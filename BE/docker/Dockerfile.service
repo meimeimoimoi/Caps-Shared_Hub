@@ -1,0 +1,42 @@
+# Multi-stage Dockerfile Template for .NET 8 Microservices
+# Usage: docker build -f docker/Dockerfile.service --build-arg SERVICE_NAME=auth -t caps-auth:latest .
+
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
+WORKDIR /app
+EXPOSE 8080
+EXPOSE 8081
+
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+ARG SERVICE_NAME
+WORKDIR /src
+
+# Copy shared common libraries first for efficient caching
+COPY ["common/common.csproj", "common/"]
+COPY ["common/abstractions/abstractions.csproj", "common/abstractions/"]
+COPY ["common/exceptions/exceptions.csproj", "common/exceptions/"]
+COPY ["common/extensions/extensions.csproj", "common/extensions/"]
+COPY ["common/messaging/messaging.csproj", "common/messaging/"]
+COPY ["common/security/security.csproj", "common/security/"]
+COPY ["common/wrappers/wrappers.csproj", "common/wrappers/"]
+
+# Copy target service project file
+COPY ["${SERVICE_NAME}/${SERVICE_NAME}.csproj", "${SERVICE_NAME}/"]
+
+# Restore dependencies
+RUN dotnet restore "${SERVICE_NAME}/${SERVICE_NAME}.csproj"
+
+# Copy full source code
+COPY common/ common/
+COPY ${SERVICE_NAME}/ ${SERVICE_NAME}/
+
+# Build project
+WORKDIR "/src/${SERVICE_NAME}"
+RUN dotnet build "${SERVICE_NAME}.csproj" -c Release -o /app/build
+
+FROM build AS publish
+RUN dotnet publish "${SERVICE_NAME}.csproj" -c Release -o /app/publish /p:UseAppHost=false
+
+FROM base AS final
+WORKDIR /app
+COPY --from=publish /app/publish .
+ENTRYPOINT ["dotnet", "${SERVICE_NAME}.dll"]

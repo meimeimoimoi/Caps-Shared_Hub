@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Server with pgvector extension enabled for RAG/Vector Search
+  postgres:
+    image: ankane/pgvector:v0.5.1
+    container_name: caps_postgres
+    restart: always
+    environment:
+      POSTGRES_DB: caps_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgrespassword
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - caps_network
+
+  # Redis Cache Server
+  redis:
+    image: redis:7-alpine
+    container_name: caps_redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - caps_network
+
+  # RabbitMQ Message Broker with Management UI
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: caps_rabbitmq
+    restart: always
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    ports:
+      - "5672:5672"   # AMQP protocol port
+      - "15672:15672" # Management Dashboard (http://localhost:15672)
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - caps_network
+
+networks:
+  caps_network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  redis_data:
+  rabbitmq_data:

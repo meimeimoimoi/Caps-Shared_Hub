@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <DefaultItemExcludes>abstractions\**;exceptions\**;extensions\**;messaging\**;security\**;wrappers\**;$(DefaultItemExcludes)</DefaultItemExcludes>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="abstractions\abstractions.csproj" />
+    <ProjectReference Include="exceptions\exceptions.csproj" />
+    <ProjectReference Include="extensions\extensions.csproj" />
+    <ProjectReference Include="messaging\messaging.csproj" />
+    <ProjectReference Include="security\security.csproj" />
+    <ProjectReference Include="wrappers\wrappers.csproj" />
+  </ItemGroup>
+
+</Project>
+
