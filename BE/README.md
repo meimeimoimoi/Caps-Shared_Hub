@@ -4,7 +4,7 @@ Hệ thống Backend xây dựng theo kiến trúc **Microservices / Modular Arc
 
 ---
 
-## 🏛️ Kiến trúc Hệ thống (Architecture Overview)
+## Kiến trúc Hệ thống (Architecture Overview)
 
 ### 1. Các Microservices chính
 * **`gateway`**: API Gateway (Single Point of Entry) tiếp nhận và điều hướng request.
@@ -28,7 +28,7 @@ Gom nhóm các module dùng chung gọn gàng:
 
 ---
 
-## 🗄️ Cơ sở dữ liệu & Hạ tầng (Database & Infra)
+## Cơ sở dữ liệu & Hạ tầng (Database & Infra)
 
 * **PostgreSQL** (Dùng 1 Database duy nhất với ranh giới **Schema-per-Service**):
   * Kích hoạt extension `pgvector` phục vụ tìm kiếm vector cho `rag-query`.
@@ -37,7 +37,7 @@ Gom nhóm các module dùng chung gọn gàng:
 
 ---
 
-## 🚀 Hướng dẫn Khởi chạy Nhanh (Quick Start)
+## Hướng dẫn Khởi chạy Nhanh (Quick Start)
 
 ### Yêu cầu môi trường
 * **.NET 8.0 SDK**
