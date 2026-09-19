@@ -2,9 +2,6 @@
 
 Monorepo gồm **Backend (.NET 8 Microservices)** và **Frontend (React 19 + Vite + TailwindCSS v4)**.
 
-> Hiện trạng: hoàn thiện kiến trúc P0–P3, chưa có business logic.
-> `dotnet build Caps.sln` và `npm run build` đều xanh.
-
 ---
 
 ## 1. Yêu cầu môi trường
