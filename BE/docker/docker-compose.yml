@@ -16,6 +16,11 @@ services:
       - postgres_data:/var/lib/postgresql/data
     networks:
       - caps_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   # Redis Cache Server
   redis:
@@ -28,6 +33,11 @@ services:
       - redis_data:/data
     networks:
       - caps_network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   # RabbitMQ Message Broker with Management UI
   rabbitmq:
@@ -42,6 +52,55 @@ services:
       - "15672:15672" # Management Dashboard (http://localhost:15672)
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - caps_network
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+
+  auth:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.service
+      args:
+        SERVICE_NAME: auth
+    container_name: caps_auth
+    restart: always
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__Postgres: Host=postgres;Port=5432;Database=caps_db;Username=postgres;Password=postgrespassword
+      ConnectionStrings__Redis: redis:6379
+      ConnectionStrings__RabbitMq: amqp://guest:guest@rabbitmq:5672
+      Jwt__Key: CHANGE_ME_dev_only_min_32_chars_1234567890
+    ports:
+      - "5194:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - caps_network
+
+  gateway:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.service
+      args:
+        SERVICE_NAME: gateway
+    container_name: caps_gateway
+    restart: always
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: http://+:8080
+      Jwt__Key: CHANGE_ME_dev_only_min_32_chars_1234567890
+    ports:
+      - "5190:8080"
+    depends_on:
+      - auth
     networks:
       - caps_network
 

@@ -1,27 +1,27 @@
-using OpenApiUi;
+using auth.Data;
+using auth.Services;
+using auth.Services.Interface;
+using Caps.Common.Extensions;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+builder.Services.AddCommonApi(builder.Configuration, "auth");
+builder.Services.AddScoped<IAuthService, AuthService>();
 
-builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+var pg = builder.Configuration.GetConnectionString("Postgres")
+    ?? builder.Configuration["ConnectionStrings:Postgres"];
+builder.Services.AddDbContext<AuthDbContext>(o => o.UseNpgsql(pg));
+builder.Services.AddHealthChecks().AddDbContextCheck<AuthDbContext>("postgres");
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+// Dev-only: ensure schema exists without requiring `dotnet ef migrations` in arch phase.
+using (var scope = app.Services.CreateScope())
 {
-    app.UseSwagger();
-    app.UseOpenApiUi();
+    var db = scope.ServiceProvider.GetRequiredService<AuthDbContext>();
+    db.Database.EnsureCreated();
 }
 
-app.UseHttpsRedirection();
-
-app.UseAuthorization();
-
-app.MapControllers();
-
+app.UseCommonApi();
 app.Run();

@@ -1,9 +1,17 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-  </PropertyGroup>
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
+    <PackageReference Include="Swashbuckle.AspNetCore" />
+    <PackageReference Include="Serilog.AspNetCore" />
+    <PackageReference Include="FluentValidation.AspNetCore" />
+    <ProjectReference Include="..\abstractions\abstractions.csproj" />
+    <ProjectReference Include="..\exceptions\exceptions.csproj" />
+    <ProjectReference Include="..\wrappers\wrappers.csproj" />
+    <ProjectReference Include="..\security\security.csproj" />
+    <ProjectReference Include="..\messaging\messaging.csproj" />
+  </ItemGroup>
 
 </Project>

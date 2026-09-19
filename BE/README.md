@@ -45,7 +45,15 @@ Gom nhóm các module dùng chung gọn gàng:
 
 ### Các bước thực hiện
 
-1. **Khởi động Hạ tầng (Postgres + pgvector, Redis, RabbitMQ)**:
+> Kiến trúc đã hoàn thiện P0-P2: Central Package Management, `common/` cross-cutting,
+> `auth` JWT+EF thật, `gateway` YARP, `docker-compose` full-stack.
+
+1. **Khởi động nhanh (khuyên dùng)**:
+   ```powershell
+   .\scripts\start-all.ps1
+   ```
+
+2. **Hoặc thủ công — Hạ tầng (Postgres + pgvector, Redis, RabbitMQ)**:
    Mở Terminal tại thư mục `BE/` và chạy:
    ```powershell
    .\scripts\start-infra.ps1
@@ -53,17 +61,30 @@ Gom nhóm các module dùng chung gọn gàng:
    * *RabbitMQ Management Dashboard*: [http://localhost:15672](http://localhost:15672) (User/Pass: `guest` / `guest`)
    * *PostgreSQL Connection*: `localhost:5432` (User/Pass: `postgres` / `postgrespassword`)
 
-2. **Biên dịch Dự án**:
+3. **Biên dịch Dự án**:
    ```powershell
    dotnet build
    ```
 
-3. **Chạy Service mong muốn** (Ví dụ `auth` service):
+4. **Chạy Service mong muốn** (Ví dụ `auth` service):
    ```powershell
-   dotnet run --project auth/auth.csproj
+   dotnet run --project auth/auth.csproj       # http://localhost:5194/healthz
+   dotnet run --project gateway/gateway.csproj # http://localhost:5190/healthz
    ```
 
-4. **Dừng Hạ tầng khi hoàn thành**:
+   Smoke test xuyên gateway:
+   ```powershell
+   curl -X POST http://localhost:5190/api/auth/register `
+     -H "Content-Type: application/json" `
+     -d '{"email":"a@caps.com","password":"Caps123!"}'
+   ```
+
+5. **Full docker (auth + gateway + infra)**:
+   ```powershell
+   docker compose -f docker/docker-compose.yml up -d --build
+   ```
+
+6. **Dừng Hạ tầng khi hoàn thành**:
    ```powershell
    .\scripts\stop-infra.ps1
    ```

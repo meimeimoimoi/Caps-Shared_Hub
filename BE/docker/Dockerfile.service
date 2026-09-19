@@ -39,4 +39,8 @@ RUN dotnet publish "${SERVICE_NAME}.csproj" -c Release -o /app/publish /p:UseApp
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "${SERVICE_NAME}.dll"]
+# NOTE: exec-form does NOT expand ARG/ENV, so use shell-form here.
+# SERVICE_NAME is baked at build time via ARG -> ENV.
+ARG SERVICE_NAME
+ENV SERVICE_NAME=${SERVICE_NAME}
+ENTRYPOINT ["sh", "-c", "dotnet ${SERVICE_NAME}.dll"]

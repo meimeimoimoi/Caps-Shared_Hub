@@ -1,21 +1,35 @@
+using auth.DTOs.Requests;
+using auth.DTOs.Responses;
+using auth.Services.Interface;
+using Caps.Common.Abstractions;
+using Caps.Common.Wrappers;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace auth.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class AuthController : ControllerBase
+public sealed class AuthController(IAuthService auth) : ControllerBase
 {
-    [HttpGet]
-    public IActionResult Get()
+    [HttpPost("register")]
+    public async Task<ActionResult<ApiResponse<AuthResponse>>> Register([FromBody] RegisterRequest request, CancellationToken ct)
     {
-        return Ok();
+        var result = await auth.RegisterAsync(request, ct);
+        return Ok(ApiResponse<AuthResponse>.Ok(result, "Registered."));
     }
 
-    [HttpGet("me")]
-    public IActionResult Me()
+    [HttpPost("login")]
+    public async Task<ActionResult<ApiResponse<AuthResponse>>> Login([FromBody] LoginRequest request, CancellationToken ct)
     {
-        return Ok();
+        var result = await auth.LoginAsync(request, ct);
+        return Ok(ApiResponse<AuthResponse>.Ok(result, "Logged in."));
+    }
+
+    [Authorize]
+    [HttpGet("me")]
+    public ActionResult<ApiResponse<MeResponse>> Me([FromServices] ICurrentUser me)
+    {
+        return Ok(ApiResponse<MeResponse>.Ok(new MeResponse(me.UserId!, me.Email), "Ok."));
     }
 }

@@ -1,6 +1,122 @@
-bin/ 
+.idea
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# User-specific files
+.vs/
+*.user
+
+# Cached and temporary files
+*.cache
+*.log
+*.tmp
+*.temp
+*.bak
+*~
+*.orig
+*.rej
+*.old
+
+# NuGet
+packages/
+.nuget/
+*.nupkg
+
+# Build artifacts
+bin/
 obj/
+out/
 
-.env/
+#ASP.NET
+wwwroot/appsettings.Development.json
 
+# VS Code
 .vscode/
+
+# Azure DevOps
+.azuredevops/
+
+# Visual Studio Code Remote
+.remote-containers/
+.remote-ssh/
+.devcontainer/
+
+# Code Climate
+.codeclimate.yml
+
+# Visual Studio Code Server
+.vscode-server/
+
+# File Sync
+.file-sync/
+
+# WebStorm
+.idea/
+
+# Project-specific
+# docs/
+/src/docs/index.html
+
+# JetBrains Rider
+.idea/
+
+# Mac-specific
+.DS_Store
+
+# Windows-specific
+i386/*
+
+# Node.js
+node_modules
+
+# Python
+__pycache__
+*.pyc
+
+# Python virtual environments
+venv
+
+# Python environment
+env/
+
+# Package manager specific (Rust, Go, etc.)
+target/ # Rust
+gomod/ # Go (if you use a custom layout)
+
+# Testing
+coverage/
+test_results/
+
+# Database
+*.db
+*.sqlite
+
+# Docker
+*.log
+docker-compose.override.yml
+
+# Terraform
+.terraform
+
+# Specific to this project (common patterns)
+docs/
+.cache/
+
+# Environment-specific files (shouldn't be in repo)
+.env
+.env.*.local
+!.env.example
+
+# Secrets / certs (never commit)
+*.pfx
+*.pem
+*.key
+secrets/
+
+# Test results
+TestResults/
+
+# OS-specific temp files
+Thumbs.db
