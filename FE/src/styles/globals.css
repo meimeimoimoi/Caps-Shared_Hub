@@ -38,3 +38,88 @@
     margin: 0;
   }
 }
+
+/* ── Expert registration tokens ── */
+@theme inline {
+  --color-ex-accent: #b84200;
+  --color-ex-accent-hover: #963700;
+  --color-ex-ink: #252b2b;
+  --color-ex-muted: #59615f;
+  --color-ex-heading: #192524;
+  --color-ex-bg: #eeede8;
+  --color-ex-selection: #f8d8bf;
+  --color-ex-panel: #ffffff;
+  --color-ex-border: #d9dbd4;
+  --color-ex-border-light: #e3e5df;
+  --color-ex-chip-bg: #fff0e3;
+  --color-ex-note-bg: #f5f4f0;
+  --color-ex-drop-bg: #fafbf8;
+  --color-ex-drop-hover: #fff8f2;
+  --color-ex-demo-bg: #fff5e8;
+  --color-ex-demo-border: #e6d5bc;
+  --color-ex-demo-text: #61411f;
+  --color-ex-error-bg: #fff0ea;
+  --color-ex-error-text: #962a0d;
+  --color-ex-notice-bg: #e9f4eb;
+  --color-ex-notice-text: #225a45;
+  --color-ex-btn-border: #aaaead;
+  --color-ex-btn-hover: #f5f2ec;
+  --color-ex-input-border: #a9afaa;
+  --color-ex-chip-border: #bcc0b8;
+  --color-ex-step-border: #919990;
+  --color-ex-timeline-border: #c9cfc5;
+  --color-ex-file-border: #e5e7df;
+  --color-ex-brand: #182727;
+  --color-ex-header-divider: #c5c9c2;
+  --color-ex-trust-border: #cdd1c8;
+  --color-ex-history-border: #e0e4dc;
+  --color-ex-footer-border: #d7dbd2;
+  --color-ex-focus: #a74512;
+  --color-ex-ring: #b8420018;
+
+  --animate-expert-enter: expert-enter 0.2s ease-out both;
+  --animate-expert-fade-in: expert-fade-in 0.2s ease-out both;
+  --animate-expert-spin: expert-spin 0.6s linear infinite;
+
+  @keyframes expert-enter {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  @keyframes expert-fade-in {
+    from {
+      opacity: 0;
+      transform: translateY(4px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  @keyframes expert-spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+}
+
+/* Loading spinner pseudo-element – cannot be done with pure utilities */
+@utility ex-loading {
+  pointer-events: none;
+  opacity: 0.7;
+  &::after {
+    content: '';
+    width: 16px;
+    height: 16px;
+    border: 2px solid currentColor;
+    border-right-color: transparent;
+    border-radius: 50%;
+    animation: expert-spin 0.6s linear infinite;
+    flex-shrink: 0;
+  }
+}

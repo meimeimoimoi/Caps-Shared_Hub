@@ -5,6 +5,9 @@ import { ProtectedRoute } from './ProtectedRoute'
 const LoginPage = lazy(() => import('@/pages/LoginPage'))
 const DashboardPage = lazy(() => import('@/pages/DashboardPage'))
 const NotFoundPage = lazy(() => import('@/pages/NotFoundPage'))
+const ExpertRegistrationPage = lazy(
+  () => import('@/pages/ExpertRegistrationPage')
+)
 
 function Fallback() {
   return (
@@ -21,6 +24,7 @@ export function AppRoutes() {
         <Routes>
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/expert/register" element={<ExpertRegistrationPage />} />
           <Route
             path="/dashboard"
             element={
