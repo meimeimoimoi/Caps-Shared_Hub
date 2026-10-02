@@ -18,7 +18,7 @@ export function FileUploader({
 }: FileUploaderProps) {
   return (
     <div className="mb-6">
-      <label className="flex items-center flex-col gap-2 border border-dashed border-ex-chip-border rounded-md py-6 px-4 bg-ex-drop-bg cursor-pointer text-center transition-[border-color,background] duration-150 ease-in-out hover:border-ex-accent hover:bg-ex-drop-hover motion-reduce:transition-none">
+      <label className="flex items-center flex-col gap-2 border border-dashed border-ex-chip-border rounded-md py-6 px-4 bg-ex-drop-bg cursor-pointer text-center transition-[border-color,background,box-shadow] duration-150 ease-in-out hover:border-ex-accent hover:bg-ex-drop-hover focus-within:ring-2 focus-within:ring-ex-accent focus-within:ring-offset-2 motion-reduce:transition-none">
         <Upload size={22} />
         <strong>Choose supporting files</strong>
         <span className="text-xs text-ex-muted">PDF, JPG or PNG · up to 10 MB each (demo)</span>
@@ -27,7 +27,7 @@ export function FileUploader({
           type="file"
           accept=".pdf,.jpg,.jpeg,.png"
           multiple
-          className="max-w-full text-[13px]"
+          className="sr-only"
           onChange={(e) => {
             onFilesSelected(e.target.files)
             e.target.value = ''

@@ -53,6 +53,7 @@ export default function ExpertRegistrationPage() {
     setSupplementFile,
     setExplanation,
     cancelSupplement,
+    supplementFile,
   } = useApplicationLifecycle()
 
   const {
@@ -183,6 +184,7 @@ export default function ExpertRegistrationPage() {
               progress={progress}
               history={history}
               supplementFormProps={{
+                file: supplementFile,
                 explanation,
                 submitting: lifecycleSubmitting,
                 onExplanationChange: setExplanation,

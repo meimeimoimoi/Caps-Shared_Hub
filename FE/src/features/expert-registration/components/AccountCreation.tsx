@@ -1,6 +1,6 @@
 import type { FormEvent } from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowRight } from 'lucide-react'
+import { ArrowRight, Loader2 } from 'lucide-react'
 import type { Profile } from '../types'
 import { FormField } from './FormField'
 
@@ -82,6 +82,7 @@ export function AccountCreation({
         className={`${btnPrimary} w-full ${submitting ? 'ex-loading' : ''}`}
         disabled={submitting}
       >
+        {submitting && <Loader2 size={16} className="animate-spin" />}
         {submitting ? 'Creating…' : 'Continue to application'}{' '}
         {!submitting && <ArrowRight size={16} />}
       </button>

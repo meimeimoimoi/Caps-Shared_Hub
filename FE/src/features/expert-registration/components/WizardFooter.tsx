@@ -1,4 +1,4 @@
-import { ArrowLeft, ArrowRight, Save } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Save, Loader2 } from 'lucide-react'
 
 export interface WizardFooterProps {
   step: number
@@ -45,6 +45,7 @@ export function WizardFooter({
           className={`${btnPrimary} ${step === 3 && submitting ? 'ex-loading' : ''}`}
           disabled={step === 3 && submitting}
         >
+          {step === 3 && submitting && <Loader2 size={16} className="animate-spin" />}
           {step === 3 && submitting
             ? 'Submitting…'
             : step === 3
