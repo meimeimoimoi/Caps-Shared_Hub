@@ -5,18 +5,22 @@ import type { ApplicationDocument } from '../types'
 
 interface DocumentsTabProps {
   documents: ApplicationDocument[]
+  /** Mở sẵn tài liệu này (vd. bấm link CV ở tab Hồ sơ) */
+  initialCode?: string
   reviewedFlags: string[]
   onToggleReviewed: (flagId: string) => void
 }
 
 export function DocumentsTab({
   documents,
+  initialCode,
   reviewedFlags,
   onToggleReviewed,
 }: DocumentsTabProps) {
   // Mở sẵn tài liệu có cờ AI (nếu có) để admin xem ngay chỗ cần xem lại
   const [code, setCode] = useState(
     () =>
+      initialCode ??
       (
         documents.find((d) =>
           d.pages.some((p) => p.notes.some((n) => n.flagId))

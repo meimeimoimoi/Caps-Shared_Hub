@@ -52,10 +52,13 @@ export interface ApplicationDocument {
 }
 
 export interface ApplicationDetail extends ExpertApplication {
-  phone: string
+  birthDate: string
   jobTitle: string
   company: string
+  location: string
   bio: string
+  fields: string[]
+  highlights: string
   screening: {
     ranAt: string
     rerunAt?: string

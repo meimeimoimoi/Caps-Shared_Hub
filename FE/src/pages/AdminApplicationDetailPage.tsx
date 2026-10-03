@@ -9,6 +9,7 @@ import {
   AiScreeningTab,
   CompetencyReview,
   DocumentsTab,
+  ProfileTab,
   DECISION_LABEL,
   formatDateTime,
   mockApplications,
@@ -31,6 +32,7 @@ const pendingCount = mockApplications.filter(
 export default function AdminApplicationDetailPage() {
   const { id = '' } = useParams()
   const [tab, setTab] = useState<(typeof tabs)[number]['key']>('ai')
+  const [docCode, setDocCode] = useState<string>()
   const review = useApplicationReview(id)
   const { detail, decision } = review
 
@@ -163,26 +165,18 @@ export default function AdminApplicationDetailPage() {
               />
             )}
             {tab === 'profile' && (
-              <dl className="paper grid gap-x-6 gap-y-3 p-5 sm:grid-cols-[160px_1fr] md:p-6">
-                {[
-                  ['Họ tên', detail.name],
-                  ['Email', detail.email],
-                  ['Số điện thoại', detail.phone],
-                  ['Chức danh', detail.jobTitle],
-                  ['Đơn vị công tác', detail.company],
-                  ['Số năm kinh nghiệm', `${detail.years} năm`],
-                  ['Giới thiệu', detail.bio],
-                ].map(([k, v]) => (
-                  <div key={k} className="contents">
-                    <dt className="text-fg-muted">{k}</dt>
-                    <dd className="text-fg-strong">{v}</dd>
-                  </div>
-                ))}
-              </dl>
+              <ProfileTab
+                detail={detail}
+                onOpenDocument={(code) => {
+                  setDocCode(code)
+                  setTab('documents')
+                }}
+              />
             )}
             {tab === 'documents' && (
               <DocumentsTab
                 documents={detail.documents}
+                initialCode={docCode}
                 reviewedFlags={review.reviewedFlags}
                 onToggleReviewed={review.toggleFlagReviewed}
               />
@@ -218,6 +212,7 @@ export default function AdminApplicationDetailPage() {
       <DecisionBar
         className="-mx-4 mt-12 -mb-12 md:-mx-6 lg:-mx-8"
         blockers={blockers}
+        ready={`Đã chấm và ghi căn cứ đủ ${review.criteria.length}/${review.criteria.length} tiêu chí`}
         secondary={
           <button
             type="button"

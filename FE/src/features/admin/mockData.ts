@@ -101,10 +101,14 @@ export function getMockApplicationDetail(
     .map((f, i) => ({ id: `F${i + 1}`, ...f }))
   return {
     ...app,
-    phone: '0912 345 678',
+    birthDate: '1988-04-12',
     jobTitle: 'Trưởng phòng Tư vấn Thuế',
-    company: 'Công ty TNHH Tư vấn An Phát',
-    bio: 'Chuyên tư vấn thuế doanh nghiệp, quyết toán thuế TNDN và TNCN.',
+    company: 'Công ty TNHH Tư vấn Thuế An Phát',
+    location: 'TP. Hồ Chí Minh',
+    bio: `${app.years} năm tư vấn và quyết toán thuế TNDN cho doanh nghiệp vừa và nhỏ.`,
+    fields: ['Thuế TNDN', 'Quyết toán thuế', 'Kế toán doanh nghiệp'],
+    highlights:
+      'Phụ trách quyết toán thuế TNDN cho khoảng 40 doanh nghiệp; rà soát chi phí được trừ, ưu đãi thuế.',
     screening: {
       ranAt: app.submittedAt,
       rerunAt: flags.length
