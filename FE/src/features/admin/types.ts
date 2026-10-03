@@ -14,6 +14,7 @@ export interface ExpertApplication {
 
 export interface AiFlag {
   id: string
+  document: string // mã tài liệu liên quan, vd. EV-03
   title: string
   detail: string
 }
@@ -67,7 +68,21 @@ export interface ApplicationDetail extends ExpertApplication {
     legalChecks: LegalCheck[]
   }
   documents: ApplicationDocument[]
-  history: { at: string; text: string }[]
+  history: HistoryEntry[]
 }
 
 export type ReviewDecision = 'approve' | 'reject' | 'supplement'
+
+/** actor = 'AI' cho thao tác của hệ thống AI, còn lại là tên người */
+export interface HistoryEntry {
+  at: string
+  actor: string
+  text: string
+}
+
+export interface DecisionRecord {
+  kind: ReviewDecision
+  at: string
+  by: string
+  note: string
+}

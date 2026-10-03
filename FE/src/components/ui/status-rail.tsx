@@ -19,7 +19,10 @@ export function StatusRail({ steps, current, size = 'lg' }: StatusRailProps) {
           {i < steps.length - 1 && (
             <span
               aria-hidden="true"
-              className={cn('rail-track absolute top-0 left-1/2 w-full', i < current && 'rail-track-done')}
+              className={cn(
+                'rail-track absolute top-0 left-1/2 w-full',
+                i < current && 'rail-track-done'
+              )}
             />
           )}
           <span
@@ -27,14 +30,14 @@ export function StatusRail({ steps, current, size = 'lg' }: StatusRailProps) {
             className={cn(
               'rail-dot relative',
               i < current && 'rail-dot-done',
-              i === current && 'rail-dot-current',
+              i === current && 'rail-dot-current'
             )}
           />
           <span
             className={cn(
               'mt-2 px-1',
               size === 'sm' ? 'text-caption' : 'text-sm',
-              i === current ? 'text-fg-strong font-semibold' : 'text-fg-muted',
+              i === current ? 'text-fg-strong font-semibold' : 'text-fg-muted'
             )}
           >
             {label}

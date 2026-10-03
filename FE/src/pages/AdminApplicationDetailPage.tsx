@@ -1,17 +1,29 @@
-import { useState, type KeyboardEvent } from 'react'
+import { useCallback, useState, type KeyboardEvent } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { cn } from '@/lib/utils'
-import { APPLICATION_RAIL_STEP, RAIL_APPLICATION } from '@/lib/constants'
+import {
+  APPLICATION_RAIL_STEP,
+  APPLICATION_STATUS,
+  RAIL_APPLICATION,
+} from '@/lib/constants'
 import { ToolHeader } from '@/components/ui/tool-header'
+import { CaseHeader } from '@/components/ui/case-header'
 import { DecisionBar } from '@/components/ui/decision-bar'
+import { Toast } from '@/components/ui/toast'
 import {
   AdminLayout,
   AiScreeningTab,
+  AiSummaryCard,
+  ApproveDialog,
   CompetencyReview,
+  CURRENT_ADMIN,
+  DecisionCard,
   DocumentsTab,
+  HistoryTab,
   ProfileTab,
   DECISION_LABEL,
-  formatDateTime,
+  DECISION_TOAST,
+  formatDate,
   mockApplications,
   useApplicationReview,
   type ReviewDecision,
@@ -33,8 +45,11 @@ export default function AdminApplicationDetailPage() {
   const { id = '' } = useParams()
   const [tab, setTab] = useState<(typeof tabs)[number]['key']>('ai')
   const [docCode, setDocCode] = useState<string>()
+  const [approveOpen, setApproveOpen] = useState(false)
+  const [toast, setToast] = useState<string | null>(null)
+  const clearToast = useCallback(() => setToast(null), [])
   const review = useApplicationReview(id)
-  const { detail, decision } = review
+  const { detail, decision, status } = review
 
   const listLink = (
     <Link
@@ -45,7 +60,7 @@ export default function AdminApplicationDetailPage() {
     </Link>
   )
 
-  if (!detail) {
+  if (!detail || !status) {
     return (
       <AdminLayout breadcrumb={listLink} pendingCount={pendingCount}>
         <h1 className="text-h1-tool">Không tìm thấy hồ sơ {id}</h1>
@@ -75,9 +90,17 @@ export default function AdminApplicationDetailPage() {
     document.getElementById(`tab-${key}`)?.focus()
   }
 
-  const decide = (d: ReviewDecision) => {
-    if (window.confirm(`${DECISION_LABEL[d]} hồ sơ ${detail.id}?`))
-      review.decide(d)
+  const finish = (kind: ReviewDecision, note?: string) => {
+    review.decide(kind, note)
+    setApproveOpen(false)
+    setTab('history')
+    setToast(DECISION_TOAST[kind])
+  }
+
+  // TODO: Từ chối / Yêu cầu bổ sung chưa có thiết kế dialog (cần ô nhập lý do)
+  const confirmOther = (kind: Exclude<ReviewDecision, 'approve'>) => {
+    if (window.confirm(`${DECISION_LABEL[kind]} hồ sơ ${detail.id}?`))
+      finish(kind)
   }
 
   const blockers = [
@@ -89,6 +112,15 @@ export default function AdminApplicationDetailPage() {
       tone: 'warning' as const,
     },
   ].filter((b) => !!b)
+
+  const railStep = APPLICATION_RAIL_STEP[status]
+  // Bước cuối hiện nhãn trạng thái khi đã có kết quả, vd. "Được duyệt"
+  const railSteps = [
+    ...RAIL_APPLICATION.slice(0, -1),
+    railStep >= RAIL_APPLICATION.length
+      ? APPLICATION_STATUS[status].label
+      : RAIL_APPLICATION[RAIL_APPLICATION.length - 1],
+  ]
 
   return (
     <AdminLayout
@@ -102,22 +134,23 @@ export default function AdminApplicationDetailPage() {
         </>
       }
     >
-      <ToolHeader
-        code={detail.id}
-        subtitle={`${detail.name} · ${detail.jobTitle} · ${detail.years} năm`}
-        rail={{
-          steps: RAIL_APPLICATION,
-          current: APPLICATION_RAIL_STEP[detail.status],
-        }}
-      />
-
-      {decision && (
-        <p
-          role="status"
-          className="bg-success-soft text-success rounded-surface mt-6 px-4 py-3"
-        >
-          Đã ghi nhận quyết định: {DECISION_LABEL[decision]}.
-        </p>
+      {decision ? (
+        <CaseHeader
+          code={detail.id}
+          title={detail.name}
+          meta={[
+            ['Chức danh', `${detail.jobTitle}, ${detail.company}`],
+            ['Kinh nghiệm', `${detail.years} năm`],
+            ['Nộp', formatDate(detail.submittedAt)],
+          ]}
+          rail={{ steps: railSteps, current: railStep }}
+        />
+      ) : (
+        <ToolHeader
+          code={detail.id}
+          subtitle={`${detail.name} · ${detail.jobTitle} · ${detail.years} năm`}
+          rail={{ steps: railSteps, current: railStep }}
+        />
       )}
 
       <div className="mt-6 grid items-start gap-4 md:gap-6 lg:grid-cols-[minmax(420px,1fr)_340px]">
@@ -161,7 +194,7 @@ export default function AdminApplicationDetailPage() {
                 screening={detail.screening}
                 reviewedFlags={review.reviewedFlags}
                 onToggleReviewed={review.toggleFlagReviewed}
-                onRequestSupplement={() => decide('supplement')}
+                onRequestSupplement={() => confirmOther('supplement')}
               />
             )}
             {tab === 'profile' && (
@@ -181,64 +214,79 @@ export default function AdminApplicationDetailPage() {
                 onToggleReviewed={review.toggleFlagReviewed}
               />
             )}
-            {tab === 'history' && (
-              <ol className="paper space-y-3 p-5 md:p-6">
-                {detail.history.map((h, i) => (
-                  <li key={i} className="flex gap-4">
-                    <span className="text-fg-muted num w-36 shrink-0">
-                      {formatDateTime(h.at)}
-                    </span>
-                    {h.text}
-                  </li>
-                ))}
-              </ol>
-            )}
+            {tab === 'history' && <HistoryTab history={review.history} />}
           </div>
         </div>
 
-        {/* ── Right: competency ── */}
-        <div className="lg:sticky lg:top-20 lg:max-h-[calc(100vh-160px)] lg:overflow-y-auto">
-          <CompetencyReview
-            criteria={review.criteria}
-            scores={review.scores}
-            evidence={review.evidence}
-            disabled={!!decision}
-            onScore={review.setScore}
-            onEvidence={review.setEvidence}
-          />
-        </div>
+        {/* ── Right: chấm điểm, hoặc kết quả sau khi đã quyết định ── */}
+        {decision ? (
+          <div className="space-y-4 md:space-y-6">
+            <DecisionCard
+              decision={decision}
+              criteria={review.criteria}
+              scores={review.scores}
+            />
+            <AiSummaryCard
+              screening={detail.screening}
+              flagReviews={review.flagReviews}
+              reviewer={CURRENT_ADMIN}
+              onOpenDetail={() => setTab('ai')}
+            />
+          </div>
+        ) : (
+          <div className="lg:sticky lg:top-20 lg:max-h-[calc(100vh-160px)] lg:overflow-y-auto">
+            <CompetencyReview
+              criteria={review.criteria}
+              scores={review.scores}
+              evidence={review.evidence}
+              disabled={false}
+              onScore={review.setScore}
+              onEvidence={review.setEvidence}
+            />
+          </div>
+        )}
       </div>
 
-      <DecisionBar
-        className="-mx-4 mt-12 -mb-12 md:-mx-6 lg:-mx-8"
-        blockers={blockers}
-        ready={`Đã chấm và ghi căn cứ đủ ${review.criteria.length}/${review.criteria.length} tiêu chí`}
-        secondary={
-          <button
-            type="button"
-            disabled={!!decision}
-            onClick={() => decide('supplement')}
-            className="btn btn-press btn-secondary"
-          >
-            {DECISION_LABEL.supplement}
-          </button>
-        }
-        danger={
-          <button
-            type="button"
-            disabled={!!decision}
-            onClick={() => decide('reject')}
-            className="btn btn-press bg-danger text-paper disabled:bg-desk-2 disabled:text-fg-disabled"
-          >
-            {DECISION_LABEL.reject}
-          </button>
-        }
-        primary={{
-          label: DECISION_LABEL.approve,
-          onClick: () => decide('approve'),
-          disabled: !review.canApprove,
-        }}
+      {!decision && (
+        <DecisionBar
+          className="-mx-4 mt-12 -mb-12 md:-mx-6 lg:-mx-8"
+          blockers={blockers}
+          ready={`Đã chấm và ghi căn cứ đủ ${review.criteria.length}/${review.criteria.length} tiêu chí`}
+          secondary={
+            <button
+              type="button"
+              onClick={() => confirmOther('supplement')}
+              className="btn btn-press btn-secondary"
+            >
+              {DECISION_LABEL.supplement}
+            </button>
+          }
+          danger={
+            <button
+              type="button"
+              onClick={() => confirmOther('reject')}
+              className="btn btn-press bg-danger text-paper"
+            >
+              {DECISION_LABEL.reject}
+            </button>
+          }
+          primary={{
+            label: DECISION_LABEL.approve,
+            onClick: () => setApproveOpen(true),
+            disabled: !review.canApprove,
+          }}
+        />
+      )}
+
+      <ApproveDialog
+        open={approveOpen}
+        applicantName={detail.name}
+        criteria={review.criteria}
+        scores={review.scores}
+        onCancel={() => setApproveOpen(false)}
+        onConfirm={(note) => finish('approve', note)}
       />
+      {toast && <Toast message={toast} onDone={clearToast} />}
     </AdminLayout>
   )
 }

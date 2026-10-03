@@ -1,6 +1,11 @@
 import { useState } from 'react'
-import { getMockApplicationDetail, mockCriteria } from '../mockData'
-import type { ReviewDecision } from '../types'
+import { DECISION_LOG, DECISION_STATUS } from '../constants'
+import {
+  CURRENT_ADMIN,
+  getMockApplicationDetail,
+  mockCriteria,
+} from '../mockData'
+import type { DecisionRecord, HistoryEntry, ReviewDecision } from '../types'
 
 export function useApplicationReview(id: string) {
   // MOCK: thay bằng useQuery gọi API chi tiết hồ sơ + tiêu chí (xem features/admin/mockData.ts)
@@ -9,10 +14,12 @@ export function useApplicationReview(id: string) {
 
   const [scores, setScores] = useState<Record<string, number>>({})
   const [evidence, setEvidence] = useState<Record<string, string>>({})
-  const [reviewedFlags, setReviewedFlags] = useState<string[]>([])
-  const [decision, setDecision] = useState<ReviewDecision | null>(null)
+  const [flagReviews, setFlagReviews] = useState<Record<string, string>>({}) // flagId → thời điểm xem xét
+  const [log, setLog] = useState<HistoryEntry[]>([])
+  const [decision, setDecision] = useState<DecisionRecord | null>(null)
 
   const flags = detail?.screening.flags ?? []
+  const reviewedFlags = Object.keys(flagReviews)
   const remainingCriteria = criteria.filter(
     (c) => !scores[c.id] || !evidence[c.id]?.trim()
   ).length
@@ -20,8 +27,38 @@ export function useApplicationReview(id: string) {
     (f) => !reviewedFlags.includes(f.id)
   ).length
 
+  const addLog = (text: string, at = new Date().toISOString()) =>
+    setLog((l) => [...l, { at, actor: CURRENT_ADMIN, text }])
+
+  const toggleFlagReviewed = (flagId: string) => {
+    const flag = flags.find((f) => f.id === flagId)
+    if (flagReviews[flagId]) {
+      setFlagReviews((r) =>
+        Object.fromEntries(Object.entries(r).filter(([k]) => k !== flagId))
+      )
+      addLog(`Bỏ đánh dấu đã xem xét mục ${flag?.document}.`)
+    } else {
+      const at = new Date().toISOString()
+      setFlagReviews((r) => ({ ...r, [flagId]: at }))
+      addLog(`Đánh dấu đã xem xét mục ${flag?.document}.`, at)
+    }
+  }
+
+  // MOCK: chưa gửi API. TODO(api): POST quyết định kèm scores + evidence + note
+  const decide = (kind: ReviewDecision, note = '') => {
+    const at = new Date().toISOString()
+    if (kind === 'approve')
+      addLog(
+        `Chấm ${criteria.length}/${criteria.length} tiêu chí năng lực.`,
+        at
+      )
+    addLog(DECISION_LOG[kind], at)
+    setDecision({ kind, at, by: CURRENT_ADMIN, note: note.trim() })
+  }
+
   return {
     detail,
+    status: decision ? DECISION_STATUS[decision.kind] : detail?.status,
     criteria,
     scores,
     setScore: (criterionId: string, level: number) =>
@@ -30,15 +67,16 @@ export function useApplicationReview(id: string) {
     setEvidence: (criterionId: string, text: string) =>
       setEvidence((e) => ({ ...e, [criterionId]: text })),
     reviewedFlags,
-    toggleFlagReviewed: (flagId: string) =>
-      setReviewedFlags((r) =>
-        r.includes(flagId) ? r.filter((x) => x !== flagId) : [...r, flagId]
-      ),
+    flagReviews,
+    toggleFlagReviewed,
     remainingCriteria,
     unreviewedFlags,
     canApprove: !decision && remainingCriteria === 0 && unreviewedFlags === 0,
     decision,
-    // MOCK: chưa gửi API. TODO(api): POST quyết định kèm scores + evidence, rồi điều hướng về danh sách
-    decide: setDecision,
+    decide,
+    // Mới nhất lên đầu
+    history: [...(detail?.history ?? []), ...log].sort((a, b) =>
+      b.at.localeCompare(a.at)
+    ),
   }
 }

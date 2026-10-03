@@ -7,6 +7,9 @@
  * ════════════════════════════════════════════════════════════════════ */
 import type { ApplicationDetail, Criterion, ExpertApplication } from './types'
 
+// MOCK: admin đang đăng nhập. TODO(api): lấy từ authStore khi có đăng nhập admin
+export const CURRENT_ADMIN = 'Trần An'
+
 const daysAgo = (n: number) =>
   new Date(Date.now() - n * 86_400_000).toISOString()
 
@@ -75,15 +78,18 @@ export const mockCriteria: Criterion[] = [1, 2, 3, 4, 5].map((n) => ({
 
 const flagTemplates = [
   {
+    document: 'EV-03',
     title: 'Cần xem lại: giai đoạn công tác 07/2017 – 02/2021',
     detail:
       'CV kê khai giai đoạn 07/2017 – 02/2021 tại Công ty Kiểm toán Sao Việt nhưng hồ sơ không có giấy xác nhận cho giai đoạn này. Giấy tờ hiện có chỉ xác nhận giai đoạn từ 03/2021.',
   },
   {
+    document: 'EV-01',
     title: 'Cần xem lại: số chứng chỉ không đọc được',
     detail: 'Ảnh chụp chứng chỉ bị mờ, AI không đọc được số hiệu.',
   },
   {
+    document: 'EV-02',
     title: 'Cần xem lại: họ tên không khớp',
     detail: 'Họ tên trên bằng cấp khác với họ tên đăng ký.',
   },
@@ -96,6 +102,10 @@ export function getMockApplicationDetail(
 ): ApplicationDetail | undefined {
   const app = mockApplications.find((a) => a.id === id)
   if (!app) return undefined
+  const at = (minutes: number) =>
+    new Date(
+      new Date(app.submittedAt).getTime() + minutes * 60_000
+    ).toISOString()
   const flags = flagTemplates
     .slice(0, app.aiFlags)
     .map((f, i) => ({ id: `F${i + 1}`, ...f }))
@@ -202,11 +212,21 @@ export function getMockApplicationDetail(
       { code: 'EV-05', name: '[Giấy tờ EV-05].pdf', pages: [] },
     ],
     history: [
-      { at: app.submittedAt, text: 'Nộp hồ sơ' },
-      { at: app.submittedAt, text: 'AI sàng lọc hoàn tất' },
+      { at: app.submittedAt, actor: app.name, text: 'Nộp hồ sơ.' },
       {
-        at: app.submittedAt,
-        text: 'Đối soát tài liệu và giấy tờ pháp lý hoàn tất',
+        at: at(3),
+        actor: 'AI',
+        text: 'Kiểm tra giấy tờ pháp lý: thiếu EV-05, EV-04 không đọc được. Chuyển Cần bổ sung.',
+      },
+      {
+        at: at(2 * 1440 + 4 * 60),
+        actor: app.name,
+        text: 'Gửi bổ sung EV-04, EV-05.',
+      },
+      {
+        at: at(2 * 1440 + 4 * 60 + 7),
+        actor: 'AI',
+        text: `Chạy lại đối soát sau bổ sung. ${flags.length} mục cần xem lại.`,
       },
     ],
   }
