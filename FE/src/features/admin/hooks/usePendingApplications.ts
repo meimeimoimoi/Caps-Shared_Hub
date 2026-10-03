@@ -1,10 +1,9 @@
 import { useState } from 'react'
+import { paginate } from '@/lib/utils'
 import { QUEUE_TABS, type QueueTab } from '../constants'
 import { mockApplications } from '../mockData'
 import type { ApplicationStatus } from '../types'
 import { foldVietnamese } from '../utils/applications'
-
-const PAGE_SIZE = 10
 
 const statusesOf = (tab: QueueTab): readonly ApplicationStatus[] =>
   QUEUE_TABS.find((t) => t.key === tab)?.statuses ?? []
@@ -29,9 +28,6 @@ export function usePendingApplications() {
           foldVietnamese(a.email).includes(q))
     )
     .sort((a, b) => a.submittedAt.localeCompare(b.submittedAt))
-  const pageCount = Math.max(1, Math.ceil(rows.length / PAGE_SIZE))
-  const visible = rows.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE)
-
   return {
     tab,
     setTab: (t: QueueTab) => {
@@ -44,12 +40,7 @@ export function usePendingApplications() {
       setPage(0)
     },
     countOf,
-    rows: visible,
-    total: rows.length,
-    from: rows.length ? page * PAGE_SIZE + 1 : 0,
-    to: page * PAGE_SIZE + visible.length,
-    canPrev: page > 0,
-    canNext: page < pageCount - 1,
+    paged: paginate(rows, page),
     prev: () => setPage((p) => p - 1),
     next: () => setPage((p) => p + 1),
   }

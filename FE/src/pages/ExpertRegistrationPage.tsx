@@ -1,5 +1,11 @@
 import { Link } from 'react-router-dom'
-import { Check, FileText, Briefcase, UserRound, ChevronDown } from 'lucide-react'
+import {
+  Check,
+  FileText,
+  Briefcase,
+  UserRound,
+  ChevronDown,
+} from 'lucide-react'
 import sharedHubLogo from '@/assets/shared-hub-logo.png'
 
 import {
@@ -25,7 +31,6 @@ const onboardingFooterLinks: { label: string; to: string }[] = []
 
 const panelCls =
   'bg-ex-panel rounded-lg p-8 shadow-[0_8px_28px_#25302509] max-md:p-[18px_24px]'
-
 
 export default function ExpertRegistrationPage() {
   const {
@@ -87,7 +92,10 @@ export default function ExpertRegistrationPage() {
   } = useRegistrationForm({
     onRegistrationSubmit: completeRegistrationSubmission,
   })
-  const visibleNotice = [notice, lifecycleNotice].find((message) => message && !/demo/i.test(message)) ?? ''
+  const visibleNotice =
+    [notice, lifecycleNotice].find(
+      (message) => message && !/demo/i.test(message)
+    ) ?? ''
   const terminal = stage === 'ineligible' || stage === 'failed'
   const timeline = [
     'Submission',
@@ -108,19 +116,19 @@ export default function ExpertRegistrationPage() {
   const stepHeading = (
     <div className="expert-wizard-heading">
       <div className="expert-wizard-heading-bar" aria-hidden="true" />
-      <span className="expert-wizard-heading-badge">Step {step + 1} of {steps.length}</span>
-      <h1
-        ref={heading}
-        tabIndex={-1}
-        className="expert-wizard-heading-title"
-      >
+      <span className="expert-wizard-heading-badge">
+        Step {step + 1} of {steps.length}
+      </span>
+      <h1 ref={heading} tabIndex={-1} className="expert-wizard-heading-title">
         {steps[step]}
       </h1>
     </div>
   )
 
   return (
-    <div className={`${!account ? 'expert-welcome' : 'expert-application'} bg-ex-bg text-ex-ink [&_::selection]:bg-ex-selection [&_a]:text-ex-accent [&_h1,&_h2,&_h3]:text-ex-heading [&_:focus-visible]:outline-ex-focus [&_input[type='checkbox']]:accent-ex-accent [&_summary]:text-ex-accent min-h-screen font-[Arial,sans-serif] text-[15px] leading-[1.6] [color-scheme:light] [&_*]:box-border [&_:focus-visible]:outline-3 [&_:focus-visible]:outline-offset-4 [&_a]:underline-offset-4 [&_button,&_input,&_select,&_textarea]:font-[inherit] [&_fieldset]:my-[22px] [&_fieldset]:border-0 [&_fieldset]:p-0 [&_h1]:mt-0 [&_h1]:mb-4 [&_h1]:text-[clamp(28px,3.3vw,42px)] [&_h1]:tracking-tight [&_h1,&_h2,&_h3]:font-[Georgia,'Times_New_Roman',serif] [&_h1,&_h2,&_h3]:leading-tight [&_h2]:mt-0 [&_h2]:mb-[18px] [&_h2]:text-[27px] [&_h3]:mt-[22px] [&_h3]:mb-3 [&_h3]:text-xl [&_input[type='checkbox']]:h-[17px] [&_input[type='checkbox']]:w-[17px] [&_input[type='checkbox']]:shrink-0 [&_legend]:mb-3 [&_legend]:font-semibold [&_p]:mt-0 [&_p]:mb-[18px] [&_p]:max-w-[72ch] [&_summary]:cursor-pointer [&_summary]:py-3 [&_summary]:underline [&_summary]:underline-offset-4`}>
+    <div
+      className={`${!account ? 'expert-welcome' : 'expert-application'} bg-ex-bg text-ex-ink [&_::selection]:bg-ex-selection [&_a]:text-ex-accent [&_h1,&_h2,&_h3]:text-ex-heading [&_:focus-visible]:outline-ex-focus [&_input[type='checkbox']]:accent-ex-accent [&_summary]:text-ex-accent min-h-screen font-[Arial,sans-serif] text-[15px] leading-[1.6] [color-scheme:light] [&_*]:box-border [&_:focus-visible]:outline-3 [&_:focus-visible]:outline-offset-4 [&_a]:underline-offset-4 [&_button,&_input,&_select,&_textarea]:font-[inherit] [&_fieldset]:my-[22px] [&_fieldset]:border-0 [&_fieldset]:p-0 [&_h1]:mt-0 [&_h1]:mb-4 [&_h1]:text-[clamp(28px,3.3vw,42px)] [&_h1]:tracking-tight [&_h1,&_h2,&_h3]:font-[Georgia,'Times_New_Roman',serif] [&_h1,&_h2,&_h3]:leading-tight [&_h2]:mt-0 [&_h2]:mb-[18px] [&_h2]:text-[27px] [&_h3]:mt-[22px] [&_h3]:mb-3 [&_h3]:text-xl [&_input[type='checkbox']]:h-[17px] [&_input[type='checkbox']]:w-[17px] [&_input[type='checkbox']]:shrink-0 [&_legend]:mb-3 [&_legend]:font-semibold [&_p]:mt-0 [&_p]:mb-[18px] [&_p]:max-w-[72ch] [&_summary]:cursor-pointer [&_summary]:py-3 [&_summary]:underline [&_summary]:underline-offset-4`}
+    >
       {/* ── Header ── */}
       <header className="border-ex-border border-b">
         <div className="mx-auto flex max-w-[1240px] items-center gap-7 px-6 py-5 max-md:px-4 [&>a:last-child]:ml-auto [&>a:last-child]:font-semibold">
@@ -129,12 +137,16 @@ export default function ExpertRegistrationPage() {
             aria-label="Shared Hub home"
             className="expert-header-logo shrink-0 no-underline"
           >
-            <img src={sharedHubLogo} alt="Shared Hub" width={1774} height={887} />
+            <img
+              src={sharedHubLogo}
+              alt="Shared Hub"
+              width={1774}
+              height={887}
+            />
           </Link>
           <span className="border-ex-header-divider border-l pl-[25px] max-md:pl-3 max-md:text-xs">
             Expert registration
           </span>
-
         </div>
       </header>
 
@@ -193,21 +205,79 @@ export default function ExpertRegistrationPage() {
                 onPreviewServiceReview={previewServiceReview}
               />
               <aside className="expert-status-profile">
-                <div className="expert-status-profile-heading"><FileText size={20} aria-hidden="true" /><h3>Submitted application</h3></div>
+                <div className="expert-status-profile-heading">
+                  <FileText size={20} aria-hidden="true" />
+                  <h3>Submitted application</h3>
+                </div>
                 <div className="expert-status-applicant">
-                  {avatarPreview ? <img src={avatarPreview} alt="" /> : <span className="expert-status-avatar"><UserRound size={26} aria-hidden="true" /></span>}
-                  <div><strong>{profile.name}</strong><span>Expert applicant</span></div>
+                  {avatarPreview ? (
+                    <img src={avatarPreview} alt="" />
+                  ) : (
+                    <span className="expert-status-avatar">
+                      <UserRound size={26} aria-hidden="true" />
+                    </span>
+                  )}
+                  <div>
+                    <strong>{profile.name}</strong>
+                    <span>Expert applicant</span>
+                  </div>
                 </div>
                 <dl className="expert-status-facts">
-                  <div><dt><Briefcase size={16} aria-hidden="true" />Experience</dt><dd>{profile.years} years</dd></div>
-                  <div><dt><FileText size={16} aria-hidden="true" />Documents</dt><dd>{Object.values(files).reduce((n, list) => n + list.length, 0)} selected locally</dd></div>
+                  <div>
+                    <dt>
+                      <Briefcase size={16} aria-hidden="true" />
+                      Experience
+                    </dt>
+                    <dd>{profile.years} years</dd>
+                  </div>
+                  <div>
+                    <dt>
+                      <FileText size={16} aria-hidden="true" />
+                      Documents
+                    </dt>
+                    <dd>
+                      {Object.values(files).reduce(
+                        (n, list) => n + list.length,
+                        0
+                      )}{' '}
+                      selected locally
+                    </dd>
+                  </div>
                 </dl>
-                <p className="expert-status-profile-note">Selected documents are awaiting verification. File count does not indicate approval.</p>
-                <a className="expert-status-view-link" href="#submitted-dossier" onClick={() => { const dossier = document.getElementById('submitted-dossier'); if (dossier instanceof HTMLDetailsElement) dossier.open = true }}>View full application <ChevronDown size={16} aria-hidden="true" /></a>
+                <p className="expert-status-profile-note">
+                  Selected documents are awaiting verification. File count does
+                  not indicate approval.
+                </p>
+                <a
+                  className="expert-status-view-link"
+                  href="#submitted-dossier"
+                  onClick={() => {
+                    const dossier = document.getElementById('submitted-dossier')
+                    if (dossier instanceof HTMLDetailsElement)
+                      dossier.open = true
+                  }}
+                >
+                  View full application{' '}
+                  <ChevronDown size={16} aria-hidden="true" />
+                </a>
               </aside>
               <details className="expert-status-dossier" id="submitted-dossier">
-                <summary><span>Application details<small>Your submitted information and supporting documents</small></span><ChevronDown size={20} aria-hidden="true" /></summary>
-                <RegistrationSummary profile={profile} avatarPreview={avatarPreview} independent={independent} fields={fields} files={files} />
+                <summary>
+                  <span>
+                    Application details
+                    <small>
+                      Your submitted information and supporting documents
+                    </small>
+                  </span>
+                  <ChevronDown size={20} aria-hidden="true" />
+                </summary>
+                <RegistrationSummary
+                  profile={profile}
+                  avatarPreview={avatarPreview}
+                  independent={independent}
+                  fields={fields}
+                  files={files}
+                />
               </details>
             </div>
           </>
@@ -227,7 +297,7 @@ export default function ExpertRegistrationPage() {
                       type="button"
                       disabled={i > step}
                       onClick={() => move(i)}
-                      aria-label={`Step ${i + 1}: ${s}${i < step ? ", completed" : ""}`}
+                      aria-label={`Step ${i + 1}: ${s}${i < step ? ', completed' : ''}`}
                       aria-current={i === step ? 'step' : undefined}
                       className="expert-stepper-btn"
                     >
@@ -236,19 +306,25 @@ export default function ExpertRegistrationPage() {
                           i < step
                             ? 'expert-stepper-bubble--done'
                             : i === step
-                            ? 'expert-stepper-bubble--active'
-                            : 'expert-stepper-bubble--upcoming'
+                              ? 'expert-stepper-bubble--active'
+                              : 'expert-stepper-bubble--upcoming'
                         }`}
                       >
-                        {i < step ? <Check size={15} strokeWidth={3} aria-hidden="true" /> : i + 1}
+                        {i < step ? (
+                          <Check size={15} strokeWidth={3} aria-hidden="true" />
+                        ) : (
+                          i + 1
+                        )}
                       </span>
-                      <span className={`expert-stepper-label ${
-                        i < step
-                          ? 'expert-stepper-label--done'
-                          : i === step
-                          ? 'expert-stepper-label--active'
-                          : 'expert-stepper-label--upcoming'
-                      }`}>
+                      <span
+                        className={`expert-stepper-label ${
+                          i < step
+                            ? 'expert-stepper-label--done'
+                            : i === step
+                              ? 'expert-stepper-label--active'
+                              : 'expert-stepper-label--upcoming'
+                        }`}
+                      >
                         {s}
                       </span>
                     </button>
@@ -256,7 +332,9 @@ export default function ExpertRegistrationPage() {
                     {/* Connecting line */}
                     {i < steps.length - 1 && (
                       <div className="expert-stepper-track" aria-hidden="true">
-                        <div className={`expert-stepper-track-fill ${i < step ? 'expert-stepper-track-fill--done' : ''}`} />
+                        <div
+                          className={`expert-stepper-track-fill ${i < step ? 'expert-stepper-track-fill--done' : ''}`}
+                        />
                       </div>
                     )}
                   </li>
@@ -277,7 +355,10 @@ export default function ExpertRegistrationPage() {
                     avatar={avatar}
                     avatarPreview={avatarPreview}
                     independent={independent}
-                    onUpdate={(key, value) => { update(key, value); clearFormError(key) }}
+                    onUpdate={(key, value) => {
+                      update(key, value)
+                      clearFormError(key)
+                    }}
                     onAvatarChange={updateAvatar}
                     onIndependentChange={setIndependentStatus}
                     onError={setError}
@@ -289,7 +370,10 @@ export default function ExpertRegistrationPage() {
                     fields={fields}
                     cvFiles={files.CV ?? []}
                     formErrors={formErrors}
-                    onUpdate={(key, value) => { update(key, value); clearFormError(key) }}
+                    onUpdate={(key, value) => {
+                      update(key, value)
+                      clearFormError(key)
+                    }}
                     onToggleField={toggleField}
                     onCvFilesSelected={(f) => chooseFiles('CV', f)}
                     onRemoveCvFile={(i) => removeFile('CV', i)}
@@ -353,8 +437,15 @@ export default function ExpertRegistrationPage() {
       <footer className="expert-onboarding-footer border-ex-footer-border text-ex-muted mx-auto flex max-w-[1240px] justify-between border-t px-6 py-[22px] text-[13px] max-md:flex-wrap max-md:gap-2">
         <span>Shared Hub</span>
         {onboardingFooterLinks.length > 0 && (
-          <nav aria-label="Support and policies" className="expert-footer-links">
-            {onboardingFooterLinks.map(({ label, to }) => <Link key={to} to={to}>{label}</Link>)}
+          <nav
+            aria-label="Support and policies"
+            className="expert-footer-links"
+          >
+            {onboardingFooterLinks.map(({ label, to }) => (
+              <Link key={to} to={to}>
+                {label}
+              </Link>
+            ))}
           </nav>
         )}
       </footer>

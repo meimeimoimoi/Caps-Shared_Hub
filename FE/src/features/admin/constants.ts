@@ -2,7 +2,7 @@ import type { ApplicationStatus, ReviewDecision } from './types'
 
 /* Cấu hình dialog xác nhận cho từng loại quyết định */
 export const DECISION_DIALOG: Record<
-  ReviewDecision,
+  Exclude<ReviewDecision, 'supplement'>,
   {
     title: string // nối thêm tên người đăng ký + "?"
     notice: string
@@ -33,17 +33,17 @@ export const DECISION_DIALOG: Record<
     confirm: 'Từ chối đơn đăng ký',
     showScores: false,
   },
-  // Chưa có thiết kế riêng; dùng cùng khung với "Từ chối"
-  supplement: {
-    title: 'Yêu cầu bổ sung hồ sơ của',
-    notice:
-      'Người đăng ký sẽ nhận email kèm nội dung bạn nhập và cần nộp bổ sung để tiếp tục xét duyệt.',
-    noteLabel: 'Nội dung cần bổ sung (bắt buộc)',
-    placeholder: 'Nêu rõ giấy tờ hoặc thông tin người đăng ký cần bổ sung',
-    required: true,
-    confirm: 'Gửi yêu cầu bổ sung',
-    showScores: false,
-  },
+}
+
+export const SUPPLEMENT_DIALOG = {
+  title: 'Yêu cầu bổ sung',
+  notice:
+    'Đơn chuyển sang Cần bổ sung. Người đăng ký nhận email kèm các mục dưới đây.',
+  itemsLabel: 'Mục cần bổ sung (chọn ít nhất 1)',
+  messageLabel: 'Lời nhắn',
+  defaultMessage:
+    'Anh/chị vui lòng bổ sung các nội dung trên để hoàn tất đánh giá năng lực.',
+  confirm: 'Gửi yêu cầu bổ sung',
 }
 
 /* Nhãn ghi chú hiển thị lại trên thẻ quyết định */

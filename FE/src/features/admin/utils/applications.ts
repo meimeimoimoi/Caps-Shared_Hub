@@ -23,3 +23,6 @@ export const formatDateTime = (iso: string) =>
     hour: '2-digit',
     minute: '2-digit',
   })
+
+export const formatVnd = (n: number) =>
+  `${new Intl.NumberFormat('vi-VN').format(n)} ₫`

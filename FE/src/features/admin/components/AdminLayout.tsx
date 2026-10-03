@@ -11,10 +11,21 @@ import {
   Tag,
   UserRound,
   Users,
+  type LucideIcon,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
+interface NavItem {
+  label: string
+  icon: LucideIcon
+  to?: string // không có = chưa có route
+  active?: boolean
+  badge?: number
+}
+
 interface AdminLayoutProps {
+  /** Mục sidebar đang mở */
+  section: 'pending' | 'experts'
   breadcrumb: ReactNode
   pendingCount: number
   /** Bỏ trống thì ẩn ô tìm kiếm */
@@ -24,6 +35,7 @@ interface AdminLayoutProps {
 }
 
 export function AdminLayout({
+  section,
   breadcrumb,
   pendingCount,
   search,
@@ -32,7 +44,7 @@ export function AdminLayout({
 }: AdminLayoutProps) {
   const [collapsed, setCollapsed] = useState(false)
 
-  const nav = [
+  const nav: { group: string; items: NavItem[] }[] = [
     {
       group: 'Xét duyệt Expert',
       items: [
@@ -40,9 +52,15 @@ export function AdminLayout({
           label: 'Hồ sơ chờ duyệt',
           icon: FileText,
           to: '/admin/experts/pending',
+          active: section === 'pending',
           badge: pendingCount,
         },
-        { label: 'Quản lý Expert', icon: Users },
+        {
+          label: 'Quản lý Expert',
+          icon: Users,
+          to: '/admin/experts',
+          active: section === 'experts',
+        },
       ],
     },
     {
@@ -102,15 +120,20 @@ export function AdminLayout({
                 </p>
               )}
               <ul className="space-y-1">
-                {items.map(({ label, icon: Icon, to, badge }) => (
+                {items.map(({ label, icon: Icon, to, active, badge }) => (
                   <li key={label}>
-                    {/* Chỉ "Hồ sơ chờ duyệt" có trang; các mục khác chưa có route */}
+                    {/* Mục không có `to` là chưa có route */}
                     {to ? (
                       <Link
                         to={to}
-                        aria-current="page"
+                        aria-current={active ? 'page' : undefined}
                         title={collapsed ? label : undefined}
-                        className="bg-ink-2 border-indicator text-paper rounded-control flex items-center gap-3 border-l-2 px-2 py-2.5 text-sm font-semibold no-underline"
+                        className={cn(
+                          'rounded-control flex items-center gap-3 border-l-2 px-2 py-2.5 text-sm no-underline',
+                          active
+                            ? 'bg-ink-2 border-indicator text-paper font-semibold'
+                            : 'text-fg-inverse-muted hover:bg-ink-2 hover:text-paper border-transparent'
+                        )}
                       >
                         <Icon
                           size={17}

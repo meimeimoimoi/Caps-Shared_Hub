@@ -7,24 +7,12 @@ import {
 } from '@/features/admin'
 
 export default function AdminPendingExpertsPage() {
-  const {
-    tab,
-    setTab,
-    query,
-    setQuery,
-    countOf,
-    rows,
-    total,
-    from,
-    to,
-    canPrev,
-    canNext,
-    prev,
-    next,
-  } = usePendingApplications()
+  const { tab, setTab, query, setQuery, countOf, paged, prev, next } =
+    usePendingApplications()
 
   return (
     <AdminLayout
+      section="pending"
       breadcrumb="Hồ sơ chờ duyệt"
       pendingCount={countOf('review')}
       search={query}
@@ -60,16 +48,7 @@ export default function AdminPendingExpertsPage() {
         ))}
       </div>
 
-      <ApplicationsTable
-        rows={rows}
-        total={total}
-        from={from}
-        to={to}
-        canPrev={canPrev}
-        canNext={canNext}
-        onPrev={prev}
-        onNext={next}
-      />
+      <ApplicationsTable paged={paged} onPrev={prev} onNext={next} />
     </AdminLayout>
   )
 }

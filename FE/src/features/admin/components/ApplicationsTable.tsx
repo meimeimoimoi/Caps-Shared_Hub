@@ -1,29 +1,22 @@
 import { Link } from 'react-router-dom'
 import { TriangleAlert } from 'lucide-react'
+import type { Paged } from '@/lib/utils'
+import { TablePager } from '@/components/ui/table-pager'
 import type { ExpertApplication } from '../types'
 import { SLA_DAYS, formatDate, waitedDays } from '../utils/applications'
 
 interface ApplicationsTableProps {
-  rows: ExpertApplication[]
-  total: number
-  from: number
-  to: number
-  canPrev: boolean
-  canNext: boolean
+  paged: Paged<ExpertApplication>
   onPrev: () => void
   onNext: () => void
 }
 
 export function ApplicationsTable({
-  rows,
-  total,
-  from,
-  to,
-  canPrev,
-  canNext,
+  paged,
   onPrev,
   onNext,
 }: ApplicationsTableProps) {
+  const { rows, total } = paged
   return (
     <section className="paper mt-4 overflow-x-auto">
       <div className="text-fg-muted flex justify-between px-4 py-3 text-sm">
@@ -101,33 +94,7 @@ export function ApplicationsTable({
           )}
         </tbody>
       </table>
-      <div className="border-border-subtle text-fg-muted flex items-center justify-between border-t px-4 py-3 text-sm">
-        <span>
-          Hiển thị{' '}
-          <span className="num">
-            {from}–{to}
-          </span>{' '}
-          trên <span className="num">{total}</span>
-        </span>
-        <div className="flex gap-2">
-          <button
-            type="button"
-            disabled={!canPrev}
-            onClick={onPrev}
-            className="btn btn-press btn-secondary text-sm"
-          >
-            Trang trước
-          </button>
-          <button
-            type="button"
-            disabled={!canNext}
-            onClick={onNext}
-            className="btn btn-press btn-secondary text-sm"
-          >
-            Trang sau
-          </button>
-        </div>
-      </div>
+      <TablePager paged={paged} onPrev={onPrev} onNext={onNext} />
     </section>
   )
 }

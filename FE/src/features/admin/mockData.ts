@@ -4,8 +4,14 @@
  *   - mockApplications        → GET danh sách hồ sơ expert (vd. /api/admin/expert-applications)
  *   - getMockApplicationDetail → GET chi tiết hồ sơ (vd. /api/admin/expert-applications/:id)
  *   - mockCriteria            → GET tiêu chí đánh giá năng lực từ cấu hình
+ *   - mockExperts             → GET danh sách Expert đã duyệt (vd. /api/admin/experts)
  * ════════════════════════════════════════════════════════════════════ */
-import type { ApplicationDetail, Criterion, ExpertApplication } from './types'
+import type {
+  ApplicationDetail,
+  Criterion,
+  Expert,
+  ExpertApplication,
+} from './types'
 
 // MOCK: admin đang đăng nhập. TODO(api): lấy từ authStore khi có đăng nhập admin
 export const CURRENT_ADMIN = 'Trần An'
@@ -70,6 +76,64 @@ export const mockApplications: ExpertApplication[] = [
   },
 ]
 
+export const mockExperts: Expert[] = [
+  {
+    id: 'EXP-0118',
+    name: 'Đặng Mỹ Linh',
+    email: 'linh.dang@outlook.com',
+    fields: ['Thuế TNDN', 'Kiểm toán'],
+    serviceStatus: 'ACTIVE',
+    fee: 2_000_000,
+    activeCases: 3,
+    capacity: 4,
+    approvedAt: daysAgo(18),
+  },
+  {
+    id: 'EXP-0142',
+    name: 'Nguyễn Minh Anh',
+    email: 'minhanh.tax@gmail.com',
+    fields: ['Thuế TNDN', 'Quyết toán thuế'],
+    serviceStatus: 'INACTIVE',
+    fee: null,
+    activeCases: 0,
+    capacity: 3,
+    approvedAt: daysAgo(6),
+  },
+  {
+    id: 'EXP-0109',
+    name: 'Phan Quốc Bảo',
+    email: 'bao.pq@taxvn.vn',
+    fields: ['Thuế TNDN', 'Chuyển giá'],
+    serviceStatus: 'ACTIVE',
+    fee: 2_500_000,
+    activeCases: 1,
+    capacity: 2,
+    approvedAt: daysAgo(31),
+  },
+  {
+    id: 'EXP-0097',
+    name: 'Võ Thị Hạnh',
+    email: 'hanh.vt@gmail.com',
+    fields: ['Thuế TNDN'],
+    serviceStatus: 'SUSPENDED',
+    fee: 1_800_000,
+    activeCases: 0,
+    capacity: 3,
+    approvedAt: daysAgo(44),
+  },
+  {
+    id: 'EXP-0088',
+    name: 'Lâm Chí Kiên',
+    email: 'kien.lam@kiemtoan.vn',
+    fields: ['Thuế TNDN', 'Soát xét BCTC'],
+    serviceStatus: 'ACTIVE',
+    fee: 2_200_000,
+    activeCases: 2,
+    capacity: 3,
+    approvedAt: daysAgo(53),
+  },
+]
+
 export const mockCriteria: Criterion[] = [1, 2, 3, 4, 5].map((n) => ({
   id: `C${n}`,
   name: `[Tên tiêu chí C${n}]`,
@@ -79,17 +143,24 @@ export const mockCriteria: Criterion[] = [1, 2, 3, 4, 5].map((n) => ({
 const flagTemplates = [
   {
     document: 'EV-03',
+    documentName: 'Giấy xác nhận công tác',
+    request:
+      'Bổ sung xác nhận công tác giai đoạn 2017-2021 tại Công ty Kiểm toán Sao Việt.',
     title: 'Cần xem lại: giai đoạn công tác 07/2017 – 02/2021',
     detail:
       'CV kê khai giai đoạn 07/2017 – 02/2021 tại Công ty Kiểm toán Sao Việt nhưng hồ sơ không có giấy xác nhận cho giai đoạn này. Giấy tờ hiện có chỉ xác nhận giai đoạn từ 03/2021.',
   },
   {
     document: 'EV-01',
+    documentName: 'Chứng chỉ hành nghề',
+    request: 'Bổ sung ảnh chụp rõ nét chứng chỉ hành nghề.',
     title: 'Cần xem lại: số chứng chỉ không đọc được',
     detail: 'Ảnh chụp chứng chỉ bị mờ, AI không đọc được số hiệu.',
   },
   {
     document: 'EV-02',
+    documentName: 'Bằng cử nhân',
+    request: 'Bổ sung giấy tờ xác nhận thay đổi họ tên.',
     title: 'Cần xem lại: họ tên không khớp',
     detail: 'Họ tên trên bằng cấp khác với họ tên đăng ký.',
   },

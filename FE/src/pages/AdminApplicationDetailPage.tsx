@@ -15,6 +15,7 @@ import {
   AiScreeningTab,
   AiSummaryCard,
   DecisionDialog,
+  SupplementDialog,
   CompetencyReview,
   CURRENT_ADMIN,
   DecisionCard,
@@ -62,7 +63,11 @@ export default function AdminApplicationDetailPage() {
 
   if (!detail || !status) {
     return (
-      <AdminLayout breadcrumb={listLink} pendingCount={pendingCount}>
+      <AdminLayout
+        section="pending"
+        breadcrumb={listLink}
+        pendingCount={pendingCount}
+      >
         <h1 className="text-h1-tool">Không tìm thấy hồ sơ {id}</h1>
         <Link
           to="/admin/experts/pending"
@@ -118,6 +123,7 @@ export default function AdminApplicationDetailPage() {
 
   return (
     <AdminLayout
+      section="pending"
       pendingCount={pendingCount}
       breadcrumb={
         <>
@@ -272,7 +278,17 @@ export default function AdminApplicationDetailPage() {
         />
       )}
 
-      {dialog && (
+      {dialog === 'supplement' && (
+        <SupplementDialog
+          criteria={review.criteria}
+          scores={review.scores}
+          evidence={review.evidence}
+          flags={detail.screening.flags}
+          onCancel={() => setDialog(null)}
+          onConfirm={(message) => finish('supplement', message)}
+        />
+      )}
+      {(dialog === 'approve' || dialog === 'reject') && (
         <DecisionDialog
           key={dialog}
           kind={dialog}

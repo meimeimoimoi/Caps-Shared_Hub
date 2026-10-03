@@ -1,4 +1,4 @@
-import type { APPLICATION_STATUS } from '@/lib/constants'
+import type { APPLICATION_STATUS, SERVICE_STATUS } from '@/lib/constants'
 
 export type ApplicationStatus = keyof typeof APPLICATION_STATUS
 
@@ -15,6 +15,9 @@ export interface ExpertApplication {
 export interface AiFlag {
   id: string
   document: string // mã tài liệu liên quan, vd. EV-03
+  documentName: string
+  /** Gợi ý nội dung yêu cầu bổ sung cho mục này */
+  request: string
   title: string
   detail: string
 }
@@ -85,4 +88,17 @@ export interface DecisionRecord {
   at: string
   by: string
   note: string
+}
+
+export interface Expert {
+  id: string
+  name: string
+  email: string
+  fields: string[]
+  serviceStatus: keyof typeof SERVICE_STATUS
+  /** Phí rà soát (VND); null = chưa thiết lập dịch vụ */
+  fee: number | null
+  activeCases: number
+  capacity: number
+  approvedAt: string
 }
