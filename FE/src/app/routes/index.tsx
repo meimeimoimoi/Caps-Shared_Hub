@@ -8,6 +8,7 @@ const NotFoundPage = lazy(() => import('@/pages/NotFoundPage'))
 const ExpertRegistrationPage = lazy(
   () => import('@/pages/ExpertRegistrationPage')
 )
+const AdminPendingExpertsPage = lazy(() => import('@/pages/AdminPendingExpertsPage'))
 
 function Fallback() {
   return (
@@ -25,6 +26,8 @@ export function AppRoutes() {
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/expert/register" element={<ExpertRegistrationPage />} />
+          {/* TODO(auth): bọc ProtectedRoute + check role admin khi có API */}
+          <Route path="/admin/experts/pending" element={<AdminPendingExpertsPage />} />
           <Route
             path="/dashboard"
             element={
