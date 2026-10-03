@@ -1,11 +1,11 @@
 import * as React from 'react'
 import { useState } from 'react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Badge } from '@/components/ui/badge'
+import { Button } from '@/shared/ui/button'
+import { Input } from '@/shared/ui/input'
+import { Badge } from '@/shared/ui/badge'
 import { Lock, Mail, LogIn } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth'
-import type { LoginFormValues } from '../types'
+import type { LoginFormValues } from '../model/types'
 
 export function LoginForm() {
   const [email, setEmail] = useState('admin@caps.com')

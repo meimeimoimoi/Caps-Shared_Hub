@@ -1,24 +1,22 @@
 import { Link } from 'react-router-dom'
 import { Check, FileText, Briefcase, UserRound, ChevronDown } from 'lucide-react'
-import sharedHubLogo from '@/assets/shared-hub-logo.png'
-import { useRegistrationMotion } from '@/features/expert-registration/hooks/useRegistrationMotion'
-import { useWizardMotion } from '@/features/expert-registration/hooks/useWizardMotion'
-import { useScrollReveal } from '@/hooks/useScrollReveal'
+import sharedHubLogo from '@/shared/assets/shared-hub-logo.png'
+import { useRegistrationMotion } from '../hooks/useRegistrationMotion'
+import { useWizardMotion } from '../hooks/useWizardMotion'
+import { useScrollReveal } from '@/shared/hooks/useScrollReveal'
 
-import {
-  steps,
-  AccountCreation,
-  AccountIntroduction,
-  ApplicationStatus,
-  WizardFooter,
-  PersonalInformation,
-  ProfessionalExperience,
-  SupportingDocuments,
-  RegistrationSummary,
-  ReviewSubmit,
-  useRegistrationForm,
-  useApplicationLifecycle,
-} from '@/features/expert-registration'
+import { steps } from '../model/constants'
+import { AccountCreation } from '../components/AccountCreation'
+import { AccountIntroduction } from '../components/AccountIntroduction'
+import { ApplicationStatus } from '../components/ApplicationStatus'
+import { WizardFooter } from '../components/WizardFooter'
+import { PersonalInformation } from '../components/steps/PersonalInformation'
+import { ProfessionalExperience } from '../components/steps/ProfessionalExperience'
+import { SupportingDocuments } from '../components/steps/SupportingDocuments'
+import { RegistrationSummary } from '../components/steps/RegistrationSummary'
+import { ReviewSubmit } from '../components/steps/ReviewSubmit'
+import { useRegistrationForm } from '../hooks/useRegistrationForm'
+import { useApplicationLifecycle } from '../hooks/useApplicationLifecycle'
 
 /* ── Shared sub-components ── */
 

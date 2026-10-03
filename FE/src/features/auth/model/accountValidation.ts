@@ -1,4 +1,4 @@
-import { vietnamPhoneError } from './vietnamPhone.ts'
+import { vietnamPhoneError } from '../../../shared/lib/validation/vietnamPhone.ts'
 
 export type AccountField = 'name' | 'email' | 'phone' | 'password' | 'confirmPassword' | 'terms'
 

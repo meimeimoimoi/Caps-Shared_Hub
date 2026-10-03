@@ -1,9 +1,9 @@
-import { formControlClassName as inputCls } from '@/components/ui/form-control'
+import { formControlClassName as inputCls } from '@/shared/ui/form-control'
 import {
   formatVietnamPhoneInput,
   normalizeVietnamPhone,
   vietnamPhoneInputValue,
-} from '../utils/vietnamPhone'
+} from '@/shared/lib/validation/vietnamPhone'
 import { useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import {
@@ -16,13 +16,13 @@ import {
   EyeOff,
   Loader2,
 } from 'lucide-react'
-import type { Profile } from '../types'
-import { FormField } from '@/components/ui/form-field'
+import type { Profile } from '../model/types'
+import { FormField } from '@/shared/ui/form-field'
 import {
   passwordRequirements,
   validateAccount,
   type AccountField,
-} from '../utils/accountValidation'
+} from '@/features/auth'
 
 export interface AccountCreationProps {
   profile: Profile

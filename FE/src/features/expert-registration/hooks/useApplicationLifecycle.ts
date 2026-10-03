@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
-import type { Stage } from '../types'
+import type { Stage } from '../model/types'
 
 export function useApplicationLifecycle() {
   const [account, setAccount] = useState(false)

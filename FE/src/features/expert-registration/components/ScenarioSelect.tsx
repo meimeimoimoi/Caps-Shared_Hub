@@ -1,6 +1,6 @@
-import { CustomSelect } from '@/components/ui/custom-select'
-import { labels } from '../constants'
-import type { Stage } from '../types'
+import { CustomSelect } from '@/shared/ui/custom-select'
+import { labels } from '../model/constants'
+import type { Stage } from '../model/types'
 
 const options = (Object.entries(labels) as [Stage, string][]).map(([value, label]) => ({ value, label }))
 

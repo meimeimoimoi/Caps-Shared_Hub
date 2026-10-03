@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 import { CircleAlert } from 'lucide-react'
 import { HelpTip } from './help-tip'
-import { cn } from '@/lib/utils'
+import { cn } from '@/shared/lib/utils'
 
 export interface FormFieldProps {
   label: string

@@ -1,4 +1,4 @@
-import { LoginForm } from '@/features/auth/components/LoginForm'
+import { LoginForm } from '../components/LoginForm'
 import { Link } from 'react-router-dom'
 
 export default function LoginPage() {

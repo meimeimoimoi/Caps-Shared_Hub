@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { authApi } from '../api/authApi'
-import { useAuthStore } from '../store/authStore'
-import type { LoginFormValues } from '../types'
+import { useAuthStore } from '../model/authStore'
+import type { LoginFormValues } from '../model/types'
 
 export function useAuth() {
   const { user, isAuthenticated, setSession, clearSession } = useAuthStore()

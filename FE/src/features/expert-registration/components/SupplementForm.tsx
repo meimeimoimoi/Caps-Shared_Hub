@@ -1,6 +1,6 @@
 import { Loader2, Upload, FileText, X } from 'lucide-react'
 import type { FormEvent } from 'react'
-import { FormField } from './FormField'
+import { FormField } from '@/shared/ui/form-field'
 
 export interface SupplementFormProps {
   file: File | null

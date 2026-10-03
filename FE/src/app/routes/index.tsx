@@ -2,11 +2,11 @@ import { Suspense, lazy } from 'react'
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { ProtectedRoute } from './ProtectedRoute'
 
-const LoginPage = lazy(() => import('@/pages/LoginPage'))
-const DashboardPage = lazy(() => import('@/pages/DashboardPage'))
-const NotFoundPage = lazy(() => import('@/pages/NotFoundPage'))
+const LoginPage = lazy(() => import('@/features/auth').then((module) => ({ default: module.LoginPage })))
+const DashboardPage = lazy(() => import('../pages/DashboardPage'))
+const NotFoundPage = lazy(() => import('../pages/NotFoundPage'))
 const ExpertRegistrationPage = lazy(
-  () => import('@/pages/ExpertRegistrationPage')
+  () => import('@/features/expert-registration').then((module) => ({ default: module.ExpertRegistrationPage }))
 )
 
 function Fallback() {

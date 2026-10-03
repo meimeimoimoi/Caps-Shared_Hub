@@ -1,6 +1,6 @@
-import { formatVietnamPhone } from '../../utils/vietnamPhone'
+import { formatVietnamPhone } from '@/shared/lib/validation/vietnamPhone'
 import { UserCircle, Briefcase, FolderOpen, FileText, FileImage, Clock3 } from 'lucide-react'
-import type { Profile } from '../../types'
+import type { Profile } from '../../model/types'
 
 export interface RegistrationSummaryProps {
   profile: Profile

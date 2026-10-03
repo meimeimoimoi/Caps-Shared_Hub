@@ -1,5 +1,5 @@
-import { Button } from '@/components/ui/button'
-import { useAuthStore } from '@/features/auth/store/authStore'
+import { Button } from '@/shared/ui/button'
+import { useAuthStore } from '@/features/auth'
 import { useNavigate } from 'react-router-dom'
 
 export default function DashboardPage() {
