@@ -48,6 +48,8 @@ export function SupportingDocuments({
               type="button"
               key={c}
               role="tab"
+              id={`evidence-tab-${criteria.indexOf(c)}`}
+              aria-controls="evidence-panel"
               aria-selected={activeCriterion === c}
               aria-pressed={activeCriterion === c}
               className="expert-pro-tab"
@@ -63,9 +65,11 @@ export function SupportingDocuments({
 
         {/* Main Content Area */}
         <section
+          key={activeCriterion}
+          id="evidence-panel"
           className="expert-pro-section"
           role="tabpanel"
-          aria-labelledby={activeCriterion}
+          aria-labelledby={`evidence-tab-${criteria.indexOf(activeCriterion)}`}
         >
           <div className="expert-pro-section-header">
             <span className="expert-pro-section-icon" style={{ background: '#f5efe9', color: '#a34524' }}>

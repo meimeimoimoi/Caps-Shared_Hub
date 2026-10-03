@@ -1,6 +1,9 @@
 import { Link } from 'react-router-dom'
 import { Check, FileText, Briefcase, UserRound, ChevronDown } from 'lucide-react'
 import sharedHubLogo from '@/assets/shared-hub-logo.png'
+import { useRegistrationMotion } from '@/features/expert-registration/hooks/useRegistrationMotion'
+import { useWizardMotion } from '@/features/expert-registration/hooks/useWizardMotion'
+import { useScrollReveal } from '@/hooks/useScrollReveal'
 
 import {
   steps,
@@ -28,6 +31,8 @@ const panelCls =
 
 
 export default function ExpertRegistrationPage() {
+  const motionRef = useRegistrationMotion()
+  const scrollRevealRef = useScrollReveal()
   const {
     account,
     submitted,
@@ -87,6 +92,7 @@ export default function ExpertRegistrationPage() {
   } = useRegistrationForm({
     onRegistrationSubmit: completeRegistrationSubmission,
   })
+  const wizardBodyRef = useWizardMotion(step, account && !submitted)
   const visibleNotice = [notice, lifecycleNotice].find((message) => message && !/demo/i.test(message)) ?? ''
   const terminal = stage === 'ineligible' || stage === 'failed'
   const timeline = [
@@ -120,7 +126,11 @@ export default function ExpertRegistrationPage() {
   )
 
   return (
-    <div className={`${!account ? 'expert-welcome' : 'expert-application'} bg-ex-bg text-ex-ink [&_::selection]:bg-ex-selection [&_a]:text-ex-accent [&_h1,&_h2,&_h3]:text-ex-heading [&_:focus-visible]:outline-ex-focus [&_input[type='checkbox']]:accent-ex-accent [&_summary]:text-ex-accent min-h-screen font-[Arial,sans-serif] text-[15px] leading-[1.6] [color-scheme:light] [&_*]:box-border [&_:focus-visible]:outline-3 [&_:focus-visible]:outline-offset-4 [&_a]:underline-offset-4 [&_button,&_input,&_select,&_textarea]:font-[inherit] [&_fieldset]:my-[22px] [&_fieldset]:border-0 [&_fieldset]:p-0 [&_h1]:mt-0 [&_h1]:mb-4 [&_h1]:text-[clamp(28px,3.3vw,42px)] [&_h1]:tracking-tight [&_h1,&_h2,&_h3]:font-[Georgia,'Times_New_Roman',serif] [&_h1,&_h2,&_h3]:leading-tight [&_h2]:mt-0 [&_h2]:mb-[18px] [&_h2]:text-[27px] [&_h3]:mt-[22px] [&_h3]:mb-3 [&_h3]:text-xl [&_input[type='checkbox']]:h-[17px] [&_input[type='checkbox']]:w-[17px] [&_input[type='checkbox']]:shrink-0 [&_legend]:mb-3 [&_legend]:font-semibold [&_p]:mt-0 [&_p]:mb-[18px] [&_p]:max-w-[72ch] [&_summary]:cursor-pointer [&_summary]:py-3 [&_summary]:underline [&_summary]:underline-offset-4`}>
+    <div ref={(el) => {
+        // Merge both refs into the same DOM node
+        (motionRef as React.MutableRefObject<HTMLDivElement | null>).current = el;
+        (scrollRevealRef as React.MutableRefObject<HTMLDivElement | null>).current = el;
+      }} className={`${!account ? 'expert-welcome' : 'expert-application'} bg-ex-bg text-ex-ink [&_::selection]:bg-ex-selection [&_a]:text-ex-accent [&_h1,&_h2,&_h3]:text-ex-heading [&_:focus-visible]:outline-ex-focus [&_input[type='checkbox']]:accent-ex-accent [&_summary]:text-ex-accent min-h-screen font-[Arial,sans-serif] text-[15px] leading-[1.6] [color-scheme:light] [&_*]:box-border [&_:focus-visible]:outline-3 [&_:focus-visible]:outline-offset-4 [&_a]:underline-offset-4 [&_button,&_input,&_select,&_textarea]:font-[inherit] [&_fieldset]:my-[22px] [&_fieldset]:border-0 [&_fieldset]:p-0 [&_h1]:mt-0 [&_h1]:mb-4 [&_h1]:text-[clamp(28px,3.3vw,42px)] [&_h1]:tracking-tight [&_h1,&_h2,&_h3]:font-[Georgia,'Times_New_Roman',serif] [&_h1,&_h2,&_h3]:leading-tight [&_h2]:mt-0 [&_h2]:mb-[18px] [&_h2]:text-[27px] [&_h3]:mt-[22px] [&_h3]:mb-3 [&_h3]:text-xl [&_input[type='checkbox']]:h-[17px] [&_input[type='checkbox']]:w-[17px] [&_input[type='checkbox']]:shrink-0 [&_legend]:mb-3 [&_legend]:font-semibold [&_p]:mt-0 [&_p]:mb-[18px] [&_p]:max-w-[72ch] [&_summary]:cursor-pointer [&_summary]:py-3 [&_summary]:underline [&_summary]:underline-offset-4`}>
       {/* ── Header ── */}
       <header className="border-ex-border border-b">
         <div className="mx-auto flex max-w-[1240px] items-center gap-7 px-6 py-5 max-md:px-4 [&>a:last-child]:ml-auto [&>a:last-child]:font-semibold">
@@ -205,7 +215,7 @@ export default function ExpertRegistrationPage() {
                 <p className="expert-status-profile-note">Selected documents are awaiting verification. File count does not indicate approval.</p>
                 <a className="expert-status-view-link" href="#submitted-dossier" onClick={() => { const dossier = document.getElementById('submitted-dossier'); if (dossier instanceof HTMLDetailsElement) dossier.open = true }}>View full application <ChevronDown size={16} aria-hidden="true" /></a>
               </aside>
-              <details className="expert-status-dossier" id="submitted-dossier">
+              <details className="expert-status-dossier" id="submitted-dossier" data-reveal>
                 <summary><span>Application details<small>Your submitted information and supporting documents</small></span><ChevronDown size={20} aria-hidden="true" /></summary>
                 <RegistrationSummary profile={profile} avatarPreview={avatarPreview} independent={independent} fields={fields} files={files} />
               </details>
@@ -265,7 +275,8 @@ export default function ExpertRegistrationPage() {
             </nav>
             <form noValidate onSubmit={advance}>
               <div
-                className="expert-wizard-body animate-expert-enter pt-4 pb-[30px] motion-reduce:animate-none"
+                ref={wizardBodyRef}
+                className="expert-wizard-body pt-4 pb-[30px]"
                 key={step}
               >
                 {step !== 0 && stepHeading}
@@ -350,7 +361,7 @@ export default function ExpertRegistrationPage() {
       </main>
 
       {/* ── Footer ── */}
-      <footer className="expert-onboarding-footer border-ex-footer-border text-ex-muted mx-auto flex max-w-[1240px] justify-between border-t px-6 py-[22px] text-[13px] max-md:flex-wrap max-md:gap-2">
+      <footer data-reveal="fade" className="expert-onboarding-footer border-ex-footer-border text-ex-muted mx-auto flex max-w-[1240px] justify-between border-t px-6 py-[22px] text-[13px] max-md:flex-wrap max-md:gap-2">
         <span>Shared Hub</span>
         {onboardingFooterLinks.length > 0 && (
           <nav aria-label="Support and policies" className="expert-footer-links">

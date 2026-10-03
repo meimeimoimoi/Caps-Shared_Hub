@@ -1,6 +1,7 @@
 import { ArrowRight, Check, ScanLine, ShieldCheck, Clock3, CircleAlert } from 'lucide-react'
 import { labels, type Stage } from '../'
 import { SupplementForm, type SupplementFormProps } from './SupplementForm'
+import { ScenarioSelect } from './ScenarioSelect'
 
 export interface ApplicationStatusProps {
   profileName: string
@@ -16,8 +17,6 @@ export interface ApplicationStatusProps {
   onPreviewServiceReview: () => void
 }
 
-const inputCls =
-  'w-full px-3 py-2.5 border border-ex-input-border rounded-[5px] bg-white text-ex-ink min-h-11 font-normal caret-ex-accent transition-[border-color,box-shadow] duration-150 ease-in-out focus:border-ex-accent focus:shadow-[0_0_0_3px_var(--color-ex-ring)] motion-reduce:transition-none'
 const btnBase =
   'cursor-pointer inline-flex items-center justify-center gap-2 min-h-11 px-[17px] py-[9px] border border-ex-btn-border rounded-md bg-white text-ex-ink font-semibold transition-[background,border-color,opacity] duration-150 ease-in-out hover:bg-ex-btn-hover disabled:cursor-not-allowed disabled:opacity-55 motion-reduce:transition-none'
 const btnPrimary = `${btnBase} !bg-ex-accent !border-ex-accent !text-white hover:!bg-ex-accent-hover`
@@ -58,20 +57,7 @@ export function ApplicationStatus({
               : 'Track your application and see what happens next.'}
           </p>
         </div>
-        <label className="expert-status-preview">
-          Preview a scenario
-          <select
-            value={stage}
-            className={`${inputCls} mt-1.5 block !text-[13px]`}
-            onChange={(e) => onStageChange(e.target.value as Stage)}
-          >
-            {Object.entries(labels).map(([value, label]) => (
-              <option key={value} value={value}>
-                {label}
-              </option>
-            ))}
-          </select>
-        </label>
+        <ScenarioSelect value={stage} onChange={onStageChange} />
       </div>
 
       <ol className="expert-status-timeline">

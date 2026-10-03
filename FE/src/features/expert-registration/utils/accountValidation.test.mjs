@@ -29,11 +29,11 @@ test('blocks mismatched confirmation and missing consent', () => {
   assert.ok(validateAccount({ ...valid, terms: false }).terms)
 })
 
-test('requires a phone value without enforcing Vietnamese formatting', () => {
-  for (const phone of ['0912345678', '+84912345678', '0084912345678', '84912345678', '912345678', '02412345678', '+14155552671', '+66912345678', '123']) {
+test('requires a valid Vietnamese phone number', () => {
+  for (const phone of ['0912345678', '+84912345678', '0084912345678', '84912345678', '912345678', '02412345678']) {
     assert.equal(validateAccount({ ...valid, phone }).phone, undefined)
   }
-  for (const phone of ['', '   ']) {
+  for (const phone of ['', '   ', '+14155552671', '+66912345678', '123', '015755928093', '0912abc345678']) {
     assert.ok(validateAccount({ ...valid, phone }).phone)
   }
 })

@@ -1,3 +1,4 @@
+import { collectFormErrors, focusInvalidField } from '@/lib/validation/formValidation'
 import { normalizeVietnamPhone, vietnamPhoneError } from '../utils/vietnamPhone'
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { criteria, initial } from '../constants'
@@ -33,26 +34,9 @@ export function useRegistrationForm({ onRegistrationSubmit }: UseRegistrationFor
   }, [error])
 
   const validateForm = (form: HTMLFormElement): boolean => {
-    const errors: Record<string, string> = {}
-    let firstInvalid: HTMLElement | null = null
-    for (const el of Array.from(form.elements)) {
-      const inputEl = el as HTMLInputElement
-      if (inputEl.validity && !inputEl.validity.valid && inputEl.name) {
-        if (!firstInvalid) firstInvalid = inputEl
-        if (inputEl.validity.valueMissing) {
-          errors[inputEl.name] = 'This field is required.'
-        } else if (inputEl.validity.typeMismatch) {
-          if (inputEl.type === 'email') errors[inputEl.name] = 'Please enter a valid email address.'
-          else errors[inputEl.name] = 'Please enter a valid value.'
-        } else if (inputEl.validity.rangeUnderflow) {
-          errors[inputEl.name] = `Value must be at least ${inputEl.min}.`
-        } else if (inputEl.validity.rangeOverflow) {
-          errors[inputEl.name] = `Value must be at most ${inputEl.max}.`
-        } else {
-          errors[inputEl.name] = 'Invalid value.'
-        }
-      }
-    }
+    const result = collectFormErrors(form)
+    const errors = result.errors
+    let firstInvalid = result.firstInvalid
     const phoneInput = form.querySelector<HTMLInputElement>('input[name="phone"]')
     if (phoneInput) {
       const phoneError = vietnamPhoneError(phoneInput.value)
@@ -69,11 +53,7 @@ export function useRegistrationForm({ onRegistrationSubmit }: UseRegistrationFor
     }
     setFormErrors(errors)
     if (Object.keys(errors).length) {
-      requestAnimationFrame(() => {
-        const target = firstInvalid ?? form.querySelector<HTMLElement>('[aria-invalid="true"] input, input[aria-invalid="true"]')
-        target?.focus({ preventScroll: true })
-        target?.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth', block: 'center' })
-      })
+      requestAnimationFrame(() => focusInvalidField(form, firstInvalid))
       return false
     }
     return true

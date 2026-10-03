@@ -47,7 +47,7 @@
   --color-ex-muted: #59615f;
   --color-ex-heading: #192524;
   --color-ex-bg: #eeede8;
-  --color-ex-selection: #f8d8bf;
+  --color-ex-selection: #dce8df;
   --color-ex-panel: #ffffff;
   --color-ex-border: #d9dbd4;
   --color-ex-border-light: #e3e5df;
@@ -174,10 +174,26 @@
 .expert-field-error svg { flex-shrink: 0; margin-top: 2px; }
 .expert-account-form input[aria-invalid='true'] { border-color: #bf796b; background: #fff9f7; box-shadow: none; }
 .expert-account-form input[aria-invalid='true']:focus-visible { outline-color: #a14532; }
-.expert-phone-field { display: flex; align-items: center; min-width: 0; border: 1px solid #d0d5cf; border-radius: 8px; background: #fdfdfa; }
-.expert-phone-prefix { display: inline-flex; align-items: center; gap: 6px; flex-shrink: 0; padding-inline: 9px; color: #263c36; border-inline-end: 1px solid #d0d5cf; font-size: 13px; line-height: 20px; }
+.expert-phone-field { display: flex; align-items: center; min-width: 0; min-height: 48px; overflow: hidden; border: 1px solid #d0d5cf; border-radius: 8px; background: #fdfdfa; }
+.expert-phone-prefix { display: inline-flex; align-items: center; gap: 8px; flex-shrink: 0; padding-inline: 12px; color: #33483e; border-inline-end: 1px solid #dce0d9; font-size: 13px; font-weight: 500; line-height: 22px; }
 .expert-phone-prefix svg { flex-shrink: 0; width: 21px; height: 14px; border-radius: 2px; }
-.expert-account-form .expert-phone-field input { min-width: 0; flex: 1; width: 0; min-height: 46px; border: 0; background: transparent; box-shadow: none; padding: 10px 9px; font-size: 13px; }
+.expert-account-form .expert-phone-field input { min-width: 0; flex: 1; width: 0; min-height: 46px; border: 0; border-radius: 0; background: transparent; box-shadow: none; padding: 12px; font-size: 14px; font-variant-numeric: tabular-nums; }
+.expert-account-form .expert-phone-field input[aria-invalid='true'] { background: transparent; }
+/* Browser autofill uses the same surface as manually entered fields. */
+.expert-account-form input { --expert-input-surface: #fdfdfa; }
+.expert-account-form input[aria-invalid='true'] { --expert-input-surface: #fff9f7; }
+.expert-account-form input:is(:autofill, :-webkit-autofill) {
+  -webkit-text-fill-color: #263c36;
+  caret-color: #a34524;
+  box-shadow: inset 0 0 0 100px var(--expert-input-surface) !important;
+}
+.expert-account-form input:is(:autofill, :-webkit-autofill):focus-visible {
+  box-shadow: inset 0 0 0 100px var(--expert-input-surface), 0 0 0 3px #a345241a !important;
+}
+.expert-account-form .expert-phone-field input:is(:autofill, :-webkit-autofill):focus-visible {
+  box-shadow: inset 0 0 0 100px var(--expert-input-surface) !important;
+}
+.expert-account-form .expert-phone-form-field .expert-field-error { font-size: 12px; gap: 6px; }
 .expert-phone-field:focus-within { border-color: #a34524; box-shadow: 0 0 0 3px #a345241a; }
 .expert-phone-field[data-invalid='true'] { border-color: #bf796b; background: #fff9f7; }
 .expert-account-form .expert-phone-field input:focus-visible { box-shadow: none; }
@@ -186,10 +202,31 @@
 /* Account credentials share the existing form palette. */
 .expert-password-field { position: relative; display: block; }
 .expert-account-form .expert-password-field input { padding-right: 54px; }
-.expert-account-form .expert-password-toggle { position: absolute; right: 4px; top: 50%; transform: translateY(-50%); display: flex; align-items: center; justify-content: center; width: 44px; min-height: 44px; padding: 0; border: 0; background: transparent !important; color: #68736a; cursor: pointer; }
-.expert-account-form .expert-password-toggle:hover { background: #eeeee7 !important; color: #263c36; }
-.expert-account-form .expert-password-toggle svg { margin: 0 !important; }
-.expert-account-form .expert-password-toggle:focus-visible { outline: 2px solid #a34524; outline-offset: 1px; }
+.expert-account-form .expert-password-toggle {
+  position: absolute; right: 4px; top: calc(50% - 22px);
+  display: flex; align-items: center; justify-content: center;
+  width: 44px; height: 44px; min-height: 44px; padding: 0;
+  border: 0; border-radius: 8px; background: transparent !important;
+  color: #68736a; cursor: pointer; transform: none;
+}
+.expert-account-form .expert-password-toggle::before {
+  content: ''; position: absolute; inset: 5px; border-radius: 7px;
+  background: #f3e8df; opacity: 0; transform: scale(.85);
+  transition: opacity 160ms ease, transform 200ms cubic-bezier(.16, 1, .3, 1);
+  pointer-events: none;
+}
+.expert-account-form .expert-password-toggle:is(:hover, :focus-visible) { background: transparent !important; color: #8b381c; }
+.expert-account-form .expert-password-toggle:is(:hover, :focus-visible)::before { opacity: 1; transform: scale(1); }
+.expert-account-form .expert-password-toggle svg {
+  position: relative; margin: 0 !important; transform: none !important;
+  transition: opacity 150ms ease;
+}
+.expert-account-form .expert-password-toggle:active:not(:disabled) { transform: none; }
+.expert-account-form .expert-password-toggle:active::before { transform: scale(.92); background: #ead5c7; }
+.expert-account-form .expert-password-toggle:focus-visible { outline: 2px solid #a34524; outline-offset: -4px; }
+@media (prefers-reduced-motion: reduce) {
+  .expert-account-form .expert-password-toggle::before { transform: none !important; }
+}
 .expert-account-consent { margin-bottom: 22px; }
 .expert-account-consent-row { display: flex; align-items: flex-start; gap: 10px; }
 .expert-account-consent label { font-size: 13px; line-height: 1.65; font-weight: 400; cursor: pointer; padding: 2px 0; }
@@ -205,13 +242,13 @@
 
 .expert-password-guidance { font-size: 13px; color: #58665d; margin-top: 3px; }
 .expert-password-strength-label { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 7px; }
-.expert-password-meter { height: 6px; overflow: hidden; border-radius: 3px; background: #e5e8e1; }
-.expert-password-meter > span { display: block; width: 100%; height: 100%; transform-origin: left; background: #a14532; transition: transform 180ms ease-out, background-color 180ms ease-out; }
+.expert-password-meter { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 5px; height: 6px; }
+.expert-password-meter > span { display: block; height: 100%; border-radius: 3px; background: #e5e8e1; transition: background-color 180ms ease-out; }
 .expert-password-guidance[data-strength='low'] strong { color: #a14532; }
 .expert-password-guidance[data-strength='medium'] strong { color: #805d0b; }
-.expert-password-guidance[data-strength='medium'] .expert-password-meter > span { background: #bd8a20; }
+.expert-password-guidance[data-strength='medium'] .expert-password-meter > span[data-active='true'] { background: #bd8a20; }
 .expert-password-guidance[data-strength='high'] strong { color: #326347; }
-.expert-password-guidance[data-strength='high'] .expert-password-meter > span { background: #326347; }
+.expert-password-guidance[data-strength='high'] .expert-password-meter > span[data-active='true'] { background: #326347; }
 .expert-password-requirements { list-style: none; padding: 0; margin: 11px 0 0; display: grid; gap: 5px; }
 .expert-password-requirements li { display: flex; align-items: flex-start; gap: 8px; }
 .expert-password-requirements svg { flex-shrink: 0; margin-top: 3px; }
@@ -239,9 +276,9 @@
 /* Final entry refinement; wizard and global scroll behavior are unchanged. */
 .expert-password-feedback[hidden] { display: none; }
 .expert-password-guidance[data-strength='low'] strong { color: var(--color-ex-muted); }
-.expert-password-guidance[data-strength='low'] .expert-password-meter > span { background: #8b7764; }
+.expert-password-guidance[data-strength='low'] .expert-password-meter > span[data-active='true'] { background: #8b7764; }
 .expert-password-guidance[data-strength='medium'] strong { color: #756348; }
-.expert-password-guidance[data-strength='medium'] .expert-password-meter > span { background: #a58c58; }
+.expert-password-guidance[data-strength='medium'] .expert-password-meter > span[data-active='true'] { background: #a58c58; }
 .expert-password-requirements li { color: var(--color-ex-muted); }
 .expert-password-requirements li[data-met='true'] { color: #42654f; }
 .expert-policy-text, .expert-account-consent a { text-decoration: underline; text-underline-offset: 3px; text-decoration-color: #b8beb6; }
@@ -386,13 +423,15 @@
 }
 .expert-stepper-track-fill {
   height: 100%;
-  width: 0;
+  width: 100%;
+  transform: scaleX(0);
+  transform-origin: left;
   background: #a34524;
   border-radius: 1px;
-  transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 320ms cubic-bezier(.16, 1, .3, 1);
 }
 .expert-stepper-track-fill--done {
-  width: 100%;
+  transform: scaleX(1);
 }
 
 /* ── Wizard body ── */
@@ -517,8 +556,13 @@
 .expert-pro-subtitle { color: #58665d; font-size: 14px; line-height: 1.7; margin-bottom: 28px !important; max-width: 60ch; }
 
 .expert-pro-section {
+  position: relative;
   padding: 28px 0 8px;
   border-top: 1px solid #eae8e0;
+}
+/* Ensure the date-picker calendar floats above subsequent sibling sections */
+.expert-pro-section:has([data-date-picker-panel]) {
+  z-index: 1;
 }
 .expert-pro-section:first-of-type { border-top: 0; padding-top: 0; }
 
@@ -814,7 +858,7 @@
 
 /* Maintain the same control scale throughout steps 2–4. */
 .expert-wizard-body legend { font-size: 14px; font-weight: 600; color: #33483e; }
-.expert-wizard-body button:not(.expert-password-toggle):not(.expert-footer-btn):not(.expert-file-item-remove) { min-height: 48px; font-size: 14px; border-radius: 8px; }
+.expert-wizard-body button:not(.expert-password-toggle):not(.expert-footer-btn):not(.expert-file-item-remove):not(:where([data-date-picker-panel] button)) { min-height: 48px; font-size: 14px; border-radius: 8px; }
 .expert-wizard .expert-file-uploader > label { border-radius: 12px; }
 .expert-wizard .expert-file-uploader strong { font-size: 14px; }
 .expert-wizard .expert-file-uploader > label > span { font-size: 13px; }
@@ -890,7 +934,17 @@
 .expert-bio-footer { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px 24px; margin-top: 8px; margin-bottom: 16px; }
 .expert-personal-form .expert-bio-hint { flex: 1 1 260px; margin: 0; max-width: 65ch; color: var(--personal-support); font-size: 12px; line-height: 1.6; }
 .expert-personal-form .expert-bio-count { flex: 0 0 auto; margin: 0 0 0 auto; text-align: right; white-space: nowrap; font-size: 12px; line-height: 1.6; color: var(--personal-support); font-variant-numeric: tabular-nums; }
-.expert-personal-form ::selection { background: #ecd5c6; color: #263c36; }
+:is(.expert-welcome, .expert-application) ::selection {
+  background-color: #dce8df;
+  color: #203c30;
+  -webkit-text-fill-color: #203c30;
+  text-shadow: none;
+}
+:is(.expert-welcome, .expert-application) :is(input, textarea)::selection {
+  background-color: #cddfd2;
+  color: #19382a;
+  -webkit-text-fill-color: #19382a;
+}
 @media (max-width: 900px) {
   .expert-personal-heading { grid-template-columns: minmax(0, 1fr) 260px; gap: 24px; }
   .expert-wizard-personal .expert-stepper-list { gap: 16px; }
@@ -1039,3 +1093,632 @@
 .expert-registration-summary .expert-summary-documents-empty { margin: 0; padding: 16px 0; border-block: 1px solid #dedfd6; color: #52665c; font-size: 14px; }
 
 .expert-summary-document-info { flex: 1; min-width: 0; }
+
+/* Scenario preview uses the same warm controls as the application. */
+.expert-scenario-select { position: relative; min-width: 0; z-index: 10; }
+.expert-application .expert-scenario-trigger {
+  display: flex; align-items: center; justify-content: space-between; gap: 14px;
+  width: 100%; min-height: 48px; margin-top: 7px; padding: 11px 14px;
+  border: 1px solid #bfc8bf; border-radius: 10px; background: #fff;
+  color: #263c36; font-size: 13px; font-weight: 500; line-height: 1.5;
+  text-align: left; cursor: pointer;
+}
+.expert-scenario-trigger > span { min-width: 0; overflow-wrap: anywhere; }
+.expert-scenario-trigger > svg { flex: none; color: #68766b; transition: transform 200ms ease, color 160ms ease; }
+.expert-application .expert-scenario-trigger:hover { border-color: #a34524; background: #fffaf6; }
+.expert-application .expert-scenario-trigger:focus-visible {
+  outline: 2px solid #a34524; outline-offset: 3px;
+}
+.expert-application .expert-scenario-trigger[aria-expanded='true'] {
+  border-color: #a34524; background: #fffaf6;
+}
+.expert-scenario-trigger[aria-expanded='true'] > svg { transform: rotate(180deg); color: #a34524; }
+.expert-application .expert-scenario-trigger:active:not(:disabled) { transform: none; }
+.expert-scenario-menu {
+  position: absolute; top: calc(100% + 8px); left: 0; right: 0;
+  list-style: none; margin: 0; padding: 6px; background: #fffefa;
+  border-radius: 12px; box-shadow: 0 16px 40px -12px #263c3640;
+  max-height: min(360px, 50vh); overflow-y: auto; overscroll-behavior: contain;
+  scrollbar-width: thin; scrollbar-color: #bac8bc transparent;
+  animation: expert-menu-enter 180ms cubic-bezier(.16, 1, .3, 1);
+}
+.expert-scenario-menu > li {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  min-height: 44px; padding: 10px 12px; border-radius: 7px;
+  color: #385247; font-size: 13px; line-height: 1.45; cursor: pointer;
+  transition: background-color 120ms ease, color 120ms ease;
+}
+.expert-scenario-menu > li > svg { flex: none; }
+.expert-scenario-menu > li[aria-selected='true'] { color: #8b381c; background: #f7eee6; font-weight: 600; }
+.expert-scenario-menu > li[data-active='true'] { background: #e9f0e9; color: #203c30; }
+@keyframes expert-menu-enter {
+  from { opacity: .3; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Four-step wizard: continuity, section rhythm, and task-specific feedback. */
+.expert-wizard .expert-pro-section-icon,
+.expert-wizard .expert-photo-preview,
+.expert-wizard .expert-pro-tab,
+.expert-wizard .expert-independent-row,
+.expert-wizard .expert-registration-summary dl > div {
+  transition: background-color 180ms ease, border-color 180ms ease,
+    box-shadow 220ms ease, transform 240ms cubic-bezier(.16, 1, .3, 1);
+}
+.expert-wizard .expert-pro-section-line {
+  transform-origin: left;
+}
+.expert-stepper-bubble--active { animation: expert-current-step 320ms ease-out; }
+.expert-stepper-bubble--done svg { animation: expert-confirm 260ms ease-out; }
+.expert-file-dropzone[data-dragging='true'] {
+  background-color: #f6e9dd;
+  border-color: #a34524;
+  box-shadow: inset 0 0 0 1px #a34524;
+}
+.expert-file-dropzone[data-dragging='true'] .expert-file-dropzone-icon {
+  transform: translateY(-5px) scale(1.08);
+  background: #e9d2be;
+}
+.expert-wizard .expert-independent-row:has(input:checked) {
+  background: #edf3ec;
+  border-color: #73917e;
+}
+.expert-wizard .expert-footer-btn svg { transition: transform 200ms ease; }
+.expert-footer-draft:has(svg.lucide-circle-check-big) svg { animation: expert-confirm 250ms ease-out; }
+@keyframes expert-current-step {
+  from { box-shadow: 0 0 0 0 #a3452425; }
+  to { box-shadow: 0 0 0 4px #a345240f, 0 2px 8px -2px #a3452420; }
+}
+@keyframes expert-section-line {
+  from { transform: scaleX(.35); opacity: .4; }
+  to { transform: scaleX(1); opacity: 1; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .expert-wizard-body :is(.expert-personal-form, .expert-pro-experience, .expert-pro-documents, .expert-pro-review) > .expert-pro-section,
+  .expert-wizard-body .expert-personal-heading,
+  .expert-wizard-body .expert-pro-tabs-container,
+  .expert-wizard-body .expert-registration-summary > *,
+  .expert-wizard-body .expert-pro-review > .expert-personal-form {
+    animation: expert-field-arrive 360ms cubic-bezier(.16, 1, .3, 1) backwards;
+  }
+  .expert-wizard-body .expert-pro-section:nth-of-type(2) { animation-delay: 45ms; }
+  .expert-wizard-body .expert-pro-section:nth-of-type(3) { animation-delay: 90ms; }
+  .expert-wizard-body .expert-pro-section:nth-of-type(n+4) { animation-delay: 135ms; }
+  .expert-wizard-body .expert-pro-section-line { animation: expert-section-line 400ms 60ms cubic-bezier(.16, 1, .3, 1) backwards; }
+  .expert-wizard-body #evidence-panel { animation: expert-step-arrive 240ms cubic-bezier(.16, 1, .3, 1) backwards; }
+  .expert-wizard .expert-photo-preview > img { animation: expert-confirm 280ms ease-out; }
+  .expert-wizard .expert-independent-row input:checked { animation: expert-confirm 200ms ease-out; }
+}
+@media (hover: hover) and (pointer: fine) {
+  .expert-wizard .expert-pro-section:focus-within > .expert-pro-section-header .expert-pro-section-icon {
+    background-color: #ead8c9 !important;
+    transform: scale(1.06);
+  }
+  .expert-wizard .expert-pro-tab:hover { transform: translateX(3px); }
+  .expert-wizard .expert-pro-tab[aria-selected='true'] { box-shadow: 0 5px 14px -8px #a3452450; }
+  .expert-wizard .expert-photo-upload:hover svg { transform: rotate(-8deg); }
+  .expert-wizard .expert-photo-upload svg { transition: transform 200ms ease; }
+  .expert-wizard .expert-registration-summary dl > div:hover { background-color: #f5e7db; }
+  .expert-wizard .expert-file-item:hover { background-color: #f8f3ec; }
+  .expert-wizard .expert-footer-back:hover svg { transform: translateX(-3px); }
+  .expert-wizard .expert-footer-continue:hover svg:last-child { transform: translateX(3px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .expert-wizard .expert-pro-tab:hover,
+  .expert-wizard .expert-pro-section:focus-within > .expert-pro-section-header .expert-pro-section-icon,
+  .expert-wizard .expert-photo-upload:hover svg,
+  .expert-wizard .expert-footer-back:hover svg,
+  .expert-wizard .expert-footer-continue:hover svg:last-child,
+  .expert-file-dropzone[data-dragging='true'] .expert-file-dropzone-icon { transform: none; }
+}
+
+/* One entrance composition, followed by feedback across the entire portal. */
+:is(.expert-welcome, .expert-application) { position: relative; isolation: isolate; }
+:is(.expert-welcome, .expert-application)::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: radial-gradient(ellipse 500px 380px at var(--ambient-x, 35%) var(--ambient-y, 35%), #dca37a30, transparent 75%);
+  opacity: 0;
+  transition: opacity 400ms ease;
+}
+:is(.expert-welcome, .expert-application)[data-pointer-active]::before { opacity: 1; }
+.expert-account-form {
+  transition: box-shadow 350ms cubic-bezier(.16, 1, .3, 1);
+}
+.expert-account-form:focus-within {
+  box-shadow: 0 28px 60px -18px #a345242a !important;
+}
+:is(.expert-welcome, .expert-application) .expert-form-field > label > span {
+  transition: transform 220ms cubic-bezier(.16, 1, .3, 1), color 180ms ease;
+  transform-origin: left center;
+}
+:is(.expert-welcome, .expert-application) .expert-form-field:focus-within > label > span {
+  transform: translateX(4px);
+}
+:is(.expert-welcome, .expert-application) :is(input:not([type='checkbox']):not([type='file']), textarea):focus-visible {
+  background-color: #fffaf5;
+  border-color: #a34524;
+  box-shadow: 0 0 0 3px #a345241a;
+}
+:is(.expert-welcome, .expert-application) a:not(.expert-header-logo) {
+  text-decoration-color: transparent;
+  transition: color 180ms ease, text-decoration-color 180ms ease;
+}
+:is(.expert-welcome, .expert-application) a:not(.expert-header-logo):is(:hover, :focus-visible) {
+  text-decoration: underline;
+  text-decoration-color: currentColor;
+}
+:is(.expert-submit-btn, .expert-footer-continue)::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse at var(--button-x, 50%) var(--button-y, 50%), #ffffff38, transparent 70%);
+  opacity: 0;
+  transition: opacity 180ms ease;
+}
+:is(.expert-submit-btn, .expert-footer-continue)[data-pointer-lit]::after { opacity: 1; }
+.expert-account-consent-row input:checked { animation: expert-confirm 240ms ease-out; }
+@keyframes expert-panel-arrive {
+  from { opacity: .35; transform: translateX(30px) scale(.97); }
+  to { opacity: 1; transform: translateX(0) scale(1); }
+}
+@keyframes expert-field-arrive {
+  from { opacity: .25; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .expert-welcome header { animation: expert-feedback 350ms ease-out both; }
+  .expert-welcome .expert-intro-copy { animation: expert-field-arrive 550ms 60ms cubic-bezier(.16, 1, .3, 1) both; }
+  .expert-welcome .expert-review-note { animation: expert-field-arrive 550ms 180ms cubic-bezier(.16, 1, .3, 1) both; }
+  .expert-welcome .expert-account-form { animation: expert-panel-arrive 650ms cubic-bezier(.16, 1, .3, 1) both; }
+  .expert-welcome .expert-account-fields > * { animation: expert-field-arrive 450ms cubic-bezier(.16, 1, .3, 1) both; }
+  .expert-welcome .expert-account-fields > :nth-child(1) { animation-delay: 80ms; }
+  .expert-welcome .expert-account-fields > :nth-child(2) { animation-delay: 110ms; }
+  .expert-welcome .expert-account-fields > :nth-child(3) { animation-delay: 140ms; }
+  .expert-welcome .expert-account-fields > :nth-child(4) { animation-delay: 170ms; }
+  .expert-welcome .expert-account-fields > :nth-child(5) { animation-delay: 200ms; }
+  .expert-welcome .expert-account-fields > :nth-child(6) { animation-delay: 230ms; }
+  .expert-welcome .expert-account-consent { animation: expert-field-arrive 450ms 250ms cubic-bezier(.16, 1, .3, 1) both; }
+  .expert-welcome .expert-submit-btn { animation: expert-feedback 450ms 280ms ease-out backwards; }
+  .expert-application .expert-wizard { animation: expert-panel-arrive 400ms cubic-bezier(.16, 1, .3, 1) backwards; }
+  .expert-application .expert-file-item { animation: expert-field-arrive 220ms ease-out backwards; }
+}
+@media (hover: hover) and (pointer: fine) {
+  .expert-account-form:hover { box-shadow: 0 30px 64px -18px #a3452430 !important; }
+  :is(.expert-welcome, .expert-application) .expert-form-field:hover > label { color: #8b381c; }
+  :is(.expert-welcome, .expert-application) .expert-form-field input:hover:not(:focus-visible) { background-color: #fffaf5; border-color: #bd8f7b; }
+  .expert-password-toggle:hover { background: #f3e8df; }
+  .expert-header-logo { transition: transform 240ms ease; }
+  .expert-header-logo:hover { transform: scale(1.035); }
+}
+@media (prefers-reduced-motion: reduce) {
+  :is(.expert-welcome, .expert-application)::before,
+  :is(.expert-submit-btn, .expert-footer-continue)::after { display: none; }
+  :is(.expert-welcome, .expert-application) .expert-form-field:focus-within > label > span,
+  .expert-header-logo:hover { transform: none; }
+}
+
+/* Registration motion: warm photographic light, precise control feedback. */
+:is(.expert-welcome, .expert-application) {
+  --expert-ease: cubic-bezier(.16, 1, .3, 1);
+}
+.expert-photo::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse at var(--light-x, 50%) var(--light-y, 50%), #fff8e560, transparent 65%);
+  opacity: 0;
+  transition: opacity 300ms ease;
+}
+.expert-photo img {
+  transform: translate(var(--photo-x, 0px), var(--photo-y, 0px)) scale(1.08);
+  transition: transform 600ms var(--expert-ease);
+}
+.expert-photo[data-tracking]::after { opacity: 1; }
+.expert-photo[data-tracking] img { transition-duration: 180ms; }
+.expert-photo {
+  transform: perspective(1000px) rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg));
+  transition: transform 450ms var(--expert-ease), box-shadow 300ms ease;
+}
+.expert-photo[data-tracking] {
+  box-shadow: 0 24px 44px -16px #2d443b50;
+  transition-duration: 180ms;
+}
+.expert-form-field > label {
+  transition: color 160ms ease;
+}
+.expert-form-field:focus-within > label { color: #8b381c; }
+:is(.expert-welcome, .expert-application) :is(input, textarea, select) {
+  transition: border-color 180ms ease, background-color 180ms ease, box-shadow 180ms ease;
+}
+.expert-account-form input::placeholder { color: #68736a; }
+.expert-account-form .expert-phone-field {
+  transition: border-color 180ms ease, box-shadow 180ms ease, background-color 180ms ease;
+}
+.expert-account-form .expert-phone-field:focus-within {
+  border-color: #a34524;
+  box-shadow: 0 0 0 3px #a345241a;
+}
+:is(.expert-welcome, .expert-application) button {
+  transition: color 160ms ease, background-color 160ms ease, border-color 160ms ease,
+    box-shadow 220ms ease, transform 220ms var(--expert-ease);
+}
+:is(.expert-submit-btn, .expert-footer-continue) { position: relative; overflow: hidden; isolation: isolate; }
+:is(.expert-submit-btn, .expert-footer-continue)::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(110deg, transparent 20%, #ffffff24 48%, transparent 76%);
+  transform: translateX(-110%);
+  pointer-events: none;
+}
+:is(.expert-welcome, .expert-application) button:active:not(:disabled) {
+  transform: translateY(1px) scale(.985);
+  transition-duration: 100ms;
+}
+.expert-password-help > svg,
+.expert-status-dossier > summary > svg {
+  transition: transform 240ms var(--expert-ease);
+}
+.expert-password-help[aria-expanded='true'] > svg { transform: rotate(180deg); }
+.expert-password-requirements li { transition: color 180ms ease; }
+.expert-password-requirements li[data-met='true'] > svg { animation: expert-confirm 240ms var(--expert-ease); }
+.expert-pro-chip-check { transition: background-color 180ms ease, border-color 180ms ease, transform 240ms var(--expert-ease); }
+.expert-pro-chip--selected .expert-pro-chip-check svg { animation: expert-confirm 240ms var(--expert-ease); }
+.expert-file-dropzone-icon { transition: transform 240ms var(--expert-ease), background-color 180ms ease; }
+.expert-field-error { animation: expert-feedback 180ms ease-out; }
+.expert-wizard-body.animate-expert-enter { animation: expert-step-arrive 280ms var(--expert-ease) both; }
+.expert-status-layout { animation: expert-feedback 240ms ease-out; }
+@keyframes expert-confirm {
+  from { opacity: .4; transform: scale(.65); }
+  to { opacity: 1; transform: scale(1); }
+}
+@keyframes expert-feedback { from { opacity: .5; } to { opacity: 1; } }
+@keyframes expert-step-arrive {
+  from { opacity: .65; transform: translateX(10px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+@keyframes expert-light-pass {
+  from { transform: translateX(-110%); }
+  to { transform: translateX(110%); }
+}
+@keyframes expert-photo-arrive {
+  from { clip-path: inset(0 0 35% 0 round 16px); opacity: .65; }
+  to { clip-path: inset(0 0 0 0 round 16px); }
+}
+@keyframes expert-title-arrive {
+  from { transform: translateY(18px); opacity: .4; }
+  to { transform: translateY(0); opacity: 1; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .expert-welcome .expert-introduction h1 { animation: expert-title-arrive 600ms var(--expert-ease) both; }
+  .expert-welcome .expert-photo { animation: expert-photo-arrive 800ms 80ms var(--expert-ease) both; }
+}
+@media (hover: hover) and (pointer: fine) {
+  .expert-account-form button[type='submit']:hover:not(:disabled) {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 24px -6px #a3452470;
+  }
+  :is(.expert-submit-btn, .expert-footer-continue):hover:not(:disabled)::before {
+    animation: expert-light-pass 650ms var(--expert-ease);
+  }
+  .expert-file-dropzone:hover .expert-file-dropzone-icon { transform: translateY(-3px); background-color: #f3e5d9; }
+  .expert-pro-chip:hover { transform: translateY(-1px); }
+  .expert-stepper-btn:not(:disabled):hover .expert-stepper-bubble { transform: translateY(-2px); }
+  :is(.expert-welcome, .expert-application) a:hover { text-decoration-thickness: 2px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  :is(.expert-welcome, .expert-application) *,
+  :is(.expert-welcome, .expert-application) *::before,
+  :is(.expert-welcome, .expert-application) *::after {
+    animation: none !important;
+    transition-duration: 100ms !important;
+    transition-property: color, background-color, border-color, opacity !important;
+  }
+  .expert-photo, .expert-photo img { transform: none; }
+  .expert-photo::after { display: none; }
+  :is(.expert-welcome, .expert-application) button:active:not(:disabled),
+  .expert-account-form button[type='submit']:hover:not(:disabled),
+  .expert-footer-continue:hover, .expert-pro-chip:hover,
+  .expert-file-dropzone:hover .expert-file-dropzone-icon,
+  .expert-stepper-btn:not(:disabled):hover .expert-stepper-bubble,
+  .expert-account-form button:hover svg:last-child { transform: none; }
+}
+
+/* ──────────────────────────────────────────────────────────────────────────── *
+ *  SCROLL-REVEAL SYSTEM
+ *  Elements with [data-reveal] start invisible and transition in once they
+ *  enter the viewport (driven by useScrollReveal hook).
+ * ──────────────────────────────────────────────────────────────────────────── */
+
+/* Base hidden state — every [data-reveal] element starts below & transparent */
+[data-reveal] {
+  opacity: 0;
+  transform: translateY(22px);
+  transition:
+    opacity 550ms cubic-bezier(.16, 1, .3, 1),
+    transform 550ms cubic-bezier(.16, 1, .3, 1);
+  transition-delay: var(--reveal-delay, 0ms);
+  will-change: opacity, transform;
+}
+
+/* Revealed state — slides up and fades in */
+[data-reveal][data-revealed] {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Directional variants */
+[data-reveal="left"] {
+  transform: translateX(-28px);
+}
+[data-reveal="left"][data-revealed] {
+  transform: translateX(0);
+}
+
+[data-reveal="right"] {
+  transform: translateX(28px);
+}
+[data-reveal="right"][data-revealed] {
+  transform: translateX(0);
+}
+
+[data-reveal="scale"] {
+  transform: scale(.92);
+}
+[data-reveal="scale"][data-revealed] {
+  transform: scale(1);
+}
+
+[data-reveal="fade"] {
+  transform: none;
+}
+[data-reveal="fade"][data-revealed] {
+  transform: none;
+}
+
+/* Reduced-motion: instant reveal with no movement */
+@media (prefers-reduced-motion: reduce) {
+  [data-reveal] {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+}
+
+/* ──────────────────────────────────────────────────────────────────────────── *
+ *  APPLICATION STATUS PAGE — entrance animations
+ * ──────────────────────────────────────────────────────────────────────────── */
+
+@keyframes expert-status-header-arrive {
+  from { opacity: .3; transform: translateY(-14px); }
+  to   { opacity: 1;  transform: translateY(0); }
+}
+
+@keyframes expert-status-timeline-arrive {
+  from { opacity: 0; transform: scaleX(.6); }
+  to   { opacity: 1; transform: scaleX(1); }
+}
+
+@keyframes expert-status-stage-arrive {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes expert-status-card-arrive {
+  from { opacity: 0; transform: translateY(16px) scale(.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes expert-status-profile-arrive {
+  from { opacity: 0; transform: translateX(20px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes expert-status-dossier-arrive {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  /* Status page header */
+  .expert-status-header {
+    animation: expert-status-header-arrive 500ms cubic-bezier(.16, 1, .3, 1) both;
+  }
+
+  /* Timeline stepper */
+  .expert-status-timeline {
+    animation: expert-status-timeline-arrive 550ms 80ms cubic-bezier(.16, 1, .3, 1) both;
+    transform-origin: left;
+  }
+
+  /* Individual timeline stages stagger */
+  .expert-status-stage {
+    animation: expert-status-stage-arrive 400ms cubic-bezier(.16, 1, .3, 1) both;
+  }
+  .expert-status-stage:nth-child(1) { animation-delay: 120ms; }
+  .expert-status-stage:nth-child(2) { animation-delay: 170ms; }
+  .expert-status-stage:nth-child(3) { animation-delay: 220ms; }
+  .expert-status-stage:nth-child(4) { animation-delay: 270ms; }
+  .expert-status-stage:nth-child(5) { animation-delay: 320ms; }
+
+  /* Action card */
+  .expert-status-action {
+    animation: expert-status-card-arrive 550ms 200ms cubic-bezier(.16, 1, .3, 1) both;
+  }
+
+  /* Action card inner elements stagger */
+  .expert-status-action .expert-status-action-top {
+    animation: expert-field-arrive 400ms 280ms cubic-bezier(.16, 1, .3, 1) both;
+  }
+  .expert-status-action > h2 {
+    animation: expert-field-arrive 400ms 340ms cubic-bezier(.16, 1, .3, 1) both;
+  }
+  .expert-status-action > p,
+  .expert-status-action > div:not(.expert-status-action-top):not(.expert-status-reassurance) {
+    animation: expert-field-arrive 400ms 400ms cubic-bezier(.16, 1, .3, 1) both;
+  }
+  .expert-status-reassurance {
+    animation: expert-field-arrive 400ms 460ms cubic-bezier(.16, 1, .3, 1) both;
+  }
+
+  /* Profile sidebar */
+  .expert-status-profile {
+    animation: expert-status-profile-arrive 500ms 300ms cubic-bezier(.16, 1, .3, 1) both;
+  }
+
+  /* Profile sidebar inner stagger */
+  .expert-status-profile .expert-status-profile-heading {
+    animation: expert-field-arrive 380ms 380ms cubic-bezier(.16, 1, .3, 1) both;
+  }
+  .expert-status-profile .expert-status-applicant {
+    animation: expert-field-arrive 380ms 430ms cubic-bezier(.16, 1, .3, 1) both;
+  }
+  .expert-status-profile .expert-status-facts {
+    animation: expert-field-arrive 380ms 480ms cubic-bezier(.16, 1, .3, 1) both;
+  }
+  .expert-status-profile .expert-status-profile-note {
+    animation: expert-field-arrive 380ms 530ms cubic-bezier(.16, 1, .3, 1) both;
+  }
+  .expert-status-profile .expert-status-view-link {
+    animation: expert-field-arrive 380ms 580ms cubic-bezier(.16, 1, .3, 1) both;
+  }
+
+  /* Dossier */
+  .expert-status-dossier {
+    animation: expert-status-dossier-arrive 450ms 450ms cubic-bezier(.16, 1, .3, 1) both;
+  }
+
+  /* Stage change transition — smooth stage label and content swap */
+  .expert-status-action > h2,
+  .expert-status-action > p {
+    transition: opacity 280ms ease, transform 280ms cubic-bezier(.16, 1, .3, 1);
+  }
+}
+
+/* Status page interactive hover enhancements */
+@media (hover: hover) and (pointer: fine) {
+  .expert-status-action {
+    transition: box-shadow 300ms ease, transform 300ms cubic-bezier(.16, 1, .3, 1);
+  }
+  .expert-status-action:hover {
+    box-shadow: 0 20px 48px -16px #a3452430;
+    transform: translateY(-2px);
+  }
+
+  .expert-status-profile {
+    transition: box-shadow 300ms ease, transform 300ms cubic-bezier(.16, 1, .3, 1);
+  }
+  .expert-status-profile:hover {
+    box-shadow: 0 16px 40px -12px #263c3640;
+    transform: translateY(-2px);
+  }
+
+  .expert-status-view-link {
+    transition: color 200ms ease, gap 250ms cubic-bezier(.16, 1, .3, 1);
+  }
+  .expert-status-view-link:hover > svg {
+    transform: translateY(2px);
+    transition: transform 250ms cubic-bezier(.16, 1, .3, 1);
+  }
+
+  .expert-status-stage {
+    transition: transform 200ms cubic-bezier(.16, 1, .3, 1);
+  }
+  .expert-status-stage:hover {
+    transform: translateY(-2px);
+  }
+}
+
+/* ──────────────────────────────────────────────────────────────────────────── *
+ *  ENHANCED WIZARD INNER CONTENT — deeper stagger for fields & controls
+ * ──────────────────────────────────────────────────────────────────────────── */
+
+@keyframes expert-inner-field-arrive {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  /* Form fields within sections animate individually */
+  .expert-wizard-body .expert-personal-grid > *,
+  .expert-wizard-body .expert-pro-experience-grid > *,
+  .expert-wizard-body .expert-bio-field,
+  .expert-wizard-body .expert-pro-chip-grid,
+  .expert-wizard-body .expert-file-dropzone,
+  .expert-wizard-body .expert-validation-summary,
+  .expert-wizard-body .expert-pro-notice,
+  .expert-wizard-body .expert-independent-row,
+  .expert-wizard-body .expert-pro-review > .expert-pro-subtitle,
+  .expert-wizard-body .expert-pro-review > .expert-pro-notice {
+    animation: expert-inner-field-arrive 380ms cubic-bezier(.16, 1, .3, 1) both;
+  }
+
+  /* Stagger within grids */
+  .expert-wizard-body .expert-personal-grid > :nth-child(1),
+  .expert-wizard-body .expert-pro-experience-grid > :nth-child(1) {
+    animation-delay: 100ms;
+  }
+  .expert-wizard-body .expert-personal-grid > :nth-child(2),
+  .expert-wizard-body .expert-pro-experience-grid > :nth-child(2) {
+    animation-delay: 160ms;
+  }
+  .expert-wizard-body .expert-bio-field { animation-delay: 220ms; }
+  .expert-wizard-body .expert-pro-chip-grid { animation-delay: 140ms; }
+  .expert-wizard-body .expert-file-dropzone { animation-delay: 180ms; }
+  .expert-wizard-body .expert-validation-summary { animation-delay: 60ms; }
+  .expert-wizard-body .expert-pro-notice { animation-delay: 100ms; }
+  .expert-wizard-body .expert-pro-review > .expert-pro-subtitle { animation-delay: 60ms; }
+
+  /* Profile photo entrance */
+  .expert-wizard-body .expert-profile-photo {
+    animation: expert-inner-field-arrive 450ms 80ms cubic-bezier(.16, 1, .3, 1) both;
+  }
+
+  /* Chip items stagger on ProfessionalExperience */
+  .expert-wizard-body .expert-pro-chip {
+    animation: expert-inner-field-arrive 280ms cubic-bezier(.16, 1, .3, 1) both;
+  }
+  .expert-wizard-body .expert-pro-chip:nth-child(1) { animation-delay: 160ms; }
+  .expert-wizard-body .expert-pro-chip:nth-child(2) { animation-delay: 200ms; }
+  .expert-wizard-body .expert-pro-chip:nth-child(3) { animation-delay: 240ms; }
+  .expert-wizard-body .expert-pro-chip:nth-child(4) { animation-delay: 280ms; }
+  .expert-wizard-body .expert-pro-chip:nth-child(5) { animation-delay: 320ms; }
+  .expert-wizard-body .expert-pro-chip:nth-child(6) { animation-delay: 360ms; }
+
+  /* Supporting documents tab panel content */
+  .expert-wizard-body .expert-pro-tabs-container .expert-pro-tab {
+    animation: expert-inner-field-arrive 300ms cubic-bezier(.16, 1, .3, 1) both;
+  }
+  .expert-wizard-body .expert-pro-tabs-container .expert-pro-tab:nth-child(1) { animation-delay: 80ms; }
+  .expert-wizard-body .expert-pro-tabs-container .expert-pro-tab:nth-child(2) { animation-delay: 130ms; }
+  .expert-wizard-body .expert-pro-tabs-container .expert-pro-tab:nth-child(3) { animation-delay: 180ms; }
+  .expert-wizard-body .expert-pro-tabs-container .expert-pro-tab:nth-child(4) { animation-delay: 230ms; }
+  .expert-wizard-body .expert-pro-tabs-container .expert-pro-tab:nth-child(5) { animation-delay: 280ms; }
+
+  /* Section icons have a pop-in micro-animation */
+  .expert-wizard-body .expert-pro-section-icon {
+    animation: expert-confirm 350ms 120ms cubic-bezier(.16, 1, .3, 1) both;
+  }
+
+  /* Review summary entries stagger */
+  .expert-wizard-body .expert-registration-summary > :nth-child(1) { animation-delay: 60ms; }
+  .expert-wizard-body .expert-registration-summary > :nth-child(2) { animation-delay: 120ms; }
+  .expert-wizard-body .expert-registration-summary > :nth-child(3) { animation-delay: 180ms; }
+  .expert-wizard-body .expert-registration-summary > :nth-child(4) { animation-delay: 240ms; }
+
+  /* Wizard footer (save draft, back, continue) */
+  .expert-wizard .expert-wizard-footer {
+    animation: expert-field-arrive 380ms 300ms cubic-bezier(.16, 1, .3, 1) both;
+  }
+
+  /* Stepper track fill animates on step change */
+  .expert-stepper-track-fill--done {
+    transition: width 400ms cubic-bezier(.16, 1, .3, 1);
+  }
+}
