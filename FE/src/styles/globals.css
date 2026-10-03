@@ -38,3 +38,24 @@
     margin: 0;
   }
 }
+:root{
+  --bg:#0A0A0B;
+  --btn:#F2F2F0;
+  --btn-hover:#FFFFFF;
+  --btn-ink:#0A0A0B;
+  --ink:#FFFFFF;
+  --body:#9A9A9E;
+  --muted:#6B6B70;
+  --line:rgba(255,255,255,.10);
+  --accent:#E85D26;
+  --link:#7DE0B0;
+  --err:#FF6B6B;
+}
+html,body,#root{height:100%}
+@keyframes cardIn{
+  from{opacity:0;transform:translateY(12px) scale(.97)}
+  to{opacity:1;transform:none}
+}
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
+  .glass-card-fallback{background:rgba(20,20,22,.92)}
+}
