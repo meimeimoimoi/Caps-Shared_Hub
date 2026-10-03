@@ -47,7 +47,7 @@ export function useApplicationReview(id: string) {
   // MOCK: chưa gửi API. TODO(api): POST quyết định kèm scores + evidence + note
   const decide = (kind: ReviewDecision, note = '') => {
     const at = new Date().toISOString()
-    if (kind === 'approve')
+    if (remainingCriteria === 0)
       addLog(
         `Chấm ${criteria.length}/${criteria.length} tiêu chí năng lực.`,
         at

@@ -14,7 +14,7 @@ import {
   AdminLayout,
   AiScreeningTab,
   AiSummaryCard,
-  ApproveDialog,
+  DecisionDialog,
   CompetencyReview,
   CURRENT_ADMIN,
   DecisionCard,
@@ -45,7 +45,7 @@ export default function AdminApplicationDetailPage() {
   const { id = '' } = useParams()
   const [tab, setTab] = useState<(typeof tabs)[number]['key']>('ai')
   const [docCode, setDocCode] = useState<string>()
-  const [approveOpen, setApproveOpen] = useState(false)
+  const [dialog, setDialog] = useState<ReviewDecision | null>(null)
   const [toast, setToast] = useState<string | null>(null)
   const clearToast = useCallback(() => setToast(null), [])
   const review = useApplicationReview(id)
@@ -92,15 +92,9 @@ export default function AdminApplicationDetailPage() {
 
   const finish = (kind: ReviewDecision, note?: string) => {
     review.decide(kind, note)
-    setApproveOpen(false)
+    setDialog(null)
     setTab('history')
     setToast(DECISION_TOAST[kind])
-  }
-
-  // TODO: Từ chối / Yêu cầu bổ sung chưa có thiết kế dialog (cần ô nhập lý do)
-  const confirmOther = (kind: Exclude<ReviewDecision, 'approve'>) => {
-    if (window.confirm(`${DECISION_LABEL[kind]} hồ sơ ${detail.id}?`))
-      finish(kind)
   }
 
   const blockers = [
@@ -194,7 +188,7 @@ export default function AdminApplicationDetailPage() {
                 screening={detail.screening}
                 reviewedFlags={review.reviewedFlags}
                 onToggleReviewed={review.toggleFlagReviewed}
-                onRequestSupplement={() => confirmOther('supplement')}
+                onRequestSupplement={() => setDialog('supplement')}
               />
             )}
             {tab === 'profile' && (
@@ -255,7 +249,7 @@ export default function AdminApplicationDetailPage() {
           secondary={
             <button
               type="button"
-              onClick={() => confirmOther('supplement')}
+              onClick={() => setDialog('supplement')}
               className="btn btn-press btn-secondary"
             >
               {DECISION_LABEL.supplement}
@@ -264,7 +258,7 @@ export default function AdminApplicationDetailPage() {
           danger={
             <button
               type="button"
-              onClick={() => confirmOther('reject')}
+              onClick={() => setDialog('reject')}
               className="btn btn-press bg-danger text-paper"
             >
               {DECISION_LABEL.reject}
@@ -272,20 +266,23 @@ export default function AdminApplicationDetailPage() {
           }
           primary={{
             label: DECISION_LABEL.approve,
-            onClick: () => setApproveOpen(true),
+            onClick: () => setDialog('approve'),
             disabled: !review.canApprove,
           }}
         />
       )}
 
-      <ApproveDialog
-        open={approveOpen}
-        applicantName={detail.name}
-        criteria={review.criteria}
-        scores={review.scores}
-        onCancel={() => setApproveOpen(false)}
-        onConfirm={(note) => finish('approve', note)}
-      />
+      {dialog && (
+        <DecisionDialog
+          key={dialog}
+          kind={dialog}
+          applicantName={detail.name}
+          criteria={review.criteria}
+          scores={review.scores}
+          onCancel={() => setDialog(null)}
+          onConfirm={(note) => finish(dialog, note)}
+        />
+      )}
       {toast && <Toast message={toast} onDone={clearToast} />}
     </AdminLayout>
   )

@@ -1,7 +1,7 @@
 import { Check, TriangleAlert, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { APPLICATION_STATUS } from '@/lib/constants'
-import { DECISION_STATUS } from '../constants'
+import { DECISION_NOTE_LABEL, DECISION_STATUS } from '../constants'
 import type { ApplicationDetail, Criterion, DecisionRecord } from '../types'
 import { formatDateTime } from '../utils/applications'
 import { ScoreSummary } from './ScoreSummary'
@@ -44,9 +44,12 @@ export function DecisionCard({
         </div>
       )}
       {decision.note && (
-        <p className="text-fg-muted mt-3 text-sm">
-          Ghi chú nội bộ: <span className="text-fg">{decision.note}</span>
-        </p>
+        <div className="mt-4 text-sm">
+          <p className="text-fg-strong font-semibold">
+            {DECISION_NOTE_LABEL[decision.kind]}
+          </p>
+          <p className="text-fg mt-1 whitespace-pre-line">{decision.note}</p>
+        </div>
       )}
     </section>
   )

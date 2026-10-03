@@ -1,7 +1,57 @@
 import type { ApplicationStatus, ReviewDecision } from './types'
 
-export const APPROVE_NOTICE =
-  'Người đăng ký sẽ nhận email và có thể thiết lập dịch vụ. Hồ sơ chỉ hiển thị trên Marketplace khi dịch vụ đang hoạt động.'
+/* Cấu hình dialog xác nhận cho từng loại quyết định */
+export const DECISION_DIALOG: Record<
+  ReviewDecision,
+  {
+    title: string // nối thêm tên người đăng ký + "?"
+    notice: string
+    noteLabel: string
+    placeholder: string
+    required: boolean
+    confirm: string
+    showScores: boolean
+  }
+> = {
+  approve: {
+    title: 'Duyệt đơn đăng ký của',
+    notice:
+      'Người đăng ký sẽ nhận email và có thể thiết lập dịch vụ. Hồ sơ chỉ hiển thị trên Marketplace khi dịch vụ đang hoạt động.',
+    noteLabel: 'Ghi chú nội bộ',
+    placeholder: 'Không bắt buộc. Chỉ System Admin xem được.',
+    required: false,
+    confirm: 'Duyệt đơn đăng ký',
+    showScores: true,
+  },
+  reject: {
+    title: 'Từ chối đơn đăng ký của',
+    notice:
+      'Người đăng ký sẽ nhận email kèm lý do bạn nhập. Không thể hoàn tác.',
+    noteLabel: 'Lý do từ chối (bắt buộc)',
+    placeholder: 'Nêu rõ tiêu chí chưa đáp ứng để người đăng ký hiểu',
+    required: true,
+    confirm: 'Từ chối đơn đăng ký',
+    showScores: false,
+  },
+  // Chưa có thiết kế riêng; dùng cùng khung với "Từ chối"
+  supplement: {
+    title: 'Yêu cầu bổ sung hồ sơ của',
+    notice:
+      'Người đăng ký sẽ nhận email kèm nội dung bạn nhập và cần nộp bổ sung để tiếp tục xét duyệt.',
+    noteLabel: 'Nội dung cần bổ sung (bắt buộc)',
+    placeholder: 'Nêu rõ giấy tờ hoặc thông tin người đăng ký cần bổ sung',
+    required: true,
+    confirm: 'Gửi yêu cầu bổ sung',
+    showScores: false,
+  },
+}
+
+/* Nhãn ghi chú hiển thị lại trên thẻ quyết định */
+export const DECISION_NOTE_LABEL: Record<ReviewDecision, string> = {
+  approve: 'Ghi chú nội bộ',
+  reject: 'Lý do gửi người đăng ký',
+  supplement: 'Nội dung gửi người đăng ký',
+}
 
 /* Quyết định → trạng thái đơn, dòng lịch sử, thông báo toast */
 export const DECISION_STATUS: Record<ReviewDecision, ApplicationStatus> = {
@@ -11,8 +61,8 @@ export const DECISION_STATUS: Record<ReviewDecision, ApplicationStatus> = {
 }
 export const DECISION_LOG: Record<ReviewDecision, string> = {
   approve: 'Duyệt đơn đăng ký.',
-  reject: 'Từ chối đơn đăng ký.',
-  supplement: 'Yêu cầu bổ sung hồ sơ.',
+  reject: 'Từ chối đơn đăng ký. Đã gửi email kèm lý do.',
+  supplement: 'Yêu cầu bổ sung hồ sơ. Đã gửi email kèm nội dung cần bổ sung.',
 }
 export const DECISION_TOAST: Record<ReviewDecision, string> = {
   approve: 'Đã duyệt đơn đăng ký',
