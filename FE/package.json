@@ -7,6 +7,8 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
+    "check:architecture": "node scripts/check-architecture.mjs",
+    "test": "node --test src/features/auth/model/accountValidation.test.mjs src/shared/lib/validation/vietnamPhone.test.mjs",
     "format": "prettier --write .",
     "preview": "vite preview"
   },
