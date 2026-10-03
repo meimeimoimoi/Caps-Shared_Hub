@@ -8,6 +8,7 @@ import {
   AdminLayout,
   AiScreeningTab,
   CompetencyReview,
+  DocumentsTab,
   DECISION_LABEL,
   formatDateTime,
   mockApplications,
@@ -180,14 +181,11 @@ export default function AdminApplicationDetailPage() {
               </dl>
             )}
             {tab === 'documents' && (
-              <ul className="paper divide-border-subtle divide-y px-5 md:px-6">
-                {/* TODO(api): mở file thật khi có URL tài liệu */}
-                {detail.documents.map((d) => (
-                  <li key={d} className="py-3">
-                    {d}
-                  </li>
-                ))}
-              </ul>
+              <DocumentsTab
+                documents={detail.documents}
+                reviewedFlags={review.reviewedFlags}
+                onToggleReviewed={review.toggleFlagReviewed}
+              />
             )}
             {tab === 'history' && (
               <ol className="paper space-y-3 p-5 md:p-6">

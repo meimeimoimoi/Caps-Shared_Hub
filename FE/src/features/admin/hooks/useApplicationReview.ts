@@ -13,8 +13,12 @@ export function useApplicationReview(id: string) {
   const [decision, setDecision] = useState<ReviewDecision | null>(null)
 
   const flags = detail?.screening.flags ?? []
-  const remainingCriteria = criteria.filter((c) => !scores[c.id] || !evidence[c.id]?.trim()).length
-  const unreviewedFlags = flags.filter((f) => !reviewedFlags.includes(f.id)).length
+  const remainingCriteria = criteria.filter(
+    (c) => !scores[c.id] || !evidence[c.id]?.trim()
+  ).length
+  const unreviewedFlags = flags.filter(
+    (f) => !reviewedFlags.includes(f.id)
+  ).length
 
   return {
     detail,
@@ -27,7 +31,9 @@ export function useApplicationReview(id: string) {
       setEvidence((e) => ({ ...e, [criterionId]: text })),
     reviewedFlags,
     toggleFlagReviewed: (flagId: string) =>
-      setReviewedFlags((r) => (r.includes(flagId) ? r.filter((x) => x !== flagId) : [...r, flagId])),
+      setReviewedFlags((r) =>
+        r.includes(flagId) ? r.filter((x) => x !== flagId) : [...r, flagId]
+      ),
     remainingCriteria,
     unreviewedFlags,
     canApprove: !decision && remainingCriteria === 0 && unreviewedFlags === 0,

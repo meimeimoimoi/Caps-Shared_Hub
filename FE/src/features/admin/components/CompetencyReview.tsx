@@ -12,14 +12,25 @@ interface CompetencyReviewProps {
   onEvidence: (criterionId: string, text: string) => void
 }
 
-export function CompetencyReview({ criteria, scores, evidence, disabled, onScore, onEvidence }: CompetencyReviewProps) {
+export function CompetencyReview({
+  criteria,
+  scores,
+  evidence,
+  disabled,
+  onScore,
+  onEvidence,
+}: CompetencyReviewProps) {
   return (
     <section className="paper p-5 md:p-6">
       <h2 className="text-h2">Đánh giá năng lực</h2>
       <p className="text-fg-muted text-sm">Thang chấm theo quy chế xét duyệt</p>
 
       {criteria.map((c) => (
-        <fieldset key={c.id} disabled={disabled} className="border-border-subtle mt-5 border-t pt-5">
+        <fieldset
+          key={c.id}
+          disabled={disabled}
+          className="border-border-subtle mt-5 border-t pt-5"
+        >
           <legend className="sr-only">{c.name}</legend>
           <p className="text-fg-strong font-semibold">
             {c.id} {c.name}
@@ -32,8 +43,8 @@ export function CompetencyReview({ criteria, scores, evidence, disabled, onScore
                 className={cn(
                   'rounded-control h-control flex cursor-pointer items-center justify-center gap-1.5 border px-2 text-sm',
                   scores[c.id] === level
-                    ? 'border-border-strong bg-sunken text-fg-strong font-semibold shadow-pressed'
-                    : 'border-border-control shadow-control',
+                    ? 'border-border-strong bg-sunken text-fg-strong shadow-pressed font-semibold'
+                    : 'border-border-control shadow-control'
                 )}
               >
                 <input

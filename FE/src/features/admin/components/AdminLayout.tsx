@@ -67,8 +67,8 @@ export function AdminLayout({
       {/* ── Sidebar ── */}
       <aside
         className={cn(
-          'on-ink bg-ink text-paper sticky top-0 flex h-dvh shrink-0 flex-col px-4 py-5 max-md:w-[72px]',
-          collapsed ? 'w-[72px]' : 'w-[224px]'
+          'on-ink bg-ink text-paper sticky top-0 flex h-dvh shrink-0 flex-col px-4 py-5 max-md:w-18',
+          collapsed ? 'w-18' : 'w-56'
         )}
       >
         <div className="border-ink-2 flex items-center gap-3 border-b px-2 pb-5">
@@ -180,7 +180,7 @@ export function AdminLayout({
             {breadcrumb}
           </nav>
           {onSearchChange && (
-            <label className="bg-paper border-border-control rounded-control shadow-control h-control flex w-full max-w-[265px] items-center gap-2 border px-3 focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-(--focus-ring)">
+            <label className="bg-paper border-border-control rounded-control shadow-control h-control flex w-full max-w-full items-center gap-2 border px-3 focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-(--focus-ring)">
               <Search size={16} aria-hidden="true" className="text-fg-muted" />
               <input
                 type="search"

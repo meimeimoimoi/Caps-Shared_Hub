@@ -24,7 +24,9 @@ export function usePendingApplications() {
     .filter(
       (a) =>
         statusesOf(tab).includes(a.status) &&
-        (!q || foldVietnamese(a.name).includes(q) || foldVietnamese(a.email).includes(q)),
+        (!q ||
+          foldVietnamese(a.name).includes(q) ||
+          foldVietnamese(a.email).includes(q))
     )
     .sort((a, b) => a.submittedAt.localeCompare(b.submittedAt))
   const pageCount = Math.max(1, Math.ceil(rows.length / PAGE_SIZE))

@@ -31,6 +31,26 @@ export interface Criterion {
   description: string
 }
 
+export interface PageNote {
+  kind: 'cite' | 'ai' | 'edit'
+  label: string
+  text: string
+  /** Gắn với cờ AI → nút "Đánh dấu đã xem xét" dùng chung state với tab AI sàng lọc */
+  flagId?: string
+}
+
+export interface DocumentPage {
+  title?: string
+  paragraphs: string[]
+  notes: PageNote[]
+}
+
+export interface ApplicationDocument {
+  code: string // CV, EV-01, ...
+  name: string
+  pages: DocumentPage[]
+}
+
 export interface ApplicationDetail extends ExpertApplication {
   phone: string
   jobTitle: string
@@ -43,7 +63,7 @@ export interface ApplicationDetail extends ExpertApplication {
     flags: AiFlag[]
     legalChecks: LegalCheck[]
   }
-  documents: string[]
+  documents: ApplicationDocument[]
   history: { at: string; text: string }[]
 }
 

@@ -16,7 +16,12 @@ interface AiScreeningTabProps {
   onRequestSupplement: () => void
 }
 
-export function AiScreeningTab({ screening, reviewedFlags, onToggleReviewed, onRequestSupplement }: AiScreeningTabProps) {
+export function AiScreeningTab({
+  screening,
+  reviewedFlags,
+  onToggleReviewed,
+  onRequestSupplement,
+}: AiScreeningTabProps) {
   const { ranAt, rerunAt, checkedCount, flags, legalChecks } = screening
 
   return (
@@ -30,7 +35,8 @@ export function AiScreeningTab({ screening, reviewedFlags, onToggleReviewed, onR
           Chạy lúc <span className="num">{formatDateTime(ranAt)}</span>
           {rerunAt && (
             <>
-              , chạy lại sau bổ sung lúc <span className="num">{formatDateTime(rerunAt)}</span>
+              , chạy lại sau bổ sung lúc{' '}
+              <span className="num">{formatDateTime(rerunAt)}</span>
             </>
           )}
           . {COPY.aiScreeningNote}
@@ -47,7 +53,10 @@ export function AiScreeningTab({ screening, reviewedFlags, onToggleReviewed, onR
             </span>
           )}
           <span className="text-fg-muted">
-            Đã xem xét <span className="num">{reviewedFlags.length}/{flags.length}</span>
+            Đã xem xét{' '}
+            <span className="num">
+              {reviewedFlags.length}/{flags.length}
+            </span>
           </span>
         </div>
 
@@ -56,7 +65,11 @@ export function AiScreeningTab({ screening, reviewedFlags, onToggleReviewed, onR
           return (
             <div key={f.id} className="para-check mt-4">
               <p className="text-warning flex items-center gap-2 font-semibold">
-                {reviewed ? <Check size={15} aria-hidden="true" /> : <TriangleAlert size={15} aria-hidden="true" />}
+                {reviewed ? (
+                  <Check size={15} aria-hidden="true" />
+                ) : (
+                  <TriangleAlert size={15} aria-hidden="true" />
+                )}
                 {f.title}
               </p>
               <p className="mt-1 pl-6 text-sm">{f.detail}</p>
@@ -69,7 +82,11 @@ export function AiScreeningTab({ screening, reviewedFlags, onToggleReviewed, onR
                 >
                   {reviewed ? 'Bỏ đánh dấu' : 'Đánh dấu đã xem xét'}
                 </button>
-                <button type="button" onClick={onRequestSupplement} className="btn btn-press btn-ghost text-sm">
+                <button
+                  type="button"
+                  onClick={onRequestSupplement}
+                  className="btn btn-press btn-ghost text-sm"
+                >
                   Yêu cầu bổ sung
                 </button>
               </div>
@@ -78,7 +95,9 @@ export function AiScreeningTab({ screening, reviewedFlags, onToggleReviewed, onR
         })}
       </div>
 
-      <h3 className="text-fg-strong mt-6 font-semibold">Kiểm tra giấy tờ pháp lý</h3>
+      <h3 className="text-fg-strong mt-6 font-semibold">
+        Kiểm tra giấy tờ pháp lý
+      </h3>
       <div className="mt-2 overflow-x-auto">
         <table className="w-full min-w-[560px] text-sm">
           <thead className="bg-sunken text-fg-muted">
@@ -91,9 +110,14 @@ export function AiScreeningTab({ screening, reviewedFlags, onToggleReviewed, onR
           </thead>
           <tbody>
             {legalChecks.map((c) => (
-              <tr key={c.item} className="border-border-subtle border-t align-top [&>td]:px-3 [&>td]:py-2.5">
+              <tr
+                key={c.item}
+                className="border-border-subtle border-t align-top [&>td]:px-3 [&>td]:py-2.5"
+              >
                 <td>{c.item}</td>
-                <td className={c.result === 'review' ? 'text-warning' : undefined}>
+                <td
+                  className={c.result === 'review' ? 'text-warning' : undefined}
+                >
                   <span className="inline-flex items-center gap-1.5">
                     {c.result === 'review' ? (
                       <TriangleAlert size={13} aria-hidden="true" />
@@ -105,7 +129,9 @@ export function AiScreeningTab({ screening, reviewedFlags, onToggleReviewed, onR
                 </td>
                 <td>{c.note}</td>
                 {/* TODO(api): mở file thật khi có URL tài liệu */}
-                <td className="underline underline-offset-2">{c.document ?? '—'}</td>
+                <td className="underline underline-offset-2">
+                  {c.document ?? '—'}
+                </td>
               </tr>
             ))}
           </tbody>

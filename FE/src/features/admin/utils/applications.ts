@@ -9,7 +9,11 @@ export const waitedDays = (iso: string, now = Date.now()) =>
   Math.floor((now - new Date(iso).getTime()) / DAY_MS)
 
 export const formatDate = (iso: string) =>
-  new Date(iso).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' })
+  new Date(iso).toLocaleDateString('vi-VN', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  })
 
 export const formatDateTime = (iso: string) =>
   new Date(iso).toLocaleString('vi-VN', {

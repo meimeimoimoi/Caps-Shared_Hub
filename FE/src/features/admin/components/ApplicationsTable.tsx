@@ -14,7 +14,16 @@ interface ApplicationsTableProps {
   onNext: () => void
 }
 
-export function ApplicationsTable({ rows, total, from, to, canPrev, canNext, onPrev, onNext }: ApplicationsTableProps) {
+export function ApplicationsTable({
+  rows,
+  total,
+  from,
+  to,
+  canPrev,
+  canNext,
+  onPrev,
+  onNext,
+}: ApplicationsTableProps) {
   return (
     <section className="paper mt-4 overflow-x-auto">
       <div className="text-fg-muted flex justify-between px-4 py-3 text-sm">
@@ -38,7 +47,10 @@ export function ApplicationsTable({ rows, total, from, to, canPrev, canNext, onP
           {rows.map((a) => {
             const days = waitedDays(a.submittedAt)
             return (
-              <tr key={a.id} className="border-border-subtle border-t [&>td]:px-4 [&>td]:py-2">
+              <tr
+                key={a.id}
+                className="border-border-subtle border-t [&>td]:px-4 [&>td]:py-2"
+              >
                 <td>
                   <Link
                     to={`/admin/experts/${a.id}`}
@@ -48,7 +60,9 @@ export function ApplicationsTable({ rows, total, from, to, canPrev, canNext, onP
                   </Link>
                 </td>
                 <td>
-                  <div className="text-fg-strong text-base font-semibold">{a.name}</div>
+                  <div className="text-fg-strong text-base font-semibold">
+                    {a.name}
+                  </div>
                   <div className="text-fg-muted">{a.email}</div>
                 </td>
                 <td className="num text-right">{a.years}</td>
@@ -89,13 +103,27 @@ export function ApplicationsTable({ rows, total, from, to, canPrev, canNext, onP
       </table>
       <div className="border-border-subtle text-fg-muted flex items-center justify-between border-t px-4 py-3 text-sm">
         <span>
-          Hiển thị <span className="num">{from}–{to}</span> trên <span className="num">{total}</span>
+          Hiển thị{' '}
+          <span className="num">
+            {from}–{to}
+          </span>{' '}
+          trên <span className="num">{total}</span>
         </span>
         <div className="flex gap-2">
-          <button type="button" disabled={!canPrev} onClick={onPrev} className="btn btn-press btn-secondary text-sm">
+          <button
+            type="button"
+            disabled={!canPrev}
+            onClick={onPrev}
+            className="btn btn-press btn-secondary text-sm"
+          >
             Trang trước
           </button>
-          <button type="button" disabled={!canNext} onClick={onNext} className="btn btn-press btn-secondary text-sm">
+          <button
+            type="button"
+            disabled={!canNext}
+            onClick={onNext}
+            className="btn btn-press btn-secondary text-sm"
+          >
             Trang sau
           </button>
         </div>
