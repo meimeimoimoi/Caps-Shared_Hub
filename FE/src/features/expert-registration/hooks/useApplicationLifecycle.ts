@@ -30,14 +30,15 @@ export function useApplicationLifecycle() {
   function completeAccountCreation() {
     setAccount(true)
     setSubmitting(false)
-    setNotice('Account preview created locally. No real account has been created.')
+    setNotice('')
+    setTimeout(() => window.scrollTo(0, 0), 0)
   }
 
   function completeRegistrationSubmission() {
     setSubmitted(true)
     setStage('screening')
-    setHistory(['Application submitted in this demo.'])
-    setNotice('Demo application received. No data was sent to the server.')
+    setHistory([])
+    setNotice('')
   }
 
   function submitSupplement(e: FormEvent<HTMLFormElement>) {
@@ -55,7 +56,7 @@ export function useApplicationLifecycle() {
       ])
       setSupplement(false)
       setStage('eligibility')
-      setNotice('Response recorded in this demo. The same application returns to eligibility review.')
+      setNotice('')
       setSupplementFile(null)
       setExplanation('')
       setError('')

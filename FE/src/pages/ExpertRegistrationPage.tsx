@@ -1,12 +1,11 @@
 import { Link } from 'react-router-dom'
-import {
-  Check,
-  ShieldCheck,
-} from 'lucide-react'
+import { Check, FileText, Briefcase, UserRound, ChevronDown } from 'lucide-react'
+import sharedHubLogo from '@/assets/shared-hub-logo.png'
 
 import {
   steps,
   AccountCreation,
+  AccountIntroduction,
   ApplicationStatus,
   WizardFooter,
   PersonalInformation,
@@ -21,14 +20,12 @@ import {
 /* ── Shared sub-components ── */
 
 /* ── Reusable style constants ── */
-const btnBase =
-  'cursor-pointer inline-flex items-center justify-center gap-2 min-h-11 px-[17px] py-[9px] border border-ex-btn-border rounded-md bg-white text-ex-ink font-semibold transition-[background,border-color,opacity] duration-150 ease-in-out hover:bg-ex-btn-hover disabled:cursor-not-allowed disabled:opacity-55 motion-reduce:transition-none'
-const panelCls = 'bg-ex-panel rounded-lg p-8 shadow-[0_8px_28px_#25302509] max-md:p-[18px_24px]'
-const mutedCls = 'text-[13px] text-ex-muted font-normal'
-const stepBubbleCls =
-  'flex items-center justify-center w-6 h-6 border border-ex-step-border rounded-full text-xs'
-const stepBubbleActiveCls =
-  'flex items-center justify-center w-6 h-6 border border-ex-accent rounded-full text-xs bg-ex-accent text-white'
+// Add entries only when genuine Privacy, Terms and Help routes are implemented.
+const onboardingFooterLinks: { label: string; to: string }[] = []
+
+const panelCls =
+  'bg-ex-panel rounded-lg p-8 shadow-[0_8px_28px_#25302509] max-md:p-[18px_24px]'
+
 
 export default function ExpertRegistrationPage() {
   const {
@@ -88,8 +85,9 @@ export default function ExpertRegistrationPage() {
     toggleConfirmed,
     saveDraft,
   } = useRegistrationForm({
-    onRegistrationSubmit: completeRegistrationSubmission
+    onRegistrationSubmit: completeRegistrationSubmission,
   })
+  const visibleNotice = [notice, lifecycleNotice].find((message) => message && !/demo/i.test(message)) ?? ''
   const terminal = stage === 'ineligible' || stage === 'failed'
   const timeline = [
     'Submission',
@@ -107,50 +105,47 @@ export default function ExpertRegistrationPage() {
           ? 3
           : 4
 
+  const stepHeading = (
+    <div className="expert-wizard-heading">
+      <div className="expert-wizard-heading-bar" aria-hidden="true" />
+      <span className="expert-wizard-heading-badge">Step {step + 1} of {steps.length}</span>
+      <h1
+        ref={heading}
+        tabIndex={-1}
+        className="expert-wizard-heading-title"
+      >
+        {steps[step]}
+      </h1>
+    </div>
+  )
+
   return (
-    <div className="min-h-screen bg-ex-bg text-ex-ink font-[Arial,sans-serif] text-[15px] leading-[1.6] [color-scheme:light] [&_*]:box-border [&_::selection]:bg-ex-selection [&_a]:text-ex-accent [&_a]:underline-offset-4 [&_button,&_input,&_select,&_textarea]:font-[inherit] [&_h1,&_h2,&_h3]:font-[Georgia,'Times_New_Roman',serif] [&_h1,&_h2,&_h3]:leading-tight [&_h1,&_h2,&_h3]:text-ex-heading [&_h1]:text-[clamp(28px,3.3vw,42px)] [&_h1]:tracking-tight [&_h1]:mt-0 [&_h1]:mb-4 [&_h2]:text-[27px] [&_h2]:mt-0 [&_h2]:mb-[18px] [&_h3]:text-xl [&_h3]:mt-[22px] [&_h3]:mb-3 [&_p]:mt-0 [&_p]:mb-[18px] [&_p]:max-w-[72ch] [&_:focus-visible]:outline-3 [&_:focus-visible]:outline-ex-focus [&_:focus-visible]:outline-offset-4 [&_input[type='checkbox']]:accent-ex-accent [&_input[type='checkbox']]:w-[17px] [&_input[type='checkbox']]:h-[17px] [&_input[type='checkbox']]:shrink-0 [&_fieldset]:border-0 [&_fieldset]:p-0 [&_fieldset]:my-[22px] [&_legend]:font-semibold [&_legend]:mb-3 [&_summary]:cursor-pointer [&_summary]:text-ex-accent [&_summary]:py-3 [&_summary]:underline [&_summary]:underline-offset-4">
+    <div className={`${!account ? 'expert-welcome' : 'expert-application'} bg-ex-bg text-ex-ink [&_::selection]:bg-ex-selection [&_a]:text-ex-accent [&_h1,&_h2,&_h3]:text-ex-heading [&_:focus-visible]:outline-ex-focus [&_input[type='checkbox']]:accent-ex-accent [&_summary]:text-ex-accent min-h-screen font-[Arial,sans-serif] text-[15px] leading-[1.6] [color-scheme:light] [&_*]:box-border [&_:focus-visible]:outline-3 [&_:focus-visible]:outline-offset-4 [&_a]:underline-offset-4 [&_button,&_input,&_select,&_textarea]:font-[inherit] [&_fieldset]:my-[22px] [&_fieldset]:border-0 [&_fieldset]:p-0 [&_h1]:mt-0 [&_h1]:mb-4 [&_h1]:text-[clamp(28px,3.3vw,42px)] [&_h1]:tracking-tight [&_h1,&_h2,&_h3]:font-[Georgia,'Times_New_Roman',serif] [&_h1,&_h2,&_h3]:leading-tight [&_h2]:mt-0 [&_h2]:mb-[18px] [&_h2]:text-[27px] [&_h3]:mt-[22px] [&_h3]:mb-3 [&_h3]:text-xl [&_input[type='checkbox']]:h-[17px] [&_input[type='checkbox']]:w-[17px] [&_input[type='checkbox']]:shrink-0 [&_legend]:mb-3 [&_legend]:font-semibold [&_p]:mt-0 [&_p]:mb-[18px] [&_p]:max-w-[72ch] [&_summary]:cursor-pointer [&_summary]:py-3 [&_summary]:underline [&_summary]:underline-offset-4`}>
       {/* ── Header ── */}
-      <header className="flex items-center gap-7 px-[4%] py-5 border-b border-ex-border [&>a:last-child]:ml-auto [&>a:last-child]:font-semibold">
-        <Link to="/login" className="text-[22px] font-extrabold tracking-[-0.04em] !text-ex-brand no-underline flex gap-[5px] items-center">
-          Shared Hub
-          <span className="w-[7px] h-[7px] bg-ex-accent" />
-        </Link>
-        <span className="border-l border-ex-header-divider pl-[25px] max-md:hidden">Expert registration</span>
-        <Link to="/login">Sign in</Link>
+      <header className="border-ex-border border-b">
+        <div className="mx-auto flex max-w-[1240px] items-center gap-7 px-6 py-5 max-md:px-4 [&>a:last-child]:ml-auto [&>a:last-child]:font-semibold">
+          <Link
+            to="/"
+            aria-label="Shared Hub home"
+            className="expert-header-logo shrink-0 no-underline"
+          >
+            <img src={sharedHubLogo} alt="Shared Hub" width={1774} height={887} />
+          </Link>
+          <span className="border-ex-header-divider border-l pl-[25px] max-md:pl-3 max-md:text-xs">
+            Expert registration
+          </span>
+
+        </div>
       </header>
 
-      {/* ── Demo banner ── */}
-      <div className="bg-ex-demo-bg border-b border-ex-demo-border flex gap-3.5 py-[11px] px-[4%] text-[13px] text-ex-demo-text max-md:flex-col max-md:gap-0.5">
-        <strong>Interactive preview</strong>
-        <span>
-          Sample workflow · nothing is uploaded or saved to a server. Refreshing
-          clears your draft. Use sample information only.
-        </span>
-      </div>
-
       {/* ── Main ── */}
-      <main className={`max-w-[1100px] mx-auto max-md:px-4 max-md:py-7 max-md:pb-10 ${!account ? 'max-w-[1050px] grid grid-cols-2 gap-[70px] items-center min-h-[75vh] px-6 py-12 pb-[70px] max-md:grid-cols-1 max-md:gap-7' : 'px-6 py-12 pb-[70px]'}`}>
+      <main
+        className={`${submitted ? 'expert-status-main' : ''} mx-auto max-w-[1240px] max-md:px-4 max-md:py-7 max-md:pb-10 ${!account ? 'expert-welcome-main grid grid-cols-[1.15fr_1fr] items-start gap-20 px-6 py-12 pb-14 max-lg:gap-10 max-md:grid-cols-1' : 'px-6 py-12 pb-[70px]'}`}
+      >
         {!account ? (
           <>
             {/* ── Account creation: left ── */}
-            <div>
-              <h1 className="!text-[clamp(36px,4vw,52px)] max-md:!text-[38px]">
-                Bring your expertise.
-                <br />
-                Make a difference.
-              </h1>
-              <p className="text-[17px]">
-                Join Shared Hub as a tax and accounting expert. Create your
-                account preview, then prepare your application.
-              </p>
-              <div className="flex gap-3 border-t border-ex-trust-border pt-6 mt-8 text-sm [&>svg]:shrink-0 [&>svg]:text-ex-accent">
-                <ShieldCheck size={20} />
-                <span>
-                  Expert approval requires eligibility and service-specific
-                  competency reviews.
-                </span>
-              </div>
-            </div>
+            <AccountIntroduction />
 
             {/* ── Account creation: right ── */}
             <AccountCreation
@@ -174,92 +169,115 @@ export default function ExpertRegistrationPage() {
           </>
         ) : submitted ? (
           <>
-            <div className="grid grid-cols-[2fr_1fr] gap-6 items-start max-md:grid-cols-1">
-            <ApplicationStatus
-              profileName={profile.name}
-              stage={stage}
-              supplement={supplement}
-              terminal={terminal}
-              timeline={timeline}
-              progress={progress}
-              history={history}
-              supplementFormProps={{
-                file: supplementFile,
-                explanation,
-                submitting: lifecycleSubmitting,
-                onExplanationChange: setExplanation,
-                onFileChange: setSupplementFile,
-                onError: setLifecycleError,
-                onBack: cancelSupplement,
-                onSubmit: submitSupplement
-              }}
-              onStageChange={changeStage}
-              onRequestSupplement={requestSupplement}
-              onPreviewServiceReview={previewServiceReview}
-            />
-            <aside className={`${panelCls} [&>h3]:mt-0 [&_.summary-block]:block`}>
-                <h3>Submitted application</h3>
-                <p>{profile.name}</p>
-                <p>{profile.years} years of experience</p>
-                <p>
-                  {Object.values(files).reduce((n, list) => n + list.length, 0)}{' '}
-                  files selected locally
-                </p>
-                <p className={mutedCls}>
-                  File count does not indicate approval.
-                </p>
-                <details>
-                  <summary>View full application</summary>
-                  <div className="block">
-                    <RegistrationSummary
-                      profile={profile}
-                      avatarPreview={avatarPreview}
-                      independent={independent}
-                      fields={fields}
-                      files={files}
-                    />
-                  </div>
-                </details>
+            <div className="expert-status-layout">
+              <ApplicationStatus
+                profileName={profile.name}
+                stage={stage}
+                supplement={supplement}
+                terminal={terminal}
+                timeline={timeline}
+                progress={progress}
+                history={history}
+                supplementFormProps={{
+                  file: supplementFile,
+                  explanation,
+                  submitting: lifecycleSubmitting,
+                  onExplanationChange: setExplanation,
+                  onFileChange: setSupplementFile,
+                  onError: setLifecycleError,
+                  onBack: cancelSupplement,
+                  onSubmit: submitSupplement,
+                }}
+                onStageChange={changeStage}
+                onRequestSupplement={requestSupplement}
+                onPreviewServiceReview={previewServiceReview}
+              />
+              <aside className="expert-status-profile">
+                <div className="expert-status-profile-heading"><FileText size={20} aria-hidden="true" /><h3>Submitted application</h3></div>
+                <div className="expert-status-applicant">
+                  {avatarPreview ? <img src={avatarPreview} alt="" /> : <span className="expert-status-avatar"><UserRound size={26} aria-hidden="true" /></span>}
+                  <div><strong>{profile.name}</strong><span>Expert applicant</span></div>
+                </div>
+                <dl className="expert-status-facts">
+                  <div><dt><Briefcase size={16} aria-hidden="true" />Experience</dt><dd>{profile.years} years</dd></div>
+                  <div><dt><FileText size={16} aria-hidden="true" />Documents</dt><dd>{Object.values(files).reduce((n, list) => n + list.length, 0)} selected locally</dd></div>
+                </dl>
+                <p className="expert-status-profile-note">Selected documents are awaiting verification. File count does not indicate approval.</p>
+                <a className="expert-status-view-link" href="#submitted-dossier" onClick={() => { const dossier = document.getElementById('submitted-dossier'); if (dossier instanceof HTMLDetailsElement) dossier.open = true }}>View full application <ChevronDown size={16} aria-hidden="true" /></a>
               </aside>
+              <details className="expert-status-dossier" id="submitted-dossier">
+                <summary><span>Application details<small>Your submitted information and supporting documents</small></span><ChevronDown size={20} aria-hidden="true" /></summary>
+                <RegistrationSummary profile={profile} avatarPreview={avatarPreview} independent={independent} fields={fields} files={files} />
+              </details>
             </div>
           </>
         ) : (
           /* ── Wizard ── */
-          <section className={panelCls}>
-            <nav aria-label="Application steps">
-              <ol className="flex list-none pb-[26px] m-0 border-b border-ex-border-light gap-5 max-md:gap-2.5">
+          <section
+            className={`${panelCls} expert-wizard ${step === 0 ? 'expert-wizard-personal' : ''}`}
+          >
+            <nav
+              aria-label="Application steps"
+              className="expert-wizard-stepper mb-4"
+            >
+              <ol className="expert-stepper-list">
                 {steps.map((s, i) => (
-                  <li className="flex-1" key={s}>
+                  <li className="expert-stepper-item" key={s}>
                     <button
                       type="button"
                       disabled={i > step}
                       onClick={() => move(i)}
+                      aria-label={`Step ${i + 1}: ${s}${i < step ? ", completed" : ""}`}
                       aria-current={i === step ? 'step' : undefined}
-                      className={`${btnBase} !border-0 !p-0 flex-col !items-start !bg-transparent text-left !text-[13px] max-md:!text-[11px]`}
+                      className="expert-stepper-btn"
                     >
-                      <span className={i <= step ? stepBubbleActiveCls : stepBubbleCls}>
-                        {i < step ? <Check size={14} /> : i + 1}
+                      <span
+                        className={`expert-stepper-bubble ${
+                          i < step
+                            ? 'expert-stepper-bubble--done'
+                            : i === step
+                            ? 'expert-stepper-bubble--active'
+                            : 'expert-stepper-bubble--upcoming'
+                        }`}
+                      >
+                        {i < step ? <Check size={15} strokeWidth={3} aria-hidden="true" /> : i + 1}
                       </span>
-                      {s}
+                      <span className={`expert-stepper-label ${
+                        i < step
+                          ? 'expert-stepper-label--done'
+                          : i === step
+                          ? 'expert-stepper-label--active'
+                          : 'expert-stepper-label--upcoming'
+                      }`}>
+                        {s}
+                      </span>
                     </button>
+
+                    {/* Connecting line */}
+                    {i < steps.length - 1 && (
+                      <div className="expert-stepper-track" aria-hidden="true">
+                        <div className={`expert-stepper-track-fill ${i < step ? 'expert-stepper-track-fill--done' : ''}`} />
+                      </div>
+                    )}
                   </li>
                 ))}
               </ol>
             </nav>
             <form noValidate onSubmit={advance}>
-              <div className="py-[30px] animate-expert-enter motion-reduce:animate-none" key={step}>
-                <p className={mutedCls}>Step {step + 1} of 4</p>
-                <h1 ref={heading} tabIndex={-1} className="!text-[32px]">
-                  {steps[step]}
-                </h1>
+              <div
+                className="expert-wizard-body animate-expert-enter pt-4 pb-[30px] motion-reduce:animate-none"
+                key={step}
+              >
+                {step !== 0 && stepHeading}
                 {step === 0 && (
                   <PersonalInformation
+                    heading={stepHeading}
                     profile={profile}
                     formErrors={formErrors}
                     avatar={avatar}
                     avatarPreview={avatarPreview}
                     independent={independent}
-                    onUpdate={update}
+                    onUpdate={(key, value) => { update(key, value); clearFormError(key) }}
                     onAvatarChange={updateAvatar}
                     onIndependentChange={setIndependentStatus}
                     onError={setError}
@@ -271,7 +289,7 @@ export default function ExpertRegistrationPage() {
                     fields={fields}
                     cvFiles={files.CV ?? []}
                     formErrors={formErrors}
-                    onUpdate={update}
+                    onUpdate={(key, value) => { update(key, value); clearFormError(key) }}
                     onToggleField={toggleField}
                     onCvFilesSelected={(f) => chooseFiles('CV', f)}
                     onRemoveCvFile={(i) => removeFile('CV', i)}
@@ -279,6 +297,7 @@ export default function ExpertRegistrationPage() {
                 )}
                 {step === 2 && (
                   <SupportingDocuments
+                    formErrors={formErrors}
                     activeCriterion={activeCriterion}
                     files={files}
                     onCriterionSelect={setActiveCriterion}
@@ -311,20 +330,33 @@ export default function ExpertRegistrationPage() {
           </section>
         )}
         {(error || lifecycleError) && (
-          <p className="bg-ex-error-bg text-ex-error-text p-[15px] rounded-[5px] animate-expert-fade-in motion-reduce:animate-none" role="alert" ref={error ? errorRef : lifecycleErrorRef} tabIndex={-1}>
+          <p
+            className="bg-ex-error-bg text-ex-error-text animate-expert-fade-in col-span-full rounded-[5px] p-[15px] motion-reduce:animate-none"
+            role="alert"
+            ref={error ? errorRef : lifecycleErrorRef}
+            tabIndex={-1}
+          >
             {error || lifecycleError}
           </p>
         )}
-        {(notice || lifecycleNotice) && (
-          <p className="p-[15px] text-ex-notice-text bg-ex-notice-bg !mt-5 animate-expert-fade-in motion-reduce:animate-none" role="status">
-            {notice || lifecycleNotice}
+        {visibleNotice && (
+          <p
+            className="text-ex-notice-text bg-ex-notice-bg animate-expert-fade-in col-span-full !mt-5 p-[15px] motion-reduce:animate-none"
+            role="status"
+          >
+            {visibleNotice}
           </p>
         )}
       </main>
 
       {/* ── Footer ── */}
-      <footer className="max-w-[1050px] mx-auto py-[22px] px-6 border-t border-ex-footer-border flex justify-between text-[13px] text-ex-muted max-md:flex-wrap max-md:gap-2">
-        Shared Hub <span>Expert onboarding · Corporate income tax</span>
+      <footer className="expert-onboarding-footer border-ex-footer-border text-ex-muted mx-auto flex max-w-[1240px] justify-between border-t px-6 py-[22px] text-[13px] max-md:flex-wrap max-md:gap-2">
+        <span>Shared Hub</span>
+        {onboardingFooterLinks.length > 0 && (
+          <nav aria-label="Support and policies" className="expert-footer-links">
+            {onboardingFooterLinks.map(({ label, to }) => <Link key={to} to={to}>{label}</Link>)}
+          </nav>
+        )}
       </footer>
     </div>
   )

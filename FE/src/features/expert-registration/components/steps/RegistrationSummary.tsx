@@ -1,3 +1,5 @@
+import { formatVietnamPhone } from '../../utils/vietnamPhone'
+import { UserCircle, Briefcase, FolderOpen, FileText, FileImage, Clock3 } from 'lucide-react'
 import type { Profile } from '../../types'
 
 export interface RegistrationSummaryProps {
@@ -11,85 +13,123 @@ export interface RegistrationSummaryProps {
 export function RegistrationSummary({
   profile,
   avatarPreview,
-  independent,
   fields,
   files,
 }: RegistrationSummaryProps) {
   return (
-    <div className="grid grid-cols-2 gap-[30px] mb-[25px] break-all max-md:grid-cols-1">
-      <section>
-        <h3>Personal information</h3>
+    <div className="expert-registration-summary grid grid-cols-2 gap-8 max-md:grid-cols-1 mb-8">
+      {/* ── Personal Information ── */}
+      <section className="expert-pro-section">
+        <div className="expert-pro-section-header">
+          <span className="expert-pro-section-icon" style={{ background: '#f5efe9', color: '#a34524' }}>
+            <UserCircle size={18} aria-hidden="true" />
+          </span>
+          <h3 className="expert-pro-section-title">Personal information</h3>
+          <span className="expert-pro-section-line" aria-hidden="true" />
+        </div>
+
         {avatarPreview && (
           <img
             src={avatarPreview}
             alt="Profile"
-            className="w-14 h-14 rounded-full object-cover border border-ex-border mb-3"
+            className="w-16 h-16 rounded-full object-cover shadow-sm border-2 border-white mb-4"
           />
         )}
-        <dl className="m-0">
+
+        <dl className="m-0 flex flex-col gap-3">
           {[
             ['Full name', profile.name],
             ['Email', profile.email],
-            ['Phone', profile.phone],
+            ['Phone', formatVietnamPhone(profile.phone)],
             ['Date of birth', profile.birth],
             ['Current title', profile.title],
-            [
-              'Organization',
-              independent
-                ? 'Independent professional'
-                : profile.company || 'Not provided',
-            ],
             ['Location', profile.location],
             ['Introduction', profile.bio],
           ].map(([k, v]) => (
-            <div key={k} className="py-2.5 border-b border-ex-file-border">
-              <dt className="text-ex-muted text-[13px]">{k}</dt>
-              <dd className="mt-0.5 ml-0 whitespace-pre-wrap">
-                {v || 'Not provided'}
+            <div key={k} className="bg-ex-chip-bg px-4 py-3 rounded-lg border border-ex-border">
+              <dt className="text-ex-muted text-[12.5px] font-semibold uppercase tracking-wider mb-1">{k}</dt>
+              <dd className="m-0 text-[14.5px] text-ex-ink whitespace-pre-wrap font-medium">
+                {v || <span className="text-gray-400 italic font-normal">Not provided</span>}
               </dd>
             </div>
           ))}
         </dl>
       </section>
-      <section>
-        <h3>Professional experience</h3>
-        <dl className="m-0">
-          <div className="py-2.5 border-b border-ex-file-border">
-            <dt className="text-ex-muted text-[13px]">
-              Tax and accounting experience
-            </dt>
-            <dd className="mt-0.5 ml-0 whitespace-pre-wrap">
-              {profile.years} years
-            </dd>
+
+      {/* ── Right Column ── */}
+      <div className="flex flex-col gap-8">
+        {/* Professional Experience */}
+        <section className="expert-pro-section">
+          <div className="expert-pro-section-header">
+            <span className="expert-pro-section-icon" style={{ background: '#f5efe9', color: '#a34524' }}>
+              <Briefcase size={18} aria-hidden="true" />
+            </span>
+            <h3 className="expert-pro-section-title">Professional experience</h3>
+            <span className="expert-pro-section-line" aria-hidden="true" />
           </div>
-          <div className="py-2.5 border-b border-ex-file-border">
-            <dt className="text-ex-muted text-[13px]">Areas of expertise</dt>
-            <dd className="mt-0.5 ml-0 whitespace-pre-wrap">
-              {fields.join(', ')}
-            </dd>
-          </div>
-          <div className="py-2.5 border-b border-ex-file-border">
-            <dt className="text-ex-muted text-[13px]">Experience highlights</dt>
-            <dd className="mt-0.5 ml-0 whitespace-pre-wrap">
-              {profile.highlights || 'Not provided'}
-            </dd>
-          </div>
-        </dl>
-        <h3>Supporting documents</h3>
-        {Object.entries(files)
-          .filter(([, list]) => list.length)
-          .map(([key, list]) => (
-            <div key={key}>
-              <strong>{key}</strong>
-              {list.map((f, i) => (
-                <p className="text-[13px] mb-2" key={i}>
-                  {f.name}
-                </p>
-              ))}
+
+          <dl className="m-0 flex flex-col gap-3">
+            <div className="bg-ex-chip-bg px-4 py-3 rounded-lg border border-ex-border">
+              <dt className="text-ex-muted text-[12.5px] font-semibold uppercase tracking-wider mb-1">
+                Tax and accounting experience
+              </dt>
+              <dd className="m-0 text-[14.5px] text-ex-ink font-medium">
+                {profile.years} years
+              </dd>
             </div>
-          ))}
-        <p>Documents selected here have not been verified.</p>
-      </section>
+            <div className="bg-ex-chip-bg px-4 py-3 rounded-lg border border-ex-border">
+              <dt className="text-ex-muted text-[12.5px] font-semibold uppercase tracking-wider mb-1">Areas of expertise</dt>
+              <dd className="m-0 text-[14.5px] text-ex-ink font-medium">
+                {fields.length > 0 ? fields.join(', ') : <span className="text-gray-400 italic font-normal">None selected</span>}
+              </dd>
+            </div>
+            <div className="bg-ex-chip-bg px-4 py-3 rounded-lg border border-ex-border">
+              <dt className="text-ex-muted text-[12.5px] font-semibold uppercase tracking-wider mb-1">Experience highlights</dt>
+              <dd className="m-0 text-[14.5px] text-ex-ink whitespace-pre-wrap font-medium">
+                {profile.highlights || <span className="text-gray-400 italic font-normal">Not provided</span>}
+              </dd>
+            </div>
+          </dl>
+        </section>
+
+        {/* Supporting Documents */}
+        <section className="expert-pro-section">
+          <div className="expert-pro-section-header">
+            <span className="expert-pro-section-icon" style={{ background: '#f5efe9', color: '#a34524' }}>
+              <FolderOpen size={18} aria-hidden="true" />
+            </span>
+            <h3 className="expert-pro-section-title">Supporting documents</h3>
+            <span className="expert-pro-section-line" aria-hidden="true" />
+          </div>
+
+          <div className="expert-summary-documents">
+            {Object.entries(files).filter(([, list]) => list.length).length === 0 ? (
+              <p className="expert-summary-documents-empty">No documents selected.</p>
+            ) : Object.entries(files).filter(([, list]) => list.length).map(([category, list]) => (
+              <div key={category} className="expert-summary-document-group">
+                <div className="expert-summary-document-heading"><strong>{category}</strong><span>{list.length} {list.length === 1 ? 'file' : 'files'}</span></div>
+                <ul className="expert-summary-document-list">
+                  {list.map((file, index) => {
+                    const extension = file.name.split('.').pop()?.toUpperCase() ?? 'FILE'
+                    const isImage = /^(PNG|JPG|JPEG)$/.test(extension)
+                    const size = file.size < 1024 * 1024 ? `${Math.max(1, Math.round(file.size / 1024))} KB` : `${(file.size / (1024 * 1024)).toFixed(1)} MB`
+                    return (
+                      <li className="expert-summary-document" key={`${file.name}-${index}`}>
+                        <span className="expert-summary-document-icon" aria-hidden="true">{isImage ? <FileImage size={22} /> : <FileText size={22} />}</span>
+                        <div className="expert-summary-document-info">
+                          <p className="expert-summary-document-name">{file.name}</p>
+                          <span className="expert-summary-document-meta">{extension} ? {size} ? Selected locally</span>
+                        </div>
+                      </li>
+                    )
+                  })}
+                </ul>
+              </div>
+            ))}
+          </div>
+          <p className="expert-summary-document-note"><Clock3 size={15} aria-hidden="true" /><span>Documents are awaiting verification.</span></p>
+        </section>
+      </div>
     </div>
   )
 }

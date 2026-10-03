@@ -1,3 +1,4 @@
+import { normalizeVietnamPhone, vietnamPhoneError } from '../utils/vietnamPhone'
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { criteria, initial } from '../constants'
 import type { Profile } from '../types'
@@ -18,7 +19,7 @@ export function useRegistrationForm({ onRegistrationSubmit }: UseRegistrationFor
   const [notice, setNotice] = useState('')
   const [avatar, setAvatar] = useState<File | null>(null)
   const [avatarPreview, setAvatarPreview] = useState('')
-  const [independent, setIndependent] = useState(false)
+  const [independent, setIndependent] = useState(true)
   const [draftSaved, setDraftSaved] = useState(false)
   const [formErrors, setFormErrors] = useState<Record<string, string>>({})
   const heading = useRef<HTMLHeadingElement>(null)
@@ -32,10 +33,6 @@ export function useRegistrationForm({ onRegistrationSubmit }: UseRegistrationFor
   }, [error])
 
   const validateForm = (form: HTMLFormElement): boolean => {
-    if (form.checkValidity()) {
-      setFormErrors({})
-      return true
-    }
     const errors: Record<string, string> = {}
     let firstInvalid: HTMLElement | null = null
     for (const el of Array.from(form.elements)) {
@@ -56,9 +53,30 @@ export function useRegistrationForm({ onRegistrationSubmit }: UseRegistrationFor
         }
       }
     }
+    const phoneInput = form.querySelector<HTMLInputElement>('input[name="phone"]')
+    if (phoneInput) {
+      const phoneError = vietnamPhoneError(phoneInput.value)
+      if (phoneError) {
+        errors.phone = phoneError
+        firstInvalid ??= phoneInput
+      } else {
+        setProfile((current) => ({ ...current, phone: normalizeVietnamPhone(phoneInput.value) ?? phoneInput.value.trim() }))
+      }
+    }
+    if (step === 1) {
+      if (!fields.length) errors.expertise = 'Select at least one area of expertise.'
+      if (!files.CV?.length) errors.CV = 'Choose your CV to continue.'
+    }
     setFormErrors(errors)
-    firstInvalid?.focus()
-    return false
+    if (Object.keys(errors).length) {
+      requestAnimationFrame(() => {
+        const target = firstInvalid ?? form.querySelector<HTMLElement>('[aria-invalid="true"] input, input[aria-invalid="true"]')
+        target?.focus({ preventScroll: true })
+        target?.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth', block: 'center' })
+      })
+      return false
+    }
+    return true
   }
 
   const update = (key: keyof Profile, value: string) =>
@@ -68,6 +86,7 @@ export function useRegistrationForm({ onRegistrationSubmit }: UseRegistrationFor
     setStep(next)
     setError('')
     setNotice('')
+    setFormErrors({})
     requestAnimationFrame(() => heading.current?.focus())
   }
 
@@ -79,12 +98,11 @@ export function useRegistrationForm({ onRegistrationSubmit }: UseRegistrationFor
         (f) => !/\.(pdf|png|jpe?g)$/i.test(f.name) || f.size > 10 * 1024 * 1024
       )
     ) {
-      setError(
-        'Choose PDF, JPG or PNG files up to 10 MB each. This limit is for the demo.'
-      )
+      setFormErrors((p) => ({ ...p, [key]: 'This file selection could not be added. Choose PDF, JPG or PNG files, each no larger than 10 MB.' }))
       return
     }
     setFiles((p) => ({ ...p, [key]: [...(p[key] ?? []), ...selected] }))
+    clearFormError(key)
     setError('')
   }
 
@@ -95,10 +113,6 @@ export function useRegistrationForm({ onRegistrationSubmit }: UseRegistrationFor
 
     if (!validateForm(e.currentTarget)) return
 
-    if (step === 1 && (!fields.length || !files.CV?.length)) {
-      setError('Select at least one area of expertise and choose your CV.')
-      return
-    }
     if (step < 3) {
       move(step + 1)
       return
@@ -130,6 +144,7 @@ export function useRegistrationForm({ onRegistrationSubmit }: UseRegistrationFor
 
   function toggleField(f: string) {
     setFields((p) => p.includes(f) ? p.filter((x) => x !== f) : [...p, f])
+    clearFormError('expertise')
   }
 
   function removeFile(criterion: string, i: number) {

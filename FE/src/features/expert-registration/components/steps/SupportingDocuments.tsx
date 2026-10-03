@@ -1,70 +1,94 @@
+import { Info, FolderOpen } from 'lucide-react'
 import { criteria } from '../../constants'
 import { FileUploader } from '../FileUploader'
 
 export interface SupportingDocumentsProps {
   activeCriterion: string
+  formErrors: Record<string, string>
   files: Record<string, File[]>
   onCriterionSelect: (criterion: string) => void
   onFilesSelected: (criterion: string, files: FileList | null) => void
   onRemoveFile: (criterion: string, index: number) => void
 }
 
-const btnBase =
-  'cursor-pointer inline-flex items-center justify-center gap-2 min-h-11 px-[17px] py-[9px] border border-ex-btn-border rounded-md bg-white text-ex-ink font-semibold transition-[background,border-color,opacity] duration-150 ease-in-out hover:bg-ex-btn-hover disabled:cursor-not-allowed disabled:opacity-55 motion-reduce:transition-none'
-const noteCls =
-  'px-[18px] py-4 bg-ex-note-bg rounded-[5px] my-5 text-sm [&>p:last-child]:mb-0'
-
 export function SupportingDocuments({
   activeCriterion,
+  formErrors,
   files,
   onCriterionSelect,
   onFilesSelected,
   onRemoveFile,
 }: SupportingDocumentsProps) {
   return (
-    <>
-      <p>
+    <div className="expert-pro-documents">
+      <p className="expert-pro-subtitle">
         Organize evidence by eligibility criterion. The final required
         documents will be determined by the approved policy.
       </p>
-      <div className={noteCls}>
-        Preview requirements only: no fixed five-document checklist.
-        Experience evidence is collected in the previous step.
+
+      {/* ── Warning Notice ── */}
+      <div className="expert-pro-notice expert-pro-notice--warn">
+        <Info className="expert-pro-notice-icon" aria-hidden="true" />
+        <p>
+          Preview requirements only: no fixed five-document checklist. Experience
+          evidence is collected in the previous step.
+        </p>
       </div>
-      <div className="grid grid-cols-[220px_1fr] gap-7 mt-7 max-md:grid-cols-1">
+
+      {/* ── Tabs and Upload Area ── */}
+      <div className="expert-pro-tabs-container">
+        {/* Sidebar Tabs */}
         <div
-          className="flex flex-col gap-1.5 max-md:grid max-md:grid-cols-2"
+          className="expert-pro-tab-list"
+          role="tablist"
           aria-label="Evidence categories"
         >
           {criteria.map((c) => (
             <button
               type="button"
               key={c}
+              role="tab"
+              aria-selected={activeCriterion === c}
               aria-pressed={activeCriterion === c}
-              className={`${btnBase} flex-col !items-start text-left !text-[13px] transition-[background,border-color] duration-150 ease-in-out motion-reduce:transition-none ${activeCriterion === c ? '!bg-ex-chip-bg !border-ex-accent' : ''}`}
+              className="expert-pro-tab"
               onClick={() => onCriterionSelect(c)}
             >
-              {c}
-              <small className="font-normal text-ex-muted">
+              <strong>{c}</strong>
+              <small>
                 {files[c]?.length ?? 0} files selected
               </small>
             </button>
           ))}
         </div>
-        <section>
-          <h3 className="!mt-0">{activeCriterion}</h3>
-          <p>
+
+        {/* Main Content Area */}
+        <section
+          className="expert-pro-section"
+          role="tabpanel"
+          aria-labelledby={activeCriterion}
+        >
+          <div className="expert-pro-section-header">
+            <span className="expert-pro-section-icon" style={{ background: '#f5efe9', color: '#a34524' }}>
+              <FolderOpen size={18} aria-hidden="true" />
+            </span>
+            <h3 className="expert-pro-section-title">{activeCriterion}</h3>
+            <span className="expert-pro-section-line" aria-hidden="true" />
+          </div>
+
+          <p className="text-[14px] text-ex-muted mb-5 leading-[1.6]">
             Provide relevant supporting evidence. Accepted document types and
             applicability must be confirmed by the eligibility policy.
           </p>
+
           <FileUploader
             id={activeCriterion}
+            error={formErrors[activeCriterion]}
             files={files[activeCriterion] ?? []}
             onFilesSelected={(f) => onFilesSelected(activeCriterion, f)}
             onRemoveFile={(i) => onRemoveFile(activeCriterion, i)}
           />
         </section>
       </div>
-    </>
+    </div>
   )
 }

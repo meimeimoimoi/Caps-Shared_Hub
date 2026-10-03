@@ -1,8 +1,11 @@
-import { Camera, User } from 'lucide-react'
+import { normalizeVietnamPhone } from '../../utils/vietnamPhone'
+import { useRef, type ReactNode } from 'react'
+import { Camera, User, UserCircle, Mail, Briefcase, ImagePlus } from 'lucide-react'
 import type { Profile } from '../../types'
 import { FormField } from '../FormField'
 
 export interface PersonalInformationProps {
+  heading: ReactNode
   profile: Profile
   formErrors: Record<string, string>
   avatar: File | null
@@ -16,19 +19,19 @@ export interface PersonalInformationProps {
 
 const inputCls =
   'w-full px-3 py-2.5 border border-ex-input-border rounded-[5px] bg-white text-ex-ink min-h-11 font-normal caret-ex-accent transition-[border-color,box-shadow] duration-150 ease-in-out focus:border-ex-accent focus:shadow-[0_0_0_3px_var(--color-ex-ring)] motion-reduce:transition-none'
-const mutedCls = 'text-[13px] text-ex-muted font-normal'
 
 export function PersonalInformation({
+  heading,
   profile,
   formErrors,
   avatar,
   avatarPreview,
-  independent,
   onUpdate,
   onAvatarChange,
-  onIndependentChange,
   onError,
 }: PersonalInformationProps) {
+  const photoInputRef = useRef<HTMLInputElement>(null)
+
   const handleUpdate = (key: keyof Profile, value: string) => {
     onUpdate(key, value)
   }
@@ -37,8 +40,40 @@ export function PersonalInformation({
     const errorId = formErrors[key] ? `error-${key}` : undefined
     return (
       <input
+        id={`profile-${key}`}
         type={type}
         name={key}
+        autoComplete={
+          key === 'name'
+            ? 'name'
+            : key === 'email'
+              ? 'email'
+              : key === 'phone'
+                ? 'tel'
+                : key === 'birth'
+                  ? 'bday'
+                  : key === 'company'
+                    ? 'organization'
+                    : key === 'title'
+                      ? 'organization-title'
+                      : undefined
+        }
+        placeholder={
+          key === 'name'
+            ? 'Your full name'
+            : key === 'email'
+              ? 'you@example.com'
+              : key === 'phone'
+                ? '+84 912 345 678'
+                : key === 'title'
+                  ? 'e.g. Tax consultant'
+                  : key === 'location'
+                    ? 'e.g. Ho Chi Minh City'
+                    : key === 'company'
+                      ? 'Your firm or organization'
+                      : undefined
+        }
+        onBlur={() => { if (key === 'phone') { const phone = normalizeVietnamPhone(profile.phone); if (phone) onUpdate('phone', phone) } }}
         required={required}
         value={profile[key]}
         onChange={(e) => handleUpdate(key, e.target.value)}
@@ -50,29 +85,32 @@ export function PersonalInformation({
   }
 
   return (
-    <>
-      <p>
-        Tell us about your professional background. Required fields are marked
-        with an asterisk.
-      </p>
+    <div className="expert-personal-form">
+      {/* ── Hero heading + Profile photo ── */}
+      <div className="expert-personal-heading">
+        <div className="expert-personal-heading-copy">
+          {heading}
+          <p>
+            Tell us about your professional background. Required fields are
+            marked with an asterisk.
+          </p>
+        </div>
 
-      {/* ── Profile photo ── */}
-      <div className="flex items-center gap-5 mb-7">
-        <div className="relative shrink-0">
-          {avatarPreview ? (
-            <img
-              src={avatarPreview}
-              alt="Profile preview"
-              className="w-20 h-20 rounded-full object-cover border-2 border-ex-border"
-            />
-          ) : (
-            <div className="w-20 h-20 rounded-full bg-ex-note-bg border-2 border-dashed border-ex-chip-border flex items-center justify-center text-ex-muted">
-              <User size={28} />
-            </div>
-          )}
-          <label className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-ex-accent text-white flex items-center justify-center cursor-pointer shadow-md hover:bg-ex-accent-hover transition-colors duration-150 motion-reduce:transition-none">
-            <Camera size={14} />
+        <div className="expert-profile-photo">
+          <div className="expert-photo-preview">
+            {avatarPreview ? (
+              <img
+                src={avatarPreview}
+                alt="Profile preview"
+              />
+            ) : (
+              <div className="expert-photo-placeholder">
+                <User size={32} aria-hidden="true" />
+              </div>
+            )}
             <input
+              ref={photoInputRef}
+              aria-label="Upload profile photo"
               type="file"
               accept="image/jpeg,image/png,image/webp"
               className="sr-only"
@@ -92,123 +130,150 @@ export function PersonalInformation({
                 e.target.value = ''
               }}
             />
-          </label>
-        </div>
-        <div>
-          <p className="!mb-1 font-semibold text-sm">Profile photo</p>
-          <p className={`${mutedCls} !mb-0`}>
-            {avatar
-              ? avatar.name
-              : 'JPG, PNG or WebP \u00b7 up to 5 MB (demo)'}
-          </p>
-          {avatar && (
-            <button
-              type="button"
-              className="text-ex-accent text-[13px] underline underline-offset-2 mt-1 p-0 border-0 bg-transparent cursor-pointer"
-              onClick={() => onAvatarChange(null, '')}
+          </div>
+          <div className="expert-photo-details">
+            <p className="expert-photo-title">Profile photo</p>
+            <p
+              className="expert-photo-description"
+              title={avatar?.name}
             >
-              Remove photo
-            </button>
-          )}
+              {avatar
+                ? avatar.name
+                : 'JPG, PNG, WebP \u00b7 max 5 MB'}
+            </p>
+            <div className="expert-photo-actions">
+              <button
+                type="button"
+                className="expert-photo-upload"
+                onClick={() => photoInputRef.current?.click()}
+              >
+                {avatarPreview
+                  ? <><Camera size={14} aria-hidden="true" /> Change photo</>
+                  : <><ImagePlus size={14} aria-hidden="true" /> Upload photo</>
+                }
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* ── Personal fields ── */}
-      <div className="grid grid-cols-2 gap-x-6 max-md:grid-cols-1">
-        <FormField
-          label="Full name *"
-          error={formErrors.name}
-          errorId="error-name"
-        >
-          {renderInput('name', true)}
-        </FormField>
-        <FormField
-          label="Date of birth"
-          error={formErrors.birth}
-          errorId="error-birth"
-        >
-          {renderInput('birth', false, 'date')}
-        </FormField>
-        <FormField
-          label="Current professional title"
-          error={formErrors.title}
-          errorId="error-title"
-        >
-          {renderInput('title')}
-        </FormField>
-        <FormField
-          label="City / region"
-          error={formErrors.location}
-          errorId="error-location"
-        >
-          {renderInput('location')}
-        </FormField>
-        <FormField
-          label="Email address *"
-          error={formErrors.email}
-          errorId="error-email"
-        >
-          {renderInput('email', true, 'email')}
-        </FormField>
-        <FormField
-          label="Phone number"
-          error={formErrors.phone}
-          errorId="error-phone"
-        >
-          {renderInput('phone', false, 'tel')}
-        </FormField>
+      {/* ── Section: Personal details ── */}
+      <div className="expert-pro-section">
+        <div className="expert-pro-section-header">
+          <span className="expert-pro-section-icon">
+            <UserCircle size={18} aria-hidden="true" />
+          </span>
+          <h3 className="expert-pro-section-title">Personal details</h3>
+          <span className="expert-pro-section-line" aria-hidden="true" />
+        </div>
+        <div className="expert-personal-grid">
+          <FormField
+            htmlFor="profile-name"
+            label="Full name *"
+            error={formErrors.name}
+            errorId="error-name"
+          >
+            {renderInput('name', true)}
+          </FormField>
+          <FormField
+            htmlFor="profile-birth"
+            label="Date of birth"
+            error={formErrors.birth}
+            errorId="error-birth"
+          >
+            {renderInput('birth', false, 'date')}
+          </FormField>
+        </div>
       </div>
 
-      {/* ── Independent professional toggle ── */}
-      <div
-        className={`flex items-start gap-3 p-4 rounded-md mb-6 border transition-colors duration-150 motion-reduce:transition-none ${independent ? 'bg-ex-chip-bg border-ex-accent' : 'bg-ex-note-bg border-transparent'}`}
-      >
-        <input
-          type="checkbox"
-          id="independent-toggle"
-          checked={independent}
-          onChange={(e) => onIndependentChange(e.target.checked)}
-        />
-        <label htmlFor="independent-toggle" className="cursor-pointer">
-          <span className="font-semibold text-sm block">
-            I work as an independent professional
+      {/* ── Section: Contact information ── */}
+      <div className="expert-pro-section">
+        <div className="expert-pro-section-header">
+          <span className="expert-pro-section-icon expert-pro-section-icon--contact">
+            <Mail size={18} aria-hidden="true" />
           </span>
-          <span className={mutedCls}>
-            {independent
-              ? 'Your profile will show \u201cIndependent professional\u201d instead of an organization.'
-              : 'Check this if you are not affiliated with a firm or organization.'}
-          </span>
-        </label>
+          <h3 className="expert-pro-section-title">Contact information</h3>
+          <span className="expert-pro-required-badge">Required</span>
+          <span className="expert-pro-section-line" aria-hidden="true" />
+        </div>
+        <div className="expert-personal-grid">
+          <FormField
+            htmlFor="profile-email"
+            label="Email address *"
+            error={formErrors.email}
+            errorId="error-email"
+          >
+            {renderInput('email', true, 'email')}
+          </FormField>
+          <FormField
+            htmlFor="profile-phone"
+            label="Phone number (Vietnam +84) *"
+            error={formErrors.phone}
+            errorId="error-phone"
+          >
+            {renderInput('phone', true, 'tel')}
+          </FormField>
+        </div>
       </div>
 
-      {!independent && (
-        <FormField
-          label="Organization"
-          hint="The firm or company you currently represent."
-          error={formErrors.company}
-          errorId="error-company"
-        >
-          {renderInput('company')}
-        </FormField>
-      )}
+      {/* ── Section: Professional profile ── */}
+      <div className="expert-pro-section">
+        <div className="expert-pro-section-header">
+          <span className="expert-pro-section-icon expert-pro-section-icon--expertise">
+            <Briefcase size={18} aria-hidden="true" />
+          </span>
+          <h3 className="expert-pro-section-title">Professional profile</h3>
+          <span className="expert-pro-section-line" aria-hidden="true" />
+        </div>
+        <div className="expert-personal-grid">
+          <FormField
+            htmlFor="profile-title"
+            label="Current professional title"
+            error={formErrors.title}
+            errorId="error-title"
+          >
+            {renderInput('title')}
+          </FormField>
+          <FormField
+            htmlFor="profile-location"
+            label="City / region"
+            error={formErrors.location}
+            errorId="error-location"
+          >
+            {renderInput('location')}
+          </FormField>
+        </div>
 
-      <FormField
-        label="Short introduction"
-        hint="Your public profile can appear once marketplace eligibility requirements are met."
-        error={formErrors.bio}
-        errorId="error-bio"
-      >
-        <textarea
-          name="bio"
-          value={profile.bio}
-          maxLength={1000}
-          onChange={(e) => handleUpdate('bio', e.target.value)}
-          aria-invalid={!!formErrors.bio}
-          aria-describedby={formErrors.bio ? 'error-bio' : undefined}
-          placeholder="Describe your experience and the clients you support."
-          className={`${inputCls} min-h-[110px] resize-y ${formErrors.bio ? '!border-ex-error-text focus:shadow-[0_0_0_3px_#d9302533]' : ''}`}
-        />
-      </FormField>
-    </>
+        <div className="expert-bio-field">
+          <FormField
+            htmlFor="profile-bio"
+            label="Short introduction"
+            error={formErrors.bio}
+            errorId="error-bio"
+          >
+            <textarea
+              id="profile-bio"
+              name="bio"
+              value={profile.bio}
+              maxLength={1000}
+              onChange={(e) => handleUpdate('bio', e.target.value)}
+              aria-invalid={!!formErrors.bio}
+              aria-describedby={`profile-bio-hint profile-bio-count${formErrors.bio ? ' error-bio' : ''}`}
+              placeholder="Share your experience and who you help."
+              rows={4}
+              className={`${inputCls} min-h-[110px] resize-y ${formErrors.bio ? '!border-ex-error-text focus:shadow-[0_0_0_3px_#d9302533]' : ''}`}
+            />
+          </FormField>
+          <div className="expert-bio-footer">
+            <p id="profile-bio-hint" className="expert-bio-hint">
+              May appear publicly once marketplace eligibility requirements are met.
+            </p>
+            <p id="profile-bio-count" className="expert-bio-count" aria-live="off">
+              {profile.bio.length.toLocaleString('en-US')} / 1,000 characters
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
   )
 }

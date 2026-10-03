@@ -1,4 +1,4 @@
-import { ArrowRight, Check } from 'lucide-react'
+import { ArrowRight, Check, ScanLine, ShieldCheck, Clock3, CircleAlert } from 'lucide-react'
 import { labels, type Stage } from '../'
 import { SupplementForm, type SupplementFormProps } from './SupplementForm'
 
@@ -21,8 +21,6 @@ const inputCls =
 const btnBase =
   'cursor-pointer inline-flex items-center justify-center gap-2 min-h-11 px-[17px] py-[9px] border border-ex-btn-border rounded-md bg-white text-ex-ink font-semibold transition-[background,border-color,opacity] duration-150 ease-in-out hover:bg-ex-btn-hover disabled:cursor-not-allowed disabled:opacity-55 motion-reduce:transition-none'
 const btnPrimary = `${btnBase} !bg-ex-accent !border-ex-accent !text-white hover:!bg-ex-accent-hover`
-const panelCls =
-  'bg-ex-panel rounded-lg p-8 shadow-[0_8px_28px_#25302509] max-md:p-[18px_24px]'
 const noteCls =
   'px-[18px] py-4 bg-ex-note-bg rounded-[5px] my-5 text-sm [&>p:last-child]:mb-0'
 const mutedCls = 'text-[13px] text-ex-muted font-normal'
@@ -44,23 +42,27 @@ export function ApplicationStatus({
   onRequestSupplement,
   onPreviewServiceReview,
 }: ApplicationStatusProps) {
+  const visibleHistory = history.filter((entry) => !/demo/i.test(entry))
+
   return (
     <>
-      <div className="flex justify-between gap-7 max-md:flex-col">
-        <div>
+      <div className="expert-status-header">
+        <div className="min-w-0">
+          <h1 className="!text-[36px] !tracking-[-0.025em] [text-wrap:balance] md:!text-[48px]">
+            {labels[stage]}
+          </h1>
           <p className={mutedCls}>Demo application · {profileName}</p>
-          <h1>{labels[stage]}</h1>
           <p>
             {stage === 'eligible'
               ? 'Your next step is a separate qualification for each service.'
               : 'Track your application and see what happens next.'}
           </p>
         </div>
-        <label className="text-xs min-w-[230px]">
+        <label className="expert-status-preview">
           Preview a scenario
           <select
             value={stage}
-            className={`${inputCls} block mt-1.5 !text-[13px]`}
+            className={`${inputCls} mt-1.5 block !text-[13px]`}
             onChange={(e) => onStageChange(e.target.value as Stage)}
           >
             {Object.entries(labels).map(([value, label]) => (
@@ -72,11 +74,11 @@ export function ApplicationStatus({
         </label>
       </div>
 
-      <ol className="flex list-none my-7 mb-10 p-0 gap-[22px] max-md:flex-col max-md:gap-3">
+      <ol className="expert-status-timeline">
         {timeline.map((s, i) => (
           <li
             key={s}
-            className={`flex-1 text-[13px] border-t-2 pt-3 max-md:flex max-md:items-center max-md:gap-3 ${i <= progress ? 'border-ex-accent' : 'border-ex-timeline-border'}`}
+            className={`expert-status-stage ${i < progress ? 'is-complete' : i === progress ? 'is-current' : ''}`}
             aria-current={i === progress ? 'step' : undefined}
           >
             <span
@@ -86,7 +88,7 @@ export function ApplicationStatus({
             </span>
             {s}
             {i === progress && (
-              <small className="block text-ex-muted max-md:ml-auto">
+              <small className="text-ex-muted block max-md:ml-auto">
                 {terminal
                   ? 'Not approved'
                   : stage === 'approved'
@@ -98,7 +100,11 @@ export function ApplicationStatus({
         ))}
       </ol>
 
-      <section className={panelCls}>
+      <section className={`expert-status-action ${terminal ? 'is-terminal' : ''}`}>
+        <div className="expert-status-action-top">
+          <span className="expert-status-state-icon" aria-hidden="true">{terminal || stage === 'additional' ? <CircleAlert size={26} /> : stage === 'approved' || stage === 'eligible' ? <ShieldCheck size={26} /> : <ScanLine size={26} />}</span>
+          <span className="expert-status-state-label">{terminal ? 'Assessment outcome' : stage === 'additional' || supplement ? 'Action required' : stage === 'approved' || stage === 'eligible' ? 'Review complete' : 'Review in progress'}</span>
+        </div>
         <h2>
           {supplement
             ? 'Provide additional information'
@@ -106,7 +112,7 @@ export function ApplicationStatus({
               ? 'Your application needs a new assessment'
               : stage === 'approved'
                 ? 'Approved for the selected service'
-                : 'Your next step'}
+                : stage === 'screening' ? 'Your application is being screened' : 'Your next step'}
         </h2>
         {supplement ? (
           <SupplementForm {...supplementFormProps} />
@@ -114,8 +120,7 @@ export function ApplicationStatus({
           <>
             <p>
               Additional evidence is needed during eligibility review. Your
-              application remains open; no reapplication waiting period
-              applies.
+              application remains open; no reapplication waiting period applies.
             </p>
             <div className={noteCls}>
               <strong>Professional qualifications</strong>
@@ -124,14 +129,10 @@ export function ApplicationStatus({
                 readable replacement or an explanation.
               </p>
               <small>
-                Illustrative request. No response deadline has been
-                configured.
+                Illustrative request. No response deadline has been configured.
               </small>
             </div>
-            <button
-              className={btnPrimary}
-              onClick={onRequestSupplement}
-            >
+            <button className={btnPrimary} onClick={onRequestSupplement}>
               Provide information <ArrowRight size={16} />
             </button>
           </>
@@ -152,10 +153,10 @@ export function ApplicationStatus({
             </div>
             <p>
               The current policy requires at least{' '}
-              {stage === 'ineligible' ? '30' : '90'} days before
-              reapplying, plus relevant new or updated evidence. Your
-              actual decision date, earliest reapplication date and
-              failed criteria must come from the assessment service.
+              {stage === 'ineligible' ? '30' : '90'} days before reapplying,
+              plus relevant new or updated evidence. Your actual decision date,
+              earliest reapplication date and failed criteria must come from the
+              assessment service.
             </p>
             <p>
               Corrections to reviewer or system errors use a controlled
@@ -166,21 +167,17 @@ export function ApplicationStatus({
           <>
             <p>
               Your approval applies to{' '}
-              <strong>
-                CIT document review (illustrative service)
-              </strong>
-              .
+              <strong>CIT document review (illustrative service)</strong>.
             </p>
             <p>
-              Next, configure your service price and submit it for
-              approval. Marketplace visibility requires an active
-              account, active service, service approval and an approved
-              price that is currently effective.
+              Next, configure your service price and submit it for approval.
+              Marketplace visibility requires an active account, active service,
+              service approval and an approved price that is currently
+              effective.
             </p>
             <div className={noteCls}>
-              Pricing setup is not connected yet. Service availability
-              and payout settings will be handled in the next
-              implementation phase.
+              Pricing setup is not connected yet. Service availability and
+              payout settings will be handled in the next implementation phase.
             </div>
           </>
         ) : stage === 'eligible' ? (
@@ -190,22 +187,18 @@ export function ApplicationStatus({
               competency evidence for each service you wish to offer.
             </p>
             <p>
-              Service selection and the C1–C5 evidence requirements will
-              use the confirmed service catalogue.
+              Service selection and the C1–C5 evidence requirements will use the
+              confirmed service catalogue.
             </p>
-            <button
-              onClick={onPreviewServiceReview}
-              className={btnPrimary}
-            >
+            <button onClick={onPreviewServiceReview} className={btnPrimary}>
               Preview service review <ArrowRight size={16} />
             </button>
           </>
         ) : stage === 'returned' ? (
           <p>
             The final approver has returned the qualification to service
-            competency review. This is not a new rejection or
-            reapplication. The assigned reviewer will address the
-            governance findings.
+            competency review. This is not a new rejection or reapplication. The
+            assigned reviewer will address the governance findings.
           </p>
         ) : (
           <>
@@ -223,11 +216,12 @@ export function ApplicationStatus({
             </p>
           </>
         )}
-        {history.length > 0 && (
-          <details className="border-t border-ex-history-border mt-6">
-            <summary>Demo activity history</summary>
+        {!terminal && !supplement && stage !== 'additional' && stage !== 'approved' && stage !== 'eligible' && <div className="expert-status-reassurance"><Clock3 size={17} aria-hidden="true" /><span>No action needed right now. Follow the review progress above.</span></div>}
+        {visibleHistory.length > 0 && (
+          <details className="expert-status-history">
+            <summary>Activity history</summary>
             <ul>
-              {history.map((h, i) => (
+              {visibleHistory.map((h, i) => (
                 <li key={i}>{h}</li>
               ))}
             </ul>

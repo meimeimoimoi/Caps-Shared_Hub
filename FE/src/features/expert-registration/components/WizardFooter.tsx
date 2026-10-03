@@ -1,4 +1,4 @@
-import { ArrowLeft, ArrowRight, Save, Loader2 } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Save, Loader2, CheckCircle2 } from 'lucide-react'
 
 export interface WizardFooterProps {
   step: number
@@ -8,11 +8,6 @@ export interface WizardFooterProps {
   onBack: () => void
 }
 
-const btnBase =
-  'cursor-pointer inline-flex items-center justify-center gap-2 min-h-11 px-[17px] py-[9px] border border-ex-btn-border rounded-md bg-white text-ex-ink font-semibold transition-[background,border-color,opacity] duration-150 ease-in-out hover:bg-ex-btn-hover disabled:cursor-not-allowed disabled:opacity-55 motion-reduce:transition-none'
-const btnPrimary = `${btnBase} !bg-ex-accent !border-ex-accent !text-white hover:!bg-ex-accent-hover`
-const mutedCls = 'text-[13px] text-ex-muted font-normal'
-
 export function WizardFooter({
   step,
   submitting,
@@ -21,31 +16,36 @@ export function WizardFooter({
   onBack,
 }: WizardFooterProps) {
   return (
-    <footer className="flex items-center justify-between gap-[18px] border-t border-ex-border-light pt-[22px] max-md:flex-wrap [&>div]:flex [&>div]:gap-3 max-md:[&>div]:w-full max-md:[&>div]:justify-between">
-      <div className="flex items-center gap-3">
+    <footer className="expert-wizard-actions expert-wizard-footer">
+      <div className="expert-footer-left">
         <button
           type="button"
-          className={`${btnBase} gap-1.5`}
+          className="expert-footer-btn expert-footer-draft"
           onClick={onSaveDraft}
+          disabled={submitting}
         >
-          <Save size={15} />
+          {draftSaved ? <CheckCircle2 size={15} /> : <Save size={15} />}
           {draftSaved ? 'Saved' : 'Save draft'}
         </button>
-        <span className={`${mutedCls} max-md:hidden`}>
-          In-memory only · clears on refresh
-        </span>
       </div>
-      <div>
+      <div className="expert-footer-right">
         {step > 0 && (
-          <button type="button" className={btnBase} onClick={onBack}>
-            <ArrowLeft size={16} /> Back
+          <button
+            type="button"
+            className="expert-footer-btn expert-footer-back"
+            onClick={onBack}
+            disabled={submitting}
+          >
+            <ArrowLeft size={16} />
+            Back
           </button>
         )}
         <button
-          className={`${btnPrimary} ${step === 3 && submitting ? 'ex-loading' : ''}`}
-          disabled={step === 3 && submitting}
+          className={`expert-footer-btn expert-footer-continue ${step === 3 && submitting ? 'expert-footer-continue--loading' : ''}`}
+          disabled={submitting}
+          aria-busy={step === 3 && submitting}
         >
-          {step === 3 && submitting && <Loader2 size={16} className="animate-spin" />}
+          {step === 3 && submitting && <Loader2 size={16} className="animate-spin motion-reduce:animate-none" aria-hidden="true" />}
           {step === 3 && submitting
             ? 'Submitting…'
             : step === 3

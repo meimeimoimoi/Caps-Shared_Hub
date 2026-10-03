@@ -1,3 +1,4 @@
+import { Info, Edit2 } from 'lucide-react'
 import type { Profile } from '../../types'
 import { RegistrationSummary } from './RegistrationSummary'
 
@@ -13,11 +14,6 @@ export interface ReviewSubmitProps {
   onEdit: () => void
 }
 
-const btnBase =
-  'cursor-pointer inline-flex items-center justify-center gap-2 min-h-11 px-[17px] py-[9px] border border-ex-btn-border rounded-md bg-white text-ex-ink font-semibold transition-[background,border-color,opacity] duration-150 ease-in-out hover:bg-ex-btn-hover disabled:cursor-not-allowed disabled:opacity-55 motion-reduce:transition-none'
-const noteCls =
-  'px-[18px] py-4 bg-ex-note-bg rounded-[5px] my-5 text-sm [&>p:last-child]:mb-0'
-
 export function ReviewSubmit({
   profile,
   avatarPreview,
@@ -30,10 +26,19 @@ export function ReviewSubmit({
   onEdit,
 }: ReviewSubmitProps) {
   return (
-    <>
-      <p>
-        Review your information before submitting this demo application.
+    <div className="expert-pro-review">
+      <p className="expert-pro-subtitle flex items-center justify-between gap-4 flex-wrap">
+        <span>Review your information carefully before submitting your formal application.</span>
+        <button
+          type="button"
+          onClick={onEdit}
+          className="inline-flex items-center gap-2 min-h-10 px-4 rounded-md bg-white border border-[#d5d2c8] text-[#a34524] text-[13px] font-semibold transition-all duration-200 hover:bg-[#fdf8f5] hover:border-[#a3452466] hover:shadow-[0_2px_8px_-2px_#a345241a] focus-visible:outline-2 focus-visible:outline-[#a34524] focus-visible:outline-offset-2"
+        >
+          <Edit2 size={14} />
+          Edit application
+        </button>
       </p>
+
       <RegistrationSummary
         profile={profile}
         avatarPreview={avatarPreview}
@@ -41,36 +46,44 @@ export function ReviewSubmit({
         fields={fields}
         files={files}
       />
-      <button type="button" className={btnBase} onClick={onEdit}>
-        Edit application
-      </button>
-      <div className={noteCls}>
-        AI supports screening. Authorized reviewers assess eligibility and
-        service competency. A System Admin performs final approval.
+
+      {/* ── AI Notice ── */}
+      <div className="expert-pro-notice expert-pro-notice--warn mt-0 mb-6">
+        <Info className="expert-pro-notice-icon" aria-hidden="true" />
+        <p>
+          AI supports screening. Authorized reviewers assess eligibility and
+          service competency. A System Admin performs final approval.
+        </p>
       </div>
-      <div className="flex flex-col gap-1.5 mt-5">
-        <label className="flex items-start gap-3">
-          <input
-            name="confirmed"
-            type="checkbox"
-            checked={confirmed}
-            onChange={(e) => onConfirmedChange(e.target.checked)}
-            aria-invalid={!!formErrors.confirmed}
-            aria-describedby={formErrors.confirmed ? 'error-confirmed' : undefined}
-            required
-          />
-          I have reviewed the information in this demo application.
-        </label>
+
+      {/* ── Confirmation Checkbox ── */}
+      <div className="expert-personal-form">
+        <div className="expert-independent-row !mb-2">
+          <label className="flex items-start gap-3 cursor-pointer">
+            <input
+              name="confirmed"
+              type="checkbox"
+              checked={confirmed}
+              onChange={(e) => onConfirmedChange(e.target.checked)}
+              aria-invalid={!!formErrors.confirmed}
+              aria-describedby={formErrors.confirmed ? 'error-confirmed' : undefined}
+              required
+            />
+            <span className="text-[14.5px] font-medium text-[#263c36] leading-relaxed">
+              I certify that the information provided in this application is accurate and complete.
+            </span>
+          </label>
+        </div>
         {formErrors.confirmed && (
           <p
             id="error-confirmed"
             role="alert"
-            className="text-[13px] text-ex-error-text font-normal m-0 pl-[29px]"
+            className="text-[13px] text-ex-error-text font-medium m-0 pl-[30px]"
           >
             {formErrors.confirmed}
           </p>
         )}
       </div>
-    </>
+    </div>
   )
 }
