@@ -1,5 +1,102 @@
 @import 'tailwindcss';
 
+/* ════════ SHFT UI config (.claude/SHFT-ui-config.md §2) — token khai báo một lần ════════ */
+@theme {
+  /* ---------- Màu nền ---------- */
+  --color-desk: #E8E7E2;
+  --color-desk-2: #F4F3EF;
+  --color-paper: #FFFFFF;
+  --color-sunken: #F7F7F5;
+  --color-ink: #000000;
+  --color-ink-2: #262624;
+
+  /* ---------- Chữ ---------- */
+  --color-fg-strong: #000000;
+  --color-fg: #3A3A38;
+  --color-fg-muted: #5A5A56;
+  --color-fg-disabled: #A3A39F;
+  --color-fg-inverse-muted: #A3A39F;
+
+  /* ---------- Viền ---------- */
+  --color-border-subtle: #EEEEEC;
+  --color-border: #DCDCD9;
+  --color-border-control: #83837F;
+  --color-border-strong: #000000;
+  --color-hairline: rgb(38 37 32 / .08);
+
+  /* ---------- Cam ---------- */
+  --color-accent: #CC4A00;
+  --color-accent-hover: #B24100;
+  --color-accent-active: #8F2F00;
+  --color-accent-text: #B24100;
+  --color-accent-soft: #FFF1E8;
+  --color-indicator: #E55300;
+
+  /* ---------- Trạng thái ---------- */
+  --color-success: #1E7B4F;   --color-success-soft: #E8F5EE;
+  --color-warning: #6B5A00;   --color-warning-soft: #FBF3D9;
+  --color-danger:  #C62828;   --color-danger-soft:  #FDECEC;
+  --color-ai-border: #83837F;
+
+  /* ---------- Thanh ---------- */
+  --color-bar: rgb(232 231 226 / .86);
+  --color-track: #DCDCD9;
+  --color-track-fill: #E55300;
+
+  /* ---------- Font ---------- */
+  --font-sans: "Be Vietnam Pro", "Inter", system-ui, sans-serif;
+  --font-serif: "Lora", Georgia, serif;
+  --font-num: "Inter", system-ui, sans-serif;
+
+  /* ---------- Cỡ chữ ---------- */
+  --text-caption: 0.75rem;        --text-caption--line-height: 1.4;
+  --text-sm: 0.8125rem;           --text-sm--line-height: 1.5;
+  --text-base: 0.9375rem;         --text-base--line-height: 1.6;
+  --text-doc: 1.0625rem;          --text-doc--line-height: 1.75;
+  --text-h2: 1.25rem;             --text-h2--line-height: 1.4;
+  --text-h1-tool: 1.75rem;        --text-h1-tool--line-height: 1.2;
+  --text-h1: 2rem;                --text-h1--line-height: 1.2;
+  --text-case-id: 3.25rem;        --text-case-id--line-height: 1.1;
+  --text-hero: 3.75rem;           --text-hero--line-height: 1.08;
+
+  /* ---------- Bo góc ---------- */
+  --radius-surface: 4px;
+  --radius-control: 8px;
+  --radius-overlay: 12px;
+
+  /* ---------- Bóng ---------- */
+  --shadow-paper: 0 1px 2px rgb(38 37 32 / .07), 0 18px 36px -22px rgb(38 37 32 / .30);
+  --shadow-overlay: 0 24px 48px -12px rgb(38 37 32 / .28);
+  --shadow-control: 0 1px 2px rgb(38 37 32 / .06);
+  --shadow-control-hover: 0 4px 10px -2px rgb(38 37 32 / .12);
+  --shadow-pressed: inset 0 1px 2px rgb(38 37 32 / .14);
+  --shadow-accent: 0 2px 6px -1px rgb(143 47 0 / .30), 0 1px 2px rgb(143 47 0 / .18);
+
+  /* ---------- Chuyển động ---------- */
+  --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
+  --duration-fast: 200ms;
+  --duration-base: 320ms;
+
+  /* ---------- Giãn cách ---------- */
+  --spacing: 0.25rem;
+
+  /* ---------- Breakpoint ---------- */
+  --breakpoint-md: 48rem;
+  --breakpoint-lg: 64rem;
+  --breakpoint-xl: 80rem;
+}
+
+/* Chiều cao control theo mật độ — dùng: h-control, min-h-control */
+:root { --control-h: 44px; }
+[data-density="compact"] { --control-h: 36px; }
+
+/* Màu vòng focus; vùng nền tối dùng class="on-ink" */
+:root { --focus-ring: var(--color-ink); }
+.on-ink { --focus-ring: var(--color-paper); }
+@theme inline {
+  --spacing-control: var(--control-h);
+}
+
 @layer base {
   :root {
     --background: #0f172a;
@@ -21,21 +118,39 @@
     --radius: 0.5rem;
   }
 
+  /* ── SHFT CSS nền (§3) ── */
+  html { color-scheme: light; }
+
   body {
-    background-color: var(--background);
-    color: var(--foreground);
-    font-family:
-      system-ui,
-      -apple-system,
-      BlinkMacSystemFont,
-      'Segoe UI',
-      Roboto,
-      Oxygen,
-      Ubuntu,
-      Cantarell,
-      sans-serif;
+    @apply bg-desk font-sans text-base text-fg antialiased;
     min-height: 100vh;
     margin: 0;
+  }
+
+  .desk-content {
+    background-image: repeating-linear-gradient(0deg, rgb(38 37 32 / .03) 0 1px, transparent 1px 28px);
+  }
+
+  h1, h2 {
+    font-family: var(--font-serif);
+    font-variant-numeric: lining-nums;
+    font-weight: 600;
+    color: var(--color-fg-strong);
+  }
+
+  .num { font-family: var(--font-num); font-variant-numeric: tabular-nums; }
+
+  :focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation: none !important;
+      transition: none !important;
+      scroll-behavior: auto !important;
+    }
   }
 }
 
@@ -1039,3 +1154,156 @@
 .expert-registration-summary .expert-summary-documents-empty { margin: 0; padding: 16px 0; border-block: 1px solid #dedfd6; color: #52665c; font-size: 14px; }
 
 .expert-summary-document-info { flex: 1; min-width: 0; }
+
+
+/* ════════ SHFT class dùng chung (.claude/SHFT-ui-config.md §4) ════════ */
+@utility paper {
+  background: var(--color-paper);
+  border: 1px solid var(--color-hairline);
+  border-radius: var(--radius-surface);
+  box-shadow: var(--shadow-paper);
+}
+@utility paper-link {
+  transition: transform var(--duration-fast) var(--ease-out-quint);
+  &:hover { transform: translateY(-2px); }
+}
+
+@utility doc-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 220px;
+  column-gap: 32px;
+  align-items: start;
+  @media (width < 64rem) { grid-template-columns: 1fr; row-gap: 8px; }
+}
+@utility mnote {
+  padding: 2px 0 2px 12px;
+  border-left: 2px solid;
+  display: flex; flex-direction: column; gap: 3px;
+  font-size: var(--text-sm); line-height: 1.5;
+}
+@utility mnote-cite { border-color: var(--color-indicator); }
+@utility mnote-ai   { border-left-style: dashed; border-color: var(--color-ai-border); }
+@utility mnote-edit { border-color: var(--color-ink); }
+@utility mnote-label {
+  font-size: var(--text-caption); font-weight: 700;
+  letter-spacing: .04em; text-transform: uppercase;
+}
+
+@utility para-ai     { border-left: 2px dashed var(--color-ai-border); padding-left: 16px; }
+@utility para-check  { background: var(--color-warning-soft); padding: 12px 16px; border-radius: var(--radius-surface); }
+@utility text-revised {
+  text-decoration: underline 2px var(--color-indicator);
+  text-underline-offset: 4px;
+}
+
+@utility verdict {
+  display: inline-flex; flex-direction: column; gap: 2px;
+  padding: 2px 0 2px 12px;
+  border-left: 3px solid var(--verdict-color, var(--color-ink));
+}
+@utility verdict-waiting  { --verdict-color: var(--color-indicator); }
+@utility verdict-refund   { --verdict-color: var(--color-success); }
+@utility verdict-negative { --verdict-color: var(--color-danger); }
+
+@utility badge-ai {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 2px 8px; border-radius: var(--radius-surface);
+  border: 1px dashed var(--color-ai-border);
+  background: var(--color-paper); color: var(--color-fg-muted);
+  font-size: var(--text-sm); font-weight: 500;
+}
+
+@utility decision-bar {
+  position: sticky; bottom: 0;
+  display: flex; align-items: center; gap: 24px;
+  padding: 12px 32px;
+  background: var(--color-paper);
+  border-top: 1px solid var(--color-border);
+}
+
+@utility btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  height: var(--control-h); padding-inline: 16px;
+  border: 1px solid transparent; border-radius: var(--radius-control);
+  font-family: var(--font-sans); font-size: var(--text-base); font-weight: 600;
+  white-space: nowrap;
+  transition: background-color var(--duration-fast) var(--ease-out-quint),
+              border-color var(--duration-fast) var(--ease-out-quint),
+              box-shadow var(--duration-fast) var(--ease-out-quint),
+              transform var(--duration-fast) var(--ease-out-quint);
+  &:disabled { pointer-events: none; }
+}
+@utility btn-press {
+  &:active { transform: translateY(1px); box-shadow: var(--shadow-pressed); }
+}
+@utility btn-primary {
+  background: var(--color-accent); color: var(--color-paper);
+  box-shadow: var(--shadow-accent);
+  &:hover { background: var(--color-accent-hover); }
+  &:active { background: var(--color-accent-active); }
+  &:disabled { background: var(--color-desk-2); color: var(--color-fg-disabled); box-shadow: none; }
+}
+@utility btn-secondary {
+  background: transparent; border-color: var(--color-border-control);
+  color: var(--color-fg-strong);
+  &:hover { background: var(--color-desk-2); border-color: var(--color-fg-muted); }
+  &:disabled { border-color: var(--color-border); color: var(--color-fg-disabled); }
+}
+@utility btn-ghost {
+  background: transparent; color: var(--color-fg);
+  &:hover { background: var(--color-desk-2); color: var(--color-fg-strong); }
+  &:disabled { color: var(--color-fg-disabled); }
+}
+@utility btn-on-media {
+  background: rgb(38 37 32 / .44); backdrop-filter: blur(6px);
+  border-color: rgb(255 255 255 / .28); color: var(--color-paper);
+}
+@utility btn-loading { position: relative; color: transparent; pointer-events: none; }
+
+@utility topbar {
+  position: sticky; top: 0; z-index: 30;
+  height: 64px; display: flex; align-items: center;
+  background: var(--color-bar); backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--color-border);
+  transition: box-shadow var(--duration-fast) var(--ease-out-quint);
+}
+@utility topbar-scrolled {
+  background: var(--color-desk);
+  box-shadow: var(--shadow-control);
+}
+
+@utility rail { display: flex; align-items: flex-start; gap: 0; }
+@utility rail-track {
+  flex: 1; height: 0; margin-top: 7px;
+  border-top: 2px dashed var(--color-border-control);
+}
+@utility rail-track-done {
+  margin-top: 6.5px;
+  border-top: 3px solid var(--color-track-fill);
+}
+@utility rail-dot {
+  width: 16px; height: 16px; border-radius: 999px;
+  border: 2px solid var(--color-border-control); background: var(--color-paper);
+}
+@utility rail-dot-done    { border-color: var(--color-track-fill); background: var(--color-track-fill); }
+@utility rail-dot-current {
+  width: 22px; height: 22px; margin-top: -3px;
+  border-width: 3px; border-color: var(--color-track-fill); background: var(--color-paper);
+  box-shadow: inset 0 0 0 4px var(--color-paper), inset 0 0 0 8px var(--color-track-fill);
+}
+
+@utility progress {
+  height: 4px; background: var(--color-track);
+  border-radius: 999px; overflow: hidden;
+}
+@utility progress-fill {
+  height: 100%; background: var(--color-track-fill);
+  border-radius: 999px; transform-origin: left;
+  transition: transform var(--duration-base) var(--ease-out-quint);
+}
+
+@utility eyebrow {
+  font-size: var(--text-caption); font-weight: 700;
+  letter-spacing: .04em; text-transform: uppercase;
+  color: var(--color-fg-muted);
+}

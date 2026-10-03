@@ -1,4 +1,5 @@
 import { useState, type ReactNode } from 'react'
+import { Link } from 'react-router-dom'
 import {
   Bell,
   CreditCard,
@@ -14,21 +15,33 @@ import {
 import { cn } from '@/lib/utils'
 
 interface AdminLayoutProps {
-  title: string
+  breadcrumb: ReactNode
   pendingCount: number
-  search: string
-  onSearchChange: (value: string) => void
+  /** Bỏ trống thì ẩn ô tìm kiếm */
+  search?: string
+  onSearchChange?: (value: string) => void
   children: ReactNode
 }
 
-export function AdminLayout({ title, pendingCount, search, onSearchChange, children }: AdminLayoutProps) {
+export function AdminLayout({
+  breadcrumb,
+  pendingCount,
+  search,
+  onSearchChange,
+  children,
+}: AdminLayoutProps) {
   const [collapsed, setCollapsed] = useState(false)
 
   const nav = [
     {
       group: 'Xét duyệt Expert',
       items: [
-        { label: 'Hồ sơ chờ duyệt', icon: FileText, active: true, badge: pendingCount },
+        {
+          label: 'Hồ sơ chờ duyệt',
+          icon: FileText,
+          to: '/admin/experts/pending',
+          badge: pendingCount,
+        },
         { label: 'Quản lý Expert', icon: Users },
       ],
     },
@@ -50,52 +63,96 @@ export function AdminLayout({ title, pendingCount, search, onSearchChange, child
   ]
 
   return (
-    <div className="bg-ex-bg text-ex-ink flex min-h-screen">
+    <div data-density="compact" className="bg-desk text-fg flex min-h-dvh">
       {/* ── Sidebar ── */}
       <aside
         className={cn(
-          'sticky top-0 flex h-screen shrink-0 flex-col bg-black px-4 py-5 text-white transition-[width]',
-          collapsed ? 'w-[72px]' : 'w-[224px]',
+          'on-ink bg-ink text-paper sticky top-0 flex h-dvh shrink-0 flex-col px-4 py-5 max-md:w-[72px]',
+          collapsed ? 'w-[72px]' : 'w-[224px]'
         )}
       >
-        <div className="flex items-center gap-3 border-b border-white/15 px-2 pb-5">
-          <span className="text-lg font-extrabold tracking-tight">
-            {collapsed ? 'S' : 'SHFT'}
-            <span className="bg-ex-accent ml-0.5 inline-block size-1.5 align-middle" />
+        <div className="border-ink-2 flex items-center gap-3 border-b px-2 pb-5">
+          <span className="text-base font-extrabold tracking-tight">
+            {collapsed ? (
+              'S'
+            ) : (
+              <>
+                <span className="md:hidden">S</span>
+                <span className="max-md:hidden">SHFT</span>
+              </>
+            )}
+            <span className="bg-indicator ml-0.5 inline-block size-1.5 align-middle" />
           </span>
-          {!collapsed && <span className="text-xs text-white/70">Admin</span>}
+          {!collapsed && (
+            <span className="text-fg-inverse-muted text-caption max-md:hidden">
+              Admin
+            </span>
+          )}
         </div>
 
-        <nav aria-label="Admin" className="mt-5 flex-1 space-y-6 overflow-y-auto">
+        <nav
+          aria-label="Admin"
+          className="mt-5 flex-1 space-y-6 overflow-y-auto"
+        >
           {nav.map(({ group, items }) => (
             <div key={group}>
               {!collapsed && (
-                <p className="mb-2 px-2 text-xs font-semibold text-white/60">{group}</p>
+                <p className="text-fg-inverse-muted text-caption mb-2 px-2 font-semibold max-md:hidden">
+                  {group}
+                </p>
               )}
               <ul className="space-y-1">
-                {items.map(({ label, icon: Icon, active, badge }) => (
+                {items.map(({ label, icon: Icon, to, badge }) => (
                   <li key={label}>
                     {/* Chỉ "Hồ sơ chờ duyệt" có trang; các mục khác chưa có route */}
-                    <button
-                      type="button"
-                      aria-current={active ? 'page' : undefined}
-                      title={collapsed ? label : undefined}
-                      disabled={!active}
-                      className={cn(
-                        'flex w-full items-center gap-3 rounded-md px-2 py-2.5 text-left text-sm',
-                        active
-                          ? 'border-ex-accent border-l-2 bg-white/10 font-semibold'
-                          : 'text-white/80',
-                      )}
-                    >
-                      <Icon size={17} aria-hidden="true" className="shrink-0" />
-                      {!collapsed && <span className="flex-1">{label}</span>}
-                      {!collapsed && !!badge && (
-                        <span className="bg-ex-accent grid size-5 place-items-center rounded-full text-[11px] font-bold">
-                          {badge}
+                    {to ? (
+                      <Link
+                        to={to}
+                        aria-current="page"
+                        title={collapsed ? label : undefined}
+                        className="bg-ink-2 border-indicator text-paper rounded-control flex items-center gap-3 border-l-2 px-2 py-2.5 text-sm font-semibold no-underline"
+                      >
+                        <Icon
+                          size={17}
+                          aria-hidden="true"
+                          className="shrink-0"
+                        />
+                        <span
+                          className={cn(
+                            'flex-1 max-md:sr-only',
+                            collapsed && 'sr-only'
+                          )}
+                        >
+                          {label}
                         </span>
-                      )}
-                    </button>
+                        {!collapsed && !!badge && (
+                          <span className="bg-accent text-caption num grid size-5 place-items-center rounded-full font-bold max-md:hidden">
+                            {badge}
+                          </span>
+                        )}
+                      </Link>
+                    ) : (
+                      <button
+                        type="button"
+                        disabled
+                        title={collapsed ? label : undefined}
+                        className="text-fg-inverse-muted rounded-control flex w-full items-center gap-3 px-2 py-2.5 text-left text-sm"
+                      >
+                        <Icon
+                          size={17}
+                          aria-hidden="true"
+                          className="shrink-0"
+                        />
+                        <span
+                          className={cn(
+                            'flex-1 max-md:sr-only',
+                            collapsed && 'sr-only'
+                          )}
+                        >
+                          {label}
+                        </span>
+                      </button>
+                    )}
                   </li>
                 ))}
               </ul>
@@ -107,37 +164,50 @@ export function AdminLayout({ title, pendingCount, search, onSearchChange, child
           type="button"
           onClick={() => setCollapsed((c) => !c)}
           aria-label={collapsed ? 'Mở rộng thanh bên' : 'Thu gọn thanh bên'}
-          className="mx-auto rounded p-2 text-white/70 hover:bg-white/10"
+          className="text-fg-inverse-muted hover:bg-ink-2 rounded-control mx-auto p-2 max-md:hidden"
         >
           <PanelLeft size={16} aria-hidden="true" />
         </button>
       </aside>
 
-      <div className="min-w-0 flex-1">
+      <div className="flex min-w-0 flex-1 flex-col">
         {/* ── Topbar ── */}
-        <header className="border-ex-border flex items-center gap-4 border-b px-7 py-4">
-          <span className="text-ex-muted text-sm">{title}</span>
-          <label className="bg-ex-note-bg ml-auto flex w-full max-w-[265px] items-center gap-2 rounded-md px-3 py-2">
-            <Search size={16} aria-hidden="true" className="text-ex-muted" />
-            <input
-              type="search"
-              value={search}
-              onChange={(e) => onSearchChange(e.target.value)}
-              placeholder="Tìm theo tên hoặc email"
-              aria-label="Tìm theo tên hoặc email"
-              className="placeholder:text-ex-muted w-full bg-transparent text-sm outline-none"
-            />
-          </label>
-          <button type="button" aria-label="Thông báo" className="relative p-1">
+        <header className="topbar gap-4 px-4 md:px-6 lg:px-8">
+          <nav
+            aria-label="Breadcrumb"
+            className="text-fg-muted mr-auto text-sm"
+          >
+            {breadcrumb}
+          </nav>
+          {onSearchChange && (
+            <label className="bg-paper border-border-control rounded-control shadow-control h-control flex w-full max-w-[265px] items-center gap-2 border px-3 focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-(--focus-ring)">
+              <Search size={16} aria-hidden="true" className="text-fg-muted" />
+              <input
+                type="search"
+                value={search}
+                onChange={(e) => onSearchChange(e.target.value)}
+                placeholder="Tìm theo tên hoặc email"
+                aria-label="Tìm theo tên hoặc email"
+                className="placeholder:text-fg-muted w-full bg-transparent text-sm outline-none"
+              />
+            </label>
+          )}
+          <button
+            type="button"
+            aria-label="Thông báo"
+            className="rounded-control relative p-1"
+          >
             <Bell size={18} aria-hidden="true" />
-            <span className="bg-ex-accent absolute top-0.5 right-0.5 size-2 rounded-full" />
+            <span className="bg-indicator absolute top-0.5 right-0.5 size-2 rounded-full" />
           </button>
-          <span className="bg-ex-panel grid size-8 place-items-center rounded-full text-xs font-semibold">
+          <span className="bg-paper text-caption grid size-8 place-items-center rounded-full font-semibold">
             TA
           </span>
         </header>
 
-        <main className="px-7 py-8">{children}</main>
+        <main className="desk-content flex-1 px-4 py-12 md:px-6 lg:px-8">
+          {children}
+        </main>
       </div>
     </div>
   )

@@ -1,24 +1,29 @@
 import { useState } from 'react'
+import { QUEUE_TABS, type QueueTab } from '../constants'
 import { mockApplications } from '../mockData'
 import type { ApplicationStatus } from '../types'
 import { foldVietnamese } from '../utils/applications'
 
 const PAGE_SIZE = 10
 
+const statusesOf = (tab: QueueTab): readonly ApplicationStatus[] =>
+  QUEUE_TABS.find((t) => t.key === tab)?.statuses ?? []
+
 export function usePendingApplications() {
-  const [tab, setTabState] = useState<ApplicationStatus>('pending')
+  const [tab, setTabState] = useState<QueueTab>('review')
   const [query, setQueryState] = useState('')
   const [page, setPage] = useState(0)
 
   // MOCK: thay mockApplications bằng useQuery gọi API (xem features/admin/mockData.ts)
   const applications = mockApplications
-  const countOf = (s: ApplicationStatus) => applications.filter((a) => a.status === s).length
+  const countOf = (t: QueueTab) =>
+    applications.filter((a) => statusesOf(t).includes(a.status)).length
 
   const q = foldVietnamese(query.trim())
   const rows = applications
     .filter(
       (a) =>
-        a.status === tab &&
+        statusesOf(tab).includes(a.status) &&
         (!q || foldVietnamese(a.name).includes(q) || foldVietnamese(a.email).includes(q)),
     )
     .sort((a, b) => a.submittedAt.localeCompare(b.submittedAt))
@@ -27,7 +32,7 @@ export function usePendingApplications() {
 
   return {
     tab,
-    setTab: (t: ApplicationStatus) => {
+    setTab: (t: QueueTab) => {
       setTabState(t)
       setPage(0)
     },
