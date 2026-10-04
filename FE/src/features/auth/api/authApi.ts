@@ -1,5 +1,5 @@
-import { api } from '@/lib/api-client'
-import type { LoginFormValues, User } from '../types'
+import { api } from '@/shared/lib/api-client'
+import type { LoginFormValues, User } from '../model/types'
 
 interface BackendEnvelope<T> {
   success: boolean

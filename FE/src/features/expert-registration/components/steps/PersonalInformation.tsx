@@ -1,8 +1,10 @@
-import { normalizeVietnamPhone } from '../../utils/vietnamPhone'
+import { formControlClassName as inputCls } from '@/shared/ui/form-control'
+import { formatVietnamPhone } from '@/shared/lib/validation/vietnamPhone'
 import { useRef, type ReactNode } from 'react'
 import { Camera, User, UserCircle, Mail, Briefcase, ImagePlus } from 'lucide-react'
-import type { Profile } from '../../types'
-import { FormField } from '../FormField'
+import type { Profile } from '../../model/types'
+import { FormField } from '@/shared/ui/form-field'
+import { DatePicker } from '@/shared/ui/date-picker'
 
 export interface PersonalInformationProps {
   heading: ReactNode
@@ -17,8 +19,7 @@ export interface PersonalInformationProps {
   onError: (msg: string) => void
 }
 
-const inputCls =
-  'w-full px-3 py-2.5 border border-ex-input-border rounded-[5px] bg-white text-ex-ink min-h-11 font-normal caret-ex-accent transition-[border-color,box-shadow] duration-150 ease-in-out focus:border-ex-accent focus:shadow-[0_0_0_3px_var(--color-ex-ring)] motion-reduce:transition-none'
+
 
 export function PersonalInformation({
   heading,
@@ -31,7 +32,6 @@ export function PersonalInformation({
   onError,
 }: PersonalInformationProps) {
   const photoInputRef = useRef<HTMLInputElement>(null)
-
   const handleUpdate = (key: keyof Profile, value: string) => {
     onUpdate(key, value)
   }
@@ -73,9 +73,9 @@ export function PersonalInformation({
                       ? 'Your firm or organization'
                       : undefined
         }
-        onBlur={() => { if (key === 'phone') { const phone = normalizeVietnamPhone(profile.phone); if (phone) onUpdate('phone', phone) } }}
+        onBlur={() => { if (key === 'phone') { onUpdate('phone', formatVietnamPhone(profile.phone)) } }}
         required={required}
-        value={profile[key]}
+        value={key === 'phone' ? formatVietnamPhone(profile.phone) : profile[key]}
         onChange={(e) => handleUpdate(key, e.target.value)}
         aria-invalid={!!formErrors[key]}
         aria-describedby={errorId}
@@ -86,7 +86,7 @@ export function PersonalInformation({
 
   return (
     <div className="expert-personal-form">
-      {/* ── Hero heading + Profile photo ── */}
+      {/* â”€â”€ Hero heading + Profile photo â”€â”€ */}
       <div className="expert-personal-heading">
         <div className="expert-personal-heading-copy">
           {heading}
@@ -157,7 +157,7 @@ export function PersonalInformation({
         </div>
       </div>
 
-      {/* ── Section: Personal details ── */}
+      {/* â”€â”€ Section: Personal details â”€â”€ */}
       <div className="expert-pro-section">
         <div className="expert-pro-section-header">
           <span className="expert-pro-section-icon">
@@ -175,18 +175,13 @@ export function PersonalInformation({
           >
             {renderInput('name', true)}
           </FormField>
-          <FormField
-            htmlFor="profile-birth"
-            label="Date of birth"
-            error={formErrors.birth}
-            errorId="error-birth"
-          >
-            {renderInput('birth', false, 'date')}
+          <FormField htmlFor="profile-birth" label="Date of birth" error={formErrors.birth} errorId="error-birth">
+            <DatePicker id="profile-birth" value={profile.birth} onChange={(value) => onUpdate('birth', value)} error={formErrors.birth} />
           </FormField>
         </div>
       </div>
 
-      {/* ── Section: Contact information ── */}
+      {/* â”€â”€ Section: Contact information â”€â”€ */}
       <div className="expert-pro-section">
         <div className="expert-pro-section-header">
           <span className="expert-pro-section-icon expert-pro-section-icon--contact">
@@ -216,7 +211,7 @@ export function PersonalInformation({
         </div>
       </div>
 
-      {/* ── Section: Professional profile ── */}
+      {/* â”€â”€ Section: Professional profile â”€â”€ */}
       <div className="expert-pro-section">
         <div className="expert-pro-section-header">
           <span className="expert-pro-section-icon expert-pro-section-icon--expertise">
@@ -248,6 +243,7 @@ export function PersonalInformation({
           <FormField
             htmlFor="profile-bio"
             label="Short introduction"
+            help="May appear publicly once marketplace eligibility requirements are met."
             error={formErrors.bio}
             errorId="error-bio"
           >

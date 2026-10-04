@@ -1,16 +1,17 @@
 import { Suspense, lazy } from 'react'
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { ProtectedRoute } from './ProtectedRoute'
+import { ExpertRoute } from './ExpertRoute'
+import { ExpertLayout } from '../layouts/expert/ExpertLayout'
+import { ExpertDashboardPage, ExpertProfilePage, ExpertSettingsPage, ExpertServicesPage, ExpertCasesPage, ExpertCaseDetailPage } from '@/features/expert-dashboard'
+import { ExpertRegistrationPage } from '@/features/expert-registration'
 
-const LoginPage = lazy(() => import('@/pages/LoginPage'))
-const DashboardPage = lazy(() => import('@/pages/DashboardPage'))
-const NotFoundPage = lazy(() => import('@/pages/NotFoundPage'))
-const ExpertRegistrationPage = lazy(
-  () => import('@/pages/ExpertRegistrationPage')
-)
-const AdminPendingExpertsPage = lazy(() => import('@/pages/AdminPendingExpertsPage'))
-const AdminApplicationDetailPage = lazy(() => import('@/pages/AdminApplicationDetailPage'))
-const AdminExpertsPage = lazy(() => import('@/pages/AdminExpertsPage'))
+const LoginPage = lazy(() => import('@/features/auth').then((module) => ({ default: module.LoginPage })))
+const DashboardPage = lazy(() => import('../pages/DashboardPage'))
+const NotFoundPage = lazy(() => import('../pages/NotFoundPage'))
+const AdminPendingExpertsPage = lazy(() => import('../pages/AdminPendingExpertsPage'))
+const AdminApplicationDetailPage = lazy(() => import('../pages/AdminApplicationDetailPage'))
+const AdminExpertsPage = lazy(() => import('../pages/AdminExpertsPage'))
 
 function Fallback() {
   return (
@@ -32,6 +33,21 @@ export function AppRoutes() {
           <Route path="/admin/experts" element={<AdminExpertsPage />} />
           <Route path="/admin/experts/pending" element={<AdminPendingExpertsPage />} />
           <Route path="/admin/experts/:id" element={<AdminApplicationDetailPage />} />
+
+          <Route element={<ExpertRoute />}>
+            <Route path="/expert" element={<ExpertLayout />}>
+              <Route index element={<Navigate to="overview" replace />} />
+              <Route path="overview" element={<ExpertDashboardPage />} />
+              <Route path="cases" element={<ExpertCasesPage key="cases" />} />
+              <Route path="queue" element={<ExpertCasesPage key="queue" />} />
+              <Route path="active" element={<ExpertCasesPage key="active" />} />
+              <Route path="cases/:id" element={<ExpertCaseDetailPage />} />
+              <Route path="services" element={<ExpertServicesPage />} />
+              <Route path="profile" element={<ExpertProfilePage />} />
+              <Route path="settings" element={<ExpertProfilePage />} />
+              <Route path="settings/:section" element={<ExpertSettingsPage />} />
+            </Route>
+          </Route>
           <Route
             path="/dashboard"
             element={

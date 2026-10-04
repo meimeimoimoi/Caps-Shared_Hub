@@ -1,3 +1,4 @@
+import { formControlClassName as inputCls } from '@/shared/ui/form-control'
 import {
   Briefcase,
   Award,
@@ -5,8 +6,8 @@ import {
   Sparkles,
   CircleAlert,
 } from 'lucide-react'
-import type { Profile } from '../../types'
-import { FormField } from '../FormField'
+import type { Profile } from '../../model/types'
+import { FormField } from '@/shared/ui/form-field'
 import { FileUploader } from '../FileUploader'
 
 export interface ProfessionalExperienceProps {
@@ -20,8 +21,7 @@ export interface ProfessionalExperienceProps {
   onRemoveCvFile: (index: number) => void
 }
 
-const inputCls =
-  'w-full px-3 py-2.5 border border-ex-input-border rounded-[5px] bg-white text-ex-ink min-h-11 font-normal caret-ex-accent transition-[border-color,box-shadow] duration-150 ease-in-out focus:border-ex-accent focus:shadow-[0_0_0_3px_var(--color-ex-ring)] motion-reduce:transition-none'
+
 
 export function ProfessionalExperience({
   profile,

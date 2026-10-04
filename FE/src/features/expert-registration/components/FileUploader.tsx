@@ -1,4 +1,5 @@
 import { Upload, FileText, X, CheckCircle2, CircleAlert } from 'lucide-react'
+import { useRef, useState } from 'react'
 
 export interface FileUploaderProps {
   id: string
@@ -15,12 +16,16 @@ export function FileUploader({
   onFilesSelected,
   onRemoveFile,
 }: FileUploaderProps) {
+  const [dragging, setDragging] = useState(false)
+  const dragDepth = useRef(0)
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault()
   }
 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault()
+    dragDepth.current = 0
+    setDragging(false)
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
       onFilesSelected(e.dataTransfer.files)
     }
@@ -30,6 +35,17 @@ export function FileUploader({
     <div className="expert-file-uploader mb-6">
       <label
         className={`expert-file-dropzone ${error ? 'expert-file-dropzone--invalid' : ''}`}
+        data-dragging={dragging}
+        onDragEnter={(e) => {
+          e.preventDefault()
+          if (!Array.from(e.dataTransfer.types).includes('Files')) return
+          dragDepth.current += 1
+          setDragging(true)
+        }}
+        onDragLeave={() => {
+          dragDepth.current = Math.max(0, dragDepth.current - 1)
+          if (dragDepth.current === 0) setDragging(false)
+        }}
         onDragOver={handleDragOver}
         onDrop={handleDrop}
       >
