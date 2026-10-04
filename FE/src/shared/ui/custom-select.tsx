@@ -158,10 +158,14 @@ export function CustomSelect<T extends string>({
           role="listbox"
           aria-labelledby={`${id}-label`}
           className={cn(
-            'expert-scenario-menu border-ex-input-border absolute right-0 left-0 z-20 mt-1 max-h-72 overflow-y-auto rounded-lg border bg-white p-1 shadow-[0_8px_24px_-8px_#263c3633]',
+            'expert-scenario-menu border-ex-input-border absolute right-0 left-0 z-20 mt-1 max-h-72 overflow-y-auto rounded-lg border bg-white p-1 shadow-[0_8px_24px_-8px_#263c3633] hide-scrollbar',
             menuClassName
           )}
         >
+          <style>{`
+            .hide-scrollbar::-webkit-scrollbar { display: none; }
+            .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+          `}</style>
           {options.map(({ value: key, label }, index) => (
             <li
               key={key}

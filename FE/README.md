@@ -17,6 +17,7 @@ On Windows PowerShell with script execution disabled, use `npm.cmd`.
 ```text
 src/
   app/                         Application composition, providers and routing
+    layouts/                   Role-specific shells (e.g. expert sidebar layout)
     pages/                     Dashboard shell and generic Not Found page
     providers/
     routes/
@@ -27,6 +28,18 @@ src/
       hooks/
       model/                   Session store, types and account validation
       pages/                   Login page
+      index.ts                 Public API
+    expert-context/
+      api/                     Expert profile and readiness HTTP calls
+      hooks/                   Context provider hook
+      model/                   Expert context types
+      index.ts                 Public API
+    expert-dashboard/
+      api/                     Dashboard HTTP calls
+      components/              Dashboard widgets, summaries and section states
+      hooks/                   Dashboard data, case workspace and analytics logic
+      model/                   View-models, types, analytics and test fixtures
+      pages/                   Overview, cases, case detail, services, profile, settings
       index.ts                 Public API
     expert-registration/
       assets/                  Assets used only by this feature
@@ -74,10 +87,18 @@ src/
 
 - `/login`: public login screen.
 - `/expert/register`: public expert onboarding screen.
+- `/expert/overview`: authenticated expert dashboard overview.
+- `/expert/cases`: expert case list (all cases).
+- `/expert/queue`: expert work queue (pending requests).
+- `/expert/active`: expert active cases.
+- `/expert/cases/:id`: individual case detail and review workspace.
+- `/expert/services`: expert service readiness.
+- `/expert/profile`: expert profile.
+- `/expert/settings/:section`: expert account settings.
 - `/dashboard`: authenticated application shell.
 - `*`: Not Found.
 
-Pages remain lazy-loaded through each feature's public entry point. Route paths and behavior are preserved.
+Expert routes require authentication and the expert role guard (`ExpertRoute`). Pages remain lazy-loaded through each feature's public entry point.
 
 ## Validation
 
@@ -85,7 +106,6 @@ Pages remain lazy-loaded through each feature's public entry point. Route paths 
 npm run check:architecture
 npm run build
 npm run lint
-npm test
 ```
 
 `npm run format` formats the project; use it deliberately because it touches unrelated files.

@@ -1,4 +1,4 @@
-import { formControlClassName as inputCls } from '@/shared/ui/form-control'
+import { formControlClassName as inputCls, formButtonClassName as btnBase } from '@/shared/ui/form-control'
 import {
   formatVietnamPhoneInput,
   normalizeVietnamPhone,
@@ -37,8 +37,6 @@ export interface AccountCreationProps {
 const panelCls =
   'relative bg-ex-panel rounded-[3px] p-8 md:p-10 shadow-ex-dossier max-md:p-[24px] before:absolute before:top-0 before:left-8 before:right-8 before:h-px before:bg-ex-ink'
 const mutedCls = 'text-[13px] text-ex-muted font-normal'
-const btnBase =
-  'cursor-pointer inline-flex items-center justify-center gap-2 min-h-11 px-[17px] py-[9px] border border-ex-btn-border rounded-md bg-white text-ex-ink font-semibold transition-[background,border-color,opacity] duration-150 ease-in-out hover:bg-ex-btn-hover disabled:cursor-not-allowed disabled:opacity-55 motion-reduce:transition-none'
 
 export function AccountCreation({
   profile,

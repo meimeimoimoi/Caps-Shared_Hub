@@ -1,1 +1,3 @@
-export { default as ExpertRegistrationPage } from './pages/ExpertRegistrationPage'
+import { lazy } from 'react'
+
+export const ExpertRegistrationPage = lazy(() => import('./pages/ExpertRegistrationPage'))

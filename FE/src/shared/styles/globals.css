@@ -1737,3 +1737,13 @@
   }
 }
 
+
+/* Shared Hub expert workspace tokens used by Tailwind utilities. */
+@theme {
+  --color-hub-border: #e2e6e9;
+  --color-hub-muted: #526174;
+  --color-hub-action: #c2410c;
+  --color-hub-action-hover: #9a3412;
+  --color-hub-success: #27775b;
+  --color-hub-ink: #162235;
+}
