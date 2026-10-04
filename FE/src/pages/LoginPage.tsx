@@ -1,4 +1,5 @@
 import { LoginForm } from '@/features/auth/components/LoginForm'
+import { Link } from 'react-router-dom'
 
 export default function LoginPage() {
   return (
@@ -11,6 +12,11 @@ export default function LoginPage() {
           <p className="text-sm text-slate-400">Sign in to continue</p>
         </div>
         <LoginForm />
+        <p className="text-center text-sm text-slate-300">
+          <Link to="/expert/register" className="underline underline-offset-4">
+            Explore expert registration
+          </Link>
+        </p>
       </div>
     </div>
   )
