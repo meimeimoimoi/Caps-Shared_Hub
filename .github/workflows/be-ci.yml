@@ -1,0 +1,41 @@
+name: Backend CI
+
+on:
+  push:
+    branches: [ main, prod, test-ci-cd ]
+    paths:
+      - 'BE/**'
+      - '.github/workflows/be-ci.yml'
+  pull_request:
+    branches: [ main, prod, test-ci-cd ]
+    paths:
+      - 'BE/**'
+      - '.github/workflows/be-ci.yml'
+  workflow_dispatch:
+
+jobs:
+  be-ci:
+    name: Build & Test Backend (.NET 8)
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: BE
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: BE/global.json
+
+      - name: Restore dependencies
+        run: dotnet restore Caps.sln
+
+      - name: Build solution
+        run: dotnet build Caps.sln --no-restore -c Release
+
+      - name: Run Tests
+        run: dotnet test Caps.sln --no-build -c Release --verbosity normal
