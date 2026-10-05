@@ -20,6 +20,9 @@ async function walk(directory) {
 for (const file of await walk(root)) {
   const relative = path.relative(root, file).replaceAll('\\', '/')
   const sourceParts = relative.split('/')
+  if (sourceParts[0] === 'shared' || (sourceParts[0] === 'features' && ['model', 'pages'].includes(sourceParts[2]))) {
+    errors.push(`${relative}: use the team's components/hooks/store/api/types structure; screens belong in src/pages`)
+  }
   const sourceFeature = sourceParts[0] === 'features' ? sourceParts[1] : undefined
   const source = ts.createSourceFile(file, await readFile(file, 'utf8'), ts.ScriptTarget.Latest, true)
 
@@ -35,12 +38,11 @@ for (const file of await walk(root)) {
         const targetParts = path.relative(root, target).replaceAll('\\', '/').split('/')
         const targetFeature = targetParts[0] === 'features' ? targetParts[1] : undefined
         const fail = (message) => errors.push(`${relative}: ${value} — ${message}`)
-        if (sourceParts[0] === 'shared' && targetParts[0] !== 'shared') fail('shared must only depend on shared')
-        if (sourceFeature && targetParts[0] === 'app') fail('features must not depend on app')
-        if (sourceFeature && targetFeature === sourceFeature && value.startsWith('@/')) fail('use relative imports inside a feature')
+        const common = ['lib', 'hooks', 'types', 'utils'].includes(sourceParts[0]) || (sourceParts[0] === 'components' && sourceParts[1] === 'ui')
+        if (common && ['features', 'app', 'pages'].includes(targetParts[0])) fail('common modules must not depend on screens or business features')
+        if (sourceFeature && ['app', 'pages'].includes(targetParts[0])) fail('features must not depend on application composition or screens')
+        if (value.startsWith('@/shared/') || /(?:^|\/)model(?:\/|$)/.test(value)) fail('obsolete shared/model import')
         if (targetFeature && targetFeature !== sourceFeature) {
-          const entry = targetParts.slice(2).join('/')
-          if (entry && !/^index(?:\.ts)?$/.test(entry)) fail('use the feature public entry point')
           if (sourceFeature) {
             if (!dependencies.has(sourceFeature)) dependencies.set(sourceFeature, new Set())
             dependencies.get(sourceFeature).add(targetFeature)
