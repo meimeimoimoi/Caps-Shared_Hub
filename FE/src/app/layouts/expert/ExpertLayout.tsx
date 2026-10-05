@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useRef, useState, useEffect } from 'react'
 import { Outlet, useSearchParams, useLocation } from 'react-router-dom'
 import { isExpertDemo } from '@/shared/lib/expert-data-source'
 import { ExpertHeader } from './ExpertHeader'
@@ -23,6 +23,23 @@ export function ExpertLayout() {
   const trigger = useRef<HTMLElement | null>(null)
   const [params, setParams] = useSearchParams()
   const [isCollapsed, setIsCollapsed] = useState(false)
+  const [lang, setLang] = useState<'vi' | 'en'>(() => {
+    return (localStorage.getItem('expert-lang') as 'vi' | 'en') || 'vi'
+  })
+  const [isDark, setIsDark] = useState(() => {
+    return localStorage.getItem('expert-theme') === 'dark' ||
+      (!localStorage.getItem('expert-theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)
+  })
+
+  useEffect(() => {
+    localStorage.setItem('expert-theme', isDark ? 'dark' : 'light')
+  }, [isDark])
+
+  useEffect(() => {
+    localStorage.setItem('expert-lang', lang)
+    document.documentElement.lang = lang
+  }, [lang])
+
   const close = () => drawer.current?.close()
   const open = () => {
     trigger.current = document.activeElement as HTMLElement
@@ -30,7 +47,7 @@ export function ExpertLayout() {
   }
 
   return (
-    <div className={`expert-portal ${isCollapsed ? 'ep-collapsed' : ''}`}>
+    <div className={`expert-portal ${isCollapsed ? 'ep-collapsed' : ''} ${isDark ? 'ep-dark' : ''}`}>
       <a className="ep-skip-link" href="#expert-main">
         Skip to overview
       </a>
@@ -61,7 +78,13 @@ export function ExpertLayout() {
         <ExpertSidebar close={close} />
       </dialog>
       <div className="ep-workspace">
-        <ExpertHeader openNavigation={open} />
+        <ExpertHeader 
+          openNavigation={open} 
+          isDark={isDark} 
+          toggleTheme={() => setIsDark(!isDark)}
+          lang={lang}
+          toggleLang={() => setLang(lang === 'vi' ? 'en' : 'vi')}
+        />
         {isExpertDemo && (
           <div className="ep-demo">
             <div>
@@ -82,7 +105,7 @@ export function ExpertLayout() {
         )}
         <main
           id="expert-main"
-          className={`ep-main ${location.pathname === '/expert/overview' ? 'ep-main-overview max-w-450 [padding:32px_36px] max-[1251px]:[padding:28px_24px] max-[720px]:[padding:24px_16px]' : ''}`}
+          className={`ep-main ${location.pathname === '/expert/overview' ? 'ep-main-overview max-w-450 [padding:32px_36px] max-[1251px]:[padding:28px_24px] max-[720px]:[padding:24px_16px]' : location.pathname.startsWith('/expert/settings/') ? 'max-w-none mx-0 p-6 max-md:p-4' : ''}`}
           tabIndex={-1}
         >
           <Outlet />

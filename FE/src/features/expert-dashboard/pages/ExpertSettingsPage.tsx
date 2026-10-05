@@ -3,7 +3,7 @@ import {
   ArrowLeft,
   ArrowUpRight,
   CheckCircle2,
-  Settings,
+  LockKeyhole,
   ShieldCheck,
   User,
   BriefcaseBusiness,
@@ -86,28 +86,27 @@ export default function ExpertSettingsPage() {
     .join('')
 
   return (
-    <div className="ep-settings mx-auto my-0 max-w-275">
+    <div className="ep-settings w-full min-w-0 text-[14px] [&_h1]:font-sans! [&_h1]:tracking-[-0.025em] [&_h2]:font-sans! [&_h2]:tracking-[-0.02em] [&_h3]:font-sans!">
       <Link
-        className="ep-settings-back text-hub-muted! mb-6 inline-flex items-center gap-2 text-[13px] [&:hover]:underline [&:hover]:underline-offset-1"
+        className="ep-settings-back mb-6 inline-flex items-center gap-2 text-[13px] text-[var(--ep-muted)]! [&:hover]:underline [&:hover]:underline-offset-1"
         to={{ pathname: '/expert/overview', search }}
       >
         <ArrowLeft size={15} aria-hidden="true" />
         Back to workspace
       </Link>
-      <div className="ep-page-heading">
+      <div className="flex items-start justify-between gap-4 border-b border-[var(--ep-line)] pb-6">
         <div>
-          <h1>Settings</h1>
-          <p>Your personal account and expert workspace access.</p>
+          <h1 className="text-[30px]! leading-tight! font-semibold!">
+            Settings
+          </h1>
+          <p className="mt-2 text-[14px] text-[var(--ep-muted)]">
+            Manage your account information and workspace access.
+          </p>
         </div>
-        <Settings
-          className="ep-settings-heading-icon text-[#7b8796]"
-          size={24}
-          aria-hidden="true"
-        />
       </div>
-      <div className="ep-settings-layout mt-8 grid grid-cols-[220px_minmax(0,_1fr)] gap-9 max-[1101px]:grid-cols-[190px_minmax(0,_1fr)] max-[1101px]:gap-6 max-[768px]:mt-6 max-[768px]:grid-cols-[minmax(0,_1fr)] max-[768px]:gap-5">
+      <div className="ep-settings-layout mt-6 grid grid-cols-[224px_minmax(0,_1fr)] items-start gap-8 max-[1101px]:grid-cols-[200px_minmax(0,_1fr)] max-[1101px]:gap-6 max-[768px]:grid-cols-[minmax(0,_1fr)] max-[768px]:gap-5">
         <nav
-          className="ep-settings-navigation [&_>_p]:text-hub-muted pt-1 max-[768px]:flex max-[768px]:flex-wrap max-[768px]:gap-[6px] max-[768px]:p-0 [&_>_p]:max-w-[25ch] [&_>_p]:[padding:20px_12px] [&_>_p]:text-[12px] max-[768px]:[&_>_p]:hidden"
+          className="ep-settings-navigation pt-1 max-[768px]:flex max-[768px]:flex-wrap max-[768px]:gap-[6px] max-[768px]:p-0 [&_>_p]:max-w-[25ch] [&_>_p]:[padding:20px_12px] [&_>_p]:text-[12px] [&_>_p]:text-[var(--ep-muted)] max-[768px]:[&_>_p]:hidden"
           aria-label="Settings sections"
         >
           {sections.map((entry) => {
@@ -117,21 +116,28 @@ export default function ExpertSettingsPage() {
                 key={entry.id}
                 to={{ pathname: `/expert/settings/${entry.id}`, search }}
                 className={({ isActive }) =>
-                  `ep-settings-nav-link text-hub-muted! [&.active]:text-hub-action-hover! mb-1 flex min-h-11 items-center gap-3 rounded-lg p-3 text-[13px] font-medium max-[768px]:[padding:10px] [&.active]:bg-[#ffeddc] [&.active]:bg-none [&.active]:font-[650] [&:hover]:bg-[#eae8e3] [&:hover]:bg-none max-[768px]:m-0 ${isActive ? 'active' : ''}`
+                  `mb-1 flex min-h-12 items-center gap-3 rounded-lg px-3 py-3 text-[14px] font-medium no-underline transition-colors focus-visible:outline-2 focus-visible:outline-[var(--ep-accent)] max-[768px]:m-0 ${isActive ? 'bg-[var(--ep-surface-raised)] font-semibold text-[var(--ep-ink)]' : 'text-[var(--ep-muted)] hover:bg-[var(--ep-surface-raised)] hover:text-[var(--ep-ink)]'}`
                 }
               >
-                <Icon size={18} aria-hidden="true" />
+                <Icon
+                  size={18}
+                  aria-hidden="true"
+                  className={
+                    entry.id === section
+                      ? 'shrink-0 text-[var(--ep-accent-soft)]'
+                      : 'shrink-0'
+                  }
+                />
                 <span>{entry.label}</span>
               </NavLink>
             )
           })}
-          <p>Account settings are separate from your case workflow.</p>
         </nav>
         <section
-          className="ep-settings-content min-w-0 rounded-[14px] bg-[#fff] bg-none p-8 [border:1px_solid_#e0e4e7] max-[1101px]:p-6 max-[768px]:[padding:22px_18px]"
+          className="ep-settings-content min-w-0 rounded-xl bg-[var(--ep-surface)] p-8 ring-1 ring-[var(--ep-line)] max-[1101px]:p-6 max-[768px]:p-5"
           aria-labelledby="settings-section-heading"
         >
-          <header className="ep-settings-section-heading [&_p]:text-hub-muted pb-6 [border-bottom:1px_solid_#e6e9ec] [&_h2]:text-[22px] [&_h2:focus]:[outline:none] [&_p]:mt-[6px]">
+          <header className="pb-6 [&_h2]:text-[22px] [&_h2]:font-semibold [&_h2:focus]:outline-none [&_p]:mt-2 [&_p]:text-[14px] [&_p]:text-[var(--ep-muted)]">
             <h2 id="settings-section-heading" ref={heading} tabIndex={-1}>
               {current.label}
             </h2>
@@ -139,7 +145,7 @@ export default function ExpertSettingsPage() {
           </header>
           {context.isError && (
             <div
-              className="ep-settings-note [&_p]:text-hub-muted mt-6 rounded-lg bg-[#f5f6f5] bg-none [padding:16px_18px] text-[13px] text-[#475569] [&_p]:mt-1"
+              className="ep-settings-note mt-6 rounded-lg bg-[var(--ep-surface-raised)] bg-none [padding:16px_18px] text-[13px] text-[var(--ep-muted)] [&_p]:mt-1 [&_p]:text-[var(--ep-muted)]"
               role="status"
             >
               The latest update failed. Showing the last loaded account
@@ -155,9 +161,9 @@ export default function ExpertSettingsPage() {
           )}
           {section === 'account' && (
             <>
-              <div className="ep-settings-identity [&_p]:text-hub-muted flex items-center gap-[18px] [padding:28px_0_12px] max-[768px]:gap-3 max-[768px]:[&_>_div:last-child]:min-w-0 [&_p]:mt-[3px] [&_p]:wrap-anywhere [&_strong]:text-[17px]">
+              <div className="ep-settings-identity flex items-center gap-[18px] [padding:28px_0_12px] max-[768px]:gap-3 max-[768px]:[&_>_div:last-child]:min-w-0 [&_p]:mt-[3px] [&_p]:wrap-anywhere [&_p]:text-[var(--ep-muted)] [&_strong]:text-[17px]">
                 <div
-                  className="ep-settings-avatar text-hub-action-hover grid h-16 w-16 shrink-0 [place-items:center] rounded-full bg-[#ffeddc] bg-none text-[21px] font-[650]"
+                  className="ep-settings-avatar grid h-16 w-16 shrink-0 [place-items:center] rounded-full bg-[var(--ep-accent-glow)] bg-none text-[21px] font-[650] text-[var(--ep-accent-soft)]"
                   aria-hidden="true"
                 >
                   {initials}
@@ -166,13 +172,13 @@ export default function ExpertSettingsPage() {
                   <strong>{data.displayName}</strong>
                   <p>{data.email}</p>
                   {isExpertDemo && (
-                    <span className="ep-settings-demo mt-2 inline-block text-[12px] text-[#7c3515]">
+                    <span className="ep-settings-demo mt-2 inline-block text-[12px] text-[var(--ep-warning)]">
                       Demonstration account
                     </span>
                   )}
                 </div>
               </div>
-              <dl className="ep-settings-rows [&_dt_small]:text-hub-muted m-0 [&_>_div]:grid [&_>_div]:grid-cols-[minmax(150px,_1fr)_minmax(0,_1.3fr)] [&_>_div]:gap-6 [&_>_div]:[padding:24px_0] [&_>_div]:[border-bottom:1px_solid_#e6e9ec] max-[768px]:[&_>_div]:grid-cols-[1fr] max-[768px]:[&_>_div]:gap-[10px] max-[768px]:[&_>_div]:[padding:20px_0] [&_dd]:m-0 [&_dd]:wrap-anywhere [&_dt]:font-semibold [&_dt_small]:mt-[5px] [&_dt_small]:block [&_dt_small]:text-[12px] [&_dt_small]:font-normal">
+              <dl className="ep-settings-rows m-0 [&_>_div]:grid [&_>_div]:grid-cols-[minmax(150px,_1fr)_minmax(0,_1.3fr)] [&_>_div]:gap-6 [&_>_div]:[padding:24px_0] [&_>_div]:[border-bottom:1px_solid_var(--ep-border)] max-[768px]:[&_>_div]:grid-cols-[1fr] max-[768px]:[&_>_div]:gap-[10px] max-[768px]:[&_>_div]:[padding:20px_0] [&_dd]:m-0 [&_dd]:wrap-anywhere [&_dt]:font-semibold [&_dt_small]:mt-[5px] [&_dt_small]:block [&_dt_small]:text-[12px] [&_dt_small]:font-normal [&_dt_small]:text-[var(--ep-muted)]">
                 <div>
                   <dt>
                     Full name
@@ -187,7 +193,7 @@ export default function ExpertSettingsPage() {
                   <dd>{data.email}</dd>
                 </div>
               </dl>
-              <div className="ep-settings-note [&_p]:text-hub-muted mt-6 rounded-lg bg-[#f5f6f5] bg-none [padding:16px_18px] text-[13px] text-[#475569] [&_p]:mt-1">
+              <div className="ep-settings-note mt-6 rounded-lg bg-[var(--ep-surface-raised)] bg-none [padding:16px_18px] text-[13px] text-[var(--ep-muted)] [&_p]:mt-1 [&_p]:text-[var(--ep-muted)]">
                 <strong>Account details are view-only</strong>
                 <p>
                   Name, email and profile photo updates are not available yet.
@@ -197,7 +203,7 @@ export default function ExpertSettingsPage() {
           )}
           {section === 'expert-profile' && (
             <>
-              <dl className="ep-settings-rows [&_dt_small]:text-hub-muted m-0 [&_>_div]:grid [&_>_div]:grid-cols-[minmax(150px,_1fr)_minmax(0,_1.3fr)] [&_>_div]:gap-6 [&_>_div]:[padding:24px_0] [&_>_div]:[border-bottom:1px_solid_#e6e9ec] max-[768px]:[&_>_div]:grid-cols-[1fr] max-[768px]:[&_>_div]:gap-[10px] max-[768px]:[&_>_div]:[padding:20px_0] [&_dd]:m-0 [&_dd]:wrap-anywhere [&_dt]:font-semibold [&_dt_small]:mt-[5px] [&_dt_small]:block [&_dt_small]:text-[12px] [&_dt_small]:font-normal">
+              <dl className="ep-settings-rows m-0 [&_>_div]:grid [&_>_div]:grid-cols-[minmax(150px,_1fr)_minmax(0,_1.3fr)] [&_>_div]:gap-6 [&_>_div]:[padding:24px_0] [&_>_div]:[border-bottom:1px_solid_var(--ep-border)] max-[768px]:[&_>_div]:grid-cols-[1fr] max-[768px]:[&_>_div]:gap-[10px] max-[768px]:[&_>_div]:[padding:20px_0] [&_dd]:m-0 [&_dd]:wrap-anywhere [&_dt]:font-semibold [&_dt_small]:mt-[5px] [&_dt_small]:block [&_dt_small]:text-[12px] [&_dt_small]:font-normal [&_dt_small]:text-[var(--ep-muted)]">
                 <div>
                   <dt>
                     Expert ID
@@ -221,13 +227,13 @@ export default function ExpertSettingsPage() {
                   </dd>
                 </div>
               </dl>
-              <div className="ep-settings-subheading [&_p]:text-hub-muted mt-8 mb-[10px] flex items-start justify-between gap-4 [&_h3]:text-[15px] [&_p]:mt-[5px] [&_p]:text-[12px]">
+              <div className="ep-settings-subheading mt-8 mb-[10px] flex items-start justify-between gap-4 [&_h3]:text-[15px] [&_p]:mt-[5px] [&_p]:text-[12px] [&_p]:text-[var(--ep-muted)]">
                 <div>
                   <h3>Registered services</h3>
                   <p>Booking readiness is specific to each service.</p>
                 </div>
                 <Link
-                  className="ep-settings-text-link text-hub-action-hover! inline-flex items-center gap-[5px] [padding:3px_0] text-[12px] whitespace-nowrap [&:hover]:underline [&:hover]:underline-offset-1"
+                  className="ep-settings-text-link inline-flex items-center gap-[5px] [padding:3px_0] text-[12px] whitespace-nowrap text-[var(--ep-accent-soft)]! [&:hover]:underline [&:hover]:underline-offset-1"
                   to={{ pathname: '/expert/services', search }}
                 >
                   My Services
@@ -235,11 +241,11 @@ export default function ExpertSettingsPage() {
                 </Link>
               </div>
               {data.services.length === 0 ? (
-                <div className="ep-settings-note [&_p]:text-hub-muted mt-6 rounded-lg bg-[#f5f6f5] bg-none [padding:16px_18px] text-[13px] text-[#475569] [&_p]:mt-1">
+                <div className="ep-settings-note mt-6 rounded-lg bg-[var(--ep-surface-raised)] bg-none [padding:16px_18px] text-[13px] text-[var(--ep-muted)] [&_p]:mt-1 [&_p]:text-[var(--ep-muted)]">
                   <p>No services registered for this account.</p>
                 </div>
               ) : (
-                <ul className="ep-settings-services [&_li_p]:text-hub-muted m-0 list-none p-0 [&_.ep-status]:shrink-0 [&_li]:flex [&_li]:items-center [&_li]:justify-between [&_li]:gap-4 [&_li]:[padding:20px_0] [&_li]:[border-bottom:1px_solid_#e6e9ec] max-[768px]:[&_li]:flex-col max-[768px]:[&_li]:items-start max-[768px]:[&_li]:gap-[10px] [&_li_p]:mt-[5px] [&_li_p]:text-[12px] [&_li_strong]:text-[13px] [&_li_strong]:font-semibold">
+                <ul className="ep-settings-services m-0 list-none p-0 [&_.ep-status]:shrink-0 [&_li]:flex [&_li]:items-center [&_li]:justify-between [&_li]:gap-4 [&_li]:[padding:20px_0] [&_li]:[border-bottom:1px_solid_var(--ep-border)] max-[768px]:[&_li]:flex-col max-[768px]:[&_li]:items-start max-[768px]:[&_li]:gap-[10px] [&_li_p]:mt-[5px] [&_li_p]:text-[12px] [&_li_p]:text-[var(--ep-muted)] [&_li_strong]:text-[13px] [&_li_strong]:font-semibold">
                   {data.services.map((service) => (
                     <li key={service.serviceId}>
                       <div>
@@ -266,11 +272,17 @@ export default function ExpertSettingsPage() {
           )}
           {section === 'access' && (
             <>
-              <div className="ep-settings-access [&_p]:text-hub-muted flex items-center gap-[14px] [padding:24px_0] [border-bottom:1px_solid_#e6e9ec] max-[768px]:flex-wrap [&_>_div]:flex-1 [&_>_svg]:shrink-0 [&_>_svg]:text-[#27734d] [&_p]:mt-[5px] [&_p]:text-[13px]">
-                <ShieldCheck size={24} aria-hidden="true" />
-                <div>
-                  <strong>Expert workspace access</strong>
-                  <p>
+              <div className="flex flex-wrap items-center gap-4 rounded-lg bg-[var(--ep-surface-raised)] p-5">
+                <span
+                  className={`grid size-11 shrink-0 place-items-center rounded-lg ${data.portalAccess.allowed ? 'bg-[var(--ep-success-bg)] text-[var(--ep-success)]' : 'bg-[var(--ep-warning-bg)] text-[var(--ep-warning)]'}`}
+                >
+                  <ShieldCheck size={23} aria-hidden="true" />
+                </span>
+                <div className="min-w-0 flex-1 basis-48">
+                  <strong className="text-[15px] font-semibold">
+                    Expert workspace access
+                  </strong>
+                  <p className="mt-1 text-[14px] leading-relaxed text-[var(--ep-muted)]">
                     {data.portalAccess.allowed
                       ? 'Your account can access the expert workspace.'
                       : (data.portalAccess.reason ??
@@ -278,46 +290,63 @@ export default function ExpertSettingsPage() {
                   </p>
                 </div>
                 <span
-                  className={`ep-status ${data.portalAccess.allowed ? 'ep-status-ready' : 'ep-status-neutral'}`}
+                  className={`inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-[12px] font-semibold ${data.portalAccess.allowed ? 'bg-[var(--ep-success-bg)] text-[var(--ep-success)]' : 'bg-[var(--ep-warning-bg)] text-[var(--ep-warning)]'}`}
                 >
-                  {data.portalAccess.allowed ? 'Granted' : 'Restricted'}
+                  <span
+                    aria-hidden="true"
+                    className="size-1.5 rounded-full bg-current"
+                  />
+                  {data.portalAccess.allowed ? 'Access granted' : 'Restricted'}
                 </span>
               </div>
-              <div className="ep-settings-subheading [&_p]:text-hub-muted mt-8 mb-[10px] flex items-start justify-between gap-4 [&_h3]:text-[15px] [&_p]:mt-[5px] [&_p]:text-[12px]">
+              <div className="mt-8 grid grid-cols-[minmax(0,1fr)_minmax(260px,.55fr)] gap-8 max-[1101px]:grid-cols-1">
                 <div>
-                  <h3>Assigned permissions</h3>
-                  <p>
-                    Assigned by the platform. Changes require an authorized
-                    administrator.
+                  <div className="mb-5 [&_h3]:text-[16px] [&_h3]:font-semibold [&_p]:mt-2 [&_p]:max-w-[60ch] [&_p]:text-[14px] [&_p]:leading-relaxed [&_p]:text-[var(--ep-muted)]">
+                    <div>
+                      <h3>Assigned permissions</h3>
+                      <p>
+                        Assigned by the platform. Changes require an authorized
+                        administrator.
+                      </p>
+                    </div>
+                  </div>
+                  {data.portalAccess.capabilities.length === 0 ? (
+                    <div className="ep-settings-note mt-6 rounded-lg bg-[var(--ep-surface-raised)] bg-none [padding:16px_18px] text-[13px] text-[var(--ep-muted)] [&_p]:mt-1 [&_p]:text-[var(--ep-muted)]">
+                      <p>
+                        No specific permissions are assigned to this account.
+                      </p>
+                    </div>
+                  ) : (
+                    <ul className="m-0 list-none divide-y divide-[var(--ep-line)] border-y border-[var(--ep-line)] p-0 [&_li]:flex [&_li]:items-start [&_li]:gap-3 [&_li]:py-5 [&_small]:mt-2 [&_small]:block [&_small]:text-[12px] [&_small]:wrap-anywhere [&_small]:text-[var(--ep-muted)] [&_strong]:text-[14px] [&_strong]:font-semibold [&_svg]:mt-0.5 [&_svg]:shrink-0 [&_svg]:text-[var(--ep-success)]">
+                      {data.portalAccess.capabilities.map((capability) => (
+                        <li key={capability}>
+                          <CheckCircle2 size={16} aria-hidden="true" />
+                          <div>
+                            <strong>
+                              {permissions[capability] ??
+                                'Additional workspace permission'}
+                            </strong>
+                            <small>{capability}</small>
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+                <aside className="border-l border-[var(--ep-line)] pl-8 max-[1101px]:border-t max-[1101px]:border-l-0 max-[1101px]:pt-6 max-[1101px]:pl-0">
+                  <LockKeyhole
+                    size={20}
+                    aria-hidden="true"
+                    className="mb-3 text-[var(--ep-muted)]"
+                  />
+                  <strong className="text-[15px] font-semibold">
+                    Security settings
+                  </strong>
+                  <p className="mt-2 max-w-[40ch] text-[14px] leading-relaxed text-[var(--ep-muted)]">
+                    Password changes, two-factor authentication and session
+                    management are not available in this preview.
                   </p>
-                </div>
-              </div>
-              {data.portalAccess.capabilities.length === 0 ? (
-                <div className="ep-settings-note [&_p]:text-hub-muted mt-6 rounded-lg bg-[#f5f6f5] bg-none [padding:16px_18px] text-[13px] text-[#475569] [&_p]:mt-1">
-                  <p>No specific permissions are assigned to this account.</p>
-                </div>
-              ) : (
-                <ul className="ep-settings-permissions [&_small]:text-hub-muted m-0 list-none p-0 [&_li]:flex [&_li]:items-start [&_li]:gap-[10px] [&_li]:[padding:16px_0] [&_li]:[border-bottom:1px_solid_#e6e9ec] [&_small]:mt-[5px] [&_small]:block [&_small]:text-[12px] [&_small]:wrap-anywhere [&_strong]:text-[13px] [&_strong]:font-medium [&_svg]:mt-[3px] [&_svg]:shrink-0 [&_svg]:text-[#27734d]">
-                  {data.portalAccess.capabilities.map((capability) => (
-                    <li key={capability}>
-                      <CheckCircle2 size={16} aria-hidden="true" />
-                      <div>
-                        <strong>
-                          {permissions[capability] ??
-                            'Additional workspace permission'}
-                        </strong>
-                        <small>{capability}</small>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-              )}
-              <div className="ep-settings-note [&_p]:text-hub-muted mt-6 rounded-lg bg-[#f5f6f5] bg-none [padding:16px_18px] text-[13px] text-[#475569] [&_p]:mt-1">
-                <strong>Security settings</strong>
-                <p>
-                  Password changes, two-factor authentication and session
-                  management are not available in this preview.
-                </p>
+                </aside>
               </div>
             </>
           )}

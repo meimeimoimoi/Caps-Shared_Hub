@@ -1,4 +1,4 @@
-﻿import { Navigate, useLocation } from 'react-router-dom'
+import { Navigate, useLocation } from 'react-router-dom'
 
 // Preserve bookmarked profile URLs and the selected demo scenario.
 export default function ExpertProfilePage() {
