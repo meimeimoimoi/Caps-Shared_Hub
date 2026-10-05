@@ -9,12 +9,15 @@ interface ApplicationsTableProps {
   paged: Paged<ExpertApplication>
   onPrev: () => void
   onNext: () => void
+  /** Chữ khi không có dòng nào, vd. đang tải hoặc lỗi */
+  empty?: string
 }
 
 export function ApplicationsTable({
   paged,
   onPrev,
   onNext,
+  empty = 'Không có hồ sơ nào.',
 }: ApplicationsTableProps) {
   const { rows, total } = paged
   return (
@@ -91,7 +94,7 @@ export function ApplicationsTable({
           {rows.length === 0 && (
             <tr className="border-border-subtle border-t">
               <td colSpan={6} className="text-fg-muted px-4 py-10 text-center">
-                Không có hồ sơ nào.
+                {empty}
               </td>
             </tr>
           )}

@@ -19,6 +19,7 @@ const AdminPendingExpertsPage = lazy(() => import('@/pages/admin/AdminPendingExp
 const AdminApplicationDetailPage = lazy(() => import('@/pages/admin/AdminApplicationDetailPage'))
 const AdminExpertsPage = lazy(() => import('@/pages/admin/AdminExpertsPage'))
 const AdminDisputeDetailPage = lazy(() => import('@/pages/admin/AdminDisputeDetailPage'))
+const AdminEscrowPage = lazy(() => import('@/pages/admin/AdminEscrowPage'))
 
 function Fallback() {
   return (
@@ -45,6 +46,7 @@ export function AppRoutes() {
           <Route path="/admin/experts/:id" element={<AdminApplicationDetailPage />} />
           <Route path="/admin/disputes" element={<AdminDisputeDetailPage />} />
           <Route path="/admin/disputes/:id" element={<AdminDisputeDetailPage />} />
+          <Route path="/admin/escrow" element={<AdminEscrowPage />} />
 
           <Route element={<ExpertRoute />}>
             <Route path="/expert" element={<ExpertLayout />}>

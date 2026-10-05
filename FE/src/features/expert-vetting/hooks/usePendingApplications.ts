@@ -1,7 +1,9 @@
 import { useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { paginate } from '@/lib/utils'
+import { getApplications } from '../api/adminApi'
+import { adminKeys } from '../api/queryKeys'
 import { QUEUE_TABS, type QueueTab } from '../constants'
-import { mockApplications } from '../mockData'
 import type { ApplicationStatus } from '../types'
 import { foldVietnamese } from '../utils/applications'
 
@@ -13,8 +15,14 @@ export function usePendingApplications() {
   const [query, setQueryState] = useState('')
   const [page, setPage] = useState(0)
 
-  // MOCK: thay mockApplications bằng useQuery gọi API (xem features/admin/mockData.ts)
-  const applications = mockApplications
+  const {
+    data: applications = [],
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: adminKeys.applications(),
+    queryFn: ({ signal }) => getApplications(signal),
+  })
   const countOf = (t: QueueTab) =>
     applications.filter((a) => statusesOf(t).includes(a.status)).length
 
@@ -29,6 +37,8 @@ export function usePendingApplications() {
     )
     .sort((a, b) => a.submittedAt.localeCompare(b.submittedAt))
   return {
+    isLoading,
+    error,
     tab,
     setTab: (t: QueueTab) => {
       setTabState(t)

@@ -11,19 +11,23 @@ import { CaseHeader } from '@/components/ui/case-header'
 import { DecisionBar } from '@/components/ui/decision-bar'
 import { Toast } from '@/components/ui/toast'
 import { AdminLayout } from '@/app/layouts/admin/AdminLayout'
-import { AiScreeningTab } from '../../features/admin/components/AiScreeningTab'
-import { DecisionDialog } from '../../features/admin/components/DecisionDialog'
-import { SupplementDialog } from '../../features/admin/components/SupplementDialog'
-import { CompetencyReview } from '../../features/admin/components/CompetencyReview'
-import { DecisionCard, AiSummaryCard } from '../../features/admin/components/DecisionSummary'
-import { DocumentsTab } from '../../features/admin/components/DocumentsTab'
-import { HistoryTab } from '../../features/admin/components/HistoryTab'
-import { ProfileTab } from '../../features/admin/components/ProfileTab'
-import { CURRENT_ADMIN, mockApplications } from '../../features/admin/mockData'
-import { DECISION_LABEL, DECISION_TOAST } from '../../features/admin/constants'
-import { formatDate } from '../../features/admin/utils/applications'
-import { useApplicationReview } from '../../features/admin/hooks/useApplicationReview'
-import type { ReviewDecision } from '../../features/admin/types'
+import { AiScreeningTab } from '../../features/expert-vetting/components/AiScreeningTab'
+import { DecisionDialog } from '../../features/expert-vetting/components/DecisionDialog'
+import { SupplementDialog } from '../../features/expert-vetting/components/SupplementDialog'
+import { CompetencyReview } from '../../features/expert-vetting/components/CompetencyReview'
+import { DecisionCard, AiSummaryCard } from '../../features/expert-vetting/components/DecisionSummary'
+import { DocumentsTab } from '../../features/expert-vetting/components/DocumentsTab'
+import { HistoryTab } from '../../features/expert-vetting/components/HistoryTab'
+import { ProfileTab } from '../../features/expert-vetting/components/ProfileTab'
+import {
+  CURRENT_ADMIN,
+  DECISION_LABEL,
+  DECISION_TOAST,
+} from '../../features/expert-vetting/constants'
+import { formatDate } from '../../features/expert-vetting/utils/applications'
+import { useAdminNav } from '@/app/layouts/admin/useAdminNav'
+import { useApplicationReview } from '../../features/expert-vetting/hooks/useApplicationReview'
+import type { ReviewDecision } from '../../features/expert-vetting/types'
 
 const tabs = [
   { key: 'profile', label: 'Hồ sơ' },
@@ -32,13 +36,9 @@ const tabs = [
   { key: 'history', label: 'Lịch sử' },
 ] as const
 
-// MOCK: badge sidebar đếm từ mock, sau này lấy từ API
-const pendingCount = mockApplications.filter(
-  (a) => a.status === 'CAPABILITY_REVIEW'
-).length
-
 export default function AdminApplicationDetailPage() {
   const { id = '' } = useParams()
+  const nav = useAdminNav()
   const [tab, setTab] = useState<(typeof tabs)[number]['key']>('ai')
   const [docCode, setDocCode] = useState<string>()
   const [dialog, setDialog] = useState<ReviewDecision | null>(null)
@@ -58,12 +58,10 @@ export default function AdminApplicationDetailPage() {
 
   if (!detail || !status) {
     return (
-      <AdminLayout
-        section="pending"
-        breadcrumb={listLink}
-        pendingCount={pendingCount}
-      >
-        <h1 className="text-h1-tool">Không tìm thấy hồ sơ {id}</h1>
+      <AdminLayout {...nav} section="pending" breadcrumb={listLink}>
+        <h1 className="text-h1-tool">
+          {review.isLoading ? 'Đang tải…' : `Không tìm thấy hồ sơ ${id}`}
+        </h1>
         <Link
           to="/admin/experts/pending"
           className="text-accent-text mt-3 inline-block underline"
@@ -90,12 +88,15 @@ export default function AdminApplicationDetailPage() {
     document.getElementById(`tab-${key}`)?.focus()
   }
 
-  const finish = (kind: ReviewDecision, note?: string) => {
-    review.decide(kind, note)
-    setDialog(null)
-    setTab('history')
-    setToast(DECISION_TOAST[kind])
-  }
+  const finish = (kind: ReviewDecision, note?: string) =>
+    review
+      .decide(kind, note)
+      .then(() => {
+        setDialog(null)
+        setTab('history')
+        setToast(DECISION_TOAST[kind])
+      })
+      .catch((e: Error) => setToast(e.message))
 
   const blockers = [
     review.remainingCriteria > 0 && {
@@ -118,8 +119,8 @@ export default function AdminApplicationDetailPage() {
 
   return (
     <AdminLayout
+      {...nav}
       section="pending"
-      pendingCount={pendingCount}
       breadcrumb={
         <>
           {listLink} <span aria-hidden="true">/</span>{' '}

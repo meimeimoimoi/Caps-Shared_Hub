@@ -1,18 +1,20 @@
 import { cn } from '@/lib/utils'
 import { AdminLayout } from '@/app/layouts/admin/AdminLayout'
-import { ApplicationsTable } from '../../features/admin/components/ApplicationsTable'
-import { QUEUE_TABS } from '../../features/admin/constants'
-import { usePendingApplications } from '../../features/admin/hooks/usePendingApplications'
+import { ApplicationsTable } from '../../features/expert-vetting/components/ApplicationsTable'
+import { QUEUE_TABS } from '../../features/expert-vetting/constants'
+import { useAdminNav } from '@/app/layouts/admin/useAdminNav'
+import { usePendingApplications } from '../../features/expert-vetting/hooks/usePendingApplications'
 
 export default function AdminPendingExpertsPage() {
-  const { tab, setTab, query, setQuery, countOf, paged, prev, next } =
+  const nav = useAdminNav()
+  const { tab, setTab, query, setQuery, countOf, paged, prev, next, isLoading, error } =
     usePendingApplications()
 
   return (
     <AdminLayout
+      {...nav}
       section="pending"
       breadcrumb="Hồ sơ chờ duyệt"
-      pendingCount={countOf('review')}
       search={query}
       onSearchChange={setQuery}
     >
@@ -46,7 +48,12 @@ export default function AdminPendingExpertsPage() {
         ))}
       </div>
 
-      <ApplicationsTable paged={paged} onPrev={prev} onNext={next} />
+      <ApplicationsTable
+        paged={paged}
+        onPrev={prev}
+        onNext={next}
+        empty={isLoading ? 'Đang tải…' : error?.message}
+      />
     </AdminLayout>
   )
 }

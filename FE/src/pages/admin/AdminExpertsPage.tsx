@@ -5,22 +5,18 @@ import { Toast } from '@/components/ui/toast'
 import { StatusBadge } from '@/components/ui/status-badge'
 import { TablePager } from '@/components/ui/table-pager'
 import { AdminLayout } from '@/app/layouts/admin/AdminLayout'
-import { formatDate } from '../../features/admin/utils/applications'
+import { formatDate } from '../../features/expert-vetting/utils/applications'
 import { formatVnd } from '@/lib/format-money'
-import { mockApplications } from '../../features/admin/mockData'
-import { useExperts, ALL } from '../../features/admin/hooks/useExperts'
-import { ExpertDrawer } from '../../features/admin/components/ExpertDrawer'
-import type { Expert } from '../../features/admin/types'
-
-// MOCK: badge sidebar đếm từ mock, sau này lấy từ API
-const pendingCount = mockApplications.filter(
-  (a) => a.status === 'CAPABILITY_REVIEW'
-).length
+import { useAdminNav } from '@/app/layouts/admin/useAdminNav'
+import { useExperts, ALL } from '../../features/expert-vetting/hooks/useExperts'
+import { ExpertDrawer } from '../../features/expert-vetting/components/ExpertDrawer'
+import type { Expert } from '../../features/expert-vetting/types'
 
 const selectCls =
   'border-border-control rounded-control shadow-control bg-paper h-control min-w-48 border px-3 text-sm'
 
 export default function AdminExpertsPage() {
+  const nav = useAdminNav()
   const experts = useExperts()
   const [toast, setToast] = useState<string | null>(null)
   const clearToast = useCallback(() => setToast(null), [])
@@ -28,9 +24,9 @@ export default function AdminExpertsPage() {
 
   return (
     <AdminLayout
+      {...nav}
       section="experts"
       breadcrumb="Quản lý Expert"
-      pendingCount={pendingCount}
       search={experts.query}
       onSearchChange={experts.setQuery}
     >
@@ -126,7 +122,10 @@ export default function AdminExpertsPage() {
                   colSpan={6}
                   className="text-fg-muted px-4 py-10 text-center"
                 >
-                  Không có Expert nào khớp bộ lọc.
+                  {experts.isLoading
+                    ? 'Đang tải…'
+                    : (experts.error?.message ??
+                      'Không có Expert nào khớp bộ lọc.')}
                 </td>
               </tr>
             )}
@@ -140,14 +139,18 @@ export default function AdminExpertsPage() {
           key={experts.selected.id}
           expert={experts.selected}
           onClose={() => experts.select(null)}
-          onSetServiceStatus={(status) => {
-            experts.setServiceStatus(experts.selected!.id, status)
-            setToast(
-              status === 'SUSPENDED'
-                ? 'Đã tạm ngưng dịch vụ'
-                : 'Đã mở lại dịch vụ'
-            )
-          }}
+          onSetServiceStatus={(status) =>
+            experts
+              .setServiceStatus(experts.selected!.id, status)
+              .then(() =>
+                setToast(
+                  status === 'SUSPENDED'
+                    ? 'Đã tạm ngưng dịch vụ'
+                    : 'Đã mở lại dịch vụ'
+                )
+              )
+              .catch((e: Error) => setToast(e.message))
+          }
         />
       )}
       {toast && <Toast message={toast} onDone={clearToast} />}

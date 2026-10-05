@@ -5,44 +5,30 @@ import { CaseHeader } from '@/components/ui/case-header'
 import { StatusBadge } from '@/components/ui/status-badge'
 import { Toast } from '@/components/ui/toast'
 import { AdminLayout } from '@/app/layouts/admin/AdminLayout'
-import { DisputeDecision } from '../../features/admin/components/DisputeDecision'
-import { HistoryTab } from '../../features/admin/components/HistoryTab'
-import {
-  CURRENT_ADMIN,
-  mockApplications,
-  mockDisputes,
-} from '../../features/admin/mockData'
-import {
-  DISPUTE_OUTCOME,
-  DISPUTE_SLA_HOURS,
-} from '../../features/admin/constants'
-
-// MOCK: badge sidebar đếm từ mock, sau này lấy từ API
-const pendingCount = mockApplications.filter(
-  (a) => a.status === 'CAPABILITY_REVIEW'
-).length
+import { DisputeDecision } from '../../features/disputes-escrow/components/DisputeDecision'
+import { HistoryTab } from '../../features/expert-vetting/components/HistoryTab'
+import { DISPUTE_SLA_HOURS } from '../../features/disputes-escrow/constants'
+import { useAdminNav } from '@/app/layouts/admin/useAdminNav'
+import { useDispute } from '../../features/disputes-escrow/hooks/useDispute'
 
 export default function AdminDisputeDetailPage() {
-  // ponytail: chưa có trang danh sách khiếu nại, /admin/disputes mở thẳng khiếu nại đầu tiên
-  const { id = mockDisputes[0].id } = useParams()
-  const dispute = mockDisputes.find((d) => d.id === id)
-  const [history, setHistory] = useState(dispute?.history ?? [])
-  const [decided, setDecided] = useState(false)
+  // ponytail: chưa có trang danh sách khiếu nại, /admin/disputes mở khiếu nại đang mở đầu tiên
+  const params = useParams()
+  const { id, dispute, isLoading, decide } = useDispute(params.id)
+  const nav = useAdminNav()
   const [now] = useState(() => Date.now())
   const [toast, setToast] = useState<string | null>(null)
   const clearToast = useCallback(() => setToast(null), [])
 
   const listLink = <span>Khiếu nại</span>
-  const layout = {
-    section: 'disputes' as const,
-    pendingCount,
-    disputeCount: decided ? 0 : mockDisputes.length,
-  }
+  const layout = { ...nav, section: 'disputes' as const }
 
   if (!dispute) {
     return (
       <AdminLayout {...layout} breadcrumb={listLink}>
-        <h1 className="text-h1-tool">Không tìm thấy khiếu nại {id}</h1>
+        <h1 className="text-h1-tool">
+          {isLoading ? 'Đang tải…' : `Không tìm thấy khiếu nại ${id ?? ''}`}
+        </h1>
         <Link
           to="/admin/disputes"
           className="text-accent-text mt-3 inline-block underline"
@@ -139,26 +125,21 @@ export default function AdminDisputeDetailPage() {
             </dl>
           </section>
 
-          <HistoryTab title="Nhật ký hồ sơ (audit log)" history={history} />
+          <HistoryTab
+            title="Nhật ký hồ sơ (audit log)"
+            history={dispute.history}
+          />
         </div>
 
         <div className="lg:sticky lg:top-20">
           <DisputeDecision
             hoursLeft={hoursLeft}
-            decided={decided}
-            // MOCK: quyết định tại chỗ. TODO(api): POST quyết định trọng tài
-            onDecide={(outcome, reason) => {
-              setDecided(true)
-              setHistory((h) => [
-                {
-                  at: new Date().toISOString(),
-                  actor: CURRENT_ADMIN,
-                  text: `Ra quyết định: ${DISPUTE_OUTCOME[outcome].label}. ${reason}`,
-                },
-                ...h,
-              ])
-              setToast('Đã ra quyết định trọng tài')
-            }}
+            decided={!!dispute.resolvedAt}
+            onDecide={(outcome, reason) =>
+              decide({ outcome, reason })
+                .then(() => setToast('Đã ra quyết định trọng tài'))
+                .catch((e: Error) => setToast(e.message))
+            }
           />
         </div>
       </div>

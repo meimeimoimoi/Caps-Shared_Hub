@@ -1,5 +1,8 @@
 import type { ApplicationStatus, ReviewDecision } from './types'
 
+// MOCK: admin đang đăng nhập. TODO(api): lấy từ authStore khi có đăng nhập admin
+export const CURRENT_ADMIN = 'Trần An'
+
 /* Cấu hình dialog xác nhận cho từng loại quyết định */
 export const DECISION_DIALOG: Record<
   Exclude<ReviewDecision, 'supplement'>,
@@ -110,27 +113,6 @@ export const QUEUE_TABS = [
 }[]
 
 export type QueueTab = (typeof QUEUE_TABS)[number]['key']
-
-/* Quyết định trọng tài khiếu nại: kết quả → tỷ lệ phân chia tiền Escrow */
-export const DISPUTE_SLA_HOURS = 48
-export const DISPUTE_OUTCOME = {
-  UPHELD: {
-    label: 'Chấp thuận khiếu nại',
-    hint: 'Chuyên gia vi phạm nghĩa vụ hoặc quy trình',
-    split: 'Hoàn Client 100% · Chuyên gia 0% · Nền tảng 0%',
-  },
-  DISMISSED: {
-    label: 'Bác khiếu nại',
-    hint: 'Chuyên gia làm đúng, đủ trách nhiệm',
-    split: 'Hoàn Client 0% · Chuyên gia 80% · Nền tảng 20%',
-  },
-  SETTLED: {
-    label: 'Hòa giải',
-    hint: 'Có thiếu sót một phần từ cả hai phía',
-    split: 'Hoàn Client 50% · Chuyên gia 40% · Nền tảng 10%',
-  },
-}
-export type DisputeOutcome = keyof typeof DISPUTE_OUTCOME
 
 export const DECISION_LABEL: Record<ReviewDecision, string> = {
   approve: 'Duyệt',
