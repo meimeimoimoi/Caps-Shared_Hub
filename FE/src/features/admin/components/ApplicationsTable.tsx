@@ -28,12 +28,14 @@ export function ApplicationsTable({
       <table className="w-full min-w-[760px] text-sm">
         <thead className="bg-sunken text-fg-muted">
           <tr className="[&>th]:px-4 [&>th]:py-3 [&>th]:font-semibold">
-            <th className="text-left">Mã đơn</th>
             <th className="text-left">Người đăng ký</th>
             <th className="text-right">Số năm KN</th>
             <th className="text-left">Kết quả AI sàng lọc</th>
             <th className="text-right">Ngày nộp</th>
             <th className="text-right">Đã chờ</th>
+            <th>
+              <span className="sr-only">Thao tác</span>
+            </th>
           </tr>
         </thead>
         <tbody>
@@ -44,14 +46,6 @@ export function ApplicationsTable({
                 key={a.id}
                 className="border-border-subtle border-t [&>td]:px-4 [&>td]:py-2"
               >
-                <td>
-                  <Link
-                    to={`/admin/experts/${a.id}`}
-                    className="text-accent-text num font-medium underline underline-offset-4"
-                  >
-                    {a.id}
-                  </Link>
-                </td>
                 <td>
                   <div className="text-fg-strong text-base font-semibold">
                     {a.name}
@@ -81,6 +75,15 @@ export function ApplicationsTable({
                       <span className="num">{days}</span> ngày
                     </>
                   )}
+                </td>
+                <td className="text-right">
+                  <Link
+                    to={`/admin/experts/${a.id}`}
+                    aria-label={`Xem chi tiết hồ sơ ${a.name}`}
+                    className="btn btn-press btn-secondary no-underline"
+                  >
+                    Xem chi tiết
+                  </Link>
                 </td>
               </tr>
             )
