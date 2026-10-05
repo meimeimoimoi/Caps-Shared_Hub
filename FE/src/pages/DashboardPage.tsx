@@ -1,4 +1,4 @@
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/ui/actions/button'
 import { useAuthStore } from '@/features/auth'
 import { useNavigate, Navigate } from 'react-router-dom'
 import { useExpertContext } from '@/features/expert-context'

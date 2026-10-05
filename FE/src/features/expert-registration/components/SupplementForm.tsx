@@ -1,7 +1,7 @@
 import { Loader2, Upload, FileText, X } from 'lucide-react'
 import type { FormEvent } from 'react'
-import { FormField } from '@/components/ui/form-field'
-import { formControlClassName as inputCls, formButtonClassName as btnBase } from '@/components/ui/form-control'
+import { FormField } from '@/components/ui/forms/form-field'
+import { formControlClassName as inputCls, formButtonClassName as btnBase } from '@/components/ui/forms/form-control'
 
 export interface SupplementFormProps {
   file: File | null

@@ -3,7 +3,7 @@ import { Outlet, useSearchParams, useLocation } from 'react-router-dom'
 import { isExpertDemo } from '@/lib/expert-data-source'
 import { ExpertHeader } from './ExpertHeader'
 import { ExpertSidebar } from './ExpertSidebar'
-import { CustomSelect } from '@/components/ui/custom-select'
+import { CustomSelect } from '@/components/ui/forms/custom-select'
 import './expert-theme.css'
 
 const scenarioOptions = [
