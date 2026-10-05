@@ -40,8 +40,13 @@ Caps-Shared_Hub/
 ├── FE/
 │   ├── src/
 │   │   ├── app/                  # Application shell, providers, routes
-│   │   ├── features/             # Business modules with public index.ts APIs
-│   │   ├── shared/               # Shared UI, hooks, lib, assets, styles
+│   │   ├── features/             # components / hooks / store / api / types per feature
+│   │   ├── components/ui/        # Reusable UI primitives
+│   │   ├── lib/                  # API client and generic utilities
+│   │   ├── pages/                # Route screens (login, admin, expert)
+│   │   ├── hooks/                # Reusable hooks
+│   │   ├── assets/               # Logos and shared assets
+│   │   ├── styles/               # Global styles and design tokens
 │   │   └── main.tsx              # React entry point
 │   ├── scripts/check-architecture.mjs
 │   ├── .env.example              # Mẫu biến môi trường
@@ -135,9 +140,9 @@ vào `/dashboard` (F5 không mất session, 401 tự về `/login`).
 
 **Frontend**
 
-- Tính năng mới: folder theo domain trong `src/features/<ten>/` gồm `pages/`, `components/`, `hooks/`, `api/`, `model/`.
-- UI nguyên tử dùng chung vào `src/shared/ui/`. Route mới khai báo trong `src/app/routes/` (lazy + `ProtectedRoute` nếu cần auth).
-- Gọi API qua `shared/lib/api-client` (`api.get/post`), không dùng `axios` trực tiếp trong component.
+- Tính năng mới: folder theo domain trong `src/features/<ten>/` gồm `components/`, `hooks/`, `store/`, `api/`, `types/` theo kiến trúc nhóm đã chốt.
+- UI nguyên tử dùng chung vào `src/components/ui/`. Màn hình đặt tại `src/pages/`; route mới khai báo trong `src/app/routes/` (lazy + `ProtectedRoute` nếu cần auth).
+- Gọi API qua `lib/api-client` (`api.get/post`), không dùng `axios` trực tiếp trong component.
 
 ---
 
