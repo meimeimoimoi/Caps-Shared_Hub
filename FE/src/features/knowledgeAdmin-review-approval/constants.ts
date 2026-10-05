@@ -9,3 +9,11 @@ export const PIPELINE = [
 export type PipelineStage = (typeof PIPELINE)[number]['key']
 
 export const SOURCE_LABEL = { UPLOAD: 'Tải lên', CRAWL: 'Crawl' } as const
+
+export const DOC_TYPES = [
+  'Luật',
+  'Nghị định',
+  'Thông tư',
+  'Quyết định',
+  'VB hợp nhất',
+] as const

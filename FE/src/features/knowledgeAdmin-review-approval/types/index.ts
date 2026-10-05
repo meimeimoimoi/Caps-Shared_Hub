@@ -15,6 +15,15 @@ export interface KnowledgeDocument {
   queuedAt: string
 }
 
+/** Thông tin bắt buộc khi tải văn bản lên (ngày dạng yyyy-mm-dd) */
+export interface UploadMeta {
+  number: string
+  docType: string
+  issuer: string
+  issuedAt: string
+  effectiveAt: string
+}
+
 /** Số đếm cho thanh quy trình */
 export interface PipelineSummary {
   collectedThisMonth: number

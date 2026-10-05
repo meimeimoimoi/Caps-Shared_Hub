@@ -2,20 +2,24 @@ import { useCallback, useState } from 'react'
 import { Upload } from 'lucide-react'
 import { Toast } from '@/components/ui/toast'
 import { KnowledgeLayout } from '@/app/layouts/knowledge/KnowledgeLayout'
+import { useKnowledgeNav } from '@/app/layouts/knowledge/useKnowledgeNav'
 import { DocumentsTable } from '../../features/knowledgeAdmin-review-approval/components/DocumentsTable'
+import { UploadDialog } from '../../features/knowledgeAdmin-review-approval/components/UploadDialog'
 import { PipelineSteps } from '../../features/knowledgeAdmin-review-approval/components/PipelineSteps'
 import { PIPELINE } from '../../features/knowledgeAdmin-review-approval/constants'
 import { useReviewQueue } from '../../features/knowledgeAdmin-review-approval/hooks/useReviewQueue'
 
 export default function KnowledgeQueuePage() {
   const queue = useReviewQueue()
+  const nav = useKnowledgeNav()
+  const [uploadOpen, setUploadOpen] = useState(false)
   const [toast, setToast] = useState<string | null>(null)
   const clearToast = useCallback(() => setToast(null), [])
 
   return (
     <KnowledgeLayout
+      {...nav}
       section="queue"
-      queueCount={queue.summary?.pending ?? 0}
       breadcrumb="Hàng đợi duyệt"
       search={queue.query}
       onSearchChange={queue.setQuery}
@@ -28,28 +32,14 @@ export default function KnowledgeQueuePage() {
             công. Bấm một bước để xem văn bản đang ở đó.
           </p>
         </div>
-        {/* Nút mở hộp chọn file gốc của trình duyệt */}
-        <label className="btn btn-press btn-primary cursor-pointer focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-(--focus-ring)">
+        <button
+          type="button"
+          onClick={() => setUploadOpen(true)}
+          className="btn btn-press btn-primary"
+        >
           <Upload size={16} aria-hidden="true" />
           Tải tài liệu lên
-          <input
-            type="file"
-            multiple
-            accept=".pdf,.doc,.docx"
-            className="sr-only"
-            onChange={(e) => {
-              const files = [...(e.target.files ?? [])]
-              e.target.value = '' // cho phép chọn lại cùng file
-              if (!files.length) return
-              queue
-                .upload(files)
-                .then(() =>
-                  setToast(`Đã tải lên ${files.length} văn bản, đang chờ bóc tách`)
-                )
-                .catch((err: Error) => setToast(err.message))
-            }}
-          />
-        </label>
+        </button>
       </div>
 
       <div className="mt-8">
@@ -68,6 +58,16 @@ export default function KnowledgeQueuePage() {
         empty={queue.isLoading ? 'Đang tải…' : queue.error?.message}
       />
 
+      {uploadOpen && (
+        <UploadDialog
+          onClose={() => setUploadOpen(false)}
+          onUpload={(file, meta, onProgress) =>
+            queue
+              .upload(file, meta, onProgress)
+              .then(() => setToast('Đã tải lên, văn bản đang chờ bóc tách'))
+          }
+        />
+      )}
       {toast && <Toast message={toast} onDone={clearToast} />}
     </KnowledgeLayout>
   )

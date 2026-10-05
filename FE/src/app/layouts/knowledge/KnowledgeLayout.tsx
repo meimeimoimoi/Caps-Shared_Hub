@@ -7,7 +7,7 @@ type KnowledgeLayoutProps = Omit<
   'nav' | 'initials' | 'searchPlaceholder'
 > & {
   /** Mục sidebar đang mở */
-  section: 'queue'
+  section: 'queue' | 'sources'
   queueCount: number
 }
 
@@ -28,7 +28,12 @@ export function KnowledgeLayout({
           badge: queueCount,
         },
         { label: 'Tất cả văn bản', icon: BookOpen },
-        { label: 'Nguồn thu thập', icon: Link2 },
+        {
+          label: 'Nguồn thu thập',
+          icon: Link2,
+          to: '/knowledge/sources',
+          active: section === 'sources',
+        },
       ],
     },
     { group: 'Soạn nháp', items: [{ label: 'Template', icon: LayoutGrid }] },

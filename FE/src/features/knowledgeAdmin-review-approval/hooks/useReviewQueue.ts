@@ -4,7 +4,7 @@ import { foldVietnamese } from '@/lib/utils'
 import {
   getDocuments,
   getPipelineSummary,
-  uploadDocuments,
+  uploadDocument,
 } from '../api/knowledgeApi'
 import { knowledgeKeys } from '../api/queryKeys'
 import type { PipelineStage } from '../constants'
@@ -43,8 +43,8 @@ export function useReviewQueue() {
     rows,
     isLoading: documents.isLoading,
     error: documents.error,
-    upload: async (files: File[]) => {
-      await uploadDocuments(files)
+    upload: async (...args: Parameters<typeof uploadDocument>) => {
+      await uploadDocument(...args)
       await qc.invalidateQueries({ queryKey: knowledgeKeys.all })
     },
   }
