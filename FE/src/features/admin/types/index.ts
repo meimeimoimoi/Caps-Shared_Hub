@@ -101,4 +101,10 @@ export interface Expert {
   activeCases: number
   capacity: number
   approvedAt: string
+  experienceYears: number
+  /** Lịch nhận việc, vd. "Thứ 2 – Thứ 6" */
+  schedule: string
+  reviewer: string
+  /** text viết tiếp sau tên actor, vd. actor "Trần An" + text "duyệt đơn đăng ký." */
+  history: HistoryEntry[]
 }

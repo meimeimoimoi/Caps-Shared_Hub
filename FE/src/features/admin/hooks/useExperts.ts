@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { paginate } from '@/lib/utils'
-import { mockExperts } from '../mockData'
+import { CURRENT_ADMIN, mockExperts } from '../mockData'
 import type { Expert } from '../types'
 import { foldVietnamese } from '../utils/applications'
 
@@ -15,7 +15,32 @@ export function useExperts() {
   const [page, setPage] = useState(0)
 
   // MOCK: thay mockExperts bằng useQuery gọi API (xem features/admin/mockData.ts)
-  const experts = mockExperts
+  const [experts, setExperts] = useState(mockExperts)
+  const [selectedId, setSelectedId] = useState<string | null>(null)
+
+  // MOCK: đổi trạng thái tại chỗ + ghi lịch sử. TODO(api): PATCH rồi refetch
+  const setServiceStatus = (id: string, status: Expert['serviceStatus']) =>
+    setExperts((list) =>
+      list.map((e) =>
+        e.id !== id
+          ? e
+          : {
+              ...e,
+              serviceStatus: status,
+              history: [
+                {
+                  at: new Date().toISOString(),
+                  actor: CURRENT_ADMIN,
+                  text:
+                    status === 'SUSPENDED'
+                      ? 'tạm ngưng dịch vụ.'
+                      : 'mở lại dịch vụ.',
+                },
+                ...e.history,
+              ],
+            }
+      )
+    )
   const fields = [...new Set(experts.flatMap((e) => e.fields))].sort((a, b) =>
     a.localeCompare(b, 'vi')
   )
@@ -41,6 +66,9 @@ export function useExperts() {
     }
 
   return {
+    selected: experts.find((e) => e.id === selectedId) ?? null,
+    select: setSelectedId,
+    setServiceStatus,
     status,
     setStatus: resetting(setStatusState),
     field,
