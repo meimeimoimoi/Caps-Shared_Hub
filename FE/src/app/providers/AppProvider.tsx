@@ -16,7 +16,7 @@ export function AppProvider({ children }: AppProviderProps) {
   }, [])
   return (
     <QueryClientProvider client={queryClient}>
-      <div className="min-h-screen bg-slate-950 text-slate-100 antialiased selection:bg-indigo-500 selection:text-white">
+      <div className="min-h-screen bg-desk-2 text-fg antialiased selection:bg-accent-soft selection:text-accent-text">
         {children}
       </div>
     </QueryClientProvider>

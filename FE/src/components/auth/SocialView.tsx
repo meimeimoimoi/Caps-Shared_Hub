@@ -1,5 +1,5 @@
 import { Mail } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { cn } from '@/shared/lib/utils'
 import { GoogleIcon } from './GoogleIcon'
 
 export type SocialViewProps = {
@@ -24,21 +24,6 @@ export function SocialView({ onContinueEmail, onGoogle, className }: SocialViewP
         className,
       )}
     >
-      <div className="flex items-center justify-center gap-[10px] mb-9">
-        <span
-          aria-hidden="true"
-          className={cn(
-            'grid h-[34px] w-[34px] place-items-center rounded-[10px] bg-[var(--accent)] text-[18px] font-extrabold text-white',
-            BRAND_FONT,
-          )}
-        >
-          F
-        </span>
-        <span className={cn('text-[22px] font-extrabold tracking-[-0.02em] text-white', BRAND_FONT)}>
-          Fisco — SHFT
-        </span>
-      </div>
-
       <h1
         className={cn(
           'text-[28px] font-bold leading-[1.2] tracking-[-0.03em] mb-2 text-white [text-shadow:0_2px_12px_rgba(0,0,0,.6)] max-[420px]:text-[24px]',
@@ -59,9 +44,6 @@ export function SocialView({ onContinueEmail, onGoogle, className }: SocialViewP
           <span className="flex-1 flex flex-col leading-[1.25] min-w-0">
             <span className="text-[15px] font-medium text-[var(--btn-ink)]">
               Continue with Google
-            </span>
-            <span className="text-[13px] font-normal text-[#6B6B70] mt-0.5 truncate">
-              worsha.co@gmail.com
             </span>
           </span>
         </button>

@@ -5,8 +5,8 @@ import { ExpertRoute } from './ExpertRoute'
 import { ExpertLayout } from '../layouts/expert/ExpertLayout'
 import { ExpertDashboardPage, ExpertProfilePage, ExpertSettingsPage, ExpertServicesPage, ExpertCasesPage, ExpertCaseDetailPage } from '@/features/expert-dashboard'
 import { ExpertRegistrationPage } from '@/features/expert-registration'
+import { LoginPage } from '@/features/auth'
 
-const LoginPage = lazy(() => import('@/features/auth').then((module) => ({ default: module.LoginPage })))
 const DashboardPage = lazy(() => import('../pages/DashboardPage'))
 const NotFoundPage = lazy(() => import('../pages/NotFoundPage'))
 const AdminPendingExpertsPage = lazy(() => import('@/features/admin').then(m => ({ default: m.AdminPendingExpertsPage })))
@@ -15,8 +15,11 @@ const AdminExpertsPage = lazy(() => import('@/features/admin').then(m => ({ defa
 
 function Fallback() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-950 text-sm text-slate-400">
-      Loading...
+    <div className="flex min-h-svh items-center justify-center bg-desk-2 text-fg-muted">
+      <div role="status" className="flex items-center gap-3 text-sm">
+        <span aria-hidden="true" className="size-5 animate-spin rounded-full border-2 border-border border-t-accent motion-reduce:animate-none" />
+        <span>Loading…</span>
+      </div>
     </div>
   )
 }

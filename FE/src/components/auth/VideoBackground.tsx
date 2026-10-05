@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import { cn } from '@/lib/utils'
+import { cn } from '@/shared/lib/utils'
 
 export const LOGIN_INTRO_VIDEO_URL =
   'https://res.cloudinary.com/ddxqug5ad/video/upload/v1790954828/loginIntro.mp4'

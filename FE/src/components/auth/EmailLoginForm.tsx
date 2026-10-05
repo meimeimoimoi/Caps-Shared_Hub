@@ -1,6 +1,6 @@
 import { useId, useState, type ChangeEvent, type FormEvent, type Ref } from 'react'
 import { ArrowRight, Lock, Mail } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { cn } from '@/shared/lib/utils'
 import { isValidEmail, validateLogin, type LoginFormValues } from '@/utils/validators'
 import { GoogleIcon } from './GoogleIcon'
 import { BackButton } from './BackButton'
@@ -11,6 +11,8 @@ export type EmailLoginFormProps = {
   onSubmit: (data: LoginFormValues) => void
   className?: string
   emailInputRef?: Ref<HTMLInputElement>
+  isLoading?: boolean
+  error?: string | null
 }
 
 const JAKARTA = "[font-family:'Plus_Jakarta_Sans',sans-serif]"
@@ -40,6 +42,8 @@ export function EmailLoginForm({
   onSubmit,
   className,
   emailInputRef,
+  isLoading = false,
+  error,
 }: EmailLoginFormProps) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -76,6 +80,7 @@ export function EmailLoginForm({
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
+    if (isLoading) return
     setTouchedEmail(true)
     setTouchedPw(true)
     const errors = validateLogin({ email, password })
@@ -189,8 +194,9 @@ export function EmailLoginForm({
 
           <button
             type="submit"
+            disabled={isLoading}
             className={cn(
-              'flex h-[50px] w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-[var(--accent)] text-[15px] font-bold text-white shadow-[0_8px_22px_-6px_rgba(232,93,38,.5)] [transition:background_.15s,transform_.1s,box-shadow_.2s] hover:-translate-y-px hover:bg-[#d04e1a] hover:shadow-[0_12px_28px_-6px_rgba(232,93,38,.6)] active:translate-y-0 active:scale-[.995]',
+              'flex h-[50px] w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-[var(--accent)] text-[15px] font-bold text-white shadow-[0_8px_22px_-6px_rgba(232,93,38,.5)] [transition:background_.15s,transform_.1s,box-shadow_.2s] hover:-translate-y-px hover:bg-[#d04e1a] hover:shadow-[0_12px_28px_-6px_rgba(232,93,38,.6)] active:translate-y-0 active:scale-[.995] disabled:pointer-events-none disabled:opacity-60',
               JAKARTA,
             )}
           >
@@ -198,6 +204,8 @@ export function EmailLoginForm({
             <ArrowRight aria-hidden="true" size={18} />
           </button>
         </form>
+        {isLoading && <p role="status" className="mt-3 text-center text-sm text-white">Signing in…</p>}
+        {error && <p role="alert" className="mt-3 text-sm text-[var(--err)]">{error}</p>}
 
         <div className="mt-[22px] mb-[18px] flex items-center gap-[14px] text-[12px] text-white/35">
           <span aria-hidden="true" className="h-px flex-1 bg-white/10" />
