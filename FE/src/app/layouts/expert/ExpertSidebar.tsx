@@ -1,7 +1,7 @@
 import { NavLink } from 'react-router-dom'
 import { LayoutDashboard, Inbox, FileStack, Briefcase, CreditCard, X, ChevronLeft, ChevronRight } from 'lucide-react'
-import logo from '@/shared/assets/shared-hub-logo.png'
-import brandMark from '@/shared/assets/shared-hub-mark.svg'
+import logo from '@/assets/shared-hub-logo.png'
+import brandMark from '@/assets/shared-hub-mark.svg'
 
 export function ExpertSidebar({ close, toggleCollapse, isCollapsed }: { close?: () => void, toggleCollapse?: () => void, isCollapsed?: boolean }) {
   const linkClass = ({ isActive }: { isActive: boolean }) => `ep-nav-link ${isActive ? 'active' : ''}`

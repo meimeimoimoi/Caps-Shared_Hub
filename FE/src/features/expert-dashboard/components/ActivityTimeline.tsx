@@ -1,5 +1,5 @@
-import type { DashboardDto } from '../model/types'
-import { formatRelativeTime, activityTypeLabels } from '../model/toDashboardViewModel'
+import type { DashboardDto } from '../types'
+import { formatRelativeTime, activityTypeLabels } from '../utils/toDashboardViewModel'
 import { FileText, CheckCircle, DollarSign, Send, RefreshCw, Clock, AlertTriangle, ShieldCheck, MapPin } from 'lucide-react'
 
 const getIcon = (type: string) => {

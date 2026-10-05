@@ -1,5 +1,5 @@
 import { Info, Edit2 } from 'lucide-react'
-import type { Profile } from '../../model/types'
+import type { Profile } from '../../types'
 import { RegistrationSummary } from './RegistrationSummary'
 
 export interface ReviewSubmitProps {

@@ -3,7 +3,7 @@ import { NavLink, useLocation } from 'react-router-dom'
 import { ChevronDown, LogOut, Menu, Settings, Moon, Sun } from 'lucide-react'
 import { useAuth } from '@/features/auth'
 import { useExpertContext } from '@/features/expert-context'
-import { isExpertDemo } from '@/shared/lib/expert-data-source'
+import { isExpertDemo } from '@/lib/expert-data-source'
 
 export function ExpertHeader({
   openNavigation,

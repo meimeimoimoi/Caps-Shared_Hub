@@ -3,7 +3,7 @@ import {
   ExpertPanelHeader,
   ExpertPanelFooter,
 } from './ExpertPanel'
-import type { DashboardDto, WorkStatus } from '../model/types'
+import type { DashboardDto, WorkStatus } from '../types'
 import type { QueueFilter } from './OverviewQueue'
 import { DashboardSectionState } from './DashboardSectionState'
 

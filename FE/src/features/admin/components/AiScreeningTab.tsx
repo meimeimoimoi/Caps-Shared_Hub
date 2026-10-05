@@ -1,7 +1,7 @@
 import { Check, TriangleAlert } from 'lucide-react'
-import { COPY } from '@/shared/lib/constants'
-import type { ApplicationDetail, LegalCheck } from '../model/types'
-import { formatDateTime } from '../model/utils/applications'
+import { COPY } from '@/lib/constants'
+import type { ApplicationDetail, LegalCheck } from '../types'
+import { formatDateTime } from '../utils/applications'
 
 const resultLabel: Record<LegalCheck['result'], string> = {
   declared: 'Đã kê khai',

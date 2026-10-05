@@ -1,5 +1,5 @@
 import { Info, FolderOpen } from 'lucide-react'
-import { criteria } from '../../model/constants'
+import { criteria } from '../../constants'
 import { FileUploader } from '../FileUploader'
 
 export interface SupportingDocumentsProps {

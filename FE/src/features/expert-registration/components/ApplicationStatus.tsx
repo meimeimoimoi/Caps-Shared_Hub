@@ -1,6 +1,6 @@
 import { ArrowRight, Check, ScanLine, ShieldCheck, Clock3, CircleAlert } from 'lucide-react'
-import { labels } from '../model/constants'
-import type { Stage } from '../model/types'
+import { labels } from '../constants'
+import type { Stage } from '../types'
 import { SupplementForm, type SupplementFormProps } from './SupplementForm'
 import { ScenarioSelect } from './ScenarioSelect'
 

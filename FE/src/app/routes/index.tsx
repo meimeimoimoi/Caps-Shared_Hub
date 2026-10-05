@@ -3,15 +3,21 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { ProtectedRoute } from './ProtectedRoute'
 import { ExpertRoute } from './ExpertRoute'
 import { ExpertLayout } from '../layouts/expert/ExpertLayout'
-import { ExpertDashboardPage, ExpertProfilePage, ExpertSettingsPage, ExpertServicesPage, ExpertCasesPage, ExpertCaseDetailPage, ExpertIncomePage } from '@/features/expert-dashboard'
-import { ExpertRegistrationPage } from '@/features/expert-registration'
-import { LoginPage } from '@/features/auth'
+const LoginPage = lazy(() => import('@/pages/LoginPage'))
+const ExpertRegistrationPage = lazy(() => import('@/pages/expert-registration/ExpertRegistrationPage'))
+const ExpertDashboardPage = lazy(() => import('@/pages/expert-dashboard/ExpertDashboardPage'))
+const ExpertProfilePage = lazy(() => import('@/pages/expert-dashboard/ExpertProfilePage'))
+const ExpertSettingsPage = lazy(() => import('@/pages/expert-dashboard/ExpertSettingsPage'))
+const ExpertServicesPage = lazy(() => import('@/pages/expert-dashboard/ExpertServicesPage'))
+const ExpertCasesPage = lazy(() => import('@/pages/expert-dashboard/ExpertCasesPage'))
+const ExpertCaseDetailPage = lazy(() => import('@/pages/expert-dashboard/ExpertCaseDetailPage').then(m => ({ default: m.ExpertCaseDetailPage })))
+const ExpertIncomePage = lazy(() => import('@/pages/expert-dashboard/ExpertIncomePage'))
 
-const DashboardPage = lazy(() => import('../pages/DashboardPage'))
-const NotFoundPage = lazy(() => import('../pages/NotFoundPage'))
-const AdminPendingExpertsPage = lazy(() => import('@/features/admin').then(m => ({ default: m.AdminPendingExpertsPage })))
-const AdminApplicationDetailPage = lazy(() => import('@/features/admin').then(m => ({ default: m.AdminApplicationDetailPage })))
-const AdminExpertsPage = lazy(() => import('@/features/admin').then(m => ({ default: m.AdminExpertsPage })))
+const DashboardPage = lazy(() => import('../../pages/DashboardPage'))
+const NotFoundPage = lazy(() => import('../../pages/NotFoundPage'))
+const AdminPendingExpertsPage = lazy(() => import('@/pages/admin/AdminPendingExpertsPage'))
+const AdminApplicationDetailPage = lazy(() => import('@/pages/admin/AdminApplicationDetailPage'))
+const AdminExpertsPage = lazy(() => import('@/pages/admin/AdminExpertsPage'))
 
 function Fallback() {
   return (

@@ -1,5 +1,5 @@
-import { cn } from '@/shared/lib/utils'
-import type { Criterion } from '../model/types'
+import { cn } from '@/lib/utils'
+import type { Criterion } from '../types'
 
 const LEVELS = [1, 2, 3, 4]
 

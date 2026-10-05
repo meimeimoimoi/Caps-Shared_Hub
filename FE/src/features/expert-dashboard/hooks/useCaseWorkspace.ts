@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import type { WorkItem } from '../model/types'
+import type { WorkItem } from '../types'
 
 const documents = [
   'CIT_Declaration_2025.pdf',

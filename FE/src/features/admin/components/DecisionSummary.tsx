@@ -1,9 +1,9 @@
 import { Check, TriangleAlert, X } from 'lucide-react'
-import { cn } from '@/shared/lib/utils'
-import { APPLICATION_STATUS } from '@/shared/lib/constants'
-import { DECISION_NOTE_LABEL, DECISION_STATUS } from '../model/constants'
-import type { ApplicationDetail, Criterion, DecisionRecord } from '../model/types'
-import { formatDateTime } from '../model/utils/applications'
+import { cn } from '@/lib/utils'
+import { APPLICATION_STATUS } from '@/lib/constants'
+import { DECISION_NOTE_LABEL, DECISION_STATUS } from '../constants'
+import type { ApplicationDetail, Criterion, DecisionRecord } from '../types'
+import { formatDateTime } from '../utils/applications'
 import { ScoreSummary } from './ScoreSummary'
 
 const verdict = {

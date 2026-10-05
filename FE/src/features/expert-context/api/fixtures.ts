@@ -1,4 +1,4 @@
-import type { ExpertContext } from '../model/types'
+import type { ExpertContext } from '../types'
 
 export function createExpertContextFixture(): ExpertContext {
   return {

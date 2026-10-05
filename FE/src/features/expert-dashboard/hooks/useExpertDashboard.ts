@@ -1,8 +1,8 @@
 import { useQuery } from '@tanstack/react-query'
 import { useAuthStore } from '@/features/auth'
 import { useExpertContext } from '@/features/expert-context'
-import { demoScenario, expertDataSource, isExpertDemo } from '@/shared/lib/expert-data-source'
-import { ApiError } from '@/shared/lib/api-client'
+import { demoScenario, expertDataSource, isExpertDemo } from '@/lib/expert-data-source'
+import { ApiError } from '@/lib/api-client'
 import { getExpertDashboard } from '../api/expertDashboardApi'
 
 export function useExpertDashboard() {

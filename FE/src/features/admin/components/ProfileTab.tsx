@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
-import type { ApplicationDetail } from '../model/types'
-import { formatDate } from '../model/utils/applications'
+import type { ApplicationDetail } from '../types'
+import { formatDate } from '../utils/applications'
 
 interface ProfileTabProps {
   detail: ApplicationDetail

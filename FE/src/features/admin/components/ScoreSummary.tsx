@@ -1,4 +1,4 @@
-import type { Criterion } from '../model/types'
+import type { Criterion } from '../types'
 
 interface ScoreSummaryProps {
   criteria: Criterion[]

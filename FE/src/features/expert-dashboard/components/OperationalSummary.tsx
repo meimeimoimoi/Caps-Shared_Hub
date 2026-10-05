@@ -1,4 +1,4 @@
-import type { DashboardDto } from '../model/types'
+import type { DashboardDto } from '../types'
 import { DashboardSectionState } from './DashboardSectionState'
 
 export function OperationalSummary({ counts, retry }: { counts: DashboardDto['counts']; retry: () => void }) {

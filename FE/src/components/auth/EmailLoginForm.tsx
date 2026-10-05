@@ -1,6 +1,6 @@
 import { useId, useState, type ChangeEvent, type FormEvent, type Ref } from 'react'
 import { ArrowRight, Lock, Mail } from 'lucide-react'
-import { cn } from '@/shared/lib/utils'
+import { cn } from '@/lib/utils'
 import { isValidEmail, validateLogin, type LoginFormValues } from '@/utils/validators'
 import { GoogleIcon } from './GoogleIcon'
 import { BackButton } from './BackButton'

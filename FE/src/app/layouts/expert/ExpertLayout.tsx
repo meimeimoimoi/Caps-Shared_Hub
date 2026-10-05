@@ -1,9 +1,9 @@
 import { useRef, useState, useEffect } from 'react'
 import { Outlet, useSearchParams, useLocation } from 'react-router-dom'
-import { isExpertDemo } from '@/shared/lib/expert-data-source'
+import { isExpertDemo } from '@/lib/expert-data-source'
 import { ExpertHeader } from './ExpertHeader'
 import { ExpertSidebar } from './ExpertSidebar'
-import { CustomSelect } from '@/shared/ui/custom-select'
+import { CustomSelect } from '@/components/ui/custom-select'
 import './expert-theme.css'
 
 const scenarioOptions = [

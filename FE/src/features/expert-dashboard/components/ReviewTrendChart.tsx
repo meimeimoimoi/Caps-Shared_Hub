@@ -1,9 +1,9 @@
 import { ExpertPanel, ExpertPanelHeader } from './ExpertPanel'
 import { useState } from 'react'
 import { TrendingUp } from 'lucide-react'
-import type { DashboardDto } from '../model/types'
+import type { DashboardDto } from '../types'
 import { DashboardSectionState } from './DashboardSectionState'
-import { projectReviewTrend } from '../model/reviewAnalytics'
+import { projectReviewTrend } from '../utils/reviewAnalytics'
 
 export function ReviewTrendChart({
   analytics,

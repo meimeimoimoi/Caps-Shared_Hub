@@ -6,8 +6,8 @@ import {
 import { Search, ArrowUpRight, Clock3, Pause, Inbox } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useState } from 'react'
-import type { DashboardDto, WorkStatus } from '../model/types'
-import { formatDeadline, statusLabels } from '../model/toDashboardViewModel'
+import type { DashboardDto, WorkStatus } from '../types'
+import { formatDeadline, statusLabels } from '../utils/toDashboardViewModel'
 import { DashboardSectionState } from './DashboardSectionState'
 
 export type QueueFilter = 'ALL' | 'EXPERT' | 'OVERDUE' | WorkStatus

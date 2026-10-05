@@ -1,6 +1,6 @@
-import { api, ApiError } from '@/shared/lib/api-client'
-import { isExpertDemo } from '@/shared/lib/expert-data-source'
-import type { ExpertContext } from '../model/types'
+import { api, ApiError } from '@/lib/api-client'
+import { isExpertDemo } from '@/lib/expert-data-source'
+import type { ExpertContext } from '../types'
 
 export async function getExpertContext(signal: AbortSignal, scenario: string): Promise<ExpertContext> {
   if (isExpertDemo) {

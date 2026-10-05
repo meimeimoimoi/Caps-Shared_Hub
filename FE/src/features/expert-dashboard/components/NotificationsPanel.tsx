@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Bell, X } from 'lucide-react'
-import type { DashboardDto, DashboardNotification } from '../model/types'
-import { formatRelativeTime } from '../model/toDashboardViewModel'
+import type { DashboardDto, DashboardNotification } from '../types'
+import { formatRelativeTime } from '../utils/toDashboardViewModel'
 
 const severityConfig: Record<string, { icon: string; className: string }> = {
   urgent: { icon: '🔴', className: 'ep-notif-urgent' },

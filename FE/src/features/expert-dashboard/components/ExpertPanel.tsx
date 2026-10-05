@@ -1,5 +1,5 @@
 import type { ComponentPropsWithoutRef } from 'react'
-import { cn } from '@/shared/lib/utils'
+import { cn } from '@/lib/utils'
 
 /** Shared panel shell; content and layout stay in the consuming component. */
 export function ExpertPanel({

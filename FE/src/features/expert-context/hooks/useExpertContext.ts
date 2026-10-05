@@ -1,9 +1,9 @@
 import { useQuery } from '@tanstack/react-query'
 import { useAuthStore } from '@/features/auth'
-import { expertDataSource, demoScenario, isExpertDemo } from '@/shared/lib/expert-data-source'
-import { ApiError } from '@/shared/lib/api-client'
+import { expertDataSource, demoScenario, isExpertDemo } from '@/lib/expert-data-source'
+import { ApiError } from '@/lib/api-client'
 import { getExpertContext } from '../api/expertContextApi'
-import { expertContextKeys } from '../model/queryKeys'
+import { expertContextKeys } from '../api/queryKeys'
 
 export function useExpertContext() {
   const token = useAuthStore((s) => s.token)

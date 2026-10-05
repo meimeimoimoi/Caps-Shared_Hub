@@ -8,11 +8,11 @@ import {
   Send,
   AlertTriangle,
 } from 'lucide-react'
-import type { DashboardDto } from '../model/types'
+import type { DashboardDto } from '../types'
 import {
   formatRelativeTime,
   formatDeadline,
-} from '../model/toDashboardViewModel'
+} from '../utils/toDashboardViewModel'
 import { DashboardSectionState } from './DashboardSectionState'
 
 export function OverviewActivity({

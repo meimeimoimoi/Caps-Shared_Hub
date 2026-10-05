@@ -1,8 +1,8 @@
-import { collectFormErrors, focusInvalidField } from '@/shared/lib/validation/formValidation'
-import { normalizeVietnamPhone, vietnamPhoneError } from '@/shared/lib/validation/vietnamPhone'
+import { collectFormErrors, focusInvalidField } from '@/lib/validation/formValidation'
+import { normalizeVietnamPhone, vietnamPhoneError } from '@/lib/validation/vietnamPhone'
 import { useEffect, useRef, useState, type FormEvent } from 'react'
-import { criteria, initial } from '../model/constants'
-import type { Profile } from '../model/types'
+import { criteria, initial } from '../constants'
+import type { Profile } from '../types'
 
 export interface UseRegistrationFormProps {
   onRegistrationSubmit: () => void

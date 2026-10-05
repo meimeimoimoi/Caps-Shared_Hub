@@ -1,5 +1,5 @@
 import { Mail } from 'lucide-react'
-import { cn } from '@/shared/lib/utils'
+import { cn } from '@/lib/utils'
 import { GoogleIcon } from './GoogleIcon'
 
 export type SocialViewProps = {

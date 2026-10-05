@@ -1,8 +1,8 @@
 import { useState } from 'react'
-import { cn } from '@/shared/lib/utils'
-import { Modal } from '@/shared/ui/modal'
-import { DECISION_DIALOG } from '../model/constants'
-import type { Criterion } from '../model/types'
+import { cn } from '@/lib/utils'
+import { Modal } from '@/components/ui/modal'
+import { DECISION_DIALOG } from '../constants'
+import type { Criterion } from '../types'
 import { ScoreSummary } from './ScoreSummary'
 
 interface DecisionDialogProps {

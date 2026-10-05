@@ -1,6 +1,6 @@
-import { api, ApiError } from '@/shared/lib/api-client'
-import { isExpertDemo } from '@/shared/lib/expert-data-source'
-import type { DashboardDto } from '../model/types'
+import { api, ApiError } from '@/lib/api-client'
+import { isExpertDemo } from '@/lib/expert-data-source'
+import type { DashboardDto } from '../types'
 
 export async function getExpertDashboard(signal: AbortSignal, scenario: string): Promise<DashboardDto> {
   if (isExpertDemo) {

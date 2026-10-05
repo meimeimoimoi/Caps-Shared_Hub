@@ -1,5 +1,5 @@
 import { ArrowLeft } from 'lucide-react'
-import { cn } from '@/shared/lib/utils'
+import { cn } from '@/lib/utils'
 
 export type BackButtonProps = {
   onClick: () => void

@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 import { ArrowUpRight, CheckCheck, Clock3, Pause } from 'lucide-react'
-import type { DashboardDto } from '../model/types'
-import { formatDeadline, resolveActionRoute, statusLabels } from '../model/toDashboardViewModel'
+import type { DashboardDto } from '../types'
+import { formatDeadline, resolveActionRoute, statusLabels } from '../utils/toDashboardViewModel'
 import { DashboardSectionState } from './DashboardSectionState'
 
 export function WorkQueue({ queue, timezone, retry }: { queue: DashboardDto['queue']; timezone: string; retry: () => void }) {

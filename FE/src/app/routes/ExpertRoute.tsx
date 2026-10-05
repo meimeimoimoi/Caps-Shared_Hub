@@ -1,8 +1,8 @@
 import { Link, Navigate, Outlet, useLocation } from 'react-router-dom'
 import { useAuth, useAuthStore } from '@/features/auth'
 import { useExpertContext } from '@/features/expert-context'
-import { ApiError } from '@/shared/lib/api-client'
-import { isExpertDemo } from '@/shared/lib/expert-data-source'
+import { ApiError } from '@/lib/api-client'
+import { isExpertDemo } from '@/lib/expert-data-source'
 import '../layouts/expert/expert-theme.css'
 
 export function ExpertRoute() {

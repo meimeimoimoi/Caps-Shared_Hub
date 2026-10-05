@@ -1,5 +1,5 @@
 import { TrendingUp, TrendingDown, Clock3, Star, CheckCircle2 } from 'lucide-react'
-import type { DashboardDto } from '../model/types'
+import type { DashboardDto } from '../types'
 import { DashboardSectionState } from './DashboardSectionState'
 
 export function PerformanceOverview({ performance, retry }: { performance: DashboardDto['performance']; retry: () => void }) {

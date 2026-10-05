@@ -1,9 +1,9 @@
 import { useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { safeReturnPath } from '../model/returnPath'
+import { safeReturnPath } from '../utils/returnPath'
 import { authApi } from '../api/authApi'
-import { useAuthStore } from '../model/authStore'
-import type { LoginFormValues } from '../model/types'
+import { useAuthStore } from '../store/authStore'
+import type { LoginFormValues } from '../types'
 
 export function useAuth() {
   const { user, isAuthenticated, setSession, clearSession } = useAuthStore()

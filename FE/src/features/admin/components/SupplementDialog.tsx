@@ -1,7 +1,7 @@
 import { useState } from 'react'
-import { Modal } from '@/shared/ui/modal'
-import { SUPPLEMENT_DIALOG } from '../model/constants'
-import type { AiFlag, Criterion } from '../model/types'
+import { Modal } from '@/components/ui/modal'
+import { SUPPLEMENT_DIALOG } from '../constants'
+import type { AiFlag, Criterion } from '../types'
 
 interface SupplementItem {
   key: string

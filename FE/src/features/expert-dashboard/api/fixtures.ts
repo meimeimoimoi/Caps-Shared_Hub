@@ -1,4 +1,4 @@
-import type { DashboardDto, WorkItem, ActivityEvent, DashboardNotification } from '../model/types'
+import type { DashboardDto, WorkItem, ActivityEvent, DashboardNotification } from '../types'
 
 export function createDashboardFixture(scenario: string): DashboardDto {
   const now = Date.now()

@@ -1,7 +1,7 @@
 import { useState } from 'react'
-import { cn } from '@/shared/lib/utils'
-import { MarginNote } from '@/shared/ui/margin-note'
-import type { ApplicationDocument } from '../model/types'
+import { cn } from '@/lib/utils'
+import { MarginNote } from '@/components/ui/margin-note'
+import type { ApplicationDocument } from '../types'
 
 interface DocumentsTabProps {
   documents: ApplicationDocument[]
