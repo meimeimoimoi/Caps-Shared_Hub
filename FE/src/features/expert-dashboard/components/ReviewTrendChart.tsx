@@ -57,7 +57,7 @@ export function ReviewTrendChart({
           <p>Incoming requests and completed reviews over time.</p>
         </div>
         <div
-          className="eo-segmented border-hub-border [&_button]:text-hub-muted [&_button[aria-pressed=true]]:text-hub-ink [&_button:hover]:text-hub-action inline-flex gap-[3px] rounded-[7px] border bg-[#f6f7f6] bg-none [padding:3px] [&_button]:min-h-8 [&_button]:rounded-[5px] [&_button]:border-0 [&_button]:[padding:6px_10px] [&_button]:[font-family:inherit] [&_button]:text-[12px] [&_button]:whitespace-nowrap [&_button]:[background:transparent] [&_button[aria-pressed=true]]:bg-white [&_button[aria-pressed=true]]:bg-none [&_button[aria-pressed=true]]:font-semibold [&_button[aria-pressed=true]]:[box-shadow:0_1px_3px_#17283b15]"
+          className="eo-segmented border-[var(--ep-border)] [&_button]:text-[var(--ep-muted)] [&_button[aria-pressed=true]]:text-[var(--ep-ink)] [&_button:hover]:text-[var(--ep-accent)] inline-flex gap-[3px] rounded-[7px] border bg-[var(--ep-surface-raised)] bg-none [padding:3px] [&_button]:min-h-8 [&_button]:rounded-[5px] [&_button]:border-0 [&_button]:[padding:6px_10px] [&_button]:[font-family:inherit] [&_button]:text-[12px] [&_button]:whitespace-nowrap [&_button]:[background:transparent] [&_button[aria-pressed=true]]:bg-[var(--ep-surface)] [&_button[aria-pressed=true]]:bg-none [&_button[aria-pressed=true]]:font-semibold [&_button[aria-pressed=true]]:[box-shadow:0_1px_3px_#17283b15]"
           aria-label="Chart period"
         >
           {([7, 28] as const).map((days) => (
@@ -84,7 +84,7 @@ export function ReviewTrendChart({
           }
         />
       ) : points.length === 0 ? (
-        <div className="eo-empty text-hub-muted [padding:40px_24px] text-center [&_h3]:mt-[10px] [&_p]:mt-[7px] [&_p]:text-[12px]">
+        <div className="eo-empty text-[var(--ep-muted)] [padding:40px_24px] text-center [&_h3]:mt-[10px] [&_p]:mt-[7px] [&_p]:text-[12px]">
           <TrendingUp size={25} aria-hidden="true" />
           <h3>No review history yet</h3>
           <p>Trends will appear when daily activity is available.</p>
@@ -114,9 +114,9 @@ export function ReviewTrendChart({
               chart.
             </p>
           )}
-          <div className="eo-chart-summary [&_span]:text-hub-muted [&_>_p]:text-hub-muted flex flex-wrap items-center gap-6 [padding:0_24px] max-[720px]:gap-[12px_20px] max-[720px]:[padding:0_18px] [&_>_div]:flex [&_>_div]:items-center [&_>_div]:gap-2 [&_>_p]:ml-auto [&_>_p]:text-[11px] max-[1251px]:[&_>_p]:ml-[0] max-[1251px]:[&_>_p]:w-full [&_span]:text-[12px] [&_strong]:text-[22px] [&_strong]:font-[650]">
+          <div className="eo-chart-summary [&_span]:text-[var(--ep-muted)] [&_>_p]:text-[var(--ep-muted)] flex flex-wrap items-center gap-6 [padding:0_24px] max-[720px]:gap-[12px_20px] max-[720px]:[padding:0_18px] [&_>_div]:flex [&_>_div]:items-center [&_>_div]:gap-2 [&_>_p]:ml-auto [&_>_p]:text-[11px] max-[1251px]:[&_>_p]:ml-[0] max-[1251px]:[&_>_p]:w-full [&_span]:text-[12px] [&_strong]:text-[22px] [&_strong]:font-[650]">
             <div>
-              <span className="eo-dot eo-dot-orange inline-block h-2 w-2 shrink-0 rounded-full [background:var(--color-hub-action)]" />
+              <span className="eo-dot eo-dot-orange inline-block h-2 w-2 shrink-0 rounded-full [background:var(--ep-accent)]" />
               <strong>{totalReceived}</strong>
               <span>received</span>
             </div>
@@ -128,7 +128,7 @@ export function ReviewTrendChart({
             <p>{analytics.data.sourceLabel}</p>
           </div>
           <div
-            className="eo-chart-inspection text-hub-muted flex min-h-[35px] gap-4 [padding:14px_24px_0] text-[11px] max-[720px]:gap-[10px] max-[720px]:[padding:14px_18px_0] [&_strong]:text-[#334155]"
+            className="eo-chart-inspection text-[var(--ep-muted)] flex min-h-[35px] gap-4 [padding:14px_24px_0] text-[11px] max-[720px]:gap-[10px] max-[720px]:[padding:14px_18px_0] [&_strong]:text-[#334155]"
             aria-live="polite"
           >
             {active && (
@@ -140,7 +140,7 @@ export function ReviewTrendChart({
             )}
           </div>
           <svg
-            className="eo-line-chart [margin:0_12px] block h-auto w-[calc(100%_-_24px)] max-[720px]:min-h-45 min-[1700px]:max-h-[330px] [&_text]:[fill:#526174] [&_text]:[font-family:inherit] [&_text]:text-[12px]"
+            className="eo-line-chart [margin:0_12px] block h-auto w-[calc(100%_-_24px)] max-[720px]:min-h-45 min-[1700px]:max-h-[330px] [&_text]:[fill:var(--ep-muted)] [&_text]:[font-family:inherit] [&_text]:text-[12px]"
             viewBox="0 0 800 250"
             role="img"
             aria-labelledby="trend-title trend-desc"
@@ -171,19 +171,19 @@ export function ReviewTrendChart({
             {completedVisible && (
               <path
                 d={`${path('completed')} L${x(points.length - 1)},206 L${x(0)},206 Z`}
-                fill="#edf6f2"
+                fill="var(--ep-success-bg)"
               />
             )}
             {receivedVisible && (
               <path
                 d={path('received')}
-                className="eo-line-received [fill:none] [stroke:var(--color-hub-action)] [stroke-width:2.5] [stroke-linecap:round] [stroke-linejoin:round] [vector-effect:non-scaling-stroke]"
+                className="eo-line-received [fill:none] [stroke:var(--ep-accent)] [stroke-width:2.5] [stroke-linecap:round] [stroke-linejoin:round] [vector-effect:non-scaling-stroke]"
               />
             )}
             {completedVisible && (
               <path
                 d={path('completed')}
-                className="eo-line-completed [fill:none] [stroke:var(--color-hub-success)] [stroke-width:2.5] [stroke-linecap:round] [stroke-linejoin:round] [vector-effect:non-scaling-stroke]"
+                className="eo-line-completed [fill:none] [stroke:var(--ep-success)] [stroke-width:2.5] [stroke-linecap:round] [stroke-linejoin:round] [vector-effect:non-scaling-stroke]"
               />
             )}
             <line
@@ -198,8 +198,8 @@ export function ReviewTrendChart({
                 cx={x(index)}
                 cy={y(active.received)}
                 r="5"
-                fill="#c2410c"
-                stroke="white"
+                fill="var(--ep-accent)"
+                stroke="var(--ep-surface)"
                 strokeWidth="3"
               />
             )}
@@ -208,8 +208,8 @@ export function ReviewTrendChart({
                 cx={x(index)}
                 cy={y(active.completed)}
                 r="5"
-                fill="#27775b"
-                stroke="white"
+                fill="var(--ep-success)"
+                stroke="var(--ep-surface)"
                 strokeWidth="3"
               />
             )}
@@ -264,12 +264,12 @@ export function ReviewTrendChart({
             </p>
           )}
           <div className="eo-chart-controls flex flex-wrap items-center justify-between gap-4 [padding:4px_24px_14px] max-[720px]:[padding:8px_18px_14px]">
-            <div className="eo-chart-legend [&_button]:text-hub-muted flex gap-[14px] [&_button]:flex [&_button]:items-center [&_button]:gap-[6px] [&_button]:border-0 [&_button]:[padding:8px_0] [&_button]:[font-family:inherit] [&_button]:text-[12px] [&_button]:[background:none] [&_button[aria-pressed=false]]:line-through">
+            <div className="eo-chart-legend [&_button]:text-[var(--ep-muted)] flex gap-[14px] [&_button]:flex [&_button]:items-center [&_button]:gap-[6px] [&_button]:border-0 [&_button]:[padding:8px_0] [&_button]:[font-family:inherit] [&_button]:text-[12px] [&_button]:[background:none] [&_button[aria-pressed=false]]:line-through">
               <button
                 aria-pressed={receivedVisible}
                 onClick={() => setReceivedVisible(!receivedVisible)}
               >
-                <span className="eo-dot eo-dot-orange inline-block h-2 w-2 shrink-0 rounded-full [background:var(--color-hub-action)]" />
+                <span className="eo-dot eo-dot-orange inline-block h-2 w-2 shrink-0 rounded-full [background:var(--ep-accent)]" />
                 Received
               </button>
               <button
@@ -280,7 +280,7 @@ export function ReviewTrendChart({
                 Completed
               </button>
             </div>
-            <label className="eo-day-selector text-hub-muted flex items-center gap-2 text-[11px] [&_input]:w-[90px] [&_input]:cursor-pointer [&_input]:[accent-color:var(--color-hub-action)]">
+            <label className="eo-day-selector text-[var(--ep-muted)] flex items-center gap-2 text-[11px] [&_input]:w-[90px] [&_input]:cursor-pointer [&_input]:[accent-color:var(--ep-accent)]">
               Inspect day
               <input
                 type="range"
@@ -296,7 +296,7 @@ export function ReviewTrendChart({
               />
             </label>
           </div>
-          <details className="eo-data-table [&_>_summary]:text-hub-muted [&_caption]:text-hub-muted text-[12px] [border-top:1px_solid_var(--color-hub-border)] [&_>_div]:max-h-60 [&_>_div]:overflow-auto [&_>_div]:[padding:0_24px_16px] [&_>_summary]:[padding:12px_24px] [&_caption]:pb-2 [&_caption]:text-left [&_table]:w-full [&_table]:border-collapse [&_table]:text-left [&_table]:text-[12px] [&_td]:p-2 [&_td]:[border-bottom:1px_solid_var(--color-hub-border)] [&_th]:p-2 [&_th]:[border-bottom:1px_solid_var(--color-hub-border)]">
+          <details className="eo-data-table [&_>_summary]:text-[var(--ep-muted)] [&_caption]:text-[var(--ep-muted)] text-[12px] [border-top:1px_solid_var(--ep-border)] [&_>_div]:max-h-60 [&_>_div]:overflow-auto [&_>_div]:[padding:0_24px_16px] [&_>_summary]:[padding:12px_24px] [&_caption]:pb-2 [&_caption]:text-left [&_table]:w-full [&_table]:border-collapse [&_table]:text-left [&_table]:text-[12px] [&_td]:p-2 [&_td]:[border-bottom:1px_solid_var(--ep-border)] [&_th]:p-2 [&_th]:[border-bottom:1px_solid_var(--ep-border)]">
             <summary>View chart data</summary>
             <div>
               <table>
@@ -325,3 +325,7 @@ export function ReviewTrendChart({
     </ExpertPanel>
   )
 }
+
+
+
+

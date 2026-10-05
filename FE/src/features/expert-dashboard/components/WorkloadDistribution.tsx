@@ -64,7 +64,7 @@ export function WorkloadDistribution({
           <p>Current stages of the loaded cases.</p>
         </div>
       </ExpertPanelHeader>
-      <div className="eo-donut-summary [&_>_div_p]:text-hub-muted flex items-center gap-[14px] [padding:0_24px_14px] max-[1251px]:flex-col max-[1251px]:gap-1 max-[1251px]:text-center max-[1101px]:flex-row max-[1101px]:text-left [&_.eo-donut-total]:[fill:#162235] [&_.eo-donut-total]:text-[26px] [&_.eo-donut-total]:font-[650] [&_>_div_p]:mt-[6px] [&_>_div_p]:text-[12px] [&_>_div_strong]:text-[13px] [&_>_div_strong]:font-semibold [&_svg]:w-34 [&_svg]:min-w-28 [&_svg]:shrink-0 [&_text]:[fill:var(--color-hub-muted)] [&_text]:[font-family:inherit] [&_text]:text-[10px]">
+      <div className="eo-donut-summary [&_>_div_p]:text-[var(--ep-muted)] flex items-center gap-[14px] [padding:0_24px_14px] max-[1251px]:flex-col max-[1251px]:gap-1 max-[1251px]:text-center max-[1101px]:flex-row max-[1101px]:text-left [&_.eo-donut-total]:[fill:#162235] [&_.eo-donut-total]:text-[26px] [&_.eo-donut-total]:font-[650] [&_>_div_p]:mt-[6px] [&_>_div_p]:text-[12px] [&_>_div_strong]:text-[13px] [&_>_div_strong]:font-semibold [&_svg]:w-34 [&_svg]:min-w-28 [&_svg]:shrink-0 [&_text]:[fill:var(--color-hub-muted)] [&_text]:[font-family:inherit] [&_text]:text-[10px]">
         <svg
           viewBox="0 0 144 144"
           role="img"
@@ -123,7 +123,7 @@ export function WorkloadDistribution({
           </p>
         </div>
       </div>
-      <div className="eo-distribution-legend grid gap-[2px] [padding:0_20px_16px] max-[1101px]:grid-cols-[1fr_1fr] max-[720px]:grid-cols-[1fr] [&_button]:flex [&_button]:w-full [&_button]:items-center [&_button]:gap-[10px] [&_button]:rounded-[6px] [&_button]:border-0 [&_button]:[padding:9px_8px] [&_button]:text-left [&_button]:[font-family:inherit] [&_button]:text-[12px] [&_button]:text-[#475569] [&_button]:[background:none] [&_button_>_span:nth-child(2)]:flex-1 [&_button:hover]:bg-[#f1f5f3] [&_button:hover]:bg-none [&_button[aria-pressed=true]]:bg-[#f1f5f3] [&_button[aria-pressed=true]]:bg-none">
+      <div className="eo-distribution-legend grid gap-[2px] [padding:0_20px_16px] max-[1101px]:grid-cols-[1fr_1fr] max-[720px]:grid-cols-[1fr] [&_button]:flex [&_button]:w-full [&_button]:items-center [&_button]:gap-[10px] [&_button]:rounded-[6px] [&_button]:border-0 [&_button]:[padding:9px_8px] [&_button]:text-left [&_button]:[font-family:inherit] [&_button]:text-[12px] [&_button]:text-[var(--ep-muted)] [&_button]:[background:none] [&_button_>_span:nth-child(2)]:flex-1 [&_button:hover]:bg-[#f1f5f3] [&_button:hover]:bg-none [&_button[aria-pressed=true]]:bg-[#f1f5f3] [&_button[aria-pressed=true]]:bg-none">
         {data
           .filter((entry) => entry.count > 0)
           .map((entry) => (
@@ -149,3 +149,4 @@ export function WorkloadDistribution({
     </ExpertPanel>
   )
 }
+
