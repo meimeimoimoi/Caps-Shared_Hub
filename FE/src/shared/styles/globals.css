@@ -1223,7 +1223,7 @@
 
 .expert-summary-document-info { flex: 1; min-width: 0; }
 
-<<<<<<< HEAD:FE/src/styles/globals.css
+
 
 /* ════════ SHFT class dùng chung (.claude/SHFT-ui-config.md §4) ════════ */
 @utility paper {
@@ -1396,7 +1396,7 @@ html,body,#root{height:100%}
 }
 @supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
   .glass-card-fallback{background:rgba(20,20,22,.92)}
-=======
+}
 /* Scenario preview uses the same warm controls as the application. */
 .expert-scenario-select { position: relative; min-width: 0; z-index: 10; }
 .expert-application .expert-scenario-trigger {
@@ -2035,5 +2035,4 @@ html,body,#root{height:100%}
   --color-hub-action-hover: #9a3412;
   --color-hub-success: #27775b;
   --color-hub-ink: #162235;
->>>>>>> origin/feat/expert-registration-ui:FE/src/shared/styles/globals.css
 }

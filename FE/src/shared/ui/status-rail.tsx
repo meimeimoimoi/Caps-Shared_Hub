@@ -1,4 +1,4 @@
-import { cn } from '@/lib/utils'
+import { cn } from '@/shared/lib/utils'
 
 /* SHFT §9 · Status Rail lớn (header hồ sơ) hoặc gọn (header công cụ) */
 export interface StatusRailProps {

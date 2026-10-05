@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import { Check, Clock, TriangleAlert } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { cn } from '@/shared/lib/utils'
 
 /* SHFT §9 · Thanh quyết định (màn công cụ) */
 export interface DecisionBarProps {

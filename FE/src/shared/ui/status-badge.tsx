@@ -1,6 +1,6 @@
 import { TriangleAlert } from 'lucide-react'
-import { cn } from '@/lib/utils'
-import type { StatusMeta, Tone } from '@/lib/constants'
+import { cn } from '@/shared/lib/utils'
+import type { StatusMeta, Tone } from '@/shared/lib/constants'
 
 const toneClass: Record<Exclude<Tone, 'plain'>, string> = {
   neutral: 'bg-sunken text-fg border-border',
