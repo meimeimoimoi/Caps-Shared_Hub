@@ -1,10 +1,8 @@
-import { cn } from '@/lib/utils'
-import {
-  AdminLayout,
-  ApplicationsTable,
-  QUEUE_TABS,
-  usePendingApplications,
-} from '@/features/admin'
+import { cn } from '@/shared/lib/utils'
+import { AdminLayout } from '@/app/layouts/admin/AdminLayout'
+import { ApplicationsTable } from '../components/ApplicationsTable'
+import { QUEUE_TABS } from '../model/constants'
+import { usePendingApplications } from '../hooks/usePendingApplications'
 
 export default function AdminPendingExpertsPage() {
   const { tab, setTab, query, setQuery, countOf, paged, prev, next } =
@@ -52,3 +50,5 @@ export default function AdminPendingExpertsPage() {
     </AdminLayout>
   )
 }
+
+

@@ -1,5 +1,5 @@
-import { cn } from '@/lib/utils'
-import type { Criterion } from '../types'
+import { cn } from '@/shared/lib/utils'
+import type { Criterion } from '../model/types'
 
 const LEVELS = [1, 2, 3, 4]
 
@@ -73,3 +73,4 @@ export function CompetencyReview({
     </section>
   )
 }
+

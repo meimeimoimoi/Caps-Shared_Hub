@@ -1,9 +1,9 @@
 import { useState } from 'react'
-import { paginate } from '@/lib/utils'
-import { QUEUE_TABS, type QueueTab } from '../constants'
-import { mockApplications } from '../mockData'
-import type { ApplicationStatus } from '../types'
-import { foldVietnamese } from '../utils/applications'
+import { paginate } from '@/shared/lib/utils'
+import { QUEUE_TABS, type QueueTab } from '../model/constants'
+import { mockApplications } from '../model/mockData'
+import type { ApplicationStatus } from '../model/types'
+import { foldVietnamese } from '../model/utils/applications'
 
 const statusesOf = (tab: QueueTab): readonly ApplicationStatus[] =>
   QUEUE_TABS.find((t) => t.key === tab)?.statuses ?? []
@@ -45,3 +45,4 @@ export function usePendingApplications() {
     next: () => setPage((p) => p + 1),
   }
 }
+

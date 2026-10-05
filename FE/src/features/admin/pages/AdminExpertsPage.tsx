@@ -1,15 +1,12 @@
-import { SERVICE_STATUS } from '@/lib/constants'
-import { StatusBadge } from '@/components/ui/status-badge'
-import { TablePager } from '@/components/ui/table-pager'
-import {
-  ALL,
-  AdminLayout,
-  formatDate,
-  formatVnd,
-  mockApplications,
-  useExperts,
-  type Expert,
-} from '@/features/admin'
+import { SERVICE_STATUS } from '@/shared/lib/constants'
+import { StatusBadge } from '@/shared/ui/status-badge'
+import { TablePager } from '@/shared/ui/table-pager'
+import { AdminLayout } from '@/app/layouts/admin/AdminLayout'
+import { formatDate } from '../model/utils/applications'
+import { formatVnd } from '@/shared/lib/format-money'
+import { mockApplications } from '../model/mockData'
+import { useExperts, ALL } from '../hooks/useExperts'
+import type { Expert } from '../model/types'
 
 // MOCK: badge sidebar đếm từ mock, sau này lấy từ API
 const pendingCount = mockApplications.filter(

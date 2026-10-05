@@ -1,7 +1,7 @@
 import { useState } from 'react'
-import { cn } from '@/lib/utils'
-import { MarginNote } from '@/components/ui/margin-note'
-import type { ApplicationDocument } from '../types'
+import { cn } from '@/shared/lib/utils'
+import { MarginNote } from '@/shared/ui/margin-note'
+import type { ApplicationDocument } from '../model/types'
 
 interface DocumentsTabProps {
   documents: ApplicationDocument[]
@@ -119,3 +119,4 @@ export function DocumentsTab({
     </div>
   )
 }
+

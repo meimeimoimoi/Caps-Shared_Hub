@@ -1,34 +1,29 @@
 import { useCallback, useState, type KeyboardEvent } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { cn } from '@/lib/utils'
+import { cn } from '@/shared/lib/utils'
 import {
   APPLICATION_RAIL_STEP,
   APPLICATION_STATUS,
   RAIL_APPLICATION,
-} from '@/lib/constants'
-import { ToolHeader } from '@/components/ui/tool-header'
-import { CaseHeader } from '@/components/ui/case-header'
-import { DecisionBar } from '@/components/ui/decision-bar'
-import { Toast } from '@/components/ui/toast'
-import {
-  AdminLayout,
-  AiScreeningTab,
-  AiSummaryCard,
-  DecisionDialog,
-  SupplementDialog,
-  CompetencyReview,
-  CURRENT_ADMIN,
-  DecisionCard,
-  DocumentsTab,
-  HistoryTab,
-  ProfileTab,
-  DECISION_LABEL,
-  DECISION_TOAST,
-  formatDate,
-  mockApplications,
-  useApplicationReview,
-  type ReviewDecision,
-} from '@/features/admin'
+} from '@/shared/lib/constants'
+import { ToolHeader } from '@/shared/ui/tool-header'
+import { CaseHeader } from '@/shared/ui/case-header'
+import { DecisionBar } from '@/shared/ui/decision-bar'
+import { Toast } from '@/shared/ui/toast'
+import { AdminLayout } from '@/app/layouts/admin/AdminLayout'
+import { AiScreeningTab } from '../components/AiScreeningTab'
+import { DecisionDialog } from '../components/DecisionDialog'
+import { SupplementDialog } from '../components/SupplementDialog'
+import { CompetencyReview } from '../components/CompetencyReview'
+import { DecisionCard, AiSummaryCard } from '../components/DecisionSummary'
+import { DocumentsTab } from '../components/DocumentsTab'
+import { HistoryTab } from '../components/HistoryTab'
+import { ProfileTab } from '../components/ProfileTab'
+import { CURRENT_ADMIN, mockApplications } from '../model/mockData'
+import { DECISION_LABEL, DECISION_TOAST } from '../model/constants'
+import { formatDate } from '../model/utils/applications'
+import { useApplicationReview } from '../hooks/useApplicationReview'
+import type { ReviewDecision } from '../model/types'
 
 const tabs = [
   { key: 'profile', label: 'Hồ sơ' },
@@ -303,3 +298,5 @@ export default function AdminApplicationDetailPage() {
     </AdminLayout>
   )
 }
+
+

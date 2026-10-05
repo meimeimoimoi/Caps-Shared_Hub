@@ -1,7 +1,7 @@
 import { Check, TriangleAlert } from 'lucide-react'
-import { COPY } from '@/lib/constants'
-import type { ApplicationDetail, LegalCheck } from '../types'
-import { formatDateTime } from '../utils/applications'
+import { COPY } from '@/shared/lib/constants'
+import type { ApplicationDetail, LegalCheck } from '../model/types'
+import { formatDateTime } from '../model/utils/applications'
 
 const resultLabel: Record<LegalCheck['result'], string> = {
   declared: 'Đã kê khai',
@@ -140,3 +140,4 @@ export function AiScreeningTab({
     </section>
   )
 }
+

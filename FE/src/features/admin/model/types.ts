@@ -1,4 +1,4 @@
-import type { APPLICATION_STATUS, SERVICE_STATUS } from '@/lib/constants'
+import type { APPLICATION_STATUS, SERVICE_STATUS } from '@/shared/lib/constants'
 
 export type ApplicationStatus = keyof typeof APPLICATION_STATUS
 

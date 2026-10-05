@@ -1,8 +1,8 @@
 import { useState } from 'react'
-import { paginate } from '@/lib/utils'
-import { mockExperts } from '../mockData'
-import type { Expert } from '../types'
-import { foldVietnamese } from '../utils/applications'
+import { paginate } from '@/shared/lib/utils'
+import { mockExperts } from '../model/mockData'
+import type { Expert } from '../model/types'
+import { foldVietnamese } from '../model/utils/applications'
 
 export const ALL = 'ALL'
 
@@ -53,3 +53,4 @@ export function useExperts() {
     next: () => setPage((p) => p + 1),
   }
 }
+

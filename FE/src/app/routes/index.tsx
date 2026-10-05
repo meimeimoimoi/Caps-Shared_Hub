@@ -9,9 +9,9 @@ import { ExpertRegistrationPage } from '@/features/expert-registration'
 const LoginPage = lazy(() => import('@/features/auth').then((module) => ({ default: module.LoginPage })))
 const DashboardPage = lazy(() => import('../pages/DashboardPage'))
 const NotFoundPage = lazy(() => import('../pages/NotFoundPage'))
-const AdminPendingExpertsPage = lazy(() => import('../pages/AdminPendingExpertsPage'))
-const AdminApplicationDetailPage = lazy(() => import('../pages/AdminApplicationDetailPage'))
-const AdminExpertsPage = lazy(() => import('../pages/AdminExpertsPage'))
+const AdminPendingExpertsPage = lazy(() => import('@/features/admin').then(m => ({ default: m.AdminPendingExpertsPage })))
+const AdminApplicationDetailPage = lazy(() => import('@/features/admin').then(m => ({ default: m.AdminApplicationDetailPage })))
+const AdminExpertsPage = lazy(() => import('@/features/admin').then(m => ({ default: m.AdminExpertsPage })))
 
 function Fallback() {
   return (

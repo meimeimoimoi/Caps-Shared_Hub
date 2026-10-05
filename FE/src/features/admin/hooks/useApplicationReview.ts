@@ -1,11 +1,11 @@
 import { useState } from 'react'
-import { DECISION_LOG, DECISION_STATUS } from '../constants'
+import { DECISION_LOG, DECISION_STATUS } from '../model/constants'
 import {
   CURRENT_ADMIN,
   getMockApplicationDetail,
   mockCriteria,
-} from '../mockData'
-import type { DecisionRecord, HistoryEntry, ReviewDecision } from '../types'
+} from '../model/mockData'
+import type { DecisionRecord, HistoryEntry, ReviewDecision } from '../model/types'
 
 export function useApplicationReview(id: string) {
   // MOCK: thay bằng useQuery gọi API chi tiết hồ sơ + tiêu chí (xem features/admin/mockData.ts)
@@ -80,3 +80,4 @@ export function useApplicationReview(id: string) {
     ),
   }
 }
+

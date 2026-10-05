@@ -1,5 +1,5 @@
-import type { HistoryEntry } from '../types'
-import { formatDateTime } from '../utils/applications'
+import type { HistoryEntry } from '../model/types'
+import { formatDateTime } from '../model/utils/applications'
 
 export function HistoryTab({ history }: { history: HistoryEntry[] }) {
   return (
@@ -28,3 +28,4 @@ export function HistoryTab({ history }: { history: HistoryEntry[] }) {
     </section>
   )
 }
+

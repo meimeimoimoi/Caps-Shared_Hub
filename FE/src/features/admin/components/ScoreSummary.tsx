@@ -1,4 +1,4 @@
-import type { Criterion } from '../types'
+import type { Criterion } from '../model/types'
 
 interface ScoreSummaryProps {
   criteria: Criterion[]
@@ -21,3 +21,4 @@ export function ScoreSummary({ criteria, scores }: ScoreSummaryProps) {
     </dl>
   )
 }
+

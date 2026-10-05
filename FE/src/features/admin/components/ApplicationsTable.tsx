@@ -1,9 +1,9 @@
 import { Link } from 'react-router-dom'
 import { TriangleAlert } from 'lucide-react'
-import type { Paged } from '@/lib/utils'
-import { TablePager } from '@/components/ui/table-pager'
-import type { ExpertApplication } from '../types'
-import { SLA_DAYS, formatDate, waitedDays } from '../utils/applications'
+import type { Paged } from '@/shared/lib/utils'
+import { TablePager } from '@/shared/ui/table-pager'
+import type { ExpertApplication } from '../model/types'
+import { SLA_DAYS, formatDate, waitedDays } from '../model/utils/applications'
 
 interface ApplicationsTableProps {
   paged: Paged<ExpertApplication>
@@ -98,3 +98,4 @@ export function ApplicationsTable({
     </section>
   )
 }
+
