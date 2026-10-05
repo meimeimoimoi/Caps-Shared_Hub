@@ -3,7 +3,7 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { ProtectedRoute } from './ProtectedRoute'
 import { ExpertRoute } from './ExpertRoute'
 import { ExpertLayout } from '../layouts/expert/ExpertLayout'
-import { ExpertDashboardPage, ExpertProfilePage, ExpertSettingsPage, ExpertServicesPage, ExpertCasesPage, ExpertCaseDetailPage } from '@/features/expert-dashboard'
+import { ExpertDashboardPage, ExpertProfilePage, ExpertSettingsPage, ExpertServicesPage, ExpertCasesPage, ExpertCaseDetailPage, ExpertIncomePage } from '@/features/expert-dashboard'
 import { ExpertRegistrationPage } from '@/features/expert-registration'
 import { LoginPage } from '@/features/auth'
 
@@ -46,6 +46,7 @@ export function AppRoutes() {
               <Route path="active" element={<ExpertCasesPage key="active" />} />
               <Route path="cases/:id" element={<ExpertCaseDetailPage />} />
               <Route path="services" element={<ExpertServicesPage />} />
+              <Route path="income" element={<ExpertIncomePage />} />
               <Route path="profile" element={<ExpertProfilePage />} />
               <Route path="settings" element={<ExpertProfilePage />} />
               <Route path="settings/:section" element={<ExpertSettingsPage />} />
