@@ -1,6 +1,6 @@
 import { useEffect, useId, useRef, useState } from 'react'
 import { CalendarDays, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react'
-import { formControlClassName } from '@/components/ui/forms/form-control'
+import { formControlClassName } from './form-control'
 
 const months = Array.from({ length: 12 }, (_, month) =>
   new Date(2000, month, 1).toLocaleString('en-US', { month: 'long' }),

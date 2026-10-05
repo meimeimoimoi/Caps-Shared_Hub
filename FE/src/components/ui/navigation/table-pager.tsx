@@ -1,5 +1,5 @@
 import type { Paged } from '@/lib/pagination'
-import { Pagination } from '@/components/ui/navigation/pagination'
+import { Pagination } from './pagination'
 
 interface TablePagerProps {
   paged: Paged<unknown>

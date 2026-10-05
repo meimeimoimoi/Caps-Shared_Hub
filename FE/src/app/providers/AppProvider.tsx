@@ -1,4 +1,5 @@
 import * as React from 'react'
+import { ThemeProvider } from './ThemeProvider'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClient } from '@/lib/query-client'
 import { useAuthStore } from '@/features/auth'
@@ -15,10 +16,12 @@ export function AppProvider({ children }: AppProviderProps) {
     return () => window.removeEventListener(SESSION_EXPIRED_EVENT, expire)
   }, [])
   return (
-    <QueryClientProvider client={queryClient}>
-      <div className="min-h-screen bg-desk-2 text-fg antialiased selection:bg-accent-soft selection:text-accent-text">
-        {children}
-      </div>
-    </QueryClientProvider>
+    <ThemeProvider>
+      <QueryClientProvider client={queryClient}>
+        <div className="bg-desk-2 text-fg selection:bg-accent-soft selection:text-accent-text min-h-screen antialiased">
+          {children}
+        </div>
+      </QueryClientProvider>
+    </ThemeProvider>
   )
 }
