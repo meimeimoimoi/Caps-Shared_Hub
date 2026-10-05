@@ -1,0 +1,3 @@
+Generated with OpenAI imagegen on 2026-10-05 from shared-hub-logo.original.png.
+Purpose: restore the existing transparent Shared Hub logo with cleaner contours and sharper lettering.
+Preserve orange S emblem, dark navy SHARED, orange HUB, and orange triangle inside A. Transparent background, smooth edges, no halo, no shadow or grain. Preserve the original horizontal composition and 1774 x 887 canvas.
