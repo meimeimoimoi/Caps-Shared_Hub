@@ -10,9 +10,11 @@ import {
   DashboardSkeleton,
 } from '../components/DashboardSectionState'
 import { Link, useLocation } from 'react-router-dom'
-import { Clock3, Pause, Filter } from 'lucide-react'
+import { Clock3, Pause, Filter, ArrowRight } from 'lucide-react'
 import { useState } from 'react'
 import { CustomSelect } from '@/shared/ui/custom-select'
+import { Pagination } from '@/shared/ui/pagination'
+import { usePagination } from '@/shared/hooks/usePagination'
 import type { WorkStatus } from '../model/types'
 
 const statusFilters: { value: WorkStatus | 'ALL'; label: string }[] = [
@@ -62,6 +64,7 @@ export default function ExpertCasesPage() {
   const visibleItems = scopedItems.filter(
     (item) => filter === 'ALL' || item.status === filter
   )
+  const pagination = usePagination(visibleItems, `${scope}:${filter}`)
   const filters = statusFilters.filter(
     (option) =>
       option.value === 'ALL' ||
@@ -149,42 +152,32 @@ export default function ExpertCasesPage() {
               <p>Try selecting a different status filter.</p>
             </div>
           ) : (
+            <>
             <div className="ep-cases-table-wrapper">
               <table className="ep-cases-table">
                 <thead>
                   <tr>
-                    <th>Case ID</th>
-                    <th>Title</th>
-                    <th>Service</th>
-                    <th>Status</th>
-                    <th>Deadline</th>
-                    <th>Next action</th>
+                    <th scope="col">Case</th>
+                    <th scope="col">Status</th>
+                    <th scope="col">Deadline</th>
+                    <th scope="col"><span className="sr-only">Details</span></th>
                   </tr>
                 </thead>
                 <tbody>
-                  {visibleItems.map((item) => {
+                  {pagination.rows.map((item) => {
                     const overdue =
                       item.deadline.overdue &&
                       !item.deadline.paused &&
                       item.deadline.actor === 'EXPERT'
                     return (
-                      <tr
-                        key={item.id}
-                        className={overdue ? 'ep-row-overdue' : ''}
-                      >
-                        <td className="ep-mono">
-                          <Link
-                            to={`/expert/cases/${item.id}`}
-                            className="ep-link font-medium"
-                          >
-                            {item.id}
-                          </Link>
+                      <tr key={item.id}>
+                        <td className="ep-case-title whitespace-normal!">
+                          <span className="block font-semibold wrap-anywhere">{item.title}</span>
+                          <span className="mt-1 block text-[12px] font-normal text-[var(--ep-muted)] wrap-anywhere">{item.serviceName}</span>
                         </td>
-                        <td className="ep-case-title">{item.title}</td>
-                        <td>{item.serviceName}</td>
                         <td>
                           <span
-                            className={`ep-status ${overdue ? 'ep-status-danger' : item.deadline.paused ? 'ep-status-paused' : ''}`}
+                            className={`ep-status ${item.deadline.paused ? 'ep-status-paused' : ''}`}
                           >
                             {statusLabels[item.status]}
                           </span>
@@ -199,7 +192,7 @@ export default function ExpertCasesPage() {
                               <Clock3 size={13} aria-hidden="true" />
                             )}
                             <div>
-                              <span>{item.deadline.kind}</span>
+                              <span>{overdue ? `Overdue: ${item.deadline.kind}` : item.deadline.kind}</span>
                               <time dateTime={item.deadline.at ?? undefined}>
                                 {formatDeadline(
                                   item.deadline.at,
@@ -210,16 +203,13 @@ export default function ExpertCasesPage() {
                           </div>
                         </td>
                         <td>
-                          {item.nextAction ? (
-                            <span className="ep-case-action">
-                              {item.nextAction.label}
-                              {item.nextAction.actor === 'USER' && (
-                                <small> · User action</small>
-                              )}
-                            </span>
-                          ) : (
-                            <span className="ep-text-muted">—</span>
-                          )}
+                          <Link
+                            to={`/expert/cases/${item.id}`}
+                            aria-label={`View details: ${item.title}`}
+                            className="inline-flex min-h-11 items-center gap-2 whitespace-nowrap text-[13px] font-medium hover:underline underline-offset-4"
+                          >
+                            View details <ArrowRight size={15} aria-hidden="true" />
+                          </Link>
                         </td>
                       </tr>
                     )
@@ -227,13 +217,15 @@ export default function ExpertCasesPage() {
                 </tbody>
               </table>
             </div>
-          )}
-          {model.queue.data.hasMore && (
-            <p className="ep-cases-footnote">
-              This projection includes {model.queue.data.items.length} of{' '}
-              {model.queue.data.total} cases across all statuses. Filtered
-              results are limited to the loaded dataset.
-            </p>
+              <Pagination
+                page={pagination.page}
+                pageSize={pagination.pageSize}
+                total={pagination.total}
+                onPageChange={pagination.setPage}
+                onPageSizeChange={pagination.setPageSize}
+                label="Case list pagination"
+              />
+            </>
           )}
         </>
       )}
