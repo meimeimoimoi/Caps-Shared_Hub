@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import { Check, FileText, Briefcase, UserRound, ChevronDown } from 'lucide-react'
-import sharedHubLogo from '@/assets/shared-hub-logo.png'
+import sharedHubLogo from '@/assets/logo-full.png'
 import { useRegistrationMotion } from '../../features/expert-registration/hooks/useRegistrationMotion'
 import { useWizardMotion } from '../../features/expert-registration/hooks/useWizardMotion'
 import { useScrollReveal } from '@/hooks/useScrollReveal'

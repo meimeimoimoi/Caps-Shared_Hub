@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import { ArrowRight, ArrowUpRight, LayoutDashboard } from 'lucide-react'
-import logo from '@/assets/shared-hub-logo.png'
+import logo from '@/assets/logo-full.png'
 
 export default function NotFoundPage() {
   return (

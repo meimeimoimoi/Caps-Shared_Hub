@@ -153,7 +153,7 @@ export default function ExpertCasesPage() {
             </div>
           ) : (
             <>
-            <div className="ep-cases-table-wrapper">
+            <div className="ep-cases-table-wrapper rounded-b-none border-b-0 shadow-none">
               <table className="ep-cases-table">
                 <thead>
                   <tr>
