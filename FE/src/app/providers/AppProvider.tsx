@@ -1,21 +1,22 @@
 import * as React from 'react'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: { retry: 1, refetchOnWindowFocus: false, staleTime: 30_000 },
-    mutations: { retry: 0 },
-  },
-})
+import { QueryClientProvider } from '@tanstack/react-query'
+import { queryClient } from '@/lib/query-client'
+import { useAuthStore } from '@/features/auth'
+import { SESSION_EXPIRED_EVENT } from '@/lib/session-events'
 
 interface AppProviderProps {
   children: React.ReactNode
 }
 
 export function AppProvider({ children }: AppProviderProps) {
+  React.useEffect(() => {
+    const expire = () => useAuthStore.getState().clearSession()
+    window.addEventListener(SESSION_EXPIRED_EVENT, expire)
+    return () => window.removeEventListener(SESSION_EXPIRED_EVENT, expire)
+  }, [])
   return (
     <QueryClientProvider client={queryClient}>
-      <div className="min-h-screen bg-slate-950 text-slate-100 antialiased selection:bg-indigo-500 selection:text-white">
+      <div className="min-h-screen bg-desk-2 text-fg antialiased selection:bg-accent-soft selection:text-accent-text">
         {children}
       </div>
     </QueryClientProvider>

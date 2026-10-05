@@ -7,3 +7,5 @@ import { twMerge } from 'tailwind-merge'
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
+
+export { paginate, type Paged } from './pagination'
