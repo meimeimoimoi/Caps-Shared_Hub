@@ -108,3 +108,31 @@ export interface Expert {
   /** text viết tiếp sau tên actor, vd. actor "Trần An" + text "duyệt đơn đăng ký." */
   history: HistoryEntry[]
 }
+
+/** Một đoạn văn bản bằng chứng; `change` là phần bị xóa (bản nháp) hoặc được thêm (bản sửa) */
+export interface EvidenceExcerpt {
+  label: string
+  text: string
+  change: string
+}
+
+export interface Dispute {
+  id: string // mã hồ sơ rà soát đang tranh chấp
+  title: string
+  client: string
+  expert: string
+  /** Căn cứ khiếu nại của Client */
+  ground: string
+  openedAt: string
+  evidence: {
+    draft: EvidenceExcerpt
+    revision: EvidenceExcerpt
+    note: string
+  }
+  complaint: {
+    issue: string
+    description: string
+    attachment: string
+  }
+  history: HistoryEntry[]
+}

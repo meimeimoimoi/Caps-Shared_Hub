@@ -25,9 +25,10 @@ interface NavItem {
 
 interface AdminLayoutProps {
   /** Mục sidebar đang mở */
-  section: 'pending' | 'experts'
+  section: 'pending' | 'experts' | 'disputes'
   breadcrumb: ReactNode
   pendingCount: number
+  disputeCount?: number
   /** Bỏ trống thì ẩn ô tìm kiếm */
   search?: string
   onSearchChange?: (value: string) => void
@@ -38,6 +39,7 @@ export function AdminLayout({
   section,
   breadcrumb,
   pendingCount,
+  disputeCount,
   search,
   onSearchChange,
   children,
@@ -66,7 +68,13 @@ export function AdminLayout({
     {
       group: 'Vận hành',
       items: [
-        { label: 'Khiếu nại', icon: Flag },
+        {
+          label: 'Khiếu nại',
+          icon: Flag,
+          to: '/admin/disputes',
+          active: section === 'disputes',
+          badge: disputeCount,
+        },
         { label: 'Hoàn tiền và chi trả', icon: CreditCard },
         { label: 'Khung giá dịch vụ', icon: Tag },
       ],
