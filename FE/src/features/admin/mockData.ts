@@ -76,8 +76,43 @@ export const mockApplications: ExpertApplication[] = [
   },
 ]
 
+// Lịch sử mock: duyệt đơn → (kích hoạt dịch vụ) → (tạm ngưng)
+function expert(
+  e: Omit<Expert, 'reviewer' | 'history' | 'approvedAt'> & {
+    approvedDaysAgo: number
+  }
+): Expert {
+  const { approvedDaysAgo, ...rest } = e
+  const approvedAt = daysAgo(approvedDaysAgo)
+  const later = (h: number) =>
+    new Date(
+      Date.now() - approvedDaysAgo * 86_400_000 + h * 3_600_000
+    ).toISOString()
+  const history = [
+    { at: approvedAt, actor: CURRENT_ADMIN, text: 'duyệt đơn đăng ký.' },
+    ...(rest.serviceStatus !== 'INACTIVE'
+      ? [{ at: later(15), actor: rest.name, text: 'kích hoạt dịch vụ.' }]
+      : []),
+    ...(rest.serviceStatus === 'SUSPENDED'
+      ? [
+          {
+            at: later(24 * 9),
+            actor: CURRENT_ADMIN,
+            text: 'tạm ngưng dịch vụ.',
+          },
+        ]
+      : []),
+  ]
+  return {
+    ...rest,
+    approvedAt,
+    reviewer: CURRENT_ADMIN,
+    history: history.reverse(),
+  }
+}
+
 export const mockExperts: Expert[] = [
-  {
+  expert({
     id: 'EXP-0118',
     name: 'Đặng Mỹ Linh',
     email: 'linh.dang@outlook.com',
@@ -86,9 +121,11 @@ export const mockExperts: Expert[] = [
     fee: 2_000_000,
     activeCases: 3,
     capacity: 4,
-    approvedAt: daysAgo(18),
-  },
-  {
+    approvedDaysAgo: 18,
+    experienceYears: 15,
+    schedule: 'Thứ 2 – Thứ 6',
+  }),
+  expert({
     id: 'EXP-0142',
     name: 'Nguyễn Minh Anh',
     email: 'minhanh.tax@gmail.com',
@@ -97,9 +134,11 @@ export const mockExperts: Expert[] = [
     fee: null,
     activeCases: 0,
     capacity: 3,
-    approvedAt: daysAgo(6),
-  },
-  {
+    approvedDaysAgo: 6,
+    experienceYears: 8,
+    schedule: 'Chưa thiết lập',
+  }),
+  expert({
     id: 'EXP-0109',
     name: 'Phan Quốc Bảo',
     email: 'bao.pq@taxvn.vn',
@@ -108,9 +147,11 @@ export const mockExperts: Expert[] = [
     fee: 2_500_000,
     activeCases: 1,
     capacity: 2,
-    approvedAt: daysAgo(31),
-  },
-  {
+    approvedDaysAgo: 31,
+    experienceYears: 11,
+    schedule: 'Thứ 2 – Thứ 7',
+  }),
+  expert({
     id: 'EXP-0097',
     name: 'Võ Thị Hạnh',
     email: 'hanh.vt@gmail.com',
@@ -119,9 +160,11 @@ export const mockExperts: Expert[] = [
     fee: 1_800_000,
     activeCases: 0,
     capacity: 3,
-    approvedAt: daysAgo(44),
-  },
-  {
+    approvedDaysAgo: 44,
+    experienceYears: 7,
+    schedule: 'Thứ 3 – Thứ 5',
+  }),
+  expert({
     id: 'EXP-0088',
     name: 'Lâm Chí Kiên',
     email: 'kien.lam@kiemtoan.vn',
@@ -130,8 +173,10 @@ export const mockExperts: Expert[] = [
     fee: 2_200_000,
     activeCases: 2,
     capacity: 3,
-    approvedAt: daysAgo(53),
-  },
+    approvedDaysAgo: 53,
+    experienceYears: 9,
+    schedule: 'Thứ 2 – Thứ 6',
+  }),
 ]
 
 export const mockCriteria: Criterion[] = [1, 2, 3, 4, 5].map((n) => ({
