@@ -6,10 +6,10 @@ import {
   APPLICATION_STATUS,
   RAIL_APPLICATION,
 } from '@/lib/constants'
-import { ToolHeader } from '@/components/ui/tool-header'
-import { CaseHeader } from '@/components/ui/case-header'
-import { DecisionBar } from '@/components/ui/decision-bar'
-import { Toast } from '@/components/ui/toast'
+import { ToolHeader } from '@/components/ui/layout/tool-header'
+import { CaseHeader } from '@/components/ui/layout/case-header'
+import { DecisionBar } from '@/components/ui/actions/decision-bar'
+import { Toast } from '@/components/ui/feedback/toast'
 import { AdminLayout } from '@/app/layouts/admin/AdminLayout'
 import { AiScreeningTab } from '../../features/admin/components/AiScreeningTab'
 import { DecisionDialog } from '../../features/admin/components/DecisionDialog'

@@ -1,6 +1,6 @@
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/ui/actions/button'
 import { useAuthStore } from '@/features/auth'
-import { useNavigate, Navigate } from 'react-router-dom'
+import { useNavigate, Navigate, Link } from 'react-router-dom'
 import { useExpertContext } from '@/features/expert-context'
 import { ApiError } from '@/lib/api-client'
 
@@ -15,8 +15,14 @@ export default function DashboardPage() {
     navigate('/login', { replace: true })
   }
 
-  if (context.isPending) return <div className="p-8" role="status">Checking workspace access…</div>
-  if (!context.isError && context.data?.portalAccess.allowed) return <Navigate to="/expert/overview" replace />
+  if (context.isPending)
+    return (
+      <div className="p-8" role="status">
+        Checking workspace access…
+      </div>
+    )
+  if (!context.isError && context.data?.portalAccess.allowed)
+    return <Navigate to="/expert/overview" replace />
 
   return (
     <div className="mx-auto max-w-3xl space-y-6 p-8">
@@ -35,7 +41,30 @@ export default function DashboardPage() {
         Architecture shell is running. Business modules (workflow / ingestion /
         RAG) plug in here as lazy routes.
       </div>
-      {context.isError && !(context.error instanceof ApiError && context.error.status === 403) && <div role="alert" className="space-y-3 text-sm text-slate-300"><p>Expert workspace access could not be verified. You can retry when the service is available.</p><Button variant="outline" onClick={() => void context.refetch()} disabled={context.isFetching}>Retry access check</Button></div>}
+      <Link
+        to="/drafts"
+        className="bg-accent hover:bg-accent-hover inline-flex min-h-11 items-center rounded-md px-5 py-3 text-white"
+      >
+        Open draft workspaces
+      </Link>
+      {context.isError &&
+        !(
+          context.error instanceof ApiError && context.error.status === 403
+        ) && (
+          <div role="alert" className="space-y-3 text-sm text-slate-300">
+            <p>
+              Expert workspace access could not be verified. You can retry when
+              the service is available.
+            </p>
+            <Button
+              variant="outline"
+              onClick={() => void context.refetch()}
+              disabled={context.isFetching}
+            >
+              Retry access check
+            </Button>
+          </div>
+        )}
     </div>
   )
 }

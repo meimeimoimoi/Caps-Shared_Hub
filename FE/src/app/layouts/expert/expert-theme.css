@@ -5,32 +5,34 @@
 
 /* ---- Foundation ---- */
 .expert-portal {
-  --ep-ink: #0f172a;
-  --ep-muted: #64748b;
-  --ep-line: rgba(226, 232, 240, 0.8);
-  --ep-accent: #ea580c;
-  --ep-accent-soft: #fb923c;
-  --ep-accent-glow: rgba(234, 88, 12, 0.15);
-  --ep-surface: #ffffff;
-  --ep-surface-raised: #f1f5f9;
-  --ep-success: #059669;
-  --ep-success-bg: rgba(16, 185, 129, 0.1);
-  --ep-warning: #d97706;
-  --ep-warning-bg: rgba(245, 158, 11, 0.1);
-  --ep-danger: #e11d48;
-  --ep-danger-bg: rgba(225, 29, 72, 0.1);
-  --ep-sidebar-bg: #09090b;
-  --ep-sidebar-text: #a1a1aa;
-  --ep-sidebar-active-bg: rgba(255, 255, 255, 0.1);
-  --ep-sidebar-active-text: #ffffff;
-  --ep-bg: #f5f4f0;
-  --ep-header-bg: #f5f4f0;
-  --ep-border: rgba(0,0,0,0.06);
-  --ep-demo-bg: linear-gradient(135deg, #fff3e7, #ffe9d6);
-  --ep-demo-text: #734325;
-  --ep-demo-border: rgba(115,67,37,.12);
-  --ep-highlight-bg: linear-gradient(135deg, #fff7ed, #ffedd5);
-  color-scheme: light;
+  --ep-ink: var(--ui-text-strong);
+  --ep-muted: var(--ui-text-muted);
+  --ep-line: var(--ui-border);
+  --ep-accent: var(--ui-accent);
+  --ep-accent-text: var(--ui-accent-text);
+  --ep-accent-hover: var(--ui-accent-hover);
+  --ep-accent-soft: var(--ui-indicator);
+  --ep-accent-glow: var(--ui-accent-soft);
+  --ep-surface: var(--ui-surface);
+  --ep-surface-raised: var(--ui-surface-muted);
+  --ep-success: var(--ui-success);
+  --ep-success-bg: var(--ui-success-soft);
+  --ep-warning: var(--ui-warning);
+  --ep-warning-bg: var(--ui-warning-soft);
+  --ep-danger: var(--ui-danger);
+  --ep-danger-bg: var(--ui-danger-soft);
+  --ep-sidebar-bg: var(--ui-sidebar);
+  --ep-sidebar-text: var(--ui-sidebar-text);
+  --ep-sidebar-active-bg: var(--ui-sidebar-selected);
+  --ep-sidebar-active-text: var(--ui-sidebar-foreground);
+  --ep-bg: var(--ui-canvas);
+  --ep-header-bg: var(--ui-header);
+  --ep-border: var(--ui-hairline);
+  --ep-demo-bg: var(--ui-surface-muted);
+  --ep-demo-text: var(--ui-text-muted);
+  --ep-demo-border: var(--ui-border-subtle);
+  --ep-highlight-bg: var(--ui-accent-soft);
+  color-scheme: inherit;
   
   /* Flat Document Background */
   background-color: var(--ep-bg);
@@ -43,38 +45,40 @@
 }
 
 .expert-portal.ep-dark {
-  --ep-ink: #fafafa;
-  --ep-muted: #a3a3a3;
-  --ep-line: rgba(64, 64, 64, 0.8);
-  --ep-accent: #f97316;
-  --ep-accent-soft: #ea580c;
-  --ep-accent-glow: rgba(249, 115, 22, 0.25);
-  --ep-surface: #171717;
-  --ep-surface-raised: #262626;
-  --ep-success: #10b981;
-  --ep-success-bg: rgba(16, 185, 129, 0.2);
-  --ep-warning: #f59e0b;
-  --ep-warning-bg: rgba(245, 158, 11, 0.2);
-  --ep-danger: #f43f5e;
-  --ep-danger-bg: rgba(244, 63, 94, 0.2);
-  --ep-sidebar-bg: #000000;
-  --ep-sidebar-text: #a3a3a3;
-  --ep-sidebar-active-bg: rgba(255, 255, 255, 0.15);
-  --ep-sidebar-active-text: #ffffff;
-  --ep-bg: #0a0a0a;
-  --ep-header-bg: rgba(10, 10, 10, 0.85);
-  --ep-border: rgba(255,255,255,0.08);
-  --ep-demo-bg: linear-gradient(135deg, #431407, #2a0a02);
-  --ep-demo-text: #fdba74;
-  --ep-demo-border: #7c2d12;
-  --ep-highlight-bg: linear-gradient(135deg, rgba(234, 88, 12, 0.15), rgba(234, 88, 12, 0.05));
-  color-scheme: dark;
+  --ep-ink: var(--ui-text-strong);
+  --ep-muted: var(--ui-text-muted);
+  --ep-line: var(--ui-border);
+  --ep-accent: var(--ui-accent);
+  --ep-accent-text: var(--ui-accent-text);
+  --ep-accent-hover: var(--ui-accent-hover);
+  --ep-accent-soft: var(--ui-indicator);
+  --ep-accent-glow: var(--ui-accent-soft);
+  --ep-surface: var(--ui-surface);
+  --ep-surface-raised: var(--ui-surface-muted);
+  --ep-success: var(--ui-success);
+  --ep-success-bg: var(--ui-success-soft);
+  --ep-warning: var(--ui-warning);
+  --ep-warning-bg: var(--ui-warning-soft);
+  --ep-danger: var(--ui-danger);
+  --ep-danger-bg: var(--ui-danger-soft);
+  --ep-sidebar-bg: var(--ui-sidebar);
+  --ep-sidebar-text: var(--ui-sidebar-text);
+  --ep-sidebar-active-bg: var(--ui-sidebar-selected);
+  --ep-sidebar-active-text: var(--ui-sidebar-foreground);
+  --ep-bg: var(--ui-canvas);
+  --ep-header-bg: var(--ui-header);
+  --ep-border: var(--ui-hairline);
+  --ep-demo-bg: var(--ui-surface-muted);
+  --ep-demo-text: var(--ui-text-muted);
+  --ep-demo-border: var(--ui-border-subtle);
+  --ep-highlight-bg: var(--ui-accent-soft);
+  color-scheme: inherit;
 }
 .expert-portal *, .expert-portal *::before, .expert-portal *::after { scrollbar-width: auto !important; -ms-overflow-style: auto !important; box-sizing: border-box; }
 .expert-portal *::-webkit-scrollbar { display: block !important; width: 8px; height: 8px; }
-.expert-portal *::-webkit-scrollbar-thumb { background: #b0bab3; border: 2px solid transparent; border-radius: 8px; background-clip: padding-box; }
+.expert-portal *::-webkit-scrollbar-thumb { background: var(--ui-border-control); border: 2px solid transparent; border-radius: 8px; background-clip: padding-box; }
 .expert-portal *::-webkit-scrollbar-track { background: transparent; }
-.expert-portal ::selection { background: #c5e0cf; color: #1a2e27; }
+.expert-portal ::selection { background: var(--ui-accent-soft); color: var(--ep-accent-text); }
 .expert-portal :focus-visible { outline: 2px solid var(--ep-accent); outline-offset: 3px; border-radius: 4px; }
 .expert-portal button, .expert-portal summary, .expert-portal select { cursor: pointer; }
 .expert-portal button:disabled { cursor: wait; opacity: .55; }
@@ -126,7 +130,7 @@
   transform: scale(1.85) translateY(1.5px);
   transform-origin: center center;
 }
-.ep-brand-collapsed { font-weight: 800; font-size: 22px; color: var(--ep-accent); text-align: center; width: 100%; padding: 10px 0; }
+.ep-brand-collapsed { font-weight: 800; font-size: 22px; color: var(--ep-accent-text); text-align: center; width: 100%; padding: 10px 0; }
 .ep-nav-link, .ep-nav-link:visited {
   display: flex; align-items: center; gap: 11px; padding: 11px 14px; border-radius: 10px;
   color: var(--ep-sidebar-text) !important; font-weight: 500; font-size: 13.5px;
@@ -215,9 +219,9 @@
   backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
 }
 .ep-button:hover:not(:disabled) { background: var(--ep-surface); border-color: rgba(0,0,0,0.2); box-shadow: 0 4px 12px rgba(0,0,0,.06); transform: translateY(-1px); }
-.ep-button:active:not(:disabled) { background: #f8fafc; transform: translateY(1px); }
+.ep-button:active:not(:disabled) { background: var(--ep-surface-raised); transform: translateY(1px); }
 .ep-button-primary {
-  background: linear-gradient(135deg, var(--ep-accent), var(--ep-accent-soft));
+  background: var(--ep-accent);
   color: var(--ep-surface) !important;
   border: none;
   box-shadow: 0 4px 14px rgba(234, 88, 12, 0.3), inset 0 1px 0 rgba(255,255,255,0.2);
@@ -310,10 +314,10 @@
 
 /* ---- Links ---- */
 .ep-link {
-  display: inline-flex; gap: 6px; align-items: center; color: var(--ep-accent);
+  display: inline-flex; gap: 6px; align-items: center; color: var(--ep-accent-text);
   text-decoration: underline; text-underline-offset: 4px; transition: color 160ms ease-out;
 }
-.ep-link:hover { color: #6d2c14; }
+.ep-link:hover { color: var(--ep-accent-text); }
 
 /* ---- Footnotes ---- */
 .ep-queue-footnote { border-top: 1px solid var(--ep-line); padding-top: 14px; font-size: 12px; max-width: 70ch; }
@@ -378,7 +382,7 @@
 
 /* ---- Notices ---- */
 .ep-notice {
-  background: linear-gradient(135deg, #fbf2df, #fcecd0); color: #68501f;
+  background: var(--ep-warning-bg); color: var(--ep-warning);
   padding: 14px 18px; margin-top: 20px; border-radius: 10px; font-size: 13px;
   animation: ep-fade-in 300ms ease-out; border: 1px solid rgba(114,83,19,.1);
 }
@@ -405,7 +409,7 @@
 }
 
 /* ---- Skip link ---- */
-.ep-skip-link { position: fixed; top: -100px; left: 16px; z-index: 20; background: var(--ep-surface); padding: 14px; color: var(--ep-accent); border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,.1); }
+.ep-skip-link { position: fixed; top: -100px; left: 16px; z-index: 20; background: var(--ep-surface); padding: 14px; color: var(--ep-accent-text); border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,.1); }
 .ep-skip-link:focus { top: 12px; }
 
 /* ---- Drawer ---- */
@@ -428,7 +432,7 @@
 
 /* ---- Skeletons ---- */
 .ep-skeleton {
-  background: linear-gradient(90deg, #e5e7eb 25%, #f3f4f6 50%, #e5e7eb 75%);
+  background: linear-gradient(90deg, var(--ep-surface-raised) 25%, var(--ep-surface) 50%, var(--ep-surface-raised) 75%);
   background-size: 200% 100%; border-radius: 10px;
   animation: ep-shimmer 1.8s ease-in-out infinite;
 }
@@ -469,7 +473,7 @@
 .ep-perf-value { font-size: 28px; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: -.02em; }
 .ep-perf-value small { font-size: 13px; font-weight: 500; color: var(--ep-muted); margin-left: 4px; }
 .ep-perf-highlight { background: var(--ep-highlight-bg); border-color: rgba(234, 88, 12, .12); }
-.ep-perf-highlight .ep-perf-card-top { color: var(--ep-accent); }
+.ep-perf-highlight .ep-perf-card-top { color: var(--ep-accent-text); }
 .ep-perf-trend { display: flex; align-items: center; gap: 5px; font-size: 12px; margin-top: 8px; font-weight: 600; }
 .ep-trend-up { color: var(--ep-success); }
 .ep-trend-down { color: var(--ep-danger); }
@@ -478,7 +482,7 @@
 .ep-star-empty { color: #e5e7eb; }
 .ep-delivery-bar { width: 100%; height: 6px; border-radius: 3px; background: var(--ep-surface-raised); margin-top: 10px; overflow: hidden; }
 .ep-delivery-fill { height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--ep-accent), var(--ep-accent-soft)); transition: width 800ms ease-out; }
-.ep-perf-delivery .ep-perf-card-top { color: var(--ep-accent); }
+.ep-perf-delivery .ep-perf-card-top { color: var(--ep-accent-text); }
 
 /* ---- Activity Timeline ---- */
 .ep-activity {
@@ -507,7 +511,7 @@
 .ep-activity-case-created { background: var(--ep-warning-bg); color: var(--ep-warning); }
 .ep-activity-case-completed { background: var(--ep-success-bg); color: var(--ep-success); }
 .ep-activity-payment-received { background: var(--ep-warning-bg); color: var(--ep-warning); }
-.ep-activity-review-submitted { background: var(--ep-accent-glow); color: var(--ep-accent); }
+.ep-activity-review-submitted { background: var(--ep-accent-glow); color: var(--ep-accent-text); }
 .ep-activity-status-changed { background: var(--ep-surface-raised); color: var(--ep-ink); }
 .ep-activity-deadline-extended { background: var(--ep-warning-bg); color: var(--ep-warning); }
 .ep-activity-dispute-opened { background: var(--ep-danger-bg); color: var(--ep-danger); }
@@ -524,10 +528,10 @@
   border-radius: 10px; background: transparent; border: 1px solid transparent; color: var(--ep-muted);
   transition: all 180ms ease-out;
 }
-.ep-notification-bell:hover { background: #edf2ed; border-color: var(--ep-line); color: var(--ep-ink); }
+.ep-notification-bell:hover { background: var(--ep-surface-raised); border-color: var(--ep-line); color: var(--ep-ink); }
 .ep-notification-badge {
   position: absolute; top: 4px; right: 4px; min-width: 18px; height: 18px; padding: 0 5px;
-  background: var(--ep-danger); color: #fff; font-size: 10px; font-weight: 700; border-radius: 9px;
+  background: var(--ui-danger-fill); color: var(--ui-on-accent); font-size: 10px; font-weight: 700; border-radius: 9px;
   display: flex; align-items: center; justify-content: center;
   animation: ep-notif-pop 300ms ease-out;
 }
@@ -562,7 +566,7 @@
   border-radius: 6px; opacity: 0; transition: all 160ms ease-out; background: transparent; border: none; color: var(--ep-muted);
 }
 .ep-notification-item:hover .ep-notif-dismiss { opacity: 1; }
-.ep-notif-dismiss:hover { background: #e4ebe5; color: var(--ep-ink); }
+.ep-notif-dismiss:hover { background: var(--ep-surface-raised); color: var(--ep-ink); }
 .ep-notif-urgent { border-left: 3px solid var(--ep-danger); }
 .ep-notif-warning { border-left: 3px solid #d4a017; }
 .ep-notif-success { border-left: 3px solid var(--ep-success); }
@@ -642,7 +646,7 @@
 .ep-detail-sub { display: block; font-size: 11px; color: var(--ep-muted); margin-top: 2px; }
 .ep-service-pricing-note {
   display: flex; align-items: flex-start; gap: 8px; margin-top: 16px;
-  padding: 12px; background: #faf2dd; border-radius: 8px; font-size: 12px; color: var(--ep-warning);
+  padding: 12px; background: var(--ep-warning-bg); border-radius: 8px; font-size: 12px; color: var(--ep-warning);
 }
 .ep-service-reasons { margin-top: 12px; }
 
@@ -752,8 +756,8 @@
 .ep-account-identity .ep-account-demo-label { color: #7c3515; margin-top: 3px; }
 .ep-account-action { display: flex; gap: 12px; align-items: center; width: 100%; min-height: 44px; padding: 12px; border: 0; border-radius: 8px; background: transparent; color: var(--ep-ink); text-align: left; font: inherit; font-weight: 500; }
 .ep-account-action svg { flex-shrink: 0; color: var(--ep-muted); }
-.ep-account-action:hover { background: #f3f4f3; }
-.ep-account-action.is-current { background: #fff1e5; color: #9a3412; }
+.ep-account-action:hover { background: var(--ep-surface-raised); }
+.ep-account-action.is-current { background: var(--ui-accent-soft); color: var(--ep-accent-text); }
 .ep-account-action.is-current svg { color: #9a3412; }
 .ep-account-signout { padding-top: 6px; margin-top: 6px; border-top: 1px solid var(--ep-border); }
 .ep-account-signout button { margin-top: 0; }
@@ -781,7 +785,7 @@
 }
 .expert-portal .expert-scenario-menu [role="option"][data-active="true"] {
   background: var(--ep-accent-glow) !important;
-  color: var(--ep-accent) !important;
+  color: var(--ep-accent-text) !important;
 }
 
 
@@ -793,7 +797,7 @@
 }
 .expert-portal .expert-scenario-menu [role="option"][aria-selected="true"][data-active="true"] {
   background: var(--ep-accent-glow) !important;
-  color: var(--ep-accent) !important;
+  color: var(--ep-accent-text) !important;
 }
 
 /* Override button base to inherit proper surface rather than white */
@@ -816,13 +820,13 @@
 }
 
 .expert-portal .ep-button-primary {
-  background: linear-gradient(135deg, var(--ep-accent), var(--ep-accent-soft)) !important;
+  background: var(--ep-accent) !important;
   color: #fff !important;
   border: none !important;
 }
 
 .expert-portal .ep-button-primary:hover:not(:disabled) {
-  background: linear-gradient(135deg, var(--ep-accent-soft), var(--ep-accent)) !important;
+  background: var(--ep-accent-hover) !important;
 }
 
 /* Override expert-wizard inputs/textareas to use dark theme */

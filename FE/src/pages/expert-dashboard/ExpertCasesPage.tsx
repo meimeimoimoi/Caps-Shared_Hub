@@ -12,8 +12,8 @@ import {
 import { Link, useLocation } from 'react-router-dom'
 import { Clock3, Pause, Filter, ArrowRight } from 'lucide-react'
 import { useState } from 'react'
-import { CustomSelect } from '@/components/ui/custom-select'
-import { Pagination } from '@/components/ui/pagination'
+import { CustomSelect } from '@/components/ui/forms/custom-select'
+import { Pagination } from '@/components/ui/navigation/pagination'
 import { usePagination } from '@/hooks/usePagination'
 import type { WorkStatus } from '../../features/expert-dashboard/types'
 

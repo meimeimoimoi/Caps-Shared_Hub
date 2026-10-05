@@ -1,4 +1,4 @@
-import { formControlClassName as inputCls } from '@/components/ui/form-control'
+import { formControlClassName as inputCls } from '@/components/ui/forms/form-control'
 import {
   Briefcase,
   Award,
@@ -7,7 +7,7 @@ import {
   CircleAlert,
 } from 'lucide-react'
 import type { Profile } from '../../types'
-import { FormField } from '@/components/ui/form-field'
+import { FormField } from '@/components/ui/forms/form-field'
 import { FileUploader } from '../FileUploader'
 
 export interface ProfessionalExperienceProps {

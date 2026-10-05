@@ -1,6 +1,6 @@
 import { SERVICE_STATUS } from '@/lib/constants'
-import { StatusBadge } from '@/components/ui/status-badge'
-import { TablePager } from '@/components/ui/table-pager'
+import { StatusBadge } from '@/components/ui/display/status-badge'
+import { TablePager } from '@/components/ui/navigation/table-pager'
 import { AdminLayout } from '@/app/layouts/admin/AdminLayout'
 import { formatDate } from '../../features/admin/utils/applications'
 import { formatVnd } from '@/lib/format-money'

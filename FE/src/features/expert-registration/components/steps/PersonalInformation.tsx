@@ -1,10 +1,10 @@
-import { formControlClassName as inputCls } from '@/components/ui/form-control'
+import { formControlClassName as inputCls } from '@/components/ui/forms/form-control'
 import { formatVietnamPhone } from '@/lib/validation/vietnamPhone'
 import { useRef, type ReactNode } from 'react'
 import { Camera, User, UserCircle, Mail, Briefcase, ImagePlus } from 'lucide-react'
 import type { Profile } from '../../types'
-import { FormField } from '@/components/ui/form-field'
-import { DatePicker } from '@/components/ui/date-picker'
+import { FormField } from '@/components/ui/forms/form-field'
+import { DatePicker } from '@/components/ui/forms/date-picker'
 
 export interface PersonalInformationProps {
   heading: ReactNode

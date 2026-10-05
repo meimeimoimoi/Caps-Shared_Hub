@@ -5,11 +5,17 @@ export interface StatusRailProps {
   steps: readonly string[]
   current: number // > steps.length - 1 = đã xong hết
   size?: 'lg' | 'sm'
+  label?: string
 }
 
-export function StatusRail({ steps, current, size = 'lg' }: StatusRailProps) {
+export function StatusRail({
+  steps,
+  current,
+  size = 'lg',
+  label = 'Tiến trình',
+}: StatusRailProps) {
   return (
-    <ol className="rail w-full" aria-label="Tiến trình">
+    <ol className="rail w-full" aria-label={label}>
       {steps.map((label, i) => (
         <li
           key={label}

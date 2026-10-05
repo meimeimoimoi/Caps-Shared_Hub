@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 import { TriangleAlert } from 'lucide-react'
 import type { Paged } from '@/lib/utils'
-import { TablePager } from '@/components/ui/table-pager'
+import { TablePager } from '@/components/ui/navigation/table-pager'
 import type { ExpertApplication } from '../types'
 import { SLA_DAYS, formatDate, waitedDays } from '../utils/applications'
 
