@@ -20,6 +20,7 @@ const AdminApplicationDetailPage = lazy(() => import('@/pages/admin/AdminApplica
 const AdminExpertsPage = lazy(() => import('@/pages/admin/AdminExpertsPage'))
 const AdminDisputeDetailPage = lazy(() => import('@/pages/admin/AdminDisputeDetailPage'))
 const AdminEscrowPage = lazy(() => import('@/pages/admin/AdminEscrowPage'))
+const KnowledgeQueuePage = lazy(() => import('@/pages/knowledge-admin/KnowledgeQueuePage'))
 
 function Fallback() {
   return (
@@ -47,6 +48,9 @@ export function AppRoutes() {
           <Route path="/admin/disputes" element={<AdminDisputeDetailPage />} />
           <Route path="/admin/disputes/:id" element={<AdminDisputeDetailPage />} />
           <Route path="/admin/escrow" element={<AdminEscrowPage />} />
+          {/* TODO(auth): bọc ProtectedRoute + check role Knowledge Admin khi có API */}
+          <Route path="/knowledge" element={<Navigate to="/knowledge/queue" replace />} />
+          <Route path="/knowledge/queue" element={<KnowledgeQueuePage />} />
 
           <Route element={<ExpertRoute />}>
             <Route path="/expert" element={<ExpertLayout />}>
