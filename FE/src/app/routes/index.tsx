@@ -64,6 +64,7 @@ const AdminExpertsPage = lazy(() => import('@/pages/admin/AdminExpertsPage'))
 const AdminDisputeDetailPage = lazy(() => import('@/pages/admin/AdminDisputeDetailPage'))
 const AdminEscrowPage = lazy(() => import('@/pages/admin/AdminEscrowPage'))
 const AdminPricingPage = lazy(() => import('@/pages/admin/AdminPricingPage'))
+const AdminPricingTierPage = lazy(() => import('@/pages/admin/AdminPricingTierPage'))
 const KnowledgeQueuePage = lazy(() => import('@/pages/knowledge-admin/KnowledgeQueuePage'))
 const KnowledgeSourcesPage = lazy(() => import('@/pages/knowledge-admin/KnowledgeSourcesPage'))
 const KnowledgeVersionPage = lazy(() => import('@/pages/knowledge-admin/KnowledgeVersionPage'))
@@ -114,6 +115,7 @@ const router = createBrowserRouter(
       <Route path="/admin/disputes/:id" element={<AdminDisputeDetailPage />} />
       <Route path="/admin/escrow" element={<AdminEscrowPage />} />
       <Route path="/admin/pricing" element={<AdminPricingPage />} />
+      <Route path="/admin/pricing/:id" element={<AdminPricingTierPage />} />
       {/* TODO(auth): bọc ProtectedRoute + check role Knowledge Admin khi có API */}
       <Route path="/knowledge" element={<Navigate to="/knowledge/queue" replace />} />
       <Route path="/knowledge/queue" element={<KnowledgeQueuePage />} />
