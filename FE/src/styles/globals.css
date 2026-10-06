@@ -1480,6 +1480,18 @@ html,body,#root{height:100%}
 .expert-scenario-menu > li > svg { flex: none; }
 .expert-scenario-menu > li[aria-selected='true'] { color: #8b381c; background: #f7eee6; font-weight: 600; }
 .expert-scenario-menu > li[data-active='true'] { background: #e9f0e9; color: #203c30; }
+.custom-select-menu {
+  margin: 0;
+  list-style: none;
+  transform-origin: top center;
+  scrollbar-width: thin;
+}
+.custom-select-menu[data-placement='above'] { transform-origin: bottom center; }
+.custom-select-menu > li { transition: background-color var(--motion-feedback) ease, color var(--motion-feedback) ease; }
+@media (prefers-reduced-motion: reduce) {
+  .custom-select-menu { animation: none; }
+  .custom-select-menu > li { transition: none; }
+}
 @keyframes expert-menu-enter {
   from { opacity: .3; transform: translateY(-6px); }
   to { opacity: 1; transform: translateY(0); }

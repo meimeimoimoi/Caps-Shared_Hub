@@ -418,7 +418,7 @@
   width: 290px; max-width: calc(100vw - 40px); height: 100dvh; max-height: none;
   background: var(--ep-sidebar-bg); padding: 24px 16px; border: 0;
 }
-.ep-drawer[open] { display: flex; flex-direction: column; animation: ep-slide-in-left 250ms ease-out; }
+.ep-drawer[open] { display: flex; flex-direction: column; }
 .ep-drawer::backdrop { background: rgba(0,0,0,.5); backdrop-filter: blur(4px); }
 .ep-drawer .ep-brand { font-size: 16px; gap: 8px; }
 .ep-drawer .ep-brand button { margin-left: auto; color: #fff; }
@@ -730,6 +730,39 @@
 }
 @media (prefers-reduced-motion: reduce) { .expert-portal * { transition: none !important; animation: none !important; } }
 
+/* Entrance sequences are owned by shared motion components. */
+.ep-page-heading, .ep-updated, .ep-dashboard-grid, .ep-work-queue,
+.ep-operational, .ep-cases-toolbar, .ep-cases-table-wrapper,
+.ep-profile-layout, .ep-services-overview, .ep-services-list {
+  animation: none;
+}
+.ep-button {
+  transition: background-color var(--motion-feedback) ease, border-color var(--motion-feedback) ease,
+    color var(--motion-feedback) ease, box-shadow var(--motion-feedback) ease,
+    transform var(--motion-feedback) var(--motion-ease-enter);
+}
+.ep-button:hover:not(:disabled), .ep-button-primary:hover:not(:disabled) { transform: none; }
+.ep-button:active:not(:disabled) { transform: scale(var(--motion-press-scale)); }
+.ep-nav-link { transition: background-color var(--motion-feedback) ease, color var(--motion-feedback) ease; }
+.ep-nav-link svg { transition: transform var(--motion-enter) var(--motion-ease-enter); }
+.ep-nav-link:hover svg { transform: translateX(2px); }
+.ep-nav-link.active::before { animation: motion-marker var(--motion-enter) var(--motion-ease-enter); }
+.ep-account-popover {
+  transform-origin: top right;
+  animation: none;
+}
+.ep-notifications-panel { animation: none; transform-origin: top right; }
+.ep-cases-table tbody tr:focus-within { background: var(--ep-surface-raised); }
+.ep-case-action a svg { transition: transform var(--motion-enter) var(--motion-ease-enter); }
+.ep-case-action a:hover svg { transform: translateX(3px); }
+@media (prefers-reduced-motion: reduce) {
+  .ep-button, .ep-nav-link, .ep-cases-table tbody tr {
+    transition: background-color var(--motion-reduced) linear, color var(--motion-reduced) linear !important;
+  }
+  .ep-button:active:not(:disabled), .ep-nav-link:hover svg,
+  .ep-case-action a:hover svg { transform: none; }
+}
+
 /* ---- Hide Scrollbar Forcefully ---- */
 .hide-scrollbar::-webkit-scrollbar,
 .hide-scrollbar *::-webkit-scrollbar,
@@ -749,7 +782,7 @@
 .ep-account summary { min-height: 44px; }
 .ep-account-chevron { color: var(--ep-muted); transition: transform 160ms ease-out; }
 .ep-account[open] .ep-account-chevron { transform: rotate(180deg); }
-.ep-account-popover { width: 288px; padding: 8px; gap: 0; animation: none; box-shadow: 0 12px 36px -8px rgba(15, 23, 42, .18); }
+.ep-account-popover { width: 288px; padding: 8px; gap: 0; box-shadow: 0 12px 36px -8px rgba(15, 23, 42, .18); }
 .ep-account-identity { display: flex; flex-direction: column; gap: 5px; padding: 12px 12px 16px; border-bottom: 1px solid var(--ep-border); margin-bottom: 6px; }
 .ep-account-identity strong { font-size: 14px; }
 .ep-account-identity > span { color: var(--ep-muted); }
