@@ -28,17 +28,19 @@ import { formatDate } from '../../features/expert-vetting/utils/applications'
 import { useAdminNav } from '@/app/layouts/admin/useAdminNav'
 import { useApplicationReview } from '../../features/expert-vetting/hooks/useApplicationReview'
 import type { ReviewDecision } from '../../features/expert-vetting/types'
-
-const tabs = [
-  { key: 'profile', label: 'Hồ sơ' },
-  { key: 'documents', label: 'Tài liệu' },
-  { key: 'ai', label: 'AI sàng lọc' },
-  { key: 'history', label: 'Lịch sử' },
-] as const
+import { useTranslation } from 'react-i18next'
+import { useEffect } from 'react'
 
 export default function AdminApplicationDetailPage() {
+  const { t } = useTranslation(['admin', 'common'])
   const { id = '' } = useParams()
   const nav = useAdminNav()
+  const tabs = [
+    { key: 'profile', label: t('admin:detail.tabs.profile') },
+    { key: 'documents', label: t('admin:detail.tabs.documents') },
+    { key: 'ai', label: t('admin:detail.tabs.ai') },
+    { key: 'history', label: t('admin:detail.tabs.history') },
+  ] as const
   const [tab, setTab] = useState<(typeof tabs)[number]['key']>('ai')
   const [docCode, setDocCode] = useState<string>()
   const [dialog, setDialog] = useState<ReviewDecision | null>(null)
@@ -46,27 +48,35 @@ export default function AdminApplicationDetailPage() {
   const clearToast = useCallback(() => setToast(null), [])
   const review = useApplicationReview(id)
   const { detail, decision, status } = review
+  useEffect(() => {
+    document.title = detail ? `${detail.name} | Shared Hub` : 'Shared Hub'
+  }, [detail])
 
   const listLink = (
     <Link
       to="/admin/experts/pending"
       className="text-fg-muted hover:text-fg-strong"
     >
-      Hồ sơ chờ duyệt
+      {t('admin:navigation.pendingExperts')}
     </Link>
   )
 
   if (!detail || !status) {
     return (
-      <AdminLayout {...nav} section="pending" breadcrumb={listLink}>
+      <AdminLayout
+        {...nav}
+        section="pending"
+        breadcrumb={listLink}
+        pendingCount={nav.pendingCount}
+      >
         <h1 className="text-h1-tool">
-          {review.isLoading ? 'Đang tải…' : `Không tìm thấy hồ sơ ${id}`}
+          {review.isLoading ? t('common:loading') : t('admin:detail.notFound', { id }).replace(id, '').trim() + ' ' + id}
         </h1>
         <Link
           to="/admin/experts/pending"
           className="text-accent-text mt-3 inline-block underline"
         >
-          Quay lại danh sách
+          {t('admin:detail.backToList')}
         </Link>
       </AdminLayout>
     )
@@ -94,16 +104,16 @@ export default function AdminApplicationDetailPage() {
       .then(() => {
         setDialog(null)
         setTab('history')
-        setToast(DECISION_TOAST[kind])
+        setToast(t(DECISION_TOAST[kind] as any))
       })
       .catch((e: Error) => setToast(e.message))
 
   const blockers = [
     review.remainingCriteria > 0 && {
-      text: `Còn ${review.remainingCriteria} tiêu chí chưa chấm hoặc chưa ghi căn cứ`,
+      text: t('admin:detail.blockers.criteria', { count: review.remainingCriteria }).replace(String(review.remainingCriteria), '').trim() + ' ' + review.remainingCriteria,
     },
     review.unreviewedFlags > 0 && {
-      text: `${review.unreviewedFlags} mục AI cần xem lại chưa được xem xét`,
+      text: t('admin:detail.blockers.flags', { count: review.unreviewedFlags }).replace(String(review.unreviewedFlags), '').trim() + ' ' + review.unreviewedFlags,
       tone: 'warning' as const,
     },
   ].filter((b) => !!b)
@@ -135,9 +145,9 @@ export default function AdminApplicationDetailPage() {
           code={detail.id}
           title={detail.name}
           meta={[
-            ['Chức danh', `${detail.jobTitle}, ${detail.company}`],
-            ['Kinh nghiệm', `${detail.years} năm`],
-            ['Nộp', formatDate(detail.submittedAt)],
+            [t('admin:detail.meta.jobTitle'), `${detail.jobTitle}, ${detail.company}`],
+            [t('admin:detail.meta.experience'), t('admin:detail.meta.years', { count: detail.years }).replace(String(detail.years), detail.years.toString())],
+            [t('admin:detail.meta.submitted'), formatDate(detail.submittedAt)],
           ]}
           rail={{ steps: railSteps, current: railStep }}
         />
@@ -154,7 +164,7 @@ export default function AdminApplicationDetailPage() {
         <div className="min-w-0">
           <div
             role="tablist"
-            aria-label="Thông tin hồ sơ"
+            aria-label={t('admin:detail.tabAria')}
             onKeyDown={onTabKey}
             className="mb-4 flex gap-7 overflow-x-auto"
           >
@@ -247,14 +257,14 @@ export default function AdminApplicationDetailPage() {
         <DecisionBar
           className="-mx-4 mt-12 -mb-12 md:-mx-6 lg:-mx-8"
           blockers={blockers}
-          ready={`Đã chấm và ghi căn cứ đủ ${review.criteria.length}/${review.criteria.length} tiêu chí`}
+          ready={t('admin:detail.ready', { count: review.criteria.length, total: review.criteria.length }).replace(String(review.criteria.length), `${review.criteria.length}/${review.criteria.length}`)}
           secondary={
             <button
               type="button"
               onClick={() => setDialog('supplement')}
               className="btn btn-press btn-secondary"
             >
-              {DECISION_LABEL.supplement}
+              {t(DECISION_LABEL.supplement as any)}
             </button>
           }
           danger={
@@ -263,11 +273,11 @@ export default function AdminApplicationDetailPage() {
               onClick={() => setDialog('reject')}
               className="btn btn-press bg-danger text-paper"
             >
-              {DECISION_LABEL.reject}
+              {t(DECISION_LABEL.reject as any)}
             </button>
           }
           primary={{
-            label: DECISION_LABEL.approve,
+            label: t(DECISION_LABEL.approve as any),
             onClick: () => setDialog('approve'),
             disabled: !review.canApprove,
           }}

@@ -12,6 +12,8 @@ import viExpert from './locales/vi/expert.json'
 import enExpert from './locales/en/expert.json'
 import viDrafting from './locales/vi/drafting.json'
 import enDrafting from './locales/en/drafting.json'
+import viAdmin from './locales/vi/admin.json'
+import enAdmin from './locales/en/admin.json'
 
 // Add feature namespaces as each rollout group migrates its screens.
 export const resources = {
@@ -23,6 +25,7 @@ export const resources = {
     dashboard: viDashboard,
     expert: viExpert,
     drafting: viDrafting,
+    admin: viAdmin,
   },
   en: {
     common: enCommon,
@@ -32,5 +35,6 @@ export const resources = {
     dashboard: enDashboard,
     expert: enExpert,
     drafting: enDrafting,
+    admin: enAdmin,
   },
 }

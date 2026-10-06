@@ -64,19 +64,20 @@ export function AdminLayout({
   disputeCount,
   ...page
 }: AdminLayoutProps) {
+  const { t } = useTranslation('admin')
   const nav: NavGroup[] = [
     {
-      group: 'Xét duyệt Expert',
+      group: t('navigation.expertReview'),
       items: [
         {
-          label: 'Hồ sơ chờ duyệt',
+          label: t('navigation.pendingExperts'),
           icon: FileText,
           to: '/admin/experts/pending',
           active: section === 'pending',
           badge: pendingCount,
         },
         {
-          label: 'Quản lý Expert',
+          label: t('navigation.manageExperts'),
           icon: Users,
           to: '/admin/experts',
           active: section === 'experts',
@@ -84,23 +85,23 @@ export function AdminLayout({
       ],
     },
     {
-      group: 'Vận hành',
+      group: t('navigation.operations'),
       items: [
         {
-          label: 'Khiếu nại',
+          label: t('navigation.complaints'),
           icon: Flag,
           to: '/admin/disputes',
           active: section === 'disputes',
           badge: disputeCount,
         },
         {
-          label: 'Escrow và chi trả',
+          label: t('navigation.payouts'),
           icon: CreditCard,
           to: '/admin/escrow',
           active: section === 'escrow',
         },
         {
-          label: 'Khung giá dịch vụ',
+          label: t('navigation.pricing'),
           icon: Tag,
           to: '/admin/pricing',
           active: section === 'pricing',
@@ -108,10 +109,10 @@ export function AdminLayout({
       ],
     },
     {
-      group: 'Hệ thống',
+      group: t('navigation.system'),
       items: [
-        { label: 'Tài khoản', icon: UserRound },
-        { label: 'Cấu hình', icon: Settings },
+        { label: t('navigation.accounts'), icon: UserRound },
+        { label: t('navigation.settings'), icon: Settings },
       ],
     },
   ]
@@ -129,7 +130,6 @@ interface RoleShellProps extends ShellPageProps {
 export function RoleShell({
   nav,
   initials,
-  searchPlaceholder = 'Tìm theo tên hoặc email',
   breadcrumb,
   search,
   onSearchChange,
@@ -139,7 +139,7 @@ export function RoleShell({
   const [collapsed, setCollapsed] = useState(false)
   const drawer = useRef<HTMLDialogElement>(null)
   const drawerTrigger = useRef<HTMLButtonElement>(null)
-  const { t } = useTranslation('common')
+  const { t } = useTranslation(['common', 'admin'])
   const { isDark, toggleTheme } = useTheme()
   const { number } = useFormatters()
   const { user, logout } = useAuth()
@@ -209,8 +209,8 @@ export function RoleShell({
                     type="search"
                     value={search ?? ''}
                     onChange={(event) => onSearchChange(event.target.value)}
-                    placeholder={searchPlaceholder}
-                    aria-label={searchPlaceholder}
+                    placeholder={t('admin:search.placeholder')}
+                    aria-label={t('admin:search.placeholder')}
                     className="placeholder:text-fg-muted w-full min-w-0 bg-transparent text-sm outline-none"
                   />
                 </label>
