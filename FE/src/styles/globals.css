@@ -1,6 +1,28 @@
 @import 'tailwindcss';
 @import './theme.css';
 
+/* The login video needs a stable palette independent of the saved app theme. */
+.language-switcher--overlay {
+  --ui-surface: #1c1c1e;
+  --ui-surface-muted: #27272a;
+  --ui-text-strong: #ffffff;
+  --ui-text-muted: #d4d4d8;
+  --ui-border: transparent;
+  --ui-border-control: #71717a;
+  --ui-accent-soft: #382318;
+  --ui-accent-text: #ffb580;
+}
+
+.language-switcher--overlay [role='combobox'] {
+  background: transparent;
+  text-shadow: 0 1px 4px rgb(0 0 0 / .9);
+}
+
+.language-switcher--overlay [role='combobox']:hover,
+.language-switcher--overlay [role='combobox'][aria-expanded='true'] {
+  background: rgb(0 0 0 / .15);
+}
+
 /* ════════ SHFT UI config (.claude/SHFT-ui-config.md §2) — token khai báo một lần ════════ */
 @theme {
   /* ---------- Màu nền ---------- */
@@ -1416,7 +1438,7 @@ html,body,#root{height:100%}
 .expert-application .expert-scenario-trigger[aria-expanded='true'] {
   border-color: #a34524; background: #fffaf6;
 }
-.expert-scenario-trigger[aria-expanded='true'] > svg { transform: rotate(180deg); color: #a34524; }
+.expert-scenario-trigger[aria-expanded='true'] > svg { color: #a34524; }
 .expert-application .expert-scenario-trigger:active:not(:disabled) { transform: none; }
 .expert-scenario-menu {
   position: absolute; top: calc(100% + 8px); left: 0; right: 0;

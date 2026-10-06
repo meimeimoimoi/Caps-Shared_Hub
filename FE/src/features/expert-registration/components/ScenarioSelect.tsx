@@ -22,6 +22,8 @@ export function ScenarioSelect({
       options={options}
       label={t('page.scenario')}
       className="expert-status-preview expert-scenario-select"
+      triggerClassName="expert-scenario-trigger"
+      menuClassName="expert-scenario-menu"
     />
   )
 }

@@ -142,7 +142,7 @@ export function CustomSelect<T extends string>({
         aria-invalid={!!error}
         aria-describedby={error ? `${id}-error` : undefined}
         className={cn(
-          'expert-scenario-trigger border-border-control text-text-strong focus-visible:outline-accent-text bg-surface flex min-h-11 w-full items-center justify-between gap-3 rounded-lg border px-3 py-2 text-left focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-55',
+          'border-border-control text-text-strong focus-visible:outline-accent-text bg-surface flex min-h-11 w-full items-center justify-between gap-3 rounded-lg border px-3 py-2 text-left focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-55',
           triggerClassName
         )}
         onKeyDown={onKeyDown}
@@ -153,7 +153,14 @@ export function CustomSelect<T extends string>({
             placeholder ??
             t('select.placeholder')}
         </span>
-        <ChevronDown size={18} aria-hidden="true" />
+        <ChevronDown
+          size={18}
+          aria-hidden="true"
+          className={cn(
+            'text-text-muted shrink-0 transition-transform duration-150 motion-reduce:transition-none',
+            open && 'rotate-180'
+          )}
+        />
       </button>
       {open && (
         <ul
@@ -161,7 +168,7 @@ export function CustomSelect<T extends string>({
           role="listbox"
           aria-labelledby={`${id}-label`}
           className={cn(
-            'expert-scenario-menu border-border-control bg-surface hide-scrollbar absolute right-0 left-0 z-20 mt-1 max-h-72 overflow-y-auto rounded-lg border p-1 shadow-[0_8px_24px_-8px_#263c3633]',
+            'border-border-control bg-surface hide-scrollbar shadow-overlay absolute right-0 left-0 z-20 mt-2 max-h-72 overflow-y-auto rounded-lg border p-1',
             menuClassName
           )}
         >
@@ -174,7 +181,7 @@ export function CustomSelect<T extends string>({
               key={key}
               id={`${id}-option-${index}`}
               role="option"
-              className="data-[active=true]:bg-accent-soft flex cursor-pointer items-center justify-between gap-2 rounded px-3 py-2 text-sm"
+              className="data-[active=true]:bg-accent-soft aria-selected:bg-accent-soft aria-selected:text-accent-text flex min-h-11 cursor-pointer items-center justify-between gap-2 rounded px-3 py-2 text-sm aria-selected:font-semibold"
               aria-selected={value === key}
               data-active={active === index}
               onPointerMove={() => setActive(index)}

@@ -148,7 +148,7 @@ export default function ExpertRegistrationPage() {
       className={`${!account ? 'expert-welcome' : 'expert-application'} bg-ex-bg text-ex-ink [&_::selection]:bg-ex-selection [&_a]:text-ex-accent [&_h1,&_h2,&_h3]:text-ex-heading [&_:focus-visible]:outline-ex-focus [&_input[type='checkbox']]:accent-ex-accent [&_summary]:text-ex-accent min-h-screen font-[Arial,sans-serif] text-[15px] leading-[1.6] [color-scheme:light] [&_*]:box-border [&_:focus-visible]:outline-3 [&_:focus-visible]:outline-offset-4 [&_a]:underline-offset-4 [&_button,&_input,&_select,&_textarea]:font-[inherit] [&_fieldset]:my-[22px] [&_fieldset]:border-0 [&_fieldset]:p-0 [&_h1]:mt-0 [&_h1]:mb-4 [&_h1]:text-[clamp(28px,3.3vw,42px)] [&_h1]:tracking-tight [&_h1,&_h2,&_h3]:font-[Georgia,'Times_New_Roman',serif] [&_h1,&_h2,&_h3]:leading-tight [&_h2]:mt-0 [&_h2]:mb-[18px] [&_h2]:text-[27px] [&_h3]:mt-[22px] [&_h3]:mb-3 [&_h3]:text-xl [&_input[type='checkbox']]:h-[17px] [&_input[type='checkbox']]:w-[17px] [&_input[type='checkbox']]:shrink-0 [&_legend]:mb-3 [&_legend]:font-semibold [&_p]:mt-0 [&_p]:mb-[18px] [&_p]:max-w-[72ch] [&_summary]:cursor-pointer [&_summary]:py-3 [&_summary]:underline [&_summary]:underline-offset-4`}
     >
       {/* ── Header ── */}
-      <header className="border-ex-border border-b">
+      <header className="border-ex-border relative z-20 border-b">
         <div className="mx-auto flex max-w-[1240px] flex-wrap items-center gap-6 px-6 py-5 max-md:gap-3 max-md:px-4">
           <Link
             to="/"

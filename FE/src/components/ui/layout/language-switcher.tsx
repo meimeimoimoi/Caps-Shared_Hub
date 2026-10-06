@@ -7,7 +7,11 @@ const options = [
   { value: 'en' as const, label: 'English' },
 ]
 
-export function LanguageSwitcher() {
+export function LanguageSwitcher({
+  variant = 'default',
+}: {
+  variant?: 'default' | 'overlay'
+}) {
   const { t, i18n } = useTranslation('common')
   return (
     <CustomSelect
@@ -17,9 +21,9 @@ export function LanguageSwitcher() {
       onChange={(language) => {
         void i18n.changeLanguage(language)
       }}
-      className="shrink-0 text-sm [&>span]:sr-only"
-      triggerClassName="!w-36"
-      menuClassName="!left-auto !w-36"
+      className={`relative z-50 shrink-0 text-sm [&>span]:sr-only ${variant === 'overlay' ? 'language-switcher--overlay' : ''}`}
+      triggerClassName="!w-36 border-border hover:bg-surface-muted focus-visible:!outline-accent-text focus-visible:!outline-2 focus-visible:!outline-offset-2"
+      menuClassName="!left-auto !w-44 !rounded-xl !p-1.5"
     />
   )
 }
