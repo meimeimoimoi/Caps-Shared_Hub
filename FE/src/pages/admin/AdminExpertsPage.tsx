@@ -1,30 +1,32 @@
+import { useCallback, useState } from 'react'
+import { cn } from '@/lib/utils'
 import { SERVICE_STATUS } from '@/lib/constants'
+import { Toast } from '@/components/ui/feedback/toast'
 import { StatusBadge } from '@/components/ui/display/status-badge'
 import { TablePager } from '@/components/ui/navigation/table-pager'
 import { AdminLayout } from '@/app/layouts/admin/AdminLayout'
-import { formatDate } from '../../features/admin/utils/applications'
+import { formatDate } from '../../features/expert-vetting/utils/applications'
 import { formatVnd } from '@/lib/format-money'
-import { mockApplications } from '../../features/admin/mockData'
-import { useExperts, ALL } from '../../features/admin/hooks/useExperts'
-import type { Expert } from '../../features/admin/types'
-
-// MOCK: badge sidebar đếm từ mock, sau này lấy từ API
-const pendingCount = mockApplications.filter(
-  (a) => a.status === 'CAPABILITY_REVIEW'
-).length
+import { useAdminNav } from '@/app/layouts/admin/useAdminNav'
+import { useExperts, ALL } from '../../features/expert-vetting/hooks/useExperts'
+import { ExpertDrawer } from '../../features/expert-vetting/components/ExpertDrawer'
+import type { Expert } from '../../features/expert-vetting/types'
 
 const selectCls =
   'border-border-control rounded-control shadow-control bg-paper h-control min-w-48 border px-3 text-sm'
 
 export default function AdminExpertsPage() {
+  const nav = useAdminNav()
   const experts = useExperts()
+  const [toast, setToast] = useState<string | null>(null)
+  const clearToast = useCallback(() => setToast(null), [])
   const { paged } = experts
 
   return (
     <AdminLayout
+      {...nav}
       section="experts"
       breadcrumb="Quản lý Expert"
-      pendingCount={pendingCount}
       search={experts.query}
       onSearchChange={experts.setQuery}
     >
@@ -86,13 +88,19 @@ export default function AdminExpertsPage() {
             {paged.rows.map((e) => (
               <tr
                 key={e.id}
-                className="border-border-subtle border-t [&>td]:px-4 [&>td]:py-2"
+                className={cn(
+                  'border-border-subtle border-t [&>td]:px-4 [&>td]:py-2',
+                  experts.selected?.id === e.id && 'bg-accent-soft'
+                )}
               >
                 <td>
-                  {/* TODO: trang chi tiết Expert chưa có thiết kế */}
-                  <div className="text-fg-strong text-base font-semibold">
+                  <button
+                    type="button"
+                    onClick={() => experts.select(e.id)}
+                    className="text-accent-text text-base font-semibold underline underline-offset-4"
+                  >
                     {e.name}
-                  </div>
+                  </button>
                   <div className="text-fg-muted">{e.email}</div>
                 </td>
                 <td>{e.fields.join(', ')}</td>
@@ -114,7 +122,10 @@ export default function AdminExpertsPage() {
                   colSpan={6}
                   className="text-fg-muted px-4 py-10 text-center"
                 >
-                  Không có Expert nào khớp bộ lọc.
+                  {experts.isLoading
+                    ? 'Đang tải…'
+                    : (experts.error?.message ??
+                      'Không có Expert nào khớp bộ lọc.')}
                 </td>
               </tr>
             )}
@@ -122,6 +133,27 @@ export default function AdminExpertsPage() {
         </table>
         <TablePager paged={paged} onPrev={experts.prev} onNext={experts.next} />
       </section>
+
+      {experts.selected && (
+        <ExpertDrawer
+          key={experts.selected.id}
+          expert={experts.selected}
+          onClose={() => experts.select(null)}
+          onSetServiceStatus={(status) =>
+            experts
+              .setServiceStatus(experts.selected!.id, status)
+              .then(() =>
+                setToast(
+                  status === 'SUSPENDED'
+                    ? 'Đã tạm ngưng dịch vụ'
+                    : 'Đã mở lại dịch vụ'
+                )
+              )
+              .catch((e: Error) => setToast(e.message))
+          }
+        />
+      )}
+      {toast && <Toast message={toast} onDone={clearToast} />}
     </AdminLayout>
   )
 }

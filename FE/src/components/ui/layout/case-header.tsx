@@ -5,7 +5,7 @@ export interface CaseHeaderProps {
   code: string
   title: string
   meta: [label: string, value: string][]
-  rail: StatusRailProps
+  rail?: StatusRailProps
 }
 
 export function CaseHeader({ code, title, meta, rail }: CaseHeaderProps) {
@@ -21,9 +21,11 @@ export function CaseHeader({ code, title, meta, rail }: CaseHeaderProps) {
           </div>
         ))}
       </dl>
-      <div className="mt-6">
-        <StatusRail size="lg" {...rail} />
-      </div>
+      {rail && (
+        <div className="mt-6">
+          <StatusRail size="lg" {...rail} />
+        </div>
+      )}
     </div>
   )
 }

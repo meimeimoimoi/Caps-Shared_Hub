@@ -1,6 +1,8 @@
 import { useState } from 'react'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { paginate } from '@/lib/utils'
-import { mockExperts } from '../mockData'
+import { getExperts, setExpertServiceStatus } from '../api/adminApi'
+import { adminKeys } from '../api/queryKeys'
 import type { Expert } from '../types'
 import { foldVietnamese } from '../utils/applications'
 
@@ -14,8 +16,24 @@ export function useExperts() {
   const [query, setQueryState] = useState('')
   const [page, setPage] = useState(0)
 
-  // MOCK: thay mockExperts bằng useQuery gọi API (xem features/admin/mockData.ts)
-  const experts = mockExperts
+  const qc = useQueryClient()
+  const {
+    data: experts = [],
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: adminKeys.experts(),
+    queryFn: ({ signal }) => getExperts(signal),
+  })
+  const [selectedId, setSelectedId] = useState<string | null>(null)
+
+  const setServiceStatus = async (
+    id: string,
+    status: Expert['serviceStatus']
+  ) => {
+    await setExpertServiceStatus(id, status)
+    await qc.invalidateQueries({ queryKey: adminKeys.experts() })
+  }
   const fields = [...new Set(experts.flatMap((e) => e.fields))].sort((a, b) =>
     a.localeCompare(b, 'vi')
   )
@@ -41,6 +59,11 @@ export function useExperts() {
     }
 
   return {
+    isLoading,
+    error,
+    selected: experts.find((e) => e.id === selectedId) ?? null,
+    select: setSelectedId,
+    setServiceStatus,
     status,
     setStatus: resetting(setStatusState),
     field,

@@ -60,6 +60,15 @@ export const CASE_STATUS = {
   TERMINATED: { label: 'Đã chấm dứt', tone: 'neutral' },
 } as const satisfies Record<string, StatusMeta>
 
+/* Flow 5 · Escrow (khoản tiền giữ hộ của hồ sơ) */
+export const ESCROW_STATUS = {
+  HELD: { label: 'Giữ · chờ nghiệm thu', tone: 'neutral' },
+  DISPUTE_LOCKED: { label: 'Khóa · tranh chấp', tone: 'warning' },
+  PAID: { label: 'Đã chi trả 80/20', tone: 'plain' },
+  REFUNDED: { label: 'Đã hoàn tiền', tone: 'plain' },
+  PAYOUT_FAILED: { label: 'Chi trả lỗi · thử lại', tone: 'danger' },
+} as const satisfies Record<string, StatusMeta>
+
 export const REVIEW_RESULT = {
   VERIFIED: { label: 'Đã xác thực', tone: 'success' },
   CANNOT_VERIFY: { label: 'Không thể xác thực', tone: 'danger' },

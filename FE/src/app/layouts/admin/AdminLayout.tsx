@@ -15,7 +15,7 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
-interface NavItem {
+export interface NavItem {
   label: string
   icon: LucideIcon
   to?: string // không có = chưa có route
@@ -23,28 +23,33 @@ interface NavItem {
   badge?: number
 }
 
-interface AdminLayoutProps {
-  /** Mục sidebar đang mở */
-  section: 'pending' | 'experts'
+export interface NavGroup {
+  group: string
+  items: NavItem[]
+}
+
+interface ShellPageProps {
   breadcrumb: ReactNode
-  pendingCount: number
   /** Bỏ trống thì ẩn ô tìm kiếm */
   search?: string
   onSearchChange?: (value: string) => void
   children: ReactNode
 }
 
+interface AdminLayoutProps extends ShellPageProps {
+  /** Mục sidebar đang mở */
+  section: 'pending' | 'experts' | 'disputes' | 'escrow'
+  pendingCount: number
+  disputeCount?: number
+}
+
 export function AdminLayout({
   section,
-  breadcrumb,
   pendingCount,
-  search,
-  onSearchChange,
-  children,
+  disputeCount,
+  ...page
 }: AdminLayoutProps) {
-  const [collapsed, setCollapsed] = useState(false)
-
-  const nav: { group: string; items: NavItem[] }[] = [
+  const nav: NavGroup[] = [
     {
       group: 'Xét duyệt Expert',
       items: [
@@ -66,8 +71,19 @@ export function AdminLayout({
     {
       group: 'Vận hành',
       items: [
-        { label: 'Khiếu nại', icon: Flag },
-        { label: 'Hoàn tiền và chi trả', icon: CreditCard },
+        {
+          label: 'Khiếu nại',
+          icon: Flag,
+          to: '/admin/disputes',
+          active: section === 'disputes',
+          badge: disputeCount,
+        },
+        {
+          label: 'Escrow và chi trả',
+          icon: CreditCard,
+          to: '/admin/escrow',
+          active: section === 'escrow',
+        },
         { label: 'Khung giá dịch vụ', icon: Tag },
       ],
     },
@@ -79,6 +95,28 @@ export function AdminLayout({
       ],
     },
   ]
+
+  return <RoleShell nav={nav} initials="TA" {...page} />
+}
+
+interface RoleShellProps extends ShellPageProps {
+  nav: NavGroup[]
+  /** Chữ viết tắt trên avatar topbar */
+  initials: string
+  searchPlaceholder?: string
+}
+
+/* Khung sidebar + topbar dùng chung cho các vai trò quản trị (Admin, Knowledge Admin) */
+export function RoleShell({
+  nav,
+  initials,
+  searchPlaceholder = 'Tìm theo tên hoặc email',
+  breadcrumb,
+  search,
+  onSearchChange,
+  children,
+}: RoleShellProps) {
+  const [collapsed, setCollapsed] = useState(false)
 
   return (
     <div data-density="compact" className="bg-desk text-fg flex min-h-dvh">
@@ -209,8 +247,8 @@ export function AdminLayout({
                 type="search"
                 value={search}
                 onChange={(e) => onSearchChange(e.target.value)}
-                placeholder="Tìm theo tên hoặc email"
-                aria-label="Tìm theo tên hoặc email"
+                placeholder={searchPlaceholder}
+                aria-label={searchPlaceholder}
                 className="placeholder:text-fg-muted w-full bg-transparent text-sm outline-none"
               />
             </label>
@@ -224,7 +262,7 @@ export function AdminLayout({
             <span className="bg-indicator absolute top-0.5 right-0.5 size-2 rounded-full" />
           </button>
           <span className="bg-paper text-caption grid size-8 place-items-center rounded-full font-semibold">
-            TA
+            {initials}
           </span>
         </header>
 

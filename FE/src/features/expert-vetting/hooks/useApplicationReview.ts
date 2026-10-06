@@ -1,16 +1,25 @@
 import { useState } from 'react'
-import { DECISION_LOG, DECISION_STATUS } from '../constants'
+import { useQuery } from '@tanstack/react-query'
 import {
-  CURRENT_ADMIN,
-  getMockApplicationDetail,
-  mockCriteria,
-} from '../mockData'
+  decideApplication,
+  getApplicationDetail,
+  getCriteria,
+} from '../api/adminApi'
+import { adminKeys } from '../api/queryKeys'
+import { CURRENT_ADMIN, DECISION_LOG, DECISION_STATUS } from '../constants'
 import type { DecisionRecord, HistoryEntry, ReviewDecision } from '../types'
 
 export function useApplicationReview(id: string) {
-  // MOCK: thay bằng useQuery gọi API chi tiết hồ sơ + tiêu chí (xem features/admin/mockData.ts)
-  const detail = getMockApplicationDetail(id)
-  const criteria = mockCriteria
+  const detailQuery = useQuery({
+    queryKey: adminKeys.application(id),
+    queryFn: ({ signal }) => getApplicationDetail(id, signal),
+  })
+  const criteriaQuery = useQuery({
+    queryKey: adminKeys.criteria(),
+    queryFn: ({ signal }) => getCriteria(signal),
+  })
+  const detail = detailQuery.data ?? undefined
+  const criteria = criteriaQuery.data ?? []
 
   const [scores, setScores] = useState<Record<string, number>>({})
   const [evidence, setEvidence] = useState<Record<string, string>>({})
@@ -44,8 +53,9 @@ export function useApplicationReview(id: string) {
     }
   }
 
-  // MOCK: chưa gửi API. TODO(api): POST quyết định kèm scores + evidence + note
-  const decide = (kind: ReviewDecision, note = '') => {
+  // Lịch sử + thẻ quyết định giữ tại chỗ sau khi API nhận quyết định
+  const decide = async (kind: ReviewDecision, note = '') => {
+    await decideApplication(id, { kind, note: note.trim(), scores, evidence })
     const at = new Date().toISOString()
     if (remainingCriteria === 0)
       addLog(
@@ -57,6 +67,7 @@ export function useApplicationReview(id: string) {
   }
 
   return {
+    isLoading: detailQuery.isLoading || criteriaQuery.isLoading,
     detail,
     status: decision ? DECISION_STATUS[decision.kind] : detail?.status,
     criteria,
@@ -71,7 +82,11 @@ export function useApplicationReview(id: string) {
     toggleFlagReviewed,
     remainingCriteria,
     unreviewedFlags,
-    canApprove: !decision && remainingCriteria === 0 && unreviewedFlags === 0,
+    canApprove:
+      !decision &&
+      criteria.length > 0 &&
+      remainingCriteria === 0 &&
+      unreviewedFlags === 0,
     decision,
     decide,
     // Mới nhất lên đầu

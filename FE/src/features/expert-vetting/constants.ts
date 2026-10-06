@@ -1,5 +1,8 @@
 import type { ApplicationStatus, ReviewDecision } from './types'
 
+// MOCK: admin đang đăng nhập. TODO(api): lấy từ authStore khi có đăng nhập admin
+export const CURRENT_ADMIN = 'Trần An'
+
 /* Cấu hình dialog xác nhận cho từng loại quyết định */
 export const DECISION_DIALOG: Record<
   Exclude<ReviewDecision, 'supplement'>,
