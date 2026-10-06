@@ -4,7 +4,12 @@ import { draftApi } from '../api/draftApi'
 import { useDraftAction } from './useDrafting'
 import { useUnsavedInput } from './useUnsavedInput'
 import { draftKeys } from '../api/queryKeys'
-import { normalizeInput, validateInput } from '../utils/validation'
+import {
+  normalizeInput,
+  validateInputIssues,
+  type InputIssue,
+} from '../utils/validation'
+import { useDraftPresentation } from './useDraftPresentation'
 import type {
   InputValues,
   Snapshot,
@@ -17,6 +22,7 @@ export function useDraftInput(
   template: TemplateVersion,
   source?: Snapshot
 ) {
+  const display = useDraftPresentation()
   const client = useQueryClient()
   const [input, setInput] = useState<InputValues>({
     ...(source?.input ?? workspace.input),
@@ -24,7 +30,7 @@ export function useDraftInput(
   const [baseline, setBaseline] = useState(workspace.input)
   const [revision, setRevision] = useState(workspace.revision)
   const [savedAt, setSavedAt] = useState(workspace.savedAt)
-  const [errors, setErrors] = useState<Record<string, string>>({})
+  const [errors, setErrors] = useState<Record<string, InputIssue>>({})
   const [dialog, setDialog] = useState(false)
   const [acknowledged, setAcknowledged] = useState(false)
   const [confirmed, setConfirmed] = useState<Snapshot | null>(null)
@@ -81,7 +87,7 @@ export function useDraftInput(
     confirm.reset()
   }
   function openConfirm() {
-    const issues = validateInput(input, template.fields)
+    const issues = validateInputIssues(input, template.fields)
     setErrors(issues)
     if (Object.keys(issues).length) {
       document.getElementById(`draft-field-${Object.keys(issues)[0]}`)?.focus()
@@ -121,7 +127,9 @@ export function useDraftInput(
     input,
     setValue,
     dirty,
-    errors,
+    errors: Object.fromEntries(
+      Object.entries(errors).map(([id, issue]) => [id, display.issue(issue)])
+    ),
     busy,
     save,
     saveInput,

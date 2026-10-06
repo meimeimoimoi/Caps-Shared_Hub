@@ -1,3 +1,6 @@
+import { DraftUiError } from '@/features/drafting/utils/DraftUiError'
+import { useDraftPresentation } from '@/features/drafting/hooks/useDraftPresentation'
+import { useTranslation } from 'react-i18next'
 import { useEffect, useRef } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { LoaderCircle, LockKeyhole } from 'lucide-react'
@@ -17,9 +20,12 @@ import {
   DraftError,
   Paper,
 } from '@/features/drafting/components/DraftUi'
-import { ApiError } from '@/lib/api-client'
 
 export default function DraftGenerationPage() {
+  const display = useDraftPresentation()
+
+  const { t } = useTranslation('drafting')
+
   const { workspaceId, jobId } = useParams()
   const query = useGeneration(jobId)
   const workspace = useWorkspace(workspaceId)
@@ -46,10 +52,7 @@ export default function DraftGenerationPage() {
     return (
       <DraftError
         error={
-          new ApiError(
-            'This generation job does not belong to this workspace.',
-            404
-          )
+          new DraftUiError('thisGenerationJobDoesNotBelongToThisWorkspace', 404)
         }
       />
     )
@@ -59,14 +62,16 @@ export default function DraftGenerationPage() {
   return (
     <>
       <DraftHeading
-        title={workspace.data?.title ?? 'Creating your draft'}
-        description="Generation uses the confirmed snapshot and its pinned template version."
+        title={workspace.data?.title ?? t('creatingYourDraft')}
+        description={t(
+          'generationUsesTheConfirmedSnapshotAndItsPinnedTemplateVersion'
+        )}
         step={3}
       />
       <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_300px]">
         <Paper className="min-h-96">
           {query.isPending ? (
-            <DraftLoading message="Checking generation status…" />
+            <DraftLoading message={t('checkingGenerationStatus')} />
           ) : query.isError ? (
             <DraftError
               error={query.error}
@@ -76,14 +81,14 @@ export default function DraftGenerationPage() {
             <div className="space-y-5">
               <DraftError
                 error={
-                  new Error(
-                    job.error ?? 'Generation failed. The snapshot is preserved.'
-                  )
+                  new DraftUiError('generationFailedTheSnapshotIsPreserved')
                 }
               />
               <p className="text-fg-muted text-sm">
-                {job.billingMessage ??
-                  'Billing has not been confirmed. Check the transaction status before assuming any charge.'}
+                {display.demoCopy(job.billingMessage) ||
+                  t(
+                    'billingHasNotBeenConfirmedCheckTheTransactionStatusBeforeAssumingAnyCharge'
+                  )}
               </p>
               <DraftButton
                 disabled={retry.isPending}
@@ -98,8 +103,8 @@ export default function DraftGenerationPage() {
                 }
               >
                 {retry.isPending
-                  ? 'Starting retry…'
-                  : 'Retry with this snapshot'}
+                  ? t('startingRetry')
+                  : t('retryWithThisSnapshot')}
               </DraftButton>
               {retry.isError && <DraftError error={retry.error} />}
             </div>
@@ -115,18 +120,20 @@ export default function DraftGenerationPage() {
               />
               <h2 className="text-h2">
                 {job?.status === 'QUEUED'
-                  ? 'Your draft is queued'
+                  ? t('yourDraftIsQueued')
                   : job?.status === 'SUCCEEDED'
-                    ? 'Opening your draft'
-                    : 'Creating your draft'}
+                    ? t('openingYourDraft')
+                    : t('creatingYourDraft')}
               </h2>
               <p className="text-fg-muted max-w-md">
-                {job?.stage ??
-                  'The service is processing your confirmed input. Progress details are not available.'}
+                {display.demoCopy(job?.stage) ||
+                  t(
+                    'theServiceIsProcessingYourConfirmedInputProgressDetailsAreNotAvailable'
+                  )}
               </p>
               {isDraftMock && (
                 <p className="text-caption text-warning">
-                  Generation stages and latency are simulated.
+                  {t('generationStagesAndLatencyAreSimulated')}
                 </p>
               )}
               <DraftButton
@@ -134,39 +141,43 @@ export default function DraftGenerationPage() {
                 disabled={query.isFetching}
                 onClick={() => void query.refetch()}
               >
-                Check status
+                {t('checkStatus')}
               </DraftButton>
             </div>
           )}
           {query.isError && (
             <p className="text-fg-muted mt-4 text-sm">
-              A connection error does not mean the job failed. Check this job
-              again; no new job has been created.
+              {t(
+                'aConnectionErrorDoesNotMeanTheJobFailedCheckThisJobAgainNoNewJobHasBeenCreated'
+              )}
             </p>
           )}
         </Paper>
         <aside className="space-y-4">
           <Paper>
             <LockKeyhole size={20} className="text-accent mb-4" />
-            <h2 className="text-h2">Confirmed input</h2>
+            <h2 className="text-h2">{t('confirmedInput')}</h2>
             <p className="mt-3 text-sm">
               {snapshot
-                ? `Snapshot v${snapshot.version} · Immutable`
-                : 'Checking snapshot reference…'}
+                ? t('snapshotImmutable', {
+                    version: display.number(snapshot.version),
+                  })
+                : t('checkingSnapshotReference')}
             </p>
             <p className="text-caption text-fg-muted mt-2 break-all">
               {job?.snapshotId}
             </p>
             <p className="text-caption text-fg-muted mt-4">
-              No draft version or export is available until generation succeeds.
-              Readiness is assessed separately.
+              {t(
+                'noDraftVersionOrExportIsAvailableUntilGenerationSucceedsReadinessIsAssessedSeparately'
+              )}
             </p>
           </Paper>
           <DraftLink to={`/drafts/${workspaceId}/input`}>
-            Back to working input
+            {t('backToWorkingInput')}
           </DraftLink>
           <DraftLink to={`/drafts/${workspaceId}/history`}>
-            Open previous versions
+            {t('openPreviousVersions')}
           </DraftLink>
         </aside>
       </div>

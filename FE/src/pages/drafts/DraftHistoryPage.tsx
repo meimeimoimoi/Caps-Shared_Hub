@@ -1,3 +1,5 @@
+import { useDraftPresentation } from '@/features/drafting/hooks/useDraftPresentation'
+import { useTranslation } from 'react-i18next'
 import { useState } from 'react'
 import { useParams, useSearchParams } from 'react-router-dom'
 import { Pagination } from '@/components/ui/navigation/pagination'
@@ -10,9 +12,12 @@ import {
   Paper,
   ReadinessBadge,
 } from '@/features/drafting/components/DraftUi'
-import { timestamp } from '@/features/drafting/utils/validation'
 
 export default function DraftHistoryPage() {
+  const display = useDraftPresentation()
+
+  const { t } = useTranslation('drafting')
+
   const { workspaceId } = useParams()
   const [params] = useSearchParams()
   const query = useHistory(workspaceId)
@@ -25,33 +30,35 @@ export default function DraftHistoryPage() {
   return (
     <>
       <DraftHeading
-        title="Draft version history"
+        title={t('draftVersionHistory')}
         description={
           workspace.data?.title ??
-          'Each version retains its original snapshot, template and source references.'
+          t('eachVersionRetainsItsOriginalSnapshotTemplateAndSourceReferences')
         }
       >
-        <DraftLink to={`/drafts/${workspaceId}/input`}>Working input</DraftLink>
+        <DraftLink to={`/drafts/${workspaceId}/input`}>
+          {t('workingInput')}
+        </DraftLink>
       </DraftHeading>
       {query.isPending ? (
-        <DraftLoading message="Loading version history…" />
+        <DraftLoading message={t('loadingVersionHistory')} />
       ) : query.isError ? (
         <DraftError error={query.error} retry={() => void query.refetch()} />
       ) : !query.data?.length ? (
         <Paper>
-          <h2 className="text-h2">No draft versions yet</h2>
+          <h2 className="text-h2">{t('noDraftVersionsYet')}</h2>
           <p className="text-fg-muted mt-3">
-            A confirmed snapshot can exist before generation succeeds.
+            {t('aConfirmedSnapshotCanExistBeforeGenerationSucceeds')}
           </p>
           <DraftLink to={`/drafts/${workspaceId}/input`}>
-            Continue working input
+            {t('continueWorkingInput')}
           </DraftLink>
           {workspace.data?.latestJobId && (
             <DraftLink
               className="ml-4"
               to={`/drafts/${workspaceId}/generations/${workspace.data.latestJobId}`}
             >
-              Check generation
+              {t('checkGeneration')}
             </DraftLink>
           )}
         </Paper>
@@ -66,22 +73,26 @@ export default function DraftHistoryPage() {
                 <div className="flex flex-wrap justify-between gap-4">
                   <div className="min-w-0">
                     <h2 className="text-h2">
-                      Draft v{draft.version}
+                      {t('draftVersion', {
+                        version: display.number(draft.version),
+                      })}
                       {params.get('selected') === draft.id && (
                         <span className="text-caption text-accent-text ml-3 font-sans">
-                          Selected
+                          {t('selected')}
                         </span>
                       )}
                     </h2>
                     <p className="text-fg-muted mt-2 text-sm">
-                      Snapshot v
-                      {workspace.data?.snapshots.find(
-                        (snapshot) => snapshot.id === draft.snapshotId
-                      )?.version ?? '?'}{' '}
+                      {t('snapshotVersion', {
+                        version:
+                          workspace.data?.snapshots.find(
+                            (snapshot) => snapshot.id === draft.snapshotId
+                          )?.version ?? '?',
+                      })}{' '}
                       · {draft.templateVersionId}
                     </p>
                     <p className="text-caption text-fg-muted mt-1">
-                      {timestamp(draft.generatedAt)}
+                      {display.timestamp(draft.generatedAt)}
                     </p>
                   </div>
                   <div className="flex flex-wrap items-center gap-4">
@@ -89,7 +100,7 @@ export default function DraftHistoryPage() {
                     <DraftLink
                       to={`/drafts/${workspaceId}/versions/${draft.id}`}
                     >
-                      Open this version
+                      {t('openThisVersion')}
                     </DraftLink>
                   </div>
                 </div>
@@ -100,12 +111,14 @@ export default function DraftHistoryPage() {
                         key={event.id}
                         className="flex flex-wrap items-center justify-between gap-2"
                       >
-                        Artifact created · {event.format.toUpperCase()} ·{' '}
-                        {timestamp(event.createdAt)}
+                        {t('artifactCreated', {
+                          format: event.format.toUpperCase(),
+                          time: display.timestamp(event.createdAt),
+                        })}
                         <DraftLink
                           to={`/drafts/${workspaceId}/versions/${draft.id}?exportId=${event.id}`}
                         >
-                          Retrieve artifact
+                          {t('retrieveArtifact')}
                         </DraftLink>
                       </li>
                     ))}

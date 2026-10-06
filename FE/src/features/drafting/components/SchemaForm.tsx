@@ -1,3 +1,6 @@
+import { useTranslation } from 'react-i18next'
+import { useDraftPresentation } from '../hooks/useDraftPresentation'
+import { parseMoneyInput } from '../utils/moneyInput'
 import { Input } from '@/components/ui/forms/input'
 import type { InputValues, SchemaField } from '../types'
 
@@ -16,6 +19,9 @@ export function SchemaForm({
   setValue: (id: string, value: string) => void
   disabled: boolean
 }) {
+  const display = useDraftPresentation()
+  const { t } = useTranslation('drafting')
+
   return (
     <fieldset
       disabled={disabled}
@@ -80,9 +86,7 @@ export function SchemaForm({
                         }
                         value={
                           field.type === 'money' && /^\d+$/.test(value)
-                            ? new Intl.NumberFormat('en-US').format(
-                                BigInt(value)
-                              )
+                            ? display.number(BigInt(value))
                             : value
                         }
                         required={field.required}
@@ -93,7 +97,10 @@ export function SchemaForm({
                           setValue(
                             field.id,
                             field.type === 'money'
-                              ? event.target.value.replace(/[,\s]/g, '')
+                              ? parseMoneyInput(
+                                  event.target.value,
+                                  display.language
+                                )
                               : event.target.value
                           )
                         }
@@ -102,8 +109,8 @@ export function SchemaForm({
                     <p id={helpId} className="text-caption text-fg-muted mt-2">
                       {field.hint ??
                         (field.required
-                          ? 'Required for this template.'
-                          : 'Optional for this template.')}
+                          ? t('requiredForThisTemplate')
+                          : t('optionalForThisTemplate'))}
                     </p>
                     {errors[field.id] && (
                       <p

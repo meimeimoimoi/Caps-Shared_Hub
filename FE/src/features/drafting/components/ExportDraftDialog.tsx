@@ -1,3 +1,6 @@
+import { DraftUiError } from '@/features/drafting/utils/DraftUiError'
+import { useDraftPresentation } from '@/features/drafting/hooks/useDraftPresentation'
+import { useTranslation } from 'react-i18next'
 import { useEffect, useRef, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Modal } from '@/components/ui/feedback/modal'
@@ -5,7 +8,7 @@ import { ApiError } from '@/lib/api-client'
 import { draftApi } from '../api/draftApi'
 import { draftKeys } from '../api/queryKeys'
 import { useDraftAction, useDraftContext } from '../hooks/useDrafting'
-import { draftDisclaimer } from '../constants'
+
 import { DraftButton, DraftError, DraftLoading } from './DraftUi'
 import { safeSourceUrl } from '../utils/sourceUrl'
 import type { DraftVersion, ExportResult } from '../types'
@@ -21,6 +24,10 @@ export function ExportDraftDialog({
   onClose: () => void
   resumeExportId?: string
 }) {
+  const display = useDraftPresentation()
+
+  const { t } = useTranslation('drafting')
+
   const ctx = useDraftContext()
   const [acknowledged, setAcknowledged] = useState(false)
   const [format, setFormat] = useState('')
@@ -56,15 +63,15 @@ export function ExportDraftDialog({
       context
     )
     if (output.draftVersionId !== draft.id)
-      throw new Error(
-        'The returned export does not match this draft. Download has been blocked.'
+      throw new DraftUiError(
+        'theReturnedExportDoesNotMatchThisDraftDownloadHasBeenBlocked'
       )
     return output
   })
   const reconcile = useDraftAction(async (_: void, context) => {
     const output = await draftApi.exportResult(currentResult!.id, context)
     if (output.draftVersionId !== draft.id)
-      throw new Error('The returned artifact belongs to another draft version.')
+      throw new DraftUiError('theReturnedArtifactBelongsToAnotherDraftVersion')
     return output
   })
   useEffect(() => {
@@ -96,8 +103,8 @@ export function ExportDraftDialog({
         !failedDownload.current
       ) {
         failedDownload.current = true
-        throw new Error(
-          'Simulated download failure. The artifact already exists; retry the download without exporting or charging again.'
+        throw new DraftUiError(
+          'simulatedDownloadFailureTheArtifactAlreadyExistsRetryTheDownloadWithoutExportingOrChargingAgain'
         )
       }
       const link = document.createElement('a')
@@ -110,8 +117,8 @@ export function ExportDraftDialog({
       } else {
         const url = safeSourceUrl(currentResult.downloadUrl)
         if (!url)
-          throw new Error(
-            'The artifact has no valid download URL. Retrieve the existing artifact again.'
+          throw new DraftUiError(
+            'theArtifactHasNoValidDownloadUrlRetrieveTheExistingArtifactAgain'
           )
         link.href = url
       }
@@ -125,7 +132,7 @@ export function ExportDraftDialog({
       setDownloadStarted(true)
     } catch (error) {
       setDownloadError(
-        error instanceof Error ? error : new Error('Download failed.')
+        error instanceof Error ? error : new DraftUiError('downloadFailed')
       )
     }
   }
@@ -134,15 +141,18 @@ export function ExportDraftDialog({
     currentResult && currentResult.draftVersionId !== draft.id
   return (
     <Modal
-      title={`Export Draft v${draft.version}`}
-      closeLabel="Close export dialog"
-      description={`Snapshot ${draft.snapshotId} · Template ${draft.templateVersionId}`}
+      title={t('exportDialogTitle', { version: display.number(draft.version) })}
+      closeLabel={t('closeExportDialog')}
+      description={t('referencesDescription', {
+        snapshot: draft.snapshotId,
+        template: draft.templateVersionId,
+      })}
       preventClose={busy}
       onClose={onClose}
       footer={
         <>
           <DraftButton secondary disabled={busy} onClick={onClose}>
-            Close
+            {t('close')}
           </DraftButton>
           {currentResult && !wrongVersion ? (
             currentResult.status === 'PENDING_RECONCILIATION' ? (
@@ -152,13 +162,13 @@ export function ExportDraftDialog({
                   reconcile.mutate(undefined, { onSuccess: setResult })
                 }
               >
-                Check transaction status
+                {t('checkTransactionStatus')}
               </DraftButton>
             ) : (
               <DraftButton disabled={busy} onClick={download}>
                 {downloadStarted
-                  ? 'Download artifact again'
-                  : 'Download artifact'}
+                  ? t('downloadArtifactAgain')
+                  : t('downloadArtifact')}
               </DraftButton>
             )
           ) : (
@@ -176,7 +186,7 @@ export function ExportDraftDialog({
                   submit.mutate(undefined, { onSuccess: setResult })
                 }
               >
-                {submit.isPending ? 'Exporting…' : 'Confirm export'}
+                {submit.isPending ? t('exporting') : t('confirmExport')}
               </DraftButton>
             )
           )}
@@ -184,33 +194,33 @@ export function ExportDraftDialog({
       }
     >
       <p className="rounded-control bg-sunken mt-5 p-4 text-sm">
-        {draftDisclaimer}
+        {t('disclaimer')}
       </p>
       {wrongVersion ? (
         <DraftError
           error={
-            new Error(
-              'This artifact belongs to a different draft version. No download is available here.'
+            new DraftUiError(
+              'thisArtifactBelongsToADifferentDraftVersionNoDownloadIsAvailableHere'
             )
           }
         />
       ) : currentResult ? (
         <div className="mt-5 space-y-3">
           <p role="status" className="rounded-control bg-sunken p-4 text-sm">
-            {currentResult.message}
+            {display.demoCopy(currentResult.message)}
           </p>
           <p className="text-caption text-fg-muted break-all">
-            Artifact reference: {currentResult.id}
+            {t('artifactReference', { id: currentResult.id })}
           </p>
           {downloadStarted && (
             <p role="status" className="text-success text-sm">
-              Download requested. You can retrieve this same artifact again.
+              {t('downloadRequestedYouCanRetrieveThisSameArtifactAgain')}
             </p>
           )}
         </div>
       ) : resumeExportId ? (
         resumed.isPending ? (
-          <DraftLoading message="Retrieving the existing artifact…" />
+          <DraftLoading message={t('retrievingTheExistingArtifact')} />
         ) : (
           <DraftError
             error={resumed.error}
@@ -220,7 +230,7 @@ export function ExportDraftDialog({
       ) : (
         <>
           {quote.isPending ? (
-            <DraftLoading message="Loading export conditions…" />
+            <DraftLoading message={t('loadingExportConditions')} />
           ) : quote.isError ? (
             <div className="mt-5">
               <DraftError
@@ -230,14 +240,17 @@ export function ExportDraftDialog({
             </div>
           ) : (
             <div className="mt-5 space-y-4">
-              <p className="text-sm">{quote.data?.description}</p>
+              <p className="text-sm">
+                {display.demoCopy(quote.data?.description)}
+              </p>
               {!quote.data?.eligibility.allowed && (
                 <p role="alert" className="text-danger text-sm">
-                  {quote.data?.eligibility.reason ?? 'Export is unavailable.'}
+                  {display.demoCopy(quote.data?.eligibility.reason) ||
+                    t('exportIsUnavailable')}
                 </p>
               )}
               <label className="block text-sm font-medium">
-                Format
+                {t('format')}
                 <select
                   value={selectedFormat}
                   onChange={(event) => setFormat(event.target.value)}
@@ -247,7 +260,7 @@ export function ExportDraftDialog({
                   {quote.data?.formats.map((value) => (
                     <option key={value} value={value}>
                       {value === 'txt'
-                        ? 'TXT — demo text file'
+                        ? t('txtDemoTextFile')
                         : value.toUpperCase()}
                     </option>
                   ))}
@@ -255,8 +268,7 @@ export function ExportDraftDialog({
               </label>
               {expired && (
                 <p role="alert" className="text-danger text-sm">
-                  This quote has expired. Reload it and confirm the new
-                  conditions.
+                  {t('thisQuoteHasExpiredReloadItAndConfirmTheNewConditions')}
                 </p>
               )}
               {(expired ||
@@ -272,7 +284,7 @@ export function ExportDraftDialog({
                       void quote.refetch()
                     }}
                   >
-                    Reload quote
+                    {t('reloadQuote')}
                   </DraftButton>
                 )}
               <label className="flex items-start gap-3 text-sm">
@@ -284,8 +296,9 @@ export function ExportDraftDialog({
                   onChange={(event) => setAcknowledged(event.target.checked)}
                 />
                 <span>
-                  I understand this is an AI-assisted draft, and I have read the
-                  export conditions for this version.
+                  {t(
+                    'iUnderstandThisIsAnAiassistedDraftAndIHaveReadTheExportConditionsForThisVersion'
+                  )}
                 </span>
               </label>
             </div>
@@ -296,8 +309,9 @@ export function ExportDraftDialog({
         <div className="mt-4">
           <DraftError error={submit.error} />
           <p className="text-caption text-fg-muted mt-2">
-            Retry retains the same operation reference. A timeout does not
-            confirm the billing result.
+            {t(
+              'retryRetainsTheSameOperationReferenceATimeoutDoesNotConfirmTheBillingResult'
+            )}
           </p>
         </div>
       )}

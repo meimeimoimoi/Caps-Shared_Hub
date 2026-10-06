@@ -1,3 +1,5 @@
+import { useDraftPresentation } from '@/features/drafting/hooks/useDraftPresentation'
+import { useTranslation } from 'react-i18next'
 import { useRef } from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { draftApi } from '@/features/drafting/api/draftApi'
@@ -14,9 +16,12 @@ import {
   DraftButton,
   Paper,
 } from '@/features/drafting/components/DraftUi'
-import { timestamp } from '@/features/drafting/utils/validation'
 
 export default function DraftTemplateDetailPage() {
+  const display = useDraftPresentation()
+
+  const { t } = useTranslation('drafting')
+
   const { templateVersionId } = useParams()
   const query = useTemplate(templateVersionId)
   const [params] = useSearchParams()
@@ -27,7 +32,7 @@ export default function DraftTemplateDetailPage() {
     draftApi.create(templateVersionId!, key.current, ctx)
   )
   if (query.isPending)
-    return <DraftLoading message="Loading input requirements…" />
+    return <DraftLoading message={t('loadingInputRequirements')} />
   if (query.isError || !query.data)
     return <DraftError error={query.error} retry={() => void query.refetch()} />
   const template = query.data
@@ -45,32 +50,40 @@ export default function DraftTemplateDetailPage() {
               className={`rounded-control px-3 py-1 ${template.status !== 'ACTIVE' ? 'bg-danger-soft text-danger' : template.fields.length ? 'bg-success-soft text-success' : 'bg-sunken text-fg-muted'}`}
             >
               {template.status !== 'ACTIVE'
-                ? 'Unavailable'
+                ? t('unavailable')
                 : template.fields.length
-                  ? 'Available for drafting'
-                  : 'Reference only'}
+                  ? t('availableForDrafting')
+                  : t('referenceOnly')}
             </span>
             <span className="rounded-control bg-sunken px-3 py-1">
-              Template v{template.version}
+              {t('templateVersionNumber', {
+                version: display.number(template.version),
+              })}
             </span>
             <span
               className={
                 template.status === 'ACTIVE' ? 'text-success' : 'text-danger'
               }
             >
-              {template.status}
+              {display.templateStatus(template.status)}
             </span>
             <span className="text-fg-muted">
-              Updated {timestamp(template.updatedAt)}
+              {t('updatedTime', {
+                time: display.timestamp(template.updatedAt),
+              })}
             </span>
           </div>
-          <h2 className="text-h2">Input requirements</h2>
+          <h2 className="text-h2">{t('inputRequirements')}</h2>
           {template.fields.length > 0 && (
             <p className="text-fg-muted mt-2">
-              {template.fields.filter((field) => field.required).length}{' '}
-              required ·{' '}
-              {template.fields.filter((field) => !field.required).length}{' '}
-              optional
+              {t('requirementsCount', {
+                required: display.number(
+                  template.fields.filter((field) => field.required).length
+                ),
+                optional: display.number(
+                  template.fields.filter((field) => !field.required).length
+                ),
+              })}
             </p>
           )}
           {template.schemaNote && (
@@ -93,8 +106,8 @@ export default function DraftTemplateDetailPage() {
                         >
                           <span>{field.label}</span>
                           <span className="text-fg-muted">
-                            {field.type} ·{' '}
-                            {field.required ? 'Required' : 'Optional'}
+                            {display.fieldType(field.type)} ·{' '}
+                            {field.required ? t('required') : t('optional')}
                           </span>
                         </li>
                       ))}
@@ -105,14 +118,15 @@ export default function DraftTemplateDetailPage() {
           </div>
           {!template.fields.length && (
             <p className="text-fg-muted mt-4">
-              This template is available for reference. Its input form is not
-              available yet, so it cannot create a drafting workspace.
+              {t(
+                'thisTemplateIsAvailableForReferenceItsInputFormIsNotAvailableYetSoItCannotCreateADraftingWorkspace'
+              )}
             </p>
           )}
         </Paper>
         <aside className="space-y-5 lg:sticky lg:top-6">
           <Paper>
-            <h2 className="text-h2">Version notes</h2>
+            <h2 className="text-h2">{t('versionNotes')}</h2>
             {template.changelog ? (
               <ul className="text-fg-muted mt-3 list-disc space-y-2 pl-4 text-sm">
                 {template.changelog.map((note) => (
@@ -121,11 +135,11 @@ export default function DraftTemplateDetailPage() {
               </ul>
             ) : (
               <p className="text-fg-muted mt-3 text-sm">
-                No changelog was supplied for this version.
+                {t('noChangelogWasSuppliedForThisVersion')}
               </p>
             )}
             <p className="text-caption text-fg-muted mt-5">
-              New template versions do not change an existing workspace.
+              {t('newTemplateVersionsDoNotChangeAnExistingWorkspace')}
             </p>
           </Paper>
           <DraftButton
@@ -142,13 +156,13 @@ export default function DraftTemplateDetailPage() {
               })
             }
           >
-            {create.isPending ? 'Creating workspace…' : 'Use this template'}
+            {create.isPending ? t('creatingWorkspace') : t('useThisTemplate')}
           </DraftButton>
           {create.isError && <DraftError error={create.error} />}
           <DraftLink
             to={`/drafts/templates?category=${encodeURIComponent(params.get('category') ?? 'All')}`}
           >
-            Choose another template
+            {t('chooseAnotherTemplate')}
           </DraftLink>
         </aside>
       </div>
