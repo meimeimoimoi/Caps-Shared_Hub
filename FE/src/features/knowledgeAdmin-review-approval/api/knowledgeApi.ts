@@ -1,6 +1,6 @@
 import { api } from '@/lib/api-client'
 import { isExpertDemo } from '@/lib/expert-data-source'
-import type { PipelineStage } from '../constants'
+import type { QueueFilter } from '../constants'
 import type {
   ApproveInput,
   DocumentDetail,
@@ -21,16 +21,33 @@ export async function getPipelineSummary(signal?: AbortSignal) {
   return api.get<PipelineSummary>(`${BASE}/pipeline/summary`, { signal })
 }
 
-/** stage = 'collect' → mọi văn bản thu thập trong tháng */
-export async function getDocuments(stage: PipelineStage, signal?: AbortSignal) {
+/** stage = 'collect' → mọi văn bản thu thập trong tháng; 'failed' → văn bản đang lỗi */
+export async function getDocuments(stage: QueueFilter, signal?: AbortSignal) {
   if (isExpertDemo) {
     const docs = structuredClone((await fixtures()).mockDocuments)
-    return stage === 'collect' ? docs : docs.filter((d) => d.stage === stage)
+    if (stage === 'collect') return docs
+    if (stage === 'failed') return docs.filter((d) => d.failure)
+    return docs.filter((d) => d.stage === stage)
   }
   return api.get<KnowledgeDocument[]>(`${BASE}/documents`, {
     params: { stage },
     signal,
   })
+}
+
+/** Thử lại ngay bước bị lỗi (index hoặc bóc tách) */
+export async function retryDocument(documentId: string) {
+  if (isExpertDemo) {
+    const f = await fixtures()
+    const d = f.mockDocuments.find((x) => x.id === documentId)
+    if (!d?.failure) return
+    const index = d.failure.kind === 'INDEX_FAILED'
+    f.mockSummary[index ? 'indexFailed' : 'parseFailed'] -= 1
+    f.mockSummary[index ? 'indexing' : 'parsing'] += 1
+    delete d.failure
+    return
+  }
+  await api.post(`${BASE}/documents/${documentId}/retry`)
 }
 
 /* ── Kiểm tra phiên bản ── */

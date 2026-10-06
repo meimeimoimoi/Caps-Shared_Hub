@@ -7,6 +7,8 @@ export const PIPELINE = [
   { key: 'indexed', label: 'Đã index', heading: 'Đã index' },
 ] as const
 export type PipelineStage = (typeof PIPELINE)[number]['key']
+/** Bộ lọc bảng hàng đợi: 1 bước quy trình, hoặc 'failed' = văn bản lỗi ở bất kỳ bước nào */
+export type QueueFilter = PipelineStage | 'failed'
 
 export const SOURCE_LABEL = { UPLOAD: 'Tải lên', CRAWL: 'Crawl' } as const
 

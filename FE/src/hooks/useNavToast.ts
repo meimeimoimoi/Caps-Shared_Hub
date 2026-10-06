@@ -12,8 +12,10 @@ export function useNavToast() {
   const clearToast = useCallback(() => setToast(null), [])
 
   useEffect(() => {
-    if (location.state) navigate(location.pathname, { replace: true })
-  }, [location.state, location.pathname, navigate])
+    // Giữ nguyên query string (vd. ?stage=failed), chỉ bỏ state
+    if (location.state)
+      navigate({ pathname: location.pathname, search: location.search }, { replace: true })
+  }, [location.state, location.pathname, location.search, navigate])
 
   return { toast, setToast, clearToast }
 }

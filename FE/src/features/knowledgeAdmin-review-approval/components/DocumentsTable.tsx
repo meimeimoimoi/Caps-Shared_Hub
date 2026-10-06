@@ -1,6 +1,8 @@
 import { Link } from 'react-router-dom'
 import { TriangleAlert } from 'lucide-react'
 import { formatDate } from '@/lib/utils'
+import { DOCUMENT_STATUS } from '@/lib/constants'
+import { StatusBadge } from '@/components/ui/display/status-badge'
 import { PIPELINE, SOURCE_LABEL } from '../constants'
 import type { KnowledgeDocument } from '../types'
 
@@ -16,14 +18,19 @@ interface DocumentsTableProps {
   empty?: string
   /** Link khi bấm số hiệu */
   linkTo?: (d: KnowledgeDocument) => string
-  /** Thêm cột bước quy trình hiện tại (màn Tất cả văn bản) */
+  /** Có thì bấm số hiệu gọi hàm này (vd. mở ngăn kéo) thay vì chuyển trang */
+  onOpen?: (d: KnowledgeDocument) => void
+  /** Thêm cột trạng thái: bước quy trình hoặc badge lỗi */
   showStage?: boolean
 }
+
+const linkCls = 'text-accent-text underline underline-offset-4'
 
 export function DocumentsTable({
   rows,
   empty = 'Không có văn bản nào.',
   linkTo = queueLink,
+  onOpen,
   showStage = false,
 }: DocumentsTableProps) {
   return (
@@ -53,12 +60,15 @@ export function DocumentsTable({
               className="border-border-subtle border-t [&>td]:px-4 [&>td]:py-2"
             >
               <td className="num whitespace-nowrap">
-                <Link
-                  to={linkTo(d)}
-                  className="text-accent-text underline underline-offset-4"
-                >
-                  {d.number}
-                </Link>
+                {onOpen ? (
+                  <button type="button" onClick={() => onOpen(d)} className={linkCls}>
+                    {d.number}
+                  </button>
+                ) : (
+                  <Link to={linkTo(d)} className={linkCls}>
+                    {d.number}
+                  </Link>
+                )}
               </td>
               <td>
                 <div className="text-fg-strong font-semibold">{d.title}</div>
@@ -68,7 +78,11 @@ export function DocumentsTable({
               </td>
               {showStage && (
                 <td className="whitespace-nowrap">
-                  {PIPELINE.find((p) => p.key === d.stage)?.label}
+                  {d.failure ? (
+                    <StatusBadge status={DOCUMENT_STATUS[d.failure.kind]} />
+                  ) : (
+                    PIPELINE.find((p) => p.key === d.stage)?.label
+                  )}
                 </td>
               )}
               <td>

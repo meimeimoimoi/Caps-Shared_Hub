@@ -5,7 +5,7 @@ import { useReviewQueue } from '../../features/knowledgeAdmin-review-approval/ho
 
 export default function KnowledgeDocumentsPage() {
   const nav = useKnowledgeNav()
-  const docs = useReviewQueue('collect')
+  const docs = useReviewQueue('collect') // 'collect' = mọi văn bản
 
   return (
     <KnowledgeLayout

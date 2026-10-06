@@ -18,6 +18,22 @@ export interface KnowledgeDocument {
   parseWarnings: number
   effectiveAt: string | null
   queuedAt: string
+  /** Có giá trị = đang lỗi (index hoặc bóc tách) */
+  failure?: DocumentFailure
+}
+
+export interface DocumentFailure {
+  kind: 'INDEX_FAILED' | 'PARSE_FAILED'
+  title: string // vd. "Không index được vào Qdrant"
+  message: string
+  /** Mã tham chiếu để báo bộ phận kỹ thuật */
+  ref: string
+  attempts: number
+  /** null = đã quá ngưỡng retry, không tự thử nữa */
+  nextRetryAt: string | null
+  /** Phiên bản cũ AI/RAG đang dùng; null = văn bản mới */
+  previousVersion: string | null
+  log: { at: string; text: string }[]
 }
 
 /** Một khoản/điểm trong Điều; change đánh dấu phần bị bỏ (bản cũ) hoặc thêm (bản mới) */
@@ -140,5 +156,6 @@ export interface PipelineSummary {
   pending: number
   indexing: number
   indexFailed: number
+  parseFailed: number
   indexed: number
 }

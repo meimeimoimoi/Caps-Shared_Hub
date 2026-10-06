@@ -4,15 +4,15 @@ import { foldVietnamese } from '@/lib/utils'
 import {
   getDocuments,
   getPipelineSummary,
+  retryDocument,
   uploadDocument,
 } from '../api/knowledgeApi'
 import { knowledgeKeys } from '../api/queryKeys'
-import type { PipelineStage } from '../constants'
+import type { QueueFilter } from '../constants'
 
-/** initialStage 'collect' = mọi văn bản (màn Tất cả văn bản) */
-export function useReviewQueue(initialStage: PipelineStage = 'review') {
+/** stage do trang quyết định (vd. lấy từ URL); 'collect' = mọi văn bản */
+export function useReviewQueue(stage: QueueFilter) {
   const qc = useQueryClient()
-  const [stage, setStage] = useState<PipelineStage>(initialStage)
   const [query, setQuery] = useState('')
 
   const summary = useQuery({
@@ -23,6 +23,7 @@ export function useReviewQueue(initialStage: PipelineStage = 'review') {
     queryKey: knowledgeKeys.documents(stage),
     queryFn: ({ signal }) => getDocuments(stage, signal),
   })
+  const refreshAll = () => qc.invalidateQueries({ queryKey: knowledgeKeys.all })
 
   // ponytail: lọc phía client theo trang đã tải; chuyển sang ?q= của API khi danh sách lớn
   const q = foldVietnamese(query.trim())
@@ -36,8 +37,6 @@ export function useReviewQueue(initialStage: PipelineStage = 'review') {
     .sort((a, b) => a.queuedAt.localeCompare(b.queuedAt)) // cũ nhất trước
 
   return {
-    stage,
-    setStage,
     query,
     setQuery,
     summary: summary.data,
@@ -46,7 +45,8 @@ export function useReviewQueue(initialStage: PipelineStage = 'review') {
     error: documents.error,
     upload: async (...args: Parameters<typeof uploadDocument>) => {
       await uploadDocument(...args)
-      await qc.invalidateQueries({ queryKey: knowledgeKeys.all })
+      await refreshAll()
     },
+    retry: (documentId: string) => retryDocument(documentId).then(refreshAll),
   }
 }

@@ -19,8 +19,11 @@ export const mockSummary: PipelineSummary = {
   pending: 4,
   indexing: 1,
   indexFailed: 1,
+  parseFailed: 1,
   indexed: 126,
 }
+
+const minutesAgo = (n: number) => new Date(Date.now() - n * 60_000).toISOString()
 
 export const mockDocuments: KnowledgeDocument[] = [
   {
@@ -106,6 +109,60 @@ export const mockDocuments: KnowledgeDocument[] = [
     parseWarnings: 0,
     effectiveAt: '2009-01-01',
     queuedAt: daysAgo(20),
+  },
+  {
+    id: 'doc-126-2020',
+    number: '126/2020/NĐ-CP',
+    title: 'Quản lý thuế với doanh nghiệp có giao dịch liên kết',
+    docType: 'Nghị định',
+    source: 'CRAWL',
+    stage: 'index',
+    version: null,
+    parseWarnings: 0,
+    effectiveAt: '2020-12-05',
+    queuedAt: minutesAgo(30),
+    failure: {
+      kind: 'INDEX_FAILED',
+      title: 'Không index được vào Qdrant',
+      message: 'Không kết nối được máy chủ vector sau 30 giây.',
+      ref: 'IDX-TIMEOUT-504',
+      attempts: 2,
+      nextRetryAt: minutesAgo(-10),
+      previousVersion: null,
+      log: [
+        { at: minutesAgo(10), text: 'Lần thử 2: không kết nối được Qdrant sau 30 giây.' },
+        { at: minutesAgo(20), text: 'Lần thử 1: không kết nối được Qdrant sau 30 giây.' },
+        { at: minutesAgo(21), text: 'Chia đoạn và tạo vector xong: 186 đoạn.' },
+        { at: minutesAgo(28), text: 'Lê Thu Hà duyệt văn bản.' },
+      ],
+    },
+  },
+  {
+    id: 'doc-cv-tct',
+    number: '[số]/CV-TCT',
+    title: 'Công văn hướng dẫn chi phí được trừ',
+    docType: 'Công văn',
+    source: 'UPLOAD',
+    stage: 'parse',
+    version: null,
+    parseWarnings: 0,
+    effectiveAt: null,
+    queuedAt: minutesAgo(90),
+    failure: {
+      kind: 'PARSE_FAILED',
+      title: 'Không bóc tách được cấu trúc văn bản',
+      message: 'File PDF là ảnh quét, không có lớp chữ để nhận dạng Điều, Khoản.',
+      ref: 'PARSE-NO-TEXT-422',
+      attempts: 3,
+      nextRetryAt: null,
+      previousVersion: null,
+      log: [
+        { at: minutesAgo(60), text: 'Lần thử 3: không tìm thấy lớp chữ. Dừng tự động thử lại.' },
+        { at: minutesAgo(75), text: 'Lần thử 2: không tìm thấy lớp chữ.' },
+        { at: minutesAgo(88), text: 'Lần thử 1: không tìm thấy lớp chữ.' },
+        { at: minutesAgo(90), text: 'Lê Thu Hà tải văn bản lên.' },
+      ],
+    },
   },
 ]
 

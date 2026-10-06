@@ -9,7 +9,7 @@ import {
   type LucideIcon,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { PIPELINE, type PipelineStage } from '../constants'
+import { PIPELINE, type PipelineStage, type QueueFilter } from '../constants'
 import type { PipelineSummary } from '../types'
 
 const ICON: Record<PipelineStage, LucideIcon> = {
@@ -22,7 +22,8 @@ const ICON: Record<PipelineStage, LucideIcon> = {
 
 interface PipelineStepsProps {
   summary?: PipelineSummary
-  selected: PipelineStage
+  /** 'failed' = đang xem văn bản lỗi, không bước nào được chọn */
+  selected: QueueFilter
   onSelect: (stage: PipelineStage) => void
 }
 

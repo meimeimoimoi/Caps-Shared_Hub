@@ -11,8 +11,8 @@ export function useKnowledgeNav() {
   })
   // ponytail: thông báo suy ra từ số đếm; thay bằng API thông báo khi BE có
   const notifications: ShellNotification[] = [
-    ...(data?.indexFailed
-      ? [{ id: 'index-failed', text: `${data.indexFailed} văn bản index lỗi, cần chạy lại`, to: '/knowledge/queue', tone: 'warning' as const }]
+    ...(data && data.indexFailed + data.parseFailed
+      ? [{ id: 'failed', text: `${data.indexFailed + data.parseFailed} văn bản lỗi cần xử lý`, to: '/knowledge/queue?stage=failed', tone: 'warning' as const }]
       : []),
     ...(data?.pending
       ? [{ id: 'pending', text: `${data.pending} văn bản chờ bạn rà soát`, to: '/knowledge/queue' }]
