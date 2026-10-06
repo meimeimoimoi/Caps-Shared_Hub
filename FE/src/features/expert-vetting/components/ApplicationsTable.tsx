@@ -6,6 +6,7 @@ import type { ExpertApplication } from '../types'
 import { SLA_DAYS, formatDate, waitedDays } from '../utils/applications'
 
 import { useTranslation } from 'react-i18next'
+import { useMotion } from '@/components/ui/motion'
 
 interface ApplicationsTableProps {
   paged: Paged<ExpertApplication>
@@ -23,6 +24,7 @@ export function ApplicationsTable({
 }: ApplicationsTableProps) {
   const { t } = useTranslation('admin')
   const { rows, total } = paged
+  const motion = useMotion<HTMLTableSectionElement>({ preset: 'fade', replayKey: rows.map((row) => row.id).join(',') })
   return (
     <section className="paper mt-4 overflow-x-auto">
       <div className="text-fg-muted flex justify-between px-4 py-3 text-sm">
@@ -44,7 +46,7 @@ export function ApplicationsTable({
             </th>
           </tr>
         </thead>
-        <tbody>
+        <tbody ref={motion}>
           {rows.map((a) => {
             const days = waitedDays(a.submittedAt)
             return (

@@ -7,7 +7,9 @@ import {
   Outlet,
   Route,
   RouterProvider,
+  useLocation,
 } from 'react-router-dom'
+import { MotionPage } from '@/components/ui/motion'
 import { ProtectedRoute } from './ProtectedRoute'
 import { ExpertRoute } from './ExpertRoute'
 import { ExpertLayout } from '../layouts/expert/ExpertLayout'
@@ -61,15 +63,31 @@ const AdminApplicationDetailPage = lazy(
   () => import('@/pages/admin/AdminApplicationDetailPage')
 )
 const AdminExpertsPage = lazy(() => import('@/pages/admin/AdminExpertsPage'))
-const AdminDisputeDetailPage = lazy(() => import('@/pages/admin/AdminDisputeDetailPage'))
+const AdminDisputeDetailPage = lazy(
+  () => import('@/pages/admin/AdminDisputeDetailPage')
+)
 const AdminEscrowPage = lazy(() => import('@/pages/admin/AdminEscrowPage'))
-const KnowledgeQueuePage = lazy(() => import('@/pages/knowledge-admin/KnowledgeQueuePage'))
-const KnowledgeSourcesPage = lazy(() => import('@/pages/knowledge-admin/KnowledgeSourcesPage'))
-const KnowledgeVersionPage = lazy(() => import('@/pages/knowledge-admin/KnowledgeVersionPage'))
-const KnowledgeReviewPage = lazy(() => import('@/pages/knowledge-admin/KnowledgeReviewPage'))
-const KnowledgeDocumentPage = lazy(() => import('@/pages/knowledge-admin/KnowledgeDocumentPage'))
-const KnowledgeDocumentsPage = lazy(() => import('@/pages/knowledge-admin/KnowledgeDocumentsPage'))
-const KnowledgeUploadsPage = lazy(() => import('@/pages/knowledge-admin/KnowledgeUploadsPage'))
+const KnowledgeQueuePage = lazy(
+  () => import('@/pages/knowledge-admin/KnowledgeQueuePage')
+)
+const KnowledgeSourcesPage = lazy(
+  () => import('@/pages/knowledge-admin/KnowledgeSourcesPage')
+)
+const KnowledgeVersionPage = lazy(
+  () => import('@/pages/knowledge-admin/KnowledgeVersionPage')
+)
+const KnowledgeReviewPage = lazy(
+  () => import('@/pages/knowledge-admin/KnowledgeReviewPage')
+)
+const KnowledgeDocumentPage = lazy(
+  () => import('@/pages/knowledge-admin/KnowledgeDocumentPage')
+)
+const KnowledgeDocumentsPage = lazy(
+  () => import('@/pages/knowledge-admin/KnowledgeDocumentsPage')
+)
+const KnowledgeUploadsPage = lazy(
+  () => import('@/pages/knowledge-admin/KnowledgeUploadsPage')
+)
 
 function Fallback() {
   const { t } = useTranslation('common')
@@ -87,12 +105,21 @@ function Fallback() {
 }
 
 // Data router enables a real navigation blocker for unsaved input, including browser Back.
+function RouteMotion() {
+  const location = useLocation()
+  return (
+    <MotionPage replayKey={location.pathname}>
+      <Outlet />
+    </MotionPage>
+  )
+}
+
 const router = createBrowserRouter(
   createRoutesFromElements(
     <Route
       element={
         <Suspense fallback={<Fallback />}>
-          <Outlet />
+          <RouteMotion />
         </Suspense>
       }
     >
@@ -113,7 +140,10 @@ const router = createBrowserRouter(
       <Route path="/admin/disputes/:id" element={<AdminDisputeDetailPage />} />
       <Route path="/admin/escrow" element={<AdminEscrowPage />} />
       {/* TODO(auth): bọc ProtectedRoute + check role Knowledge Admin khi có API */}
-      <Route path="/knowledge" element={<Navigate to="/knowledge/queue" replace />} />
+      <Route
+        path="/knowledge"
+        element={<Navigate to="/knowledge/queue" replace />}
+      />
       <Route path="/knowledge/queue" element={<KnowledgeQueuePage />} />
       <Route path="/knowledge/sources" element={<KnowledgeSourcesPage />} />
       <Route path="/knowledge/uploads" element={<KnowledgeUploadsPage />} />

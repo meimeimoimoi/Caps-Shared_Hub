@@ -1,4 +1,5 @@
-import { useId } from 'react'
+import { useId, useState } from 'react'
+import { useMotion } from '@/components/ui/motion'
 import { Link } from 'react-router-dom'
 import { Bell } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -17,15 +18,27 @@ interface NotificationBellProps {
 }
 
 /* Chuông + danh sách thông báo. Popover API gốc: tự đóng khi bấm ra ngoài hoặc Esc */
-export function NotificationBell({ notifications, className }: NotificationBellProps) {
+export function NotificationBell({
+  notifications,
+  className,
+}: NotificationBellProps) {
   const id = useId()
+  const [open, setOpen] = useState(false)
+  const popupMotion = useMotion({
+    preset: 'popover',
+    disabled: !open,
+    replayKey: open ? 1 : 0,
+  })
   return (
     <>
       <button
         type="button"
         popoverTarget={id}
         aria-label={`Thông báo (${notifications.length})`}
-        className={cn('rounded-control relative grid place-items-center', className)}
+        className={cn(
+          'rounded-control relative grid place-items-center',
+          className
+        )}
       >
         <Bell size={18} aria-hidden="true" />
         {notifications.length > 0 && (
@@ -34,6 +47,10 @@ export function NotificationBell({ notifications, className }: NotificationBellP
       </button>
       <div
         id={id}
+        ref={popupMotion}
+        onToggle={(event) =>
+          setOpen(event.currentTarget.matches(':popover-open'))
+        }
         popover="auto"
         className="bg-paper border-hairline rounded-overlay shadow-overlay text-fg fixed inset-auto top-18 right-4 m-0 w-80 max-w-[calc(100vw-32px)] border p-0"
       >

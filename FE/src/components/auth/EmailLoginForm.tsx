@@ -16,6 +16,7 @@ import {
 } from '@/utils/validators'
 import { GoogleIcon } from './GoogleIcon'
 import { BackButton } from './BackButton'
+import { useMotion } from '@/components/ui/motion'
 
 export type EmailLoginFormProps = {
   onBack: () => void
@@ -58,6 +59,7 @@ export function EmailLoginForm({
   isLoading = false,
   error,
 }: EmailLoginFormProps) {
+  const motion = useMotion({ preset: 'panel' })
   const { t } = useTranslation('auth')
 
   const [email, setEmail] = useState('')
@@ -110,8 +112,9 @@ export function EmailLoginForm({
 
   return (
     <div
+      ref={motion}
       className={cn(
-        'relative z-2 w-full max-w-[440px] animate-[cardIn_.45s_cubic-bezier(.2,.8,.25,1)]',
+        'relative z-2 w-full max-w-[440px]',
         className
       )}
     >

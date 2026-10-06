@@ -6,6 +6,7 @@ import { TrendingUp } from 'lucide-react'
 import type { DashboardDto } from '../types'
 import { DashboardSectionState } from './DashboardSectionState'
 import { projectReviewTrend } from '../utils/reviewAnalytics'
+import { MotionPath } from '@/components/ui/motion'
 
 export function ReviewTrendChart({
   analytics,
@@ -187,13 +188,13 @@ export function ReviewTrendChart({
               />
             )}
             {receivedVisible && (
-              <path
+              <MotionPath
                 d={path('received')}
                 className="eo-line-received [fill:none] [stroke:var(--ui-chart-response)] [stroke-width:2.5] [stroke-linecap:round] [stroke-linejoin:round] [vector-effect:non-scaling-stroke]"
               />
             )}
             {completedVisible && (
-              <path
+              <MotionPath
                 d={path('completed')}
                 className="eo-line-completed [fill:none] [stroke:var(--ep-success)] [stroke-width:2.5] [stroke-linecap:round] [stroke-linejoin:round] [vector-effect:non-scaling-stroke]"
               />

@@ -26,6 +26,7 @@ import { AppAccountMenu } from '@/components/ui/layout/app-account-menu'
 import { useTheme } from '@/hooks/useTheme'
 import { useFormatters } from '@/hooks/useFormatters'
 import { useAuth } from '@/features/auth'
+import { useDialogMotion } from '@/components/ui/motion'
 import { NotificationBell, type ShellNotification } from '../NotificationBell'
 
 export interface NavItem {
@@ -133,6 +134,7 @@ export function RoleShell({
 }: RoleShellProps) {
   const [collapsed, setCollapsed] = useState(false)
   const drawer = useRef<HTMLDialogElement>(null)
+  useDialogMotion(drawer, 'drawer-left')
   const drawerTrigger = useRef<HTMLButtonElement>(null)
   const { t } = useTranslation(['common', 'admin'])
   const { isDark, toggleTheme } = useTheme()

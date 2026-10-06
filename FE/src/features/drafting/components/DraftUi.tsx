@@ -5,6 +5,7 @@ import type { ButtonHTMLAttributes, ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { Button } from '@/components/ui/actions/button'
 import { StatusRail } from '@/components/ui/navigation/status-rail'
+import { useMotion } from '@/components/ui/motion'
 import { ApiError } from '@/lib/api-client'
 import { useDraftHref } from '../hooks/useDrafting'
 
@@ -111,8 +112,10 @@ export function Paper({
   children: ReactNode
   className?: string
 }) {
+  const motion = useMotion<HTMLElement>({ preset: 'panel', viewport: true })
   return (
     <section
+      ref={motion}
       className={`rounded-surface border-border bg-paper shadow-paper min-w-0 border p-5 md:p-8 ${className}`}
     >
       {children}
