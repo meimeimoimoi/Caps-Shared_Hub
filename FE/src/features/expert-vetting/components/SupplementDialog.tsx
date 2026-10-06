@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Modal } from '@/components/ui/modal'
+import { Modal } from '@/components/ui/feedback/modal'
 import { SUPPLEMENT_DIALOG } from '../constants'
 import type { AiFlag, Criterion } from '../types'
 

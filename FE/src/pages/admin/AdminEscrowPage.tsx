@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import { ESCROW_STATUS } from '@/lib/constants'
-import { StatusBadge } from '@/components/ui/status-badge'
+import { StatusBadge } from '@/components/ui/display/status-badge'
 import { AdminLayout } from '@/app/layouts/admin/AdminLayout'
 import {
   ESCROW_NEXT_LABEL,

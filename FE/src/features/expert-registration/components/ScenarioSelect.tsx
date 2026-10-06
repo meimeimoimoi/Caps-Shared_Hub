@@ -1,4 +1,4 @@
-import { CustomSelect } from '@/components/ui/custom-select'
+import { CustomSelect } from '@/components/ui/forms/custom-select'
 import { labels } from '../constants'
 import type { Stage } from '../types'
 

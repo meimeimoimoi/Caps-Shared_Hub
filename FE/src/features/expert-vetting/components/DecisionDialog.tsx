@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { cn } from '@/lib/utils'
-import { Modal } from '@/components/ui/modal'
+import { Modal } from '@/components/ui/feedback/modal'
 import { DECISION_DIALOG } from '../constants'
 import type { Criterion } from '../types'
 import { ScoreSummary } from './ScoreSummary'

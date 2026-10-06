@@ -1,7 +1,7 @@
 import { useState, type ReactNode } from 'react'
 import { cn } from '@/lib/utils'
 import { DOCUMENT_STATUS, type StatusMeta } from '@/lib/constants'
-import { StatusBadge } from '@/components/ui/status-badge'
+import { StatusBadge } from '@/components/ui/display/status-badge'
 import { CHANGE_LABEL } from '../constants'
 import type { ArticleChange, Clause } from '../types'
 

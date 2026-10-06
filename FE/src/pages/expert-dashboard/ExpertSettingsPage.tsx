@@ -124,7 +124,7 @@ export default function ExpertSettingsPage() {
                   aria-hidden="true"
                   className={
                     entry.id === section
-                      ? 'shrink-0 text-[var(--ep-accent-soft)]'
+                      ? 'shrink-0 text-[var(--ep-accent-text)]'
                       : 'shrink-0'
                   }
                 />
@@ -163,7 +163,7 @@ export default function ExpertSettingsPage() {
             <>
               <div className="ep-settings-identity flex items-center gap-[18px] [padding:28px_0_12px] max-[768px]:gap-3 max-[768px]:[&_>_div:last-child]:min-w-0 [&_p]:mt-[3px] [&_p]:wrap-anywhere [&_p]:text-[var(--ep-muted)] [&_strong]:text-[17px]">
                 <div
-                  className="ep-settings-avatar grid h-16 w-16 shrink-0 [place-items:center] rounded-full bg-[var(--ep-accent-glow)] bg-none text-[21px] font-[650] text-[var(--ep-accent-soft)]"
+                  className="ep-settings-avatar grid h-16 w-16 shrink-0 [place-items:center] rounded-full bg-[var(--ep-accent-glow)] bg-none text-[21px] font-[650] text-[var(--ep-accent-text)]"
                   aria-hidden="true"
                 >
                   {initials}
@@ -233,7 +233,7 @@ export default function ExpertSettingsPage() {
                   <p>Booking readiness is specific to each service.</p>
                 </div>
                 <Link
-                  className="ep-settings-text-link inline-flex items-center gap-[5px] [padding:3px_0] text-[12px] whitespace-nowrap text-[var(--ep-accent-soft)]! [&:hover]:underline [&:hover]:underline-offset-1"
+                  className="ep-settings-text-link inline-flex items-center gap-[5px] [padding:3px_0] text-[12px] whitespace-nowrap text-[var(--ep-accent-text)]! [&:hover]:underline [&:hover]:underline-offset-1"
                   to={{ pathname: '/expert/services', search }}
                 >
                   My Services

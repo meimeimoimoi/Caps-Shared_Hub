@@ -62,7 +62,7 @@ function CaseWorkspace({
 }) {
   const ws = useCaseWorkspace(item)
   const field = (task: number, label: string, placeholder: string) => (
-    <div className="ep-case-field [margin:20px_0] flex flex-col gap-2 [&_.ep-case-revision]:min-h-[250px] [&_label]:text-[13px] [&_label]:font-semibold [&_textarea]:min-h-35 [&_textarea]:w-full [&_textarea]:resize-y [&_textarea]:rounded-lg [&_textarea]:bg-[var(--ep-surface)] [&_textarea]:bg-none [&_textarea]:[padding:14px] [&_textarea]:[font-family:inherit] [&_textarea]:text-[var(--ep-ink)] [&_textarea]:[caret-color:#c2410c] [&_textarea]:[border:1px_solid_var(--ep-border)] [&_textarea::placeholder]:text-[var(--ep-muted)] [&_textarea:disabled]:cursor-not-allowed [&_textarea:disabled]:bg-[var(--ep-surface-raised)] [&_textarea:disabled]:bg-none">
+    <div className="ep-case-field [margin:20px_0] flex flex-col gap-2 [&_.ep-case-revision]:min-h-[250px] [&_label]:text-[13px] [&_label]:font-semibold [&_textarea]:min-h-35 [&_textarea]:w-full [&_textarea]:resize-y [&_textarea]:rounded-lg [&_textarea]:bg-[var(--ep-surface)] [&_textarea]:bg-none [&_textarea]:[padding:14px] [&_textarea]:[font-family:inherit] [&_textarea]:text-[var(--ep-ink)] [&_textarea]:[caret-color:var(--ep-accent-text)] [&_textarea]:[border:1px_solid_var(--ep-border)] [&_textarea::placeholder]:text-[var(--ep-muted)] [&_textarea:disabled]:cursor-not-allowed [&_textarea:disabled]:bg-[var(--ep-surface-raised)] [&_textarea:disabled]:bg-none">
       <label htmlFor={`case-note-${task}`}>{label}</label>
       <textarea
         id={`case-note-${task}`}
@@ -154,7 +154,7 @@ function CaseWorkspace({
           <div className="ep-request-main flex flex-col gap-5 h-full">
             <section className="rounded-xl bg-[var(--ep-surface)] bg-none [border:1px_solid_var(--ep-line)] overflow-hidden h-full flex flex-col">
               <div className="flex items-center gap-3 [padding:18px_22px] [border-bottom:1px_solid_var(--ep-line)]">
-                <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-[var(--ep-accent-glow)] bg-none text-[var(--ep-accent)]">
+                <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-[var(--ep-accent-glow)] bg-none text-[var(--ep-accent-text)]">
                   <Clock3 size={18} aria-hidden="true" />
                 </span>
                 <div>
@@ -198,7 +198,7 @@ function CaseWorkspace({
               <div className="[padding:20px_22px]">
                 <h3 className="mb-3 text-[13px] font-semibold uppercase tracking-[0.04em] text-[var(--ep-muted)]">
                   Attached documents
-                  <span className="ml-2 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-[var(--ep-accent-glow)] bg-none px-[6px] text-[11px] font-bold text-[var(--ep-accent)] align-middle normal-case tracking-normal">
+                  <span className="ml-2 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-[var(--ep-accent-glow)] bg-none px-[6px] text-[11px] font-bold text-[var(--ep-accent-text)] align-middle normal-case tracking-normal">
                     {documents.length}
                   </span>
                 </h3>
@@ -242,7 +242,7 @@ function CaseWorkspace({
                   
                   <div className="mt-3 rounded-xl bg-[var(--ep-surface-raised)] bg-none [padding:18px_20px] [border:1px_solid_var(--ep-line)] flex items-center justify-between">
                     <span className="font-semibold text-[15px] text-[var(--ep-ink)]">Your earnings</span>
-                    <span className="text-[22px] font-bold text-[var(--ep-accent)] tracking-tight">{formatVnd(1_600_000)}</span>
+                    <span className="text-[22px] font-bold text-[var(--ep-accent-text)] tracking-tight">{formatVnd(1_600_000)}</span>
                   </div>
                 </div>
 
@@ -382,7 +382,7 @@ function CaseWorkspace({
       )}
       {ws.currentStep >= 3 && (
       <div className={`ep-case-workspace grid items-start gap-6 max-[1101px]:gap-4 max-[768px]:grid-cols-[1fr] ${ws.currentStep >= 3 ? 'grid-cols-[260px_minmax(0,_1fr)] max-[1101px]:grid-cols-[220px_minmax(0,_1fr)]' : 'grid-cols-[minmax(0,_1fr)_340px] max-[1000px]:grid-cols-[minmax(0,_1fr)_300px]'}`}>
-        {ws.currentStep >= 3 && (<aside className="ep-case-task-list [&_nav_button[aria-current=true]]:text-[var(--ep-accent-soft)] sticky top-6 max-[768px]:static [&_.ep-case-sla]:mt-6 [&_.ep-case-sla]:flex [&_.ep-case-sla]:items-start [&_.ep-case-sla]:gap-2 [&_.ep-case-sla]:pt-[18px] [&_.ep-case-sla]:[border-top:1px_solid_var(--ep-line)] max-[768px]:[&_.ep-case-sla]:mt-3 [&_>_p]:[margin:8px_0_18px] [&_>_p]:text-[12px] [&_nav]:flex [&_nav]:flex-col [&_nav]:gap-1 max-[768px]:[&_nav]:grid max-[768px]:[&_nav]:grid-cols-[1fr_1fr] max-[401px]:[&_nav]:grid-cols-[1fr] [&_nav_button]:flex [&_nav_button]:w-full [&_nav_button]:items-center [&_nav_button]:gap-[10px] [&_nav_button]:rounded-lg [&_nav_button]:border-0 [&_nav_button]:[padding:13px_12px] [&_nav_button]:text-left [&_nav_button]:[font-family:inherit] [&_nav_button]:text-[var(--ep-muted)] [&_nav_button]:[background:transparent] [&_nav_button_>_span]:flex-1 [&_nav_button:hover]:bg-[var(--ep-surface-raised)] [&_nav_button:hover]:bg-none [&_nav_button[aria-current=true]]:bg-[var(--ep-accent-glow)] [&_nav_button[aria-current=true]]:bg-none [&_nav_button[aria-current=true]]:font-semibold">
+        {ws.currentStep >= 3 && (<aside className="ep-case-task-list [&_nav_button[aria-current=true]]:text-[var(--ep-accent-text)] sticky top-6 max-[768px]:static [&_.ep-case-sla]:mt-6 [&_.ep-case-sla]:flex [&_.ep-case-sla]:items-start [&_.ep-case-sla]:gap-2 [&_.ep-case-sla]:pt-[18px] [&_.ep-case-sla]:[border-top:1px_solid_var(--ep-line)] max-[768px]:[&_.ep-case-sla]:mt-3 [&_>_p]:[margin:8px_0_18px] [&_>_p]:text-[12px] [&_nav]:flex [&_nav]:flex-col [&_nav]:gap-1 max-[768px]:[&_nav]:grid max-[768px]:[&_nav]:grid-cols-[1fr_1fr] max-[401px]:[&_nav]:grid-cols-[1fr] [&_nav_button]:flex [&_nav_button]:w-full [&_nav_button]:items-center [&_nav_button]:gap-[10px] [&_nav_button]:rounded-lg [&_nav_button]:border-0 [&_nav_button]:[padding:13px_12px] [&_nav_button]:text-left [&_nav_button]:[font-family:inherit] [&_nav_button]:text-[var(--ep-muted)] [&_nav_button]:[background:transparent] [&_nav_button_>_span]:flex-1 [&_nav_button:hover]:bg-[var(--ep-surface-raised)] [&_nav_button:hover]:bg-none [&_nav_button[aria-current=true]]:bg-[var(--ep-accent-glow)] [&_nav_button[aria-current=true]]:bg-none [&_nav_button[aria-current=true]]:font-semibold">
           <h2>Professional review</h2>
           <p>{ws.complete.length} of 6 steps completed in preview</p>
           <nav aria-label="Review tasks">
@@ -538,7 +538,7 @@ function CaseWorkspace({
                     </p>
                   </div>
                 )}
-                <div className="ep-case-field [margin:20px_0] flex flex-col gap-2 [&_.ep-case-revision]:min-h-[250px] [&_label]:text-[13px] [&_label]:font-semibold [&_textarea]:min-h-35 [&_textarea]:w-full [&_textarea]:resize-y [&_textarea]:rounded-lg [&_textarea]:bg-[var(--ep-surface)] [&_textarea]:bg-none [&_textarea]:[padding:14px] [&_textarea]:[font-family:inherit] [&_textarea]:text-[var(--ep-ink)] [&_textarea]:[caret-color:#c2410c] [&_textarea]:[border:1px_solid_var(--ep-border)] [&_textarea::placeholder]:text-[var(--ep-muted)] [&_textarea:disabled]:cursor-not-allowed [&_textarea:disabled]:bg-[var(--ep-surface-raised)] [&_textarea:disabled]:bg-none">
+                <div className="ep-case-field [margin:20px_0] flex flex-col gap-2 [&_.ep-case-revision]:min-h-[250px] [&_label]:text-[13px] [&_label]:font-semibold [&_textarea]:min-h-35 [&_textarea]:w-full [&_textarea]:resize-y [&_textarea]:rounded-lg [&_textarea]:bg-[var(--ep-surface)] [&_textarea]:bg-none [&_textarea]:[padding:14px] [&_textarea]:[font-family:inherit] [&_textarea]:text-[var(--ep-ink)] [&_textarea]:[caret-color:var(--ep-accent-text)] [&_textarea]:[border:1px_solid_var(--ep-border)] [&_textarea::placeholder]:text-[var(--ep-muted)] [&_textarea:disabled]:cursor-not-allowed [&_textarea:disabled]:bg-[var(--ep-surface-raised)] [&_textarea:disabled]:bg-none">
                   <label htmlFor="clarification">
                     Information requested from the client
                   </label>

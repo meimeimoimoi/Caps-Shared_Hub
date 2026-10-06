@@ -1,7 +1,7 @@
 import { useState, type ReactNode } from 'react'
 import { FileText, Info, Upload, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { Modal } from '@/components/ui/modal'
+import { Modal } from '@/components/ui/feedback/modal'
 import { DOC_TYPES } from '../constants'
 import type { UploadMeta } from '../types'
 

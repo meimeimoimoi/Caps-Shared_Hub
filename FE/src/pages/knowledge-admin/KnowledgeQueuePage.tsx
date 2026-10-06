@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import { Upload } from 'lucide-react'
-import { Toast } from '@/components/ui/toast'
+import { Toast } from '@/components/ui/feedback/toast'
 import { KnowledgeLayout } from '@/app/layouts/knowledge/KnowledgeLayout'
 import { useKnowledgeNav } from '@/app/layouts/knowledge/useKnowledgeNav'
 import { DocumentsTable } from '../../features/knowledgeAdmin-review-approval/components/DocumentsTable'

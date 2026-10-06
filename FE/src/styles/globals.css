@@ -1,47 +1,48 @@
 @import 'tailwindcss';
+@import './theme.css';
 
 /* ════════ SHFT UI config (.claude/SHFT-ui-config.md §2) — token khai báo một lần ════════ */
 @theme {
   /* ---------- Màu nền ---------- */
-  --color-desk: #E8E7E2;
-  --color-desk-2: #F4F3EF;
-  --color-paper: #FFFFFF;
-  --color-sunken: #F7F7F5;
-  --color-ink: #000000;
-  --color-ink-2: #262624;
+  --color-desk: var(--ui-desk);
+  --color-desk-2: var(--ui-canvas);
+  --color-paper: var(--ui-surface);
+  --color-sunken: var(--ui-surface-muted);
+  --color-ink: var(--ui-text-strong);
+  --color-ink-2: var(--ui-text);
 
   /* ---------- Chữ ---------- */
-  --color-fg-strong: #000000;
-  --color-fg: #3A3A38;
-  --color-fg-muted: #5A5A56;
-  --color-fg-disabled: #A3A39F;
+  --color-fg-strong: var(--ui-text-strong);
+  --color-fg: var(--ui-text);
+  --color-fg-muted: var(--ui-text-muted);
+  --color-fg-disabled: var(--ui-text-disabled);
   --color-fg-inverse-muted: #A3A39F;
 
   /* ---------- Viền ---------- */
-  --color-border-subtle: #EEEEEC;
-  --color-border: #DCDCD9;
-  --color-border-control: #83837F;
-  --color-border-strong: #000000;
-  --color-hairline: rgb(38 37 32 / .08);
+  --color-border-subtle: var(--ui-border-subtle);
+  --color-border: var(--ui-border);
+  --color-border-control: var(--ui-border-control);
+  --color-border-strong: var(--ui-border-strong);
+  --color-hairline: var(--ui-hairline);
 
   /* ---------- Cam ---------- */
-  --color-accent: #CC4A00;
-  --color-accent-hover: #B24100;
-  --color-accent-active: #8F2F00;
-  --color-accent-text: #B24100;
-  --color-accent-soft: #FFF1E8;
-  --color-indicator: #E55300;
+  --color-accent: var(--ui-accent);
+  --color-accent-hover: var(--ui-accent-hover);
+  --color-accent-active: var(--ui-accent-active);
+  --color-accent-text: var(--ui-accent-text);
+  --color-accent-soft: var(--ui-accent-soft);
+  --color-indicator: var(--ui-indicator);
 
   /* ---------- Trạng thái ---------- */
-  --color-success: #1E7B4F;   --color-success-soft: #E8F5EE;
-  --color-warning: #6B5A00;   --color-warning-soft: #FBF3D9;
-  --color-danger:  #C62828;   --color-danger-soft:  #FDECEC;
-  --color-ai-border: #83837F;
+  --color-success: var(--ui-success);   --color-success-soft: var(--ui-success-soft);
+  --color-warning: var(--ui-warning);   --color-warning-soft: var(--ui-warning-soft);
+  --color-danger: var(--ui-danger);   --color-danger-soft: var(--ui-danger-soft);
+  --color-ai-border: var(--ui-border-control);
 
   /* ---------- Thanh ---------- */
-  --color-bar: rgb(232 231 226 / .86);
-  --color-track: #DCDCD9;
-  --color-track-fill: #E55300;
+  --color-bar: var(--ui-bar);
+  --color-track: var(--ui-border);
+  --color-track-fill: var(--ui-indicator);
 
   /* ---------- Font ---------- */
   --font-sans: "Be Vietnam Pro", "Inter", system-ui, sans-serif;
@@ -92,7 +93,7 @@
 
 /* Màu vòng focus; vùng nền tối dùng class="on-ink" */
 :root { --focus-ring: var(--color-ink); }
-.on-ink { --focus-ring: var(--color-paper); }
+.on-ink { --focus-ring: var(--ui-sidebar-foreground); }
 @theme inline {
   --spacing-control: var(--control-h);
 }
@@ -133,7 +134,7 @@
   }
 
   /* ── SHFT CSS nền (§3) ── */
-  html { color-scheme: light; }
+  html { color-scheme: var(--app-color-scheme, light); }
 
   body {
     @apply bg-desk font-sans text-base text-fg antialiased;
@@ -2036,3 +2037,5 @@ html,body,#root{height:100%}
   --color-hub-success: #27775b;
   --color-hub-ink: #162235;
 }
+
+:root[data-theme="dark"] { --app-color-scheme: dark; }

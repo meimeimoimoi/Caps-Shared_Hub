@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Info } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { StatusBadge } from '@/components/ui/status-badge'
+import { StatusBadge } from '@/components/ui/display/status-badge'
 import {
   DISPUTE_OUTCOME,
   DISPUTE_SLA_HOURS,
