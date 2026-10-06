@@ -33,6 +33,7 @@ import {
 import { OverviewReadiness } from '../../features/expert-dashboard/components/OverviewReadiness'
 import { OverviewActivity } from '../../features/expert-dashboard/components/OverviewActivity'
 import { ApiError } from '@/lib/api-client'
+import { MotionStagger, useMotion } from '@/components/ui/motion'
 
 export default function ExpertDashboardPage() {
   const display = useExpertPresentation()
@@ -62,6 +63,8 @@ export default function ExpertDashboardPage() {
       : null
   const performance =
     model?.performance.status === 'available' ? model.performance.data : null
+  const workloadAvailable = model?.consistent && model.counts.status === 'available'
+  const workloadMotion = useMotion<HTMLElement>({ preset: 'reveal', disabled: !workloadAvailable, replayKey: workloadAvailable ? 'loaded' : 'loading' })
   return (
     <div className="eo-overview tabular-nums">
       <header className="eo-page-heading flex items-center justify-between gap-5 max-[720px]:flex-col max-[720px]:items-start max-[720px]:gap-4 [&_h1]:text-[30px] [&_h1]:[letter-spacing:-0.03em] max-[720px]:[&_h1]:text-[27px] [&_p]:mt-[7px] [&_p]:text-[var(--ep-muted)]">
@@ -160,6 +163,7 @@ export default function ExpertDashboardPage() {
             />
           ) : (
             <section
+              ref={workloadMotion}
               className="eo-workload-strip [margin:24px_0_16px] overflow-hidden rounded-xl border border-[var(--ep-border)] bg-[var(--ep-surface)] bg-none [&_>_p]:bg-[var(--ep-surface-raised)] [&_>_p]:bg-none [&_>_p]:[padding:10px_24px] [&_>_p]:text-[11px] [&_>_p]:text-[var(--ep-muted)] [&_>_p]:[border-top:1px_solid_var(--ep-border)] max-[720px]:[&_>_p]:[padding:12px_18px]"
               aria-label={t('totalsAcrossAllActiveCases')}
             >
@@ -234,7 +238,7 @@ export default function ExpertDashboardPage() {
               </Link>
             </div>
           )}
-          <div className="eo-analytics-grid mt-6 grid grid-cols-[minmax(0,_2.15fr)_minmax(300px,_1fr)] items-start items-stretch gap-6 max-[1251px]:grid-cols-[minmax(0,_1fr)_300px] max-[1251px]:gap-5 max-[1101px]:grid-cols-[minmax(0,_1fr)]">
+          <MotionStagger className="eo-analytics-grid mt-6 grid grid-cols-[minmax(0,_2.15fr)_minmax(300px,_1fr)] items-start items-stretch gap-6 max-[1251px]:grid-cols-[minmax(0,_1fr)_300px] max-[1251px]:gap-5 max-[1101px]:grid-cols-[minmax(0,_1fr)]">
             <ReviewTrendChart
               analytics={model.analytics}
               timezone={model.timezone}
@@ -244,8 +248,8 @@ export default function ExpertDashboardPage() {
               filter={filter}
               setFilter={setFilter}
             />
-          </div>
-          <div className="eo-work-grid mt-6 grid grid-cols-[minmax(0,_2.15fr)_minmax(300px,_1fr)] items-start gap-6 max-[1251px]:grid-cols-[minmax(0,_1fr)_300px] max-[1251px]:gap-5 max-[1101px]:grid-cols-[minmax(0,_1fr)]">
+          </MotionStagger>
+          <MotionStagger className="eo-work-grid mt-6 grid grid-cols-[minmax(0,_2.15fr)_minmax(300px,_1fr)] items-start gap-6 max-[1251px]:grid-cols-[minmax(0,_1fr)_300px] max-[1251px]:gap-5 max-[1101px]:grid-cols-[minmax(0,_1fr)]">
             <OverviewQueue
               queue={model.queue}
               timezone={model.timezone}
@@ -254,8 +258,8 @@ export default function ExpertDashboardPage() {
               retry={refresh}
             />
             <OverviewReadiness services={context.data?.services ?? []} />
-          </div>
-          <div className="eo-bottom-grid mt-6 grid grid-cols-[minmax(0,_2.15fr)_minmax(300px,_1fr)] items-start gap-6 max-[1251px]:grid-cols-[minmax(0,_1fr)_300px] max-[1251px]:gap-5 max-[1101px]:grid-cols-[minmax(0,_1fr)]">
+          </MotionStagger>
+          <MotionStagger className="eo-bottom-grid mt-6 grid grid-cols-[minmax(0,_2.15fr)_minmax(300px,_1fr)] items-start gap-6 max-[1251px]:grid-cols-[minmax(0,_1fr)_300px] max-[1251px]:gap-5 max-[1101px]:grid-cols-[minmax(0,_1fr)]">
             <OverviewActivity
               activity={model.activity}
               timezone={model.timezone}
@@ -363,7 +367,7 @@ export default function ExpertDashboardPage() {
                 </>
               )}
             </ExpertPanel>
-          </div>
+          </MotionStagger>
         </>
       )}
     </div>

@@ -26,7 +26,7 @@ export function DecisionCard({
 }: DecisionCardProps) {
   const { cls, Icon } = verdict[decision.kind]
   return (
-    <section className="paper p-5 md:p-6">
+    <section className="paper card-hover p-5 md:p-6">
       <h2 className="text-h2">Quyết định của System Admin</h2>
       <div className={cn('verdict mt-3', cls)}>
         <span className="inline-flex items-center gap-1.5 font-semibold">

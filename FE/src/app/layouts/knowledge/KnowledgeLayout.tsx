@@ -10,6 +10,7 @@ import {
   Sun,
 } from 'lucide-react'
 import { useTheme } from '@/hooks/useTheme'
+import { useDialogMotion } from '@/components/ui/motion'
 import { useAuthStore } from '@/features/auth/store/authStore'
 import { AppAccountMenu } from '@/components/ui/layout/app-account-menu'
 import { AppHeader, HeaderActionButton } from '@/components/ui/layout/app-header'
@@ -42,6 +43,7 @@ export function KnowledgeLayout({
   const { isDark, toggleTheme } = useTheme()
   const [expanded, setExpanded] = useState(true)
   const drawer = useRef<HTMLDialogElement>(null)
+  useDialogMotion(drawer, 'drawer-left')
   const drawerTrigger = useRef<HTMLButtonElement>(null)
   const user = useAuthStore((s) => s.user)
   const clearSession = useAuthStore((s) => s.clearSession)

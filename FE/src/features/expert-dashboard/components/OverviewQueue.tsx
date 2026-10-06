@@ -9,6 +9,7 @@ import { Search, ArrowUpRight, Clock3, Pause, Inbox } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useState } from 'react'
 import type { DashboardDto, WorkStatus } from '../types'
+import { useMotion } from '@/components/ui/motion'
 
 import { DashboardSectionState } from './DashboardSectionState'
 
@@ -48,6 +49,7 @@ export function OverviewQueue({
               .includes(search.toLowerCase().trim())
         )
       : []
+  const rowsMotion = useMotion<HTMLTableSectionElement>({ preset: 'fade', replayKey: `${filter}:${items.map((item) => item.id).join(',')}` })
   return (
     <ExpertPanel className="eo-queue" aria-labelledby="work-heading">
       <ExpertPanelHeader>
@@ -136,7 +138,7 @@ export function OverviewQueue({
                 </th>
               </tr>
             </thead>
-            <tbody>
+            <tbody ref={rowsMotion}>
               {items.map((item) => {
                 const overdue =
                   item.deadline.overdue &&

@@ -5,6 +5,7 @@ import { DOCUMENT_STATUS } from '@/lib/constants'
 import { StatusBadge } from '@/components/ui/display/status-badge'
 import { PIPELINE, SOURCE_LABEL } from '../constants'
 import type { KnowledgeDocument } from '../types'
+import { useMotion } from '@/components/ui/motion'
 
 /** Mặc định: Chờ duyệt → so sánh phiên bản / rà soát nội dung; bước khác → chi tiết */
 const queueLink = (d: KnowledgeDocument) =>
@@ -33,6 +34,7 @@ export function DocumentsTable({
   onOpen,
   showStage = false,
 }: DocumentsTableProps) {
+  const motion = useMotion<HTMLTableSectionElement>({ preset: 'fade', replayKey: rows.map((row) => row.id).join(',') })
   return (
     <section className="paper mt-4 overflow-x-auto">
       <div className="text-fg-muted flex justify-between px-4 py-3 text-sm">
@@ -53,7 +55,7 @@ export function DocumentsTable({
             <th className="text-right">Vào hàng đợi</th>
           </tr>
         </thead>
-        <tbody>
+        <tbody ref={motion}>
           {rows.map((d) => (
             <tr
               key={d.id}

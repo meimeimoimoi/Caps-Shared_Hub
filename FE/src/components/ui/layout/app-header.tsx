@@ -43,7 +43,7 @@ export function AppHeader({
             aria-haspopup="dialog"
             onClick={onOpenNavigation}
             className={cn(
-              'rounded-control flex size-11 shrink-0 items-center justify-center',
+              'motion-interactive rounded-control flex size-11 shrink-0 items-center justify-center',
               'hover:bg-surface-muted',
               navigationButtonClassName
             )}
@@ -76,7 +76,7 @@ export function HeaderActionButton({
       type="button"
       {...props}
       className={cn(
-        'rounded-control flex size-11 shrink-0 items-center justify-center text-xs font-bold tracking-wider transition-colors',
+        'motion-interactive rounded-control flex size-11 shrink-0 items-center justify-center text-xs font-bold tracking-wider',
         'text-text-muted hover:bg-surface-muted hover:text-text-strong',
         className
       )}

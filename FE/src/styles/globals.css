@@ -107,6 +107,19 @@
   --breakpoint-md: 48rem;
   --breakpoint-lg: 64rem;
   --breakpoint-xl: 80rem;
+
+  /* ---------- Hiệu ứng nâng cao ---------- */
+  --animate-enter: enter 0.5s var(--ease-out-quint) both;
+  --animate-fade: fade 0.4s var(--ease-out-quint) both;
+
+  @keyframes enter {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fade {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
 }
 
 /* Chiều cao control theo mật độ — dùng: h-control, min-h-control */
@@ -1326,7 +1339,7 @@
   &:disabled { pointer-events: none; }
 }
 @utility btn-press {
-  &:active { transform: translateY(1px); box-shadow: var(--shadow-pressed); }
+  &:active { transform: translateY(1px) scale(0.98); box-shadow: var(--shadow-pressed); }
 }
 @utility btn-primary {
   background: var(--color-accent); color: var(--color-paper);
@@ -1343,8 +1356,18 @@
 }
 @utility btn-ghost {
   background: transparent; color: var(--color-fg);
-  &:hover { background: var(--color-desk-2); color: var(--color-fg-strong); }
+  &:hover { background: var(--color-desk-2); color: var(--color-fg-strong); transform: translateY(-1px); }
   &:disabled { color: var(--color-fg-disabled); }
+}
+
+@utility card-hover {
+  transition: transform var(--duration-base) var(--ease-out-quint),
+              box-shadow var(--duration-base) var(--ease-out-quint);
+  &:hover {
+    transform: translateY(-2px) scale(1.01);
+    box-shadow: var(--shadow-overlay);
+    z-index: 10;
+  }
 }
 @utility btn-on-media {
   background: rgb(38 37 32 / .44); backdrop-filter: blur(6px);
@@ -1457,6 +1480,18 @@ html,body,#root{height:100%}
 .expert-scenario-menu > li > svg { flex: none; }
 .expert-scenario-menu > li[aria-selected='true'] { color: #8b381c; background: #f7eee6; font-weight: 600; }
 .expert-scenario-menu > li[data-active='true'] { background: #e9f0e9; color: #203c30; }
+.custom-select-menu {
+  margin: 0;
+  list-style: none;
+  transform-origin: top center;
+  scrollbar-width: thin;
+}
+.custom-select-menu[data-placement='above'] { transform-origin: bottom center; }
+.custom-select-menu > li { transition: background-color var(--motion-feedback) ease, color var(--motion-feedback) ease; }
+@media (prefers-reduced-motion: reduce) {
+  .custom-select-menu { animation: none; }
+  .custom-select-menu > li { transition: none; }
+}
 @keyframes expert-menu-enter {
   from { opacity: .3; transform: translateY(-6px); }
   to { opacity: 1; transform: translateY(0); }

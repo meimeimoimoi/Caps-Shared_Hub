@@ -2,6 +2,7 @@ import { Trans, useTranslation } from 'react-i18next'
 import { Mail } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { GoogleIcon } from './GoogleIcon'
+import { useMotion } from '@/components/ui/motion'
 
 export type SocialViewProps = {
   onContinueEmail: () => void
@@ -23,9 +24,11 @@ export function SocialView({
   className,
 }: SocialViewProps) {
   const { t } = useTranslation('auth')
+  const motion = useMotion({ preset: 'reveal' })
 
   return (
     <div
+      ref={motion}
       className={cn(
         'relative z-1 flex w-full max-w-[480px] flex-col items-center text-center [transition:opacity_.35s_ease,transform_.35s_ease]',
         className

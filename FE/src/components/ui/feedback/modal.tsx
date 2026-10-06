@@ -1,6 +1,7 @@
 import { useEffect, useId, useRef, type ReactNode } from 'react'
 import { X } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import { useDialogMotion } from '@/components/ui/motion'
 
 interface ModalProps {
   title: ReactNode
@@ -28,6 +29,7 @@ export function Modal({
 }: ModalProps) {
   const { t } = useTranslation('common')
   const ref = useRef<HTMLDialogElement>(null)
+  useDialogMotion(ref)
   const titleId = useId()
 
   useEffect(() => {

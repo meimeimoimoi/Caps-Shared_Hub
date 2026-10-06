@@ -1,4 +1,5 @@
 import { DemoBanner } from '@/components/ui/feedback/demo-banner'
+import { useDialogMotion } from '@/components/ui/motion'
 import { LanguageSwitcher } from '@/components/ui/layout/language-switcher'
 import { useTranslation } from 'react-i18next'
 import { CustomSelect } from '@/components/ui/forms/custom-select'
@@ -38,6 +39,7 @@ export function DraftLayout() {
   const { isDark, toggleTheme } = useTheme()
   const [expanded, setExpanded] = useState(true)
   const drawer = useRef<HTMLDialogElement>(null)
+  useDialogMotion(drawer, 'drawer-left')
   const drawerTrigger = useRef<HTMLButtonElement>(null)
   const user = useAuthStore((state) => state.user)
   const clearSession = useAuthStore((state) => state.clearSession)

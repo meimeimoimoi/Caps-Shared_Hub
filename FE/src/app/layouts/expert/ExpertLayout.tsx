@@ -8,6 +8,7 @@ import { ExpertSidebar } from './ExpertSidebar'
 import { CustomSelect } from '@/components/ui/forms/custom-select'
 import './expert-theme.css'
 import { useTranslation } from 'react-i18next'
+import { useDialogMotion } from '@/components/ui/motion'
 
 const scenarioOptions = [
   { value: 'normal', key: 'demo.scenarios.normal' },
@@ -24,6 +25,7 @@ export function ExpertLayout() {
   const { t } = useTranslation(['common', 'navigation'])
   const location = useLocation()
   const drawer = useRef<HTMLDialogElement>(null)
+  useDialogMotion(drawer, 'drawer-left')
   const trigger = useRef<HTMLElement | null>(null)
   const [params, setParams] = useSearchParams()
   const [isCollapsed, setIsCollapsed] = useState(false)

@@ -1,11 +1,29 @@
-import { useEffect, useId, useRef, useState, type KeyboardEvent } from 'react'
+import {
+  useEffect,
+  useLayoutEffect,
+  useId,
+  useRef,
+  useState,
+  type KeyboardEvent,
+} from 'react'
 import { Check, ChevronDown } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useTranslation } from 'react-i18next'
+import { useMotion } from '@/components/ui/motion'
 
 export interface SelectOption<T extends string = string> {
   value: T
   label: string
+}
+
+function scrollActiveOption(list: HTMLUListElement, index: number) {
+  const option = list.children[index] as HTMLElement | undefined
+  if (!option) return
+  const top = option.offsetTop
+  const bottom = top + option.offsetHeight
+  if (top < list.scrollTop) list.scrollTop = top
+  else if (bottom > list.scrollTop + list.clientHeight)
+    list.scrollTop = bottom - list.clientHeight
 }
 
 export interface CustomSelectProps<T extends string = string> {
@@ -40,7 +58,13 @@ export function CustomSelect<T extends string>({
   const id = useId()
   const root = useRef<HTMLDivElement>(null)
   const trigger = useRef<HTMLButtonElement>(null)
+  const [placement, setPlacement] = useState({ above: false, maxHeight: 288 })
   const [open, setOpen] = useState(false)
+  const menu = useMotion<HTMLUListElement>({
+    preset: 'popover',
+    disabled: !open,
+    replayKey: open ? 1 : 0,
+  })
   const [active, setActive] = useState(0)
   const search = useRef({ text: '', time: 0 })
   const selected = options.findIndex((option) => option.value === value)
@@ -56,21 +80,41 @@ export function CustomSelect<T extends string>({
     setOpen(false)
     trigger.current?.focus()
   }
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!open) return
+    const position = () => {
+      const rect = trigger.current?.getBoundingClientRect()
+      if (!rect) return
+      const below = window.innerHeight - rect.bottom - 16
+      const above = rect.top - 16
+      const openAbove =
+        below < Math.min(288, options.length * 44 + 10) && above > below
+      const maxHeight = Math.max(44, Math.min(288, openAbove ? above : below))
+      setPlacement((current) =>
+        current.above === openAbove && current.maxHeight === maxHeight
+          ? current
+          : { above: openAbove, maxHeight }
+      )
+    }
+    position()
+    window.addEventListener('resize', position)
+    window.addEventListener('scroll', position, true)
     const dismiss = (event: PointerEvent) => {
       if (event.target instanceof Node && !root.current?.contains(event.target))
         setOpen(false)
     }
     document.addEventListener('pointerdown', dismiss)
-    return () => document.removeEventListener('pointerdown', dismiss)
-  }, [open])
+    return () => {
+      document.removeEventListener('pointerdown', dismiss)
+      window.removeEventListener('resize', position)
+      window.removeEventListener('scroll', position, true)
+    }
+  }, [open, options.length])
   useEffect(() => {
-    if (open)
-      root.current
-        ?.querySelector(`#${CSS.escape(`${id}-option-${active}`)}`)
-        ?.scrollIntoView({ block: 'nearest' })
-  }, [active, open, id])
+    if (!open || !menu.current) return
+    // Scroll only the list; scrollIntoView also moves the page and its ancestors.
+    scrollActiveOption(menu.current, active)
+  }, [active, open, placement.maxHeight, menu])
   const onKeyDown = (event: KeyboardEvent<HTMLButtonElement>) => {
     const key = event.key
     if (key === 'Tab') {
@@ -142,7 +186,7 @@ export function CustomSelect<T extends string>({
         aria-invalid={!!error}
         aria-describedby={error ? `${id}-error` : undefined}
         className={cn(
-          'border-border-control text-text-strong focus-visible:outline-accent-text bg-surface flex min-h-11 w-full items-center justify-between gap-3 rounded-lg border px-3 py-2 text-left focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-55',
+          'motion-interactive border-border-control text-text-strong focus-visible:outline-accent-text bg-surface flex min-h-11 w-full items-center justify-between gap-3 rounded-lg border px-3 py-2 text-left focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-55',
           triggerClassName
         )}
         onKeyDown={onKeyDown}
@@ -164,18 +208,21 @@ export function CustomSelect<T extends string>({
       </button>
       {open && (
         <ul
+          ref={menu}
           id={`${id}-list`}
           role="listbox"
           aria-labelledby={`${id}-label`}
           className={cn(
-            'border-border-control bg-surface hide-scrollbar shadow-overlay absolute right-0 left-0 z-20 mt-2 max-h-72 overflow-y-auto rounded-lg border p-1',
+            'custom-select-menu border-border-control bg-surface shadow-overlay absolute right-0 left-0 z-20 overflow-y-auto overscroll-contain rounded-lg border p-1',
             menuClassName
           )}
+          data-placement={placement.above ? 'above' : 'below'}
+          style={{
+            top: placement.above ? undefined : 'calc(100% + 8px)',
+            bottom: placement.above ? 'calc(100% + 8px)' : undefined,
+            maxHeight: placement.maxHeight,
+          }}
         >
-          <style>{`
-            .hide-scrollbar::-webkit-scrollbar { display: none; }
-            .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-          `}</style>
           {options.map(({ value: key, label }, index) => (
             <li
               key={key}
