@@ -1,4 +1,5 @@
 import { Suspense, lazy } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   createBrowserRouter,
   createRoutesFromElements,
@@ -62,6 +63,7 @@ const AdminApplicationDetailPage = lazy(
 const AdminExpertsPage = lazy(() => import('@/pages/admin/AdminExpertsPage'))
 
 function Fallback() {
+  const { t } = useTranslation('common')
   return (
     <div className="bg-desk-2 text-fg-muted flex min-h-svh items-center justify-center">
       <div role="status" className="flex items-center gap-3 text-sm">
@@ -69,7 +71,7 @@ function Fallback() {
           aria-hidden="true"
           className="border-border border-t-accent size-5 animate-spin rounded-full border-2 motion-reduce:animate-none"
         />
-        <span>Loading…</span>
+        <span>{t('loading')}</span>
       </div>
     </div>
   )

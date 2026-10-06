@@ -1,10 +1,12 @@
 import type { ButtonHTMLAttributes, ReactNode, Ref } from 'react'
 import { Menu } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useTranslation } from 'react-i18next'
 
 interface AppHeaderProps {
   context: ReactNode
   actions?: ReactNode
+  actionsClassName?: string
   onOpenNavigation?: () => void
   navigationButtonRef?: Ref<HTMLButtonElement>
   navigationButtonClassName?: string
@@ -15,11 +17,13 @@ interface AppHeaderProps {
 export function AppHeader({
   context,
   actions,
+  actionsClassName,
   onOpenNavigation,
   navigationButtonRef,
   navigationButtonClassName = 'md:hidden',
   className,
 }: AppHeaderProps) {
+  const { t } = useTranslation('common')
   return (
     <header
       className={cn(
@@ -35,7 +39,7 @@ export function AppHeader({
           <button
             ref={navigationButtonRef}
             type="button"
-            aria-label="Open navigation"
+            aria-label={t('navigation.open')}
             aria-haspopup="dialog"
             onClick={onOpenNavigation}
             className={cn(
@@ -50,7 +54,12 @@ export function AppHeader({
         {context}
       </div>
       {actions && (
-        <div className="flex min-w-0 items-center gap-3 sm:gap-4">
+        <div
+          className={cn(
+            'flex min-w-0 items-center gap-3 sm:gap-4',
+            actionsClassName
+          )}
+        >
           {actions}
         </div>
       )}

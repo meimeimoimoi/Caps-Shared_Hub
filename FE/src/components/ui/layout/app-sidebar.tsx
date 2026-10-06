@@ -3,13 +3,15 @@ import { Link } from 'react-router-dom'
 import { PanelLeftClose, PanelLeftOpen, X } from 'lucide-react'
 import logo from '@/assets/logo-full.png'
 import brandMark from '@/assets/logo-icon.svg'
+import { useTranslation } from 'react-i18next'
 
 export interface SidebarItem {
   id: string
-  to: string
+  to?: string
   label: string
   icon: ReactNode
   active?: boolean
+  badge?: ReactNode
 }
 export interface SidebarGroup {
   id: string
@@ -34,6 +36,7 @@ export function AppSidebar({
   onNavigate,
   onClose,
 }: AppSidebarProps) {
+  const { t } = useTranslation('common')
   const navigationId = useId()
   return (
     <div className="on-ink flex min-h-0 flex-1 flex-col text-[var(--ui-sidebar-text)]">
@@ -60,7 +63,7 @@ export function AppSidebar({
         {onClose && (
           <button
             type="button"
-            aria-label="Close navigation"
+            aria-label={t('navigation.close')}
             onClick={onClose}
             className="rounded-control flex size-11 shrink-0 items-center justify-center hover:bg-white/10 hover:text-white"
           >
@@ -86,23 +89,59 @@ export function AppSidebar({
                   {group.label}
                 </h2>
               ))}
-            {group.items.map((item) => (
-              <Link
-                key={item.id}
-                to={item.to}
-                onClick={onNavigate}
-                title={item.label}
-                aria-current={item.active ? 'page' : undefined}
-                className={`relative flex min-h-11 items-center gap-3 overflow-hidden rounded-[10px] py-3 text-sm whitespace-nowrap transition-colors focus-visible:!outline-white ${collapsed ? 'justify-center px-2' : 'px-3.5'} ${item.active ? 'bg-white/10 font-semibold !text-white before:absolute before:inset-y-3 before:left-0 before:w-[3px] before:rounded-r before:bg-[var(--ui-indicator)]' : 'font-medium !text-[var(--ui-sidebar-text)] hover:bg-white/10 hover:!text-white'}`}
-              >
-                <span aria-hidden="true" className="flex shrink-0 items-center">
-                  {item.icon}
-                </span>
-                <span className={collapsed ? 'sr-only' : 'min-w-0 truncate'}>
-                  {item.label}
-                </span>
-              </Link>
-            ))}
+            {group.items.map((item) => {
+              const content = (
+                <>
+                  <span
+                    aria-hidden="true"
+                    className="flex shrink-0 items-center"
+                  >
+                    {item.icon}
+                  </span>
+                  <span
+                    className={
+                      collapsed ? 'sr-only' : 'min-w-0 flex-1 truncate'
+                    }
+                  >
+                    {item.label}
+                  </span>
+                  {item.badge != null && (
+                    <span
+                      className={
+                        collapsed
+                          ? 'sr-only'
+                          : 'bg-indicator ml-auto grid min-h-5 min-w-5 shrink-0 place-items-center rounded-full px-1.5 text-xs font-semibold text-[var(--ui-on-accent)] tabular-nums'
+                      }
+                    >
+                      {item.badge}
+                    </span>
+                  )}
+                </>
+              )
+              const className = `relative flex min-h-11 items-center gap-3 overflow-hidden rounded-[10px] py-3 text-sm whitespace-nowrap transition-colors focus-visible:!outline-white ${collapsed ? 'justify-center px-2' : 'px-3.5'} ${item.active ? 'bg-white/10 font-semibold !text-white before:absolute before:inset-y-3 before:left-0 before:w-[3px] before:rounded-r before:bg-[var(--ui-indicator)]' : 'font-medium !text-[var(--ui-sidebar-text)]'} ${item.to ? 'hover:bg-white/10 hover:!text-white' : 'w-full cursor-not-allowed text-left opacity-55'}`
+              return item.to ? (
+                <Link
+                  key={item.id}
+                  to={item.to}
+                  onClick={onNavigate}
+                  title={item.label}
+                  aria-current={item.active ? 'page' : undefined}
+                  className={className}
+                >
+                  {content}
+                </Link>
+              ) : (
+                <button
+                  key={item.id}
+                  type="button"
+                  disabled
+                  title={item.label}
+                  className={className}
+                >
+                  {content}
+                </button>
+              )
+            })}
           </div>
         ))}
       </nav>
@@ -111,8 +150,10 @@ export function AppSidebar({
           <button
             type="button"
             onClick={onToggleCollapse}
-            aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-            title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            aria-label={t(
+              collapsed ? 'navigation.expand' : 'navigation.collapse'
+            )}
+            title={t(collapsed ? 'navigation.expand' : 'navigation.collapse')}
             aria-expanded={!collapsed}
             aria-controls={navigationId}
             className="rounded-control flex size-11 items-center justify-center transition-colors hover:bg-white/10 hover:text-white focus-visible:!outline-white"

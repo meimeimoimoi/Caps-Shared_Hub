@@ -2,6 +2,7 @@ import type { ReactNode } from 'react'
 import { CircleAlert } from 'lucide-react'
 import { HelpTip } from '@/components/ui/feedback/help-tip'
 import { cn } from '@/lib/utils'
+import { useTranslation } from 'react-i18next'
 
 export interface FormFieldProps {
   label: string
@@ -26,6 +27,7 @@ export function FormField({
   errorId,
   htmlFor,
 }: FormFieldProps) {
+  const { t } = useTranslation('common')
   return (
     <div
       className={cn(
@@ -42,7 +44,9 @@ export function FormField({
           {!htmlFor && children}
         </label>
         {help && (
-          <HelpTip label={`Help for ${label.replace(/\s*\*$/, '')}`}>
+          <HelpTip
+            label={t('form.help', { label: label.replace(/\s*\*$/, '') })}
+          >
             {help}
           </HelpTip>
         )}

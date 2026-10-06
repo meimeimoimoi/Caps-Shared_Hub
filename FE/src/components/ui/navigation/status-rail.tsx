@@ -1,4 +1,5 @@
 import { cn } from '@/lib/utils'
+import { useTranslation } from 'react-i18next'
 
 /* SHFT §9 · Status Rail lớn (header hồ sơ) hoặc gọn (header công cụ) */
 export interface StatusRailProps {
@@ -12,10 +13,11 @@ export function StatusRail({
   steps,
   current,
   size = 'lg',
-  label = 'Tiến trình',
+  label,
 }: StatusRailProps) {
+  const { t } = useTranslation('common')
   return (
-    <ol className="rail w-full" aria-label={label}>
+    <ol className="rail w-full" aria-label={label ?? t('navigation.progress')}>
       {steps.map((label, i) => (
         <li
           key={label}

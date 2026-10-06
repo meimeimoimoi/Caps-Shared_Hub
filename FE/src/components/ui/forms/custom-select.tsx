@@ -1,6 +1,7 @@
 import { useEffect, useId, useRef, useState, type KeyboardEvent } from 'react'
 import { Check, ChevronDown } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useTranslation } from 'react-i18next'
 
 export interface SelectOption<T extends string = string> {
   value: T
@@ -27,7 +28,7 @@ export function CustomSelect<T extends string>({
   onChange,
   options,
   label,
-  placeholder = 'Select an option',
+  placeholder,
   name,
   disabled = false,
   error,
@@ -35,6 +36,7 @@ export function CustomSelect<T extends string>({
   triggerClassName,
   menuClassName,
 }: CustomSelectProps<T>) {
+  const { t } = useTranslation('common')
   const id = useId()
   const root = useRef<HTMLDivElement>(null)
   const trigger = useRef<HTMLButtonElement>(null)
@@ -148,7 +150,8 @@ export function CustomSelect<T extends string>({
       >
         <span id={`${id}-value`}>
           {options.find((option) => option.value === value)?.label ??
-            placeholder}
+            placeholder ??
+            t('select.placeholder')}
         </span>
         <ChevronDown size={18} aria-hidden="true" />
       </button>

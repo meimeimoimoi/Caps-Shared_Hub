@@ -1,4 +1,6 @@
 import { DemoBanner } from '@/components/ui/feedback/demo-banner'
+import { LanguageSwitcher } from '@/components/ui/layout/language-switcher'
+import { useTranslation } from 'react-i18next'
 import { CustomSelect } from '@/components/ui/forms/custom-select'
 import { useTheme } from '@/hooks/useTheme'
 import { useRef, useState } from 'react'
@@ -32,6 +34,7 @@ import {
 } from '@/components/ui/layout/app-sidebar'
 
 export function DraftLayout() {
+  const { t } = useTranslation(['common', 'navigation'])
   const { isDark, toggleTheme } = useTheme()
   const [expanded, setExpanded] = useState(true)
   const drawer = useRef<HTMLDialogElement>(null)
@@ -50,14 +53,14 @@ export function DraftLayout() {
         {
           id: 'workspaces',
           to: href('/drafts'),
-          label: 'Workspaces',
+          label: t('navigation:workspaces'),
           icon: <FileText size={18} />,
           active: !location.pathname.startsWith('/drafts/templates'),
         },
         {
           id: 'templates',
           to: href('/drafts/templates'),
-          label: 'Templates',
+          label: t('navigation:templates'),
           icon: <Library size={18} />,
           active: location.pathname.startsWith('/drafts/templates'),
         },
@@ -66,7 +69,7 @@ export function DraftLayout() {
               {
                 id: 'dashboard',
                 to: '/dashboard',
-                label: 'Dashboard',
+                label: t('navigation:dashboard'),
                 icon: <LayoutDashboard size={18} />,
               },
             ]
@@ -81,27 +84,27 @@ export function DraftLayout() {
         href="#draft-main"
         className="focus:bg-paper sr-only z-50 focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:p-3"
       >
-        Skip to workspace
+        {t('navigation.skipWorkspace')}
       </a>
       <aside
         className={`bg-sidebar fixed inset-y-0 left-0 z-30 hidden flex-col border-r border-black py-6 md:flex ${expanded ? 'w-60 px-4' : 'w-20 px-3'}`}
       >
         <AppSidebar
           groups={groups}
-          navigationLabel="Draft workspace"
+          navigationLabel={t('navigation:draftWorkspace')}
           collapsed={!expanded}
           onToggleCollapse={() => setExpanded((value) => !value)}
         />
       </aside>
       <dialog
         ref={drawer}
-        aria-label="Draft workspace navigation"
+        aria-label={t('navigation:draftNavigation')}
         onClose={() => drawerTrigger.current?.focus()}
         className="bg-sidebar fixed inset-y-0 left-0 m-0 h-dvh max-h-none w-72 max-w-[calc(100vw-32px)] border-0 px-4 py-6 text-white backdrop:bg-black/50 [&[open]]:flex [&[open]]:flex-col"
       >
         <AppSidebar
           groups={groups}
-          navigationLabel="Draft workspace"
+          navigationLabel={t('navigation:draftWorkspace')}
           onNavigate={closeDrawer}
           onClose={closeDrawer}
         />
@@ -110,14 +113,13 @@ export function DraftLayout() {
         <AppHeader
           navigationButtonRef={drawerTrigger}
           onOpenNavigation={() => drawer.current?.showModal()}
-          context="Draft workspace"
+          context={t('navigation:draftWorkspace')}
           actions={
             <>
+              <LanguageSwitcher />
               <HeaderActionButton
                 onClick={toggleTheme}
-                aria-label={
-                  isDark ? 'Switch to light theme' : 'Switch to dark theme'
-                }
+                aria-label={t(isDark ? 'theme.light' : 'theme.dark')}
               >
                 {isDark ? (
                   <Sun size={20} aria-hidden="true" />
@@ -126,9 +128,9 @@ export function DraftLayout() {
                 )}
               </HeaderActionButton>
               <AppAccountMenu
-                name={user?.name ?? 'Demo preview'}
+                name={user?.name ?? t('account.preview')}
                 email={user?.email}
-                note={isDraftMock ? 'Demonstration account' : undefined}
+                note={isDraftMock ? t('account.demo') : undefined}
                 onSignOut={
                   user
                     ? () => {
@@ -142,7 +144,7 @@ export function DraftLayout() {
                     ? []
                     : [
                         {
-                          label: 'Sign in',
+                          label: t('actions.signIn'),
                           to: '/login',
                           icon: <LogIn size={17} />,
                         },
@@ -157,11 +159,11 @@ export function DraftLayout() {
             controls={
               <div className="flex flex-wrap items-center gap-3">
                 <CustomSelect
-                  label="Scenario"
+                  label={t('demo.scenario')}
                   value={ctx.scenario}
                   options={draftScenarios.map((value) => ({
                     value,
-                    label: value,
+                    label: t(`navigation:draftScenarios.${value}`),
                   }))}
                   onChange={(value) =>
                     navigate(`/drafts?scenario=${encodeURIComponent(value)}`)
@@ -175,26 +177,19 @@ export function DraftLayout() {
                     secondary
                     disabled={reset.isPending}
                     onClick={() => {
-                      if (
-                        window.confirm(
-                          'Reset this demo scenario? Saved fixture input and versions will be removed.'
-                        )
-                      )
+                      if (window.confirm(t('demo.resetConfirm')))
                         reset.mutate(undefined, {
                           onSuccess: () => navigate(href('/drafts')),
                         })
                     }}
                   >
-                    Reset demo
+                    {t('actions.resetDemo')}
                   </DraftButton>
                 )}
               </div>
             }
           >
-            <p>
-              <strong>Demo · Synthetic data · No server changes.</strong> Data
-              is stored in memory and resets on reload.
-            </p>
+            <p>{t('demo.draftDisclosure')}</p>
           </DemoBanner>
         )}
         <main
