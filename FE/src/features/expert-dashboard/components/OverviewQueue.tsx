@@ -67,7 +67,7 @@ export function OverviewQueue({
       </ExpertPanelHeader>
       <div className="eo-queue-toolbar flex flex-wrap items-center justify-between gap-3 [padding:0_24px_18px] max-[720px]:[padding:0_18px_16px]">
         <div
-          className="eo-segmented inline-flex gap-[3px] rounded-[7px] border border-[var(--ep-border)] bg-[var(--ep-surface-raised)] bg-none [padding:3px] [&_button]:min-h-8 [&_button]:rounded-[5px] [&_button]:border-0 [&_button]:[padding:6px_10px] [&_button]:[font-family:inherit] [&_button]:text-[12px] [&_button]:whitespace-nowrap [&_button]:text-[var(--ep-muted)] [&_button]:[background:transparent] [&_button:hover]:text-[var(--ep-accent-text)] [&_button[aria-pressed=true]]:bg-[var(--ep-surface)] [&_button[aria-pressed=true]]:bg-none [&_button[aria-pressed=true]]:font-semibold [&_button[aria-pressed=true]]:text-[var(--ep-ink)] [&_button[aria-pressed=true]]:[box-shadow:0_1px_3px_#17283b15]"
+          className="eo-segmented inline-flex gap-[3px] rounded-[7px] border border-[var(--ep-border)] bg-[var(--ep-surface-raised)] bg-none [padding:3px] [&_button]:min-h-8 [&_button]:rounded-[5px] [&_button]:border-0 [&_button]:[padding:6px_10px] [&_button]:[font-family:inherit] [&_button]:text-[12px] [&_button]:whitespace-nowrap [&_button]:text-[var(--ep-muted)] [&_button]:[background:transparent] [&_button:hover]:text-[var(--ep-accent-text)] [&_button[aria-pressed=true]]:bg-[var(--ep-surface)] [&_button[aria-pressed=true]]:bg-none [&_button[aria-pressed=true]]:font-semibold [&_button[aria-pressed=true]]:text-[var(--ep-ink)] [&_button[aria-pressed=true]]:shadow-control"
           aria-label={t('queueFilter')}
         >
           {(

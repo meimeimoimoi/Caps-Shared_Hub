@@ -41,6 +41,27 @@
   --ui-sidebar-text: #a1a1aa;
   --ui-sidebar-selected: #242426;
   --ui-sidebar-foreground: #ffffff;
+  --ui-info: #526b91;
+  --ui-info-soft: #edf2fa;
+  --ui-shadow: #262520;
+  --ui-brand-surface: #ffffff;
+  --ui-overlay-ink: #000000;
+  --ui-inverse-muted: #a3a39f;
+  /* Fixed material over the login video, independent of app theme. */
+  --ui-login-canvas: #141416;
+  --ui-login-surface: #1c1c1e;
+  --ui-login-surface-muted: #27272a;
+  --ui-login-text: #ffffff;
+  --ui-login-muted: #d4d4d8;
+  --ui-login-border: #71717a;
+  --ui-login-accent-soft: #382319;
+  --ui-login-accent-text: #ffad7b;
+  --ui-login-button: #f2f2f0;
+  --ui-login-button-hover: #ffffff;
+  --ui-login-button-ink: #0a0a0b;
+  --ui-login-danger: #ffb4b4;
+  --ui-login-link: #8ee8c6;
+  --app-color-scheme: light;
   color-scheme: light;
 }
 :root[data-theme='dark'] {
@@ -79,10 +100,16 @@
   --ui-danger: #ff9d9d;
   --ui-danger-soft: #3d2023;
   --ui-bar: rgb(22 22 24 / 0.9);
+  --ui-info: #a9c3ed;
+  --ui-info-soft: #202e43;
+  --ui-shadow: #000000;
+  --app-color-scheme: dark;
   color-scheme: dark;
 }
 
 @theme inline {
+  --color-info: var(--ui-info);
+  --color-info-soft: var(--ui-info-soft);
   --color-canvas: var(--ui-canvas);
   --color-surface: var(--ui-surface);
   --color-surface-muted: var(--ui-surface-muted);

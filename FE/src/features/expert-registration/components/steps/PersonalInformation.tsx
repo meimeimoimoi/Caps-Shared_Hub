@@ -96,7 +96,7 @@ export function PersonalInformation({
         onChange={(e) => handleUpdate(key, e.target.value)}
         aria-invalid={!!formErrors[key]}
         aria-describedby={errorId}
-        className={`${inputCls} ${formErrors[key] ? '!border-ex-error-text focus:shadow-[0_0_0_3px_#d9302533]' : ''}`}
+        className={`${inputCls} ${formErrors[key] ? '!border-ex-error-text focus:ring-2 focus:ring-danger/20' : ''}`}
       />
     )
   }
@@ -284,7 +284,7 @@ export function PersonalInformation({
               aria-describedby={`profile-bio-hint profile-bio-count${formErrors.bio ? ' error-bio' : ''}`}
               placeholder={t('fields.bioPlaceholder')}
               rows={4}
-              className={`${inputCls} min-h-[110px] resize-y ${formErrors.bio ? '!border-ex-error-text focus:shadow-[0_0_0_3px_#d9302533]' : ''}`}
+              className={`${inputCls} min-h-[110px] resize-y ${formErrors.bio ? '!border-ex-error-text focus:ring-2 focus:ring-danger/20' : ''}`}
             />
           </FormField>
           <div className="expert-bio-footer">

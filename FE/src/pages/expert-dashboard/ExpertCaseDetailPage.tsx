@@ -236,7 +236,7 @@ function CaseWorkspace({
                   {documents.map((name) => (
                     <li
                       key={name}
-                      className="flex items-center gap-3 rounded-lg [padding:12px_14px] transition-colors duration-150 hover:bg-[var(--ep-surface-raised)] hover:bg-none [&:not(:last-child)]:[border-bottom:1px_solid_var(--ep-line)]"
+                      className="flex items-center gap-3 rounded-lg [padding:12px_14px] transition-colors duration-[var(--motion-feedback)] hover:bg-[var(--ep-surface-raised)] hover:bg-none [&:not(:last-child)]:[border-bottom:1px_solid_var(--ep-line)]"
                     >
                       <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-[var(--ep-surface-raised)] bg-none text-[var(--ep-muted)]">
                         <FileText size={16} aria-hidden="true" />
@@ -258,7 +258,7 @@ function CaseWorkspace({
 
           {/* Right column: Decision sidebar */}
           <aside className="ep-request-sidebar sticky top-6 flex h-full flex-col max-[900px]:static">
-            <div className="flex h-full flex-col overflow-hidden rounded-2xl bg-[var(--ep-surface)] bg-none shadow-[0_4px_24px_rgba(0,0,0,0.02)] [border:1px_solid_var(--ep-line)]">
+            <div className="flex h-full flex-col overflow-hidden rounded-2xl bg-[var(--ep-surface)] bg-none shadow-paper [border:1px_solid_var(--ep-line)]">
               <div className="flex items-center gap-[10px] bg-[var(--ep-surface-raised)] [padding:20px_24px] [border-bottom:1px_solid_var(--ep-line)]">
                 <Receipt size={18} className="text-[var(--ep-muted)]" />
                 <h3 className="text-[13px] font-bold tracking-[0.06em] text-[var(--ep-ink)] uppercase">
@@ -294,7 +294,7 @@ function CaseWorkspace({
                   </div>
                 </div>
 
-                <div className="rounded-xl bg-[var(--ep-warning-bg)] bg-none [padding:18px_20px] [border:1px_solid_rgba(245,158,11,0.2)]">
+                <div className="rounded-xl bg-[var(--ep-warning-bg)] bg-none [padding:18px_20px] border border-warning/20">
                   <div className="flex items-center gap-[10px] text-[var(--ep-warning)]">
                     <Clock3 size={18} aria-hidden="true" />
                     <span className="text-[14px] font-bold tracking-wide">

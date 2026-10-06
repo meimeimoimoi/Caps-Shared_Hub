@@ -1,4 +1,4 @@
-/* SHFT UI config (.claude/SHFT-ui-config.md §6–§8).
+/* SHFT UI config (FE/docs/UI-CONFIG.md).
  * Nhãn trạng thái và câu chữ cố định chỉ khai báo ở đây, component không tự viết. */
 
 /* ── §6 Bảng trạng thái ── */

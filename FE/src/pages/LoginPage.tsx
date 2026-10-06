@@ -30,7 +30,7 @@ export default function LoginPage() {
   const google = () => setNotice('googleUnavailable')
 
   return (
-    <main className="relative isolate flex min-h-svh flex-col items-center justify-center overflow-hidden bg-[#141416] px-6 py-12 text-white [--accent:#e85d26] [--body:#d4d4d8] [--btn:#f2f2f0] [--btn-hover:#ffffff] [--btn-ink:#0a0a0b] [--err:#ffb4b4] [--line:rgba(255,255,255,.25)] [--link:#8ee8c6] [--muted:#d4d4d8]">
+    <main className="login-material relative isolate flex min-h-svh flex-col items-center justify-center overflow-hidden bg-[var(--ui-login-canvas)] px-6 py-12 text-[var(--ui-login-text)]">
       <VideoBackground />
       <div className="fixed top-[max(1rem,env(safe-area-inset-top))] right-[max(1rem,env(safe-area-inset-right))] z-50"><LanguageSwitcher variant="overlay" /></div>
       <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-black/30" />

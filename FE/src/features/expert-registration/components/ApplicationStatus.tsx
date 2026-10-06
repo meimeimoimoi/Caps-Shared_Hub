@@ -27,15 +27,15 @@ export interface ApplicationStatusProps {
 }
 
 const btnBase =
-  'cursor-pointer inline-flex items-center justify-center gap-2 min-h-11 px-[17px] py-[9px] border border-ex-btn-border rounded-md bg-white text-ex-ink font-semibold transition-[background,border-color,opacity] duration-150 ease-in-out hover:bg-ex-btn-hover disabled:cursor-not-allowed disabled:opacity-55 motion-reduce:transition-none'
-const btnPrimary = `${btnBase} !bg-ex-accent !border-ex-accent !text-white hover:!bg-ex-accent-hover`
+  'cursor-pointer inline-flex items-center justify-center gap-2 min-h-11 px-[17px] py-[9px] border border-ex-btn-border rounded-md bg-surface text-ex-ink font-semibold transition-[background,border-color,opacity] duration-[var(--motion-feedback)] ease-in-out hover:bg-ex-btn-hover disabled:cursor-not-allowed disabled:opacity-55 motion-reduce:transition-none'
+const btnPrimary = `${btnBase} !bg-ex-accent !border-ex-accent !text-on-accent hover:!bg-ex-accent-hover`
 const noteCls =
   'px-[18px] py-4 bg-ex-note-bg rounded-[5px] my-5 text-sm [&>p:last-child]:mb-0'
 const mutedCls = 'text-[13px] text-ex-muted font-normal'
 const stepBubbleCls =
   'flex items-center justify-center w-6 h-6 border border-ex-step-border rounded-full text-xs'
 const stepBubbleActiveCls =
-  'flex items-center justify-center w-6 h-6 border border-ex-accent rounded-full text-xs bg-ex-accent text-white'
+  'flex items-center justify-center w-6 h-6 border border-ex-accent rounded-full text-xs bg-ex-accent text-on-accent'
 
 export function ApplicationStatus({
   profileName,

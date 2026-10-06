@@ -15,7 +15,7 @@ or send HTTP directly. Replace the HTTP mapping after backend agreement; retain 
   and workspace detail; input PUT; confirm POST; generations POST; generation detail GET;
   draft history GET; draft detail GET; assessment retry POST. The `/api` fallback does not
   receive a duplicate prefix. These paths do not assert that services are already deployed.
-- Save and confirm send `expectedRevision`. Confirm/generate/assessment use
+- Save and confirm send `expectedRevision`. Create/confirm/generate/assessment use
   `Idempotency-Key`. Backend must bind each key to actor, operation and payload and return
   the same result for retries. Client buttons alone cannot enforce idempotency.
 - Generation status and readiness assessment are independent. Backend returns issues,
@@ -91,15 +91,16 @@ Conditional input and upload scenarios are excluded until a schema requires them
 does not imply attachments or conditional business rules are supported. Production API/auth,
 real generation, billing and Flow 5 end-to-end checks require the agreed backend services.
 
-## Verification performed
+## Development configuration and verification
 
-- TypeScript/Vite build and architecture boundaries passed. Lint has the four existing
-  warnings in shared button/badge and expert registration; Drafting adds no lint warnings.
-- Executed adapter assertions for required validation, revision conflicts, snapshot/draft
-  immutability, repeated idempotency keys, regeneration, exact references, action eligibility,
-  pending/failed assessment, unknown job status, export format limits and transaction reconciliation.
-- React server-render smoke checks exercised the route screens with seeded Query data.
-  These are render/contract checks, not browser interaction tests.
-- The mechanical design detector reported no findings. Desktop/mobile visual inspection,
-  keyboard interaction and native-dialog behavior remain unverified because the browser tool
-  reported no available browser surfaces in this session.
+See [README.md](../README.md) and [.env.example](../.env.example) for setup. Isolated preview requires both `VITE_DRAFT_DATA_SOURCE=mock` and `VITE_DRAFT_DEMO_ACCESS=true` in development; restart Vite after changing environment values. Mock alone does not bypass authentication. Production ignores mock/demo-access flags and uses authenticated API flows.
+
+Run `npm run build`, `npm run lint`, `npm run check:architecture` and `npm run check:i18n` after changing source. Current scripts do not retain the earlier local adapter/render test suite; historical assertions are not a current executable acceptance suite.
+
+Exercise the ten scenarios above in a browser, including keyboard/focus, unsaved navigation, reload and exact version references. Real API/auth, generation, export/billing and review handoff require backend integration; successful mock interaction does not verify those contracts. Record actual results when checks are run rather than treating this document as a permanent pass report.
+
+## Shared UI integration
+
+Use shared layout/form/feedback components, semantic [theme tokens](THEMING.md), [translation rules](I18N.md) and [motion](MOTION.md). Draft routes already inherit MotionPage; Draft Paper uses the shared hook. Changing theme or language must preserve working input, dirty state, query identity and selected version. Animation must not start a business mutation or delay authorization/error recovery.
+
+Shared palette normalization now covers the surrounding app and legacy registration/Expert controls. Draft data contracts, snapshot/version identity and capabilities remain owned by the existing adapters. Use `npm run check:ui-config` alongside the checks above when changing shared styles.

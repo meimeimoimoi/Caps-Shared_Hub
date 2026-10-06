@@ -120,7 +120,7 @@ export function ProfessionalExperience({
               onChange={(e) => onUpdate('years', e.target.value)}
               aria-invalid={!!formErrors.years}
               aria-describedby={formErrors.years ? 'error-years' : undefined}
-              className={`${inputCls} ${formErrors.years ? '!border-ex-error-text focus:shadow-[0_0_0_3px_#d9302533]' : ''}`}
+              className={`${inputCls} ${formErrors.years ? '!border-ex-error-text focus:ring-2 focus:ring-danger/20' : ''}`}
             />
           </FormField>
           <FormField
@@ -138,7 +138,7 @@ export function ProfessionalExperience({
               }
               placeholder={t('experience.placeholder')}
               rows={4}
-              className={`${inputCls} min-h-[110px] resize-y ${formErrors.highlights ? '!border-ex-error-text focus:shadow-[0_0_0_3px_#d9302533]' : ''}`}
+              className={`${inputCls} min-h-[110px] resize-y ${formErrors.highlights ? '!border-ex-error-text focus:ring-2 focus:ring-danger/20' : ''}`}
             />
           </FormField>
         </div>

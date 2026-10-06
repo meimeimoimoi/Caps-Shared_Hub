@@ -28,19 +28,19 @@ export type EmailLoginFormProps = {
   error?: string | null
 }
 
-const JAKARTA = "[font-family:'Plus_Jakarta_Sans',sans-serif]"
-const GEIST = '[font-family:Geist,sans-serif]'
+const UI_FONT = "font-sans"
+
 
 const LABEL_CLASS = cn(
   'block text-[12px] font-semibold tracking-[-0.01em] text-white/85 mb-[7px]',
-  JAKARTA
+  UI_FONT
 )
 
 const INPUT_CLASS =
-  'peer w-full h-[50px] pl-11 pr-[14px] rounded-xl border border-white/14 bg-white/5 text-sm font-medium text-white outline-none backdrop-blur-[10px] [-webkit-backdrop-filter:blur(10px)] placeholder:text-white/35 [transition:border-color_.15s,box-shadow_.15s,background_.15s] focus:border-[var(--accent)] focus:bg-white/8 focus:shadow-[0_0_0_3px_rgba(232,93,38,.22)]'
+  'peer w-full h-[50px] pl-11 pr-[14px] rounded-xl border border-white/14 bg-white/5 text-sm font-medium text-white outline-none backdrop-blur-[10px] [-webkit-backdrop-filter:blur(10px)] placeholder:text-white/35 motion-interactive focus:border-[var(--accent)] focus:bg-white/8 focus:ring-2 focus:ring-accent/25'
 
 const INPUT_ERROR_CLASS =
-  'border-[var(--err)] shadow-[0_0_0_3px_rgba(255,107,107,.2)]'
+  'border-[var(--err)] ring-2 ring-[var(--err)]/20'
 
 const FIELD_ICON_CLASS =
   'pointer-events-none absolute left-[14px] text-white/40 transition-colors peer-focus:text-[var(--accent)]'
@@ -118,14 +118,14 @@ export function EmailLoginForm({
         className
       )}
     >
-      <div className="glass-card-fallback relative w-full rounded-3xl border border-white/14 bg-[rgba(20,20,22,.42)] px-8 pt-9 pb-8 shadow-[0_24px_60px_-20px_rgba(0,0,0,.55),0_4px_12px_rgba(0,0,0,.25),inset_0_1px_0_rgba(255,255,255,.10)] backdrop-blur-[28px] backdrop-saturate-150 [-webkit-backdrop-filter:blur(28px)_saturate(1.5)] max-[420px]:rounded-[20px] max-[420px]:px-[22px] max-[420px]:pt-8 max-[420px]:pb-[26px]">
+      <div className="glass-card-fallback relative w-full rounded-3xl border border-white/14 bg-[color-mix(in_srgb,var(--ui-login-canvas)_42.0%,transparent)] px-8 pt-9 pb-8 shadow-[0_24px_60px_-20px_color-mix(in_srgb,var(--ui-overlay-ink)_55.0%,transparent),0_4px_12px_color-mix(in_srgb,var(--ui-overlay-ink)_25.0%,transparent),inset_0_1px_0_color-mix(in_srgb,var(--ui-login-text)_10.0%,transparent)] backdrop-blur-[28px] backdrop-saturate-150 [-webkit-backdrop-filter:blur(28px)_saturate(1.5)] max-[420px]:rounded-[20px] max-[420px]:px-[22px] max-[420px]:pt-8 max-[420px]:pb-[26px]">
         <BackButton onClick={onBack} />
 
         <div className="mb-7 text-center">
           <div
             className={cn(
               'mb-1.5 text-[22px] leading-[1.2] font-bold tracking-[-0.02em] text-white max-[420px]:text-[20px]',
-              JAKARTA
+              UI_FONT
             )}
           >
             {t('email.title')}
@@ -154,7 +154,7 @@ export function EmailLoginForm({
                 aria-describedby={emailError ? emailErrId : undefined}
                 className={cn(
                   INPUT_CLASS,
-                  GEIST,
+                  UI_FONT,
                   emailError ? INPUT_ERROR_CLASS : undefined
                 )}
               />
@@ -184,7 +184,7 @@ export function EmailLoginForm({
                 aria-describedby={pwError ? pwErrId : undefined}
                 className={cn(
                   INPUT_CLASS,
-                  GEIST,
+                  UI_FONT,
                   'pr-[70px]',
                   pwError ? INPUT_ERROR_CLASS : undefined
                 )}
@@ -194,8 +194,8 @@ export function EmailLoginForm({
                 type="button"
                 onClick={() => setShowPw((prev) => !prev)}
                 className={cn(
-                  'absolute top-1/2 right-1.5 h-[38px] -translate-y-1/2 rounded-lg border-0 bg-transparent px-3 text-[12px] font-semibold text-white/55 [transition:color_.15s,background_.15s] hover:bg-white/6 hover:text-white',
-                  GEIST
+                  'absolute top-1/2 right-1.5 h-[38px] -translate-y-1/2 rounded-lg border-0 bg-transparent px-3 text-[12px] font-semibold text-white/55 motion-interactive hover:bg-white/6 hover:text-white',
+                  UI_FONT
                 )}
               >
                 {showPw ? t('password.hide') : t('password.show')}
@@ -226,8 +226,8 @@ export function EmailLoginForm({
             type="submit"
             disabled={isLoading}
             className={cn(
-              'flex h-[50px] w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-[var(--accent)] text-[15px] font-bold text-white shadow-[0_8px_22px_-6px_rgba(232,93,38,.5)] [transition:background_.15s,transform_.1s,box-shadow_.2s] hover:-translate-y-px hover:bg-[#d04e1a] hover:shadow-[0_12px_28px_-6px_rgba(232,93,38,.6)] active:translate-y-0 active:scale-[.995] disabled:pointer-events-none disabled:opacity-60',
-              JAKARTA
+              'flex h-[50px] w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-[var(--accent)] text-[15px] font-bold text-white shadow-accent motion-interactive hover:-translate-y-px hover:bg-accent-hover hover:shadow-accent active:translate-y-0 active:scale-[.995] disabled:pointer-events-none disabled:opacity-60',
+              UI_FONT
             )}
           >
             <span>{t('actions.signIn')}</span>
@@ -255,8 +255,8 @@ export function EmailLoginForm({
           type="button"
           onClick={onGoogle}
           className={cn(
-            'flex min-h-[50px] w-full cursor-pointer items-center justify-center gap-[10px] rounded-xl border border-white/14 bg-white/5 text-sm font-medium text-white backdrop-blur-[10px] [-webkit-backdrop-filter:blur(10px)] [transition:background_.15s,border-color_.15s] hover:border-white/22 hover:bg-white/10 active:scale-[.995]',
-            GEIST
+            'flex min-h-[50px] w-full cursor-pointer items-center justify-center gap-[10px] rounded-xl border border-white/14 bg-white/5 text-sm font-medium text-white backdrop-blur-[10px] [-webkit-backdrop-filter:blur(10px)] motion-interactive hover:border-white/22 hover:bg-white/10 active:scale-[.995]',
+            UI_FONT
           )}
         >
           <GoogleIcon size={18} />

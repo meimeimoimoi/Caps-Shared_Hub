@@ -59,7 +59,7 @@ export function DatePicker({
     close()
   }
   const cellClass =
-    'h-9 w-full bg-transparent text-ex-ink [&[aria-current=date]:not([aria-pressed=true])]:bg-[#fbf1eb] aria-[current=date]:font-semibold [&[aria-current=date]:not([aria-pressed=true])]:text-ex-accent aria-pressed:bg-ex-accent aria-pressed:font-semibold aria-pressed:text-white aria-pressed:enabled:hover:bg-ex-accent'
+    'h-9 w-full bg-transparent text-ex-ink [&[aria-current=date]:not([aria-pressed=true])]:bg-accent-soft aria-[current=date]:font-semibold [&[aria-current=date]:not([aria-pressed=true])]:text-ex-accent aria-pressed:bg-ex-accent aria-pressed:font-semibold aria-pressed:text-on-accent aria-pressed:enabled:hover:bg-ex-accent'
 
   useEffect(() => {
     if (!open) return
@@ -174,12 +174,12 @@ export function DatePicker({
           data-date-picker-panel
           role="dialog"
           aria-label={t('calendar.chooseDate')}
-          className="text-ex-ink [&_button:focus-visible]:outline-ex-accent absolute top-[calc(100%+8px)] left-0 z-50 w-[308px] max-w-[min(100%,calc(100vw-40px))] rounded-[14px] bg-white p-3.5 text-[13px] tabular-nums shadow-[0_12px_36px_-10px_#263c3638,0_3px_10px_-4px_#263c361a] [&_button]:inline-flex [&_button]:cursor-pointer [&_button]:items-center [&_button]:justify-center [&_button]:rounded-[7px] [&_button]:border-0 [&_button]:font-[inherit] [&_button]:leading-none [&_button]:transition-colors [&_button]:duration-[140ms] [&_button]:ease-[ease] motion-reduce:[&_button]:transition-none [&_button:disabled]:cursor-default [&_button:disabled]:opacity-35 [&_button:enabled:hover]:bg-[#f2f4f1] [&_button:focus-visible]:outline-2 [&_button:focus-visible]:outline-offset-2"
+          className="text-ex-ink [&_button:focus-visible]:outline-ex-accent absolute top-[calc(100%+8px)] left-0 z-50 w-[308px] max-w-[min(100%,calc(100vw-40px))] rounded-[14px] bg-surface p-3.5 text-[13px] tabular-nums shadow-overlay [&_button]:inline-flex [&_button]:cursor-pointer [&_button]:items-center [&_button]:justify-center [&_button]:rounded-[7px] [&_button]:border-0 [&_button]:font-[inherit] [&_button]:leading-none [&_button]:transition-colors [&_button]:duration-[var(--motion-feedback)] [&_button]:ease-[var(--motion-ease-enter)] motion-reduce:[&_button]:transition-none [&_button:disabled]:cursor-default [&_button:disabled]:opacity-35 [&_button:enabled:hover]:bg-surface-muted [&_button:focus-visible]:outline-2 [&_button:focus-visible]:outline-offset-2"
         >
           <div className="mb-3 flex items-center justify-between gap-1">
             <button
               type="button"
-              className="text-ex-muted size-8 shrink-0 bg-[#f5f6f4]"
+              className="text-ex-muted size-8 shrink-0 bg-surface-muted"
               aria-label={t(
                 view === 'years'
                   ? 'calendar.previousYears'
@@ -201,7 +201,7 @@ export function DatePicker({
             >
               <button
                 type="button"
-                className="aria-pressed:text-ex-accent [&_svg]:text-ex-muted h-8 gap-[5px] bg-transparent px-[7px] font-semibold! aria-pressed:bg-[#fbf1eb]"
+                className="aria-pressed:text-ex-accent [&_svg]:text-ex-muted h-8 gap-[5px] bg-transparent px-[7px] font-semibold! aria-pressed:bg-accent-soft"
                 aria-label={t('calendar.chooseMonth')}
                 aria-pressed={view === 'months'}
                 onClick={() => setView(view === 'months' ? 'days' : 'months')}
@@ -211,7 +211,7 @@ export function DatePicker({
               </button>
               <button
                 type="button"
-                className="aria-pressed:text-ex-accent [&_svg]:text-ex-muted h-8 gap-[5px] bg-transparent px-[7px] font-semibold! aria-pressed:bg-[#fbf1eb]"
+                className="aria-pressed:text-ex-accent [&_svg]:text-ex-muted h-8 gap-[5px] bg-transparent px-[7px] font-semibold! aria-pressed:bg-accent-soft"
                 aria-label={t('calendar.chooseYear')}
                 aria-pressed={view === 'years'}
                 onClick={() => setView(view === 'years' ? 'days' : 'years')}
@@ -222,7 +222,7 @@ export function DatePicker({
             </div>
             <button
               type="button"
-              className="text-ex-muted size-8 shrink-0 bg-[#f5f6f4]"
+              className="text-ex-muted size-8 shrink-0 bg-surface-muted"
               aria-label={t(
                 view === 'years' ? 'calendar.nextYears' : 'calendar.nextMonth'
               )}
@@ -325,7 +325,7 @@ export function DatePicker({
               })}
             </div>
           )}
-          <div className="mt-3 flex items-center justify-between border-t border-[#edf0eb] pt-2.5">
+          <div className="mt-3 flex items-center justify-between border-t border-border-subtle pt-2.5">
             <button
               type="button"
               className="text-ex-muted h-[30px] bg-transparent px-2.5 text-xs!"
@@ -339,7 +339,7 @@ export function DatePicker({
             </button>
             <button
               type="button"
-              className="text-ex-ink h-[30px] bg-[#f2f4f1] px-2.5 text-xs! font-semibold!"
+              className="text-ex-ink h-[30px] bg-surface-muted px-2.5 text-xs! font-semibold!"
               onClick={close}
             >
               {t('actions.close')}

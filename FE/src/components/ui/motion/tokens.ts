@@ -27,6 +27,10 @@ export function installMotionTokens(root: HTMLElement) {
   for (const [name, value] of Object.entries(motionTokens.easing))
     root.style.setProperty(`--motion-ease-${name}`, value)
   root.style.setProperty(
+    '--motion-stagger-interval',
+    `${motionTokens.stagger.interval}ms`
+  )
+  root.style.setProperty(
     '--motion-press-scale',
     String(motionTokens.scale.press)
   )

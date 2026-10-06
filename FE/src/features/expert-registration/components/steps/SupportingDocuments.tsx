@@ -69,7 +69,7 @@ export function SupportingDocuments({
           <div className="expert-pro-section-header">
             <span
               className="expert-pro-section-icon"
-              style={{ background: '#f5efe9', color: '#a34524' }}
+              style={{ background: 'var(--ui-accent-soft)', color: 'var(--ui-accent-text)' }}
             >
               <FolderOpen size={18} aria-hidden="true" />
             </span>

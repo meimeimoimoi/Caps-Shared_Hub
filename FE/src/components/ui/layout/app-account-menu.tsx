@@ -91,7 +91,7 @@ export function AppAccountMenu({
       </summary>
       <div
         ref={popover}
-        className={`bg-surface text-text-strong ring-border absolute top-full right-0 z-50 mt-3 w-[min(304px,calc(100vw-32px))] rounded-xl p-2 shadow-[0_16px_48px_-12px_rgba(0,0,0,0.35)] ring-1`}
+        className={`bg-surface text-text-strong ring-border absolute top-full right-0 z-50 mt-3 w-[min(304px,calc(100vw-32px))] rounded-xl p-2 shadow-overlay ring-1`}
       >
         <div className="flex flex-col gap-1 px-3 pt-3 pb-4">
           <strong className="text-sm font-semibold [overflow-wrap:anywhere]">

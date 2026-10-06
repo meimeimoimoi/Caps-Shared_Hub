@@ -21,7 +21,7 @@ export function HelpTip({ label, children, className = '' }: HelpTipProps) {
       </summary>
       <div
         id={id}
-        className="border-ex-input-border text-ex-ink absolute right-0 z-30 mt-2 w-64 max-w-[calc(100vw-3rem)] rounded-lg border bg-white p-3 text-sm shadow-[0_8px_24px_-8px_#263c3633]"
+        className="border-ex-input-border text-ex-ink absolute right-0 z-30 mt-2 w-64 max-w-[calc(100vw-3rem)] rounded-lg border bg-surface p-3 text-sm shadow-overlay"
       >
         {children}
       </div>

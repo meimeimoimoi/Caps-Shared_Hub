@@ -22,7 +22,7 @@ export default function NotFoundPage() {
         <section aria-labelledby="not-found-title">
           <h1 id="not-found-title" className="m-0 text-[38px] leading-[1.12] tracking-[-0.03em] text-balance md:text-[clamp(36px,4vw,56px)]">{t('notFound.title')}</h1>
           <p className="mt-6 mb-8 max-w-[43ch] text-[16px] leading-[1.75] text-fg-muted">{t('notFound.description')}</p>
-          <Link to="/dashboard" className="inline-flex min-h-12 w-full items-center justify-center gap-3 rounded-control bg-accent px-5 py-3 text-[14px] font-semibold text-paper no-underline transition-colors duration-200 hover:bg-accent-hover active:bg-accent-active md:w-auto">
+          <Link to="/dashboard" className="inline-flex min-h-12 w-full items-center justify-center gap-3 rounded-control bg-accent px-5 py-3 text-[14px] font-semibold text-paper no-underline transition-colors duration-[var(--motion-feedback)] hover:bg-accent-hover active:bg-accent-active md:w-auto">
             <LayoutDashboard size={18} aria-hidden="true" /> {t('actions.dashboard')} <ArrowRight size={18} aria-hidden="true" />
           </Link>
           <div className="mt-8 flex flex-col items-start gap-2 border-t border-border pt-6 text-[14px] md:mt-10">

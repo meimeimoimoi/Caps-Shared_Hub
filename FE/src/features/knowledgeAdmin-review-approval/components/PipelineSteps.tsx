@@ -67,7 +67,7 @@ export function PipelineSteps({ summary, selected, onSelect }: PipelineStepsProp
             aria-pressed={active}
             onClick={() => onSelect(key)}
             className={cn(
-              'rounded-control relative flex min-h-32 flex-col items-start p-4 text-left transition-[background-color,transform] duration-200 ease-out active:scale-[0.98] motion-reduce:transition-none',
+              'rounded-control relative flex min-h-32 flex-col items-start p-4 text-left transition-[background-color,transform] duration-[var(--motion-feedback)] ease-out active:scale-[0.98] motion-reduce:transition-none',
               active ? 'bg-accent text-on-accent' : 'hover:bg-desk-2 text-fg'
             )}
           >

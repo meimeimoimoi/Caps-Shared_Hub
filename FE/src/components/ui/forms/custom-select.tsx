@@ -201,7 +201,7 @@ export function CustomSelect<T extends string>({
           size={18}
           aria-hidden="true"
           className={cn(
-            'text-text-muted shrink-0 transition-transform duration-150 motion-reduce:transition-none',
+            'text-text-muted shrink-0 transition-transform duration-[var(--motion-feedback)] motion-reduce:transition-none',
             open && 'rotate-180'
           )}
         />

@@ -4,10 +4,14 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "prepare": "node scripts/install-git-hooks.mjs",
+    "hooks:install": "node scripts/install-git-hooks.mjs",
+    "check:commit": "node scripts/check-commit.mjs --all",
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
     "check:architecture": "node scripts/check-architecture.mjs",
+    "check:ui-config": "node scripts/check-ui-config.mjs",
     "check:i18n": "node scripts/check-i18n.mjs",
     "format": "prettier --write .",
     "preview": "vite preview"

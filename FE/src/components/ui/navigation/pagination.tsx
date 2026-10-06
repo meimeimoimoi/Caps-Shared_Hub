@@ -44,7 +44,7 @@ export function Pagination({
 
   return (
     <nav
-      className="shared-pagination flex flex-wrap items-center justify-between gap-x-5 gap-y-3 rounded-b-[14px] border-t border-[var(--pager-line)] bg-[var(--pager-surface)] px-[18px] py-3 text-[13px] text-[var(--pager-ink)] tabular-nums [--pager-hover:var(--ep-surface-raised,#f7f7f5)] [--pager-ink:var(--ep-ink,#262624)] [--pager-line:var(--ep-line,#dcdcd9)] [--pager-muted:var(--ep-muted,#5a5a56)] [--pager-surface:var(--ep-surface,#fff)] [.ep-cases-table-wrapper+&]:border [.ep-cases-table-wrapper+&]:border-t-0"
+      className="shared-pagination flex flex-wrap items-center justify-between gap-x-5 gap-y-3 rounded-b-[14px] border-t border-[var(--pager-line)] bg-[var(--pager-surface)] px-[18px] py-3 text-[13px] text-[var(--pager-ink)] tabular-nums [--pager-hover:var(--ui-surface-muted)] [--pager-ink:var(--ui-text-strong)] [--pager-line:var(--ui-border)] [--pager-muted:var(--ui-text-muted)] [--pager-surface:var(--ui-surface)] [.ep-cases-table-wrapper+&]:border [.ep-cases-table-wrapper+&]:border-t-0"
       aria-label={label ?? t('pagination.label')}
     >
       <p

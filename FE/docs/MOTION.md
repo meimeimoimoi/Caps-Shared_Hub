@@ -4,14 +4,14 @@ Import from `@/components/ui/motion`. This module is independent of pages, featu
 
 ## One place to tune
 
-`tokens.ts` owns duration, easing, distance and maximum stagger delay. `main.tsx` installs the same tokens as CSS variables for interactions. Entry uses gentle deceleration rather than elastic/bouncing motion: 680ms reveals, 800ms panels, 580ms pages, 1200ms chart drawing, 360ms exits and 220ms control feedback. Overrides use milliseconds.
+[tokens.ts](../src/components/ui/motion/tokens.ts) owns duration, easing, distance and maximum stagger delay. `main.tsx` installs the same tokens as CSS variables for interactions. Entry uses gentle deceleration rather than elastic/bouncing motion: 680ms reveals, 800ms panels, 580ms pages, 1200ms chart drawing, 360ms exits and 220ms control feedback. Overrides use milliseconds.
 
 ## Components
 
 ```tsx
-import { MotionReveal, MotionStagger, MotionPresence, MotionPath } from '@/components/ui/motion'
+import { MotionPage, MotionReveal, MotionStagger, MotionPresence, MotionPath } from '@/components/ui/motion'
 
-<MotionReveal preset="page" key={pathname}>{children}</MotionReveal>
+<MotionPage replayKey={pathname}>{children}</MotionPage>
 
 <MotionStagger className="grid gap-6 md:grid-cols-2">
   <MotionReveal preset="panel" viewport>First panel</MotionReveal>
@@ -32,6 +32,8 @@ import { MotionReveal, MotionStagger, MotionPresence, MotionPath } from '@/compo
 ## Existing semantic elements
 
 ```tsx
+import { useMotion } from '@/components/ui/motion'
+
 const panel = useMotion<HTMLElement>({ preset: 'panel', viewport: true })
 return <section ref={panel}>{children}</section>
 
@@ -60,4 +62,10 @@ ExpertPanel and Draft Paper use useMotion; overview panel grids use MotionStagge
 
 All four workspace navigation drawers and the common Modal/Drawer use useDialogMotion. It observes native dialog opening, keeping showModal/close, focus trapping and focus return intact. Dialog exits remain immediate so closing semantics never wait for an animation. Toasts use the shared reveal preset. Scoped button/form feedback applies throughout data-motion-page; use motion-interactive outside routed content.
 
-Run `npm run test:motion`, `npm run build`, and `npm run check:architecture`. Tests cover reduced-motion presets, capped sequences, CSS/runtime token consistency, completion cleanup, interrupted exits, unsupported native animation fallback, and router coverage across all registered routes. Live visual/performance verification requires a connected browser and is not covered by these tests.
+Run `npm run build`, `npm run lint`, and `npm run check:architecture` from FE after changing motion source. These check compilation and code boundaries, not visual quality. The current package has no `test:motion` script or retained motion unit-test suite.
+
+Manually check reload, route navigation, filter changes without form remounts, viewport reveals, rapid open/close, native dialog focus return, dropdown scrolling near viewport edges, reduced-motion changes and unsupported-animation fallback. Inspect desktop/mobile timing and performance in a browser; static checks do not verify these behaviors.
+
+Use MotionPage once at the router boundary. New child routes inherit it automatically; use MotionReveal for selected sections without reanimating the whole page twice. MotionPage targets `[data-motion-content]` or `main`; verify that new page markup exposes the intended content region.
+
+Legacy CSS keyframes coexist with this module, but their entrance/feedback timings now consume shared motion variables. Delays use the installed stagger interval and are capped at four intervals. Continuous spinners retain their loop cadence. Reusable motion takes its values from tokens.ts; component layout/sequence can remain local. Colors, fonts and other UI tokens are documented in [THEMING.md](THEMING.md) and [UI-CONFIG.md](UI-CONFIG.md).

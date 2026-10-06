@@ -10,7 +10,7 @@ npm install
 npm run dev
 ```
 
-BE must be running: gateway `http://localhost:5190`, auth `http://localhost:5194`.
+For real API flows, BE must be running: gateway `http://localhost:5190`, auth `http://localhost:5194`.
 `VITE_API_URL=http://localhost:5190` (see `.env.development`).
 On Windows PowerShell with script execution disabled, use `npm.cmd`.
 
@@ -35,6 +35,7 @@ src/
     feedback/              Dialogs, toasts and help tips
     display/               Badges and document notes
     actions/               Buttons and decision bars
+    motion/                Shared motion components, hooks and tokens
   components/auth/         Login presentation components
   lib/                     API client, query client and generic utilities
   hooks/                   Reusable hooks
@@ -68,16 +69,34 @@ src/
 - `/expert/services`, `/expert/income`, `/expert/profile` — expert services, income and profile.
 - `/expert/settings/:section` — account settings.
 - `/admin/experts`, `/admin/experts/pending`, `/admin/experts/:id` — admin screens; admin auth integration is pending.
-- `*` — Not Found.
+- `/admin/disputes`, `/admin/disputes/:id`, `/admin/escrow` - dispute and escrow screens.
+- `/admin/pricing`, `/admin/pricing/:id` - pricing and tier detail.
+- `/knowledge` redirects to `/knowledge/queue`; `/knowledge/sources`, `/knowledge/uploads`, `/knowledge/documents`, `/knowledge/documents/:id` - knowledge administration.
+- `/knowledge/documents/:id/compare`, `/knowledge/documents/:id/review` - version comparison and review.
+- `*` - Not Found.
+
+[Router source](src/app/routes/index.tsx) owns the route inventory. Admin and Knowledge role/auth guards remain TODOs there; registered routes do not imply production authorization is complete.
 
 Expert workspace routes use `ExpertRoute`; demo access is configured separately from production authentication.
 
 ## Scripts
 
 - `npm run dev` / `npm run build` / `npm run lint` (`oxlint`) / `npm run format`.
+- `npm run check:ui-config` rejects inline hex UI colors, hardcoded fonts and undefined semantic palette references, with explicit artwork exceptions.
+- `npm run check:i18n` checks locale key, placeholder and plural consistency; it does not detect every hardcoded UI string.
 - `npm run check:architecture` checks the agreed folder structure, common-module boundaries and circular feature dependencies. TypeScript build checks import resolution.
 
 Formatting the entire project may touch unrelated files; format deliberately.
+
+## Automatic commit checks
+
+Run `npm install` or `npm ci` in FE after cloning. The prepare script installs the tracked `.githooks/pre-commit` using this clone's local Git config. Existing custom hooksPath settings are preserved and need explicit integration. Use `npm run hooks:install` to reinstall. Node.js and installed FE dependencies must be available to the Git client/agent.
+
+When FE or hook files are staged, `git commit` automatically runs architecture, i18n and UI configuration checks on a temporary copy of the staged index. Unstaged edits stay untouched. All three results appear in the terminal; any failure blocks the commit and identifies the check/files to fix. Stage the fixes and retry. Backend-only commits skip these frontend checks. Run `npm run check:commit` to check the working tree manually.
+
+After push or opening/updating a PR, the tracked Frontend checks GitHub Actions workflow runs the same checks plus lint and a production build. Results and logs are visible to teammates and agents in the PR checks/Actions view. Personal GitHub notifications follow each member's settings; this setup does not send chat/email messages. Enable the Frontend checks job as a required branch-protection check if the team wants merges blocked on failures. Local hooks can be bypassed, so CI is the shared enforcement layer.
+
+Agents using this checkout should install hooks before committing, read the full failure output, fix/stage affected files and rerun checks. Warnings from lint remain warnings; the three validation scripts block on errors.
 
 ## Draft Workspace
 
@@ -123,7 +142,19 @@ job/assessment contracts and charging policy still require backend agreement.
 Demo export creates a real `.txt` artifact containing the AI disclaimer and version
 references. It does not create PDF/DOCX or charge credit. Demo review records only a
 version-pinned handoff in memory. Production export and review submission remain
-explicitly unavailable until their contracts are connected. See [DRAFTING.md](DRAFTING.md)
+explicitly unavailable until their contracts are connected. See [DRAFTING.md](docs/DRAFTING.md)
 for adapter boundaries, business-rule traceability and verification scenarios.
 
-Theme conventions and migration: [THEMING.md](./THEMING.md).
+## Shared configuration and documentation
+
+Maintenance guides are grouped in `docs/`; this README remains the frontend entry point.
+
+- [UI-CONFIG.md](docs/UI-CONFIG.md): configuration ownership and reusable UI rules; a guide, not a runtime configuration file.
+- [THEMING.md](docs/THEMING.md): palette, fonts, theme behavior and migration. Colors live in [theme.css](src/styles/theme.css); font/size/spacing/radius/shadow tokens in [globals.css](src/styles/globals.css); font loading in [index.html](index.html).
+- [I18N.md](docs/I18N.md): translation rules, glossary, formatting and acceptance checklist.
+- [DRAFTING.md](docs/DRAFTING.md): proposed API integration, business-rule traceability and acceptance scenarios.
+- [Motion README](docs/MOTION.md): reusable animations; [tokens.ts](src/components/ui/motion/tokens.ts) owns motion values.
+
+All registered routes inherit MotionPage at the root router boundary. Add component-level motion through the shared module when needed; avoid duplicating page entrance wrappers. Registration, Expert/case detail, login controls and legacy widget palettes now consume shared configuration. Layout geometry remains screen-specific; fixed login/video material is centralized in theme.css and logo/flag fills are intentional artwork exceptions.
+
+Documentation describes the current source and verification workflow. There is no `test:motion` script or retained local unit-test suite in the current package scripts; do not treat historical test counts as checks that can be rerun.

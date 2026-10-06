@@ -35,7 +35,7 @@ export function ReviewSubmit({
         <button
           type="button"
           onClick={onEdit}
-          className="inline-flex min-h-10 items-center gap-2 rounded-md border border-[#d5d2c8] bg-white px-4 text-[13px] font-semibold text-[#a34524] transition-all duration-200 hover:border-[#a3452466] hover:bg-[#fdf8f5] hover:shadow-[0_2px_8px_-2px_#a345241a] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#a34524]"
+          className="inline-flex min-h-10 items-center gap-2 rounded-md border border-border bg-surface px-4 text-[13px] font-semibold text-accent-text transition-all duration-[var(--motion-feedback)] hover:border-accent hover:bg-surface-muted hover:shadow-control focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-text"
         >
           <Edit2 size={14} />
           {t('actions.edit')}
@@ -71,7 +71,7 @@ export function ReviewSubmit({
               }
               required
             />
-            <span className="text-[14.5px] leading-relaxed font-medium text-[#263c36]">
+            <span className="text-[14.5px] leading-relaxed font-medium text-text-strong">
               {t('review.confirm')}
             </span>
           </label>

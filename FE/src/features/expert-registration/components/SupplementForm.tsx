@@ -20,7 +20,7 @@ export interface SupplementFormProps {
   onSubmit: (e: FormEvent<HTMLFormElement>) => void
 }
 
-const btnPrimary = `${btnBase} !bg-ex-accent !border-ex-accent !text-white hover:!bg-ex-accent-hover`
+const btnPrimary = `${btnBase} !bg-ex-accent !border-ex-accent !text-on-accent hover:!bg-ex-accent-hover`
 
 export function SupplementForm({
   file,
@@ -42,7 +42,7 @@ export function SupplementForm({
         label={t('supplement.document')}
         hint={t('supplement.formats')}
       >
-        <label className="border-ex-chip-border bg-ex-drop-bg hover:border-ex-accent hover:bg-ex-drop-hover focus-within:ring-ex-accent flex cursor-pointer flex-col items-center gap-2 rounded-md border border-dashed px-4 py-6 text-center transition-[border-color,background,box-shadow] duration-150 ease-in-out focus-within:ring-2 focus-within:ring-offset-2 motion-reduce:transition-none">
+        <label className="border-ex-chip-border bg-ex-drop-bg hover:border-ex-accent hover:bg-ex-drop-hover focus-within:ring-ex-accent flex cursor-pointer flex-col items-center gap-2 rounded-md border border-dashed px-4 py-6 text-center transition-[border-color,background,box-shadow] duration-[var(--motion-feedback)] ease-in-out focus-within:ring-2 focus-within:ring-offset-2 motion-reduce:transition-none">
           <Upload size={22} />
           <strong>{t('supplement.choose')}</strong>
           <input

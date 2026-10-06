@@ -36,7 +36,7 @@ export function RegistrationSummary({
         <div className="expert-pro-section-header">
           <span
             className="expert-pro-section-icon"
-            style={{ background: '#f5efe9', color: '#a34524' }}
+            style={{ background: 'var(--ui-accent-soft)', color: 'var(--ui-accent-text)' }}
           >
             <UserCircle size={18} aria-hidden="true" />
           </span>
@@ -71,7 +71,7 @@ export function RegistrationSummary({
               </dt>
               <dd className="text-ex-ink m-0 text-[14.5px] font-medium whitespace-pre-wrap">
                 {v || (
-                  <span className="font-normal text-gray-400 italic">
+                  <span className="font-normal text-text-muted italic">
                     {t('experience.missing')}
                   </span>
                 )}
@@ -88,7 +88,7 @@ export function RegistrationSummary({
           <div className="expert-pro-section-header">
             <span
               className="expert-pro-section-icon"
-              style={{ background: '#f5efe9', color: '#a34524' }}
+              style={{ background: 'var(--ui-accent-soft)', color: 'var(--ui-accent-text)' }}
             >
               <Briefcase size={18} aria-hidden="true" />
             </span>
@@ -115,7 +115,7 @@ export function RegistrationSummary({
                 {fields.length > 0 ? (
                   fields.map((field) => expertiseKey(field) ? t(expertiseKey(field)!) : field).join(', ')
                 ) : (
-                  <span className="font-normal text-gray-400 italic">
+                  <span className="font-normal text-text-muted italic">
                     {t('experience.none')}
                   </span>
                 )}
@@ -127,7 +127,7 @@ export function RegistrationSummary({
               </dt>
               <dd className="text-ex-ink m-0 text-[14.5px] font-medium whitespace-pre-wrap">
                 {profile.highlights || (
-                  <span className="font-normal text-gray-400 italic">
+                  <span className="font-normal text-text-muted italic">
                     {t('experience.missing')}
                   </span>
                 )}
@@ -141,7 +141,7 @@ export function RegistrationSummary({
           <div className="expert-pro-section-header">
             <span
               className="expert-pro-section-icon"
-              style={{ background: '#f5efe9', color: '#a34524' }}
+              style={{ background: 'var(--ui-accent-soft)', color: 'var(--ui-accent-text)' }}
             >
               <FolderOpen size={18} aria-hidden="true" />
             </span>
