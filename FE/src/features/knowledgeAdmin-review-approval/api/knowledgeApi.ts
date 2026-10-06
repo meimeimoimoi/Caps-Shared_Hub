@@ -8,6 +8,7 @@ import type {
   KnowledgeDocument,
   PipelineSummary,
   UploadMeta,
+  UploadResult,
   VersionComparison,
 } from '../types'
 
@@ -150,13 +151,32 @@ export async function rejectVersion(documentId: string, reason: string) {
   await api.post(`${BASE}/documents/${documentId}/version/reject`, { reason })
 }
 
+/* ── Tải lên ── */
+/** Kết quả các lần tải lên gần đây của người dùng, mới nhất trước */
+export async function getUploads(signal?: AbortSignal) {
+  if (isExpertDemo) return structuredClone((await fixtures()).mockUploads)
+  return api.get<UploadResult[]>(`${BASE}/uploads`, { signal })
+}
+
 /** onProgress nhận 0–100 theo số byte đã gửi */
 export async function uploadDocument(
   file: File,
   meta: UploadMeta,
   onProgress: (percent: number) => void
 ) {
-  if (isExpertDemo) return onProgress(100)
+  if (isExpertDemo) {
+    onProgress(100)
+    // MOCK: file mới luôn vào hàng đợi; BE mới biết trùng/phiên bản mới/lỗi bóc tách
+    ;(await fixtures()).mockUploads.unshift({
+      id: `up-${Date.now()}`,
+      fileName: file.name,
+      number: meta.number,
+      result: 'QUEUED',
+      documentId: null,
+      uploadedAt: new Date().toISOString(),
+    })
+    return
+  }
   const body = new FormData()
   body.append('file', file)
   Object.entries(meta).forEach(([k, v]) => body.append(k, v))

@@ -5,6 +5,7 @@ export const knowledgeKeys = {
   summary: () => [...knowledgeKeys.all, 'summary'] as const,
   documents: (stage: QueueFilter) =>
     [...knowledgeKeys.all, 'documents', stage] as const,
+  uploads: () => [...knowledgeKeys.all, 'uploads'] as const,
   detail: (documentId: string) =>
     [...knowledgeKeys.all, 'detail', documentId] as const,
   review: (documentId: string) =>

@@ -7,6 +7,7 @@ import type {
   ArticleChange,
   KnowledgeDocument,
   PipelineSummary,
+  UploadResult,
   VersionComparison,
 } from '../types'
 
@@ -24,6 +25,15 @@ export const mockSummary: PipelineSummary = {
 }
 
 const minutesAgo = (n: number) => new Date(Date.now() - n * 60_000).toISOString()
+
+/** Kết quả các lần tải lên gần đây, mới nhất trước */
+export const mockUploads: UploadResult[] = [
+  { id: 'up-1', fileName: 'TT_78_2014_TT-BTC.pdf', number: '78/2014/TT-BTC', result: 'QUEUED', documentId: 'doc-78-2014', uploadedAt: minutesAgo(5) },
+  { id: 'up-2', fileName: 'VBHN_TNDN_2026.pdf', number: '[số]/VBHN-BTC', result: 'NEW_VERSION', documentId: 'doc-vbhn-tndn', uploadedAt: minutesAgo(5) },
+  { id: 'up-3', fileName: 'ND_218_2013.pdf', number: '218/2013/NĐ-CP', result: 'DUPLICATE', documentId: null, uploadedAt: minutesAgo(5) },
+  { id: 'up-4', fileName: 'CV_chi_phi_scan.pdf', number: '[số]/CV-TCT', result: 'PARSE_FAILED', documentId: null, uploadedAt: minutesAgo(5) },
+  { id: 'up-5', fileName: 'thong_tu.zip', number: null, result: 'FILE_INVALID', documentId: null, uploadedAt: minutesAgo(5) },
+]
 
 export const mockDocuments: KnowledgeDocument[] = [
   {

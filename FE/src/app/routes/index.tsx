@@ -68,6 +68,7 @@ const KnowledgeVersionPage = lazy(() => import('@/pages/knowledge-admin/Knowledg
 const KnowledgeReviewPage = lazy(() => import('@/pages/knowledge-admin/KnowledgeReviewPage'))
 const KnowledgeDocumentPage = lazy(() => import('@/pages/knowledge-admin/KnowledgeDocumentPage'))
 const KnowledgeDocumentsPage = lazy(() => import('@/pages/knowledge-admin/KnowledgeDocumentsPage'))
+const KnowledgeUploadsPage = lazy(() => import('@/pages/knowledge-admin/KnowledgeUploadsPage'))
 
 function Fallback() {
   return (
@@ -113,6 +114,7 @@ const router = createBrowserRouter(
       <Route path="/knowledge" element={<Navigate to="/knowledge/queue" replace />} />
       <Route path="/knowledge/queue" element={<KnowledgeQueuePage />} />
       <Route path="/knowledge/sources" element={<KnowledgeSourcesPage />} />
+      <Route path="/knowledge/uploads" element={<KnowledgeUploadsPage />} />
       <Route path="/knowledge/documents" element={<KnowledgeDocumentsPage />} />
       <Route
         path="/knowledge/documents/:id"

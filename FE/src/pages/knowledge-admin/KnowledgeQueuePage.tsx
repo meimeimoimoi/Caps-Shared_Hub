@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link, useSearchParams } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { CircleX, Upload } from 'lucide-react'
 import { useNavToast } from '@/hooks/useNavToast'
 import { Toast } from '@/components/ui/feedback/toast'
@@ -27,6 +27,7 @@ export default function KnowledgeQueuePage() {
   const setStage = (s: QueueFilter) => setParams(s === 'review' ? {} : { stage: s })
 
   const queue = useReviewQueue(stage)
+  const navigate = useNavigate()
   const nav = useKnowledgeNav()
   const [uploadOpen, setUploadOpen] = useState(false)
   const [openId, setOpenId] = useState<string | null>(null)
@@ -136,7 +137,11 @@ export default function KnowledgeQueuePage() {
           onUpload={(file, meta, onProgress) =>
             queue
               .upload(file, meta, onProgress)
-              .then(() => setToast('Đã tải lên, văn bản đang chờ bóc tách'))
+              .then(() =>
+                navigate('/knowledge/uploads', {
+                  state: { toast: `Đã tải lên ${file.name}` },
+                })
+              )
           }
         />
       )}

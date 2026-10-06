@@ -3,6 +3,7 @@ import type {
   CrosscheckKey,
   PipelineStage,
   UNIT_STATUS,
+  UPLOAD_RESULT,
 } from '../constants'
 
 export interface KnowledgeDocument {
@@ -138,6 +139,18 @@ export interface DocumentDetail {
   chunks: IndexedChunk[]
   chapters: DocumentReview['chapters']
   history: { at: string; actor: string; text: string }[]
+}
+
+/** Kết quả kiểm tra một file đã tải lên */
+export interface UploadResult {
+  id: string
+  fileName: string
+  /** null = không đọc được số hiệu (vd. sai định dạng) */
+  number: string | null
+  result: keyof typeof UPLOAD_RESULT
+  /** Văn bản trong kho để rà soát / so sánh; null = không có */
+  documentId: string | null
+  uploadedAt: string
 }
 
 /** Thông tin bắt buộc khi tải văn bản lên (ngày dạng yyyy-mm-dd) */

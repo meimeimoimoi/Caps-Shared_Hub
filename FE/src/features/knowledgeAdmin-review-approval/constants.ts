@@ -50,6 +50,35 @@ export const CROSSCHECK = {
 } as const
 export type CrosscheckKey = keyof typeof CROSSCHECK
 
+/* Kết quả hệ thống kiểm tra một file vừa tải lên → nhãn + việc người dùng cần làm */
+export const UPLOAD_RESULT = {
+  QUEUED: {
+    label: 'Đã vào hàng đợi',
+    tone: 'neutral',
+    todo: 'Chưa có trong kho. Bóc tách xong, chờ duyệt.',
+  },
+  NEW_VERSION: {
+    label: 'Phiên bản mới',
+    tone: 'accent',
+    todo: 'Đã có số hiệu, nội dung khác. Kiểm tra lại số hiệu và ngày hiệu lực bạn đã nhập.',
+  },
+  DUPLICATE: {
+    label: 'Trùng hoàn toàn',
+    tone: 'neutral',
+    todo: 'Cùng số hiệu, cùng nội dung. Hệ thống dừng, không lưu gì.',
+  },
+  PARSE_FAILED: {
+    label: 'Lỗi bóc tách',
+    tone: 'danger',
+    todo: 'Không bóc tách được: bản scan mờ, sai font hoặc mất trang. Sửa file rồi tải lại.',
+  },
+  FILE_INVALID: {
+    label: 'Lỗi file',
+    tone: 'danger',
+    todo: 'Sai định dạng. Chỉ nhận PDF hoặc DOCX.',
+  },
+} as const
+
 export const DOC_TYPES = [
   'Luật',
   'Nghị định',
