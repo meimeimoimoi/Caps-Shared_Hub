@@ -1,4 +1,4 @@
-import { formControlClassName as inputCls, formButtonClassName as btnBase } from '@/components/ui/form-control'
+import { formControlClassName as inputCls, formButtonClassName as btnBase } from '@/components/ui/forms/form-control'
 import {
   formatVietnamPhoneInput,
   normalizeVietnamPhone,
@@ -17,7 +17,7 @@ import {
   Loader2,
 } from 'lucide-react'
 import type { Profile } from '../types'
-import { FormField } from '@/components/ui/form-field'
+import { FormField } from '@/components/ui/forms/form-field'
 import {
   passwordRequirements,
   validateAccount,

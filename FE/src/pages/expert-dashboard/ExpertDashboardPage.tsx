@@ -1,4 +1,7 @@
-import { ExpertPanel, ExpertPanelHeader } from '../../features/expert-dashboard/components/ExpertPanel'
+import {
+  ExpertPanel,
+  ExpertPanelHeader,
+} from '../../features/expert-dashboard/components/ExpertPanel'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
@@ -24,7 +27,10 @@ import {
 import { NotificationsPanel } from '../../features/expert-dashboard/components/NotificationsPanel'
 import { ReviewTrendChart } from '../../features/expert-dashboard/components/ReviewTrendChart'
 import { WorkloadDistribution } from '../../features/expert-dashboard/components/WorkloadDistribution'
-import { OverviewQueue, type QueueFilter } from '../../features/expert-dashboard/components/OverviewQueue'
+import {
+  OverviewQueue,
+  type QueueFilter,
+} from '../../features/expert-dashboard/components/OverviewQueue'
 import { OverviewReadiness } from '../../features/expert-dashboard/components/OverviewReadiness'
 import { OverviewActivity } from '../../features/expert-dashboard/components/OverviewActivity'
 import { ApiError } from '@/lib/api-client'
@@ -55,7 +61,7 @@ export default function ExpertDashboardPage() {
     model?.performance.status === 'available' ? model.performance.data : null
   return (
     <div className="eo-overview tabular-nums">
-      <header className="eo-page-heading [&_p]:text-[var(--ep-muted)] flex items-center justify-between gap-5 max-[720px]:flex-col max-[720px]:items-start max-[720px]:gap-4 [&_h1]:text-[30px] [&_h1]:[letter-spacing:-0.03em] max-[720px]:[&_h1]:text-[27px] [&_p]:mt-[7px]">
+      <header className="eo-page-heading flex items-center justify-between gap-5 max-[720px]:flex-col max-[720px]:items-start max-[720px]:gap-4 [&_h1]:text-[30px] [&_h1]:[letter-spacing:-0.03em] max-[720px]:[&_h1]:text-[27px] [&_p]:mt-[7px] [&_p]:text-[var(--ep-muted)]">
         <div>
           <h1>Overview</h1>
           <p>Your review workspace, at a glance.</p>
@@ -75,7 +81,7 @@ export default function ExpertDashboardPage() {
             {refreshing ? 'Refreshing…' : 'Refresh'}
           </button>
           <Link
-            className="eo-primary-link [&:hover]:bg-[var(--ep-accent-soft)] inline-flex min-h-[42px] items-center justify-center gap-2 rounded-lg [border-color:var(--ep-accent)] bg-[var(--ep-surface)] bg-none [padding:10px_16px] [font-family:inherit] text-[13px] font-semibold text-[white]! [background:var(--ep-accent)] [border:1px_solid_var(--ep-border)] [&:hover]:bg-none"
+            className="eo-primary-link inline-flex min-h-[42px] items-center justify-center gap-2 rounded-lg [border-color:var(--ep-accent)] bg-[var(--ep-surface)] bg-none [padding:10px_16px] [font-family:inherit] text-[13px] font-semibold text-[white]! [background:var(--ep-accent)] [border:1px_solid_var(--ep-border)] [&:hover]:bg-[var(--ep-accent-hover)] [&:hover]:bg-none"
             to="/expert/queue"
           >
             Work Queue
@@ -84,7 +90,7 @@ export default function ExpertDashboardPage() {
         </div>
       </header>
       {model && (
-        <div className="eo-snapshot text-[var(--ep-muted)] mt-3 mb-6 flex flex-wrap items-center gap-[8px_12px] text-[12px]">
+        <div className="eo-snapshot mt-3 mb-6 flex flex-wrap items-center gap-[8px_12px] text-[12px] text-[var(--ep-muted)]">
           <CalendarDays size={14} aria-hidden="true" />
           <time dateTime={model.generatedAt}>
             {formatDeadline(model.generatedAt, model.timezone)}
@@ -143,17 +149,17 @@ export default function ExpertDashboardPage() {
             />
           ) : (
             <section
-              className="eo-workload-strip border-[var(--ep-border)] [&_>_p]:text-[var(--ep-muted)] [margin:24px_0_16px] overflow-hidden rounded-xl border bg-[var(--ep-surface)] bg-none [&_>_p]:bg-[var(--ep-surface-raised)] [&_>_p]:bg-none [&_>_p]:[padding:10px_24px] [&_>_p]:text-[11px] [&_>_p]:[border-top:1px_solid_var(--ep-border)] max-[720px]:[&_>_p]:[padding:12px_18px]"
+              className="eo-workload-strip [margin:24px_0_16px] overflow-hidden rounded-xl border border-[var(--ep-border)] bg-[var(--ep-surface)] bg-none [&_>_p]:bg-[var(--ep-surface-raised)] [&_>_p]:bg-none [&_>_p]:[padding:10px_24px] [&_>_p]:text-[11px] [&_>_p]:text-[var(--ep-muted)] [&_>_p]:[border-top:1px_solid_var(--ep-border)] max-[720px]:[&_>_p]:[padding:12px_18px]"
               aria-label="Totals across all active cases"
             >
-              <div className="eo-workload-caption [&_>_span]:text-[var(--ep-muted)] flex justify-between gap-3 [padding:16px_24px_0] max-[720px]:flex-col max-[720px]:gap-[5px] max-[720px]:[padding:16px_18px_0] [&_>_span]:text-[12px] [&_strong]:text-[13px]">
+              <div className="eo-workload-caption flex justify-between gap-3 [padding:16px_24px_0] max-[720px]:flex-col max-[720px]:gap-[5px] max-[720px]:[padding:16px_18px_0] [&_>_span]:text-[12px] [&_>_span]:text-[var(--ep-muted)] [&_strong]:text-[13px]">
                 <strong>Across your workload</strong>
                 <span>
                   {isExpertDemo ? 'Sample totals' : 'Server totals'} · All
                   active cases
                 </span>
               </div>
-              <div className="eo-workload-numbers [&_>_button]:text-[var(--ep-ink)] [&_>_button_>_span]:text-[var(--ep-muted)] [&_small]:text-[var(--ep-muted)] [&_>_button:hover_small]:text-[var(--ep-accent)] [&_>_button[aria-pressed=true]_small]:text-[var(--ep-accent)] grid grid-cols-[repeat(4,_minmax(0,_1fr))] [padding:20px_8px] max-[720px]:grid-cols-[1fr_1fr] max-[720px]:gap-y-6 [&_.eo-danger-stat_>_strong]:text-[var(--ep-danger)] [&_>_button]:flex [&_>_button]:flex-col [&_>_button]:items-start [&_>_button]:gap-2 [&_>_button]:border-0 [&_>_button]:[padding:0_24px] [&_>_button]:text-left [&_>_button]:[background:none] [&_>_button]:[border-right:1px_solid_var(--ep-border)] max-[1251px]:[&_>_button]:[padding:0_18px] [&_>_button_>_span]:text-[13px] [&_>_button_>_strong]:text-[32px] [&_>_button_>_strong]:[line-height:1.1] [&_>_button_>_strong]:font-[650] [&_>_button_>_strong]:[letter-spacing:-0.02em] max-[720px]:[&_>_button_>_strong]:text-[28px] [&_>_button:hover_small]:underline [&_>_button:hover_small]:underline-offset-[3px] [&_>_button:last-child]:[border-right:0] max-[720px]:[&_>_button:nth-child(2)]:[border-right:0] [&_>_button[aria-pressed=true]_small]:underline [&_>_button[aria-pressed=true]_small]:underline-offset-[3px] [&_small]:inline-flex [&_small]:items-center [&_small]:gap-[5px] [&_small]:text-[11px]">
+              <div className="eo-workload-numbers grid grid-cols-[repeat(4,_minmax(0,_1fr))] [padding:20px_8px] max-[720px]:grid-cols-[1fr_1fr] max-[720px]:gap-y-6 [&_.eo-danger-stat_>_strong]:text-[var(--ep-danger)] [&_>_button]:flex [&_>_button]:flex-col [&_>_button]:items-start [&_>_button]:gap-2 [&_>_button]:border-0 [&_>_button]:[padding:0_24px] [&_>_button]:text-left [&_>_button]:text-[var(--ep-ink)] [&_>_button]:[background:none] [&_>_button]:[border-right:1px_solid_var(--ep-border)] max-[1251px]:[&_>_button]:[padding:0_18px] [&_>_button_>_span]:text-[13px] [&_>_button_>_span]:text-[var(--ep-muted)] [&_>_button_>_strong]:text-[32px] [&_>_button_>_strong]:[line-height:1.1] [&_>_button_>_strong]:font-[650] [&_>_button_>_strong]:[letter-spacing:-0.02em] max-[720px]:[&_>_button_>_strong]:text-[28px] [&_>_button:hover_small]:text-[var(--ep-accent-text)] [&_>_button:hover_small]:underline [&_>_button:hover_small]:underline-offset-[3px] [&_>_button:last-child]:[border-right:0] max-[720px]:[&_>_button:nth-child(2)]:[border-right:0] [&_>_button[aria-pressed=true]_small]:text-[var(--ep-accent-text)] [&_>_button[aria-pressed=true]_small]:underline [&_>_button[aria-pressed=true]_small]:underline-offset-[3px] [&_small]:inline-flex [&_small]:items-center [&_small]:gap-[5px] [&_small]:text-[11px] [&_small]:text-[var(--ep-muted)]">
                 {(
                   [
                     {
@@ -269,7 +275,7 @@ export default function ExpertDashboardPage() {
                 />
               ) : (
                 <>
-                  <dl className="eo-quality-rows [&_dt]:text-[var(--ep-muted)] [&_dd_small]:text-[var(--ep-muted)] m-0 [padding:0_24px] [&_>_div]:flex [&_>_div]:items-center [&_>_div]:justify-between [&_>_div]:gap-4 [&_>_div]:[padding:15px_0] [&_>_div]:[border-top:1px_solid_var(--ep-border)] [&_dd]:m-0 [&_dd]:text-[18px] [&_dd]:font-semibold [&_dd_small]:ml-[5px] [&_dd_small]:text-[11px] [&_dd_small]:font-normal [&_dt]:flex [&_dt]:items-center [&_dt]:gap-[9px] [&_dt]:text-[12px]">
+                  <dl className="eo-quality-rows m-0 [padding:0_24px] [&_>_div]:flex [&_>_div]:items-center [&_>_div]:justify-between [&_>_div]:gap-4 [&_>_div]:[padding:15px_0] [&_>_div]:[border-top:1px_solid_var(--ep-border)] [&_dd]:m-0 [&_dd]:text-[18px] [&_dd]:font-semibold [&_dd_small]:ml-[5px] [&_dd_small]:text-[11px] [&_dd_small]:font-normal [&_dd_small]:text-[var(--ep-muted)] [&_dt]:flex [&_dt]:items-center [&_dt]:gap-[9px] [&_dt]:text-[12px] [&_dt]:text-[var(--ep-muted)]">
                     <div>
                       <dt>
                         <CheckCircle2 size={16} aria-hidden="true" />
@@ -334,8 +340,3 @@ export default function ExpertDashboardPage() {
     </div>
   )
 }
-
-
-
-
-

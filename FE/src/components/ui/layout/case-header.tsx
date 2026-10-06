@@ -1,4 +1,4 @@
-import { StatusRail, type StatusRailProps } from './status-rail'
+import { StatusRail, type StatusRailProps } from '@/components/ui/navigation/status-rail'
 
 /* SHFT §9 · Header hồ sơ. Đã có rail thì KHÔNG thêm badge trạng thái. */
 export interface CaseHeaderProps {

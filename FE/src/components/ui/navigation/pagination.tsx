@@ -1,6 +1,6 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react'
-import { paginationPages } from '../../lib/pagination'
-import { CustomSelect } from './custom-select'
+import { paginationPages } from '@/lib/pagination'
+import { CustomSelect } from '@/components/ui/forms/custom-select'
 
 const pagerButton = 'inline-flex min-h-11 min-w-11 cursor-pointer items-center justify-center gap-1.5 rounded-lg border border-transparent bg-transparent px-2.5 py-2 text-[13px] text-[var(--pager-muted)] hover:enabled:bg-[var(--pager-hover)] hover:enabled:text-[var(--pager-ink)] disabled:cursor-not-allowed disabled:opacity-45 focus-visible:outline-2 focus-visible:outline-offset-[3px] focus-visible:outline-[var(--pager-ink)]'
 
