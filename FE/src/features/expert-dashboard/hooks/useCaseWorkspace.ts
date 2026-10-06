@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next'
+import type { ParseKeys } from 'i18next'
 import { useState } from 'react'
 import type { WorkItem } from '../types'
 
@@ -8,6 +10,7 @@ const documents = [
 ]
 
 export function useCaseWorkspace(item: WorkItem) {
+  const { t } = useTranslation('expert')
   const [status, setStatus] = useState(item.status)
   const [activeTask, setActiveTask] = useState(
     item.status === 'AWAITING_USER_INFORMATION'
@@ -21,7 +24,7 @@ export function useCaseWorkspace(item: WorkItem) {
   const [notes, setNotes] = useState<Record<number, string>>({})
   const [question, setQuestion] = useState('')
   const [signed, setSigned] = useState(false)
-  const [notice, setNotice] = useState('')
+  const [notice, setNotice] = useState<ParseKeys<'expert'> | null>(null)
   const [declining, setDeclining] = useState(false)
   const [declineReason, setDeclineReason] = useState('')
   const [closed, setClosed] = useState(false)
@@ -66,75 +69,57 @@ export function useCaseWorkspace(item: WorkItem) {
     )
     if (activeTask === 5) {
       setStatus('AWAITING_ACCEPTANCE')
-      setNotice(
-        'Demo delivery prepared. No document was sent to the client. Acceptance and settlement require the backend.'
-      )
+      setNotice('noticeDelivery')
     } else {
       setActiveTask(activeTask + 1)
-      setNotice('Step completed in this preview session only.')
+      setNotice('noticeStep')
     }
   }
 
   const toggleVerified = (name: string) => {
     setVerified((old) =>
-      old.includes(name)
-        ? old.filter((doc) => doc !== name)
-        : [...old, name]
+      old.includes(name) ? old.filter((doc) => doc !== name) : [...old, name]
     )
     invalidate(0)
   }
 
   const acceptRequest = () => {
     setAccepted(true)
-    setNotice(
-      'Request accepted in preview only. No payment request was sent.'
-    )
+    setNotice('noticeAccept')
   }
 
   const toggleDeclining = () => setDeclining(!declining)
 
   const confirmDecline = () => {
     setClosed(true)
-    setNotice(
-      'Request declined in preview only. The client was not notified.'
-    )
+    setNotice('noticeDecline')
   }
 
   const simulatePayment = () => {
     setAccepted(false)
     setStatus('PAYMENT_CONFIRMED')
-    setNotice(
-      'Demo payment confirmation simulated. No payment was collected.'
-    )
+    setNotice('noticePayment')
   }
 
   const startReview = () => {
     setStatus('IN_REVIEW')
-    setNotice(
-      'Review started in preview only. No live SLA was started.'
-    )
+    setNotice('noticeReview')
   }
 
   const submitClarification = () => {
     setRfi(question)
     invalidate(3)
     setStatus('AWAITING_USER_INFORMATION')
-    setNotice(
-      'Clarification prepared in preview only. No message was sent, no 72-hour deadline was created and no settlement was triggered.'
-    )
+    setNotice('noticeClarification')
   }
 
   const simulateClientResponse = () => {
     setStatus('IN_REVIEW')
-    setNotice(
-      'Client response simulated for UI review. The original fixture deadline remains unchanged.'
-    )
+    setNotice('noticeResponse')
   }
 
   const keepDraft = () => {
-    setNotice(
-      'Draft retained in this page session only. It is not saved to the server and resets when you leave.'
-    )
+    setNotice('noticeDraft')
   }
 
   return {
@@ -148,7 +133,7 @@ export function useCaseWorkspace(item: WorkItem) {
     setQuestion,
     signed,
     setSigned,
-    notice,
+    notice: notice ? t(notice) : '',
     declining,
     declineReason,
     setDeclineReason,

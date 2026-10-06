@@ -1,3 +1,5 @@
+import { useDraftPresentation } from '@/features/drafting/hooks/useDraftPresentation'
+import { useTranslation } from 'react-i18next'
 import { useSearchParams } from 'react-router-dom'
 import { FileText, ArrowUpRight, MessageSquare } from 'lucide-react'
 import {
@@ -13,6 +15,10 @@ import {
 import { isDraftMock } from '@/features/drafting/api/dataSource'
 
 export default function DraftTemplatePage() {
+  const display = useDraftPresentation()
+
+  const { t } = useTranslation('drafting')
+
   const query = useTemplates()
   const ctx = useDraftContext()
   const [params, setParams] = useSearchParams()
@@ -27,8 +33,10 @@ export default function DraftTemplatePage() {
   return (
     <>
       <DraftHeading
-        title="Choose a document template"
-        description="Start with a versioned template. Your confirmed input will be kept separate from the AI draft."
+        title={t('chooseADocumentTemplate')}
+        description={t(
+          'startWithAVersionedTemplateYourConfirmedInputWillBeKeptSeparateFromTheAiDraft'
+        )}
         step={0}
       />
       {isDraftMock && ctx.scenario === 'chat-suggestion' && (
@@ -36,17 +44,20 @@ export default function DraftTemplatePage() {
           <MessageSquare className="text-accent mt-1 shrink-0" size={20} />
           <div>
             <h2 className="text-h2">
-              A suggestion from your demo conversation
+              {t('aSuggestionFromYourDemoConversation')}
             </h2>
             <p className="text-fg-muted mt-2">
-              The expense explanation template matches the synthetic
-              conversation. Choosing it imports editable suggestions into
-              Working Input; nothing is confirmed automatically.
+              {t(
+                'theExpenseExplanationTemplateMatchesTheSyntheticConversationChoosingItImportsEditableSuggestionsIntoWorkingInputNothingIsConfirmedAutomatically'
+              )}
             </p>
           </div>
         </div>
       )}
-      <div className="mb-6 flex flex-wrap gap-2" aria-label="Template category">
+      <div
+        className="mb-6 flex flex-wrap gap-2"
+        aria-label={t('templateCategory')}
+      >
         {categories.map((value) => (
           <button
             key={value}
@@ -63,7 +74,7 @@ export default function DraftTemplatePage() {
         ))}
       </div>
       {query.isPending ? (
-        <DraftLoading message="Loading template versions…" />
+        <DraftLoading message={t('loadingTemplateVersions')} />
       ) : query.isError ? (
         <DraftError error={query.error} retry={() => void query.refetch()} />
       ) : (
@@ -80,7 +91,7 @@ export default function DraftTemplatePage() {
                 <div className="mb-5 flex items-center justify-between">
                   <FileText size={25} className="text-accent" />
                   <span className="text-caption text-fg-muted">
-                    v{template.version} · {template.category}
+                    v{template.version} · {display.category(template.category)}
                   </span>
                 </div>
                 <div className="mb-3">
@@ -90,8 +101,8 @@ export default function DraftTemplatePage() {
                     {template.status !== 'ACTIVE'
                       ? 'Unavailable'
                       : template.fields.length
-                        ? 'Available for drafting'
-                        : 'Reference only'}
+                        ? t('availableForDrafting')
+                        : t('referenceOnly')}
                   </span>
                 </div>
                 <h2 className="text-h2">{template.title}</h2>
@@ -100,22 +111,27 @@ export default function DraftTemplatePage() {
                 </p>
                 <p className="text-caption text-fg-muted mt-6">
                   {template.fields.length
-                    ? `${template.fields.length} input fields`
-                    : 'Input form not available'}{' '}
-                  · Updated {template.updatedAt.slice(0, 10)}
+                    ? t('schemaFieldsCount', {
+                        total: display.number(template.fields.length),
+                      })
+                    : t('inputFormNotAvailable')}{' '}
+                  {'·'}{' '}
+                  {t('updatedTime', {
+                    time: display.timestamp(template.updatedAt),
+                  })}
                 </p>
                 <div className="border-border mt-4 border-t pt-2">
                   <DraftLink
                     to={`/drafts/templates/${template.id}?category=${encodeURIComponent(category)}`}
                   >
                     {template.fields.length
-                      ? 'View template'
-                      : 'View reference'}{' '}
+                      ? t('viewTemplate')
+                      : t('viewReference')}{' '}
                     <ArrowUpRight size={16} />
                   </DraftLink>
                   {template.status !== 'ACTIVE' && (
                     <p className="text-caption text-danger">
-                      Inactive — unavailable for new workspaces
+                      {t('inactiveUnavailableForNewWorkspaces')}
                     </p>
                   )}
                 </div>
@@ -127,7 +143,7 @@ export default function DraftTemplatePage() {
         !query.data.filter(
           (template) => category === 'All' || template.category === category
         ).length && (
-          <p className="text-fg-muted py-8">No templates in this category.</p>
+          <p className="text-fg-muted py-8">{t('noTemplatesInThisCategory')}</p>
         )}
     </>
   )

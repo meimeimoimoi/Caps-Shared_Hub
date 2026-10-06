@@ -1,6 +1,8 @@
+import { DraftUiError } from '@/features/drafting/utils/DraftUiError'
+import { useDraftPresentation } from '@/features/drafting/hooks/useDraftPresentation'
+import { useTranslation } from 'react-i18next'
 import { useRef, useState } from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
-import { ApiError } from '@/lib/api-client'
 import { draftApi, draftCapabilities } from '@/features/drafting/api/draftApi'
 import {
   useDraftAction,
@@ -24,7 +26,7 @@ import { DocumentPreview } from '@/features/drafting/components/DocumentPreview'
 import { ReadinessPanel } from '@/features/drafting/components/ReadinessPanel'
 import { ExportDraftDialog } from '@/features/drafting/components/ExportDraftDialog'
 import { ReviewHandoffSummary } from '@/features/drafting/components/ReviewHandoffSummary'
-import { normalizeInput, timestamp } from '@/features/drafting/utils/validation'
+import { normalizeInput } from '@/features/drafting/utils/validation'
 import type {
   Citation,
   DraftVersion,
@@ -44,6 +46,10 @@ function Preview({
   snapshot: Snapshot
   template: TemplateVersion
 }) {
+  const display = useDraftPresentation()
+
+  const { t } = useTranslation('drafting')
+
   const [citation, setCitation] = useState<Citation | null>(null)
   const [showSnapshot, setShowSnapshot] = useState(false)
   const [params] = useSearchParams()
@@ -70,7 +76,12 @@ function Preview({
     <>
       <DraftHeading
         title={draft.title}
-        description={`Draft v${draft.version} · Snapshot v${snapshot.version} · Template v${template.version} · ${timestamp(draft.generatedAt)}`}
+        description={t('previewMetadata', {
+          draft: display.number(draft.version),
+          snapshot: display.number(snapshot.version),
+          template: display.number(template.version),
+          time: display.timestamp(draft.generatedAt),
+        })}
         step={4}
       >
         <ReadinessBadge assessment={draft.assessment} />
@@ -80,8 +91,9 @@ function Preview({
           role="status"
           className="rounded-control border-warning/30 bg-warning-soft text-warning mb-6 border p-4 text-sm"
         >
-          Working Input differs from the snapshot of this version. This draft
-          still shows its original confirmed input.
+          {t(
+            'workingInputDiffersFromTheSnapshotOfThisVersionThisDraftStillShowsItsOriginalConfirmedInput'
+          )}
         </p>
       )}
       <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
@@ -91,27 +103,32 @@ function Preview({
             <ReadinessPanel draft={draft} onCitation={openCitation} />
           </Paper>
           <Paper className="!p-5">
-            <h2 className="text-h2">Traceability & actions</h2>
+            <h2 className="text-h2">{t('traceabilityActions')}</h2>
             <dl className="mt-4 space-y-3 text-sm">
               <div>
-                <dt className="text-caption text-fg-muted">Template</dt>
+                <dt className="text-caption text-fg-muted">{t('template')}</dt>
                 <dd>
                   {template.title} · v{template.version}
                 </dd>
               </div>
               <div>
-                <dt className="text-caption text-fg-muted">Confirmed input</dt>
+                <dt className="text-caption text-fg-muted">
+                  {t('confirmedInput')}
+                </dt>
                 <dd>
                   <button
                     className="text-accent-text min-h-11 underline-offset-4 hover:underline"
                     onClick={() => setShowSnapshot(true)}
                   >
-                    Snapshot v{snapshot.version} · Immutable
+                    {t('snapshotVersion', {
+                      version: display.number(snapshot.version),
+                    })}{' '}
+                    {'·'} {t('immutable')}
                   </button>
                 </dd>
               </div>
             </dl>
-            <h3 className="mt-4 text-sm font-semibold">Sources</h3>
+            <h3 className="mt-4 text-sm font-semibold">{t('sources')}</h3>
             {draft.citations.length ? (
               <ol className="mt-2 space-y-2">
                 {draft.citations.map((source, index) => (
@@ -124,7 +141,7 @@ function Preview({
                       {source.sourceTitle}
                       <span className="text-caption text-fg-muted mt-1 block">
                         {source.sourceVersion}
-                        {source.synthetic ? ' · Synthetic' : ''}
+                        {source.synthetic ? ' · ' + t('synthetic') : ''}
                       </span>
                     </button>
                   </li>
@@ -132,7 +149,7 @@ function Preview({
               </ol>
             ) : (
               <p className="text-danger mt-2 text-sm">
-                No grounded source references are available.
+                {t('noGroundedSourceReferencesAreAvailable')}
               </p>
             )}
             <div className="border-border mt-5 space-y-3 border-t pt-5">
@@ -141,17 +158,18 @@ function Preview({
                 disabled={!assessed || !draft.actions.review.allowed}
                 onClick={() => setShowReview(true)}
               >
-                Request expert review
+                {t('requestExpertReview')}
               </DraftButton>
               {!draft.actions.review.allowed && (
                 <p className="text-caption text-fg-muted">
-                  {draft.actions.review.reason}
+                  {display.demoCopy(draft.actions.review.reason)}
                 </p>
               )}
               {!draftCapabilities.review && (
                 <p className="text-caption text-fg-muted">
-                  Review submission is not connected. You can inspect the
-                  handoff summary.
+                  {t(
+                    'reviewSubmissionIsNotConnectedYouCanInspectTheHandoffSummary'
+                  )}
                 </p>
               )}
               <DraftButton
@@ -160,22 +178,22 @@ function Preview({
                 disabled={!assessed || !draft.actions.export.allowed}
                 onClick={() => setShowExport(true)}
               >
-                Export draft
+                {t('exportDraft')}
               </DraftButton>
               {!draft.actions.export.allowed && (
                 <p className="text-caption text-fg-muted">
-                  {draft.actions.export.reason}
+                  {display.demoCopy(draft.actions.export.reason)}
                 </p>
               )}
               {!draftCapabilities.export && (
                 <p className="text-caption text-fg-muted">
-                  Export formats and charging policy are not connected.
+                  {t('exportFormatsAndChargingPolicyAreNotConnected')}
                 </p>
               )}
               <DraftLink
                 to={`/drafts/${workspace.id}/input?fromVersion=${draft.id}`}
               >
-                Revise input
+                {t('reviseInput')}
               </DraftLink>
               <DraftButton
                 secondary
@@ -193,8 +211,8 @@ function Preview({
                 }
               >
                 {regenerate.isPending
-                  ? 'Starting generation…'
-                  : 'Regenerate from this snapshot'}
+                  ? t('startingGeneration')
+                  : t('regenerateFromThisSnapshot')}
               </DraftButton>
               {!draft.actions.regenerate.allowed && (
                 <p className="text-caption text-fg-muted">
@@ -202,13 +220,12 @@ function Preview({
                 </p>
               )}
               <p className="text-caption text-fg-muted">
-                Regeneration creates a new draft version using the same
-                snapshot.
+                {t('regenerationCreatesANewDraftVersionUsingTheSameSnapshot')}
               </p>
               <DraftLink
                 to={`/drafts/${workspace.id}/history?selected=${draft.id}`}
               >
-                View version history
+                {t('viewVersionHistory')}
               </DraftLink>
               {regenerate.isError && <DraftError error={regenerate.error} />}
             </div>
@@ -243,6 +260,8 @@ function Preview({
   )
 }
 export default function DraftPreviewPage() {
+  const { t } = useTranslation('drafting')
+
   const { workspaceId, draftVersionId } = useParams()
   const query = useDraftVersion(draftVersionId)
   const workspace = useWorkspace(workspaceId)
@@ -253,7 +272,7 @@ export default function DraftPreviewPage() {
     (query.data && template.isPending)
   )
     return (
-      <DraftLoading message="Loading this draft version and its references…" />
+      <DraftLoading message={t('loadingThisDraftVersionAndItsReferences')} />
     )
   if (query.isError || workspace.isError || template.isError)
     return (
@@ -280,8 +299,8 @@ export default function DraftPreviewPage() {
     return (
       <DraftError
         error={
-          new ApiError(
-            'This version or its exact references are unavailable. No substitute version has been opened.',
+          new DraftUiError(
+            'thisVersionOrItsExactReferencesAreUnavailableNoSubstituteVersionHasBeenOpened',
             404
           )
         }

@@ -10,12 +10,13 @@ interface TablePagerProps {
 /** Compatibility adapter for existing Admin tables. */
 export function TablePager({ paged, onPrev, onNext }: TablePagerProps) {
   const page = paged.pageIndex + 1
-  return <Pagination
-    page={page}
-    pageSize={paged.pageSize}
-    total={paged.total}
-    locale="vi"
-    showPages={false}
-    onPageChange={(next) => next < page ? onPrev() : onNext()}
-  />
+  return (
+    <Pagination
+      page={page}
+      pageSize={paged.pageSize}
+      total={paged.total}
+      showPages={false}
+      onPageChange={(next) => (next < page ? onPrev() : onNext())}
+    />
+  )
 }

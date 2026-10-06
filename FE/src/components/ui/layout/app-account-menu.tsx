@@ -1,6 +1,7 @@
 import { useEffect, useRef, type ReactNode } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { ChevronDown, LogOut } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 
 interface AccountLink {
   label: string
@@ -23,6 +24,7 @@ export function AppAccountMenu({
   links = [],
   onSignOut,
 }: AppAccountMenuProps) {
+  const { t } = useTranslation('common')
   const account = useRef<HTMLDetailsElement>(null)
   const location = useLocation()
   const close = () => {
@@ -65,7 +67,7 @@ export function AppAccountMenu({
       }}
     >
       <summary
-        aria-label={`Account menu for ${name}`}
+        aria-label={t('account.menu', { name })}
         className={`text-text-strong hover:bg-surface-muted flex min-h-11 cursor-pointer list-none items-center gap-2.5 rounded-lg px-2 py-1 text-[13px] transition-colors [&::-webkit-details-marker]:hidden`}
       >
         <span
@@ -107,7 +109,7 @@ export function AppAccountMenu({
         </div>
         {links.length > 0 && (
           <nav
-            aria-label="Account navigation"
+            aria-label={t('account.navigation')}
             className={`border-border border-t pt-2`}
           >
             {links.map((link) => (
@@ -135,7 +137,7 @@ export function AppAccountMenu({
               className={`text-danger hover:bg-danger-soft flex min-h-11 w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-semibold`}
             >
               <LogOut size={17} aria-hidden="true" />
-              Sign out
+              {t('actions.signOut')}
             </button>
           </div>
         )}

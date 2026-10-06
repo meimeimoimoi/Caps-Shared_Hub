@@ -1,10 +1,13 @@
+import { useDraftPresentation } from '@/features/drafting/hooks/useDraftPresentation'
+import { useTranslation } from 'react-i18next'
+import { useEffect } from 'react'
 import type { ButtonHTMLAttributes, ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { Button } from '@/components/ui/actions/button'
 import { StatusRail } from '@/components/ui/navigation/status-rail'
 import { ApiError } from '@/lib/api-client'
 import { useDraftHref } from '../hooks/useDrafting'
-import { draftSteps } from '../constants'
+
 import type { Assessment } from '../types'
 
 export function DraftButton({
@@ -52,6 +55,11 @@ export function DraftHeading({
   step?: number
   children?: ReactNode
 }) {
+  useEffect(() => {
+    document.title = `${title} | Shared Hub`
+  }, [title])
+  const { t } = useTranslation('drafting')
+
   return (
     <header className="mb-8 space-y-5">
       <div className="flex flex-wrap items-start justify-between gap-4">
@@ -66,14 +74,30 @@ export function DraftHeading({
       {step !== undefined && (
         <div className="border-border max-w-3xl border-t pt-5">
           <StatusRail
-            steps={draftSteps}
+            steps={[
+              'stepTemplate',
+              'stepInput',
+              'stepConfirm',
+              'stepGenerate',
+              'stepPreview',
+            ].map((key) =>
+              t(
+                key as
+                  | 'stepTemplate'
+                  | 'stepInput'
+                  | 'stepConfirm'
+                  | 'stepGenerate'
+                  | 'stepPreview'
+              )
+            )}
             current={step}
             size="sm"
-            label="Draft workflow progress"
+            label={t('draftWorkflowProgress')}
           />
           <p className="text-caption text-fg-muted mt-3">
-            A snapshot is a confirmed version of your input, kept separate from
-            the AI draft.
+            {t(
+              'aSnapshotIsAConfirmedVersionOfYourInputKeptSeparateFromTheAiDraft'
+            )}
           </p>
         </div>
       )}
@@ -95,14 +119,12 @@ export function Paper({
     </section>
   )
 }
-export function DraftLoading({
-  message = 'Loading workspace…',
-}: {
-  message?: string
-}) {
+export function DraftLoading({ message }: { message?: string }) {
+  const { t } = useTranslation('drafting')
+
   return (
     <div role="status" className="min-h-48 space-y-6">
-      <p className="text-fg-muted">{message}</p>
+      <p className="text-fg-muted">{message ?? t('loadingWorkspace')}</p>
       <div
         aria-hidden="true"
         className="bg-border h-5 w-2/3 rounded motion-safe:animate-pulse"
@@ -121,6 +143,10 @@ export function DraftError({
   error: Error | null
   retry?: () => void
 }) {
+  const display = useDraftPresentation()
+
+  const { t } = useTranslation('drafting')
+
   const status = error instanceof ApiError ? error.status : undefined
   return (
     <div
@@ -129,28 +155,28 @@ export function DraftError({
     >
       <h2 className="text-h2 !text-danger">
         {status === 403
-          ? 'Access denied'
+          ? t('accessDenied')
           : status === 404
-            ? 'Version or workspace unavailable'
+            ? t('versionOrWorkspaceUnavailable')
             : status === 401
-              ? 'Session expired'
-              : 'Unable to complete this action'}
+              ? t('sessionExpired')
+              : t('unableToCompleteThisAction')}
       </h2>
-      <p>
-        {error?.message ?? 'The service returned no data. Please try again.'}
-      </p>
+      <p>{display.error(error)}</p>
       <div className="flex flex-wrap gap-3">
         {retry && (
           <DraftButton secondary onClick={retry}>
-            Retry
+            {t('retry')}
           </DraftButton>
         )}
-        {status === 401 && <DraftLink to="/login">Sign in</DraftLink>}
+        {status === 401 && <DraftLink to="/login">{t('signIn')}</DraftLink>}
       </div>
     </div>
   )
 }
 export function ReadinessBadge({ assessment }: { assessment: Assessment }) {
+  const display = useDraftPresentation()
+
   const result =
     assessment.status === 'COMPLETED' ? assessment.result : assessment.status
   const tone =
@@ -163,7 +189,7 @@ export function ReadinessBadge({ assessment }: { assessment: Assessment }) {
     <span
       className={`rounded-control text-caption inline-flex px-2.5 py-1 font-semibold ${tone}`}
     >
-      {result?.replaceAll('_', ' ') ?? 'Not assessed'}
+      {display.readiness(result)}
     </span>
   )
 }

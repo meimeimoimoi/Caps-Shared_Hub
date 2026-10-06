@@ -1,5 +1,6 @@
 import { useEffect, useId, useRef, type ReactNode } from 'react'
 import { X } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 
 interface ModalProps {
   title: ReactNode
@@ -23,8 +24,9 @@ export function Modal({
   onClose,
   onSubmit,
   preventClose = false,
-  closeLabel = 'Đóng',
+  closeLabel,
 }: ModalProps) {
+  const { t } = useTranslation('common')
   const ref = useRef<HTMLDialogElement>(null)
   const titleId = useId()
 
@@ -49,7 +51,7 @@ export function Modal({
           <button
             type="button"
             onClick={onClose}
-            aria-label={closeLabel}
+            aria-label={closeLabel ?? t('actions.close')}
             disabled={preventClose}
             className="btn btn-ghost -mt-1 -mr-2 px-2"
           >

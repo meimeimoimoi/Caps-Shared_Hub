@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { Modal } from '@/components/ui/feedback/modal'
 import { DraftButton } from './DraftUi'
 import type { Citation } from '../types'
@@ -9,35 +10,37 @@ export function CitationDetails({
   citation: Citation
   onClose: () => void
 }) {
+  const { t } = useTranslation('drafting')
+
   const link = safeSourceUrl(citation.url)
   return (
     <Modal
-      title="Source details"
-      closeLabel="Close source details"
+      title={t('sourceDetails')}
+      closeLabel={t('closeSourceDetails')}
       onClose={onClose}
       footer={
         <DraftButton secondary onClick={onClose}>
-          Close
+          {t('close')}
         </DraftButton>
       }
     >
       <h3 className="mt-5 font-semibold">{citation.sourceTitle}</h3>
       {citation.synthetic && (
         <p className="rounded-control bg-warning-soft text-warning mt-3 p-3 text-sm">
-          Synthetic demonstration source. This is not verified legal knowledge.
+          {t('syntheticDemonstrationSourceThisIsNotVerifiedLegalKnowledge')}
         </p>
       )}
       <dl className="mt-5 space-y-3 text-sm">
         <div>
-          <dt className="font-semibold">Source version</dt>
+          <dt className="font-semibold">{t('sourceVersion')}</dt>
           <dd>{citation.sourceVersion}</dd>
         </div>
         <div>
-          <dt className="font-semibold">Knowledge version</dt>
+          <dt className="font-semibold">{t('knowledgeVersion')}</dt>
           <dd>{citation.knowledgeVersion}</dd>
         </div>
         <div>
-          <dt className="font-semibold">Applicability</dt>
+          <dt className="font-semibold">{t('applicability')}</dt>
           <dd>{citation.applicability}</dd>
         </div>
       </dl>
@@ -53,7 +56,7 @@ export function CitationDetails({
               target="_blank"
               rel="noopener noreferrer"
             >
-              Open source
+              {t('openSource')}
             </a>
           )}
         </>
@@ -62,8 +65,9 @@ export function CitationDetails({
           role="alert"
           className="rounded-control bg-danger-soft text-danger mt-5 p-4 text-sm"
         >
-          This source is unavailable or access is restricted. Its contents
-          cannot currently be verified.
+          {t(
+            'thisSourceIsUnavailableOrAccessIsRestrictedItsContentsCannotCurrentlyBeVerified'
+          )}
         </p>
       )}
     </Modal>

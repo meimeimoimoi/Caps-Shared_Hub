@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { formControlClassName as inputCls } from '@/components/ui/forms/form-control'
 import {
   Briefcase,
@@ -9,6 +10,7 @@ import {
 import type { Profile } from '../../types'
 import { FormField } from '@/components/ui/forms/form-field'
 import { FileUploader } from '../FileUploader'
+import { expertiseOptions, expertiseKey } from '../../constants'
 
 export interface ProfessionalExperienceProps {
   profile: Profile
@@ -21,8 +23,6 @@ export interface ProfessionalExperienceProps {
   onRemoveCvFile: (index: number) => void
 }
 
-
-
 export function ProfessionalExperience({
   profile,
   fields,
@@ -33,21 +33,16 @@ export function ProfessionalExperience({
   onCvFilesSelected,
   onRemoveCvFile,
 }: ProfessionalExperienceProps) {
-  const EXPERTISE_OPTIONS = [
-    'Corporate income tax',
-    'Tax finalization',
-    'Corporate accounting',
-    'Financial reporting',
-    'Audit',
-    'Tax advisory',
-  ]
+  const { t } = useTranslation('expertRegistration')
+
+  const EXPERTISE_OPTIONS = expertiseOptions
 
   const issues = Object.entries(formErrors).filter(([, message]) => !!message)
   const labels: Record<string, string> = {
-    years: 'Years of experience',
-    highlights: 'Experience highlights',
-    expertise: 'Areas of expertise',
-    CV: 'Curriculum vitae',
+    years: t('experience.years'),
+    highlights: t('experience.highlights'),
+    expertise: t('experience.expertise'),
+    CV: t('experience.cv'),
   }
   function focusField(key: string) {
     const container = document.getElementById(`validation-${key}`)
@@ -67,26 +62,22 @@ export function ProfessionalExperience({
 
   return (
     <div className="expert-pro-experience">
-      <p className="expert-pro-subtitle">
-        Help reviewers understand your tax and accounting experience.
-      </p>
+      <p className="expert-pro-subtitle">{t('experience.guidance')}</p>
 
       {/* ── Section: Experience overview ── */}
       {issues.length > 0 && (
         <div
           className="expert-validation-summary"
-          aria-label="Information to complete"
+          aria-label={t('experience.issues')}
         >
           <CircleAlert size={21} aria-hidden="true" />
           <div>
             <h3>
               {issues.length === 1
-                ? 'One detail to complete'
+                ? t('experience.issue')
                 : `${issues.length} details to complete`}
             </h3>
-            <p>
-              Your information is still here. Update the following to continue.
-            </p>
+            <p>{t('experience.fix')}</p>
             <ul>
               {issues.map(([key, message]) => (
                 <li key={key}>
@@ -106,13 +97,15 @@ export function ProfessionalExperience({
           <span className="expert-pro-section-icon">
             <Briefcase size={18} aria-hidden="true" />
           </span>
-          <h3 className="expert-pro-section-title">Experience overview</h3>
+          <h3 className="expert-pro-section-title">
+            {t('experience.overview')}
+          </h3>
           <span className="expert-pro-section-line" aria-hidden="true" />
         </div>
 
         <div className="expert-pro-experience-grid">
           <FormField
-            label="Years of tax and accounting experience *"
+            label={t('experience.taxYears')}
             error={formErrors.years}
             errorId="error-years"
           >
@@ -131,7 +124,7 @@ export function ProfessionalExperience({
             />
           </FormField>
           <FormField
-            label="Experience highlights"
+            label={t('experience.highlights')}
             error={formErrors.highlights}
             errorId="error-highlights"
           >
@@ -143,7 +136,7 @@ export function ProfessionalExperience({
               aria-describedby={
                 formErrors.highlights ? 'error-highlights' : undefined
               }
-              placeholder="Describe relevant responsibilities and experience."
+              placeholder={t('experience.placeholder')}
               rows={4}
               className={`${inputCls} min-h-[110px] resize-y ${formErrors.highlights ? '!border-ex-error-text focus:shadow-[0_0_0_3px_#d9302533]' : ''}`}
             />
@@ -153,11 +146,7 @@ export function ProfessionalExperience({
         {profile.years !== '' && Number(profile.years) < 5 && (
           <div className="expert-pro-notice expert-pro-notice--warn">
             <span className="expert-pro-notice-icon">⚠</span>
-            <p>
-              The current eligibility policy requires at least 5 years. You can
-              prepare this demo draft; an authorized reviewer makes the
-              eligibility decision.
-            </p>
+            <p>{t('experience.minimum')}</p>
           </div>
         )}
       </div>
@@ -168,8 +157,12 @@ export function ProfessionalExperience({
           <span className="expert-pro-section-icon expert-pro-section-icon--expertise">
             <Award size={18} aria-hidden="true" />
           </span>
-          <h3 className="expert-pro-section-title">Areas of expertise</h3>
-          <span className="expert-pro-required-badge">Required</span>
+          <h3 className="expert-pro-section-title">
+            {t('experience.expertise')}
+          </h3>
+          <span className="expert-pro-required-badge">
+            {t('experience.required')}
+          </span>
           <span className="expert-pro-section-line" aria-hidden="true" />
         </div>
 
@@ -181,7 +174,9 @@ export function ProfessionalExperience({
             formErrors.expertise ? 'error-expertise' : undefined
           }
         >
-          <legend className="sr-only">Areas of expertise *</legend>
+          <legend className="sr-only">
+            {t('experience.expertiseRequired')}
+          </legend>
           <div className="expert-pro-chip-grid">
             {EXPERTISE_OPTIONS.map((f) => (
               <label
@@ -205,7 +200,7 @@ export function ProfessionalExperience({
                   onChange={() => onToggleField(f)}
                   className="sr-only"
                 />
-                <span className="expert-pro-chip-text">{f}</span>
+                <span className="expert-pro-chip-text">{t(expertiseKey(f)!)}</span>
               </label>
             ))}
           </div>
@@ -221,8 +216,7 @@ export function ProfessionalExperience({
           )}
           <p className="expert-pro-chip-hint">
             <Sparkles size={13} aria-hidden="true" />
-            These describe your background. They do not grant approval to offer
-            a service.
+            {t('experience.expertiseNote')}
           </p>
         </fieldset>
       </div>
@@ -233,8 +227,10 @@ export function ProfessionalExperience({
           <span className="expert-pro-section-icon expert-pro-section-icon--cv">
             <FileIcon size={18} aria-hidden="true" />
           </span>
-          <h3 className="expert-pro-section-title">Curriculum vitae</h3>
-          <span className="expert-pro-required-badge">Required</span>
+          <h3 className="expert-pro-section-title">{t('experience.cv')}</h3>
+          <span className="expert-pro-required-badge">
+            {t('experience.required')}
+          </span>
           <span className="expert-pro-section-line" aria-hidden="true" />
         </div>
         <FileUploader

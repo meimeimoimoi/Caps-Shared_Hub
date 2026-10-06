@@ -6,7 +6,11 @@ import {
   Briefcase,
   CreditCard,
 } from 'lucide-react'
-import { AppSidebar, type SidebarGroup } from '@/components/ui/layout/app-sidebar'
+import {
+  AppSidebar,
+  type SidebarGroup,
+} from '@/components/ui/layout/app-sidebar'
+import { useTranslation } from 'react-i18next'
 
 export function ExpertSidebar({
   close,
@@ -17,6 +21,7 @@ export function ExpertSidebar({
   toggleCollapse?: () => void
   isCollapsed?: boolean
 }) {
+  const { t } = useTranslation('navigation')
   const { pathname } = useLocation()
   const item = (
     to: string,
@@ -33,24 +38,24 @@ export function ExpertSidebar({
     {
       id: 'workspace',
       items: [
-        item('/expert/overview', 'Overview', <LayoutDashboard size={18} />),
-        item('/expert/queue', 'Work Queue', <Inbox size={18} />),
-        item('/expert/active', 'Active Cases', <FileStack size={18} />),
+        item('/expert/overview', t('overview'), <LayoutDashboard size={18} />),
+        item('/expert/queue', t('workQueue'), <Inbox size={18} />),
+        item('/expert/active', t('activeCases'), <FileStack size={18} />),
       ],
     },
     {
       id: 'business',
-      label: 'Business',
+      label: t('business'),
       items: [
-        item('/expert/services', 'My Services', <Briefcase size={18} />),
-        item('/expert/income', 'Income', <CreditCard size={18} />),
+        item('/expert/services', t('myServices'), <Briefcase size={18} />),
+        item('/expert/income', t('income'), <CreditCard size={18} />),
       ],
     },
   ]
   return (
     <AppSidebar
       groups={groups}
-      navigationLabel="Expert Portal"
+      navigationLabel={t('expertPortal')}
       collapsed={isCollapsed}
       onToggleCollapse={toggleCollapse}
       onNavigate={close}

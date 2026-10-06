@@ -1,3 +1,5 @@
+import { useExpertPresentation } from '@/features/expert-dashboard/hooks/useExpertPresentation'
+import { useTranslation } from 'react-i18next'
 import { ExpertPanel, ExpertPanelHeader } from './ExpertPanel'
 import { useState } from 'react'
 import {
@@ -9,10 +11,7 @@ import {
   AlertTriangle,
 } from 'lucide-react'
 import type { DashboardDto } from '../types'
-import {
-  formatRelativeTime,
-  formatDeadline,
-} from '../utils/toDashboardViewModel'
+
 import { DashboardSectionState } from './DashboardSectionState'
 
 export function OverviewActivity({
@@ -22,6 +21,10 @@ export function OverviewActivity({
   activity: DashboardDto['activity']
   timezone: string
 }) {
+  const display = useExpertPresentation()
+
+  const { t } = useTranslation('expert')
+
   const [expanded, setExpanded] = useState(false)
   return (
     <ExpertPanel
@@ -30,8 +33,8 @@ export function OverviewActivity({
     >
       <ExpertPanelHeader>
         <div>
-          <h2 id="activity-heading">Recent activity</h2>
-          <p>Your latest case and service updates.</p>
+          <h2 id="activity-heading">{t('recentActivity')}</h2>
+          <p>{t('yourLatestCaseAndServiceUpdates')}</p>
         </div>
         {activity.status === 'available' && activity.data.events.length > 4 && (
           <button
@@ -39,19 +42,19 @@ export function OverviewActivity({
             aria-expanded={expanded}
             onClick={() => setExpanded(!expanded)}
           >
-            {expanded ? 'Show less' : 'Show all'}
+            {expanded ? t('showLess') : t('showAll')}
           </button>
         )}
       </ExpertPanelHeader>
       {activity.status !== 'available' ? (
         <DashboardSectionState
-          title="Activity unavailable"
+          title={t('activityUnavailable')}
           message={activity.message}
         />
       ) : activity.data.events.length === 0 ? (
         <div className="eo-empty [padding:40px_24px] text-center text-[var(--ep-muted)] [&_h3]:mt-[10px] [&_p]:mt-[7px] [&_p]:text-[12px]">
-          <h3>No recent activity</h3>
-          <p>Updates will appear as your cases progress.</p>
+          <h3>{t('noRecentActivity')}</h3>
+          <p>{t('updatesWillAppearAsYourCasesProgress')}</p>
         </div>
       ) : (
         <ol>
@@ -82,13 +85,13 @@ export function OverviewActivity({
                       {event.actor} ·{' '}
                       <time
                         dateTime={event.timestamp}
-                        title={`${formatDeadline(event.timestamp, timezone)} · ${timezone}`}
+                        title={`${display.deadline(event.timestamp, timezone)} · ${timezone}`}
                       >
-                        {formatRelativeTime(event.timestamp)}
+                        {display.relativeTime(event.timestamp)}
                       </time>
                     </small>
                     <details>
-                      <summary>View update</summary>
+                      <summary>{t('viewUpdate')}</summary>
                       <p>{event.description}</p>
                     </details>
                   </div>

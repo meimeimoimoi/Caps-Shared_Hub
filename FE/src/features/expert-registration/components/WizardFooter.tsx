@@ -1,4 +1,11 @@
-import { ArrowLeft, ArrowRight, Save, Loader2, CheckCircle2 } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
+import {
+  ArrowLeft,
+  ArrowRight,
+  Save,
+  Loader2,
+  CheckCircle2,
+} from 'lucide-react'
 
 export interface WizardFooterProps {
   step: number
@@ -15,6 +22,8 @@ export function WizardFooter({
   onSaveDraft,
   onBack,
 }: WizardFooterProps) {
+  const { t } = useTranslation('expertRegistration')
+
   return (
     <footer className="expert-wizard-actions expert-wizard-footer">
       <div className="expert-footer-left">
@@ -25,7 +34,7 @@ export function WizardFooter({
           disabled={submitting}
         >
           {draftSaved ? <CheckCircle2 size={15} /> : <Save size={15} />}
-          {draftSaved ? 'Saved' : 'Save draft'}
+          {draftSaved ? t('actions.saved') : t('actions.save')}
         </button>
       </div>
       <div className="expert-footer-right">
@@ -37,7 +46,7 @@ export function WizardFooter({
             disabled={submitting}
           >
             <ArrowLeft size={16} />
-            Back
+            {t('actions.back')}
           </button>
         )}
         <button
@@ -45,12 +54,18 @@ export function WizardFooter({
           disabled={submitting}
           aria-busy={step === 3 && submitting}
         >
-          {step === 3 && submitting && <Loader2 size={16} className="animate-spin motion-reduce:animate-none" aria-hidden="true" />}
+          {step === 3 && submitting && (
+            <Loader2
+              size={16}
+              className="animate-spin motion-reduce:animate-none"
+              aria-hidden="true"
+            />
+          )}
           {step === 3 && submitting
-            ? 'Submitting…'
+            ? t('actions.submitting')
             : step === 3
-              ? 'Submit demo application'
-              : 'Continue'}
+              ? t('actions.submit')
+              : t('actions.continue')}
           {!(step === 3 && submitting) && <ArrowRight size={16} />}
         </button>
       </div>

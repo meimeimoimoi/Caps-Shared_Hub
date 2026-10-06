@@ -1,17 +1,20 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import type { Stage } from '../types'
+import { useTranslation } from 'react-i18next'
+import type { RegistrationMessage } from '../types/messages'
 
 export function useApplicationLifecycle() {
+  const { t } = useTranslation('expertRegistration')
   const [account, setAccount] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const [stage, setStage] = useState<Stage>('screening')
   const [history, setHistory] = useState<string[]>([])
-  
+
   const [supplement, setSupplement] = useState(false)
   const [supplementFile, setSupplementFile] = useState<File | null>(null)
   const [explanation, setExplanation] = useState('')
-  
-  const [error, setError] = useState('')
+
+  const [error, setError] = useState<RegistrationMessage | null>(null)
   const [notice, setNotice] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const errorRef = useRef<HTMLParagraphElement>(null)
@@ -45,7 +48,7 @@ export function useApplicationLifecycle() {
     e.preventDefault()
     if (submitting) return
     if (!supplementFile && !explanation.trim()) {
-      setError('Add a document or an explanation.')
+      setError({ key: 'validation.supplement' })
       return
     }
     setSubmitting(true)
@@ -59,7 +62,7 @@ export function useApplicationLifecycle() {
       setNotice('')
       setSupplementFile(null)
       setExplanation('')
-      setError('')
+      setError(null)
       setSubmitting(false)
     }, 600)
   }
@@ -68,7 +71,7 @@ export function useApplicationLifecycle() {
     setStage(s)
     setSupplement(false)
     setNotice('')
-    setError('')
+    setError(null)
   }
 
   function requestSupplement() {
@@ -93,7 +96,7 @@ export function useApplicationLifecycle() {
     setSupplementFile,
     explanation,
     setExplanation,
-    error,
+    error: error ? t(error.key, error.params) : '',
     setError,
     notice,
     submitting,

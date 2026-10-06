@@ -1,3 +1,6 @@
+import { DraftUiError } from '@/features/drafting/utils/DraftUiError'
+import { useDraftPresentation } from '@/features/drafting/hooks/useDraftPresentation'
+import { useTranslation } from 'react-i18next'
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { Modal } from '@/components/ui/feedback/modal'
@@ -23,7 +26,7 @@ import {
   DraftError,
   Paper,
 } from '@/features/drafting/components/DraftUi'
-import { timestamp } from '@/features/drafting/utils/validation'
+
 import type {
   Snapshot,
   TemplateVersion,
@@ -41,6 +44,10 @@ function InputEditor({
   source?: Snapshot
   fromVersion?: string
 }) {
+  const display = useDraftPresentation()
+
+  const { t } = useTranslation('drafting')
+
   const editor = useDraftInput(workspace, template, source)
   const [selected, setSelected] = useState<Snapshot | null>(null)
   const href = useDraftHref()
@@ -62,8 +69,12 @@ function InputEditor({
         title={workspace.title}
         description={
           source
-            ? `Revising Snapshot v${source.version}. Confirming these changes will create a new snapshot; previous drafts stay unchanged.`
-            : 'Enter the facts and amounts for this document. Only confirmed input can be used to create a draft.'
+            ? t('revisionDescription', {
+                version: display.number(source.version),
+              })
+            : t(
+                'enterTheFactsAndAmountsForThisDocumentOnlyConfirmedInputCanBeUsedToCreateADraft'
+              )
         }
         step={editor.dialog ? 2 : 1}
       >
@@ -74,20 +85,22 @@ function InputEditor({
               : '/drafts'
           }
         >
-          {source ? 'Cancel revision' : 'All workspaces'}
+          {source ? t('cancelRevision') : t('allWorkspaces')}
         </DraftLink>
       </DraftHeading>
       <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_300px]">
         <Paper>
           <div className="mb-6 flex flex-wrap items-center justify-between gap-3 text-sm">
             <p className="text-fg-muted">
-              Template v{template.version} · Working input revision{' '}
-              {editor.revision}
+              {t('inputRevision', {
+                template: display.number(template.version),
+                revision: display.number(editor.revision),
+              })}
             </p>
             <span className="rounded-control bg-sunken px-3 py-1">
               {editor.dirty
-                ? 'Unsaved changes'
-                : 'Working input · Not confirmed'}
+                ? t('unsavedChanges')
+                : t('workingInputNotConfirmed')}
             </span>
           </div>
           {isDraftMock && template.schemaNote && (
@@ -101,7 +114,7 @@ function InputEditor({
               className="rounded-control border-danger/30 bg-danger-soft text-danger mb-6 border p-4"
             >
               <p className="font-semibold">
-                Check the following fields before confirmation.
+                {t('checkTheFollowingFieldsBeforeConfirmation')}
               </p>
               <ul className="mt-2 space-y-1">
                 {Object.entries(editor.errors).map(([field, message]) => (
@@ -138,8 +151,8 @@ function InputEditor({
             <div className="border-border mt-8 flex flex-wrap items-center justify-between gap-4 border-t pt-5">
               <p role="status" className="text-caption text-fg-muted">
                 {editor.savedAt
-                  ? `${isDraftMock ? 'Saved in demo memory' : 'Saved'} · ${timestamp(editor.savedAt)}`
-                  : 'Not saved yet'}
+                  ? `${isDraftMock ? t('savedInDemoMemory') : t('saved')} · ${display.timestamp(editor.savedAt)}`
+                  : t('notSavedYet')}
               </p>
               <div className="flex flex-wrap gap-3">
                 <DraftButton
@@ -147,10 +160,10 @@ function InputEditor({
                   disabled={editor.busy || !editor.dirty}
                   onClick={() => void editor.saveInput()}
                 >
-                  {editor.save.isPending ? 'Saving…' : 'Save input'}
+                  {editor.save.isPending ? t('saving') : t('saveInput')}
                 </DraftButton>
                 <DraftButton type="submit" disabled={editor.busy}>
-                  Review & confirm
+                  {t('reviewConfirm')}
                 </DraftButton>
               </div>
             </div>
@@ -163,15 +176,16 @@ function InputEditor({
           {conflict && (
             <div className="mt-4 space-y-3">
               <p className="text-fg-muted text-sm">
-                Your local values have been kept. Load the saved revision to
-                compare before choosing to save them.
+                {t(
+                  'yourLocalValuesHaveBeenKeptLoadTheSavedRevisionToCompareBeforeChoosingToSaveThem'
+                )}
               </p>
               <DraftButton
                 secondary
                 disabled={editor.busy}
                 onClick={() => void editor.compareSaved()}
               >
-                Compare with saved revision
+                {t('compareWithSavedRevision')}
               </DraftButton>
             </div>
           )}
@@ -179,24 +193,26 @@ function InputEditor({
           {editor.remote && (
             <div className="border-border mt-5 border-t pt-5">
               <h2 className="text-h2">
-                Saved revision {editor.remote.revision}
+                {t('savedRevision')}
+                {editor.remote.revision}
               </h2>
               <InputSummary
                 input={editor.remote.input}
                 fields={template.fields}
               />
               <DraftButton secondary onClick={editor.keepLocalAgainstRemote}>
-                Keep my input and use this revision for the next save
+                {t('keepMyInputAndUseThisRevisionForTheNextSave')}
               </DraftButton>
             </div>
           )}
         </Paper>
         <aside className="space-y-5 lg:sticky lg:top-6">
           <Paper>
-            <h2 className="text-h2">Input versions</h2>
+            <h2 className="text-h2">{t('inputVersions')}</h2>
             <p className="text-fg-muted mt-3 text-sm">
-              Snapshots are immutable. Saving Working Input does not confirm a
-              snapshot or change an existing draft.
+              {t(
+                'snapshotsAreImmutableSavingWorkingInputDoesNotConfirmASnapshotOrChangeAnExistingDraft'
+              )}
             </p>
             <ul className="mt-5 space-y-3">
               {workspace.snapshots.map((snapshot) => (
@@ -205,26 +221,29 @@ function InputEditor({
                     onClick={() => setSelected(snapshot)}
                     className="text-accent-text min-h-11 text-left underline-offset-4 hover:underline"
                   >
-                    Snapshot v{snapshot.version} · Confirmed
+                    {t('snapshotConfirmed', {
+                      version: display.number(snapshot.version),
+                    })}
                   </button>
                   <p className="text-caption text-fg-muted">
-                    {timestamp(snapshot.confirmedAt)}
+                    {display.timestamp(snapshot.confirmedAt)}
                   </p>
                 </li>
               ))}
             </ul>
             {!workspace.snapshots.length && (
               <p className="text-caption text-fg-muted mt-5">
-                No confirmed snapshots yet.
+                {t('noConfirmedSnapshotsYet')}
               </p>
             )}
             <DraftLink to={`/drafts/${workspace.id}/history`}>
-              Draft history
+              {t('draftHistory')}
             </DraftLink>
           </Paper>
           <p className="text-caption text-fg-muted px-1">
-            Amounts are user-provided input. This form does not calculate tax or
-            determine deductibility.
+            {t(
+              'amountsAreUserprovidedInputThisFormDoesNotCalculateTaxOrDetermineDeductibility'
+            )}
           </p>
         </aside>
       </div>
@@ -239,13 +258,18 @@ function InputEditor({
         <Modal
           title={
             editor.confirmed
-              ? `Snapshot v${editor.confirmed.version} confirmed`
-              : 'Confirm your input snapshot'
+              ? t('confirmedTime', {
+                  version: display.number(editor.confirmed.version),
+                  time: display.timestamp(editor.confirmed.confirmedAt),
+                })
+              : t('confirmYourInputSnapshot')
           }
-          closeLabel="Back to input"
+          closeLabel={t('backToInput')}
           preventClose={editor.confirm.isPending}
           onClose={() => editor.setDialog(false)}
-          description="Confirmation creates an immutable input version. Check every value before continuing."
+          description={t(
+            'confirmationCreatesAnImmutableInputVersionCheckEveryValueBeforeContinuing'
+          )}
           footer={
             <>
               <DraftButton
@@ -253,7 +277,7 @@ function InputEditor({
                 disabled={editor.confirm.isPending}
                 onClick={() => editor.setDialog(false)}
               >
-                Back to input
+                {t('backToInput')}
               </DraftButton>
               <DraftButton
                 disabled={editor.confirm.isPending || !editor.acknowledged}
@@ -269,10 +293,10 @@ function InputEditor({
                 }
               >
                 {editor.confirm.isPending
-                  ? 'Confirming & starting…'
+                  ? t('confirmingStarting')
                   : editor.confirmed
-                    ? 'Retry generation with this snapshot'
-                    : 'Confirm & generate'}
+                    ? t('retryGenerationWithThisSnapshot')
+                    : t('confirmGenerate')}
               </DraftButton>
             </>
           }
@@ -290,8 +314,9 @@ function InputEditor({
               onChange={(event) => editor.setAcknowledged(event.target.checked)}
             />
             <span>
-              I have checked this input. It represents the data I am providing,
-              not professional verification.
+              {t(
+                'iHaveCheckedThisInputItRepresentsTheDataIAmProvidingNotProfessionalVerification'
+              )}
             </span>
           </label>
           {editor.confirm.isError && (
@@ -299,8 +324,9 @@ function InputEditor({
               <DraftError error={editor.confirm.error} />
               {editor.confirmed && (
                 <p className="mt-3 text-sm">
-                  The confirmed snapshot is preserved. Retry does not create
-                  another snapshot.
+                  {t(
+                    'theConfirmedSnapshotIsPreservedRetryDoesNotCreateAnotherSnapshot'
+                  )}
                 </p>
               )}
             </div>
@@ -309,20 +335,22 @@ function InputEditor({
       )}
       {editor.guard.blocker.state === 'blocked' && (
         <Modal
-          title="Leave unsaved input?"
-          closeLabel="Keep editing"
+          title={t('leaveUnsavedInput')}
+          closeLabel={t('keepEditing')}
           onClose={() => editor.guard.blocker.reset?.()}
-          description="Your latest changes have not been saved. Leave to discard them, or keep editing and save first."
+          description={t(
+            'yourLatestChangesHaveNotBeenSavedLeaveToDiscardThemOrKeepEditingAndSaveFirst'
+          )}
           footer={
             <>
               <DraftButton
                 secondary
                 onClick={() => editor.guard.blocker.reset?.()}
               >
-                Keep editing
+                {t('keepEditing')}
               </DraftButton>
               <DraftButton onClick={() => editor.guard.blocker.proceed?.()}>
-                Leave page
+                {t('leavePage')}
               </DraftButton>
             </>
           }
@@ -332,6 +360,8 @@ function InputEditor({
   )
 }
 export default function DraftInputPage() {
+  const { t } = useTranslation('drafting')
+
   const { workspaceId } = useParams()
   const [params] = useSearchParams()
   const workspace = useWorkspace(workspaceId)
@@ -343,7 +373,7 @@ export default function DraftInputPage() {
     (workspace.data && template.isPending) ||
     (fromVersion && version.isPending)
   )
-    return <DraftLoading message="Loading working input…" />
+    return <DraftLoading message={t('loadingWorkingInput')} />
   if (workspace.isError || template.isError || (fromVersion && version.isError))
     return (
       <DraftError
@@ -357,7 +387,9 @@ export default function DraftInputPage() {
     )
   if (!workspace.data || !template.data || !template.data.fields.length)
     return (
-      <DraftError error={new Error('Workspace or input schema unavailable.')} />
+      <DraftError
+        error={new DraftUiError('workspaceOrInputSchemaUnavailable')}
+      />
     )
   const sourceId = params.get('fromSnapshot') ?? version.data?.snapshotId
   const source = sourceId
@@ -370,10 +402,7 @@ export default function DraftInputPage() {
     return (
       <DraftError
         error={
-          new ApiError(
-            'The revision source does not belong to this workspace.',
-            404
-          )
+          new DraftUiError('theRevisionSourceDoesNotBelongToThisWorkspace', 404)
         }
       />
     )

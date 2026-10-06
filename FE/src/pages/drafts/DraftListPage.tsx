@@ -1,3 +1,5 @@
+import { useDraftPresentation } from '@/features/drafting/hooks/useDraftPresentation'
+import { useTranslation } from 'react-i18next'
 import { useState } from 'react'
 import { FilePlus2, ArrowRight } from 'lucide-react'
 import { Pagination } from '@/components/ui/navigation/pagination'
@@ -9,9 +11,12 @@ import {
   DraftError,
   Paper,
 } from '@/features/drafting/components/DraftUi'
-import { timestamp } from '@/features/drafting/utils/validation'
 
 export default function DraftListPage() {
+  const display = useDraftPresentation()
+
+  const { t } = useTranslation('drafting')
+
   const query = useWorkspaces()
   const [page, setPage] = useState(1)
   const [search, setSearch] = useState('')
@@ -22,12 +27,14 @@ export default function DraftListPage() {
   return (
     <>
       <DraftHeading
-        title="Your draft workspaces"
-        description="Continue a saved input, follow a generation job or return to an exact draft version."
+        title={t('yourDraftWorkspaces')}
+        description={t(
+          'continueASavedInputFollowAGenerationJobOrReturnToAnExactDraftVersion'
+        )}
       >
         <DraftLink primary to="/drafts/templates">
           <FilePlus2 size={18} className="mr-2" />
-          New draft
+          {t('newDraft')}
         </DraftLink>
       </DraftHeading>
       {query.isPending ? (
@@ -36,18 +43,18 @@ export default function DraftListPage() {
         <DraftError error={query.error} retry={() => void query.refetch()} />
       ) : !query.data?.length ? (
         <Paper>
-          <h2 className="text-h2">Start with a template</h2>
+          <h2 className="text-h2">{t('startWithATemplate')}</h2>
           <p className="text-fg-muted my-3">
-            Your saved inputs and draft versions will appear here.
+            {t('yourSavedInputsAndDraftVersionsWillAppearHere')}
           </p>
           <DraftLink primary to="/drafts/templates">
-            Browse templates
+            {t('browseTemplates')}
           </DraftLink>
         </Paper>
       ) : (
         <>
           <label className="mb-5 block max-w-md text-sm font-medium">
-            Find a workspace
+            {t('findAWorkspace')}
             <input
               type="search"
               value={search}
@@ -56,7 +63,7 @@ export default function DraftListPage() {
                 setPage(1)
               }}
               className="rounded-control border-border-control bg-paper text-fg mt-2 min-h-11 w-full border px-3"
-              placeholder="Search by document title"
+              placeholder={t('searchByDocumentTitle')}
             />
           </label>
           <div className="divide-border rounded-surface border-border bg-paper divide-y border">
@@ -68,40 +75,45 @@ export default function DraftListPage() {
                 <div className="max-w-2xl min-w-0">
                   <h2 className="text-h2 break-words">{workspace.title}</h2>
                   <p className="text-caption text-fg-muted mt-2">
-                    Working input revision {workspace.revision} ·{' '}
-                    {workspace.snapshots.length} confirmed snapshot(s)
+                    {t('listRevision', {
+                      revision: display.number(workspace.revision),
+                      total: display.number(workspace.snapshots.length),
+                    })}
                   </p>
                   <p className="text-caption text-fg-muted">
-                    Saved {timestamp(workspace.savedAt)}
+                    {t('savedTime', {
+                      time: display.timestamp(workspace.savedAt),
+                    })}
                   </p>
                 </div>
                 <div className="flex flex-wrap items-center gap-4">
                   <DraftLink to={`/drafts/${workspace.id}/input`}>
-                    Working input <ArrowRight size={16} />
+                    {t('workingInput')}
+                    <ArrowRight size={16} />
                   </DraftLink>
                   {workspace.latestJobId && (
                     <DraftLink
                       to={`/drafts/${workspace.id}/generations/${workspace.latestJobId}`}
                     >
-                      Generation
+                      {t('generation')}
                     </DraftLink>
                   )}
                   {workspace.latestDraftId && (
                     <DraftLink
                       to={`/drafts/${workspace.id}/versions/${workspace.latestDraftId}`}
                     >
-                      Preview
+                      {t('preview')}
                     </DraftLink>
                   )}
                   <DraftLink to={`/drafts/${workspace.id}/history`}>
-                    History
+                    {t('history')}
                   </DraftLink>
                 </div>
               </article>
             ))}
             {!rows.length && (
               <p className="text-fg-muted p-6">
-                No workspaces match your search.
+                {t('noWorkspacesMatchYourSearch')}
               </p>
             )}
           </div>

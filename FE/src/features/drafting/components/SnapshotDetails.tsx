@@ -1,6 +1,8 @@
+import { useDraftPresentation } from '@/features/drafting/hooks/useDraftPresentation'
+import { useTranslation } from 'react-i18next'
 import { Modal } from '@/components/ui/feedback/modal'
 import { DraftButton, DraftLink } from './DraftUi'
-import { formatField, timestamp } from '../utils/validation'
+
 import type { SchemaField, Snapshot } from '../types'
 import { useHistory } from '../hooks/useDrafting'
 
@@ -11,16 +13,20 @@ export function InputSummary({
   input: Record<string, string>
   fields: SchemaField[]
 }) {
+  const display = useDraftPresentation()
+
+  const { t } = useTranslation('drafting')
+
   return (
     <dl className="divide-border mt-4 divide-y">
       {fields.map((field) => (
         <div key={field.id} className="py-3">
           <dt className="text-caption text-fg-muted font-semibold">
             {field.label}
-            {field.required ? ' · Required' : ''}
+            {field.required ? ' · ' + t('required') : ''}
           </dt>
           <dd className="mt-1 text-sm break-words whitespace-pre-wrap tabular-nums">
-            {formatField(input[field.id], field)}
+            {display.field(input[field.id], field)}
           </dd>
         </div>
       ))}
@@ -36,35 +42,44 @@ export function SnapshotDetails({
   fields: SchemaField[]
   onClose: () => void
 }) {
+  const display = useDraftPresentation()
+
+  const { t } = useTranslation('drafting')
+
   const history = useHistory(snapshot.workspaceId)
   return (
     <Modal
-      title={`Confirmed Snapshot v${snapshot.version}`}
-      closeLabel="Close snapshot details"
-      description={`Immutable · ${timestamp(snapshot.confirmedAt)} · Template ${snapshot.templateVersionId}`}
+      title={t('snapshotDialogTitle', {
+        version: display.number(snapshot.version),
+      })}
+      closeLabel={t('closeSnapshotDetails')}
+      description={t('snapshotDialogDescription', {
+        time: display.timestamp(snapshot.confirmedAt),
+        template: snapshot.templateVersionId,
+      })}
       onClose={onClose}
       footer={
         <>
           <DraftLink
             to={`/drafts/${snapshot.workspaceId}/input?fromSnapshot=${snapshot.id}`}
           >
-            Revise this snapshot
+            {t('reviseThisSnapshot')}
           </DraftLink>
           <DraftButton secondary onClick={onClose}>
-            Close
+            {t('close')}
           </DraftButton>
         </>
       }
     >
       <InputSummary input={snapshot.input} fields={fields} />
-      <h3 className="mt-5 font-semibold">Drafts from this snapshot</h3>
+      <h3 className="mt-5 font-semibold">{t('draftsFromThisSnapshot')}</h3>
       {history.isPending ? (
         <p role="status" className="mt-2 text-sm">
-          Loading related drafts…
+          {t('loadingRelatedDrafts')}
         </p>
       ) : history.isError ? (
         <p role="alert" className="text-danger mt-2 text-sm">
-          Related draft history could not be loaded.
+          {t('relatedDraftHistoryCouldNotBeLoaded')}
         </p>
       ) : (
         <ul>
@@ -75,7 +90,9 @@ export function SnapshotDetails({
                 <DraftLink
                   to={`/drafts/${snapshot.workspaceId}/versions/${draft.id}`}
                 >
-                  Draft v{draft.version}
+                  {t('draftVersion', {
+                    version: display.number(draft.version),
+                  })}
                 </DraftLink>
               </li>
             ))}
