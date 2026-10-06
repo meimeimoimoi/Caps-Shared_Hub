@@ -1,5 +1,10 @@
 /* Dữ liệu demo cho knowledgeApi.ts khi chạy dev (isExpertDemo). */
-import type { KnowledgeDocument, PipelineSummary } from '../types'
+import type {
+  ArticleChange,
+  KnowledgeDocument,
+  PipelineSummary,
+  VersionComparison,
+} from '../types'
 
 const daysAgo = (n: number) =>
   new Date(Date.now() - n * 86_400_000).toISOString()
@@ -99,3 +104,45 @@ export const mockDocuments: KnowledgeDocument[] = [
     queuedAt: daysAgo(20),
   },
 ]
+
+const unchanged26 = { text: 'Khoản 2 · Điểm 2.6: [nội dung không đổi]' }
+const modified = (article: number, heading: string): ArticleChange => ({
+  article,
+  heading,
+  kind: 'MODIFIED',
+  before: [
+    { text: 'Khoản 2 · Điểm 2.5: [nội dung điểm 2.5 phiên bản cũ]', change: 'removed' },
+    unchanged26,
+  ],
+  after: [
+    { text: 'Khoản 2 · Điểm 2.5: [nội dung điểm 2.5 đã sửa đổi]', change: 'added' },
+    unchanged26,
+  ],
+})
+
+/** Khóa theo documentId */
+export const mockComparisons: Record<string, VersionComparison> = {
+  'doc-vbhn-tndn': {
+    documentId: 'doc-vbhn-tndn',
+    number: '[số]/VBHN-BTC',
+    title: 'Văn bản hợp nhất Thông tư hướng dẫn thuế TNDN',
+    version: 3,
+    prevVersion: 2,
+    collectedAt: daysAgo(10),
+    collectedBy: 'AUTO',
+    changes: [
+      modified(6, 'Điều 6. Các khoản chi được trừ và không được trừ'),
+      modified(9, 'Điều 9. Xác định chi phí khấu hao tài sản cố định'),
+      modified(12, 'Điều 12. Doanh thu để tính thu nhập chịu thuế'),
+      {
+        article: 20,
+        heading: 'Điều 20. [Tên điều mới]',
+        kind: 'ADDED',
+        before: null,
+        after: [{ text: 'Khoản 1: [nội dung điều mới]', change: 'added' }],
+      },
+      modified(22, 'Điều 22. Ưu đãi thuế thu nhập doanh nghiệp'),
+    ],
+  },
+}
+

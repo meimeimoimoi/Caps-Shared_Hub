@@ -5,4 +5,6 @@ export const knowledgeKeys = {
   summary: () => [...knowledgeKeys.all, 'summary'] as const,
   documents: (stage: PipelineStage) =>
     [...knowledgeKeys.all, 'documents', stage] as const,
+  comparison: (documentId: string) =>
+    [...knowledgeKeys.all, 'comparison', documentId] as const,
 }

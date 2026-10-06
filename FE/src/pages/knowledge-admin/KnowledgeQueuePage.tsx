@@ -1,4 +1,5 @@
 import { useCallback, useState } from 'react'
+import { useLocation } from 'react-router-dom'
 import { Upload } from 'lucide-react'
 import { Toast } from '@/components/ui/toast'
 import { KnowledgeLayout } from '@/app/layouts/knowledge/KnowledgeLayout'
@@ -13,7 +14,11 @@ export default function KnowledgeQueuePage() {
   const queue = useReviewQueue()
   const nav = useKnowledgeNav()
   const [uploadOpen, setUploadOpen] = useState(false)
-  const [toast, setToast] = useState<string | null>(null)
+  // Màn khác điều hướng về kèm { toast } (vd. sau khi duyệt phiên bản)
+  const location = useLocation()
+  const [toast, setToast] = useState<string | null>(
+    (location.state as { toast?: string } | null)?.toast ?? null
+  )
   const clearToast = useCallback(() => setToast(null), [])
 
   return (

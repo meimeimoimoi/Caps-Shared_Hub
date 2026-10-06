@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import { TriangleAlert } from 'lucide-react'
 import { formatDate } from '@/lib/utils'
 import { SOURCE_LABEL } from '../constants'
@@ -38,9 +39,18 @@ export function DocumentsTable({
               key={d.id}
               className="border-border-subtle border-t [&>td]:px-4 [&>td]:py-2"
             >
-              {/* TODO: link sang trang rà soát văn bản khi có màn đó */}
-              <td className="text-accent-text num whitespace-nowrap">
-                {d.number}
+              <td className="num whitespace-nowrap">
+                {/* Phiên bản mới có thay đổi → màn so sánh; các màn rà soát khác: TODO */}
+                {d.stage === 'review' && d.version?.changed ? (
+                  <Link
+                    to={`/knowledge/documents/${d.id}/compare`}
+                    className="text-accent-text underline underline-offset-4"
+                  >
+                    {d.number}
+                  </Link>
+                ) : (
+                  <span className="text-accent-text">{d.number}</span>
+                )}
               </td>
               <td>
                 <div className="text-fg-strong font-semibold">{d.title}</div>

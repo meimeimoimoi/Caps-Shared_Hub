@@ -22,6 +22,7 @@ const AdminDisputeDetailPage = lazy(() => import('@/pages/admin/AdminDisputeDeta
 const AdminEscrowPage = lazy(() => import('@/pages/admin/AdminEscrowPage'))
 const KnowledgeQueuePage = lazy(() => import('@/pages/knowledge-admin/KnowledgeQueuePage'))
 const KnowledgeSourcesPage = lazy(() => import('@/pages/knowledge-admin/KnowledgeSourcesPage'))
+const KnowledgeVersionPage = lazy(() => import('@/pages/knowledge-admin/KnowledgeVersionPage'))
 
 function Fallback() {
   return (
@@ -53,6 +54,7 @@ export function AppRoutes() {
           <Route path="/knowledge" element={<Navigate to="/knowledge/queue" replace />} />
           <Route path="/knowledge/queue" element={<KnowledgeQueuePage />} />
           <Route path="/knowledge/sources" element={<KnowledgeSourcesPage />} />
+          <Route path="/knowledge/documents/:id/compare" element={<KnowledgeVersionPage />} />
 
           <Route element={<ExpertRoute />}>
             <Route path="/expert" element={<ExpertLayout />}>

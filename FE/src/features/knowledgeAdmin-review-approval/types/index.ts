@@ -15,6 +15,34 @@ export interface KnowledgeDocument {
   queuedAt: string
 }
 
+/** Một khoản/điểm trong Điều; change đánh dấu phần bị bỏ (bản cũ) hoặc thêm (bản mới) */
+export interface Clause {
+  text: string
+  change?: 'removed' | 'added'
+}
+
+export interface ArticleChange {
+  article: number
+  heading: string // vd. "Điều 6. Các khoản chi được trừ..."
+  kind: 'MODIFIED' | 'ADDED' | 'REMOVED'
+  /** null = Điều chưa có ở bản cũ (ADDED) */
+  before: Clause[] | null
+  /** null = Điều bị bỏ ở bản mới (REMOVED) */
+  after: Clause[] | null
+}
+
+/** So sánh phiên bản mới thu thập với phiên bản đang dùng */
+export interface VersionComparison {
+  documentId: string
+  number: string
+  title: string
+  version: number
+  prevVersion: number
+  collectedAt: string
+  collectedBy: 'AUTO' | 'MANUAL'
+  changes: ArticleChange[]
+}
+
 /** Thông tin bắt buộc khi tải văn bản lên (ngày dạng yyyy-mm-dd) */
 export interface UploadMeta {
   number: string

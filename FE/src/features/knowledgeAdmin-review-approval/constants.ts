@@ -10,6 +10,12 @@ export type PipelineStage = (typeof PIPELINE)[number]['key']
 
 export const SOURCE_LABEL = { UPLOAD: 'Tải lên', CRAWL: 'Crawl' } as const
 
+export const CHANGE_LABEL = {
+  MODIFIED: 'Sửa',
+  ADDED: 'Thêm',
+  REMOVED: 'Bỏ',
+} as const
+
 export const DOC_TYPES = [
   'Luật',
   'Nghị định',
