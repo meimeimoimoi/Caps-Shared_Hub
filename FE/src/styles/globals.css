@@ -67,9 +67,9 @@
   --color-track-fill: var(--ui-indicator);
 
   /* ---------- Font ---------- */
-  --font-sans: "Be Vietnam Pro", "Inter", system-ui, sans-serif;
+  --font-sans: "Be Vietnam Pro", "Geist", system-ui, sans-serif;
   --font-serif: "Lora", Georgia, serif;
-  --font-num: "Inter", system-ui, sans-serif;
+  --font-num: "Geist", system-ui, sans-serif;
 
   /* ---------- Cỡ chữ ---------- */
   --text-caption: 0.75rem;        --text-caption--line-height: 1.4;

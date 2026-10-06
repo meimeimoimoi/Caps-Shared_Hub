@@ -28,7 +28,7 @@ export type EmailLoginFormProps = {
 }
 
 const JAKARTA = "[font-family:'Plus_Jakarta_Sans',sans-serif]"
-const INTER = '[font-family:Inter,sans-serif]'
+const GEIST = '[font-family:Geist,sans-serif]'
 
 const LABEL_CLASS = cn(
   'block text-[12px] font-semibold tracking-[-0.01em] text-white/85 mb-[7px]',
@@ -151,7 +151,7 @@ export function EmailLoginForm({
                 aria-describedby={emailError ? emailErrId : undefined}
                 className={cn(
                   INPUT_CLASS,
-                  INTER,
+                  GEIST,
                   emailError ? INPUT_ERROR_CLASS : undefined
                 )}
               />
@@ -181,7 +181,7 @@ export function EmailLoginForm({
                 aria-describedby={pwError ? pwErrId : undefined}
                 className={cn(
                   INPUT_CLASS,
-                  INTER,
+                  GEIST,
                   'pr-[70px]',
                   pwError ? INPUT_ERROR_CLASS : undefined
                 )}
@@ -192,7 +192,7 @@ export function EmailLoginForm({
                 onClick={() => setShowPw((prev) => !prev)}
                 className={cn(
                   'absolute top-1/2 right-1.5 h-[38px] -translate-y-1/2 rounded-lg border-0 bg-transparent px-3 text-[12px] font-semibold text-white/55 [transition:color_.15s,background_.15s] hover:bg-white/6 hover:text-white',
-                  INTER
+                  GEIST
                 )}
               >
                 {showPw ? t('password.hide') : t('password.show')}
@@ -253,7 +253,7 @@ export function EmailLoginForm({
           onClick={onGoogle}
           className={cn(
             'flex min-h-[50px] w-full cursor-pointer items-center justify-center gap-[10px] rounded-xl border border-white/14 bg-white/5 text-sm font-medium text-white backdrop-blur-[10px] [-webkit-backdrop-filter:blur(10px)] [transition:background_.15s,border-color_.15s] hover:border-white/22 hover:bg-white/10 active:scale-[.995]',
-            INTER
+            GEIST
           )}
         >
           <GoogleIcon size={18} />

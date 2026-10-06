@@ -4,6 +4,7 @@ import { Modal } from '@/components/ui/feedback/modal'
 import { DECISION_DIALOG } from '../constants'
 import type { Criterion } from '../types'
 import { ScoreSummary } from './ScoreSummary'
+import { useTranslation } from 'react-i18next'
 
 interface DecisionDialogProps {
   kind: keyof typeof DECISION_DIALOG
@@ -25,11 +26,12 @@ export function DecisionDialog({
 }: DecisionDialogProps) {
   const [note, setNote] = useState('')
   const cfg = DECISION_DIALOG[kind]
+  const { t } = useTranslation(['admin', 'common'])
 
   return (
     <Modal
-      title={`${cfg.title} ${applicantName}?`}
-      description={cfg.notice}
+      title={`${t(cfg.title as any)} ${applicantName}?`}
+      description={t(cfg.notice as any)}
       onClose={onCancel}
       // `required` trên textarea đã chặn submit khi trống
       onSubmit={() => onConfirm(note)}
@@ -40,7 +42,7 @@ export function DecisionDialog({
             onClick={onCancel}
             className="btn btn-press btn-secondary"
           >
-            Hủy
+            {t('common:actions.cancel' as any, 'Hủy') as string}
           </button>
           <button
             type="submit"
@@ -49,7 +51,7 @@ export function DecisionDialog({
               kind === 'reject' ? 'bg-danger text-paper' : 'btn-primary'
             )}
           >
-            {cfg.confirm}
+            {t(cfg.confirm as any) as string}
           </button>
         </>
       }
@@ -60,13 +62,13 @@ export function DecisionDialog({
         </div>
       )}
       <label className="mt-5 flex flex-col gap-2 text-sm font-semibold">
-        {cfg.noteLabel}
+        {t(cfg.noteLabel as any)}
         <textarea
           rows={3}
           required={cfg.required}
           value={note}
           onChange={(e) => setNote(e.target.value)}
-          placeholder={cfg.placeholder}
+          placeholder={t(cfg.placeholder as any)}
           className="border-border-control rounded-control shadow-control bg-paper placeholder:text-fg-muted resize-y border px-3 py-2 text-base font-normal"
         />
       </label>

@@ -1,0 +1,180 @@
+{
+  "navigation": {
+    "expertReview": "Xét duyệt Expert",
+    "pendingExperts": "Hồ sơ chờ duyệt",
+    "manageExperts": "Quản lý Expert",
+    "operations": "Vận hành",
+    "complaints": "Khiếu nại",
+    "payouts": "Hoàn tiền và chi trả",
+    "pricing": "Khung giá dịch vụ",
+    "system": "Hệ thống",
+    "accounts": "Tài khoản",
+    "settings": "Cấu hình"
+  },
+  "search": {
+    "placeholder": "Tìm theo tên hoặc email"
+  },
+  "notifications": {
+    "label": "Thông báo"
+  },
+  "pendingExperts": {
+    "title": "Hồ sơ chờ duyệt",
+    "description": "Hồ sơ đã qua đối soát tài liệu và kiểm tra giấy tờ pháp lý, đang chờ System Admin đánh giá năng lực.",
+    "filterAria": "Lọc theo trạng thái"
+  },
+  "experts": {
+    "title": "Quản lý Expert",
+    "description": "Expert đã được duyệt. Chỉ Expert có dịch vụ đang hoạt động mới hiển thị trên Marketplace.",
+    "serviceStatus": "Trạng thái dịch vụ",
+    "allStatuses": "Tất cả",
+    "field": "Lĩnh vực",
+    "allFields": "Tất cả lĩnh vực",
+    "expertCount": "Expert",
+    "table": {
+      "expert": "Expert",
+      "field": "Lĩnh vực",
+      "serviceStatus": "Trạng thái dịch vụ",
+      "reviewFee": "Phí rà soát",
+      "activeCases": "Đang nhận",
+      "approvedAt": "Ngày duyệt"
+    },
+    "noResults": "Không có Expert nào khớp bộ lọc."
+  },
+  "applicationsTable": {
+    "sortBy": "Sắp xếp: nộp sớm nhất trước",
+    "applicationCount": "hồ sơ",
+    "table": {
+      "id": "Mã đơn",
+      "applicant": "Người đăng ký",
+      "experienceYears": "Số năm KN",
+      "aiScreening": "Kết quả AI sàng lọc",
+      "submittedAt": "Ngày nộp",
+      "waited": "Đã chờ"
+    },
+    "aiFlags": "{{count}} mục cần xem lại",
+    "noNotes": "Không có ghi chú",
+    "overdue": "Quá hạn",
+    "days": "{{count}} ngày",
+    "noApplications": "Không có hồ sơ nào."
+  },
+  "queue": {
+    "tabs": {
+      "review": "Chờ đánh giá",
+      "screening": "Đang đối soát",
+      "moreInfo": "Cần bổ sung",
+      "notEligible": "Không đủ điều kiện",
+      "done": "Đã xử lý"
+    }
+  },
+  "decision": {
+    "approve": {
+      "title": "Duyệt đơn đăng ký của",
+      "notice": "Người đăng ký sẽ nhận email và có thể thiết lập dịch vụ. Hồ sơ chỉ hiển thị trên Marketplace khi dịch vụ đang hoạt động.",
+      "noteLabel": "Ghi chú nội bộ",
+      "placeholder": "Không bắt buộc. Chỉ System Admin xem được.",
+      "confirm": "Duyệt đơn đăng ký"
+    },
+    "reject": {
+      "title": "Từ chối đơn đăng ký của",
+      "notice": "Người đăng ký sẽ nhận email kèm lý do bạn nhập. Không thể hoàn tác.",
+      "noteLabel": "Lý do từ chối (bắt buộc)",
+      "placeholder": "Nêu rõ tiêu chí chưa đáp ứng để người đăng ký hiểu",
+      "confirm": "Từ chối đơn đăng ký"
+    },
+    "supplement": {
+      "title": "Yêu cầu bổ sung",
+      "notice": "Đơn chuyển sang Cần bổ sung. Người đăng ký nhận email kèm các mục dưới đây.",
+      "itemsLabel": "Mục cần bổ sung (chọn ít nhất 1)",
+      "messageLabel": "Lời nhắn",
+      "defaultMessage": "Anh/chị vui lòng bổ sung các nội dung trên để hoàn tất đánh giá năng lực.",
+      "confirm": "Gửi yêu cầu bổ sung",
+      "noteLabel": "Nội dung gửi người đăng ký"
+    },
+    "log": {
+      "approve": "Duyệt đơn đăng ký.",
+      "reject": "Từ chối đơn đăng ký. Đã gửi email kèm lý do.",
+      "supplement": "Yêu cầu bổ sung hồ sơ. Đã gửi email kèm nội dung cần bổ sung."
+    },
+    "toast": {
+      "approve": "Đã duyệt đơn đăng ký",
+      "reject": "Đã từ chối đơn đăng ký",
+      "supplement": "Đã gửi yêu cầu bổ sung"
+    },
+    "label": {
+      "approve": "Duyệt",
+      "reject": "Từ chối",
+      "supplement": "Yêu cầu bổ sung"
+    }
+  },
+  "detail": {
+    "tabs": {
+      "profile": "Hồ sơ",
+      "documents": "Tài liệu",
+      "ai": "AI sàng lọc",
+      "history": "Lịch sử"
+    },
+    "notFound": "Không tìm thấy hồ sơ {{id}}",
+    "backToList": "Quay lại danh sách",
+    "tabAria": "Thông tin hồ sơ",
+    "meta": {
+      "jobTitle": "Chức danh",
+      "experience": "Kinh nghiệm",
+      "years": "{{count}} năm",
+      "submitted": "Nộp"
+    },
+    "blockers": {
+      "criteria": "Còn {{count}} tiêu chí chưa chấm hoặc chưa ghi căn cứ",
+      "flags": "{{count}} mục AI cần xem lại chưa được xem xét"
+    },
+    "ready": "Đã chấm và ghi căn cứ đủ {{count}}/{{total}} tiêu chí",
+    "scoreSummary": {
+      "level": "Mức {{level}}",
+      "unscored": "Chưa chấm"
+    },
+    "profile": {
+      "personal": "Thông tin cá nhân",
+      "name": "Họ và tên",
+      "dob": "Ngày sinh",
+      "title": "Chức danh, đơn vị",
+      "location": "Tỉnh/Thành phố",
+      "bio": "Giới thiệu",
+      "experience": "Kinh nghiệm",
+      "years": "Số năm kinh nghiệm",
+      "fields": "Lĩnh vực",
+      "cv": "Sơ yếu lý lịch (CV)",
+      "noCv": "Chưa nộp CV",
+      "highlights": "Kinh nghiệm nổi bật"
+    },
+    "history": {
+      "title": "Lịch sử thao tác"
+    },
+    "documents": {
+      "select": "Chọn tài liệu",
+      "noPreview": "Chưa có bản xem trước cho tài liệu này.",
+      "pageNote": "Ghi chú cho trang {{page}}",
+      "aiReviewed": "AI · Đã xem xét",
+      "unmark": "Bỏ đánh dấu",
+      "mark": "Đánh dấu đã xem xét"
+    },
+    "aiScreening": {
+      "declared": "Đã kê khai",
+      "present": "Có trong hồ sơ",
+      "missing": "Thiếu",
+      "inconsistent": "Không nhất quán",
+      "results": "Kết quả AI sàng lọc",
+      "overview": "Tổng quan",
+      "checked": "{{count}} mục đã kiểm tra",
+      "flags": "{{count}} mục cần xem lại",
+      "allReviewed": "đã được System Admin xem xét",
+      "noFlags": "không có mục cần xem lại.",
+      "reviewed": "Đã xem xét",
+      "viewDetail": "Xem chi tiết AI sàng lọc"
+    },
+    "competency": {
+      "title": "Đánh giá năng lực",
+      "subtitle": "Thang chấm theo quy chế xét duyệt",
+      "level": "Mức {{level}}",
+      "evidence": "Căn cứ đánh giá (bắt buộc)"
+    }
+  }
+}

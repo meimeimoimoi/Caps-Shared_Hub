@@ -4,29 +4,35 @@ import { ApplicationsTable } from '../../features/expert-vetting/components/Appl
 import { QUEUE_TABS } from '../../features/expert-vetting/constants'
 import { useAdminNav } from '@/app/layouts/admin/useAdminNav'
 import { usePendingApplications } from '../../features/expert-vetting/hooks/usePendingApplications'
+import { useTranslation } from 'react-i18next'
+import { useEffect } from 'react'
 
 export default function AdminPendingExpertsPage() {
   const nav = useAdminNav()
   const { tab, setTab, query, setQuery, countOf, paged, prev, next, isLoading, error } =
     usePendingApplications()
+  const { t } = useTranslation('admin')
+  useEffect(() => {
+    document.title = `${t('pendingExperts.title')} | Shared Hub`
+  }, [t])
 
   return (
     <AdminLayout
       {...nav}
       section="pending"
-      breadcrumb="Hồ sơ chờ duyệt"
+      breadcrumb={t('navigation.pendingExperts')}
+      pendingCount={countOf('review')}
       search={query}
       onSearchChange={setQuery}
     >
-      <h1 className="text-h1">Hồ sơ chờ duyệt</h1>
+      <h1 className="text-h1">{t('pendingExperts.title')}</h1>
       <p className="text-fg-muted mt-3">
-        Hồ sơ đã qua đối soát tài liệu và kiểm tra giấy tờ pháp lý, đang chờ
-        System Admin đánh giá năng lực.
+        {t('pendingExperts.description')}
       </p>
 
       <div
         role="group"
-        aria-label="Lọc theo trạng thái"
+        aria-label={t('pendingExperts.filterAria')}
         className="mt-12 flex gap-7 overflow-x-auto"
       >
         {QUEUE_TABS.map(({ key, label, showCount }) => (
@@ -42,7 +48,7 @@ export default function AdminPendingExpertsPage() {
                 : 'text-fg-muted border-transparent'
             )}
           >
-            {label}
+            {t(label as any)}
             {showCount && <span className="num"> ({countOf(key)})</span>}
           </button>
         ))}

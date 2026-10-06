@@ -1,4 +1,5 @@
 import type { Criterion } from '../types'
+import { useTranslation } from 'react-i18next'
 
 interface ScoreSummaryProps {
   criteria: Criterion[]
@@ -6,6 +7,7 @@ interface ScoreSummaryProps {
 }
 
 export function ScoreSummary({ criteria, scores }: ScoreSummaryProps) {
+  const { t } = useTranslation('admin')
   return (
     <dl className="bg-sunken rounded-surface divide-border-subtle divide-y px-3 text-sm">
       {criteria.map((c) => (
@@ -14,7 +16,7 @@ export function ScoreSummary({ criteria, scores }: ScoreSummaryProps) {
             {c.id} {c.name}
           </dt>
           <dd className="text-fg-strong font-semibold whitespace-nowrap">
-            {scores[c.id] ? `Mức ${scores[c.id]}` : 'Chưa chấm'}
+            {scores[c.id] ? t('detail.scoreSummary.level', { level: scores[c.id] }) : t('detail.scoreSummary.unscored')}
           </dd>
         </div>
       ))}
