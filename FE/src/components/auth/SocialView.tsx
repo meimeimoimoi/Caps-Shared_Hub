@@ -12,7 +12,7 @@ export type SocialViewProps = {
 const BRAND_FONT = "[font-family:'Plus_Jakarta_Sans',sans-serif]"
 
 const BTN =
-  'w-full min-h-[56px] border-0 rounded-[14px] bg-[var(--btn)] text-[var(--btn-ink)] text-[15px] font-medium flex items-center gap-[14px] px-5 cursor-pointer text-left [font-family:Inter,sans-serif] [transition:background_.15s,transform_.1s,box-shadow_.2s] hover:bg-[var(--btn-hover)] hover:shadow-[0_6px_20px_-6px_rgba(255,255,255,.15)] active:scale-[.995] focus-visible:outline-2 focus-visible:outline-offset-[3px] focus-visible:outline-[var(--accent)] max-[420px]:min-h-[52px] max-[420px]:px-4'
+  'w-full min-h-[56px] border-0 rounded-[14px] bg-[var(--btn)] text-[var(--btn-ink)] text-[15px] font-medium flex items-center gap-[14px] px-5 cursor-pointer text-left [font-family:Geist,sans-serif] [transition:background_.15s,transform_.1s,box-shadow_.2s] hover:bg-[var(--btn-hover)] hover:shadow-[0_6px_20px_-6px_rgba(255,255,255,.15)] active:scale-[.995] focus-visible:outline-2 focus-visible:outline-offset-[3px] focus-visible:outline-[var(--accent)] max-[420px]:min-h-[52px] max-[420px]:px-4'
 
 const TERMS_LINK =
   'text-[var(--link)] font-medium no-underline transition-opacity underline-offset-2 hover:underline hover:opacity-80'
