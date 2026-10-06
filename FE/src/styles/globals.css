@@ -107,6 +107,19 @@
   --breakpoint-md: 48rem;
   --breakpoint-lg: 64rem;
   --breakpoint-xl: 80rem;
+
+  /* ---------- Hiệu ứng nâng cao ---------- */
+  --animate-enter: enter 0.5s var(--ease-out-quint) both;
+  --animate-fade: fade 0.4s var(--ease-out-quint) both;
+
+  @keyframes enter {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fade {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
 }
 
 /* Chiều cao control theo mật độ — dùng: h-control, min-h-control */
@@ -1326,7 +1339,7 @@
   &:disabled { pointer-events: none; }
 }
 @utility btn-press {
-  &:active { transform: translateY(1px); box-shadow: var(--shadow-pressed); }
+  &:active { transform: translateY(1px) scale(0.98); box-shadow: var(--shadow-pressed); }
 }
 @utility btn-primary {
   background: var(--color-accent); color: var(--color-paper);
@@ -1343,8 +1356,18 @@
 }
 @utility btn-ghost {
   background: transparent; color: var(--color-fg);
-  &:hover { background: var(--color-desk-2); color: var(--color-fg-strong); }
+  &:hover { background: var(--color-desk-2); color: var(--color-fg-strong); transform: translateY(-1px); }
   &:disabled { color: var(--color-fg-disabled); }
+}
+
+@utility card-hover {
+  transition: transform var(--duration-base) var(--ease-out-quint),
+              box-shadow var(--duration-base) var(--ease-out-quint);
+  &:hover {
+    transform: translateY(-2px) scale(1.01);
+    box-shadow: var(--shadow-overlay);
+    z-index: 10;
+  }
 }
 @utility btn-on-media {
   background: rgb(38 37 32 / .44); backdrop-filter: blur(6px);
