@@ -53,7 +53,7 @@ interface ShellPageProps {
 
 interface AdminLayoutProps extends ShellPageProps {
   /** Mục sidebar đang mở */
-  section: 'pending' | 'experts' | 'disputes' | 'escrow'
+  section: 'pending' | 'experts' | 'disputes' | 'escrow' | 'pricing'
   pendingCount: number
   disputeCount?: number
 }
@@ -99,7 +99,12 @@ export function AdminLayout({
           to: '/admin/escrow',
           active: section === 'escrow',
         },
-        { label: 'Khung giá dịch vụ', icon: Tag },
+        {
+          label: 'Khung giá dịch vụ',
+          icon: Tag,
+          to: '/admin/pricing',
+          active: section === 'pricing',
+        },
       ],
     },
     {
