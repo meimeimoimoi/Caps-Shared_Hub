@@ -37,11 +37,11 @@ export const AVAILABILITY = {
 export const DOCUMENT_STATUS = {
   PENDING: { label: 'Chờ duyệt', tone: 'neutral' },
   APPROVED: { label: 'Đang index', tone: 'accent' },
-  INDEXED: { label: 'Đã index', tone: 'plain' },
+  INDEXED: { label: 'Đã index', tone: 'success' },
   INDEX_FAILED: { label: 'Index lỗi', tone: 'danger' },
   PARSE_FAILED: { label: 'Lỗi bóc tách', tone: 'danger' },
   REJECTED: { label: 'Từ chối', tone: 'danger' },
-  SUPERSEDED: { label: 'Đã thay thế', tone: 'plain' },
+  SUPERSEDED: { label: 'Đã thay thế', tone: 'neutral' },
 } as const satisfies Record<string, StatusMeta>
 
 /* Flow 5 · Hồ sơ rà soát (case) */
