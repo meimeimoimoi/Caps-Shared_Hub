@@ -47,18 +47,18 @@ export function AdminLayout({
   const [collapsed, setCollapsed] = useState(false)
   const drawer = useRef<HTMLDialogElement>(null)
   const drawerTrigger = useRef<HTMLButtonElement>(null)
-  const { t } = useTranslation('common')
+  const { t } = useTranslation(['common', 'admin'])
   const { isDark, toggleTheme } = useTheme()
   const { number } = useFormatters()
   const { user, logout } = useAuth()
   const groups: SidebarGroup[] = [
     {
       id: 'expert-review',
-      label: 'Xét duyệt Expert',
+      label: t('admin:navigation.expertReview'),
       items: [
         {
           id: 'pending',
-          label: 'Hồ sơ chờ duyệt',
+          label: t('admin:navigation.pendingExperts'),
           icon: <FileText size={18} />,
           to: '/admin/experts/pending',
           active: section === 'pending',
@@ -66,7 +66,7 @@ export function AdminLayout({
         },
         {
           id: 'experts',
-          label: 'Quản lý Expert',
+          label: t('admin:navigation.manageExperts'),
           icon: <Users size={18} />,
           to: '/admin/experts',
           active: section === 'experts',
@@ -75,23 +75,23 @@ export function AdminLayout({
     },
     {
       id: 'operations',
-      label: 'Vận hành',
+      label: t('admin:navigation.operations'),
       items: [
-        { id: 'complaints', label: 'Khiếu nại', icon: <Flag size={18} /> },
+        { id: 'complaints', label: t('admin:navigation.complaints'), icon: <Flag size={18} /> },
         {
           id: 'payouts',
-          label: 'Hoàn tiền và chi trả',
+          label: t('admin:navigation.payouts'),
           icon: <CreditCard size={18} />,
         },
-        { id: 'pricing', label: 'Khung giá dịch vụ', icon: <Tag size={18} /> },
+        { id: 'pricing', label: t('admin:navigation.pricing'), icon: <Tag size={18} /> },
       ],
     },
     {
       id: 'system',
-      label: 'Hệ thống',
+      label: t('admin:navigation.system'),
       items: [
-        { id: 'accounts', label: 'Tài khoản', icon: <UserRound size={18} /> },
-        { id: 'settings', label: 'Cấu hình', icon: <Settings size={18} /> },
+        { id: 'accounts', label: t('admin:navigation.accounts'), icon: <UserRound size={18} /> },
+        { id: 'settings', label: t('admin:navigation.settings'), icon: <Settings size={18} /> },
       ],
     },
   ]
@@ -149,8 +149,8 @@ export function AdminLayout({
                     type="search"
                     value={search ?? ''}
                     onChange={(event) => onSearchChange(event.target.value)}
-                    placeholder="Tìm theo tên hoặc email"
-                    aria-label="Tìm theo tên hoặc email"
+                    placeholder={t('admin:search.placeholder')}
+                    aria-label={t('admin:search.placeholder')}
                     className="placeholder:text-fg-muted w-full min-w-0 bg-transparent text-sm outline-none"
                   />
                 </label>
@@ -166,7 +166,7 @@ export function AdminLayout({
                   <Moon size={20} aria-hidden="true" />
                 )}
               </HeaderActionButton>
-              <HeaderActionButton aria-label="Thông báo" className="relative">
+              <HeaderActionButton aria-label={t('admin:notifications.label')} className="relative">
                 <Bell size={18} aria-hidden="true" />
                 <span className="bg-indicator absolute top-2 right-2 size-2 rounded-full" />
               </HeaderActionButton>

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Modal } from '@/components/ui/feedback/modal'
 import { SUPPLEMENT_DIALOG } from '../constants'
 import type { AiFlag, Criterion } from '../types'
+import { useTranslation } from 'react-i18next'
 
 interface SupplementItem {
   key: string
@@ -56,7 +57,8 @@ export function SupplementDialog(props: SupplementDialogProps) {
   const [texts, setTexts] = useState(() =>
     Object.fromEntries(items.map((i) => [i.key, i.defaultText]))
   )
-  const [message, setMessage] = useState(SUPPLEMENT_DIALOG.defaultMessage)
+  const { t } = useTranslation(['admin', 'common'])
+  const [message, setMessage] = useState(t(SUPPLEMENT_DIALOG.defaultMessage as any))
 
   const toggle = (key: string) =>
     setChecked((s) => {
@@ -77,8 +79,8 @@ export function SupplementDialog(props: SupplementDialogProps) {
 
   return (
     <Modal
-      title={SUPPLEMENT_DIALOG.title}
-      description={SUPPLEMENT_DIALOG.notice}
+      title={t(SUPPLEMENT_DIALOG.title as any)}
+      description={t(SUPPLEMENT_DIALOG.notice as any)}
       onClose={onCancel}
       onSubmit={submit}
       footer={
@@ -88,21 +90,21 @@ export function SupplementDialog(props: SupplementDialogProps) {
             onClick={onCancel}
             className="btn btn-press btn-secondary"
           >
-            Hủy
+            {t('common:actions.cancel' as any, 'Hủy') as string}
           </button>
           <button
             type="submit"
             disabled={checked.size === 0}
             className="btn btn-press btn-primary"
           >
-            {SUPPLEMENT_DIALOG.confirm}
+            {t(SUPPLEMENT_DIALOG.confirm as any) as string}
           </button>
         </>
       }
     >
       <fieldset className="mt-4">
         <legend className="text-sm font-semibold">
-          {SUPPLEMENT_DIALOG.itemsLabel}
+          {t(SUPPLEMENT_DIALOG.itemsLabel as any)}
         </legend>
         {items.length === 0 && (
           <p className="text-fg-muted mt-2 text-sm">
@@ -141,7 +143,7 @@ export function SupplementDialog(props: SupplementDialogProps) {
         )}
       </fieldset>
       <label className="mt-5 flex flex-col gap-2 text-sm font-semibold">
-        {SUPPLEMENT_DIALOG.messageLabel}
+        {t(SUPPLEMENT_DIALOG.messageLabel as any)}
         <textarea
           rows={3}
           value={message}

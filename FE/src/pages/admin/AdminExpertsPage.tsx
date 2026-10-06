@@ -7,6 +7,8 @@ import { formatVnd } from '@/lib/format-money'
 import { mockApplications } from '../../features/admin/mockData'
 import { useExperts, ALL } from '../../features/admin/hooks/useExperts'
 import type { Expert } from '../../features/admin/types'
+import { useTranslation } from 'react-i18next'
+import { useEffect } from 'react'
 
 // MOCK: badge sidebar đếm từ mock, sau này lấy từ API
 const pendingCount = mockApplications.filter(
@@ -19,25 +21,28 @@ const selectCls =
 export default function AdminExpertsPage() {
   const experts = useExperts()
   const { paged } = experts
+  const { t } = useTranslation(['admin', 'common'])
+  useEffect(() => {
+    document.title = `${t('admin:experts.title')} | Shared Hub`
+  }, [t])
 
   return (
     <AdminLayout
       section="experts"
-      breadcrumb="Quản lý Expert"
+      breadcrumb={t('admin:navigation.manageExperts')}
       pendingCount={pendingCount}
       search={experts.query}
       onSearchChange={experts.setQuery}
     >
-      <h1 className="text-h1">Quản lý Expert</h1>
+      <h1 className="text-h1">{t('admin:experts.title')}</h1>
       <p className="text-fg-muted mt-3">
-        Expert đã được duyệt. Chỉ Expert có dịch vụ đang hoạt động mới hiển thị
-        trên Marketplace.
+        {t('admin:experts.description')}
       </p>
 
       <section className="paper mt-12 overflow-x-auto">
         <div className="flex flex-wrap items-end gap-4 px-4 py-3">
           <label className="flex flex-col gap-2 text-sm font-semibold">
-            Trạng thái dịch vụ
+            {t('admin:experts.serviceStatus')}
             <select
               value={experts.status}
               onChange={(e) =>
@@ -45,7 +50,7 @@ export default function AdminExpertsPage() {
               }
               className={selectCls}
             >
-              <option value={ALL}>Tất cả</option>
+              <option value={ALL}>{t('admin:experts.allStatuses')}</option>
               {Object.entries(SERVICE_STATUS).map(([key, s]) => (
                 <option key={key} value={key}>
                   {s.label}
@@ -54,32 +59,32 @@ export default function AdminExpertsPage() {
             </select>
           </label>
           <label className="flex flex-col gap-2 text-sm font-semibold">
-            Lĩnh vực
+            {t('admin:experts.field')}
             <select
               value={experts.field}
               onChange={(e) => experts.setField(e.target.value)}
               className={selectCls}
             >
-              <option value={ALL}>Tất cả lĩnh vực</option>
+              <option value={ALL}>{t('admin:experts.allFields')}</option>
               {experts.fields.map((f) => (
                 <option key={f}>{f}</option>
               ))}
             </select>
           </label>
           <span className="text-fg-muted ml-auto text-sm">
-            <span className="num">{paged.total}</span> Expert
+            <span className="num">{paged.total}</span> {t('admin:experts.expertCount')}
           </span>
         </div>
 
         <table className="w-full min-w-200 text-sm">
           <thead className="bg-sunken text-fg-muted">
             <tr className="[&>th]:px-4 [&>th]:py-3 [&>th]:font-semibold">
-              <th className="text-left">Expert</th>
-              <th className="text-left">Lĩnh vực</th>
-              <th className="text-left">Trạng thái dịch vụ</th>
-              <th className="text-right">Phí rà soát</th>
-              <th className="text-right">Đang nhận</th>
-              <th className="text-right">Ngày duyệt</th>
+              <th className="text-left">{t('admin:experts.table.expert')}</th>
+              <th className="text-left">{t('admin:experts.table.field')}</th>
+              <th className="text-left">{t('admin:experts.table.serviceStatus')}</th>
+              <th className="text-right">{t('admin:experts.table.reviewFee')}</th>
+              <th className="text-right">{t('admin:experts.table.activeCases')}</th>
+              <th className="text-right">{t('admin:experts.table.approvedAt')}</th>
             </tr>
           </thead>
           <tbody>
@@ -114,7 +119,7 @@ export default function AdminExpertsPage() {
                   colSpan={6}
                   className="text-fg-muted px-4 py-10 text-center"
                 >
-                  Không có Expert nào khớp bộ lọc.
+                  {t('admin:experts.noResults')}
                 </td>
               </tr>
             )}

@@ -1,0 +1,180 @@
+{
+  "navigation": {
+    "expertReview": "Expert Review",
+    "pendingExperts": "Pending Applications",
+    "manageExperts": "Manage Experts",
+    "operations": "Operations",
+    "complaints": "Complaints",
+    "payouts": "Payouts",
+    "pricing": "Pricing Framework",
+    "system": "System",
+    "accounts": "Accounts",
+    "settings": "Settings"
+  },
+  "search": {
+    "placeholder": "Search by name or email"
+  },
+  "notifications": {
+    "label": "Notifications"
+  },
+  "pendingExperts": {
+    "title": "Pending Applications",
+    "description": "Applications that have passed document screening and legal verification, waiting for System Admin capability assessment.",
+    "filterAria": "Filter by status"
+  },
+  "experts": {
+    "title": "Manage Experts",
+    "description": "Approved Experts. Only Experts with active services will appear on the Marketplace.",
+    "serviceStatus": "Service Status",
+    "allStatuses": "All",
+    "field": "Field",
+    "allFields": "All fields",
+    "expertCount": "Expert(s)",
+    "table": {
+      "expert": "Expert",
+      "field": "Field",
+      "serviceStatus": "Service Status",
+      "reviewFee": "Review Fee",
+      "activeCases": "Active Cases",
+      "approvedAt": "Approved At"
+    },
+    "noResults": "No Expert matches the filter."
+  },
+  "applicationsTable": {
+    "sortBy": "Sort by: oldest submitted first",
+    "applicationCount": "application(s)",
+    "table": {
+      "id": "Application ID",
+      "applicant": "Applicant",
+      "experienceYears": "Years Exp",
+      "aiScreening": "AI Screening",
+      "submittedAt": "Submitted At",
+      "waited": "Waited"
+    },
+    "aiFlags": "{{count}} items to review",
+    "noNotes": "No notes",
+    "overdue": "Overdue",
+    "days": "{{count}} days",
+    "noApplications": "No applications."
+  },
+  "queue": {
+    "tabs": {
+      "review": "Pending Review",
+      "screening": "Screening",
+      "moreInfo": "Need More Info",
+      "notEligible": "Not Eligible",
+      "done": "Processed"
+    }
+  },
+  "decision": {
+    "approve": {
+      "title": "Approve application for",
+      "notice": "Applicant will receive an email and can setup services. The profile will only appear on Marketplace when services are active.",
+      "noteLabel": "Internal Note",
+      "placeholder": "Optional. Only visible to System Admin.",
+      "confirm": "Approve Application"
+    },
+    "reject": {
+      "title": "Reject application for",
+      "notice": "Applicant will receive an email with your provided reason. This cannot be undone.",
+      "noteLabel": "Rejection Reason (Required)",
+      "placeholder": "Clearly state the criteria not met so the applicant understands",
+      "confirm": "Reject Application"
+    },
+    "supplement": {
+      "title": "Request Supplement",
+      "notice": "Application moved to Need More Info. Applicant will receive an email with the items below.",
+      "itemsLabel": "Items to Supplement (Select at least 1)",
+      "messageLabel": "Message",
+      "defaultMessage": "Please provide the following information to complete the capability assessment.",
+      "confirm": "Send Supplement Request",
+      "noteLabel": "Message sent to applicant"
+    },
+    "log": {
+      "approve": "Approved application.",
+      "reject": "Rejected application. Email sent with reason.",
+      "supplement": "Requested application supplement. Email sent with items needed."
+    },
+    "toast": {
+      "approve": "Application approved",
+      "reject": "Application rejected",
+      "supplement": "Supplement request sent"
+    },
+    "label": {
+      "approve": "Approve",
+      "reject": "Reject",
+      "supplement": "Request Supplement"
+    }
+  },
+  "detail": {
+    "tabs": {
+      "profile": "Profile",
+      "documents": "Documents",
+      "ai": "AI Screening",
+      "history": "History"
+    },
+    "notFound": "Application {{id}} not found",
+    "backToList": "Back to list",
+    "tabAria": "Application Info",
+    "meta": {
+      "jobTitle": "Job Title",
+      "experience": "Experience",
+      "years": "{{count}} year(s)",
+      "submitted": "Submitted"
+    },
+    "blockers": {
+      "criteria": "{{count}} criteria unreviewed or missing evidence",
+      "flags": "{{count}} AI flags unreviewed"
+    },
+    "ready": "{{count}}/{{total}} criteria reviewed with evidence",
+    "scoreSummary": {
+      "level": "Level {{level}}",
+      "unscored": "Unscored"
+    },
+    "profile": {
+      "personal": "Personal Information",
+      "name": "Full Name",
+      "dob": "Date of Birth",
+      "title": "Job Title & Company",
+      "location": "Location",
+      "bio": "Bio",
+      "experience": "Experience",
+      "years": "Years of experience",
+      "fields": "Fields",
+      "cv": "Curriculum Vitae (CV)",
+      "noCv": "No CV provided",
+      "highlights": "Experience Highlights"
+    },
+    "history": {
+      "title": "Operation History"
+    },
+    "documents": {
+      "select": "Select document",
+      "noPreview": "No preview available for this document.",
+      "pageNote": "Notes for page {{page}}",
+      "aiReviewed": "AI · Reviewed",
+      "unmark": "Unmark",
+      "mark": "Mark as reviewed"
+    },
+    "aiScreening": {
+      "declared": "Declared",
+      "present": "Present in document",
+      "missing": "Missing",
+      "inconsistent": "Inconsistent",
+      "results": "AI Screening Results",
+      "overview": "Overview",
+      "checked": "{{count}} items checked",
+      "flags": "{{count}} items need review",
+      "allReviewed": "reviewed by System Admin",
+      "noFlags": "no items need review.",
+      "reviewed": "Reviewed",
+      "viewDetail": "View AI screening details"
+    },
+    "competency": {
+      "title": "Competency Review",
+      "subtitle": "Scoring scale based on review policy",
+      "level": "Level {{level}}",
+      "evidence": "Evidence (required)"
+    }
+  }
+}
