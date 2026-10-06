@@ -28,7 +28,6 @@ import { formatDate } from '../../features/expert-vetting/utils/applications'
 import { useAdminNav } from '@/app/layouts/admin/useAdminNav'
 import { useApplicationReview } from '../../features/expert-vetting/hooks/useApplicationReview'
 import type { ReviewDecision } from '../../features/expert-vetting/types'
-import { mockApplications } from '../../features/expert-vetting/mockData'
 import { useTranslation } from 'react-i18next'
 import { useEffect } from 'react'
 
@@ -53,10 +52,6 @@ export default function AdminApplicationDetailPage() {
     document.title = detail ? `${detail.name} | Shared Hub` : 'Shared Hub'
   }, [detail])
 
-  const pendingCount = mockApplications.filter(
-    (a) => a.status === 'CAPABILITY_REVIEW'
-  ).length
-
   const listLink = (
     <Link
       to="/admin/experts/pending"
@@ -72,7 +67,7 @@ export default function AdminApplicationDetailPage() {
         {...nav}
         section="pending"
         breadcrumb={listLink}
-        pendingCount={pendingCount}
+        pendingCount={nav.pendingCount}
       >
         <h1 className="text-h1-tool">
           {review.isLoading ? t('common:loading') : t('admin:detail.notFound', { id }).replace(id, '').trim() + ' ' + id}

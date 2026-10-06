@@ -11,14 +11,8 @@ import { useAdminNav } from '@/app/layouts/admin/useAdminNav'
 import { useExperts, ALL } from '../../features/expert-vetting/hooks/useExperts'
 import { ExpertDrawer } from '../../features/expert-vetting/components/ExpertDrawer'
 import type { Expert } from '../../features/expert-vetting/types'
-import { mockApplications } from '../../features/expert-vetting/mockData'
 import { useTranslation } from 'react-i18next'
 import { useEffect } from 'react'
-
-// MOCK: badge sidebar đếm từ mock, sau này lấy từ API
-const pendingCount = mockApplications.filter(
-  (a) => a.status === 'CAPABILITY_REVIEW'
-).length
 
 const selectCls =
   'border-border-control rounded-control shadow-control bg-paper h-control min-w-48 border px-3 text-sm'
@@ -39,7 +33,7 @@ export default function AdminExpertsPage() {
       {...nav}
       section="experts"
       breadcrumb={t('admin:navigation.manageExperts')}
-      pendingCount={pendingCount}
+      pendingCount={nav.pendingCount}
       search={experts.query}
       onSearchChange={experts.setQuery}
     >

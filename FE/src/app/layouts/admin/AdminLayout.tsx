@@ -125,7 +125,6 @@ interface RoleShellProps extends ShellPageProps {
 export function RoleShell({
   nav,
   initials,
-  searchPlaceholder = 'Tìm theo tên hoặc email',
   breadcrumb,
   search,
   onSearchChange,
