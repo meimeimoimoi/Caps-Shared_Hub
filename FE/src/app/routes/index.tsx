@@ -63,6 +63,13 @@ const AdminApplicationDetailPage = lazy(
 const AdminExpertsPage = lazy(() => import('@/pages/admin/AdminExpertsPage'))
 const AdminDisputeDetailPage = lazy(() => import('@/pages/admin/AdminDisputeDetailPage'))
 const AdminEscrowPage = lazy(() => import('@/pages/admin/AdminEscrowPage'))
+const KnowledgeQueuePage = lazy(() => import('@/pages/knowledge-admin/KnowledgeQueuePage'))
+const KnowledgeSourcesPage = lazy(() => import('@/pages/knowledge-admin/KnowledgeSourcesPage'))
+const KnowledgeVersionPage = lazy(() => import('@/pages/knowledge-admin/KnowledgeVersionPage'))
+const KnowledgeReviewPage = lazy(() => import('@/pages/knowledge-admin/KnowledgeReviewPage'))
+const KnowledgeDocumentPage = lazy(() => import('@/pages/knowledge-admin/KnowledgeDocumentPage'))
+const KnowledgeDocumentsPage = lazy(() => import('@/pages/knowledge-admin/KnowledgeDocumentsPage'))
+const KnowledgeUploadsPage = lazy(() => import('@/pages/knowledge-admin/KnowledgeUploadsPage'))
 
 function Fallback() {
   const { t } = useTranslation('common')
@@ -105,6 +112,24 @@ const router = createBrowserRouter(
       <Route path="/admin/disputes" element={<AdminDisputeDetailPage />} />
       <Route path="/admin/disputes/:id" element={<AdminDisputeDetailPage />} />
       <Route path="/admin/escrow" element={<AdminEscrowPage />} />
+      {/* TODO(auth): bọc ProtectedRoute + check role Knowledge Admin khi có API */}
+      <Route path="/knowledge" element={<Navigate to="/knowledge/queue" replace />} />
+      <Route path="/knowledge/queue" element={<KnowledgeQueuePage />} />
+      <Route path="/knowledge/sources" element={<KnowledgeSourcesPage />} />
+      <Route path="/knowledge/uploads" element={<KnowledgeUploadsPage />} />
+      <Route path="/knowledge/documents" element={<KnowledgeDocumentsPage />} />
+      <Route
+        path="/knowledge/documents/:id"
+        element={<KnowledgeDocumentPage />}
+      />
+      <Route
+        path="/knowledge/documents/:id/compare"
+        element={<KnowledgeVersionPage />}
+      />
+      <Route
+        path="/knowledge/documents/:id/review"
+        element={<KnowledgeReviewPage />}
+      />
 
       <Route element={<DraftRoute />}>
         <Route path="/drafts" element={<DraftLayout />}>

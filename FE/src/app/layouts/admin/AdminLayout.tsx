@@ -1,6 +1,5 @@
 import { useRef, useState, type ReactNode } from 'react'
 import {
-  Bell,
   CreditCard,
   FileText,
   Flag,
@@ -27,6 +26,7 @@ import { AppAccountMenu } from '@/components/ui/layout/app-account-menu'
 import { useTheme } from '@/hooks/useTheme'
 import { useFormatters } from '@/hooks/useFormatters'
 import { useAuth } from '@/features/auth'
+import { NotificationBell, type ShellNotification } from '../NotificationBell'
 
 export interface NavItem {
   label: string
@@ -46,6 +46,8 @@ interface ShellPageProps {
   /** Bỏ trống thì ẩn ô tìm kiếm */
   search?: string
   onSearchChange?: (value: string) => void
+  /** Danh sách trong popover chuông; có mục thì hiện chấm đỏ */
+  notifications?: ShellNotification[]
   children: ReactNode
 }
 
@@ -126,6 +128,7 @@ export function RoleShell({
   breadcrumb,
   search,
   onSearchChange,
+  notifications = [],
   children,
 }: RoleShellProps) {
   const [collapsed, setCollapsed] = useState(false)
@@ -218,10 +221,7 @@ export function RoleShell({
                   <Moon size={20} aria-hidden="true" />
                 )}
               </HeaderActionButton>
-              <HeaderActionButton aria-label="Thông báo" className="relative">
-                <Bell size={18} aria-hidden="true" />
-                <span className="bg-indicator absolute top-2 right-2 size-2 rounded-full" />
-              </HeaderActionButton>
+              <NotificationBell notifications={notifications} className="size-9" />
               <AppAccountMenu
                 name={user?.name ?? initials}
                 email={user?.email}

@@ -104,18 +104,19 @@ export function AppSidebar({
                     }
                   >
                     {item.label}
+                    {item.badge != null && collapsed && `, ${item.badge}`}
                   </span>
-                  {item.badge != null && (
-                    <span
-                      className={
-                        collapsed
-                          ? 'sr-only'
-                          : 'bg-indicator ml-auto grid min-h-5 min-w-5 shrink-0 place-items-center rounded-full px-1.5 text-xs font-semibold text-[var(--ui-on-accent)] tabular-nums'
-                      }
-                    >
-                      {item.badge}
-                    </span>
-                  )}
+                  {item.badge != null &&
+                    (collapsed ? (
+                      <span
+                        aria-hidden="true"
+                        className="bg-indicator absolute top-2 right-2 size-2 rounded-full"
+                      />
+                    ) : (
+                      <span className="bg-indicator ml-auto grid min-h-5 min-w-5 shrink-0 place-items-center rounded-full px-1.5 text-xs font-semibold text-[var(--ui-on-accent)] tabular-nums">
+                        {item.badge}
+                      </span>
+                    ))}
                 </>
               )
               const className = `relative flex min-h-11 items-center gap-3 overflow-hidden rounded-[10px] py-3 text-sm whitespace-nowrap transition-colors focus-visible:!outline-white ${collapsed ? 'justify-center px-2' : 'px-3.5'} ${item.active ? 'bg-white/10 font-semibold !text-white before:absolute before:inset-y-3 before:left-0 before:w-[3px] before:rounded-r before:bg-[var(--ui-indicator)]' : 'font-medium !text-[var(--ui-sidebar-text)]'} ${item.to ? 'hover:bg-white/10 hover:!text-white' : 'w-full cursor-not-allowed text-left opacity-55'}`
