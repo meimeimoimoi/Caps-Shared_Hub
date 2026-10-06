@@ -1,4 +1,8 @@
-import { formControlClassName as inputCls, formButtonClassName as btnBase } from '@/components/ui/forms/form-control'
+import { Trans, useTranslation } from 'react-i18next'
+import {
+  formControlClassName as inputCls,
+  formButtonClassName as btnBase,
+} from '@/components/ui/forms/form-control'
 import {
   formatVietnamPhoneInput,
   normalizeVietnamPhone,
@@ -20,7 +24,7 @@ import type { Profile } from '../types'
 import { FormField } from '@/components/ui/forms/form-field'
 import {
   passwordRequirements,
-  validateAccount,
+  validateAccountIssues,
   type AccountField,
 } from '@/features/auth'
 
@@ -46,6 +50,8 @@ export function AccountCreation({
   onSubmit,
   policyRoutes,
 }: AccountCreationProps) {
+  const { t } = useTranslation(['expertRegistration', 'auth'])
+
   const [password, setPassword] = useState('')
   const [confirmation, setConfirmation] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -59,7 +65,7 @@ export function AccountCreation({
   >({})
   const touch = (key: AccountField) =>
     setTouched((current) => ({ ...current, [key]: true }))
-  const errors = validateAccount({
+  const errors = validateAccountIssues({
     name: profile.name,
     email: profile.email,
     phone: profile.phone,
@@ -72,6 +78,8 @@ export function AccountCreation({
     touched[key] ||
     (key === 'confirmPassword' && confirmation.length > 0)
       ? errors[key]
+        ? t(`auth:validation.${errors[key]}`)
+        : undefined
       : undefined
   const passwordError = fieldError('password')
   const confirmationError = fieldError('confirmPassword')
@@ -90,10 +98,10 @@ export function AccountCreation({
     strength === 'empty'
       ? ''
       : strength === 'high'
-        ? 'High'
+        ? t('password.high')
         : strength === 'medium'
-          ? 'Medium'
-          : 'Low'
+          ? t('password.medium')
+          : t('password.low')
 
   const showRequirements =
     passwordFocused || requirementsExpanded || !!passwordError
@@ -105,7 +113,7 @@ export function AccountCreation({
     return (
       <FormField
         htmlFor={name}
-        label={confirm ? 'Confirm password *' : 'Password *'}
+        label={confirm ? t('password.confirmRequired') : t('password.required')}
         error={error}
         errorId={`error-${name}`}
       >
@@ -125,7 +133,9 @@ export function AccountCreation({
               touch(name)
               if (!confirm) setPasswordFocused(false)
             }}
-            placeholder={confirm ? 'Confirm password' : 'Enter password'}
+            placeholder={
+              confirm ? t('password.confirm') : t('password.placeholder')
+            }
             onChange={(e) =>
               (confirm ? setConfirmation : setPassword)(e.target.value)
             }
@@ -143,7 +153,7 @@ export function AccountCreation({
           <button
             type="button"
             className="expert-password-toggle"
-            aria-label={`${visible ? 'Hide' : 'Show'} ${confirm ? 'confirmation password' : 'password'}`}
+            aria-label={t(confirm ? visible ? 'dynamic.hideConfirmation' : 'dynamic.showConfirmation' : visible ? 'dynamic.hidePassword' : 'dynamic.showPassword')}
             aria-controls={name}
             aria-pressed={visible}
             onClick={() =>
@@ -174,7 +184,7 @@ export function AccountCreation({
         }
         placeholder={
           key === 'name'
-            ? 'Your full name'
+            ? t('fields.namePlaceholder')
             : key === 'email'
               ? 'you@example.com'
               : '+84 912 345 678'
@@ -224,13 +234,14 @@ export function AccountCreation({
         onSubmit(e)
       }}
     >
-      <h2 className="text-center">Create your expert account</h2>
+      <h2 className="text-center">{t('account.heading')}</h2>
       <p className={`${mutedCls} expert-account-signin text-center`}>
-        Already registered? <Link to="/login">Sign in</Link>
+        {t('account.registered')}
+        <Link to="/login">{t('actions.signIn')}</Link>
       </p>
       <div className="expert-account-fields">
         <FormField
-          label="Full name *"
+          label={t('fields.fullNameRequired')}
           htmlFor="name"
           error={fieldError('name') || formErrors.name}
           errorId="error-name"
@@ -238,7 +249,7 @@ export function AccountCreation({
           {renderInput('name', true)}
         </FormField>
         <FormField
-          label="Phone number *"
+          label={t('fields.phoneRequired')}
           htmlFor="phone"
           className="expert-phone-form-field"
           error={phoneError}
@@ -251,7 +262,7 @@ export function AccountCreation({
                 width="21"
                 height="14"
                 role="img"
-                aria-label="Vietnam"
+                aria-label={t('fields.vietnam')}
               >
                 <rect width="30" height="20" fill="#da251d" />
                 <path
@@ -318,7 +329,7 @@ export function AccountCreation({
         </FormField>
         <div className="expert-account-wide">
           <FormField
-            label="Email address *"
+            label={t('fields.emailRequired')}
             htmlFor="email"
             error={fieldError('email') || formErrors.email}
             errorId="error-email"
@@ -328,22 +339,78 @@ export function AccountCreation({
         </div>
         {renderPassword(false)}
         {renderPassword(true)}
-        <div id="password-guidance" className="expert-password-guidance expert-account-wide" data-strength={strength}>
+        <div
+          id="password-guidance"
+          className="expert-password-guidance expert-account-wide"
+          data-strength={strength}
+        >
           <div className="expert-password-feedback" hidden={!password}>
-            <div className="expert-password-strength-label"><span>Password strength</span><strong>{strengthLabel}</strong></div>
-            <div className="expert-password-meter" role="meter" aria-label="Password strength" aria-valuemin={0} aria-valuemax={3} aria-valuenow={strength === 'high' ? 3 : strength === 'medium' ? 2 : password ? 1 : 0} aria-valuetext={strengthLabel || 'Empty'}>
-              {[1, 2, 3].map((segment) => <span key={segment} aria-hidden="true" data-active={!!password && segment <= (strength === 'high' ? 3 : strength === 'medium' ? 2 : 1)} />)}
+            <div className="expert-password-strength-label">
+              <span>{t('password.strength')}</span>
+              <strong>{strengthLabel}</strong>
+            </div>
+            <div
+              className="expert-password-meter"
+              role="meter"
+              aria-label={t('password.strength')}
+              aria-valuemin={0}
+              aria-valuemax={3}
+              aria-valuenow={
+                strength === 'high'
+                  ? 3
+                  : strength === 'medium'
+                    ? 2
+                    : password
+                      ? 1
+                      : 0
+              }
+              aria-valuetext={strengthLabel || t('password.empty')}
+            >
+              {[1, 2, 3].map((segment) => (
+                <span
+                  key={segment}
+                  aria-hidden="true"
+                  data-active={
+                    !!password &&
+                    segment <=
+                      (strength === 'high' ? 3 : strength === 'medium' ? 2 : 1)
+                  }
+                />
+              ))}
             </div>
           </div>
-          <button type="button" className="expert-password-help" aria-expanded={showRequirements} aria-controls="password-requirements" onClick={() => setRequirementsExpanded((expanded) => !expanded)}>
-            <span>{passed === 5 ? 'All password requirements met' : '12+ characters; uppercase, lowercase, number & symbol'}</span>
+          <button
+            type="button"
+            className="expert-password-help"
+            aria-expanded={showRequirements}
+            aria-controls="password-requirements"
+            onClick={() => setRequirementsExpanded((expanded) => !expanded)}
+          >
+            <span>
+              {passed === 5 ? t('password.complete') : t('password.guidance')}
+            </span>
             <ChevronDown size={16} aria-hidden="true" />
           </button>
-          <ul id="password-requirements" className="expert-password-requirements" hidden={!showRequirements}>
-            {requirements.map((rule) => <li key={rule.label} data-met={rule.met}>
-              {rule.met ? <Check size={15} aria-hidden="true" /> : <Circle size={15} aria-hidden="true" />}
-              <span><span className="sr-only">{rule.met ? 'Met: ' : 'Not met: '}</span>{rule.label}</span>
-            </li>)}
+          <ul
+            id="password-requirements"
+            className="expert-password-requirements"
+            hidden={!showRequirements}
+          >
+            {requirements.map((rule) => (
+              <li key={rule.key} data-met={rule.met}>
+                {rule.met ? (
+                  <Check size={15} aria-hidden="true" />
+                ) : (
+                  <Circle size={15} aria-hidden="true" />
+                )}
+                <span>
+                  <span className="sr-only">
+                    {rule.met ? t('password.met') : t('password.notMet')}
+                  </span>
+                  {t(`auth:${rule.key}`)}
+                </span>
+              </li>
+            ))}
           </ul>
         </div>
       </div>
@@ -361,19 +428,7 @@ export function AccountCreation({
             aria-describedby={termsError ? 'error-terms' : undefined}
           />
           <label htmlFor="account-terms">
-            I agree to the{' '}
-            {policyRoutes?.terms ? (
-              <Link to={policyRoutes.terms}>terms and conditions</Link>
-            ) : (
-              <span className="expert-policy-text">terms and conditions</span>
-            )}{' '}
-            and{' '}
-            {policyRoutes?.privacy ? (
-              <Link to={policyRoutes.privacy}>privacy policy</Link>
-            ) : (
-              <span className="expert-policy-text">privacy policy</span>
-            )}
-            .
+            <Trans ns="expertRegistration" i18nKey="consent" components={{ terms: policyRoutes?.terms ? <Link to={policyRoutes.terms} /> : <span className="expert-policy-text" />, privacy: policyRoutes?.privacy ? <Link to={policyRoutes.privacy} /> : <span className="expert-policy-text" /> }} />
           </label>
         </div>
         {termsError && (
@@ -396,7 +451,7 @@ export function AccountCreation({
             aria-hidden="true"
           />
         )}
-        {submitting ? 'Creating…' : 'Create account'}{' '}
+        {submitting ? t('actions.creating') : t('actions.create')}{' '}
         {!submitting && <ArrowRight size={16} />}
       </button>
     </form>

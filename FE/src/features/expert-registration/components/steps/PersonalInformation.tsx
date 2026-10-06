@@ -1,10 +1,20 @@
+import { useTranslation } from 'react-i18next'
 import { formControlClassName as inputCls } from '@/components/ui/forms/form-control'
 import { formatVietnamPhone } from '@/lib/validation/vietnamPhone'
 import { useRef, type ReactNode } from 'react'
-import { Camera, User, UserCircle, Mail, Briefcase, ImagePlus } from 'lucide-react'
+import {
+  Camera,
+  User,
+  UserCircle,
+  Mail,
+  Briefcase,
+  ImagePlus,
+} from 'lucide-react'
 import type { Profile } from '../../types'
 import { FormField } from '@/components/ui/forms/form-field'
 import { DatePicker } from '@/components/ui/forms/date-picker'
+import type { RegistrationMessage } from '../../types/messages'
+import { useFormatters } from '@/hooks/useFormatters'
 
 export interface PersonalInformationProps {
   heading: ReactNode
@@ -16,10 +26,8 @@ export interface PersonalInformationProps {
   onUpdate: (key: keyof Profile, value: string) => void
   onAvatarChange: (file: File | null, preview: string) => void
   onIndependentChange: (val: boolean) => void
-  onError: (msg: string) => void
+  onError: (msg: RegistrationMessage | null) => void
 }
-
-
 
 export function PersonalInformation({
   heading,
@@ -31,6 +39,9 @@ export function PersonalInformation({
   onAvatarChange,
   onError,
 }: PersonalInformationProps) {
+  const { t } = useTranslation('expertRegistration')
+  const format = useFormatters()
+
   const photoInputRef = useRef<HTMLInputElement>(null)
   const handleUpdate = (key: keyof Profile, value: string) => {
     onUpdate(key, value)
@@ -60,22 +71,28 @@ export function PersonalInformation({
         }
         placeholder={
           key === 'name'
-            ? 'Your full name'
+            ? t('fields.namePlaceholder')
             : key === 'email'
               ? 'you@example.com'
               : key === 'phone'
                 ? '+84 912 345 678'
                 : key === 'title'
-                  ? 'e.g. Tax consultant'
+                  ? t('fields.titlePlaceholder')
                   : key === 'location'
-                    ? 'e.g. Ho Chi Minh City'
+                    ? t('fields.regionPlaceholder')
                     : key === 'company'
-                      ? 'Your firm or organization'
+                      ? t('fields.companyPlaceholder')
                       : undefined
         }
-        onBlur={() => { if (key === 'phone') { onUpdate('phone', formatVietnamPhone(profile.phone)) } }}
+        onBlur={() => {
+          if (key === 'phone') {
+            onUpdate('phone', formatVietnamPhone(profile.phone))
+          }
+        }}
         required={required}
-        value={key === 'phone' ? formatVietnamPhone(profile.phone) : profile[key]}
+        value={
+          key === 'phone' ? formatVietnamPhone(profile.phone) : profile[key]
+        }
         onChange={(e) => handleUpdate(key, e.target.value)}
         aria-invalid={!!formErrors[key]}
         aria-describedby={errorId}
@@ -90,19 +107,13 @@ export function PersonalInformation({
       <div className="expert-personal-heading">
         <div className="expert-personal-heading-copy">
           {heading}
-          <p>
-            Tell us about your professional background. Required fields are
-            marked with an asterisk.
-          </p>
+          <p>{t('personal.guidance')}</p>
         </div>
 
         <div className="expert-profile-photo">
           <div className="expert-photo-preview">
             {avatarPreview ? (
-              <img
-                src={avatarPreview}
-                alt="Profile preview"
-              />
+              <img src={avatarPreview} alt={t('personal.preview')} />
             ) : (
               <div className="expert-photo-placeholder">
                 <User size={32} aria-hidden="true" />
@@ -110,7 +121,7 @@ export function PersonalInformation({
             )}
             <input
               ref={photoInputRef}
-              aria-label="Upload profile photo"
+              aria-label={t('personal.uploadLabel')}
               type="file"
               accept="image/jpeg,image/png,image/webp"
               className="sr-only"
@@ -121,25 +132,20 @@ export function PersonalInformation({
                   !/\.(jpe?g|png|webp)$/i.test(f.name) ||
                   f.size > 5 * 1024 * 1024
                 ) {
-                  onError('Choose a JPG, PNG or WebP image up to 5 MB.')
+                  onError({ key: 'personal.photoError' })
                   e.target.value = ''
                   return
                 }
                 onAvatarChange(f, URL.createObjectURL(f))
-                onError('')
+                onError(null)
                 e.target.value = ''
               }}
             />
           </div>
           <div className="expert-photo-details">
-            <p className="expert-photo-title">Profile photo</p>
-            <p
-              className="expert-photo-description"
-              title={avatar?.name}
-            >
-              {avatar
-                ? avatar.name
-                : 'JPG, PNG, WebP \u00b7 max 5 MB'}
+            <p className="expert-photo-title">{t('personal.photo')}</p>
+            <p className="expert-photo-description" title={avatar?.name}>
+              {avatar ? avatar.name : t('personal.photoFormats')}
             </p>
             <div className="expert-photo-actions">
               <button
@@ -147,10 +153,17 @@ export function PersonalInformation({
                 className="expert-photo-upload"
                 onClick={() => photoInputRef.current?.click()}
               >
-                {avatarPreview
-                  ? <><Camera size={14} aria-hidden="true" /> Change photo</>
-                  : <><ImagePlus size={14} aria-hidden="true" /> Upload photo</>
-                }
+                {avatarPreview ? (
+                  <>
+                    <Camera size={14} aria-hidden="true" />
+                    {t('personal.change')}
+                  </>
+                ) : (
+                  <>
+                    <ImagePlus size={14} aria-hidden="true" />
+                    {t('personal.upload')}
+                  </>
+                )}
               </button>
             </div>
           </div>
@@ -163,20 +176,30 @@ export function PersonalInformation({
           <span className="expert-pro-section-icon">
             <UserCircle size={18} aria-hidden="true" />
           </span>
-          <h3 className="expert-pro-section-title">Personal details</h3>
+          <h3 className="expert-pro-section-title">{t('personal.details')}</h3>
           <span className="expert-pro-section-line" aria-hidden="true" />
         </div>
         <div className="expert-personal-grid">
           <FormField
             htmlFor="profile-name"
-            label="Full name *"
+            label={t('fields.fullNameRequired')}
             error={formErrors.name}
             errorId="error-name"
           >
             {renderInput('name', true)}
           </FormField>
-          <FormField htmlFor="profile-birth" label="Date of birth" error={formErrors.birth} errorId="error-birth">
-            <DatePicker id="profile-birth" value={profile.birth} onChange={(value) => onUpdate('birth', value)} error={formErrors.birth} />
+          <FormField
+            htmlFor="profile-birth"
+            label={t('fields.birth')}
+            error={formErrors.birth}
+            errorId="error-birth"
+          >
+            <DatePicker
+              id="profile-birth"
+              value={profile.birth}
+              onChange={(value) => onUpdate('birth', value)}
+              error={formErrors.birth}
+            />
           </FormField>
         </div>
       </div>
@@ -187,14 +210,16 @@ export function PersonalInformation({
           <span className="expert-pro-section-icon expert-pro-section-icon--contact">
             <Mail size={18} aria-hidden="true" />
           </span>
-          <h3 className="expert-pro-section-title">Contact information</h3>
-          <span className="expert-pro-required-badge">Required</span>
+          <h3 className="expert-pro-section-title">{t('personal.contact')}</h3>
+          <span className="expert-pro-required-badge">
+            {t('experience.required')}
+          </span>
           <span className="expert-pro-section-line" aria-hidden="true" />
         </div>
         <div className="expert-personal-grid">
           <FormField
             htmlFor="profile-email"
-            label="Email address *"
+            label={t('fields.emailRequired')}
             error={formErrors.email}
             errorId="error-email"
           >
@@ -202,7 +227,7 @@ export function PersonalInformation({
           </FormField>
           <FormField
             htmlFor="profile-phone"
-            label="Phone number (Vietnam +84) *"
+            label={t('fields.phoneVietnam')}
             error={formErrors.phone}
             errorId="error-phone"
           >
@@ -217,13 +242,15 @@ export function PersonalInformation({
           <span className="expert-pro-section-icon expert-pro-section-icon--expertise">
             <Briefcase size={18} aria-hidden="true" />
           </span>
-          <h3 className="expert-pro-section-title">Professional profile</h3>
+          <h3 className="expert-pro-section-title">
+            {t('personal.professional')}
+          </h3>
           <span className="expert-pro-section-line" aria-hidden="true" />
         </div>
         <div className="expert-personal-grid">
           <FormField
             htmlFor="profile-title"
-            label="Current professional title"
+            label={t('fields.professionalTitle')}
             error={formErrors.title}
             errorId="error-title"
           >
@@ -231,7 +258,7 @@ export function PersonalInformation({
           </FormField>
           <FormField
             htmlFor="profile-location"
-            label="City / region"
+            label={t('fields.region')}
             error={formErrors.location}
             errorId="error-location"
           >
@@ -242,8 +269,8 @@ export function PersonalInformation({
         <div className="expert-bio-field">
           <FormField
             htmlFor="profile-bio"
-            label="Short introduction"
-            help="May appear publicly once marketplace eligibility requirements are met."
+            label={t('fields.bio')}
+            help={t('fields.bioPublic')}
             error={formErrors.bio}
             errorId="error-bio"
           >
@@ -255,17 +282,21 @@ export function PersonalInformation({
               onChange={(e) => handleUpdate('bio', e.target.value)}
               aria-invalid={!!formErrors.bio}
               aria-describedby={`profile-bio-hint profile-bio-count${formErrors.bio ? ' error-bio' : ''}`}
-              placeholder="Share your experience and who you help."
+              placeholder={t('fields.bioPlaceholder')}
               rows={4}
               className={`${inputCls} min-h-[110px] resize-y ${formErrors.bio ? '!border-ex-error-text focus:shadow-[0_0_0_3px_#d9302533]' : ''}`}
             />
           </FormField>
           <div className="expert-bio-footer">
             <p id="profile-bio-hint" className="expert-bio-hint">
-              May appear publicly once marketplace eligibility requirements are met.
+              {t('fields.bioPublic')}
             </p>
-            <p id="profile-bio-count" className="expert-bio-count" aria-live="off">
-              {profile.bio.length.toLocaleString('en-US')} / 1,000 characters
+            <p
+              id="profile-bio-count"
+              className="expert-bio-count"
+              aria-live="off"
+            >
+              {t('counts.characters', { length: format.number(profile.bio.length), maximum: format.number(1000) })}
             </p>
           </div>
         </div>

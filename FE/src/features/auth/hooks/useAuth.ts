@@ -4,11 +4,16 @@ import { safeReturnPath } from '../utils/returnPath'
 import { authApi } from '../api/authApi'
 import { useAuthStore } from '../store/authStore'
 import type { LoginFormValues } from '../types'
+import { useTranslation } from 'react-i18next'
+import { ApiError } from '@/lib/api-client'
 
 export function useAuth() {
+  const { t } = useTranslation('auth')
   const { user, isAuthenticated, setSession, clearSession } = useAuthStore()
   const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [error, setError] = useState<
+    'errors.credentials' | 'errors.unavailable' | 'errors.failed' | null
+  >(null)
   const navigate = useNavigate()
   const location = useLocation()
 
@@ -21,8 +26,13 @@ export function useAuth() {
       navigate(safeReturnPath(location.state?.from), { replace: true })
       return u
     } catch (e) {
-      const msg = e instanceof Error ? e.message : 'Login failed'
-      setError(msg)
+      setError(
+        e instanceof ApiError && e.status === 401
+          ? 'errors.credentials'
+          : e instanceof ApiError && (e.status == null || e.status >= 500)
+            ? 'errors.unavailable'
+            : 'errors.failed'
+      )
       throw e
     } finally {
       setIsLoading(false)
@@ -34,5 +44,12 @@ export function useAuth() {
     navigate('/login', { replace: true })
   }
 
-  return { user, isAuthenticated, isLoading, error, login, logout }
+  return {
+    user,
+    isAuthenticated,
+    isLoading,
+    error: error ? t(error) : null,
+    login,
+    logout,
+  }
 }

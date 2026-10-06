@@ -1,5 +1,8 @@
-import { collectFormErrors, focusInvalidField } from '@/lib/validation/formValidation'
-import { normalizeVietnamPhone, vietnamPhoneError } from '@/lib/validation/vietnamPhone'
+import { focusInvalidField } from '@/lib/validation/formValidation'
+import { collectFormIssues } from '@/lib/validation/formIssues'
+import { normalizeVietnamPhone } from '@/lib/validation/vietnamPhone'
+import { useTranslation } from 'react-i18next'
+import type { RegistrationMessage } from '../types/messages'
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { criteria, initial } from '../constants'
 import type { Profile } from '../types'
@@ -8,21 +11,26 @@ export interface UseRegistrationFormProps {
   onRegistrationSubmit: () => void
 }
 
-export function useRegistrationForm({ onRegistrationSubmit }: UseRegistrationFormProps) {
+export function useRegistrationForm({
+  onRegistrationSubmit,
+}: UseRegistrationFormProps) {
+  const { t } = useTranslation('expertRegistration')
   const [profile, setProfile] = useState<Profile>(initial)
   const [step, setStep] = useState(0)
   const [submitting, setSubmitting] = useState(false)
   const [files, setFiles] = useState<Record<string, File[]>>({})
   const [fields, setFields] = useState<string[]>([])
-  const [activeCriterion, setActiveCriterion] = useState(criteria[0]!)
+  const [activeCriterion, setActiveCriterion] = useState<string>(criteria[0]!)
   const [confirmed, setConfirmed] = useState(false)
-  const [error, setError] = useState('')
-  const [notice, setNotice] = useState('')
+  const [error, setError] = useState<RegistrationMessage | null>(null)
+  const [notice, setNotice] = useState<RegistrationMessage | null>(null)
   const [avatar, setAvatar] = useState<File | null>(null)
   const [avatarPreview, setAvatarPreview] = useState('')
   const [independent, setIndependent] = useState(true)
   const [draftSaved, setDraftSaved] = useState(false)
-  const [formErrors, setFormErrors] = useState<Record<string, string>>({})
+  const [formErrors, setFormErrors] = useState<
+    Record<string, RegistrationMessage>
+  >({})
   const heading = useRef<HTMLHeadingElement>(null)
   const errorRef = useRef<HTMLParagraphElement>(null)
 
@@ -34,22 +42,37 @@ export function useRegistrationForm({ onRegistrationSubmit }: UseRegistrationFor
   }, [error])
 
   const validateForm = (form: HTMLFormElement): boolean => {
-    const result = collectFormErrors(form)
-    const errors = result.errors
+    const result = collectFormIssues(form)
+    const errors: Record<string, RegistrationMessage> = Object.fromEntries(
+      Object.entries(result.errors).map(([field, issue]) => [
+        field,
+        { key: `validation.${issue.code}`, params: issue.params },
+      ])
+    )
     let firstInvalid = result.firstInvalid
-    const phoneInput = form.querySelector<HTMLInputElement>('input[name="phone"]')
+    const phoneInput = form.querySelector<HTMLInputElement>(
+      'input[name="phone"]'
+    )
     if (phoneInput) {
-      const phoneError = vietnamPhoneError(phoneInput.value)
+      const phoneError = !phoneInput.value.trim()
+        ? 'validation.phoneRequired'
+        : !normalizeVietnamPhone(phoneInput.value)
+          ? 'validation.phoneInvalid'
+          : undefined
       if (phoneError) {
-        errors.phone = phoneError
+        errors.phone = { key: phoneError }
         firstInvalid ??= phoneInput
       } else {
-        setProfile((current) => ({ ...current, phone: normalizeVietnamPhone(phoneInput.value) ?? phoneInput.value.trim() }))
+        setProfile((current) => ({
+          ...current,
+          phone:
+            normalizeVietnamPhone(phoneInput.value) ?? phoneInput.value.trim(),
+        }))
       }
     }
     if (step === 1) {
-      if (!fields.length) errors.expertise = 'Select at least one area of expertise.'
-      if (!files.CV?.length) errors.CV = 'Choose your CV to continue.'
+      if (!fields.length) errors.expertise = { key: 'validation.expertise' }
+      if (!files.CV?.length) errors.CV = { key: 'validation.cv' }
     }
     setFormErrors(errors)
     if (Object.keys(errors).length) {
@@ -64,8 +87,8 @@ export function useRegistrationForm({ onRegistrationSubmit }: UseRegistrationFor
 
   function move(next: number) {
     setStep(next)
-    setError('')
-    setNotice('')
+    setError(null)
+    setNotice(null)
     setFormErrors({})
     requestAnimationFrame(() => heading.current?.focus())
   }
@@ -78,18 +101,18 @@ export function useRegistrationForm({ onRegistrationSubmit }: UseRegistrationFor
         (f) => !/\.(pdf|png|jpe?g)$/i.test(f.name) || f.size > 10 * 1024 * 1024
       )
     ) {
-      setFormErrors((p) => ({ ...p, [key]: 'This file selection could not be added. Choose PDF, JPG or PNG files, each no larger than 10 MB.' }))
+      setFormErrors((p) => ({ ...p, [key]: { key: 'validation.file' } }))
       return
     }
     setFiles((p) => ({ ...p, [key]: [...(p[key] ?? []), ...selected] }))
     clearFormError(key)
-    setError('')
+    setError(null)
   }
 
   function advance(e: FormEvent<HTMLFormElement>) {
     e.preventDefault()
     if (submitting) return
-    setError('')
+    setError(null)
 
     if (!validateForm(e.currentTarget)) return
 
@@ -98,7 +121,7 @@ export function useRegistrationForm({ onRegistrationSubmit }: UseRegistrationFor
       return
     }
     if (!confirmed) {
-      setError('Confirm that your application is accurate before continuing.')
+      setError({ key: 'validation.confirmed' })
       return
     }
     setSubmitting(true)
@@ -109,7 +132,12 @@ export function useRegistrationForm({ onRegistrationSubmit }: UseRegistrationFor
   }
 
   function clearFormError(key: string) {
-    if (formErrors[key]) setFormErrors((p) => ({ ...p, [key]: '' }))
+    if (formErrors[key])
+      setFormErrors((p) => {
+        const next = { ...p }
+        delete next[key]
+        return next
+      })
   }
 
   function updateAvatar(f: File | null, preview: string) {
@@ -123,22 +151,25 @@ export function useRegistrationForm({ onRegistrationSubmit }: UseRegistrationFor
   }
 
   function toggleField(f: string) {
-    setFields((p) => p.includes(f) ? p.filter((x) => x !== f) : [...p, f])
+    setFields((p) => (p.includes(f) ? p.filter((x) => x !== f) : [...p, f]))
     clearFormError('expertise')
   }
 
   function removeFile(criterion: string, i: number) {
-    setFiles((p) => ({ ...p, [criterion]: p[criterion]!.filter((_, n) => n !== i) }))
+    setFiles((p) => ({
+      ...p,
+      [criterion]: p[criterion]!.filter((_, n) => n !== i),
+    }))
   }
 
   function toggleConfirmed(val: boolean) {
     setConfirmed(val)
-    if (formErrors.confirmed) setFormErrors((p) => ({ ...p, confirmed: '' }))
+    clearFormError('confirmed')
   }
 
   function saveDraft() {
     setDraftSaved(true)
-    setNotice('Draft saved in memory for this session. Nothing was sent to the server.')
+    setNotice({ key: 'messages.draftSaved' })
     setTimeout(() => setDraftSaved(false), 2000)
   }
 
@@ -151,14 +182,19 @@ export function useRegistrationForm({ onRegistrationSubmit }: UseRegistrationFor
     activeCriterion,
     setActiveCriterion,
     confirmed,
-    error,
+    error: error ? t(error.key, error.params) : '',
     setError,
-    notice,
+    notice: notice ? t(notice.key, notice.params) : '',
     avatar,
     avatarPreview,
     independent,
     draftSaved,
-    formErrors,
+    formErrors: Object.fromEntries(
+      Object.entries(formErrors).map(([field, issue]) => [
+        field,
+        t(issue.key, issue.params),
+      ])
+    ),
     heading,
     errorRef,
     validateForm,

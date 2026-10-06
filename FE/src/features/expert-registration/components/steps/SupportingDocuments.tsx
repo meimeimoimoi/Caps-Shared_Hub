@@ -1,5 +1,6 @@
+import { useTranslation } from 'react-i18next'
 import { Info, FolderOpen } from 'lucide-react'
-import { criteria } from '../../constants'
+import { criteria, criterionKey } from '../../constants'
 import { FileUploader } from '../FileUploader'
 
 export interface SupportingDocumentsProps {
@@ -19,20 +20,16 @@ export function SupportingDocuments({
   onFilesSelected,
   onRemoveFile,
 }: SupportingDocumentsProps) {
+  const { t } = useTranslation('expertRegistration')
+
   return (
     <div className="expert-pro-documents">
-      <p className="expert-pro-subtitle">
-        Organize evidence by eligibility criterion. The final required
-        documents will be determined by the approved policy.
-      </p>
+      <p className="expert-pro-subtitle">{t('documents.guidance')}</p>
 
       {/* ── Warning Notice ── */}
       <div className="expert-pro-notice expert-pro-notice--warn">
         <Info className="expert-pro-notice-icon" aria-hidden="true" />
-        <p>
-          Preview requirements only: no fixed five-document checklist. Experience
-          evidence is collected in the previous step.
-        </p>
+        <p>{t('documents.preview')}</p>
       </div>
 
       {/* ── Tabs and Upload Area ── */}
@@ -41,7 +38,7 @@ export function SupportingDocuments({
         <div
           className="expert-pro-tab-list"
           role="tablist"
-          aria-label="Evidence categories"
+          aria-label={t('documents.categories')}
         >
           {criteria.map((c) => (
             <button
@@ -55,10 +52,8 @@ export function SupportingDocuments({
               className="expert-pro-tab"
               onClick={() => onCriterionSelect(c)}
             >
-              <strong>{c}</strong>
-              <small>
-                {files[c]?.length ?? 0} files selected
-              </small>
+              <strong>{t(criterionKey(c)!)}</strong>
+              <small>{t('counts.selected', { count: files[c]?.length ?? 0 })}</small>
             </button>
           ))}
         </div>
@@ -72,16 +67,18 @@ export function SupportingDocuments({
           aria-labelledby={`evidence-tab-${criteria.indexOf(activeCriterion)}`}
         >
           <div className="expert-pro-section-header">
-            <span className="expert-pro-section-icon" style={{ background: '#f5efe9', color: '#a34524' }}>
+            <span
+              className="expert-pro-section-icon"
+              style={{ background: '#f5efe9', color: '#a34524' }}
+            >
               <FolderOpen size={18} aria-hidden="true" />
             </span>
-            <h3 className="expert-pro-section-title">{activeCriterion}</h3>
+            <h3 className="expert-pro-section-title">{criterionKey(activeCriterion) ? t(criterionKey(activeCriterion)!) : activeCriterion}</h3>
             <span className="expert-pro-section-line" aria-hidden="true" />
           </div>
 
-          <p className="text-[14px] text-ex-muted mb-5 leading-[1.6]">
-            Provide relevant supporting evidence. Accepted document types and
-            applicability must be confirmed by the eligibility policy.
+          <p className="text-ex-muted mb-5 text-[14px] leading-[1.6]">
+            {t('documents.evidence')}
           </p>
 
           <FileUploader

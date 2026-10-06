@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { Info, Edit2 } from 'lucide-react'
 import type { Profile } from '../../types'
 import { RegistrationSummary } from './RegistrationSummary'
@@ -25,17 +26,19 @@ export function ReviewSubmit({
   onConfirmedChange,
   onEdit,
 }: ReviewSubmitProps) {
+  const { t } = useTranslation('expertRegistration')
+
   return (
     <div className="expert-pro-review">
-      <p className="expert-pro-subtitle flex items-center justify-between gap-4 flex-wrap">
-        <span>Review your information carefully before submitting your formal application.</span>
+      <p className="expert-pro-subtitle flex flex-wrap items-center justify-between gap-4">
+        <span>{t('review.guidance')}</span>
         <button
           type="button"
           onClick={onEdit}
-          className="inline-flex items-center gap-2 min-h-10 px-4 rounded-md bg-white border border-[#d5d2c8] text-[#a34524] text-[13px] font-semibold transition-all duration-200 hover:bg-[#fdf8f5] hover:border-[#a3452466] hover:shadow-[0_2px_8px_-2px_#a345241a] focus-visible:outline-2 focus-visible:outline-[#a34524] focus-visible:outline-offset-2"
+          className="inline-flex min-h-10 items-center gap-2 rounded-md border border-[#d5d2c8] bg-white px-4 text-[13px] font-semibold text-[#a34524] transition-all duration-200 hover:border-[#a3452466] hover:bg-[#fdf8f5] hover:shadow-[0_2px_8px_-2px_#a345241a] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#a34524]"
         >
           <Edit2 size={14} />
-          Edit application
+          {t('actions.edit')}
         </button>
       </p>
 
@@ -50,27 +53,26 @@ export function ReviewSubmit({
       {/* ── AI Notice ── */}
       <div className="expert-pro-notice expert-pro-notice--warn mt-0 mb-6">
         <Info className="expert-pro-notice-icon" aria-hidden="true" />
-        <p>
-          AI supports screening. Authorized reviewers assess eligibility and
-          service competency. A System Admin performs final approval.
-        </p>
+        <p>{t('review.ai')}</p>
       </div>
 
       {/* ── Confirmation Checkbox ── */}
       <div className="expert-personal-form">
         <div className="expert-independent-row !mb-2">
-          <label className="flex items-start gap-3 cursor-pointer">
+          <label className="flex cursor-pointer items-start gap-3">
             <input
               name="confirmed"
               type="checkbox"
               checked={confirmed}
               onChange={(e) => onConfirmedChange(e.target.checked)}
               aria-invalid={!!formErrors.confirmed}
-              aria-describedby={formErrors.confirmed ? 'error-confirmed' : undefined}
+              aria-describedby={
+                formErrors.confirmed ? 'error-confirmed' : undefined
+              }
               required
             />
-            <span className="text-[14.5px] font-medium text-[#263c36] leading-relaxed">
-              I certify that the information provided in this application is accurate and complete.
+            <span className="text-[14.5px] leading-relaxed font-medium text-[#263c36]">
+              {t('review.confirm')}
             </span>
           </label>
         </div>
@@ -78,7 +80,7 @@ export function ReviewSubmit({
           <p
             id="error-confirmed"
             role="alert"
-            className="text-[13px] text-ex-error-text font-medium m-0 pl-[30px]"
+            className="text-ex-error-text m-0 pl-[30px] text-[13px] font-medium"
           >
             {formErrors.confirmed}
           </p>
