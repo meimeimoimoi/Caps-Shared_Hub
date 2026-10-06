@@ -1,8 +1,8 @@
-import { useState, type ReactNode } from 'react'
+import { useState } from 'react'
 import { FileText, Info, Upload, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Modal } from '@/components/ui/feedback/modal'
-import { DOC_TYPES } from '../constants'
+import { MetaFields } from './MetaFields'
 import type { UploadMeta } from '../types'
 
 interface UploadDialogProps {
@@ -15,8 +15,6 @@ interface UploadDialogProps {
 }
 
 const ACCEPT = '.pdf,.docx'
-const inputCls =
-  'border-border-control rounded-control shadow-control bg-paper h-control w-full border px-3 text-base font-normal'
 
 const emptyMeta: UploadMeta = {
   number: '',
@@ -24,15 +22,6 @@ const emptyMeta: UploadMeta = {
   issuer: '',
   issuedAt: '',
   effectiveAt: '',
-}
-
-function Field({ label, children }: { label: string; children: ReactNode }) {
-  return (
-    <label className="flex flex-col gap-1.5 text-sm font-semibold">
-      {label}
-      {children}
-    </label>
-  )
 }
 
 /* Dialog "Tải văn bản lên": 1 file + thông tin văn bản; báo lỗi qua onUpload reject */
@@ -44,8 +33,6 @@ export function UploadDialog({ onClose, onUpload }: UploadDialogProps) {
   const [dragging, setDragging] = useState(false)
   const uploading = progress !== null
 
-  const set = (k: keyof UploadMeta) => (v: string) =>
-    setMeta((m) => ({ ...m, [k]: v }))
   // Kéo thả bỏ qua `accept` của input nên kiểm tra đuôi file tại đây
   const pick = (f?: File) => {
     if (!f) return
@@ -133,7 +120,11 @@ export function UploadDialog({ onClose, onUpload }: UploadDialogProps) {
               e.preventDefault()
               setDragging(true)
             }}
-            onDragLeave={() => setDragging(false)}
+            // Chỉ tắt khi thật sự rời vùng thả, không phải khi đi qua phần tử con
+            onDragLeave={(e) => {
+              if (!e.currentTarget.contains(e.relatedTarget as Node | null))
+                setDragging(false)
+            }}
             onDrop={(e) => {
               e.preventDefault()
               setDragging(false)
@@ -167,62 +158,7 @@ export function UploadDialog({ onClose, onUpload }: UploadDialogProps) {
           </p>
         )}
 
-        <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="Số hiệu văn bản (bắt buộc)">
-            <input
-              required
-              value={meta.number}
-              onChange={(e) => set('number')(e.target.value)}
-              placeholder="vd. 78/2014/TT-BTC"
-              className={inputCls}
-            />
-          </Field>
-          <Field label="Loại văn bản (bắt buộc)">
-            <select
-              required
-              value={meta.docType}
-              onChange={(e) => set('docType')(e.target.value)}
-              className={inputCls}
-            >
-              <option value="" disabled>
-                Chọn loại
-              </option>
-              {DOC_TYPES.map((t) => (
-                <option key={t}>{t}</option>
-              ))}
-            </select>
-          </Field>
-        </div>
-        <Field label="Cơ quan ban hành (bắt buộc)">
-          <input
-            required
-            value={meta.issuer}
-            onChange={(e) => set('issuer')(e.target.value)}
-            placeholder="vd. Bộ Tài chính"
-            className={inputCls}
-          />
-        </Field>
-        <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="Ngày ban hành (bắt buộc)">
-            <input
-              required
-              type="date"
-              value={meta.issuedAt}
-              onChange={(e) => set('issuedAt')(e.target.value)}
-              className={inputCls}
-            />
-          </Field>
-          <Field label="Ngày hiệu lực (bắt buộc)">
-            <input
-              required
-              type="date"
-              min={meta.issuedAt || undefined}
-              value={meta.effectiveAt}
-              onChange={(e) => set('effectiveAt')(e.target.value)}
-              className={inputCls}
-            />
-          </Field>
-        </div>
+        <MetaFields value={meta} onChange={setMeta} />
 
         <div className="bg-sunken rounded-surface flex gap-2 p-3 text-sm">
           <Info size={16} aria-hidden="true" className="mt-0.5 shrink-0" />

@@ -1,5 +1,9 @@
 /* Dữ liệu demo cho knowledgeApi.ts khi chạy dev (isExpertDemo). */
 import type {
+  DocumentDetail,
+  DocumentReview,
+  ReviewArticle,
+  UnitStatus,
   ArticleChange,
   KnowledgeDocument,
   PipelineSummary,
@@ -119,6 +123,161 @@ const modified = (article: number, heading: string): ArticleChange => ({
     unchanged26,
   ],
 })
+
+/* Điều chỉ có tiêu đề + 1 Khoản, cùng một trạng thái */
+const simpleArticle = (
+  n: number,
+  title: string,
+  status: UnitStatus
+): ReviewArticle => ({
+  id: `d${n}`,
+  number: n,
+  title,
+  units: [
+    { id: `d${n}-t`, label: `Điều ${n} · Tiêu đề`, text: `Điều ${n}. ${title}`, status, heading: true },
+    { id: `d${n}-k1`, label: 'Khoản 1', text: `[Nội dung Khoản 1 Điều ${n}]`, status },
+  ],
+})
+
+/** Khóa theo documentId */
+export const mockReviews: Record<string, DocumentReview> = {
+  'doc-78-2014': {
+    documentId: 'doc-78-2014',
+    title: 'Hướng dẫn thi hành Luật Thuế thu nhập doanh nghiệp',
+    sourceUrl: 'https://vbpl.vn',
+    meta: {
+      number: '78/2014/TT-BTC',
+      docType: 'Thông tư',
+      issuer: 'Bộ Tài chính',
+      issuedAt: '2014-06-18',
+      effectiveAt: '2014-08-02',
+    },
+    chapters: [
+      {
+        title: 'Chương I · Quy định chung',
+        articles: [
+          simpleArticle(1, 'Người nộp thuế', 'REVIEWED'),
+          simpleArticle(2, 'Thu nhập chịu thuế', 'REVIEWED'),
+          simpleArticle(3, 'Các khoản thu nhập được miễn thuế', 'REVIEWED'),
+        ],
+      },
+      {
+        title: 'Chương II · Căn cứ và phương pháp tính thuế',
+        articles: [
+          simpleArticle(4, 'Thu nhập tính thuế', 'REVIEWED'),
+          simpleArticle(5, 'Doanh thu', 'AUTO'),
+          {
+            id: 'd6',
+            number: 6,
+            title: 'Các khoản chi được trừ và không được trừ khi xác định thu nhập chịu thuế',
+            units: [
+              { id: 'd6-t', label: 'Điều 6 · Tiêu đề', text: 'Điều 6. Các khoản chi được trừ và không được trừ khi xác định thu nhập chịu thuế', status: 'REVIEWED', heading: true },
+              { id: 'd6-k1', label: 'Khoản 1', text: 'Trừ các khoản chi không được trừ nêu tại Khoản 2 Điều này, doanh nghiệp được trừ mọi khoản chi nếu đáp ứng đủ các điều kiện sau:', status: 'REVIEWED' },
+              { id: 'd6-k1a', label: 'Khoản 1 · Điểm a', text: 'Khoản chi thực tế phát sinh liên quan đến hoạt động sản xuất, kinh doanh của doanh nghiệp.', status: 'AUTO' },
+              { id: 'd6-k1b', label: 'Khoản 1 · Điểm b', text: 'Khoản chi có đủ hóa đơn, chứng từ hợp pháp theo quy định của pháp luật.', status: 'AUTO' },
+              { id: 'd6-k1c', label: 'Khoản 1 · Điểm c', text: 'Khoản chi nếu có hóa đơn mua hàng hóa, dịch vụ từng lần có giá trị từ 20 triệu đồng trở lên phải có chứng từ thanh toán không dùng tiền mặt.', status: 'WARNING', warning: 'Số tiền "20 triệu đồng" cần đối chiếu bản gốc: bản quét bị mờ ở dòng này.' },
+              { id: 'd6-k2', label: 'Khoản 2', text: 'Các khoản chi không được trừ khi xác định thu nhập chịu thuế bao gồm: [nội dung Khoản 2]', status: 'AUTO' },
+            ],
+          },
+          simpleArticle(7, 'Thu nhập khác', 'AUTO'),
+        ],
+      },
+      {
+        title: 'Chương III · Ưu đãi thuế',
+        articles: [
+          {
+            ...simpleArticle(18, 'Điều kiện áp dụng ưu đãi', 'AUTO'),
+            units: [
+              { id: 'd18-t', label: 'Điều 18 · Tiêu đề', text: 'Điều 18. Điều kiện áp dụng ưu đãi', status: 'AUTO', heading: true },
+              { id: 'd18-k1', label: 'Khoản 1', text: '[Nội dung Khoản 1 Điều 18]', status: 'WARNING', warning: 'Có thể thiếu Điểm c): bản gốc liệt kê a) đến d), bản bóc tách chỉ có a), b), d).' },
+            ],
+          },
+          simpleArticle(19, 'Thuế suất ưu đãi', 'AUTO'),
+        ],
+      },
+    ],
+  },
+}
+
+const after = (iso: string, minutes: number) =>
+  new Date(new Date(iso).getTime() + minutes * 60_000).toISOString()
+
+/** Chi tiết văn bản: VBHN có dữ liệu đầy đủ; văn bản khác dựng tối thiểu từ mockDocuments */
+export function getMockDetail(id: string): DocumentDetail | null {
+  const doc = mockDocuments.find((d) => d.id === id)
+  if (!doc) return null
+  const collected = doc.queuedAt
+  // Số bước đã xong theo stage hiện tại (Thu thập, Kiểm tra phiên bản, Bóc tách, Rà soát, Index)
+  const done = { parse: 2, review: 3, index: 4, indexed: 5 }[doc.stage]
+  const base: DocumentDetail = {
+    id,
+    number: doc.number,
+    title: doc.title,
+    docType: doc.docType,
+    issuer: 'Bộ Tài chính',
+    currentVersion: doc.version?.no ?? 1,
+    timeline: [0, 1, 2, 3, 4].map((i) => (i < done ? after(collected, i * 3) : null)),
+    rag: null,
+    versions: [
+      {
+        no: doc.version?.no ?? 1,
+        collectedAt: collected,
+        source: doc.source,
+        reviewer: null,
+        reviewedAt: null,
+        status: { parse: 'PENDING', review: 'PENDING', index: 'APPROVED', indexed: 'INDEXED' }[doc.stage] as DocumentDetail['versions'][number]['status'],
+      },
+    ],
+    chunks: [],
+    chapters: [],
+    history: [{ at: collected, actor: 'Hệ thống', text: 'Thu thập văn bản' }],
+  }
+  if (id !== 'doc-vbhn-tndn') return base
+
+  const approvedAt = after(collected, 2 * 1440 + 425)
+  const indexedAt = after(approvedAt, 7)
+  return {
+    ...base,
+    title: 'Văn bản hợp nhất Thông tư hướng dẫn thuế TNDN',
+    docType: 'Văn bản hợp nhất',
+    timeline: [collected, after(collected, 2), after(collected, 5), approvedAt, indexedAt],
+    rag: {
+      approvedBy: 'Lê Thu Hà',
+      approvedAt,
+      chunkCount: 312,
+      vectorCount: 312,
+      indexedAt,
+    },
+    versions: [
+      { no: 3, collectedAt: collected, source: 'CRAWL', reviewer: 'Lê Thu Hà', reviewedAt: approvedAt, status: 'INDEXED' },
+      { no: 2, collectedAt: daysAgo(66), source: 'CRAWL', reviewer: 'Lê Thu Hà', reviewedAt: daysAgo(64), status: 'SUPERSEDED' },
+      { no: 1, collectedAt: daysAgo(207), source: 'UPLOAD', reviewer: 'Lê Thu Hà', reviewedAt: daysAgo(206), status: 'SUPERSEDED' },
+    ],
+    chunks: [
+      { id: 'c-0601', path: 'Điều 6 · Tiêu đề', text: 'Điều 6. Các khoản chi được trừ và không được trừ khi xác định thu nhập chịu thuế' },
+      { id: 'c-0602', path: 'Điều 6 · Khoản 1', text: 'Trừ các khoản chi không được trừ nêu tại Khoản 2 Điều này, doanh nghiệp được trừ mọi khoản chi nếu đáp ứng đủ các điều kiện sau:' },
+      { id: 'c-0625', path: 'Điều 6 · Khoản 2 · Điểm 2.5', text: '[nội dung điểm 2.5 đã sửa đổi]' },
+      { id: 'c-0626', path: 'Điều 6 · Khoản 2 · Điểm 2.6', text: '[nội dung không đổi]' },
+    ],
+    chapters: [
+      {
+        title: 'Chương II · Căn cứ và phương pháp tính thuế',
+        articles: [
+          simpleArticle(4, 'Thu nhập tính thuế', 'REVIEWED'),
+          simpleArticle(6, 'Các khoản chi được trừ và không được trừ', 'REVIEWED'),
+          simpleArticle(9, 'Xác định chi phí khấu hao tài sản cố định', 'REVIEWED'),
+        ],
+      },
+    ],
+    history: [
+      { at: indexedAt, actor: 'Hệ thống', text: 'Index 312 đoạn vào Qdrant Shared KB; v2 chuyển sang Đã thay thế' },
+      { at: approvedAt, actor: 'Lê Thu Hà', text: 'Duyệt v3 sau khi đối chiếu 5/5 mục' },
+      { at: after(collected, 5), actor: 'Hệ thống', text: 'Bóc tách v3: 42 Điều' },
+      { at: after(collected, 2), actor: 'Hệ thống', text: 'Kiểm tra phiên bản: 4 Điều sửa, 1 Điều thêm' },
+      { at: collected, actor: 'Hệ thống', text: 'Thu thập tự động v3 từ vbpl.vn' },
+    ],
+  }
+}
 
 /** Khóa theo documentId */
 export const mockComparisons: Record<string, VersionComparison> = {

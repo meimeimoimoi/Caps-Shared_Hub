@@ -2,6 +2,9 @@ import { api } from '@/lib/api-client'
 import { isExpertDemo } from '@/lib/expert-data-source'
 import type { PipelineStage } from '../constants'
 import type {
+  ApproveInput,
+  DocumentDetail,
+  DocumentReview,
   KnowledgeDocument,
   PipelineSummary,
   UploadMeta,
@@ -44,15 +47,79 @@ export async function getVersionComparison(
 }
 
 /** Rời hàng đợi Chờ duyệt: demo bớt số đếm và bỏ/chuyển văn bản trong fixtures */
-async function leaveReviewDemo(documentId: string, nextStage: 'parse' | null) {
+async function leaveReviewDemo(
+  documentId: string,
+  nextStage: 'parse' | 'index' | null
+) {
   const f = await fixtures()
   const i = f.mockDocuments.findIndex((d) => d.id === documentId)
   if (i < 0) return
   f.mockSummary.pending -= 1
   if (nextStage) {
     f.mockDocuments[i].stage = nextStage
-    f.mockSummary.parsing += 1
+    f.mockSummary[nextStage === 'parse' ? 'parsing' : 'indexing'] += 1
   } else f.mockDocuments.splice(i, 1)
+}
+
+/* ── Chi tiết văn bản ── */
+/** null = không tìm thấy (demo); API trả 404 thành ApiError */
+export async function getDocumentDetail(
+  documentId: string,
+  signal?: AbortSignal
+): Promise<DocumentDetail | null> {
+  if (isExpertDemo) return (await fixtures()).getMockDetail(documentId)
+  return api.get<DocumentDetail>(`${BASE}/documents/${documentId}`, { signal })
+}
+
+/* ── Rà soát nội dung bóc tách ── */
+/** null = văn bản chưa có nội dung bóc tách */
+export async function getDocumentReview(
+  documentId: string,
+  signal?: AbortSignal
+): Promise<DocumentReview | null> {
+  if (isExpertDemo) {
+    const r = (await fixtures()).mockReviews[documentId]
+    return r ? structuredClone(r) : null
+  }
+  return api.get<DocumentReview>(`${BASE}/documents/${documentId}/review`, { signal })
+}
+
+async function findUnitDemo(documentId: string, unitId: string) {
+  const r = (await fixtures()).mockReviews[documentId]
+  return r?.chapters
+    .flatMap((c) => c.articles)
+    .flatMap((a) => a.units)
+    .find((u) => u.id === unitId)
+}
+
+export async function markUnitReviewed(documentId: string, unitId: string) {
+  if (isExpertDemo) {
+    const u = await findUnitDemo(documentId, unitId)
+    if (u) u.status = 'REVIEWED'
+    return
+  }
+  await api.post(`${BASE}/documents/${documentId}/units/${unitId}/reviewed`)
+}
+
+/** Sửa nội dung một đơn vị; sửa xong coi như đã rà soát */
+export async function saveUnitText(documentId: string, unitId: string, text: string) {
+  if (isExpertDemo) {
+    const u = await findUnitDemo(documentId, unitId)
+    if (u) Object.assign(u, { text, status: 'REVIEWED' })
+    return
+  }
+  await api.put(`${BASE}/documents/${documentId}/units/${unitId}`, { text })
+}
+
+/** Duyệt nội dung → chuyển sang bước Index */
+export async function approveDocument(documentId: string, body: ApproveInput) {
+  if (isExpertDemo) return leaveReviewDemo(documentId, 'index')
+  await api.post(`${BASE}/documents/${documentId}/approve`, body)
+}
+
+export async function rejectDocument(documentId: string, reason: string) {
+  if (isExpertDemo) return leaveReviewDemo(documentId, null)
+  await api.post(`${BASE}/documents/${documentId}/reject`, { reason })
 }
 
 /** Chấp nhận phiên bản mới, chuyển sang bước Bóc tách */

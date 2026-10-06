@@ -9,9 +9,10 @@ import {
 import { knowledgeKeys } from '../api/queryKeys'
 import type { PipelineStage } from '../constants'
 
-export function useReviewQueue() {
+/** initialStage 'collect' = mọi văn bản (màn Tất cả văn bản) */
+export function useReviewQueue(initialStage: PipelineStage = 'review') {
   const qc = useQueryClient()
-  const [stage, setStage] = useState<PipelineStage>('review')
+  const [stage, setStage] = useState<PipelineStage>(initialStage)
   const [query, setQuery] = useState('')
 
   const summary = useQuery({

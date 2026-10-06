@@ -10,6 +10,8 @@ export interface SidebarItem {
   label: string
   icon: ReactNode
   active?: boolean
+  /** Số việc đang chờ; 0 hoặc bỏ trống thì ẩn */
+  badge?: number
 }
 export interface SidebarGroup {
   id: string
@@ -98,9 +100,21 @@ export function AppSidebar({
                 <span aria-hidden="true" className="flex shrink-0 items-center">
                   {item.icon}
                 </span>
-                <span className={collapsed ? 'sr-only' : 'min-w-0 truncate'}>
+                <span className={collapsed ? 'sr-only' : 'min-w-0 flex-1 truncate'}>
                   {item.label}
+                  {!!item.badge && collapsed && `, ${item.badge}`}
                 </span>
+                {!!item.badge &&
+                  (collapsed ? (
+                    <span
+                      aria-hidden="true"
+                      className="bg-indicator absolute top-2 right-2 size-2 rounded-full"
+                    />
+                  ) : (
+                    <span className="bg-accent text-on-accent num grid h-5 min-w-5 place-items-center rounded-full px-1.5 text-[11px] font-bold">
+                      {item.badge}
+                    </span>
+                  ))}
               </Link>
             ))}
           </div>

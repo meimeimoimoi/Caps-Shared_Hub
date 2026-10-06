@@ -1,4 +1,9 @@
-import type { PipelineStage } from '../constants'
+import type { DOCUMENT_STATUS } from '@/lib/constants'
+import type {
+  CrosscheckKey,
+  PipelineStage,
+  UNIT_STATUS,
+} from '../constants'
 
 export interface KnowledgeDocument {
   id: string
@@ -41,6 +46,82 @@ export interface VersionComparison {
   collectedAt: string
   collectedBy: 'AUTO' | 'MANUAL'
   changes: ArticleChange[]
+}
+
+/* ── Rà soát nội dung bóc tách ── */
+export type UnitStatus = keyof typeof UNIT_STATUS
+
+/** Một đơn vị đã bóc tách: tiêu đề Điều, Khoản hoặc Điểm */
+export interface ReviewUnit {
+  id: string
+  label: string // vd. "Điều 6 · Tiêu đề", "Khoản 1 · Điểm a"
+  text: string
+  status: UnitStatus
+  /** Lý do AI cần kiểm tra (chỉ khi status = WARNING) */
+  warning?: string
+  heading?: boolean
+}
+
+export interface ReviewArticle {
+  id: string
+  number: number
+  title: string
+  units: ReviewUnit[]
+}
+
+export interface DocumentReview {
+  documentId: string
+  /** Link bản gốc (PDF/DOCX hoặc trang vbpl.vn) */
+  sourceUrl: string
+  meta: UploadMeta
+  title: string
+  chapters: { title: string; articles: ReviewArticle[] }[]
+}
+
+export interface ApproveInput {
+  meta: UploadMeta
+  crosscheck: CrosscheckKey[]
+}
+
+/* ── Chi tiết văn bản (Tất cả văn bản) ── */
+export interface DocumentVersion {
+  no: number
+  collectedAt: string
+  source: KnowledgeDocument['source']
+  reviewer: string | null
+  reviewedAt: string | null
+  status: keyof typeof DOCUMENT_STATUS
+}
+
+/** Đoạn đã chia và index vào vector DB */
+export interface IndexedChunk {
+  id: string
+  path: string // vd. "Điều 6 · Khoản 2 · Điểm 2.5"
+  text: string
+}
+
+export interface DocumentDetail {
+  id: string
+  number: string
+  title: string
+  docType: string
+  issuer: string
+  currentVersion: number
+  /** Thời điểm xong từng bước, theo thứ tự RAIL_DOCUMENT; null = chưa tới */
+  timeline: (string | null)[]
+  /** null = chưa index */
+  rag: {
+    approvedBy: string
+    approvedAt: string
+    chunkCount: number
+    vectorCount: number
+    indexedAt: string
+  } | null
+  versions: DocumentVersion[]
+  /** Mẫu vài đoạn đầu; tổng số ở rag.chunkCount */
+  chunks: IndexedChunk[]
+  chapters: DocumentReview['chapters']
+  history: { at: string; actor: string; text: string }[]
 }
 
 /** Thông tin bắt buộc khi tải văn bản lên (ngày dạng yyyy-mm-dd) */

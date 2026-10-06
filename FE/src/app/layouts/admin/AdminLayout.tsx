@@ -1,19 +1,22 @@
 import { useState, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import {
-  Bell,
   CreditCard,
   FileText,
   Flag,
   PanelLeft,
+  Moon,
   Search,
   Settings,
+  Sun,
   Tag,
   UserRound,
   Users,
   type LucideIcon,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useTheme } from '@/hooks/useTheme'
+import { NotificationBell, type ShellNotification } from '../NotificationBell'
 
 export interface NavItem {
   label: string
@@ -33,6 +36,8 @@ interface ShellPageProps {
   /** Bỏ trống thì ẩn ô tìm kiếm */
   search?: string
   onSearchChange?: (value: string) => void
+  /** Danh sách trong popover chuông; có mục thì hiện chấm đỏ */
+  notifications?: ShellNotification[]
   children: ReactNode
 }
 
@@ -114,20 +119,22 @@ export function RoleShell({
   breadcrumb,
   search,
   onSearchChange,
+  notifications = [],
   children,
 }: RoleShellProps) {
   const [collapsed, setCollapsed] = useState(false)
+  const { isDark, toggleTheme } = useTheme()
 
   return (
     <div data-density="compact" className="bg-desk text-fg flex min-h-dvh">
       {/* ── Sidebar ── */}
       <aside
         className={cn(
-          'on-ink bg-ink text-paper sticky top-0 flex h-dvh shrink-0 flex-col px-4 py-5 max-md:w-18',
+          'on-ink bg-sidebar text-sidebar-foreground sticky top-0 flex h-dvh shrink-0 flex-col px-4 py-5 max-md:w-18',
           collapsed ? 'w-18' : 'w-56'
         )}
       >
-        <div className="border-ink-2 flex items-center gap-3 border-b px-2 pb-5">
+        <div className="border-sidebar-selected flex items-center gap-3 border-b px-2 pb-5">
           <span className="text-base font-extrabold tracking-tight">
             {collapsed ? (
               'S'
@@ -140,7 +147,7 @@ export function RoleShell({
             <span className="bg-indicator ml-0.5 inline-block size-1.5 align-middle" />
           </span>
           {!collapsed && (
-            <span className="text-fg-inverse-muted text-caption max-md:hidden">
+            <span className="text-sidebar-text text-caption max-md:hidden">
               Admin
             </span>
           )}
@@ -153,7 +160,7 @@ export function RoleShell({
           {nav.map(({ group, items }) => (
             <div key={group}>
               {!collapsed && (
-                <p className="text-fg-inverse-muted text-caption mb-2 px-2 font-semibold max-md:hidden">
+                <p className="text-sidebar-text text-caption mb-2 px-2 font-semibold max-md:hidden">
                   {group}
                 </p>
               )}
@@ -169,8 +176,8 @@ export function RoleShell({
                         className={cn(
                           'rounded-control flex items-center gap-3 border-l-2 px-2 py-2.5 text-sm no-underline',
                           active
-                            ? 'bg-ink-2 border-indicator text-paper font-semibold'
-                            : 'text-fg-inverse-muted hover:bg-ink-2 hover:text-paper border-transparent'
+                            ? 'bg-sidebar-selected border-indicator text-sidebar-foreground font-semibold'
+                            : 'text-sidebar-text hover:bg-sidebar-selected hover:text-sidebar-foreground border-transparent'
                         )}
                       >
                         <Icon
@@ -197,7 +204,7 @@ export function RoleShell({
                         type="button"
                         disabled
                         title={collapsed ? label : undefined}
-                        className="text-fg-inverse-muted rounded-control flex w-full items-center gap-3 px-2 py-2.5 text-left text-sm"
+                        className="text-sidebar-text rounded-control flex w-full items-center gap-3 px-2 py-2.5 text-left text-sm"
                       >
                         <Icon
                           size={17}
@@ -225,7 +232,7 @@ export function RoleShell({
           type="button"
           onClick={() => setCollapsed((c) => !c)}
           aria-label={collapsed ? 'Mở rộng thanh bên' : 'Thu gọn thanh bên'}
-          className="text-fg-inverse-muted hover:bg-ink-2 rounded-control mx-auto p-2 max-md:hidden"
+          className="text-sidebar-text hover:bg-sidebar-selected rounded-control mx-auto p-2 max-md:hidden"
         >
           <PanelLeft size={16} aria-hidden="true" />
         </button>
@@ -255,12 +262,17 @@ export function RoleShell({
           )}
           <button
             type="button"
-            aria-label="Thông báo"
-            className="rounded-control relative p-1"
+            onClick={toggleTheme}
+            aria-label={isDark ? 'Chuyển sang giao diện sáng' : 'Chuyển sang giao diện tối'}
+            className="rounded-control p-1"
           >
-            <Bell size={18} aria-hidden="true" />
-            <span className="bg-indicator absolute top-0.5 right-0.5 size-2 rounded-full" />
+            {isDark ? (
+              <Sun size={18} aria-hidden="true" />
+            ) : (
+              <Moon size={18} aria-hidden="true" />
+            )}
           </button>
+          <NotificationBell notifications={notifications} className="size-8" />
           <span className="bg-paper text-caption grid size-8 place-items-center rounded-full font-semibold">
             {initials}
           </span>

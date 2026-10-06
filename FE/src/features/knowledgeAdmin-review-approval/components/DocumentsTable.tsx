@@ -1,18 +1,30 @@
 import { Link } from 'react-router-dom'
 import { TriangleAlert } from 'lucide-react'
 import { formatDate } from '@/lib/utils'
-import { SOURCE_LABEL } from '../constants'
+import { PIPELINE, SOURCE_LABEL } from '../constants'
 import type { KnowledgeDocument } from '../types'
+
+/** Mặc định: Chờ duyệt → so sánh phiên bản / rà soát nội dung; bước khác → chi tiết */
+const queueLink = (d: KnowledgeDocument) =>
+  d.stage === 'review'
+    ? `/knowledge/documents/${d.id}/${d.version?.changed ? 'compare' : 'review'}`
+    : `/knowledge/documents/${d.id}`
 
 interface DocumentsTableProps {
   rows: KnowledgeDocument[]
   /** Chữ khi không có dòng nào, vd. đang tải hoặc lỗi */
   empty?: string
+  /** Link khi bấm số hiệu */
+  linkTo?: (d: KnowledgeDocument) => string
+  /** Thêm cột bước quy trình hiện tại (màn Tất cả văn bản) */
+  showStage?: boolean
 }
 
 export function DocumentsTable({
   rows,
   empty = 'Không có văn bản nào.',
+  linkTo = queueLink,
+  showStage = false,
 }: DocumentsTableProps) {
   return (
     <section className="paper mt-4 overflow-x-auto">
@@ -27,6 +39,7 @@ export function DocumentsTable({
           <tr className="[&>th]:px-4 [&>th]:py-3 [&>th]:font-semibold">
             <th className="text-left">Số hiệu</th>
             <th className="text-left">Văn bản</th>
+            {showStage && <th className="text-left">Trạng thái</th>}
             <th className="text-left">Phiên bản</th>
             <th className="text-left">Cảnh báo bóc tách</th>
             <th className="text-right">Ngày hiệu lực</th>
@@ -40,17 +53,12 @@ export function DocumentsTable({
               className="border-border-subtle border-t [&>td]:px-4 [&>td]:py-2"
             >
               <td className="num whitespace-nowrap">
-                {/* Phiên bản mới có thay đổi → màn so sánh; các màn rà soát khác: TODO */}
-                {d.stage === 'review' && d.version?.changed ? (
-                  <Link
-                    to={`/knowledge/documents/${d.id}/compare`}
-                    className="text-accent-text underline underline-offset-4"
-                  >
-                    {d.number}
-                  </Link>
-                ) : (
-                  <span className="text-accent-text">{d.number}</span>
-                )}
+                <Link
+                  to={linkTo(d)}
+                  className="text-accent-text underline underline-offset-4"
+                >
+                  {d.number}
+                </Link>
               </td>
               <td>
                 <div className="text-fg-strong font-semibold">{d.title}</div>
@@ -58,6 +66,11 @@ export function DocumentsTable({
                   {d.docType} · {SOURCE_LABEL[d.source]}
                 </div>
               </td>
+              {showStage && (
+                <td className="whitespace-nowrap">
+                  {PIPELINE.find((p) => p.key === d.stage)?.label}
+                </td>
+              )}
               <td>
                 {d.version ? (
                   <span className="text-fg-strong font-semibold">
@@ -87,7 +100,10 @@ export function DocumentsTable({
           ))}
           {rows.length === 0 && (
             <tr className="border-border-subtle border-t">
-              <td colSpan={6} className="text-fg-muted px-4 py-10 text-center">
+              <td
+                colSpan={showStage ? 7 : 6}
+                className="text-fg-muted px-4 py-10 text-center"
+              >
                 {empty}
               </td>
             </tr>

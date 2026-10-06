@@ -3,11 +3,11 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { Info } from 'lucide-react'
 import { formatDateTime } from '@/lib/utils'
 import { RAIL_DOCUMENT } from '@/lib/constants'
-import { Modal } from '@/components/ui/feedback/modal'
 import { ToolHeader } from '@/components/ui/layout/tool-header'
 import { KnowledgeLayout } from '@/app/layouts/knowledge/KnowledgeLayout'
 import { useKnowledgeNav } from '@/app/layouts/knowledge/useKnowledgeNav'
 import { VersionCompare } from '../../features/knowledgeAdmin-review-approval/components/VersionCompare'
+import { RejectDialog } from '../../features/knowledgeAdmin-review-approval/components/RejectDialog'
 import { useVersionReview } from '../../features/knowledgeAdmin-review-approval/hooks/useVersionReview'
 
 const queueLink = (
@@ -23,7 +23,6 @@ export default function KnowledgeVersionPage() {
   const { comparison: c, isLoading, error, continueReview, reject } =
     useVersionReview(id)
   const [rejecting, setRejecting] = useState(false)
-  const [reason, setReason] = useState('')
   const [busy, setBusy] = useState(false)
   const [actionError, setActionError] = useState<string | null>(null)
 
@@ -108,7 +107,7 @@ export default function KnowledgeVersionPage() {
           </button>
         </div>
       </div>
-      {actionError && !rejecting && (
+      {actionError && (
         <p role="alert" className="text-danger mt-2 text-sm">
           {actionError}
         </p>
@@ -137,50 +136,19 @@ export default function KnowledgeVersionPage() {
       </div>
 
       {rejecting && (
-        <Modal
+        <RejectDialog
           title={`Từ chối v${c.version}?`}
           description={`v${c.prevVersion} tiếp tục được dùng. Phiên bản mới bị loại khỏi hàng đợi.`}
+          confirmLabel={`Từ chối v${c.version}`}
           onClose={() => setRejecting(false)}
-          // `required` trên textarea đã chặn submit khi trống
-          onSubmit={() =>
-            run(reject(reason.trim()), `Đã từ chối v${c.version}`)
+          onConfirm={(reason) =>
+            reject(reason).then(() =>
+              navigate('/knowledge/queue', {
+                state: { toast: `Đã từ chối v${c.version}` },
+              })
+            )
           }
-          footer={
-            <>
-              <button
-                type="button"
-                onClick={() => setRejecting(false)}
-                className="btn btn-press btn-secondary"
-              >
-                Hủy
-              </button>
-              <button
-                type="submit"
-                disabled={busy}
-                className="btn btn-press bg-danger text-paper"
-              >
-                Từ chối v{c.version}
-              </button>
-            </>
-          }
-        >
-          <label className="mt-5 flex flex-col gap-2 text-sm font-semibold">
-            Lý do từ chối (bắt buộc)
-            <textarea
-              required
-              rows={3}
-              value={reason}
-              onChange={(e) => setReason(e.target.value)}
-              placeholder="vd. Bản thu thập lỗi định dạng, thiếu Điều 20"
-              className="border-border-control rounded-control shadow-control bg-paper placeholder:text-fg-muted resize-y border px-3 py-2 text-base font-normal"
-            />
-          </label>
-          {actionError && (
-            <p role="alert" className="text-danger mt-2 text-sm">
-              {actionError}
-            </p>
-          )}
-        </Modal>
+        />
       )}
     </KnowledgeLayout>
   )

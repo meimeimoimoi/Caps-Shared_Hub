@@ -1,6 +1,6 @@
-import { useCallback, useState } from 'react'
-import { useLocation } from 'react-router-dom'
+import { useState } from 'react'
 import { Upload } from 'lucide-react'
+import { useNavToast } from '@/hooks/useNavToast'
 import { Toast } from '@/components/ui/feedback/toast'
 import { KnowledgeLayout } from '@/app/layouts/knowledge/KnowledgeLayout'
 import { useKnowledgeNav } from '@/app/layouts/knowledge/useKnowledgeNav'
@@ -15,11 +15,7 @@ export default function KnowledgeQueuePage() {
   const nav = useKnowledgeNav()
   const [uploadOpen, setUploadOpen] = useState(false)
   // Màn khác điều hướng về kèm { toast } (vd. sau khi duyệt phiên bản)
-  const location = useLocation()
-  const [toast, setToast] = useState<string | null>(
-    (location.state as { toast?: string } | null)?.toast ?? null
-  )
-  const clearToast = useCallback(() => setToast(null), [])
+  const { toast, setToast, clearToast } = useNavToast()
 
   return (
     <KnowledgeLayout
