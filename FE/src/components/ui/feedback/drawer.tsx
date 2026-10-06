@@ -1,5 +1,6 @@
 import { useEffect, useId, useRef, type ReactNode } from 'react'
 import { X } from 'lucide-react'
+import { useDialogMotion } from '@/components/ui/motion'
 
 interface DrawerProps {
   title: ReactNode
@@ -12,6 +13,7 @@ interface DrawerProps {
  * Mount = mở, unmount = đóng. */
 export function Drawer({ title, children, footer, onClose }: DrawerProps) {
   const ref = useRef<HTMLDialogElement>(null)
+  useDialogMotion(ref, 'drawer')
   const titleId = useId()
 
   useEffect(() => {

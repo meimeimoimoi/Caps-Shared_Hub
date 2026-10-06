@@ -9,6 +9,7 @@ import { formControlClassName } from './form-control'
 import { useTranslation } from 'react-i18next'
 import { isLanguage, locales } from '@/lib/i18n/language'
 import { useFormatters } from '@/hooks/useFormatters'
+import { useMotion } from '@/components/ui/motion'
 
 const iso = (date: Date) =>
   `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
@@ -43,6 +44,7 @@ export function DatePicker({
   const today = new Date()
   const minYear = today.getFullYear() - 120
   const [open, setOpen] = useState(false)
+  const popupMotion = useMotion({ preset: 'popover', disabled: !open, replayKey: open ? 1 : 0 })
   const [view, setView] = useState<'days' | 'months' | 'years'>('days')
   const [cursor, setCursor] = useState(today)
   const year = cursor.getFullYear()
@@ -168,6 +170,7 @@ export function DatePicker({
       {open && (
         <div
           id={popupId}
+          ref={popupMotion}
           data-date-picker-panel
           role="dialog"
           aria-label={t('calendar.chooseDate')}

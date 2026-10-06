@@ -1,4 +1,5 @@
-import { useEffect, useRef, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { useMotion } from '@/components/ui/motion'
 import { Link, useLocation } from 'react-router-dom'
 import { ChevronDown, LogOut } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
@@ -26,6 +27,8 @@ export function AppAccountMenu({
 }: AppAccountMenuProps) {
   const { t } = useTranslation('common')
   const account = useRef<HTMLDetailsElement>(null)
+  const [open, setOpen] = useState(false)
+  const popover = useMotion({ preset: 'popover', disabled: !open, replayKey: open ? 1 : 0 })
   const location = useLocation()
   const close = () => {
     if (account.current) account.current.open = false
@@ -55,6 +58,7 @@ export function AppAccountMenu({
   return (
     <details
       ref={account}
+      onToggle={(event) => setOpen(event.currentTarget.open)}
       className="group relative"
       onKeyDown={(event) => {
         if (event.key === 'Escape') {
@@ -86,6 +90,7 @@ export function AppAccountMenu({
         />
       </summary>
       <div
+        ref={popover}
         className={`bg-surface text-text-strong ring-border absolute top-full right-0 z-50 mt-3 w-[min(304px,calc(100vw-32px))] rounded-xl p-2 shadow-[0_16px_48px_-12px_rgba(0,0,0,0.35)] ring-1`}
       >
         <div className="flex flex-col gap-1 px-3 pt-3 pb-4">
