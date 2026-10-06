@@ -1,0 +1,11 @@
+{
+  "title": "Bảng điều khiển",
+  "welcome": "Chào {{name}} ({{email}})",
+  "user": "người dùng",
+  "logout": "Đăng xuất",
+  "checking": "Đang kiểm tra quyền truy cập không gian làm việc…",
+  "shell": "Khung ứng dụng đang hoạt động. Các module nghiệp vụ (workflow / ingestion / RAG) được tích hợp tại đây qua các route tải khi cần.",
+  "drafts": "Mở không gian soạn nháp",
+  "accessError": "Chưa thể xác minh quyền truy cập không gian chuyên gia. Bạn có thể thử lại khi dịch vụ khả dụng.",
+  "retry": "Thử kiểm tra quyền truy cập lại"
+}
