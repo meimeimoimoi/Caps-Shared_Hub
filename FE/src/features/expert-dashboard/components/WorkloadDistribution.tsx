@@ -1,3 +1,5 @@
+import { useExpertPresentation } from '@/features/expert-dashboard/hooks/useExpertPresentation'
+import { useTranslation } from 'react-i18next'
 import {
   ExpertPanel,
   ExpertPanelHeader,
@@ -6,31 +8,6 @@ import {
 import type { DashboardDto, WorkStatus } from '../types'
 import type { QueueFilter } from './OverviewQueue'
 import { DashboardSectionState } from './DashboardSectionState'
-
-const segments: { status: WorkStatus; label: string; color: string }[] = [
-  {
-    status: 'PENDING_EXPERT_RESPONSE',
-    label: 'Response needed',
-    color: 'var(--ui-chart-response)',
-  },
-  {
-    status: 'PAYMENT_CONFIRMED',
-    label: 'Ready to start',
-    color: 'var(--ui-chart-ready)',
-  },
-  { status: 'IN_REVIEW', label: 'In review', color: 'var(--ui-chart-review)' },
-  {
-    status: 'AWAITING_USER_INFORMATION',
-    label: 'Waiting for information',
-    color: 'var(--ui-chart-information)',
-  },
-  {
-    status: 'AWAITING_ACCEPTANCE',
-    label: 'Awaiting acceptance',
-    color: 'var(--ui-chart-acceptance)',
-  },
-  { status: 'DISPUTED', label: 'Disputed', color: 'var(--ui-chart-disputed)' },
-]
 
 export function WorkloadDistribution({
   queue,
@@ -41,11 +18,47 @@ export function WorkloadDistribution({
   filter: QueueFilter
   setFilter: (filter: QueueFilter) => void
 }) {
+  const { t } = useTranslation('expert')
+  const display = useExpertPresentation()
+
+  const segments: { status: WorkStatus; label: string; color: string }[] = [
+    {
+      status: 'PENDING_EXPERT_RESPONSE',
+      label: t('responseNeeded'),
+      color: 'var(--ui-chart-response)',
+    },
+    {
+      status: 'PAYMENT_CONFIRMED',
+      label: t('readyToStart'),
+      color: 'var(--ui-chart-ready)',
+    },
+    {
+      status: 'IN_REVIEW',
+      label: t('inReview'),
+      color: 'var(--ui-chart-review)',
+    },
+    {
+      status: 'AWAITING_USER_INFORMATION',
+      label: t('waitingForInformation'),
+      color: 'var(--ui-chart-information)',
+    },
+    {
+      status: 'AWAITING_ACCEPTANCE',
+      label: t('awaitingAcceptance'),
+      color: 'var(--ui-chart-acceptance)',
+    },
+    {
+      status: 'DISPUTED',
+      label: t('disputed'),
+      color: 'var(--ui-chart-disputed)',
+    },
+  ]
+
   if (queue.status !== 'available')
     return (
       <ExpertPanel>
         <DashboardSectionState
-          title="Workload distribution unavailable"
+          title={t('workloadDistributionUnavailable')}
           message={queue.message}
         />
       </ExpertPanel>
@@ -64,15 +77,20 @@ export function WorkloadDistribution({
     >
       <ExpertPanelHeader>
         <div>
-          <h2 id="distribution-heading">Workload mix</h2>
-          <p>Current stages of the loaded cases.</p>
+          <h2 id="distribution-heading">{t('workloadMix')}</h2>
+          <p>{t('currentStagesOfTheLoadedCases')}</p>
         </div>
       </ExpertPanelHeader>
       <div className="eo-donut-summary flex items-center gap-[14px] [padding:0_24px_14px] max-[1251px]:flex-col max-[1251px]:gap-1 max-[1251px]:text-center max-[1101px]:flex-row max-[1101px]:text-left [&_.eo-donut-total]:[fill:var(--ep-ink)] [&_.eo-donut-total]:text-[26px] [&_.eo-donut-total]:font-[650] [&_>_div_p]:mt-[6px] [&_>_div_p]:text-[12px] [&_>_div_p]:text-[var(--ep-muted)] [&_>_div_strong]:text-[13px] [&_>_div_strong]:font-semibold [&_svg]:w-34 [&_svg]:min-w-28 [&_svg]:shrink-0 [&_text]:[fill:var(--ep-muted)] [&_text]:[font-family:inherit] [&_text]:text-[10px]">
         <svg
           viewBox="0 0 144 144"
           role="img"
-          aria-label={`Distribution of ${total} loaded cases: ${data.map((entry) => `${entry.count} ${entry.label.toLowerCase()}`).join(', ')}`}
+          aria-label={t('distributionLabel', {
+            total: display.number(total),
+            stages: data
+              .map((entry) => `${display.number(entry.count)} ${entry.label}`)
+              .join(', '),
+          })}
         >
           <circle
             cx="72"
@@ -108,22 +126,23 @@ export function WorkloadDistribution({
             )
           })}
           <text x="72" y="72" textAnchor="middle" className="eo-donut-total">
-            {total}
+            {display.number(total)}
           </text>
           <text x="72" y="92" textAnchor="middle">
-            loaded cases
+            {t('loadedCases')}
           </text>
         </svg>
         <div>
           <strong>
-            {total === 0
-              ? 'No active cases loaded'
-              : 'Every stage, in one view'}
+            {total === 0 ? t('noActiveCasesLoaded') : t('everyStageInOneView')}
           </strong>
           <p>
             {queue.data.hasMore
-              ? `${total} of ${queue.data.total} cases are included in this snapshot.`
-              : 'All cases in this snapshot are included.'}
+              ? t('snapshotCount', {
+                  loaded: display.number(total),
+                  total: display.number(queue.data.total),
+                })
+              : t('allCasesInThisSnapshotAreIncluded')}
           </p>
         </div>
       </div>
@@ -143,12 +162,12 @@ export function WorkloadDistribution({
                 style={{ background: entry.color }}
               />
               <span>{entry.label}</span>
-              <strong>{entry.count}</strong>
+              <strong>{display.number(entry.count)}</strong>
             </button>
           ))}
       </div>
       <ExpertPanelFooter>
-        Select a stage to filter the queue below.
+        {t('selectAStageToFilterTheQueueBelow')}
       </ExpertPanelFooter>
     </ExpertPanel>
   )

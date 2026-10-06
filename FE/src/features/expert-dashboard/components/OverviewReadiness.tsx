@@ -1,3 +1,5 @@
+import { useExpertPresentation } from '@/features/expert-dashboard/hooks/useExpertPresentation'
+import { useTranslation } from 'react-i18next'
 import {
   ExpertPanel,
   ExpertPanelHeader,
@@ -12,6 +14,9 @@ export function OverviewReadiness({
 }: {
   services: ServiceReadiness[]
 }) {
+  const { t } = useTranslation('expert')
+  const display = useExpertPresentation()
+
   const open = services.filter((service) => service.bookingAllowed).length
   return (
     <ExpertPanel
@@ -20,14 +25,17 @@ export function OverviewReadiness({
     >
       <ExpertPanelHeader>
         <div>
-          <h2 id="readiness-heading">Service readiness</h2>
+          <h2 id="readiness-heading">{t('serviceReadiness')}</h2>
           <p>
-            {open} of {services.length} services open for bookings.
+            {t('readinessCount', {
+              open: display.number(open),
+              total: display.number(services.length),
+            })}
           </p>
         </div>
         <Link
           className="eo-row-action inline-flex h-[34px] w-[34px] shrink-0 items-center justify-center rounded-[7px] border border-[var(--ep-border)] text-[var(--ep-muted)]! [&:hover]:bg-[var(--ui-accent-soft)] [&:hover]:bg-none [&:hover]:text-[var(--ep-accent-text)]!"
-          aria-label="Manage services"
+          aria-label={t('manageServices')}
           to="/expert/services"
         >
           <ArrowUpRight size={18} aria-hidden="true" />
@@ -35,8 +43,8 @@ export function OverviewReadiness({
       </ExpertPanelHeader>
       {services.length === 0 ? (
         <div className="eo-empty [padding:40px_24px] text-center text-[var(--ep-muted)] [&_h3]:mt-[10px] [&_p]:mt-[7px] [&_p]:text-[12px]">
-          <h3>No registered services</h3>
-          <p>Service readiness will appear once supplied.</p>
+          <h3>{t('noRegisteredServices')}</h3>
+          <p>{t('serviceReadinessWillAppearOnceSupplied')}</p>
         </div>
       ) : (
         <ul>
@@ -54,44 +62,45 @@ export function OverviewReadiness({
                 className={`eo-status inline-flex rounded-[5px] bg-[var(--ep-surface-raised)] bg-none [padding:4px_8px] text-[10px] font-semibold whitespace-nowrap text-[var(--ep-muted)] ${service.bookingAllowed ? 'eo-status-ready bg-[var(--ep-success-bg)] bg-none text-[var(--ep-success)]' : ''}`}
               >
                 {service.bookingAllowed
-                  ? 'Open for bookings'
-                  : 'Not receiving bookings'}
+                  ? t('openForBookings')
+                  : t('notReceivingBookings')}
               </span>
               {service.reasons.map((reason) => (
-                <p key={reason}>{reason}</p>
+                <p key={reason}>{display.demoCopy(reason)}</p>
               ))}
               {service.pendingPricingVersion && (
                 <p>
-                  {service.pendingPricingVersion} pending approval
+                  {t('pricingPending', {
+                    version: service.pendingPricingVersion,
+                  })}{' '}
                   {service.pricing
-                    ? ` · ${service.pricing.version} remains effective`
+                    ? t('pricingEffective', {
+                        version: service.pricing.version,
+                      })
                     : ''}
-                  .
                 </p>
               )}
               <details>
-                <summary>Readiness details</summary>
+                <summary>{t('readinessDetails')}</summary>
                 <dl>
                   <div>
-                    <dt>Qualification</dt>
+                    <dt>{t('qualification')}</dt>
                     <dd>
-                      {service.qualificationStatus
-                        .replaceAll('_', ' ')
-                        .toLowerCase()}
+                      {display.qualification(service.qualificationStatus)}
                     </dd>
                   </div>
                   <div>
-                    <dt>Service status</dt>
-                    <dd>{service.serviceStatus.toLowerCase()}</dd>
+                    <dt>{t('serviceStatus')}</dt>
+                    <dd>{display.serviceStatus(service.serviceStatus)}</dd>
                   </div>
                   <div>
-                    <dt>Availability</dt>
-                    <dd>{service.availability ? 'On' : 'Off'}</dd>
+                    <dt>{t('availability')}</dt>
+                    <dd>{service.availability ? t('on') : t('off')}</dd>
                   </div>
                   <div>
-                    <dt>Approved price</dt>
+                    <dt>{t('approvedPrice')}</dt>
                     <dd>
-                      {service.pricing?.version ?? 'No effective pricing'}
+                      {service.pricing?.version ?? t('noEffectivePricing')}
                     </dd>
                   </div>
                 </dl>
@@ -101,7 +110,7 @@ export function OverviewReadiness({
         </ul>
       )}
       <ExpertPanelFooter>
-        Readiness affects new bookings, not your existing work.
+        {t('readinessAffectsNewBookingsNotYourExistingWork')}
       </ExpertPanelFooter>
     </ExpertPanel>
   )

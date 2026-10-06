@@ -1,3 +1,5 @@
+import { useExpertPresentation } from '@/features/expert-dashboard/hooks/useExpertPresentation'
+import { useTranslation } from 'react-i18next'
 import { ExpertPanel, ExpertPanelHeader } from './ExpertPanel'
 import { useState } from 'react'
 import { TrendingUp } from 'lucide-react'
@@ -12,6 +14,9 @@ export function ReviewTrendChart({
   analytics: DashboardDto['analytics']
   timezone: string
 }) {
+  const { t } = useTranslation('expert')
+  const display = useExpertPresentation()
+
   const [period, setPeriod] = useState<7 | 28>(28)
   const [selected, setSelected] = useState(27)
   const [receivedVisible, setReceivedVisible] = useState(true)
@@ -34,11 +39,7 @@ export function ReviewTrendChart({
   const index = Math.min(selected, Math.max(0, points.length - 1))
   const active = points[index]
   const formatDate = (date: string) =>
-    new Intl.DateTimeFormat('en-GB', {
-      timeZone: chartTimezone,
-      day: 'numeric',
-      month: 'short',
-    }).format(new Date(date))
+    display.timestamp(date, chartTimezone, { day: 'numeric', month: 'short' })
   const x = (position: number) =>
     42 + dayOffsets[position] * (710 / (period - 1))
   const y = (value: number) => 206 - (value * 166) / ceiling
@@ -53,12 +54,12 @@ export function ReviewTrendChart({
     <ExpertPanel className="eo-trend" aria-labelledby="trend-heading">
       <ExpertPanelHeader>
         <div>
-          <h2 id="trend-heading">Review activity</h2>
-          <p>Incoming requests and completed reviews over time.</p>
+          <h2 id="trend-heading">{t('reviewActivity')}</h2>
+          <p>{t('incomingRequestsAndCompletedReviewsOverTime')}</p>
         </div>
         <div
           className="eo-segmented inline-flex gap-[3px] rounded-[7px] border border-[var(--ep-border)] bg-[var(--ep-surface-raised)] bg-none [padding:3px] [&_button]:min-h-8 [&_button]:rounded-[5px] [&_button]:border-0 [&_button]:[padding:6px_10px] [&_button]:[font-family:inherit] [&_button]:text-[12px] [&_button]:whitespace-nowrap [&_button]:text-[var(--ep-muted)] [&_button]:[background:transparent] [&_button:hover]:text-[var(--ep-accent-text)] [&_button[aria-pressed=true]]:bg-[var(--ep-surface)] [&_button[aria-pressed=true]]:bg-none [&_button[aria-pressed=true]]:font-semibold [&_button[aria-pressed=true]]:text-[var(--ep-ink)] [&_button[aria-pressed=true]]:[box-shadow:0_1px_3px_#17283b15]"
-          aria-label="Chart period"
+          aria-label={t('chartPeriod')}
         >
           {([7, 28] as const).map((days) => (
             <button
@@ -69,63 +70,64 @@ export function ReviewTrendChart({
                 setSelected(days - 1)
               }}
             >
-              {days === 7 ? '7 days' : '4 weeks'}
+              {days === 7 ? t('7Days') : t('4Weeks')}
             </button>
           ))}
         </div>
       </ExpertPanelHeader>
       {!analytics || analytics.status !== 'available' ? (
         <DashboardSectionState
-          title="Trend unavailable"
+          title={t('trendUnavailable')}
           message={
             analytics
               ? analytics.message
-              : 'Daily review history has not been supplied. Current workload is still available below.'
+              : t(
+                  'dailyReviewHistoryHasNotBeenSuppliedCurrentWorkloadIsStillAvailableBelow'
+                )
           }
         />
       ) : points.length === 0 ? (
         <div className="eo-empty [padding:40px_24px] text-center text-[var(--ep-muted)] [&_h3]:mt-[10px] [&_p]:mt-[7px] [&_p]:text-[12px]">
           <TrendingUp size={25} aria-hidden="true" />
-          <h3>No review history yet</h3>
-          <p>Trends will appear when daily activity is available.</p>
+          <h3>{t('noReviewHistoryYet')}</h3>
+          <p>{t('trendsWillAppearWhenDailyActivityIsAvailable')}</p>
         </div>
       ) : (
         <>
           {chartTimezone !== timezone && (
             <p className="eo-series-hint [padding:0_24px_8px] text-[12px]">
-              The supplied timezone is unavailable. Chart dates are shown in
-              UTC.
+              {t('theSuppliedTimezoneIsUnavailableChartDatesAreShownInUtc')}
             </p>
           )}
           {duplicateCount > 0 && (
             <p className="eo-series-hint [padding:0_24px_8px] text-[12px]">
-              Duplicate daily records use the latest snapshot for each day.
+              {t('duplicateDailyRecordsUseTheLatestSnapshotForEachDay')}
             </p>
           )}
           {missingDays > 0 && (
             <p className="eo-series-hint [padding:0_24px_8px] text-[12px]">
-              Some days are unreported. Lines connect available observations;
-              missing days are not counted as zero.
+              {t(
+                'someDaysAreUnreportedLinesConnectAvailableObservationsMissingDaysAreNotCountedAsZero'
+              )}
             </p>
           )}
           {excludedCount > 0 && (
             <p className="eo-series-hint [padding:0_24px_8px] text-[12px]">
-              {excludedCount} invalid history points were excluded from this
-              chart.
+              {t('chartExcluded', { total: display.number(excludedCount) })}
             </p>
           )}
           <div className="eo-chart-summary flex flex-wrap items-center gap-6 [padding:0_24px] max-[720px]:gap-[12px_20px] max-[720px]:[padding:0_18px] [&_>_div]:flex [&_>_div]:items-center [&_>_div]:gap-2 [&_>_p]:ml-auto [&_>_p]:text-[11px] [&_>_p]:text-[var(--ep-muted)] max-[1251px]:[&_>_p]:ml-[0] max-[1251px]:[&_>_p]:w-full [&_span]:text-[12px] [&_span]:text-[var(--ep-muted)] [&_strong]:text-[22px] [&_strong]:font-[650]">
             <div>
               <span className="eo-dot eo-dot-orange inline-block h-2 w-2 shrink-0 rounded-full [background:var(--ui-chart-response)]" />
-              <strong>{totalReceived}</strong>
-              <span>received</span>
+              <strong>{display.number(totalReceived)}</strong>
+              <span>{t('received')}</span>
             </div>
             <div>
               <span className="eo-dot eo-dot-green inline-block h-2 w-2 shrink-0 rounded-full [background:var(--ep-success)]" />
-              <strong>{totalCompleted}</strong>
-              <span>completed</span>
+              <strong>{display.number(totalCompleted)}</strong>
+              <span>{t('completed')}</span>
             </div>
-            <p>{analytics.data.sourceLabel}</p>
+            <p>{display.demoCopy(analytics.data.sourceLabel)}</p>
           </div>
           <div
             className="eo-chart-inspection flex min-h-[35px] gap-4 [padding:14px_24px_0] text-[11px] text-[var(--ep-muted)] max-[720px]:gap-[10px] max-[720px]:[padding:14px_18px_0] [&_strong]:text-[var(--ep-ink)]"
@@ -134,8 +136,16 @@ export function ReviewTrendChart({
             {active && (
               <>
                 <strong>{formatDate(active.date)}</strong>
-                <span>{active.received} received</span>
-                <span>{active.completed} completed</span>
+                <span>
+                  {t('chartReceivedCount', {
+                    total: display.number(active.received),
+                  })}
+                </span>
+                <span>
+                  {t('chartCompletedCount', {
+                    total: display.number(active.completed),
+                  })}
+                </span>
               </>
             )}
           </div>
@@ -146,13 +156,15 @@ export function ReviewTrendChart({
             aria-labelledby="trend-title trend-desc"
           >
             <title id="trend-title">
-              Daily received requests and completed reviews
+              {t('dailyReceivedRequestsAndCompletedReviews')}
             </title>
             <desc id="trend-desc">
-              {points.length} reported days in the {period}-day window.{' '}
-              {totalReceived} requests received, {totalCompleted} reviews
-              completed. Use the day selector or expand the data table for exact
-              values.
+              {t('chartDescription', {
+                days: display.number(points.length),
+                period: display.number(period),
+                received: display.number(totalReceived),
+                completed: display.number(totalCompleted),
+              })}
             </desc>
             {[0, 1, 2, 3, 4].map((tick) => (
               <g key={tick}>
@@ -164,7 +176,7 @@ export function ReviewTrendChart({
                   className="eo-chart-grid [stroke:var(--ep-border)] [stroke-width:1]"
                 />
                 <text x="26" y={y((tick * ceiling) / 4) + 4} textAnchor="end">
-                  {(tick * ceiling) / 4}
+                  {display.number((tick * ceiling) / 4)}
                 </text>
               </g>
             ))}
@@ -229,7 +241,11 @@ export function ReviewTrendChart({
                 onMouseEnter={() => setSelected(position)}
               >
                 <title>
-                  {`${formatDate(point.date)}: ${point.received} received, ${point.completed} completed`}
+                  {t('chartDay', {
+                    date: formatDate(point.date),
+                    received: display.number(point.received),
+                    completed: display.number(point.completed),
+                  })}
                 </title>
               </rect>
             ))}
@@ -259,7 +275,7 @@ export function ReviewTrendChart({
           </svg>
           {!receivedVisible && !completedVisible && (
             <p className="eo-series-hint [padding:0_24px_8px] text-[12px]">
-              Select a series below to display the chart.
+              {t('selectASeriesBelowToDisplayTheChart')}
             </p>
           )}
           <div className="eo-chart-controls flex flex-wrap items-center justify-between gap-4 [padding:4px_24px_14px] max-[720px]:[padding:8px_18px_14px]">
@@ -269,18 +285,18 @@ export function ReviewTrendChart({
                 onClick={() => setReceivedVisible(!receivedVisible)}
               >
                 <span className="eo-dot eo-dot-orange inline-block h-2 w-2 shrink-0 rounded-full [background:var(--ui-chart-response)]" />
-                Received
+                {t('received')}
               </button>
               <button
                 aria-pressed={completedVisible}
                 onClick={() => setCompletedVisible(!completedVisible)}
               >
                 <span className="eo-dot eo-dot-green inline-block h-2 w-2 shrink-0 rounded-full [background:var(--ep-success)]" />
-                Completed
+                {t('completed')}
               </button>
             </div>
             <label className="eo-day-selector flex items-center gap-2 text-[11px] text-[var(--ep-muted)] [&_input]:w-[90px] [&_input]:cursor-pointer [&_input]:[accent-color:var(--ep-accent)]">
-              Inspect day
+              {t('inspectDay')}
               <input
                 type="range"
                 min="0"
@@ -289,30 +305,36 @@ export function ReviewTrendChart({
                 onChange={(event) => setSelected(Number(event.target.value))}
                 aria-valuetext={
                   active
-                    ? `${formatDate(active.date)}: ${active.received} received, ${active.completed} completed`
+                    ? t('chartDay', {
+                        date: formatDate(active.date),
+                        received: display.number(active.received),
+                        completed: display.number(active.completed),
+                      })
                     : undefined
                 }
               />
             </label>
           </div>
           <details className="eo-data-table text-[12px] [border-top:1px_solid_var(--ep-border)] [&_>_div]:max-h-60 [&_>_div]:overflow-auto [&_>_div]:[padding:0_24px_16px] [&_>_summary]:[padding:12px_24px] [&_>_summary]:text-[var(--ep-muted)] [&_caption]:pb-2 [&_caption]:text-left [&_caption]:text-[var(--ep-muted)] [&_table]:w-full [&_table]:border-collapse [&_table]:text-left [&_table]:text-[12px] [&_td]:p-2 [&_td]:[border-bottom:1px_solid_var(--ep-border)] [&_th]:p-2 [&_th]:[border-bottom:1px_solid_var(--ep-border)]">
-            <summary>View chart data</summary>
+            <summary>{t('viewChartData')}</summary>
             <div>
               <table>
-                <caption>Daily review activity · {chartTimezone}</caption>
+                <caption>
+                  {t('chartCaption', { timezone: chartTimezone })}
+                </caption>
                 <thead>
                   <tr>
-                    <th>Date</th>
-                    <th>Received</th>
-                    <th>Completed</th>
+                    <th>{t('date')}</th>
+                    <th>{t('received')}</th>
+                    <th>{t('completed')}</th>
                   </tr>
                 </thead>
                 <tbody>
                   {points.map((point) => (
                     <tr key={point.date}>
                       <th scope="row">{formatDate(point.date)}</th>
-                      <td>{point.received}</td>
-                      <td>{point.completed}</td>
+                      <td>{display.number(point.received)}</td>
+                      <td>{display.number(point.completed)}</td>
                     </tr>
                   ))}
                 </tbody>

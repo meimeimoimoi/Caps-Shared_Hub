@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { useEffect, useRef } from 'react'
 import {
   ArrowLeft,
@@ -16,36 +17,38 @@ import {
   DashboardSkeleton,
 } from '../../features/expert-dashboard/components/DashboardSectionState'
 
-const sections = [
-  {
-    id: 'account',
-    label: 'Account',
-    description: 'Your identity and contact details.',
-    icon: User,
-  },
-  {
-    id: 'expert-profile',
-    label: 'Expert profile',
-    description: 'Your professional account and services.',
-    icon: BriefcaseBusiness,
-  },
-  {
-    id: 'access',
-    label: 'Access & permissions',
-    description: 'Your access to the expert workspace.',
-    icon: ShieldCheck,
-  },
-]
-const statuses: Record<string, string> = {
-  ACTIVE: 'Active',
-  PENDING: 'Pending',
-  SUSPENDED: 'Suspended',
-}
-const permissions: Record<string, string> = {
-  'expert.overview.read': 'View the expert overview',
-}
-
 export default function ExpertSettingsPage() {
+  const { t } = useTranslation('expert')
+
+  const sections = [
+    {
+      id: 'account',
+      label: t('account'),
+      description: t('yourIdentityAndContactDetails'),
+      icon: User,
+    },
+    {
+      id: 'expert-profile',
+      label: t('expertProfile'),
+      description: t('yourProfessionalAccountAndServices'),
+      icon: BriefcaseBusiness,
+    },
+    {
+      id: 'access',
+      label: t('accessPermissions'),
+      description: t('yourAccessToTheExpertWorkspace'),
+      icon: ShieldCheck,
+    },
+  ]
+  const statuses: Record<string, string> = {
+    ACTIVE: t('active'),
+    PENDING: t('pending'),
+    SUSPENDED: t('suspended'),
+  }
+  const permissions: Record<string, string> = {
+    'expert.overview.read': t('viewTheExpertOverview'),
+  }
+
   const context = useExpertContext()
   const { section = 'account' } = useParams()
   const { search } = useLocation()
@@ -58,21 +61,21 @@ export default function ExpertSettingsPage() {
   if (!context.data)
     return (
       <DashboardSectionState
-        title="Settings unavailable"
-        message="Your account information could not be loaded. Retry to reconnect."
+        title={t('settingsUnavailable')}
+        message={t('yourAccountInformationCouldNotBeLoadedRetryToReconnect')}
         retry={() => void context.refetch()}
       />
     )
   if (!current)
     return (
       <div className="ep-empty">
-        <h1>Settings page not found</h1>
-        <p>Choose an available account settings section.</p>
+        <h1>{t('settingsPageNotFound')}</h1>
+        <p>{t('chooseAnAvailableAccountSettingsSection')}</p>
         <Link
           className="ep-link"
           to={{ pathname: '/expert/settings/account', search }}
         >
-          Back to account settings
+          {t('backToAccountSettings')}
         </Link>
       </div>
     )
@@ -92,22 +95,22 @@ export default function ExpertSettingsPage() {
         to={{ pathname: '/expert/overview', search }}
       >
         <ArrowLeft size={15} aria-hidden="true" />
-        Back to workspace
+        {t('backToWorkspace')}
       </Link>
       <div className="flex items-start justify-between gap-4 border-b border-[var(--ep-line)] pb-6">
         <div>
           <h1 className="text-[30px]! leading-tight! font-semibold!">
-            Settings
+            {t('settings')}
           </h1>
           <p className="mt-2 text-[14px] text-[var(--ep-muted)]">
-            Manage your account information and workspace access.
+            {t('manageYourAccountInformationAndWorkspaceAccess')}
           </p>
         </div>
       </div>
       <div className="ep-settings-layout mt-6 grid grid-cols-[224px_minmax(0,_1fr)] items-start gap-8 max-[1101px]:grid-cols-[200px_minmax(0,_1fr)] max-[1101px]:gap-6 max-[768px]:grid-cols-[minmax(0,_1fr)] max-[768px]:gap-5">
         <nav
           className="ep-settings-navigation pt-1 max-[768px]:flex max-[768px]:flex-wrap max-[768px]:gap-[6px] max-[768px]:p-0 [&_>_p]:max-w-[25ch] [&_>_p]:[padding:20px_12px] [&_>_p]:text-[12px] [&_>_p]:text-[var(--ep-muted)] max-[768px]:[&_>_p]:hidden"
-          aria-label="Settings sections"
+          aria-label={t('settingsSections')}
         >
           {sections.map((entry) => {
             const Icon = entry.icon
@@ -148,14 +151,13 @@ export default function ExpertSettingsPage() {
               className="ep-settings-note mt-6 rounded-lg bg-[var(--ep-surface-raised)] bg-none [padding:16px_18px] text-[13px] text-[var(--ep-muted)] [&_p]:mt-1 [&_p]:text-[var(--ep-muted)]"
               role="status"
             >
-              The latest update failed. Showing the last loaded account
-              information.{' '}
+              {t('theLatestUpdateFailedShowingTheLastLoadedAccountInformation')}{' '}
               <button
                 className="ep-inline-button"
                 onClick={() => void context.refetch()}
                 disabled={context.isFetching}
               >
-                Retry
+                {t('retry')}
               </button>
             </div>
           )}
@@ -173,7 +175,7 @@ export default function ExpertSettingsPage() {
                   <p>{data.email}</p>
                   {isExpertDemo && (
                     <span className="ep-settings-demo mt-2 inline-block text-[12px] text-[var(--ep-warning)]">
-                      Demonstration account
+                      {t('demonstrationAccount')}
                     </span>
                   )}
                 </div>
@@ -181,23 +183,22 @@ export default function ExpertSettingsPage() {
               <dl className="ep-settings-rows m-0 [&_>_div]:grid [&_>_div]:grid-cols-[minmax(150px,_1fr)_minmax(0,_1.3fr)] [&_>_div]:gap-6 [&_>_div]:[padding:24px_0] [&_>_div]:[border-bottom:1px_solid_var(--ep-border)] max-[768px]:[&_>_div]:grid-cols-[1fr] max-[768px]:[&_>_div]:gap-[10px] max-[768px]:[&_>_div]:[padding:20px_0] [&_dd]:m-0 [&_dd]:wrap-anywhere [&_dt]:font-semibold [&_dt_small]:mt-[5px] [&_dt_small]:block [&_dt_small]:text-[12px] [&_dt_small]:font-normal [&_dt_small]:text-[var(--ep-muted)]">
                 <div>
                   <dt>
-                    Full name
-                    <small>The name associated with your account.</small>
+                    {t('fullName')}
+                    <small>{t('theNameAssociatedWithYourAccount')}</small>
                   </dt>
                   <dd>{data.displayName}</dd>
                 </div>
                 <div>
                   <dt>
-                    Email address<small>Your account contact email.</small>
+                    {t('emailAddress')}
+                    <small>{t('yourAccountContactEmail')}</small>
                   </dt>
                   <dd>{data.email}</dd>
                 </div>
               </dl>
               <div className="ep-settings-note mt-6 rounded-lg bg-[var(--ep-surface-raised)] bg-none [padding:16px_18px] text-[13px] text-[var(--ep-muted)] [&_p]:mt-1 [&_p]:text-[var(--ep-muted)]">
-                <strong>Account details are view-only</strong>
-                <p>
-                  Name, email and profile photo updates are not available yet.
-                </p>
+                <strong>{t('accountDetailsAreViewonly')}</strong>
+                <p>{t('nameEmailAndProfilePhotoUpdatesAreNotAvailableYet')}</p>
               </div>
             </>
           )}
@@ -206,16 +207,16 @@ export default function ExpertSettingsPage() {
               <dl className="ep-settings-rows m-0 [&_>_div]:grid [&_>_div]:grid-cols-[minmax(150px,_1fr)_minmax(0,_1.3fr)] [&_>_div]:gap-6 [&_>_div]:[padding:24px_0] [&_>_div]:[border-bottom:1px_solid_var(--ep-border)] max-[768px]:[&_>_div]:grid-cols-[1fr] max-[768px]:[&_>_div]:gap-[10px] max-[768px]:[&_>_div]:[padding:20px_0] [&_dd]:m-0 [&_dd]:wrap-anywhere [&_dt]:font-semibold [&_dt_small]:mt-[5px] [&_dt_small]:block [&_dt_small]:text-[12px] [&_dt_small]:font-normal [&_dt_small]:text-[var(--ep-muted)]">
                 <div>
                   <dt>
-                    Expert ID
-                    <small>Your professional account identifier.</small>
+                    {t('expertId')}
+                    <small>{t('yourProfessionalAccountIdentifier')}</small>
                   </dt>
                   <dd>{data.expertId}</dd>
                 </div>
                 <div>
                   <dt>
-                    Account status
+                    {t('accountStatus')}
                     <small>
-                      Service qualifications are assessed separately.
+                      {t('serviceQualificationsAreAssessedSeparately')}
                     </small>
                   </dt>
                   <dd>
@@ -229,20 +230,20 @@ export default function ExpertSettingsPage() {
               </dl>
               <div className="ep-settings-subheading mt-8 mb-[10px] flex items-start justify-between gap-4 [&_h3]:text-[15px] [&_p]:mt-[5px] [&_p]:text-[12px] [&_p]:text-[var(--ep-muted)]">
                 <div>
-                  <h3>Registered services</h3>
-                  <p>Booking readiness is specific to each service.</p>
+                  <h3>{t('registeredServices')}</h3>
+                  <p>{t('bookingReadinessIsSpecificToEachService')}</p>
                 </div>
                 <Link
                   className="ep-settings-text-link inline-flex items-center gap-[5px] [padding:3px_0] text-[12px] whitespace-nowrap text-[var(--ep-accent-text)]! [&:hover]:underline [&:hover]:underline-offset-1"
                   to={{ pathname: '/expert/services', search }}
                 >
-                  My Services
+                  {t('myServices')}
                   <ArrowUpRight size={15} aria-hidden="true" />
                 </Link>
               </div>
               {data.services.length === 0 ? (
                 <div className="ep-settings-note mt-6 rounded-lg bg-[var(--ep-surface-raised)] bg-none [padding:16px_18px] text-[13px] text-[var(--ep-muted)] [&_p]:mt-1 [&_p]:text-[var(--ep-muted)]">
-                  <p>No services registered for this account.</p>
+                  <p>{t('noServicesRegisteredForThisAccount')}</p>
                 </div>
               ) : (
                 <ul className="ep-settings-services m-0 list-none p-0 [&_.ep-status]:shrink-0 [&_li]:flex [&_li]:items-center [&_li]:justify-between [&_li]:gap-4 [&_li]:[padding:20px_0] [&_li]:[border-bottom:1px_solid_var(--ep-border)] max-[768px]:[&_li]:flex-col max-[768px]:[&_li]:items-start max-[768px]:[&_li]:gap-[10px] [&_li_p]:mt-[5px] [&_li_p]:text-[12px] [&_li_p]:text-[var(--ep-muted)] [&_li_strong]:text-[13px] [&_li_strong]:font-semibold">
@@ -253,16 +254,16 @@ export default function ExpertSettingsPage() {
                         <p>
                           {service.qualificationStatus ===
                           'APPROVED_FOR_SERVICE'
-                            ? 'Approved for this service'
-                            : 'Not yet approved for this service'}
+                            ? t('approvedForThisService')
+                            : t('notYetApprovedForThisService')}
                         </p>
                       </div>
                       <span
                         className={`ep-status ${service.bookingAllowed ? 'ep-status-ready' : 'ep-status-neutral'}`}
                       >
                         {service.bookingAllowed
-                          ? 'Open for bookings'
-                          : 'Not accepting bookings'}
+                          ? t('openForBookings')
+                          : t('notAcceptingBookings')}
                       </span>
                     </li>
                   ))}
@@ -280,13 +281,13 @@ export default function ExpertSettingsPage() {
                 </span>
                 <div className="min-w-0 flex-1 basis-48">
                   <strong className="text-[15px] font-semibold">
-                    Expert workspace access
+                    {t('expertWorkspaceAccess')}
                   </strong>
                   <p className="mt-1 text-[14px] leading-relaxed text-[var(--ep-muted)]">
                     {data.portalAccess.allowed
-                      ? 'Your account can access the expert workspace.'
+                      ? t('yourAccountCanAccessTheExpertWorkspace')
                       : (data.portalAccess.reason ??
-                        'Access has not been granted.')}
+                        t('accessHasNotBeenGranted'))}
                   </p>
                 </div>
                 <span
@@ -296,24 +297,27 @@ export default function ExpertSettingsPage() {
                     aria-hidden="true"
                     className="size-1.5 rounded-full bg-current"
                   />
-                  {data.portalAccess.allowed ? 'Access granted' : 'Restricted'}
+                  {data.portalAccess.allowed
+                    ? t('accessGranted')
+                    : 'Restricted'}
                 </span>
               </div>
               <div className="mt-8 grid grid-cols-[minmax(0,1fr)_minmax(260px,.55fr)] gap-8 max-[1101px]:grid-cols-1">
                 <div>
                   <div className="mb-5 [&_h3]:text-[16px] [&_h3]:font-semibold [&_p]:mt-2 [&_p]:max-w-[60ch] [&_p]:text-[14px] [&_p]:leading-relaxed [&_p]:text-[var(--ep-muted)]">
                     <div>
-                      <h3>Assigned permissions</h3>
+                      <h3>{t('assignedPermissions')}</h3>
                       <p>
-                        Assigned by the platform. Changes require an authorized
-                        administrator.
+                        {t(
+                          'assignedByThePlatformChangesRequireAnAuthorizedAdministrator'
+                        )}
                       </p>
                     </div>
                   </div>
                   {data.portalAccess.capabilities.length === 0 ? (
                     <div className="ep-settings-note mt-6 rounded-lg bg-[var(--ep-surface-raised)] bg-none [padding:16px_18px] text-[13px] text-[var(--ep-muted)] [&_p]:mt-1 [&_p]:text-[var(--ep-muted)]">
                       <p>
-                        No specific permissions are assigned to this account.
+                        {t('noSpecificPermissionsAreAssignedToThisAccount')}
                       </p>
                     </div>
                   ) : (
@@ -324,7 +328,7 @@ export default function ExpertSettingsPage() {
                           <div>
                             <strong>
                               {permissions[capability] ??
-                                'Additional workspace permission'}
+                                t('additionalWorkspacePermission')}
                             </strong>
                             <small>{capability}</small>
                           </div>
@@ -340,11 +344,12 @@ export default function ExpertSettingsPage() {
                     className="mb-3 text-[var(--ep-muted)]"
                   />
                   <strong className="text-[15px] font-semibold">
-                    Security settings
+                    {t('securitySettings')}
                   </strong>
                   <p className="mt-2 max-w-[40ch] text-[14px] leading-relaxed text-[var(--ep-muted)]">
-                    Password changes, two-factor authentication and session
-                    management are not available in this preview.
+                    {t(
+                      'passwordChangesTwofactorAuthenticationAndSessionManagementAreNotAvailableInThisPreview'
+                    )}
                   </p>
                 </aside>
               </div>

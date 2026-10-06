@@ -1,10 +1,8 @@
+import { useExpertPresentation } from '@/features/expert-dashboard/hooks/useExpertPresentation'
+import { useTranslation } from 'react-i18next'
 import { useExpertDashboard } from '../../features/expert-dashboard/hooks/useExpertDashboard'
 import { useExpertContext } from '@/features/expert-context'
-import {
-  toDashboardViewModel,
-  statusLabels,
-  formatDeadline,
-} from '../../features/expert-dashboard/utils/toDashboardViewModel'
+import { toDashboardViewModel } from '../../features/expert-dashboard/utils/toDashboardViewModel'
 import {
   DashboardSectionState,
   DashboardSkeleton,
@@ -17,17 +15,21 @@ import { Pagination } from '@/components/ui/navigation/pagination'
 import { usePagination } from '@/hooks/usePagination'
 import type { WorkStatus } from '../../features/expert-dashboard/types'
 
-const statusFilters: { value: WorkStatus | 'ALL'; label: string }[] = [
-  { value: 'ALL', label: 'All statuses' },
-  { value: 'PENDING_EXPERT_RESPONSE', label: 'Response needed' },
-  { value: 'PAYMENT_CONFIRMED', label: 'Ready to start' },
-  { value: 'IN_REVIEW', label: 'In review' },
-  { value: 'AWAITING_USER_INFORMATION', label: 'Waiting for info' },
-  { value: 'AWAITING_ACCEPTANCE', label: 'Awaiting acceptance' },
-  { value: 'DISPUTED', label: 'Disputed' },
-]
-
 export default function ExpertCasesPage() {
+  const display = useExpertPresentation()
+
+  const { t } = useTranslation('expert')
+
+  const statusFilters: { value: WorkStatus | 'ALL'; label: string }[] = [
+    { value: 'ALL', label: t('allStatuses') },
+    { value: 'PENDING_EXPERT_RESPONSE', label: t('responseNeeded') },
+    { value: 'PAYMENT_CONFIRMED', label: t('readyToStart') },
+    { value: 'IN_REVIEW', label: t('inReview') },
+    { value: 'AWAITING_USER_INFORMATION', label: t('waitingForInfo') },
+    { value: 'AWAITING_ACCEPTANCE', label: t('awaitingAcceptance') },
+    { value: 'DISPUTED', label: t('disputed') },
+  ]
+
   const { pathname } = useLocation()
   const scope = pathname.endsWith('/queue')
     ? 'queue'
@@ -36,10 +38,10 @@ export default function ExpertCasesPage() {
       : 'all'
   const heading =
     scope === 'queue'
-      ? 'Work Queue'
+      ? t('workQueue')
       : scope === 'active'
-        ? 'Active Cases'
-        : 'Cases'
+        ? t('activeCasesAlternative')
+        : t('cases')
   const context = useExpertContext()
   const dashboard = useExpertDashboard()
   const [filter, setFilter] = useState<WorkStatus | 'ALL'>('ALL')
@@ -82,10 +84,10 @@ export default function ExpertCasesPage() {
           <h1>{heading}</h1>
           <p>
             {scope === 'queue'
-              ? 'New requests awaiting your acceptance or decline.'
+              ? t('newRequestsAwaitingYourAcceptanceOrDecline')
               : scope === 'active'
-                ? 'Accepted cases, delivery deadlines and client follow-ups.'
-                : 'All your review cases and requests.'}
+                ? t('acceptedCasesDeliveryDeadlinesAndClientFollowups')
+                : t('allYourReviewCasesAndRequests')}
           </p>
         </div>
       </div>
@@ -93,19 +95,19 @@ export default function ExpertCasesPage() {
         <DashboardSkeleton />
       ) : !model ? (
         <DashboardSectionState
-          title="Cases unavailable"
-          message={dashboard.error?.message ?? 'Case data could not be loaded.'}
+          title={t('casesUnavailable')}
+          message={t('caseDataCouldNotBeLoaded')}
           retry={refresh}
         />
       ) : !model.consistent ? (
         <DashboardSectionState
-          title="Data versions do not match"
-          message="Refresh to load cases and expert context from the same snapshot."
+          title={t('dataVersionsDoNotMatch')}
+          message={t('refreshToLoadCasesAndExpertContextFromTheSameSnapshot')}
           retry={refresh}
         />
       ) : model.queue.status !== 'available' ? (
         <DashboardSectionState
-          title="Cases unavailable"
+          title={t('casesUnavailable')}
           message={model.queue.message}
           retry={refresh}
         />
@@ -113,16 +115,16 @@ export default function ExpertCasesPage() {
         <>
           {(dashboard.isError || model.freshness.stale) && (
             <div className="ep-notice" role="status">
-              <strong>Showing earlier data.</strong>{' '}
+              <strong>{t('showingEarlierData')}</strong>{' '}
               {dashboard.isError
-                ? 'The latest refresh failed.'
-                : model.freshness.message}{' '}
+                ? t('theLatestRefreshFailed')
+                : display.demoCopy(model.freshness.message ?? '')}{' '}
               <button
                 className="ep-inline-button"
                 onClick={refresh}
                 disabled={dashboard.isFetching}
               >
-                Retry refresh
+                {t('retryRefresh')}
               </button>
             </div>
           )}
@@ -136,94 +138,111 @@ export default function ExpertCasesPage() {
                 value={filter}
                 onChange={(val) => setFilter(val)}
                 options={filters}
-                label="Filter by status"
+                label={t('filterByStatus')}
                 className="flex items-center gap-2 [&>span]:hidden"
                 triggerClassName="!min-h-[34px] !py-1 !text-xs !w-[200px]"
               />
             </div>
             <span className="ep-count-label">
-              {visibleItems.length} shown
-              {model.queue.data.hasMore ? ' · Partial dataset' : ''}
+              {t('shownCount', { total: display.number(visibleItems.length) })}
+              {model.queue.data.hasMore ? ' · ' + t('partialDataset') : ''}
             </span>
           </div>
           {visibleItems.length === 0 ? (
             <div className="ep-empty">
-              <h3>No cases match this filter</h3>
-              <p>Try selecting a different status filter.</p>
+              <h3>{t('noCasesMatchThisFilter')}</h3>
+              <p>{t('trySelectingADifferentStatusFilter')}</p>
             </div>
           ) : (
             <>
-            <div className="ep-cases-table-wrapper rounded-b-none border-b-0 shadow-none">
-              <table className="ep-cases-table">
-                <thead>
-                  <tr>
-                    <th scope="col">Case</th>
-                    <th scope="col">Status</th>
-                    <th scope="col">Deadline</th>
-                    <th scope="col"><span className="sr-only">Details</span></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {pagination.rows.map((item) => {
-                    const overdue =
-                      item.deadline.overdue &&
-                      !item.deadline.paused &&
-                      item.deadline.actor === 'EXPERT'
-                    return (
-                      <tr key={item.id}>
-                        <td className="ep-case-title whitespace-normal!">
-                          <span className="block font-semibold wrap-anywhere">{item.title}</span>
-                          <span className="mt-1 block text-[12px] font-normal text-[var(--ep-muted)] wrap-anywhere">{item.serviceName}</span>
-                        </td>
-                        <td>
-                          <span
-                            className={`ep-status ${item.deadline.paused ? 'ep-status-paused' : ''}`}
-                          >
-                            {statusLabels[item.status]}
-                          </span>
-                        </td>
-                        <td className="ep-case-deadline">
-                          <div
-                            className={`ep-deadline ${overdue ? 'ep-text-danger' : ''}`}
-                          >
-                            {item.deadline.paused ? (
-                              <Pause size={13} aria-hidden="true" />
-                            ) : (
-                              <Clock3 size={13} aria-hidden="true" />
-                            )}
-                            <div>
-                              <span>{overdue ? `Overdue: ${item.deadline.kind}` : item.deadline.kind}</span>
-                              <time dateTime={item.deadline.at ?? undefined}>
-                                {formatDeadline(
-                                  item.deadline.at,
-                                  model.timezone
-                                )}
-                              </time>
+              <div className="ep-cases-table-wrapper rounded-b-none border-b-0 shadow-none">
+                <table className="ep-cases-table">
+                  <thead>
+                    <tr>
+                      <th scope="col">{t('case')}</th>
+                      <th scope="col">{t('status')}</th>
+                      <th scope="col">{t('deadline')}</th>
+                      <th scope="col">
+                        <span className="sr-only">{t('details')}</span>
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {pagination.rows.map((item) => {
+                      const overdue =
+                        item.deadline.overdue &&
+                        !item.deadline.paused &&
+                        item.deadline.actor === 'EXPERT'
+                      return (
+                        <tr key={item.id}>
+                          <td className="ep-case-title whitespace-normal!">
+                            <span className="block font-semibold wrap-anywhere">
+                              {item.title}
+                            </span>
+                            <span className="mt-1 block text-[12px] font-normal wrap-anywhere text-[var(--ep-muted)]">
+                              {item.serviceName}
+                            </span>
+                          </td>
+                          <td>
+                            <span
+                              className={`ep-status ${item.deadline.paused ? 'ep-status-paused' : ''}`}
+                            >
+                              {display.status(item.status)}
+                            </span>
+                          </td>
+                          <td className="ep-case-deadline">
+                            <div
+                              className={`ep-deadline ${overdue ? 'ep-text-danger' : ''}`}
+                            >
+                              {item.deadline.paused ? (
+                                <Pause size={13} aria-hidden="true" />
+                              ) : (
+                                <Clock3 size={13} aria-hidden="true" />
+                              )}
+                              <div>
+                                <span>
+                                  {overdue
+                                    ? t('overdueDeadline', {
+                                        kind: display.deadlineKind(
+                                          item.deadline.kind
+                                        ),
+                                      })
+                                    : display.deadlineKind(item.deadline.kind)}
+                                </span>
+                                <time dateTime={item.deadline.at ?? undefined}>
+                                  {display.deadline(
+                                    item.deadline.at,
+                                    model.timezone
+                                  )}
+                                </time>
+                              </div>
                             </div>
-                          </div>
-                        </td>
-                        <td>
-                          <Link
-                            to={`/expert/cases/${item.id}`}
-                            aria-label={`View details: ${item.title}`}
-                            className="inline-flex min-h-11 items-center gap-2 whitespace-nowrap text-[13px] font-medium hover:underline underline-offset-4"
-                          >
-                            View details <ArrowRight size={15} aria-hidden="true" />
-                          </Link>
-                        </td>
-                      </tr>
-                    )
-                  })}
-                </tbody>
-              </table>
-            </div>
+                          </td>
+                          <td>
+                            <Link
+                              to={`/expert/cases/${item.id}`}
+                              aria-label={t('detailsFor', {
+                                title: item.title,
+                              })}
+                              className="inline-flex min-h-11 items-center gap-2 text-[13px] font-medium whitespace-nowrap underline-offset-4 hover:underline"
+                            >
+                              {t('viewDetails')}
+                              <ArrowRight size={15} aria-hidden="true" />
+                            </Link>
+                          </td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
+              </div>
               <Pagination
                 page={pagination.page}
                 pageSize={pagination.pageSize}
                 total={pagination.total}
                 onPageChange={pagination.setPage}
                 onPageSizeChange={pagination.setPageSize}
-                label="Case list pagination"
+                label={t('caseListPagination')}
               />
             </>
           )}
