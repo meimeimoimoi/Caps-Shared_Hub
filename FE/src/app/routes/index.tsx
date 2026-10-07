@@ -15,6 +15,16 @@ import { ExpertRoute } from './ExpertRoute'
 import { ExpertLayout } from '../layouts/expert/ExpertLayout'
 import { DraftRoute } from './DraftRoute'
 import { DraftLayout } from '../layouts/drafts/DraftLayout'
+const ReviewerLayout = lazy(() => import('../layouts/reviewer/ReviewerLayout'))
+const ReviewerQueuePage = lazy(
+  () => import('@/pages/reviewer/ReviewerQueuePage')
+)
+const ReviewerAssessmentPage = lazy(
+  () => import('@/pages/reviewer/ReviewerAssessmentPage')
+)
+const ReviewerHistoryPage = lazy(
+  () => import('@/pages/reviewer/ReviewerHistoryPage')
+)
 const DraftListPage = lazy(() => import('@/pages/drafts/DraftListPage'))
 const DraftTemplatePage = lazy(() => import('@/pages/drafts/DraftTemplatePage'))
 const DraftTemplateDetailPage = lazy(
@@ -68,14 +78,30 @@ const AdminDisputeDetailPage = lazy(
 )
 const AdminEscrowPage = lazy(() => import('@/pages/admin/AdminEscrowPage'))
 const AdminPricingPage = lazy(() => import('@/pages/admin/AdminPricingPage'))
-const AdminPricingTierPage = lazy(() => import('@/pages/admin/AdminPricingTierPage'))
-const KnowledgeQueuePage = lazy(() => import('@/pages/knowledge-admin/KnowledgeQueuePage'))
-const KnowledgeSourcesPage = lazy(() => import('@/pages/knowledge-admin/KnowledgeSourcesPage'))
-const KnowledgeVersionPage = lazy(() => import('@/pages/knowledge-admin/KnowledgeVersionPage'))
-const KnowledgeReviewPage = lazy(() => import('@/pages/knowledge-admin/KnowledgeReviewPage'))
-const KnowledgeDocumentPage = lazy(() => import('@/pages/knowledge-admin/KnowledgeDocumentPage'))
-const KnowledgeDocumentsPage = lazy(() => import('@/pages/knowledge-admin/KnowledgeDocumentsPage'))
-const KnowledgeUploadsPage = lazy(() => import('@/pages/knowledge-admin/KnowledgeUploadsPage'))
+const AdminPricingTierPage = lazy(
+  () => import('@/pages/admin/AdminPricingTierPage')
+)
+const KnowledgeQueuePage = lazy(
+  () => import('@/pages/knowledge-admin/KnowledgeQueuePage')
+)
+const KnowledgeSourcesPage = lazy(
+  () => import('@/pages/knowledge-admin/KnowledgeSourcesPage')
+)
+const KnowledgeVersionPage = lazy(
+  () => import('@/pages/knowledge-admin/KnowledgeVersionPage')
+)
+const KnowledgeReviewPage = lazy(
+  () => import('@/pages/knowledge-admin/KnowledgeReviewPage')
+)
+const KnowledgeDocumentPage = lazy(
+  () => import('@/pages/knowledge-admin/KnowledgeDocumentPage')
+)
+const KnowledgeDocumentsPage = lazy(
+  () => import('@/pages/knowledge-admin/KnowledgeDocumentsPage')
+)
+const KnowledgeUploadsPage = lazy(
+  () => import('@/pages/knowledge-admin/KnowledgeUploadsPage')
+)
 
 function Fallback() {
   const { t } = useTranslation('common')
@@ -114,6 +140,19 @@ const router = createBrowserRouter(
       <Route path="/" element={<Navigate to="/dashboard" replace />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/expert/register" element={<ExpertRegistrationPage />} />
+      {/* Explicit isolated demo; real Reviewer permissions/assignments need a server API. */}
+      <Route path="/reviewer" element={<ReviewerLayout />}>
+        <Route index element={<ReviewerQueuePage />} />
+        <Route
+          path="gate-1/:id"
+          element={<ReviewerAssessmentPage gate="GATE_1" />}
+        />
+        <Route
+          path="gate-2/:id"
+          element={<ReviewerAssessmentPage gate="GATE_2" />}
+        />
+        <Route path="history" element={<ReviewerHistoryPage />} />
+      </Route>
       {/* TODO(auth): bọc ProtectedRoute + check role admin khi có API */}
       <Route path="/admin/experts" element={<AdminExpertsPage />} />
       <Route
