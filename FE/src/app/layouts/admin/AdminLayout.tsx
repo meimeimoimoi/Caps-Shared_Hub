@@ -2,6 +2,7 @@ import { useRef, useState, type ReactNode } from 'react'
 import {
   CreditCard,
   FileText,
+  LayoutDashboard,
   Flag,
   Settings,
   Tag,
@@ -45,7 +46,14 @@ interface ShellPageProps {
 
 interface AdminLayoutProps extends ShellPageProps {
   /** Mục sidebar đang mở */
-  section: 'pending' | 'experts' | 'disputes' | 'escrow' | 'pricing' | 'account'
+  section:
+    | 'overview'
+    | 'pending'
+    | 'experts'
+    | 'disputes'
+    | 'escrow'
+    | 'pricing'
+    | 'account'
   pendingCount: number
   disputeCount?: number
 }
@@ -58,6 +66,18 @@ export function AdminLayout({
 }: AdminLayoutProps) {
   const { t } = useTranslation('admin')
   const nav: NavGroup[] = [
+    {
+      // Không tiêu đề nhóm: AppSidebar chỉ hiện tiêu đề khi có chữ
+      group: '',
+      items: [
+        {
+          label: t('navigation.overview'),
+          icon: LayoutDashboard,
+          to: '/admin',
+          active: section === 'overview',
+        },
+      ],
+    },
     {
       group: t('navigation.expertReview'),
       items: [
@@ -208,6 +228,16 @@ export function RoleShell({
             name: account.name,
             avatarUrl: account.avatarUrl,
             onSignOut: account.logout,
+            // Giống Expert: menu tài khoản có lối vào trang tài khoản, lấy từ mục sidebar cho khớp nhãn và trạng thái
+            links: nav
+              .flatMap((g) => g.items)
+              .filter((item) => item.to === '/admin/account')
+              .map(({ label, icon: Icon, active }) => ({
+                label,
+                to: '/admin/account',
+                icon: <Icon size={17} />,
+                active,
+              })),
           }}
           notifications={notifications}
         />

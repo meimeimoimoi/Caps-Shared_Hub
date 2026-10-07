@@ -153,6 +153,15 @@ export function KnowledgeLayout({
             name: account.name,
             avatarUrl: account.avatarUrl,
             onSignOut: account.logout,
+            // Giống Expert: menu tài khoản luôn có lối vào trang tài khoản
+            links: [
+              {
+                label: 'Tài khoản',
+                to: '/knowledge/account',
+                icon: <UserRound size={17} />,
+                active: section === 'account',
+              },
+            ],
           }}
           notifications={notifications}
         />

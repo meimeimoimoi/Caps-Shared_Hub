@@ -1,5 +1,6 @@
 {
   "navigation": {
+    "overview": "Overview",
     "expertReview": "Expert Review",
     "pendingExperts": "Pending Applications",
     "manageExperts": "Manage Experts",
@@ -10,6 +11,64 @@
     "system": "System",
     "accounts": "Accounts",
     "settings": "Settings"
+  },
+  "dashboard": {
+    "title": "Overview",
+    "description": "What needs attention first, and how the platform is doing.",
+    "attention": {
+      "title": "Needs attention",
+      "empty": "Nothing urgent right now.",
+      "dispute": "{{count}} open disputes, the nearest is due in {{hours}} h",
+      "payoutFailed": "{{count}} failed payouts need a retry",
+      "slaOverdue": "{{count}} expert applications waiting over {{days}} days",
+      "outsideRange": "{{count}} experts priced outside the range"
+    },
+    "kpi": {
+      "pending": "Pending applications",
+      "pendingOverdue": "{{count}} past the review deadline",
+      "pendingOnTime": "All within the review deadline",
+      "experts": "Active experts",
+      "expertsNote": "{{suspended}} suspended · {{total}} total",
+      "held": "Funds held",
+      "heldNote": "{{amount}} locked by disputes",
+      "disputes": "Open disputes",
+      "disputesNote": "Nearest due in {{hours}} h",
+      "disputesNone": "No disputes"
+    },
+    "vetting": "Expert review",
+    "escrow": "Escrow funds",
+    "upcoming": {
+      "title": "Coming up",
+      "priceChange": "New price range: {{group}}",
+      "empty": "No scheduled changes."
+    },
+    "loading": "Loading figures…",
+    "growth": {
+      "title": "Growth",
+      "filterLabel": "View by",
+      "month": "Monthly",
+      "quarter": "Quarterly",
+      "platformFee": "Platform revenue",
+      "gmv": "Transaction value",
+      "newUsers": "New users",
+      "totalUsers": "Total users",
+      "versus": "vs {{period}}",
+      "moneyChart": "Money flow by period",
+      "usersChart": "New users by period",
+      "expertPayout": "Expert payouts",
+      "refunds": "Refunds",
+      "clients": "Clients",
+      "experts": "Experts",
+      "table": "Show as table",
+      "period": "Period",
+      "total": "Total",
+      "quarterLabel": "Q{{quarter}} {{year}}",
+      "mock": "Sample figures until the backend statistics API is ready.",
+      "partial": "{{period}} (to date)",
+      "latest": "Latest closed period: {{period}}. The current period is shown on the charts only.",
+      "notEnough": "Not enough closed periods to compare yet.",
+      "monthTick": "{{name}}"
+    }
   },
   "search": {
     "placeholder": "Search by name or email"

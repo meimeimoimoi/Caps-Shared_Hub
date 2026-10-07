@@ -37,6 +37,12 @@
   --ui-chart-information: #657da0;
   --ui-chart-acceptance: #8a729a;
   --ui-chart-disputed: #b83e56;
+  /* Biểu đồ nhiều series: 3 slot theo đúng thứ tự (blue, orange, aqua), đã chạy
+   * validate_palette.js trên surface #ffffff: đạt CVD và normal-vision; slot 3
+   * dưới 3:1 nên biểu đồ luôn có legend + bảng số. */
+  --ui-series-1: #2a78d6;
+  --ui-series-2: #eb6834;
+  --ui-series-3: #1baf7a;
   --ui-on-accent: #ffffff;
   --ui-selected: #262624;
   --ui-on-selected: #ffffff;
@@ -74,6 +80,10 @@
   --ui-chart-information: #91b3e4;
   --ui-chart-acceptance: #c0a2d7;
   --ui-chart-disputed: #ff9d9d;
+  /* Cùng 3 hue, bước cho surface tối #1c1c1e; đã validate (đạt cả 5 kiểm tra) */
+  --ui-series-1: #3987e5;
+  --ui-series-2: #d95926;
+  --ui-series-3: #199e70;
   --ui-selected: #e1e1dd;
   --ui-on-selected: #161618;
   --ui-canvas: #0f0f10;
