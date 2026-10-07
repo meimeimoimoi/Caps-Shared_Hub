@@ -1,5 +1,6 @@
 {
   "navigation": {
+    "overview": "Tổng quan",
     "expertReview": "Xét duyệt Expert",
     "pendingExperts": "Hồ sơ chờ duyệt",
     "manageExperts": "Quản lý Expert",
@@ -10,6 +11,64 @@
     "system": "Hệ thống",
     "accounts": "Tài khoản",
     "settings": "Cấu hình"
+  },
+  "dashboard": {
+    "title": "Tổng quan",
+    "description": "Việc cần xử lý trước và tình trạng chung của hệ thống.",
+    "attention": {
+      "title": "Cần xử lý ngay",
+      "empty": "Không có việc gấp. Mọi thứ đang ổn.",
+      "dispute": "{{count}} khiếu nại đang mở, gần nhất còn {{hours}} giờ trước hạn trọng tài",
+      "payoutFailed": "{{count}} khoản chi trả lỗi, cần thử lại",
+      "slaOverdue": "{{count}} hồ sơ Expert chờ quá {{days}} ngày",
+      "outsideRange": "{{count}} Expert đặt giá ngoài khung"
+    },
+    "kpi": {
+      "pending": "Hồ sơ chờ duyệt",
+      "pendingOverdue": "{{count}} quá hạn xử lý",
+      "pendingOnTime": "Đều trong hạn xử lý",
+      "experts": "Expert đang hoạt động",
+      "expertsNote": "{{suspended}} tạm ngưng · tổng {{total}}",
+      "held": "Tiền đang giữ",
+      "heldNote": "{{amount}} bị khóa do tranh chấp",
+      "disputes": "Khiếu nại đang mở",
+      "disputesNote": "Gần nhất còn {{hours}} giờ",
+      "disputesNone": "Không có khiếu nại"
+    },
+    "vetting": "Xét duyệt Expert",
+    "escrow": "Dòng tiền Escrow",
+    "upcoming": {
+      "title": "Sắp diễn ra",
+      "priceChange": "Khung giá mới: {{group}}",
+      "empty": "Chưa có thay đổi nào lên lịch."
+    },
+    "loading": "Đang tải số liệu…",
+    "growth": {
+      "title": "Tăng trưởng",
+      "filterLabel": "Xem theo",
+      "month": "Theo tháng",
+      "quarter": "Theo quý",
+      "platformFee": "Doanh thu nền tảng",
+      "gmv": "Giá trị giao dịch",
+      "newUsers": "Người dùng mới",
+      "totalUsers": "Tổng người dùng",
+      "versus": "so với {{period}}",
+      "moneyChart": "Dòng tiền theo kỳ",
+      "usersChart": "Người dùng mới theo kỳ",
+      "expertPayout": "Chi trả chuyên gia",
+      "refunds": "Hoàn tiền",
+      "clients": "Client",
+      "experts": "Expert",
+      "table": "Xem dạng bảng",
+      "period": "Kỳ",
+      "total": "Tổng",
+      "quarterLabel": "Q{{quarter}}/{{year}}",
+      "mock": "Số liệu minh họa, chờ API thống kê của BE.",
+      "partial": "{{period}} (đến nay)",
+      "latest": "Kỳ đã chốt gần nhất: {{period}}. Kỳ đang diễn ra chỉ hiện trên biểu đồ.",
+      "notEnough": "Chưa đủ 2 kỳ đã chốt để so sánh.",
+      "monthTick": "T{{month}}"
+    }
   },
   "search": {
     "placeholder": "Tìm theo tên hoặc email"

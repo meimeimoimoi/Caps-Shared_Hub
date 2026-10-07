@@ -82,6 +82,7 @@ const AdminPricingTierPage = lazy(
   () => import('@/pages/admin/AdminPricingTierPage')
 )
 const AdminAccountPage = lazy(() => import('@/pages/admin/AdminAccountPage'))
+const AdminDashboardPage = lazy(() => import('@/pages/admin/AdminDashboardPage'))
 const KnowledgeQueuePage = lazy(
   () => import('@/pages/knowledge-admin/KnowledgeQueuePage')
 )
@@ -173,6 +174,7 @@ const router = createBrowserRouter(
       <Route path="/admin/pricing" element={<AdminPricingPage />} />
       <Route path="/admin/pricing/:id" element={<AdminPricingTierPage />} />
       <Route path="/admin/account" element={<AdminAccountPage />} />
+      <Route path="/admin" element={<AdminDashboardPage />} />
       {/* TODO(auth): bọc ProtectedRoute + check role Knowledge Admin khi có API */}
       <Route
         path="/knowledge"
