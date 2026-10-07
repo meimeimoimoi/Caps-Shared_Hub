@@ -1,0 +1,97 @@
+{
+  "loading": "Loading…",
+  "account": {
+    "menu": "Account menu for {{name}}",
+    "navigation": "Account navigation",
+    "fallback": "Your account",
+    "demo": "Demonstration account",
+    "preview": "Demo preview"
+  },
+  "navigation": {
+    "open": "Open navigation",
+    "close": "Close navigation",
+    "expand": "Expand sidebar",
+    "collapse": "Collapse sidebar",
+    "progress": "Progress",
+    "skipOverview": "Skip to overview",
+    "skipWorkspace": "Skip to workspace"
+  },
+  "theme": {
+    "appearance": "Appearance",
+    "darkMode": "Dark mode",
+    "darkLabel": "Dark",
+    "lightLabel": "Light",
+    "light": "Switch to light theme",
+    "dark": "Switch to dark theme"
+  },
+  "select": {
+    "placeholder": "Select an option"
+  },
+  "form": {
+    "help": "Help for {{label}}"
+  },
+  "pagination": {
+    "label": "Pagination",
+    "previous": "Previous",
+    "next": "Next",
+    "page": "Page {{page}}",
+    "range": "Showing {{from}}–{{to}} of {{total}}",
+    "rows": "Rows per page"
+  },
+  "calendar": {
+    "chooseDate": "Choose date of birth",
+    "chooseMonth": "Choose month",
+    "chooseYear": "Choose year",
+    "previousYears": "Previous years",
+    "nextYears": "Next years",
+    "previousMonth": "Previous month",
+    "nextMonth": "Next month",
+    "placeholder": "MM / DD / YYYY"
+  },
+  "demo": {
+    "label": "Demo workspace information",
+    "workspace": "Demo workspace",
+    "readOnly": "Synthetic data · read-only · no server changes",
+    "draftDisclosure": "Demo · Synthetic data · No server changes. Data is stored in memory and resets on reload.",
+    "scenario": "Scenario",
+    "previewState": "Preview state",
+    "resetConfirm": "Reset this demo scenario? Saved fixture input and versions will be removed.",
+    "footer": "Shared Hub · Expert Portal",
+    "overviewReadOnly": "Read-only overview",
+    "scenarios": {
+      "normal": "Active workload",
+      "empty": "Empty queue",
+      "partial": "Partial failure",
+      "stale": "Stale data",
+      "inconsistent": "Version mismatch",
+      "error": "Dashboard error",
+      "denied": "Access denied",
+      "contextError": "Access check error"
+    }
+  },
+  "language": {
+    "label": "Language"
+  },
+  "actions": {
+    "exitDemo": "Exit demo",
+    "signOut": "Sign out",
+    "close": "Close",
+    "clear": "Clear",
+    "resetDemo": "Reset demo",
+    "signIn": "Sign in",
+    "dashboard": "Go to dashboard",
+    "registerExpert": "Expert registration"
+  },
+  "notFound": {
+    "title": "This page is out of reach.",
+    "description": "The page you’re looking for may have moved, or the link may be incorrect. Let’s get you back to your workspace.",
+    "joinExpert": "Looking to join as an expert?",
+    "footer": "404 · Page not found",
+    "dashboardLabel": "Shared Hub dashboard"
+  },
+  "search": {
+    "pages": "Find a page…",
+    "noPages": "No matching pages.",
+    "knowledge": "Search document number or title"
+  }
+}

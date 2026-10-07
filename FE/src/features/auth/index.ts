@@ -1,3 +1,10 @@
-export * from './components/LoginForm'
-export * from './hooks/useAuth'
-export * from './types'
+export { useAuth } from './hooks/useAuth'
+export { useAccount, DEMO_ACCOUNTS, type AccountRole } from './hooks/useAccount'
+export { AccountSettings } from './components/AccountSettings'
+// Dùng riêng lẻ khi trang tài khoản có giao diện riêng (vd. Expert settings)
+export { AvatarUploader } from './components/AvatarUploader'
+export { ChangePasswordForm } from './components/ChangePasswordForm'
+export { useAuthStore } from './store/authStore'
+export { validateAccount, validateAccountIssues, passwordRequirements } from './utils/accountValidation'
+export type { AccountField } from './utils/accountValidation'
+export type * from './types'

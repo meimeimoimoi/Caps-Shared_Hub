@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Fisco — Đăng nhập</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --bg:#0A0A0B;
+  --btn:#F2F2F0;
+  --btn-hover:#FFFFFF;
+  --btn-ink:#0A0A0B;
+  --ink:#FFFFFF;
+  --body:#9A9A9E;
+  --muted:#6B6B70;
+  --line:rgba(255,255,255,.10);
+  --accent:#E85D26;
+  --link:#7DE0B0;
+  --err:#FF6B6B;
+}
+*{box-sizing:border-box;margin:0}
+html,body{height:100%}
+body{
+  background:var(--bg);
+  color:var(--ink);
+  font:400 14px/1.5 Inter,system-ui,-apple-system,sans-serif;
+  -webkit-font-smoothing:antialiased;
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:max(24px,env(safe-area-inset-top,0px)) 20px max(24px,env(safe-area-inset-bottom,0px));
+  position:relative;
+  overflow-x:hidden;
+}
+
+/* ============ VIDEO BACKGROUND ============ */
+.bg-video{
+  position:fixed;
+  inset:0;
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  z-index:0;
+  pointer-events:none;
+}
+
+/* ============ LOGIN WRAP ============ */
+.login-wrap{
+  position:relative;
+  z-index:1;
+  width:100%;
+  max-width:480px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  text-align:center;
+  transition:opacity .35s ease, transform .35s ease;
+}
+.login-wrap.hidden{
+  opacity:0;
+  transform:scale(.96);
+  pointer-events:none;
+  position:absolute;
+}
+
+.brand{display:flex;align-items:center;gap:10px;margin-bottom:36px;justify-content:center}
+.brand-mark{
+  width:34px;height:34px;border-radius:10px;
+  background:var(--accent);color:#fff;
+  font:800 18px "Plus Jakarta Sans",sans-serif;
+  display:grid;place-items:center;
+}
+.brand-name{font:800 22px "Plus Jakarta Sans",sans-serif;letter-spacing:-.02em;color:#fff}
+
+h1{
+  font:700 28px/1.2 "Plus Jakarta Sans",sans-serif;
+  letter-spacing:-.03em;
+  margin-bottom:8px;color:#fff;
+  text-shadow:0 2px 12px rgba(0,0,0,.6);
+}
+.subtitle{
+  color:var(--body);font-size:14px;margin-bottom:32px;
+  text-shadow:0 1px 8px rgba(0,0,0,.6);
+}
+
+.btn-stack{
+  width:100%;display:flex;flex-direction:column;gap:12px;margin-bottom:24px;
+}
+
+.btn{
+  width:100%;min-height:56px;border:0;border-radius:14px;
+  background:var(--btn);color:var(--btn-ink);
+  font:500 15px Inter,sans-serif;
+  display:flex;align-items:center;gap:14px;
+  padding:0 20px;cursor:pointer;text-align:left;
+  transition:background .15s, transform .1s, box-shadow .2s;
+}
+.btn:hover{background:var(--btn-hover);box-shadow:0 6px 20px -6px rgba(255,255,255,.15)}
+.btn:active{transform:scale(.995)}
+.btn .icon{flex:none;width:22px;height:22px;display:grid;place-items:center}
+.btn .label{flex:1;display:flex;flex-direction:column;line-height:1.25;min-width:0}
+.btn .label-main{font:500 15px Inter;color:var(--btn-ink)}
+.btn .label-sub{
+  font:400 13px Inter;color:#6B6B70;margin-top:2px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.btn .material-symbols-outlined{
+  font-size:22px;color:var(--btn-ink);
+  font-variation-settings:'FILL' 0,'wght' 500;
+}
+
+.divider{
+  display:flex;align-items:center;gap:16px;width:100%;
+  margin:4px 0 20px;color:var(--muted);font-size:13px;
+}
+.divider::before,.divider::after{
+  content:"";flex:1;height:1px;background:var(--line);
+}
+
+.terms{
+  margin-top:32px;font-size:12.5px;line-height:1.6;
+  color:var(--body);max-width:440px;
+  text-shadow:0 1px 8px rgba(0,0,0,.6);
+}
+.terms a{
+  color:var(--link);text-decoration:none;font-weight:500;
+  transition:opacity .15s;
+}
+.terms a:hover{opacity:.8;text-decoration:underline;text-underline-offset:2px}
+
+/* =========================================================
+   GLASS LOGIN CARD
+   ========================================================= */
+.glass-wrap{
+  position:relative;
+  z-index:2;
+  width:100%;
+  max-width:440px;
+  display:none;
+}
+.glass-wrap.active{
+  display:block;
+  animation:cardIn .45s cubic-bezier(.2,.8,.25,1);
+}
+@keyframes cardIn{
+  from{opacity:0;transform:translateY(12px) scale(.97)}
+  to{opacity:1;transform:none}
+}
+
+.glass-card{
+  position:relative;
+  width:100%;
+  padding:36px 32px 32px;
+  border-radius:24px;
+
+  /* === GLASS STYLE — thấy được video ở sau === */
+  background:rgba(20,20,22,.42);
+  backdrop-filter:blur(28px) saturate(1.5);
+  -webkit-backdrop-filter:blur(28px) saturate(1.5);
+  border:1px solid rgba(255,255,255,.14);
+
+  box-shadow:
+    0 24px 60px -20px rgba(0,0,0,.55),
+    0 4px 12px rgba(0,0,0,.25),
+    inset 0 1px 0 rgba(255,255,255,.10);
+}
+
+/* Trình duyệt không hỗ trợ backdrop-filter → nền đặc hơn */
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
+  .glass-card{background:rgba(20,20,22,.92)}
+}
+
+/* Nút back */
+.back-btn{
+  position:absolute;
+  top:16px;
+  left:16px;
+  width:36px;
+  height:36px;
+  border-radius:10px;
+  border:1px solid rgba(255,255,255,.10);
+  background:rgba(255,255,255,.06);
+  color:#fff;
+  display:grid;
+  place-items:center;
+  cursor:pointer;
+  transition:background .15s, border-color .15s, transform .1s;
+}
+.back-btn:hover{
+  background:rgba(255,255,255,.12);
+  border-color:rgba(255,255,255,.2);
+}
+.back-btn:active{transform:scale(.95)}
+.back-btn .material-symbols-outlined{
+  font-size:20px;
+  font-weight:500;
+}
+
+/* Header trong card */
+.card-header{
+  text-align:center;
+  margin-bottom:28px;
+}
+.card-title{
+  font:700 22px/1.2 "Plus Jakarta Sans",sans-serif;
+  letter-spacing:-.02em;
+  color:#fff;
+  margin-bottom:6px;
+}
+.card-sub{
+  font-size:13px;
+  color:var(--body);
+  line-height:1.5;
+}
+
+/* Form */
+.form-group{
+  margin-bottom:16px;
+  text-align:left;
+}
+.form-label{
+  display:block;
+  font:600 12px "Plus Jakarta Sans",sans-serif;
+  letter-spacing:-.01em;
+  color:rgba(255,255,255,.85);
+  margin-bottom:7px;
+}
+.input-wrap{
+  position:relative;
+  display:flex;
+  align-items:center;
+}
+.input-wrap .material-symbols-outlined{
+  position:absolute;
+  left:14px;
+  font-size:20px;
+  color:rgba(255,255,255,.4);
+  pointer-events:none;
+  transition:color .15s;
+  font-variation-settings:'FILL' 0,'wght' 400;
+}
+.form-input{
+  width:100%;
+  height:50px;
+  padding:0 14px 0 44px;
+  border-radius:12px;
+  border:1px solid rgba(255,255,255,.14);
+  background:rgba(255,255,255,.05);
+  color:#fff;
+  font:500 14px Inter,sans-serif;
+  outline:none;
+  transition:border-color .15s, box-shadow .15s, background .15s;
+  -webkit-backdrop-filter:blur(10px);
+  backdrop-filter:blur(10px);
+}
+.form-input::placeholder{
+  color:rgba(255,255,255,.35);
+}
+.form-input:focus{
+  border-color:var(--accent);
+  background:rgba(255,255,255,.08);
+  box-shadow:0 0 0 3px rgba(232,93,38,.22);
+}
+.form-input:focus + .material-symbols-outlined,
+.input-wrap:focus-within .material-symbols-outlined{
+  color:var(--accent);
+}
+.form-input.bad{
+  border-color:var(--err);
+  box-shadow:0 0 0 3px rgba(255,107,107,.2);
+}
+
+/* Nút hiện/ẩn mật khẩu */
+.toggle-pw{
+  position:absolute;
+  right:6px;
+  top:50%;
+  transform:translateY(-50%);
+  height:38px;
+  padding:0 12px;
+  border:0;
+  background:transparent;
+  color:rgba(255,255,255,.55);
+  font:600 12px Inter,sans-serif;
+  cursor:pointer;
+  border-radius:8px;
+  transition:color .15s, background .15s;
+}
+.toggle-pw:hover{
+  color:#fff;
+  background:rgba(255,255,255,.06);
+}
+.form-input.pw{
+  padding-right:70px;
+}
+
+/* Error message */
+.form-error{
+  display:none;
+  margin-top:6px;
+  font-size:12px;
+  color:var(--err);
+  line-height:1.4;
+}
+.form-error.show{display:block}
+
+/* Row quên mật khẩu */
+.form-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin:4px 0 20px;
+  font-size:12.5px;
+}
+.remember{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  color:rgba(255,255,255,.65);
+  cursor:pointer;
+  user-select:none;
+}
+.remember input{
+  width:15px;
+  height:15px;
+  accent-color:var(--accent);
+  cursor:pointer;
+}
+.forgot{
+  color:var(--link);
+  text-decoration:none;
+  font-weight:500;
+  transition:opacity .15s;
+}
+.forgot:hover{opacity:.8;text-decoration:underline;text-underline-offset:2px}
+
+/* Nút submit */
+.submit-btn{
+  width:100%;
+  height:50px;
+  border:0;
+  border-radius:12px;
+  background:var(--accent);
+  color:#fff;
+  font:700 15px "Plus Jakarta Sans",sans-serif;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  transition:background .15s, transform .1s, box-shadow .2s;
+  box-shadow:0 8px 22px -6px rgba(232,93,38,.5);
+}
+.submit-btn:hover{
+  background:#d04e1a;
+  transform:translateY(-1px);
+  box-shadow:0 12px 28px -6px rgba(232,93,38,.6);
+}
+.submit-btn:active{transform:translateY(0) scale(.995)}
+.submit-btn .material-symbols-outlined{
+  font-size:18px;
+  font-weight:600;
+}
+
+/* Divider "hoặc" trong card */
+.card-or{
+  display:flex;
+  align-items:center;
+  gap:14px;
+  margin:22px 0 18px;
+  color:rgba(255,255,255,.35);
+  font-size:12px;
+}
+.card-or::before,
+.card-or::after{
+  content:"";
+  flex:1;
+  height:1px;
+  background:rgba(255,255,255,.10);
+}
+
+/* Nút Google trong card */
+.btn-google-glass{
+  width:100%;
+  min-height:50px;
+  border:1px solid rgba(255,255,255,.14);
+  border-radius:12px;
+  background:rgba(255,255,255,.05);
+  color:#fff;
+  font:500 14px Inter,sans-serif;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  cursor:pointer;
+  transition:background .15s, border-color .15s;
+  -webkit-backdrop-filter:blur(10px);
+  backdrop-filter:blur(10px);
+}
+.btn-google-glass:hover{
+  background:rgba(255,255,255,.10);
+  border-color:rgba(255,255,255,.22);
+}
+.btn-google-glass:active{transform:scale(.995)}
+
+/* Footer nhỏ trong card */
+.card-foot{
+  text-align:center;
+  margin-top:22px;
+  font-size:12.5px;
+  color:rgba(255,255,255,.5);
+  line-height:1.6;
+}
+.card-foot a{
+  color:var(--link);
+  text-decoration:none;
+  font-weight:500;
+}
+.card-foot a:hover{text-decoration:underline;text-underline-offset:2px}
+
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:14px}
+
+/* ============ RESPONSIVE ============ */
+@media(max-width:420px){
+  h1{font-size:24px}
+  .btn{min-height:52px;padding:0 16px}
+  .glass-card{padding:32px 22px 26px;border-radius:20px}
+  .card-title{font-size:20px}
+}
+</style>
+</head>
+<body>
+
+<!-- =========================================================
+     VIDEO BACKGROUND
+     ========================================================= -->
+<video class="bg-video" autoplay muted loop playsinline aria-hidden="true">
+  <source src="https://res.cloudinary.com/ddxqug5ad/video/upload/v1790954828/loginIntro.mp4" type="video/mp4">
+</video>
+
+<!-- =========================================================
+     VIEW 1 — SOCIAL LOGIN (mặc định)
+     ========================================================= -->
+<main class="login-wrap" id="view-social">
+
+  <h1>Đăng nhập vào SHFT</h1>
+  <p class="subtitle">Tiếp tục quản lý hồ sơ thuế của bạn.</p>
+
+  <div class="btn-stack">
+    <button type="button" class="btn" id="btn-google">
+      <span class="icon">
+        <svg width="20" height="20" viewBox="0 0 48 48" aria-hidden="true">
+          <path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.8 2.4 30.3 0 24 0 14.6 0 6.5 5.4 2.6 13.2l7.9 6.1C12.4 13.6 17.7 9.5 24 9.5z"/>
+          <path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.6 3-2.3 5.5-4.8 7.2l7.6 5.9c4.4-4.1 7-10.1 7-17.6z"/>
+          <path fill="#FBBC05" d="M10.5 28.7c-.5-1.5-.8-3-.8-4.7s.3-3.2.8-4.7l-7.9-6.1C.9 16.4 0 20.1 0 24s.9 7.6 2.6 10.8l7.9-6.1z"/>
+          <path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.6-5.9c-2.1 1.4-4.9 2.3-8.3 2.3-6.3 0-11.6-4.1-13.5-9.8l-7.9 6.1C6.5 42.6 14.6 48 24 48z"/>
+        </svg>
+      </span>
+      <span class="label">
+        <span class="label-main">Continue with Google</span>
+        <span class="label-sub">worsha.co@gmail.com</span>
+      </span>
+    </button>
+  </div>
+
+  <div class="divider">or</div>
+
+  <button type="button" class="btn" id="btn-email">
+    <span class="icon">
+      <span class="material-symbols-outlined">mail</span>
+    </span>
+    <span class="label">
+      <span class="label-main">Continue with email</span>
+    </span>
+  </button>
+
+  <p class="terms">
+    By continuing with Google, or Email, you agree to our
+    <a href="#">Terms of Service</a> and acknowledge that
+    you have read and understand our
+    <a href="#">Privacy Policy</a>.
+  </p>
+
+</main>
+
+<!-- =========================================================
+     VIEW 2 — GLASS LOGIN CARD (hiện khi bấm Continue with email)
+     ========================================================= -->
+<main class="glass-wrap" id="view-email">
+  <div class="glass-card">
+
+    <!-- Nút quay lại -->
+    <button type="button" class="back-btn" id="btn-back" aria-label="Quay lại">
+      <span class="material-symbols-outlined">arrow_back</span>
+    </button>
+
+    <!-- Header -->
+    <div class="card-header">
+      <div class="card-title">Đăng nhập bằng email</div>
+      <div class="card-sub">Nhập email và mật khẩu để tiếp tục.</div>
+    </div>
+
+    <!-- Form -->
+    <form id="email-form" novalidate>
+
+      <!-- Email -->
+      <div class="form-group">
+        <label class="form-label" for="input-email">Email công việc</label>
+        <div class="input-wrap">
+          <span class="material-symbols-outlined">mail</span>
+          <input
+            id="input-email"
+            class="form-input"
+            type="email"
+            placeholder="ban@doanhnghiep.vn"
+            autocomplete="email">
+        </div>
+        <div class="form-error" id="err-email">Nhập email hợp lệ, ví dụ ban@doanhnghiep.vn.</div>
+      </div>
+
+      <!-- Mật khẩu -->
+      <div class="form-group">
+        <label class="form-label" for="input-pw">Mật khẩu</label>
+        <div class="input-wrap">
+          <span class="material-symbols-outlined">lock</span>
+          <input
+            id="input-pw"
+            class="form-input pw"
+            type="password"
+            placeholder="Nhập mật khẩu"
+            autocomplete="current-password">
+          <button type="button" class="toggle-pw" id="toggle-pw">Hiện</button>
+        </div>
+        <div class="form-error" id="err-pw">Nhập mật khẩu của bạn.</div>
+      </div>
+
+      <!-- Ghi nhớ / Quên mật khẩu -->
+      <div class="form-row">
+        <label class="remember">
+          <input type="checkbox" checked>
+          <span>Ghi nhớ đăng nhập</span>
+        </label>
+        <a href="#" class="forgot">Quên mật khẩu?</a>
+      </div>
+
+      <!-- Nút submit -->
+      <button type="submit" class="submit-btn">
+        <span>Đăng nhập</span>
+        <span class="material-symbols-outlined">arrow_forward</span>
+      </button>
+    </form>
+
+    <!-- Divider -->
+    <div class="card-or">hoặc</div>
+
+    <!-- Google alternative -->
+    <button type="button" class="btn-google-glass" id="btn-google-glass">
+      <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true">
+        <path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.8 2.4 30.3 0 24 0 14.6 0 6.5 5.4 2.6 13.2l7.9 6.1C12.4 13.6 17.7 9.5 24 9.5z"/>
+        <path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.6 3-2.3 5.5-4.8 7.2l7.6 5.9c4.4-4.1 7-10.1 7-17.6z"/>
+        <path fill="#FBBC05" d="M10.5 28.7c-.5-1.5-.8-3-.8-4.7s.3-3.2.8-4.7l-7.9-6.1C.9 16.4 0 20.1 0 24s.9 7.6 2.6 10.8l7.9-6.1z"/>
+        <path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.6-5.9c-2.1 1.4-4.9 2.3-8.3 2.3-6.3 0-11.6-4.1-13.5-9.8l-7.9 6.1C6.5 42.6 14.6 48 24 48z"/>
+      </svg>
+      <span>Tiếp tục với Google</span>
+    </button>
+
+    <!-- Footer -->
+    <div class="card-foot">
+      Chưa có tài khoản?
+      <a href="#">Tạo tài khoản mới</a>
+    </div>
+
+  </div>
+</main>
+
+<script>
+(function(){
+  var $ = function(s){ return document.querySelector(s); };
+
+  /* ============ VIEW SWITCHING ============ */
+  var viewSocial = $('#view-social');
+  var viewEmail  = $('#view-email');
+
+  function showEmail(){
+    viewSocial.classList.add('hidden');
+    viewEmail.classList.add('active');
+    // Focus vào ô email sau khi animation xong
+    setTimeout(function(){
+      var el = $('#input-email');
+      if(el) el.focus();
+    }, 480);
+  }
+
+  function showSocial(){
+    viewEmail.classList.remove('active');
+    viewSocial.classList.remove('hidden');
+    // Reset form
+    var form = $('#email-form');
+    if(form) form.reset();
+    clearErrors();
+  }
+
+  /* ============ EVENT HANDLERS ============ */
+  $('#btn-google').addEventListener('click', function(){
+    console.log('Sign in with Google');
+  });
+
+  $('#btn-email').addEventListener('click', function(){
+    showEmail();
+  });
+
+  $('#btn-back').addEventListener('click', function(){
+    showSocial();
+  });
+
+  $('#btn-google-glass').addEventListener('click', function(){
+    console.log('Sign in with Google (from email card)');
+  });
+
+  /* ============ TOGGLE PASSWORD ============ */
+  var togglePw = $('#toggle-pw');
+  togglePw.addEventListener('click', function(){
+    var input = $('#input-pw');
+    var isPw = input.type === 'password';
+    input.type = isPw ? 'text' : 'password';
+    togglePw.textContent = isPw ? 'Ẩn' : 'Hiện';
+  });
+
+  /* ============ VALIDATION ============ */
+  var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+
+  function clearErrors(){
+    ['input-email','input-pw'].forEach(function(id){
+      var el = document.getElementById(id);
+      if(el) el.classList.remove('bad');
+    });
+    ['err-email','err-pw'].forEach(function(id){
+      var el = document.getElementById(id);
+      if(el) el.classList.remove('show');
+    });
+  }
+
+  // Xoá lỗi khi gõ
+  ['input-email','input-pw'].forEach(function(id){
+    var el = document.getElementById(id);
+    if(!el) return;
+    el.addEventListener('input', function(){
+      el.classList.remove('bad');
+      var errId = id === 'input-email' ? 'err-email' : 'err-pw';
+      var errEl = document.getElementById(errId);
+      if(errEl) errEl.classList.remove('show');
+    });
+  });
+
+  /* ============ SUBMIT ============ */
+  $('#email-form').addEventListener('submit', function(e){
+    e.preventDefault();
+
+    var emailEl = $('#input-email');
+    var pwEl    = $('#input-pw');
+    var email   = emailEl.value.trim();
+    var pw      = pwEl.value;
+
+    var emailOk = emailRegex.test(email);
+    var pwOk    = pw.length > 0;
+
+    emailEl.classList.toggle('bad', !emailOk);
+    $('#err-email').classList.toggle('show', !emailOk);
+
+    pwEl.classList.toggle('bad', !pwOk);
+    $('#err-pw').classList.toggle('show', !pwOk);
+
+    if(!emailOk || !pwOk) return;
+
+    // TODO: gọi API đăng nhập
+    console.log('Sign in with email:', { email: email });
+  });
+
+  /* ============ VIDEO AUTOPLAY FIX ============ */
+  var video = document.querySelector('.bg-video');
+  if(video){
+    video.muted = true;
+    video.play().catch(function(err){
+      console.warn('Autoplay bị chặn:', err);
+      ['click','touchstart','keydown'].forEach(function(evt){
+        document.addEventListener(evt, function once(){
+          video.play().catch(function(){});
+          document.removeEventListener(evt, once);
+        }, { once:true });
+      });
+    });
+  }
+})();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,11 @@
+{
+  "title": "Dashboard",
+  "welcome": "Welcome, {{name}} ({{email}})",
+  "user": "user",
+  "logout": "Logout",
+  "checking": "Checking workspace access…",
+  "shell": "Architecture shell is running. Business modules (workflow / ingestion / RAG) plug in here as lazy routes.",
+  "drafts": "Open draft workspaces",
+  "accessError": "Expert workspace access could not be verified. You can retry when the service is available.",
+  "retry": "Retry access check"
+}

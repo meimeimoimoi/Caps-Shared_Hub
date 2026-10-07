@@ -1,0 +1,9 @@
+# Local project documentation
+/docs/
+
+# Local design context, asset backups and test files
+/.impeccable/
+/FE/src/assets/*.original.png
+/FE/src/assets/*.prompt.txt
+/FE/src/**/*.test.*
+/FE/src/**/*.spec.*
