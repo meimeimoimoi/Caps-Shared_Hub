@@ -10,6 +10,8 @@ interface AuthStore {
   sessionScope: string
   setSession: (user: User, token: string) => void
   clearSession: () => void
+  /** Cập nhật một phần thông tin user đang đăng nhập (vd. ảnh đại diện) */
+  updateUser: (patch: Partial<User>) => void
 }
 
 export const useAuthStore = create<AuthStore>()(
@@ -25,6 +27,13 @@ export const useAuthStore = create<AuthStore>()(
         localStorage.setItem('auth_user', JSON.stringify(user))
         set({ user, token, isAuthenticated: true, sessionScope: crypto.randomUUID() })
       },
+      updateUser: (patch) =>
+        set((s) => {
+          if (!s.user) return s
+          const user = { ...s.user, ...patch }
+          localStorage.setItem('auth_user', JSON.stringify(user))
+          return { user }
+        }),
       clearSession: () => {
         clearPrivateQueries()
         localStorage.removeItem('auth_token')

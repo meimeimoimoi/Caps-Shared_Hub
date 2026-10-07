@@ -171,7 +171,8 @@ export function CustomSelect<T extends string>({
   return (
     <div
       ref={root}
-      className={cn('text-text-strong relative', className)}
+      // Đang mở thì nổi lên trên các ô cùng cấp, để menu (kể cả mở lên trên) không bị đè
+      className={cn('text-text-strong relative', className, open && 'z-50')}
       onBlur={(event) => {
         if (!event.currentTarget.contains(event.relatedTarget)) setOpen(false)
       }}

@@ -81,6 +81,7 @@ const AdminPricingPage = lazy(() => import('@/pages/admin/AdminPricingPage'))
 const AdminPricingTierPage = lazy(
   () => import('@/pages/admin/AdminPricingTierPage')
 )
+const AdminAccountPage = lazy(() => import('@/pages/admin/AdminAccountPage'))
 const KnowledgeQueuePage = lazy(
   () => import('@/pages/knowledge-admin/KnowledgeQueuePage')
 )
@@ -101,6 +102,9 @@ const KnowledgeDocumentsPage = lazy(
 )
 const KnowledgeUploadsPage = lazy(
   () => import('@/pages/knowledge-admin/KnowledgeUploadsPage')
+)
+const KnowledgeAccountPage = lazy(
+  () => import('@/pages/knowledge-admin/KnowledgeAccountPage')
 )
 
 function Fallback() {
@@ -168,6 +172,7 @@ const router = createBrowserRouter(
       <Route path="/admin/escrow" element={<AdminEscrowPage />} />
       <Route path="/admin/pricing" element={<AdminPricingPage />} />
       <Route path="/admin/pricing/:id" element={<AdminPricingTierPage />} />
+      <Route path="/admin/account" element={<AdminAccountPage />} />
       {/* TODO(auth): bọc ProtectedRoute + check role Knowledge Admin khi có API */}
       <Route
         path="/knowledge"
@@ -176,6 +181,7 @@ const router = createBrowserRouter(
       <Route path="/knowledge/queue" element={<KnowledgeQueuePage />} />
       <Route path="/knowledge/sources" element={<KnowledgeSourcesPage />} />
       <Route path="/knowledge/uploads" element={<KnowledgeUploadsPage />} />
+      <Route path="/knowledge/account" element={<KnowledgeAccountPage />} />
       <Route path="/knowledge/documents" element={<KnowledgeDocumentsPage />} />
       <Route
         path="/knowledge/documents/:id"

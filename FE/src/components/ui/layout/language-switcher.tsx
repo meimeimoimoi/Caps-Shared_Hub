@@ -22,7 +22,7 @@ export function LanguageSwitcher({
       onChange={(language) => {
         void i18n.changeLanguage(language)
       }}
-      className={`relative z-50 text-sm [&>span]:sr-only ${variant === 'account' ? 'w-full' : 'shrink-0'} ${variant === 'overlay' ? 'language-switcher--overlay' : ''}`}
+      className={`relative text-sm [&>span]:sr-only ${variant === 'account' ? 'w-full' : 'shrink-0'} ${variant === 'overlay' ? 'language-switcher--overlay' : ''}`}
       triggerLeading={
         variant === 'account' ? (
           <span className="text-text-strong flex min-w-0 flex-1 items-center gap-3">

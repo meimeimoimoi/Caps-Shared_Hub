@@ -1,9 +1,8 @@
 import { useTranslation } from 'react-i18next'
 import { useRef, useState, type ReactNode } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { BookOpen, LayoutTemplate, ListChecks, Rss } from 'lucide-react'
+import { BookOpen, LayoutTemplate, ListChecks, Rss, UserRound } from 'lucide-react'
 import { useDialogMotion } from '@/components/ui/motion'
-import { useAuthStore } from '@/features/auth/store/authStore'
+import { useAccount } from '@/features/auth'
 import { AppHeader } from '@/components/ui/layout/app-header'
 import {
   AppSidebar,
@@ -13,7 +12,7 @@ import { type ShellNotification } from '../NotificationBell'
 
 interface KnowledgeLayoutProps {
   /** Mục sidebar đang mở */
-  section: 'queue' | 'sources' | 'documents'
+  section: 'queue' | 'sources' | 'documents' | 'account'
   queueCount: number
   notifications?: ShellNotification[]
   breadcrumb: ReactNode
@@ -39,9 +38,8 @@ export function KnowledgeLayout({
   const drawer = useRef<HTMLDialogElement>(null)
   useDialogMotion(drawer, 'drawer-left')
   const drawerTrigger = useRef<HTMLButtonElement>(null)
-  const user = useAuthStore((s) => s.user)
-  const clearSession = useAuthStore((s) => s.clearSession)
-  const navigate = useNavigate()
+  // Tài khoản thật hoặc minh họa; dùng chung với trang Tài khoản nên đổi ảnh là header đổi theo
+  const account = useAccount('knowledge')
 
   const groups: SidebarGroup[] = [
     {
@@ -81,6 +79,19 @@ export function KnowledgeLayout({
           to: '/drafts/templates',
           label: 'Template',
           icon: <LayoutTemplate size={18} />,
+        },
+      ],
+    },
+    {
+      id: 'system',
+      label: 'Hệ thống',
+      items: [
+        {
+          id: 'account',
+          to: '/knowledge/account',
+          label: 'Tài khoản',
+          icon: <UserRound size={18} />,
+          active: section === 'account',
         },
       ],
     },
@@ -139,13 +150,9 @@ export function KnowledgeLayout({
             )
           )}
           account={{
-            name: user?.name ?? 'Lê Thu Hà',
-            onSignOut: user
-              ? () => {
-                  clearSession()
-                  navigate('/login')
-                }
-              : undefined,
+            name: account.name,
+            avatarUrl: account.avatarUrl,
+            onSignOut: account.logout,
           }}
           notifications={notifications}
         />
