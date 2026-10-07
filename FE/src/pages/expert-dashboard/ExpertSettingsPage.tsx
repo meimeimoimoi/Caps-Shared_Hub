@@ -11,6 +11,7 @@ import {
 } from 'lucide-react'
 import { Link, NavLink, useLocation, useParams } from 'react-router-dom'
 import { useExpertContext } from '@/features/expert-context'
+import { AvatarUploader, ChangePasswordForm, useAccount } from '@/features/auth'
 import { isExpertDemo } from '@/lib/expert-data-source'
 import {
   DashboardSectionState,
@@ -50,6 +51,8 @@ export default function ExpertSettingsPage() {
   }
 
   const context = useExpertContext()
+  // Ảnh đại diện dùng chung với header Expert (features/auth)
+  const account = useAccount('expert')
   const { section = 'account' } = useParams()
   const { search } = useLocation()
   const current = sections.find((entry) => entry.id === section)
@@ -81,12 +84,6 @@ export default function ExpertSettingsPage() {
     )
   const data = context.data
   const status = statuses[data.accountStatus] ?? data.accountStatus
-  const initials = data.displayName
-    .trim()
-    .split(/\s+/)
-    .map((part) => part[0])
-    .slice(0, 2)
-    .join('')
 
   return (
     <div className="ep-settings w-full min-w-0 text-[14px] [&_h1]:font-sans! [&_h1]:tracking-[-0.025em] [&_h2]:font-sans! [&_h2]:tracking-[-0.02em] [&_h3]:font-sans!">
@@ -164,15 +161,13 @@ export default function ExpertSettingsPage() {
           {section === 'account' && (
             <>
               <div className="ep-settings-identity flex items-center gap-[18px] [padding:28px_0_12px] max-[768px]:gap-3 max-[768px]:[&_>_div:last-child]:min-w-0 [&_p]:mt-[3px] [&_p]:wrap-anywhere [&_p]:text-[var(--ep-muted)] [&_strong]:text-[17px]">
-                <div
-                  className="ep-settings-avatar grid h-16 w-16 shrink-0 [place-items:center] rounded-full bg-[var(--ep-accent-glow)] bg-none text-[21px] font-[650] text-[var(--ep-accent-text)]"
-                  aria-hidden="true"
-                >
-                  {initials}
-                </div>
+                {/* Ảnh đại diện dùng chung (features/auth); họ tên, email đã có ở các dòng bên dưới */}
                 <div>
-                  <strong>{data.displayName}</strong>
-                  <p>{data.email}</p>
+                  <AvatarUploader
+                    name={data.displayName}
+                    avatarUrl={account.avatarUrl}
+                    onChange={account.saveAvatar}
+                  />
                   {isExpertDemo && (
                     <span className="ep-settings-demo mt-2 inline-block text-[12px] text-[var(--ep-warning)]">
                       {t('demonstrationAccount')}
@@ -346,11 +341,8 @@ export default function ExpertSettingsPage() {
                   <strong className="text-[15px] font-semibold">
                     {t('securitySettings')}
                   </strong>
-                  <p className="mt-2 max-w-[40ch] text-[14px] leading-relaxed text-[var(--ep-muted)]">
-                    {t(
-                      'passwordChangesTwofactorAuthenticationAndSessionManagementAreNotAvailableInThisPreview'
-                    )}
-                  </p>
+                  {/* Form đổi mật khẩu dùng chung (features/auth), cùng quy tắc với trang đăng ký */}
+                  <ChangePasswordForm />
                 </aside>
               </div>
             </>

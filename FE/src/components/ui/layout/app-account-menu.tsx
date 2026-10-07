@@ -16,6 +16,8 @@ interface AccountLink {
 }
 interface AppAccountMenuProps {
   name: string
+  /** Có thì hiện ảnh thay cho chữ viết tắt */
+  avatarUrl?: string
   links?: AccountLink[]
   onSignOut?: () => void
   signOutLabel?: string
@@ -25,6 +27,7 @@ interface AppAccountMenuProps {
 
 export function AppAccountMenu({
   name,
+  avatarUrl,
   links = [],
   onSignOut,
   signOutLabel,
@@ -86,12 +89,21 @@ export function AppAccountMenu({
         aria-label={t('account.menu', { name })}
         className={`text-text-strong hover:bg-surface-muted flex min-h-11 cursor-pointer list-none items-center gap-2.5 rounded-lg px-2 py-1 text-[13px] transition-colors [&::-webkit-details-marker]:hidden`}
       >
-        <span
-          aria-hidden="true"
-          className="bg-accent-soft text-accent-text flex size-[34px] shrink-0 items-center justify-center rounded-full text-xs font-semibold"
-        >
-          {initials || 'U'}
-        </span>
+        {avatarUrl ? (
+          // Tên đã có trong aria-label của nút nên ảnh để alt rỗng
+          <img
+            src={avatarUrl}
+            alt=""
+            className="size-[34px] shrink-0 rounded-full object-cover"
+          />
+        ) : (
+          <span
+            aria-hidden="true"
+            className="bg-accent-soft text-accent-text flex size-[34px] shrink-0 items-center justify-center rounded-full text-xs font-semibold"
+          >
+            {initials || 'U'}
+          </span>
+        )}
         <span className="hidden max-w-40 truncate font-semibold sm:block">
           {name}
         </span>

@@ -1,7 +1,7 @@
 import { useLocation } from 'react-router-dom'
 import { Settings } from 'lucide-react'
 import { AppHeader } from '@/components/ui/layout/app-header'
-import { useAuth } from '@/features/auth'
+import { useAccount, useAuth } from '@/features/auth'
 import { useExpertContext } from '@/features/expert-context'
 import { useTranslation } from 'react-i18next'
 
@@ -24,6 +24,8 @@ export function ExpertHeader({
   const { t } = useTranslation(['common', 'navigation'])
   const { data } = useExpertContext()
   const { logout } = useAuth()
+  // Ảnh đại diện dùng chung với trang Settings: đổi ở đó là header đổi theo
+  const { avatarUrl } = useAccount('expert')
   const location = useLocation()
   const pageKey = location.pathname.startsWith('/expert/cases/')
     ? 'pages.caseDetail'
@@ -44,6 +46,7 @@ export function ExpertHeader({
       }))}
       account={{
         name: data?.displayName ?? t('account.fallback'),
+        avatarUrl,
         onSignOut: logout,
         links: [
           {

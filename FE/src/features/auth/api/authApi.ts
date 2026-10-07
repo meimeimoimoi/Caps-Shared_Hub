@@ -1,4 +1,5 @@
 import { api } from '@/lib/api-client'
+import { isExpertDemo } from '@/lib/expert-data-source'
 import type { LoginFormValues, User } from '../types'
 
 interface BackendEnvelope<T> {
@@ -31,4 +32,34 @@ export const authApi = {
     return toUser(res.data)
   },
   me: () => api.get<BackendEnvelope<{ userId: string; email: string }>>('/api/auth/me'),
+  /** Tải ảnh đại diện, trả URL ảnh mới.
+   * TODO(api): đối chiếu endpoint với BE khi có Swagger. */
+  uploadAvatar: async (file: File): Promise<string> => {
+    // MOCK: dev demo chưa có BE lưu ảnh, đọc thành data URL để hiện ngay
+    if (isExpertDemo)
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader()
+        reader.onload = () => resolve(String(reader.result))
+        reader.onerror = () => reject(reader.error)
+        reader.readAsDataURL(file)
+      })
+    const body = new FormData()
+    body.append('file', file)
+    // apiClient mặc định gửi JSON; FormData cần header multipart
+    const res = await api.post<BackendEnvelope<{ avatarUrl: string }>>('/api/auth/me/avatar', body, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    })
+    return res.data.avatarUrl
+  },
+  removeAvatar: async () => {
+    if (isExpertDemo) return
+    await api.del('/api/auth/me/avatar')
+  },
+  /** Sai mật khẩu hiện tại → BE trả lỗi, ApiError mang message của BE.
+   * TODO(api): đối chiếu endpoint với BE khi có Swagger. */
+  changePassword: async (body: { currentPassword: string; newPassword: string }) => {
+    // MOCK: dev demo chưa có đăng nhập thật, giả lập thành công
+    if (isExpertDemo) return
+    await api.post('/api/auth/change-password', body)
+  },
 }

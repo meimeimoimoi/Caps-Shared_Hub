@@ -16,7 +16,7 @@ import {
 } from '@/components/ui/layout/app-sidebar'
 import { AppHeader } from '@/components/ui/layout/app-header'
 import { useFormatters } from '@/hooks/useFormatters'
-import { useAuth } from '@/features/auth'
+import { useAccount } from '@/features/auth'
 import { useDialogMotion } from '@/components/ui/motion'
 import { type ShellNotification } from '../NotificationBell'
 
@@ -45,7 +45,7 @@ interface ShellPageProps {
 
 interface AdminLayoutProps extends ShellPageProps {
   /** Mục sidebar đang mở */
-  section: 'pending' | 'experts' | 'disputes' | 'escrow' | 'pricing'
+  section: 'pending' | 'experts' | 'disputes' | 'escrow' | 'pricing' | 'account'
   pendingCount: number
   disputeCount?: number
 }
@@ -103,25 +103,27 @@ export function AdminLayout({
     {
       group: t('navigation.system'),
       items: [
-        { label: t('navigation.accounts'), icon: UserRound },
+        {
+          label: t('navigation.accounts'),
+          icon: UserRound,
+          to: '/admin/account',
+          active: section === 'account',
+        },
         { label: t('navigation.settings'), icon: Settings },
       ],
     },
   ]
 
-  return <RoleShell nav={nav} initials="TA" {...page} />
+  return <RoleShell nav={nav} {...page} />
 }
 
 interface RoleShellProps extends ShellPageProps {
   nav: NavGroup[]
-  /** Chữ viết tắt trên avatar topbar */
-  initials: string
   searchPlaceholder?: string
 }
 
 export function RoleShell({
   nav,
-  initials,
   breadcrumb,
   search,
   onSearchChange,
@@ -134,7 +136,8 @@ export function RoleShell({
   const drawerTrigger = useRef<HTMLButtonElement>(null)
   const { t } = useTranslation(['common', 'admin'])
   const { number } = useFormatters()
-  const { user, logout } = useAuth()
+  // Tài khoản thật hoặc minh họa; dùng chung với trang Tài khoản nên đổi ảnh là header đổi theo
+  const account = useAccount('admin')
   const groups: SidebarGroup[] = nav.map(({ group, items }, groupIndex) => ({
     id: `admin-group-${groupIndex}`,
     label: group,
@@ -202,8 +205,9 @@ export function RoleShell({
             )
           )}
           account={{
-            name: user?.name ?? initials,
-            onSignOut: user ? logout : undefined,
+            name: account.name,
+            avatarUrl: account.avatarUrl,
+            onSignOut: account.logout,
           }}
           notifications={notifications}
         />
