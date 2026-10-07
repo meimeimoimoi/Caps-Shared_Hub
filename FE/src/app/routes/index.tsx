@@ -73,6 +73,7 @@ const AdminApplicationDetailPage = lazy(
   () => import('@/pages/admin/AdminApplicationDetailPage')
 )
 const AdminExpertsPage = lazy(() => import('@/pages/admin/AdminExpertsPage'))
+const AdminDisputesPage = lazy(() => import('@/pages/admin/AdminDisputesPage'))
 const AdminDisputeDetailPage = lazy(
   () => import('@/pages/admin/AdminDisputeDetailPage')
 )
@@ -168,7 +169,7 @@ const router = createBrowserRouter(
         path="/admin/experts/:id"
         element={<AdminApplicationDetailPage />}
       />
-      <Route path="/admin/disputes" element={<AdminDisputeDetailPage />} />
+      <Route path="/admin/disputes" element={<AdminDisputesPage />} />
       <Route path="/admin/disputes/:id" element={<AdminDisputeDetailPage />} />
       <Route path="/admin/escrow" element={<AdminEscrowPage />} />
       <Route path="/admin/pricing" element={<AdminPricingPage />} />

@@ -2,6 +2,8 @@ import type { ESCROW_STATUS } from '@/lib/constants'
 
 /* Quyết định trọng tài khiếu nại: kết quả → tỷ lệ phân chia tiền Escrow */
 export const DISPUTE_SLA_HOURS = 48
+/** Trạng thái hiển thị khi khiếu nại đã có quyết định trọng tài */
+export const DISPUTE_RESOLVED = { label: 'Đã có quyết định', tone: 'plain' } as const
 export const DISPUTE_OUTCOME = {
   UPHELD: {
     label: 'Chấp thuận khiếu nại',
