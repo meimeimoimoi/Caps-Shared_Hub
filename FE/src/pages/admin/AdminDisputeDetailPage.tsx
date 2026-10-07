@@ -7,27 +7,31 @@ import { Toast } from '@/components/ui/feedback/toast'
 import { AdminLayout } from '@/app/layouts/admin/AdminLayout'
 import { DisputeDecision } from '../../features/disputes-escrow/components/DisputeDecision'
 import { HistoryTab } from '../../features/expert-vetting/components/HistoryTab'
-import { DISPUTE_SLA_HOURS } from '../../features/disputes-escrow/constants'
+import { DISPUTE_RESOLVED } from '../../features/disputes-escrow/constants'
+import { disputeHoursLeft } from '../../features/disputes-escrow/utils/disputes'
 import { useAdminNav } from '@/app/layouts/admin/useAdminNav'
 import { useDispute } from '../../features/disputes-escrow/hooks/useDispute'
 
 export default function AdminDisputeDetailPage() {
-  // ponytail: chưa có trang danh sách khiếu nại, /admin/disputes mở khiếu nại đang mở đầu tiên
-  const params = useParams()
-  const { id, dispute, isLoading, decide } = useDispute(params.id)
+  const id = useParams().id!
+  const { dispute, isLoading, decide } = useDispute(id)
   const nav = useAdminNav()
   const [now] = useState(() => Date.now())
   const [toast, setToast] = useState<string | null>(null)
   const clearToast = useCallback(() => setToast(null), [])
 
-  const listLink = <span>Khiếu nại</span>
+  const listLink = (
+    <Link to="/admin/disputes" className="hover:text-fg-strong">
+      Khiếu nại
+    </Link>
+  )
   const layout = { ...nav, section: 'disputes' as const }
 
   if (!dispute) {
     return (
       <AdminLayout {...layout} breadcrumb={listLink}>
         <h1 className="text-h1-tool">
-          {isLoading ? 'Đang tải…' : `Không tìm thấy khiếu nại ${id ?? ''}`}
+          {isLoading ? 'Đang tải…' : `Không tìm thấy khiếu nại ${id}`}
         </h1>
         <Link
           to="/admin/disputes"
@@ -40,11 +44,7 @@ export default function AdminDisputeDetailPage() {
   }
 
   const { evidence, complaint } = dispute
-  const hoursLeft = Math.max(
-    0,
-    DISPUTE_SLA_HOURS -
-      Math.floor((now - new Date(dispute.openedAt).getTime()) / 3_600_000)
-  )
+  const hoursLeft = disputeHoursLeft(dispute.openedAt, now)
 
   return (
     <AdminLayout
@@ -68,7 +68,9 @@ export default function AdminDisputeDetailPage() {
             ['Căn cứ', dispute.ground],
           ]}
         />
-        <StatusBadge status={CASE_STATUS.DISPUTED} />
+        <StatusBadge
+          status={dispute.resolvedAt ? DISPUTE_RESOLVED : CASE_STATUS.DISPUTED}
+        />
       </div>
 
       <div className="mt-6 grid items-start gap-4 md:gap-6 lg:grid-cols-[minmax(420px,1fr)_340px]">

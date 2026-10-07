@@ -12,7 +12,7 @@ import { QUEUE_TABS } from '../../features/expert-vetting/constants'
 import { SLA_DAYS, waitedDays } from '../../features/expert-vetting/utils/applications'
 import { getDisputes, getEscrows } from '../../features/disputes-escrow/api/disputesApi'
 import { disputesKeys } from '../../features/disputes-escrow/api/queryKeys'
-import { DISPUTE_SLA_HOURS } from '../../features/disputes-escrow/constants'
+import { disputeHoursLeft } from '../../features/disputes-escrow/utils/disputes'
 import { usePricing } from '../../features/service-pricing/hooks/usePricing'
 import { AttentionList, type AttentionItem } from '../../features/admin-analytics/components/AttentionList'
 import { BarList } from '../../features/admin-analytics/components/BarList'
@@ -45,9 +45,7 @@ export default function AdminDashboardPage() {
   const suspended = expertList.filter((e) => e.serviceStatus === 'SUSPENDED').length
 
   const open = (disputes.data ?? []).filter((d) => !d.resolvedAt)
-  const hoursLeft = (openedAt: string) =>
-    Math.max(0, DISPUTE_SLA_HOURS - Math.floor((now - new Date(openedAt).getTime()) / 3_600_000))
-  const nearestHours = open.length ? Math.min(...open.map((d) => hoursLeft(d.openedAt))) : null
+  const nearestHours = open.length ? Math.min(...open.map((d) => disputeHoursLeft(d.openedAt, now))) : null
 
   const escrowList = escrows.data ?? []
   const sumBy = (status: keyof typeof ESCROW_STATUS) =>
