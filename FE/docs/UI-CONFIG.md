@@ -26,7 +26,7 @@ Không sao chép toàn bộ CSS, TypeScript interfaces hoặc constants vào Mar
 
 Registration `ex-*`, Expert `--ep-*`, case and `hub-*` colors now alias shared semantic tokens. Font overrides have been replaced with sans/serif/num/mono tokens. Legacy component keyframes use shared timing while retaining their sequence; continuous spinners retain their loop cadence. Login video material uses centralized `--ui-login-*`; logo/flag artwork keeps fixed fills. Layout geometry remains specific to each screen.
 
-Use `npm run check:ui-config` to catch new inline color/font overrides and missing semantic token definitions. See [THEMING.md](THEMING.md) for coverage and visual verification limits.
+Review shared styles against the semantic tokens manually. See [THEMING.md](THEMING.md) for coverage and visual verification limits.
 
 ## Quy ước UI
 

@@ -62,7 +62,7 @@ ExpertPanel and Draft Paper use useMotion; overview panel grids use MotionStagge
 
 All four workspace navigation drawers and the common Modal/Drawer use useDialogMotion. It observes native dialog opening, keeping showModal/close, focus trapping and focus return intact. Dialog exits remain immediate so closing semantics never wait for an animation. Toasts use the shared reveal preset. Scoped button/form feedback applies throughout data-motion-page; use motion-interactive outside routed content.
 
-Run `npm run build`, `npm run lint`, and `npm run check:architecture` from FE after changing motion source. These check compilation and code boundaries, not visual quality. The current package has no `test:motion` script or retained motion unit-test suite.
+Run `npm run build` and `npm run lint` from FE after changing motion source. These check compilation and code boundaries, not visual quality. The current package has no `test:motion` script or retained motion unit-test suite.
 
 Manually check reload, route navigation, filter changes without form remounts, viewport reveals, rapid open/close, native dialog focus return, dropdown scrolling near viewport edges, reduced-motion changes and unsupported-animation fallback. Inspect desktop/mobile timing and performance in a browser; static checks do not verify these behaviors.
 

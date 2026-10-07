@@ -49,4 +49,4 @@ Legacy widget variables also alias the shared palette. CSS entrance/feedback tim
 
 Intentional fixed material is centralized as `--ui-login-*` for text and controls over video, plus brand/sidebar/overlay tokens. Actual Google logo and Vietnamese flag SVG fills retain their supplied colors. Fixed media does not prevent the rest of the UI from following the app theme.
 
-Run `npm run check:ui-config` to reject new inline hex colors, hardcoded font families and undefined semantic color references. This is a source guard, not a visual or contrast test. Build/lint/architecture/i18n checks passed during normalization; lint retains four existing warnings. Browser surfaces were unavailable, so desktop/mobile light/dark visual verification remains outstanding.
+Review colors, fonts and semantic token references manually. Build and lint passed during normalization; lint retains four existing warnings. Browser surfaces were unavailable, so desktop/mobile light/dark visual verification remains outstanding.

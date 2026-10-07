@@ -95,7 +95,7 @@ real generation, billing and Flow 5 end-to-end checks require the agreed backend
 
 See [README.md](../README.md) and [.env.example](../.env.example) for setup. Isolated preview requires both `VITE_DRAFT_DATA_SOURCE=mock` and `VITE_DRAFT_DEMO_ACCESS=true` in development; restart Vite after changing environment values. Mock alone does not bypass authentication. Production ignores mock/demo-access flags and uses authenticated API flows.
 
-Run `npm run build`, `npm run lint`, `npm run check:architecture` and `npm run check:i18n` after changing source. Current scripts do not retain the earlier local adapter/render test suite; historical assertions are not a current executable acceptance suite.
+Run `npm run build` and `npm run lint` after changing source. Current scripts do not retain the earlier local adapter/render test suite; historical assertions are not a current executable acceptance suite.
 
 Exercise the ten scenarios above in a browser, including keyboard/focus, unsaved navigation, reload and exact version references. Real API/auth, generation, export/billing and review handoff require backend integration; successful mock interaction does not verify those contracts. Record actual results when checks are run rather than treating this document as a permanent pass report.
 
@@ -103,4 +103,4 @@ Exercise the ten scenarios above in a browser, including keyboard/focus, unsaved
 
 Use shared layout/form/feedback components, semantic [theme tokens](THEMING.md), [translation rules](I18N.md) and [motion](MOTION.md). Draft routes already inherit MotionPage; Draft Paper uses the shared hook. Changing theme or language must preserve working input, dirty state, query identity and selected version. Animation must not start a business mutation or delay authorization/error recovery.
 
-Shared palette normalization now covers the surrounding app and legacy registration/Expert controls. Draft data contracts, snapshot/version identity and capabilities remain owned by the existing adapters. Use `npm run check:ui-config` alongside the checks above when changing shared styles.
+Shared palette normalization now covers the surrounding app and legacy registration/Expert controls. Draft data contracts, snapshot/version identity and capabilities remain owned by the existing adapters. Review shared styles against the semantic tokens manually.

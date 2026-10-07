@@ -82,21 +82,8 @@ Expert workspace routes use `ExpertRoute`; demo access is configured separately 
 ## Scripts
 
 - `npm run dev` / `npm run build` / `npm run lint` (`oxlint`) / `npm run format`.
-- `npm run check:ui-config` rejects inline hex UI colors, hardcoded fonts and undefined semantic palette references, with explicit artwork exceptions.
-- `npm run check:i18n` checks locale key, placeholder and plural consistency; it does not detect every hardcoded UI string.
-- `npm run check:architecture` checks the agreed folder structure, common-module boundaries and circular feature dependencies. TypeScript build checks import resolution.
 
 Formatting the entire project may touch unrelated files; format deliberately.
-
-## Automatic commit checks
-
-Run `npm install` or `npm ci` in FE after cloning. The prepare script installs the tracked `.githooks/pre-commit` using this clone's local Git config. Existing custom hooksPath settings are preserved and need explicit integration. Use `npm run hooks:install` to reinstall. Node.js and installed FE dependencies must be available to the Git client/agent.
-
-When FE or hook files are staged, `git commit` automatically runs architecture, i18n and UI configuration checks on a temporary copy of the staged index. Unstaged edits stay untouched. All three results appear in the terminal; any failure blocks the commit and identifies the check/files to fix. Stage the fixes and retry. Backend-only commits skip these frontend checks. Run `npm run check:commit` to check the working tree manually.
-
-After push or opening/updating a PR, the tracked Frontend checks GitHub Actions workflow runs the same checks plus lint and a production build. Results and logs are visible to teammates and agents in the PR checks/Actions view. Personal GitHub notifications follow each member's settings; this setup does not send chat/email messages. Enable the Frontend checks job as a required branch-protection check if the team wants merges blocked on failures. Local hooks can be bypassed, so CI is the shared enforcement layer.
-
-Agents using this checkout should install hooks before committing, read the full failure output, fix/stage affected files and rerun checks. Warnings from lint remain warnings; the three validation scripts block on errors.
 
 ## Draft Workspace
 
@@ -153,6 +140,7 @@ Maintenance guides are grouped in `docs/`; this README remains the frontend entr
 - [THEMING.md](docs/THEMING.md): palette, fonts, theme behavior and migration. Colors live in [theme.css](src/styles/theme.css); font/size/spacing/radius/shadow tokens in [globals.css](src/styles/globals.css); font loading in [index.html](index.html).
 - [I18N.md](docs/I18N.md): translation rules, glossary, formatting and acceptance checklist.
 - [DRAFTING.md](docs/DRAFTING.md): proposed API integration, business-rule traceability and acceptance scenarios.
+- [REVIEWER.md](docs/REVIEWER.md): Reviewer routes, isolated demo behavior, Gate 1/Gate 2 rules.
 - [Motion README](docs/MOTION.md): reusable animations; [tokens.ts](src/components/ui/motion/tokens.ts) owns motion values.
 
 All registered routes inherit MotionPage at the root router boundary. Add component-level motion through the shared module when needed; avoid duplicating page entrance wrappers. Registration, Expert/case detail, login controls and legacy widget palettes now consume shared configuration. Layout geometry remains screen-specific; fixed login/video material is centralized in theme.css and logo/flag fills are intentional artwork exceptions.
