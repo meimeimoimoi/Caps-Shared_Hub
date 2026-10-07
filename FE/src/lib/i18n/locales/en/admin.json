@@ -21,7 +21,8 @@
       "dispute": "{{count}} open disputes, the nearest is due in {{hours}} h",
       "payoutFailed": "{{count}} failed payouts need a retry",
       "slaOverdue": "{{count}} expert applications waiting over {{days}} days",
-      "outsideRange": "{{count}} experts priced outside the range"
+      "outsideRange": "{{count}} experts priced outside the range",
+      "count": "{{count}} to do"
     },
     "kpi": {
       "pending": "Pending applications",
@@ -68,7 +69,8 @@
       "latest": "Latest closed period: {{period}}. The current period is shown on the charts only.",
       "notEnough": "Not enough closed periods to compare yet.",
       "monthTick": "{{name}}"
-    }
+    },
+    "noData": "No data yet."
   },
   "search": {
     "placeholder": "Search by name or email"
