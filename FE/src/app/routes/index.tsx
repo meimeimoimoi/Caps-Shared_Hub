@@ -105,6 +105,9 @@ const KnowledgeDocumentsPage = lazy(
 const KnowledgeUploadsPage = lazy(
   () => import('@/pages/knowledge-admin/KnowledgeUploadsPage')
 )
+const KnowledgeDashboardPage = lazy(
+  () => import('@/pages/knowledge-admin/KnowledgeDashboardPage')
+)
 const KnowledgeAccountPage = lazy(
   () => import('@/pages/knowledge-admin/KnowledgeAccountPage')
 )
@@ -177,10 +180,7 @@ const router = createBrowserRouter(
       <Route path="/admin/account" element={<AdminAccountPage />} />
       <Route path="/admin" element={<AdminDashboardPage />} />
       {/* TODO(auth): bọc ProtectedRoute + check role Knowledge Admin khi có API */}
-      <Route
-        path="/knowledge"
-        element={<Navigate to="/knowledge/queue" replace />}
-      />
+      <Route path="/knowledge" element={<KnowledgeDashboardPage />} />
       <Route path="/knowledge/queue" element={<KnowledgeQueuePage />} />
       <Route path="/knowledge/sources" element={<KnowledgeSourcesPage />} />
       <Route path="/knowledge/uploads" element={<KnowledgeUploadsPage />} />

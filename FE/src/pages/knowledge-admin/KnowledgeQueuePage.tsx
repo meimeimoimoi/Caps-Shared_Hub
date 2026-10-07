@@ -87,8 +87,9 @@ export default function KnowledgeQueuePage() {
         />
       </div>
 
+      {/* Đậm hơn danger-soft (~7%) một bậc: 16% màu danger trên nền giấy; chữ xám vẫn 5.4:1 (sáng) / 5.7:1 (tối) */}
       {failedCount > 0 && !failed && (
-        <div className="bg-danger-soft rounded-surface mt-4 flex flex-wrap items-center gap-x-3 gap-y-1 px-4 py-3 text-sm">
+        <div className="rounded-surface mt-4 flex bg-[color-mix(in_oklab,var(--color-danger)_16%,var(--color-paper))] flex-wrap items-center gap-x-3 gap-y-1 px-4 py-3 text-sm">
           <CircleX size={16} aria-hidden="true" className="text-danger shrink-0" />
           <span className="text-fg-strong font-semibold">
             <span className="num">{failedCount}</span> văn bản lỗi cần xử lý

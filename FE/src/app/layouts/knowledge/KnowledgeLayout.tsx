@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import { useRef, useState, type ReactNode } from 'react'
-import { BookOpen, LayoutTemplate, ListChecks, Rss, UserRound } from 'lucide-react'
+import { BookOpen, LayoutDashboard, LayoutTemplate, ListChecks, Rss, UserRound } from 'lucide-react'
 import { useDialogMotion } from '@/components/ui/motion'
 import { useAccount } from '@/features/auth'
 import { AppHeader } from '@/components/ui/layout/app-header'
@@ -12,7 +12,7 @@ import { type ShellNotification } from '../NotificationBell'
 
 interface KnowledgeLayoutProps {
   /** Mục sidebar đang mở */
-  section: 'queue' | 'sources' | 'documents' | 'account'
+  section: 'overview' | 'queue' | 'sources' | 'documents' | 'account'
   queueCount: number
   notifications?: ShellNotification[]
   breadcrumb: ReactNode
@@ -42,6 +42,20 @@ export function KnowledgeLayout({
   const account = useAccount('knowledge')
 
   const groups: SidebarGroup[] = [
+    {
+      // Không tiêu đề nhóm: AppSidebar chỉ hiện tiêu đề khi có chữ
+      id: 'overview',
+      label: '',
+      items: [
+        {
+          id: 'overview',
+          to: '/knowledge',
+          label: 'Tổng quan',
+          icon: <LayoutDashboard size={18} />,
+          active: section === 'overview',
+        },
+      ],
+    },
     {
       id: 'knowledge',
       label: 'Kho tri thức',

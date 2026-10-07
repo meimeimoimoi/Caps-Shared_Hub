@@ -62,17 +62,17 @@ export default function AdminDashboardPage() {
     nearestHours !== null && {
       text: t('dashboard.attention.dispute', { count: open.length, hours: nearestHours }),
       to: '/admin/disputes',
-      urgent: true,
+      tone: 'warning',
     },
     payoutFailed > 0 && {
       text: t('dashboard.attention.payoutFailed', { count: payoutFailed }),
       to: '/admin/escrow',
-      urgent: true,
+      tone: 'danger',
     },
     overdue.length > 0 && {
       text: t('dashboard.attention.slaOverdue', { count: overdue.length, days: SLA_DAYS }),
       to: '/admin/experts/pending',
-      urgent: true,
+      tone: 'warning',
     },
     outsideRange > 0 && {
       text: t('dashboard.attention.outsideRange', { count: outsideRange }),
@@ -132,6 +132,7 @@ export default function AdminDashboardPage() {
         <BarList
           id="dash-vetting"
           title={t('dashboard.vetting')}
+          empty={loading ? t('dashboard.loading') : t('dashboard.noData')}
           rows={QUEUE_TABS.map((tab) => {
             const count = apps.filter((a) => (tab.statuses as readonly string[]).includes(a.status)).length
             return { key: tab.label, label: t(tab.label), value: count, display: f.number(count) }
@@ -140,6 +141,7 @@ export default function AdminDashboardPage() {
         <BarList
           id="dash-escrow"
           title={t('dashboard.escrow')}
+          empty={loading ? t('dashboard.loading') : t('dashboard.noData')}
           rows={(Object.keys(ESCROW_STATUS) as (keyof typeof ESCROW_STATUS)[])
             .map((status) => ({ status, amount: sumBy(status) }))
             .filter((r) => r.amount > 0)

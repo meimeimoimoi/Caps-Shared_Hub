@@ -21,7 +21,8 @@
       "dispute": "{{count}} khiếu nại đang mở, gần nhất còn {{hours}} giờ trước hạn trọng tài",
       "payoutFailed": "{{count}} khoản chi trả lỗi, cần thử lại",
       "slaOverdue": "{{count}} hồ sơ Expert chờ quá {{days}} ngày",
-      "outsideRange": "{{count}} Expert đặt giá ngoài khung"
+      "outsideRange": "{{count}} Expert đặt giá ngoài khung",
+      "count": "{{count}} việc"
     },
     "kpi": {
       "pending": "Hồ sơ chờ duyệt",
@@ -68,7 +69,8 @@
       "latest": "Kỳ đã chốt gần nhất: {{period}}. Kỳ đang diễn ra chỉ hiện trên biểu đồ.",
       "notEnough": "Chưa đủ 2 kỳ đã chốt để so sánh.",
       "monthTick": "T{{month}}"
-    }
+    },
+    "noData": "Chưa có số liệu."
   },
   "search": {
     "placeholder": "Tìm theo tên hoặc email"
