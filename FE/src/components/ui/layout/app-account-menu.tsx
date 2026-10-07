@@ -1,8 +1,12 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { useMotion } from '@/components/ui/motion'
+import { useEffect, useId, useRef, useState, type ReactNode } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { ChevronDown, LogOut } from 'lucide-react'
+import { ChevronDown, LogOut, Moon, Sun } from 'lucide-react'
+import { LanguageSwitcher } from './language-switcher'
 import { useTranslation } from 'react-i18next'
+import { cn } from '@/lib/utils'
+
+const menuRow =
+  'flex min-h-11 w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-medium transition-colors hover:bg-surface-muted'
 
 interface AccountLink {
   label: string
@@ -12,26 +16,31 @@ interface AccountLink {
 }
 interface AppAccountMenuProps {
   name: string
-  email?: string
-  note?: string
   links?: AccountLink[]
   onSignOut?: () => void
+  signOutLabel?: string
+  isDark?: boolean
+  onToggleTheme?: () => void
 }
 
 export function AppAccountMenu({
   name,
-  email,
-  note,
   links = [],
   onSignOut,
+  signOutLabel,
+  isDark,
+  onToggleTheme,
 }: AppAccountMenuProps) {
   const { t } = useTranslation('common')
-  const account = useRef<HTMLDetailsElement>(null)
-  const [open, setOpen] = useState(false)
-  const popover = useMotion({ preset: 'popover', disabled: !open, replayKey: open ? 1 : 0 })
+  const account = useRef<HTMLDivElement>(null)
+  const trigger = useRef<HTMLButtonElement>(null)
+  const panelId = useId()
   const location = useLocation()
+  const routeKey = location.key
+  const [openRoute, setOpenRoute] = useState<string | null>(null)
+  const open = openRoute === routeKey
   const close = () => {
-    if (account.current) account.current.open = false
+    setOpenRoute(null)
   }
   useEffect(() => {
     const dismiss = (event: PointerEvent) => {
@@ -44,9 +53,6 @@ export function AppAccountMenu({
     document.addEventListener('pointerdown', dismiss)
     return () => document.removeEventListener('pointerdown', dismiss)
   }, [])
-  useEffect(() => {
-    close()
-  }, [location.pathname, location.search])
   const initials = name
     .trim()
     .split(/\s+/)
@@ -56,27 +62,33 @@ export function AppAccountMenu({
     .join('')
     .toUpperCase()
   return (
-    <details
+    <div
       ref={account}
-      onToggle={(event) => setOpen(event.currentTarget.open)}
-      className="group relative"
+      className="relative"
       onKeyDown={(event) => {
         if (event.key === 'Escape') {
           close()
-          account.current?.querySelector('summary')?.focus()
+          trigger.current?.focus()
         }
       }}
       onBlur={(event) => {
         if (!event.currentTarget.contains(event.relatedTarget as Node)) close()
       }}
     >
-      <summary
+      <button
+        ref={trigger}
+        type="button"
+        aria-expanded={open}
+        aria-controls={open ? panelId : undefined}
+        onClick={() =>
+          setOpenRoute((current) => (current === routeKey ? null : routeKey))
+        }
         aria-label={t('account.menu', { name })}
         className={`text-text-strong hover:bg-surface-muted flex min-h-11 cursor-pointer list-none items-center gap-2.5 rounded-lg px-2 py-1 text-[13px] transition-colors [&::-webkit-details-marker]:hidden`}
       >
         <span
           aria-hidden="true"
-          className="flex size-[34px] shrink-0 items-center justify-center rounded-full bg-orange-200 text-xs font-bold text-orange-900 shadow-sm"
+          className="bg-accent-soft text-accent-text flex size-[34px] shrink-0 items-center justify-center rounded-full text-xs font-semibold"
         >
           {initials || 'U'}
         </span>
@@ -86,67 +98,110 @@ export function AppAccountMenu({
         <ChevronDown
           size={15}
           aria-hidden="true"
-          className={`text-text-muted shrink-0 transition-transform group-open:rotate-180 motion-reduce:transition-none`}
-        />
-      </summary>
-      <div
-        ref={popover}
-        className={`bg-surface text-text-strong ring-border absolute top-full right-0 z-50 mt-3 w-[min(304px,calc(100vw-32px))] rounded-xl p-2 shadow-overlay ring-1`}
-      >
-        <div className="flex flex-col gap-1 px-3 pt-3 pb-4">
-          <strong className="text-sm font-semibold [overflow-wrap:anywhere]">
-            {name}
-          </strong>
-          {email && (
-            <span
-              className={`text-text-muted text-[13px] [overflow-wrap:anywhere]`}
-            >
-              {email}
-            </span>
+          className={cn(
+            'text-text-muted shrink-0 transition-transform motion-reduce:transition-none',
+            open && 'rotate-180'
           )}
-          {note && (
-            <span
-              className={`bg-surface-muted text-text mt-2 self-start rounded-md px-2 py-1 text-[11px] font-medium`}
-            >
-              {note}
-            </span>
+        />
+      </button>
+      {open && (
+        <div
+          id={panelId}
+          className="bg-surface text-text-strong shadow-overlay absolute top-full right-0 z-50 mt-2 max-h-[calc(100dvh-96px)] min-h-56 w-[min(320px,calc(100vw-24px))] overflow-y-auto rounded-xl p-1.5 font-sans tracking-normal [word-spacing:normal]"
+        >
+          {links.length > 0 && (
+            <nav aria-label={t('account.navigation')} className="space-y-0.5">
+              {links.map((link) => (
+                <Link
+                  key={link.to}
+                  to={link.to}
+                  onClick={close}
+                  aria-current={link.active ? 'page' : undefined}
+                  className={cn(
+                    menuRow,
+                    '!text-text-strong',
+                    link.active && 'bg-surface-muted'
+                  )}
+                >
+                  <span
+                    aria-hidden="true"
+                    className="text-text-muted flex size-5 shrink-0 items-center justify-center"
+                  >
+                    {link.icon}
+                  </span>
+                  <span className="flex-1">{link.label}</span>
+                  {link.active && (
+                    <span
+                      aria-hidden="true"
+                      className="bg-accent-text size-1.5 rounded-full"
+                    />
+                  )}
+                </Link>
+              ))}
+            </nav>
+          )}
+          {onToggleTheme && (
+            <div className="space-y-0.5">
+              <LanguageSwitcher variant="account" />
+              <button
+                type="button"
+                onClick={onToggleTheme}
+                role="switch"
+                aria-checked={Boolean(isDark)}
+                aria-label={t('theme.darkMode')}
+                className={menuRow}
+              >
+                {isDark ? (
+                  <Moon
+                    size={18}
+                    aria-hidden="true"
+                    className="text-text-muted shrink-0"
+                  />
+                ) : (
+                  <Sun
+                    size={18}
+                    aria-hidden="true"
+                    className="text-text-muted shrink-0"
+                  />
+                )}
+                <span className="flex-1">{t('theme.appearance')}</span>
+                <span aria-hidden="true" className="text-text-muted text-xs">
+                  {t(isDark ? 'theme.darkLabel' : 'theme.lightLabel')}
+                </span>
+                <span
+                  aria-hidden="true"
+                  className={cn(
+                    'flex h-5 w-9 shrink-0 items-center rounded-full p-0.5 transition-colors motion-reduce:transition-none',
+                    isDark ? 'bg-switch-on' : 'bg-switch-off'
+                  )}
+                >
+                  <span
+                    className={cn(
+                      'bg-switch-thumb size-4 rounded-full shadow-sm transition-transform motion-reduce:transition-none',
+                      isDark && 'translate-x-4'
+                    )}
+                  />
+                </span>
+              </button>
+            </div>
+          )}
+          {onSignOut && (
+            <div className="border-border mt-1.5 border-t pt-1.5">
+              <button
+                type="button"
+                onClick={() => {
+                  close()
+                  onSignOut()
+                }}
+                className={cn(menuRow, 'text-danger hover:bg-danger-soft')}
+              >
+                <LogOut size={17} aria-hidden="true" />
+                {signOutLabel ?? t('actions.signOut')}
+              </button>
+            </div>
           )}
         </div>
-        {links.length > 0 && (
-          <nav
-            aria-label={t('account.navigation')}
-            className={`border-border border-t pt-2`}
-          >
-            {links.map((link) => (
-              <Link
-                key={link.to}
-                to={link.to}
-                onClick={close}
-                aria-current={link.active ? 'page' : undefined}
-                className={`flex min-h-11 items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold ${link.active ? 'bg-accent-soft !text-accent-text' : '!text-text-strong hover:bg-surface-muted'}`}
-              >
-                <span aria-hidden="true">{link.icon}</span>
-                {link.label}
-              </Link>
-            ))}
-          </nav>
-        )}
-        {onSignOut && (
-          <div className={`border-border mt-2 border-t pt-2`}>
-            <button
-              type="button"
-              onClick={() => {
-                close()
-                onSignOut()
-              }}
-              className={`text-danger hover:bg-danger-soft flex min-h-11 w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-semibold`}
-            >
-              <LogOut size={17} aria-hidden="true" />
-              {t('actions.signOut')}
-            </button>
-          </div>
-        )}
-      </div>
-    </details>
+      )}
+    </div>
   )
 }

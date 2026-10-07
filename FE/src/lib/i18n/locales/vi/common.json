@@ -17,6 +17,10 @@
     "skipWorkspace": "Đến không gian làm việc"
   },
   "theme": {
+    "appearance": "Giao diện",
+    "darkMode": "Giao diện tối",
+    "darkLabel": "Tối",
+    "lightLabel": "Sáng",
     "light": "Chuyển sang giao diện sáng",
     "dark": "Chuyển sang giao diện tối"
   },
@@ -65,8 +69,11 @@
       "contextError": "Lỗi kiểm tra quyền truy cập"
     }
   },
-  "language": { "label": "Ngôn ngữ" },
+  "language": {
+    "label": "Ngôn ngữ"
+  },
   "actions": {
+    "exitDemo": "Thoát demo",
     "signOut": "Đăng xuất",
     "close": "Đóng",
     "clear": "Xóa lựa chọn",
@@ -81,5 +88,10 @@
     "joinExpert": "Bạn muốn tham gia với vai trò chuyên gia?",
     "footer": "404 · Không tìm thấy trang",
     "dashboardLabel": "Bảng điều khiển Shared Hub"
+  },
+  "search": {
+    "pages": "Tìm trang chức năng…",
+    "noPages": "Không có trang phù hợp.",
+    "knowledge": "Tìm số hiệu hoặc tên văn bản"
   }
 }

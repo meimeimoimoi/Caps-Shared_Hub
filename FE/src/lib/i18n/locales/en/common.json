@@ -17,6 +17,10 @@
     "skipWorkspace": "Skip to workspace"
   },
   "theme": {
+    "appearance": "Appearance",
+    "darkMode": "Dark mode",
+    "darkLabel": "Dark",
+    "lightLabel": "Light",
     "light": "Switch to light theme",
     "dark": "Switch to dark theme"
   },
@@ -65,8 +69,11 @@
       "contextError": "Access check error"
     }
   },
-  "language": { "label": "Language" },
+  "language": {
+    "label": "Language"
+  },
   "actions": {
+    "exitDemo": "Exit demo",
     "signOut": "Sign out",
     "close": "Close",
     "clear": "Clear",
@@ -81,5 +88,10 @@
     "joinExpert": "Looking to join as an expert?",
     "footer": "404 · Page not found",
     "dashboardLabel": "Shared Hub dashboard"
+  },
+  "search": {
+    "pages": "Find a page…",
+    "noPages": "No matching pages.",
+    "knowledge": "Search document number or title"
   }
 }

@@ -1,63 +1,59 @@
 import { useLocation } from 'react-router-dom'
-import { Settings, Moon, Sun } from 'lucide-react'
-import {
-  AppHeader,
-  HeaderActionButton,
-} from '@/components/ui/layout/app-header'
-import { AppAccountMenu } from '@/components/ui/layout/app-account-menu'
+import { Settings } from 'lucide-react'
+import { AppHeader } from '@/components/ui/layout/app-header'
 import { useAuth } from '@/features/auth'
 import { useExpertContext } from '@/features/expert-context'
-import { isExpertDemo } from '@/lib/expert-data-source'
-import { LanguageSwitcher } from '@/components/ui/layout/language-switcher'
 import { useTranslation } from 'react-i18next'
+
+const pageKeys = {
+  overview: 'overview',
+  queue: 'workQueue',
+  active: 'activeCases',
+  cases: 'pages.cases',
+  services: 'myServices',
+  income: 'income',
+  profile: 'pages.profile',
+  settings: 'settings',
+} as const
 
 export function ExpertHeader({
   openNavigation,
-  isDark,
-  toggleTheme,
 }: {
   openNavigation: () => void
-  isDark: boolean
-  toggleTheme: () => void
 }) {
   const { t } = useTranslation(['common', 'navigation'])
   const { data } = useExpertContext()
   const { logout } = useAuth()
   const location = useLocation()
+  const pageKey = location.pathname.startsWith('/expert/cases/')
+    ? 'pages.caseDetail'
+    : (pageKeys[location.pathname.split('/')[2] as keyof typeof pageKeys] ??
+      'expertWorkspace')
   return (
     <AppHeader
-      context={t('navigation:expertWorkspace')}
+      context={
+        <span aria-current="page" className="text-text-strong font-semibold">
+          {t(`navigation:${pageKey}`)}
+        </span>
+      }
       onOpenNavigation={openNavigation}
       navigationButtonClassName="min-[960px]:hidden"
-      actions={
-        <>
-          <LanguageSwitcher />
-          <HeaderActionButton
-            onClick={toggleTheme}
-            aria-label={t(isDark ? 'theme.light' : 'theme.dark')}
-          >
-            {isDark ? (
-              <Sun size={19} aria-hidden="true" />
-            ) : (
-              <Moon size={19} aria-hidden="true" />
-            )}
-          </HeaderActionButton>
-          <AppAccountMenu
-            name={data?.displayName ?? t('account.fallback')}
-            email={data?.email}
-            note={isExpertDemo ? t('account.demo') : undefined}
-            onSignOut={logout}
-            links={[
-              {
-                label: t('navigation:settings'),
-                to: `/expert/settings/account${location.search}`,
-                icon: <Settings size={17} />,
-                active: location.pathname.startsWith('/expert/settings'),
-              },
-            ]}
-          />
-        </>
-      }
+      searchLinks={Object.entries(pageKeys).map(([path, key]) => ({
+        label: t(`navigation:${key}`),
+        to: `/expert/${path}${location.search}`,
+      }))}
+      account={{
+        name: data?.displayName ?? t('account.fallback'),
+        onSignOut: logout,
+        links: [
+          {
+            label: t('navigation:settings'),
+            to: `/expert/settings/account${location.search}`,
+            icon: <Settings size={17} />,
+            active: location.pathname.startsWith('/expert/settings'),
+          },
+        ],
+      }}
     />
   )
 }

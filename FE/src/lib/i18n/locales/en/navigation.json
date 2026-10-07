@@ -59,5 +59,15 @@
   "workspaces": "Workspaces",
   "templates": "Templates",
   "dashboard": "Dashboard",
-  "settings": "Settings"
+  "settings": "Settings",
+  "pages": {
+    "caseDetail": "Case details",
+    "cases": "Review cases",
+    "profile": "Profile",
+    "templateDetail": "Template details",
+    "draftInput": "Draft inputs",
+    "draftGeneration": "Draft generation",
+    "draftVersion": "Draft version",
+    "draftHistory": "Version history"
+  }
 }

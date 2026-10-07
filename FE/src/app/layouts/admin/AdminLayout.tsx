@@ -3,31 +3,22 @@ import {
   CreditCard,
   FileText,
   Flag,
-  Moon,
-  Search,
   Settings,
-  Sun,
   Tag,
   UserRound,
   Users,
   type LucideIcon,
 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import { LanguageSwitcher } from '@/components/ui/layout/language-switcher'
 import {
   AppSidebar,
   type SidebarGroup,
 } from '@/components/ui/layout/app-sidebar'
-import {
-  AppHeader,
-  HeaderActionButton,
-} from '@/components/ui/layout/app-header'
-import { AppAccountMenu } from '@/components/ui/layout/app-account-menu'
-import { useTheme } from '@/hooks/useTheme'
+import { AppHeader } from '@/components/ui/layout/app-header'
 import { useFormatters } from '@/hooks/useFormatters'
 import { useAuth } from '@/features/auth'
 import { useDialogMotion } from '@/components/ui/motion'
-import { NotificationBell, type ShellNotification } from '../NotificationBell'
+import { type ShellNotification } from '../NotificationBell'
 
 export interface NavItem {
   label: string
@@ -142,7 +133,6 @@ export function RoleShell({
   useDialogMotion(drawer, 'drawer-left')
   const drawerTrigger = useRef<HTMLButtonElement>(null)
   const { t } = useTranslation(['common', 'admin'])
-  const { isDark, toggleTheme } = useTheme()
   const { number } = useFormatters()
   const { user, logout } = useAuth()
   const groups: SidebarGroup[] = nav.map(({ group, items }, groupIndex) => ({
@@ -197,46 +187,25 @@ export function RoleShell({
           navigationButtonRef={drawerTrigger}
           onOpenNavigation={() => drawer.current?.showModal()}
           context={<nav aria-label="Breadcrumb">{breadcrumb}</nav>}
-          actionsClassName="w-full flex-wrap sm:w-auto"
-          actions={
-            <>
-              {onSearchChange && (
-                <label className="border-border-control bg-paper focus-within:outline-accent-text flex min-h-11 w-full items-center gap-2 rounded-lg border px-3 focus-within:outline-2 focus-within:outline-offset-2 sm:w-64 lg:w-72">
-                  <Search
-                    size={16}
-                    aria-hidden="true"
-                    className="text-fg-muted shrink-0"
-                  />
-                  <input
-                    type="search"
-                    value={search ?? ''}
-                    onChange={(event) => onSearchChange(event.target.value)}
-                    placeholder={t('admin:search.placeholder')}
-                    aria-label={t('admin:search.placeholder')}
-                    className="placeholder:text-fg-muted w-full min-w-0 bg-transparent text-sm outline-none"
-                  />
-                </label>
-              )}
-              <LanguageSwitcher />
-              <HeaderActionButton
-                onClick={toggleTheme}
-                aria-label={t(isDark ? 'theme.light' : 'theme.dark')}
-              >
-                {isDark ? (
-                  <Sun size={20} aria-hidden="true" />
-                ) : (
-                  <Moon size={20} aria-hidden="true" />
-                )}
-              </HeaderActionButton>
-              <NotificationBell notifications={notifications} className="size-9" />
-              <AppAccountMenu
-                name={user?.name ?? initials}
-                email={user?.email}
-                note="Admin"
-                onSignOut={user ? logout : undefined}
-              />
-            </>
+          search={
+            onSearchChange
+              ? {
+                  value: search ?? '',
+                  onChange: onSearchChange,
+                  label: t('admin:search.placeholder'),
+                }
+              : undefined
           }
+          searchLinks={groups.flatMap((group) =>
+            group.items.flatMap((item) =>
+              item.to ? [{ label: item.label, to: item.to }] : []
+            )
+          )}
+          account={{
+            name: user?.name ?? initials,
+            onSignOut: user ? logout : undefined,
+          }}
+          notifications={notifications}
         />
         <main
           id="admin-main"

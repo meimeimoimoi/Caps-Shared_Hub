@@ -5,6 +5,7 @@ import {
   useRef,
   useState,
   type KeyboardEvent,
+  type ReactNode,
 } from 'react'
 import { Check, ChevronDown } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -38,6 +39,7 @@ export interface CustomSelectProps<T extends string = string> {
   className?: string
   triggerClassName?: string
   menuClassName?: string
+  triggerLeading?: ReactNode
 }
 
 /** Controlled single select with keyboard navigation and typeahead. */
@@ -53,6 +55,7 @@ export function CustomSelect<T extends string>({
   className,
   triggerClassName,
   menuClassName,
+  triggerLeading,
 }: CustomSelectProps<T>) {
   const { t } = useTranslation('common')
   const id = useId()
@@ -123,6 +126,7 @@ export function CustomSelect<T extends string>({
     }
     if (key === 'Escape') {
       event.preventDefault()
+      if (open) event.stopPropagation()
       setOpen(false)
       return
     }
@@ -192,6 +196,7 @@ export function CustomSelect<T extends string>({
         onKeyDown={onKeyDown}
         onClick={() => (open ? setOpen(false) : show())}
       >
+        {triggerLeading}
         <span id={`${id}-value`}>
           {options.find((option) => option.value === value)?.label ??
             placeholder ??
@@ -213,7 +218,7 @@ export function CustomSelect<T extends string>({
           role="listbox"
           aria-labelledby={`${id}-label`}
           className={cn(
-            'custom-select-menu border-border-control bg-surface shadow-overlay absolute right-0 left-0 z-20 overflow-y-auto overscroll-contain rounded-lg border p-1',
+            'custom-select-menu hide-scrollbar border-border-control bg-surface shadow-overlay absolute right-0 left-0 z-20 overflow-y-auto overscroll-contain rounded-lg border p-1',
             menuClassName
           )}
           data-placement={placement.above ? 'above' : 'below'}

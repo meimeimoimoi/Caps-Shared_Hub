@@ -4,6 +4,9 @@
   --ui-desk: #e8e7e2;
   --ui-surface: #ffffff;
   --ui-surface-muted: #f7f7f5;
+  --ui-switch-off: #949a9f;
+  --ui-switch-on: var(--ui-accent);
+  --ui-switch-thumb: #ffffff;
   --ui-header: #f5f4f0;
   --ui-text: #3a3a38;
   --ui-text-strong: #000000;
@@ -77,6 +80,8 @@
   --ui-desk: #161618;
   --ui-surface: #1c1c1e;
   --ui-surface-muted: #252527;
+  --ui-switch-off: #626a70;
+  --ui-switch-on: var(--ui-accent);
   --ui-header: #141416;
   --ui-text: #e1e1dd;
   --ui-text-strong: #fafaf8;
@@ -108,6 +113,9 @@
 }
 
 @theme inline {
+  --color-switch-off: var(--ui-switch-off);
+  --color-switch-on: var(--ui-switch-on);
+  --color-switch-thumb: var(--ui-switch-thumb);
   --color-info: var(--ui-info);
   --color-info-soft: var(--ui-info-soft);
   --color-canvas: var(--ui-canvas);

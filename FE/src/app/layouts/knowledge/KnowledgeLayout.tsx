@@ -1,21 +1,15 @@
+import { useTranslation } from 'react-i18next'
 import { useRef, useState, type ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
-import {
-  BookOpen,
-  LayoutTemplate,
-  ListChecks,
-  Moon,
-  Rss,
-  Search,
-  Sun,
-} from 'lucide-react'
-import { useTheme } from '@/hooks/useTheme'
+import { BookOpen, LayoutTemplate, ListChecks, Rss } from 'lucide-react'
 import { useDialogMotion } from '@/components/ui/motion'
 import { useAuthStore } from '@/features/auth/store/authStore'
-import { AppAccountMenu } from '@/components/ui/layout/app-account-menu'
-import { AppHeader, HeaderActionButton } from '@/components/ui/layout/app-header'
-import { AppSidebar, type SidebarGroup } from '@/components/ui/layout/app-sidebar'
-import { NotificationBell, type ShellNotification } from '../NotificationBell'
+import { AppHeader } from '@/components/ui/layout/app-header'
+import {
+  AppSidebar,
+  type SidebarGroup,
+} from '@/components/ui/layout/app-sidebar'
+import { type ShellNotification } from '../NotificationBell'
 
 interface KnowledgeLayoutProps {
   /** Mục sidebar đang mở */
@@ -40,7 +34,7 @@ export function KnowledgeLayout({
   onSearchChange,
   children,
 }: KnowledgeLayoutProps) {
-  const { isDark, toggleTheme } = useTheme()
+  const { t } = useTranslation('common')
   const [expanded, setExpanded] = useState(true)
   const drawer = useRef<HTMLDialogElement>(null)
   useDialogMotion(drawer, 'drawer-left')
@@ -130,49 +124,35 @@ export function KnowledgeLayout({
           navigationButtonRef={drawerTrigger}
           onOpenNavigation={() => drawer.current?.showModal()}
           context={<nav aria-label="Breadcrumb">{breadcrumb}</nav>}
-          actions={
-            <>
-              {onSearchChange && (
-                <label className="bg-paper border-border-control rounded-control h-control hidden w-72 items-center gap-2 border px-3 focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-(--focus-ring) lg:flex">
-                  <Search size={16} aria-hidden="true" className="text-fg-muted" />
-                  <input
-                    type="search"
-                    value={search}
-                    onChange={(e) => onSearchChange(e.target.value)}
-                    placeholder="Tìm số hiệu hoặc tên văn bản"
-                    aria-label="Tìm số hiệu hoặc tên văn bản"
-                    className="placeholder:text-fg-muted w-full bg-transparent text-sm outline-none"
-                  />
-                </label>
-              )}
-              <NotificationBell
-                notifications={notifications}
-                className="text-text-muted hover:bg-surface-muted hover:text-text-strong size-11"
-              />
-              <HeaderActionButton
-                onClick={toggleTheme}
-                aria-label={isDark ? 'Chuyển sang giao diện sáng' : 'Chuyển sang giao diện tối'}
-              >
-                {isDark ? <Sun size={20} aria-hidden="true" /> : <Moon size={20} aria-hidden="true" />}
-              </HeaderActionButton>
-              <AppAccountMenu
-                // MOCK: TODO(auth) bỏ tên mặc định khi có đăng nhập Knowledge Admin
-                name={user?.name ?? 'Lê Thu Hà'}
-                email={user?.email}
-                note="Knowledge Admin"
-                onSignOut={
-                  user
-                    ? () => {
-                        clearSession()
-                        navigate('/login')
-                      }
-                    : undefined
+          search={
+            onSearchChange
+              ? {
+                  value: search ?? '',
+                  onChange: onSearchChange,
+                  label: t('search.knowledge'),
                 }
-              />
-            </>
+              : undefined
           }
+          searchLinks={groups.flatMap((group) =>
+            group.items.flatMap((item) =>
+              item.to ? [{ label: item.label, to: item.to }] : []
+            )
+          )}
+          account={{
+            name: user?.name ?? 'Lê Thu Hà',
+            onSignOut: user
+              ? () => {
+                  clearSession()
+                  navigate('/login')
+                }
+              : undefined,
+          }}
+          notifications={notifications}
         />
-        <main id="knowledge-main" className="desk-content px-4 py-12 md:px-6 lg:px-8">
+        <main
+          id="knowledge-main"
+          className="desk-content px-4 py-12 md:px-6 lg:px-8"
+        >
           {children}
         </main>
       </div>

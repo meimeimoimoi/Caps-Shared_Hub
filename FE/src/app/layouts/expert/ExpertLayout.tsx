@@ -29,7 +29,7 @@ export function ExpertLayout() {
   const trigger = useRef<HTMLElement | null>(null)
   const [params, setParams] = useSearchParams()
   const [isCollapsed, setIsCollapsed] = useState(false)
-  const { isDark, toggleTheme } = useTheme()
+  const { isDark } = useTheme()
 
   const close = () => drawer.current?.close()
   const open = () => {
@@ -71,11 +71,7 @@ export function ExpertLayout() {
         <ExpertSidebar close={close} />
       </dialog>
       <div className="ep-workspace">
-        <ExpertHeader
-          openNavigation={open}
-          isDark={isDark}
-          toggleTheme={toggleTheme}
-        />
+        <ExpertHeader openNavigation={open} />
         {isExpertDemo && (
           <DemoBanner
             controls={

@@ -59,5 +59,15 @@
   "workspaces": "Không gian làm việc",
   "templates": "Mẫu văn bản",
   "dashboard": "Bảng điều khiển",
-  "settings": "Cài đặt"
+  "settings": "Cài đặt",
+  "pages": {
+    "caseDetail": "Chi tiết hồ sơ",
+    "cases": "Hồ sơ thẩm định",
+    "profile": "Hồ sơ cá nhân",
+    "templateDetail": "Chi tiết mẫu",
+    "draftInput": "Dữ liệu bản nháp",
+    "draftGeneration": "Tạo bản nháp",
+    "draftVersion": "Phiên bản bản nháp",
+    "draftHistory": "Lịch sử phiên bản"
+  }
 }

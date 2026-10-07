@@ -1,19 +1,10 @@
 import { DemoBanner } from '@/components/ui/feedback/demo-banner'
 import { useDialogMotion } from '@/components/ui/motion'
-import { LanguageSwitcher } from '@/components/ui/layout/language-switcher'
 import { useTranslation } from 'react-i18next'
 import { CustomSelect } from '@/components/ui/forms/custom-select'
-import { useTheme } from '@/hooks/useTheme'
 import { useRef, useState } from 'react'
 import { Outlet, useLocation, useNavigate } from 'react-router-dom'
-import {
-  FileText,
-  Library,
-  LayoutDashboard,
-  LogIn,
-  Moon,
-  Sun,
-} from 'lucide-react'
+import { FileText, Library, LayoutDashboard, LogIn } from 'lucide-react'
 import { useAuthStore } from '@/features/auth/store/authStore'
 import { isDraftMock, isDraftPreview } from '@/features/drafting/api/dataSource'
 import { draftScenarios } from '@/features/drafting/constants'
@@ -24,11 +15,7 @@ import {
 } from '@/features/drafting/hooks/useDrafting'
 import { draftApi } from '@/features/drafting/api/draftApi'
 import { DraftButton } from '@/features/drafting/components/DraftUi'
-import { AppAccountMenu } from '@/components/ui/layout/app-account-menu'
-import {
-  AppHeader,
-  HeaderActionButton,
-} from '@/components/ui/layout/app-header'
+import { AppHeader } from '@/components/ui/layout/app-header'
 import {
   AppSidebar,
   type SidebarGroup,
@@ -36,7 +23,6 @@ import {
 
 export function DraftLayout() {
   const { t } = useTranslation(['common', 'navigation'])
-  const { isDark, toggleTheme } = useTheme()
   const [expanded, setExpanded] = useState(true)
   const drawer = useRef<HTMLDialogElement>(null)
   useDialogMotion(drawer, 'drawer-left')
@@ -79,6 +65,22 @@ export function DraftLayout() {
       ],
     },
   ]
+  const pageKey =
+    location.pathname === '/drafts'
+      ? 'workspaces'
+      : location.pathname === '/drafts/templates'
+        ? 'templates'
+        : location.pathname.startsWith('/drafts/templates/')
+          ? 'pages.templateDetail'
+          : location.pathname.endsWith('/input')
+            ? 'pages.draftInput'
+            : location.pathname.includes('/generations/')
+              ? 'pages.draftGeneration'
+              : location.pathname.includes('/versions/')
+                ? 'pages.draftVersion'
+                : location.pathname.endsWith('/history')
+                  ? 'pages.draftHistory'
+                  : 'draftWorkspace'
   const closeDrawer = () => drawer.current?.close()
   return (
     <div className="bg-desk-2 text-fg selection:bg-accent-soft selection:text-accent-text min-h-svh">
@@ -115,46 +117,37 @@ export function DraftLayout() {
         <AppHeader
           navigationButtonRef={drawerTrigger}
           onOpenNavigation={() => drawer.current?.showModal()}
-          context={t('navigation:draftWorkspace')}
-          actions={
-            <>
-              <LanguageSwitcher />
-              <HeaderActionButton
-                onClick={toggleTheme}
-                aria-label={t(isDark ? 'theme.light' : 'theme.dark')}
-              >
-                {isDark ? (
-                  <Sun size={20} aria-hidden="true" />
-                ) : (
-                  <Moon size={20} aria-hidden="true" />
-                )}
-              </HeaderActionButton>
-              <AppAccountMenu
-                name={user?.name ?? t('account.preview')}
-                email={user?.email}
-                note={isDraftMock ? t('account.demo') : undefined}
-                onSignOut={
-                  user
-                    ? () => {
-                        clearSession()
-                        navigate('/login')
-                      }
-                    : undefined
-                }
-                links={
-                  user
-                    ? []
-                    : [
-                        {
-                          label: t('actions.signIn'),
-                          to: '/login',
-                          icon: <LogIn size={17} />,
-                        },
-                      ]
-                }
-              />
-            </>
+          context={
+            <span
+              aria-current="page"
+              className="text-text-strong font-semibold"
+            >
+              {t(`navigation:${pageKey}`)}
+            </span>
           }
+          searchLinks={groups.flatMap((group) =>
+            group.items.flatMap((item) =>
+              item.to ? [{ label: item.label, to: item.to }] : []
+            )
+          )}
+          account={{
+            name: user?.name ?? t('account.preview'),
+            onSignOut: user
+              ? () => {
+                  clearSession()
+                  navigate('/login')
+                }
+              : undefined,
+            links: user
+              ? []
+              : [
+                  {
+                    label: t('actions.signIn'),
+                    to: '/login',
+                    icon: <LogIn size={17} />,
+                  },
+                ],
+          }}
         />
         {isDraftMock && (
           <DemoBanner
