@@ -12,7 +12,7 @@ import { type ShellNotification } from '../NotificationBell'
 
 interface KnowledgeLayoutProps {
   /** Mục sidebar đang mở */
-  section: 'overview' | 'queue' | 'sources' | 'documents' | 'account'
+  section: 'overview' | 'queue' | 'sources' | 'documents' | 'templates' | 'account'
   queueCount: number
   notifications?: ShellNotification[]
   breadcrumb: ReactNode
@@ -90,9 +90,11 @@ export function KnowledgeLayout({
       items: [
         {
           id: 'templates',
-          to: '/drafts/templates',
+          // Màn quản lý của Knowledge Admin; /drafts/templates là màn chọn mẫu của người soạn nháp
+          to: '/knowledge/templates',
           label: 'Template',
           icon: <LayoutTemplate size={18} />,
+          active: section === 'templates',
         },
       ],
     },

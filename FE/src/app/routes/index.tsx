@@ -105,6 +105,9 @@ const KnowledgeDocumentsPage = lazy(
 const KnowledgeUploadsPage = lazy(
   () => import('@/pages/knowledge-admin/KnowledgeUploadsPage')
 )
+const KnowledgeTemplatesPage = lazy(() => import('@/pages/knowledge-admin/KnowledgeTemplatesPage'))
+const KnowledgeTemplateNewPage = lazy(() => import('@/pages/knowledge-admin/KnowledgeTemplateNewPage'))
+const KnowledgeTemplatePage = lazy(() => import('@/pages/knowledge-admin/KnowledgeTemplatePage'))
 const KnowledgeDashboardPage = lazy(
   () => import('@/pages/knowledge-admin/KnowledgeDashboardPage')
 )
@@ -185,6 +188,9 @@ const router = createBrowserRouter(
       <Route path="/knowledge/sources" element={<KnowledgeSourcesPage />} />
       <Route path="/knowledge/uploads" element={<KnowledgeUploadsPage />} />
       <Route path="/knowledge/account" element={<KnowledgeAccountPage />} />
+      <Route path="/knowledge/templates" element={<KnowledgeTemplatesPage />} />
+      <Route path="/knowledge/templates/new" element={<KnowledgeTemplateNewPage />} />
+      <Route path="/knowledge/templates/:id" element={<KnowledgeTemplatePage />} />
       <Route path="/knowledge/documents" element={<KnowledgeDocumentsPage />} />
       <Route
         path="/knowledge/documents/:id"
