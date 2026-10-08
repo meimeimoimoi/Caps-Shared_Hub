@@ -1,5 +1,6 @@
 import { useState, type KeyboardEvent } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Info, Plus } from 'lucide-react'
 import { cn, formatDate, formatDateTime } from '@/lib/utils'
 import { useNavToast } from '@/hooks/useNavToast'
@@ -15,49 +16,49 @@ import type {
   PricingOverview,
 } from '../../features/service-pricing/types'
 
+// Nhãn/giới thiệu tab lấy từ i18n theo key: pricing.tabs.<key>.label / .intro
 const tabs = [
-  {
-    key: 'review-fee',
-    label: 'Phí rà soát chuyên gia',
-    intro: 'Expert đặt phí rà soát trong khung của từng nhóm mẫu biểu. Thay đổi chỉ áp dụng cho yêu cầu mới, từ ngày hiệu lực.',
-  },
-  {
-    key: 'credit',
-    label: 'Credit và gói nạp',
-    intro: 'Đơn giá credit cho trợ lý AI và soạn nháp, và các gói nạp hiện trên paywall.',
-  },
-  {
-    key: 'history',
-    label: 'Lịch sử thay đổi',
-    intro: 'Mọi thay đổi khung giá, đơn giá credit và gói nạp, mới nhất trước.',
-  },
+  { key: 'review-fee' },
+  { key: 'credit' },
+  { key: 'history' },
 ] as const
 type Tab = (typeof tabs)[number]['key']
 
 const vnd = (n: number) => n.toLocaleString('vi-VN')
 const range = (min: number, max: number) => `${vnd(min)} – ${vnd(max)} đ`
 const dayMonth = (iso: string) =>
-  new Date(iso).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' })
+  new Date(iso).toLocaleDateString('vi-VN', {
+    day: '2-digit',
+    month: '2-digit',
+  })
 
-const headCls = 'bg-sunken text-fg-muted [&>th]:px-4 [&>th]:py-3 [&>th]:font-semibold'
+const headCls =
+  'bg-sunken text-fg-muted [&>th]:px-4 [&>th]:py-3 [&>th]:font-semibold'
 const rowCls = 'border-border-subtle border-t [&>td]:px-4 [&>td]:py-3'
 
 export default function AdminPricingPage() {
   const nav = useAdminNav()
+  const { t } = useTranslation(['admin', 'common'])
   const pricing = usePricing()
   const { data, isLoading, error } = pricing
   // Tab nằm trên URL (?tab=) để breadcrumb và link dẫn đúng tab
   const [params, setParams] = useSearchParams()
-  const current = tabs.find((t) => t.key === params.get('tab')) ?? tabs[0]
+  const current = tabs.find((x) => x.key === params.get('tab')) ?? tabs[0]
   const tab = current.key
-  const setTab = (key: Tab) => setParams(key === 'review-fee' ? {} : { tab: key })
+  const setTab = (key: Tab) =>
+    setParams(key === 'review-fee' ? {} : { tab: key })
   // Màn sửa khung chuyển về đây sau khi lên lịch, kèm { toast }
   const { toast, setToast, clearToast } = useNavToast()
 
   // Tab ARIA: mũi tên trái/phải, Home/End chuyển tab và chuyển focus theo
   const onTabKey = (e: KeyboardEvent<HTMLDivElement>) => {
-    const i = tabs.findIndex((t) => t.key === tab)
-    const next = { ArrowRight: i + 1, ArrowLeft: i - 1, Home: 0, End: tabs.length - 1 }[e.key]
+    const i = tabs.findIndex((x) => x.key === tab)
+    const next = {
+      ArrowRight: i + 1,
+      ArrowLeft: i - 1,
+      Home: 0,
+      End: tabs.length - 1,
+    }[e.key]
     if (next === undefined) return
     e.preventDefault()
     const key = tabs[(next + tabs.length) % tabs.length].key
@@ -71,30 +72,33 @@ export default function AdminPricingPage() {
       section="pricing"
       breadcrumb={
         tab === 'review-fee' ? (
-          'Khung giá dịch vụ'
+          t('pricing.title')
         ) : (
           <>
-            <Link to="/admin/pricing" className="text-fg-muted hover:text-fg-strong">
-              Khung giá dịch vụ
+            <Link
+              to="/admin/pricing"
+              className="text-fg-muted hover:text-fg-strong"
+            >
+              {t('pricing.title')}
             </Link>{' '}
             <span aria-hidden="true">/</span>{' '}
             <span className="text-fg-strong" aria-current="page">
-              {current.label}
+              {t(`pricing.tabs.${tab}.label`)}
             </span>
           </>
         )
       }
     >
-      <h1 className="text-h1">Khung giá dịch vụ</h1>
-      <p className="text-fg-muted mt-3">{current.intro}</p>
+      <h1 className="text-h1">{t('pricing.title')}</h1>
+      <p className="text-fg-muted mt-3">{t(`pricing.tabs.${tab}.intro`)}</p>
 
       <div
         role="tablist"
-        aria-label="Cấu hình giá"
+        aria-label={t('pricing.tabsLabel')}
         onKeyDown={onTabKey}
         className="mt-8 flex gap-7 overflow-x-auto"
       >
-        {tabs.map(({ key, label }) => (
+        {tabs.map(({ key }) => (
           <button
             key={key}
             type="button"
@@ -111,16 +115,28 @@ export default function AdminPricingPage() {
                 : 'text-fg-muted border-transparent'
             )}
           >
-            {label}
+            {t(`pricing.tabs.${key}.label`)}
           </button>
         ))}
       </div>
 
-      <div role="tabpanel" id={`panel-${tab}`} aria-labelledby={`tab-${tab}`} className="mt-6">
+      <div
+        role="tabpanel"
+        id={`panel-${tab}`}
+        aria-labelledby={`tab-${tab}`}
+        className="mt-6"
+      >
         {!data ? (
-          <p className="paper text-fg-muted px-4 py-10 text-center text-sm">
-            {isLoading ? 'Đang tải…' : error?.message}
-          </p>
+          isLoading ? (
+            // Khung xương cỡ bảng khung giá để trang không giật khi dữ liệu về
+            <div role="status" className="paper h-72 motion-safe:animate-pulse">
+              <span className="sr-only">{t('common:loading')}</span>
+            </div>
+          ) : (
+            <p className="paper text-fg-muted px-4 py-10 text-center text-sm">
+              {error?.message}
+            </p>
+          )
         ) : tab === 'review-fee' ? (
           <ReviewFeeTab data={data} />
         ) : tab === 'credit' ? (
@@ -129,15 +145,20 @@ export default function AdminPricingPage() {
             onSave={(input) =>
               pricing
                 .savePackage(input)
-                .then(() => setToast(`Đã lưu ${input.name}`))
+                .then(() => setToast(t('pricing.saved', { name: input.name })))
             }
           />
         ) : (
           <section className="paper">
             <ol className="divide-border-subtle divide-y">
               {data.history.map((h) => (
-                <li key={h.at} className="grid gap-x-6 gap-y-1 px-4 py-3 text-sm sm:grid-cols-[150px_120px_1fr]">
-                  <span className="text-fg-muted num">{formatDateTime(h.at)}</span>
+                <li
+                  key={h.at}
+                  className="grid gap-x-6 gap-y-1 px-4 py-3 text-sm sm:grid-cols-[150px_120px_1fr]"
+                >
+                  <span className="text-fg-muted num">
+                    {formatDateTime(h.at)}
+                  </span>
                   <span className="text-fg-strong font-semibold">{h.by}</span>
                   <span>{h.text}</span>
                 </li>
@@ -152,77 +173,101 @@ export default function AdminPricingPage() {
 }
 
 function ReviewFeeTab({ data }: { data: PricingOverview }) {
-  const scheduled = data.tiers.filter((t) => t.scheduled)
+  const { t } = useTranslation('admin')
+  const scheduled = data.tiers.filter((x) => x.scheduled)
 
   return (
     <>
       <section className="bg-sunken rounded-surface flex flex-wrap items-center gap-x-10 gap-y-3 p-4">
         <dl className="flex gap-10">
           <div>
-            <dt className="text-fg-muted text-sm">Phí nền tảng</dt>
-            <dd className="text-fg-strong num text-2xl font-semibold">{data.platformShare}%</dd>
+            <dt className="text-fg-muted text-sm">
+              {t('pricing.share.platform')}
+            </dt>
+            <dd className="text-fg-strong num text-2xl font-semibold">
+              {data.platformShare}%
+            </dd>
           </div>
           <div>
-            <dt className="text-fg-muted text-sm">Chuyên gia nhận</dt>
-            <dd className="text-fg-strong num text-2xl font-semibold">{data.expertShare}%</dd>
+            <dt className="text-fg-muted text-sm">
+              {t('pricing.share.expert')}
+            </dt>
+            <dd className="text-fg-strong num text-2xl font-semibold">
+              {data.expertShare}%
+            </dd>
           </div>
         </dl>
         <p className="text-fg-muted max-w-[52ch] text-sm md:ml-auto">
-          Tỷ lệ theo chính sách nền tảng, không chỉnh ở màn này. Client không
-          thấy tỷ lệ chia; chỉ thấy phí rà soát chuyên gia đặt.
+          {t('pricing.share.note')}
         </p>
       </section>
 
       <div className="mt-8 flex items-center justify-between gap-4">
-        <h2 className="text-h2">Khung theo nhóm mẫu biểu</h2>
-        <Link to="/admin/pricing/new" className="btn btn-press btn-secondary no-underline">
+        <h2 className="text-h2">{t('pricing.tiers.title')}</h2>
+        <Link
+          to="/admin/pricing/new"
+          className="btn btn-press btn-secondary no-underline"
+        >
           <Plus size={16} aria-hidden="true" />
-          Thêm nhóm mẫu biểu
+          {t('pricing.tiers.add')}
         </Link>
       </div>
       <section className="paper mt-3 overflow-x-auto">
         <table className="w-full min-w-200 text-sm">
           <thead>
             <tr className={headCls}>
-              <th className="text-left">Nhóm mẫu biểu</th>
-              <th className="text-left">Khung hiện hành</th>
-              <th className="text-right">Bước giá</th>
-              <th className="text-right">Expert đang nhận</th>
-              <th className="text-right">Ngoài khung</th>
-              <th className="text-right">Hiệu lực từ</th>
+              <th className="text-left">{t('pricing.tiers.col.group')}</th>
+              <th className="text-left">{t('pricing.tiers.col.range')}</th>
+              <th className="text-right">{t('pricing.tiers.col.step')}</th>
+              <th className="text-right">{t('pricing.tiers.col.accepting')}</th>
+              <th className="text-right">{t('pricing.tiers.col.outside')}</th>
+              <th className="text-right">{t('pricing.tiers.col.from')}</th>
               <th>
-                <span className="sr-only">Thay đổi đã lên lịch</span>
+                <span className="sr-only">
+                  {t('pricing.tiers.col.scheduled')}
+                </span>
               </th>
             </tr>
           </thead>
           <tbody>
-            {data.tiers.map((t) => (
-              <tr key={t.id} className={rowCls}>
+            {data.tiers.map((tier) => (
+              <tr key={tier.id} className={rowCls}>
                 <td>
                   <Link
-                    to={`/admin/pricing/${t.id}`}
+                    to={`/admin/pricing/${tier.id}`}
                     className="text-fg-strong font-semibold underline underline-offset-4"
                   >
-                    {t.group}
+                    {tier.group}
                   </Link>
                   <div className="text-fg-muted">
-                    <span className="num">{t.templateCount}</span> mẫu
+                    {t('pricing.tiers.templates', {
+                      count: tier.templateCount,
+                    })}
                   </div>
                 </td>
                 <td className="text-fg-strong num font-semibold whitespace-nowrap">
-                  {range(t.min, t.max)}
+                  {range(tier.min, tier.max)}
                 </td>
-                <td className="num text-right">{vnd(t.step)}</td>
-                <td className="num text-right">{t.expertsAccepting}</td>
-                <td className={cn('num text-right', t.outsideRange > 0 && 'text-warning font-semibold')}>
-                  {t.outsideRange}
+                <td className="num text-right">{vnd(tier.step)}</td>
+                <td className="num text-right">{tier.expertsAccepting}</td>
+                <td
+                  className={cn(
+                    'num text-right',
+                    tier.outsideRange > 0 && 'text-warning font-semibold'
+                  )}
+                >
+                  {tier.outsideRange}
                 </td>
-                <td className="num text-right">{formatDate(t.effectiveFrom)}</td>
+                <td className="num text-right">
+                  {formatDate(tier.effectiveFrom)}
+                </td>
                 <td className="text-right">
-                  {t.scheduled && (
+                  {tier.scheduled && (
                     <StatusBadge
                       status={{
-                        label: `Có thay đổi từ ${dayMonth(t.scheduled.effectiveFrom)}`,
+                        label: t('pricing.tiers.changeFrom', {
+                          date: dayMonth(tier.scheduled.effectiveFrom),
+                        }),
                         tone: 'warning',
                       }}
                     />
@@ -239,14 +284,17 @@ function ReviewFeeTab({ data }: { data: PricingOverview }) {
           <Info size={16} aria-hidden="true" className="mt-0.5 shrink-0" />
           <div>
             <p className="text-fg-strong font-semibold">
-              <span className="num">{scheduled.length}</span> thay đổi đã lên lịch
+              {t('pricing.tiers.scheduledCount', { count: scheduled.length })}
             </p>
             {scheduled.map(({ id, group, scheduled: s }) => (
               <p key={id} className="text-fg-muted">
-                {group}: <span className="num">{range(s!.min, s!.max)}</span> từ{' '}
-                <span className="num">{formatDate(s!.effectiveFrom)}</span>, do {s!.by} tạo
-                ngày <span className="num">{formatDate(s!.createdAt)}</span>. Có thể hủy
-                trước ngày hiệu lực.
+                {t('pricing.tiers.scheduledLine', {
+                  group,
+                  range: range(s!.min, s!.max),
+                  from: formatDate(s!.effectiveFrom),
+                  by: s!.by,
+                  created: formatDate(s!.createdAt),
+                })}
               </p>
             ))}
           </div>
@@ -264,20 +312,21 @@ function CreditTab({
   data: PricingOverview
   onSave: (input: PackageInput) => Promise<unknown>
 }) {
+  const { t } = useTranslation('admin')
   // Giá chưa chốt hoặc kèm điều kiện tô cam để Admin thấy còn phải xử lý
   const pending = 'text-accent-text font-semibold'
   // undefined = dialog đóng, null = thêm gói, CreditPackage = sửa gói đó
   const [editing, setEditing] = useState<CreditPackage | null>()
   return (
     <>
-      <h2 className="text-h2">Đơn giá</h2>
+      <h2 className="text-h2">{t('pricing.credit.rates')}</h2>
       <section className="paper mt-3 overflow-x-auto">
         <table className="w-full min-w-150 text-sm">
           <thead>
             <tr className={headCls}>
-              <th className="text-left">Thao tác</th>
-              <th className="text-left">Khi nào tính</th>
-              <th className="text-right">Giá</th>
+              <th className="text-left">{t('pricing.credit.col.action')}</th>
+              <th className="text-left">{t('pricing.credit.col.when')}</th>
+              <th className="text-right">{t('pricing.credit.col.price')}</th>
             </tr>
           </thead>
           <tbody>
@@ -287,13 +336,17 @@ function CreditTab({
                 <td className="text-fg-muted">{r.when}</td>
                 <td className="num text-right whitespace-nowrap">
                   {r.credits === null ? (
-                    <span className={pending}>[chờ chốt]</span>
+                    <span className={pending}>
+                      {t('pricing.credit.pendingRate')}
+                    </span>
                   ) : r.note ? (
                     <span className={pending}>
                       {r.credits} · {r.note}
                     </span>
                   ) : (
-                    <span className="text-fg-strong font-semibold">{r.credits} credit</span>
+                    <span className="text-fg-strong font-semibold">
+                      {t('pricing.credit.credits', { count: r.credits })}
+                    </span>
                   )}
                 </td>
               </tr>
@@ -303,25 +356,25 @@ function CreditTab({
       </section>
 
       <div className="mt-10 flex items-center justify-between gap-4">
-        <h2 className="text-h2">Gói nạp qua PayOS</h2>
+        <h2 className="text-h2">{t('pricing.credit.packages')}</h2>
         <button
           type="button"
           onClick={() => setEditing(null)}
           className="btn btn-press btn-secondary"
         >
           <Plus size={16} aria-hidden="true" />
-          Thêm gói
+          {t('pricing.credit.addPackage')}
         </button>
       </div>
       <section className="paper mt-3 overflow-x-auto">
         <table className="w-full min-w-150 text-sm">
           <thead>
             <tr className={headCls}>
-              <th className="text-left">Gói</th>
-              <th className="text-right">Số credit</th>
-              <th className="text-right">Giá bán</th>
-              <th className="text-left">Trạng thái</th>
-              <th className="text-right">Thứ tự trên paywall</th>
+              <th className="text-left">{t('pricing.credit.pcol.name')}</th>
+              <th className="text-right">{t('pricing.credit.pcol.credits')}</th>
+              <th className="text-right">{t('pricing.credit.pcol.price')}</th>
+              <th className="text-left">{t('pricing.credit.pcol.status')}</th>
+              <th className="text-right">{t('pricing.credit.pcol.order')}</th>
             </tr>
           </thead>
           <tbody>
@@ -333,7 +386,9 @@ function CreditTab({
                     <button
                       type="button"
                       onClick={() => setEditing(p)}
-                      aria-label={`Sửa ${p.name}`}
+                      aria-label={t('pricing.credit.editLabel', {
+                        name: p.name,
+                      })}
                       className="text-fg-strong font-semibold underline underline-offset-4"
                     >
                       {p.name}
@@ -342,14 +397,18 @@ function CreditTab({
                   <td className="num text-right">{p.credits}</td>
                   <td className="num text-right">
                     {p.price === null ? (
-                      <span className={pending}>[giá gói]</span>
+                      <span className={pending}>
+                        {t('pricing.credit.pendingPrice')}
+                      </span>
                     ) : (
                       `${vnd(p.price)} đ`
                     )}
                   </td>
                   <td className="text-fg-muted">
-                    {p.onSale ? 'Đang bán' : 'Ngừng bán'}
-                    {p.recommended && ' · gợi ý'}
+                    {p.onSale
+                      ? t('pricing.credit.onSale')
+                      : t('pricing.credit.offSale')}
+                    {p.recommended && t('pricing.credit.recommended')}
                   </td>
                   <td className="num text-right">{p.order}</td>
                 </tr>
@@ -357,15 +416,15 @@ function CreditTab({
           </tbody>
         </table>
       </section>
-      <p className="text-fg-muted mt-3 text-sm">
-        Đổi giá gói chỉ áp dụng cho lần nạp mới; credit đã nạp giữ nguyên.
-      </p>
+      <p className="text-fg-muted mt-3 text-sm">{t('pricing.credit.note')}</p>
 
       {editing !== undefined && (
         <PackageDialog
           key={editing?.id ?? 'new'}
           pkg={editing ?? undefined}
-          nextOrder={Math.max(0, ...data.creditPackages.map((p) => p.order)) + 1}
+          nextOrder={
+            Math.max(0, ...data.creditPackages.map((p) => p.order)) + 1
+          }
           onClose={() => setEditing(undefined)}
           onSave={onSave}
         />

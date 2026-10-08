@@ -66,6 +66,8 @@ export const ESCROW_STATUS = {
   DISPUTE_LOCKED: { label: 'Khóa · tranh chấp', tone: 'warning' },
   PAID: { label: 'Đã chi trả 80/20', tone: 'plain' },
   REFUNDED: { label: 'Đã hoàn tiền', tone: 'plain' },
+  REFUND_PENDING: { label: 'Chờ hoàn tiền', tone: 'warning' },
+  REFUND_FAILED: { label: 'Hoàn tiền lỗi', tone: 'danger' },
   PAYOUT_FAILED: { label: 'Chi trả lỗi · thử lại', tone: 'danger' },
 } as const satisfies Record<string, StatusMeta>
 

@@ -3,6 +3,7 @@ import { TriangleAlert } from 'lucide-react'
 import { formatDate } from '@/lib/utils'
 import { DOCUMENT_STATUS } from '@/lib/constants'
 import { StatusBadge } from '@/components/ui/display/status-badge'
+import { SkeletonRows } from '@/components/ui/display/skeleton-rows'
 import { PIPELINE, SOURCE_LABEL } from '../constants'
 import type { KnowledgeDocument } from '../types'
 import { useMotion } from '@/components/ui/motion'
@@ -150,29 +151,8 @@ export function DocumentsTable({
               </td>
             </tr>
           ))}
-          {loading &&
-            rows.length === 0 &&
-            [0, 1, 2, 3].map((i) => (
-              <tr
-                key={i}
-                aria-hidden="true"
-                className="border-border-subtle border-t [&>td]:px-4 [&>td]:py-4"
-              >
-                {Array.from({ length: showStage ? 8 : 7 }, (_, c) => (
-                  <td key={c}>
-                    <span
-                      className="bg-sunken block h-3 rounded motion-safe:animate-pulse"
-                      // Ô "Văn bản" dài hơn các ô khác, giống dữ liệu thật
-                      style={{ width: c === 1 ? '80%' : '55%' }}
-                    />
-                  </td>
-                ))}
-              </tr>
-            ))}
           {loading && rows.length === 0 && (
-            <tr className="sr-only">
-              <td role="status">Đang tải văn bản…</td>
-            </tr>
+            <SkeletonRows cols={showStage ? 8 : 7} />
           )}
           {!loading && rows.length === 0 && (
             <tr className="border-border-subtle border-t">

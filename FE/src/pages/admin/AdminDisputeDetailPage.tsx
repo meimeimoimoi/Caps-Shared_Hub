@@ -1,5 +1,6 @@
 import { useCallback, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { CASE_STATUS } from '@/lib/constants'
 import { CaseHeader } from '@/components/ui/layout/case-header'
 import { StatusBadge } from '@/components/ui/display/status-badge'
@@ -16,13 +17,14 @@ export default function AdminDisputeDetailPage() {
   const id = useParams().id!
   const { dispute, isLoading, decide } = useDispute(id)
   const nav = useAdminNav()
+  const { t } = useTranslation(['admin', 'common'])
   const [now] = useState(() => Date.now())
   const [toast, setToast] = useState<string | null>(null)
   const clearToast = useCallback(() => setToast(null), [])
 
   const listLink = (
     <Link to="/admin/disputes" className="hover:text-fg-strong">
-      Khiếu nại
+      {t('disputes.title')}
     </Link>
   )
   const layout = { ...nav, section: 'disputes' as const }
@@ -31,13 +33,13 @@ export default function AdminDisputeDetailPage() {
     return (
       <AdminLayout {...layout} breadcrumb={listLink}>
         <h1 className="text-h1-tool">
-          {isLoading ? 'Đang tải…' : `Không tìm thấy khiếu nại ${id}`}
+          {isLoading ? t('common:loading') : t('disputes.notFound', { id })}
         </h1>
         <Link
           to="/admin/disputes"
           className="text-accent-text mt-3 inline-block underline"
         >
-          Quay lại
+          {t('disputes.back')}
         </Link>
       </AdminLayout>
     )
@@ -61,24 +63,26 @@ export default function AdminDisputeDetailPage() {
       <div className="flex items-start justify-between gap-4">
         <CaseHeader
           code={dispute.id}
-          title={`Tranh chấp · ${dispute.title}`}
+          title={t('disputes.caseTitle', { title: dispute.title })}
           meta={[
-            ['Client', dispute.client],
-            ['Chuyên gia', dispute.expert],
-            ['Căn cứ', dispute.ground],
+            [t('disputes.meta.client'), dispute.client],
+            [t('disputes.meta.expert'), dispute.expert],
+            [t('disputes.meta.ground'), dispute.ground],
           ]}
         />
         <StatusBadge
-          status={dispute.resolvedAt ? DISPUTE_RESOLVED : CASE_STATUS.DISPUTED}
+          status={
+            dispute.resolvedAt
+              ? { ...DISPUTE_RESOLVED, label: t(DISPUTE_RESOLVED.label) }
+              : CASE_STATUS.DISPUTED
+          }
         />
       </div>
 
       <div className="mt-6 grid items-start gap-4 md:gap-6 lg:grid-cols-[minmax(420px,1fr)_340px]">
         <div className="min-w-0 space-y-4 md:space-y-6">
           <section className="paper p-5 md:p-6">
-            <h2 className="text-h2">
-              Bằng chứng: bản nháp AI so với bản chuyên gia sửa
-            </h2>
+            <h2 className="text-h2">{t('disputes.evidence')}</h2>
             <div className="mt-3 grid gap-3 text-sm sm:grid-cols-2">
               <div className="bg-sunken rounded-surface p-3">
                 <p className="text-fg-muted text-caption">
@@ -103,13 +107,13 @@ export default function AdminDisputeDetailPage() {
           </section>
 
           <section className="paper p-5 md:p-6">
-            <h2 className="text-h2">Khiếu nại của Client</h2>
+            <h2 className="text-h2">{t('disputes.complaint.title')}</h2>
             <dl className="divide-border-subtle mt-3 divide-y text-sm">
               {[
-                ['Vấn đề', complaint.issue],
-                ['Mô tả', complaint.description],
+                [t('disputes.complaint.issue'), complaint.issue],
+                [t('disputes.complaint.description'), complaint.description],
                 [
-                  'Bằng chứng',
+                  t('disputes.complaint.attachment'),
                   // TODO(api): link tải file bằng chứng
                   <span key="file" className="underline underline-offset-4">
                     {complaint.attachment}
@@ -128,7 +132,7 @@ export default function AdminDisputeDetailPage() {
           </section>
 
           <HistoryTab
-            title="Nhật ký hồ sơ (audit log)"
+            title={t('disputes.auditLog')}
             history={dispute.history}
           />
         </div>
@@ -139,7 +143,7 @@ export default function AdminDisputeDetailPage() {
             decided={!!dispute.resolvedAt}
             onDecide={(outcome, reason) =>
               decide({ outcome, reason })
-                .then(() => setToast('Đã ra quyết định trọng tài'))
+                .then(() => setToast(t('disputes.decided')))
                 .catch((e: Error) => setToast(e.message))
             }
           />

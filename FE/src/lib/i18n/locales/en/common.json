@@ -92,7 +92,8 @@
     "resetDemo": "Reset demo",
     "signIn": "Sign in",
     "dashboard": "Go to dashboard",
-    "registerExpert": "Expert registration"
+    "registerExpert": "Expert registration",
+    "cancel": "Cancel"
   },
   "notFound": {
     "title": "This page is out of reach.",

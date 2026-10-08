@@ -1,13 +1,13 @@
-import { useRef, useState, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import {
   CreditCard,
   FileText,
   LayoutDashboard,
   Flag,
-  Settings,
   Tag,
   UserRound,
   Users,
+  UsersRound,
   type LucideIcon,
 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
@@ -36,8 +36,12 @@ export interface NavGroup {
 
 interface ShellPageProps {
   breadcrumb: ReactNode
+  /** Tiêu đề tab trình duyệt; bỏ trống thì lấy tên mục sidebar đang chọn */
+  title?: string
   /** Bỏ trống thì ẩn ô tìm kiếm */
   search?: string
+  /** Gợi ý trong ô tìm kiếm; mặc định "Tìm theo tên hoặc email" */
+  searchLabel?: string
   onSearchChange?: (value: string) => void
   /** Danh sách trong popover chuông; có mục thì hiện chấm đỏ */
   notifications?: ShellNotification[]
@@ -53,6 +57,7 @@ interface AdminLayoutProps extends ShellPageProps {
     | 'disputes'
     | 'escrow'
     | 'pricing'
+    | 'users'
     | 'account'
   pendingCount: number
   disputeCount?: number
@@ -124,12 +129,18 @@ export function AdminLayout({
       group: t('navigation.system'),
       items: [
         {
+          label: t('navigation.users'),
+          icon: UsersRound,
+          to: '/admin/users',
+          active: section === 'users',
+        },
+        {
           label: t('navigation.accounts'),
           icon: UserRound,
           to: '/admin/account',
           active: section === 'account',
         },
-        { label: t('navigation.settings'), icon: Settings },
+        // ponytail: bỏ mục Cài đặt (chưa có trang, hiện mờ dễ tưởng lỗi); thêm lại khi có màn cấu hình hệ thống
       ],
     },
   ]
@@ -145,7 +156,9 @@ interface RoleShellProps extends ShellPageProps {
 export function RoleShell({
   nav,
   breadcrumb,
+  title,
   search,
+  searchLabel,
   onSearchChange,
   notifications = [],
   children,
@@ -170,6 +183,12 @@ export function RoleShell({
       badge: badge != null && badge > 0 ? number(badge) : undefined,
     })),
   }))
+  // Đặt ở layout để mọi trang admin đều có tiêu đề tab (effect của layout chạy sau effect của trang)
+  const pageTitle =
+    title ?? nav.flatMap((g) => g.items).find((i) => i.active)?.label ?? 'Shared Hub'
+  useEffect(() => {
+    document.title = `${pageTitle} | Shared Hub`
+  }, [pageTitle])
   const closeDrawer = () => drawer.current?.close()
   return (
     <div
@@ -215,7 +234,7 @@ export function RoleShell({
               ? {
                   value: search ?? '',
                   onChange: onSearchChange,
-                  label: t('admin:search.placeholder'),
+                  label: searchLabel ?? t('admin:search.placeholder'),
                 }
               : undefined
           }

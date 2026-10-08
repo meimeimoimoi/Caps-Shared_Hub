@@ -30,8 +30,8 @@ export function DecisionDialog({
 
   return (
     <Modal
-      title={`${t(cfg.title as any)} ${applicantName}?`}
-      description={t(cfg.notice as any)}
+      title={`${t(cfg.title)} ${applicantName}?`}
+      description={t(cfg.notice)}
       onClose={onCancel}
       // `required` trên textarea đã chặn submit khi trống
       onSubmit={() => onConfirm(note)}
@@ -42,7 +42,7 @@ export function DecisionDialog({
             onClick={onCancel}
             className="btn btn-press btn-secondary"
           >
-            {t('common:actions.cancel' as any, 'Hủy') as string}
+            {t('common:actions.cancel')}
           </button>
           <button
             type="submit"
@@ -51,7 +51,7 @@ export function DecisionDialog({
               kind === 'reject' ? 'bg-danger text-paper' : 'btn-primary'
             )}
           >
-            {t(cfg.confirm as any) as string}
+            {t(cfg.confirm)}
           </button>
         </>
       }
@@ -62,17 +62,16 @@ export function DecisionDialog({
         </div>
       )}
       <label className="mt-5 flex flex-col gap-2 text-sm font-semibold">
-        {t(cfg.noteLabel as any)}
+        {t(cfg.noteLabel)}
         <textarea
           rows={3}
           required={cfg.required}
           value={note}
           onChange={(e) => setNote(e.target.value)}
-          placeholder={t(cfg.placeholder as any)}
+          placeholder={t(cfg.placeholder)}
           className="border-border-control rounded-control shadow-control bg-paper placeholder:text-fg-muted resize-y border px-3 py-2 text-base font-normal"
         />
       </label>
     </Modal>
   )
 }
-

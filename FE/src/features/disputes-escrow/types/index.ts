@@ -12,6 +12,19 @@ export interface Escrow {
   termination?: TerminationReason
   /** Hạn quyết định / tự xác nhận, hoặc ngày hoàn tất */
   nextAt: string
+  /** Lúc Client thanh toán vào Escrow */
+  paidAt: string
+  /** Mã giao dịch PayOS, dùng để đối soát */
+  payosRef: string
+  /** Tài khoản nhận chi trả của chuyên gia, đã che số */
+  payoutAccount: string
+  /** Tài khoản nhận hoàn của Client (đã che số); chỉ có với khoản phải hoàn */
+  refundAccount?: string
+  /** Mã giao dịch ngân hàng của lần hoàn, nhập khi đánh dấu đã hoàn */
+  refundRef?: string
+  /** Chỉ có khi PAYOUT_FAILED / REFUND_FAILED. retryable = false: thử lại vô ích tới khi sửa thông tin nhận tiền */
+  failure?: { reason: string; retryable: boolean }
+  history: HistoryEntry[]
 }
 
 export interface DisputeDecisionInput {

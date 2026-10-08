@@ -110,47 +110,70 @@ export const mockDisputes: Dispute[] = [
   },
 ]
 
+/* Khoản Escrow mẫu: đủ mọi trạng thái, 2 kiểu chi trả lỗi (thử lại được / phải sửa tài khoản) */
+const escrow = (
+  caseId: string,
+  client: string,
+  expert: string,
+  amount: number,
+  status: Escrow['status'],
+  paidDaysAgo: number,
+  nextAt: string,
+  extra: Partial<Escrow> = {}
+): Escrow => ({
+  caseId,
+  client,
+  expert,
+  amount,
+  status,
+  nextAt,
+  paidAt: daysAgo(paidDaysAgo),
+  payosRef: `PO${caseId.replace(/\D/g, '')}${String(amount).slice(0, 2)}`,
+  payoutAccount: `Vietcombank ···· ${caseId.slice(-4)}`,
+  history: [
+    { at: daysAgo(paidDaysAgo), actor: 'PayOS', text: `Thanh toán ${amount.toLocaleString('vi-VN')} đ vào Escrow` },
+  ],
+  ...extra,
+})
+
 export const mockEscrows: Escrow[] = [
-  {
-    caseId: 'HS-2026-0314',
-    client: 'Tân Tiến',
-    expert: 'Đặng Mỹ Linh',
-    amount: 2_000_000,
-    status: 'DISPUTE_LOCKED',
-    nextAt: hoursFromNow(31), // hạn 48 giờ kể từ khi mở khiếu nại
-  },
-  {
-    caseId: 'HS-2026-0311',
-    client: 'Sao Mai',
-    expert: 'Phan Quốc Bảo',
-    amount: 2_500_000,
-    status: 'HELD',
-    nextAt: hoursFromNow(48),
-  },
-  {
-    caseId: 'HS-2026-0305',
-    client: 'Hòa Bình',
-    expert: 'Lâm Chí Kiên',
-    amount: 2_200_000,
-    status: 'REFUNDED',
+  escrow('HS-2026-0314', 'Tân Tiến', 'Đặng Mỹ Linh', 2_000_000, 'DISPUTE_LOCKED', 3, hoursFromNow(31)), // hạn 48 giờ kể từ khi mở khiếu nại
+  escrow('HS-2026-0302', 'Nông sản Mekong', 'Võ Thanh Tùng', 3_200_000, 'DISPUTE_LOCKED', 4, hoursFromNow(9)),
+  escrow('HS-2026-0311', 'Sao Mai', 'Phan Quốc Bảo', 2_500_000, 'HELD', 2, hoursFromNow(48)),
+  escrow('HS-2026-0316', 'Hồng Nhung', 'Lý Gia Hân', 1_500_000, 'HELD', 1, hoursFromNow(70)),
+  escrow('HS-2026-0309', 'Thép Nam Á', 'Phan Quốc Bảo', 2_800_000, 'PAID', 9, daysAgo(2), {
+    history: [
+      { at: daysAgo(2), actor: 'Hệ thống', text: 'Chi trả 2.240.000 đ cho chuyên gia, giữ 560.000 đ phí nền tảng' },
+      { at: daysAgo(3), actor: 'Thép Nam Á', text: 'Nghiệm thu hồ sơ' },
+      { at: daysAgo(9), actor: 'PayOS', text: 'Thanh toán 2.800.000 đ vào Escrow' },
+    ],
+  }),
+  escrow('HS-2026-0301', 'Tân Tiến', 'Đặng Mỹ Linh', 1_900_000, 'PAID', 14, daysAgo(6)),
+  escrow('HS-2026-0287', 'Hồng Nhung', 'Phan Quốc Bảo', 1_600_000, 'PAID', 9, daysAgo(5)),
+  escrow('HS-2026-0305', 'Hòa Bình', 'Lâm Chí Kiên', 2_200_000, 'REFUNDED', 8, daysAgo(3), {
     termination: 'CLIENT_CANCEL_EARLY',
-    nextAt: daysAgo(3),
-  },
-  {
-    caseId: 'HS-2026-0298',
-    client: 'Nhựa Việt Tiến',
-    expert: 'Võ Thị Hạnh',
-    amount: 1_800_000,
-    status: 'REFUNDED',
+    refundAccount: 'BIDV ···· 5521',
+    refundRef: 'FT26278193052',
+  }),
+  escrow('HS-2026-0298', 'Nhựa Việt Tiến', 'Võ Thị Hạnh', 1_800_000, 'REFUNDED', 10, daysAgo(4), {
     termination: 'EXPERT_OVERDUE',
-    nextAt: daysAgo(4),
-  },
-  {
-    caseId: 'HS-2026-0290',
-    client: 'Thép Nam Á',
-    expert: 'Đặng Mỹ Linh',
-    amount: 2_000_000,
-    status: 'PAYOUT_FAILED',
-    nextAt: daysAgo(4),
-  },
+    refundAccount: 'ACB ···· 7740',
+    refundRef: 'FT26277048816',
+  }),
+  escrow('HS-2026-0293', 'Nông sản Mekong', 'Lý Gia Hân', 1_700_000, 'REFUND_PENDING', 5, daysAgo(1), {
+    termination: 'SYSTEM_ERROR',
+    refundAccount: 'Vietinbank ···· 3086',
+  }),
+  escrow('HS-2026-0279', 'Hồng Nhung', 'Võ Thanh Tùng', 1_400_000, 'REFUND_FAILED', 13, daysAgo(2), {
+    termination: 'EXPERT_NOT_STARTED',
+    refundAccount: 'Sacombank ···· 6612',
+    failure: { reason: 'Tài khoản nhận hoàn đã đóng', retryable: false },
+  }),
+  escrow('HS-2026-0290', 'Thép Nam Á', 'Đặng Mỹ Linh', 2_000_000, 'PAYOUT_FAILED', 12, daysAgo(4), {
+    failure: { reason: 'Ngân hàng nhận không phản hồi (hết thời gian chờ)', retryable: true },
+  }),
+  escrow('HS-2026-0284', 'Sao Mai', 'Võ Thanh Tùng', 2_400_000, 'PAYOUT_FAILED', 15, daysAgo(6), {
+    payoutAccount: 'Techcombank ···· 0193',
+    failure: { reason: 'Số tài khoản nhận không tồn tại', retryable: false },
+  }),
 ]
