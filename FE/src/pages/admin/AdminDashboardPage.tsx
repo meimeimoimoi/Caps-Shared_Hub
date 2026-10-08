@@ -6,15 +6,27 @@ import { ESCROW_STATUS } from '@/lib/constants'
 import { useFormatters } from '@/hooks/useFormatters'
 import { AdminLayout } from '@/app/layouts/admin/AdminLayout'
 import { useAdminNav } from '@/app/layouts/admin/useAdminNav'
-import { getApplications, getExperts } from '../../features/expert-vetting/api/adminApi'
+import {
+  getApplications,
+  getExperts,
+} from '../../features/expert-vetting/api/adminApi'
 import { adminKeys } from '../../features/expert-vetting/api/queryKeys'
 import { QUEUE_TABS } from '../../features/expert-vetting/constants'
-import { SLA_DAYS, waitedDays } from '../../features/expert-vetting/utils/applications'
-import { getDisputes, getEscrows } from '../../features/disputes-escrow/api/disputesApi'
+import {
+  SLA_DAYS,
+  waitedDays,
+} from '../../features/expert-vetting/utils/applications'
+import {
+  getDisputes,
+  getEscrows,
+} from '../../features/disputes-escrow/api/disputesApi'
 import { disputesKeys } from '../../features/disputes-escrow/api/queryKeys'
 import { disputeHoursLeft } from '../../features/disputes-escrow/utils/disputes'
 import { usePricing } from '../../features/service-pricing/hooks/usePricing'
-import { AttentionList, type AttentionItem } from '../../features/admin-analytics/components/AttentionList'
+import {
+  AttentionList,
+  type AttentionItem,
+} from '../../features/admin-analytics/components/AttentionList'
 import { BarList } from '../../features/admin-analytics/components/BarList'
 import { GrowthSection } from '../../features/admin-analytics/components/GrowthSection'
 import { KpiCard } from '../../features/admin-analytics/components/KpiCard'
@@ -29,29 +41,53 @@ export default function AdminDashboardPage() {
     document.title = `${t('dashboard.title')} | Shared Hub`
   }, [t])
 
-  const applications = useQuery({ queryKey: adminKeys.applications(), queryFn: ({ signal }) => getApplications(signal) })
-  const experts = useQuery({ queryKey: adminKeys.experts(), queryFn: ({ signal }) => getExperts(signal) })
-  const disputes = useQuery({ queryKey: disputesKeys.disputes(), queryFn: ({ signal }) => getDisputes(signal) })
-  const escrows = useQuery({ queryKey: disputesKeys.escrows(), queryFn: ({ signal }) => getEscrows(signal) })
+  const applications = useQuery({
+    queryKey: adminKeys.applications(),
+    queryFn: ({ signal }) => getApplications(signal),
+  })
+  const experts = useQuery({
+    queryKey: adminKeys.experts(),
+    queryFn: ({ signal }) => getExperts(signal),
+  })
+  const disputes = useQuery({
+    queryKey: disputesKeys.disputes(),
+    queryFn: ({ signal }) => getDisputes(signal),
+  })
+  const escrows = useQuery({
+    queryKey: disputesKeys.escrows(),
+    queryFn: ({ signal }) => getEscrows(signal),
+  })
   const pricing = usePricing()
-  const loading = [applications, experts, disputes, escrows, pricing].some((q) => q.isLoading)
+  const loading = [applications, experts, disputes, escrows, pricing].some(
+    (q) => q.isLoading
+  )
 
   const apps = applications.data ?? []
   const pending = apps.filter((a) => a.status === 'CAPABILITY_REVIEW')
-  const overdue = pending.filter((a) => waitedDays(a.submittedAt, now) > SLA_DAYS)
+  const overdue = pending.filter(
+    (a) => waitedDays(a.submittedAt, now) > SLA_DAYS
+  )
 
   const expertList = experts.data ?? []
   const active = expertList.filter((e) => e.serviceStatus === 'ACTIVE').length
-  const suspended = expertList.filter((e) => e.serviceStatus === 'SUSPENDED').length
+  const suspended = expertList.filter(
+    (e) => e.serviceStatus === 'SUSPENDED'
+  ).length
 
   const open = (disputes.data ?? []).filter((d) => !d.resolvedAt)
-  const nearestHours = open.length ? Math.min(...open.map((d) => disputeHoursLeft(d.openedAt, now))) : null
+  const nearestHours = open.length
+    ? Math.min(...open.map((d) => disputeHoursLeft(d.openedAt, now)))
+    : null
 
   const escrowList = escrows.data ?? []
   const sumBy = (status: keyof typeof ESCROW_STATUS) =>
-    escrowList.filter((e) => e.status === status).reduce((s, e) => s + e.amount, 0)
+    escrowList
+      .filter((e) => e.status === status)
+      .reduce((s, e) => s + e.amount, 0)
   const locked = sumBy('DISPUTE_LOCKED')
-  const payoutFailed = escrowList.filter((e) => e.status === 'PAYOUT_FAILED').length
+  const payoutFailed = escrowList.filter(
+    (e) => e.status === 'PAYOUT_FAILED'
+  ).length
 
   const tiers = pricing.data?.tiers ?? []
   const outsideRange = tiers.reduce((s, tier) => s + tier.outsideRange, 0)
@@ -60,7 +96,10 @@ export default function AdminDashboardPage() {
   // Việc gấp, sắp theo mức độ: tiền và hạn trọng tài trước, cảnh báo nhẹ sau
   const attention = [
     nearestHours !== null && {
-      text: t('dashboard.attention.dispute', { count: open.length, hours: nearestHours }),
+      text: t('dashboard.attention.dispute', {
+        count: open.length,
+        hours: nearestHours,
+      }),
       to: '/admin/disputes',
       tone: 'warning',
     },
@@ -70,7 +109,10 @@ export default function AdminDashboardPage() {
       tone: 'danger',
     },
     overdue.length > 0 && {
-      text: t('dashboard.attention.slaOverdue', { count: overdue.length, days: SLA_DAYS }),
+      text: t('dashboard.attention.slaOverdue', {
+        count: overdue.length,
+        days: SLA_DAYS,
+      }),
       to: '/admin/experts/pending',
       tone: 'warning',
     },
@@ -81,7 +123,11 @@ export default function AdminDashboardPage() {
   ].filter((a): a is AttentionItem => !!a)
 
   return (
-    <AdminLayout {...nav} section="overview" breadcrumb={t('navigation.overview')}>
+    <AdminLayout
+      {...nav}
+      section="overview"
+      breadcrumb={t('navigation.overview')}
+    >
       <h1 className="text-h1">{t('dashboard.title')}</h1>
       <p className="text-fg-muted mt-3">{t('dashboard.description')}</p>
 
@@ -90,7 +136,7 @@ export default function AdminDashboardPage() {
       <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <KpiCard
           label={t('dashboard.kpi.pending')}
-          value={f.number(pending.length)}
+          value={applications.data && pending.length}
           note={
             overdue.length
               ? t('dashboard.kpi.pendingOverdue', { count: overdue.length })
@@ -101,20 +147,24 @@ export default function AdminDashboardPage() {
         />
         <KpiCard
           label={t('dashboard.kpi.experts')}
-          value={f.number(active)}
-          note={t('dashboard.kpi.expertsNote', { suspended, total: expertList.length })}
+          value={experts.data && active}
+          note={t('dashboard.kpi.expertsNote', {
+            suspended,
+            total: expertList.length,
+          })}
           to="/admin/experts"
         />
         <KpiCard
           label={t('dashboard.kpi.held')}
-          value={f.money(sumBy('HELD') + locked)}
+          value={escrows.data && sumBy('HELD') + locked}
+          format={(n) => f.money(n)}
           note={t('dashboard.kpi.heldNote', { amount: f.money(locked) })}
           warn={locked > 0}
           to="/admin/escrow"
         />
         <KpiCard
           label={t('dashboard.kpi.disputes')}
-          value={f.number(open.length)}
+          value={disputes.data && open.length}
           note={
             nearestHours !== null
               ? t('dashboard.kpi.disputesNote', { hours: nearestHours })
@@ -134,8 +184,15 @@ export default function AdminDashboardPage() {
           title={t('dashboard.vetting')}
           empty={loading ? t('dashboard.loading') : t('dashboard.noData')}
           rows={QUEUE_TABS.map((tab) => {
-            const count = apps.filter((a) => (tab.statuses as readonly string[]).includes(a.status)).length
-            return { key: tab.label, label: t(tab.label), value: count, display: f.number(count) }
+            const count = apps.filter((a) =>
+              (tab.statuses as readonly string[]).includes(a.status)
+            ).length
+            return {
+              key: tab.label,
+              label: t(tab.label),
+              value: count,
+              display: f.number(count),
+            }
           })}
         />
         <BarList
@@ -169,15 +226,22 @@ export default function AdminDashboardPage() {
                   className="hover:bg-desk-2 -mx-2 flex gap-4 rounded px-2 py-2.5 no-underline"
                 >
                   <span className="text-fg-muted num w-14 shrink-0">
-                    {f.dateOnly(tier.scheduled!.effectiveFrom.slice(0, 10), { day: '2-digit', month: '2-digit' })}
+                    {f.dateOnly(tier.scheduled!.effectiveFrom.slice(0, 10), {
+                      day: '2-digit',
+                      month: '2-digit',
+                    })}
                   </span>
-                  <span className="text-fg-strong">{t('dashboard.upcoming.priceChange', { group: tier.group })}</span>
+                  <span className="text-fg-strong">
+                    {t('dashboard.upcoming.priceChange', { group: tier.group })}
+                  </span>
                 </Link>
               </li>
             ))}
           </ul>
         ) : (
-          <p className="text-fg-muted mt-3 text-sm">{t('dashboard.upcoming.empty')}</p>
+          <p className="text-fg-muted mt-3 text-sm">
+            {t('dashboard.upcoming.empty')}
+          </p>
         )}
       </section>
     </AdminLayout>
