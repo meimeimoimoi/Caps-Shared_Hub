@@ -153,7 +153,7 @@ export default function ExpertRegistrationPage() {
           <Link
             to="/"
             aria-label={t('page.home')}
-            className="relative block h-[44px] w-[200px] shrink-0 overflow-hidden no-underline max-md:h-[34px] max-md:w-[150px]"
+            className="expert-registration-logo relative block h-[44px] w-[200px] shrink-0 overflow-hidden no-underline max-md:h-[34px] max-md:w-[150px]"
           >
             <img
               src={sharedHubLogo}

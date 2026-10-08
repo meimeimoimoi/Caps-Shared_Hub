@@ -213,7 +213,7 @@ export function EmailLoginForm({
               <input
                 type="checkbox"
                 defaultChecked
-                className="h-[15px] w-[15px] cursor-pointer accent-[var(--accent)]"
+                className="app-custom-checkbox"
               />
               <span>{t('email.remember')}</span>
             </label>

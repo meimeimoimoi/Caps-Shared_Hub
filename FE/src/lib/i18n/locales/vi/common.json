@@ -1,4 +1,15 @@
 {
+  "routeError": {
+    "title": "Chưa thể tải trang này.",
+    "description": "Một phần của Shared Hub chưa tải được. Hãy tải lại trang để thử lại.",
+    "reload": "Tải lại trang",
+    "reloading": "Đang tải lại…",
+    "help": "Nếu lỗi vẫn tiếp diễn, hãy kiểm tra kết nối hoặc thử lại sau ít phút.",
+    "offlineTitle": "Bạn đang ngoại tuyến.",
+    "offlineDescription": "Shared Hub hiện không thể kết nối. Hãy kết nối lại internet rồi tải lại trang.",
+    "offlineHelp": "Kiểm tra kết nối Wi-Fi hoặc dữ liệu di động trước khi thử lại.",
+    "footer": "Quay lại không gian làm việc của bạn."
+  },
   "loading": "Đang tải…",
   "account": {
     "menu": "Menu tài khoản của {{name}}",
@@ -67,7 +78,8 @@
       "error": "Lỗi bảng tổng quan",
       "denied": "Không có quyền truy cập",
       "contextError": "Lỗi kiểm tra quyền truy cập"
-    }
+    },
+    "interactive": "Demo tương tác · lưu trong bộ nhớ · không thay đổi trên máy chủ"
   },
   "language": {
     "label": "Ngôn ngữ"

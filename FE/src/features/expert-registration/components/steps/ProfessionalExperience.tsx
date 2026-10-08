@@ -106,10 +106,13 @@ export function ProfessionalExperience({
         <div className="expert-pro-experience-grid">
           <FormField
             label={t('experience.taxYears')}
+            htmlFor="experience-years"
+            className="expert-years-field"
             error={formErrors.years}
             errorId="error-years"
           >
             <input
+              id="experience-years"
               name="years"
               required
               type="number"
@@ -183,22 +186,11 @@ export function ProfessionalExperience({
                 key={f}
                 className={`expert-pro-chip ${fields.includes(f) ? 'expert-pro-chip--selected' : ''}`}
               >
-                <span className="expert-pro-chip-check" aria-hidden="true">
-                  <svg viewBox="0 0 12 10" fill="none">
-                    <path
-                      d="M1 5.5L4 8.5L11 1.5"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </span>
                 <input
                   type="checkbox"
                   checked={fields.includes(f)}
                   onChange={() => onToggleField(f)}
-                  className="sr-only"
+                  className="expert-custom-checkbox"
                 />
                 <span className="expert-pro-chip-text">{t(expertiseKey(f)!)}</span>
               </label>
