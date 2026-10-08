@@ -6,6 +6,8 @@ import { Toast } from '@/components/ui/feedback/toast'
 import { KnowledgeLayout } from '@/app/layouts/knowledge/KnowledgeLayout'
 import { useKnowledgeNav } from '@/app/layouts/knowledge/useKnowledgeNav'
 import { ScheduleCard } from '../../features/knowledgeAdmin-sources/components/ScheduleCard'
+import { SourceDialog } from '../../features/knowledgeAdmin-sources/components/SourceDialog'
+import type { CollectionSource } from '../../features/knowledgeAdmin-sources/types'
 import {
   RUN_TRIGGER,
   SOURCE_STATUS,
@@ -21,6 +23,8 @@ export default function KnowledgeSourcesPage() {
   const collection = useCollection()
   const { data } = collection
   const [running, setRunning] = useState(false)
+  /** 'new' = thêm nguồn; một nguồn = đang sửa nguồn đó */
+  const [editing, setEditing] = useState<CollectionSource | 'new' | null>(null)
   const [toast, setToast] = useState<string | null>(null)
   const clearToast = useCallback(() => setToast(null), [])
 
@@ -73,10 +77,9 @@ export default function KnowledgeSourcesPage() {
           <section className="paper overflow-x-auto">
             <div className="flex items-center justify-between px-4 py-3">
               <h2 className="text-h2">Nguồn</h2>
-              {/* TODO: dialog thêm/sửa nguồn khi có thiết kế */}
               <button
                 type="button"
-                disabled
+                onClick={() => setEditing('new')}
                 className="btn btn-press btn-secondary"
               >
                 <Plus size={16} aria-hidden="true" />
@@ -97,7 +100,14 @@ export default function KnowledgeSourcesPage() {
               <tbody>
                 {data.sources.map((s) => (
                   <tr key={s.id} className={rowCls}>
-                    <td className="text-fg-strong">{s.name}</td>
+                    <td>
+                      <p className="text-fg-strong">{s.name}</p>
+                      {s.url && (
+                        <p className="text-fg-muted text-caption break-all">
+                          {s.url}
+                        </p>
+                      )}
+                    </td>
                     <td className="text-fg-muted">{s.scope ?? '—'}</td>
                     <td>
                       <StatusBadge status={SOURCE_STATUS[s.status]} />
@@ -105,9 +115,9 @@ export default function KnowledgeSourcesPage() {
                     <td className="text-right">
                       <button
                         type="button"
-                        disabled
+                        onClick={() => setEditing(s)}
                         aria-label={`Sửa nguồn ${s.name}`}
-                        className="text-fg-muted underline underline-offset-4"
+                        className="text-fg-strong underline underline-offset-4"
                       >
                         Sửa
                       </button>
@@ -159,6 +169,19 @@ export default function KnowledgeSourcesPage() {
         </div>
       )}
 
+      {editing && (
+        <SourceDialog
+          source={editing === 'new' ? undefined : editing}
+          onClose={() => setEditing(null)}
+          onSave={(input) =>
+            collection
+              .saveSource(input, editing === 'new' ? undefined : editing.id)
+              .then(() =>
+                setToast(editing === 'new' ? 'Đã thêm nguồn' : 'Đã lưu nguồn')
+              )
+          }
+        />
+      )}
       {toast && <Toast message={toast} onDone={clearToast} />}
     </KnowledgeLayout>
   )

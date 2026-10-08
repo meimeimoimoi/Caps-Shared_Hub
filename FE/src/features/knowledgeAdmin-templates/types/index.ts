@@ -9,6 +9,8 @@ export interface ManagedTemplateVersion {
   publishedAt: string
   publishedBy: string
   changelog: string
+  /** File mẫu văn bản (.docx) đã tải lên cho phiên bản này */
+  fileName: string
   fields: SchemaField[]
   /** Số bản nháp đang ghim phiên bản này */
   workspaces: number
@@ -27,8 +29,10 @@ export interface ManagedTemplate {
   history: { at: string; actor: string; text: string }[]
 }
 
-/** Dữ liệu form tạo template; phát hành thành v1 */
+/** Dữ liệu form tải lên template; phát hành thành v1 */
 export interface NewTemplateInput {
+  /** Tên file mẫu; file gửi riêng qua multipart */
+  fileName: string
   title: string
   description: string
   category: string

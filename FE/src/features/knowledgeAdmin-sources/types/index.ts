@@ -10,6 +10,8 @@ export interface CollectionSchedule {
 export interface CollectionSource {
   id: string
   name: string
+  /** Địa chỉ trang để thu thập; null = chưa cấu hình */
+  url: string | null
   /** Phạm vi thu thập; null = chưa cấu hình */
   scope: string | null
   status: keyof typeof SOURCE_STATUS
@@ -26,6 +28,9 @@ export interface CollectionRun {
   /** Số văn bản trích xuất lỗi */
   errors: number
 }
+
+/** Dữ liệu form thêm/sửa nguồn */
+export type SourceInput = Omit<CollectionSource, 'id'>
 
 /** Toàn bộ dữ liệu màn Nguồn thu thập, lấy trong 1 lần gọi */
 export interface CollectionOverview {

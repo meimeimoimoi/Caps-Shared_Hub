@@ -1,7 +1,7 @@
 import { useId, useState } from 'react'
 import { useMotion } from '@/components/ui/motion'
 import { Link } from 'react-router-dom'
-import { Bell } from 'lucide-react'
+import { Bell, Check } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 export interface ShellNotification {
@@ -101,7 +101,7 @@ export function NotificationBell({
             {notifications.map((n) => {
               const isRead = read.includes(keyOf(n))
               return (
-                <li key={n.id}>
+                <li key={n.id} className="flex items-stretch">
                   <Link
                     to={n.to}
                     onClick={() => {
@@ -109,7 +109,7 @@ export function NotificationBell({
                       document.getElementById(id)?.hidePopover()
                     }}
                     className={cn(
-                      'hover:bg-desk-2 flex gap-2 px-4 py-3 text-sm no-underline',
+                      'hover:bg-desk-2 flex min-w-0 flex-1 gap-2 px-4 py-3 text-sm no-underline',
                       isRead ? 'text-fg-muted' : 'text-fg-strong'
                     )}
                   >
@@ -127,6 +127,18 @@ export function NotificationBell({
                     {n.text}
                     {!isRead && <span className="sr-only">, chưa đọc</span>}
                   </Link>
+                  {/* Đánh dấu riêng một thông báo mà không phải mở trang của nó */}
+                  {!isRead && (
+                    <button
+                      type="button"
+                      onClick={() => markRead([n])}
+                      aria-label={`Đánh dấu đã đọc: ${n.text}`}
+                      title="Đánh dấu đã đọc"
+                      className="text-fg-muted hover:bg-desk-2 hover:text-fg-strong grid w-11 shrink-0 place-items-center"
+                    >
+                      <Check size={16} aria-hidden="true" />
+                    </button>
+                  )}
                 </li>
               )
             })}

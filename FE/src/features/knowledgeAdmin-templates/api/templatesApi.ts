@@ -12,7 +12,10 @@ export async function getTemplates(signal?: AbortSignal) {
   return api.get<ManagedTemplate[]>(BASE, { signal })
 }
 
-export async function getTemplate(id: string, signal?: AbortSignal): Promise<ManagedTemplate | null> {
+export async function getTemplate(
+  id: string,
+  signal?: AbortSignal
+): Promise<ManagedTemplate | null> {
   if (isExpertDemo) {
     const tpl = (await fixtures()).mockTemplates.find((x) => x.id === id)
     return tpl ? structuredClone(tpl) : null
@@ -21,7 +24,11 @@ export async function getTemplate(id: string, signal?: AbortSignal): Promise<Man
 }
 
 /** Tạm ngưng / kích hoạt lại; bản nháp đang ghim phiên bản cũ không bị ảnh hưởng */
-export async function setTemplateStatus(id: string, status: ManagedTemplate['status'], actor: string) {
+export async function setTemplateStatus(
+  id: string,
+  status: ManagedTemplate['status'],
+  actor: string
+) {
   if (isExpertDemo) {
     const tpl = (await fixtures()).mockTemplates.find((x) => x.id === id)
     if (!tpl) return
@@ -29,15 +36,20 @@ export async function setTemplateStatus(id: string, status: ManagedTemplate['sta
     tpl.history.unshift({
       at: new Date().toISOString(),
       actor,
-      text: status === 'ACTIVE' ? 'Kích hoạt lại template' : 'Tạm ngưng template',
+      text:
+        status === 'ACTIVE' ? 'Kích hoạt lại template' : 'Tạm ngưng template',
     })
     return
   }
   await api.put(`${BASE}/${id}/status`, { status })
 }
 
-/** Tạo template mới: phát hành v1 ở trạng thái Tạm ngưng để admin kiểm tra trước khi người dùng thấy */
-export async function createTemplate(input: NewTemplateInput, actor: string): Promise<string> {
+/** Tải lên template mới (file mẫu + khai báo trường): phát hành v1 ở trạng thái Tạm ngưng để admin kiểm tra trước khi người dùng thấy */
+export async function createTemplate(
+  file: File,
+  input: NewTemplateInput,
+  actor: string
+): Promise<string> {
   if (isExpertDemo) {
     const list = (await fixtures()).mockTemplates
     const at = new Date().toISOString()
@@ -49,12 +61,33 @@ export async function createTemplate(input: NewTemplateInput, actor: string): Pr
       category: input.category,
       status: 'INACTIVE',
       versions: [
-        { id: `${id}-v1`, version: 1, publishedAt: at, publishedBy: actor, changelog: input.changelog, fields: input.fields, workspaces: 0 },
+        {
+          id: `${id}-v1`,
+          version: 1,
+          publishedAt: at,
+          publishedBy: actor,
+          changelog: input.changelog,
+          fileName: input.fileName,
+          fields: input.fields,
+          workspaces: 0,
+        },
       ],
-      history: [{ at, actor, text: 'Tạo template, phát hành v1 (đang tạm ngưng)' }],
+      history: [
+        {
+          at,
+          actor,
+          text: `Tải lên ${input.fileName}, phát hành v1 (đang tạm ngưng)`,
+        },
+      ],
     })
     return id
   }
-  const { id } = await api.post<{ id: string }>(BASE, input)
+  const body = new FormData()
+  body.append('file', file)
+  body.append('data', JSON.stringify(input))
+  // apiClient mặc định gửi JSON; FormData cần header multipart
+  const { id } = await api.post<{ id: string }>(BASE, body, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  })
   return id
 }

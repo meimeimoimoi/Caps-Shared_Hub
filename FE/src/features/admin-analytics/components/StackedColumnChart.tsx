@@ -1,5 +1,6 @@
 import { useId, useState } from 'react'
 import { cn } from '@/lib/utils'
+import { staggerDelay } from '@/components/ui/motion/tokens'
 
 export interface ChartSeries {
   name: string
@@ -51,15 +52,25 @@ export function StackedColumnChart({
   const top = ticks[ticks.length - 1] || 1
 
   return (
-    <figure className={cn('transition-opacity', stale && 'opacity-60')} aria-labelledby={`${id}-title`}>
-      <figcaption id={`${id}-title`} className="text-fg-strong text-sm font-semibold">
+    <figure
+      className={cn('transition-opacity', stale && 'opacity-60')}
+      aria-labelledby={`${id}-title`}
+    >
+      <figcaption
+        id={`${id}-title`}
+        className="text-fg-strong text-sm font-semibold"
+      >
         {title}
       </figcaption>
       {/* Legend luôn có khi >= 2 series: nhận diện không chỉ dựa vào màu */}
-      <ul className="text-fg-muted mt-2 flex flex-wrap gap-x-4 gap-y-1 text-caption">
+      <ul className="text-fg-muted text-caption mt-2 flex flex-wrap gap-x-4 gap-y-1">
         {series.map((s) => (
           <li key={s.name} className="flex items-center gap-1.5">
-            <span aria-hidden="true" className="size-2.5 rounded-sm" style={{ background: s.color }} />
+            <span
+              aria-hidden="true"
+              className="size-2.5 rounded-sm"
+              style={{ background: s.color }}
+            />
             {s.name}
           </li>
         ))}
@@ -67,13 +78,20 @@ export function StackedColumnChart({
 
       <div className="mt-4 flex gap-2">
         {/* Trục Y: số tròn, căn phải, tabular để thẳng hàng */}
-        <div className="relative w-16 shrink-0" style={{ height: PLOT_H }} aria-hidden="true">
+        <div
+          className="relative w-16 shrink-0"
+          style={{ height: PLOT_H }}
+          aria-hidden="true"
+        >
           {ticks.map((tick) => (
             <span
               key={tick}
               className="text-fg-muted num text-caption absolute right-0 tabular-nums"
               // Căn giữa nhãn theo đường lưới cùng giá trị
-              style={{ bottom: `${(tick / top) * 100}%`, transform: 'translateY(50%)' }}
+              style={{
+                bottom: `${(tick / top) * 100}%`,
+                transform: 'translateY(50%)',
+              }}
             >
               {format(tick)}
             </span>
@@ -106,17 +124,25 @@ export function StackedColumnChart({
                   {/* Cột: series đầu ở đáy; khe 2px giữa các phần; bo 4px ở đầu cột, đáy vuông */}
                   <span
                     className={cn(
-                      'flex w-full max-w-6 flex-col-reverse gap-0.5 overflow-hidden rounded-t transition-opacity',
+                      'motion-bar flex w-full max-w-6 flex-col-reverse gap-0.5 overflow-hidden rounded-t transition-opacity',
                       active !== null && active !== i && 'opacity-50'
                     )}
-                    style={{ height: `${(totals[i] / top) * 100}%` }}
+                    // Lệch nhịp từ trái sang, tối đa theo token stagger để 12 cột không chờ quá lâu
+                    style={{
+                      height: `${(totals[i] / top) * 100}%`,
+                      animationDelay: `${staggerDelay(i, 30)}ms`,
+                    }}
                   >
                     {col.values.map((v, k) =>
                       v > 0 ? (
                         <span
                           key={series[k].name}
                           className="block w-full shrink-0"
-                          style={{ flexGrow: v, flexBasis: 0, background: series[k].color }}
+                          style={{
+                            flexGrow: v,
+                            flexBasis: 0,
+                            background: series[k].color,
+                          }}
                         />
                       ) : null
                     )}
@@ -124,14 +150,23 @@ export function StackedColumnChart({
                   {active === i && (
                     <span
                       role="tooltip"
-                      className="bg-paper border-hairline shadow-overlay text-fg pointer-events-none absolute bottom-full z-10 mb-2 w-max max-w-56 rounded-lg border px-3 py-2 text-left text-caption"
+                      className="bg-paper border-hairline shadow-overlay text-fg text-caption pointer-events-none absolute bottom-full z-10 mb-2 w-max max-w-56 rounded-lg border px-3 py-2 text-left"
                     >
                       <span className="text-fg-muted block">{col.label}</span>
                       {series.map((s, k) => (
-                        <span key={s.name} className="mt-1 flex items-center gap-2">
+                        <span
+                          key={s.name}
+                          className="mt-1 flex items-center gap-2"
+                        >
                           {/* Line key, không phải ô màu */}
-                          <span aria-hidden="true" className="h-0.5 w-3 rounded-full" style={{ background: s.color }} />
-                          <span className="text-fg-strong num font-semibold">{format(col.values[k])}</span>
+                          <span
+                            aria-hidden="true"
+                            className="h-0.5 w-3 rounded-full"
+                            style={{ background: s.color }}
+                          />
+                          <span className="text-fg-strong num font-semibold">
+                            {format(col.values[k])}
+                          </span>
                           <span className="text-fg-muted">{s.name}</span>
                         </span>
                       ))}
@@ -144,7 +179,10 @@ export function StackedColumnChart({
           {/* Trục X */}
           <div className="mt-2 flex" aria-hidden="true">
             {columns.map((col) => (
-              <span key={col.label} className="text-fg-muted num flex-1 truncate text-center text-caption">
+              <span
+                key={col.label}
+                className="text-fg-muted num text-caption flex-1 truncate text-center"
+              >
                 {col.tick}
               </span>
             ))}
@@ -153,10 +191,12 @@ export function StackedColumnChart({
       </div>
 
       {/* Bảng số: bản tương đương cho trình đọc màn hình và khi cần số chính xác */}
-      <details className="mt-3 text-sm">
-        <summary className="text-fg-muted cursor-pointer text-caption">{tableLabel}</summary>
+      <details className="motion-details mt-3 text-sm">
+        <summary className="text-fg-muted text-caption cursor-pointer">
+          {tableLabel}
+        </summary>
         <div className="mt-2 overflow-x-auto">
-          <table className="w-full text-caption">
+          <table className="text-caption w-full">
             <thead className="text-fg-muted">
               <tr className="[&>th]:px-2 [&>th]:py-1.5 [&>th]:font-semibold">
                 <th className="text-left">{periodLabel}</th>
@@ -170,14 +210,22 @@ export function StackedColumnChart({
             </thead>
             <tbody>
               {columns.map((col, i) => (
-                <tr key={col.label} className="border-border-subtle border-t [&>td]:px-2 [&>td]:py-1.5">
+                <tr
+                  key={col.label}
+                  className="border-border-subtle border-t [&>td]:px-2 [&>td]:py-1.5"
+                >
                   <td>{col.label}</td>
                   {col.values.map((v, k) => (
-                    <td key={series[k].name} className="num text-right tabular-nums">
+                    <td
+                      key={series[k].name}
+                      className="num text-right tabular-nums"
+                    >
                       {format(v)}
                     </td>
                   ))}
-                  <td className="text-fg-strong num text-right font-semibold tabular-nums">{format(totals[i])}</td>
+                  <td className="text-fg-strong num text-right font-semibold tabular-nums">
+                    {format(totals[i])}
+                  </td>
                 </tr>
               ))}
             </tbody>

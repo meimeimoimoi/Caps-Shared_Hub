@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { formatDayMonth } from '@/lib/utils'
@@ -12,27 +12,18 @@ import {
 import { knowledgeKeys } from '../../features/knowledgeAdmin-review-approval/api/queryKeys'
 import { useCollection } from '../../features/knowledgeAdmin-sources/hooks/useCollection'
 import { RUN_TRIGGER } from '../../features/knowledgeAdmin-sources/constants'
+import { REVIEW_SLA_DAYS } from '../../features/knowledgeAdmin-review-approval/constants'
 import { KnowledgeGrowth } from '../../features/knowledgeAdmin-analytics/components/KnowledgeGrowth'
 import { useKnowledgeStats } from '../../features/knowledgeAdmin-analytics/hooks/useKnowledgeStats'
-import {
-  AttentionList,
-  type AttentionItem,
-} from '../../features/admin-analytics/components/AttentionList'
 import { BarList } from '../../features/admin-analytics/components/BarList'
 import { KpiCard } from '../../features/admin-analytics/components/KpiCard'
 
-// ponytail: ngưỡng chờ rà soát do FE tạm đặt; đổi khi nhóm chốt SLA duyệt văn bản
-const REVIEW_SLA_DAYS = 7
-
-/* Tổng quan Knowledge Admin: việc gấp, chỉ số, tăng trưởng kho, chỗ đang tắc. Dùng chung cache với các màn chi tiết */
+/* Tổng quan Knowledge Admin: chỉ số, tăng trưởng kho, chỗ đang tắc. Việc gấp nằm ở chuông thông báo (useKnowledgeNav).
+ * Dùng chung cache với các màn chi tiết */
 export default function KnowledgeDashboardPage() {
   const nav = useKnowledgeNav()
   const f = useFormatters()
   const [now] = useState(() => Date.now())
-  useEffect(() => {
-    document.title = 'Tổng quan | Shared Hub'
-  }, [])
-
   const summary = useQuery({
     queryKey: knowledgeKeys.summary(),
     queryFn: ({ signal }) => getPipelineSummary(signal),
@@ -43,11 +34,8 @@ export default function KnowledgeDashboardPage() {
   })
   const collection = useCollection()
   const stats = useKnowledgeStats()
-  const loading = summary.isLoading || review.isLoading || collection.isLoading
 
   const s = summary.data
-  // Chưa có dữ liệu thì hiện "…", tránh thoáng hiện 0 như thể kho đang ổn
-  const num = (v: number | undefined) => (v === undefined ? '…' : f.number(v))
   const failed = s ? s.indexFailed + s.parseFailed : 0
   const waited = (iso: string) =>
     Math.floor((now - new Date(iso).getTime()) / 86_400_000)
@@ -55,50 +43,20 @@ export default function KnowledgeDashboardPage() {
   const oldestDays = pendingDocs.length
     ? Math.max(...pendingDocs.map((d) => waited(d.queuedAt)))
     : null
-  const overdue = pendingDocs.filter(
-    (d) => waited(d.queuedAt) > REVIEW_SLA_DAYS
-  ).length
-  const withWarnings = pendingDocs.filter((d) => d.parseWarnings > 0).length
   const schedule = collection.data?.schedule
   const runs = collection.data?.runs.slice(0, 3) ?? []
-
-  // Việc gấp: lỗi làm kho thiếu văn bản trước, chờ lâu sau, cảnh báo nhẹ cuối
-  const attention = [
-    failed > 0 && {
-      text: `${failed} văn bản lỗi bóc tách hoặc index, cần thử lại`,
-      to: '/knowledge/queue?stage=failed',
-      tone: 'danger',
-    },
-    schedule &&
-      !schedule.lastRunOk && {
-        text: 'Lần thu thập định kỳ gần nhất bị lỗi',
-        to: '/knowledge/sources',
-        tone: 'danger',
-      },
-    overdue > 0 && {
-      text: `${overdue} văn bản chờ rà soát quá ${REVIEW_SLA_DAYS} ngày`,
-      to: '/knowledge/queue?stage=review',
-      tone: 'warning',
-    },
-    withWarnings > 0 && {
-      text: `${withWarnings} văn bản chờ duyệt có cảnh báo bóc tách`,
-      to: '/knowledge/queue?stage=review',
-    },
-  ].filter((a): a is AttentionItem => !!a)
 
   return (
     <KnowledgeLayout {...nav} section="overview" breadcrumb="Tổng quan">
       <h1 className="text-h1">Tổng quan</h1>
       <p className="text-fg-muted mt-3">
-        Việc cần xử lý trước và tình trạng kho tri thức.
+        Tình trạng kho tri thức. Việc cần xử lý nằm ở chuông thông báo.
       </p>
 
-      <AttentionList items={attention} loading={loading} />
-
-      <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <KpiCard
           label="Chờ rà soát"
-          value={num(s?.pending)}
+          value={s?.pending}
           note={
             !review.data
               ? ''
@@ -110,7 +68,7 @@ export default function KnowledgeDashboardPage() {
         />
         <KpiCard
           label="Đang lỗi"
-          value={num(s && failed)}
+          value={s && failed}
           note={
             s
               ? `${s.indexFailed} lỗi index · ${s.parseFailed} lỗi bóc tách`
@@ -121,7 +79,7 @@ export default function KnowledgeDashboardPage() {
         />
         <KpiCard
           label="Đã index"
-          value={num(s?.indexed)}
+          value={s?.indexed}
           note={
             s ? `${s.indexing} đang index · ${s.parsing} đang bóc tách` : ''
           }
@@ -129,7 +87,7 @@ export default function KnowledgeDashboardPage() {
         />
         <KpiCard
           label="Thu thập tháng này"
-          value={num(s?.collectedThisMonth)}
+          value={s?.collectedThisMonth}
           note={
             schedule
               ? `Lần chạy tới: ${formatDayMonth(schedule.nextRunAt)}`
@@ -145,11 +103,24 @@ export default function KnowledgeDashboardPage() {
         </h2>
         {stats.data ? (
           <KnowledgeGrowth months={stats.data.months} />
+        ) : stats.isLoading ? (
+          // Khung xương đúng bố cục: 3 ô so sánh + 2 biểu đồ, để trang không giật khi dữ liệu về
+          <div role="status" className="mt-4">
+            <span className="sr-only">Đang tải số liệu…</span>
+            <div aria-hidden="true" className="grid gap-4 sm:grid-cols-3">
+              {[0, 1, 2].map((i) => (
+                <div key={i} className="paper h-28 motion-safe:animate-pulse" />
+              ))}
+            </div>
+            <div aria-hidden="true" className="mt-4 grid gap-4 lg:grid-cols-2">
+              {[0, 1].map((i) => (
+                <div key={i} className="paper h-80 motion-safe:animate-pulse" />
+              ))}
+            </div>
+          </div>
         ) : (
           <p className="paper text-fg-muted mt-4 px-5 py-8 text-sm">
-            {stats.isLoading
-              ? 'Đang tải số liệu…'
-              : (stats.error?.message ?? 'Không tải được số liệu.')}
+            {stats.error?.message ?? 'Không tải được số liệu.'}
           </p>
         )}
       </section>

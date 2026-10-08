@@ -47,7 +47,7 @@ export function KnowledgeGrowth({ months }: { months: KnowledgeStatPeriod[] }) {
         ))}
       </div>
 
-      <div className="mt-4 grid gap-4 lg:grid-cols-2">
+      <div className="mt-4 grid items-start gap-4 lg:grid-cols-2">
         <div className="paper p-5">
           <StackedColumnChart
             title="Văn bản thu thập theo nguồn"
