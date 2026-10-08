@@ -38,7 +38,7 @@ export function LanguageSwitcher({
       triggerClassName={
         variant === 'account'
           ? '!w-full !gap-3 !border-0 !bg-transparent !px-3 !py-2.5 !text-sm !font-medium !text-text-muted whitespace-nowrap tracking-normal [word-spacing:normal] transition-colors hover:!bg-surface-muted'
-          : '!w-36 border-border hover:bg-surface-muted focus-visible:!outline-accent-text focus-visible:!outline-2 focus-visible:!outline-offset-2'
+          : '!w-36 border-border hover:bg-surface-muted focus-visible:!outline-none focus-visible:!border-text-muted'
       }
       menuClassName="!left-auto !w-44 !rounded-xl !p-1.5"
     />

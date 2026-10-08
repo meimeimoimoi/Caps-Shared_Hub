@@ -14,6 +14,7 @@ import { ProtectedRoute } from './ProtectedRoute'
 import { ExpertRoute } from './ExpertRoute'
 import { ExpertLayout } from '../layouts/expert/ExpertLayout'
 import { DraftRoute } from './DraftRoute'
+import { RouteErrorPage } from './RouteErrorPage'
 import { DraftLayout } from '../layouts/drafts/DraftLayout'
 const ReviewerLayout = lazy(() => import('../layouts/reviewer/ReviewerLayout'))
 const ReviewerQueuePage = lazy(
@@ -49,6 +50,7 @@ const ExpertProfilePage = lazy(
 const ExpertSettingsPage = lazy(
   () => import('@/pages/expert-dashboard/ExpertSettingsPage')
 )
+const ExpertPricingPage = lazy(() => import('@/pages/expert-dashboard/ExpertPricingPage'))
 const ExpertServicesPage = lazy(
   () => import('@/pages/expert-dashboard/ExpertServicesPage')
 )
@@ -143,6 +145,7 @@ function RouteMotion() {
 const router = createBrowserRouter(
   createRoutesFromElements(
     <Route
+      errorElement={<RouteErrorPage />}
       element={
         <Suspense fallback={<Fallback />}>
           <RouteMotion />
@@ -235,6 +238,7 @@ const router = createBrowserRouter(
           <Route path="active" element={<ExpertCasesPage key="active" />} />
           <Route path="cases/:id" element={<ExpertCaseDetailPage />} />
           <Route path="services" element={<ExpertServicesPage />} />
+          <Route path="services/:serviceId/pricing" element={<ExpertPricingPage />} />
           <Route path="income" element={<ExpertIncomePage />} />
           <Route path="profile" element={<ExpertProfilePage />} />
           <Route path="settings" element={<ExpertProfilePage />} />

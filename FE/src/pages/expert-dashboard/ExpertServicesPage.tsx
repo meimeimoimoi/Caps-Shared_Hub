@@ -1,3 +1,5 @@
+import { Link, useLocation } from 'react-router-dom'
+import '@/features/expert-pricing/pricing.css'
 import { useExpertPresentation } from '@/features/expert-dashboard/hooks/useExpertPresentation'
 import { useTranslation } from 'react-i18next'
 import {
@@ -80,6 +82,7 @@ export default function ExpertServicesPage() {
 }
 
 function ServiceCard({ service }: { service: ServiceReadiness }) {
+  const location = useLocation()
   const display = useExpertPresentation()
   const { t } = useTranslation('expert')
 
@@ -146,6 +149,19 @@ function ServiceCard({ service }: { service: ServiceReadiness }) {
         ) : (
           <ChevronDown size={18} aria-hidden="true" />
         )}
+      </div>
+      <div className="ep-service-pricing-actions">
+        <Link
+          className="ep-button"
+          to={`/expert/services/${encodeURIComponent(service.serviceId)}/pricing${location.search}`}
+        >
+          <DollarSign size={16} aria-hidden="true" />
+          {t(
+            service.qualificationStatus === 'APPROVED_FOR_SERVICE'
+              ? 'pricing.configure'
+              : 'pricing.view'
+          )}
+        </Link>
       </div>
       {expanded && (
         <div className="ep-service-card-body">
