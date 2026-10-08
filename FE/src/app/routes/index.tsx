@@ -14,6 +14,7 @@ import { ProtectedRoute } from './ProtectedRoute'
 import { ExpertRoute } from './ExpertRoute'
 import { ExpertLayout } from '../layouts/expert/ExpertLayout'
 import { DraftRoute } from './DraftRoute'
+import { RouteErrorPage } from './RouteErrorPage'
 import { DraftLayout } from '../layouts/drafts/DraftLayout'
 const ReviewerLayout = lazy(() => import('../layouts/reviewer/ReviewerLayout'))
 const ReviewerQueuePage = lazy(
@@ -143,6 +144,7 @@ function RouteMotion() {
 const router = createBrowserRouter(
   createRoutesFromElements(
     <Route
+      errorElement={<RouteErrorPage />}
       element={
         <Suspense fallback={<Fallback />}>
           <RouteMotion />

@@ -1,4 +1,15 @@
 {
+  "routeError": {
+    "title": "We couldn’t load this page.",
+    "description": "Part of Shared Hub didn’t load correctly. Reload the page to try again.",
+    "reload": "Reload page",
+    "reloading": "Reloading…",
+    "help": "If this keeps happening, check your connection or try again in a few minutes.",
+    "offlineTitle": "You’re offline.",
+    "offlineDescription": "Shared Hub can’t connect right now. Reconnect to the internet, then reload this page.",
+    "offlineHelp": "Check your Wi-Fi or mobile connection before trying again.",
+    "footer": "Let’s get you back to your workspace."
+  },
   "loading": "Loading…",
   "account": {
     "menu": "Account menu for {{name}}",
