@@ -418,6 +418,7 @@ export function AccountCreation({
         <div className="expert-account-consent-row">
           <input
             id="account-terms"
+            className="expert-custom-checkbox"
             type="checkbox"
             name="terms"
             required

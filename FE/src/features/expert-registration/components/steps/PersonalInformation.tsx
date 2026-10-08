@@ -231,7 +231,13 @@ export function PersonalInformation({
             error={formErrors.phone}
             errorId="error-phone"
           >
-            {renderInput('phone', true, 'tel')}
+            <div className="expert-profile-phone">
+              <svg viewBox="0 0 30 20" width="21" height="14" role="img" aria-label={t('fields.vietnam')}>
+                <rect width="30" height="20" fill="#da251d" />
+                <path d="M15 3 16.6 7.8H21.7L17.6 10.8 19.2 15.7 15 12.7 10.8 15.7 12.4 10.8 8.3 7.8H13.4Z" fill="#ffff00" />
+              </svg>
+              {renderInput('phone', true, 'tel')}
+            </div>
           </FormField>
         </div>
       </div>

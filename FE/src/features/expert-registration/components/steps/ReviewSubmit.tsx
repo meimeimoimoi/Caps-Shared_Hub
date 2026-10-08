@@ -30,17 +30,17 @@ export function ReviewSubmit({
 
   return (
     <div className="expert-pro-review">
-      <p className="expert-pro-subtitle flex flex-wrap items-center justify-between gap-4">
-        <span>{t('review.guidance')}</span>
+      <div className="expert-review-toolbar">
+        <p>{t('review.guidance')}</p>
         <button
           type="button"
           onClick={onEdit}
-          className="inline-flex min-h-10 items-center gap-2 rounded-md border border-border bg-surface px-4 text-[13px] font-semibold text-accent-text transition-all duration-[var(--motion-feedback)] hover:border-accent hover:bg-surface-muted hover:shadow-control focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-text"
+          className="expert-review-edit"
         >
           <Edit2 size={14} />
           {t('actions.edit')}
         </button>
-      </p>
+      </div>
 
       <RegistrationSummary
         profile={profile}
@@ -51,17 +51,18 @@ export function ReviewSubmit({
       />
 
       {/* ── AI Notice ── */}
-      <div className="expert-pro-notice expert-pro-notice--warn mt-0 mb-6">
+      <div className="expert-review-notice">
         <Info className="expert-pro-notice-icon" aria-hidden="true" />
         <p>{t('review.ai')}</p>
       </div>
 
       {/* ── Confirmation Checkbox ── */}
-      <div className="expert-personal-form">
-        <div className="expert-independent-row !mb-2">
+      <div className="expert-review-confirmation">
+        <div className="expert-review-confirmation-row">
           <label className="flex cursor-pointer items-start gap-3">
             <input
               name="confirmed"
+              className="expert-custom-checkbox"
               type="checkbox"
               checked={confirmed}
               onChange={(e) => onConfirmedChange(e.target.checked)}
