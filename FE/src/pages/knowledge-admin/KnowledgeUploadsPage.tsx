@@ -24,13 +24,19 @@ export default function KnowledgeUploadsPage() {
   const action = (u: UploadResult) => {
     if (u.result === 'QUEUED' && u.documentId)
       return (
-        <Link to={`/knowledge/documents/${u.documentId}/review`} className={actionCls}>
+        <Link
+          to={`/knowledge/documents/${u.documentId}/review`}
+          className={actionCls}
+        >
           Rà soát
         </Link>
       )
     if (u.result === 'NEW_VERSION' && u.documentId)
       return (
-        <Link to={`/knowledge/documents/${u.documentId}/compare`} className={actionCls}>
+        <Link
+          to={`/knowledge/documents/${u.documentId}/compare`}
+          className={actionCls}
+        >
           So sánh phiên bản
         </Link>
       )
@@ -52,9 +58,13 @@ export default function KnowledgeUploadsPage() {
     <KnowledgeLayout
       {...nav}
       section="queue"
+      title="Kết quả tải lên"
       breadcrumb={
         <>
-          <Link to="/knowledge/queue" className="text-fg-muted hover:text-fg-strong">
+          <Link
+            to="/knowledge/queue"
+            className="text-fg-muted hover:text-fg-strong"
+          >
             Hàng đợi duyệt
           </Link>{' '}
           <span aria-hidden="true">/</span>{' '}
@@ -101,20 +111,29 @@ export default function KnowledgeUploadsPage() {
                 className="border-border-subtle border-t align-top [&>td]:px-4 [&>td]:py-3"
               >
                 <td>
-                  <div className="text-fg-strong font-semibold break-all">{u.fileName}</div>
+                  <div className="text-fg-strong font-semibold break-all">
+                    {u.fileName}
+                  </div>
                   <div className="text-fg-muted num">{u.number ?? '—'}</div>
                 </td>
                 <td className="whitespace-nowrap">
                   <StatusBadge status={UPLOAD_RESULT[u.result]} />
                 </td>
-                <td className="text-fg max-w-[48ch]">{UPLOAD_RESULT[u.result].todo}</td>
+                <td className="text-fg max-w-[48ch]">
+                  {UPLOAD_RESULT[u.result].todo}
+                </td>
                 <td className="text-right whitespace-nowrap">{action(u)}</td>
               </tr>
             ))}
             {uploads.length === 0 && (
               <tr className="border-border-subtle border-t">
-                <td colSpan={4} className="text-fg-muted px-4 py-10 text-center">
-                  {isLoading ? 'Đang tải…' : (error?.message ?? 'Chưa có lần tải lên nào.')}
+                <td
+                  colSpan={4}
+                  className="text-fg-muted px-4 py-10 text-center"
+                >
+                  {isLoading
+                    ? 'Đang tải…'
+                    : (error?.message ?? 'Chưa có lần tải lên nào.')}
                 </td>
               </tr>
             )}
@@ -125,10 +144,12 @@ export default function KnowledgeUploadsPage() {
       <div className="bg-sunken rounded-surface mt-6 flex gap-2 p-3 text-sm">
         <Info size={16} aria-hidden="true" className="mt-0.5 shrink-0" />
         <div>
-          <p className="text-fg-strong font-semibold">Mỗi văn bản chỉ cần tải lên một lần</p>
+          <p className="text-fg-strong font-semibold">
+            Mỗi văn bản chỉ cần tải lên một lần
+          </p>
           <p className="text-fg-muted">
-            Khi tải văn bản sửa đổi, nên tải thêm văn bản gốc nếu kho chưa có, để
-            trích dẫn được đầy đủ.
+            Khi tải văn bản sửa đổi, nên tải thêm văn bản gốc nếu kho chưa có,
+            để trích dẫn được đầy đủ.
           </p>
         </div>
       </div>

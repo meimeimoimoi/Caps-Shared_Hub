@@ -26,7 +26,8 @@ export default function KnowledgeDocumentsPage() {
           rows={docs.rows}
           showStage
           linkTo={(d) => `/knowledge/documents/${d.id}`}
-          empty={docs.isLoading ? 'Đang tải…' : docs.error?.message}
+          loading={docs.isLoading}
+          empty={docs.error?.message}
         />
       </div>
     </KnowledgeLayout>

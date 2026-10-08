@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useState } from 'react'
 import { Link, useParams, useSearchParams } from 'react-router-dom'
-import { Eye } from 'lucide-react'
+import { Eye, FileText } from 'lucide-react'
 import { cn, formatDayMonth } from '@/lib/utils'
 import { StatusBadge } from '@/components/ui/display/status-badge'
 import { Modal } from '@/components/ui/feedback/modal'
@@ -25,16 +25,16 @@ export default function KnowledgeTemplatePage() {
   const [previewing, setPreviewing] = useState(false)
   const [toast, setToast] = useState<string | null>(null)
   const clearToast = useCallback(() => setToast(null), [])
-  useEffect(() => {
-    if (template) document.title = `${template.title} | Shared Hub`
-  }, [template])
-
   const listLink = (
     <Link to="/knowledge/templates" className="hover:text-fg-strong">
       Template
     </Link>
   )
-  const layout = { ...nav, section: 'templates' as const }
+  const layout = {
+    ...nav,
+    section: 'templates' as const,
+    title: template?.title,
+  }
 
   if (!template) {
     return (
@@ -120,6 +120,13 @@ export default function KnowledgeTemplatePage() {
               {selected.fields.length} trường
             </span>
           </div>
+          <p className="text-fg-muted mt-1 flex items-center gap-1.5 text-sm">
+            <FileText size={14} aria-hidden="true" />
+            File mẫu:{' '}
+            <span className="text-fg-strong break-all">
+              {selected.fileName}
+            </span>
+          </p>
           {selected !== current && (
             <p className="bg-sunken rounded-surface text-fg-muted mt-3 px-3 py-2 text-sm">
               Đang xem phiên bản cũ. Bản nháp mới dùng v{current.version}.

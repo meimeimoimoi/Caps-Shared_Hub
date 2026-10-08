@@ -1,6 +1,13 @@
 import { useTranslation } from 'react-i18next'
-import { useRef, useState, type ReactNode } from 'react'
-import { BookOpen, LayoutDashboard, LayoutTemplate, ListChecks, Rss, UserRound } from 'lucide-react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
+import {
+  BookOpen,
+  LayoutDashboard,
+  LayoutTemplate,
+  ListChecks,
+  Rss,
+  UserRound,
+} from 'lucide-react'
 import { useDialogMotion } from '@/components/ui/motion'
 import { useAccount } from '@/features/auth'
 import { AppHeader } from '@/components/ui/layout/app-header'
@@ -12,10 +19,13 @@ import { type ShellNotification } from '../NotificationBell'
 
 interface KnowledgeLayoutProps {
   /** Mục sidebar đang mở */
-  section: 'overview' | 'queue' | 'sources' | 'documents' | 'templates' | 'account'
+  section:
+    'overview' | 'queue' | 'sources' | 'documents' | 'templates' | 'account'
   queueCount: number
   notifications?: ShellNotification[]
   breadcrumb: ReactNode
+  /** Tiêu đề tab trình duyệt; bỏ trống thì lấy tên mục sidebar đang chọn */
+  title?: string
   /** Bỏ trống thì ẩn ô tìm kiếm */
   search?: string
   onSearchChange?: (value: string) => void
@@ -29,6 +39,7 @@ export function KnowledgeLayout({
   queueCount,
   notifications = [],
   breadcrumb,
+  title,
   search,
   onSearchChange,
   children,
@@ -112,6 +123,14 @@ export function KnowledgeLayout({
       ],
     },
   ]
+  // Đặt ở layout để mọi trang Knowledge đều có tiêu đề tab (effect của layout chạy sau effect của trang)
+  const pageTitle =
+    title ??
+    groups.flatMap((g) => g.items).find((i) => i.active)?.label ??
+    'Kho tri thức'
+  useEffect(() => {
+    document.title = `${pageTitle} | Shared Hub`
+  }, [pageTitle])
   const closeDrawer = () => drawer.current?.close()
 
   return (

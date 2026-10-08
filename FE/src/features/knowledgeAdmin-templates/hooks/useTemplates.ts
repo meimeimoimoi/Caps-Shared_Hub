@@ -1,11 +1,19 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAccount } from '@/features/auth'
-import { createTemplate, getTemplate, getTemplates, setTemplateStatus } from '../api/templatesApi'
+import {
+  createTemplate,
+  getTemplate,
+  getTemplates,
+  setTemplateStatus,
+} from '../api/templatesApi'
 import { templatesKeys } from '../api/queryKeys'
 import type { ManagedTemplate, NewTemplateInput } from '../types'
 
 export function useTemplates() {
-  return useQuery({ queryKey: templatesKeys.list(), queryFn: ({ signal }) => getTemplates(signal) })
+  return useQuery({
+    queryKey: templatesKeys.list(),
+    queryFn: ({ signal }) => getTemplates(signal),
+  })
 }
 
 export function useManagedTemplate(id: string) {
@@ -30,8 +38,8 @@ export function useManagedTemplate(id: string) {
 export function useCreateTemplate() {
   const qc = useQueryClient()
   const { name } = useAccount('knowledge')
-  return async (input: NewTemplateInput) => {
-    const id = await createTemplate(input, name)
+  return async (file: File, input: NewTemplateInput) => {
+    const id = await createTemplate(file, input, name)
     await qc.invalidateQueries({ queryKey: templatesKeys.all })
     return id
   }

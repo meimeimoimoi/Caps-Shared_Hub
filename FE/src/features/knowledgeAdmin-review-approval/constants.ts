@@ -86,3 +86,6 @@ export const DOC_TYPES = [
   'Quyết định',
   'VB hợp nhất',
 ] as const
+
+// ponytail: ngưỡng chờ rà soát do FE tạm đặt; đổi khi nhóm chốt SLA duyệt văn bản
+export const REVIEW_SLA_DAYS = 7

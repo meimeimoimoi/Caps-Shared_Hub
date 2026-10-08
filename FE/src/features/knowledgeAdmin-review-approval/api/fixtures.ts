@@ -266,6 +266,34 @@ export const mockReviews: Record<string, DocumentReview> = {
   },
 }
 
+/* Văn bản chờ duyệt khác chưa có bản bóc tách viết tay: dựng tối thiểu từ mockDocuments
+ * để màn rà soát không trống; số mục WARNING khớp cột "Cảnh báo bóc tách" của hàng đợi */
+const ISSUER: Record<string, string> = { 'Nghị định': 'Chính phủ', Luật: 'Quốc hội' }
+for (const doc of mockDocuments) {
+  if (doc.stage !== 'review' || mockReviews[doc.id]) continue
+  const articles = [1, 2, 3, 4, 5].map((n) =>
+    simpleArticle(n, `[Tiêu đề Điều ${n}]`, n <= doc.parseWarnings ? 'WARNING' : 'AUTO')
+  )
+  for (const a of articles.slice(0, doc.parseWarnings))
+    a.units[1].warning = 'Đoạn này đọc không chắc chắn từ bản gốc, cần đối chiếu.'
+  mockReviews[doc.id] = {
+    documentId: doc.id,
+    title: doc.title,
+    sourceUrl: 'https://vbpl.vn',
+    meta: {
+      number: doc.number,
+      docType: doc.docType,
+      issuer: ISSUER[doc.docType] ?? 'Bộ Tài chính',
+      issuedAt: doc.effectiveAt ?? '',
+      effectiveAt: doc.effectiveAt ?? '',
+    },
+    chapters: [
+      { title: 'Chương I · Quy định chung', articles: articles.slice(0, 2) },
+      { title: 'Chương II · Quy định cụ thể', articles: articles.slice(2) },
+    ],
+  }
+}
+
 const after = (iso: string, minutes: number) =>
   new Date(new Date(iso).getTime() + minutes * 60_000).toISOString()
 

@@ -1,7 +1,7 @@
 import { api } from '@/lib/api-client'
 import { isExpertDemo } from '@/lib/expert-data-source'
 import type { Frequency } from '../constants'
-import type { CollectionOverview } from '../types'
+import type { CollectionOverview, SourceInput } from '../types'
 
 /* Dev chạy demo thì đọc fixtures (bản sao để React Query thấy dữ liệu mới);
  * mutation demo sửa thẳng fixtures để lần refetch sau thấy thay đổi.
@@ -38,4 +38,17 @@ export async function runCollectionNow() {
     return
   }
   await api.post(`${BASE}/run`)
+}
+
+/** Thêm nguồn (không có id) hoặc sửa nguồn có sẵn */
+export async function saveSource(input: SourceInput, id?: string) {
+  if (isExpertDemo) {
+    const sources = (await fixtures()).mockOverview.sources
+    const existing = sources.find((s) => s.id === id)
+    if (existing) Object.assign(existing, input)
+    else sources.push({ id: `src-${Date.now().toString(36)}`, ...input })
+    return
+  }
+  if (id) await api.put(`${BASE}/sources/${id}`, input)
+  else await api.post(`${BASE}/sources`, input)
 }

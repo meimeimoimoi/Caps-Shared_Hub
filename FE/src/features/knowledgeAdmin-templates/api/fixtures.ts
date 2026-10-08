@@ -3,7 +3,8 @@
 import { templates } from '@/features/drafting/api/fixtures'
 import type { ManagedTemplate } from '../types'
 
-const daysAgo = (n: number) => new Date(Date.now() - n * 86_400_000).toISOString()
+const daysAgo = (n: number) =>
+  new Date(Date.now() - n * 86_400_000).toISOString()
 const ADMIN = 'Lê Thu Hà' // MOCK: TODO(auth) tài khoản Knowledge Admin đang đăng nhập
 // MOCK: số bản nháp đang dùng từng template (phiên bản mới nhất trước)
 const USAGE: Record<string, number[]> = {
@@ -32,16 +33,30 @@ export const mockTemplates: ManagedTemplate[] = templates.map((tpl, i) => {
         version,
         publishedAt: daysAgo(3 + i * 5 + k * 60),
         publishedBy: ADMIN,
-        changelog: k === 0 ? (tpl.changelog?.[0] ?? 'Cập nhật mô tả và gợi ý trường.') : `Phát hành phiên bản ${version}.`,
+        fileName: `${base}-v${version}.docx`,
+        changelog:
+          k === 0
+            ? (tpl.changelog?.[0] ?? 'Cập nhật mô tả và gợi ý trường.')
+            : `Phát hành phiên bản ${version}.`,
         // Phiên bản cũ của mẫu giải trình bớt dần trường để thấy khác biệt giữa các phiên bản
         fields: tpl.fields.slice(0, tpl.fields.length - k * 2),
         workspaces,
       }
     }),
     history: [
-      { at: daysAgo(3 + i * 5), actor: ADMIN, text: `Phát hành phiên bản ${tpl.version}` },
+      {
+        at: daysAgo(3 + i * 5),
+        actor: ADMIN,
+        text: `Phát hành phiên bản ${tpl.version}`,
+      },
       ...(base === 'incentive'
-        ? [{ at: daysAgo(1), actor: ADMIN, text: 'Tạm ngưng template: chờ cập nhật theo nghị định mới' }]
+        ? [
+            {
+              at: daysAgo(1),
+              actor: ADMIN,
+              text: 'Tạm ngưng template: chờ cập nhật theo nghị định mới',
+            },
+          ]
         : []),
     ].sort((a, b) => b.at.localeCompare(a.at)),
   }

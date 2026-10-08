@@ -13,9 +13,11 @@ export const toFieldId = (label: string) =>
 /** Lỗi chặn tạo template, theo thứ tự hiện trên form; rỗng = hợp lệ */
 export function templateIssues(input: NewTemplateInput): string[] {
   const issues: string[] = []
+  if (!input.fileName) issues.push('Chọn file mẫu (.docx).')
   if (!input.title.trim()) issues.push('Nhập tên template.')
   if (!input.category) issues.push('Chọn nhóm template.')
-  if (input.fields.length === 0) issues.push('Thêm ít nhất một trường người dùng cần nhập.')
+  if (input.fields.length === 0)
+    issues.push('Thêm ít nhất một trường người dùng cần nhập.')
   input.fields.forEach((f, i) => {
     if (!f.label.trim()) issues.push(`Trường ${i + 1}: nhập tên trường.`)
     if (!f.group.trim()) issues.push(`Trường ${i + 1}: nhập nhóm trường.`)

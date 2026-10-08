@@ -1,6 +1,7 @@
-import { useEffect, useState, type ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { Plus, Trash2 } from 'lucide-react'
+import { FileText, Plus, Trash2, Upload, X } from 'lucide-react'
+import { cn } from '@/lib/utils'
 import type { SchemaField } from '@/features/drafting/types'
 import { KnowledgeLayout } from '@/app/layouts/knowledge/KnowledgeLayout'
 import { useKnowledgeNav } from '@/app/layouts/knowledge/useKnowledgeNav'
@@ -47,12 +48,15 @@ const emptyField = (key: number, group = ''): Draft => ({
   hint: '',
 })
 
-/* Tạo template: thông tin chung, các trường người dùng phải nhập, ghi chú phát hành.
- * Tạo xong là v1 ở trạng thái Tạm ngưng; admin kiểm tra rồi mới kích hoạt cho người dùng thấy. */
+/* Tải lên template: file mẫu (.docx), thông tin chung, các chỗ trống người dùng phải điền, ghi chú phát hành.
+ * Tải xong là v1 ở trạng thái Tạm ngưng; admin kiểm tra rồi mới kích hoạt cho người dùng thấy. */
 export default function KnowledgeTemplateNewPage() {
   const nav = useKnowledgeNav()
   const navigate = useNavigate()
   const create = useCreateTemplate()
+  const [file, setFile] = useState<File | null>(null)
+  const [fileError, setFileError] = useState<string | null>(null)
+  const [dragging, setDragging] = useState(false)
   const [title, setTitle] = useState('')
   const [category, setCategory] = useState('')
   const [description, setDescription] = useState('')
@@ -61,11 +65,8 @@ export default function KnowledgeTemplateNewPage() {
   const [tried, setTried] = useState(false)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  useEffect(() => {
-    document.title = 'Tạo template | Shared Hub'
-  }, [])
-
   const input = {
+    fileName: file?.name ?? '',
     title: title.trim(),
     description: description.trim(),
     category,
@@ -80,6 +81,16 @@ export default function KnowledgeTemplateNewPage() {
   }
   const issues = templateIssues(input)
   const groups = [...new Set(fields.map((f) => f.group.trim()).filter(Boolean))]
+  // Kéo thả bỏ qua `accept` của input nên kiểm tra đuôi file tại đây; tên template mặc định lấy theo tên file
+  const pick = (f?: File) => {
+    if (!f) return
+    if (!/\.docx$/i.test(f.name))
+      return setFileError('Chỉ nhận file Word (.docx).')
+    setFileError(null)
+    setFile(f)
+    if (!title.trim())
+      setTitle(f.name.replace(/\.docx$/i, '').replace(/[-_]+/g, ' '))
+  }
   const update = (key: number, patch: Partial<Draft>) =>
     setFields((list) =>
       list.map((f) => (f.key === key ? { ...f, ...patch } : f))
@@ -89,6 +100,7 @@ export default function KnowledgeTemplateNewPage() {
     <KnowledgeLayout
       {...nav}
       section="templates"
+      title="Tải lên template"
       breadcrumb={
         <>
           <Link to="/knowledge/templates" className="hover:text-fg-strong">
@@ -96,15 +108,16 @@ export default function KnowledgeTemplateNewPage() {
           </Link>{' '}
           <span aria-hidden="true">/</span>{' '}
           <span className="text-fg-strong" aria-current="page">
-            Tạo template
+            Tải lên template
           </span>
         </>
       }
     >
-      <h1 className="text-h1">Tạo template</h1>
+      <h1 className="text-h1">Tải lên template</h1>
       <p className="text-fg-muted mt-3 max-w-[65ch]">
-        Template mới được phát hành thành v1 ở trạng thái Tạm ngưng. Kiểm tra
-        lại rồi bấm Kích hoạt để người dùng chọn được khi soạn nháp.
+        Tải file mẫu văn bản và khai báo các chỗ trống người dùng phải điền.
+        Template mới ở trạng thái Tạm ngưng; kiểm tra lại rồi bấm Kích hoạt để
+        người dùng chọn được khi soạn nháp.
       </p>
 
       <form
@@ -115,12 +128,85 @@ export default function KnowledgeTemplateNewPage() {
           if (issues.length) return setTried(true)
           setBusy(true)
           setError(null)
-          create(input)
+          create(file!, input)
             .then((id) => navigate(`/knowledge/templates/${id}`))
             .catch((err: Error) => setError(err.message))
             .finally(() => setBusy(false))
         }}
       >
+        <section className="paper p-5 md:p-6" aria-labelledby="new-file">
+          <h2 id="new-file" className="text-h2">
+            File mẫu
+          </h2>
+          <p className="text-fg-muted mt-1 text-sm">
+            Văn bản Word có sẵn bố cục; AI điền nội dung vào các chỗ trống khai
+            báo bên dưới.
+          </p>
+          {file ? (
+            <div className="border-border rounded-control mt-4 flex items-center gap-3 border p-3 text-sm">
+              <FileText size={18} aria-hidden="true" className="shrink-0" />
+              <div className="min-w-0 flex-1">
+                <p className="text-fg-strong truncate font-semibold">
+                  {file.name}
+                </p>
+                <p className="text-fg-muted num text-caption">
+                  {(file.size / 1_048_576).toFixed(1)} MB
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setFile(null)}
+                aria-label={`Bỏ file ${file.name}`}
+                className="btn btn-ghost px-2"
+              >
+                <X size={16} aria-hidden="true" />
+              </button>
+            </div>
+          ) : (
+            <div
+              onDragOver={(e) => {
+                e.preventDefault()
+                setDragging(true)
+              }}
+              // Chỉ tắt khi thật sự rời vùng thả, không phải khi đi qua phần tử con
+              onDragLeave={(e) => {
+                if (!e.currentTarget.contains(e.relatedTarget as Node | null))
+                  setDragging(false)
+              }}
+              onDrop={(e) => {
+                e.preventDefault()
+                setDragging(false)
+                pick(e.dataTransfer.files[0])
+              }}
+              className={cn(
+                'rounded-control mt-4 flex flex-wrap items-center gap-3 border border-dashed p-4 text-sm',
+                dragging
+                  ? 'border-accent bg-accent-soft'
+                  : 'border-border-control'
+              )}
+            >
+              <label className="btn btn-press btn-secondary cursor-pointer focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-(--focus-ring)">
+                <Upload size={16} aria-hidden="true" />
+                Chọn file
+                <input
+                  type="file"
+                  accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                  className="sr-only"
+                  onChange={(e) => pick(e.target.files?.[0])}
+                />
+              </label>
+              <span className="text-fg-muted">
+                hoặc kéo thả file vào đây · chỉ nhận .docx
+              </span>
+            </div>
+          )}
+          {fileError && (
+            <p role="alert" className="text-danger mt-2 text-sm">
+              {fileError}
+            </p>
+          )}
+        </section>
+
         <section
           className="paper space-y-4 p-5 md:p-6"
           aria-labelledby="new-info"
@@ -165,10 +251,11 @@ export default function KnowledgeTemplateNewPage() {
 
         <section className="paper p-5 md:p-6" aria-labelledby="new-fields">
           <h2 id="new-fields" className="text-h2">
-            Trường người dùng cần nhập
+            Chỗ trống người dùng cần điền
           </h2>
           <p className="text-fg-muted mt-1 text-sm">
-            Trường cùng nhóm hiện chung một khối trên form của người dùng.
+            Mỗi chỗ trống trong file mẫu là một trường. Trường cùng nhóm hiện
+            chung một khối trên form của người dùng.
           </p>
           <datalist id="field-groups">
             {groups.map((g) => (
@@ -292,7 +379,9 @@ export default function KnowledgeTemplateNewPage() {
 
         {tried && issues.length > 0 && (
           <div role="alert" className="text-danger text-sm">
-            <p className="font-semibold">Chưa tạo được template, còn thiếu:</p>
+            <p className="font-semibold">
+              Chưa tải lên được template, còn thiếu:
+            </p>
             <ul className="mt-1 list-disc pl-5">
               {issues.map((m) => (
                 <li key={m}>{m}</li>
@@ -311,7 +400,7 @@ export default function KnowledgeTemplateNewPage() {
             disabled={busy}
             className="btn btn-press btn-primary"
           >
-            {busy ? 'Đang tạo…' : 'Tạo template'}
+            {busy ? 'Đang tải lên…' : 'Tải lên template'}
           </button>
           <Link
             to="/knowledge/templates"

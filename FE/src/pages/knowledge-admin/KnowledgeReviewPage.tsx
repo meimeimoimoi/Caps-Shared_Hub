@@ -37,6 +37,7 @@ export default function KnowledgeReviewPage() {
     <KnowledgeLayout
       {...nav}
       section="queue"
+      title={review ? `Rà soát ${review.meta.number}` : undefined}
       breadcrumb={
         <>
           {queueLink}
@@ -76,7 +77,9 @@ function ReviewWorkspace({
   const navigate = useNavigate()
   const { articles, reviewedArticles, warnings } = state
   const [selectedId, setSelectedId] = useState(
-    () => articles.find((a) => articleStatus(a) !== 'REVIEWED')?.id ?? articles[0]?.id
+    () =>
+      articles.find((a) => articleStatus(a) !== 'REVIEWED')?.id ??
+      articles[0]?.id
   )
   const [editing, setEditing] = useState(false)
   const [edits, setEdits] = useState<Record<string, string>>({})
@@ -144,7 +147,9 @@ function ReviewWorkspace({
 
         <section className="paper min-w-0 p-5 md:p-6">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <h2 className="text-fg-strong font-semibold">Nội dung đã bóc tách</h2>
+            <h2 className="text-fg-strong font-semibold">
+              Nội dung đã bóc tách
+            </h2>
             <p className="text-fg-muted text-sm">
               <span className="num">
                 {reviewedArticles}/{total}
