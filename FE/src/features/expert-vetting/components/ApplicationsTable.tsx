@@ -20,29 +20,43 @@ export function ApplicationsTable({
   paged,
   onPrev,
   onNext,
-  empty = 'Không có hồ sơ nào.',
+  empty,
 }: ApplicationsTableProps) {
   const { t } = useTranslation('admin')
   const { rows, total } = paged
-  const motion = useMotion<HTMLTableSectionElement>({ preset: 'fade', replayKey: rows.map((row) => row.id).join(',') })
+  const motion = useMotion<HTMLTableSectionElement>({
+    preset: 'fade',
+    replayKey: rows.map((row) => row.id).join(','),
+  })
   return (
     <section className="paper mt-4 overflow-x-auto">
       <div className="text-fg-muted flex justify-between px-4 py-3 text-sm">
         <span>{t('applicationsTable.sortBy')}</span>
         <span>
-          <span className="num">{total}</span> {t('applicationsTable.applicationCount')}
+          <span className="num">{total}</span>{' '}
+          {t('applicationsTable.applicationCount')}
         </span>
       </div>
       <table className="w-full min-w-[760px] text-sm">
         <thead className="bg-sunken text-fg-muted">
           <tr className="[&>th]:px-4 [&>th]:py-3 [&>th]:font-semibold">
-            <th className="text-left">{t('applicationsTable.table.applicant')}</th>
-            <th className="text-right">{t('applicationsTable.table.experienceYears')}</th>
-            <th className="text-left">{t('applicationsTable.table.aiScreening')}</th>
-            <th className="text-right">{t('applicationsTable.table.submittedAt')}</th>
-            <th className="text-right">{t('applicationsTable.table.waited')}</th>
+            <th className="text-left">
+              {t('applicationsTable.table.applicant')}
+            </th>
+            <th className="text-right">
+              {t('applicationsTable.table.experienceYears')}
+            </th>
+            <th className="text-left">
+              {t('applicationsTable.table.aiScreening')}
+            </th>
+            <th className="text-right">
+              {t('applicationsTable.table.submittedAt')}
+            </th>
+            <th className="text-right">
+              {t('applicationsTable.table.waited')}
+            </th>
             <th>
-              <span className="sr-only">Thao tác</span>
+              <span className="sr-only">{t('applicationsTable.actions')}</span>
             </th>
           </tr>
         </thead>
@@ -65,32 +79,48 @@ export function ApplicationsTable({
                   {a.aiFlags > 0 ? (
                     <span className="text-warning inline-flex items-center gap-1.5">
                       <TriangleAlert size={14} aria-hidden="true" />
-                      <span className="num">{a.aiFlags}</span> {t('applicationsTable.aiFlags', { count: a.aiFlags }).replace(String(a.aiFlags), '').trim()}
+                      <span className="num">{a.aiFlags}</span>{' '}
+                      {t('applicationsTable.aiFlags', { count: a.aiFlags })
+                        .replace(String(a.aiFlags), '')
+                        .trim()}
                     </span>
                   ) : (
-                    <span className="text-fg-muted">{t('applicationsTable.noNotes')}</span>
+                    <span className="text-fg-muted">
+                      {t('applicationsTable.noNotes')}
+                    </span>
                   )}
                 </td>
                 <td className="num text-right">{formatDate(a.submittedAt)}</td>
                 <td className="text-right">
                   {days > SLA_DAYS ? (
                     <span className="text-warning inline-flex items-center gap-1.5">
-                      <TriangleAlert size={14} aria-label={t('applicationsTable.overdue')} />
-                      <span className="num">{days}</span> {t('applicationsTable.days', { count: days }).replace(String(days), '').trim()}
+                      <TriangleAlert
+                        size={14}
+                        aria-label={t('applicationsTable.overdue')}
+                      />
+                      <span className="num">{days}</span>{' '}
+                      {t('applicationsTable.days', { count: days })
+                        .replace(String(days), '')
+                        .trim()}
                     </span>
                   ) : (
                     <>
-                      <span className="num">{days}</span> {t('applicationsTable.days', { count: days }).replace(String(days), '').trim()}
+                      <span className="num">{days}</span>{' '}
+                      {t('applicationsTable.days', { count: days })
+                        .replace(String(days), '')
+                        .trim()}
                     </>
                   )}
                 </td>
                 <td className="text-right">
                   <Link
                     to={`/admin/experts/${a.id}`}
-                    aria-label={`Xem chi tiết hồ sơ ${a.name}`}
+                    aria-label={t('applicationsTable.viewLabel', {
+                      name: a.name,
+                    })}
                     className="btn btn-press btn-secondary no-underline"
                   >
-                    Xem chi tiết
+                    {t('applicationsTable.view')}
                   </Link>
                 </td>
               </tr>
@@ -99,7 +129,7 @@ export function ApplicationsTable({
           {rows.length === 0 && (
             <tr className="border-border-subtle border-t">
               <td colSpan={6} className="text-fg-muted px-4 py-10 text-center">
-                {empty}
+                {empty ?? t('applicationsTable.noApplications')}
               </td>
             </tr>
           )}
@@ -109,4 +139,3 @@ export function ApplicationsTable({
     </section>
   )
 }
-

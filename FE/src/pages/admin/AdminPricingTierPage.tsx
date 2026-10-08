@@ -1,5 +1,6 @@
 import { useState, type ReactNode } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Info } from 'lucide-react'
 import { formatDate } from '@/lib/utils'
 import { DecisionBar } from '@/components/ui/actions/decision-bar'
@@ -18,15 +19,26 @@ const isoDay = (d: Date) => d.toLocaleDateString('sv-SE')
 const inputCls =
   'border-border-control rounded-control shadow-control bg-paper h-control w-full border px-3 text-base font-normal'
 
-function Field(props: { label: string; hint?: string; suffix?: string; children: ReactNode }) {
+function Field(props: {
+  label: string
+  hint?: string
+  suffix?: string
+  children: ReactNode
+}) {
   return (
     <label className="flex flex-col gap-1.5 text-sm font-semibold">
       {props.label}
       <span className="flex items-center gap-2">
         {props.children}
-        {props.suffix && <span className="text-fg-muted font-normal">{props.suffix}</span>}
+        {props.suffix && (
+          <span className="text-fg-muted font-normal">{props.suffix}</span>
+        )}
       </span>
-      {props.hint && <span className="text-fg-muted text-caption font-normal">{props.hint}</span>}
+      {props.hint && (
+        <span className="text-fg-muted text-caption font-normal">
+          {props.hint}
+        </span>
+      )}
     </label>
   )
 }
@@ -34,15 +46,16 @@ function Field(props: { label: string; hint?: string; suffix?: string; children:
 export default function AdminPricingTierPage() {
   const { id = '' } = useParams()
   const nav = useAdminNav()
+  const { t } = useTranslation(['admin', 'common'])
   const pricing = usePricing()
   // /admin/pricing/new = thêm nhóm mẫu biểu, dùng chung form với màn sửa khung
   const isNew = id === 'new'
-  const tier = pricing.data?.tiers.find((t) => t.id === id)
-  const title = isNew ? 'Thêm nhóm mẫu biểu' : tier?.group
+  const tier = pricing.data?.tiers.find((x) => x.id === id)
+  const title = isNew ? t('pricing.tier.new') : tier?.group
 
   const listLink = (
     <Link to="/admin/pricing" className="text-fg-muted hover:text-fg-strong">
-      Khung giá dịch vụ
+      {t('pricing.title')}
     </Link>
   )
 
@@ -70,14 +83,16 @@ export default function AdminPricingTierPage() {
           tier={tier}
           expertShare={pricing.data.expertShare}
           onSubmit={({ group, ...input }) =>
-            tier ? pricing.schedule(tier.id, input) : pricing.createTier({ ...input, group })
+            tier
+              ? pricing.schedule(tier.id, input)
+              : pricing.createTier({ ...input, group })
           }
         />
       ) : (
         <h1 className="text-h1-tool">
           {pricing.isLoading
-            ? 'Đang tải…'
-            : (pricing.error?.message ?? `Không tìm thấy nhóm mẫu biểu ${id}`)}
+            ? t('common:loading')
+            : (pricing.error?.message ?? t('pricing.tier.notFound', { id }))}
         </h1>
       )}
     </AdminLayout>
@@ -94,6 +109,7 @@ function TierForm({
   expertShare: number
   onSubmit: (input: TierChangeInput & { group: string }) => Promise<unknown>
 }) {
+  const { t } = useTranslation('admin')
   const navigate = useNavigate()
   const base = tier?.scheduled ?? tier
   const [tomorrow] = useState(() => isoDay(new Date(Date.now() + 86_400_000)))
@@ -115,54 +131,57 @@ function TierForm({
   const outside = tier?.experts.filter((e) => e.fee < lo || e.fee > hi) ?? []
 
   const blockers = [
-    !tier && !group.trim() && { text: 'Thiếu tên nhóm mẫu biểu' },
-    (!lo || !hi) && { text: 'Nhập đủ mức tối thiểu và tối đa' },
-    lo && hi && lo >= hi && { text: 'Mức tối thiểu phải nhỏ hơn mức tối đa' },
+    !tier && !group.trim() && { text: t('pricing.tier.blocker.group') },
+    (!lo || !hi) && { text: t('pricing.tier.blocker.bounds') },
+    lo && hi && lo >= hi && { text: t('pricing.tier.blocker.order') },
     (st <= 0 || lo % st !== 0 || hi % st !== 0) && {
-      text: 'Mức giá phải chia hết cho bước giá',
+      text: t('pricing.tier.blocker.step'),
     },
-    (!effectiveFrom || effectiveFrom < tomorrow) && { text: 'Hiệu lực phải từ ngày mai trở đi' },
-    !reason.trim() && { text: 'Thiếu lý do thay đổi' },
+    (!effectiveFrom || effectiveFrom < tomorrow) && {
+      text: t('pricing.tier.blocker.date'),
+    },
+    !reason.trim() && { text: t('pricing.tier.blocker.reason') },
   ].filter((b) => !!b)
 
   return (
     <>
-      <h1 className="text-h1">{tier ? tier.group : 'Thêm nhóm mẫu biểu'}</h1>
+      <h1 className="text-h1">{tier ? tier.group : t('pricing.tier.new')}</h1>
       <p className="text-fg-muted mt-2 text-sm">
         {tier ? (
-          <>
-            Đang áp dụng:{' '}
-            <strong className="text-fg-strong num">
-              {vnd(tier.min)} – {vnd(tier.max)} đ
-            </strong>
-            , bước <span className="num">{vnd(tier.step)}</span>, từ{' '}
-            <span className="num">{formatDate(tier.effectiveFrom)}</span>
-          </>
+          <span className="num">
+            {t('pricing.tier.current', {
+              range: `${vnd(tier.min)} – ${vnd(tier.max)} đ`,
+              step: vnd(tier.step),
+              from: formatDate(tier.effectiveFrom),
+            })}
+          </span>
         ) : (
-          'Expert nhận nhóm này sẽ đặt phí rà soát trong khung bạn tạo, từ ngày hiệu lực.'
+          t('pricing.tier.newIntro')
         )}
       </p>
 
       <div className="mt-8 grid items-start gap-4 md:gap-6 lg:grid-cols-[minmax(0,1fr)_300px]">
         <section className="paper p-5 md:p-6">
-          <h2 className="text-h2">{tier ? 'Khung mới' : 'Khung giá'}</h2>
+          <h2 className="text-h2">
+            {tier ? t('pricing.tier.newRange') : t('pricing.tier.range')}
+          </h2>
           {!tier && (
             <div className="mt-4">
               <Field
-                label="Tên nhóm mẫu biểu (bắt buộc)"
-                hint="Tên Client thấy khi chọn loại hồ sơ cần rà soát."
+                label={t('pricing.tier.group')}
+                hint={t('pricing.tier.groupHint')}
               >
                 <input
                   value={group}
                   onChange={(e) => setGroup(e.target.value)}
-                  placeholder="vd. Chuyển giá liên kết"
+                  placeholder={t('pricing.tier.groupPlaceholder')}
                   className={inputCls}
                 />
               </Field>
             </div>
           )}
           <div className="mt-4 grid gap-4 sm:grid-cols-2">
-            <Field label="Phí tối thiểu (bắt buộc)" suffix="đ">
+            <Field label={t('pricing.tier.min')} suffix="đ">
               <input
                 type="number"
                 inputMode="numeric"
@@ -173,7 +192,7 @@ function TierForm({
                 className={`${inputCls} num text-right`}
               />
             </Field>
-            <Field label="Phí tối đa (bắt buộc)" suffix="đ">
+            <Field label={t('pricing.tier.max')} suffix="đ">
               <input
                 type="number"
                 inputMode="numeric"
@@ -185,9 +204,9 @@ function TierForm({
               />
             </Field>
             <Field
-              label="Bước giá (bắt buộc)"
+              label={t('pricing.tier.step')}
               suffix="đ"
-              hint="Expert chỉ đặt được bội số của bước giá."
+              hint={t('pricing.tier.stepHint')}
             >
               <input
                 type="number"
@@ -198,7 +217,10 @@ function TierForm({
                 className={`${inputCls} num text-right`}
               />
             </Field>
-            <Field label="Hiệu lực từ (bắt buộc)" hint="Sớm nhất là ngày mai.">
+            <Field
+              label={t('pricing.tier.from')}
+              hint={t('pricing.tier.fromHint')}
+            >
               <input
                 type="date"
                 min={tomorrow}
@@ -210,91 +232,107 @@ function TierForm({
           </div>
 
           <label className="mt-4 flex flex-col gap-1.5 text-sm font-semibold">
-            {tier ? 'Lý do thay đổi (bắt buộc)' : 'Lý do tạo nhóm (bắt buộc)'}
+            {tier
+              ? t('pricing.tier.reasonChange')
+              : t('pricing.tier.reasonCreate')}
             <textarea
               rows={3}
               value={reason}
               onChange={(e) => setReason(e.target.value)}
               placeholder={
                 tier
-                  ? 'vd. Hồ sơ hoàn thuế thường cần đối chiếu nhiều kỳ'
-                  : 'vd. Thêm mẫu biểu chuyển giá theo Nghị định 132/2020'
+                  ? t('pricing.tier.reasonChangePlaceholder')
+                  : t('pricing.tier.reasonCreatePlaceholder')
               }
               className="border-border-control rounded-control shadow-control bg-paper placeholder:text-fg-muted resize-y border px-3 py-2 text-base font-normal"
             />
             <span className="text-fg-muted text-caption font-normal">
-              Lưu vào lịch sử thay đổi và gửi kèm thông báo cho Expert.
+              {t('pricing.tier.reasonHint')}
             </span>
           </label>
 
           <div className="bg-sunken rounded-surface mt-5 p-3 text-sm">
-            <p className="text-fg-strong font-semibold">Expert sẽ thấy khi đặt giá</p>
-            <p className="mt-1">
-              Khung hiện hành:{' '}
-              <strong className="num">
-                {lo ? vnd(lo) : '…'} – {hi ? vnd(hi) : '…'} đ
-              </strong>{' '}
-              · bạn nhận <span className="num">{expertShare}%</span>
+            <p className="text-fg-strong font-semibold">
+              {t('pricing.tier.previewTitle')}
+            </p>
+            <p className="num mt-1">
+              {t('pricing.tier.preview', {
+                range: `${lo ? vnd(lo) : '…'} – ${hi ? vnd(hi) : '…'} đ`,
+                share: expertShare,
+              })}
             </p>
           </div>
         </section>
 
         {!tier ? (
           <section className="paper p-5">
-            <h2 className="text-h2">Sau khi tạo</h2>
-            <Note title="Nhóm mới chưa có Expert nào nhận">
-              Từ ngày hiệu lực, Expert thấy nhóm này trong mục Dịch vụ và tự bật
-              nhận nếu muốn, với giá trong khung.
+            <h2 className="text-h2">{t('pricing.tier.afterTitle')}</h2>
+            <Note title={t('pricing.tier.afterNoExpertTitle')}>
+              {t('pricing.tier.afterNoExpert')}
             </Note>
-            <Note title="Client chỉ thấy khi có Expert nhận">
-              Nhóm hiện trên Marketplace khi có ít nhất một Expert đang hoạt động
-              nhận nhóm này.
+            <Note title={t('pricing.tier.afterMarketTitle')}>
+              {t('pricing.tier.afterMarket')}
             </Note>
           </section>
         ) : (
-        <section className="paper p-5">
-          <h2 className="text-h2">Ảnh hưởng</h2>
-          <dl className="mt-3 grid grid-cols-3 gap-2">
-            {[
-              [tier.expertsAccepting, 'Expert trong nhóm', ''],
-              [outside.length, 'Ngoài khung mới', outside.length ? 'text-warning' : ''],
-              [tier.activeCases, 'Case đang chạy', ''],
-            ].map(([n, label, cls]) => (
-              <div key={label as string}>
-                <dd className={`text-fg-strong num text-2xl font-semibold ${cls}`}>{n}</dd>
-                <dt className="text-fg-muted text-caption">{label}</dt>
-              </div>
-            ))}
-          </dl>
+          <section className="paper p-5">
+            <h2 className="text-h2">{t('pricing.tier.impact')}</h2>
+            <dl className="mt-3 grid grid-cols-3 gap-2">
+              {[
+                [tier.expertsAccepting, t('pricing.tier.inGroup'), ''],
+                [
+                  outside.length,
+                  t('pricing.tier.outside'),
+                  outside.length ? 'text-warning' : '',
+                ],
+                [tier.activeCases, t('pricing.tier.activeCases'), ''],
+              ].map(([n, label, cls]) => (
+                <div key={label as string}>
+                  <dd
+                    className={`text-fg-strong num text-2xl font-semibold ${cls}`}
+                  >
+                    {n}
+                  </dd>
+                  <dt className="text-fg-muted text-caption">{label}</dt>
+                </div>
+              ))}
+            </dl>
 
-          {outside.length > 0 && (
-            <>
-              <p className="eyebrow mt-4">Ngoài khung mới</p>
-              <ul className="divide-border-subtle mt-1 divide-y text-sm">
-                {outside.map((e) => (
-                  <li key={e.id} className="flex justify-between gap-3 py-2">
-                    <span>
-                      <span className="text-fg-strong block font-semibold">{e.name}</span>
-                      <span className="text-warning text-caption">
-                        {e.fee < lo ? 'dưới mức tối thiểu mới' : 'trên mức tối đa mới'}
+            {outside.length > 0 && (
+              <>
+                <p className="eyebrow mt-4">{t('pricing.tier.outside')}</p>
+                <ul className="divide-border-subtle mt-1 divide-y text-sm">
+                  {outside.map((e) => (
+                    <li key={e.id} className="flex justify-between gap-3 py-2">
+                      <span>
+                        <span className="text-fg-strong block font-semibold">
+                          {e.name}
+                        </span>
+                        <span className="text-warning text-caption">
+                          {e.fee < lo
+                            ? t('pricing.tier.below')
+                            : t('pricing.tier.above')}
+                        </span>
                       </span>
-                    </span>
-                    <span className="num">{vnd(e.fee)} đ</span>
-                  </li>
-                ))}
-              </ul>
-              <Note title="Expert ngoài khung giữ giá cũ cho tới khi tự sửa">
-                Hệ thống gửi thông báo đề nghị cập nhật. Họ vẫn hiện trên
-                Marketplace với giá hiện tại.
+                      <span className="num">{vnd(e.fee)} đ</span>
+                    </li>
+                  ))}
+                </ul>
+                <Note title={t('pricing.tier.outsideNoteTitle')}>
+                  {t('pricing.tier.outsideNote')}
+                </Note>
+              </>
+            )}
+            {tier.activeCases > 0 && (
+              <Note
+                title={t('pricing.tier.casesNoteTitle', {
+                  count: tier.activeCases,
+                })}
+              >
+                {t('pricing.tier.casesNote')}
               </Note>
-            </>
-          )}
-          {tier.activeCases > 0 && (
-            <Note title={`${tier.activeCases} case đang chạy không đổi giá`}>
-              Case đã thanh toán giữ đúng số tiền đã trả.
-            </Note>
-          )}
-        </section>
+            )}
+          </section>
         )}
       </div>
 
@@ -308,28 +346,51 @@ function TierForm({
         blockers={blockers}
         ready={
           tier
-            ? `Áp dụng cho yêu cầu mới từ ${formatDate(effectiveFrom)} · gửi thông báo cho ${tier.expertsAccepting} Expert`
-            : `Mở cho Expert đặt giá từ ${formatDate(effectiveFrom)}`
+            ? t('pricing.tier.readyChange', {
+                date: formatDate(effectiveFrom),
+                count: tier.expertsAccepting,
+              })
+            : t('pricing.tier.readyCreate', { date: formatDate(effectiveFrom) })
         }
         secondary={
-          <Link to="/admin/pricing" className="btn btn-press btn-secondary no-underline">
-            Hủy
+          <Link
+            to="/admin/pricing"
+            className="btn btn-press btn-secondary no-underline"
+          >
+            {t('pricing.tier.cancel')}
           </Link>
         }
         primary={{
-          label: busy ? 'Đang lưu…' : tier ? 'Lên lịch áp dụng' : 'Tạo nhóm',
+          label: busy
+            ? t('pricing.tier.saving')
+            : tier
+              ? t('pricing.tier.schedule')
+              : t('pricing.tier.create'),
           disabled: blockers.length > 0 || busy,
           onClick: () => {
             setBusy(true)
             setError(null)
             const name = tier?.group ?? group.trim()
-            onSubmit({ group: name, min: lo, max: hi, step: st, effectiveFrom, reason: reason.trim() })
+            onSubmit({
+              group: name,
+              min: lo,
+              max: hi,
+              step: st,
+              effectiveFrom,
+              reason: reason.trim(),
+            })
               .then(() =>
                 navigate('/admin/pricing', {
                   state: {
                     toast: tier
-                      ? `Đã lên lịch khung mới cho ${name} từ ${formatDate(effectiveFrom)}`
-                      : `Đã tạo nhóm ${name}, mở từ ${formatDate(effectiveFrom)}`,
+                      ? t('pricing.tier.scheduled', {
+                          name,
+                          date: formatDate(effectiveFrom),
+                        })
+                      : t('pricing.tier.created', {
+                          name,
+                          date: formatDate(effectiveFrom),
+                        }),
                   },
                 })
               )

@@ -92,7 +92,8 @@
     "resetDemo": "Đặt lại demo",
     "signIn": "Đăng nhập",
     "dashboard": "Về bảng điều khiển",
-    "registerExpert": "Đăng ký chuyên gia"
+    "registerExpert": "Đăng ký chuyên gia",
+    "cancel": "Hủy"
   },
   "notFound": {
     "title": "Không tìm thấy trang này.",

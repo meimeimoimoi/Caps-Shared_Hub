@@ -1,16 +1,18 @@
+import { useTranslation } from 'react-i18next'
 import type { HistoryEntry } from '../types'
 import { formatDateTime } from '../utils/applications'
 
 export function HistoryTab({
   history,
-  title = 'Lịch sử thao tác',
+  title,
 }: {
   history: HistoryEntry[]
   title?: string
 }) {
+  const { t } = useTranslation('admin')
   return (
     <section className="paper p-5 md:p-6">
-      <h2 className="text-h2">{title}</h2>
+      <h2 className="text-h2">{title ?? t('detail.history.title')}</h2>
       <ol className="divide-border-subtle mt-3 divide-y">
         {history.map((h, i) => (
           <li
@@ -34,4 +36,3 @@ export function HistoryTab({
     </section>
   )
 }
-

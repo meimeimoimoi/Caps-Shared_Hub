@@ -12,7 +12,6 @@ import { useExperts, ALL } from '../../features/expert-vetting/hooks/useExperts'
 import { ExpertDrawer } from '../../features/expert-vetting/components/ExpertDrawer'
 import type { Expert } from '../../features/expert-vetting/types'
 import { useTranslation } from 'react-i18next'
-import { useEffect } from 'react'
 
 const selectCls =
   'border-border-control rounded-control shadow-control bg-paper h-control min-w-48 border px-3 text-sm'
@@ -24,9 +23,6 @@ export default function AdminExpertsPage() {
   const clearToast = useCallback(() => setToast(null), [])
   const { paged } = experts
   const { t } = useTranslation(['admin', 'common'])
-  useEffect(() => {
-    document.title = `${t('admin:experts.title')} | Shared Hub`
-  }, [t])
 
   return (
     <AdminLayout

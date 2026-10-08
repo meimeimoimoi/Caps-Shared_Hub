@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { cn } from '@/lib/utils'
 import type { Criterion } from '../types'
 
@@ -20,10 +21,11 @@ export function CompetencyReview({
   onScore,
   onEvidence,
 }: CompetencyReviewProps) {
+  const { t } = useTranslation('admin')
   return (
     <section className="paper p-5 md:p-6">
-      <h2 className="text-h2">Đánh giá năng lực</h2>
-      <p className="text-fg-muted text-sm">Thang chấm theo quy chế xét duyệt</p>
+      <h2 className="text-h2">{t('detail.competency.title')}</h2>
+      <p className="text-fg-muted text-sm">{t('detail.competency.subtitle')}</p>
 
       {criteria.map((c) => (
         <fieldset
@@ -54,12 +56,12 @@ export function CompetencyReview({
                   onChange={() => onScore(c.id, level)}
                   className="accent-ink"
                 />
-                Mức {level}
+                {t('detail.competency.level', { level })}
               </label>
             ))}
           </div>
           <label className="mt-3 flex flex-col gap-2 text-sm font-semibold">
-            Căn cứ đánh giá (bắt buộc)
+            {t('detail.competency.evidence')}
             <textarea
               required
               rows={2}
@@ -73,4 +75,3 @@ export function CompetencyReview({
     </section>
   )
 }
-

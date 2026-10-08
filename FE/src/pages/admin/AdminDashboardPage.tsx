@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useQuery } from '@tanstack/react-query'
@@ -23,23 +23,16 @@ import {
 import { disputesKeys } from '../../features/disputes-escrow/api/queryKeys'
 import { disputeHoursLeft } from '../../features/disputes-escrow/utils/disputes'
 import { usePricing } from '../../features/service-pricing/hooks/usePricing'
-import {
-  AttentionList,
-  type AttentionItem,
-} from '../../features/admin-analytics/components/AttentionList'
 import { BarList } from '../../features/admin-analytics/components/BarList'
 import { GrowthSection } from '../../features/admin-analytics/components/GrowthSection'
 import { KpiCard } from '../../features/admin-analytics/components/KpiCard'
 
-/* Tổng quan System Admin: việc gấp trước, chỉ số sau. Số liệu dùng chung cache với các màn chi tiết */
+/* Tổng quan System Admin: chỉ số, tăng trưởng, chỗ đang tắc. Việc gấp nằm ở chuông thông báo (useAdminNav). Số liệu dùng chung cache với các màn chi tiết */
 export default function AdminDashboardPage() {
   const nav = useAdminNav()
   const { t } = useTranslation('admin')
   const f = useFormatters()
   const [now] = useState(() => Date.now())
-  useEffect(() => {
-    document.title = `${t('dashboard.title')} | Shared Hub`
-  }, [t])
 
   const applications = useQuery({
     queryKey: adminKeys.applications(),
@@ -85,42 +78,10 @@ export default function AdminDashboardPage() {
       .filter((e) => e.status === status)
       .reduce((s, e) => s + e.amount, 0)
   const locked = sumBy('DISPUTE_LOCKED')
-  const payoutFailed = escrowList.filter(
-    (e) => e.status === 'PAYOUT_FAILED'
-  ).length
 
   const tiers = pricing.data?.tiers ?? []
-  const outsideRange = tiers.reduce((s, tier) => s + tier.outsideRange, 0)
   const scheduled = tiers.filter((tier) => tier.scheduled)
 
-  // Việc gấp, sắp theo mức độ: tiền và hạn trọng tài trước, cảnh báo nhẹ sau
-  const attention = [
-    nearestHours !== null && {
-      text: t('dashboard.attention.dispute', {
-        count: open.length,
-        hours: nearestHours,
-      }),
-      to: '/admin/disputes',
-      tone: 'warning',
-    },
-    payoutFailed > 0 && {
-      text: t('dashboard.attention.payoutFailed', { count: payoutFailed }),
-      to: '/admin/escrow',
-      tone: 'danger',
-    },
-    overdue.length > 0 && {
-      text: t('dashboard.attention.slaOverdue', {
-        count: overdue.length,
-        days: SLA_DAYS,
-      }),
-      to: '/admin/experts/pending',
-      tone: 'warning',
-    },
-    outsideRange > 0 && {
-      text: t('dashboard.attention.outsideRange', { count: outsideRange }),
-      to: '/admin/pricing',
-    },
-  ].filter((a): a is AttentionItem => !!a)
 
   return (
     <AdminLayout
@@ -130,8 +91,6 @@ export default function AdminDashboardPage() {
     >
       <h1 className="text-h1">{t('dashboard.title')}</h1>
       <p className="text-fg-muted mt-3">{t('dashboard.description')}</p>
-
-      <AttentionList items={attention} loading={loading} />
 
       <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <KpiCard
@@ -156,7 +115,8 @@ export default function AdminDashboardPage() {
         />
         <KpiCard
           label={t('dashboard.kpi.held')}
-          value={escrows.data && sumBy('HELD') + locked}
+          // Cùng tổng với nhóm "Đang giữ trong hệ thống" ở trang Hoàn tiền & chi trả
+          value={escrows.data && sumBy('HELD') + locked + sumBy('REFUND_PENDING')}
           format={(n) => f.money(n)}
           note={t('dashboard.kpi.heldNote', { amount: f.money(locked) })}
           warn={locked > 0}
@@ -204,10 +164,10 @@ export default function AdminDashboardPage() {
             .filter((r) => r.amount > 0)
             .map((r) => ({
               key: r.status,
-              label: ESCROW_STATUS[r.status].label,
+              label: t(`escrow.status.${r.status}`),
               value: r.amount,
               display: f.money(r.amount),
-              warn: r.status === 'PAYOUT_FAILED',
+              warn: r.status === 'PAYOUT_FAILED' || r.status === 'REFUND_FAILED',
             }))}
         />
       </div>

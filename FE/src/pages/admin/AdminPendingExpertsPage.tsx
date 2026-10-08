@@ -5,16 +5,12 @@ import { QUEUE_TABS } from '../../features/expert-vetting/constants'
 import { useAdminNav } from '@/app/layouts/admin/useAdminNav'
 import { usePendingApplications } from '../../features/expert-vetting/hooks/usePendingApplications'
 import { useTranslation } from 'react-i18next'
-import { useEffect } from 'react'
 
 export default function AdminPendingExpertsPage() {
   const nav = useAdminNav()
   const { tab, setTab, query, setQuery, countOf, paged, prev, next, isLoading, error } =
     usePendingApplications()
-  const { t } = useTranslation('admin')
-  useEffect(() => {
-    document.title = `${t('pendingExperts.title')} | Shared Hub`
-  }, [t])
+  const { t } = useTranslation(['admin', 'common'])
 
   return (
     <AdminLayout
@@ -48,7 +44,7 @@ export default function AdminPendingExpertsPage() {
                 : 'text-fg-muted border-transparent'
             )}
           >
-            {t(label as any)}
+            {t(label)}
             {showCount && <span className="num"> ({countOf(key)})</span>}
           </button>
         ))}
@@ -58,7 +54,7 @@ export default function AdminPendingExpertsPage() {
         paged={paged}
         onPrev={prev}
         onNext={next}
-        empty={isLoading ? 'Đang tải…' : error?.message}
+        empty={isLoading ? t('common:loading') : error?.message}
       />
     </AdminLayout>
   )

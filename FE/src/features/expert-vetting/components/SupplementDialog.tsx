@@ -58,7 +58,7 @@ export function SupplementDialog(props: SupplementDialogProps) {
     Object.fromEntries(items.map((i) => [i.key, i.defaultText]))
   )
   const { t } = useTranslation(['admin', 'common'])
-  const [message, setMessage] = useState(t(SUPPLEMENT_DIALOG.defaultMessage as any))
+  const [message, setMessage] = useState(t(SUPPLEMENT_DIALOG.defaultMessage))
 
   const toggle = (key: string) =>
     setChecked((s) => {
@@ -79,8 +79,8 @@ export function SupplementDialog(props: SupplementDialogProps) {
 
   return (
     <Modal
-      title={t(SUPPLEMENT_DIALOG.title as any)}
-      description={t(SUPPLEMENT_DIALOG.notice as any)}
+      title={t(SUPPLEMENT_DIALOG.title)}
+      description={t(SUPPLEMENT_DIALOG.notice)}
       onClose={onCancel}
       onSubmit={submit}
       footer={
@@ -90,25 +90,25 @@ export function SupplementDialog(props: SupplementDialogProps) {
             onClick={onCancel}
             className="btn btn-press btn-secondary"
           >
-            {t('common:actions.cancel' as any, 'Hủy') as string}
+            {t('common:actions.cancel')}
           </button>
           <button
             type="submit"
             disabled={checked.size === 0}
             className="btn btn-press btn-primary"
           >
-            {t(SUPPLEMENT_DIALOG.confirm as any) as string}
+            {t(SUPPLEMENT_DIALOG.confirm)}
           </button>
         </>
       }
     >
       <fieldset className="mt-4">
         <legend className="text-sm font-semibold">
-          {t(SUPPLEMENT_DIALOG.itemsLabel as any)}
+          {t(SUPPLEMENT_DIALOG.itemsLabel)}
         </legend>
         {items.length === 0 && (
           <p className="text-fg-muted mt-2 text-sm">
-            Không có mục nào được gợi ý.
+            {t('decision.supplement.noSuggestions')}
           </p>
         )}
         <ul className="mt-2 space-y-3">
@@ -126,12 +126,14 @@ export function SupplementDialog(props: SupplementDialogProps) {
               {checked.has(i.key) && (
                 <textarea
                   rows={2}
-                  aria-label={`Nội dung cần bổ sung cho ${i.label}`}
+                  aria-label={t('decision.supplement.itemAria', {
+                    item: i.label,
+                  })}
                   value={texts[i.key]}
                   onChange={(e) =>
                     setTexts((t) => ({ ...t, [i.key]: e.target.value }))
                   }
-                  placeholder="Nêu rõ nội dung cần bổ sung"
+                  placeholder={t('decision.supplement.itemPlaceholder')}
                   className="bg-sunken rounded-surface placeholder:text-fg-muted mt-2 block w-full resize-y border border-transparent px-3 py-2 text-sm"
                 />
               )}
@@ -139,11 +141,13 @@ export function SupplementDialog(props: SupplementDialogProps) {
           ))}
         </ul>
         {checked.size === 0 && items.length > 0 && (
-          <p className="text-warning mt-2 text-sm">Chọn ít nhất 1 mục.</p>
+          <p className="text-warning mt-2 text-sm">
+            {t('decision.supplement.pickOne')}
+          </p>
         )}
       </fieldset>
       <label className="mt-5 flex flex-col gap-2 text-sm font-semibold">
-        {t(SUPPLEMENT_DIALOG.messageLabel as any)}
+        {t(SUPPLEMENT_DIALOG.messageLabel)}
         <textarea
           rows={3}
           value={message}
@@ -154,4 +158,3 @@ export function SupplementDialog(props: SupplementDialogProps) {
     </Modal>
   )
 }
-

@@ -4,18 +4,7 @@ import type { ApplicationStatus, ReviewDecision } from './types'
 export const CURRENT_ADMIN = 'Trần An'
 
 /* Cấu hình dialog xác nhận cho từng loại quyết định */
-export const DECISION_DIALOG: Record<
-  Exclude<ReviewDecision, 'supplement'>,
-  {
-    title: string // nối thêm tên người đăng ký + "?"
-    notice: string
-    noteLabel: string
-    placeholder: string
-    required: boolean
-    confirm: string
-    showScores: boolean
-  }
-> = {
+export const DECISION_DIALOG = {
   approve: {
     title: 'decision.approve.title',
     notice: 'decision.approve.notice',
@@ -34,7 +23,18 @@ export const DECISION_DIALOG: Record<
     confirm: 'decision.reject.confirm',
     showScores: false,
   },
-}
+} as const satisfies Record<
+  Exclude<ReviewDecision, 'supplement'>,
+  {
+    title: string
+    notice: string
+    noteLabel: string
+    placeholder: string
+    required: boolean
+    confirm: string
+    showScores: boolean
+  }
+>
 
 export const SUPPLEMENT_DIALOG = {
   title: 'decision.supplement.title',
@@ -43,14 +43,14 @@ export const SUPPLEMENT_DIALOG = {
   messageLabel: 'decision.supplement.messageLabel',
   defaultMessage: 'decision.supplement.defaultMessage',
   confirm: 'decision.supplement.confirm',
-}
+} as const
 
 /* Nhãn ghi chú hiển thị lại trên thẻ quyết định */
-export const DECISION_NOTE_LABEL: Record<ReviewDecision, string> = {
+export const DECISION_NOTE_LABEL = {
   approve: 'decision.approve.noteLabel',
   reject: 'decision.reject.noteLabel',
   supplement: 'decision.supplement.noteLabel',
-}
+} as const satisfies Record<ReviewDecision, string>
 
 /* Quyết định → trạng thái đơn, dòng lịch sử, thông báo toast */
 export const DECISION_STATUS: Record<ReviewDecision, ApplicationStatus> = {
@@ -58,16 +58,16 @@ export const DECISION_STATUS: Record<ReviewDecision, ApplicationStatus> = {
   reject: 'REJECTED',
   supplement: 'NEED_MORE_INFORMATION',
 }
-export const DECISION_LOG: Record<ReviewDecision, string> = {
+export const DECISION_LOG = {
   approve: 'decision.log.approve',
   reject: 'decision.log.reject',
   supplement: 'decision.log.supplement',
-}
-export const DECISION_TOAST: Record<ReviewDecision, string> = {
+} as const satisfies Record<ReviewDecision, string>
+export const DECISION_TOAST = {
   approve: 'decision.toast.approve',
   reject: 'decision.toast.reject',
   supplement: 'decision.toast.supplement',
-}
+} as const satisfies Record<ReviewDecision, string>
 
 /* Tab hàng đợi xét duyệt: một tab có thể gom nhiều trạng thái (APPLICATION_STATUS) */
 export const QUEUE_TABS = [
@@ -110,8 +110,8 @@ export const QUEUE_TABS = [
 
 export type QueueTab = (typeof QUEUE_TABS)[number]['key']
 
-export const DECISION_LABEL: Record<ReviewDecision, string> = {
+export const DECISION_LABEL = {
   approve: 'decision.label.approve',
   reject: 'decision.label.reject',
   supplement: 'decision.label.supplement',
-}
+} as const satisfies Record<ReviewDecision, string>

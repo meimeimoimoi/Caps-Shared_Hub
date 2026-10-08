@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { Check, TriangleAlert, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { APPLICATION_STATUS } from '@/lib/constants'
@@ -24,10 +25,11 @@ export function DecisionCard({
   criteria,
   scores,
 }: DecisionCardProps) {
+  const { t } = useTranslation('admin')
   const { cls, Icon } = verdict[decision.kind]
   return (
     <section className="paper card-hover p-5 md:p-6">
-      <h2 className="text-h2">Quyết định của System Admin</h2>
+      <h2 className="text-h2">{t('detail.decisionTitle')}</h2>
       <div className={cn('verdict mt-3', cls)}>
         <span className="inline-flex items-center gap-1.5 font-semibold">
           <Icon size={16} aria-hidden="true" />
@@ -46,7 +48,7 @@ export function DecisionCard({
       {decision.note && (
         <div className="mt-4 text-sm">
           <p className="text-fg-strong font-semibold">
-            {DECISION_NOTE_LABEL[decision.kind]}
+            {t(DECISION_NOTE_LABEL[decision.kind])}
           </p>
           <p className="text-fg mt-1 whitespace-pre-line">{decision.note}</p>
         </div>
@@ -69,6 +71,7 @@ export function AiSummaryCard({
   reviewer,
   onOpenDetail,
 }: AiSummaryCardProps) {
+  const { t } = useTranslation('admin')
   const { checkedCount, flags } = screening
   const allReviewed = flags.every((f) => flagReviews[f.id])
   const reviewed = flags.filter((f) => flagReviews[f.id])
@@ -76,18 +79,18 @@ export function AiSummaryCard({
   return (
     <section className="paper p-5 md:p-6">
       <div className="flex items-start justify-between gap-4">
-        <h2 className="text-h2">Kết quả AI sàng lọc</h2>
+        <h2 className="text-h2">{t('detail.aiScreening.results')}</h2>
         <span className="badge-ai">AI</span>
       </div>
       <p className="text-fg-muted mt-1 text-sm">
-        <span className="num">{checkedCount}</span> mục đã kiểm tra ·{' '}
+        {t('detail.aiScreening.checked', { count: checkedCount })} ·{' '}
         {flags.length ? (
           <>
-            <span className="num">{flags.length}</span> mục cần xem lại
-            {allReviewed && ', đã được System Admin xem xét'}.
+            {t('detail.aiScreening.flags', { count: flags.length })}
+            {allReviewed && `, ${t('detail.aiScreening.allReviewed')}`}.
           </>
         ) : (
-          'không có mục cần xem lại.'
+          t('detail.aiScreening.noFlags')
         )}
       </p>
       {reviewed.length > 0 && (
@@ -101,7 +104,9 @@ export function AiSummaryCard({
               />
               <div>
                 <p className="text-fg-strong font-semibold">
-                  {f.document} · Đã xem xét
+                  {t('detail.aiScreening.documentReviewed', {
+                    document: f.document,
+                  })}
                 </p>
                 <p className="text-fg-muted">
                   {reviewer} ·{' '}
@@ -119,9 +124,8 @@ export function AiSummaryCard({
         onClick={onOpenDetail}
         className="text-fg-strong mt-3 text-sm underline underline-offset-4"
       >
-        Xem chi tiết AI sàng lọc
+        {t('detail.aiScreening.viewDetail')}
       </button>
     </section>
   )
 }
-
