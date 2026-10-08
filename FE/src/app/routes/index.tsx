@@ -50,6 +50,7 @@ const ExpertProfilePage = lazy(
 const ExpertSettingsPage = lazy(
   () => import('@/pages/expert-dashboard/ExpertSettingsPage')
 )
+const ExpertPricingPage = lazy(() => import('@/pages/expert-dashboard/ExpertPricingPage'))
 const ExpertServicesPage = lazy(
   () => import('@/pages/expert-dashboard/ExpertServicesPage')
 )
@@ -237,6 +238,7 @@ const router = createBrowserRouter(
           <Route path="active" element={<ExpertCasesPage key="active" />} />
           <Route path="cases/:id" element={<ExpertCaseDetailPage />} />
           <Route path="services" element={<ExpertServicesPage />} />
+          <Route path="services/:serviceId/pricing" element={<ExpertPricingPage />} />
           <Route path="income" element={<ExpertIncomePage />} />
           <Route path="profile" element={<ExpertProfilePage />} />
           <Route path="settings" element={<ExpertProfilePage />} />

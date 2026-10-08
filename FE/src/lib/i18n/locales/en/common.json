@@ -78,7 +78,8 @@
       "error": "Dashboard error",
       "denied": "Access denied",
       "contextError": "Access check error"
-    }
+    },
+    "interactive": "Interactive demo · in-memory changes · no server changes"
   },
   "language": {
     "label": "Language"

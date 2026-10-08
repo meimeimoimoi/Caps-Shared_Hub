@@ -78,7 +78,8 @@
       "error": "Lỗi bảng tổng quan",
       "denied": "Không có quyền truy cập",
       "contextError": "Lỗi kiểm tra quyền truy cập"
-    }
+    },
+    "interactive": "Demo tương tác · lưu trong bộ nhớ · không thay đổi trên máy chủ"
   },
   "language": {
     "label": "Ngôn ngữ"
