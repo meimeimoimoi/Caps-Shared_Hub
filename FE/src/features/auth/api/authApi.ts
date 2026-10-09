@@ -62,4 +62,20 @@ export const authApi = {
     if (isExpertDemo) return
     await api.post('/api/auth/change-password', body)
   },
+  /** BE luôn trả thành công dù email có tồn tại hay không (chống dò tài khoản).
+   * TODO(api): BE chưa có endpoint, đối chiếu khi có Swagger. */
+  requestPasswordReset: async (email: string) => {
+    if (isExpertDemo) return
+    await api.post('/api/auth/forgot-password', { email })
+  },
+  /** Token lấy từ liên kết trong email; hết hạn/sai → BE trả lỗi.
+   * TODO(api): BE chưa có endpoint, đối chiếu khi có Swagger. */
+  resetPassword: async (body: { token: string; newPassword: string }) => {
+    // MOCK: demo nhận token "expired" để xem trạng thái liên kết hết hạn
+    if (isExpertDemo) {
+      if (body.token === 'expired') throw new Error('RESET_TOKEN_EXPIRED')
+      return
+    }
+    await api.post('/api/auth/reset-password', body)
+  },
 }

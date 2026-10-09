@@ -21,6 +21,7 @@ import { useMotion } from '@/components/ui/motion'
 export type EmailLoginFormProps = {
   onBack: () => void
   onGoogle: () => void
+  onForgot: () => void
   onSubmit: (data: LoginFormValues) => void
   className?: string
   emailInputRef?: Ref<HTMLInputElement>
@@ -28,31 +29,38 @@ export type EmailLoginFormProps = {
   error?: string | null
 }
 
-const UI_FONT = "font-sans"
+const UI_FONT = 'font-sans'
 
+export const LABEL_CLASS =
+  'block text-[12px] font-semibold tracking-[-0.01em] text-white/85 mb-[7px] font-sans'
 
-const LABEL_CLASS = cn(
-  'block text-[12px] font-semibold tracking-[-0.01em] text-white/85 mb-[7px]',
-  UI_FONT
-)
-
-const INPUT_CLASS =
+export const INPUT_CLASS =
   'peer w-full h-[50px] pl-11 pr-[14px] rounded-xl border border-white/14 bg-white/5 text-sm font-medium text-white outline-none backdrop-blur-[10px] [-webkit-backdrop-filter:blur(10px)] placeholder:text-white/35 motion-interactive focus:border-[var(--accent)] focus:bg-white/8 focus:ring-2 focus:ring-accent/25'
 
-const INPUT_ERROR_CLASS =
+export const INPUT_ERROR_CLASS =
   'border-[var(--err)] ring-2 ring-[var(--err)]/20'
 
-const FIELD_ICON_CLASS =
+export const FIELD_ICON_CLASS =
   'pointer-events-none absolute left-[14px] text-white/40 transition-colors peer-focus:text-[var(--accent)]'
 
-const ERROR_CLASS = 'mt-1.5 text-[12px] leading-[1.4] text-[var(--err)]'
+export const ERROR_CLASS = 'mt-1.5 text-[12px] leading-[1.4] text-[var(--err)]'
 
-const LINK_CLASS =
+export const LINK_CLASS =
   'text-[var(--link)] font-medium no-underline underline-offset-2 transition-opacity hover:underline hover:opacity-80'
+
+export const CARD_CLASS =
+  'glass-card-fallback relative w-full rounded-3xl border border-white/14 bg-[color-mix(in_srgb,var(--ui-login-canvas)_42.0%,transparent)] px-8 pt-9 pb-8 shadow-[0_24px_60px_-20px_color-mix(in_srgb,var(--ui-overlay-ink)_55.0%,transparent),0_4px_12px_color-mix(in_srgb,var(--ui-overlay-ink)_25.0%,transparent),inset_0_1px_0_color-mix(in_srgb,var(--ui-login-text)_10.0%,transparent)] backdrop-blur-[28px] backdrop-saturate-150 [-webkit-backdrop-filter:blur(28px)_saturate(1.5)] max-[420px]:rounded-[20px] max-[420px]:px-[22px] max-[420px]:pt-8 max-[420px]:pb-[26px]'
+
+export const TITLE_CLASS =
+  'mb-1.5 text-[22px] leading-[1.2] font-bold tracking-[-0.02em] text-white max-[420px]:text-[20px]'
+
+export const PRIMARY_BUTTON_CLASS =
+  'flex h-[50px] w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-[var(--accent)] text-[15px] font-bold text-white shadow-accent motion-interactive hover:-translate-y-px hover:bg-accent-hover hover:shadow-accent active:translate-y-0 active:scale-[.995] disabled:pointer-events-none disabled:opacity-60'
 
 export function EmailLoginForm({
   onBack,
   onGoogle,
+  onForgot,
   onSubmit,
   className,
   emailInputRef,
@@ -113,23 +121,13 @@ export function EmailLoginForm({
   return (
     <div
       ref={motion}
-      className={cn(
-        'relative z-2 w-full max-w-[440px]',
-        className
-      )}
+      className={cn('relative z-2 w-full max-w-[440px]', className)}
     >
-      <div className="glass-card-fallback relative w-full rounded-3xl border border-white/14 bg-[color-mix(in_srgb,var(--ui-login-canvas)_42.0%,transparent)] px-8 pt-9 pb-8 shadow-[0_24px_60px_-20px_color-mix(in_srgb,var(--ui-overlay-ink)_55.0%,transparent),0_4px_12px_color-mix(in_srgb,var(--ui-overlay-ink)_25.0%,transparent),inset_0_1px_0_color-mix(in_srgb,var(--ui-login-text)_10.0%,transparent)] backdrop-blur-[28px] backdrop-saturate-150 [-webkit-backdrop-filter:blur(28px)_saturate(1.5)] max-[420px]:rounded-[20px] max-[420px]:px-[22px] max-[420px]:pt-8 max-[420px]:pb-[26px]">
+      <div className={CARD_CLASS}>
         <BackButton onClick={onBack} />
 
         <div className="mb-7 text-center">
-          <div
-            className={cn(
-              'mb-1.5 text-[22px] leading-[1.2] font-bold tracking-[-0.02em] text-white max-[420px]:text-[20px]',
-              UI_FONT
-            )}
-          >
-            {t('email.title')}
-          </div>
+          <div className={cn(TITLE_CLASS, UI_FONT)}>{t('email.title')}</div>
           <div className="text-[13px] leading-[1.5] text-[var(--body)]">
             {t('email.description')}
           </div>
@@ -194,7 +192,7 @@ export function EmailLoginForm({
                 type="button"
                 onClick={() => setShowPw((prev) => !prev)}
                 className={cn(
-                  'absolute top-1/2 right-1.5 h-[38px] -translate-y-1/2 rounded-lg border-0 bg-transparent px-3 text-[12px] font-semibold text-white/55 motion-interactive hover:bg-white/6 hover:text-white',
+                  'motion-interactive absolute top-1/2 right-1.5 h-[38px] -translate-y-1/2 rounded-lg border-0 bg-transparent px-3 text-[12px] font-semibold text-white/55 hover:bg-white/6 hover:text-white',
                   UI_FONT
                 )}
               >
@@ -217,18 +215,15 @@ export function EmailLoginForm({
               />
               <span>{t('email.remember')}</span>
             </label>
-            <a href="#" className={LINK_CLASS}>
+            <button type="button" onClick={onForgot} className={LINK_CLASS}>
               {t('email.forgot')}
-            </a>
+            </button>
           </div>
 
           <button
             type="submit"
             disabled={isLoading}
-            className={cn(
-              'flex h-[50px] w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-[var(--accent)] text-[15px] font-bold text-white shadow-accent motion-interactive hover:-translate-y-px hover:bg-accent-hover hover:shadow-accent active:translate-y-0 active:scale-[.995] disabled:pointer-events-none disabled:opacity-60',
-              UI_FONT
-            )}
+            className={cn(PRIMARY_BUTTON_CLASS, UI_FONT)}
           >
             <span>{t('actions.signIn')}</span>
             <ArrowRight aria-hidden="true" size={18} />
@@ -255,7 +250,7 @@ export function EmailLoginForm({
           type="button"
           onClick={onGoogle}
           className={cn(
-            'flex min-h-[50px] w-full cursor-pointer items-center justify-center gap-[10px] rounded-xl border border-white/14 bg-white/5 text-sm font-medium text-white backdrop-blur-[10px] [-webkit-backdrop-filter:blur(10px)] motion-interactive hover:border-white/22 hover:bg-white/10 active:scale-[.995]',
+            'motion-interactive flex min-h-[50px] w-full cursor-pointer items-center justify-center gap-[10px] rounded-xl border border-white/14 bg-white/5 text-sm font-medium text-white backdrop-blur-[10px] [-webkit-backdrop-filter:blur(10px)] hover:border-white/22 hover:bg-white/10 active:scale-[.995]',
             UI_FONT
           )}
         >
