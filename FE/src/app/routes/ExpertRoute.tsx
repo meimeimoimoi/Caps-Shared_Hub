@@ -27,6 +27,8 @@ export function ExpertRoute() {
             ? t('activeCasesAlternative')
             : path.endsWith('/services')
               ? t('services')
+              : path.endsWith('/bio')
+                ? t('publicProfile')
               : path.endsWith('/income')
                 ? t('income')
                 : path.endsWith('/cases')

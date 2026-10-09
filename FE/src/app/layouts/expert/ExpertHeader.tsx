@@ -12,6 +12,7 @@ const pageKeys = {
   cases: 'pages.cases',
   services: 'myServices',
   income: 'income',
+  bio: 'publicProfile',
   profile: 'pages.profile',
   settings: 'settings',
 } as const
