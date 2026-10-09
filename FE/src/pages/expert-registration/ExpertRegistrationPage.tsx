@@ -280,7 +280,6 @@ export default function ExpertRegistrationPage() {
               <details
                 className="expert-status-dossier"
                 id="submitted-dossier"
-                data-reveal
               >
                 <summary>
                   <span>

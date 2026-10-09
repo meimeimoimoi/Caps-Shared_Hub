@@ -821,7 +821,7 @@
 .expert-pro-notice { display: flex; gap: 10px; padding: 14px 16px; border-radius: 10px; margin-bottom: 20px; font-size: 13px; line-height: 1.6; }
 .expert-pro-notice p { margin: 0 !important; max-width: none; }
 .expert-pro-notice--warn { background: var(--ui-warning-soft); border: 1px solid var(--ui-warning-soft); color: var(--ui-warning); }
-.expert-pro-notice-icon { font-size: 16px; flex-shrink: 0; line-height: 1.5; }
+.expert-pro-notice-icon { flex-shrink: 0; margin-top: 3px; }
 
 /* ── Expertise chips (premium) ── */
 .expert-pro-expertise-fieldset { margin: 0 !important; padding: 0; border: 0; }
@@ -1664,18 +1664,18 @@ html,body,#root{height:100%}
   to { opacity: 1; transform: translateY(0); }
 }
 @media (prefers-reduced-motion: no-preference) {
-  .expert-welcome header { animation: expert-feedback var(--motion-feedback) var(--motion-ease-enter) both; }
-  .expert-welcome .expert-intro-copy { animation: expert-field-arrive var(--motion-enter) calc(var(--motion-stagger-interval) * 1) var(--motion-ease-enter) both; }
-  .expert-welcome .expert-review-note { animation: expert-field-arrive var(--motion-enter) calc(var(--motion-stagger-interval) * 2) var(--motion-ease-enter) both; }
-  .expert-welcome .expert-account-form { animation: expert-panel-arrive var(--motion-enter) var(--motion-ease-enter) both; }
-  .expert-welcome .expert-account-fields > * { animation: expert-field-arrive var(--motion-enter) var(--motion-ease-enter) both; }
+  .expert-welcome header { animation: expert-feedback var(--motion-feedback) var(--motion-ease-enter) backwards; }
+  .expert-welcome .expert-intro-copy { animation: expert-field-arrive var(--motion-enter) calc(var(--motion-stagger-interval) * 1) var(--motion-ease-enter) backwards; }
+  .expert-welcome .expert-review-note { animation: expert-field-arrive var(--motion-enter) calc(var(--motion-stagger-interval) * 2) var(--motion-ease-enter) backwards; }
+  .expert-welcome .expert-account-form { animation: expert-panel-arrive var(--motion-enter) var(--motion-ease-enter) backwards; }
+  .expert-welcome .expert-account-fields > * { animation: expert-field-arrive var(--motion-enter) var(--motion-ease-enter) backwards; }
   .expert-welcome .expert-account-fields > :nth-child(1) { animation-delay: 80ms; }
   .expert-welcome .expert-account-fields > :nth-child(2) { animation-delay: 110ms; }
   .expert-welcome .expert-account-fields > :nth-child(3) { animation-delay: 140ms; }
   .expert-welcome .expert-account-fields > :nth-child(4) { animation-delay: 170ms; }
   .expert-welcome .expert-account-fields > :nth-child(5) { animation-delay: 200ms; }
   .expert-welcome .expert-account-fields > :nth-child(6) { animation-delay: 230ms; }
-  .expert-welcome .expert-account-consent { animation: expert-field-arrive var(--motion-enter) calc(var(--motion-stagger-interval) * 3) var(--motion-ease-enter) both; }
+  .expert-welcome .expert-account-consent { animation: expert-field-arrive var(--motion-enter) calc(var(--motion-stagger-interval) * 3) var(--motion-ease-enter) backwards; }
   .expert-welcome .expert-submit-btn { animation: expert-feedback var(--motion-feedback) calc(var(--motion-stagger-interval) * 3) var(--motion-ease-enter) backwards; }
   .expert-application .expert-wizard { animation: expert-panel-arrive var(--motion-enter) var(--motion-ease-enter) backwards; }
   .expert-application .expert-file-item { animation: expert-field-arrive var(--motion-enter) var(--motion-ease-enter) backwards; }
@@ -1765,7 +1765,7 @@ html,body,#root{height:100%}
 .expert-pro-chip--selected .expert-pro-chip-check svg { animation: expert-confirm var(--motion-feedback) var(--motion-ease-enter); }
 .expert-file-dropzone-icon { transition: transform var(--motion-feedback) var(--motion-ease-enter), background-color var(--motion-feedback) var(--motion-ease-enter); }
 .expert-field-error { animation: expert-feedback var(--motion-feedback) var(--motion-ease-enter); }
-.expert-wizard-body.animate-expert-enter { animation: expert-step-arrive var(--motion-enter) var(--motion-ease-enter) both; }
+.expert-wizard-body.animate-expert-enter { animation: expert-step-arrive var(--motion-enter) var(--motion-ease-enter) backwards; }
 .expert-status-layout { animation: expert-feedback var(--motion-feedback) var(--motion-ease-enter); }
 @keyframes expert-confirm {
   from { opacity: .4; transform: scale(.65); }
@@ -1789,7 +1789,7 @@ html,body,#root{height:100%}
   to { transform: translateY(0); opacity: 1; }
 }
 @media (prefers-reduced-motion: no-preference) {
-  .expert-welcome .expert-introduction h1 { animation: expert-title-arrive var(--motion-enter) var(--motion-ease-enter) both; }
+  .expert-welcome .expert-introduction h1 { animation: expert-title-arrive var(--motion-enter) var(--motion-ease-enter) backwards; }
   .expert-welcome .expert-photo { animation: expert-photo-arrive var(--motion-enter) calc(var(--motion-stagger-interval) * 1) var(--motion-ease-enter) both; }
 }
 @media (hover: hover) and (pointer: fine) {
@@ -1841,9 +1841,11 @@ html,body,#root{height:100%}
 }
 
 /* Revealed state — slides up and fades in */
+/* none (not translate 0) and no will-change, so revealed blocks keep no stacking context that would cover popovers */
 [data-reveal][data-revealed] {
   opacity: 1;
-  transform: translateY(0);
+  transform: none;
+  will-change: auto;
 }
 
 /* Directional variants */
@@ -1851,21 +1853,21 @@ html,body,#root{height:100%}
   transform: translateX(-28px);
 }
 [data-reveal="left"][data-revealed] {
-  transform: translateX(0);
+  transform: none;
 }
 
 [data-reveal="right"] {
   transform: translateX(28px);
 }
 [data-reveal="right"][data-revealed] {
-  transform: translateX(0);
+  transform: none;
 }
 
 [data-reveal="scale"] {
   transform: scale(.92);
 }
 [data-reveal="scale"][data-revealed] {
-  transform: scale(1);
+  transform: none;
 }
 
 [data-reveal="fade"] {
@@ -1921,18 +1923,18 @@ html,body,#root{height:100%}
 @media (prefers-reduced-motion: no-preference) {
   /* Status page header */
   .expert-status-header {
-    animation: expert-status-header-arrive var(--motion-enter) var(--motion-ease-enter) both;
+    animation: expert-status-header-arrive var(--motion-enter) var(--motion-ease-enter) backwards;
   }
 
   /* Timeline stepper */
   .expert-status-timeline {
-    animation: expert-status-timeline-arrive var(--motion-enter) calc(var(--motion-stagger-interval) * 1) var(--motion-ease-enter) both;
+    animation: expert-status-timeline-arrive var(--motion-enter) calc(var(--motion-stagger-interval) * 1) var(--motion-ease-enter) backwards;
     transform-origin: left;
   }
 
   /* Individual timeline stages stagger */
   .expert-status-stage {
-    animation: expert-status-stage-arrive var(--motion-enter) var(--motion-ease-enter) both;
+    animation: expert-status-stage-arrive var(--motion-enter) var(--motion-ease-enter) backwards;
   }
   .expert-status-stage:nth-child(1) { animation-delay: 120ms; }
   .expert-status-stage:nth-child(2) { animation-delay: 170ms; }
@@ -1942,49 +1944,49 @@ html,body,#root{height:100%}
 
   /* Action card */
   .expert-status-action {
-    animation: expert-status-card-arrive var(--motion-enter) calc(var(--motion-stagger-interval) * 2) var(--motion-ease-enter) both;
+    animation: expert-status-card-arrive var(--motion-enter) calc(var(--motion-stagger-interval) * 2) var(--motion-ease-enter) backwards;
   }
 
   /* Action card inner elements stagger */
   .expert-status-action .expert-status-action-top {
-    animation: expert-field-arrive var(--motion-enter) calc(var(--motion-stagger-interval) * 3) var(--motion-ease-enter) both;
+    animation: expert-field-arrive var(--motion-enter) calc(var(--motion-stagger-interval) * 3) var(--motion-ease-enter) backwards;
   }
   .expert-status-action > h2 {
-    animation: expert-field-arrive var(--motion-enter) calc(var(--motion-stagger-interval) * 4) var(--motion-ease-enter) both;
+    animation: expert-field-arrive var(--motion-enter) calc(var(--motion-stagger-interval) * 4) var(--motion-ease-enter) backwards;
   }
   .expert-status-action > p,
   .expert-status-action > div:not(.expert-status-action-top):not(.expert-status-reassurance) {
-    animation: expert-field-arrive var(--motion-enter) calc(var(--motion-stagger-interval) * 4) var(--motion-ease-enter) both;
+    animation: expert-field-arrive var(--motion-enter) calc(var(--motion-stagger-interval) * 4) var(--motion-ease-enter) backwards;
   }
   .expert-status-reassurance {
-    animation: expert-field-arrive var(--motion-enter) calc(var(--motion-stagger-interval) * 4) var(--motion-ease-enter) both;
+    animation: expert-field-arrive var(--motion-enter) calc(var(--motion-stagger-interval) * 4) var(--motion-ease-enter) backwards;
   }
 
   /* Profile sidebar */
   .expert-status-profile {
-    animation: expert-status-profile-arrive var(--motion-enter) calc(var(--motion-stagger-interval) * 3) var(--motion-ease-enter) both;
+    animation: expert-status-profile-arrive var(--motion-enter) calc(var(--motion-stagger-interval) * 3) var(--motion-ease-enter) backwards;
   }
 
   /* Profile sidebar inner stagger */
   .expert-status-profile .expert-status-profile-heading {
-    animation: expert-field-arrive var(--motion-enter) calc(var(--motion-stagger-interval) * 4) var(--motion-ease-enter) both;
+    animation: expert-field-arrive var(--motion-enter) calc(var(--motion-stagger-interval) * 4) var(--motion-ease-enter) backwards;
   }
   .expert-status-profile .expert-status-applicant {
-    animation: expert-field-arrive var(--motion-enter) calc(var(--motion-stagger-interval) * 4) var(--motion-ease-enter) both;
+    animation: expert-field-arrive var(--motion-enter) calc(var(--motion-stagger-interval) * 4) var(--motion-ease-enter) backwards;
   }
   .expert-status-profile .expert-status-facts {
-    animation: expert-field-arrive var(--motion-enter) calc(var(--motion-stagger-interval) * 4) var(--motion-ease-enter) both;
+    animation: expert-field-arrive var(--motion-enter) calc(var(--motion-stagger-interval) * 4) var(--motion-ease-enter) backwards;
   }
   .expert-status-profile .expert-status-profile-note {
-    animation: expert-field-arrive var(--motion-enter) calc(var(--motion-stagger-interval) * 4) var(--motion-ease-enter) both;
+    animation: expert-field-arrive var(--motion-enter) calc(var(--motion-stagger-interval) * 4) var(--motion-ease-enter) backwards;
   }
   .expert-status-profile .expert-status-view-link {
-    animation: expert-field-arrive var(--motion-enter) calc(var(--motion-stagger-interval) * 4) var(--motion-ease-enter) both;
+    animation: expert-field-arrive var(--motion-enter) calc(var(--motion-stagger-interval) * 4) var(--motion-ease-enter) backwards;
   }
 
   /* Dossier */
   .expert-status-dossier {
-    animation: expert-status-dossier-arrive var(--motion-enter) calc(var(--motion-stagger-interval) * 4) var(--motion-ease-enter) both;
+    animation: expert-status-dossier-arrive var(--motion-enter) calc(var(--motion-stagger-interval) * 4) var(--motion-ease-enter) backwards;
   }
 
   /* Stage change transition — smooth stage label and content swap */
@@ -2049,7 +2051,7 @@ html,body,#root{height:100%}
   .expert-wizard-body .expert-independent-row,
   .expert-wizard-body .expert-pro-review > .expert-pro-subtitle,
   .expert-wizard-body .expert-pro-review > .expert-pro-notice {
-    animation: expert-inner-field-arrive var(--motion-enter) var(--motion-ease-enter) both;
+    animation: expert-inner-field-arrive var(--motion-enter) var(--motion-ease-enter) backwards;
   }
 
   /* Stagger within grids */
@@ -2070,12 +2072,12 @@ html,body,#root{height:100%}
 
   /* Profile photo entrance */
   .expert-wizard-body .expert-profile-photo {
-    animation: expert-inner-field-arrive var(--motion-enter) calc(var(--motion-stagger-interval) * 1) var(--motion-ease-enter) both;
+    animation: expert-inner-field-arrive var(--motion-enter) calc(var(--motion-stagger-interval) * 1) var(--motion-ease-enter) backwards;
   }
 
   /* Chip items stagger on ProfessionalExperience */
   .expert-wizard-body .expert-pro-chip {
-    animation: expert-inner-field-arrive var(--motion-enter) var(--motion-ease-enter) both;
+    animation: expert-inner-field-arrive var(--motion-enter) var(--motion-ease-enter) backwards;
   }
   .expert-wizard-body .expert-pro-chip:nth-child(1) { animation-delay: 160ms; }
   .expert-wizard-body .expert-pro-chip:nth-child(2) { animation-delay: 200ms; }
@@ -2086,7 +2088,7 @@ html,body,#root{height:100%}
 
   /* Supporting documents tab panel content */
   .expert-wizard-body .expert-pro-tabs-container .expert-pro-tab {
-    animation: expert-inner-field-arrive var(--motion-enter) var(--motion-ease-enter) both;
+    animation: expert-inner-field-arrive var(--motion-enter) var(--motion-ease-enter) backwards;
   }
   .expert-wizard-body .expert-pro-tabs-container .expert-pro-tab:nth-child(1) { animation-delay: 80ms; }
   .expert-wizard-body .expert-pro-tabs-container .expert-pro-tab:nth-child(2) { animation-delay: 130ms; }
@@ -2096,7 +2098,7 @@ html,body,#root{height:100%}
 
   /* Section icons have a pop-in micro-animation */
   .expert-wizard-body .expert-pro-section-icon {
-    animation: expert-confirm var(--motion-feedback) calc(var(--motion-stagger-interval) * 1) var(--motion-ease-enter) both;
+    animation: expert-confirm var(--motion-feedback) calc(var(--motion-stagger-interval) * 1) var(--motion-ease-enter) backwards;
   }
 
   /* Review summary entries stagger */
@@ -2107,7 +2109,7 @@ html,body,#root{height:100%}
 
   /* Wizard footer (save draft, back, continue) */
   .expert-wizard .expert-wizard-footer {
-    animation: expert-field-arrive var(--motion-enter) calc(var(--motion-stagger-interval) * 3) var(--motion-ease-enter) both;
+    animation: expert-field-arrive var(--motion-enter) calc(var(--motion-stagger-interval) * 3) var(--motion-ease-enter) backwards;
   }
 
   /* Stepper track fill animates on step change */

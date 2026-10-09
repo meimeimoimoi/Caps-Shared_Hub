@@ -2,14 +2,23 @@ import { useExpertPresentation } from '@/features/expert-dashboard/hooks/useExpe
 import { useTranslation } from 'react-i18next'
 import { useRef, useState } from 'react'
 import { MotionPresence } from '@/components/ui/motion'
-import { Bell, X } from 'lucide-react'
+import {
+  Bell,
+  CircleAlert,
+  CircleCheck,
+  Info,
+  TriangleAlert,
+  X,
+  type LucideIcon,
+} from 'lucide-react'
 import type { DashboardDto, DashboardNotification } from '../types'
 
-const severityConfig: Record<string, { icon: string; className: string }> = {
-  urgent: { icon: '🔴', className: 'ep-notif-urgent' },
-  warning: { icon: '🟡', className: 'ep-notif-warning' },
-  success: { icon: '🟢', className: 'ep-notif-success' },
-  info: { icon: '🔵', className: 'ep-notif-info' },
+// Icon cùng màu với viền trái của từng mức; không dùng emoji vì mỗi hệ điều hành vẽ một kiểu
+const severityConfig: Record<string, { icon: LucideIcon; className: string }> = {
+  urgent: { icon: CircleAlert, className: 'ep-notif-urgent' },
+  warning: { icon: TriangleAlert, className: 'ep-notif-warning' },
+  success: { icon: CircleCheck, className: 'ep-notif-success' },
+  info: { icon: Info, className: 'ep-notif-info' },
 }
 
 export function NotificationsPanel({
@@ -116,9 +125,7 @@ function NotificationItem({
     <li
       className={`ep-notification-item ${config.className} ${item.read ? 'ep-notif-read' : ''}`}
     >
-      <span className="ep-notif-icon" aria-hidden="true">
-        {config.icon}
-      </span>
+      <config.icon size={16} className="ep-notif-icon" aria-hidden="true" />
       <div className="ep-notif-body">
         <div className="ep-notif-top">
           <strong>{item.title}</strong>
