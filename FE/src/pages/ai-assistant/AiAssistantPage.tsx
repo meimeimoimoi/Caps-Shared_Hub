@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { Trans, useTranslation } from 'react-i18next'
+import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import {
   FileText,
@@ -10,7 +10,6 @@ import {
   Sparkles,
 } from 'lucide-react'
 import { Button } from '@/components/ui/actions/button'
-import { DemoBanner } from '@/components/ui/feedback/demo-banner'
 import { Drawer } from '@/components/ui/feedback/drawer'
 import { Toast } from '@/components/ui/feedback/toast'
 import { AppHeader } from '@/components/ui/layout/app-header'
@@ -207,16 +206,6 @@ export default function AiAssistantPage() {
                 ],
           }}
         />
-
-        <DemoBanner>
-          <p>
-            <Trans
-              t={t}
-              i18nKey="aiAssistant:demoDisclosure"
-              components={{ strong: <strong /> }}
-            />
-          </p>
-        </DemoBanner>
 
         <div className="flex min-h-0 flex-1">
           <main
