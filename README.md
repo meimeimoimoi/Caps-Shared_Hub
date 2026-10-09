@@ -39,14 +39,19 @@ Caps-Shared_Hub/
 │   └── scripts/                  # start-all.ps1 / start-infra.ps1 / stop-infra.ps1
 ├── FE/
 │   ├── src/
-│   │   ├── app/                  # App shell: providers (QueryClient) + routes
-│   │   ├── features/auth/        # components / hooks / store (zustand) / api / types
-│   │   ├── components/ui/        # UI dùng chung kiểu shadcn (button, input, badge)
-│   │   ├── lib/                  # api-client (axios + Bearer + 401 auto-logout)
-│   │   ├── pages/                # LoginPage / DashboardPage / NotFoundPage
-│   │   └── types/                # Types toàn cục
+│   │   ├── app/                  # Application shell, providers, routes
+│   │   ├── features/             # components / hooks / store / api / types per feature
+│   │   ├── components/ui/        # Reusable UI primitives
+│   │   ├── lib/                  # API client and generic utilities
+│   │   ├── pages/                # Route screens (login, admin, expert)
+│   │   ├── hooks/                # Reusable hooks
+│   │   ├── assets/               # Logos and shared assets
+│   │   ├── styles/               # Global styles and design tokens
+│   │   └── main.tsx              # React entry point
+│   ├── scripts/check-architecture.mjs
 │   ├── .env.example              # Mẫu biến môi trường
-│   └── package.json
+│   ├── package.json
+│   └── README.md                 # Frontend architecture and conventions
 └── README.md                     # File này
 ```
 
@@ -135,8 +140,8 @@ vào `/dashboard` (F5 không mất session, 401 tự về `/login`).
 
 **Frontend**
 
-- Tính năng mới: folder theo domain trong `src/features/<ten>/` gồm `components/`, `hooks/`, `store/`, `api/`, `types/`.
-- UI nguyên tử dùng chung vào `src/components/ui/`. Route mới khai báo trong `src/app/routes/` (lazy + `ProtectedRoute` nếu cần auth).
+- Tính năng mới: folder theo domain trong `src/features/<ten>/` gồm `components/`, `hooks/`, `store/`, `api/`, `types/` theo kiến trúc nhóm đã chốt.
+- UI nguyên tử dùng chung vào `src/components/ui/`. Màn hình đặt tại `src/pages/`; route mới khai báo trong `src/app/routes/` (lazy + `ProtectedRoute` nếu cần auth).
 - Gọi API qua `lib/api-client` (`api.get/post`), không dùng `axios` trực tiếp trong component.
 
 ---
@@ -149,3 +154,5 @@ Những điểm cố ý để đơn giản, sẽ thay khi code thật:
 - `AuthDbContext.EnsureCreated()` → `dotnet ef migrations`.
 - Hash mật khẩu SHA256 demo → BCrypt/Argon2 + refresh token + lockout.
 - MassTransit mới có contracts + config, chưa wiring consumer thật.
+
+Frontend dependency rules and verification commands: [FE/README.md](FE/README.md).

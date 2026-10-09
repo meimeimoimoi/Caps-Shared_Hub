@@ -1,3 +1,5 @@
-export * from './components/LoginForm'
-export * from './hooks/useAuth'
-export * from './types'
+export { useAuth } from './hooks/useAuth'
+export { useAuthStore } from './store/authStore'
+export { validateAccount, passwordRequirements } from './utils/accountValidation'
+export type { AccountField } from './utils/accountValidation'
+export type * from './types'
