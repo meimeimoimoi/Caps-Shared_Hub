@@ -223,18 +223,13 @@ export default function AiAssistantPage() {
         </DemoBanner>
 
         <div className="flex min-h-0 flex-1">
-          {/* Lịch sử tra cứu (từ lg) */}
-          <aside className="bg-surface-muted border-border hidden w-72 shrink-0 flex-col border-r lg:flex">
-            <ConversationHistory {...historyProps} />
-          </aside>
-
           <main
             id="assistant-main"
             tabIndex={-1}
             className="flex min-w-0 flex-1 flex-col focus:outline-none"
           >
-            {/* Thanh công cụ dưới lg: lịch sử nằm trong Drawer */}
-            <div className="border-border-subtle bg-canvas flex items-center justify-between gap-2 border-b px-4 py-2 lg:hidden">
+            {/* Lịch sử nằm trong Drawer ở mọi kích thước để không thành sidebar thứ hai */}
+            <div className="border-border-subtle bg-canvas flex items-center justify-between gap-2 border-b px-4 py-2 md:px-8">
               <Button
                 ref={historyTrigger}
                 type="button"
@@ -246,6 +241,12 @@ export default function AiAssistantPage() {
               >
                 <History size={16} aria-hidden="true" />
                 {t('aiAssistant:history.title')}
+                <span
+                  aria-hidden="true"
+                  className="font-num bg-surface-muted text-text-muted text-caption rounded px-1.5 tabular-nums"
+                >
+                  {conversations.length}
+                </span>
               </Button>
               <Button
                 type="button"
