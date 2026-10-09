@@ -1,0 +1,6 @@
+<Project Sdk="Microsoft.NET.Sdk">
+<PropertyGroup><OutputType>Exe</OutputType></PropertyGroup>
+<ItemGroup><ProjectReference Include="../../auth/auth.csproj" /></ItemGroup>
+<ItemGroup><ProjectReference Include="../../notification/notification.csproj" /></ItemGroup>
+<ItemGroup><FrameworkReference Include="Microsoft.AspNetCore.App" /></ItemGroup>
+</Project>
