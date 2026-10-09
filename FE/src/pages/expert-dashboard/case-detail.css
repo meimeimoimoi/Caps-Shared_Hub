@@ -1,0 +1,69 @@
+@layer components {
+  .expert-portal .ep-case-detail {
+    --case-accent: #9a3412;
+    --case-accent-bg: #fff1e8;
+    --case-muted: #526175;
+    font-family: 'Be Vietnam Pro', Arial, sans-serif;
+  }
+
+  .expert-portal.ep-dark .ep-case-detail {
+    --case-accent: #fdba74;
+    --case-accent-bg: #431407;
+    --case-muted: #b5b5b5;
+  }
+
+  .expert-portal .ep-case-detail h1,
+  .expert-portal .ep-review-preparation h2 {
+    font-family: 'Lora', Georgia, serif;
+    font-weight: 600;
+  }
+
+  .expert-portal .ep-case-detail .ep-button-primary {
+    background: #c2410c;
+    background-image: none;
+    color: #fff !important;
+    border-color: #c2410c;
+    box-shadow: none;
+    backdrop-filter: none;
+    transition: background-color 160ms ease-out, transform 160ms ease-out;
+  }
+
+  .expert-portal .ep-case-detail .ep-button-primary:hover:not(:disabled) {
+    background: #9a3412;
+    box-shadow: none;
+    transform: translateY(-1px);
+  }
+
+  .expert-portal .ep-case-detail .ep-button-primary:active:not(:disabled) {
+    background: #7c2d12;
+    transform: translateY(0);
+  }
+
+  .expert-portal .ep-case-detail .ep-button-primary:focus-visible {
+    outline: 2px solid var(--case-accent);
+    outline-offset: 3px;
+  }
+
+  .expert-portal .ep-review-preparation p,
+  .expert-portal .ep-review-preparation small {
+    color: var(--case-muted);
+  }
+
+  .expert-portal .ep-review-start {
+    border: 1px solid var(--case-accent);
+    background: var(--case-accent-bg);
+    color: var(--case-accent);
+  }
+
+  .expert-portal .ep-review-start-label {
+    color: var(--case-accent);
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .expert-portal .ep-review-start-button {
+    min-height: 48px;
+    font-size: 14px;
+    white-space: normal;
+  }
+}

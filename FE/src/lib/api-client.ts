@@ -1,4 +1,17 @@
 import axios, { type AxiosRequestConfig } from 'axios'
+import { SESSION_EXPIRED_EVENT } from './session-events'
+import { clearPrivateQueries } from './query-client'
+
+export class ApiError extends Error {
+  readonly status?: number
+  readonly code?: string
+  constructor(message: string, status?: number, code?: string) {
+    super(message)
+    this.name = 'ApiError'
+    this.status = status
+    this.code = code
+  }
+}
 
 function getApiBaseUrl() {
   const fromEnv = import.meta.env.VITE_API_URL as string | undefined
@@ -23,17 +36,17 @@ apiClient.interceptors.request.use((config) => {
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
+    if (axios.isCancel(error)) return Promise.reject(error)
     const status = error.response?.status
     if (status === 401) {
+      clearPrivateQueries()
       localStorage.removeItem('auth_token')
       localStorage.removeItem('auth_user')
-      if (window.location.pathname !== '/login') {
-        window.location.href = '/login'
-      }
+      window.dispatchEvent(new Event(SESSION_EXPIRED_EVENT))
     }
     const backendMessage =
       error.response?.data?.message || error.response?.data?.detail || error.message
-    return Promise.reject(new Error(backendMessage))
+    return Promise.reject(new ApiError(backendMessage, status, error.response?.data?.code))
   },
 )
 
