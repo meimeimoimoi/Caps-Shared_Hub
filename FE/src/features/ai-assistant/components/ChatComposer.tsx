@@ -39,13 +39,13 @@ export function ChatComposer({
             onKeyDown={handleKeyDown}
             placeholder="Hỏi về Thuế TNDN..."
             rows={2}
-            className="min-w-0 flex-1 resize-none rounded-lg border border-gray-400 px-4 py-3"/>
+            className="min-w-0 flex-1 resize-none rounded-lg border border-border-control px-4 py-3"/>
 
             <button 
             type="button"
             disabled={!value.trim() || isSending}
             onClick={onSend}
-            className="h-14 shrink-0 rounded-lg bg-[#CC4A00] px-5 text-white disabled:cursor-not-allowed disabled:opacity-50">
+            className="h-14 shrink-0 rounded-lg bg-accent px-5 text-on-accent hover:bg-accent-hover disabled:cursor-not-allowed disabled:opacity-50">
                 {isSending ? 'Đang trả lời...' : 'Gửi'}
             </button>
         </div>

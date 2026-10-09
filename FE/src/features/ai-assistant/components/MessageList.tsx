@@ -34,8 +34,8 @@ export function MessageList({
           key={message.id}
           className={`max-w-[85%] rounded-xl px-4 py-3 ${
             message.role === 'user'
-              ? 'self-end bg-[#F7F7F5]'
-              : 'self-start border border-[#E4E4E1] bg-white'
+              ? 'self-end bg-sunken'
+              : 'self-start border border-border bg-paper'
           }`}
         >
           <p className="whitespace-pre-wrap break-words">
@@ -45,7 +45,7 @@ export function MessageList({
             <button
               type="button"
               onClick={() => handleCopy(message)}
-              className="mt-2 rounded px-2 py-1 text-xs text-gray-600 hover:bg-gray-100"
+              className="mt-2 rounded px-2 py-1 text-xs text-fg-muted hover:bg-sunken"
             >
               {copiedMessageId === message.id ? 'Đã sao chép' : 'Sao chép'}
             </button>
@@ -55,13 +55,13 @@ export function MessageList({
       {isSending && (
         <div
           role="status"
-          className="self-start rounded-xl border border-[#E4E4E1] bg-white px-4 py-3 text-sm text-gray-500"
+          className="self-start rounded-xl border border-border bg-paper px-4 py-3 text-sm text-fg-muted"
         >
           Đang trả lời…
         </div>
       )}
       {copyError && (
-        <p role="alert" className="text-sm text-red-600">
+        <p role="alert" className="text-sm text-danger">
           {copyError}
         </p>
       )}

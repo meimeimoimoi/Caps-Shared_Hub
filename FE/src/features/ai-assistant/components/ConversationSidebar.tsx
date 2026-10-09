@@ -33,11 +33,11 @@ export function ConversationSidebar({
                 <label htmlFor='conversation-search' className='sr-only'>
                     Tìm cuộc trò chuyện
                 </label>
-                <div className='flex items-center gap-2 rounded-lg border border-[#E4E4E1] bg-white px-3 py-2'>
+                <div className='flex items-center gap-2 rounded-lg border border-border bg-paper px-3 py-2'>
                     <Search
                     size={16}
                     aria-hidden="true"
-                    className='shrink-0 text-gray-500'
+                    className='shrink-0 text-fg-muted'
                     />
                     <input
                     id="conversation-search"
@@ -50,7 +50,7 @@ export function ConversationSidebar({
                 </div>
             </div>
 
-            <div className="flex h-16 shrink-0 items-center justify-between border-b border-[#E4E4E1] px-4">
+            <div className="flex h-16 shrink-0 items-center justify-between border-b border-border px-4">
                 <h2 className="">
                     Trợ lý AI
                 </h2>
@@ -59,7 +59,7 @@ export function ConversationSidebar({
                 type="button"
                 onClick={onNewConversation}
                 disabled={isSending}
-                className="flex items-center gap-1 rounded-lg border border-black bg-white px-3 py-1.5 text-sm font-semibold"
+                className="flex items-center gap-1 rounded-lg border border-border-strong bg-paper px-3 py-1.5 text-sm font-semibold"
                 >
                     <Plus size={16} aria-hidden="true"/>
                     Mới
@@ -67,7 +67,7 @@ export function ConversationSidebar({
             </div>
 
             <div className="min-h-0 flex-1 overflow-y-auto px-3 pb-4">
-                <h3 className="mb-2 text-xs font-semibold text-gray-500">
+                <h3 className="mb-2 text-xs font-semibold text-fg-muted">
                     Cuộc trò chuyện
                 </h3>
 
@@ -85,8 +85,8 @@ export function ConversationSidebar({
                                     }
                                     className={`w-full truncate rounded-lg px-3 py-2 text-left text-sm disabled:cursor-not-allowed disabled:opacity-50 ${
                                     conversation.id === activeConversationId
-                                        ? 'bg-white font-semibold text-black'
-                                        : 'text-gray-700 hover:bg-white'
+                                        ? 'bg-paper font-semibold text-fg-strong'
+                                        : 'text-fg hover:bg-paper'
                                 }`}
                             >
                                 {conversation.title}
@@ -95,7 +95,7 @@ export function ConversationSidebar({
                     ))}
                     </ul>
                 ) : (
-                    <p role="status" className="px-3 py-2 text-sm text-gray-500">
+                    <p role="status" className="px-3 py-2 text-sm text-fg-muted">
                     Không tìm thấy cuộc trò chuyện.
                     </p>
                 )}

@@ -131,8 +131,8 @@ const KnowledgeDashboardPage = lazy(
 const KnowledgeAccountPage = lazy(
   () => import('@/pages/knowledge-admin/KnowledgeAccountPage')
 )
-const AiAssitantPage = lazy(
-  () => import('@/pages/ai-assitant/AiAssitantPage')
+const AiAssistantPage = lazy(
+  () => import('@/pages/ai-assistant/AiAssistantPage')
 )
 
 function Fallback() {
@@ -295,7 +295,7 @@ const router = createBrowserRouter(
           </ProtectedRoute>
         }
       />
-      <Route path="/ai-assitant" element={<AiAssitantPage/>}/>
+      <Route path="/ai-assistant" element={<AiAssistantPage/>}/>
       <Route path="*" element={<NotFoundPage />} />
     </Route>
   )

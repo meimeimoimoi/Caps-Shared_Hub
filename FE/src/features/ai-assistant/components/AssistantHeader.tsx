@@ -1,4 +1,4 @@
-type AssitantHeaderProps = {
+type AssistantHeaderProps = {
     title: string
     onNewConversation: () => void
     isSending: boolean
@@ -8,7 +8,7 @@ type AssitantHeaderProps = {
     onToggleNavigation: () => void          
 }
 
-export function AssitantHeader({
+export function AssistantHeader({
   title,
   onNewConversation,
   isSending,
@@ -16,16 +16,16 @@ export function AssitantHeader({
   onToggleHistory,
   isNavigationOpen,
   onToggleNavigation
-}: AssitantHeaderProps) {
+}: AssistantHeaderProps) {
   return (
-    <header className="flex h-16 shrink-0 items-center gap-3 border-b border-[#E4E4E1] px-6">
+    <header className="flex h-16 shrink-0 items-center gap-3 border-b border-border px-6">
         <button
             type="button"
             onClick={onToggleNavigation}
             aria-expanded={isNavigationOpen}
             aria-controls="mobile-main-navigation"
             aria-label={isNavigationOpen ? 'Đóng điều hướng' : 'Mở điều hướng'}
-            className="shrink-0 rounded-lg border border-[#E4E4E1] px-2 py-1.5 text-sm md:hidden"
+            className="shrink-0 rounded-lg border border-border px-2 py-1.5 text-sm md:hidden"
             >
             Menu
         </button>
@@ -40,7 +40,7 @@ export function AssitantHeader({
             type="button"
             onClick={onNewConversation}
             disabled={isSending}
-            className="shrink-0 rounded-lg border border-black px-3 py-1.5 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-50 lg:hidden"
+            className="shrink-0 rounded-lg border border-border-strong px-3 py-1.5 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-50 lg:hidden"
         >
             Mới
         </button>
@@ -49,7 +49,7 @@ export function AssitantHeader({
             onClick={onToggleHistory}
             aria-expanded={isHistoryOpen}
             aria-controls="mobile-conversation-history"
-            className="shrink-0 rounded-lg border border-[#E4E4E1] px-3 py-1.5 text-sm lg:hidden"
+            className="shrink-0 rounded-lg border border-border px-3 py-1.5 text-sm lg:hidden"
             >
             {isHistoryOpen ? 'Đóng' : 'Lịch sử'}
         </button>
