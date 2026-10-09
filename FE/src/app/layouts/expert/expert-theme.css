@@ -622,7 +622,7 @@
 
 /* ---- Cases page ---- */
 .ep-cases-toolbar {
-  display: flex; justify-content: space-between; align-items: center; gap: 16px;
+  display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 16px;
   margin-top: 24px; margin-bottom: 20px; animation: ep-fade-in var(--motion-enter) var(--motion-ease-enter);
 }
 .ep-filter-group {
@@ -633,12 +633,12 @@
   padding: 8px 12px; min-height: 36px; font-size: 13px; color: var(--ep-ink);
 }
 .ep-cases-table-wrapper {
-  overflow-x: auto; animation: ep-fade-in var(--motion-enter) var(--motion-ease-enter) calc(var(--motion-stagger-interval) * 1) both;
+  position: relative; overflow-x: auto; animation: ep-fade-in var(--motion-enter) var(--motion-ease-enter) calc(var(--motion-stagger-interval) * 1) both;
   border-radius: 14px; border: 1px solid var(--ep-border); background: var(--ep-surface);
   box-shadow: 0 1px 4px color-mix(in srgb, var(--ui-shadow) 3.0%, transparent);
 }
 .ep-cases-table {
-  width: 100%; border-collapse: collapse; font-size: 13px;
+  width: 100%; min-width: 640px; border-collapse: collapse; font-size: 13px;
 }
 .ep-cases-table thead { background: var(--ep-surface-raised); }
 .ep-cases-table th {

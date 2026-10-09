@@ -123,7 +123,7 @@ export function OverviewQueue({
           </p>
         </div>
       ) : (
-        <div className="eo-queue-table overflow-x-auto [&_small]:mt-[5px] [&_small]:block [&_small]:text-[10px] [&_small]:text-[var(--ep-muted)] [&_table]:w-full [&_table]:min-w-160 [&_table]:border-collapse [&_table]:text-left [&_tbody_tr:hover]:bg-[var(--ep-surface-raised)] [&_tbody_tr:hover]:bg-none [&_td]:[padding:19px_18px] [&_td]:text-[12px] [&_td]:[border-bottom:1px_solid_var(--ep-border)] [&_td:first-child]:pl-6 [&_th]:[padding:12px_18px] [&_th]:text-[11px] [&_th]:font-medium [&_th]:[border-block:1px_solid_var(--ep-border)] [&_th:first-child]:pl-6 [&_thead]:bg-[var(--ep-surface-raised)] [&_thead]:bg-none [&_thead]:text-[var(--ep-muted)] [&_tr:last-child_td]:[border-bottom:0]">
+        <div className="eo-queue-table relative overflow-x-auto [&_small]:mt-[5px] [&_small]:block [&_small]:text-[10px] [&_small]:text-[var(--ep-muted)] [&_table]:w-full [&_table]:min-w-160 [&_table]:border-collapse [&_table]:text-left [&_tbody_tr:hover]:bg-[var(--ep-surface-raised)] [&_tbody_tr:hover]:bg-none [&_td]:[padding:19px_18px] [&_td]:text-[12px] [&_td]:[border-bottom:1px_solid_var(--ep-border)] [&_td:first-child]:pl-6 [&_th]:[padding:12px_18px] [&_th]:text-[11px] [&_th]:font-medium [&_th]:[border-block:1px_solid_var(--ep-border)] [&_th:first-child]:pl-6 [&_thead]:bg-[var(--ep-surface-raised)] [&_thead]:bg-none [&_thead]:text-[var(--ep-muted)] [&_tr:last-child_td]:[border-bottom:0]">
           <table>
             <caption className="sr-only">
               {t('queueCaption', { timezone })}
