@@ -48,7 +48,6 @@
 .expert-portal *::-webkit-scrollbar { display: block !important; width: 8px; height: 8px; }
 .expert-portal *::-webkit-scrollbar-thumb { background: var(--ui-border-control); border: 2px solid transparent; border-radius: 8px; background-clip: padding-box; }
 .expert-portal *::-webkit-scrollbar-track { background: transparent; }
-.expert-portal ::selection { background: var(--ui-accent-soft); color: var(--ep-accent-text); }
 .expert-portal :focus-visible { outline: 2px solid var(--ep-accent); outline-offset: 3px; border-radius: 4px; }
 .expert-portal button, .expert-portal summary, .expert-portal select { cursor: pointer; }
 .expert-portal button:disabled { cursor: wait; opacity: .55; }

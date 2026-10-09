@@ -219,6 +219,21 @@
     color: var(--color-fg-strong);
   }
 
+  /* Bôi đen chữ dùng chung cho mọi trang; đổi màu tại theme.css (--ui-text-selection).
+     text-fill-color ghi đè chữ gradient/autofill để vùng chọn luôn đọc được. */
+  ::selection,
+  :is(input, textarea)::selection {
+    background-color: var(--ui-text-selection);
+    color: var(--ui-on-text-selection);
+    -webkit-text-fill-color: var(--ui-on-text-selection);
+    text-shadow: none;
+  }
+  :is(.bg-sidebar, .ep-sidebar, .ep-drawer) ::selection {
+    background-color: var(--ui-sidebar-selection);
+    color: var(--ui-on-sidebar-selection);
+    -webkit-text-fill-color: var(--ui-on-sidebar-selection);
+  }
+
   .num { font-family: var(--font-num); font-variant-numeric: tabular-nums; }
 
   :focus-visible {
@@ -243,7 +258,6 @@
   --color-ex-muted: var(--ui-text-muted);
   --color-ex-heading: var(--ui-text-strong);
   --color-ex-bg: var(--ui-canvas);
-  --color-ex-selection: var(--ui-accent-soft);
   --color-ex-panel: var(--ui-surface);
   --color-ex-border: var(--ui-border);
   --color-ex-border-light: var(--ui-border);
@@ -1130,17 +1144,6 @@
 .expert-bio-footer { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px 24px; margin-top: 8px; margin-bottom: 16px; }
 .expert-personal-form .expert-bio-hint { flex: 1 1 260px; margin: 0; max-width: 65ch; color: var(--personal-support); font-size: 12px; line-height: 1.6; }
 .expert-personal-form .expert-bio-count { flex: 0 0 auto; margin: 0 0 0 auto; text-align: right; white-space: nowrap; font-size: 12px; line-height: 1.6; color: var(--personal-support); font-variant-numeric: tabular-nums; }
-:is(.expert-welcome, .expert-application) ::selection {
-  background-color: var(--ui-success-soft);
-  color: var(--ui-text-strong);
-  -webkit-text-fill-color: var(--ui-text-strong);
-  text-shadow: none;
-}
-:is(.expert-welcome, .expert-application) :is(input, textarea)::selection {
-  background-color: var(--ui-success-soft);
-  color: var(--ui-text-strong);
-  -webkit-text-fill-color: var(--ui-text-strong);
-}
 @media (max-width: 900px) {
   .expert-personal-heading { grid-template-columns: minmax(0, 1fr) 260px; gap: 24px; }
   .expert-wizard-personal .expert-stepper-list { gap: 16px; }
@@ -2309,19 +2312,13 @@ html,body,#root{height:100%}
 }
 .expert-account-form .expert-account-consent .expert-custom-checkbox[aria-invalid="true"]:not(:checked) { border-color: var(--ui-danger); }
 
-/* Keep browser autofill and text selection consistent with the dark form. */
+/* Keep browser autofill consistent with the dark form. */
 :root[data-theme='dark'] .expert-account-form input:is(:autofill, :-webkit-autofill),
 :root[data-theme='dark'] .expert-account-form input:is(:autofill, :-webkit-autofill):focus-visible {
   -webkit-text-fill-color: var(--ui-text-strong);
   caret-color: var(--ui-text-strong);
   box-shadow: inset 0 0 0 100px var(--expert-input-surface) !important;
   background-color: var(--expert-input-surface) !important;
-}
-:root[data-theme='dark'] :is(.expert-welcome, .expert-application) ::selection,
-:root[data-theme='dark'] :is(.expert-welcome, .expert-application) :is(input, textarea)::selection {
-  background: #55555b;
-  color: #ffffff;
-  -webkit-text-fill-color: #ffffff;
 }
 
 .expert-pro-experience-grid .expert-form-field.expert-years-field {

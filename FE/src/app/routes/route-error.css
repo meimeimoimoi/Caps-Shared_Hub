@@ -6,10 +6,6 @@
   background: var(--ui-canvas);
   color: var(--ui-text-strong);
 }
-.route-error-page ::selection {
-  background: var(--ui-accent-soft);
-  color: var(--ui-accent-text);
-}
 .route-error-header {
   display: flex;
   align-items: center;

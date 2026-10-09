@@ -134,7 +134,7 @@ export function KnowledgeLayout({
   const closeDrawer = () => drawer.current?.close()
 
   return (
-    <div className="bg-desk text-fg selection:bg-accent-soft selection:text-accent-text min-h-svh">
+    <div className="bg-desk text-fg min-h-svh">
       <a
         href="#knowledge-main"
         className="focus:bg-paper sr-only z-50 focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:p-3"

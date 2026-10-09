@@ -193,7 +193,7 @@ export function RoleShell({
   return (
     <div
       data-density="compact"
-      className="bg-desk-2 text-fg selection:bg-accent-soft selection:text-accent-text min-h-svh"
+      className="bg-desk-2 text-fg min-h-svh"
     >
       <a
         href="#admin-main"

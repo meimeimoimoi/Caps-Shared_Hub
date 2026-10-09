@@ -85,7 +85,7 @@ export function DraftLayout() {
                   : 'draftWorkspace'
   const closeDrawer = () => drawer.current?.close()
   return (
-    <div className="bg-desk-2 text-fg selection:bg-accent-soft selection:text-accent-text min-h-svh">
+    <div className="bg-desk-2 text-fg min-h-svh">
       <a
         href="#draft-main"
         className="focus:bg-paper sr-only z-50 focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:p-3"

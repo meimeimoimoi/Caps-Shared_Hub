@@ -9,7 +9,7 @@ export default function NotFoundPage() {
   const { t } = useTranslation('common')
   useEffect(() => { document.title = `${t('notFound.title')} | Shared Hub` }, [t])
   return (
-    <div className="flex min-h-svh flex-col bg-desk-2 px-[clamp(24px,5vw,80px)] text-fg-strong selection:bg-accent-soft selection:text-accent-text">
+    <div className="flex min-h-svh flex-col bg-desk-2 px-[clamp(24px,5vw,80px)] text-fg-strong">
       <header className="flex min-h-20 flex-wrap items-center justify-between gap-3 border-b border-border py-4 md:min-h-[100px] md:gap-6">
         <Link to="/dashboard" className="relative block h-[34px] w-[150px] shrink-0 overflow-hidden md:h-[44px] md:w-[200px]" aria-label={t('notFound.dashboardLabel')}>
           <img src={logo} alt="Shared Hub" className="absolute top-1/2 left-1/2 h-auto w-[108%] max-w-none -translate-x-1/2 -translate-y-[50.5%]" />

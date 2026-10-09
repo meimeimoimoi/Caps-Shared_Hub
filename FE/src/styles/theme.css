@@ -50,6 +50,11 @@
   --ui-sidebar-text: #a1a1aa;
   --ui-sidebar-selected: #242426;
   --ui-sidebar-foreground: #ffffff;
+  /* Bôi đen chữ (::selection). Sidebar luôn tối nên có cặp riêng, không đổi theo theme. */
+  --ui-text-selection: #d6d5cf;
+  --ui-on-text-selection: #000000;
+  --ui-sidebar-selection: #55555b;
+  --ui-on-sidebar-selection: #ffffff;
   --ui-info: #526b91;
   --ui-info-soft: #edf2fa;
   --ui-shadow: #262520;
@@ -86,6 +91,8 @@
   --ui-series-3: #199e70;
   --ui-selected: #e1e1dd;
   --ui-on-selected: #161618;
+  --ui-text-selection: #55555b;
+  --ui-on-text-selection: #ffffff;
   --ui-canvas: #0f0f10;
   --ui-desk: #161618;
   --ui-surface: #1c1c1e;

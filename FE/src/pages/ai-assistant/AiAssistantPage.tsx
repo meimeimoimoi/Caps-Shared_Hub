@@ -140,7 +140,7 @@ export default function AiAssistantPage() {
   }
 
   return (
-    <div className="bg-canvas text-text selection:bg-accent-soft selection:text-accent-text flex h-dvh overflow-hidden">
+    <div className="bg-canvas text-text flex h-dvh overflow-hidden">
       <a
         href="#assistant-main"
         className="focus:bg-surface sr-only z-50 focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:p-3"
