@@ -16,5 +16,9 @@
     <ProjectReference Include="wrappers\wrappers.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Npgsql" />
+  </ItemGroup>
+
 </Project>
 

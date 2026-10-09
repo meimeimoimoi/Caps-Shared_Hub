@@ -1,0 +1,45 @@
+name: Frontend CI
+
+on:
+  push:
+    branches: [ "main", "fe_dev", "test-ci-cd" ]
+    paths:
+      - "FE/**"
+      - ".github/workflows/fe-ci.yml"
+  pull_request:
+    branches: [ "main", "fe_dev", "test-ci-cd" ]
+    paths:
+      - "FE/**"
+      - ".github/workflows/fe-ci.yml"
+  workflow_dispatch:
+
+jobs:
+  fe-checks:
+    name: Lint & Build Frontend
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: FE
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: "npm"
+          cache-dependency-path: "FE/package-lock.json"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run Linter (oxlint)
+        run: npm run lint
+
+      - name: Build & TypeScript check
+        run: npm run build
+        env:
+          VITE_API_GATEWAY_URL: "http://localhost:5190"
