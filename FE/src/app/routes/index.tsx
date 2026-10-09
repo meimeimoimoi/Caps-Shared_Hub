@@ -296,6 +296,8 @@ const router = createBrowserRouter(
         }
       />
       <Route path="/ai-assistant" element={<AiAssistantPage/>}/>
+      {/* Đường dẫn cũ (viết sai chính tả) giữ lại để link đã chia sẻ vẫn mở được */}
+      <Route path="/ai-assitant" element={<Navigate to="/ai-assistant" replace />} />
       <Route path="*" element={<NotFoundPage />} />
     </Route>
   )

@@ -1,7 +1,7 @@
 import { useId, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { PanelLeftClose, PanelLeftOpen, X } from 'lucide-react'
-import logo from '@/assets/logo-full.png'
+import { BrandLogo } from '@/components/ui/display/brand-logo'
 import brandMark from '@/assets/logo-icon.svg'
 import { useTranslation } from 'react-i18next'
 
@@ -52,13 +52,7 @@ export function AppSidebar({
             />
           </div>
         ) : (
-          <div className="relative h-11 min-w-0 flex-1 overflow-hidden rounded-md bg-white">
-            <img
-              src={logo}
-              alt="Shared Hub"
-              className="absolute top-1/2 left-1/2 h-auto w-[96%] max-w-none -translate-x-1/2 -translate-y-[50.5%]"
-            />
-          </div>
+          <BrandLogo plate="always" className="h-11 min-w-0 flex-1 rounded-md" />
         )}
         {onClose && (
           <button

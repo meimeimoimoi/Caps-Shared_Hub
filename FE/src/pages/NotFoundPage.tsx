@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import { ArrowRight, ArrowUpRight, LayoutDashboard } from 'lucide-react'
-import logo from '@/assets/logo-full.png'
+import { BrandLogo } from '@/components/ui/display/brand-logo'
 import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { LanguageSwitcher } from '@/components/ui/layout/language-switcher'
@@ -11,8 +11,8 @@ export default function NotFoundPage() {
   return (
     <div className="flex min-h-svh flex-col bg-desk-2 px-[clamp(24px,5vw,80px)] text-fg-strong">
       <header className="flex min-h-20 flex-wrap items-center justify-between gap-3 border-b border-border py-4 md:min-h-[100px] md:gap-6">
-        <Link to="/dashboard" className="relative block h-[34px] w-[150px] shrink-0 overflow-hidden md:h-[44px] md:w-[200px]" aria-label={t('notFound.dashboardLabel')}>
-          <img src={logo} alt="Shared Hub" className="absolute top-1/2 left-1/2 h-auto w-[108%] max-w-none -translate-x-1/2 -translate-y-[50.5%]" />
+        <Link to="/dashboard" className="block shrink-0" aria-label={t('notFound.dashboardLabel')}>
+          <BrandLogo className="h-[34px] w-[150px] md:h-[44px] md:w-[200px]" />
         </Link>
         <div className="flex flex-wrap items-center justify-end gap-3"><LanguageSwitcher /><Link to="/login" className="inline-flex min-h-11 items-center gap-2 text-[14px] no-underline hover:text-accent-text">{t('actions.signIn')} <ArrowUpRight size={16} aria-hidden="true" /></Link></div>
       </header>

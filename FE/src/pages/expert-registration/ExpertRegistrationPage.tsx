@@ -10,7 +10,7 @@ import {
   UserRound,
   ChevronDown,
 } from 'lucide-react'
-import sharedHubLogo from '@/assets/logo-full.png'
+import { BrandLogo } from '@/components/ui/display/brand-logo'
 import { useRegistrationMotion } from '../../features/expert-registration/hooks/useRegistrationMotion'
 import { useWizardMotion } from '../../features/expert-registration/hooks/useWizardMotion'
 import { useScrollReveal } from '@/hooks/useScrollReveal'
@@ -153,15 +153,9 @@ export default function ExpertRegistrationPage() {
           <Link
             to="/"
             aria-label={t('page.home')}
-            className="expert-registration-logo relative block h-[44px] w-[200px] shrink-0 overflow-hidden no-underline max-md:h-[34px] max-md:w-[150px]"
+            className="block shrink-0 no-underline"
           >
-            <img
-              src={sharedHubLogo}
-              alt="Shared Hub"
-              width={1774}
-              height={887}
-              className="absolute top-1/2 left-1/2 h-auto w-[108%] max-w-none -translate-x-1/2 -translate-y-[50.5%]"
-            />
+            <BrandLogo className="h-[44px] w-[200px] max-md:h-[34px] max-md:w-[150px]" />
           </Link>
           <span className="border-ex-header-divider border-l pl-[25px] max-md:pl-3 max-md:text-xs">
             {t('page.title')}
