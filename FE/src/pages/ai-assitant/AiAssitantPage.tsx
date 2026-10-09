@@ -3,7 +3,7 @@ import { ChatComposer } from "@/features/ai-assistant/components/ChatComposer"
 import { MessageList } from "@/features/ai-assistant/components/MessageList"
 import { ConversationSidebar } from "@/features/ai-assistant/components/ConversationSidebar"
 import { AssitantHeader } from "@/features/ai-assistant/components/AssitantHeader"
-import { userAiAssitant } from "@/features/ai-assistant/hooks/useAiAssistant"
+import { useAiAssistant } from "@/features/ai-assistant/hooks/useAiAssistant"
 import { AppSidebar } from '@/components/ui/layout/app-sidebar'
 import { Sparkles, LayoutDashboard, FileText } from 'lucide-react'
 
@@ -22,7 +22,7 @@ export default function AiAssitantPage() {
         conversations,
         handleSelectConversation,
         activeConversationId,
-    } = userAiAssitant()
+    } = useAiAssistant()
 
     const sidebarGroups = [
         {

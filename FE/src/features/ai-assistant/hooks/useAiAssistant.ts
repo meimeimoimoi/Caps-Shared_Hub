@@ -37,7 +37,7 @@ const demoMessages: Record<string, ChatMessage[]> = {
   ],
 }
 
-export function userAiAssitant() {
+export function useAiAssistant() {
     const [question, setQuestion] = useState('')
     const [messages, setMessages] = useState<ChatMessage[]>([])
     const [isSending, setIsSending] = useState(false)
