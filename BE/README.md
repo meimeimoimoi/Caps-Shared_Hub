@@ -74,9 +74,10 @@ Gom nhóm các module dùng chung gọn gàng:
 
    Smoke test xuyên gateway:
    ```powershell
-   curl -X POST http://localhost:5190/api/auth/register `
+   curl -X POST http://localhost:5190/api/v1/auth/register `
      -H "Content-Type: application/json" `
-     -d '{"email":"a@caps.com","password":"Caps123!"}'
+     -H "X-Caps-Client: spa" `
+     -d '{"email":"a@caps.com","password":"Caps123!DemoPassword"}'
    ```
 
 5. **Full docker (auth + gateway + infra)**:
@@ -88,3 +89,7 @@ Gom nhóm các module dùng chung gọn gàng:
    ```powershell
    .\scripts\stop-infra.ps1
    ```
+
+## Auth implementation
+
+Xem [auth/README.md](auth/README.md) cho contract 12 API v1, migrations, refresh cookie, email notification và bộ kiểm thử qua YARP. Chuỗi kết nối Postgres của auth đặt bằng User Secrets (mỗi máy chạy 1 lần, xem auth/README.md); chạy notification để nhận email qua RabbitMQ.

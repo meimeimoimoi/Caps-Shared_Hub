@@ -1,6 +1,35 @@
-@auth_HostAddress = http://localhost:5194
+@base = http://localhost:5190
+@access = replace-with-access-token
+@verification = replace-with-email-token
 
-GET {{auth_HostAddress}}/weatherforecast/
-Accept: application/json
+### Register — refresh cookie returned; USER only
+POST {{base}}/api/v1/auth/register
+Content-Type: application/json
+X-Caps-Client: spa
 
-###
+{"email":"local-demo@caps.test","password":"Caps-strong-password-123!","displayName":"Local Demo"}
+
+### Login
+POST {{base}}/api/v1/auth/login
+Content-Type: application/json
+X-Caps-Client: spa
+
+{"email":"local-demo@caps.test","password":"Caps-strong-password-123!"}
+
+### Verify email
+POST {{base}}/api/v1/auth/verify-email
+Content-Type: application/json
+X-Caps-Client: spa
+
+{"token":"{{verification}}"}
+
+### Profile
+GET {{base}}/api/v1/users/me
+Authorization: Bearer {{access}}
+
+### Refresh (requires cookie from login/register)
+POST {{base}}/api/v1/auth/refresh-token
+Content-Type: application/json
+X-Caps-Client: spa
+
+{}
