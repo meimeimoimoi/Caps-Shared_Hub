@@ -66,6 +66,8 @@ const ExpertIncomePage = lazy(
   () => import('@/pages/expert-dashboard/ExpertIncomePage')
 )
 
+const ExpertBioPage = lazy(() => import('@/pages/expert-dashboard/ExpertBioPage'))
+const ExpertPublicProfilePage = lazy(() => import('@/pages/ExpertPublicProfilePage'))
 const DashboardPage = lazy(() => import('../../pages/DashboardPage'))
 const NotFoundPage = lazy(() => import('../../pages/NotFoundPage'))
 const AdminPendingExpertsPage = lazy(
@@ -156,6 +158,7 @@ const router = createBrowserRouter(
       <Route path="/" element={<Navigate to="/dashboard" replace />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/expert/register" element={<ExpertRegistrationPage />} />
+      <Route path="/experts/:expertId" element={<ExpertPublicProfilePage />} />
       {/* Explicit isolated demo; real Reviewer permissions/assignments need a server API. */}
       <Route path="/reviewer" element={<ReviewerLayout />}>
         <Route index element={<ReviewerQueuePage />} />
@@ -242,6 +245,7 @@ const router = createBrowserRouter(
           <Route path="services" element={<ExpertServicesPage />} />
           <Route path="services/:serviceId/pricing" element={<ExpertPricingPage />} />
           <Route path="income" element={<ExpertIncomePage />} />
+          <Route path="bio" element={<ExpertBioPage />} />
           <Route path="profile" element={<ExpertProfilePage />} />
           <Route path="settings" element={<ExpertProfilePage />} />
           <Route path="settings/:section" element={<ExpertSettingsPage />} />
