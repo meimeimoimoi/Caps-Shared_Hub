@@ -12,7 +12,8 @@
     "empty": "No questions yet.",
     "noMatch": "No questions match “{{query}}”.",
     "count_one": "{{count}} lookup",
-    "count_other": "{{count}} lookups"
+    "count_other": "{{count}} lookups",
+    "listLabel": "Past questions"
   },
   "welcome": {
     "eyebrow": "Corporate income tax",
@@ -36,7 +37,9 @@
         "name": "Employee welfare",
         "question": "Up to what level are employee welfare expenses deductible?"
       }
-    }
+    },
+    "recentLabel": "Recent research",
+    "viewAll": "View all ({{count}})"
   },
   "transcript": {
     "label": "Research conversation",

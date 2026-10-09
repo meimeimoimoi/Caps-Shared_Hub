@@ -1,21 +1,32 @@
 import { useTranslation } from 'react-i18next'
-import { ArrowUpRight } from 'lucide-react'
+import { ArrowUpRight, CornerDownRight } from 'lucide-react'
 import { MotionReveal, MotionStagger } from '@/components/ui/motion'
+import type { Conversation } from '../types'
 
 const topics = ['deductible', 'invoice', 'rate', 'welfare'] as const
 
 type AssistantWelcomeProps = {
   onSelectQuestion: (question: string) => void
+  /** Toàn bộ lịch sử; màn hình chào chỉ hiện 3 mục mới nhất */
+  conversations: Conversation[]
+  onSelectConversation: (id: string) => void
+  onOpenHistory: () => void
 }
 
 /* Trạng thái trống: mục lục chủ đề CIT thay cho hình minh họa. */
-export function AssistantWelcome({ onSelectQuestion }: AssistantWelcomeProps) {
+export function AssistantWelcome({
+  onSelectQuestion,
+  conversations,
+  onSelectConversation,
+  onOpenHistory,
+}: AssistantWelcomeProps) {
   const { t } = useTranslation('aiAssistant')
+  const recent = conversations.slice(0, 3)
 
   return (
     <section
       aria-labelledby="assistant-welcome-title"
-      className="mx-auto flex w-full max-w-3xl flex-col gap-10 py-8 md:gap-14 md:py-16"
+      className="mx-auto flex w-full max-w-3xl flex-col gap-10 pt-4 pb-8 md:gap-12 md:pt-6 md:pb-12"
     >
       <MotionReveal preset="reveal" className="flex flex-col gap-4">
         <p className="text-accent-text text-caption font-semibold tracking-[0.08em] uppercase">
@@ -70,6 +81,42 @@ export function AssistantWelcome({ onSelectQuestion }: AssistantWelcomeProps) {
           ))}
         </MotionStagger>
       </div>
+
+      {recent.length > 0 && (
+        <MotionReveal preset="reveal" className="flex flex-col gap-3">
+          <div className="flex items-baseline justify-between gap-3">
+            <h2 className="text-text-muted text-caption font-sans font-semibold tracking-[0.08em] uppercase">
+              {t('welcome.recentLabel')}
+            </h2>
+            <button
+              type="button"
+              onClick={onOpenHistory}
+              aria-haspopup="dialog"
+              className="text-accent-text focus-visible:ring-accent rounded-sm text-sm font-medium hover:underline focus-visible:ring-2 focus-visible:outline-none"
+            >
+              {t('welcome.viewAll', { count: conversations.length })}
+            </button>
+          </div>
+          <ul className="border-border-subtle divide-border-subtle divide-y border-y">
+            {recent.map((conversation) => (
+              <li key={conversation.id}>
+                <button
+                  type="button"
+                  onClick={() => onSelectConversation(conversation.id)}
+                  className="group motion-interactive text-text hover:text-text-strong focus-visible:ring-accent flex w-full items-center gap-3 py-3 text-left text-sm focus-visible:ring-2 focus-visible:outline-none"
+                >
+                  <CornerDownRight
+                    size={15}
+                    aria-hidden="true"
+                    className="text-text-muted group-hover:text-accent-text shrink-0 transition-colors"
+                  />
+                  <span className="truncate">{conversation.title}</span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        </MotionReveal>
+      )}
     </section>
   )
 }

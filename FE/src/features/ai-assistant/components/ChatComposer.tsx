@@ -95,7 +95,7 @@ export const ChatComposer = forwardRef<HTMLTextAreaElement, ChatComposerProps>(
             size="icon"
             disabled={!canSend}
             aria-label={isSending ? t('composer.sending') : t('composer.send')}
-            className="size-11 shrink-0 rounded-md"
+            className="disabled:bg-sunken disabled:text-fg-disabled size-11 shrink-0 rounded-md disabled:opacity-100 disabled:shadow-none"
           >
             <ArrowUp size={18} aria-hidden="true" />
           </Button>

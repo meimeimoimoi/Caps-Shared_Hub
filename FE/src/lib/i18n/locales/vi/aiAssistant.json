@@ -12,7 +12,8 @@
     "empty": "Chưa có câu hỏi nào.",
     "noMatch": "Không có câu hỏi nào khớp với “{{query}}”.",
     "count_one": "{{count}} cuộc tra cứu",
-    "count_other": "{{count}} cuộc tra cứu"
+    "count_other": "{{count}} cuộc tra cứu",
+    "listLabel": "Câu hỏi đã hỏi"
   },
   "welcome": {
     "eyebrow": "Thuế thu nhập doanh nghiệp",
@@ -36,7 +37,9 @@
         "name": "Phúc lợi nhân viên",
         "question": "Chi phí phúc lợi cho nhân viên được trừ ở mức nào?"
       }
-    }
+    },
+    "recentLabel": "Tra cứu gần đây",
+    "viewAll": "Xem tất cả ({{count}})"
   },
   "transcript": {
     "label": "Nội dung cuộc tra cứu",

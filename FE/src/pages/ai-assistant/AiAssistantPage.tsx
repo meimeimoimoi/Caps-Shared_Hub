@@ -131,12 +131,8 @@ export default function AiAssistantPage() {
     }
   }
 
-  const historyProps = {
-    conversations,
-    activeConversationId,
-    disabled: isSending,
-    onSelect: selectConversation,
-    onNewQuestion: startNewQuestion,
+  function openHistory() {
+    setHistoryOpen(true)
   }
 
   return (
@@ -228,36 +224,36 @@ export default function AiAssistantPage() {
             tabIndex={-1}
             className="flex min-w-0 flex-1 flex-col focus:outline-none"
           >
-            {/* Lịch sử nằm trong Drawer ở mọi kích thước để không thành sidebar thứ hai */}
-            <div className="border-border-subtle bg-canvas flex items-center justify-between gap-2 border-b px-4 py-2 md:px-8">
-              <Button
-                ref={historyTrigger}
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={() => setHistoryOpen(true)}
-                aria-haspopup="dialog"
-                aria-label={t('aiAssistant:history.open')}
-              >
-                <History size={16} aria-hidden="true" />
-                {t('aiAssistant:history.title')}
-                <span
-                  aria-hidden="true"
-                  className="font-num bg-surface-muted text-text-muted text-caption rounded px-1.5 tabular-nums"
+            {/* Thao tác gọn trong cột nội dung, không thành thanh ngang thứ ba */}
+            <div className="px-5 pt-3 md:px-10">
+              <div className="mx-auto flex w-full max-w-4xl items-center justify-end gap-1">
+                <Button
+                  ref={historyTrigger}
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={openHistory}
+                  aria-haspopup="dialog"
+                  aria-label={t('aiAssistant:history.open')}
+                  className="text-text-muted"
                 >
-                  {conversations.length}
-                </span>
-              </Button>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={startNewQuestion}
-                disabled={isSending}
-              >
-                <Plus size={16} aria-hidden="true" />
-                {t('aiAssistant:history.newQuestion')}
-              </Button>
+                  <History size={16} aria-hidden="true" />
+                  {t('aiAssistant:history.title')}
+                </Button>
+                {messages.length > 0 && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={startNewQuestion}
+                    disabled={isSending}
+                    className="text-text-muted"
+                  >
+                    <Plus size={16} aria-hidden="true" />
+                    {t('aiAssistant:history.newQuestion')}
+                  </Button>
+                )}
+              </div>
             </div>
 
             <div
@@ -265,7 +261,12 @@ export default function AiAssistantPage() {
               className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 md:px-10"
             >
               {messages.length === 0 && !isSending ? (
-                <AssistantWelcome onSelectQuestion={selectQuestion} />
+                <AssistantWelcome
+                  onSelectQuestion={selectQuestion}
+                  conversations={conversations}
+                  onSelectConversation={selectConversation}
+                  onOpenHistory={openHistory}
+                />
               ) : (
                 <Transcript
                   messages={messages}
@@ -293,14 +294,28 @@ export default function AiAssistantPage() {
       {historyOpen && (
         <Drawer
           title={t('aiAssistant:history.title')}
+          footer={
+            <Button
+              type="button"
+              onClick={startNewQuestion}
+              disabled={isSending}
+              className="h-10 w-full"
+            >
+              <Plus size={16} aria-hidden="true" />
+              {t('aiAssistant:history.newQuestion')}
+            </Button>
+          }
           onClose={() => {
             setHistoryOpen(false)
             historyTrigger.current?.focus()
           }}
         >
-          <div className="-mx-5 -my-4 flex h-full flex-col">
-            <ConversationHistory {...historyProps} showTitle={false} />
-          </div>
+          <ConversationHistory
+            conversations={conversations}
+            activeConversationId={activeConversationId}
+            disabled={isSending}
+            onSelect={selectConversation}
+          />
         </Drawer>
       )}
 
