@@ -16,6 +16,8 @@ import viAdmin from './locales/vi/admin.json'
 import enAdmin from './locales/en/admin.json'
 import viReviewer from './locales/vi/reviewer.json'
 import enReviewer from './locales/en/reviewer.json'
+import viAiAssistant from './locales/vi/aiAssistant.json'
+import enAiAssistant from './locales/en/aiAssistant.json'
 
 // Add feature namespaces as each rollout group migrates its screens.
 export const resources = {
@@ -29,6 +31,7 @@ export const resources = {
     drafting: viDrafting,
     admin: viAdmin,
     reviewer: viReviewer,
+    aiAssistant: viAiAssistant,
   },
   en: {
     common: enCommon,
@@ -40,5 +43,6 @@ export const resources = {
     drafting: enDrafting,
     admin: enAdmin,
     reviewer: enReviewer,
+    aiAssistant: enAiAssistant,
   },
 }

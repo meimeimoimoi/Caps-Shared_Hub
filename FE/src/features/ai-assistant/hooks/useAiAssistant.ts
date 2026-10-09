@@ -18,7 +18,14 @@ const demoMessages: Record<string, ChatMessage[]> = {
     {
       id: 'demo-2',
       role: 'assistant',
-      content: 'Đây là nội dung demo của hội thoại về khấu hao ô tô.',
+      content: 'Đây là nội dung minh họa của cuộc tra cứu về khấu hao ô tô[1].',
+      citations: [
+        {
+          id: 'demo-2-cite-1',
+          source: 'Văn bản mẫu A (minh họa)',
+          excerpt: 'Trích đoạn văn bản pháp luật sẽ hiển thị tại đây.',
+        },
+      ],
     },
   ],
   '2': [
@@ -37,20 +44,22 @@ const demoMessages: Record<string, ChatMessage[]> = {
   ],
 }
 
+/** Khóa i18n trong namespace aiAssistant, ví dụ 'errors.sendFailed' */
+export type AssistantError = 'errors.sendFailed'
+
 export function useAiAssistant() {
     const [question, setQuestion] = useState('')
     const [messages, setMessages] = useState<ChatMessage[]>([])
     const [isSending, setIsSending] = useState(false)
-    const [error, setError] =useState<string | null>(null)
-    const [activeConversationId, setActiveConversationId] = 
+    const [error, setError] = useState<AssistantError | null>(null)
+    const [activeConversationId, setActiveConversationId] =
                                             useState<string | null>(null)
     const [messagesByConversation, setMessagesByConversation] =
                                             useState<Record<string, ChatMessage[]>>(demoMessages)
     const [conversations, setConversations] = useState<Conversation[]>(demoConversations)
 
-    const conversationTitle = messages.find((messages) => 
-                                messages.role === 'user')?.content
-                                                        || 'Cuộc trò chuyện mới'
+    const conversationTitle = messages.find((message) =>
+                                message.role === 'user')?.content ?? null
 
     function handleSelectConversation(id: string) {
         if (isSending) return
@@ -59,76 +68,70 @@ export function useAiAssistant() {
         setMessages(messagesByConversation[id] ?? [])
         setQuestion('')
         setError(null)
-
     }
 
     function appendMessage(
         message: ChatMessage,
-        conversationId: string | null,
+        conversationId: string,
     ) {
         setMessages((current) => [...current, message])
-
-        if (conversationId) {
-            setMessagesByConversation((current) => ({
+        setMessagesByConversation((current) => ({
             ...current,
             [conversationId]: [
                 ...(current[conversationId] ?? []),
                 message,
             ],
-            }))
-        }
+        }))
     }
 
     async function handleSend() {
         const content = question.trim()
-        let conversationId = activeConversationId
-
-        if (!conversationId) {
-        conversationId = crypto.randomUUID()
-
-        const newConversation: Conversation = {
-            id: conversationId,
-            title: content,
-        }
-
-        setConversations((current) => [newConversation, ...current])
-        setActiveConversationId(conversationId)
-        }
-
         if (!content || isSending) return
+
+        const conversationId = activeConversationId ?? crypto.randomUUID()
+        if (!activeConversationId) {
+            setConversations((current) => [
+                { id: conversationId, title: content },
+                ...current,
+            ])
+            setActiveConversationId(conversationId)
+        }
+
         setError(null)
         setIsSending(true)
-
-        appendMessage(
-            {
-                id: crypto.randomUUID(),
-                role: 'user',
-                content,
-            },
-            conversationId
-        )
+        const userMessage: ChatMessage = { id: crypto.randomUUID(), role: 'user', content }
+        appendMessage(userMessage, conversationId)
         setQuestion('')
 
-        try{
+        try {
             const answer = await sendQuestionDemo(content)
-            
             appendMessage(
                 {
                     id: crypto.randomUUID(),
                     role: 'assistant',
-                    content: answer,
+                    content: answer.content,
+                    citations: answer.citations,
                 },
                 conversationId,
             )
-        } catch{
-            setError('Không thể nhận câu trả lời. Vui lòng thử lại sau.')
+        } catch {
+            // Gỡ câu hỏi chưa được trả lời và trả về ô nhập để gửi lại mà không bị lặp
+            const withoutUnanswered = (list: ChatMessage[]) =>
+                list.filter((message) => message.id !== userMessage.id)
+            setMessages(withoutUnanswered)
+            setMessagesByConversation((current) => ({
+                ...current,
+                [conversationId]: withoutUnanswered(current[conversationId] ?? []),
+            }))
+            setQuestion(content)
+            setError('errors.sendFailed')
         } finally {
             setIsSending(false)
         }
     }
 
     function handleNewConversation() {
-        if(isSending) return
+        if (isSending) return
 
         setActiveConversationId(null)
         setMessages([])

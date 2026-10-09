@@ -1,0 +1,67 @@
+{
+  "pageTitle": "Trợ lý AI",
+  "skipToConversation": "Đến cuộc trò chuyện",
+  "workspaceNavigation": "Điều hướng không gian làm việc",
+  "demoDisclosure": "Câu trả lời và trích dẫn trên trang này là <strong>dữ liệu minh họa</strong>. Trợ lý chưa được kết nối với kho tri thức Thuế TNDN.",
+  "history": {
+    "title": "Lịch sử tra cứu",
+    "open": "Mở lịch sử tra cứu",
+    "newQuestion": "Câu hỏi mới",
+    "searchLabel": "Tìm trong lịch sử",
+    "searchPlaceholder": "Tìm câu hỏi đã hỏi…",
+    "empty": "Chưa có câu hỏi nào.",
+    "noMatch": "Không có câu hỏi nào khớp với “{{query}}”.",
+    "count_one": "{{count}} cuộc tra cứu",
+    "count_other": "{{count}} cuộc tra cứu"
+  },
+  "welcome": {
+    "eyebrow": "Thuế thu nhập doanh nghiệp",
+    "title": "Tra cứu có căn cứ pháp lý",
+    "lead": "Đặt câu hỏi về Thuế TNDN. Mỗi câu trả lời đi kèm trích dẫn tới văn bản trong kho tri thức đã được phê duyệt.",
+    "topicsLabel": "Bắt đầu từ một chủ đề",
+    "topics": {
+      "deductible": {
+        "name": "Chi phí được trừ",
+        "question": "Chi phí lãi vay được trừ tối đa bao nhiêu?"
+      },
+      "invoice": {
+        "name": "Hóa đơn, chứng từ",
+        "question": "Hóa đơn thanh toán bằng tiền mặt có được tính vào chi phí được trừ không?"
+      },
+      "rate": {
+        "name": "Thuế suất",
+        "question": "Thuế suất Thuế TNDN áp dụng cho kỳ tính thuế của tôi là bao nhiêu?"
+      },
+      "welfare": {
+        "name": "Phúc lợi nhân viên",
+        "question": "Chi phí phúc lợi cho nhân viên được trừ ở mức nào?"
+      }
+    }
+  },
+  "transcript": {
+    "label": "Nội dung cuộc tra cứu",
+    "question": "Câu hỏi",
+    "answer": "Trả lời",
+    "aiBadge": "AI hỗ trợ",
+    "citationsLabel": "Căn cứ trích dẫn",
+    "citation": "[{{index}}] Căn cứ",
+    "noCitations": "Câu trả lời này chưa có trích dẫn. Không dùng làm căn cứ.",
+    "disclaimer": "Nội dung do AI tổng hợp từ văn bản được trích dẫn, không thay thế ý kiến của Chuyên gia Thuế.",
+    "thinking": "Đang tra cứu văn bản liên quan…",
+    "copy": "Sao chép câu trả lời",
+    "copied": "Đã sao chép câu trả lời",
+    "copyFailed": "Không sao chép được. Hãy chọn và sao chép thủ công.",
+    "sendToExpert": "Gửi Chuyên gia thẩm định",
+    "sendToExpertSoon": "Sắp có: gửi câu trả lời này cho Chuyên gia đã xác minh."
+  },
+  "composer": {
+    "label": "Câu hỏi về Thuế TNDN",
+    "placeholder": "Ví dụ: Chi phí khấu hao ô tô 4 chỗ được trừ tối đa bao nhiêu?",
+    "hint": "Enter để gửi · Shift + Enter để xuống dòng",
+    "send": "Gửi câu hỏi",
+    "sending": "Đang gửi…"
+  },
+  "errors": {
+    "sendFailed": "Không nhận được câu trả lời. Câu hỏi của bạn vẫn còn trong ô nhập, hãy thử gửi lại."
+  }
+}
