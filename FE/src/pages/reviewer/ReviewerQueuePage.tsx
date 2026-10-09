@@ -103,7 +103,7 @@ export default function ReviewerQueuePage() {
               <tbody className="divide-border divide-y">
                 {filtered.slice((page - 1) * 5, page * 5).map((row) => (
                   <tr key={row.id} className="hover:bg-surface-muted">
-                    <td className="px-5 py-5">
+                    <td className="px-5 py-5 whitespace-nowrap">
                       <p className="text-text-strong font-semibold">
                         {row.name}
                       </p>

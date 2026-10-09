@@ -100,7 +100,9 @@ export function AppSidebar({
                   </span>
                   <span
                     className={
-                      collapsed ? 'sr-only' : 'min-w-0 flex-1 truncate'
+                      collapsed
+                        ? 'sr-only'
+                        : 'line-clamp-2 min-w-0 flex-1 leading-snug whitespace-normal'
                     }
                   >
                     {item.label}

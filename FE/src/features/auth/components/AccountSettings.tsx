@@ -12,6 +12,7 @@ import { ChangePasswordForm } from './ChangePasswordForm'
 const ROLE_LABEL = {
   admin: 'accountSettings.roleAdmin',
   knowledge: 'accountSettings.roleKnowledge',
+  reviewer: 'accountSettings.roleReviewer',
   expert: 'accountSettings.roleExpert',
 } as const satisfies Record<AccountRole, string>
 

@@ -6,6 +6,7 @@ import { useAuth } from './useAuth'
 export const DEMO_ACCOUNTS = {
   admin: { name: 'Trần An', email: 'tran.an@shft.vn' },
   knowledge: { name: 'Lê Thu Hà', email: 'thuha.le@shft.vn' },
+  reviewer: { name: 'Phạm Quốc Huy', email: 'huy.pham@shft.vn' },
   // Expert có dữ liệu thật từ useExpertContext; mục này chỉ dùng khi thiếu context
   expert: { name: 'Đặng Mỹ Linh', email: 'linh.dang@outlook.com' },
 } as const

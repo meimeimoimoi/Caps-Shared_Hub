@@ -15,6 +15,7 @@ import { ExpertRoute } from './ExpertRoute'
 import { ExpertLayout } from '../layouts/expert/ExpertLayout'
 import { DraftRoute } from './DraftRoute'
 import { RouteErrorPage } from './RouteErrorPage'
+import { AccountSettings } from '@/features/auth'
 import { DraftLayout } from '../layouts/drafts/DraftLayout'
 const ReviewerLayout = lazy(() => import('../layouts/reviewer/ReviewerLayout'))
 const ReviewerQueuePage = lazy(
@@ -173,6 +174,7 @@ const router = createBrowserRouter(
           element={<ReviewerAssessmentPage gate="GATE_2" />}
         />
         <Route path="history" element={<ReviewerHistoryPage />} />
+        <Route path="account" element={<AccountSettings role="reviewer" />} />
       </Route>
       {/* TODO(auth): bọc ProtectedRoute + check role admin khi có API */}
       <Route path="/admin/experts" element={<AdminExpertsPage />} />
