@@ -1,0 +1,111 @@
+/* Opt-in interaction material. Timing is installed from tokens.ts at app startup. */
+@keyframes motion-marker {
+  from {
+    opacity: 0.4;
+    scale: 1 0.35;
+  }
+  to {
+    opacity: 1;
+    scale: 1;
+  }
+}
+.motion-marker {
+  animation: motion-marker var(--motion-enter) var(--motion-ease-enter);
+}
+.motion-interactive,
+[data-motion-page] :where(button, a.btn, a[role='button']) {
+  transition:
+    background-color var(--motion-feedback) ease,
+    border-color var(--motion-feedback) ease,
+    color var(--motion-feedback) ease,
+    box-shadow var(--motion-feedback) ease,
+    transform var(--motion-feedback) var(--motion-ease-enter);
+}
+.motion-interactive:active:not(:disabled),
+[data-motion-page]
+  :where(button, a.btn, a[role='button']):active:not(:disabled):not(
+    [aria-disabled='true']
+  ) {
+  transform: scale(var(--motion-press-scale));
+}
+.motion-directional svg {
+  transition: transform var(--motion-enter) var(--motion-ease-enter);
+}
+.motion-directional:hover svg {
+  transform: translate(2px, -2px);
+}
+@media (prefers-reduced-motion: reduce) {
+  .motion-marker {
+    animation: none;
+  }
+  .motion-interactive {
+    transition-duration: var(--motion-reduced);
+  }
+  .motion-interactive:active:not(:disabled),
+  [data-motion-page]
+    :where(button, a.btn, a[role='button']):active:not(:disabled),
+  .motion-directional:hover svg {
+    transform: none;
+  }
+}
+
+[data-motion-page] :where(input, select, textarea) {
+  transition:
+    border-color var(--motion-feedback) ease,
+    background-color var(--motion-feedback) ease,
+    box-shadow var(--motion-feedback) ease;
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-motion-page]
+    :where(button, a.btn, a[role='button'], input, select, textarea) {
+    transition-duration: var(--motion-reduced);
+  }
+}
+
+/* Cột biểu đồ mọc từ đáy. Cột gắn key theo nhãn kỳ nên đổi tháng ↔ quý là bộ cột mới, hiệu ứng chạy lại */
+@keyframes motion-bar {
+  from {
+    transform: scaleY(0);
+  }
+}
+.motion-bar {
+  transform-origin: bottom;
+  animation: motion-bar var(--motion-chart) var(--motion-ease-enter) both;
+}
+/* Thẻ bấm được nhấc nhẹ khi rê chuột: báo là bấm được, không chỉ đổi nền */
+.motion-lift {
+  transition:
+    transform var(--motion-feedback) var(--motion-ease-enter),
+    box-shadow var(--motion-feedback) ease,
+    background-color var(--motion-feedback) ease;
+}
+.motion-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-overlay);
+}
+/* <details> mở/đóng trượt mượt (Chromium 131+). Trình duyệt chưa hỗ trợ vẫn mở ngay như cũ */
+.motion-details {
+  interpolate-size: allow-keywords;
+}
+.motion-details::details-content {
+  block-size: 0;
+  overflow: hidden;
+  transition:
+    block-size var(--motion-panel) var(--motion-ease-enter),
+    content-visibility var(--motion-panel) allow-discrete;
+}
+.motion-details[open]::details-content {
+  block-size: auto;
+}
+@media (prefers-reduced-motion: reduce) {
+  .motion-bar {
+    animation: none;
+  }
+  .motion-lift,
+  .motion-details::details-content {
+    transition-duration: var(--motion-reduced);
+  }
+  .motion-lift:hover {
+    transform: none;
+  }
+}

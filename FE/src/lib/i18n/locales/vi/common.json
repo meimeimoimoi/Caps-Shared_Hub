@@ -1,0 +1,110 @@
+{
+  "routeError": {
+    "title": "Chưa thể tải trang này.",
+    "description": "Một phần của Shared Hub chưa tải được. Hãy tải lại trang để thử lại.",
+    "reload": "Tải lại trang",
+    "reloading": "Đang tải lại…",
+    "help": "Nếu lỗi vẫn tiếp diễn, hãy kiểm tra kết nối hoặc thử lại sau ít phút.",
+    "offlineTitle": "Bạn đang ngoại tuyến.",
+    "offlineDescription": "Shared Hub hiện không thể kết nối. Hãy kết nối lại internet rồi tải lại trang.",
+    "offlineHelp": "Kiểm tra kết nối Wi-Fi hoặc dữ liệu di động trước khi thử lại.",
+    "footer": "Quay lại không gian làm việc của bạn."
+  },
+  "loading": "Đang tải…",
+  "account": {
+    "menu": "Menu tài khoản của {{name}}",
+    "navigation": "Điều hướng tài khoản",
+    "fallback": "Tài khoản của bạn",
+    "demo": "Tài khoản minh họa",
+    "preview": "Xem thử demo"
+  },
+  "navigation": {
+    "open": "Mở điều hướng",
+    "close": "Đóng điều hướng",
+    "expand": "Mở rộng thanh bên",
+    "collapse": "Thu gọn thanh bên",
+    "progress": "Tiến trình",
+    "skipOverview": "Đến phần tổng quan",
+    "skipWorkspace": "Đến không gian làm việc"
+  },
+  "theme": {
+    "appearance": "Giao diện",
+    "darkMode": "Giao diện tối",
+    "darkLabel": "Tối",
+    "lightLabel": "Sáng",
+    "light": "Chuyển sang giao diện sáng",
+    "dark": "Chuyển sang giao diện tối"
+  },
+  "select": {
+    "placeholder": "Chọn một tùy chọn"
+  },
+  "form": {
+    "help": "Hướng dẫn cho {{label}}"
+  },
+  "pagination": {
+    "label": "Phân trang",
+    "previous": "Trang trước",
+    "next": "Trang sau",
+    "page": "Trang {{page}}",
+    "range": "Hiển thị {{from}}–{{to}} trên {{total}}",
+    "rows": "Số dòng mỗi trang"
+  },
+  "calendar": {
+    "chooseDate": "Chọn ngày sinh",
+    "chooseMonth": "Chọn tháng",
+    "chooseYear": "Chọn năm",
+    "previousYears": "Các năm trước",
+    "nextYears": "Các năm tiếp theo",
+    "previousMonth": "Tháng trước",
+    "nextMonth": "Tháng sau",
+    "placeholder": "NN / TT / NNNN"
+  },
+  "demo": {
+    "label": "Thông tin không gian demo",
+    "workspace": "Không gian demo",
+    "readOnly": "Dữ liệu minh họa · chỉ đọc · không thay đổi trên máy chủ",
+    "draftDisclosure": "Demo · Dữ liệu minh họa · Không thay đổi trên máy chủ. Dữ liệu lưu trong bộ nhớ và đặt lại khi tải lại trang.",
+    "scenario": "Kịch bản",
+    "previewState": "Trạng thái xem thử",
+    "resetConfirm": "Đặt lại kịch bản demo này? Dữ liệu nhập và các phiên bản đã lưu trong demo sẽ bị xóa.",
+    "footer": "Shared Hub · Cổng chuyên gia",
+    "overviewReadOnly": "Tổng quan chỉ đọc",
+    "scenarios": {
+      "normal": "Khối lượng công việc hiện tại",
+      "empty": "Hàng đợi trống",
+      "partial": "Lỗi một phần",
+      "stale": "Dữ liệu chưa cập nhật",
+      "inconsistent": "Phiên bản không khớp",
+      "error": "Lỗi bảng tổng quan",
+      "denied": "Không có quyền truy cập",
+      "contextError": "Lỗi kiểm tra quyền truy cập"
+    },
+    "interactive": "Demo tương tác · lưu trong bộ nhớ · không thay đổi trên máy chủ"
+  },
+  "language": {
+    "label": "Ngôn ngữ"
+  },
+  "actions": {
+    "exitDemo": "Thoát demo",
+    "signOut": "Đăng xuất",
+    "close": "Đóng",
+    "clear": "Xóa lựa chọn",
+    "resetDemo": "Đặt lại demo",
+    "signIn": "Đăng nhập",
+    "dashboard": "Về bảng điều khiển",
+    "registerExpert": "Đăng ký chuyên gia",
+    "cancel": "Hủy"
+  },
+  "notFound": {
+    "title": "Không tìm thấy trang này.",
+    "description": "Trang bạn tìm có thể đã được chuyển hoặc đường dẫn không đúng. Hãy quay lại không gian làm việc của bạn.",
+    "joinExpert": "Bạn muốn tham gia với vai trò chuyên gia?",
+    "footer": "404 · Không tìm thấy trang",
+    "dashboardLabel": "Bảng điều khiển Shared Hub"
+  },
+  "search": {
+    "pages": "Tìm trang chức năng…",
+    "noPages": "Không có trang phù hợp.",
+    "knowledge": "Tìm số hiệu hoặc tên văn bản"
+  }
+}
