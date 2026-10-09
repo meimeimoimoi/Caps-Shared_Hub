@@ -206,6 +206,12 @@
     background-image: repeating-linear-gradient(0deg, color-mix(in srgb, var(--ui-shadow) 3.0%, transparent) 0 1px, transparent 1px 28px);
   }
 
+  /* sr-only is position:absolute; anchor it to its header cell so it stays inside
+     the table's scroll wrapper instead of widening the page on mobile. */
+  th:has(> .sr-only) {
+    position: relative;
+  }
+
   h1, h2 {
     font-family: var(--font-serif);
     font-variant-numeric: lining-nums;
