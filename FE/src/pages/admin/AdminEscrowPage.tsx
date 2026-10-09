@@ -182,10 +182,11 @@ export default function AdminEscrowPage() {
                 )}
               </div>
               <div
-                className="mt-2 grid gap-3"
-                style={{
-                  gridTemplateColumns: `repeat(${group.statuses.length}, minmax(0, 1fr))`,
-                }}
+                // Màn rộng: mỗi trạng thái một cột; màn hẹp: xuống dòng thay vì ép số tiền tràn ô
+                className="mt-2 grid [grid-template-columns:repeat(auto-fit,minmax(9.5rem,1fr))] gap-3 lg:[grid-template-columns:repeat(var(--cols),minmax(0,1fr))]"
+                style={
+                  { '--cols': group.statuses.length } as React.CSSProperties
+                }
               >
                 {group.statuses.map((s) => {
                   const active = escrows.status === s

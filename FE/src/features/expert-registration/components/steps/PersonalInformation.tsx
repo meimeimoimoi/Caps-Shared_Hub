@@ -13,6 +13,8 @@ import {
 import type { Profile } from '../../types'
 import { FormField } from '@/components/ui/forms/form-field'
 import { DatePicker } from '@/components/ui/forms/date-picker'
+import { Combobox } from '@/components/ui/forms/combobox'
+import { provinces } from '../../constants'
 import type { RegistrationMessage } from '../../types/messages'
 import { useFormatters } from '@/hooks/useFormatters'
 
@@ -268,7 +270,19 @@ export function PersonalInformation({
             error={formErrors.location}
             errorId="error-location"
           >
-            {renderInput('location')}
+            <Combobox
+              id="profile-location"
+              name="location"
+              value={profile.location}
+              onChange={(value) => handleUpdate('location', value)}
+              options={provinces}
+              placeholder={t('fields.regionPlaceholder')}
+              aria-invalid={!!formErrors.location}
+              aria-describedby={
+                formErrors.location ? 'error-location' : undefined
+              }
+              className={`${inputCls} ${formErrors.location ? '!border-ex-error-text focus:ring-2 focus:ring-danger/20' : ''}`}
+            />
           </FormField>
         </div>
 

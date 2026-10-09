@@ -11,21 +11,13 @@ import { Check, ChevronDown } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useTranslation } from 'react-i18next'
 import { useMotion } from '@/components/ui/motion'
+import { scrollActiveOption } from './form-control'
 
 export interface SelectOption<T extends string = string> {
   value: T
   label: string
 }
 
-function scrollActiveOption(list: HTMLUListElement, index: number) {
-  const option = list.children[index] as HTMLElement | undefined
-  if (!option) return
-  const top = option.offsetTop
-  const bottom = top + option.offsetHeight
-  if (top < list.scrollTop) list.scrollTop = top
-  else if (bottom > list.scrollTop + list.clientHeight)
-    list.scrollTop = bottom - list.clientHeight
-}
 
 export interface CustomSelectProps<T extends string = string> {
   value: T | ''

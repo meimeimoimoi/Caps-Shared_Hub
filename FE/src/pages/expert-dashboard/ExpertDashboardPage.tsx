@@ -223,8 +223,9 @@ export default function ExpertDashboardPage() {
               <p>{display.demoCopy(model.counts.data.definition)}</p>
             </section>
           )}
+          {/* Cùng màu với cảnh báo "văn bản lỗi cần xử lý" bên Knowledge: 16% màu danger trên nền giấy */}
           {attention && (
-            <div className="eo-attention mb-6 flex items-center gap-[14px] rounded-[10px] bg-[var(--ep-warning-bg)] bg-none [padding:14px_20px] text-[var(--ep-warning)] [border:1px_solid_var(--ep-warning-bg)] max-[720px]:flex-wrap max-[720px]:[padding:14px_16px] [&_>_div]:min-w-0 [&_>_div]:flex-1 max-[720px]:[&_>_div]:[flex-basis:calc(100%_-_45px)] [&_>_svg]:shrink-0 [&_a]:inline-flex [&_a]:items-center [&_a]:gap-2 [&_a]:[padding:7px_0] [&_a]:text-[12px] [&_a]:font-semibold [&_a]:whitespace-nowrap max-[720px]:[&_a]:ml-[33px] [&_a:hover]:underline [&_a:hover]:underline-offset-1 [&_p]:mt-[3px] [&_p]:text-[12px] [&_p]:text-[var(--ep-warning)] [&_strong]:text-[13px]">
+            <div className="eo-attention mb-6 flex items-center gap-[14px] rounded-[10px] bg-[color-mix(in_oklab,var(--color-danger)_16%,var(--color-paper))] bg-none [padding:14px_20px] text-fg-strong max-[720px]:flex-wrap max-[720px]:[padding:14px_16px] [&_>_div]:min-w-0 [&_>_div]:flex-1 max-[720px]:[&_>_div]:[flex-basis:calc(100%_-_45px)] [&_>_svg]:shrink-0 [&_>_svg]:text-danger [&_a]:inline-flex [&_a]:items-center [&_a]:gap-2 [&_a]:[padding:7px_0] [&_a]:text-[12px] [&_a]:font-semibold [&_a]:whitespace-nowrap max-[720px]:[&_a]:ml-[33px] [&_a]:text-fg-strong [&_a]:underline [&_a]:underline-offset-4 [&_p]:mt-[3px] [&_p]:text-[12px] [&_p]:text-fg-muted [&_strong]:text-[13px]">
               <AlertTriangle size={19} aria-hidden="true" />
               <div>
                 <strong>{t('anOverdueCaseNeedsYourAttention')}</strong>
