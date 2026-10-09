@@ -354,7 +354,7 @@
 .expert-review-note { display: flex; gap: 12px; align-items: center; margin-top: 20px; color: var(--ui-text-muted); }
 .expert-review-note svg { flex-shrink: 0; color: var(--ui-success); }
 .expert-review-note p { margin: 0 !important; font-size: 12.5px; max-width: none; line-height: 1.65; font-weight: 500; }
-@media (min-width: 1024px) { .expert-review-note { width: max-content; } .expert-review-note p { white-space: nowrap; } }
+/* Ghi chú được xuống dòng: câu dài (vd. tiếng Việt) không được đẩy rộng cột giới thiệu làm hẹp form. */
 .expert-account-form { padding: 40px !important; border-radius: 20px !important; background: var(--ui-surface) !important; box-shadow: 0 24px 48px -12px color-mix(in srgb, var(--ui-accent) 8.0%, transparent), 0 0 0 1px color-mix(in srgb, var(--ui-accent) 5.0%, transparent) !important; }
 .expert-account-form::before { display: none; }
 .expert-account-form h2 { font-family: var(--font-serif); font-size: 28px !important; line-height: 1.2; color: var(--ui-text-strong) !important; margin-bottom: 8px !important; font-weight: 700; letter-spacing: -0.01em; }
