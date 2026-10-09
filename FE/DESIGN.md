@@ -88,7 +88,7 @@ Quy tắc: chữ trắng trên avatar, bóng viền `0 0 0 3px var(--surf)` tạ
 | Nhãn nhỏ (`.lb`, `.ch`) | Inter | 11–12px | 600–700 | Dùng UPPERCASE chỉ với `.lb`/`.er` |
 | Trích dẫn / nội dung hồ sơ | Merriweather, Georgia, serif | 14.5–15.5px / 1.8 | 400 | Chỉ dùng cho nội dung chuyên môn dài, không dùng cho tên hay giá |
 
-**Lưu ý:** cần xác nhận Inter và Merriweather đã được nạp (Google Fonts) trong `index.html`; nếu chưa, fallback về hệ thống.
+**Lưu ý — chưa nạp font:** hiện không có Inter hay Merriweather nào được nạp. `FE/index.html` không có link Google Fonts và không file nào trong `src/` khai báo `@import` hay `@font-face`. Homepage đang rơi về font hệ thống (`system-ui`, `Georgia`). Trước khi bàn giao trang marketplace, cần thêm link Google Fonts (ví dụ `Inter:wght@400;500;600;700;800` và `Merriweather:wght@400`) vào `index.html` hoặc `globals.css`, và việc này nên làm chung cho cả homepage.
 
 ---
 
