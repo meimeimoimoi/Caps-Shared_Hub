@@ -124,7 +124,7 @@ function ReviewerShell() {
         {t('common:navigation.skipWorkspace')}
       </a>
       <aside
-        className={`bg-sidebar border-border fixed inset-y-0 left-0 z-30 hidden flex-col border-r py-6 md:flex ${collapsed ? 'w-20 px-3' : 'w-60 px-4'}`}
+        className={`sidebar-rail bg-sidebar border-border fixed inset-y-0 left-0 z-30 hidden flex-col border-r py-6 md:flex ${collapsed ? 'w-20 px-3' : 'w-60 px-4'}`}
       >
         <AppSidebar
           {...sidebarProps}
@@ -140,7 +140,7 @@ function ReviewerShell() {
       >
         <AppSidebar {...sidebarProps} onClose={close} onNavigate={close} />
       </dialog>
-      <div className={collapsed ? 'md:ml-20' : 'md:ml-60'}>
+      <div className={`sidebar-offset ${collapsed ? 'md:ml-20' : 'md:ml-60'}`}>
         <AppHeader
           navigationButtonRef={trigger}
           onOpenNavigation={() => drawer.current?.showModal()}

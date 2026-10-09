@@ -145,7 +145,7 @@ export default function AiAssistantPage() {
 
       {/* Điều hướng ứng dụng (desktop) */}
       <aside
-        className={`bg-sidebar border-sidebar hidden shrink-0 flex-col border-r py-6 md:flex ${sidebarExpanded ? 'w-60 px-4' : 'w-20 px-3'}`}
+        className={`sidebar-rail bg-sidebar border-sidebar hidden shrink-0 flex-col border-r py-6 md:flex ${sidebarExpanded ? 'w-60 px-4' : 'w-20 px-3'}`}
       >
         <AppSidebar
           groups={groups}

@@ -1295,6 +1295,26 @@
 
 
 
+/* ════════ Sidebar thu gọn/mở rộng (AppSidebar + các layout) ════════ */
+/* sidebar-rail: <aside> đổi w-60 ↔ w-20; sidebar-offset: vùng nội dung đổi md:ml-60 ↔ md:ml-20.
+   Cùng thời lượng/easing nên hai bên trượt khớp nhau; giảm chuyển động thì gần như tức thì. */
+.sidebar-rail {
+  transition:
+    width var(--motion-exit) var(--motion-ease-enter),
+    padding var(--motion-exit) var(--motion-ease-enter);
+}
+.sidebar-offset {
+  transition: margin-left var(--motion-exit) var(--motion-ease-enter);
+}
+.sidebar-fade {
+  transition:
+    opacity var(--motion-feedback) var(--motion-ease-enter),
+    padding var(--motion-exit) var(--motion-ease-enter);
+}
+@media (prefers-reduced-motion: reduce) {
+  :is(.sidebar-rail, .sidebar-offset, .sidebar-fade) { transition-duration: var(--motion-reduced); }
+}
+
 /* ════════ Logo thương hiệu (components/ui/display/brand-logo.tsx) ════════ */
 /* Ảnh logo có khoảng trắng quanh chữ nên phóng to và cắt trong khung. */
 .brand-logo {

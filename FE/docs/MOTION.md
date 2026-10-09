@@ -52,7 +52,7 @@ Add `motion-interactive` to buttons/links for shared color, border, shadow and p
 
 Base markup remains visible without JavaScript animation support. Native effects are cancelled on completion and unmount, leaving no filled transforms behind. Presence cancels interrupted exits, resumes from the current visual position, and makes exiting content inert immediately. The caller owns focus return (for example, focus the popup's trigger before closing). Keep content mounted inside MotionPresence while `show` changes; do not conditionally render the whole presence component.
 
-Reduced motion is observed live: spatial movement/drawing and stagger delays are removed, retaining a 100ms opacity confirmation. No loop or layout-dimension animation is included.
+Reduced motion is observed live: spatial movement/drawing and stagger delays are removed, retaining a 100ms opacity confirmation. No loop is included. The only layout-dimension motion is the sidebar collapse: `sidebar-rail` (width/padding of the `<aside>`), `sidebar-offset` (content `margin-left`) and `sidebar-fade` (labels/logo opacity) in globals.css share the exit duration and enter easing, and drop to the reduced duration under reduced motion.
 
 ## Current adoption and verification
 

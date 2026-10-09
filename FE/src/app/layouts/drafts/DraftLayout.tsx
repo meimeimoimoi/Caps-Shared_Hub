@@ -93,7 +93,7 @@ export function DraftLayout() {
         {t('navigation.skipWorkspace')}
       </a>
       <aside
-        className={`bg-sidebar fixed inset-y-0 left-0 z-30 hidden flex-col border-r border-black py-6 md:flex ${expanded ? 'w-60 px-4' : 'w-20 px-3'}`}
+        className={`sidebar-rail bg-sidebar fixed inset-y-0 left-0 z-30 hidden flex-col border-r border-black py-6 md:flex ${expanded ? 'w-60 px-4' : 'w-20 px-3'}`}
       >
         <AppSidebar
           groups={groups}
@@ -115,7 +115,7 @@ export function DraftLayout() {
           onClose={closeDrawer}
         />
       </dialog>
-      <div className={expanded ? 'md:ml-60' : 'md:ml-20'}>
+      <div className={`sidebar-offset ${expanded ? 'md:ml-60' : 'md:ml-20'}`}>
         <AppHeader
           navigationButtonRef={drawerTrigger}
           onOpenNavigation={() => drawer.current?.showModal()}
