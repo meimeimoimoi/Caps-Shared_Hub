@@ -63,8 +63,11 @@ public static class JwtServiceCollectionExtensions
         services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(o =>
             {
+                o.MapInboundClaims = false;
                 o.TokenValidationParameters = new TokenValidationParameters
                 {
+                    RoleClaimType = "role",
+                    NameClaimType = JwtRegisteredClaimNames.Sub,
                     ValidateIssuer = true,
                     ValidateAudience = true,
                     ValidateLifetime = true,
@@ -75,7 +78,12 @@ public static class JwtServiceCollectionExtensions
                     ClockSkew = TimeSpan.FromMinutes(2),
                 };
             });
-        services.AddAuthorization();
+        services.AddAuthorization(o =>
+        {
+            o.DefaultPolicy = new Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder().RequireAuthenticatedUser().RequireClaim("account_status", "ACTIVE").Build();
+            o.AddPolicy("ActiveAccount", o.DefaultPolicy);
+            o.AddPolicy("AuthSession", p => p.RequireAuthenticatedUser());
+        });
         return services;
     }
 }

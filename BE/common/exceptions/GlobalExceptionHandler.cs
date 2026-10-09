@@ -33,14 +33,14 @@ public sealed class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logge
         {
             Status = status,
             Title = title,
-            Detail = exception.Message,
+            Detail = status >= 500 ? "An unexpected error occurred." : exception.Message,
             Instance = httpContext.Request.Path,
         };
         problem.Extensions["traceId"] = traceId;
 
         httpContext.Response.StatusCode = status;
         await httpContext.Response.WriteAsJsonAsync(
-            ApiResponse<ProblemDetails>.Fail(exception.Message),
+            ApiResponse<ProblemDetails>.Fail(status >= 500 ? "An unexpected error occurred." : exception.Message),
             cancellationToken);
 
         return true;

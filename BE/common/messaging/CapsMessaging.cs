@@ -9,6 +9,8 @@ public sealed record MessagingOptions(string Host, string Username, string Passw
 /// <summary>Sample contract — services share events via this lib.</summary>
 public sealed record UserRegisteredEvent(string UserId, string Email, DateTimeOffset At);
 
+public sealed record AuthEmailRequestedEvent(Guid Id, string Email, string Purpose, string Link, DateTimeOffset ExpiresAt);
+
 public static class MessagingServiceCollectionExtensions
 {
     public static IServiceCollection AddCapsMessaging(
