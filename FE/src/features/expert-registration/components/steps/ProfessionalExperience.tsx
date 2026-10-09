@@ -6,6 +6,7 @@ import {
   FileText as FileIcon,
   Sparkles,
   CircleAlert,
+  TriangleAlert,
 } from 'lucide-react'
 import type { Profile } from '../../types'
 import { FormField } from '@/components/ui/forms/form-field'
@@ -148,7 +149,7 @@ export function ProfessionalExperience({
 
         {profile.years !== '' && Number(profile.years) < 5 && (
           <div className="expert-pro-notice expert-pro-notice--warn">
-            <span className="expert-pro-notice-icon">⚠</span>
+            <TriangleAlert size={16} aria-hidden="true" className="expert-pro-notice-icon" />
             <p>{t('experience.minimum')}</p>
           </div>
         )}
