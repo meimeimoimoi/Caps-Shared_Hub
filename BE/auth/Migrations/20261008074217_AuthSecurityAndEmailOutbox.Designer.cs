@@ -3,6 +3,7 @@ using System;
 using System.Net;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using auth.Data;
@@ -12,9 +13,11 @@ using auth.Data;
 namespace auth.Migrations
 {
     [DbContext(typeof(AuthDbContext))]
-    partial class AuthDbContextModelSnapshot : ModelSnapshot
+    [Migration("20261008074217_AuthSecurityAndEmailOutbox")]
+    partial class AuthSecurityAndEmailOutbox
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -414,32 +417,6 @@ namespace auth.Migrations
                         .IsUnique();
 
                     b.ToTable("permission", "identity");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = new Guid("20000000-0000-0000-0000-000000000001"),
-                            Code = "profile:read",
-                            Description = "profile:read"
-                        },
-                        new
-                        {
-                            Id = new Guid("20000000-0000-0000-0000-000000000002"),
-                            Code = "profile:write",
-                            Description = "profile:write"
-                        },
-                        new
-                        {
-                            Id = new Guid("20000000-0000-0000-0000-000000000003"),
-                            Code = "business:read",
-                            Description = "business:read"
-                        },
-                        new
-                        {
-                            Id = new Guid("20000000-0000-0000-0000-000000000004"),
-                            Code = "business:write",
-                            Description = "business:write"
-                        });
                 });
 
             modelBuilder.Entity("auth.Entities.Role", b =>
@@ -514,28 +491,6 @@ namespace auth.Migrations
                     b.HasIndex("PermissionId");
 
                     b.ToTable("role_permission", "identity");
-
-                    b.HasData(
-                        new
-                        {
-                            RoleId = new Guid("10000000-0000-0000-0000-000000000001"),
-                            PermissionId = new Guid("20000000-0000-0000-0000-000000000001")
-                        },
-                        new
-                        {
-                            RoleId = new Guid("10000000-0000-0000-0000-000000000001"),
-                            PermissionId = new Guid("20000000-0000-0000-0000-000000000002")
-                        },
-                        new
-                        {
-                            RoleId = new Guid("10000000-0000-0000-0000-000000000001"),
-                            PermissionId = new Guid("20000000-0000-0000-0000-000000000003")
-                        },
-                        new
-                        {
-                            RoleId = new Guid("10000000-0000-0000-0000-000000000001"),
-                            PermissionId = new Guid("20000000-0000-0000-0000-000000000004")
-                        });
                 });
 
             modelBuilder.Entity("auth.Entities.ServiceOffering", b =>

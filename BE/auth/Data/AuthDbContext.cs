@@ -5,6 +5,7 @@ namespace auth.Data;
 
 public sealed class AuthDbContext(DbContextOptions<AuthDbContext> options) : DbContext(options)
 {
+    public DbSet<AuthEmailOutbox> EmailOutbox => Set<AuthEmailOutbox>();
     public DbSet<Role> Roles => Set<Role>();
     public DbSet<User> Users => Set<User>();
     public DbSet<UserRole> UserRoles => Set<UserRole>();
@@ -23,6 +24,16 @@ public sealed class AuthDbContext(DbContextOptions<AuthDbContext> options) : DbC
     {
         modelBuilder.HasDefaultSchema("identity");
 
+        modelBuilder.Entity<AuthEmailOutbox>(e => { e.ToTable("auth_email_outbox"); e.HasKey(x => x.Id); e.HasIndex(x => x.SentAt); });
+        var codes = new[] { "USER", "EXPERT", "AUTHOR_REVIEWER", "KNOWLEDGE_ADMIN", "SYSTEM_ADMIN" };
+        for (var i = 0; i < codes.Length; i++) modelBuilder.Entity<Role>().HasData(new Role { Id = Guid.Parse($"10000000-0000-0000-0000-{i + 1:000000000000}"), Code = codes[i], Name = codes[i] });
+        var permissionCodes = new[] { "profile:read", "profile:write", "business:read", "business:write" };
+        for (var i = 0; i < permissionCodes.Length; i++)
+        {
+            var permissionId = Guid.Parse($"20000000-0000-0000-0000-{i + 1:000000000000}");
+            modelBuilder.Entity<Permission>().HasData(new Permission { Id = permissionId, Code = permissionCodes[i], Description = permissionCodes[i] });
+            modelBuilder.Entity<RolePermission>().HasData(new RolePermission { RoleId = Guid.Parse("10000000-0000-0000-0000-000000000001"), PermissionId = permissionId });
+        }
         // Roles
         modelBuilder.Entity<Role>(e =>
         {
@@ -41,6 +52,10 @@ public sealed class AuthDbContext(DbContextOptions<AuthDbContext> options) : DbC
             e.HasKey(x => x.Id);
             e.Property(x => x.Id).HasColumnName("id");
             e.Property(x => x.Email).HasColumnName("email").IsRequired();
+            e.HasIndex(x => x.Email).IsUnique();
+            e.Property(x => x.FailedLoginAttempts).HasColumnName("failed_login_attempts");
+            e.Property(x => x.LockoutEnd).HasColumnName("lockout_end");
+            e.Property(x => x.TokenVersion).HasColumnName("token_version");
             e.Property(x => x.PasswordHash).HasColumnName("password_hash").IsRequired();
             e.Property(x => x.FullName).HasColumnName("full_name").IsRequired();
             e.Ignore(x => x.DisplayName);
