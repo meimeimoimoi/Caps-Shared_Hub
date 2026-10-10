@@ -154,9 +154,8 @@ function Fallback() {
 // Data router enables a real navigation blocker for unsaved input, including browser Back.
 function RouteMotion() {
   const location = useLocation()
-  // The homepage is a pixel port of a standalone template; it opts out of the
-  // app's page transition (fade entrance + transformed ancestor breaks its
-  // position:fixed modal).
+  // Fixed navigation and the sticky video hero must not have a transformed
+  // ancestor from the app's page transition.
   if (location.pathname === '/') return <Outlet />
   return (
     <MotionPage replayKey={location.pathname}>

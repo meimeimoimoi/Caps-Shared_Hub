@@ -1,3 +1,5 @@
+import viHome from './locales/vi/home.json'
+import enHome from './locales/en/home.json'
 import viCommon from './locales/vi/common.json'
 import enCommon from './locales/en/common.json'
 import viNavigation from './locales/vi/navigation.json'
@@ -22,6 +24,7 @@ import enAiAssistant from './locales/en/aiAssistant.json'
 // Add feature namespaces as each rollout group migrates its screens.
 export const resources = {
   vi: {
+    home: viHome,
     common: viCommon,
     navigation: viNavigation,
     auth: viAuth,
@@ -34,6 +37,7 @@ export const resources = {
     aiAssistant: viAiAssistant,
   },
   en: {
+    home: enHome,
     common: enCommon,
     navigation: enNavigation,
     auth: enAuth,

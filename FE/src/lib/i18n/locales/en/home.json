@@ -1,0 +1,180 @@
+{
+  "meta": {
+    "title": "Shared Hub · Corporate income tax, AI drafts, experts verify"
+  },
+  "skip": "Skip to main content",
+  "brand": {
+    "home": "Shared Hub, back to home",
+    "name": "Shared Hub"
+  },
+  "nav": {
+    "label": "Main navigation",
+    "process": "How it works",
+    "products": "Products",
+    "escrow": "Escrow",
+    "faq": "FAQ",
+    "login": "Sign in",
+    "askAi": "Ask the AI assistant",
+    "askAiShort": "Ask AI"
+  },
+  "hero": {
+    "eyebrow": "Corporate income tax · Legal citations",
+    "ask": {
+      "label": "Your corporate income tax question",
+      "placeholder": "Are cash payments tax deductible?",
+      "placeholderShort": "Ask about corporate income tax...",
+      "submit": "Ask AI",
+      "note": "Sign in to get an answer with citations."
+    },
+    "ask1": "Ask about tax law. Get answers with <em>articles and clauses.</em>",
+    "draft": "AI writes <em>the draft.</em>",
+    "draftSub": "<b>Form 03/TNDN</b>, <b>explanatory letters</b>. Ready for you to edit.",
+    "review": "An expert <em>reviews it.</em>",
+    "reviewSub": "A real person, vetted through <b>two assessment rounds</b>.",
+    "verified": "A <em>verified version.</em>",
+    "verifiedSub": "Saved separately. <b>Never overwritten.</b>",
+    "cta": "Get started with Shared Hub",
+    "cue": "Scroll down",
+    "staticTitle": "Corporate income tax documents. AI drafts, experts <em>verify</em>.",
+    "staticSub": "Cited <b>articles and clauses</b>. Ready drafts. Expert verification."
+  },
+  "seal": {
+    "verified": "VERIFIED",
+    "version": "VERSION 2"
+  },
+  "process": {
+    "label": "How it works",
+    "title": "Four steps.<br/> A document you can <em>file with confidence.</em>",
+    "lead": "From your first question to filing with the tax authority. Know <b>who did what</b> at every step.",
+    "ask": {
+      "who": "You ask",
+      "title": "Ask AI",
+      "desc": "Answers with <b>articles and clauses</b> you can check."
+    },
+    "draft": {
+      "who": "AI drafts",
+      "title": "AI draft",
+      "desc": "<b>Form 03/TNDN</b> and explanatory letters drafted from your figures."
+    },
+    "review": {
+      "who": "An expert",
+      "title": "Expert review",
+      "desc": "A real person vetted through <b>two assessment rounds</b> edits and reviews it."
+    },
+    "verified": {
+      "who": "The result",
+      "title": "Verified version",
+      "desc": "Each version is <b>saved separately</b>, never overwritten."
+    }
+  },
+  "products": {
+    "label": "Products",
+    "title": "Three tools. <em>One set of documents.</em>",
+    "lead": "Ask, draft and review in one place. Enter your figures <b>once</b>; they follow your documents through to the end.",
+    "lookup": {
+      "tag": "Research",
+      "title": "AI research",
+      "desc": "Ask about corporate income tax and get answers with <b>articles and clauses</b>.",
+      "cta": "Try a question",
+      "alt": "An open law book on a stone desk, a beam of light falling onto its pages"
+    },
+    "workspace": {
+      "tag": "Drafting",
+      "title": "Draft workspace",
+      "desc": "AI drafts <b>Form 03/TNDN</b> and explanatory letters from your figures.",
+      "cta": "Open a draft",
+      "alt": "A draft on a stone desk beside a blue screen glow and a steaming cup of tea"
+    },
+    "experts": {
+      "tag": "Verification",
+      "title": "Expert marketplace",
+      "desc": "Book a <b>vetted expert</b> to review and verify your draft.",
+      "cta": "Find an expert",
+      "alt": "An expert's hand stamping a document, with a fountain pen beside it"
+    }
+  },
+  "verify": {
+    "label": "AI draft → Verified version",
+    "title": "Every draft needs <em>someone to read it again.</em>",
+    "lead": "An overlooked cash expense may be disallowed during an audit. <b>An expert catches it first.</b>",
+    "hold": "Hold to verify",
+    "held": "Verified",
+    "hint": "Hold the button to see the expert stamp the sample draft beside it.",
+    "heldHint": "Stamped. The draft is now version 2; the original version is preserved.",
+    "docLabel": "AI draft · Explanatory letter",
+    "draftVersion": "Version 1 · Draft",
+    "verifiedVersion": "Version 2 · Verified",
+    "docTitle": "Explanation of client entertainment expenses, Q1",
+    "rowBefore": "Client entertainment on 12 March: <flag>VND 8,500,000 in cash</flag>, recorded as a deductible expense.",
+    "rowAfter": "Client entertainment on 12 March: VND 8,500,000 in cash. <b>Excluded from deductible expenses.</b>",
+    "reviewer": "Reviewing expert",
+    "reviewerInitials": "EX",
+    "note": "Expenses of <b>VND 5 million</b> or more require evidence of non-cash payment to qualify for a deduction.",
+    "citation": "Point c, Clause 1, Article 9 · Decree 320/2025/NĐ-CP",
+    "example": "Illustrative example."
+  },
+  "escrow": {
+    "label": "Secure escrow",
+    "title": "Your money moves only <em>when the work is done.</em>",
+    "lead": "Credits are held in escrow. The expert is paid only when you <b>accept the work</b>.",
+    "step": "Step {{n}}",
+    "book": {
+      "title": "You book",
+      "desc": "Pay with <b>credits</b>; no one is paid yet."
+    },
+    "hold": {
+      "title": "Credits are held",
+      "desc": "Shared Hub holds them throughout <b>the review</b>."
+    },
+    "accept": {
+      "title": "You accept",
+      "desc": "The expert <b>receives credits</b> only when you agree."
+    },
+    "note": "Not satisfied? Open a <b>dispute</b>. Credits remain held until it is resolved."
+  },
+  "faq": {
+    "label": "FAQ",
+    "title": "Still <em>have questions?</em>",
+    "lead": "Can't find your question? Ask the AI assistant directly.",
+    "askAi": "Ask the AI assistant",
+    "wrong": {
+      "q": "What if AI gives a wrong answer?",
+      "a": "Each answer includes <b>articles and clauses</b> you can check. Have an expert review your documents before filing."
+    },
+    "unfinished": {
+      "q": "What if I pay and the expert leaves the work unfinished?",
+      "a": "<b>Secure escrow</b> holds the credits. The expert is paid only when you accept the work."
+    },
+    "who": {
+      "q": "Who are the experts?",
+      "a": "Tax agents, chief accountants and legal professionals. Everyone goes through <b>two assessment rounds</b>."
+    },
+    "legal": {
+      "q": "Is AI content legal advice?",
+      "a": "No. It is a <b>reference draft</b> that needs expert verification before use."
+    }
+  },
+  "final": {
+    "title": "Let AI handle <quiet>the quick work.</quiet><br/> Let experts handle <em>the careful work.</em>",
+    "cta": "Get started with Shared Hub",
+    "expert": "Are you a tax agent or chief accountant?",
+    "expertLink": "Register as an expert"
+  },
+  "footer": {
+    "tagline": "Corporate income tax documents: <b>AI drafts</b>, <b>experts verify</b>.",
+    "products": "Products",
+    "learn": "Learn more",
+    "account": "Account",
+    "lookup": "AI research",
+    "workspace": "Draft workspace",
+    "experts": "Expert marketplace",
+    "process": "How it works",
+    "escrow": "Secure escrow",
+    "faq": "FAQ",
+    "login": "Sign in",
+    "expertSignup": "Register as an expert",
+    "disclaimer": "<b>Note:</b> AI content is a reference draft, not legal advice. Have an expert verify it before filing.",
+    "copyright": "© {{year}} Shared Hub"
+  },
+  "toTop": "Back to top"
+}

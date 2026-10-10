@@ -75,6 +75,24 @@
   --ui-login-button-ink: #0a0a0b;
   --ui-login-danger: #ffb4b4;
   --ui-login-link: #8ee8c6;
+  /* Fixed material for the public marketing homepage (/home-v2): a dark slate
+   * desk with one brand orange, independent of app theme like the login video. */
+  --ui-home-canvas: #0f1b26;
+  --ui-home-canvas-deep: #0a131c;
+  --ui-home-panel: #16263a;
+  --ui-home-line: #2b3f55;
+  --ui-home-line-strong: #5d7590;
+  --ui-home-paper: #e8ecef;
+  --ui-home-paper-2: #dde3e8;
+  --ui-home-card: #f5f7f9;
+  --ui-home-sheet: #fbfcfd;
+  --ui-home-ink: #122030;
+  --ui-home-ink-muted: #465767;
+  --ui-home-accent: #ff7a00;
+  --ui-home-accent-hover: #ff8f26;
+  --ui-home-accent-ink: #b34f00;
+  --ui-home-text: #f2f4f6;
+  --ui-home-muted: #a9b6c2;
   --app-color-scheme: light;
   color-scheme: light;
 }
@@ -130,6 +148,22 @@
 }
 
 @theme inline {
+  --color-home-canvas: var(--ui-home-canvas);
+  --color-home-canvas-deep: var(--ui-home-canvas-deep);
+  --color-home-panel: var(--ui-home-panel);
+  --color-home-line: var(--ui-home-line);
+  --color-home-line-strong: var(--ui-home-line-strong);
+  --color-home-paper: var(--ui-home-paper);
+  --color-home-paper-2: var(--ui-home-paper-2);
+  --color-home-card: var(--ui-home-card);
+  --color-home-sheet: var(--ui-home-sheet);
+  --color-home-ink: var(--ui-home-ink);
+  --color-home-ink-muted: var(--ui-home-ink-muted);
+  --color-home-accent: var(--ui-home-accent);
+  --color-home-accent-hover: var(--ui-home-accent-hover);
+  --color-home-accent-ink: var(--ui-home-accent-ink);
+  --color-home-text: var(--ui-home-text);
+  --color-home-muted: var(--ui-home-muted);
   --color-switch-off: var(--ui-switch-off);
   --color-switch-on: var(--ui-switch-on);
   --color-switch-thumb: var(--ui-switch-thumb);

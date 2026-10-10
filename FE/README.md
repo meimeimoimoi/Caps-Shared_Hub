@@ -61,7 +61,7 @@ src/
 
 ## Routes
 
-- `/` — public marketing homepage (pixel port of `SHUB Homepage.html`; opts out of `MotionPage`, scoped CSS under `#shub-home`; see [docs/HOMEPAGE.md](docs/HOMEPAGE.md)).
+- `/` — public marketing homepage (React redesign with Vietnamese/English content, scoped CSS and scroll-driven video; see [docs/HOMEPAGE.md](docs/HOMEPAGE.md)).
 - `/login` — public; email login calls `POST /api/auth/login` through the gateway.
 - `/expert/register` — public expert onboarding.
 - `/dashboard` — protected application dashboard.

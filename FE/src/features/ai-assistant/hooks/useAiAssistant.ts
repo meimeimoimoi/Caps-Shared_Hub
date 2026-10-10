@@ -1,3 +1,4 @@
+import { useLocation } from 'react-router-dom'
 import { useState } from "react";
 import type { ChatMessage, Conversation } from "../types";
 import { sendQuestionDemo } from "../api/ai-assistantApi";
@@ -48,7 +49,9 @@ const demoMessages: Record<string, ChatMessage[]> = {
 export type AssistantError = 'errors.sendFailed'
 
 export function useAiAssistant() {
-    const [question, setQuestion] = useState('')
+    const location = useLocation()
+    const initialQuestion: unknown = location.state?.homepageQuestion
+    const [question, setQuestion] = useState(typeof initialQuestion === 'string' ? initialQuestion.slice(0, 2000) : '')
     const [messages, setMessages] = useState<ChatMessage[]>([])
     const [isSending, setIsSending] = useState(false)
     const [error, setError] = useState<AssistantError | null>(null)
