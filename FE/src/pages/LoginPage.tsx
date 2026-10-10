@@ -5,7 +5,7 @@ import { ForgotPasswordForm } from '@/components/auth/ForgotPasswordForm'
 import { VideoBackground } from '@/components/auth/VideoBackground'
 import { useAuth } from '../features/auth/hooks/useAuth'
 import type { LoginFormValues } from '../features/auth/types'
-import { LanguageSwitcher } from '@/components/ui/layout/language-switcher'
+import { AuthLanguageToggle } from '@/components/auth/AuthLanguageToggle'
 import { useTranslation } from 'react-i18next'
 import { useLocation } from 'react-router-dom'
 
@@ -34,9 +34,11 @@ export default function LoginPage() {
   const google = () => setNotice('googleUnavailable')
 
   return (
-    <main className="login-material relative isolate flex min-h-svh flex-col items-center justify-center overflow-hidden bg-[var(--ui-login-canvas)] px-6 py-12 text-[var(--ui-login-text)]">
+    <main className="login-material relative isolate flex min-h-svh flex-col items-center justify-center overflow-hidden bg-[var(--ui-login-canvas)] px-6 py-12 text-[var(--ui-login-text)] max-sm:pt-20">
       <VideoBackground />
-      <div className="fixed top-[max(1rem,env(safe-area-inset-top))] right-[max(1rem,env(safe-area-inset-right))] z-50"><LanguageSwitcher variant="overlay" /></div>
+      <div className="fixed top-[max(1rem,env(safe-area-inset-top))] right-[max(1rem,env(safe-area-inset-right))] z-50">
+        <AuthLanguageToggle />
+      </div>
       <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-black/30" />
       {view === 'social' ? (
         <SocialView onContinueEmail={() => { setNotice(null); setView('email') }} onGoogle={google} />

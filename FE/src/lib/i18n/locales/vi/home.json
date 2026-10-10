@@ -1,0 +1,181 @@
+{
+  "meta": {
+    "title": "Shared Hub · Thuế TNDN, AI soạn, chuyên gia xác thực"
+  },
+  "skip": "Bỏ qua, tới nội dung chính",
+  "brand": {
+    "home": "Shared Hub, về đầu trang",
+    "name": "Shared Hub"
+  },
+  "nav": {
+    "label": "Điều hướng chính",
+    "process": "Quy trình",
+    "products": "Sản phẩm",
+    "escrow": "Ký quỹ",
+    "faq": "Hỏi đáp",
+    "login": "Đăng nhập",
+    "register": "Đăng ký",
+    "askAi": "Hỏi Trợ lý AI",
+    "askAiShort": "Hỏi AI"
+  },
+  "hero": {
+    "eyebrow": "Thuế TNDN · Có trích dẫn pháp lý",
+    "ask": {
+      "label": "Câu hỏi về Thuế TNDN",
+      "placeholder": "Chi tiền mặt có được trừ không?",
+      "placeholderShort": "Hỏi về Thuế TNDN...",
+      "submit": "Hỏi AI",
+      "note": "Đăng nhập để nhận câu trả lời kèm trích dẫn."
+    },
+    "ask1": "Hỏi luật thuế. Nhận câu trả lời có <em>Điều, Khoản.</em>",
+    "draft": "AI soạn <em>bản nháp.</em>",
+    "draftSub": "<b>Tờ khai 03/TNDN</b>, <b>công văn giải trình</b>. Soạn sẵn để bạn sửa.",
+    "review": "Chuyên gia <em>rà soát.</em>",
+    "reviewSub": "Người thật, đã qua <b>2 vòng thẩm định</b>.",
+    "verified": "Bản <em>đã xác thực.</em>",
+    "verifiedSub": "Lưu riêng. <b>Không bao giờ bị ghi đè.</b>",
+    "cta": "Bắt đầu với Shared Hub",
+    "cue": "Cuộn xuống",
+    "staticTitle": "Hồ sơ thuế TNDN. AI soạn, chuyên gia <em>xác thực</em>.",
+    "staticSub": "Trích dẫn <b>Điều, Khoản</b>. Bản nháp soạn sẵn. Chuyên gia xác thực."
+  },
+  "seal": {
+    "verified": "ĐÃ XÁC THỰC",
+    "version": "PHIÊN BẢN 2"
+  },
+  "process": {
+    "label": "Quy trình",
+    "title": "Bốn bước.<br/> Một bản bạn <em>dám nộp.</em>",
+    "lead": "Từ câu hỏi đầu tiên đến bản nộp cơ quan thuế. Bước nào cũng biết <b>ai đã làm</b>.",
+    "ask": {
+      "who": "Bạn hỏi",
+      "title": "Hỏi AI",
+      "desc": "Câu trả lời kèm <b>Điều, Khoản</b> để bạn đối chiếu."
+    },
+    "draft": {
+      "who": "AI soạn",
+      "title": "Bản nháp AI",
+      "desc": "<b>Tờ khai 03/TNDN</b>, công văn giải trình soạn sẵn từ số liệu của bạn."
+    },
+    "review": {
+      "who": "Chuyên gia",
+      "title": "Chuyên gia rà soát",
+      "desc": "Người thật đã qua <b>2 vòng thẩm định</b> sửa và duyệt."
+    },
+    "verified": {
+      "who": "Kết quả",
+      "title": "Bản đã xác thực",
+      "desc": "Mỗi phiên bản <b>lưu riêng</b>, không bao giờ bị ghi đè."
+    }
+  },
+  "products": {
+    "label": "Sản phẩm",
+    "title": "Ba công cụ. <em>Một hồ sơ.</em>",
+    "lead": "Hỏi, soạn, duyệt ở cùng một chỗ. Số liệu nhập <b>một lần</b>, đi theo hồ sơ đến cuối.",
+    "lookup": {
+      "tag": "Tra cứu",
+      "title": "Tra cứu AI",
+      "desc": "Hỏi về Thuế TNDN, nhận câu trả lời kèm <b>Điều, Khoản</b>.",
+      "cta": "Hỏi thử",
+      "alt": "Cuốn sách luật mở trên bàn đá, một luồng sáng rọi xuống trang giấy"
+    },
+    "workspace": {
+      "tag": "Soạn thảo",
+      "title": "Không gian soạn thảo",
+      "desc": "AI soạn <b>tờ khai 03/TNDN</b> và công văn giải trình từ số liệu của bạn.",
+      "cta": "Mở bản nháp",
+      "alt": "Bản nháp đang soạn dở trên bàn đá, ánh sáng màn hình xanh và tách trà bốc khói"
+    },
+    "experts": {
+      "tag": "Xác thực",
+      "title": "Sàn chuyên gia",
+      "desc": "Đặt lịch chuyên gia <b>đã thẩm định</b> để rà soát và xác thực bản nháp.",
+      "cta": "Tìm chuyên gia",
+      "alt": "Bàn tay chuyên gia đóng dấu lên văn bản, bút máy đặt bên cạnh"
+    }
+  },
+  "verify": {
+    "label": "Bản nháp AI → Bản đã xác thực",
+    "title": "Bản nháp nào cũng cần <em>một người đọc lại.</em>",
+    "lead": "Một khoản chi tiền mặt bị bỏ sót có thể bị loại khi thanh tra. <b>Chuyên gia bắt lỗi đó trước.</b>",
+    "hold": "Giữ để xác thực",
+    "held": "Đã xác thực",
+    "hint": "Nhấn giữ nút để chuyên gia đóng dấu lên bản nháp bên cạnh.",
+    "heldHint": "Đã đóng dấu. Bản nháp giờ là phiên bản 2, bản cũ vẫn được giữ lại.",
+    "docLabel": "Bản nháp AI · Công văn giải trình",
+    "draftVersion": "Phiên bản 1 · Nháp",
+    "verifiedVersion": "Phiên bản 2 · Đã xác thực",
+    "docTitle": "Giải trình chi phí tiếp khách, quý I",
+    "rowBefore": "Chi tiếp khách 12/3: <flag>8.500.000 đ tiền mặt</flag>, ghi vào chi phí được trừ.",
+    "rowAfter": "Chi tiếp khách 12/3: 8.500.000 đ tiền mặt. <b>Loại khỏi chi phí được trừ.</b>",
+    "reviewer": "Chuyên gia rà soát",
+    "reviewerInitials": "CG",
+    "note": "Khoản chi từ <b>5 triệu đồng</b> trở lên cần chứng từ thanh toán không dùng tiền mặt mới được trừ.",
+    "citation": "Điểm c khoản 1 Điều 9 · Nghị định 320/2025/NĐ-CP",
+    "example": "Ví dụ minh họa."
+  },
+  "escrow": {
+    "label": "Ký quỹ an toàn",
+    "title": "Tiền của bạn chỉ đi <em>khi việc đã xong.</em>",
+    "lead": "Credit được giữ ở giữa. Chuyên gia chỉ nhận khi bạn <b>nghiệm thu</b>.",
+    "step": "Bước {{n}}",
+    "book": {
+      "title": "Bạn đặt lịch",
+      "desc": "Trả bằng <b>credit</b>, chưa chuyển cho ai."
+    },
+    "hold": {
+      "title": "Credit được giữ",
+      "desc": "Shared Hub giữ suốt <b>thời gian rà soát</b>."
+    },
+    "accept": {
+      "title": "Bạn nghiệm thu",
+      "desc": "Chuyên gia <b>chỉ nhận credit</b> khi bạn đồng ý."
+    },
+    "note": "Chưa hài lòng? Mở <b>khiếu nại</b>, credit vẫn được giữ cho đến khi xử lý xong."
+  },
+  "faq": {
+    "label": "Hỏi đáp",
+    "title": "Còn <em>băn khoăn?</em>",
+    "lead": "Chưa thấy câu bạn cần? Hỏi thẳng Trợ lý AI.",
+    "askAi": "Hỏi Trợ lý AI",
+    "wrong": {
+      "q": "AI trả lời sai thì sao?",
+      "a": "Mỗi câu trả lời kèm <b>Điều, Khoản</b> để bạn đối chiếu. Trước khi nộp, hãy để chuyên gia rà soát."
+    },
+    "unfinished": {
+      "q": "Trả tiền rồi chuyên gia làm dở thì sao?",
+      "a": "<b>Ký quỹ an toàn</b> giữ credit. Chuyên gia chỉ nhận khi bạn nghiệm thu."
+    },
+    "who": {
+      "q": "Chuyên gia là ai?",
+      "a": "Đại lý thuế, kế toán trưởng, chuyên gia pháp lý. Ai cũng qua <b>2 vòng thẩm định</b>."
+    },
+    "legal": {
+      "q": "Nội dung AI có phải tư vấn pháp lý?",
+      "a": "Không. Đó là <b>bản nháp tham khảo</b>, cần chuyên gia xác thực trước khi dùng."
+    }
+  },
+  "final": {
+    "title": "Để AI làm <quiet>phần nhanh.</quiet><br/> Để chuyên gia làm <em>phần chắc.</em>",
+    "cta": "Bắt đầu với Shared Hub",
+    "expert": "Bạn là đại lý thuế hoặc kế toán trưởng?",
+    "expertLink": "Đăng ký làm chuyên gia"
+  },
+  "footer": {
+    "tagline": "Hồ sơ Thuế TNDN: <b>AI soạn</b>, <b>chuyên gia xác thực</b>.",
+    "products": "Sản phẩm",
+    "learn": "Tìm hiểu",
+    "account": "Tài khoản",
+    "lookup": "Tra cứu AI",
+    "workspace": "Không gian soạn thảo",
+    "experts": "Sàn chuyên gia",
+    "process": "Quy trình",
+    "escrow": "Ký quỹ an toàn",
+    "faq": "Hỏi đáp",
+    "login": "Đăng nhập",
+    "expertSignup": "Đăng ký làm chuyên gia",
+    "disclaimer": "<b>Lưu ý:</b> Nội dung do AI tạo chỉ là bản nháp tham khảo, không phải tư vấn pháp lý. Hãy để chuyên gia xác thực trước khi nộp.",
+    "copyright": "© {{year}} Shared Hub"
+  },
+  "toTop": "Về đầu trang"
+}

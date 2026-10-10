@@ -12,7 +12,7 @@ import { cn } from '@/lib/utils'
 import { authApi } from '@/features/auth/api/authApi'
 import { passwordRequirements } from '@/features/auth'
 import { VideoBackground } from '@/components/auth/VideoBackground'
-import { LanguageSwitcher } from '@/components/ui/layout/language-switcher'
+import { AuthLanguageToggle } from '@/components/auth/AuthLanguageToggle'
 import {
   CARD_CLASS,
   ERROR_CLASS,
@@ -60,10 +60,10 @@ export default function ResetPasswordPage() {
   }
 
   return (
-    <main className="login-material relative isolate flex min-h-svh flex-col items-center justify-center overflow-hidden bg-[var(--ui-login-canvas)] px-6 py-12 text-[var(--ui-login-text)]">
+    <main className="login-material relative isolate flex min-h-svh flex-col items-center justify-center overflow-hidden bg-[var(--ui-login-canvas)] px-6 py-12 text-[var(--ui-login-text)] max-sm:pt-20">
       <VideoBackground />
       <div className="fixed top-[max(1rem,env(safe-area-inset-top))] right-[max(1rem,env(safe-area-inset-right))] z-50">
-        <LanguageSwitcher variant="overlay" />
+        <AuthLanguageToggle />
       </div>
       <div
         aria-hidden="true"

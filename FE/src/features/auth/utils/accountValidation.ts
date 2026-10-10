@@ -59,32 +59,73 @@ const legacyMessages = {
     'Please agree to the terms and conditions and privacy policy to continue.',
 } as const
 
+type Issue = keyof typeof legacyMessages
+
+function nameIssue(value: string): Issue | undefined {
+  const name = value.trim()
+  if (!name) return 'nameRequired'
+  if (name.length < 2 || name.length > 100) return 'nameLength'
+  if (!/^[\p{L}\p{M}][\p{L}\p{M}\s.’\x27-]*$/u.test(name))
+    return 'nameCharacters'
+}
+
+function emailIssue(value: string): Issue | undefined {
+  const email = value.trim()
+  if (!email) return 'emailRequired'
+  if (email.length > 254 || !/^[^\s@]+@[^\s@.]+(?:\.[^\s@.]+)+$/.test(email))
+    return 'emailInvalid'
+}
+
+function passwordIssue(password: string): Issue | undefined {
+  if (!password) return 'passwordRequired'
+  if (!passwordRequirements(password).every((rule) => rule.met))
+    return 'passwordRules'
+}
+
+function compact<T extends string>(
+  issues: Record<T, Issue | undefined>
+): Partial<Record<T, Issue>> {
+  return Object.fromEntries(
+    Object.entries(issues).filter(([, issue]) => issue)
+  ) as Partial<Record<T, Issue>>
+}
+
 export function validateAccountIssues(
   values: AccountValues
-): Partial<Record<AccountField, keyof typeof legacyMessages>> {
-  const errors: Partial<Record<AccountField, keyof typeof legacyMessages>> = {}
-  const name = values.name.trim()
-  if (!name) errors.name = 'nameRequired'
-  else if (name.length < 2 || name.length > 100) errors.name = 'nameLength'
-  else if (!/^[\p{L}\p{M}][\p{L}\p{M}\s.’\x27-]*$/u.test(name))
-    errors.name = 'nameCharacters'
-  const email = values.email.trim()
-  if (!email) errors.email = 'emailRequired'
-  else if (
-    email.length > 254 ||
-    !/^[^\s@]+@[^\s@.]+(?:\.[^\s@.]+)+$/.test(email)
-  )
-    errors.email = 'emailInvalid'
-  if (!values.phone.trim()) errors.phone = 'phoneRequired'
-  else if (!normalizeVietnamPhone(values.phone)) errors.phone = 'phoneInvalid'
-  if (!values.password) errors.password = 'passwordRequired'
-  else if (!passwordRequirements(values.password).every((rule) => rule.met))
-    errors.password = 'passwordRules'
-  if (!values.confirmPassword) errors.confirmPassword = 'confirmationRequired'
-  else if (values.confirmPassword !== values.password)
-    errors.confirmPassword = 'passwordMismatch'
-  if (!values.terms) errors.terms = 'terms'
-  return errors
+): Partial<Record<AccountField, Issue>> {
+  return compact({
+    name: nameIssue(values.name),
+    email: emailIssue(values.email),
+    phone: !values.phone.trim()
+      ? 'phoneRequired'
+      : !normalizeVietnamPhone(values.phone)
+        ? 'phoneInvalid'
+        : undefined,
+    password: passwordIssue(values.password),
+    confirmPassword: !values.confirmPassword
+      ? 'confirmationRequired'
+      : values.confirmPassword !== values.password
+        ? 'passwordMismatch'
+        : undefined,
+    terms: values.terms ? undefined : 'terms',
+  } satisfies Record<AccountField, Issue | undefined>)
+}
+
+export type SignupField = 'name' | 'email' | 'password' | 'terms'
+
+/** Đăng ký khách hàng: gọn hơn hồ sơ chuyên gia (không số điện thoại, không nhập lại mật khẩu). */
+export function validateSignupIssues(values: {
+  name: string
+  email: string
+  password: string
+  terms: boolean
+}): Partial<Record<SignupField, Issue>> {
+  return compact({
+    name: nameIssue(values.name),
+    email: emailIssue(values.email),
+    password: passwordIssue(values.password),
+    terms: values.terms ? undefined : 'terms',
+  } satisfies Record<SignupField, Issue | undefined>)
 }
 
 /** Compatibility for existing callers/tests; migrated UI uses locale-independent issues. */

@@ -1,5 +1,5 @@
 {
-"validation": {
+  "validation": {
     "required": "This field is required.",
     "email": "Please enter a valid email address.",
     "validValue": "Please enter a valid value.",
@@ -83,11 +83,39 @@
     "impact": "Make a difference.",
     "description": "Join Shared Hub as a tax and accounting expert and share your knowledge with a wider community.",
     "photo": "Two tax and accounting professionals working together over financial documents in a sunlit office",
-    "review": "Expert approval includes eligibility and service-specific competency reviews."
+    "review": "Expert approval includes eligibility and service-specific competency reviews.",
+    "eyebrow": "For tax and accounting experts",
+    "stepsTitle": "How to become an expert",
+    "steps": {
+      "account": {
+        "title": "Create your account",
+        "body": "Name, phone number and email. About 2 minutes."
+      },
+      "dossier": {
+        "title": "Submit your credentials",
+        "body": "Experience, expertise and supporting documents."
+      },
+      "gate1": {
+        "title": "Stage 1: Eligibility check",
+        "body": "Your profile and evidence are checked against eligibility rules."
+      },
+      "gate2": {
+        "title": "Stage 2: Competency review",
+        "body": "Assessed per service: CIT knowledge, AI draft review and professional judgment."
+      },
+      "pricing": {
+        "title": "Set prices and take cases",
+        "body": "Once approved, price each service and take cases."
+      }
+    }
   },
   "account": {
     "heading": "Create your expert account",
-    "registered": "Already registered?"
+    "registered": "Already registered?",
+    "notExpert": "Looking for tax help rather than offering it?",
+    "customerSignup": "Create a customer account",
+    "subtitle": "Step 1 of the process. Next, you will complete your credentials.",
+    "namePlaceholder": "Jane Nguyen"
   },
   "actions": {
     "signIn": "Sign in",
@@ -129,7 +157,7 @@
   "password": {
     "required": "Password *",
     "confirmRequired": "Confirm password *",
-    "confirm": "Confirm password",
+    "confirm": "Re-enter your password",
     "placeholder": "Enter password",
     "strength": "Password strength",
     "high": "High",
@@ -137,16 +165,27 @@
     "low": "Low",
     "empty": "Empty",
     "complete": "All password requirements met",
-    "guidance": "12+ characters; uppercase, lowercase, number & symbol",
+    "guidance": "At least 12 characters, with uppercase and lowercase letters, a number and a symbol.",
     "met": "Met: ",
-    "notMet": "Not met: "
+    "notMet": "Not met: ",
+    "label": "Password",
+    "confirmLabel": "Confirm password",
+    "short": {
+      "length": "12+ characters",
+      "uppercase": "Uppercase",
+      "lowercase": "Lowercase",
+      "number": "Number",
+      "symbol": "Symbol"
+    },
+    "requirementsLabel": "Password requirements",
+    "create": "Create a new password"
   },
   "personal": {
     "heading": "Personal information",
     "details": "Personal details",
     "contact": "Contact information",
     "professional": "Professional profile",
-    "guidance": "Tell us about your professional background. Required fields are marked with an asterisk.",
+    "guidance": "Introduce yourself to the reviewers. Fields marked * are required.",
     "photo": "Profile photo",
     "preview": "Profile preview",
     "upload": "Upload photo",
@@ -154,7 +193,8 @@
     "change": "Change photo",
     "photoFormats": "JPG, PNG, WebP · max 5 MB",
     "photoError": "Choose a JPG, PNG or WebP image up to 5 MB.",
-    "profile": "Profile"
+    "profile": "Profile",
+    "contactFromAccount": "From the account you just created."
   },
   "experience": {
     "heading": "Professional experience",
@@ -175,7 +215,10 @@
     "missing": "Not provided",
     "issue": "One detail to complete",
     "issues": "Information to complete",
-    "fix": "Your information is still here. Update the following to continue."
+    "fix": "Your information is still here. Update the following to continue.",
+    "yearsUnit": "years",
+    "cvRequired": "Curriculum vitae (CV) *",
+    "issueCount": "{{count}} details to complete"
   },
   "documents": {
     "heading": "Supporting documents",
@@ -188,7 +231,7 @@
     "cv": "Choose your CV",
     "choose": "Choose supporting files",
     "drop": "or drag and drop here",
-    "formats": "PDF, JPG or PNG · up to 10 MB each (demo)",
+    "formats": "PDF, JPG or PNG · up to 10 MB each",
     "local": "selected locally",
     "countLabel": "Documents",
     "countNote": "Selected documents are awaiting verification. File count does not indicate approval."
@@ -202,7 +245,7 @@
   "supplement": {
     "guidance": "Professional qualifications: provide a readable copy or clarify the information in your existing evidence. This is an illustrative request.",
     "document": "Replacement document",
-    "formats": "PDF, JPG or PNG · maximum 10 MB (demo)",
+    "formats": "PDF, JPG or PNG · maximum 10 MB",
     "choose": "Choose replacement document",
     "fileError": "Choose a PDF, JPG or PNG under 10 MB.",
     "explanation": "Explanation"
@@ -260,5 +303,11 @@
     "steps": "Application steps",
     "policies": "Support and policies",
     "scenario": "Preview a scenario"
+  },
+  "stepper": {
+    "personal": "Personal",
+    "experience": "Experience",
+    "documents": "Evidence",
+    "review": "Submit"
   }
 }
