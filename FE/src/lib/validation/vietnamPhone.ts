@@ -1,6 +1,7 @@
 // Validate national mobile/fixed-line structure; this does not verify ownership.
+// Ô nhập đã hiện sẵn +84 nên bỏ mã quốc gia và số 0 đầu: "0909 422 807" thành "909 422 807".
 export function vietnamPhoneInputValue(value: string): string {
-  return value.trimStart().replace(/^(?:\+84|0084|84(?=\d{9,10}$))\s*/, '')
+  return value.trimStart().replace(/^(?:\+84|0084|84(?=\d{9,10}$)|0)\s*/, '')
 }
 
 export function formatVietnamPhoneInput(value: string): string {
