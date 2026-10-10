@@ -399,7 +399,9 @@
 }
 #shub-home .hero {
   position: relative;
-  height: 560vh;
+  /* Quãng cuộn của hero = chiều cao - 1 màn hình. 560vh bắt người dùng cuộn ~4,6 màn hình;
+   * 360vh còn ~2,6 màn hình. Mọi mốc chữ/video tính theo phần trăm nên không lệch. */
+  height: 360vh;
 }
 #shub-home .stage {
   position: sticky;
