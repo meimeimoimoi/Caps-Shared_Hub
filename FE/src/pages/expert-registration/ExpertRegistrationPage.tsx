@@ -2,7 +2,8 @@ import { useTranslation } from 'react-i18next'
 import { useEffect } from 'react'
 import { useFormatters } from '@/hooks/useFormatters'
 import { Link } from 'react-router-dom'
-import { LanguageSwitcher } from '@/components/ui/layout/language-switcher'
+import { AuthLanguageToggle } from '@/components/auth/AuthLanguageToggle'
+import brandMark from '@/assets/logo-icon.svg'
 import {
   Check,
   FileText,
@@ -10,13 +11,15 @@ import {
   UserRound,
   ChevronDown,
 } from 'lucide-react'
-import { BrandLogo } from '@/components/ui/display/brand-logo'
 import { useRegistrationMotion } from '../../features/expert-registration/hooks/useRegistrationMotion'
 import { useWizardMotion } from '../../features/expert-registration/hooks/useWizardMotion'
 import { useScrollReveal } from '@/hooks/useScrollReveal'
 import { mergeRefs } from '@/lib/merge-refs'
 
-import { steps } from '../../features/expert-registration/constants'
+import {
+  steps,
+  stepShortLabels,
+} from '../../features/expert-registration/constants'
 import { AccountCreation } from '../../features/expert-registration/components/AccountCreation'
 import { AccountIntroduction } from '../../features/expert-registration/components/AccountIntroduction'
 import { ApplicationStatus } from '../../features/expert-registration/components/ApplicationStatus'
@@ -35,13 +38,14 @@ import { useApplicationLifecycle } from '../../features/expert-registration/hook
 // Add entries only when genuine Privacy, Terms and Help routes are implemented.
 const onboardingFooterLinks: { label: string; to: string }[] = []
 
-const panelCls =
-  'bg-ex-panel rounded-lg p-8 shadow-paper max-md:p-[18px_24px]'
+const panelCls = 'bg-ex-panel rounded-lg p-8 shadow-paper max-md:p-[18px_24px]'
 
 export default function ExpertRegistrationPage() {
   const { t } = useTranslation('expertRegistration')
   const format = useFormatters()
-  useEffect(() => { document.title = `${t('page.title')} | Shared Hub` }, [t])
+  useEffect(() => {
+    document.title = `${t('page.title')} | Shared Hub`
+  }, [t])
 
   const motionRef = useRegistrationMotion()
   const scrollRevealRef = useScrollReveal()
@@ -105,8 +109,7 @@ export default function ExpertRegistrationPage() {
     onRegistrationSubmit: completeRegistrationSubmission,
   })
   const wizardBodyRef = useWizardMotion(step, account && !submitted)
-  const visibleNotice =
-    [notice, lifecycleNotice].find(Boolean) ?? ''
+  const visibleNotice = [notice, lifecycleNotice].find(Boolean) ?? ''
   const terminal = stage === 'ineligible' || stage === 'failed'
   const timeline = [
     t('timeline.submission'),
@@ -126,10 +129,6 @@ export default function ExpertRegistrationPage() {
 
   const stepHeading = (
     <div className="expert-wizard-heading">
-      <div className="expert-wizard-heading-bar" aria-hidden="true" />
-      <span className="expert-wizard-heading-badge">
-        {t('counts.step', { step: format.number(step + 1), total: format.number(steps.length) })}
-      </span>
       <h1 ref={heading} tabIndex={-1} className="expert-wizard-heading-title">
         {t(steps[step])}
       </h1>
@@ -139,30 +138,33 @@ export default function ExpertRegistrationPage() {
   return (
     <div
       ref={mergeRefs(motionRef, scrollRevealRef)}
-      className={`${!account ? 'expert-welcome' : 'expert-application'} bg-ex-bg text-ex-ink [&_a]:text-ex-accent [&_h1,&_h2,&_h3]:text-ex-heading [&_:focus-visible]:outline-ex-focus [&_input[type='checkbox']]:accent-ex-accent [&_summary]:text-ex-accent min-h-screen font-sans text-[15px] leading-[1.6] [color-scheme:inherit] [&_*]:box-border [&_:focus-visible]:outline-3 [&_:focus-visible]:outline-offset-4 [&_a]:underline-offset-4 [&_button,&_input,&_select,&_textarea]:font-[inherit] [&_fieldset]:my-[22px] [&_fieldset]:border-0 [&_fieldset]:p-0 [&_h1]:mt-0 [&_h1]:mb-4 [&_h1]:text-[clamp(28px,3.3vw,42px)] [&_h1]:tracking-tight [&_h1,&_h2,&_h3]:font-serif [&_h1,&_h2,&_h3]:leading-tight [&_h2]:mt-0 [&_h2]:mb-[18px] [&_h2]:text-[27px] [&_h3]:mt-[22px] [&_h3]:mb-3 [&_h3]:text-xl [&_input[type='checkbox']]:h-[17px] [&_input[type='checkbox']]:w-[17px] [&_input[type='checkbox']]:shrink-0 [&_legend]:mb-3 [&_legend]:font-semibold [&_p]:mt-0 [&_p]:mb-[18px] [&_p]:max-w-[72ch] [&_summary]:cursor-pointer [&_summary]:py-3 [&_summary]:underline [&_summary]:underline-offset-4`}
+      className={`${!account ? 'expert-welcome expert-signup' : 'expert-application'} bg-ex-bg text-ex-ink [&_a]:text-ex-accent [&_h1,&_h2,&_h3]:text-ex-heading [&_:focus-visible]:outline-ex-focus [&_input[type='checkbox']]:accent-ex-accent [&_summary]:text-ex-accent min-h-screen font-sans text-[15px] leading-[1.6] [color-scheme:inherit] [&_*]:box-border [&_:focus-visible]:outline-3 [&_:focus-visible]:outline-offset-4 [&_a]:underline-offset-4 [&_button,&_input,&_select,&_textarea]:font-[inherit] [&_fieldset]:my-[22px] [&_fieldset]:border-0 [&_fieldset]:p-0 [&_h1]:mt-0 [&_h1]:mb-4 [&_h1]:text-[clamp(28px,3.3vw,42px)] [&_h1]:tracking-tight [&_h1,&_h2,&_h3]:font-serif [&_h1,&_h2,&_h3]:leading-tight [&_h2]:mt-0 [&_h2]:mb-[18px] [&_h2]:text-[27px] [&_h3]:mt-[22px] [&_h3]:mb-3 [&_h3]:text-xl [&_input[type='checkbox']]:h-[17px] [&_input[type='checkbox']]:w-[17px] [&_input[type='checkbox']]:shrink-0 [&_legend]:mb-3 [&_legend]:font-semibold [&_p]:mt-0 [&_p]:mb-[18px] [&_p]:max-w-[72ch] [&_summary]:cursor-pointer [&_summary]:py-3 [&_summary]:underline [&_summary]:underline-offset-4`}
     >
-      {/* ── Header ── */}
-      <header className="border-ex-border relative z-20 border-b">
-        <div className="mx-auto flex max-w-[1240px] flex-wrap items-center gap-6 px-6 py-5 max-md:gap-3 max-md:px-4">
-          <Link
-            to="/"
-            aria-label={t('page.home')}
-            className="block shrink-0 no-underline"
-          >
-            <BrandLogo className="h-[44px] w-[200px] max-md:h-[34px] max-md:w-[150px]" />
-          </Link>
-          <span className="border-ex-header-divider border-l pl-[25px] max-md:pl-3 max-md:text-xs">
-            {t('page.title')}
-          </span>
-          <div className="ml-auto">
-            <LanguageSwitcher />
+      {/* ── Header ── (màn tạo tài khoản có panel trái riêng chứa logo và ngôn ngữ) */}
+      {account && (
+        <header className="expert-portal-header">
+          <div className="expert-portal-header-inner">
+            <Link
+              to="/"
+              aria-label={t('page.home')}
+              className="expert-portal-brand"
+            >
+              <img src={brandMark} alt="" width={26} height={30} />
+              <span>Shared Hub</span>
+            </Link>
+            <span className="expert-portal-title">{t('page.title')}</span>
+            <AuthLanguageToggle tone="light" className="ml-auto" />
           </div>
-        </div>
-      </header>
+        </header>
+      )}
 
       {/* ── Main ── */}
       <main
-        className={`${submitted ? 'expert-status-main' : ''} mx-auto max-w-[1240px] max-md:px-4 max-md:py-7 max-md:pb-10 ${!account ? 'expert-welcome-main grid grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] items-start gap-20 px-6 py-12 pb-14 max-lg:gap-10 max-md:grid-cols-1' : 'px-6 py-12 pb-[70px]'}`}
+        className={
+          !account
+            ? 'expert-signup-layout'
+            : `${submitted ? 'expert-status-main' : ''} mx-auto max-w-[1240px] px-6 py-12 pb-[70px] max-md:px-4 max-md:py-7 max-md:pb-10`
+        }
       >
         {!account ? (
           <>
@@ -170,24 +172,26 @@ export default function ExpertRegistrationPage() {
             <AccountIntroduction />
 
             {/* ── Account creation: right ── */}
-            <AccountCreation
-              profile={profile}
-              formErrors={formErrors}
-              submitting={lifecycleSubmitting}
-              onUpdate={(key, value) => {
-                update(key, value)
-                clearFormError(key)
-              }}
-              onSubmit={(e) => {
-                e.preventDefault()
-                if (lifecycleSubmitting) return
-                if (!validateForm(e.currentTarget)) return
-                beginTask()
-                setTimeout(() => {
-                  completeAccountCreation()
-                }, 600)
-              }}
-            />
+            <div className="expert-signup-form-pane">
+              <AccountCreation
+                profile={profile}
+                formErrors={formErrors}
+                submitting={lifecycleSubmitting}
+                onUpdate={(key, value) => {
+                  update(key, value)
+                  clearFormError(key)
+                }}
+                onSubmit={(e) => {
+                  e.preventDefault()
+                  if (lifecycleSubmitting) return
+                  if (!validateForm(e.currentTarget)) return
+                  beginTask()
+                  setTimeout(() => {
+                    completeAccountCreation()
+                  }, 600)
+                }}
+              />
+            </div>
           </>
         ) : submitted ? (
           <>
@@ -238,7 +242,13 @@ export default function ExpertRegistrationPage() {
                       <Briefcase size={16} aria-hidden="true" />
                       {t('page.experience')}
                     </dt>
-                    <dd>{t('counts.years', { years: profile.years ? format.number(Number(profile.years)) : '—' })}</dd>
+                    <dd>
+                      {t('counts.years', {
+                        years: profile.years
+                          ? format.number(Number(profile.years))
+                          : '—',
+                      })}
+                    </dd>
                   </div>
                   <div>
                     <dt>
@@ -246,7 +256,12 @@ export default function ExpertRegistrationPage() {
                       {t('documents.countLabel')}
                     </dt>
                     <dd>
-                      {t('counts.selected', { count: Object.values(files).reduce((n, list) => n + list.length, 0) })}
+                      {t('counts.selected', {
+                        count: Object.values(files).reduce(
+                          (n, list) => n + list.length,
+                          0
+                        ),
+                      })}
                     </dd>
                   </div>
                 </dl>
@@ -265,10 +280,7 @@ export default function ExpertRegistrationPage() {
                   {t('page.view')} <ChevronDown size={16} aria-hidden="true" />
                 </a>
               </aside>
-              <details
-                className="expert-status-dossier"
-                id="submitted-dossier"
-              >
+              <details className="expert-status-dossier" id="submitted-dossier">
                 <summary>
                   <span>
                     {t('page.details')}
@@ -302,7 +314,10 @@ export default function ExpertRegistrationPage() {
                       type="button"
                       disabled={i > step}
                       onClick={() => move(i)}
-                      aria-label={t(i < step ? 'counts.completedStep' : 'counts.stepLabel', { step: format.number(i + 1), label: t(s) })}
+                      aria-label={t(
+                        i < step ? 'counts.completedStep' : 'counts.stepLabel',
+                        { step: format.number(i + 1), label: t(s) }
+                      )}
                       aria-current={i === step ? 'step' : undefined}
                       className="expert-stepper-btn"
                     >
@@ -330,7 +345,7 @@ export default function ExpertRegistrationPage() {
                               : 'expert-stepper-label--upcoming'
                         }`}
                       >
-                        {t(s)}
+                        {t(stepShortLabels[i])}
                       </span>
                     </button>
 
@@ -440,21 +455,26 @@ export default function ExpertRegistrationPage() {
       </main>
 
       {/* ── Footer ── */}
-      <footer
-        data-reveal="fade"
-        className="expert-onboarding-footer border-ex-footer-border text-ex-muted mx-auto flex max-w-[1240px] justify-between border-t px-6 py-[22px] text-[13px] max-md:flex-wrap max-md:gap-2"
-      >
-        <span>Shared Hub</span>
-        {onboardingFooterLinks.length > 0 && (
-          <nav aria-label={t('page.policies')} className="expert-footer-links">
-            {onboardingFooterLinks.map(({ label, to }) => (
-              <Link key={to} to={to}>
-                {label}
-              </Link>
-            ))}
-          </nav>
-        )}
-      </footer>
+      {account && (
+        <footer
+          data-reveal="fade"
+          className="expert-onboarding-footer border-ex-footer-border text-ex-muted mx-auto flex max-w-[1240px] justify-between border-t px-6 py-[22px] text-[13px] max-md:flex-wrap max-md:gap-2"
+        >
+          <span>Shared Hub</span>
+          {onboardingFooterLinks.length > 0 && (
+            <nav
+              aria-label={t('page.policies')}
+              className="expert-footer-links"
+            >
+              {onboardingFooterLinks.map(({ label, to }) => (
+                <Link key={to} to={to}>
+                  {label}
+                </Link>
+              ))}
+            </nav>
+          )}
+        </footer>
+      )}
     </div>
   )
 }
