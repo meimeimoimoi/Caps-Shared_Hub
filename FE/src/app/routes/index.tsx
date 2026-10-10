@@ -40,6 +40,7 @@ const DraftPreviewPage = lazy(() => import('@/pages/drafts/DraftPreviewPage'))
 const DraftHistoryPage = lazy(() => import('@/pages/drafts/DraftHistoryPage'))
 const LoginPage = lazy(() => import('@/pages/LoginPage'))
 const ResetPasswordPage = lazy(() => import('@/pages/ResetPasswordPage'))
+const RegisterPage = lazy(() => import('@/pages/RegisterPage'))
 const ExpertRegistrationPage = lazy(
   () => import('@/pages/expert-registration/ExpertRegistrationPage')
 )
@@ -177,6 +178,7 @@ const router = createBrowserRouter(
     >
       <Route path="/" element={<HomePage />} />
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/register" element={<RegisterPage />} />
       <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route path="/expert/register" element={<ExpertRegistrationPage />} />
       <Route path="/experts/:expertId" element={<ExpertPublicProfilePage />} />

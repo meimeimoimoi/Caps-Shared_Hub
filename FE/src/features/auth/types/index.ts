@@ -11,6 +11,14 @@ export interface LoginFormValues {
   rememberMe?: boolean
 }
 
+export interface RegisterFormValues {
+  name: string
+  email: string
+  password: string
+  confirmPassword: string
+  terms: boolean
+}
+
 export interface AuthState {
   user: User | null
   isAuthenticated: boolean
