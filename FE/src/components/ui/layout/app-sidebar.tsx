@@ -99,7 +99,8 @@ export function AppSidebar({
                     {item.icon}
                   </span>
                   <span
-                    className={`sidebar-fade line-clamp-2 w-[148px] shrink-0 leading-snug whitespace-normal ${collapsed ? 'opacity-0' : 'opacity-100'}`}
+                    // Rộng cố định để chữ không xô khi thu/mở; có badge thì chừa chỗ bên phải cho nó.
+                    className={`sidebar-fade line-clamp-2 w-[148px] shrink-0 leading-snug whitespace-normal ${item.badge != null ? 'pr-10' : ''} ${collapsed ? 'opacity-0' : 'opacity-100'}`}
                   >
                     {item.label}
                     {item.badge != null && collapsed && `, ${item.badge}`}
@@ -111,7 +112,7 @@ export function AppSidebar({
                         className="bg-indicator absolute top-2 right-2 size-2 rounded-full"
                       />
                     ) : (
-                      <span className="bg-indicator ml-auto grid min-h-5 min-w-5 shrink-0 place-items-center rounded-full px-1.5 text-xs font-semibold text-[var(--ui-on-accent)] tabular-nums">
+                      <span className="bg-indicator absolute top-1/2 right-3.5 grid min-h-5 min-w-5 -translate-y-1/2 place-items-center rounded-full px-1.5 text-xs font-semibold text-[var(--ui-on-accent)] tabular-nums">
                         {item.badge}
                       </span>
                     ))}
