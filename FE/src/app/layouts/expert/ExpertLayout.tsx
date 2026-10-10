@@ -24,6 +24,9 @@ const scenarioOptions = [
 export function ExpertLayout() {
   const { t } = useTranslation(['common', 'navigation'])
   const location = useLocation()
+  const interactivePricing = /^\/expert\/services\/[^/]+\/pricing$/.test(
+    location.pathname
+  )
   const drawer = useRef<HTMLDialogElement>(null)
   useDialogMotion(drawer, 'drawer-left')
   const trigger = useRef<HTMLElement | null>(null)
@@ -92,7 +95,9 @@ export function ExpertLayout() {
           >
             <div>
               <strong className="mr-2">{t('demo.workspace')}</strong>
-              <span>{t('demo.readOnly')}</span>
+              <span>
+                {t(interactivePricing ? 'demo.interactive' : 'demo.readOnly')}
+              </span>
             </div>
           </DemoBanner>
         )}
@@ -105,7 +110,11 @@ export function ExpertLayout() {
         </main>
         <footer className="ep-footer">
           {t('demo.footer')}
-          <span>{t('demo.overviewReadOnly')}</span>
+          <span>
+            {t(
+              interactivePricing ? 'demo.interactive' : 'demo.overviewReadOnly'
+            )}
+          </span>
         </footer>
       </div>
     </div>

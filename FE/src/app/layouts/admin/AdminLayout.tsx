@@ -1,12 +1,13 @@
-import { useRef, useState, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import {
   CreditCard,
   FileText,
+  LayoutDashboard,
   Flag,
-  Settings,
   Tag,
   UserRound,
   Users,
+  UsersRound,
   type LucideIcon,
 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
@@ -35,8 +36,12 @@ export interface NavGroup {
 
 interface ShellPageProps {
   breadcrumb: ReactNode
+  /** Tiêu đề tab trình duyệt; bỏ trống thì lấy tên mục sidebar đang chọn */
+  title?: string
   /** Bỏ trống thì ẩn ô tìm kiếm */
   search?: string
+  /** Gợi ý trong ô tìm kiếm; mặc định "Tìm theo tên hoặc email" */
+  searchLabel?: string
   onSearchChange?: (value: string) => void
   /** Danh sách trong popover chuông; có mục thì hiện chấm đỏ */
   notifications?: ShellNotification[]
@@ -45,7 +50,15 @@ interface ShellPageProps {
 
 interface AdminLayoutProps extends ShellPageProps {
   /** Mục sidebar đang mở */
-  section: 'pending' | 'experts' | 'disputes' | 'escrow' | 'pricing' | 'account'
+  section:
+    | 'overview'
+    | 'pending'
+    | 'experts'
+    | 'disputes'
+    | 'escrow'
+    | 'pricing'
+    | 'users'
+    | 'account'
   pendingCount: number
   disputeCount?: number
 }
@@ -58,6 +71,18 @@ export function AdminLayout({
 }: AdminLayoutProps) {
   const { t } = useTranslation('admin')
   const nav: NavGroup[] = [
+    {
+      // Không tiêu đề nhóm: AppSidebar chỉ hiện tiêu đề khi có chữ
+      group: '',
+      items: [
+        {
+          label: t('navigation.overview'),
+          icon: LayoutDashboard,
+          to: '/admin',
+          active: section === 'overview',
+        },
+      ],
+    },
     {
       group: t('navigation.expertReview'),
       items: [
@@ -104,12 +129,18 @@ export function AdminLayout({
       group: t('navigation.system'),
       items: [
         {
+          label: t('navigation.users'),
+          icon: UsersRound,
+          to: '/admin/users',
+          active: section === 'users',
+        },
+        {
           label: t('navigation.accounts'),
           icon: UserRound,
           to: '/admin/account',
           active: section === 'account',
         },
-        { label: t('navigation.settings'), icon: Settings },
+        // ponytail: bỏ mục Cài đặt (chưa có trang, hiện mờ dễ tưởng lỗi); thêm lại khi có màn cấu hình hệ thống
       ],
     },
   ]
@@ -125,7 +156,9 @@ interface RoleShellProps extends ShellPageProps {
 export function RoleShell({
   nav,
   breadcrumb,
+  title,
   search,
+  searchLabel,
   onSearchChange,
   notifications = [],
   children,
@@ -150,11 +183,17 @@ export function RoleShell({
       badge: badge != null && badge > 0 ? number(badge) : undefined,
     })),
   }))
+  // Đặt ở layout để mọi trang admin đều có tiêu đề tab (effect của layout chạy sau effect của trang)
+  const pageTitle =
+    title ?? nav.flatMap((g) => g.items).find((i) => i.active)?.label ?? 'Shared Hub'
+  useEffect(() => {
+    document.title = `${pageTitle} | Shared Hub`
+  }, [pageTitle])
   const closeDrawer = () => drawer.current?.close()
   return (
     <div
       data-density="compact"
-      className="bg-desk-2 text-fg selection:bg-accent-soft selection:text-accent-text min-h-svh"
+      className="bg-desk-2 text-fg min-h-svh"
     >
       <a
         href="#admin-main"
@@ -163,7 +202,7 @@ export function RoleShell({
         {t('navigation.skipWorkspace')}
       </a>
       <aside
-        className={`bg-sidebar fixed inset-y-0 left-0 z-30 hidden flex-col border-r border-black py-6 md:flex ${collapsed ? 'w-20 px-3' : 'w-60 px-4'}`}
+        className={`sidebar-rail bg-sidebar fixed inset-y-0 left-0 z-30 hidden flex-col border-r border-black py-6 md:flex ${collapsed ? 'w-20 px-3' : 'w-60 px-4'}`}
       >
         <AppSidebar
           groups={groups}
@@ -185,7 +224,7 @@ export function RoleShell({
           onClose={closeDrawer}
         />
       </dialog>
-      <div className={collapsed ? 'md:ml-20' : 'md:ml-60'}>
+      <div className={`sidebar-offset ${collapsed ? 'md:ml-20' : 'md:ml-60'}`}>
         <AppHeader
           navigationButtonRef={drawerTrigger}
           onOpenNavigation={() => drawer.current?.showModal()}
@@ -195,7 +234,7 @@ export function RoleShell({
               ? {
                   value: search ?? '',
                   onChange: onSearchChange,
-                  label: t('admin:search.placeholder'),
+                  label: searchLabel ?? t('admin:search.placeholder'),
                 }
               : undefined
           }
@@ -208,6 +247,16 @@ export function RoleShell({
             name: account.name,
             avatarUrl: account.avatarUrl,
             onSignOut: account.logout,
+            // Giống Expert: menu tài khoản có lối vào trang tài khoản, lấy từ mục sidebar cho khớp nhãn và trạng thái
+            links: nav
+              .flatMap((g) => g.items)
+              .filter((item) => item.to === '/admin/account')
+              .map(({ label, icon: Icon, active }) => ({
+                label,
+                to: '/admin/account',
+                icon: <Icon size={17} />,
+                active,
+              })),
           }}
           notifications={notifications}
         />

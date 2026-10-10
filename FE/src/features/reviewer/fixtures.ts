@@ -4,10 +4,12 @@ import type {
   ReviewerState,
   ReviewRecord,
 } from './domain'
+import { DEMO_ACCOUNTS } from '@/features/auth'
 
 export const demoActor: ReviewerActor = {
   id: 'reviewer-demo',
-  name: 'Demo Reviewer',
+  // Cùng tên với trang Tài khoản và header
+  name: DEMO_ACCOUNTS.reviewer.name,
   permissions: ['GATE_1', 'GATE_2'],
 }
 export const demoPolicy: ReviewPolicy = {

@@ -48,7 +48,6 @@
 .expert-portal *::-webkit-scrollbar { display: block !important; width: 8px; height: 8px; }
 .expert-portal *::-webkit-scrollbar-thumb { background: var(--ui-border-control); border: 2px solid transparent; border-radius: 8px; background-clip: padding-box; }
 .expert-portal *::-webkit-scrollbar-track { background: transparent; }
-.expert-portal ::selection { background: var(--ui-accent-soft); color: var(--ep-accent-text); }
 .expert-portal :focus-visible { outline: 2px solid var(--ep-accent); outline-offset: 3px; border-radius: 4px; }
 .expert-portal button, .expert-portal summary, .expert-portal select { cursor: pointer; }
 .expert-portal button:disabled { cursor: wait; opacity: .55; }
@@ -525,7 +524,11 @@
 }
 .ep-notification-item:hover { background: var(--ep-surface-raised); }
 .ep-notif-read { opacity: .65; }
-.ep-notif-icon { font-size: 14px; flex-shrink: 0; margin-top: 2px; }
+.ep-notif-icon { flex-shrink: 0; margin-top: 2px; }
+.ep-notif-urgent .ep-notif-icon { color: var(--ep-danger); }
+.ep-notif-warning .ep-notif-icon { color: var(--ui-warning); }
+.ep-notif-success .ep-notif-icon { color: var(--ep-success); }
+.ep-notif-info .ep-notif-icon { color: var(--ui-info); }
 .ep-notif-body { flex: 1; min-width: 0; }
 .ep-notif-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 3px; }
 .ep-notif-top strong { font-size: 13px; }
@@ -622,7 +625,7 @@
 
 /* ---- Cases page ---- */
 .ep-cases-toolbar {
-  display: flex; justify-content: space-between; align-items: center; gap: 16px;
+  display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 16px;
   margin-top: 24px; margin-bottom: 20px; animation: ep-fade-in var(--motion-enter) var(--motion-ease-enter);
 }
 .ep-filter-group {
@@ -633,12 +636,12 @@
   padding: 8px 12px; min-height: 36px; font-size: 13px; color: var(--ep-ink);
 }
 .ep-cases-table-wrapper {
-  overflow-x: auto; animation: ep-fade-in var(--motion-enter) var(--motion-ease-enter) calc(var(--motion-stagger-interval) * 1) both;
+  position: relative; overflow-x: auto; animation: ep-fade-in var(--motion-enter) var(--motion-ease-enter) calc(var(--motion-stagger-interval) * 1) both;
   border-radius: 14px; border: 1px solid var(--ep-border); background: var(--ep-surface);
   box-shadow: 0 1px 4px color-mix(in srgb, var(--ui-shadow) 3.0%, transparent);
 }
 .ep-cases-table {
-  width: 100%; border-collapse: collapse; font-size: 13px;
+  width: 100%; min-width: 640px; border-collapse: collapse; font-size: 13px;
 }
 .ep-cases-table thead { background: var(--ep-surface-raised); }
 .ep-cases-table th {

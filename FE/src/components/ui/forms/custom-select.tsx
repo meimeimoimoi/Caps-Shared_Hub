@@ -11,21 +11,13 @@ import { Check, ChevronDown } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useTranslation } from 'react-i18next'
 import { useMotion } from '@/components/ui/motion'
+import { scrollActiveOption } from './form-control'
 
 export interface SelectOption<T extends string = string> {
   value: T
   label: string
 }
 
-function scrollActiveOption(list: HTMLUListElement, index: number) {
-  const option = list.children[index] as HTMLElement | undefined
-  if (!option) return
-  const top = option.offsetTop
-  const bottom = top + option.offsetHeight
-  if (top < list.scrollTop) list.scrollTop = top
-  else if (bottom > list.scrollTop + list.clientHeight)
-    list.scrollTop = bottom - list.clientHeight
-}
 
 export interface CustomSelectProps<T extends string = string> {
   value: T | ''
@@ -69,6 +61,7 @@ export function CustomSelect<T extends string>({
     replayKey: open ? 1 : 0,
   })
   const [active, setActive] = useState(0)
+  const [keyboardNavigation, setKeyboardNavigation] = useState(false)
   const search = useRef({ text: '', time: 0 })
   const selected = options.findIndex((option) => option.value === value)
   const show = (index = selected) => {
@@ -120,6 +113,9 @@ export function CustomSelect<T extends string>({
   }, [active, open, placement.maxHeight, menu])
   const onKeyDown = (event: KeyboardEvent<HTMLButtonElement>) => {
     const key = event.key
+    if (['ArrowDown', 'ArrowUp', 'Home', 'End', 'Enter', ' '].includes(key) || key.length === 1) {
+      setKeyboardNavigation(true)
+    }
     if (key === 'Tab') {
       setOpen(false)
       return
@@ -195,13 +191,15 @@ export function CustomSelect<T extends string>({
           triggerClassName
         )}
         onKeyDown={onKeyDown}
-        onClick={() => (open ? setOpen(false) : show())}
+        onClick={(event) => {
+          setKeyboardNavigation(event.detail === 0)
+          if (open) setOpen(false)
+          else show()
+        }}
       >
         {triggerLeading}
         <span id={`${id}-value`}>
-          {options.find((option) => option.value === value)?.label ??
-            placeholder ??
-            t('select.placeholder')}
+          {options.find((option) => option.value === value)?.label ?? placeholder ?? t('select.placeholder')}
         </span>
         <ChevronDown
           size={18}
@@ -234,15 +232,18 @@ export function CustomSelect<T extends string>({
               key={key}
               id={`${id}-option-${index}`}
               role="option"
-              className="data-[active=true]:bg-accent-soft aria-selected:bg-accent-soft aria-selected:text-accent-text flex min-h-11 cursor-pointer items-center justify-between gap-2 rounded px-3 py-2 text-sm aria-selected:font-semibold"
+              className="hover:bg-accent-soft hover:text-accent-text data-[active=true]:bg-accent-soft data-[active=true]:text-accent-text aria-selected:bg-accent-soft aria-selected:text-accent-text flex min-h-11 cursor-pointer items-center justify-between gap-2 rounded px-3 py-2 text-sm aria-selected:font-semibold"
               aria-selected={value === key}
-              data-active={active === index}
-              onPointerMove={() => setActive(index)}
+              data-active={keyboardNavigation && active === index}
+              onPointerMove={() => {
+                setKeyboardNavigation(false)
+                setActive(index)
+              }}
               onMouseDown={(event) => event.preventDefault()}
               onClick={() => choose(index)}
             >
               <span>{label}</span>
-              {value === key && <Check size={16} aria-hidden="true" />}
+              {(value === key) && <Check size={16} aria-hidden="true" />}
             </li>
           ))}
         </ul>

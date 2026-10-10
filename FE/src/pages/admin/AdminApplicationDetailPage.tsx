@@ -29,7 +29,6 @@ import { useAdminNav } from '@/app/layouts/admin/useAdminNav'
 import { useApplicationReview } from '../../features/expert-vetting/hooks/useApplicationReview'
 import type { ReviewDecision } from '../../features/expert-vetting/types'
 import { useTranslation } from 'react-i18next'
-import { useEffect } from 'react'
 
 export default function AdminApplicationDetailPage() {
   const { t } = useTranslation(['admin', 'common'])
@@ -48,9 +47,6 @@ export default function AdminApplicationDetailPage() {
   const clearToast = useCallback(() => setToast(null), [])
   const review = useApplicationReview(id)
   const { detail, decision, status } = review
-  useEffect(() => {
-    document.title = detail ? `${detail.name} | Shared Hub` : 'Shared Hub'
-  }, [detail])
 
   const listLink = (
     <Link
@@ -104,7 +100,7 @@ export default function AdminApplicationDetailPage() {
       .then(() => {
         setDialog(null)
         setTab('history')
-        setToast(t(DECISION_TOAST[kind] as any))
+        setToast(t(DECISION_TOAST[kind]))
       })
       .catch((e: Error) => setToast(e.message))
 
@@ -131,6 +127,7 @@ export default function AdminApplicationDetailPage() {
     <AdminLayout
       {...nav}
       section="pending"
+      title={detail.name}
       breadcrumb={
         <>
           {listLink} <span aria-hidden="true">/</span>{' '}
@@ -264,7 +261,7 @@ export default function AdminApplicationDetailPage() {
               onClick={() => setDialog('supplement')}
               className="btn btn-press btn-secondary"
             >
-              {t(DECISION_LABEL.supplement as any)}
+              {t(DECISION_LABEL.supplement)}
             </button>
           }
           danger={
@@ -273,11 +270,11 @@ export default function AdminApplicationDetailPage() {
               onClick={() => setDialog('reject')}
               className="btn btn-press bg-danger text-paper"
             >
-              {t(DECISION_LABEL.reject as any)}
+              {t(DECISION_LABEL.reject)}
             </button>
           }
           primary={{
-            label: t(DECISION_LABEL.approve as any),
+            label: t(DECISION_LABEL.approve),
             onClick: () => setDialog('approve'),
             disabled: !review.canApprove,
           }}

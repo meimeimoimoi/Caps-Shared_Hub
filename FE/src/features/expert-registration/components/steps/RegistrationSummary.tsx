@@ -30,7 +30,7 @@ export function RegistrationSummary({
   const format = useFormatters()
 
   return (
-    <div className="expert-registration-summary mb-8 grid grid-cols-2 gap-8 max-md:grid-cols-1">
+    <div className="expert-registration-summary">
       {/* ── Personal Information ── */}
       <section className="expert-pro-section">
         <div className="expert-pro-section-header">
@@ -48,11 +48,11 @@ export function RegistrationSummary({
           <img
             src={avatarPreview}
             alt={t('personal.profile')}
-            className="mb-4 h-16 w-16 rounded-full border-2 border-white object-cover shadow-sm"
+            className="expert-review-avatar"
           />
         )}
 
-        <dl className="m-0 flex flex-col gap-3">
+        <dl className="expert-review-details">
           {[
             ['fields.fullName', profile.name],
             ['fields.email', profile.email],
@@ -64,9 +64,9 @@ export function RegistrationSummary({
           ].map(([k, v]) => (
             <div
               key={k}
-              className="bg-ex-chip-bg border-ex-border rounded-lg border px-4 py-3"
+              className="expert-review-detail"
             >
-              <dt className="text-ex-muted mb-1 text-[12.5px] font-semibold tracking-wider uppercase">
+              <dt className="expert-review-label">
                 {t(k as 'fields.fullName' | 'fields.email' | 'fields.phone' | 'fields.birth' | 'fields.title' | 'fields.location' | 'fields.introduction')}
               </dt>
               <dd className="text-ex-ink m-0 text-[14.5px] font-medium whitespace-pre-wrap">
@@ -82,7 +82,7 @@ export function RegistrationSummary({
       </section>
 
       {/* ── Right Column ── */}
-      <div className="flex flex-col gap-8">
+      <div className="expert-review-secondary">
         {/* Professional Experience */}
         <section className="expert-pro-section">
           <div className="expert-pro-section-header">
@@ -98,22 +98,22 @@ export function RegistrationSummary({
             <span className="expert-pro-section-line" aria-hidden="true" />
           </div>
 
-          <dl className="m-0 flex flex-col gap-3">
-            <div className="bg-ex-chip-bg border-ex-border rounded-lg border px-4 py-3">
-              <dt className="text-ex-muted mb-1 text-[12.5px] font-semibold tracking-wider uppercase">
+          <dl className="expert-review-details">
+            <div className="expert-review-detail">
+              <dt className="expert-review-label">
                 {t('experience.taxAccounting')}
               </dt>
               <dd className="text-ex-ink m-0 text-[14.5px] font-medium">
                 {t('counts.years', { years: profile.years ? format.number(Number(profile.years)) : '—' })}
               </dd>
             </div>
-            <div className="bg-ex-chip-bg border-ex-border rounded-lg border px-4 py-3">
-              <dt className="text-ex-muted mb-1 text-[12.5px] font-semibold tracking-wider uppercase">
+            <div className="expert-review-detail">
+              <dt className="expert-review-label">
                 {t('experience.expertise')}
               </dt>
               <dd className="text-ex-ink m-0 text-[14.5px] font-medium">
                 {fields.length > 0 ? (
-                  fields.map((field) => expertiseKey(field) ? t(expertiseKey(field)!) : field).join(', ')
+                  <span className="expert-review-tags">{fields.map((field) => <span key={field}>{expertiseKey(field) ? t(expertiseKey(field)!) : field}</span>)}</span>
                 ) : (
                   <span className="font-normal text-text-muted italic">
                     {t('experience.none')}
@@ -121,8 +121,8 @@ export function RegistrationSummary({
                 )}
               </dd>
             </div>
-            <div className="bg-ex-chip-bg border-ex-border rounded-lg border px-4 py-3">
-              <dt className="text-ex-muted mb-1 text-[12.5px] font-semibold tracking-wider uppercase">
+            <div className="expert-review-detail">
+              <dt className="expert-review-label">
                 {t('experience.highlights')}
               </dt>
               <dd className="text-ex-ink m-0 text-[14.5px] font-medium whitespace-pre-wrap">

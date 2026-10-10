@@ -1,38 +1,66 @@
-import type { ESCROW_STATUS } from '@/lib/constants'
-
 /* Quyết định trọng tài khiếu nại: kết quả → tỷ lệ phân chia tiền Escrow */
 export const DISPUTE_SLA_HOURS = 48
+/** Trạng thái hiển thị khi khiếu nại đã có quyết định trọng tài */
+export const DISPUTE_RESOLVED = {
+  label: 'disputes.resolved',
+  tone: 'plain',
+} as const
 export const DISPUTE_OUTCOME = {
   UPHELD: {
-    label: 'Chấp thuận khiếu nại',
-    hint: 'Chuyên gia vi phạm nghĩa vụ hoặc quy trình',
-    split: 'Hoàn Client 100% · Chuyên gia 0% · Nền tảng 0%',
+    label: 'disputes.outcome.UPHELD.label',
+    hint: 'disputes.outcome.UPHELD.hint',
+    split: 'disputes.outcome.UPHELD.split',
   },
   DISMISSED: {
-    label: 'Bác khiếu nại',
-    hint: 'Chuyên gia làm đúng, đủ trách nhiệm',
-    split: 'Hoàn Client 0% · Chuyên gia 80% · Nền tảng 20%',
+    label: 'disputes.outcome.DISMISSED.label',
+    hint: 'disputes.outcome.DISMISSED.hint',
+    split: 'disputes.outcome.DISMISSED.split',
   },
   SETTLED: {
-    label: 'Hòa giải',
-    hint: 'Có thiếu sót một phần từ cả hai phía',
-    split: 'Hoàn Client 50% · Chuyên gia 40% · Nền tảng 10%',
+    label: 'disputes.outcome.SETTLED.label',
+    hint: 'disputes.outcome.SETTLED.hint',
+    split: 'disputes.outcome.SETTLED.split',
   },
-}
+} as const
 export type DisputeOutcome = keyof typeof DISPUTE_OUTCOME
 
 /* Ma trận chấm dứt hồ sơ: % hoàn Client / Chuyên gia / Nền tảng */
 export const TERMINATION_MATRIX = {
-  CLIENT_NO_RESPONSE: { label: 'Client không phản hồi 72 giờ', short: 'Client không phản hồi', split: [0, 80, 20] },
-  CLIENT_CANCEL_EARLY: { label: 'Client hủy sớm khi đang rà soát', short: 'Hủy sớm', split: [50, 40, 10] },
-  EXPERT_OVERDUE: { label: 'Chuyên gia bỏ dở quá hạn bàn giao', short: 'Chuyên gia quá hạn', split: [100, 0, 0] },
-  SYSTEM_ERROR: { label: 'Lỗi hệ thống', short: 'Lỗi hệ thống', split: [100, 0, 0] },
-  EXPERT_NOT_STARTED: { label: 'Chuyên gia quá 24 giờ chưa bắt đầu', short: 'Chuyên gia chưa bắt đầu', split: [100, 0, 0] },
+  CLIENT_NO_RESPONSE: {
+    label: 'escrow.termination.CLIENT_NO_RESPONSE.label',
+    short: 'escrow.termination.CLIENT_NO_RESPONSE.short',
+    split: [0, 80, 20],
+  },
+  CLIENT_CANCEL_EARLY: {
+    label: 'escrow.termination.CLIENT_CANCEL_EARLY.label',
+    short: 'escrow.termination.CLIENT_CANCEL_EARLY.short',
+    split: [50, 40, 10],
+  },
+  EXPERT_OVERDUE: {
+    label: 'escrow.termination.EXPERT_OVERDUE.label',
+    short: 'escrow.termination.EXPERT_OVERDUE.short',
+    split: [100, 0, 0],
+  },
+  SYSTEM_ERROR: {
+    label: 'escrow.termination.SYSTEM_ERROR.label',
+    short: 'escrow.termination.SYSTEM_ERROR.short',
+    split: [100, 0, 0],
+  },
+  EXPERT_NOT_STARTED: {
+    label: 'escrow.termination.EXPERT_NOT_STARTED.label',
+    short: 'escrow.termination.EXPERT_NOT_STARTED.short',
+    split: [100, 0, 0],
+  },
 } as const
 export type TerminationReason = keyof typeof TERMINATION_MATRIX
 
 /* Chữ đứng trước ngày ở cột "Mốc tiếp theo" của Escrow */
-export const ESCROW_NEXT_LABEL: Partial<Record<keyof typeof ESCROW_STATUS, string>> = {
-  DISPUTE_LOCKED: 'quyết định trước',
-  HELD: 'tự xác nhận',
-}
+export const ESCROW_NEXT_LABEL = {
+  DISPUTE_LOCKED: 'escrow.nextLabel.DISPUTE_LOCKED',
+  HELD: 'escrow.nextLabel.HELD',
+  PAID: 'escrow.nextLabel.PAID',
+  REFUNDED: 'escrow.nextLabel.REFUNDED',
+  PAYOUT_FAILED: 'escrow.nextLabel.PAYOUT_FAILED',
+  REFUND_PENDING: 'escrow.nextLabel.REFUND_PENDING',
+  REFUND_FAILED: 'escrow.nextLabel.REFUND_FAILED',
+} as const

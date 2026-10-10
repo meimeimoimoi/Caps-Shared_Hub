@@ -24,7 +24,7 @@ import { Modal } from '@/components/ui/feedback/modal'
 import { useFormatters } from '@/hooks/useFormatters'
 
 const textAreaClass =
-  'border-border-control bg-surface text-text placeholder:text-text-muted min-h-24 w-full resize-y rounded-lg border px-3 py-2.5 text-sm'
+  'border-border-control bg-surface text-text placeholder:text-text-muted aria-[invalid=true]:border-danger min-h-24 w-full resize-y rounded-lg border px-3 py-2.5 text-sm'
 
 function AssessmentForm({ record }: { record: ReviewRecord }) {
   const { t } = useTranslation('reviewer')
@@ -44,6 +44,8 @@ function AssessmentForm({ record }: { record: ReviewRecord }) {
     null
   )
   const [confirm, setConfirm] = useState(false)
+  // Sau lần ghi quyết định bị thiếu: đánh dấu từng ô còn trống cho tới khi điền xong
+  const [tried, setTried] = useState(false)
   const errorSummary = useRef<HTMLDivElement>(null)
   const denied = reviewAccess(record, actor)
   const dirty = JSON.stringify(draft) !== saved
@@ -90,7 +92,10 @@ function AssessmentForm({ record }: { record: ReviewRecord }) {
       setError(null)
     }
   }
+  const required = (empty: boolean) =>
+    tried && empty ? t('required') : undefined
   const prepareDecision = () => {
+    setTried(true)
     const issue = validateDecision(record, draft, actor, policy)
     if (issue) showError(issue)
     else setConfirm(true)
@@ -101,6 +106,7 @@ function AssessmentForm({ record }: { record: ReviewRecord }) {
     if (issue) showError(issue)
     else {
       setSaved(JSON.stringify(draft))
+      setTried(false)
       setMessage('decisionSaved')
       setError(null)
     }
@@ -188,7 +194,9 @@ function AssessmentForm({ record }: { record: ReviewRecord }) {
               <div>
                 <dt className="text-text-muted">{t('scope')}</dt>
                 <dd className="mt-1">{record.serviceLabel}</dd>
-                <dd className="text-success mt-1 text-xs">
+                <dd
+                  className={`mt-1 text-xs ${record.gate1Passed ? 'text-success' : 'text-danger'}`}
+                >
                   {record.gate1Passed
                     ? t('gate1Passed')
                     : t('errors.gate1Required')}
@@ -268,6 +276,7 @@ function AssessmentForm({ record }: { record: ReviewRecord }) {
                       }))}
                       onChange={(result) => updateAssessment(id, { result })}
                       disabled={!!denied}
+                      error={required(!row.result)}
                       className="flex flex-col gap-2 text-sm"
                     />
                     <CustomSelect
@@ -282,6 +291,7 @@ function AssessmentForm({ record }: { record: ReviewRecord }) {
                         updateAssessment(id, { evidenceId })
                       }
                       disabled={!!denied}
+                      error={required(!row.evidenceId)}
                       className="flex flex-col gap-2 text-sm"
                     />
                   </div>
@@ -289,6 +299,8 @@ function AssessmentForm({ record }: { record: ReviewRecord }) {
                     label={t('note')}
                     htmlFor={`note-${id}`}
                     className="mt-4 !mb-0"
+                    error={required(!row.note.trim())}
+                    errorId={`note-${id}-error`}
                   >
                     <textarea
                       id={`note-${id}`}
@@ -299,6 +311,12 @@ function AssessmentForm({ record }: { record: ReviewRecord }) {
                       placeholder={t('notePlaceholder')}
                       className={textAreaClass}
                       aria-required="true"
+                      aria-invalid={!!required(!row.note.trim())}
+                      aria-describedby={
+                        required(!row.note.trim())
+                          ? `note-${id}-error`
+                          : undefined
+                      }
                     />
                   </FormField>
                 </section>
@@ -321,6 +339,7 @@ function AssessmentForm({ record }: { record: ReviewRecord }) {
                 }))}
                 disabled={!!denied || policyMissing}
                 onChange={(outcome) => update({ outcome })}
+                error={required(!draft.outcome)}
                 className="flex max-w-sm flex-col gap-2 text-sm"
               />
             </div>
@@ -328,6 +347,8 @@ function AssessmentForm({ record }: { record: ReviewRecord }) {
               label={t('decisionNote')}
               htmlFor="decision-note"
               className="mt-5 !mb-0"
+              error={required(!draft.note.trim())}
+              errorId="decision-note-error"
             >
               <textarea
                 id="decision-note"
@@ -337,6 +358,12 @@ function AssessmentForm({ record }: { record: ReviewRecord }) {
                 placeholder={t('decisionPlaceholder')}
                 className={textAreaClass}
                 aria-required="true"
+                aria-invalid={!!required(!draft.note.trim())}
+                aria-describedby={
+                  required(!draft.note.trim())
+                    ? 'decision-note-error'
+                    : undefined
+                }
               />
             </FormField>
             {!!record.flags.length && (

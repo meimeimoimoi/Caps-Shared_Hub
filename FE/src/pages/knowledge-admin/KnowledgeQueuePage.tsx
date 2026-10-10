@@ -24,7 +24,8 @@ export default function KnowledgeQueuePage() {
   const stage: QueueFilter = FILTERS.includes(raw as QueueFilter)
     ? (raw as QueueFilter)
     : 'review'
-  const setStage = (s: QueueFilter) => setParams(s === 'review' ? {} : { stage: s })
+  const setStage = (s: QueueFilter) =>
+    setParams(s === 'review' ? {} : { stage: s })
 
   const queue = useReviewQueue(stage)
   const navigate = useNavigate()
@@ -46,7 +47,10 @@ export default function KnowledgeQueuePage() {
       breadcrumb={
         failed ? (
           <>
-            <Link to="/knowledge/queue" className="text-fg-muted hover:text-fg-strong">
+            <Link
+              to="/knowledge/queue"
+              className="text-fg-muted hover:text-fg-strong"
+            >
               Hàng đợi duyệt
             </Link>{' '}
             <span aria-hidden="true">/</span>{' '}
@@ -69,14 +73,23 @@ export default function KnowledgeQueuePage() {
             công. Bấm một bước để xem văn bản đang ở đó.
           </p>
         </div>
-        <button
-          type="button"
-          onClick={() => setUploadOpen(true)}
-          className="btn btn-press btn-primary"
-        >
-          <Upload size={16} aria-hidden="true" />
-          Tải tài liệu lên
-        </button>
+        <div className="flex flex-wrap gap-2">
+          {/* Lối vào lại trang kết quả; trước đây chỉ tới được ngay sau khi tải lên */}
+          <Link
+            to="/knowledge/uploads"
+            className="btn btn-press btn-secondary no-underline"
+          >
+            Kết quả tải lên
+          </Link>
+          <button
+            type="button"
+            onClick={() => setUploadOpen(true)}
+            className="btn btn-press btn-primary"
+          >
+            <Upload size={16} aria-hidden="true" />
+            Tải tài liệu lên
+          </button>
+        </div>
       </div>
 
       <div className="mt-8">
@@ -87,13 +100,20 @@ export default function KnowledgeQueuePage() {
         />
       </div>
 
+      {/* Đậm hơn danger-soft (~7%) một bậc: 16% màu danger trên nền giấy; chữ xám vẫn 5.4:1 (sáng) / 5.7:1 (tối) */}
       {failedCount > 0 && !failed && (
-        <div className="bg-danger-soft rounded-surface mt-4 flex flex-wrap items-center gap-x-3 gap-y-1 px-4 py-3 text-sm">
-          <CircleX size={16} aria-hidden="true" className="text-danger shrink-0" />
+        <div className="rounded-surface mt-4 flex flex-wrap items-center gap-x-3 gap-y-1 bg-[color-mix(in_oklab,var(--color-danger)_16%,var(--color-paper))] px-4 py-3 text-sm">
+          <CircleX
+            size={16}
+            aria-hidden="true"
+            className="text-danger shrink-0"
+          />
           <span className="text-fg-strong font-semibold">
             <span className="num">{failedCount}</span> văn bản lỗi cần xử lý
           </span>
-          <span className="text-fg-muted">AI/RAG chưa dùng được các văn bản này.</span>
+          <span className="text-fg-muted">
+            AI/RAG chưa dùng được các văn bản này.
+          </span>
           <button
             type="button"
             onClick={() => setStage('failed')}
@@ -105,17 +125,19 @@ export default function KnowledgeQueuePage() {
       )}
 
       <h2 className="text-h2 mt-12">
-        {failed ? 'Văn bản lỗi' : PIPELINE.find((p) => p.key === stage)?.heading}
+        {failed
+          ? 'Văn bản lỗi'
+          : PIPELINE.find((p) => p.key === stage)?.heading}
       </h2>
       <DocumentsTable
         rows={queue.rows}
-        showStage={failed}
+        // Tab Thu thập gồm văn bản ở mọi bước: hiện cột trạng thái để biết văn bản nào đang chờ duyệt
+        showStage={failed || stage === 'collect'}
         // Văn bản lỗi: mở ngăn kéo chi tiết lỗi thay vì chuyển trang
         onOpen={failed ? (d) => setOpenId(d.id) : undefined}
+        loading={queue.isLoading}
         empty={
-          queue.isLoading
-            ? 'Đang tải…'
-            : (queue.error?.message ?? (failed ? 'Không có văn bản lỗi.' : undefined))
+          queue.error?.message ?? (failed ? 'Không có văn bản lỗi.' : undefined)
         }
       />
 
@@ -135,13 +157,11 @@ export default function KnowledgeQueuePage() {
         <UploadDialog
           onClose={() => setUploadOpen(false)}
           onUpload={(file, meta, onProgress) =>
-            queue
-              .upload(file, meta, onProgress)
-              .then(() =>
-                navigate('/knowledge/uploads', {
-                  state: { toast: `Đã tải lên ${file.name}` },
-                })
-              )
+            queue.upload(file, meta, onProgress).then(() =>
+              navigate('/knowledge/uploads', {
+                state: { toast: `Đã tải lên ${file.name}` },
+              })
+            )
           }
         />
       )}

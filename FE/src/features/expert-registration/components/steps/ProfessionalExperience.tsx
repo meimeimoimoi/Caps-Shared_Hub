@@ -6,6 +6,7 @@ import {
   FileText as FileIcon,
   Sparkles,
   CircleAlert,
+  TriangleAlert,
 } from 'lucide-react'
 import type { Profile } from '../../types'
 import { FormField } from '@/components/ui/forms/form-field'
@@ -106,10 +107,13 @@ export function ProfessionalExperience({
         <div className="expert-pro-experience-grid">
           <FormField
             label={t('experience.taxYears')}
+            htmlFor="experience-years"
+            className="expert-years-field"
             error={formErrors.years}
             errorId="error-years"
           >
             <input
+              id="experience-years"
               name="years"
               required
               type="number"
@@ -145,7 +149,7 @@ export function ProfessionalExperience({
 
         {profile.years !== '' && Number(profile.years) < 5 && (
           <div className="expert-pro-notice expert-pro-notice--warn">
-            <span className="expert-pro-notice-icon">⚠</span>
+            <TriangleAlert size={16} aria-hidden="true" className="expert-pro-notice-icon" />
             <p>{t('experience.minimum')}</p>
           </div>
         )}
@@ -183,22 +187,11 @@ export function ProfessionalExperience({
                 key={f}
                 className={`expert-pro-chip ${fields.includes(f) ? 'expert-pro-chip--selected' : ''}`}
               >
-                <span className="expert-pro-chip-check" aria-hidden="true">
-                  <svg viewBox="0 0 12 10" fill="none">
-                    <path
-                      d="M1 5.5L4 8.5L11 1.5"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </span>
                 <input
                   type="checkbox"
                   checked={fields.includes(f)}
                   onChange={() => onToggleField(f)}
-                  className="sr-only"
+                  className="expert-custom-checkbox"
                 />
                 <span className="expert-pro-chip-text">{t(expertiseKey(f)!)}</span>
               </label>

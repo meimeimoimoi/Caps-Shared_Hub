@@ -5,6 +5,7 @@ import {
   FileStack,
   Briefcase,
   CreditCard,
+  IdCard,
 } from 'lucide-react'
 import {
   AppSidebar,
@@ -49,6 +50,7 @@ export function ExpertSidebar({
       items: [
         item('/expert/services', t('myServices'), <Briefcase size={18} />),
         item('/expert/income', t('income'), <CreditCard size={18} />),
+        item('/expert/bio', t('publicProfile'), <IdCard size={18} />),
       ],
     },
   ]

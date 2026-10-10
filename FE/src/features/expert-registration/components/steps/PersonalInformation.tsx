@@ -13,6 +13,8 @@ import {
 import type { Profile } from '../../types'
 import { FormField } from '@/components/ui/forms/form-field'
 import { DatePicker } from '@/components/ui/forms/date-picker'
+import { Combobox } from '@/components/ui/forms/combobox'
+import { provinces } from '../../constants'
 import type { RegistrationMessage } from '../../types/messages'
 import { useFormatters } from '@/hooks/useFormatters'
 
@@ -231,7 +233,13 @@ export function PersonalInformation({
             error={formErrors.phone}
             errorId="error-phone"
           >
-            {renderInput('phone', true, 'tel')}
+            <div className="expert-profile-phone">
+              <svg viewBox="0 0 30 20" width="21" height="14" role="img" aria-label={t('fields.vietnam')}>
+                <rect width="30" height="20" fill="#da251d" />
+                <path d="M15 3 16.6 7.8H21.7L17.6 10.8 19.2 15.7 15 12.7 10.8 15.7 12.4 10.8 8.3 7.8H13.4Z" fill="#ffff00" />
+              </svg>
+              {renderInput('phone', true, 'tel')}
+            </div>
           </FormField>
         </div>
       </div>
@@ -262,7 +270,19 @@ export function PersonalInformation({
             error={formErrors.location}
             errorId="error-location"
           >
-            {renderInput('location')}
+            <Combobox
+              id="profile-location"
+              name="location"
+              value={profile.location}
+              onChange={(value) => handleUpdate('location', value)}
+              options={provinces}
+              placeholder={t('fields.regionPlaceholder')}
+              aria-invalid={!!formErrors.location}
+              aria-describedby={
+                formErrors.location ? 'error-location' : undefined
+              }
+              className={`${inputCls} ${formErrors.location ? '!border-ex-error-text focus:ring-2 focus:ring-danger/20' : ''}`}
+            />
           </FormField>
         </div>
 

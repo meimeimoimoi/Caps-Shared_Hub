@@ -22,7 +22,7 @@ export function AppProvider({ children }: AppProviderProps) {
     <I18nextProvider i18n={i18n}>
       <ThemeProvider>
         <QueryClientProvider client={queryClient}>
-          <div className="bg-desk-2 text-fg selection:bg-accent-soft selection:text-accent-text min-h-screen antialiased">
+          <div className="bg-desk-2 text-fg min-h-screen antialiased">
             {children}
           </div>
         </QueryClientProvider>

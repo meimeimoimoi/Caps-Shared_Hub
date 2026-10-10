@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { useState } from 'react'
 import { cn } from '@/lib/utils'
 import { MarginNote } from '@/components/ui/display/margin-note'
@@ -17,6 +18,7 @@ export function DocumentsTab({
   reviewedFlags,
   onToggleReviewed,
 }: DocumentsTabProps) {
+  const { t } = useTranslation('admin')
   // Mở sẵn tài liệu có cờ AI (nếu có) để admin xem ngay chỗ cần xem lại
   const [code, setCode] = useState(
     () =>
@@ -33,7 +35,7 @@ export function DocumentsTab({
     <div className="space-y-4">
       <div
         role="group"
-        aria-label="Chọn tài liệu"
+        aria-label={t('detail.documents.select')}
         className="flex flex-wrap gap-2"
       >
         {documents.map((d) => (
@@ -57,7 +59,7 @@ export function DocumentsTab({
 
       {doc && doc.pages.length === 0 && (
         <p className="paper text-fg-muted p-5 md:p-6">
-          Chưa có bản xem trước cho tài liệu này.
+          {t('detail.documents.noPreview')}
         </p>
       )}
 
@@ -69,7 +71,11 @@ export function DocumentsTab({
             <header className="mb-4 flex items-baseline justify-between gap-4">
               <h3 className="text-fg-strong font-semibold">{doc.name}</h3>
               <span className="text-fg-muted num shrink-0 text-sm">
-                {doc.code} · trang {i + 1}/{doc.pages.length}
+                {t('detail.documents.pageOf', {
+                  code: doc.code,
+                  page: i + 1,
+                  total: doc.pages.length,
+                })}
               </span>
             </header>
             <div className="doc-row">
@@ -86,7 +92,9 @@ export function DocumentsTab({
               </div>
               {page.notes.length > 0 && (
                 <aside id={notesId} className="space-y-4">
-                  <p className="eyebrow">Ghi chú cho trang {i + 1}</p>
+                  <p className="eyebrow">
+                    {t('detail.documents.pageNote', { page: i + 1 })}
+                  </p>
                   {page.notes.map((n, j) => {
                     const flagId = n.flagId
                     const reviewed = !!flagId && reviewedFlags.includes(flagId)
@@ -94,13 +102,15 @@ export function DocumentsTab({
                       <MarginNote
                         key={j}
                         kind={n.kind}
-                        label={reviewed ? 'AI · Đã xem xét' : n.label}
+                        label={
+                          reviewed ? t('detail.documents.aiReviewed') : n.label
+                        }
                         action={
                           flagId
                             ? {
                                 label: reviewed
-                                  ? 'Bỏ đánh dấu'
-                                  : 'Đánh dấu đã xem xét',
+                                  ? t('detail.documents.unmark')
+                                  : t('detail.documents.mark'),
                                 onClick: () => onToggleReviewed(flagId),
                               }
                             : undefined
@@ -119,4 +129,3 @@ export function DocumentsTab({
     </div>
   )
 }
-

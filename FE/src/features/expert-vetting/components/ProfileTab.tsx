@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import type { ReactNode } from 'react'
 import type { ApplicationDetail } from '../types'
 import { formatDate } from '../utils/applications'
@@ -33,40 +34,44 @@ function InfoSection({
 }
 
 export function ProfileTab({ detail, onOpenDocument }: ProfileTabProps) {
+  const { t } = useTranslation('admin')
   const cv = detail.documents.find((d) => d.code === 'CV')
 
   return (
     <div className="space-y-4 md:space-y-6">
       <InfoSection
-        title="Thông tin cá nhân"
+        title={t('detail.profile.personal')}
         rows={[
-          { label: 'Họ và tên', value: detail.name },
+          { label: t('detail.profile.name'), value: detail.name },
           {
-            label: 'Ngày sinh',
+            label: t('detail.profile.dob'),
             value: <span className="num">{formatDate(detail.birthDate)}</span>,
           },
           {
-            label: 'Chức danh, đơn vị',
+            label: t('detail.profile.title'),
             value: `${detail.jobTitle}, ${detail.company}`,
           },
-          { label: 'Tỉnh/Thành phố', value: detail.location },
-          { label: 'Giới thiệu', value: detail.bio },
+          { label: t('detail.profile.location'), value: detail.location },
+          { label: t('detail.profile.bio'), value: detail.bio },
         ]}
       />
       <InfoSection
-        title="Kinh nghiệm"
+        title={t('detail.profile.experience')}
         rows={[
           {
-            label: 'Số năm kinh nghiệm',
+            label: t('detail.profile.years'),
             value: (
-              <>
-                <span className="num">{detail.years}</span> năm
-              </>
+              <span className="num">
+                {t('detail.meta.years', { count: detail.years })}
+              </span>
             ),
           },
-          { label: 'Lĩnh vực', value: detail.fields.join(', ') },
           {
-            label: 'CV',
+            label: t('detail.profile.fields'),
+            value: detail.fields.join(', '),
+          },
+          {
+            label: t('detail.profile.cv'),
             value: cv ? (
               <button
                 type="button"
@@ -76,13 +81,12 @@ export function ProfileTab({ detail, onOpenDocument }: ProfileTabProps) {
                 {cv.name}
               </button>
             ) : (
-              <span className="text-fg-muted">Chưa nộp CV</span>
+              <span className="text-fg-muted">{t('detail.profile.noCv')}</span>
             ),
           },
-          { label: 'Kinh nghiệm nổi bật', value: detail.highlights },
+          { label: t('detail.profile.highlights'), value: detail.highlights },
         ]}
       />
     </div>
   )
 }
-

@@ -3,6 +3,7 @@ import { TriangleAlert } from 'lucide-react'
 import { formatDate } from '@/lib/utils'
 import { DOCUMENT_STATUS } from '@/lib/constants'
 import { StatusBadge } from '@/components/ui/display/status-badge'
+import { SkeletonRows } from '@/components/ui/display/skeleton-rows'
 import { PIPELINE, SOURCE_LABEL } from '../constants'
 import type { KnowledgeDocument } from '../types'
 import { useMotion } from '@/components/ui/motion'
@@ -17,6 +18,8 @@ interface DocumentsTableProps {
   rows: KnowledgeDocument[]
   /** Chữ khi không có dòng nào, vd. đang tải hoặc lỗi */
   empty?: string
+  /** Đang tải lần đầu: hiện dòng khung xương đúng số cột thay cho chữ */
+  loading?: boolean
   /** Link khi bấm số hiệu */
   linkTo?: (d: KnowledgeDocument) => string
   /** Có thì bấm số hiệu gọi hàm này (vd. mở ngăn kéo) thay vì chuyển trang */
@@ -30,11 +33,15 @@ const linkCls = 'text-accent-text underline underline-offset-4'
 export function DocumentsTable({
   rows,
   empty = 'Không có văn bản nào.',
+  loading = false,
   linkTo = queueLink,
   onOpen,
   showStage = false,
 }: DocumentsTableProps) {
-  const motion = useMotion<HTMLTableSectionElement>({ preset: 'fade', replayKey: rows.map((row) => row.id).join(',') })
+  const motion = useMotion<HTMLTableSectionElement>({
+    preset: 'fade',
+    replayKey: rows.map((row) => row.id).join(','),
+  })
   return (
     <section className="paper mt-4 overflow-x-auto">
       <div className="text-fg-muted flex justify-between px-4 py-3 text-sm">
@@ -53,6 +60,9 @@ export function DocumentsTable({
             <th className="text-left">Cảnh báo bóc tách</th>
             <th className="text-right">Ngày hiệu lực</th>
             <th className="text-right">Vào hàng đợi</th>
+            <th>
+              <span className="sr-only">Thao tác</span>
+            </th>
           </tr>
         </thead>
         <tbody ref={motion}>
@@ -63,7 +73,11 @@ export function DocumentsTable({
             >
               <td className="num whitespace-nowrap">
                 {onOpen ? (
-                  <button type="button" onClick={() => onOpen(d)} className={linkCls}>
+                  <button
+                    type="button"
+                    onClick={() => onOpen(d)}
+                    className={linkCls}
+                  >
                     {d.number}
                   </button>
                 ) : (
@@ -112,12 +126,38 @@ export function DocumentsTable({
                 {d.effectiveAt ? formatDate(d.effectiveAt) : '—'}
               </td>
               <td className="num text-right">{formatDate(d.queuedAt)}</td>
+              <td className="text-right whitespace-nowrap">
+                {/* Nút rõ ràng thay cho việc phải biết bấm vào số hiệu; văn bản chờ duyệt dùng nút chính */}
+                {onOpen ? (
+                  <button
+                    type="button"
+                    onClick={() => onOpen(d)}
+                    className="btn btn-press btn-secondary"
+                  >
+                    Xem chi tiết
+                  </button>
+                ) : (
+                  <Link
+                    to={linkTo(d)}
+                    className={`btn btn-press no-underline ${linkTo === queueLink && d.stage === 'review' ? 'btn-primary' : 'btn-secondary'}`}
+                  >
+                    {linkTo === queueLink && d.stage === 'review'
+                      ? d.version?.changed
+                        ? 'So sánh và duyệt'
+                        : 'Rà soát và duyệt'
+                      : 'Xem chi tiết'}
+                  </Link>
+                )}
+              </td>
             </tr>
           ))}
-          {rows.length === 0 && (
+          {loading && rows.length === 0 && (
+            <SkeletonRows cols={showStage ? 8 : 7} />
+          )}
+          {!loading && rows.length === 0 && (
             <tr className="border-border-subtle border-t">
               <td
-                colSpan={showStage ? 7 : 6}
+                colSpan={showStage ? 8 : 7}
                 className="text-fg-muted px-4 py-10 text-center"
               >
                 {empty}

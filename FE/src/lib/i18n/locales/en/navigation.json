@@ -56,8 +56,10 @@
   "business": "Business",
   "myServices": "My Services",
   "income": "Income",
+  "publicProfile": "Public profile",
   "workspaces": "Workspaces",
   "templates": "Templates",
+  "aiAssistant": "AI Assistant",
   "dashboard": "Dashboard",
   "settings": "Settings",
   "pages": {

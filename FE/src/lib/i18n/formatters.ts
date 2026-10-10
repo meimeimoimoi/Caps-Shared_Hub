@@ -75,10 +75,13 @@ export function formatTimestamp(
   const date = new Date(value)
   if (!Number.isFinite(date.getTime())) return unavailable
   const locale = locales[language]
-  const defaults: Intl.DateTimeFormatOptions =
-    options.dateStyle || options.timeStyle
-      ? {}
-      : { year: 'numeric', month: 'short', day: 'numeric' }
+  // Mặc định chỉ dùng khi người gọi không chọn thành phần nào; trộn vào sẽ thêm "day" ngoài ý muốn (vd. chỉ muốn tháng/năm)
+  const picksParts = (
+    ['dateStyle', 'timeStyle', 'year', 'month', 'day', 'weekday', 'hour', 'minute', 'second'] as const
+  ).some((k) => options[k] !== undefined)
+  const defaults: Intl.DateTimeFormatOptions = picksParts
+    ? {}
+    : { year: 'numeric', month: 'short', day: 'numeric' }
   const settings = { ...defaults, ...options, timeZone }
   try {
     return cached(

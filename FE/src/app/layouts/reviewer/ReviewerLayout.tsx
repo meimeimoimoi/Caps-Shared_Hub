@@ -1,7 +1,13 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, Outlet, useLocation, useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { ClipboardCheck, FileCheck2, History, Inbox } from 'lucide-react'
+import {
+  ClipboardCheck,
+  FileCheck2,
+  History,
+  Inbox,
+  UserRound,
+} from 'lucide-react'
 import { AppHeader } from '@/components/ui/layout/app-header'
 import {
   AppSidebar,
@@ -10,16 +16,20 @@ import {
 import { DemoBanner } from '@/components/ui/feedback/demo-banner'
 import { CustomSelect } from '@/components/ui/forms/custom-select'
 import { Button } from '@/components/ui/actions/button'
+import { Modal } from '@/components/ui/feedback/modal'
 import { useDialogMotion } from '@/components/ui/motion'
 import { ReviewerProvider, useReviewer } from '@/features/reviewer'
+import { useAccount } from '@/features/auth'
 
 function ReviewerShell() {
   const { t } = useTranslation(['reviewer', 'common'])
   const { state, actor, readOnly, setReadOnly, query, setQuery, reset } =
     useReviewer()
   const location = useLocation()
+  const account = useAccount('reviewer')
   const [params] = useSearchParams()
   const [collapsed, setCollapsed] = useState(false)
+  const [confirmReset, setConfirmReset] = useState(false)
   const drawer = useRef<HTMLDialogElement>(null)
   const trigger = useRef<HTMLButtonElement>(null)
   useDialogMotion(drawer, 'drawer-left')
@@ -29,13 +39,16 @@ function ReviewerShell() {
       ? 'GATE_2'
       : params.get('gate')
   const isHistory = location.pathname.endsWith('/history')
-  const title = isHistory
-    ? t('history')
-    : gate === 'GATE_1'
-      ? t('gate1')
-      : gate === 'GATE_2'
-        ? t('gate2')
-        : t('queue')
+  const isAccount = location.pathname.endsWith('/account')
+  const title = isAccount
+    ? t('account')
+    : isHistory
+      ? t('history')
+      : gate === 'GATE_1'
+        ? t('gate1')
+        : gate === 'GATE_2'
+          ? t('gate2')
+          : t('queue')
   useEffect(() => {
     document.title = `${title} | Shared Hub`
   }, [title])
@@ -86,6 +99,19 @@ function ReviewerShell() {
         },
       ],
     },
+    {
+      id: 'system',
+      label: t('system'),
+      items: [
+        {
+          id: 'account',
+          to: '/reviewer/account',
+          label: t('account'),
+          icon: <UserRound size={18} />,
+          active: isAccount,
+        },
+      ],
+    },
   ]
   const sidebarProps = { groups, navigationLabel: t('workspace') }
   const close = () => drawer.current?.close()
@@ -98,7 +124,7 @@ function ReviewerShell() {
         {t('common:navigation.skipWorkspace')}
       </a>
       <aside
-        className={`bg-sidebar border-border fixed inset-y-0 left-0 z-30 hidden flex-col border-r py-6 md:flex ${collapsed ? 'w-20 px-3' : 'w-60 px-4'}`}
+        className={`sidebar-rail bg-sidebar border-border fixed inset-y-0 left-0 z-30 hidden flex-col border-r py-6 md:flex ${collapsed ? 'w-20 px-3' : 'w-60 px-4'}`}
       >
         <AppSidebar
           {...sidebarProps}
@@ -114,28 +140,34 @@ function ReviewerShell() {
       >
         <AppSidebar {...sidebarProps} onClose={close} onNavigate={close} />
       </dialog>
-      <div className={collapsed ? 'md:ml-20' : 'md:ml-60'}>
+      <div className={`sidebar-offset ${collapsed ? 'md:ml-20' : 'md:ml-60'}`}>
         <AppHeader
           navigationButtonRef={trigger}
           onOpenNavigation={() => drawer.current?.showModal()}
-          context={
-            isHistory
-              ? t('history')
-              : gate === 'GATE_1'
-                ? t('gate1')
-                : gate === 'GATE_2'
-                  ? t('gate2')
-                  : t('queue')
-          }
-          account={{ name: actor.name }}
+          context={title}
+          account={{
+            name: account.name,
+            avatarUrl: account.avatarUrl,
+            onSignOut: account.logout,
+            links: [
+              {
+                label: t('account'),
+                to: '/reviewer/account',
+                icon: <UserRound size={17} />,
+                active: isAccount,
+              },
+            ],
+          }}
           search={
             isQueue || isHistory
               ? { value: query, onChange: setQuery, label: t('search') }
               : undefined
           }
-          searchLinks={groups[0].items.flatMap((item) =>
-            item.to ? [{ to: item.to, label: item.label }] : []
-          )}
+          searchLinks={groups
+            .flatMap((group) => group.items)
+            .flatMap((item) =>
+              item.to ? [{ to: item.to, label: item.label }] : []
+            )}
         />
         <DemoBanner
           controls={
@@ -155,9 +187,7 @@ function ReviewerShell() {
                 <Button
                   variant="ghost"
                   className="min-h-11"
-                  onClick={() => {
-                    if (window.confirm(t('resetConfirm'))) reset()
-                  }}
+                  onClick={() => setConfirmReset(true)}
                 >
                   {t('reset')}
                 </Button>
@@ -175,6 +205,34 @@ function ReviewerShell() {
           <Outlet />
         </main>
       </div>
+      {confirmReset && (
+        <Modal
+          title={t('resetTitle')}
+          description={t('resetConfirm')}
+          onClose={() => setConfirmReset(false)}
+          footer={
+            <>
+              <Button
+                variant="outline"
+                className="min-h-11"
+                onClick={() => setConfirmReset(false)}
+              >
+                {t('common:actions.cancel')}
+              </Button>
+              <Button
+                variant="destructive"
+                className="min-h-11"
+                onClick={() => {
+                  reset()
+                  setConfirmReset(false)
+                }}
+              >
+                {t('reset')}
+              </Button>
+            </>
+          }
+        />
+      )}
     </div>
   )
 }

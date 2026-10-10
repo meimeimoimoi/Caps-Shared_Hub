@@ -16,6 +16,7 @@ import {
 import { draftApi } from '@/features/drafting/api/draftApi'
 import { DraftButton } from '@/features/drafting/components/DraftUi'
 import { AppHeader } from '@/components/ui/layout/app-header'
+import { Modal } from '@/components/ui/feedback/modal'
 import {
   AppSidebar,
   type SidebarGroup,
@@ -24,6 +25,7 @@ import {
 export function DraftLayout() {
   const { t } = useTranslation(['common', 'navigation'])
   const [expanded, setExpanded] = useState(true)
+  const [confirmReset, setConfirmReset] = useState(false)
   const drawer = useRef<HTMLDialogElement>(null)
   useDialogMotion(drawer, 'drawer-left')
   const drawerTrigger = useRef<HTMLButtonElement>(null)
@@ -83,7 +85,7 @@ export function DraftLayout() {
                   : 'draftWorkspace'
   const closeDrawer = () => drawer.current?.close()
   return (
-    <div className="bg-desk-2 text-fg selection:bg-accent-soft selection:text-accent-text min-h-svh">
+    <div className="bg-desk-2 text-fg min-h-svh">
       <a
         href="#draft-main"
         className="focus:bg-paper sr-only z-50 focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:p-3"
@@ -91,7 +93,7 @@ export function DraftLayout() {
         {t('navigation.skipWorkspace')}
       </a>
       <aside
-        className={`bg-sidebar fixed inset-y-0 left-0 z-30 hidden flex-col border-r border-black py-6 md:flex ${expanded ? 'w-60 px-4' : 'w-20 px-3'}`}
+        className={`sidebar-rail bg-sidebar fixed inset-y-0 left-0 z-30 hidden flex-col border-r border-black py-6 md:flex ${expanded ? 'w-60 px-4' : 'w-20 px-3'}`}
       >
         <AppSidebar
           groups={groups}
@@ -113,7 +115,7 @@ export function DraftLayout() {
           onClose={closeDrawer}
         />
       </dialog>
-      <div className={expanded ? 'md:ml-60' : 'md:ml-20'}>
+      <div className={`sidebar-offset ${expanded ? 'md:ml-60' : 'md:ml-20'}`}>
         <AppHeader
           navigationButtonRef={drawerTrigger}
           onOpenNavigation={() => drawer.current?.showModal()}
@@ -171,12 +173,7 @@ export function DraftLayout() {
                   <DraftButton
                     secondary
                     disabled={reset.isPending}
-                    onClick={() => {
-                      if (window.confirm(t('demo.resetConfirm')))
-                        reset.mutate(undefined, {
-                          onSuccess: () => navigate(href('/drafts')),
-                        })
-                    }}
+                    onClick={() => setConfirmReset(true)}
                   >
                     {t('actions.resetDemo')}
                   </DraftButton>
@@ -194,6 +191,30 @@ export function DraftLayout() {
           <Outlet />
         </main>
       </div>
+      {confirmReset && (
+        <Modal
+          title={t('actions.resetDemo')}
+          description={t('demo.resetConfirm')}
+          onClose={() => setConfirmReset(false)}
+          footer={
+            <>
+              <DraftButton secondary onClick={() => setConfirmReset(false)}>
+                {t('actions.cancel')}
+              </DraftButton>
+              <DraftButton
+                onClick={() => {
+                  setConfirmReset(false)
+                  reset.mutate(undefined, {
+                    onSuccess: () => navigate(href('/drafts')),
+                  })
+                }}
+              >
+                {t('actions.resetDemo')}
+              </DraftButton>
+            </>
+          }
+        />
+      )}
     </div>
   )
 }

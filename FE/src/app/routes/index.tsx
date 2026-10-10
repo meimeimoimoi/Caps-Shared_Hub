@@ -10,10 +10,12 @@ import {
   useLocation,
 } from 'react-router-dom'
 import { MotionPage } from '@/components/ui/motion'
-import { ProtectedRoute } from './ProtectedRoute'
+import { ProtectedRoute, StaffRoute } from './ProtectedRoute'
 import { ExpertRoute } from './ExpertRoute'
 import { ExpertLayout } from '../layouts/expert/ExpertLayout'
 import { DraftRoute } from './DraftRoute'
+import { RouteErrorPage } from './RouteErrorPage'
+import { AccountSettings } from '@/features/auth'
 import { DraftLayout } from '../layouts/drafts/DraftLayout'
 const ReviewerLayout = lazy(() => import('../layouts/reviewer/ReviewerLayout'))
 const ReviewerQueuePage = lazy(
@@ -37,6 +39,7 @@ const DraftGenerationPage = lazy(
 const DraftPreviewPage = lazy(() => import('@/pages/drafts/DraftPreviewPage'))
 const DraftHistoryPage = lazy(() => import('@/pages/drafts/DraftHistoryPage'))
 const LoginPage = lazy(() => import('@/pages/LoginPage'))
+const ResetPasswordPage = lazy(() => import('@/pages/ResetPasswordPage'))
 const ExpertRegistrationPage = lazy(
   () => import('@/pages/expert-registration/ExpertRegistrationPage')
 )
@@ -48,6 +51,9 @@ const ExpertProfilePage = lazy(
 )
 const ExpertSettingsPage = lazy(
   () => import('@/pages/expert-dashboard/ExpertSettingsPage')
+)
+const ExpertPricingPage = lazy(
+  () => import('@/pages/expert-dashboard/ExpertPricingPage')
 )
 const ExpertServicesPage = lazy(
   () => import('@/pages/expert-dashboard/ExpertServicesPage')
@@ -65,6 +71,8 @@ const ExpertIncomePage = lazy(
 )
 
 const HomePage = lazy(() => import('@/pages/home/HomePage'))
+const ExpertBioPage = lazy(() => import('@/pages/expert-dashboard/ExpertBioPage'))
+const ExpertPublicProfilePage = lazy(() => import('@/pages/ExpertPublicProfilePage'))
 const DashboardPage = lazy(() => import('../../pages/DashboardPage'))
 const NotFoundPage = lazy(() => import('../../pages/NotFoundPage'))
 const AdminPendingExpertsPage = lazy(
@@ -74,6 +82,7 @@ const AdminApplicationDetailPage = lazy(
   () => import('@/pages/admin/AdminApplicationDetailPage')
 )
 const AdminExpertsPage = lazy(() => import('@/pages/admin/AdminExpertsPage'))
+const AdminDisputesPage = lazy(() => import('@/pages/admin/AdminDisputesPage'))
 const AdminDisputeDetailPage = lazy(
   () => import('@/pages/admin/AdminDisputeDetailPage')
 )
@@ -83,6 +92,10 @@ const AdminPricingTierPage = lazy(
   () => import('@/pages/admin/AdminPricingTierPage')
 )
 const AdminAccountPage = lazy(() => import('@/pages/admin/AdminAccountPage'))
+const AdminUsersPage = lazy(() => import('@/pages/admin/AdminUsersPage'))
+const AdminDashboardPage = lazy(
+  () => import('@/pages/admin/AdminDashboardPage')
+)
 const KnowledgeQueuePage = lazy(
   () => import('@/pages/knowledge-admin/KnowledgeQueuePage')
 )
@@ -104,8 +117,23 @@ const KnowledgeDocumentsPage = lazy(
 const KnowledgeUploadsPage = lazy(
   () => import('@/pages/knowledge-admin/KnowledgeUploadsPage')
 )
+const KnowledgeTemplatesPage = lazy(
+  () => import('@/pages/knowledge-admin/KnowledgeTemplatesPage')
+)
+const KnowledgeTemplateNewPage = lazy(
+  () => import('@/pages/knowledge-admin/KnowledgeTemplateNewPage')
+)
+const KnowledgeTemplatePage = lazy(
+  () => import('@/pages/knowledge-admin/KnowledgeTemplatePage')
+)
+const KnowledgeDashboardPage = lazy(
+  () => import('@/pages/knowledge-admin/KnowledgeDashboardPage')
+)
 const KnowledgeAccountPage = lazy(
   () => import('@/pages/knowledge-admin/KnowledgeAccountPage')
+)
+const AiAssistantPage = lazy(
+  () => import('@/pages/ai-assistant/AiAssistantPage')
 )
 
 function Fallback() {
@@ -140,6 +168,7 @@ function RouteMotion() {
 const router = createBrowserRouter(
   createRoutesFromElements(
     <Route
+      errorElement={<RouteErrorPage />}
       element={
         <Suspense fallback={<Fallback />}>
           <RouteMotion />
@@ -148,7 +177,9 @@ const router = createBrowserRouter(
     >
       <Route path="/" element={<HomePage />} />
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route path="/expert/register" element={<ExpertRegistrationPage />} />
+      <Route path="/experts/:expertId" element={<ExpertPublicProfilePage />} />
       {/* Explicit isolated demo; real Reviewer permissions/assignments need a server API. */}
       <Route path="/reviewer" element={<ReviewerLayout />}>
         <Route index element={<ReviewerQueuePage />} />
@@ -161,45 +192,64 @@ const router = createBrowserRouter(
           element={<ReviewerAssessmentPage gate="GATE_2" />}
         />
         <Route path="history" element={<ReviewerHistoryPage />} />
+        <Route path="account" element={<AccountSettings role="reviewer" />} />
       </Route>
-      {/* TODO(auth): bọc ProtectedRoute + check role admin khi có API */}
-      <Route path="/admin/experts" element={<AdminExpertsPage />} />
-      <Route
-        path="/admin/experts/pending"
-        element={<AdminPendingExpertsPage />}
-      />
-      <Route
-        path="/admin/experts/:id"
-        element={<AdminApplicationDetailPage />}
-      />
-      <Route path="/admin/disputes" element={<AdminDisputeDetailPage />} />
-      <Route path="/admin/disputes/:id" element={<AdminDisputeDetailPage />} />
-      <Route path="/admin/escrow" element={<AdminEscrowPage />} />
-      <Route path="/admin/pricing" element={<AdminPricingPage />} />
-      <Route path="/admin/pricing/:id" element={<AdminPricingTierPage />} />
-      <Route path="/admin/account" element={<AdminAccountPage />} />
-      {/* TODO(auth): bọc ProtectedRoute + check role Knowledge Admin khi có API */}
-      <Route
-        path="/knowledge"
-        element={<Navigate to="/knowledge/queue" replace />}
-      />
-      <Route path="/knowledge/queue" element={<KnowledgeQueuePage />} />
-      <Route path="/knowledge/sources" element={<KnowledgeSourcesPage />} />
-      <Route path="/knowledge/uploads" element={<KnowledgeUploadsPage />} />
-      <Route path="/knowledge/account" element={<KnowledgeAccountPage />} />
-      <Route path="/knowledge/documents" element={<KnowledgeDocumentsPage />} />
-      <Route
-        path="/knowledge/documents/:id"
-        element={<KnowledgeDocumentPage />}
-      />
-      <Route
-        path="/knowledge/documents/:id/compare"
-        element={<KnowledgeVersionPage />}
-      />
-      <Route
-        path="/knowledge/documents/:id/review"
-        element={<KnowledgeReviewPage />}
-      />
+      {/* Production bắt buộc đăng nhập; TODO(auth): check role admin / Knowledge Admin khi BE có role */}
+      <Route element={<StaffRoute />}>
+        <Route path="/admin/experts" element={<AdminExpertsPage />} />
+        <Route
+          path="/admin/experts/pending"
+          element={<AdminPendingExpertsPage />}
+        />
+        <Route
+          path="/admin/experts/:id"
+          element={<AdminApplicationDetailPage />}
+        />
+        <Route path="/admin/disputes" element={<AdminDisputesPage />} />
+        <Route
+          path="/admin/disputes/:id"
+          element={<AdminDisputeDetailPage />}
+        />
+        <Route path="/admin/escrow" element={<AdminEscrowPage />} />
+        <Route path="/admin/pricing" element={<AdminPricingPage />} />
+        <Route path="/admin/pricing/:id" element={<AdminPricingTierPage />} />
+        <Route path="/admin/users" element={<AdminUsersPage />} />
+        <Route path="/admin/account" element={<AdminAccountPage />} />
+        <Route path="/admin" element={<AdminDashboardPage />} />
+        <Route path="/knowledge" element={<KnowledgeDashboardPage />} />
+        <Route path="/knowledge/queue" element={<KnowledgeQueuePage />} />
+        <Route path="/knowledge/sources" element={<KnowledgeSourcesPage />} />
+        <Route path="/knowledge/uploads" element={<KnowledgeUploadsPage />} />
+        <Route path="/knowledge/account" element={<KnowledgeAccountPage />} />
+        <Route
+          path="/knowledge/templates"
+          element={<KnowledgeTemplatesPage />}
+        />
+        <Route
+          path="/knowledge/templates/new"
+          element={<KnowledgeTemplateNewPage />}
+        />
+        <Route
+          path="/knowledge/templates/:id"
+          element={<KnowledgeTemplatePage />}
+        />
+        <Route
+          path="/knowledge/documents"
+          element={<KnowledgeDocumentsPage />}
+        />
+        <Route
+          path="/knowledge/documents/:id"
+          element={<KnowledgeDocumentPage />}
+        />
+        <Route
+          path="/knowledge/documents/:id/compare"
+          element={<KnowledgeVersionPage />}
+        />
+        <Route
+          path="/knowledge/documents/:id/review"
+          element={<KnowledgeReviewPage />}
+        />
+      </Route>
 
       <Route element={<DraftRoute />}>
         <Route path="/drafts" element={<DraftLayout />}>
@@ -231,7 +281,12 @@ const router = createBrowserRouter(
           <Route path="active" element={<ExpertCasesPage key="active" />} />
           <Route path="cases/:id" element={<ExpertCaseDetailPage />} />
           <Route path="services" element={<ExpertServicesPage />} />
+          <Route
+            path="services/:serviceId/pricing"
+            element={<ExpertPricingPage />}
+          />
           <Route path="income" element={<ExpertIncomePage />} />
+          <Route path="bio" element={<ExpertBioPage />} />
           <Route path="profile" element={<ExpertProfilePage />} />
           <Route path="settings" element={<ExpertProfilePage />} />
           <Route path="settings/:section" element={<ExpertSettingsPage />} />
@@ -245,6 +300,9 @@ const router = createBrowserRouter(
           </ProtectedRoute>
         }
       />
+      <Route path="/ai-assistant" element={<AiAssistantPage/>}/>
+      {/* Đường dẫn cũ (viết sai chính tả) giữ lại để link đã chia sẻ vẫn mở được */}
+      <Route path="/ai-assitant" element={<Navigate to="/ai-assistant" replace />} />
       <Route path="*" element={<NotFoundPage />} />
     </Route>
   )

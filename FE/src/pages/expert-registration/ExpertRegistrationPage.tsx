@@ -10,7 +10,7 @@ import {
   UserRound,
   ChevronDown,
 } from 'lucide-react'
-import sharedHubLogo from '@/assets/logo-full.png'
+import { BrandLogo } from '@/components/ui/display/brand-logo'
 import { useRegistrationMotion } from '../../features/expert-registration/hooks/useRegistrationMotion'
 import { useWizardMotion } from '../../features/expert-registration/hooks/useWizardMotion'
 import { useScrollReveal } from '@/hooks/useScrollReveal'
@@ -145,7 +145,7 @@ export default function ExpertRegistrationPage() {
           scrollRevealRef as React.MutableRefObject<HTMLDivElement | null>
         ).current = el
       }}
-      className={`${!account ? 'expert-welcome' : 'expert-application'} bg-ex-bg text-ex-ink [&_::selection]:bg-ex-selection [&_a]:text-ex-accent [&_h1,&_h2,&_h3]:text-ex-heading [&_:focus-visible]:outline-ex-focus [&_input[type='checkbox']]:accent-ex-accent [&_summary]:text-ex-accent min-h-screen font-sans text-[15px] leading-[1.6] [color-scheme:inherit] [&_*]:box-border [&_:focus-visible]:outline-3 [&_:focus-visible]:outline-offset-4 [&_a]:underline-offset-4 [&_button,&_input,&_select,&_textarea]:font-[inherit] [&_fieldset]:my-[22px] [&_fieldset]:border-0 [&_fieldset]:p-0 [&_h1]:mt-0 [&_h1]:mb-4 [&_h1]:text-[clamp(28px,3.3vw,42px)] [&_h1]:tracking-tight [&_h1,&_h2,&_h3]:font-serif [&_h1,&_h2,&_h3]:leading-tight [&_h2]:mt-0 [&_h2]:mb-[18px] [&_h2]:text-[27px] [&_h3]:mt-[22px] [&_h3]:mb-3 [&_h3]:text-xl [&_input[type='checkbox']]:h-[17px] [&_input[type='checkbox']]:w-[17px] [&_input[type='checkbox']]:shrink-0 [&_legend]:mb-3 [&_legend]:font-semibold [&_p]:mt-0 [&_p]:mb-[18px] [&_p]:max-w-[72ch] [&_summary]:cursor-pointer [&_summary]:py-3 [&_summary]:underline [&_summary]:underline-offset-4`}
+      className={`${!account ? 'expert-welcome' : 'expert-application'} bg-ex-bg text-ex-ink [&_a]:text-ex-accent [&_h1,&_h2,&_h3]:text-ex-heading [&_:focus-visible]:outline-ex-focus [&_input[type='checkbox']]:accent-ex-accent [&_summary]:text-ex-accent min-h-screen font-sans text-[15px] leading-[1.6] [color-scheme:inherit] [&_*]:box-border [&_:focus-visible]:outline-3 [&_:focus-visible]:outline-offset-4 [&_a]:underline-offset-4 [&_button,&_input,&_select,&_textarea]:font-[inherit] [&_fieldset]:my-[22px] [&_fieldset]:border-0 [&_fieldset]:p-0 [&_h1]:mt-0 [&_h1]:mb-4 [&_h1]:text-[clamp(28px,3.3vw,42px)] [&_h1]:tracking-tight [&_h1,&_h2,&_h3]:font-serif [&_h1,&_h2,&_h3]:leading-tight [&_h2]:mt-0 [&_h2]:mb-[18px] [&_h2]:text-[27px] [&_h3]:mt-[22px] [&_h3]:mb-3 [&_h3]:text-xl [&_input[type='checkbox']]:h-[17px] [&_input[type='checkbox']]:w-[17px] [&_input[type='checkbox']]:shrink-0 [&_legend]:mb-3 [&_legend]:font-semibold [&_p]:mt-0 [&_p]:mb-[18px] [&_p]:max-w-[72ch] [&_summary]:cursor-pointer [&_summary]:py-3 [&_summary]:underline [&_summary]:underline-offset-4`}
     >
       {/* ── Header ── */}
       <header className="border-ex-border relative z-20 border-b">
@@ -153,15 +153,9 @@ export default function ExpertRegistrationPage() {
           <Link
             to="/"
             aria-label={t('page.home')}
-            className="relative block h-[44px] w-[200px] shrink-0 overflow-hidden no-underline max-md:h-[34px] max-md:w-[150px]"
+            className="block shrink-0 no-underline"
           >
-            <img
-              src={sharedHubLogo}
-              alt="Shared Hub"
-              width={1774}
-              height={887}
-              className="absolute top-1/2 left-1/2 h-auto w-[108%] max-w-none -translate-x-1/2 -translate-y-[50.5%]"
-            />
+            <BrandLogo className="h-[44px] w-[200px] max-md:h-[34px] max-md:w-[150px]" />
           </Link>
           <span className="border-ex-header-divider border-l pl-[25px] max-md:pl-3 max-md:text-xs">
             {t('page.title')}
@@ -174,7 +168,7 @@ export default function ExpertRegistrationPage() {
 
       {/* ── Main ── */}
       <main
-        className={`${submitted ? 'expert-status-main' : ''} mx-auto max-w-[1240px] max-md:px-4 max-md:py-7 max-md:pb-10 ${!account ? 'expert-welcome-main grid grid-cols-[1.15fr_1fr] items-start gap-20 px-6 py-12 pb-14 max-lg:gap-10 max-md:grid-cols-1' : 'px-6 py-12 pb-[70px]'}`}
+        className={`${submitted ? 'expert-status-main' : ''} mx-auto max-w-[1240px] max-md:px-4 max-md:py-7 max-md:pb-10 ${!account ? 'expert-welcome-main grid grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] items-start gap-20 px-6 py-12 pb-14 max-lg:gap-10 max-md:grid-cols-1' : 'px-6 py-12 pb-[70px]'}`}
       >
         {!account ? (
           <>
@@ -280,7 +274,6 @@ export default function ExpertRegistrationPage() {
               <details
                 className="expert-status-dossier"
                 id="submitted-dossier"
-                data-reveal
               >
                 <summary>
                   <span>

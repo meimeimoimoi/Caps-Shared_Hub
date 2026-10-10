@@ -1,0 +1,69 @@
+{
+  "pageTitle": "AI Assistant",
+  "skipToConversation": "Skip to conversation",
+  "workspaceNavigation": "Workspace navigation",
+  "history": {
+    "title": "Research history",
+    "open": "Open research history",
+    "newQuestion": "New question",
+    "searchLabel": "Search history",
+    "searchPlaceholder": "Search past questions…",
+    "empty": "No questions yet.",
+    "noMatch": "No questions match “{{query}}”.",
+    "count_one": "{{count}} lookup",
+    "count_other": "{{count}} lookups",
+    "listLabel": "Past questions"
+  },
+  "welcome": {
+    "eyebrow": "Corporate income tax",
+    "title": "Research grounded in law",
+    "lead": "Ask about Corporate Income Tax. Every answer cites documents from the approved knowledge base.",
+    "topicsLabel": "Start from a topic",
+    "topics": {
+      "deductible": {
+        "name": "Deductible expenses",
+        "question": "What is the maximum deductible interest expense?"
+      },
+      "invoice": {
+        "name": "Invoices and records",
+        "question": "Can invoices paid in cash be counted as deductible expenses?"
+      },
+      "rate": {
+        "name": "Tax rates",
+        "question": "Which CIT rate applies to my tax period?"
+      },
+      "welfare": {
+        "name": "Employee welfare",
+        "question": "Up to what level are employee welfare expenses deductible?"
+      }
+    },
+    "recentLabel": "Recent research",
+    "viewAll": "View all ({{count}})"
+  },
+  "transcript": {
+    "label": "Research conversation",
+    "question": "Question",
+    "answer": "Answer",
+    "aiBadge": "AI-assisted",
+    "citationsLabel": "Cited sources",
+    "citation": "[{{index}}] Source",
+    "noCitations": "This answer has no citations. Do not rely on it.",
+    "disclaimer": "AI summary of the cited documents. It does not replace advice from a Tax Expert.",
+    "thinking": "Searching relevant documents…",
+    "copy": "Copy answer",
+    "copied": "Answer copied",
+    "copyFailed": "Could not copy. Select and copy the text manually.",
+    "sendToExpert": "Send to an Expert",
+    "sendToExpertSoon": "Coming soon: send this answer to a verified Expert."
+  },
+  "composer": {
+    "label": "Corporate income tax question",
+    "placeholder": "For example: How much depreciation on a 4-seat car is deductible?",
+    "hint": "Enter to send · Shift + Enter for a new line",
+    "send": "Send question",
+    "sending": "Sending…"
+  },
+  "errors": {
+    "sendFailed": "No answer was received. Your question is still in the box — try sending again."
+  }
+}

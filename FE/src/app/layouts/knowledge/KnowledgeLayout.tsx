@@ -1,6 +1,13 @@
 import { useTranslation } from 'react-i18next'
-import { useRef, useState, type ReactNode } from 'react'
-import { BookOpen, LayoutTemplate, ListChecks, Rss, UserRound } from 'lucide-react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
+import {
+  BookOpen,
+  LayoutDashboard,
+  LayoutTemplate,
+  ListChecks,
+  Rss,
+  UserRound,
+} from 'lucide-react'
 import { useDialogMotion } from '@/components/ui/motion'
 import { useAccount } from '@/features/auth'
 import { AppHeader } from '@/components/ui/layout/app-header'
@@ -12,10 +19,13 @@ import { type ShellNotification } from '../NotificationBell'
 
 interface KnowledgeLayoutProps {
   /** Mục sidebar đang mở */
-  section: 'queue' | 'sources' | 'documents' | 'account'
+  section:
+    'overview' | 'queue' | 'sources' | 'documents' | 'templates' | 'account'
   queueCount: number
   notifications?: ShellNotification[]
   breadcrumb: ReactNode
+  /** Tiêu đề tab trình duyệt; bỏ trống thì lấy tên mục sidebar đang chọn */
+  title?: string
   /** Bỏ trống thì ẩn ô tìm kiếm */
   search?: string
   onSearchChange?: (value: string) => void
@@ -29,6 +39,7 @@ export function KnowledgeLayout({
   queueCount,
   notifications = [],
   breadcrumb,
+  title,
   search,
   onSearchChange,
   children,
@@ -42,6 +53,20 @@ export function KnowledgeLayout({
   const account = useAccount('knowledge')
 
   const groups: SidebarGroup[] = [
+    {
+      // Không tiêu đề nhóm: AppSidebar chỉ hiện tiêu đề khi có chữ
+      id: 'overview',
+      label: '',
+      items: [
+        {
+          id: 'overview',
+          to: '/knowledge',
+          label: 'Tổng quan',
+          icon: <LayoutDashboard size={18} />,
+          active: section === 'overview',
+        },
+      ],
+    },
     {
       id: 'knowledge',
       label: 'Kho tri thức',
@@ -76,9 +101,11 @@ export function KnowledgeLayout({
       items: [
         {
           id: 'templates',
-          to: '/drafts/templates',
+          // Màn quản lý của Knowledge Admin; /drafts/templates là màn chọn mẫu của người soạn nháp
+          to: '/knowledge/templates',
           label: 'Template',
           icon: <LayoutTemplate size={18} />,
+          active: section === 'templates',
         },
       ],
     },
@@ -96,10 +123,18 @@ export function KnowledgeLayout({
       ],
     },
   ]
+  // Đặt ở layout để mọi trang Knowledge đều có tiêu đề tab (effect của layout chạy sau effect của trang)
+  const pageTitle =
+    title ??
+    groups.flatMap((g) => g.items).find((i) => i.active)?.label ??
+    'Kho tri thức'
+  useEffect(() => {
+    document.title = `${pageTitle} | Shared Hub`
+  }, [pageTitle])
   const closeDrawer = () => drawer.current?.close()
 
   return (
-    <div className="bg-desk text-fg selection:bg-accent-soft selection:text-accent-text min-h-svh">
+    <div className="bg-desk text-fg min-h-svh">
       <a
         href="#knowledge-main"
         className="focus:bg-paper sr-only z-50 focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:p-3"
@@ -107,7 +142,7 @@ export function KnowledgeLayout({
         Bỏ qua điều hướng
       </a>
       <aside
-        className={`bg-sidebar fixed inset-y-0 left-0 z-30 hidden flex-col border-r border-black py-6 md:flex ${expanded ? 'w-60 px-4' : 'w-20 px-3'}`}
+        className={`sidebar-rail bg-sidebar fixed inset-y-0 left-0 z-30 hidden flex-col border-r border-black py-6 md:flex ${expanded ? 'w-60 px-4' : 'w-20 px-3'}`}
       >
         <AppSidebar
           groups={groups}
@@ -130,7 +165,7 @@ export function KnowledgeLayout({
         />
       </dialog>
 
-      <div className={expanded ? 'md:ml-60' : 'md:ml-20'}>
+      <div className={`sidebar-offset ${expanded ? 'md:ml-60' : 'md:ml-20'}`}>
         <AppHeader
           navigationButtonRef={drawerTrigger}
           onOpenNavigation={() => drawer.current?.showModal()}
@@ -153,6 +188,15 @@ export function KnowledgeLayout({
             name: account.name,
             avatarUrl: account.avatarUrl,
             onSignOut: account.logout,
+            // Giống Expert: menu tài khoản luôn có lối vào trang tài khoản
+            links: [
+              {
+                label: 'Tài khoản',
+                to: '/knowledge/account',
+                icon: <UserRound size={17} />,
+                active: section === 'account',
+              },
+            ],
           }}
           notifications={notifications}
         />

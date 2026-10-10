@@ -23,6 +23,7 @@ Dùng utility theo vai trò:
 - Trạng thái: `text-success bg-success-soft`, hoặc warning/danger; luôn có nhãn.
 - Chart: `--ui-chart-*`; label SVG dùng text token.
 - Demo disclosure: shared DemoBanner, phân biệt với cảnh báo nghiệp vụ.
+- Bôi đen chữ: quy tắc `::selection` toàn cục trong globals.css, màu ở `--ui-text-selection` / `--ui-on-text-selection` (sáng: xám ấm, tối: xám). Sidebar luôn tối dùng `--ui-sidebar-selection`. Không thêm `selection:` hoặc `::selection` riêng trong trang.
 
 Utility cũ như `bg-paper`, `text-fg` vẫn alias shared palette. Expert `--ep-*` có aliases để migrate dần. Ưu tiên tên semantic khi viết mới.
 
