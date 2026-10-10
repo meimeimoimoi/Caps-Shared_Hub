@@ -15,7 +15,7 @@ dist-ssr
 
 # Env (keep .env.example, ignore real secrets)
 .env
-.env.*.local
+.env.*.local    
 !.env.example
 
 # Test / cache
@@ -32,3 +32,7 @@ coverage/
 *.njsproj
 *.sln
 *.sw?
+
+# Ignore AI assistant metadata
+.codex/
+.claude/
