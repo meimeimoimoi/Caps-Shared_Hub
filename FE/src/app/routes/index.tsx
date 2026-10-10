@@ -134,6 +134,9 @@ const KnowledgeAccountPage = lazy(
 const AiAssistantPage = lazy(
   () => import('@/pages/ai-assistant/AiAssistantPage')
 )
+const MarketplacePage = lazy(
+  () => import('@/pages/marketplace/MarketplacePage')
+)
 
 function Fallback() {
   const { t } = useTranslation('common')
@@ -175,6 +178,7 @@ const router = createBrowserRouter(
       <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route path="/expert/register" element={<ExpertRegistrationPage />} />
       <Route path="/experts/:expertId" element={<ExpertPublicProfilePage />} />
+      <Route path="/marketplace" element={<MarketplacePage />} />
       {/* Explicit isolated demo; real Reviewer permissions/assignments need a server API. */}
       <Route path="/reviewer" element={<ReviewerLayout />}>
         <Route index element={<ReviewerQueuePage />} />
