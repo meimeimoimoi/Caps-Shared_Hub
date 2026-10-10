@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next'
+import { Link } from 'react-router-dom'
 import {
   useId,
   useState,
@@ -260,9 +261,9 @@ export function EmailLoginForm({
 
         <div className="mt-[22px] text-center text-[12.5px] leading-[1.6] text-white/50">
           {t('email.noAccount')}{' '}
-          <a href="#" className={LINK_CLASS}>
+          <Link to="/register" className={LINK_CLASS}>
             {t('email.create')}
-          </a>
+          </Link>
         </div>
       </div>
     </div>
