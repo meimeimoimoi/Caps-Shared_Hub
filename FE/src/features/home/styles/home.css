@@ -874,7 +874,7 @@
     display: grid;
   }
   #shub-home .hero-static::before {
-    background-image: url('../../assets/home/hero-ending.jpg');
+    background-image: url('../assets/hero-ending.jpg');
   }
 }
 #shub-home .sec {

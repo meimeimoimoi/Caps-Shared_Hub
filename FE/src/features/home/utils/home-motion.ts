@@ -1,7 +1,7 @@
 import type { TFunction } from 'i18next'
-import posterUrl from '@/assets/home/hero-poster.jpg'
-import endingUrl from '@/assets/home/hero-ending.jpg'
-import videoUrl from '@/assets/home/hero-scrub.mp4'
+import posterUrl from '../assets/hero-poster.jpg'
+import endingUrl from '../assets/hero-ending.jpg'
+import videoUrl from '../assets/hero-scrub.mp4'
 
 const gates = [
   '(max-width: 720px)',

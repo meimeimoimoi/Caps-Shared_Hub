@@ -2,9 +2,9 @@ import { useTranslation } from 'react-i18next'
 import type { CSSProperties } from 'react'
 import { Link } from 'react-router-dom'
 import { HomeText } from './HomeText'
-import lookupImage from '@/assets/home/product-tra-cuu.jpg'
-import workspaceImage from '@/assets/home/product-workspace.jpg'
-import expertsImage from '@/assets/home/product-chuyen-gia.jpg'
+import lookupImage from '../assets/product-tra-cuu.jpg'
+import workspaceImage from '../assets/product-workspace.jpg'
+import expertsImage from '../assets/product-chuyen-gia.jpg'
 
 export function ProductsSection() {
   const { t } = useTranslation('home')

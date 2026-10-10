@@ -5,12 +5,13 @@ The redesign replaces the previous homepage at `/` and is the project's main hom
 ## Source and conventions
 
 - `src/pages/home/HomePage.tsx` composes `features/home/components/HomeLanding`.
-- `src/features/home/components/` owns the hero and six independent sections.
-- `src/features/home/hooks/home-motion.ts` owns scroll scrubbing, caption bands,
+- `src/features/home/components/` owns navigation, hero, footer, back-to-top and six content sections.
+- `src/features/home/hooks/useHomeMotion.ts` binds animation to the React lifecycle.
+- `src/features/home/utils/home-motion.ts` owns scroll scrubbing, caption bands,
   reveals, navigation, progress and the illustrative hold-to-verify interaction.
-- `src/features/home/home.css` scopes selectors to `#shub-home` and namespaces
+- `src/features/home/styles/home.css` scopes selectors to `#shub-home` and namespaces
   keyframes. Fixed media colors use `--ui-home-*` in `src/styles/theme.css`.
-- `src/assets/home/` contains bundled imagery and the 3.7 MB hero video.
+- `src/features/home/assets/` contains bundled imagery and the 3.7 MB hero video.
 - `src/lib/i18n/locales/{vi,en}/home.json` owns the `home` namespace, using explicit
   React emphasis components without raw HTML insertion.
 
@@ -30,7 +31,6 @@ Hero questions prefill `/ai-assistant` via router state, limited to 2,000 charac
 without being placed in the URL or automatically sent. Existing assistant demo/auth
 behavior remains in place. Product links target existing routes. Verification is an
 illustrative sample, not a real review or payment. FAQs use native details/summary.
-Local static source and review artifacts remain in `FE/home-v2-work/`, outside deployment.
 
 ## Validation
 
