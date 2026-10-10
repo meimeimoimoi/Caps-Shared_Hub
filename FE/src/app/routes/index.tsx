@@ -70,6 +70,7 @@ const ExpertIncomePage = lazy(
   () => import('@/pages/expert-dashboard/ExpertIncomePage')
 )
 
+const HomePage = lazy(() => import('@/pages/home/HomePage'))
 const ExpertBioPage = lazy(() => import('@/pages/expert-dashboard/ExpertBioPage'))
 const ExpertPublicProfilePage = lazy(() => import('@/pages/ExpertPublicProfilePage'))
 const DashboardPage = lazy(() => import('../../pages/DashboardPage'))
@@ -153,6 +154,10 @@ function Fallback() {
 // Data router enables a real navigation blocker for unsaved input, including browser Back.
 function RouteMotion() {
   const location = useLocation()
+  // The homepage is a pixel port of a standalone template; it opts out of the
+  // app's page transition (fade entrance + transformed ancestor breaks its
+  // position:fixed modal).
+  if (location.pathname === '/') return <Outlet />
   return (
     <MotionPage replayKey={location.pathname}>
       <Outlet />
@@ -170,7 +175,7 @@ const router = createBrowserRouter(
         </Suspense>
       }
     >
-      <Route path="/" element={<Navigate to="/dashboard" replace />} />
+      <Route path="/" element={<HomePage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route path="/expert/register" element={<ExpertRegistrationPage />} />
