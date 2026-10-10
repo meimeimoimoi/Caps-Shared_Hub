@@ -7,6 +7,7 @@ import {
   Outlet,
   Route,
   RouterProvider,
+  ScrollRestoration,
   useLocation,
 } from 'react-router-dom'
 import { MotionPage } from '@/components/ui/motion'
@@ -174,9 +175,13 @@ const router = createBrowserRouter(
     <Route
       errorElement={<RouteErrorPage />}
       element={
-        <Suspense fallback={<Fallback />}>
-          <RouteMotion />
-        </Suspense>
+        <>
+          {/* Về đầu trang (hoặc tới #hash) trước khi vẽ trang mới; Back khôi phục vị trí cũ. */}
+          <ScrollRestoration />
+          <Suspense fallback={<Fallback />}>
+            <RouteMotion />
+          </Suspense>
+        </>
       }
     >
       <Route path="/" element={<HomePage />} />

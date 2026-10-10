@@ -7,7 +7,7 @@ import './homepage.css'
    Khác bản gốc — xem docs/HOMEPAGE.md:
    - Bọc #shub-home (scope CSS) + class js tĩnh.
    - Style inline → object; href map: #login/#register → /login,
-     #register-expert → /expert/register; fragment còn lại giữ nguyên.
+     #register-expert → /expert/register, link Sàn Chuyên gia (nav, "Xem toàn bộ", footer) → /marketplace; fragment còn lại giữ nguyên.
    - Nút #th dùng useTheme() của app (icon theo isDark). */
 export default function HomePage() {
   const rootRef = useRef<HTMLDivElement>(null)
@@ -100,7 +100,7 @@ export default function HomePage() {
           <nav className="links" id="nv">
             <a href="#ai-assistant">Trợ lý AI</a>
             <a href="#workspace">AI Workspace</a>
-            <a href="#marketplace">Sàn Chuyên gia</a>
+            <a href="/marketplace">Sàn Chuyên gia</a>
             <a href="#pricing">Bảng giá</a>
             <a href="#help">Trung tâm trợ giúp</a>
           </nav>
@@ -540,7 +540,7 @@ export default function HomePage() {
                   lực chuyên môn.
                 </p>
               </div>
-              <a className="lnk" href="#marketplace">
+              <a className="lnk" href="/marketplace">
                 Xem toàn bộ Sàn Chuyên gia{' '}
                 <svg className="i">
                   <use href="#i-arrow" />
@@ -604,7 +604,7 @@ export default function HomePage() {
               <h4>Chuyên gia</h4>
               <ul>
                 <li>
-                  <a href="#marketplace">Sàn Chuyên gia</a>
+                  <a href="/marketplace">Sàn Chuyên gia</a>
                 </li>
                 <li>
                   <a href="/expert/register">Đăng ký đối tác</a>

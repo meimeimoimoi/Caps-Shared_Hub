@@ -3,8 +3,15 @@ import { useTranslation } from 'react-i18next'
 import { useFormatters } from '@/hooks/useFormatters'
 import type { ExpertBio } from './useExpertBio'
 
-/** Client-facing profile. Also rendered as the live preview in the expert's editor. */
-export function ExpertBioView({ bio }: { bio: ExpertBio }) {
+/** Client-facing profile. Also rendered as the live preview in the expert's editor.
+ *  hideServices: the public page lists services in its booking panel instead. */
+export function ExpertBioView({
+  bio,
+  hideServices = false,
+}: {
+  bio: ExpertBio
+  hideServices?: boolean
+}) {
   const { t } = useTranslation('expert')
   const format = useFormatters()
   const initials = bio.displayName
@@ -100,7 +107,7 @@ export function ExpertBioView({ bio }: { bio: ExpertBio }) {
             </ul>
           </section>
         )}
-        <section>
+        <section hidden={hideServices}>
           <h2 className="text-fg-muted font-sans text-xs font-semibold tracking-wide uppercase">
             {t('bio.services')}
           </h2>
