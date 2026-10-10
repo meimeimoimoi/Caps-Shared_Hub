@@ -1,6 +1,5 @@
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
-import { LanguageSwitcher } from '@/components/ui/layout/language-switcher'
 
 export function HomeNavigation() {
   const { t } = useTranslation('home')
@@ -60,18 +59,17 @@ export function HomeNavigation() {
         </li>
       </ul>
       <div className="nav-actions">
-        <LanguageSwitcher variant="overlay" />
         <Link className="nav-login" to="/login">
           {t('footer.login')}
         </Link>
         <Link
           className="btn btn-primary"
-          to="/ai-assistant"
-          aria-label={t('nav.askAi')}
+          to="/register"
+          aria-label={t('nav.register')}
         >
-          <span className="lg">{t('faq.askAi')}</span>
+          <span className="lg">{t('nav.register')}</span>
           <span className="sm" aria-hidden="true">
-            {t('process.ask.title')}
+            {t('nav.register')}
           </span>
           <span className="arrow" aria-hidden="true">
             →

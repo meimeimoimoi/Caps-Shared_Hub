@@ -168,6 +168,10 @@
   animation: home-envDrift 72s var(--ease-io) infinite alternate;
   animation-delay: -20s;
 }
+/* Nền trôi bị video hero che kín; dừng nó khi hero đang hiện để GPU dành cho video. */
+#shub-home:has(.stage.live) .env::before {
+  animation-play-state: paused;
+}
 #shub-home .env::after {
   content: '';
   position: absolute;
@@ -549,12 +553,28 @@
   z-index: -1;
   pointer-events: none;
   opacity: calc(0.25 + 0.75 * var(--k, 1));
+  /* closest-side: elip vừa khít khung nên mờ hết đúng tại mép. Kích thước cố định (72% 64%)
+   * trước đây chỉ mờ hết ở ~55% bề rộng tính từ tâm, bị khung cắt ngang thành viền thẳng. */
   background: radial-gradient(
-    ellipse 72% 64% at 50% 50%,
+    closest-side,
     rgba(6, 11, 18, var(--sa, 0.66)) 0%,
-    rgba(6, 11, 18, calc(var(--sa, 0.66) * 0.66)) 46%,
-    rgba(6, 11, 18, 0) 76%
+    rgba(6, 11, 18, calc(var(--sa, 0.66) * 0.66)) 45%,
+    rgba(6, 11, 18, calc(var(--sa, 0.66) * 0.22)) 75%,
+    rgba(6, 11, 18, 0) 100%
   );
+}
+/* Độ mờ/vị trí của chữ do JS đổi qua biến CSS theo từng khung cuộn; tách lớp sẵn để
+ * trình duyệt chỉ ghép lớp thay vì vẽ lại chữ có bóng đổ và blur đè lên video mỗi khung. */
+#shub-home .band,
+#shub-home .band::before,
+#shub-home .band .w,
+#shub-home .band .c,
+#shub-home .band .ask,
+#shub-home .band .sub,
+#shub-home .b3 .soft,
+#shub-home .b3 .sharp,
+#shub-home .b4 .cta-row {
+  will-change: transform, opacity;
 }
 #shub-home .band .btn {
   text-shadow: none;
@@ -1984,6 +2004,73 @@
   gap: 16px;
   flex-wrap: wrap;
   font-size: 15px;
+}
+#shub-home .foot-lang {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  padding: 4px 4px 4px 14px;
+  min-width: 0;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.035);
+}
+#shub-home .foot-lang-icon {
+  flex: none;
+  color: var(--text-secondary);
+}
+#shub-home .foot-lang-track {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+#shub-home .foot-lang-thumb {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 50%;
+  border-radius: 999px;
+  background: var(--accent-muted);
+  box-shadow: inset 0 0 0 1px rgba(255, 122, 0, 0.45);
+  transform: translateX(calc(var(--i, 0) * 100%));
+  transition: transform 0.4s var(--ease-out);
+}
+#shub-home .foot-lang label {
+  position: relative;
+  cursor: pointer;
+}
+#shub-home .foot-lang input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  margin: 0;
+  cursor: pointer;
+}
+#shub-home .foot-lang label span {
+  display: block;
+  padding: 8px 16px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 500;
+  text-align: center;
+  white-space: nowrap;
+  color: var(--text-secondary);
+  transition: color 0.3s var(--ease-out);
+}
+#shub-home .foot-lang label:hover span {
+  color: var(--text-primary);
+}
+#shub-home .foot-lang input:checked + span {
+  color: var(--accent);
+}
+#shub-home .foot-lang input:focus-visible + span {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+@media (prefers-reduced-motion: reduce) {
+  #shub-home .foot-lang-thumb {
+    transition: none;
+  }
 }
 #shub-home.paused *,
 #shub-home.paused *::before,

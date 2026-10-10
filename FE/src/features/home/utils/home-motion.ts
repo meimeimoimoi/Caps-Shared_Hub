@@ -31,6 +31,8 @@ export function initHomeMotion(root: HTMLElement, t: TFunction<'home'>) {
     finalVisual = get('finalVisual')
   const steps = [...track.querySelectorAll<HTMLElement>('.step')]
   const bands = [...stage.querySelectorAll<HTMLElement>('.band')]
+  const cue = stage.querySelector<HTMLElement>('.cue')!
+  const bandVisible: (boolean | undefined)[] = bands.map(() => undefined)
   const queries = gates.map((query) => matchMedia(query)),
     reduced = queries[4]
   const disposals: (() => void)[] = []
@@ -79,6 +81,16 @@ export function initHomeMotion(root: HTMLElement, t: TFunction<'home'>) {
   }
   const set = (el: HTMLElement | SVGElement, name: string, value: number) =>
     el.style.setProperty(name, String(value))
+  // Dùng cho các giá trị ghi mỗi khung hình: bỏ qua khi không đổi, vì biến CSS được kế thừa
+  // nên mỗi lần ghi có thể bắt trình duyệt tính lại style cho cả cây con.
+  const written = new WeakMap<Element, Map<string, string>>()
+  function write(el: HTMLElement | SVGElement, name: string, value: string) {
+    let cache = written.get(el)
+    if (!cache) written.set(el, (cache = new Map()))
+    if (cache.get(name) === value) return
+    cache.set(name, value)
+    el.style.setProperty(name, value)
+  }
   get('poster').style.backgroundImage = `url("${posterUrl}")`
   get('posterEnd').style.backgroundImage = `url("${endingUrl}")`
   get('finalBg').style.backgroundImage = `url("${endingUrl}")`
@@ -96,16 +108,23 @@ export function initHomeMotion(root: HTMLElement, t: TFunction<'home'>) {
       -hero.getBoundingClientRect().top /
         Math.max(1, hero.offsetHeight - innerHeight)
     )
+  // Video hero 24 khung/giây, khung nào cũng là keyframe. Chỉ tua khi sang khung mới:
+  // tua tới thời điểm lẻ trong cùng một khung vẫn tốn trọn một lượt giải mã và bắt lượt tua sau phải chờ.
+  const FPS = 24
+  let shownFrame = -1
   function seek(time: number) {
     if (!ready || !Number.isFinite(video.duration)) return
-    const next = Math.max(0, Math.min(video.duration - 0.04, time))
+    const lastFrame = Math.max(0, Math.floor(video.duration * FPS) - 1)
+    const frameIndex = Math.max(0, Math.min(lastFrame, Math.round(time * FPS)))
     if (seekBusy) {
-      pending = next
+      pending = time
       return
     }
-    if (Math.abs(video.currentTime - next) < 0.001) return
+    if (frameIndex === shownFrame) return
+    shownFrame = frameIndex
     seekBusy = true
-    video.currentTime = next
+    // Tua vào giữa khung để không rơi đúng ranh giới giữa hai khung
+    video.currentTime = (frameIndex + 0.5) / FPS
   }
   listen(video, 'seeked', () => {
     seekBusy = false
@@ -124,18 +143,21 @@ export function initHomeMotion(root: HTMLElement, t: TFunction<'home'>) {
         (i === 0 ? 1 : smooth(p, a, a + fade)) *
         (i === bands.length - 1 ? 1 : 1 - smooth(p, b - fade, b))
       const visible = opacity > 0.01
-      band.style.opacity = opacity.toFixed(3)
-      band.style.visibility = visible ? 'visible' : 'hidden'
-      // Invisible captions must not remain reachable by keyboard or screen readers.
-      band.inert = !visible
-      band.setAttribute('aria-hidden', String(!visible))
+      write(band, 'opacity', opacity.toFixed(3))
+      // Chỉ ghi khi đổi trạng thái: ghi lại mỗi khung hình làm trình duyệt tính lại style liên tục.
+      if (bandVisible[i] !== visible) {
+        bandVisible[i] = visible
+        band.style.visibility = visible ? 'visible' : 'hidden'
+        // Invisible captions must not remain reachable by keyboard or screen readers.
+        band.inert = !visible
+        band.setAttribute('aria-hidden', String(!visible))
+      }
       const k = clamp((p - a) / (Number(band.dataset.ramp) || 0.025))
-      set(band, '--k', i === 0 ? Math.max(k, intro) : k)
+      write(band, '--k', (i === 0 ? Math.max(k, intro) : k).toFixed(4))
     })
-    set(sheet, '--l', smooth(p, 0.88, 0.93))
-    set(sheet, '--s', smooth(p, 0.93, 0.975))
-    stage.querySelector<HTMLElement>('.cue')!.style.opacity =
-      p < 0.04 ? '' : '0'
+    write(sheet, '--l', smooth(p, 0.88, 0.93).toFixed(4))
+    write(sheet, '--s', smooth(p, 0.93, 0.975).toFixed(4))
+    write(cue, 'opacity', p < 0.04 ? '' : '0')
     stage.classList.toggle('at-end', failed && p > 0.5)
   }
   function tick(now: number) {
@@ -176,7 +198,7 @@ export function initHomeMotion(root: HTMLElement, t: TFunction<'home'>) {
       if (!response.ok || !response.body) throw new Error('Video unavailable')
       const reader = response.body.getReader(),
         chunks: BlobPart[] = []
-      const total = Number(response.headers.get('content-length')) || 3710379
+      const total = Number(response.headers.get('content-length')) || 4507259
       let bytes = 0
       while (true) {
         const { value, done } = await reader.read()
@@ -242,47 +264,47 @@ export function initHomeMotion(root: HTMLElement, t: TFunction<'home'>) {
       steps.forEach((el) => el.classList.add('lit'))
       complete()
     }
+    measure()
     update()
   }
   const toTop = get<HTMLButtonElement>('toTop')
   let queued = false
-  function update() {
-    queued = false
-    target = progress()
-    kick()
-    nav.classList.toggle(
-      'solid',
-      scrollY >
-        (enabled ? hero.offsetHeight - innerHeight * 0.5 : innerHeight * 0.6)
-    )
-    toTop.classList.toggle('show', scrollY > innerHeight * 1.2)
-    toTop.inert = scrollY <= innerHeight * 1.2
-    set(
-      toTop,
-      '--tp',
-      1 -
-        clamp(
-          scrollY /
-            Math.max(1, document.documentElement.scrollHeight - innerHeight)
-        )
-    )
-    if (!reduced.matches) {
-      const p = clamp(
-          (innerHeight * 0.78 - track.getBoundingClientRect().top) /
-            (innerHeight * 0.5)
-        ),
-        reached = Math.floor(p * (steps.length - 1) + 0.001)
-      trackDone.style.strokeDashoffset = String(
-        1 - reached / (steps.length - 1)
-      )
-      steps.forEach((el, i) => el.classList.toggle('lit', i <= reached))
-    }
+  // Kích thước chỉ đổi khi resize, không cần đo lại mỗi lần cuộn
+  function measure() {
     set(
       sheet,
       '--cv',
       Math.max(stage.clientWidth / 1920, stage.clientHeight / 1080)
     )
     set(finalVisual, '--fv', finalVisual.clientWidth / 1140)
+  }
+  function update() {
+    queued = false
+    // Đọc hết số đo trước rồi mới ghi: đọc bố cục sau khi đã ghi class/style
+    // buộc trình duyệt tính lại layout ngay giữa khung hình.
+    target = progress()
+    const y = scrollY,
+      solidAt = enabled
+        ? hero.offsetHeight - innerHeight * 0.5
+        : innerHeight * 0.6,
+      scrollable = Math.max(
+        1,
+        document.documentElement.scrollHeight - innerHeight
+      ),
+      trackTop = reduced.matches ? 0 : track.getBoundingClientRect().top
+    kick()
+    nav.classList.toggle('solid', y > solidAt)
+    toTop.classList.toggle('show', y > innerHeight * 1.2)
+    toTop.inert = y <= innerHeight * 1.2
+    set(toTop, '--tp', 1 - clamp(y / scrollable))
+    if (!reduced.matches) {
+      const p = clamp((innerHeight * 0.78 - trackTop) / (innerHeight * 0.5)),
+        reached = Math.floor(p * (steps.length - 1) + 0.001)
+      trackDone.style.strokeDashoffset = String(
+        1 - reached / (steps.length - 1)
+      )
+      steps.forEach((el, i) => el.classList.toggle('lit', i <= reached))
+    }
   }
   const schedule = () => {
     if (!queued) {
@@ -292,6 +314,10 @@ export function initHomeMotion(root: HTMLElement, t: TFunction<'home'>) {
   }
   listen(window, 'scroll', schedule, { passive: true })
   listen(window, 'resize', schedule, { passive: true })
+  const sizes = new ResizeObserver(measure)
+  sizes.observe(stage)
+  sizes.observe(finalVisual)
+  disposals.push(() => sizes.disconnect())
   listen(toTop, 'click', () => {
     window.scrollTo({ top: 0, behavior: reduced.matches ? 'auto' : 'smooth' })
     nav.querySelector<HTMLElement>('.brand')?.focus({ preventScroll: true })

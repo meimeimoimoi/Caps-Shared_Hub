@@ -17,7 +17,7 @@ export function FinalSection() {
           <HomeText i18nKey="final.title" />
         </h2>
         <div className="cta-row r" style={{ '--i': '1' } as CSSProperties}>
-          <Link className="btn btn-primary" to="/login">
+          <Link className="btn btn-primary" to="/register">
             {t('final.cta')}
             <span className="arrow" aria-hidden="true">
               →

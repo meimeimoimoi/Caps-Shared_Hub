@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { HomeText } from './HomeText'
+import { FooterLanguageToggle } from './FooterLanguageToggle'
 
 export function HomeFooter() {
   const { t } = useTranslation('home')
@@ -87,6 +88,7 @@ export function HomeFooter() {
         </div>
         <div className="foot-bottom">
           <p>{t('footer.copyright', { year: new Date().getFullYear() })}</p>
+          <FooterLanguageToggle />
         </div>
       </div>
     </footer>

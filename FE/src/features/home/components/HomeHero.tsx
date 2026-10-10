@@ -260,7 +260,7 @@ export function HomeHero({
               <HomeText i18nKey="hero.verifiedSub" />
             </p>
             <div className="cta-row">
-              <Link className="btn btn-primary" to="/login">
+              <Link className="btn btn-primary" to="/register">
                 {t('final.cta')}
                 <span className="arrow" aria-hidden="true">
                   →
@@ -322,7 +322,7 @@ export function HomeHero({
           </form>
           <p className="ask-note">{t('hero.ask.note')}</p>
           <div className="cta-row">
-            <Link className="btn btn-primary" to="/login">
+            <Link className="btn btn-primary" to="/register">
               {t('final.cta')}
               <span className="arrow" aria-hidden="true">
                 →

@@ -337,11 +337,6 @@
 
 /* Expert entry: warm editorial photography with a focused registration form. */
 .expert-welcome { background: var(--ui-surface-muted); color: var(--ui-text-strong); }
-/* Match the preferred 110% desktop scale at the browser's default zoom. */
-@media (min-width: 1024px) {
-  .expert-welcome { zoom: 1.1; min-height: calc(100vh / 1.1); }
-  .expert-welcome .expert-welcome-main { min-height: calc(100vh / 1.1 - 210px); }
-}
 .expert-welcome header { background: var(--ui-surface); }
 .expert-welcome header > div { padding-top: 23px; padding-bottom: 23px; }
 .expert-welcome-main { min-height: calc(100vh - 210px); }
@@ -1506,6 +1501,14 @@
   --err: var(--ui-login-danger);
   color-scheme: dark;
 }
+/* Autofill của Chrome/Edge phủ nền sáng lên ô nhập; giữ ô nhập trong suốt trên thẻ kính tối. */
+.login-material input:-webkit-autofill,
+.login-material input:-webkit-autofill:hover,
+.login-material input:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--ui-login-text);
+  caret-color: var(--ui-login-text);
+  transition: background-color 9999s ease-out 0s;
+}
 html,body,#root{height:100%}
 @keyframes cardIn{
   from{opacity:0;transform:translateY(12px) scale(.97)}
@@ -2455,3 +2458,288 @@ html,body,#root{height:100%}
   .expert-review-detail { grid-template-columns: 1fr; gap: 4px; }
   .expert-pro-review .expert-summary-documents { grid-template-columns: 1fr; }
 }
+
+/* ── Đăng ký chuyên gia: bố cục chia đôi ──
+ * Trái: panel tối cố định (ảnh, lời mời, quy trình 4 bước), cùng tông với trang chủ và đăng nhập.
+ * Phải: form trên nền sáng của portal chuyên gia. Wizard sau bước này giữ nguyên giao diện cũ. */
+.expert-signup { background: var(--ui-surface); }
+.expert-signup-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 46fr) minmax(0, 54fr);
+  min-height: 100svh;
+}
+.expert-signup-aside {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  overflow: hidden;
+  isolation: isolate;
+  background: var(--ui-home-canvas);
+  color: #fff;
+}
+.expert-signup-photo {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 38%;
+}
+/* Phủ tối vùng có chữ (nửa trên) để luôn đọc được, nhạt dần ở đáy cho ảnh lộ ra */
+.expert-signup-aside::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(
+    180deg,
+    rgba(8, 13, 19, 0.82) 0%,
+    rgba(8, 13, 19, 0.74) 55%,
+    rgba(8, 13, 19, 0.5) 80%,
+    rgba(8, 13, 19, 0.62) 100%
+  );
+}
+.expert-signup-aside-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  height: 100%;
+  padding: 26px clamp(28px, 4vw, 56px) 36px;
+  /* Màn hình thấp: cuộn trong panel thay vì cắt mất chữ */
+  overflow-y: auto;
+}
+.expert-signup-topbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.expert-signup .expert-signup-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  text-decoration: none;
+}
+/* Cụm chữ đặt gần đầu panel, phần đáy để lộ ảnh */
+.expert-signup-pitch { margin-top: clamp(24px, 9vh, 96px); }
+.expert-signup .expert-signup-eyebrow {
+  margin: 0 0 14px;
+  color: var(--ui-login-accent-text);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.expert-signup .expert-signup-aside h1 {
+  margin: 0 0 16px;
+  color: #fff;
+  font-family: var(--font-serif);
+  font-size: clamp(34px, 3.1vw, 48px);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+.expert-signup-aside h1 em { display: block; color: var(--ui-login-accent-text); font-style: italic; font-weight: 400; }
+.expert-signup .expert-signup-lead { max-width: 42ch; margin: 0; color: rgba(255, 255, 255, 0.72); font-size: 15.5px; line-height: 1.6; }
+.expert-signup-process { padding-top: 20px; border-top: 1px solid rgba(255, 255, 255, 0.12); }
+.expert-signup .expert-signup-process h2 {
+  margin: 0 0 14px;
+  color: rgba(255, 255, 255, 0.5);
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.expert-signup-process ol { display: grid; gap: 11px; margin: 0; padding: 0; list-style: none; }
+.expert-signup-process li { display: flex; align-items: flex-start; gap: 14px; }
+.expert-signup-step-index {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 50%;
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 12.5px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.expert-signup-process li[data-current] .expert-signup-step-index { border-color: var(--ui-accent); background: var(--ui-accent); color: #fff; }
+.expert-signup-process li strong { display: block; color: #fff; font-size: 14.5px; font-weight: 600; line-height: 1.4; }
+.expert-signup-process li span:not(.expert-signup-step-index) { display: block; margin-top: 2px; color: rgba(255, 255, 255, 0.6); font-size: 13px; line-height: 1.5; }
+
+.expert-signup-form-pane {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px clamp(24px, 5vw, 72px);
+}
+/* Form nằm thẳng trên nền, không còn khung thẻ (đè các rule cũ có !important) */
+.expert-signup .expert-account-form {
+  width: 100%;
+  max-width: 560px;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+.expert-account-head { margin-bottom: 24px; }
+.expert-account-head { text-align: center; }
+.expert-signup .expert-account-head h2 { margin-bottom: 6px !important; font-size: 30px !important; text-align: center; }
+.expert-signup .expert-account-head p { max-width: none; margin: 0 !important; font-size: 14px; }
+/* Yêu cầu mật khẩu dạng nhãn ngắn trên một hàng thay cho danh sách 3 dòng */
+.expert-password-chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.expert-password-chips li {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px;
+  border: 1px solid var(--ui-border);
+  border-radius: 999px;
+  color: var(--ui-text-muted);
+  font-size: 12px;
+  line-height: 1.4;
+  transition: color var(--motion-feedback) var(--motion-ease-enter), border-color var(--motion-feedback) var(--motion-ease-enter), background-color var(--motion-feedback) var(--motion-ease-enter);
+}
+.expert-password-chips li svg { flex: none; }
+.expert-password-chips li[data-met='true'] { border-color: color-mix(in srgb, var(--ui-success) 40%, transparent); background: color-mix(in srgb, var(--ui-success) 8%, transparent); color: var(--ui-success); }
+.expert-password-chips li[data-flag='true'] { border-color: color-mix(in srgb, var(--ui-danger) 45%, transparent); color: var(--ui-danger); }
+@media (prefers-reduced-motion: reduce) { .expert-password-chips li { transition: none; } }
+.expert-account-alt {
+  display: grid;
+  gap: 6px;
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid var(--ui-border);
+  color: var(--ui-text-muted);
+  font-size: 13.5px;
+  text-align: center;
+}
+.expert-signup .expert-account-alt p { max-width: none; margin: 0 !important; }
+
+/* Vệt sáng theo chuột của portal trông như vết bẩn trên nền trắng trơn của form */
+.expert-signup.expert-welcome::before { display: none !important; }
+/* Ô nhập 44px như trang đăng nhập; nhãn không còn dấu * vì mọi ô đều bắt buộc */
+.expert-signup .expert-account-form input:not([type='checkbox']) { min-height: 44px; padding: 10px 14px; border-radius: 10px; font-size: 14.5px; }
+.expert-signup .expert-account-form .expert-phone-field { min-height: 44px; border-radius: 10px; }
+.expert-signup .expert-account-form .expert-phone-field input { min-height: 42px; padding: 10px 12px; }
+.expert-signup .expert-account-form .expert-password-field input { padding-right: 50px; }
+.expert-signup .expert-account-form label { font-size: 13px; }
+.expert-signup .expert-account-fields { row-gap: 18px; }
+.expert-signup .expert-password-hint { max-width: none; margin: 0 !important; color: var(--ui-text-muted); font-size: 12.5px; line-height: 1.5; }
+.expert-signup .expert-account-consent label { color: var(--ui-text-muted); font-size: 13px; }
+.expert-signup .expert-account-form button[type='submit'] { min-height: 48px; }
+
+/* Ô số điện thoại: cả cụm (cờ, +84, số) là một ô duy nhất */
+.expert-signup .expert-phone-prefix { gap: 7px; padding-inline: 12px 10px; color: var(--ui-text-muted); }
+.expert-signup .expert-phone-field:focus-within { border-color: var(--ui-accent-text); box-shadow: 0 0 0 3px color-mix(in srgb, var(--ui-accent-text) 10%, transparent); }
+/* Autofill của Chrome tô nền xanh chỉ ở ô nhập bên trong làm vỡ khung; giữ nền trong suốt
+ * (box-shadow không phủ được ở trạng thái xem trước gợi ý, nên trì hoãn đổi màu nền). */
+.expert-signup .expert-phone-field input:is(:autofill, :-webkit-autofill) {
+  box-shadow: none !important;
+  -webkit-text-fill-color: var(--ui-text-strong);
+  transition: background-color 9999s ease-out 0s;
+}
+
+/* Laptop màn thấp: chỉ giữ tên từng bước */
+@media (min-width: 1024px) and (max-height: 700px) {
+  .expert-signup-process li span:not(.expert-signup-step-index) { display: none; }
+  .expert-signup-process ol { gap: 10px; }
+}
+/* Máy tính bảng và điện thoại: panel trái thu gọn thành dải đầu trang, ẩn quy trình */
+@media (max-width: 1023px) {
+  .expert-signup-layout { grid-template-columns: minmax(0, 1fr); }
+  .expert-signup-aside { position: relative; height: auto; }
+  .expert-signup-aside-inner { gap: 40px; padding: 18px 20px 28px; }
+  .expert-signup-process { display: none; }
+  .expert-signup .expert-signup-aside h1 { font-size: clamp(28px, 6vw, 36px); }
+  .expert-signup .expert-signup-lead { font-size: 14.5px; }
+  .expert-signup-form-pane { align-items: flex-start; padding: 32px 20px 48px; }
+  .expert-signup .expert-account-head h2 { font-size: 26px !important; }
+}
+
+/* ── Wizard nộp hồ sơ chuyên gia: làm gọn giao diện ── */
+/* Header: logo nhỏ + tên trang + nút gạt VI | EN, cùng kiểu với trang đăng nhập */
+.expert-portal-header { position: relative; z-index: 20; border-bottom: 1px solid var(--ui-border); background: var(--ui-surface); }
+.expert-portal-header-inner { display: flex; align-items: center; gap: 16px; max-width: 1240px; margin: 0 auto; padding: 14px 24px; }
+/* Đè rule cũ cho header > div và lề fieldset của khung trang */
+.expert-application .expert-portal-header > .expert-portal-header-inner { padding: 14px 24px; }
+.expert-portal-header fieldset { margin: 0 0 0 auto !important; }
+.expert-application .expert-portal-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--ui-text-strong);
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  text-decoration: none !important;
+}
+.expert-portal-title { padding-left: 16px; border-left: 1px solid var(--ui-border); color: var(--ui-text-muted); font-size: 14px; }
+@media (max-width: 479px) {
+  .expert-portal-header-inner { padding: 12px 16px; }
+  .expert-portal-title { display: none; }
+}
+/* Vệt sáng theo chuột trông như vết bẩn trên nền sáng */
+.expert-application::before { display: none !important; }
+
+/* Thanh bước: nhãn ngắn một dòng */
+.expert-wizard .expert-stepper-label { max-width: none; white-space: nowrap; }
+/* Tiêu đề bước: bỏ vạch trang trí và nhãn "Bước x trên 4" */
+.expert-wizard-heading { padding: 0 0 6px; margin-bottom: 0; }
+
+/* Đầu bước Thông tin cá nhân: một cột, ảnh đại diện chuyển xuống nhóm Thông tin cá nhân */
+.expert-personal-form .expert-personal-heading { display: block; padding: 4px 0 24px; }
+.expert-personal-heading > p { max-width: 60ch; margin: 0 !important; color: var(--ui-text-muted); font-size: 14px; line-height: 1.6; }
+
+/* Tiêu đề nhóm: chỉ chữ, bỏ icon tròn và đường kẻ */
+.expert-wizard .expert-pro-section-icon,
+.expert-wizard .expert-pro-section-line { display: none !important; }
+.expert-wizard .expert-pro-section-header { margin-bottom: 16px; }
+.expert-wizard .expert-pro-section-title { font-family: var(--font-sans) !important; font-size: 15px !important; font-weight: 600 !important; }
+.expert-wizard .expert-pro-section { padding-top: 24px; }
+
+/* Ảnh đại diện nằm đầu nhóm, cạnh nút tải lên */
+.expert-pro-section > .expert-profile-photo { display: flex; align-items: center; gap: 16px; margin-bottom: 20px; }
+.expert-pro-section > .expert-profile-photo :is(.expert-photo-preview, .expert-photo-preview > img, .expert-photo-placeholder) { width: 64px; height: 64px; }
+.expert-pro-section > .expert-profile-photo .expert-photo-title { font-family: var(--font-sans); font-size: 14px; font-weight: 600; }
+.expert-pro-section > .expert-profile-photo .expert-photo-actions { margin-top: 6px; }
+.expert-personal-form .expert-pro-section > .expert-profile-photo .expert-photo-actions button { min-height: 34px; }
+
+/* Email và số điện thoại từ tài khoản: hiện dạng chữ, không dùng ô xám bị khoá */
+.expert-contact-readonly dl {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px 28px;
+  margin: 0;
+  padding: 14px 16px;
+  border: 1px solid var(--ui-border);
+  border-radius: 10px;
+  background: var(--ui-surface-muted);
+}
+.expert-contact-readonly dt { margin-bottom: 2px; color: var(--ui-text-muted); font-size: 12.5px; }
+.expert-contact-readonly dd { margin: 0; color: var(--ui-text-strong); font-size: 14.5px; font-weight: 500; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.expert-application .expert-contact-readonly > p { max-width: none; margin: 8px 0 0 !important; color: var(--ui-text-muted); font-size: 12.5px; }
+@media (max-width: 639px) {
+  .expert-contact-readonly dl { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* ── Bước Kinh nghiệm chuyên môn ── */
+/* Số năm: nhãn ở trên, ô vừa đủ cho 2 chữ số kèm đơn vị "năm" */
+.expert-years-input { position: relative; display: flex; align-items: center; max-width: 180px; }
+.expert-years-input > input { width: 100%; padding-right: 52px !important; }
+.expert-years-input > span { position: absolute; right: 14px; color: var(--ui-text-muted); font-size: 14px; pointer-events: none; }
+/* Ẩn mũi tên tăng/giảm của ô số; vẫn gõ được và dùng phím mũi tên */
+.expert-years-input > input { appearance: textfield; -moz-appearance: textfield; }
+.expert-years-input > input::-webkit-inner-spin-button,
+.expert-years-input > input::-webkit-outer-spin-button { margin: 0; -webkit-appearance: none; }
+/* Thẻ lĩnh vực: ô tick tuỳ biến thay checkbox mặc định, trạng thái chọn nhẹ hơn */
+.expert-wizard .expert-pro-chip { padding: 9px 14px; border-width: 1px; }
+.expert-wizard .expert-pro-chip-check { width: 18px; height: 18px; border-radius: 5px; }
+.expert-wizard .expert-pro-chip--selected { box-shadow: none !important; }
+.expert-wizard .expert-pro-chip:focus-within { outline-offset: 2px; }
+/* Gợi ý dưới các thẻ: một dòng chữ nhạt, không icon */
+.expert-wizard .expert-pro-chip-hint { display: block; max-width: none; margin-top: 12px !important; }
+
