@@ -36,6 +36,27 @@ let demoInput: ExpertBioInput = {
 }
 
 async function demoBio(expertId: string): Promise<ExpertBio> {
+  // Chuyên gia mock của Sàn (id 1..8) dùng chung trang hồ sơ công khai này.
+  const { EXPERTS, packagesFor } =
+    await import('@/features/marketplace/fixtures')
+  const listed = EXPERTS.find((e) => String(e.id) === expertId)
+  if (listed)
+    return {
+      expertId,
+      displayName: listed.name,
+      avatarUrl: null,
+      headline: listed.roleTitle,
+      location: '',
+      yearsOfExperience: listed.years,
+      bio: listed.bio,
+      expertise: listed.tags,
+      highlights: [listed.desc],
+      services: packagesFor(listed).map((p, i) => ({
+        serviceId: `${expertId}-${i}`,
+        serviceName: p.title,
+        price: String(p.price),
+      })),
+    }
   const [{ createExpertContextFixture }, { getDemoPricing }] =
     await Promise.all([
       import('@/features/expert-context/api/fixtures'),
