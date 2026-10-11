@@ -40,19 +40,29 @@ Lấy 10 văn bản mới nhất của mỗi loại:
 python scraper_agent.py --top-n 10 --sources vbpl,mof --export
 ```
 
-## 3. Thay đổi từ khóa
+## 3. Chỉ đếm toàn bộ tài liệu, không lưu dữ liệu
+
+Duyệt tất cả trang và in thống kê số tài liệu của VBPL, MOF, số tài liệu MOF trùng VBPL và tổng số dự kiến lưu vào metadata:
+
+```powershell
+python scraper_agent.py --count-only --sources vbpl,mof
+```
+
+Chế độ này không tạo lượt cào và không lưu `metadata.json`, `raw_html`, PDF, text hoặc export. Tài liệu MOF được xem là trùng VBPL khi có cùng **số hiệu văn bản sau chuẩn hóa**; tool không so sánh toàn văn hoặc file hash trong chế độ đếm.
+
+## 4. Thay đổi từ khóa
 
 ```powershell
 python scraper_agent.py --all --keyword "thuế thu nhập doanh nghiệp" --sources vbpl,mof --export
 ```
 
-## 4. Chọn loại văn bản
+## 5. Chọn loại văn bản
 
 ```powershell
 python scraper_agent.py --all --doc-types "Luật,Nghị định,Thông tư,Quyết định" --sources vbpl,mof --export
 ```
 
-## 5. Chạy trình duyệt có giao diện
+## 6. Chạy trình duyệt có giao diện
 
 Dùng khi cần quan sát hoặc kiểm tra crawler:
 
@@ -60,7 +70,7 @@ Dùng khi cần quan sát hoặc kiểm tra crawler:
 python scraper_agent.py --top-n 1 --sources vbpl --headless false
 ```
 
-## 6. Không tải PDF/DOC
+## 7. Không tải PDF/DOC
 
 Chỉ lấy metadata và nội dung HTML để kiểm tra nhanh:
 
@@ -68,13 +78,13 @@ Chỉ lấy metadata và nội dung HTML để kiểm tra nhanh:
 python scraper_agent.py --top-n 3 --sources vbpl --skip-download
 ```
 
-## 7. Tắt OCR
+## 8. Tắt OCR
 
 ```powershell
 python scraper_agent.py --all --sources vbpl,mof --no-ocr --export
 ```
 
-## 8. Export lại dữ liệu đã cào
+## 9. Export lại dữ liệu đã cào
 
 Export lại lượt cào mới nhất:
 
@@ -88,7 +98,7 @@ Export một lượt cào cụ thể:
 python scraper_agent.py --export-only --run-dir data/2026-10-11/run-083015
 ```
 
-## 9. Xóa metadata không hợp lệ
+## 10. Xóa metadata không hợp lệ
 
 Xử lý lượt cào mới nhất:
 
@@ -102,7 +112,7 @@ Xử lý một lượt cụ thể:
 python scraper_agent.py --purge-invalid --run-dir data/2026-10-11/run-083015
 ```
 
-## 10. Chạy kiểm thử
+## 11. Chạy kiểm thử
 
 ```powershell
 python -m pytest tests -q

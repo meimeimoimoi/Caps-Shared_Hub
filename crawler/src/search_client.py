@@ -683,6 +683,8 @@ def search_and_download_by_type(
     top_n: Optional[int] = 3,
     headless: bool = True,
     skip_download: bool = False,
+    listing_only: bool = False,
+    save_debug: bool = True,
 ) -> List[SearchResultItem]:
     """
     Tìm `top_n` văn bản mới nhất của loại `doc_type`, vào từng trang tài liệu
@@ -747,7 +749,8 @@ def search_and_download_by_type(
                                               min_count=n_before)
             if not payload:
                 logger.error(f"[{doc_type}] Khong bat duoc payload ket qua tu server.")
-                _dump_debug(page, f"debug_nopayload_{doc_type}")
+                if save_debug:
+                    _dump_debug(page, f"debug_nopayload_{doc_type}")
                 return results
 
             # ── Bước 3: Bật bộ lọc "Loại văn bản" ───────────────────
@@ -843,7 +846,8 @@ def search_and_download_by_type(
                     logger.warning(
                         f"[{doc_type}] Khong con van ban nao khop sau khi loc server-side."
                     )
-                _dump_debug(page, f"debug_nomatch_{doc_type}")
+                if save_debug:
+                    _dump_debug(page, f"debug_nomatch_{doc_type}")
                 return results
 
             logger.info(
@@ -862,6 +866,10 @@ def search_and_download_by_type(
 
                 item = _make_search_result_item(items[i], doc_type, search_url, doc_type_id)
                 if item is None:
+                    continue
+
+                if listing_only:
+                    results.append(item)
                     continue
 
                 logger.info(f"  Tieu de   : {item.title[:90]}")
@@ -984,6 +992,8 @@ def search_and_download_all_types(
     top_n: Optional[int] = 3,
     headless: bool = True,
     skip_download: bool = False,
+    listing_only: bool = False,
+    save_debug: bool = True,
 ) -> List[SearchResultItem]:
     """
     Chạy search_and_download_by_type() tuần tự cho từng loại văn bản.
@@ -1003,6 +1013,8 @@ def search_and_download_all_types(
             top_n=top_n,
             headless=headless,
             skip_download=skip_download,
+            listing_only=listing_only,
+            save_debug=save_debug,
         )
 
         # Chống trùng: cùng 1 văn bản có thể khớp nhiều loại (ví dụ "Thông tư"

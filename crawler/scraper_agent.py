@@ -77,6 +77,14 @@ def parse_args():
         help="Cào toàn bộ kết quả liên quan, đi đến trang cuối (dùng để khởi tạo kho dữ liệu).",
     )
     parser.add_argument(
+        "--count-only",
+        action="store_true",
+        help=(
+            "Chỉ đếm toàn bộ kết quả và tài liệu trùng giữa các nguồn; "
+            "không tải hoặc lưu dữ liệu crawler."
+        ),
+    )
+    parser.add_argument(
         "--headless",
         type=str,
         default=str(config.HEADLESS).lower(),
@@ -160,6 +168,68 @@ def _log_export_summary(manifest):
                 f"  [{m['document_number']}] {len(m['warnings'])} cảnh báo văn bản, "
                 f"{m['unit_warnings']} đơn vị cần duyệt lại"
             )
+
+
+def build_count_report(vbpl_docs: List[LegalDocument], mof_docs: List[LegalDocument]) -> dict:
+    """Count cross-source duplicates by normalized document number, not full text."""
+    vbpl_numbers = {doc_number_key(doc.so_hieu) for doc in vbpl_docs}
+    vbpl_numbers.discard(None)
+    duplicates = [
+        doc for doc in mof_docs
+        if doc_number_key(doc.so_hieu) in vbpl_numbers
+    ]
+    duplicate_numbers = sorted({doc.so_hieu for doc in duplicates})
+    return {
+        "vbpl": len(vbpl_docs),
+        "mof": len(mof_docs),
+        "mof_duplicates": len(duplicates),
+        "duplicate_numbers": duplicate_numbers,
+        "metadata_total": len(vbpl_docs) + len(mof_docs) - len(duplicates),
+    }
+
+
+def run_count_only(keyword: str, doc_types: List[str], headless: bool, sources: List[str]) -> dict:
+    """Inventory all matching listings without visiting details or writing crawl artifacts."""
+    vbpl_docs: List[LegalDocument] = []
+    mof_docs: List[LegalDocument] = []
+
+    if "vbpl" in sources:
+        items = search_and_download_all_types(
+            keyword=keyword,
+            doc_types=doc_types,
+            top_n=None,
+            headless=headless,
+            skip_download=True,
+            listing_only=True,
+            save_debug=False,
+        )
+        vbpl_docs = [scrape_document_detail(item) for item in items]
+
+    if "mof" in sources:
+        mof_docs = collect_mof_documents(
+            keyword,
+            doc_types,
+            top_n=None,
+            skip_download=True,
+            known_numbers=set(),
+        )
+
+    report = build_count_report(vbpl_docs, mof_docs)
+    print("\n" + "=" * 70)
+    print("THỐNG KÊ TOÀN BỘ DỮ LIỆU LIÊN QUAN")
+    print("=" * 70)
+    print(f"Nguồn VBPL                         : {report['vbpl']} tài liệu")
+    print(f"Nguồn MOF                          : {report['mof']} tài liệu")
+    print(f"MOF trùng với VBPL                 : {report['mof_duplicates']} tài liệu")
+    print("Tiêu chí trùng                     : cùng số hiệu văn bản sau chuẩn hóa")
+    print("Không so trùng                     : nội dung toàn văn / tiêu đề / file hash")
+    print(f"Dự kiến lưu vào metadata           : {report['metadata_total']} tài liệu")
+    if report["duplicate_numbers"]:
+        print("Các số hiệu trùng:")
+        for number in report["duplicate_numbers"]:
+            print(f"  - {number}")
+    print("\nChế độ đếm: không tạo metadata, raw_html, PDF, text hoặc export.")
+    return report
 
 
 def collect_vbpl_documents(
@@ -325,6 +395,22 @@ def main():
     args = parse_args()
     doc_types = [d.strip() for d in args.doc_types.split(",") if d.strip()]
     headless = args.headless.lower() == "true"
+    sources = [s.strip().lower() for s in args.sources.split(",") if s.strip()]
+    unknown = [s for s in sources if s not in ("vbpl", "mof")]
+    if unknown:
+        print(f"Nguồn không hỗ trợ: {unknown}. Dùng: vbpl, mof")
+        sys.exit(2)
+
+    if args.count_only:
+        try:
+            run_count_only(args.keyword, doc_types, headless, sources)
+            return
+        except KeyboardInterrupt:
+            logger.warning("Đã dừng bởi người dùng (Ctrl+C).")
+            sys.exit(1)
+        except Exception as exc:
+            logger.error(f"Lỗi khi đếm dữ liệu: {exc}", exc_info=True)
+            sys.exit(1)
 
     if args.purge_invalid or args.export_only or args.reparse_only:
         try:
@@ -345,11 +431,6 @@ def main():
         run_export_only()
         return
 
-    sources = [s.strip().lower() for s in args.sources.split(",") if s.strip()]
-    unknown = [s for s in sources if s not in ("vbpl", "mof")]
-    if unknown:
-        print(f"Nguồn không hỗ trợ: {unknown}. Dùng: vbpl, mof")
-        sys.exit(2)
     if args.no_ocr:
         config.OCR_ENABLED = False
 

@@ -40,6 +40,9 @@ python scraper_agent.py \
 
 # Khởi tạo kho dữ liệu: cào TOÀN BỘ kết quả liên quan, đi đến trang cuối
 python scraper_agent.py --all --sources vbpl,mof --export
+
+# Chỉ thống kê toàn bộ, không lưu dữ liệu crawler
+python scraper_agent.py --count-only --sources vbpl,mof
 ```
 
 ## Kết quả sau khi chạy
@@ -160,6 +163,7 @@ Hệ thống được thiết kế tối ưu với 3 giai đoạn (Pipeline):
 | `--doc-types` | "Luật,Nghị định,Thông tư,Quyết định" | Danh sách loại văn bản, cách nhau bởi dấu phẩy |
 | `--top-n` | 3 | Số văn bản gần nhất mỗi loại |
 | `--all` | (tắt) | Cào toàn bộ kết quả liên quan đến từ khóa cho mỗi loại; bỏ giới hạn `--top-n` và đi đến trang cuối |
+| `--count-only` | (tắt) | Duyệt toàn bộ và chỉ in số lượng theo nguồn, số MOF trùng VBPL và tổng dự kiến; không lưu dữ liệu crawler |
 | `--headless` | true | `false` để xem trình duyệt chạy trực tiếp (debug) |
 | `--skip-download` | (tắt) | Bỏ qua tải PDF/DOC, chỉ lấy metadata + text HTML (test nhanh) |
 | `--sources` | "vbpl" | Nguồn cào: `vbpl`, `mof` (vbpq.mof.gov.vn), hoặc `vbpl,mof` |
