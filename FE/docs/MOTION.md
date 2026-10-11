@@ -56,7 +56,7 @@ Reduced motion is observed live: spatial movement/drawing and stagger delays are
 
 ## Current adoption and verification
 
-All registered pages inherit MotionPage through the root router's RouteMotion boundary: login, registration, dashboard, Admin, Knowledge, Drafts, Expert and the 404 page. Lazy pages commit inside Suspense before their entrance runs. The boundary animates the page's main content (or a marked data-motion-content region), preserves fixed shell navigation, and uses pathname rather than search parameters. It has no React key, so filter changes do not remount forms. New routes nested under the root inherit this automatically.
+All registered pages except the marketing homepage inherit MotionPage through the root router's RouteMotion boundary: login, registration, dashboard, Admin, Knowledge, Drafts, Expert and the 404 page. The homepage uses its own lifecycle-bound scroll animation to preserve fixed navigation and the sticky hero. Lazy pages commit inside Suspense before their entrance runs. The boundary animates the page's main content (or a marked data-motion-content region), preserves fixed shell navigation, and uses pathname rather than search parameters. It has no React key, so filter changes do not remount forms. New routes nested under the root inherit this automatically.
 
 ExpertPanel and Draft Paper use useMotion; overview panel grids use MotionStagger; review trend lines use MotionPath; notifications use MotionPresence. Admin, Knowledge and Expert queue tables fade updated rows; login view changes and registration wizard steps use shared presets. Account menus, native notification popovers, calendars and selects use the popover preset. The dropdown keeps list-only scrolling and viewport-aware placement.
 

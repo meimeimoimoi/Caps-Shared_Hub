@@ -5,11 +5,11 @@ The redesign replaces the previous homepage at `/` and is the project's main hom
 ## Source and conventions
 
 - `src/pages/home/HomePage.tsx` composes `features/home/components/HomeLanding`.
-- `src/features/home/components/` owns navigation, hero, footer, back-to-top and six content sections.
+- `src/features/home/components/` owns hero, back-to-top and content sections. Public navigation, footer and language toggle are shared in `src/components/ui/layout/`.
 - `src/features/home/hooks/useHomeMotion.ts` binds animation to the React lifecycle.
 - `src/features/home/utils/home-motion.ts` owns scroll scrubbing, caption bands,
   reveals, navigation, progress and the illustrative hold-to-verify interaction.
-- `src/features/home/styles/home.css` scopes selectors to `#shub-home` and namespaces
+- `src/styles/public-site.css` is imported directly by both public surfaces, scopes selectors to `#shub-home` and namespaces
   keyframes. Fixed media colors use `--ui-home-*` in `src/styles/theme.css`.
 - `src/features/home/assets/` contains bundled imagery and the 3.7 MB hero video.
 - `src/lib/i18n/locales/{vi,en}/home.json` owns the `home` namespace, using explicit
