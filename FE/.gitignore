@@ -21,6 +21,8 @@ dist-ssr
 # Test / cache
 coverage/
 .vite/
+test-results/
+playwright-report/
 
 # Editor directories and files
 .vscode/*
