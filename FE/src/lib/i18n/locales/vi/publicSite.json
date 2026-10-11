@@ -28,13 +28,15 @@
     "login": "Đăng nhập",
     "expertSignup": "Đăng ký làm chuyên gia",
     "disclaimer": "<b>Lưu ý:</b> Nội dung do AI tạo chỉ là bản nháp tham khảo, không phải tư vấn pháp lý. Hãy để chuyên gia xác thực trước khi nộp.",
-    "copyright": "© {{year}} Shared Hub"
+    "copyright": "© {{year}} Shared Hub",
+    "pricing": "Bảng giá"
   },
   "links": {
     "label": "Điều hướng chính",
     "home": "Trang chủ",
     "marketplace": "Sàn chuyên gia",
     "aiAssistant": "Tra cứu AI",
-    "workspace": "Không gian soạn thảo"
+    "workspace": "Không gian soạn thảo",
+    "pricing": "Bảng giá"
   }
 }

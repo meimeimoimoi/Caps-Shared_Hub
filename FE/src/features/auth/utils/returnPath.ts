@@ -9,6 +9,9 @@ const allowedSections = [
   '/experts',
   '/marketplace',
   '/ai-assistant',
+  '/cases',
+  '/wallet',
+  '/account',
 ]
 
 export function safeReturnPath(value: unknown): string {
@@ -19,6 +22,9 @@ export function safeReturnPath(value: unknown): string {
   )
     return DEFAULT_HOME
   const path = value.split(/[?#]/)[0]
+  // Router chuẩn hóa '.'/'..', nên '/drafts/../admin' sẽ thoát khỏi khu được phép
+  if (path.includes('\\') || /(^|\/)\.{1,2}(\/|$)/.test(path))
+    return DEFAULT_HOME
   return allowedSections.some(
     (section) => path === section || path.startsWith(`${section}/`)
   )

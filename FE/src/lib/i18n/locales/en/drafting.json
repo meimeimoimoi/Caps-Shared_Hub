@@ -168,6 +168,7 @@
   "closeReviewSummary": "Close review summary",
   "theSelectedVersionAndItsReferencesWillBeHandedOverTogetherANewerDraftDoesNotReplaceThisPackage": "The selected version and its references will be handed over together. A newer draft does not replace this package.",
   "preparingHandoff": "Preparing handoff…",
+  "chooseExpertOnMarketplace": "Choose an expert on the marketplace",
   "confirmDemoHandoff": "Confirm demo handoff",
   "draft": "Draft",
   "version": "Version",

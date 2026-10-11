@@ -75,7 +75,7 @@ export function AiScreeningTab({
                 {f.title}
               </p>
               <p className="mt-1 pl-6 text-sm">{f.detail}</p>
-              <div className="mt-3 flex gap-2 pl-6">
+              <div className="mt-3 flex flex-wrap gap-2 pl-6">
                 <button
                   type="button"
                   aria-pressed={reviewed}

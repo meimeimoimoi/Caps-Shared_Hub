@@ -45,6 +45,9 @@ export function PublicFooter({ anchorBase = '' }: { anchorBase?: string }) {
               <li>
                 <Link to="/marketplace">{t('footer.experts')}</Link>
               </li>
+              <li>
+                <Link to="/pricing">{t('footer.pricing')}</Link>
+              </li>
             </ul>
           </nav>
           <nav className="foot-col" aria-label={t('footer.learn')}>

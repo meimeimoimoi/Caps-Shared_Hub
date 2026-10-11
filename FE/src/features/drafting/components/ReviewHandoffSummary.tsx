@@ -3,6 +3,7 @@ import { DraftUiError } from '@/features/drafting/utils/DraftUiError'
 import { useDraftPresentation } from '@/features/drafting/hooks/useDraftPresentation'
 import { useTranslation } from 'react-i18next'
 import { useRef, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { Modal } from '@/components/ui/feedback/modal'
 import { draftApi, draftCapabilities } from '../api/draftApi'
 import { useDraftAction } from '../hooks/useDrafting'
@@ -142,6 +143,11 @@ export function ReviewHandoffSummary({
               })
             : receipt.message}
         </p>
+      )}
+      {receipt && (
+        <Link to="/marketplace" className="btn btn-press btn-primary mt-4">
+          {t('chooseExpertOnMarketplace')}
+        </Link>
       )}
     </Modal>
   )

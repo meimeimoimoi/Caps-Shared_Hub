@@ -14,6 +14,7 @@ const ROLE_LABEL = {
   knowledge: 'accountSettings.roleKnowledge',
   reviewer: 'accountSettings.roleReviewer',
   expert: 'accountSettings.roleExpert',
+  client: 'accountSettings.roleClient',
 } as const satisfies Record<AccountRole, string>
 
 /* Một dòng nhãn bên trái, nội dung bên phải; xếp dọc trên màn hẹp */

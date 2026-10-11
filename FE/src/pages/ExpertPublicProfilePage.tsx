@@ -249,10 +249,10 @@ function RequestPanel({
   const format = useFormatters()
   const sla = useSlaLabel()
   const text = useServiceText()
-  // Thông báo gắn với đúng dịch vụ đã bấm gửi; đổi dịch vụ thì tự ẩn
-  const [sentFor, setSentFor] = useState<string>()
-  // Xem hồ sơ công khai; gửi yêu cầu (tạo Review Case, chốt giá — F5) mới cần đăng nhập
-  const signedIn = useAuthStore((s) => s.isAuthenticated)
+  // Xem hồ sơ công khai; gửi yêu cầu (tạo Review Case, chốt giá — F5) mới cần đăng nhập.
+  // Dev mở thẳng như ClientLayout để demo luồng không cần BE đăng nhập.
+  const signedIn =
+    useAuthStore((s) => s.isAuthenticated) || import.meta.env.DEV
   const navigate = useNavigate()
   const selected = bio.services.find((s) => s.serviceId === picked)
   const availability = bio.listing?.availability
@@ -311,7 +311,9 @@ function RequestPanel({
             disabled={!open}
             onClick={() =>
               signedIn
-                ? setSentFor(picked)
+                ? navigate(
+                    `/cases/new?expert=${encodeURIComponent(bio.expertId)}&service=${encodeURIComponent(selected.serviceId)}`
+                  )
                 : navigate('/login', {
                     state: {
                       from: `/experts/${encodeURIComponent(bio.expertId)}?service=${encodeURIComponent(selected.serviceId)}#${REQUEST_ID}`,
@@ -325,9 +327,6 @@ function RequestPanel({
                 ? t('profile.book.cta')
                 : t('profile.book.ctaSignIn')}
           </button>
-          <p className="mk-pending" role="status">
-            {sentFor === picked ? t('profile.book.pending') : ''}
-          </p>
           <p className="mk-lock">
             <Lock size={14} aria-hidden="true" />
             {t('profile.book.lock')}

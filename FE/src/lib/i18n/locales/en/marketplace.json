@@ -135,7 +135,6 @@
       "lock": "The fee, delivery time and policies are locked when you send.",
       "cta": "Send verification request",
       "ctaUnavailable": "Expert is not taking requests",
-      "pending": "Sending requests is not connected in this demo, so no request was created and you have not been charged.",
       "steps": "After you send",
       "step1": "The expert confirms the work",
       "step2": "You place 100% of the fee in escrow within 15 minutes",

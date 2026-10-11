@@ -9,6 +9,7 @@ export const DEMO_ACCOUNTS = {
   reviewer: { name: 'Phạm Quốc Huy', email: 'huy.pham@shft.vn' },
   // Expert có dữ liệu thật từ useExpertContext; mục này chỉ dùng khi thiếu context
   expert: { name: 'Đặng Mỹ Linh', email: 'linh.dang@outlook.com' },
+  client: { name: 'Nguyễn Thảo Vy', email: 'thaovy.nguyen@tandinhphat.vn' },
 } as const
 export type AccountRole = keyof typeof DEMO_ACCOUNTS
 

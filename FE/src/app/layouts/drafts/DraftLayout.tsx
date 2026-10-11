@@ -6,7 +6,7 @@ import { useRef, useState } from 'react'
 import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { FileText, Library, LayoutDashboard, LogIn } from 'lucide-react'
 import { useAuthStore } from '@/features/auth/store/authStore'
-import { isDraftMock, isDraftPreview } from '@/features/drafting/api/dataSource'
+import { isDraftMock } from '@/features/drafting/api/dataSource'
 import { draftScenarios } from '@/features/drafting/constants'
 import {
   useDraftAction,
@@ -54,16 +54,13 @@ export function DraftLayout() {
           icon: <Library size={18} />,
           active: location.pathname.startsWith('/drafts/templates'),
         },
-        ...(!isDraftPreview
-          ? [
-              {
-                id: 'dashboard',
-                to: '/dashboard',
-                label: t('navigation:dashboard'),
-                icon: <LayoutDashboard size={18} />,
-              },
-            ]
-          : []),
+        // /dashboard (ClientLayout) mở được ở bản dev như preview này, nên luôn có đường về
+        {
+          id: 'dashboard',
+          to: '/dashboard',
+          label: t('navigation:dashboard'),
+          icon: <LayoutDashboard size={18} />,
+        },
       ],
     },
   ]

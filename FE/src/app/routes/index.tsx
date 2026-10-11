@@ -18,6 +18,7 @@ import { DraftRoute } from './DraftRoute'
 import { RouteErrorPage } from './RouteErrorPage'
 import { AccountSettings } from '@/features/auth'
 import { DraftLayout } from '../layouts/drafts/DraftLayout'
+import { ClientLayout } from '../layouts/client/ClientLayout'
 const ReviewerLayout = lazy(() => import('../layouts/reviewer/ReviewerLayout'))
 const ReviewerQueuePage = lazy(
   () => import('@/pages/reviewer/ReviewerQueuePage')
@@ -137,6 +138,13 @@ const KnowledgeAccountPage = lazy(
 const AiAssistantPage = lazy(
   () => import('@/pages/ai-assistant/AiAssistantPage')
 )
+const PricingPage = lazy(() => import('@/pages/marketplace/PricingPage'))
+const ReviewRequestPage = lazy(
+  () => import('@/pages/review-case/ReviewRequestPage')
+)
+const ReviewCasePage = lazy(() => import('@/pages/review-case/ReviewCasePage'))
+const CasesPage = lazy(() => import('@/pages/client/CasesPage'))
+const WalletPage = lazy(() => import('@/pages/client/WalletPage'))
 const MarketplacePage = lazy(
   () => import('@/pages/marketplace/MarketplacePage')
 )
@@ -190,6 +198,16 @@ const router = createBrowserRouter(
       <Route path="/expert/register" element={<ExpertRegistrationPage />} />
       <Route path="/experts/:expertId" element={<ExpertPublicProfilePage />} />
       <Route path="/marketplace" element={<MarketplacePage />} />
+      <Route path="/pricing" element={<PricingPage />} />
+      {/* Không gian khách hàng; ClientLayout tự chặn khi chưa đăng nhập ở production. */}
+      <Route element={<ClientLayout />}>
+        <Route path="/dashboard" element={<DashboardPage />} />
+        <Route path="/cases" element={<CasesPage />} />
+        <Route path="/cases/new" element={<ReviewRequestPage />} />
+        <Route path="/cases/:caseId" element={<ReviewCasePage />} />
+        <Route path="/wallet" element={<WalletPage />} />
+        <Route path="/account" element={<AccountSettings role="client" />} />
+      </Route>
       {/* Explicit isolated demo; real Reviewer permissions/assignments need a server API. */}
       <Route path="/reviewer" element={<ReviewerLayout />}>
         <Route index element={<ReviewerQueuePage />} />
@@ -302,14 +320,6 @@ const router = createBrowserRouter(
           <Route path="settings/:section" element={<ExpertSettingsPage />} />
         </Route>
       </Route>
-      <Route
-        path="/dashboard"
-        element={
-          <ProtectedRoute>
-            <DashboardPage />
-          </ProtectedRoute>
-        }
-      />
       {/* F3: chat tính Credit theo tài khoản nên phải đăng nhập; câu hỏi gõ ở trang chủ được giữ qua bước đăng nhập */}
       <Route
         path="/ai-assistant"

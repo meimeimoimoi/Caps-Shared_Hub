@@ -47,16 +47,17 @@ export const DOCUMENT_STATUS = {
 /* Flow 5 · Hồ sơ rà soát (case) */
 export const CASE_STATUS = {
   PENDING_EXPERT_RESPONSE: { label: 'Chờ chuyên gia nhận', tone: 'neutral' },
+  EXPERT_DECLINED: { label: 'Chuyên gia từ chối', tone: 'plain' },
   AWAITING_PAYMENT: { label: 'Chờ thanh toán', tone: 'warning' },
   CANCELLED_UNPAID: { label: 'Đã hủy · chưa thanh toán', tone: 'plain' },
   PAYMENT_CONFIRMED: { label: 'Chờ bắt đầu rà soát', tone: 'neutral' },
-  EXPERT_TIMEOUT: { label: 'Đã hủy · hoàn tiền', tone: 'plain' },
+  CANCELLED: { label: 'Đã hủy · hoàn tiền', tone: 'plain' },
   IN_REVIEW: { label: 'Đang rà soát', tone: 'accent' },
   AWAITING_USER_INFORMATION: { label: 'Chờ bạn bổ sung', tone: 'warning' },
   AWAITING_ACCEPTANCE: { label: 'Chờ nghiệm thu', tone: 'warning' },
   DISPUTED: { label: 'Đang tranh chấp', tone: 'warning' },
+  RESOLVED: { label: 'Đã giải quyết tranh chấp', tone: 'neutral' },
   COMPLETED: { label: 'Hoàn tất', tone: 'success' },
-  AUTO_CONFIRMED: { label: 'Hoàn tất · tự xác nhận', tone: 'success' },
   TERMINATED: { label: 'Đã chấm dứt', tone: 'neutral' },
 } as const satisfies Record<string, StatusMeta>
 
@@ -73,7 +74,8 @@ export const ESCROW_STATUS = {
 
 export const REVIEW_RESULT = {
   VERIFIED: { label: 'Đã xác thực', tone: 'success' },
-  CANNOT_VERIFY: { label: 'Không thể xác thực', tone: 'danger' },
+  // Không phải lỗi: CANNOT_VERIFY vẫn là dịch vụ hoàn tất hợp lệ (BF Flow 5 · Bước 5)
+  CANNOT_VERIFY: { label: 'Không thể xác thực', tone: 'neutral' },
 } as const satisfies Record<string, StatusMeta>
 
 /* Kết luận → kiểu dòng kết luận */
@@ -89,11 +91,12 @@ export const TRACE_ANSWER = ['Kiểm tra phạm vi', 'Tìm văn bản pháp lý'
 
 /* Ánh xạ trạng thái case → bước hiện tại trên rail Client */
 export const CASE_RAIL_STEP: Record<keyof typeof CASE_STATUS, number> = {
-  PENDING_EXPERT_RESPONSE: 0, AWAITING_PAYMENT: 1, CANCELLED_UNPAID: 1,
-  PAYMENT_CONFIRMED: 2, EXPERT_TIMEOUT: 2,
-  IN_REVIEW: 3, AWAITING_USER_INFORMATION: 3,
+  PENDING_EXPERT_RESPONSE: 0, EXPERT_DECLINED: 0,
+  AWAITING_PAYMENT: 1, CANCELLED_UNPAID: 1,
+  PAYMENT_CONFIRMED: 2, CANCELLED: 2,
+  IN_REVIEW: 3, AWAITING_USER_INFORMATION: 3, TERMINATED: 3,
   AWAITING_ACCEPTANCE: 4, DISPUTED: 4,
-  COMPLETED: 5, AUTO_CONFIRMED: 5, TERMINATED: 3,
+  COMPLETED: 5, RESOLVED: 5,
 }
 
 /* Ánh xạ trạng thái đơn Expert → bước hiện tại trên RAIL_APPLICATION.

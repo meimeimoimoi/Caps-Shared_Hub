@@ -19,6 +19,7 @@
     "preview": "Xem thử demo"
   },
   "navigation": {
+    "home": "Về trang chủ Shared Hub",
     "open": "Mở điều hướng",
     "close": "Đóng điều hướng",
     "expand": "Mở rộng thanh bên",

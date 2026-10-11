@@ -1325,15 +1325,6 @@
   flex: none;
   margin-top: 3px;
 }
-#shub-home.mk .mk-pending {
-  margin-top: -8px;
-  font-size: 14px;
-  line-height: 1.55;
-  color: var(--warn);
-}
-#shub-home.mk .mk-pending:empty {
-  display: none;
-}
 #shub-home.mk .mk-next {
   margin-top: auto;
   padding-top: 18px;
