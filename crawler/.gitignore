@@ -1,0 +1,7 @@
+# Dữ liệu sinh ra khi chạy (PDF, text, metadata.json, export/) và log
+data/
+logs/
+
+__pycache__/
+.pytest_cache/
+.env

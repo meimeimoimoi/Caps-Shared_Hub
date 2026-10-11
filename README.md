@@ -1,6 +1,6 @@
 # Caps-Shared Hub
 
-Monorepo gồm **Backend (.NET 8 Microservices)** và **Frontend (React 19 + Vite + TailwindCSS v4)**.
+Monorepo gồm **Backend (.NET 8 Microservices)**, **Frontend (React 19 + Vite + TailwindCSS v4)** và **Crawler văn bản pháp luật (Python)**.
 
 ---
 
@@ -47,10 +47,12 @@ Caps-Shared_Hub/
 │   │   └── types/                # Types toàn cục
 │   ├── .env.example              # Mẫu biến môi trường
 │   └── package.json
+├── crawler/                      # Python: cào vbpl.vn + vbpq.mof.gov.vn, OCR,
+│                                 # tách Điều/Khoản → data/export/*.json cho BE/ingestion
 └── README.md                     # File này
 ```
 
-Chi tiết từng phía: [BE/README.md](BE/README.md) · [FE/README.md](FE/README.md).
+Chi tiết từng phía: [BE/README.md](BE/README.md) · [FE/README.md](FE/README.md) · [crawler/README.md](crawler/README.md).
 
 Luồng request giai đoạn kiến trúc:
 
@@ -121,6 +123,24 @@ vào `/dashboard` (F5 không mất session, 401 tự về `/login`).
 | `/login` | Public | Gọi `POST /api/auth/login` qua gateway |
 | `/dashboard` | `ProtectedRoute` | Shell chờ module nghiệp vụ cắm vào |
 | `*` | Public | Trang 404 |
+
+### 3.4. Crawler văn bản pháp luật (Python 3.13)
+
+Cào văn bản từ vbpl.vn và vbpq.mof.gov.vn (Bộ Tài chính), tách Chương/Điều/Khoản/Điểm và
+xuất chunk JSON theo schema `knowledge` (`legal_source`, `knowledge_document`, `kb_chunk`).
+
+```powershell
+cd crawler
+pip install -r requirements.txt
+playwright install chromium
+
+python scraper_agent.py --sources vbpl,mof --top-n 3   # 1. cào: data/text, data/metadata.json
+python scraper_agent.py --export-only                  # 2. tách Điều/Khoản: data/export/**/*.json
+python -m pytest tests -q
+```
+
+- OCR (PDF scan của vbpq.mof.gov.vn) cần cài Tesseract + gói tiếng Việt — xem [crawler/README.md](crawler/README.md).
+- `BE/ingestion` chưa có API nhận file export; ràng buộc `ck_kd_source` trong `BE/SHFT_PostgreSQL.sql` cần thêm `CRAWL_MOF`.
 
 ---
 

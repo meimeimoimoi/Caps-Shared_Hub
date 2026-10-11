@@ -1,0 +1,33 @@
+# === VBPL Scraper Agent - Dependencies ===
+# Cài đặt: pip install -r requirements.txt
+# Sau đó bắt buộc chạy thêm: playwright install chromium
+
+# --- Browser automation (bắt buộc vì vbpl.vn là SPA render bằng JavaScript) ---
+playwright==1.48.0
+
+# --- HTTP requests thuần cho trang chi tiết + tải file (nhanh hơn Playwright) ---
+requests==2.32.3
+
+# --- Parse HTML ---
+beautifulsoup4==4.12.3
+lxml==5.3.0
+
+# --- Chuẩn hóa tên file (bỏ dấu tiếng Việt, ký tự đặc biệt) ---
+python-slugify==8.0.4
+
+# --- Retry tự động khi request lỗi mạng ---
+tenacity==9.0.0
+
+# --- Đọc file .env cấu hình (tùy chọn) ---
+python-dotenv==1.0.1
+
+# --- Thanh tiến trình khi chạy CLI ---
+tqdm==4.66.5
+
+# --- Trích xuất text từ PDF (không cần OCR nếu PDF có text layer) ---
+pdfplumber==0.11.4
+
+# --- OCR cho PDF scan (vbpq.mof.gov.vn) ---
+# Cần cài thêm Tesseract (bản Windows UB-Mannheim) + gói ngôn ngữ "vie"
+pypdfium2>=4.30
+pytesseract==0.3.13
