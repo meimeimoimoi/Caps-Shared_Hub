@@ -169,7 +169,7 @@ def test_collect_skips_documents_already_on_vbpl(monkeypatch):
     new = dict(API_ITEM, id=999, no="70/2026/TT-BTC")
     monkeypatch.setattr(mof_client, "_session", lambda: None)
     monkeypatch.setattr(mof_client, "_doc_type_ids", lambda s: {"Thông tư": 20})
-    monkeypatch.setattr(mof_client, "_search_pages", lambda *a: iter([dup, new]))
+    monkeypatch.setattr(mof_client, "_search_pages", lambda *a, **kw: iter([dup, new]))
     monkeypatch.setattr(mof_client, "_delay", lambda: None)
 
     docs = mof_client.collect_mof_documents(
@@ -178,3 +178,21 @@ def test_collect_skips_documents_already_on_vbpl(monkeypatch):
     )
     # Bản trùng không tính vào top-N -> lấy văn bản kế tiếp
     assert [d.so_hieu for d in docs] == ["70/2026/TT-BTC"]
+
+
+def test_collect_all_does_not_apply_top_n_limit(monkeypatch):
+    first = dict(API_ITEM, id=101, no="65/2026/TT-BTC")
+    second = dict(API_ITEM, id=102, no="70/2026/TT-BTC")
+    monkeypatch.setattr(mof_client, "_session", lambda: None)
+    monkeypatch.setattr(mof_client, "_doc_type_ids", lambda s: {"Thông tư": 20})
+    monkeypatch.setattr(mof_client, "_search_pages", lambda *a, **kw: iter([first, second]))
+    monkeypatch.setattr(mof_client, "_delay", lambda: None)
+
+    docs = mof_client.collect_mof_documents(
+        "thuế thu nhập doanh nghiệp",
+        ["Thông tư"],
+        top_n=None,
+        skip_download=True,
+    )
+
+    assert [d.so_hieu for d in docs] == ["65/2026/TT-BTC", "70/2026/TT-BTC"]

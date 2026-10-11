@@ -26,7 +26,13 @@ from src.normalize import has_document_number, parse_vn_date
 logger = setup_logger(__name__, config.LOG_DIR)
 
 SCHEMA_VERSION = 1
-EXPORT_DIR = config.DATA_DIR / "export"
+
+
+def get_export_dir():
+    """Resolve lazily because DATA_DIR changes when a crawl run is activated."""
+    return config.DATA_DIR / "export"
+
+
 # Giá trị `knowledge_document.source` theo nguồn cào. Lưu ý: ràng buộc ck_kd_source
 # trong BE/SHFT_PostgreSQL.sql hiện chỉ cho CRAWL_VBPL/MANUAL_UPLOAD -> cần thêm CRAWL_MOF.
 SOURCE_CODES = {"vbpl": "CRAWL_VBPL", "mof": "CRAWL_MOF"}
@@ -184,6 +190,7 @@ def build_payload(rec: dict) -> dict:
 
 def export_records(records: List[dict]) -> List[dict]:
     """Ghi payload cho từng bản ghi + manifest.json; trả về danh sách mục manifest."""
+    export_dir = get_export_dir()
     manifest: List[dict] = []
     for rec in records:
         payload = build_payload(rec)
@@ -191,7 +198,7 @@ def export_records(records: List[dict]) -> List[dict]:
         slug = slugify(rec.get("so_hieu") or rec.get("doc_id") or "unknown", separator="-")
         if not has_document_number(rec.get("so_hieu")) and rec.get("doc_id"):
             slug = f"{slug}-{str(rec['doc_id'])[:8]}"
-        dest = config.source_dir(EXPORT_DIR, rec.get("source")) / folder / f"{slug}.json"
+        dest = config.source_dir(export_dir, rec.get("source")) / folder / f"{slug}.json"
         dest.parent.mkdir(parents=True, exist_ok=True)
         dest.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
 
@@ -200,7 +207,7 @@ def export_records(records: List[dict]) -> List[dict]:
             1 for c in content["chapters"] for a in c["articles"] for u in a["units"] if u["status"] == "WARNING"
         )
         entry = {
-            "file": str(dest.relative_to(EXPORT_DIR)).replace("\\", "/"),
+            "file": str(dest.relative_to(export_dir)).replace("\\", "/"),
             "document_number": payload["legal_source"]["document_number"],
             "source": rec.get("source") or "vbpl",
             "text_source": rec.get("text_source"),
@@ -218,8 +225,8 @@ def export_records(records: List[dict]) -> List[dict]:
             f"{entry['articles']} Điều, {entry['chunks']} chunk -> {dest}"
         )
 
-    EXPORT_DIR.mkdir(parents=True, exist_ok=True)
-    (EXPORT_DIR / "manifest.json").write_text(
+    export_dir.mkdir(parents=True, exist_ok=True)
+    (export_dir / "manifest.json").write_text(
         json.dumps(
             {"schema_version": SCHEMA_VERSION, "generated_at": datetime.now().isoformat(timespec="seconds"),
              "documents": manifest},

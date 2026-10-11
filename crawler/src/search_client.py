@@ -680,7 +680,7 @@ def _guess_so_hieu(item: SearchResultItem) -> str:
 def search_and_download_by_type(
     keyword: str,
     doc_type: str,
-    top_n: int = 3,
+    top_n: Optional[int] = 3,
     headless: bool = True,
     skip_download: bool = False,
 ) -> List[SearchResultItem]:
@@ -780,8 +780,15 @@ def search_and_download_by_type(
             # Trang đầu có thể không chứa loại văn bản cần tìm (đặc biệt với
             # từ khóa rộng), nên phải bấm "trang sau" cho tới khi đủ kết quả.
             current_payload = payload
-            for page_idx in range(config.MAX_RESULT_PAGES):
+            page_idx = 0
+            seen_pages: set = set()
+            while True:
                 raw_items = list(current_payload.get("items") or [])
+                page_fingerprint = tuple(str(it.get("id")) for it in raw_items)
+                if page_fingerprint in seen_pages:
+                    logger.warning(f"[{doc_type}] Trang ket qua bi lap; dung de tranh vong lap vo han.")
+                    break
+                seen_pages.add(page_fingerprint)
                 matched = _filter_items_by_doc_type(raw_items, doc_type, doc_type_id)
 
                 for it in matched:
@@ -801,7 +808,13 @@ def search_and_download_by_type(
                         f"{len(items)} ket qua khop '{doc_type}'."
                     )
 
-                if len(items) >= top_n:
+                if top_n is not None and len(items) >= top_n:
+                    break
+
+                if top_n is not None and page_idx + 1 >= config.MAX_RESULT_PAGES:
+                    logger.warning(
+                        f"[{doc_type}] Da dat gioi han {config.MAX_RESULT_PAGES} trang cua che do dinh ky."
+                    )
                     break
 
                 n_before = len(listener.search_payloads)
@@ -816,6 +829,7 @@ def search_and_download_by_type(
                     logger.warning(f"[{doc_type}] Trang {page_idx + 2} khong tai duoc.")
                     break
                 current_payload = next_payload
+                page_idx += 1
 
             if not items:
                 if not filtered_ok:
@@ -841,7 +855,7 @@ def search_and_download_by_type(
                 logger.warning(f"[{doc_type}] Khong co ket qua nao khop '{doc_type}'.")
                 return results
             # ── Bước 5: Vào từng trang tài liệu để tải file ───────────
-            n_fetch = min(top_n, len(items))
+            n_fetch = len(items) if top_n is None else min(top_n, len(items))
             for i in range(n_fetch):
                 logger.info(SEP)
                 logger.info(f"[{doc_type}] === VAN BAN #{i + 1}/{n_fetch} ===")
@@ -967,7 +981,7 @@ def _dump_debug(page: Page, name: str) -> None:
 def search_and_download_all_types(
     keyword: str,
     doc_types: List[str],
-    top_n: int = 3,
+    top_n: Optional[int] = 3,
     headless: bool = True,
     skip_download: bool = False,
 ) -> List[SearchResultItem]:
@@ -1004,7 +1018,7 @@ def search_and_download_all_types(
 
         all_results.extend(fresh)
 
-        if len(results) < top_n:
+        if top_n is not None and len(results) < top_n:
             logger.warning(f"[{doc_type}] Chi lay duoc {len(results)}/{top_n} van ban.")
         _polite_delay()
 

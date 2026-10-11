@@ -72,10 +72,12 @@ def _doc_type_ids(s: requests.Session) -> Dict[str, int]:
 
 
 def _search_pages(
-    s: requests.Session, keyword: str, type_id: int, type_name: str
+    s: requests.Session, keyword: str, type_id: int, type_name: str,
+    max_pages: Optional[int] = None,
 ) -> Iterator[dict]:
     """Duyệt kết quả tìm kiếm (mới nhất trước) từng trang, tối đa MOF_MAX_PAGES."""
-    for page in range(1, config.MOF_MAX_PAGES + 1):
+    page = 1
+    while max_pages is None or page <= max_pages:
         body = {
             "QueryText": keyword or "",
             "Page": page,
@@ -95,7 +97,11 @@ def _search_pages(
         yield from docs
         if len(docs) < config.MOF_PAGE_SIZE:
             return
+        total = data.get("totalItem")
+        if isinstance(total, int) and page * config.MOF_PAGE_SIZE >= total:
+            return
         _delay()
+        page += 1
 
 
 def to_legal_document(item: dict) -> LegalDocument:
@@ -173,7 +179,7 @@ def _download_attachments(s: requests.Session, doc: LegalDocument, sizes: Dict[s
 def collect_mof_documents(
     keyword: str,
     doc_types: List[str],
-    top_n: int,
+    top_n: Optional[int],
     skip_download: bool = False,
     known_numbers: Optional[Set[str]] = None,
 ) -> List[LegalDocument]:
@@ -196,8 +202,9 @@ def collect_mof_documents(
             continue
 
         picked = 0
-        for item in _search_pages(s, keyword, type_id, type_name):
-            if picked >= top_n:
+        max_pages = None if top_n is None else config.MOF_MAX_PAGES
+        for item in _search_pages(s, keyword, type_id, type_name, max_pages=max_pages):
+            if top_n is not None and picked >= top_n:
                 break
             if item.get("id") in seen or not summary_matches(item.get("summary"), keyword):
                 continue
@@ -216,7 +223,7 @@ def collect_mof_documents(
             documents.append(doc)
             picked += 1
 
-        if picked < top_n:
+        if top_n is not None and picked < top_n:
             logger.warning(
                 f"[mof] '{type_name}': chỉ tìm được {picked}/{top_n} văn bản có trích yếu chứa "
                 f"'{keyword}' trong {config.MOF_MAX_PAGES} trang đầu"

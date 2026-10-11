@@ -10,7 +10,7 @@ lý do kỹ thuật, rủi ro, checklist).
 
 > **Vị trí trong repo:** `Caps-Shared_Hub/crawler/` — project Python độc lập, không thuộc
 > solution .NET trong `BE/`. Mọi lệnh bên dưới chạy từ thư mục `crawler/`. Dữ liệu sinh ra
-> (`data/`, `logs/`) không được commit; file `data/export/**/*.json` là đầu vào cho `BE/ingestion`.
+> (`data/`, `logs/`) không được commit; file `data/<ngày>/<lượt>/export/**/*.json` là đầu vào cho `BE/ingestion`.
 
 ---
 
@@ -37,38 +37,50 @@ python scraper_agent.py \
     --doc-types "Nghị định,Thông tư,Luật,Quyết định" \
     --top-n 3 \
     --headless true
+
+# Khởi tạo kho dữ liệu: cào TOÀN BỘ kết quả liên quan, đi đến trang cuối
+python scraper_agent.py --all --sources vbpl,mof --export
 ```
 
 ## Kết quả sau khi chạy
 
 ```
 data/
-├── metadata.json              # Index đầy đủ: số hiệu, ngày ban hành, hiệu lực, link...
-├── pdf/
-│   ├── thong_tu/*.pdf
-│   ├── nghi_dinh/*.pdf
-│   ├── luat/*.pdf
-│   └── quyet_dinh/*.pdf
-├── text/
-│   ├── thong_tu/*.txt          # Toàn văn đã trích, kèm header metadata
-│   ├── nghi_dinh/*.txt
-│   ├── luat/*.txt
-│   └── quyet_dinh/*.txt
-└── export/                     # Payload cho Caps-Shared_Hub (xem bên dưới)
-    ├── manifest.json
-    └── <loai>/<so-hieu>.json
+└── 2026-10-11/               # Ngày chạy crawler
+    └── run-083015/            # Một lượt chạy (HHMMSS; tự thêm -02 nếu trùng giây)
+        ├── metadata.json      # Chỉ chứa dữ liệu của lượt này
+        ├── raw_html/
+        ├── pdf/
+        │   ├── thong_tu/*.pdf
+        │   ├── nghi_dinh/*.pdf
+        │   ├── luat/*.pdf
+        │   └── quyet_dinh/*.pdf
+        ├── text/
+        │   ├── thong_tu/*.txt # Toàn văn đã trích, kèm header metadata
+        │   ├── nghi_dinh/*.txt
+        │   ├── luat/*.txt
+        │   └── quyet_dinh/*.txt
+        └── export/            # Payload cho Caps-Shared_Hub (xem bên dưới)
+            ├── manifest.json
+            └── <loai>/<so-hieu>.json
 ```
 
 ## Xuất dữ liệu cho Caps-Shared_Hub (tách Điều/Khoản)
 
 Cào và chunking là **2 bước riêng**. Lệnh cào mặc định chỉ lưu text + `metadata.json`;
 bước 2 tách toàn văn thành Chương → Điều → Khoản → Điểm (`src/legal_parser.py`) và ghi
-`data/export/<loai>/<so-hieu>.json` (`src/exporter.py`; nguồn khác vbpl nằm ở `data/export/<nguon>/...`).
+`data/<ngày>/<lượt>/export/<loai>/<so-hieu>.json` (`src/exporter.py`; nguồn khác vbpl nằm trong thư mục `<nguon>/`).
 
 ```bash
 python scraper_agent.py --sources vbpl,mof --top-n 3   # 1. cào
 python scraper_agent.py --export-only                  # 2. tách Điều/Khoản + tạo chunk
 # hoặc gộp 1 lệnh: python scraper_agent.py --export
+```
+
+`--export-only` mặc định xử lý lượt mới nhất. Để chọn một lượt cụ thể:
+
+```bash
+python scraper_agent.py --export-only --run-dir data/2026-10-11/run-083015
 ```
 
 Mỗi file khớp schema `knowledge` của backend (`BE/ingestion/Entities`):
@@ -147,12 +159,14 @@ Hệ thống được thiết kế tối ưu với 3 giai đoạn (Pipeline):
 | `--keyword` | "thuế thu nhập doanh nghiệp" | Từ khóa tìm kiếm |
 | `--doc-types` | "Luật,Nghị định,Thông tư,Quyết định" | Danh sách loại văn bản, cách nhau bởi dấu phẩy |
 | `--top-n` | 3 | Số văn bản gần nhất mỗi loại |
+| `--all` | (tắt) | Cào toàn bộ kết quả liên quan đến từ khóa cho mỗi loại; bỏ giới hạn `--top-n` và đi đến trang cuối |
 | `--headless` | true | `false` để xem trình duyệt chạy trực tiếp (debug) |
 | `--skip-download` | (tắt) | Bỏ qua tải PDF/DOC, chỉ lấy metadata + text HTML (test nhanh) |
 | `--sources` | "vbpl" | Nguồn cào: `vbpl`, `mof` (vbpq.mof.gov.vn), hoặc `vbpl,mof` |
 | `--no-ocr` | (tắt) | Không OCR PDF scan, chỉ đánh dấu `ocr_required` |
 | `--export` | (tắt) | Cào xong tách Điều/Khoản + tạo chunk luôn |
-| `--export-only` | (tắt) | Không cào: chuẩn hoá `metadata.json` hiện có rồi tạo lại `data/export/` (tên cũ: `--reparse-only`) |
+| `--export-only` | (tắt) | Không cào: chuẩn hoá `metadata.json` của lượt mới nhất rồi tạo lại `export/` (tên cũ: `--reparse-only`) |
+| `--run-dir` | lượt mới nhất | Chọn lượt cũ cho `--export-only` hoặc `--purge-invalid`, ví dụ `data/2026-10-11/run-083015` |
 
 ## Lưu ý đạo đức & pháp lý khi cào dữ liệu
 

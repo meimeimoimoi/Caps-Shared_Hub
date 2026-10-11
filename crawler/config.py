@@ -6,6 +6,7 @@ Chỉnh các giá trị dưới đây theo nhu cầu trước khi chạy scraper
 """
 
 import os
+from datetime import datetime
 from pathlib import Path
 
 # ============================================================
@@ -193,16 +194,61 @@ OCR_MAX_PAGES = 60
 # ============================================================
 
 PROJECT_ROOT = Path(__file__).resolve().parent
-DATA_DIR = PROJECT_ROOT / "data"
+DATA_ROOT = PROJECT_ROOT / "data"
+DATA_DIR = DATA_ROOT
 RAW_HTML_DIR = DATA_DIR / "raw_html"
 PDF_DIR = DATA_DIR / "pdf"
 TEXT_DIR = DATA_DIR / "text"
 METADATA_FILE = DATA_DIR / "metadata.json"
 LOG_DIR = PROJECT_ROOT / "logs"
 
-# Tự động tạo thư mục nếu chưa tồn tại
-for _dir in (RAW_HTML_DIR, PDF_DIR, TEXT_DIR, LOG_DIR):
-    _dir.mkdir(parents=True, exist_ok=True)
+def _activate_run(run_dir: Path) -> Path:
+    """Point every crawler output at one date/run partition."""
+    global DATA_DIR, RAW_HTML_DIR, PDF_DIR, TEXT_DIR, METADATA_FILE
+    DATA_DIR = Path(run_dir).resolve()
+    RAW_HTML_DIR = DATA_DIR / "raw_html"
+    PDF_DIR = DATA_DIR / "pdf"
+    TEXT_DIR = DATA_DIR / "text"
+    METADATA_FILE = DATA_DIR / "metadata.json"
+    for directory in (RAW_HTML_DIR, PDF_DIR, TEXT_DIR, LOG_DIR):
+        directory.mkdir(parents=True, exist_ok=True)
+    return DATA_DIR
+
+
+def start_new_run(now: datetime = None) -> Path:
+    """Create data/YYYY-MM-DD/run-HHMMSS[-NN] without overwriting another run."""
+    now = now or datetime.now()
+    day_dir = DATA_ROOT / now.strftime("%Y-%m-%d")
+    base_name = f"run-{now:%H%M%S}"
+    run_dir = day_dir / base_name
+    suffix = 2
+    while run_dir.exists():
+        run_dir = day_dir / f"{base_name}-{suffix:02d}"
+        suffix += 1
+    run_dir.mkdir(parents=True)
+    return _activate_run(run_dir)
+
+
+def select_run(run_dir: str = None) -> Path:
+    """Activate an explicit run, or the newest run containing metadata.json."""
+    if run_dir:
+        selected = Path(run_dir)
+        if not selected.is_absolute():
+            selected = PROJECT_ROOT / selected
+        if not (selected / "metadata.json").is_file():
+            raise FileNotFoundError(f"Không tìm thấy metadata.json trong lượt cào: {selected}")
+        return _activate_run(selected)
+
+    candidates = sorted(DATA_ROOT.glob("????-??-??/run-*/metadata.json"))
+    if candidates:
+        return _activate_run(candidates[-1].parent)
+    if (DATA_ROOT / "metadata.json").is_file():
+        return _activate_run(DATA_ROOT)
+    raise FileNotFoundError(f"Không tìm thấy lượt cào nào trong {DATA_ROOT}")
+
+
+# A crawl run is activated explicitly by scraper_agent.main().
+LOG_DIR.mkdir(parents=True, exist_ok=True)
 
 
 # ============================================================

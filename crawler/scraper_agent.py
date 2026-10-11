@@ -21,14 +21,14 @@ XEM THÊM: PLAN.md để hiểu chi tiết pipeline và cách xử lý khi selec
 
 import argparse
 import sys
-from typing import List, Set
+from typing import List, Optional, Set
 
 from tqdm import tqdm
 
 import config
 from src.search_client import search_and_download_all_types
 from src.detail_scraper import scrape_document_detail
-from src.exporter import EXPORT_DIR, export_records
+from src.exporter import export_records, get_export_dir
 from src.models import LegalDocument
 from src.mof_client import collect_mof_documents
 from src.normalize import doc_number_key
@@ -69,6 +69,12 @@ def parse_args():
         type=int,
         default=config.TOP_N,
         help=f"Số văn bản gần nhất mỗi loại (mặc định: {config.TOP_N})",
+    )
+    parser.add_argument(
+        "--all",
+        dest="crawl_all",
+        action="store_true",
+        help="Cào toàn bộ kết quả liên quan, đi đến trang cuối (dùng để khởi tạo kho dữ liệu).",
     )
     parser.add_argument(
         "--headless",
@@ -122,6 +128,12 @@ def parse_args():
         action="store_true",
         help="Không OCR PDF scan (chỉ đánh dấu ocr_required) - chạy nhanh hơn",
     )
+    parser.add_argument(
+        "--run-dir",
+        type=str,
+        default=None,
+        help="Thư mục lượt cào cũ cho --export-only/--purge-invalid; mặc định chọn lượt mới nhất.",
+    )
     return parser.parse_args()
 
 
@@ -140,7 +152,7 @@ def _log_export_summary(manifest):
     failed = [m for m in manifest if m["parse_status"] != "PARSED"]
     logger.info(
         f"Đã xuất {len(manifest)} văn bản ({sum(m['chunks'] for m in manifest)} chunk) "
-        f"vào {EXPORT_DIR}; {len(failed)} văn bản không tách được Điều."
+        f"vào {get_export_dir()}; {len(failed)} văn bản không tách được Điều."
     )
     for m in manifest:
         if m["warnings"] or m["unit_warnings"]:
@@ -151,7 +163,7 @@ def _log_export_summary(manifest):
 
 
 def collect_vbpl_documents(
-    keyword: str, doc_types: List[str], top_n: int, headless: bool, skip_download: bool
+    keyword: str, doc_types: List[str], top_n: Optional[int], headless: bool, skip_download: bool
 ) -> List[LegalDocument]:
     # --- TIM KIEM + VAO TRANG CHI TIET + TAI FILE (1 browser session) ---
     # Với mỗi kết quả: bắt payload server action -> lấy doc_id -> dựng URL
@@ -198,7 +210,7 @@ def vbpl_document_numbers(vbpl_docs: List[LegalDocument]) -> Set[str]:
 
 
 def collect_mof(
-    keyword: str, doc_types: List[str], top_n: int, skip_download: bool,
+    keyword: str, doc_types: List[str], top_n: Optional[int], skip_download: bool,
     known_numbers: Set[str] = None,
 ) -> List[LegalDocument]:
     # API JSON của vbpq.mof.gov.vn; toàn văn chỉ có trong PDF (thường là bản scan -> OCR)
@@ -216,7 +228,7 @@ def collect_mof(
 def run_pipeline(
     keyword: str,
     doc_types: List[str],
-    top_n: int,
+    top_n: Optional[int],
     headless: bool,
     skip_download: bool = False,
     export: bool = False,
@@ -228,7 +240,7 @@ def run_pipeline(
     logger.info(f"Nguon         : {sources}")
     logger.info(f"Tu khoa       : {keyword}")
     logger.info(f"Loai van ban  : {doc_types}")
-    logger.info(f"Top-N moi loai: {top_n}")
+    logger.info(f"Pham vi       : {'toan bo ket qua' if top_n is None else f'top {top_n} moi loai'}")
     logger.info(f"Headless mode : {headless}")
     logger.info(f"OCR           : {config.OCR_ENABLED}")
     logger.info("=" * 70)
@@ -314,6 +326,16 @@ def main():
     doc_types = [d.strip() for d in args.doc_types.split(",") if d.strip()]
     headless = args.headless.lower() == "true"
 
+    if args.purge_invalid or args.export_only or args.reparse_only:
+        try:
+            config.select_run(args.run_dir)
+        except FileNotFoundError as exc:
+            logger.error(str(exc))
+            sys.exit(2)
+    else:
+        config.start_new_run()
+        logger.info(f"Lượt cào mới: {config.DATA_DIR}")
+
     if args.purge_invalid:
         n = purge_invalid_metadata()
         print(f"Đã xoá {n} bản ghi không hợp lệ khỏi {config.METADATA_FILE}")
@@ -335,7 +357,7 @@ def main():
         run_pipeline(
             keyword=args.keyword,
             doc_types=doc_types,
-            top_n=args.top_n,
+            top_n=None if args.crawl_all else args.top_n,
             headless=headless,
             skip_download=args.skip_download,
             export=args.export,
