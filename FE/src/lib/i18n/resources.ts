@@ -1,3 +1,7 @@
+import viPublicSite from './locales/vi/publicSite.json'
+import enPublicSite from './locales/en/publicSite.json'
+import viHome from './locales/vi/home.json'
+import enHome from './locales/en/home.json'
 import viCommon from './locales/vi/common.json'
 import enCommon from './locales/en/common.json'
 import viNavigation from './locales/vi/navigation.json'
@@ -18,10 +22,14 @@ import viReviewer from './locales/vi/reviewer.json'
 import enReviewer from './locales/en/reviewer.json'
 import viAiAssistant from './locales/vi/aiAssistant.json'
 import enAiAssistant from './locales/en/aiAssistant.json'
+import viMarketplace from './locales/vi/marketplace.json'
+import enMarketplace from './locales/en/marketplace.json'
 
 // Add feature namespaces as each rollout group migrates its screens.
 export const resources = {
   vi: {
+    home: viHome,
+    publicSite: viPublicSite,
     common: viCommon,
     navigation: viNavigation,
     auth: viAuth,
@@ -32,8 +40,11 @@ export const resources = {
     admin: viAdmin,
     reviewer: viReviewer,
     aiAssistant: viAiAssistant,
+    marketplace: viMarketplace,
   },
   en: {
+    home: enHome,
+    publicSite: enPublicSite,
     common: enCommon,
     navigation: enNavigation,
     auth: enAuth,
@@ -44,5 +55,6 @@ export const resources = {
     admin: enAdmin,
     reviewer: enReviewer,
     aiAssistant: enAiAssistant,
+    marketplace: enMarketplace,
   },
 }

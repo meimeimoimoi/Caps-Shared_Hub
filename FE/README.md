@@ -61,7 +61,7 @@ src/
 
 ## Routes
 
-- `/` — public marketing homepage (pixel port of `SHUB Homepage.html`; opts out of `MotionPage`, scoped CSS under `#shub-home`; see [docs/HOMEPAGE.md](docs/HOMEPAGE.md)).
+- `/` — public marketing homepage (React redesign with Vietnamese/English content, scoped CSS and scroll-driven video; see [docs/HOMEPAGE.md](docs/HOMEPAGE.md)).
 - `/login` — public; email login calls `POST /api/auth/login` through the gateway.
 - `/expert/register` — public expert onboarding.
 - `/dashboard` — protected application dashboard.
@@ -144,6 +144,8 @@ Maintenance guides are grouped in `docs/`; this README remains the frontend entr
 - [REVIEWER.md](docs/REVIEWER.md): Reviewer routes, isolated demo behavior, Gate 1/Gate 2 rules.
 - [Motion README](docs/MOTION.md): reusable animations; [tokens.ts](src/components/ui/motion/tokens.ts) owns motion values.
 
-All registered routes inherit MotionPage at the root router boundary. Add component-level motion through the shared module when needed; avoid duplicating page entrance wrappers. Registration, Expert/case detail, login controls and legacy widget palettes now consume shared configuration. Layout geometry remains screen-specific; fixed login/video material is centralized in theme.css and logo/flag fills are intentional artwork exceptions.
+All registered routes except the marketing homepage inherit MotionPage at the root router boundary. The homepage uses its own lifecycle-bound scroll animation to preserve fixed navigation and the sticky hero. Add component-level motion through the shared module when needed; avoid duplicating page entrance wrappers. Registration, Expert/case detail, login controls and legacy widget palettes now consume shared configuration. Layout geometry remains screen-specific; fixed login/video material is centralized in theme.css and logo/flag fills are intentional artwork exceptions.
 
 Documentation describes the current source and verification workflow. There is no `test:motion` script or retained local unit-test suite in the current package scripts; do not treat historical test counts as checks that can be rerun.
+
+Public navigation, footer and the compact language selector live in `components/ui/layout/`. Their Vietnamese/English copy uses the shared `publicSite` namespace. Authentication is supplied by the caller; shared UI does not import business features. The original public-site stylesheet lives in `styles/public-site.css`; both public surfaces import it directly. Fixed public material colors are centralized in `theme.css` with identical values in both themes.

@@ -1,15 +1,11 @@
 import { useTranslation } from 'react-i18next'
 import { formControlClassName as inputCls } from '@/components/ui/forms/form-control'
-import { formatVietnamPhone } from '@/lib/validation/vietnamPhone'
-import { useRef, type ReactNode } from 'react'
 import {
-  Camera,
-  User,
-  UserCircle,
-  Mail,
-  Briefcase,
-  ImagePlus,
-} from 'lucide-react'
+  formatVietnamPhone,
+  normalizeVietnamPhone,
+} from '@/lib/validation/vietnamPhone'
+import { useRef, type ReactNode } from 'react'
+import { Camera, User, ImagePlus } from 'lucide-react'
 import type { Profile } from '../../types'
 import { FormField } from '@/components/ui/forms/form-field'
 import { DatePicker } from '@/components/ui/forms/date-picker'
@@ -45,6 +41,10 @@ export function PersonalInformation({
   const format = useFormatters()
 
   const photoInputRef = useRef<HTMLInputElement>(null)
+  // Email và số điện thoại đã nhập và kiểm tra ở bước tạo tài khoản: chỉ hiện lại để xác nhận.
+  // Thiếu hoặc sai (vd. mở lại bản nháp cũ) thì vẫn cho nhập như trước.
+  const contactFromAccount =
+    !!profile.email.trim() && !!normalizeVietnamPhone(profile.phone)
   const handleUpdate = (key: keyof Profile, value: string) => {
     onUpdate(key, value)
   }
@@ -98,7 +98,7 @@ export function PersonalInformation({
         onChange={(e) => handleUpdate(key, e.target.value)}
         aria-invalid={!!formErrors[key]}
         aria-describedby={errorId}
-        className={`${inputCls} ${formErrors[key] ? '!border-ex-error-text focus:ring-2 focus:ring-danger/20' : ''}`}
+        className={`${inputCls} ${formErrors[key] ? '!border-ex-error-text focus:ring-danger/20 focus:ring-2' : ''}`}
       />
     )
   }
@@ -107,11 +107,13 @@ export function PersonalInformation({
     <div className="expert-personal-form">
       {/* â”€â”€ Hero heading + Profile photo â”€â”€ */}
       <div className="expert-personal-heading">
-        <div className="expert-personal-heading-copy">
-          {heading}
-          <p>{t('personal.guidance')}</p>
-        </div>
+        {heading}
+        <p>{t('personal.guidance')}</p>
+      </div>
 
+      {/* â”€â”€ Section: Personal details â”€â”€ */}
+      <div className="expert-pro-section">
+        {/* Không lặp tiêu đề nhóm: tiêu đề bước đã là "Thông tin cá nhân" */}
         <div className="expert-profile-photo">
           <div className="expert-photo-preview">
             {avatarPreview ? (
@@ -170,17 +172,6 @@ export function PersonalInformation({
             </div>
           </div>
         </div>
-      </div>
-
-      {/* â”€â”€ Section: Personal details â”€â”€ */}
-      <div className="expert-pro-section">
-        <div className="expert-pro-section-header">
-          <span className="expert-pro-section-icon">
-            <UserCircle size={18} aria-hidden="true" />
-          </span>
-          <h3 className="expert-pro-section-title">{t('personal.details')}</h3>
-          <span className="expert-pro-section-line" aria-hidden="true" />
-        </div>
         <div className="expert-personal-grid">
           <FormField
             htmlFor="profile-name"
@@ -209,51 +200,65 @@ export function PersonalInformation({
       {/* â”€â”€ Section: Contact information â”€â”€ */}
       <div className="expert-pro-section">
         <div className="expert-pro-section-header">
-          <span className="expert-pro-section-icon expert-pro-section-icon--contact">
-            <Mail size={18} aria-hidden="true" />
-          </span>
           <h3 className="expert-pro-section-title">{t('personal.contact')}</h3>
-          <span className="expert-pro-required-badge">
-            {t('experience.required')}
-          </span>
-          <span className="expert-pro-section-line" aria-hidden="true" />
         </div>
-        <div className="expert-personal-grid">
-          <FormField
-            htmlFor="profile-email"
-            label={t('fields.emailRequired')}
-            error={formErrors.email}
-            errorId="error-email"
-          >
-            {renderInput('email', true, 'email')}
-          </FormField>
-          <FormField
-            htmlFor="profile-phone"
-            label={t('fields.phoneVietnam')}
-            error={formErrors.phone}
-            errorId="error-phone"
-          >
-            <div className="expert-profile-phone">
-              <svg viewBox="0 0 30 20" width="21" height="14" role="img" aria-label={t('fields.vietnam')}>
-                <rect width="30" height="20" fill="#da251d" />
-                <path d="M15 3 16.6 7.8H21.7L17.6 10.8 19.2 15.7 15 12.7 10.8 15.7 12.4 10.8 8.3 7.8H13.4Z" fill="#ffff00" />
-              </svg>
-              {renderInput('phone', true, 'tel')}
-            </div>
-          </FormField>
-        </div>
+        {contactFromAccount ? (
+          <div className="expert-contact-readonly">
+            <dl>
+              <div>
+                <dt>{t('fields.email')}</dt>
+                <dd>{profile.email}</dd>
+              </div>
+              <div>
+                <dt>{t('fields.phone')}</dt>
+                <dd>{formatVietnamPhone(profile.phone)}</dd>
+              </div>
+            </dl>
+            <p>{t('personal.contactFromAccount')}</p>
+          </div>
+        ) : (
+          <div className="expert-personal-grid">
+            <FormField
+              htmlFor="profile-email"
+              label={t('fields.emailRequired')}
+              error={formErrors.email}
+              errorId="error-email"
+            >
+              {renderInput('email', true, 'email')}
+            </FormField>
+            <FormField
+              htmlFor="profile-phone"
+              label={t('fields.phoneVietnam')}
+              error={formErrors.phone}
+              errorId="error-phone"
+            >
+              <div className="expert-profile-phone">
+                <svg
+                  viewBox="0 0 30 20"
+                  width="21"
+                  height="14"
+                  role="img"
+                  aria-label={t('fields.vietnam')}
+                >
+                  <rect width="30" height="20" fill="#da251d" />
+                  <path
+                    d="M15 3 16.6 7.8H21.7L17.6 10.8 19.2 15.7 15 12.7 10.8 15.7 12.4 10.8 8.3 7.8H13.4Z"
+                    fill="#ffff00"
+                  />
+                </svg>
+                {renderInput('phone', true, 'tel')}
+              </div>
+            </FormField>
+          </div>
+        )}
       </div>
 
       {/* â”€â”€ Section: Professional profile â”€â”€ */}
       <div className="expert-pro-section">
         <div className="expert-pro-section-header">
-          <span className="expert-pro-section-icon expert-pro-section-icon--expertise">
-            <Briefcase size={18} aria-hidden="true" />
-          </span>
           <h3 className="expert-pro-section-title">
             {t('personal.professional')}
           </h3>
-          <span className="expert-pro-section-line" aria-hidden="true" />
         </div>
         <div className="expert-personal-grid">
           <FormField
@@ -281,7 +286,7 @@ export function PersonalInformation({
               aria-describedby={
                 formErrors.location ? 'error-location' : undefined
               }
-              className={`${inputCls} ${formErrors.location ? '!border-ex-error-text focus:ring-2 focus:ring-danger/20' : ''}`}
+              className={`${inputCls} ${formErrors.location ? '!border-ex-error-text focus:ring-danger/20 focus:ring-2' : ''}`}
             />
           </FormField>
         </div>
@@ -304,7 +309,7 @@ export function PersonalInformation({
               aria-describedby={`profile-bio-hint profile-bio-count${formErrors.bio ? ' error-bio' : ''}`}
               placeholder={t('fields.bioPlaceholder')}
               rows={4}
-              className={`${inputCls} min-h-[110px] resize-y ${formErrors.bio ? '!border-ex-error-text focus:ring-2 focus:ring-danger/20' : ''}`}
+              className={`${inputCls} min-h-[110px] resize-y ${formErrors.bio ? '!border-ex-error-text focus:ring-danger/20 focus:ring-2' : ''}`}
             />
           </FormField>
           <div className="expert-bio-footer">
@@ -316,7 +321,10 @@ export function PersonalInformation({
               className="expert-bio-count"
               aria-live="off"
             >
-              {t('counts.characters', { length: format.number(profile.bio.length), maximum: format.number(1000) })}
+              {t('counts.characters', {
+                length: format.number(profile.bio.length),
+                maximum: format.number(1000),
+              })}
             </p>
           </div>
         </div>

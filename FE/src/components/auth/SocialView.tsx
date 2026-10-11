@@ -1,8 +1,19 @@
 import { Trans, useTranslation } from 'react-i18next'
+import { Link, useLocation } from 'react-router-dom'
 import { Mail } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { AuthBrandHeader } from './AuthBrandHeader'
 import { GoogleIcon } from './GoogleIcon'
+import {
+  CARD_CLASS,
+  LINK_CLASS,
+  PRIMARY_BUTTON_CLASS,
+  SECONDARY_BUTTON_CLASS,
+} from './EmailLoginForm'
 import { useMotion } from '@/components/ui/motion'
+
+const LEGAL_LINK_CLASS =
+  'rounded-sm text-white/65 underline decoration-white/25 underline-offset-2 transition-colors hover:text-white hover:decoration-white/60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--link)]'
 
 export type SocialViewProps = {
   onContinueEmail: () => void
@@ -10,14 +21,8 @@ export type SocialViewProps = {
   className?: string
 }
 
-const BRAND_FONT = "font-sans"
-
-const BTN =
-  'w-full min-h-[56px] border-0 rounded-[14px] bg-[var(--btn)] text-[var(--btn-ink)] text-[15px] font-medium flex items-center gap-[14px] px-5 cursor-pointer text-left font-sans motion-interactive hover:bg-[var(--btn-hover)] hover:shadow-[0_6px_20px_-6px_color-mix(in_srgb,var(--ui-login-text)_15.0%,transparent)] active:scale-[.995] focus-visible:outline-2 focus-visible:outline-offset-[3px] focus-visible:outline-[var(--accent)] max-[420px]:min-h-[52px] max-[420px]:px-4'
-
-const TERMS_LINK =
-  'text-[var(--link)] font-medium no-underline transition-opacity underline-offset-2 hover:underline hover:opacity-80'
-
+/* Bước đầu của đăng nhập: dùng chung thẻ kính và kiểu nút với bước email
+ * để chuyển bước không bị nhảy bố cục. Email là lựa chọn chính vì Google chưa khả dụng. */
 export function SocialView({
   onContinueEmail,
   onGoogle,
@@ -25,67 +30,65 @@ export function SocialView({
 }: SocialViewProps) {
   const { t } = useTranslation('auth')
   const motion = useMotion({ preset: 'reveal' })
+  // Giữ trang cần quay lại (nếu có) khi chuyển sang đăng ký
+  const returnState = useLocation().state
 
   return (
     <div
       ref={motion}
-      className={cn(
-        'relative z-1 flex w-full max-w-[480px] flex-col items-center text-center motion-interactive',
-        className
-      )}
+      className={cn('relative z-2 w-full max-w-[440px]', className)}
     >
-      <h1
-        className={cn(
-          'mb-2 text-[28px] leading-[1.2] font-bold tracking-[-0.03em] text-white [text-shadow:0_2px_12px_color-mix(in_srgb,var(--ui-overlay-ink)_60.0%,transparent)] max-[420px]:text-[24px]',
-          BRAND_FONT
-        )}
-      >
-        {t('social.title')}
-      </h1>
-      <p className="mb-8 text-sm text-[var(--body)] [text-shadow:0_1px_8px_color-mix(in_srgb,var(--ui-overlay-ink)_60.0%,transparent)]">
-        {t('social.description')}
-      </p>
+      <div className={CARD_CLASS}>
+        <AuthBrandHeader title={t('social.title')} />
 
-      <div className="mb-6 flex w-full flex-col gap-3">
-        <button type="button" onClick={onGoogle} className={BTN}>
-          <span className="grid h-[22px] w-[22px] flex-none place-items-center">
-            <GoogleIcon size={20} />
-          </span>
-          <span className="flex min-w-0 flex-1 flex-col leading-[1.25]">
-            <span className="text-[15px] font-medium text-[var(--btn-ink)]">
-              {t('actions.google')}
-            </span>
-          </span>
+        <button
+          type="button"
+          onClick={onContinueEmail}
+          className={cn(PRIMARY_BUTTON_CLASS, 'font-sans')}
+        >
+          <Mail aria-hidden="true" size={18} />
+          <span>{t('actions.email')}</span>
         </button>
+
+        <div className="my-5 flex items-center gap-4 text-[11.5px] font-medium tracking-[0.08em] text-white/35 uppercase">
+          <span aria-hidden="true" className="h-px flex-1 bg-white/10" />
+          {t('actions.or')}
+          <span aria-hidden="true" className="h-px flex-1 bg-white/10" />
+        </div>
+
+        <button
+          type="button"
+          onClick={onGoogle}
+          className={cn(SECONDARY_BUTTON_CLASS, 'font-sans')}
+        >
+          <GoogleIcon size={18} />
+          <span>{t('actions.google')}</span>
+        </button>
+
+        <p className="mt-5 text-center text-[13px] leading-[1.6] text-white/55">
+          {t('email.noAccount')}{' '}
+          <Link to="/register" state={returnState} className={LINK_CLASS}>
+            {t('email.create')}
+          </Link>
+        </p>
+        <p className="mt-1.5 text-center text-[12.5px] leading-[1.6] text-white/45">
+          {t('register.expertPrompt')}{' '}
+          <Link to="/expert/register" className={LINK_CLASS}>
+            {t('register.expertLink')}
+          </Link>
+        </p>
+
+        <p className="mt-6 border-t border-white/8 pt-5 text-center text-[11.5px] leading-[1.6] text-white/40">
+          <Trans
+            ns="auth"
+            i18nKey="legal"
+            components={{
+              terms: <a href="#" className={LEGAL_LINK_CLASS} />,
+              privacy: <a href="#" className={LEGAL_LINK_CLASS} />,
+            }}
+          />
+        </p>
       </div>
-
-      <div className="mt-1 mb-5 flex w-full items-center gap-4 text-[13px] text-[var(--muted)]">
-        <span aria-hidden="true" className="h-px flex-1 bg-[var(--line)]" />
-        {t('actions.or')}
-        <span aria-hidden="true" className="h-px flex-1 bg-[var(--line)]" />
-      </div>
-
-      <button type="button" onClick={onContinueEmail} className={BTN}>
-        <span className="grid h-[22px] w-[22px] flex-none place-items-center">
-          <Mail size={22} aria-hidden="true" />
-        </span>
-        <span className="flex min-w-0 flex-1 flex-col leading-[1.25]">
-          <span className="text-[15px] font-medium text-[var(--btn-ink)]">
-            {t('actions.email')}
-          </span>
-        </span>
-      </button>
-
-      <p className="mt-8 max-w-[440px] text-[12.5px] leading-[1.6] text-[var(--body)] [text-shadow:0_1px_8px_color-mix(in_srgb,var(--ui-overlay-ink)_60.0%,transparent)]">
-        <Trans
-          ns="auth"
-          i18nKey="legal"
-          components={{
-            terms: <a href="#" className={TERMS_LINK} />,
-            privacy: <a href="#" className={TERMS_LINK} />,
-          }}
-        />
-      </p>
     </div>
   )
 }

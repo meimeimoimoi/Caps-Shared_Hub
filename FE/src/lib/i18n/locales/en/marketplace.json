@@ -1,0 +1,166 @@
+{
+  "meta": {
+    "title": "Expert Marketplace | Shared Hub"
+  },
+  "nav": {
+    "label": "Main navigation",
+    "home": "Home",
+    "marketplace": "Expert Marketplace",
+    "aiAssistant": "AI lookup",
+    "workspace": "AI Workspace"
+  },
+  "skip": "Skip to the expert list",
+  "title": "Choose who verifies <em>your CIT file</em>",
+  "lead": "Each expert is approved separately for every service they offer. Fees and delivery times are approved by a System Admin before they are listed.",
+  "demo": "Illustrative data. Real expert profiles replace it once the Marketplace is connected.",
+  "proof": {
+    "gate1": {
+      "term": "Gate 1",
+      "detail": "Eligible to practise"
+    },
+    "gate2": {
+      "term": "Gate 2",
+      "detail": "Competent for the service"
+    },
+    "escrow": {
+      "term": "Escrow",
+      "detail": "Fee held until you accept"
+    }
+  },
+  "services": {
+    "label": "Service you need",
+    "from": "From",
+    "cit-review": {
+      "name": "CIT draft verification",
+      "deliverable": "The expert reviews your AI draft and issues a Verified version, or a reasoned cannot-verify conclusion."
+    },
+    "cit-compliance": {
+      "name": "CIT compliance assessment",
+      "deliverable": "A review of your finalisation file with a risk list citing the exact articles and clauses."
+    },
+    "cit-consultation": {
+      "name": "CIT situation conclusion",
+      "deliverable": "The expert answers one specific situation with a grounded professional conclusion."
+    },
+    "fastest": "Delivered in",
+    "experts": "Experts"
+  },
+  "filters": {
+    "label": "Filter experts",
+    "search": "Search by name or topic",
+    "searchPlaceholder": "e.g. interest expense",
+    "openOnly": "Only experts taking requests",
+    "sla": "Delivery time",
+    "slaAny": "Any delivery time",
+    "sort": "Sort",
+    "sortRecommended": "Recommended",
+    "sortRating": "Highest rated",
+    "sortPrice": "Lowest fee",
+    "sortSla": "Fastest delivery",
+    "reset": "Clear filters",
+    "slaMax": "Up to {{duration}}"
+  },
+  "results": {
+    "count_one": "{{count}} expert offers this service",
+    "count_other": "{{count}} experts offer this service",
+    "filtered_one": "{{count}} of {{total}} experts match your filters",
+    "filtered_other": "{{count}} of {{total}} experts match your filters"
+  },
+  "row": {
+    "fee": "Fee",
+    "delivery": "Delivery",
+    "rating": "{{rating}} out of 5",
+    "reviews_one": "{{count}} review",
+    "reviews_other": "{{count}} reviews",
+    "cases_one": "{{count}} file done",
+    "cases_other": "{{count}} files done",
+    "years_one": "{{count}} year of experience",
+    "years_other": "{{count}} years of experience",
+    "profile": "View profile",
+    "request": "Send request",
+    "requestFor": "Send a request to {{name}}",
+    "expert": "Expert",
+    "status": "Availability",
+    "topics": "Topics handled"
+  },
+  "sla": {
+    "hours_one": "{{count}} hour",
+    "hours_other": "{{count}} hours",
+    "days_one": "{{count}} day",
+    "days_other": "{{count}} days"
+  },
+  "availability": {
+    "open": "Taking requests",
+    "openDetail": "Responds within {{hours}} hours",
+    "full": "Fully booked",
+    "fullDetail": "Reopens on {{date}}",
+    "paused": "Paused",
+    "pausedDetail": "This expert has paused new requests"
+  },
+  "trail": {
+    "label": "Verification trail",
+    "gate1": "Gate 1",
+    "gate1Detail": "Eligibility, passed on {{date}}",
+    "gate2": "Gate 2",
+    "gate2Detail": "Competency for this service, passed on {{date}}",
+    "price": "Fee {{version}}",
+    "priceDetail": "Fee schedule {{version}} approved",
+    "badge": "Verified"
+  },
+  "empty": {
+    "title": "No experts match these filters",
+    "body": "Try a longer delivery time, a wider fee range, or include experts who are not taking requests.",
+    "noOffers": "No expert has been approved for this service yet."
+  },
+  "profile": {
+    "back": "Expert Marketplace",
+    "loading": "Loading the expert profile",
+    "notFound": "This profile is no longer on the Marketplace",
+    "unavailable": "The profile could not be loaded",
+    "unavailableBody": "The connection was interrupted, so the expert details could not be fetched. Please try again shortly.",
+    "retry": "Try again",
+    "about": "About",
+    "topics": "CIT topics handled",
+    "highlights": "Notable experience",
+    "credential": "Credential",
+    "location": "Based in",
+    "notOffered": "Not approved",
+    "book": {
+      "title": "Request a verification",
+      "service": "Service",
+      "noServices": "This expert has not opened any service for booking.",
+      "fee": "Fee",
+      "delivery": "Delivery time",
+      "response": "Availability",
+      "lock": "The fee, delivery time and policies are locked when you send.",
+      "cta": "Send verification request",
+      "ctaUnavailable": "Expert is not taking requests",
+      "pending": "Sending requests is not connected in this demo, so no request was created and you have not been charged.",
+      "steps": "After you send",
+      "step1": "The expert confirms the work",
+      "step2": "You place 100% of the fee in escrow within 15 minutes",
+      "step3": "The expert starts within 24 hours and delivers on time",
+      "step4": "You accept within 72 hours before the money is released",
+      "ctaSignIn": "Sign in to send a request"
+    },
+    "verifiedSince": "Eligibility verified since {{date}}",
+    "casesLabel": "Files done",
+    "yearsLabel": "Years of experience",
+    "servicesTitle": "Services and fees",
+    "servicesLead": "Each service is competency-checked and priced separately. Pick one to send a request.",
+    "approvedOn": "Passed Gate 2 on {{date}}",
+    "deliveredIn": "Delivered in {{duration}}",
+    "breadcrumb": "Breadcrumb",
+    "notFoundBody": "The expert may have hidden their profile, or the link is wrong. You can pick another verified expert.",
+    "missingCrumb": "Not found",
+    "failedCrumb": "Failed to load",
+    "missingCode": "Profile ID: {{id}}",
+    "home": "Back to home",
+    "browse": "Back to the Marketplace"
+  },
+  "featured": {
+    "from": "From",
+    "title": "Experts taking requests",
+    "lead": "Verified in two rounds and ready to take your request."
+  }
+}

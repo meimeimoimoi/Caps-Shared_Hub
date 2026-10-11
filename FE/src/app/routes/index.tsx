@@ -40,8 +40,8 @@ const DraftGenerationPage = lazy(
 const DraftPreviewPage = lazy(() => import('@/pages/drafts/DraftPreviewPage'))
 const DraftHistoryPage = lazy(() => import('@/pages/drafts/DraftHistoryPage'))
 const LoginPage = lazy(() => import('@/pages/LoginPage'))
-const ResetPasswordPage = lazy(() => import('@/pages/ResetPasswordPage'))
 const RegisterPage = lazy(() => import('@/pages/RegisterPage'))
+const ResetPasswordPage = lazy(() => import('@/pages/ResetPasswordPage'))
 const ExpertRegistrationPage = lazy(
   () => import('@/pages/expert-registration/ExpertRegistrationPage')
 )
@@ -159,9 +159,8 @@ function Fallback() {
 // Data router enables a real navigation blocker for unsaved input, including browser Back.
 function RouteMotion() {
   const location = useLocation()
-  // The homepage is a pixel port of a standalone template; it opts out of the
-  // app's page transition (fade entrance + transformed ancestor breaks its
-  // position:fixed modal).
+  // Fixed navigation and the sticky video hero must not have a transformed
+  // ancestor from the app's page transition.
   if (location.pathname === '/') return <Outlet />
   return (
     <MotionPage replayKey={location.pathname}>
@@ -311,7 +310,15 @@ const router = createBrowserRouter(
           </ProtectedRoute>
         }
       />
-      <Route path="/ai-assistant" element={<AiAssistantPage/>}/>
+      {/* F3: chat tính Credit theo tài khoản nên phải đăng nhập; câu hỏi gõ ở trang chủ được giữ qua bước đăng nhập */}
+      <Route
+        path="/ai-assistant"
+        element={
+          <ProtectedRoute>
+            <AiAssistantPage />
+          </ProtectedRoute>
+        }
+      />
       {/* Đường dẫn cũ (viết sai chính tả) giữ lại để link đã chia sẻ vẫn mở được */}
       <Route path="/ai-assitant" element={<Navigate to="/ai-assistant" replace />} />
       <Route path="*" element={<NotFoundPage />} />

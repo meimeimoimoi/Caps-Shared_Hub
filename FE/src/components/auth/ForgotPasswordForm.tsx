@@ -6,6 +6,7 @@ import { isValidEmail } from '@/utils/validators'
 import { authApi } from '@/features/auth/api/authApi'
 import { useMotion } from '@/components/ui/motion'
 import { BackButton } from './BackButton'
+import { AuthCardHeader } from './AuthCardHeader'
 import {
   CARD_CLASS,
   ERROR_CLASS,
@@ -62,9 +63,9 @@ export function ForgotPasswordForm({ onBack }: { onBack: () => void }) {
   return (
     <div ref={motion} className="relative z-2 w-full max-w-[440px]">
       <div className={CARD_CLASS}>
-        <BackButton onClick={onBack} />
         {sent ? (
           <div className="pt-4 text-center" role="status">
+            <BackButton onClick={onBack} />
             <MailCheck
               aria-hidden="true"
               size={40}
@@ -97,14 +98,11 @@ export function ForgotPasswordForm({ onBack }: { onBack: () => void }) {
           </div>
         ) : (
           <>
-            <div className="mb-7 text-center">
-              <h1 className={cn(TITLE_CLASS, 'font-sans')}>
-                {t('forgot.title')}
-              </h1>
-              <p className="text-[13px] leading-[1.5] text-[var(--body)]">
-                {t('forgot.description')}
-              </p>
-            </div>
+            <AuthCardHeader
+              title={t('forgot.title')}
+              description={t('forgot.description')}
+              onBack={onBack}
+            />
             <form onSubmit={submit} noValidate>
               <div className="mb-5 text-left">
                 <label htmlFor={id} className={cn(LABEL_CLASS, 'font-sans')}>

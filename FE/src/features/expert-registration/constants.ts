@@ -7,6 +7,14 @@ export const steps = [
   'review.heading',
 ] as const
 
+// Nhãn ngắn một dòng cho thanh bước; tên đầy đủ (steps) vẫn dùng cho tiêu đề và trình đọc màn hình
+export const stepShortLabels = [
+  'stepper.personal',
+  'stepper.experience',
+  'stepper.documents',
+  'stepper.review',
+] as const
+
 export const criteria: readonly string[] = [
   'Legal eligibility',
   'Professional qualifications',

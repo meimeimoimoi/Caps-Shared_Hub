@@ -1,15 +1,14 @@
+import type { ExpertBio, ExpertBioInput } from '@/features/expert-bio/types'
 import { useState, type InputHTMLAttributes } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ArrowUpRight, Save } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useExpertContext } from '@/features/expert-context'
-import { ExpertBioView } from '@/features/expert-bio/ExpertBioView'
+import { ExpertBioView } from '@/features/expert-bio/components/ExpertBioView'
 import {
   useExpertBio,
   useSaveExpertBio,
-  type ExpertBio,
-  type ExpertBioInput,
-} from '@/features/expert-bio/useExpertBio'
+} from '@/features/expert-bio/hooks/useExpertBio'
 import {
   DashboardSectionState,
   DashboardSkeleton,

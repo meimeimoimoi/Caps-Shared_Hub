@@ -1,5 +1,5 @@
 {
-"validation": {
+  "validation": {
     "required": "Trường này là bắt buộc.",
     "email": "Vui lòng nhập địa chỉ email hợp lệ.",
     "validValue": "Vui lòng nhập giá trị hợp lệ.",
@@ -81,11 +81,39 @@
     "impact": "Tạo nên giá trị.",
     "description": "Tham gia Shared Hub với vai trò chuyên gia thuế và kế toán, chia sẻ kiến thức với cộng đồng rộng hơn.",
     "photo": "Hai chuyên gia thuế và kế toán cùng làm việc với tài liệu tài chính trong văn phòng có ánh sáng tự nhiên",
-    "review": "Việc phê duyệt chuyên gia bao gồm đánh giá điều kiện tham gia và năng lực theo từng dịch vụ."
+    "review": "Việc phê duyệt chuyên gia bao gồm đánh giá điều kiện tham gia và năng lực theo từng dịch vụ.",
+    "eyebrow": "Dành cho chuyên gia thuế – kế toán",
+    "stepsTitle": "Quy trình trở thành chuyên gia",
+    "steps": {
+      "account": {
+        "title": "Tạo tài khoản",
+        "body": "Họ tên, số điện thoại và email. Khoảng 2 phút."
+      },
+      "dossier": {
+        "title": "Nộp hồ sơ năng lực",
+        "body": "Kinh nghiệm, chuyên môn và tài liệu minh chứng."
+      },
+      "gate1": {
+        "title": "Vòng 1: Xét điều kiện tham gia",
+        "body": "Đối chiếu hồ sơ và minh chứng với điều kiện tham gia."
+      },
+      "gate2": {
+        "title": "Vòng 2: Đánh giá năng lực",
+        "body": "Xét theo từng dịch vụ: kiến thức thuế TNDN, rà soát bản nháp AI và xét đoán nghề nghiệp."
+      },
+      "pricing": {
+        "title": "Thiết lập giá và nhận việc",
+        "body": "Được duyệt thì đặt giá từng dịch vụ và nhận hồ sơ."
+      }
+    }
   },
   "account": {
     "heading": "Tạo tài khoản chuyên gia",
-    "registered": "Bạn đã đăng ký?"
+    "registered": "Bạn đã đăng ký?",
+    "notExpert": "Bạn cần tư vấn thuế, không phải chuyên gia?",
+    "customerSignup": "Tạo tài khoản khách hàng",
+    "subtitle": "Bước 1 trong quy trình. Sau đó bạn sẽ hoàn thiện hồ sơ năng lực.",
+    "namePlaceholder": "Nguyễn Văn An"
   },
   "actions": {
     "signIn": "Đăng nhập",
@@ -127,7 +155,7 @@
   "password": {
     "required": "Mật khẩu *",
     "confirmRequired": "Xác nhận mật khẩu *",
-    "confirm": "Xác nhận mật khẩu",
+    "confirm": "Nhập lại mật khẩu",
     "placeholder": "Nhập mật khẩu",
     "strength": "Độ mạnh mật khẩu",
     "high": "Mạnh",
@@ -135,16 +163,27 @@
     "low": "Yếu",
     "empty": "Chưa nhập",
     "complete": "Đã đáp ứng tất cả yêu cầu mật khẩu",
-    "guidance": "Từ 12 ký tự; có chữ hoa, chữ thường, số và ký tự đặc biệt",
+    "guidance": "Ít nhất 12 ký tự, gồm chữ hoa, chữ thường, chữ số và ký tự đặc biệt.",
     "met": "Đã đạt: ",
-    "notMet": "Chưa đạt: "
+    "notMet": "Chưa đạt: ",
+    "label": "Mật khẩu",
+    "confirmLabel": "Xác nhận mật khẩu",
+    "short": {
+      "length": "12+ ký tự",
+      "uppercase": "Chữ hoa",
+      "lowercase": "Chữ thường",
+      "number": "Chữ số",
+      "symbol": "Ký tự đặc biệt"
+    },
+    "requirementsLabel": "Yêu cầu mật khẩu",
+    "create": "Tạo mật khẩu mới"
   },
   "personal": {
     "heading": "Thông tin cá nhân",
     "details": "Thông tin cá nhân",
     "contact": "Thông tin liên hệ",
     "professional": "Hồ sơ chuyên môn",
-    "guidance": "Chia sẻ thông tin nghề nghiệp của bạn. Các trường bắt buộc được đánh dấu hoa thị.",
+    "guidance": "Giới thiệu bạn với người đánh giá hồ sơ. Trường có dấu * là bắt buộc.",
     "photo": "Ảnh đại diện",
     "preview": "Xem trước ảnh đại diện",
     "upload": "Tải ảnh lên",
@@ -152,7 +191,8 @@
     "change": "Đổi ảnh",
     "photoFormats": "JPG, PNG, WebP · tối đa 5 MB",
     "photoError": "Chọn ảnh JPG, PNG hoặc WebP không quá 5 MB.",
-    "profile": "Ảnh đại diện"
+    "profile": "Ảnh đại diện",
+    "contactFromAccount": "Lấy từ tài khoản bạn vừa tạo."
   },
   "experience": {
     "heading": "Kinh nghiệm chuyên môn",
@@ -173,7 +213,10 @@
     "missing": "Chưa cung cấp",
     "issue": "Một thông tin cần hoàn thiện",
     "issues": "Thông tin cần hoàn thiện",
-    "fix": "Thông tin của bạn vẫn được giữ nguyên. Cập nhật các mục sau để tiếp tục."
+    "fix": "Thông tin của bạn vẫn được giữ nguyên. Cập nhật các mục sau để tiếp tục.",
+    "yearsUnit": "năm",
+    "cvRequired": "Hồ sơ kinh nghiệm (CV) *",
+    "issueCount": "{{count}} thông tin cần hoàn thiện"
   },
   "documents": {
     "heading": "Tài liệu minh chứng",
@@ -186,7 +229,7 @@
     "cv": "Chọn CV của bạn",
     "choose": "Chọn tài liệu minh chứng",
     "drop": "hoặc kéo và thả tại đây",
-    "formats": "PDF, JPG hoặc PNG · tối đa 10 MB mỗi file (demo)",
+    "formats": "PDF, JPG hoặc PNG · tối đa 10 MB mỗi file",
     "local": "được chọn trên thiết bị",
     "countLabel": "Tài liệu",
     "countNote": "Các tài liệu đã chọn đang chờ xác minh. Số lượng file không thể hiện việc đã được phê duyệt."
@@ -200,7 +243,7 @@
   "supplement": {
     "guidance": "Năng lực chuyên môn: cung cấp bản sao rõ ràng hoặc làm rõ thông tin trong minh chứng hiện có. Đây là yêu cầu minh họa.",
     "document": "Tài liệu thay thế",
-    "formats": "PDF, JPG hoặc PNG · tối đa 10 MB (demo)",
+    "formats": "PDF, JPG hoặc PNG · tối đa 10 MB",
     "choose": "Chọn tài liệu thay thế",
     "fileError": "Chọn file PDF, JPG hoặc PNG không quá 10 MB.",
     "explanation": "Nội dung giải thích"
@@ -258,5 +301,11 @@
     "steps": "Các bước đăng ký",
     "policies": "Hỗ trợ và chính sách",
     "scenario": "Xem thử kịch bản"
+  },
+  "stepper": {
+    "personal": "Cá nhân",
+    "experience": "Kinh nghiệm",
+    "documents": "Minh chứng",
+    "review": "Nộp hồ sơ"
   }
 }
