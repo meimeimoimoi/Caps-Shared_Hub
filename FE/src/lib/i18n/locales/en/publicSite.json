@@ -28,13 +28,15 @@
     "login": "Sign in",
     "expertSignup": "Register as an expert",
     "disclaimer": "<b>Note:</b> AI content is a reference draft, not legal advice. Have an expert verify it before filing.",
-    "copyright": "© {{year}} Shared Hub"
+    "copyright": "© {{year}} Shared Hub",
+    "pricing": "Pricing"
   },
   "links": {
     "label": "Main navigation",
     "home": "Home",
     "marketplace": "Expert Marketplace",
     "aiAssistant": "AI lookup",
-    "workspace": "AI Workspace"
+    "workspace": "AI Workspace",
+    "pricing": "Pricing"
   }
 }

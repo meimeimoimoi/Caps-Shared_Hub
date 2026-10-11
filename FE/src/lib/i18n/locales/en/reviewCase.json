@@ -1,0 +1,433 @@
+{
+  "pageTitle": "Review case",
+  "retry": "Try again",
+  "marketplace": "Expert marketplace",
+  "demo": {
+    "disclosure": "Demo · Sample data. Actions only change state in this browser and reset when you switch scenarios.",
+    "scenarios": {
+      "PENDING_EXPERT_RESPONSE": "1 · Awaiting expert",
+      "EXPERT_DECLINED": "1b · Expert declined",
+      "AWAITING_PAYMENT": "2 · Awaiting payment (15 min)",
+      "CANCELLED_UNPAID": "2b · Cancelled, unpaid",
+      "PAYMENT_CONFIRMED": "3 · Paid, awaiting start",
+      "CANCELLED": "3b · Expert did not start",
+      "IN_REVIEW": "3 · In review",
+      "AWAITING_USER_INFORMATION": "4 · Awaiting your information",
+      "VERIFIED": "5 · Delivered · VERIFIED",
+      "CANNOT_VERIFY": "5 · Delivered · CANNOT_VERIFY",
+      "COMPLETED": "6 · Completed · you accepted",
+      "AUTO_CONFIRMED": "6 · Completed · auto-confirmed",
+      "DISPUTED": "7 · Disputed",
+      "RESOLVED": "7 · Dispute resolved",
+      "USER_CANCELLED": "4 · Terminated · you cancelled",
+      "USER_NON_RESPONSE": "4 · Terminated · no response",
+      "EXPERT_ABANDON": "4 · Terminated · expert abandoned",
+      "SYSTEM_ERROR": "4 · Terminated · system error"
+    }
+  },
+  "status": {
+    "PENDING_EXPERT_RESPONSE": "Awaiting expert",
+    "EXPERT_DECLINED": "Expert declined",
+    "AWAITING_PAYMENT": "Awaiting payment",
+    "CANCELLED_UNPAID": "Cancelled · unpaid",
+    "PAYMENT_CONFIRMED": "Awaiting review start",
+    "CANCELLED": "Cancelled · refunded",
+    "IN_REVIEW": "In review",
+    "AWAITING_USER_INFORMATION": "Awaiting your information",
+    "AWAITING_ACCEPTANCE": "Awaiting acceptance",
+    "DISPUTED": "Disputed",
+    "RESOLVED": "Dispute resolved",
+    "COMPLETED": "Completed",
+    "TERMINATED": "Terminated"
+  },
+  "rail": {
+    "accept": "Expert accepts",
+    "payment": "Payment",
+    "start": "Start",
+    "review": "Review",
+    "acceptance": "Acceptance"
+  },
+  "meta": {
+    "expert": "Expert",
+    "service": "Service",
+    "fee": "Service fee",
+    "requested": "Requested"
+  },
+  "countdown": {
+    "ms": "{{m}}:{{s}}",
+    "hm": "{{h}} h {{m}} min",
+    "dh": "{{d}} d {{h}} h",
+    "left": "left",
+    "until": "Due {{date}}",
+    "expired": "Expired"
+  },
+  "next": {
+    "you": "Your move",
+    "expert": "Next · Expert",
+    "admin": "Next · Dispute resolution",
+    "closed": "Case closed"
+  },
+  "panel": {
+    "PENDING_EXPERT_RESPONSE": {
+      "title": "Waiting for {{name}} to accept",
+      "body": "The expert is reviewing the service scope, review package and timeline. You don't pay anything yet. Once the expert accepts, you have 15 minutes to pay and hold the slot."
+    },
+    "EXPERT_DECLINED": {
+      "title": "{{name}} declined the request",
+      "body": "The slot has been released and you were not charged. You can send this file to another expert on the marketplace.",
+      "cta": "Choose another expert"
+    },
+    "AWAITING_PAYMENT": {
+      "title": "Pay to hold your review slot",
+      "body": "{{name}} accepted the case. The slot is temporarily locked for you; if time runs out, the request is cancelled and the slot released.",
+      "timer": "Slot hold",
+      "amount": "Amount due",
+      "method": "Bank transfer via PayOS",
+      "cta": "Pay {{amount}}",
+      "escrow": "Shared Hub holds your payment until you accept the result."
+    },
+    "CANCELLED_UNPAID": {
+      "title": "Request cancelled: payment not received",
+      "body": "The 15-minute hold expired. The expert's slot has been released and you were not charged.",
+      "cta": "Send the request again"
+    },
+    "PAYMENT_CONFIRMED": {
+      "title": "Payment held, waiting for the expert to start",
+      "body": "The expert must confirm the review start before the deadline. If they don't, the case is cancelled and you get a 100% refund.",
+      "due": "Start deadline"
+    },
+    "CANCELLED": {
+      "title": "Cancelled · expert did not start on time",
+      "body": "Your payment is refunded in full under the refund policy."
+    },
+    "IN_REVIEW": {
+      "title": "The expert is reviewing your file",
+      "body": "You'll be notified if the expert needs more information and when the result is delivered.",
+      "due": "Delivery deadline",
+      "progress": "Review progress",
+      "cancel": "Request cancellation"
+    },
+    "AWAITING_USER_INFORMATION": {
+      "title": "The expert needs more information",
+      "from": "Request from {{name}} · {{date}}",
+      "items": "Please provide",
+      "due": "Response deadline",
+      "warning": "If you don't respond within 72 hours, the case is terminated and the expert still receives 80% of the fee.",
+      "response": "Your response",
+      "responseHint": "Answer each item the expert asked for. Up to 2,000 characters.",
+      "files": "Attachments",
+      "filesHint": "PDF, Excel or images, up to 20 MB each.",
+      "required": "Enter a response or attach at least one document.",
+      "submit": "Send response",
+      "answered": "Your response"
+    },
+    "AWAITING_ACCEPTANCE": {
+      "title": "Result delivered: please review and accept",
+      "body": "Review the result below, then accept it or report an issue. If you take no action before the deadline, the case is confirmed automatically.",
+      "due": "Acceptance deadline",
+      "accept": "Accept result",
+      "report": "Report an issue",
+      "principle": "You pay for the expert's review work; the fee does not depend on the file being VERIFIED."
+    },
+    "COMPLETED": {
+      "title": "Case completed",
+      "USER_ACCEPTED": "You accepted the result. The payment has been settled.",
+      "AUTO_CONFIRMED": "The acceptance window ended, so the case was confirmed and settled automatically."
+    },
+    "DISPUTED": {
+      "title": "Your complaint is under review",
+      "body": "The payment stays on hold and is not paid out to the expert until a decision is made.",
+      "issue": "Issue",
+      "description": "Details",
+      "opened": "Submitted",
+      "sla": "A Dispute Admin responds within {{hours}} hours.",
+      "escalation": "If the dispute needs professional judgment, it is escalated to an independent expert reviewer; admins do not replace the expert's professional conclusion."
+    },
+    "RESOLVED": {
+      "title": "The dispute has been decided",
+      "decision": "Decision",
+      "reason": "Reason",
+      "decidedBy": "Decided by",
+      "decidedAt": "Decided at"
+    },
+    "TERMINATED": {
+      "title": "Case terminated",
+      "USER_NON_RESPONSE": "You did not respond to the information request within 72 hours.",
+      "USER_CANCELLED": "You cancelled after the expert started the review.",
+      "EXPERT_ABANDON": "The expert did not deliver within the service deadline.",
+      "SYSTEM_ERROR": "A system error prevented the case from continuing."
+    }
+  },
+  "tasks": {
+    "T1": "Review information and evidence",
+    "T2": "Review AI draft",
+    "T3": "Verify legal basis",
+    "T4": "Request information if needed",
+    "T5": "Create expert revision",
+    "T6": "Professional conclusion",
+    "done": "Done",
+    "current": "In progress",
+    "todo": "Not started"
+  },
+  "result": {
+    "title": "Review result",
+    "VERIFIED": "Verified",
+    "CANNOT_VERIFY": "Cannot verify",
+    "by": "{{name}} · delivered {{date}}",
+    "verifiedVersion": "Verified version",
+    "immutable": "Immutable · linked to case {{id}}",
+    "conclusion": "Professional conclusion",
+    "notes": "Notes and citations",
+    "summary": "Review summary",
+    "rationale": "Professional rationale",
+    "findings": "Findings"
+  },
+  "settlement": {
+    "title": "Settlement",
+    "gross": "Paid",
+    "refund": "Refunded to you",
+    "expert": "Expert payout",
+    "platform": "Platform fee",
+    "policy": "Policy applied",
+    "settledAt": "Settled at",
+    "ref": "Transaction ref",
+    "once": "Each case has exactly one final settlement for this payment.",
+    "types": {
+      "NORMAL": "Normal completion",
+      "TERMINATION": "Termination",
+      "DISPUTE": "After dispute"
+    },
+    "rules": {
+      "USER_ACCEPTED": "Accepted by you",
+      "AUTO_CONFIRMED": "Auto-confirmed after 72 hours",
+      "USER_NON_RESPONSE": "No response to information request",
+      "USER_CANCELLED": "Cancelled by you after start",
+      "EXPERT_START_TIMEOUT": "Expert did not start on time",
+      "EXPERT_ABANDON": "Expert abandoned",
+      "SYSTEM_ERROR": "System error",
+      "RESOLVE_REFUND_USER": "Refund to you",
+      "RESOLVE_PAY_EXPERT": "Pay the expert",
+      "RESOLVE_PARTIAL": "Partial settlement"
+    }
+  },
+  "package": {
+    "title": "Review package",
+    "locked": "Locked {{date}}",
+    "pending": "The review package is locked when the expert accepts.",
+    "aiDraft": "AI draft",
+    "snapshot": "Input snapshot",
+    "template": "Template",
+    "citations": "Citations",
+    "documents": "Supporting documents",
+    "note": "Versions you create after the lock do not replace the package the expert is reviewing."
+  },
+  "funds": {
+    "title": "Payment",
+    "none": "Not paid",
+    "held": "Held",
+    "locked": "On hold · dispute",
+    "settled": "Settled"
+  },
+  "timeline": {
+    "title": "Case log",
+    "actors": {
+      "USER": "You",
+      "EXPERT": "Expert",
+      "SYSTEM": "System",
+      "ADMIN": "Admin"
+    },
+    "events": {
+      "requested": "Sent review request",
+      "declined": "Declined the request",
+      "accepted": "Accepted · package locked",
+      "paymentExpired": "Payment expired · slot released",
+      "paid": "Payment received · held",
+      "startTimeout": "Expert did not start on time",
+      "started": "Started the review",
+      "infoRequested": "Requested more information",
+      "infoAnswered": "Answered the information request",
+      "delivered": "Delivered the result",
+      "userAccepted": "Accepted the result",
+      "autoConfirmed": "Auto-confirmed completion",
+      "disputed": "Reported an issue",
+      "resolved": "Decided the dispute",
+      "terminated": "Terminated the case"
+    }
+  },
+  "dialogs": {
+    "accept": {
+      "title": "Accept the result?",
+      "body": "The case moves to Completed and the payment is settled: 80% to the expert, 20% platform fee. After accepting, you can no longer report an issue.",
+      "confirm": "Accept"
+    },
+    "cancel": {
+      "title": "Cancel a case in review?",
+      "body": "The expert has already started, so the case is settled under the cancellation policy:",
+      "confirm": "Confirm cancellation",
+      "keep": "Continue review"
+    },
+    "report": {
+      "title": "Report an issue with the result",
+      "body": "The payment stays on hold until the dispute is decided.",
+      "issue": "Issue type",
+      "issuePlaceholder": "Choose an issue type",
+      "issues": {
+        "DELIVERABLE_INCOMPLETE": "Missing deliverables",
+        "SLA_BREACH": "Service deadline breached",
+        "OBLIGATION_NOT_MET": "Required obligation not performed",
+        "PROFESSIONAL_JUDGMENT": "Disagree with the professional conclusion"
+      },
+      "description": "Details",
+      "descriptionHint": "Describe what is wrong, where it appears in the result and the supporting evidence.",
+      "issueRequired": "Choose an issue type.",
+      "descriptionRequired": "Write at least 20 characters so the Dispute Admin has enough to review.",
+      "submit": "Submit complaint"
+    }
+  },
+  "toast": {
+    "paid": "Payment received. The funds are on hold.",
+    "answered": "Response sent. The case is back in review.",
+    "accepted": "Result accepted. Case completed.",
+    "disputed": "Complaint submitted. The payment stays on hold.",
+    "cancelled": "Case cancelled and settled under the cancellation policy.",
+    "expired": "The slot hold expired. The request was cancelled.",
+    "rated": "Rating submitted. Thank you."
+  },
+  "notFound": {
+    "title": "Case not found",
+    "body": "This case ID doesn't exist or you don't have access to it."
+  },
+  "request": {
+    "title": "Send a review request",
+    "lead": "Choose the AI file you want an expert to verify. You don't pay until the expert accepts.",
+    "drafts": "File to review",
+    "draftMeta": "{{aiDraft}} · {{snapshot}} · {{template}}",
+    "draftCounts": "{{citations}} citations · {{documents}} documents",
+    "draftRequired": "Choose a file to send for review.",
+    "noDrafts": "You don't have an AI file ready for review yet.",
+    "noDraftsCta": "Create a file",
+    "scope": "Scope notes for the expert",
+    "scopeHint": "Optional. Point out what you want the expert to focus on, up to 1,000 characters.",
+    "files": "Additional documents",
+    "filesHint": "Optional. PDF, Excel or images, up to 20 MB each.",
+    "consent": "I understand: once the expert accepts, I have 15 minutes to pay; the payment is held until I accept the result; the fee pays for the review work and does not depend on a VERIFIED outcome.",
+    "consentRequired": "Confirm the terms to send the request.",
+    "submit": "Send review request",
+    "summary": "Request summary",
+    "priceOnRequest": "Quoted later",
+    "nextTitle": "What happens next",
+    "steps": {
+      "s1": "The expert reviews the package and accepts or declines.",
+      "s2": "You have 15 minutes to pay and hold the slot.",
+      "s3": "The expert reviews and delivers; you have 72 hours to accept."
+    },
+    "serviceMissing": "This service is no longer open for booking. Choose again on the expert's profile.",
+    "expertMissing": "Couldn't load the expert's profile.",
+    "backToProfile": "Back to expert profile"
+  },
+  "nav": {
+    "label": "Client workspace",
+    "work": "Work",
+    "account": "Account",
+    "dashboard": "Overview",
+    "cases": "Review cases",
+    "drafts": "AI files",
+    "assistant": "AI assistant",
+    "marketplace": "Expert marketplace",
+    "wallet": "Wallet & credits",
+    "profile": "My account"
+  },
+  "dashboard": {
+    "greeting": "Hello {{name}}",
+    "lead": "Track your review cases, pending actions and credits.",
+    "todo": "Waiting on you",
+    "todoEmpty": "Nothing needs your action right now.",
+    "recent": "Recent cases",
+    "viewAll": "View all",
+    "quick": "Quick start",
+    "newDraft": "Create an AI file",
+    "findExpert": "Find a review expert",
+    "askAi": "Ask the AI assistant",
+    "credits": "Available credits",
+    "topUp": "Open wallet",
+    "cta": {
+      "AWAITING_PAYMENT": "Pay",
+      "AWAITING_USER_INFORMATION": "Send information",
+      "AWAITING_ACCEPTANCE": "Review result"
+    }
+  },
+  "cases": {
+    "lead": "Every review request you've sent, from awaiting the expert to final settlement.",
+    "new": "Find an expert",
+    "filterLabel": "Filter by status",
+    "filters": {
+      "all": "All",
+      "action": "Waiting on you",
+      "active": "In progress",
+      "closed": "Closed"
+    },
+    "cols": {
+      "case": "Case",
+      "expert": "Expert",
+      "status": "Status",
+      "updated": "Updated",
+      "fee": "Fee"
+    },
+    "empty": "No cases in this view.",
+    "emptyAll": "You haven't sent a review request yet."
+  },
+  "wallet": {
+    "lead": "Credits pay for the AI assistant and draft downloads. Expert review fees are paid separately per case.",
+    "available": "Available credits",
+    "held": "On hold",
+    "heldHint": "Held when you ask a question, charged only if it's answered.",
+    "unit_one": "{{count}} credit",
+    "unit_other": "{{count}} credits",
+    "packages": "Credit packages",
+    "recommended": "Recommended",
+    "priceTbd": "Price not set",
+    "buy": "Top up via PayOS",
+    "buyUnavailable": "This package has no price yet, so it isn't on sale.",
+    "rates": "Credit pricing",
+    "free": "Free",
+    "tbd": "Not set",
+    "rateCols": {
+      "action": "Action",
+      "when": "Charged when",
+      "credits": "Credits"
+    },
+    "ledger": "Credit history",
+    "ledgerCols": {
+      "date": "Time",
+      "entry": "Transaction",
+      "amount": "Change",
+      "balance": "Balance"
+    },
+    "types": {
+      "TOPUP": "Top-up",
+      "HOLD": "Hold",
+      "CAPTURE": "Charge",
+      "RELEASE": "Hold released"
+    },
+    "escrow": "Review fees on hold",
+    "escrowEmpty": "No payments are on hold.",
+    "escrowNote": "Shared Hub holds review fees until you accept the result or a dispute is decided."
+  },
+  "rating": {
+    "title": "Rate the expert",
+    "hint": "Ratings are shown publicly on the expert's profile.",
+    "star_one": "{{count}} star",
+    "star_other": "{{count}} stars",
+    "comment": "Comment",
+    "commentHint": "Optional. Up to 1,000 characters.",
+    "required": "Choose a star rating to submit.",
+    "submit": "Submit rating",
+    "yours": "Your rating"
+  },
+  "files": {
+    "choose": "Choose files",
+    "none": "No file chosen",
+    "count_one": "{{count}} file selected",
+    "count_other": "{{count}} files selected"
+  }
+}

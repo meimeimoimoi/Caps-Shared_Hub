@@ -19,6 +19,7 @@
     "preview": "Demo preview"
   },
   "navigation": {
+    "home": "Shared Hub home",
     "open": "Open navigation",
     "close": "Close navigation",
     "expand": "Expand sidebar",

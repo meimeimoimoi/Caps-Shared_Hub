@@ -41,8 +41,13 @@ export function AppSidebar({
   return (
     <div className="on-ink flex min-h-0 flex-1 flex-col text-[var(--ui-sidebar-text)]">
       <div className="mb-9 flex shrink-0 items-center gap-2 px-1">
-        {/* Hai logo chồng nhau và mờ chéo theo chiều rộng sidebar (sidebar-rail) */}
-        <div className="relative h-11 min-w-0 flex-1 overflow-hidden">
+        {/* Logo về landing page. Hai logo chồng nhau và mờ chéo theo chiều rộng sidebar (sidebar-rail) */}
+        <Link
+          to="/"
+          onClick={onNavigate}
+          aria-label={t('navigation.home')}
+          className="rounded-control relative h-11 min-w-0 flex-1 overflow-hidden transition-opacity hover:opacity-85"
+        >
           <span
             aria-hidden={collapsed}
             className={`sidebar-fade absolute inset-y-0 left-0 ${collapsed ? 'opacity-0' : 'opacity-100'}`}
@@ -57,7 +62,7 @@ export function AppSidebar({
             height={41}
             className={`sidebar-fade absolute top-px left-1/2 h-[41px] w-9 -translate-x-1/2 ${collapsed ? 'opacity-100' : 'opacity-0'}`}
           />
-        </div>
+        </Link>
         {onClose && (
           <button
             type="button"

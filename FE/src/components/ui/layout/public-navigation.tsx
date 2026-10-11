@@ -74,6 +74,9 @@ export function PublicNavigation({
         <li>
           <NavLink to="/marketplace">{t('links.marketplace')}</NavLink>
         </li>
+        <li>
+          <NavLink to="/pricing">{t('links.pricing')}</NavLink>
+        </li>
       </ul>
       <div className="nav-actions">
         <Link className="nav-login" to="/login">
