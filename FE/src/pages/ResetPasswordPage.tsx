@@ -12,7 +12,7 @@ import { cn } from '@/lib/utils'
 import { authApi } from '@/features/auth/api/authApi'
 import { passwordRequirements } from '@/features/auth'
 import { VideoBackground } from '@/components/auth/VideoBackground'
-import { AuthLanguageToggle } from '@/components/auth/AuthLanguageToggle'
+import { LanguageToggle as AuthLanguageToggle } from '@/components/ui/layout/language-toggle'
 import {
   CARD_CLASS,
   ERROR_CLASS,

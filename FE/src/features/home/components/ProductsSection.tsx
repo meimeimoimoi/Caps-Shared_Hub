@@ -96,7 +96,7 @@ export function ProductsSection() {
             <p>
               <HomeText i18nKey="products.experts.desc" />
             </p>
-            <Link className="more" to="/login">
+            <Link className="more" to="/marketplace">
               {t('products.experts.cta')}
               <span aria-hidden="true">→</span>
             </Link>

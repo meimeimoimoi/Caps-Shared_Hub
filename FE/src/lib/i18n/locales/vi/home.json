@@ -177,5 +177,16 @@
     "disclaimer": "<b>Lưu ý:</b> Nội dung do AI tạo chỉ là bản nháp tham khảo, không phải tư vấn pháp lý. Hãy để chuyên gia xác thực trước khi nộp.",
     "copyright": "© {{year}} Shared Hub"
   },
-  "toTop": "Về đầu trang"
+  "toTop": "Về đầu trang",
+  "market": {
+    "title": "Chuyên gia <em>đã qua hai vòng</em> thẩm định",
+    "lead": "Chọn dịch vụ, so sánh phí và thời hạn bàn giao, rồi gửi yêu cầu cho chuyên gia đang nhận việc.",
+    "cta": "Xem toàn bộ Sàn chuyên gia",
+    "servicesLabel": "Dịch vụ trên Sàn",
+    "from": "Phí từ",
+    "fastest": "Bàn giao từ",
+    "experts": "Chuyên gia",
+    "featured": "Chuyên gia được đánh giá cao",
+    "profile": "Xem hồ sơ"
+  }
 }

@@ -177,5 +177,16 @@
     "disclaimer": "<b>Note:</b> AI content is a reference draft, not legal advice. Have an expert verify it before filing.",
     "copyright": "© {{year}} Shared Hub"
   },
-  "toTop": "Back to top"
+  "toTop": "Back to top",
+  "market": {
+    "title": "Experts <em>verified in two rounds</em>",
+    "lead": "Pick a service, compare fees and delivery times, then send a request to an expert who is taking work.",
+    "cta": "Browse the Expert Marketplace",
+    "servicesLabel": "Services on the Marketplace",
+    "from": "From",
+    "fastest": "Delivered in",
+    "experts": "Experts",
+    "featured": "Highly rated experts",
+    "profile": "View profile"
+  }
 }

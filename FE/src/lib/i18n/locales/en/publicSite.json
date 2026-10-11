@@ -1,0 +1,40 @@
+{
+  "brand": {
+    "home": "Shared Hub, back to home",
+    "name": "Shared Hub"
+  },
+  "nav": {
+    "label": "Main navigation",
+    "process": "How it works",
+    "products": "Products",
+    "escrow": "Escrow",
+    "faq": "FAQ",
+    "login": "Sign in",
+    "register": "Sign up",
+    "askAi": "Ask the AI assistant",
+    "askAiShort": "Ask AI"
+  },
+  "footer": {
+    "tagline": "Corporate income tax documents: <b>AI drafts</b>, <b>experts verify</b>.",
+    "products": "Products",
+    "learn": "Learn more",
+    "account": "Account",
+    "lookup": "AI research",
+    "workspace": "Draft workspace",
+    "experts": "Expert marketplace",
+    "process": "How it works",
+    "escrow": "Secure escrow",
+    "faq": "FAQ",
+    "login": "Sign in",
+    "expertSignup": "Register as an expert",
+    "disclaimer": "<b>Note:</b> AI content is a reference draft, not legal advice. Have an expert verify it before filing.",
+    "copyright": "© {{year}} Shared Hub"
+  },
+  "links": {
+    "label": "Main navigation",
+    "home": "Home",
+    "marketplace": "Expert Marketplace",
+    "aiAssistant": "AI lookup",
+    "workspace": "AI Workspace"
+  }
+}

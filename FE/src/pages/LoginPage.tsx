@@ -5,7 +5,7 @@ import { ForgotPasswordForm } from '@/components/auth/ForgotPasswordForm'
 import { VideoBackground } from '@/components/auth/VideoBackground'
 import { useAuth } from '../features/auth/hooks/useAuth'
 import type { LoginFormValues } from '../features/auth/types'
-import { AuthLanguageToggle } from '@/components/auth/AuthLanguageToggle'
+import { LanguageToggle as AuthLanguageToggle } from '@/components/ui/layout/language-toggle'
 import { useTranslation } from 'react-i18next'
 import { useLocation } from 'react-router-dom'
 

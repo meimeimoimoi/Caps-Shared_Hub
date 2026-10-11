@@ -1,7 +1,8 @@
+import { useAuthStore } from '@/features/auth/store/authStore'
 import { HomeBackToTop } from './HomeBackToTop'
-import { HomeFooter } from './HomeFooter'
+import { PublicFooter } from '@/components/ui/layout/public-footer'
 import { HomeHero } from './HomeHero'
-import { HomeNavigation } from './HomeNavigation'
+import { PublicNavigation } from '@/components/ui/layout/public-navigation'
 import { FinalSection } from './FinalSection'
 import { FaqSection } from './FaqSection'
 import { EscrowSection } from './EscrowSection'
@@ -12,8 +13,9 @@ import { useEffect, useRef, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { useHomeMotion } from '../hooks/useHomeMotion'
-import '../styles/home.css'
+import '@/styles/public-site.css'
 export function HomeLanding() {
+  const authenticated = useAuthStore((state) => state.isAuthenticated)
   const { t } = useTranslation('home')
   const root = useRef<HTMLDivElement>(null)
   const navigate = useNavigate()
@@ -38,7 +40,7 @@ export function HomeLanding() {
         {t('skip')}
       </a>
       <div className="env" aria-hidden="true"></div>
-      <HomeNavigation />
+      <PublicNavigation authenticated={authenticated} />
       <HomeHero onAskAi={askAi} />
 
       <main id="main" tabIndex={-1}>
@@ -49,7 +51,7 @@ export function HomeLanding() {
         <FaqSection />
         <FinalSection />
       </main>
-      <HomeFooter />
+      <PublicFooter />
       <HomeBackToTop />
     </div>
   )

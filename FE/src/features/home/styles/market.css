@@ -1,0 +1,181 @@
+/* Xem trước Sàn chuyên gia: khối con nằm cuối mục "Bản nháp nào cũng cần một người đọc lại" (nền giấy),
+   nên không tạo thêm dải nền và nhịp sáng/tối của trang chủ giữ nguyên. Thẻ trắng như tờ phiếu,
+   cam chỉ cho nút chính và số "phí từ". */
+#shub-home .market-block {
+  --sheet: var(--ui-home-sheet);
+  --rule: var(--ui-public-rule);
+  --ok: var(--ui-public-success);
+  margin-top: clamp(80px, 10vw, 128px);
+  color: var(--ink);
+}
+#shub-home .market-block > .wrap {
+  padding-top: clamp(56px, 7vw, 88px);
+  border-top: 1px solid var(--rule);
+}
+#shub-home .market-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 28px 48px;
+}
+#shub-home .market-head > div {
+  max-width: 720px;
+}
+#shub-home .market-title {
+  font-size: clamp(30px, 3.6vw, 46px);
+  line-height: 1.12;
+  text-wrap: balance;
+}
+#shub-home .market-title em {
+  font-style: italic;
+  color: var(--accent);
+}
+/* This nested heading must wait for its own viewport entry, not its parent's. */
+#shub-home .market-head.reveal:not(.in) .r {
+  opacity: 0;
+  transform: translateY(26px);
+}
+#shub-home .market-head.reveal .r {
+  transition-delay: calc(var(--i, 0) * 120ms) !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  #shub-home .market-head.reveal:not(.in) .r {
+    opacity: 1;
+    transform: none;
+  }
+}
+#shub-home .market-head .lead {
+  margin-top: 18px;
+  max-width: 52ch;
+  color: var(--ink-2);
+}
+#shub-home .market-cta {
+  flex: none;
+}
+
+/* Ba dịch vụ */
+#shub-home .market-services {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin: clamp(40px, 5vw, 56px) 0 0;
+  padding: 0;
+  list-style: none;
+}
+#shub-home .market-services a {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  height: 100%;
+  padding: 26px 26px 22px;
+  border-radius: 18px;
+  background: var(--sheet);
+  color: var(--ink);
+  text-decoration: none;
+  box-shadow:
+    0 1px 2px var(--ui-public-shadow-contact),
+    0 18px 40px -30px var(--ui-public-shadow-card);
+  transition:
+    box-shadow 0.3s var(--ease-out),
+    transform 0.3s var(--ease-out);
+}
+#shub-home .market-services a:hover {
+  transform: translateY(-3px);
+  box-shadow:
+    0 1px 2px var(--ui-public-shadow-contact),
+    0 26px 48px -28px var(--ui-public-shadow-card-hover);
+}
+#shub-home .ms-name {
+  font-family: var(--f-display);
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+#shub-home .ms-desc {
+  flex: 1;
+  font-size: 16px;
+  line-height: 1.55;
+  color: var(--ink-2);
+}
+#shub-home .ms-facts {
+  display: flex;
+  align-items: flex-end;
+  gap: 24px;
+  margin-top: 10px;
+  padding-top: 16px;
+  border-top: 1px solid var(--rule);
+}
+#shub-home .ms-facts > span {
+  display: grid;
+  gap: 2px;
+}
+#shub-home .ms-facts small {
+  font-size: 13px;
+  white-space: nowrap;
+  color: var(--ink-2);
+}
+#shub-home .ms-facts b {
+  font-family: var(--f-mono);
+  font-size: 17px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+#shub-home .ms-facts > span:first-child b {
+  color: var(--ui-home-accent-ink);
+}
+#shub-home .ms-go {
+  flex: none;
+  margin-left: auto;
+  color: var(--ink-2);
+  transition:
+    transform 0.3s var(--ease-out),
+    color 0.3s var(--ease-out);
+}
+#shub-home .market-services a:hover .ms-go {
+  transform: translateX(4px);
+  color: var(--ink);
+}
+
+/* Chuyên gia nổi bật */
+#shub-home .market-sub {
+  margin: clamp(40px, 5vw, 56px) 0 0;
+  font-family: var(--f-body);
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--ink);
+}
+#shub-home .market-services a:focus-visible {
+  outline: 2px solid var(--ui-home-accent-ink);
+  outline-offset: 3px;
+}
+
+#shub-home .market-demo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 24px;
+  font-size: 14px;
+  color: var(--ink-2);
+}
+
+@media (max-width: 1024px) {
+  #shub-home .market-services {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 720px) {
+  #shub-home .market-cta {
+    width: 100%;
+  }
+  #shub-home .ms-facts {
+    gap: 18px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  #shub-home .market-services a,
+  #shub-home .ms-go {
+    transition: none;
+  }
+}

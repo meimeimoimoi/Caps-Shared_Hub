@@ -1,8 +1,13 @@
 import { useTranslation } from 'react-i18next'
-import { Link } from 'react-router-dom'
+import { Link, NavLink } from 'react-router-dom'
 
-export function HomeNavigation() {
-  const { t } = useTranslation('home')
+/** Shared primary navigation for all public pages. Protected routes handle sign-in. */
+export function PublicNavigation({
+  authenticated,
+}: {
+  authenticated: boolean
+}) {
+  const { t } = useTranslation('publicSite')
   return (
     <nav className="nav" aria-label={t('nav.label')}>
       <Link className="brand" to="/" aria-label={t('brand.home')}>
@@ -46,16 +51,28 @@ export function HomeNavigation() {
       </Link>
       <ul className="nav-links">
         <li>
-          <a href="#quy-trinh">{t('footer.process')}</a>
+          <NavLink to="/" end>
+            {t('links.home')}
+          </NavLink>
         </li>
         <li>
-          <a href="#san-pham">{t('footer.products')}</a>
+          <NavLink
+            to={authenticated ? '/ai-assistant' : '/login'}
+            state={authenticated ? undefined : { from: '/ai-assistant' }}
+          >
+            {t('links.aiAssistant')}
+          </NavLink>
         </li>
         <li>
-          <a href="#an-tam">{t('nav.escrow')}</a>
+          <NavLink
+            to={authenticated ? '/drafts' : '/login'}
+            state={authenticated ? undefined : { from: '/drafts' }}
+          >
+            {t('links.workspace')}
+          </NavLink>
         </li>
         <li>
-          <a href="#hoi-dap">{t('footer.faq')}</a>
+          <NavLink to="/marketplace">{t('links.marketplace')}</NavLink>
         </li>
       </ul>
       <div className="nav-actions">

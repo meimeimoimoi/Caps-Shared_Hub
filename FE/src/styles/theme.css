@@ -184,3 +184,55 @@
   --color-sidebar-selected: var(--ui-sidebar-selected);
   --color-sidebar-foreground: var(--ui-sidebar-foreground);
 }
+
+/* Fixed public-site material: preserve the approved appearance in both themes. */
+:root {
+  --ui-public-rule: rgba(18, 32, 48, 0.12);
+  --ui-public-success: #1f7a55;
+  --ui-public-shadow-contact: rgba(18, 32, 48, 0.06);
+  --ui-public-shadow-card: rgba(18, 32, 48, 0.4);
+  --ui-public-shadow-card-hover: rgba(18, 32, 48, 0.5);
+  --ui-public-rule-soft: rgba(18, 32, 48, 0.07);
+  --ui-public-success-on-dark: #5fd3a0;
+  --ui-public-warning: #9a5a00;
+  --ui-public-selection: rgba(255, 122, 0, 0.32);
+  --ui-public-hero-overlay-start: rgba(16, 29, 44, 0.94);
+  --ui-public-hero-overlay-end: rgba(22, 38, 58, 0.96);
+  --ui-public-shadow-deep: rgba(0, 0, 0, 0.7);
+  --ui-public-shadow-control: rgba(18, 32, 48, 0.25);
+  --ui-public-surface: #fff;
+  --ui-public-focus-ring: rgba(255, 122, 0, 0.18);
+  --ui-public-placeholder: #5f6f7e;
+  --ui-public-control-hover: rgba(18, 32, 48, 0.055);
+  --ui-public-shadow-ink: #122030;
+  --ui-public-shadow-panel: rgba(18, 32, 48, 0.32);
+  --ui-public-shadow-panel-hover: rgba(18, 32, 48, 0.35);
+  --ui-public-avatar-neutral: #b9c4ce;
+  --ui-public-shadow-floating: rgba(18, 32, 48, 0.3);
+  --ui-public-row-hover: rgba(18, 32, 48, 0.025);
+  --ui-public-success-soft: rgba(31, 122, 85, 0.1);
+  --ui-public-avatar-overlay: rgba(5, 9, 14, 0.6);
+  --ui-public-success-muted: rgba(31, 122, 85, 0.16);
+  --ui-public-warning-soft: rgba(154, 90, 0, 0.16);
+  --ui-public-availability-idle: #7b8794;
+  --ui-public-availability-idle-soft: rgba(123, 135, 148, 0.18);
+  --ui-public-availability-offline-surface: #c7d0d8;
+  --ui-public-availability-offline-text: #4b5a68;
+  --ui-public-shadow-raised: rgba(18, 32, 48, 0.28);
+  --ui-public-border-muted: rgba(18, 32, 48, 0.04);
+  --ui-public-dark-rule: rgba(169, 182, 194, 0.24);
+  --ui-public-dark-overlay: rgba(10, 19, 28, 0.45);
+  --ui-public-dark-rule-soft: rgba(169, 182, 194, 0.14);
+  --ui-public-dark-muted: rgba(169, 182, 194, 0.5);
+  --ui-public-dark-card: rgba(22, 38, 58, 0.8);
+  --ui-public-success-dark-soft: rgba(95, 211, 160, 0.12);
+  --ui-public-surface-hover: rgba(18, 32, 48, 0.05);
+  --ui-public-shadow-soft: rgba(18, 32, 48, 0.24);
+  --ui-public-shadow-strong: rgba(18, 32, 48, 0.45);
+  --ui-public-accent-line: rgba(179, 79, 0, 0.55);
+  --ui-public-shadow-subtle: rgba(18, 32, 48, 0.2);
+  --ui-public-text-subtle: #66737f;
+  --ui-public-accent-ring: rgba(255, 122, 0, 0.35);
+  --ui-public-accent-soft: rgba(255, 122, 0, 0.1);
+  --ui-public-dark-border: rgba(169, 182, 194, 0.12);
+}

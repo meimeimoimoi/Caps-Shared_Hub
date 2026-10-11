@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next'
 import { useEffect } from 'react'
 import { useFormatters } from '@/hooks/useFormatters'
 import { Link } from 'react-router-dom'
-import { AuthLanguageToggle } from '@/components/auth/AuthLanguageToggle'
+import { LanguageToggle as AuthLanguageToggle } from '@/components/ui/layout/language-toggle'
 import brandMark from '@/assets/logo-icon.svg'
 import {
   Check,

@@ -1,10 +1,10 @@
-import { useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
-import { HomeText } from './HomeText'
-import { FooterLanguageToggle } from './FooterLanguageToggle'
+import { LanguageToggle } from './language-toggle'
 
-export function HomeFooter() {
-  const { t } = useTranslation('home')
+/** anchorBase: '/' when rendered off the homepage, so the section links lead back to it. */
+export function PublicFooter({ anchorBase = '' }: { anchorBase?: string }) {
+  const { t } = useTranslation('publicSite')
   return (
     <footer className="foot">
       <div className="wrap">
@@ -26,7 +26,11 @@ export function HomeFooter() {
               </span>
             </Link>
             <p>
-              <HomeText i18nKey="footer.tagline" />
+              <Trans
+                ns="publicSite"
+                i18nKey="footer.tagline"
+                components={{ b: <b />, em: <em />, br: <br /> }}
+              />
             </p>
           </div>
           <nav className="foot-col" aria-label={t('footer.products')}>
@@ -47,13 +51,13 @@ export function HomeFooter() {
             <h3>{t('footer.learn')}</h3>
             <ul>
               <li>
-                <a href="#quy-trinh">{t('footer.process')}</a>
+                <a href={`${anchorBase}#quy-trinh`}>{t('footer.process')}</a>
               </li>
               <li>
-                <a href="#an-tam">{t('footer.escrow')}</a>
+                <a href={`${anchorBase}#an-tam`}>{t('footer.escrow')}</a>
               </li>
               <li>
-                <a href="#hoi-dap">{t('footer.faq')}</a>
+                <a href={`${anchorBase}#hoi-dap`}>{t('footer.faq')}</a>
               </li>
             </ul>
           </nav>
@@ -83,12 +87,16 @@ export function HomeFooter() {
             <path d="M12 8v5M12 16.5v.01"></path>
           </svg>
           <p>
-            <HomeText i18nKey="footer.disclaimer" />
+            <Trans
+              ns="publicSite"
+              i18nKey="footer.disclaimer"
+              components={{ b: <b />, em: <em />, br: <br /> }}
+            />
           </p>
         </div>
         <div className="foot-bottom">
           <p>{t('footer.copyright', { year: new Date().getFullYear() })}</p>
-          <FooterLanguageToggle />
+          <LanguageToggle />
         </div>
       </div>
     </footer>

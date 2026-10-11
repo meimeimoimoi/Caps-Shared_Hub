@@ -1,8 +1,8 @@
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import brandMark from '@/assets/logo-icon.svg'
-import expertPhoto from '@/features/home/assets/product-chuyen-gia.jpg'
-import { AuthLanguageToggle } from '@/components/auth/AuthLanguageToggle'
+import expertPhoto from '@/assets/generated/expert-registration-collaboration.png'
+import { LanguageToggle as AuthLanguageToggle } from '@/components/ui/layout/language-toggle'
 
 const steps = ['account', 'dossier', 'gate1', 'gate2', 'pricing'] as const
 
@@ -18,8 +18,8 @@ export function AccountIntroduction() {
         alt=""
         aria-hidden="true"
         className="expert-signup-photo"
-        width={1000}
-        height={1250}
+        width={1024}
+        height={1536}
         fetchPriority="high"
       />
       <div className="expert-signup-aside-inner">

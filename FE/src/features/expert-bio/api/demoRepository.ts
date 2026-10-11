@@ -1,26 +1,7 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { api, ApiError } from '@/lib/api-client'
-import { isExpertDemo } from '@/lib/expert-data-source'
+import { ApiError } from '@/lib/api-client'
 import { useAuthStore } from '@/features/auth'
 import { useDemoAccountStore } from '@/features/auth/store/demoAccountStore'
-
-// Proposed contract: GET /api/experts/{id}/bio is public, PUT /api/expert/me/bio is the expert's own.
-export interface ExpertBioInput {
-  headline: string
-  location: string
-  yearsOfExperience: number
-  bio: string
-  expertise: string[]
-  highlights: string[]
-}
-
-export interface ExpertBio extends ExpertBioInput {
-  expertId: string
-  displayName: string
-  avatarUrl: string | null
-  /** Only services currently open for booking, with the approved fee in VND. */
-  services: { serviceId: string; serviceName: string; price: string | null }[]
-}
+import type { ExpertBio, ExpertBioInput } from '../types'
 
 // ponytail: in-memory demo store, resets on reload like pricing; real persistence needs the BE endpoint.
 let demoInput: ExpertBioInput = {
@@ -35,27 +16,45 @@ let demoInput: ExpertBioInput = {
   ],
 }
 
-async function demoBio(expertId: string): Promise<ExpertBio> {
+export async function demoBio(expertId: string): Promise<ExpertBio> {
   // Chuyên gia mock của Sàn (id 1..8) dùng chung trang hồ sơ công khai này.
-  const { EXPERTS, packagesFor } =
+  const { findExpert, SERVICE_IDS, SERVICE_NAMES } =
     await import('@/features/marketplace/fixtures')
-  const listed = EXPERTS.find((e) => String(e.id) === expertId)
+  const listed = findExpert(expertId)
   if (listed)
     return {
       expertId,
       displayName: listed.name,
-      avatarUrl: null,
-      headline: listed.roleTitle,
-      location: '',
+      avatarUrl: listed.avatar ?? null,
+      headline: listed.headline,
+      location: listed.location,
       yearsOfExperience: listed.years,
       bio: listed.bio,
-      expertise: listed.tags,
-      highlights: [listed.desc],
-      services: packagesFor(listed).map((p, i) => ({
-        serviceId: `${expertId}-${i}`,
-        serviceName: p.title,
-        price: String(p.price),
-      })),
+      expertise: listed.topics,
+      highlights: listed.highlights,
+      services: SERVICE_IDS.flatMap((id) => {
+        const offer = listed.offers[id]
+        return offer
+          ? [
+              {
+                serviceId: id,
+                serviceName: SERVICE_NAMES[id],
+                price: String(offer.price),
+                slaHours: offer.slaHours,
+                pricingVersion: offer.pricingVersion,
+                approvedAt: offer.approvedAt,
+              },
+            ]
+          : []
+      }),
+      listing: {
+        credential: listed.credential,
+        rating: listed.rating,
+        reviews: listed.reviews,
+        completedCases: listed.completedCases,
+        eligibleSince: listed.eligibleSince,
+        availability: listed.availability,
+      },
     }
   const [{ createExpertContextFixture }, { getDemoPricing }] =
     await Promise.all([
@@ -83,32 +82,7 @@ async function demoBio(expertId: string): Promise<ExpertBio> {
   }
 }
 
-const bioKey = (expertId: string) => ['public', 'expert-bio', expertId] as const
-
-export function useExpertBio(expertId: string | undefined) {
-  return useQuery({
-    queryKey: bioKey(expertId ?? ''),
-    queryFn: () =>
-      isExpertDemo
-        ? demoBio(expertId!)
-        : api.get<ExpertBio>(
-            `/api/experts/${encodeURIComponent(expertId!)}/bio`
-          ),
-    enabled: Boolean(expertId),
-    retry: false,
-  })
-}
-
-export function useSaveExpertBio(expertId: string) {
-  const client = useQueryClient()
-  return useMutation({
-    mutationFn: async (input: ExpertBioInput) => {
-      if (isExpertDemo) {
-        demoInput = structuredClone(input)
-        return demoBio(expertId)
-      }
-      return api.put<ExpertBio>('/api/expert/me/bio', input)
-    },
-    onSuccess: (data) => client.setQueryData(bioKey(expertId), data),
-  })
+export async function saveDemoBio(expertId: string, input: ExpertBioInput) {
+  demoInput = structuredClone(input)
+  return demoBio(expertId)
 }

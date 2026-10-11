@@ -5,7 +5,7 @@ import {
   type RegisterFormValues,
 } from '@/components/auth/RegisterForm'
 import { VideoBackground } from '@/components/auth/VideoBackground'
-import { AuthLanguageToggle } from '@/components/auth/AuthLanguageToggle'
+import { LanguageToggle as AuthLanguageToggle } from '@/components/ui/layout/language-toggle'
 import { useAuth } from '../features/auth/hooks/useAuth'
 
 /* Đăng ký khách hàng. Chuyên gia đăng ký ở /expert/register (luồng nhiều bước, tài khoản riêng). */

@@ -1,378 +1,429 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
-import { flushSync } from 'react-dom'
-import { Link } from 'react-router-dom'
-import { useReducedMotion } from '@/components/ui/motion'
-import { cn } from '@/lib/utils'
-import { EXPERTS, money, type Expert, type RoleKey } from '@/features/marketplace/fixtures'
-import { Icon, MarketplaceShell } from './MarketplaceShell'
+import { Trans, useTranslation } from 'react-i18next'
+import { Link, useSearchParams } from 'react-router-dom'
+import { Award, Info, Search, SearchX, Star } from 'lucide-react'
+import { useFormatters } from '@/hooks/useFormatters'
+import { CustomSelect } from '@/components/ui/forms/custom-select'
+import { MarketplaceFrame } from '@/features/marketplace/components/MarketplaceFrame'
+import {
+  AvailabilityTag,
+  Avatar,
+  VerifiedBadge,
+} from '@/features/marketplace/components/ListingParts'
+import { useSlaLabel } from '@/features/marketplace/hooks/useSlaLabel'
+import {
+  useRevealRows,
+  withViewTransition,
+} from '@/features/marketplace/hooks/useListMotion'
+import consultationPhoto from '@/assets/generated/marketplace-consultation.png'
+import {
+  canRequest,
+  EXPERTS,
+  isServiceId,
+  SERVICE_IDS,
+  type Expert,
+  type ServiceId,
+  type ServiceOffer,
+} from '@/features/marketplace/fixtures'
 
-/* Trang Sàn Chuyên gia, theo mẫu FE/code.html (Stitch).
-   Dữ liệu là mock lấy từ mẫu, thay bằng API khi có. */
+type SortKey = 'recommended' | 'rating' | 'price' | 'sla'
+const SLA_LIMITS = [24, 48, 72, 168] as const
 
-type SortKey = 'rating' | 'exp' | 'price-asc' | 'price-desc'
-type ExpKey = 'all' | 'under12' | '12to15' | 'over15'
-type PriceKey = 'all' | 'under1.5' | '1.5to2.0' | 'over2.0'
+type Listing = { expert: Expert; offer: ServiceOffer }
 
-const ROLE_OPTIONS: { value: RoleKey | 'all'; label: string }[] = [
-  { value: 'all', label: 'Tất cả vai trò' },
-  { value: 'tax', label: 'Đại lý thuế' },
-  { value: 'chief', label: 'Kế toán trưởng' },
-  { value: 'legal', label: 'Luật sư / Pháp lý' },
-  { value: 'cit', label: 'Rà soát TNDN & Chuyển giá' },
-]
-
-const EXP_OPTIONS: { value: ExpKey; label: string }[] = [
-  { value: 'all', label: 'Tất cả số năm' },
-  { value: 'under12', label: 'Dưới 12 năm' },
-  { value: '12to15', label: '12 - 15 năm' },
-  { value: 'over15', label: 'Trên 15 năm' },
-]
-
-const PRICE_OPTIONS: { value: PriceKey; label: string }[] = [
-  { value: 'all', label: 'Tất cả mức phí' },
-  { value: 'under1.5', label: 'Dưới 1.500.000đ' },
-  { value: '1.5to2.0', label: '1.500.000đ - 2.000.000đ' },
-  { value: 'over2.0', label: 'Trên 2.000.000đ' },
-]
-
-const SORT_OPTIONS: { value: SortKey; label: string }[] = [
-  { value: 'rating', label: 'Đánh giá cao nhất' },
-  { value: 'exp', label: 'Năm kinh nghiệm (Cao - Thấp)' },
-  { value: 'price-asc', label: 'Phí tư vấn (Thấp - Cao)' },
-  { value: 'price-desc', label: 'Phí tư vấn (Cao - Thấp)' },
-]
-
-const PAGE_SIZE = 8
-
-
-function matchesExp(years: number, key: ExpKey) {
-  if (key === 'under12') return years < 12
-  if (key === '12to15') return years >= 12 && years <= 15
-  if (key === 'over15') return years > 15
-  return true
+/** Sàn hiển thị theo dịch vụ: chỉ chuyên gia đã được duyệt cho dịch vụ đang chọn, với giá + SLA của dịch vụ đó. */
+function listingsFor(service: ServiceId): Listing[] {
+  return EXPERTS.flatMap((expert) => {
+    const offer = expert.offers[service]
+    return offer ? [{ expert, offer }] : []
+  })
 }
 
-function matchesPrice(price: number, key: PriceKey) {
-  if (key === 'under1.5') return price < 1500000
-  if (key === '1.5to2.0') return price >= 1500000 && price <= 2000000
-  if (key === 'over2.0') return price > 2000000
-  return true
-}
-
-function ExpertCard({ expert: e }: { expert: Expert }) {
-  const accent = { color: e.color } as CSSProperties
+function ExpertRow({
+  listing: { expert: e, offer },
+  service,
+}: {
+  listing: Listing
+  service: ServiceId
+}) {
+  const { t } = useTranslation('marketplace')
+  const format = useFormatters()
+  const sla = useSlaLabel()
+  const open = canRequest(e)
+  const profile = `/experts/${e.id}?service=${service}`
   return (
-    <article className="mk-card" data-role={e.role} style={{ viewTransitionName: `mk-card-${e.id}` }}>
-      <div className="mk-card-who">
-        <div className="mk-avatar-wrap">
-          <div className="mk-avatar" style={{ backgroundColor: e.color }} aria-hidden="true">
-            {e.initials}
-          </div>
-          <span className="mk-online" title="Đang nhận việc" aria-hidden="true">
-            <span />
-          </span>
-        </div>
-        <div className="mk-card-id">
+    <li
+      className="mk-row"
+      data-open={open}
+      data-mk-reveal=""
+      style={{ viewTransitionName: `mk-row-${e.id}` } as CSSProperties}
+    >
+      <div className="mk-who">
+        <Avatar src={e.avatar} text={e.initials} />
+        <div className="mk-who-text">
           <div className="mk-name-row">
-            <h2 className="mk-name">{e.name}</h2>
-            <Icon name="verified" filled className="mk-verified" />
-            <span className="mk-sr">Đã qua Cổng 2: Năng lực chuyên môn</span>
+            <h3 className="mk-name">
+              <Link to={profile}>{e.name}</Link>
+            </h3>
+            <VerifiedBadge
+              eligibleSince={e.eligibleSince}
+              approvedAt={offer.approvedAt}
+              pricingVersion={offer.pricingVersion}
+            />
           </div>
-          <p className="mk-role-title" style={accent}>
-            {e.roleTitle}
+          <p className="mk-headline">{e.headline}</p>
+          <p className="mk-credential">
+            <Award size={15} aria-hidden="true" />
+            {e.credential}
           </p>
-          <p className="mk-meta">{e.subtitle}</p>
+          <p className="mk-meta">
+            <span className="mk-rating">
+              <Star size={14} aria-hidden="true" />
+              <b>{format.number(e.rating, { minimumFractionDigits: 2 })}</b>
+              <span className="sr-only">
+                {t('row.rating', { rating: e.rating })}
+              </span>
+            </span>
+            <span>{t('row.reviews', { count: e.reviews })}</span>
+            <span>{t('row.cases', { count: e.completedCases })}</span>
+            <span>{t('row.years', { count: e.years })}</span>
+          </p>
+          <ul className="mk-topics" aria-label={t('row.topics')}>
+            {e.topics.map((topic) => (
+              <li key={topic}>{topic}</li>
+            ))}
+          </ul>
         </div>
       </div>
 
-      <div className="mk-card-mid">
-        <div className="mk-rating-row">
-          <span className="mk-rating">
-            <Icon name="star" filled className="mk-star" />
-            <b>{e.rating.toFixed(2)}</b>
-          </span>
-          <span className="mk-meta">{e.reviews} đánh giá thực tế</span>
-          <span className="mk-shub">• SHUB Verified</span>
+      <dl className="mk-cells">
+        <div className="mk-cell mk-cell-fee">
+          <dt>{t('row.fee')}</dt>
+          <dd className="mk-num-lg">{format.money(offer.price)}</dd>
         </div>
-        <ul className="mk-tags">
-          {e.tags.map((tag) => (
-            <li key={tag}>{tag}</li>
-          ))}
-        </ul>
-        <p className="mk-desc">{e.desc}</p>
-      </div>
+        <div className="mk-cell mk-cell-sla">
+          <dt>{t('row.delivery')}</dt>
+          <dd className="mk-num-lg">{sla(offer.slaHours)}</dd>
+        </div>
+        <div className="mk-cell mk-cell-avail">
+          <dt>{t('row.status')}</dt>
+          <dd>
+            <AvailabilityTag availability={e.availability} detailed />
+          </dd>
+        </div>
+      </dl>
 
-      <div className="mk-card-foot">
-        <div className="mk-price">
-          <span className="mk-price-value">{money(e.price)}</span>
-          <span className="mk-unit"> /60p</span>
-          <span className="mk-escrow">Ký quỹ Escrow 100%</span>
-        </div>
-        <div className="mk-card-actions">
-          <Link to={`/experts/${e.id}`} className="mk-btn mk-btn-ghost">
-            Hồ sơ
+      <div className="mk-actions">
+        {open && (
+          <Link
+            className="mk-btn mk-btn-accent"
+            to={`${profile}#gui-yeu-cau`}
+            aria-label={t('row.requestFor', { name: e.name })}
+          >
+            {t('row.request')}
           </Link>
-          <Link to={`/experts/${e.id}#goi-dich-vu`} className="mk-btn mk-btn-primary">
-            Đặt lịch ngay
-          </Link>
-        </div>
+        )}
+        <Link className="mk-btn mk-btn-line" to={profile}>
+          {t('row.profile')}
+        </Link>
       </div>
-    </article>
+    </li>
   )
 }
 
 export default function MarketplacePage() {
+  const { t } = useTranslation('marketplace')
+  const format = useFormatters()
+  const sla = useSlaLabel()
+  const [params, setParams] = useSearchParams()
+  const requested = params.get('service')
+  const service: ServiceId = isServiceId(requested) ? requested : 'cit-review'
+
   const [query, setQuery] = useState('')
-  const [role, setRole] = useState<RoleKey | 'all'>('all')
-  const [exp, setExp] = useState<ExpKey>('all')
-  const [price, setPrice] = useState<PriceKey>('all')
-  const [sort, setSort] = useState<SortKey>('rating')
-  const [page, setPage] = useState(1)
+  const [openOnly, setOpenOnly] = useState(false)
+  const [slaMax, setSlaMax] = useState(0)
+  const [sort, setSort] = useState<SortKey>('recommended')
+  const picker = useRef<HTMLDivElement>(null)
+  const list = useRef<HTMLOListElement>(null)
 
-  const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase()
-    const list = EXPERTS.filter((e) => {
-      if (role !== 'all' && e.role !== role) return false
-      if (!matchesExp(e.years, exp)) return false
-      if (!matchesPrice(e.price, price)) return false
-      if (!q) return true
-      return [e.name, e.roleTitle, e.subtitle, e.desc, ...e.tags].some((s) => s.toLowerCase().includes(q))
-    })
-    switch (sort) {
-      case 'exp':
-        return [...list].sort((a, b) => b.years - a.years)
-      case 'price-asc':
-        return [...list].sort((a, b) => a.price - b.price)
-      case 'price-desc':
-        return [...list].sort((a, b) => b.price - a.price)
-      default:
-        return [...list].sort((a, b) => b.rating - a.rating)
-    }
-  }, [query, role, exp, price, sort])
-
-  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
-  const current = Math.min(page, totalPages)
-  const pageItems = filtered.slice((current - 1) * PAGE_SIZE, current * PAGE_SIZE)
-  const rangeStart = filtered.length === 0 ? 0 : (current - 1) * PAGE_SIZE + 1
-  const rangeEnd = Math.min(current * PAGE_SIZE, filtered.length)
+  // Trên màn hẹp bộ chọn dịch vụ cuộn ngang: đưa thẻ đang chọn vào khung (vd. mở bằng ?service=).
+  useEffect(() => {
+    const box = picker.current
+    const on = box?.querySelector<HTMLElement>('[data-on="true"]')
+    if (!box || !on || box.scrollWidth <= box.clientWidth) return
+    const gap =
+      on.getBoundingClientRect().left - box.getBoundingClientRect().left
+    box.scrollTo({ left: box.scrollLeft + gap - 16, behavior: 'smooth' })
+  }, [service])
 
   useEffect(() => {
-    document.title = 'Sàn Chuyên gia | Shared Hub'
-  }, [])
-
-  const toolbarRef = useRef<HTMLElement>(null)
-  const reduced = useReducedMotion()
-  /* Đổi lọc/sắp xếp/trang: card trượt/mờ tới chỗ mới (View Transitions, trình duyệt không hỗ trợ thì đổi ngay)
-     và kéo đầu danh sách vào tầm nhìn, thay vì để trang tự nhảy khi danh sách ngắn lại. */
-  const transition = (update: () => void) => {
-    const apply = () => {
-      flushSync(update)
-      // Thanh lọc bị cuộn khuất dưới header (vd. đổi trang ở cuối danh sách) thì kéo nó về tầm nhìn.
-      const toolbar = toolbarRef.current
-      if (toolbar && toolbar.getBoundingClientRect().top < 68) toolbar.scrollIntoView({ block: 'start' })
+    const previous = document.title
+    document.title = t('meta.title')
+    return () => {
+      document.title = previous
     }
-    if (reduced || !document.startViewTransition) apply()
-    else document.startViewTransition(apply)
-  }
+  }, [t])
 
-  const hasFilters = query.trim() !== '' || role !== 'all' || exp !== 'all' || price !== 'all'
+  const catalog = useMemo(
+    () =>
+      SERVICE_IDS.map((id) => {
+        const listings = listingsFor(id)
+        return {
+          id,
+          count: listings.length,
+          from: Math.min(...listings.map((l) => l.offer.price)),
+          fastest: Math.min(...listings.map((l) => l.offer.slaHours)),
+        }
+      }),
+    []
+  )
 
-  const resetFilters = () =>
-    transition(() => {
+  const all = useMemo(() => listingsFor(service), [service])
+  const shown = useMemo(() => {
+    const needle = query.trim().toLocaleLowerCase('vi')
+    const list = all.filter(({ expert: e, offer }) => {
+      if (openOnly && !canRequest(e)) return false
+      if (slaMax && offer.slaHours > slaMax) return false
+      if (!needle) return true
+      return [e.name, e.headline, ...e.topics].some((text) =>
+        text.toLocaleLowerCase('vi').includes(needle)
+      )
+    })
+    const byRating = (a: Listing, b: Listing) =>
+      b.expert.rating - a.expert.rating || b.expert.reviews - a.expert.reviews
+    const sorters: Record<SortKey, (a: Listing, b: Listing) => number> = {
+      // Người đang nhận việc lên trước: Availability quyết định có gửi được yêu cầu hay không.
+      recommended: (a, b) =>
+        Number(canRequest(b.expert)) - Number(canRequest(a.expert)) ||
+        byRating(a, b),
+      rating: byRating,
+      price: (a, b) => a.offer.price - b.offer.price,
+      sla: (a, b) => a.offer.slaHours - b.offer.slaHours || byRating(a, b),
+    }
+    return [...list].sort(sorters[sort])
+  }, [all, query, openOnly, slaMax, sort])
+
+  const slaOptions = [
+    { value: '0', label: t('filters.slaAny') },
+    ...SLA_LIMITS.map((hours) => ({
+      value: String(hours),
+      label: t('filters.slaMax', { duration: sla(hours) }),
+    })),
+  ]
+  const sortOptions: { value: SortKey; label: string }[] = [
+    { value: 'recommended', label: t('filters.sortRecommended') },
+    { value: 'rating', label: t('filters.sortRating') },
+    { value: 'price', label: t('filters.sortPrice') },
+    { value: 'sla', label: t('filters.sortSla') },
+  ]
+  useRevealRows(list, [shown])
+
+  const filtered = query.trim() !== '' || openOnly || slaMax !== 0
+  const reset = () =>
+    withViewTransition(() => {
       setQuery('')
-      setRole('all')
-      setExp('all')
-      setPrice('all')
-      setPage(1)
+      setOpenOnly(false)
+      setSlaMax(0)
     })
 
   return (
-    <MarketplaceShell>
-      <main className="mk-wrap mk-main">
-        <header className="mk-head">
-          <h1>Sàn Chuyên gia Thuế &amp; Pháp lý</h1>
-          <ul className="mk-trust">
-            <li>
-              <Icon name="verified" filled />
-              100% chứng chỉ hành nghề được xác thực
-            </li>
-            <li>
-              <Icon name="shield" />
-              Phí giữ trong Escrow tới khi bạn nghiệm thu
-            </li>
-          </ul>
-        </header>
-
-        <section className="mk-toolbar" ref={toolbarRef} aria-label="Bộ lọc tìm kiếm">
-          <div className="mk-toolbar-row">
-            <div className="mk-select mk-search">
-              <label htmlFor="mk-search">Từ khóa</label>
-              <div className="mk-input-wrap">
-                <Icon name="search" className="mk-accent" />
-                <input
-                  id="mk-search"
-                  type="search"
-                  placeholder="Tên, chuyển giá, FDI..."
-                  value={query}
-                  onChange={(ev) => {
-                    setQuery(ev.target.value)
-                    setPage(1)
-                  }}
-                />
-              </div>
-            </div>
-            <label className="mk-select">
-              <span>Kinh nghiệm</span>
-              <select
-                value={exp}
-                onChange={(ev) => {
-                  const next = ev.target.value as ExpKey
-                  transition(() => {
-                    setExp(next)
-                    setPage(1)
-                  })
-                }}
-              >
-                {EXP_OPTIONS.map((o) => (
-                  <option key={o.value} value={o.value}>
-                    {o.label}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label className="mk-select">
-              <span>Mức phí</span>
-              <select
-                value={price}
-                onChange={(ev) => {
-                  const next = ev.target.value as PriceKey
-                  transition(() => {
-                    setPrice(next)
-                    setPage(1)
-                  })
-                }}
-              >
-                {PRICE_OPTIONS.map((o) => (
-                  <option key={o.value} value={o.value}>
-                    {o.label}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label className="mk-select">
-              <span>Sắp xếp</span>
-              <select
-                value={sort}
-                onChange={(ev) => {
-                  const next = ev.target.value as SortKey
-                  transition(() => setSort(next))
-                }}
-              >
-                {SORT_OPTIONS.map((o) => (
-                  <option key={o.value} value={o.value}>
-                    {o.label}
-                  </option>
-                ))}
-              </select>
-            </label>
+    <MarketplaceFrame skipTarget="mk-results">
+      <header className="mk-head">
+        <figure className="mk-plate" aria-hidden="true">
+          <img
+            src={consultationPhoto}
+            alt=""
+            width="1672"
+            height="941"
+            decoding="async"
+            fetchPriority="high"
+          />
+        </figure>
+        <div className="wrap">
+          <div className="mk-intro">
+            <h1>
+              <Trans t={t} i18nKey="title" components={{ em: <em /> }} />
+            </h1>
+            <p className="mk-lead">{t('lead')}</p>
+            <dl className="mk-proof">
+              {(['gate1', 'gate2', 'escrow'] as const).map((key) => (
+                <div key={key}>
+                  <dt>{t(`proof.${key}.term`)}</dt>
+                  <dd>{t(`proof.${key}.detail`)}</dd>
+                </div>
+              ))}
+            </dl>
           </div>
 
-          <div className="mk-toolbar-foot">
-            <fieldset className="mk-chips">
-              <legend className="mk-sr">Vai trò chuyên gia</legend>
-              {ROLE_OPTIONS.map((o) => (
-                <label key={o.value} className="mk-chip">
+          <fieldset className="mk-services">
+            <legend>{t('services.label')}</legend>
+            <div
+              className="mk-tabs"
+              ref={picker}
+              style={{ '--on': SERVICE_IDS.indexOf(service) } as CSSProperties}
+            >
+              <span className="mk-tab-bar" aria-hidden="true" />
+              {catalog.map((s) => (
+                <label
+                  key={s.id}
+                  className="mk-service"
+                  data-on={s.id === service}
+                >
                   <input
                     type="radio"
-                    name="role"
-                    value={o.value}
-                    checked={role === o.value}
+                    name="service"
+                    value={s.id}
+                    checked={s.id === service}
                     onChange={() =>
-                      transition(() => {
-                        setRole(o.value)
-                        setPage(1)
-                      })
+                      setParams(
+                        (prev) => {
+                          const next = new URLSearchParams(prev)
+                          next.set('service', s.id)
+                          return next
+                        },
+                        { replace: true, preventScrollReset: true }
+                      )
                     }
                   />
-                  <span>{o.label}</span>
+                  <span className="mk-service-name">
+                    {t(`services.${s.id}.name`)}
+                  </span>
+                  <span className="mk-service-desc">
+                    {t(`services.${s.id}.deliverable`)}
+                  </span>
+                  <span className="mk-service-facts">
+                    <span>
+                      <small>{t('services.from')}</small>
+                      <b>{format.money(s.from)}</b>
+                    </span>
+                    <span>
+                      <small>{t('services.fastest')}</small>
+                      <b>{sla(s.fastest)}</b>
+                    </span>
+                    <span>
+                      <small>{t('services.experts')}</small>
+                      <b>{format.number(s.count)}</b>
+                    </span>
+                  </span>
                 </label>
               ))}
-            </fieldset>
-            <p className="mk-count" aria-live="polite">
-              <strong>{filtered.length} chuyên gia</strong>
-              <span>/ {EXPERTS.length} đủ điều kiện</span>
-              {hasFilters && (
-                <button type="button" className="mk-link-btn" onClick={resetFilters}>
-                  Đặt lại
-                </button>
-              )}
+            </div>
+          </fieldset>
+        </div>
+      </header>
+
+      <main className="mk-work" id="mk-results" tabIndex={-1}>
+        <div className="wrap">
+          <form
+            className="mk-tools"
+            role="search"
+            aria-label={t('filters.label')}
+            onSubmit={(event) => event.preventDefault()}
+          >
+            <label className="mk-search">
+              <span className="sr-only">{t('filters.search')}</span>
+              <Search size={18} aria-hidden="true" />
+              <input
+                type="search"
+                value={query}
+                placeholder={t('filters.searchPlaceholder')}
+                onChange={(event) => {
+                  const value = event.target.value
+                  withViewTransition(() => setQuery(value))
+                }}
+              />
+            </label>
+            <CustomSelect
+              className="mk-select"
+              triggerClassName="mk-select-trigger"
+              menuClassName="mk-select-menu"
+              label={t('filters.sla')}
+              value={String(slaMax)}
+              onChange={(value) =>
+                withViewTransition(() => setSlaMax(Number(value)))
+              }
+              options={slaOptions}
+            />
+            <CustomSelect
+              className="mk-select"
+              triggerClassName="mk-select-trigger"
+              menuClassName="mk-select-menu"
+              label={t('filters.sort')}
+              value={sort}
+              onChange={(value) => withViewTransition(() => setSort(value))}
+              options={sortOptions}
+            />
+            <label className="mk-switch">
+              <input
+                type="checkbox"
+                role="switch"
+                checked={openOnly}
+                onChange={(event) => {
+                  const checked = event.target.checked
+                  withViewTransition(() => setOpenOnly(checked))
+                }}
+              />
+              <span className="mk-switch-track" aria-hidden="true" />
+              {t('filters.openOnly')}
+            </label>
+          </form>
+
+          <div className="mk-summary">
+            <p aria-live="polite">
+              {filtered
+                ? t('results.filtered', {
+                    count: shown.length,
+                    total: all.length,
+                  })
+                : t('results.count', { count: all.length })}
+            </p>
+            {filtered && (
+              <button type="button" className="mk-text-btn" onClick={reset}>
+                {t('filters.reset')}
+              </button>
+            )}
+            <p className="mk-demo">
+              <Info size={15} aria-hidden="true" />
+              {t('demo')}
             </p>
           </div>
-        </section>
 
-        <div className="mk-results">
-          {pageItems.length > 0 ? (
-            <div className="mk-grid">
-              {pageItems.map((e) => (
-                <ExpertCard key={e.id} expert={e} />
-              ))}
+          {shown.length > 0 ? (
+            <div className="mk-sheet">
+              <div className="mk-list-head" aria-hidden="true">
+                <span>{t('row.expert')}</span>
+                <span>{t('row.fee')}</span>
+                <span>{t('row.delivery')}</span>
+                <span>{t('row.status')}</span>
+              </div>
+              <ol className="mk-list" key={service} ref={list}>
+                {shown.map((listing) => (
+                  <ExpertRow
+                    key={listing.expert.id}
+                    listing={listing}
+                    service={service}
+                  />
+                ))}
+              </ol>
             </div>
           ) : (
             <div className="mk-empty">
-              <Icon name="person_search" className="mk-empty-icon" />
-              <h2>Không tìm thấy chuyên gia phù hợp</h2>
-              <p>Hãy thử điều chỉnh bộ lọc hoặc xóa các tiêu chí đã chọn.</p>
-              <button type="button" className="mk-btn mk-btn-primary" onClick={resetFilters}>
-                Xóa toàn bộ bộ lọc
-              </button>
+              <SearchX size={28} aria-hidden="true" />
+              <h2>{all.length ? t('empty.title') : t('empty.noOffers')}</h2>
+              {all.length > 0 && <p>{t('empty.body')}</p>}
+              {filtered && (
+                <button
+                  type="button"
+                  className="mk-btn mk-btn-line"
+                  onClick={reset}
+                >
+                  {t('filters.reset')}
+                </button>
+              )}
             </div>
           )}
-
-          {filtered.length > 0 && (
-            <nav className="mk-pager" aria-label="Phân trang">
-              <p>
-                Hiển thị <strong>{rangeStart} - {rangeEnd}</strong> trong tổng số{' '}
-                <strong>{filtered.length} chuyên gia</strong> đã xác thực
-              </p>
-              <div className="mk-pager-btns">
-                <button
-                  type="button"
-                  className="mk-page-btn"
-                  disabled={current <= 1}
-                  onClick={() => transition(() => setPage(current - 1))}
-                  aria-label="Trang trước"
-                >
-                  <Icon name="chevron_left" />
-                </button>
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map((n) => (
-                  <button
-                    key={n}
-                    type="button"
-                    className={cn('mk-page-btn', n === current && 'mk-page-on')}
-                    aria-current={n === current ? 'page' : undefined}
-                    onClick={() => transition(() => setPage(n))}
-                  >
-                    {n}
-                  </button>
-                ))}
-                <button
-                  type="button"
-                  className="mk-page-btn"
-                  disabled={current >= totalPages}
-                  onClick={() => transition(() => setPage(current + 1))}
-                  aria-label="Trang sau"
-                >
-                  <Icon name="chevron_right" />
-                </button>
-              </div>
-            </nav>
-          )}
         </div>
-
-        <p className="mk-demo">
-          * Dữ liệu minh họa thực nghiệm, hồ sơ chuyên gia đã qua kiểm tra chứng chỉ hành nghề và bài kiểm tra độc lập.
-        </p>
       </main>
-    </MarketplaceShell>
+    </MarketplaceFrame>
   )
 }

@@ -1,7 +1,7 @@
 import { BadgeCheck, BriefcaseBusiness, MapPin } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useFormatters } from '@/hooks/useFormatters'
-import type { ExpertBio } from './useExpertBio'
+import type { ExpertBio } from '../types'
 
 /** Client-facing profile. Also rendered as the live preview in the expert's editor.
  *  hideServices: the public page lists services in its booking panel instead. */

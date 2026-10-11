@@ -340,7 +340,10 @@ export function initHomeMotion(root: HTMLElement, t: TFunction<'home'>) {
       entry.target.classList.toggle('live', entry.isIntersecting)
     )
   )
-  const links = [...nav.querySelectorAll<HTMLAnchorElement>('.nav-links a')]
+  // Chỉ link tới mục trong trang (#...); link sang trang khác như /marketplace không có mục để theo dõi
+  const links = [
+    ...nav.querySelectorAll<HTMLAnchorElement>('.nav-links a[href^="#"]'),
+  ]
   observe(
     links
       .map((link) => root.querySelector(link.getAttribute('href')!)!)

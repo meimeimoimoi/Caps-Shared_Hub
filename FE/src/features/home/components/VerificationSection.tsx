@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import type { CSSProperties } from 'react'
 import { HomeText } from './HomeText'
+import { MarketplacePreview } from './MarketplacePreview'
 
 export function VerificationSection() {
   const { t } = useTranslation('home')
@@ -150,6 +151,7 @@ export function VerificationSection() {
           </svg>
         </article>
       </div>
+      <MarketplacePreview />
     </section>
   )
 }

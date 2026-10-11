@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next'
+import { useId } from 'react'
 import { Globe } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { isLanguage, type Language } from '@/lib/i18n/language'
@@ -29,9 +30,8 @@ const tones = {
   },
 }
 
-/* Nút gạt ngôn ngữ; cùng thiết kế với FooterLanguageToggle của trang chủ
- * (CSS trang chủ chỉ áp dụng trong #shub-home nên ở đây viết bằng Tailwind). */
-export function AuthLanguageToggle({
+/** Shared compact language selector. */
+export function LanguageToggle({
   className,
   tone = 'dark',
 }: {
@@ -39,6 +39,7 @@ export function AuthLanguageToggle({
   tone?: keyof typeof tones
 }) {
   const { t, i18n } = useTranslation('common')
+  const groupName = useId()
   const current = isLanguage(i18n.language) ? i18n.language : 'vi'
   const activeIndex = options.findIndex((option) => option.value === current)
   const style = tones[tone]
@@ -46,13 +47,17 @@ export function AuthLanguageToggle({
   return (
     <fieldset
       className={cn(
-        'relative z-2 m-0 inline-flex min-w-0 items-center gap-1.5 rounded-full border py-1 pr-1 pl-2.5',
+        'relative z-2 m-0 inline-flex min-w-0 items-center gap-2.5 rounded-full border py-1 pr-1.5 pl-3.5',
         style.root,
         className
       )}
     >
       <legend className="sr-only">{t('language.label')}</legend>
-      <Globe size={15} aria-hidden="true" className={cn('flex-none', style.icon)} />
+      <Globe
+        size={15}
+        aria-hidden="true"
+        className={cn('flex-none', style.icon)}
+      />
       <div className="relative grid grid-cols-2">
         <span
           aria-hidden="true"
@@ -71,7 +76,7 @@ export function AuthLanguageToggle({
           >
             <input
               type="radio"
-              name="auth-language"
+              name={groupName}
               value={option.value}
               aria-label={option.label}
               checked={current === option.value}
@@ -95,4 +100,4 @@ export function AuthLanguageToggle({
   )
 }
 
-export default AuthLanguageToggle
+export default LanguageToggle

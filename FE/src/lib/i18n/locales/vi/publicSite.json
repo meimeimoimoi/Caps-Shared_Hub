@@ -1,0 +1,40 @@
+{
+  "brand": {
+    "home": "Shared Hub, về đầu trang",
+    "name": "Shared Hub"
+  },
+  "nav": {
+    "label": "Điều hướng chính",
+    "process": "Quy trình",
+    "products": "Sản phẩm",
+    "escrow": "Ký quỹ",
+    "faq": "Hỏi đáp",
+    "login": "Đăng nhập",
+    "register": "Đăng ký",
+    "askAi": "Hỏi Trợ lý AI",
+    "askAiShort": "Hỏi AI"
+  },
+  "footer": {
+    "tagline": "Hồ sơ Thuế TNDN: <b>AI soạn</b>, <b>chuyên gia xác thực</b>.",
+    "products": "Sản phẩm",
+    "learn": "Tìm hiểu",
+    "account": "Tài khoản",
+    "lookup": "Tra cứu AI",
+    "workspace": "Không gian soạn thảo",
+    "experts": "Sàn chuyên gia",
+    "process": "Quy trình",
+    "escrow": "Ký quỹ an toàn",
+    "faq": "Hỏi đáp",
+    "login": "Đăng nhập",
+    "expertSignup": "Đăng ký làm chuyên gia",
+    "disclaimer": "<b>Lưu ý:</b> Nội dung do AI tạo chỉ là bản nháp tham khảo, không phải tư vấn pháp lý. Hãy để chuyên gia xác thực trước khi nộp.",
+    "copyright": "© {{year}} Shared Hub"
+  },
+  "links": {
+    "label": "Điều hướng chính",
+    "home": "Trang chủ",
+    "marketplace": "Sàn chuyên gia",
+    "aiAssistant": "Tra cứu AI",
+    "workspace": "Không gian soạn thảo"
+  }
+}

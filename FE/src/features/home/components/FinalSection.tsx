@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import type { CSSProperties } from 'react'
 import { Link } from 'react-router-dom'
-import { HomeText } from './HomeText'
+import { TypewriterTitle } from './TypewriterTitle'
 
 export function FinalSection() {
   const { t } = useTranslation('home')
@@ -13,8 +13,8 @@ export function FinalSection() {
     >
       <div className="glow" aria-hidden="true"></div>
       <div className="wrap">
-        <h2 id="h-final" className="r" style={{ '--i': '0' } as CSSProperties}>
-          <HomeText i18nKey="final.title" />
+        <h2 id="h-final">
+          <TypewriterTitle text={t('final.title')} />
         </h2>
         <div className="cta-row r" style={{ '--i': '1' } as CSSProperties}>
           <Link className="btn btn-primary" to="/register">
