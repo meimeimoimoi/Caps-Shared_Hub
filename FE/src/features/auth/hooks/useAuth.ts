@@ -31,7 +31,10 @@ export function useAuth() {
     try {
       const { user: u, token } = await authApi.login(values)
       setSession(u, token)
-      navigate(safeReturnPath(location.state?.from), { replace: true })
+      navigate(safeReturnPath(location.state?.from), {
+        replace: true,
+        state: location.state?.fromState,
+      })
       return u
     } catch (e) {
       // BE trả 404 khi email chưa đăng ký và 422 khi sai mật khẩu; cả hai đều là sai thông tin
@@ -64,7 +67,10 @@ export function useAuth() {
         displayName: values.name,
       })
       setSession(u, token)
-      navigate(safeReturnPath(location.state?.from), { replace: true })
+      navigate(safeReturnPath(location.state?.from), {
+        replace: true,
+        state: location.state?.fromState,
+      })
       return u
     } catch (e) {
       // BE trả 422 khi email đã có tài khoản

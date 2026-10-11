@@ -2,7 +2,14 @@
 export const DEFAULT_HOME = '/drafts'
 
 // Chỉ quay về các khu vực đã biết; loại URL dạng //host, vòng lặp về /login và route lạ.
-const allowedSections = ['/drafts', '/dashboard', '/expert']
+const allowedSections = [
+  '/drafts',
+  '/dashboard',
+  '/expert',
+  '/experts',
+  '/marketplace',
+  '/ai-assistant',
+]
 
 export function safeReturnPath(value: unknown): string {
   if (

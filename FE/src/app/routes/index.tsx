@@ -310,7 +310,15 @@ const router = createBrowserRouter(
           </ProtectedRoute>
         }
       />
-      <Route path="/ai-assistant" element={<AiAssistantPage/>}/>
+      {/* F3: chat tính Credit theo tài khoản nên phải đăng nhập; câu hỏi gõ ở trang chủ được giữ qua bước đăng nhập */}
+      <Route
+        path="/ai-assistant"
+        element={
+          <ProtectedRoute>
+            <AiAssistantPage />
+          </ProtectedRoute>
+        }
+      />
       {/* Đường dẫn cũ (viết sai chính tả) giữ lại để link đã chia sẻ vẫn mở được */}
       <Route path="/ai-assitant" element={<Navigate to="/ai-assistant" replace />} />
       <Route path="*" element={<NotFoundPage />} />
