@@ -39,7 +39,7 @@ export function HomeFooter() {
                 <Link to="/drafts">{t('footer.workspace')}</Link>
               </li>
               <li>
-                <a href="#san-pham">{t('footer.experts')}</a>
+                <Link to="/marketplace">{t('footer.experts')}</Link>
               </li>
             </ul>
           </nav>
