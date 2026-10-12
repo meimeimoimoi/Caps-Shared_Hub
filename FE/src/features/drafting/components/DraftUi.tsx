@@ -4,7 +4,7 @@ import { useEffect } from 'react'
 import type { ButtonHTMLAttributes, ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { Button } from '@/components/ui/actions/button'
-import { StatusRail } from '@/components/ui/navigation/status-rail'
+import { Check } from 'lucide-react'
 import { useMotion } from '@/components/ui/motion'
 import { ApiError } from '@/lib/api-client'
 import { useDraftHref } from '../hooks/useDrafting'
@@ -45,6 +45,80 @@ export function DraftLink({
     </Link>
   )
 }
+const DRAFT_STEPS = [
+  'stepTemplate',
+  'stepInput',
+  'stepConfirm',
+  'stepGenerate',
+  'stepPreview',
+] as const
+
+/* Thanh bước riêng cho luồng soạn thảo: thanh tiến độ chia đoạn + số bước + tên; mobile gọn thành "Bước x/5" + thanh tiến độ */
+function DraftSteps({ current }: { current: number }) {
+  const { t } = useTranslation('drafting')
+  const total = DRAFT_STEPS.length
+  return (
+    <nav aria-label={t('draftWorkflowProgress')}>
+      <div className="flex flex-col gap-2 sm:hidden">
+        <p className="text-sm">
+          <span className="font-num text-text-muted">
+            {t('stepCounter', { current: current + 1, total })}
+          </span>
+          <span className="text-text-muted"> · </span>
+          <span className="text-text-strong font-semibold">
+            {t(DRAFT_STEPS[current])}
+          </span>
+        </p>
+        <span className="bg-sunken block h-1 overflow-hidden rounded-full">
+          <span
+            className="bg-accent block h-full rounded-full transition-[width] duration-300"
+            style={{ width: `${((current + 1) / total) * 100}%` }}
+          />
+        </span>
+      </div>
+
+      <ol className="hidden gap-2 sm:grid sm:grid-cols-5">
+        {DRAFT_STEPS.map((key, index) => {
+          const done = index < current
+          const active = index === current
+          return (
+            <li
+              key={key}
+              aria-current={active ? 'step' : undefined}
+              className="flex min-w-0 flex-col gap-2.5"
+            >
+              <span
+                aria-hidden="true"
+                className={`h-1 rounded-full transition-colors duration-300 ${done || active ? 'bg-accent' : 'bg-border'}`}
+              />
+              <span className="flex min-w-0 items-center gap-2.5">
+                <span
+                  className={`font-num flex size-6 shrink-0 items-center justify-center rounded-full text-xs font-semibold transition-colors ${done || active ? 'bg-accent text-on-accent' : 'border-border bg-surface text-text-muted border'}`}
+                >
+                  {done ? <Check size={13} aria-hidden="true" /> : index + 1}
+                </span>
+                <span className="flex min-w-0 flex-col">
+                  <span className="text-text-muted text-[0.6875rem] leading-tight font-medium tracking-[0.04em] uppercase">
+                    {t('stepNumber', { n: index + 1 })}
+                  </span>
+                  <span
+                    className={`truncate text-sm leading-snug ${active ? 'text-text-strong font-semibold' : done ? 'text-text' : 'text-text-muted'}`}
+                  >
+                    {t(key)}
+                    {done && (
+                      <span className="sr-only"> ({t('stepDone')})</span>
+                    )}
+                  </span>
+                </span>
+              </span>
+            </li>
+          )
+        })}
+      </ol>
+    </nav>
+  )
+}
+
 export function DraftHeading({
   title,
   description,
@@ -73,33 +147,16 @@ export function DraftHeading({
         {children}
       </div>
       {step !== undefined && (
-        <div className="border-border max-w-3xl border-t pt-5">
-          <StatusRail
-            steps={[
-              'stepTemplate',
-              'stepInput',
-              'stepConfirm',
-              'stepGenerate',
-              'stepPreview',
-            ].map((key) =>
-              t(
-                key as
-                  | 'stepTemplate'
-                  | 'stepInput'
-                  | 'stepConfirm'
-                  | 'stepGenerate'
-                  | 'stepPreview'
-              )
-            )}
-            current={step}
-            size="sm"
-            label={t('draftWorkflowProgress')}
-          />
-          <p className="text-caption text-fg-muted mt-3">
-            {t(
-              'aSnapshotIsAConfirmedVersionOfYourInputKeptSeparateFromTheAiDraft'
-            )}
-          </p>
+        <div className="flex max-w-5xl flex-col gap-3">
+          <DraftSteps current={step} />
+          {/* Khái niệm snapshot chỉ cần giải thích ở bước nhập / xác nhận dữ liệu */}
+          {(step === 1 || step === 2) && (
+            <p className="text-caption text-fg-muted">
+              {t(
+                'aSnapshotIsAConfirmedVersionOfYourInputKeptSeparateFromTheAiDraft'
+              )}
+            </p>
+          )}
         </div>
       )}
     </header>

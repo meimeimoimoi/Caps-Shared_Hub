@@ -6,7 +6,8 @@ import english from '@/lib/i18n/locales/en/drafting.json'
 export class DraftUiError extends ApiError {
   readonly translationKey: ParseKeys<'drafting'>
   constructor(key: ParseKeys<'drafting'>, status?: number) {
-    super(english[key], status)
+    // Key số nhiều (vd. versionCount) không có sẵn dạng gốc trong JSON nên tra theo chuỗi
+    super((english as Record<string, string>)[key] ?? key, status)
     this.translationKey = key
   }
 }

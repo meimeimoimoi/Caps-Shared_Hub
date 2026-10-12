@@ -12,6 +12,8 @@ export interface SchemaField {
 }
 export interface TemplateVersion {
   id: string
+  /** Mẫu gốc; nhiều phiên bản cùng templateId, chỉ 1 phiên bản ACTIVE */
+  templateId: string
   version: number
   title: string
   description: string
