@@ -32,7 +32,7 @@ Backend (chạy ở `BE/`):
 
 ```powershell
 dotnet build Caps.sln
-dotnet run --project auth/auth.csproj          # :5194
+dotnet run --project auth/Caps.Auth.Api       # :5194
 dotnet run --project gateway/gateway.csproj    # :5190
 ```
 
@@ -53,8 +53,15 @@ npm run dev        # :5173
 
 - Pin SDK trong `BE/global.json` (8.0.421). Thuộc tính chung (net8.0, Nullable, ImplicitUsings, LangVersion) nằm ở `Directory.Build.props`, không lặp lại trong `.csproj`.
 - **Version package chỉ pin trong `Directory.Packages.props`** (Central Package Management). `.csproj` dùng `<PackageReference Include="..." />` **không có `Version`**.
-- Tên folder dạng số nhiều: `Controllers/`, `Services/`, `Entities/`, `DTOs/`. Interface có prefix `I`, đặt trong `Services/Interface/`.
-- Code dùng chung đặt vào `common/` (wrappers, exceptions, abstractions, security, messaging, extensions). Không copy qua từng service.
+- **Service nhiều nghiệp vụ theo Clean Architecture** (mẫu: `auth/`): 4 project `Caps.<Service>.Domain` / `.Application` / `.Infrastructure` / `.Api`, thư mục service giữ chữ thường.
+  - `Domain`: entity có hành vi (quy tắc nghiệp vụ nằm trong entity), hằng số, `<Service>Errors`. Không tham chiếu EF Core/ASP.NET.
+  - `Application`: mỗi use case một file trong `Features/<Nhom>/` gồm `XxxCommand`/`XxxQuery` + `XxxHandler` (implement `ICommandHandler`/`IQueryHandler`); interface (port) trong `Abstractions/`; dịch vụ dùng chung nhỏ trong `Common/`. Chỉ phụ thuộc interface, không dùng `DbContext`, `IOptions`.
+  - `Infrastructure`: EF Core + migration, repository, adapter (JWT, hash, email, storage); đăng ký qua `AddXxxInfrastructure`.
+  - `Api`: controller chỉ map request → command và nhận đúng handler cần qua `[FromServices]`; request DTO trong `DTOs/Requests/`; `Program.cs` là composition root.
+- Áp dụng **SOLID**: một class một trách nhiệm; thêm use case bằng class mới (handler tự đăng ký qua `AddHandlersFromAssembly`), không sửa class cũ; interface nhỏ theo việc; phụ thuộc vào abstraction.
+- Service đơn giản (gateway, notification, read…) giữ 1 project, chia thư mục theo tính năng. Tên folder dạng số nhiều, interface có prefix `I`.
+- Lỗi có chủ đích: `throw <Service>Errors.Xxx()` hoặc `CommonErrors.Xxx()` (`AppException` + `ErrorType`), không trả mã HTTP từ Domain/Application.
+- Code dùng chung đặt vào `common/` (`Caps.Common.Domain/Application/Security/Api/Messaging/Persistence`, `Caps.Contracts`), chỉ code kỹ thuật, không chứa nghiệp vụ. Không copy qua từng service.
 - Wiring service qua `AddCommonApi` / `UseCommonApi`. **Không copy `Program.cs`** từ service khác.
 - Service mới: `dotnet sln Caps.sln add <path-to-csproj>`, thêm route YARP ở `gateway/` nếu đi qua gateway, và có `/healthz`, `/readyz`.
 - Mọi request từ client đi qua Gateway (`:5190`), không gọi thẳng service từ FE.
@@ -76,8 +83,11 @@ npm run dev        # :5173
 Các điểm sau cố ý làm đơn giản và sẽ thay. Không dùng làm mẫu cho code mới:
 
 - JWT HS256 + key trong `appsettings.json` (sẽ chuyển RS256 + secret manager).
-- `AuthDbContext.EnsureCreated()` (sẽ chuyển sang `dotnet ef migrations`). Code mới dùng migration.
-- Hash mật khẩu SHA256 demo (sẽ chuyển BCrypt/Argon2, kèm refresh token + lockout). Không dùng SHA256 cho mật khẩu ở chỗ khác.
+- Thu hồi phiên (`AuthBoundaryMiddleware`) đọc thẳng DB của auth (sẽ chuyển sang Redis/event để service khác tự kiểm tra).
+- Nhiều service dùng chung user `postgres` và có khóa ngoại chéo schema (sẽ tách DB user riêng cho mỗi service, bỏ khóa ngoại chéo).
+- Phần hồ sơ chuyên gia đang nằm tạm trong `auth` (sẽ tách thành service `expert`).
+
+Đã xong: DB dùng `dotnet ef migrations`; mật khẩu băm bằng `PasswordHasher` (PBKDF2) + lockout + refresh token xoay vòng.
 
 ## Git
 

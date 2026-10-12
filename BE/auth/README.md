@@ -24,12 +24,21 @@ All mutations under /api/v1/auth require X-Caps-Client: spa. Browser Origin must
 
 Response: existing success/data/message envelope. Auth business failures add code: 400 validation, 401 credentials/token, 403 permission/CSRF, 409 conflict, 429 cooldown/rate limit. Rate limiter and JWT authorization may return empty bodies; frontend must handle HTTP status as well as JSON.
 
+## Project layout
+
+- Caps.Auth.Domain: entities with behavior (User, AuthRefreshToken, VerificationToken...), AuthErrors.
+- Caps.Auth.Application: one handler per use case under Features/ (Sessions, EmailVerification, Passwords, Profile); ports under Abstractions/.
+- Caps.Auth.Infrastructure: AuthDbContext + migrations, repositories, JWT/password/outbox adapters (AddAuthInfrastructure).
+- Caps.Auth.Api: controllers, middleware, Program.cs. Run with `dotnet run --project auth/Caps.Auth.Api`.
+
+EF commands: `dotnet ef migrations add <Name> --project auth/Caps.Auth.Infrastructure --startup-project auth/Caps.Auth.Api`.
+
 ## Local setup (PowerShell from BE)
 
 Use .NET SDK 8.0.421 (global.json), PostgreSQL and RabbitMQ. The Postgres connection string is not stored in appsettings; set it once per machine with User Secrets (stored outside the repo, loaded only in Development):
 
 ~~~powershell
-dotnet user-secrets set "ConnectionStrings:Postgres" "Host=localhost;Port=5432;Database=shared_hub_db;Username=postgres;Password=<your-local-password>" --project auth
+dotnet user-secrets set "ConnectionStrings:Postgres" "Host=localhost;Port=5432;Database=shared_hub_db;Username=postgres;Password=<your-local-password>" --project auth/Caps.Auth.Api
 ~~~
 
 Outside Development, supply ConnectionStrings__Postgres as an environment variable or from a secret store. Development applies migrations automatically; Production requires an explicit EF deployment step.

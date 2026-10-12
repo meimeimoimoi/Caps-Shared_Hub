@@ -89,7 +89,7 @@ cd BE
 dotnet build Caps.sln
 
 # Terminal 1 — Auth (http://localhost:5194/healthz)
-dotnet run --project auth/auth.csproj
+dotnet run --project auth/Caps.Auth.Api
 
 # Terminal 2 — Gateway (http://localhost:5190/healthz)
 dotnet run --project gateway/gateway.csproj
@@ -133,7 +133,7 @@ vào `/dashboard` (F5 không mất session, 401 tự về `/login`).
 
 **Backend**
 
-- Folder dạng số nhiều: `Controllers/`, `Services/`, `Entities/`, `DTOs/`. Interface prefix `I`, đặt trong `Services/Interface/`.
+- Service nhiều nghiệp vụ theo Clean Architecture (mẫu `BE/auth/`: Domain / Application / Infrastructure / Api) và SOLID; chi tiết trong `AGENTS.md`.
 - Code dùng chung vào `common/`. Service wiring qua `AddCommonApi` / `UseCommonApi`, không copy `Program.cs`.
 - Version package chỉ pin trong `Directory.Packages.props`, `.csproj` không ghi `Version`.
 - Service mới: `dotnet sln Caps.sln add <path-to-csproj>` + thêm route YARP nếu đi qua gateway.
