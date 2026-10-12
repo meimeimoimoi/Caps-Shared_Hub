@@ -1,5 +1,5 @@
 using System.Text.Encodings.Web;
-using Caps.Common.Messaging;
+using Caps.Contracts;
 
 namespace notification.Services;
 

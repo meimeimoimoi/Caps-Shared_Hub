@@ -2,7 +2,7 @@ using System.Security.Claims;
 using auth.DTOs.Requests;
 using auth.Services;
 using auth.Services.Interface;
-using Caps.Common.Wrappers;
+using Caps.Common.Api;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;

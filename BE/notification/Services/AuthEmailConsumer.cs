@@ -2,7 +2,7 @@ using System.Net;
 using System.Net.Mail;
 using System.Net.Mime;
 using System.Text;
-using Caps.Common.Messaging;
+using Caps.Contracts;
 using MassTransit;
 
 namespace notification.Services;

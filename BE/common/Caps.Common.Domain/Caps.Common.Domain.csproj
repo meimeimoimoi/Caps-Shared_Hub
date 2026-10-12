@@ -1,0 +1,5 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Khối nền cho tầng Domain: không phụ thuộc gì -->
+
+</Project>

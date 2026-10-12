@@ -1,6 +1,6 @@
 using System.Text.Json;
 using auth.Data;
-using Caps.Common.Messaging;
+using Caps.Contracts;
 using MassTransit;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;

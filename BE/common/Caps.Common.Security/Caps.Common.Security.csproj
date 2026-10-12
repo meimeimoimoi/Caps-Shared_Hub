@@ -1,9 +1,9 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
-    <ProjectReference Include="..\abstractions\abstractions.csproj" />
+    <ProjectReference Include="..\Caps.Common.Application\Caps.Common.Application.csproj" />
   </ItemGroup>
 
 </Project>

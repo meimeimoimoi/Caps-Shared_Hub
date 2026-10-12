@@ -3,7 +3,7 @@ using auth.DTOs.Requests;
 using auth.DTOs.Responses;
 using auth.Services;
 using auth.Services.Interface;
-using Caps.Common.Wrappers;
+using Caps.Common.Api;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 

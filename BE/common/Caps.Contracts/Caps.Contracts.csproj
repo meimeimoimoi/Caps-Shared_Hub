@@ -1,0 +1,5 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Event giữa các service: record thuần, không phụ thuộc gì -->
+
+</Project>

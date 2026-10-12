@@ -1,5 +1,5 @@
 using auth.Data;
-using Caps.Common.Wrappers;
+using Caps.Common.Api;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 

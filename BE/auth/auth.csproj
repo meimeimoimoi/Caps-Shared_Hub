@@ -13,7 +13,10 @@
     <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" />
     <PackageReference Include="AWSSDK.S3" />
     <PackageReference Include="DnsClient" />
-    <ProjectReference Include="..\common\common.csproj" />
+    <ProjectReference Include="..\common\Caps.Common.Api\Caps.Common.Api.csproj" />
+    <ProjectReference Include="..\common\Caps.Common.Messaging\Caps.Common.Messaging.csproj" />
+    <ProjectReference Include="..\common\Caps.Common.Persistence\Caps.Common.Persistence.csproj" />
+    <ProjectReference Include="..\common\Caps.Contracts\Caps.Contracts.csproj" />
   </ItemGroup>
 
 </Project>

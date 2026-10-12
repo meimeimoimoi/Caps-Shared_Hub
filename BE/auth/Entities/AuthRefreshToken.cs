@@ -1,5 +1,5 @@
 using System.Net;
-using Caps.Common.Database;
+using Caps.Common.Domain;
 
 namespace auth.Entities;
 

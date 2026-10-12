@@ -1,6 +1,6 @@
 using System.Security.Cryptography;
 
-namespace Caps.Common.Database;
+namespace Caps.Common.Domain;
 
 /// <summary>
 /// UUID version 7 generator complying with RFC 9562.

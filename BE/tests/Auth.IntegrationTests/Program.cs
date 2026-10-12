@@ -4,7 +4,7 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using auth.Data;
 using auth.Services;
-using Caps.Common.Messaging;
+using Caps.Contracts;
 using MassTransit;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;

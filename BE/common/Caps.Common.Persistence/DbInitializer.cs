@@ -1,6 +1,6 @@
 using Npgsql;
 
-namespace Caps.Common.Database;
+namespace Caps.Common.Persistence;
 
 /// <summary>
 /// Database bootstrapper responsible for zero-setup developer experience.

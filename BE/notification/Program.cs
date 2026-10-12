@@ -1,4 +1,4 @@
-using Caps.Common.Extensions;
+using Caps.Common.Api;
 using Caps.Common.Messaging;
 using notification.Services;
 

@@ -6,21 +6,6 @@ namespace Caps.Common.Messaging;
 
 public sealed record MessagingOptions(string Host, string Username, string Password);
 
-/// <summary>Sample contract — services share events via this lib.</summary>
-public sealed record UserRegisteredEvent(string UserId, string Email, DateTimeOffset At);
-
-/// <param name="Code">Mã 6 số nhập trực tiếp trên web (chỉ có ở email xác nhận); null với phiếu cũ.</param>
-/// <param name="CodeExpiresAt">Hạn của mã, ngắn hơn hạn của liên kết.</param>
-public sealed record AuthEmailRequestedEvent(
-    Guid Id,
-    string Email,
-    string Purpose,
-    string Link,
-    DateTimeOffset ExpiresAt,
-    string? Code = null,
-    DateTimeOffset? CodeExpiresAt = null
-);
-
 public static class MessagingServiceCollectionExtensions
 {
     public static IServiceCollection AddCapsMessaging(

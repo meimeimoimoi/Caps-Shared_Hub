@@ -1,4 +1,4 @@
-namespace Caps.Common.Abstractions;
+namespace Caps.Common.Application;
 
 public interface ICurrentUser
 {

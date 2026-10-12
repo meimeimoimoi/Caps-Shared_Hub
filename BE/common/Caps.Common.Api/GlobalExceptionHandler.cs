@@ -1,22 +1,11 @@
-using Caps.Common.Wrappers;
+using Caps.Common.Application;
+using Caps.Common.Domain;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
-namespace Caps.Common.Exceptions;
-
-public class DomainException(string message) : Exception(message);
-
-public sealed class NotFoundException(string message) : DomainException(message);
-
-public sealed class ValidationException(
-    string message,
-    IDictionary<string, string[]>? errors = null
-) : DomainException(message)
-{
-    public IDictionary<string, string[]>? Errors { get; } = errors;
-}
+namespace Caps.Common.Api;
 
 /// <summary>Centralized ProblemDetails mapping. Register via AddExceptionHandler.</summary>
 public sealed class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger)

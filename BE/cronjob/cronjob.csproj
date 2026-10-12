@@ -4,7 +4,7 @@
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
     <PackageReference Include="Swashbuckle.AspNetCore" />
     <PackageReference Include="OpenApiUi" />
-    <ProjectReference Include="..\common\common.csproj" />
+    <ProjectReference Include="..\common\Caps.Common.Api\Caps.Common.Api.csproj" />
   </ItemGroup>
 
 </Project>

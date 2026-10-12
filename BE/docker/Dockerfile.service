@@ -10,14 +10,11 @@ FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG SERVICE_NAME
 WORKDIR /src
 
-# Copy shared common libraries first for efficient caching
-COPY ["common/common.csproj", "common/"]
-COPY ["common/abstractions/abstractions.csproj", "common/abstractions/"]
-COPY ["common/exceptions/exceptions.csproj", "common/exceptions/"]
-COPY ["common/extensions/extensions.csproj", "common/extensions/"]
-COPY ["common/messaging/messaging.csproj", "common/messaging/"]
-COPY ["common/security/security.csproj", "common/security/"]
-COPY ["common/wrappers/wrappers.csproj", "common/wrappers/"]
+# Build props + central package versions (required by every project)
+COPY ["Directory.Build.props", "Directory.Packages.props", "global.json", "./"]
+
+# Shared libraries (common/Caps.Common.*, common/Caps.Contracts)
+COPY common/ common/
 
 # Copy target service project file
 COPY ["${SERVICE_NAME}/${SERVICE_NAME}.csproj", "${SERVICE_NAME}/"]
@@ -25,8 +22,7 @@ COPY ["${SERVICE_NAME}/${SERVICE_NAME}.csproj", "${SERVICE_NAME}/"]
 # Restore dependencies
 RUN dotnet restore "${SERVICE_NAME}/${SERVICE_NAME}.csproj"
 
-# Copy full source code
-COPY common/ common/
+# Copy service source code
 COPY ${SERVICE_NAME}/ ${SERVICE_NAME}/
 
 # Build project

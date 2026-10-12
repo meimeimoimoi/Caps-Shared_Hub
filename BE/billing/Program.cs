@@ -1,6 +1,6 @@
 using billing.Data;
-using Caps.Common.Database;
-using Caps.Common.Extensions;
+using Caps.Common.Api;
+using Caps.Common.Persistence;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);

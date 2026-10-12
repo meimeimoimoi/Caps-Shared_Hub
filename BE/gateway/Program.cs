@@ -1,4 +1,4 @@
-using Caps.Common.Extensions;
+using Caps.Common.Api;
 
 var builder = WebApplication.CreateBuilder(args);
 
