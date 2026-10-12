@@ -375,6 +375,12 @@ Check(
         && Code(pendingSubmit.Json) == "EMAIL_NOT_VERIFIED",
     "expert application submit requires a verified email"
 );
+var draftSupplement = await ExpertCall(Upload(applicant, "SUPPLEMENT", pdf));
+Check(
+    draftSupplement.Status == HttpStatusCode.BadRequest
+        && Code(draftSupplement.Json) == "INVALID_EVIDENCE_CODE",
+    "supplementary files are only accepted when more information is requested"
+);
 
 var fakeUpload = await ExpertCall(Upload(deviceA, "EV-01", "<svg onload=alert(1)>"u8.ToArray()));
 Check(

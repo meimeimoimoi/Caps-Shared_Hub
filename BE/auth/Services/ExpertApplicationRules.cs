@@ -3,6 +3,9 @@ namespace auth.Services;
 /// <summary>Quy tắc dữ liệu của hồ sơ chuyên gia (BR-E02, POL-EXP-01).</summary>
 public static class ExpertApplicationRules
 {
+    /// <summary>Tài liệu gửi kèm khi bổ sung hồ sơ (NEED_MORE_INFORMATION), không thuộc nhóm cố định.</summary>
+    public const string SupplementCode = "SUPPLEMENT";
+
     /// <summary>CV bắt buộc + 5 nhóm bằng chứng điều kiện EV-01…EV-05 (EV-06 là số năm kinh nghiệm).</summary>
     public static readonly string[] EvidenceCodes =
     [

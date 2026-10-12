@@ -275,7 +275,8 @@ public sealed class ExpertApplicationService(
         CancellationToken ct
     )
     {
-        if (!ExpertApplicationRules.EvidenceCodes.Contains(code))
+        var supplementFile = code == ExpertApplicationRules.SupplementCode;
+        if (!supplementFile && !ExpertApplicationRules.EvidenceCodes.Contains(code))
             throw new AuthFailure(400, "INVALID_EVIDENCE_CODE", "Unknown evidence category.");
         if (content.Length == 0)
             throw new AuthFailure(400, "EVIDENCE_REQUIRED", "File is required.");
@@ -294,6 +295,12 @@ public sealed class ExpertApplicationService(
         var (profile, app) = await OpenApplication(user, ct);
         if (app.Status is not (Status.Draft or Status.NeedMoreInformation))
             throw Locked(app.Status);
+        if (supplementFile && app.Status != Status.NeedMoreInformation)
+            throw new AuthFailure(
+                400,
+                "INVALID_EVIDENCE_CODE",
+                "Supplementary files are only accepted when more information is requested."
+            );
         var count =
             db.Entry(app).State == EntityState.Added
                 ? 0
