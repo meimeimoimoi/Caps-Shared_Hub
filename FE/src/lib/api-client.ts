@@ -45,25 +45,34 @@ let refreshing: Promise<string> | null = null
 
 /** Single-flight: nhiều request cùng gặp 401 chỉ dùng chung một lần refresh,
  * vì BE xoay vòng refresh token và coi việc dùng lại token cũ là bị đánh cắp. */
-export function refreshAccessToken(): Promise<string> {
-  refreshing ??= apiClient
-    .post<{ data: RefreshedSession }>(
+export function refreshAccessToken(staleToken?: string | null): Promise<string> {
+  refreshing ??= withRefreshLock(async () => {
+    // Tab khác vừa refresh xong (token dùng chung qua localStorage): dùng luôn, không refresh lại
+    // vì gửi cookie đã xoay vòng sẽ bị BE coi là bị đánh cắp và thu hồi mọi phiên.
+    const current = localStorage.getItem('auth_token')
+    if (staleToken && current && current !== staleToken) return current
+    const { data } = await apiClient.post<{ data: RefreshedSession }>(
       '/api/v1/auth/refresh-token',
       {},
       { withCredentials: true },
     )
-    .then(({ data }) => {
-      const { accessToken, user } = data.data
-      localStorage.setItem('auth_token', accessToken)
-      window.dispatchEvent(
-        new CustomEvent(SESSION_REFRESHED_EVENT, { detail: { accessToken, user } }),
-      )
-      return accessToken
-    })
-    .finally(() => {
-      refreshing = null
-    })
+    const { accessToken, user } = data.data
+    localStorage.setItem('auth_token', accessToken)
+    window.dispatchEvent(
+      new CustomEvent(SESSION_REFRESHED_EVENT, { detail: { accessToken, user } }),
+    )
+    return accessToken
+  }).finally(() => {
+    refreshing = null
+  })
   return refreshing
+}
+
+/** Khóa giữa các tab cùng trình duyệt: tại một thời điểm chỉ một tab được refresh. */
+function withRefreshLock<T>(task: () => Promise<T>): Promise<T> {
+  return typeof navigator !== 'undefined' && navigator.locks
+    ? navigator.locks.request('caps-auth-refresh', task)
+    : task()
 }
 
 function expireSession() {
@@ -83,8 +92,9 @@ apiClient.interceptors.response.use(
     const hadSession = !!localStorage.getItem('auth_token')
     if (status === 401 && config && hadSession && !config._retried && canRefresh(url)) {
       config._retried = true
+      const sent = String(config.headers.Authorization ?? '').replace(/^Bearer /, '')
       try {
-        const token = await refreshAccessToken()
+        const token = await refreshAccessToken(sent)
         config.headers.Authorization = `Bearer ${token}`
         return apiClient(config)
       } catch {

@@ -21,11 +21,17 @@ export function AppProvider({ children }: AppProviderProps) {
       const { accessToken, user } = (event as CustomEvent<{ accessToken: string; user: BackendMe }>).detail
       useAuthStore.getState().renewSession(toUser(user), accessToken)
     }
+    // Tab khác đổi phiên (refresh, xác nhận email, đăng xuất): nạp lại để các tab dùng chung một phiên
+    const sync = (event: StorageEvent) => {
+      if (event.key === 'caps-auth') void useAuthStore.persist.rehydrate()
+    }
     window.addEventListener(SESSION_EXPIRED_EVENT, expire)
     window.addEventListener(SESSION_REFRESHED_EVENT, renew)
+    window.addEventListener('storage', sync)
     return () => {
       window.removeEventListener(SESSION_EXPIRED_EVENT, expire)
       window.removeEventListener(SESSION_REFRESHED_EVENT, renew)
+      window.removeEventListener('storage', sync)
     }
   }, [])
   // Mở/tải lại app: lấy lại hồ sơ từ server (trạng thái, role, avatar có thể đã đổi ở nơi khác).
