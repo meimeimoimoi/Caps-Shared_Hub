@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-// Chỉ chạy trên DB test riêng. Không gửi email thật; đọc outbox đã mã hóa bằng key test.
+// Runs only against a dedicated test DB. Sends no real email; reads the encrypted outbox with the test key.
 var connection =
     Environment.GetEnvironmentVariable("AUTH_TEST_CONNECTION")
     ?? throw new Exception("AUTH_TEST_CONNECTION required.");
@@ -258,7 +258,7 @@ Check(
     "new password works"
 );
 
-// Đổi mật khẩu: thiết bị khác bị đăng xuất, nhưng thiết bị cũ refresh không được đá phiên mới.
+// Change password: other devices are signed out, but an old device refreshing must not kick out the new session.
 const string changedPassword = "Changed-caps-password-123!";
 using var deviceA = Client();
 using var deviceB = Client();
@@ -305,7 +305,7 @@ Check(
     "stale device refresh does not revoke the new session"
 );
 
-// Ảnh đại diện: nhận diện định dạng theo nội dung, phục vụ công khai qua URL có phiên bản.
+// Avatar: format detected from content, served publicly through a versioned URL.
 Bearer(deviceA, Access(change.Json));
 var png = Convert.FromBase64String(
     "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII="
@@ -345,7 +345,7 @@ Check(
     "remove avatar"
 );
 
-// Hồ sơ chuyên gia (phía ứng viên): file lưu ở storage riêng tư, chỉ nộp được khi đã xác nhận email.
+// Expert application (applicant side): files live in private storage; submitting requires a verified email.
 const string expertBase = "/api/v1/experts/me/application";
 var pdf = "%PDF-1.4\n%%EOF\n"u8.ToArray();
 async Task<(HttpStatusCode Status, JsonElement Json)> ExpertCall(Task<HttpResponseMessage> request)
@@ -455,7 +455,7 @@ Check(
     "another user cannot open the evidence"
 );
 
-// Xác nhận email bằng mã 6 số (applicant vẫn đang chờ xác nhận)
+// Verify email with the 6-digit code (applicant is still pending verification)
 var applicantEmail = pendingReg
     .Json.GetProperty("data")
     .GetProperty("user")
@@ -501,7 +501,7 @@ Check(
     "anonymous me denied"
 );
 
-// Kiểm tra concurrency/expiry trực tiếp với PostgreSQL thật, không tiêu thụ quota HTTP.
+// Check concurrency/expiry directly against real PostgreSQL without using the HTTP quota.
 var provider = DataProtectionProvider.Create(
     new DirectoryInfo(keyPath),
     x => x.SetApplicationName("caps-auth")
@@ -641,7 +641,7 @@ await using (var db = new AuthDbContext(options))
         "lockout blocks correct password after repeated failure"
     );
 
-// Resend invalidates older links; kiểm tra bằng service để tránh quota HTTP.
+// Resend invalidates older links; checked through the service to avoid the HTTP quota.
 var resendEmail = "resend-" + Guid.NewGuid().ToString("N") + "@caps.test";
 auth.DTOs.Responses.SessionResult pending;
 await using (var db = new AuthDbContext(options))
@@ -671,7 +671,7 @@ await using (var db = new AuthDbContext(options))
         "resend invalidates previous link"
     );
 
-// Broker in-memory và SMTP loopback giả lập: không gửi email ra ngoài.
+// In-memory broker and fake loopback SMTP: no email leaves the machine.
 await using var smtp = new LocalSmtpSink();
 var services = new ServiceCollection();
 services.AddLogging();
@@ -705,7 +705,7 @@ try
 {
     var body = await smtp.Message.Task.WaitAsync(TimeSpan.FromSeconds(20));
     var normalizedMail = body.Replace("\r\n", "\n");
-    // Email gồm nhiều phần (chữ thuần, HTML, logo nhúng): giải mã từng phần chữ theo encoding của nó.
+    // Emails are multipart (plain text, HTML, embedded logo): decode each text part with its own encoding.
     static string DecodePart(string part)
     {
         var split = part.IndexOf("\n\n", StringComparison.Ordinal);

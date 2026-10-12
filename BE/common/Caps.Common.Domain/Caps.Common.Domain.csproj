@@ -1,5 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <!-- Khối nền cho tầng Domain: không phụ thuộc gì -->
+  <!-- Domain layer building blocks: no dependencies -->
 
 </Project>

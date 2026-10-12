@@ -8,7 +8,7 @@ public sealed class AuthOptions
     public int RefreshDays { get; set; } = 7;
     public int VerificationMinutes { get; set; } = 1440;
 
-    /// <summary>Mã 6 số trong email xác nhận: hạn ngắn và giới hạn số lần nhập sai vì dễ đoán hơn link.</summary>
+    /// <summary>6-digit code in the verification email: short expiry and limited attempts, since it is easier to guess than a link.</summary>
     public int VerificationCodeMinutes { get; set; } = 10;
     public int MaxCodeAttempts { get; set; } = 5;
     public int ResetMinutes { get; set; } = 30;
@@ -20,8 +20,8 @@ public sealed class AuthOptions
 }
 
 /// <summary>
-/// Cầu nối tạm: lỗi của auth đi qua cơ chế lỗi chung (GlobalExceptionHandler).
-/// Bước tái cấu trúc auth sẽ thay bằng CommonErrors / AuthErrors theo ErrorType.
+/// Temporary bridge: auth errors go through the shared error pipeline (GlobalExceptionHandler).
+/// The auth refactor replaces it with CommonErrors / AuthErrors based on ErrorType.
 /// </summary>
 public sealed class AuthFailure(int status, string code, string message)
     : AppException(TypeOf(status), code, message)

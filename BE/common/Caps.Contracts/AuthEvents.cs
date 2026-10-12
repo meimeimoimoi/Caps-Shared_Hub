@@ -1,11 +1,11 @@
 namespace Caps.Contracts;
 
-// Hợp đồng giữa các service: chỉ thêm trường tùy chọn, không xóa/đổi tên trường đã phát hành.
+// Contracts between services: only add optional fields; never remove or rename a released field.
 
 public sealed record UserRegisteredEvent(string UserId, string Email, DateTimeOffset At);
 
-/// <param name="Code">Mã 6 số nhập trực tiếp trên web (chỉ có ở email xác nhận); null với phiếu cũ.</param>
-/// <param name="CodeExpiresAt">Hạn của mã, ngắn hơn hạn của liên kết.</param>
+/// <param name="Code">6-digit code entered on the website (verification emails only); null for older messages.</param>
+/// <param name="CodeExpiresAt">Code expiry, shorter than the link expiry.</param>
 public sealed record AuthEmailRequestedEvent(
     Guid Id,
     string Email,

@@ -1,12 +1,12 @@
 namespace auth.Services;
 
-/// <summary>Quy tắc dữ liệu của hồ sơ chuyên gia (BR-E02, POL-EXP-01).</summary>
+/// <summary>Data rules for expert applications (BR-E02, POL-EXP-01).</summary>
 public static class ExpertApplicationRules
 {
-    /// <summary>Tài liệu gửi kèm khi bổ sung hồ sơ (NEED_MORE_INFORMATION), không thuộc nhóm cố định.</summary>
+    /// <summary>Documents attached when supplementing (NEED_MORE_INFORMATION); not part of a fixed group.</summary>
     public const string SupplementCode = "SUPPLEMENT";
 
-    /// <summary>CV bắt buộc + 5 nhóm bằng chứng điều kiện EV-01…EV-05 (EV-06 là số năm kinh nghiệm).</summary>
+    /// <summary>Required CV + 5 eligibility evidence groups EV-01…EV-05 (EV-06 is years of experience).</summary>
     public static readonly string[] EvidenceCodes =
     [
         "CV",
@@ -29,10 +29,10 @@ public static class ExpertApplicationRules
 
     public const long MaxFileBytes = 10 * 1024 * 1024;
 
-    /// <summary>Giới hạn số file mỗi hồ sơ: tài khoản chưa xác nhận email cũng tải được nên phải chặn lạm dụng.</summary>
+    /// <summary>Max files per application: unverified accounts can upload too, so abuse must be capped.</summary>
     public const int MaxFilesPerApplication = 20;
 
-    /// <summary>Nhận diện loại file theo nội dung (không tin đuôi file hay Content-Type client gửi).</summary>
+    /// <summary>Detect the file type from its content (never trust the extension or the client's Content-Type).</summary>
     public static string? DetectContentType(ReadOnlySpan<byte> d)
     {
         if (d.Length >= 5 && d[..5].SequenceEqual("%PDF-"u8))
@@ -47,7 +47,7 @@ public static class ExpertApplicationRules
         return null;
     }
 
-    /// <summary>Hồ sơ đã kết thúc: muốn nộp tiếp phải tạo Application mới (BR-E23).</summary>
+    /// <summary>Closed application: applying again requires a new Application (BR-E23).</summary>
     public static bool IsClosed(string status) =>
         status
             is Entities.ExpertApplicationStatus.NotEligible

@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 namespace auth.DTOs.Requests;
 
 /// <summary>
-/// Lưu nháp hồ sơ chuyên gia: mọi trường đều có thể để trống; điều kiện bắt buộc chỉ kiểm tra lúc nộp.
+/// Save an expert application draft: every field may be empty; required fields are only checked on submit.
 /// </summary>
 public sealed record SaveExpertApplicationRequest(
     [MaxLength(128)] string? DisplayName,

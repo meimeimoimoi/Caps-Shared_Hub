@@ -3,8 +3,8 @@ using Caps.Common.Domain;
 namespace auth.Entities;
 
 /// <summary>
-/// Một lần nộp Expert Eligibility Application (Gate 1). Nộp lại sau NOT_ELIGIBLE/REJECTED phải tạo
-/// dòng mới liên kết dòng cũ (BR-E23), không ghi đè kết quả lịch sử.
+/// One Expert Eligibility Application submission (Gate 1). Re-applying after NOT_ELIGIBLE/REJECTED
+/// creates a new row linked to the previous one (BR-E23); past results are never overwritten.
 /// </summary>
 public sealed class ExpertApplication
 {
@@ -15,7 +15,7 @@ public sealed class ExpertApplication
     /// <summary>Theo ExpertApplicationStatus.</summary>
     public string Status { get; set; } = ExpertApplicationStatus.Draft;
 
-    /// <summary>Lần nộp gần nhất (nộp đầu hoặc gửi bổ sung); lịch sử đầy đủ ở Events.</summary>
+    /// <summary>Latest submission (first submit or supplement); full history is in Events.</summary>
     public DateTimeOffset? SubmittedAt { get; set; }
     public DateTimeOffset? DecidedAt { get; set; }
     public string? DecisionNote { get; set; }
@@ -30,7 +30,7 @@ public sealed class ExpertApplication
         new List<ExpertApplicationEvent>();
 }
 
-/// <summary>Trùng tên với APPLICATION_STATUS ở FE (màn duyệt của admin).</summary>
+/// <summary>Same names as APPLICATION_STATUS in the FE (admin review screen).</summary>
 public static class ExpertApplicationStatus
 {
     public const string Draft = "DRAFT";

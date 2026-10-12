@@ -2,7 +2,7 @@ using Caps.Common.Domain;
 
 namespace Caps.Common.Application;
 
-/// <summary>Mã lỗi mà service nào cũng có thể gặp. Mã nghiệp vụ để trong service, không thêm vào đây.</summary>
+/// <summary>Error codes any service may raise. Business codes belong in their service, not here.</summary>
 public static class CommonErrors
 {
     public static class Codes
@@ -19,11 +19,11 @@ public static class CommonErrors
         public const string Internal = "INTERNAL_ERROR";
     }
 
-    /// <summary>Token hỏng, hết hiệu lực hoặc đã bị thu hồi.</summary>
+    /// <summary>Token is malformed, expired or revoked.</summary>
     public static AppException InvalidSession(string message = "Invalid session.") =>
         new(ErrorType.Unauthorized, Codes.InvalidSession, message);
 
-    /// <summary>Claim trong token đã cũ: FE cần refresh để nhận token mới.</summary>
+    /// <summary>Token claims are stale: the FE must refresh to get a new token.</summary>
     public static AppException RefreshRequired(string message = "Refresh the session.") =>
         new(ErrorType.Unauthorized, Codes.RefreshRequired, message);
 
@@ -31,7 +31,7 @@ public static class CommonErrors
         string message = "Email verification and active account required."
     ) => new(ErrorType.Forbidden, Codes.AccountNotActive, message);
 
-    /// <summary>Chống CSRF: request thay đổi dữ liệu từ SPA phải có header nhận diện.</summary>
+    /// <summary>CSRF guard: state-changing requests from the SPA must carry the client header.</summary>
     public static AppException ClientHeaderRequired(
         string message = "X-Caps-Client: spa is required."
     ) => new(ErrorType.Forbidden, Codes.ClientHeaderRequired, message);
@@ -49,7 +49,7 @@ public static class CommonErrors
         new(ErrorType.TooManyRequests, Codes.TooManyRequests, message);
 }
 
-/// <summary>Dữ liệu vào không hợp lệ; <see cref="Errors"/> gom lỗi theo từng trường.</summary>
+/// <summary>Invalid input; <see cref="Errors"/> groups messages per field.</summary>
 public sealed class ValidationException(
     string message,
     IDictionary<string, string[]>? errors = null,

@@ -42,7 +42,7 @@ public sealed class AuthService(
     private const string VerifyPurpose = "VERIFY_EMAIL";
     private const string CodePurpose = "VERIFY_EMAIL_CODE";
 
-    // Mã 6 số trùng nhau giữa nhiều người nên băm kèm user id; tra cứu luôn theo user.
+    // 6-digit codes collide across users, so hash them with the user id; always look up by user.
     private static string CodeHash(Guid userId, string code) => HashToken($"{userId:N}:{code}");
 
     private Task InvalidateUnused(Guid userId, string purpose, CancellationToken ct) =>
@@ -172,9 +172,9 @@ public sealed class AuthService(
         var current = await db.RefreshTokens.SingleAsync(x => x.Id == found.Id, ct);
         if (current.RevokedAt != null)
         {
-            // Token đã xoay vòng mà bị dùng lại => nghi bị đánh cắp: thu hồi mọi refresh session.
-            // Token bị thu hồi vì đăng xuất/đổi/đặt lại mật khẩu chỉ bị từ chối, để thiết bị cũ
-            // tự refresh không đá luôn phiên mới của chính người dùng.
+            // A rotated token being reused => likely stolen: revoke every refresh session.
+            // A token revoked by sign-out/password change/reset is only rejected, so an old device
+            // refreshing on its own does not kick out the user's new session.
             if (await db.RefreshTokens.AnyAsync(x => x.RotatedFrom == current.Id, ct))
             {
                 await RevokeAll(user, ct);
@@ -219,9 +219,9 @@ public sealed class AuthService(
         user.EmailVerifiedAt = Now;
         user.Status = "ACTIVE";
         user.UpdatedAt = Now;
-        // Đã xác nhận bằng liên kết thì mã 6 số cùng email không còn dùng được
+        // Once verified via the link, the 6-digit code from the same email can no longer be used
         await InvalidateUnused(user.Id, CodePurpose, ct);
-        // Phiên hạn chế cũ không tự nhận quyền ACTIVE; client refresh để lấy quyền mới.
+        // The old restricted session does not gain ACTIVE rights; the client refreshes to get them.
         await db.SaveChangesAsync(ct);
         await tx.CommitAsync(ct);
     }
@@ -279,7 +279,7 @@ public sealed class AuthService(
         user.Status = "ACTIVE";
         user.UpdatedAt = Now;
         await InvalidateUnused(user.Id, VerifyPurpose, ct);
-        // Trả phiên mới mang quyền ACTIVE: người dùng tiếp tục ngay, không phải đăng nhập lại
+        // Return a new ACTIVE session so the user continues right away without signing in again
         var session = await Session(user, null, ct);
         await db.SaveChangesAsync(ct);
         await tx.CommitAsync(ct);
@@ -309,7 +309,7 @@ public sealed class AuthService(
         var user = await Lock(id.Value, ct);
         if (user.Status != "ACTIVE" && user.Status != "PENDING_VERIFICATION")
             return;
-        // Response chung, kể cả bị cooldown, tránh tiết lộ email tồn tại.
+        // Same response even during cooldown, to avoid revealing whether the email exists.
         if (
             await db.VerificationTokens.AnyAsync(
                 x =>
@@ -375,7 +375,7 @@ public sealed class AuthService(
             );
         user.PasswordHash = hasher.HashPassword(user, request.NewPassword);
         user.UpdatedAt = Now;
-        // Đăng xuất mọi thiết bị khác; thiết bị hiện tại nhận phiên mới ngay bên dưới.
+        // Sign out every other device; the current device gets a new session right below.
         await RevokeAll(user, ct);
         var session = await Session(user, null, ct);
         await db.SaveChangesAsync(ct);
@@ -444,7 +444,7 @@ public sealed class AuthService(
         DateTimeOffset? codeExpires = null;
         if (purpose == VerifyPurpose)
         {
-            // Kèm mã 6 số để nhập ngay trên trang đang mở, không phải rời trang mở liên kết
+            // Include a 6-digit code so the user can enter it on the open page instead of following the link
             await InvalidateUnused(user.Id, CodePurpose, ct);
             code = RandomNumberGenerator.GetInt32(0, 1_000_000).ToString("D6");
             codeExpires = Now.AddMinutes(o.VerificationCodeMinutes);
@@ -537,7 +537,7 @@ public sealed class AuthService(
             .UserRoles.Where(x => x.UserId == u.Id)
             .Select(x => x.Role.Code)
             .ToArrayAsync(ct);
-        // Khớp với JWT: chỉ tài khoản ACTIVE mới có quyền nghiệp vụ.
+        // Matches the JWT: only ACTIVE accounts get business permissions.
         var permissions =
             u.Status == "ACTIVE"
                 ? await db
@@ -547,7 +547,7 @@ public sealed class AuthService(
                     .Distinct()
                     .ToArrayAsync(ct)
                 : [];
-        // Đăng ký mới chưa SaveChanges nên role cố định USER chỉ trong response.
+        // A new registration is not saved yet, so the fixed USER role exists only in the response.
         if (db.Entry(u).State == EntityState.Added)
             roles = ["USER"];
         var avatarAt = await db
@@ -567,7 +567,7 @@ public sealed class AuthService(
         );
     }
 
-    // Đường dẫn tương đối qua gateway; ?v= đổi mỗi lần thay ảnh để trình duyệt không dùng cache cũ.
+    // Relative path through the gateway; ?v= changes on every update so browsers skip the old cache.
     private static string AvatarPath(Guid id, DateTimeOffset at) =>
         $"/api/v1/users/{id}/avatar?v={at.ToUnixTimeMilliseconds()}";
 

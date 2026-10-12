@@ -410,10 +410,10 @@ public sealed class AuthDbContext(DbContextOptions<AuthDbContext> options) : DbC
                 .HasDefaultValueSql("now()")
                 .IsRequired();
 
-            // Hàng chờ duyệt lọc theo trạng thái và thời điểm nộp
+            // Review queue filters by status and submission time
             e.HasIndex(x => new { x.Status, x.SubmittedAt })
                 .HasDatabaseName("ix_expert_application_queue");
-            // Mỗi Expert chỉ có một hồ sơ chưa kết thúc tại một thời điểm
+            // An expert can have only one open application at a time
             e.HasIndex(x => x.ExpertProfileId)
                 .IsUnique()
                 .HasFilter("status NOT IN ('NOT_ELIGIBLE', 'REJECTED', 'APPROVED')")

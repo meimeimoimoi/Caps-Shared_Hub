@@ -44,7 +44,7 @@ foreach ($svc in $services) {
         $content = Get-Content -Path $file -Raw -Encoding UTF8
 
         if ($content -match '("Postgres"\s*:\s*")([^"]*)(")') {
-            # Giữ nguyên 100% format đẹp của file, chỉ thay giá trị connection string
+            # Keep the file's formatting intact; only replace the connection string value
             $newContent = [regex]::Replace($content, '("Postgres"\s*:\s*")([^"]*)(")', "`${1}$ConnectionString`${3}")
             Set-Content -Path $file -Value $newContent -Encoding UTF8
             Write-Host "  [OK] Da cap nhat: $svc / appsettings.json" -ForegroundColor Green

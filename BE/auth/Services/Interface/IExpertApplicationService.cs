@@ -3,7 +3,7 @@ using auth.DTOs.Responses;
 
 namespace auth.Services.Interface;
 
-/// <summary>Phía ứng viên của Expert Eligibility Application (Flow 1, Step 1–2).</summary>
+/// <summary>Applicant side of the Expert Eligibility Application (Flow 1, Step 1–2).</summary>
 public interface IExpertApplicationService
 {
     Task<ExpertApplicationResponse?> GetAsync(Guid userId, CancellationToken ct);

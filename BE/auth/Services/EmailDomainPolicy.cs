@@ -7,17 +7,17 @@ namespace auth.Services;
 
 public sealed class EmailPolicyOptions
 {
-    /// <summary>Kiểm tra tên miền có nhận thư (bản ghi MX/A). Lỗi DNS thì cho qua, không chặn nhầm.</summary>
+    /// <summary>Check that the domain accepts mail (MX/A records). DNS failures pass, so nobody is blocked by mistake.</summary>
     public bool CheckMx { get; set; } = true;
     public int DnsTimeoutSeconds { get; set; } = 3;
 
-    /// <summary>Tên miền bỏ qua kiểm tra DNS (vd. caps.test khi dev/test; .test không có thật).</summary>
+    /// <summary>Domains that skip the DNS check (e.g. caps.test in dev/test; .test does not exist).</summary>
     public string[] TrustedDomains { get; set; } = [];
 }
 
 /// <summary>
-/// Chặn email không dùng được trước khi tạo tài khoản: dịch vụ email dùng một lần và tên miền không
-/// nhận thư. Kết quả xét duyệt chuyên gia và mọi liên kết bảo mật đều gửi qua email nên email phải thật.
+/// Reject unusable emails before creating the account: disposable email services and domains that
+/// cannot receive mail. Expert review results and every security link are sent by email, so it must be real.
 /// </summary>
 public sealed class EmailDomainPolicy(
     IOptions<EmailPolicyOptions> options,
@@ -27,7 +27,7 @@ public sealed class EmailDomainPolicy(
 {
     private readonly EmailPolicyOptions o = options.Value;
 
-    // Dịch vụ email tạm phổ biến; so khớp cả tên miền con (vd. abc.mailinator.com).
+    // Common disposable email services; subdomains match too (e.g. abc.mailinator.com).
     private static readonly HashSet<string> Disposable = new(StringComparer.OrdinalIgnoreCase)
     {
         "10minutemail.com",
@@ -114,7 +114,7 @@ public sealed class EmailDomainPolicy(
     {
         var at = email.LastIndexOf('@');
         if (at <= 0 || at == email.Length - 1)
-            return; // Định dạng đã được kiểm tra ở DTO
+            return; // Format is already validated by the DTO
         var domain = email[(at + 1)..].Trim().TrimEnd('.').ToLowerInvariant();
 
         if (IsDisposable(domain))
@@ -155,7 +155,7 @@ public sealed class EmailDomainPolicy(
                 accepts = true;
             else
             {
-                // Không có MX: theo chuẩn SMTP vẫn gửi được tới bản ghi A/AAAA của tên miền
+                // No MX: per SMTP, mail can still be delivered to the domain's A/AAAA record
                 var a = await dns.QueryAsync(domain, QueryType.A, cancellationToken: ct);
                 accepts = a.Answers.ARecords().Any() || a.Answers.AaaaRecords().Any();
             }
@@ -169,7 +169,7 @@ public sealed class EmailDomainPolicy(
         {
             if (ct.IsCancellationRequested)
                 throw;
-            // DNS không trả lời: không chặn người dùng vì lỗi hạ tầng của chính mình
+            // DNS did not answer: do not block users because of our own infrastructure failure
             logger.LogWarning(e, "MX lookup failed for {Domain}; allowing registration", domain);
             return true;
         }

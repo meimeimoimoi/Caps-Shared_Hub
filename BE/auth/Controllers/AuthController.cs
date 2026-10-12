@@ -42,7 +42,7 @@ public sealed class AuthController(
     [AllowAnonymous, HttpPost("register")]
     public async Task<IActionResult> Register(RegisterRequest r, CancellationToken ct)
     {
-        // Chặn email tạm/tên miền không nhận thư trước khi tạo tài khoản và gửi email xác nhận
+        // Reject disposable/undeliverable emails before creating the account and sending the verification email
         await emailPolicy.EnsureDeliverableAsync(r.Email, ct);
         return Ok(Session(await auth.RegisterAsync(r, ct)));
     }
@@ -90,7 +90,7 @@ public sealed class AuthController(
         return Ok(ApiResponse<object>.Ok(new { }, "Email verified. Refresh or sign in again."));
     }
 
-    /// <summary>Xác nhận bằng mã 6 số trong email; trả phiên mới đã kích hoạt.</summary>
+    /// <summary>Verify with the 6-digit code from the email; returns a new active session.</summary>
     [Authorize(Policy = "AuthSession"), HttpPost("verify-email-code")]
     public async Task<IActionResult> VerifyCode(VerifyEmailCodeRequest r, CancellationToken ct) =>
         Ok(Session(await auth.VerifyCodeAsync(UserId, r.Code, ct)));

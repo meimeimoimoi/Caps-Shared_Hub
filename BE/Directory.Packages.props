@@ -27,7 +27,7 @@
     <!-- Object storage (S3 API: MinIO khi dev, S3 khi deploy) -->
     <PackageVersion Include="AWSSDK.S3" Version="4.0.103.4" />
 
-    <!-- DNS: kiểm tra tên miền email có nhận thư (MX) lúc đăng ký -->
+    <!-- DNS: check that an email domain accepts mail (MX) at sign-up -->
     <PackageVersion Include="DnsClient" Version="1.8.0" />
 
     <!-- Cross-cutting -->

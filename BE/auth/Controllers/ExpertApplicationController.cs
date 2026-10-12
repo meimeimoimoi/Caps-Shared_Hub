@@ -10,8 +10,8 @@ using Microsoft.AspNetCore.Mvc;
 namespace auth.Controllers;
 
 /// <summary>
-/// Hồ sơ đăng ký chuyên gia của chính người đang đăng nhập. Tài khoản chưa xác nhận email vẫn được
-/// lưu nháp/tải file; chỉ bước nộp và gửi bổ sung mới yêu cầu đã xác nhận.
+/// The signed-in user's own expert application. Unverified accounts can still save drafts
+/// and upload files; only submitting and supplementing require a verified email.
 /// </summary>
 [ApiController, Authorize(Policy = "AuthSession"), Route("api/v1/experts/me/application")]
 public sealed class ExpertApplicationController(IExpertApplicationService applications)
@@ -22,7 +22,7 @@ public sealed class ExpertApplicationController(IExpertApplicationService applic
     private static OkObjectResult Result(ExpertApplicationResponse? data) =>
         new(ApiResponse<ExpertApplicationResponse?>.Ok(data));
 
-    /// <summary>data = null khi chưa từng tạo hồ sơ.</summary>
+    /// <summary>data = null when no application has been created yet.</summary>
     [HttpGet]
     public async Task<IActionResult> Get(CancellationToken ct) =>
         Result(await applications.GetAsync(UserId, ct));

@@ -33,7 +33,7 @@ public sealed class AuthEmailConsumer(IConfiguration config) : IConsumer<AuthEma
             config["Smtp:FromName"] ?? "Shared Hub",
             Encoding.UTF8
         );
-        // Body là bản chữ thuần; bản HTML gửi kèm để ứng dụng mail tự chọn bản hiển thị được.
+        // Body is plain text; the HTML version is attached so mail clients pick what they can render.
         using var mail = new MailMessage(from, new MailAddress(m.Email))
         {
             Subject = content.Subject,
@@ -46,7 +46,7 @@ public sealed class AuthEmailConsumer(IConfiguration config) : IConsumer<AuthEma
             Encoding.UTF8,
             MediaTypeNames.Text.Html
         );
-        // Logo đi kèm trong email (cid:), hiển thị được cả khi máy nhận không truy cập được web.
+        // The logo is embedded (cid:) so it shows even when the recipient cannot reach the web.
         html.LinkedResources.Add(
             new LinkedResource(new MemoryStream(Logo), "image/png")
             {

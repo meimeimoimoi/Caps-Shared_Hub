@@ -17,7 +17,7 @@ public sealed class ExpertApplicationService(
 {
     private DateTimeOffset Now => clock.GetUtcNow();
 
-    // Khóa dòng user để các thao tác của cùng ứng viên (lưu nháp, tải file, nộp) không chạy chồng nhau.
+    // Lock the user row so the same applicant's actions (save draft, upload, submit) never overlap.
     private async Task<User> LockUser(Guid id, CancellationToken ct) =>
         await db
             .Users.FromSqlInterpolated($"SELECT * FROM identity.users WHERE id = {id} FOR UPDATE")
@@ -60,12 +60,12 @@ public sealed class ExpertApplicationService(
         );
         app.Status = to;
         app.UpdatedAt = Now;
-        // expert_profile.status phản ánh hồ sơ mới nhất để lọc/hiển thị cấp Expert
+        // expert_profile.status mirrors the latest application for expert-level filtering/display
         profile.Status = to;
         profile.UpdatedAt = Now;
     }
 
-    /// <summary>Lấy hồ sơ đang mở, tạo mới nếu chưa có hoặc hồ sơ trước đã kết thúc.</summary>
+    /// <summary>Get the open application, creating one if none exists or the previous one is closed.</summary>
     private async Task<(ExpertProfile, ExpertApplication)> OpenApplication(
         User user,
         CancellationToken ct
@@ -133,7 +133,7 @@ public sealed class ExpertApplicationService(
         return missing.ToArray();
     }
 
-    // File thêm sau lần nộp gần nhất (khi đang bổ sung) mới được xóa; file đã nộp là bằng chứng lịch sử.
+    // Only files added after the latest submission (while supplementing) can be removed; submitted files are historical evidence.
     private static bool Removable(ExpertApplication app, ExpertEvidence e) =>
         app.Status == Status.Draft
         || (app.Status == Status.NeedMoreInformation && e.CreatedAt > app.SubmittedAt);
@@ -349,7 +349,7 @@ public sealed class ExpertApplicationService(
         }
         catch (Exception e)
         {
-            // File mồ côi chỉ tốn chỗ, không lộ dữ liệu; ghi log để dọn sau.
+            // An orphaned file only wastes space and leaks nothing; log it for later cleanup.
             logger.LogWarning(e, "Could not delete orphan evidence object {Key}", key);
         }
     }
@@ -385,7 +385,7 @@ public sealed class ExpertApplicationService(
         CancellationToken ct
     )
     {
-        // Chỉ chủ hồ sơ; file của người khác trả 404 để không lộ sự tồn tại.
+        // Owner only; other people's files return 404 so their existence is not revealed.
         var evidence =
             await db
                 .ExpertEvidences.AsNoTracking()
@@ -462,7 +462,7 @@ public sealed class ExpertApplicationService(
                 "SUPPLEMENT_EMPTY",
                 "Add an explanation or at least one new file."
             );
-        // BR-E05: bổ sung xong quay lại đúng bước đang chờ (Gate 1 sau khi nộp)
+        // BR-E05: after supplementing, return to the pending step (Gate 1 after submission)
         Transition(app, profile, user.Id, Status.Submitted, note);
         app.SubmittedAt = Now;
         await db.SaveChangesAsync(ct);

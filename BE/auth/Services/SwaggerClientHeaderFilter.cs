@@ -4,7 +4,7 @@ using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace auth.Services;
 
-// Swagger UI chỉ bật ở Development; điền sẵn X-Caps-Client để thử các mutation /api/v1/auth mà AuthBoundaryMiddleware yêu cầu.
+// Swagger UI is Development-only; prefill X-Caps-Client to try the /api/v1/auth mutations that AuthBoundaryMiddleware requires.
 public sealed class SwaggerClientHeaderFilter : IOperationFilter
 {
     public void Apply(OpenApiOperation operation, OperationFilterContext context)

@@ -4,12 +4,12 @@ using Caps.Contracts;
 namespace notification.Services;
 
 /// <summary>
-/// Nội dung email xác nhận / đặt lại mật khẩu. HTML dùng bảng + style inline vì nhiều
-/// ứng dụng mail (Gmail, Outlook) bỏ thẻ style và không hỗ trợ flex/grid.
+/// Verification / password reset email content. The HTML uses tables + inline styles because many
+/// mail clients (Gmail, Outlook) strip style tags and do not support flex/grid.
 /// </summary>
 public static class AuthEmailTemplate
 {
-    /// <summary>Content-ID của logo nhúng trong email (xem AuthEmailConsumer).</summary>
+    /// <summary>Content-ID of the logo embedded in the email (see AuthEmailConsumer).</summary>
     public const string LogoCid = "shared-hub-logo";
 
     private const string Brand = "Shared Hub";
@@ -20,7 +20,7 @@ public static class AuthEmailTemplate
     private const string Muted = "#7a7f87";
     private const string Font = "'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif";
 
-    // Việt Nam không có giờ mùa hè nên dùng cố định UTC+7, không phụ thuộc múi giờ của server.
+    // Vietnam has no daylight saving time, so use a fixed UTC+7 regardless of the server time zone.
     private static readonly TimeSpan VietnamOffset = TimeSpan.FromHours(7);
 
     public sealed record Content(string Subject, string Html, string Text);
@@ -64,7 +64,7 @@ public static class AuthEmailTemplate
         var copy = For(m.Purpose);
         var local = m.ExpiresAt.ToOffset(VietnamOffset);
         var expires = local.ToString("HH:mm 'ngày' dd/MM/yyyy");
-        // Mã 6 số chỉ có ở email xác nhận; hạn của mã ngắn hơn hạn của liên kết
+        // Only verification emails carry a 6-digit code; it expires sooner than the link
         var code =
             m.Code is { Length: > 0 } c && m.CodeExpiresAt is { } at
                 ? new OneTimeCode(c, at.ToOffset(VietnamOffset).ToString("HH:mm"))
@@ -116,11 +116,11 @@ public static class AuthEmailTemplate
         OneTimeCode? code
     )
     {
-        // Mã hoá trước mọi giá trị động để chuỗi HTML bên dưới chỉ chèn biến đơn giản.
+        // Encode every dynamic value up front so the HTML below only interpolates plain variables.
         var e = HtmlEncoder.Default;
         var href = e.Encode(link);
         var subject = e.Encode(c.Subject);
-        // Hộp thư hiện dòng xem trước cạnh tiêu đề: có mã thì người dùng thấy mã ngay
+        // Inboxes show a preview line next to the subject: with a code, the user sees it right away
         var preheader = e.Encode(
             code == null ? c.Preheader : $"Mã xác nhận của bạn là {code.Value}."
         );

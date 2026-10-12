@@ -1,6 +1,6 @@
 namespace auth.Services.Interface;
 
-/// <summary>Lưu file riêng tư (hồ sơ chuyên gia). Không trả URL công khai; đọc lại qua API có kiểm tra quyền.</summary>
+/// <summary>Private file storage (expert applications). No public URLs; files are read back through an API that checks access.</summary>
 public interface IObjectStorage
 {
     Task PutAsync(string key, byte[] content, string contentType, CancellationToken ct);

@@ -15,7 +15,7 @@ public sealed class ExpertProfile
     public string? Location { get; set; }
     public DateOnly? BirthDate { get; set; }
 
-    /// <summary>Lĩnh vực chuyên môn ứng viên chọn (mã cố định, xem ExpertApplicationRules).</summary>
+    /// <summary>Expertise fields chosen by the applicant (fixed codes, see ExpertApplicationRules).</summary>
     public string[] Fields { get; set; } = [];
     public string? Highlights { get; set; }
     public string Status { get; set; } = "SCREENING";

@@ -2,7 +2,7 @@ using Caps.Common.Domain;
 
 namespace auth.Entities;
 
-/// <summary>Audit trail của hồ sơ: mỗi lần đổi trạng thái lưu actor, thời điểm và ghi chú.</summary>
+/// <summary>Application audit trail: each status change stores the actor, time and note.</summary>
 public sealed class ExpertApplicationEvent
 {
     public Guid Id { get; set; } = UuidV7.NewGuid();

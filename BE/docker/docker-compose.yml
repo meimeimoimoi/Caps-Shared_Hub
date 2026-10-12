@@ -60,7 +60,7 @@ services:
       timeout: 10s
       retries: 5
 
-  # Hộp thư thử: nhận mọi email notification gửi đi, xem ở http://localhost:8025
+  # Test mailbox: catches every email sent by notification, view at http://localhost:8025
   mailpit:
     image: axllent/mailpit:v1.21
     container_name: caps_mailpit
@@ -71,8 +71,8 @@ services:
     networks:
       - caps_network
 
-  # Object storage tương thích S3 (SeaweedFS): lưu hồ sơ/bằng chứng chuyên gia.
-  # S3 API: http://localhost:8333 · xem file: http://localhost:8899 · khóa dev ở seaweedfs/s3.json
+  # S3-compatible object storage (SeaweedFS): stores expert applications/evidence.
+  # S3 API: http://localhost:8333 · file browser: http://localhost:8899 · dev keys in seaweedfs/s3.json
   seaweedfs:
     image: chrislusf/seaweedfs:3.97
     container_name: caps_seaweedfs
@@ -102,7 +102,7 @@ services:
       ConnectionStrings__Redis: redis:6379
       ConnectionStrings__RabbitMq: amqp://guest:guest@rabbitmq:5672
       Jwt__Key: CHANGE_ME_dev_only_min_32_chars_1234567890
-      # Khóa dev của SeaweedFS (seaweedfs/s3.json); deploy thật dùng secret store
+      # SeaweedFS dev keys (seaweedfs/s3.json); real deployments use a secret store
       Storage__ServiceUrl: http://seaweedfs:8333
       Storage__AccessKey: caps-dev-access
       Storage__SecretKey: caps-dev-secret-change-me

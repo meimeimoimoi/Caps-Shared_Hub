@@ -12,7 +12,7 @@ public sealed record ExpertApplicationResponse(
     ExpertApplicationProfile Profile,
     ExpertEvidenceResponse[] Evidence,
     ExpertApplicationEventResponse[] History,
-    /// <summary>Điều kiện còn thiếu để nộp: phone, yearsExperience, fields, CV.</summary>
+    /// <summary>Requirements still missing before submit: phone, yearsExperience, fields, CV.</summary>
     string[] MissingRequirements,
     bool EmailVerified,
     bool CanEdit,

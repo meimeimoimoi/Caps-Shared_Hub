@@ -36,7 +36,7 @@ public sealed class UsersController(IAuthService auth) : ControllerBase
         using var buffer = new MemoryStream((int)file.Length);
         await file.CopyToAsync(buffer, ct);
         var data = buffer.ToArray();
-        // Xác định định dạng theo nội dung file, không tin Content-Type do client gửi.
+        // Detect the format from the file content; never trust the client's Content-Type.
         var type =
             ImageType(data)
             ?? throw new AuthFailure(
@@ -77,7 +77,7 @@ public sealed class UsersController(IAuthService auth) : ControllerBase
 }
 
 /// <summary>
-/// Ảnh đại diện công khai: thẻ img không gửi được bearer token nên endpoint này không yêu cầu đăng nhập.
+/// Public avatar: an img tag cannot send a bearer token, so this endpoint does not require sign-in.
 /// </summary>
 [ApiController, AllowAnonymous, Route("api/v1/users/{id:guid}/avatar")]
 public sealed class AvatarsController(IAuthService auth) : ControllerBase
@@ -89,7 +89,7 @@ public sealed class AvatarsController(IAuthService auth) : ControllerBase
         if (avatar == null)
             return NotFound();
         Response.Headers["X-Content-Type-Options"] = "nosniff";
-        // URL có ?v=<thời điểm cập nhật> nên mỗi phiên bản ảnh được cache lâu dài.
+        // The URL carries ?v=<updated time>, so each image version can be cached long-term.
         Response.Headers.CacheControl = "public, max-age=31536000, immutable";
         return File(avatar.Data, avatar.ContentType);
     }

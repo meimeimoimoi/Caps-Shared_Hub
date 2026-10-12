@@ -1,7 +1,7 @@
 namespace auth.Entities;
 
 /// <summary>
-/// Ảnh đại diện lưu trong DB (bảng riêng để không kéo bytea theo mỗi lần đọc users).
+/// Avatar stored in the DB (separate table so reading users does not load the bytea).
 /// </summary>
 public sealed class UserAvatar
 {

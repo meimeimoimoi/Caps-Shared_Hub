@@ -8,18 +8,18 @@ namespace auth.Services;
 
 public sealed class StorageOptions
 {
-    /// <summary>Endpoint S3 (SeaweedFS khi dev). Để trống nếu dùng AWS S3 thật theo Region.</summary>
+    /// <summary>S3 endpoint (SeaweedFS in dev). Leave empty to use real AWS S3 by Region.</summary>
     public string? ServiceUrl { get; set; }
     public string Region { get; set; } = "us-east-1";
     public string AccessKey { get; set; } = "";
     public string SecretKey { get; set; } = "";
     public string Bucket { get; set; } = "caps-expert-evidence";
 
-    /// <summary>Tự tạo bucket khi chưa có (chỉ nên bật khi dev).</summary>
+    /// <summary>Create the bucket if missing (enable in dev only).</summary>
     public bool CreateBucket { get; set; }
 }
 
-/// <summary>Lưu file qua API S3: SeaweedFS/MinIO khi dev, AWS S3 khi deploy (chỉ đổi cấu hình).</summary>
+/// <summary>Stores files through the S3 API: SeaweedFS/MinIO in dev, AWS S3 when deployed (config change only).</summary>
 public sealed class S3ObjectStorage : IObjectStorage, IDisposable
 {
     private readonly AmazonS3Client client;
@@ -32,7 +32,7 @@ public sealed class S3ObjectStorage : IObjectStorage, IDisposable
         o = options.Value;
         var config = new AmazonS3Config
         {
-            // S3 tự host không hỗ trợ virtual-host bucket và checksum mặc định mới của SDK v4.
+            // Self-hosted S3 supports neither virtual-host buckets nor the new default checksums of SDK v4.
             ForcePathStyle = true,
             RequestChecksumCalculation = RequestChecksumCalculation.WHEN_REQUIRED,
             ResponseChecksumValidation = ResponseChecksumValidation.WHEN_REQUIRED,

@@ -1,6 +1,6 @@
 namespace Caps.Common.Domain;
 
-/// <summary>Loại lỗi theo nghĩa nghiệp vụ; chỉ tầng Api mới đổi sang mã HTTP.</summary>
+/// <summary>Error category in business terms; only the Api layer maps it to an HTTP status.</summary>
 public enum ErrorType
 {
     Validation,
@@ -13,8 +13,8 @@ public enum ErrorType
 }
 
 /// <summary>
-/// Lỗi có chủ đích, kèm mã ổn định (`code` trong response) để FE xử lý.
-/// Mã dùng chung ở <c>CommonErrors</c>; mã nghiệp vụ khai báo trong từng service.
+/// An intentional error with a stable code (`code` in the response) for the FE to handle.
+/// Shared codes live in <c>CommonErrors</c>; business codes are declared in each service.
 /// </summary>
 public class AppException(ErrorType type, string code, string message) : Exception(message)
 {

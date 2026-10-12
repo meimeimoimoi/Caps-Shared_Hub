@@ -22,7 +22,7 @@ public sealed class AuthBoundaryMiddleware(RequestDelegate next)
                 && context.Request.Path.StartsWithSegments("/api/v1/auth")
             )
             {
-                // Yêu cầu explicit header chống form POST/CSRF; cross-origin JS phải qua CORS preflight.
+                // Require an explicit header against form POST/CSRF; cross-origin JS must pass the CORS preflight.
                 if (context.Request.Headers["X-Caps-Client"] != "spa")
                     throw new AuthFailure(
                         403,
@@ -62,7 +62,7 @@ public sealed class AuthBoundaryMiddleware(RequestDelegate next)
                 )
                     throw new AuthFailure(401, "INVALID_SESSION", "Session revoked.");
             }
-            // CURRENT role/status bị đổi phải lấy lại token, không dùng claim stale.
+            // When the current role/status changes, a new token is required; never trust stale claims.
             if (
                 context.User.Identity?.IsAuthenticated == true
                 && context.Request.Path.StartsWithSegments("/api/v1/users")
@@ -81,7 +81,7 @@ public sealed class AuthBoundaryMiddleware(RequestDelegate next)
             }
             await next(context);
         }
-        // Middleware này chạy trước exception handler chung nên tự ghi lỗi theo cùng dạng
+        // This middleware runs before the shared exception handler, so it writes the same error shape itself
         catch (AppException e)
         {
             await ApiErrors.WriteAsync(context, e, context.RequestAborted);

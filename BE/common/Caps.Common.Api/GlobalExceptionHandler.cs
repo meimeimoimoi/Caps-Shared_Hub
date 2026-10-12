@@ -7,8 +7,8 @@ using Microsoft.Extensions.Logging;
 namespace Caps.Common.Api;
 
 /// <summary>
-/// Nơi duy nhất đổi lỗi thành response HTTP. Đăng ký qua AddCommonApi.
-/// <see cref="AppException"/> trả đúng mã + code; lỗi không lường trước trả 500 và không lộ chi tiết.
+/// The only place that turns errors into HTTP responses. Registered by AddCommonApi.
+/// <see cref="AppException"/> maps to its status + code; unexpected errors return 500 without details.
 /// </summary>
 public sealed class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger)
     : IExceptionHandler
@@ -64,7 +64,7 @@ public static class ApiErrors
             _ => StatusCodes.Status400BadRequest,
         };
 
-    /// <summary>Ghi lỗi theo dạng chung; dùng được cả trong middleware chạy trước exception handler.</summary>
+    /// <summary>Writes the shared error shape; also usable in middleware that runs before the exception handler.</summary>
     public static Task WriteAsync(
         HttpContext httpContext,
         AppException exception,

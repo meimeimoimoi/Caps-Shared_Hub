@@ -9,7 +9,7 @@ public sealed record ApiResponse<T>(bool Success, T? Data, string? Message = nul
     public static ApiResponse<T> Fail(string message) => new(false, default, message);
 }
 
-/// <summary>Dạng lỗi thống nhất cho mọi service: FE dựa vào <see cref="Code"/>, không dựa vào message.</summary>
+/// <summary>Uniform error shape for every service: the FE relies on <see cref="Code"/>, not on the message.</summary>
 public sealed record ApiErrorResponse(
     string Message,
     string Code,
