@@ -17,6 +17,8 @@ public sealed class AuthDbContext(DbContextOptions<AuthDbContext> options) : DbC
     public DbSet<UserAvatar> UserAvatars => Set<UserAvatar>();
     public DbSet<ExpertProfile> ExpertProfiles => Set<ExpertProfile>();
     public DbSet<ExpertEvidence> ExpertEvidences => Set<ExpertEvidence>();
+    public DbSet<ExpertApplication> ExpertApplications => Set<ExpertApplication>();
+    public DbSet<ExpertApplicationEvent> ExpertApplicationEvents => Set<ExpertApplicationEvent>();
     public DbSet<ExpertCompetencyAssessment> ExpertCompetencyAssessments =>
         Set<ExpertCompetencyAssessment>();
     public DbSet<ServiceOffering> ServiceOfferings => Set<ServiceOffering>();
@@ -295,6 +297,16 @@ public sealed class AuthDbContext(DbContextOptions<AuthDbContext> options) : DbC
             e.HasIndex(x => x.UserId).IsUnique();
             e.Property(x => x.YearsExperience).HasColumnName("years_experience");
             e.Property(x => x.Bio).HasColumnName("bio");
+            e.Property(x => x.Title).HasColumnName("title");
+            e.Property(x => x.Company).HasColumnName("company");
+            e.Property(x => x.Location).HasColumnName("location");
+            e.Property(x => x.BirthDate).HasColumnName("birth_date");
+            e.Property(x => x.Fields)
+                .HasColumnName("fields")
+                .HasColumnType("text[]")
+                .HasDefaultValueSql("'{}'::text[]")
+                .IsRequired();
+            e.Property(x => x.Highlights).HasColumnName("highlights");
             e.Property(x => x.Status)
                 .HasColumnName("status")
                 .HasDefaultValue("SCREENING")
@@ -346,6 +358,10 @@ public sealed class AuthDbContext(DbContextOptions<AuthDbContext> options) : DbC
             e.Property(x => x.ExpertProfileId).HasColumnName("expert_profile_id");
             e.Property(x => x.EvidenceType).HasColumnName("evidence_type").IsRequired();
             e.Property(x => x.FileUrl).HasColumnName("file_url").IsRequired();
+            e.Property(x => x.ApplicationId).HasColumnName("application_id");
+            e.Property(x => x.FileName).HasColumnName("file_name");
+            e.Property(x => x.ContentType).HasColumnName("content_type");
+            e.Property(x => x.SizeBytes).HasColumnName("size_bytes");
             e.Property(x => x.ParsedMeta).HasColumnName("parsed_meta").HasColumnType("jsonb");
             e.Property(x => x.ScreeningFlag).HasColumnName("screening_flag");
             e.Property(x => x.CreatedAt)
@@ -360,6 +376,90 @@ public sealed class AuthDbContext(DbContextOptions<AuthDbContext> options) : DbC
                 .HasForeignKey(x => x.ExpertProfileId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("fk_expert_evidence_11");
+
+            e.HasIndex(x => x.ApplicationId).HasDatabaseName("ix_expert_evidence_application");
+            e.HasOne(x => x.Application)
+                .WithMany(a => a.Evidences)
+                .HasForeignKey(x => x.ApplicationId)
+                .OnDelete(DeleteBehavior.Restrict)
+                .HasConstraintName("fk_expert_evidence_application");
+        });
+
+        // Expert Application (Gate 1)
+        modelBuilder.Entity<ExpertApplication>(e =>
+        {
+            e.ToTable("expert_application");
+            e.HasKey(x => x.Id);
+            e.Property(x => x.Id).HasColumnName("id");
+            e.Property(x => x.ExpertProfileId).HasColumnName("expert_profile_id");
+            e.Property(x => x.Status)
+                .HasColumnName("status")
+                .HasDefaultValue(ExpertApplicationStatus.Draft)
+                .IsRequired();
+            e.Property(x => x.SubmittedAt).HasColumnName("submitted_at");
+            e.Property(x => x.DecidedAt).HasColumnName("decided_at");
+            e.Property(x => x.DecisionNote).HasColumnName("decision_note");
+            e.Property(x => x.PreviousApplicationId).HasColumnName("previous_application_id");
+            e.Property(x => x.EarliestReapplyAt).HasColumnName("earliest_reapply_at");
+            e.Property(x => x.CreatedAt)
+                .HasColumnName("created_at")
+                .HasDefaultValueSql("now()")
+                .IsRequired();
+            e.Property(x => x.UpdatedAt)
+                .HasColumnName("updated_at")
+                .HasDefaultValueSql("now()")
+                .IsRequired();
+
+            // Hàng chờ duyệt lọc theo trạng thái và thời điểm nộp
+            e.HasIndex(x => new { x.Status, x.SubmittedAt })
+                .HasDatabaseName("ix_expert_application_queue");
+            // Mỗi Expert chỉ có một hồ sơ chưa kết thúc tại một thời điểm
+            e.HasIndex(x => x.ExpertProfileId)
+                .IsUnique()
+                .HasFilter("status NOT IN ('NOT_ELIGIBLE', 'REJECTED', 'APPROVED')")
+                .HasDatabaseName("ux_expert_application_open");
+
+            e.HasOne(x => x.ExpertProfile)
+                .WithMany(p => p.Applications)
+                .HasForeignKey(x => x.ExpertProfileId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("fk_expert_application_profile");
+            e.HasOne(x => x.PreviousApplication)
+                .WithMany()
+                .HasForeignKey(x => x.PreviousApplicationId)
+                .OnDelete(DeleteBehavior.Restrict)
+                .HasConstraintName("fk_expert_application_previous");
+        });
+
+        // Expert Application Event (audit trail)
+        modelBuilder.Entity<ExpertApplicationEvent>(e =>
+        {
+            e.ToTable("expert_application_event");
+            e.HasKey(x => x.Id);
+            e.Property(x => x.Id).HasColumnName("id");
+            e.Property(x => x.ApplicationId).HasColumnName("application_id");
+            e.Property(x => x.ActorUserId).HasColumnName("actor_user_id");
+            e.Property(x => x.FromStatus).HasColumnName("from_status");
+            e.Property(x => x.ToStatus).HasColumnName("to_status").IsRequired();
+            e.Property(x => x.Note).HasColumnName("note");
+            e.Property(x => x.CreatedAt)
+                .HasColumnName("created_at")
+                .HasDefaultValueSql("now()")
+                .IsRequired();
+
+            e.HasIndex(x => new { x.ApplicationId, x.CreatedAt })
+                .HasDatabaseName("ix_expert_application_event");
+
+            e.HasOne(x => x.Application)
+                .WithMany(a => a.Events)
+                .HasForeignKey(x => x.ApplicationId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("fk_expert_application_event_application");
+            e.HasOne(x => x.Actor)
+                .WithMany()
+                .HasForeignKey(x => x.ActorUserId)
+                .OnDelete(DeleteBehavior.Restrict)
+                .HasConstraintName("fk_expert_application_event_actor");
         });
 
         // Expert Competency Assessment

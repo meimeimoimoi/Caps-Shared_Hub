@@ -10,6 +10,14 @@ public sealed class ExpertProfile
 
     public int? YearsExperience { get; set; }
     public string? Bio { get; set; }
+    public string? Title { get; set; }
+    public string? Company { get; set; }
+    public string? Location { get; set; }
+    public DateOnly? BirthDate { get; set; }
+
+    /// <summary>Lĩnh vực chuyên môn ứng viên chọn (mã cố định, xem ExpertApplicationRules).</summary>
+    public string[] Fields { get; set; } = [];
+    public string? Highlights { get; set; }
     public string Status { get; set; } = "SCREENING";
     public string ServiceStatus { get; set; } = "INACTIVE";
     public string? EligibilityNote { get; set; }
@@ -23,6 +31,8 @@ public sealed class ExpertProfile
     public DateTimeOffset UpdatedAt { get; set; } = DateTimeOffset.UtcNow;
 
     public ICollection<ExpertEvidence> Evidences { get; set; } = new List<ExpertEvidence>();
+    public ICollection<ExpertApplication> Applications { get; set; } =
+        new List<ExpertApplication>();
     public ICollection<ExpertCompetencyAssessment> Assessments { get; set; } =
         new List<ExpertCompetencyAssessment>();
     public ICollection<ServiceOffering> ServiceOfferings { get; set; } =

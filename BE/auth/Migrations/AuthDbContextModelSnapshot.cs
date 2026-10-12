@@ -202,6 +202,115 @@ namespace auth.Migrations
                     b.ToTable("business_profile", "identity");
                 });
 
+            modelBuilder.Entity("auth.Entities.ExpertApplication", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<DateTimeOffset?>("DecidedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("decided_at");
+
+                    b.Property<string>("DecisionNote")
+                        .HasColumnType("text")
+                        .HasColumnName("decision_note");
+
+                    b.Property<DateTimeOffset?>("EarliestReapplyAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("earliest_reapply_at");
+
+                    b.Property<Guid>("ExpertProfileId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("expert_profile_id");
+
+                    b.Property<Guid?>("PreviousApplicationId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("previous_application_id");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("text")
+                        .HasDefaultValue("DRAFT")
+                        .HasColumnName("status");
+
+                    b.Property<DateTimeOffset?>("SubmittedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("submitted_at");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ExpertProfileId")
+                        .IsUnique()
+                        .HasDatabaseName("ux_expert_application_open")
+                        .HasFilter("status NOT IN ('NOT_ELIGIBLE', 'REJECTED', 'APPROVED')");
+
+                    b.HasIndex("PreviousApplicationId");
+
+                    b.HasIndex("Status", "SubmittedAt")
+                        .HasDatabaseName("ix_expert_application_queue");
+
+                    b.ToTable("expert_application", "identity");
+                });
+
+            modelBuilder.Entity("auth.Entities.ExpertApplicationEvent", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("ActorUserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("actor_user_id");
+
+                    b.Property<Guid>("ApplicationId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("application_id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<string>("FromStatus")
+                        .HasColumnType("text")
+                        .HasColumnName("from_status");
+
+                    b.Property<string>("Note")
+                        .HasColumnType("text")
+                        .HasColumnName("note");
+
+                    b.Property<string>("ToStatus")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("to_status");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ActorUserId");
+
+                    b.HasIndex("ApplicationId", "CreatedAt")
+                        .HasDatabaseName("ix_expert_application_event");
+
+                    b.ToTable("expert_application_event", "identity");
+                });
+
             modelBuilder.Entity("auth.Entities.ExpertCompetencyAssessment", b =>
                 {
                     b.Property<Guid>("Id")
@@ -270,6 +379,14 @@ namespace auth.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
+                    b.Property<Guid?>("ApplicationId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("application_id");
+
+                    b.Property<string>("ContentType")
+                        .HasColumnType("text")
+                        .HasColumnName("content_type");
+
                     b.Property<DateTimeOffset>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
@@ -285,6 +402,10 @@ namespace auth.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("expert_profile_id");
 
+                    b.Property<string>("FileName")
+                        .HasColumnType("text")
+                        .HasColumnName("file_name");
+
                     b.Property<string>("FileUrl")
                         .IsRequired()
                         .HasColumnType("text")
@@ -298,7 +419,14 @@ namespace auth.Migrations
                         .HasColumnType("text")
                         .HasColumnName("screening_flag");
 
+                    b.Property<long?>("SizeBytes")
+                        .HasColumnType("bigint")
+                        .HasColumnName("size_bytes");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("ApplicationId")
+                        .HasDatabaseName("ix_expert_evidence_application");
 
                     b.HasIndex("ExpertProfileId")
                         .HasDatabaseName("ix_expert_evidence_2");
@@ -325,6 +453,14 @@ namespace auth.Migrations
                         .HasColumnType("text")
                         .HasColumnName("bio");
 
+                    b.Property<DateOnly?>("BirthDate")
+                        .HasColumnType("date")
+                        .HasColumnName("birth_date");
+
+                    b.Property<string>("Company")
+                        .HasColumnType("text")
+                        .HasColumnName("company");
+
                     b.Property<DateTimeOffset>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
@@ -334,6 +470,21 @@ namespace auth.Migrations
                     b.Property<string>("EligibilityNote")
                         .HasColumnType("text")
                         .HasColumnName("eligibility_note");
+
+                    b.Property<string[]>("Fields")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("text[]")
+                        .HasColumnName("fields")
+                        .HasDefaultValueSql("'{}'::text[]");
+
+                    b.Property<string>("Highlights")
+                        .HasColumnType("text")
+                        .HasColumnName("highlights");
+
+                    b.Property<string>("Location")
+                        .HasColumnType("text")
+                        .HasColumnName("location");
 
                     b.Property<decimal>("RatingAvg")
                         .ValueGeneratedOnAdd()
@@ -360,6 +511,10 @@ namespace auth.Migrations
                         .HasColumnType("text")
                         .HasDefaultValue("SCREENING")
                         .HasColumnName("status");
+
+                    b.Property<string>("Title")
+                        .HasColumnType("text")
+                        .HasColumnName("title");
 
                     b.Property<int?>("TurnaroundHours")
                         .HasColumnType("integer")
@@ -785,6 +940,47 @@ namespace auth.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("auth.Entities.ExpertApplication", b =>
+                {
+                    b.HasOne("auth.Entities.ExpertProfile", "ExpertProfile")
+                        .WithMany("Applications")
+                        .HasForeignKey("ExpertProfileId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_expert_application_profile");
+
+                    b.HasOne("auth.Entities.ExpertApplication", "PreviousApplication")
+                        .WithMany()
+                        .HasForeignKey("PreviousApplicationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_expert_application_previous");
+
+                    b.Navigation("ExpertProfile");
+
+                    b.Navigation("PreviousApplication");
+                });
+
+            modelBuilder.Entity("auth.Entities.ExpertApplicationEvent", b =>
+                {
+                    b.HasOne("auth.Entities.User", "Actor")
+                        .WithMany()
+                        .HasForeignKey("ActorUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_expert_application_event_actor");
+
+                    b.HasOne("auth.Entities.ExpertApplication", "Application")
+                        .WithMany("Events")
+                        .HasForeignKey("ApplicationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_expert_application_event_application");
+
+                    b.Navigation("Actor");
+
+                    b.Navigation("Application");
+                });
+
             modelBuilder.Entity("auth.Entities.ExpertCompetencyAssessment", b =>
                 {
                     b.HasOne("auth.Entities.User", "Assessor")
@@ -806,11 +1002,19 @@ namespace auth.Migrations
 
             modelBuilder.Entity("auth.Entities.ExpertEvidence", b =>
                 {
+                    b.HasOne("auth.Entities.ExpertApplication", "Application")
+                        .WithMany("Evidences")
+                        .HasForeignKey("ApplicationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_expert_evidence_application");
+
                     b.HasOne("auth.Entities.ExpertProfile", "ExpertProfile")
                         .WithMany("Evidences")
                         .HasForeignKey("ExpertProfileId")
                         .IsRequired()
                         .HasConstraintName("fk_expert_evidence_11");
+
+                    b.Navigation("Application");
 
                     b.Navigation("ExpertProfile");
                 });
@@ -914,8 +1118,17 @@ namespace auth.Migrations
                     b.Navigation("RotatedToTokens");
                 });
 
+            modelBuilder.Entity("auth.Entities.ExpertApplication", b =>
+                {
+                    b.Navigation("Events");
+
+                    b.Navigation("Evidences");
+                });
+
             modelBuilder.Entity("auth.Entities.ExpertProfile", b =>
                 {
+                    b.Navigation("Applications");
+
                     b.Navigation("Assessments");
 
                     b.Navigation("AvailabilitySlots");

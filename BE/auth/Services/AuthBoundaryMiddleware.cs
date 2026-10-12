@@ -40,6 +40,7 @@ public sealed class AuthBoundaryMiddleware(RequestDelegate next)
                 context.User.Identity?.IsAuthenticated == true
                 && (
                     context.Request.Path.StartsWithSegments("/api/v1/users")
+                    || context.Request.Path.StartsWithSegments("/api/v1/experts")
                     || context.Request.Path == "/api/v1/auth/logout"
                     || context.Request.Path == "/api/v1/auth/resend-verification"
                     || context.Request.Path == "/api/v1/auth/change-password"

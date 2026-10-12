@@ -45,6 +45,20 @@ builder.Services.AddSwaggerGen(o =>
     o.OperationFilter<SwaggerClientHeaderFilter>();
 });
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IExpertApplicationService, ExpertApplicationService>();
+builder
+    .Services.AddOptions<StorageOptions>()
+    .Bind(builder.Configuration.GetSection("Storage"))
+    .Validate(
+        x => !string.IsNullOrEmpty(x.AccessKey) && !string.IsNullOrEmpty(x.SecretKey),
+        "Storage:AccessKey and Storage:SecretKey are required."
+    )
+    .Validate(
+        x => builder.Environment.IsDevelopment() || !x.CreateBucket,
+        "Storage:CreateBucket may only be enabled in Development."
+    )
+    .ValidateOnStart();
+builder.Services.AddSingleton<IObjectStorage, S3ObjectStorage>();
 builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
 builder.Services.AddSingleton(TimeProvider.System);
 builder
