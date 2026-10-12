@@ -451,6 +451,10 @@ public sealed class AuthService(
         // Đăng ký mới chưa SaveChanges nên role cố định USER chỉ trong response.
         if (db.Entry(u).State == EntityState.Added)
             roles = ["USER"];
+        var avatarAt = await db
+            .UserAvatars.Where(x => x.UserId == u.Id)
+            .Select(x => (DateTimeOffset?)x.UpdatedAt)
+            .SingleOrDefaultAsync(ct);
         return new(
             u.Id.ToString(),
             u.Email,
@@ -459,9 +463,53 @@ public sealed class AuthService(
             u.Status,
             u.EmailVerifiedAt != null,
             roles,
-            permissions
+            permissions,
+            avatarAt == null ? null : AvatarPath(u.Id, avatarAt.Value)
         );
     }
+
+    // Đường dẫn tương đối qua gateway; ?v= đổi mỗi lần thay ảnh để trình duyệt không dùng cache cũ.
+    private static string AvatarPath(Guid id, DateTimeOffset at) =>
+        $"/api/v1/users/{id}/avatar?v={at.ToUnixTimeMilliseconds()}";
+
+    public async Task<MeResponse> UpdateAvatarAsync(
+        Guid id,
+        string contentType,
+        byte[] data,
+        CancellationToken ct
+    )
+    {
+        await using var tx = await db.Database.BeginTransactionAsync(ct);
+        var u = await Lock(id, ct);
+        Active(u);
+        var avatar = await db.UserAvatars.SingleOrDefaultAsync(x => x.UserId == id, ct);
+        if (avatar == null)
+        {
+            avatar = new UserAvatar { UserId = id };
+            db.UserAvatars.Add(avatar);
+        }
+        avatar.ContentType = contentType;
+        avatar.Data = data;
+        avatar.UpdatedAt = Now;
+        await db.SaveChangesAsync(ct);
+        await tx.CommitAsync(ct);
+        return await Describe(u, ct);
+    }
+
+    public async Task<MeResponse> RemoveAvatarAsync(Guid id, CancellationToken ct)
+    {
+        var u = await Find(id, ct);
+        Active(u);
+        await db.UserAvatars.Where(x => x.UserId == id).ExecuteDeleteAsync(ct);
+        return await Describe(u, ct);
+    }
+
+    public async Task<AvatarFile?> AvatarAsync(Guid id, CancellationToken ct) =>
+        await db
+            .UserAvatars.AsNoTracking()
+            .Where(x => x.UserId == id)
+            .Select(x => new AvatarFile(x.ContentType, x.Data, x.UpdatedAt))
+            .SingleOrDefaultAsync(ct);
 
     public async Task<MeResponse> MeAsync(Guid id, CancellationToken ct) =>
         await Describe(await Find(id, ct), ct);

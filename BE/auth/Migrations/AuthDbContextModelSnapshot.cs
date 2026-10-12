@@ -647,6 +647,33 @@ namespace auth.Migrations
                     b.ToTable("users", "identity");
                 });
 
+            modelBuilder.Entity("auth.Entities.UserAvatar", b =>
+                {
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.Property<string>("ContentType")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("content_type");
+
+                    b.Property<byte[]>("Data")
+                        .IsRequired()
+                        .HasColumnType("bytea")
+                        .HasColumnName("data");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.HasKey("UserId");
+
+                    b.ToTable("user_avatar", "identity");
+                });
+
             modelBuilder.Entity("auth.Entities.UserRole", b =>
                 {
                     b.Property<Guid>("UserId")
@@ -836,6 +863,18 @@ namespace auth.Migrations
                         .HasConstraintName("fk_service_offering_14");
 
                     b.Navigation("ExpertProfile");
+                });
+
+            modelBuilder.Entity("auth.Entities.UserAvatar", b =>
+                {
+                    b.HasOne("auth.Entities.User", "User")
+                        .WithOne()
+                        .HasForeignKey("auth.Entities.UserAvatar", "UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_user_avatar_user");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("auth.Entities.UserRole", b =>

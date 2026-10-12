@@ -17,6 +17,8 @@ All mutations under /api/v1/auth require X-Caps-Client: spa. Browser Origin must
 - POST /api/v1/auth/change-password — bearer plus cookie; currentPassword/newPassword (12–128). 400 CURRENT_PASSWORD_INVALID or PASSWORD_UNCHANGED. Revokes every session, then returns a new session (accessToken + refresh cookie) for the calling device.
 - GET /api/v1/users/me — bearer, including limited pending session. Returns profile/status/roles/permissions from DB.
 - PUT /api/v1/users/me — active bearer; displayName/phone.
+- PUT /api/v1/users/me/avatar — active bearer; multipart field file, JPEG/PNG/WebP detected from content, max 2 MB (400 AVATAR_INVALID_TYPE / AVATAR_TOO_LARGE). Returns the updated profile; avatarUrl is a gateway-relative path. DELETE /api/v1/users/me/avatar removes it.
+- GET /api/v1/users/{id}/avatar — anonymous (img tags cannot send bearer); versioned URL with long-lived cache, 404 when unset. Stored in identity.user_avatar (bytea) until object storage exists.
 - GET /api/v1/users/me/business-profile — active USER; data null if no profile.
 - PUT /api/v1/users/me/business-profile — active USER; companyName/taxCode/address/representative/contactEmail/contactPhone. One profile per account; tax code is not globally unique across accounts.
 

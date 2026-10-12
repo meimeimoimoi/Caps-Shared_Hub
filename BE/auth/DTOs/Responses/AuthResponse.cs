@@ -10,8 +10,11 @@ public sealed record MeResponse(
     string Status,
     bool EmailVerified,
     string[] Roles,
-    string[] Permissions
+    string[] Permissions,
+    string? AvatarUrl = null
 );
+
+public sealed record AvatarFile(string ContentType, byte[] Data, DateTimeOffset UpdatedAt);
 
 public sealed record SessionResult(
     AuthResponse Response,

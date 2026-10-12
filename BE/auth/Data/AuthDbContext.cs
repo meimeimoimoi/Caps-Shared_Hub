@@ -14,6 +14,7 @@ public sealed class AuthDbContext(DbContextOptions<AuthDbContext> options) : DbC
     public DbSet<AuthRefreshToken> RefreshTokens => Set<AuthRefreshToken>();
     public DbSet<VerificationToken> VerificationTokens => Set<VerificationToken>();
     public DbSet<BusinessProfile> BusinessProfiles => Set<BusinessProfile>();
+    public DbSet<UserAvatar> UserAvatars => Set<UserAvatar>();
     public DbSet<ExpertProfile> ExpertProfiles => Set<ExpertProfile>();
     public DbSet<ExpertEvidence> ExpertEvidences => Set<ExpertEvidence>();
     public DbSet<ExpertCompetencyAssessment> ExpertCompetencyAssessments =>
@@ -232,6 +233,26 @@ public sealed class AuthDbContext(DbContextOptions<AuthDbContext> options) : DbC
                 .HasForeignKey(x => x.UserId)
                 .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("fk_verification_token_7");
+        });
+
+        // User Avatar
+        modelBuilder.Entity<UserAvatar>(e =>
+        {
+            e.ToTable("user_avatar");
+            e.HasKey(x => x.UserId);
+            e.Property(x => x.UserId).HasColumnName("user_id");
+            e.Property(x => x.ContentType).HasColumnName("content_type").IsRequired();
+            e.Property(x => x.Data).HasColumnName("data").IsRequired();
+            e.Property(x => x.UpdatedAt)
+                .HasColumnName("updated_at")
+                .HasDefaultValueSql("now()")
+                .IsRequired();
+
+            e.HasOne(x => x.User)
+                .WithOne()
+                .HasForeignKey<UserAvatar>(x => x.UserId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("fk_user_avatar_user");
         });
 
         // Business Profile

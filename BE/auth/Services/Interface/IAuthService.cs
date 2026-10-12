@@ -20,6 +20,14 @@ public interface IAuthService
     );
     Task<MeResponse> MeAsync(Guid userId, CancellationToken ct);
     Task<MeResponse> UpdateAsync(Guid userId, UpdateProfileRequest request, CancellationToken ct);
+    Task<MeResponse> UpdateAvatarAsync(
+        Guid userId,
+        string contentType,
+        byte[] data,
+        CancellationToken ct
+    );
+    Task<MeResponse> RemoveAvatarAsync(Guid userId, CancellationToken ct);
+    Task<AvatarFile?> AvatarAsync(Guid userId, CancellationToken ct);
     Task<BusinessResponse?> BusinessAsync(Guid userId, CancellationToken ct);
     Task<BusinessResponse> UpdateBusinessAsync(
         Guid userId,
