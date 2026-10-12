@@ -18,6 +18,8 @@ export function useAuth() {
   const [error, setError] = useState<
     | 'errors.credentials'
     | 'errors.emailTaken'
+    | 'errors.emailDisposable'
+    | 'errors.emailDomain'
     | 'errors.registerFailed'
     | 'errors.unavailable'
     | 'errors.tooManyRequests'
@@ -33,11 +35,17 @@ export function useAuth() {
     try {
       const { user: u, token } = await authApi.login(values)
       setSession(u, token)
-      const state = { from: location.state?.from, fromState: location.state?.fromState }
+      const state = {
+        from: location.state?.from,
+        fromState: location.state?.fromState,
+      }
       if (u.status === 'PENDING_VERIFICATION')
         navigate('/verify-email', { replace: true, state })
       else
-        navigate(safeReturnPath(state.from), { replace: true, state: state.fromState })
+        navigate(safeReturnPath(state.from), {
+          replace: true,
+          state: state.fromState,
+        })
       return u
     } catch (e) {
       // BE trả chung 401 INVALID_CREDENTIALS cho email chưa đăng ký, sai mật khẩu và tài khoản
@@ -86,11 +94,15 @@ export function useAuth() {
       setError(
         e instanceof ApiError && e.status === 409
           ? 'errors.emailTaken'
-          : throttled(e)
-            ? 'errors.tooManyRequests'
-            : unavailable(e)
-              ? 'errors.unavailable'
-              : 'errors.registerFailed'
+          : e instanceof ApiError && e.code === 'EMAIL_DISPOSABLE'
+            ? 'errors.emailDisposable'
+            : e instanceof ApiError && e.code === 'EMAIL_DOMAIN_INVALID'
+              ? 'errors.emailDomain'
+              : throttled(e)
+                ? 'errors.tooManyRequests'
+                : unavailable(e)
+                  ? 'errors.unavailable'
+                  : 'errors.registerFailed'
       )
       throw e
     } finally {

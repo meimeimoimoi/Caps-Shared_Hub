@@ -26,7 +26,9 @@
     "locked": "This application has been submitted and can no longer be edited.",
     "fileLimit": "An application can hold at most 20 files. Remove some before adding more.",
     "supplementSent": "Additional information sent. Your application is back in the review queue.",
-    "loadFailed": "We couldn't load your application. Check your connection and try again."
+    "loadFailed": "We couldn't load your application. Check your connection and try again.",
+    "emailDisposable": "Temporary email addresses aren't accepted. Review results are sent by email, so use one you check regularly.",
+    "emailDomain": "This email domain can't receive email. Check the address."
   },
   "consent": "I agree to the <terms>terms and conditions</terms> and <privacy>privacy policy</privacy>.",
   "counts": {
@@ -327,7 +329,7 @@
   },
   "verifyEmail": {
     "title": "Verify your email.",
-    "body": "We sent a verification link to {{email}}. You can keep working on your application; you only need to verify before submitting.",
+    "body": "We sent a 6-digit code and a verification link to {{email}}. You can keep working on your application; you only need to verify before submitting.",
     "resend": "Resend email",
     "cooldown": "Resend in {{seconds}} seconds",
     "check": "I've verified it",

@@ -13,8 +13,13 @@ import { ApiError } from '@/lib/api-client'
 import { authApi } from '@/features/auth/api/authApi'
 import { useAuth, useAuthStore } from '@/features/auth'
 import { safeReturnPath } from '@/features/auth/utils/returnPath'
+import {
+  notifyEmailVerified,
+  useEmailVerifiedSignal,
+} from '@/features/auth/utils/emailVerifiedSignal'
 import { EXPERT_ONBOARDING_KEY } from '@/features/expert-registration/hooks/useExpertApplication'
 import { VideoBackground } from '@/components/auth/VideoBackground'
+import { EmailCodeField } from '@/components/auth/EmailCodeField'
 import { LanguageToggle as AuthLanguageToggle } from '@/components/ui/layout/language-toggle'
 import {
   CARD_CLASS,
@@ -37,9 +42,17 @@ export default function VerifyEmailPage() {
   const token = useSearchParams()[0].get('token')
   const user = useAuthStore((s) => s.user)
   const authenticated = useAuthStore((s) => s.isAuthenticated)
+  const location = useLocation()
 
+  // Đã kích hoạt (kể cả vừa xác nhận ở tab khác): đi tiếp tới trang người dùng định vào
   if (!token && authenticated && user?.status === 'ACTIVE')
-    return <Navigate to="/dashboard" replace />
+    return (
+      <Navigate
+        to={safeReturnPath(location.state?.from)}
+        replace
+        state={location.state?.fromState}
+      />
+    )
 
   return (
     <main className="login-material relative isolate flex min-h-svh flex-col items-center justify-center overflow-hidden bg-[var(--ui-login-canvas)] px-6 py-12 text-[var(--ui-login-text)] max-sm:pt-20">
@@ -97,6 +110,8 @@ function ConfirmToken({ token }: { token: string }) {
             useAuthStore.getState().clearSession()
           }
         }
+        // Báo sau khi đã refresh xong để tab đang chờ dùng phiên mới, không refresh song song
+        notifyEmailVerified()
         setStatus('done')
       })
       .catch(() => setStatus('invalid'))
@@ -182,6 +197,11 @@ function Pending() {
   )?.justRegistered
   const [busy, setBusy] = useState(false)
   const [message, setMessage] = useState<'resent' | 'resendFailed' | null>(null)
+  // Đã xác nhận ở tab/thiết bị khác: /users/me trả 401 REFRESH_REQUIRED, api-client tự refresh và
+  // store nhận trạng thái ACTIVE, trang tự chuyển tiếp mà người dùng không phải bấm gì
+  useEmailVerifiedSignal(() => {
+    void authApi.me().catch(() => undefined)
+  }, authenticated)
   // Vừa đăng ký xong thì BE đã gửi email, nên bắt đầu đếm ngược luôn
   const [cooldown, setCooldown] = useState(
     justRegistered ? COOLDOWN_SECONDS : 0
@@ -226,6 +246,10 @@ function Pending() {
 
       {authenticated ? (
         <>
+          {/* Nhập mã xong store nhận phiên ACTIVE và trang tự chuyển tiếp */}
+          <div className="mb-5">
+            <EmailCodeField tone="dark" autoFocus />
+          </div>
           <button
             type="button"
             onClick={resend}

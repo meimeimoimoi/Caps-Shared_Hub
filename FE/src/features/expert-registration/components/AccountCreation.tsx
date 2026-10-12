@@ -1,4 +1,5 @@
 import { Trans, useTranslation } from 'react-i18next'
+import { EmailSuggestion } from '@/components/auth/EmailSuggestion'
 import {
   formControlClassName as inputCls,
   formButtonClassName as btnBase,
@@ -335,6 +336,11 @@ export function AccountCreation({
           >
             {renderInput('email', true, 'email')}
           </FormField>
+          <EmailSuggestion
+            tone="light"
+            email={profile.email}
+            onApply={(email) => onUpdate('email', email)}
+          />
         </div>
         {renderPassword(false)}
         {renderPassword(true)}

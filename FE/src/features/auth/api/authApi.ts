@@ -107,6 +107,15 @@ export const authApi = {
   verifyEmail: async (token: string) => {
     await api.post('/api/v1/auth/verify-email', { token }, withCookie)
   },
+  /** Mã 6 số trong email xác nhận; đúng thì BE trả phiên mới đã kích hoạt (sai 5 lần bị khóa). */
+  verifyEmailCode: async (code: string) => {
+    const res = await api.post<BackendEnvelope<BackendAuthPayload>>(
+      '/api/v1/auth/verify-email-code',
+      { code },
+      withCookie
+    )
+    return toSession(res.data)
+  },
   /** Cần phiên đăng nhập (kể cả đang chờ xác thực); BE giới hạn 60 giây/lần. */
   resendVerification: async () => {
     await api.post('/api/v1/auth/resend-verification', {}, withCookie)

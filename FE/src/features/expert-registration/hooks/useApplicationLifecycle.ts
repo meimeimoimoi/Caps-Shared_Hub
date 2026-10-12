@@ -24,6 +24,10 @@ export function messageFor(e: unknown): RegistrationMessage {
     if (e.status == null || e.status >= 500)
       return { key: 'messages.unavailable' }
     switch (e.code) {
+      case 'EMAIL_DISPOSABLE':
+        return { key: 'messages.emailDisposable' }
+      case 'EMAIL_DOMAIN_INVALID':
+        return { key: 'messages.emailDomain' }
       case 'EMAIL_NOT_VERIFIED':
         return { key: 'messages.verifyBeforeSubmit' }
       case 'APPLICATION_INCOMPLETE':

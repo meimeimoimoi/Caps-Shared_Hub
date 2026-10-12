@@ -15,6 +15,7 @@ import {
 import { cn } from '@/lib/utils'
 import { mergeRefs } from '@/lib/merge-refs'
 import { AuthBrandHeader } from './AuthBrandHeader'
+import { EmailSuggestion } from './EmailSuggestion'
 import {
   passwordRequirements,
   validateSignupIssues,
@@ -219,6 +220,10 @@ export function RegisterForm({
                 {t(`validation.${errors.email}`)}
               </FieldMessage>
             )}
+            <EmailSuggestion
+              email={values.email}
+              onApply={(email) => change('email', email)}
+            />
           </div>
 
           <div className="mb-4">

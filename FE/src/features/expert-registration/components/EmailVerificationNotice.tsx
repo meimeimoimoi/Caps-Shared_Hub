@@ -3,6 +3,8 @@ import { useTranslation } from 'react-i18next'
 import { MailCheck } from 'lucide-react'
 import { ApiError } from '@/lib/api-client'
 import { authApi } from '@/features/auth/api/authApi'
+import { useEmailVerifiedSignal } from '@/features/auth/utils/emailVerifiedSignal'
+import { EmailCodeField } from '@/components/auth/EmailCodeField'
 
 const COOLDOWN_SECONDS = 60
 
@@ -19,6 +21,10 @@ export function EmailVerificationNotice({
 }: EmailVerificationNoticeProps) {
   const { t } = useTranslation('expertRegistration')
   const [cooldown, setCooldown] = useState(0)
+  // Bấm link ở tab khác hoặc trên điện thoại: tự kiểm tra lại, dải nhắc biến mất khi đã xác nhận
+  useEmailVerifiedSignal(() => {
+    void onCheck()
+  }, true)
   const [busy, setBusy] = useState(false)
   const [message, setMessage] = useState<
     'resent' | 'failed' | 'stillPending' | null
@@ -66,6 +72,9 @@ export function EmailVerificationNotice({
           <strong>{t('verifyEmail.title')}</strong>{' '}
           {t('verifyEmail.body', { email })}
         </p>
+        <div className="my-3 max-w-[420px]">
+          <EmailCodeField tone="light" onVerified={() => void onCheck()} />
+        </div>
         <p className="!mb-0 flex flex-wrap items-center gap-x-4 gap-y-1 text-[13px]">
           <button
             type="button"

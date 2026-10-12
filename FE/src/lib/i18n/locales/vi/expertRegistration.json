@@ -26,7 +26,9 @@
     "locked": "Hồ sơ đã nộp nên không thể chỉnh sửa.",
     "fileLimit": "Mỗi hồ sơ có tối đa 20 file. Xóa bớt file trước khi thêm.",
     "supplementSent": "Đã gửi thông tin bổ sung. Hồ sơ quay lại hàng chờ đánh giá.",
-    "loadFailed": "Không tải được hồ sơ. Kiểm tra kết nối rồi thử lại."
+    "loadFailed": "Không tải được hồ sơ. Kiểm tra kết nối rồi thử lại.",
+    "emailDisposable": "Không nhận email dùng một lần. Kết quả xét duyệt sẽ gửi qua email, hãy dùng email bạn kiểm tra thường xuyên.",
+    "emailDomain": "Tên miền email này không nhận được thư. Kiểm tra lại địa chỉ email."
   },
   "consent": "Tôi đồng ý với <terms>điều khoản và điều kiện</terms> cùng <privacy>chính sách quyền riêng tư</privacy>.",
   "counts": {
@@ -325,7 +327,7 @@
   },
   "verifyEmail": {
     "title": "Xác nhận email của bạn.",
-    "body": "Chúng tôi đã gửi liên kết xác nhận tới {{email}}. Bạn có thể tiếp tục khai hồ sơ; chỉ cần xác nhận trước khi nộp.",
+    "body": "Chúng tôi đã gửi mã 6 số và liên kết xác nhận tới {{email}}. Bạn có thể tiếp tục khai hồ sơ; chỉ cần xác nhận trước khi nộp.",
     "resend": "Gửi lại email",
     "cooldown": "Gửi lại sau {{seconds}} giây",
     "check": "Tôi đã xác nhận",
