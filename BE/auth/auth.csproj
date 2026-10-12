@@ -12,6 +12,7 @@
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
     <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" />
     <PackageReference Include="AWSSDK.S3" />
+    <PackageReference Include="DnsClient" />
     <ProjectReference Include="..\common\common.csproj" />
   </ItemGroup>
 

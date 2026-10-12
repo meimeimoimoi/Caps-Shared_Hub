@@ -46,6 +46,9 @@ builder.Services.AddSwaggerGen(o =>
 });
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IExpertApplicationService, ExpertApplicationService>();
+builder.Services.AddMemoryCache();
+builder.Services.Configure<EmailPolicyOptions>(builder.Configuration.GetSection("EmailPolicy"));
+builder.Services.AddSingleton<IEmailDomainPolicy, EmailDomainPolicy>();
 builder
     .Services.AddOptions<StorageOptions>()
     .Bind(builder.Configuration.GetSection("Storage"))

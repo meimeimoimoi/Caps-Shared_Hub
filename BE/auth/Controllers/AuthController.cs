@@ -10,8 +10,11 @@ using Microsoft.Extensions.Options;
 namespace auth.Controllers;
 
 [ApiController, Route("api/v1/auth")]
-public sealed class AuthController(IAuthService auth, IOptions<AuthOptions> options)
-    : ControllerBase
+public sealed class AuthController(
+    IAuthService auth,
+    IEmailDomainPolicy emailPolicy,
+    IOptions<AuthOptions> options
+) : ControllerBase
 {
     private const string CookieName = "caps_refresh";
     private Guid UserId => Guid.Parse(User.FindFirstValue("sub")!);
@@ -37,8 +40,12 @@ public sealed class AuthController(IAuthService auth, IOptions<AuthOptions> opti
     }
 
     [AllowAnonymous, HttpPost("register")]
-    public async Task<IActionResult> Register(RegisterRequest r, CancellationToken ct) =>
-        Ok(Session(await auth.RegisterAsync(r, ct)));
+    public async Task<IActionResult> Register(RegisterRequest r, CancellationToken ct)
+    {
+        // Chặn email tạm/tên miền không nhận thư trước khi tạo tài khoản và gửi email xác nhận
+        await emailPolicy.EnsureDeliverableAsync(r.Email, ct);
+        return Ok(Session(await auth.RegisterAsync(r, ct)));
+    }
 
     [AllowAnonymous, HttpPost("login")]
     public async Task<IActionResult> Login(LoginRequest r, CancellationToken ct) =>
