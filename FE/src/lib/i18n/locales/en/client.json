@@ -1,0 +1,22 @@
+{
+  "credits": {
+    "paymentsTitle": "Payments",
+    "emptyPayments": "No payments yet.",
+    "col": {
+      "time": "Time",
+      "purpose": "Purpose",
+      "amount": "Amount",
+      "status": "Status"
+    },
+    "purpose": {
+      "CREDIT_TOP_UP": "Credit top-up",
+      "REVIEW_FEE": "Review fee"
+    },
+    "paymentStatus": {
+      "PENDING": "Pending",
+      "SUCCEEDED": "Succeeded",
+      "FAILED": "Failed",
+      "CANCELLED": "Cancelled"
+    }
+  }
+}

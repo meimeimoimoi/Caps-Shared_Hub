@@ -24,6 +24,8 @@ import viMarketplace from './locales/vi/marketplace.json'
 import viReviewCase from './locales/vi/reviewCase.json'
 import enReviewCase from './locales/en/reviewCase.json'
 import enMarketplace from './locales/en/marketplace.json'
+import viClient from './locales/vi/client.json'
+import enClient from './locales/en/client.json'
 
 // Add feature namespaces as each rollout group migrates its screens.
 export const resources = {
@@ -41,6 +43,7 @@ export const resources = {
     aiAssistant: viAiAssistant,
     marketplace: viMarketplace,
     reviewCase: viReviewCase,
+    client: viClient,
   },
   en: {
     home: enHome,
@@ -56,5 +59,6 @@ export const resources = {
     aiAssistant: enAiAssistant,
     marketplace: enMarketplace,
     reviewCase: enReviewCase,
+    client: enClient,
   },
 }
