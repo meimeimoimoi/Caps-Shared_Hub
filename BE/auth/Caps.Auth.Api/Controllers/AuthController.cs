@@ -65,7 +65,7 @@ public sealed class AuthController(IOptions<AuthOptions> options) : ControllerBa
     {
         var token =
             Request.Cookies[CookieName]
-            ?? throw new AuthFailure(401, "REFRESH_REQUIRED", "Refresh cookie required.");
+            ?? throw CommonErrors.RefreshRequired("Refresh cookie required.");
         return Ok(Session(await handler.HandleAsync(new(token), ct)));
     }
 

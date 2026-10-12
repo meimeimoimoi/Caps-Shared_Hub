@@ -1,5 +1,6 @@
 using Caps.Auth.Application.Abstractions.Email;
 using Caps.Auth.Application.Abstractions.Persistence;
+using Caps.Auth.Domain;
 using Caps.Auth.Domain.Users;
 using Caps.Auth.Domain.Verification;
 using Caps.Contracts;
@@ -33,24 +34,13 @@ public sealed class AccountEmailQueue(
                 ct
             )
         )
-            throw new AuthFailure(
-                429,
-                "EMAIL_COOLDOWN",
-                "Please wait before requesting another email."
-            );
+            throw AuthErrors.EmailCooldown();
         await tokens.InvalidateUnusedAsync(user.Id, purpose, now, ct);
         var raw = OpaqueTokens.NewSecret();
         var isVerify = purpose == VerificationPurpose.VerifyEmail;
         var expires = now.AddMinutes(isVerify ? options.VerificationMinutes : options.ResetMinutes);
         tokens.Add(
-            new VerificationToken
-            {
-                UserId = user.Id,
-                Purpose = purpose,
-                TokenHash = OpaqueTokens.Hash(raw),
-                CreatedAt = now,
-                ExpiresAt = expires,
-            }
+            VerificationToken.Create(user.Id, purpose, OpaqueTokens.Hash(raw), now, expires)
         );
         string? code = null;
         DateTimeOffset? codeExpires = null;
@@ -66,14 +56,13 @@ public sealed class AccountEmailQueue(
             code = OpaqueTokens.NewCode();
             codeExpires = now.AddMinutes(options.VerificationCodeMinutes);
             tokens.Add(
-                new VerificationToken
-                {
-                    UserId = user.Id,
-                    Purpose = VerificationPurpose.VerifyEmailCode,
-                    TokenHash = OpaqueTokens.HashCode(user.Id, code),
-                    CreatedAt = now,
-                    ExpiresAt = codeExpires.Value,
-                }
+                VerificationToken.Create(
+                    user.Id,
+                    VerificationPurpose.VerifyEmailCode,
+                    OpaqueTokens.HashCode(user.Id, code),
+                    now,
+                    codeExpires.Value
+                )
             );
         }
         var path = isVerify ? "/verify-email" : "/reset-password";

@@ -5,6 +5,7 @@ using Caps.Auth.Application.DTOs.Responses;
 using Caps.Auth.Domain.Experts;
 using Caps.Auth.Domain.Users;
 using Caps.Auth.Infrastructure.Persistence;
+using Caps.Common.Domain;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Status = Caps.Auth.Domain.Experts.ExpertApplicationStatus;
@@ -25,7 +26,7 @@ public sealed class ExpertApplicationService(
         await db
             .Users.FromSqlInterpolated($"SELECT * FROM identity.users WHERE id = {id} FOR UPDATE")
             .SingleOrDefaultAsync(ct)
-        ?? throw new AuthFailure(401, "INVALID_SESSION", "Invalid session.");
+        ?? throw new AppException(ErrorType.Unauthorized, "INVALID_SESSION", "Invalid session.");
 
     private Task<ExpertProfile?> Profile(Guid userId, CancellationToken ct) =>
         db.ExpertProfiles.SingleOrDefaultAsync(x => x.UserId == userId, ct);
@@ -36,11 +37,15 @@ public sealed class ExpertApplicationService(
             .OrderByDescending(x => x.CreatedAt)
             .FirstOrDefaultAsync(ct);
 
-    private static AuthFailure NotFound() =>
-        new(404, "APPLICATION_NOT_FOUND", "Expert application not found.");
+    private static AppException NotFound() =>
+        new(ErrorType.NotFound, "APPLICATION_NOT_FOUND", "Expert application not found.");
 
-    private static AuthFailure Locked(string status) =>
-        new(409, "APPLICATION_LOCKED", $"Application cannot be changed while {status}.");
+    private static AppException Locked(string status) =>
+        new(
+            ErrorType.Conflict,
+            "APPLICATION_LOCKED",
+            $"Application cannot be changed while {status}."
+        );
 
     private void Transition(
         ExpertApplication app,
@@ -91,8 +96,8 @@ public sealed class ExpertApplicationService(
         if (latest != null && !ExpertApplicationRules.IsClosed(latest.Status))
             return (profile, latest);
         if (latest?.EarliestReapplyAt > Now)
-            throw new AuthFailure(
-                409,
+            throw new AppException(
+                ErrorType.Conflict,
                 "REAPPLY_TOO_EARLY",
                 $"A new application is allowed from {latest.EarliestReapplyAt:O}."
             );
@@ -234,12 +239,20 @@ public sealed class ExpertApplicationService(
         var fields = (r.Fields ?? []).Select(x => x.Trim()).Distinct().ToArray();
         var unknown = fields.Except(ExpertApplicationRules.FieldCodes).ToArray();
         if (unknown.Length > 0)
-            throw new AuthFailure(400, "INVALID_FIELD", $"Unknown expertise field: {unknown[0]}.");
+            throw new AppException(
+                ErrorType.Validation,
+                "INVALID_FIELD",
+                $"Unknown expertise field: {unknown[0]}."
+            );
         if (
             r.BirthDate is { } birth
             && (birth > DateOnly.FromDateTime(Now.UtcDateTime) || birth.Year < 1900)
         )
-            throw new AuthFailure(400, "INVALID_BIRTH_DATE", "Birth date is invalid.");
+            throw new AppException(
+                ErrorType.Validation,
+                "INVALID_BIRTH_DATE",
+                "Birth date is invalid."
+            );
 
         await using var tx = await db.Database.BeginTransactionAsync(ct);
         var user = await LockUser(userId, ct);
@@ -280,15 +293,23 @@ public sealed class ExpertApplicationService(
     {
         var supplementFile = code == ExpertApplicationRules.SupplementCode;
         if (!supplementFile && !ExpertApplicationRules.EvidenceCodes.Contains(code))
-            throw new AuthFailure(400, "INVALID_EVIDENCE_CODE", "Unknown evidence category.");
+            throw new AppException(
+                ErrorType.Validation,
+                "INVALID_EVIDENCE_CODE",
+                "Unknown evidence category."
+            );
         if (content.Length == 0)
-            throw new AuthFailure(400, "EVIDENCE_REQUIRED", "File is required.");
+            throw new AppException(ErrorType.Validation, "EVIDENCE_REQUIRED", "File is required.");
         if (content.Length > ExpertApplicationRules.MaxFileBytes)
-            throw new AuthFailure(400, "EVIDENCE_TOO_LARGE", "File must be 10 MB or smaller.");
+            throw new AppException(
+                ErrorType.Validation,
+                "EVIDENCE_TOO_LARGE",
+                "File must be 10 MB or smaller."
+            );
         var type =
             ExpertApplicationRules.DetectContentType(content)
-            ?? throw new AuthFailure(
-                400,
+            ?? throw new AppException(
+                ErrorType.Validation,
                 "EVIDENCE_INVALID_TYPE",
                 "Only PDF, PNG or JPG files are allowed."
             );
@@ -299,8 +320,8 @@ public sealed class ExpertApplicationService(
         if (app.Status is not (Status.Draft or Status.NeedMoreInformation))
             throw Locked(app.Status);
         if (supplementFile && app.Status != Status.NeedMoreInformation)
-            throw new AuthFailure(
-                400,
+            throw new AppException(
+                ErrorType.Validation,
                 "INVALID_EVIDENCE_CODE",
                 "Supplementary files are only accepted when more information is requested."
             );
@@ -309,8 +330,8 @@ public sealed class ExpertApplicationService(
                 ? 0
                 : await db.ExpertEvidences.CountAsync(x => x.ApplicationId == app.Id, ct);
         if (count >= ExpertApplicationRules.MaxFilesPerApplication)
-            throw new AuthFailure(
-                409,
+            throw new AppException(
+                ErrorType.Conflict,
                 "EVIDENCE_LIMIT",
                 $"An application can hold at most {ExpertApplicationRules.MaxFilesPerApplication} files."
             );
@@ -371,9 +392,14 @@ public sealed class ExpertApplicationService(
             await db.ExpertEvidences.SingleOrDefaultAsync(
                 x => x.Id == evidenceId && x.ApplicationId == app.Id,
                 ct
-            ) ?? throw new AuthFailure(404, "EVIDENCE_NOT_FOUND", "File not found.");
+            )
+            ?? throw new AppException(ErrorType.NotFound, "EVIDENCE_NOT_FOUND", "File not found.");
         if (!Removable(app, evidence))
-            throw new AuthFailure(409, "EVIDENCE_LOCKED", "Submitted files cannot be removed.");
+            throw new AppException(
+                ErrorType.Conflict,
+                "EVIDENCE_LOCKED",
+                "Submitted files cannot be removed."
+            );
         db.ExpertEvidences.Remove(evidence);
         app.UpdatedAt = Now;
         await db.SaveChangesAsync(ct);
@@ -396,7 +422,7 @@ public sealed class ExpertApplicationService(
                     x => x.Id == evidenceId && x.ExpertProfile.UserId == userId,
                     ct
                 )
-            ?? throw new AuthFailure(404, "EVIDENCE_NOT_FOUND", "File not found.");
+            ?? throw new AppException(ErrorType.NotFound, "EVIDENCE_NOT_FOUND", "File not found.");
         var stream = await storage.OpenAsync(evidence.FileUrl, ct);
         return new(
             stream,
@@ -408,8 +434,8 @@ public sealed class ExpertApplicationService(
     private static void RequireVerified(User user)
     {
         if (user.Status != "ACTIVE")
-            throw new AuthFailure(
-                403,
+            throw new AppException(
+                ErrorType.Forbidden,
                 "EMAIL_NOT_VERIFIED",
                 "Verify your email address before submitting."
             );
@@ -429,8 +455,8 @@ public sealed class ExpertApplicationService(
             .ToListAsync(ct);
         var missing = Missing(user, profile, evidence);
         if (missing.Length > 0)
-            throw new AuthFailure(
-                400,
+            throw new AppException(
+                ErrorType.Validation,
                 "APPLICATION_INCOMPLETE",
                 $"Missing required information: {string.Join(", ", missing)}."
             );
@@ -460,8 +486,8 @@ public sealed class ExpertApplicationService(
             ct
         );
         if (note == null && !added)
-            throw new AuthFailure(
-                400,
+            throw new AppException(
+                ErrorType.Validation,
                 "SUPPLEMENT_EMPTY",
                 "Add an explanation or at least one new file."
             );

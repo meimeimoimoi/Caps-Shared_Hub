@@ -1,5 +1,6 @@
 using Caps.Auth.Application;
 using Caps.Auth.Application.Abstractions;
+using Caps.Auth.Domain;
 using DnsClient;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
@@ -120,19 +121,11 @@ public sealed class EmailDomainPolicy(
         var domain = email[(at + 1)..].Trim().TrimEnd('.').ToLowerInvariant();
 
         if (IsDisposable(domain))
-            throw new AuthFailure(
-                400,
-                "EMAIL_DISPOSABLE",
-                "Temporary email addresses are not accepted. Use an email you check regularly."
-            );
+            throw AuthErrors.EmailDisposable();
         if (!o.CheckMx || o.TrustedDomains.Contains(domain, StringComparer.OrdinalIgnoreCase))
             return;
         if (!await AcceptsMail(domain, ct))
-            throw new AuthFailure(
-                400,
-                "EMAIL_DOMAIN_INVALID",
-                "This email domain cannot receive email. Check the address for typos."
-            );
+            throw AuthErrors.EmailDomainInvalid();
     }
 
     private async Task<bool> AcceptsMail(string domain, CancellationToken ct)

@@ -19,9 +19,7 @@ public sealed class UpdateProfileHandler(
         await using var tx = await unitOfWork.BeginTransactionAsync(ct);
         var user = await users.GetLockedAsync(command.UserId, ct);
         AccountGuards.EnsureActive(user);
-        user.FullName = command.DisplayName.Trim();
-        user.Phone = command.Phone?.Trim();
-        user.UpdatedAt = clock.GetUtcNow();
+        user.UpdateProfile(command.DisplayName, command.Phone, clock.GetUtcNow());
         await unitOfWork.SaveChangesAsync(ct);
         await tx.CommitAsync(ct);
         return await profiles.DescribeAsync(user, ct);

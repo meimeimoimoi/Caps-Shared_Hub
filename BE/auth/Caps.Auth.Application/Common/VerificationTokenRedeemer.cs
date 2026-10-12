@@ -1,4 +1,5 @@
 using Caps.Auth.Application.Abstractions.Persistence;
+using Caps.Auth.Domain;
 using Caps.Auth.Domain.Users;
 using Caps.Auth.Domain.Verification;
 
@@ -31,15 +32,11 @@ public sealed class VerificationTokenRedeemer(
     {
         var found =
             await tokens.FindByHashAsync(OpaqueTokens.Hash(rawToken), purpose, ct)
-            ?? throw AccountGuards.Invalid();
+            ?? throw AuthErrors.InvalidCredentials();
         var user = await users.GetLockedAsync(found.UserId, ct);
         var token = await tokens.GetAsync(found.Id, ct);
-        if (
-            token.UsedAt != null
-            || token.InvalidatedAt != null
-            || token.ExpiresAt <= clock.GetUtcNow()
-        )
-            throw AccountGuards.Invalid();
+        if (!token.IsUsable(clock.GetUtcNow()))
+            throw AuthErrors.InvalidCredentials();
         return (user, token);
     }
 }

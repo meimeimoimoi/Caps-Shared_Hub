@@ -2,6 +2,7 @@ using Caps.Auth.Application.Abstractions.Persistence;
 using Caps.Auth.Application.Abstractions.Security;
 using Caps.Auth.Application.Common;
 using Caps.Auth.Application.DTOs.Responses;
+using Caps.Auth.Domain;
 using Caps.Common.Application;
 
 namespace Caps.Auth.Application.Features.Passwords;
@@ -23,21 +24,12 @@ public sealed class ChangePasswordHandler(
     {
         await using var tx = await unitOfWork.BeginTransactionAsync(ct);
         var user = await users.GetLockedAsync(command.UserId, ct);
-        AccountGuards.EnsureEligible(user);
+        user.EnsureCanSignIn();
         if (hasher.Verify(user.PasswordHash, command.CurrentPassword) == PasswordCheck.Failed)
-            throw new AuthFailure(
-                400,
-                "CURRENT_PASSWORD_INVALID",
-                "Current password is incorrect."
-            );
+            throw AuthErrors.CurrentPasswordInvalid();
         if (command.NewPassword == command.CurrentPassword)
-            throw new AuthFailure(
-                400,
-                "PASSWORD_UNCHANGED",
-                "New password must differ from the current password."
-            );
-        user.PasswordHash = hasher.Hash(command.NewPassword);
-        user.UpdatedAt = clock.GetUtcNow();
+            throw AuthErrors.PasswordUnchanged();
+        user.ChangePassword(hasher.Hash(command.NewPassword), clock.GetUtcNow());
         // Sign out every other device; the current device gets a new session right below.
         await sessions.RevokeAllAsync(user, ct);
         var session = await sessions.IssueAsync(user, ct);

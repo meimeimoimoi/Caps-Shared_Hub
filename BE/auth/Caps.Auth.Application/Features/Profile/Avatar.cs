@@ -32,9 +32,7 @@ public sealed class UpdateAvatarHandler(
             avatar = new UserAvatar { UserId = user.Id };
             avatars.Add(avatar);
         }
-        avatar.ContentType = command.ContentType;
-        avatar.Data = command.Data;
-        avatar.UpdatedAt = clock.GetUtcNow();
+        avatar.Replace(command.ContentType, command.Data, clock.GetUtcNow());
         await unitOfWork.SaveChangesAsync(ct);
         await tx.CommitAsync(ct);
         return await profiles.DescribeAsync(user, ct);

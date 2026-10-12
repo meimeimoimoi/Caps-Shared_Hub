@@ -17,4 +17,23 @@ public sealed class BusinessProfile
     public string? ContactPhone { get; set; }
     public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
     public DateTimeOffset UpdatedAt { get; set; } = DateTimeOffset.UtcNow;
+
+    public void Update(
+        string companyName,
+        string taxCode,
+        string? address,
+        string? representative,
+        string? contactEmail,
+        string? contactPhone,
+        DateTimeOffset now
+    )
+    {
+        CompanyName = companyName.Trim();
+        TaxCode = taxCode.Trim();
+        Address = address?.Trim();
+        Representative = representative?.Trim();
+        ContactEmail = contactEmail?.Trim();
+        ContactPhone = contactPhone?.Trim();
+        UpdatedAt = now;
+    }
 }

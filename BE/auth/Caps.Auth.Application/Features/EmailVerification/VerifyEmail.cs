@@ -1,6 +1,6 @@
 using Caps.Auth.Application.Abstractions.Persistence;
 using Caps.Auth.Application.Common;
-using Caps.Auth.Domain.Users;
+using Caps.Auth.Domain;
 using Caps.Auth.Domain.Verification;
 using Caps.Common.Application;
 
@@ -24,13 +24,12 @@ public sealed class VerifyEmailHandler(
             VerificationPurpose.VerifyEmail,
             ct
         );
-        if (user.Status != UserStatus.PendingVerification)
-            throw AccountGuards.Invalid();
+        // An old link must not reveal whether the account is already verified
+        if (!user.IsPendingVerification)
+            throw AuthErrors.InvalidCredentials();
         var now = clock.GetUtcNow();
-        token.UsedAt = now;
-        user.EmailVerifiedAt = now;
-        user.Status = UserStatus.Active;
-        user.UpdatedAt = now;
+        token.MarkUsed(now);
+        user.VerifyEmail(now);
         // Once verified via the link, the 6-digit code from the same email can no longer be used
         await tokens.InvalidateUnusedAsync(user.Id, VerificationPurpose.VerifyEmailCode, now, ct);
         // The old restricted session does not gain ACTIVE rights; the client refreshes to get them.

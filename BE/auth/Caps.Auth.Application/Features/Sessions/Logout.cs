@@ -24,8 +24,7 @@ public sealed class LogoutHandler(
             command.UserId,
             ct
         );
-        if (current != null && current.RevokedAt == null)
-            current.RevokedAt = clock.GetUtcNow();
+        current?.Revoke(clock.GetUtcNow());
         await unitOfWork.SaveChangesAsync(ct);
         await tx.CommitAsync(ct);
     }

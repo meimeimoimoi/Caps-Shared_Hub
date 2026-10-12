@@ -41,21 +41,14 @@ public sealed class SessionIssuer(
         var raw = OpaqueTokens.NewSecret();
         var expiry = now.AddDays(options.RefreshDays);
         refreshTokens.Add(
-            new AuthRefreshToken
-            {
-                UserId = user.Id,
-                TokenHash = OpaqueTokens.Hash(raw),
-                ExpiresAt = expiry,
-                IssuedAt = now,
-                RotatedFrom = rotatedFrom,
-            }
+            AuthRefreshToken.Issue(user.Id, OpaqueTokens.Hash(raw), now, expiry, rotatedFrom)
         );
         return new(new(access.Value, access.ExpiresInSeconds, me), raw, expiry);
     }
 
     public async Task RevokeAllAsync(User user, CancellationToken ct)
     {
-        user.TokenVersion++;
+        user.RevokeAllSessions();
         await refreshTokens.RevokeAllActiveAsync(user.Id, clock.GetUtcNow(), ct);
     }
 }

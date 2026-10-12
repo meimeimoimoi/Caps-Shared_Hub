@@ -25,13 +25,11 @@ public sealed class ResetPasswordHandler(
             VerificationPurpose.ResetPassword,
             ct
         );
-        AccountGuards.EnsureEligible(user);
+        user.EnsureCanSignIn();
         var now = clock.GetUtcNow();
-        user.PasswordHash = hasher.Hash(command.Password);
-        user.FailedLoginAttempts = 0;
-        user.LockoutEnd = null;
-        user.UpdatedAt = now;
-        token.UsedAt = now;
+        user.ResetPassword(hasher.Hash(command.Password), now);
+        token.MarkUsed(now);
+        // Anyone holding an old session or another reset link is signed out
         await sessions.RevokeAllAsync(user, ct);
         await tokens.InvalidateUnusedAsync(user.Id, VerificationPurpose.ResetPassword, now, ct);
         await unitOfWork.SaveChangesAsync(ct);

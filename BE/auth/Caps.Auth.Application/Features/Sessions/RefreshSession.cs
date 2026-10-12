@@ -1,6 +1,7 @@
 using Caps.Auth.Application.Abstractions.Persistence;
 using Caps.Auth.Application.Common;
 using Caps.Auth.Application.DTOs.Responses;
+using Caps.Auth.Domain;
 using Caps.Common.Application;
 
 namespace Caps.Auth.Application.Features.Sessions;
@@ -22,12 +23,12 @@ public sealed class RefreshSessionHandler(
     {
         var found =
             await refreshTokens.FindByHashAsync(OpaqueTokens.Hash(command.RefreshToken), ct)
-            ?? throw AccountGuards.Invalid();
+            ?? throw AuthErrors.InvalidCredentials();
         await using var tx = await unitOfWork.BeginTransactionAsync(ct);
         var user = await users.GetLockedAsync(found.UserId, ct);
-        AccountGuards.EnsureEligible(user);
+        user.EnsureCanSignIn();
         var current = await refreshTokens.GetAsync(found.Id, ct);
-        if (current.RevokedAt != null)
+        if (current.IsRevoked)
         {
             // A rotated token being reused => likely stolen: revoke every refresh session.
             // A token revoked by sign-out/password change/reset is only rejected, so an old device
@@ -38,12 +39,12 @@ public sealed class RefreshSessionHandler(
                 await unitOfWork.SaveChangesAsync(ct);
                 await tx.CommitAsync(ct);
             }
-            throw AccountGuards.Invalid();
+            throw AuthErrors.InvalidCredentials();
         }
         var now = clock.GetUtcNow();
-        if (current.ExpiresAt <= now)
-            throw AccountGuards.Invalid();
-        current.RevokedAt = now;
+        if (current.IsExpired(now))
+            throw AuthErrors.InvalidCredentials();
+        current.Revoke(now);
         var session = await sessions.IssueAsync(user, ct, rotatedFrom: current.Id);
         await unitOfWork.SaveChangesAsync(ct);
         await tx.CommitAsync(ct);

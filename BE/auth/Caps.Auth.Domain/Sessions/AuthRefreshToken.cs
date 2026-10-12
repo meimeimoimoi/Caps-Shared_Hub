@@ -20,4 +20,27 @@ public sealed class AuthRefreshToken
     public AuthRefreshToken? RotatedFromToken { get; set; }
     public ICollection<AuthRefreshToken> RotatedToTokens { get; set; } =
         new List<AuthRefreshToken>();
+
+    public static AuthRefreshToken Issue(
+        Guid userId,
+        string tokenHash,
+        DateTimeOffset now,
+        DateTimeOffset expiresAt,
+        Guid? rotatedFrom
+    ) =>
+        new()
+        {
+            UserId = userId,
+            TokenHash = tokenHash,
+            IssuedAt = now,
+            ExpiresAt = expiresAt,
+            RotatedFrom = rotatedFrom,
+        };
+
+    public bool IsRevoked => RevokedAt != null;
+
+    public bool IsExpired(DateTimeOffset now) => ExpiresAt <= now;
+
+    /// <summary>Keeps the first revocation time if called again.</summary>
+    public void Revoke(DateTimeOffset now) => RevokedAt ??= now;
 }

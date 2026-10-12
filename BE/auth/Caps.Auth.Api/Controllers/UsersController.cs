@@ -3,6 +3,7 @@ using Caps.Auth.Api.DTOs.Requests;
 using Caps.Auth.Application;
 using Caps.Auth.Application.DTOs.Responses;
 using Caps.Auth.Application.Features.Profile;
+using Caps.Auth.Domain;
 using Caps.Common.Api;
 using Caps.Common.Application;
 using Microsoft.AspNetCore.Authorization;
@@ -45,20 +46,14 @@ public sealed class UsersController : ControllerBase
     )
     {
         if (file == null || file.Length == 0)
-            throw new AuthFailure(400, "AVATAR_REQUIRED", "Avatar file is required.");
+            throw AuthErrors.AvatarRequired();
         if (file.Length > MaxAvatarBytes)
-            throw new AuthFailure(400, "AVATAR_TOO_LARGE", "Avatar must be 2 MB or smaller.");
+            throw AuthErrors.AvatarTooLarge();
         using var buffer = new MemoryStream((int)file.Length);
         await file.CopyToAsync(buffer, ct);
         var data = buffer.ToArray();
         // Detect the format from the file content; never trust the client's Content-Type.
-        var type =
-            ImageType(data)
-            ?? throw new AuthFailure(
-                400,
-                "AVATAR_INVALID_TYPE",
-                "Only JPEG, PNG or WebP images are allowed."
-            );
+        var type = ImageType(data) ?? throw AuthErrors.AvatarInvalidType();
         return Ok(
             ApiResponse<MeResponse>.Ok(await handler.HandleAsync(new(UserId, type, data), ct))
         );

@@ -1,6 +1,7 @@
 using Caps.Auth.Application.Abstractions.Persistence;
 using Caps.Auth.Application.Common;
 using Caps.Auth.Application.DTOs.Responses;
+using Caps.Auth.Domain;
 using Caps.Auth.Domain.Users;
 using Caps.Common.Application;
 using BusinessProfileEntity = Caps.Auth.Domain.Business.BusinessProfile;
@@ -56,13 +57,15 @@ public sealed class UpdateBusinessProfileHandler(
             profile = new BusinessProfileEntity { UserId = command.UserId };
             profiles.Add(profile);
         }
-        profile.CompanyName = command.CompanyName.Trim();
-        profile.TaxCode = command.TaxCode.Trim();
-        profile.Address = command.Address?.Trim();
-        profile.Representative = command.Representative?.Trim();
-        profile.ContactEmail = command.ContactEmail?.Trim();
-        profile.ContactPhone = command.ContactPhone?.Trim();
-        profile.UpdatedAt = clock.GetUtcNow();
+        profile.Update(
+            command.CompanyName,
+            command.TaxCode,
+            command.Address,
+            command.Representative,
+            command.ContactEmail,
+            command.ContactPhone,
+            clock.GetUtcNow()
+        );
         await unitOfWork.SaveChangesAsync(ct);
         await tx.CommitAsync(ct);
         return BusinessAccess.ToResponse(profile);
@@ -76,7 +79,7 @@ internal static class BusinessAccess
     {
         AccountGuards.EnsureActive(await users.GetAsync(userId, ct));
         if (!await users.HasRoleAsync(userId, RoleCodes.User, ct))
-            throw new AuthFailure(403, "USER_ROLE_REQUIRED", "USER role required.");
+            throw AuthErrors.UserRoleRequired();
     }
 
     public static BusinessResponse ToResponse(BusinessProfileEntity b) =>

@@ -1,6 +1,5 @@
 using Caps.Auth.Application.Abstractions.Persistence;
 using Caps.Auth.Application.Common;
-using Caps.Auth.Domain.Users;
 using Caps.Auth.Domain.Verification;
 using Caps.Common.Application;
 
@@ -25,7 +24,7 @@ public sealed class ForgotPasswordHandler(
             return;
         await using var tx = await unitOfWork.BeginTransactionAsync(ct);
         var user = await users.GetLockedAsync(id.Value, ct);
-        if (user.Status != UserStatus.Active && user.Status != UserStatus.PendingVerification)
+        if (!user.CanSignIn)
             return;
         // Same response even during cooldown, to avoid revealing whether the email exists.
         var since = clock.GetUtcNow().AddSeconds(-options.EmailCooldownSeconds);

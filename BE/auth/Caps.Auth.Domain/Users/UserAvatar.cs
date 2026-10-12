@@ -10,4 +10,12 @@ public sealed class UserAvatar
     public string ContentType { get; set; } = default!;
     public byte[] Data { get; set; } = default!;
     public DateTimeOffset UpdatedAt { get; set; } = DateTimeOffset.UtcNow;
+
+    /// <param name="contentType">Detected from the file bytes, never taken from the client.</param>
+    public void Replace(string contentType, byte[] data, DateTimeOffset now)
+    {
+        ContentType = contentType;
+        Data = data;
+        UpdatedAt = now;
+    }
 }

@@ -6,6 +6,7 @@ using Caps.Auth.Application.DTOs.Responses;
 using Caps.Auth.Domain.Experts;
 using Caps.Auth.Domain.Users;
 using Caps.Common.Api;
+using Caps.Common.Domain;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -43,9 +44,13 @@ public sealed class ExpertApplicationController(IExpertApplicationService applic
     )
     {
         if (file == null || file.Length == 0)
-            throw new AuthFailure(400, "EVIDENCE_REQUIRED", "File is required.");
+            throw new AppException(ErrorType.Validation, "EVIDENCE_REQUIRED", "File is required.");
         if (file.Length > ExpertApplicationRules.MaxFileBytes)
-            throw new AuthFailure(400, "EVIDENCE_TOO_LARGE", "File must be 10 MB or smaller.");
+            throw new AppException(
+                ErrorType.Validation,
+                "EVIDENCE_TOO_LARGE",
+                "File must be 10 MB or smaller."
+            );
         using var buffer = new MemoryStream((int)file.Length);
         await file.CopyToAsync(buffer, ct);
         return Result(
