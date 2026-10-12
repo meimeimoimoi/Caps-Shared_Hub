@@ -1,3 +1,5 @@
+using Caps.Common.Domain;
+
 namespace Caps.Auth.Domain.Users;
 
 /// <summary>
@@ -5,17 +7,43 @@ namespace Caps.Auth.Domain.Users;
 /// </summary>
 public sealed class UserAvatar
 {
-    public Guid UserId { get; set; }
-    public User User { get; set; } = default!;
-    public string ContentType { get; set; } = default!;
-    public byte[] Data { get; set; } = default!;
-    public DateTimeOffset UpdatedAt { get; set; } = DateTimeOffset.UtcNow;
+    public const int MaxBytes = 2 * 1024 * 1024;
 
-    /// <param name="contentType">Detected from the file bytes, never taken from the client.</param>
-    public void Replace(string contentType, byte[] data, DateTimeOffset now)
+    private static readonly string[] AllowedTypes =
+    [
+        FileSignature.Jpeg,
+        FileSignature.Png,
+        FileSignature.Webp,
+    ];
+
+    private UserAvatar() { }
+
+    public Guid UserId { get; private set; }
+    public User User { get; private set; } = default!;
+    public string ContentType { get; private set; } = default!;
+    public byte[] Data { get; private set; } = default!;
+    public DateTimeOffset UpdatedAt { get; private set; }
+
+    public static UserAvatar Create(Guid userId) => new() { UserId = userId };
+
+    /// <summary>Validates the image (size and format detected from its bytes) before storing it.</summary>
+    public void Replace(byte[] data, DateTimeOffset now)
     {
-        ContentType = contentType;
+        ContentType = ValidateImage(data);
         Data = data;
         UpdatedAt = now;
+    }
+
+    /// <returns>The detected content type.</returns>
+    public static string ValidateImage(byte[] data)
+    {
+        if (data.Length == 0)
+            throw AuthErrors.AvatarRequired();
+        if (data.Length > MaxBytes)
+            throw AuthErrors.AvatarTooLarge();
+        var type = FileSignature.Detect(data);
+        return type != null && AllowedTypes.Contains(type)
+            ? type
+            : throw AuthErrors.AvatarInvalidType();
     }
 }

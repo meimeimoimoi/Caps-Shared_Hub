@@ -54,7 +54,7 @@ public sealed class UpdateBusinessProfileHandler(
         var profile = await profiles.GetAsync(command.UserId, ct);
         if (profile == null)
         {
-            profile = new BusinessProfileEntity { UserId = command.UserId };
+            profile = BusinessProfileEntity.Create(command.UserId, clock.GetUtcNow());
             profiles.Add(profile);
         }
         profile.Update(

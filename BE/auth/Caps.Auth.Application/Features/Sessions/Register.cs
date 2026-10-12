@@ -18,17 +18,22 @@ public sealed class RegisterHandler(
     IPasswordHasher hasher,
     IAccountEmailQueue emails,
     ISessionIssuer sessions,
-    IUnitOfWork unitOfWork
+    IUnitOfWork unitOfWork,
+    TimeProvider clock
 ) : ICommandHandler<RegisterCommand, SessionResult>
 {
     public async Task<SessionResult> HandleAsync(RegisterCommand command, CancellationToken ct)
     {
         // Reject disposable/undeliverable emails before creating the account and sending the verification email
         await emailPolicy.EnsureDeliverableAsync(command.Email, ct);
-        var email = OpaqueTokens.NormalizeEmail(command.Email);
-        if (await users.EmailExistsAsync(email, ct))
+        if (await users.EmailExistsAsync(User.NormalizeEmail(command.Email), ct))
             throw AuthErrors.EmailExists();
-        var user = User.Register(email, command.DisplayName, hasher.Hash(command.Password));
+        var user = User.Register(
+            command.Email,
+            command.DisplayName,
+            hasher.Hash(command.Password),
+            clock.GetUtcNow()
+        );
         await users.AddAsync(user, RoleCodes.User, ct);
         await emails.QueueAsync(user, VerificationPurpose.VerifyEmail, ct);
         var session = await sessions.IssueAsync(user, ct, isNew: true);

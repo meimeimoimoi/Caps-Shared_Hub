@@ -6,37 +6,34 @@ using Caps.Common.Domain;
 
 namespace Caps.Auth.Domain.Users;
 
+/// <summary>
+/// Account aggregate. State changes only through its methods, so the account rules
+/// (lockout, verification, session revocation) cannot be bypassed.
+/// </summary>
 public sealed class User
 {
-    public Guid Id { get; set; } = UuidV7.NewGuid();
-    public string Email { get; set; } = default!;
-    public string PasswordHash { get; set; } = default!;
-    public string FullName { get; set; } = default!;
+    private User() { }
 
-    /// <summary>
-    /// Helper accessor mapping to FullName for backwards compatibility with existing auth endpoints.
-    /// </summary>
-    public string DisplayName
-    {
-        get => FullName;
-        set => FullName = value;
-    }
+    public Guid Id { get; private set; } = UuidV7.NewGuid();
+    public string Email { get; private set; } = default!;
+    public string PasswordHash { get; private set; } = default!;
+    public string FullName { get; private set; } = default!;
+    public string? Phone { get; private set; }
+    public int FailedLoginAttempts { get; private set; }
+    public DateTimeOffset? LockoutEnd { get; private set; }
+    public int TokenVersion { get; private set; }
+    public string Status { get; private set; } = UserStatus.PendingVerification;
+    public DateTimeOffset? EmailVerifiedAt { get; private set; }
+    public DateTimeOffset CreatedAt { get; private set; }
+    public DateTimeOffset UpdatedAt { get; private set; }
 
-    public string? Phone { get; set; }
-    public int FailedLoginAttempts { get; set; }
-    public DateTimeOffset? LockoutEnd { get; set; }
-    public int TokenVersion { get; set; }
-    public string Status { get; set; } = UserStatus.PendingVerification;
-    public DateTimeOffset? EmailVerifiedAt { get; set; }
-    public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
-    public DateTimeOffset UpdatedAt { get; set; } = DateTimeOffset.UtcNow;
-
-    public ICollection<UserRole> UserRoles { get; set; } = new List<UserRole>();
-    public ICollection<AuthRefreshToken> RefreshTokens { get; set; } = new List<AuthRefreshToken>();
-    public ICollection<VerificationToken> VerificationTokens { get; set; } =
+    public ICollection<UserRole> UserRoles { get; private set; } = new List<UserRole>();
+    public ICollection<AuthRefreshToken> RefreshTokens { get; private set; } =
+        new List<AuthRefreshToken>();
+    public ICollection<VerificationToken> VerificationTokens { get; private set; } =
         new List<VerificationToken>();
-    public BusinessProfile? BusinessProfile { get; set; }
-    public ExpertProfile? ExpertProfile { get; set; }
+    public BusinessProfile? BusinessProfile { get; private set; }
+    public ExpertProfile? ExpertProfile { get; private set; }
 
     public bool IsActive => Status == UserStatus.Active;
     public bool IsPendingVerification => Status == UserStatus.PendingVerification;
@@ -44,16 +41,29 @@ public sealed class User
     /// <summary>Active or still waiting for email verification.</summary>
     public bool CanSignIn => IsActive || IsPendingVerification;
 
+    /// <summary>Emails are compared case-insensitively and without surrounding spaces.</summary>
+    public static string NormalizeEmail(string email) => email.Trim().ToLowerInvariant();
+
     /// <summary>New account waiting for email verification; the display name falls back to the email's local part.</summary>
-    public static User Register(string normalizedEmail, string? displayName, string passwordHash) =>
-        new()
+    public static User Register(
+        string email,
+        string? displayName,
+        string passwordHash,
+        DateTimeOffset now
+    )
+    {
+        var normalized = NormalizeEmail(email);
+        return new()
         {
-            Email = normalizedEmail,
+            Email = normalized,
             FullName = string.IsNullOrWhiteSpace(displayName)
-                ? normalizedEmail.Split('@')[0]
+                ? normalized.Split('@')[0]
                 : displayName.Trim(),
             PasswordHash = passwordHash,
+            CreatedAt = now,
+            UpdatedAt = now,
         };
+    }
 
     /// <summary>Throws the generic credential error so a blocked account looks like a wrong password.</summary>
     public void EnsureCanSignIn()
@@ -109,10 +119,20 @@ public sealed class User
     /// <summary>Invalidates every access token already issued (they carry the old version).</summary>
     public void RevokeAllSessions() => TokenVersion++;
 
+    /// <summary>Profile page: the display name is required.</summary>
     public void UpdateProfile(string displayName, string? phone, DateTimeOffset now)
     {
         FullName = displayName.Trim();
         Phone = phone?.Trim();
+        UpdatedAt = now;
+    }
+
+    /// <summary>Draft forms: a blank name keeps the current one and a blank phone clears it.</summary>
+    public void UpdateContact(string? displayName, string? phone, DateTimeOffset now)
+    {
+        if (!string.IsNullOrWhiteSpace(displayName))
+            FullName = displayName.Trim();
+        Phone = string.IsNullOrWhiteSpace(phone) ? null : phone.Trim();
         UpdatedAt = now;
     }
 }

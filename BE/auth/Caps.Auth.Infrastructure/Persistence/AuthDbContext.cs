@@ -111,7 +111,6 @@ public sealed class AuthDbContext(DbContextOptions<AuthDbContext> options) : DbC
             e.Property(x => x.TokenVersion).HasColumnName("token_version");
             e.Property(x => x.PasswordHash).HasColumnName("password_hash").IsRequired();
             e.Property(x => x.FullName).HasColumnName("full_name").IsRequired();
-            e.Ignore(x => x.DisplayName);
             e.Property(x => x.Phone).HasColumnName("phone");
             e.Property(x => x.Status)
                 .HasColumnName("status")

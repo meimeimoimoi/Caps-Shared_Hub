@@ -1,6 +1,4 @@
-using System.Security.Claims;
 using Caps.Auth.Api.DTOs.Requests;
-using Caps.Auth.Application;
 using Caps.Auth.Application.DTOs.Responses;
 using Caps.Auth.Application.Features.EmailVerification;
 using Caps.Auth.Application.Features.Passwords;
@@ -9,7 +7,6 @@ using Caps.Common.Api;
 using Caps.Common.Application;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
 
 namespace Caps.Auth.Api.Controllers;
 
@@ -18,28 +15,14 @@ namespace Caps.Auth.Api.Controllers;
 /// Each action receives just the handler it needs.
 /// </summary>
 [ApiController, Route("api/v1/auth")]
-public sealed class AuthController(IOptions<AuthOptions> options) : ControllerBase
+public sealed class AuthController(ICurrentUser currentUser, RefreshCookie refreshCookie)
+    : ControllerBase
 {
-    private const string CookieName = "caps_refresh";
-    private Guid UserId => Guid.Parse(User.FindFirstValue("sub")!);
-
-    private void Cookie(string token, DateTimeOffset expires) =>
-        Response.Cookies.Append(
-            CookieName,
-            token,
-            new CookieOptions
-            {
-                HttpOnly = true,
-                Secure = options.Value.SecureCookie,
-                SameSite = SameSiteMode.Strict,
-                Path = "/api/v1/auth",
-                Expires = expires,
-            }
-        );
+    private Guid UserId => currentUser.RequireUserId();
 
     private object Session(SessionResult session)
     {
-        Cookie(session.RefreshToken, session.RefreshExpiresAt);
+        refreshCookie.Write(Response, session.RefreshToken, session.RefreshExpiresAt);
         return ApiResponse<AuthResponse>.Ok(session.Response);
     }
 
@@ -64,7 +47,7 @@ public sealed class AuthController(IOptions<AuthOptions> options) : ControllerBa
     )
     {
         var token =
-            Request.Cookies[CookieName]
+            refreshCookie.Read(Request)
             ?? throw CommonErrors.RefreshRequired("Refresh cookie required.");
         return Ok(Session(await handler.HandleAsync(new(token), ct)));
     }
@@ -75,16 +58,8 @@ public sealed class AuthController(IOptions<AuthOptions> options) : ControllerBa
         CancellationToken ct
     )
     {
-        await handler.HandleAsync(new(UserId, Request.Cookies[CookieName]), ct);
-        Response.Cookies.Delete(
-            CookieName,
-            new CookieOptions
-            {
-                Path = "/api/v1/auth",
-                Secure = options.Value.SecureCookie,
-                SameSite = SameSiteMode.Strict,
-            }
-        );
+        await handler.HandleAsync(new(UserId, refreshCookie.Read(Request)), ct);
+        refreshCookie.Clear(Response);
         return Ok(ApiResponse<object>.Ok(new { }, "Logged out."));
     }
 

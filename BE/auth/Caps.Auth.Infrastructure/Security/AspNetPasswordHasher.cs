@@ -9,7 +9,9 @@ namespace Caps.Auth.Infrastructure.Security;
 public sealed class AspNetPasswordHasher : AppHasher
 {
     private static readonly PasswordHasher<User> Inner = new();
-    private static readonly User Nobody = new();
+
+    // The default PBKDF2 hasher ignores the user argument
+    private static readonly User Nobody = null!;
     private static readonly string DummyHash = Inner.HashPassword(
         Nobody,
         "Unused-account-timing-padding-42"

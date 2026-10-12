@@ -1,9 +1,8 @@
-using System.Security.Claims;
 using Caps.Auth.Api.DTOs.Requests;
 using Caps.Auth.Application;
 using Caps.Auth.Application.DTOs.Responses;
 using Caps.Auth.Application.Features.Profile;
-using Caps.Auth.Domain;
+using Caps.Auth.Domain.Users;
 using Caps.Common.Api;
 using Caps.Common.Application;
 using Microsoft.AspNetCore.Authorization;
@@ -12,9 +11,9 @@ using Microsoft.AspNetCore.Mvc;
 namespace Caps.Auth.Api.Controllers;
 
 [ApiController, Authorize(Policy = "AuthSession"), Route("api/v1/users/me")]
-public sealed class UsersController : ControllerBase
+public sealed class UsersController(ICurrentUser currentUser) : ControllerBase
 {
-    private Guid UserId => Guid.Parse(User.FindFirstValue("sub")!);
+    private Guid UserId => currentUser.RequireUserId();
 
     [HttpGet]
     public async Task<IActionResult> Me(
@@ -34,28 +33,21 @@ public sealed class UsersController : ControllerBase
             )
         );
 
-    public const int MaxAvatarBytes = 2 * 1024 * 1024;
-
     [HttpPut("avatar"), Authorize(Policy = "ActiveAccount")]
-    [RequestSizeLimit(MaxAvatarBytes + 64 * 1024)]
-    [RequestFormLimits(MultipartBodyLengthLimit = MaxAvatarBytes + 64 * 1024)]
+    [RequestSizeLimit(UserAvatar.MaxBytes + 64 * 1024)]
+    [RequestFormLimits(MultipartBodyLengthLimit = UserAvatar.MaxBytes + 64 * 1024)]
     public async Task<IActionResult> UploadAvatar(
         IFormFile? file,
         [FromServices] ICommandHandler<UpdateAvatarCommand, MeResponse> handler,
         CancellationToken ct
     )
     {
-        if (file == null || file.Length == 0)
-            throw AuthErrors.AvatarRequired();
-        if (file.Length > MaxAvatarBytes)
-            throw AuthErrors.AvatarTooLarge();
-        using var buffer = new MemoryStream((int)file.Length);
-        await file.CopyToAsync(buffer, ct);
-        var data = buffer.ToArray();
-        // Detect the format from the file content; never trust the client's Content-Type.
-        var type = ImageType(data) ?? throw AuthErrors.AvatarInvalidType();
+        // Size and format are validated by the domain from the bytes themselves
+        using var buffer = new MemoryStream();
+        if (file != null)
+            await file.CopyToAsync(buffer, ct);
         return Ok(
-            ApiResponse<MeResponse>.Ok(await handler.HandleAsync(new(UserId, type, data), ct))
+            ApiResponse<MeResponse>.Ok(await handler.HandleAsync(new(UserId, buffer.ToArray()), ct))
         );
     }
 
@@ -64,20 +56,6 @@ public sealed class UsersController : ControllerBase
         [FromServices] ICommandHandler<RemoveAvatarCommand, MeResponse> handler,
         CancellationToken ct
     ) => Ok(ApiResponse<MeResponse>.Ok(await handler.HandleAsync(new(UserId), ct)));
-
-    private static string? ImageType(ReadOnlySpan<byte> d)
-    {
-        if (d.Length >= 3 && d[0] == 0xFF && d[1] == 0xD8 && d[2] == 0xFF)
-            return "image/jpeg";
-        if (
-            d.Length >= 8
-            && d[..8].SequenceEqual(new byte[] { 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A })
-        )
-            return "image/png";
-        if (d.Length >= 12 && d[..4].SequenceEqual("RIFF"u8) && d[8..12].SequenceEqual("WEBP"u8))
-            return "image/webp";
-        return null;
-    }
 
     [HttpGet("business-profile"), Authorize(Policy = "ActiveAccount")]
     public async Task<IActionResult> Business(

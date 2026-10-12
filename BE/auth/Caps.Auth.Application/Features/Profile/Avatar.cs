@@ -6,8 +6,8 @@ using Caps.Common.Application;
 
 namespace Caps.Auth.Application.Features.Profile;
 
-/// <param name="ContentType">Detected from the file bytes by the caller, never taken from the client.</param>
-public sealed record UpdateAvatarCommand(Guid UserId, string ContentType, byte[] Data);
+/// <summary>The image format is detected from <paramref name="Data"/>, never taken from the client.</summary>
+public sealed record UpdateAvatarCommand(Guid UserId, byte[] Data);
 
 public sealed record RemoveAvatarCommand(Guid UserId);
 
@@ -23,16 +23,18 @@ public sealed class UpdateAvatarHandler(
 {
     public async Task<MeResponse> HandleAsync(UpdateAvatarCommand command, CancellationToken ct)
     {
+        // Reject a bad file before touching the account
+        UserAvatar.ValidateImage(command.Data);
         await using var tx = await unitOfWork.BeginTransactionAsync(ct);
         var user = await users.GetLockedAsync(command.UserId, ct);
         AccountGuards.EnsureActive(user);
         var avatar = await avatars.GetAsync(user.Id, ct);
         if (avatar == null)
         {
-            avatar = new UserAvatar { UserId = user.Id };
+            avatar = UserAvatar.Create(user.Id);
             avatars.Add(avatar);
         }
-        avatar.Replace(command.ContentType, command.Data, clock.GetUtcNow());
+        avatar.Replace(command.Data, clock.GetUtcNow());
         await unitOfWork.SaveChangesAsync(ct);
         await tx.CommitAsync(ct);
         return await profiles.DescribeAsync(user, ct);

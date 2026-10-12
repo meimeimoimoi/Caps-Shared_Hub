@@ -5,17 +5,19 @@ namespace Caps.Auth.Domain.Verification;
 
 public sealed class VerificationToken
 {
-    public Guid Id { get; set; } = UuidV7.NewGuid();
-    public Guid UserId { get; set; }
-    public User User { get; set; } = default!;
+    private VerificationToken() { }
 
-    public string Purpose { get; set; } = default!;
-    public string TokenHash { get; set; } = default!;
-    public DateTimeOffset ExpiresAt { get; set; }
-    public DateTimeOffset? UsedAt { get; set; }
-    public DateTimeOffset? InvalidatedAt { get; set; }
-    public int AttemptCount { get; set; }
-    public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
+    public Guid Id { get; private set; } = UuidV7.NewGuid();
+    public Guid UserId { get; private set; }
+    public User User { get; private set; } = default!;
+
+    public string Purpose { get; private set; } = default!;
+    public string TokenHash { get; private set; } = default!;
+    public DateTimeOffset ExpiresAt { get; private set; }
+    public DateTimeOffset? UsedAt { get; private set; }
+    public DateTimeOffset? InvalidatedAt { get; private set; }
+    public int AttemptCount { get; private set; }
+    public DateTimeOffset CreatedAt { get; private set; }
 
     public static VerificationToken Create(
         Guid userId,

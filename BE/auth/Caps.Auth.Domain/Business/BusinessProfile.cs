@@ -5,18 +5,28 @@ namespace Caps.Auth.Domain.Business;
 
 public sealed class BusinessProfile
 {
-    public Guid Id { get; set; } = UuidV7.NewGuid();
-    public Guid UserId { get; set; }
-    public User User { get; set; } = default!;
+    private BusinessProfile() { }
 
-    public string CompanyName { get; set; } = default!;
-    public string TaxCode { get; set; } = default!;
-    public string? Address { get; set; }
-    public string? Representative { get; set; }
-    public string? ContactEmail { get; set; }
-    public string? ContactPhone { get; set; }
-    public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
-    public DateTimeOffset UpdatedAt { get; set; } = DateTimeOffset.UtcNow;
+    public Guid Id { get; private set; } = UuidV7.NewGuid();
+    public Guid UserId { get; private set; }
+    public User User { get; private set; } = default!;
+
+    public string CompanyName { get; private set; } = default!;
+    public string TaxCode { get; private set; } = default!;
+    public string? Address { get; private set; }
+    public string? Representative { get; private set; }
+    public string? ContactEmail { get; private set; }
+    public string? ContactPhone { get; private set; }
+    public DateTimeOffset CreatedAt { get; private set; }
+    public DateTimeOffset UpdatedAt { get; private set; }
+
+    public static BusinessProfile Create(Guid userId, DateTimeOffset now) =>
+        new()
+        {
+            UserId = userId,
+            CreatedAt = now,
+            UpdatedAt = now,
+        };
 
     public void Update(
         string companyName,

@@ -1,29 +1,35 @@
-using Caps.Auth.Application;
-using Caps.Auth.Domain.Users;
-using Caps.Auth.Infrastructure.Persistence;
+using Caps.Auth.Application.Common;
 using Caps.Common.Api;
 using Caps.Common.Application;
 using Caps.Common.Domain;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 
 namespace Caps.Auth.Api.Middleware;
 
+/// <summary>
+/// HTTP-level guards: CSRF header/origin on auth mutations, and session revocation for the
+/// endpoints that change account state. The revocation rule itself lives in <see cref="ISessionGuard"/>.
+/// </summary>
 public sealed class AuthBoundaryMiddleware(RequestDelegate next)
 {
+    private static readonly string[] SessionCheckedExact =
+    [
+        "/api/v1/auth/logout",
+        "/api/v1/auth/resend-verification",
+        "/api/v1/auth/verify-email-code",
+        "/api/v1/auth/change-password",
+    ];
+
     public async Task InvokeAsync(
         HttpContext context,
-        AuthDbContext db,
-        IOptions<AuthOptions> options,
+        ISessionGuard sessions,
+        ICurrentUser currentUser,
         IConfiguration config
     )
     {
         try
         {
-            if (
-                context.Request.Method != "GET"
-                && context.Request.Path.StartsWithSegments("/api/v1/auth")
-            )
+            var path = context.Request.Path;
+            if (context.Request.Method != "GET" && path.StartsWithSegments("/api/v1/auth"))
             {
                 // Require an explicit header against form POST/CSRF; cross-origin JS must pass the CORS preflight.
                 if (context.Request.Headers["X-Caps-Client"] != "spa")
@@ -36,46 +42,24 @@ public sealed class AuthBoundaryMiddleware(RequestDelegate next)
                 )
                     throw CommonErrors.OriginRejected();
             }
+            var users = path.StartsWithSegments("/api/v1/users");
             if (
-                context.User.Identity?.IsAuthenticated == true
+                currentUser.IsAuthenticated
                 && (
-                    context.Request.Path.StartsWithSegments("/api/v1/users")
-                    || context.Request.Path.StartsWithSegments("/api/v1/experts")
-                    || context.Request.Path == "/api/v1/auth/logout"
-                    || context.Request.Path == "/api/v1/auth/resend-verification"
-                    || context.Request.Path == "/api/v1/auth/verify-email-code"
-                    || context.Request.Path == "/api/v1/auth/change-password"
+                    users
+                    || path.StartsWithSegments("/api/v1/experts")
+                    || SessionCheckedExact.Contains(path.Value)
                 )
             )
-            {
-                if (!Guid.TryParse(context.User.FindFirst("sub")?.Value, out var id))
-                    throw CommonErrors.InvalidSession("Invalid session.");
-                var user = await db
-                    .Users.AsNoTracking()
-                    .SingleOrDefaultAsync(x => x.Id == id, context.RequestAborted);
-                if (
-                    user == null
-                    || (user.Status != "ACTIVE" && user.Status != "PENDING_VERIFICATION")
-                    || context.User.FindFirst("token_version")?.Value
-                        != user.TokenVersion.ToString()
-                )
-                    throw CommonErrors.InvalidSession("Session revoked.");
-            }
-            // When the current role/status changes, a new token is required; never trust stale claims.
-            if (
-                context.User.Identity?.IsAuthenticated == true
-                && context.Request.Path.StartsWithSegments("/api/v1/users")
-            )
-            {
-                var currentId = Guid.Parse(context.User.FindFirst("sub")!.Value);
-                var account = await db
-                    .Users.AsNoTracking()
-                    .SingleAsync(x => x.Id == currentId, context.RequestAborted);
-                if (context.User.FindFirst("account_status")?.Value != account.Status)
-                    throw CommonErrors.RefreshRequired(
-                        "Refresh the session after account status changes."
-                    );
-            }
+                await sessions.EnsureValidAsync(
+                    new(
+                        currentUser.RequireUserId(),
+                        context.User.FindFirst("token_version")?.Value,
+                        context.User.FindFirst("account_status")?.Value
+                    ),
+                    requireCurrentStatus: users,
+                    context.RequestAborted
+                );
             await next(context);
         }
         // This middleware runs before the shared exception handler, so it writes the same error shape itself

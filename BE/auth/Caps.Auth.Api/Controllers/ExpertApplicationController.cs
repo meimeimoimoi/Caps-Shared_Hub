@@ -1,4 +1,3 @@
-using System.Security.Claims;
 using Caps.Auth.Application;
 using Caps.Auth.Application.Abstractions;
 using Caps.Auth.Application.DTOs.Requests;
@@ -6,6 +5,7 @@ using Caps.Auth.Application.DTOs.Responses;
 using Caps.Auth.Domain.Experts;
 using Caps.Auth.Domain.Users;
 using Caps.Common.Api;
+using Caps.Common.Application;
 using Caps.Common.Domain;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -17,10 +17,12 @@ namespace Caps.Auth.Api.Controllers;
 /// and upload files; only submitting and supplementing require a verified email.
 /// </summary>
 [ApiController, Authorize(Policy = "AuthSession"), Route("api/v1/experts/me/application")]
-public sealed class ExpertApplicationController(IExpertApplicationService applications)
-    : ControllerBase
+public sealed class ExpertApplicationController(
+    IExpertApplicationService applications,
+    ICurrentUser currentUser
+) : ControllerBase
 {
-    private Guid UserId => Guid.Parse(User.FindFirstValue("sub")!);
+    private Guid UserId => currentUser.RequireUserId();
 
     private static OkObjectResult Result(ExpertApplicationResponse? data) =>
         new(ApiResponse<ExpertApplicationResponse?>.Ok(data));

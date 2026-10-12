@@ -22,6 +22,4 @@ public static class OpaqueTokens
             Encoding.ASCII.GetBytes(a),
             Encoding.ASCII.GetBytes(b)
         );
-
-    public static string NormalizeEmail(string email) => email.Trim().ToLowerInvariant();
 }

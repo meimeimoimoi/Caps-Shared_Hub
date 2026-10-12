@@ -14,5 +14,4 @@ public sealed class AuthOptions
     public int MaxFailedAttempts { get; set; } = 5;
     public int LockoutMinutes { get; set; } = 15;
     public string FrontendUrl { get; set; } = "http://localhost:5173";
-    public bool SecureCookie { get; set; } = true;
 }

@@ -55,9 +55,11 @@ npm run dev        # :5173
 - **Version package chỉ pin trong `Directory.Packages.props`** (Central Package Management). `.csproj` dùng `<PackageReference Include="..." />` **không có `Version`**.
 - **Service nhiều nghiệp vụ theo Clean Architecture** (mẫu: `auth/`): 4 project `Caps.<Service>.Domain` / `.Application` / `.Infrastructure` / `.Api`, thư mục service giữ chữ thường.
   - `Domain`: entity có hành vi (quy tắc nghiệp vụ nằm trong entity), hằng số, `<Service>Errors`. Không tham chiếu EF Core/ASP.NET.
+    Thuộc tính entity dùng `private set`; tạo bằng factory (`User.Register(...)`); thời gian truyền vào từ `TimeProvider`, không gọi `DateTimeOffset.UtcNow` trong entity.
   - `Application`: mỗi use case một file trong `Features/<Nhom>/` gồm `XxxCommand`/`XxxQuery` + `XxxHandler` (implement `ICommandHandler`/`IQueryHandler`); interface (port) trong `Abstractions/`; dịch vụ dùng chung nhỏ trong `Common/`. Chỉ phụ thuộc interface, không dùng `DbContext`, `IOptions`.
   - `Infrastructure`: EF Core + migration, repository, adapter (JWT, hash, email, storage); đăng ký qua `AddXxxInfrastructure`.
-  - `Api`: controller chỉ map request → command và nhận đúng handler cần qua `[FromServices]`; request DTO trong `DTOs/Requests/`; `Program.cs` là composition root.
+  - `Api`: controller chỉ map request → command và nhận đúng handler cần qua `[FromServices]`; lấy người dùng hiện tại bằng `ICurrentUser.RequireUserId()`; request DTO trong `DTOs/Requests/`.
+    `Program.cs` chỉ ghép các hàm cấu hình (`Configuration/*HostSetup.cs`), mỗi hàm một việc; middleware không gọi DB trực tiếp mà qua dịch vụ ở Application.
 - Áp dụng **SOLID**: một class một trách nhiệm; thêm use case bằng class mới (handler tự đăng ký qua `AddHandlersFromAssembly`), không sửa class cũ; interface nhỏ theo việc; phụ thuộc vào abstraction.
 - Service đơn giản (gateway, notification, read…) giữ 1 project, chia thư mục theo tính năng. Tên folder dạng số nhiều, interface có prefix `I`.
 - Lỗi có chủ đích: `throw <Service>Errors.Xxx()` hoặc `CommonErrors.Xxx()` (`AppException` + `ErrorType`), không trả mã HTTP từ Domain/Application.

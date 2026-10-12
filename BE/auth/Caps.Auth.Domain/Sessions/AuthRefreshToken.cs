@@ -6,19 +6,21 @@ namespace Caps.Auth.Domain.Sessions;
 
 public sealed class AuthRefreshToken
 {
-    public Guid Id { get; set; } = UuidV7.NewGuid();
-    public Guid UserId { get; set; }
-    public User User { get; set; } = default!;
+    private AuthRefreshToken() { }
 
-    public string TokenHash { get; set; } = default!;
-    public string? UserAgent { get; set; }
-    public IPAddress? IpAddress { get; set; }
-    public DateTimeOffset IssuedAt { get; set; } = DateTimeOffset.UtcNow;
-    public DateTimeOffset ExpiresAt { get; set; }
-    public DateTimeOffset? RevokedAt { get; set; }
-    public Guid? RotatedFrom { get; set; }
-    public AuthRefreshToken? RotatedFromToken { get; set; }
-    public ICollection<AuthRefreshToken> RotatedToTokens { get; set; } =
+    public Guid Id { get; private set; } = UuidV7.NewGuid();
+    public Guid UserId { get; private set; }
+    public User User { get; private set; } = default!;
+
+    public string TokenHash { get; private set; } = default!;
+    public string? UserAgent { get; private set; }
+    public IPAddress? IpAddress { get; private set; }
+    public DateTimeOffset IssuedAt { get; private set; }
+    public DateTimeOffset ExpiresAt { get; private set; }
+    public DateTimeOffset? RevokedAt { get; private set; }
+    public Guid? RotatedFrom { get; private set; }
+    public AuthRefreshToken? RotatedFromToken { get; private set; }
+    public ICollection<AuthRefreshToken> RotatedToTokens { get; private set; } =
         new List<AuthRefreshToken>();
 
     public static AuthRefreshToken Issue(

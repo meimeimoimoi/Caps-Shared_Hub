@@ -3,6 +3,7 @@ using Caps.Auth.Application.Abstractions.Security;
 using Caps.Auth.Application.Common;
 using Caps.Auth.Application.DTOs.Responses;
 using Caps.Auth.Domain;
+using Caps.Auth.Domain.Users;
 using Caps.Common.Application;
 
 namespace Caps.Auth.Application.Features.Sessions;
@@ -20,7 +21,7 @@ public sealed class LoginHandler(
 {
     public async Task<SessionResult> HandleAsync(LoginCommand command, CancellationToken ct)
     {
-        var id = await users.FindIdByEmailAsync(OpaqueTokens.NormalizeEmail(command.Email), ct);
+        var id = await users.FindIdByEmailAsync(User.NormalizeEmail(command.Email), ct);
         if (id is null)
         {
             hasher.VerifyAgainstDummy(command.Password);

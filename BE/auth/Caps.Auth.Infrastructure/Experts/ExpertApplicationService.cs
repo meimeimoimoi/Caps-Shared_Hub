@@ -260,10 +260,7 @@ public sealed class ExpertApplicationService(
         if (app.Status != Status.Draft)
             throw Locked(app.Status);
 
-        if (!string.IsNullOrWhiteSpace(r.DisplayName))
-            user.FullName = r.DisplayName.Trim();
-        user.Phone = string.IsNullOrWhiteSpace(r.Phone) ? null : r.Phone.Trim();
-        user.UpdatedAt = Now;
+        user.UpdateContact(r.DisplayName, r.Phone, Now);
         profile.BirthDate = r.BirthDate;
         profile.Title = Clean(r.Title);
         profile.Company = Clean(r.Company);

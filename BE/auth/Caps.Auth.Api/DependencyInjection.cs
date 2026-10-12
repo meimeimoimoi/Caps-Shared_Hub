@@ -17,6 +17,7 @@ public static class DependencyInjection
         services.AddScoped<ISessionIssuer, SessionIssuer>();
         services.AddScoped<IAccountEmailQueue, AccountEmailQueue>();
         services.AddScoped<IVerificationTokenRedeemer, VerificationTokenRedeemer>();
+        services.AddScoped<ISessionGuard, SessionGuard>();
         services.AddHandlersFromAssembly(typeof(LoginHandler).Assembly);
         return services;
     }

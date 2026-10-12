@@ -1,5 +1,6 @@
 using Caps.Auth.Application.Abstractions.Persistence;
 using Caps.Auth.Application.Common;
+using Caps.Auth.Domain.Users;
 using Caps.Auth.Domain.Verification;
 using Caps.Common.Application;
 
@@ -19,7 +20,7 @@ public sealed class ForgotPasswordHandler(
 {
     public async Task HandleAsync(ForgotPasswordCommand command, CancellationToken ct)
     {
-        var id = await users.FindIdByEmailAsync(OpaqueTokens.NormalizeEmail(command.Email), ct);
+        var id = await users.FindIdByEmailAsync(User.NormalizeEmail(command.Email), ct);
         if (id is null)
             return;
         await using var tx = await unitOfWork.BeginTransactionAsync(ct);

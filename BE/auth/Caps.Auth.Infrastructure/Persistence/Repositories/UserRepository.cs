@@ -14,6 +14,13 @@ public sealed class UserRepository(AuthDbContext db) : IUserRepository, IUserAcc
             .Users.FromSqlInterpolated($"SELECT * FROM identity.users WHERE id = {id} FOR UPDATE")
             .SingleOrDefaultAsync(ct);
 
+    public Task<UserSessionState?> GetSessionStateAsync(Guid id, CancellationToken ct) =>
+        db
+            .Users.AsNoTracking()
+            .Where(x => x.Id == id)
+            .Select(x => new UserSessionState(x.Status, x.TokenVersion))
+            .SingleOrDefaultAsync(ct);
+
     public Task<Guid?> FindIdByEmailAsync(string normalizedEmail, CancellationToken ct) =>
         db
             .Users.Where(x => x.Email == normalizedEmail)
