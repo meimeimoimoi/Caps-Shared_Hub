@@ -93,6 +93,8 @@ services:
       dockerfile: docker/Dockerfile.service
       args:
         SERVICE_NAME: auth
+        PROJECT: auth/Caps.Auth.Api/Caps.Auth.Api.csproj
+        APP_NAME: Caps.Auth.Api
     container_name: caps_auth
     restart: always
     environment:

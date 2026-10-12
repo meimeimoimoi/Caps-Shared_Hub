@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
+    <PackageReference Include="AWSSDK.S3" />
+    <PackageReference Include="DnsClient" />
+    <ProjectReference Include="..\Caps.Auth.Application\Caps.Auth.Application.csproj" />
+    <ProjectReference Include="..\..\common\Caps.Common.Security\Caps.Common.Security.csproj" />
+    <ProjectReference Include="..\..\common\Caps.Common.Messaging\Caps.Common.Messaging.csproj" />
+    <ProjectReference Include="..\..\common\Caps.Contracts\Caps.Contracts.csproj" />
+  </ItemGroup>
+
+</Project>

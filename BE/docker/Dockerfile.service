@@ -1,5 +1,6 @@
 # Multi-stage Dockerfile Template for .NET 8 Microservices
-# Usage: docker build -f docker/Dockerfile.service --build-arg SERVICE_NAME=auth -t caps-auth:latest .
+# Usage (single-project service): docker build -f docker/Dockerfile.service --build-arg SERVICE_NAME=gateway -t caps-gateway:latest .
+# Usage (layered service): add --build-arg PROJECT=auth/Caps.Auth.Api/Caps.Auth.Api.csproj --build-arg APP_NAME=Caps.Auth.Api
 
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
 WORKDIR /app
@@ -8,6 +9,8 @@ EXPOSE 8081
 
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG SERVICE_NAME
+# Single-project services use the defaults; layered services (e.g. auth) pass their Api project
+ARG PROJECT=${SERVICE_NAME}/${SERVICE_NAME}.csproj
 WORKDIR /src
 
 # Build props + central package versions (required by every project)
@@ -16,27 +19,22 @@ COPY ["Directory.Build.props", "Directory.Packages.props", "global.json", "./"]
 # Shared libraries (common/Caps.Common.*, common/Caps.Contracts)
 COPY common/ common/
 
-# Copy target service project file
-COPY ["${SERVICE_NAME}/${SERVICE_NAME}.csproj", "${SERVICE_NAME}/"]
-
-# Restore dependencies
-RUN dotnet restore "${SERVICE_NAME}/${SERVICE_NAME}.csproj"
-
-# Copy service source code
+# Service source (all of its projects)
 COPY ${SERVICE_NAME}/ ${SERVICE_NAME}/
 
-# Build project
-WORKDIR "/src/${SERVICE_NAME}"
-RUN dotnet build "${SERVICE_NAME}.csproj" -c Release -o /app/build
+RUN dotnet restore "${PROJECT}"
+RUN dotnet build "${PROJECT}" -c Release -o /app/build
 
 FROM build AS publish
-RUN dotnet publish "${SERVICE_NAME}.csproj" -c Release -o /app/publish /p:UseAppHost=false
+ARG PROJECT
+RUN dotnet publish "${PROJECT}" -c Release -o /app/publish /p:UseAppHost=false
 
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
 # NOTE: exec-form does NOT expand ARG/ENV, so use shell-form here.
-# SERVICE_NAME is baked at build time via ARG -> ENV.
+# APP_NAME (assembly name) is baked at build time via ARG -> ENV.
 ARG SERVICE_NAME
-ENV SERVICE_NAME=${SERVICE_NAME}
-ENTRYPOINT ["sh", "-c", "dotnet ${SERVICE_NAME}.dll"]
+ARG APP_NAME=${SERVICE_NAME}
+ENV APP_NAME=${APP_NAME}
+ENTRYPOINT ["sh", "-c", "dotnet ${APP_NAME}.dll"]

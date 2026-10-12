@@ -2,8 +2,12 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
-using auth.Data;
-using auth.Services;
+using Caps.Auth.Application;
+using Caps.Auth.Application.DTOs.Responses;
+using Caps.Auth.Domain.Users;
+using Caps.Auth.Infrastructure.Email;
+using Caps.Auth.Infrastructure.Persistence;
+using Caps.Auth.Infrastructure.Services;
 using Caps.Contracts;
 using MassTransit;
 using Microsoft.AspNetCore.DataProtection;
@@ -511,12 +515,12 @@ var jwt = new Caps.Common.Security.JwtOptions(
     "caps-spa",
     "CHANGE_ME_dev_only_min_32_chars_1234567890"
 );
-auth.Services.AuthService Service(AuthDbContext db) =>
+Caps.Auth.Infrastructure.Services.AuthService Service(AuthDbContext db) =>
     new(
         db,
-        new Microsoft.AspNetCore.Identity.PasswordHasher<auth.Entities.User>(),
+        new Microsoft.AspNetCore.Identity.PasswordHasher<Caps.Auth.Domain.Users.User>(),
         jwt,
-        Microsoft.Extensions.Options.Options.Create(new auth.Services.AuthOptions()),
+        Microsoft.Extensions.Options.Options.Create(new Caps.Auth.Application.AuthOptions()),
         provider,
         TimeProvider.System
     );
@@ -527,9 +531,9 @@ async Task<int> Status(Func<Task> action)
         await action();
         return 200;
     }
-    catch (auth.Services.AuthFailure e)
+    catch (Caps.Common.Domain.AppException e)
     {
-        return e.Status;
+        return Caps.Common.Api.ApiErrors.StatusCodeOf(e.Type);
     }
 }
 var raceEmail = "race-" + Guid.NewGuid().ToString("N") + "@caps.test";
@@ -549,7 +553,7 @@ Check(
     registrations.Order().SequenceEqual(new[] { 200, 409 }),
     "concurrent registration creates one user"
 );
-auth.DTOs.Responses.SessionResult racedSession;
+Caps.Auth.Application.DTOs.Responses.SessionResult racedSession;
 await using (var db = new AuthDbContext(options))
     racedSession = await Service(db).LoginAsync(new(raceEmail, password), default);
 var rotations = await Task.WhenAll(
@@ -590,7 +594,7 @@ Check(
     "concurrent verification consumes token once"
 );
 var expiryEmail = "expiry-" + Guid.NewGuid().ToString("N") + "@caps.test";
-auth.DTOs.Responses.SessionResult expiring;
+Caps.Auth.Application.DTOs.Responses.SessionResult expiring;
 await using (var db = new AuthDbContext(options))
     expiring = await Service(db).RegisterAsync(new(expiryEmail, password), default);
 var expiryToken = await EmailToken(expiryEmail, "VERIFY_EMAIL");
@@ -643,7 +647,7 @@ await using (var db = new AuthDbContext(options))
 
 // Resend invalidates older links; checked through the service to avoid the HTTP quota.
 var resendEmail = "resend-" + Guid.NewGuid().ToString("N") + "@caps.test";
-auth.DTOs.Responses.SessionResult pending;
+Caps.Auth.Application.DTOs.Responses.SessionResult pending;
 await using (var db = new AuthDbContext(options))
     pending = await Service(db).RegisterAsync(new(resendEmail, password), default);
 var oldVerify = await EmailToken(resendEmail, "VERIFY_EMAIL");
