@@ -97,6 +97,12 @@ public sealed class AuthController(IAuthService auth, IOptions<AuthOptions> opti
         return Ok(ApiResponse<object>.Ok(new { }, "If the account exists, an email will be sent."));
     }
 
+    [Authorize(Policy = "AuthSession"), HttpPost("change-password")]
+    public async Task<IActionResult> ChangePassword(
+        ChangePasswordRequest r,
+        CancellationToken ct
+    ) => Ok(Session(await auth.ChangePasswordAsync(UserId, r, ct)));
+
     [AllowAnonymous, HttpPost("reset-password")]
     public async Task<IActionResult> Reset(ResetPasswordRequest r, CancellationToken ct)
     {

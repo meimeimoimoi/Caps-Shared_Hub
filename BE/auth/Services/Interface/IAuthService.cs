@@ -13,6 +13,11 @@ public interface IAuthService
     Task ResendAsync(Guid userId, CancellationToken ct);
     Task ForgotAsync(string email, CancellationToken ct);
     Task ResetAsync(ResetPasswordRequest request, CancellationToken ct);
+    Task<SessionResult> ChangePasswordAsync(
+        Guid userId,
+        ChangePasswordRequest request,
+        CancellationToken ct
+    );
     Task<MeResponse> MeAsync(Guid userId, CancellationToken ct);
     Task<MeResponse> UpdateAsync(Guid userId, UpdateProfileRequest request, CancellationToken ct);
     Task<BusinessResponse?> BusinessAsync(Guid userId, CancellationToken ct);

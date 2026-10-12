@@ -270,6 +270,41 @@ public sealed class AuthService(
         await tx.CommitAsync(ct);
     }
 
+    public async Task<SessionResult> ChangePasswordAsync(
+        Guid id,
+        ChangePasswordRequest request,
+        CancellationToken ct
+    )
+    {
+        await using var tx = await db.Database.BeginTransactionAsync(ct);
+        var user = await Lock(id, ct);
+        Eligible(user);
+        var result =
+            user.PasswordHash.Length == 64
+                ? PasswordVerificationResult.Failed
+                : hasher.VerifyHashedPassword(user, user.PasswordHash, request.CurrentPassword);
+        if (result == PasswordVerificationResult.Failed)
+            throw new AuthFailure(
+                400,
+                "CURRENT_PASSWORD_INVALID",
+                "Current password is incorrect."
+            );
+        if (request.NewPassword == request.CurrentPassword)
+            throw new AuthFailure(
+                400,
+                "PASSWORD_UNCHANGED",
+                "New password must differ from the current password."
+            );
+        user.PasswordHash = hasher.HashPassword(user, request.NewPassword);
+        user.UpdatedAt = Now;
+        // Đăng xuất mọi thiết bị khác; thiết bị hiện tại nhận phiên mới ngay bên dưới.
+        await RevokeAll(user, ct);
+        var session = await Session(user, null, ct);
+        await db.SaveChangesAsync(ct);
+        await tx.CommitAsync(ct);
+        return session;
+    }
+
     private async Task<(User, VerificationToken)> Verification(
         string raw,
         string purpose,

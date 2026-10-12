@@ -22,6 +22,11 @@ public sealed record ResetPasswordRequest(
     [Required, MinLength(12), MaxLength(128)] string Password
 );
 
+public sealed record ChangePasswordRequest(
+    [Required, MaxLength(128)] string CurrentPassword,
+    [Required, MinLength(12), MaxLength(128)] string NewPassword
+);
+
 public sealed record UpdateProfileRequest(
     [Required, MaxLength(128)] string DisplayName,
     [Phone, MaxLength(32)] string? Phone

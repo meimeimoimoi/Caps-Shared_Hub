@@ -14,6 +14,7 @@ All mutations under /api/v1/auth require X-Caps-Client: spa. Browser Origin must
 - POST /api/v1/auth/resend-verification — limited bearer; 60-second cooldown; invalidates earlier links.
 - POST /api/v1/auth/forgot-password — email. Generic response even for missing user/cooldown.
 - POST /api/v1/auth/reset-password — token/password. Single use; revokes refresh sessions and increments token version.
+- POST /api/v1/auth/change-password — bearer plus cookie; currentPassword/newPassword (12–128). 400 CURRENT_PASSWORD_INVALID or PASSWORD_UNCHANGED. Revokes every session, then returns a new session (accessToken + refresh cookie) for the calling device.
 - GET /api/v1/users/me — bearer, including limited pending session. Returns profile/status/roles/permissions from DB.
 - PUT /api/v1/users/me — active bearer; displayName/phone.
 - GET /api/v1/users/me/business-profile — active USER; data null if no profile.
