@@ -15,6 +15,8 @@ public sealed record RegisterRequest(
 
 public sealed record EmailRequest([Required, EmailAddress, MaxLength(256)] string Email);
 
+public sealed record VerifyEmailCodeRequest([Required, RegularExpression(@"^\d{6}$")] string Code);
+
 public sealed record TokenRequest([Required, MaxLength(256)] string Token);
 
 public sealed record ResetPasswordRequest(

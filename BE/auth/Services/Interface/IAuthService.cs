@@ -10,6 +10,7 @@ public interface IAuthService
     Task<SessionResult> RefreshAsync(string token, CancellationToken ct);
     Task LogoutAsync(Guid userId, string? token, CancellationToken ct);
     Task VerifyAsync(string token, CancellationToken ct);
+    Task<SessionResult> VerifyCodeAsync(Guid userId, string code, CancellationToken ct);
     Task ResendAsync(Guid userId, CancellationToken ct);
     Task ForgotAsync(string email, CancellationToken ct);
     Task ResetAsync(ResetPasswordRequest request, CancellationToken ct);

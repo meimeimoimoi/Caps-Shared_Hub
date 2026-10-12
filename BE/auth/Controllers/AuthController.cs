@@ -90,6 +90,11 @@ public sealed class AuthController(
         return Ok(ApiResponse<object>.Ok(new { }, "Email verified. Refresh or sign in again."));
     }
 
+    /// <summary>Xác nhận bằng mã 6 số trong email; trả phiên mới đã kích hoạt.</summary>
+    [Authorize(Policy = "AuthSession"), HttpPost("verify-email-code")]
+    public async Task<IActionResult> VerifyCode(VerifyEmailCodeRequest r, CancellationToken ct) =>
+        Ok(Session(await auth.VerifyCodeAsync(UserId, r.Code, ct)));
+
     [Authorize(Policy = "AuthSession"), HttpPost("resend-verification")]
     public async Task<IActionResult> Resend(CancellationToken ct)
     {

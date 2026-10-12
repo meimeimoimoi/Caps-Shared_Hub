@@ -64,20 +64,38 @@ public static class AuthEmailTemplate
         var copy = For(m.Purpose);
         var local = m.ExpiresAt.ToOffset(VietnamOffset);
         var expires = local.ToString("HH:mm 'ngày' dd/MM/yyyy");
+        // Mã 6 số chỉ có ở email xác nhận; hạn của mã ngắn hơn hạn của liên kết
+        var code =
+            m.Code is { Length: > 0 } c && m.CodeExpiresAt is { } at
+                ? new OneTimeCode(c, at.ToOffset(VietnamOffset).ToString("HH:mm"))
+                : null;
         return new(
             copy.Subject,
-            Html(copy, m.Link, m.Email, expires, local.Year),
-            Text(copy, m.Link, m.Email, expires, local.Year)
+            Html(copy, m.Link, m.Email, expires, local.Year, code),
+            Text(copy, m.Link, m.Email, expires, local.Year, code)
         );
     }
 
-    private static string Text(Copy c, string link, string email, string expires, int year) =>
+    private sealed record OneTimeCode(string Value, string ValidUntil);
+
+    private static string Text(
+        Copy c,
+        string link,
+        string email,
+        string expires,
+        int year,
+        OneTimeCode? code
+    ) =>
         $"""
             {Brand} · {c.Heading}
 
             {c.Intro}
 
-            {c.Button}: {link}
+            {(
+                code == null
+                    ? ""
+                    : $"Mã xác nhận: {code.Value} (hiệu lực đến {code.ValidUntil})\n\n"
+            )}{c.Button}: {link}
 
             Liên kết hết hạn lúc {expires} (giờ Việt Nam) và chỉ dùng được một lần.
 
@@ -89,13 +107,35 @@ public static class AuthEmailTemplate
             © {year} {Brand}
             """;
 
-    private static string Html(Copy c, string link, string email, string expires, int year)
+    private static string Html(
+        Copy c,
+        string link,
+        string email,
+        string expires,
+        int year,
+        OneTimeCode? code
+    )
     {
         // Mã hoá trước mọi giá trị động để chuỗi HTML bên dưới chỉ chèn biến đơn giản.
         var e = HtmlEncoder.Default;
         var href = e.Encode(link);
         var subject = e.Encode(c.Subject);
-        var preheader = e.Encode(c.Preheader);
+        // Hộp thư hiện dòng xem trước cạnh tiêu đề: có mã thì người dùng thấy mã ngay
+        var preheader = e.Encode(
+            code == null ? c.Preheader : $"Mã xác nhận của bạn là {code.Value}."
+        );
+        var codeBlock =
+            code == null
+                ? ""
+                : $"""
+                    <p style="margin:0 0 10px;font-size:13px;color:{Muted};">Mã xác nhận của bạn</p>
+                    <div style="display:inline-block;margin:0 0 10px;padding:14px 18px 14px 28px;background:#fff7f1;border:1px solid #ffe2cf;border-radius:12px;font-family:'Courier New',Consolas,monospace;font-size:34px;font-weight:700;letter-spacing:10px;color:{Ink};">{e.Encode(
+                        code.Value
+                    )}</div>
+                    <p style="margin:0 0 28px;font-size:13px;line-height:1.6;color:{Muted};">Nhập mã trên trang đăng ký đang mở. Mã có hiệu lực đến <strong style="color:{Ink};">{e.Encode(
+                        code.ValidUntil
+                    )}</strong>. Hoặc bấm nút bên dưới.</p>
+                    """;
         var heading = e.Encode(c.Heading);
         var intro = e.Encode(c.Intro);
         var button = e.Encode(c.Button);
@@ -130,6 +170,7 @@ public static class AuthEmailTemplate
                         </tr></table>
                         <h1 style="margin:24px 0 12px;font-size:26px;line-height:1.3;font-weight:700;color:{Ink};">{heading}</h1>
                         <p style="margin:0 0 32px;font-size:15px;line-height:1.7;color:{Body};">{intro}</p>
+                        {codeBlock}
                         <table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>
                           <td align="center" bgcolor="{Accent}" style="border-radius:10px;background:{Accent};">
                             <a href="{href}" target="_blank" style="display:inline-block;padding:16px 40px;font-family:{Font};font-size:16px;font-weight:700;line-height:1;color:#ffffff;text-decoration:none;border-radius:10px;">{button}</a>

@@ -39,6 +39,22 @@ public sealed class AuthService(
     public static string HashToken(string token) =>
         Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(token)));
 
+    private const string VerifyPurpose = "VERIFY_EMAIL";
+    private const string CodePurpose = "VERIFY_EMAIL_CODE";
+
+    // Mã 6 số trùng nhau giữa nhiều người nên băm kèm user id; tra cứu luôn theo user.
+    private static string CodeHash(Guid userId, string code) => HashToken($"{userId:N}:{code}");
+
+    private Task InvalidateUnused(Guid userId, string purpose, CancellationToken ct) =>
+        db
+            .VerificationTokens.Where(x =>
+                x.UserId == userId
+                && x.Purpose == purpose
+                && x.UsedAt == null
+                && x.InvalidatedAt == null
+            )
+            .ExecuteUpdateAsync(x => x.SetProperty(t => t.InvalidatedAt, Now), ct);
+
     private static AuthFailure Invalid() =>
         new(401, "INVALID_CREDENTIALS", "Invalid credentials or token.");
 
@@ -203,9 +219,71 @@ public sealed class AuthService(
         user.EmailVerifiedAt = Now;
         user.Status = "ACTIVE";
         user.UpdatedAt = Now;
+        // Đã xác nhận bằng liên kết thì mã 6 số cùng email không còn dùng được
+        await InvalidateUnused(user.Id, CodePurpose, ct);
         // Phiên hạn chế cũ không tự nhận quyền ACTIVE; client refresh để lấy quyền mới.
         await db.SaveChangesAsync(ct);
         await tx.CommitAsync(ct);
+    }
+
+    public async Task<SessionResult> VerifyCodeAsync(Guid id, string code, CancellationToken ct)
+    {
+        await using var tx = await db.Database.BeginTransactionAsync(ct);
+        var user = await Lock(id, ct);
+        if (user.Status != "PENDING_VERIFICATION")
+            throw new AuthFailure(409, "ALREADY_VERIFIED", "Account is not pending verification.");
+        var row = await db
+            .VerificationTokens.Where(x =>
+                x.UserId == id
+                && x.Purpose == CodePurpose
+                && x.UsedAt == null
+                && x.InvalidatedAt == null
+            )
+            .OrderByDescending(x => x.CreatedAt)
+            .FirstOrDefaultAsync(ct);
+        if (row == null || row.ExpiresAt <= Now)
+            throw new AuthFailure(
+                400,
+                "CODE_EXPIRED",
+                "The code has expired. Request a new email."
+            );
+        if (row.AttemptCount >= o.MaxCodeAttempts)
+            throw new AuthFailure(
+                429,
+                "CODE_LOCKED",
+                "Too many incorrect codes. Request a new email."
+            );
+        var match = CryptographicOperations.FixedTimeEquals(
+            Encoding.ASCII.GetBytes(row.TokenHash),
+            Encoding.ASCII.GetBytes(CodeHash(id, code))
+        );
+        if (!match)
+        {
+            row.AttemptCount++;
+            await db.SaveChangesAsync(ct);
+            await tx.CommitAsync(ct);
+            throw row.AttemptCount >= o.MaxCodeAttempts
+                ? new AuthFailure(
+                    429,
+                    "CODE_LOCKED",
+                    "Too many incorrect codes. Request a new email."
+                )
+                : new AuthFailure(
+                    400,
+                    "CODE_INVALID",
+                    $"Incorrect code. {o.MaxCodeAttempts - row.AttemptCount} attempts left."
+                );
+        }
+        row.UsedAt = Now;
+        user.EmailVerifiedAt = Now;
+        user.Status = "ACTIVE";
+        user.UpdatedAt = Now;
+        await InvalidateUnused(user.Id, VerifyPurpose, ct);
+        // Trả phiên mới mang quyền ACTIVE: người dùng tiếp tục ngay, không phải đăng nhập lại
+        var session = await Session(user, null, ct);
+        await db.SaveChangesAsync(ct);
+        await tx.CommitAsync(ct);
+        return session;
     }
 
     public async Task ResendAsync(Guid id, CancellationToken ct)
@@ -362,13 +440,34 @@ public sealed class AuthService(
                 ExpiresAt = expires,
             }
         );
+        string? code = null;
+        DateTimeOffset? codeExpires = null;
+        if (purpose == VerifyPurpose)
+        {
+            // Kèm mã 6 số để nhập ngay trên trang đang mở, không phải rời trang mở liên kết
+            await InvalidateUnused(user.Id, CodePurpose, ct);
+            code = RandomNumberGenerator.GetInt32(0, 1_000_000).ToString("D6");
+            codeExpires = Now.AddMinutes(o.VerificationCodeMinutes);
+            db.VerificationTokens.Add(
+                new VerificationToken
+                {
+                    UserId = user.Id,
+                    Purpose = CodePurpose,
+                    TokenHash = CodeHash(user.Id, code),
+                    CreatedAt = Now,
+                    ExpiresAt = codeExpires.Value,
+                }
+            );
+        }
         var path = purpose == "VERIFY_EMAIL" ? "/verify-email" : "/reset-password";
         var payload = new AuthEmailRequestedEvent(
             Guid.NewGuid(),
             user.Email,
             purpose,
             o.FrontendUrl.TrimEnd('/') + path + "?token=" + raw,
-            expires
+            expires,
+            code,
+            codeExpires
         );
         db.EmailOutbox.Add(
             new AuthEmailOutbox
