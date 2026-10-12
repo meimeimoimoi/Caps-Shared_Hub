@@ -9,7 +9,7 @@ import {
   normalizeVietnamPhone,
   vietnamPhoneInputValue,
 } from '@/lib/validation/vietnamPhone'
-import { useState, type FormEvent } from 'react'
+import { useEffect, useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import {
   ArrowRight,
@@ -35,6 +35,9 @@ export interface AccountCreationProps {
   onUpdate: (key: keyof Profile, value: string) => void
   /** Mật khẩu chỉ nằm trong form này; truyền ra để gọi API đăng ký */
   onSubmit: (e: FormEvent<HTMLFormElement>, password: string) => void
+  /** Lỗi từ máy chủ khi tạo tài khoản: email (dưới ô Email) và lỗi chung (trên nút tạo) */
+  serverEmailError?: string
+  serverError?: string
   // Supply destinations only once genuine policy routes are available.
   policyRoutes?: { terms?: string; privacy?: string }
 }
@@ -57,6 +60,8 @@ export function AccountCreation({
   submitting,
   onUpdate,
   onSubmit,
+  serverEmailError,
+  serverError,
   policyRoutes,
 }: AccountCreationProps) {
   const { t } = useTranslation(['expertRegistration', 'auth'])
@@ -90,6 +95,10 @@ export function AccountCreation({
         : undefined
       : undefined
   const passwordError = fieldError('password')
+  // Máy chủ từ chối email (đã có tài khoản, email tạm…): đưa con trỏ về ô Email để sửa ngay
+  useEffect(() => {
+    if (serverEmailError) document.getElementById('email')?.focus()
+  }, [serverEmailError])
   const confirmationError = fieldError('confirmPassword')
   const termsError = fieldError('terms')
   const phoneError = fieldError('phone') || formErrors.phone
@@ -173,7 +182,10 @@ export function AccountCreation({
   }
 
   const renderInput = (key: keyof Profile, required = false, type = 'text') => {
-    const error = fieldError(key as AccountField) || formErrors[key]
+    const error =
+      (key === 'email' && serverEmailError) ||
+      fieldError(key as AccountField) ||
+      formErrors[key]
     const errorId = error ? `error-${key}` : undefined
     return (
       <input
@@ -331,7 +343,7 @@ export function AccountCreation({
           <FormField
             label={t('fields.email')}
             htmlFor="email"
-            error={fieldError('email') || formErrors.email}
+            error={serverEmailError || fieldError('email') || formErrors.email}
             errorId="error-email"
           >
             {renderInput('email', true, 'email')}
@@ -419,6 +431,15 @@ export function AccountCreation({
           </p>
         )}
       </div>
+      {serverError && (
+        <p
+          role="alert"
+          className="expert-field-error bg-ex-error-bg mb-4 rounded-md px-3.5 py-3 text-[13px]"
+        >
+          <CircleAlert size={15} aria-hidden="true" />
+          <span>{serverError}</span>
+        </p>
+      )}
       <button
         type="submit"
         className={`${btnBase} expert-submit-btn w-full ${submitting ? 'opacity-70' : ''}`}

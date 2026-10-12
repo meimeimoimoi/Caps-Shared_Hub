@@ -77,6 +77,11 @@ export function useApplicationLifecycle({
   const [explanation, setExplanation] = useState('')
 
   const [error, setError] = useState<RegistrationMessage | null>(null)
+  // Lỗi khi tạo tài khoản hiện ngay trong form: lỗi về email dưới ô Email, lỗi khác trên nút tạo
+  const [accountErrors, setAccountErrors] = useState<{
+    email?: RegistrationMessage
+    general?: RegistrationMessage
+  }>({})
   const [notice, setNotice] = useState<RegistrationMessage | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const errorRef = useRef<HTMLParagraphElement>(null)
@@ -104,6 +109,7 @@ export function useApplicationLifecycle({
     if (submitting) return
     setSubmitting(true)
     setError(null)
+    setAccountErrors({})
     try {
       const { user, token } = await authApi.register({
         email: profile.email.trim(),
@@ -117,11 +123,12 @@ export function useApplicationLifecycle({
       setNotice({ key: 'messages.accountCreated' })
       setTimeout(() => window.scrollTo(0, 0), 0)
     } catch (e) {
-      setError(
-        e instanceof ApiError && e.status === 409
-          ? { key: 'messages.emailTaken' }
-          : messageFor(e)
-      )
+      const code = e instanceof ApiError ? e.code : undefined
+      if (e instanceof ApiError && e.status === 409)
+        setAccountErrors({ email: { key: 'messages.emailTaken' } })
+      else if (code === 'EMAIL_DISPOSABLE' || code === 'EMAIL_DOMAIN_INVALID')
+        setAccountErrors({ email: messageFor(e) })
+      else setAccountErrors({ general: messageFor(e) })
     } finally {
       setSubmitting(false)
     }
@@ -170,6 +177,15 @@ export function useApplicationLifecycle({
     submitting,
     errorRef,
     createAccount,
+    accountEmailError: accountErrors.email
+      ? t(accountErrors.email.key, accountErrors.email.params)
+      : '',
+    accountError: accountErrors.general
+      ? t(accountErrors.general.key, accountErrors.general.params)
+      : '',
+    /** Người dùng sửa email thì bỏ lỗi máy chủ cũ của ô email */
+    clearAccountEmailError: () =>
+      setAccountErrors((p) => (p.email ? { ...p, email: undefined } : p)),
     submitSupplement,
     /** Ô xem thử giai đoạn chỉ hiện ở chế độ demo khi dev */
     canPreviewStages: isExpertDemo,

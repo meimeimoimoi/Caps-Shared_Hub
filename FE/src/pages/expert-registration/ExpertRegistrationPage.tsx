@@ -72,6 +72,9 @@ export default function ExpertRegistrationPage() {
     submitting: lifecycleSubmitting,
     errorRef: lifecycleErrorRef,
     createAccount,
+    accountEmailError,
+    accountError,
+    clearAccountEmailError,
     canPreviewStages,
     submitSupplement,
     changeStage,
@@ -184,9 +187,12 @@ export default function ExpertRegistrationPage() {
                 profile={profile}
                 formErrors={formErrors}
                 submitting={lifecycleSubmitting}
+                serverEmailError={accountEmailError}
+                serverError={accountError}
                 onUpdate={(key, value) => {
                   update(key, value)
                   clearFormError(key)
+                  if (key === 'email') clearAccountEmailError()
                 }}
                 onSubmit={(e, password) => {
                   e.preventDefault()
@@ -457,7 +463,7 @@ export default function ExpertRegistrationPage() {
             </form>
           </section>
         )}
-        {(error || lifecycleError) && (
+        {account && (error || lifecycleError) && (
           <p
             className="bg-ex-error-bg text-ex-error-text animate-expert-fade-in col-span-full rounded-[5px] p-[15px] motion-reduce:animate-none"
             role="alert"
