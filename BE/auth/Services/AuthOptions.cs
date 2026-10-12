@@ -1,3 +1,5 @@
+using Caps.Common.Domain;
+
 namespace auth.Services;
 
 public sealed class AuthOptions
@@ -17,8 +19,22 @@ public sealed class AuthOptions
     public bool SecureCookie { get; set; } = true;
 }
 
-public sealed class AuthFailure(int status, string code, string message) : Exception(message)
+/// <summary>
+/// Cầu nối tạm: lỗi của auth đi qua cơ chế lỗi chung (GlobalExceptionHandler).
+/// Bước tái cấu trúc auth sẽ thay bằng CommonErrors / AuthErrors theo ErrorType.
+/// </summary>
+public sealed class AuthFailure(int status, string code, string message)
+    : AppException(TypeOf(status), code, message)
 {
-    public int Status { get; } = status;
-    public string Code { get; } = code;
+    private static ErrorType TypeOf(int status) =>
+        status switch
+        {
+            401 => ErrorType.Unauthorized,
+            403 => ErrorType.Forbidden,
+            404 => ErrorType.NotFound,
+            409 => ErrorType.Conflict,
+            422 => ErrorType.RuleViolation,
+            429 => ErrorType.TooManyRequests,
+            _ => ErrorType.Validation,
+        };
 }

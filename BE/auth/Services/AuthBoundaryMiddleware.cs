@@ -1,5 +1,6 @@
 using auth.Data;
 using Caps.Common.Api;
+using Caps.Common.Domain;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
@@ -80,19 +81,10 @@ public sealed class AuthBoundaryMiddleware(RequestDelegate next)
             }
             await next(context);
         }
-        catch (AuthFailure e)
+        // Middleware này chạy trước exception handler chung nên tự ghi lỗi theo cùng dạng
+        catch (AppException e)
         {
-            context.Response.StatusCode = e.Status;
-            await context.Response.WriteAsJsonAsync(
-                new
-                {
-                    success = false,
-                    data = (object?)null,
-                    message = e.Message,
-                    code = e.Code,
-                },
-                context.RequestAborted
-            );
+            await ApiErrors.WriteAsync(context, e, context.RequestAborted);
         }
     }
 }

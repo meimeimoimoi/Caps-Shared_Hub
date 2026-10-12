@@ -2,12 +2,14 @@ using Caps.Common.Application;
 using Caps.Common.Domain;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
 namespace Caps.Common.Api;
 
-/// <summary>Centralized ProblemDetails mapping. Register via AddExceptionHandler.</summary>
+/// <summary>
+/// Nơi duy nhất đổi lỗi thành response HTTP. Đăng ký qua AddCommonApi.
+/// <see cref="AppException"/> trả đúng mã + code; lỗi không lường trước trả 500 và không lộ chi tiết.
+/// </summary>
 public sealed class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger)
     : IExceptionHandler
 {
@@ -17,34 +19,67 @@ public sealed class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logge
         CancellationToken cancellationToken
     )
     {
-        var traceId = httpContext.TraceIdentifier;
-        logger.LogError(exception, "Unhandled exception. TraceId={TraceId}", traceId);
-
-        var (status, title) = exception switch
+        if (exception is AppException app)
         {
-            ValidationException => (StatusCodes.Status400BadRequest, "Validation failed"),
-            NotFoundException => (StatusCodes.Status404NotFound, "Resource not found"),
-            DomainException => (StatusCodes.Status422UnprocessableEntity, "Domain rule violated"),
-            _ => (StatusCodes.Status500InternalServerError, "Internal server error"),
-        };
+            logger.LogInformation(
+                "Request rejected: {Code} {Message}. TraceId={TraceId}",
+                app.Code,
+                app.Message,
+                httpContext.TraceIdentifier
+            );
+            await ApiErrors.WriteAsync(httpContext, app, cancellationToken);
+            return true;
+        }
 
-        var problem = new ProblemDetails
-        {
-            Status = status,
-            Title = title,
-            Detail = status >= 500 ? "An unexpected error occurred." : exception.Message,
-            Instance = httpContext.Request.Path,
-        };
-        problem.Extensions["traceId"] = traceId;
-
-        httpContext.Response.StatusCode = status;
+        logger.LogError(
+            exception,
+            "Unhandled exception. TraceId={TraceId}",
+            httpContext.TraceIdentifier
+        );
+        httpContext.Response.StatusCode = StatusCodes.Status500InternalServerError;
         await httpContext.Response.WriteAsJsonAsync(
-            ApiResponse<ProblemDetails>.Fail(
-                status >= 500 ? "An unexpected error occurred." : exception.Message
+            new ApiErrorResponse(
+                "An unexpected error occurred.",
+                CommonErrors.Codes.Internal,
+                httpContext.TraceIdentifier
             ),
             cancellationToken
         );
-
         return true;
+    }
+}
+
+public static class ApiErrors
+{
+    public static int StatusCodeOf(ErrorType type) =>
+        type switch
+        {
+            ErrorType.Validation => StatusCodes.Status400BadRequest,
+            ErrorType.Unauthorized => StatusCodes.Status401Unauthorized,
+            ErrorType.Forbidden => StatusCodes.Status403Forbidden,
+            ErrorType.NotFound => StatusCodes.Status404NotFound,
+            ErrorType.Conflict => StatusCodes.Status409Conflict,
+            ErrorType.RuleViolation => StatusCodes.Status422UnprocessableEntity,
+            ErrorType.TooManyRequests => StatusCodes.Status429TooManyRequests,
+            _ => StatusCodes.Status400BadRequest,
+        };
+
+    /// <summary>Ghi lỗi theo dạng chung; dùng được cả trong middleware chạy trước exception handler.</summary>
+    public static Task WriteAsync(
+        HttpContext httpContext,
+        AppException exception,
+        CancellationToken cancellationToken = default
+    )
+    {
+        httpContext.Response.StatusCode = StatusCodeOf(exception.Type);
+        return httpContext.Response.WriteAsJsonAsync(
+            new ApiErrorResponse(
+                exception.Message,
+                exception.Code,
+                httpContext.TraceIdentifier,
+                (exception as ValidationException)?.Errors
+            ),
+            cancellationToken
+        );
     }
 }

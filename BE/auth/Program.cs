@@ -15,7 +15,6 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddCommonApi(builder.Configuration, "auth");
-builder.Services.AddControllers(o => o.Filters.Add<AuthExceptionFilter>());
 builder.Services.AddSwaggerGen(o =>
 {
     o.AddSecurityDefinition(
