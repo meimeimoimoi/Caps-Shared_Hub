@@ -8,7 +8,7 @@ import {
   FileImage,
   Clock3,
 } from 'lucide-react'
-import type { Profile } from '../../types'
+import type { EvidenceFile, Profile } from '../../types'
 import { useFormatters } from '@/hooks/useFormatters'
 import { criterionKey, expertiseKey } from '../../constants'
 
@@ -17,7 +17,7 @@ export interface RegistrationSummaryProps {
   avatarPreview: string
   independent: boolean
   fields: string[]
-  files: Record<string, File[]>
+  files: Record<string, EvidenceFile[]>
 }
 
 export function RegistrationSummary({
@@ -163,7 +163,7 @@ export function RegistrationSummary({
                 .map(([category, list]) => (
                   <div key={category} className="expert-summary-document-group">
                     <div className="expert-summary-document-heading">
-                      <strong>{category === 'CV' ? t('experience.cv') : criterionKey(category) ? t(criterionKey(category)!) : category}</strong>
+                      <strong>{category === 'CV' ? t('experience.cv') : category === 'SUPPLEMENT' ? t('supplement.document') : criterionKey(category) ? t(criterionKey(category)!) : category}</strong>
                       <span>
                         {t('counts.file', { count: list.length })}
                       </span>

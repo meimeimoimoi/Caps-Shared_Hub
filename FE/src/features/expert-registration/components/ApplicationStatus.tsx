@@ -21,6 +21,8 @@ export interface ApplicationStatusProps {
   progress: number
   history: string[]
   supplementFormProps: SupplementFormProps
+  /** Ô xem thử các giai đoạn: chỉ ở chế độ demo khi dev */
+  showScenario?: boolean
   onStageChange: (stage: Stage) => void
   onRequestSupplement: () => void
   onPreviewServiceReview: () => void
@@ -46,6 +48,7 @@ export function ApplicationStatus({
   progress,
   history,
   supplementFormProps,
+  showScenario = false,
   onStageChange,
   onRequestSupplement,
   onPreviewServiceReview,
@@ -70,7 +73,7 @@ export function ApplicationStatus({
               : t('status.track')}
           </p>
         </div>
-        <ScenarioSelect value={stage} onChange={onStageChange} />
+        {showScenario && <ScenarioSelect value={stage} onChange={onStageChange} />}
       </div>
 
       <ol className="expert-status-timeline">

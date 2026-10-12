@@ -13,6 +13,7 @@ import { ApiError } from '@/lib/api-client'
 import { authApi } from '@/features/auth/api/authApi'
 import { useAuth, useAuthStore } from '@/features/auth'
 import { safeReturnPath } from '@/features/auth/utils/returnPath'
+import { EXPERT_ONBOARDING_KEY } from '@/features/expert-registration/hooks/useExpertApplication'
 import { VideoBackground } from '@/components/auth/VideoBackground'
 import { LanguageToggle as AuthLanguageToggle } from '@/components/ui/layout/language-toggle'
 import {
@@ -67,6 +68,16 @@ function ConfirmToken({ token }: { token: string }) {
     'verifying'
   )
   const [signedIn, setSignedIn] = useState(false)
+  // Đăng ký từ cổng chuyên gia: xác nhận xong quay lại wizard; xóa dấu để lần sau không bị dẫn nhầm
+  const [expertOnboarding] = useState(() => {
+    try {
+      const flagged = localStorage.getItem(EXPERT_ONBOARDING_KEY) === '1'
+      localStorage.removeItem(EXPERT_ONBOARDING_KEY)
+      return flagged
+    } catch {
+      return false
+    }
+  })
   // Token chỉ dùng được một lần: chặn StrictMode gọi effect hai lần
   const started = useRef(false)
 
@@ -129,10 +140,15 @@ function ConfirmToken({ token }: { token: string }) {
           <button
             type="button"
             onClick={() =>
-              navigate(safeReturnPath(location.state?.from), {
-                replace: true,
-                state: location.state?.fromState,
-              })
+              navigate(
+                expertOnboarding
+                  ? '/expert/register'
+                  : safeReturnPath(location.state?.from),
+                {
+                  replace: true,
+                  state: location.state?.fromState,
+                }
+              )
             }
             className={cn(PRIMARY_BUTTON_CLASS, 'font-sans')}
           >
@@ -141,7 +157,11 @@ function ConfirmToken({ token }: { token: string }) {
         ) : (
           <Link
             to="/login"
-            state={{ view: 'email' }}
+            state={
+              expertOnboarding
+                ? { view: 'email', from: '/expert/register' }
+                : { view: 'email' }
+            }
             className={BUTTON_LINK_CLASS}
           >
             {t('verify.signIn')}

@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import { Info, Edit2 } from 'lucide-react'
-import type { Profile } from '../../types'
+import type { EvidenceFile, Profile } from '../../types'
 import { RegistrationSummary } from './RegistrationSummary'
 
 export interface ReviewSubmitProps {
@@ -8,7 +8,7 @@ export interface ReviewSubmitProps {
   avatarPreview: string
   independent: boolean
   fields: string[]
-  files: Record<string, File[]>
+  files: Record<string, EvidenceFile[]>
   confirmed: boolean
   formErrors: Record<string, string>
   onConfirmedChange: (val: boolean) => void

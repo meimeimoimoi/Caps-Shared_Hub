@@ -31,6 +31,8 @@ import { RegistrationSummary } from '../../features/expert-registration/componen
 import { ReviewSubmit } from '../../features/expert-registration/components/steps/ReviewSubmit'
 import { useRegistrationForm } from '../../features/expert-registration/hooks/useRegistrationForm'
 import { useApplicationLifecycle } from '../../features/expert-registration/hooks/useApplicationLifecycle'
+import { useExpertApplication } from '../../features/expert-registration/hooks/useExpertApplication'
+import { EmailVerificationNotice } from '../../features/expert-registration/components/EmailVerificationNotice'
 
 /* ── Shared sub-components ── */
 
@@ -50,6 +52,14 @@ export default function ExpertRegistrationPage() {
   const motionRef = useRegistrationMotion()
   const scrollRevealRef = useScrollReveal()
   const {
+    application,
+    setApplication,
+    loading,
+    loadFailed,
+    reload,
+    syncVerifiedSession,
+  } = useExpertApplication()
+  const {
     account,
     submitted,
     stage,
@@ -61,9 +71,8 @@ export default function ExpertRegistrationPage() {
     notice: lifecycleNotice,
     submitting: lifecycleSubmitting,
     errorRef: lifecycleErrorRef,
-    beginTask,
-    completeAccountCreation,
-    completeRegistrationSubmission,
+    createAccount,
+    canPreviewStages,
     submitSupplement,
     changeStage,
     requestSupplement,
@@ -72,7 +81,7 @@ export default function ExpertRegistrationPage() {
     setExplanation,
     cancelSupplement,
     supplementFile,
-  } = useApplicationLifecycle()
+  } = useApplicationLifecycle({ application, setApplication, syncVerifiedSession })
 
   const {
     profile,
@@ -105,9 +114,7 @@ export default function ExpertRegistrationPage() {
     removeFile,
     toggleConfirmed,
     saveDraft,
-  } = useRegistrationForm({
-    onRegistrationSubmit: completeRegistrationSubmission,
-  })
+  } = useRegistrationForm({ application, setApplication, syncVerifiedSession })
   const wizardBodyRef = useWizardMotion(step, account && !submitted)
   const visibleNotice = [notice, lifecycleNotice].find(Boolean) ?? ''
   const terminal = stage === 'ineligible' || stage === 'failed'
@@ -181,18 +188,30 @@ export default function ExpertRegistrationPage() {
                   update(key, value)
                   clearFormError(key)
                 }}
-                onSubmit={(e) => {
+                onSubmit={(e, password) => {
                   e.preventDefault()
                   if (lifecycleSubmitting) return
                   if (!validateForm(e.currentTarget)) return
-                  beginTask()
-                  setTimeout(() => {
-                    completeAccountCreation()
-                  }, 600)
+                  void createAccount(profile, password)
                 }}
               />
             </div>
           </>
+        ) : loading || loadFailed ? (
+          <section className={`${panelCls} expert-wizard`} aria-busy={loading}>
+            {loading ? (
+              <p role="status" className="text-ex-muted !mb-0">
+                {t('page.loading')}
+              </p>
+            ) : (
+              <div role="alert">
+                <p>{t('messages.loadFailed')}</p>
+                <button type="button" className="underline underline-offset-4" onClick={() => void reload()}>
+                  {t('page.retry')}
+                </button>
+              </div>
+            )}
+          </section>
         ) : submitted ? (
           <>
             <div className="expert-status-layout">
@@ -204,6 +223,7 @@ export default function ExpertRegistrationPage() {
                 timeline={timeline}
                 progress={progress}
                 history={history}
+                showScenario={canPreviewStages}
                 supplementFormProps={{
                   file: supplementFile,
                   explanation,
@@ -361,6 +381,9 @@ export default function ExpertRegistrationPage() {
                 ))}
               </ol>
             </nav>
+            {application && !application.emailVerified && (
+              <EmailVerificationNotice email={profile.email} onCheck={reload} />
+            )}
             <form noValidate onSubmit={advance}>
               <div
                 ref={wizardBodyRef}

@@ -15,7 +15,18 @@
     "supplement": "Add a document or an explanation."
   },
   "messages": {
-    "draftSaved": "Draft saved in memory for this session. Nothing was sent to the server."
+    "draftSaved": "Draft saved. You can come back and finish your application at any time.",
+    "accountCreated": "Account created and a verification email sent. You can keep filling in your application now.",
+    "emailTaken": "This email already has an account. Sign in to continue your application.",
+    "tooManyRequests": "Too many attempts. Please wait a moment and try again.",
+    "unavailable": "Can't reach the server. Please try again in a few minutes.",
+    "failed": "That didn't work. Please try again.",
+    "verifyBeforeSubmit": "Verify your email before submitting. Everything you entered is saved.",
+    "incomplete": "Your application is missing required information: phone number, years of experience, expertise or CV.",
+    "locked": "This application has been submitted and can no longer be edited.",
+    "fileLimit": "An application can hold at most 20 files. Remove some before adding more.",
+    "supplementSent": "Additional information sent. Your application is back in the review queue.",
+    "loadFailed": "We couldn't load your application. Check your connection and try again."
   },
   "consent": "I agree to the <terms>terms and conditions</terms> and <privacy>privacy policy</privacy>.",
   "counts": {
@@ -32,7 +43,9 @@
   "files": {
     "remove": "Remove {{name}}",
     "choose": "Choose files for {{category}}",
-    "meta": "{{extension}} · {{size}} · Selected locally",
+    "meta": "{{extension}} · {{size}} · Uploaded",
+    "uploading": "Uploading…",
+    "uploadedSize": "{{size}} KB · Uploaded",
     "localSize": "{{size}} KB · Selected locally"
   },
   "stages": {
@@ -72,7 +85,7 @@
   "dynamic": {
     "reapply": "The current policy requires at least {{days}} days before reapplying, plus relevant new or updated evidence. Your actual decision date, earliest reapplication date and failed criteria must come from the assessment service.",
     "approved": "Your approval applies to <service>CIT document review (illustrative service)</service>.",
-    "application": "Demo application · {{name}}",
+    "application": "Application · {{name}}",
     "hidePassword": "Hide password",
     "showPassword": "Show password",
     "hideConfirmation": "Hide confirmation password",
@@ -125,7 +138,7 @@
     "continue": "Continue",
     "saved": "Saved",
     "save": "Save draft",
-    "submit": "Submit demo application",
+    "submit": "Submit application",
     "submitting": "Submitting…",
     "edit": "Edit application",
     "send": "Send additional information",
@@ -204,7 +217,7 @@
     "taxYears": "Years of tax and accounting experience *",
     "highlights": "Experience highlights",
     "placeholder": "Describe relevant responsibilities and experience.",
-    "minimum": "The current eligibility policy requires at least 5 years. You can prepare this demo draft; an authorized reviewer makes the eligibility decision.",
+    "minimum": "The current eligibility policy requires at least 5 years. You can still submit; an authorized reviewer makes the eligibility decision.",
     "expertise": "Areas of expertise",
     "expertiseRequired": "Areas of expertise *",
     "required": "Required",
@@ -223,7 +236,7 @@
   "documents": {
     "heading": "Supporting documents",
     "guidance": "Organize evidence by eligibility criterion. The final required documents will be determined by the approved policy.",
-    "preview": "Preview requirements only: no fixed five-document checklist. Experience evidence is collected in the previous step.",
+    "preview": "Documents are grouped by eligibility criteria; you don't need all five groups. Your CV was added in the previous step.",
     "categories": "Evidence categories",
     "evidence": "Provide relevant supporting evidence. Accepted document types and applicability must be confirmed by the eligibility policy.",
     "empty": "No documents selected.",
@@ -243,7 +256,7 @@
     "confirm": "I certify that the information provided in this application is accurate and complete."
   },
   "supplement": {
-    "guidance": "Professional qualifications: provide a readable copy or clarify the information in your existing evidence. This is an illustrative request.",
+    "guidance": "Provide a replacement document or an explanation as requested by the reviewer.",
     "document": "Replacement document",
     "formats": "PDF, JPG or PNG · maximum 10 MB",
     "choose": "Choose replacement document",
@@ -267,8 +280,8 @@
     "next": "Your next step",
     "additional": "Additional evidence is needed during eligibility review. Your application remains open; no reapplication waiting period applies.",
     "qualification": "Professional qualifications",
-    "clarify": "The qualification document needs clarification. Provide a readable replacement or an explanation.",
-    "noDeadline": "Illustrative request. No response deadline has been configured.",
+    "clarify": "The reviewer needs more information to verify your eligibility. Send a readable replacement document or an explanation.",
+    "noDeadline": "Your application stays open while you prepare the information.",
     "provide": "Provide information",
     "eligibilityUnmet": "The eligibility requirements have not been met.",
     "competencyUnmet": "The competency requirements for the selected service have not been met. Other service approvals are unaffected.",
@@ -302,12 +315,24 @@
     "submittedInfo": "Your submitted information and supporting documents",
     "steps": "Application steps",
     "policies": "Support and policies",
-    "scenario": "Preview a scenario"
+    "scenario": "Preview a scenario",
+    "loading": "Loading your application…",
+    "retry": "Try again"
   },
   "stepper": {
     "personal": "Personal",
     "experience": "Experience",
     "documents": "Evidence",
     "review": "Submit"
+  },
+  "verifyEmail": {
+    "title": "Verify your email.",
+    "body": "We sent a verification link to {{email}}. You can keep working on your application; you only need to verify before submitting.",
+    "resend": "Resend email",
+    "cooldown": "Resend in {{seconds}} seconds",
+    "check": "I've verified it",
+    "resent": "Email sent again.",
+    "failed": "Couldn't send it. Please try again.",
+    "stillPending": "Your email isn't verified yet."
   }
 }

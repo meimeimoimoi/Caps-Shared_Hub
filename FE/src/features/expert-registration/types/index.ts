@@ -10,6 +10,16 @@ export type Stage =
   | 'failed'
   | 'returned'
 
+/** File minh chứng đã lưu trên máy chủ (hoặc đang tải lên) */
+export interface EvidenceFile {
+  /** Rỗng khi đang tải lên */
+  id: string
+  name: string
+  size: number
+  canRemove: boolean
+  uploading?: boolean
+}
+
 export interface Profile {
   name: string
   email: string

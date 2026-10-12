@@ -15,7 +15,18 @@
     "supplement": "Thêm tài liệu hoặc nội dung giải thích."
   },
   "messages": {
-    "draftSaved": "Nháp được lưu trong bộ nhớ của phiên này. Chưa gửi dữ liệu lên máy chủ."
+    "draftSaved": "Đã lưu nháp. Bạn có thể quay lại hoàn thiện hồ sơ bất cứ lúc nào.",
+    "accountCreated": "Đã tạo tài khoản và gửi email xác nhận. Bạn có thể tiếp tục khai hồ sơ ngay.",
+    "emailTaken": "Email này đã có tài khoản. Hãy đăng nhập để tiếp tục hồ sơ.",
+    "tooManyRequests": "Bạn thao tác quá nhanh. Vui lòng đợi một lát rồi thử lại.",
+    "unavailable": "Không kết nối được máy chủ. Vui lòng thử lại sau ít phút.",
+    "failed": "Chưa thực hiện được. Vui lòng thử lại.",
+    "verifyBeforeSubmit": "Xác nhận email trước khi nộp hồ sơ. Thông tin bạn đã nhập vẫn được lưu.",
+    "incomplete": "Hồ sơ còn thiếu thông tin bắt buộc: số điện thoại, số năm kinh nghiệm, lĩnh vực chuyên môn hoặc CV.",
+    "locked": "Hồ sơ đã nộp nên không thể chỉnh sửa.",
+    "fileLimit": "Mỗi hồ sơ có tối đa 20 file. Xóa bớt file trước khi thêm.",
+    "supplementSent": "Đã gửi thông tin bổ sung. Hồ sơ quay lại hàng chờ đánh giá.",
+    "loadFailed": "Không tải được hồ sơ. Kiểm tra kết nối rồi thử lại."
   },
   "consent": "Tôi đồng ý với <terms>điều khoản và điều kiện</terms> cùng <privacy>chính sách quyền riêng tư</privacy>.",
   "counts": {
@@ -30,7 +41,9 @@
   "files": {
     "remove": "Xóa {{name}}",
     "choose": "Chọn file cho {{category}}",
-    "meta": "{{extension}} · {{size}} · Đã chọn trên thiết bị",
+    "meta": "{{extension}} · {{size}} · Đã tải lên",
+    "uploading": "Đang tải lên…",
+    "uploadedSize": "{{size}} KB · Đã tải lên",
     "localSize": "{{size}} KB · Đã chọn trên thiết bị"
   },
   "stages": {
@@ -70,7 +83,7 @@
   "dynamic": {
     "reapply": "Chính sách hiện tại yêu cầu chờ ít nhất {{days}} ngày trước khi nộp lại, cùng minh chứng mới hoặc cập nhật có liên quan. Ngày quyết định thực tế, ngày sớm nhất được nộp lại và tiêu chí chưa đạt phải lấy từ dịch vụ đánh giá.",
     "approved": "Phê duyệt của bạn áp dụng cho <service>dịch vụ rà soát tài liệu thuế TNDN (dịch vụ minh họa)</service>.",
-    "application": "Hồ sơ demo · {{name}}",
+    "application": "Hồ sơ · {{name}}",
     "hidePassword": "Ẩn mật khẩu",
     "showPassword": "Hiện mật khẩu",
     "hideConfirmation": "Ẩn mật khẩu xác nhận",
@@ -123,7 +136,7 @@
     "continue": "Tiếp tục",
     "saved": "Đã lưu",
     "save": "Lưu nháp",
-    "submit": "Nộp hồ sơ demo",
+    "submit": "Nộp hồ sơ",
     "submitting": "Đang nộp…",
     "edit": "Chỉnh sửa hồ sơ",
     "send": "Gửi thông tin bổ sung",
@@ -202,7 +215,7 @@
     "taxYears": "Số năm kinh nghiệm thuế và kế toán *",
     "highlights": "Kinh nghiệm nổi bật",
     "placeholder": "Mô tả trách nhiệm và kinh nghiệm liên quan.",
-    "minimum": "Chính sách điều kiện tham gia hiện tại yêu cầu ít nhất 5 năm kinh nghiệm. Bạn vẫn có thể chuẩn bị nháp demo này; người đánh giá được ủy quyền sẽ quyết định điều kiện tham gia.",
+    "minimum": "Chính sách điều kiện tham gia hiện tại yêu cầu ít nhất 5 năm kinh nghiệm. Bạn vẫn có thể nộp hồ sơ; người đánh giá được ủy quyền sẽ quyết định điều kiện tham gia.",
     "expertise": "Lĩnh vực chuyên môn",
     "expertiseRequired": "Lĩnh vực chuyên môn *",
     "required": "Bắt buộc",
@@ -221,7 +234,7 @@
   "documents": {
     "heading": "Tài liệu minh chứng",
     "guidance": "Sắp xếp minh chứng theo tiêu chí điều kiện tham gia. Các tài liệu bắt buộc cuối cùng được xác định theo chính sách đã phê duyệt.",
-    "preview": "Đây chỉ là yêu cầu xem thử, không phải danh sách cố định gồm năm tài liệu. Minh chứng kinh nghiệm được thu thập ở bước trước.",
+    "preview": "Tài liệu được sắp theo tiêu chí điều kiện tham gia; không bắt buộc đủ cả năm nhóm. CV được nộp ở bước trước.",
     "categories": "Nhóm minh chứng",
     "evidence": "Cung cấp minh chứng liên quan. Loại tài liệu được chấp nhận và phạm vi áp dụng phải được xác nhận theo chính sách điều kiện tham gia.",
     "empty": "Chưa chọn tài liệu.",
@@ -241,7 +254,7 @@
     "confirm": "Tôi xác nhận thông tin cung cấp trong hồ sơ này là chính xác và đầy đủ."
   },
   "supplement": {
-    "guidance": "Năng lực chuyên môn: cung cấp bản sao rõ ràng hoặc làm rõ thông tin trong minh chứng hiện có. Đây là yêu cầu minh họa.",
+    "guidance": "Cung cấp tài liệu thay thế hoặc nội dung giải thích theo yêu cầu của người đánh giá.",
     "document": "Tài liệu thay thế",
     "formats": "PDF, JPG hoặc PNG · tối đa 10 MB",
     "choose": "Chọn tài liệu thay thế",
@@ -265,8 +278,8 @@
     "next": "Bước tiếp theo của bạn",
     "additional": "Cần bổ sung minh chứng trong quá trình đánh giá điều kiện tham gia. Hồ sơ của bạn vẫn đang mở; không áp dụng thời gian chờ nộp lại.",
     "qualification": "Năng lực chuyên môn",
-    "clarify": "Tài liệu năng lực chuyên môn cần được làm rõ. Cung cấp bản thay thế rõ ràng hoặc nội dung giải thích.",
-    "noDeadline": "Yêu cầu minh họa. Chưa cấu hình thời hạn phản hồi.",
+    "clarify": "Người đánh giá cần thêm thông tin để xác minh điều kiện tham gia. Gửi tài liệu thay thế rõ ràng hoặc nội dung giải thích.",
+    "noDeadline": "Hồ sơ vẫn mở trong lúc bạn chuẩn bị bổ sung.",
     "provide": "Cung cấp thông tin",
     "eligibilityUnmet": "Chưa đáp ứng các yêu cầu về điều kiện tham gia.",
     "competencyUnmet": "Chưa đáp ứng yêu cầu năng lực của dịch vụ đã chọn. Việc phê duyệt các dịch vụ khác không bị ảnh hưởng.",
@@ -300,12 +313,24 @@
     "submittedInfo": "Thông tin và tài liệu minh chứng bạn đã nộp",
     "steps": "Các bước đăng ký",
     "policies": "Hỗ trợ và chính sách",
-    "scenario": "Xem thử kịch bản"
+    "scenario": "Xem thử kịch bản",
+    "loading": "Đang tải hồ sơ…",
+    "retry": "Thử lại"
   },
   "stepper": {
     "personal": "Cá nhân",
     "experience": "Kinh nghiệm",
     "documents": "Minh chứng",
     "review": "Nộp hồ sơ"
+  },
+  "verifyEmail": {
+    "title": "Xác nhận email của bạn.",
+    "body": "Chúng tôi đã gửi liên kết xác nhận tới {{email}}. Bạn có thể tiếp tục khai hồ sơ; chỉ cần xác nhận trước khi nộp.",
+    "resend": "Gửi lại email",
+    "cooldown": "Gửi lại sau {{seconds}} giây",
+    "check": "Tôi đã xác nhận",
+    "resent": "Đã gửi lại email.",
+    "failed": "Chưa gửi được, vui lòng thử lại.",
+    "stillPending": "Email vẫn chưa được xác nhận."
   }
 }

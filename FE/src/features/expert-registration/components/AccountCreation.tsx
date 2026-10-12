@@ -32,7 +32,8 @@ export interface AccountCreationProps {
   formErrors: Record<string, string>
   submitting: boolean
   onUpdate: (key: keyof Profile, value: string) => void
-  onSubmit: (e: FormEvent<HTMLFormElement>) => void
+  /** Mật khẩu chỉ nằm trong form này; truyền ra để gọi API đăng ký */
+  onSubmit: (e: FormEvent<HTMLFormElement>, password: string) => void
   // Supply destinations only once genuine policy routes are available.
   policyRoutes?: { terms?: string; privacy?: string }
 }
@@ -230,7 +231,7 @@ export function AccountCreation({
             ?.focus()
           return
         }
-        onSubmit(e)
+        onSubmit(e, password)
       }}
     >
       <div className="expert-account-head">

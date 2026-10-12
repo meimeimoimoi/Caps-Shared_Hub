@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import { formControlClassName as inputCls } from '@/components/ui/forms/form-control'
 import { Check, CircleAlert, TriangleAlert } from 'lucide-react'
-import type { Profile } from '../../types'
+import type { EvidenceFile, Profile } from '../../types'
 import { FormField } from '@/components/ui/forms/form-field'
 import { FileUploader } from '../FileUploader'
 import { expertiseOptions, expertiseKey } from '../../constants'
@@ -9,7 +9,7 @@ import { expertiseOptions, expertiseKey } from '../../constants'
 export interface ProfessionalExperienceProps {
   profile: Profile
   fields: string[]
-  cvFiles: File[]
+  cvFiles: EvidenceFile[]
   formErrors: Record<string, string>
   onUpdate: (key: keyof Profile, value: string) => void
   onToggleField: (field: string) => void

@@ -2,11 +2,12 @@ import { useTranslation } from 'react-i18next'
 import { Info, FolderOpen } from 'lucide-react'
 import { criteria, criterionKey } from '../../constants'
 import { FileUploader } from '../FileUploader'
+import type { EvidenceFile } from '../../types'
 
 export interface SupportingDocumentsProps {
   activeCriterion: string
   formErrors: Record<string, string>
-  files: Record<string, File[]>
+  files: Record<string, EvidenceFile[]>
   onCriterionSelect: (criterion: string) => void
   onFilesSelected: (criterion: string, files: FileList | null) => void
   onRemoveFile: (criterion: string, index: number) => void
