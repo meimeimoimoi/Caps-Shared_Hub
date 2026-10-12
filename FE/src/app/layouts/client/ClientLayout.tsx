@@ -1,28 +1,25 @@
-import { useMemo, useRef, useState, type ReactNode } from 'react'
+import { useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Navigate, Outlet, useLocation } from 'react-router-dom'
-import {
-  Bot,
-  FileText,
-  FolderCheck,
-  LayoutDashboard,
-  Store,
-  UserRound,
-  Wallet,
-} from 'lucide-react'
 import { DemoBanner } from '@/components/ui/feedback/demo-banner'
 import { AppHeader } from '@/components/ui/layout/app-header'
-import {
-  AppSidebar,
-  type SidebarGroup,
-} from '@/components/ui/layout/app-sidebar'
+import { AppSidebar } from '@/components/ui/layout/app-sidebar'
 import { useDialogMotion } from '@/components/ui/motion'
 import { useAuthStore } from '@/features/auth'
 import { useAccount } from '@/features/auth/hooks/useAccount'
-import { DEMO_CASES, demoCase } from '@/features/review-case/fixtures'
-import { ACTION_STATUSES } from '@/features/review-case/ui'
+import {
+  useUserNavigation,
+  type UserNavId,
+} from '@/app/layouts/user/useUserNavigation'
 
-/* Không gian khách hàng: Tổng quan, Hồ sơ thẩm định, Ví, Tài khoản.
+const SECTIONS: [string, UserNavId][] = [
+  ['/dashboard', 'dashboard'],
+  ['/cases', 'cases'],
+  ['/wallet', 'wallet'],
+  ['/account', 'account'],
+]
+
+/* Không gian khách hàng: Tổng quan, Hồ sơ thẩm định, Ví, Tài khoản. Sidebar dùng chung useUserNavigation.
  * Dev mở demo không cần đăng nhập (như StaffRoute); production bắt buộc phiên đăng nhập. */
 export function ClientLayout() {
   const { t } = useTranslation('reviewCase')
@@ -34,55 +31,14 @@ export function ClientLayout() {
   const drawer = useRef<HTMLDialogElement>(null)
   const drawerTrigger = useRef<HTMLButtonElement>(null)
   useDialogMotion(drawer, 'drawer-left')
-  // ponytail: đếm từ dữ liệu demo; thay bằng số từ API khi BE có review-case
-  const waiting = useMemo(
-    () =>
-      DEMO_CASES.filter((d) => ACTION_STATUSES.includes(demoCase(d.id)!.status))
-        .length,
-    []
-  )
+  const active = SECTIONS.find(([prefix]) => path.startsWith(prefix))?.[1]
+  const groups = useUserNavigation(active)
 
   if (!import.meta.env.DEV && !authenticated)
     return (
       <Navigate to="/login" replace state={{ from: path + location.search }} />
     )
 
-  const item = (
-    id: string,
-    to: string,
-    icon: ReactNode,
-    active = path.startsWith(to)
-  ) => ({
-    id,
-    to,
-    icon,
-    active,
-    label: t(`nav.${id}` as 'nav.dashboard'),
-  })
-  const groups: SidebarGroup[] = [
-    {
-      id: 'work',
-      label: t('nav.work'),
-      items: [
-        item('dashboard', '/dashboard', <LayoutDashboard size={18} />),
-        {
-          ...item('cases', '/cases', <FolderCheck size={18} />),
-          badge: waiting || undefined,
-        },
-        item('drafts', '/drafts', <FileText size={18} />),
-        item('assistant', '/ai-assistant', <Bot size={18} />),
-        item('marketplace', '/marketplace', <Store size={18} />),
-      ],
-    },
-    {
-      id: 'account',
-      label: t('nav.account'),
-      items: [
-        item('wallet', '/wallet', <Wallet size={18} />),
-        item('profile', '/account', <UserRound size={18} />),
-      ],
-    },
-  ]
   const page = path.startsWith('/cases/new')
     ? t('request.title')
     : path.startsWith('/cases/')

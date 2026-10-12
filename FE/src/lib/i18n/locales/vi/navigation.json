@@ -60,7 +60,8 @@
   "workspaces": "Không gian làm việc",
   "templates": "Mẫu văn bản",
   "aiAssistant": "Trợ lý AI",
-  "dashboard": "Bảng điều khiển",
+  "dashboard": "Tổng quan",
+  "marketplace": "Sàn chuyên gia",
   "settings": "Cài đặt",
   "pages": {
     "caseDetail": "Chi tiết hồ sơ",
@@ -71,5 +72,11 @@
     "draftGeneration": "Tạo bản nháp",
     "draftVersion": "Phiên bản bản nháp",
     "draftHistory": "Lịch sử phiên bản"
-  }
+  },
+  "cases": "Hồ sơ thẩm định",
+  "wallet": "Ví & credit",
+  "account": "Tài khoản",
+  "accountGroup": "Tài khoản",
+  "draftingGroup": "Soạn thảo",
+  "expertsGroup": "Chuyên gia"
 }

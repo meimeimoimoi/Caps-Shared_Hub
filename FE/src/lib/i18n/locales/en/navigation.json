@@ -60,7 +60,8 @@
   "workspaces": "Workspaces",
   "templates": "Templates",
   "aiAssistant": "AI Assistant",
-  "dashboard": "Dashboard",
+  "dashboard": "Overview",
+  "marketplace": "Expert Marketplace",
   "settings": "Settings",
   "pages": {
     "caseDetail": "Case details",
@@ -71,5 +72,11 @@
     "draftGeneration": "Draft generation",
     "draftVersion": "Draft version",
     "draftHistory": "Version history"
-  }
+  },
+  "cases": "Review cases",
+  "wallet": "Wallet & credit",
+  "account": "Account",
+  "accountGroup": "Account",
+  "draftingGroup": "Drafting",
+  "expertsGroup": "Experts"
 }

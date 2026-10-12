@@ -2,10 +2,17 @@ import * as React from 'react'
 import { Navigate, Outlet, useLocation } from 'react-router-dom'
 import { useAuthStore } from '@/features/auth'
 
-export function ProtectedRoute({ children }: { children: React.ReactNode }) {
+export function ProtectedRoute({
+  children,
+  allowInDev = false,
+}: {
+  children: React.ReactNode
+  /** Dev: cho xem UI khi chưa đăng nhập; production vẫn bắt đăng nhập */
+  allowInDev?: boolean
+}) {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
   const location = useLocation()
-  if (!isAuthenticated) {
+  if (!isAuthenticated && !(allowInDev && import.meta.env.DEV)) {
     // fromState: state gốc của trang đích (vd. câu hỏi gõ ở trang chủ), trả lại sau khi đăng nhập
     return (
       <Navigate

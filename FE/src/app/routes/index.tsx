@@ -74,8 +74,12 @@ const ExpertIncomePage = lazy(
 )
 
 const HomePage = lazy(() => import('@/pages/home/HomePage'))
-const ExpertBioPage = lazy(() => import('@/pages/expert-dashboard/ExpertBioPage'))
-const ExpertPublicProfilePage = lazy(() => import('@/pages/ExpertPublicProfilePage'))
+const ExpertBioPage = lazy(
+  () => import('@/pages/expert-dashboard/ExpertBioPage')
+)
+const ExpertPublicProfilePage = lazy(
+  () => import('@/pages/ExpertPublicProfilePage')
+)
 const DashboardPage = lazy(() => import('../../pages/DashboardPage'))
 const NotFoundPage = lazy(() => import('../../pages/NotFoundPage'))
 const AdminPendingExpertsPage = lazy(
@@ -324,13 +328,19 @@ const router = createBrowserRouter(
       <Route
         path="/ai-assistant"
         element={
-          <ProtectedRoute>
+          <ProtectedRoute allowInDev>
             <AiAssistantPage />
           </ProtectedRoute>
         }
       />
+      {/* Đường dẫn cũ của khu vực khách hàng, đã gộp vào /cases và /wallet */}
+      <Route path="/requests" element={<Navigate to="/cases" replace />} />
+      <Route path="/credits" element={<Navigate to="/wallet" replace />} />
       {/* Đường dẫn cũ (viết sai chính tả) giữ lại để link đã chia sẻ vẫn mở được */}
-      <Route path="/ai-assitant" element={<Navigate to="/ai-assistant" replace />} />
+      <Route
+        path="/ai-assitant"
+        element={<Navigate to="/ai-assistant" replace />}
+      />
       <Route path="*" element={<NotFoundPage />} />
     </Route>
   )

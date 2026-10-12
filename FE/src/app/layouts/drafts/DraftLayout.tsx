@@ -1,31 +1,17 @@
-import { DemoBanner } from '@/components/ui/feedback/demo-banner'
 import { useDialogMotion } from '@/components/ui/motion'
 import { useTranslation } from 'react-i18next'
-import { CustomSelect } from '@/components/ui/forms/custom-select'
 import { useRef, useState } from 'react'
 import { Outlet, useLocation, useNavigate } from 'react-router-dom'
-import { FileText, Library, LayoutDashboard, LogIn } from 'lucide-react'
+import { LogIn } from 'lucide-react'
 import { useAuthStore } from '@/features/auth/store/authStore'
-import { isDraftMock } from '@/features/drafting/api/dataSource'
-import { draftScenarios } from '@/features/drafting/constants'
-import {
-  useDraftAction,
-  useDraftContext,
-  useDraftHref,
-} from '@/features/drafting/hooks/useDrafting'
-import { draftApi } from '@/features/drafting/api/draftApi'
-import { DraftButton } from '@/features/drafting/components/DraftUi'
+import { useDraftHref } from '@/features/drafting/hooks/useDrafting'
 import { AppHeader } from '@/components/ui/layout/app-header'
-import { Modal } from '@/components/ui/feedback/modal'
-import {
-  AppSidebar,
-  type SidebarGroup,
-} from '@/components/ui/layout/app-sidebar'
+import { AppSidebar } from '@/components/ui/layout/app-sidebar'
+import { useUserNavigation } from '@/app/layouts/user/useUserNavigation'
 
 export function DraftLayout() {
   const { t } = useTranslation(['common', 'navigation'])
   const [expanded, setExpanded] = useState(true)
-  const [confirmReset, setConfirmReset] = useState(false)
   const drawer = useRef<HTMLDialogElement>(null)
   useDialogMotion(drawer, 'drawer-left')
   const drawerTrigger = useRef<HTMLButtonElement>(null)
@@ -34,36 +20,12 @@ export function DraftLayout() {
   const navigate = useNavigate()
   const location = useLocation()
   const href = useDraftHref()
-  const ctx = useDraftContext()
-  const reset = useDraftAction((_: void, context) => draftApi.reset(context))
-  const groups: SidebarGroup[] = [
-    {
-      id: 'drafts',
-      items: [
-        {
-          id: 'workspaces',
-          to: href('/drafts'),
-          label: t('navigation:workspaces'),
-          icon: <FileText size={18} />,
-          active: !location.pathname.startsWith('/drafts/templates'),
-        },
-        {
-          id: 'templates',
-          to: href('/drafts/templates'),
-          label: t('navigation:templates'),
-          icon: <Library size={18} />,
-          active: location.pathname.startsWith('/drafts/templates'),
-        },
-        // /dashboard (ClientLayout) mở được ở bản dev như preview này, nên luôn có đường về
-        {
-          id: 'dashboard',
-          to: '/dashboard',
-          label: t('navigation:dashboard'),
-          icon: <LayoutDashboard size={18} />,
-        },
-      ],
-    },
-  ]
+  const groups = useUserNavigation(
+    location.pathname.startsWith('/drafts/templates')
+      ? 'templates'
+      : 'workspaces',
+    { draftHref: href }
+  )
   const pageKey =
     location.pathname === '/drafts'
       ? 'workspaces'
@@ -148,39 +110,6 @@ export function DraftLayout() {
                 ],
           }}
         />
-        {isDraftMock && (
-          <DemoBanner
-            controls={
-              <div className="flex flex-wrap items-center gap-3">
-                <CustomSelect
-                  label={t('demo.scenario')}
-                  value={ctx.scenario}
-                  options={draftScenarios.map((value) => ({
-                    value,
-                    label: t(`navigation:draftScenarios.${value}`),
-                  }))}
-                  onChange={(value) =>
-                    navigate(`/drafts?scenario=${encodeURIComponent(value)}`)
-                  }
-                  className="flex min-w-0 flex-col items-start gap-2 sm:flex-row sm:items-center"
-                  triggerClassName="!w-56 !max-w-full"
-                  menuClassName="!left-auto !w-56 !max-w-[calc(100vw-32px)]"
-                />
-                {location.pathname === '/drafts' && (
-                  <DraftButton
-                    secondary
-                    disabled={reset.isPending}
-                    onClick={() => setConfirmReset(true)}
-                  >
-                    {t('actions.resetDemo')}
-                  </DraftButton>
-                )}
-              </div>
-            }
-          >
-            <p>{t('demo.draftDisclosure')}</p>
-          </DemoBanner>
-        )}
         <main
           id="draft-main"
           className="mx-auto w-full max-w-[1440px] p-5 md:p-8 lg:p-10"
@@ -188,30 +117,6 @@ export function DraftLayout() {
           <Outlet />
         </main>
       </div>
-      {confirmReset && (
-        <Modal
-          title={t('actions.resetDemo')}
-          description={t('demo.resetConfirm')}
-          onClose={() => setConfirmReset(false)}
-          footer={
-            <>
-              <DraftButton secondary onClick={() => setConfirmReset(false)}>
-                {t('actions.cancel')}
-              </DraftButton>
-              <DraftButton
-                onClick={() => {
-                  setConfirmReset(false)
-                  reset.mutate(undefined, {
-                    onSuccess: () => navigate(href('/drafts')),
-                  })
-                }}
-              >
-                {t('actions.resetDemo')}
-              </DraftButton>
-            </>
-          }
-        />
-      )}
     </div>
   )
 }
