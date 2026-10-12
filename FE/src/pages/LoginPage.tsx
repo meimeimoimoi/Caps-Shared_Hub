@@ -12,8 +12,9 @@ import { useLocation } from 'react-router-dom'
 export default function LoginPage() {
   const { t } = useTranslation('auth')
   useEffect(() => { document.title = `${t('social.title')} | Shared Hub` }, [t])
-  // Trang đặt lại mật khẩu gửi state { view: 'forgot' } khi liên kết hết hạn
-  const initialView = (useLocation().state as { view?: 'forgot' } | null)?.view
+  // Trang đặt lại mật khẩu gửi state { view: 'forgot' } khi liên kết hết hạn,
+  // trang xác thực email gửi { view: 'email' } để vào thẳng form đăng nhập
+  const initialView = (useLocation().state as { view?: 'forgot' | 'email' } | null)?.view
   const [view, setView] = useState<'social' | 'email' | 'forgot'>(initialView ?? 'social')
   const [notice, setNotice] = useState<'googleUnavailable' | null>(null)
   const emailInput = useRef<HTMLInputElement>(null)

@@ -9,6 +9,7 @@ import { ApiError } from '@/lib/api-client'
 
 const unavailable = (e: unknown) =>
   e instanceof ApiError && (e.status == null || e.status >= 500)
+const throttled = (e: unknown) => e instanceof ApiError && e.status === 429
 
 export function useAuth() {
   const { t } = useTranslation('auth')
@@ -19,6 +20,7 @@ export function useAuth() {
     | 'errors.emailTaken'
     | 'errors.registerFailed'
     | 'errors.unavailable'
+    | 'errors.tooManyRequests'
     | 'errors.failed'
     | null
   >(null)
@@ -31,21 +33,23 @@ export function useAuth() {
     try {
       const { user: u, token } = await authApi.login(values)
       setSession(u, token)
-      navigate(safeReturnPath(location.state?.from), {
-        replace: true,
-        state: location.state?.fromState,
-      })
+      const state = { from: location.state?.from, fromState: location.state?.fromState }
+      if (u.status === 'PENDING_VERIFICATION')
+        navigate('/verify-email', { replace: true, state })
+      else
+        navigate(safeReturnPath(state.from), { replace: true, state: state.fromState })
       return u
     } catch (e) {
-      // BE trả 404 khi email chưa đăng ký và 422 khi sai mật khẩu; cả hai đều là sai thông tin
-      // đăng nhập, gộp chung để không lộ email nào đã có tài khoản.
+      // BE trả chung 401 INVALID_CREDENTIALS cho email chưa đăng ký, sai mật khẩu và tài khoản
+      // đang bị khoá tạm, để không lộ email nào đã có tài khoản.
       setError(
-        e instanceof ApiError &&
-          (e.status === 401 || e.status === 404 || e.status === 422)
+        e instanceof ApiError && (e.status === 400 || e.status === 401)
           ? 'errors.credentials'
-          : unavailable(e)
-            ? 'errors.unavailable'
-            : 'errors.failed'
+          : throttled(e)
+            ? 'errors.tooManyRequests'
+            : unavailable(e)
+              ? 'errors.unavailable'
+              : 'errors.failed'
       )
       throw e
     } finally {
@@ -67,19 +71,26 @@ export function useAuth() {
         displayName: values.name,
       })
       setSession(u, token)
-      navigate(safeReturnPath(location.state?.from), {
+      // Tài khoản mới ở trạng thái PENDING_VERIFICATION: chờ người dùng bấm liên kết trong email
+      navigate('/verify-email', {
         replace: true,
-        state: location.state?.fromState,
+        state: {
+          from: location.state?.from,
+          fromState: location.state?.fromState,
+          justRegistered: true,
+        },
       })
       return u
     } catch (e) {
-      // BE trả 422 khi email đã có tài khoản
+      // BE trả 409 EMAIL_EXISTS khi email đã có tài khoản
       setError(
-        e instanceof ApiError && e.status === 422
+        e instanceof ApiError && e.status === 409
           ? 'errors.emailTaken'
-          : unavailable(e)
-            ? 'errors.unavailable'
-            : 'errors.registerFailed'
+          : throttled(e)
+            ? 'errors.tooManyRequests'
+            : unavailable(e)
+              ? 'errors.unavailable'
+              : 'errors.registerFailed'
       )
       throw e
     } finally {
@@ -87,7 +98,9 @@ export function useAuth() {
     }
   }
 
-  const logout = () => {
+  const logout = async () => {
+    // Thu hồi refresh cookie phía BE; lỗi mạng vẫn đăng xuất cục bộ
+    await authApi.logout().catch(() => undefined)
     clearSession()
     navigate('/login', { replace: true })
   }

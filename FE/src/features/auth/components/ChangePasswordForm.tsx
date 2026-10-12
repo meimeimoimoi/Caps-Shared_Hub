@@ -4,6 +4,7 @@ import { Check, Circle, CircleCheck } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Modal } from '@/components/ui/feedback/modal'
 import { authApi } from '../api/authApi'
+import { useAuthStore } from '../store/authStore'
 import { passwordRequirements } from '../utils/accountValidation'
 
 const inputCls =
@@ -63,7 +64,9 @@ export function ChangePasswordForm() {
     setError(null)
     authApi
       .changePassword({ currentPassword: current, newPassword: next })
-      .then(() => {
+      .then((session) => {
+        // Phiên cũ đã bị thu hồi; dùng phiên mới BE vừa cấp cho thiết bị này
+        if (session) useAuthStore.getState().renewSession(session.user, session.token)
         setCurrent('')
         setNext('')
         setConfirm('')
