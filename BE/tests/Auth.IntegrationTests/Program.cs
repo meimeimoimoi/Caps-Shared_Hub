@@ -243,6 +243,94 @@ Check(
         .IsSuccessStatusCode,
     "new password works"
 );
+
+// Đổi mật khẩu: thiết bị khác bị đăng xuất, nhưng thiết bị cũ refresh không được đá phiên mới.
+const string changedPassword = "Changed-caps-password-123!";
+using var deviceA = Client();
+using var deviceB = Client();
+var loginA = await Post(
+    deviceA,
+    "/api/v1/auth/login",
+    new { email, password = "New-caps-password-123!" }
+);
+var loginB = await Post(
+    deviceB,
+    "/api/v1/auth/login",
+    new { email, password = "New-caps-password-123!" }
+);
+Bearer(deviceA, Access(loginA.Json));
+deviceA.DefaultRequestHeaders.Add("Cookie", Refresh(loginA.Response));
+Check(
+    (
+        await Post(
+            deviceA,
+            "/api/v1/auth/change-password",
+            new { currentPassword = "Wrong-caps-password-1!", newPassword = changedPassword }
+        )
+    )
+        .Response
+        .StatusCode == HttpStatusCode.BadRequest,
+    "change password requires current password"
+);
+var change = await Post(
+    deviceA,
+    "/api/v1/auth/change-password",
+    new { currentPassword = "New-caps-password-123!", newPassword = changedPassword }
+);
+Check(change.Response.IsSuccessStatusCode, "change password");
+deviceB.DefaultRequestHeaders.Add("Cookie", Refresh(loginB.Response));
+Check(
+    (await Post(deviceB, "/api/v1/auth/refresh-token", new { })).Response.StatusCode
+        == HttpStatusCode.Unauthorized,
+    "change password signs out other devices"
+);
+deviceA.DefaultRequestHeaders.Remove("Cookie");
+deviceA.DefaultRequestHeaders.Add("Cookie", Refresh(change.Response));
+Check(
+    (await Post(deviceA, "/api/v1/auth/refresh-token", new { })).Response.IsSuccessStatusCode,
+    "stale device refresh does not revoke the new session"
+);
+
+// Ảnh đại diện: nhận diện định dạng theo nội dung, phục vụ công khai qua URL có phiên bản.
+Bearer(deviceA, Access(change.Json));
+var png = Convert.FromBase64String(
+    "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII="
+);
+async Task<HttpResponseMessage> PutAvatar(byte[] bytes)
+{
+    var file = new ByteArrayContent(bytes);
+    file.Headers.ContentType = new MediaTypeHeaderValue("image/png");
+    var form = new MultipartFormDataContent { { file, "file", "avatar.png" } };
+    return await deviceA.PutAsync("/api/v1/users/me/avatar", form);
+}
+var avatar = await PutAvatar(png);
+var avatarUrl = JsonDocument
+    .Parse(await avatar.Content.ReadAsStringAsync())
+    .RootElement.GetProperty("data")
+    .GetProperty("avatarUrl")
+    .GetString()!;
+Check(
+    avatar.IsSuccessStatusCode && avatarUrl.StartsWith($"/api/v1/users/{userId}/avatar"),
+    "upload avatar"
+);
+using var anonymous = Client();
+var served = await anonymous.GetAsync(avatarUrl);
+Check(
+    served.IsSuccessStatusCode
+        && served.Content.Headers.ContentType?.MediaType == "image/png"
+        && (await served.Content.ReadAsByteArrayAsync()).SequenceEqual(png),
+    "avatar served anonymously"
+);
+Check(
+    (await PutAvatar("<svg onload=alert(1)>"u8.ToArray())).StatusCode
+        == HttpStatusCode.BadRequest,
+    "avatar type sniffed from content, not trusted from header"
+);
+Check(
+    (await deviceA.DeleteAsync("/api/v1/users/me/avatar")).IsSuccessStatusCode
+        && (await anonymous.GetAsync(avatarUrl)).StatusCode == HttpStatusCode.NotFound,
+    "remove avatar"
+);
 using var csrf = Client();
 csrf.DefaultRequestHeaders.Remove("X-Caps-Client");
 Check(
