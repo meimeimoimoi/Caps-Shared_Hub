@@ -13,6 +13,8 @@ interface ModalProps {
   onSubmit?: () => void
   preventClose?: boolean
   closeLabel?: string
+  /** md: hộp thoại xác nhận/biểu mẫu ngắn; lg: nội dung dạng danh sách cần bề ngang */
+  size?: 'md' | 'lg'
 }
 
 /* Native <dialog>: trình duyệt lo focus trap, phím Esc và backdrop.
@@ -26,6 +28,7 @@ export function Modal({
   onSubmit,
   preventClose = false,
   closeLabel,
+  size = 'md',
 }: ModalProps) {
   const { t } = useTranslation('common')
   const ref = useRef<HTMLDialogElement>(null)
@@ -38,6 +41,8 @@ export function Modal({
         ? document.activeElement
         : null
     ref.current?.showModal()
+    // Không có ô autofocus thì focus vào chính hộp thoại, tránh viền focus đậm trên nút Đóng ngay khi mở
+    if (!ref.current?.querySelector('[autofocus]')) ref.current?.focus()
     return () => {
       trigger?.focus()
     }
@@ -78,7 +83,8 @@ export function Modal({
         if (!preventClose) onClose()
       }}
       aria-labelledby={titleId}
-      className="bg-paper border-hairline rounded-overlay shadow-overlay text-fg backdrop:bg-ink/40 m-auto max-h-[calc(100dvh-32px)] w-[calc(100%-32px)] max-w-lg overflow-hidden border p-0 [&[open]]:flex [&[open]]:flex-col"
+      tabIndex={-1}
+      className={`bg-paper border-hairline rounded-overlay shadow-overlay text-fg backdrop:bg-ink/40 m-auto max-h-[calc(100dvh-32px)] w-[calc(100%-32px)] ${size === 'lg' ? 'max-w-3xl' : 'max-w-lg'} overflow-hidden border p-0 focus:outline-none [&[open]]:flex [&[open]]:flex-col`}
     >
       {onSubmit ? (
         <form

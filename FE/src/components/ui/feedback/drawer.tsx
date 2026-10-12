@@ -18,6 +18,8 @@ export function Drawer({ title, children, footer, onClose }: DrawerProps) {
 
   useEffect(() => {
     ref.current?.showModal()
+    // Đưa focus về chính panel thay vì nút Đóng, tránh viền focus đậm ngay khi mở; Tab vẫn đi tiếp bình thường
+    ref.current?.focus()
   }, [])
 
   return (
@@ -27,7 +29,8 @@ export function Drawer({ title, children, footer, onClose }: DrawerProps) {
       // Bấm vào backdrop (chính phần tử dialog, ngoài nội dung) thì đóng
       onClick={(e) => e.target === e.currentTarget && onClose()}
       aria-labelledby={titleId}
-      className="bg-paper shadow-overlay text-fg backdrop:bg-ink/40 m-0 ml-auto h-dvh max-h-dvh w-full max-w-md p-0"
+      tabIndex={-1}
+      className="bg-paper shadow-overlay text-fg backdrop:bg-ink/40 m-0 ml-auto h-dvh max-h-dvh w-full max-w-md p-0 focus:outline-none"
     >
       <div className="flex h-full flex-col">
         <div className="border-border flex items-start justify-between gap-4 border-b px-5 py-4">
