@@ -9,6 +9,13 @@ public sealed record ApiResponse<T>(bool Success, T? Data, string? Message = nul
     public static ApiResponse<T> Fail(string message) => new(false, default, message);
 }
 
+/// <summary>Shortcuts for responses without a payload.</summary>
+public static class ApiResponse
+{
+    /// <summary>Successful action that only reports a message (data is an empty object).</summary>
+    public static ApiResponse<object> Message(string message) => new(true, new { }, message);
+}
+
 /// <summary>Uniform error shape for every service: the FE relies on <see cref="Code"/>, not on the message.</summary>
 public sealed record ApiErrorResponse(
     string Message,

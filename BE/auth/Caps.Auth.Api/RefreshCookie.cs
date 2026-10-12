@@ -1,3 +1,5 @@
+using Caps.Auth.Application.DTOs.Responses;
+using Caps.Common.Api;
 using Microsoft.Extensions.Options;
 
 namespace Caps.Auth.Api;
@@ -17,7 +19,14 @@ public sealed class RefreshCookie(IOptions<RefreshCookieOptions> options)
 
     public string? Read(HttpRequest request) => request.Cookies[Name];
 
-    public void Write(HttpResponse response, string token, DateTimeOffset expires) =>
+    /// <summary>Stores the refresh token in the cookie and returns the body with the access token.</summary>
+    public ApiResponse<AuthResponse> Issue(HttpResponse response, SessionResult session)
+    {
+        Write(response, session.RefreshToken, session.RefreshExpiresAt);
+        return ApiResponse<AuthResponse>.Ok(session.Response);
+    }
+
+    private void Write(HttpResponse response, string token, DateTimeOffset expires) =>
         response.Cookies.Append(
             Name,
             token,

@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Caps.Auth.Application.Features.Profile;
 
 namespace Caps.Auth.Api.DTOs.Requests;
 
@@ -41,4 +42,8 @@ public sealed record BusinessProfileRequest(
     [MaxLength(128)] string? Representative,
     [EmailAddress, MaxLength(256)] string? ContactEmail,
     [Phone, MaxLength(32)] string? ContactPhone
-);
+)
+{
+    public UpdateBusinessProfileCommand ToCommand(Guid userId) =>
+        new(userId, CompanyName, TaxCode, Address, Representative, ContactEmail, ContactPhone);
+}
