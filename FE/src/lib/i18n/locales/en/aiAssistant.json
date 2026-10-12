@@ -12,13 +12,20 @@
     "noMatch": "No questions match “{{query}}”.",
     "count_one": "{{count}} lookup",
     "count_other": "{{count}} lookups",
-    "listLabel": "Past questions"
+    "listLabel": "Past questions",
+    "collapse": "Collapse history",
+    "expand": "Open research history",
+    "groups": {
+      "today": "Today",
+      "week": "Previous 7 days",
+      "older": "Older"
+    }
   },
   "welcome": {
     "eyebrow": "Corporate income tax",
-    "title": "Research grounded in law",
-    "lead": "Ask about Corporate Income Tax. Every answer cites documents from the approved knowledge base.",
-    "topicsLabel": "Start from a topic",
+    "title": "Corporate income tax, with sources",
+    "lead": "Every answer cites approved legal documents.",
+    "topicsLabel": "Suggested questions",
     "topics": {
       "deductible": {
         "name": "Deductible expenses",
@@ -38,7 +45,8 @@
       }
     },
     "recentLabel": "Recent research",
-    "viewAll": "View all ({{count}})"
+    "viewAll": "View all ({{count}})",
+    "creditNote": "1 Credit per question · charged only when answered"
   },
   "transcript": {
     "label": "Research conversation",
@@ -54,7 +62,12 @@
     "copied": "Answer copied",
     "copyFailed": "Could not copy. Select and copy the text manually.",
     "sendToExpert": "Send to an Expert",
-    "sendToExpertSoon": "Coming soon: send this answer to a verified Expert."
+    "sendToExpertSoon": "Coming soon: send this answer to a verified Expert.",
+    "assistantName": "Shared Hub Assistant",
+    "verified_one": "Checked against {{count}} approved document",
+    "verified_other": "Checked against {{count}} approved documents",
+    "unverified": "No sources",
+    "sources": "Sources"
   },
   "composer": {
     "label": "Corporate income tax question",

@@ -12,13 +12,20 @@
     "noMatch": "Không có câu hỏi nào khớp với “{{query}}”.",
     "count_one": "{{count}} cuộc tra cứu",
     "count_other": "{{count}} cuộc tra cứu",
-    "listLabel": "Câu hỏi đã hỏi"
+    "listLabel": "Câu hỏi đã hỏi",
+    "collapse": "Thu gọn lịch sử",
+    "expand": "Mở lịch sử tra cứu",
+    "groups": {
+      "today": "Hôm nay",
+      "week": "7 ngày qua",
+      "older": "Cũ hơn"
+    }
   },
   "welcome": {
     "eyebrow": "Thuế thu nhập doanh nghiệp",
-    "title": "Tra cứu có căn cứ pháp lý",
-    "lead": "Đặt câu hỏi về Thuế TNDN. Mỗi câu trả lời đi kèm trích dẫn tới văn bản trong kho tri thức đã được phê duyệt.",
-    "topicsLabel": "Bắt đầu từ một chủ đề",
+    "title": "Tra cứu Thuế TNDN có căn cứ",
+    "lead": "Mỗi câu trả lời kèm trích dẫn tới văn bản đã được phê duyệt.",
+    "topicsLabel": "Gợi ý câu hỏi",
     "topics": {
       "deductible": {
         "name": "Chi phí được trừ",
@@ -38,7 +45,8 @@
       }
     },
     "recentLabel": "Tra cứu gần đây",
-    "viewAll": "Xem tất cả ({{count}})"
+    "viewAll": "Xem tất cả ({{count}})",
+    "creditNote": "1 Credit mỗi câu hỏi · chỉ trừ khi có câu trả lời"
   },
   "transcript": {
     "label": "Nội dung cuộc tra cứu",
@@ -54,7 +62,12 @@
     "copied": "Đã sao chép câu trả lời",
     "copyFailed": "Không sao chép được. Hãy chọn và sao chép thủ công.",
     "sendToExpert": "Gửi Chuyên gia thẩm định",
-    "sendToExpertSoon": "Sắp có: gửi câu trả lời này cho Chuyên gia đã xác minh."
+    "sendToExpertSoon": "Sắp có: gửi câu trả lời này cho Chuyên gia đã xác minh.",
+    "assistantName": "Trợ lý Shared Hub",
+    "verified_one": "Đối chiếu {{count}} văn bản đã duyệt",
+    "verified_other": "Đối chiếu {{count}} văn bản đã duyệt",
+    "unverified": "Chưa có căn cứ",
+    "sources": "Nguồn tham chiếu"
   },
   "composer": {
     "label": "Câu hỏi về Thuế TNDN",

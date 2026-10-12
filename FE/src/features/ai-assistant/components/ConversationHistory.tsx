@@ -1,8 +1,15 @@
 import { useEffect, useId, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Search } from 'lucide-react'
-import { Input } from '@/components/ui/forms/input'
+import {
+  History,
+  MessageSquareText,
+  PanelLeftClose,
+  Plus,
+  Search,
+} from 'lucide-react'
+import { MotionReveal, MotionStagger } from '@/components/ui/motion'
 import { cn } from '@/lib/utils'
+import { useFormatters } from '@/hooks/useFormatters'
 import type { Conversation } from '../types'
 
 type ConversationHistoryProps = {
@@ -10,27 +17,51 @@ type ConversationHistoryProps = {
   activeConversationId: string | null
   disabled: boolean
   onSelect: (id: string) => void
+  onNewQuestion: () => void
+  /** Có thì hiện nút thu gọn cột (desktop) */
+  onCollapse?: () => void
+  /** Ngăn kéo mobile: đưa focus vào ô tìm khi mở */
+  autoFocusSearch?: boolean
 }
 
-/* Nội dung Drawer lịch sử: tìm kiếm → danh sách. "Câu hỏi mới" nằm ở footer của Drawer. */
+const DAY = 24 * 60 * 60 * 1000
+const GROUPS = ['today', 'week', 'older'] as const
+type Group = (typeof GROUPS)[number]
+
+/* Nhóm theo mốc ngày lịch (giờ máy người dùng), không theo 24 giờ trôi qua */
+function groupOf(updatedAt: string, now: Date): Group {
+  const startOfToday = new Date(now).setHours(0, 0, 0, 0)
+  const time = new Date(updatedAt).getTime()
+  if (time >= startOfToday) return 'today'
+  if (time >= startOfToday - 6 * DAY) return 'week'
+  return 'older'
+}
+
+/* Cột lịch sử tra cứu: Câu hỏi mới → tìm kiếm → danh sách nhóm theo thời gian */
 export function ConversationHistory({
   conversations,
   activeConversationId,
   disabled,
   onSelect,
+  onNewQuestion,
+  onCollapse,
+  autoFocusSearch = false,
 }: ConversationHistoryProps) {
   const { t } = useTranslation('aiAssistant')
+  const format = useFormatters()
+  // Giờ hiển thị theo máy người dùng, khớp với cách nhóm Hôm nay / 7 ngày qua
+  const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone
   const [query, setQuery] = useState('')
   const searchId = useId()
-  const listLabelId = useId()
   const searchInput = useRef<HTMLInputElement>(null)
 
   // Drawer gọi showModal() sau khi con mount và đưa focus về nút đóng;
   // chờ một frame rồi đưa focus vào ô tìm kiếm, nơi người dùng cần gõ.
   useEffect(() => {
+    if (!autoFocusSearch) return
     const frame = requestAnimationFrame(() => searchInput.current?.focus())
     return () => cancelAnimationFrame(frame)
-  }, [])
+  }, [autoFocusSearch])
 
   const normalized = query.trim().toLocaleLowerCase()
   const visible = normalized
@@ -38,76 +69,144 @@ export function ConversationHistory({
         item.title.toLocaleLowerCase().includes(normalized)
       )
     : conversations
+  const now = new Date()
+  const grouped = GROUPS.map((group) => ({
+    group,
+    items: visible.filter((item) => groupOf(item.updatedAt, now) === group),
+  })).filter(({ items }) => items.length > 0)
 
+  // Hôm nay: giờ; ngày khác: dd/MM (không dùng gạch ngang dễ nhầm với khoảng)
+  const stamp = (iso: string, group: Group) => {
+    if (group === 'today')
+      return format.timestamp(iso, timeZone, {
+        hour: '2-digit',
+        minute: '2-digit',
+      })
+    const date = new Date(iso)
+    const pad = (n: number) => String(n).padStart(2, '0')
+    return `${pad(date.getDate())}/${pad(date.getMonth() + 1)}`
+  }
+
+  /* Mọi hàng dùng chung lề trong px-3 để tiêu đề, nút, ô tìm và danh sách thẳng một mép */
   return (
-    <div className="flex flex-col gap-5">
-      <div className="relative">
-        <label htmlFor={searchId} className="sr-only">
-          {t('history.searchLabel')}
-        </label>
-        <Search
-          size={15}
-          aria-hidden="true"
-          className="text-text-muted pointer-events-none absolute top-1/2 left-3 -translate-y-1/2"
-        />
-        <Input
-          ref={searchInput}
-          id={searchId}
-          type="search"
-          value={query}
-          onChange={(event) => setQuery(event.target.value)}
-          placeholder={t('history.searchPlaceholder')}
-          className="h-10 pl-9"
-        />
+    <div className="flex min-h-0 flex-1 flex-col">
+      <div className="flex h-9 items-center justify-between gap-2 pl-3">
+        <h2 className="text-text-strong flex items-center gap-2 font-sans text-sm font-semibold">
+          <History size={16} aria-hidden="true" className="text-accent-text" />
+          {t('history.title')}
+        </h2>
+        {onCollapse && (
+          <button
+            type="button"
+            onClick={onCollapse}
+            aria-label={t('history.collapse')}
+            title={t('history.collapse')}
+            className="motion-interactive text-text-muted hover:bg-surface hover:text-text-strong focus-visible:ring-accent flex size-8 shrink-0 items-center justify-center rounded-md focus-visible:ring-2 focus-visible:outline-none"
+          >
+            <PanelLeftClose size={16} aria-hidden="true" />
+          </button>
+        )}
       </div>
 
-      <section aria-labelledby={listLabelId} className="flex flex-col gap-2">
-        <div className="flex items-baseline justify-between gap-3 px-1">
-          <h3
-            id={listLabelId}
-            className="text-text-muted text-caption font-sans font-semibold tracking-[0.08em] uppercase"
-          >
-            {t('history.listLabel')}
-          </h3>
-          <span className="font-num text-text-muted text-caption tabular-nums">
-            {normalized
-              ? `${visible.length}/${conversations.length}`
-              : conversations.length}
-          </span>
-        </div>
+      <div className="mt-3 flex flex-col gap-2">
+        <button
+          type="button"
+          onClick={onNewQuestion}
+          disabled={disabled}
+          className="group motion-interactive bg-surface border-border text-text-strong hover:border-border-strong focus-visible:ring-accent flex h-9 w-full items-center gap-2 rounded-lg border px-3 text-sm font-medium hover:shadow-sm focus-visible:ring-2 focus-visible:outline-none disabled:opacity-50"
+        >
+          <Plus
+            size={16}
+            aria-hidden="true"
+            className="text-accent-text transition-transform duration-200 group-hover:rotate-90"
+          />
+          {t('history.newQuestion')}
+        </button>
 
-        {visible.length > 0 ? (
-          <ul className="-mx-2 flex flex-col">
-            {visible.map((conversation) => {
-              const active = conversation.id === activeConversationId
-              return (
-                <li key={conversation.id}>
-                  <button
-                    type="button"
-                    onClick={() => onSelect(conversation.id)}
-                    disabled={disabled}
-                    aria-current={active ? 'true' : undefined}
-                    className={cn(
-                      'motion-interactive focus-visible:ring-accent relative w-full rounded-md px-3 py-2.5 text-left text-sm leading-snug focus-visible:ring-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50',
-                      active
-                        ? 'bg-surface-muted text-text-strong before:bg-accent font-medium before:absolute before:inset-y-2 before:left-0 before:w-0.5 before:rounded-full'
-                        : 'text-text hover:bg-surface-muted hover:text-text-strong'
-                    )}
-                  >
-                    <span className="line-clamp-2">{conversation.title}</span>
-                  </button>
-                </li>
-              )
-            })}
-          </ul>
+        <label
+          htmlFor={searchId}
+          className="bg-surface/60 border-border/70 focus-within:border-border-control/60 focus-within:bg-surface flex h-9 items-center gap-2 rounded-lg border px-3 transition-[border-color,background-color]"
+        >
+          <Search
+            size={15}
+            aria-hidden="true"
+            className="text-text-muted shrink-0"
+          />
+          <span className="sr-only">{t('history.searchLabel')}</span>
+          <input
+            ref={searchInput}
+            id={searchId}
+            type="search"
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder={t('history.searchPlaceholder')}
+            className="text-text-strong placeholder:text-text-muted w-full min-w-0 bg-transparent text-sm outline-none"
+          />
+        </label>
+      </div>
+
+      <nav
+        aria-label={t('history.title')}
+        className="mt-4 min-h-0 flex-1 overflow-y-auto pb-3"
+      >
+        {grouped.length > 0 ? (
+          grouped.map(({ group, items }) => (
+            <section key={group} className="mt-4 first:mt-0">
+              <h3 className="text-text-muted px-3 pb-1 font-sans text-xs font-semibold">
+                {t(`history.groups.${group}`)}
+              </h3>
+              <MotionStagger className="flex flex-col gap-px">
+                {items.map((conversation) => {
+                  const active = conversation.id === activeConversationId
+                  return (
+                    <MotionReveal key={conversation.id} preset="reveal">
+                      <button
+                        type="button"
+                        onClick={() => onSelect(conversation.id)}
+                        disabled={disabled}
+                        aria-current={active ? 'page' : undefined}
+                        title={conversation.title}
+                        className={cn(
+                          'group motion-interactive focus-visible:ring-accent flex h-9 w-full items-center gap-2.5 rounded-lg px-3 text-left text-sm focus-visible:ring-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50',
+                          active
+                            ? 'bg-surface text-text-strong font-semibold shadow-xs'
+                            : 'text-text-strong hover:bg-surface hover:shadow-xs'
+                        )}
+                      >
+                        <MessageSquareText
+                          size={15}
+                          aria-hidden="true"
+                          className={cn(
+                            'shrink-0 transition-colors',
+                            active
+                              ? 'text-accent-text'
+                              : 'text-text-muted group-hover:text-accent-text'
+                          )}
+                        />
+                        <span className="min-w-0 flex-1 truncate transition-transform duration-200 group-hover:translate-x-0.5">
+                          {conversation.title}
+                        </span>
+                        <time
+                          dateTime={conversation.updatedAt}
+                          className="font-num text-text-muted shrink-0 text-xs tabular-nums"
+                        >
+                          {stamp(conversation.updatedAt, group)}
+                        </time>
+                      </button>
+                    </MotionReveal>
+                  )
+                })}
+              </MotionStagger>
+            </section>
+          ))
         ) : (
-          <p role="status" className="text-text-muted px-1 py-2 text-sm">
+          <p role="status" className="text-text-muted px-3 py-2 text-sm">
             {normalized
               ? t('history.noMatch', { query: query.trim() })
               : t('history.empty')}
           </p>
         )}
-      </section>
+      </nav>
     </div>
   )
 }

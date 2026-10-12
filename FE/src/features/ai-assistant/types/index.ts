@@ -16,6 +16,8 @@ export type ChatMessage = {
 export type Conversation = {
     id: string
     title: string
+    /** ISO time của lần hỏi gần nhất; dùng để nhóm Hôm nay / 7 ngày qua / Cũ hơn */
+    updatedAt: string
 }
 
 export type AssistantAnswer = {

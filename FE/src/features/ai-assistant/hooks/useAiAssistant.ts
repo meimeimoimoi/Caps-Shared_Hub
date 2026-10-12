@@ -3,10 +3,13 @@ import { useState } from "react";
 import type { ChatMessage, Conversation } from "../types";
 import { sendQuestionDemo } from "../api/ai-assistantApi";
 
+const hoursAgo = (hours: number) =>
+  new Date(Date.now() - hours * 60 * 60 * 1000).toISOString()
+
 const demoConversations: Conversation[] = [
-  { id: '1', title: 'Khấu hao ô tô 4 chỗ' },
-  { id: '2', title: 'Chi phí lãi vay' },
-  { id: '3', title: 'Chi phí phúc lợi cho nhân viên' },
+  { id: '1', title: 'Khấu hao ô tô 4 chỗ', updatedAt: hoursAgo(1) },
+  { id: '2', title: 'Chi phí lãi vay', updatedAt: hoursAgo(30) },
+  { id: '3', title: 'Chi phí phúc lợi cho nhân viên', updatedAt: hoursAgo(24 * 12) },
 ]
 
 const demoMessages: Record<string, ChatMessage[]> = {
@@ -94,7 +97,7 @@ export function useAiAssistant() {
         const conversationId = activeConversationId ?? crypto.randomUUID()
         if (!activeConversationId) {
             setConversations((current) => [
-                { id: conversationId, title: content },
+                { id: conversationId, title: content, updatedAt: new Date().toISOString() },
                 ...current,
             ])
             setActiveConversationId(conversationId)

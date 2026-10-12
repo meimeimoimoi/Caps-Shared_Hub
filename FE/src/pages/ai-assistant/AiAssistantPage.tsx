@@ -1,23 +1,18 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
-import {
-  FileText,
-  History,
-  LayoutDashboard,
-  LogIn,
-  Plus,
-  Sparkles,
-} from 'lucide-react'
-import { Button } from '@/components/ui/actions/button'
+import { LogIn, PanelLeftOpen, SquarePen } from 'lucide-react'
 import { Drawer } from '@/components/ui/feedback/drawer'
 import { Toast } from '@/components/ui/feedback/toast'
 import { AppHeader } from '@/components/ui/layout/app-header'
+import { AppSidebar } from '@/components/ui/layout/app-sidebar'
+import { cn } from '@/lib/utils'
+import { useUserNavigation } from '@/app/layouts/user/useUserNavigation'
 import {
-  AppSidebar,
-  type SidebarGroup,
-} from '@/components/ui/layout/app-sidebar'
-import { useDialogMotion, useReducedMotion } from '@/components/ui/motion'
+  MotionReveal,
+  useDialogMotion,
+  useReducedMotion,
+} from '@/components/ui/motion'
 import { useAuthStore } from '@/features/auth/store/authStore'
 import { AssistantWelcome } from '@/features/ai-assistant/components/AssistantWelcome'
 import { ChatComposer } from '@/features/ai-assistant/components/ChatComposer'
@@ -46,14 +41,18 @@ export default function AiAssistantPage() {
   const clearSession = useAuthStore((state) => state.clearSession)
   const reducedMotion = useReducedMotion()
 
-  const [sidebarExpanded, setSidebarExpanded] = useState(true)
+  // Trang này có cột lịch sử riêng nên menu chính mặc định thu thành dải icon (kiểu Slack/Linear)
+  const [sidebarExpanded, setSidebarExpanded] = useState(false)
   const [historyOpen, setHistoryOpen] = useState(false)
+  // Desktop (lg+): cột lịch sử cố định, thu gọn được; dưới lg dùng ngăn kéo
+  const [historyPanel, setHistoryPanel] = useState(true)
   const [toast, setToast] = useState<string | null>(null)
   const dismissToast = useCallback(() => setToast(null), [])
 
   const navDrawer = useRef<HTMLDialogElement>(null)
   const navTrigger = useRef<HTMLButtonElement>(null)
   const historyTrigger = useRef<HTMLButtonElement>(null)
+  const focusTriggerOnCollapse = useRef(false)
   const composer = useRef<HTMLTextAreaElement>(null)
   const scrollArea = useRef<HTMLDivElement>(null)
   useDialogMotion(navDrawer, 'drawer-left')
@@ -72,32 +71,7 @@ export default function AiAssistantPage() {
     })
   }, [messages, isSending, reducedMotion])
 
-  const groups: SidebarGroup[] = [
-    {
-      id: 'workspace',
-      items: [
-        {
-          id: 'ai-assistant',
-          to: '/ai-assistant',
-          label: t('navigation:aiAssistant'),
-          icon: <Sparkles size={18} />,
-          active: true,
-        },
-        {
-          id: 'drafts',
-          to: '/drafts',
-          label: t('navigation:workspaces'),
-          icon: <FileText size={18} />,
-        },
-        {
-          id: 'dashboard',
-          to: '/dashboard',
-          label: t('navigation:dashboard'),
-          icon: <LayoutDashboard size={18} />,
-        },
-      ],
-    },
-  ]
+  const groups = useUserNavigation('ai-assistant')
 
   const closeNavDrawer = () => navDrawer.current?.close()
 
@@ -130,7 +104,33 @@ export default function AiAssistantPage() {
     }
   }
 
+  const isEmpty = messages.length === 0 && !isSending
+  const composerProps = {
+    ref: composer,
+    value: question,
+    onChange: setQuestion,
+    onSend: handleSend,
+    isSending,
+    error: error ? t(`aiAssistant:${error}`) : null,
+  }
+
+  function collapseHistory() {
+    setHistoryPanel(false)
+    focusTriggerOnCollapse.current = true
+  }
+
+  // Cột vừa thu gọn thành inert: sau khi nút mở lại đã render thì chuyển focus sang đó
+  useEffect(() => {
+    if (historyPanel || !focusTriggerOnCollapse.current) return
+    focusTriggerOnCollapse.current = false
+    historyTrigger.current?.focus()
+  }, [historyPanel])
+
   function openHistory() {
+    if (window.matchMedia('(min-width: 1024px)').matches) {
+      setHistoryPanel(true)
+      return
+    }
     setHistoryOpen(true)
   }
 
@@ -208,53 +208,105 @@ export default function AiAssistantPage() {
         />
 
         <div className="flex min-h-0 flex-1">
+          {/* Cột lịch sử luôn gắn trong DOM để co/giãn chiều rộng mượt; khi thu gọn thì inert */}
+          <aside
+            id="assistant-history"
+            inert={!historyPanel}
+            aria-hidden={!historyPanel}
+            className={cn(
+              'bg-sunken hidden min-w-0 shrink-0 overflow-hidden border-r transition-[width,border-color] duration-300 ease-[var(--motion-ease-enter)] motion-reduce:transition-none lg:flex',
+              historyPanel ? 'border-border w-72' : 'w-0 border-r-0'
+            )}
+          >
+            <div
+              className={cn(
+                'flex w-72 shrink-0 flex-col px-3 pt-3 transition-[opacity,translate] duration-300 ease-[var(--motion-ease-enter)] motion-reduce:transition-none',
+                historyPanel
+                  ? 'translate-x-0 opacity-100'
+                  : '-translate-x-4 opacity-0'
+              )}
+            >
+              <ConversationHistory
+                conversations={conversations}
+                activeConversationId={activeConversationId}
+                disabled={isSending}
+                onSelect={selectConversation}
+                onNewQuestion={startNewQuestion}
+                onCollapse={collapseHistory}
+              />
+            </div>
+          </aside>
           <main
             id="assistant-main"
             tabIndex={-1}
-            className="flex min-w-0 flex-1 flex-col focus:outline-none"
+            className="relative flex min-w-0 flex-1 flex-col focus:outline-none"
           >
-            {/* Thao tác gọn trong cột nội dung, không thành thanh ngang thứ ba */}
-            <div className="px-5 pt-3 md:px-10">
-              <div className="mx-auto flex w-full max-w-4xl items-center justify-end gap-1">
-                <Button
-                  ref={historyTrigger}
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={openHistory}
-                  aria-haspopup="dialog"
-                  aria-label={t('aiAssistant:history.open')}
-                  className="text-text-muted"
-                >
-                  <History size={16} aria-hidden="true" />
-                  {t('aiAssistant:history.title')}
-                </Button>
-                {messages.length > 0 && (
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={startNewQuestion}
-                    disabled={isSending}
-                    className="text-text-muted"
-                  >
-                    <Plus size={16} aria-hidden="true" />
-                    {t('aiAssistant:history.newQuestion')}
-                  </Button>
+            {/* Cụm thao tác khi cột lịch sử đóng: mở lịch sử + câu hỏi mới, gom ở góc trái
+                đúng chỗ cột thu vào. Desktop: nổi đè lên nội dung, không chiếm hàng riêng.
+                Desktop khi cột mở thì ẩn vì cột đã có cả hai nút. */}
+            {(!isEmpty || !historyPanel) && (
+              <div
+                className={cn(
+                  'px-4 pt-3 md:px-5',
+                  historyPanel && 'lg:hidden',
+                  'lg:pointer-events-none lg:absolute lg:top-0 lg:left-0 lg:z-10'
                 )}
+              >
+                <MotionReveal
+                  preset="reveal"
+                  replayKey={String(historyPanel)}
+                  className="bg-surface/90 border-border pointer-events-auto inline-flex items-center gap-0.5 rounded-xl border p-1 shadow-xs backdrop-blur"
+                >
+                  <button
+                    ref={historyTrigger}
+                    type="button"
+                    onClick={openHistory}
+                    aria-controls="assistant-history"
+                    aria-expanded={historyPanel}
+                    aria-label={t('aiAssistant:history.open')}
+                    title={t('aiAssistant:history.open')}
+                    className="group motion-interactive text-text-muted hover:bg-sunken hover:text-text-strong focus-visible:ring-accent flex size-8 items-center justify-center rounded-lg focus-visible:ring-2 focus-visible:outline-none"
+                  >
+                    <PanelLeftOpen
+                      size={17}
+                      aria-hidden="true"
+                      className="transition-transform duration-200 group-hover:translate-x-0.5"
+                    />
+                  </button>
+                  {messages.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={startNewQuestion}
+                      disabled={isSending}
+                      aria-label={t('aiAssistant:history.newQuestion')}
+                      title={t('aiAssistant:history.newQuestion')}
+                      className="group motion-interactive text-text-muted hover:bg-sunken hover:text-text-strong focus-visible:ring-accent flex size-8 items-center justify-center rounded-lg focus-visible:ring-2 focus-visible:outline-none disabled:opacity-50"
+                    >
+                      <SquarePen
+                        size={16}
+                        aria-hidden="true"
+                        className="transition-transform duration-200 group-hover:-rotate-6"
+                      />
+                    </button>
+                  )}
+                </MotionReveal>
               </div>
-            </div>
+            )}
 
             <div
               ref={scrollArea}
               className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 md:px-10"
             >
-              {messages.length === 0 && !isSending ? (
+              {isEmpty ? (
                 <AssistantWelcome
+                  composer={
+                    <ChatComposer
+                      {...composerProps}
+                      prominent
+                      hint={t('aiAssistant:welcome.creditNote')}
+                    />
+                  }
                   onSelectQuestion={selectQuestion}
-                  conversations={conversations}
-                  onSelectConversation={selectConversation}
-                  onOpenHistory={openHistory}
                 />
               ) : (
                 <Transcript
@@ -265,17 +317,12 @@ export default function AiAssistantPage() {
               )}
             </div>
 
-            {/* Ô hỏi luôn ở đáy; tôn trọng vùng an toàn trên điện thoại */}
-            <div className="border-border-subtle bg-canvas border-t px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] md:px-10 md:pt-4 md:pb-5">
-              <ChatComposer
-                ref={composer}
-                value={question}
-                onChange={setQuestion}
-                onSend={handleSend}
-                isSending={isSending}
-                error={error ? t(`aiAssistant:${error}`) : null}
-              />
-            </div>
+            {/* Đã có hội thoại: ô hỏi ghim ở đáy; tôn trọng vùng an toàn trên điện thoại */}
+            {!isEmpty && (
+              <div className="bg-canvas before:from-canvas relative px-4 pt-2 pb-[max(0.75rem,env(safe-area-inset-bottom))] before:pointer-events-none before:absolute before:inset-x-0 before:-top-8 before:h-8 before:bg-linear-to-t before:to-transparent md:px-10 md:pb-5">
+                <ChatComposer {...composerProps} />
+              </div>
+            )}
           </main>
         </div>
       </div>
@@ -283,17 +330,6 @@ export default function AiAssistantPage() {
       {historyOpen && (
         <Drawer
           title={t('aiAssistant:history.title')}
-          footer={
-            <Button
-              type="button"
-              onClick={startNewQuestion}
-              disabled={isSending}
-              className="h-10 w-full"
-            >
-              <Plus size={16} aria-hidden="true" />
-              {t('aiAssistant:history.newQuestion')}
-            </Button>
-          }
           onClose={() => {
             setHistoryOpen(false)
             historyTrigger.current?.focus()
@@ -304,6 +340,8 @@ export default function AiAssistantPage() {
             activeConversationId={activeConversationId}
             disabled={isSending}
             onSelect={selectConversation}
+            onNewQuestion={startNewQuestion}
+            autoFocusSearch
           />
         </Drawer>
       )}
