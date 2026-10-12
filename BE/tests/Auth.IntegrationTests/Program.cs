@@ -547,24 +547,41 @@ try
 {
     var body = await smtp.Message.Task.WaitAsync(TimeSpan.FromSeconds(20));
     var normalizedMail = body.Replace("\r\n", "\n");
-    var split = normalizedMail.IndexOf("\n\n", StringComparison.Ordinal);
-    var mailContent = normalizedMail[(split + 2)..];
-    if (
-        normalizedMail[..split]
-            .Contains("Content-Transfer-Encoding: base64", StringComparison.OrdinalIgnoreCase)
-    )
-        mailContent = System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(mailContent));
-    else
+    // Email gồm nhiều phần (chữ thuần, HTML, logo nhúng): giải mã từng phần chữ theo encoding của nó.
+    static string DecodePart(string part)
     {
-        mailContent = mailContent.Replace("=\n", "");
-        mailContent = System.Text.RegularExpressions.Regex.Replace(
-            mailContent,
-            "=([0-9A-Fa-f]{2})",
-            x => ((char)Convert.ToInt32(x.Groups[1].Value, 16)).ToString()
-        );
+        var split = part.IndexOf("\n\n", StringComparison.Ordinal);
+        if (split < 0)
+            return part;
+        var headers = part[..split];
+        var content = part[(split + 2)..];
+        if (
+            headers.Contains(
+                "Content-Transfer-Encoding: base64",
+                StringComparison.OrdinalIgnoreCase
+            )
+        )
+            return headers.Contains("Content-Type: text", StringComparison.OrdinalIgnoreCase)
+                ? System.Text.Encoding.UTF8.GetString(
+                    Convert.FromBase64String(string.Concat(content.Split('\n')).Trim())
+                )
+                : "";
+        if (headers.Contains("quoted-printable", StringComparison.OrdinalIgnoreCase))
+            return System.Text.RegularExpressions.Regex.Replace(
+                content.Replace("=\n", ""),
+                "=([0-9A-Fa-f]{2})",
+                x => ((char)Convert.ToInt32(x.Groups[1].Value, 16)).ToString()
+            );
+        return content;
     }
+    var mailContent = string.Join(
+        "\n",
+        System
+            .Text.RegularExpressions.Regex.Split(normalizedMail, "\n--[^\n]+\n")
+            .Select(DecodePart)
+    );
     Check(
-        mailContent.Contains("Continue") && mailContent.Contains("token="),
+        mailContent.Contains("Shared Hub") && mailContent.Contains("token="),
         "encrypted outbox to broker consumer to SMTP"
     );
     for (var i = 0; i < 30; i++)
