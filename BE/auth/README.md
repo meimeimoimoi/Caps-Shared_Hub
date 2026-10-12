@@ -8,8 +8,8 @@ All mutations under /api/v1/auth require X-Caps-Client: spa. Browser Origin must
 
 - POST /api/v1/auth/register — email, password (12–128 characters), displayName. Always USER, initially PENDING_VERIFICATION. Returns accessToken/expiresIn/user and refresh cookie. Token has no business roles until verified.
 - POST /api/v1/auth/login — email/password. SHA256 demo hashes are rejected; those users must reset password.
-- POST /api/v1/auth/refresh-token — cookie only; rotates once. Replay revokes ALL refresh sessions of that user and increments token version (conservative policy).
-- POST /api/v1/auth/logout — bearer plus cookie. Revokes current refresh session; access expires within 15 minutes. Calling refresh with revoked token triggers conservative replay revocation.
+- POST /api/v1/auth/refresh-token — cookie only; rotates once. Replaying a rotated token revokes ALL refresh sessions of that user and increments token version (conservative policy). A token revoked by logout or a password change/reset is only rejected, so a stale device cannot sign the user out of their new session.
+- POST /api/v1/auth/logout — bearer plus cookie. Revokes current refresh session; access expires within 15 minutes. Refreshing with that revoked cookie returns 401.
 - POST /api/v1/auth/verify-email — token. Single use; then refresh or login again.
 - POST /api/v1/auth/resend-verification — limited bearer; 60-second cooldown; invalidates earlier links.
 - POST /api/v1/auth/forgot-password — email. Generic response even for missing user/cooldown.

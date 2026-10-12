@@ -156,10 +156,15 @@ public sealed class AuthService(
         var current = await db.RefreshTokens.SingleAsync(x => x.Id == found.Id, ct);
         if (current.RevokedAt != null)
         {
-            // Chính sách bảo thủ: replay thu hồi mọi refresh session của user.
-            await RevokeAll(user, ct);
-            await db.SaveChangesAsync(ct);
-            await tx.CommitAsync(ct);
+            // Token đã xoay vòng mà bị dùng lại => nghi bị đánh cắp: thu hồi mọi refresh session.
+            // Token bị thu hồi vì đăng xuất/đổi/đặt lại mật khẩu chỉ bị từ chối, để thiết bị cũ
+            // tự refresh không đá luôn phiên mới của chính người dùng.
+            if (await db.RefreshTokens.AnyAsync(x => x.RotatedFrom == current.Id, ct))
+            {
+                await RevokeAll(user, ct);
+                await db.SaveChangesAsync(ct);
+                await tx.CommitAsync(ct);
+            }
             throw Invalid();
         }
         if (current.ExpiresAt <= Now)
