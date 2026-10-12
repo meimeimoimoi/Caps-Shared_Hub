@@ -329,7 +329,7 @@
   },
   "verifyEmail": {
     "title": "Verify your email.",
-    "body": "We sent a 6-digit code and a verification link to {{email}}. You can keep working on your application; you only need to verify before submitting.",
+    "body": "We sent a 6-digit code to {{email}} · Required before you submit.",
     "resend": "Resend email",
     "cooldown": "Resend in {{seconds}} seconds",
     "check": "I've verified it",

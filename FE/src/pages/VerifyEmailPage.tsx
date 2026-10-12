@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from 'react-i18next'
 import {
   Link,
   Navigate,
@@ -240,7 +240,14 @@ function Pending() {
       </h1>
       <p className="mb-7 text-[13px] leading-[1.6] text-[var(--body)]">
         {user?.email
-          ? t('verify.pendingBody', { email: user.email })
+          ? (
+            <Trans
+              ns="auth"
+              i18nKey="verify.pendingBody"
+              values={{ email: user.email }}
+              components={{ strong: <strong className="text-white" /> }}
+            />
+          )
           : t('verify.pendingBodyNoEmail')}
       </p>
 
