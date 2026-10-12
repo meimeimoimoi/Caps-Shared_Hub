@@ -7,13 +7,18 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddCommonApi(builder.Configuration, "workflow");
 
-var pg = builder.Configuration.GetConnectionString("Postgres")
+var pg =
+    builder.Configuration.GetConnectionString("Postgres")
     ?? builder.Configuration["ConnectionStrings:Postgres"]
     ?? "Host=localhost;Port=5432;Database=shft_db;Username=postgres;Password=postgres";
 
 builder.Services.AddDbContext<WorkflowDbContext>(o =>
-    o.UseNpgsql(pg, npgsqlOptions =>
-        npgsqlOptions.MigrationsHistoryTable("__EFMigrationsHistory_Workflow", "workspace")));
+    o.UseNpgsql(
+        pg,
+        npgsqlOptions =>
+            npgsqlOptions.MigrationsHistoryTable("__EFMigrationsHistory_Workflow", "workspace")
+    )
+);
 
 builder.Services.AddHealthChecks().AddDbContextCheck<WorkflowDbContext>("postgres");
 

@@ -17,7 +17,10 @@ public static class DbInitializer
     {
         if (string.IsNullOrWhiteSpace(connectionString))
         {
-            throw new ArgumentException("Connection string cannot be null or empty.", nameof(connectionString));
+            throw new ArgumentException(
+                "Connection string cannot be null or empty.",
+                nameof(connectionString)
+            );
         }
 
         var builder = new NpgsqlConnectionStringBuilder(connectionString);
@@ -31,14 +34,20 @@ public static class DbInitializer
         {
             adminConn.Open();
 
-            using var checkCmd = new NpgsqlCommand("SELECT 1 FROM pg_database WHERE datname = @dbName;", adminConn);
+            using var checkCmd = new NpgsqlCommand(
+                "SELECT 1 FROM pg_database WHERE datname = @dbName;",
+                adminConn
+            );
             checkCmd.Parameters.AddWithValue("@dbName", targetDb);
             var exists = checkCmd.ExecuteScalar() != null;
 
             if (!exists)
             {
                 var sanitizedDb = targetDb.Replace("\"", "\"\"");
-                using var createCmd = new NpgsqlCommand($"CREATE DATABASE \"{sanitizedDb}\";", adminConn);
+                using var createCmd = new NpgsqlCommand(
+                    $"CREATE DATABASE \"{sanitizedDb}\";",
+                    adminConn
+                );
                 createCmd.ExecuteNonQuery();
             }
         }
@@ -48,9 +57,12 @@ public static class DbInitializer
         {
             targetConn.Open();
 
-            using var extCmd = new NpgsqlCommand(@"
+            using var extCmd = new NpgsqlCommand(
+                @"
                 CREATE EXTENSION IF NOT EXISTS ""btree_gist"";
-                CREATE EXTENSION IF NOT EXISTS ""uuid-ossp"";", targetConn);
+                CREATE EXTENSION IF NOT EXISTS ""uuid-ossp"";",
+                targetConn
+            );
             extCmd.ExecuteNonQuery();
 
             foreach (var schema in schemaNames)
@@ -58,7 +70,10 @@ public static class DbInitializer
                 if (!string.IsNullOrWhiteSpace(schema))
                 {
                     var sanitizedSchema = schema.Replace("\"", "\"\"");
-                    using var schemaCmd = new NpgsqlCommand($"CREATE SCHEMA IF NOT EXISTS \"{sanitizedSchema}\";", targetConn);
+                    using var schemaCmd = new NpgsqlCommand(
+                        $"CREATE SCHEMA IF NOT EXISTS \"{sanitizedSchema}\";",
+                        targetConn
+                    );
                     schemaCmd.ExecuteNonQuery();
                 }
             }

@@ -4,7 +4,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace billing.Data;
 
-public sealed class BillingDbContext(DbContextOptions<BillingDbContext> options) : DbContext(options)
+public sealed class BillingDbContext(DbContextOptions<BillingDbContext> options)
+    : DbContext(options)
 {
     public DbSet<PaymentTransaction> PaymentTransactions => Set<PaymentTransaction>();
     public DbSet<CreditWallet> CreditWallets => Set<CreditWallet>();
@@ -46,7 +47,10 @@ public sealed class BillingDbContext(DbContextOptions<BillingDbContext> options)
             e.Property(x => x.UserId).HasColumnName("user_id");
             e.Property(x => x.Balance).HasColumnName("balance").HasDefaultValue(0L);
             e.Property(x => x.Held).HasColumnName("held").HasDefaultValue(0L);
-            e.Property(x => x.UpdatedAt).HasColumnName("updated_at").HasDefaultValueSql("now()").IsRequired();
+            e.Property(x => x.UpdatedAt)
+                .HasColumnName("updated_at")
+                .HasDefaultValueSql("now()")
+                .IsRequired();
 
             e.HasOne<UserStub>()
                 .WithMany()
@@ -64,12 +68,21 @@ public sealed class BillingDbContext(DbContextOptions<BillingDbContext> options)
             e.Property(x => x.ReviewCaseId).HasColumnName("review_case_id");
             e.Property(x => x.Purpose).HasColumnName("purpose").IsRequired();
             e.Property(x => x.Amount).HasColumnName("amount");
-            e.Property(x => x.Provider).HasColumnName("provider").HasDefaultValue("PAYOS").IsRequired();
+            e.Property(x => x.Provider)
+                .HasColumnName("provider")
+                .HasDefaultValue("PAYOS")
+                .IsRequired();
             e.Property(x => x.OrderCode).HasColumnName("order_code").IsRequired();
             e.HasIndex(x => x.OrderCode).IsUnique();
-            e.Property(x => x.Status).HasColumnName("status").HasDefaultValue("PENDING").IsRequired();
+            e.Property(x => x.Status)
+                .HasColumnName("status")
+                .HasDefaultValue("PENDING")
+                .IsRequired();
             e.Property(x => x.PaidAt).HasColumnName("paid_at");
-            e.Property(x => x.CreatedAt).HasColumnName("created_at").HasDefaultValueSql("now()").IsRequired();
+            e.Property(x => x.CreatedAt)
+                .HasColumnName("created_at")
+                .HasDefaultValueSql("now()")
+                .IsRequired();
 
             e.HasIndex(x => new { x.UserId, x.Status }).HasDatabaseName("ix_payment_transaction_2");
 
@@ -100,7 +113,10 @@ public sealed class BillingDbContext(DbContextOptions<BillingDbContext> options)
             e.Property(x => x.RefAiUsageId).HasColumnName("ref_ai_usage_id");
             e.Property(x => x.RefDocumentVersionId).HasColumnName("ref_document_version_id");
             e.Property(x => x.Note).HasColumnName("note");
-            e.Property(x => x.CreatedAt).HasColumnName("created_at").HasDefaultValueSql("now()").IsRequired();
+            e.Property(x => x.CreatedAt)
+                .HasColumnName("created_at")
+                .HasDefaultValueSql("now()")
+                .IsRequired();
 
             e.HasIndex(x => new { x.UserId, x.CreatedAt }).HasDatabaseName("ix_credit_ledger_2");
 
@@ -125,8 +141,14 @@ public sealed class BillingDbContext(DbContextOptions<BillingDbContext> options)
             e.HasIndex(x => x.ReviewCaseId).IsUnique();
             e.Property(x => x.Amount).HasColumnName("amount");
             e.Property(x => x.Status).HasColumnName("status").HasDefaultValue("HELD").IsRequired();
-            e.Property(x => x.CreatedAt).HasColumnName("created_at").HasDefaultValueSql("now()").IsRequired();
-            e.Property(x => x.UpdatedAt).HasColumnName("updated_at").HasDefaultValueSql("now()").IsRequired();
+            e.Property(x => x.CreatedAt)
+                .HasColumnName("created_at")
+                .HasDefaultValueSql("now()")
+                .IsRequired();
+            e.Property(x => x.UpdatedAt)
+                .HasColumnName("updated_at")
+                .HasDefaultValueSql("now()")
+                .IsRequired();
 
             e.HasOne<ReviewCaseStub>()
                 .WithOne()
@@ -143,10 +165,19 @@ public sealed class BillingDbContext(DbContextOptions<BillingDbContext> options)
             e.Property(x => x.ReviewCaseId).HasColumnName("review_case_id");
             e.HasIndex(x => x.ReviewCaseId).IsUnique();
             e.Property(x => x.Reason).HasColumnName("reason").IsRequired();
-            e.Property(x => x.UserRefundAmount).HasColumnName("user_refund_amount").HasDefaultValue(0L);
-            e.Property(x => x.ExpertPayoutAmount).HasColumnName("expert_payout_amount").HasDefaultValue(0L);
-            e.Property(x => x.PlatformFeeAmount).HasColumnName("platform_fee_amount").HasDefaultValue(0L);
-            e.Property(x => x.SettledAt).HasColumnName("settled_at").HasDefaultValueSql("now()").IsRequired();
+            e.Property(x => x.UserRefundAmount)
+                .HasColumnName("user_refund_amount")
+                .HasDefaultValue(0L);
+            e.Property(x => x.ExpertPayoutAmount)
+                .HasColumnName("expert_payout_amount")
+                .HasDefaultValue(0L);
+            e.Property(x => x.PlatformFeeAmount)
+                .HasColumnName("platform_fee_amount")
+                .HasDefaultValue(0L);
+            e.Property(x => x.SettledAt)
+                .HasColumnName("settled_at")
+                .HasDefaultValueSql("now()")
+                .IsRequired();
 
             e.HasOne<ReviewCaseStub>()
                 .WithOne()
@@ -168,13 +199,22 @@ public sealed class BillingDbContext(DbContextOptions<BillingDbContext> options)
             e.Property(x => x.AccountLast4).HasColumnName("account_last4").IsRequired();
             e.Property(x => x.AccountHolderName).HasColumnName("account_holder_name").IsRequired();
             e.Property(x => x.IsDefault).HasColumnName("is_default").HasDefaultValue(false);
-            e.Property(x => x.Status).HasColumnName("status").HasDefaultValue("UNVERIFIED").IsRequired();
+            e.Property(x => x.Status)
+                .HasColumnName("status")
+                .HasDefaultValue("UNVERIFIED")
+                .IsRequired();
             e.Property(x => x.RejectionReason).HasColumnName("rejection_reason");
             e.Property(x => x.VerifiedBy).HasColumnName("verified_by");
             e.Property(x => x.VerifiedAt).HasColumnName("verified_at");
             e.Property(x => x.DeletedAt).HasColumnName("deleted_at");
-            e.Property(x => x.CreatedAt).HasColumnName("created_at").HasDefaultValueSql("now()").IsRequired();
-            e.Property(x => x.UpdatedAt).HasColumnName("updated_at").HasDefaultValueSql("now()").IsRequired();
+            e.Property(x => x.CreatedAt)
+                .HasColumnName("created_at")
+                .HasDefaultValueSql("now()")
+                .IsRequired();
+            e.Property(x => x.UpdatedAt)
+                .HasColumnName("updated_at")
+                .HasDefaultValueSql("now()")
+                .IsRequired();
 
             e.HasOne<UserStub>()
                 .WithMany()
@@ -203,17 +243,30 @@ public sealed class BillingDbContext(DbContextOptions<BillingDbContext> options)
             e.Property(x => x.SnapBankName).HasColumnName("snap_bank_name");
             e.Property(x => x.SnapAccountLast4).HasColumnName("snap_account_last4");
             e.Property(x => x.SnapHolderName).HasColumnName("snap_holder_name");
-            e.Property(x => x.Provider).HasColumnName("provider").HasDefaultValue("PAYOS").IsRequired();
+            e.Property(x => x.Provider)
+                .HasColumnName("provider")
+                .HasDefaultValue("PAYOS")
+                .IsRequired();
             e.Property(x => x.ProviderRef).HasColumnName("provider_ref");
             e.HasIndex(x => x.ProviderRef).IsUnique();
-            e.Property(x => x.Status).HasColumnName("status").HasDefaultValue("PENDING").IsRequired();
+            e.Property(x => x.Status)
+                .HasColumnName("status")
+                .HasDefaultValue("PENDING")
+                .IsRequired();
             e.Property(x => x.AttemptCount).HasColumnName("attempt_count").HasDefaultValue(0);
             e.Property(x => x.LastError).HasColumnName("last_error");
-            e.Property(x => x.CreatedAt).HasColumnName("created_at").HasDefaultValueSql("now()").IsRequired();
-            e.Property(x => x.UpdatedAt).HasColumnName("updated_at").HasDefaultValueSql("now()").IsRequired();
+            e.Property(x => x.CreatedAt)
+                .HasColumnName("created_at")
+                .HasDefaultValueSql("now()")
+                .IsRequired();
+            e.Property(x => x.UpdatedAt)
+                .HasColumnName("updated_at")
+                .HasDefaultValueSql("now()")
+                .IsRequired();
             e.Property(x => x.CompletedAt).HasColumnName("completed_at");
 
-            e.HasIndex(x => new { x.Status, x.CreatedAt }).HasDatabaseName("ix_payout_transaction_4");
+            e.HasIndex(x => new { x.Status, x.CreatedAt })
+                .HasDatabaseName("ix_payout_transaction_4");
 
             e.HasOne(x => x.Settlement)
                 .WithMany(s => s.PayoutTransactions)
@@ -247,7 +300,10 @@ public sealed class BillingDbContext(DbContextOptions<BillingDbContext> options)
             e.Property(x => x.Outcome).HasColumnName("outcome");
             e.Property(x => x.ResolutionNote).HasColumnName("resolution_note");
             e.Property(x => x.Status).HasColumnName("status").HasDefaultValue("OPEN").IsRequired();
-            e.Property(x => x.CreatedAt).HasColumnName("created_at").HasDefaultValueSql("now()").IsRequired();
+            e.Property(x => x.CreatedAt)
+                .HasColumnName("created_at")
+                .HasDefaultValueSql("now()")
+                .IsRequired();
             e.Property(x => x.ResolvedAt).HasColumnName("resolved_at");
 
             e.HasOne<ReviewCaseStub>()

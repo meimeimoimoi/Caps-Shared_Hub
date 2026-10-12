@@ -5,7 +5,8 @@ using workflow.Entities.Workspace;
 
 namespace workflow.Data;
 
-public sealed class WorkflowDbContext(DbContextOptions<WorkflowDbContext> options) : DbContext(options)
+public sealed class WorkflowDbContext(DbContextOptions<WorkflowDbContext> options)
+    : DbContext(options)
 {
     // Workspace schema
     public DbSet<Template> Templates => Set<Template>();
@@ -77,7 +78,10 @@ public sealed class WorkflowDbContext(DbContextOptions<WorkflowDbContext> option
             e.Property(x => x.Name).HasColumnName("name").IsRequired();
             e.Property(x => x.Description).HasColumnName("description");
             e.Property(x => x.IsActive).HasColumnName("is_active").HasDefaultValue(true);
-            e.Property(x => x.CreatedAt).HasColumnName("created_at").HasDefaultValueSql("now()").IsRequired();
+            e.Property(x => x.CreatedAt)
+                .HasColumnName("created_at")
+                .HasDefaultValueSql("now()")
+                .IsRequired();
         });
 
         // TemplateVersion
@@ -88,10 +92,16 @@ public sealed class WorkflowDbContext(DbContextOptions<WorkflowDbContext> option
             e.Property(x => x.Id).HasColumnName("id");
             e.Property(x => x.TemplateId).HasColumnName("template_id");
             e.Property(x => x.VersionNo).HasColumnName("version_no");
-            e.Property(x => x.FieldSchema).HasColumnName("field_schema").HasColumnType("jsonb").IsRequired();
+            e.Property(x => x.FieldSchema)
+                .HasColumnName("field_schema")
+                .HasColumnType("jsonb")
+                .IsRequired();
             e.Property(x => x.Status).HasColumnName("status").HasDefaultValue("DRAFT").IsRequired();
             e.Property(x => x.CreatedBy).HasColumnName("created_by");
-            e.Property(x => x.CreatedAt).HasColumnName("created_at").HasDefaultValueSql("now()").IsRequired();
+            e.Property(x => x.CreatedAt)
+                .HasColumnName("created_at")
+                .HasDefaultValueSql("now()")
+                .IsRequired();
 
             e.HasIndex(x => new { x.TemplateId, x.VersionNo }).IsUnique();
 
@@ -114,8 +124,14 @@ public sealed class WorkflowDbContext(DbContextOptions<WorkflowDbContext> option
             e.Property(x => x.Id).HasColumnName("id");
             e.Property(x => x.UserId).HasColumnName("user_id");
             e.Property(x => x.Title).HasColumnName("title");
-            e.Property(x => x.CreatedAt).HasColumnName("created_at").HasDefaultValueSql("now()").IsRequired();
-            e.Property(x => x.UpdatedAt).HasColumnName("updated_at").HasDefaultValueSql("now()").IsRequired();
+            e.Property(x => x.CreatedAt)
+                .HasColumnName("created_at")
+                .HasDefaultValueSql("now()")
+                .IsRequired();
+            e.Property(x => x.UpdatedAt)
+                .HasColumnName("updated_at")
+                .HasDefaultValueSql("now()")
+                .IsRequired();
 
             e.HasIndex(x => new { x.UserId, x.UpdatedAt }).HasDatabaseName("ix_conversation_2");
 
@@ -140,9 +156,13 @@ public sealed class WorkflowDbContext(DbContextOptions<WorkflowDbContext> option
             e.Property(x => x.ScopeResult).HasColumnName("scope_result");
             e.Property(x => x.AnswerStatus).HasColumnName("answer_status");
             e.Property(x => x.Citations).HasColumnName("citations").HasColumnType("jsonb");
-            e.Property(x => x.CreatedAt).HasColumnName("created_at").HasDefaultValueSql("now()").IsRequired();
+            e.Property(x => x.CreatedAt)
+                .HasColumnName("created_at")
+                .HasDefaultValueSql("now()")
+                .IsRequired();
 
-            e.HasIndex(x => new { x.ConversationId, x.CreatedAt }).HasDatabaseName("ix_chat_message_2");
+            e.HasIndex(x => new { x.ConversationId, x.CreatedAt })
+                .HasDatabaseName("ix_chat_message_2");
 
             e.HasOne(x => x.Conversation)
                 .WithMany(c => c.Messages)
@@ -158,7 +178,10 @@ public sealed class WorkflowDbContext(DbContextOptions<WorkflowDbContext> option
             e.HasKey(x => x.UserId);
             e.Property(x => x.UserId).HasColumnName("user_id");
             e.Property(x => x.Balance).HasColumnName("balance").HasDefaultValue(10);
-            e.Property(x => x.UpdatedAt).HasColumnName("updated_at").HasDefaultValueSql("now()").IsRequired();
+            e.Property(x => x.UpdatedAt)
+                .HasColumnName("updated_at")
+                .HasDefaultValueSql("now()")
+                .IsRequired();
 
             e.HasOne<UserStub>()
                 .WithMany()
@@ -178,9 +201,18 @@ public sealed class WorkflowDbContext(DbContextOptions<WorkflowDbContext> option
             e.Property(x => x.QuestionId).HasColumnName("question_id");
             e.Property(x => x.PaidWith).HasColumnName("paid_with").IsRequired();
             e.Property(x => x.CreditHold).HasColumnName("credit_hold").HasDefaultValue(0L);
-            e.Property(x => x.State).HasColumnName("state").HasDefaultValue("RESERVED").IsRequired();
-            e.Property(x => x.CreatedAt).HasColumnName("created_at").HasDefaultValueSql("now()").IsRequired();
-            e.Property(x => x.UpdatedAt).HasColumnName("updated_at").HasDefaultValueSql("now()").IsRequired();
+            e.Property(x => x.State)
+                .HasColumnName("state")
+                .HasDefaultValue("RESERVED")
+                .IsRequired();
+            e.Property(x => x.CreatedAt)
+                .HasColumnName("created_at")
+                .HasDefaultValueSql("now()")
+                .IsRequired();
+            e.Property(x => x.UpdatedAt)
+                .HasColumnName("updated_at")
+                .HasDefaultValueSql("now()")
+                .IsRequired();
 
             e.HasIndex(x => new { x.UserId, x.State }).HasDatabaseName("ix_ai_usage_2");
 
@@ -207,16 +239,29 @@ public sealed class WorkflowDbContext(DbContextOptions<WorkflowDbContext> option
             e.HasKey(x => x.Id);
             e.Property(x => x.Id).HasColumnName("id");
             e.Property(x => x.OwnerUserId).HasColumnName("owner_user_id");
-            e.Property(x => x.Source).HasColumnName("source").HasDefaultValue("TEMPLATE").IsRequired();
+            e.Property(x => x.Source)
+                .HasColumnName("source")
+                .HasDefaultValue("TEMPLATE")
+                .IsRequired();
             e.Property(x => x.TemplateId).HasColumnName("template_id");
             e.Property(x => x.Title).HasColumnName("title").IsRequired();
             e.Property(x => x.PeriodStart).HasColumnName("period_start").IsRequired();
             e.Property(x => x.PeriodEnd).HasColumnName("period_end").IsRequired();
             e.Property(x => x.Status).HasColumnName("status").HasDefaultValue("DRAFT").IsRequired();
             e.Property(x => x.VerifiedVersionId).HasColumnName("verified_version_id");
-            e.Property(x => x.Metadata).HasColumnName("metadata").HasColumnType("jsonb").HasDefaultValue("{}").IsRequired();
-            e.Property(x => x.CreatedAt).HasColumnName("created_at").HasDefaultValueSql("now()").IsRequired();
-            e.Property(x => x.UpdatedAt).HasColumnName("updated_at").HasDefaultValueSql("now()").IsRequired();
+            e.Property(x => x.Metadata)
+                .HasColumnName("metadata")
+                .HasColumnType("jsonb")
+                .HasDefaultValue("{}")
+                .IsRequired();
+            e.Property(x => x.CreatedAt)
+                .HasColumnName("created_at")
+                .HasDefaultValueSql("now()")
+                .IsRequired();
+            e.Property(x => x.UpdatedAt)
+                .HasColumnName("updated_at")
+                .HasDefaultValueSql("now()")
+                .IsRequired();
 
             e.HasIndex(x => new { x.OwnerUserId, x.Status }).HasDatabaseName("ix_document_2");
 
@@ -241,7 +286,10 @@ public sealed class WorkflowDbContext(DbContextOptions<WorkflowDbContext> option
             e.Property(x => x.VersionNo).HasColumnName("version_no");
             e.Property(x => x.Data).HasColumnName("data").HasColumnType("jsonb").IsRequired();
             e.Property(x => x.CreatedBy).HasColumnName("created_by");
-            e.Property(x => x.CreatedAt).HasColumnName("created_at").HasDefaultValueSql("now()").IsRequired();
+            e.Property(x => x.CreatedAt)
+                .HasColumnName("created_at")
+                .HasDefaultValueSql("now()")
+                .IsRequired();
 
             e.HasIndex(x => new { x.DocumentId, x.VersionNo }).IsUnique();
             e.HasAlternateKey(x => new { x.DocumentId, x.Id });
@@ -276,7 +324,10 @@ public sealed class WorkflowDbContext(DbContextOptions<WorkflowDbContext> option
             e.Property(x => x.ContentHash).HasColumnName("content_hash").IsRequired();
             e.Property(x => x.IsImmutable).HasColumnName("is_immutable");
             e.Property(x => x.CreatedBy).HasColumnName("created_by");
-            e.Property(x => x.CreatedAt).HasColumnName("created_at").HasDefaultValueSql("now()").IsRequired();
+            e.Property(x => x.CreatedAt)
+                .HasColumnName("created_at")
+                .HasDefaultValueSql("now()")
+                .IsRequired();
 
             e.HasIndex(x => new { x.DocumentId, x.VersionNo }).IsUnique();
             e.HasAlternateKey(x => new { x.DocumentId, x.Id });
@@ -333,7 +384,10 @@ public sealed class WorkflowDbContext(DbContextOptions<WorkflowDbContext> option
             e.Property(x => x.PlatformFeePct).HasColumnName("platform_fee_pct");
             e.Property(x => x.ProblemDescription).HasColumnName("problem_description").IsRequired();
             e.Property(x => x.ExpectedOutcome).HasColumnName("expected_outcome");
-            e.Property(x => x.Status).HasColumnName("status").HasDefaultValue("PENDING_EXPERT_RESPONSE").IsRequired();
+            e.Property(x => x.Status)
+                .HasColumnName("status")
+                .HasDefaultValue("PENDING_EXPERT_RESPONSE")
+                .IsRequired();
             e.Property(x => x.Result).HasColumnName("result");
             e.Property(x => x.CannotVerifyReason).HasColumnName("cannot_verify_reason");
             e.Property(x => x.ReviewSummary).HasColumnName("review_summary");
@@ -349,12 +403,20 @@ public sealed class WorkflowDbContext(DbContextOptions<WorkflowDbContext> option
             e.Property(x => x.DeliveredAt).HasColumnName("delivered_at");
             e.Property(x => x.AcceptanceDeadline).HasColumnName("acceptance_deadline");
             e.Property(x => x.CompletedAt).HasColumnName("completed_at");
-            e.Property(x => x.CreatedAt).HasColumnName("created_at").HasDefaultValueSql("now()").IsRequired();
-            e.Property(x => x.UpdatedAt).HasColumnName("updated_at").HasDefaultValueSql("now()").IsRequired();
+            e.Property(x => x.CreatedAt)
+                .HasColumnName("created_at")
+                .HasDefaultValueSql("now()")
+                .IsRequired();
+            e.Property(x => x.UpdatedAt)
+                .HasColumnName("updated_at")
+                .HasDefaultValueSql("now()")
+                .IsRequired();
 
             e.HasAlternateKey(x => new { x.DocumentId, x.Id });
-            e.HasIndex(x => new { x.ExpertProfileId, x.Status }).HasDatabaseName("ix_review_case_4");
-            e.HasIndex(x => new { x.RequesterUserId, x.Status }).HasDatabaseName("ix_review_case_6");
+            e.HasIndex(x => new { x.ExpertProfileId, x.Status })
+                .HasDatabaseName("ix_review_case_4");
+            e.HasIndex(x => new { x.RequesterUserId, x.Status })
+                .HasDatabaseName("ix_review_case_6");
 
             e.HasOne<Document>()
                 .WithMany()
@@ -407,9 +469,15 @@ public sealed class WorkflowDbContext(DbContextOptions<WorkflowDbContext> option
             e.Property(x => x.Id).HasColumnName("id");
             e.Property(x => x.ReviewCaseId).HasColumnName("review_case_id");
             e.Property(x => x.TaskCode).HasColumnName("task_code").IsRequired();
-            e.Property(x => x.Status).HasColumnName("status").HasDefaultValue("PENDING").IsRequired();
+            e.Property(x => x.Status)
+                .HasColumnName("status")
+                .HasDefaultValue("PENDING")
+                .IsRequired();
             e.Property(x => x.Note).HasColumnName("note");
-            e.Property(x => x.UpdatedAt).HasColumnName("updated_at").HasDefaultValueSql("now()").IsRequired();
+            e.Property(x => x.UpdatedAt)
+                .HasColumnName("updated_at")
+                .HasDefaultValueSql("now()")
+                .IsRequired();
 
             e.HasIndex(x => new { x.ReviewCaseId, x.TaskCode }).IsUnique();
 
@@ -432,7 +500,10 @@ public sealed class WorkflowDbContext(DbContextOptions<WorkflowDbContext> option
             e.Property(x => x.ResponseMessage).HasColumnName("response_message");
             e.Property(x => x.RespondedAt).HasColumnName("responded_at");
             e.Property(x => x.Status).HasColumnName("status").HasDefaultValue("OPEN").IsRequired();
-            e.Property(x => x.CreatedAt).HasColumnName("created_at").HasDefaultValueSql("now()").IsRequired();
+            e.Property(x => x.CreatedAt)
+                .HasColumnName("created_at")
+                .HasDefaultValueSql("now()")
+                .IsRequired();
 
             e.HasAlternateKey(x => new { x.ReviewCaseId, x.Id });
             e.HasIndex(x => new { x.ReviewCaseId, x.Status }).HasDatabaseName("ix_info_request_2");
@@ -459,7 +530,10 @@ public sealed class WorkflowDbContext(DbContextOptions<WorkflowDbContext> option
             e.Property(x => x.FileUrl).HasColumnName("file_url").IsRequired();
             e.Property(x => x.FileName).HasColumnName("file_name").IsRequired();
             e.Property(x => x.UploadedBy).HasColumnName("uploaded_by");
-            e.Property(x => x.UploadedAt).HasColumnName("uploaded_at").HasDefaultValueSql("now()").IsRequired();
+            e.Property(x => x.UploadedAt)
+                .HasColumnName("uploaded_at")
+                .HasDefaultValueSql("now()")
+                .IsRequired();
 
             e.HasIndex(x => x.ReviewCaseId).HasDatabaseName("ix_review_attachment_2");
 
@@ -492,9 +566,13 @@ public sealed class WorkflowDbContext(DbContextOptions<WorkflowDbContext> option
             e.Property(x => x.ToStatus).HasColumnName("to_status").IsRequired();
             e.Property(x => x.ActorUserId).HasColumnName("actor_user_id");
             e.Property(x => x.Note).HasColumnName("note");
-            e.Property(x => x.CreatedAt).HasColumnName("created_at").HasDefaultValueSql("now()").IsRequired();
+            e.Property(x => x.CreatedAt)
+                .HasColumnName("created_at")
+                .HasDefaultValueSql("now()")
+                .IsRequired();
 
-            e.HasIndex(x => new { x.ReviewCaseId, x.CreatedAt }).HasDatabaseName("ix_review_status_history_2");
+            e.HasIndex(x => new { x.ReviewCaseId, x.CreatedAt })
+                .HasDatabaseName("ix_review_status_history_2");
 
             e.HasOne(x => x.ReviewCase)
                 .WithMany(c => c.StatusHistories)

@@ -12,7 +12,9 @@ public sealed class LegalSource
     public string Metadata { get; set; } = "{}"; // jsonb
     public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
 
-    public ICollection<LegalAmendment> AmendingAmendments { get; set; } = new List<LegalAmendment>();
+    public ICollection<LegalAmendment> AmendingAmendments { get; set; } =
+        new List<LegalAmendment>();
     public ICollection<LegalAmendment> AmendedAmendments { get; set; } = new List<LegalAmendment>();
-    public ICollection<KnowledgeDocument> KnowledgeDocuments { get; set; } = new List<KnowledgeDocument>();
+    public ICollection<KnowledgeDocument> KnowledgeDocuments { get; set; } =
+        new List<KnowledgeDocument>();
 }

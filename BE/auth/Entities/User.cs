@@ -19,6 +19,9 @@ public sealed class User
     }
 
     public string? Phone { get; set; }
+    public int FailedLoginAttempts { get; set; }
+    public DateTimeOffset? LockoutEnd { get; set; }
+    public int TokenVersion { get; set; }
     public string Status { get; set; } = "PENDING_VERIFICATION";
     public DateTimeOffset? EmailVerifiedAt { get; set; }
     public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
@@ -26,7 +29,8 @@ public sealed class User
 
     public ICollection<UserRole> UserRoles { get; set; } = new List<UserRole>();
     public ICollection<AuthRefreshToken> RefreshTokens { get; set; } = new List<AuthRefreshToken>();
-    public ICollection<VerificationToken> VerificationTokens { get; set; } = new List<VerificationToken>();
+    public ICollection<VerificationToken> VerificationTokens { get; set; } =
+        new List<VerificationToken>();
     public BusinessProfile? BusinessProfile { get; set; }
     public ExpertProfile? ExpertProfile { get; set; }
 }

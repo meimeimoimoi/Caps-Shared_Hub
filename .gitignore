@@ -7,3 +7,8 @@
 /FE/src/assets/*.prompt.txt
 /FE/src/**/*.test.*
 /FE/src/**/*.spec.*
+
+# Build output and local tooling
+/.tmp/
+**/bin/
+**/obj/

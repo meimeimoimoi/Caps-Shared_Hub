@@ -5,6 +5,7 @@ namespace auth.Data;
 
 public sealed class AuthDbContext(DbContextOptions<AuthDbContext> options) : DbContext(options)
 {
+    public DbSet<AuthEmailOutbox> EmailOutbox => Set<AuthEmailOutbox>();
     public DbSet<Role> Roles => Set<Role>();
     public DbSet<User> Users => Set<User>();
     public DbSet<UserRole> UserRoles => Set<UserRole>();
@@ -15,7 +16,8 @@ public sealed class AuthDbContext(DbContextOptions<AuthDbContext> options) : DbC
     public DbSet<BusinessProfile> BusinessProfiles => Set<BusinessProfile>();
     public DbSet<ExpertProfile> ExpertProfiles => Set<ExpertProfile>();
     public DbSet<ExpertEvidence> ExpertEvidences => Set<ExpertEvidence>();
-    public DbSet<ExpertCompetencyAssessment> ExpertCompetencyAssessments => Set<ExpertCompetencyAssessment>();
+    public DbSet<ExpertCompetencyAssessment> ExpertCompetencyAssessments =>
+        Set<ExpertCompetencyAssessment>();
     public DbSet<ServiceOffering> ServiceOfferings => Set<ServiceOffering>();
     public DbSet<AvailabilitySlot> AvailabilitySlots => Set<AvailabilitySlot>();
 
@@ -23,6 +25,61 @@ public sealed class AuthDbContext(DbContextOptions<AuthDbContext> options) : DbC
     {
         modelBuilder.HasDefaultSchema("identity");
 
+        modelBuilder.Entity<AuthEmailOutbox>(e =>
+        {
+            e.ToTable("auth_email_outbox");
+            e.HasKey(x => x.Id);
+            e.HasIndex(x => x.SentAt);
+        });
+        var codes = new[]
+        {
+            "USER",
+            "EXPERT",
+            "AUTHOR_REVIEWER",
+            "KNOWLEDGE_ADMIN",
+            "SYSTEM_ADMIN",
+        };
+        for (var i = 0; i < codes.Length; i++)
+            modelBuilder
+                .Entity<Role>()
+                .HasData(
+                    new Role
+                    {
+                        Id = Guid.Parse($"10000000-0000-0000-0000-{i + 1:000000000000}"),
+                        Code = codes[i],
+                        Name = codes[i],
+                    }
+                );
+        var permissionCodes = new[]
+        {
+            "profile:read",
+            "profile:write",
+            "business:read",
+            "business:write",
+        };
+        for (var i = 0; i < permissionCodes.Length; i++)
+        {
+            var permissionId = Guid.Parse($"20000000-0000-0000-0000-{i + 1:000000000000}");
+            modelBuilder
+                .Entity<Permission>()
+                .HasData(
+                    new Permission
+                    {
+                        Id = permissionId,
+                        Code = permissionCodes[i],
+                        Description = permissionCodes[i],
+                    }
+                );
+            modelBuilder
+                .Entity<RolePermission>()
+                .HasData(
+                    new RolePermission
+                    {
+                        RoleId = Guid.Parse("10000000-0000-0000-0000-000000000001"),
+                        PermissionId = permissionId,
+                    }
+                );
+        }
         // Roles
         modelBuilder.Entity<Role>(e =>
         {
@@ -41,14 +98,27 @@ public sealed class AuthDbContext(DbContextOptions<AuthDbContext> options) : DbC
             e.HasKey(x => x.Id);
             e.Property(x => x.Id).HasColumnName("id");
             e.Property(x => x.Email).HasColumnName("email").IsRequired();
+            e.HasIndex(x => x.Email).IsUnique();
+            e.Property(x => x.FailedLoginAttempts).HasColumnName("failed_login_attempts");
+            e.Property(x => x.LockoutEnd).HasColumnName("lockout_end");
+            e.Property(x => x.TokenVersion).HasColumnName("token_version");
             e.Property(x => x.PasswordHash).HasColumnName("password_hash").IsRequired();
             e.Property(x => x.FullName).HasColumnName("full_name").IsRequired();
             e.Ignore(x => x.DisplayName);
             e.Property(x => x.Phone).HasColumnName("phone");
-            e.Property(x => x.Status).HasColumnName("status").HasDefaultValue("PENDING_VERIFICATION").IsRequired();
+            e.Property(x => x.Status)
+                .HasColumnName("status")
+                .HasDefaultValue("PENDING_VERIFICATION")
+                .IsRequired();
             e.Property(x => x.EmailVerifiedAt).HasColumnName("email_verified_at");
-            e.Property(x => x.CreatedAt).HasColumnName("created_at").HasDefaultValueSql("now()").IsRequired();
-            e.Property(x => x.UpdatedAt).HasColumnName("updated_at").HasDefaultValueSql("now()").IsRequired();
+            e.Property(x => x.CreatedAt)
+                .HasColumnName("created_at")
+                .HasDefaultValueSql("now()")
+                .IsRequired();
+            e.Property(x => x.UpdatedAt)
+                .HasColumnName("updated_at")
+                .HasDefaultValueSql("now()")
+                .IsRequired();
         });
 
         // User Roles
@@ -115,12 +185,16 @@ public sealed class AuthDbContext(DbContextOptions<AuthDbContext> options) : DbC
             e.HasIndex(x => x.TokenHash).IsUnique();
             e.Property(x => x.UserAgent).HasColumnName("user_agent");
             e.Property(x => x.IpAddress).HasColumnName("ip_address").HasColumnType("inet");
-            e.Property(x => x.IssuedAt).HasColumnName("issued_at").HasDefaultValueSql("now()").IsRequired();
+            e.Property(x => x.IssuedAt)
+                .HasColumnName("issued_at")
+                .HasDefaultValueSql("now()")
+                .IsRequired();
             e.Property(x => x.ExpiresAt).HasColumnName("expires_at").IsRequired();
             e.Property(x => x.RevokedAt).HasColumnName("revoked_at");
             e.Property(x => x.RotatedFrom).HasColumnName("rotated_from");
 
-            e.HasIndex(x => new { x.UserId, x.ExpiresAt }).HasDatabaseName("ix_auth_refresh_token_2");
+            e.HasIndex(x => new { x.UserId, x.ExpiresAt })
+                .HasDatabaseName("ix_auth_refresh_token_2");
 
             e.HasOne(x => x.User)
                 .WithMany(u => u.RefreshTokens)
@@ -148,7 +222,10 @@ public sealed class AuthDbContext(DbContextOptions<AuthDbContext> options) : DbC
             e.Property(x => x.UsedAt).HasColumnName("used_at");
             e.Property(x => x.InvalidatedAt).HasColumnName("invalidated_at");
             e.Property(x => x.AttemptCount).HasColumnName("attempt_count").HasDefaultValue(0);
-            e.Property(x => x.CreatedAt).HasColumnName("created_at").HasDefaultValueSql("now()").IsRequired();
+            e.Property(x => x.CreatedAt)
+                .HasColumnName("created_at")
+                .HasDefaultValueSql("now()")
+                .IsRequired();
 
             e.HasOne(x => x.User)
                 .WithMany(u => u.VerificationTokens)
@@ -171,8 +248,14 @@ public sealed class AuthDbContext(DbContextOptions<AuthDbContext> options) : DbC
             e.Property(x => x.Representative).HasColumnName("representative");
             e.Property(x => x.ContactEmail).HasColumnName("contact_email");
             e.Property(x => x.ContactPhone).HasColumnName("contact_phone");
-            e.Property(x => x.CreatedAt).HasColumnName("created_at").HasDefaultValueSql("now()").IsRequired();
-            e.Property(x => x.UpdatedAt).HasColumnName("updated_at").HasDefaultValueSql("now()").IsRequired();
+            e.Property(x => x.CreatedAt)
+                .HasColumnName("created_at")
+                .HasDefaultValueSql("now()")
+                .IsRequired();
+            e.Property(x => x.UpdatedAt)
+                .HasColumnName("updated_at")
+                .HasDefaultValueSql("now()")
+                .IsRequired();
 
             e.HasOne(x => x.User)
                 .WithOne(u => u.BusinessProfile)
@@ -191,18 +274,34 @@ public sealed class AuthDbContext(DbContextOptions<AuthDbContext> options) : DbC
             e.HasIndex(x => x.UserId).IsUnique();
             e.Property(x => x.YearsExperience).HasColumnName("years_experience");
             e.Property(x => x.Bio).HasColumnName("bio");
-            e.Property(x => x.Status).HasColumnName("status").HasDefaultValue("SCREENING").IsRequired();
-            e.Property(x => x.ServiceStatus).HasColumnName("service_status").HasDefaultValue("INACTIVE").IsRequired();
+            e.Property(x => x.Status)
+                .HasColumnName("status")
+                .HasDefaultValue("SCREENING")
+                .IsRequired();
+            e.Property(x => x.ServiceStatus)
+                .HasColumnName("service_status")
+                .HasDefaultValue("INACTIVE")
+                .IsRequired();
             e.Property(x => x.EligibilityNote).HasColumnName("eligibility_note");
             e.Property(x => x.TurnaroundHours).HasColumnName("turnaround_hours");
-            e.Property(x => x.RatingAvg).HasColumnName("rating_avg").HasColumnType("numeric(3,2)").HasDefaultValue(0m);
+            e.Property(x => x.RatingAvg)
+                .HasColumnName("rating_avg")
+                .HasColumnType("numeric(3,2)")
+                .HasDefaultValue(0m);
             e.Property(x => x.RatingCount).HasColumnName("rating_count").HasDefaultValue(0);
             e.Property(x => x.ApprovedBy).HasColumnName("approved_by");
             e.Property(x => x.ApprovedAt).HasColumnName("approved_at");
-            e.Property(x => x.CreatedAt).HasColumnName("created_at").HasDefaultValueSql("now()").IsRequired();
-            e.Property(x => x.UpdatedAt).HasColumnName("updated_at").HasDefaultValueSql("now()").IsRequired();
+            e.Property(x => x.CreatedAt)
+                .HasColumnName("created_at")
+                .HasDefaultValueSql("now()")
+                .IsRequired();
+            e.Property(x => x.UpdatedAt)
+                .HasColumnName("updated_at")
+                .HasDefaultValueSql("now()")
+                .IsRequired();
 
-            e.HasIndex(x => new { x.Status, x.ServiceStatus }).HasDatabaseName("ix_expert_marketplace_feed");
+            e.HasIndex(x => new { x.Status, x.ServiceStatus })
+                .HasDatabaseName("ix_expert_marketplace_feed");
 
             e.HasOne(x => x.User)
                 .WithOne(u => u.ExpertProfile)
@@ -228,7 +327,10 @@ public sealed class AuthDbContext(DbContextOptions<AuthDbContext> options) : DbC
             e.Property(x => x.FileUrl).HasColumnName("file_url").IsRequired();
             e.Property(x => x.ParsedMeta).HasColumnName("parsed_meta").HasColumnType("jsonb");
             e.Property(x => x.ScreeningFlag).HasColumnName("screening_flag");
-            e.Property(x => x.CreatedAt).HasColumnName("created_at").HasDefaultValueSql("now()").IsRequired();
+            e.Property(x => x.CreatedAt)
+                .HasColumnName("created_at")
+                .HasDefaultValueSql("now()")
+                .IsRequired();
 
             e.HasIndex(x => x.ExpertProfileId).HasDatabaseName("ix_expert_evidence_2");
 
@@ -254,7 +356,10 @@ public sealed class AuthDbContext(DbContextOptions<AuthDbContext> options) : DbC
             e.Property(x => x.C5Score).HasColumnName("c5_score");
             e.Property(x => x.Rationale).HasColumnName("rationale").IsRequired();
             e.Property(x => x.Decision).HasColumnName("decision").IsRequired();
-            e.Property(x => x.CreatedAt).HasColumnName("created_at").HasDefaultValueSql("now()").IsRequired();
+            e.Property(x => x.CreatedAt)
+                .HasColumnName("created_at")
+                .HasDefaultValueSql("now()")
+                .IsRequired();
 
             e.HasIndex(x => x.ExpertProfileId).HasDatabaseName("ix_expert_competency_assessment_2");
 
@@ -281,9 +386,13 @@ public sealed class AuthDbContext(DbContextOptions<AuthDbContext> options) : DbC
             e.Property(x => x.ServiceType).HasColumnName("service_type").IsRequired();
             e.Property(x => x.Fee).HasColumnName("fee");
             e.Property(x => x.IsActive).HasColumnName("is_active").HasDefaultValue(true);
-            e.Property(x => x.CreatedAt).HasColumnName("created_at").HasDefaultValueSql("now()").IsRequired();
+            e.Property(x => x.CreatedAt)
+                .HasColumnName("created_at")
+                .HasDefaultValueSql("now()")
+                .IsRequired();
 
-            e.HasIndex(x => new { x.ExpertProfileId, x.IsActive }).HasDatabaseName("ix_service_offering_2");
+            e.HasIndex(x => new { x.ExpertProfileId, x.IsActive })
+                .HasDatabaseName("ix_service_offering_2");
 
             e.HasOne(x => x.ExpertProfile)
                 .WithMany(p => p.ServiceOfferings)
@@ -302,9 +411,18 @@ public sealed class AuthDbContext(DbContextOptions<AuthDbContext> options) : DbC
             e.Property(x => x.StartAt).HasColumnName("start_at").IsRequired();
             e.Property(x => x.EndAt).HasColumnName("end_at").IsRequired();
             e.Property(x => x.Status).HasColumnName("status").HasDefaultValue("OPEN").IsRequired();
-            e.Property(x => x.CreatedAt).HasColumnName("created_at").HasDefaultValueSql("now()").IsRequired();
+            e.Property(x => x.CreatedAt)
+                .HasColumnName("created_at")
+                .HasDefaultValueSql("now()")
+                .IsRequired();
 
-            e.HasIndex(x => new { x.ExpertProfileId, x.Status, x.StartAt }).HasDatabaseName("ix_availability_slot_2");
+            e.HasIndex(x => new
+                {
+                    x.ExpertProfileId,
+                    x.Status,
+                    x.StartAt,
+                })
+                .HasDatabaseName("ix_availability_slot_2");
 
             e.HasOne(x => x.ExpertProfile)
                 .WithMany(p => p.AvailabilitySlots)

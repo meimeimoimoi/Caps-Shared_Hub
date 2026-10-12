@@ -10,22 +10,30 @@ namespace Caps.Common.Extensions;
 /// <summary>One-liner standard API setup for every microservice.</summary>
 public static class CommonApiExtensions
 {
-    public static IServiceCollection AddCommonApi(this IServiceCollection services, IConfiguration config, string serviceName)
+    public static IServiceCollection AddCommonApi(
+        this IServiceCollection services,
+        IConfiguration config,
+        string serviceName
+    )
     {
         services.AddControllers();
         services.AddEndpointsApiExplorer();
-        services.AddSwaggerGen(o => o.SwaggerDoc("v1", new() { Title = $"{serviceName} API", Version = "v1" }));
+        services.AddSwaggerGen(o =>
+            o.SwaggerDoc("v1", new() { Title = $"{serviceName} API", Version = "v1" })
+        );
         services.AddExceptionHandler<GlobalExceptionHandler>();
         services.AddProblemDetails();
         services.AddHealthChecks();
         services.AddCapsJwt(config);
 
-        var origins = config.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? ["http://localhost:5173"];
-        services.AddCors(o => o.AddPolicy("spa", p => p
-            .WithOrigins(origins)
-            .AllowAnyHeader()
-            .AllowAnyMethod()
-            .AllowCredentials()));
+        var origins =
+            config.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? ["http://localhost:5173"];
+        services.AddCors(o =>
+            o.AddPolicy(
+                "spa",
+                p => p.WithOrigins(origins).AllowAnyHeader().AllowAnyMethod().AllowCredentials()
+            )
+        );
 
         return services;
     }

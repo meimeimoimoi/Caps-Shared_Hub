@@ -9,14 +9,24 @@ public sealed record MessagingOptions(string Host, string Username, string Passw
 /// <summary>Sample contract — services share events via this lib.</summary>
 public sealed record UserRegisteredEvent(string UserId, string Email, DateTimeOffset At);
 
+public sealed record AuthEmailRequestedEvent(
+    Guid Id,
+    string Email,
+    string Purpose,
+    string Link,
+    DateTimeOffset ExpiresAt
+);
+
 public static class MessagingServiceCollectionExtensions
 {
     public static IServiceCollection AddCapsMessaging(
         this IServiceCollection services,
         IConfiguration config,
-        Action<IBusRegistrationConfigurator>? configureConsumers = null)
+        Action<IBusRegistrationConfigurator>? configureConsumers = null
+    )
     {
-        var cs = config.GetConnectionString("RabbitMq")
+        var cs =
+            config.GetConnectionString("RabbitMq")
             ?? config["ConnectionStrings:RabbitMq"]
             ?? "amqp://guest:guest@localhost:5672";
 
@@ -29,15 +39,20 @@ public static class MessagingServiceCollectionExtensions
         {
             configureConsumers?.Invoke(x);
             x.SetKebabCaseEndpointNameFormatter();
-            x.UsingRabbitMq((ctx, cfg) =>
-            {
-                cfg.Host(host, h =>
+            x.UsingRabbitMq(
+                (ctx, cfg) =>
                 {
-                    h.Username(user);
-                    h.Password(pass);
-                });
-                cfg.ConfigureEndpoints(ctx);
-            });
+                    cfg.Host(
+                        host,
+                        h =>
+                        {
+                            h.Username(user);
+                            h.Password(pass);
+                        }
+                    );
+                    cfg.ConfigureEndpoints(ctx);
+                }
+            );
         });
         return services;
     }

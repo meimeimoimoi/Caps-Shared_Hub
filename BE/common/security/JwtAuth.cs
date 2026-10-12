@@ -27,10 +27,15 @@ public sealed class JwtTokenService(JwtOptions options, IDateTimeProvider clock)
         var token = new JwtSecurityToken(
             issuer: options.Issuer,
             audience: options.Audience,
-            claims: [new Claim(JwtRegisteredClaimNames.Sub, userId), new Claim(JwtRegisteredClaimNames.Email, email)],
+            claims:
+            [
+                new Claim(JwtRegisteredClaimNames.Sub, userId),
+                new Claim(JwtRegisteredClaimNames.Email, email),
+            ],
             notBefore: now,
             expires: now.AddMinutes(options.ExpiryMinutes),
-            signingCredentials: creds);
+            signingCredentials: creds
+        );
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
 }
@@ -38,20 +43,25 @@ public sealed class JwtTokenService(JwtOptions options, IDateTimeProvider clock)
 public sealed class HttpContextCurrentUser(IHttpContextAccessor accessor) : ICurrentUser
 {
     public string? UserId => accessor.HttpContext?.User.FindFirstValue(JwtRegisteredClaimNames.Sub);
-    public string? Email => accessor.HttpContext?.User.FindFirstValue(JwtRegisteredClaimNames.Email);
+    public string? Email =>
+        accessor.HttpContext?.User.FindFirstValue(JwtRegisteredClaimNames.Email);
     public bool IsAuthenticated => accessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
 }
 
 public static class JwtServiceCollectionExtensions
 {
-    public static IServiceCollection AddCapsJwt(this IServiceCollection services, IConfiguration config)
+    public static IServiceCollection AddCapsJwt(
+        this IServiceCollection services,
+        IConfiguration config
+    )
     {
         var section = config.GetSection("Jwt");
         var options = new JwtOptions(
             section["Issuer"] ?? "caps-auth",
             section["Audience"] ?? "caps-spa",
             section["Key"] ?? throw new InvalidOperationException("Missing Jwt:Key"),
-            int.TryParse(section["ExpiryMinutes"], out var m) ? m : 60);
+            int.TryParse(section["ExpiryMinutes"], out var m) ? m : 60
+        );
 
         services.AddSingleton(options);
         services.AddSingleton<IDateTimeProvider, SystemDateTimeProvider>();
@@ -60,11 +70,15 @@ public static class JwtServiceCollectionExtensions
         services.AddScoped<ICurrentUser, HttpContextCurrentUser>();
 
         var keyBytes = Encoding.UTF8.GetBytes(options.Key);
-        services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+        services
+            .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(o =>
             {
+                o.MapInboundClaims = false;
                 o.TokenValidationParameters = new TokenValidationParameters
                 {
+                    RoleClaimType = "role",
+                    NameClaimType = JwtRegisteredClaimNames.Sub,
                     ValidateIssuer = true,
                     ValidateAudience = true,
                     ValidateLifetime = true,
@@ -75,7 +89,15 @@ public static class JwtServiceCollectionExtensions
                     ClockSkew = TimeSpan.FromMinutes(2),
                 };
             });
-        services.AddAuthorization();
+        services.AddAuthorization(o =>
+        {
+            o.DefaultPolicy = new Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder()
+                .RequireAuthenticatedUser()
+                .RequireClaim("account_status", "ACTIVE")
+                .Build();
+            o.AddPolicy("ActiveAccount", o.DefaultPolicy);
+            o.AddPolicy("AuthSession", p => p.RequireAuthenticatedUser());
+        });
         return services;
     }
 }

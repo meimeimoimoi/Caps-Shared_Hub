@@ -7,16 +7,26 @@ using Microsoft.Extensions.Logging;
 namespace Caps.Common.Exceptions;
 
 public class DomainException(string message) : Exception(message);
+
 public sealed class NotFoundException(string message) : DomainException(message);
-public sealed class ValidationException(string message, IDictionary<string, string[]>? errors = null) : DomainException(message)
+
+public sealed class ValidationException(
+    string message,
+    IDictionary<string, string[]>? errors = null
+) : DomainException(message)
 {
     public IDictionary<string, string[]>? Errors { get; } = errors;
 }
 
 /// <summary>Centralized ProblemDetails mapping. Register via AddExceptionHandler.</summary>
-public sealed class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger) : IExceptionHandler
+public sealed class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger)
+    : IExceptionHandler
 {
-    public async ValueTask<bool> TryHandleAsync(HttpContext httpContext, Exception exception, CancellationToken cancellationToken)
+    public async ValueTask<bool> TryHandleAsync(
+        HttpContext httpContext,
+        Exception exception,
+        CancellationToken cancellationToken
+    )
     {
         var traceId = httpContext.TraceIdentifier;
         logger.LogError(exception, "Unhandled exception. TraceId={TraceId}", traceId);
@@ -33,15 +43,18 @@ public sealed class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logge
         {
             Status = status,
             Title = title,
-            Detail = exception.Message,
+            Detail = status >= 500 ? "An unexpected error occurred." : exception.Message,
             Instance = httpContext.Request.Path,
         };
         problem.Extensions["traceId"] = traceId;
 
         httpContext.Response.StatusCode = status;
         await httpContext.Response.WriteAsJsonAsync(
-            ApiResponse<ProblemDetails>.Fail(exception.Message),
-            cancellationToken);
+            ApiResponse<ProblemDetails>.Fail(
+                status >= 500 ? "An unexpected error occurred." : exception.Message
+            ),
+            cancellationToken
+        );
 
         return true;
     }

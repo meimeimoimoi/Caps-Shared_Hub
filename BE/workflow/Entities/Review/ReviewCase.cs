@@ -37,5 +37,6 @@ public sealed class ReviewCase
     public ICollection<ReviewTask> ReviewTasks { get; set; } = new List<ReviewTask>();
     public ICollection<InfoRequest> InfoRequests { get; set; } = new List<InfoRequest>();
     public ICollection<ReviewAttachment> Attachments { get; set; } = new List<ReviewAttachment>();
-    public ICollection<ReviewStatusHistory> StatusHistories { get; set; } = new List<ReviewStatusHistory>();
+    public ICollection<ReviewStatusHistory> StatusHistories { get; set; } =
+        new List<ReviewStatusHistory>();
 }

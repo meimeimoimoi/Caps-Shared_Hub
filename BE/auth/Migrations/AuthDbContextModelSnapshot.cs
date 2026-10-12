@@ -24,6 +24,32 @@ namespace auth.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("auth.Entities.AuthEmailOutbox", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Attempts")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("ProtectedPayload")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTimeOffset?>("SentAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SentAt");
+
+                    b.ToTable("auth_email_outbox", "identity");
+                });
+
             modelBuilder.Entity("auth.Entities.AuthRefreshToken", b =>
                 {
                     b.Property<Guid>("Id")
@@ -388,6 +414,32 @@ namespace auth.Migrations
                         .IsUnique();
 
                     b.ToTable("permission", "identity");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("20000000-0000-0000-0000-000000000001"),
+                            Code = "profile:read",
+                            Description = "profile:read"
+                        },
+                        new
+                        {
+                            Id = new Guid("20000000-0000-0000-0000-000000000002"),
+                            Code = "profile:write",
+                            Description = "profile:write"
+                        },
+                        new
+                        {
+                            Id = new Guid("20000000-0000-0000-0000-000000000003"),
+                            Code = "business:read",
+                            Description = "business:read"
+                        },
+                        new
+                        {
+                            Id = new Guid("20000000-0000-0000-0000-000000000004"),
+                            Code = "business:write",
+                            Description = "business:write"
+                        });
                 });
 
             modelBuilder.Entity("auth.Entities.Role", b =>
@@ -413,6 +465,38 @@ namespace auth.Migrations
                         .IsUnique();
 
                     b.ToTable("roles", "identity");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("10000000-0000-0000-0000-000000000001"),
+                            Code = "USER",
+                            Name = "USER"
+                        },
+                        new
+                        {
+                            Id = new Guid("10000000-0000-0000-0000-000000000002"),
+                            Code = "EXPERT",
+                            Name = "EXPERT"
+                        },
+                        new
+                        {
+                            Id = new Guid("10000000-0000-0000-0000-000000000003"),
+                            Code = "AUTHOR_REVIEWER",
+                            Name = "AUTHOR_REVIEWER"
+                        },
+                        new
+                        {
+                            Id = new Guid("10000000-0000-0000-0000-000000000004"),
+                            Code = "KNOWLEDGE_ADMIN",
+                            Name = "KNOWLEDGE_ADMIN"
+                        },
+                        new
+                        {
+                            Id = new Guid("10000000-0000-0000-0000-000000000005"),
+                            Code = "SYSTEM_ADMIN",
+                            Name = "SYSTEM_ADMIN"
+                        });
                 });
 
             modelBuilder.Entity("auth.Entities.RolePermission", b =>
@@ -430,6 +514,28 @@ namespace auth.Migrations
                     b.HasIndex("PermissionId");
 
                     b.ToTable("role_permission", "identity");
+
+                    b.HasData(
+                        new
+                        {
+                            RoleId = new Guid("10000000-0000-0000-0000-000000000001"),
+                            PermissionId = new Guid("20000000-0000-0000-0000-000000000001")
+                        },
+                        new
+                        {
+                            RoleId = new Guid("10000000-0000-0000-0000-000000000001"),
+                            PermissionId = new Guid("20000000-0000-0000-0000-000000000002")
+                        },
+                        new
+                        {
+                            RoleId = new Guid("10000000-0000-0000-0000-000000000001"),
+                            PermissionId = new Guid("20000000-0000-0000-0000-000000000003")
+                        },
+                        new
+                        {
+                            RoleId = new Guid("10000000-0000-0000-0000-000000000001"),
+                            PermissionId = new Guid("20000000-0000-0000-0000-000000000004")
+                        });
                 });
 
             modelBuilder.Entity("auth.Entities.ServiceOffering", b =>
@@ -494,10 +600,18 @@ namespace auth.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("email_verified_at");
 
+                    b.Property<int>("FailedLoginAttempts")
+                        .HasColumnType("integer")
+                        .HasColumnName("failed_login_attempts");
+
                     b.Property<string>("FullName")
                         .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("full_name");
+
+                    b.Property<DateTimeOffset?>("LockoutEnd")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("lockout_end");
 
                     b.Property<string>("PasswordHash")
                         .IsRequired()
@@ -515,6 +629,10 @@ namespace auth.Migrations
                         .HasDefaultValue("PENDING_VERIFICATION")
                         .HasColumnName("status");
 
+                    b.Property<int>("TokenVersion")
+                        .HasColumnType("integer")
+                        .HasColumnName("token_version");
+
                     b.Property<DateTimeOffset>("UpdatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
@@ -522,6 +640,9 @@ namespace auth.Migrations
                         .HasDefaultValueSql("now()");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Email")
+                        .IsUnique();
 
                     b.ToTable("users", "identity");
                 });
