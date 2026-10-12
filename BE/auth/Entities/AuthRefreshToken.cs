@@ -17,5 +17,6 @@ public sealed class AuthRefreshToken
     public DateTimeOffset? RevokedAt { get; set; }
     public Guid? RotatedFrom { get; set; }
     public AuthRefreshToken? RotatedFromToken { get; set; }
-    public ICollection<AuthRefreshToken> RotatedToTokens { get; set; } = new List<AuthRefreshToken>();
+    public ICollection<AuthRefreshToken> RotatedToTokens { get; set; } =
+        new List<AuthRefreshToken>();
 }

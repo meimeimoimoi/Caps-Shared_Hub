@@ -29,7 +29,8 @@ public sealed class User
 
     public ICollection<UserRole> UserRoles { get; set; } = new List<UserRole>();
     public ICollection<AuthRefreshToken> RefreshTokens { get; set; } = new List<AuthRefreshToken>();
-    public ICollection<VerificationToken> VerificationTokens { get; set; } = new List<VerificationToken>();
+    public ICollection<VerificationToken> VerificationTokens { get; set; } =
+        new List<VerificationToken>();
     public BusinessProfile? BusinessProfile { get; set; }
     public ExpertProfile? ExpertProfile { get; set; }
 }

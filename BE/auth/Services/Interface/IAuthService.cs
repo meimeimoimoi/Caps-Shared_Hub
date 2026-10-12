@@ -1,6 +1,8 @@
 using auth.DTOs.Requests;
 using auth.DTOs.Responses;
+
 namespace auth.Services.Interface;
+
 public interface IAuthService
 {
     Task<SessionResult> RegisterAsync(RegisterRequest request, CancellationToken ct);
@@ -14,5 +16,9 @@ public interface IAuthService
     Task<MeResponse> MeAsync(Guid userId, CancellationToken ct);
     Task<MeResponse> UpdateAsync(Guid userId, UpdateProfileRequest request, CancellationToken ct);
     Task<BusinessResponse?> BusinessAsync(Guid userId, CancellationToken ct);
-    Task<BusinessResponse> UpdateBusinessAsync(Guid userId, BusinessProfileRequest request, CancellationToken ct);
+    Task<BusinessResponse> UpdateBusinessAsync(
+        Guid userId,
+        BusinessProfileRequest request,
+        CancellationToken ct
+    );
 }

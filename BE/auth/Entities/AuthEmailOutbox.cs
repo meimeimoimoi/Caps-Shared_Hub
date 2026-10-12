@@ -1,4 +1,5 @@
 namespace auth.Entities;
+
 public sealed class AuthEmailOutbox
 {
     public Guid Id { get; set; } = Guid.NewGuid();

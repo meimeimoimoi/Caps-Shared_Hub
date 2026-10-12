@@ -1,4 +1,5 @@
 namespace auth.Services;
+
 public sealed class AuthOptions
 {
     public int AccessMinutes { get; set; } = 15;
@@ -11,6 +12,7 @@ public sealed class AuthOptions
     public string FrontendUrl { get; set; } = "http://localhost:5173";
     public bool SecureCookie { get; set; } = true;
 }
+
 public sealed class AuthFailure(int status, string code, string message) : Exception(message)
 {
     public int Status { get; } = status;

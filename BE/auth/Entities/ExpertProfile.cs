@@ -23,7 +23,10 @@ public sealed class ExpertProfile
     public DateTimeOffset UpdatedAt { get; set; } = DateTimeOffset.UtcNow;
 
     public ICollection<ExpertEvidence> Evidences { get; set; } = new List<ExpertEvidence>();
-    public ICollection<ExpertCompetencyAssessment> Assessments { get; set; } = new List<ExpertCompetencyAssessment>();
-    public ICollection<ServiceOffering> ServiceOfferings { get; set; } = new List<ServiceOffering>();
-    public ICollection<AvailabilitySlot> AvailabilitySlots { get; set; } = new List<AvailabilitySlot>();
+    public ICollection<ExpertCompetencyAssessment> Assessments { get; set; } =
+        new List<ExpertCompetencyAssessment>();
+    public ICollection<ServiceOffering> ServiceOfferings { get; set; } =
+        new List<ServiceOffering>();
+    public ICollection<AvailabilitySlot> AvailabilitySlots { get; set; } =
+        new List<AvailabilitySlot>();
 }

@@ -13,5 +13,6 @@ public sealed class CrawlJob
     public DateTimeOffset StartedAt { get; set; } = DateTimeOffset.UtcNow;
     public DateTimeOffset? FinishedAt { get; set; }
 
-    public ICollection<KnowledgeDocument> KnowledgeDocuments { get; set; } = new List<KnowledgeDocument>();
+    public ICollection<KnowledgeDocument> KnowledgeDocuments { get; set; } =
+        new List<KnowledgeDocument>();
 }
