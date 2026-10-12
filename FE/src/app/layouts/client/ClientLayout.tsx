@@ -84,7 +84,11 @@ export function ClientLayout() {
           searchLinks={groups.flatMap((g) =>
             g.items.flatMap((i) => (i.to ? [{ label: i.label, to: i.to }] : []))
           )}
-          account={{ name: account.name, onSignOut: account.logout }}
+          account={{
+            name: account.name,
+            avatarUrl: account.avatarUrl,
+            onSignOut: account.logout,
+          }}
         />
         {account.isDemo && (
           <DemoBanner>

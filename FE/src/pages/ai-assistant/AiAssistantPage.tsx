@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useNavigate } from 'react-router-dom'
 import { LogIn, PanelLeftOpen, SquarePen } from 'lucide-react'
 import { Drawer } from '@/components/ui/feedback/drawer'
 import { Toast } from '@/components/ui/feedback/toast'
@@ -14,6 +13,7 @@ import {
   useReducedMotion,
 } from '@/components/ui/motion'
 import { useAuthStore } from '@/features/auth/store/authStore'
+import { useAuth } from '@/features/auth/hooks/useAuth'
 import { AssistantWelcome } from '@/features/ai-assistant/components/AssistantWelcome'
 import { ChatComposer } from '@/features/ai-assistant/components/ChatComposer'
 import { ConversationHistory } from '@/features/ai-assistant/components/ConversationHistory'
@@ -36,9 +36,9 @@ export default function AiAssistantPage() {
     activeConversationId,
   } = useAiAssistant()
 
-  const navigate = useNavigate()
   const user = useAuthStore((state) => state.user)
-  const clearSession = useAuthStore((state) => state.clearSession)
+  // logout gọi API thu hồi refresh cookie rồi mới xoá phiên cục bộ
+  const { logout } = useAuth()
   const reducedMotion = useReducedMotion()
 
   // Trang này có cột lịch sử riêng nên menu chính mặc định thu thành dải icon (kiểu Slack/Linear)
@@ -189,12 +189,8 @@ export default function AiAssistantPage() {
           )}
           account={{
             name: user?.name ?? t('common:account.preview'),
-            onSignOut: user
-              ? () => {
-                  clearSession()
-                  navigate('/login')
-                }
-              : undefined,
+            avatarUrl: user?.avatarUrl,
+            onSignOut: user ? () => void logout() : undefined,
             links: user
               ? []
               : [

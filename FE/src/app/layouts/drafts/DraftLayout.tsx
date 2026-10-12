@@ -1,9 +1,10 @@
 import { useDialogMotion } from '@/components/ui/motion'
 import { useTranslation } from 'react-i18next'
 import { useRef, useState } from 'react'
-import { Outlet, useLocation, useNavigate } from 'react-router-dom'
+import { Outlet, useLocation } from 'react-router-dom'
 import { LogIn } from 'lucide-react'
 import { useAuthStore } from '@/features/auth/store/authStore'
+import { useAuth } from '@/features/auth/hooks/useAuth'
 import { useDraftHref } from '@/features/drafting/hooks/useDrafting'
 import { AppHeader } from '@/components/ui/layout/app-header'
 import { AppSidebar } from '@/components/ui/layout/app-sidebar'
@@ -16,8 +17,8 @@ export function DraftLayout() {
   useDialogMotion(drawer, 'drawer-left')
   const drawerTrigger = useRef<HTMLButtonElement>(null)
   const user = useAuthStore((state) => state.user)
-  const clearSession = useAuthStore((state) => state.clearSession)
-  const navigate = useNavigate()
+  // logout gọi API thu hồi refresh cookie rồi mới xoá phiên cục bộ
+  const { logout } = useAuth()
   const location = useLocation()
   const href = useDraftHref()
   const groups = useUserNavigation(
@@ -93,12 +94,8 @@ export function DraftLayout() {
           )}
           account={{
             name: user?.name ?? t('account.preview'),
-            onSignOut: user
-              ? () => {
-                  clearSession()
-                  navigate('/login')
-                }
-              : undefined,
+            avatarUrl: user?.avatarUrl,
+            onSignOut: user ? () => void logout() : undefined,
             links: user
               ? []
               : [
