@@ -5,7 +5,8 @@ Tổng quan, cách chạy, route: xem [README.md](README.md). File này chỉ ch
 
 ## Nguyên tắc chung
 
-- Trả lời và comment bằng **tiếng Việt**; tên biến, class, hàm, commit message dùng tiếng Anh. <!-- đổi nếu team quy định khác -->
+- Trả lời bằng **tiếng Việt**. **Comment trong code bằng tiếng Anh**, không viết comment tiếng Việt; tên biến, class, hàm, commit message cũng dùng tiếng Anh. Nội dung hiển thị cho người dùng (file ngôn ngữ `locales/vi`, nội dung email) vẫn là tiếng Việt.
+- Code cũ còn comment tiếng Việt (chủ yếu ở FE): sửa file nào thì dịch comment ở phần mình sửa, không dịch hàng loạt.
 - Sửa tối thiểu, đúng phạm vi yêu cầu. Không refactor, đổi tên, format lại code không liên quan.
 - Trước khi tạo file/pattern mới, tìm code tương tự đã có trong repo và làm theo.
 - Không bịa API, package, endpoint. Không chắc thì đọc code hoặc hỏi.
