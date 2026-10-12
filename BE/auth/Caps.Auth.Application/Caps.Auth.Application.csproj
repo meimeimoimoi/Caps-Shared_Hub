@@ -3,6 +3,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Caps.Auth.Domain\Caps.Auth.Domain.csproj" />
     <ProjectReference Include="..\..\common\Caps.Common.Application\Caps.Common.Application.csproj" />
+    <ProjectReference Include="..\..\common\Caps.Contracts\Caps.Contracts.csproj" />
   </ItemGroup>
 
 </Project>

@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace Caps.Auth.Application.DTOs.Requests;
+namespace Caps.Auth.Api.DTOs.Requests;
 
 public sealed record LoginRequest(
     [Required, EmailAddress, MaxLength(256)] string Email,

@@ -25,7 +25,7 @@ public sealed class AuthEmailPublisher(
                 var db = scope.ServiceProvider.GetRequiredService<AuthDbContext>();
                 var protector = scope
                     .ServiceProvider.GetRequiredService<IDataProtectionProvider>()
-                    .CreateProtector("AuthEmailOutbox.v1");
+                    .CreateProtector(AuthEmailOutboxWriter.ProtectorPurpose);
                 var bus = scope.ServiceProvider.GetRequiredService<IPublishEndpoint>();
                 await using var tx = await db.Database.BeginTransactionAsync(ct);
                 var entries = await db

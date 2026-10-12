@@ -1,34 +1,48 @@
 using System.Security.Claims;
+using Caps.Auth.Api.DTOs.Requests;
 using Caps.Auth.Application;
-using Caps.Auth.Application.Abstractions;
-using Caps.Auth.Application.DTOs.Requests;
 using Caps.Auth.Application.DTOs.Responses;
-using Caps.Auth.Domain.Users;
+using Caps.Auth.Application.Features.Profile;
 using Caps.Common.Api;
+using Caps.Common.Application;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Caps.Auth.Api.Controllers;
 
 [ApiController, Authorize(Policy = "AuthSession"), Route("api/v1/users/me")]
-public sealed class UsersController(IAuthService auth) : ControllerBase
+public sealed class UsersController : ControllerBase
 {
     private Guid UserId => Guid.Parse(User.FindFirstValue("sub")!);
 
     [HttpGet]
-    public async Task<IActionResult> Me(CancellationToken ct) =>
-        Ok(ApiResponse<MeResponse>.Ok(await auth.MeAsync(UserId, ct)));
+    public async Task<IActionResult> Me(
+        [FromServices] IQueryHandler<GetMeQuery, MeResponse> handler,
+        CancellationToken ct
+    ) => Ok(ApiResponse<MeResponse>.Ok(await handler.HandleAsync(new(UserId), ct)));
 
     [HttpPut, Authorize(Policy = "ActiveAccount")]
-    public async Task<IActionResult> Update(UpdateProfileRequest r, CancellationToken ct) =>
-        Ok(ApiResponse<MeResponse>.Ok(await auth.UpdateAsync(UserId, r, ct)));
+    public async Task<IActionResult> Update(
+        UpdateProfileRequest r,
+        [FromServices] ICommandHandler<UpdateProfileCommand, MeResponse> handler,
+        CancellationToken ct
+    ) =>
+        Ok(
+            ApiResponse<MeResponse>.Ok(
+                await handler.HandleAsync(new(UserId, r.DisplayName, r.Phone), ct)
+            )
+        );
 
     public const int MaxAvatarBytes = 2 * 1024 * 1024;
 
     [HttpPut("avatar"), Authorize(Policy = "ActiveAccount")]
     [RequestSizeLimit(MaxAvatarBytes + 64 * 1024)]
     [RequestFormLimits(MultipartBodyLengthLimit = MaxAvatarBytes + 64 * 1024)]
-    public async Task<IActionResult> UploadAvatar(IFormFile? file, CancellationToken ct)
+    public async Task<IActionResult> UploadAvatar(
+        IFormFile? file,
+        [FromServices] ICommandHandler<UpdateAvatarCommand, MeResponse> handler,
+        CancellationToken ct
+    )
     {
         if (file == null || file.Length == 0)
             throw new AuthFailure(400, "AVATAR_REQUIRED", "Avatar file is required.");
@@ -45,12 +59,16 @@ public sealed class UsersController(IAuthService auth) : ControllerBase
                 "AVATAR_INVALID_TYPE",
                 "Only JPEG, PNG or WebP images are allowed."
             );
-        return Ok(ApiResponse<MeResponse>.Ok(await auth.UpdateAvatarAsync(UserId, type, data, ct)));
+        return Ok(
+            ApiResponse<MeResponse>.Ok(await handler.HandleAsync(new(UserId, type, data), ct))
+        );
     }
 
     [HttpDelete("avatar"), Authorize(Policy = "ActiveAccount")]
-    public async Task<IActionResult> RemoveAvatar(CancellationToken ct) =>
-        Ok(ApiResponse<MeResponse>.Ok(await auth.RemoveAvatarAsync(UserId, ct)));
+    public async Task<IActionResult> RemoveAvatar(
+        [FromServices] ICommandHandler<RemoveAvatarCommand, MeResponse> handler,
+        CancellationToken ct
+    ) => Ok(ApiResponse<MeResponse>.Ok(await handler.HandleAsync(new(UserId), ct)));
 
     private static string? ImageType(ReadOnlySpan<byte> d)
     {
@@ -67,26 +85,49 @@ public sealed class UsersController(IAuthService auth) : ControllerBase
     }
 
     [HttpGet("business-profile"), Authorize(Policy = "ActiveAccount")]
-    public async Task<IActionResult> Business(CancellationToken ct) =>
-        Ok(ApiResponse<BusinessResponse?>.Ok(await auth.BusinessAsync(UserId, ct)));
+    public async Task<IActionResult> Business(
+        [FromServices] IQueryHandler<GetBusinessProfileQuery, BusinessResponse?> handler,
+        CancellationToken ct
+    ) => Ok(ApiResponse<BusinessResponse?>.Ok(await handler.HandleAsync(new(UserId), ct)));
 
     [HttpPut("business-profile"), Authorize(Policy = "ActiveAccount")]
     public async Task<IActionResult> BusinessUpdate(
         BusinessProfileRequest r,
+        [FromServices] ICommandHandler<UpdateBusinessProfileCommand, BusinessResponse> handler,
         CancellationToken ct
-    ) => Ok(ApiResponse<BusinessResponse>.Ok(await auth.UpdateBusinessAsync(UserId, r, ct)));
+    ) =>
+        Ok(
+            ApiResponse<BusinessResponse>.Ok(
+                await handler.HandleAsync(
+                    new(
+                        UserId,
+                        r.CompanyName,
+                        r.TaxCode,
+                        r.Address,
+                        r.Representative,
+                        r.ContactEmail,
+                        r.ContactPhone
+                    ),
+                    ct
+                )
+            )
+        );
 }
 
 /// <summary>
 /// Public avatar: an img tag cannot send a bearer token, so this endpoint does not require sign-in.
 /// </summary>
 [ApiController, AllowAnonymous, Route("api/v1/users/{id:guid}/avatar")]
-public sealed class AvatarsController(IAuthService auth) : ControllerBase
+public sealed class AvatarsController : ControllerBase
 {
     [HttpGet]
-    public async Task<IActionResult> Get(Guid id, CancellationToken ct)
+    public async Task<IActionResult> Get(
+        Guid id,
+        [FromServices] IQueryHandler<GetAvatarQuery, AvatarFile?> handler,
+        CancellationToken ct
+    )
     {
-        var avatar = await auth.AvatarAsync(id, ct);
+        var avatar = await handler.HandleAsync(new(id), ct);
         if (avatar == null)
             return NotFound();
         Response.Headers["X-Content-Type-Options"] = "nosniff";

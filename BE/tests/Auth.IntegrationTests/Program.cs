@@ -2,12 +2,16 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
+using Caps.Auth.Api;
 using Caps.Auth.Application;
 using Caps.Auth.Application.DTOs.Responses;
+using Caps.Auth.Application.Features.EmailVerification;
+using Caps.Auth.Application.Features.Sessions;
 using Caps.Auth.Domain.Users;
+using Caps.Auth.Infrastructure;
 using Caps.Auth.Infrastructure.Email;
 using Caps.Auth.Infrastructure.Persistence;
-using Caps.Auth.Infrastructure.Services;
+using Caps.Common.Application;
 using Caps.Contracts;
 using MassTransit;
 using Microsoft.AspNetCore.DataProtection;
@@ -515,15 +519,30 @@ var jwt = new Caps.Common.Security.JwtOptions(
     "caps-spa",
     "CHANGE_ME_dev_only_min_32_chars_1234567890"
 );
-Caps.Auth.Infrastructure.Services.AuthService Service(AuthDbContext db) =>
-    new(
-        db,
-        new Microsoft.AspNetCore.Identity.PasswordHasher<Caps.Auth.Domain.Users.User>(),
-        jwt,
-        Microsoft.Extensions.Options.Options.Create(new Caps.Auth.Application.AuthOptions()),
-        provider,
-        TimeProvider.System
-    );
+
+// Same composition as the API: handlers resolved from DI, one scope (and DbContext) per call
+var core = new ServiceCollection();
+core.AddSingleton(jwt);
+core.AddSingleton<IDataProtectionProvider>(provider);
+core.AddSingleton(TimeProvider.System);
+core.AddSingleton(Microsoft.Extensions.Options.Options.Create(new AuthOptions()));
+core.AddSingleton<Caps.Auth.Application.Abstractions.IEmailDomainPolicy, AllowAllEmails>();
+core.AddAuthApplication();
+core.AddAuthInfrastructure(connection);
+await using var coreServices = core.BuildServiceProvider();
+T Fresh<T>()
+    where T : notnull => coreServices.CreateScope().ServiceProvider.GetRequiredService<T>();
+Task<SessionResult> RegisterAsync(string email, string pwd) =>
+    Fresh<ICommandHandler<RegisterCommand, SessionResult>>()
+        .HandleAsync(new(email, pwd, null), default);
+Task<SessionResult> LoginAsync(string email, string pwd) =>
+    Fresh<ICommandHandler<LoginCommand, SessionResult>>().HandleAsync(new(email, pwd), default);
+Task<SessionResult> RefreshAsync(string token) =>
+    Fresh<ICommandHandler<RefreshSessionCommand, SessionResult>>().HandleAsync(new(token), default);
+Task VerifyAsync(string token) =>
+    Fresh<ICommandHandler<VerifyEmailCommand>>().HandleAsync(new(token), default);
+Task ResendAsync(Guid userId) =>
+    Fresh<ICommandHandler<ResendVerificationCommand>>().HandleAsync(new(userId), default);
 async Task<int> Status(Func<Task> action)
 {
     try
@@ -545,7 +564,7 @@ var registrations = await Task.WhenAll(
             await using var db = new AuthDbContext(options);
             return await Status(async () =>
             {
-                await Service(db).RegisterAsync(new(raceEmail, password), default);
+                await RegisterAsync(raceEmail, password);
             });
         })
 );
@@ -555,7 +574,7 @@ Check(
 );
 Caps.Auth.Application.DTOs.Responses.SessionResult racedSession;
 await using (var db = new AuthDbContext(options))
-    racedSession = await Service(db).LoginAsync(new(raceEmail, password), default);
+    racedSession = await LoginAsync(raceEmail, password);
 var rotations = await Task.WhenAll(
     Enumerable
         .Range(0, 2)
@@ -564,7 +583,7 @@ var rotations = await Task.WhenAll(
             await using var db = new AuthDbContext(options);
             return await Status(async () =>
             {
-                await Service(db).RefreshAsync(racedSession.RefreshToken, default);
+                await RefreshAsync(racedSession.RefreshToken);
             });
         })
 );
@@ -586,7 +605,7 @@ var verifications = await Task.WhenAll(
         .Select(async _ =>
         {
             await using var db = new AuthDbContext(options);
-            return await Status(() => Service(db).VerifyAsync(raceVerify, default));
+            return await Status(() => VerifyAsync(raceVerify));
         })
 );
 Check(
@@ -596,7 +615,7 @@ Check(
 var expiryEmail = "expiry-" + Guid.NewGuid().ToString("N") + "@caps.test";
 Caps.Auth.Application.DTOs.Responses.SessionResult expiring;
 await using (var db = new AuthDbContext(options))
-    expiring = await Service(db).RegisterAsync(new(expiryEmail, password), default);
+    expiring = await RegisterAsync(expiryEmail, password);
 var expiryToken = await EmailToken(expiryEmail, "VERIFY_EMAIL");
 await using (var db = new AuthDbContext(options))
 {
@@ -611,36 +630,30 @@ await using (var db = new AuthDbContext(options))
         .ExecuteUpdateAsync(x =>
             x.SetProperty(v => v.ExpiresAt, DateTimeOffset.UtcNow.AddMinutes(-1))
         );
-    Check(
-        await Status(() => Service(db).VerifyAsync(expiryToken, default)) == 401,
-        "expired verification rejected"
-    );
+    Check(await Status(() => VerifyAsync(expiryToken)) == 401, "expired verification rejected");
     Check(
         await Status(async () =>
         {
-            await Service(db).RefreshAsync(expiring.RefreshToken, default);
+            await RefreshAsync(expiring.RefreshToken);
         }) == 401,
         "expired refresh rejected"
     );
 }
 await using (var db = new AuthDbContext(options))
-    Check(
-        await Status(() => Service(db).VerifyAsync(reset, default)) == 401,
-        "reset token cannot verify email"
-    );
+    Check(await Status(() => VerifyAsync(reset)) == 401, "reset token cannot verify email");
 for (var i = 0; i < 5; i++)
 {
     await using var db = new AuthDbContext(options);
     await Status(async () =>
     {
-        await Service(db).LoginAsync(new(raceEmail, "Wrong-password-123!"), default);
+        await LoginAsync(raceEmail, "Wrong-password-123!");
     });
 }
 await using (var db = new AuthDbContext(options))
     Check(
         await Status(async () =>
         {
-            await Service(db).LoginAsync(new(raceEmail, password), default);
+            await LoginAsync(raceEmail, password);
         }) == 401,
         "lockout blocks correct password after repeated failure"
     );
@@ -649,13 +662,11 @@ await using (var db = new AuthDbContext(options))
 var resendEmail = "resend-" + Guid.NewGuid().ToString("N") + "@caps.test";
 Caps.Auth.Application.DTOs.Responses.SessionResult pending;
 await using (var db = new AuthDbContext(options))
-    pending = await Service(db).RegisterAsync(new(resendEmail, password), default);
+    pending = await RegisterAsync(resendEmail, password);
 var oldVerify = await EmailToken(resendEmail, "VERIFY_EMAIL");
 await using (var db = new AuthDbContext(options))
     Check(
-        await Status(() =>
-            Service(db).ResendAsync(Guid.Parse(pending.Response.User.UserId), default)
-        ) == 429,
+        await Status(() => ResendAsync(Guid.Parse(pending.Response.User.UserId))) == 429,
         "resend cooldown"
     );
 await using (var db = new AuthDbContext(options))
@@ -670,10 +681,7 @@ Check(
     "resend endpoint"
 );
 await using (var db = new AuthDbContext(options))
-    Check(
-        await Status(() => Service(db).VerifyAsync(oldVerify, default)) == 401,
-        "resend invalidates previous link"
-    );
+    Check(await Status(() => VerifyAsync(oldVerify)) == 401, "resend invalidates previous link");
 
 // In-memory broker and fake loopback SMTP: no email leaves the machine.
 await using var smtp = new LocalSmtpSink();
@@ -841,4 +849,10 @@ sealed class LocalSmtpSink : IAsyncDisposable
         catch (ObjectDisposedException) { }
         stop.Dispose();
     }
+}
+
+/// <summary>DNS checks are covered over HTTP; in-process runs only need sign-up to proceed.</summary>
+sealed class AllowAllEmails : Caps.Auth.Application.Abstractions.IEmailDomainPolicy
+{
+    public Task EnsureDeliverableAsync(string email, CancellationToken ct) => Task.CompletedTask;
 }

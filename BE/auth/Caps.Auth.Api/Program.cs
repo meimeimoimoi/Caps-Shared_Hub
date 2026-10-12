@@ -1,13 +1,14 @@
 using System.Threading.RateLimiting;
+using Caps.Auth.Api;
 using Caps.Auth.Api.Middleware;
 using Caps.Auth.Api.Swagger;
 using Caps.Auth.Application;
 using Caps.Auth.Application.Abstractions;
 using Caps.Auth.Domain.Users;
+using Caps.Auth.Infrastructure;
 using Caps.Auth.Infrastructure.Email;
 using Caps.Auth.Infrastructure.Experts;
 using Caps.Auth.Infrastructure.Persistence;
-using Caps.Auth.Infrastructure.Services;
 using Caps.Auth.Infrastructure.Storage;
 using Caps.Common.Api;
 using Caps.Common.Messaging;
@@ -49,7 +50,6 @@ builder.Services.AddSwaggerGen(o =>
     );
     o.OperationFilter<SwaggerClientHeaderFilter>();
 });
-builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IExpertApplicationService, ExpertApplicationService>();
 builder.Services.AddMemoryCache();
 builder.Services.Configure<EmailPolicyOptions>(builder.Configuration.GetSection("EmailPolicy"));
@@ -67,7 +67,6 @@ builder
     )
     .ValidateOnStart();
 builder.Services.AddSingleton<IObjectStorage, S3ObjectStorage>();
-builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
 builder.Services.AddSingleton(TimeProvider.System);
 builder
     .Services.AddOptions<AuthOptions>()
@@ -118,9 +117,8 @@ else if (!builder.Environment.IsDevelopment())
 var pg =
     builder.Configuration.GetConnectionString("Postgres")
     ?? throw new InvalidOperationException("ConnectionStrings:Postgres is required.");
-builder.Services.AddDbContext<AuthDbContext>(o =>
-    o.UseNpgsql(pg, n => n.MigrationsHistoryTable("__EFMigrationsHistory_Auth", "identity"))
-);
+builder.Services.AddAuthApplication();
+builder.Services.AddAuthInfrastructure(pg);
 builder.Services.AddHealthChecks().AddDbContextCheck<AuthDbContext>("postgres");
 builder.Services.Configure<ForwardedHeadersOptions>(o =>
 {

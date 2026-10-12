@@ -1,22 +1,24 @@
 using System.Security.Claims;
+using Caps.Auth.Api.DTOs.Requests;
 using Caps.Auth.Application;
-using Caps.Auth.Application.Abstractions;
-using Caps.Auth.Application.DTOs.Requests;
 using Caps.Auth.Application.DTOs.Responses;
-using Caps.Auth.Domain.Users;
+using Caps.Auth.Application.Features.EmailVerification;
+using Caps.Auth.Application.Features.Passwords;
+using Caps.Auth.Application.Features.Sessions;
 using Caps.Common.Api;
+using Caps.Common.Application;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 
 namespace Caps.Auth.Api.Controllers;
 
+/// <summary>
+/// HTTP adapter only: maps requests to commands and sessions to the refresh cookie.
+/// Each action receives just the handler it needs.
+/// </summary>
 [ApiController, Route("api/v1/auth")]
-public sealed class AuthController(
-    IAuthService auth,
-    IEmailDomainPolicy emailPolicy,
-    IOptions<AuthOptions> options
-) : ControllerBase
+public sealed class AuthController(IOptions<AuthOptions> options) : ControllerBase
 {
     private const string CookieName = "caps_refresh";
     private Guid UserId => Guid.Parse(User.FindFirstValue("sub")!);
@@ -35,44 +37,45 @@ public sealed class AuthController(
             }
         );
 
-    private object Session(Caps.Auth.Application.DTOs.Responses.SessionResult session)
+    private object Session(SessionResult session)
     {
         Cookie(session.RefreshToken, session.RefreshExpiresAt);
-        return ApiResponse<Caps.Auth.Application.DTOs.Responses.AuthResponse>.Ok(session.Response);
+        return ApiResponse<AuthResponse>.Ok(session.Response);
     }
 
     [AllowAnonymous, HttpPost("register")]
-    public async Task<IActionResult> Register(RegisterRequest r, CancellationToken ct)
-    {
-        // Reject disposable/undeliverable emails before creating the account and sending the verification email
-        await emailPolicy.EnsureDeliverableAsync(r.Email, ct);
-        return Ok(Session(await auth.RegisterAsync(r, ct)));
-    }
+    public async Task<IActionResult> Register(
+        RegisterRequest r,
+        [FromServices] ICommandHandler<RegisterCommand, SessionResult> handler,
+        CancellationToken ct
+    ) => Ok(Session(await handler.HandleAsync(new(r.Email, r.Password, r.DisplayName), ct)));
 
     [AllowAnonymous, HttpPost("login")]
-    public async Task<IActionResult> Login(LoginRequest r, CancellationToken ct) =>
-        Ok(Session(await auth.LoginAsync(r, ct)));
+    public async Task<IActionResult> Login(
+        LoginRequest r,
+        [FromServices] ICommandHandler<LoginCommand, SessionResult> handler,
+        CancellationToken ct
+    ) => Ok(Session(await handler.HandleAsync(new(r.Email, r.Password), ct)));
 
     [AllowAnonymous, HttpPost("refresh-token")]
-    public async Task<IActionResult> Refresh(CancellationToken ct) =>
-        Ok(
-            Session(
-                await auth.RefreshAsync(
-                    Request.Cookies[CookieName]
-                        ?? throw new AuthFailure(
-                            401,
-                            "REFRESH_REQUIRED",
-                            "Refresh cookie required."
-                        ),
-                    ct
-                )
-            )
-        );
+    public async Task<IActionResult> Refresh(
+        [FromServices] ICommandHandler<RefreshSessionCommand, SessionResult> handler,
+        CancellationToken ct
+    )
+    {
+        var token =
+            Request.Cookies[CookieName]
+            ?? throw new AuthFailure(401, "REFRESH_REQUIRED", "Refresh cookie required.");
+        return Ok(Session(await handler.HandleAsync(new(token), ct)));
+    }
 
     [Authorize(Policy = "AuthSession"), HttpPost("logout")]
-    public async Task<IActionResult> Logout(CancellationToken ct)
+    public async Task<IActionResult> Logout(
+        [FromServices] ICommandHandler<LogoutCommand> handler,
+        CancellationToken ct
+    )
     {
-        await auth.LogoutAsync(UserId, Request.Cookies[CookieName], ct);
+        await handler.HandleAsync(new(UserId, Request.Cookies[CookieName]), ct);
         Response.Cookies.Delete(
             CookieName,
             new CookieOptions
@@ -86,41 +89,60 @@ public sealed class AuthController(
     }
 
     [AllowAnonymous, HttpPost("verify-email")]
-    public async Task<IActionResult> Verify(TokenRequest r, CancellationToken ct)
+    public async Task<IActionResult> Verify(
+        TokenRequest r,
+        [FromServices] ICommandHandler<VerifyEmailCommand> handler,
+        CancellationToken ct
+    )
     {
-        await auth.VerifyAsync(r.Token, ct);
+        await handler.HandleAsync(new(r.Token), ct);
         return Ok(ApiResponse<object>.Ok(new { }, "Email verified. Refresh or sign in again."));
     }
 
     /// <summary>Verify with the 6-digit code from the email; returns a new active session.</summary>
     [Authorize(Policy = "AuthSession"), HttpPost("verify-email-code")]
-    public async Task<IActionResult> VerifyCode(VerifyEmailCodeRequest r, CancellationToken ct) =>
-        Ok(Session(await auth.VerifyCodeAsync(UserId, r.Code, ct)));
+    public async Task<IActionResult> VerifyCode(
+        VerifyEmailCodeRequest r,
+        [FromServices] ICommandHandler<VerifyEmailCodeCommand, SessionResult> handler,
+        CancellationToken ct
+    ) => Ok(Session(await handler.HandleAsync(new(UserId, r.Code), ct)));
 
     [Authorize(Policy = "AuthSession"), HttpPost("resend-verification")]
-    public async Task<IActionResult> Resend(CancellationToken ct)
+    public async Task<IActionResult> Resend(
+        [FromServices] ICommandHandler<ResendVerificationCommand> handler,
+        CancellationToken ct
+    )
     {
-        await auth.ResendAsync(UserId, ct);
+        await handler.HandleAsync(new(UserId), ct);
         return Ok(ApiResponse<object>.Ok(new { }, "Verification requested."));
     }
 
     [AllowAnonymous, HttpPost("forgot-password")]
-    public async Task<IActionResult> Forgot(EmailRequest r, CancellationToken ct)
+    public async Task<IActionResult> Forgot(
+        EmailRequest r,
+        [FromServices] ICommandHandler<ForgotPasswordCommand> handler,
+        CancellationToken ct
+    )
     {
-        await auth.ForgotAsync(r.Email, ct);
+        await handler.HandleAsync(new(r.Email), ct);
         return Ok(ApiResponse<object>.Ok(new { }, "If the account exists, an email will be sent."));
     }
 
     [Authorize(Policy = "AuthSession"), HttpPost("change-password")]
     public async Task<IActionResult> ChangePassword(
         ChangePasswordRequest r,
+        [FromServices] ICommandHandler<ChangePasswordCommand, SessionResult> handler,
         CancellationToken ct
-    ) => Ok(Session(await auth.ChangePasswordAsync(UserId, r, ct)));
+    ) => Ok(Session(await handler.HandleAsync(new(UserId, r.CurrentPassword, r.NewPassword), ct)));
 
     [AllowAnonymous, HttpPost("reset-password")]
-    public async Task<IActionResult> Reset(ResetPasswordRequest r, CancellationToken ct)
+    public async Task<IActionResult> Reset(
+        ResetPasswordRequest r,
+        [FromServices] ICommandHandler<ResetPasswordCommand> handler,
+        CancellationToken ct
+    )
     {
-        await auth.ResetAsync(r, ct);
+        await handler.HandleAsync(new(r.Token, r.Password), ct);
         return Ok(ApiResponse<object>.Ok(new { }, "Password reset. Sign in again."));
     }
 }
