@@ -247,29 +247,37 @@ function Pending() {
       {authenticated ? (
         <>
           {/* Nhập mã xong store nhận phiên ACTIVE và trang tự chuyển tiếp */}
-          <div className="mb-5">
-            <EmailCodeField tone="dark" autoFocus />
-          </div>
-          <button
-            type="button"
-            onClick={resend}
-            disabled={busy || cooldown > 0}
-            aria-busy={busy}
-            className={cn(PRIMARY_BUTTON_CLASS, 'font-sans')}
-          >
-            {busy ? t('verify.resending') : t('verify.resend')}
-          </button>
+          <EmailCodeField tone="dark" autoFocus />
+          {/* Gửi lại là thao tác phụ: dòng chữ nhỏ dưới nút Xác nhận */}
           <p
             role="status"
-            className="mt-3 min-h-[1.5em] text-[12.5px] text-white/60"
+            className="mt-4 min-h-[1.5em] text-[13px] text-white/60"
           >
-            {message === 'resent'
-              ? t('verify.resent')
-              : message === 'resendFailed'
-                ? t('verify.resendFailed')
-                : cooldown > 0
-                  ? t('verify.cooldown', { seconds: cooldown })
-                  : ''}
+            {message === 'resent' ? (
+              t('verify.resent')
+            ) : message === 'resendFailed' ? (
+              t('verify.resendFailed')
+            ) : (
+              <>
+                {t('verify.noCode')}{' '}
+                <button
+                  type="button"
+                  onClick={resend}
+                  disabled={busy || cooldown > 0}
+                  aria-busy={busy}
+                  className={cn(
+                    LINK_CLASS,
+                    'cursor-pointer font-semibold disabled:cursor-not-allowed disabled:opacity-60'
+                  )}
+                >
+                  {busy
+                    ? t('verify.resending')
+                    : cooldown > 0
+                      ? t('verify.resendIn', { seconds: cooldown })
+                      : t('verify.resendShort')}
+                </button>
+              </>
+            )}
           </p>
           <button
             type="button"
