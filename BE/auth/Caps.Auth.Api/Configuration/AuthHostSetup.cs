@@ -48,6 +48,13 @@ public static class AuthHostSetup
                 }
             );
             o.OperationFilter<SwaggerClientHeaderFilter>();
+            // Show the controllers' XML comments (summary, remarks, response codes) in Swagger UI
+            o.IncludeXmlComments(
+                Path.Combine(
+                    AppContext.BaseDirectory,
+                    $"{typeof(AuthHostSetup).Assembly.GetName().Name}.xml"
+                )
+            );
         });
 
     /// <summary>Auth settings and refresh cookie, validated at startup.</summary>

@@ -14,13 +14,20 @@ public sealed class BusinessProfileController(ICurrentUser currentUser) : Contro
 {
     private Guid UserId => currentUser.RequireUserId();
 
-    /// <summary>data = null when no profile has been saved yet.</summary>
+    /// <summary>Returns the company details of the signed-in customer.</summary>
+    /// <response code="200">Company details, or data = null when none were saved yet.</response>
+    /// <response code="403">The account is not active or lacks the USER role (USER_ROLE_REQUIRED).</response>
     [HttpGet]
     public async Task<IActionResult> Get(
         [FromServices] IQueryHandler<GetBusinessProfileQuery, BusinessResponse?> handler,
         CancellationToken ct
     ) => Ok(ApiResponse<BusinessResponse?>.Ok(await handler.HandleAsync(new(UserId), ct)));
 
+    /// <summary>Creates or updates the company details (one per account).</summary>
+    /// <remarks>The tax code has 10 digits, optionally followed by a 3-digit branch suffix.</remarks>
+    /// <response code="200">Saved company details.</response>
+    /// <response code="400">Invalid input.</response>
+    /// <response code="403">The account is not active or lacks the USER role (USER_ROLE_REQUIRED).</response>
     [HttpPut]
     public async Task<IActionResult> Update(
         BusinessProfileRequest r,

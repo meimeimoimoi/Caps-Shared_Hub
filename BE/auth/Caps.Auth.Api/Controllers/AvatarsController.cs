@@ -12,6 +12,10 @@ namespace Caps.Auth.Api.Controllers;
 [ApiController, AllowAnonymous, Route("api/v1/users/{id:guid}/avatar")]
 public sealed class AvatarsController : ControllerBase
 {
+    /// <summary>Returns a user's avatar image (no sign-in needed, so img tags can load it).</summary>
+    /// <remarks>Use the versioned URL from the profile; each version is cached for a year.</remarks>
+    /// <response code="200">The image bytes.</response>
+    /// <response code="404">The user has no avatar.</response>
     [HttpGet]
     public async Task<IActionResult> Get(
         Guid id,

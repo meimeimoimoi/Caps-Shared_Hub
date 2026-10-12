@@ -2,6 +2,9 @@
 
   <PropertyGroup>
     <UserSecretsId>caps-shared-hub-auth</UserSecretsId>
+    <!-- API comments are shown in Swagger; undocumented internals are not an error -->
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
