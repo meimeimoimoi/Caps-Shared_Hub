@@ -60,6 +60,33 @@ services:
       timeout: 10s
       retries: 5
 
+  # Hộp thư thử: nhận mọi email notification gửi đi, xem ở http://localhost:8025
+  mailpit:
+    image: axllent/mailpit:v1.21
+    container_name: caps_mailpit
+    restart: always
+    ports:
+      - "1025:1025" # SMTP
+      - "8025:8025" # Giao diện web
+    networks:
+      - caps_network
+
+  # Object storage tương thích S3 (SeaweedFS): lưu hồ sơ/bằng chứng chuyên gia.
+  # S3 API: http://localhost:8333 · xem file: http://localhost:8899 · khóa dev ở seaweedfs/s3.json
+  seaweedfs:
+    image: chrislusf/seaweedfs:3.97
+    container_name: caps_seaweedfs
+    restart: always
+    command: server -dir=/data -s3 -s3.config=/etc/seaweedfs/s3.json
+    ports:
+      - "8333:8333" # S3 API
+      - "8899:8888" # Filer (duyệt file khi dev); 8888 hay bị Windows/Hyper-V giữ
+    volumes:
+      - seaweedfs_data:/data
+      - ./seaweedfs/s3.json:/etc/seaweedfs/s3.json:ro
+    networks:
+      - caps_network
+
   auth:
     build:
       context: ..
@@ -75,6 +102,10 @@ services:
       ConnectionStrings__Redis: redis:6379
       ConnectionStrings__RabbitMq: amqp://guest:guest@rabbitmq:5672
       Jwt__Key: CHANGE_ME_dev_only_min_32_chars_1234567890
+      # Khóa dev của SeaweedFS (seaweedfs/s3.json); deploy thật dùng secret store
+      Storage__ServiceUrl: http://seaweedfs:8333
+      Storage__AccessKey: caps-dev-access
+      Storage__SecretKey: caps-dev-secret-change-me
     ports:
       - "5194:8080"
     depends_on:
@@ -112,3 +143,4 @@ volumes:
   postgres_data:
   redis_data:
   rabbitmq_data:
+  seaweedfs_data:
