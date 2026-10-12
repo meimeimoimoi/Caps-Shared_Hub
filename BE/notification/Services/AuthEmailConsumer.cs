@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.Mail;
-using System.Text.Encodings.Web;
+using System.Net.Mime;
+using System.Text;
 using Caps.Common.Messaging;
 using MassTransit;
 
@@ -26,21 +27,47 @@ public sealed class AuthEmailConsumer(IConfiguration config) : IConsumer<AuthEma
                 config["Smtp:Username"],
                 config["Smtp:Password"]
             );
-        using var mail = new MailMessage(
+        var content = AuthEmailTemplate.Build(m);
+        var from = new MailAddress(
             config["Smtp:From"] ?? throw new InvalidOperationException("Smtp:From is required."),
-            m.Email
-        )
+            config["Smtp:FromName"] ?? "Shared Hub",
+            Encoding.UTF8
+        );
+        // Body là bản chữ thuần; bản HTML gửi kèm để ứng dụng mail tự chọn bản hiển thị được.
+        using var mail = new MailMessage(from, new MailAddress(m.Email))
         {
-            Subject =
-                m.Purpose == "VERIFY_EMAIL"
-                    ? "Verify your Shared-Hub email"
-                    : "Reset your Shared-Hub password",
-            IsBodyHtml = true,
-            Body =
-                "<p><a href=\""
-                + HtmlEncoder.Default.Encode(m.Link)
-                + "\">Continue</a></p><p>This link is single-use and expires.</p>",
+            Subject = content.Subject,
+            SubjectEncoding = Encoding.UTF8,
+            Body = content.Text,
+            BodyEncoding = Encoding.UTF8,
         };
+        var html = AlternateView.CreateAlternateViewFromString(
+            content.Html,
+            Encoding.UTF8,
+            MediaTypeNames.Text.Html
+        );
+        // Logo đi kèm trong email (cid:), hiển thị được cả khi máy nhận không truy cập được web.
+        html.LinkedResources.Add(
+            new LinkedResource(new MemoryStream(Logo), "image/png")
+            {
+                ContentId = AuthEmailTemplate.LogoCid,
+                TransferEncoding = TransferEncoding.Base64,
+            }
+        );
+        mail.AlternateViews.Add(html);
         await smtp.SendMailAsync(mail, context.CancellationToken);
+    }
+
+    private static readonly byte[] Logo = ReadLogo();
+
+    private static byte[] ReadLogo()
+    {
+        using var stream =
+            typeof(AuthEmailConsumer).Assembly.GetManifestResourceStream(
+                "notification.email-logo.png"
+            ) ?? throw new InvalidOperationException("Embedded email logo is missing.");
+        using var buffer = new MemoryStream();
+        stream.CopyTo(buffer);
+        return buffer.ToArray();
     }
 }

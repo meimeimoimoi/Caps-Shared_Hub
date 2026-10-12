@@ -7,4 +7,9 @@
     <ProjectReference Include="..\common\common.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- Logo nhúng vào email (Content-ID), không phụ thuộc URL ảnh bên ngoài -->
+    <EmbeddedResource Include="Assets\email-logo.png" LogicalName="notification.email-logo.png" />
+  </ItemGroup>
+
 </Project>
