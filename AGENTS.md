@@ -59,6 +59,7 @@ npm run dev        # :5173
   - `Application`: mỗi use case một file trong `Features/<Nhom>/` gồm `XxxCommand`/`XxxQuery` + `XxxHandler` (implement `ICommandHandler`/`IQueryHandler`); interface (port) trong `Abstractions/`; dịch vụ dùng chung nhỏ trong `Common/`. Chỉ phụ thuộc interface, không dùng `DbContext`, `IOptions`.
   - `Infrastructure`: EF Core + migration, repository, adapter (JWT, hash, email, storage); đăng ký qua `AddXxxInfrastructure`.
   - `Api`: controller chỉ map request → command và nhận đúng handler cần qua `[FromServices]`; lấy người dùng hiện tại bằng `ICurrentUser.RequireUserId()`; request DTO trong `DTOs/Requests/`.
+    Action dễ đọc: chỉ dùng `=>` khi thân hàm vừa **một dòng**, còn lại dùng `{ }`; gọi handler rồi gán vào biến (`var session = await ...;`) trước khi `return Ok(...)`, không lồng `await` trong lời gọi hàm khác; mỗi controller có `private Guid UserId => currentUser.RequireUserId();`. Mỗi action có chú thích `///` (summary, remarks, response codes) để hiện trên Swagger.
     `Program.cs` chỉ ghép các hàm cấu hình (`Configuration/*HostSetup.cs`), mỗi hàm một việc; middleware không gọi DB trực tiếp mà qua dịch vụ ở Application.
 - Áp dụng **SOLID**: một class một trách nhiệm; thêm use case bằng class mới (handler tự đăng ký qua `AddHandlersFromAssembly`), không sửa class cũ; interface nhỏ theo việc; phụ thuộc vào abstraction.
 - Service đơn giản (gateway, notification, read…) giữ 1 project, chia thư mục theo tính năng. Tên folder dạng số nhiều, interface có prefix `I`.

@@ -24,7 +24,11 @@ public sealed class ProfileController(ICurrentUser currentUser) : ControllerBase
     public async Task<IActionResult> Me(
         [FromServices] IQueryHandler<GetMeQuery, MeResponse> handler,
         CancellationToken ct
-    ) => Ok(ApiResponse<MeResponse>.Ok(await handler.HandleAsync(new(UserId), ct)));
+    )
+    {
+        var me = await handler.HandleAsync(new(UserId), ct);
+        return Ok(ApiResponse<MeResponse>.Ok(me));
+    }
 
     /// <summary>Updates the display name and phone number.</summary>
     /// <response code="200">Updated profile.</response>
@@ -35,12 +39,11 @@ public sealed class ProfileController(ICurrentUser currentUser) : ControllerBase
         UpdateProfileRequest r,
         [FromServices] ICommandHandler<UpdateProfileCommand, MeResponse> handler,
         CancellationToken ct
-    ) =>
-        Ok(
-            ApiResponse<MeResponse>.Ok(
-                await handler.HandleAsync(new(UserId, r.DisplayName, r.Phone), ct)
-            )
-        );
+    )
+    {
+        var me = await handler.HandleAsync(new(UserId, r.DisplayName, r.Phone), ct);
+        return Ok(ApiResponse<MeResponse>.Ok(me));
+    }
 
     /// <summary>Uploads or replaces the avatar (multipart field <c>file</c>).</summary>
     /// <remarks>JPEG, PNG or WebP up to 2 MB; the format is detected from the file bytes, not from its name.</remarks>
@@ -59,8 +62,8 @@ public sealed class ProfileController(ICurrentUser currentUser) : ControllerBase
         using var buffer = new MemoryStream();
         if (file != null)
             await file.CopyToAsync(buffer, ct);
-        var command = new UpdateAvatarCommand(UserId, buffer.ToArray());
-        return Ok(ApiResponse<MeResponse>.Ok(await handler.HandleAsync(command, ct)));
+        var me = await handler.HandleAsync(new(UserId, buffer.ToArray()), ct);
+        return Ok(ApiResponse<MeResponse>.Ok(me));
     }
 
     /// <summary>Removes the avatar.</summary>
@@ -70,5 +73,9 @@ public sealed class ProfileController(ICurrentUser currentUser) : ControllerBase
     public async Task<IActionResult> RemoveAvatar(
         [FromServices] ICommandHandler<RemoveAvatarCommand, MeResponse> handler,
         CancellationToken ct
-    ) => Ok(ApiResponse<MeResponse>.Ok(await handler.HandleAsync(new(UserId), ct)));
+    )
+    {
+        var me = await handler.HandleAsync(new(UserId), ct);
+        return Ok(ApiResponse<MeResponse>.Ok(me));
+    }
 }

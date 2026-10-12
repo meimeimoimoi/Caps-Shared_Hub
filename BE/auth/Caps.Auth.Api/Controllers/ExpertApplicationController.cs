@@ -30,16 +30,22 @@ public sealed class ExpertApplicationController(
     /// <summary>Returns the signed-in user's latest expert application.</summary>
     /// <response code="200">The application with its files, history and missing requirements; data = null when none exists.</response>
     [HttpGet]
-    public async Task<IActionResult> Get(CancellationToken ct) =>
-        Result(await applications.GetAsync(UserId, ct));
+    public async Task<IActionResult> Get(CancellationToken ct)
+    {
+        var application = await applications.GetAsync(UserId, ct);
+        return Result(application);
+    }
 
     /// <summary>Saves the application as a draft (creates it on first save). Every field may be empty.</summary>
     /// <response code="200">The saved draft.</response>
     /// <response code="400">INVALID_FIELD or INVALID_BIRTH_DATE.</response>
     /// <response code="409">APPLICATION_LOCKED (already submitted) or REAPPLY_TOO_EARLY.</response>
     [HttpPut]
-    public async Task<IActionResult> Save(SaveExpertApplicationRequest r, CancellationToken ct) =>
-        Result(await applications.SaveDraftAsync(UserId, r, ct));
+    public async Task<IActionResult> Save(SaveExpertApplicationRequest r, CancellationToken ct)
+    {
+        var application = await applications.SaveDraftAsync(UserId, r, ct);
+        return Result(application);
+    }
 
     /// <summary>Uploads one evidence file (multipart fields <c>code</c> and <c>file</c>).</summary>
     /// <remarks>Codes: CV, EV-01…EV-05, or SUPPLEMENT while more information is requested. PDF, PNG or JPG up to 10 MB, at most 20 files.</remarks>
@@ -65,15 +71,14 @@ public sealed class ExpertApplicationController(
             );
         using var buffer = new MemoryStream((int)file.Length);
         await file.CopyToAsync(buffer, ct);
-        return Result(
-            await applications.AddEvidenceAsync(
-                UserId,
-                code ?? "",
-                file.FileName,
-                buffer.ToArray(),
-                ct
-            )
+        var application = await applications.AddEvidenceAsync(
+            UserId,
+            code ?? "",
+            file.FileName,
+            buffer.ToArray(),
+            ct
         );
+        return Result(application);
     }
 
     /// <summary>Removes a file that has not been submitted yet.</summary>
@@ -81,8 +86,11 @@ public sealed class ExpertApplicationController(
     /// <response code="404">EVIDENCE_NOT_FOUND or APPLICATION_NOT_FOUND.</response>
     /// <response code="409">EVIDENCE_LOCKED: submitted files are kept as history.</response>
     [HttpDelete("evidence/{id:guid}")]
-    public async Task<IActionResult> RemoveEvidence(Guid id, CancellationToken ct) =>
-        Result(await applications.RemoveEvidenceAsync(UserId, id, ct));
+    public async Task<IActionResult> RemoveEvidence(Guid id, CancellationToken ct)
+    {
+        var application = await applications.RemoveEvidenceAsync(UserId, id, ct);
+        return Result(application);
+    }
 
     /// <summary>Downloads one of the applicant's own files.</summary>
     /// <response code="200">The file bytes.</response>
@@ -104,8 +112,11 @@ public sealed class ExpertApplicationController(
     /// <response code="404">APPLICATION_NOT_FOUND.</response>
     /// <response code="409">APPLICATION_LOCKED.</response>
     [HttpPost("submit")]
-    public async Task<IActionResult> Submit(CancellationToken ct) =>
-        Result(await applications.SubmitAsync(UserId, ct));
+    public async Task<IActionResult> Submit(CancellationToken ct)
+    {
+        var application = await applications.SubmitAsync(UserId, ct);
+        return Result(application);
+    }
 
     /// <summary>Sends the extra information a reviewer asked for (explanation and/or new files).</summary>
     /// <response code="200">The application, back in the review queue.</response>
@@ -116,5 +127,9 @@ public sealed class ExpertApplicationController(
     public async Task<IActionResult> Supplement(
         SupplementExpertApplicationRequest r,
         CancellationToken ct
-    ) => Result(await applications.SupplementAsync(UserId, r, ct));
+    )
+    {
+        var application = await applications.SupplementAsync(UserId, r, ct);
+        return Result(application);
+    }
 }

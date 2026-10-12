@@ -14,6 +14,8 @@ namespace Caps.Auth.Api.Controllers;
 public sealed class PasswordsController(ICurrentUser currentUser, RefreshCookie refreshCookie)
     : ControllerBase
 {
+    private Guid UserId => currentUser.RequireUserId();
+
     /// <summary>Emails a password reset link if the account exists.</summary>
     /// <remarks>Always answers the same way so the response never reveals whether the email is registered.</remarks>
     /// <response code="200">Request accepted (an email is sent only for existing accounts, at most once a minute).</response>
@@ -54,14 +56,10 @@ public sealed class PasswordsController(ICurrentUser currentUser, RefreshCookie 
         ChangePasswordRequest r,
         [FromServices] ICommandHandler<ChangePasswordCommand, SessionResult> handler,
         CancellationToken ct
-    ) =>
-        Ok(
-            refreshCookie.Issue(
-                Response,
-                await handler.HandleAsync(
-                    new(currentUser.RequireUserId(), r.CurrentPassword, r.NewPassword),
-                    ct
-                )
-            )
-        );
+    )
+    {
+        var command = new ChangePasswordCommand(UserId, r.CurrentPassword, r.NewPassword);
+        var session = await handler.HandleAsync(command, ct);
+        return Ok(refreshCookie.Issue(Response, session));
+    }
 }

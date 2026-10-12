@@ -21,7 +21,11 @@ public sealed class BusinessProfileController(ICurrentUser currentUser) : Contro
     public async Task<IActionResult> Get(
         [FromServices] IQueryHandler<GetBusinessProfileQuery, BusinessResponse?> handler,
         CancellationToken ct
-    ) => Ok(ApiResponse<BusinessResponse?>.Ok(await handler.HandleAsync(new(UserId), ct)));
+    )
+    {
+        var profile = await handler.HandleAsync(new(UserId), ct);
+        return Ok(ApiResponse<BusinessResponse?>.Ok(profile));
+    }
 
     /// <summary>Creates or updates the company details (one per account).</summary>
     /// <remarks>The tax code has 10 digits, optionally followed by a 3-digit branch suffix.</remarks>
@@ -33,5 +37,9 @@ public sealed class BusinessProfileController(ICurrentUser currentUser) : Contro
         BusinessProfileRequest r,
         [FromServices] ICommandHandler<UpdateBusinessProfileCommand, BusinessResponse> handler,
         CancellationToken ct
-    ) => Ok(ApiResponse<BusinessResponse>.Ok(await handler.HandleAsync(r.ToCommand(UserId), ct)));
+    )
+    {
+        var profile = await handler.HandleAsync(r.ToCommand(UserId), ct);
+        return Ok(ApiResponse<BusinessResponse>.Ok(profile));
+    }
 }

@@ -16,6 +16,8 @@ public sealed class EmailVerificationController(
     RefreshCookie refreshCookie
 ) : ControllerBase
 {
+    private Guid UserId => currentUser.RequireUserId();
+
     /// <summary>Verifies the email with the token from the link (works without signing in).</summary>
     /// <remarks>Using the link also voids the 6-digit code from the same email. Existing sessions stay restricted until refreshed.</remarks>
     /// <response code="200">Email verified; the account is now ACTIVE.</response>
@@ -42,13 +44,11 @@ public sealed class EmailVerificationController(
         VerifyEmailCodeRequest r,
         [FromServices] ICommandHandler<VerifyEmailCodeCommand, SessionResult> handler,
         CancellationToken ct
-    ) =>
-        Ok(
-            refreshCookie.Issue(
-                Response,
-                await handler.HandleAsync(new(currentUser.RequireUserId(), r.Code), ct)
-            )
-        );
+    )
+    {
+        var session = await handler.HandleAsync(new(UserId, r.Code), ct);
+        return Ok(refreshCookie.Issue(Response, session));
+    }
 
     /// <summary>Sends a new verification email (new link and code; the previous ones stop working).</summary>
     /// <response code="200">Email queued.</response>
@@ -60,7 +60,7 @@ public sealed class EmailVerificationController(
         CancellationToken ct
     )
     {
-        await handler.HandleAsync(new(currentUser.RequireUserId()), ct);
+        await handler.HandleAsync(new(UserId), ct);
         return Ok(ApiResponse.Message("Verification requested."));
     }
 }

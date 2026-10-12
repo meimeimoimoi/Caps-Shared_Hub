@@ -17,6 +17,8 @@ namespace Caps.Auth.Api.Controllers;
 public sealed class SessionsController(ICurrentUser currentUser, RefreshCookie refreshCookie)
     : ControllerBase
 {
+    private Guid UserId => currentUser.RequireUserId();
+
     /// <summary>Creates an account and signs it in with a restricted (pending verification) session.</summary>
     /// <remarks>Also emails a verification link plus a 6-digit code. Disposable or undeliverable emails are rejected.</remarks>
     /// <response code="200">Account created; access token in the body, refresh token in the cookie.</response>
@@ -28,13 +30,11 @@ public sealed class SessionsController(ICurrentUser currentUser, RefreshCookie r
         RegisterRequest r,
         [FromServices] ICommandHandler<RegisterCommand, SessionResult> handler,
         CancellationToken ct
-    ) =>
-        Ok(
-            refreshCookie.Issue(
-                Response,
-                await handler.HandleAsync(new(r.Email, r.Password, r.DisplayName), ct)
-            )
-        );
+    )
+    {
+        var session = await handler.HandleAsync(new(r.Email, r.Password, r.DisplayName), ct);
+        return Ok(refreshCookie.Issue(Response, session));
+    }
 
     /// <summary>Signs in with email and password.</summary>
     /// <remarks>Five wrong passwords lock the account for 15 minutes. Unknown email, wrong password and lockout all return the same error.</remarks>
@@ -46,7 +46,11 @@ public sealed class SessionsController(ICurrentUser currentUser, RefreshCookie r
         LoginRequest r,
         [FromServices] ICommandHandler<LoginCommand, SessionResult> handler,
         CancellationToken ct
-    ) => Ok(refreshCookie.Issue(Response, await handler.HandleAsync(new(r.Email, r.Password), ct)));
+    )
+    {
+        var session = await handler.HandleAsync(new(r.Email, r.Password), ct);
+        return Ok(refreshCookie.Issue(Response, session));
+    }
 
     /// <summary>Exchanges the refresh cookie for a new access token and rotates the cookie.</summary>
     /// <remarks>Reusing an already rotated refresh token is treated as theft and signs out every device.</remarks>
@@ -61,7 +65,8 @@ public sealed class SessionsController(ICurrentUser currentUser, RefreshCookie r
         var token =
             refreshCookie.Read(Request)
             ?? throw CommonErrors.RefreshRequired("Refresh cookie required.");
-        return Ok(refreshCookie.Issue(Response, await handler.HandleAsync(new(token), ct)));
+        var session = await handler.HandleAsync(new(token), ct);
+        return Ok(refreshCookie.Issue(Response, session));
     }
 
     /// <summary>Signs out this device: revokes its refresh token and clears the cookie.</summary>
@@ -73,10 +78,7 @@ public sealed class SessionsController(ICurrentUser currentUser, RefreshCookie r
         CancellationToken ct
     )
     {
-        await handler.HandleAsync(
-            new(currentUser.RequireUserId(), refreshCookie.Read(Request)),
-            ct
-        );
+        await handler.HandleAsync(new(UserId, refreshCookie.Read(Request)), ct);
         refreshCookie.Clear(Response);
         return Ok(ApiResponse.Message("Logged out."));
     }
