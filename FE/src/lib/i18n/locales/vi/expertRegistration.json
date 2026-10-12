@@ -326,8 +326,9 @@
     "review": "Nộp hồ sơ"
   },
   "verifyEmail": {
-    "title": "Xác nhận email.",
-    "body": "Mã 6 số đã gửi tới {{email}} · Cần xác nhận trước khi nộp hồ sơ.",
+    "title": "Xác nhận email để nộp hồ sơ",
+    "body": "Mã 6 số đã gửi tới {{email}}. Xác nhận xong, hồ sơ được nộp ngay.",
+    "later": "Để sau",
     "resend": "Gửi lại email",
     "cooldown": "Gửi lại sau {{seconds}} giây",
     "check": "Tôi đã xác nhận",

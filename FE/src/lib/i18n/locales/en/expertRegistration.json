@@ -328,8 +328,9 @@
     "review": "Submit"
   },
   "verifyEmail": {
-    "title": "Verify your email.",
-    "body": "We sent a 6-digit code to {{email}} · Required before you submit.",
+    "title": "Verify your email to submit",
+    "body": "We sent a 6-digit code to {{email}}. Your application is submitted as soon as you verify.",
+    "later": "Later",
     "resend": "Resend email",
     "cooldown": "Resend in {{seconds}} seconds",
     "check": "I've verified it",

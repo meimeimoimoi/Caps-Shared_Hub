@@ -46,6 +46,10 @@ export function useRegistrationForm({
   const [localPreview, setLocalPreview] = useState('')
   const [independent, setIndependent] = useState(true)
   const [draftSaved, setDraftSaved] = useState(false)
+  // Bấm nộp khi email chưa xác nhận: mở hộp nhập mã, xác nhận xong thì nộp tiếp
+  const [verifyOpen, setVerifyOpen] = useState(false)
+  // Nhập mã và tín hiệu "đã xác nhận" có thể báo cùng lúc: chỉ nộp một lần
+  const verifyCheck = useRef(false)
   const [formErrors, setFormErrors] = useState<
     Record<string, RegistrationMessage>
   >({})
@@ -204,16 +208,44 @@ export function useRegistrationForm({
         move(step + 1)
         return
       }
-      if (saved.emailVerified) await syncVerifiedSession()
-      if (avatar && useAuthStore.getState().user?.status === 'ACTIVE') {
-        const url = await authApi.uploadAvatar(avatar)
-        useAuthStore.getState().updateUser({ avatarUrl: url })
-        setAvatar(null)
+      if (!saved.emailVerified) {
+        setVerifyOpen(true)
+        return
       }
-      setApplication(await applicationApi.submit())
+      await submitNow()
     } catch (err) {
       setError(messageFor(err))
     } finally {
+      setSubmitting(false)
+    }
+  }
+
+  async function submitNow() {
+    await syncVerifiedSession()
+    if (avatar && useAuthStore.getState().user?.status === 'ACTIVE') {
+      const url = await authApi.uploadAvatar(avatar)
+      useAuthStore.getState().updateUser({ avatarUrl: url })
+      setAvatar(null)
+    }
+    setApplication(await applicationApi.submit())
+  }
+
+  /** Gọi sau khi nhập mã hoặc bấm link (tab khác): đã xác nhận thì đóng hộp và nộp hồ sơ ngay */
+  async function checkVerifiedAndSubmit() {
+    if (verifyCheck.current) return
+    verifyCheck.current = true
+    try {
+      const latest = await applicationApi.get()
+      if (latest) setApplication(latest)
+      if (!latest?.emailVerified || latest.status !== 'DRAFT') return
+      setVerifyOpen(false)
+      setSubmitting(true)
+      setError(null)
+      await submitNow()
+    } catch (err) {
+      setError(messageFor(err))
+    } finally {
+      verifyCheck.current = false
       setSubmitting(false)
     }
   }
@@ -297,6 +329,9 @@ export function useRegistrationForm({
     avatarPreview: localPreview || user?.avatarUrl || '',
     independent,
     draftSaved,
+    verifyOpen,
+    closeVerify: () => setVerifyOpen(false),
+    checkVerifiedAndSubmit,
     formErrors: Object.fromEntries(
       Object.entries(formErrors).map(([field, issue]) => [
         field,

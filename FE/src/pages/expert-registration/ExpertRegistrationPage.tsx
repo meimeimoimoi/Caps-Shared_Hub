@@ -102,6 +102,9 @@ export default function ExpertRegistrationPage() {
     avatarPreview,
     independent,
     draftSaved,
+    verifyOpen,
+    closeVerify,
+    checkVerifiedAndSubmit,
     formErrors,
     heading,
     errorRef,
@@ -387,8 +390,12 @@ export default function ExpertRegistrationPage() {
                 ))}
               </ol>
             </nav>
-            {application && !application.emailVerified && (
-              <EmailVerificationNotice email={profile.email} onCheck={reload} />
+            {verifyOpen && application && !application.emailVerified && (
+              <EmailVerificationNotice
+                email={profile.email}
+                onCheck={checkVerifiedAndSubmit}
+                onClose={closeVerify}
+              />
             )}
             <form noValidate onSubmit={advance}>
               <div

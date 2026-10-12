@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { MailCheck } from 'lucide-react'
+import { Modal } from '@/components/ui/feedback/modal'
 import { ApiError } from '@/lib/api-client'
 import { authApi } from '@/features/auth/api/authApi'
 import { useEmailVerifiedSignal } from '@/features/auth/utils/emailVerifiedSignal'
@@ -10,17 +10,24 @@ const COOLDOWN_SECONDS = 60
 
 export interface EmailVerificationNoticeProps {
   email: string
-  /** Kiểm tra lại trạng thái sau khi người dùng bấm link ở tab khác */
+  /** Kiểm tra lại trạng thái (sau khi nhập mã hoặc bấm link ở tab khác); đã xác nhận thì nộp hồ sơ */
   onCheck: () => Promise<void>
+  onClose: () => void
 }
 
-/* Hồ sơ được khai và lưu khi chưa xác nhận email; chỉ bước nộp mới bắt buộc xác nhận. */
+/* Hồ sơ được khai và lưu khi chưa xác nhận email; hộp này chỉ mở khi bấm Nộp hồ sơ. */
 export function EmailVerificationNotice({
   email,
   onCheck,
+  onClose,
 }: EmailVerificationNoticeProps) {
   const { t } = useTranslation('expertRegistration')
   const [cooldown, setCooldown] = useState(0)
+  const codeArea = useRef<HTMLDivElement>(null)
+  // Modal focus vào hộp thoại khi mở; chuyển sang ô mã đầu tiên để gõ ngay
+  useEffect(() => {
+    codeArea.current?.querySelector('input')?.focus()
+  }, [])
   // Bấm link ở tab khác hoặc trên điện thoại: tự kiểm tra lại, dải nhắc biến mất khi đã xác nhận
   useEmailVerifiedSignal(() => {
     void onCheck()
@@ -62,41 +69,44 @@ export function EmailVerificationNotice({
   }
 
   return (
-    <div
-      className="expert-pro-notice expert-pro-notice--warn mb-5"
-      role="status"
+    <Modal
+      title={t('verifyEmail.title')}
+      description={t('verifyEmail.body', { email })}
+      onClose={onClose}
+      footer={
+        <button
+          type="button"
+          className="expert-footer-btn cursor-pointer"
+          onClick={onClose}
+        >
+          {t('verifyEmail.later')}
+        </button>
+      }
     >
-      <MailCheck className="expert-pro-notice-icon" aria-hidden="true" />
-      <div>
-        <p className="!mb-1">
-          <strong>{t('verifyEmail.title')}</strong>{' '}
-          {t('verifyEmail.body', { email })}
-        </p>
-        <div className="my-3 max-w-[420px]">
-          <EmailCodeField tone="light" onVerified={() => void onCheck()} />
-        </div>
-        <p className="!mb-0 flex flex-wrap items-center gap-x-4 gap-y-1 text-[13px]">
-          <button
-            type="button"
-            className="cursor-pointer underline underline-offset-4 disabled:cursor-not-allowed disabled:opacity-60"
-            onClick={resend}
-            disabled={busy || cooldown > 0}
-          >
-            {cooldown > 0
-              ? t('verifyEmail.cooldown', { seconds: cooldown })
-              : t('verifyEmail.resend')}
-          </button>
-          <button
-            type="button"
-            className="cursor-pointer underline underline-offset-4 disabled:cursor-not-allowed disabled:opacity-60"
-            onClick={check}
-            disabled={busy}
-          >
-            {t('verifyEmail.check')}
-          </button>
-          {message && <span>{t(`verifyEmail.${message}`)}</span>}
-        </p>
+      <div ref={codeArea} className="mt-5">
+        <EmailCodeField tone="light" onVerified={() => void onCheck()} />
       </div>
-    </div>
+      <p className="!mt-4 !mb-0 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-[13px]">
+        <button
+          type="button"
+          className="cursor-pointer underline underline-offset-4 disabled:cursor-not-allowed disabled:opacity-60"
+          onClick={resend}
+          disabled={busy || cooldown > 0}
+        >
+          {cooldown > 0
+            ? t('verifyEmail.cooldown', { seconds: cooldown })
+            : t('verifyEmail.resend')}
+        </button>
+        <button
+          type="button"
+          className="cursor-pointer underline underline-offset-4 disabled:cursor-not-allowed disabled:opacity-60"
+          onClick={check}
+          disabled={busy}
+        >
+          {t('verifyEmail.check')}
+        </button>
+        {message && <span>{t(`verifyEmail.${message}`)}</span>}
+      </p>
+    </Modal>
   )
 }
