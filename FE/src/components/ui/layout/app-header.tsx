@@ -62,7 +62,7 @@ export function AppHeader({
     <header
       className={cn(
         'font-num sticky top-0 z-20 grid min-h-18 grid-cols-[minmax(0,1fr)_auto] items-center gap-x-2 gap-y-3 border-b px-3 py-3 sm:px-5 md:px-8',
-        search && 'xl:grid-cols-[minmax(0,1fr)_minmax(180px,288px)_auto]',
+        search && 'xl:grid-cols-[minmax(0,1fr)_minmax(180px,240px)_auto]',
         'border-hairline bg-header text-text-strong',
         className
       )}
@@ -136,12 +136,12 @@ export function AppHeader({
           <label
             id={searchId}
             className={cn(
-              'border-border-control bg-surface focus-within:outline-accent-text order-3 col-span-2 min-h-11 min-w-0 items-center gap-2 rounded-lg border px-3 focus-within:outline-2 focus-within:outline-offset-2 xl:order-2 xl:col-span-1 xl:flex',
+              'bg-surface-muted hover:border-border focus-within:border-border-control/60 focus-within:bg-surface order-3 col-span-2 min-h-11 min-w-0 items-center gap-2 rounded-lg border border-transparent px-3 transition-[border-color,background-color] xl:order-2 xl:col-span-1 xl:flex xl:min-h-9',
               searchOpen ? 'flex' : 'hidden'
             )}
           >
             <Search
-              size={18}
+              size={16}
               aria-hidden="true"
               className="text-text-muted shrink-0"
             />
