@@ -322,14 +322,117 @@ Check(
     "avatar served anonymously"
 );
 Check(
-    (await PutAvatar("<svg onload=alert(1)>"u8.ToArray())).StatusCode
-        == HttpStatusCode.BadRequest,
+    (await PutAvatar("<svg onload=alert(1)>"u8.ToArray())).StatusCode == HttpStatusCode.BadRequest,
     "avatar type sniffed from content, not trusted from header"
 );
 Check(
     (await deviceA.DeleteAsync("/api/v1/users/me/avatar")).IsSuccessStatusCode
         && (await anonymous.GetAsync(avatarUrl)).StatusCode == HttpStatusCode.NotFound,
     "remove avatar"
+);
+
+// Hồ sơ chuyên gia (phía ứng viên): file lưu ở storage riêng tư, chỉ nộp được khi đã xác nhận email.
+const string expertBase = "/api/v1/experts/me/application";
+var pdf = "%PDF-1.4\n%%EOF\n"u8.ToArray();
+async Task<(HttpStatusCode Status, JsonElement Json)> ExpertCall(Task<HttpResponseMessage> request)
+{
+    var response = await request;
+    var body = await response.Content.ReadAsStringAsync();
+    return (
+        response.StatusCode,
+        body.Length == 0 ? default : JsonDocument.Parse(body).RootElement.Clone()
+    );
+}
+Task<HttpResponseMessage> Upload(HttpClient client, string code, byte[] bytes)
+{
+    var file = new ByteArrayContent(bytes);
+    file.Headers.ContentType = new MediaTypeHeaderValue("application/pdf");
+    var form = new MultipartFormDataContent
+    {
+        { new StringContent(code), "code" },
+        { file, "file", "evidence.pdf" },
+    };
+    return client.PostAsync(expertBase + "/evidence", form);
+}
+string Code(JsonElement j) => j.TryGetProperty("code", out var c) ? c.GetString() ?? "" : "";
+
+using var applicant = Client();
+var pendingReg = await Post(
+    applicant,
+    "/api/v1/auth/register",
+    new { email = "applicant-" + Guid.NewGuid().ToString("N") + "@caps.test", password }
+);
+Bearer(applicant, Access(pendingReg.Json));
+var pendingUpload = await ExpertCall(Upload(applicant, "CV", pdf));
+Check(
+    pendingUpload.Status == HttpStatusCode.OK
+        && pendingUpload.Json.GetProperty("data").GetProperty("status").GetString() == "DRAFT",
+    "unverified applicant can save a draft with files"
+);
+var pendingSubmit = await ExpertCall(applicant.PostAsync(expertBase + "/submit", null));
+Check(
+    pendingSubmit.Status == HttpStatusCode.Forbidden
+        && Code(pendingSubmit.Json) == "EMAIL_NOT_VERIFIED",
+    "expert application submit requires a verified email"
+);
+
+var fakeUpload = await ExpertCall(Upload(deviceA, "EV-01", "<svg onload=alert(1)>"u8.ToArray()));
+Check(
+    fakeUpload.Status == HttpStatusCode.BadRequest
+        && Code(fakeUpload.Json) == "EVIDENCE_INVALID_TYPE",
+    "evidence type sniffed from content"
+);
+Check(
+    (await ExpertCall(deviceA.PostAsync(expertBase + "/submit", null))).Status
+        == HttpStatusCode.NotFound,
+    "submit without an application returns not found"
+);
+await deviceA.PutAsJsonAsync(expertBase, new { yearsExperience = 8 });
+var incomplete = await ExpertCall(deviceA.PostAsync(expertBase + "/submit", null));
+Check(
+    incomplete.Status == HttpStatusCode.BadRequest
+        && Code(incomplete.Json) == "APPLICATION_INCOMPLETE",
+    "expert application requires CV and mandatory fields"
+);
+var cv = await ExpertCall(Upload(deviceA, "CV", pdf));
+var cvId = cv.Json.GetProperty("data").GetProperty("evidence")[0].GetProperty("id").GetString();
+var draft = await ExpertCall(
+    deviceA.PutAsJsonAsync(
+        expertBase,
+        new
+        {
+            phone = "0901234567",
+            yearsExperience = 8,
+            fields = new[] { "CORPORATE_INCOME_TAX" },
+        }
+    )
+);
+Check(
+    draft.Status == HttpStatusCode.OK
+        && draft.Json.GetProperty("data").GetProperty("canSubmit").GetBoolean(),
+    "complete draft can be submitted"
+);
+var submitted = await ExpertCall(deviceA.PostAsync(expertBase + "/submit", null));
+Check(
+    submitted.Status == HttpStatusCode.OK
+        && submitted.Json.GetProperty("data").GetProperty("status").GetString() == "SUBMITTED",
+    "submit expert application"
+);
+var lockedEdit = await ExpertCall(deviceA.PutAsJsonAsync(expertBase, new { yearsExperience = 1 }));
+Check(
+    lockedEdit.Status == HttpStatusCode.Conflict && Code(lockedEdit.Json) == "APPLICATION_LOCKED",
+    "submitted application cannot be edited"
+);
+var ownFile = await deviceA.GetAsync($"{expertBase}/evidence/{cvId}/file");
+Check(
+    ownFile.IsSuccessStatusCode
+        && (await ownFile.Content.ReadAsByteArrayAsync()).SequenceEqual(pdf),
+    "applicant can download own evidence"
+);
+Check(
+    (await applicant.GetAsync($"{expertBase}/evidence/{cvId}/file")).StatusCode
+        == HttpStatusCode.NotFound,
+    "another user cannot open the evidence"
 );
 using var csrf = Client();
 csrf.DefaultRequestHeaders.Remove("X-Caps-Client");
