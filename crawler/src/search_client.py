@@ -37,7 +37,7 @@ import re
 import shutil
 import time
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional, Set
 
 from playwright.sync_api import (
     Page,
@@ -685,10 +685,19 @@ def search_and_download_by_type(
     skip_download: bool = False,
     listing_only: bool = False,
     save_debug: bool = True,
+    item_filter: Optional[Callable[[Optional[str], Optional[str]], Optional[bool]]] = None,
+    skip_ids: Optional[Set[str]] = None,
+    stats: Optional[dict] = None,
 ) -> List[SearchResultItem]:
     """
     Tìm `top_n` văn bản mới nhất của loại `doc_type`, vào từng trang tài liệu
     để tải file.
+
+    Chế độ bộ từ khoá (`--keywords-file`):
+      - `item_filter(title, docNum)`: False bỏ, None giữ nhưng đánh dấu
+        `api_item["_title_uncertain"]` (tên hỏng encoding, kiểm lại bằng tiêu đề DOM)
+      - `skip_ids`: doc_id đã cào -> bỏ trước khi vào trang chi tiết
+      - `stats`: cộng dồn `listed` / `matched` / `skipped_ids`
 
     Trả về list SearchResultItem, mỗi item có:
       - doc_id          : id văn bản (để dựng lại URL bất cứ lúc nào)
@@ -796,9 +805,26 @@ def search_and_download_by_type(
 
                 for it in matched:
                     iid = it.get("id")
-                    if iid and iid not in seen_item_ids:
-                        seen_item_ids.add(iid)
-                        items.append(it)
+                    if not iid or iid in seen_item_ids:
+                        continue
+                    seen_item_ids.add(iid)
+                    if stats is not None:
+                        stats["listed"] += 1
+                    # Chế độ bộ từ khoá: chỉ giữ văn bản có TÊN khớp (server khớp rất lỏng)
+                    if item_filter is not None:
+                        verdict = item_filter(it.get("title"), it.get("docNum"))
+                        if verdict is False:
+                            continue
+                        if verdict is None:
+                            it["_title_uncertain"] = True
+                    if stats is not None:
+                        stats["matched"] += 1
+                    # Đã cào ở lượt trước / từ khoá trước: không vào trang chi tiết, không tải lại
+                    if skip_ids is not None and str(iid) in skip_ids:
+                        if stats is not None:
+                            stats["skipped_ids"].append(str(iid))
+                        continue
+                    items.append(it)
 
                 if page_idx == 0:
                     logger.info(
@@ -833,6 +859,11 @@ def search_and_download_by_type(
                     break
                 current_payload = next_payload
                 page_idx += 1
+
+            if not items and (item_filter is not None or skip_ids):
+                # Bộ từ khoá: mọi kết quả bị lọc theo tên hoặc đã cào trước đó - bình thường
+                logger.info(f"[{doc_type}] Khong co van ban moi khop ten sau khi loc.")
+                return results
 
             if not items:
                 if not filtered_ok:
@@ -994,10 +1025,14 @@ def search_and_download_all_types(
     skip_download: bool = False,
     listing_only: bool = False,
     save_debug: bool = True,
+    item_filter: Optional[Callable[[Optional[str], Optional[str]], Optional[bool]]] = None,
+    skip_ids: Optional[Set[str]] = None,
+    stats: Optional[dict] = None,
 ) -> List[SearchResultItem]:
     """
     Chạy search_and_download_by_type() tuần tự cho từng loại văn bản.
     Mỗi loại mở 1 browser session riêng (để tránh context bị nhiễm).
+    `item_filter` / `skip_ids` / `stats`: xem search_and_download_by_type().
     """
     all_results: List[SearchResultItem] = []
     seen_ids: set = set()
@@ -1015,6 +1050,9 @@ def search_and_download_all_types(
             skip_download=skip_download,
             listing_only=listing_only,
             save_debug=save_debug,
+            item_filter=item_filter,
+            skip_ids=skip_ids,
+            stats=stats,
         )
 
         # Chống trùng: cùng 1 văn bản có thể khớp nhiều loại (ví dụ "Thông tư"

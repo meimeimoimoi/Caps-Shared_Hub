@@ -59,6 +59,15 @@ class LegalDocument:
     ocr_required: bool = False               # True nếu PDF là ảnh scan, không trích được text
     error: Optional[str] = None              # Ghi lại lỗi nếu có phát sinh trong quá trình xử lý
     source: str = "vbpl"                     # Nguồn cào: "vbpl" (vbpl.vn) | "mof" (vbpq.mof.gov.vn)
+    # Chế độ --keywords-file: những từ khoá / nhóm đã tìm ra văn bản này
+    matched_keywords: List[str] = field(default_factory=list)
+    keyword_groups: List[str] = field(default_factory=list)
+
+    def add_keyword(self, term: str, group: str) -> None:
+        if term not in self.matched_keywords:
+            self.matched_keywords.append(term)
+        if group not in self.keyword_groups:
+            self.keyword_groups.append(group)
 
     def to_dict(self) -> dict:
         d = asdict(self)

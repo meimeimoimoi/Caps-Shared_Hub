@@ -56,6 +56,26 @@ Chế độ này không tạo lượt cào và không lưu `metadata.json`, `raw
 python scraper_agent.py --all --keyword "thuế thu nhập doanh nghiệp" --sources vbpl,mof --export
 ```
 
+### 4.1. Cào hết theo bộ từ khoá (thuế TNDN)
+
+Bộ từ khoá nằm ở `keywords/thue_tndn.toml` (nhóm `core`, `topic`, `seeds`, `contractor` đang tắt).
+Mỗi từ khoá đi hết các trang kết quả; tool **chỉ giữ văn bản có tên chứa cụm từ khoá**
+(hoặc alias của nhóm `core`), vì ô tìm kiếm của cả 2 trang khớp rất lỏng.
+
+```powershell
+# Ước lượng trước, không lưu gì
+python scraper_agent.py --count-only --sources vbpl,mof --keywords-file keywords/thue_tndn.toml
+
+# Cào thật (lâu: hàng giờ). Bị ngắt thì chạy lại đúng lệnh này -> bỏ qua văn bản đã có ở mọi lượt trước
+python scraper_agent.py --sources vbpl,mof --keywords-file keywords/thue_tndn.toml
+python scraper_agent.py --export-only
+```
+
+- `metadata.json` được lưu sau **mỗi từ khoá**; `keyword_report.json` ghi số `listed / matched / mới / đã có` theo từ khoá.
+- Mỗi văn bản có `matched_keywords` và `keyword_groups` (cũng có trong file export) để người duyệt biết vì sao văn bản được lấy. Nhóm `topic` dễ lẫn văn bản ngoài thuế TNDN, nên duyệt kỹ.
+- `[seeds].so_hieu`: số hiệu văn bản phải lấy chắc chắn (ví dụ văn bản ban hành mẫu 03/TNDN). Seed tìm tốt trên vbpl.vn; trên vbpq.mof.gov.vn, tìm theo số hiệu thường không ra chính văn bản đó.
+- `--doc-types` ghi đè loại văn bản của mọi nhóm; `--no-skip-existing` cào lại cả văn bản đã có.
+
 ## 5. Chọn loại văn bản
 
 ```powershell

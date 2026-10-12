@@ -20,8 +20,9 @@ XEM THÊM: PLAN.md để hiểu chi tiết pipeline và cách xử lý khi selec
 """
 
 import argparse
+import json
 import sys
-from typing import List, Optional, Set
+from typing import Dict, List, Optional, Set
 
 from tqdm import tqdm
 
@@ -29,11 +30,13 @@ import config
 from src.search_client import search_and_download_all_types
 from src.detail_scraper import scrape_document_detail
 from src.exporter import export_records, get_export_dir
+from src.keywords import KeywordPlan, KeywordSearch, load_keyword_plan
 from src.models import LegalDocument
 from src.mof_client import collect_mof_documents
 from src.normalize import doc_number_key
 from src.storage import (
     ensure_document_text,
+    load_all_runs_records,
     load_existing_metadata,
     purge_invalid_metadata,
     save_metadata,
@@ -58,11 +61,26 @@ def parse_args():
     parser.add_argument(
         "--doc-types",
         type=str,
-        default=",".join(config.DOCUMENT_TYPES),
+        default=None,
         help=(
             "Danh sách loại văn bản cần lấy, cách nhau bởi dấu phẩy. "
-            f"Mặc định: '{','.join(config.DOCUMENT_TYPES)}'"
+            f"Mặc định: '{','.join(config.DOCUMENT_TYPES)}' "
+            "(với --keywords-file: lấy theo file từ khoá)"
         ),
+    )
+    parser.add_argument(
+        "--keywords-file",
+        type=str,
+        default=None,
+        help=(
+            "Cào theo bộ từ khoá TOML (vd keywords/thue_tndn.toml): mỗi từ khoá cào HẾT "
+            "kết quả, chỉ giữ văn bản có tên khớp; thay cho --keyword/--top-n."
+        ),
+    )
+    parser.add_argument(
+        "--no-skip-existing",
+        action="store_true",
+        help="Với --keywords-file: cào lại cả văn bản đã có ở các lượt trước (mặc định bỏ qua)",
     )
     parser.add_argument(
         "--top-n",
@@ -232,6 +250,170 @@ def run_count_only(keyword: str, doc_types: List[str], headless: bool, sources: 
     return report
 
 
+def _new_stats() -> dict:
+    return {"listed": 0, "matched": 0, "skipped_ids": []}
+
+
+def _previous_state(skip_existing: bool):
+    """doc_id đã cào theo nguồn + số hiệu vbpl đã có, gom từ MỌI lượt cào trước."""
+    done_ids: Dict[str, Set[str]] = {"vbpl": set(), "mof": set()}
+    vbpl_numbers: Set[str] = set()
+    if not skip_existing:
+        return done_ids, vbpl_numbers
+    for rec in load_all_runs_records().values():
+        source = rec.get("source") or "vbpl"
+        if rec.get("doc_id"):
+            done_ids.setdefault(source, set()).add(str(rec["doc_id"]))
+        if source == "vbpl":
+            key = doc_number_key(rec.get("so_hieu"))
+            if key:
+                vbpl_numbers.add(key)
+    return done_ids, vbpl_numbers
+
+
+def _retag(collected: Dict[str, LegalDocument], source: str, ids: List[str],
+           search: KeywordSearch) -> List[LegalDocument]:
+    """Văn bản đã lấy ở từ khoá trước trong lượt này -> ghi thêm từ khoá vừa khớp."""
+    touched = []
+    for doc in collected.values():
+        if doc.source == source and doc.doc_id in ids:
+            doc.add_keyword(search.term, search.group)
+            touched.append(doc)
+    return touched
+
+
+def run_keyword_pipeline(
+    plan: KeywordPlan,
+    sources: List[str],
+    headless: bool,
+    skip_download: bool = False,
+    export: bool = False,
+    skip_existing: bool = True,
+    count_only: bool = False,
+) -> List[dict]:
+    """
+    Cào theo bộ từ khoá: mỗi từ khoá đi hết các trang kết quả của từng nguồn, chỉ giữ
+    văn bản có tên khớp, bỏ văn bản đã có (lượt này + lượt trước) và lưu metadata.json
+    sau MỖI từ khoá để bị ngắt giữa chừng thì chạy lại là tiếp tục được.
+    """
+    done_ids, vbpl_numbers = _previous_state(skip_existing and not count_only)
+    n_previous = sum(len(v) for v in done_ids.values())
+    collected: Dict[str, LegalDocument] = {}
+    report: List[dict] = []
+
+    logger.info("=" * 70)
+    logger.info(f"CAO THEO BO TU KHOA: {plan.path} ({len(plan.searches)} luot tim, nhom {plan.groups})")
+    logger.info(f"Nguon: {sources} | Bo qua {n_previous} van ban da co | Dem: {count_only}")
+    logger.info("=" * 70)
+
+    for i, search in enumerate(plan.searches, 1):
+        logger.info(f"\n### [{i}/{len(plan.searches)}] {search.label} | {', '.join(search.doc_types)} ###\n")
+        row = {"keyword": search.term, "group": search.group}
+        fresh: List[LegalDocument] = []
+        touched: List[LegalDocument] = []
+
+        if "vbpl" in sources:
+            st = _new_stats()
+            items = search_and_download_all_types(
+                keyword=search.term,
+                doc_types=list(search.doc_types),
+                top_n=None,
+                headless=headless,
+                skip_download=skip_download or count_only,
+                listing_only=count_only,
+                save_debug=False,
+                item_filter=search.matches,
+                skip_ids=done_ids["vbpl"],
+                stats=st,
+            )
+            n_new = 0
+            for item in items:
+                doc = scrape_document_detail(item)
+                # Tên trong payload hỏng encoding -> kiểm lại bằng tiêu đề trang chi tiết
+                if (item.api_item or {}).get("_title_uncertain") and search.matches(doc.tieu_de, doc.so_hieu) is False:
+                    logger.info(f"  [LOC] Bo {doc.so_hieu}: tieu de khong khop '{search.term}'")
+                    continue
+                if not count_only:
+                    ensure_document_text(doc)
+                doc.add_keyword(search.term, search.group)
+                collected[doc.unique_key] = doc
+                done_ids["vbpl"].add(doc.doc_id)
+                key = doc_number_key(doc.so_hieu)
+                if key:
+                    vbpl_numbers.add(key)
+                fresh.append(doc)
+                n_new += 1
+            touched += _retag(collected, "vbpl", st["skipped_ids"], search)
+            row["vbpl"] = {"listed": st["listed"], "matched": st["matched"],
+                           "new": n_new, "already": len(st["skipped_ids"])}
+
+        if "mof" in sources:
+            st = _new_stats()
+            docs = collect_mof_documents(
+                search.term,
+                list(search.doc_types),
+                top_n=None,
+                skip_download=skip_download or count_only,
+                known_numbers=set(vbpl_numbers),
+                item_filter=search.matches,
+                skip_ids=done_ids["mof"],
+                stats=st,
+            )
+            for doc in docs:
+                if not count_only:
+                    ensure_document_text(doc)
+                doc.add_keyword(search.term, search.group)
+                collected[doc.unique_key] = doc
+                done_ids["mof"].add(doc.doc_id)
+                fresh.append(doc)
+            touched += _retag(collected, "mof", st["skipped_ids"], search)
+            row["mof"] = {"listed": st["listed"], "matched": st["matched"],
+                          "new": len(docs), "already": len(st["skipped_ids"])}
+
+        # Checkpoint sau mỗi từ khoá
+        if not count_only and (fresh or touched):
+            for doc in fresh:
+                save_text_file(doc)
+            save_metadata(fresh + [d for d in touched if d not in fresh])
+        report.append(row)
+
+    _log_keyword_report(report, count_only)
+    if count_only:
+        return report
+
+    (config.DATA_DIR / "keyword_report.json").write_text(
+        json.dumps({"keywords_file": str(plan.path), "sources": sources, "searches": report},
+                   ensure_ascii=False, indent=2),
+        encoding="utf-8",
+    )
+    logger.info(f"Bao cao tu khoa: {config.DATA_DIR / 'keyword_report.json'}")
+    logger.info(f"Metadata luu tai: {config.METADATA_FILE} ({len(collected)} van ban moi)")
+
+    if export and collected:
+        saved = load_existing_metadata()
+        manifest = export_records([rec for key, rec in saved.items() if key in collected])
+        _log_export_summary(manifest)
+    elif collected:
+        logger.info('Chạy "python scraper_agent.py --export-only" để tách Điều/Khoản và tạo chunk.')
+    return report
+
+
+def _log_keyword_report(report: List[dict], count_only: bool) -> None:
+    lines = ["", "=" * 70, "KET QUA THEO TU KHOA (listed = ket qua dung loai, matched = ten khop)", "=" * 70]
+    for row in report:
+        parts = []
+        for source in ("vbpl", "mof"):
+            s = row.get(source)
+            if s:
+                parts.append(f"{source}: {s['listed']} listed / {s['matched']} matched / "
+                             f"{s['new']} {'tim thay' if count_only else 'moi'} / {s['already']} da co")
+        lines.append(f"[{row['group']}] {row['keyword']}: " + " | ".join(parts))
+    total_new = sum(row.get(s, {}).get("new", 0) for row in report for s in ("vbpl", "mof"))
+    lines.append(f"TONG: {total_new} van ban {'khop (chua tru trung giua cac tu khoa)' if count_only else 'moi'}")
+    for line in lines:
+        logger.info(line)
+
+
 def collect_vbpl_documents(
     keyword: str, doc_types: List[str], top_n: Optional[int], headless: bool, skip_download: bool
 ) -> List[LegalDocument]:
@@ -393,13 +575,33 @@ def run_pipeline(
 
 def main():
     args = parse_args()
-    doc_types = [d.strip() for d in args.doc_types.split(",") if d.strip()]
+    explicit_types = [d.strip() for d in (args.doc_types or "").split(",") if d.strip()]
+    doc_types = explicit_types or list(config.DOCUMENT_TYPES)
     headless = args.headless.lower() == "true"
     sources = [s.strip().lower() for s in args.sources.split(",") if s.strip()]
     unknown = [s for s in sources if s not in ("vbpl", "mof")]
     if unknown:
         print(f"Nguồn không hỗ trợ: {unknown}. Dùng: vbpl, mof")
         sys.exit(2)
+
+    plan = None
+    if args.keywords_file:
+        try:
+            plan = load_keyword_plan(args.keywords_file, doc_types_override=explicit_types or None)
+        except (OSError, ValueError) as exc:
+            print(f"Không đọc được file từ khoá: {exc}")
+            sys.exit(2)
+        if not plan.searches:
+            print(f"File từ khoá {args.keywords_file} không có từ khoá nào đang bật.")
+            sys.exit(2)
+
+    if args.count_only and plan is not None:
+        try:
+            run_keyword_pipeline(plan, sources, headless, count_only=True)
+            return
+        except KeyboardInterrupt:
+            logger.warning("Đã dừng bởi người dùng (Ctrl+C).")
+            sys.exit(1)
 
     if args.count_only:
         try:
@@ -433,6 +635,22 @@ def main():
 
     if args.no_ocr:
         config.OCR_ENABLED = False
+
+    if plan is not None:
+        try:
+            run_keyword_pipeline(
+                plan, sources, headless,
+                skip_download=args.skip_download,
+                export=args.export,
+                skip_existing=not args.no_skip_existing,
+            )
+        except KeyboardInterrupt:
+            logger.warning("Đã dừng (Ctrl+C). Dữ liệu đến từ khoá trước đã được lưu; chạy lại để tiếp tục.")
+            sys.exit(1)
+        except Exception as e:
+            logger.error(f"Lỗi không mong muốn ở cấp cao nhất: {e}", exc_info=True)
+            sys.exit(1)
+        return
 
     try:
         run_pipeline(

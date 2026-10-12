@@ -183,6 +183,30 @@ def load_existing_metadata() -> Dict[str, dict]:
         return {}
 
 
+def load_all_runs_records() -> Dict[str, dict]:
+    """
+    Bản ghi của MỌI lượt cào (data/YYYY-MM-DD/run-*/metadata.json + data/metadata.json
+    kiểu cũ), khoá theo `record_key`; lượt mới hơn ghi đè lượt cũ.
+
+    Dùng cho `--keywords-file`: bỏ qua văn bản đã cào ở lượt trước (chạy tiếp khi bị ngắt).
+    """
+    files = [config.DATA_ROOT / "metadata.json"]
+    files += sorted(config.DATA_ROOT.glob("????-??-??/run-*/metadata.json"))
+    out: Dict[str, dict] = {}
+    for path in files:
+        if not path.is_file():
+            continue
+        try:
+            data = json.loads(path.read_text(encoding="utf-8"))
+        except Exception as e:
+            logger.warning(f"Bỏ qua {path}: không đọc được ({e})")
+            continue
+        for item in data:
+            if isinstance(item, dict):
+                out[record_key(item)] = item
+    return out
+
+
 def _migrate_placeholder_urls(records: Dict[str, dict]) -> int:
     """
     Chuẩn hóa các bản ghi cũ từ các lần chạy trước: `detail_url` từng bị ghi
@@ -274,9 +298,15 @@ def save_metadata(documents: List[LegalDocument]) -> None:
     n_new = 0
     for doc in documents:
         key = doc.unique_key
-        if key not in existing:
+        rec = doc.to_dict()
+        old = existing.get(key)
+        if old is None:
             n_new += 1
-        existing[key] = doc.to_dict()
+        else:
+            # Văn bản tìm ra lại bằng từ khoá khác: giữ hợp các từ khoá đã khớp
+            for field_name in ("matched_keywords", "keyword_groups"):
+                rec[field_name] = list(dict.fromkeys((old.get(field_name) or []) + rec[field_name]))
+        existing[key] = rec
 
     merged_list = write_metadata_records(list(existing.values()))
 

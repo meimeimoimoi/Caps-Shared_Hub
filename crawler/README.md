@@ -171,6 +171,8 @@ Hệ thống được thiết kế tối ưu với 3 giai đoạn (Pipeline):
 | `--export` | (tắt) | Cào xong tách Điều/Khoản + tạo chunk luôn |
 | `--export-only` | (tắt) | Không cào: chuẩn hoá `metadata.json` của lượt mới nhất rồi tạo lại `export/` (tên cũ: `--reparse-only`) |
 | `--run-dir` | lượt mới nhất | Chọn lượt cũ cho `--export-only` hoặc `--purge-invalid`, ví dụ `data/2026-10-11/run-083015` |
+| `--keywords-file` | (tắt) | Cào hết theo bộ từ khoá TOML (vd `keywords/thue_tndn.toml`), chỉ giữ văn bản có tên khớp; thay cho `--keyword`/`--top-n`. Xem RUN_COMMANDS.md mục 4.1 |
+| `--no-skip-existing` | (tắt) | Với `--keywords-file`: không bỏ qua văn bản đã cào ở các lượt trước |
 
 ## Lưu ý đạo đức & pháp lý khi cào dữ liệu
 

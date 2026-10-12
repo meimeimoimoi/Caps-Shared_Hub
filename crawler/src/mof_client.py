@@ -20,7 +20,7 @@ import random
 import re
 import time
 from pathlib import Path
-from typing import Dict, Iterator, List, Optional, Set
+from typing import Callable, Dict, Iterator, List, Optional, Set
 
 import requests
 from slugify import slugify
@@ -182,12 +182,19 @@ def collect_mof_documents(
     top_n: Optional[int],
     skip_download: bool = False,
     known_numbers: Optional[Set[str]] = None,
+    item_filter: Optional[Callable[[Optional[str], Optional[str]], Optional[bool]]] = None,
+    skip_ids: Optional[Set[str]] = None,
+    stats: Optional[dict] = None,
 ) -> List[LegalDocument]:
     """
     Tìm top-N văn bản mới nhất mỗi loại có trích yếu chứa `keyword`, tải file đính kèm.
 
     `known_numbers`: tập `doc_number_key` đã có từ vbpl.vn -> văn bản trùng số hiệu
     bị bỏ qua trước khi tải file/OCR và không tính vào top-N.
+
+    Chế độ bộ từ khoá: `item_filter(summary, no)` thay cho so khớp trích yếu mặc định
+    (False bỏ); `skip_ids` = id đã cào ở lượt trước; `stats` cộng dồn
+    `listed` / `matched` / `skipped_ids`.
     """
     known_numbers = known_numbers or set()
     s = _session()
@@ -206,9 +213,23 @@ def collect_mof_documents(
         for item in _search_pages(s, keyword, type_id, type_name, max_pages=max_pages):
             if top_n is not None and picked >= top_n:
                 break
-            if item.get("id") in seen or not summary_matches(item.get("summary"), keyword):
+            if item.get("id") in seen:
                 continue
             seen.add(item.get("id"))
+            if stats is not None:
+                stats["listed"] += 1
+            if item_filter is not None:
+                # Trích yếu của vbpq không bị hỏng encoding -> None coi như không khớp
+                if not item_filter(item.get("summary"), item.get("no")):
+                    continue
+            elif not summary_matches(item.get("summary"), keyword):
+                continue
+            if stats is not None:
+                stats["matched"] += 1
+            if skip_ids is not None and str(item.get("id")) in skip_ids:
+                if stats is not None:
+                    stats["skipped_ids"].append(str(item.get("id")))
+                continue
             if doc_number_key(item.get("no")) in known_numbers:
                 logger.info(f"[mof] Bỏ qua {item.get('no')}: trùng số hiệu với vbpl.vn")
                 continue

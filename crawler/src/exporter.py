@@ -167,6 +167,9 @@ def build_payload(rec: dict) -> dict:
                 "source_doc_id": rec.get("doc_id"),
                 "detail_url": rec.get("detail_url"),
                 "has_document_number": has_document_number(rec.get("so_hieu")),
+                # Vì sao văn bản được lấy (chế độ --keywords-file) - giúp người duyệt lọc nhanh
+                "matched_keywords": rec.get("matched_keywords") or [],
+                "keyword_groups": rec.get("keyword_groups") or [],
             },
         },
         "knowledge_document": {
