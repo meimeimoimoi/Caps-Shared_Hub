@@ -71,6 +71,20 @@ async Task<string> EmailToken(string email, string purpose)
     }
     throw new Exception("Email outbox not found.");
 }
+async Task<string> EmailCode(string email)
+{
+    await using var db = new AuthDbContext(options);
+    var rows = await db.EmailOutbox.OrderByDescending(x => x.CreatedAt).ToListAsync();
+    foreach (var row in rows)
+    {
+        var m = JsonSerializer.Deserialize<AuthEmailRequestedEvent>(
+            protector.Unprotect(row.ProtectedPayload)
+        )!;
+        if (m.Email == email && m.Code != null)
+            return m.Code;
+    }
+    throw new Exception("Verification code not found.");
+}
 using var c = Client();
 var email = "flow-" + Guid.NewGuid().ToString("N") + "@caps.test";
 var password = "Caps-auth-test-123!";
@@ -439,6 +453,41 @@ Check(
     (await applicant.GetAsync($"{expertBase}/evidence/{cvId}/file")).StatusCode
         == HttpStatusCode.NotFound,
     "another user cannot open the evidence"
+);
+
+// Xác nhận email bằng mã 6 số (applicant vẫn đang chờ xác nhận)
+var applicantEmail = pendingReg
+    .Json.GetProperty("data")
+    .GetProperty("user")
+    .GetProperty("email")
+    .GetString()!;
+var otp = await EmailCode(applicantEmail);
+var wrongCode = await Post(
+    applicant,
+    "/api/v1/auth/verify-email-code",
+    new { code = otp == "000000" ? "111111" : "000000" }
+);
+Check(
+    wrongCode.Response.StatusCode == HttpStatusCode.BadRequest
+        && Code(wrongCode.Json) == "CODE_INVALID",
+    "wrong verification code rejected"
+);
+var rightCode = await Post(applicant, "/api/v1/auth/verify-email-code", new { code = otp });
+Check(
+    rightCode.Response.IsSuccessStatusCode
+        && rightCode.Json.GetProperty("data").GetProperty("user").GetProperty("status").GetString()
+            == "ACTIVE",
+    "verification code activates the account and returns an active session"
+);
+var disposable = await Post(
+    applicant,
+    "/api/v1/auth/register",
+    new { email = "someone@mailinator.com", password }
+);
+Check(
+    disposable.Response.StatusCode == HttpStatusCode.BadRequest
+        && Code(disposable.Json) == "EMAIL_DISPOSABLE",
+    "disposable email domains are rejected at registration"
 );
 using var csrf = Client();
 csrf.DefaultRequestHeaders.Remove("X-Caps-Client");
