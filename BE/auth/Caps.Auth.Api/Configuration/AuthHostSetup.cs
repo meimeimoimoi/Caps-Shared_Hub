@@ -143,13 +143,14 @@ public static class AuthHostSetup
         return services;
     }
 
-    /// <summary>Middleware order matters: forwarded headers, auth, boundary checks, rate limit, then the shared API pipeline.</summary>
+    /// <summary>Middleware order matters: forwarded headers, authentication, CSRF and session guards, rate limit, then the shared API pipeline.</summary>
     public static WebApplication UseAuthPipeline(this WebApplication app)
     {
         app.UseForwardedHeaders();
         app.UseRouting();
         app.UseAuthentication();
-        app.UseMiddleware<AuthBoundaryMiddleware>();
+        app.UseMiddleware<CsrfGuardMiddleware>();
+        app.UseMiddleware<SessionGuardMiddleware>();
         app.UseRateLimiter();
         app.UseCommonApi();
         return app;
