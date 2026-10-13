@@ -11,6 +11,10 @@ $env:Logging__LogLevel__Default = "Warning"
 $env:Logging__LogLevel__Microsoft = "Warning"
 $env:AUTH_TEST_CONNECTION = $Connection
 $env:AUTH_TEST_KEYS = $env:Auth__DataProtectionKeysPath
+# Auth (Development) creates its RSA signing key here; the in-process checks sign with the same key
+$env:Jwt__DevKeyPath = Join-Path $repoRoot ".tmp/auth-test-keys/jwt-signing-key.pem"
+$env:AUTH_TEST_JWT_KEY = $env:Jwt__DevKeyPath
+$env:AUTH_TEST_AUTH_URL = "http://127.0.0.1:55194"
 $env:AUTH_TEST_URL = "http://127.0.0.1:55190"
 # Build the services and the test runner first so the run never uses stale binaries
 & $Dotnet build (Join-Path $repoRoot "BE/Caps.sln") --nologo -v q
@@ -22,6 +26,8 @@ try {
     $env:ASPNETCORE_URLS = "http://127.0.0.1:55194"
     $authDll = Join-Path $repoRoot "BE/auth/Caps.Auth.Api/bin/Debug/net8.0/Caps.Auth.Api.dll"
     $services += Start-Process -FilePath $Dotnet -ArgumentList ('"' + $authDll + '"') -WorkingDirectory (Join-Path $repoRoot "BE/auth/Caps.Auth.Api") -WindowStyle Hidden -PassThru -RedirectStandardOutput (Join-Path $testArtifacts "auth.log") -RedirectStandardError (Join-Path $testArtifacts "auth-error.log")
+    # Expert and gateway verify tokens with the public keys auth publishes
+    $env:Jwt__JwksUrl = "http://127.0.0.1:55194/.well-known/jwks.json"
     $env:ASPNETCORE_URLS = "http://127.0.0.1:55198"
     $expertDll = Join-Path $repoRoot "BE/expert/Caps.Expert.Api/bin/Debug/net8.0/Caps.Expert.Api.dll"
     $services += Start-Process -FilePath $Dotnet -ArgumentList ('"' + $expertDll + '"') -WorkingDirectory (Join-Path $repoRoot "BE/expert/Caps.Expert.Api") -WindowStyle Hidden -PassThru -RedirectStandardOutput (Join-Path $testArtifacts "expert.log") -RedirectStandardError (Join-Path $testArtifacts "expert-error.log")

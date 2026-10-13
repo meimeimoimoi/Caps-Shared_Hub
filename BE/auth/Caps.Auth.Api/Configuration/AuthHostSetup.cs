@@ -5,9 +5,11 @@ using Caps.Auth.Application;
 using Caps.Auth.Application.Abstractions;
 using Caps.Auth.Infrastructure.Email;
 using Caps.Auth.Infrastructure.Persistence;
+using Caps.Auth.Infrastructure.Security;
 using Caps.Common.Api;
 using Caps.Common.Messaging;
 using Caps.Common.Persistence;
+using Caps.Common.Security;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
@@ -97,7 +99,7 @@ public static class AuthHostSetup
         return services;
     }
 
-    /// <summary>Keys for the encrypted email outbox and the production JWT key guard.</summary>
+    /// <summary>Keys for the encrypted email outbox and the RSA keys that sign access tokens.</summary>
     public static IServiceCollection AddAuthSecrets(
         this IServiceCollection services,
         IConfiguration config,
@@ -112,8 +114,13 @@ public static class AuthHostSetup
             throw new InvalidOperationException(
                 "Auth:DataProtectionKeysPath is required for durable email outbox keys."
             );
-        if (!env.IsDevelopment() && (config["Jwt:Key"]?.StartsWith("CHANGE_ME") != false))
-            throw new InvalidOperationException("Configure a real Jwt:Key outside Development.");
+        var signingKeys = JwtSigningKeys.Load(
+            config.GetSection("Jwt").Get<JwtSigningOptions>() ?? new JwtSigningOptions(),
+            allowDevKey: env.IsDevelopment()
+        );
+        services.AddSingleton(signingKeys);
+        // Auth validates its own tokens with its public keys instead of downloading its own JWKS
+        services.AddSingleton<ILocalValidationKeys>(signingKeys);
         return services;
     }
 

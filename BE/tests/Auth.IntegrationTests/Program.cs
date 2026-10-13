@@ -11,6 +11,7 @@ using Caps.Auth.Domain.Users;
 using Caps.Auth.Infrastructure;
 using Caps.Auth.Infrastructure.Email;
 using Caps.Auth.Infrastructure.Persistence;
+using Caps.Auth.Infrastructure.Security;
 using Caps.Common.Application;
 using Caps.Contracts;
 using Caps.Notification;
@@ -19,6 +20,7 @@ using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.IdentityModel.Tokens;
 
 // Runs only against a dedicated test DB. Sends no real email; reads the encrypted outbox with the test key.
 var connection =
@@ -28,6 +30,10 @@ var keyPath =
     Environment.GetEnvironmentVariable("AUTH_TEST_KEYS")
     ?? throw new Exception("AUTH_TEST_KEYS required.");
 var baseUrl = Environment.GetEnvironmentVariable("AUTH_TEST_URL") ?? "http://127.0.0.1:55190";
+var authUrl = Environment.GetEnvironmentVariable("AUTH_TEST_AUTH_URL") ?? "http://127.0.0.1:55194";
+var jwtKeyPath =
+    Environment.GetEnvironmentVariable("AUTH_TEST_JWT_KEY")
+    ?? throw new Exception("AUTH_TEST_JWT_KEY required.");
 if (!new Npgsql.NpgsqlConnectionStringBuilder(connection).Database!.EndsWith("_test"))
     throw new Exception("Use a dedicated database ending _test.");
 var options = new DbContextOptionsBuilder<AuthDbContext>().UseNpgsql(connection).Options;
@@ -171,6 +177,56 @@ Check(login.Response.IsSuccessStatusCode, "active login");
 var access = Access(login.Json);
 var cookie = Refresh(login.Response);
 Bearer(c, access);
+
+// RS256: the header names the key, auth publishes only its public part, forged tokens are rejected
+var tokenHeader = JsonDocument
+    .Parse(Base64UrlEncoder.Decode(access.Split('.')[0]))
+    .RootElement.Clone();
+Check(tokenHeader.GetProperty("alg").GetString() == "RS256", "access token signed with RS256");
+var kid = tokenHeader.GetProperty("kid").GetString();
+using (var direct = new HttpClient { BaseAddress = new Uri(authUrl) })
+{
+    var jwks = JsonDocument
+        .Parse(await direct.GetStringAsync("/.well-known/jwks.json"))
+        .RootElement.Clone();
+    Check(
+        jwks.GetProperty("keys")
+            .EnumerateArray()
+            .Any(k => k.GetProperty("kid").GetString() == kid && !k.TryGetProperty("d", out _)),
+        "JWKS publishes the signing key without private parts"
+    );
+}
+string Forge(string alg, string signature) =>
+    Base64UrlEncoder.Encode($"{{\"alg\":\"{alg}\",\"typ\":\"JWT\",\"kid\":\"{kid}\"}}")
+    + "."
+    + access.Split('.')[1]
+    + "."
+    + signature;
+var unsigned = Forge("none", "");
+var hs256Body = Forge("HS256", "").TrimEnd('.');
+// Signed with the former shared HS256 key that every service used to hold
+var hs256 =
+    hs256Body
+    + "."
+    + Base64UrlEncoder.Encode(
+        new System.Security.Cryptography.HMACSHA256(
+            System.Text.Encoding.UTF8.GetBytes("CHANGE_ME_dev_only_min_32_chars_1234567890")
+        ).ComputeHash(System.Text.Encoding.ASCII.GetBytes(hs256Body))
+    );
+foreach (var (forged, name) in new[] { (hs256, "HS256"), (unsigned, "alg none") })
+{
+    using var attacker = Client();
+    Bearer(attacker, forged);
+    Check(
+        (await attacker.GetAsync("/api/v1/users/me")).StatusCode == HttpStatusCode.Unauthorized,
+        $"{name} token rejected by auth"
+    );
+    Check(
+        (await attacker.GetAsync("/api/v1/experts/me/application")).StatusCode
+            == HttpStatusCode.Unauthorized,
+        $"{name} token rejected on the expert route"
+    );
+}
 Check(
     (
         await c.PutAsJsonAsync(
@@ -515,15 +571,14 @@ var provider = DataProtectionProvider.Create(
     new DirectoryInfo(keyPath),
     x => x.SetApplicationName("caps-auth")
 );
-var jwt = new Caps.Common.Security.JwtOptions(
-    "caps-auth",
-    "caps-spa",
-    "CHANGE_ME_dev_only_min_32_chars_1234567890"
-);
+var jwt = new Caps.Common.Security.JwtOptions();
+// Same key file as the running auth service (Development generates it there on first start)
+var signingKeys = JwtSigningKeys.Load(new JwtSigningOptions { DevKeyPath = jwtKeyPath }, true);
 
 // Same composition as the API: handlers resolved from DI, one scope (and DbContext) per call
 var core = new ServiceCollection();
 core.AddSingleton(jwt);
+core.AddSingleton(signingKeys);
 core.AddSingleton<IDataProtectionProvider>(provider);
 core.AddSingleton(TimeProvider.System);
 core.AddSingleton(Microsoft.Extensions.Options.Options.Create(new AuthOptions()));

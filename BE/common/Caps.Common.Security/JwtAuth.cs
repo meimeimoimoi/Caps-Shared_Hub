@@ -1,44 +1,17 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using System.Text;
 using Caps.Common.Application;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.Protocols;
+using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
 
 namespace Caps.Common.Security;
-
-public sealed record JwtOptions(string Issuer, string Audience, string Key, int ExpiryMinutes = 60);
-
-public interface IJwtTokenService
-{
-    string CreateToken(string userId, string email);
-}
-
-public sealed class JwtTokenService(JwtOptions options, IDateTimeProvider clock) : IJwtTokenService
-{
-    public string CreateToken(string userId, string email)
-    {
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(options.Key));
-        var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-        var now = clock.UtcNow.UtcDateTime;
-        var token = new JwtSecurityToken(
-            issuer: options.Issuer,
-            audience: options.Audience,
-            claims:
-            [
-                new Claim(JwtRegisteredClaimNames.Sub, userId),
-                new Claim(JwtRegisteredClaimNames.Email, email),
-            ],
-            notBefore: now,
-            expires: now.AddMinutes(options.ExpiryMinutes),
-            signingCredentials: creds
-        );
-        return new JwtSecurityTokenHandler().WriteToken(token);
-    }
-}
 
 public sealed class HttpContextCurrentUser(IHttpContextAccessor accessor) : ICurrentUser
 {
@@ -49,47 +22,79 @@ public sealed class HttpContextCurrentUser(IHttpContextAccessor accessor) : ICur
     public bool IsAuthenticated => accessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
 }
 
+/// <summary>Keys a host trusts without downloading them; auth registers the public half of its signing keys.</summary>
+public interface ILocalValidationKeys
+{
+    IEnumerable<SecurityKey> Keys { get; }
+}
+
 public static class JwtServiceCollectionExtensions
 {
+    /// <summary>
+    /// RS256 bearer validation with public keys only: auth's JWKS (refreshed periodically and on an unknown
+    /// key id, last good copy kept while auth is down), Jwt:PublicKeys as PEM fallback, and any
+    /// <see cref="ILocalValidationKeys"/> the host registers.
+    /// </summary>
     public static IServiceCollection AddCapsJwt(
         this IServiceCollection services,
         IConfiguration config
     )
     {
-        var section = config.GetSection("Jwt");
-        var options = new JwtOptions(
-            section["Issuer"] ?? "caps-auth",
-            section["Audience"] ?? "caps-spa",
-            section["Key"] ?? throw new InvalidOperationException("Missing Jwt:Key"),
-            int.TryParse(section["ExpiryMinutes"], out var m) ? m : 60
-        );
+        var options = config.GetSection("Jwt").Get<JwtOptions>() ?? new JwtOptions();
+        var fallbackKeys = options.PublicKeys.Select(RsaKeys.FromPem).ToArray();
 
         services.AddSingleton(options);
         services.AddSingleton<IDateTimeProvider, SystemDateTimeProvider>();
-        services.AddScoped<IJwtTokenService, JwtTokenService>();
         services.AddHttpContextAccessor();
         services.AddScoped<ICurrentUser, HttpContextCurrentUser>();
-
-        var keyBytes = Encoding.UTF8.GetBytes(options.Key);
+        services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer();
         services
-            .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-            .AddJwtBearer(o =>
-            {
-                o.MapInboundClaims = false;
-                o.TokenValidationParameters = new TokenValidationParameters
+            .AddOptions<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme)
+            .Configure<IHostEnvironment, ILoggerFactory, IEnumerable<ILocalValidationKeys>>(
+                (o, env, logs, local) =>
                 {
-                    RoleClaimType = "role",
-                    NameClaimType = JwtRegisteredClaimNames.Sub,
-                    ValidateIssuer = true,
-                    ValidateAudience = true,
-                    ValidateLifetime = true,
-                    ValidateIssuerSigningKey = true,
-                    ValidIssuer = options.Issuer,
-                    ValidAudience = options.Audience,
-                    IssuerSigningKey = new SymmetricSecurityKey(keyBytes),
-                    ClockSkew = TimeSpan.FromMinutes(2),
-                };
-            });
+                    o.MapInboundClaims = false;
+                    o.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        RoleClaimType = "role",
+                        NameClaimType = JwtRegisteredClaimNames.Sub,
+                        ValidateIssuer = true,
+                        ValidateAudience = true,
+                        ValidateLifetime = true,
+                        ValidateIssuerSigningKey = true,
+                        ValidIssuer = options.Issuer,
+                        ValidAudience = options.Audience,
+                        // Only RS256: a token re-signed as HS256 or "none" is rejected outright
+                        ValidAlgorithms = [SecurityAlgorithms.RsaSha256],
+                        IssuerSigningKeys = fallbackKeys
+                            .Concat(local.SelectMany(x => x.Keys))
+                            .ToArray(),
+                        ClockSkew = TimeSpan.FromMinutes(2),
+                    };
+                    if (string.IsNullOrWhiteSpace(options.JwksUrl))
+                        return;
+                    var jwks = new ConfigurationManager<OpenIdConnectConfiguration>(
+                        options.JwksUrl,
+                        new JwksRetriever(),
+                        new HttpDocumentRetriever
+                        {
+                            RequireHttps = options.RequireHttpsMetadata ?? !env.IsDevelopment(),
+                        }
+                    )
+                    {
+                        AutomaticRefreshInterval = TimeSpan.FromMinutes(options.JwksRefreshMinutes),
+                        // Lets a new key id (key rotation) be picked up quickly
+                        RefreshInterval = TimeSpan.FromSeconds(30),
+                    };
+                    o.ConfigurationManager = new ResilientJwksManager(
+                        jwks,
+                        options.Issuer,
+                        TimeProvider.System,
+                        logs.CreateLogger("Caps.Common.Security.Jwks")
+                    );
+                    o.RefreshOnIssuerKeyNotFound = true;
+                }
+            );
         services.AddAuthorization(o =>
         {
             o.DefaultPolicy = new Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder()

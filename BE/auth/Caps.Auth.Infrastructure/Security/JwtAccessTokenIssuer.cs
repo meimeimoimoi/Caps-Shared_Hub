@@ -1,16 +1,18 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using System.Text;
 using Caps.Auth.Application;
 using Caps.Auth.Application.Abstractions.Security;
 using Caps.Auth.Domain.Users;
 using Caps.Common.Security;
-using Microsoft.IdentityModel.Tokens;
 
 namespace Caps.Auth.Infrastructure.Security;
 
-public sealed class JwtAccessTokenIssuer(JwtOptions jwt, AuthOptions options, TimeProvider clock)
-    : IAccessTokenIssuer
+public sealed class JwtAccessTokenIssuer(
+    JwtOptions jwt,
+    JwtSigningKeys keys,
+    AuthOptions options,
+    TimeProvider clock
+) : IAccessTokenIssuer
 {
     public AccessToken Issue(
         User user,
@@ -33,14 +35,14 @@ public sealed class JwtAccessTokenIssuer(JwtOptions jwt, AuthOptions options, Ti
             claims.AddRange(roles.Select(x => new Claim("role", x)));
             claims.AddRange(permissions.Select(x => new Claim("permission", x)));
         }
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwt.Key));
         var token = new JwtSecurityToken(
             jwt.Issuer,
             jwt.Audience,
             claims,
             now.UtcDateTime,
             now.AddMinutes(options.AccessMinutes).UtcDateTime,
-            new SigningCredentials(key, SecurityAlgorithms.HmacSha256)
+            // RS256 with the key id in the header, so services can pick the right public key
+            keys.Signing
         );
         return new(new JwtSecurityTokenHandler().WriteToken(token), options.AccessMinutes * 60);
     }

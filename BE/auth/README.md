@@ -45,7 +45,7 @@ The auth service connects as `caps_auth` and owns the `identity` schema.
 
 Outside Development, supply ConnectionStrings__Postgres as an environment variable or from a secret store. Development applies migrations automatically; Production requires an explicit EF deployment step.
 
-Configure Auth__FrontendUrl, Cors__AllowedOrigins__0 and matching Jwt__Key on auth/gateway/services. For local HTTP, Development overrides Auth__SecureCookie=false. Outside Development, SecureCookie=true, a real Jwt__Key and durable Auth__DataProtectionKeysPath are required. Protect the key directory at rest and persist it across replicas/restarts. Set Auth__KnownProxies__0 to the trusted gateway IP in container deployments; never trust arbitrary forwarded headers.
+Configure Auth__FrontendUrl and Cors__AllowedOrigins__0. For local HTTP, Development overrides Auth__SecureCookie=false. Outside Development, SecureCookie=true, a signing key (see below) and durable Auth__DataProtectionKeysPath are required. Protect the key directory at rest and persist it across replicas/restarts. Set Auth__KnownProxies__0 to the trusted gateway IP in container deployments; never trust arbitrary forwarded headers.
 
 Start notification alongside auth and gateway. Local notification SMTP defaults to 127.0.0.1:1025 (Mailpit), from noreply@caps.local, without TLS. For real email configure Smtp__Host, Smtp__Port, Smtp__EnableSsl=true, Smtp__From, Smtp__Username and Smtp__Password using secret configuration. Broker config: ConnectionStrings__RabbitMq.
 
@@ -56,6 +56,15 @@ The existing Docker compose needs overrides for real JWT, durable DataProtection
 ## Migrations
 
 AuthSecurityAndEmailOutbox adds lockout/token version, email uniqueness, role seed and encrypted outbox. AuthPermissions adds profile/business permissions, normalizes existing emails and guards uniqueness after normalization. It assigns USER only to legacy users without any role. If role codes already exist under other IDs, reconcile the role seed before migration. Duplicate emails fail migration for manual reconciliation; no users are silently deleted. Validate on a staging copy before applying to an existing team database.
+
+## Access token keys (RS256)
+
+Only auth holds the private key; every other service verifies tokens with the public keys auth publishes at `GET /.well-known/jwks.json`.
+
+- **Development:** nothing to configure. Without `Jwt:SigningKeys`, auth generates a key once and keeps it at `%LOCALAPPDATA%/caps-shared-hub/jwt-dev-signing-key.pem` (override with `Jwt:DevKeyPath`).
+- **Other environments:** `Jwt__SigningKeys__0__PrivateKeyPath` (mounted secret file) or `Jwt__SigningKeys__0__PrivateKeyPem`. Create a key with `openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:2048 -out jwt-signing-key.pem`.
+- **Other services:** `Jwt:JwksUrl` points at the JWKS (downloaded on first use, refreshed every `Jwt:JwksRefreshMinutes`, last good copy kept while auth is down). `Jwt:PublicKeys` (PEM, `openssl pkey -in jwt-signing-key.pem -pubout`) is the fallback for a service that starts while auth is down. Outside Development the JWKS URL must be HTTPS unless `Jwt:RequireHttpsMetadata=false` on a trusted internal network.
+- **Rotation without failed requests:** add the new key as `SigningKeys:1` (published, not signing) and wait at least `JwksRefreshMinutes`; then move it to `SigningKeys:0` and keep the old key at index 1 until its last tokens expire (`Auth:AccessMinutes`); finally remove it.
 
 ## Verification
 
@@ -73,4 +82,4 @@ The connection must target a dedicated DB ending _test. PostgreSQL must already 
 
 Auth validates token version and account status from its DB. Other services enforce ACTIVE by the shared default authorization policy, but do not synchronously query Auth for token revocation; an old token can remain usable there until its 15-minute expiry. Immediate cross-service revocation requires a shared revocation mechanism. Role changes likewise require refresh or expiry.
 
-Frontend adaptation must be made on a frontend branch: current FE still uses legacy /api/auth, stores tokens differently and lacks verification/reset pages. This backend change does not silently alter frontend. RS256/JWKS migration is a separate infrastructure decision; current signed JWT implementation remains HS256 with environment-managed key.
+Frontend adaptation must be made on a frontend branch: current FE still uses legacy /api/auth, stores tokens differently and lacks verification/reset pages. This backend change does not silently alter frontend. Access tokens are signed with RS256 (see Access token keys).
