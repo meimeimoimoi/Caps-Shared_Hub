@@ -9,7 +9,7 @@ All mutations under /api/v1/auth require X-Caps-Client: spa. Browser Origin must
 - POST /api/v1/auth/register — email, password (12–128 characters), displayName. Always USER, initially PENDING_VERIFICATION. Returns accessToken/expiresIn/user and refresh cookie. Token has no business roles until verified.
 - POST /api/v1/auth/login — email/password. SHA256 demo hashes are rejected; those users must reset password.
 - POST /api/v1/auth/refresh-token — cookie only; rotates once. Replaying a rotated token revokes ALL refresh sessions of that user and increments token version (conservative policy). A token revoked by logout or a password change/reset is only rejected, so a stale device cannot sign the user out of their new session.
-- POST /api/v1/auth/logout — bearer plus cookie. Revokes current refresh session; access expires within 15 minutes. Refreshing with that revoked cookie returns 401.
+- POST /api/v1/auth/logout — bearer plus cookie. Revokes the current refresh session and this device's access token in every service (shared Redis revocation). Refreshing with that revoked cookie returns 401.
 - POST /api/v1/auth/verify-email — token. Single use; then refresh or login again.
 - POST /api/v1/auth/resend-verification — limited bearer; 60-second cooldown; invalidates earlier links.
 - POST /api/v1/auth/forgot-password — email. Generic response even for missing user/cooldown.
@@ -56,6 +56,15 @@ The existing Docker compose needs overrides for real JWT, durable DataProtection
 ## Migrations
 
 AuthSecurityAndEmailOutbox adds lockout/token version, email uniqueness, role seed and encrypted outbox. AuthPermissions adds profile/business permissions, normalizes existing emails and guards uniqueness after normalization. It assigns USER only to legacy users without any role. If role codes already exist under other IDs, reconcile the role seed before migration. Duplicate emails fail migration for manual reconciliation; no users are silently deleted. Validate on a staging copy before applying to an existing team database.
+
+## Session revocation across services
+
+Auth publishes revocations to Redis after the database commit; every service with `ConnectionStrings:Redis` checks them while validating the token, without calling auth.
+
+- Sign-out: the access token's `jti` is revoked until it expires (`caps:session:revoked:{jti}`).
+- Password change/reset and a replayed refresh token: the new `token_version` is the lowest valid one (`caps:session:version:{userId}`, kept `Sessions:RevokeAllTtlMinutes`, default 20, which must exceed `Auth:AccessMinutes` + 2 minutes clock skew).
+- A revoked token counts as no token: public endpoints still work (an old device can refresh), protected ones return 401.
+- Redis down: tokens are trusted until they expire (decision 0.2), except on endpoints marked `[RequireSessionCheck]`, which return 503 `SESSION_CHECK_UNAVAILABLE`. After a failure checks are skipped for 5 seconds, so requests do not each wait for a Redis timeout. A revocation published while Redis is down is logged and lost; the auth database still enforces it for auth itself.
 
 ## Access token keys (RS256)
 

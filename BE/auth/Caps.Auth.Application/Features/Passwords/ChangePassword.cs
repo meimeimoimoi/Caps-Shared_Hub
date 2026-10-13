@@ -13,6 +13,7 @@ public sealed class ChangePasswordHandler(
     IUserRepository users,
     IPasswordHasher hasher,
     ISessionIssuer sessions,
+    ISessionRevocationStore revocations,
     IUnitOfWork unitOfWork,
     TimeProvider clock
 ) : ICommandHandler<ChangePasswordCommand, SessionResult>
@@ -35,6 +36,8 @@ public sealed class ChangePasswordHandler(
         var session = await sessions.IssueAsync(user, ct);
         await unitOfWork.SaveChangesAsync(ct);
         await tx.CommitAsync(ct);
+        // Published after commit, so other services never see a revocation that was rolled back
+        await revocations.RevokeAllAsync(user.Id, user.TokenVersion, ct);
         return session;
     }
 }

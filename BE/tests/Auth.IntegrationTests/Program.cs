@@ -13,6 +13,7 @@ using Caps.Auth.Infrastructure.Email;
 using Caps.Auth.Infrastructure.Persistence;
 using Caps.Auth.Infrastructure.Security;
 using Caps.Common.Application;
+using Caps.Common.Security;
 using Caps.Contracts;
 using Caps.Notification;
 using MassTransit;
@@ -280,7 +281,21 @@ login = await Post(c, "/api/v1/auth/login", new { email, password });
 Bearer(c, Access(login.Json));
 cookie = Refresh(login.Response);
 c.DefaultRequestHeaders.Add("Cookie", cookie);
+const string expertMe = "/api/v1/experts/me/application";
+Check(
+    (await c.GetAsync(expertMe)).StatusCode != HttpStatusCode.Unauthorized,
+    "expert accepts the session before logout"
+);
 Check((await Post(c, "/api/v1/auth/logout", new { })).Response.IsSuccessStatusCode, "logout");
+// Revocation is shared through Redis: expert rejects the signed-out token without asking auth
+Check(
+    (await c.GetAsync(expertMe)).StatusCode == HttpStatusCode.Unauthorized,
+    "logout revokes the access token at expert immediately"
+);
+Check(
+    (await c.GetAsync("/api/v1/users/me")).StatusCode == HttpStatusCode.Unauthorized,
+    "logout revokes the access token at auth immediately"
+);
 Check(
     (await Post(c, "/api/v1/auth/refresh-token", new { })).Response.StatusCode
         == HttpStatusCode.Unauthorized,
@@ -357,6 +372,20 @@ var change = await Post(
     new { currentPassword = "New-caps-password-123!", newPassword = changedPassword }
 );
 Check(change.Response.IsSuccessStatusCode, "change password");
+Bearer(deviceB, Access(loginB.Json));
+Check(
+    (await deviceB.GetAsync(expertMe)).StatusCode == HttpStatusCode.Unauthorized,
+    "change password revokes other devices' access tokens at expert"
+);
+using (var changed = Client())
+{
+    Bearer(changed, Access(change.Json));
+    Check(
+        (await changed.GetAsync(expertMe)).StatusCode != HttpStatusCode.Unauthorized,
+        "the new session after a password change works at expert"
+    );
+}
+deviceB.DefaultRequestHeaders.Authorization = null;
 deviceB.DefaultRequestHeaders.Add("Cookie", Refresh(loginB.Response));
 Check(
     (await Post(deviceB, "/api/v1/auth/refresh-token", new { })).Response.StatusCode
@@ -579,6 +608,15 @@ var signingKeys = JwtSigningKeys.Load(new JwtSigningOptions { DevKeyPath = jwtKe
 var core = new ServiceCollection();
 core.AddSingleton(jwt);
 core.AddSingleton(signingKeys);
+core.AddLogging();
+// Same Redis as the running services, so in-process revocations are visible to them
+core.AddCapsSessionRevocation(
+    new ConfigurationBuilder()
+        .AddInMemoryCollection(
+            new Dictionary<string, string?> { ["ConnectionStrings:Redis"] = "127.0.0.1:6379" }
+        )
+        .Build()
+);
 core.AddSingleton<IDataProtectionProvider>(provider);
 core.AddSingleton(TimeProvider.System);
 core.AddSingleton(Microsoft.Extensions.Options.Options.Create(new AuthOptions()));

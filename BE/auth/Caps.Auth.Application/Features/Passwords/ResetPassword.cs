@@ -13,6 +13,7 @@ public sealed class ResetPasswordHandler(
     IVerificationTokenRepository tokens,
     IPasswordHasher hasher,
     ISessionIssuer sessions,
+    ISessionRevocationStore revocations,
     IUnitOfWork unitOfWork,
     TimeProvider clock
 ) : ICommandHandler<ResetPasswordCommand>
@@ -34,5 +35,6 @@ public sealed class ResetPasswordHandler(
         await tokens.InvalidateUnusedAsync(user.Id, VerificationPurpose.ResetPassword, now, ct);
         await unitOfWork.SaveChangesAsync(ct);
         await tx.CommitAsync(ct);
+        await revocations.RevokeAllAsync(user.Id, user.TokenVersion, ct);
     }
 }

@@ -12,6 +12,7 @@ public sealed class RefreshSessionHandler(
     IUserRepository users,
     IRefreshTokenRepository refreshTokens,
     ISessionIssuer sessions,
+    ISessionRevocationStore revocations,
     IUnitOfWork unitOfWork,
     TimeProvider clock
 ) : ICommandHandler<RefreshSessionCommand, SessionResult>
@@ -38,6 +39,7 @@ public sealed class RefreshSessionHandler(
                 await sessions.RevokeAllAsync(user, ct);
                 await unitOfWork.SaveChangesAsync(ct);
                 await tx.CommitAsync(ct);
+                await revocations.RevokeAllAsync(user.Id, user.TokenVersion, ct);
             }
             throw AuthErrors.InvalidCredentials();
         }

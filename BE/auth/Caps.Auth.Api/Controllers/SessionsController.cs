@@ -68,7 +68,8 @@ public sealed class SessionsController(ICurrentUser currentUser, RefreshCookie r
         return Ok(refreshCookie.Issue(Response, session));
     }
 
-    /// <summary>Signs out this device: revokes its refresh token and clears the cookie.</summary>
+    /// <summary>Signs out this device: revokes its refresh token and access token, and clears the cookie.</summary>
+    /// <remarks>Every service rejects the access token from now on, not only when it expires.</remarks>
     /// <response code="200">Signed out. Other devices stay signed in.</response>
     /// <response code="401">Missing, expired or revoked access token.</response>
     [Authorize(Policy = "AuthSession"), HttpPost("logout")]
@@ -77,7 +78,13 @@ public sealed class SessionsController(ICurrentUser currentUser, RefreshCookie r
         CancellationToken ct
     )
     {
-        await handler.HandleAsync(new(UserId, refreshCookie.Read(Request)), ct);
+        var command = new LogoutCommand(
+            UserId,
+            refreshCookie.Read(Request),
+            currentUser.TokenId,
+            currentUser.TokenExpiresAt
+        );
+        await handler.HandleAsync(command, ct);
         refreshCookie.Clear(Response);
         return Ok(ApiResponse.Message("Logged out."));
     }

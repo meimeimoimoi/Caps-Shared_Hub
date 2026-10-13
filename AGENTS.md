@@ -65,6 +65,7 @@ npm run dev        # :5173
     `Program.cs` chỉ ghép các hàm cấu hình (`Configuration/*HostSetup.cs`), mỗi hàm một việc; middleware không gọi DB trực tiếp mà qua dịch vụ ở Application.
 - Áp dụng **SOLID**: một class một trách nhiệm; thêm use case bằng class mới (handler tự đăng ký qua `AddHandlersFromAssembly`), không sửa class cũ; interface nhỏ theo việc; phụ thuộc vào abstraction.
 - Service đơn giản (gateway, notification, read…) giữ 1 project, chia thư mục theo tính năng. Tên folder dạng số nhiều, interface có prefix `I`.
+- API nhạy cảm (tiền, duyệt hồ sơ…) gắn `[RequireSessionCheck]`: khi không kiểm tra được phiên đã bị thu hồi (Redis sập) sẽ trả 503 thay vì tin token.
 - Lỗi có chủ đích: `throw <Service>Errors.Xxx()` hoặc `CommonErrors.Xxx()` (`AppException` + `ErrorType`), không trả mã HTTP từ Domain/Application.
 - Code dùng chung đặt vào `common/` (`Caps.Common.Domain/Application/Security/Api/Messaging/Persistence`, `Caps.Contracts`), chỉ code kỹ thuật, không chứa nghiệp vụ. Không copy qua từng service.
 - Wiring service qua `AddCommonApi` / `UseCommonApi`. **Không copy `Program.cs`** từ service khác.
@@ -87,10 +88,8 @@ npm run dev        # :5173
 
 Các điểm sau cố ý làm đơn giản và sẽ thay. Không dùng làm mẫu cho code mới:
 
-- Thu hồi phiên (`AuthBoundaryMiddleware`) đọc thẳng DB của auth (sẽ chuyển sang Redis/event để service khác tự kiểm tra).
-- Service `expert` tin token tới khi hết hạn (15 phút), chưa kiểm tra thu hồi phiên (sẽ làm cùng Redis/event).
 
-Đã xong: JWT ký RS256, chỉ `auth` giữ private key; service khác xác thực bằng public key tải từ `/.well-known/jwks.json` (dự phòng `Jwt:PublicKeys`), gateway chặn token sai trên route `/me`; hồ sơ chuyên gia tách thành service `expert` (schema `expert`); không còn khóa ngoại chéo service, id của service khác (user, review case…) chỉ là cột thường, nên mỗi service migrate độc lập; mỗi service kết nối DB bằng role riêng (`caps_<service>`) chỉ có quyền trên schema của mình, mật khẩu nằm trong user-secrets / `docker/.env`, không nằm trong `appsettings`; DB dùng `dotnet ef migrations`; mật khẩu băm bằng `PasswordHasher` (PBKDF2) + lockout + refresh token xoay vòng.
+Đã xong: thu hồi phiên dùng chung qua Redis (đăng xuất, đổi/reset mật khẩu → mọi service từ chối token ngay; Redis sập thì cho qua, trừ API gắn `[RequireSessionCheck]` trả 503); JWT ký RS256, chỉ `auth` giữ private key; service khác xác thực bằng public key tải từ `/.well-known/jwks.json` (dự phòng `Jwt:PublicKeys`), gateway chặn token sai trên route `/me`; hồ sơ chuyên gia tách thành service `expert` (schema `expert`); không còn khóa ngoại chéo service, id của service khác (user, review case…) chỉ là cột thường, nên mỗi service migrate độc lập; mỗi service kết nối DB bằng role riêng (`caps_<service>`) chỉ có quyền trên schema của mình, mật khẩu nằm trong user-secrets / `docker/.env`, không nằm trong `appsettings`; DB dùng `dotnet ef migrations`; mật khẩu băm bằng `PasswordHasher` (PBKDF2) + lockout + refresh token xoay vòng.
 
 ## Git
 

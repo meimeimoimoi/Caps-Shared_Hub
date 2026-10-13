@@ -4,24 +4,38 @@ using Caps.Common.Application;
 
 namespace Caps.Auth.Application.Features.Sessions;
 
-public sealed record LogoutCommand(Guid UserId, string? RefreshToken);
+/// <param name="TokenId">The jti of the access token used for this request, revoked everywhere until it expires.</param>
+public sealed record LogoutCommand(
+    Guid UserId,
+    string? RefreshToken,
+    string? TokenId,
+    DateTimeOffset? TokenExpiresAt
+);
 
 public sealed class LogoutHandler(
     IUserRepository users,
     IRefreshTokenRepository refreshTokens,
+    ISessionRevocationStore revocations,
     IUnitOfWork unitOfWork,
     TimeProvider clock
 ) : ICommandHandler<LogoutCommand>
 {
     public async Task HandleAsync(LogoutCommand command, CancellationToken ct)
     {
-        if (string.IsNullOrEmpty(command.RefreshToken))
-            return;
+        if (!string.IsNullOrEmpty(command.RefreshToken))
+            await RevokeRefreshTokenAsync(command.UserId, command.RefreshToken, ct);
+        // Only this device: its access token stops working now instead of when it expires
+        if (!string.IsNullOrEmpty(command.TokenId) && command.TokenExpiresAt is { } expiresAt)
+            await revocations.RevokeTokenAsync(command.TokenId, expiresAt, ct);
+    }
+
+    private async Task RevokeRefreshTokenAsync(Guid userId, string refreshToken, CancellationToken ct)
+    {
         await using var tx = await unitOfWork.BeginTransactionAsync(ct);
-        await users.GetLockedAsync(command.UserId, ct);
+        await users.GetLockedAsync(userId, ct);
         var current = await refreshTokens.FindForUserAsync(
-            OpaqueTokens.Hash(command.RefreshToken),
-            command.UserId,
+            OpaqueTokens.Hash(refreshToken),
+            userId,
             ct
         );
         current?.Revoke(clock.GetUtcNow());
