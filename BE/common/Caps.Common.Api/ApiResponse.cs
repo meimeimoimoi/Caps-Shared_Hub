@@ -30,13 +30,3 @@ public sealed record ApiErrorResponse(
     public bool Success { get; }
     public object? Data { get; }
 }
-
-/// <summary>Response shape for a page of items. Not used by any endpoint yet.</summary>
-public sealed record PagedResponse<T>(
-    bool Success,
-    IReadOnlyList<T> Items,
-    int Page,
-    int PageSize,
-    long Total,
-    string? Message = null
-);

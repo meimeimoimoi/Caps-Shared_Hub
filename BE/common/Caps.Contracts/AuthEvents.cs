@@ -2,9 +2,6 @@ namespace Caps.Contracts;
 
 // Contracts between services: only add optional fields; never remove or rename a released field.
 
-/// <summary>Announces a new account to other services. Not published or consumed yet.</summary>
-public sealed record UserRegisteredEvent(string UserId, string Email, DateTimeOffset At);
-
 /// <summary>
 /// Asks the notification service to send a verification or password reset email. Published through auth's
 /// outbox; expired messages are dropped instead of sent.
