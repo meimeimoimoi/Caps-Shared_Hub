@@ -8,6 +8,13 @@ Caps-Shared_Hub (BE/ingestion/Entities: LegalSource, KnowledgeDocument, KbChunk)
     data/export/manifest.json      (tóm tắt mọi file đã xuất)
 
 Đây chính là body sẽ POST lên API ingestion ở bước tích hợp sau.
+
+schema_version 2:
+  - chunk có thêm `part` / `total_parts` / `char_count`; mỗi chunk <= MAX_CHUNK_CHARS
+    (thân quá dài được tách thành nhiều phần, mỗi phần lặp lại header ngữ cảnh).
+  - `knowledge_document.file_hash` luôn có giá trị; `file_hash_basis` = "text" | "source_id".
+  - `knowledge_document.ingest` = {"suggested_status": "APPROVED"|"PENDING", "pending_reasons": [...]}
+    để BE quyết định tự duyệt hay chờ admin.
 """
 
 import hashlib
@@ -25,7 +32,7 @@ from src.normalize import has_document_number, parse_vn_date
 
 logger = setup_logger(__name__, config.LOG_DIR)
 
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
 
 
 def get_export_dir():
@@ -38,6 +45,10 @@ def get_export_dir():
 SOURCE_CODES = {"vbpl": "CRAWL_VBPL", "mof": "CRAWL_MOF"}
 # Khoản dài hơn ngưỡng này thì tách mỗi Điểm thành 1 chunk riêng
 MAX_CLAUSE_CHARS = 1500
+# Trần độ dài toàn bộ `text` của 1 chunk (header + thân) để embedding không bị cắt cụt
+MAX_CHUNK_CHARS = 2000
+# Thân chunk tối thiểu khi header quá dài, tránh tách thành các mẩu vụn
+MIN_BODY_CHARS = 500
 
 
 def _iso(value: Optional[str]) -> Optional[str]:
@@ -49,6 +60,62 @@ def _text_hash(text: str) -> str:
     """sha256 của toàn văn đã chuẩn hoá khoảng trắng (dùng cho file_hash / dedup)."""
     normalized = re.sub(r"\s+", " ", text or "").strip()
     return hashlib.sha256(normalized.encode("utf-8")).hexdigest()
+
+
+def _file_hash(rec: dict, text: str) -> tuple:
+    """(hash, basis): hash toàn văn nếu có; không có text thì hash định danh nguồn để BE vẫn dedup được."""
+    if text.strip():
+        return _text_hash(text), "text"
+    attachments = rec.get("attachments") or []
+    first_url = next((a.get("url") for a in attachments if a.get("url")), "")
+    key = f"{rec.get('source') or 'vbpl'}:{rec.get('doc_id') or rec.get('detail_url') or ''}:{first_url}"
+    return hashlib.sha256(key.encode("utf-8")).hexdigest(), "source_id"
+
+
+def _split_body(body: str, limit: int) -> List[str]:
+    """Tách thân chunk thành các phần <= limit: ưu tiên theo dòng, rồi theo câu, cuối cùng cắt cứng."""
+    if len(body) <= limit:
+        return [body]
+    pieces: List[str] = []
+    for line in body.split("\n"):
+        if len(line) <= limit:
+            pieces.append(line)
+            continue
+        for sentence in re.split(r"(?<=[.;:])\s+", line):
+            while len(sentence) > limit:
+                cut = sentence.rfind(" ", 0, limit)
+                cut = cut if cut > limit // 2 else limit
+                pieces.append(sentence[:cut].rstrip())
+                sentence = sentence[cut:].lstrip()
+            if sentence:
+                pieces.append(sentence)
+
+    parts: List[str] = []
+    current = ""
+    for piece in pieces:
+        candidate = f"{current}\n{piece}" if current else piece
+        if len(candidate) <= limit:
+            current = candidate
+        else:
+            parts.append(current)
+            current = piece
+    if current:
+        parts.append(current)
+    return parts
+
+
+def _ingest_hint(rec: dict, text: str, parsed: ParsedDocument, chunks: List[dict]) -> dict:
+    """Gợi ý cho BE: văn bản nào đủ sạch để tự duyệt, văn bản nào phải chờ admin."""
+    reasons: List[str] = []
+    if not text.strip():
+        reasons.append("NO_TEXT")
+    elif parsed.parse_status != "PARSED":
+        reasons.append(parsed.parse_status)
+    if rec.get("ocr_required") or rec.get("text_source") == "pdf_ocr":
+        reasons.append("OCR_TEXT")
+    if text.strip() and parsed.parse_status == "PARSED" and not chunks:
+        reasons.append("NO_CHUNKS")
+    return {"suggested_status": "PENDING" if reasons else "APPROVED", "pending_reasons": reasons}
 
 
 def _document_number(rec: dict) -> str:
@@ -132,17 +199,25 @@ def build_chunks(rec: dict, parsed: ParsedDocument) -> List[dict]:
                 crumbs.append(heading)
                 if clause:
                     crumbs.append(f"Khoản {clause}")
-                body = "\n".join(_numbered(u) for u in group if u.text) or article.title
-                chunks.append({
-                    "chunk_index": len(chunks),
-                    "article": article.number,
-                    "clause": clause,
-                    "point": point,
-                    "path": path,
-                    "text": " — ".join(crumbs) + "\n" + body,
-                    "effective_from": effective_from,
-                    "effective_to": effective_to,
-                })
+                header = " — ".join(crumbs)
+                body = "\n".join(_numbered(u) for u in group if u.text) or article.title or ""
+                limit = max(MAX_CHUNK_CHARS - len(header) - 1, MIN_BODY_CHARS)
+                parts = _split_body(body, limit)
+                for part_no, part in enumerate(parts, start=1):
+                    text = header + "\n" + part
+                    chunks.append({
+                        "chunk_index": len(chunks),
+                        "article": article.number,
+                        "clause": clause,
+                        "point": point,
+                        "path": path,
+                        "part": part_no,
+                        "total_parts": len(parts),
+                        "char_count": len(text),
+                        "text": text,
+                        "effective_from": effective_from,
+                        "effective_to": effective_to,
+                    })
     return chunks
 
 
@@ -153,6 +228,7 @@ def build_payload(rec: dict) -> dict:
     parsed = parse_legal_text(text)
     content = parsed.to_content_json()
     chunks = build_chunks(rec, parsed) if parsed.parse_status == "PARSED" else []
+    file_hash, file_hash_basis = _file_hash(rec, text)
 
     return {
         "schema_version": SCHEMA_VERSION,
@@ -174,11 +250,13 @@ def build_payload(rec: dict) -> dict:
         },
         "knowledge_document": {
             "source": SOURCE_CODES.get(source, f"CRAWL_{source.upper()}"),
-            "file_hash": _text_hash(text) if text else None,
+            "file_hash": file_hash,
+            "file_hash_basis": file_hash_basis,
             "issued_date": _iso(rec.get("ngay_ban_hanh")),
             "effective_from": _iso(rec.get("ngay_hieu_luc")),
             "effective_to": _iso(rec.get("ngay_het_hieu_luc")),
             "content_json": content,
+            "ingest": _ingest_hint(rec, text, parsed, chunks),
             "metadata": {
                 "tinh_trang_hieu_luc": rec.get("tinh_trang_hieu_luc"),
                 "text_source": rec.get("text_source"),
@@ -218,6 +296,7 @@ def export_records(records: List[dict]) -> List[dict]:
             "parse_status": content["parse_status"],
             "articles": sum(len(c["articles"]) for c in content["chapters"]),
             "chunks": len(payload["chunks"]),
+            "suggested_status": payload["knowledge_document"]["ingest"]["suggested_status"],
             "warnings": content["warnings"],
             "unit_warnings": n_unit_warnings,
         }

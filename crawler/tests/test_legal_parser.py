@@ -8,7 +8,7 @@ import pytest
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from src.exporter import build_payload  # noqa: E402
+from src.exporter import MAX_CHUNK_CHARS, build_payload  # noqa: E402
 from src.legal_parser import parse_legal_text  # noqa: E402
 from src.normalize import (  # noqa: E402
     normalize_attachments,
@@ -187,6 +187,45 @@ def test_payload_matches_ingestion_schema():
     assert body.startswith("1. Đối với thuế giá trị gia tăng")
     assert "\na) Gia hạn thời hạn nộp thuế" in body
     assert c41["effective_from"] == "2025-04-02"
+    assert payload["schema_version"] == 2
+    assert kd["file_hash_basis"] == "text"
+    assert kd["ingest"] == {"suggested_status": "APPROVED", "pending_reasons": []}
+    assert all(c["char_count"] == len(c["text"]) <= MAX_CHUNK_CHARS for c in chunks)
+
+
+def test_long_clause_is_split_with_header_repeated():
+    sentence = "Doanh nghiệp được giảm thuế theo quy định tại khoản này. "
+    text = "Điều 1. Ưu đãi thuế\n1. " + sentence * 120
+    rec = {"so_hieu": "1/2025/NĐ-CP", "loai_van_ban": "Nghị định", "doc_id": "long",
+           "tieu_de": "Nghị định dài", "noi_dung_text": text}
+    chunks = build_payload(rec)["chunks"]
+    assert len(chunks) > 1
+    assert [c["chunk_index"] for c in chunks] == list(range(len(chunks)))
+    assert [c["part"] for c in chunks] == list(range(1, len(chunks) + 1))
+    assert all(c["total_parts"] == len(chunks) for c in chunks)
+    header = chunks[0]["text"].split("\n", 1)[0]
+    for c in chunks:
+        assert len(c["text"]) <= MAX_CHUNK_CHARS
+        assert c["text"].startswith(header + "\n")
+        assert c["path"] == "Điều 1 · Khoản 1"
+
+
+def test_document_without_text_still_has_hash_and_is_pending():
+    rec = {"so_hieu": "2/2025/TT-BTC", "loai_van_ban": "Thông tư", "doc_id": "empty",
+           "source": "mof", "tieu_de": "Thông tư rỗng", "noi_dung_text": "", "ocr_required": True}
+    kd = build_payload(rec)["knowledge_document"]
+    assert len(kd["file_hash"]) == 64
+    assert kd["file_hash_basis"] == "source_id"
+    assert kd["ingest"]["suggested_status"] == "PENDING"
+    assert kd["ingest"]["pending_reasons"] == ["NO_TEXT", "OCR_TEXT"]
+
+
+def test_unparsable_text_is_pending():
+    rec = {"so_hieu": "3/2025/QĐ-BTC", "loai_van_ban": "Quyết định", "doc_id": "noparse",
+           "tieu_de": "Quyết định", "noi_dung_text": "Văn bản không có cấu trúc Điều."}
+    payload = build_payload(rec)
+    assert payload["chunks"] == []
+    assert payload["knowledge_document"]["ingest"]["pending_reasons"] == ["PARSE_FAILED"]
 
 
 def test_law_without_number_gets_unique_fallback_key():
