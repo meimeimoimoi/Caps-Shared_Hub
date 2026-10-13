@@ -62,7 +62,7 @@ src/
 ## Routes
 
 - `/` — public marketing homepage (React redesign with Vietnamese/English content, scoped CSS and scroll-driven video; see [docs/HOMEPAGE.md](docs/HOMEPAGE.md)).
-- `/login` — public; email login calls `POST /api/auth/login` through the gateway.
+- `/login` — public; email login calls `POST /api/v1/auth/login` through the gateway.
 - `/expert/register` — public expert onboarding.
 - `/dashboard` — protected application dashboard.
 - `/expert/overview`, `/expert/cases`, `/expert/queue`, `/expert/active` — expert workspace.

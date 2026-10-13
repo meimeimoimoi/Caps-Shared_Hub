@@ -89,6 +89,6 @@ The connection must target a dedicated DB ending _test. PostgreSQL must already 
 
 ## Integration limits
 
-Auth validates token version and account status from its DB. Other services enforce ACTIVE by the shared default authorization policy, but do not synchronously query Auth for token revocation; an old token can remain usable there until its 15-minute expiry. Immediate cross-service revocation requires a shared revocation mechanism. Role changes likewise require refresh or expiry.
+Auth validates token version and account status from its DB. Other services enforce ACTIVE by the shared default authorization policy and reject revoked tokens through the shared Redis revocation store (see Session revocation across services). Role and status changes still require a refresh or the token's expiry.
 
-Frontend adaptation must be made on a frontend branch: current FE still uses legacy /api/auth, stores tokens differently and lacks verification/reset pages. This backend change does not silently alter frontend. Access tokens are signed with RS256 (see Access token keys).
+The FE calls the /api/v1 endpoints through the gateway (the legacy /api/auth route was removed). Access tokens are signed with RS256 (see Access token keys).

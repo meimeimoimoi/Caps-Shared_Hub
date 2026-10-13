@@ -104,9 +104,10 @@ dotnet run --project gateway/gateway.csproj
 Smoke test xuyên gateway:
 
 ```powershell
-curl -X POST http://localhost:5190/api/auth/register `
+curl -X POST http://localhost:5190/api/v1/auth/register `
   -H "Content-Type: application/json" `
-  -d '{"email":"a@caps.com","password":"Caps123!"}'
+  -H "X-Caps-Client: spa" `
+  -d '{"email":"a@caps.test","password":"Caps-password-123!","displayName":"Test"}'
 ```
 
 Hoặc chạy full docker:
@@ -129,7 +130,7 @@ vào `/dashboard` (F5 không mất session, 401 tự về `/login`).
 
 | Route | Quyền | Ghi chú |
 |---|---|---|
-| `/login` | Public | Gọi `POST /api/auth/login` qua gateway |
+| `/login` | Public | Gọi `POST /api/v1/auth/login` qua gateway |
 | `/dashboard` | `ProtectedRoute` | Shell chờ module nghiệp vụ cắm vào |
 | `*` | Public | Trang 404 |
 
