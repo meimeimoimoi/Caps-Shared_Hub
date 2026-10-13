@@ -19,6 +19,11 @@ public sealed class HttpContextCurrentUser(IHttpContextAccessor accessor) : ICur
     public string? Email =>
         accessor.HttpContext?.User.FindFirstValue(JwtRegisteredClaimNames.Email);
     public string? AccountStatus => accessor.HttpContext?.User.FindFirstValue("account_status");
+    public string? TokenId => accessor.HttpContext?.User.FindFirstValue(JwtRegisteredClaimNames.Jti);
+    public DateTimeOffset? TokenExpiresAt =>
+        long.TryParse(accessor.HttpContext?.User.FindFirstValue(JwtRegisteredClaimNames.Exp), out var exp)
+            ? DateTimeOffset.FromUnixTimeSeconds(exp)
+            : null;
     public bool IsAuthenticated => accessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
 }
 
@@ -54,6 +59,11 @@ public static class JwtServiceCollectionExtensions
                 (o, env, logs, local) =>
                 {
                     o.MapInboundClaims = false;
+                    // Revoked tokens (shared through Redis) are rejected as if they were never sent
+                    o.Events = new JwtBearerEvents
+                    {
+                        OnTokenValidated = SessionRevocationCheck.OnTokenValidated,
+                    };
                     o.TokenValidationParameters = new TokenValidationParameters
                     {
                         RoleClaimType = "role",

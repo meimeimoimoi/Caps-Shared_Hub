@@ -61,6 +61,7 @@ public static class ApiErrors
             ErrorType.Conflict => StatusCodes.Status409Conflict,
             ErrorType.RuleViolation => StatusCodes.Status422UnprocessableEntity,
             ErrorType.TooManyRequests => StatusCodes.Status429TooManyRequests,
+            ErrorType.Unavailable => StatusCodes.Status503ServiceUnavailable,
             _ => StatusCodes.Status400BadRequest,
         };
 

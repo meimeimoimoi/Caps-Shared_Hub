@@ -24,6 +24,7 @@ public static class CommonApiExtensions
         services.AddProblemDetails();
         services.AddHealthChecks();
         services.AddCapsJwt(config);
+        services.AddCapsSessionRevocation(config);
 
         var origins =
             config.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? ["http://localhost:5173"];

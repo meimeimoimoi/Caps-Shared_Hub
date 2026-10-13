@@ -10,6 +10,9 @@ public enum ErrorType
     Conflict,
     RuleViolation,
     TooManyRequests,
+
+    /// <summary>A dependency needed to answer safely is down; the client may retry later.</summary>
+    Unavailable,
 }
 
 /// <summary>

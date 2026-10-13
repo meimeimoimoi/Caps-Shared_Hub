@@ -140,6 +140,8 @@ services:
       ASPNETCORE_ENVIRONMENT: Production
       ASPNETCORE_URLS: http://+:8080
       ConnectionStrings__Postgres: Host=postgres;Port=5432;Database=caps_db;Username=caps_expert;Password=${CAPS_EXPERT_DB_PASSWORD}
+      # Shared session revocations written by auth (sign-out, password change)
+      ConnectionStrings__Redis: redis:6379
       # Verify tokens with auth's public keys; plain HTTP is acceptable only inside this network
       Jwt__JwksUrl: http://auth:8080/.well-known/jwks.json
       Jwt__RequireHttpsMetadata: "false"
@@ -151,6 +153,8 @@ services:
       - "5198:8080"
     depends_on:
       postgres:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     networks:
       - caps_network

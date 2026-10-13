@@ -17,7 +17,7 @@ It does **not** own accounts or roles (identity service) or case handling (workf
 - The applicant comes from the access token: `sub`, `email`, and `account_status` (ACTIVE = email verified).
   After verifying the email, the client refreshes the session before submitting.
 - Name and phone entered in the application are stored here; they do not change the account profile.
-- Tokens are trusted until they expire (15 minutes); session revocation across services comes with the Redis/event work.
+- Revoked tokens (sign-out, password change/reset) are rejected at once through the shared Redis revocation store (`ConnectionStrings:Redis`). If Redis is down, tokens are trusted until they expire, except on endpoints marked `[RequireSessionCheck]` (503).
 
 ## Run (PowerShell from BE)
 

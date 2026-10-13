@@ -16,6 +16,7 @@ public static class CommonErrors
         public const string ClientHeaderRequired = "CLIENT_HEADER_REQUIRED";
         public const string OriginRejected = "ORIGIN_REJECTED";
         public const string TooManyRequests = "RATE_LIMITED";
+        public const string SessionCheckUnavailable = "SESSION_CHECK_UNAVAILABLE";
         public const string Internal = "INTERNAL_ERROR";
     }
 
@@ -47,6 +48,11 @@ public static class CommonErrors
 
     public static AppException TooManyRequests(string message = "Too many requests.") =>
         new(ErrorType.TooManyRequests, Codes.TooManyRequests, message);
+
+    /// <summary>A sensitive endpoint cannot confirm the session was not revoked (revocation store down).</summary>
+    public static AppException SessionCheckUnavailable(
+        string message = "Session check is temporarily unavailable. Try again shortly."
+    ) => new(ErrorType.Unavailable, Codes.SessionCheckUnavailable, message);
 }
 
 /// <summary>Invalid input; <see cref="Errors"/> groups messages per field.</summary>
