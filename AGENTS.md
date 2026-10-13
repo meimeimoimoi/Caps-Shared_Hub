@@ -62,13 +62,16 @@ npm run dev        # :5173
   - `Infrastructure`: EF Core + migration, repository, adapter (JWT, hash, email, storage); đăng ký qua `AddXxxInfrastructure`.
   - `Api`: controller chỉ map request → command và nhận đúng handler cần qua `[FromServices]`; lấy người dùng hiện tại bằng `ICurrentUser.RequireUserId()`; request DTO trong `DTOs/Requests/`.
     Action dễ đọc: chỉ dùng `=>` khi thân hàm vừa **một dòng**, còn lại dùng `{ }`; gọi handler rồi gán vào biến (`var session = await ...;`) trước khi `return Ok(...)`, không lồng `await` trong lời gọi hàm khác; mỗi controller có `private Guid UserId => currentUser.RequireUserId();`. Mỗi action có chú thích `///` (summary, remarks, response codes) để hiện trên Swagger.
-    `Program.cs` chỉ ghép các hàm cấu hình (`Configuration/*HostSetup.cs`), mỗi hàm một việc; middleware không gọi DB trực tiếp mà qua dịch vụ ở Application.
+    `Program.cs` chỉ ghép các hàm cấu hình (phần riêng của service đặt trong `Configuration/*HostSetup.cs`, mỗi hàm một việc); middleware không gọi DB trực tiếp mà qua dịch vụ ở Application. Mỗi middleware một việc.
 - Áp dụng **SOLID**: một class một trách nhiệm; thêm use case bằng class mới (handler tự đăng ký qua `AddHandlersFromAssembly`), không sửa class cũ; interface nhỏ theo việc; phụ thuộc vào abstraction.
 - Service đơn giản (gateway, notification, read…) giữ 1 project, chia thư mục theo tính năng. Tên folder dạng số nhiều, interface có prefix `I`.
 - API nhạy cảm (tiền, duyệt hồ sơ…) gắn `[RequireSessionCheck]`: khi không kiểm tra được phiên đã bị thu hồi (Redis sập) sẽ trả 503 thay vì tin token.
 - Lỗi có chủ đích: `throw <Service>Errors.Xxx()` hoặc `CommonErrors.Xxx()` (`AppException` + `ErrorType`), không trả mã HTTP từ Domain/Application.
-- Code dùng chung đặt vào `common/` (`Caps.Common.Domain/Application/Security/Api/Messaging/Persistence`, `Caps.Contracts`), chỉ code kỹ thuật, không chứa nghiệp vụ. Không copy qua từng service.
-- Wiring service qua `AddCommonApi` / `UseCommonApi`. **Không copy `Program.cs`** từ service khác.
+- Code dùng chung đặt vào `common/` (`Caps.Common.Domain/Application/Security/Api/Messaging/Persistence`, `Caps.Contracts`). Chỉ đưa vào khi **cả hai** điều đúng: là code kỹ thuật (không nghiệp vụ, không entity) **và** đã cần ở ít nhất 2 service. Chỉ một service dùng thì để trong service đó. Không copy code dùng chung qua từng service.
+- Wiring service, không tự viết lại những phần này:
+  - `AddCommonApi` / `UseCommonApi`: controller, Swagger (bearer + XML), lỗi chung, `/healthz` (sống) và `/readyz` (DB), JWT, thu hồi phiên, CORS, `TimeProvider`.
+  - `config.GetRequiredConnectionString("Postgres")` + `AddServiceDatabase<TContext>(conn, "<Service>", "<schema>")` trong `Add<Service>Infrastructure`: DbContext, bảng lịch sử migration, `IUnitOfWork`, health check DB.
+  - `app.MigrateInDevelopment<TContext>()` trước `UseCommonApi()` (tắt bằng `Database:ApplyMigrations=false`).
 - Service mới: `dotnet sln Caps.sln add <path-to-csproj>`, thêm route YARP ở `gateway/` nếu đi qua gateway, và có `/healthz`, `/readyz`.
 - Mọi request từ client đi qua Gateway (`:5190`), không gọi thẳng service từ FE.
 - Messaging dùng MassTransit; hiện mới có contracts + config, chưa có consumer thật.
