@@ -2,8 +2,8 @@ using Caps.Expert.Infrastructure.Storage;
 
 namespace Caps.Expert.Api.Configuration;
 
-/// <summary>Host wiring specific to the expert service; the shared parts come from AddCommonApi.</summary>
-public static class ExpertHostSetup
+/// <summary>Object storage for evidence files; the shared host parts come from AddCommonApi.</summary>
+public static class ExpertStorageSetup
 {
     /// <summary>Private object storage for evidence files, validated at startup.</summary>
     public static IServiceCollection AddExpertStorage(

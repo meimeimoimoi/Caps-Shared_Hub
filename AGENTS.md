@@ -62,7 +62,7 @@ npm run dev        # :5173
   - `Infrastructure`: EF Core + migration, repository, adapter (JWT, hash, email, storage); đăng ký qua `AddXxxInfrastructure`.
   - `Api`: controller chỉ map request → command và nhận đúng handler cần qua `[FromServices]`; lấy người dùng hiện tại bằng `ICurrentUser.RequireUserId()`; request DTO trong `DTOs/Requests/`.
     Action dễ đọc: chỉ dùng `=>` khi thân hàm vừa **một dòng**, còn lại dùng `{ }`; gọi handler rồi gán vào biến (`var session = await ...;`) trước khi `return Ok(...)`, không lồng `await` trong lời gọi hàm khác; mỗi controller có `private Guid UserId => currentUser.RequireUserId();`. Mỗi action có chú thích `///` (summary, remarks, response codes) để hiện trên Swagger.
-    `Program.cs` chỉ ghép các hàm cấu hình (phần riêng của service đặt trong `Configuration/*HostSetup.cs`, mỗi hàm một việc); middleware không gọi DB trực tiếp mà qua dịch vụ ở Application. Mỗi middleware một việc.
+    `Program.cs` chỉ ghép các hàm cấu hình (phần riêng của service đặt trong `Configuration/`, mỗi việc một class, ví dụ `AuthEmailSetup`, `ExpertStorageSetup`); middleware không gọi DB trực tiếp mà qua dịch vụ ở Application. Mỗi middleware một việc.
 - Áp dụng **SOLID**: một class một trách nhiệm; thêm use case bằng class mới (handler tự đăng ký qua `AddHandlersFromAssembly`), không sửa class cũ; interface nhỏ theo việc; phụ thuộc vào abstraction.
 - Service đơn giản (gateway, notification, read…) giữ 1 project, chia thư mục theo tính năng. Tên folder dạng số nhiều, interface có prefix `I`.
 - API nhạy cảm (tiền, duyệt hồ sơ…) gắn `[RequireSessionCheck]`: khi không kiểm tra được phiên đã bị thu hồi (Redis sập) sẽ trả 503 thay vì tin token.
