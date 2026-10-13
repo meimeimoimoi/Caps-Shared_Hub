@@ -1,7 +1,8 @@
 using System.Text.Encodings.Web;
 using Caps.Contracts;
+using Caps.Notification.Email;
 
-namespace notification.Services;
+namespace Caps.Notification.Features.AuthEmails;
 
 /// <summary>
 /// Verification / password reset email content. The HTML uses tables + inline styles because many
@@ -9,8 +10,8 @@ namespace notification.Services;
 /// </summary>
 public static class AuthEmailTemplate
 {
-    /// <summary>Content-ID of the logo embedded in the email (see AuthEmailConsumer).</summary>
-    public const string LogoCid = "shared-hub-logo";
+    /// <summary>Content-ID of the logo embedded in the email (see EmailAssets).</summary>
+    public const string LogoCid = EmailAssets.LogoContentId;
 
     private const string Brand = "Shared Hub";
     private const string Tagline = "Tra cứu luật thuế TNDN và soạn hồ sơ có trích dẫn.";

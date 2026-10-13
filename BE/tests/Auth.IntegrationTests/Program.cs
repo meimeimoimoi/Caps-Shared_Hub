@@ -13,6 +13,7 @@ using Caps.Auth.Infrastructure.Email;
 using Caps.Auth.Infrastructure.Persistence;
 using Caps.Common.Application;
 using Caps.Contracts;
+using Caps.Notification;
 using MassTransit;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
@@ -689,22 +690,22 @@ var services = new ServiceCollection();
 services.AddLogging();
 services.AddDbContext<AuthDbContext>(x => x.UseNpgsql(connection));
 services.AddSingleton<IDataProtectionProvider>(provider);
-services.AddSingleton<IConfiguration>(
-    new ConfigurationBuilder()
-        .AddInMemoryCollection(
-            new Dictionary<string, string?>
-            {
-                ["Smtp:Host"] = "127.0.0.1",
-                ["Smtp:Port"] = smtp.Port.ToString(),
-                ["Smtp:EnableSsl"] = "false",
-                ["Smtp:From"] = "test@caps.test",
-            }
-        )
-        .Build()
-);
+var smtpConfig = new ConfigurationBuilder()
+    .AddInMemoryCollection(
+        new Dictionary<string, string?>
+        {
+            ["Smtp:Host"] = "127.0.0.1",
+            ["Smtp:Port"] = smtp.Port.ToString(),
+            ["Smtp:EnableSsl"] = "false",
+            ["Smtp:From"] = "test@caps.test",
+        }
+    )
+    .Build();
+services.AddSingleton<IConfiguration>(smtpConfig);
+services.AddNotificationEmail(smtpConfig);
 services.AddMassTransit(x =>
 {
-    x.AddConsumer<notification.Services.AuthEmailConsumer>();
+    x.AddConsumer<Caps.Notification.Features.AuthEmails.AuthEmailConsumer>();
     x.UsingInMemory((ctx, cfg) => cfg.ConfigureEndpoints(ctx));
 });
 services.AddSingleton<AuthEmailPublisher>();
