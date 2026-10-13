@@ -5,11 +5,11 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
-using ingestion.Data;
+using Caps.Ingestion.Data;
 
 #nullable disable
 
-namespace ingestion.Migrations
+namespace Caps.Ingestion.Migrations
 {
     [DbContext(typeof(IngestionDbContext))]
     [Migration("20261013015601_DropCrossServiceForeignKeys")]
@@ -26,7 +26,7 @@ namespace ingestion.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("ingestion.Entities.CrawlJob", b =>
+            modelBuilder.Entity("Caps.Ingestion.Entities.CrawlJob", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -74,7 +74,7 @@ namespace ingestion.Migrations
                     b.ToTable("crawl_job", "knowledge");
                 });
 
-            modelBuilder.Entity("ingestion.Entities.KbChunk", b =>
+            modelBuilder.Entity("Caps.Ingestion.Entities.KbChunk", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -142,7 +142,7 @@ namespace ingestion.Migrations
                     b.ToTable("kb_chunk", "knowledge");
                 });
 
-            modelBuilder.Entity("ingestion.Entities.KnowledgeDocument", b =>
+            modelBuilder.Entity("Caps.Ingestion.Entities.KnowledgeDocument", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -258,7 +258,7 @@ namespace ingestion.Migrations
                     b.ToTable("knowledge_document", "knowledge");
                 });
 
-            modelBuilder.Entity("ingestion.Entities.LegalAmendment", b =>
+            modelBuilder.Entity("Caps.Ingestion.Entities.LegalAmendment", b =>
                 {
                     b.Property<Guid>("AmendingSourceId")
                         .HasColumnType("uuid")
@@ -292,7 +292,7 @@ namespace ingestion.Migrations
                     b.ToTable("legal_amendment", "knowledge");
                 });
 
-            modelBuilder.Entity("ingestion.Entities.LegalSource", b =>
+            modelBuilder.Entity("Caps.Ingestion.Entities.LegalSource", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -339,9 +339,9 @@ namespace ingestion.Migrations
                     b.ToTable("legal_source", "knowledge");
                 });
 
-            modelBuilder.Entity("ingestion.Entities.KbChunk", b =>
+            modelBuilder.Entity("Caps.Ingestion.Entities.KbChunk", b =>
                 {
-                    b.HasOne("ingestion.Entities.KnowledgeDocument", "KnowledgeDocument")
+                    b.HasOne("Caps.Ingestion.Entities.KnowledgeDocument", "KnowledgeDocument")
                         .WithMany("Chunks")
                         .HasForeignKey("KnowledgeDocumentId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -351,14 +351,14 @@ namespace ingestion.Migrations
                     b.Navigation("KnowledgeDocument");
                 });
 
-            modelBuilder.Entity("ingestion.Entities.KnowledgeDocument", b =>
+            modelBuilder.Entity("Caps.Ingestion.Entities.KnowledgeDocument", b =>
                 {
-                    b.HasOne("ingestion.Entities.CrawlJob", "CrawlJob")
+                    b.HasOne("Caps.Ingestion.Entities.CrawlJob", "CrawlJob")
                         .WithMany("KnowledgeDocuments")
                         .HasForeignKey("CrawlJobId")
                         .HasConstraintName("fk_knowledge_document_19");
 
-                    b.HasOne("ingestion.Entities.LegalSource", "LegalSource")
+                    b.HasOne("Caps.Ingestion.Entities.LegalSource", "LegalSource")
                         .WithMany("KnowledgeDocuments")
                         .HasForeignKey("LegalSourceId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -370,16 +370,16 @@ namespace ingestion.Migrations
                     b.Navigation("LegalSource");
                 });
 
-            modelBuilder.Entity("ingestion.Entities.LegalAmendment", b =>
+            modelBuilder.Entity("Caps.Ingestion.Entities.LegalAmendment", b =>
                 {
-                    b.HasOne("ingestion.Entities.LegalSource", "AmendedSource")
+                    b.HasOne("Caps.Ingestion.Entities.LegalSource", "AmendedSource")
                         .WithMany("AmendedAmendments")
                         .HasForeignKey("AmendedSourceId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_legal_amendment_17");
 
-                    b.HasOne("ingestion.Entities.LegalSource", "AmendingSource")
+                    b.HasOne("Caps.Ingestion.Entities.LegalSource", "AmendingSource")
                         .WithMany("AmendingAmendments")
                         .HasForeignKey("AmendingSourceId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -391,17 +391,17 @@ namespace ingestion.Migrations
                     b.Navigation("AmendingSource");
                 });
 
-            modelBuilder.Entity("ingestion.Entities.CrawlJob", b =>
+            modelBuilder.Entity("Caps.Ingestion.Entities.CrawlJob", b =>
                 {
                     b.Navigation("KnowledgeDocuments");
                 });
 
-            modelBuilder.Entity("ingestion.Entities.KnowledgeDocument", b =>
+            modelBuilder.Entity("Caps.Ingestion.Entities.KnowledgeDocument", b =>
                 {
                     b.Navigation("Chunks");
                 });
 
-            modelBuilder.Entity("ingestion.Entities.LegalSource", b =>
+            modelBuilder.Entity("Caps.Ingestion.Entities.LegalSource", b =>
                 {
                     b.Navigation("AmendedAmendments");
 

@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace ingestion.Migrations
+namespace Caps.Ingestion.Migrations
 {
     /// <inheritdoc />
     public partial class InitialIngestion : Migration

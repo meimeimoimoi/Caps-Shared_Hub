@@ -1,6 +1,6 @@
 using Caps.Common.Domain;
 
-namespace ingestion.Entities;
+namespace Caps.Ingestion.Entities;
 
 public sealed class KbChunk
 {

@@ -1,6 +1,6 @@
 using Caps.Common.Api;
 using Caps.Common.Persistence;
-using ingestion.Data;
+using Caps.Ingestion.Data;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -9,8 +9,7 @@ builder.Services.AddCommonApi(builder.Configuration, "ingestion");
 
 var pg =
     builder.Configuration.GetConnectionString("Postgres")
-    ?? builder.Configuration["ConnectionStrings:Postgres"]
-    ?? "Host=localhost;Port=5432;Database=shft_db;Username=postgres;Password=postgres";
+    ?? throw new InvalidOperationException("ConnectionStrings:Postgres is required.");
 
 builder.Services.AddDbContext<IngestionDbContext>(o =>
     o.UseNpgsql(

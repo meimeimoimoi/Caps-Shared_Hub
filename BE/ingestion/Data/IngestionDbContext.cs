@@ -1,7 +1,7 @@
-using ingestion.Entities;
+using Caps.Ingestion.Entities;
 using Microsoft.EntityFrameworkCore;
 
-namespace ingestion.Data;
+namespace Caps.Ingestion.Data;
 
 public sealed class IngestionDbContext(DbContextOptions<IngestionDbContext> options)
     : DbContext(options)
