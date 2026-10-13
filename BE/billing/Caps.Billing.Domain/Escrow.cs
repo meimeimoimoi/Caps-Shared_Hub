@@ -2,6 +2,7 @@ using Caps.Common.Domain;
 
 namespace Caps.Billing.Domain;
 
+/// <summary>Money held for a review case until it is settled.</summary>
 public sealed class Escrow
 {
     public Guid Id { get; set; } = UuidV7.NewGuid();

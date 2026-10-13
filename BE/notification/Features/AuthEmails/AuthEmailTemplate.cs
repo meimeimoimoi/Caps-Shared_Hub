@@ -25,6 +25,7 @@ public static class AuthEmailTemplate
     // Vietnam has no daylight saving time, so use a fixed UTC+7 regardless of the server time zone.
     private static readonly TimeSpan VietnamOffset = TimeSpan.FromHours(7);
 
+    /// <summary>Subject, HTML and plain-text body of one email.</summary>
     public sealed record Content(string Subject, string Html, string Text);
 
     private sealed record Copy(

@@ -9,10 +9,13 @@ namespace Caps.Auth.Application.Features.Profile;
 /// <summary>The image format is detected from <paramref name="Data"/>, never taken from the client.</summary>
 public sealed record UpdateAvatarCommand(Guid UserId, byte[] Data);
 
+/// <summary>Removes the signed-in user's avatar.</summary>
 public sealed record RemoveAvatarCommand(Guid UserId);
 
+/// <summary>Reads a user's avatar for the public image URL.</summary>
 public sealed record GetAvatarQuery(Guid UserId);
 
+/// <summary>Validates the image by its content and stores it as the user's avatar.</summary>
 public sealed class UpdateAvatarHandler(
     IUserRepository users,
     IUserAvatarRepository avatars,
@@ -41,6 +44,7 @@ public sealed class UpdateAvatarHandler(
     }
 }
 
+/// <summary>Deletes the user's avatar if there is one.</summary>
 public sealed class RemoveAvatarHandler(
     IUserRepository users,
     IUserAvatarRepository avatars,
@@ -56,6 +60,7 @@ public sealed class RemoveAvatarHandler(
     }
 }
 
+/// <summary>Returns the avatar file, or null when the user has none.</summary>
 public sealed class GetAvatarHandler(IUserAvatarRepository avatars)
     : IQueryHandler<GetAvatarQuery, AvatarFile?>
 {

@@ -3,12 +3,14 @@ using Caps.Expert.Domain.Profiles;
 
 namespace Caps.Expert.Application.Abstractions;
 
+/// <summary>Expert profiles, one per account.</summary>
 public interface IExpertProfileRepository
 {
     Task<ExpertProfile?> FindByUserAsync(Guid userId, CancellationToken ct);
     void Add(ExpertProfile profile);
 }
 
+/// <summary>Expert applications with their history; the latest one is the current application.</summary>
 public interface IExpertApplicationRepository
 {
     /// <summary>The most recent application of the profile, open or closed.</summary>
@@ -21,6 +23,7 @@ public interface IExpertApplicationRepository
     void AddEvent(ExpertApplicationEvent applicationEvent);
 }
 
+/// <summary>Uploaded evidence files of an application (metadata; the bytes live in object storage).</summary>
 public interface IExpertEvidenceRepository
 {
     /// <summary>Files of the application, oldest first.</summary>

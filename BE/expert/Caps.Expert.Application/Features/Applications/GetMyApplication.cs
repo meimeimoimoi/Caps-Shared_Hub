@@ -5,6 +5,7 @@ using Caps.Expert.Application.DTOs.Responses;
 
 namespace Caps.Expert.Application.Features.Applications;
 
+/// <summary>Reads the signed-in applicant's current application.</summary>
 public sealed record GetMyApplicationQuery(Applicant Applicant);
 
 /// <summary>Returns null when the user has never started an application.</summary>

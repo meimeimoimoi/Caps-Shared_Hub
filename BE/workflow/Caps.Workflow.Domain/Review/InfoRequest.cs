@@ -2,6 +2,7 @@ using Caps.Common.Domain;
 
 namespace Caps.Workflow.Domain.Review;
 
+/// <summary>A question the expert asks the requester during a review, answered before a deadline.</summary>
 public sealed class InfoRequest
 {
     public Guid Id { get; set; } = UuidV7.NewGuid();

@@ -6,6 +6,7 @@ using Caps.Auth.Domain.Users;
 
 namespace Caps.Auth.Application.Common;
 
+/// <summary>Starts sessions (access token + refresh token) and revokes all of an account's sessions.</summary>
 public interface ISessionIssuer
 {
     /// <summary>Issues an access token plus a new refresh token (added to the unit of work, not saved).</summary>
@@ -20,6 +21,7 @@ public interface ISessionIssuer
     Task RevokeAllAsync(User user, CancellationToken ct);
 }
 
+/// <summary>Issues the access token and stores the hashed refresh token in one place for every sign-in path.</summary>
 public sealed class SessionIssuer(
     IUserProfileReader profiles,
     IAccessTokenIssuer accessTokens,

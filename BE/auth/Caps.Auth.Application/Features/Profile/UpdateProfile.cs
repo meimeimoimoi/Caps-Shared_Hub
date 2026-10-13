@@ -5,8 +5,10 @@ using Caps.Common.Application;
 
 namespace Caps.Auth.Application.Features.Profile;
 
+/// <summary>New display name and phone of the signed-in user.</summary>
 public sealed record UpdateProfileCommand(Guid UserId, string DisplayName, string? Phone);
 
+/// <summary>Updates the display name and phone of an active account.</summary>
 public sealed class UpdateProfileHandler(
     IUserRepository users,
     IUserProfileReader profiles,

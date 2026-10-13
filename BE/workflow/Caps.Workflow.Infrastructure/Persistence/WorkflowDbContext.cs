@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Caps.Workflow.Infrastructure.Persistence;
 
+/// <summary>The workflow service's database: documents and AI chats (schema workspace) and expert reviews (schema review).</summary>
 public sealed class WorkflowDbContext(DbContextOptions<WorkflowDbContext> options)
     : DbContext(options)
 {

@@ -6,8 +6,10 @@ using Caps.Expert.Domain;
 
 namespace Caps.Expert.Application.Features.Applications;
 
+/// <summary>Removes a file the applicant uploaded.</summary>
 public sealed record RemoveEvidenceCommand(Applicant Applicant, Guid EvidenceId);
 
+/// <summary>Removes a file that is not yet part of a submission, then deletes it from storage.</summary>
 public sealed class RemoveEvidenceHandler(
     IApplicantLock locks,
     IApplicationLoader loader,

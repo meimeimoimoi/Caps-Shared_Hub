@@ -22,6 +22,7 @@ public sealed class SmtpOptions
     public string? Password { get; set; }
 }
 
+/// <summary>Sends email over SMTP (Mailpit in development), with an HTML part and inline images.</summary>
 public sealed class SmtpEmailSender(IOptions<SmtpOptions> options) : IEmailSender
 {
     public async Task SendAsync(EmailMessage message, CancellationToken ct)

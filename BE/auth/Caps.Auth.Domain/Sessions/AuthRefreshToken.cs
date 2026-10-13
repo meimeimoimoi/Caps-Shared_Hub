@@ -4,6 +4,7 @@ using Caps.Common.Domain;
 
 namespace Caps.Auth.Domain.Sessions;
 
+/// <summary>One refresh session. Rotating creates a successor, which lets reuse of an old token be detected.</summary>
 public sealed class AuthRefreshToken
 {
     private AuthRefreshToken() { }

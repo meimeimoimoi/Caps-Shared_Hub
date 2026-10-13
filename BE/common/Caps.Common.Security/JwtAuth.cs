@@ -13,6 +13,7 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace Caps.Common.Security;
 
+/// <summary>Reads the signed-in user from the validated access token of the current request.</summary>
 public sealed class HttpContextCurrentUser(IHttpContextAccessor accessor) : ICurrentUser
 {
     public string? UserId => accessor.HttpContext?.User.FindFirstValue(JwtRegisteredClaimNames.Sub);
@@ -37,6 +38,7 @@ public interface ILocalValidationKeys
     IEnumerable<SecurityKey> Keys { get; }
 }
 
+/// <summary>Registers RS256 token validation and the shared authorization policies.</summary>
 public static class JwtServiceCollectionExtensions
 {
     /// <summary>

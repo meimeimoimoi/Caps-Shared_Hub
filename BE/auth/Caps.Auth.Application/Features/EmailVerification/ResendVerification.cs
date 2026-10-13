@@ -6,8 +6,10 @@ using Caps.Common.Application;
 
 namespace Caps.Auth.Application.Features.EmailVerification;
 
+/// <summary>Sends a new verification email to the signed-in, still unverified account.</summary>
 public sealed record ResendVerificationCommand(Guid UserId);
 
+/// <summary>Queues a fresh verification email; older links stop working.</summary>
 public sealed class ResendVerificationHandler(
     IUserRepository users,
     IAccountEmailQueue emails,

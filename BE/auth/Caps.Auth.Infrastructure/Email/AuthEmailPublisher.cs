@@ -10,6 +10,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Caps.Auth.Infrastructure.Email;
 
+/// <summary>Background worker that moves queued emails from the encrypted outbox to RabbitMQ.</summary>
 public sealed class AuthEmailPublisher(
     IServiceScopeFactory scopes,
     TimeProvider clock,

@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Caps.Auth.Infrastructure.Persistence.Repositories;
 
+/// <summary>EF Core store for emailed tokens.</summary>
 public sealed class VerificationTokenRepository(AuthDbContext db) : IVerificationTokenRepository
 {
     public async Task<(Guid Id, Guid UserId)?> FindByHashAsync(

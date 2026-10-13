@@ -2,6 +2,7 @@ using System.Text.Json.Serialization;
 
 namespace Caps.Common.Api;
 
+/// <summary>Successful response shape of every service: { success, data, message }.</summary>
 public sealed record ApiResponse<T>(bool Success, T? Data, string? Message = null)
 {
     public static ApiResponse<T> Ok(T data, string? message = null) => new(true, data, message);
@@ -30,6 +31,7 @@ public sealed record ApiErrorResponse(
     public object? Data { get; }
 }
 
+/// <summary>Response shape for a page of items. Not used by any endpoint yet.</summary>
 public sealed record PagedResponse<T>(
     bool Success,
     IReadOnlyList<T> Items,

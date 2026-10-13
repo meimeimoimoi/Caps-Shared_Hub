@@ -5,6 +5,7 @@ using Caps.Common.Application;
 
 namespace Caps.Auth.Application.Common;
 
+/// <summary>Account checks shared by several use cases, failing with the API's generic errors.</summary>
 public static class AccountGuards
 {
     public static void EnsureActive(User user)

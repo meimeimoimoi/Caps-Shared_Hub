@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Caps.Common.Api;
 
+/// <summary>Finds use-case handlers by their interfaces, so new use cases register themselves.</summary>
 public static class HandlerRegistration
 {
     private static readonly Type[] HandlerInterfaces =

@@ -5,6 +5,7 @@ namespace Caps.Auth.Application.Abstractions.Persistence;
 /// <summary>Untracked snapshot used to validate a session without loading the account.</summary>
 public sealed record UserSessionState(string Status, int TokenVersion);
 
+/// <summary>Accounts; LockAsync takes a row lock so concurrent changes to one account run one at a time.</summary>
 public interface IUserRepository
 {
     Task<User?> FindAsync(Guid id, CancellationToken ct);

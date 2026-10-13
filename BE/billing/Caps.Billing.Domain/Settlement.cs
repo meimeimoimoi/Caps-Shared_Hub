@@ -2,6 +2,7 @@ using Caps.Common.Domain;
 
 namespace Caps.Billing.Domain;
 
+/// <summary>How an escrowed amount is split when a review case ends: refund, expert payout and platform fee.</summary>
 public sealed class Settlement
 {
     public Guid Id { get; set; } = UuidV7.NewGuid();

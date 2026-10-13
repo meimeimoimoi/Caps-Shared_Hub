@@ -2,6 +2,7 @@ using Caps.Common.Domain;
 
 namespace Caps.Workflow.Domain.Review;
 
+/// <summary>A checklist item the expert works through in a review case.</summary>
 public sealed class ReviewTask
 {
     public Guid Id { get; set; } = UuidV7.NewGuid();

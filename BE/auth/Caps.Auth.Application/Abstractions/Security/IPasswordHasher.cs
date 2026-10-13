@@ -1,5 +1,6 @@
 namespace Caps.Auth.Application.Abstractions.Security;
 
+/// <summary>Result of a password check; SuccessRehashNeeded asks to store a stronger hash.</summary>
 public enum PasswordCheck
 {
     Failed,
@@ -7,6 +8,7 @@ public enum PasswordCheck
     SuccessRehashNeeded,
 }
 
+/// <summary>Hashes and verifies passwords; the algorithm (PBKDF2) stays in Infrastructure.</summary>
 public interface IPasswordHasher
 {
     string Hash(string password);

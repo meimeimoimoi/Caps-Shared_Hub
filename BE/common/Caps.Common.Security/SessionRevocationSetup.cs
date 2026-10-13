@@ -6,6 +6,7 @@ using StackExchange.Redis;
 
 namespace Caps.Common.Security;
 
+/// <summary>Registers the shared session revocation store when Redis is configured.</summary>
 public static class SessionRevocationSetup
 {
     /// <summary>

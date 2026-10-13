@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Caps.Auth.Infrastructure.Persistence.Repositories;
 
+/// <summary>EF Core store for refresh sessions.</summary>
 public sealed class RefreshTokenRepository(AuthDbContext db) : IRefreshTokenRepository
 {
     public async Task<(Guid Id, Guid UserId)?> FindByHashAsync(

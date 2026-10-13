@@ -4,6 +4,7 @@ using Caps.Expert.Application.Features.Applications;
 
 namespace Caps.Expert.Api;
 
+/// <summary>Registers the expert Application layer: its shared services and every use-case handler.</summary>
 public static class DependencyInjection
 {
     /// <summary>Application services plus every command/query handler found in the Application assembly.</summary>

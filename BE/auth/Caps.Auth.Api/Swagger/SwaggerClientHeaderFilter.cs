@@ -5,6 +5,7 @@ using Swashbuckle.AspNetCore.SwaggerGen;
 namespace Caps.Auth.Api.Swagger;
 
 // Swagger UI is Development-only; prefill X-Caps-Client to try the /api/v1/auth mutations that CsrfGuardMiddleware requires.
+/// <summary>Adds the X-Caps-Client header to auth mutations in Swagger UI, so they can be tried there.</summary>
 public sealed class SwaggerClientHeaderFilter : IOperationFilter
 {
     public void Apply(OpenApiOperation operation, OperationFilterContext context)

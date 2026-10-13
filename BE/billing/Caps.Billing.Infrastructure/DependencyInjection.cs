@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Caps.Billing.Infrastructure;
 
+/// <summary>Registers the billing adapters, starting with its database.</summary>
 public static class DependencyInjection
 {
     /// <summary>The billing database (shared unit of work, readiness check) behind the application ports.</summary>

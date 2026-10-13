@@ -10,8 +10,10 @@ using Caps.Common.Application;
 
 namespace Caps.Auth.Application.Features.Sessions;
 
+/// <summary>Sign-up with email and password; the account starts unverified.</summary>
 public sealed record RegisterCommand(string Email, string Password, string? DisplayName);
 
+/// <summary>Creates the account, sends the verification email and signs the new user in.</summary>
 public sealed class RegisterHandler(
     IEmailDomainPolicy emailPolicy,
     IUserRepository users,

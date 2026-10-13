@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Caps.Expert.Infrastructure;
 
+/// <summary>Registers the expert adapters: database, repositories and object storage.</summary>
 public static class DependencyInjection
 {
     /// <summary>

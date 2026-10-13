@@ -2,6 +2,7 @@ using Caps.Common.Domain;
 
 namespace Caps.Ingestion.Entities;
 
+/// <summary>One crawl run that looks for new legal documents, started on schedule or by an admin.</summary>
 public sealed class CrawlJob
 {
     public Guid Id { get; set; } = UuidV7.NewGuid();

@@ -2,6 +2,7 @@ using Caps.Auth.Domain.Verification;
 
 namespace Caps.Auth.Application.Abstractions.Persistence;
 
+/// <summary>Email verification and password reset tokens, stored only as hashes.</summary>
 public interface IVerificationTokenRepository
 {
     /// <summary>Untracked lookup used before taking the user lock.</summary>

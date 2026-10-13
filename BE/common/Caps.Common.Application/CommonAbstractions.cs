@@ -1,5 +1,6 @@
 namespace Caps.Common.Application;
 
+/// <summary>The signed-in user as the access token describes it.</summary>
 public interface ICurrentUser
 {
     string? UserId { get; }
@@ -16,6 +17,7 @@ public interface ICurrentUser
     bool IsAuthenticated { get; }
 }
 
+/// <summary>Helpers for reading the signed-in user safely.</summary>
 public static class CurrentUserExtensions
 {
     /// <summary>The signed-in user's id; a missing or malformed subject claim is an invalid session.</summary>

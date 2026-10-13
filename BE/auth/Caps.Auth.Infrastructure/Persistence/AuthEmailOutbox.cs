@@ -1,5 +1,6 @@
 namespace Caps.Auth.Infrastructure.Persistence;
 
+/// <summary>An email waiting to be published; the payload is encrypted and cleared once sent.</summary>
 public sealed class AuthEmailOutbox
 {
     public Guid Id { get; set; } = Guid.NewGuid();

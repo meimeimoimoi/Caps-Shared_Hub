@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Caps.Billing.Infrastructure.Persistence;
 
+/// <summary>The billing service's database (schema billing): payments, credits, escrow and payouts.</summary>
 public sealed class BillingDbContext(DbContextOptions<BillingDbContext> options)
     : DbContext(options)
 {

@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Caps.Expert.Infrastructure.Persistence;
 
+/// <summary>EF Core store for expert profiles.</summary>
 public sealed class ExpertProfileRepository(ExpertDbContext db) : IExpertProfileRepository
 {
     public Task<ExpertProfile?> FindByUserAsync(Guid userId, CancellationToken ct) =>
@@ -13,6 +14,7 @@ public sealed class ExpertProfileRepository(ExpertDbContext db) : IExpertProfile
     public void Add(ExpertProfile profile) => db.ExpertProfiles.Add(profile);
 }
 
+/// <summary>EF Core store for applications and their history.</summary>
 public sealed class ExpertApplicationRepository(ExpertDbContext db) : IExpertApplicationRepository
 {
     public Task<ExpertApplication?> FindLatestAsync(Guid profileId, CancellationToken ct) =>
@@ -37,6 +39,7 @@ public sealed class ExpertApplicationRepository(ExpertDbContext db) : IExpertApp
         db.ExpertApplicationEvents.Add(applicationEvent);
 }
 
+/// <summary>EF Core store for evidence metadata.</summary>
 public sealed class ExpertEvidenceRepository(ExpertDbContext db) : IExpertEvidenceRepository
 {
     public async Task<IReadOnlyList<ExpertEvidence>> ListAsync(

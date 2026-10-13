@@ -6,8 +6,10 @@ using Caps.Common.Application;
 
 namespace Caps.Auth.Application.Features.Sessions;
 
+/// <summary>The refresh token from the HttpOnly cookie.</summary>
 public sealed record RefreshSessionCommand(string RefreshToken);
 
+/// <summary>Rotates the refresh token; reuse of a rotated token revokes every session of the account.</summary>
 public sealed class RefreshSessionHandler(
     IUserRepository users,
     IRefreshTokenRepository refreshTokens,

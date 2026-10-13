@@ -7,6 +7,7 @@ using Caps.Contracts;
 
 namespace Caps.Auth.Application.Common;
 
+/// <summary>Sends account emails (verification, password reset) through the outbox, with a cooldown.</summary>
 public interface IAccountEmailQueue
 {
     /// <summary>
@@ -16,6 +17,7 @@ public interface IAccountEmailQueue
     Task QueueAsync(User user, string purpose, CancellationToken ct);
 }
 
+/// <summary>Creates the token, replaces older unused ones and writes the email to the outbox.</summary>
 public sealed class AccountEmailQueue(
     IVerificationTokenRepository tokens,
     IAuthEmailOutbox outbox,

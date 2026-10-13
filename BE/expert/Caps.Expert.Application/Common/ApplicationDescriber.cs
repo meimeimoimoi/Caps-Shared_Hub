@@ -5,6 +5,7 @@ using Caps.Expert.Domain.Profiles;
 
 namespace Caps.Expert.Application.Common;
 
+/// <summary>Builds the applicant's view of an application.</summary>
 public interface IApplicationDescriber
 {
     /// <summary>Builds the applicant's view: details, files, history and what can be done next.</summary>
@@ -16,6 +17,7 @@ public interface IApplicationDescriber
     );
 }
 
+/// <summary>Combines the application, profile, files and history, and works out the allowed actions.</summary>
 public sealed class ApplicationDescriber(
     IExpertApplicationRepository applications,
     IExpertEvidenceRepository evidences

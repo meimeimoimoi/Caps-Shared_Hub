@@ -8,6 +8,7 @@ using Caps.Common.Security;
 
 namespace Caps.Auth.Infrastructure.Security;
 
+/// <summary>Signs RS256 access tokens; unverified accounts get no roles or permissions.</summary>
 public sealed class JwtAccessTokenIssuer(
     JwtOptions jwt,
     JwtSigningKeys keys,

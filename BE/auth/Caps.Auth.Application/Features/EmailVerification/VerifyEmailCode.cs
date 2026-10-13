@@ -10,6 +10,7 @@ namespace Caps.Auth.Application.Features.EmailVerification;
 /// <summary>Verification with the 6-digit code; returns a new ACTIVE session.</summary>
 public sealed record VerifyEmailCodeCommand(Guid UserId, string Code);
 
+/// <summary>Activates the account from the 6-digit code, with a limited number of attempts.</summary>
 public sealed class VerifyEmailCodeHandler(
     IUserRepository users,
     IVerificationTokenRepository tokens,

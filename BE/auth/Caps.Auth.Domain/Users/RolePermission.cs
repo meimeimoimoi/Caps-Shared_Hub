@@ -1,5 +1,6 @@
 namespace Caps.Auth.Domain.Users;
 
+/// <summary>Grants a permission to a role.</summary>
 public sealed class RolePermission
 {
     public Guid RoleId { get; set; }

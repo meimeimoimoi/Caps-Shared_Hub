@@ -2,6 +2,7 @@ using Caps.Common.Domain;
 
 namespace Caps.Billing.Domain;
 
+/// <summary>A complaint about a review case, decided by an arbiter before the deadline (SLA).</summary>
 public sealed class Dispute
 {
     public Guid Id { get; set; } = UuidV7.NewGuid();

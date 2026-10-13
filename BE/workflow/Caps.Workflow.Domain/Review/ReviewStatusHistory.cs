@@ -2,6 +2,7 @@ using Caps.Common.Domain;
 
 namespace Caps.Workflow.Domain.Review;
 
+/// <summary>Audit trail of a review case's status changes.</summary>
 public sealed class ReviewStatusHistory
 {
     public Guid Id { get; set; } = UuidV7.NewGuid();

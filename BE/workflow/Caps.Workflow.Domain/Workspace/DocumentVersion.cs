@@ -2,6 +2,7 @@ using Caps.Common.Domain;
 
 namespace Caps.Workflow.Domain.Workspace;
 
+/// <summary>One version of a document; versions sent to review become immutable.</summary>
 public sealed class DocumentVersion
 {
     public Guid Id { get; set; } = UuidV7.NewGuid();

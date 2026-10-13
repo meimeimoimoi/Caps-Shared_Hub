@@ -3,6 +3,7 @@ using Caps.Common.Domain;
 
 namespace Caps.Auth.Domain.Business;
 
+/// <summary>Company details of a customer account (one per account).</summary>
 public sealed class BusinessProfile
 {
     private BusinessProfile() { }

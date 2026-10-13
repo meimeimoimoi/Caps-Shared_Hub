@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Caps.Auth.Infrastructure.Persistence.Repositories;
 
+/// <summary>EF Core store for accounts, their roles and permissions.</summary>
 public sealed class UserRepository(AuthDbContext db) : IUserRepository, IUserAccessReader
 {
     public async Task<User?> FindAsync(Guid id, CancellationToken ct) =>

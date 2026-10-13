@@ -13,6 +13,7 @@ public sealed record ServiceDatabase<TContext>(
 )
     where TContext : DbContext;
 
+/// <summary>One-line database setup and development migration for every service.</summary>
 public static class ServiceDatabaseExtensions
 {
     /// <summary>Reads a connection string that must be configured (user-secrets, environment).</summary>

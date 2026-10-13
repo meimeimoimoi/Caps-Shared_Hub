@@ -4,8 +4,10 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Caps.Common.Messaging;
 
+/// <summary>RabbitMQ connection details.</summary>
 public sealed record MessagingOptions(string Host, string Username, string Password);
 
+/// <summary>Registers MassTransit on RabbitMQ with the shared conventions.</summary>
 public static class MessagingServiceCollectionExtensions
 {
     public static IServiceCollection AddCapsMessaging(

@@ -2,6 +2,7 @@ using Caps.Common.Domain;
 
 namespace Caps.Workflow.Domain.Workspace;
 
+/// <summary>A question or AI answer in a conversation, with the legal period it covers and its citations.</summary>
 public sealed class ChatMessage
 {
     public Guid Id { get; set; } = UuidV7.NewGuid();

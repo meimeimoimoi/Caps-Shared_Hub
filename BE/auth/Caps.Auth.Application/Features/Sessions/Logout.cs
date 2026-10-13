@@ -4,6 +4,7 @@ using Caps.Common.Application;
 
 namespace Caps.Auth.Application.Features.Sessions;
 
+/// <summary>Signs this device out; the refresh token comes from its cookie.</summary>
 /// <param name="TokenId">The jti of the access token used for this request, revoked everywhere until it expires.</param>
 public sealed record LogoutCommand(
     Guid UserId,
@@ -12,6 +13,7 @@ public sealed record LogoutCommand(
     DateTimeOffset? TokenExpiresAt
 );
 
+/// <summary>Signs this device out: revokes its refresh token and its access token in every service.</summary>
 public sealed class LogoutHandler(
     IUserRepository users,
     IRefreshTokenRepository refreshTokens,

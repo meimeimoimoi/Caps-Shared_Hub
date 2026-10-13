@@ -2,6 +2,7 @@ using Caps.Common.Domain;
 
 namespace Caps.Billing.Domain;
 
+/// <summary>Append-only movement of a credit wallet; the idempotency key stops the same movement twice.</summary>
 public sealed class CreditLedger
 {
     public Guid Id { get; set; } = UuidV7.NewGuid();

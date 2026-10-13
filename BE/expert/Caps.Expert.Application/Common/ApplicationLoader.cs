@@ -5,6 +5,7 @@ using Caps.Expert.Domain.Profiles;
 
 namespace Caps.Expert.Application.Common;
 
+/// <summary>Finds (or opens) the applicant's current application.</summary>
 public interface IApplicationLoader
 {
     /// <summary>The open application, creating the profile and/or a new draft when needed.</summary>
@@ -20,6 +21,7 @@ public interface IApplicationLoader
     );
 }
 
+/// <summary>Loads the profile and current application, creating them on first use.</summary>
 public sealed class ApplicationLoader(
     IExpertProfileRepository profiles,
     IExpertApplicationRepository applications,

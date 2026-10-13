@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Caps.Auth.Infrastructure.Persistence.Repositories;
 
+/// <summary>EF Core store for avatars.</summary>
 public sealed class UserAvatarRepository(AuthDbContext db) : IUserAvatarRepository
 {
     public Task<UserAvatar?> GetAsync(Guid userId, CancellationToken ct) =>
@@ -30,6 +31,7 @@ public sealed class UserAvatarRepository(AuthDbContext db) : IUserAvatarReposito
     public void Add(UserAvatar avatar) => db.UserAvatars.Add(avatar);
 }
 
+/// <summary>EF Core store for company details.</summary>
 public sealed class BusinessProfileRepository(AuthDbContext db) : IBusinessProfileRepository
 {
     public Task<BusinessProfile?> GetAsync(Guid userId, CancellationToken ct) =>

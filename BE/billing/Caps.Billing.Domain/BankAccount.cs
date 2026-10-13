@@ -2,6 +2,7 @@ using Caps.Common.Domain;
 
 namespace Caps.Billing.Domain;
 
+/// <summary>An expert's payout bank account; the number is stored encrypted, plus a hash and the last 4 digits.</summary>
 public sealed class BankAccount
 {
     public Guid Id { get; set; } = UuidV7.NewGuid();

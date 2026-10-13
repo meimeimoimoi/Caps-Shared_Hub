@@ -2,6 +2,7 @@ using Caps.Auth.Domain.Sessions;
 
 namespace Caps.Auth.Application.Abstractions.Persistence;
 
+/// <summary>Refresh sessions, looked up by hash; also tells whether a token was rotated (reuse detection).</summary>
 public interface IRefreshTokenRepository
 {
     /// <summary>Untracked lookup used before taking the user lock.</summary>

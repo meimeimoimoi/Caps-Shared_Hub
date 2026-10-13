@@ -2,6 +2,7 @@ using Caps.Common.Domain;
 
 namespace Caps.Workflow.Domain.Workspace;
 
+/// <summary>One AI answer and how it was paid (free quota or held credits), reserved first and settled after.</summary>
 public sealed class AiUsage
 {
     public Guid Id { get; set; } = UuidV7.NewGuid();

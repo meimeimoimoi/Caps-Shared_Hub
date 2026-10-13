@@ -36,4 +36,5 @@ public sealed record SaveExpertApplicationRequest(
         );
 }
 
+/// <summary>Resubmits an application after more information was requested, with an optional note.</summary>
 public sealed record SupplementExpertApplicationRequest([MaxLength(2000)] string? Note);

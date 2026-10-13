@@ -8,8 +8,10 @@ using BusinessProfileEntity = Caps.Auth.Domain.Business.BusinessProfile;
 
 namespace Caps.Auth.Application.Features.Profile;
 
+/// <summary>Reads the company details of the signed-in customer.</summary>
 public sealed record GetBusinessProfileQuery(Guid UserId);
 
+/// <summary>New company details of the signed-in customer.</summary>
 public sealed record UpdateBusinessProfileCommand(
     Guid UserId,
     string CompanyName,
@@ -20,6 +22,7 @@ public sealed record UpdateBusinessProfileCommand(
     string? ContactPhone
 );
 
+/// <summary>Returns the company details, or null before they are first saved.</summary>
 public sealed class GetBusinessProfileHandler(
     IUserRepository users,
     IBusinessProfileRepository profiles
@@ -36,6 +39,7 @@ public sealed class GetBusinessProfileHandler(
     }
 }
 
+/// <summary>Creates or updates the company details of an active customer account.</summary>
 public sealed class UpdateBusinessProfileHandler(
     IUserRepository users,
     IBusinessProfileRepository profiles,

@@ -1,5 +1,6 @@
 namespace Caps.Workflow.Domain.Workspace;
 
+/// <summary>Free AI questions left for a user before credits are used.</summary>
 public sealed class AiQuota
 {
     public Guid UserId { get; set; }

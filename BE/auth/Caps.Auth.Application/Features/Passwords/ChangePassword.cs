@@ -7,8 +7,10 @@ using Caps.Common.Application;
 
 namespace Caps.Auth.Application.Features.Passwords;
 
+/// <summary>Password change by the signed-in owner, who must give the current password.</summary>
 public sealed record ChangePasswordCommand(Guid UserId, string CurrentPassword, string NewPassword);
 
+/// <summary>Changes the password, signs out every other device and starts a new session here.</summary>
 public sealed class ChangePasswordHandler(
     IUserRepository users,
     IPasswordHasher hasher,

@@ -9,6 +9,7 @@ namespace Caps.Auth.Application.Features.EmailVerification;
 /// <summary>Verification through the link in the email (the user may not be signed in).</summary>
 public sealed record VerifyEmailCommand(string Token);
 
+/// <summary>Activates the account from the emailed link.</summary>
 public sealed class VerifyEmailHandler(
     IVerificationTokenRedeemer redeemer,
     IVerificationTokenRepository tokens,

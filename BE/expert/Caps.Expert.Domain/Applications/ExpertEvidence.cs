@@ -2,6 +2,7 @@ using Caps.Common.Domain;
 
 namespace Caps.Expert.Domain.Applications;
 
+/// <summary>Metadata of an uploaded evidence file; the bytes live in object storage under its FileUrl.</summary>
 public sealed class ExpertEvidence
 {
     private ExpertEvidence() { }

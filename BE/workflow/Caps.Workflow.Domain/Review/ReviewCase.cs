@@ -2,6 +2,7 @@ using Caps.Common.Domain;
 
 namespace Caps.Workflow.Domain.Review;
 
+/// <summary>An expert review of one document version, from request through payment and delivery to acceptance.</summary>
 public sealed class ReviewCase
 {
     public Guid Id { get; set; } = UuidV7.NewGuid();

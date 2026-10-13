@@ -6,6 +6,7 @@ using Microsoft.Extensions.Options;
 
 namespace Caps.Auth.Api;
 
+/// <summary>Registers the auth Application layer: its shared services and every use-case handler.</summary>
 public static class DependencyInjection
 {
     /// <summary>Application services plus every command/query handler found in the Application assembly.</summary>

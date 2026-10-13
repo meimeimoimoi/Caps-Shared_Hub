@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Caps.Ingestion.Data;
 
+/// <summary>The ingestion service's database (schema knowledge): legal sources and their indexed chunks.</summary>
 public sealed class IngestionDbContext(DbContextOptions<IngestionDbContext> options)
     : DbContext(options)
 {

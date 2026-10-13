@@ -7,6 +7,7 @@ using Microsoft.Extensions.Options;
 
 namespace Caps.Expert.Infrastructure.Storage;
 
+/// <summary>S3-compatible storage settings ("Storage" section); SeaweedFS in development.</summary>
 public sealed class StorageOptions
 {
     /// <summary>S3 endpoint (SeaweedFS in dev). Leave empty to use real AWS S3 by Region.</summary>

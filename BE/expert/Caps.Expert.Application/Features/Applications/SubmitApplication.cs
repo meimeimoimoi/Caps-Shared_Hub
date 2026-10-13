@@ -7,8 +7,10 @@ using Caps.Expert.Domain.Applications;
 
 namespace Caps.Expert.Application.Features.Applications;
 
+/// <summary>Submits the applicant's draft for review.</summary>
 public sealed record SubmitApplicationCommand(Applicant Applicant);
 
+/// <summary>Submits a complete draft from a verified account and locks it.</summary>
 public sealed class SubmitApplicationHandler(
     IApplicantLock locks,
     IApplicationLoader loader,

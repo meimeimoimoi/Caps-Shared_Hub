@@ -91,6 +91,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Caps.__Name__.Infrastructure.Persistence;
 
+/// <summary>The __folder__ service's database (schema __schema__).</summary>
 public sealed class __Name__DbContext(DbContextOptions<__Name__DbContext> options) : DbContext(options)
 {
     public const string Schema = "__schema__";
@@ -111,6 +112,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Caps.__Name__.Infrastructure;
 
+/// <summary>Registers the __folder__ adapters, starting with its database.</summary>
 public static class DependencyInjection
 {
     /// <summary>The __folder__ database (shared unit of work, readiness check) behind the application ports.</summary>
@@ -151,6 +153,7 @@ using Caps.Common.Api;
 
 namespace Caps.__Name__.Api;
 
+/// <summary>Registers the __folder__ Application layer (every use-case handler).</summary>
 public static class DependencyInjection
 {
     /// <summary>Every command/query handler found in the Application assembly.</summary>

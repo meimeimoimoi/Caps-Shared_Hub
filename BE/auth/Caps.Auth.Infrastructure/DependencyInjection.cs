@@ -10,6 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Caps.Auth.Infrastructure;
 
+/// <summary>Registers the auth adapters: database, repositories, password hashing, tokens and email outbox.</summary>
 public static class DependencyInjection
 {
     /// <summary>

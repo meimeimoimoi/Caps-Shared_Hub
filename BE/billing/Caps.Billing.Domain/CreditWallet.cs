@@ -1,5 +1,6 @@
 namespace Caps.Billing.Domain;
 
+/// <summary>A user's prepaid credits; Held is reserved for work in progress.</summary>
 public sealed class CreditWallet
 {
     public Guid UserId { get; set; }

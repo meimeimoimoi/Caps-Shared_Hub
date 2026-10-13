@@ -2,6 +2,7 @@ using Caps.Common.Domain;
 
 namespace Caps.Billing.Domain;
 
+/// <summary>A transfer to an expert after settlement; bank details are copied at that moment.</summary>
 public sealed class PayoutTransaction
 {
     public Guid Id { get; set; } = UuidV7.NewGuid();

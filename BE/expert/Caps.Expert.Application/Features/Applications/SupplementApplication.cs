@@ -9,6 +9,7 @@ namespace Caps.Expert.Application.Features.Applications;
 /// <summary>The extra information a reviewer asked for: an explanation and/or files uploaded beforehand.</summary>
 public sealed record SupplementApplicationCommand(Applicant Applicant, string? Note);
 
+/// <summary>Resubmits after more information was requested, once new files were added.</summary>
 public sealed class SupplementApplicationHandler(
     IApplicantLock locks,
     IApplicationLoader loader,

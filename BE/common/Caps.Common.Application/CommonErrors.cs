@@ -5,6 +5,7 @@ namespace Caps.Common.Application;
 /// <summary>Error codes any service may raise. Business codes belong in their service, not here.</summary>
 public static class CommonErrors
 {
+    /// <summary>The error codes as constants, for code that compares or documents them.</summary>
     public static class Codes
     {
         public const string ValidationFailed = "VALIDATION_FAILED";

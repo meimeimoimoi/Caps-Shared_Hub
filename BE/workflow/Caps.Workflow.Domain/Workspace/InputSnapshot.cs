@@ -2,6 +2,7 @@ using Caps.Common.Domain;
 
 namespace Caps.Workflow.Domain.Workspace;
 
+/// <summary>The form data a document version was generated from.</summary>
 public sealed class InputSnapshot
 {
     public Guid Id { get; set; } = UuidV7.NewGuid();

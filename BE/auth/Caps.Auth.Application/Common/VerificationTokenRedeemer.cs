@@ -5,6 +5,7 @@ using Caps.Auth.Domain.Verification;
 
 namespace Caps.Auth.Application.Common;
 
+/// <summary>Turns a raw emailed token into its account, failing generically when it is not usable.</summary>
 public interface IVerificationTokenRedeemer
 {
     /// <summary>
@@ -18,6 +19,7 @@ public interface IVerificationTokenRedeemer
     );
 }
 
+/// <summary>Looks the token up by hash and locks its account before the caller uses it.</summary>
 public sealed class VerificationTokenRedeemer(
     IVerificationTokenRepository tokens,
     IUserRepository users,

@@ -2,6 +2,7 @@ using Caps.Common.Domain;
 
 namespace Caps.Billing.Domain;
 
+/// <summary>A payment through the payment provider (PayOS), for credits or a review case.</summary>
 public sealed class PaymentTransaction
 {
     public Guid Id { get; set; } = UuidV7.NewGuid();

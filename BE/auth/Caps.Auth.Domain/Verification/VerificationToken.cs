@@ -3,6 +3,7 @@ using Caps.Common.Domain;
 
 namespace Caps.Auth.Domain.Verification;
 
+/// <summary>A single-use emailed token (link or 6-digit code), stored as a hash with an expiry.</summary>
 public sealed class VerificationToken
 {
     private VerificationToken() { }

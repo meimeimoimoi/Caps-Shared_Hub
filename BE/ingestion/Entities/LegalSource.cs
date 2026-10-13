@@ -2,6 +2,7 @@ using Caps.Common.Domain;
 
 namespace Caps.Ingestion.Entities;
 
+/// <summary>A legal document identified by its official number (law, decree, circular).</summary>
 public sealed class LegalSource
 {
     public Guid Id { get; set; } = UuidV7.NewGuid();

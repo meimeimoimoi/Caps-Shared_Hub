@@ -5,6 +5,7 @@ using Caps.Expert.Domain;
 
 namespace Caps.Expert.Application.Features.Applications;
 
+/// <summary>Opens one of the applicant's own files.</summary>
 public sealed record OpenEvidenceQuery(Guid UserId, Guid EvidenceId);
 
 /// <summary>Owner only; other people's files return 404 so their existence is not revealed.</summary>

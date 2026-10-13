@@ -2,6 +2,7 @@ using Caps.Common.Domain;
 
 namespace Caps.Workflow.Domain.Workspace;
 
+/// <summary>A user's document (e.g. a tax explanation) for a period, built from a template or uploaded.</summary>
 public sealed class Document
 {
     public Guid Id { get; set; } = UuidV7.NewGuid();

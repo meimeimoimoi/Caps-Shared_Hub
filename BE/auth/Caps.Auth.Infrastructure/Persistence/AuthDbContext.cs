@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Caps.Auth.Infrastructure.Persistence;
 
+/// <summary>The auth service's database (schema identity): accounts, sessions, tokens and the email outbox.</summary>
 public sealed class AuthDbContext(DbContextOptions<AuthDbContext> options) : DbContext(options)
 {
     public const string Schema = "identity";

@@ -6,6 +6,7 @@ using Caps.Common.Application;
 
 namespace Caps.Auth.Application.Features.Passwords;
 
+/// <summary>Asks for a password reset email; answers the same whether the email exists or not.</summary>
 public sealed record ForgotPasswordCommand(string Email);
 
 /// <summary>Always succeeds silently so the response never reveals whether the email exists.</summary>

@@ -24,4 +24,5 @@ app.MigrateInDevelopment<AuthDbContext>();
 app.UseAuthPipeline();
 app.Run();
 
+/// <summary>Entry point type, public so integration tests can host the API.</summary>
 public partial class Program { }

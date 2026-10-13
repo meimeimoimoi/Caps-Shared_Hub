@@ -22,6 +22,7 @@ public sealed record SaveDraftCommand(
     string? Highlights
 );
 
+/// <summary>Saves the draft form; nothing is required until submission.</summary>
 public sealed class SaveDraftHandler(
     IApplicantLock locks,
     IApplicationLoader loader,

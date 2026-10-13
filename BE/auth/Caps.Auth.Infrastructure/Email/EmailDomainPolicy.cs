@@ -7,6 +7,7 @@ using Microsoft.Extensions.Options;
 
 namespace Caps.Auth.Infrastructure.Email;
 
+/// <summary>Email deliverability settings ("EmailPolicy" section): MX lookup, DNS timeout, trusted domains.</summary>
 public sealed class EmailPolicyOptions
 {
     /// <summary>Check that the domain accepts mail (MX/A records). DNS failures pass, so nobody is blocked by mistake.</summary>

@@ -7,6 +7,7 @@ using Caps.Expert.Domain.Applications;
 
 namespace Caps.Expert.Application.Features.Applications;
 
+/// <summary>Uploads one evidence file to the applicant's open application.</summary>
 /// <param name="Code">CV, EV-01…EV-05, or SUPPLEMENT while more information is requested.</param>
 public sealed record AddEvidenceCommand(
     Applicant Applicant,
@@ -15,6 +16,7 @@ public sealed record AddEvidenceCommand(
     byte[] Content
 );
 
+/// <summary>Validates an upload by its content, stores it and records it on the application.</summary>
 public sealed class AddEvidenceHandler(
     IApplicantLock locks,
     IApplicationLoader loader,

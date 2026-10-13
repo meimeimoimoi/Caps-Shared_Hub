@@ -6,8 +6,10 @@ using Caps.Common.Application;
 
 namespace Caps.Auth.Application.Features.Passwords;
 
+/// <summary>The emailed reset token and the new password.</summary>
 public sealed record ResetPasswordCommand(string Token, string Password);
 
+/// <summary>Sets the new password, lifts any lockout and signs out every session.</summary>
 public sealed class ResetPasswordHandler(
     IVerificationTokenRedeemer redeemer,
     IVerificationTokenRepository tokens,

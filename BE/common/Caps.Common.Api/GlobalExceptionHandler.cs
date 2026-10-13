@@ -49,6 +49,7 @@ public sealed class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logge
     }
 }
 
+/// <summary>Maps business error types to HTTP status codes and writes the shared error shape.</summary>
 public static class ApiErrors
 {
     public static int StatusCodeOf(ErrorType type) =>

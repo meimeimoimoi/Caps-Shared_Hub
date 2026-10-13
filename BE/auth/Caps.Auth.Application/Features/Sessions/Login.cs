@@ -8,8 +8,10 @@ using Caps.Common.Application;
 
 namespace Caps.Auth.Application.Features.Sessions;
 
+/// <summary>Email and password sign-in.</summary>
 public sealed record LoginCommand(string Email, string Password);
 
+/// <summary>Signs in, counting wrong passwords towards a lockout without revealing which part was wrong.</summary>
 public sealed class LoginHandler(
     IUserRepository users,
     IPasswordHasher hasher,

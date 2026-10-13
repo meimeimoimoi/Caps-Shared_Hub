@@ -1,5 +1,6 @@
 namespace Caps.Auth.Application;
 
+/// <summary>Auth settings ("Auth" section): token lifetimes, lockout and email limits, the frontend URL.</summary>
 public sealed class AuthOptions
 {
     public int AccessMinutes { get; set; } = 15;

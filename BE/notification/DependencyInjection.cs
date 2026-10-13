@@ -2,6 +2,7 @@ using Caps.Notification.Email;
 
 namespace Caps.Notification;
 
+/// <summary>Registers email sending for the notification service.</summary>
 public static class DependencyInjection
 {
     /// <summary>SMTP delivery, validated at startup so a missing Smtp:Host or Smtp:From fails fast.</summary>
