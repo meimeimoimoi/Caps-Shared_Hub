@@ -1,7 +1,7 @@
+using Caps.Common.Persistence;
 using Caps.Expert.Application.Abstractions;
 using Caps.Expert.Infrastructure.Persistence;
 using Caps.Expert.Infrastructure.Storage;
-using Caps.Common.Persistence;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Caps.Expert.Infrastructure;
@@ -17,7 +17,11 @@ public static class DependencyInjection
         string connectionString
     )
     {
-        services.AddServiceDatabase<ExpertDbContext>(connectionString, "Expert", ExpertDbContext.Schema);
+        services.AddServiceDatabase<ExpertDbContext>(
+            connectionString,
+            "Expert",
+            ExpertDbContext.Schema
+        );
         services.AddScoped<IApplicantLock, ApplicantLock>();
         services.AddScoped<IExpertProfileRepository, ExpertProfileRepository>();
         services.AddScoped<IExpertApplicationRepository, ExpertApplicationRepository>();

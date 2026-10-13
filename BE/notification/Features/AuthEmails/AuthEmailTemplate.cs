@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text.Encodings.Web;
 using Caps.Contracts;
 using Caps.Notification.Email;
@@ -64,11 +65,14 @@ public static class AuthEmailTemplate
     {
         var copy = For(m.Purpose);
         var local = m.ExpiresAt.ToOffset(VietnamOffset);
-        var expires = local.ToString("HH:mm 'ngày' dd/MM/yyyy");
+        var expires = local.ToString("HH:mm 'ngày' dd/MM/yyyy", CultureInfo.InvariantCulture);
         // Only verification emails carry a 6-digit code; it expires sooner than the link
         var code =
             m.Code is { Length: > 0 } c && m.CodeExpiresAt is { } at
-                ? new OneTimeCode(c, at.ToOffset(VietnamOffset).ToString("HH:mm"))
+                ? new OneTimeCode(
+                    c,
+                    at.ToOffset(VietnamOffset).ToString("HH:mm", CultureInfo.InvariantCulture)
+                )
                 : null;
         return new(
             copy.Subject,

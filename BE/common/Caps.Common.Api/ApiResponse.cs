@@ -25,8 +25,9 @@ public sealed record ApiErrorResponse(
         IDictionary<string, string[]>? Errors = null
 )
 {
-    public bool Success => false;
-    public object? Data => null;
+    // Always false / null; serialized so errors keep the same shape as ApiResponse<T>
+    public bool Success { get; }
+    public object? Data { get; }
 }
 
 public sealed record PagedResponse<T>(

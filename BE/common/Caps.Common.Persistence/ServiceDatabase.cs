@@ -7,7 +7,10 @@ using Microsoft.Extensions.Hosting;
 namespace Caps.Common.Persistence;
 
 /// <summary>Where a service's DbContext lives: its connection string and the schemas it owns.</summary>
-public sealed record ServiceDatabase<TContext>(string ConnectionString, IReadOnlyList<string> Schemas)
+public sealed record ServiceDatabase<TContext>(
+    string ConnectionString,
+    IReadOnlyList<string> Schemas
+)
     where TContext : DbContext;
 
 public static class ServiceDatabaseExtensions
@@ -32,7 +35,10 @@ public static class ServiceDatabaseExtensions
         where TContext : DbContext
     {
         if (schemas.Length == 0)
-            throw new ArgumentException("A service database owns at least one schema.", nameof(schemas));
+            throw new ArgumentException(
+                "A service database owns at least one schema.",
+                nameof(schemas)
+            );
         services.AddDbContext<TContext>(o =>
             o.UseNpgsql(
                 connectionString,
@@ -41,7 +47,9 @@ public static class ServiceDatabaseExtensions
         );
         services.AddSingleton(new ServiceDatabase<TContext>(connectionString, schemas));
         services.AddScoped<IUnitOfWork, EfUnitOfWork<TContext>>();
-        services.AddHealthChecks().AddDbContextCheck<TContext>("postgres", tags: [HealthTags.Ready]);
+        services
+            .AddHealthChecks()
+            .AddDbContextCheck<TContext>("postgres", tags: [HealthTags.Ready]);
         return services;
     }
 

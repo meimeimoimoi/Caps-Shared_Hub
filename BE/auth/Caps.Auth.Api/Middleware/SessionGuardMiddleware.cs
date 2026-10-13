@@ -19,7 +19,11 @@ public sealed class SessionGuardMiddleware(RequestDelegate next)
         "/api/v1/auth/change-password",
     ];
 
-    public async Task InvokeAsync(HttpContext context, ISessionGuard sessions, ICurrentUser currentUser)
+    public async Task InvokeAsync(
+        HttpContext context,
+        ISessionGuard sessions,
+        ICurrentUser currentUser
+    )
     {
         var path = context.Request.Path;
         var profile = path.StartsWithSegments("/api/v1/users");
@@ -33,7 +37,11 @@ public sealed class SessionGuardMiddleware(RequestDelegate next)
             try
             {
                 // Profile endpoints also need the token's account status to still be current
-                await sessions.EnsureValidAsync(claims, requireCurrentStatus: profile, context.RequestAborted);
+                await sessions.EnsureValidAsync(
+                    claims,
+                    requireCurrentStatus: profile,
+                    context.RequestAborted
+                );
             }
             // Runs before the shared exception handler, so it writes the shared error shape itself
             catch (AppException e)

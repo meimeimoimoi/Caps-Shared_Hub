@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -8,7 +9,8 @@ public static class OpaqueTokens
 {
     public static string NewSecret() => Convert.ToHexString(RandomNumberGenerator.GetBytes(32));
 
-    public static string NewCode() => RandomNumberGenerator.GetInt32(0, 1_000_000).ToString("D6");
+    public static string NewCode() =>
+        RandomNumberGenerator.GetInt32(0, 1_000_000).ToString("D6", CultureInfo.InvariantCulture);
 
     public static string Hash(string token) =>
         Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(token)));

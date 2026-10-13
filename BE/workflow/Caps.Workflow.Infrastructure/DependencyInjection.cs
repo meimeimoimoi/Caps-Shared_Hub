@@ -1,5 +1,5 @@
-using Caps.Workflow.Infrastructure.Persistence;
 using Caps.Common.Persistence;
+using Caps.Workflow.Infrastructure.Persistence;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Caps.Workflow.Infrastructure;
@@ -12,7 +12,12 @@ public static class DependencyInjection
         string connectionString
     )
     {
-        services.AddServiceDatabase<WorkflowDbContext>(connectionString, "Workflow", "workspace", "review");
+        services.AddServiceDatabase<WorkflowDbContext>(
+            connectionString,
+            "Workflow",
+            "workspace",
+            "review"
+        );
         return services;
     }
 }

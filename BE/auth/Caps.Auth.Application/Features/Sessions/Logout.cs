@@ -29,7 +29,11 @@ public sealed class LogoutHandler(
             await revocations.RevokeTokenAsync(command.TokenId, expiresAt, ct);
     }
 
-    private async Task RevokeRefreshTokenAsync(Guid userId, string refreshToken, CancellationToken ct)
+    private async Task RevokeRefreshTokenAsync(
+        Guid userId,
+        string refreshToken,
+        CancellationToken ct
+    )
     {
         await using var tx = await unitOfWork.BeginTransactionAsync(ct);
         await users.GetLockedAsync(userId, ct);

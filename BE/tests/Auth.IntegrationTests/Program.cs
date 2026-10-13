@@ -7,7 +7,6 @@ using Caps.Auth.Application;
 using Caps.Auth.Application.DTOs.Responses;
 using Caps.Auth.Application.Features.EmailVerification;
 using Caps.Auth.Application.Features.Sessions;
-using Caps.Auth.Domain.Users;
 using Caps.Auth.Infrastructure;
 using Caps.Auth.Infrastructure.Email;
 using Caps.Auth.Infrastructure.Persistence;
@@ -205,6 +204,7 @@ string Forge(string alg, string signature) =>
     + signature;
 var unsigned = Forge("none", "");
 var hs256Body = Forge("HS256", "").TrimEnd('.');
+
 // Signed with the former shared HS256 key that every service used to hold
 var hs256 =
     hs256Body
@@ -287,6 +287,7 @@ Check(
     "expert accepts the session before logout"
 );
 Check((await Post(c, "/api/v1/auth/logout", new { })).Response.IsSuccessStatusCode, "logout");
+
 // Revocation is shared through Redis: expert rejects the signed-out token without asking auth
 Check(
     (await c.GetAsync(expertMe)).StatusCode == HttpStatusCode.Unauthorized,
@@ -601,6 +602,7 @@ var provider = DataProtectionProvider.Create(
     x => x.SetApplicationName("caps-auth")
 );
 var jwt = new Caps.Common.Security.JwtOptions();
+
 // Same key file as the running auth service (Development generates it there on first start)
 var signingKeys = JwtSigningKeys.Load(new JwtSigningOptions { DevKeyPath = jwtKeyPath }, true);
 
@@ -609,6 +611,7 @@ var core = new ServiceCollection();
 core.AddSingleton(jwt);
 core.AddSingleton(signingKeys);
 core.AddLogging();
+
 // Same Redis as the running services, so in-process revocations are visible to them
 core.AddCapsSessionRevocation(
     new ConfigurationBuilder()

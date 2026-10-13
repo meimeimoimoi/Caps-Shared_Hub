@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using Caps.Auth.Application;
@@ -27,7 +28,7 @@ public sealed class JwtAccessTokenIssuer(
             new(JwtRegisteredClaimNames.Email, user.Email),
             new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
             new("account_status", user.Status),
-            new("token_version", user.TokenVersion.ToString()),
+            new("token_version", user.TokenVersion.ToString(CultureInfo.InvariantCulture)),
         };
         // Accounts that are not active yet get a restricted token without business rights
         if (user.Status == UserStatus.Active)

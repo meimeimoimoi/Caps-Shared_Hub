@@ -11,3 +11,37 @@ trim_trailing_whitespace = false
 
 [*.ps1]
 end_of_line = crlf
+
+# ---- C# (BE): rules the build enforces (EnforceCodeStyleInBuild, AnalysisLevel in BE/Directory.Build.props) ----
+[*.cs]
+# Code style kept consistent everywhere
+csharp_style_namespace_declarations = file_scoped:warning
+dotnet_diagnostic.IDE0161.severity = warning
+# Unused usings and unused private members
+dotnet_diagnostic.IDE0005.severity = warning
+dotnet_diagnostic.IDE0051.severity = warning
+dotnet_diagnostic.IDE0052.severity = warning
+# Analyzer rules turned off on purpose:
+# CA1848 LoggerMessage delegates: a performance tweak not worth the noise for these rare log lines
+dotnet_diagnostic.CA1848.severity = none
+# CA1711 suffixes such as Permission/Queue are business names here, not type-kind suffixes
+dotnet_diagnostic.CA1711.severity = none
+# CA1000 static factories on generic records (ApiResponse<T>.Ok) are the intended API
+dotnet_diagnostic.CA1000.severity = none
+
+# EF Core migrations are generated, never edited by hand: no analyzer findings there
+[BE/**/Migrations/*.cs]
+generated_code = true
+dotnet_analyzer_diagnostic.severity = none
+# Rules set by id above win over the catch-all, so they are switched off by id too
+dotnet_diagnostic.IDE0005.severity = none
+dotnet_diagnostic.IDE0161.severity = none
+dotnet_diagnostic.IDE0051.severity = none
+dotnet_diagnostic.IDE0052.severity = none
+
+# The integration test runner fails fast with plain exceptions and literal inputs on purpose
+[BE/tests/**.cs]
+dotnet_diagnostic.CA2201.severity = none
+dotnet_diagnostic.CA1305.severity = none
+dotnet_diagnostic.CA1310.severity = none
+dotnet_diagnostic.CA1861.severity = none

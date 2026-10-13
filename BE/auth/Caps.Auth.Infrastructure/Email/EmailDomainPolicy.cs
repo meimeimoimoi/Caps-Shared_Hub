@@ -1,4 +1,3 @@
-using Caps.Auth.Application;
 using Caps.Auth.Application.Abstractions;
 using Caps.Auth.Domain;
 using DnsClient;

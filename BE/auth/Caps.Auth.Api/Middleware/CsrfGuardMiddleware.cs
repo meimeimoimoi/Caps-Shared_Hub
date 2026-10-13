@@ -15,7 +15,10 @@ public sealed class CsrfGuardMiddleware(RequestDelegate next, IConfiguration con
 
     public async Task InvokeAsync(HttpContext context)
     {
-        if (context.Request.Method != "GET" && context.Request.Path.StartsWithSegments("/api/v1/auth"))
+        if (
+            context.Request.Method != "GET"
+            && context.Request.Path.StartsWithSegments("/api/v1/auth")
+        )
         {
             try
             {
@@ -36,7 +39,10 @@ public sealed class CsrfGuardMiddleware(RequestDelegate next, IConfiguration con
         if (request.Headers["X-Caps-Client"] != "spa")
             throw CommonErrors.ClientHeaderRequired();
         var origin = request.Headers.Origin.ToString();
-        if (origin.Length > 0 && !_allowedOrigins.Contains(origin, StringComparer.OrdinalIgnoreCase))
+        if (
+            origin.Length > 0
+            && !_allowedOrigins.Contains(origin, StringComparer.OrdinalIgnoreCase)
+        )
             throw CommonErrors.OriginRejected();
     }
 }

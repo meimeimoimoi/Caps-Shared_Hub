@@ -1,3 +1,4 @@
+using System.Globalization;
 using Caps.Auth.Application.Abstractions.Persistence;
 using Caps.Auth.Domain.Users;
 using Caps.Common.Application;
@@ -28,7 +29,7 @@ public sealed class SessionGuard(IUserRepository users) : ISessionGuard
         if (
             state == null
             || (state.Status != UserStatus.Active && state.Status != UserStatus.PendingVerification)
-            || claims.TokenVersion != state.TokenVersion.ToString()
+            || claims.TokenVersion != state.TokenVersion.ToString(CultureInfo.InvariantCulture)
         )
             throw CommonErrors.InvalidSession("Session revoked.");
         // When the current role/status changes, a new token is required; never trust stale claims.

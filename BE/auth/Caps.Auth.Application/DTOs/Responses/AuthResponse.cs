@@ -1,5 +1,3 @@
-using Caps.Auth.Domain.Users;
-
 namespace Caps.Auth.Application.DTOs.Responses;
 
 public sealed record AuthResponse(string AccessToken, int ExpiresIn, MeResponse User);

@@ -19,9 +19,13 @@ public sealed class HttpContextCurrentUser(IHttpContextAccessor accessor) : ICur
     public string? Email =>
         accessor.HttpContext?.User.FindFirstValue(JwtRegisteredClaimNames.Email);
     public string? AccountStatus => accessor.HttpContext?.User.FindFirstValue("account_status");
-    public string? TokenId => accessor.HttpContext?.User.FindFirstValue(JwtRegisteredClaimNames.Jti);
+    public string? TokenId =>
+        accessor.HttpContext?.User.FindFirstValue(JwtRegisteredClaimNames.Jti);
     public DateTimeOffset? TokenExpiresAt =>
-        long.TryParse(accessor.HttpContext?.User.FindFirstValue(JwtRegisteredClaimNames.Exp), out var exp)
+        long.TryParse(
+            accessor.HttpContext?.User.FindFirstValue(JwtRegisteredClaimNames.Exp),
+            out var exp
+        )
             ? DateTimeOffset.FromUnixTimeSeconds(exp)
             : null;
     public bool IsAuthenticated => accessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;

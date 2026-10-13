@@ -38,6 +38,10 @@ public interface ISessionRevocationStore
     Task RevokeTokenAsync(string tokenId, DateTimeOffset expiresAt, CancellationToken ct);
 
     /// <summary>True when revoked, false when not, null when the store cannot be reached.</summary>
-    Task<bool?> IsRevokedAsync(Guid userId, int tokenVersion, string? tokenId, CancellationToken ct);
+    Task<bool?> IsRevokedAsync(
+        Guid userId,
+        int tokenVersion,
+        string? tokenId,
+        CancellationToken ct
+    );
 }
-

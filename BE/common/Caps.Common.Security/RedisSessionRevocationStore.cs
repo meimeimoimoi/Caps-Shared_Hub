@@ -60,7 +60,11 @@ public sealed class RedisSessionRevocationStore(
         }
     }
 
-    public async Task RevokeTokenAsync(string tokenId, DateTimeOffset expiresAt, CancellationToken ct)
+    public async Task RevokeTokenAsync(
+        string tokenId,
+        DateTimeOffset expiresAt,
+        CancellationToken ct
+    )
     {
         var ttl = expiresAt - clock.GetUtcNow() + ClockSkew;
         if (ttl <= TimeSpan.Zero)
@@ -101,7 +105,10 @@ public sealed class RedisSessionRevocationStore(
         }
         catch (Exception e) when (e is RedisException or TimeoutException)
         {
-            Volatile.Write(ref _skipChecksUntilTicks, (clock.GetUtcNow() + SkipAfterFailure).UtcTicks);
+            Volatile.Write(
+                ref _skipChecksUntilTicks,
+                (clock.GetUtcNow() + SkipAfterFailure).UtcTicks
+            );
             logger.LogWarning(e, "Session revocation store unavailable; trusting tokens for now.");
             return null;
         }

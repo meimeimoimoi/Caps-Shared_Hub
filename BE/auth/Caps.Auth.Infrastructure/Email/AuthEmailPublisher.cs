@@ -16,9 +16,9 @@ public sealed class AuthEmailPublisher(
     ILogger<AuthEmailPublisher> logger
 ) : BackgroundService
 {
-    protected override async Task ExecuteAsync(CancellationToken ct)
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        while (!ct.IsCancellationRequested)
+        while (!stoppingToken.IsCancellationRequested)
         {
             try
             {
@@ -28,12 +28,12 @@ public sealed class AuthEmailPublisher(
                     .ServiceProvider.GetRequiredService<IDataProtectionProvider>()
                     .CreateProtector(AuthEmailOutboxWriter.ProtectorPurpose);
                 var bus = scope.ServiceProvider.GetRequiredService<IPublishEndpoint>();
-                await using var tx = await db.Database.BeginTransactionAsync(ct);
+                await using var tx = await db.Database.BeginTransactionAsync(stoppingToken);
                 var entries = await db
                     .EmailOutbox.FromSqlRaw(
                         "SELECT * FROM identity.auth_email_outbox WHERE \"SentAt\" IS NULL ORDER BY \"CreatedAt\" LIMIT 20 FOR UPDATE SKIP LOCKED"
                     )
-                    .ToListAsync(ct);
+                    .ToListAsync(stoppingToken);
                 foreach (var row in entries)
                 {
                     var message = JsonSerializer.Deserialize<AuthEmailRequestedEvent>(
@@ -41,14 +41,18 @@ public sealed class AuthEmailPublisher(
                     )!;
                     var now = clock.GetUtcNow();
                     if (message.ExpiresAt > now)
-                        await bus.Publish(message, ctx => ctx.MessageId = message.Id, ct);
+                        await bus.Publish(
+                            message,
+                            ctx => ctx.MessageId = message.Id,
+                            stoppingToken
+                        );
                     row.SentAt = now;
                     row.ProtectedPayload = "";
                 }
-                await db.SaveChangesAsync(ct);
-                await tx.CommitAsync(ct);
+                await db.SaveChangesAsync(stoppingToken);
+                await tx.CommitAsync(stoppingToken);
             }
-            catch (OperationCanceledException) when (ct.IsCancellationRequested)
+            catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
             {
                 break;
             }
@@ -57,7 +61,7 @@ public sealed class AuthEmailPublisher(
                 // The exception says why (database, broker, key ring); payloads are never logged
                 logger.LogWarning(e, "Auth email outbox unavailable; retrying.");
             }
-            await Task.Delay(TimeSpan.FromSeconds(5), ct);
+            await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken);
         }
     }
 }
