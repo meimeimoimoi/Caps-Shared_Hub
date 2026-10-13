@@ -104,16 +104,39 @@ services:
       ConnectionStrings__Redis: redis:6379
       ConnectionStrings__RabbitMq: amqp://guest:guest@rabbitmq:5672
       Jwt__Key: CHANGE_ME_dev_only_min_32_chars_1234567890
-      # SeaweedFS dev keys (seaweedfs/s3.json); real deployments use a secret store
-      Storage__ServiceUrl: http://seaweedfs:8333
-      Storage__AccessKey: caps-dev-access
-      Storage__SecretKey: caps-dev-secret-change-me
     ports:
       - "5194:8080"
     depends_on:
       postgres:
         condition: service_healthy
       rabbitmq:
+        condition: service_healthy
+    networks:
+      - caps_network
+
+  expert:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.service
+      args:
+        SERVICE_NAME: expert
+        PROJECT: expert/Caps.Expert.Api/Caps.Expert.Api.csproj
+        APP_NAME: Caps.Expert.Api
+    container_name: caps_expert
+    restart: always
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__Postgres: Host=postgres;Port=5432;Database=caps_db;Username=postgres;Password=postgrespassword
+      Jwt__Key: CHANGE_ME_dev_only_min_32_chars_1234567890
+      # SeaweedFS dev keys (seaweedfs/s3.json); real deployments use a secret store
+      Storage__ServiceUrl: http://seaweedfs:8333
+      Storage__AccessKey: caps-dev-access
+      Storage__SecretKey: caps-dev-secret-change-me
+    ports:
+      - "5198:8080"
+    depends_on:
+      postgres:
         condition: service_healthy
     networks:
       - caps_network
@@ -130,10 +153,14 @@ services:
       ASPNETCORE_ENVIRONMENT: Production
       ASPNETCORE_URLS: http://+:8080
       Jwt__Key: CHANGE_ME_dev_only_min_32_chars_1234567890
+      # Inside the compose network services are reached by name, not localhost
+      ReverseProxy__Clusters__auth-cluster__Destinations__auth__Address: http://auth:8080
+      ReverseProxy__Clusters__expert-cluster__Destinations__expert__Address: http://expert:8080
     ports:
       - "5190:8080"
     depends_on:
       - auth
+      - expert
     networks:
       - caps_network
 

@@ -43,14 +43,7 @@ public sealed class AuthBoundaryMiddleware(RequestDelegate next)
                     throw CommonErrors.OriginRejected();
             }
             var users = path.StartsWithSegments("/api/v1/users");
-            if (
-                currentUser.IsAuthenticated
-                && (
-                    users
-                    || path.StartsWithSegments("/api/v1/experts")
-                    || SessionCheckedExact.Contains(path.Value)
-                )
-            )
+            if (currentUser.IsAuthenticated && (users || SessionCheckedExact.Contains(path.Value)))
                 await sessions.EnsureValidAsync(
                     new(
                         currentUser.RequireUserId(),

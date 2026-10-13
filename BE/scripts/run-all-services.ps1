@@ -41,6 +41,7 @@ if (-not $NoBuild) {
 # 2. Danh sach cac service can chay
 $dbServices = @(
     @{ Name = "auth";      Port = 5194; Path = (Join-Path $beRoot "auth\Caps.Auth.Api\Caps.Auth.Api.csproj") },
+    @{ Name = "expert";    Port = 5198; Path = (Join-Path $beRoot "expert\Caps.Expert.Api\Caps.Expert.Api.csproj") },
     @{ Name = "billing";   Port = 5220; Path = (Join-Path $beRoot "billing\billing.csproj") },
     @{ Name = "workflow";  Port = 5030; Path = (Join-Path $beRoot "workflow\workflow.csproj") },
     @{ Name = "ingestion"; Port = 5004; Path = (Join-Path $beRoot "ingestion\ingestion.csproj") }

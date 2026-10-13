@@ -22,13 +22,17 @@ try {
     $env:ASPNETCORE_URLS = "http://127.0.0.1:55194"
     $authDll = Join-Path $repoRoot "BE/auth/Caps.Auth.Api/bin/Debug/net8.0/Caps.Auth.Api.dll"
     $services += Start-Process -FilePath $Dotnet -ArgumentList ('"' + $authDll + '"') -WorkingDirectory (Join-Path $repoRoot "BE/auth/Caps.Auth.Api") -WindowStyle Hidden -PassThru -RedirectStandardOutput (Join-Path $testArtifacts "auth.log") -RedirectStandardError (Join-Path $testArtifacts "auth-error.log")
+    $env:ASPNETCORE_URLS = "http://127.0.0.1:55198"
+    $expertDll = Join-Path $repoRoot "BE/expert/Caps.Expert.Api/bin/Debug/net8.0/Caps.Expert.Api.dll"
+    $services += Start-Process -FilePath $Dotnet -ArgumentList ('"' + $expertDll + '"') -WorkingDirectory (Join-Path $repoRoot "BE/expert/Caps.Expert.Api") -WindowStyle Hidden -PassThru -RedirectStandardOutput (Join-Path $testArtifacts "expert.log") -RedirectStandardError (Join-Path $testArtifacts "expert-error.log")
     $env:ASPNETCORE_URLS = "http://127.0.0.1:55190"
+    [Environment]::SetEnvironmentVariable("ReverseProxy__Clusters__expert-cluster__Destinations__expert__Address", "http://127.0.0.1:55198")
     [Environment]::SetEnvironmentVariable("ReverseProxy__Clusters__auth-cluster__Destinations__auth__Address", "http://127.0.0.1:55194")
     $gatewayDll = Join-Path $repoRoot "BE/gateway/bin/Debug/net8.0/gateway.dll"
     $services += Start-Process -FilePath $Dotnet -ArgumentList ('"' + $gatewayDll + '"') -WorkingDirectory (Join-Path $repoRoot "BE/gateway") -WindowStyle Hidden -PassThru -RedirectStandardOutput (Join-Path $testArtifacts "gateway.log") -RedirectStandardError (Join-Path $testArtifacts "gateway-error.log")
     $ready = $false
-    for ($attempt = 0; $attempt -lt 20; $attempt++) {
-        try { Invoke-WebRequest "http://127.0.0.1:55194/healthz" -UseBasicParsing | Out-Null; Invoke-WebRequest "http://127.0.0.1:55190/healthz" -UseBasicParsing | Out-Null; $ready = $true; break } catch { Start-Sleep -Seconds 1 }
+    for ($attempt = 0; $attempt -lt 40; $attempt++) {
+        try { Invoke-WebRequest "http://127.0.0.1:55194/healthz" -UseBasicParsing | Out-Null; Invoke-WebRequest "http://127.0.0.1:55198/healthz" -UseBasicParsing | Out-Null; Invoke-WebRequest "http://127.0.0.1:55190/healthz" -UseBasicParsing | Out-Null; $ready = $true; break } catch { Start-Sleep -Seconds 1 }
     }
     if (-not $ready) { throw "Servers did not start. Inspect .tmp/auth-tests logs." }
     & $Dotnet (Join-Path $repoRoot "BE/tests/Auth.IntegrationTests/bin/Debug/net8.0/Auth.IntegrationTests.dll")

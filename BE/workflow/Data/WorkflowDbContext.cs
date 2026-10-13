@@ -28,9 +28,6 @@ public sealed class WorkflowDbContext(DbContextOptions<WorkflowDbContext> option
 
     // Identity stubs (excluded from migrations)
     public DbSet<UserStub> Users => Set<UserStub>();
-    public DbSet<ExpertProfileStub> ExpertProfiles => Set<ExpertProfileStub>();
-    public DbSet<AvailabilitySlotStub> AvailabilitySlots => Set<AvailabilitySlotStub>();
-    public DbSet<ServiceOfferingStub> ServiceOfferings => Set<ServiceOfferingStub>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -40,27 +37,6 @@ public sealed class WorkflowDbContext(DbContextOptions<WorkflowDbContext> option
         modelBuilder.Entity<UserStub>(e =>
         {
             e.ToTable("users", "identity", t => t.ExcludeFromMigrations());
-            e.HasKey(x => x.Id);
-            e.Property(x => x.Id).HasColumnName("id");
-        });
-
-        modelBuilder.Entity<ExpertProfileStub>(e =>
-        {
-            e.ToTable("expert_profile", "identity", t => t.ExcludeFromMigrations());
-            e.HasKey(x => x.Id);
-            e.Property(x => x.Id).HasColumnName("id");
-        });
-
-        modelBuilder.Entity<AvailabilitySlotStub>(e =>
-        {
-            e.ToTable("availability_slot", "identity", t => t.ExcludeFromMigrations());
-            e.HasKey(x => x.Id);
-            e.Property(x => x.Id).HasColumnName("id");
-        });
-
-        modelBuilder.Entity<ServiceOfferingStub>(e =>
-        {
-            e.ToTable("service_offering", "identity", t => t.ExcludeFromMigrations());
             e.HasKey(x => x.Id);
             e.Property(x => x.Id).HasColumnName("id");
         });
@@ -428,20 +404,7 @@ public sealed class WorkflowDbContext(DbContextOptions<WorkflowDbContext> option
                 .HasForeignKey(x => x.RequesterUserId)
                 .HasConstraintName("fk_review_case_43");
 
-            e.HasOne<ExpertProfileStub>()
-                .WithMany()
-                .HasForeignKey(x => x.ExpertProfileId)
-                .HasConstraintName("fk_review_case_44");
-
-            e.HasOne<AvailabilitySlotStub>()
-                .WithMany()
-                .HasForeignKey(x => x.SlotId)
-                .HasConstraintName("fk_review_case_45");
-
-            e.HasOne<ServiceOfferingStub>()
-                .WithMany()
-                .HasForeignKey(x => x.ServiceOfferingId)
-                .HasConstraintName("fk_review_case_46");
+            // Expert, slot and offering ids belong to the expert service: plain columns, no cross-service FKs
 
             // Composite FK: (document_id, source_version_id) -> document_version (document_id, id)
             e.HasOne<DocumentVersion>()

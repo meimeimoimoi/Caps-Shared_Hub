@@ -16,7 +16,6 @@ builder.Services.AddAuthSwagger();
 builder.Services.AddAuthSettings(config, env);
 builder.Services.AddAuthSecrets(config, env);
 builder.Services.AddAuthEmail(config, env);
-builder.Services.AddExpertApplications(config, env);
 builder.Services.AddAuthApplication();
 builder.Services.AddAuthInfrastructure(postgres);
 builder.Services.AddHealthChecks().AddDbContextCheck<AuthDbContext>("postgres");

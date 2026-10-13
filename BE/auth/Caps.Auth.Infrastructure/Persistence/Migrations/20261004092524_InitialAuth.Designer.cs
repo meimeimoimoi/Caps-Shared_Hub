@@ -7,7 +7,6 @@ using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Caps.Auth.Domain.Business;
-using Caps.Auth.Domain.Experts;
 using Caps.Auth.Domain.Sessions;
 using Caps.Auth.Domain.Users;
 using Caps.Auth.Domain.Verification;

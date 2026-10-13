@@ -1,5 +1,4 @@
 using Caps.Auth.Domain.Business;
-using Caps.Auth.Domain.Experts;
 using Caps.Auth.Domain.Sessions;
 using Caps.Auth.Domain.Verification;
 using Caps.Common.Domain;
@@ -33,7 +32,6 @@ public sealed class User
     public ICollection<VerificationToken> VerificationTokens { get; private set; } =
         new List<VerificationToken>();
     public BusinessProfile? BusinessProfile { get; private set; }
-    public ExpertProfile? ExpertProfile { get; private set; }
 
     public bool IsActive => Status == UserStatus.Active;
     public bool IsPendingVerification => Status == UserStatus.PendingVerification;
@@ -124,15 +122,6 @@ public sealed class User
     {
         FullName = displayName.Trim();
         Phone = phone?.Trim();
-        UpdatedAt = now;
-    }
-
-    /// <summary>Draft forms: a blank name keeps the current one and a blank phone clears it.</summary>
-    public void UpdateContact(string? displayName, string? phone, DateTimeOffset now)
-    {
-        if (!string.IsNullOrWhiteSpace(displayName))
-            FullName = displayName.Trim();
-        Phone = string.IsNullOrWhiteSpace(phone) ? null : phone.Trim();
         UpdatedAt = now;
     }
 }

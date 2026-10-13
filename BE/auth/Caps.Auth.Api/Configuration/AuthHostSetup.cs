@@ -4,9 +4,7 @@ using Caps.Auth.Api.Swagger;
 using Caps.Auth.Application;
 using Caps.Auth.Application.Abstractions;
 using Caps.Auth.Infrastructure.Email;
-using Caps.Auth.Infrastructure.Experts;
 using Caps.Auth.Infrastructure.Persistence;
-using Caps.Auth.Infrastructure.Storage;
 using Caps.Common.Api;
 using Caps.Common.Messaging;
 using Caps.Common.Persistence;
@@ -138,30 +136,6 @@ public static class AuthHostSetup
             throw new InvalidOperationException(
                 "Email publishing may only be disabled in Development."
             );
-        return services;
-    }
-
-    /// <summary>Expert applications live here until they move to their own service.</summary>
-    public static IServiceCollection AddExpertApplications(
-        this IServiceCollection services,
-        IConfiguration config,
-        IHostEnvironment env
-    )
-    {
-        services
-            .AddOptions<StorageOptions>()
-            .Bind(config.GetSection("Storage"))
-            .Validate(
-                x => !string.IsNullOrEmpty(x.AccessKey) && !string.IsNullOrEmpty(x.SecretKey),
-                "Storage:AccessKey and Storage:SecretKey are required."
-            )
-            .Validate(
-                x => env.IsDevelopment() || !x.CreateBucket,
-                "Storage:CreateBucket may only be enabled in Development."
-            )
-            .ValidateOnStart();
-        services.AddSingleton<IObjectStorage, S3ObjectStorage>();
-        services.AddScoped<IExpertApplicationService, ExpertApplicationService>();
         return services;
     }
 

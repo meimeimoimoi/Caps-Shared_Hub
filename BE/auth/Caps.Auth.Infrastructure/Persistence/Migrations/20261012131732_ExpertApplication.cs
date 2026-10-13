@@ -1,6 +1,5 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
-using Caps.Auth.Domain.Experts;
 
 #nullable disable
 

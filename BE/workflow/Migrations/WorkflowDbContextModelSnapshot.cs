@@ -254,10 +254,6 @@ namespace workflow.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ServiceOfferingId");
-
-                    b.HasIndex("SlotId");
-
                     b.HasIndex("DocumentId", "SourceVersionId");
 
                     b.HasIndex("ExpertProfileId", "Status")
@@ -352,51 +348,6 @@ namespace workflow.Migrations
                         .IsUnique();
 
                     b.ToTable("review_task", "review");
-                });
-
-            modelBuilder.Entity("workflow.Entities.Stubs.AvailabilitySlotStub", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("availability_slot", "identity", t =>
-                        {
-                            t.ExcludeFromMigrations();
-                        });
-                });
-
-            modelBuilder.Entity("workflow.Entities.Stubs.ExpertProfileStub", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("expert_profile", "identity", t =>
-                        {
-                            t.ExcludeFromMigrations();
-                        });
-                });
-
-            modelBuilder.Entity("workflow.Entities.Stubs.ServiceOfferingStub", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("service_offering", "identity", t =>
-                        {
-                            t.ExcludeFromMigrations();
-                        });
                 });
 
             modelBuilder.Entity("workflow.Entities.Stubs.UserStub", b =>
@@ -934,29 +885,12 @@ namespace workflow.Migrations
                         .IsRequired()
                         .HasConstraintName("fk_review_case_42");
 
-                    b.HasOne("workflow.Entities.Stubs.ExpertProfileStub", null)
-                        .WithMany()
-                        .HasForeignKey("ExpertProfileId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_review_case_44");
-
                     b.HasOne("workflow.Entities.Stubs.UserStub", null)
                         .WithMany()
                         .HasForeignKey("RequesterUserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_review_case_43");
-
-                    b.HasOne("workflow.Entities.Stubs.ServiceOfferingStub", null)
-                        .WithMany()
-                        .HasForeignKey("ServiceOfferingId")
-                        .HasConstraintName("fk_review_case_46");
-
-                    b.HasOne("workflow.Entities.Stubs.AvailabilitySlotStub", null)
-                        .WithMany()
-                        .HasForeignKey("SlotId")
-                        .HasConstraintName("fk_review_case_45");
 
                     b.HasOne("workflow.Entities.Workspace.DocumentVersion", null)
                         .WithMany()

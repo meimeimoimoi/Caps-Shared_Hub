@@ -352,25 +352,6 @@ namespace workflow.Migrations
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "fk_review_case_44",
-                        column: x => x.expert_profile_id,
-                        principalSchema: "identity",
-                        principalTable: "expert_profile",
-                        principalColumn: "id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "fk_review_case_45",
-                        column: x => x.slot_id,
-                        principalSchema: "identity",
-                        principalTable: "availability_slot",
-                        principalColumn: "id");
-                    table.ForeignKey(
-                        name: "fk_review_case_46",
-                        column: x => x.service_offering_id,
-                        principalSchema: "identity",
-                        principalTable: "service_offering",
-                        principalColumn: "id");
-                    table.ForeignKey(
                         name: "fk_review_case_47",
                         columns: x => new { x.document_id, x.source_version_id },
                         principalSchema: "workspace",
