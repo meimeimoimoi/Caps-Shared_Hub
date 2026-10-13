@@ -12,6 +12,7 @@ namespace Caps.Auth.Infrastructure.Email;
 
 public sealed class AuthEmailPublisher(
     IServiceScopeFactory scopes,
+    TimeProvider clock,
     ILogger<AuthEmailPublisher> logger
 ) : BackgroundService
 {
@@ -38,9 +39,10 @@ public sealed class AuthEmailPublisher(
                     var message = JsonSerializer.Deserialize<AuthEmailRequestedEvent>(
                         protector.Unprotect(row.ProtectedPayload)
                     )!;
-                    if (message.ExpiresAt > DateTimeOffset.UtcNow)
+                    var now = clock.GetUtcNow();
+                    if (message.ExpiresAt > now)
                         await bus.Publish(message, ctx => ctx.MessageId = message.Id, ct);
-                    row.SentAt = DateTimeOffset.UtcNow;
+                    row.SentAt = now;
                     row.ProtectedPayload = "";
                 }
                 await db.SaveChangesAsync(ct);
@@ -50,11 +52,10 @@ public sealed class AuthEmailPublisher(
             {
                 break;
             }
-            catch (Exception)
+            catch (Exception e)
             {
-                logger.LogWarning(
-                    "Auth email outbox unavailable; retrying. Payloads are not logged."
-                );
+                // The exception says why (database, broker, key ring); payloads are never logged
+                logger.LogWarning(e, "Auth email outbox unavailable; retrying.");
             }
             await Task.Delay(TimeSpan.FromSeconds(5), ct);
         }
