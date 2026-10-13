@@ -6,6 +6,7 @@
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
     <PackageReference Include="AWSSDK.S3" />
     <ProjectReference Include="..\Caps.Expert.Application\Caps.Expert.Application.csproj" />
+    <ProjectReference Include="..\..\common\Caps.Common.Persistence\Caps.Common.Persistence.csproj" />
   </ItemGroup>
 
 </Project>

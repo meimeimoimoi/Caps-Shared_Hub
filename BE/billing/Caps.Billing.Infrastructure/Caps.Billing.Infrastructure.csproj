@@ -4,6 +4,7 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
     <ProjectReference Include="..\Caps.Billing.Application\Caps.Billing.Application.csproj" />
+    <ProjectReference Include="..\..\common\Caps.Common.Persistence\Caps.Common.Persistence.csproj" />
   </ItemGroup>
 
 </Project>

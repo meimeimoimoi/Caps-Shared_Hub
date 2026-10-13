@@ -1,23 +1,18 @@
 using Caps.Workflow.Infrastructure.Persistence;
-using Microsoft.EntityFrameworkCore;
+using Caps.Common.Persistence;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Caps.Workflow.Infrastructure;
 
 public static class DependencyInjection
 {
-    /// <summary>Persistence behind the application ports.</summary>
+    /// <summary>The workflow database (shared unit of work, readiness check) behind the application ports.</summary>
     public static IServiceCollection AddWorkflowInfrastructure(
         this IServiceCollection services,
         string connectionString
     )
     {
-        services.AddDbContext<WorkflowDbContext>(o =>
-            o.UseNpgsql(
-                connectionString,
-                n => n.MigrationsHistoryTable("__EFMigrationsHistory_Workflow", "workspace")
-            )
-        );
+        services.AddServiceDatabase<WorkflowDbContext>(connectionString, "Workflow", "workspace", "review");
         return services;
     }
 }

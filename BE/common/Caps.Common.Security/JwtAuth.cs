@@ -49,7 +49,6 @@ public static class JwtServiceCollectionExtensions
         var fallbackKeys = options.PublicKeys.Select(RsaKeys.FromPem).ToArray();
 
         services.AddSingleton(options);
-        services.AddSingleton<IDateTimeProvider, SystemDateTimeProvider>();
         services.AddHttpContextAccessor();
         services.AddScoped<ICurrentUser, HttpContextCurrentUser>();
         services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer();

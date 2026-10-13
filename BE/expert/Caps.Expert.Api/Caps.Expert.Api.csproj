@@ -12,10 +12,8 @@
     <PackageReference Include="Swashbuckle.AspNetCore" />
     <PackageReference Include="OpenApiUi" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" />
-    <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" />
     <ProjectReference Include="..\Caps.Expert.Infrastructure\Caps.Expert.Infrastructure.csproj" />
     <ProjectReference Include="..\..\common\Caps.Common.Api\Caps.Common.Api.csproj" />
-    <ProjectReference Include="..\..\common\Caps.Common.Persistence\Caps.Common.Persistence.csproj" />
   </ItemGroup>
 
 </Project>

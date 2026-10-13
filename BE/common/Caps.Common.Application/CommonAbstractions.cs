@@ -41,12 +41,3 @@ public interface ISessionRevocationStore
     Task<bool?> IsRevokedAsync(Guid userId, int tokenVersion, string? tokenId, CancellationToken ct);
 }
 
-public interface IDateTimeProvider
-{
-    DateTimeOffset UtcNow { get; }
-}
-
-public sealed class SystemDateTimeProvider : IDateTimeProvider
-{
-    public DateTimeOffset UtcNow => DateTimeOffset.UtcNow;
-}

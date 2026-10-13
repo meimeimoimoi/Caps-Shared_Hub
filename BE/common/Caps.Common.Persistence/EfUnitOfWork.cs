@@ -1,11 +1,13 @@
-using Caps.Auth.Application.Abstractions.Persistence;
+using Caps.Common.Application;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using Npgsql;
 
-namespace Caps.Auth.Infrastructure.Persistence;
+namespace Caps.Common.Persistence;
 
-public sealed class UnitOfWork(AuthDbContext db) : IUnitOfWork
+/// <summary>The one <see cref="IUnitOfWork"/> implementation, shared by every service's DbContext.</summary>
+public sealed class EfUnitOfWork<TContext>(TContext db) : IUnitOfWork
+    where TContext : DbContext
 {
     public async Task<ITransaction> BeginTransactionAsync(CancellationToken ct) =>
         new Transaction(await db.Database.BeginTransactionAsync(ct));

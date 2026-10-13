@@ -9,6 +9,7 @@
     <ProjectReference Include="..\..\common\Caps.Common.Security\Caps.Common.Security.csproj" />
     <ProjectReference Include="..\..\common\Caps.Common.Messaging\Caps.Common.Messaging.csproj" />
     <ProjectReference Include="..\..\common\Caps.Contracts\Caps.Contracts.csproj" />
+    <ProjectReference Include="..\..\common\Caps.Common.Persistence\Caps.Common.Persistence.csproj" />
   </ItemGroup>
 
 </Project>

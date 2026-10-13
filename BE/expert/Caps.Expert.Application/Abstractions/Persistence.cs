@@ -36,18 +36,6 @@ public interface IExpertEvidenceRepository
     void Remove(ExpertEvidence evidence);
 }
 
-public interface IUnitOfWork
-{
-    Task<ITransaction> BeginTransactionAsync(CancellationToken ct);
-    Task SaveChangesAsync(CancellationToken ct);
-}
-
-/// <summary>Rolled back on dispose unless committed.</summary>
-public interface ITransaction : IAsyncDisposable
-{
-    Task CommitAsync(CancellationToken ct);
-}
-
 /// <summary>
 /// Serializes changes of one applicant (save draft, upload, submit) inside the current transaction,
 /// including the very first save when no row exists yet to lock.

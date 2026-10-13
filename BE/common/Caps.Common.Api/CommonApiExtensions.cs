@@ -1,12 +1,18 @@
+using Caps.Common.Application;
 using Caps.Common.Security;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 
 namespace Caps.Common.Api;
 
-/// <summary>One-liner standard API setup for every microservice.</summary>
+/// <summary>
+/// Everything a service shares: controllers, Swagger, error format, health endpoints, JWT validation,
+/// session revocation, CORS and the clock. A service adds only its own features on top.
+/// </summary>
 public static class CommonApiExtensions
 {
     public static IServiceCollection AddCommonApi(
@@ -17,9 +23,8 @@ public static class CommonApiExtensions
     {
         services.AddControllers();
         services.AddEndpointsApiExplorer();
-        services.AddSwaggerGen(o =>
-            o.SwaggerDoc("v1", new() { Title = $"{serviceName} API", Version = "v1" })
-        );
+        services.AddCapsSwagger(serviceName);
+        services.TryAddSingleton(TimeProvider.System);
         services.AddExceptionHandler<GlobalExceptionHandler>();
         services.AddProblemDetails();
         services.AddHealthChecks();
@@ -46,8 +51,12 @@ public static class CommonApiExtensions
         app.UseAuthentication();
         app.UseAuthorization();
         app.MapControllers();
-        app.MapHealthChecks("/healthz");
-        app.MapHealthChecks("/readyz");
+        // Liveness: the process answers. Readiness: its dependencies (database) answer too.
+        app.MapHealthChecks("/healthz", new HealthCheckOptions { Predicate = _ => false });
+        app.MapHealthChecks(
+            "/readyz",
+            new HealthCheckOptions { Predicate = x => x.Tags.Contains(HealthTags.Ready) }
+        );
         if (app.Environment.IsDevelopment())
         {
             app.UseSwagger();

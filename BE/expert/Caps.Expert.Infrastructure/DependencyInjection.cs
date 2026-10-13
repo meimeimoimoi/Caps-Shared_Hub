@@ -1,7 +1,7 @@
 using Caps.Expert.Application.Abstractions;
 using Caps.Expert.Infrastructure.Persistence;
 using Caps.Expert.Infrastructure.Storage;
-using Microsoft.EntityFrameworkCore;
+using Caps.Common.Persistence;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Caps.Expert.Infrastructure;
@@ -17,14 +17,7 @@ public static class DependencyInjection
         string connectionString
     )
     {
-        services.AddDbContext<ExpertDbContext>(o =>
-            o.UseNpgsql(
-                connectionString,
-                n =>
-                    n.MigrationsHistoryTable("__EFMigrationsHistory_Expert", ExpertDbContext.Schema)
-            )
-        );
-        services.AddScoped<IUnitOfWork, UnitOfWork>();
+        services.AddServiceDatabase<ExpertDbContext>(connectionString, "Expert", ExpertDbContext.Schema);
         services.AddScoped<IApplicantLock, ApplicantLock>();
         services.AddScoped<IExpertProfileRepository, ExpertProfileRepository>();
         services.AddScoped<IExpertApplicationRepository, ExpertApplicationRepository>();

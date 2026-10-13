@@ -1,5 +1,6 @@
-namespace Caps.Auth.Application.Abstractions.Persistence;
+namespace Caps.Common.Application;
 
+/// <summary>Commits a use case's changes as one unit; implemented once for every service in Caps.Common.Persistence.</summary>
 public interface IUnitOfWork
 {
     Task<ITransaction> BeginTransactionAsync(CancellationToken ct);

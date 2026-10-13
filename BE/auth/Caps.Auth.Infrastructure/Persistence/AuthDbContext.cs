@@ -8,6 +8,8 @@ namespace Caps.Auth.Infrastructure.Persistence;
 
 public sealed class AuthDbContext(DbContextOptions<AuthDbContext> options) : DbContext(options)
 {
+    public const string Schema = "identity";
+
     public DbSet<AuthEmailOutbox> EmailOutbox => Set<AuthEmailOutbox>();
     public DbSet<Role> Roles => Set<Role>();
     public DbSet<User> Users => Set<User>();
@@ -21,7 +23,7 @@ public sealed class AuthDbContext(DbContextOptions<AuthDbContext> options) : DbC
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.HasDefaultSchema("identity");
+        modelBuilder.HasDefaultSchema(Schema);
 
         modelBuilder.Entity<AuthEmailOutbox>(e =>
         {

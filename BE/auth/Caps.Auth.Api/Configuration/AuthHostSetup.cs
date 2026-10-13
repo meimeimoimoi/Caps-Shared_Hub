@@ -4,58 +4,24 @@ using Caps.Auth.Api.Swagger;
 using Caps.Auth.Application;
 using Caps.Auth.Application.Abstractions;
 using Caps.Auth.Infrastructure.Email;
-using Caps.Auth.Infrastructure.Persistence;
 using Caps.Auth.Infrastructure.Security;
 using Caps.Common.Api;
 using Caps.Common.Messaging;
-using Caps.Common.Persistence;
 using Caps.Common.Security;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.HttpOverrides;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.OpenApi.Models;
 
 namespace Caps.Auth.Api.Configuration;
 
 /// <summary>Host wiring for the auth service, one concern per method; Program.cs only composes them.</summary>
 public static class AuthHostSetup
 {
-    public static IServiceCollection AddAuthSwagger(this IServiceCollection services) =>
-        services.AddSwaggerGen(o =>
-        {
-            o.AddSecurityDefinition(
-                "Bearer",
-                new OpenApiSecurityScheme
-                {
-                    Type = SecuritySchemeType.Http,
-                    Scheme = "bearer",
-                    BearerFormat = "JWT",
-                }
-            );
-            o.AddSecurityRequirement(
-                new OpenApiSecurityRequirement
-                {
-                    [
-                        new OpenApiSecurityScheme
-                        {
-                            Reference = new OpenApiReference
-                            {
-                                Type = ReferenceType.SecurityScheme,
-                                Id = "Bearer",
-                            },
-                        }
-                    ] = Array.Empty<string>(),
-                }
-            );
-            o.OperationFilter<SwaggerClientHeaderFilter>();
-            // Show the controllers' XML comments (summary, remarks, response codes) in Swagger UI
-            o.IncludeXmlComments(
-                Path.Combine(
-                    AppContext.BaseDirectory,
-                    $"{typeof(AuthHostSetup).Assembly.GetName().Name}.xml"
-                )
-            );
-        });
+    /// <summary>Prefills the CSRF client header in Swagger UI; the rest of Swagger comes from AddCommonApi.</summary>
+    public static IServiceCollection AddAuthSwagger(this IServiceCollection services)
+    {
+        services.ConfigureSwaggerGen(o => o.OperationFilter<SwaggerClientHeaderFilter>());
+        return services;
+    }
 
     /// <summary>Auth settings and refresh cookie, validated at startup.</summary>
     public static IServiceCollection AddAuthSettings(
@@ -64,7 +30,6 @@ public static class AuthHostSetup
         IHostEnvironment env
     )
     {
-        services.AddSingleton(TimeProvider.System);
         services
             .AddOptions<AuthOptions>()
             .Bind(config.GetSection("Auth"))
@@ -179,17 +144,8 @@ public static class AuthHostSetup
     }
 
     /// <summary>Middleware order matters: forwarded headers, auth, boundary checks, rate limit, then the shared API pipeline.</summary>
-    public static WebApplication UseAuthPipeline(this WebApplication app, string connectionString)
+    public static WebApplication UseAuthPipeline(this WebApplication app)
     {
-        if (
-            app.Environment.IsDevelopment()
-            && app.Configuration.GetValue("Auth:ApplyMigrations", true)
-        )
-        {
-            DbInitializer.EnsureDatabaseCreated(connectionString, "identity");
-            using var scope = app.Services.CreateScope();
-            scope.ServiceProvider.GetRequiredService<AuthDbContext>().Database.Migrate();
-        }
         app.UseForwardedHeaders();
         app.UseRouting();
         app.UseAuthentication();
