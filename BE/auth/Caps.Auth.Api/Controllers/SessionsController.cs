@@ -14,8 +14,7 @@ namespace Caps.Auth.Api.Controllers;
 /// A session response carries the access token in the body and sets the HttpOnly <c>caps_refresh</c> cookie.
 /// </remarks>
 [ApiController, Route("api/v1/auth")]
-public sealed class SessionsController(ICurrentUser currentUser, RefreshCookie refreshCookie)
-    : ControllerBase
+public sealed class SessionsController(ICurrentUser currentUser, RefreshCookie refreshCookie) : ControllerBase
 {
     private Guid UserId => currentUser.RequireUserId();
 
