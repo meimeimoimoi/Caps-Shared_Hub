@@ -25,12 +25,12 @@ Caps-Shared_Hub/
 │   ├── gateway/                  # API Gateway (YARP). Single entry point
 │   ├── auth/                     # Identity: tài khoản, phiên, JWT (schema `identity`)
 │   ├── expert/                   # Hồ sơ đăng ký chuyên gia, minh chứng S3 (schema `expert`)
-│   ├── billing/                  # Thanh toán & gói dịch vụ (skeleton)
-│   ├── ingestion/                # Pipeline nạp tài liệu (skeleton)
+│   ├── billing/                  # Thanh toán, ví, escrow, payout (schema `billing`, Clean Architecture, chưa có API)
+│   ├── ingestion/                # Pipeline nạp tài liệu (schema `knowledge`, chưa có API)
 │   ├── rag-query/                # RAG / Vector Search pgvector (skeleton)
 │   ├── notification/             # Thông báo bất đồng bộ (skeleton)
 │   ├── read/                     # CQRS Read Model (skeleton)
-│   ├── workflow/                 # Luồng quy trình nghiệp vụ (skeleton)
+│   ├── workflow/                 # Tài liệu, hội thoại AI, review case (schema `workspace`, `review`, Clean Architecture, chưa có API)
 │   ├── cronjob/                  # Tác vụ nền định kỳ (skeleton)
 │   ├── common/                   # Thư viện dùng chung:
 │   │                             # wrappers, exceptions, abstractions,

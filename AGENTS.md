@@ -88,10 +88,10 @@ Các điểm sau cố ý làm đơn giản và sẽ thay. Không dùng làm mẫ
 
 - JWT HS256 + key trong `appsettings.json` (sẽ chuyển RS256 + secret manager).
 - Thu hồi phiên (`AuthBoundaryMiddleware`) đọc thẳng DB của auth (sẽ chuyển sang Redis/event để service khác tự kiểm tra).
-- Nhiều service dùng chung user `postgres` và có khóa ngoại chéo schema (sẽ tách DB user riêng cho mỗi service, bỏ khóa ngoại chéo).
+- Nhiều service dùng chung user `postgres` (sẽ tách DB user riêng cho mỗi service, chỉ có quyền trên schema của mình).
 - Service `expert` tin token tới khi hết hạn (15 phút), chưa kiểm tra thu hồi phiên (sẽ làm cùng Redis/event).
 
-Đã xong: hồ sơ chuyên gia tách thành service `expert` (schema `expert`, không khóa ngoại sang `identity`); DB dùng `dotnet ef migrations`; mật khẩu băm bằng `PasswordHasher` (PBKDF2) + lockout + refresh token xoay vòng.
+Đã xong: hồ sơ chuyên gia tách thành service `expert` (schema `expert`); không còn khóa ngoại chéo service, id của service khác (user, review case…) chỉ là cột thường, nên mỗi service migrate độc lập; DB dùng `dotnet ef migrations`; mật khẩu băm bằng `PasswordHasher` (PBKDF2) + lockout + refresh token xoay vòng.
 
 ## Git
 
