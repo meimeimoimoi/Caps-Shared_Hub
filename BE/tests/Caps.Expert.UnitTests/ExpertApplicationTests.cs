@@ -58,7 +58,7 @@ public sealed class ExpertApplicationTests
 
         var error = Errors.CodeOf(() => draft.EnsureAcceptsFile(supplement: true));
 
-        Assert.Equal("INVALID_EVIDENCE_CODE", error);
+        Assert.Equal("SUPPLEMENT_NOT_REQUESTED", error);
     }
 
     [Fact]

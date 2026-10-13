@@ -487,7 +487,7 @@ Check(
 var draftSupplement = await ExpertCall(Upload(applicant, "SUPPLEMENT", pdf));
 Check(
     draftSupplement.Status == HttpStatusCode.BadRequest
-        && Code(draftSupplement.Json) == "INVALID_EVIDENCE_CODE",
+        && Code(draftSupplement.Json) == "SUPPLEMENT_NOT_REQUESTED",
     "supplementary files are only accepted when more information is requested"
 );
 

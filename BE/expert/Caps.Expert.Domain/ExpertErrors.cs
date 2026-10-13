@@ -34,7 +34,7 @@ public static class ExpertErrors
     public static AppException SupplementNotRequested() =>
         new(
             ErrorType.Validation,
-            "INVALID_EVIDENCE_CODE",
+            "SUPPLEMENT_NOT_REQUESTED",
             "Supplementary files are only accepted when more information is requested."
         );
 
