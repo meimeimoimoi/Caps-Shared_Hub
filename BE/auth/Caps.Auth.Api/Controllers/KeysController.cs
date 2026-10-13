@@ -1,13 +1,12 @@
-using Caps.Auth.Infrastructure.Security;
+using Caps.Auth.Application.Abstractions.Security;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
 
 namespace Caps.Auth.Api.Controllers;
 
 /// <summary>Public keys other services use to verify access tokens without holding any secret.</summary>
 [ApiController, AllowAnonymous, Route(".well-known")]
-public sealed class KeysController(JwtSigningKeys keys) : ControllerBase
+public sealed class KeysController(IPublicKeySet publicKeys) : ControllerBase
 {
     /// <summary>Returns the JSON Web Key Set with every public key that may have signed a live token.</summary>
     /// <remarks>
@@ -19,19 +18,15 @@ public sealed class KeysController(JwtSigningKeys keys) : ControllerBase
     [ResponseCache(Duration = 300, Location = ResponseCacheLocation.Any)]
     public IActionResult Jwks()
     {
-        var set = keys.PublicKeys.Select(key =>
+        var keys = publicKeys.Keys.Select(key => new
         {
-            var jwk = JsonWebKeyConverter.ConvertFromRSASecurityKey(key);
-            return new
-            {
-                kty = "RSA",
-                use = "sig",
-                alg = SecurityAlgorithms.RsaSha256,
-                kid = key.KeyId,
-                n = jwk.N,
-                e = jwk.E,
-            };
+            kty = "RSA",
+            use = "sig",
+            alg = "RS256",
+            kid = key.KeyId,
+            n = key.Modulus,
+            e = key.Exponent,
         });
-        return Ok(new { keys = set });
+        return Ok(new { keys });
     }
 }

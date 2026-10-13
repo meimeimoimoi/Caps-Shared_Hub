@@ -1,4 +1,5 @@
 using System.Security.Cryptography;
+using Caps.Auth.Application.Abstractions.Security;
 using Caps.Common.Security;
 using Microsoft.IdentityModel.Tokens;
 
@@ -22,17 +23,21 @@ public sealed class JwtSigningKeyEntry
 }
 
 /// <summary>Auth's RSA keys: the private key signs access tokens, the public halves go into the JWKS.</summary>
-public sealed class JwtSigningKeys : ILocalValidationKeys
+public sealed class JwtSigningKeys : ILocalValidationKeys, IPublicKeySet
 {
     private JwtSigningKeys(IReadOnlyList<RsaSecurityKey> keys)
     {
         Signing = new SigningCredentials(keys[0], SecurityAlgorithms.RsaSha256);
         PublicKeys = keys.Select(RsaKeys.PublicOnly).ToArray();
+        Keys = PublicKeys.Select(ToJwk).ToArray();
     }
 
     public SigningCredentials Signing { get; }
     public IReadOnlyList<RsaSecurityKey> PublicKeys { get; }
     IEnumerable<SecurityKey> ILocalValidationKeys.Keys => PublicKeys;
+
+    /// <summary>The public keys in JWK terms, as published at /.well-known/jwks.json.</summary>
+    public IReadOnlyList<PublicSigningKey> Keys { get; }
 
     /// <summary>
     /// Loads the configured keys. Without any, Development generates one key and keeps it in
@@ -48,6 +53,12 @@ public sealed class JwtSigningKeys : ILocalValidationKeys
                 "Configure Jwt:SigningKeys:0:PrivateKeyPem or PrivateKeyPath outside Development."
             );
         return new JwtSigningKeys([RsaKeys.FromPem(LoadOrCreateDevKey(options.DevKeyPath))]);
+    }
+
+    private static PublicSigningKey ToJwk(RsaSecurityKey key)
+    {
+        var jwk = JsonWebKeyConverter.ConvertFromRSASecurityKey(key);
+        return new PublicSigningKey(key.KeyId, jwk.N, jwk.E);
     }
 
     private static string ReadPem(JwtSigningKeyEntry entry) =>

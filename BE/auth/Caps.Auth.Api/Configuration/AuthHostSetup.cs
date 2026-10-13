@@ -3,6 +3,7 @@ using Caps.Auth.Api.Middleware;
 using Caps.Auth.Api.Swagger;
 using Caps.Auth.Application;
 using Caps.Auth.Application.Abstractions;
+using Caps.Auth.Application.Abstractions.Security;
 using Caps.Auth.Infrastructure.Email;
 using Caps.Auth.Infrastructure.Security;
 using Caps.Common.Api;
@@ -86,6 +87,7 @@ public static class AuthHostSetup
         services.AddSingleton(signingKeys);
         // Auth validates its own tokens with its public keys instead of downloading its own JWKS
         services.AddSingleton<ILocalValidationKeys>(signingKeys);
+        services.AddSingleton<IPublicKeySet>(signingKeys);
         return services;
     }
 
