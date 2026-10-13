@@ -87,11 +87,10 @@ npm run dev        # :5173
 
 Các điểm sau cố ý làm đơn giản và sẽ thay. Không dùng làm mẫu cho code mới:
 
-- JWT HS256 + key trong `appsettings.json` (sẽ chuyển RS256 + secret manager).
 - Thu hồi phiên (`AuthBoundaryMiddleware`) đọc thẳng DB của auth (sẽ chuyển sang Redis/event để service khác tự kiểm tra).
 - Service `expert` tin token tới khi hết hạn (15 phút), chưa kiểm tra thu hồi phiên (sẽ làm cùng Redis/event).
 
-Đã xong: hồ sơ chuyên gia tách thành service `expert` (schema `expert`); không còn khóa ngoại chéo service, id của service khác (user, review case…) chỉ là cột thường, nên mỗi service migrate độc lập; mỗi service kết nối DB bằng role riêng (`caps_<service>`) chỉ có quyền trên schema của mình, mật khẩu nằm trong user-secrets / `docker/.env`, không nằm trong `appsettings`; DB dùng `dotnet ef migrations`; mật khẩu băm bằng `PasswordHasher` (PBKDF2) + lockout + refresh token xoay vòng.
+Đã xong: JWT ký RS256, chỉ `auth` giữ private key; service khác xác thực bằng public key tải từ `/.well-known/jwks.json` (dự phòng `Jwt:PublicKeys`), gateway chặn token sai trên route `/me`; hồ sơ chuyên gia tách thành service `expert` (schema `expert`); không còn khóa ngoại chéo service, id của service khác (user, review case…) chỉ là cột thường, nên mỗi service migrate độc lập; mỗi service kết nối DB bằng role riêng (`caps_<service>`) chỉ có quyền trên schema của mình, mật khẩu nằm trong user-secrets / `docker/.env`, không nằm trong `appsettings`; DB dùng `dotnet ef migrations`; mật khẩu băm bằng `PasswordHasher` (PBKDF2) + lockout + refresh token xoay vòng.
 
 ## Git
 

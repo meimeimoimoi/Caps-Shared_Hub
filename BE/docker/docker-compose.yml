@@ -112,7 +112,10 @@ services:
       ConnectionStrings__Postgres: Host=postgres;Port=5432;Database=caps_db;Username=caps_auth;Password=${CAPS_AUTH_DB_PASSWORD}
       ConnectionStrings__Redis: redis:6379
       ConnectionStrings__RabbitMq: amqp://guest:guest@rabbitmq:5672
-      Jwt__Key: CHANGE_ME_dev_only_min_32_chars_1234567890
+      # Only auth holds the private key: create secrets/jwt-signing-key.pem first (see .env.example)
+      Jwt__SigningKeys__0__PrivateKeyPath: /run/secrets/jwt_signing_key
+    secrets:
+      - jwt_signing_key
     ports:
       - "5194:8080"
     depends_on:
@@ -137,7 +140,9 @@ services:
       ASPNETCORE_ENVIRONMENT: Production
       ASPNETCORE_URLS: http://+:8080
       ConnectionStrings__Postgres: Host=postgres;Port=5432;Database=caps_db;Username=caps_expert;Password=${CAPS_EXPERT_DB_PASSWORD}
-      Jwt__Key: CHANGE_ME_dev_only_min_32_chars_1234567890
+      # Verify tokens with auth's public keys; plain HTTP is acceptable only inside this network
+      Jwt__JwksUrl: http://auth:8080/.well-known/jwks.json
+      Jwt__RequireHttpsMetadata: "false"
       # SeaweedFS dev keys (seaweedfs/s3.json); real deployments use a secret store
       Storage__ServiceUrl: http://seaweedfs:8333
       Storage__AccessKey: caps-dev-access
@@ -161,7 +166,9 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: Production
       ASPNETCORE_URLS: http://+:8080
-      Jwt__Key: CHANGE_ME_dev_only_min_32_chars_1234567890
+      # Verify tokens with auth's public keys; plain HTTP is acceptable only inside this network
+      Jwt__JwksUrl: http://auth:8080/.well-known/jwks.json
+      Jwt__RequireHttpsMetadata: "false"
       # Inside the compose network services are reached by name, not localhost
       ReverseProxy__Clusters__auth-cluster__Destinations__auth__Address: http://auth:8080
       ReverseProxy__Clusters__expert-cluster__Destinations__expert__Address: http://expert:8080
@@ -176,6 +183,10 @@ services:
 networks:
   caps_network:
     driver: bridge
+
+secrets:
+  jwt_signing_key:
+    file: ./secrets/jwt-signing-key.pem
 
 volumes:
   postgres_data:

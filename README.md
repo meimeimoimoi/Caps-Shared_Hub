@@ -62,7 +62,7 @@ Luồng request giai đoạn kiến trúc:
 
 ```text
 Browser (FE :5173) → Gateway (:5190) → Auth (:5194) → Postgres (schema auth)
-                           │                    └── JWT (HS256, dev)
+                           │                    └── ký JWT RS256, công bố public key ở /.well-known/jwks.json
                            └── /healthz, /readyz mỗi service
 ```
 
@@ -156,7 +156,6 @@ vào `/dashboard` (F5 không mất session, 401 tự về `/login`).
 
 Những điểm cố ý để đơn giản, sẽ thay khi code thật:
 
-- JWT HS256 + key trong `appsettings.json` → chuyển RS256 + secret manager.
 - `AuthDbContext.EnsureCreated()` → `dotnet ef migrations`.
 - Hash mật khẩu SHA256 demo → BCrypt/Argon2 + refresh token + lockout.
 - MassTransit mới có contracts + config, chưa wiring consumer thật.
