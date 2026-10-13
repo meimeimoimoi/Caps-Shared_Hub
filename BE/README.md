@@ -18,13 +18,17 @@ Hệ thống Backend xây dựng theo kiến trúc **Microservices / Modular Arc
 * **`cronjob`**: Dịch vụ chạy các tác vụ định kỳ ngầm (Background Worker).
 
 ### 2. Thư viện dùng chung (`common`)
-Gom nhóm các module dùng chung gọn gàng:
-* `abstractions`: Common Interfaces & Contracts.
-* `exceptions`: Khai báo exception hệ thống & Domain errors.
-* `extensions`: Các tiện ích đăng ký Dependency Injection.
-* `messaging`: Event Bus / Message Broker contracts.
-* `security`: JWT Helper & Encryption.
-* `wrappers`: Chuẩn hóa API ResponseEnvelope & PagedResult.
+Chỉ chứa code kỹ thuật, tách theo tầng: `Caps.Common.Domain` · `Application` · `Security` · `Api` · `Persistence` · `Messaging`, cùng `Caps.Contracts` (sự kiện giữa các service). Chi tiết và quy tắc thêm code: [common/README.md](common/README.md).
+
+### 3. Tài liệu từng thư mục
+Mỗi thư mục có README riêng: service lo việc gì, không lo việc gì, cấu trúc, cách chạy, cấu hình.
+
+| Thư mục | README |
+|---|---|
+| Service có nghiệp vụ | [auth](auth/README.md) · [expert](expert/README.md) · [billing](billing/README.md) · [workflow](workflow/README.md) · [ingestion](ingestion/README.md) |
+| Service hạ tầng | [gateway](gateway/README.md) · [notification](notification/README.md) |
+| Service chưa triển khai | [read](read/README.md) · [rag-query](rag-query/README.md) · [cronjob](cronjob/README.md) |
+| Dùng chung, hạ tầng, công cụ | [common](common/README.md) · [docker](docker/README.md) · [scripts](scripts/README.md) (cổng chuẩn của mọi service) · [tests](tests/README.md) |
 
 ---
 
