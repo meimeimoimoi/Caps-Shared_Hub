@@ -31,12 +31,6 @@ namespace ingestion.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_crawl_job", x => x.id);
-                    table.ForeignKey(
-                        name: "fk_crawl_job_23",
-                        column: x => x.triggered_by,
-                        principalSchema: "identity",
-                        principalTable: "users",
-                        principalColumn: "id");
                 });
 
             migrationBuilder.CreateTable(
@@ -99,18 +93,6 @@ namespace ingestion.Migrations
                         column: x => x.crawl_job_id,
                         principalSchema: "knowledge",
                         principalTable: "crawl_job",
-                        principalColumn: "id");
-                    table.ForeignKey(
-                        name: "fk_knowledge_document_20",
-                        column: x => x.uploaded_by,
-                        principalSchema: "identity",
-                        principalTable: "users",
-                        principalColumn: "id");
-                    table.ForeignKey(
-                        name: "fk_knowledge_document_21",
-                        column: x => x.approved_by,
-                        principalSchema: "identity",
-                        principalTable: "users",
                         principalColumn: "id");
                 });
 

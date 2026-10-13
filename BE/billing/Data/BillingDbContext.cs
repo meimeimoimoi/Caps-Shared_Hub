@@ -1,5 +1,4 @@
 using billing.Entities;
-using billing.Entities.Stubs;
 using Microsoft.EntityFrameworkCore;
 
 namespace billing.Data;
@@ -16,28 +15,12 @@ public sealed class BillingDbContext(DbContextOptions<BillingDbContext> options)
     public DbSet<PayoutTransaction> PayoutTransactions => Set<PayoutTransaction>();
     public DbSet<Dispute> Disputes => Set<Dispute>();
 
-    // Cross-schema stubs
-    public DbSet<UserStub> Users => Set<UserStub>();
-    public DbSet<ReviewCaseStub> ReviewCases => Set<ReviewCaseStub>();
-
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.HasDefaultSchema("billing");
 
-        // Stubs excluded from migrations
-        modelBuilder.Entity<UserStub>(e =>
-        {
-            e.ToTable("users", "identity", t => t.ExcludeFromMigrations());
-            e.HasKey(x => x.Id);
-            e.Property(x => x.Id).HasColumnName("id");
-        });
-
-        modelBuilder.Entity<ReviewCaseStub>(e =>
-        {
-            e.ToTable("review_case", "review", t => t.ExcludeFromMigrations());
-            e.HasKey(x => x.Id);
-            e.Property(x => x.Id).HasColumnName("id");
-        });
+        // User and review case ids are plain columns: those rows live in other services,
+        // so there are no cross-service foreign keys and each service migrates on its own.
 
         // CreditWallet
         modelBuilder.Entity<CreditWallet>(e =>
@@ -51,11 +34,6 @@ public sealed class BillingDbContext(DbContextOptions<BillingDbContext> options)
                 .HasColumnName("updated_at")
                 .HasDefaultValueSql("now()")
                 .IsRequired();
-
-            e.HasOne<UserStub>()
-                .WithMany()
-                .HasForeignKey(x => x.UserId)
-                .HasConstraintName("fk_credit_wallet_68");
         });
 
         // PaymentTransaction
@@ -85,16 +63,7 @@ public sealed class BillingDbContext(DbContextOptions<BillingDbContext> options)
                 .IsRequired();
 
             e.HasIndex(x => new { x.UserId, x.Status }).HasDatabaseName("ix_payment_transaction_2");
-
-            e.HasOne<UserStub>()
-                .WithMany()
-                .HasForeignKey(x => x.UserId)
-                .HasConstraintName("fk_payment_transaction_66");
-
-            e.HasOne<ReviewCaseStub>()
-                .WithMany()
-                .HasForeignKey(x => x.ReviewCaseId)
-                .HasConstraintName("fk_payment_transaction_67");
+            e.HasIndex(x => x.ReviewCaseId);
         });
 
         // CreditLedger
@@ -120,11 +89,6 @@ public sealed class BillingDbContext(DbContextOptions<BillingDbContext> options)
 
             e.HasIndex(x => new { x.UserId, x.CreatedAt }).HasDatabaseName("ix_credit_ledger_2");
 
-            e.HasOne<UserStub>()
-                .WithMany()
-                .HasForeignKey(x => x.UserId)
-                .HasConstraintName("fk_credit_ledger_69");
-
             e.HasOne(x => x.PaymentTransaction)
                 .WithMany()
                 .HasForeignKey(x => x.RefPaymentId)
@@ -149,11 +113,6 @@ public sealed class BillingDbContext(DbContextOptions<BillingDbContext> options)
                 .HasColumnName("updated_at")
                 .HasDefaultValueSql("now()")
                 .IsRequired();
-
-            e.HasOne<ReviewCaseStub>()
-                .WithOne()
-                .HasForeignKey<Escrow>(x => x.ReviewCaseId)
-                .HasConstraintName("fk_escrow_56");
         });
 
         // Settlement
@@ -178,11 +137,6 @@ public sealed class BillingDbContext(DbContextOptions<BillingDbContext> options)
                 .HasColumnName("settled_at")
                 .HasDefaultValueSql("now()")
                 .IsRequired();
-
-            e.HasOne<ReviewCaseStub>()
-                .WithOne()
-                .HasForeignKey<Settlement>(x => x.ReviewCaseId)
-                .HasConstraintName("fk_settlement_57");
         });
 
         // BankAccount
@@ -198,6 +152,7 @@ public sealed class BillingDbContext(DbContextOptions<BillingDbContext> options)
             e.Property(x => x.AccountNumberHash).HasColumnName("account_number_hash").IsRequired();
             e.Property(x => x.AccountLast4).HasColumnName("account_last4").IsRequired();
             e.Property(x => x.AccountHolderName).HasColumnName("account_holder_name").IsRequired();
+            e.HasIndex(x => x.UserId);
             e.Property(x => x.IsDefault).HasColumnName("is_default").HasDefaultValue(false);
             e.Property(x => x.Status)
                 .HasColumnName("status")
@@ -215,16 +170,6 @@ public sealed class BillingDbContext(DbContextOptions<BillingDbContext> options)
                 .HasColumnName("updated_at")
                 .HasDefaultValueSql("now()")
                 .IsRequired();
-
-            e.HasOne<UserStub>()
-                .WithMany()
-                .HasForeignKey(x => x.UserId)
-                .HasConstraintName("fk_bank_account_58");
-
-            e.HasOne<UserStub>()
-                .WithMany()
-                .HasForeignKey(x => x.VerifiedBy)
-                .HasConstraintName("fk_bank_account_59");
         });
 
         // PayoutTransaction
@@ -237,6 +182,7 @@ public sealed class BillingDbContext(DbContextOptions<BillingDbContext> options)
             e.Property(x => x.PayoutType).HasColumnName("payout_type").IsRequired();
             e.HasIndex(x => new { x.SettlementId, x.PayoutType }).IsUnique();
             e.Property(x => x.RecipientUserId).HasColumnName("recipient_user_id");
+            e.HasIndex(x => x.RecipientUserId);
             e.Property(x => x.Amount).HasColumnName("amount");
             e.Property(x => x.BankAccountId).HasColumnName("bank_account_id");
             e.Property(x => x.SnapBankBin).HasColumnName("snap_bank_bin");
@@ -277,11 +223,6 @@ public sealed class BillingDbContext(DbContextOptions<BillingDbContext> options)
                 .WithMany()
                 .HasForeignKey(x => x.BankAccountId)
                 .HasConstraintName("fk_payout_transaction_61");
-
-            e.HasOne<UserStub>()
-                .WithMany()
-                .HasForeignKey(x => x.RecipientUserId)
-                .HasConstraintName("fk_payout_transaction_62");
         });
 
         // Dispute
@@ -296,6 +237,7 @@ public sealed class BillingDbContext(DbContextOptions<BillingDbContext> options)
             e.Property(x => x.Grounds).HasColumnName("grounds").IsRequired();
             e.Property(x => x.Evidence).HasColumnName("evidence").HasColumnType("jsonb");
             e.Property(x => x.ArbiterUserId).HasColumnName("arbiter_user_id");
+            e.HasIndex(x => x.ArbiterUserId);
             e.Property(x => x.SlaDueAt).HasColumnName("sla_due_at").IsRequired();
             e.Property(x => x.Outcome).HasColumnName("outcome");
             e.Property(x => x.ResolutionNote).HasColumnName("resolution_note");
@@ -305,21 +247,6 @@ public sealed class BillingDbContext(DbContextOptions<BillingDbContext> options)
                 .HasDefaultValueSql("now()")
                 .IsRequired();
             e.Property(x => x.ResolvedAt).HasColumnName("resolved_at");
-
-            e.HasOne<ReviewCaseStub>()
-                .WithOne()
-                .HasForeignKey<Dispute>(x => x.ReviewCaseId)
-                .HasConstraintName("fk_dispute_63");
-
-            e.HasOne<UserStub>()
-                .WithMany()
-                .HasForeignKey(x => x.RaisedBy)
-                .HasConstraintName("fk_dispute_64");
-
-            e.HasOne<UserStub>()
-                .WithMany()
-                .HasForeignKey(x => x.ArbiterUserId)
-                .HasConstraintName("fk_dispute_65");
         });
     }
 }

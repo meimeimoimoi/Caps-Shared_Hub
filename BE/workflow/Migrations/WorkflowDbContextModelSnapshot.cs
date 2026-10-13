@@ -70,8 +70,6 @@ namespace workflow.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("RequestedBy");
-
                     b.HasIndex("ReviewCaseId", "Status")
                         .HasDatabaseName("ix_info_request_2");
 
@@ -117,8 +115,6 @@ namespace workflow.Migrations
 
                     b.HasIndex("ReviewCaseId")
                         .HasDatabaseName("ix_review_attachment_2");
-
-                    b.HasIndex("UploadedBy");
 
                     b.HasIndex("ReviewCaseId", "InfoRequestId");
 
@@ -301,8 +297,6 @@ namespace workflow.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ActorUserId");
-
                     b.HasIndex("ReviewCaseId", "CreatedAt")
                         .HasDatabaseName("ix_review_status_history_2");
 
@@ -350,24 +344,10 @@ namespace workflow.Migrations
                     b.ToTable("review_task", "review");
                 });
 
-            modelBuilder.Entity("workflow.Entities.Stubs.UserStub", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("users", "identity", t =>
-                        {
-                            t.ExcludeFromMigrations();
-                        });
-                });
-
             modelBuilder.Entity("workflow.Entities.Workspace.AiQuota", b =>
                 {
                     b.Property<Guid>("UserId")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("user_id");
 
@@ -685,8 +665,6 @@ namespace workflow.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CreatedBy");
-
                     b.HasIndex("ReviewCaseId")
                         .HasDatabaseName("ix_document_version_6");
 
@@ -733,8 +711,6 @@ namespace workflow.Migrations
                         .HasColumnName("version_no");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("CreatedBy");
 
                     b.HasIndex("DocumentId", "VersionNo")
                         .IsUnique();
@@ -822,8 +798,6 @@ namespace workflow.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CreatedBy");
-
                     b.HasIndex("TemplateId", "VersionNo")
                         .IsUnique();
 
@@ -832,13 +806,6 @@ namespace workflow.Migrations
 
             modelBuilder.Entity("workflow.Entities.Review.InfoRequest", b =>
                 {
-                    b.HasOne("workflow.Entities.Stubs.UserStub", null)
-                        .WithMany()
-                        .HasForeignKey("RequestedBy")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_info_request_50");
-
                     b.HasOne("workflow.Entities.Review.ReviewCase", "ReviewCase")
                         .WithMany("InfoRequests")
                         .HasForeignKey("ReviewCaseId")
@@ -857,13 +824,6 @@ namespace workflow.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_review_attachment_51");
-
-                    b.HasOne("workflow.Entities.Stubs.UserStub", null)
-                        .WithMany()
-                        .HasForeignKey("UploadedBy")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_review_attachment_52");
 
                     b.HasOne("workflow.Entities.Review.InfoRequest", "InfoRequest")
                         .WithMany("Attachments")
@@ -885,13 +845,6 @@ namespace workflow.Migrations
                         .IsRequired()
                         .HasConstraintName("fk_review_case_42");
 
-                    b.HasOne("workflow.Entities.Stubs.UserStub", null)
-                        .WithMany()
-                        .HasForeignKey("RequesterUserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_review_case_43");
-
                     b.HasOne("workflow.Entities.Workspace.DocumentVersion", null)
                         .WithMany()
                         .HasForeignKey("DocumentId", "SourceVersionId")
@@ -903,11 +856,6 @@ namespace workflow.Migrations
 
             modelBuilder.Entity("workflow.Entities.Review.ReviewStatusHistory", b =>
                 {
-                    b.HasOne("workflow.Entities.Stubs.UserStub", null)
-                        .WithMany()
-                        .HasForeignKey("ActorUserId")
-                        .HasConstraintName("fk_review_status_history_55");
-
                     b.HasOne("workflow.Entities.Review.ReviewCase", "ReviewCase")
                         .WithMany("StatusHistories")
                         .HasForeignKey("ReviewCaseId")
@@ -930,16 +878,6 @@ namespace workflow.Migrations
                     b.Navigation("ReviewCase");
                 });
 
-            modelBuilder.Entity("workflow.Entities.Workspace.AiQuota", b =>
-                {
-                    b.HasOne("workflow.Entities.Stubs.UserStub", null)
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_ai_quota_28");
-                });
-
             modelBuilder.Entity("workflow.Entities.Workspace.AiUsage", b =>
                 {
                     b.HasOne("workflow.Entities.Workspace.Conversation", "Conversation")
@@ -951,13 +889,6 @@ namespace workflow.Migrations
                         .WithMany()
                         .HasForeignKey("QuestionId")
                         .HasConstraintName("fk_ai_usage_31");
-
-                    b.HasOne("workflow.Entities.Stubs.UserStub", null)
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_ai_usage_29");
 
                     b.Navigation("Conversation");
 
@@ -976,25 +907,8 @@ namespace workflow.Migrations
                     b.Navigation("Conversation");
                 });
 
-            modelBuilder.Entity("workflow.Entities.Workspace.Conversation", b =>
-                {
-                    b.HasOne("workflow.Entities.Stubs.UserStub", null)
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_conversation_26");
-                });
-
             modelBuilder.Entity("workflow.Entities.Workspace.Document", b =>
                 {
-                    b.HasOne("workflow.Entities.Stubs.UserStub", null)
-                        .WithMany()
-                        .HasForeignKey("OwnerUserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_document_32");
-
                     b.HasOne("workflow.Entities.Workspace.Template", "Template")
                         .WithMany()
                         .HasForeignKey("TemplateId")
@@ -1011,13 +925,6 @@ namespace workflow.Migrations
 
             modelBuilder.Entity("workflow.Entities.Workspace.DocumentVersion", b =>
                 {
-                    b.HasOne("workflow.Entities.Stubs.UserStub", null)
-                        .WithMany()
-                        .HasForeignKey("CreatedBy")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_document_version_37");
-
                     b.HasOne("workflow.Entities.Workspace.Document", "Document")
                         .WithMany("Versions")
                         .HasForeignKey("DocumentId")
@@ -1051,13 +958,6 @@ namespace workflow.Migrations
 
             modelBuilder.Entity("workflow.Entities.Workspace.InputSnapshot", b =>
                 {
-                    b.HasOne("workflow.Entities.Stubs.UserStub", null)
-                        .WithMany()
-                        .HasForeignKey("CreatedBy")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_input_snapshot_35");
-
                     b.HasOne("workflow.Entities.Workspace.Document", "Document")
                         .WithMany("InputSnapshots")
                         .HasForeignKey("DocumentId")
@@ -1070,13 +970,6 @@ namespace workflow.Migrations
 
             modelBuilder.Entity("workflow.Entities.Workspace.TemplateVersion", b =>
                 {
-                    b.HasOne("workflow.Entities.Stubs.UserStub", null)
-                        .WithMany()
-                        .HasForeignKey("CreatedBy")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_template_version_25");
-
                     b.HasOne("workflow.Entities.Workspace.Template", "Template")
                         .WithMany("Versions")
                         .HasForeignKey("TemplateId")

@@ -1,5 +1,4 @@
 using ingestion.Entities;
-using ingestion.Entities.Stubs;
 using Microsoft.EntityFrameworkCore;
 
 namespace ingestion.Data;
@@ -13,20 +12,12 @@ public sealed class IngestionDbContext(DbContextOptions<IngestionDbContext> opti
     public DbSet<KbChunk> KbChunks => Set<KbChunk>();
     public DbSet<CrawlJob> CrawlJobs => Set<CrawlJob>();
 
-    // Identity stub
-    public DbSet<UserStub> Users => Set<UserStub>();
-
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.HasDefaultSchema("knowledge");
 
-        // UserStub excluded from migrations
-        modelBuilder.Entity<UserStub>(e =>
-        {
-            e.ToTable("users", "identity", t => t.ExcludeFromMigrations());
-            e.HasKey(x => x.Id);
-            e.Property(x => x.Id).HasColumnName("id");
-        });
+        // User ids are plain columns: users live in the auth service,
+        // so there are no cross-service foreign keys and each service migrates on its own.
 
         // LegalSource
         modelBuilder.Entity<LegalSource>(e =>
@@ -131,16 +122,6 @@ public sealed class IngestionDbContext(DbContextOptions<IngestionDbContext> opti
                 .WithMany(j => j.KnowledgeDocuments)
                 .HasForeignKey(x => x.CrawlJobId)
                 .HasConstraintName("fk_knowledge_document_19");
-
-            e.HasOne<UserStub>()
-                .WithMany()
-                .HasForeignKey(x => x.UploadedBy)
-                .HasConstraintName("fk_knowledge_document_20");
-
-            e.HasOne<UserStub>()
-                .WithMany()
-                .HasForeignKey(x => x.ApprovedBy)
-                .HasConstraintName("fk_knowledge_document_21");
         });
 
         // KbChunk
@@ -197,11 +178,6 @@ public sealed class IngestionDbContext(DbContextOptions<IngestionDbContext> opti
                 .HasDefaultValueSql("now()")
                 .IsRequired();
             e.Property(x => x.FinishedAt).HasColumnName("finished_at");
-
-            e.HasOne<UserStub>()
-                .WithMany()
-                .HasForeignKey(x => x.TriggeredBy)
-                .HasConstraintName("fk_crawl_job_23");
         });
     }
 }

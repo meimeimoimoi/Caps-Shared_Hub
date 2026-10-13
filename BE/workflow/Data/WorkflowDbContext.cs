@@ -1,6 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 using workflow.Entities.Review;
-using workflow.Entities.Stubs;
 using workflow.Entities.Workspace;
 
 namespace workflow.Data;
@@ -26,20 +25,12 @@ public sealed class WorkflowDbContext(DbContextOptions<WorkflowDbContext> option
     public DbSet<ReviewAttachment> ReviewAttachments => Set<ReviewAttachment>();
     public DbSet<ReviewStatusHistory> ReviewStatusHistories => Set<ReviewStatusHistory>();
 
-    // Identity stubs (excluded from migrations)
-    public DbSet<UserStub> Users => Set<UserStub>();
-
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.HasDefaultSchema("workspace");
 
-        // Identity Stubs
-        modelBuilder.Entity<UserStub>(e =>
-        {
-            e.ToTable("users", "identity", t => t.ExcludeFromMigrations());
-            e.HasKey(x => x.Id);
-            e.Property(x => x.Id).HasColumnName("id");
-        });
+        // User ids are plain columns: users live in the auth service,
+        // so there are no cross-service foreign keys and each service migrates on its own.
 
         // ------------------ WORKSPACE SCHEMA ------------------
 
@@ -85,11 +76,6 @@ public sealed class WorkflowDbContext(DbContextOptions<WorkflowDbContext> option
                 .WithMany(t => t.Versions)
                 .HasForeignKey(x => x.TemplateId)
                 .HasConstraintName("fk_template_version_24");
-
-            e.HasOne<UserStub>()
-                .WithMany()
-                .HasForeignKey(x => x.CreatedBy)
-                .HasConstraintName("fk_template_version_25");
         });
 
         // Conversation
@@ -110,12 +96,6 @@ public sealed class WorkflowDbContext(DbContextOptions<WorkflowDbContext> option
                 .IsRequired();
 
             e.HasIndex(x => new { x.UserId, x.UpdatedAt }).HasDatabaseName("ix_conversation_2");
-
-            e.HasOne<UserStub>()
-                .WithMany()
-                .HasForeignKey(x => x.UserId)
-                .OnDelete(DeleteBehavior.Cascade)
-                .HasConstraintName("fk_conversation_26");
         });
 
         // ChatMessage
@@ -158,12 +138,6 @@ public sealed class WorkflowDbContext(DbContextOptions<WorkflowDbContext> option
                 .HasColumnName("updated_at")
                 .HasDefaultValueSql("now()")
                 .IsRequired();
-
-            e.HasOne<UserStub>()
-                .WithMany()
-                .HasForeignKey(x => x.UserId)
-                .OnDelete(DeleteBehavior.Cascade)
-                .HasConstraintName("fk_ai_quota_28");
         });
 
         // AiUsage
@@ -191,11 +165,6 @@ public sealed class WorkflowDbContext(DbContextOptions<WorkflowDbContext> option
                 .IsRequired();
 
             e.HasIndex(x => new { x.UserId, x.State }).HasDatabaseName("ix_ai_usage_2");
-
-            e.HasOne<UserStub>()
-                .WithMany()
-                .HasForeignKey(x => x.UserId)
-                .HasConstraintName("fk_ai_usage_29");
 
             e.HasOne(x => x.Conversation)
                 .WithMany()
@@ -241,11 +210,6 @@ public sealed class WorkflowDbContext(DbContextOptions<WorkflowDbContext> option
 
             e.HasIndex(x => new { x.OwnerUserId, x.Status }).HasDatabaseName("ix_document_2");
 
-            e.HasOne<UserStub>()
-                .WithMany()
-                .HasForeignKey(x => x.OwnerUserId)
-                .HasConstraintName("fk_document_32");
-
             e.HasOne(x => x.Template)
                 .WithMany()
                 .HasForeignKey(x => x.TemplateId)
@@ -274,11 +238,6 @@ public sealed class WorkflowDbContext(DbContextOptions<WorkflowDbContext> option
                 .WithMany(d => d.InputSnapshots)
                 .HasForeignKey(x => x.DocumentId)
                 .HasConstraintName("fk_input_snapshot_34");
-
-            e.HasOne<UserStub>()
-                .WithMany()
-                .HasForeignKey(x => x.CreatedBy)
-                .HasConstraintName("fk_input_snapshot_35");
         });
 
         // DocumentVersion
@@ -313,11 +272,6 @@ public sealed class WorkflowDbContext(DbContextOptions<WorkflowDbContext> option
                 .WithMany(d => d.Versions)
                 .HasForeignKey(x => x.DocumentId)
                 .HasConstraintName("fk_document_version_36");
-
-            e.HasOne<UserStub>()
-                .WithMany()
-                .HasForeignKey(x => x.CreatedBy)
-                .HasConstraintName("fk_document_version_37");
 
             e.HasOne(x => x.TemplateVersion)
                 .WithMany()
@@ -399,11 +353,6 @@ public sealed class WorkflowDbContext(DbContextOptions<WorkflowDbContext> option
                 .HasForeignKey(x => x.DocumentId)
                 .HasConstraintName("fk_review_case_42");
 
-            e.HasOne<UserStub>()
-                .WithMany()
-                .HasForeignKey(x => x.RequesterUserId)
-                .HasConstraintName("fk_review_case_43");
-
             // Expert, slot and offering ids belong to the expert service: plain columns, no cross-service FKs
 
             // Composite FK: (document_id, source_version_id) -> document_version (document_id, id)
@@ -475,11 +424,6 @@ public sealed class WorkflowDbContext(DbContextOptions<WorkflowDbContext> option
                 .WithMany(c => c.InfoRequests)
                 .HasForeignKey(x => x.ReviewCaseId)
                 .HasConstraintName("fk_info_request_49");
-
-            e.HasOne<UserStub>()
-                .WithMany()
-                .HasForeignKey(x => x.RequestedBy)
-                .HasConstraintName("fk_info_request_50");
         });
 
         // ReviewAttachment
@@ -504,11 +448,6 @@ public sealed class WorkflowDbContext(DbContextOptions<WorkflowDbContext> option
                 .WithMany(c => c.Attachments)
                 .HasForeignKey(x => x.ReviewCaseId)
                 .HasConstraintName("fk_review_attachment_51");
-
-            e.HasOne<UserStub>()
-                .WithMany()
-                .HasForeignKey(x => x.UploadedBy)
-                .HasConstraintName("fk_review_attachment_52");
 
             // Composite FK: (review_case_id, info_request_id) -> info_request (review_case_id, id)
             e.HasOne(x => x.InfoRequest)
@@ -541,11 +480,6 @@ public sealed class WorkflowDbContext(DbContextOptions<WorkflowDbContext> option
                 .WithMany(c => c.StatusHistories)
                 .HasForeignKey(x => x.ReviewCaseId)
                 .HasConstraintName("fk_review_status_history_54");
-
-            e.HasOne<UserStub>()
-                .WithMany()
-                .HasForeignKey(x => x.ActorUserId)
-                .HasConstraintName("fk_review_status_history_55");
         });
     }
 }

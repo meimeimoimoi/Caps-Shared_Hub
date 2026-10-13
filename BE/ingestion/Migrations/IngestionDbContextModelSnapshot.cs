@@ -68,8 +68,6 @@ namespace ingestion.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("TriggeredBy");
-
                     b.ToTable("crawl_job", "knowledge");
                 });
 
@@ -243,14 +241,10 @@ namespace ingestion.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ApprovedBy");
-
                     b.HasIndex("CrawlJobId");
 
                     b.HasIndex("FileHash")
                         .IsUnique();
-
-                    b.HasIndex("UploadedBy");
 
                     b.HasIndex("LegalSourceId", "VersionNo")
                         .IsUnique();
@@ -342,29 +336,6 @@ namespace ingestion.Migrations
                     b.ToTable("legal_source", "knowledge");
                 });
 
-            modelBuilder.Entity("ingestion.Entities.Stubs.UserStub", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("users", "identity", t =>
-                        {
-                            t.ExcludeFromMigrations();
-                        });
-                });
-
-            modelBuilder.Entity("ingestion.Entities.CrawlJob", b =>
-                {
-                    b.HasOne("ingestion.Entities.Stubs.UserStub", null)
-                        .WithMany()
-                        .HasForeignKey("TriggeredBy")
-                        .HasConstraintName("fk_crawl_job_23");
-                });
-
             modelBuilder.Entity("ingestion.Entities.KbChunk", b =>
                 {
                     b.HasOne("ingestion.Entities.KnowledgeDocument", "KnowledgeDocument")
@@ -379,11 +350,6 @@ namespace ingestion.Migrations
 
             modelBuilder.Entity("ingestion.Entities.KnowledgeDocument", b =>
                 {
-                    b.HasOne("ingestion.Entities.Stubs.UserStub", null)
-                        .WithMany()
-                        .HasForeignKey("ApprovedBy")
-                        .HasConstraintName("fk_knowledge_document_21");
-
                     b.HasOne("ingestion.Entities.CrawlJob", "CrawlJob")
                         .WithMany("KnowledgeDocuments")
                         .HasForeignKey("CrawlJobId")
@@ -395,11 +361,6 @@ namespace ingestion.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_knowledge_document_18");
-
-                    b.HasOne("ingestion.Entities.Stubs.UserStub", null)
-                        .WithMany()
-                        .HasForeignKey("UploadedBy")
-                        .HasConstraintName("fk_knowledge_document_20");
 
                     b.Navigation("CrawlJob");
 

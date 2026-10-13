@@ -39,19 +39,6 @@ namespace billing.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_bank_account", x => x.id);
-                    table.ForeignKey(
-                        name: "fk_bank_account_58",
-                        column: x => x.user_id,
-                        principalSchema: "identity",
-                        principalTable: "users",
-                        principalColumn: "id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "fk_bank_account_59",
-                        column: x => x.verified_by,
-                        principalSchema: "identity",
-                        principalTable: "users",
-                        principalColumn: "id");
                 });
 
             migrationBuilder.CreateTable(
@@ -67,13 +54,6 @@ namespace billing.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_credit_wallet", x => x.user_id);
-                    table.ForeignKey(
-                        name: "fk_credit_wallet_68",
-                        column: x => x.user_id,
-                        principalSchema: "identity",
-                        principalTable: "users",
-                        principalColumn: "id",
-                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -97,26 +77,6 @@ namespace billing.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_dispute", x => x.id);
-                    table.ForeignKey(
-                        name: "fk_dispute_63",
-                        column: x => x.review_case_id,
-                        principalSchema: "review",
-                        principalTable: "review_case",
-                        principalColumn: "id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "fk_dispute_64",
-                        column: x => x.raised_by,
-                        principalSchema: "identity",
-                        principalTable: "users",
-                        principalColumn: "id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "fk_dispute_65",
-                        column: x => x.arbiter_user_id,
-                        principalSchema: "identity",
-                        principalTable: "users",
-                        principalColumn: "id");
                 });
 
             migrationBuilder.CreateTable(
@@ -134,13 +94,6 @@ namespace billing.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_escrow", x => x.id);
-                    table.ForeignKey(
-                        name: "fk_escrow_56",
-                        column: x => x.review_case_id,
-                        principalSchema: "review",
-                        principalTable: "review_case",
-                        principalColumn: "id",
-                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -162,19 +115,6 @@ namespace billing.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_payment_transaction", x => x.id);
-                    table.ForeignKey(
-                        name: "fk_payment_transaction_66",
-                        column: x => x.user_id,
-                        principalSchema: "identity",
-                        principalTable: "users",
-                        principalColumn: "id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "fk_payment_transaction_67",
-                        column: x => x.review_case_id,
-                        principalSchema: "review",
-                        principalTable: "review_case",
-                        principalColumn: "id");
                 });
 
             migrationBuilder.CreateTable(
@@ -193,13 +133,6 @@ namespace billing.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_settlement", x => x.id);
-                    table.ForeignKey(
-                        name: "fk_settlement_57",
-                        column: x => x.review_case_id,
-                        principalSchema: "review",
-                        principalTable: "review_case",
-                        principalColumn: "id",
-                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -222,13 +155,6 @@ namespace billing.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_credit_ledger", x => x.id);
-                    table.ForeignKey(
-                        name: "fk_credit_ledger_69",
-                        column: x => x.user_id,
-                        principalSchema: "identity",
-                        principalTable: "users",
-                        principalColumn: "id",
-                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "fk_credit_ledger_70",
                         column: x => x.ref_payment_id,
@@ -277,13 +203,6 @@ namespace billing.Migrations
                         principalSchema: "billing",
                         principalTable: "bank_account",
                         principalColumn: "id");
-                    table.ForeignKey(
-                        name: "fk_payout_transaction_62",
-                        column: x => x.recipient_user_id,
-                        principalSchema: "identity",
-                        principalTable: "users",
-                        principalColumn: "id",
-                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateIndex(

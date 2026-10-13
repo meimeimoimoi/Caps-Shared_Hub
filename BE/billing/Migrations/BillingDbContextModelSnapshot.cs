@@ -109,8 +109,6 @@ namespace billing.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.HasIndex("VerifiedBy");
-
                     b.ToTable("bank_account", "billing");
                 });
 
@@ -181,6 +179,7 @@ namespace billing.Migrations
             modelBuilder.Entity("billing.Entities.CreditWallet", b =>
                 {
                     b.Property<Guid>("UserId")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("user_id");
 
@@ -267,8 +266,6 @@ namespace billing.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("ArbiterUserId");
-
-                    b.HasIndex("RaisedBy");
 
                     b.HasIndex("ReviewCaseId")
                         .IsUnique();
@@ -538,51 +535,6 @@ namespace billing.Migrations
                     b.ToTable("settlement", "billing");
                 });
 
-            modelBuilder.Entity("billing.Entities.Stubs.ReviewCaseStub", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("review_case", "review", t =>
-                        {
-                            t.ExcludeFromMigrations();
-                        });
-                });
-
-            modelBuilder.Entity("billing.Entities.Stubs.UserStub", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("users", "identity", t =>
-                        {
-                            t.ExcludeFromMigrations();
-                        });
-                });
-
-            modelBuilder.Entity("billing.Entities.BankAccount", b =>
-                {
-                    b.HasOne("billing.Entities.Stubs.UserStub", null)
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_bank_account_58");
-
-                    b.HasOne("billing.Entities.Stubs.UserStub", null)
-                        .WithMany()
-                        .HasForeignKey("VerifiedBy")
-                        .HasConstraintName("fk_bank_account_59");
-                });
-
             modelBuilder.Entity("billing.Entities.CreditLedger", b =>
                 {
                     b.HasOne("billing.Entities.PaymentTransaction", "PaymentTransaction")
@@ -590,71 +542,7 @@ namespace billing.Migrations
                         .HasForeignKey("RefPaymentId")
                         .HasConstraintName("fk_credit_ledger_70");
 
-                    b.HasOne("billing.Entities.Stubs.UserStub", null)
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_credit_ledger_69");
-
                     b.Navigation("PaymentTransaction");
-                });
-
-            modelBuilder.Entity("billing.Entities.CreditWallet", b =>
-                {
-                    b.HasOne("billing.Entities.Stubs.UserStub", null)
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_credit_wallet_68");
-                });
-
-            modelBuilder.Entity("billing.Entities.Dispute", b =>
-                {
-                    b.HasOne("billing.Entities.Stubs.UserStub", null)
-                        .WithMany()
-                        .HasForeignKey("ArbiterUserId")
-                        .HasConstraintName("fk_dispute_65");
-
-                    b.HasOne("billing.Entities.Stubs.UserStub", null)
-                        .WithMany()
-                        .HasForeignKey("RaisedBy")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_dispute_64");
-
-                    b.HasOne("billing.Entities.Stubs.ReviewCaseStub", null)
-                        .WithOne()
-                        .HasForeignKey("billing.Entities.Dispute", "ReviewCaseId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_dispute_63");
-                });
-
-            modelBuilder.Entity("billing.Entities.Escrow", b =>
-                {
-                    b.HasOne("billing.Entities.Stubs.ReviewCaseStub", null)
-                        .WithOne()
-                        .HasForeignKey("billing.Entities.Escrow", "ReviewCaseId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_escrow_56");
-                });
-
-            modelBuilder.Entity("billing.Entities.PaymentTransaction", b =>
-                {
-                    b.HasOne("billing.Entities.Stubs.ReviewCaseStub", null)
-                        .WithMany()
-                        .HasForeignKey("ReviewCaseId")
-                        .HasConstraintName("fk_payment_transaction_67");
-
-                    b.HasOne("billing.Entities.Stubs.UserStub", null)
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_payment_transaction_66");
                 });
 
             modelBuilder.Entity("billing.Entities.PayoutTransaction", b =>
@@ -663,13 +551,6 @@ namespace billing.Migrations
                         .WithMany()
                         .HasForeignKey("BankAccountId")
                         .HasConstraintName("fk_payout_transaction_61");
-
-                    b.HasOne("billing.Entities.Stubs.UserStub", null)
-                        .WithMany()
-                        .HasForeignKey("RecipientUserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_payout_transaction_62");
 
                     b.HasOne("billing.Entities.Settlement", "Settlement")
                         .WithMany("PayoutTransactions")
@@ -681,16 +562,6 @@ namespace billing.Migrations
                     b.Navigation("BankAccount");
 
                     b.Navigation("Settlement");
-                });
-
-            modelBuilder.Entity("billing.Entities.Settlement", b =>
-                {
-                    b.HasOne("billing.Entities.Stubs.ReviewCaseStub", null)
-                        .WithOne()
-                        .HasForeignKey("billing.Entities.Settlement", "ReviewCaseId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_settlement_57");
                 });
 
             modelBuilder.Entity("billing.Entities.Settlement", b =>

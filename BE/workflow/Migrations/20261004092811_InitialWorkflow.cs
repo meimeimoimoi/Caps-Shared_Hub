@@ -29,13 +29,6 @@ namespace workflow.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_ai_quota", x => x.user_id);
-                    table.ForeignKey(
-                        name: "fk_ai_quota_28",
-                        column: x => x.user_id,
-                        principalSchema: "identity",
-                        principalTable: "users",
-                        principalColumn: "id",
-                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -52,13 +45,6 @@ namespace workflow.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_conversation", x => x.id);
-                    table.ForeignKey(
-                        name: "fk_conversation_26",
-                        column: x => x.user_id,
-                        principalSchema: "identity",
-                        principalTable: "users",
-                        principalColumn: "id",
-                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -129,13 +115,6 @@ namespace workflow.Migrations
                         principalTable: "template",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "fk_template_version_25",
-                        column: x => x.created_by,
-                        principalSchema: "identity",
-                        principalTable: "users",
-                        principalColumn: "id",
-                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -156,13 +135,6 @@ namespace workflow.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_ai_usage", x => x.id);
-                    table.ForeignKey(
-                        name: "fk_ai_usage_29",
-                        column: x => x.user_id,
-                        principalSchema: "identity",
-                        principalTable: "users",
-                        principalColumn: "id",
-                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "fk_ai_usage_30",
                         column: x => x.conversation_id,
@@ -199,13 +171,6 @@ namespace workflow.Migrations
                 {
                     table.PrimaryKey("PK_document", x => x.id);
                     table.ForeignKey(
-                        name: "fk_document_32",
-                        column: x => x.owner_user_id,
-                        principalSchema: "identity",
-                        principalTable: "users",
-                        principalColumn: "id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
                         name: "fk_document_33",
                         column: x => x.template_id,
                         principalSchema: "workspace",
@@ -234,13 +199,6 @@ namespace workflow.Migrations
                         column: x => x.document_id,
                         principalSchema: "workspace",
                         principalTable: "document",
-                        principalColumn: "id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "fk_input_snapshot_35",
-                        column: x => x.created_by,
-                        principalSchema: "identity",
-                        principalTable: "users",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -275,13 +233,6 @@ namespace workflow.Migrations
                         column: x => x.document_id,
                         principalSchema: "workspace",
                         principalTable: "document",
-                        principalColumn: "id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "fk_document_version_37",
-                        column: x => x.created_by,
-                        principalSchema: "identity",
-                        principalTable: "users",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
@@ -345,13 +296,6 @@ namespace workflow.Migrations
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "fk_review_case_43",
-                        column: x => x.requester_user_id,
-                        principalSchema: "identity",
-                        principalTable: "users",
-                        principalColumn: "id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
                         name: "fk_review_case_47",
                         columns: x => new { x.document_id, x.source_version_id },
                         principalSchema: "workspace",
@@ -386,13 +330,6 @@ namespace workflow.Migrations
                         principalTable: "review_case",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "fk_info_request_50",
-                        column: x => x.requested_by,
-                        principalSchema: "identity",
-                        principalTable: "users",
-                        principalColumn: "id",
-                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -418,12 +355,6 @@ namespace workflow.Migrations
                         principalTable: "review_case",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "fk_review_status_history_55",
-                        column: x => x.actor_user_id,
-                        principalSchema: "identity",
-                        principalTable: "users",
-                        principalColumn: "id");
                 });
 
             migrationBuilder.CreateTable(
@@ -471,13 +402,6 @@ namespace workflow.Migrations
                         column: x => x.review_case_id,
                         principalSchema: "review",
                         principalTable: "review_case",
-                        principalColumn: "id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "fk_review_attachment_52",
-                        column: x => x.uploaded_by,
-                        principalSchema: "identity",
-                        principalTable: "users",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
