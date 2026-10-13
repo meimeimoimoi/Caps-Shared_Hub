@@ -23,7 +23,8 @@ Caps-Shared_Hub/
 │   ├── Directory.Build.props     # Props chung: net8.0, Nullable, ImplicitUsings, LangVersion
 │   ├── Directory.Packages.props  # Central Package Management — nơi duy nhất pin version
 │   ├── gateway/                  # API Gateway (YARP). Single entry point
-│   ├── auth/                     # Identity + JWT + EF Core (schema `auth`)
+│   ├── auth/                     # Identity: tài khoản, phiên, JWT (schema `identity`)
+│   ├── expert/                   # Hồ sơ đăng ký chuyên gia, minh chứng S3 (schema `expert`)
 │   ├── billing/                  # Thanh toán & gói dịch vụ (skeleton)
 │   ├── ingestion/                # Pipeline nạp tài liệu (skeleton)
 │   ├── rag-query/                # RAG / Vector Search pgvector (skeleton)
@@ -90,6 +91,7 @@ dotnet build Caps.sln
 
 # Terminal 1 — Auth (http://localhost:5194/healthz)
 dotnet run --project auth/Caps.Auth.Api
+dotnet run --project expert/Caps.Expert.Api
 
 # Terminal 2 — Gateway (http://localhost:5190/healthz)
 dotnet run --project gateway/gateway.csproj

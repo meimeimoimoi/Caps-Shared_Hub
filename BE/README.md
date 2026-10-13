@@ -69,6 +69,7 @@ Gom nhóm các module dùng chung gọn gàng:
 4. **Chạy Service mong muốn** (Ví dụ `auth` service):
    ```powershell
    dotnet run --project auth/Caps.Auth.Api    # http://localhost:5194/healthz
+   dotnet run --project expert/Caps.Expert.Api # http://localhost:5198/healthz (xem expert/README.md)
    dotnet run --project gateway/gateway.csproj # http://localhost:5190/healthz
    ```
 

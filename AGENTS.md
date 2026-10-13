@@ -33,6 +33,7 @@ Backend (chạy ở `BE/`):
 ```powershell
 dotnet build Caps.sln
 dotnet run --project auth/Caps.Auth.Api       # :5194
+dotnet run --project expert/Caps.Expert.Api   # :5198
 dotnet run --project gateway/gateway.csproj    # :5190
 ```
 
@@ -88,9 +89,9 @@ Các điểm sau cố ý làm đơn giản và sẽ thay. Không dùng làm mẫ
 - JWT HS256 + key trong `appsettings.json` (sẽ chuyển RS256 + secret manager).
 - Thu hồi phiên (`AuthBoundaryMiddleware`) đọc thẳng DB của auth (sẽ chuyển sang Redis/event để service khác tự kiểm tra).
 - Nhiều service dùng chung user `postgres` và có khóa ngoại chéo schema (sẽ tách DB user riêng cho mỗi service, bỏ khóa ngoại chéo).
-- Phần hồ sơ chuyên gia đang nằm tạm trong `auth` (sẽ tách thành service `expert`).
+- Service `expert` tin token tới khi hết hạn (15 phút), chưa kiểm tra thu hồi phiên (sẽ làm cùng Redis/event).
 
-Đã xong: DB dùng `dotnet ef migrations`; mật khẩu băm bằng `PasswordHasher` (PBKDF2) + lockout + refresh token xoay vòng.
+Đã xong: hồ sơ chuyên gia tách thành service `expert` (schema `expert`, không khóa ngoại sang `identity`); DB dùng `dotnet ef migrations`; mật khẩu băm bằng `PasswordHasher` (PBKDF2) + lockout + refresh token xoay vòng.
 
 ## Git
 
