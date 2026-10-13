@@ -39,9 +39,11 @@ dotnet_diagnostic.IDE0161.severity = none
 dotnet_diagnostic.IDE0051.severity = none
 dotnet_diagnostic.IDE0052.severity = none
 
-# The integration test runner fails fast with plain exceptions and literal inputs on purpose
+# Tests fail fast with plain exceptions and literal inputs on purpose
 [BE/tests/**.cs]
 dotnet_diagnostic.CA2201.severity = none
 dotnet_diagnostic.CA1305.severity = none
 dotnet_diagnostic.CA1310.severity = none
 dotnet_diagnostic.CA1861.severity = none
+# Test names read as sentences: Domain_uses_no_framework
+dotnet_diagnostic.CA1707.severity = none
