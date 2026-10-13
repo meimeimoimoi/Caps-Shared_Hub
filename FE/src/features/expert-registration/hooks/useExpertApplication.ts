@@ -65,7 +65,10 @@ export function useExpertApplication() {
     if (id) setLoaded({ userId: id, application, failed: false })
   }, [])
 
-  /** Email vừa được xác nhận ở tab khác: lấy token mới mang trạng thái ACTIVE (cần cho ảnh đại diện). */
+  /**
+   * Gets a new token once the email may have been verified (another tab or device). The expert
+   * service and the avatar API trust the token's ACTIVE status, not a database lookup.
+   */
   const syncVerifiedSession = useCallback(async () => {
     const store = useAuthStore.getState()
     if (store.user?.status === 'ACTIVE') return
@@ -73,7 +76,7 @@ export function useExpertApplication() {
       const { user, token } = await authApi.refresh()
       store.renewSession(user, token)
     } catch {
-      // Refresh lỗi thì api-client đã xử lý phiên; không chặn thao tác hiện tại
+      // A failed refresh is already handled by the api-client; do not block the current action
     }
   }, [])
 

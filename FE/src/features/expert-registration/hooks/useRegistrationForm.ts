@@ -208,7 +208,10 @@ export function useRegistrationForm({
         move(step + 1)
         return
       }
-      if (!saved.emailVerified) {
+      // The expert service reads verification from the token: refresh it first in case the
+      // email was verified in another tab or on another device, then re-read the application
+      const verified = saved.emailVerified || (await refreshVerification())
+      if (!verified) {
         setVerifyOpen(true)
         return
       }
@@ -231,10 +234,19 @@ export function useRegistrationForm({
   }
 
   /** Gọi sau khi nhập mã hoặc bấm link (tab khác): đã xác nhận thì đóng hộp và nộp hồ sơ ngay */
+  /** Refreshes the session and reports whether the application now sees a verified email. */
+  async function refreshVerification() {
+    await syncVerifiedSession()
+    const latest = await applicationApi.get()
+    if (latest) setApplication(latest)
+    return !!latest?.emailVerified
+  }
+
   async function checkVerifiedAndSubmit() {
     if (verifyCheck.current) return
     verifyCheck.current = true
     try {
+      await syncVerifiedSession()
       const latest = await applicationApi.get()
       if (latest) setApplication(latest)
       if (!latest?.emailVerified || latest.status !== 'DRAFT') return
