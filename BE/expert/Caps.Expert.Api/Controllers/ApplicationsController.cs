@@ -17,7 +17,7 @@ namespace Caps.Expert.Api.Controllers;
 [ApiController, Authorize(Policy = "AuthSession"), Route("api/v1/experts/me/application")]
 public sealed class ApplicationsController(ICurrentUser currentUser) : ControllerBase
 {
-    private const long UploadLimit = ApplicationRules.MaxFileBytes + 64 * 1024;
+    private const long UploadLimit = ApplicationRules.MaxFileBytes + (64 * 1024);
 
     private Applicant Applicant => Applicant.From(currentUser);
 
@@ -67,7 +67,7 @@ public sealed class ApplicationsController(ICurrentUser currentUser) : Controlle
     )
     {
         // Size and format are validated by the domain from the bytes themselves
-        using var buffer = new MemoryStream();
+        await using var buffer = new MemoryStream();
         if (file != null)
             await file.CopyToAsync(buffer, ct);
         var command = new AddEvidenceCommand(
@@ -106,7 +106,7 @@ public sealed class ApplicationsController(ICurrentUser currentUser) : Controlle
     )
     {
         var file = await handler.HandleAsync(new(currentUser.RequireUserId(), id), ct);
-        Response.Headers["X-Content-Type-Options"] = "nosniff";
+        Response.Headers.XContentTypeOptions = "nosniff";
         Response.Headers.CacheControl = "private, no-store";
         return File(file.Content, file.ContentType, file.FileName);
     }

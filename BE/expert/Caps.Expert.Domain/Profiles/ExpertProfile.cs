@@ -26,7 +26,7 @@ public sealed class ExpertProfile
 {
     private ExpertProfile() { }
 
-    public Guid Id { get; private set; } = UuidV7.NewGuid();
+    public Guid Id { get; } = UuidV7.NewGuid();
 
     /// <summary>Account id from the identity service (no foreign key across services).</summary>
     public Guid UserId { get; private set; }
@@ -45,23 +45,21 @@ public sealed class ExpertProfile
 
     /// <summary>Mirrors the latest application status for expert-level filtering/display.</summary>
     public string Status { get; private set; } = ExpertApplicationStatus.Draft;
-    public string ServiceStatus { get; private set; } = "INACTIVE";
-    public string? EligibilityNote { get; private set; }
+    public string ServiceStatus { get; } = "INACTIVE";
+    public string? EligibilityNote { get; }
     public int? TurnaroundHours { get; private set; }
-    public decimal RatingAvg { get; private set; }
-    public int RatingCount { get; private set; }
+    public decimal RatingAvg { get; }
+    public int RatingCount { get; }
     public Guid? ApprovedBy { get; private set; }
     public DateTimeOffset? ApprovedAt { get; private set; }
     public DateTimeOffset CreatedAt { get; private set; }
     public DateTimeOffset UpdatedAt { get; private set; }
 
-    public ICollection<ExpertApplication> Applications { get; private set; } =
-        new List<ExpertApplication>();
-    public ICollection<ServiceOffering> ServiceOfferings { get; private set; } =
-        new List<ServiceOffering>();
-    public ICollection<AvailabilitySlot> AvailabilitySlots { get; private set; } =
-        new List<AvailabilitySlot>();
+    public ICollection<ExpertApplication> Applications { get; } = [];
+    public ICollection<ServiceOffering> ServiceOfferings { get; } = [];
+    public ICollection<AvailabilitySlot> AvailabilitySlots { get; } = [];
 
+    /// <summary>A new profile for the account, created on its first application.</summary>
     /// <param name="defaultName">Shown until the applicant saves a name (e.g. the email's local part).</param>
     public static ExpertProfile Create(Guid userId, string defaultName, DateTimeOffset now) =>
         new()

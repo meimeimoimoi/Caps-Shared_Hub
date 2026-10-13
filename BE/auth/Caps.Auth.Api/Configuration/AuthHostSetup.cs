@@ -77,9 +77,12 @@ public static class AuthHostSetup
         if (!string.IsNullOrEmpty(keys))
             dataProtection.PersistKeysToFileSystem(new DirectoryInfo(keys));
         if (!env.IsDevelopment() && string.IsNullOrEmpty(keys))
+        {
             throw new InvalidOperationException(
                 "Auth:DataProtectionKeysPath is required for durable email outbox keys."
             );
+        }
+
         var signingKeys = JwtSigningKeys.Load(
             config.GetSection("Jwt").Get<JwtSigningOptions>() ?? new JwtSigningOptions(),
             allowDevKey: env.IsDevelopment()
@@ -107,9 +110,12 @@ public static class AuthHostSetup
             services.AddHostedService<AuthEmailPublisher>();
         }
         else if (!env.IsDevelopment())
+        {
             throw new InvalidOperationException(
                 "Email publishing may only be disabled in Development."
             );
+        }
+
         return services;
     }
 

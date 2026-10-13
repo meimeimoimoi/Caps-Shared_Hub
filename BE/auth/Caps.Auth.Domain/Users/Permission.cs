@@ -9,5 +9,5 @@ public sealed class Permission
     public string Code { get; set; } = default!;
     public string? Description { get; set; }
 
-    public ICollection<RolePermission> RolePermissions { get; set; } = new List<RolePermission>();
+    public ICollection<RolePermission> RolePermissions { get; set; } = [];
 }

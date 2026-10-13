@@ -7,10 +7,10 @@ public sealed class ExpertEvidence
 {
     private ExpertEvidence() { }
 
-    public Guid Id { get; private set; } = UuidV7.NewGuid();
+    public Guid Id { get; } = UuidV7.NewGuid();
     public Guid ExpertProfileId { get; private set; }
     public Guid ApplicationId { get; private set; }
-    public ExpertApplication Application { get; private set; } = default!;
+    public ExpertApplication Application { get; } = default!;
 
     /// <summary>Document group code: CV or EV-01…EV-05 (POL-EXP-01), or SUPPLEMENT.</summary>
     public string EvidenceType { get; private set; } = default!;
@@ -20,10 +20,11 @@ public sealed class ExpertEvidence
     public string FileName { get; private set; } = default!;
     public string ContentType { get; private set; } = default!;
     public long SizeBytes { get; private set; }
-    public string? ParsedMeta { get; private set; }
-    public string? ScreeningFlag { get; private set; }
+    public string? ParsedMeta { get; }
+    public string? ScreeningFlag { get; }
     public DateTimeOffset CreatedAt { get; private set; }
 
+    /// <summary>Records a file uploaded to the application; its storage path is derived from the ids.</summary>
     /// <param name="contentType">Detected from the file bytes (see ApplicationRules.ValidateFile).</param>
     public static ExpertEvidence Create(
         ExpertApplication application,

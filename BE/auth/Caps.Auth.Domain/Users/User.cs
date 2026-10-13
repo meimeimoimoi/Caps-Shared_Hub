@@ -13,7 +13,7 @@ public sealed class User
 {
     private User() { }
 
-    public Guid Id { get; private set; } = UuidV7.NewGuid();
+    public Guid Id { get; } = UuidV7.NewGuid();
     public string Email { get; private set; } = default!;
     public string PasswordHash { get; private set; } = default!;
     public string FullName { get; private set; } = default!;
@@ -26,12 +26,10 @@ public sealed class User
     public DateTimeOffset CreatedAt { get; private set; }
     public DateTimeOffset UpdatedAt { get; private set; }
 
-    public ICollection<UserRole> UserRoles { get; private set; } = new List<UserRole>();
-    public ICollection<AuthRefreshToken> RefreshTokens { get; private set; } =
-        new List<AuthRefreshToken>();
-    public ICollection<VerificationToken> VerificationTokens { get; private set; } =
-        new List<VerificationToken>();
-    public BusinessProfile? BusinessProfile { get; private set; }
+    public ICollection<UserRole> UserRoles { get; } = [];
+    public ICollection<AuthRefreshToken> RefreshTokens { get; } = [];
+    public ICollection<VerificationToken> VerificationTokens { get; } = [];
+    public BusinessProfile? BusinessProfile { get; }
 
     public bool IsActive => Status == UserStatus.Active;
     public bool IsPendingVerification => Status == UserStatus.PendingVerification;
@@ -82,6 +80,7 @@ public sealed class User
         FailedLoginAttempts = 0;
     }
 
+    /// <summary>Clears failed attempts and any lockout after a correct password.</summary>
     /// <param name="rehashedPassword">Set when the stored hash uses outdated parameters.</param>
     public void RecordSuccessfulLogin(string? rehashedPassword)
     {

@@ -17,5 +17,5 @@ public sealed class InfoRequest
     public string Status { get; set; } = "OPEN";
     public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
 
-    public ICollection<ReviewAttachment> Attachments { get; set; } = new List<ReviewAttachment>();
+    public ICollection<ReviewAttachment> Attachments { get; set; } = [];
 }

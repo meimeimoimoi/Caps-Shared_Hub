@@ -15,7 +15,7 @@ public sealed class ProfileController(ICurrentUser currentUser) : ControllerBase
 {
     private Guid UserId => currentUser.RequireUserId();
 
-    private const int UploadLimit = UserAvatar.MaxBytes + 64 * 1024;
+    private const int UploadLimit = UserAvatar.MaxBytes + (64 * 1024);
 
     /// <summary>Returns the signed-in user's profile (roles, permissions, avatar URL).</summary>
     /// <response code="200">Profile of the current user.</response>
@@ -59,7 +59,7 @@ public sealed class ProfileController(ICurrentUser currentUser) : ControllerBase
     )
     {
         // Size and format are validated by the domain from the bytes themselves
-        using var buffer = new MemoryStream();
+        await using var buffer = new MemoryStream();
         if (file != null)
             await file.CopyToAsync(buffer, ct);
         var me = await handler.HandleAsync(new(UserId, buffer.ToArray()), ct);

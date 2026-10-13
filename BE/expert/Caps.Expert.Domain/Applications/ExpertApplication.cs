@@ -12,23 +12,22 @@ public sealed class ExpertApplication
 {
     private ExpertApplication() { }
 
-    public Guid Id { get; private set; } = UuidV7.NewGuid();
+    public Guid Id { get; } = UuidV7.NewGuid();
     public Guid ExpertProfileId { get; private set; }
-    public ExpertProfile ExpertProfile { get; private set; } = default!;
+    public ExpertProfile ExpertProfile { get; } = default!;
     public string Status { get; private set; } = ExpertApplicationStatus.Draft;
 
     /// <summary>Latest submission (first submit or supplement); full history is in Events.</summary>
     public DateTimeOffset? SubmittedAt { get; private set; }
     public DateTimeOffset? DecidedAt { get; private set; }
-    public string? DecisionNote { get; private set; }
+    public string? DecisionNote { get; }
     public Guid? PreviousApplicationId { get; private set; }
     public DateTimeOffset? EarliestReapplyAt { get; private set; }
     public DateTimeOffset CreatedAt { get; private set; }
     public DateTimeOffset UpdatedAt { get; private set; }
 
-    public ICollection<ExpertEvidence> Evidences { get; private set; } = new List<ExpertEvidence>();
-    public ICollection<ExpertApplicationEvent> Events { get; private set; } =
-        new List<ExpertApplicationEvent>();
+    public ICollection<ExpertEvidence> Evidences { get; } = [];
+    public ICollection<ExpertApplicationEvent> Events { get; } = [];
 
     public bool CanEdit => Status == ExpertApplicationStatus.Draft;
     public bool NeedsInformation => Status == ExpertApplicationStatus.NeedMoreInformation;
@@ -68,6 +67,7 @@ public sealed class ExpertApplication
             throw ExpertErrors.ApplicationLocked(Status);
     }
 
+    /// <summary>Throws unless the application can take a new file now.</summary>
     /// <param name="supplement">Supplementary files are only accepted while more information is requested.</param>
     public void EnsureAcceptsFile(bool supplement)
     {

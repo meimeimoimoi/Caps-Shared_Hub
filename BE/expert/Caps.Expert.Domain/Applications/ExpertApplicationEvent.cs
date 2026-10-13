@@ -7,9 +7,9 @@ public sealed class ExpertApplicationEvent
 {
     private ExpertApplicationEvent() { }
 
-    public Guid Id { get; private set; } = UuidV7.NewGuid();
+    public Guid Id { get; } = UuidV7.NewGuid();
     public Guid ApplicationId { get; private set; }
-    public ExpertApplication Application { get; private set; } = default!;
+    public ExpertApplication Application { get; } = default!;
 
     /// <summary>Account id from the identity service (no foreign key across services).</summary>
     public Guid ActorUserId { get; private set; }

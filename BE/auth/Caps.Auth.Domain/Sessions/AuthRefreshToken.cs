@@ -9,20 +9,19 @@ public sealed class AuthRefreshToken
 {
     private AuthRefreshToken() { }
 
-    public Guid Id { get; private set; } = UuidV7.NewGuid();
+    public Guid Id { get; } = UuidV7.NewGuid();
     public Guid UserId { get; private set; }
-    public User User { get; private set; } = default!;
+    public User User { get; } = default!;
 
     public string TokenHash { get; private set; } = default!;
-    public string? UserAgent { get; private set; }
-    public IPAddress? IpAddress { get; private set; }
+    public string? UserAgent { get; }
+    public IPAddress? IpAddress { get; }
     public DateTimeOffset IssuedAt { get; private set; }
     public DateTimeOffset ExpiresAt { get; private set; }
     public DateTimeOffset? RevokedAt { get; private set; }
     public Guid? RotatedFrom { get; private set; }
-    public AuthRefreshToken? RotatedFromToken { get; private set; }
-    public ICollection<AuthRefreshToken> RotatedToTokens { get; private set; } =
-        new List<AuthRefreshToken>();
+    public AuthRefreshToken? RotatedFromToken { get; }
+    public ICollection<AuthRefreshToken> RotatedToTokens { get; } = [];
 
     public static AuthRefreshToken Issue(
         Guid userId,

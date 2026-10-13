@@ -65,6 +65,8 @@ public static class ApplicationRules
             birthDate is { } birth
             && (birth > DateOnly.FromDateTime(now.UtcDateTime) || birth.Year < 1900)
         )
+        {
             throw ExpertErrors.InvalidBirthDate();
+        }
     }
 }

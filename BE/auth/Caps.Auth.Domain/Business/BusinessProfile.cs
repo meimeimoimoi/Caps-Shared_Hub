@@ -8,9 +8,9 @@ public sealed class BusinessProfile
 {
     private BusinessProfile() { }
 
-    public Guid Id { get; private set; } = UuidV7.NewGuid();
+    public Guid Id { get; } = UuidV7.NewGuid();
     public Guid UserId { get; private set; }
-    public User User { get; private set; } = default!;
+    public User User { get; } = default!;
 
     public string CompanyName { get; private set; } = default!;
     public string TaxCode { get; private set; } = default!;

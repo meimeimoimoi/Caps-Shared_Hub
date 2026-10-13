@@ -145,9 +145,13 @@ public sealed class EmailDomainPolicy(
             );
             var mx = await dns.QueryAsync(domain, QueryType.MX, cancellationToken: ct);
             if (mx.Header.ResponseCode == DnsHeaderResponseCode.NotExistentDomain)
+            {
                 accepts = false;
+            }
             else if (mx.Answers.MxRecords().Any())
+            {
                 accepts = true;
+            }
             else
             {
                 // No MX: per SMTP, mail can still be delivered to the domain's A/AAAA record

@@ -15,7 +15,10 @@ public sealed class SwaggerClientHeaderFilter : IOperationFilter
             context.ApiDescription.HttpMethod == "GET"
             || !path.StartsWith("api/v1/auth", StringComparison.OrdinalIgnoreCase)
         )
+        {
             return;
+        }
+
         operation.Parameters ??= [];
         operation.Parameters.Add(
             new OpenApiParameter

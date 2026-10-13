@@ -41,6 +41,7 @@ public sealed class AuthDbContext(DbContextOptions<AuthDbContext> options) : DbC
             "SYSTEM_ADMIN",
         };
         for (var i = 0; i < codes.Length; i++)
+        {
             modelBuilder
                 .Entity<Role>()
                 .HasData(
@@ -51,6 +52,8 @@ public sealed class AuthDbContext(DbContextOptions<AuthDbContext> options) : DbC
                         Name = codes[i],
                     }
                 );
+        }
+
         var permissionCodes = new[]
         {
             "profile:read",

@@ -28,6 +28,20 @@ dotnet_diagnostic.CA1848.severity = none
 dotnet_diagnostic.CA1711.severity = none
 # CA1000 static factories on generic records (ApiResponse<T>.Ok) are the intended API
 dotnet_diagnostic.CA1000.severity = none
+# RCS1194 errors must carry an ErrorType and a code, so the parameterless/message-only constructors are not wanted
+dotnet_diagnostic.RCS1194.severity = none
+# Readability rules raised from suggestions to warnings, so the build and CI enforce what the IDE shows
+dotnet_diagnostic.RCS1001.severity = warning
+dotnet_diagnostic.RCS1003.severity = warning
+dotnet_diagnostic.RCS1077.severity = warning
+dotnet_diagnostic.RCS1123.severity = warning
+dotnet_diagnostic.RCS1139.severity = warning
+dotnet_diagnostic.RCS1146.severity = warning
+dotnet_diagnostic.RCS1170.severity = warning
+dotnet_diagnostic.RCS1251.severity = warning
+dotnet_diagnostic.RCS1261.severity = warning
+dotnet_diagnostic.IDE0028.severity = warning
+dotnet_diagnostic.ASP0015.severity = warning
 
 # EF Core migrations are generated, never edited by hand: no analyzer findings there
 [BE/**/Migrations/*.cs]

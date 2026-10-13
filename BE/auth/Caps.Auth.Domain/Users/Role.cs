@@ -9,6 +9,6 @@ public sealed class Role
     public string Code { get; set; } = default!;
     public string Name { get; set; } = default!;
 
-    public ICollection<UserRole> UserRoles { get; set; } = new List<UserRole>();
-    public ICollection<RolePermission> RolePermissions { get; set; } = new List<RolePermission>();
+    public ICollection<UserRole> UserRoles { get; set; } = [];
+    public ICollection<RolePermission> RolePermissions { get; set; } = [];
 }

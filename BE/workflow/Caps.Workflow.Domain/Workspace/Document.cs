@@ -19,6 +19,6 @@ public sealed class Document
     public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
     public DateTimeOffset UpdatedAt { get; set; } = DateTimeOffset.UtcNow;
 
-    public ICollection<InputSnapshot> InputSnapshots { get; set; } = new List<InputSnapshot>();
-    public ICollection<DocumentVersion> Versions { get; set; } = new List<DocumentVersion>();
+    public ICollection<InputSnapshot> InputSnapshots { get; set; } = [];
+    public ICollection<DocumentVersion> Versions { get; set; } = [];
 }

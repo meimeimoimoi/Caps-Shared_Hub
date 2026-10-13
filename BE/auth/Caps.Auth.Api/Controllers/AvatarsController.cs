@@ -26,7 +26,7 @@ public sealed class AvatarsController : ControllerBase
         var avatar = await handler.HandleAsync(new(id), ct);
         if (avatar == null)
             return NotFound();
-        Response.Headers["X-Content-Type-Options"] = "nosniff";
+        Response.Headers.XContentTypeOptions = "nosniff";
         // The URL carries ?v=<updated time>, so each image version can be cached long-term.
         Response.Headers.CacheControl = "public, max-age=31536000, immutable";
         return File(avatar.Data, avatar.ContentType);

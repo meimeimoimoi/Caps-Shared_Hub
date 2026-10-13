@@ -48,6 +48,7 @@ public sealed class SmtpEmailSender(IOptions<SmtpOptions> options) : IEmailSende
             MediaTypeNames.Text.Html
         );
         foreach (var image in message.Images)
+        {
             html.LinkedResources.Add(
                 new LinkedResource(new MemoryStream(image.Content), image.ContentType)
                 {
@@ -55,6 +56,8 @@ public sealed class SmtpEmailSender(IOptions<SmtpOptions> options) : IEmailSende
                     TransferEncoding = TransferEncoding.Base64,
                 }
             );
+        }
+
         mail.AlternateViews.Add(html);
         await smtp.SendMailAsync(mail, ct);
     }

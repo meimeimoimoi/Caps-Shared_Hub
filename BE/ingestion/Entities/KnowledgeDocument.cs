@@ -30,5 +30,5 @@ public sealed class KnowledgeDocument
     public string Metadata { get; set; } = "{}"; // jsonb
     public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
 
-    public ICollection<KbChunk> Chunks { get; set; } = new List<KbChunk>();
+    public ICollection<KbChunk> Chunks { get; set; } = [];
 }

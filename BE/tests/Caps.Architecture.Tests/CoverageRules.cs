@@ -13,8 +13,8 @@ public sealed class CoverageRules
             .Select(name => name!["Caps.".Length..^".Domain".Length]);
 
         var missing = found.Except(Assemblies.LayeredServices);
-        Assert.True(
-            !missing.Any(),
+        Assert.False(
+            missing.Any(),
             $"Add {string.Join(", ", missing)} to Assemblies.LayeredServices and reference its Api project."
         );
     }

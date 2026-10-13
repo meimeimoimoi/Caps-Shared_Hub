@@ -45,13 +45,16 @@ public sealed class JwtSigningKeys : ILocalValidationKeys, IPublicKeySet
     /// </summary>
     public static JwtSigningKeys Load(JwtSigningOptions options, bool allowDevKey)
     {
-        var keys = options.SigningKeys.Select(x => RsaKeys.FromPem(ReadPem(x))).ToList();
+        var keys = options.SigningKeys.ConvertAll(x => RsaKeys.FromPem(ReadPem(x)));
         if (keys.Count > 0)
             return new JwtSigningKeys(keys);
         if (!allowDevKey)
+        {
             throw new InvalidOperationException(
                 "Configure Jwt:SigningKeys:0:PrivateKeyPem or PrivateKeyPath outside Development."
             );
+        }
+
         return new JwtSigningKeys([RsaKeys.FromPem(LoadOrCreateDevKey(options.DevKeyPath))]);
     }
 

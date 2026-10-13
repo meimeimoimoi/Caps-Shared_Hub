@@ -13,6 +13,5 @@ public sealed class Settlement
     public long PlatformFeeAmount { get; set; }
     public DateTimeOffset SettledAt { get; set; } = DateTimeOffset.UtcNow;
 
-    public ICollection<PayoutTransaction> PayoutTransactions { get; set; } =
-        new List<PayoutTransaction>();
+    public ICollection<PayoutTransaction> PayoutTransactions { get; set; } = [];
 }

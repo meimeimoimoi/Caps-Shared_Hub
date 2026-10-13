@@ -43,6 +43,8 @@ public sealed class CsrfGuardMiddleware(RequestDelegate next, IConfiguration con
             origin.Length > 0
             && !_allowedOrigins.Contains(origin, StringComparer.OrdinalIgnoreCase)
         )
+        {
             throw CommonErrors.OriginRejected();
+        }
     }
 }

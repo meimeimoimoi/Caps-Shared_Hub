@@ -35,9 +35,8 @@ public sealed class ReviewCase
     public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
     public DateTimeOffset UpdatedAt { get; set; } = DateTimeOffset.UtcNow;
 
-    public ICollection<ReviewTask> ReviewTasks { get; set; } = new List<ReviewTask>();
-    public ICollection<InfoRequest> InfoRequests { get; set; } = new List<InfoRequest>();
-    public ICollection<ReviewAttachment> Attachments { get; set; } = new List<ReviewAttachment>();
-    public ICollection<ReviewStatusHistory> StatusHistories { get; set; } =
-        new List<ReviewStatusHistory>();
+    public ICollection<ReviewTask> ReviewTasks { get; set; } = [];
+    public ICollection<InfoRequest> InfoRequests { get; set; } = [];
+    public ICollection<ReviewAttachment> Attachments { get; set; } = [];
+    public ICollection<ReviewStatusHistory> StatusHistories { get; set; } = [];
 }

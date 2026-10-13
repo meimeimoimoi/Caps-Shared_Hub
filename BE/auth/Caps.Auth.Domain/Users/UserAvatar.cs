@@ -19,7 +19,7 @@ public sealed class UserAvatar
     private UserAvatar() { }
 
     public Guid UserId { get; private set; }
-    public User User { get; private set; } = default!;
+    public User User { get; } = default!;
     public string ContentType { get; private set; } = default!;
     public byte[] Data { get; private set; } = default!;
     public DateTimeOffset UpdatedAt { get; private set; }
@@ -34,6 +34,7 @@ public sealed class UserAvatar
         UpdatedAt = now;
     }
 
+    /// <summary>Accepts a non-empty JPEG, PNG or WebP image within the size limit, judged by its bytes.</summary>
     /// <returns>The detected content type.</returns>
     public static string ValidateImage(byte[] data)
     {

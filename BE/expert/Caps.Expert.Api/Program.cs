@@ -21,4 +21,4 @@ app.UseCommonApi();
 app.Run();
 
 /// <summary>Entry point type, public so integration tests can host the API.</summary>
-public partial class Program { }
+public partial class Program;

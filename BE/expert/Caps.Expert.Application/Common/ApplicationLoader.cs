@@ -42,7 +42,10 @@ public sealed class ApplicationLoader(
             profiles.Add(profile);
         }
         else
+        {
             latest = await applications.FindLatestAsync(profile.Id, ct);
+        }
+
         if (latest != null && !ExpertApplicationStatus.IsClosed(latest.Status))
             return (profile, latest);
 

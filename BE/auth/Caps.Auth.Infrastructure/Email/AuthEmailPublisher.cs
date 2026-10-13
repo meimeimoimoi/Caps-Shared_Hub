@@ -42,11 +42,14 @@ public sealed class AuthEmailPublisher(
                     )!;
                     var now = clock.GetUtcNow();
                     if (message.ExpiresAt > now)
+                    {
                         await bus.Publish(
                             message,
                             ctx => ctx.MessageId = message.Id,
                             stoppingToken
                         );
+                    }
+
                     row.SentAt = now;
                     row.ProtectedPayload = "";
                 }

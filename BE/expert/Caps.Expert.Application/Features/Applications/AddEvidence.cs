@@ -44,7 +44,9 @@ public sealed class AddEvidenceHandler(
             await evidences.CountAsync(application.Id, ct)
             >= ApplicationRules.MaxFilesPerApplication
         )
+        {
             throw ExpertErrors.EvidenceLimit(ApplicationRules.MaxFilesPerApplication);
+        }
 
         var now = clock.GetUtcNow();
         var evidence = ExpertEvidence.Create(

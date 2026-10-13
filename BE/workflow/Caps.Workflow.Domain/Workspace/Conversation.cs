@@ -11,5 +11,5 @@ public sealed class Conversation
     public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
     public DateTimeOffset UpdatedAt { get; set; } = DateTimeOffset.UtcNow;
 
-    public ICollection<ChatMessage> Messages { get; set; } = new List<ChatMessage>();
+    public ICollection<ChatMessage> Messages { get; set; } = [];
 }

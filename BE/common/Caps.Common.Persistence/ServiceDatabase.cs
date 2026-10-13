@@ -36,10 +36,13 @@ public static class ServiceDatabaseExtensions
         where TContext : DbContext
     {
         if (schemas.Length == 0)
+        {
             throw new ArgumentException(
                 "A service database owns at least one schema.",
                 nameof(schemas)
             );
+        }
+
         services.AddDbContext<TContext>(o =>
             o.UseNpgsql(
                 connectionString,

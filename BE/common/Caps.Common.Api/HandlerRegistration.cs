@@ -23,16 +23,17 @@ public static class HandlerRegistration
         Assembly assembly
     )
     {
-        foreach (
-            var type in assembly.GetTypes().Where(t => t is { IsClass: true, IsAbstract: false })
-        )
-        foreach (
-            var contract in type.GetInterfaces()
-                .Where(i =>
-                    i.IsGenericType && HandlerInterfaces.Contains(i.GetGenericTypeDefinition())
-                )
-        )
+        var handlers =
+            from type in assembly.GetTypes()
+            where type is { IsClass: true, IsAbstract: false }
+            from contract in type.GetInterfaces()
+            where
+                contract.IsGenericType
+                && HandlerInterfaces.Contains(contract.GetGenericTypeDefinition())
+            select (contract, type);
+        foreach (var (contract, type) in handlers)
             services.AddScoped(contract, type);
+
         return services;
     }
 }

@@ -36,7 +36,10 @@ public sealed class AccountEmailQueue(
                 ct
             )
         )
+        {
             throw AuthErrors.EmailCooldown();
+        }
+
         await tokens.InvalidateUnusedAsync(user.Id, purpose, now, ct);
         var raw = OpaqueTokens.NewSecret();
         var isVerify = purpose == VerificationPurpose.VerifyEmail;

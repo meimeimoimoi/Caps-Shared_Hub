@@ -35,7 +35,7 @@ public sealed class VerifyEmailCodeHandler(
             VerificationPurpose.VerifyEmailCode,
             ct
         );
-        if (code == null || code.IsExpired(now))
+        if (code?.IsExpired(now) != false)
             throw AuthErrors.CodeExpired();
         if (code.AttemptsExhausted(options.MaxCodeAttempts))
             throw AuthErrors.CodeLocked();
