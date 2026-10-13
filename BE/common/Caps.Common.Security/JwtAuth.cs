@@ -45,6 +45,7 @@ public sealed class HttpContextCurrentUser(IHttpContextAccessor accessor) : ICur
     public string? UserId => accessor.HttpContext?.User.FindFirstValue(JwtRegisteredClaimNames.Sub);
     public string? Email =>
         accessor.HttpContext?.User.FindFirstValue(JwtRegisteredClaimNames.Email);
+    public string? AccountStatus => accessor.HttpContext?.User.FindFirstValue("account_status");
     public bool IsAuthenticated => accessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
 }
 

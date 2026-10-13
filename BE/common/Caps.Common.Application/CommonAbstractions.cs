@@ -4,6 +4,9 @@ public interface ICurrentUser
 {
     string? UserId { get; }
     string? Email { get; }
+
+    /// <summary>Account status claim of the token (ACTIVE once the email is verified).</summary>
+    string? AccountStatus { get; }
     bool IsAuthenticated { get; }
 }
 
