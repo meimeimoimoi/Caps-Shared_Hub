@@ -75,7 +75,7 @@ Browser (FE :5173) → Gateway (:5190) → Auth (:5194) → Postgres (schema aut
 ```powershell
 cd BE
 Copy-Item docker\.env.example docker\.env   # lần đầu: đổi các mật khẩu trong docker/.env
-.\scripts\start-all.ps1
+.\scripts\start-all.ps1                     # Postgres, Redis, RabbitMQ, Mailpit, SeaweedFS + build
 .\scripts\setup-db-users.ps1               # lần đầu: role DB cho từng service + user-secrets
 ```
 

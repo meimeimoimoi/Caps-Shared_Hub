@@ -6,7 +6,7 @@ PowerShell helpers, run from `BE/`.
 |---|---|
 | `setup-db-users.ps1` | Creates one Postgres role per service (owner of its schemas only) and writes each connection string to the service's user-secrets. Run once per machine; run again to rotate passwords. `-Container caps_postgres` runs psql inside the compose container. |
 | `new-service.ps1 -Name <Name> -Port <port>` | Creates a layered service (`Caps.<Name>.Domain/Application/Infrastructure/Api`) from the standard skeleton and registers it in `Caps.sln`, the architecture tests and `setup-db-users.ps1`. |
-| `start-all.ps1` | Starts Postgres, Redis and RabbitMQ in Docker and builds the solution. Mailpit and SeaweedFS are not started: add them with `docker compose -f docker/docker-compose.yml up -d mailpit seaweedfs`. |
+| `start-all.ps1` | Starts the development infrastructure in Docker (Postgres, Redis, RabbitMQ, Mailpit, SeaweedFS) and builds the solution. |
 | `start-infra.ps1` / `stop-infra.ps1` | `docker compose up -d` / `down` for **everything** in `docker/docker-compose.yml`, including the auth, expert and gateway containers. |
 | `run-all-services.ps1` | Builds and starts every service locally on its standard port (`-CoreOnly`: the database services and the gateway). |
 | `stop-all-services.ps1` | Stops the service processes started locally. |

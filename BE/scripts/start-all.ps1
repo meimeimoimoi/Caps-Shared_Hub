@@ -1,11 +1,12 @@
-# Full-stack startup (infra + auth + gateway)
+# Development startup: infrastructure in Docker, then a build; run the services with dotnet run
 param([switch]$Build = $true)
 
 $ErrorActionPreference = 'Stop'
 $compose = Join-Path $PSScriptRoot '..\docker\docker-compose.yml'
 
-Write-Host '== Caps Shared Hub: starting infra (postgres/redis/rabbit) ==' -ForegroundColor Green
-docker compose -f $compose up -d postgres redis rabbitmq
+# Mailpit receives the emails and SeaweedFS stores expert evidence files; without them those flows fail
+Write-Host '== Caps Shared Hub: starting infra (postgres/redis/rabbitmq/mailpit/seaweedfs) ==' -ForegroundColor Green
+docker compose -f $compose up -d postgres redis rabbitmq mailpit seaweedfs
 
 Write-Host '== Building BE solution ==' -ForegroundColor Green
 dotnet build (Join-Path $PSScriptRoot '..\Caps.sln') --nologo -v q
