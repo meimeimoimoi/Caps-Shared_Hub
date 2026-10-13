@@ -74,12 +74,16 @@ Browser (FE :5173) → Gateway (:5190) → Auth (:5194) → Postgres (schema aut
 
 ```powershell
 cd BE
+Copy-Item docker\.env.example docker\.env   # lần đầu: đổi các mật khẩu trong docker/.env
 .\scripts\start-all.ps1
+.\scripts\setup-db-users.ps1               # lần đầu: role DB cho từng service + user-secrets
 ```
+
+`setup-db-users.ps1` dùng `psql` trên máy; nếu chỉ có Postgres trong Docker thì thêm `-Container caps_postgres -Database caps_db`.
 
 | Dịch vụ | Địa chỉ | Tài khoản |
 |---|---|---|
-| PostgreSQL | `localhost:5432` | `postgres` / `postgrespassword` |
+| PostgreSQL | `localhost:5432` | admin `postgres` / mật khẩu trong `docker/.env`; mỗi service dùng role `caps_<service>` riêng |
 | RabbitMQ UI | `http://localhost:15672` | `guest` / `guest` |
 | Redis | `localhost:6379` | — |
 

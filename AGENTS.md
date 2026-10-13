@@ -25,7 +25,8 @@ Tổng quan, cách chạy, route: xem [README.md](README.md). File này chỉ ch
 Hạ tầng (Postgres+pgvector, Redis, RabbitMQ) — PowerShell, chạy ở `BE/`:
 
 ```powershell
-.\scripts\start-all.ps1        # hoặc start-infra.ps1 / stop-infra.ps1
+.\scripts\start-all.ps1        # hoặc start-infra.ps1 / stop-infra.ps1 (cần docker/.env, chép từ docker/.env.example)
+.\scripts\setup-db-users.ps1  # một lần mỗi máy: tạo role DB cho từng service + ghi user-secrets
 ```
 
 Backend (chạy ở `BE/`):
@@ -88,10 +89,9 @@ Các điểm sau cố ý làm đơn giản và sẽ thay. Không dùng làm mẫ
 
 - JWT HS256 + key trong `appsettings.json` (sẽ chuyển RS256 + secret manager).
 - Thu hồi phiên (`AuthBoundaryMiddleware`) đọc thẳng DB của auth (sẽ chuyển sang Redis/event để service khác tự kiểm tra).
-- Nhiều service dùng chung user `postgres` (sẽ tách DB user riêng cho mỗi service, chỉ có quyền trên schema của mình).
 - Service `expert` tin token tới khi hết hạn (15 phút), chưa kiểm tra thu hồi phiên (sẽ làm cùng Redis/event).
 
-Đã xong: hồ sơ chuyên gia tách thành service `expert` (schema `expert`); không còn khóa ngoại chéo service, id của service khác (user, review case…) chỉ là cột thường, nên mỗi service migrate độc lập; DB dùng `dotnet ef migrations`; mật khẩu băm bằng `PasswordHasher` (PBKDF2) + lockout + refresh token xoay vòng.
+Đã xong: hồ sơ chuyên gia tách thành service `expert` (schema `expert`); không còn khóa ngoại chéo service, id của service khác (user, review case…) chỉ là cột thường, nên mỗi service migrate độc lập; mỗi service kết nối DB bằng role riêng (`caps_<service>`) chỉ có quyền trên schema của mình, mật khẩu nằm trong user-secrets / `docker/.env`, không nằm trong `appsettings`; DB dùng `dotnet ef migrations`; mật khẩu băm bằng `PasswordHasher` (PBKDF2) + lockout + refresh token xoay vòng.
 
 ## Git
 

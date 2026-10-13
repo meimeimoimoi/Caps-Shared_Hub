@@ -59,7 +59,8 @@ Gom nhóm các module dùng chung gọn gàng:
    .\scripts\start-infra.ps1
    ```
    * *RabbitMQ Management Dashboard*: [http://localhost:15672](http://localhost:15672) (User/Pass: `guest` / `guest`)
-   * *PostgreSQL Connection*: `localhost:5432` (User/Pass: `postgres` / `postgrespassword`)
+   * *PostgreSQL Connection*: `localhost:5432` (admin `postgres`, mật khẩu đặt trong `docker/.env`, chép từ `docker/.env.example`)
+   * Lần đầu chạy `.\scripts\setup-db-users.ps1` để tạo role riêng cho từng service (chỉ có quyền trên schema của mình) và ghi chuỗi kết nối vào user-secrets.
 
 3. **Biên dịch Dự án**:
    ```powershell

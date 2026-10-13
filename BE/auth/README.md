@@ -35,11 +35,13 @@ EF commands: `dotnet ef migrations add <Name> --project auth/Caps.Auth.Infrastru
 
 ## Local setup (PowerShell from BE)
 
-Use .NET SDK 8.0.421 (global.json), PostgreSQL and RabbitMQ. The Postgres connection string is not stored in appsettings; set it once per machine with User Secrets (stored outside the repo, loaded only in Development):
+Use .NET SDK 8.0.421 (global.json), PostgreSQL and RabbitMQ. The Postgres connection string is not stored in appsettings. Each service connects with its own PostgreSQL role, which owns only its schema. Create the roles and store every connection string in User Secrets once per machine (run again to rotate the passwords):
 
 ~~~powershell
-dotnet user-secrets set "ConnectionStrings:Postgres" "Host=localhost;Port=5432;Database=shared_hub_db;Username=postgres;Password=<your-local-password>" --project auth/Caps.Auth.Api
+.\scripts\setup-db-users.ps1                  # local PostgreSQL, asks for the admin password
 ~~~
+
+The auth service connects as `caps_auth` and owns the `identity` schema.
 
 Outside Development, supply ConnectionStrings__Postgres as an environment variable or from a secret store. Development applies migrations automatically; Production requires an explicit EF deployment step.
 

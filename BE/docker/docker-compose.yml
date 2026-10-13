@@ -9,11 +9,20 @@ services:
     environment:
       POSTGRES_DB: caps_db
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgrespassword
+      # Passwords come from docker/.env (copy docker/.env.example)
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set it in docker/.env}
+      # One role per service, created by postgres/init-service-roles.sh on first start
+      CAPS_AUTH_DB_PASSWORD: ${CAPS_AUTH_DB_PASSWORD:?set it in docker/.env}
+      CAPS_EXPERT_DB_PASSWORD: ${CAPS_EXPERT_DB_PASSWORD:?set it in docker/.env}
+      CAPS_BILLING_DB_PASSWORD: ${CAPS_BILLING_DB_PASSWORD:?set it in docker/.env}
+      CAPS_WORKFLOW_DB_PASSWORD: ${CAPS_WORKFLOW_DB_PASSWORD:?set it in docker/.env}
+      CAPS_INGESTION_DB_PASSWORD: ${CAPS_INGESTION_DB_PASSWORD:?set it in docker/.env}
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./postgres/init-service-roles.sh:/docker-entrypoint-initdb.d/10-service-roles.sh:ro
+      - ../scripts/db:/caps-db:ro
     networks:
       - caps_network
     healthcheck:
@@ -100,7 +109,7 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: Production
       ASPNETCORE_URLS: http://+:8080
-      ConnectionStrings__Postgres: Host=postgres;Port=5432;Database=caps_db;Username=postgres;Password=postgrespassword
+      ConnectionStrings__Postgres: Host=postgres;Port=5432;Database=caps_db;Username=caps_auth;Password=${CAPS_AUTH_DB_PASSWORD}
       ConnectionStrings__Redis: redis:6379
       ConnectionStrings__RabbitMq: amqp://guest:guest@rabbitmq:5672
       Jwt__Key: CHANGE_ME_dev_only_min_32_chars_1234567890
@@ -127,7 +136,7 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: Production
       ASPNETCORE_URLS: http://+:8080
-      ConnectionStrings__Postgres: Host=postgres;Port=5432;Database=caps_db;Username=postgres;Password=postgrespassword
+      ConnectionStrings__Postgres: Host=postgres;Port=5432;Database=caps_db;Username=caps_expert;Password=${CAPS_EXPERT_DB_PASSWORD}
       Jwt__Key: CHANGE_ME_dev_only_min_32_chars_1234567890
       # SeaweedFS dev keys (seaweedfs/s3.json); real deployments use a secret store
       Storage__ServiceUrl: http://seaweedfs:8333

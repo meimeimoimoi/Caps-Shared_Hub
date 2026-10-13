@@ -22,7 +22,7 @@ It does **not** own accounts or roles (identity service) or case handling (workf
 ## Run (PowerShell from BE)
 
 ~~~powershell
-dotnet user-secrets set "ConnectionStrings:Postgres" "Host=localhost;Port=5432;Database=shared_hub_db;Username=postgres;Password=<your-local-password>" --project expert/Caps.Expert.Api
+.\scripts\setup-db-users.ps1                  # once per machine: role caps_expert + user-secrets
 dotnet run --project expert/Caps.Expert.Api    # http://localhost:5198/healthz, Swagger at /swagger
 ~~~
 
