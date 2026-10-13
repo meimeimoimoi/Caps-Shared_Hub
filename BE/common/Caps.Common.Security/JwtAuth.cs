@@ -32,12 +32,6 @@ public sealed class HttpContextCurrentUser(IHttpContextAccessor accessor) : ICur
     public bool IsAuthenticated => accessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
 }
 
-/// <summary>Keys a host trusts without downloading them; auth registers the public half of its signing keys.</summary>
-public interface ILocalValidationKeys
-{
-    IEnumerable<SecurityKey> Keys { get; }
-}
-
 /// <summary>Registers RS256 token validation and the shared authorization policies.</summary>
 public static class JwtServiceCollectionExtensions
 {
