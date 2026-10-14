@@ -103,6 +103,98 @@ export function CancelDialog({
   )
 }
 
+/** Withdraw or cancel before the expert starts: nothing is charged, or the payment is refunded in full */
+export function EarlyCancelDialog({
+  stage,
+  onConfirm,
+  onClose,
+}: {
+  stage: 'PENDING_EXPERT_RESPONSE' | 'AWAITING_PAYMENT' | 'PAYMENT_CONFIRMED'
+  onConfirm: () => void
+  onClose: () => void
+}) {
+  const { t } = useTranslation('reviewCase')
+  return (
+    <Modal
+      title={t(`dialogs.earlyCancel.${stage}.title`)}
+      description={t(`dialogs.earlyCancel.${stage}.body`)}
+      onClose={onClose}
+      footer={
+        <>
+          <button type="button" onClick={onClose} className="btn btn-secondary">
+            {t('dialogs.earlyCancel.keep')}
+          </button>
+          <button
+            type="button"
+            onClick={onConfirm}
+            className="btn btn-press bg-danger text-paper hover:opacity-90"
+          >
+            {t(`dialogs.earlyCancel.${stage}.confirm`)}
+          </button>
+        </>
+      }
+    />
+  )
+}
+
+/** Challenge a USER_NON_RESPONSE termination; opens a separate dispute and the case stays TERMINATED */
+export function ChallengeDialog({
+  onSubmit,
+  onClose,
+}: {
+  onSubmit: (description: string) => void
+  onClose: () => void
+}) {
+  const { t } = useTranslation(['reviewCase', 'common'])
+  const id = useId()
+  const [text, setText] = useState('')
+  const [submitted, setSubmitted] = useState(false)
+  const textError = submitted && text.trim().length < 20
+
+  return (
+    <Modal
+      title={t('dialogs.challenge.title')}
+      description={t('dialogs.challenge.body')}
+      onClose={onClose}
+      onSubmit={() => {
+        setSubmitted(true)
+        if (text.trim().length >= 20) onSubmit(text.trim())
+      }}
+      footer={
+        <>
+          <button type="button" onClick={onClose} className="btn btn-secondary">
+            {t('common:actions.cancel')}
+          </button>
+          <button type="submit" className="btn btn-press btn-primary">
+            {t('dialogs.challenge.submit')}
+          </button>
+        </>
+      }
+    >
+      <FormField
+        label={t('dialogs.challenge.description')}
+        htmlFor={`${id}-desc`}
+        hint={t('dialogs.challenge.descriptionHint')}
+        hintId={`${id}-hint`}
+        error={textError ? t('dialogs.report.descriptionRequired') : undefined}
+        errorId={`${id}-error`}
+        className="mt-5 mb-0"
+      >
+        <textarea
+          id={`${id}-desc`}
+          rows={4}
+          maxLength={2000}
+          value={text}
+          aria-invalid={textError}
+          aria-describedby={textError ? `${id}-error` : `${id}-hint`}
+          onChange={(e) => setText(e.target.value)}
+          className={cn(fieldClass, 'resize-y')}
+        />
+      </FormField>
+    </Modal>
+  )
+}
+
 export function ReportDialog({
   onSubmit,
   onClose,

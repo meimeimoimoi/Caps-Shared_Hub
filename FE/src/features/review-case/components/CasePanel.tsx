@@ -13,24 +13,21 @@ import {
 import { FormField } from '@/components/ui/forms/form-field'
 import { DISPUTE_SLA_HOURS } from '@/features/disputes-escrow/constants'
 import { cn } from '@/lib/utils'
-import type { SettlementRule } from '../settlement'
 import type { ReviewCase, TaskCode } from '../types'
 import { Countdown, Deadline, FilePicker } from './CaseUi'
 import { fieldClass, useCaseFormat } from '../ui'
 
 const TASKS: TaskCode[] = ['T1', 'T2', 'T3', 'T4', 'T5', 'T6']
-const PAYMENT_HOLD_MS = 15 * 60_000
-
-type TerminationRule = Extract<
-  SettlementRule,
-  'USER_NON_RESPONSE' | 'USER_CANCELLED' | 'EXPERT_ABANDON' | 'SYSTEM_ERROR'
->
+// Payment window of the case; a single payOS link lasts 15 minutes and can be recreated
+const PAYMENT_WINDOW_MS = 24 * 3_600_000
 
 export interface PanelActions {
   pay: () => void
   answer: (text: string) => void
   expire: () => void
   requestCancel: () => void
+  requestEarlyCancel: () => void
+  requestChallenge: () => void
   rate: (stars: number, comment: string) => void
 }
 
@@ -95,6 +92,16 @@ export function CasePanel({
       {t('panel.IN_REVIEW.cancel')}
     </button>
   )
+  // Withdraw (before ACCEPT) or cancel (before START); the label depends on the stage
+  const earlyCancelButton = (label: string) => (
+    <button
+      type="button"
+      onClick={actions.requestEarlyCancel}
+      className="btn btn-ghost text-danger hover:text-danger -ml-4"
+    >
+      {label}
+    </button>
+  )
 
   switch (c.status) {
     case 'PENDING_EXPERT_RESPONSE':
@@ -105,10 +112,20 @@ export function CasePanel({
           icon={<Hourglass size={13} aria-hidden="true" />}
         >
           <Body>{t('panel.PENDING_EXPERT_RESPONSE.body')}</Body>
+          {c.due?.response && (
+            <Deadline
+              label={t('panel.PENDING_EXPERT_RESPONSE.due')}
+              dueAt={c.due.response}
+              onExpire={actions.expire}
+            />
+          )}
+          {earlyCancelButton(t('panel.PENDING_EXPERT_RESPONSE.cancel'))}
         </Frame>
       )
 
-    case 'EXPERT_DECLINED':
+    case 'DECLINED_BY_EXPERT':
+    case 'EXPERT_RESPONSE_TIMEOUT':
+    case 'WITHDRAWN':
     case 'CANCELLED_UNPAID': {
       const k = c.status
       return (
@@ -132,8 +149,8 @@ export function CasePanel({
                 {c.due?.payment && (
                   <Countdown
                     dueAt={c.due.payment}
-                    totalMs={PAYMENT_HOLD_MS}
-                    urgentMs={3 * 60_000}
+                    totalMs={PAYMENT_WINDOW_MS}
+                    urgentMs={2 * 3_600_000}
                     onExpire={actions.expire}
                   />
                 )}
@@ -166,6 +183,10 @@ export function CasePanel({
               {t('panel.AWAITING_PAYMENT.escrow')}
             </p>
           </div>
+          <p className="text-fg-muted text-sm">
+            {t('panel.AWAITING_PAYMENT.link')}
+          </p>
+          {earlyCancelButton(t('panel.AWAITING_PAYMENT.cancel'))}
         </Frame>
       )
 
@@ -184,18 +205,33 @@ export function CasePanel({
               onExpire={actions.expire}
             />
           )}
+          {earlyCancelButton(t('panel.PAYMENT_CONFIRMED.cancel'))}
         </Frame>
       )
 
     case 'IN_REVIEW': {
       const current = TASKS.find((k) => !c.tasks.includes(k) && k !== 'T4')
+      // After the delivery deadline the countdown switches to the grace period
+      const deliveryDue = c.due?.grace ?? c.due?.delivery
       return (
         <Frame who={who.expert} title={t('panel.IN_REVIEW.title')}>
           <Body>{t('panel.IN_REVIEW.body')}</Body>
-          {c.due?.delivery && (
+          {c.overdue && (
+            <p className="para-check text-warning flex items-start gap-2 text-sm">
+              <TriangleAlert
+                size={15}
+                aria-hidden="true"
+                className="mt-0.5 shrink-0"
+              />
+              {t('panel.IN_REVIEW.overdue')}
+            </p>
+          )}
+          {deliveryDue && (
             <Deadline
-              label={t('panel.IN_REVIEW.due')}
-              dueAt={c.due.delivery}
+              label={t(
+                c.overdue ? 'panel.IN_REVIEW.grace' : 'panel.IN_REVIEW.due'
+              )}
+              dueAt={deliveryDue}
               onExpire={actions.expire}
             />
           )}
@@ -357,7 +393,9 @@ export function CasePanel({
             <dl className="grid gap-x-8 gap-y-4 text-sm sm:grid-cols-[10rem_minmax(0,1fr)]">
               <dt className="text-fg-muted">{t('panel.DISPUTED.issue')}</dt>
               <dd className="text-fg-strong font-semibold">
-                {t(`dialogs.report.issues.${c.dispute.issue}`)}
+                {c.dispute.issue
+                  ? t(`dialogs.report.issues.${c.dispute.issue}`)
+                  : t('panel.TERMINATED.challengeIssue')}
               </dd>
               <dt className="text-fg-muted">
                 {t('panel.DISPUTED.description')}
@@ -399,17 +437,26 @@ export function CasePanel({
       )
     }
 
-    case 'CANCELLED':
+    case 'CANCELLED': {
+      // No settlement means the client cancelled before paying
+      const rule = c.settlement?.rule
+      const k =
+        rule === 'EXPERT_START_TIMEOUT' ||
+        rule === 'USER_CANCELLED_BEFORE_START'
+          ? rule
+          : 'UNPAID'
       return (
-        <Frame who={who.closed} title={t('panel.CANCELLED.title')}>
+        <Frame who={who.closed} title={t(`panel.CANCELLED.${k}.title`)}>
           <Body className="verdict verdict-refund">
-            {t('panel.CANCELLED.body')}
+            {t(`panel.CANCELLED.${k}.body`)}
           </Body>
         </Frame>
       )
+    }
 
     case 'TERMINATED': {
-      const rule = c.settlement?.rule as TerminationRule
+      const rule = c.termination ?? 'SYSTEM_ERROR'
+      const challenge = c.dispute?.kind === 'USER_NON_RESPONSE_CHALLENGE'
       return (
         <Frame who={who.closed} title={t('panel.TERMINATED.title')}>
           <Body
@@ -422,6 +469,47 @@ export function CasePanel({
           >
             {t(`panel.TERMINATED.${rule}`)}
           </Body>
+          {rule === 'USER_NON_RESPONSE' && !c.settlement && !challenge && (
+            <>
+              <Body>{t('panel.TERMINATED.challengeBody')}</Body>
+              {c.due?.challenge && (
+                <Deadline
+                  label={t('panel.TERMINATED.challengeDue')}
+                  dueAt={c.due.challenge}
+                  onExpire={actions.expire}
+                />
+              )}
+              <button
+                type="button"
+                onClick={actions.requestChallenge}
+                className="btn btn-press btn-secondary"
+              >
+                {t('panel.TERMINATED.challenge')}
+              </button>
+            </>
+          )}
+          {challenge && c.dispute && !c.dispute.decision && (
+            <>
+              <Body className="verdict verdict-waiting">
+                {t('panel.TERMINATED.challengeOpen')}
+              </Body>
+              <dl className="grid gap-x-8 gap-y-4 text-sm sm:grid-cols-[10rem_minmax(0,1fr)]">
+                <dt className="text-fg-muted">
+                  {t('panel.DISPUTED.description')}
+                </dt>
+                <dd className="text-fg-strong max-w-[65ch]">
+                  {c.dispute.description}
+                </dd>
+                <dt className="text-fg-muted">{t('panel.DISPUTED.opened')}</dt>
+                <dd className="num text-fg-strong">
+                  {f.at(c.dispute.openedAt)}
+                </dd>
+              </dl>
+              <p className="text-fg-muted max-w-[65ch] text-sm">
+                {t('panel.DISPUTED.sla', { hours: DISPUTE_SLA_HOURS })}
+              </p>
+            </>
+          )}
         </Frame>
       )
     }

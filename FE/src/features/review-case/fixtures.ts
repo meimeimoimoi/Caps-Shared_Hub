@@ -6,12 +6,16 @@ import type { Actor, ReviewCase, TimelineEvent } from './types'
 
 export const SCENARIOS = [
   'PENDING_EXPERT_RESPONSE',
-  'EXPERT_DECLINED',
+  'DECLINED_BY_EXPERT',
+  'EXPERT_RESPONSE_TIMEOUT',
+  'WITHDRAWN',
   'AWAITING_PAYMENT',
   'CANCELLED_UNPAID',
   'PAYMENT_CONFIRMED',
   'CANCELLED',
+  'USER_CANCELLED_BEFORE_START',
   'IN_REVIEW',
+  'OVERDUE',
   'AWAITING_USER_INFORMATION',
   'VERIFIED',
   'CANNOT_VERIFY',
@@ -21,6 +25,7 @@ export const SCENARIOS = [
   'RESOLVED',
   'USER_CANCELLED',
   'USER_NON_RESPONSE',
+  'NON_RESPONSE_CHALLENGED',
   'EXPERT_ABANDON',
   'SYSTEM_ERROR',
 ] as const
@@ -32,12 +37,16 @@ export const isScenario = (v: string | null): v is Scenario =>
 /** Số giờ đã trôi qua kể từ lúc gửi yêu cầu, theo từng kịch bản */
 const ELAPSED: Record<Scenario, number> = {
   PENDING_EXPERT_RESPONSE: 0.8,
-  EXPERT_DECLINED: 3,
-  AWAITING_PAYMENT: 1.556,
-  CANCELLED_UNPAID: 3,
+  DECLINED_BY_EXPERT: 3,
+  EXPERT_RESPONSE_TIMEOUT: 26,
+  WITHDRAWN: 1,
+  AWAITING_PAYMENT: 3,
+  CANCELLED_UNPAID: 27,
   PAYMENT_CONFIRMED: 2.5,
   CANCELLED: 30,
+  USER_CANCELLED_BEFORE_START: 3,
   IN_REVIEW: 20,
+  OVERDUE: 140,
   AWAITING_USER_INFORMATION: 34,
   VERIFIED: 75,
   CANNOT_VERIFY: 75,
@@ -47,7 +56,8 @@ const ELAPSED: Record<Scenario, number> = {
   RESOLVED: 150,
   USER_CANCELLED: 30,
   USER_NON_RESPONSE: 110,
-  EXPERT_ABANDON: 130,
+  NON_RESPONSE_CHALLENGED: 115,
+  EXPERT_ABANDON: 160,
   SYSTEM_ERROR: 24,
 }
 
@@ -160,19 +170,17 @@ export function caseFor(s: Scenario, now = Date.now()): ReviewCase {
     c.settlement = { rule, settledAt: t(h + 0.1), ref: 'STL-2026-0418-01' }
     return c
   }
-
-  log(0, 'USER', 'requested')
-  if (s === 'PENDING_EXPERT_RESPONSE') return c
-  if (s === 'EXPERT_DECLINED') {
-    log(1.5, 'EXPERT', 'declined')
-    c.status = 'EXPERT_DECLINED'
+  const end = (status: ReviewCase['status']) => {
+    c.status = status
+    c.due = undefined
     return c
   }
 
-  log(1.5, 'EXPERT', 'accepted')
+  // The review package is locked when the request is sent (BR-M05)
+  log(0, 'USER', 'requested')
   c.package = {
     version: 'RP-0418 · v3',
-    lockedAt: t(1.5),
+    lockedAt: t(0),
     aiDraft: 'AI Draft v4',
     snapshot: 'Snapshot đầu vào v2',
     template: 'Mẫu 03/TNDN · TT 80/2021 · v1.3',
@@ -183,14 +191,29 @@ export function caseFor(s: Scenario, now = Date.now()): ReviewCase {
       'Hợp đồng vay liên kết HĐ-07.pdf',
     ],
   }
+  c.due = { response: t(24) }
+  if (s === 'PENDING_EXPERT_RESPONSE') return c
+  if (s === 'WITHDRAWN') {
+    log(0.5, 'USER', 'withdrawn')
+    return end('WITHDRAWN')
+  }
+  if (s === 'DECLINED_BY_EXPERT') {
+    log(1.5, 'EXPERT', 'declined')
+    return end('DECLINED_BY_EXPERT')
+  }
+  if (s === 'EXPERT_RESPONSE_TIMEOUT') {
+    log(24, 'SYSTEM', 'responseTimeout')
+    return end('EXPERT_RESPONSE_TIMEOUT')
+  }
+
+  // Payment window is 24 hours from ACCEPT; each payOS link lasts 15 minutes
+  log(1.5, 'EXPERT', 'accepted')
   c.status = 'AWAITING_PAYMENT'
-  c.due = { payment: t(1.75) }
+  c.due = { payment: t(25.5) }
   if (s === 'AWAITING_PAYMENT') return c
   if (s === 'CANCELLED_UNPAID') {
-    log(1.75, 'SYSTEM', 'paymentExpired')
-    c.status = 'CANCELLED_UNPAID'
-    c.due = undefined
-    return c
+    log(25.5, 'SYSTEM', 'paymentExpired')
+    return end('CANCELLED_UNPAID')
   }
 
   log(1.7, 'USER', 'paid')
@@ -201,6 +224,10 @@ export function caseFor(s: Scenario, now = Date.now()): ReviewCase {
     log(25.7, 'SYSTEM', 'startTimeout')
     return close(25.7, 'CANCELLED', 'EXPERT_START_TIMEOUT')
   }
+  if (s === 'USER_CANCELLED_BEFORE_START') {
+    log(2.2, 'USER', 'cancelled')
+    return close(2.2, 'CANCELLED', 'USER_CANCELLED_BEFORE_START')
+  }
 
   log(4, 'EXPERT', 'started')
   c.status = 'IN_REVIEW'
@@ -209,10 +236,12 @@ export function caseFor(s: Scenario, now = Date.now()): ReviewCase {
   if (s === 'IN_REVIEW') return c
   if (s === 'SYSTEM_ERROR') {
     log(18, 'SYSTEM', 'terminated')
+    c.termination = 'SYSTEM_ERROR'
     return close(18, 'TERMINATED', 'SYSTEM_ERROR')
   }
   if (s === 'USER_CANCELLED') {
     log(22, 'USER', 'terminated')
+    c.termination = 'USER_CANCELLED'
     return close(22, 'TERMINATED', 'USER_CANCELLED')
   }
 
@@ -230,20 +259,40 @@ export function caseFor(s: Scenario, now = Date.now()): ReviewCase {
   c.status = 'AWAITING_USER_INFORMATION'
   c.due = { info: t(102), delivery: t(124) }
   if (s === 'AWAITING_USER_INFORMATION') return c
-  if (s === 'USER_NON_RESPONSE') {
+  // USER_NON_RESPONSE holds the funds for a 72-hour dispute window before settling
+  if (s === 'USER_NON_RESPONSE' || s === 'NON_RESPONSE_CHALLENGED') {
     log(102, 'SYSTEM', 'terminated')
-    return close(102, 'TERMINATED', 'USER_NON_RESPONSE')
+    c.status = 'TERMINATED'
+    c.termination = 'USER_NON_RESPONSE'
+    c.due = { challenge: t(174) }
+    if (s === 'USER_NON_RESPONSE') return c
+    log(108, 'USER', 'challenged')
+    c.dispute = {
+      kind: 'USER_NON_RESPONSE_CHALLENGE',
+      description:
+        'Tôi đã tải bảng EBITDA lên mục Tài liệu đính kèm lúc 21:40 ngày thứ ba, trước hạn phản hồi, nhưng hệ thống vẫn chấm dứt hồ sơ.',
+      openedAt: t(108),
+    }
+    c.due = undefined
+    return c
   }
 
   log(40, 'USER', 'infoAnswered')
   c.infoRequest.response =
     'Đã tải lên bảng EBITDA 2025 (đối chiếu BCTC trang 14-17) và Phụ lục I có chữ ký giám đốc. Lưu ý thêm khoản trích trước chi phí bảo hành 186.200.000đ.'
   c.status = 'IN_REVIEW'
-  c.due = { delivery: t(124) }
+  // The deadline moves by the actual 10-hour pause only (BR-M31)
+  c.due = { delivery: t(134) }
   c.tasks = ['T1', 'T2', 'T3', 'T4', 'T5']
-  if (s === 'EXPERT_ABANDON') {
-    log(124, 'SYSTEM', 'terminated')
-    return close(124, 'TERMINATED', 'EXPERT_ABANDON')
+  // Past the delivery deadline the case is only flagged OVERDUE; EXPERT_ABANDON follows the 24-hour grace period
+  if (s === 'OVERDUE' || s === 'EXPERT_ABANDON') {
+    log(134, 'SYSTEM', 'overdue')
+    c.overdue = true
+    c.due = { grace: t(158) }
+    if (s === 'OVERDUE') return c
+    log(158, 'SYSTEM', 'terminated')
+    c.termination = 'EXPERT_ABANDON'
+    return close(158, 'TERMINATED', 'EXPERT_ABANDON')
   }
 
   log(70, 'EXPERT', 'delivered')
@@ -303,6 +352,7 @@ export function caseFor(s: Scenario, now = Date.now()): ReviewCase {
 
   log(85, 'USER', 'disputed')
   c.dispute = {
+    kind: 'DELIVERY_ISSUE',
     issue: 'DELIVERABLE_INCOMPLETE',
     description:
       'Kết luận không nêu cách xử lý khoản trích trước chi phí bảo hành mà tôi đã đề cập trong phần phản hồi bổ sung.',

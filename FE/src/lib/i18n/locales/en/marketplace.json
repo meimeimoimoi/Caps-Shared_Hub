@@ -137,7 +137,7 @@
       "ctaUnavailable": "Expert is not taking requests",
       "steps": "After you send",
       "step1": "The expert confirms the work",
-      "step2": "You place 100% of the fee in escrow within 15 minutes",
+      "step2": "You place 100% of the fee in escrow within 24 hours after the expert accepts",
       "step3": "The expert starts within 24 hours and delivers on time",
       "step4": "You accept within 72 hours before the money is released",
       "ctaSignIn": "Sign in to send a request"

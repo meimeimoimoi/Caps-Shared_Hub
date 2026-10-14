@@ -6,12 +6,16 @@
     "disclosure": "Demo · Sample data. Actions only change state in this browser and reset when you switch scenarios.",
     "scenarios": {
       "PENDING_EXPERT_RESPONSE": "1 · Awaiting expert",
-      "EXPERT_DECLINED": "1b · Expert declined",
-      "AWAITING_PAYMENT": "2 · Awaiting payment (15 min)",
+      "DECLINED_BY_EXPERT": "1b · Expert declined",
+      "EXPERT_RESPONSE_TIMEOUT": "1c · Expert did not respond",
+      "WITHDRAWN": "1d · You withdrew",
+      "AWAITING_PAYMENT": "2 · Awaiting payment (24 h)",
       "CANCELLED_UNPAID": "2b · Cancelled, unpaid",
       "PAYMENT_CONFIRMED": "3 · Paid, awaiting start",
       "CANCELLED": "3b · Expert did not start",
+      "USER_CANCELLED_BEFORE_START": "3c · You cancelled before start",
       "IN_REVIEW": "3 · In review",
+      "OVERDUE": "3 · Delivery overdue · 24 h grace",
       "AWAITING_USER_INFORMATION": "4 · Awaiting your information",
       "VERIFIED": "5 · Delivered · VERIFIED",
       "CANNOT_VERIFY": "5 · Delivered · CANNOT_VERIFY",
@@ -21,17 +25,20 @@
       "RESOLVED": "7 · Dispute resolved",
       "USER_CANCELLED": "4 · Terminated · you cancelled",
       "USER_NON_RESPONSE": "4 · Terminated · no response",
+      "NON_RESPONSE_CHALLENGED": "4 · Terminated · challenged",
       "EXPERT_ABANDON": "4 · Terminated · expert abandoned",
       "SYSTEM_ERROR": "4 · Terminated · system error"
     }
   },
   "status": {
     "PENDING_EXPERT_RESPONSE": "Awaiting expert",
-    "EXPERT_DECLINED": "Expert declined",
+    "DECLINED_BY_EXPERT": "Expert declined",
+    "EXPERT_RESPONSE_TIMEOUT": "Expert did not respond",
+    "WITHDRAWN": "Withdrawn",
     "AWAITING_PAYMENT": "Awaiting payment",
     "CANCELLED_UNPAID": "Cancelled · unpaid",
     "PAYMENT_CONFIRMED": "Awaiting review start",
-    "CANCELLED": "Cancelled · refunded",
+    "CANCELLED": "Cancelled",
     "IN_REVIEW": "In review",
     "AWAITING_USER_INFORMATION": "Awaiting your information",
     "AWAITING_ACCEPTANCE": "Awaiting acceptance",
@@ -70,40 +77,67 @@
   "panel": {
     "PENDING_EXPERT_RESPONSE": {
       "title": "Waiting for {{name}} to accept",
-      "body": "The expert is reviewing the service scope, review package and timeline. You don't pay anything yet. Once the expert accepts, you have 15 minutes to pay and hold the slot."
+      "body": "The expert is reviewing the service scope, review package and timeline. You don't pay anything yet. Once the expert accepts, you have 24 hours to pay and hold the slot.",
+      "due": "Expert response deadline",
+      "cancel": "Withdraw request"
     },
-    "EXPERT_DECLINED": {
+    "DECLINED_BY_EXPERT": {
       "title": "{{name}} declined the request",
-      "body": "The slot has been released and you were not charged. You can send this file to another expert on the marketplace.",
+      "body": "You haven't paid, so you were not charged. You can send this file to another expert on the marketplace.",
       "cta": "Choose another expert"
+    },
+    "EXPERT_RESPONSE_TIMEOUT": {
+      "title": "{{name}} did not respond within 24 hours",
+      "body": "The request closed automatically and you were not charged. You can send this file to another expert on the marketplace.",
+      "cta": "Choose another expert"
+    },
+    "WITHDRAWN": {
+      "title": "You withdrew the request",
+      "body": "The request closed before the expert accepted, so you were not charged.",
+      "cta": "Find an expert"
     },
     "AWAITING_PAYMENT": {
       "title": "Pay to hold your review slot",
-      "body": "{{name}} accepted the case. The slot is temporarily locked for you; if time runs out, the request is cancelled and the slot released.",
-      "timer": "Slot hold",
+      "body": "{{name}} accepted the case. The slot is locked for you; if you don't pay within 24 hours, the request is cancelled and the slot released.",
+      "timer": "Payment deadline",
       "amount": "Amount due",
       "method": "Bank transfer via PayOS",
       "cta": "Pay {{amount}}",
-      "escrow": "Shared Hub holds your payment until you accept the result."
+      "escrow": "Shared Hub holds your payment until you accept the result.",
+      "link": "Each PayOS payment link is valid for 15 minutes. If a link expires, create a new one while the payment deadline is still open.",
+      "cancel": "Cancel request"
     },
     "CANCELLED_UNPAID": {
       "title": "Request cancelled: payment not received",
-      "body": "The 15-minute hold expired. The expert's slot has been released and you were not charged.",
+      "body": "The 24-hour payment window ended. The expert's slot has been released and you were not charged.",
       "cta": "Send the request again"
     },
     "PAYMENT_CONFIRMED": {
       "title": "Payment held, waiting for the expert to start",
       "body": "The expert must confirm the review start before the deadline. If they don't, the case is cancelled and you get a 100% refund.",
-      "due": "Start deadline"
+      "due": "Start deadline",
+      "cancel": "Cancel for a 100% refund"
     },
     "CANCELLED": {
-      "title": "Cancelled · expert did not start on time",
-      "body": "Your payment is refunded in full under the refund policy."
+      "UNPAID": {
+        "title": "You cancelled the request",
+        "body": "You cancelled before paying, so you were not charged. The expert's slot has been released."
+      },
+      "USER_CANCELLED_BEFORE_START": {
+        "title": "You cancelled before the expert started",
+        "body": "Your payment is refunded in full."
+      },
+      "EXPERT_START_TIMEOUT": {
+        "title": "Cancelled · expert did not start on time",
+        "body": "Your payment is refunded in full under the refund policy."
+      }
     },
     "IN_REVIEW": {
       "title": "The expert is reviewing your file",
       "body": "You'll be notified if the expert needs more information and when the result is delivered.",
+      "overdue": "The expert missed the delivery deadline. The case gets a 24-hour grace period; if nothing is delivered by then, the case is terminated and you get a 100% refund.",
       "due": "Delivery deadline",
+      "grace": "Grace period ends",
       "progress": "Review progress",
       "cancel": "Request cancellation"
     },
@@ -112,7 +146,7 @@
       "from": "Request from {{name}} · {{date}}",
       "items": "Please provide",
       "due": "Response deadline",
-      "warning": "If you don't respond within 72 hours, the case is terminated and the expert still receives 80% of the fee.",
+      "warning": "If you don't respond within 72 hours, the case is terminated and the expert still receives 80% of the fee. If you did respond on time, you then have 72 hours to challenge the decision.",
       "response": "Your response",
       "responseHint": "Answer each item the expert asked for. Up to 2,000 characters.",
       "files": "Attachments",
@@ -155,7 +189,12 @@
       "USER_NON_RESPONSE": "You did not respond to the information request within 72 hours.",
       "USER_CANCELLED": "You cancelled after the expert started the review.",
       "EXPERT_ABANDON": "The expert did not deliver within the service deadline.",
-      "SYSTEM_ERROR": "A system error prevented the case from continuing."
+      "SYSTEM_ERROR": "A system error prevented the case from continuing.",
+      "challengeBody": "If you responded on time or the information request was not valid, you can challenge this decision. The payment stays on hold until the challenge window ends or a decision is made.",
+      "challengeDue": "Challenge deadline",
+      "challenge": "Challenge the decision",
+      "challengeOpen": "Your challenge is under review. The case stays terminated; the payment stays on hold until a decision is made.",
+      "challengeIssue": "Challenge of a no-response termination"
     }
   },
   "tasks": {
@@ -203,6 +242,7 @@
       "USER_NON_RESPONSE": "No response to information request",
       "USER_CANCELLED": "Cancelled by you after start",
       "EXPERT_START_TIMEOUT": "Expert did not start on time",
+      "USER_CANCELLED_BEFORE_START": "You cancelled before the start",
       "EXPERT_ABANDON": "Expert abandoned",
       "SYSTEM_ERROR": "System error",
       "RESOLVE_REFUND_USER": "Refund to you",
@@ -213,7 +253,7 @@
   "package": {
     "title": "Review package",
     "locked": "Locked {{date}}",
-    "pending": "The review package is locked when the expert accepts.",
+    "pending": "The review package is locked when you send the request.",
     "aiDraft": "AI draft",
     "snapshot": "Input snapshot",
     "template": "Template",
@@ -237,21 +277,27 @@
       "ADMIN": "Admin"
     },
     "events": {
-      "requested": "Sent review request",
+      "requested": "Review requested · package locked",
+      "withdrawn": "Request withdrawn",
       "declined": "Declined the request",
-      "accepted": "Accepted · package locked",
+      "responseTimeout": "Expert did not respond within 24 hours",
+      "accepted": "Request accepted · slot locked",
       "paymentExpired": "Payment expired · slot released",
       "paid": "Payment received · held",
+      "cancelled": "Request cancelled",
       "startTimeout": "Expert did not start on time",
       "started": "Started the review",
       "infoRequested": "Requested more information",
       "infoAnswered": "Answered the information request",
+      "overdue": "Delivery overdue · grace period started",
       "delivered": "Delivered the result",
       "userAccepted": "Accepted the result",
       "autoConfirmed": "Auto-confirmed completion",
       "disputed": "Reported an issue",
+      "challenged": "Termination challenged",
       "resolved": "Decided the dispute",
-      "terminated": "Terminated the case"
+      "terminated": "Terminated the case",
+      "settled": "Challenge window ended · settled"
     }
   },
   "dialogs": {
@@ -265,6 +311,24 @@
       "body": "The expert has already started, so the case is settled under the cancellation policy:",
       "confirm": "Confirm cancellation",
       "keep": "Continue review"
+    },
+    "earlyCancel": {
+      "keep": "Keep request",
+      "PENDING_EXPERT_RESPONSE": {
+        "title": "Withdraw the review request?",
+        "body": "The expert hasn't accepted yet, so you won't be charged. To get a review later, send a new request.",
+        "confirm": "Withdraw request"
+      },
+      "AWAITING_PAYMENT": {
+        "title": "Cancel the review request?",
+        "body": "You haven't paid, so you won't be charged. The expert's slot will be released.",
+        "confirm": "Cancel request"
+      },
+      "PAYMENT_CONFIRMED": {
+        "title": "Cancel before the expert starts?",
+        "body": "The expert hasn't started, so you get a 100% refund of your payment.",
+        "confirm": "Cancel and refund"
+      }
     },
     "report": {
       "title": "Report an issue with the result",
@@ -282,6 +346,13 @@
       "issueRequired": "Choose an issue type.",
       "descriptionRequired": "Write at least 20 characters so the Dispute Admin has enough to review.",
       "submit": "Submit complaint"
+    },
+    "challenge": {
+      "title": "Challenge the termination",
+      "body": "Your challenge is handled as a separate dispute. The case stays terminated; the payment stays on hold until a decision is made.",
+      "description": "Reason for the challenge",
+      "descriptionHint": "State when you responded or why the information request was not valid, with evidence if you have it.",
+      "submit": "Send challenge"
     }
   },
   "toast": {
@@ -290,7 +361,10 @@
     "accepted": "Result accepted. Case completed.",
     "disputed": "Complaint submitted. The payment stays on hold.",
     "cancelled": "Case cancelled and settled under the cancellation policy.",
-    "expired": "The slot hold expired. The request was cancelled.",
+    "withdrawn": "Request withdrawn. You were not charged.",
+    "cancelledEarly": "Request cancelled.",
+    "challenged": "Challenge sent. The payment stays on hold.",
+    "expired": "Payment deadline passed. The request was cancelled.",
     "rated": "Rating submitted. Thank you."
   },
   "notFound": {
@@ -310,7 +384,7 @@
     "scopeHint": "Optional. Point out what you want the expert to focus on, up to 1,000 characters.",
     "files": "Additional documents",
     "filesHint": "Optional. PDF, Excel or images, up to 20 MB each.",
-    "consent": "I understand: once the expert accepts, I have 15 minutes to pay; the payment is held until I accept the result; the fee pays for the review work and does not depend on a VERIFIED outcome.",
+    "consent": "I understand: once the expert accepts, I have 24 hours to pay; the payment is held until I accept the result; the fee pays for the review work and does not depend on a VERIFIED result.",
     "consentRequired": "Confirm the terms to send the request.",
     "submit": "Send review request",
     "summary": "Request summary",
@@ -318,7 +392,7 @@
     "nextTitle": "What happens next",
     "steps": {
       "s1": "The expert reviews the package and accepts or declines.",
-      "s2": "You have 15 minutes to pay and hold the slot.",
+      "s2": "You have 24 hours to pay and hold the slot; each PayOS link is valid for 15 minutes.",
       "s3": "The expert reviews and delivers; you have 72 hours to accept."
     },
     "serviceMissing": "This service is no longer open for booking. Choose again on the expert's profile.",

@@ -37,19 +37,25 @@ export const CLOSED_STATUSES: CaseStatus[] = [
   'TERMINATED',
   'CANCELLED',
   'CANCELLED_UNPAID',
-  'EXPERT_DECLINED',
+  'DECLINED_BY_EXPERT',
+  'EXPERT_RESPONSE_TIMEOUT',
+  'WITHDRAWN',
 ]
+// CANCELLED without a settlement means the client cancelled before paying
 const UNPAID: CaseStatus[] = [
   'PENDING_EXPERT_RESPONSE',
-  'EXPERT_DECLINED',
+  'DECLINED_BY_EXPERT',
+  'EXPERT_RESPONSE_TIMEOUT',
+  'WITHDRAWN',
   'AWAITING_PAYMENT',
   'CANCELLED_UNPAID',
+  'CANCELLED',
 ]
 
 export const fundsOf = (c: ReviewCase) =>
   c.settlement
     ? 'settled'
-    : c.status === 'DISPUTED'
+    : c.dispute
       ? 'locked'
       : UNPAID.includes(c.status)
         ? 'none'

@@ -5,7 +5,13 @@ export type CaseStatus = keyof typeof CASE_STATUS
 export type TaskCode = 'T1' | 'T2' | 'T3' | 'T4' | 'T5' | 'T6'
 export type Actor = 'USER' | 'EXPERT' | 'SYSTEM' | 'ADMIN'
 
-/** Gói hồ sơ khóa tại thời điểm Expert ACCEPT; version mới của User không thay thế. */
+/** Reason a TERMINATED case stopped; kept apart from the settlement (BR-M12). */
+export type TerminationReason = Extract<
+  SettlementRule,
+  'USER_NON_RESPONSE' | 'USER_CANCELLED' | 'EXPERT_ABANDON' | 'SYSTEM_ERROR'
+>
+
+/** Review package locked when the request is sent (BR-M05); newer User versions do not replace it. */
 export interface ReviewPackage {
   version: string
   lockedAt: string
@@ -37,6 +43,9 @@ export type ReviewResult =
       deliveredAt: string
     }
 
+/** DELIVERY_ISSUE moves the case to DISPUTED; a USER_NON_RESPONSE challenge leaves it TERMINATED. */
+export type DisputeKind = 'DELIVERY_ISSUE' | 'USER_NON_RESPONSE_CHALLENGE'
+
 export interface ReviewCase {
   id: string
   title: string
@@ -46,15 +55,22 @@ export interface ReviewCase {
   slaDays: number
   amount: number
   requestedAt: string
-  /** Có sau khi Expert ACCEPT */
   package?: ReviewPackage
   due?: {
+    response?: string
     payment?: string
     start?: string
     delivery?: string
+    /** Grace period after the delivery deadline, before EXPERT_ABANDON */
+    grace?: string
     info?: string
     acceptance?: string
+    /** Window to challenge a USER_NON_RESPONSE termination */
+    challenge?: string
   }
+  /** Flag on an IN_REVIEW case past its delivery deadline; not a status */
+  overdue?: boolean
+  termination?: TerminationReason
   tasks: TaskCode[] // các nhiệm vụ Expert đã hoàn thành
   infoRequest?: {
     message: string
@@ -64,7 +80,8 @@ export interface ReviewCase {
   }
   result?: ReviewResult
   dispute?: {
-    issue: IssueCode
+    kind: DisputeKind
+    issue?: IssueCode
     description: string
     openedAt: string
     decision?: {
@@ -81,20 +98,26 @@ export interface ReviewCase {
 
 export type TimelineEvent =
   | 'requested'
+  | 'withdrawn'
   | 'declined'
+  | 'responseTimeout'
   | 'accepted'
   | 'paymentExpired'
   | 'paid'
+  | 'cancelled'
   | 'startTimeout'
   | 'started'
   | 'infoRequested'
   | 'infoAnswered'
+  | 'overdue'
   | 'delivered'
   | 'userAccepted'
   | 'autoConfirmed'
   | 'disputed'
+  | 'challenged'
   | 'resolved'
   | 'terminated'
+  | 'settled'
 
 export type IssueCode =
   | 'DELIVERABLE_INCOMPLETE'

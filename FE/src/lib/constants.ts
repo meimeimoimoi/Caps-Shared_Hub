@@ -44,14 +44,16 @@ export const DOCUMENT_STATUS = {
   SUPERSEDED: { label: 'Đã thay thế', tone: 'neutral' },
 } as const satisfies Record<string, StatusMeta>
 
-/* Flow 5 · Hồ sơ rà soát (case) */
+/* Flow 5 · Review case. Names follow the state model in business tab 04. */
 export const CASE_STATUS = {
   PENDING_EXPERT_RESPONSE: { label: 'Chờ chuyên gia nhận', tone: 'neutral' },
-  EXPERT_DECLINED: { label: 'Chuyên gia từ chối', tone: 'plain' },
+  DECLINED_BY_EXPERT: { label: 'Chuyên gia từ chối', tone: 'plain' },
+  EXPERT_RESPONSE_TIMEOUT: { label: 'Chuyên gia không phản hồi', tone: 'plain' },
+  WITHDRAWN: { label: 'Đã rút yêu cầu', tone: 'plain' },
   AWAITING_PAYMENT: { label: 'Chờ thanh toán', tone: 'warning' },
   CANCELLED_UNPAID: { label: 'Đã hủy · chưa thanh toán', tone: 'plain' },
   PAYMENT_CONFIRMED: { label: 'Chờ bắt đầu rà soát', tone: 'neutral' },
-  CANCELLED: { label: 'Đã hủy · hoàn tiền', tone: 'plain' },
+  CANCELLED: { label: 'Đã hủy', tone: 'plain' },
   IN_REVIEW: { label: 'Đang rà soát', tone: 'accent' },
   AWAITING_USER_INFORMATION: { label: 'Chờ bạn bổ sung', tone: 'warning' },
   AWAITING_ACCEPTANCE: { label: 'Chờ nghiệm thu', tone: 'warning' },
@@ -91,7 +93,7 @@ export const TRACE_ANSWER = ['Kiểm tra phạm vi', 'Tìm văn bản pháp lý'
 
 /* Ánh xạ trạng thái case → bước hiện tại trên rail Client */
 export const CASE_RAIL_STEP: Record<keyof typeof CASE_STATUS, number> = {
-  PENDING_EXPERT_RESPONSE: 0, EXPERT_DECLINED: 0,
+  PENDING_EXPERT_RESPONSE: 0, DECLINED_BY_EXPERT: 0, EXPERT_RESPONSE_TIMEOUT: 0, WITHDRAWN: 0,
   AWAITING_PAYMENT: 1, CANCELLED_UNPAID: 1,
   PAYMENT_CONFIRMED: 2, CANCELLED: 2,
   IN_REVIEW: 3, AWAITING_USER_INFORMATION: 3, TERMINATED: 3,

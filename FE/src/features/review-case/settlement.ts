@@ -8,6 +8,8 @@ export const SETTLEMENT_POLICY = {
   USER_NON_RESPONSE: { type: 'TERMINATION', split: [0, 80, 20] },
   USER_CANCELLED: { type: 'TERMINATION', split: [50, 40, 10] },
   EXPERT_START_TIMEOUT: { type: 'TERMINATION', split: [100, 0, 0] },
+  // Client cancels after paying but before the expert starts (BR-M37)
+  USER_CANCELLED_BEFORE_START: { type: 'TERMINATION', split: [100, 0, 0] },
   EXPERT_ABANDON: { type: 'TERMINATION', split: [100, 0, 0] },
   SYSTEM_ERROR: { type: 'TERMINATION', split: [100, 0, 0] },
   RESOLVE_REFUND_USER: { type: 'DISPUTE', split: [100, 0, 0] },

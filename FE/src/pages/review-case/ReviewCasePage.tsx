@@ -11,6 +11,8 @@ import { CaseAside } from '@/features/review-case/components/CaseAside'
 import {
   AcceptDialog,
   CancelDialog,
+  ChallengeDialog,
+  EarlyCancelDialog,
   ReportDialog,
 } from '@/features/review-case/components/CaseDialogs'
 import { CasePanel } from '@/features/review-case/components/CasePanel'
@@ -36,15 +38,16 @@ import type {
 
 const RAIL = ['accept', 'payment', 'start', 'review', 'acceptance'] as const
 const HOUR = 3_600_000
+const GRACE_HOURS = 24
+const CHALLENGE_WINDOW_HOURS = 72
 
-/** Hết hạn ở trạng thái → [trạng thái mới, rule quyết toán, sự kiện] (BF Bước 2-6) */
+/** Deadline passed in a status -> [new status, settlement rule, event] (business tab 04, section 2) */
 const ON_EXPIRE: Partial<
   Record<CaseStatus, [CaseStatus, SettlementRule | null, TimelineEvent]>
 > = {
+  PENDING_EXPERT_RESPONSE: ['EXPERT_RESPONSE_TIMEOUT', null, 'responseTimeout'],
   AWAITING_PAYMENT: ['CANCELLED_UNPAID', null, 'paymentExpired'],
   PAYMENT_CONFIRMED: ['CANCELLED', 'EXPERT_START_TIMEOUT', 'startTimeout'],
-  IN_REVIEW: ['TERMINATED', 'EXPERT_ABANDON', 'terminated'],
-  AWAITING_USER_INFORMATION: ['TERMINATED', 'USER_NON_RESPONSE', 'terminated'],
   AWAITING_ACCEPTANCE: ['COMPLETED', 'AUTO_CONFIRMED', 'autoConfirmed'],
 }
 
@@ -101,9 +104,9 @@ function CaseView({ initial }: { initial: ReviewCase }) {
   const { t } = useTranslation('reviewCase')
   const f = useCaseFormat()
   const [c, setC] = useState(initial)
-  const [dialog, setDialog] = useState<'accept' | 'cancel' | 'report' | null>(
-    null
-  )
+  const [dialog, setDialog] = useState<
+    'accept' | 'cancel' | 'earlyCancel' | 'report' | 'challenge' | null
+  >(null)
   const [toast, setToast] = useState<string | null>(null)
 
   /** Chuyển trạng thái; guard theo `from` để thao tác lặp (retry, StrictMode) không ghi hai lần */
@@ -113,7 +116,15 @@ function CaseView({ initial }: { initial: ReviewCase }) {
     actor: Actor,
     event: TimelineEvent,
     toastKey?:
-      'paid' | 'answered' | 'accepted' | 'disputed' | 'cancelled' | 'expired'
+      | 'paid'
+      | 'answered'
+      | 'accepted'
+      | 'disputed'
+      | 'cancelled'
+      | 'expired'
+      | 'withdrawn'
+      | 'cancelledEarly'
+      | 'challenged'
   ) => {
     setC((p) => {
       if (!from.includes(p.status)) return p
@@ -166,6 +177,44 @@ function CaseView({ initial }: { initial: ReviewCase }) {
         'answered'
       ),
     expire: () => {
+      // Delivery deadline only flags OVERDUE; EXPERT_ABANDON comes after the grace period
+      if (c.status === 'IN_REVIEW') {
+        if (!c.overdue)
+          return move(
+            ['IN_REVIEW'],
+            () => ({ overdue: true, due: { grace: inHours(GRACE_HOURS) } }),
+            'SYSTEM',
+            'overdue'
+          )
+        return move(
+          ['IN_REVIEW'],
+          (_, now) => ({
+            ...closeWith('TERMINATED', 'EXPERT_ABANDON', now),
+            termination: 'EXPERT_ABANDON',
+          }),
+          'SYSTEM',
+          'terminated'
+        )
+      }
+      // USER_NON_RESPONSE keeps the funds held until the challenge window ends
+      if (c.status === 'AWAITING_USER_INFORMATION')
+        return move(
+          ['AWAITING_USER_INFORMATION'],
+          () => ({
+            status: 'TERMINATED',
+            termination: 'USER_NON_RESPONSE',
+            due: { challenge: inHours(CHALLENGE_WINDOW_HOURS) },
+          }),
+          'SYSTEM',
+          'terminated'
+        )
+      if (c.status === 'TERMINATED' && c.due?.challenge && !c.dispute)
+        return move(
+          ['TERMINATED'],
+          (_, now) => closeWith('TERMINATED', 'USER_NON_RESPONSE', now),
+          'SYSTEM',
+          'settled'
+        )
       const rule = ON_EXPIRE[c.status]
       if (!rule) return
       const [status, settlement, event] = rule
@@ -178,6 +227,8 @@ function CaseView({ initial }: { initial: ReviewCase }) {
       )
     },
     requestCancel: () => setDialog('cancel'),
+    requestEarlyCancel: () => setDialog('earlyCancel'),
+    requestChallenge: () => setDialog('challenge'),
     rate: (stars: number, comment: string) => {
       setC((p) =>
         p.rating
@@ -283,10 +334,67 @@ function CaseView({ initial }: { initial: ReviewCase }) {
           onConfirm={() =>
             move(
               ['IN_REVIEW', 'AWAITING_USER_INFORMATION'],
-              (_, now) => closeWith('TERMINATED', 'USER_CANCELLED', now),
+              (_, now) => ({
+                ...closeWith('TERMINATED', 'USER_CANCELLED', now),
+                termination: 'USER_CANCELLED',
+              }),
               'USER',
               'terminated',
               'cancelled'
+            )
+          }
+        />
+      )}
+      {dialog === 'earlyCancel' &&
+        (c.status === 'PENDING_EXPERT_RESPONSE' ||
+          c.status === 'AWAITING_PAYMENT' ||
+          c.status === 'PAYMENT_CONFIRMED') && (
+          <EarlyCancelDialog
+            stage={c.status}
+            onClose={() => setDialog(null)}
+            onConfirm={() =>
+              c.status === 'PENDING_EXPERT_RESPONSE'
+                ? move(
+                    ['PENDING_EXPERT_RESPONSE'],
+                    (_, now) => closeWith('WITHDRAWN', null, now),
+                    'USER',
+                    'withdrawn',
+                    'withdrawn'
+                  )
+                : move(
+                    ['AWAITING_PAYMENT', 'PAYMENT_CONFIRMED'],
+                    (p, now) =>
+                      closeWith(
+                        'CANCELLED',
+                        p.status === 'PAYMENT_CONFIRMED'
+                          ? 'USER_CANCELLED_BEFORE_START'
+                          : null,
+                        now
+                      ),
+                    'USER',
+                    'cancelled',
+                    'cancelledEarly'
+                  )
+            }
+          />
+        )}
+      {dialog === 'challenge' && (
+        <ChallengeDialog
+          onClose={() => setDialog(null)}
+          onSubmit={(description) =>
+            move(
+              ['TERMINATED'],
+              (_, now) => ({
+                due: undefined,
+                dispute: {
+                  kind: 'USER_NON_RESPONSE_CHALLENGE',
+                  description,
+                  openedAt: now,
+                },
+              }),
+              'USER',
+              'challenged',
+              'challenged'
             )
           }
         />
@@ -300,7 +408,12 @@ function CaseView({ initial }: { initial: ReviewCase }) {
               (_, now) => ({
                 status: 'DISPUTED',
                 due: undefined,
-                dispute: { issue, description, openedAt: now },
+                dispute: {
+                  kind: 'DELIVERY_ISSUE',
+                  issue,
+                  description,
+                  openedAt: now,
+                },
               }),
               'USER',
               'disputed',
