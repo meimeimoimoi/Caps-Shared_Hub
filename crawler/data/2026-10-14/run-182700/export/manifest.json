@@ -1,0 +1,110 @@
+{
+  "schema_version": 2,
+  "generated_at": "2026-10-14T18:35:26",
+  "documents": [
+    {
+      "file": "thong_tu/47-2024-tt-bgtvt.json",
+      "md_file": "thong_tu/47-2024-tt-bgtvt.md",
+      "document_number": "47/2024/TT-BGTVT",
+      "source": "vbpl",
+      "text_source": "detail_page_dom",
+      "doc_type": "Thông tư",
+      "parse_status": "PARSED",
+      "articles": 35,
+      "chunks": 181,
+      "suggested_status": "APPROVED",
+      "warnings": [],
+      "unit_warnings": 1
+    },
+    {
+      "file": "thong_tu/121-2025-tt-btc.json",
+      "md_file": "thong_tu/121-2025-tt-btc.md",
+      "document_number": "121/2025/TT-BTC",
+      "source": "vbpl",
+      "text_source": "detail_page_dom",
+      "doc_type": "Thông tư",
+      "parse_status": "PARSED",
+      "articles": 3,
+      "chunks": 304,
+      "suggested_status": "APPROVED",
+      "warnings": [],
+      "unit_warnings": 25
+    },
+    {
+      "file": "thong_tu/80-2004-tt-btc.json",
+      "md_file": "thong_tu/80-2004-tt-btc.md",
+      "document_number": "80/2004/TT-BTC",
+      "source": "vbpl",
+      "text_source": "unavailable",
+      "doc_type": "Thông tư",
+      "parse_status": "PARSE_FAILED",
+      "articles": 0,
+      "chunks": 0,
+      "suggested_status": "PENDING",
+      "warnings": [
+        "Không tìm thấy Điều nào trong văn bản"
+      ],
+      "unit_warnings": 0
+    },
+    {
+      "file": "quyet_dinh/11-2017-qd-ktnn.json",
+      "md_file": "quyet_dinh/11-2017-qd-ktnn.md",
+      "document_number": "11/2017/QĐ-KTNN",
+      "source": "vbpl",
+      "text_source": "unavailable",
+      "doc_type": "Quyết định",
+      "parse_status": "PARSE_FAILED",
+      "articles": 0,
+      "chunks": 0,
+      "suggested_status": "PENDING",
+      "warnings": [
+        "Không tìm thấy Điều nào trong văn bản"
+      ],
+      "unit_warnings": 0
+    },
+    {
+      "file": "quyet_dinh/177-qd-nhpt.json",
+      "md_file": "quyet_dinh/177-qd-nhpt.md",
+      "document_number": "177/QĐ-NHPT",
+      "source": "vbpl",
+      "text_source": "detail_page_dom",
+      "doc_type": "Quyết định",
+      "parse_status": "PARSED",
+      "articles": 34,
+      "chunks": 129,
+      "suggested_status": "APPROVED",
+      "warnings": [
+        "Số Điều không liên tiếp: Điều 2 -> Điều 1"
+      ],
+      "unit_warnings": 0
+    },
+    {
+      "file": "quyet_dinh/318-1998-qd-nhnn1.json",
+      "md_file": "quyet_dinh/318-1998-qd-nhnn1.md",
+      "document_number": "318/1998/QĐ-NHNN1",
+      "source": "vbpl",
+      "text_source": "detail_page_dom",
+      "doc_type": "Quyết định",
+      "parse_status": "PARSED",
+      "articles": 4,
+      "chunks": 27,
+      "suggested_status": "APPROVED",
+      "warnings": [],
+      "unit_warnings": 3
+    },
+    {
+      "file": "nghi_dinh/32-2018-nd-cp.json",
+      "md_file": "nghi_dinh/32-2018-nd-cp.md",
+      "document_number": "32/2018/NĐ-CP",
+      "source": "vbpl",
+      "text_source": "detail_page_dom",
+      "doc_type": "Nghị định",
+      "parse_status": "PARSED",
+      "articles": 3,
+      "chunks": 62,
+      "suggested_status": "APPROVED",
+      "warnings": [],
+      "unit_warnings": 0
+    }
+  ]
+}

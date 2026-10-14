@@ -1,0 +1,50 @@
+{
+  "schema_version": 2,
+  "exported_at": "2026-10-14T18:35:26",
+  "legal_source": {
+    "document_number": "11/2017/QĐ-KTNN",
+    "doc_type": "Quyết định",
+    "issuing_authority": "Kiểm toán nhà nước",
+    "title": "Quyết định số 11/2017/Q�-KTNN Ban hành Quy trình kiểm toán các tổ chức tài chính, ngân hàng",
+    "metadata": {
+      "source": "vbpl",
+      "source_doc_id": "126996",
+      "detail_url": "https://vbpl.vn/van-ban/chi-tiet/126996",
+      "has_document_number": true,
+      "matched_keywords": [],
+      "keyword_groups": []
+    }
+  },
+  "knowledge_document": {
+    "source": "CRAWL_VBPL",
+    "file_hash": "f848117af28c3a5a57a0d92da096a6b9d08dea9a49e763e2c26a2c7b5131a7bc",
+    "file_hash_basis": "source_id",
+    "issued_date": "2017-11-21",
+    "effective_from": "2018-01-05",
+    "effective_to": "2021-09-01",
+    "content_json": {
+      "parse_status": "PARSE_FAILED",
+      "preamble": "",
+      "chapters": [],
+      "closing": "",
+      "appendices": [],
+      "warnings": [
+        "Không tìm thấy Điều nào trong văn bản"
+      ]
+    },
+    "ingest": {
+      "suggested_status": "PENDING",
+      "pending_reasons": [
+        "NO_TEXT"
+      ]
+    },
+    "metadata": {
+      "tinh_trang_hieu_luc": "Hết hiệu lực toàn bộ",
+      "text_source": "unavailable",
+      "ocr_required": false,
+      "scraped_at": "2026-10-14T18:32:53.251441",
+      "attachments": []
+    }
+  },
+  "chunks": []
+}
