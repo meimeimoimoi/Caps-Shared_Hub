@@ -279,7 +279,7 @@
   },
   "disputes": {
     "title": "Disputes",
-    "intro": "{{count}} disputes awaiting arbitration. Each must be decided within {{hours}} hours of opening; the Escrow funds stay locked until then.",
+    "intro": "{{count}} disputes awaiting a decision. Each dispute must be decided within {{hours}} hours of opening, extended once by 48 hours when escalated to a professional reviewer; escrow funds stay locked until then.",
     "col": {
       "caseId": "Case ID",
       "case": "Case",
@@ -294,13 +294,23 @@
     "viewLabel": "View dispute {{id}}",
     "empty": "No disputes yet.",
     "resolved": "Decided",
+    "badge": {
+      "open": "Disputed",
+      "challenge": "Challenged · case terminated",
+      "escalated": "Escalated to professional review"
+    },
     "notFound": "Dispute {{id}} not found",
     "back": "Back",
     "caseTitle": "Dispute · {{title}}",
     "meta": {
+      "kind": "Type",
       "client": "Client",
       "expert": "Expert",
       "ground": "Ground"
+    },
+    "kind": {
+      "DELIVERY_ISSUE": "Dispute on the delivered result",
+      "USER_NON_RESPONSE_CHALLENGE": "Challenge of a no-response termination"
     },
     "evidence": "Evidence: AI draft vs. expert revision",
     "complaint": {
@@ -322,19 +332,26 @@
       "submit": "Record decision",
       "done": "Decision recorded"
     },
+    "escalation": {
+      "hint": "Disputes about professional judgment or a CIT conclusion go to an Authorized Reviewer. The decision deadline is extended by {{hours}} hours, once.",
+      "action": "Escalate to professional review",
+      "done": "Escalated to professional review; the decision deadline was extended.",
+      "logged": "Escalated to an Authorized Reviewer; decision deadline extended by 48 hours",
+      "toast": "Escalated to professional review"
+    },
     "outcome": {
-      "UPHELD": {
-        "label": "Uphold the dispute",
-        "hint": "The expert breached their duty or the process",
+      "RESOLVE_REFUND_USER": {
+        "label": "Uphold · refund the client",
+        "hint": "The complaint is justified: the expert breached an obligation, or the client responded on time / the information request was not valid",
         "split": "Client refund 100% · Expert 0% · Platform 0%"
       },
-      "DISMISSED": {
-        "label": "Dismiss the dispute",
-        "hint": "The expert met their responsibilities",
+      "RESOLVE_PAY_EXPERT": {
+        "label": "Dismiss · pay the expert",
+        "hint": "The complaint is not justified; the expert did the work properly",
         "split": "Client refund 0% · Expert 80% · Platform 20%"
       },
-      "SETTLED": {
-        "label": "Settle",
+      "RESOLVE_PARTIAL": {
+        "label": "Partial settlement",
         "hint": "Both sides fell partly short",
         "split": "Client refund 50% · Expert 40% · Platform 10%"
       }
@@ -367,6 +384,7 @@
     "nextLabel": {
       "DISPUTE_LOCKED": "decide by",
       "HELD": "auto-confirms",
+      "PAYOUT_SCHEDULED": "payout on",
       "PAID": "paid on",
       "REFUNDED": "refunded on",
       "PAYOUT_FAILED": "failed on",
@@ -374,23 +392,27 @@
       "REFUND_FAILED": "failed on"
     },
     "termination": {
-      "CLIENT_NO_RESPONSE": {
-        "label": "Client did not respond within 72 hours",
-        "short": "No client response"
+      "USER_NON_RESPONSE": {
+        "label": "Client did not answer the information request within 72 hours",
+        "short": "Client no response"
       },
-      "CLIENT_CANCEL_EARLY": {
-        "label": "Client cancelled during review",
-        "short": "Cancelled early"
+      "USER_CANCELLED": {
+        "label": "Client cancelled during the review",
+        "short": "Client cancelled in review"
       },
-      "EXPERT_OVERDUE": {
-        "label": "Expert abandoned past the delivery deadline",
-        "short": "Expert overdue"
+      "USER_CANCELLED_BEFORE_START": {
+        "label": "Client cancelled after paying, before the expert started",
+        "short": "Cancelled before start"
+      },
+      "EXPERT_ABANDON": {
+        "label": "Expert did not deliver after the deadline and the 24-hour grace period",
+        "short": "Expert abandoned"
       },
       "SYSTEM_ERROR": {
         "label": "System error",
         "short": "System error"
       },
-      "EXPERT_NOT_STARTED": {
+      "EXPERT_START_TIMEOUT": {
         "label": "Expert did not start within 24 hours",
         "short": "Expert did not start"
       }
@@ -399,6 +421,7 @@
       "ALL": "All",
       "HELD": "Awaiting acceptance",
       "DISPUTE_LOCKED": "Dispute lock",
+      "PAYOUT_SCHEDULED": "Payout scheduled · 7 days",
       "PAID": "Paid out",
       "REFUNDED": "Refunded",
       "PAYOUT_FAILED": "Payout failed",

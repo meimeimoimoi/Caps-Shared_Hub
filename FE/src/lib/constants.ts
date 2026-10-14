@@ -67,6 +67,8 @@ export const CASE_STATUS = {
 export const ESCROW_STATUS = {
   HELD: { label: 'Giữ · chờ nghiệm thu', tone: 'neutral' },
   DISPUTE_LOCKED: { label: 'Khóa · tranh chấp', tone: 'warning' },
+  // Settled; the expert payout runs 7 days after settlement (settlement.payout_hold_period)
+  PAYOUT_SCHEDULED: { label: 'Chờ chi trả · 7 ngày', tone: 'neutral' },
   PAID: { label: 'Đã chi trả 80/20', tone: 'plain' },
   REFUNDED: { label: 'Đã hoàn tiền', tone: 'plain' },
   REFUND_PENDING: { label: 'Chờ hoàn tiền', tone: 'warning' },

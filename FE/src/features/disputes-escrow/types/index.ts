@@ -39,17 +39,24 @@ export interface EvidenceExcerpt {
   change: string
 }
 
+/** DELIVERY_ISSUE: the case is DISPUTED. USER_NON_RESPONSE_CHALLENGE: the case stays TERMINATED. */
+export type DisputeKind = 'DELIVERY_ISSUE' | 'USER_NON_RESPONSE_CHALLENGE'
+
 export interface Dispute {
   id: string // mã hồ sơ rà soát đang tranh chấp
+  kind: DisputeKind
   title: string
   client: string
   expert: string
   /** Căn cứ khiếu nại của Client */
   ground: string
   openedAt: string
+  /** Set once when escalated to a professional reviewer; extends the deadline by 48 hours */
+  escalatedAt?: string
   /** Có giá trị = đã ra quyết định trọng tài */
   resolvedAt?: string
-  evidence: {
+  /** Draft versus revision excerpts; a USER_NON_RESPONSE challenge has none */
+  evidence?: {
     draft: EvidenceExcerpt
     revision: EvidenceExcerpt
     note: string

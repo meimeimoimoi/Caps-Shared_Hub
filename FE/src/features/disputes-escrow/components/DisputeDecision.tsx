@@ -4,22 +4,29 @@ import { Info } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { StatusBadge } from '@/components/ui/display/status-badge'
 import {
+  DISPUTE_ESCALATION_HOURS,
   DISPUTE_OUTCOME,
-  DISPUTE_SLA_HOURS,
   type DisputeOutcome,
 } from '../constants'
 
 interface DisputeDecisionProps {
   hoursLeft: number
+  /** 48 hours, or 96 once escalated */
+  slaHours: number
   decided: boolean
+  escalated: boolean
   onDecide: (outcome: DisputeOutcome, reason: string) => void
+  onEscalate: () => void
 }
 
 /* Thẻ "Quyết định trọng tài": chọn kết quả + lý do, gửi cho cả Client và chuyên gia */
 export function DisputeDecision({
   hoursLeft,
+  slaHours,
   decided,
+  escalated,
   onDecide,
+  onEscalate,
 }: DisputeDecisionProps) {
   const { t } = useTranslation('admin')
   const [outcome, setOutcome] = useState<DisputeOutcome>()
@@ -40,7 +47,7 @@ export function DisputeDecision({
           status={{
             label: t('disputes.decision.timeLeft', {
               left: hoursLeft,
-              total: DISPUTE_SLA_HOURS,
+              total: slaHours,
             }),
             tone: 'warning',
           }}
@@ -56,6 +63,30 @@ export function DisputeDecision({
           <p className="text-fg-muted">{t('disputes.decision.lockedBody')}</p>
         </div>
       </div>
+
+      {/* Professional-judgment disputes go to an Authorized Reviewer; allowed once */}
+      {!decided && (
+        <div className="mt-4 text-sm">
+          {escalated ? (
+            <p className="text-fg-muted">{t('disputes.escalation.done')}</p>
+          ) : (
+            <>
+              <p className="text-fg-muted">
+                {t('disputes.escalation.hint', {
+                  hours: DISPUTE_ESCALATION_HOURS,
+                })}
+              </p>
+              <button
+                type="button"
+                onClick={onEscalate}
+                className="btn btn-press btn-secondary mt-2 w-full"
+              >
+                {t('disputes.escalation.action')}
+              </button>
+            </>
+          )}
+        </div>
+      )}
 
       <fieldset disabled={decided} className="mt-5">
         <legend className="text-sm font-semibold">

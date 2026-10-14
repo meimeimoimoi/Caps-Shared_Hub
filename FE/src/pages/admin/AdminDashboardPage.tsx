@@ -69,7 +69,7 @@ export default function AdminDashboardPage() {
 
   const open = (disputes.data ?? []).filter((d) => !d.resolvedAt)
   const nearestHours = open.length
-    ? Math.min(...open.map((d) => disputeHoursLeft(d.openedAt, now)))
+    ? Math.min(...open.map((d) => disputeHoursLeft(d, now)))
     : null
 
   const escrowList = escrows.data ?? []
@@ -116,7 +116,13 @@ export default function AdminDashboardPage() {
         <KpiCard
           label={t('dashboard.kpi.held')}
           // Cùng tổng với nhóm "Đang giữ trong hệ thống" ở trang Hoàn tiền & chi trả
-          value={escrows.data && sumBy('HELD') + locked + sumBy('REFUND_PENDING')}
+          value={
+            escrows.data &&
+            sumBy('HELD') +
+              locked +
+              sumBy('PAYOUT_SCHEDULED') +
+              sumBy('REFUND_PENDING')
+          }
           format={(n) => f.money(n)}
           note={t('dashboard.kpi.heldNote', { amount: f.money(locked) })}
           warn={locked > 0}

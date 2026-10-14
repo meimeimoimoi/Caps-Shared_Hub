@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { CASE_STATUS } from '@/lib/constants'
 import { cn, formatDayMonth } from '@/lib/utils'
 import { StatusBadge } from '@/components/ui/display/status-badge'
 import { SkeletonRows } from '@/components/ui/display/skeleton-rows'
@@ -12,7 +11,10 @@ import {
   DISPUTE_SLA_HOURS,
 } from '../../features/disputes-escrow/constants'
 import { useDisputes } from '../../features/disputes-escrow/hooks/useDispute'
-import { disputeHoursLeft } from '../../features/disputes-escrow/utils/disputes'
+import {
+  disputeBadgeKey,
+  disputeHoursLeft,
+} from '../../features/disputes-escrow/utils/disputes'
 
 const rowCls = 'border-border-subtle border-t [&>td]:px-4 [&>td]:py-3'
 const headCls =
@@ -28,7 +30,7 @@ export default function AdminDisputesPage() {
   const rows = data
     .map((d) => ({
       ...d,
-      hoursLeft: d.resolvedAt ? null : disputeHoursLeft(d.openedAt, now),
+      hoursLeft: d.resolvedAt ? null : disputeHoursLeft(d, now),
     }))
     .sort((a, b) =>
       a.hoursLeft !== null && b.hoursLeft !== null
@@ -85,7 +87,7 @@ export default function AdminDisputesPage() {
                             ...DISPUTE_RESOLVED,
                             label: t(DISPUTE_RESOLVED.label),
                           }
-                        : CASE_STATUS.DISPUTED
+                        : { label: t(disputeBadgeKey(d)), tone: 'warning' }
                     }
                   />
                 </td>

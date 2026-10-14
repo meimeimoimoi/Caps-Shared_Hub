@@ -10,6 +10,7 @@ const daysAgo = (n: number) => hoursAgo(n * 24)
 export const mockDisputes: Dispute[] = [
   {
     id: 'HS-2026-0314',
+    kind: 'DELIVERY_ISSUE',
     title: 'Giải trình chi phí khấu hao ô tô 2025',
     client: 'Công ty TNHH Cơ khí Tân Tiến',
     expert: 'Đặng Mỹ Linh',
@@ -46,6 +47,7 @@ export const mockDisputes: Dispute[] = [
   },
   {
     id: 'HS-2026-0302',
+    kind: 'DELIVERY_ISSUE',
     title: 'Hồ sơ hoàn thuế GTGT hàng xuất khẩu quý II',
     client: 'Công ty CP Nông sản Mekong',
     expert: 'Võ Thanh Tùng',
@@ -78,6 +80,7 @@ export const mockDisputes: Dispute[] = [
   },
   {
     id: 'HS-2026-0287',
+    kind: 'DELIVERY_ISSUE',
     title: 'Rà soát hợp đồng thuê nhà và thuế TNCN cho thuê tài sản',
     client: 'Nguyễn Thị Hồng Nhung',
     expert: 'Phan Quốc Bảo',
@@ -106,6 +109,28 @@ export const mockDisputes: Dispute[] = [
       { at: daysAgo(5), actor: 'Trần An', text: 'Ra quyết định: Bác khiếu nại. Kết luận đúng, đã dẫn Thông tư 40/2021/TT-BTC ở phụ lục.' },
       { at: daysAgo(6), actor: 'Nguyễn Thị Hồng Nhung', text: 'Gửi khiếu nại: không dẫn văn bản pháp luật' },
       { at: daysAgo(7), actor: 'Phan Quốc Bảo', text: 'Gửi kết luận Xác thực; tạo bản chính thức V-0287-1' },
+    ],
+  },
+  // Challenge of a USER_NON_RESPONSE termination: the case stays TERMINATED and has no draft/revision evidence
+  {
+    id: 'HS-2026-0318',
+    kind: 'USER_NON_RESPONSE_CHALLENGE',
+    title: 'Tạm nộp TNDN quý III/2026',
+    client: 'Công ty TNHH Thép Nam Á',
+    expert: 'Võ Thanh Tùng',
+    ground: 'Khiếu nại quyết định chấm dứt do không phản hồi',
+    openedAt: hoursAgo(6),
+    complaint: {
+      issue: 'Đã phản hồi trước hạn nhưng hồ sơ vẫn bị chấm dứt',
+      description:
+        'Kế toán đã tải bảng EBITDA lên lúc 21:40, trước hạn phản hồi 72 giờ, nhưng hệ thống vẫn ghi là không phản hồi.',
+      attachment: 'anh_chup_tai_len_2140.png',
+    },
+    history: [
+      { at: hoursAgo(6), actor: 'Thép Nam Á', text: 'Khiếu nại quyết định chấm dứt do không phản hồi' },
+      { at: hoursAgo(9), actor: 'Hệ thống', text: 'Chấm dứt hồ sơ (USER_NON_RESPONSE); giữ tiền 72 giờ chờ khiếu nại' },
+      { at: hoursAgo(81), actor: 'Võ Thanh Tùng', text: 'Gửi yêu cầu bổ sung (T4), hạn phản hồi 72 giờ' },
+      { at: hoursAgo(100), actor: 'PayOS', text: 'Thanh toán 1.800.000 đ vào Escrow' },
     ],
   },
 ]
@@ -141,22 +166,31 @@ export const mockEscrows: Escrow[] = [
   escrow('HS-2026-0302', 'Nông sản Mekong', 'Võ Thanh Tùng', 3_200_000, 'DISPUTE_LOCKED', 4, hoursFromNow(9)),
   escrow('HS-2026-0311', 'Sao Mai', 'Phan Quốc Bảo', 2_500_000, 'HELD', 2, hoursFromNow(48)),
   escrow('HS-2026-0316', 'Hồng Nhung', 'Lý Gia Hân', 1_500_000, 'HELD', 1, hoursFromNow(70)),
-  escrow('HS-2026-0309', 'Thép Nam Á', 'Phan Quốc Bảo', 2_800_000, 'PAID', 9, daysAgo(2), {
+  escrow('HS-2026-0318', 'Thép Nam Á', 'Võ Thanh Tùng', 1_800_000, 'DISPUTE_LOCKED', 4, hoursFromNow(42)),
+  // Expert payout runs 7 days after settlement
+  escrow('HS-2026-0313', 'Hòa Bình', 'Lý Gia Hân', 2_100_000, 'PAYOUT_SCHEDULED', 6, hoursFromNow(5 * 24), {
+    history: [
+      { at: daysAgo(2), actor: 'Hệ thống', text: 'Quyết toán 0/80/20; lên lịch chi trả chuyên gia sau 7 ngày' },
+      { at: daysAgo(2), actor: 'Hòa Bình', text: 'Nghiệm thu hồ sơ' },
+      { at: daysAgo(6), actor: 'PayOS', text: 'Thanh toán 2.100.000 đ vào Escrow' },
+    ],
+  }),
+  escrow('HS-2026-0309', 'Thép Nam Á', 'Phan Quốc Bảo', 2_800_000, 'PAID', 16, daysAgo(2), {
     history: [
       { at: daysAgo(2), actor: 'Hệ thống', text: 'Chi trả 2.240.000 đ cho chuyên gia, giữ 560.000 đ phí nền tảng' },
-      { at: daysAgo(3), actor: 'Thép Nam Á', text: 'Nghiệm thu hồ sơ' },
-      { at: daysAgo(9), actor: 'PayOS', text: 'Thanh toán 2.800.000 đ vào Escrow' },
+      { at: daysAgo(9), actor: 'Thép Nam Á', text: 'Nghiệm thu hồ sơ; lên lịch chi trả sau 7 ngày' },
+      { at: daysAgo(16), actor: 'PayOS', text: 'Thanh toán 2.800.000 đ vào Escrow' },
     ],
   }),
   escrow('HS-2026-0301', 'Tân Tiến', 'Đặng Mỹ Linh', 1_900_000, 'PAID', 14, daysAgo(6)),
   escrow('HS-2026-0287', 'Hồng Nhung', 'Phan Quốc Bảo', 1_600_000, 'PAID', 9, daysAgo(5)),
   escrow('HS-2026-0305', 'Hòa Bình', 'Lâm Chí Kiên', 2_200_000, 'REFUNDED', 8, daysAgo(3), {
-    termination: 'CLIENT_CANCEL_EARLY',
+    termination: 'USER_CANCELLED',
     refundAccount: 'BIDV ···· 5521',
     refundRef: 'FT26278193052',
   }),
   escrow('HS-2026-0298', 'Nhựa Việt Tiến', 'Võ Thị Hạnh', 1_800_000, 'REFUNDED', 10, daysAgo(4), {
-    termination: 'EXPERT_OVERDUE',
+    termination: 'EXPERT_ABANDON',
     refundAccount: 'ACB ···· 7740',
     refundRef: 'FT26277048816',
   }),
@@ -165,7 +199,7 @@ export const mockEscrows: Escrow[] = [
     refundAccount: 'Vietinbank ···· 3086',
   }),
   escrow('HS-2026-0279', 'Hồng Nhung', 'Võ Thanh Tùng', 1_400_000, 'REFUND_FAILED', 13, daysAgo(2), {
-    termination: 'EXPERT_NOT_STARTED',
+    termination: 'EXPERT_START_TIMEOUT',
     refundAccount: 'Sacombank ···· 6612',
     failure: { reason: 'Tài khoản nhận hoàn đã đóng', retryable: false },
   }),

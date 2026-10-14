@@ -32,7 +32,7 @@ export function useAdminNav() {
   const pending = (applications.data ?? []).filter((a) => a.status === 'CAPABILITY_REVIEW')
   const overdue = pending.filter((a) => waitedDays(a.submittedAt, now) > SLA_DAYS).length
   const open = (disputes.data ?? []).filter((d) => !d.resolvedAt)
-  const nearestHours = open.length ? Math.min(...open.map((d) => disputeHoursLeft(d.openedAt, now))) : 0
+  const nearestHours = open.length ? Math.min(...open.map((d) => disputeHoursLeft(d, now))) : 0
   const payoutFailed = (escrows.data ?? []).filter((e) => e.status === 'PAYOUT_FAILED').length
   const refundFailed = (escrows.data ?? []).filter((e) => e.status === 'REFUND_FAILED').length
   const outsideRange = tiers.reduce((s, tier) => s + tier.outsideRange, 0)

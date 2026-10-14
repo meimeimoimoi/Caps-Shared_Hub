@@ -279,7 +279,7 @@
   },
   "disputes": {
     "title": "Khiếu nại",
-    "intro": "{{count}} khiếu nại đang chờ trọng tài. Mỗi khiếu nại phải có quyết định trong {{hours}} giờ kể từ khi mở; tiền Escrow bị khóa tới lúc đó.",
+    "intro": "{{count}} khiếu nại đang chờ trọng tài. Mỗi khiếu nại phải có quyết định trong {{hours}} giờ kể từ khi mở, gia hạn một lần thêm 48 giờ khi chuyển cấp chuyên môn; tiền Escrow bị khóa tới lúc đó.",
     "col": {
       "caseId": "Mã hồ sơ",
       "case": "Hồ sơ",
@@ -294,13 +294,23 @@
     "viewLabel": "Xem chi tiết khiếu nại {{id}}",
     "empty": "Chưa có khiếu nại nào.",
     "resolved": "Đã có quyết định",
+    "badge": {
+      "open": "Đang tranh chấp",
+      "challenge": "Đang khiếu nại · hồ sơ đã chấm dứt",
+      "escalated": "Đã chuyển cấp chuyên môn"
+    },
     "notFound": "Không tìm thấy khiếu nại {{id}}",
     "back": "Quay lại",
     "caseTitle": "Tranh chấp · {{title}}",
     "meta": {
+      "kind": "Loại",
       "client": "Client",
       "expert": "Chuyên gia",
       "ground": "Căn cứ"
+    },
+    "kind": {
+      "DELIVERY_ISSUE": "Khiếu nại kết quả bàn giao",
+      "USER_NON_RESPONSE_CHALLENGE": "Khiếu nại quyết định chấm dứt do không phản hồi"
     },
     "evidence": "Bằng chứng: bản nháp AI so với bản chuyên gia sửa",
     "complaint": {
@@ -322,19 +332,26 @@
       "submit": "Ra quyết định",
       "done": "Đã ra quyết định"
     },
+    "escalation": {
+      "hint": "Tranh chấp cần xét đoán chuyên môn hoặc kết luận Thuế TNDN phải chuyển cho Authorized Reviewer. Hạn quyết định được cộng thêm {{hours}} giờ, chỉ một lần.",
+      "action": "Chuyển cấp chuyên môn",
+      "done": "Đã chuyển cấp chuyên môn; hạn quyết định đã được gia hạn.",
+      "logged": "Chuyển cấp chuyên môn cho Authorized Reviewer; gia hạn quyết định thêm 48 giờ",
+      "toast": "Đã chuyển cấp chuyên môn"
+    },
     "outcome": {
-      "UPHELD": {
-        "label": "Chấp thuận khiếu nại",
-        "hint": "Chuyên gia vi phạm nghĩa vụ hoặc quy trình",
+      "RESOLVE_REFUND_USER": {
+        "label": "Chấp thuận khiếu nại · hoàn tiền Client",
+        "hint": "Khiếu nại có căn cứ: chuyên gia vi phạm nghĩa vụ, hoặc Client đã phản hồi đúng hạn / yêu cầu bổ sung không hợp lệ",
         "split": "Hoàn Client 100% · Chuyên gia 0% · Nền tảng 0%"
       },
-      "DISMISSED": {
-        "label": "Bác khiếu nại",
-        "hint": "Chuyên gia làm đúng, đủ trách nhiệm",
+      "RESOLVE_PAY_EXPERT": {
+        "label": "Bác khiếu nại · chi trả chuyên gia",
+        "hint": "Khiếu nại không có căn cứ; chuyên gia làm đúng, đủ trách nhiệm",
         "split": "Hoàn Client 0% · Chuyên gia 80% · Nền tảng 20%"
       },
-      "SETTLED": {
-        "label": "Hòa giải",
+      "RESOLVE_PARTIAL": {
+        "label": "Quyết toán một phần",
         "hint": "Có thiếu sót một phần từ cả hai phía",
         "split": "Hoàn Client 50% · Chuyên gia 40% · Nền tảng 10%"
       }
@@ -367,6 +384,7 @@
     "nextLabel": {
       "DISPUTE_LOCKED": "quyết định trước",
       "HELD": "tự xác nhận",
+      "PAYOUT_SCHEDULED": "chi trả ngày",
       "PAID": "chi trả ngày",
       "REFUNDED": "hoàn ngày",
       "PAYOUT_FAILED": "lỗi ngày",
@@ -374,23 +392,27 @@
       "REFUND_FAILED": "lỗi ngày"
     },
     "termination": {
-      "CLIENT_NO_RESPONSE": {
-        "label": "Client không phản hồi 72 giờ",
+      "USER_NON_RESPONSE": {
+        "label": "Client không phản hồi yêu cầu bổ sung trong 72 giờ",
         "short": "Client không phản hồi"
       },
-      "CLIENT_CANCEL_EARLY": {
-        "label": "Client hủy sớm khi đang rà soát",
-        "short": "Hủy sớm"
+      "USER_CANCELLED": {
+        "label": "Client hủy khi chuyên gia đang rà soát",
+        "short": "Client hủy khi đang rà soát"
       },
-      "EXPERT_OVERDUE": {
-        "label": "Chuyên gia bỏ dở quá hạn bàn giao",
-        "short": "Chuyên gia quá hạn"
+      "USER_CANCELLED_BEFORE_START": {
+        "label": "Client hủy sau khi thanh toán, trước khi chuyên gia bắt đầu",
+        "short": "Hủy trước khi bắt đầu"
+      },
+      "EXPERT_ABANDON": {
+        "label": "Chuyên gia không bàn giao sau hạn và 24 giờ gia hạn",
+        "short": "Chuyên gia bỏ dở"
       },
       "SYSTEM_ERROR": {
         "label": "Lỗi hệ thống",
         "short": "Lỗi hệ thống"
       },
-      "EXPERT_NOT_STARTED": {
+      "EXPERT_START_TIMEOUT": {
         "label": "Chuyên gia quá 24 giờ chưa bắt đầu",
         "short": "Chuyên gia chưa bắt đầu"
       }
@@ -399,6 +421,7 @@
       "ALL": "Tất cả",
       "HELD": "Chờ nghiệm thu",
       "DISPUTE_LOCKED": "Khóa tranh chấp",
+      "PAYOUT_SCHEDULED": "Chờ chi trả · 7 ngày",
       "PAID": "Đã chi trả",
       "REFUNDED": "Đã hoàn",
       "PAYOUT_FAILED": "Chi trả lỗi",

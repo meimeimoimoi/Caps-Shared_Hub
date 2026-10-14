@@ -1,7 +1,6 @@
 import { useCallback, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { CASE_STATUS } from '@/lib/constants'
 import { CaseHeader } from '@/components/ui/layout/case-header'
 import { StatusBadge } from '@/components/ui/display/status-badge'
 import { Toast } from '@/components/ui/feedback/toast'
@@ -9,13 +8,17 @@ import { AdminLayout } from '@/app/layouts/admin/AdminLayout'
 import { DisputeDecision } from '../../features/disputes-escrow/components/DisputeDecision'
 import { HistoryTab } from '../../features/expert-vetting/components/HistoryTab'
 import { DISPUTE_RESOLVED } from '../../features/disputes-escrow/constants'
-import { disputeHoursLeft } from '../../features/disputes-escrow/utils/disputes'
+import {
+  disputeBadgeKey,
+  disputeHoursLeft,
+  disputeSlaHours,
+} from '../../features/disputes-escrow/utils/disputes'
 import { useAdminNav } from '@/app/layouts/admin/useAdminNav'
 import { useDispute } from '../../features/disputes-escrow/hooks/useDispute'
 
 export default function AdminDisputeDetailPage() {
   const id = useParams().id!
-  const { dispute, isLoading, decide } = useDispute(id)
+  const { dispute, isLoading, decide, escalate } = useDispute(id)
   const nav = useAdminNav()
   const { t } = useTranslation(['admin', 'common'])
   const [now] = useState(() => Date.now())
@@ -46,7 +49,7 @@ export default function AdminDisputeDetailPage() {
   }
 
   const { evidence, complaint } = dispute
-  const hoursLeft = disputeHoursLeft(dispute.openedAt, now)
+  const hoursLeft = disputeHoursLeft(dispute, now)
 
   return (
     <AdminLayout
@@ -65,6 +68,7 @@ export default function AdminDisputeDetailPage() {
           code={dispute.id}
           title={t('disputes.caseTitle', { title: dispute.title })}
           meta={[
+            [t('disputes.meta.kind'), t(`disputes.kind.${dispute.kind}`)],
             [t('disputes.meta.client'), dispute.client],
             [t('disputes.meta.expert'), dispute.expert],
             [t('disputes.meta.ground'), dispute.ground],
@@ -74,37 +78,41 @@ export default function AdminDisputeDetailPage() {
           status={
             dispute.resolvedAt
               ? { ...DISPUTE_RESOLVED, label: t(DISPUTE_RESOLVED.label) }
-              : CASE_STATUS.DISPUTED
+              : { label: t(disputeBadgeKey(dispute)), tone: 'warning' }
           }
         />
       </div>
 
       <div className="mt-6 grid items-start gap-4 md:gap-6 lg:grid-cols-[minmax(420px,1fr)_340px]">
         <div className="min-w-0 space-y-4 md:space-y-6">
-          <section className="paper p-5 md:p-6">
-            <h2 className="text-h2">{t('disputes.evidence')}</h2>
-            <div className="mt-3 grid gap-3 text-sm sm:grid-cols-2">
-              <div className="bg-sunken rounded-surface p-3">
-                <p className="text-fg-muted text-caption">
-                  {evidence.draft.label}
-                </p>
-                <p className="mt-1">
-                  {evidence.draft.text}
-                  <del className="text-fg-muted">{evidence.draft.change}</del>
-                </p>
+          {evidence && (
+            <section className="paper p-5 md:p-6">
+              <h2 className="text-h2">{t('disputes.evidence')}</h2>
+              <div className="mt-3 grid gap-3 text-sm sm:grid-cols-2">
+                <div className="bg-sunken rounded-surface p-3">
+                  <p className="text-fg-muted text-caption">
+                    {evidence.draft.label}
+                  </p>
+                  <p className="mt-1">
+                    {evidence.draft.text}
+                    <del className="text-fg-muted">{evidence.draft.change}</del>
+                  </p>
+                </div>
+                <div className="bg-sunken rounded-surface p-3">
+                  <p className="text-fg-muted text-caption">
+                    {evidence.revision.label}
+                  </p>
+                  <p className="mt-1">
+                    {evidence.revision.text}
+                    <ins className="text-revised">
+                      {evidence.revision.change}
+                    </ins>
+                  </p>
+                </div>
               </div>
-              <div className="bg-sunken rounded-surface p-3">
-                <p className="text-fg-muted text-caption">
-                  {evidence.revision.label}
-                </p>
-                <p className="mt-1">
-                  {evidence.revision.text}
-                  <ins className="text-revised">{evidence.revision.change}</ins>
-                </p>
-              </div>
-            </div>
-            <p className="text-fg-muted mt-3 text-sm">{evidence.note}</p>
-          </section>
+              <p className="text-fg-muted mt-3 text-sm">{evidence.note}</p>
+            </section>
+          )}
 
           <section className="paper p-5 md:p-6">
             <h2 className="text-h2">{t('disputes.complaint.title')}</h2>
@@ -140,7 +148,14 @@ export default function AdminDisputeDetailPage() {
         <div className="lg:sticky lg:top-20">
           <DisputeDecision
             hoursLeft={hoursLeft}
+            slaHours={disputeSlaHours(dispute)}
             decided={!!dispute.resolvedAt}
+            escalated={!!dispute.escalatedAt}
+            onEscalate={() =>
+              escalate()
+                .then(() => setToast(t('disputes.escalation.toast')))
+                .catch((e: Error) => setToast(e.message))
+            }
             onDecide={(outcome, reason) =>
               decide({ outcome, reason })
                 .then(() => setToast(t('disputes.decided')))

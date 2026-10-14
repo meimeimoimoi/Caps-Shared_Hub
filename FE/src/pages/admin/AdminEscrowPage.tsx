@@ -30,7 +30,10 @@ const headCls =
  * Không vẽ chart: tiền đang giữ (số tồn) và đã chi/hoàn (cộng dồn) không cộng thành một tổng có nghĩa. */
 const GROUPS = [
   { key: 'action', statuses: ['PAYOUT_FAILED', 'REFUND_FAILED'] },
-  { key: 'holding', statuses: ['HELD', 'DISPUTE_LOCKED', 'REFUND_PENDING'] },
+  {
+    key: 'holding',
+    statuses: ['HELD', 'DISPUTE_LOCKED', 'PAYOUT_SCHEDULED', 'REFUND_PENDING'],
+  },
   { key: 'done', statuses: ['PAID', 'REFUNDED'] },
 ] as const
 

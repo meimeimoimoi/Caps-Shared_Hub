@@ -43,6 +43,22 @@ export async function decideDispute(id: string, body: DisputeDecisionInput) {
   await api.post(`${BASE}/disputes/${id}/decision`, body)
 }
 
+/** Escalate a professional-judgment dispute; allowed once and adds 48 hours to the deadline */
+export async function escalateDispute(id: string) {
+  if (isExpertDemo) {
+    const d = (await fixtures()).mockDisputes.find((x) => x.id === id)
+    if (!d || d.escalatedAt || d.resolvedAt) return
+    d.escalatedAt = new Date().toISOString()
+    d.history.unshift({
+      at: d.escalatedAt,
+      actor: CURRENT_ADMIN,
+      text: i18n.t('disputes.escalation.logged', { ns: 'admin' }),
+    })
+    return
+  }
+  await api.post(`${BASE}/disputes/${id}/escalate`)
+}
+
 /* ── Escrow ── */
 export async function getEscrows(signal?: AbortSignal) {
   if (isExpertDemo) return structuredClone((await fixtures()).mockEscrows)

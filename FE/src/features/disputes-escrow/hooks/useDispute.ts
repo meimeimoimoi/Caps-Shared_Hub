@@ -1,5 +1,10 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { decideDispute, getDispute, getDisputes } from '../api/disputesApi'
+import {
+  decideDispute,
+  escalateDispute,
+  getDispute,
+  getDisputes,
+} from '../api/disputesApi'
 import { disputesKeys } from '../api/queryKeys'
 import type { DisputeDecisionInput } from '../types'
 
@@ -23,6 +28,10 @@ export function useDispute(id: string) {
     decide: async (input: DisputeDecisionInput) => {
       await decideDispute(id, input)
       // Đổi badge, nhật ký, danh sách và Escrow cùng lúc
+      await qc.invalidateQueries({ queryKey: disputesKeys.all })
+    },
+    escalate: async () => {
+      await escalateDispute(id)
       await qc.invalidateQueries({ queryKey: disputesKeys.all })
     },
   }
