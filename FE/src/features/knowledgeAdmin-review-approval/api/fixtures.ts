@@ -320,7 +320,7 @@ export function getMockDetail(id: string): DocumentDetail | null {
         source: doc.source,
         reviewer: null,
         reviewedAt: null,
-        status: { parse: 'PENDING', review: 'PENDING', index: 'APPROVED', indexed: 'INDEXED' }[doc.stage] as DocumentDetail['versions'][number]['status'],
+        status: { parse: 'PENDING_REVIEW', review: 'PENDING_REVIEW', index: 'APPROVED', indexed: 'INDEXED' }[doc.stage] as DocumentDetail['versions'][number]['status'],
       },
     ],
     chunks: [],

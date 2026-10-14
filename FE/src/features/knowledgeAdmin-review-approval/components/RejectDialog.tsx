@@ -5,16 +5,19 @@ interface RejectDialogProps {
   title: string
   description: string
   confirmLabel: string
+  /** Label of the mandatory reason field */
+  reasonLabel?: string
   onClose: () => void
-  /** Reject → giữ dialog, hiện lỗi */
+  /** Keep the dialog open and show an error when the action fails. */
   onConfirm: (reason: string) => Promise<unknown>
 }
 
-/* Dialog từ chối văn bản/phiên bản, bắt buộc nhập lý do */
+/* Document/version action dialog with a mandatory reason. */
 export function RejectDialog({
   title,
   description,
   confirmLabel,
+  reasonLabel = 'Lý do từ chối (bắt buộc)',
   onClose,
   onConfirm,
 }: RejectDialogProps) {
@@ -27,8 +30,13 @@ export function RejectDialog({
       title={title}
       description={description}
       onClose={onClose}
-      // `required` trên textarea đã chặn submit khi trống
+      // Native validation catches empty input; trimming also rejects whitespace.
       onSubmit={() => {
+        if (busy) return
+        if (!reason.trim()) {
+          setError('Vui lòng nhập lý do.')
+          return
+        }
         setBusy(true)
         setError(null)
         onConfirm(reason.trim()).catch((e: Error) => {
@@ -56,7 +64,7 @@ export function RejectDialog({
       }
     >
       <label className="mt-5 flex flex-col gap-2 text-sm font-semibold">
-        Lý do từ chối (bắt buộc)
+        {reasonLabel}
         <textarea
           required
           rows={3}

@@ -4,6 +4,7 @@ import {
   getDocumentReview,
   markUnitReviewed,
   rejectDocument,
+  reprocessDocument,
   saveUnitText,
 } from '../api/knowledgeApi'
 import { knowledgeKeys } from '../api/queryKeys'
@@ -46,5 +47,7 @@ export function useDocumentReview(documentId: string) {
       approveDocument(documentId, input).then(refreshAll),
     reject: (reason: string) =>
       rejectDocument(documentId, reason).then(refreshAll),
+    reprocess: (reason: string) =>
+      reprocessDocument(documentId, reason).then(refreshAll),
   }
 }

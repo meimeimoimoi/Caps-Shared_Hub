@@ -4,6 +4,7 @@ import { formatDateTime } from '@/lib/utils'
 import { DOCUMENT_STATUS } from '@/lib/constants'
 import { StatusBadge } from '@/components/ui/display/status-badge'
 import { Drawer } from '@/components/ui/feedback/drawer'
+import { INDEX_RETRY_LIMIT } from '../constants'
 import type { KnowledgeDocument } from '../types'
 
 interface FailureDrawerProps {
@@ -24,7 +25,7 @@ export function FailureDrawer({ doc, onClose, onRetry }: FailureDrawerProps) {
   const rows: [string, string][] = [
     [
       'Tự động thử lại',
-      `Lần ${f.attempts} (tối đa theo System Policy) · ${
+      `Lần ${f.attempts}/${INDEX_RETRY_LIMIT} · ${
         f.nextRetryAt ? `lần tiếp theo ${time(f.nextRetryAt)}` : 'đã dừng tự động'
       }`,
     ],

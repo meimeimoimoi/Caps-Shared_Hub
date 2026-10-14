@@ -33,15 +33,17 @@ export const AVAILABILITY = {
   UNAVAILABLE: { label: 'Hết lịch nhận', tone: 'neutral' },
 } as const satisfies Record<string, StatusMeta>
 
-/* Flow 2 · Văn bản tri thức */
+/* Flow 2 · Knowledge version; names follow business tab 04, section 6 */
 export const DOCUMENT_STATUS = {
-  PENDING: { label: 'Chờ duyệt', tone: 'neutral' },
+  PENDING_REVIEW: { label: 'Chờ duyệt', tone: 'neutral' },
+  REPROCESS_REQUIRED: { label: 'Cần bóc tách lại', tone: 'warning' },
   APPROVED: { label: 'Đang index', tone: 'accent' },
   INDEXED: { label: 'Đã index', tone: 'success' },
   INDEX_FAILED: { label: 'Index lỗi', tone: 'danger' },
   PARSE_FAILED: { label: 'Lỗi bóc tách', tone: 'danger' },
   REJECTED: { label: 'Từ chối', tone: 'danger' },
   SUPERSEDED: { label: 'Đã thay thế', tone: 'neutral' },
+  RETIRED: { label: 'Ngừng sử dụng', tone: 'neutral' },
 } as const satisfies Record<string, StatusMeta>
 
 /* Flow 5 · Review case. Names follow the state model in business tab 04. */

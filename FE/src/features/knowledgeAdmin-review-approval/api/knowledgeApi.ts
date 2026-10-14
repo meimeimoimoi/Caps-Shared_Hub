@@ -85,7 +85,19 @@ export async function getDocumentDetail(
   documentId: string,
   signal?: AbortSignal
 ): Promise<DocumentDetail | null> {
-  if (isExpertDemo) return (await fixtures()).getMockDetail(documentId)
+  if (isExpertDemo) {
+    const d = (await fixtures()).getMockDetail(documentId)
+    const retired = retiredDemo.get(documentId)
+    if (!d || !retired) return d
+    const current = d.versions.find((v) => v.no === d.currentVersion)
+    if (current) current.status = 'RETIRED'
+    d.history.unshift({
+      at: retired.at,
+      actor: 'Bạn',
+      text: `Ngừng sử dụng v${d.currentVersion}: ${retired.reason}`,
+    })
+    return d
+  }
   return api.get<DocumentDetail>(`${BASE}/documents/${documentId}`, { signal })
 }
 
@@ -138,6 +150,26 @@ export async function approveDocument(documentId: string, body: ApproveInput) {
 export async function rejectDocument(documentId: string, reason: string) {
   if (isExpertDemo) return leaveReviewDemo(documentId, null)
   await api.post(`${BASE}/documents/${documentId}/reject`, { reason })
+}
+
+/** REPROCESS_REQUIRED: send the version back to parsing; it must come back to review (BR-K08) */
+export async function reprocessDocument(documentId: string, reason: string) {
+  if (!reason.trim()) throw new Error('Vui lòng nhập lý do.')
+  if (isExpertDemo) return leaveReviewDemo(documentId, 'parse')
+  throw new Error('Chức năng bóc tách lại chưa được kết nối với máy chủ.')
+}
+
+// Demo only: documents retired in this browser session
+const retiredDemo = new Map<string, { at: string; reason: string }>()
+
+/** Stop using an indexed version; RAG no longer retrieves it (FR-054) */
+export async function retireDocument(documentId: string, reason: string) {
+  if (!reason.trim()) throw new Error('Vui lòng nhập lý do.')
+  if (isExpertDemo) {
+    retiredDemo.set(documentId, { at: new Date().toISOString(), reason })
+    return
+  }
+  throw new Error('Chức năng ngừng sử dụng chưa được kết nối với máy chủ.')
 }
 
 /** Chấp nhận phiên bản mới, chuyển sang bước Bóc tách */

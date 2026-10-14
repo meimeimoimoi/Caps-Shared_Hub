@@ -10,6 +10,7 @@ import { CaseHeader } from '@/components/ui/layout/case-header'
 import { KnowledgeLayout } from '@/app/layouts/knowledge/KnowledgeLayout'
 import { useKnowledgeNav } from '@/app/layouts/knowledge/useKnowledgeNav'
 import { HistoryTab } from '../../features/expert-vetting/components/HistoryTab'
+import { RejectDialog } from '../../features/knowledgeAdmin-review-approval/components/RejectDialog'
 import { ArticleContent } from '../../features/knowledgeAdmin-review-approval/components/ArticleContent'
 import { DocumentTimeline } from '../../features/knowledgeAdmin-review-approval/components/DocumentTimeline'
 import { StructureTree } from '../../features/knowledgeAdmin-review-approval/components/StructureTree'
@@ -31,7 +32,7 @@ const rowCls = 'border-border-subtle border-t [&>td]:px-4 [&>td]:py-3'
 export default function KnowledgeDocumentPage() {
   const { id = '' } = useParams()
   const nav = useKnowledgeNav()
-  const { data: doc, isLoading, error } = useDocumentDetail(id)
+  const { data: doc, isLoading, error, retire } = useDocumentDetail(id)
 
   return (
     <KnowledgeLayout
@@ -53,7 +54,7 @@ export default function KnowledgeDocumentPage() {
       }
     >
       {doc ? (
-        <DocumentView doc={doc} />
+        <DocumentView doc={doc} onRetire={retire} />
       ) : (
         <h1 className="text-h1-tool">
           {isLoading ? 'Đang tải…' : (error?.message ?? `Không tìm thấy văn bản ${id}`)}
@@ -63,10 +64,20 @@ export default function KnowledgeDocumentPage() {
   )
 }
 
-function DocumentView({ doc }: { doc: DocumentDetail }) {
+function DocumentView({
+  doc,
+  onRetire,
+}: {
+  doc: DocumentDetail
+  onRetire: (reason: string) => Promise<unknown>
+}) {
   const [tab, setTab] = useState<Tab>('versions')
-  // Màn rà soát chuyển sang đây sau khi duyệt, kèm { toast }
+  // The review page navigates here after approval with a toast.
   const { toast, clearToast } = useNavToast()
+  const [retiring, setRetiring] = useState(false)
+  const [retireToast, setRetireToast] = useState<string | null>(null)
+  // Only an indexed current version can be retired
+  const current = doc.versions.find((v) => v.no === doc.currentVersion)
   const articles = doc.chapters.flatMap((c) => c.articles)
   const [articleId, setArticleId] = useState(articles[0]?.id)
   const article = articles.find((a) => a.id === articleId)
@@ -210,6 +221,21 @@ function DocumentView({ doc }: { doc: DocumentDetail }) {
 
         <div className="space-y-4">
           <RagStatus rag={doc.rag} />
+          {current?.status === 'INDEXED' && (
+            <section className="paper p-5">
+              <h2 className="text-h2">Ngừng sử dụng</h2>
+              <p className="text-fg-muted mt-2 text-sm">
+                AI/RAG không truy xuất văn bản này nữa. Bản ghi và lịch sử được giữ nguyên.
+              </p>
+              <button
+                type="button"
+                onClick={() => setRetiring(true)}
+                className="btn btn-press btn-secondary mt-3 w-full"
+              >
+                Ngừng sử dụng v{doc.currentVersion}
+              </button>
+            </section>
+          )}
           <section className="paper p-5">
             <h2 className="text-h2">Metadata</h2>
             <dl className="divide-border-subtle mt-3 divide-y text-sm">
@@ -228,7 +254,25 @@ function DocumentView({ doc }: { doc: DocumentDetail }) {
           </section>
         </div>
       </div>
+      {retiring && (
+        <RejectDialog
+          title={`Ngừng sử dụng ${doc.number}?`}
+          description="Văn bản chuyển sang Ngừng sử dụng và không còn được dùng làm căn cứ cho AI/RAG."
+          confirmLabel="Ngừng sử dụng"
+          reasonLabel="Lý do ngừng sử dụng (bắt buộc)"
+          onClose={() => setRetiring(false)}
+          onConfirm={(reason) =>
+            onRetire(reason).then(() => {
+              setRetiring(false)
+              setRetireToast(`Đã ngừng sử dụng ${doc.number}`)
+            })
+          }
+        />
+      )}
       {toast && <Toast message={toast} onDone={clearToast} />}
+      {retireToast && (
+        <Toast message={retireToast} onDone={() => setRetireToast(null)} />
+      )}
     </>
   )
 }

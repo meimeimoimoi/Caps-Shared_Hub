@@ -86,6 +86,7 @@ function ReviewWorkspace({
   const [checked, setChecked] = useState<CrosscheckKey[]>([])
   const [meta, setMeta] = useState(review.meta)
   const [rejecting, setRejecting] = useState(false)
+  const [reprocessing, setReprocessing] = useState(false)
   const [busy, setBusy] = useState(false)
   const [toast, setToast] = useState<string | null>(null)
   const clearToast = useCallback(() => setToast(null), [])
@@ -282,6 +283,15 @@ function ReviewWorkspace({
             Từ chối
           </button>
         }
+        secondary={
+          <button
+            type="button"
+            onClick={() => setReprocessing(true)}
+            className="btn btn-press btn-secondary"
+          >
+            Yêu cầu bóc tách lại
+          </button>
+        }
         primary={{
           label: busy ? 'Đang duyệt…' : 'Duyệt và index',
           disabled: blockers.length > 0 || busy,
@@ -312,6 +322,24 @@ function ReviewWorkspace({
             state.reject(reason).then(() =>
               navigate('/knowledge/queue', {
                 state: { toast: `Đã từ chối ${review.meta.number}` },
+              })
+            )
+          }
+        />
+      )}
+      {reprocessing && (
+        <RejectDialog
+          title={`Bóc tách lại ${review.meta.number}?`}
+          description="Văn bản quay về bước bóc tách. Bóc tách xong, văn bản trở lại hàng đợi Chờ duyệt để rà soát lại."
+          confirmLabel="Yêu cầu bóc tách lại"
+          reasonLabel="Lý do bóc tách lại (bắt buộc)"
+          onClose={() => setReprocessing(false)}
+          onConfirm={(reason) =>
+            state.reprocess(reason).then(() =>
+              navigate('/knowledge/queue', {
+                state: {
+                  toast: `Đã gửi ${review.meta.number} về bước bóc tách`,
+                },
               })
             )
           }

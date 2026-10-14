@@ -111,7 +111,7 @@ export function VersionCompare({
           />
           <VersionCard
             title={`v${version} · bản mới thu thập`}
-            status={DOCUMENT_STATUS.PENDING}
+            status={DOCUMENT_STATUS.PENDING_REVIEW}
             heading={current.heading}
             clauses={current.after}
             missing={`Điều này đã bỏ ở v${version}.`}
