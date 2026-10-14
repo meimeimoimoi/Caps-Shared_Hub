@@ -46,7 +46,7 @@
     },
     "recentLabel": "Tra cứu gần đây",
     "viewAll": "Xem tất cả ({{count}})",
-    "creditNote": "1 Credit mỗi câu hỏi · chỉ trừ khi có câu trả lời"
+    "creditNote": "1 Credit mỗi câu hỏi · trừ khi câu hỏi được đưa vào tra cứu"
   },
   "transcript": {
     "label": "Nội dung cuộc tra cứu",

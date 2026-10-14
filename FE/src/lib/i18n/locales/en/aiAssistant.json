@@ -46,7 +46,7 @@
     },
     "recentLabel": "Recent research",
     "viewAll": "View all ({{count}})",
-    "creditNote": "1 Credit per question · charged only when answered"
+    "creditNote": "1 Credit per question · charged once the question goes to retrieval"
   },
   "transcript": {
     "label": "Research conversation",

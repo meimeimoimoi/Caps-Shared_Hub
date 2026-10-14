@@ -454,7 +454,7 @@
     "lead": "Credit dùng cho trợ lý AI và tải bản nháp. Phí thẩm định chuyên gia được thanh toán riêng cho từng hồ sơ.",
     "available": "Credit khả dụng",
     "held": "Đang giữ tạm",
-    "heldHint": "Giữ khi gửi câu hỏi, chỉ trừ khi trả lời thành công.",
+    "heldHint": "Giữ khi gửi câu hỏi; trừ khi câu hỏi được đưa vào tra cứu, hoàn lại nếu câu hỏi ngoài phạm vi.",
     "unit_one": "{{count}} credit",
     "unit_other": "{{count}} credit",
     "packages": "Gói nạp credit",
@@ -481,7 +481,8 @@
       "TOPUP": "Nạp credit",
       "HOLD": "Giữ tạm",
       "CAPTURE": "Trừ credit",
-      "RELEASE": "Hoàn giữ tạm"
+      "RELEASE": "Hoàn giữ tạm",
+      "RESTORE": "Hoàn credit do lỗi hệ thống"
     },
     "escrow": "Phí thẩm định đang giữ hộ",
     "escrowEmpty": "Không có khoản nào đang được giữ hộ.",

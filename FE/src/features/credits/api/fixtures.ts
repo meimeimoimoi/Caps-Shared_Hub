@@ -29,7 +29,7 @@ export const mockCreditOverview: CreditOverview = {
       entryType: 'REFUND',
       amount: 1,
       balanceAfter: 48,
-      note: 'Câu hỏi không trả lời được',
+      note: 'Lỗi hệ thống sau khi tra cứu · hoàn 1 credit',
       createdAt: at(-26),
     },
     {

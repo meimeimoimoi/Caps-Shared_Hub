@@ -454,7 +454,7 @@
     "lead": "Credits pay for the AI assistant and draft downloads. Expert review fees are paid separately per case.",
     "available": "Available credits",
     "held": "On hold",
-    "heldHint": "Held when you ask a question, charged only if it's answered.",
+    "heldHint": "Held when you ask; charged once the question goes to retrieval, released if it is out of scope.",
     "unit_one": "{{count}} credit",
     "unit_other": "{{count}} credits",
     "packages": "Credit packages",
@@ -481,7 +481,8 @@
       "TOPUP": "Top-up",
       "HOLD": "Hold",
       "CAPTURE": "Charge",
-      "RELEASE": "Hold released"
+      "RELEASE": "Hold released",
+      "RESTORE": "Restored after a system error"
     },
     "escrow": "Review fees on hold",
     "escrowEmpty": "No payments are on hold.",

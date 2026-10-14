@@ -73,10 +73,12 @@ export const mockPricing: PricingOverview = {
     },
   ],
   creditRates: [
-    { id: 'ai-question', action: 'Câu hỏi trợ lý AI', when: 'Giữ tạm khi gửi, trừ khi trả lời thành công', credits: 1 },
-    { id: 'light-fee', action: 'Phí xử lý nhẹ', when: 'Ngoài phạm vi Thuế TNDN, hoặc không đủ căn cứ', credits: null },
-    { id: 'draft-export', action: 'Tải bản nháp về', when: 'Xuất DOCX hoặc PDF', credits: 1 },
-    { id: 'draft-preview', action: 'Tạo và xem trước bản nháp', when: 'Theo Final Flow V2: miễn phí', credits: 0, note: 'cần xác nhận' },
+    // Rates follow POL-CRD-01 and POL-CRD-02 in business tab 03
+    { id: 'ai-question', action: 'Câu hỏi trợ lý AI', when: 'Giữ tạm khi gửi; trừ khi câu hỏi được đưa vào tra cứu, kể cả khi không đủ căn cứ. Hỏi lại để làm rõ không trừ thêm', credits: 1 },
+    { id: 'ai-out-of-scope', action: 'Câu hỏi ngoài phạm vi Thuế TNDN', when: 'Phát hiện trước khi tra cứu; hoàn toàn bộ credit giữ tạm', credits: 0 },
+    { id: 'ai-system-error', action: 'Lỗi hệ thống sau khi đã trừ', when: 'Xử lý thất bại hoàn toàn do lỗi nền tảng; hoàn 1 credit', credits: 0 },
+    { id: 'draft-export', action: 'Tải bản nháp về', when: 'Xuất DOCX hoặc PDF; tải lại cùng phiên bản không tính thêm', credits: 1 },
+    { id: 'draft-preview', action: 'Tạo và xem trước bản nháp', when: 'Miễn phí, kể cả khi tạo lại', credits: 0 },
   ],
   // Giá gói chưa chốt nên để null; hiện "[giá gói]" trên màn
   creditPackages: [

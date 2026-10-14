@@ -119,7 +119,8 @@ export const COPY = {
   aiDraftDisclaimer: 'Nội dung do AI tạo, chưa được chuyên gia xác thực.',
   aiAnswerNote: 'Câu trả lời do AI tạo từ văn bản pháp lý đã duyệt; không thay thế ý kiến chuyên gia cho hồ sơ cụ thể.',
   aiScreeningNote: 'Gợi ý để xem xét, không phải quyết định.',
-  creditHold: 'Mỗi câu hỏi giữ tạm 1 credit, chỉ trừ khi trả lời thành công',
+  // Captured at RAG_PROCESSING_ACCEPTED, not on a successful answer (POL-CRD-01)
+  creditHold: 'Mỗi câu hỏi giữ tạm 1 credit, chỉ trừ khi câu hỏi được đưa vào tra cứu; hỏi lại để làm rõ không trừ thêm',
   exportCredit: 'Tải về dùng ngay · 1 credit',
   escrowClient: 'Khoản thanh toán được SHFT giữ hộ tới khi bạn nghiệm thu.',
   noChatForExpert: 'Chuyên gia không xem được lịch sử trò chuyện với trợ lý AI.',
