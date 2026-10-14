@@ -505,7 +505,7 @@
     "editorHelp": "Đặt mức phí cho các lượt đặt dịch vụ mới. Lưu bản nháp trước khi gửi quản trị viên phê duyệt.",
     "reviewNote": "Phản hồi của quản trị viên",
     "amount": "Phí dịch vụ",
-    "amountHelp": "Mức phí cố định cho mỗi lượt đặt dịch vụ. Nhập số nguyên dương bằng VND, không có dấu phân cách.",
+    "amountHelp": "Mức phí cố định cho mỗi lượt đặt dịch vụ, từ 1.000.000 đến 10.000.000 VND. Nhập số nguyên, không có dấu phân cách.",
     "effectiveFrom": "Ngày đề xuất hiệu lực",
     "dateHelp": "Theo giờ Việt Nam (UTC+7). Đây là ngày đề xuất; giá chỉ có hiệu lực sau khi được duyệt.",
     "reason": "Lý do tạo phiên bản",
@@ -544,10 +544,12 @@
       "PENDING_APPROVAL": "Chờ duyệt",
       "APPROVED": "Đã duyệt",
       "RETURN_FOR_REVISION": "Trả về để sửa",
-      "REJECTED": "Từ chối"
+      "REJECTED": "Từ chối",
+      "SUPERSEDED": "Đã thay thế"
     },
     "errors": {
       "amountInvalid": "Nhập mức phí VND là số nguyên dương trong phạm vi số nguyên được hỗ trợ.",
+      "amountOutOfRange": "Mức phí phải nằm trong khoảng 1.000.000 đến 10.000.000 VND.",
       "dateInvalid": "Chọn ngày hiệu lực hợp lệ.",
       "datePast": "Chọn ngày hôm nay hoặc một ngày trong tương lai.",
       "reasonRequired": "Bổ sung lý do trước khi gửi duyệt.",

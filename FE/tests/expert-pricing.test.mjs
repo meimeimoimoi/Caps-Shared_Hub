@@ -11,7 +11,7 @@ import {
 } from '../src/features/expert-pricing/demoRepository.ts'
 const now = new Date('2026-10-08T10:00:00Z')
 const input = {
-  amount: '650000',
+  amount: '1650000',
   effectiveFrom: '2026-10-10',
   reason: 'Updated fee for new bookings',
 }
@@ -26,7 +26,7 @@ const approved = {
   ...input,
   id: 'PR-002',
   sequence: 2,
-  amount: '500000',
+  amount: '1500000',
   effectiveFrom: '2026-09-01',
   effectiveTo: null,
   status: 'APPROVED',
@@ -54,6 +54,18 @@ test('rejects invalid money including fractions, scientific notation, zero and u
       'amountInvalid'
     )
   assert.deepEqual(validatePricing(input, true, '2026-10-08'), {})
+})
+test('rejects a fee outside the 1,000,000 to 10,000,000 VND price range', () => {
+  for (const amount of ['999999', '10000001', '500000'])
+    assert.equal(
+      validatePricing({ ...input, amount }, true, '2026-10-08').amount,
+      'amountOutOfRange'
+    )
+  for (const amount of ['1000000', '10000000'])
+    assert.equal(
+      validatePricing({ ...input, amount }, true, '2026-10-08').amount,
+      undefined
+    )
 })
 test('validates calendar date, business timezone and submission reason', () => {
   assert.equal(businessDate(new Date('2026-10-07T18:00:00Z')), '2026-10-08')

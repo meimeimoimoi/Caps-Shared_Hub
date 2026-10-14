@@ -1,5 +1,13 @@
+/* Pricing Version state model (business tab 04, section 5); SUPERSEDED marks an approved version replaced by a newer one */
 export type PricingStatus =
-  'DRAFT' | 'PENDING_APPROVAL' | 'APPROVED' | 'RETURN_FOR_REVISION' | 'REJECTED'
+  | 'DRAFT'
+  | 'PENDING_APPROVAL'
+  | 'APPROVED'
+  | 'RETURN_FOR_REVISION'
+  | 'REJECTED'
+  | 'SUPERSEDED'
+/** Price range of the service (pricing.min_price / pricing.max_price, business tab 03) */
+export const PRICE_RANGE = { min: 1_000_000, max: 10_000_000 } as const
 export interface PricingInput {
   amount: string
   effectiveFrom: string
@@ -29,6 +37,7 @@ export type PricingErrors = Partial<
   Record<
     keyof PricingInput,
     | 'amountInvalid'
+    | 'amountOutOfRange'
     | 'dateInvalid'
     | 'datePast'
     | 'reasonRequired'
@@ -59,6 +68,11 @@ export function validatePricing(
     Number(input.amount) <= 0
   )
     errors.amount = 'amountInvalid'
+  else if (
+    Number(input.amount) < PRICE_RANGE.min ||
+    Number(input.amount) > PRICE_RANGE.max
+  )
+    errors.amount = 'amountOutOfRange'
   const date = new Date(input.effectiveFrom + 'T00:00:00Z')
   if (
     !/^\d{4}-\d{2}-\d{2}$/.test(input.effectiveFrom) ||
