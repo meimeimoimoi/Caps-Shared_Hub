@@ -56,11 +56,11 @@ export function createExpertContextFixture(): ExpertContext {
       {
         serviceId: 'cit-compliance',
         serviceName: 'CIT compliance assessment',
-        qualificationStatus: 'PENDING_APPROVAL',
+        qualificationStatus: 'PENDING_FINAL_APPROVAL',
         serviceStatus: 'ACTIVE',
         availability: true,
         bookingAllowed: false,
-        reasons: ['Service qualification is awaiting approval.'],
+        reasons: ['Service qualification is awaiting final approval.'],
         pricing: null,
         pendingPricingVersion: null,
       },

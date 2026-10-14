@@ -96,13 +96,18 @@ function ServiceCard({ service }: { service: ServiceReadiness }) {
       className: 'ep-status-ready',
       icon: CheckCircle2,
     },
-    PENDING_APPROVAL: {
-      label: t('pendingApproval'),
+    PENDING_FINAL_APPROVAL: {
+      label: t('awaitingFinalApproval'),
       className: 'ep-status-paused',
       icon: Clock3,
     },
-    NOT_ELIGIBLE: {
-      label: t('notEligible'),
+    SUSPENDED: {
+      label: t('suspendedForService'),
+      className: 'ep-status-paused',
+      icon: Clock3,
+    },
+    FAIL: {
+      label: t('competencyFailed'),
       className: 'ep-status-danger',
       icon: XCircle,
     },

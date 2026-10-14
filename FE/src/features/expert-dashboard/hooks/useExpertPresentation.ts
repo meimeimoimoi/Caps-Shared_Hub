@@ -22,10 +22,14 @@ const activityKeys = {
   dispute_opened: 'disputeOpened',
   pricing_approved: 'pricingApproved',
 } as const satisfies Record<ActivityType, ParseKeys<'expert'>>
+// Expert-Service Qualification states (Gate 2 and Final Approval), business tab 04, section 4.2
 const qualificationKeys = {
+  COMPETENCY_REVIEW: 'competencyReview',
+  NEED_MORE_INFORMATION: 'needMoreEvidence',
+  PENDING_FINAL_APPROVAL: 'awaitingFinalApproval',
   APPROVED_FOR_SERVICE: 'approvedForService',
-  PENDING_APPROVAL: 'pendingApproval',
-  NOT_ELIGIBLE: 'notEligible',
+  SUSPENDED: 'suspendedForService',
+  FAIL: 'competencyFailed',
 } as const
 const serviceKeys = {
   ACTIVE: 'active',
@@ -56,7 +60,8 @@ const demoCopyKeys = {
   'Illustrative daily history · demo data': 'demoHistorySource',
   'Availability is off for this service. Existing cases remain accessible.':
     'demoAvailabilityOff',
-  'Service qualification is awaiting approval.': 'demoQualificationPending',
+  'Service qualification is awaiting final approval.':
+    'demoQualificationPending',
   'This account does not have access to the operational Expert Portal.':
     'demoAccessDenied',
 } as const
