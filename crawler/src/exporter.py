@@ -269,8 +269,97 @@ def build_payload(rec: dict) -> dict:
     }
 
 
-def export_records(records: List[dict]) -> List[dict]:
-    """Ghi payload cho từng bản ghi + manifest.json; trả về danh sách mục manifest."""
+def _md_paragraphs(text: str) -> str:
+    """Markdown gộp các dòng liền nhau thành 1 đoạn -> mỗi dòng gốc thành 1 đoạn riêng."""
+    return "\n\n".join(line.strip() for line in (text or "").splitlines() if line.strip())
+
+
+def _md_title(number: str, title: str) -> str:
+    title = (title or "").strip().lstrip(":.-– ").strip()
+    return f"{number}. {title}" if title else number
+
+
+def _md_unit(unit: dict) -> str:
+    text = _md_paragraphs(unit["text"])
+    if unit["point"]:
+        return f"{unit['point']}) {text}"
+    if unit["clause"]:
+        return f"**{unit['clause']}.** {text}"
+    return text
+
+
+def render_markdown(rec: dict, payload: dict) -> str:
+    """
+    Bản đọc cho người (review, đưa vào NotebookLM...): metadata ở đầu, rồi Chương/Điều/Khoản
+    theo `content_json`. Văn bản không tách được Điều thì in nguyên toàn văn.
+    """
+    src = payload["legal_source"]
+    kd = payload["knowledge_document"]
+    content = kd["content_json"]
+    title = src.get("title") or src["document_number"]
+
+    meta_rows = [
+        ("Số hiệu", src["document_number"]),
+        ("Loại văn bản", src.get("doc_type")),
+        ("Cơ quan ban hành", src.get("issuing_authority")),
+        ("Ngày ban hành", kd.get("issued_date")),
+        ("Hiệu lực từ", kd.get("effective_from")),
+        ("Hết hiệu lực", kd.get("effective_to")),
+        ("Tình trạng", kd["metadata"].get("tinh_trang_hieu_luc")),
+        ("Nguồn", src["metadata"].get("detail_url") or src["metadata"].get("source")),
+    ]
+    lines = [f"# {title}", "", "| Trường | Giá trị |", "| --- | --- |"]
+    lines += [f"| {k} | {str(v).replace('|', '/')} |" for k, v in meta_rows if v]
+    lines.append("")
+
+    if content["parse_status"] != "PARSED":
+        lines += ["> Chưa tách được Điều/Khoản — dưới đây là toàn văn.", "", _md_paragraphs(rec.get("noi_dung_text"))]
+        return "\n".join(lines).rstrip() + "\n"
+
+    if content["preamble"]:
+        lines += [_md_paragraphs(content["preamble"]), ""]
+
+    current_part = None
+    for chapter in content["chapters"]:
+        if chapter["part"] and chapter["part"] != current_part:
+            current_part = chapter["part"]
+            lines += [f"## Phần {current_part}", ""]
+        if chapter["number"]:
+            lines += [f"## {_md_title('Chương ' + chapter['number'], chapter['title'])}", ""]
+        current_section = None
+        for article in chapter["articles"]:
+            if article["section"] and article["section"] != current_section:
+                current_section = article["section"]
+                lines += [f"#### Mục {current_section}", ""]
+            lines += [f"### {_md_title('Điều ' + article['number'], article['title'])}", ""]
+            for unit in article["units"]:
+                if unit["text"]:
+                    lines += [_md_unit(unit), ""]
+
+    if content["closing"]:
+        lines += ["---", "", _md_paragraphs(content["closing"]), ""]
+    for appendix in content["appendices"]:
+        lines += [f"## {appendix['title']}", "", _md_paragraphs(appendix["text"]), ""]
+    return "\n".join(lines).rstrip() + "\n"
+
+
+EXPORT_FORMATS = ("json", "md")
+
+
+def parse_export_format(value: str) -> tuple:
+    """'json' | 'md' | 'both' (hoặc 'json,md') -> tuple định dạng cần xuất."""
+    value = (value or "json").strip().lower()
+    if value == "both":
+        return EXPORT_FORMATS
+    formats = tuple(f.strip() for f in value.split(",") if f.strip())
+    unknown = [f for f in formats if f not in EXPORT_FORMATS]
+    if unknown or not formats:
+        raise ValueError(f"Định dạng export không hợp lệ: {value!r} (chọn json, md hoặc both)")
+    return formats
+
+
+def export_records(records: List[dict], formats: tuple = ("json",)) -> List[dict]:
+    """Ghi payload JSON và/hoặc bản Markdown cho từng bản ghi + manifest.json; trả về danh sách mục manifest."""
     export_dir = get_export_dir()
     manifest: List[dict] = []
     for rec in records:
@@ -279,16 +368,25 @@ def export_records(records: List[dict]) -> List[dict]:
         slug = slugify(rec.get("so_hieu") or rec.get("doc_id") or "unknown", separator="-")
         if not has_document_number(rec.get("so_hieu")) and rec.get("doc_id"):
             slug = f"{slug}-{str(rec['doc_id'])[:8]}"
-        dest = config.source_dir(export_dir, rec.get("source")) / folder / f"{slug}.json"
-        dest.parent.mkdir(parents=True, exist_ok=True)
-        dest.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+        base = config.source_dir(export_dir, rec.get("source")) / folder / slug
+        base.parent.mkdir(parents=True, exist_ok=True)
+        written = {}
+        if "json" in formats:
+            dest = base.with_suffix(".json")
+            dest.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+            written["file"] = dest
+        if "md" in formats:
+            dest = base.with_suffix(".md")
+            dest.write_text(render_markdown(rec, payload), encoding="utf-8")
+            written["md_file"] = dest
+        dest = written.get("file") or written["md_file"]
 
         content = payload["knowledge_document"]["content_json"]
         n_unit_warnings = sum(
             1 for c in content["chapters"] for a in c["articles"] for u in a["units"] if u["status"] == "WARNING"
         )
         entry = {
-            "file": str(dest.relative_to(export_dir)).replace("\\", "/"),
+            **{k: str(p.relative_to(export_dir)).replace("\\", "/") for k, p in written.items()},
             "document_number": payload["legal_source"]["document_number"],
             "source": rec.get("source") or "vbpl",
             "text_source": rec.get("text_source"),

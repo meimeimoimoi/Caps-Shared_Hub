@@ -78,6 +78,7 @@ bước 2 tách toàn văn thành Chương → Điều → Khoản → Điểm (
 python scraper_agent.py --sources vbpl,mof --top-n 3   # 1. cào
 python scraper_agent.py --export-only                  # 2. tách Điều/Khoản + tạo chunk
 # hoặc gộp 1 lệnh: python scraper_agent.py --export
+# thêm bản Markdown: python scraper_agent.py --export-only --export-format both
 ```
 
 `--export-only` mặc định xử lý lượt mới nhất. Để chọn một lượt cụ thể:
@@ -170,6 +171,7 @@ Hệ thống được thiết kế tối ưu với 3 giai đoạn (Pipeline):
 | `--no-ocr` | (tắt) | Không OCR PDF scan, chỉ đánh dấu `ocr_required` |
 | `--export` | (tắt) | Cào xong tách Điều/Khoản + tạo chunk luôn |
 | `--export-only` | (tắt) | Không cào: chuẩn hoá `metadata.json` của lượt mới nhất rồi tạo lại `export/` (tên cũ: `--reparse-only`) |
+| `--export-format` | `json` | Định dạng cho `--export`/`--export-only`: `json` (payload BE), `md` (bản đọc Markdown) hoặc `both` |
 | `--run-dir` | lượt mới nhất | Chọn lượt cũ cho `--export-only` hoặc `--purge-invalid`, ví dụ `data/2026-10-11/run-083015` |
 | `--keywords-file` | (tắt) | Cào hết theo bộ từ khoá TOML (vd `keywords/thue_tndn.toml`), chỉ giữ văn bản có tên khớp; thay cho `--keyword`/`--top-n`. Xem RUN_COMMANDS.md mục 4.1 |
 | `--no-skip-existing` | (tắt) | Với `--keywords-file`: không bỏ qua văn bản đã cào ở các lượt trước |

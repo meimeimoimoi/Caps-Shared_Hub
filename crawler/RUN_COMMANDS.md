@@ -32,6 +32,7 @@ python scraper_agent.py [OPTIONS]
 | `--top-n N`          | Giới hạn N văn bản mới nhất của mỗi loại         |
 | `--export`           | Xuất dữ liệu JSON sau khi crawl                  |
 | `--export-only`      | Chỉ xuất lại dữ liệu đã crawl                    |
+| `--export-format`    | Định dạng xuất: `json` (mặc định), `md`, `both`  |
 | `--count-only`       | Đếm số lượng văn bản, không lưu dữ liệu          |
 | `--keyword`          | Tìm kiếm theo một từ khóa                        |
 | `--keywords-file`    | Đọc bộ từ khóa từ file TOML                      |
@@ -263,7 +264,18 @@ python scraper_agent.py --export-only
 python scraper_agent.py --export-only --run-dir data/2026-10-11/run-083015
 ```
 
-Export tạo payload JSON phục vụ quá trình ingestion vào Backend hoặc hệ thống Legal RAG.
+### 5.3. Chọn định dạng xuất
+
+```powershell
+python scraper_agent.py --export-only --export-format json   # mặc định: payload JSON cho BE
+python scraper_agent.py --export-only --export-format md     # bản Markdown để đọc / review
+python scraper_agent.py --export-only --export-format both   # cả hai
+python scraper_agent.py --all --sources vbpl,mof --export --export-format both
+```
+
+- **JSON** (`<so-hieu>.json`): payload phục vụ ingestion vào Backend hoặc hệ thống Legal RAG.
+- **Markdown** (`<so-hieu>.md`, cùng thư mục): bảng metadata + Chương/Điều/Khoản/Điểm dạng tiêu đề; văn bản không tách được Điều thì ghi toàn văn.
+- `manifest.json` ghi đường dẫn ở trường `file` (JSON) và `md_file` (Markdown).
 
 ---
 

@@ -8,7 +8,14 @@ import pytest
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from src.exporter import MAX_CHUNK_CHARS, build_payload  # noqa: E402
+import config  # noqa: E402
+from src.exporter import (  # noqa: E402
+    MAX_CHUNK_CHARS,
+    build_payload,
+    export_records,
+    parse_export_format,
+    render_markdown,
+)
 from src.legal_parser import parse_legal_text  # noqa: E402
 from src.normalize import (  # noqa: E402
     normalize_attachments,
@@ -234,3 +241,53 @@ def test_law_without_number_gets_unique_fallback_key():
     src = build_payload(rec)["legal_source"]
     assert src["document_number"] == "Luật không số (10/05/1997, vbpl:abc)"
     assert src["metadata"]["has_document_number"] is False
+
+
+# ------------------------------------------------------------
+#  Xuất Markdown / chọn định dạng
+# ------------------------------------------------------------
+def _nd82_rec():
+    return {
+        "so_hieu": "82/2025/NĐ-CP", "tieu_de": "Nghị định 82/2025/NĐ-CP", "loai_van_ban": "Nghị định",
+        "co_quan_ban_hanh": "Chính phủ", "ngay_ban_hanh": "02/04/2025", "doc_id": "test-id",
+        "noi_dung_text": _read("nghi_dinh/82-2025-n-cp.txt"),
+    }
+
+
+def test_render_markdown_has_metadata_and_structure():
+    rec = _nd82_rec()
+    md = render_markdown(rec, build_payload(rec))
+    assert md.startswith("# Nghị định 82/2025/NĐ-CP\n")
+    assert "| Số hiệu | 82/2025/NĐ-CP |" in md
+    assert "### Điều 4. Gia hạn" in md
+    assert "**1.** Đối với thuế giá trị gia tăng" in md
+    assert "\na) Gia hạn thời hạn nộp thuế" in md
+
+
+def test_render_markdown_falls_back_to_full_text():
+    rec = {"so_hieu": "3/2025/QĐ-BTC", "loai_van_ban": "Quyết định", "doc_id": "x",
+           "tieu_de": "Quyết định", "noi_dung_text": "Văn bản không có cấu trúc Điều."}
+    md = render_markdown(rec, build_payload(rec))
+    assert "Chưa tách được Điều/Khoản" in md
+    assert md.rstrip().endswith("Văn bản không có cấu trúc Điều.")
+
+
+def test_parse_export_format():
+    assert parse_export_format("json") == ("json",)
+    assert parse_export_format("MD") == ("md",)
+    assert parse_export_format("both") == ("json", "md")
+    assert parse_export_format("json,md") == ("json", "md")
+    with pytest.raises(ValueError):
+        parse_export_format("pdf")
+
+
+@pytest.mark.parametrize("formats, suffixes", [
+    (("json",), {".json"}), (("md",), {".md"}), (("json", "md"), {".json", ".md"}),
+])
+def test_export_records_writes_selected_formats(tmp_path, monkeypatch, formats, suffixes):
+    monkeypatch.setattr(config, "DATA_DIR", tmp_path)
+    manifest = export_records([_nd82_rec()], formats)
+    written = {p.suffix for p in (tmp_path / "export").rglob("*") if p.is_file() and p.name != "manifest.json"}
+    assert written == suffixes
+    assert ("file" in manifest[0]) == ("json" in formats)
+    assert ("md_file" in manifest[0]) == ("md" in formats)

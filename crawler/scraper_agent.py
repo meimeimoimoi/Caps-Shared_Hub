@@ -29,7 +29,7 @@ from tqdm import tqdm
 import config
 from src.search_client import search_and_download_all_types
 from src.detail_scraper import scrape_document_detail
-from src.exporter import export_records, get_export_dir
+from src.exporter import export_records, get_export_dir, parse_export_format
 from src.keywords import KeywordPlan, KeywordSearch, load_keyword_plan
 from src.models import LegalDocument
 from src.mof_client import collect_mof_documents
@@ -141,6 +141,15 @@ def parse_args():
         help="Cào xong thì tách Điều/Khoản + tạo chunk luôn (mặc định chỉ cào)",
     )
     parser.add_argument(
+        "--export-format",
+        type=str,
+        default="json",
+        help=(
+            "Định dạng cho --export/--export-only: json (payload cho BE ingestion), "
+            "md (bản Markdown để đọc/review) hoặc both. Mặc định: json"
+        ),
+    )
+    parser.add_argument(
         "--sources",
         type=str,
         default=",".join(config.DEFAULT_SOURCES),
@@ -163,14 +172,14 @@ def parse_args():
     return parser.parse_args()
 
 
-def run_export_only():
+def run_export_only(formats=("json",)):
     records = load_existing_metadata()
     if not records:
         logger.error(f"Không có dữ liệu trong {config.METADATA_FILE}. Hãy cào trước.")
         return
     normalized = write_metadata_records(list(records.values()))
     logger.info(f"Đã chuẩn hoá {len(normalized)} bản ghi trong {config.METADATA_FILE}")
-    manifest = export_records(normalized)
+    manifest = export_records(normalized, formats)
     _log_export_summary(manifest)
 
 
@@ -290,6 +299,7 @@ def run_keyword_pipeline(
     export: bool = False,
     skip_existing: bool = True,
     count_only: bool = False,
+    export_formats: tuple = ("json",),
 ) -> List[dict]:
     """
     Cào theo bộ từ khoá: mỗi từ khoá đi hết các trang kết quả của từng nguồn, chỉ giữ
@@ -391,7 +401,7 @@ def run_keyword_pipeline(
 
     if export and collected:
         saved = load_existing_metadata()
-        manifest = export_records([rec for key, rec in saved.items() if key in collected])
+        manifest = export_records([rec for key, rec in saved.items() if key in collected], export_formats)
         _log_export_summary(manifest)
     elif collected:
         logger.info('Chạy "python scraper_agent.py --export-only" để tách Điều/Khoản và tạo chunk.')
@@ -485,6 +495,7 @@ def run_pipeline(
     skip_download: bool = False,
     export: bool = False,
     sources: List[str] = None,
+    export_formats: tuple = ("json",),
 ):
     sources = sources or list(config.DEFAULT_SOURCES)
     logger.info("=" * 70)
@@ -521,7 +532,7 @@ def run_pipeline(
         # Đọc lại từ metadata.json để dùng bản đã chuẩn hoá (số hiệu, file đính kèm)
         saved = load_existing_metadata()
         keys = {doc.unique_key for doc in documents}
-        manifest = export_records([rec for key, rec in saved.items() if key in keys])
+        manifest = export_records([rec for key, rec in saved.items() if key in keys], export_formats)
         _log_export_summary(manifest)
     else:
         logger.info(
@@ -614,6 +625,12 @@ def main():
             logger.error(f"Lỗi khi đếm dữ liệu: {exc}", exc_info=True)
             sys.exit(1)
 
+    try:
+        export_formats = parse_export_format(args.export_format)
+    except ValueError as exc:
+        logger.error(str(exc))
+        sys.exit(2)
+
     if args.purge_invalid or args.export_only or args.reparse_only:
         try:
             config.select_run(args.run_dir)
@@ -630,7 +647,7 @@ def main():
         return
 
     if args.export_only or args.reparse_only:
-        run_export_only()
+        run_export_only(export_formats)
         return
 
     if args.no_ocr:
@@ -643,6 +660,7 @@ def main():
                 skip_download=args.skip_download,
                 export=args.export,
                 skip_existing=not args.no_skip_existing,
+                export_formats=export_formats,
             )
         except KeyboardInterrupt:
             logger.warning("Đã dừng (Ctrl+C). Dữ liệu đến từ khoá trước đã được lưu; chạy lại để tiếp tục.")
@@ -661,6 +679,7 @@ def main():
             skip_download=args.skip_download,
             export=args.export,
             sources=sources,
+            export_formats=export_formats,
         )
     except KeyboardInterrupt:
         logger.warning("Đã dừng bởi người dùng (Ctrl+C).")
