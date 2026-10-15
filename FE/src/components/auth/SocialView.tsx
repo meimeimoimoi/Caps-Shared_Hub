@@ -4,6 +4,7 @@ import { Mail } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { AuthBrandHeader } from './AuthBrandHeader'
 import { GoogleIcon } from './GoogleIcon'
+import { GoogleSignInButton } from './GoogleSignInButton'
 import {
   CARD_CLASS,
   LINK_CLASS,
@@ -17,15 +18,21 @@ const LEGAL_LINK_CLASS =
 
 export type SocialViewProps = {
   onContinueEmail: () => void
-  onGoogle: () => void
+  /** Receives the Google ID token. */
+  onGoogle: (idToken: string) => void
+  /** Google sign-in is not configured or could not load. */
+  onGoogleUnavailable: () => void
+  isLoading?: boolean
   className?: string
 }
 
-/* Bước đầu của đăng nhập: dùng chung thẻ kính và kiểu nút với bước email
- * để chuyển bước không bị nhảy bố cục. Email là lựa chọn chính vì Google chưa khả dụng. */
+/* First sign-in step: shares the glass card and button styles with the email step
+ * so switching steps does not shift the layout. */
 export function SocialView({
   onContinueEmail,
   onGoogle,
+  onGoogleUnavailable,
+  isLoading = false,
   className,
 }: SocialViewProps) {
   const { t } = useTranslation('auth')
@@ -56,14 +63,20 @@ export function SocialView({
           <span aria-hidden="true" className="h-px flex-1 bg-white/10" />
         </div>
 
-        <button
-          type="button"
-          onClick={onGoogle}
-          className={cn(SECONDARY_BUTTON_CLASS, 'font-sans')}
+        <GoogleSignInButton
+          onCredential={onGoogle}
+          disabled={isLoading}
         >
-          <GoogleIcon size={18} />
-          <span>{t('actions.google')}</span>
-        </button>
+          <button
+            type="button"
+            onClick={onGoogleUnavailable}
+            disabled={isLoading}
+            className={cn(SECONDARY_BUTTON_CLASS, 'font-sans')}
+          >
+            <GoogleIcon size={18} />
+            <span>{t('actions.google')}</span>
+          </button>
+        </GoogleSignInButton>
 
         <p className="mt-5 text-center text-[13px] leading-[1.6] text-white/55">
           {t('email.noAccount')}{' '}

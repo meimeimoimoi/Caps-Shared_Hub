@@ -79,6 +79,15 @@ export const authApi = {
     )
     return toSession(res.data)
   },
+  /** ID token from Google Identity Services; BE creates or links the account (verified email only). */
+  loginWithGoogle: async (idToken: string) => {
+    const res = await api.post<BackendEnvelope<BackendAuthPayload>>(
+      '/api/v1/auth/google',
+      { idToken },
+      withCookie,
+    )
+    return toSession(res.data)
+  },
   register: async (values: { email: string; password: string; displayName?: string }) => {
     const res = await api.post<BackendEnvelope<BackendAuthPayload>>(
       '/api/v1/auth/register',

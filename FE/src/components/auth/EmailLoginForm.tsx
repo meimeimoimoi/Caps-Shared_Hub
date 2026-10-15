@@ -25,12 +25,16 @@ import { mergeRefs } from '@/lib/merge-refs'
 import { validateLogin, type LoginFormErrors } from '@/utils/validators'
 import type { LoginFormValues } from '@/features/auth/types'
 import { GoogleIcon } from './GoogleIcon'
+import { GoogleSignInButton } from './GoogleSignInButton'
 import { AuthCardHeader } from './AuthCardHeader'
 import { useMotion } from '@/components/ui/motion'
 
 export type EmailLoginFormProps = {
   onBack: () => void
-  onGoogle: () => void
+  /** Receives the Google ID token. */
+  onGoogle: (idToken: string) => void
+  /** Google sign-in is not configured or could not load. */
+  onGoogleUnavailable: () => void
   onForgot: () => void
   onSubmit: (data: LoginFormValues) => void
   className?: string
@@ -83,6 +87,7 @@ export function FieldMessage({ id, children }: { id?: string; children: ReactNod
 export function EmailLoginForm({
   onBack,
   onGoogle,
+  onGoogleUnavailable,
   onForgot,
   onSubmit,
   className,
@@ -333,18 +338,23 @@ export function EmailLoginForm({
           <span aria-hidden="true" className="h-px flex-1 bg-white/10" />
         </div>
 
-        <button
-          type="button"
-          onClick={onGoogle}
+        <GoogleSignInButton
+          onCredential={onGoogle}
           disabled={isLoading}
-          className={cn(
-            SECONDARY_BUTTON_CLASS,
-            UI_FONT
-          )}
         >
-          <GoogleIcon size={18} />
-          <span>{t('actions.google')}</span>
-        </button>
+          <button
+            type="button"
+            onClick={onGoogleUnavailable}
+            disabled={isLoading}
+            className={cn(
+              SECONDARY_BUTTON_CLASS,
+              UI_FONT
+            )}
+          >
+            <GoogleIcon size={18} />
+            <span>{t('actions.google')}</span>
+          </button>
+        </GoogleSignInButton>
 
         <p className="mt-5 text-center text-[13px] leading-[1.6] text-white/55">
           {t('email.noAccount')}{' '}

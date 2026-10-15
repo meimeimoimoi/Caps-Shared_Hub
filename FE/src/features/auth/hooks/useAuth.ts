@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import { safeReturnPath } from '../utils/returnPath'
 import { authApi } from '../api/authApi'
 import { useAuthStore } from '../store/authStore'
-import type { LoginFormValues } from '../types'
+import type { LoginFormValues, User } from '../types'
 import { useTranslation } from 'react-i18next'
 import { ApiError } from '@/lib/api-client'
 
@@ -17,6 +17,8 @@ export function useAuth() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<
     | 'errors.credentials'
+    | 'errors.google'
+    | 'errors.googleEmail'
     | 'errors.emailTaken'
     | 'errors.emailDisposable'
     | 'errors.emailDomain'
@@ -29,23 +31,28 @@ export function useAuth() {
   const navigate = useNavigate()
   const location = useLocation()
 
+  // Shared by every sign-in path: store the session, then go to verification or back to the requested page
+  const enter = (u: User, token: string) => {
+    setSession(u, token)
+    const state = {
+      from: location.state?.from,
+      fromState: location.state?.fromState,
+    }
+    if (u.status === 'PENDING_VERIFICATION')
+      navigate('/verify-email', { replace: true, state })
+    else
+      navigate(safeReturnPath(state.from), {
+        replace: true,
+        state: state.fromState,
+      })
+  }
+
   const login = async (values: LoginFormValues) => {
     setIsLoading(true)
     setError(null)
     try {
       const { user: u, token } = await authApi.login(values)
-      setSession(u, token)
-      const state = {
-        from: location.state?.from,
-        fromState: location.state?.fromState,
-      }
-      if (u.status === 'PENDING_VERIFICATION')
-        navigate('/verify-email', { replace: true, state })
-      else
-        navigate(safeReturnPath(state.from), {
-          replace: true,
-          state: state.fromState,
-        })
+      enter(u, token)
       return u
     } catch (e) {
       // BE trả chung 401 INVALID_CREDENTIALS cho email chưa đăng ký, sai mật khẩu và tài khoản
@@ -58,6 +65,31 @@ export function useAuth() {
             : unavailable(e)
               ? 'errors.unavailable'
               : 'errors.failed'
+      )
+      throw e
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const loginWithGoogle = async (idToken: string) => {
+    setIsLoading(true)
+    setError(null)
+    try {
+      const { user: u, token } = await authApi.loginWithGoogle(idToken)
+      enter(u, token)
+      return u
+    } catch (e) {
+      setError(
+        e instanceof ApiError && e.code === 'GOOGLE_EMAIL_UNVERIFIED'
+          ? 'errors.googleEmail'
+          : e instanceof ApiError && (e.status === 400 || e.status === 401)
+            ? 'errors.google'
+            : throttled(e)
+              ? 'errors.tooManyRequests'
+              : unavailable(e)
+                ? 'errors.unavailable'
+                : 'errors.failed'
       )
       throw e
     } finally {
@@ -123,6 +155,7 @@ export function useAuth() {
     isLoading,
     error: error ? t(error) : null,
     login,
+    loginWithGoogle,
     register,
     logout,
   }

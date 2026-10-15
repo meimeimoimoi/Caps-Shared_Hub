@@ -18,7 +18,7 @@ export default function LoginPage() {
   const [view, setView] = useState<'social' | 'email' | 'forgot'>(initialView ?? 'social')
   const [notice, setNotice] = useState<'googleUnavailable' | null>(null)
   const emailInput = useRef<HTMLInputElement>(null)
-  const { login, isLoading, error } = useAuth()
+  const { login, loginWithGoogle, isLoading, error } = useAuth()
 
   useEffect(() => {
     if (view === 'email') emailInput.current?.focus()
@@ -32,7 +32,15 @@ export default function LoginPage() {
       // useAuth preserves the form and exposes the API error for retry.
     }
   }
-  const google = () => setNotice('googleUnavailable')
+  const google = async (idToken: string) => {
+    setNotice(null)
+    try {
+      await loginWithGoogle(idToken)
+    } catch {
+      // useAuth exposes the API error; the user can pick Google again or use email.
+    }
+  }
+  const googleUnavailable = () => setNotice('googleUnavailable')
 
   return (
     <main className="login-material relative isolate flex min-h-svh flex-col items-center justify-center overflow-hidden bg-[var(--ui-login-canvas)] px-6 py-12 text-[var(--ui-login-text)] max-sm:pt-20">
@@ -42,13 +50,14 @@ export default function LoginPage() {
       </div>
       <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-black/30" />
       {view === 'social' ? (
-        <SocialView onContinueEmail={() => { setNotice(null); setView('email') }} onGoogle={google} />
+        <SocialView onContinueEmail={() => { setNotice(null); setView('email') }} onGoogle={google} onGoogleUnavailable={googleUnavailable} isLoading={isLoading} />
       ) : view === 'forgot' ? (
         <ForgotPasswordForm onBack={() => setView('email')} />
       ) : (
         <EmailLoginForm
           onBack={() => { setNotice(null); setView('social') }}
           onGoogle={google}
+          onGoogleUnavailable={googleUnavailable}
           onForgot={() => { setNotice(null); setView('forgot') }}
           onSubmit={submit}
           emailInputRef={emailInput}
@@ -57,6 +66,8 @@ export default function LoginPage() {
         />
       )}
       {notice && <p role="status" className="relative z-10 mt-6 max-w-[480px] rounded-xl bg-black/70 px-5 py-3 text-center text-sm text-white">{t(notice)}</p>}
+      {/* The email form shows its own error; the first step has no error slot */}
+      {!notice && view === 'social' && error && <p role="alert" className="relative z-10 mt-6 max-w-[480px] rounded-xl bg-black/70 px-5 py-3 text-center text-sm text-white">{error}</p>}
     </main>
   )
 }
