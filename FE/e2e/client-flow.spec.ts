@@ -30,11 +30,12 @@ test('Bước 1 · gửi yêu cầu từ Sàn tới hồ sơ chờ chuyên gia n
   await expect(page.getByText('Chưa thanh toán')).toBeVisible()
 })
 
-test('Bước 2 · thanh toán trong 15 phút thì tiền được giữ hộ', async ({
+test('Bước 2 · thanh toán trong hạn 24 giờ thì tiền được giữ hộ', async ({
   page,
 }) => {
   await page.goto('/cases/RC-2026-0418')
-  await expect(page.getByRole('timer')).toHaveText(/^\d{2}:\d{2}$/)
+  // Payment window is 24 hours from ACCEPT, so the countdown shows hours and minutes
+  await expect(page.getByRole('timer')).toHaveText(/^\d{1,2} giờ \d{1,2} phút$/)
 
   await page.getByRole('button', { name: /^Thanh toán 6\.500\.000/ }).click()
   await expect(
@@ -44,14 +45,14 @@ test('Bước 2 · thanh toán trong 15 phút thì tiền được giữ hộ', 
   await expect(page.getByText('Thanh toán thành công · giữ hộ')).toBeVisible()
 })
 
-test('Bước 2 · quá 15 phút không thanh toán thì hủy và giải phóng lịch', async ({
+test('Bước 2 · quá 24 giờ không thanh toán thì hủy và giải phóng lịch', async ({
   page,
 }) => {
   await page.clock.install()
   await page.goto('/cases/RC-2026-0418')
   await expect(page.getByRole('timer')).toBeVisible()
 
-  await page.clock.fastForward('15:00')
+  await page.clock.fastForward('24:00:00')
   await expect(heading(page, 'Yêu cầu đã hủy do chưa thanh toán')).toBeVisible()
   await expect(
     page.getByText('Hết hạn thanh toán · giải phóng lịch')
