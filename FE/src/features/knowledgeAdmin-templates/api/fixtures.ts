@@ -16,8 +16,17 @@ const USAGE: Record<string, number[]> = {
   'incentive-v1': [0],
 }
 
-export const mockTemplates: ManagedTemplate[] = templates.map((tpl, i) => {
-  const base = tpl.id.replace(/-v\d+$/, '')
+const baseId = (id: string) => id.replace(/-v\d+$/, '')
+// The drafting fixtures list every version of a template; keep one row per template (its newest version)
+const latest = templates.filter(
+  (tpl) =>
+    !templates.some(
+      (other) => baseId(other.id) === baseId(tpl.id) && other.version > tpl.version
+    )
+)
+
+export const mockTemplates: ManagedTemplate[] = latest.map((tpl, i) => {
+  const base = baseId(tpl.id)
   const usage = USAGE[tpl.id] ?? [0]
   return {
     id: base,
