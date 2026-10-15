@@ -10,6 +10,7 @@ import { Link } from 'react-router-dom'
 import { Circle, CircleCheck, Lock } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { authApi } from '@/features/auth/api/authApi'
+import { ApiError } from '@/lib/api-client'
 import { useLinkToken } from '@/features/auth/hooks/useLinkToken'
 import { passwordRequirements } from '@/features/auth'
 import { VideoBackground } from '@/components/auth/VideoBackground'
@@ -37,6 +38,8 @@ export default function ResetPasswordPage() {
   const [show, setShow] = useState(false)
   const [tried, setTried] = useState(false)
   const [busy, setBusy] = useState(false)
+  // BE rejects reusing the current password (PASSWORD_UNCHANGED) but keeps the link usable
+  const [sameAsCurrent, setSameAsCurrent] = useState(false)
   const [status, setStatus] = useState<'form' | 'done' | 'invalid'>(
     token ? 'form' : 'invalid'
   )
@@ -56,7 +59,10 @@ export default function ResetPasswordPage() {
     authApi
       .resetPassword({ token, newPassword: password })
       .then(() => setStatus('done'))
-      .catch(() => setStatus('invalid'))
+      .catch((e: unknown) => {
+        if (e instanceof ApiError && e.code === 'PASSWORD_UNCHANGED') setSameAsCurrent(true)
+        else setStatus('invalid')
+      })
       .finally(() => setBusy(false))
   }
 
@@ -112,19 +118,28 @@ export default function ResetPasswordPage() {
                 </p>
               </div>
               <form onSubmit={submit} noValidate className="font-sans">
-                <Field id={`${id}-new`} label={t('changePassword.new')}>
+                <Field
+                  id={`${id}-new`}
+                  label={t('changePassword.new')}
+                  error={sameAsCurrent ? t('changePassword.sameAsCurrent') : undefined}
+                >
                   <input
                     id={`${id}-new`}
                     type={type}
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    onChange={(e) => {
+                      setPassword(e.target.value)
+                      setSameAsCurrent(false)
+                    }}
                     autoComplete="new-password"
                     autoFocus
-                    aria-invalid={tried && weak ? true : undefined}
-                    aria-describedby={`${id}-rules`}
+                    aria-invalid={(tried && weak) || sameAsCurrent ? true : undefined}
+                    aria-describedby={
+                      sameAsCurrent ? `${id}-new-error ${id}-rules` : `${id}-rules`
+                    }
                     className={cn(
                       INPUT_CLASS,
-                      tried && weak && INPUT_ERROR_CLASS
+                      ((tried && weak) || sameAsCurrent) && INPUT_ERROR_CLASS
                     )}
                   />
                 </Field>
