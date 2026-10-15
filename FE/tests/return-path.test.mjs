@@ -13,6 +13,11 @@ test('client workspace pages survive the login round trip', () => {
     assert.equal(safeReturnPath(p), p)
 })
 
+test('staff areas survive the login round trip', () => {
+  for (const p of ['/admin', '/admin/experts/pending', '/knowledge/queue', '/reviewer'])
+    assert.equal(safeReturnPath(p), p)
+})
+
 test('anything else falls back to the default home', () => {
   for (const p of [
     '//evil.example',

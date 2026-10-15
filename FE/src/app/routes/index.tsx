@@ -11,12 +11,12 @@ import {
   useLocation,
 } from 'react-router-dom'
 import { MotionPage } from '@/components/ui/motion'
-import { ProtectedRoute, StaffRoute } from './ProtectedRoute'
+import { PermissionRoute, ProtectedRoute } from './ProtectedRoute'
 import { ExpertRoute } from './ExpertRoute'
 import { ExpertLayout } from '../layouts/expert/ExpertLayout'
 import { DraftRoute } from './DraftRoute'
 import { RouteErrorPage } from './RouteErrorPage'
-import { AccountSettings } from '@/features/auth'
+import { AccountSettings, Permission } from '@/features/auth'
 import { DraftLayout } from '../layouts/drafts/DraftLayout'
 import { ClientLayout } from '../layouts/client/ClientLayout'
 const ReviewerLayout = lazy(() => import('../layouts/reviewer/ReviewerLayout'))
@@ -182,6 +182,12 @@ function RouteMotion() {
   )
 }
 
+// Permissions from the auth service (BE PermissionMatrix) that open each staff area
+const SYSTEM_ADMIN = [Permission.UserManage] as const
+const EXPERT_REVIEW = [Permission.UserManage, Permission.ExpertReview] as const
+const KNOWLEDGE_ADMIN = [Permission.KnowledgeManage] as const
+const REVIEWER = [Permission.ExpertReview] as const
+
 const router = createBrowserRouter(
   createRoutesFromElements(
     <Route
@@ -214,22 +220,24 @@ const router = createBrowserRouter(
         <Route path="/wallet" element={<WalletPage />} />
         <Route path="/account" element={<AccountSettings role="client" />} />
       </Route>
-      {/* Explicit isolated demo; real Reviewer permissions/assignments need a server API. */}
-      <Route path="/reviewer" element={<ReviewerLayout />}>
-        <Route index element={<ReviewerQueuePage />} />
-        <Route
-          path="gate-1/:id"
-          element={<ReviewerAssessmentPage gate="GATE_1" />}
-        />
-        <Route
-          path="gate-2/:id"
-          element={<ReviewerAssessmentPage gate="GATE_2" />}
-        />
-        <Route path="history" element={<ReviewerHistoryPage />} />
-        <Route path="account" element={<AccountSettings role="reviewer" />} />
+      {/* Reviewer workspace (demo data until the reviewer API exists); needs ExpertReview */}
+      <Route element={<PermissionRoute anyOf={REVIEWER} />}>
+        <Route path="/reviewer" element={<ReviewerLayout />}>
+          <Route index element={<ReviewerQueuePage />} />
+          <Route
+            path="gate-1/:id"
+            element={<ReviewerAssessmentPage gate="GATE_1" />}
+          />
+          <Route
+            path="gate-2/:id"
+            element={<ReviewerAssessmentPage gate="GATE_2" />}
+          />
+          <Route path="history" element={<ReviewerHistoryPage />} />
+          <Route path="account" element={<AccountSettings role="reviewer" />} />
+        </Route>
       </Route>
-      {/* Production bắt buộc đăng nhập; TODO(auth): check role admin / Knowledge Admin khi BE có role */}
-      <Route element={<StaffRoute />}>
+      {/* Expert applications: system admins and author reviewers */}
+      <Route element={<PermissionRoute anyOf={EXPERT_REVIEW} />}>
         <Route path="/admin/experts" element={<AdminExpertsPage />} />
         <Route
           path="/admin/experts/pending"
@@ -239,6 +247,10 @@ const router = createBrowserRouter(
           path="/admin/experts/:id"
           element={<AdminApplicationDetailPage />}
         />
+        <Route path="/admin/account" element={<AdminAccountPage />} />
+      </Route>
+      {/* Rest of the admin area: system admins only */}
+      <Route element={<PermissionRoute anyOf={SYSTEM_ADMIN} />}>
         <Route path="/admin/disputes" element={<AdminDisputesPage />} />
         <Route
           path="/admin/disputes/:id"
@@ -248,8 +260,10 @@ const router = createBrowserRouter(
         <Route path="/admin/pricing" element={<AdminPricingPage />} />
         <Route path="/admin/pricing/:id" element={<AdminPricingTierPage />} />
         <Route path="/admin/users" element={<AdminUsersPage />} />
-        <Route path="/admin/account" element={<AdminAccountPage />} />
         <Route path="/admin" element={<AdminDashboardPage />} />
+      </Route>
+      {/* Knowledge base management */}
+      <Route element={<PermissionRoute anyOf={KNOWLEDGE_ADMIN} />}>
         <Route path="/knowledge" element={<KnowledgeDashboardPage />} />
         <Route path="/knowledge/queue" element={<KnowledgeQueuePage />} />
         <Route path="/knowledge/sources" element={<KnowledgeSourcesPage />} />

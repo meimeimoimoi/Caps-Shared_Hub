@@ -17,7 +17,12 @@ import {
 } from '@/components/ui/layout/app-sidebar'
 import { AppHeader } from '@/components/ui/layout/app-header'
 import { useFormatters } from '@/hooks/useFormatters'
-import { useAccount } from '@/features/auth'
+import {
+  Permission,
+  hasAnyPermission,
+  useAccount,
+  useAuthStore,
+} from '@/features/auth'
 import { useDialogMotion } from '@/components/ui/motion'
 import { type ShellNotification } from '../NotificationBell'
 
@@ -70,7 +75,12 @@ export function AdminLayout({
   ...page
 }: AdminLayoutProps) {
   const { t } = useTranslation('admin')
-  const nav: NavGroup[] = [
+  // Author reviewers share this shell for expert applications; hide what only system admins can open
+  const isSystemAdmin = hasAnyPermission(
+    useAuthStore((s) => s.user),
+    [Permission.UserManage]
+  )
+  const allGroups: NavGroup[] = [
     {
       // Không tiêu đề nhóm: AppSidebar chỉ hiện tiêu đề khi có chữ
       group: '',
@@ -144,6 +154,19 @@ export function AdminLayout({
       ],
     },
   ]
+  const reviewerRoutes = [
+    '/admin/experts/pending',
+    '/admin/experts',
+    '/admin/account',
+  ]
+  const nav = isSystemAdmin
+    ? allGroups
+    : allGroups
+        .map((g) => ({
+          ...g,
+          items: g.items.filter((i) => i.to && reviewerRoutes.includes(i.to)),
+        }))
+        .filter((g) => g.items.length > 0)
 
   return <RoleShell nav={nav} {...page} />
 }
@@ -185,16 +208,15 @@ export function RoleShell({
   }))
   // Đặt ở layout để mọi trang admin đều có tiêu đề tab (effect của layout chạy sau effect của trang)
   const pageTitle =
-    title ?? nav.flatMap((g) => g.items).find((i) => i.active)?.label ?? 'Shared Hub'
+    title ??
+    nav.flatMap((g) => g.items).find((i) => i.active)?.label ??
+    'Shared Hub'
   useEffect(() => {
     document.title = `${pageTitle} | Shared Hub`
   }, [pageTitle])
   const closeDrawer = () => drawer.current?.close()
   return (
-    <div
-      data-density="compact"
-      className="bg-desk-2 text-fg min-h-svh"
-    >
+    <div data-density="compact" className="bg-desk-2 text-fg min-h-svh">
       <a
         href="#admin-main"
         className="focus:bg-paper sr-only z-50 focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:p-3"

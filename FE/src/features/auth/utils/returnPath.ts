@@ -12,6 +12,10 @@ const allowedSections = [
   '/cases',
   '/wallet',
   '/account',
+  // Staff areas check permissions themselves (PermissionRoute shows 403)
+  '/admin',
+  '/knowledge',
+  '/reviewer',
 ]
 
 export function safeReturnPath(value: unknown): string {

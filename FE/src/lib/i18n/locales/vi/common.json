@@ -96,6 +96,11 @@
     "registerExpert": "Đăng ký chuyên gia",
     "cancel": "Hủy"
   },
+  "forbidden": {
+    "title": "Bạn không có quyền vào trang này.",
+    "description": "Tài khoản {{email}} không được cấp quyền cho khu vực này. Nếu cần truy cập, hãy liên hệ quản trị viên hoặc đăng nhập bằng tài khoản khác.",
+    "switchAccount": "Đăng nhập tài khoản khác"
+  },
   "notFound": {
     "title": "Không tìm thấy trang này.",
     "description": "Trang bạn tìm có thể đã được chuyển hoặc đường dẫn không đúng. Hãy quay lại không gian làm việc của bạn.",

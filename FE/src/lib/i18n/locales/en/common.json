@@ -96,6 +96,11 @@
     "registerExpert": "Expert registration",
     "cancel": "Cancel"
   },
+  "forbidden": {
+    "title": "You don’t have access to this page.",
+    "description": "The account {{email}} has no permission for this area. Ask an administrator for access or sign in with another account.",
+    "switchAccount": "Sign in with another account"
+  },
   "notFound": {
     "title": "This page is out of reach.",
     "description": "The page you’re looking for may have moved, or the link may be incorrect. Let’s get you back to your workspace.",
