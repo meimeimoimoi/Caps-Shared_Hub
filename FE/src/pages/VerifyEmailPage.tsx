@@ -5,12 +5,12 @@ import {
   Navigate,
   useLocation,
   useNavigate,
-  useSearchParams,
 } from 'react-router-dom'
 import { CircleCheck, Loader2, Lock, MailCheck } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { ApiError } from '@/lib/api-client'
 import { authApi } from '@/features/auth/api/authApi'
+import { useLinkToken } from '@/features/auth/hooks/useLinkToken'
 import { useAuth, useAuthStore } from '@/features/auth'
 import { safeReturnPath } from '@/features/auth/utils/returnPath'
 import {
@@ -31,15 +31,15 @@ import {
 const COOLDOWN_SECONDS = 60
 const BUTTON_LINK_CLASS = cn(PRIMARY_BUTTON_CLASS, 'font-sans no-underline')
 
-/* Xác thực email sau khi đăng ký.
- * - Không có ?token: nhắc người dùng mở email, cho gửi lại liên kết.
- * - Có ?token (mở từ email): gọi verify-email rồi refresh để nhận token ACTIVE. */
+/* Email verification after sign-up.
+ * - No token: remind the user to open the email and offer to resend the link.
+ * - Token in the link (opened from the email): call verify-email, then refresh to get an ACTIVE token. */
 export default function VerifyEmailPage() {
   const { t } = useTranslation('auth')
   useEffect(() => {
     document.title = `${t('verify.pageTitle')} | Shared Hub`
   }, [t])
-  const token = useSearchParams()[0].get('token')
+  const token = useLinkToken()
   const user = useAuthStore((s) => s.user)
   const authenticated = useAuthStore((s) => s.isAuthenticated)
   const location = useLocation()

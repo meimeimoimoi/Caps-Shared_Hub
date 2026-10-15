@@ -6,10 +6,11 @@ import {
   type ReactNode,
 } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link, useSearchParams } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { Circle, CircleCheck, Lock } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { authApi } from '@/features/auth/api/authApi'
+import { useLinkToken } from '@/features/auth/hooks/useLinkToken'
 import { passwordRequirements } from '@/features/auth'
 import { VideoBackground } from '@/components/auth/VideoBackground'
 import { LanguageToggle as AuthLanguageToggle } from '@/components/ui/layout/language-toggle'
@@ -24,13 +25,13 @@ import {
   TITLE_CLASS,
 } from '@/components/auth/EmailLoginForm'
 
-/* Bước 2 của quên mật khẩu: mở từ liên kết trong email, ?token=... */
+/* Step 2 of a password reset: opened from the emailed link (#token=...) */
 export default function ResetPasswordPage() {
   const { t } = useTranslation('auth')
   useEffect(() => {
     document.title = `${t('reset.title')} | Shared Hub`
   }, [t])
-  const token = useSearchParams()[0].get('token')
+  const token = useLinkToken()
   const [password, setPassword] = useState('')
   const [confirm, setConfirm] = useState('')
   const [show, setShow] = useState(false)
