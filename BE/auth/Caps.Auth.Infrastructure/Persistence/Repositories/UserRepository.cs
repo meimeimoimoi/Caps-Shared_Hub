@@ -43,12 +43,4 @@ public sealed class UserRepository(AuthDbContext db) : IUserRepository, IUserAcc
 
     public Task<string[]> GetRoleCodesAsync(Guid userId, CancellationToken ct) =>
         db.UserRoles.Where(x => x.UserId == userId).Select(x => x.Role.Code).ToArrayAsync(ct);
-
-    public Task<string[]> GetPermissionCodesAsync(Guid userId, CancellationToken ct) =>
-        db
-            .UserRoles.Where(x => x.UserId == userId)
-            .SelectMany(x => x.Role.RolePermissions)
-            .Select(x => x.Permission.Code)
-            .Distinct()
-            .ToArrayAsync(ct);
 }
