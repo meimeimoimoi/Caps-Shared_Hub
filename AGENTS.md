@@ -85,15 +85,23 @@ npm run dev        # :5173
 - **Gọi API qua `lib/api-client` (`api.get/post`)**. Không import `axios` trực tiếp trong component.
 - Server state dùng React Query (QueryClient ở `src/app/`); client state dùng zustand trong `store/` của feature.
 - Biến môi trường: thêm vào `.env.example` khi thêm biến mới. Không commit `.env.*` thật.
-- Tailwind v4: import bằng `@import "tailwindcss";` trong CSS (không dùng `@tailwind base/components/utilities`). Tùy biến theme bằng `@theme`; không tạo `tailwind.config.js` nếu không được yêu cầu. Với Vite dùng plugin `@tailwindcss/vite`. Ưu tiên utility class, chỉ viết CSS riêng khi utility không làm được.- React 19: không cần `forwardRef` (truyền `ref` như prop thường). Không dùng API đã bị loại bỏ; nếu không chắc, kiểm tra trong code hiện có hoặc hỏi trước.
+- Tailwind v4: import bằng `@import "tailwindcss";` trong CSS (không dùng `@tailwind base/components/utilities`). Tùy biến theme bằng `@theme`; không tạo `tailwind.config.js` nếu không được yêu cầu. Với Vite dùng plugin `@tailwindcss/vite`. Ưu tiên utility class, chỉ viết CSS riêng khi utility không làm được.
+- React 19: truyền `ref` như prop thường (không cần `forwardRef`). Không dùng `ReactDOM.render`, `propTypes`, `defaultProps` trên function component (đã bị gỡ); dùng default parameter của hàm. Không chắc về một API thì kiểm tra trong code hiện có hoặc hỏi trước.
 - Gặp lỗi build lạ sau khi nâng package: đọc changelog/migration guide của đúng version, đừng đoán.
-- React 19: truyền `ref` như prop thường (không cần `forwardRef`). Không dùng `ReactDOM.render`, `propTypes`, `defaultProps` trên function component (đã bị gỡ); dùng default parameter của hàm. Không chắc về một API thì hỏi trước.
+
 ## Giai đoạn kiến trúc: KHÔNG học theo, KHÔNG nhân bản
 
-Các điểm sau cố ý làm đơn giản và sẽ thay. Không dùng làm mẫu cho code mới:
-
+Các điểm cố ý làm đơn giản và sẽ thay thì liệt kê ở đây; không dùng chúng làm mẫu cho code mới. Hiện chưa có mục nào.
 
 Đã xong: thu hồi phiên dùng chung qua Redis (đăng xuất, đổi/reset mật khẩu → mọi service từ chối token ngay; Redis sập thì cho qua, trừ API gắn `[RequireSessionCheck]` trả 503); JWT ký RS256, chỉ `auth` giữ private key; service khác xác thực bằng public key tải từ `/.well-known/jwks.json` (dự phòng `Jwt:PublicKeys`), gateway chặn token sai trên route `/me`; hồ sơ chuyên gia tách thành service `expert` (schema `expert`); không còn khóa ngoại chéo service, id của service khác (user, review case…) chỉ là cột thường, nên mỗi service migrate độc lập; mỗi service kết nối DB bằng role riêng (`caps_<service>`) chỉ có quyền trên schema của mình, mật khẩu nằm trong user-secrets / `docker/.env`, không nằm trong `appsettings`; DB dùng `dotnet ef migrations`; mật khẩu băm bằng `PasswordHasher` (PBKDF2) + lockout + refresh token xoay vòng.
+
+## Skills & agents (Claude Code, Codex, Antigravity)
+
+- Rule: file này là nguồn duy nhất. Codex và Antigravity đọc `AGENTS.md` trực tiếp; `CLAUDE.md` chỉ import nó (`@AGENTS.md`); `.agents/rules/project.md` trỏ về đây cho Antigravity bản cũ. Không chép rule sang file khác.
+- Skill: nguồn duy nhất là `.agents/skills/` (Codex và Antigravity đọc trực tiếp). `.claude/skills/` là bản sinh ra cho Claude Code: không sửa tay, sửa ở `.agents/skills/` rồi chạy `./.agents/sync.ps1` (từ gốc repo) và commit cả hai. CI (`agent-config.yml`) báo lỗi khi hai bên lệch nhau.
+- Đường dẫn trong skill viết theo `.agents/skills/...`; script tự đổi thành `.claude/skills/...` cho bản Claude.
+- Subagent có hai định dạng: `.claude/agents/<ten>.md` và `.codex/agents/<ten>.toml`. Thêm hoặc đổi tên một subagent thì sửa cả hai; script kiểm tra hai bên có cùng danh sách tên.
+- Không dùng `.agent/` (số ít, định dạng cũ của Antigravity): skill trùng tên ở hai nơi sẽ hiện hai lần.
 
 ## Git
 

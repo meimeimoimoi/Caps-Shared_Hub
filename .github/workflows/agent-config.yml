@@ -1,0 +1,33 @@
+name: Agent config
+
+# .agents/skills is the source; .claude/skills is generated from it by .agents/sync.ps1
+on:
+  push:
+    branches: [ main, prod ]
+    paths:
+      - ".agents/**"
+      - ".claude/skills/**"
+      - ".claude/agents/**"
+      - ".codex/agents/**"
+      - ".github/workflows/agent-config.yml"
+  pull_request:
+    paths:
+      - ".agents/**"
+      - ".claude/skills/**"
+      - ".claude/agents/**"
+      - ".codex/agents/**"
+      - ".github/workflows/agent-config.yml"
+  workflow_dispatch:
+
+jobs:
+  agent-config:
+    name: Skills and subagents are in step
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check .claude/skills matches .agents/skills
+        shell: pwsh
+        run: ./.agents/sync.ps1 -Check

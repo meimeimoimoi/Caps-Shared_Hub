@@ -12,7 +12,5 @@
 /.tmp/
 **/bin/
 **/obj/
-
-# Local AI agent skills and Codex agent configs
-/.agents/
-/.codex/agents/
+# Skill launchers ship prebuilt engines in scripts/bin (not build output)
+!/.agents/skills/*/scripts/bin/
