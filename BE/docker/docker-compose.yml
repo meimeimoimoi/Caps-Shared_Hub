@@ -116,8 +116,12 @@ services:
       Jwt__SigningKeys__0__PrivateKeyPath: /run/secrets/jwt_signing_key
       # Read the client IP from X-Forwarded-For only when the request comes from the gateway (fixed IP below)
       Auth__KnownProxies__0: 172.28.0.10
+      # Production requires durable data protection keys (encrypted email outbox); kept in a volume
+      Auth__DataProtectionKeysPath: /var/lib/caps-auth/keys
     secrets:
       - jwt_signing_key
+    volumes:
+      - auth_keys:/var/lib/caps-auth/keys
     # Published for local debugging only; in production expose the gateway alone
     ports:
       - "5194:8080"
@@ -206,3 +210,4 @@ volumes:
   redis_data:
   rabbitmq_data:
   seaweedfs_data:
+  auth_keys:

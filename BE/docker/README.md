@@ -31,8 +31,19 @@ docker compose -f docker/docker-compose.yml up -d postgres redis rabbitmq mailpi
 ## Whole stack in containers
 
 `docker compose -f docker/docker-compose.yml up -d --build` also builds and runs auth, expert and gateway
-(environment `Production`). Not verified end to end yet: in Production the services do not migrate their
-database on startup, so a fresh volume has no tables until migrations are applied as a deployment step.
+(environment `Production`). The gateway proxies to auth and expert by service name.
+
+**No migrations in Production:** the services migrate their schema only in Development
+(`MigrateInDevelopment`), so on a fresh Postgres volume the containers start but every endpoint that touches the
+database returns 500 (auth also logs `relation "identity.auth_email_outbox" does not exist`) until migrations
+are applied as a separate deployment step.
+
+auth needs durable data protection keys outside Development (`Auth__DataProtectionKeysPath`); compose keeps them
+in the `auth_keys` volume. Deleting that volume makes queued outbox emails unreadable.
+
+The image starts the service with `dotnet service.dll` (exec form, `service.dll` links to the assembly). Do not
+switch back to a shell entrypoint: `/bin/sh` drops environment variables with `-` in their names, such as
+`ReverseProxy__Clusters__auth-cluster__...`, and the gateway then proxies to `localhost` (502).
 
 The gateway has a fixed address (`172.28.0.10` on `caps_network`) and auth trusts `X-Forwarded-For` from that
 address only (`Auth__KnownProxies__0`), so auth's rate limit counts real client IPs. Change both together. An

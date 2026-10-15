@@ -32,9 +32,9 @@ RUN dotnet publish "${PROJECT}" -c Release -o /app/publish /p:UseAppHost=false
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-# NOTE: exec-form does NOT expand ARG/ENV, so use shell-form here.
-# APP_NAME (assembly name) is baked at build time via ARG -> ENV.
+# Exec form cannot expand ARG/ENV, and a shell entrypoint (dash) drops env vars with '-' in their names
+# (e.g. ReverseProxy__Clusters__auth-cluster__...). Link the assembly to a fixed name at build time instead.
 ARG SERVICE_NAME
 ARG APP_NAME=${SERVICE_NAME}
-ENV APP_NAME=${APP_NAME}
-ENTRYPOINT ["sh", "-c", "dotnet ${APP_NAME}.dll"]
+RUN ln -s "${APP_NAME}.dll" service.dll
+ENTRYPOINT ["dotnet", "service.dll"]
