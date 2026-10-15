@@ -1,6 +1,7 @@
 using Caps.Auth.Application.Abstractions.Persistence;
 using Caps.Auth.Application.Abstractions.Security;
 using Caps.Auth.Application.Common;
+using Caps.Auth.Domain;
 using Caps.Auth.Domain.Verification;
 using Caps.Common.Application;
 
@@ -29,6 +30,14 @@ public sealed class ResetPasswordHandler(
             ct
         );
         user.EnsureCanSignIn();
+        // Same rule as change-password; the link stays usable so the user can pick another password
+        if (
+            user.PasswordHash is not null
+            && hasher.Verify(user.PasswordHash, command.Password) != PasswordCheck.Failed
+        )
+        {
+            throw AuthErrors.PasswordUnchanged();
+        }
         var now = clock.GetUtcNow();
         user.ResetPassword(hasher.Hash(command.Password), now);
         token.MarkUsed(now);
