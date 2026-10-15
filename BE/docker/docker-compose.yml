@@ -22,7 +22,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./postgres/init-service-roles.sh:/docker-entrypoint-initdb.d/10-service-roles.sh:ro
-      - ../scripts/db:/caps-db:ro
+      - ./postgres/db:/caps-db:ro
     networks:
       - caps_network
     healthcheck:

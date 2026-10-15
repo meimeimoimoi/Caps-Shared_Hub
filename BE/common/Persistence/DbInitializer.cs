@@ -6,8 +6,7 @@ namespace Caps.Common.Persistence;
 /// Development bootstrapper: creates the database, extensions and schemas that are still missing.
 /// </summary>
 /// <remarks>
-/// Each step checks for the object first and only creates what is missing. A service role created by
-/// scripts/setup-db-users.ps1 cannot create databases, extensions or schemas, but by then they all exist,
+/// Each step checks for the object first and only creates what is missing. A restricted service role cannot create databases, extensions or schemas, but by then they all exist,
 /// so it passes through. With an admin connection everything is created on first run (zero setup).
 /// </remarks>
 public static class DbInitializer

@@ -34,8 +34,13 @@ Clean Architecture, like `auth`: `Domain` (entities), `Application` (use cases u
 ## Run (PowerShell from BE)
 
 ~~~powershell
-.\scripts\setup-db-users.ps1                    # once per machine: role caps_billing + user-secrets
 dotnet run --project billing/Api    # http://localhost:5220/healthz
 ~~~
 
 EF commands: `dotnet ef migrations add <Name> --project billing/Infrastructure --startup-project billing/Api --output-dir Persistence/Migrations`.
+
+Development connection (database and service role must already exist):
+
+```powershell
+.\scripts\set-connections.ps1 -Service billing
+```

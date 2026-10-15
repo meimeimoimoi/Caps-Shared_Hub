@@ -19,7 +19,7 @@ Monorepo gồm **Backend (.NET 8 Microservices)** và **Frontend (React 19 + Vit
 ```text
 Caps-Shared_Hub/
 ├── BE/
-│   ├── Caps.sln                  # Solution: 9 services + common (6 libs)
+│   ├── Caps.sln                  # Solution: 10 services + common (7 libs)
 │   ├── Directory.Build.props     # Props chung: net8.0, Nullable, ImplicitUsings, LangVersion
 │   ├── Directory.Packages.props  # Central Package Management — nơi duy nhất pin version
 │   ├── gateway/                  # API Gateway (YARP). Single entry point
@@ -33,11 +33,10 @@ Caps-Shared_Hub/
 │   ├── workflow/                 # Tài liệu, hội thoại AI, review case (schema `workspace`, `review`, Clean Architecture, chưa có API)
 │   ├── cronjob/                  # Tác vụ nền định kỳ (skeleton)
 │   ├── common/                   # Thư viện dùng chung:
-│   │                             # wrappers, exceptions, abstractions,
-│   │                             # security (JWT), messaging (MassTransit),
-│   │                             # extensions (AddCommonApi/UseCommonApi)
+│   │                             # Domain, Application, Api, Security,
+│   │                             # Persistence, Messaging, Contracts
 │   ├── docker/                   # docker-compose.yml + Dockerfile.service
-│   └── scripts/                  # start-all.ps1 / start-infra.ps1 / stop-infra.ps1
+│   └── scripts/                  # run-all-services.ps1 / stop-all-services.ps1 / set-connections.ps1
 ├── FE/
 │   ├── src/
 │   │   ├── app/                  # Application shell, providers, routes
@@ -75,11 +74,10 @@ Browser (FE :5173) → Gateway (:5190) → Auth (:5194) → Postgres (schema aut
 ```powershell
 cd BE
 Copy-Item docker\.env.example docker\.env   # lần đầu: đổi các mật khẩu trong docker/.env
-.\scripts\start-all.ps1                     # Postgres, Redis, RabbitMQ, Mailpit, SeaweedFS + build
-.\scripts\setup-db-users.ps1               # lần đầu: role DB cho từng service + user-secrets
+docker compose -f docker/docker-compose.yml up -d postgres redis rabbitmq mailpit seaweedfs
+.\scripts\set-connections.ps1 -Service auth,expert,billing,workflow,ingestion
 ```
 
-`setup-db-users.ps1` dùng `psql` trên máy; nếu chỉ có Postgres trong Docker thì thêm `-Container caps_postgres -Database caps_db`.
 
 | Dịch vụ | Địa chỉ | Tài khoản |
 |---|---|---|

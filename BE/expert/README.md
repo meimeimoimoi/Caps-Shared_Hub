@@ -22,7 +22,6 @@ It does **not** own accounts or roles (identity service) or case handling (workf
 ## Run (PowerShell from BE)
 
 ~~~powershell
-.\scripts\setup-db-users.ps1                  # once per machine: role caps_expert + user-secrets
 dotnet run --project expert/Api    # http://localhost:5198/healthz, Swagger at /swagger
 ~~~
 
@@ -30,3 +29,9 @@ The gateway routes `/api/v1/experts/**` here. Development applies migrations on 
 (S3 API on :8333) for evidence files.
 
 EF commands: `dotnet ef migrations add <Name> --project expert/Infrastructure --startup-project expert/Api --output-dir Persistence/Migrations`.
+
+Development connection (database and service role must already exist):
+
+```powershell
+.\scripts\set-connections.ps1 -Service expert
+```

@@ -1,28 +1,37 @@
-# Scripts
+# Backend scripts
 
-PowerShell helpers, run from `BE/`.
+Run from `BE/`. Infrastructure, databases, service roles and passwords must be provisioned separately.
 
-| Script | What it does |
+| Script | Purpose |
 |---|---|
-| `setup-db-users.ps1` | Creates one Postgres role per service (owner of its schemas only) and writes each connection string to the service's user-secrets. Run once per machine; run again to rotate passwords. `-Container caps_postgres` runs psql inside the compose container. |
-| `new-service.ps1 -Name <Name> -Port <port>` | Creates a layered service (`Caps.<Name>.Domain/Application/Infrastructure/Api`) from the standard skeleton and registers it in `Caps.sln`, the architecture tests and `setup-db-users.ps1`. |
-| `start-all.ps1` | Starts the development infrastructure in Docker (Postgres, Redis, RabbitMQ, Mailpit, SeaweedFS) and builds the solution. |
-| `start-infra.ps1` / `stop-infra.ps1` | `docker compose up -d` / `down` for **everything** in `docker/docker-compose.yml`, including the auth, expert and gateway containers. |
-| `run-all-services.ps1` | Builds and starts every service locally on its standard port (`-CoreOnly`: the database services and the gateway). |
-| `stop-all-services.ps1` | Stops the service processes started locally. |
-| `db/*.sql` | SQL used by `setup-db-users.ps1` and by `docker/postgres/init-service-roles.sh`. |
+| `run-all-services.ps1` | Builds and starts all ten backend services in the background. `-NoBuild` skips build; `-CoreOnly` starts the five database services and gateway. Logs: `.tmp/services/` at repository root. Check `/readyz` for readiness. |
+| `stop-all-services.ps1` | Stops backend processes belonging to this repository; leaves infrastructure and unrelated processes running. |
+| `set-connections.ps1` | Updates development connection strings in each project's user-secrets. Prompts securely for each service; does not create databases, roles or change server passwords. |
 
-## Standard ports
+```powershell
+# Enter the existing connection for each service's own PostgreSQL role.
+.\scripts\set-connections.ps1 -Service auth,expert,billing,workflow,ingestion
+.\scripts\set-connections.ps1 -Service auth,expert,gateway -Name Redis
+.\scripts\set-connections.ps1 -Service auth,notification -Name RabbitMq
+.\scripts\run-all-services.ps1
+.\scripts\stop-all-services.ps1
+```
 
-| Service | Port |
-|---|---|
-| gateway | 5190 |
-| auth | 5194 |
-| expert | 5198 |
-| ingestion | 5004 |
-| workflow | 5030 |
-| notification | 5100 |
-| cronjob | 5102 |
-| rag-query | 5104 |
-| read | 5106 |
-| billing | 5220 |
+Restart services after updating connections. User-secrets are for Development; use environment variables or a secret store in deployment. The connection script never prints connection values.
+
+| Service | Port | Database schemas |
+|---|---|---|
+| gateway | 5190 | none |
+| auth | 5194 | identity |
+| expert | 5198 | expert |
+| billing | 5220 | billing |
+| workflow | 5030 | workspace, review |
+| ingestion | 5004 | knowledge |
+| notification | 5100 | none |
+| cronjob | 5102 | none |
+| rag-query | 5104 | none |
+| read | 5106 | none |
+
+Layered hosts use `<service>/Api/Api.csproj`; other hosts use `<service>/<service>.csproj`. Namespaces and assemblies retain `Caps.*`.
+
+For optional Docker infrastructure, use Docker Compose directly as described in `docker/README.md`. SQL used exclusively by Docker initialization is stored in `docker/postgres/db/`.

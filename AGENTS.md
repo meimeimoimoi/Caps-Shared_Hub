@@ -25,11 +25,12 @@ Tổng quan, cách chạy, route: xem [README.md](README.md). File này chỉ ch
 Hạ tầng (Postgres+pgvector, Redis, RabbitMQ) — PowerShell, chạy ở `BE/`:
 
 ```powershell
-.\scripts\start-all.ps1        # hoặc start-infra.ps1 / stop-infra.ps1 (cần docker/.env, chép từ docker/.env.example)
-.\scripts\setup-db-users.ps1  # một lần mỗi máy: tạo role DB cho từng service + ghi user-secrets
+docker compose -f docker/docker-compose.yml up -d postgres redis rabbitmq mailpit seaweedfs
 ```
 
 Backend (chạy ở `BE/`):
+
+Chuẩn bị DB/role riêng; cập nhật connection bằng `scripts/set-connections.ps1 -Service auth,expert,billing,workflow,ingestion`. Chạy/dừng bằng `scripts/run-all-services.ps1` và `scripts/stop-all-services.ps1`. Service mới dùng 4 project `Domain/Application/Infrastructure/Api`, namespace và assembly `Caps.<Service>.<Layer>`, đăng ký vào solution và test kiến trúc.
 
 ```powershell
 dotnet build Caps.sln
@@ -55,7 +56,7 @@ npm run dev        # :5173
 
 - Pin SDK trong `BE/global.json` (8.0.421). Thuộc tính chung (net8.0, Nullable, ImplicitUsings, LangVersion) nằm ở `Directory.Build.props`, không lặp lại trong `.csproj`.
 - **Version package chỉ pin trong `Directory.Packages.props`** (Central Package Management). `.csproj` dùng `<PackageReference Include="..." />` **không có `Version`**.
-- **Service nhiều nghiệp vụ theo Clean Architecture** (mẫu: `auth/`): 4 project `Caps.<Service>.Domain` / `.Application` / `.Infrastructure` / `.Api`, thư mục service giữ chữ thường.
+- **Service nhiều nghiệp vụ theo Clean Architecture** (mẫu: `auth/`): 4 project `Domain` / `Application` / `Infrastructure` / `Api`, thư mục service giữ chữ thường. Namespace và assembly giữ dạng `Caps.<Service>.<Layer>`; khai báo `RootNamespace` và `AssemblyName` trong từng `.csproj`.
   - `Domain`: entity có hành vi (quy tắc nghiệp vụ nằm trong entity), hằng số, `<Service>Errors`. Không tham chiếu EF Core/ASP.NET.
     Thuộc tính entity dùng `private set`; tạo bằng factory (`User.Register(...)`); thời gian truyền vào từ `TimeProvider`, không gọi `DateTimeOffset.UtcNow` trong entity.
   - `Application`: mỗi use case một file trong `Features/<Nhom>/` gồm `XxxCommand`/`XxxQuery` + `XxxHandler` (implement `ICommandHandler`/`IQueryHandler`); interface (port) trong `Abstractions/`; dịch vụ dùng chung nhỏ trong `Common/`. Mỗi interface một file `I<Ten>.cs` (không gộp nhiều interface, không để chung file với class cài đặt; interface của dịch vụ trong `Common/` nằm cạnh class đó). Chỉ phụ thuộc interface, không dùng `DbContext`, `IOptions`.
@@ -72,7 +73,6 @@ npm run dev        # :5173
   - `AddCommonApi` / `UseCommonApi`: controller, Swagger (bearer + XML), lỗi chung, `/healthz` (sống) và `/readyz` (DB), JWT, thu hồi phiên, CORS, `TimeProvider`.
   - `config.GetRequiredConnectionString("Postgres")` + `AddServiceDatabase<TContext>(conn, "<Service>", "<schema>")` trong `Add<Service>Infrastructure`: DbContext, bảng lịch sử migration, `IUnitOfWork`, health check DB.
   - `app.MigrateInDevelopment<TContext>()` trước `UseCommonApi()` (tắt bằng `Database:ApplyMigrations=false`).
-- Service mới nhiều nghiệp vụ: tạo bằng `.\scripts\new-service.ps1 -Name <Ten> -Port <cong>` (không chép từ service khác). Script sinh 4 project theo khuôn, thêm vào `Caps.sln`, test kiến trúc và `setup-db-users.ps1`. Sau đó thêm route YARP ở `gateway/` nếu đi qua gateway.
 - Trước khi push: `dotnet csharpier format .` rồi `dotnet build Caps.sln -warnaserror` và `dotnet test Caps.sln` phải sạch; CI chạy đúng các bước này cùng 73 integration test.
 - Mọi request từ client đi qua Gateway (`:5190`), không gọi thẳng service từ FE.
 - Messaging dùng MassTransit; hiện mới có contracts + config, chưa có consumer thật.

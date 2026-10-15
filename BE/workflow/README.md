@@ -29,8 +29,13 @@ Clean Architecture, like `auth`: `Domain` (`Workspace/`, `Review/`), `Applicatio
 ## Run (PowerShell from BE)
 
 ~~~powershell
-.\scripts\setup-db-users.ps1                      # once per machine: role caps_workflow + user-secrets
 dotnet run --project workflow/Api    # http://localhost:5030/healthz
 ~~~
 
 EF commands: `dotnet ef migrations add <Name> --project workflow/Infrastructure --startup-project workflow/Api --output-dir Persistence/Migrations`.
+
+Development connection (database and service role must already exist):
+
+```powershell
+.\scripts\set-connections.ps1 -Service workflow
+```
