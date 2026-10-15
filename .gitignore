@@ -12,3 +12,5 @@
 /.tmp/
 **/bin/
 **/obj/
+# Skill launchers ship prebuilt engines in scripts/bin (not build output)
+!/.agents/skills/*/scripts/bin/
