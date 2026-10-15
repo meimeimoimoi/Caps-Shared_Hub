@@ -28,14 +28,14 @@ answer 503 instead of trusting a possibly revoked token.
 
 ## Layout
 
-Clean Architecture, like `auth`: `Caps.Billing.Domain` (entities), `.Application` (use cases under
-`Features/`), `.Infrastructure` (`BillingDbContext` + migrations), `.Api` (controllers).
+Clean Architecture, like `auth`: `Domain` (entities), `Application` (use cases under
+`Features/`), `Infrastructure` (`BillingDbContext` + migrations), `Api` (controllers).
 
 ## Run (PowerShell from BE)
 
 ~~~powershell
 .\scripts\setup-db-users.ps1                    # once per machine: role caps_billing + user-secrets
-dotnet run --project billing/Caps.Billing.Api    # http://localhost:5220/healthz
+dotnet run --project billing/Api    # http://localhost:5220/healthz
 ~~~
 
-EF commands: `dotnet ef migrations add <Name> --project billing/Caps.Billing.Infrastructure --startup-project billing/Caps.Billing.Api --output-dir Persistence/Migrations`.
+EF commands: `dotnet ef migrations add <Name> --project billing/Infrastructure --startup-project billing/Api --output-dir Persistence/Migrations`.

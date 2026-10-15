@@ -94,8 +94,8 @@ cd BE
 dotnet build Caps.sln
 
 # Terminal 1 — Auth (http://localhost:5194/healthz)
-dotnet run --project auth/Caps.Auth.Api
-dotnet run --project expert/Caps.Expert.Api
+dotnet run --project auth/Api
+dotnet run --project expert/Api
 
 # Terminal 2 — Gateway (http://localhost:5190/healthz)
 dotnet run --project gateway/gateway.csproj

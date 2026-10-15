@@ -102,7 +102,7 @@ services:
       dockerfile: docker/Dockerfile.service
       args:
         SERVICE_NAME: auth
-        PROJECT: auth/Caps.Auth.Api/Caps.Auth.Api.csproj
+        PROJECT: auth/Api/Api.csproj
         APP_NAME: Caps.Auth.Api
     container_name: caps_auth
     restart: always
@@ -132,7 +132,7 @@ services:
       dockerfile: docker/Dockerfile.service
       args:
         SERVICE_NAME: expert
-        PROJECT: expert/Caps.Expert.Api/Caps.Expert.Api.csproj
+        PROJECT: expert/Api/Api.csproj
         APP_NAME: Caps.Expert.Api
     container_name: caps_expert
     restart: always

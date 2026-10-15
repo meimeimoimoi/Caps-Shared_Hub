@@ -4,7 +4,6 @@
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
     <PackageReference Include="Swashbuckle.AspNetCore" />
-    <ProjectReference Include="..\Caps.Common.Security\Caps.Common.Security.csproj" />
   </ItemGroup>
 
 </Project>

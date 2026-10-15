@@ -33,8 +33,8 @@ Backend (chạy ở `BE/`):
 
 ```powershell
 dotnet build Caps.sln
-dotnet run --project auth/Caps.Auth.Api       # :5194
-dotnet run --project expert/Caps.Expert.Api   # :5198
+dotnet run --project auth/Api       # :5194
+dotnet run --project expert/Api   # :5198
 dotnet run --project gateway/gateway.csproj    # :5190
 ```
 
@@ -67,7 +67,7 @@ npm run dev        # :5173
 - Service đơn giản (gateway, notification, read…) giữ 1 project, chia thư mục theo tính năng. Tên folder dạng số nhiều, interface có prefix `I`.
 - API nhạy cảm (tiền, duyệt hồ sơ…) gắn `[RequireSessionCheck]`: khi không kiểm tra được phiên đã bị thu hồi (Redis sập) sẽ trả 503 thay vì tin token.
 - Lỗi có chủ đích: `throw <Service>Errors.Xxx()` hoặc `CommonErrors.Xxx()` (`AppException` + `ErrorType`), không trả mã HTTP từ Domain/Application.
-- Code dùng chung đặt vào `common/` (`Caps.Common.Domain/Application/Security/Api/Messaging/Persistence`, `Caps.Contracts`). Chỉ đưa vào khi **cả hai** điều đúng: là code kỹ thuật (không nghiệp vụ, không entity) **và** đã cần ở ít nhất 2 service. Chỉ một service dùng thì để trong service đó. Không copy code dùng chung qua từng service.
+- Code dùng chung đặt vào `common/` (`Domain/Application/Security/Api/Messaging/Persistence`, `Contracts`). Chỉ đưa vào khi **cả hai** điều đúng: là code kỹ thuật (không nghiệp vụ, không entity) **và** đã cần ở ít nhất 2 service. Chỉ một service dùng thì để trong service đó. Không copy code dùng chung qua từng service.
 - Wiring service, không tự viết lại những phần này:
   - `AddCommonApi` / `UseCommonApi`: controller, Swagger (bearer + XML), lỗi chung, `/healthz` (sống) và `/readyz` (DB), JWT, thu hồi phiên, CORS, `TimeProvider`.
   - `config.GetRequiredConnectionString("Postgres")` + `AddServiceDatabase<TContext>(conn, "<Service>", "<schema>")` trong `Add<Service>Infrastructure`: DbContext, bảng lịch sử migration, `IUnitOfWork`, health check DB.

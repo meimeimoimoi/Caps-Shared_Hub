@@ -26,12 +26,12 @@ Response: existing success/data/message envelope. Auth business failures add cod
 
 ## Project layout
 
-- Caps.Auth.Domain: entities with behavior (User, AuthRefreshToken, VerificationToken...), AuthErrors.
-- Caps.Auth.Application: one handler per use case under Features/ (Sessions, EmailVerification, Passwords, Profile); ports under Abstractions/.
-- Caps.Auth.Infrastructure: AuthDbContext + migrations, repositories, JWT/password/outbox adapters (AddAuthInfrastructure).
-- Caps.Auth.Api: controllers, middleware, Program.cs. Run with `dotnet run --project auth/Caps.Auth.Api`.
+- Domain: entities with behavior (User, AuthRefreshToken, VerificationToken...), AuthErrors.
+- Application: one handler per use case under Features/ (Sessions, EmailVerification, Passwords, Profile); ports under Abstractions/.
+- Infrastructure: AuthDbContext + migrations, repositories, JWT/password/outbox adapters (AddAuthInfrastructure).
+- Api: controllers, middleware, Program.cs. Run with `dotnet run --project auth/Api`.
 
-EF commands: `dotnet ef migrations add <Name> --project auth/Caps.Auth.Infrastructure --startup-project auth/Caps.Auth.Api`.
+EF commands: `dotnet ef migrations add <Name> --project auth/Infrastructure --startup-project auth/Api`.
 
 ## Local setup (PowerShell from BE)
 

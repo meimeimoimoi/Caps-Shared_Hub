@@ -17,59 +17,59 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "read", "read\read.csproj", 
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "common", "common", "{8116FF9A-9065-4BFD-BD32-DBE90F74382F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Caps.Common.Domain", "common\Caps.Common.Domain\Caps.Common.Domain.csproj", "{561DD90D-D59E-44DE-82EF-7BCE499F3DC9}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Domain", "common\Domain\Domain.csproj", "{561DD90D-D59E-44DE-82EF-7BCE499F3DC9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Caps.Common.Application", "common\Caps.Common.Application\Caps.Common.Application.csproj", "{735895E1-58DD-4343-98BF-7A6057CF3E50}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Application", "common\Application\Application.csproj", "{735895E1-58DD-4343-98BF-7A6057CF3E50}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Caps.Common.Security", "common\Caps.Common.Security\Caps.Common.Security.csproj", "{3B89A9A8-C3BC-473A-8E05-6974E34FC0B1}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Security", "common\Security\Security.csproj", "{3B89A9A8-C3BC-473A-8E05-6974E34FC0B1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Caps.Common.Api", "common\Caps.Common.Api\Caps.Common.Api.csproj", "{7362C328-A5A6-4EE2-BD48-1C31391CA0B4}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Api", "common\Api\Api.csproj", "{7362C328-A5A6-4EE2-BD48-1C31391CA0B4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Caps.Common.Messaging", "common\Caps.Common.Messaging\Caps.Common.Messaging.csproj", "{47699063-6DC0-4B68-8293-BE48515A1081}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Messaging", "common\Messaging\Messaging.csproj", "{47699063-6DC0-4B68-8293-BE48515A1081}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Caps.Common.Persistence", "common\Caps.Common.Persistence\Caps.Common.Persistence.csproj", "{C43BE498-2839-4105-897E-E6EAF0049F3C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Persistence", "common\Persistence\Persistence.csproj", "{C43BE498-2839-4105-897E-E6EAF0049F3C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Caps.Contracts", "common\Caps.Contracts\Caps.Contracts.csproj", "{9F55442B-2AC2-45CF-BB54-ADF27A99C68C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Contracts", "common\Contracts\Contracts.csproj", "{9F55442B-2AC2-45CF-BB54-ADF27A99C68C}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "auth", "auth", "{9A60E489-B334-44B8-AF71-E711EECF6C79}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Caps.Auth.Domain", "auth\Caps.Auth.Domain\Caps.Auth.Domain.csproj", "{BCA325A2-C4F1-4A11-AB94-C3B62C18A41B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Domain", "auth\Domain\Domain.csproj", "{BCA325A2-C4F1-4A11-AB94-C3B62C18A41B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Caps.Auth.Application", "auth\Caps.Auth.Application\Caps.Auth.Application.csproj", "{9631777E-3450-4018-B58B-A0034BE93DAE}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Application", "auth\Application\Application.csproj", "{9631777E-3450-4018-B58B-A0034BE93DAE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Caps.Auth.Infrastructure", "auth\Caps.Auth.Infrastructure\Caps.Auth.Infrastructure.csproj", "{C59AEB91-8FFC-44ED-9899-4D1A548C8E3F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Infrastructure", "auth\Infrastructure\Infrastructure.csproj", "{C59AEB91-8FFC-44ED-9899-4D1A548C8E3F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Caps.Auth.Api", "auth\Caps.Auth.Api\Caps.Auth.Api.csproj", "{90DF6823-2CBB-45DA-B6A9-D63EEF4CEBBB}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Api", "auth\Api\Api.csproj", "{90DF6823-2CBB-45DA-B6A9-D63EEF4CEBBB}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "expert", "expert", "{D443D3C8-FDC4-427A-ACF7-69B5564BB3E2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Caps.Expert.Domain", "expert\Caps.Expert.Domain\Caps.Expert.Domain.csproj", "{9AD464D1-5D0F-4724-9494-D3EA5000D44C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Domain", "expert\Domain\Domain.csproj", "{9AD464D1-5D0F-4724-9494-D3EA5000D44C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Caps.Expert.Application", "expert\Caps.Expert.Application\Caps.Expert.Application.csproj", "{58116FE0-D855-4C3E-B9CB-0DD34AE24F7E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Application", "expert\Application\Application.csproj", "{58116FE0-D855-4C3E-B9CB-0DD34AE24F7E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Caps.Expert.Infrastructure", "expert\Caps.Expert.Infrastructure\Caps.Expert.Infrastructure.csproj", "{A05960FC-93DB-486E-9D0D-1A1330CB708B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Infrastructure", "expert\Infrastructure\Infrastructure.csproj", "{A05960FC-93DB-486E-9D0D-1A1330CB708B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Caps.Expert.Api", "expert\Caps.Expert.Api\Caps.Expert.Api.csproj", "{F3BD46D5-A74C-41B9-8D0E-D4088FFB93B9}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Api", "expert\Api\Api.csproj", "{F3BD46D5-A74C-41B9-8D0E-D4088FFB93B9}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "billing", "billing", "{F5112CC2-E832-43B2-83FA-239B35BA246F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Caps.Billing.Domain", "billing\Caps.Billing.Domain\Caps.Billing.Domain.csproj", "{73640BF7-B25E-410E-B149-AB39828A8B68}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Domain", "billing\Domain\Domain.csproj", "{73640BF7-B25E-410E-B149-AB39828A8B68}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Caps.Billing.Application", "billing\Caps.Billing.Application\Caps.Billing.Application.csproj", "{528557B1-5841-4889-9A38-CF896C89764B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Application", "billing\Application\Application.csproj", "{528557B1-5841-4889-9A38-CF896C89764B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Caps.Billing.Infrastructure", "billing\Caps.Billing.Infrastructure\Caps.Billing.Infrastructure.csproj", "{A921BD30-F6E6-4E15-8A74-3D3B0E06E191}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Infrastructure", "billing\Infrastructure\Infrastructure.csproj", "{A921BD30-F6E6-4E15-8A74-3D3B0E06E191}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Caps.Billing.Api", "billing\Caps.Billing.Api\Caps.Billing.Api.csproj", "{638B5471-D812-4D9E-8098-A324045E4F47}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Api", "billing\Api\Api.csproj", "{638B5471-D812-4D9E-8098-A324045E4F47}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflow", "workflow", "{C8DBBABB-977D-49D4-872F-5A8F664E7D67}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Caps.Workflow.Domain", "workflow\Caps.Workflow.Domain\Caps.Workflow.Domain.csproj", "{84DB6CD4-15D2-49B5-A29C-7975B1608D07}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Domain", "workflow\Domain\Domain.csproj", "{84DB6CD4-15D2-49B5-A29C-7975B1608D07}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Caps.Workflow.Application", "workflow\Caps.Workflow.Application\Caps.Workflow.Application.csproj", "{231D9F7A-FADF-40A4-B1CE-DFB49520DCA6}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Application", "workflow\Application\Application.csproj", "{231D9F7A-FADF-40A4-B1CE-DFB49520DCA6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Caps.Workflow.Infrastructure", "workflow\Caps.Workflow.Infrastructure\Caps.Workflow.Infrastructure.csproj", "{F785BA25-42FE-439C-8A92-735EC6952DA9}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Infrastructure", "workflow\Infrastructure\Infrastructure.csproj", "{F785BA25-42FE-439C-8A92-735EC6952DA9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Caps.Workflow.Api", "workflow\Caps.Workflow.Api\Caps.Workflow.Api.csproj", "{12FB04B7-753C-4775-AF0E-796D575D7DCE}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Api", "workflow\Api\Api.csproj", "{12FB04B7-753C-4775-AF0E-796D575D7DCE}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{A44A6DD2-D687-4399-A3ED-0FC23BFA4F23}"
 EndProject

@@ -28,10 +28,10 @@ $sqlDir = Join-Path $PSScriptRoot "db"
 
 # Service role, the schemas it owns, and the project that reads ConnectionStrings:Postgres
 $services = @(
-    @{ Role = "caps_auth";      Schemas = @("identity");             Project = "auth\Caps.Auth.Api" },
-    @{ Role = "caps_expert";    Schemas = @("expert");               Project = "expert\Caps.Expert.Api" },
-    @{ Role = "caps_billing";   Schemas = @("billing");              Project = "billing\Caps.Billing.Api" },
-    @{ Role = "caps_workflow";  Schemas = @("workspace", "review");  Project = "workflow\Caps.Workflow.Api" },
+    @{ Role = "caps_auth";      Schemas = @("identity");             Project = "auth\Api" },
+    @{ Role = "caps_expert";    Schemas = @("expert");               Project = "expert\Api" },
+    @{ Role = "caps_billing";   Schemas = @("billing");              Project = "billing\Api" },
+    @{ Role = "caps_workflow";  Schemas = @("workspace", "review");  Project = "workflow\Api" },
     @{ Role = "caps_ingestion"; Schemas = @("knowledge");            Project = "ingestion" }
 )
 

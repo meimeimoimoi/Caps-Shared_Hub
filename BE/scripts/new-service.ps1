@@ -40,7 +40,7 @@ Write-Template "Caps.$Name.Domain/Caps.$Name.Domain.csproj" @'
 <Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
-    <ProjectReference Include="..\..\common\Caps.Common.Domain\Caps.Common.Domain.csproj" />
+    <ProjectReference Include="..\..\common\Domain\Domain.csproj" />
   </ItemGroup>
 
 </Project>
@@ -52,7 +52,7 @@ Write-Template "Caps.$Name.Application/Caps.$Name.Application.csproj" @'
 
   <ItemGroup>
     <ProjectReference Include="..\Caps.__Name__.Domain\Caps.__Name__.Domain.csproj" />
-    <ProjectReference Include="..\..\common\Caps.Common.Application\Caps.Common.Application.csproj" />
+    <ProjectReference Include="..\..\common\Application\Application.csproj" />
   </ItemGroup>
 
 </Project>
@@ -80,7 +80,7 @@ Write-Template "Caps.$Name.Infrastructure/Caps.$Name.Infrastructure.csproj" @'
     <PackageReference Include="Microsoft.EntityFrameworkCore" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
     <ProjectReference Include="..\Caps.__Name__.Application\Caps.__Name__.Application.csproj" />
-    <ProjectReference Include="..\..\common\Caps.Common.Persistence\Caps.Common.Persistence.csproj" />
+    <ProjectReference Include="..\..\common\Persistence\Persistence.csproj" />
   </ItemGroup>
 
 </Project>
@@ -141,7 +141,7 @@ Write-Template "Caps.$Name.Api/Caps.$Name.Api.csproj" @'
     <PackageReference Include="OpenApiUi" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" />
     <ProjectReference Include="..\Caps.__Name__.Infrastructure\Caps.__Name__.Infrastructure.csproj" />
-    <ProjectReference Include="..\..\common\Caps.Common.Api\Caps.Common.Api.csproj" />
+    <ProjectReference Include="..\..\common\Api\Api.csproj" />
   </ItemGroup>
 
 </Project>

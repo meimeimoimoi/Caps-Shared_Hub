@@ -10,7 +10,7 @@
     <PackageReference Include="xunit" />
     <PackageReference Include="xunit.runner.visualstudio" />
     <Using Include="Xunit" />
-    <ProjectReference Include="..\..\expert\Caps.Expert.Domain\Caps.Expert.Domain.csproj" />
+    <ProjectReference Include="..\..\expert\Domain\Domain.csproj" />
   </ItemGroup>
 
 </Project>

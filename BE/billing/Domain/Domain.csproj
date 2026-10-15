@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>Caps.Billing.Domain</RootNamespace>
+    <AssemblyName>Caps.Billing.Domain</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\common\Domain\Domain.csproj" />
+  </ItemGroup>
+
+</Project>

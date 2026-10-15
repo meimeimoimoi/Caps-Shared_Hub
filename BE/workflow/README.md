@@ -23,14 +23,14 @@ data through events or the access token, never by reading their schemas.
 
 ## Layout
 
-Clean Architecture, like `auth`: `Caps.Workflow.Domain` (`Workspace/`, `Review/`), `.Application`,
-`.Infrastructure` (`WorkflowDbContext` + migrations), `.Api`.
+Clean Architecture, like `auth`: `Domain` (`Workspace/`, `Review/`), `Application`,
+`Infrastructure` (`WorkflowDbContext` + migrations), `Api`.
 
 ## Run (PowerShell from BE)
 
 ~~~powershell
 .\scripts\setup-db-users.ps1                      # once per machine: role caps_workflow + user-secrets
-dotnet run --project workflow/Caps.Workflow.Api    # http://localhost:5030/healthz
+dotnet run --project workflow/Api    # http://localhost:5030/healthz
 ~~~
 
-EF commands: `dotnet ef migrations add <Name> --project workflow/Caps.Workflow.Infrastructure --startup-project workflow/Caps.Workflow.Api --output-dir Persistence/Migrations`.
+EF commands: `dotnet ef migrations add <Name> --project workflow/Infrastructure --startup-project workflow/Api --output-dir Persistence/Migrations`.

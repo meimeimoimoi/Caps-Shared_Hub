@@ -9,7 +9,7 @@
     <PackageReference Include="Swashbuckle.AspNetCore" />
     <PackageReference Include="OpenApiUi" />
     <PackageReference Include="Yarp.ReverseProxy" />
-    <ProjectReference Include="..\common\Caps.Common.Api\Caps.Common.Api.csproj" />
+    <ProjectReference Include="..\common\Api\Api.csproj" />
   </ItemGroup>
 
 </Project>
