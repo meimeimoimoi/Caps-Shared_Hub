@@ -1,6 +1,6 @@
 # Multi-stage Dockerfile Template for .NET 8 Microservices
 # Usage (single-project service): docker build -f docker/Dockerfile.service --build-arg SERVICE_NAME=gateway -t caps-gateway:latest .
-# Usage (layered service): add --build-arg PROJECT=auth/Caps.Auth.Api/Caps.Auth.Api.csproj --build-arg APP_NAME=Caps.Auth.Api
+# Usage (layered service): add --build-arg PROJECT=auth/Api/Api.csproj --build-arg APP_NAME=Caps.Auth.Api
 
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
 WORKDIR /app
@@ -16,7 +16,7 @@ WORKDIR /src
 # Build props + central package versions (required by every project)
 COPY ["Directory.Build.props", "Directory.Packages.props", "global.json", "./"]
 
-# Shared libraries (common/Caps.Common.*, common/Caps.Contracts)
+# Shared libraries (common/*)
 COPY common/ common/
 
 # Service source (all of its projects)

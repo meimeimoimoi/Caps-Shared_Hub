@@ -6,10 +6,10 @@ It does **not** own accounts or roles (identity service) or case handling (workf
 
 ## Project layout
 
-- Caps.Expert.Domain: `ExpertProfile`, `ExpertApplication` (status transitions + audit events), `ExpertEvidence`, `ApplicationRules`, `ExpertErrors`.
-- Caps.Expert.Application: one handler per use case under `Features/Applications`; ports under `Abstractions/`.
-- Caps.Expert.Infrastructure: `ExpertDbContext` (schema `expert`) + migrations, repositories, per-user advisory lock, S3 storage.
-- Caps.Expert.Api: `ApplicationsController`, host setup. Swagger shows each endpoint's codes.
+- Domain: `ExpertProfile`, `ExpertApplication` (status transitions + audit events), `ExpertEvidence`, `ApplicationRules`, `ExpertErrors`.
+- Application: one handler per use case under `Features/Applications`; ports under `Abstractions/`.
+- Infrastructure: `ExpertDbContext` (schema `expert`) + migrations, repositories, per-user advisory lock, S3 storage.
+- Api: `ApplicationsController`, host setup. Swagger shows each endpoint's codes.
 
 ## Boundaries with other services
 
@@ -22,11 +22,16 @@ It does **not** own accounts or roles (identity service) or case handling (workf
 ## Run (PowerShell from BE)
 
 ~~~powershell
-.\scripts\setup-db-users.ps1                  # once per machine: role caps_expert + user-secrets
-dotnet run --project expert/Caps.Expert.Api    # http://localhost:5198/healthz, Swagger at /swagger
+dotnet run --project expert/Api    # http://localhost:5198/healthz, Swagger at /swagger
 ~~~
 
 The gateway routes `/api/v1/experts/**` here. Development applies migrations on startup and needs SeaweedFS
 (S3 API on :8333) for evidence files.
 
-EF commands: `dotnet ef migrations add <Name> --project expert/Caps.Expert.Infrastructure --startup-project expert/Caps.Expert.Api --output-dir Persistence/Migrations`.
+EF commands: `dotnet ef migrations add <Name> --project expert/Infrastructure --startup-project expert/Api --output-dir Persistence/Migrations`.
+
+Development connection (database and service role must already exist):
+
+```powershell
+.\scripts\set-connections.ps1 -Service expert
+```

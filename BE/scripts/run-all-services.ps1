@@ -1,10 +1,10 @@
-<#
+﻿<#
 .SYNOPSIS
-    Build va khoi chay dong thoi tat ca cac microservices trong Caps Backend.
+    Builds and starts the ten backend services in the background.
 .DESCRIPTION
-    Script se build Caps.sln, sau do khoi chay cac service theo thu tu:
+    Builds Caps.sln, then starts database services and the remaining hosts:
     1. auth        (identity schema, http://localhost:5194)
-    2. billing     (billing schema, http://localhost:5220)
+    2. expert (http://localhost:5198), billing     (billing schema, http://localhost:5220)
     3. workflow    (workspace & review schemas, http://localhost:5030)
     4. ingestion   (knowledge schema, http://localhost:5004)
     5. gateway     (API gateway, http://localhost:5190)
@@ -15,7 +15,7 @@
     .\run-all-services.ps1 -CoreOnly
 #>
 param(
-    [switch]$CoreOnly = $false, # Chi chay 4 DB services + gateway
+    [switch]$CoreOnly = $false, # Start the five database services and gateway
     [switch]$NoBuild = $false
 )
 
@@ -27,7 +27,7 @@ Write-Host "==========================================================" -Foregro
 Write-Host "       CAPS SHARED HUB - MULTI-SERVICE LAUNCHER           " -ForegroundColor Cyan
 Write-Host "==========================================================" -ForegroundColor Cyan
 
-# 1. Build Solution
+# Build the solution.
 if (-not $NoBuild) {
     Write-Host "`n[1/3] Dang build Caps.sln..." -ForegroundColor Yellow
     dotnet build $slnPath --nologo -v m
@@ -38,12 +38,12 @@ if (-not $NoBuild) {
     Write-Host "-> Build thanh cong!" -ForegroundColor Green
 }
 
-# 2. Danh sach cac service can chay
+# Projects use the current layered and single-project service layouts.
 $dbServices = @(
-    @{ Name = "auth";      Port = 5194; Path = (Join-Path $beRoot "auth\Caps.Auth.Api\Caps.Auth.Api.csproj") },
-    @{ Name = "expert";    Port = 5198; Path = (Join-Path $beRoot "expert\Caps.Expert.Api\Caps.Expert.Api.csproj") },
-    @{ Name = "billing";   Port = 5220; Path = (Join-Path $beRoot "billing\Caps.Billing.Api\Caps.Billing.Api.csproj") },
-    @{ Name = "workflow";  Port = 5030; Path = (Join-Path $beRoot "workflow\Caps.Workflow.Api\Caps.Workflow.Api.csproj") },
+    @{ Name = "auth";      Port = 5194; Path = (Join-Path $beRoot "auth\Api\Api.csproj") },
+    @{ Name = "expert";    Port = 5198; Path = (Join-Path $beRoot "expert\Api\Api.csproj") },
+    @{ Name = "billing";   Port = 5220; Path = (Join-Path $beRoot "billing\Api\Api.csproj") },
+    @{ Name = "workflow";  Port = 5030; Path = (Join-Path $beRoot "workflow\Api\Api.csproj") },
     @{ Name = "ingestion"; Port = 5004; Path = (Join-Path $beRoot "ingestion\ingestion.csproj") }
 )
 
@@ -61,34 +61,36 @@ $servicesToRun = if ($CoreOnly) {
     $dbServices + $otherServices
 }
 
-Write-Host "`n[2/3] Khoi chay cac service trong cua so rieng biet..." -ForegroundColor Yellow
+Write-Host "`n[2/3] Khoi chay cac service o nen..." -ForegroundColor Yellow
 
+# Validate every selected project before starting any service.
+foreach ($svc in $servicesToRun) {
+    if (-not (Test-Path -LiteralPath $svc.Path -PathType Leaf)) {
+        throw "Project not found: $($svc.Path)"
+    }
+}
+$logDir = Join-Path $beRoot "..\.tmp\services"
+New-Item -ItemType Directory -Force -Path $logDir | Out-Null
 foreach ($svc in $servicesToRun) {
     $svcName = $svc.Name
-    $projPath = $svc.Path
     $port = $svc.Port
-
-    Write-Host "  -> Dang bat [$svcName] tren port $port..." -ForegroundColor Cyan
-
-    $command = @"
-`$host.UI.RawUI.WindowTitle = '[$svcName] Caps Service - Port $port';
-Write-Host '===================================================' -ForegroundColor Green;
-Write-Host ' Dang chay: $svcName (Port $port)' -ForegroundColor Green;
-Write-Host ' Thu muc:   $projPath' -ForegroundColor DarkGray;
-Write-Host '===================================================' -ForegroundColor Green;
-dotnet run --project '$projPath' --no-build;
-Read-Host 'Service da dung. Nhan Enter de dong...';
-"@
-
-    Start-Process powershell -ArgumentList "-NoExit", "-Command", $command
-    # Delay nho giua cac service de tranh race condition khi bootstrap DB
-    Start-Sleep -Milliseconds 1500
+    Write-Host "Starting $svcName on http://localhost:$port" -ForegroundColor Cyan
+    # Explicit URLs keep the standard ports independent of launch profiles and prevent browser windows.
+    $arguments = @("run", "--project", ('"' + $svc.Path + '"'), "--no-build", "--no-launch-profile", "--", "--urls", "http://localhost:$port")
+    $previousEnvironment = $env:ASPNETCORE_ENVIRONMENT
+    try {
+        $env:ASPNETCORE_ENVIRONMENT = "Development"
+        $process = Start-Process -FilePath dotnet -ArgumentList $arguments -WorkingDirectory $beRoot -WindowStyle Hidden -PassThru -RedirectStandardOutput (Join-Path $logDir "$svcName.log") -RedirectStandardError (Join-Path $logDir "$svcName.error.log")
+        Write-Host "  PID $($process.Id); logs: $logDir"
+    } finally {
+        $env:ASPNETCORE_ENVIRONMENT = $previousEnvironment
+    }
 }
-
-Write-Host "`n[3/3] Tat ca cac service da duoc khoi chay!" -ForegroundColor Green
+Write-Host "`n[3/3] Da gui lenh khoi chay. Kiem tra log va /readyz de xac nhan!" -ForegroundColor Green
 Write-Host "==========================================================" -ForegroundColor Cyan
 Write-Host "Danh sach endpoint Swagger / OpenAPI UI:" -ForegroundColor White
 Write-Host "  - auth:        http://localhost:5194/openapi-ui" -ForegroundColor Gray
+Write-Host "  - expert:      http://localhost:5198/openapi-ui" -ForegroundColor Gray
 Write-Host "  - billing:     http://localhost:5220/openapi-ui" -ForegroundColor Gray
 Write-Host "  - workflow:    http://localhost:5030/openapi-ui" -ForegroundColor Gray
 Write-Host "  - ingestion:   http://localhost:5004/openapi-ui" -ForegroundColor Gray

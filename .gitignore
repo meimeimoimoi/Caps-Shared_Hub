@@ -13,6 +13,32 @@
 **/bin/
 **/obj/
 
+# Python virtual environments and installed dependencies
+.venv/
+venv/
+env/
+ENV/
+__pypackages__/
+
+# Python bytecode and tooling caches
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.pytype/
+.tox/
+.nox/
+
+# Python packaging and coverage output
+*.egg-info/
+*.egg
+.eggs/
+pip-wheel-metadata/
+.coverage
+.coverage.*
+htmlcov/
+
 # Local AI agent skills and Codex agent configs
 /.agents/
 /.codex/agents/

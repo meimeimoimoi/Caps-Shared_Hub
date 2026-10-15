@@ -12,8 +12,8 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
-    <ProjectReference Include="..\common\Caps.Common.Api\Caps.Common.Api.csproj" />
-    <ProjectReference Include="..\common\Caps.Common.Persistence\Caps.Common.Persistence.csproj" />
+    <ProjectReference Include="..\common\Api\Api.csproj" />
+    <ProjectReference Include="..\common\Persistence\Persistence.csproj" />
   </ItemGroup>
 
 </Project>

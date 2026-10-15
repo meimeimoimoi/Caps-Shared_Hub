@@ -9,7 +9,7 @@ Local infrastructure and container images for the services.
 | `docker-compose.yml` | Postgres, Redis, RabbitMQ, Mailpit, SeaweedFS, and the auth, expert and gateway containers |
 | `Dockerfile.service` | One multi-stage image for any service (`SERVICE_NAME`, or `PROJECT` + `APP_NAME` for layered services) |
 | `.env.example` | Every password compose needs; copy to `.env` (gitignored) and change the values |
-| `postgres/init-service-roles.sh` | Creates one database role per service on the first start of the volume (same SQL as `scripts/setup-db-users.ps1`) |
+| `postgres/init-service-roles.sh` | Initializes service roles on a new Docker volume using `postgres/db/*.sql` |
 | `seaweedfs/s3.json` | Development S3 keys for the evidence bucket |
 | `secrets/jwt-signing-key.pem` | auth's private signing key (gitignored); create it as `.env.example` explains |
 
@@ -52,5 +52,4 @@ published for local debugging; a real deployment publishes the gateway alone.
 
 ## Changing a role password later
 
-The init script only runs when the Postgres volume is created. Afterwards, run `scripts/setup-db-users.ps1
--Container caps_postgres -Database caps_db` or recreate the volume.
+Change the role password through a PostgreSQL administrator, then update docker/.env for containers and run scripts/set-connections.ps1 for local hosts. The connection script does not change server passwords.

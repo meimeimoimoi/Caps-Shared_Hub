@@ -18,7 +18,7 @@ Hệ thống Backend xây dựng theo kiến trúc **Microservices / Modular Arc
 * **`cronjob`**: Dịch vụ chạy các tác vụ định kỳ ngầm (Background Worker).
 
 ### 2. Thư viện dùng chung (`common`)
-Chỉ chứa code kỹ thuật, tách theo tầng: `Caps.Common.Domain` · `Application` · `Security` · `Api` · `Persistence` · `Messaging`, cùng `Caps.Contracts` (sự kiện giữa các service). Chi tiết và quy tắc thêm code: [common/README.md](common/README.md).
+Chỉ chứa code kỹ thuật, tách theo tầng: `Domain` · `Application` · `Security` · `Api` · `Persistence` · `Messaging`, cùng `Contracts` (sự kiện giữa các service). Chi tiết và quy tắc thêm code: [common/README.md](common/README.md).
 
 ### 3. Tài liệu từng thư mục
 Mỗi thư mục có README riêng: service lo việc gì, không lo việc gì, cấu trúc, cách chạy, cấu hình.
@@ -52,19 +52,18 @@ Mỗi thư mục có README riêng: service lo việc gì, không lo việc gì,
 > Kiến trúc đã hoàn thiện P0-P2: Central Package Management, `common/` cross-cutting,
 > `auth` JWT+EF thật, `gateway` YARP, `docker-compose` full-stack.
 
-1. **Khởi động nhanh (khuyên dùng)**:
+1. **Chạy backend sau khi đã chuẩn bị hạ tầng và connection**:
    ```powershell
-   .\scripts\start-all.ps1
+   .\scripts\run-all-services.ps1
    ```
 
 2. **Hoặc thủ công — Hạ tầng (Postgres + pgvector, Redis, RabbitMQ)**:
    Mở Terminal tại thư mục `BE/` và chạy:
    ```powershell
-   .\scripts\start-infra.ps1
+   docker compose -f docker/docker-compose.yml up -d postgres redis rabbitmq mailpit seaweedfs
    ```
    * *RabbitMQ Management Dashboard*: [http://localhost:15672](http://localhost:15672) (User/Pass: `guest` / `guest`)
    * *PostgreSQL Connection*: `localhost:5432` (admin `postgres`, mật khẩu đặt trong `docker/.env`, chép từ `docker/.env.example`)
-   * Lần đầu chạy `.\scripts\setup-db-users.ps1` để tạo role riêng cho từng service (chỉ có quyền trên schema của mình) và ghi chuỗi kết nối vào user-secrets.
 
 3. **Biên dịch Dự án**:
    ```powershell
@@ -73,8 +72,8 @@ Mỗi thư mục có README riêng: service lo việc gì, không lo việc gì,
 
 4. **Chạy Service mong muốn** (Ví dụ `auth` service):
    ```powershell
-   dotnet run --project auth/Caps.Auth.Api    # http://localhost:5194/healthz
-   dotnet run --project expert/Caps.Expert.Api # http://localhost:5198/healthz (xem expert/README.md)
+   dotnet run --project auth/Api    # http://localhost:5194/healthz
+   dotnet run --project expert/Api # http://localhost:5198/healthz (xem expert/README.md)
    dotnet run --project gateway/gateway.csproj # http://localhost:5190/healthz
    ```
 
@@ -93,9 +92,15 @@ Mỗi thư mục có README riêng: service lo việc gì, không lo việc gì,
 
 6. **Dừng Hạ tầng khi hoàn thành**:
    ```powershell
-   .\scripts\stop-infra.ps1
+   docker compose -f docker/docker-compose.yml stop postgres redis rabbitmq mailpit seaweedfs
    ```
 
 ## Auth implementation
 
 Xem [auth/README.md](auth/README.md) cho contract 12 API v1, migrations, refresh cookie, email notification và bộ kiểm thử qua YARP. Chuỗi kết nối Postgres của auth đặt bằng User Secrets (mỗi máy chạy 1 lần, xem auth/README.md); chạy notification để nhận email qua RabbitMQ.
+
+Cập nhật connection có sẵn (không tạo DB/role):
+```powershell
+.\scripts\set-connections.ps1 -Service auth,expert,billing,workflow,ingestion
+.\scripts\stop-all-services.ps1
+```

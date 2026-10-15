@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>Caps.Expert.Domain</RootNamespace>
+    <AssemblyName>Caps.Expert.Domain</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\common\Domain\Domain.csproj" />
+  </ItemGroup>
+
+</Project>

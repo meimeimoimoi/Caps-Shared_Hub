@@ -27,13 +27,13 @@ if ($env:OS -eq "Windows_NT") { $hidden.WindowStyle = "Hidden" }
 $services = @()
 try {
     $env:ASPNETCORE_URLS = "http://127.0.0.1:55194"
-    $authDll = Join-Path $repoRoot "BE/auth/Caps.Auth.Api/bin/Debug/net8.0/Caps.Auth.Api.dll"
-    $services += Start-Process -FilePath $Dotnet -ArgumentList ('"' + $authDll + '"') -WorkingDirectory (Join-Path $repoRoot "BE/auth/Caps.Auth.Api") @hidden -PassThru -RedirectStandardOutput (Join-Path $testArtifacts "auth.log") -RedirectStandardError (Join-Path $testArtifacts "auth-error.log")
+    $authDll = Join-Path $repoRoot "BE/auth/Api/bin/Debug/net8.0/Caps.Auth.Api.dll"
+    $services += Start-Process -FilePath $Dotnet -ArgumentList ('"' + $authDll + '"') -WorkingDirectory (Join-Path $repoRoot "BE/auth/Api") @hidden -PassThru -RedirectStandardOutput (Join-Path $testArtifacts "auth.log") -RedirectStandardError (Join-Path $testArtifacts "auth-error.log")
     # Expert and gateway verify tokens with the public keys auth publishes
     $env:Jwt__JwksUrl = "http://127.0.0.1:55194/.well-known/jwks.json"
     $env:ASPNETCORE_URLS = "http://127.0.0.1:55198"
-    $expertDll = Join-Path $repoRoot "BE/expert/Caps.Expert.Api/bin/Debug/net8.0/Caps.Expert.Api.dll"
-    $services += Start-Process -FilePath $Dotnet -ArgumentList ('"' + $expertDll + '"') -WorkingDirectory (Join-Path $repoRoot "BE/expert/Caps.Expert.Api") @hidden -PassThru -RedirectStandardOutput (Join-Path $testArtifacts "expert.log") -RedirectStandardError (Join-Path $testArtifacts "expert-error.log")
+    $expertDll = Join-Path $repoRoot "BE/expert/Api/bin/Debug/net8.0/Caps.Expert.Api.dll"
+    $services += Start-Process -FilePath $Dotnet -ArgumentList ('"' + $expertDll + '"') -WorkingDirectory (Join-Path $repoRoot "BE/expert/Api") @hidden -PassThru -RedirectStandardOutput (Join-Path $testArtifacts "expert.log") -RedirectStandardError (Join-Path $testArtifacts "expert-error.log")
     $env:ASPNETCORE_URLS = "http://127.0.0.1:55190"
     [Environment]::SetEnvironmentVariable("ReverseProxy__Clusters__expert-cluster__Destinations__expert__Address", "http://127.0.0.1:55198")
     [Environment]::SetEnvironmentVariable("ReverseProxy__Clusters__auth-cluster__Destinations__auth__Address", "http://127.0.0.1:55194")

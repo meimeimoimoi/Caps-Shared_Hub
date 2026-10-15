@@ -1,8 +1,0 @@
-<Project Sdk="Microsoft.NET.Sdk">
-
-  <ItemGroup>
-    <ProjectReference Include="..\Caps.Billing.Domain\Caps.Billing.Domain.csproj" />
-    <ProjectReference Include="..\..\common\Caps.Common.Application\Caps.Common.Application.csproj" />
-  </ItemGroup>
-
-</Project>

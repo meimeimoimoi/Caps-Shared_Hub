@@ -1,5 +1,5 @@
 #!/bin/sh
-# Runs once, when the postgres volume is first initialised. Same SQL as scripts/setup-db-users.ps1:
+# Runs once, when the postgres volume is first initialised. Uses the SQL files under docker/postgres/db:
 # one role per service, owning only its own schemas. Passwords come from docker/.env.
 set -eu
 

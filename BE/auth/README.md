@@ -26,19 +26,19 @@ Response: existing success/data/message envelope. Auth business failures add cod
 
 ## Project layout
 
-- Caps.Auth.Domain: entities with behavior (User, AuthRefreshToken, VerificationToken...), AuthErrors.
-- Caps.Auth.Application: one handler per use case under Features/ (Sessions, EmailVerification, Passwords, Profile); ports under Abstractions/.
-- Caps.Auth.Infrastructure: AuthDbContext + migrations, repositories, JWT/password/outbox adapters (AddAuthInfrastructure).
-- Caps.Auth.Api: controllers, middleware, Program.cs. Run with `dotnet run --project auth/Caps.Auth.Api`.
+- Domain: entities with behavior (User, AuthRefreshToken, VerificationToken...), AuthErrors.
+- Application: one handler per use case under Features/ (Sessions, EmailVerification, Passwords, Profile); ports under Abstractions/.
+- Infrastructure: AuthDbContext + migrations, repositories, JWT/password/outbox adapters (AddAuthInfrastructure).
+- Api: controllers, middleware, Program.cs. Run with `dotnet run --project auth/Api`.
 
-EF commands: `dotnet ef migrations add <Name> --project auth/Caps.Auth.Infrastructure --startup-project auth/Caps.Auth.Api`.
+EF commands: `dotnet ef migrations add <Name> --project auth/Infrastructure --startup-project auth/Api`.
 
 ## Local setup (PowerShell from BE)
 
-Use .NET SDK 8.0.421 (global.json), PostgreSQL and RabbitMQ. The Postgres connection string is not stored in appsettings. Each service connects with its own PostgreSQL role, which owns only its schema. Create the roles and store every connection string in User Secrets once per machine (run again to rotate the passwords):
+Use .NET SDK 8.0.421 (global.json), PostgreSQL and RabbitMQ. The Postgres connection string is not stored in appsettings. Each service connects with its own PostgreSQL role, which owns only its schema. Provision the roles separately, then store the existing connection string in User Secrets:
 
 ~~~powershell
-.\scripts\setup-db-users.ps1                  # local PostgreSQL, asks for the admin password
+.\scripts\set-connections.ps1 -Service auth
 ~~~
 
 The auth service connects as `caps_auth` and owns the `identity` schema.

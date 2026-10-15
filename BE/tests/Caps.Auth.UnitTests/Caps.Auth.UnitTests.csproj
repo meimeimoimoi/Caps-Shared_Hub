@@ -10,7 +10,7 @@
     <PackageReference Include="xunit" />
     <PackageReference Include="xunit.runner.visualstudio" />
     <Using Include="Xunit" />
-    <ProjectReference Include="..\..\auth\Caps.Auth.Domain\Caps.Auth.Domain.csproj" />
+    <ProjectReference Include="..\..\auth\Domain\Domain.csproj" />
   </ItemGroup>
 
 </Project>

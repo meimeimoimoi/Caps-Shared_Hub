@@ -14,8 +14,7 @@ database, events or endpoints yet.
   the database roles do not allow it anyway.
 - Keep one project and split by feature: `Features/<View>/` with its consumer, store and controller. Move to the
   four Clean Architecture projects only if real business rules appear.
-- Give it its own schema and role in `scripts/setup-db-users.ps1`, and register the database with
-  `AddServiceDatabase` (see `common/README.md`).
+- Provision a dedicated database role/schema and register `AddServiceDatabase` (see `common/README.md`).
 - Route its endpoints through `gateway/appsettings.json`.
 
 ## Run (PowerShell from BE)
