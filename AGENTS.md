@@ -85,13 +85,13 @@ npm run dev        # :5173
 - **Gọi API qua `lib/api-client` (`api.get/post`)**. Không import `axios` trực tiếp trong component.
 - Server state dùng React Query (QueryClient ở `src/app/`); client state dùng zustand trong `store/` của feature.
 - Biến môi trường: thêm vào `.env.example` khi thêm biến mới. Không commit `.env.*` thật.
-- Tailwind v4: import bằng `@import "tailwindcss";` trong CSS (không dùng `@tailwind base/components/utilities`). Tùy biến theme bằng `@theme`; không tạo `tailwind.config.js` nếu không được yêu cầu. Với Vite dùng plugin `@tailwindcss/vite`. Ưu tiên utility class, chỉ viết CSS riêng khi utility không làm được.- React 19: không cần `forwardRef` (truyền `ref` như prop thường). Không dùng API đã bị loại bỏ; nếu không chắc, kiểm tra trong code hiện có hoặc hỏi trước.
+- Tailwind v4: import bằng `@import "tailwindcss";` trong CSS (không dùng `@tailwind base/components/utilities`). Tùy biến theme bằng `@theme`; không tạo `tailwind.config.js` nếu không được yêu cầu. Với Vite dùng plugin `@tailwindcss/vite`. Ưu tiên utility class, chỉ viết CSS riêng khi utility không làm được.
+- React 19: truyền `ref` như prop thường (không cần `forwardRef`). Không dùng `ReactDOM.render`, `propTypes`, `defaultProps` trên function component (đã bị gỡ); dùng default parameter của hàm. Không chắc về một API thì kiểm tra trong code hiện có hoặc hỏi trước.
 - Gặp lỗi build lạ sau khi nâng package: đọc changelog/migration guide của đúng version, đừng đoán.
-- React 19: truyền `ref` như prop thường (không cần `forwardRef`). Không dùng `ReactDOM.render`, `propTypes`, `defaultProps` trên function component (đã bị gỡ); dùng default parameter của hàm. Không chắc về một API thì hỏi trước.
+
 ## Giai đoạn kiến trúc: KHÔNG học theo, KHÔNG nhân bản
 
-Các điểm sau cố ý làm đơn giản và sẽ thay. Không dùng làm mẫu cho code mới:
-
+Các điểm cố ý làm đơn giản và sẽ thay thì liệt kê ở đây; không dùng chúng làm mẫu cho code mới. Hiện chưa có mục nào.
 
 Đã xong: thu hồi phiên dùng chung qua Redis (đăng xuất, đổi/reset mật khẩu → mọi service từ chối token ngay; Redis sập thì cho qua, trừ API gắn `[RequireSessionCheck]` trả 503); JWT ký RS256, chỉ `auth` giữ private key; service khác xác thực bằng public key tải từ `/.well-known/jwks.json` (dự phòng `Jwt:PublicKeys`), gateway chặn token sai trên route `/me`; hồ sơ chuyên gia tách thành service `expert` (schema `expert`); không còn khóa ngoại chéo service, id của service khác (user, review case…) chỉ là cột thường, nên mỗi service migrate độc lập; mỗi service kết nối DB bằng role riêng (`caps_<service>`) chỉ có quyền trên schema của mình, mật khẩu nằm trong user-secrets / `docker/.env`, không nằm trong `appsettings`; DB dùng `dotnet ef migrations`; mật khẩu băm bằng `PasswordHasher` (PBKDF2) + lockout + refresh token xoay vòng.
 
