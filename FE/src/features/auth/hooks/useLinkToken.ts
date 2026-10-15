@@ -7,7 +7,9 @@ export function useLinkToken(): string | null {
   const location = useLocation()
   const navigate = useNavigate()
   // Read once: the URL no longer carries the token after the cleanup below
-  const [token] = useState(() => new URLSearchParams(location.hash.slice(1)).get('token'))
+  const [token] = useState(() =>
+    new URLSearchParams(location.hash.slice(1)).get('token')
+  )
 
   useEffect(() => {
     const hash = new URLSearchParams(location.hash.slice(1))
