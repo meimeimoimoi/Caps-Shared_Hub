@@ -12,3 +12,7 @@
 /.tmp/
 **/bin/
 **/obj/
+
+# Local AI agent skills and Codex agent configs
+/.agents/
+/.codex/agents/
