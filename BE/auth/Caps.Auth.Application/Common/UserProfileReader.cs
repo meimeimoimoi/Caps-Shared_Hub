@@ -12,10 +12,7 @@ public sealed class UserProfileReader(IUserAccessReader access, IUserAvatarRepos
     {
         var roles = isNew ? [RoleCodes.User] : await access.GetRoleCodesAsync(user.Id, ct);
         // Matches the JWT: only ACTIVE accounts get business permissions.
-        var permissions =
-            user.Status == UserStatus.Active
-                ? await access.GetPermissionCodesAsync(user.Id, ct)
-                : [];
+        var permissions = user.Status == UserStatus.Active ? PermissionMatrix.For(roles) : [];
         var avatarAt = isNew ? null : await avatars.GetUpdatedAtAsync(user.Id, ct);
         return new(
             user.Id.ToString(),

@@ -12,4 +12,8 @@ public static class RoleCodes
 {
     /// <summary>Role every account gets at sign-up.</summary>
     public const string User = "USER";
+    public const string Expert = "EXPERT";
+    public const string AuthorReviewer = "AUTHOR_REVIEWER";
+    public const string KnowledgeAdmin = "KNOWLEDGE_ADMIN";
+    public const string SystemAdmin = "SYSTEM_ADMIN";
 }
