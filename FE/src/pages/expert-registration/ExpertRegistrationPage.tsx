@@ -103,6 +103,7 @@ export default function ExpertRegistrationPage() {
     independent,
     draftSaved,
     verifyOpen,
+    verifyPurpose,
     closeVerify,
     checkVerifiedAndSubmit,
     formErrors,
@@ -394,6 +395,7 @@ export default function ExpertRegistrationPage() {
               <EmailVerificationNotice
                 email={profile.email}
                 onCheck={checkVerifiedAndSubmit}
+                purpose={verifyPurpose}
                 onClose={closeVerify}
               />
             )}

@@ -3,6 +3,7 @@ import { collectFormIssues } from '@/lib/validation/formIssues'
 import { normalizeVietnamPhone } from '@/lib/validation/vietnamPhone'
 import { useTranslation } from 'react-i18next'
 import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
+import { ApiError } from '@/lib/api-client'
 import { authApi } from '@/features/auth/api/authApi'
 import { useAuthStore } from '@/features/auth/store/authStore'
 import type { RegistrationMessage } from '../types/messages'
@@ -17,6 +18,8 @@ import {
   type ExpertApplication,
 } from '../api/applicationApi'
 import { messageFor } from './useApplicationLifecycle'
+
+export type VerifyPurpose = 'submit' | 'upload'
 
 export interface UseRegistrationFormProps {
   application: ExpertApplication | null
@@ -46,8 +49,10 @@ export function useRegistrationForm({
   const [localPreview, setLocalPreview] = useState('')
   const [independent, setIndependent] = useState(true)
   const [draftSaved, setDraftSaved] = useState(false)
-  // Bấm nộp khi email chưa xác nhận: mở hộp nhập mã, xác nhận xong thì nộp tiếp
+  // The code dialog opens when submitting, or when uploading past the unverified file limit;
+  // once verified it submits (submit) or just closes so uploading can continue (upload)
   const [verifyOpen, setVerifyOpen] = useState(false)
+  const [verifyPurpose, setVerifyPurpose] = useState<VerifyPurpose>('submit')
   // Nhập mã và tín hiệu "đã xác nhận" có thể báo cùng lúc: chỉ nộp một lần
   const verifyCheck = useRef(false)
   const [formErrors, setFormErrors] = useState<
@@ -180,6 +185,12 @@ export function useRegistrationForm({
         setApplication(await applicationApi.upload(evidenceCode(key), file))
       } catch (e) {
         setFormErrors((p) => ({ ...p, [key]: messageFor(e) }))
+        // The remaining files would hit the same limit: ask for verification instead
+        if (e instanceof ApiError && e.code === 'EVIDENCE_LIMIT_UNVERIFIED') {
+          setVerifyPurpose('upload')
+          setVerifyOpen(true)
+          break
+        }
       } finally {
         setUploading((p) => ({
           ...p,
@@ -212,6 +223,7 @@ export function useRegistrationForm({
       // email was verified in another tab or on another device, then re-read the application
       const verified = saved.emailVerified || (await refreshVerification())
       if (!verified) {
+        setVerifyPurpose('submit')
         setVerifyOpen(true)
         return
       }
@@ -233,7 +245,6 @@ export function useRegistrationForm({
     setApplication(await applicationApi.submit())
   }
 
-  /** Gọi sau khi nhập mã hoặc bấm link (tab khác): đã xác nhận thì đóng hộp và nộp hồ sơ ngay */
   /** Refreshes the session and reports whether the application now sees a verified email. */
   async function refreshVerification() {
     await syncVerifiedSession()
@@ -242,6 +253,8 @@ export function useRegistrationForm({
     return !!latest?.emailVerified
   }
 
+  /** Runs after the code is entered or the link is opened (another tab): once verified, closes the
+   * dialog and submits, or only lifts the upload limit when the dialog was opened by an upload. */
   async function checkVerifiedAndSubmit() {
     if (verifyCheck.current) return
     verifyCheck.current = true
@@ -249,7 +262,19 @@ export function useRegistrationForm({
       await syncVerifiedSession()
       const latest = await applicationApi.get()
       if (latest) setApplication(latest)
-      if (!latest?.emailVerified || latest.status !== 'DRAFT') return
+      if (!latest?.emailVerified) return
+      if (verifyPurpose === 'upload') {
+        setVerifyOpen(false)
+        setFormErrors((p) =>
+          Object.fromEntries(
+            Object.entries(p).filter(
+              ([, issue]) => issue.key !== 'messages.verifyForMoreFiles'
+            )
+          )
+        )
+        return
+      }
+      if (latest.status !== 'DRAFT') return
       setVerifyOpen(false)
       setSubmitting(true)
       setError(null)
@@ -342,6 +367,7 @@ export function useRegistrationForm({
     independent,
     draftSaved,
     verifyOpen,
+    verifyPurpose,
     closeVerify: () => setVerifyOpen(false),
     checkVerifiedAndSubmit,
     formErrors: Object.fromEntries(

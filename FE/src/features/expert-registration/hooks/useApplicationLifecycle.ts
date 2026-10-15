@@ -39,6 +39,8 @@ export function messageFor(e: unknown): RegistrationMessage {
         return { key: 'validation.file' }
       case 'EVIDENCE_LIMIT':
         return { key: 'messages.fileLimit' }
+      case 'EVIDENCE_LIMIT_UNVERIFIED':
+        return { key: 'messages.verifyForMoreFiles' }
     }
   }
   return { key: 'messages.failed' }

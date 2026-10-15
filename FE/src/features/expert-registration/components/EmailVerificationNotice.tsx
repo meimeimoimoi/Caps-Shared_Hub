@@ -5,21 +5,26 @@ import { ApiError } from '@/lib/api-client'
 import { authApi } from '@/features/auth/api/authApi'
 import { useEmailVerifiedSignal } from '@/features/auth/utils/emailVerifiedSignal'
 import { EmailCodeField } from '@/components/auth/EmailCodeField'
+import type { VerifyPurpose } from '../hooks/useRegistrationForm'
 
 const COOLDOWN_SECONDS = 60
 
 export interface EmailVerificationNoticeProps {
   email: string
-  /** Kiểm tra lại trạng thái (sau khi nhập mã hoặc bấm link ở tab khác); đã xác nhận thì nộp hồ sơ */
+  /** Re-checks the status (after the code is entered or the link is opened in another tab) */
   onCheck: () => Promise<void>
   onClose: () => void
+  /** Why the dialog opened: submitting, or uploading past the unverified file limit */
+  purpose?: VerifyPurpose
 }
 
-/* Hồ sơ được khai và lưu khi chưa xác nhận email; hộp này chỉ mở khi bấm Nộp hồ sơ. */
+/* The application is filled in and saved before the email is verified; this dialog opens on submit,
+ * or when an unverified account tries to upload more files than allowed. */
 export function EmailVerificationNotice({
   email,
   onCheck,
   onClose,
+  purpose = 'submit',
 }: EmailVerificationNoticeProps) {
   const { t } = useTranslation('expertRegistration')
   const [cooldown, setCooldown] = useState(0)
@@ -70,8 +75,13 @@ export function EmailVerificationNotice({
 
   return (
     <Modal
-      title={t('verifyEmail.title')}
-      description={t('verifyEmail.body', { email })}
+      title={t(
+        purpose === 'upload' ? 'verifyEmail.uploadTitle' : 'verifyEmail.title'
+      )}
+      description={t(
+        purpose === 'upload' ? 'verifyEmail.uploadBody' : 'verifyEmail.body',
+        { email }
+      )}
       onClose={onClose}
       footer={
         <button

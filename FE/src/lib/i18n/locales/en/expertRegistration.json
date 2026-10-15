@@ -25,6 +25,7 @@
     "incomplete": "Your application is missing required information: phone number, years of experience, expertise or CV.",
     "locked": "This application has been submitted and can no longer be edited.",
     "fileLimit": "An application can hold at most 20 files. Remove some before adding more.",
+    "verifyForMoreFiles": "You've uploaded the 3 files allowed before verifying your email. Verify it to upload more.",
     "supplementSent": "Additional information sent. Your application is back in the review queue.",
     "loadFailed": "We couldn't load your application. Check your connection and try again.",
     "emailDisposable": "Temporary email addresses aren't accepted. Review results are sent by email, so use one you check regularly.",
@@ -330,6 +331,8 @@
   "verifyEmail": {
     "title": "Verify your email to submit",
     "body": "We sent a 6-digit code to {{email}}. Your application is submitted as soon as you verify.",
+    "uploadTitle": "Verify your email to upload more documents",
+    "uploadBody": "Until your email is verified, an application can hold 3 files. Enter the 6-digit code sent to {{email}}, then choose the files again.",
     "later": "Later",
     "resend": "Resend email",
     "cooldown": "Resend in {{seconds}} seconds",

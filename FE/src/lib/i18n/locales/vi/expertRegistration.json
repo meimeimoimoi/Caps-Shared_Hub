@@ -25,6 +25,7 @@
     "incomplete": "Hồ sơ còn thiếu thông tin bắt buộc: số điện thoại, số năm kinh nghiệm, lĩnh vực chuyên môn hoặc CV.",
     "locked": "Hồ sơ đã nộp nên không thể chỉnh sửa.",
     "fileLimit": "Mỗi hồ sơ có tối đa 20 file. Xóa bớt file trước khi thêm.",
+    "verifyForMoreFiles": "Bạn đã tải đủ 3 file cho phép khi chưa xác nhận email. Xác nhận email để tải thêm.",
     "supplementSent": "Đã gửi thông tin bổ sung. Hồ sơ quay lại hàng chờ đánh giá.",
     "loadFailed": "Không tải được hồ sơ. Kiểm tra kết nối rồi thử lại.",
     "emailDisposable": "Không nhận email dùng một lần. Kết quả xét duyệt sẽ gửi qua email, hãy dùng email bạn kiểm tra thường xuyên.",
@@ -328,6 +329,8 @@
   "verifyEmail": {
     "title": "Xác nhận email để nộp hồ sơ",
     "body": "Mã 6 số đã gửi tới {{email}}. Xác nhận xong, hồ sơ được nộp ngay.",
+    "uploadTitle": "Xác nhận email để tải thêm tài liệu",
+    "uploadBody": "Khi chưa xác nhận email, hồ sơ chỉ chứa được 3 file. Nhập mã 6 số đã gửi tới {{email}}, sau đó chọn lại file cần tải.",
     "later": "Để sau",
     "resend": "Gửi lại email",
     "cooldown": "Gửi lại sau {{seconds}} giây",
