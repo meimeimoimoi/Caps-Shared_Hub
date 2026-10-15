@@ -7,8 +7,8 @@
 # both define the same agents.
 #
 # Usage (from the repository root):
-#   ./scripts/sync-agent-config.ps1          # regenerate .claude/skills
-#   ./scripts/sync-agent-config.ps1 -Check   # fail when .claude/skills or the subagents are out of step (CI)
+#   ./.agents/sync.ps1          # regenerate .claude/skills
+#   ./.agents/sync.ps1 -Check   # fail when .claude/skills or the subagents are out of step (CI)
 param([switch]$Check)
 
 $ErrorActionPreference = "Stop"
@@ -102,7 +102,7 @@ foreach ($name in $codexAgents | Where-Object { $claudeAgents -notcontains $_ })
 if ($problems.Count -gt 0) {
     $problems | ForEach-Object { Write-Host "  $_" }
     if ($Check) {
-        Write-Host "Agent config is out of step. Edit .agents/skills, then run ./scripts/sync-agent-config.ps1."
+        Write-Host "Agent config is out of step. Edit .agents/skills, then run ./.agents/sync.ps1."
     }
     exit 1
 }

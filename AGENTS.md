@@ -98,7 +98,7 @@ Các điểm cố ý làm đơn giản và sẽ thay thì liệt kê ở đây; 
 ## Skills & agents (Claude Code, Codex, Antigravity)
 
 - Rule: file này là nguồn duy nhất. Codex và Antigravity đọc `AGENTS.md` trực tiếp; `CLAUDE.md` chỉ import nó (`@AGENTS.md`); `.agents/rules/project.md` trỏ về đây cho Antigravity bản cũ. Không chép rule sang file khác.
-- Skill: nguồn duy nhất là `.agents/skills/` (Codex và Antigravity đọc trực tiếp). `.claude/skills/` là bản sinh ra cho Claude Code: không sửa tay, sửa ở `.agents/skills/` rồi chạy `./scripts/sync-agent-config.ps1` (ở gốc repo) và commit cả hai. CI (`agent-config.yml`) báo lỗi khi hai bên lệch nhau.
+- Skill: nguồn duy nhất là `.agents/skills/` (Codex và Antigravity đọc trực tiếp). `.claude/skills/` là bản sinh ra cho Claude Code: không sửa tay, sửa ở `.agents/skills/` rồi chạy `./.agents/sync.ps1` (từ gốc repo) và commit cả hai. CI (`agent-config.yml`) báo lỗi khi hai bên lệch nhau.
 - Đường dẫn trong skill viết theo `.agents/skills/...`; script tự đổi thành `.claude/skills/...` cho bản Claude.
 - Subagent có hai định dạng: `.claude/agents/<ten>.md` và `.codex/agents/<ten>.toml`. Thêm hoặc đổi tên một subagent thì sửa cả hai; script kiểm tra hai bên có cùng danh sách tên.
 - Không dùng `.agent/` (số ít, định dạng cũ của Antigravity): skill trùng tên ở hai nơi sẽ hiện hai lần.
