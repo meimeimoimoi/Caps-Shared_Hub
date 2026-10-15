@@ -1,6 +1,7 @@
 import axios, { type AxiosRequestConfig, type InternalAxiosRequestConfig } from 'axios'
 import { SESSION_EXPIRED_EVENT, SESSION_REFRESHED_EVENT } from './session-events'
 import { clearPrivateQueries } from './query-client'
+import { getAccessToken, isSignedIn, setAccessToken } from './access-token'
 
 export class ApiError extends Error {
   readonly status?: number
@@ -26,20 +27,24 @@ export const apiClient = axios.create({
   headers: { 'Content-Type': 'application/json', 'X-Caps-Client': 'spa' },
 })
 
-apiClient.interceptors.request.use((config) => {
-  const token = localStorage.getItem('auth_token')
-  if (token && config.headers && !config.headers.Authorization) {
-    config.headers.Authorization = `Bearer ${token}`
+// A 401 from /api/v1/auth is a business error (wrong password, bad email token, expired cookie…),
+// not an expired access token, so it is not refreshed. resend-verification is the exception (bearer).
+const canRefresh = (url: string) =>
+  !url.includes('/api/v1/auth/') || url.endsWith('/api/v1/auth/resend-verification')
+
+apiClient.interceptors.request.use(async (config) => {
+  if (!config.headers || config.headers.Authorization) return config
+  let token = getAccessToken()
+  // After a reload only the refresh cookie survives: get an access token before the first call.
+  // A failed refresh is handled by the 401 path below (network errors keep the session).
+  if (!token && isSignedIn() && canRefresh(config.url ?? '')) {
+    token = await refreshAccessToken().catch(() => null)
   }
+  if (token) config.headers.Authorization = `Bearer ${token}`
   return config
 })
 
 type RefreshedSession = { accessToken: string; user: unknown }
-
-// 401 từ /api/v1/auth là lỗi nghiệp vụ (sai mật khẩu, token email sai, cookie hết hạn…),
-// không phải access token hết hạn, nên không tự refresh. Riêng resend-verification dùng bearer.
-const canRefresh = (url: string) =>
-  !url.includes('/api/v1/auth/') || url.endsWith('/api/v1/auth/resend-verification')
 
 let refreshing: Promise<string> | null = null
 
@@ -47,17 +52,17 @@ let refreshing: Promise<string> | null = null
  * vì BE xoay vòng refresh token và coi việc dùng lại token cũ là bị đánh cắp. */
 export function refreshAccessToken(staleToken?: string | null): Promise<string> {
   refreshing ??= withRefreshLock(async () => {
-    // Tab khác vừa refresh xong (token dùng chung qua localStorage): dùng luôn, không refresh lại
-    // vì gửi cookie đã xoay vòng sẽ bị BE coi là bị đánh cắp và thu hồi mọi phiên.
-    const current = localStorage.getItem('auth_token')
-    if (staleToken && current && current !== staleToken) return current
+    // Another tab may have refreshed while this one waited for the lock and shared its token:
+    // use it instead of rotating the refresh cookie again.
+    const current = getAccessToken()
+    if (current && current !== staleToken) return current
     const { data } = await apiClient.post<{ data: RefreshedSession }>(
       '/api/v1/auth/refresh-token',
       {},
       { withCredentials: true },
     )
     const { accessToken, user } = data.data
-    localStorage.setItem('auth_token', accessToken)
+    setAccessToken(accessToken)
     window.dispatchEvent(
       new CustomEvent(SESSION_REFRESHED_EVENT, { detail: { accessToken, user } }),
     )
@@ -77,8 +82,7 @@ function withRefreshLock<T>(task: () => Promise<T>): Promise<T> {
 
 function expireSession() {
   clearPrivateQueries()
-  localStorage.removeItem('auth_token')
-  localStorage.removeItem('auth_user')
+  setAccessToken(null)
   window.dispatchEvent(new Event(SESSION_EXPIRED_EVENT))
 }
 
@@ -89,7 +93,7 @@ apiClient.interceptors.response.use(
     const status = error.response?.status
     const config = error.config as (InternalAxiosRequestConfig & { _retried?: boolean }) | undefined
     const url = config?.url ?? ''
-    const hadSession = !!localStorage.getItem('auth_token')
+    const hadSession = isSignedIn()
     if (status === 401 && config && hadSession && !config._retried && canRefresh(url)) {
       config._retried = true
       const sent = String(config.headers.Authorization ?? '').replace(/^Bearer /, '')

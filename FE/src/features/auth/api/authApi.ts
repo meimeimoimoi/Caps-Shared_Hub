@@ -1,6 +1,7 @@
 import { api, apiClient, ApiError } from '@/lib/api-client'
 import { i18n } from '@/lib/i18n'
 import { isExpertDemo } from '@/lib/expert-data-source'
+import { isSignedIn } from '@/lib/access-token'
 import type { LoginFormValues, User } from '../types'
 
 interface BackendEnvelope<T> {
@@ -48,8 +49,8 @@ function absoluteUrl(path: string | null | undefined) {
   return /^https?:/.test(path) ? path : (apiClient.defaults.baseURL ?? '') + path
 }
 
-/** Dev: trang chuyên gia/khách hàng cho xem bằng tài khoản minh họa khi chưa đăng nhập thật */
-const demoOnly = () => isExpertDemo && !localStorage.getItem('auth_token')
+/** Dev: expert/customer pages can be viewed with a demo account when not really signed in */
+const demoOnly = () => isExpertDemo && !isSignedIn()
 
 /** Đổi lỗi nghiệp vụ của BE thành khóa i18n để form hiển thị đúng ngôn ngữ */
 type AuthKey = 'avatar.typeError' | 'avatar.sizeError' | 'changePassword.wrongCurrent' | 'changePassword.sameAsCurrent'
@@ -66,8 +67,8 @@ function toSession(p: BackendAuthPayload): { user: User; token: string } {
   return { user: toUser(p.user), token: p.accessToken }
 }
 
-/* Refresh token nằm trong cookie HttpOnly (path /api/v1/auth), nên mọi lệnh gọi
- * /api/v1/auth phải gửi kèm cookie. */
+/* The refresh token is an HttpOnly cookie (path /api/v1/auth), so every /api/v1/auth call
+ * must send cookies. The access token stays in memory (lib/access-token). */
 const withCookie = { withCredentials: true } as const
 
 export const authApi = {

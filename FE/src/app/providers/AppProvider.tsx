@@ -21,21 +21,17 @@ export function AppProvider({ children }: AppProviderProps) {
       const { accessToken, user } = (event as CustomEvent<{ accessToken: string; user: BackendMe }>).detail
       useAuthStore.getState().renewSession(toUser(user), accessToken)
     }
-    // Tab khác đổi phiên (refresh, xác nhận email, đăng xuất): nạp lại để các tab dùng chung một phiên
-    const sync = (event: StorageEvent) => {
-      if (event.key === 'caps-auth') void useAuthStore.persist.rehydrate()
-    }
+    // Other tabs follow sign-in, refresh and sign-out through the store's BroadcastChannel
     window.addEventListener(SESSION_EXPIRED_EVENT, expire)
     window.addEventListener(SESSION_REFRESHED_EVENT, renew)
-    window.addEventListener('storage', sync)
     return () => {
       window.removeEventListener(SESSION_EXPIRED_EVENT, expire)
       window.removeEventListener(SESSION_REFRESHED_EVENT, renew)
-      window.removeEventListener('storage', sync)
     }
   }, [])
-  // Mở/tải lại app: lấy lại hồ sơ từ server (trạng thái, role, avatar có thể đã đổi ở nơi khác).
-  // Access token hết hạn thì api-client tự refresh; refresh thất bại thì phiên bị xoá.
+  // App opened or reloaded: reload the profile (status, roles, avatar may have changed elsewhere).
+  // The access token is not persisted, so api-client first gets one through the refresh cookie;
+  // if that fails the session is cleared.
   React.useEffect(() => {
     if (!useAuthStore.getState().isAuthenticated) return
     authApi
