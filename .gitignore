@@ -12,6 +12,8 @@
 /.tmp/
 **/bin/
 **/obj/
+# Skill launchers ship prebuilt engines in scripts/bin (not build output)
+!/.agents/skills/*/scripts/bin/
 
 # Python virtual environments and installed dependencies
 .venv/
@@ -38,7 +40,3 @@ pip-wheel-metadata/
 .coverage
 .coverage.*
 htmlcov/
-
-# Local AI agent skills and Codex agent configs
-/.agents/
-/.codex/agents/
