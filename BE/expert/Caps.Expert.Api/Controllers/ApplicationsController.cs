@@ -53,9 +53,10 @@ public sealed class ApplicationsController(ICurrentUser currentUser) : Controlle
     }
 
     /// <summary>Uploads one evidence file (multipart fields <c>code</c> and <c>file</c>).</summary>
-    /// <remarks>Codes: CV, EV-01…EV-05, or SUPPLEMENT while more information is requested. PDF, PNG or JPG up to 10 MB, at most 20 files.</remarks>
+    /// <remarks>Codes: CV, EV-01…EV-05, or SUPPLEMENT while more information is requested. PDF, PNG or JPG up to 10 MB, at most 20 files (3 until the email is verified).</remarks>
     /// <response code="200">The application with the new file.</response>
     /// <response code="400">EVIDENCE_REQUIRED, EVIDENCE_TOO_LARGE, EVIDENCE_INVALID_TYPE, INVALID_EVIDENCE_CODE (unknown group) or SUPPLEMENT_NOT_REQUESTED.</response>
+    /// <response code="403">EVIDENCE_LIMIT_UNVERIFIED: at most 3 files until the email is verified (refresh the session after verifying).</response>
     /// <response code="409">EVIDENCE_LIMIT or APPLICATION_LOCKED.</response>
     [HttpPost("evidence")]
     [RequestSizeLimit(UploadLimit), RequestFormLimits(MultipartBodyLengthLimit = UploadLimit)]

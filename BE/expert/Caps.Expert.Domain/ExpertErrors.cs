@@ -54,6 +54,13 @@ public static class ExpertErrors
     public static AppException EvidenceLimit(int max) =>
         new(ErrorType.Conflict, "EVIDENCE_LIMIT", $"An application can hold at most {max} files.");
 
+    public static AppException EvidenceLimitUnverified(int max) =>
+        new(
+            ErrorType.Forbidden,
+            "EVIDENCE_LIMIT_UNVERIFIED",
+            $"Verify your email address to upload more than {max} files."
+        );
+
     public static AppException EvidenceNotFound() =>
         new(ErrorType.NotFound, "EVIDENCE_NOT_FOUND", "File not found.");
 

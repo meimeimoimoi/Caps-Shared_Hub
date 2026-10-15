@@ -2,7 +2,6 @@ using Caps.Common.Application;
 using Caps.Expert.Application.Abstractions;
 using Caps.Expert.Application.Common;
 using Caps.Expert.Application.DTOs.Responses;
-using Caps.Expert.Domain;
 using Caps.Expert.Domain.Applications;
 
 namespace Caps.Expert.Application.Features.Applications;
@@ -40,13 +39,10 @@ public sealed class AddEvidenceHandler(
         await locks.AcquireAsync(command.Applicant.UserId, ct);
         var (profile, application) = await loader.OpenOrCreateAsync(command.Applicant, ct);
         application.EnsureAcceptsFile(supplement);
-        if (
-            await evidences.CountAsync(application.Id, ct)
-            >= ApplicationRules.MaxFilesPerApplication
-        )
-        {
-            throw ExpertErrors.EvidenceLimit(ApplicationRules.MaxFilesPerApplication);
-        }
+        ApplicationRules.EnsureRoomForFile(
+            await evidences.CountAsync(application.Id, ct),
+            command.Applicant.EmailVerified
+        );
 
         var now = clock.GetUtcNow();
         var evidence = ExpertEvidence.Create(

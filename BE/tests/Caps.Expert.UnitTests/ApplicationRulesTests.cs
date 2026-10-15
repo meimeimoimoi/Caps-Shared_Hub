@@ -46,6 +46,30 @@ public sealed class ApplicationRulesTests
     }
 
     [Fact]
+    public void An_unverified_account_can_hold_only_a_few_files()
+    {
+        var max = ApplicationRules.MaxFilesBeforeVerification;
+
+        ApplicationRules.EnsureRoomForFile(max - 1, emailVerified: false);
+        Assert.Equal(
+            "EVIDENCE_LIMIT_UNVERIFIED",
+            Errors.CodeOf(() => ApplicationRules.EnsureRoomForFile(max, emailVerified: false))
+        );
+    }
+
+    [Fact]
+    public void A_verified_account_can_fill_the_whole_application()
+    {
+        var max = ApplicationRules.MaxFilesPerApplication;
+
+        ApplicationRules.EnsureRoomForFile(max - 1, emailVerified: true);
+        Assert.Equal(
+            "EVIDENCE_LIMIT",
+            Errors.CodeOf(() => ApplicationRules.EnsureRoomForFile(max, emailVerified: true))
+        );
+    }
+
+    [Fact]
     public void Fields_are_trimmed_and_deduplicated_and_unknown_ones_rejected()
     {
         Assert.Equal(["AUDIT"], ApplicationRules.NormalizeFields([" AUDIT ", "AUDIT"]));
