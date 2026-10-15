@@ -60,7 +60,8 @@ export default function ResetPasswordPage() {
       .resetPassword({ token, newPassword: password })
       .then(() => setStatus('done'))
       .catch((e: unknown) => {
-        if (e instanceof ApiError && e.code === 'PASSWORD_UNCHANGED') setSameAsCurrent(true)
+        if (e instanceof ApiError && e.code === 'PASSWORD_UNCHANGED')
+          setSameAsCurrent(true)
         else setStatus('invalid')
       })
       .finally(() => setBusy(false))
@@ -121,7 +122,11 @@ export default function ResetPasswordPage() {
                 <Field
                   id={`${id}-new`}
                   label={t('changePassword.new')}
-                  error={sameAsCurrent ? t('changePassword.sameAsCurrent') : undefined}
+                  error={
+                    sameAsCurrent
+                      ? t('changePassword.sameAsCurrent')
+                      : undefined
+                  }
                 >
                   <input
                     id={`${id}-new`}
@@ -133,9 +138,13 @@ export default function ResetPasswordPage() {
                     }}
                     autoComplete="new-password"
                     autoFocus
-                    aria-invalid={(tried && weak) || sameAsCurrent ? true : undefined}
+                    aria-invalid={
+                      (tried && weak) || sameAsCurrent ? true : undefined
+                    }
                     aria-describedby={
-                      sameAsCurrent ? `${id}-new-error ${id}-rules` : `${id}-rules`
+                      sameAsCurrent
+                        ? `${id}-new-error ${id}-rules`
+                        : `${id}-rules`
                     }
                     className={cn(
                       INPUT_CLASS,

@@ -63,10 +63,7 @@ export function SocialView({
           <span aria-hidden="true" className="h-px flex-1 bg-white/10" />
         </div>
 
-        <GoogleSignInButton
-          onCredential={onGoogle}
-          disabled={isLoading}
-        >
+        <GoogleSignInButton onCredential={onGoogle} disabled={isLoading}>
           <button
             type="button"
             onClick={onGoogleUnavailable}

@@ -160,7 +160,9 @@ async function signInAt(page: Page, path: string, email: string) {
   await expect(page).toHaveURL(/\/login$/)
   await page.getByRole('button', { name: 'Tiếp tục bằng email' }).click()
   await page.getByLabel('Email').fill(email)
-  await page.getByLabel('Mật khẩu', { exact: true }).fill(process.env.E2E_PASSWORD!)
+  await page
+    .getByLabel('Mật khẩu', { exact: true })
+    .fill(process.env.E2E_PASSWORD!)
   await page.getByRole('button', { name: 'Đăng nhập', exact: true }).click()
   await expect(page).toHaveURL(new RegExp(`${path}$`), { timeout: 15_000 })
 }
@@ -187,7 +189,9 @@ test.describe('staff areas, signed in', () => {
         signedIn: true,
       })
 
-      console.log(`${email}: đã rà ${seen.size} trang:\n${[...seen].join('\n')}`)
+      console.log(
+        `${email}: đã rà ${seen.size} trang:\n${[...seen].join('\n')}`
+      )
       expect(seen.size).toBeGreaterThan(entries.length)
       expect(problems, problems.join('\n')).toEqual([])
     })

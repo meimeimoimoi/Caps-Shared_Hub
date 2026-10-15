@@ -14,7 +14,10 @@ export function isSignedIn() {
 }
 
 /** Pass a token to start or renew a session; pass signedIn without a token to restore after a reload. */
-export function setAccessToken(next: string | null, nextSignedIn = next !== null) {
+export function setAccessToken(
+  next: string | null,
+  nextSignedIn = next !== null
+) {
   token = next
   signedIn = nextSignedIn
 }

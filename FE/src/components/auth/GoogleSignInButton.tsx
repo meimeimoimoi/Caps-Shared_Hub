@@ -40,7 +40,8 @@ function loadGoogleIdentity(): Promise<GoogleAccountsId> {
       window.google?.accounts?.id
         ? resolve(window.google.accounts.id)
         : reject(new Error('Google Identity Services did not load'))
-    script.onerror = () => reject(new Error('Google Identity Services did not load'))
+    script.onerror = () =>
+      reject(new Error('Google Identity Services did not load'))
     document.head.appendChild(script)
   }).catch((e: unknown) => {
     // Allow a later mount to try again (e.g. after a network blip)
@@ -71,7 +72,9 @@ export function GoogleSignInButton({
 }: GoogleSignInButtonProps) {
   const { i18n } = useTranslation()
   const slot = useRef<HTMLDivElement>(null)
-  const [status, setStatus] = useState<'loading' | 'ready' | 'failed'>('loading')
+  const [status, setStatus] = useState<'loading' | 'ready' | 'failed'>(
+    'loading'
+  )
 
   useEffect(() => {
     activeHandler = onCredential
@@ -106,7 +109,10 @@ export function GoogleSignInButton({
           shape: 'rectangular',
           text: 'continue_with',
           logo_alignment: 'center',
-          width: Math.min(MAX_BUTTON_WIDTH, parent.offsetWidth || MAX_BUTTON_WIDTH),
+          width: Math.min(
+            MAX_BUTTON_WIDTH,
+            parent.offsetWidth || MAX_BUTTON_WIDTH
+          ),
           locale: i18n.language,
         })
         setStatus('ready')
@@ -124,12 +130,16 @@ export function GoogleSignInButton({
   return (
     <div
       aria-busy={status === 'loading'}
-      className={cn('group relative w-full', disabled && 'pointer-events-none', className)}
+      className={cn(
+        'group relative w-full',
+        disabled && 'pointer-events-none',
+        className
+      )}
     >
       {/* Visual only: the pointer and keyboard reach Google's iframe, so mirror its hover/focus here */}
       <div
         inert
-        className="group-hover:[&_button]:border-white/22 group-hover:[&_button]:bg-white/[0.09] group-active:[&_button]:scale-[.995] group-focus-within:[&_button]:outline-2 group-focus-within:[&_button]:outline-offset-[3px] group-focus-within:[&_button]:outline-[var(--accent)]"
+        className="group-focus-within:[&_button]:outline-2 group-focus-within:[&_button]:outline-offset-[3px] group-focus-within:[&_button]:outline-[var(--accent)] group-hover:[&_button]:border-white/22 group-hover:[&_button]:bg-white/[0.09] group-active:[&_button]:scale-[.995]"
       >
         {children}
       </div>
@@ -137,7 +147,7 @@ export function GoogleSignInButton({
        * A light color scheme stops the iframe from painting a white backdrop on dark pages. */}
       <div
         ref={slot}
-        className="absolute inset-0 flex scale-y-110 items-center justify-center overflow-hidden opacity-0 [color-scheme:light]"
+        className="absolute inset-0 flex scale-y-110 items-center justify-center overflow-hidden [color-scheme:light] opacity-0"
       />
     </div>
   )

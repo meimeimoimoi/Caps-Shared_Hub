@@ -21,7 +21,8 @@ const baseId = (id: string) => id.replace(/-v\d+$/, '')
 const latest = templates.filter(
   (tpl) =>
     !templates.some(
-      (other) => baseId(other.id) === baseId(tpl.id) && other.version > tpl.version
+      (other) =>
+        baseId(other.id) === baseId(tpl.id) && other.version > tpl.version
     )
 )
 
