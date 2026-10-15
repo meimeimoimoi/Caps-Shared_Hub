@@ -46,7 +46,8 @@ export function DecisionBar({
           </li>
         )}
       </ul>
-      <div className="ml-auto flex gap-2">
+      {/* Wraps on narrow screens: three actions are wider than a phone */}
+      <div className="ml-auto flex flex-wrap justify-end gap-2">
         {secondary}
         {danger}
         <button
