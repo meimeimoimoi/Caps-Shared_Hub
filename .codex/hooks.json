@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "[ ! -f \"${CLAUDE_PROJECT_DIR}/.claude/skills/impeccable/scripts/impeccable\" ] || \"${CLAUDE_PROJECT_DIR}/.claude/skills/impeccable/scripts/impeccable\" hook",
+            "command": "d=\"$(git rev-parse --show-toplevel 2>/dev/null || pwd)\"; [ ! -f \"$d/.agents/skills/impeccable/scripts/impeccable\" ] || \"$d/.agents/skills/impeccable/scripts/impeccable\" hook",
             "timeout": 5,
             "statusMessage": "Checking UI changes"
           }
@@ -18,7 +18,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "[ ! -f \"${CLAUDE_PROJECT_DIR}/.claude/skills/impeccable/scripts/impeccable\" ] || \"${CLAUDE_PROJECT_DIR}/.claude/skills/impeccable/scripts/impeccable\" hook",
+            "command": "d=\"$(git rev-parse --show-toplevel 2>/dev/null || pwd)\"; [ ! -f \"$d/.agents/skills/impeccable/scripts/impeccable\" ] || \"$d/.agents/skills/impeccable/scripts/impeccable\" hook",
             "timeout": 5,
             "statusMessage": "Preparing build session"
           }
@@ -30,7 +30,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "[ ! -f \"${CLAUDE_PROJECT_DIR}/.claude/skills/impeccable/scripts/impeccable\" ] || \"${CLAUDE_PROJECT_DIR}/.claude/skills/impeccable/scripts/impeccable\" hook",
+            "command": "d=\"$(git rev-parse --show-toplevel 2>/dev/null || pwd)\"; [ ! -f \"$d/.agents/skills/impeccable/scripts/impeccable\" ] || \"$d/.agents/skills/impeccable/scripts/impeccable\" hook",
             "timeout": 30,
             "statusMessage": "Design deep pass"
           }

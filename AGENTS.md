@@ -95,6 +95,14 @@ Các điểm cố ý làm đơn giản và sẽ thay thì liệt kê ở đây; 
 
 Đã xong: thu hồi phiên dùng chung qua Redis (đăng xuất, đổi/reset mật khẩu → mọi service từ chối token ngay; Redis sập thì cho qua, trừ API gắn `[RequireSessionCheck]` trả 503); JWT ký RS256, chỉ `auth` giữ private key; service khác xác thực bằng public key tải từ `/.well-known/jwks.json` (dự phòng `Jwt:PublicKeys`), gateway chặn token sai trên route `/me`; hồ sơ chuyên gia tách thành service `expert` (schema `expert`); không còn khóa ngoại chéo service, id của service khác (user, review case…) chỉ là cột thường, nên mỗi service migrate độc lập; mỗi service kết nối DB bằng role riêng (`caps_<service>`) chỉ có quyền trên schema của mình, mật khẩu nằm trong user-secrets / `docker/.env`, không nằm trong `appsettings`; DB dùng `dotnet ef migrations`; mật khẩu băm bằng `PasswordHasher` (PBKDF2) + lockout + refresh token xoay vòng.
 
+## Skills & agents (Claude Code, Codex, Antigravity)
+
+- Rule: file này là nguồn duy nhất. Codex và Antigravity đọc `AGENTS.md` trực tiếp; `CLAUDE.md` chỉ import nó (`@AGENTS.md`); `.agents/rules/project.md` trỏ về đây cho Antigravity bản cũ. Không chép rule sang file khác.
+- Skill: nguồn duy nhất là `.agents/skills/` (Codex và Antigravity đọc trực tiếp). `.claude/skills/` là bản sinh ra cho Claude Code: không sửa tay, sửa ở `.agents/skills/` rồi chạy `./scripts/sync-agent-config.ps1` (ở gốc repo) và commit cả hai. CI (`agent-config.yml`) báo lỗi khi hai bên lệch nhau.
+- Đường dẫn trong skill viết theo `.agents/skills/...`; script tự đổi thành `.claude/skills/...` cho bản Claude.
+- Subagent có hai định dạng: `.claude/agents/<ten>.md` và `.codex/agents/<ten>.toml`. Thêm hoặc đổi tên một subagent thì sửa cả hai; script kiểm tra hai bên có cùng danh sách tên.
+- Không dùng `.agent/` (số ít, định dạng cũ của Antigravity): skill trùng tên ở hai nơi sẽ hiện hai lần.
+
 ## Git
 
 **Branch**
