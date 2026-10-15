@@ -82,7 +82,7 @@ async Task<string> EmailToken(string email, string purpose)
             protector.Unprotect(row.ProtectedPayload)
         )!;
         if (m.Email == email && m.Purpose == purpose)
-            return new Uri(m.Link).Query.Split("token=")[1];
+            return new Uri(m.Link).Fragment.Split("token=")[1];
     }
     throw new Exception("Email outbox not found.");
 }

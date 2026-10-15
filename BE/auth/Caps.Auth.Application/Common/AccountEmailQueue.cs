@@ -61,12 +61,13 @@ public sealed class AccountEmailQueue(
             );
         }
         var path = isVerify ? "/verify-email" : "/reset-password";
+        // The token goes in the fragment: browsers never send it to the server, so it stays out of access logs
         outbox.Enqueue(
             new AuthEmailRequestedEvent(
                 Guid.NewGuid(),
                 user.Email,
                 purpose,
-                options.FrontendUrl.TrimEnd('/') + path + "?token=" + raw,
+                options.FrontendUrl.TrimEnd('/') + path + "#token=" + raw,
                 expires,
                 code,
                 codeExpires
