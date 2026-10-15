@@ -35,6 +35,12 @@ public sealed class LoginHandler(
         user.EnsureCanSignIn();
         if (user.IsLockedOut(now))
             throw AuthErrors.InvalidCredentials();
+        if (user.PasswordHash is null)
+        {
+            // Google-only account: same timing and error as a wrong password
+            hasher.VerifyAgainstDummy(command.Password);
+            throw AuthErrors.InvalidCredentials();
+        }
         var result = hasher.Verify(user.PasswordHash, command.Password);
         if (result == PasswordCheck.Failed)
         {

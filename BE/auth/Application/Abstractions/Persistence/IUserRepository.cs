@@ -16,6 +16,7 @@ public interface IUserRepository
     Task<UserSessionState?> GetSessionStateAsync(Guid id, CancellationToken ct);
 
     Task<Guid?> FindIdByEmailAsync(string normalizedEmail, CancellationToken ct);
+    Task<Guid?> FindIdByGoogleSubjectAsync(string googleSubject, CancellationToken ct);
     Task<bool> EmailExistsAsync(string normalizedEmail, CancellationToken ct);
     Task<bool> HasRoleAsync(Guid userId, string roleCode, CancellationToken ct);
 

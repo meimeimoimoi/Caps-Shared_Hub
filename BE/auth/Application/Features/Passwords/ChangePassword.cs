@@ -28,8 +28,14 @@ public sealed class ChangePasswordHandler(
         await using var tx = await unitOfWork.BeginTransactionAsync(ct);
         var user = await users.GetLockedAsync(command.UserId, ct);
         user.EnsureCanSignIn();
-        if (hasher.Verify(user.PasswordHash, command.CurrentPassword) == PasswordCheck.Failed)
+        // A Google-only account has no current password; it sets one through forgot-password
+        if (
+            user.PasswordHash is null
+            || hasher.Verify(user.PasswordHash, command.CurrentPassword) == PasswordCheck.Failed
+        )
+        {
             throw AuthErrors.CurrentPasswordInvalid();
+        }
         if (command.NewPassword == command.CurrentPassword)
             throw AuthErrors.PasswordUnchanged();
         user.ChangePassword(hasher.Hash(command.NewPassword), clock.GetUtcNow());

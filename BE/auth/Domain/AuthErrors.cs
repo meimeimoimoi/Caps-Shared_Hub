@@ -15,6 +15,16 @@ public static class AuthErrors
     public static AppException EmailExists() =>
         new(ErrorType.Conflict, "EMAIL_EXISTS", "Email already registered.");
 
+    public static AppException GoogleEmailUnverified() =>
+        new(
+            ErrorType.Validation,
+            "GOOGLE_EMAIL_UNVERIFIED",
+            "This Google account has no verified email."
+        );
+
+    public static AppException GoogleLoginUnavailable() =>
+        new(ErrorType.Unavailable, "GOOGLE_LOGIN_UNAVAILABLE", "Google sign-in is not configured.");
+
     public static AppException EmailDisposable() =>
         new(
             ErrorType.Validation,

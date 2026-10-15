@@ -9,6 +9,9 @@ public sealed record LoginRequest(
     [Required, MaxLength(128)] string Password
 );
 
+/// <summary>Body of POST /auth/google: the ID token (credential) from Google Identity Services.</summary>
+public sealed record GoogleLoginRequest([Required, MaxLength(4096)] string IdToken);
+
 /// <summary>Body of POST /auth/register; the display name is optional (falls back to the email's local part).</summary>
 public sealed record RegisterRequest(
     [Required, EmailAddress, MaxLength(256)] string Email,

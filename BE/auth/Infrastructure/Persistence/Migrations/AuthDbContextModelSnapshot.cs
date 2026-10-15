@@ -313,12 +313,15 @@ namespace auth.Migrations
                         .HasColumnType("text")
                         .HasColumnName("full_name");
 
+                    b.Property<string>("GoogleSubject")
+                        .HasColumnType("text")
+                        .HasColumnName("google_subject");
+
                     b.Property<DateTimeOffset?>("LockoutEnd")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("lockout_end");
 
                     b.Property<string>("PasswordHash")
-                        .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("password_hash");
 
@@ -346,6 +349,9 @@ namespace auth.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("Email")
+                        .IsUnique();
+
+                    b.HasIndex("GoogleSubject")
                         .IsUnique();
 
                     b.ToTable("users", "identity");

@@ -52,6 +52,27 @@ public sealed class SessionsController(ICurrentUser currentUser, RefreshCookie r
         return Ok(refreshCookie.Issue(Response, session));
     }
 
+    /// <summary>Signs in with a Google ID token, creating the account on first use.</summary>
+    /// <remarks>
+    /// An existing account with the same verified email is linked to the Google account (and verified if it was pending).
+    /// New accounts are active immediately and have no password until one is set through forgot-password.
+    /// </remarks>
+    /// <response code="200">Signed in; access token in the body, refresh token in the cookie.</response>
+    /// <response code="400">Invalid input or GOOGLE_EMAIL_UNVERIFIED.</response>
+    /// <response code="401">INVALID_CREDENTIALS (invalid or expired Google token, or a blocked account).</response>
+    /// <response code="429">Too many requests from this IP.</response>
+    /// <response code="503">GOOGLE_LOGIN_UNAVAILABLE (not configured, or Google's keys cannot be downloaded).</response>
+    [AllowAnonymous, HttpPost("google")]
+    public async Task<IActionResult> Google(
+        GoogleLoginRequest r,
+        [FromServices] ICommandHandler<GoogleLoginCommand, SessionResult> handler,
+        CancellationToken ct
+    )
+    {
+        var session = await handler.HandleAsync(new(r.IdToken), ct);
+        return Ok(refreshCookie.Issue(Response, session));
+    }
+
     /// <summary>Exchanges the refresh cookie for a new access token and rotates the cookie.</summary>
     /// <remarks>Reusing an already rotated refresh token is treated as theft and signs out every device.</remarks>
     /// <response code="200">New session; the old refresh token can no longer be used.</response>

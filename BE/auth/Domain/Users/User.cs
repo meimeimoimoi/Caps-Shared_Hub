@@ -15,7 +15,12 @@ public sealed class User
 
     public Guid Id { get; } = UuidV7.NewGuid();
     public string Email { get; private set; } = default!;
-    public string PasswordHash { get; private set; } = default!;
+
+    /// <summary>Null for accounts created through Google that never set a password.</summary>
+    public string? PasswordHash { get; private set; }
+
+    /// <summary>Google account id ("sub" claim) once the account signs in with Google.</summary>
+    public string? GoogleSubject { get; private set; }
     public string FullName { get; private set; } = default!;
     public string? Phone { get; private set; }
     public int FailedLoginAttempts { get; private set; }
@@ -32,6 +37,7 @@ public sealed class User
     public BusinessProfile? BusinessProfile { get; }
 
     public bool IsActive => Status == UserStatus.Active;
+    public bool HasPassword => PasswordHash != null;
     public bool IsPendingVerification => Status == UserStatus.PendingVerification;
 
     /// <summary>Active or still waiting for email verification.</summary>
@@ -59,6 +65,48 @@ public sealed class User
             CreatedAt = now,
             UpdatedAt = now,
         };
+    }
+
+    /// <summary>New account from a Google sign-in: Google already verified the email, so it starts active without a password.</summary>
+    public static User RegisterWithGoogle(
+        string email,
+        string? displayName,
+        string googleSubject,
+        DateTimeOffset now
+    )
+    {
+        var normalized = NormalizeEmail(email);
+        return new()
+        {
+            Email = normalized,
+            FullName = string.IsNullOrWhiteSpace(displayName)
+                ? normalized.Split('@')[0]
+                : displayName.Trim(),
+            GoogleSubject = googleSubject,
+            Status = UserStatus.Active,
+            EmailVerifiedAt = now,
+            CreatedAt = now,
+            UpdatedAt = now,
+        };
+    }
+
+    /// <summary>
+    /// Links a Google account whose verified email matches this account; a pending account becomes verified.
+    /// An account already linked to another Google account is rejected with the generic credential error.
+    /// </summary>
+    public void LinkGoogle(string googleSubject, DateTimeOffset now)
+    {
+        if (GoogleSubject == googleSubject)
+            return;
+        if (GoogleSubject != null)
+            throw AuthErrors.InvalidCredentials();
+        GoogleSubject = googleSubject;
+        if (IsPendingVerification)
+        {
+            EmailVerifiedAt = now;
+            Status = UserStatus.Active;
+        }
+        UpdatedAt = now;
     }
 
     /// <summary>Throws the generic credential error so a blocked account looks like a wrong password.</summary>

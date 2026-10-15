@@ -131,7 +131,7 @@ await using (var db = new AuthDbContext(options))
 {
     var u = await db.Users.FindAsync(userId);
     Check(
-        u!.PasswordHash != password && u.PasswordHash.Length != 64,
+        u!.PasswordHash != password && u.PasswordHash!.Length != 64,
         "password uses Identity hasher"
     );
     Check(

@@ -34,6 +34,7 @@ public static class DependencyInjection
         services.AddScoped<IAuthEmailOutbox, AuthEmailOutboxWriter>();
         services.AddSingleton<IPasswordHasher, AspNetPasswordHasher>();
         services.AddSingleton<IAccessTokenIssuer, JwtAccessTokenIssuer>();
+        services.AddSingleton<IGoogleIdTokenValidator, GoogleIdTokenValidator>();
         return services;
     }
 }

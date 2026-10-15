@@ -106,7 +106,9 @@ public sealed class AuthDbContext(DbContextOptions<AuthDbContext> options) : DbC
             e.Property(x => x.FailedLoginAttempts).HasColumnName("failed_login_attempts");
             e.Property(x => x.LockoutEnd).HasColumnName("lockout_end");
             e.Property(x => x.TokenVersion).HasColumnName("token_version");
-            e.Property(x => x.PasswordHash).HasColumnName("password_hash").IsRequired();
+            e.Property(x => x.PasswordHash).HasColumnName("password_hash");
+            e.Property(x => x.GoogleSubject).HasColumnName("google_subject");
+            e.HasIndex(x => x.GoogleSubject).IsUnique();
             e.Property(x => x.FullName).HasColumnName("full_name").IsRequired();
             e.Property(x => x.Phone).HasColumnName("phone");
             e.Property(x => x.Status)

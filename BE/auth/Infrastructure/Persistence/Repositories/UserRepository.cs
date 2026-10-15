@@ -28,6 +28,12 @@ public sealed class UserRepository(AuthDbContext db) : IUserRepository, IUserAcc
             .Select(x => (Guid?)x.Id)
             .SingleOrDefaultAsync(ct);
 
+    public Task<Guid?> FindIdByGoogleSubjectAsync(string googleSubject, CancellationToken ct) =>
+        db
+            .Users.Where(x => x.GoogleSubject == googleSubject)
+            .Select(x => (Guid?)x.Id)
+            .SingleOrDefaultAsync(ct);
+
     public Task<bool> EmailExistsAsync(string normalizedEmail, CancellationToken ct) =>
         db.Users.AnyAsync(x => x.Email == normalizedEmail, ct);
 

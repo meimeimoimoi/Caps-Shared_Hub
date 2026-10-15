@@ -102,4 +102,41 @@ public sealed class UserTests
         Assert.Equal("New Name", user.FullName);
         Assert.Equal("+84901234567", user.Phone);
     }
+
+    [Fact]
+    public void Google_registration_starts_active_without_a_password()
+    {
+        var user = User.RegisterWithGoogle(" Someone@Gmail.com ", "Google User", "sub-1", Now);
+
+        Assert.Equal("someone@gmail.com", user.Email);
+        Assert.True(user.IsActive);
+        Assert.Equal(Now, user.EmailVerifiedAt);
+        Assert.False(user.HasPassword);
+        Assert.Equal("sub-1", user.GoogleSubject);
+    }
+
+    [Fact]
+    public void Linking_google_verifies_a_pending_account()
+    {
+        var user = NewUser();
+
+        user.LinkGoogle("sub-1", Now);
+
+        Assert.True(user.IsActive);
+        Assert.Equal(Now, user.EmailVerifiedAt);
+        Assert.Equal("sub-1", user.GoogleSubject);
+    }
+
+    [Fact]
+    public void An_account_cannot_be_linked_to_a_second_google_account()
+    {
+        var user = NewUser();
+        user.LinkGoogle("sub-1", Now);
+
+        user.LinkGoogle("sub-1", Now);
+        var other = Assert.Throws<AppException>(() => user.LinkGoogle("sub-2", Now));
+
+        Assert.Equal("INVALID_CREDENTIALS", other.Code);
+        Assert.Equal("sub-1", user.GoogleSubject);
+    }
 }
