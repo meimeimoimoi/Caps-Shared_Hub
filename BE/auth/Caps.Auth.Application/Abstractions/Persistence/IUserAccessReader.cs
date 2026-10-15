@@ -4,5 +4,4 @@ namespace Caps.Auth.Application.Abstractions.Persistence;
 public interface IUserAccessReader
 {
     Task<string[]> GetRoleCodesAsync(Guid userId, CancellationToken ct);
-    Task<string[]> GetPermissionCodesAsync(Guid userId, CancellationToken ct);
 }
