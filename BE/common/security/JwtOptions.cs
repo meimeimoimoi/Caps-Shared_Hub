@@ -7,7 +7,7 @@ namespace Caps.Common.Security;
 public sealed class JwtOptions
 {
     public string Issuer { get; set; } = "caps-auth";
-    public string Audience { get; set; } = "caps-spa";
+    public string Audience { get; set; } = "caps-api";
 
     /// <summary>Auth's public key set, e.g. http://localhost:5194/.well-known/jwks.json.</summary>
     public string? JwksUrl { get; set; }
