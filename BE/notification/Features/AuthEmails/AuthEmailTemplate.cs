@@ -15,10 +15,10 @@ public static class AuthEmailTemplate
     public const string LogoCid = EmailAssets.LogoContentId;
 
     private const string Brand = "Shared Hub";
-    private const string Tagline = "Tra cứu luật thuế TNDN và soạn hồ sơ có trích dẫn.";
     private const string Accent = "#cc4a00";
     private const string Ink = "#1c2833";
     private const string Body = "#4a4f57";
+    private const string Line = "#ece6df";
     private const string Muted = "#7a7f87";
     private const string Font = "'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif";
 
@@ -31,7 +31,6 @@ public static class AuthEmailTemplate
     private sealed record Copy(
         string Subject,
         string Preheader,
-        string Icon,
         string Heading,
         string Intro,
         string Button,
@@ -44,22 +43,20 @@ public static class AuthEmailTemplate
             ? new(
                 $"Xác nhận địa chỉ email của bạn – {Brand}",
                 "Chỉ còn một bước để kích hoạt tài khoản của bạn.",
-                "✉️",
                 "Xác nhận địa chỉ email",
                 $"Cảm ơn bạn đã đăng ký {Brand}. Hãy xác nhận đây là email của bạn để kích hoạt tài khoản.",
                 "Xác nhận email",
                 "Không phải bạn đăng ký?",
-                "Hãy bỏ qua email này. Tài khoản sẽ không được kích hoạt nếu không có xác nhận."
+                "Hãy bỏ qua email này, tài khoản sẽ không được kích hoạt."
             )
             : new(
                 $"Đặt lại mật khẩu – {Brand}",
                 "Bấm vào liên kết để tạo mật khẩu mới cho tài khoản của bạn.",
-                "🔒",
                 "Đặt lại mật khẩu",
                 $"Chúng tôi nhận được yêu cầu đặt lại mật khẩu cho tài khoản {Brand} của bạn.",
                 "Đặt mật khẩu mới",
                 "Không phải bạn yêu cầu?",
-                "Hãy bỏ qua email này. Mật khẩu hiện tại của bạn vẫn giữ nguyên và không ai có thể đổi nó nếu không có liên kết này."
+                "Hãy bỏ qua email này, mật khẩu của bạn vẫn giữ nguyên."
             );
 
     public static Content Build(AuthEmailRequestedEvent m)
@@ -103,13 +100,14 @@ public static class AuthEmailTemplate
                     : $"Mã xác nhận: {code.Value} (hiệu lực đến {code.ValidUntil})\n\n"
             )}{c.Button}: {link}
 
-            Liên kết hết hạn lúc {expires} (giờ Việt Nam) và chỉ dùng được một lần.
-
-            {c.IgnoreTitle} {c.Ignore}
+            {(
+                code == null
+                    ? $"Liên kết dùng được một lần, hết hạn lúc {expires} (giờ Việt Nam).\n\n"
+                    : ""
+            )}{c.IgnoreTitle} {c.Ignore}
 
             —
-            {Brand} · {Tagline}
-            Email này được gửi tự động tới {email}, vui lòng không trả lời.
+            Email tự động gửi tới {email}, vui lòng không trả lời.
             © {year} {Brand}
             """;
 
@@ -134,13 +132,17 @@ public static class AuthEmailTemplate
             code == null
                 ? ""
                 : $"""
-                    <p style="margin:0 0 10px;font-size:13px;color:{Muted};">Mã xác nhận của bạn</p>
-                    <div style="display:inline-block;margin:0 0 10px;padding:14px 18px 14px 28px;background:#fff7f1;border:1px solid #ffe2cf;border-radius:12px;font-family:'Courier New',Consolas,monospace;font-size:34px;font-weight:700;letter-spacing:10px;color:{Ink};">{e.Encode(
+                    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 28px;background:#fff7f1;border:1px solid #ffe2cf;border-radius:12px;">
+                      <tr><td align="center" style="padding:20px 16px;">
+                        <p style="margin:0 0 10px;font-size:13px;color:{Muted};">Mã xác nhận của bạn</p>
+                        <p style="margin:0;padding-left:12px;font-family:'Courier New',Consolas,monospace;font-size:38px;font-weight:700;line-height:1.1;letter-spacing:12px;color:{Accent};">{e.Encode(
                         code.Value
-                    )}</div>
-                    <p style="margin:0 0 28px;font-size:13px;line-height:1.6;color:{Muted};">Nhập mã trên trang đăng ký đang mở. Mã có hiệu lực đến <strong style="color:{Ink};">{e.Encode(
+                    )}</p>
+                        <p style="margin:10px 0 0;font-size:13px;color:{Muted};">Hiệu lực đến <strong style="color:{Ink};">{e.Encode(
                         code.ValidUntil
-                    )}</strong>. Hoặc bấm nút bên dưới.</p>
+                    )}</strong></p>
+                      </td></tr>
+                    </table>
                     """;
         var heading = e.Encode(c.Heading);
         var intro = e.Encode(c.Intro);
@@ -148,8 +150,14 @@ public static class AuthEmailTemplate
         var ignoreTitle = e.Encode(c.IgnoreTitle);
         var ignore = e.Encode(c.Ignore);
         var to = e.Encode(email);
-        var until = e.Encode(expires);
-        var icon = c.Icon;
+        // With a code the email already shows the code's expiry; a second date reads as a duplicate
+        var linkExpiry =
+            code == null
+                ? $"""<p style="margin:16px 0 0;font-size:13px;line-height:1.6;color:{Muted};">Liên kết dùng được một lần, hết hạn lúc {e.Encode(
+                    expires
+                )} (giờ Việt Nam).</p>"""
+                : "";
+        // One centered column: logo, heading, short intro, the action, then small print
         return $"""
             <!doctype html>
             <html lang="vi">
@@ -163,48 +171,23 @@ public static class AuthEmailTemplate
             <div style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent;">{preheader}</div>
             <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f6f3ef;">
               <tr><td align="center" style="padding:40px 16px;">
-                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:560px;">
-                  <tr><td style="background:#ffffff;border-radius:16px;border:1px solid #ece6df;overflow:hidden;">
-                    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
-                      <tr><td height="4" style="height:4px;line-height:4px;font-size:0;background:{Accent};border-radius:16px 16px 0 0;">&nbsp;</td></tr>
-                      <tr><td align="center" style="padding:32px 40px 28px;border-bottom:1px solid #f0ebe5;">
-                        <img src="cid:{LogoCid}" width="180" height="42" alt="{Brand}" style="display:block;border:0;outline:none;width:180px;height:auto;">
-                      </td></tr>
-                      <tr><td align="center" style="padding:36px 40px 0;font-family:{Font};">
-                        <table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>
-                          <td align="center" width="64" height="64" style="width:64px;height:64px;border-radius:32px;background:#fff1e8;font-size:30px;line-height:64px;">{icon}</td>
-                        </tr></table>
-                        <h1 style="margin:24px 0 12px;font-size:26px;line-height:1.3;font-weight:700;color:{Ink};">{heading}</h1>
-                        <p style="margin:0 0 32px;font-size:15px;line-height:1.7;color:{Body};">{intro}</p>
-                        {codeBlock}
-                        <table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>
-                          <td align="center" bgcolor="{Accent}" style="border-radius:10px;background:{Accent};">
-                            <a href="{href}" target="_blank" style="display:inline-block;padding:16px 40px;font-family:{Font};font-size:16px;font-weight:700;line-height:1;color:#ffffff;text-decoration:none;border-radius:10px;">{button}</a>
-                          </td>
-                        </tr></table>
-                      </td></tr>
-                      <tr><td style="padding:32px 40px 0;font-family:{Font};">
-                        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#fff7f1;border:1px solid #ffe2cf;border-radius:10px;">
-                          <tr><td style="padding:14px 18px;font-size:13px;line-height:1.7;color:{Body};">
-                            ⏱&nbsp; Liên kết hết hạn lúc <strong style="color:{Ink};">{until}</strong> (giờ Việt Nam) và chỉ dùng được <strong style="color:{Ink};">một lần</strong>.
-                          </td></tr>
-                        </table>
-                        <p style="margin:24px 0 0;font-size:13px;line-height:1.6;color:{Muted};">Nút không hoạt động? Sao chép liên kết sau và dán vào trình duyệt:</p>
-                        <p style="margin:6px 0 0;font-size:12px;line-height:1.6;word-break:break-all;"><a href="{href}" target="_blank" style="color:{Accent};text-decoration:underline;">{href}</a></p>
-                      </td></tr>
-                      <tr><td style="padding:32px 40px 40px;font-family:{Font};">
-                        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f7f7f8;border-radius:10px;">
-                          <tr><td style="padding:16px 18px;font-size:13px;line-height:1.6;color:{Muted};">
-                            <strong style="color:{Ink};">{ignoreTitle}</strong> {ignore}
-                          </td></tr>
-                        </table>
-                      </td></tr>
-                    </table>
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:520px;">
+                  <tr><td align="center" style="background:#ffffff;border-radius:12px;border:1px solid {Line};padding:36px 40px;font-family:{Font};text-align:center;">
+                    <img src="cid:{LogoCid}" width="140" height="33" alt="{Brand}" style="display:block;margin:0 auto;border:0;outline:none;width:140px;height:auto;">
+                    <h1 style="margin:32px 0 12px;font-size:22px;line-height:1.3;font-weight:700;color:{Ink};">{heading}</h1>
+                    <p style="margin:0 0 28px;font-size:15px;line-height:1.7;color:{Body};">{intro}</p>
+                    {codeBlock}
+                    <table role="presentation" align="center" cellpadding="0" cellspacing="0" border="0" style="margin:0 auto;"><tr>
+                      <td bgcolor="{Accent}" style="border-radius:8px;background:{Accent};">
+                        <a href="{href}" target="_blank" style="display:inline-block;padding:14px 28px;font-family:{Font};font-size:15px;font-weight:600;line-height:1;color:#ffffff;text-decoration:none;border-radius:8px;">{button}</a>
+                      </td>
+                    </tr></table>
+                    {linkExpiry}
+                    <p style="margin:28px 0 0;padding-top:20px;border-top:1px solid {Line};font-size:13px;line-height:1.6;color:{Muted};"><strong style="color:{Body};">{ignoreTitle}</strong> {ignore}</p>
+                    <p style="margin:12px 0 0;font-size:12px;line-height:1.6;color:{Muted};">Nút không bấm được? Mở <a href="{href}" target="_blank" style="color:{Accent};text-decoration:underline;">liên kết này</a>.</p>
                   </td></tr>
-                  <tr><td align="center" style="padding:28px 24px 0;font-family:{Font};font-size:12px;line-height:1.7;color:{Muted};">
-                    <strong style="color:{Ink};">{Brand}</strong> · {Tagline}<br>
-                    Email này được gửi tự động tới <span style="color:{Ink};">{to}</span>, vui lòng không trả lời.<br>
-                    © {year} {Brand}
+                  <tr><td align="center" style="padding:20px 24px 0;font-family:{Font};font-size:12px;line-height:1.7;color:{Muted};">
+                    Email tự động gửi tới {to}, vui lòng không trả lời. © {year} {Brand}
                   </td></tr>
                 </table>
               </td></tr>
