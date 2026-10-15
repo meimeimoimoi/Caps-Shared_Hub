@@ -34,6 +34,11 @@ docker compose -f docker/docker-compose.yml up -d postgres redis rabbitmq mailpi
 (environment `Production`). Not verified end to end yet: in Production the services do not migrate their
 database on startup, so a fresh volume has no tables until migrations are applied as a deployment step.
 
+The gateway has a fixed address (`172.28.0.10` on `caps_network`) and auth trusts `X-Forwarded-For` from that
+address only (`Auth__KnownProxies__0`), so auth's rate limit counts real client IPs. Change both together. An
+existing network keeps its old settings: run `docker compose down` once before `up`. Ports 5194 and 5198 are
+published for local debugging; a real deployment publishes the gateway alone.
+
 ## Changing a role password later
 
 The init script only runs when the Postgres volume is created. Afterwards, run `scripts/setup-db-users.ps1

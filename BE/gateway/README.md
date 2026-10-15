@@ -16,11 +16,21 @@ and rejects invalid tokens early on signed-in routes. It has no database and no 
 The gateway only checks that the token is valid. Every service checks it again and decides what the user may
 do, so a request that bypasses the gateway gains nothing.
 
+## Rate limits
+
+Every route has a per-IP limit (`RateLimiterPolicy` on the route): `auth` for `/api/v1/auth/**` (30 per minute)
+and `api` for the rest (300 per minute). Change the numbers in `RateLimits`. Over the limit the gateway answers
+429 `RATE_LIMITED` with a `Retry-After` header. The gateway is the first hop, so the connection address is the
+client IP; if a load balancer is ever put in front of it, configure forwarded headers here first, otherwise
+every client shares the load balancer's limit. Auth keeps its own per-IP limit for requests that do not come
+through the gateway.
+
 ## Adding a route
 
-Add it under `ReverseProxy:Routes` (and a cluster if the service is new) in `appsettings.json`. Set
-`"AuthorizationPolicy": "AuthSession"` when every endpoint under the path needs a signed-in user. In Docker the
-cluster addresses come from environment variables (see `docker/docker-compose.yml`).
+Add it under `ReverseProxy:Routes` (and a cluster if the service is new) in `appsettings.json` with a
+`RateLimiterPolicy` (`auth` or `api`). Set `"AuthorizationPolicy": "AuthSession"` when every endpoint under the
+path needs a signed-in user. In Docker the cluster addresses come from environment variables (see
+`docker/docker-compose.yml`).
 
 ## Run (PowerShell from BE)
 
