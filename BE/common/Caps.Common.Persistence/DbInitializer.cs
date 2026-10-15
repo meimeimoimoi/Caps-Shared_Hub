@@ -38,7 +38,7 @@ public static class DbInitializer
         {
             adminConn.Open();
             if (!Exists(adminConn, "SELECT 1 FROM pg_database WHERE datname = @name;", targetDb))
-                Execute(adminConn, $"CREATE DATABASE {Quote(targetDb)};");
+                ExecuteCreate(adminConn, $"CREATE DATABASE {Quote(targetDb)};");
         }
 
         // Step 2: Connect to the target database, ensure extensions and schemas exist
@@ -48,14 +48,14 @@ public static class DbInitializer
         foreach (var extension in Extensions)
         {
             if (!Exists(targetConn, "SELECT 1 FROM pg_extension WHERE extname = @name;", extension))
-                Execute(targetConn, $"CREATE EXTENSION IF NOT EXISTS {Quote(extension)};");
+                ExecuteCreate(targetConn, $"CREATE EXTENSION IF NOT EXISTS {Quote(extension)};");
         }
 
         // CREATE SCHEMA IF NOT EXISTS still requires CREATE on the database, so check first
         foreach (var schema in schemaNames.Where(s => !string.IsNullOrWhiteSpace(s)))
         {
             if (!Exists(targetConn, "SELECT 1 FROM pg_namespace WHERE nspname = @name;", schema))
-                Execute(targetConn, $"CREATE SCHEMA IF NOT EXISTS {Quote(schema)};");
+                ExecuteCreate(targetConn, $"CREATE SCHEMA IF NOT EXISTS {Quote(schema)};");
         }
     }
 
@@ -66,10 +66,28 @@ public static class DbInitializer
         return cmd.ExecuteScalar() != null;
     }
 
-    private static void Execute(NpgsqlConnection conn, string sql)
+    // Errors raised when another service created the same object between our check and our CREATE
+    // (e.g. auth and expert starting together against an empty database). IF NOT EXISTS does not
+    // cover this: concurrent creators can still hit the catalog's unique index.
+    private static readonly HashSet<string> AlreadyExistsStates =
+    [
+        PostgresErrorCodes.UniqueViolation,
+        PostgresErrorCodes.DuplicateDatabase,
+        PostgresErrorCodes.DuplicateSchema,
+        PostgresErrorCodes.DuplicateObject,
+    ];
+
+    private static void ExecuteCreate(NpgsqlConnection conn, string sql)
     {
-        using var cmd = new NpgsqlCommand(sql, conn);
-        cmd.ExecuteNonQuery();
+        try
+        {
+            using var cmd = new NpgsqlCommand(sql, conn);
+            cmd.ExecuteNonQuery();
+        }
+        catch (PostgresException ex) when (AlreadyExistsStates.Contains(ex.SqlState))
+        {
+            // Lost the race to a concurrent creator; the object exists now
+        }
     }
 
     private static string Quote(string identifier) => $"\"{identifier.Replace("\"", "\"\"")}\"";
