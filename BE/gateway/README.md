@@ -25,6 +25,14 @@ client IP; if a load balancer is ever put in front of it, configure forwarded he
 every client shares the load balancer's limit. Auth keeps its own per-IP limit for requests that do not come
 through the gateway.
 
+## Security headers
+
+Every response gets `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY` and `Referrer-Policy:
+no-referrer`, and no `Server` header. Responses under `/api` also get `Content-Security-Policy: default-src
+'none'; frame-ancestors 'none'` and `Cache-Control: no-store` unless the service set its own cache policy (e.g.
+versioned avatars). These protect API responses only: the React app's CSP belongs wherever `index.html` is
+served. HSTS is not sent because the gateway speaks plain HTTP; enable it where TLS is terminated.
+
 ## Adding a route
 
 Add it under `ReverseProxy:Routes` (and a cluster if the service is new) in `appsettings.json` with a
