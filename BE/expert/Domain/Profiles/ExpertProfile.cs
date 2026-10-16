@@ -45,7 +45,7 @@ public sealed class ExpertProfile
 
     /// <summary>Mirrors the latest application status for expert-level filtering/display.</summary>
     public string Status { get; private set; } = ExpertApplicationStatus.Draft;
-    public string ServiceStatus { get; } = "INACTIVE";
+    public string ServiceStatus { get; } = ExpertServiceStatus.Inactive;
     public string? EligibilityNote { get; }
     public int? TurnaroundHours { get; private set; }
     public decimal RatingAvg { get; }

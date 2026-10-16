@@ -3,6 +3,7 @@ using Caps.Expert.Application.Abstractions;
 using Caps.Expert.Infrastructure.Persistence;
 using Caps.Expert.Infrastructure.Storage;
 using Microsoft.Extensions.DependencyInjection;
+using static Caps.Expert.Infrastructure.Persistence.ExpertEvidenceRepository;
 
 namespace Caps.Expert.Infrastructure;
 
@@ -27,6 +28,7 @@ public static class DependencyInjection
         services.AddScoped<IExpertProfileRepository, ExpertProfileRepository>();
         services.AddScoped<IExpertApplicationRepository, ExpertApplicationRepository>();
         services.AddScoped<IExpertEvidenceRepository, ExpertEvidenceRepository>();
+        services.AddScoped<IMarketplaceReader, MarketplaceReader>();
         services.AddSingleton<IObjectStorage, S3ObjectStorage>();
         return services;
     }
