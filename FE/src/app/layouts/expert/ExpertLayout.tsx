@@ -17,6 +17,7 @@ const scenarioOptions = [
   { value: 'stale', key: 'demo.scenarios.stale' },
   { value: 'inconsistent', key: 'demo.scenarios.inconsistent' },
   { value: 'error', key: 'demo.scenarios.error' },
+  { value: 'applicant', key: 'demo.scenarios.applicant' },
   { value: 'denied', key: 'demo.scenarios.denied' },
   { value: 'context-error', key: 'demo.scenarios.contextError' },
 ] as const

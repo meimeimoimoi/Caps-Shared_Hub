@@ -12,6 +12,7 @@ import {
 } from 'react-router-dom'
 import { MotionPage } from '@/components/ui/motion'
 import { PermissionRoute, ProtectedRoute } from './ProtectedRoute'
+import { ExpertHome, RequireCapability } from './RequireCapability'
 import { ExpertRoute } from './ExpertRoute'
 import { ExpertLayout } from '../layouts/expert/ExpertLayout'
 import { DraftRoute } from './DraftRoute'
@@ -211,15 +212,6 @@ const router = createBrowserRouter(
       <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route path="/verify-email" element={<VerifyEmailPage />} />
       <Route path="/expert/register" element={<ExpertRegistrationPage />} />
-      {/* The applicant's own expert application; signing up happens at /expert/register */}
-      <Route
-        path="/expert/application"
-        element={
-          <ProtectedRoute>
-            <ExpertApplicationPage />
-          </ProtectedRoute>
-        }
-      />
       <Route path="/experts/:expertId" element={<ExpertPublicProfilePage />} />
       <Route path="/marketplace" element={<MarketplacePage />} />
       <Route path="/pricing" element={<PricingPage />} />
@@ -334,19 +326,89 @@ const router = createBrowserRouter(
 
       <Route element={<ExpertRoute />}>
         <Route path="/expert" element={<ExpertLayout />}>
-          <Route index element={<Navigate to="overview" replace />} />
-          <Route path="overview" element={<ExpertDashboardPage />} />
-          <Route path="cases" element={<ExpertCasesPage key="cases" />} />
-          <Route path="queue" element={<ExpertCasesPage key="queue" />} />
-          <Route path="active" element={<ExpertCasesPage key="active" />} />
-          <Route path="cases/:id" element={<ExpertCaseDetailPage />} />
-          <Route path="services" element={<ExpertServicesPage />} />
+          <Route index element={<ExpertHome />} />
+          {/* The applicant's own application and review progress; signing up happens at /expert/register */}
+          <Route
+            path="application"
+            element={
+              <ProtectedRoute>
+                <ExpertApplicationPage />
+              </ProtectedRoute>
+            }
+          />
+          {/* Locked areas open as the server grants capabilities (see RequireCapability) */}
+          <Route
+            path="overview"
+            element={
+              <RequireCapability capability="cases.work">
+                <ExpertDashboardPage />
+              </RequireCapability>
+            }
+          />
+          <Route
+            path="cases"
+            element={
+              <RequireCapability capability="cases.work">
+                <ExpertCasesPage key="cases" />
+              </RequireCapability>
+            }
+          />
+          <Route
+            path="queue"
+            element={
+              <RequireCapability capability="cases.work">
+                <ExpertCasesPage key="queue" />
+              </RequireCapability>
+            }
+          />
+          <Route
+            path="active"
+            element={
+              <RequireCapability capability="cases.work">
+                <ExpertCasesPage key="active" />
+              </RequireCapability>
+            }
+          />
+          <Route
+            path="cases/:id"
+            element={
+              <RequireCapability capability="cases.work">
+                <ExpertCaseDetailPage />
+              </RequireCapability>
+            }
+          />
+          <Route
+            path="services"
+            element={
+              <RequireCapability capability="services.manage">
+                <ExpertServicesPage />
+              </RequireCapability>
+            }
+          />
           <Route
             path="services/:serviceId/pricing"
-            element={<ExpertPricingPage />}
+            element={
+              <RequireCapability capability="services.manage">
+                <ExpertPricingPage />
+              </RequireCapability>
+            }
           />
-          <Route path="income" element={<ExpertIncomePage />} />
-          <Route path="bio" element={<ExpertBioPage />} />
+          <Route
+            path="income"
+            element={
+              <RequireCapability capability="income.view">
+                <ExpertIncomePage />
+              </RequireCapability>
+            }
+          />
+          <Route
+            path="bio"
+            element={
+              <RequireCapability capability="profile.public">
+                <ExpertBioPage />
+              </RequireCapability>
+            }
+          />
           <Route path="profile" element={<ExpertProfilePage />} />
           <Route path="settings" element={<ExpertProfilePage />} />
           <Route path="settings/:section" element={<ExpertSettingsPage />} />

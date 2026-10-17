@@ -1,9 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import { useEffect } from 'react'
 import { useFormatters } from '@/hooks/useFormatters'
-import { Link, useLocation } from 'react-router-dom'
-import { LanguageToggle as AuthLanguageToggle } from '@/components/ui/layout/language-toggle'
-import brandMark from '@/assets/logo-icon.svg'
+import { useLocation } from 'react-router-dom'
 import {
   Check,
   FileText,
@@ -36,12 +34,10 @@ import { expertPageCls } from './expertPageClass'
 /* ── Shared sub-components ── */
 
 /* ── Reusable style constants ── */
-// Add entries only when genuine Privacy, Terms and Help routes are implemented.
-const onboardingFooterLinks: { label: string; to: string }[] = []
 
 const panelCls = 'bg-ex-panel rounded-lg p-8 shadow-paper max-md:p-[18px_24px]'
 
-/** The signed-in user's expert application: the draft wizard, then its review status. */
+/** The signed-in user's expert application inside the Expert Portal: the draft wizard, then its review status. */
 export default function ExpertApplicationPage() {
   const { t } = useTranslation('expertRegistration')
   const format = useFormatters()
@@ -165,24 +161,8 @@ export default function ExpertApplicationPage() {
       ref={mergeRefs(motionRef, scrollRevealRef)}
       className={`expert-application ${expertPageCls}`}
     >
-      {/* ── Header ── */}
-      <header className="expert-portal-header">
-        <div className="expert-portal-header-inner">
-          <Link
-            to="/"
-            aria-label={t('page.home')}
-            className="expert-portal-brand"
-          >
-            <img src={brandMark} alt="" width={26} height={30} />
-            <span>Shared Hub</span>
-          </Link>
-          <span className="expert-portal-title">{t('page.title')}</span>
-          <AuthLanguageToggle tone="light" className="ml-auto" />
-        </div>
-      </header>
-
-      {/* ── Main ── */}
-      <main
+      {/* ── Content (the Expert Portal layout owns <main>) ── */}
+      <div
         className={`${submitted ? 'expert-status-main' : ''} mx-auto max-w-[1240px] px-6 py-12 pb-[70px] max-md:px-4 max-md:py-7 max-md:pb-10`}
       >
         {loading || loadFailed ? (
@@ -475,24 +455,7 @@ export default function ExpertApplicationPage() {
             {visibleNotice}
           </p>
         )}
-      </main>
-
-      {/* ── Footer ── */}
-      <footer
-        data-reveal="fade"
-        className="expert-onboarding-footer border-ex-footer-border text-ex-muted mx-auto flex max-w-[1240px] justify-between border-t px-6 py-[22px] text-[13px] max-md:flex-wrap max-md:gap-2"
-      >
-        <span>Shared Hub</span>
-        {onboardingFooterLinks.length > 0 && (
-          <nav aria-label={t('page.policies')} className="expert-footer-links">
-            {onboardingFooterLinks.map(({ label, to }) => (
-              <Link key={to} to={to}>
-                {label}
-              </Link>
-            ))}
-          </nav>
-        )}
-      </footer>
+      </div>
     </div>
   )
 }

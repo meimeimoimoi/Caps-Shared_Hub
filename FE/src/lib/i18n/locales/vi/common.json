@@ -77,6 +77,7 @@
       "stale": "Dữ liệu chưa cập nhật",
       "inconsistent": "Phiên bản không khớp",
       "error": "Lỗi bảng tổng quan",
+      "applicant": "Đang nộp hồ sơ",
       "denied": "Không có quyền truy cập",
       "contextError": "Lỗi kiểm tra quyền truy cập"
     },

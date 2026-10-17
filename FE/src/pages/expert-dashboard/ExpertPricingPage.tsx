@@ -60,7 +60,7 @@ export default function ExpertPricingPage() {
     <PricingService
       key={context.data!.expertId + ':' + service.serviceId}
       service={service}
-      expertId={context.data!.expertId}
+      expertId={context.data!.expertId ?? ''}
       activeAccount={context.data!.accountStatus === 'ACTIVE'}
       back={back}
     />

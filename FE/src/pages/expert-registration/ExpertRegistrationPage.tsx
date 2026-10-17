@@ -52,7 +52,7 @@ export default function ExpertRegistrationPage() {
   return (
     <div
       ref={mergeRefs(motionRef, scrollRevealRef)}
-      className={`expert-welcome expert-signup ${expertPageCls}`}
+      className={`expert-welcome expert-signup min-h-screen ${expertPageCls}`}
     >
       <main className="expert-signup-layout">
         <AccountIntroduction />

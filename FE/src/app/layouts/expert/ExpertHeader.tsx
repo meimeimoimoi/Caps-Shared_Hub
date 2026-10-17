@@ -6,6 +6,7 @@ import { useExpertContext } from '@/features/expert-context'
 import { useTranslation } from 'react-i18next'
 
 const pageKeys = {
+  application: 'expertApplication',
   overview: 'overview',
   queue: 'workQueue',
   active: 'activeCases',

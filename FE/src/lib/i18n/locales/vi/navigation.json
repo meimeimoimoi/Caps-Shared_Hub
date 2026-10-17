@@ -54,6 +54,8 @@
   "workQueue": "Hàng đợi công việc",
   "activeCases": "Hồ sơ đang xử lý",
   "business": "Hoạt động kinh doanh",
+  "expertApplication": "Hồ sơ đăng ký",
+  "lockedUntilApproved": "Mở sau khi hồ sơ được duyệt",
   "myServices": "Dịch vụ của tôi",
   "income": "Thu nhập",
   "publicProfile": "Hồ sơ công khai",

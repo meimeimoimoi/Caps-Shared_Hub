@@ -1,6 +1,6 @@
 import { useId, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
-import { PanelLeftClose, PanelLeftOpen, X } from 'lucide-react'
+import { Lock, PanelLeftClose, PanelLeftOpen, X } from 'lucide-react'
 import { BrandLogo } from '@/components/ui/display/brand-logo'
 import brandMark from '@/assets/logo-icon.svg'
 import { useTranslation } from 'react-i18next'
@@ -12,6 +12,8 @@ export interface SidebarItem {
   icon: ReactNode
   active?: boolean
   badge?: ReactNode
+  /** Locked item (no `to`): shows a lock and explains when it opens */
+  lockedHint?: string
 }
 export interface SidebarGroup {
   id: string
@@ -109,7 +111,17 @@ export function AppSidebar({
                   >
                     {item.label}
                     {item.badge != null && collapsed && `, ${item.badge}`}
+                    {item.lockedHint && (
+                      <span className="sr-only">. {item.lockedHint}</span>
+                    )}
                   </span>
+                  {item.lockedHint && !collapsed && (
+                    <Lock
+                      size={14}
+                      aria-hidden="true"
+                      className="absolute top-1/2 right-3.5 -translate-y-1/2"
+                    />
+                  )}
                   {item.badge != null &&
                     (collapsed ? (
                       <span
@@ -140,7 +152,7 @@ export function AppSidebar({
                   key={item.id}
                   type="button"
                   disabled
-                  title={item.label}
+                  title={item.lockedHint ?? item.label}
                   className={className}
                 >
                   {content}

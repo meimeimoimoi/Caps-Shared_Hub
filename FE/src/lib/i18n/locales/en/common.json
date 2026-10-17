@@ -77,6 +77,7 @@
       "stale": "Stale data",
       "inconsistent": "Version mismatch",
       "error": "Dashboard error",
+      "applicant": "Applicant",
       "denied": "Access denied",
       "contextError": "Access check error"
     },

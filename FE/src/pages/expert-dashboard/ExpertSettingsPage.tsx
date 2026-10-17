@@ -47,7 +47,11 @@ export default function ExpertSettingsPage() {
     SUSPENDED: t('suspended'),
   }
   const permissions: Record<string, string> = {
-    'expert.overview.read': t('viewTheExpertOverview'),
+    'application.view': t('capabilityApplication'),
+    'services.manage': t('capabilityServicesManage'),
+    'profile.public': t('capabilityPublicProfile'),
+    'cases.work': t('capabilityCasesWork'),
+    'income.view': t('capabilityIncomeView'),
   }
 
   const context = useExpertContext()

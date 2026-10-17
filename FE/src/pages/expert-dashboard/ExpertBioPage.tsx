@@ -19,7 +19,7 @@ const LIMITS = { headline: 120, bio: 2000 }
 
 export default function ExpertBioPage() {
   const { t } = useTranslation('expert')
-  const expertId = useExpertContext().data?.expertId
+  const expertId = useExpertContext().data?.expertId ?? undefined
   const query = useExpertBio(expertId)
   if (query.isPending) return <DashboardSkeleton />
   if (!query.data)

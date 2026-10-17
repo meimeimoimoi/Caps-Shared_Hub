@@ -54,6 +54,8 @@
   "workQueue": "Work Queue",
   "activeCases": "Active Cases",
   "business": "Business",
+  "expertApplication": "Application",
+  "lockedUntilApproved": "Opens once your application is approved",
   "myServices": "My Services",
   "income": "Income",
   "publicProfile": "Public profile",
