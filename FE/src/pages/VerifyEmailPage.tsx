@@ -1,11 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
-import {
-  Link,
-  Navigate,
-  useLocation,
-  useNavigate,
-} from 'react-router-dom'
+import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { CircleCheck, Loader2, Lock, MailCheck } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { ApiError } from '@/lib/api-client'
@@ -157,7 +152,7 @@ function ConfirmToken({ token }: { token: string }) {
             onClick={() =>
               navigate(
                 expertOnboarding
-                  ? '/expert/register'
+                  ? '/expert/application'
                   : safeReturnPath(location.state?.from),
                 {
                   replace: true,
@@ -174,7 +169,7 @@ function ConfirmToken({ token }: { token: string }) {
             to="/login"
             state={
               expertOnboarding
-                ? { view: 'email', from: '/expert/register' }
+                ? { view: 'email', from: '/expert/application' }
                 : { view: 'email' }
             }
             className={BUTTON_LINK_CLASS}
@@ -239,16 +234,16 @@ function Pending() {
         {t('verify.pendingTitle')}
       </h1>
       <p className="mb-7 text-[13px] leading-[1.6] text-[var(--body)]">
-        {user?.email
-          ? (
-            <Trans
-              ns="auth"
-              i18nKey="verify.pendingBody"
-              values={{ email: user.email }}
-              components={{ strong: <strong className="text-white" /> }}
-            />
-          )
-          : t('verify.pendingBodyNoEmail')}
+        {user?.email ? (
+          <Trans
+            ns="auth"
+            i18nKey="verify.pendingBody"
+            values={{ email: user.email }}
+            components={{ strong: <strong className="text-white" /> }}
+          />
+        ) : (
+          t('verify.pendingBodyNoEmail')
+        )}
       </p>
 
       {authenticated ? (

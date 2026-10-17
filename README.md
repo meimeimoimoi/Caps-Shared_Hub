@@ -176,6 +176,7 @@ npm run dev     # http://localhost:5173
 | Công khai | `/`, `/login`, `/register`, `/reset-password`, `/verify-email`, `/marketplace`, `/pricing`, `/experts/:expertId`, `/expert/register` | 🌐 Public |
 | Khách hàng | `/dashboard`, `/cases`, `/cases/new`, `/cases/:caseId`, `/wallet`, `/account` | 🔒 `ClientLayout` |
 | Trợ lý AI | `/ai-assistant` | 🔒 `ProtectedRoute` |
+| Hồ sơ chuyên gia | `/expert/application` (nháp, nộp, trạng thái Gate 1) | 🔒 `ProtectedRoute` |
 | Soạn thảo | `/drafts/*` | 🔒 `DraftRoute` |
 | Chuyên gia | `/expert/*` (overview, cases, services, income, bio, settings…) | 🔒 `ExpertRoute` |
 | Reviewer | `/reviewer/*` (queue, gate-1, gate-2, history) | 🧪 Demo |

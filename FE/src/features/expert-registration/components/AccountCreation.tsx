@@ -459,8 +459,8 @@ export function AccountCreation({
       <div className="expert-account-alt">
         <p>
           {t('account.registered')}{' '}
-          {/* Đăng nhập xong quay lại đúng trang đăng ký chuyên gia */}
-          <Link to="/login" state={{ from: '/expert/register' }}>
+          {/* After signing in, continue with the expert application */}
+          <Link to="/login" state={{ from: '/expert/application' }}>
             {t('actions.signIn')}
           </Link>
         </p>

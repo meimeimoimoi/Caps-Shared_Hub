@@ -47,6 +47,9 @@ const VerifyEmailPage = lazy(() => import('@/pages/VerifyEmailPage'))
 const ExpertRegistrationPage = lazy(
   () => import('@/pages/expert-registration/ExpertRegistrationPage')
 )
+const ExpertApplicationPage = lazy(
+  () => import('@/pages/expert-registration/ExpertApplicationPage')
+)
 const ExpertDashboardPage = lazy(
   () => import('@/pages/expert-dashboard/ExpertDashboardPage')
 )
@@ -208,6 +211,15 @@ const router = createBrowserRouter(
       <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route path="/verify-email" element={<VerifyEmailPage />} />
       <Route path="/expert/register" element={<ExpertRegistrationPage />} />
+      {/* The applicant's own expert application; signing up happens at /expert/register */}
+      <Route
+        path="/expert/application"
+        element={
+          <ProtectedRoute>
+            <ExpertApplicationPage />
+          </ProtectedRoute>
+        }
+      />
       <Route path="/experts/:expertId" element={<ExpertPublicProfilePage />} />
       <Route path="/marketplace" element={<MarketplacePage />} />
       <Route path="/pricing" element={<PricingPage />} />
