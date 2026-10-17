@@ -1,7 +1,8 @@
-using Caps.Common.Database;
+using Caps.Common.Domain;
 
-namespace ingestion.Entities;
+namespace Caps.Ingestion.Entities;
 
+/// <summary>One version of a legal document, reviewed by an admin before it is indexed.</summary>
 public sealed class KnowledgeDocument
 {
     public Guid Id { get; set; } = UuidV7.NewGuid();
@@ -29,5 +30,5 @@ public sealed class KnowledgeDocument
     public string Metadata { get; set; } = "{}"; // jsonb
     public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
 
-    public ICollection<KbChunk> Chunks { get; set; } = new List<KbChunk>();
+    public ICollection<KbChunk> Chunks { get; set; } = [];
 }

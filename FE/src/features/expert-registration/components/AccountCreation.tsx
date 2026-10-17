@@ -1,15 +1,19 @@
-import { formControlClassName as inputCls, formButtonClassName as btnBase } from '@/components/ui/form-control'
+import { Trans, useTranslation } from 'react-i18next'
+import { EmailSuggestion } from '@/components/auth/EmailSuggestion'
+import {
+  formControlClassName as inputCls,
+  formButtonClassName as btnBase,
+} from '@/components/ui/forms/form-control'
 import {
   formatVietnamPhoneInput,
   normalizeVietnamPhone,
   vietnamPhoneInputValue,
 } from '@/lib/validation/vietnamPhone'
-import { useState, type FormEvent } from 'react'
+import { useEffect, useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import {
   ArrowRight,
   Check,
-  ChevronDown,
   Circle,
   CircleAlert,
   Eye,
@@ -17,10 +21,10 @@ import {
   Loader2,
 } from 'lucide-react'
 import type { Profile } from '../types'
-import { FormField } from '@/components/ui/form-field'
+import { FormField } from '@/components/ui/forms/form-field'
 import {
   passwordRequirements,
-  validateAccount,
+  validateAccountIssues,
   type AccountField,
 } from '@/features/auth'
 
@@ -29,13 +33,25 @@ export interface AccountCreationProps {
   formErrors: Record<string, string>
   submitting: boolean
   onUpdate: (key: keyof Profile, value: string) => void
-  onSubmit: (e: FormEvent<HTMLFormElement>) => void
+  /** Mật khẩu chỉ nằm trong form này; truyền ra để gọi API đăng ký */
+  onSubmit: (e: FormEvent<HTMLFormElement>, password: string) => void
+  /** Lỗi từ máy chủ khi tạo tài khoản: email (dưới ô Email) và lỗi chung (trên nút tạo) */
+  serverEmailError?: string
+  serverError?: string
   // Supply destinations only once genuine policy routes are available.
   policyRoutes?: { terms?: string; privacy?: string }
 }
 
 const panelCls =
   'relative bg-ex-panel rounded-[3px] p-8 md:p-10 shadow-ex-dossier max-md:p-[24px] before:absolute before:top-0 before:left-8 before:right-8 before:h-px before:bg-ex-ink'
+// Nhãn ngắn cho từng yêu cầu mật khẩu; tên đầy đủ hiện khi rê chuột
+const shortRuleLabel = {
+  'passwordRules.length': 'password.short.length',
+  'passwordRules.uppercase': 'password.short.uppercase',
+  'passwordRules.lowercase': 'password.short.lowercase',
+  'passwordRules.number': 'password.short.number',
+  'passwordRules.symbol': 'password.short.symbol',
+} as const
 const mutedCls = 'text-[13px] text-ex-muted font-normal'
 
 export function AccountCreation({
@@ -44,8 +60,12 @@ export function AccountCreation({
   submitting,
   onUpdate,
   onSubmit,
+  serverEmailError,
+  serverError,
   policyRoutes,
 }: AccountCreationProps) {
+  const { t } = useTranslation(['expertRegistration', 'auth'])
+
   const [password, setPassword] = useState('')
   const [confirmation, setConfirmation] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -53,13 +73,12 @@ export function AccountCreation({
   const [accepted, setAccepted] = useState(false)
   const [attempted, setAttempted] = useState(false)
   const [passwordFocused, setPasswordFocused] = useState(false)
-  const [requirementsExpanded, setRequirementsExpanded] = useState(false)
   const [touched, setTouched] = useState<
     Partial<Record<AccountField, boolean>>
   >({})
   const touch = (key: AccountField) =>
     setTouched((current) => ({ ...current, [key]: true }))
-  const errors = validateAccount({
+  const errors = validateAccountIssues({
     name: profile.name,
     email: profile.email,
     phone: profile.phone,
@@ -72,41 +91,34 @@ export function AccountCreation({
     touched[key] ||
     (key === 'confirmPassword' && confirmation.length > 0)
       ? errors[key]
+        ? t(`auth:validation.${errors[key]}`)
+        : undefined
       : undefined
   const passwordError = fieldError('password')
+  // Máy chủ từ chối email (đã có tài khoản, email tạm…): đưa con trỏ về ô Email để sửa ngay
+  useEffect(() => {
+    if (serverEmailError) document.getElementById('email')?.focus()
+  }, [serverEmailError])
   const confirmationError = fieldError('confirmPassword')
   const termsError = fieldError('terms')
   const phoneError = fieldError('phone') || formErrors.phone
   const requirements = passwordRequirements(password)
-  const passed = requirements.filter((rule) => rule.met).length
-  const strength = !password
-    ? 'empty'
-    : passed === 5
-      ? 'high'
-      : passed >= 3
-        ? 'medium'
-        : 'low'
-  const strengthLabel =
-    strength === 'empty'
-      ? ''
-      : strength === 'high'
-        ? 'High'
-        : strength === 'medium'
-          ? 'Medium'
-          : 'Low'
-
-  const showRequirements =
-    passwordFocused || requirementsExpanded || !!passwordError
+  // Hiện các yêu cầu ngay khi bắt đầu nhập mật khẩu. Ô còn trống thì chỉ cần câu
+  // "Vui lòng nhập mật khẩu", không hiện thêm danh sách cho đỡ dài form.
+  const showRequirements = passwordFocused || password.length > 0
 
   const renderPassword = (confirm: boolean) => {
     const name = confirm ? 'confirmPassword' : 'password'
     const visible = confirm ? showConfirmation : showPassword
     const error = confirm ? confirmationError : passwordError
+    // Chưa đủ yêu cầu thì các nhãn yêu cầu chưa đạt đã chuyển đỏ; không lặp thêm câu lỗi
+    const message =
+      !confirm && errors.password === 'passwordRules' ? undefined : error
     return (
       <FormField
         htmlFor={name}
-        label={confirm ? 'Confirm password *' : 'Password *'}
-        error={error}
+        label={confirm ? t('password.confirmLabel') : t('password.label')}
+        error={message}
         errorId={`error-${name}`}
       >
         <span className="expert-password-field">
@@ -125,14 +137,14 @@ export function AccountCreation({
               touch(name)
               if (!confirm) setPasswordFocused(false)
             }}
-            placeholder={confirm ? 'Confirm password' : 'Enter password'}
+            placeholder={confirm ? t('password.confirm') : t('password.create')}
             onChange={(e) =>
               (confirm ? setConfirmation : setPassword)(e.target.value)
             }
             aria-invalid={!!error}
             aria-describedby={
               [
-                error ? `error-${name}` : '',
+                message ? `error-${name}` : '',
                 !confirm ? 'password-guidance' : '',
               ]
                 .filter(Boolean)
@@ -143,7 +155,15 @@ export function AccountCreation({
           <button
             type="button"
             className="expert-password-toggle"
-            aria-label={`${visible ? 'Hide' : 'Show'} ${confirm ? 'confirmation password' : 'password'}`}
+            aria-label={t(
+              confirm
+                ? visible
+                  ? 'dynamic.hideConfirmation'
+                  : 'dynamic.showConfirmation'
+                : visible
+                  ? 'dynamic.hidePassword'
+                  : 'dynamic.showPassword'
+            )}
             aria-controls={name}
             aria-pressed={visible}
             onClick={() =>
@@ -162,7 +182,10 @@ export function AccountCreation({
   }
 
   const renderInput = (key: keyof Profile, required = false, type = 'text') => {
-    const error = fieldError(key as AccountField) || formErrors[key]
+    const error =
+      (key === 'email' && serverEmailError) ||
+      fieldError(key as AccountField) ||
+      formErrors[key]
     const errorId = error ? `error-${key}` : undefined
     return (
       <input
@@ -174,7 +197,7 @@ export function AccountCreation({
         }
         placeholder={
           key === 'name'
-            ? 'Your full name'
+            ? t('account.namePlaceholder')
             : key === 'email'
               ? 'you@example.com'
               : '+84 912 345 678'
@@ -221,16 +244,16 @@ export function AccountCreation({
             ?.focus()
           return
         }
-        onSubmit(e)
+        onSubmit(e, password)
       }}
     >
-      <h2 className="text-center">Create your expert account</h2>
-      <p className={`${mutedCls} expert-account-signin text-center`}>
-        Already registered? <Link to="/login">Sign in</Link>
-      </p>
+      <div className="expert-account-head">
+        <h2>{t('account.heading')}</h2>
+        <p className={mutedCls}>{t('account.subtitle')}</p>
+      </div>
       <div className="expert-account-fields">
         <FormField
-          label="Full name *"
+          label={t('fields.fullName')}
           htmlFor="name"
           error={fieldError('name') || formErrors.name}
           errorId="error-name"
@@ -238,7 +261,7 @@ export function AccountCreation({
           {renderInput('name', true)}
         </FormField>
         <FormField
-          label="Phone number *"
+          label={t('fields.phone')}
           htmlFor="phone"
           className="expert-phone-form-field"
           error={phoneError}
@@ -251,7 +274,7 @@ export function AccountCreation({
                 width="21"
                 height="14"
                 role="img"
-                aria-label="Vietnam"
+                aria-label={t('fields.vietnam')}
               >
                 <rect width="30" height="20" fill="#da251d" />
                 <path
@@ -318,39 +341,61 @@ export function AccountCreation({
         </FormField>
         <div className="expert-account-wide">
           <FormField
-            label="Email address *"
+            label={t('fields.email')}
             htmlFor="email"
-            error={fieldError('email') || formErrors.email}
+            error={serverEmailError || fieldError('email') || formErrors.email}
             errorId="error-email"
           >
             {renderInput('email', true, 'email')}
           </FormField>
+          <EmailSuggestion
+            tone="light"
+            email={profile.email}
+            onApply={(email) => onUpdate('email', email)}
+          />
         </div>
         {renderPassword(false)}
         {renderPassword(true)}
-        <div id="password-guidance" className="expert-password-guidance expert-account-wide" data-strength={strength}>
-          <div className="expert-password-feedback" hidden={!password}>
-            <div className="expert-password-strength-label"><span>Password strength</span><strong>{strengthLabel}</strong></div>
-            <div className="expert-password-meter" role="meter" aria-label="Password strength" aria-valuemin={0} aria-valuemax={3} aria-valuenow={strength === 'high' ? 3 : strength === 'medium' ? 2 : password ? 1 : 0} aria-valuetext={strengthLabel || 'Empty'}>
-              {[1, 2, 3].map((segment) => <span key={segment} aria-hidden="true" data-active={!!password && segment <= (strength === 'high' ? 3 : strength === 'medium' ? 2 : 1)} />)}
-            </div>
-          </div>
-          <button type="button" className="expert-password-help" aria-expanded={showRequirements} aria-controls="password-requirements" onClick={() => setRequirementsExpanded((expanded) => !expanded)}>
-            <span>{passed === 5 ? 'All password requirements met' : '12+ characters; uppercase, lowercase, number & symbol'}</span>
-            <ChevronDown size={16} aria-hidden="true" />
-          </button>
-          <ul id="password-requirements" className="expert-password-requirements" hidden={!showRequirements}>
-            {requirements.map((rule) => <li key={rule.label} data-met={rule.met}>
-              {rule.met ? <Check size={15} aria-hidden="true" /> : <Circle size={15} aria-hidden="true" />}
-              <span><span className="sr-only">{rule.met ? 'Met: ' : 'Not met: '}</span>{rule.label}</span>
-            </li>)}
-          </ul>
+        <div
+          id="password-guidance"
+          className="expert-password-guidance expert-account-wide"
+        >
+          {showRequirements ? (
+            <ul
+              id="password-requirements"
+              className="expert-password-chips"
+              aria-label={t('password.requirementsLabel')}
+            >
+              {requirements.map((rule) => (
+                <li
+                  key={rule.key}
+                  data-met={rule.met}
+                  data-flag={!rule.met && !!passwordError}
+                >
+                  {rule.met ? (
+                    <Check size={13} strokeWidth={3} aria-hidden="true" />
+                  ) : (
+                    <Circle size={7} fill="currentColor" aria-hidden="true" />
+                  )}
+                  <span className="sr-only">
+                    {rule.met ? t('password.met') : t('password.notMet')}
+                  </span>
+                  <span title={t(`auth:${rule.key}`)}>
+                    {t(shortRuleLabel[rule.key])}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="expert-password-hint">{t('password.guidance')}</p>
+          )}
         </div>
       </div>
       <div className="expert-account-consent">
         <div className="expert-account-consent-row">
           <input
             id="account-terms"
+            className="expert-custom-checkbox"
             type="checkbox"
             name="terms"
             required
@@ -361,19 +406,22 @@ export function AccountCreation({
             aria-describedby={termsError ? 'error-terms' : undefined}
           />
           <label htmlFor="account-terms">
-            I agree to the{' '}
-            {policyRoutes?.terms ? (
-              <Link to={policyRoutes.terms}>terms and conditions</Link>
-            ) : (
-              <span className="expert-policy-text">terms and conditions</span>
-            )}{' '}
-            and{' '}
-            {policyRoutes?.privacy ? (
-              <Link to={policyRoutes.privacy}>privacy policy</Link>
-            ) : (
-              <span className="expert-policy-text">privacy policy</span>
-            )}
-            .
+            <Trans
+              ns="expertRegistration"
+              i18nKey="consent"
+              components={{
+                terms: policyRoutes?.terms ? (
+                  <Link to={policyRoutes.terms} />
+                ) : (
+                  <span className="expert-policy-text" />
+                ),
+                privacy: policyRoutes?.privacy ? (
+                  <Link to={policyRoutes.privacy} />
+                ) : (
+                  <span className="expert-policy-text" />
+                ),
+              }}
+            />
           </label>
         </div>
         {termsError && (
@@ -383,6 +431,15 @@ export function AccountCreation({
           </p>
         )}
       </div>
+      {serverError && (
+        <p
+          role="alert"
+          className="expert-field-error bg-ex-error-bg mb-4 rounded-md px-3.5 py-3 text-[13px]"
+        >
+          <CircleAlert size={15} aria-hidden="true" />
+          <span>{serverError}</span>
+        </p>
+      )}
       <button
         type="submit"
         className={`${btnBase} expert-submit-btn w-full ${submitting ? 'opacity-70' : ''}`}
@@ -396,9 +453,22 @@ export function AccountCreation({
             aria-hidden="true"
           />
         )}
-        {submitting ? 'Creating…' : 'Create account'}{' '}
+        {submitting ? t('actions.creating') : t('actions.create')}{' '}
         {!submitting && <ArrowRight size={16} />}
       </button>
+      <div className="expert-account-alt">
+        <p>
+          {t('account.registered')}{' '}
+          {/* Đăng nhập xong quay lại đúng trang đăng ký chuyên gia */}
+          <Link to="/login" state={{ from: '/expert/register' }}>
+            {t('actions.signIn')}
+          </Link>
+        </p>
+        <p>
+          {t('account.notExpert')}{' '}
+          <Link to="/register">{t('account.customerSignup')}</Link>
+        </p>
+      </div>
     </form>
   )
 }

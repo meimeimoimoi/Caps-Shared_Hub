@@ -1,62 +1,65 @@
-import { ShieldCheck } from 'lucide-react'
-import { useEffect, useRef } from 'react'
-import expertPhoto from '../assets/expert-collaboration.png'
+import { useTranslation } from 'react-i18next'
+import { Link } from 'react-router-dom'
+import brandMark from '@/assets/logo-icon.svg'
+import expertPhoto from '@/assets/generated/expert-registration-collaboration.png'
+import { LanguageToggle as AuthLanguageToggle } from '@/components/ui/layout/language-toggle'
 
+const steps = ['account', 'dossier', 'gate1', 'gate2', 'pricing'] as const
+
+/* Panel trái của trang đăng ký chuyên gia: luôn tối, dùng chung ảnh và tông màu với trang chủ.
+ * Nêu rõ quy trình để chuyên gia biết trước công sức cần bỏ ra trước khi tạo tài khoản. */
 export function AccountIntroduction() {
-  const photoRef = useRef<HTMLElement>(null)
-
-  useEffect(() => {
-    const photo = photoRef.current
-    const media = window.matchMedia('(hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference)')
-    if (!photo) return
-    let frame = 0
-    const reset = () => {
-      cancelAnimationFrame(frame)
-      photo.removeAttribute('data-tracking')
-      photo.style.removeProperty('--photo-x')
-      photo.style.removeProperty('--photo-y')
-      photo.style.removeProperty('--light-x')
-      photo.style.removeProperty('--light-y')
-      photo.style.removeProperty('--tilt-x')
-      photo.style.removeProperty('--tilt-y')
-    }
-    const move = (event: PointerEvent) => {
-      if (!media.matches || event.pointerType === 'touch') return
-      const rect = photo.getBoundingClientRect()
-      const x = Math.max(0, Math.min(1, (event.clientX - rect.left) / rect.width))
-      const y = Math.max(0, Math.min(1, (event.clientY - rect.top) / rect.height))
-      cancelAnimationFrame(frame)
-      frame = requestAnimationFrame(() => {
-        photo.dataset.tracking = 'true'
-        photo.style.setProperty('--photo-x', `${(x - 0.5) * 20}px`)
-        photo.style.setProperty('--photo-y', `${(y - 0.5) * 14}px`)
-        photo.style.setProperty('--tilt-x', `${(0.5 - y) * 6}deg`)
-        photo.style.setProperty('--tilt-y', `${(x - 0.5) * 8}deg`)
-        photo.style.setProperty('--light-x', `${x * 100}%`)
-        photo.style.setProperty('--light-y', `${y * 100}%`)
-      })
-    }
-    photo.addEventListener('pointermove', move)
-    photo.addEventListener('pointerleave', reset)
-    media.addEventListener('change', reset)
-    window.addEventListener('blur', reset)
-    return () => {
-      reset()
-      photo.removeEventListener('pointermove', move)
-      photo.removeEventListener('pointerleave', reset)
-      media.removeEventListener('change', reset)
-      window.removeEventListener('blur', reset)
-    }
-  }, [])
+  const { t } = useTranslation('expertRegistration')
 
   return (
-    <section className="expert-introduction">
-      <h1>Bring your expertise.<br /><em>Make a difference.</em></h1>
-      <p className="expert-intro-copy">Join Shared Hub as a tax and accounting expert and share your knowledge with a wider community.</p>
-      <figure ref={photoRef} className="expert-photo">
-        <img src={expertPhoto} alt="Two tax and accounting professionals working together over financial documents in a sunlit office" width={1536} height={1024} fetchPriority="high" />
-      </figure>
-      <div className="expert-review-note"><ShieldCheck size={22} aria-hidden="true" /><p>Expert approval includes eligibility and service-specific competency reviews.</p></div>
-    </section>
+    <aside className="expert-signup-aside login-material">
+      <img
+        src={expertPhoto}
+        alt=""
+        aria-hidden="true"
+        className="expert-signup-photo"
+        width={1024}
+        height={1536}
+        fetchPriority="high"
+      />
+      <div className="expert-signup-aside-inner">
+        <div className="expert-signup-topbar">
+          <Link
+            to="/"
+            aria-label={t('page.home')}
+            className="expert-signup-brand"
+          >
+            <img src={brandMark} alt="" width={28} height={32} />
+            <span>Shared Hub</span>
+          </Link>
+          <AuthLanguageToggle />
+        </div>
+
+        <div className="expert-signup-pitch">
+          <p className="expert-signup-eyebrow">{t('introduction.eyebrow')}</p>
+          <h1>
+            {t('introduction.heading')} <em>{t('introduction.impact')}</em>
+          </h1>
+          <p className="expert-signup-lead">{t('introduction.description')}</p>
+        </div>
+
+        <div className="expert-signup-process">
+          <h2>{t('introduction.stepsTitle')}</h2>
+          <ol>
+            {steps.map((step, i) => (
+              <li key={step} data-current={i === 0 || undefined}>
+                <span className="expert-signup-step-index" aria-hidden="true">
+                  {i + 1}
+                </span>
+                <div>
+                  <strong>{t(`introduction.steps.${step}.title`)}</strong>
+                  <span>{t(`introduction.steps.${step}.body`)}</span>
+                </div>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </div>
+    </aside>
   )
 }

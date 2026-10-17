@@ -43,3 +43,10 @@ jobs:
         run: npm run build
         env:
           VITE_API_GATEWAY_URL: "http://localhost:5190"
+
+      - name: Unit tests
+        run: npm test
+
+      # Runner ubuntu-latest có sẵn Google Chrome; Playwright dùng channel 'chrome'
+      - name: E2E flow tests (Playwright)
+        run: npm run test:e2e

@@ -10,8 +10,8 @@ export type LoginFormValues = {
 }
 
 export type LoginFormErrors = {
-  email?: string
-  password?: string
+  email?: 'validation.emailRequired' | 'validation.emailInvalid'
+  password?: 'validation.passwordRequired'
 }
 
 export function validateLogin(values: LoginFormValues): LoginFormErrors {
@@ -19,13 +19,13 @@ export function validateLogin(values: LoginFormValues): LoginFormErrors {
   const email = values.email.trim()
 
   if (!email) {
-    errors.email = 'Vui lòng nhập email.'
+    errors.email = 'validation.emailRequired'
   } else if (!isValidEmail(email)) {
-    errors.email = 'Nhập email hợp lệ, ví dụ ban@doanhnghiep.vn.'
+    errors.email = 'validation.emailInvalid'
   }
 
   if (!values.password) {
-    errors.password = 'Nhập mật khẩu của bạn.'
+    errors.password = 'validation.passwordRequired'
   }
 
   return errors

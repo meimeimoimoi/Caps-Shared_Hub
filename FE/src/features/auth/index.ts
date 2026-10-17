@@ -1,5 +1,11 @@
 export { useAuth } from './hooks/useAuth'
+export { useAccount, DEMO_ACCOUNTS, type AccountRole } from './hooks/useAccount'
+export { AccountSettings } from './components/AccountSettings'
+// Dùng riêng lẻ khi trang tài khoản có giao diện riêng (vd. Expert settings)
+export { AvatarUploader } from './components/AvatarUploader'
+export { ChangePasswordForm } from './components/ChangePasswordForm'
 export { useAuthStore } from './store/authStore'
-export { validateAccount, passwordRequirements } from './utils/accountValidation'
+export { validateAccount, validateAccountIssues, validateSignupIssues, passwordRequirements } from './utils/accountValidation'
 export type { AccountField } from './utils/accountValidation'
+export { Permission, hasAnyPermission, type PermissionName } from './utils/permissions'
 export type * from './types'

@@ -1,15 +1,24 @@
 import { useEffect, useRef, useState } from 'react'
 import { SocialView } from '@/components/auth/SocialView'
 import { EmailLoginForm } from '@/components/auth/EmailLoginForm'
+import { ForgotPasswordForm } from '@/components/auth/ForgotPasswordForm'
 import { VideoBackground } from '@/components/auth/VideoBackground'
 import { useAuth } from '../features/auth/hooks/useAuth'
 import type { LoginFormValues } from '../features/auth/types'
+import { LanguageToggle as AuthLanguageToggle } from '@/components/ui/layout/language-toggle'
+import { useTranslation } from 'react-i18next'
+import { useLocation } from 'react-router-dom'
 
 export default function LoginPage() {
-  const [view, setView] = useState<'social' | 'email'>('social')
-  const [notice, setNotice] = useState<string | null>(null)
+  const { t } = useTranslation('auth')
+  useEffect(() => { document.title = `${t('social.title')} | Shared Hub` }, [t])
+  // Trang đặt lại mật khẩu gửi state { view: 'forgot' } khi liên kết hết hạn,
+  // trang xác thực email gửi { view: 'email' } để vào thẳng form đăng nhập
+  const initialView = (useLocation().state as { view?: 'forgot' | 'email' } | null)?.view
+  const [view, setView] = useState<'social' | 'email' | 'forgot'>(initialView ?? 'social')
+  const [notice, setNotice] = useState<'googleUnavailable' | null>(null)
   const emailInput = useRef<HTMLInputElement>(null)
-  const { login, isLoading, error } = useAuth()
+  const { login, loginWithGoogle, isLoading, error } = useAuth()
 
   useEffect(() => {
     if (view === 'email') emailInput.current?.focus()
@@ -23,25 +32,42 @@ export default function LoginPage() {
       // useAuth preserves the form and exposes the API error for retry.
     }
   }
-  const google = () => setNotice('Google sign-in is not available yet. Please continue with email.')
+  const google = async (idToken: string) => {
+    setNotice(null)
+    try {
+      await loginWithGoogle(idToken)
+    } catch {
+      // useAuth exposes the API error; the user can pick Google again or use email.
+    }
+  }
+  const googleUnavailable = () => setNotice('googleUnavailable')
 
   return (
-    <main className="relative isolate flex min-h-svh flex-col items-center justify-center overflow-hidden bg-[#141416] px-6 py-12 text-white [--accent:#e85d26] [--body:#d4d4d8] [--btn:#f2f2f0] [--btn-hover:#ffffff] [--btn-ink:#0a0a0b] [--err:#ffb4b4] [--line:rgba(255,255,255,.25)] [--link:#8ee8c6] [--muted:#d4d4d8]">
+    <main className="login-material relative isolate flex min-h-svh flex-col items-center justify-center overflow-hidden bg-[var(--ui-login-canvas)] px-6 py-12 text-[var(--ui-login-text)] max-sm:pt-20">
       <VideoBackground />
+      <div className="fixed top-[max(1rem,env(safe-area-inset-top))] right-[max(1rem,env(safe-area-inset-right))] z-50">
+        <AuthLanguageToggle />
+      </div>
       <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-black/30" />
       {view === 'social' ? (
-        <SocialView onContinueEmail={() => { setNotice(null); setView('email') }} onGoogle={google} />
+        <SocialView onContinueEmail={() => { setNotice(null); setView('email') }} onGoogle={google} onGoogleUnavailable={googleUnavailable} isLoading={isLoading} />
+      ) : view === 'forgot' ? (
+        <ForgotPasswordForm onBack={() => setView('email')} />
       ) : (
         <EmailLoginForm
           onBack={() => { setNotice(null); setView('social') }}
           onGoogle={google}
+          onGoogleUnavailable={googleUnavailable}
+          onForgot={() => { setNotice(null); setView('forgot') }}
           onSubmit={submit}
           emailInputRef={emailInput}
           isLoading={isLoading}
           error={error}
         />
       )}
-      {notice && <p role="status" className="relative z-10 mt-6 max-w-[480px] rounded-xl bg-black/70 px-5 py-3 text-center text-sm text-white">{notice}</p>}
+      {notice && <p role="status" className="relative z-10 mt-6 max-w-[480px] rounded-xl bg-black/70 px-5 py-3 text-center text-sm text-white">{t(notice)}</p>}
+      {/* The email form shows its own error; the first step has no error slot */}
+      {!notice && view === 'social' && error && <p role="alert" className="relative z-10 mt-6 max-w-[480px] rounded-xl bg-black/70 px-5 py-3 text-center text-sm text-white">{error}</p>}
     </main>
   )
 }

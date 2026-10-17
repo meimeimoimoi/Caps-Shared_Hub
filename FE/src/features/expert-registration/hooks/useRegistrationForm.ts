@@ -1,30 +1,84 @@
-import { collectFormErrors, focusInvalidField } from '@/lib/validation/formValidation'
-import { normalizeVietnamPhone, vietnamPhoneError } from '@/lib/validation/vietnamPhone'
-import { useEffect, useRef, useState, type FormEvent } from 'react'
+import { focusInvalidField } from '@/lib/validation/formValidation'
+import { collectFormIssues } from '@/lib/validation/formIssues'
+import { normalizeVietnamPhone } from '@/lib/validation/vietnamPhone'
+import { useTranslation } from 'react-i18next'
+import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
+import { ApiError } from '@/lib/api-client'
+import { authApi } from '@/features/auth/api/authApi'
+import { useAuthStore } from '@/features/auth/store/authStore'
+import type { RegistrationMessage } from '../types/messages'
 import { criteria, initial } from '../constants'
-import type { Profile } from '../types'
+import type { EvidenceFile, Profile } from '../types'
+import {
+  applicationApi,
+  evidenceCode,
+  toFields,
+  toFiles,
+  toProfile,
+  type ExpertApplication,
+} from '../api/applicationApi'
+import { messageFor } from './useApplicationLifecycle'
+
+export type VerifyPurpose = 'submit' | 'upload'
 
 export interface UseRegistrationFormProps {
-  onRegistrationSubmit: () => void
+  application: ExpertApplication | null
+  setApplication: (app: ExpertApplication) => void
+  syncVerifiedSession: () => Promise<void>
 }
 
-export function useRegistrationForm({ onRegistrationSubmit }: UseRegistrationFormProps) {
+export function useRegistrationForm({
+  application,
+  setApplication,
+  syncVerifiedSession,
+}: UseRegistrationFormProps) {
+  const { t } = useTranslation('expertRegistration')
+  const user = useAuthStore((s) => s.user)
   const [profile, setProfile] = useState<Profile>(initial)
   const [step, setStep] = useState(0)
   const [submitting, setSubmitting] = useState(false)
-  const [files, setFiles] = useState<Record<string, File[]>>({})
+  // File đang tải lên (chưa có trong phản hồi máy chủ) theo từng nhóm
+  const [uploading, setUploading] = useState<Record<string, EvidenceFile[]>>({})
   const [fields, setFields] = useState<string[]>([])
-  const [activeCriterion, setActiveCriterion] = useState(criteria[0]!)
+  const [activeCriterion, setActiveCriterion] = useState<string>(criteria[0]!)
   const [confirmed, setConfirmed] = useState(false)
-  const [error, setError] = useState('')
-  const [notice, setNotice] = useState('')
+  const [error, setError] = useState<RegistrationMessage | null>(null)
+  const [notice, setNotice] = useState<RegistrationMessage | null>(null)
+  // Ảnh chọn khi email chưa xác nhận: tải lên lúc nộp (API ảnh đại diện cần tài khoản đã kích hoạt)
   const [avatar, setAvatar] = useState<File | null>(null)
-  const [avatarPreview, setAvatarPreview] = useState('')
+  const [localPreview, setLocalPreview] = useState('')
   const [independent, setIndependent] = useState(true)
   const [draftSaved, setDraftSaved] = useState(false)
-  const [formErrors, setFormErrors] = useState<Record<string, string>>({})
+  // The code dialog opens when submitting, or when uploading past the unverified file limit;
+  // once verified it submits (submit) or just closes so uploading can continue (upload)
+  const [verifyOpen, setVerifyOpen] = useState(false)
+  const [verifyPurpose, setVerifyPurpose] = useState<VerifyPurpose>('submit')
+  // Nhập mã và tín hiệu "đã xác nhận" có thể báo cùng lúc: chỉ nộp một lần
+  const verifyCheck = useRef(false)
+  const [formErrors, setFormErrors] = useState<
+    Record<string, RegistrationMessage>
+  >({})
   const heading = useRef<HTMLHeadingElement>(null)
   const errorRef = useRef<HTMLParagraphElement>(null)
+  // Nạp dữ liệu từ máy chủ một lần cho mỗi hồ sơ (điều chỉnh state ngay khi render, không qua effect);
+  // sau đó form là nguồn dữ liệu đang sửa
+  const [hydratedKey, setHydratedKey] = useState<string | null>(null)
+  const sourceKey = application?.id ?? (user ? `user:${user.id}` : null)
+  if (sourceKey && sourceKey !== hydratedKey) {
+    setHydratedKey(sourceKey)
+    if (application) {
+      const next = toProfile(application)
+      setProfile(next)
+      setFields(toFields(application))
+      setIndependent(!next.company)
+    } else if (user) {
+      setProfile((p) => ({
+        ...p,
+        name: p.name || user.name,
+        email: user.email,
+      }))
+    }
+  }
 
   useEffect(() => {
     if (error && errorRef.current) {
@@ -33,23 +87,46 @@ export function useRegistrationForm({ onRegistrationSubmit }: UseRegistrationFor
     }
   }, [error])
 
+  const files = useMemo(() => {
+    const saved = application ? toFiles(application) : {}
+    for (const [key, list] of Object.entries(uploading))
+      saved[key] = [...(saved[key] ?? []), ...list]
+    return saved
+  }, [application, uploading])
+
   const validateForm = (form: HTMLFormElement): boolean => {
-    const result = collectFormErrors(form)
-    const errors = result.errors
+    const result = collectFormIssues(form)
+    const errors: Record<string, RegistrationMessage> = Object.fromEntries(
+      Object.entries(result.errors).map(([field, issue]) => [
+        field,
+        { key: `validation.${issue.code}`, params: issue.params },
+      ])
+    )
     let firstInvalid = result.firstInvalid
-    const phoneInput = form.querySelector<HTMLInputElement>('input[name="phone"]')
+    const phoneInput = form.querySelector<HTMLInputElement>(
+      'input[name="phone"]'
+    )
     if (phoneInput) {
-      const phoneError = vietnamPhoneError(phoneInput.value)
+      const phoneError = !phoneInput.value.trim()
+        ? 'validation.phoneRequired'
+        : !normalizeVietnamPhone(phoneInput.value)
+          ? 'validation.phoneInvalid'
+          : undefined
       if (phoneError) {
-        errors.phone = phoneError
+        errors.phone = { key: phoneError }
         firstInvalid ??= phoneInput
       } else {
-        setProfile((current) => ({ ...current, phone: normalizeVietnamPhone(phoneInput.value) ?? phoneInput.value.trim() }))
+        setProfile((current) => ({
+          ...current,
+          phone:
+            normalizeVietnamPhone(phoneInput.value) ?? phoneInput.value.trim(),
+        }))
       }
     }
     if (step === 1) {
-      if (!fields.length) errors.expertise = 'Select at least one area of expertise.'
-      if (!files.CV?.length) errors.CV = 'Choose your CV to continue.'
+      if (!fields.length) errors.expertise = { key: 'validation.expertise' }
+      if (!files.CV?.some((f) => !f.uploading))
+        errors.CV = { key: 'validation.cv' }
     }
     setFormErrors(errors)
     if (Object.keys(errors).length) {
@@ -64,13 +141,24 @@ export function useRegistrationForm({ onRegistrationSubmit }: UseRegistrationFor
 
   function move(next: number) {
     setStep(next)
-    setError('')
-    setNotice('')
+    setError(null)
+    setNotice(null)
     setFormErrors({})
     requestAnimationFrame(() => heading.current?.focus())
   }
 
-  function chooseFiles(key: string, incoming: FileList | null) {
+  /** Lưu nháp lên máy chủ; số điện thoại chuẩn hóa giống lúc kiểm tra form */
+  async function persist() {
+    const phone = normalizeVietnamPhone(profile.phone) ?? profile.phone
+    const saved = await applicationApi.save(
+      { ...profile, phone, company: independent ? '' : profile.company },
+      fields
+    )
+    setApplication(saved)
+    return saved
+  }
+
+  async function chooseFiles(key: string, incoming: FileList | null) {
     if (!incoming) return
     const selected = Array.from(incoming)
     if (
@@ -78,43 +166,147 @@ export function useRegistrationForm({ onRegistrationSubmit }: UseRegistrationFor
         (f) => !/\.(pdf|png|jpe?g)$/i.test(f.name) || f.size > 10 * 1024 * 1024
       )
     ) {
-      setFormErrors((p) => ({ ...p, [key]: 'This file selection could not be added. Choose PDF, JPG or PNG files, each no larger than 10 MB.' }))
+      setFormErrors((p) => ({ ...p, [key]: { key: 'validation.file' } }))
       return
     }
-    setFiles((p) => ({ ...p, [key]: [...(p[key] ?? []), ...selected] }))
     clearFormError(key)
-    setError('')
+    setError(null)
+    // Tải lần lượt để thứ tự file giữ đúng như người dùng chọn
+    for (const file of selected) {
+      const placeholder: EvidenceFile = {
+        id: '',
+        name: file.name,
+        size: file.size,
+        canRemove: false,
+        uploading: true,
+      }
+      setUploading((p) => ({ ...p, [key]: [...(p[key] ?? []), placeholder] }))
+      try {
+        setApplication(await applicationApi.upload(evidenceCode(key), file))
+      } catch (e) {
+        setFormErrors((p) => ({ ...p, [key]: messageFor(e) }))
+        // The remaining files would hit the same limit: ask for verification instead
+        if (e instanceof ApiError && e.code === 'EVIDENCE_LIMIT_UNVERIFIED') {
+          setVerifyPurpose('upload')
+          setVerifyOpen(true)
+          break
+        }
+      } finally {
+        setUploading((p) => ({
+          ...p,
+          [key]: (p[key] ?? []).filter((x) => x !== placeholder),
+        }))
+      }
+    }
   }
 
-  function advance(e: FormEvent<HTMLFormElement>) {
+  async function advance(e: FormEvent<HTMLFormElement>) {
     e.preventDefault()
     if (submitting) return
-    setError('')
+    setError(null)
 
     if (!validateForm(e.currentTarget)) return
+    if (step === 3 && !confirmed) {
+      setError({ key: 'validation.confirmed' })
+      return
+    }
 
-    if (step < 3) {
-      move(step + 1)
-      return
-    }
-    if (!confirmed) {
-      setError('Confirm that your application is accurate before continuing.')
-      return
-    }
     setSubmitting(true)
-    setTimeout(() => {
+    try {
+      // Mỗi lần "Tiếp tục" đều lưu nháp để không mất dữ liệu khi đóng trang
+      const saved = await persist()
+      if (step < 3) {
+        move(step + 1)
+        return
+      }
+      // The expert service reads verification from the token: refresh it first in case the
+      // email was verified in another tab or on another device, then re-read the application
+      const verified = saved.emailVerified || (await refreshVerification())
+      if (!verified) {
+        setVerifyPurpose('submit')
+        setVerifyOpen(true)
+        return
+      }
+      await submitNow()
+    } catch (err) {
+      setError(messageFor(err))
+    } finally {
       setSubmitting(false)
-      onRegistrationSubmit()
-    }, 800)
+    }
+  }
+
+  async function submitNow() {
+    await syncVerifiedSession()
+    if (avatar && useAuthStore.getState().user?.status === 'ACTIVE') {
+      const url = await authApi.uploadAvatar(avatar)
+      useAuthStore.getState().updateUser({ avatarUrl: url })
+      setAvatar(null)
+    }
+    setApplication(await applicationApi.submit())
+  }
+
+  /** Refreshes the session and reports whether the application now sees a verified email. */
+  async function refreshVerification() {
+    await syncVerifiedSession()
+    const latest = await applicationApi.get()
+    if (latest) setApplication(latest)
+    return !!latest?.emailVerified
+  }
+
+  /** Runs after the code is entered or the link is opened (another tab): once verified, closes the
+   * dialog and submits, or only lifts the upload limit when the dialog was opened by an upload. */
+  async function checkVerifiedAndSubmit() {
+    if (verifyCheck.current) return
+    verifyCheck.current = true
+    try {
+      await syncVerifiedSession()
+      const latest = await applicationApi.get()
+      if (latest) setApplication(latest)
+      if (!latest?.emailVerified) return
+      if (verifyPurpose === 'upload') {
+        setVerifyOpen(false)
+        setFormErrors((p) =>
+          Object.fromEntries(
+            Object.entries(p).filter(
+              ([, issue]) => issue.key !== 'messages.verifyForMoreFiles'
+            )
+          )
+        )
+        return
+      }
+      if (latest.status !== 'DRAFT') return
+      setVerifyOpen(false)
+      setSubmitting(true)
+      setError(null)
+      await submitNow()
+    } catch (err) {
+      setError(messageFor(err))
+    } finally {
+      verifyCheck.current = false
+      setSubmitting(false)
+    }
   }
 
   function clearFormError(key: string) {
-    if (formErrors[key]) setFormErrors((p) => ({ ...p, [key]: '' }))
+    setFormErrors((p) => {
+      if (!p[key]) return p
+      const next = { ...p }
+      delete next[key]
+      return next
+    })
   }
 
-  function updateAvatar(f: File | null, preview: string) {
+  async function updateAvatar(f: File | null, preview: string) {
+    setLocalPreview(preview)
     setAvatar(f)
-    setAvatarPreview(preview)
+    if (!f || useAuthStore.getState().user?.status !== 'ACTIVE') return
+    try {
+      const url = await authApi.uploadAvatar(f)
+      useAuthStore.getState().updateUser({ avatarUrl: url })
+      setAvatar(null)
+    } catch {
+      setError({ key: 'personal.photoError' })
+    }
   }
 
   function setIndependentStatus(val: boolean) {
@@ -123,23 +315,39 @@ export function useRegistrationForm({ onRegistrationSubmit }: UseRegistrationFor
   }
 
   function toggleField(f: string) {
-    setFields((p) => p.includes(f) ? p.filter((x) => x !== f) : [...p, f])
+    setFields((p) => (p.includes(f) ? p.filter((x) => x !== f) : [...p, f]))
     clearFormError('expertise')
   }
 
-  function removeFile(criterion: string, i: number) {
-    setFiles((p) => ({ ...p, [criterion]: p[criterion]!.filter((_, n) => n !== i) }))
+  async function removeFile(criterion: string, i: number) {
+    const item = files[criterion]?.[i]
+    if (!item?.id || !item.canRemove) return
+    try {
+      setApplication(await applicationApi.remove(item.id))
+    } catch (e) {
+      setError(messageFor(e))
+    }
   }
 
   function toggleConfirmed(val: boolean) {
     setConfirmed(val)
-    if (formErrors.confirmed) setFormErrors((p) => ({ ...p, confirmed: '' }))
+    clearFormError('confirmed')
   }
 
-  function saveDraft() {
-    setDraftSaved(true)
-    setNotice('Draft saved in memory for this session. Nothing was sent to the server.')
-    setTimeout(() => setDraftSaved(false), 2000)
+  async function saveDraft() {
+    if (submitting) return
+    setSubmitting(true)
+    setError(null)
+    try {
+      await persist()
+      setDraftSaved(true)
+      setNotice({ key: 'messages.draftSaved' })
+      setTimeout(() => setDraftSaved(false), 2000)
+    } catch (e) {
+      setError(messageFor(e))
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   return {
@@ -151,14 +359,23 @@ export function useRegistrationForm({ onRegistrationSubmit }: UseRegistrationFor
     activeCriterion,
     setActiveCriterion,
     confirmed,
-    error,
+    error: error ? t(error.key, error.params) : '',
     setError,
-    notice,
+    notice: notice ? t(notice.key, notice.params) : '',
     avatar,
-    avatarPreview,
+    avatarPreview: localPreview || user?.avatarUrl || '',
     independent,
     draftSaved,
-    formErrors,
+    verifyOpen,
+    verifyPurpose,
+    closeVerify: () => setVerifyOpen(false),
+    checkVerifiedAndSubmit,
+    formErrors: Object.fromEntries(
+      Object.entries(formErrors).map(([field, issue]) => [
+        field,
+        t(issue.key, issue.params),
+      ])
+    ),
     heading,
     errorRef,
     validateForm,

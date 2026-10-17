@@ -1,44 +1,38 @@
-import { useRef, useState, useEffect } from 'react'
+import { DemoBanner } from '@/components/ui/feedback/demo-banner'
+import { useTheme } from '@/hooks/useTheme'
+import { useRef, useState } from 'react'
 import { Outlet, useSearchParams, useLocation } from 'react-router-dom'
 import { isExpertDemo } from '@/lib/expert-data-source'
 import { ExpertHeader } from './ExpertHeader'
 import { ExpertSidebar } from './ExpertSidebar'
-import { CustomSelect } from '@/components/ui/custom-select'
+import { CustomSelect } from '@/components/ui/forms/custom-select'
 import './expert-theme.css'
+import { useTranslation } from 'react-i18next'
+import { useDialogMotion } from '@/components/ui/motion'
 
 const scenarioOptions = [
-  { value: 'normal', label: 'Active workload' },
-  { value: 'empty', label: 'Empty queue' },
-  { value: 'partial', label: 'Partial failure' },
-  { value: 'stale', label: 'Stale data' },
-  { value: 'inconsistent', label: 'Version mismatch' },
-  { value: 'error', label: 'Dashboard error' },
-  { value: 'denied', label: 'Access denied' },
-  { value: 'context-error', label: 'Access check error' },
-]
+  { value: 'normal', key: 'demo.scenarios.normal' },
+  { value: 'empty', key: 'demo.scenarios.empty' },
+  { value: 'partial', key: 'demo.scenarios.partial' },
+  { value: 'stale', key: 'demo.scenarios.stale' },
+  { value: 'inconsistent', key: 'demo.scenarios.inconsistent' },
+  { value: 'error', key: 'demo.scenarios.error' },
+  { value: 'denied', key: 'demo.scenarios.denied' },
+  { value: 'context-error', key: 'demo.scenarios.contextError' },
+] as const
 
 export function ExpertLayout() {
+  const { t } = useTranslation(['common', 'navigation'])
   const location = useLocation()
+  const interactivePricing = /^\/expert\/services\/[^/]+\/pricing$/.test(
+    location.pathname
+  )
   const drawer = useRef<HTMLDialogElement>(null)
+  useDialogMotion(drawer, 'drawer-left')
   const trigger = useRef<HTMLElement | null>(null)
   const [params, setParams] = useSearchParams()
   const [isCollapsed, setIsCollapsed] = useState(false)
-  const [lang, setLang] = useState<'vi' | 'en'>(() => {
-    return (localStorage.getItem('expert-lang') as 'vi' | 'en') || 'vi'
-  })
-  const [isDark, setIsDark] = useState(() => {
-    return localStorage.getItem('expert-theme') === 'dark' ||
-      (!localStorage.getItem('expert-theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)
-  })
-
-  useEffect(() => {
-    localStorage.setItem('expert-theme', isDark ? 'dark' : 'light')
-  }, [isDark])
-
-  useEffect(() => {
-    localStorage.setItem('expert-lang', lang)
-    document.documentElement.lang = lang
-  }, [lang])
+  const { isDark } = useTheme()
 
   const close = () => drawer.current?.close()
   const open = () => {
@@ -47,9 +41,11 @@ export function ExpertLayout() {
   }
 
   return (
-    <div className={`expert-portal ${isCollapsed ? 'ep-collapsed' : ''} ${isDark ? 'ep-dark' : ''}`}>
+    <div
+      className={`expert-portal ${isCollapsed ? 'ep-collapsed' : ''} ${isDark ? 'ep-dark' : ''}`}
+    >
       <a className="ep-skip-link" href="#expert-main">
-        Skip to overview
+        {t('navigation.skipOverview')}
       </a>
       <aside className="ep-sidebar">
         <ExpertSidebar
@@ -60,7 +56,7 @@ export function ExpertLayout() {
       <dialog
         ref={drawer}
         className="ep-drawer"
-        aria-label="Expert Portal navigation"
+        aria-label={t('navigation:expertNavigation')}
         onClose={() => trigger.current?.focus()}
         onClick={(event) => {
           if (event.target === event.currentTarget) {
@@ -78,40 +74,47 @@ export function ExpertLayout() {
         <ExpertSidebar close={close} />
       </dialog>
       <div className="ep-workspace">
-        <ExpertHeader 
-          openNavigation={open} 
-          isDark={isDark} 
-          toggleTheme={() => setIsDark(!isDark)}
-          lang={lang}
-          toggleLang={() => setLang(lang === 'vi' ? 'en' : 'vi')}
-        />
+        <ExpertHeader openNavigation={open} />
         {isExpertDemo && (
-          <div className="ep-demo">
+          <DemoBanner
+            controls={
+              <CustomSelect
+                value={params.get('scenario') ?? 'normal'}
+                onChange={(val) =>
+                  setParams(val === 'normal' ? {} : { scenario: val })
+                }
+                options={scenarioOptions.map(({ value, key }) => ({
+                  value,
+                  label: t(key),
+                }))}
+                label={t('demo.previewState')}
+                className="flex items-center gap-2"
+                triggerClassName="!w-[180px] !text-sm"
+              />
+            }
+          >
             <div>
-              <strong>Demo workspace</strong>
-              <span>Synthetic data · read-only · no server changes</span>
+              <strong className="mr-2">{t('demo.workspace')}</strong>
+              <span>
+                {t(interactivePricing ? 'demo.interactive' : 'demo.readOnly')}
+              </span>
             </div>
-            <CustomSelect
-              value={params.get('scenario') ?? 'normal'}
-              onChange={(val) =>
-                setParams(val === 'normal' ? {} : { scenario: val })
-              }
-              options={scenarioOptions}
-              label="Preview state"
-              className="flex items-center gap-2"
-              triggerClassName="!min-h-[34px] !py-1 !text-xs !w-[180px]"
-            />
-          </div>
+          </DemoBanner>
         )}
         <main
           id="expert-main"
-          className={`ep-main ${location.pathname === '/expert/overview' ? 'ep-main-overview max-w-450 [padding:32px_36px] max-[1251px]:[padding:28px_24px] max-[720px]:[padding:24px_16px]' : location.pathname.startsWith('/expert/settings/') ? 'max-w-none mx-0 p-6 max-md:p-4' : ''}`}
+          className={`ep-main ${location.pathname === '/expert/overview' ? 'ep-main-overview max-w-450 [padding:32px_36px] max-[1251px]:[padding:28px_24px] max-[720px]:[padding:24px_16px]' : location.pathname.startsWith('/expert/settings/') ? 'mx-0 max-w-none p-6 max-md:p-4' : ''}`}
           tabIndex={-1}
         >
           <Outlet />
         </main>
         <footer className="ep-footer">
-          Shared Hub · Expert Portal<span>Read-only overview</span>
+          {t('demo.footer')}
+          <span>
+            {t(
+              interactivePricing ? 'demo.interactive' : 'demo.overviewReadOnly'
+            )}
+          </span>
         </footer>
       </div>
     </div>

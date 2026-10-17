@@ -1,10 +1,22 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
+  <PropertyGroup>
+    <RootNamespace>Caps.Notification</RootNamespace>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
     <PackageReference Include="Swashbuckle.AspNetCore" />
     <PackageReference Include="OpenApiUi" />
-    <ProjectReference Include="..\common\common.csproj" />
+    <ProjectReference Include="..\common\Api\Api.csproj" />
+    <ProjectReference Include="..\common\Contracts\Contracts.csproj" />
+    <ProjectReference Include="..\common\Messaging\Messaging.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Logo embedded in emails (Content-ID), independent of any external image URL -->
+    <EmbeddedResource Include="Assets\email-logo.png" LogicalName="notification.email-logo.png" />
+    <ProjectReference Include="..\common\Messaging\Messaging.csproj" />
   </ItemGroup>
 
 </Project>

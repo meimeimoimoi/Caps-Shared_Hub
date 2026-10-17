@@ -1,80 +1,104 @@
+import { Trans, useTranslation } from 'react-i18next'
+import { Link, useLocation } from 'react-router-dom'
 import { Mail } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { AuthBrandHeader } from './AuthBrandHeader'
 import { GoogleIcon } from './GoogleIcon'
+import { GoogleSignInButton } from './GoogleSignInButton'
+import {
+  CARD_CLASS,
+  LINK_CLASS,
+  PRIMARY_BUTTON_CLASS,
+  SECONDARY_BUTTON_CLASS,
+} from './EmailLoginForm'
+import { useMotion } from '@/components/ui/motion'
+
+const LEGAL_LINK_CLASS =
+  'rounded-sm text-white/65 underline decoration-white/25 underline-offset-2 transition-colors hover:text-white hover:decoration-white/60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--link)]'
 
 export type SocialViewProps = {
   onContinueEmail: () => void
-  onGoogle: () => void
+  /** Receives the Google ID token. */
+  onGoogle: (idToken: string) => void
+  /** Google sign-in is not configured or could not load. */
+  onGoogleUnavailable: () => void
+  isLoading?: boolean
   className?: string
 }
 
-const BRAND_FONT = "[font-family:'Plus_Jakarta_Sans',sans-serif]"
+/* First sign-in step: shares the glass card and button styles with the email step
+ * so switching steps does not shift the layout. */
+export function SocialView({
+  onContinueEmail,
+  onGoogle,
+  onGoogleUnavailable,
+  isLoading = false,
+  className,
+}: SocialViewProps) {
+  const { t } = useTranslation('auth')
+  const motion = useMotion({ preset: 'reveal' })
+  // Giữ trang cần quay lại (nếu có) khi chuyển sang đăng ký
+  const returnState = useLocation().state
 
-const BTN =
-  'w-full min-h-[56px] border-0 rounded-[14px] bg-[var(--btn)] text-[var(--btn-ink)] text-[15px] font-medium flex items-center gap-[14px] px-5 cursor-pointer text-left [font-family:Inter,sans-serif] [transition:background_.15s,transform_.1s,box-shadow_.2s] hover:bg-[var(--btn-hover)] hover:shadow-[0_6px_20px_-6px_rgba(255,255,255,.15)] active:scale-[.995] focus-visible:outline-2 focus-visible:outline-offset-[3px] focus-visible:outline-[var(--accent)] max-[420px]:min-h-[52px] max-[420px]:px-4'
-
-const TERMS_LINK =
-  'text-[var(--link)] font-medium no-underline transition-opacity underline-offset-2 hover:underline hover:opacity-80'
-
-export function SocialView({ onContinueEmail, onGoogle, className }: SocialViewProps) {
   return (
     <div
-      className={cn(
-        'relative z-1 w-full max-w-[480px] flex flex-col items-center text-center [transition:opacity_.35s_ease,transform_.35s_ease]',
-        className,
-      )}
+      ref={motion}
+      className={cn('relative z-2 w-full max-w-[440px]', className)}
     >
-      <h1
-        className={cn(
-          'text-[28px] font-bold leading-[1.2] tracking-[-0.03em] mb-2 text-white [text-shadow:0_2px_12px_rgba(0,0,0,.6)] max-[420px]:text-[24px]',
-          BRAND_FONT,
-        )}
-      >
-        Đăng nhập vào SHFT
-      </h1>
-      <p className="text-sm text-[var(--body)] mb-8 [text-shadow:0_1px_8px_rgba(0,0,0,.6)]">
-        Tiếp tục quản lý hồ sơ thuế của bạn.
-      </p>
+      <div className={CARD_CLASS}>
+        <AuthBrandHeader title={t('social.title')} />
 
-      <div className="w-full flex flex-col gap-3 mb-6">
-        <button type="button" onClick={onGoogle} className={BTN}>
-          <span className="flex-none grid h-[22px] w-[22px] place-items-center">
-            <GoogleIcon size={20} />
-          </span>
-          <span className="flex-1 flex flex-col leading-[1.25] min-w-0">
-            <span className="text-[15px] font-medium text-[var(--btn-ink)]">
-              Continue with Google
-            </span>
-          </span>
+        <button
+          type="button"
+          onClick={onContinueEmail}
+          className={cn(PRIMARY_BUTTON_CLASS, 'font-sans')}
+        >
+          <Mail aria-hidden="true" size={18} />
+          <span>{t('actions.email')}</span>
         </button>
+
+        <div className="my-5 flex items-center gap-4 text-[11.5px] font-medium tracking-[0.08em] text-white/35 uppercase">
+          <span aria-hidden="true" className="h-px flex-1 bg-white/10" />
+          {t('actions.or')}
+          <span aria-hidden="true" className="h-px flex-1 bg-white/10" />
+        </div>
+
+        <GoogleSignInButton onCredential={onGoogle} disabled={isLoading}>
+          <button
+            type="button"
+            onClick={onGoogleUnavailable}
+            disabled={isLoading}
+            className={cn(SECONDARY_BUTTON_CLASS, 'font-sans')}
+          >
+            <GoogleIcon size={18} />
+            <span>{t('actions.google')}</span>
+          </button>
+        </GoogleSignInButton>
+
+        <p className="mt-5 text-center text-[13px] leading-[1.6] text-white/55">
+          {t('email.noAccount')}{' '}
+          <Link to="/register" state={returnState} className={LINK_CLASS}>
+            {t('email.create')}
+          </Link>
+        </p>
+        <p className="mt-1.5 text-center text-[12.5px] leading-[1.6] text-white/45">
+          {t('register.expertPrompt')}{' '}
+          <Link to="/expert/register" className={LINK_CLASS}>
+            {t('register.expertLink')}
+          </Link>
+        </p>
+
+        <p className="mt-6 border-t border-white/8 pt-5 text-center text-[11.5px] leading-[1.6] text-white/40">
+          <Trans
+            ns="auth"
+            i18nKey="legal"
+            components={{
+              terms: <a href="#" className={LEGAL_LINK_CLASS} />,
+              privacy: <a href="#" className={LEGAL_LINK_CLASS} />,
+            }}
+          />
+        </p>
       </div>
-
-      <div className="flex items-center gap-4 w-full mt-1 mb-5 text-[13px] text-[var(--muted)]">
-        <span aria-hidden="true" className="h-px flex-1 bg-[var(--line)]" />
-        or
-        <span aria-hidden="true" className="h-px flex-1 bg-[var(--line)]" />
-      </div>
-
-      <button type="button" onClick={onContinueEmail} className={BTN}>
-        <span className="flex-none grid h-[22px] w-[22px] place-items-center">
-          <Mail size={22} aria-hidden="true" />
-        </span>
-        <span className="flex-1 flex flex-col leading-[1.25] min-w-0">
-          <span className="text-[15px] font-medium text-[var(--btn-ink)]">Continue with email</span>
-        </span>
-      </button>
-
-      <p className="mt-8 text-[12.5px] leading-[1.6] text-[var(--body)] max-w-[440px] [text-shadow:0_1px_8px_rgba(0,0,0,.6)]">
-        By continuing with Google, or Email, you agree to our{' '}
-        <a href="#" className={TERMS_LINK}>
-          Terms of Service
-        </a>{' '}
-        and acknowledge that you have read and understand our{' '}
-        <a href="#" className={TERMS_LINK}>
-          Privacy Policy
-        </a>
-        .
-      </p>
     </div>
   )
 }

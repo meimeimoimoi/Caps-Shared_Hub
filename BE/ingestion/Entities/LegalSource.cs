@@ -1,7 +1,8 @@
-using Caps.Common.Database;
+using Caps.Common.Domain;
 
-namespace ingestion.Entities;
+namespace Caps.Ingestion.Entities;
 
+/// <summary>A legal document identified by its official number (law, decree, circular).</summary>
 public sealed class LegalSource
 {
     public Guid Id { get; set; } = UuidV7.NewGuid();
@@ -12,7 +13,7 @@ public sealed class LegalSource
     public string Metadata { get; set; } = "{}"; // jsonb
     public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
 
-    public ICollection<LegalAmendment> AmendingAmendments { get; set; } = new List<LegalAmendment>();
-    public ICollection<LegalAmendment> AmendedAmendments { get; set; } = new List<LegalAmendment>();
-    public ICollection<KnowledgeDocument> KnowledgeDocuments { get; set; } = new List<KnowledgeDocument>();
+    public ICollection<LegalAmendment> AmendingAmendments { get; set; } = [];
+    public ICollection<LegalAmendment> AmendedAmendments { get; set; } = [];
+    public ICollection<KnowledgeDocument> KnowledgeDocuments { get; set; } = [];
 }

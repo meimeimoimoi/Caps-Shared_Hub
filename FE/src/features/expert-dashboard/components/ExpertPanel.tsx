@@ -1,13 +1,16 @@
 import type { ComponentPropsWithoutRef } from 'react'
 import { cn } from '@/lib/utils'
+import { useMotion } from '@/components/ui/motion'
 
 /** Shared panel shell; content and layout stay in the consuming component. */
 export function ExpertPanel({
   className,
   ...props
 }: ComponentPropsWithoutRef<'section'>) {
+  const motion = useMotion<HTMLElement>({ preset: 'panel', viewport: true })
   return (
     <section
+      ref={motion}
       className={cn(
         'border-[var(--ep-border)] min-w-0 overflow-hidden rounded-xl border bg-[var(--ep-surface)] bg-none [&_.ep-state]:p-6',
         className

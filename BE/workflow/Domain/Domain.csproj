@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>Caps.Workflow.Domain</RootNamespace>
+    <AssemblyName>Caps.Workflow.Domain</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\common\Domain\Domain.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -1,49 +1,47 @@
 import { useCallback, useState } from 'react'
 import { cn } from '@/lib/utils'
 import { SERVICE_STATUS } from '@/lib/constants'
-import { Toast } from '@/components/ui/toast'
-import { StatusBadge } from '@/components/ui/status-badge'
-import { TablePager } from '@/components/ui/table-pager'
+import { Toast } from '@/components/ui/feedback/toast'
+import { StatusBadge } from '@/components/ui/display/status-badge'
+import { TablePager } from '@/components/ui/navigation/table-pager'
 import { AdminLayout } from '@/app/layouts/admin/AdminLayout'
-import { formatDate } from '../../features/admin/utils/applications'
+import { formatDate } from '../../features/expert-vetting/utils/applications'
 import { formatVnd } from '@/lib/format-money'
-import { mockApplications } from '../../features/admin/mockData'
-import { useExperts, ALL } from '../../features/admin/hooks/useExperts'
-import { ExpertDrawer } from '../../features/admin/components/ExpertDrawer'
-import type { Expert } from '../../features/admin/types'
-
-// MOCK: badge sidebar đếm từ mock, sau này lấy từ API
-const pendingCount = mockApplications.filter(
-  (a) => a.status === 'CAPABILITY_REVIEW'
-).length
+import { useAdminNav } from '@/app/layouts/admin/useAdminNav'
+import { useExperts, ALL } from '../../features/expert-vetting/hooks/useExperts'
+import { ExpertDrawer } from '../../features/expert-vetting/components/ExpertDrawer'
+import type { Expert } from '../../features/expert-vetting/types'
+import { useTranslation } from 'react-i18next'
 
 const selectCls =
   'border-border-control rounded-control shadow-control bg-paper h-control min-w-48 border px-3 text-sm'
 
 export default function AdminExpertsPage() {
+  const nav = useAdminNav()
   const experts = useExperts()
   const [toast, setToast] = useState<string | null>(null)
   const clearToast = useCallback(() => setToast(null), [])
   const { paged } = experts
+  const { t } = useTranslation(['admin', 'common'])
 
   return (
     <AdminLayout
+      {...nav}
       section="experts"
-      breadcrumb="Quản lý Expert"
-      pendingCount={pendingCount}
+      breadcrumb={t('admin:navigation.manageExperts')}
+      pendingCount={nav.pendingCount}
       search={experts.query}
       onSearchChange={experts.setQuery}
     >
-      <h1 className="text-h1">Quản lý Expert</h1>
+      <h1 className="text-h1">{t('admin:experts.title')}</h1>
       <p className="text-fg-muted mt-3">
-        Expert đã được duyệt. Chỉ Expert có dịch vụ đang hoạt động mới hiển thị
-        trên Marketplace.
+        {t('admin:experts.description')}
       </p>
 
       <section className="paper mt-12 overflow-x-auto">
         <div className="flex flex-wrap items-end gap-4 px-4 py-3">
           <label className="flex flex-col gap-2 text-sm font-semibold">
-            Trạng thái dịch vụ
+            {t('admin:experts.serviceStatus')}
             <select
               value={experts.status}
               onChange={(e) =>
@@ -51,7 +49,7 @@ export default function AdminExpertsPage() {
               }
               className={selectCls}
             >
-              <option value={ALL}>Tất cả</option>
+              <option value={ALL}>{t('admin:experts.allStatuses')}</option>
               {Object.entries(SERVICE_STATUS).map(([key, s]) => (
                 <option key={key} value={key}>
                   {s.label}
@@ -60,32 +58,32 @@ export default function AdminExpertsPage() {
             </select>
           </label>
           <label className="flex flex-col gap-2 text-sm font-semibold">
-            Lĩnh vực
+            {t('admin:experts.field')}
             <select
               value={experts.field}
               onChange={(e) => experts.setField(e.target.value)}
               className={selectCls}
             >
-              <option value={ALL}>Tất cả lĩnh vực</option>
+              <option value={ALL}>{t('admin:experts.allFields')}</option>
               {experts.fields.map((f) => (
                 <option key={f}>{f}</option>
               ))}
             </select>
           </label>
           <span className="text-fg-muted ml-auto text-sm">
-            <span className="num">{paged.total}</span> Expert
+            <span className="num">{paged.total}</span> {t('admin:experts.expertCount')}
           </span>
         </div>
 
         <table className="w-full min-w-200 text-sm">
           <thead className="bg-sunken text-fg-muted">
             <tr className="[&>th]:px-4 [&>th]:py-3 [&>th]:font-semibold">
-              <th className="text-left">Expert</th>
-              <th className="text-left">Lĩnh vực</th>
-              <th className="text-left">Trạng thái dịch vụ</th>
-              <th className="text-right">Phí rà soát</th>
-              <th className="text-right">Đang nhận</th>
-              <th className="text-right">Ngày duyệt</th>
+              <th className="text-left">{t('admin:experts.table.expert')}</th>
+              <th className="text-left">{t('admin:experts.table.field')}</th>
+              <th className="text-left">{t('admin:experts.table.serviceStatus')}</th>
+              <th className="text-right">{t('admin:experts.table.reviewFee')}</th>
+              <th className="text-right">{t('admin:experts.table.activeCases')}</th>
+              <th className="text-right">{t('admin:experts.table.approvedAt')}</th>
             </tr>
           </thead>
           <tbody>
@@ -126,7 +124,9 @@ export default function AdminExpertsPage() {
                   colSpan={6}
                   className="text-fg-muted px-4 py-10 text-center"
                 >
-                  Không có Expert nào khớp bộ lọc.
+                  {experts.isLoading
+                    ? t('common:loading')
+                    : (experts.error?.message ?? t('admin:experts.noResults'))}
                 </td>
               </tr>
             )}
@@ -140,14 +140,18 @@ export default function AdminExpertsPage() {
           key={experts.selected.id}
           expert={experts.selected}
           onClose={() => experts.select(null)}
-          onSetServiceStatus={(status) => {
-            experts.setServiceStatus(experts.selected!.id, status)
-            setToast(
-              status === 'SUSPENDED'
-                ? 'Đã tạm ngưng dịch vụ'
-                : 'Đã mở lại dịch vụ'
-            )
-          }}
+          onSetServiceStatus={(status) =>
+            experts
+              .setServiceStatus(experts.selected!.id, status)
+              .then(() =>
+                setToast(
+                  status === 'SUSPENDED'
+                    ? 'Đã tạm ngưng dịch vụ'
+                    : 'Đã mở lại dịch vụ'
+                )
+              )
+              .catch((e: Error) => setToast(e.message))
+          }
         />
       )}
       {toast && <Toast message={toast} onDone={clearToast} />}

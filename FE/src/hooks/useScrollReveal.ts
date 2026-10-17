@@ -26,6 +26,8 @@ import { useEffect, useRef } from 'react'
  * }
  * ```
  */
+// ponytail: scans for targets once, on mount. Elements rendered later (e.g. after a
+// state change) are never revealed and stay at opacity 0; add a MutationObserver if needed.
 export function useScrollReveal(
   selector = '[data-reveal]',
   { threshold = 0.12, staggerMs = 60 } = {},

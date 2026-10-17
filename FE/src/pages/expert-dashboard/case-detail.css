@@ -1,41 +1,36 @@
 @layer components {
   .expert-portal .ep-case-detail {
-    --case-accent: #9a3412;
-    --case-accent-bg: #fff1e8;
-    --case-muted: #526175;
-    font-family: 'Be Vietnam Pro', Arial, sans-serif;
+    --case-accent: var(--ui-accent-text);
+    --case-accent-bg: var(--ui-accent-soft);
+    --case-muted: var(--ui-text-muted);
+    font-family: var(--font-sans);
   }
 
-  .expert-portal.ep-dark .ep-case-detail {
-    --case-accent: #fdba74;
-    --case-accent-bg: #431407;
-    --case-muted: #b5b5b5;
-  }
 
   .expert-portal .ep-case-detail h1,
   .expert-portal .ep-review-preparation h2 {
-    font-family: 'Lora', Georgia, serif;
+    font-family: var(--font-serif);
     font-weight: 600;
   }
 
   .expert-portal .ep-case-detail .ep-button-primary {
-    background: #c2410c;
+    background: var(--ui-accent);
     background-image: none;
-    color: #fff !important;
-    border-color: #c2410c;
+    color: var(--ui-on-accent) !important;
+    border-color: var(--ui-accent);
     box-shadow: none;
     backdrop-filter: none;
-    transition: background-color 160ms ease-out, transform 160ms ease-out;
+    transition: background-color var(--motion-feedback) var(--motion-ease-enter), transform var(--motion-feedback) var(--motion-ease-enter);
   }
 
   .expert-portal .ep-case-detail .ep-button-primary:hover:not(:disabled) {
-    background: #9a3412;
+    background: var(--ui-accent-hover);
     box-shadow: none;
     transform: translateY(-1px);
   }
 
   .expert-portal .ep-case-detail .ep-button-primary:active:not(:disabled) {
-    background: #7c2d12;
+    background: var(--ui-accent-active);
     transform: translateY(0);
   }
 

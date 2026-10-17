@@ -1,0 +1,82 @@
+{
+  "pageTitle": "AI Assistant",
+  "skipToConversation": "Skip to conversation",
+  "workspaceNavigation": "Workspace navigation",
+  "history": {
+    "title": "Research history",
+    "open": "Open research history",
+    "newQuestion": "New question",
+    "searchLabel": "Search history",
+    "searchPlaceholder": "Search past questions…",
+    "empty": "No questions yet.",
+    "noMatch": "No questions match “{{query}}”.",
+    "count_one": "{{count}} lookup",
+    "count_other": "{{count}} lookups",
+    "listLabel": "Past questions",
+    "collapse": "Collapse history",
+    "expand": "Open research history",
+    "groups": {
+      "today": "Today",
+      "week": "Previous 7 days",
+      "older": "Older"
+    }
+  },
+  "welcome": {
+    "eyebrow": "Corporate income tax",
+    "title": "Corporate income tax, with sources",
+    "lead": "Every answer cites approved legal documents.",
+    "topicsLabel": "Suggested questions",
+    "topics": {
+      "deductible": {
+        "name": "Deductible expenses",
+        "question": "What is the maximum deductible interest expense?"
+      },
+      "invoice": {
+        "name": "Invoices and records",
+        "question": "Can invoices paid in cash be counted as deductible expenses?"
+      },
+      "rate": {
+        "name": "Tax rates",
+        "question": "Which CIT rate applies to my tax period?"
+      },
+      "welfare": {
+        "name": "Employee welfare",
+        "question": "Up to what level are employee welfare expenses deductible?"
+      }
+    },
+    "recentLabel": "Recent research",
+    "viewAll": "View all ({{count}})",
+    "creditNote": "1 Credit per question · charged once the question goes to retrieval"
+  },
+  "transcript": {
+    "label": "Research conversation",
+    "question": "Question",
+    "answer": "Answer",
+    "aiBadge": "AI-assisted",
+    "citationsLabel": "Cited sources",
+    "citation": "[{{index}}] Source",
+    "noCitations": "This answer has no citations. Do not rely on it.",
+    "disclaimer": "AI summary of the cited documents. It does not replace advice from a Tax Expert.",
+    "thinking": "Searching relevant documents…",
+    "copy": "Copy answer",
+    "copied": "Answer copied",
+    "copyFailed": "Could not copy. Select and copy the text manually.",
+    "sendToExpert": "Send to an Expert",
+    "sendToExpertSoon": "Coming soon: send this answer to a verified Expert.",
+    "assistantName": "Shared Hub Assistant",
+    "verified_one": "Checked against {{count}} approved document",
+    "verified_other": "Checked against {{count}} approved documents",
+    "unverified": "No sources",
+    "sources": "Sources"
+  },
+  "composer": {
+    "label": "Corporate income tax question",
+    "placeholder": "For example: How much depreciation on a 4-seat car is deductible?",
+    "hint": "Enter to send · Shift + Enter for a new line",
+    "send": "Send question",
+    "sending": "Sending…"
+  },
+  "errors": {
+    "sendFailed": "No answer was received. Your question is still in the box — try sending again."
+  }
+}

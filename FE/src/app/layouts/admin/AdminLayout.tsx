@@ -1,21 +1,32 @@
-import { useState, type ReactNode } from 'react'
-import { Link } from 'react-router-dom'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import {
-  Bell,
   CreditCard,
   FileText,
+  LayoutDashboard,
   Flag,
-  PanelLeft,
-  Search,
-  Settings,
   Tag,
   UserRound,
   Users,
+  UsersRound,
   type LucideIcon,
 } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { useTranslation } from 'react-i18next'
+import {
+  AppSidebar,
+  type SidebarGroup,
+} from '@/components/ui/layout/app-sidebar'
+import { AppHeader } from '@/components/ui/layout/app-header'
+import { useFormatters } from '@/hooks/useFormatters'
+import {
+  Permission,
+  hasAnyPermission,
+  useAccount,
+  useAuthStore,
+} from '@/features/auth'
+import { useDialogMotion } from '@/components/ui/motion'
+import { type ShellNotification } from '../NotificationBell'
 
-interface NavItem {
+export interface NavItem {
   label: string
   icon: LucideIcon
   to?: string // không có = chưa có route
@@ -23,40 +34,77 @@ interface NavItem {
   badge?: number
 }
 
-interface AdminLayoutProps {
-  /** Mục sidebar đang mở */
-  section: 'pending' | 'experts'
+export interface NavGroup {
+  group: string
+  items: NavItem[]
+}
+
+interface ShellPageProps {
   breadcrumb: ReactNode
-  pendingCount: number
+  /** Tiêu đề tab trình duyệt; bỏ trống thì lấy tên mục sidebar đang chọn */
+  title?: string
   /** Bỏ trống thì ẩn ô tìm kiếm */
   search?: string
+  /** Gợi ý trong ô tìm kiếm; mặc định "Tìm theo tên hoặc email" */
+  searchLabel?: string
   onSearchChange?: (value: string) => void
+  /** Danh sách trong popover chuông; có mục thì hiện chấm đỏ */
+  notifications?: ShellNotification[]
   children: ReactNode
+}
+
+interface AdminLayoutProps extends ShellPageProps {
+  /** Mục sidebar đang mở */
+  section:
+    | 'overview'
+    | 'pending'
+    | 'experts'
+    | 'disputes'
+    | 'escrow'
+    | 'pricing'
+    | 'users'
+    | 'account'
+  pendingCount: number
+  disputeCount?: number
 }
 
 export function AdminLayout({
   section,
-  breadcrumb,
   pendingCount,
-  search,
-  onSearchChange,
-  children,
+  disputeCount,
+  ...page
 }: AdminLayoutProps) {
-  const [collapsed, setCollapsed] = useState(false)
-
-  const nav: { group: string; items: NavItem[] }[] = [
+  const { t } = useTranslation('admin')
+  // Author reviewers share this shell for expert applications; hide what only system admins can open
+  const isSystemAdmin = hasAnyPermission(
+    useAuthStore((s) => s.user),
+    [Permission.UserManage]
+  )
+  const allGroups: NavGroup[] = [
     {
-      group: 'Xét duyệt Expert',
+      // Không tiêu đề nhóm: AppSidebar chỉ hiện tiêu đề khi có chữ
+      group: '',
       items: [
         {
-          label: 'Hồ sơ chờ duyệt',
+          label: t('navigation.overview'),
+          icon: LayoutDashboard,
+          to: '/admin',
+          active: section === 'overview',
+        },
+      ],
+    },
+    {
+      group: t('navigation.expertReview'),
+      items: [
+        {
+          label: t('navigation.pendingExperts'),
           icon: FileText,
           to: '/admin/experts/pending',
           active: section === 'pending',
           badge: pendingCount,
         },
         {
-          label: 'Quản lý Expert',
+          label: t('navigation.manageExperts'),
           icon: Users,
           to: '/admin/experts',
           active: section === 'experts',
@@ -64,171 +112,181 @@ export function AdminLayout({
       ],
     },
     {
-      group: 'Vận hành',
+      group: t('navigation.operations'),
       items: [
-        { label: 'Khiếu nại', icon: Flag },
-        { label: 'Hoàn tiền và chi trả', icon: CreditCard },
-        { label: 'Khung giá dịch vụ', icon: Tag },
+        {
+          label: t('navigation.complaints'),
+          icon: Flag,
+          to: '/admin/disputes',
+          active: section === 'disputes',
+          badge: disputeCount,
+        },
+        {
+          label: t('navigation.payouts'),
+          icon: CreditCard,
+          to: '/admin/escrow',
+          active: section === 'escrow',
+        },
+        {
+          label: t('navigation.pricing'),
+          icon: Tag,
+          to: '/admin/pricing',
+          active: section === 'pricing',
+        },
       ],
     },
     {
-      group: 'Hệ thống',
+      group: t('navigation.system'),
       items: [
-        { label: 'Tài khoản', icon: UserRound },
-        { label: 'Cấu hình', icon: Settings },
+        {
+          label: t('navigation.users'),
+          icon: UsersRound,
+          to: '/admin/users',
+          active: section === 'users',
+        },
+        {
+          label: t('navigation.accounts'),
+          icon: UserRound,
+          to: '/admin/account',
+          active: section === 'account',
+        },
+        // ponytail: bỏ mục Cài đặt (chưa có trang, hiện mờ dễ tưởng lỗi); thêm lại khi có màn cấu hình hệ thống
       ],
     },
   ]
+  const reviewerRoutes = [
+    '/admin/experts/pending',
+    '/admin/experts',
+    '/admin/account',
+  ]
+  const nav = isSystemAdmin
+    ? allGroups
+    : allGroups
+        .map((g) => ({
+          ...g,
+          items: g.items.filter((i) => i.to && reviewerRoutes.includes(i.to)),
+        }))
+        .filter((g) => g.items.length > 0)
 
+  return <RoleShell nav={nav} {...page} />
+}
+
+interface RoleShellProps extends ShellPageProps {
+  nav: NavGroup[]
+  searchPlaceholder?: string
+}
+
+export function RoleShell({
+  nav,
+  breadcrumb,
+  title,
+  search,
+  searchLabel,
+  onSearchChange,
+  notifications = [],
+  children,
+}: RoleShellProps) {
+  const [collapsed, setCollapsed] = useState(false)
+  const drawer = useRef<HTMLDialogElement>(null)
+  useDialogMotion(drawer, 'drawer-left')
+  const drawerTrigger = useRef<HTMLButtonElement>(null)
+  const { t } = useTranslation(['common', 'admin'])
+  const { number } = useFormatters()
+  // Tài khoản thật hoặc minh họa; dùng chung với trang Tài khoản nên đổi ảnh là header đổi theo
+  const account = useAccount('admin')
+  const groups: SidebarGroup[] = nav.map(({ group, items }, groupIndex) => ({
+    id: `admin-group-${groupIndex}`,
+    label: group,
+    items: items.map(({ label, icon: Icon, to, active, badge }, itemIndex) => ({
+      id: to ?? `admin-item-${groupIndex}-${itemIndex}`,
+      label,
+      icon: <Icon size={18} />,
+      to,
+      active,
+      badge: badge != null && badge > 0 ? number(badge) : undefined,
+    })),
+  }))
+  // Đặt ở layout để mọi trang admin đều có tiêu đề tab (effect của layout chạy sau effect của trang)
+  const pageTitle =
+    title ??
+    nav.flatMap((g) => g.items).find((i) => i.active)?.label ??
+    'Shared Hub'
+  useEffect(() => {
+    document.title = `${pageTitle} | Shared Hub`
+  }, [pageTitle])
+  const closeDrawer = () => drawer.current?.close()
   return (
-    <div data-density="compact" className="bg-desk text-fg flex min-h-dvh">
-      {/* ── Sidebar ── */}
-      <aside
-        className={cn(
-          'on-ink bg-ink text-paper sticky top-0 flex h-dvh shrink-0 flex-col px-4 py-5 max-md:w-18',
-          collapsed ? 'w-18' : 'w-56'
-        )}
+    <div data-density="compact" className="bg-desk-2 text-fg min-h-svh">
+      <a
+        href="#admin-main"
+        className="focus:bg-paper sr-only z-50 focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:p-3"
       >
-        <div className="border-ink-2 flex items-center gap-3 border-b px-2 pb-5">
-          <span className="text-base font-extrabold tracking-tight">
-            {collapsed ? (
-              'S'
-            ) : (
-              <>
-                <span className="md:hidden">S</span>
-                <span className="max-md:hidden">SHFT</span>
-              </>
-            )}
-            <span className="bg-indicator ml-0.5 inline-block size-1.5 align-middle" />
-          </span>
-          {!collapsed && (
-            <span className="text-fg-inverse-muted text-caption max-md:hidden">
-              Admin
-            </span>
-          )}
-        </div>
-
-        <nav
-          aria-label="Admin"
-          className="mt-5 flex-1 space-y-6 overflow-y-auto"
-        >
-          {nav.map(({ group, items }) => (
-            <div key={group}>
-              {!collapsed && (
-                <p className="text-fg-inverse-muted text-caption mb-2 px-2 font-semibold max-md:hidden">
-                  {group}
-                </p>
-              )}
-              <ul className="space-y-1">
-                {items.map(({ label, icon: Icon, to, active, badge }) => (
-                  <li key={label}>
-                    {/* Mục không có `to` là chưa có route */}
-                    {to ? (
-                      <Link
-                        to={to}
-                        aria-current={active ? 'page' : undefined}
-                        title={collapsed ? label : undefined}
-                        className={cn(
-                          'rounded-control flex items-center gap-3 border-l-2 px-2 py-2.5 text-sm no-underline',
-                          active
-                            ? 'bg-ink-2 border-indicator text-paper font-semibold'
-                            : 'text-fg-inverse-muted hover:bg-ink-2 hover:text-paper border-transparent'
-                        )}
-                      >
-                        <Icon
-                          size={17}
-                          aria-hidden="true"
-                          className="shrink-0"
-                        />
-                        <span
-                          className={cn(
-                            'flex-1 max-md:sr-only',
-                            collapsed && 'sr-only'
-                          )}
-                        >
-                          {label}
-                        </span>
-                        {!collapsed && !!badge && (
-                          <span className="bg-accent text-caption num grid size-5 place-items-center rounded-full font-bold max-md:hidden">
-                            {badge}
-                          </span>
-                        )}
-                      </Link>
-                    ) : (
-                      <button
-                        type="button"
-                        disabled
-                        title={collapsed ? label : undefined}
-                        className="text-fg-inverse-muted rounded-control flex w-full items-center gap-3 px-2 py-2.5 text-left text-sm"
-                      >
-                        <Icon
-                          size={17}
-                          aria-hidden="true"
-                          className="shrink-0"
-                        />
-                        <span
-                          className={cn(
-                            'flex-1 max-md:sr-only',
-                            collapsed && 'sr-only'
-                          )}
-                        >
-                          {label}
-                        </span>
-                      </button>
-                    )}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
-        </nav>
-
-        <button
-          type="button"
-          onClick={() => setCollapsed((c) => !c)}
-          aria-label={collapsed ? 'Mở rộng thanh bên' : 'Thu gọn thanh bên'}
-          className="text-fg-inverse-muted hover:bg-ink-2 rounded-control mx-auto p-2 max-md:hidden"
-        >
-          <PanelLeft size={16} aria-hidden="true" />
-        </button>
+        {t('navigation.skipWorkspace')}
+      </a>
+      <aside
+        className={`sidebar-rail bg-sidebar fixed inset-y-0 left-0 z-30 hidden flex-col border-r border-black py-6 md:flex ${collapsed ? 'w-20 px-3' : 'w-60 px-4'}`}
+      >
+        <AppSidebar
+          groups={groups}
+          navigationLabel="Admin"
+          collapsed={collapsed}
+          onToggleCollapse={() => setCollapsed((value) => !value)}
+        />
       </aside>
-
-      <div className="flex min-w-0 flex-1 flex-col">
-        {/* ── Topbar ── */}
-        <header className="topbar gap-4 px-4 md:px-6 lg:px-8">
-          <nav
-            aria-label="Breadcrumb"
-            className="text-fg-muted mr-auto text-sm"
-          >
-            {breadcrumb}
-          </nav>
-          {onSearchChange && (
-            <label className="bg-paper border-border-control rounded-control shadow-control h-control flex w-full max-w-full items-center gap-2 border px-3 focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-(--focus-ring)">
-              <Search size={16} aria-hidden="true" className="text-fg-muted" />
-              <input
-                type="search"
-                value={search}
-                onChange={(e) => onSearchChange(e.target.value)}
-                placeholder="Tìm theo tên hoặc email"
-                aria-label="Tìm theo tên hoặc email"
-                className="placeholder:text-fg-muted w-full bg-transparent text-sm outline-none"
-              />
-            </label>
+      <dialog
+        ref={drawer}
+        aria-label="Admin"
+        onClose={() => drawerTrigger.current?.focus()}
+        className="bg-sidebar fixed inset-y-0 left-0 m-0 h-dvh max-h-none w-72 max-w-[calc(100vw-32px)] border-0 px-4 py-6 text-white backdrop:bg-black/50 [&[open]]:flex [&[open]]:flex-col"
+      >
+        <AppSidebar
+          groups={groups}
+          navigationLabel="Admin"
+          onNavigate={closeDrawer}
+          onClose={closeDrawer}
+        />
+      </dialog>
+      <div className={`sidebar-offset ${collapsed ? 'md:ml-20' : 'md:ml-60'}`}>
+        <AppHeader
+          navigationButtonRef={drawerTrigger}
+          onOpenNavigation={() => drawer.current?.showModal()}
+          context={<nav aria-label="Breadcrumb">{breadcrumb}</nav>}
+          search={
+            onSearchChange
+              ? {
+                  value: search ?? '',
+                  onChange: onSearchChange,
+                  label: searchLabel ?? t('admin:search.placeholder'),
+                }
+              : undefined
+          }
+          searchLinks={groups.flatMap((group) =>
+            group.items.flatMap((item) =>
+              item.to ? [{ label: item.label, to: item.to }] : []
+            )
           )}
-          <button
-            type="button"
-            aria-label="Thông báo"
-            className="rounded-control relative p-1"
-          >
-            <Bell size={18} aria-hidden="true" />
-            <span className="bg-indicator absolute top-0.5 right-0.5 size-2 rounded-full" />
-          </button>
-          <span className="bg-paper text-caption grid size-8 place-items-center rounded-full font-semibold">
-            TA
-          </span>
-        </header>
-
-        <main className="desk-content flex-1 px-4 py-12 md:px-6 lg:px-8">
+          account={{
+            name: account.name,
+            avatarUrl: account.avatarUrl,
+            onSignOut: account.logout,
+            // Giống Expert: menu tài khoản có lối vào trang tài khoản, lấy từ mục sidebar cho khớp nhãn và trạng thái
+            links: nav
+              .flatMap((g) => g.items)
+              .filter((item) => item.to === '/admin/account')
+              .map(({ label, icon: Icon, active }) => ({
+                label,
+                to: '/admin/account',
+                icon: <Icon size={17} />,
+                active,
+              })),
+          }}
+          notifications={notifications}
+        />
+        <main
+          id="admin-main"
+          tabIndex={-1}
+          className="animate-enter min-w-0 px-4 py-12 md:px-6 lg:px-8"
+        >
           {children}
         </main>
       </div>

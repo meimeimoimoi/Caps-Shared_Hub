@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>Caps.Contracts</RootNamespace>
+    <AssemblyName>Caps.Contracts</AssemblyName>
+  </PropertyGroup>
+
+  <!-- Events between services: plain records, no dependencies -->
+
+</Project>

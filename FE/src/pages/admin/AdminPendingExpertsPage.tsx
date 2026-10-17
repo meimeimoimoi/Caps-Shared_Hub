@@ -1,30 +1,34 @@
 import { cn } from '@/lib/utils'
 import { AdminLayout } from '@/app/layouts/admin/AdminLayout'
-import { ApplicationsTable } from '../../features/admin/components/ApplicationsTable'
-import { QUEUE_TABS } from '../../features/admin/constants'
-import { usePendingApplications } from '../../features/admin/hooks/usePendingApplications'
+import { ApplicationsTable } from '../../features/expert-vetting/components/ApplicationsTable'
+import { QUEUE_TABS } from '../../features/expert-vetting/constants'
+import { useAdminNav } from '@/app/layouts/admin/useAdminNav'
+import { usePendingApplications } from '../../features/expert-vetting/hooks/usePendingApplications'
+import { useTranslation } from 'react-i18next'
 
 export default function AdminPendingExpertsPage() {
-  const { tab, setTab, query, setQuery, countOf, paged, prev, next } =
+  const nav = useAdminNav()
+  const { tab, setTab, query, setQuery, countOf, paged, prev, next, isLoading, error } =
     usePendingApplications()
+  const { t } = useTranslation(['admin', 'common'])
 
   return (
     <AdminLayout
+      {...nav}
       section="pending"
-      breadcrumb="Hồ sơ chờ duyệt"
+      breadcrumb={t('navigation.pendingExperts')}
       pendingCount={countOf('review')}
       search={query}
       onSearchChange={setQuery}
     >
-      <h1 className="text-h1">Hồ sơ chờ duyệt</h1>
+      <h1 className="text-h1">{t('pendingExperts.title')}</h1>
       <p className="text-fg-muted mt-3">
-        Hồ sơ đã qua đối soát tài liệu và kiểm tra giấy tờ pháp lý, đang chờ
-        System Admin đánh giá năng lực.
+        {t('pendingExperts.description')}
       </p>
 
       <div
         role="group"
-        aria-label="Lọc theo trạng thái"
+        aria-label={t('pendingExperts.filterAria')}
         className="mt-12 flex gap-7 overflow-x-auto"
       >
         {QUEUE_TABS.map(({ key, label, showCount }) => (
@@ -40,13 +44,18 @@ export default function AdminPendingExpertsPage() {
                 : 'text-fg-muted border-transparent'
             )}
           >
-            {label}
+            {t(label)}
             {showCount && <span className="num"> ({countOf(key)})</span>}
           </button>
         ))}
       </div>
 
-      <ApplicationsTable paged={paged} onPrev={prev} onNext={next} />
+      <ApplicationsTable
+        paged={paged}
+        onPrev={prev}
+        onNext={next}
+        empty={isLoading ? t('common:loading') : error?.message}
+      />
     </AdminLayout>
   )
 }
