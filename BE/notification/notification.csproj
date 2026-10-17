@@ -2,13 +2,18 @@
 
   <PropertyGroup>
     <RootNamespace>Caps.Notification</RootNamespace>
+    <UserSecretsId>caps-shared-hub-notification</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
     <PackageReference Include="Swashbuckle.AspNetCore" />
     <PackageReference Include="OpenApiUi" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
     <ProjectReference Include="..\common\Api\Api.csproj" />
+    <ProjectReference Include="..\common\Persistence\Persistence.csproj" />
     <ProjectReference Include="..\common\Contracts\Contracts.csproj" />
     <ProjectReference Include="..\common\Messaging\Messaging.csproj" />
   </ItemGroup>

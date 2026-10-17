@@ -17,7 +17,7 @@ param(
 $ErrorActionPreference = 'Stop'
 $beRoot = Split-Path -Parent $PSScriptRoot
 $layered = @('auth', 'expert', 'billing', 'workflow')
-$databaseServices = @('auth', 'expert', 'billing', 'workflow', 'ingestion')
+$databaseServices = @('auth', 'expert', 'billing', 'workflow', 'ingestion', 'notification')
 $projects = @()
 foreach ($serviceName in ($Service | Select-Object -Unique)) {
     if ($Name -eq 'Postgres' -and $serviceName -notin $databaseServices) {

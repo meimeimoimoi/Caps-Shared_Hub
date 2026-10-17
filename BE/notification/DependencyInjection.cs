@@ -1,3 +1,5 @@
+using Caps.Common.Persistence;
+using Caps.Notification.Data;
 using Caps.Notification.Email;
 
 namespace Caps.Notification;
@@ -18,6 +20,26 @@ public static class DependencyInjection
             .ValidateOnStart();
         services.AddSingleton<IEmailSender, SmtpEmailSender>();
         services.AddSingleton(TimeProvider.System);
+        return services;
+    }
+
+    /// <summary>In-app notifications stored in the notification schema, plus the links emails point to.</summary>
+    public static IServiceCollection AddNotificationInbox(
+        this IServiceCollection services,
+        IConfiguration config
+    )
+    {
+        var postgres = config.GetRequiredConnectionString("Postgres");
+        services.AddServiceDatabase<NotificationDbContext>(
+            postgres,
+            "Notification",
+            "notification"
+        );
+        services
+            .AddOptions<AppLinkOptions>()
+            .Bind(config.GetSection("App"))
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
         return services;
     }
 }
