@@ -139,32 +139,18 @@
     "noApplications": "Không có hồ sơ nào.",
     "actions": "Thao tác",
     "view": "Xem chi tiết",
-    "viewLabel": "Xem chi tiết hồ sơ {{name}}"
+    "viewLabel": "Xem chi tiết hồ sơ {{name}}",
+    "reapplication": "Nộp lại"
   },
   "queue": {
     "tabs": {
       "review": "Chờ đánh giá",
-      "screening": "Đang đối soát",
       "moreInfo": "Cần bổ sung",
       "notEligible": "Không đủ điều kiện",
-      "done": "Đã xử lý"
+      "eligible": "Đủ điều kiện"
     }
   },
   "decision": {
-    "approve": {
-      "title": "Duyệt đơn đăng ký của",
-      "notice": "Người đăng ký sẽ nhận email và có thể thiết lập dịch vụ. Hồ sơ chỉ hiển thị trên Marketplace khi dịch vụ đang hoạt động.",
-      "noteLabel": "Ghi chú nội bộ",
-      "placeholder": "Không bắt buộc. Chỉ System Admin xem được.",
-      "confirm": "Duyệt đơn đăng ký"
-    },
-    "reject": {
-      "title": "Từ chối đơn đăng ký của",
-      "notice": "Người đăng ký sẽ nhận email kèm lý do bạn nhập. Không thể hoàn tác.",
-      "noteLabel": "Lý do từ chối (bắt buộc)",
-      "placeholder": "Nêu rõ tiêu chí chưa đáp ứng để người đăng ký hiểu",
-      "confirm": "Từ chối đơn đăng ký"
-    },
     "supplement": {
       "title": "Yêu cầu bổ sung",
       "notice": "Đơn chuyển sang Cần bổ sung. Người đăng ký nhận email kèm các mục dưới đây.",
@@ -178,19 +164,7 @@
       "itemPlaceholder": "Nêu rõ nội dung cần bổ sung",
       "pickOne": "Chọn ít nhất 1 mục."
     },
-    "log": {
-      "approve": "Duyệt đơn đăng ký.",
-      "reject": "Từ chối đơn đăng ký. Đã gửi email kèm lý do.",
-      "supplement": "Yêu cầu bổ sung hồ sơ. Đã gửi email kèm nội dung cần bổ sung."
-    },
-    "toast": {
-      "approve": "Đã duyệt đơn đăng ký",
-      "reject": "Đã từ chối đơn đăng ký",
-      "supplement": "Đã gửi yêu cầu bổ sung"
-    },
     "label": {
-      "approve": "Duyệt",
-      "reject": "Từ chối",
       "supplement": "Yêu cầu bổ sung"
     }
   },
@@ -211,10 +185,8 @@
       "submitted": "Nộp"
     },
     "blockers": {
-      "criteria": "Còn {{count}} tiêu chí chưa chấm hoặc chưa ghi căn cứ",
       "flags": "{{count}} mục AI cần xem lại chưa được xem xét"
     },
-    "ready": "Đã chấm và ghi căn cứ đủ {{count}}/{{total}} tiêu chí",
     "scoreSummary": {
       "level": "Mức {{level}}",
       "unscored": "Chưa chấm"
@@ -234,7 +206,8 @@
       "highlights": "Kinh nghiệm nổi bật"
     },
     "history": {
-      "title": "Lịch sử thao tác"
+      "title": "Lịch sử thao tác",
+      "reviewer": "Người đánh giá"
     },
     "documents": {
       "select": "Chọn tài liệu",
@@ -243,7 +216,9 @@
       "aiReviewed": "AI · Đã xem xét",
       "unmark": "Bỏ đánh dấu",
       "mark": "Đánh dấu đã xem xét",
-      "pageOf": "{{code}} · trang {{page}}/{{total}}"
+      "pageOf": "{{code}} · trang {{page}}/{{total}}",
+      "open": "Mở file",
+      "openFailed": "Không mở được file. Vui lòng thử lại."
     },
     "aiScreening": {
       "declared": "Đã kê khai",
@@ -696,6 +671,60 @@
       "locked": "Đã khóa {{name}}",
       "unlocked": "Đã mở khóa {{name}}",
       "resetSent": "Đã gửi email đặt lại mật khẩu tới {{email}}"
+    }
+  },
+  "eligibility": {
+    "title": "Gate 1 · Điều kiện tham gia",
+    "subtitle": "Đánh giá từng yêu cầu EV-01 – EV-06. Kết quả chung được suy ra tự động. Đủ điều kiện chưa đưa chuyên gia lên Marketplace: còn đánh giá năng lực từng dịch vụ và phê duyệt cuối.",
+    "results": {
+      "PASS": "Đạt",
+      "NEED_MORE_INFORMATION": "Cần bổ sung",
+      "FAIL": "Không đạt"
+    },
+    "noteRequired": "Ghi chú gửi người đăng ký (bắt buộc)",
+    "noteOptional": "Ghi chú (không bắt buộc)",
+    "notePlaceholder": "Nêu rõ cần bổ sung gì hoặc vì sao chưa đạt",
+    "experienceHint": "Kê khai {{years}} năm; tối thiểu {{min}} năm.",
+    "experienceBelow": "Dưới mức tối thiểu nên không thể chọn Đạt.",
+    "previous": "Lần trước: {{result}}",
+    "remaining": "Còn {{count}} yêu cầu chưa chọn kết quả hoặc thiếu ghi chú",
+    "ready": "Đã đánh giá đủ {{count}}/{{total}} yêu cầu",
+    "outcomeLabel": "Kết quả chung",
+    "outcome": {
+      "ELIGIBLE": {
+        "confirm": "Xác nhận đủ điều kiện",
+        "notice": "Người đăng ký được thông báo đủ điều kiện tham gia. Bước tiếp theo là đánh giá năng lực cho từng dịch vụ; hồ sơ chưa hiển thị trên Marketplace.",
+        "toast": "Đã xác nhận đủ điều kiện"
+      },
+      "NEED_MORE_INFORMATION": {
+        "confirm": "Gửi yêu cầu bổ sung",
+        "notice": "Hồ sơ trả về người đăng ký kèm ghi chú của từng yêu cầu cần bổ sung. Họ bổ sung trên cùng hồ sơ.",
+        "toast": "Đã gửi yêu cầu bổ sung"
+      },
+      "NOT_ELIGIBLE": {
+        "confirm": "Xác nhận không đủ điều kiện",
+        "notice": "Hồ sơ đóng lại. Người đăng ký thấy ghi chú của từng yêu cầu không đạt và chỉ nộp hồ sơ mới được sau thời gian chờ theo chính sách. Không thể hoàn tác.",
+        "toast": "Đã ghi nhận không đủ điều kiện"
+      }
+    },
+    "dialog": {
+      "title": "Kết luận Gate 1 cho {{name}}?",
+      "noteLabel": "Ghi chú chung (không bắt buộc)",
+      "placeholder": "Người đăng ký xem được cùng kết quả."
+    },
+    "resultTitle": "Kết quả Gate 1",
+    "decidedAt": "Quyết định lúc {{time}}",
+    "reapplyAt": "Được nộp hồ sơ mới từ {{date}}.",
+    "noDecision": "Chưa có kết luận Gate 1.",
+    "notReviewable": "Hồ sơ không ở bước chờ kết luận Gate 1.",
+    "errors": {
+      "INVALID_ELIGIBILITY_CRITERIA": "Cần đúng một kết quả cho mỗi yêu cầu EV-01 – EV-06.",
+      "INVALID_ELIGIBILITY_RESULT": "Có kết quả không hợp lệ. Tải lại trang rồi thử lại.",
+      "ELIGIBILITY_NOTE_REQUIRED": "Yêu cầu không đạt hoặc cần bổ sung phải có ghi chú.",
+      "EXPERIENCE_BELOW_MINIMUM": "EV-06 không thể Đạt: kinh nghiệm kê khai dưới mức tối thiểu.",
+      "SELF_REVIEW_NOT_ALLOWED": "Bạn không thể tự đánh giá hồ sơ của chính mình.",
+      "APPLICATION_NOT_IN_REVIEW": "Hồ sơ không còn chờ kết luận; tải lại để xem trạng thái mới.",
+      "failed": "Chưa ghi nhận được kết luận. Vui lòng thử lại."
     }
   }
 }

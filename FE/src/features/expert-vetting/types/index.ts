@@ -5,11 +5,16 @@ export type ApplicationStatus = keyof typeof APPLICATION_STATUS
 export interface ExpertApplication {
   id: string
   name: string
-  email: string
+  /** Not returned by the review API; the table shows the fields instead */
+  email?: string
   years: number
   aiFlags: number
   submittedAt: string
   status: ApplicationStatus
+  /** Field codes, e.g. CORPORATE_INCOME_TAX */
+  fields?: string[]
+  /** Follows an earlier closed application (BR-E23) */
+  isReapplication?: boolean
 }
 
 export interface AiFlag {
@@ -53,6 +58,8 @@ export interface ApplicationDocument {
   code: string // CV, EV-01, ...
   name: string
   pages: DocumentPage[]
+  /** Uploaded file on the server; opened through the review API */
+  evidenceId?: string
 }
 
 export interface ApplicationDetail extends ExpertApplication {
@@ -63,7 +70,8 @@ export interface ApplicationDetail extends ExpertApplication {
   bio: string
   fields: string[]
   highlights: string
-  screening: {
+  /** Demo only: AI screening is postponed, the review API does not return it */
+  screening?: {
     ranAt: string
     rerunAt?: string
     checkedCount: number
@@ -72,22 +80,47 @@ export interface ApplicationDetail extends ExpertApplication {
   }
   documents: ApplicationDocument[]
   history: HistoryEntry[]
+  /** Per-requirement results of the latest Gate 1 decision (empty before the first one) */
+  eligibility: EligibilityCheck[]
+  minYearsExperience: number
+  /** EV-06 result the declared years point to; the reviewer confirms it */
+  suggestedExperienceResult: EligibilityResult
+  /** True while the application waits for a Gate 1 decision */
+  canDecide: boolean
+  decidedAt: string | null
+  decisionNote: string | null
+  earliestReapplyAt: string | null
 }
 
-export type ReviewDecision = 'approve' | 'reject' | 'supplement'
+/* Gate 1 (eligibility) is decided per expert from EV-01…EV-06; the outcome is derived from the results */
+export type EligibilityResult = 'PASS' | 'FAIL' | 'NEED_MORE_INFORMATION'
+export type EligibilityOutcome =
+  'ELIGIBLE' | 'NOT_ELIGIBLE' | 'NEED_MORE_INFORMATION'
+
+export interface EligibilityCheck {
+  code: string
+  result: EligibilityResult
+  note: string | null
+  decidedAt: string
+}
+
+/** One requirement in the reviewer's form; result is empty until chosen */
+export interface EligibilityAssessment {
+  code: string
+  result: EligibilityResult | ''
+  note: string
+}
+
+export interface EligibilityDecisionInput {
+  criteria: { code: string; result: EligibilityResult; note: string | null }[]
+  note: string | null
+}
 
 /** actor = 'AI' cho thao tác của hệ thống AI, còn lại là tên người */
 export interface HistoryEntry {
   at: string
   actor: string
   text: string
-}
-
-export interface DecisionRecord {
-  kind: ReviewDecision
-  at: string
-  by: string
-  note: string
 }
 
 export interface Expert {
@@ -107,11 +140,4 @@ export interface Expert {
   reviewer: string
   /** text viết tiếp sau tên actor, vd. actor "Trần An" + text "duyệt đơn đăng ký." */
   history: HistoryEntry[]
-}
-
-export interface ApplicationDecisionInput {
-  kind: ReviewDecision
-  note: string
-  scores: Record<string, number>
-  evidence: Record<string, string>
 }

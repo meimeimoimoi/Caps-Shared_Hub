@@ -12,9 +12,21 @@ import type { Stage } from '../types'
 import { SupplementForm, type SupplementFormProps } from './SupplementForm'
 import { ScenarioSelect } from './ScenarioSelect'
 
+/** Gate 1 requirement to supplement or not met, with the reviewer's note */
+export interface EligibilityIssue {
+  code: string
+  label: string
+  result: 'FAIL' | 'NEED_MORE_INFORMATION' | 'PASS'
+  note: string
+}
+
 export interface ApplicationStatusProps {
   profileName: string
   stage: Stage
+  eligibilityIssues?: EligibilityIssue[]
+  /** Formatted earliest date for a new application after NOT_ELIGIBLE */
+  reapplyAt?: string | null
+  decisionNote?: string | null
   supplement: boolean
   terminal: boolean
   timeline: string[]
@@ -36,12 +48,42 @@ const noteCls =
 const mutedCls = 'text-[13px] text-ex-muted font-normal'
 const stepBubbleCls =
   'flex items-center justify-center w-6 h-6 border border-ex-step-border rounded-full text-xs'
+function IssueList({
+  title,
+  issues,
+  decisionNote,
+}: {
+  title: string
+  issues: EligibilityIssue[]
+  decisionNote?: string | null
+}) {
+  return (
+    <>
+      <strong>{title}</strong>
+      <ul className="mt-2 mb-3 list-disc space-y-1 pl-5">
+        {issues.map((i) => (
+          <li key={i.code}>
+            <span className="font-semibold">
+              {i.code} · {i.label}
+            </span>
+            {i.note && <span className="whitespace-pre-line">: {i.note}</span>}
+          </li>
+        ))}
+      </ul>
+      {decisionNote && <p className="whitespace-pre-line">{decisionNote}</p>}
+    </>
+  )
+}
+
 const stepBubbleActiveCls =
   'flex items-center justify-center w-6 h-6 border border-ex-accent rounded-full text-xs bg-ex-accent text-on-accent'
 
 export function ApplicationStatus({
   profileName,
   stage,
+  eligibilityIssues = [],
+  reapplyAt = null,
+  decisionNote = null,
   supplement,
   terminal,
   timeline,
@@ -56,6 +98,10 @@ export function ApplicationStatus({
   const { t } = useTranslation('expertRegistration')
 
   const visibleHistory = history.filter((entry) => !/demo/i.test(entry))
+  const toSupplement = eligibilityIssues.filter(
+    (i) => i.result === 'NEED_MORE_INFORMATION'
+  )
+  const ineligible = stage === 'ineligible'
 
   return (
     <>
@@ -73,7 +119,9 @@ export function ApplicationStatus({
               : t('status.track')}
           </p>
         </div>
-        {showScenario && <ScenarioSelect value={stage} onChange={onStageChange} />}
+        {showScenario && (
+          <ScenarioSelect value={stage} onChange={onStageChange} />
+        )}
       </div>
 
       <ol className="expert-status-timeline">
@@ -142,8 +190,18 @@ export function ApplicationStatus({
           <>
             <p>{t('status.additional')}</p>
             <div className={noteCls}>
-              <strong>{t('status.qualification')}</strong>
-              <p>{t('status.clarify')}</p>
+              {toSupplement.length ? (
+                <IssueList
+                  title={t('status.toSupplement')}
+                  issues={toSupplement}
+                  decisionNote={decisionNote}
+                />
+              ) : (
+                <>
+                  <strong>{t('status.qualification')}</strong>
+                  <p>{t('status.clarify')}</p>
+                </>
+              )}
               <small>{t('status.noDeadline')}</small>
             </div>
             <button className={btnPrimary} onClick={onRequestSupplement}>
@@ -154,20 +212,32 @@ export function ApplicationStatus({
         ) : terminal ? (
           <>
             <p>
-              {stage === 'ineligible'
+              {ineligible
                 ? t('status.eligibilityUnmet')
                 : t('status.competencyUnmet')}
             </p>
             <div className={noteCls}>
-              <strong>{t('status.illustrative')}</strong>
-              <p>
-                {stage === 'ineligible'
-                  ? t('status.experienceUnmet')
-                  : t('status.evidenceUnmet')}
-              </p>
+              {ineligible && eligibilityIssues.length ? (
+                <IssueList
+                  title={t('status.unmetCriteria')}
+                  issues={eligibilityIssues}
+                  decisionNote={decisionNote}
+                />
+              ) : (
+                <>
+                  <strong>{t('status.illustrative')}</strong>
+                  <p>
+                    {ineligible
+                      ? t('status.experienceUnmet')
+                      : t('status.evidenceUnmet')}
+                  </p>
+                </>
+              )}
             </div>
             <p>
-              {t('dynamic.reapply', { days: stage === 'ineligible' ? 30 : 90 })}
+              {ineligible && reapplyAt
+                ? t('dynamic.reapplyFrom', { date: reapplyAt })
+                : t('dynamic.reapply', { days: ineligible ? 30 : 90 })}
             </p>
             <p>{t('status.corrections')}</p>
           </>

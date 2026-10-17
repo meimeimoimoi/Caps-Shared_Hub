@@ -11,7 +11,10 @@ import {
   getExperts,
 } from '../../features/expert-vetting/api/adminApi'
 import { adminKeys } from '../../features/expert-vetting/api/queryKeys'
-import { QUEUE_TABS } from '../../features/expert-vetting/constants'
+import {
+  PENDING_STATUS,
+  QUEUE_TABS,
+} from '../../features/expert-vetting/constants'
 import {
   SLA_DAYS,
   waitedDays,
@@ -56,7 +59,7 @@ export default function AdminDashboardPage() {
   )
 
   const apps = applications.data ?? []
-  const pending = apps.filter((a) => a.status === 'CAPABILITY_REVIEW')
+  const pending = apps.filter((a) => a.status === PENDING_STATUS)
   const overdue = pending.filter(
     (a) => waitedDays(a.submittedAt, now) > SLA_DAYS
   )
@@ -81,7 +84,6 @@ export default function AdminDashboardPage() {
 
   const tiers = pricing.data?.tiers ?? []
   const scheduled = tiers.filter((tier) => tier.scheduled)
-
 
   return (
     <AdminLayout
@@ -173,7 +175,8 @@ export default function AdminDashboardPage() {
               label: t(`escrow.status.${r.status}`),
               value: r.amount,
               display: f.money(r.amount),
-              warn: r.status === 'PAYOUT_FAILED' || r.status === 'REFUND_FAILED',
+              warn:
+                r.status === 'PAYOUT_FAILED' || r.status === 'REFUND_FAILED',
             }))}
         />
       </div>

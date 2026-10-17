@@ -1,6 +1,7 @@
 import { useCallback, useState, type KeyboardEvent } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { cn } from '@/lib/utils'
+import { ApiError } from '@/lib/api-client'
 import {
   APPLICATION_RAIL_STEP,
   APPLICATION_STATUS,
@@ -11,42 +12,62 @@ import { CaseHeader } from '@/components/ui/layout/case-header'
 import { DecisionBar } from '@/components/ui/actions/decision-bar'
 import { Toast } from '@/components/ui/feedback/toast'
 import { AdminLayout } from '@/app/layouts/admin/AdminLayout'
+import { getEvidenceFile } from '../../features/expert-vetting/api/adminApi'
 import { AiScreeningTab } from '../../features/expert-vetting/components/AiScreeningTab'
 import { DecisionDialog } from '../../features/expert-vetting/components/DecisionDialog'
-import { SupplementDialog } from '../../features/expert-vetting/components/SupplementDialog'
-import { CompetencyReview } from '../../features/expert-vetting/components/CompetencyReview'
-import { DecisionCard, AiSummaryCard } from '../../features/expert-vetting/components/DecisionSummary'
+import { EligibilityReview } from '../../features/expert-vetting/components/EligibilityReview'
+import {
+  DecisionCard,
+  AiSummaryCard,
+} from '../../features/expert-vetting/components/DecisionSummary'
 import { DocumentsTab } from '../../features/expert-vetting/components/DocumentsTab'
 import { HistoryTab } from '../../features/expert-vetting/components/HistoryTab'
 import { ProfileTab } from '../../features/expert-vetting/components/ProfileTab'
 import {
   CURRENT_ADMIN,
-  DECISION_LABEL,
-  DECISION_TOAST,
+  ELIGIBILITY_CODES,
+  ELIGIBILITY_OUTCOME,
 } from '../../features/expert-vetting/constants'
 import { formatDate } from '../../features/expert-vetting/utils/applications'
 import { useAdminNav } from '@/app/layouts/admin/useAdminNav'
 import { useApplicationReview } from '../../features/expert-vetting/hooks/useApplicationReview'
-import type { ReviewDecision } from '../../features/expert-vetting/types'
 import { useTranslation } from 'react-i18next'
+
+const DECISION_ERRORS = [
+  'INVALID_ELIGIBILITY_CRITERIA',
+  'INVALID_ELIGIBILITY_RESULT',
+  'ELIGIBILITY_NOTE_REQUIRED',
+  'EXPERIENCE_BELOW_MINIMUM',
+  'SELF_REVIEW_NOT_ALLOWED',
+  'APPLICATION_NOT_IN_REVIEW',
+] as const
+type DecisionError = (typeof DECISION_ERRORS)[number]
+const isDecisionError = (code?: string): code is DecisionError =>
+  (DECISION_ERRORS as readonly (string | undefined)[]).includes(code)
+
+type TabKey = 'profile' | 'documents' | 'ai' | 'history'
 
 export default function AdminApplicationDetailPage() {
   const { t } = useTranslation(['admin', 'common'])
   const { id = '' } = useParams()
   const nav = useAdminNav()
+  const review = useApplicationReview(id)
+  const { detail, status } = review
+  // AI screening is postponed: the tab only exists for demo fixtures
   const tabs = [
     { key: 'profile', label: t('admin:detail.tabs.profile') },
     { key: 'documents', label: t('admin:detail.tabs.documents') },
-    { key: 'ai', label: t('admin:detail.tabs.ai') },
+    ...(detail?.screening
+      ? [{ key: 'ai', label: t('admin:detail.tabs.ai') } as const]
+      : []),
     { key: 'history', label: t('admin:detail.tabs.history') },
   ] as const
-  const [tab, setTab] = useState<(typeof tabs)[number]['key']>('ai')
-  const [docCode, setDocCode] = useState<string>()
-  const [dialog, setDialog] = useState<ReviewDecision | null>(null)
+  const [chosenTab, setTab] = useState<TabKey>()
+  const tab: TabKey = chosenTab ?? (detail?.screening ? 'ai' : 'profile')
+  const [docKey, setDocKey] = useState<string>()
+  const [confirming, setConfirming] = useState(false)
   const [toast, setToast] = useState<string | null>(null)
   const clearToast = useCallback(() => setToast(null), [])
-  const review = useApplicationReview(id)
-  const { detail, decision, status } = review
 
   const listLink = (
     <Link
@@ -66,7 +87,9 @@ export default function AdminApplicationDetailPage() {
         pendingCount={nav.pendingCount}
       >
         <h1 className="text-h1-tool">
-          {review.isLoading ? t('common:loading') : t('admin:detail.notFound', { id }).replace(id, '').trim() + ' ' + id}
+          {review.isLoading
+            ? t('common:loading')
+            : (review.error?.message ?? t('admin:detail.notFound', { id }))}
         </h1>
         <Link
           to="/admin/experts/pending"
@@ -94,34 +117,61 @@ export default function AdminApplicationDetailPage() {
     document.getElementById(`tab-${key}`)?.focus()
   }
 
-  const finish = (kind: ReviewDecision, note?: string) =>
-    review
-      .decide(kind, note)
+  const errorText = (e: unknown) =>
+    e instanceof ApiError && isDecisionError(e.code)
+      ? t(`admin:eligibility.errors.${e.code}`)
+      : t('admin:eligibility.errors.failed')
+
+  const finish = (note: string) => {
+    const outcome = review.outcome
+    return review
+      .decide(note)
       .then(() => {
-        setDialog(null)
+        setConfirming(false)
         setTab('history')
-        setToast(t(DECISION_TOAST[kind]))
+        setToast(t(`admin:${ELIGIBILITY_OUTCOME[outcome].toast}`))
       })
-      .catch((e: Error) => setToast(e.message))
+      .catch((e: unknown) => {
+        setConfirming(false)
+        setToast(errorText(e))
+      })
+  }
+
+  // Open a blank tab first so the browser does not block the popup after the download
+  const openFile = (evidenceId: string) => {
+    const win = window.open('', '_blank')
+    getEvidenceFile(detail.id, evidenceId)
+      .then((blob) => {
+        if (!blob || !win) throw new Error('no file')
+        win.location.href = URL.createObjectURL(blob)
+      })
+      .catch(() => {
+        win?.close()
+        setToast(t('admin:detail.documents.openFailed'))
+      })
+  }
 
   const blockers = [
-    review.remainingCriteria > 0 && {
-      text: t('admin:detail.blockers.criteria', { count: review.remainingCriteria }).replace(String(review.remainingCriteria), '').trim() + ' ' + review.remainingCriteria,
+    review.remaining > 0 && {
+      text: t('admin:eligibility.remaining', { count: review.remaining }),
     },
     review.unreviewedFlags > 0 && {
-      text: t('admin:detail.blockers.flags', { count: review.unreviewedFlags }).replace(String(review.unreviewedFlags), '').trim() + ' ' + review.unreviewedFlags,
+      text: t('admin:detail.blockers.flags', { count: review.unreviewedFlags }),
       tone: 'warning' as const,
     },
   ].filter((b) => !!b)
 
   const railStep = APPLICATION_RAIL_STEP[status]
-  // Bước cuối hiện nhãn trạng thái khi đã có kết quả, vd. "Được duyệt"
+  // The last step shows the status label once there is a result, e.g. "Được duyệt"
   const railSteps = [
     ...RAIL_APPLICATION.slice(0, -1),
     railStep >= RAIL_APPLICATION.length
       ? APPLICATION_STATUS[status].label
       : RAIL_APPLICATION[RAIL_APPLICATION.length - 1],
   ]
+  const decided = !detail.canDecide
+  const jobTitle = [detail.jobTitle, detail.company].filter(Boolean).join(', ')
+  const years = t('admin:detail.meta.years', { count: detail.years })
 
   return (
     <AdminLayout
@@ -137,13 +187,13 @@ export default function AdminApplicationDetailPage() {
         </>
       }
     >
-      {decision ? (
+      {decided ? (
         <CaseHeader
           code={detail.id}
           title={detail.name}
           meta={[
-            [t('admin:detail.meta.jobTitle'), `${detail.jobTitle}, ${detail.company}`],
-            [t('admin:detail.meta.experience'), t('admin:detail.meta.years', { count: detail.years }).replace(String(detail.years), detail.years.toString())],
+            [t('admin:detail.meta.jobTitle'), jobTitle],
+            [t('admin:detail.meta.experience'), years],
             [t('admin:detail.meta.submitted'), formatDate(detail.submittedAt)],
           ]}
           rail={{ steps: railSteps, current: railStep }}
@@ -151,7 +201,9 @@ export default function AdminApplicationDetailPage() {
       ) : (
         <ToolHeader
           code={detail.id}
-          subtitle={`${detail.name} · ${detail.jobTitle} · ${detail.years} năm`}
+          subtitle={[detail.name, detail.jobTitle, years]
+            .filter(Boolean)
+            .join(' · ')}
           rail={{ steps: railSteps, current: railStep }}
         />
       )}
@@ -192,19 +244,19 @@ export default function AdminApplicationDetailPage() {
             id={`panel-${tab}`}
             aria-labelledby={`tab-${tab}`}
           >
-            {tab === 'ai' && (
+            {tab === 'ai' && detail.screening && (
               <AiScreeningTab
                 screening={detail.screening}
                 reviewedFlags={review.reviewedFlags}
                 onToggleReviewed={review.toggleFlagReviewed}
-                onRequestSupplement={() => setDialog('supplement')}
+                onRequestSupplement={review.requestFromFlags}
               />
             )}
             {tab === 'profile' && (
               <ProfileTab
                 detail={detail}
-                onOpenDocument={(code) => {
-                  setDocCode(code)
+                onOpenDocument={(key) => {
+                  setDocKey(key)
                   setTab('documents')
                 }}
               />
@@ -212,99 +264,69 @@ export default function AdminApplicationDetailPage() {
             {tab === 'documents' && (
               <DocumentsTab
                 documents={detail.documents}
-                initialCode={docCode}
+                initialCode={docKey}
                 reviewedFlags={review.reviewedFlags}
                 onToggleReviewed={review.toggleFlagReviewed}
+                onOpenFile={openFile}
               />
             )}
             {tab === 'history' && <HistoryTab history={review.history} />}
           </div>
         </div>
 
-        {/* ── Right: chấm điểm, hoặc kết quả sau khi đã quyết định ── */}
-        {decision ? (
+        {/* ── Right: Gate 1 form, or the latest result once decided ── */}
+        {decided ? (
           <div className="space-y-4 md:space-y-6">
-            <DecisionCard
-              decision={decision}
-              criteria={review.criteria}
-              scores={review.scores}
-            />
-            <AiSummaryCard
-              screening={detail.screening}
-              flagReviews={review.flagReviews}
-              reviewer={CURRENT_ADMIN}
-              onOpenDetail={() => setTab('ai')}
-            />
+            <DecisionCard detail={detail} />
+            {detail.screening && (
+              <AiSummaryCard
+                screening={detail.screening}
+                flagReviews={review.flagReviews}
+                reviewer={CURRENT_ADMIN}
+                onOpenDetail={() => setTab('ai')}
+              />
+            )}
           </div>
         ) : (
           <div className="lg:sticky lg:top-20 lg:max-h-[calc(100vh-160px)] lg:overflow-y-auto">
-            <CompetencyReview
-              criteria={review.criteria}
-              scores={review.scores}
-              evidence={review.evidence}
-              disabled={false}
-              onScore={review.setScore}
-              onEvidence={review.setEvidence}
+            <EligibilityReview
+              detail={detail}
+              assessments={review.assessments}
+              disabled={review.deciding}
+              onResult={review.setResult}
+              onNote={review.setNote}
             />
           </div>
         )}
       </div>
 
-      {!decision && (
+      {!decided && (
         <DecisionBar
           className="-mx-4 mt-12 -mb-12 md:-mx-6 lg:-mx-8"
           blockers={blockers}
-          ready={t('admin:detail.ready', { count: review.criteria.length, total: review.criteria.length }).replace(String(review.criteria.length), `${review.criteria.length}/${review.criteria.length}`)}
-          secondary={
-            <button
-              type="button"
-              onClick={() => setDialog('supplement')}
-              className="btn btn-press btn-secondary"
-            >
-              {t(DECISION_LABEL.supplement)}
-            </button>
-          }
-          danger={
-            <button
-              type="button"
-              onClick={() => setDialog('reject')}
-              className="btn btn-press bg-danger text-paper"
-            >
-              {t(DECISION_LABEL.reject)}
-            </button>
-          }
+          ready={`${t('admin:eligibility.ready', {
+            count: ELIGIBILITY_CODES.length,
+            total: ELIGIBILITY_CODES.length,
+          })} · ${t('admin:eligibility.outcomeLabel')}: ${APPLICATION_STATUS[review.outcome].label}`}
           primary={{
-            label: t(DECISION_LABEL.approve),
-            onClick: () => setDialog('approve'),
-            disabled: !review.canApprove,
+            label: t(`admin:${ELIGIBILITY_OUTCOME[review.outcome].confirm}`),
+            onClick: () => setConfirming(true),
+            disabled: !review.canDecide,
           }}
         />
       )}
 
-      {dialog === 'supplement' && (
-        <SupplementDialog
-          criteria={review.criteria}
-          scores={review.scores}
-          evidence={review.evidence}
-          flags={detail.screening.flags}
-          onCancel={() => setDialog(null)}
-          onConfirm={(message) => finish('supplement', message)}
-        />
-      )}
-      {(dialog === 'approve' || dialog === 'reject') && (
+      {confirming && (
         <DecisionDialog
-          key={dialog}
-          kind={dialog}
           applicantName={detail.name}
-          criteria={review.criteria}
-          scores={review.scores}
-          onCancel={() => setDialog(null)}
-          onConfirm={(note) => finish(dialog, note)}
+          outcome={review.outcome}
+          assessments={review.assessments}
+          submitting={review.deciding}
+          onCancel={() => setConfirming(false)}
+          onConfirm={(note) => void finish(note)}
         />
       )}
       {toast && <Toast message={toast} onDone={clearToast} />}
     </AdminLayout>
   )
 }
-
-

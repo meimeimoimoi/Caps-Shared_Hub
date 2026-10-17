@@ -139,32 +139,18 @@
     "noApplications": "No applications.",
     "actions": "Actions",
     "view": "View details",
-    "viewLabel": "View application of {{name}}"
+    "viewLabel": "View application of {{name}}",
+    "reapplication": "Reapplication"
   },
   "queue": {
     "tabs": {
       "review": "Pending Review",
-      "screening": "Screening",
       "moreInfo": "Need More Info",
       "notEligible": "Not Eligible",
-      "done": "Processed"
+      "eligible": "Eligible"
     }
   },
   "decision": {
-    "approve": {
-      "title": "Approve application for",
-      "notice": "Applicant will receive an email and can setup services. The profile will only appear on Marketplace when services are active.",
-      "noteLabel": "Internal Note",
-      "placeholder": "Optional. Only visible to System Admin.",
-      "confirm": "Approve Application"
-    },
-    "reject": {
-      "title": "Reject application for",
-      "notice": "Applicant will receive an email with your provided reason. This cannot be undone.",
-      "noteLabel": "Rejection Reason (Required)",
-      "placeholder": "Clearly state the criteria not met so the applicant understands",
-      "confirm": "Reject Application"
-    },
     "supplement": {
       "title": "Request Supplement",
       "notice": "Application moved to Need More Info. Applicant will receive an email with the items below.",
@@ -178,19 +164,7 @@
       "itemPlaceholder": "Say exactly what needs to be added",
       "pickOne": "Pick at least 1 item."
     },
-    "log": {
-      "approve": "Approved application.",
-      "reject": "Rejected application. Email sent with reason.",
-      "supplement": "Requested application supplement. Email sent with items needed."
-    },
-    "toast": {
-      "approve": "Application approved",
-      "reject": "Application rejected",
-      "supplement": "Supplement request sent"
-    },
     "label": {
-      "approve": "Approve",
-      "reject": "Reject",
       "supplement": "Request Supplement"
     }
   },
@@ -211,10 +185,8 @@
       "submitted": "Submitted"
     },
     "blockers": {
-      "criteria": "{{count}} criteria unreviewed or missing evidence",
       "flags": "{{count}} AI flags unreviewed"
     },
-    "ready": "{{count}}/{{total}} criteria reviewed with evidence",
     "scoreSummary": {
       "level": "Level {{level}}",
       "unscored": "Unscored"
@@ -234,7 +206,8 @@
       "highlights": "Experience Highlights"
     },
     "history": {
-      "title": "Operation History"
+      "title": "Operation History",
+      "reviewer": "Reviewer"
     },
     "documents": {
       "select": "Select document",
@@ -243,7 +216,9 @@
       "aiReviewed": "AI · Reviewed",
       "unmark": "Unmark",
       "mark": "Mark as reviewed",
-      "pageOf": "{{code}} · page {{page}}/{{total}}"
+      "pageOf": "{{code}} · page {{page}}/{{total}}",
+      "open": "Open file",
+      "openFailed": "Could not open the file. Please try again."
     },
     "aiScreening": {
       "declared": "Declared",
@@ -696,6 +671,60 @@
       "locked": "Locked {{name}}",
       "unlocked": "Unlocked {{name}}",
       "resetSent": "Password reset email sent to {{email}}"
+    }
+  },
+  "eligibility": {
+    "title": "Gate 1 · Eligibility",
+    "subtitle": "Assess each requirement EV-01 – EV-06. The overall outcome is derived automatically. Eligible does not list the expert on the Marketplace yet: per-service competency review and final approval follow.",
+    "results": {
+      "PASS": "Pass",
+      "NEED_MORE_INFORMATION": "More info",
+      "FAIL": "Fail"
+    },
+    "noteRequired": "Note to the applicant (required)",
+    "noteOptional": "Note (optional)",
+    "notePlaceholder": "State what is missing or why it is not met",
+    "experienceHint": "Declared {{years}} years; minimum {{min}} years.",
+    "experienceBelow": "Below the minimum, so Pass is not available.",
+    "previous": "Previously: {{result}}",
+    "remaining": "{{count}} requirement(s) without a result or a required note",
+    "ready": "All {{count}}/{{total}} requirements assessed",
+    "outcomeLabel": "Overall outcome",
+    "outcome": {
+      "ELIGIBLE": {
+        "confirm": "Confirm eligible",
+        "notice": "The applicant is told they meet the eligibility requirements. Next is the competency review for each service; the profile is not on the Marketplace yet.",
+        "toast": "Eligibility confirmed"
+      },
+      "NEED_MORE_INFORMATION": {
+        "confirm": "Request more information",
+        "notice": "The application goes back to the applicant with the note of each requirement to supplement. They supplement the same application.",
+        "toast": "More information requested"
+      },
+      "NOT_ELIGIBLE": {
+        "confirm": "Confirm not eligible",
+        "notice": "The application is closed. The applicant sees the note of each failed requirement and can only apply again after the policy waiting period. This cannot be undone.",
+        "toast": "Recorded as not eligible"
+      }
+    },
+    "dialog": {
+      "title": "Record the Gate 1 outcome for {{name}}?",
+      "noteLabel": "Overall note (optional)",
+      "placeholder": "Shown to the applicant with the results."
+    },
+    "resultTitle": "Gate 1 result",
+    "decidedAt": "Decided at {{time}}",
+    "reapplyAt": "A new application is allowed from {{date}}.",
+    "noDecision": "No Gate 1 decision yet.",
+    "notReviewable": "This application is not waiting for a Gate 1 decision.",
+    "errors": {
+      "INVALID_ELIGIBILITY_CRITERIA": "Give exactly one result for each of EV-01 – EV-06.",
+      "INVALID_ELIGIBILITY_RESULT": "A result is invalid. Reload the page and try again.",
+      "ELIGIBILITY_NOTE_REQUIRED": "A failed or incomplete requirement needs a note.",
+      "EXPERIENCE_BELOW_MINIMUM": "EV-06 cannot pass: the declared experience is below the minimum.",
+      "SELF_REVIEW_NOT_ALLOWED": "You cannot review your own application.",
+      "APPLICATION_NOT_IN_REVIEW": "This application no longer waits for a decision; reload to see its status.",
+      "failed": "The decision was not recorded. Please try again."
     }
   }
 }

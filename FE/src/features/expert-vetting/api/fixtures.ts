@@ -1,12 +1,15 @@
 /* Dữ liệu demo cho adminApi.ts khi chạy dev (isExpertDemo).
  * Chỉ adminApi.ts được import file này; component/hook đi qua adminApi. */
-import { CURRENT_ADMIN } from '../constants'
+import { APPLICATION_STATUS } from '@/lib/constants'
+import { CURRENT_ADMIN, ELIGIBILITY_CODES, EXPERIENCE_CODE } from '../constants'
 import type {
   ApplicationDetail,
-  Criterion,
+  EligibilityCheck,
+  EligibilityDecisionInput,
   Expert,
   ExpertApplication,
 } from '../types'
+import { eligibilityOutcome } from '../utils/applications'
 
 const daysAgo = (n: number) =>
   new Date(Date.now() - n * 86_400_000).toISOString()
@@ -19,7 +22,7 @@ export const mockApplications: ExpertApplication[] = [
     years: 12,
     aiFlags: 0,
     submittedAt: daysAgo(8),
-    status: 'CAPABILITY_REVIEW',
+    status: 'SUBMITTED',
   },
   {
     id: 'EXP-0142',
@@ -28,7 +31,7 @@ export const mockApplications: ExpertApplication[] = [
     years: 8,
     aiFlags: 1,
     submittedAt: daysAgo(7),
-    status: 'CAPABILITY_REVIEW',
+    status: 'SUBMITTED',
   },
   {
     id: 'EXP-0145',
@@ -37,7 +40,7 @@ export const mockApplications: ExpertApplication[] = [
     years: 10,
     aiFlags: 0,
     submittedAt: daysAgo(4),
-    status: 'CAPABILITY_REVIEW',
+    status: 'SUBMITTED',
   },
   {
     id: 'EXP-0147',
@@ -46,7 +49,7 @@ export const mockApplications: ExpertApplication[] = [
     years: 6,
     aiFlags: 0,
     submittedAt: daysAgo(2),
-    status: 'AI_SCREENING',
+    status: 'ELIGIBLE',
   },
   {
     id: 'EXP-0136',
@@ -171,11 +174,58 @@ export const mockExperts: Expert[] = [
   }),
 ]
 
-export const mockCriteria: Criterion[] = [1, 2, 3, 4, 5].map((n) => ({
-  id: `C${n}`,
-  name: `[Tên tiêu chí C${n}]`,
-  description: '[Mô tả ngắn tiêu chí từ cấu hình]',
-}))
+const MIN_YEARS = 5
+const REAPPLY_DAYS = 30
+
+const allPass = (at: string, years: number): EligibilityCheck[] =>
+  ELIGIBILITY_CODES.map((code) => ({
+    code,
+    result: 'PASS',
+    note: code === EXPERIENCE_CODE ? `${years} năm kinh nghiệm.` : null,
+    decidedAt: at,
+  }))
+
+/* Latest Gate 1 results per application; decideMockEligibility replaces them */
+const mockEligibility: Record<string, EligibilityCheck[]> = {
+  'EXP-0147': allPass(daysAgo(1), 6),
+  'EXP-0136': allPass(daysAgo(9), 5).map((c) =>
+    c.code === 'EV-03'
+      ? {
+          ...c,
+          result: 'NEED_MORE_INFORMATION',
+          note: 'Bổ sung xác nhận công tác giai đoạn 2017-2021 tại Công ty Kiểm toán Sao Việt.',
+        }
+      : c
+  ),
+  'EXP-0131': allPass(daysAgo(14), 1).map((c) =>
+    c.code === EXPERIENCE_CODE
+      ? {
+          ...c,
+          result: 'FAIL',
+          note: 'Kinh nghiệm kê khai 1 năm, dưới mức tối thiểu 5 năm.',
+        }
+      : c
+  ),
+}
+
+const mockDecisions: Record<string, ApplicationDetail['history']> = {}
+
+/** Demo version of the server's Gate 1 decision: same outcome rule, status and history */
+export function decideMockEligibility(
+  id: string,
+  body: EligibilityDecisionInput
+) {
+  const app = mockApplications.find((a) => a.id === id)
+  if (!app) return
+  const at = new Date().toISOString()
+  mockEligibility[id] = body.criteria.map((c) => ({ ...c, decidedAt: at }))
+  app.status = eligibilityOutcome(body.criteria.map((c) => c.result))
+  ;(mockDecisions[id] ??= []).push({
+    at,
+    actor: CURRENT_ADMIN,
+    text: `${APPLICATION_STATUS[app.status].label}.${body.note ? ` ${body.note}` : ''}`,
+  })
+}
 
 const flagTemplates = [
   {
@@ -217,8 +267,22 @@ export function getMockApplicationDetail(
   const flags = flagTemplates
     .slice(0, app.aiFlags)
     .map((f, i) => ({ id: `F${i + 1}`, ...f }))
+  const eligibility = mockEligibility[id] ?? []
+  const decidedAt = eligibility[0]?.decidedAt ?? null
   return {
     ...app,
+    eligibility,
+    minYearsExperience: MIN_YEARS,
+    suggestedExperienceResult: app.years >= MIN_YEARS ? 'PASS' : 'FAIL',
+    canDecide: app.status === 'SUBMITTED',
+    decidedAt,
+    decisionNote: null,
+    earliestReapplyAt:
+      app.status === 'NOT_ELIGIBLE' && decidedAt
+        ? new Date(
+            new Date(decidedAt).getTime() + REAPPLY_DAYS * 86_400_000
+          ).toISOString()
+        : null,
     birthDate: '1988-04-12',
     jobTitle: 'Trưởng phòng Tư vấn Thuế',
     company: 'Công ty TNHH Tư vấn Thuế An Phát',
@@ -336,6 +400,7 @@ export function getMockApplicationDetail(
         actor: 'AI',
         text: `Chạy lại đối soát sau bổ sung. ${flags.length} mục cần xem lại.`,
       },
+      ...(mockDecisions[id] ?? []),
     ],
   }
 }

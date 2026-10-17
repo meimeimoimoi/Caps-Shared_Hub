@@ -5,11 +5,12 @@ import { authApi } from '@/features/auth/api/authApi'
 import { useAuthStore } from '@/features/auth/store/authStore'
 import { isExpertDemo } from '@/lib/expert-data-source'
 import { useFormatters } from '@/hooks/useFormatters'
-import { labels } from '../constants'
+import { criterionKey, labels } from '../constants'
 import type { Profile, Stage } from '../types'
 import type { RegistrationMessage } from '../types/messages'
 import {
   applicationApi,
+  criterionOf,
   stageOf,
   SUPPLEMENT_CODE,
   type ApplicationStatus,
@@ -34,6 +35,8 @@ export function messageFor(e: unknown): RegistrationMessage {
         return { key: 'messages.incomplete' }
       case 'APPLICATION_LOCKED':
         return { key: 'messages.locked' }
+      case 'ALREADY_ELIGIBLE':
+        return { key: 'messages.alreadyEligible' }
       case 'EVIDENCE_INVALID_TYPE':
       case 'EVIDENCE_TOO_LARGE':
         return { key: 'validation.file' }
@@ -52,6 +55,7 @@ const STATUS_LABEL: Record<ApplicationStatus, Stage> = {
   AI_SCREENING: 'screening',
   NEED_MORE_INFORMATION: 'additional',
   NOT_ELIGIBLE: 'ineligible',
+  ELIGIBLE: 'eligible',
   CAPABILITY_REVIEW: 'competency',
   APPROVED: 'approved',
   REJECTED: 'failed',
@@ -106,6 +110,25 @@ export function useApplicationLifecycle({
       const label = t(labels[STATUS_LABEL[h.toStatus]])
       return h.note ? `${when} · ${label}: ${h.note}` : `${when} · ${label}`
     })
+
+  // Gate 1 requirements to supplement or not met, with the reviewer's note (BR-E28)
+  const eligibilityIssues = (application?.eligibility ?? [])
+    .filter((c) => c.result !== 'PASS')
+    .map((c) => {
+      const key =
+        c.code === 'EV-06'
+          ? 'criteria.experience'
+          : criterionKey(criterionOf(c.code) ?? '')
+      return {
+        code: c.code,
+        label: key ? t(key) : c.code,
+        result: c.result,
+        note: c.note ?? '',
+      }
+    })
+  const reapplyAt = application?.earliestReapplyAt
+    ? format.timestamp(application.earliestReapplyAt, 'Asia/Ho_Chi_Minh')
+    : null
 
   async function createAccount(profile: Profile, password: string) {
     if (submitting) return
@@ -167,6 +190,9 @@ export function useApplicationLifecycle({
     submitted,
     stage,
     history,
+    eligibilityIssues,
+    reapplyAt,
+    decisionNote: application?.decisionNote ?? null,
     supplement,
     supplementFile,
     setSupplementFile,

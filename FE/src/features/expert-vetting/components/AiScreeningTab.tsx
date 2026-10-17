@@ -11,7 +11,7 @@ const resultLabel = {
 } as const satisfies Record<LegalCheck['result'], string>
 
 interface AiScreeningTabProps {
-  screening: ApplicationDetail['screening']
+  screening: NonNullable<ApplicationDetail['screening']>
   reviewedFlags: string[]
   onToggleReviewed: (flagId: string) => void
   onRequestSupplement: () => void

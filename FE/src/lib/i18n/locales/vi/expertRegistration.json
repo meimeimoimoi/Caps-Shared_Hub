@@ -29,7 +29,8 @@
     "supplementSent": "Đã gửi thông tin bổ sung. Hồ sơ quay lại hàng chờ đánh giá.",
     "loadFailed": "Không tải được hồ sơ. Kiểm tra kết nối rồi thử lại.",
     "emailDisposable": "Không nhận email dùng một lần. Kết quả xét duyệt sẽ gửi qua email, hãy dùng email bạn kiểm tra thường xuyên.",
-    "emailDomain": "Tên miền email này không nhận được thư. Kiểm tra lại địa chỉ email."
+    "emailDomain": "Tên miền email này không nhận được thư. Kiểm tra lại địa chỉ email.",
+    "alreadyEligible": "Điều kiện tham gia của bạn đã được xác nhận; không cần nộp hồ sơ mới."
   },
   "consent": "Tôi đồng ý với <terms>điều khoản và điều kiện</terms> cùng <privacy>chính sách quyền riêng tư</privacy>.",
   "counts": {
@@ -73,7 +74,8 @@
     "qualifications": "Năng lực chuyên môn",
     "development": "Cập nhật kiến thức chuyên môn",
     "ethics": "Đạo đức nghề nghiệp",
-    "confidentiality": "Bảo mật thông tin"
+    "confidentiality": "Bảo mật thông tin",
+    "experience": "Kinh nghiệm thuế – kế toán"
   },
   "expertise": {
     "cit": "Thuế thu nhập doanh nghiệp",
@@ -90,7 +92,8 @@
     "hidePassword": "Ẩn mật khẩu",
     "showPassword": "Hiện mật khẩu",
     "hideConfirmation": "Ẩn mật khẩu xác nhận",
-    "showConfirmation": "Hiện mật khẩu xác nhận"
+    "showConfirmation": "Hiện mật khẩu xác nhận",
+    "reapplyFrom": "Bạn có thể nộp hồ sơ mới từ {{date}}, kèm minh chứng mới hoặc cập nhật có liên quan."
   },
   "introduction": {
     "heading": "Đóng góp chuyên môn.",
@@ -303,7 +306,9 @@
     "finalDescription": "Đã đạt bước đánh giá điều kiện tham gia và năng lực dịch vụ. Quản trị viên hệ thống sẽ thực hiện kiểm tra quản trị cuối cùng.",
     "noDate": "Chưa cấu hình ngày hoàn tất đánh giá.",
     "noAction": "Hiện chưa cần thực hiện hành động. Theo dõi tiến trình đánh giá ở trên.",
-    "history": "Lịch sử hoạt động"
+    "history": "Lịch sử hoạt động",
+    "toSupplement": "Nội dung cần bổ sung",
+    "unmetCriteria": "Yêu cầu chưa đạt"
   },
   "page": {
     "title": "Đăng ký chuyên gia",

@@ -29,7 +29,8 @@
     "supplementSent": "Additional information sent. Your application is back in the review queue.",
     "loadFailed": "We couldn't load your application. Check your connection and try again.",
     "emailDisposable": "Temporary email addresses aren't accepted. Review results are sent by email, so use one you check regularly.",
-    "emailDomain": "This email domain can't receive email. Check the address."
+    "emailDomain": "This email domain can't receive email. Check the address.",
+    "alreadyEligible": "Your eligibility has already been confirmed; no new application is needed."
   },
   "consent": "I agree to the <terms>terms and conditions</terms> and <privacy>privacy policy</privacy>.",
   "counts": {
@@ -75,7 +76,8 @@
     "qualifications": "Professional qualifications",
     "development": "Continuing professional development",
     "ethics": "Professional ethics",
-    "confidentiality": "Confidentiality"
+    "confidentiality": "Confidentiality",
+    "experience": "Tax and accounting experience"
   },
   "expertise": {
     "cit": "Corporate income tax",
@@ -92,7 +94,8 @@
     "hidePassword": "Hide password",
     "showPassword": "Show password",
     "hideConfirmation": "Hide confirmation password",
-    "showConfirmation": "Show confirmation password"
+    "showConfirmation": "Show confirmation password",
+    "reapplyFrom": "You can submit a new application from {{date}}, with new or updated relevant evidence."
   },
   "introduction": {
     "heading": "Bring your expertise.",
@@ -305,7 +308,9 @@
     "finalDescription": "Eligibility and service competency reviews have passed. A System Admin will perform the final governance check.",
     "noDate": "No review completion date has been configured.",
     "noAction": "No action needed right now. Follow the review progress above.",
-    "history": "Activity history"
+    "history": "Activity history",
+    "toSupplement": "What to supplement",
+    "unmetCriteria": "Requirements not met"
   },
   "page": {
     "title": "Expert registration",

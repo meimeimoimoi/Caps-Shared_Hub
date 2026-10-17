@@ -64,6 +64,9 @@ export default function ExpertRegistrationPage() {
     submitted,
     stage,
     history,
+    eligibilityIssues,
+    reapplyAt,
+    decisionNote,
     supplement,
     explanation,
     error: lifecycleError,
@@ -84,7 +87,11 @@ export default function ExpertRegistrationPage() {
     setExplanation,
     cancelSupplement,
     supplementFile,
-  } = useApplicationLifecycle({ application, setApplication, syncVerifiedSession })
+  } = useApplicationLifecycle({
+    application,
+    setApplication,
+    syncVerifiedSession,
+  })
 
   const {
     profile,
@@ -216,7 +223,11 @@ export default function ExpertRegistrationPage() {
             ) : (
               <div role="alert">
                 <p>{t('messages.loadFailed')}</p>
-                <button type="button" className="underline underline-offset-4" onClick={() => void reload()}>
+                <button
+                  type="button"
+                  className="underline underline-offset-4"
+                  onClick={() => void reload()}
+                >
                   {t('page.retry')}
                 </button>
               </div>
@@ -228,6 +239,9 @@ export default function ExpertRegistrationPage() {
               <ApplicationStatus
                 profileName={profile.name}
                 stage={stage}
+                eligibilityIssues={eligibilityIssues}
+                reapplyAt={reapplyAt}
+                decisionNote={decisionNote}
                 supplement={supplement}
                 terminal={terminal}
                 timeline={timeline}

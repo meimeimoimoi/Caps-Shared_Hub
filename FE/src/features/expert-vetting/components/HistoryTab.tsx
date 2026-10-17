@@ -26,7 +26,9 @@ export function HistoryTab({
               {h.actor === 'AI' ? (
                 <span className="badge-ai">AI</span>
               ) : (
-                <span className="text-fg-strong font-semibold">{h.actor}</span>
+                <span className="text-fg-strong font-semibold">
+                  {h.actor || t('detail.history.reviewer')}
+                </span>
               )}
             </span>
             <span className="text-fg-strong">{h.text}</span>

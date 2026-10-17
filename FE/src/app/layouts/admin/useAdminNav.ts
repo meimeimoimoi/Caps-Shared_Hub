@@ -4,8 +4,15 @@ import { useTranslation } from 'react-i18next'
 import type { ShellNotification } from '../NotificationBell'
 import { getApplications } from '@/features/expert-vetting/api/adminApi'
 import { adminKeys } from '@/features/expert-vetting/api/queryKeys'
-import { SLA_DAYS, waitedDays } from '@/features/expert-vetting/utils/applications'
-import { getDisputes, getEscrows } from '@/features/disputes-escrow/api/disputesApi'
+import { PENDING_STATUS } from '@/features/expert-vetting/constants'
+import {
+  SLA_DAYS,
+  waitedDays,
+} from '@/features/expert-vetting/utils/applications'
+import {
+  getDisputes,
+  getEscrows,
+} from '@/features/disputes-escrow/api/disputesApi'
 import { disputesKeys } from '@/features/disputes-escrow/api/queryKeys'
 import { disputeHoursLeft } from '@/features/disputes-escrow/utils/disputes'
 import { usePricing } from '@/features/service-pricing/hooks/usePricing'
@@ -29,12 +36,22 @@ export function useAdminNav() {
   })
   const tiers = usePricing().data?.tiers ?? []
 
-  const pending = (applications.data ?? []).filter((a) => a.status === 'CAPABILITY_REVIEW')
-  const overdue = pending.filter((a) => waitedDays(a.submittedAt, now) > SLA_DAYS).length
+  const pending = (applications.data ?? []).filter(
+    (a) => a.status === PENDING_STATUS
+  )
+  const overdue = pending.filter(
+    (a) => waitedDays(a.submittedAt, now) > SLA_DAYS
+  ).length
   const open = (disputes.data ?? []).filter((d) => !d.resolvedAt)
-  const nearestHours = open.length ? Math.min(...open.map((d) => disputeHoursLeft(d, now))) : 0
-  const payoutFailed = (escrows.data ?? []).filter((e) => e.status === 'PAYOUT_FAILED').length
-  const refundFailed = (escrows.data ?? []).filter((e) => e.status === 'REFUND_FAILED').length
+  const nearestHours = open.length
+    ? Math.min(...open.map((d) => disputeHoursLeft(d, now)))
+    : 0
+  const payoutFailed = (escrows.data ?? []).filter(
+    (e) => e.status === 'PAYOUT_FAILED'
+  ).length
+  const refundFailed = (escrows.data ?? []).filter(
+    (e) => e.status === 'REFUND_FAILED'
+  ).length
   const outsideRange = tiers.reduce((s, tier) => s + tier.outsideRange, 0)
 
   // ponytail: thông báo suy ra từ số đếm; thay bằng API thông báo khi BE có
@@ -42,7 +59,10 @@ export function useAdminNav() {
   const notifications: ShellNotification[] = [
     open.length > 0 && {
       id: 'disputes',
-      text: t('dashboard.attention.dispute', { count: open.length, hours: nearestHours }),
+      text: t('dashboard.attention.dispute', {
+        count: open.length,
+        hours: nearestHours,
+      }),
       to: '/admin/disputes',
       tone: 'warning' as const,
     },
@@ -60,7 +80,10 @@ export function useAdminNav() {
     },
     overdue > 0 && {
       id: 'sla-overdue',
-      text: t('dashboard.attention.slaOverdue', { count: overdue, days: SLA_DAYS }),
+      text: t('dashboard.attention.slaOverdue', {
+        count: overdue,
+        days: SLA_DAYS,
+      }),
       to: '/admin/experts/pending',
       tone: 'warning' as const,
     },
@@ -76,5 +99,9 @@ export function useAdminNav() {
     },
   ].filter((n): n is ShellNotification => !!n)
 
-  return { pendingCount: pending.length, disputeCount: open.length, notifications }
+  return {
+    pendingCount: pending.length,
+    disputeCount: open.length,
+    notifications,
+  }
 }

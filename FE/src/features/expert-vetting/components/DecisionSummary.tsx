@@ -2,69 +2,105 @@ import { useTranslation } from 'react-i18next'
 import { Check, TriangleAlert, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { APPLICATION_STATUS } from '@/lib/constants'
-import { DECISION_NOTE_LABEL, DECISION_STATUS } from '../constants'
-import type { ApplicationDetail, Criterion, DecisionRecord } from '../types'
-import { formatDateTime } from '../utils/applications'
-import { ScoreSummary } from './ScoreSummary'
+import { useEligibilityLabel } from '../hooks/useLabels'
+import type { ApplicationDetail, ApplicationStatus } from '../types'
+import { formatDate, formatDateTime } from '../utils/applications'
 
-const verdict = {
-  approve: { cls: 'verdict-refund text-success', Icon: Check },
-  reject: { cls: 'verdict-negative text-danger', Icon: X },
-  supplement: { cls: 'verdict-waiting text-warning', Icon: TriangleAlert },
+const verdict: Partial<
+  Record<ApplicationStatus, { cls: string; Icon: typeof Check }>
+> = {
+  ELIGIBLE: { cls: 'verdict-refund text-success', Icon: Check },
+  NOT_ELIGIBLE: { cls: 'verdict-negative text-danger', Icon: X },
+  NEED_MORE_INFORMATION: {
+    cls: 'verdict-waiting text-warning',
+    Icon: TriangleAlert,
+  },
 }
 
-interface DecisionCardProps {
-  decision: DecisionRecord
-  criteria: Criterion[]
-  scores: Record<string, number>
-}
-
-/* Thẻ "Quyết định của System Admin" sau khi đã ra quyết định */
-export function DecisionCard({
-  decision,
-  criteria,
-  scores,
-}: DecisionCardProps) {
+/* Latest Gate 1 result: per-requirement results and notes as the applicant sees them */
+export function DecisionCard({ detail }: { detail: ApplicationDetail }) {
   const { t } = useTranslation('admin')
-  const { cls, Icon } = verdict[decision.kind]
+  const label = useEligibilityLabel()
+  const { cls, Icon } = verdict[detail.status] ?? {
+    cls: 'verdict-waiting text-fg-muted',
+    Icon: TriangleAlert,
+  }
+  if (!detail.eligibility.length) {
+    return (
+      <section className="paper p-5 md:p-6">
+        <h2 className="text-h2">{t('eligibility.resultTitle')}</h2>
+        <p className="text-fg-muted mt-1 text-sm">
+          {t('eligibility.notReviewable')} {t('eligibility.noDecision')}
+        </p>
+      </section>
+    )
+  }
   return (
     <section className="paper card-hover p-5 md:p-6">
-      <h2 className="text-h2">{t('detail.decisionTitle')}</h2>
+      <h2 className="text-h2">{t('eligibility.resultTitle')}</h2>
       <div className={cn('verdict mt-3', cls)}>
         <span className="inline-flex items-center gap-1.5 font-semibold">
           <Icon size={16} aria-hidden="true" />
-          {APPLICATION_STATUS[DECISION_STATUS[decision.kind]].label}
+          {APPLICATION_STATUS[detail.status].label}
         </span>
-        <span className="text-fg-muted text-sm">
-          {decision.by} ·{' '}
-          <span className="num">{formatDateTime(decision.at)}</span>
-        </span>
+        {detail.decidedAt && (
+          <span className="text-fg-muted num text-sm">
+            {t('eligibility.decidedAt', {
+              time: formatDateTime(detail.decidedAt),
+            })}
+          </span>
+        )}
       </div>
-      {decision.kind === 'approve' && (
-        <div className="mt-4">
-          <ScoreSummary criteria={criteria} scores={scores} />
-        </div>
+      <ul className="divide-border-subtle mt-4 divide-y text-sm">
+        {detail.eligibility.map((c) => (
+          <li key={c.code} className="py-2">
+            <div className="flex justify-between gap-4">
+              <span className="text-fg-muted">
+                <span className="num">{c.code}</span> {label(c.code)}
+              </span>
+              <span
+                className={cn(
+                  'shrink-0 font-semibold',
+                  c.result === 'FAIL'
+                    ? 'text-danger'
+                    : c.result === 'NEED_MORE_INFORMATION'
+                      ? 'text-warning'
+                      : 'text-fg-strong'
+                )}
+              >
+                {t(`eligibility.results.${c.result}`)}
+              </span>
+            </div>
+            {c.note && (
+              <p className="text-fg mt-1 whitespace-pre-line">{c.note}</p>
+            )}
+          </li>
+        ))}
+      </ul>
+      {detail.decisionNote && (
+        <p className="text-fg mt-3 text-sm whitespace-pre-line">
+          {detail.decisionNote}
+        </p>
       )}
-      {decision.note && (
-        <div className="mt-4 text-sm">
-          <p className="text-fg-strong font-semibold">
-            {t(DECISION_NOTE_LABEL[decision.kind])}
-          </p>
-          <p className="text-fg mt-1 whitespace-pre-line">{decision.note}</p>
-        </div>
+      {detail.earliestReapplyAt && (
+        <p className="text-fg-muted mt-3 text-sm">
+          {t('eligibility.reapplyAt', {
+            date: formatDate(detail.earliestReapplyAt),
+          })}
+        </p>
       )}
     </section>
   )
 }
 
 interface AiSummaryCardProps {
-  screening: ApplicationDetail['screening']
+  screening: NonNullable<ApplicationDetail['screening']>
   flagReviews: Record<string, string>
   reviewer: string
   onOpenDetail: () => void
 }
 
-/* Tóm tắt kết quả AI sàng lọc cho trang đã ra quyết định */
+/* AI screening summary once the decision is made (demo only) */
 export function AiSummaryCard({
   screening,
   flagReviews,

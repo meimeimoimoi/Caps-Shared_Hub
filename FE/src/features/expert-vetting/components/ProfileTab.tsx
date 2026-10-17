@@ -1,11 +1,13 @@
 import { useTranslation } from 'react-i18next'
 import type { ReactNode } from 'react'
 import type { ApplicationDetail } from '../types'
-import { formatDate } from '../utils/applications'
+import { documentKey, formatDate } from '../utils/applications'
+import { useFieldLabel } from '../hooks/useLabels'
 
 interface ProfileTabProps {
   detail: ApplicationDetail
-  onOpenDocument: (code: string) => void
+  /** Takes the document key (evidence id or code) */
+  onOpenDocument: (key: string) => void
 }
 
 function InfoSection({
@@ -35,6 +37,7 @@ function InfoSection({
 
 export function ProfileTab({ detail, onOpenDocument }: ProfileTabProps) {
   const { t } = useTranslation('admin')
+  const fieldLabel = useFieldLabel()
   const cv = detail.documents.find((d) => d.code === 'CV')
 
   return (
@@ -68,14 +71,14 @@ export function ProfileTab({ detail, onOpenDocument }: ProfileTabProps) {
           },
           {
             label: t('detail.profile.fields'),
-            value: detail.fields.join(', '),
+            value: detail.fields.map(fieldLabel).join(', '),
           },
           {
             label: t('detail.profile.cv'),
             value: cv ? (
               <button
                 type="button"
-                onClick={() => onOpenDocument(cv.code)}
+                onClick={() => onOpenDocument(documentKey(cv))}
                 className="text-accent-text font-semibold underline underline-offset-4"
               >
                 {cv.name}

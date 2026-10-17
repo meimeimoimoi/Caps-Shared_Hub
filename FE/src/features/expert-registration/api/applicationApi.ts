@@ -15,6 +15,7 @@ export type ApplicationStatus =
   | 'AI_SCREENING'
   | 'NEED_MORE_INFORMATION'
   | 'NOT_ELIGIBLE'
+  | 'ELIGIBLE'
   | 'CAPABILITY_REVIEW'
   | 'APPROVED'
   | 'REJECTED'
@@ -55,6 +56,13 @@ export interface ExpertApplication {
     at: string
     byApplicant: boolean
   }[]
+  /** Per-requirement results of the latest Gate 1 decision (EV-01…EV-06) */
+  eligibility: {
+    code: string
+    result: 'PASS' | 'FAIL' | 'NEED_MORE_INFORMATION'
+    note: string | null
+    decidedAt: string
+  }[]
   missingRequirements: string[]
   emailVerified: boolean
   canEdit: boolean
@@ -87,6 +95,10 @@ const FIELD_BY_CODE = invert(FIELD_CODES)
 export const evidenceCode = (criterion: string) =>
   CRITERION_CODES[criterion] ?? criterion
 
+/** Form criterion for an EV code (EV-06, the declared experience, has no evidence group) */
+export const criterionOf = (code: string): string | undefined =>
+  CRITERION_BY_CODE[code]
+
 /** Màn trạng thái của ứng viên dùng các giai đoạn (Stage) chi tiết hơn trạng thái BE */
 export function stageOf(status: ApplicationStatus): Stage {
   switch (status) {
@@ -94,6 +106,8 @@ export function stageOf(status: ApplicationStatus): Stage {
       return 'additional'
     case 'NOT_ELIGIBLE':
       return 'ineligible'
+    case 'ELIGIBLE':
+      return 'eligible'
     case 'CAPABILITY_REVIEW':
       return 'competency'
     case 'APPROVED':
