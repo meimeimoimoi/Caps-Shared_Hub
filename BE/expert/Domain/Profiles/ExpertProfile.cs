@@ -38,6 +38,7 @@ public sealed class ExpertProfile
     public string? Company { get; private set; }
     public string? Location { get; private set; }
     public DateOnly? BirthDate { get; private set; }
+    public bool IsApproved => Status == ExpertApplicationStatus.Approved;
 
     /// <summary>Expertise fields chosen by the applicant (fixed codes, see ApplicationRules).</summary>
     public string[] Fields { get; private set; } = [];

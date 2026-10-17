@@ -1,5 +1,7 @@
 using Caps.Expert.Application.Abstractions;
+using Caps.Expert.Application.DTOs.Responses;
 using Caps.Expert.Domain.Applications;
+using Caps.Expert.Domain.Catalog;
 using Caps.Expert.Domain.Profiles;
 using Microsoft.EntityFrameworkCore;
 
@@ -97,4 +99,41 @@ public sealed class ExpertEvidenceRepository(ExpertDbContext db) : IExpertEviden
     public void Add(ExpertEvidence evidence) => db.ExpertEvidences.Add(evidence);
 
     public void Remove(ExpertEvidence evidence) => db.ExpertEvidences.Remove(evidence);
+}
+
+/// <summary>EF Core store for availability slots; queries use ix_availability_slot_open.</summary>
+public sealed class SlotRepository(ExpertDbContext db) : ISlotRepository
+{
+    // Two ranges overlap when each starts before the other ends
+    public Task<bool> OverlapsAsync(
+        Guid profileId,
+        DateTimeOffset startAt,
+        DateTimeOffset endAt,
+        CancellationToken ct
+    ) =>
+        db.AvailabilitySlots.AnyAsync(
+            s => s.ExpertProfileId == profileId && s.StartAt < endAt && startAt < s.EndAt,
+            ct
+        );
+
+    public async Task<IReadOnlyList<SlotResponse>> ListUpcomingAsync(
+        Guid profileId,
+        DateTimeOffset now,
+        CancellationToken ct
+    ) =>
+        await db
+            .AvailabilitySlots.Where(s => s.ExpertProfileId == profileId && s.EndAt > now)
+            .OrderBy(s => s.StartAt)
+            .Select(s => new SlotResponse(s.Id, s.StartAt, s.EndAt, s.Status))
+            .ToListAsync(ct);
+
+    public Task<AvailabilitySlot?> FindAsync(Guid profileId, Guid slotId, CancellationToken ct) =>
+        db.AvailabilitySlots.SingleOrDefaultAsync(
+            s => s.Id == slotId && s.ExpertProfileId == profileId,
+            ct
+        );
+
+    public void Add(AvailabilitySlot slot) => db.AvailabilitySlots.Add(slot);
+
+    public void Remove(AvailabilitySlot slot) => db.AvailabilitySlots.Remove(slot);
 }

@@ -87,4 +87,27 @@ public static class ExpertErrors
             "SUPPLEMENT_EMPTY",
             "Add an explanation or at least one new file."
         );
+
+    public static AppException NotApprovedForService() =>
+        new(
+            ErrorType.Forbidden,
+            "NOT_APPROVED_FOR_SERVICE",
+            "Only approved experts can manage services and slots."
+        );
+
+    public static AppException SlotInvalidTime() =>
+        new(
+            ErrorType.Validation,
+            "SLOT_INVALID_TIME",
+            "The slot must start in the future and end after it starts."
+        );
+
+    public static AppException SlotOverlaps() =>
+        new(ErrorType.Conflict, "SLOT_OVERLAPS", "The slot overlaps another of your slots.");
+
+    public static AppException SlotNotFound() =>
+        new(ErrorType.NotFound, "SLOT_NOT_FOUND", "Slot not found.");
+
+    public static AppException SlotNotOpen() =>
+        new(ErrorType.Conflict, "SLOT_NOT_OPEN", "A booked slot cannot be removed.");
 }

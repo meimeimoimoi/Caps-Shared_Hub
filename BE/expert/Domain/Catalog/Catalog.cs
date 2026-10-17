@@ -20,15 +20,40 @@ public sealed class ServiceOffering
 /// <summary>A time slot an expert can be booked for; managed by a later phase (no API yet).</summary>
 public sealed class AvailabilitySlot
 {
+    public const string OpenStatus = "OPEN";
+
     private AvailabilitySlot() { }
 
     public Guid Id { get; } = UuidV7.NewGuid();
-    public Guid ExpertProfileId { get; }
+    public Guid ExpertProfileId { get; private set; }
     public ExpertProfile ExpertProfile { get; } = default!;
-    public DateTimeOffset StartAt { get; }
-    public DateTimeOffset EndAt { get; }
-    public string Status { get; } = "OPEN";
-    public DateTimeOffset CreatedAt { get; }
+    public DateTimeOffset StartAt { get; private set; }
+    public DateTimeOffset EndAt { get; private set; }
+    public string Status { get; } = OpenStatus;
+    public DateTimeOffset CreatedAt { get; private set; }
+
+    public bool IsOpen => Status == OpenStatus;
+
+    //<summary>Opens a future slot ; oberlap with other slots is checked by the caller under a lock. </summary>
+    public static AvailabilitySlot Open(
+        Guid expertProfileId,
+        DateTimeOffset startAt,
+        DateTimeOffset endAt,
+        DateTimeOffset now
+    )
+    {
+        if (startAt <= now || endAt <= now)
+        {
+            throw ExpertErrors.SlotInvalidTime();
+        }
+        return new()
+        {
+            ExpertProfileId = expertProfileId,
+            StartAt = startAt,
+            EndAt = endAt,
+            CreatedAt = now,
+        };
+    }
 }
 
 /// <summary>Gate 2 competency scoring by a reviewer; filled by a later phase (no API yet).</summary>
