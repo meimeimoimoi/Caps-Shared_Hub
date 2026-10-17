@@ -1,19 +1,19 @@
 from pydantic import BaseModel
-from typing import Optional, List, Dict, Any
+from typing import Optional, List
 
 class ChatQueryRequest(BaseModel):
     question: str
     user_tax_period: Optional[str] = None
 
 class CitationItem(BaseModel):
-    legal_source_id: str
-    document_number: str
-    article: Optional[str]
-    clause: Optional[str]
-    point: Optional[str]
+    legal_source_id: Optional[str] = None
+    document_number: Optional[str] = None
+    article: Optional[str] = None
+    clause: Optional[str] = None
+    point: Optional[str] = None
 
 class ChatQueryResponse(BaseModel):
-    scope_reult: str
+    scope_result: str
     answer_status: str
     period_start: Optional[str]
     period_end: Optional[str]

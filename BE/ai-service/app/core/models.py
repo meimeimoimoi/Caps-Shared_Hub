@@ -3,7 +3,7 @@ from langchain_community.chat_models import ChatOllama
 from app.config import settings
 
 # bge-m2: Model vector kích thước 1024 
-embedding.model = OllamaEmbeddings(
+embedding_model = OllamaEmbeddings(
     model="bge-m3:latest",
     base_url=settings.OLLAMA_BASE_URL
 )
