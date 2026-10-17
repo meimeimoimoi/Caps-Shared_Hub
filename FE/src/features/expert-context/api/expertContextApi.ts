@@ -1,12 +1,22 @@
 import { api, ApiError } from '@/lib/api-client'
+import { useAuthStore } from '@/features/auth/store/authStore'
 import { isExpertDemo } from '@/lib/expert-data-source'
 import type { ExpertContext } from '../types'
 
+/** Demo scenarios that only narrow access; none of them can grant more than the server would. */
+const CONTEXT_SCENARIOS = ['context-error', 'applicant', 'denied']
+
+/**
+ * The server decides portal access, so a signed-in account always gets its real context, even in demo
+ * mode (demo data only fills pages that have no API yet). Fixtures are used when browsing the demo
+ * signed out, or to preview a restricting scenario.
+ */
 export async function getExpertContext(
   signal: AbortSignal,
   scenario: string
 ): Promise<ExpertContext> {
-  if (isExpertDemo) {
+  const signedIn = useAuthStore.getState().isAuthenticated
+  if (isExpertDemo && (!signedIn || CONTEXT_SCENARIOS.includes(scenario))) {
     const { createExpertContextFixture } = await import('./fixtures')
     const data = createExpertContextFixture()
     if (scenario === 'context-error')
@@ -32,5 +42,9 @@ export async function getExpertContext(
       }
     return data
   }
-  return api.get<ExpertContext>('/api/v1/experts/me/context', { signal })
+  const response = await api.get<{ data: ExpertContext }>(
+    '/api/v1/experts/me/context',
+    { signal }
+  )
+  return response.data
 }
