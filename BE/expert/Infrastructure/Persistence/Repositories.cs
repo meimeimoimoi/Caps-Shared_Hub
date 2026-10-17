@@ -23,6 +23,31 @@ public sealed class ExpertApplicationRepository(ExpertDbContext db) : IExpertApp
             .OrderByDescending(x => x.CreatedAt)
             .FirstOrDefaultAsync(ct);
 
+    public Task<ExpertApplication?> FindWithProfileAsync(
+        Guid applicationId,
+        CancellationToken ct
+    ) =>
+        db
+            .ExpertApplications.Include(x => x.ExpertProfile)
+            .SingleOrDefaultAsync(x => x.Id == applicationId, ct);
+
+    public Task<Guid?> FindApplicantUserIdAsync(Guid applicationId, CancellationToken ct) =>
+        db
+            .ExpertApplications.Where(x => x.Id == applicationId)
+            .Select(x => (Guid?)x.ExpertProfile.UserId)
+            .SingleOrDefaultAsync(ct);
+
+    public async Task<IReadOnlyList<ExpertApplication>> ListByStatusAsync(
+        string status,
+        CancellationToken ct
+    ) =>
+        await db
+            .ExpertApplications.AsNoTracking()
+            .Include(x => x.ExpertProfile)
+            .Where(x => x.Status == status)
+            .OrderBy(x => x.SubmittedAt)
+            .ToListAsync(ct);
+
     public async Task<IReadOnlyList<ExpertApplicationEvent>> ListEventsAsync(
         Guid applicationId,
         CancellationToken ct
@@ -97,4 +122,24 @@ public sealed class ExpertEvidenceRepository(ExpertDbContext db) : IExpertEviden
     public void Add(ExpertEvidence evidence) => db.ExpertEvidences.Add(evidence);
 
     public void Remove(ExpertEvidence evidence) => db.ExpertEvidences.Remove(evidence);
+}
+
+/// <summary>EF Core store for Gate 1 per-requirement results.</summary>
+public sealed class EligibilityCheckRepository(ExpertDbContext db) : IEligibilityCheckRepository
+{
+    public async Task<IReadOnlyList<EligibilityCheck>> ListLatestAsync(
+        Guid applicationId,
+        CancellationToken ct
+    )
+    {
+        var rows = db.EligibilityChecks.AsNoTracking().Where(x => x.ApplicationId == applicationId);
+        var latest = await rows.MaxAsync(x => (DateTimeOffset?)x.CreatedAt, ct);
+        if (latest == null)
+            return [];
+        var checks = await rows.Where(x => x.CreatedAt == latest).ToListAsync(ct);
+        return checks.OrderBy(x => Array.IndexOf(EligibilityCriteria.Codes, x.Criterion)).ToList();
+    }
+
+    public void AddRange(IEnumerable<EligibilityCheck> checks) =>
+        db.EligibilityChecks.AddRange(checks);
 }

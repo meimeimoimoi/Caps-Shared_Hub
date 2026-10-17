@@ -17,6 +17,7 @@ public sealed class ExpertDbContext(DbContextOptions<ExpertDbContext> options) :
     public DbSet<ExpertApplication> ExpertApplications => Set<ExpertApplication>();
     public DbSet<ExpertApplicationEvent> ExpertApplicationEvents => Set<ExpertApplicationEvent>();
     public DbSet<ExpertEvidence> ExpertEvidences => Set<ExpertEvidence>();
+    public DbSet<EligibilityCheck> EligibilityChecks => Set<EligibilityCheck>();
     public DbSet<ExpertCompetencyAssessment> ExpertCompetencyAssessments =>
         Set<ExpertCompetencyAssessment>();
     public DbSet<ServiceOffering> ServiceOfferings => Set<ServiceOffering>();
@@ -87,7 +88,7 @@ public sealed class ExpertDbContext(DbContextOptions<ExpertDbContext> options) :
             // An expert can have only one open application at a time
             e.HasIndex(x => x.ExpertProfileId)
                 .IsUnique()
-                .HasFilter("status NOT IN ('NOT_ELIGIBLE', 'REJECTED', 'APPROVED')")
+                .HasFilter("status NOT IN ('ELIGIBLE', 'NOT_ELIGIBLE', 'REJECTED', 'APPROVED')")
                 .HasDatabaseName("ux_expert_application_open");
             e.HasOne(x => x.ExpertProfile)
                 .WithMany(p => p.Applications)
@@ -148,6 +149,36 @@ public sealed class ExpertDbContext(DbContextOptions<ExpertDbContext> options) :
                 .HasForeignKey(x => x.ApplicationId)
                 .OnDelete(DeleteBehavior.Restrict)
                 .HasConstraintName("fk_expert_evidence_application");
+        });
+
+        modelBuilder.Entity<EligibilityCheck>(e =>
+        {
+            e.ToTable("eligibility_check");
+            e.HasKey(x => x.Id);
+            e.Property(x => x.Id).HasColumnName("id");
+            e.Property(x => x.ApplicationId).HasColumnName("application_id");
+            e.Property(x => x.EventId).HasColumnName("event_id");
+            e.Property(x => x.Criterion).HasColumnName("criterion").HasMaxLength(16).IsRequired();
+            e.Property(x => x.Result).HasColumnName("result").HasMaxLength(32).IsRequired();
+            e.Property(x => x.Note).HasColumnName("note");
+            e.Property(x => x.ReviewerUserId).HasColumnName("reviewer_user_id");
+            e.Property(x => x.CreatedAt).HasColumnName("created_at").IsRequired();
+            // One result per requirement in each decision
+            e.HasIndex(x => new { x.EventId, x.Criterion })
+                .IsUnique()
+                .HasDatabaseName("ux_eligibility_check_decision");
+            e.HasIndex(x => new { x.ApplicationId, x.CreatedAt })
+                .HasDatabaseName("ix_eligibility_check_application");
+            e.HasOne<ExpertApplication>()
+                .WithMany()
+                .HasForeignKey(x => x.ApplicationId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("fk_eligibility_check_application");
+            e.HasOne<ExpertApplicationEvent>()
+                .WithMany()
+                .HasForeignKey(x => x.EventId)
+                .OnDelete(DeleteBehavior.Restrict)
+                .HasConstraintName("fk_eligibility_check_event");
         });
 
         modelBuilder.Entity<ExpertCompetencyAssessment>(e =>

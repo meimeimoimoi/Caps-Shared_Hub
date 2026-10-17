@@ -23,6 +23,57 @@ namespace Caps.Expert.Infrastructure.Persistence.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("Caps.Expert.Domain.Applications.EligibilityCheck", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("ApplicationId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("application_id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("Criterion")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("criterion");
+
+                    b.Property<Guid>("EventId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("event_id");
+
+                    b.Property<string>("Note")
+                        .HasColumnType("text")
+                        .HasColumnName("note");
+
+                    b.Property<string>("Result")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("result");
+
+                    b.Property<Guid>("ReviewerUserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("reviewer_user_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ApplicationId", "CreatedAt")
+                        .HasDatabaseName("ix_eligibility_check_application");
+
+                    b.HasIndex("EventId", "Criterion")
+                        .IsUnique()
+                        .HasDatabaseName("ux_eligibility_check_decision");
+
+                    b.ToTable("eligibility_check", "expert");
+                });
+
             modelBuilder.Entity("Caps.Expert.Domain.Applications.ExpertApplication", b =>
                 {
                     b.Property<Guid>("Id")
@@ -72,7 +123,7 @@ namespace Caps.Expert.Infrastructure.Persistence.Migrations
                     b.HasIndex("ExpertProfileId")
                         .IsUnique()
                         .HasDatabaseName("ux_expert_application_open")
-                        .HasFilter("status NOT IN ('NOT_ELIGIBLE', 'REJECTED', 'APPROVED')");
+                        .HasFilter("status NOT IN ('ELIGIBLE', 'NOT_ELIGIBLE', 'REJECTED', 'APPROVED')");
 
                     b.HasIndex("PreviousApplicationId");
 
@@ -432,6 +483,23 @@ namespace Caps.Expert.Infrastructure.Persistence.Migrations
                         .HasDatabaseName("ix_expert_marketplace_feed");
 
                     b.ToTable("expert_profile", "expert");
+                });
+
+            modelBuilder.Entity("Caps.Expert.Domain.Applications.EligibilityCheck", b =>
+                {
+                    b.HasOne("Caps.Expert.Domain.Applications.ExpertApplication", null)
+                        .WithMany()
+                        .HasForeignKey("ApplicationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_eligibility_check_application");
+
+                    b.HasOne("Caps.Expert.Domain.Applications.ExpertApplicationEvent", null)
+                        .WithMany()
+                        .HasForeignKey("EventId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_eligibility_check_event");
                 });
 
             modelBuilder.Entity("Caps.Expert.Domain.Applications.ExpertApplication", b =>

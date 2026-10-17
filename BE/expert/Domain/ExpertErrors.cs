@@ -87,4 +87,53 @@ public static class ExpertErrors
             "SUPPLEMENT_EMPTY",
             "Add an explanation or at least one new file."
         );
+
+    public static AppException AlreadyEligible() =>
+        new(
+            ErrorType.Conflict,
+            "ALREADY_ELIGIBLE",
+            "Eligibility has already been confirmed; no new application is needed."
+        );
+
+    public static AppException ApplicationNotInReview(string status) =>
+        new(
+            ErrorType.Conflict,
+            "APPLICATION_NOT_IN_REVIEW",
+            $"Only submitted applications can be decided; this one is {status}."
+        );
+
+    public static AppException SelfReviewNotAllowed() =>
+        new(
+            ErrorType.Forbidden,
+            "SELF_REVIEW_NOT_ALLOWED",
+            "Reviewers cannot decide their own application."
+        );
+
+    public static AppException InvalidEligibilityCriteria() =>
+        new(
+            ErrorType.Validation,
+            "INVALID_ELIGIBILITY_CRITERIA",
+            "Give exactly one result for each of EV-01 to EV-06."
+        );
+
+    public static AppException InvalidEligibilityResult(string code) =>
+        new(
+            ErrorType.Validation,
+            "INVALID_ELIGIBILITY_RESULT",
+            $"Result of {code} must be PASS, FAIL or NEED_MORE_INFORMATION."
+        );
+
+    public static AppException EligibilityNoteRequired(string code) =>
+        new(
+            ErrorType.Validation,
+            "ELIGIBILITY_NOTE_REQUIRED",
+            $"Explain the result of {code}: what is missing or why it is not met."
+        );
+
+    public static AppException ExperienceBelowMinimum(int minYears) =>
+        new(
+            ErrorType.Validation,
+            "EXPERIENCE_BELOW_MINIMUM",
+            $"EV-06 cannot pass: the declared experience is below {minYears} years."
+        );
 }

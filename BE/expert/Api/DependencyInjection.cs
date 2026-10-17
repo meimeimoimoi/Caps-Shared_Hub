@@ -12,6 +12,7 @@ public static class DependencyInjection
     {
         services.AddScoped<IApplicationLoader, ApplicationLoader>();
         services.AddScoped<IApplicationDescriber, ApplicationDescriber>();
+        services.AddScoped<IReviewDescriber, ReviewDescriber>();
         services.AddHandlersFromAssembly(typeof(SaveDraftHandler).Assembly);
         return services;
     }
