@@ -21,6 +21,7 @@ public sealed class ExpertDbContext(DbContextOptions<ExpertDbContext> options) :
     public DbSet<ExpertCompetencyAssessment> ExpertCompetencyAssessments =>
         Set<ExpertCompetencyAssessment>();
     public DbSet<ServiceOffering> ServiceOfferings => Set<ServiceOffering>();
+    public DbSet<ServiceCatalogItem> ServiceCatalog => Set<ServiceCatalogItem>();
     public DbSet<AvailabilitySlot> AvailabilitySlots => Set<AvailabilitySlot>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -203,6 +204,33 @@ public sealed class ExpertDbContext(DbContextOptions<ExpertDbContext> options) :
                 .HasForeignKey(x => x.ExpertProfileId)
                 .OnDelete(DeleteBehavior.Restrict)
                 .HasConstraintName("fk_expert_competency_assessment_profile");
+        });
+
+        modelBuilder.Entity<ServiceCatalogItem>(e =>
+        {
+            e.ToTable("service_catalog");
+            e.HasKey(x => x.Code);
+            e.Property(x => x.Code).HasColumnName("code").HasMaxLength(64);
+            e.Property(x => x.Name).HasColumnName("name").HasMaxLength(128).IsRequired();
+            e.Property(x => x.Status)
+                .HasColumnName("status")
+                .HasMaxLength(16)
+                .HasDefaultValue(ServiceCatalogItem.Active)
+                .IsRequired();
+            e.Property(x => x.SortOrder).HasColumnName("sort_order");
+            e.Property(x => x.CreatedAt).HasColumnName("created_at").IsRequired();
+            e.Ignore(x => x.IsActive);
+            // MVP core service (overview: core Expert Service = HUMAN_VERIFICATION); more are added as rows
+            e.HasData(
+                new
+                {
+                    Code = "HUMAN_VERIFICATION",
+                    Name = "Xác minh bởi chuyên gia",
+                    Status = ServiceCatalogItem.Active,
+                    SortOrder = 1,
+                    CreatedAt = new DateTimeOffset(2026, 10, 17, 0, 0, 0, TimeSpan.Zero),
+                }
+            );
         });
 
         modelBuilder.Entity<ServiceOffering>(e =>

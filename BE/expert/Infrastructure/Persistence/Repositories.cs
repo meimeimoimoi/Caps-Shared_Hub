@@ -1,5 +1,6 @@
 using Caps.Expert.Application.Abstractions;
 using Caps.Expert.Domain.Applications;
+using Caps.Expert.Domain.Catalog;
 using Caps.Expert.Domain.Profiles;
 using Microsoft.EntityFrameworkCore;
 
@@ -142,4 +143,15 @@ public sealed class EligibilityCheckRepository(ExpertDbContext db) : IEligibilit
 
     public void AddRange(IEnumerable<EligibilityCheck> checks) =>
         db.EligibilityChecks.AddRange(checks);
+}
+
+/// <summary>EF Core store for the service catalog.</summary>
+public sealed class ServiceCatalogRepository(ExpertDbContext db) : IServiceCatalogRepository
+{
+    public async Task<IReadOnlyList<ServiceCatalogItem>> ListActiveAsync(CancellationToken ct) =>
+        await db
+            .ServiceCatalog.AsNoTracking()
+            .Where(x => x.Status == ServiceCatalogItem.Active)
+            .OrderBy(x => x.SortOrder)
+            .ToListAsync(ct);
 }

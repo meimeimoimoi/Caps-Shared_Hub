@@ -11,6 +11,14 @@ It does **not** own accounts or roles (identity service) or case handling (workf
 - Infrastructure: `ExpertDbContext` (schema `expert`) + migrations, repositories, per-user advisory lock, S3 storage.
 - Api: `ApplicationsController` (applicant), `ApplicationReviewsController` (reviewer, permission `ExpertReview`), host setup. Swagger shows each endpoint's codes.
 
+## Expert Portal context
+
+`GET /api/v1/experts/me/context` tells the portal what the signed-in account may open. Capabilities:
+`application.view` (always), `services.manage` + `profile.public` (a service approved), `cases.work` + `income.view`
+(a service can take bookings); the EXPERT role's `ServiceManage` / `CaseWork` permissions grant them too.
+`services` has one readiness entry per ACTIVE row of `expert.service_catalog` (seeded with `HUMAN_VERIFICATION`);
+adding a service is a new catalog row, not a code change.
+
 ## Gate 1 (eligibility review)
 
 A reviewer gives PASS / FAIL / NEED_MORE_INFORMATION for each of EV-01…EV-06 (a note is required unless PASS).

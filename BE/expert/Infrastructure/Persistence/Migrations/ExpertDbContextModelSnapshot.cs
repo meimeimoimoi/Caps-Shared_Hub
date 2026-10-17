@@ -331,6 +331,50 @@ namespace Caps.Expert.Infrastructure.Persistence.Migrations
                     b.ToTable("expert_competency_assessment", "expert");
                 });
 
+            modelBuilder.Entity("Caps.Expert.Domain.Catalog.ServiceCatalogItem", b =>
+                {
+                    b.Property<string>("Code")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("code");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)")
+                        .HasColumnName("name");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer")
+                        .HasColumnName("sort_order");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasDefaultValue("ACTIVE")
+                        .HasColumnName("status");
+
+                    b.HasKey("Code");
+
+                    b.ToTable("service_catalog", "expert");
+
+                    b.HasData(
+                        new
+                        {
+                            Code = "HUMAN_VERIFICATION",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 10, 17, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Name = "Xác minh bởi chuyên gia",
+                            SortOrder = 1,
+                            Status = "ACTIVE"
+                        });
+                });
+
             modelBuilder.Entity("Caps.Expert.Domain.Catalog.ServiceOffering", b =>
                 {
                     b.Property<Guid>("Id")
