@@ -1,4 +1,5 @@
 using Caps.Common.Application;
+using Caps.Contracts;
 using Caps.Expert.Application.Abstractions;
 using Caps.Expert.Application.Common;
 using Caps.Expert.Application.DTOs.Responses;
@@ -23,6 +24,7 @@ public sealed class DecideEligibilityHandler(
     IApplicantLock locks,
     IExpertApplicationRepository applications,
     IEligibilityCheckRepository eligibility,
+    IExpertNotificationOutbox outbox,
     IReviewDescriber describer,
     ExpertPolicyOptions policy,
     IUnitOfWork unitOfWork,
@@ -58,6 +60,27 @@ public sealed class DecideEligibilityHandler(
         applications.AddEvent(decision.Event);
         eligibility.AddRange(decision.Checks);
         profile.MirrorStatus(application.Status, now);
+        // Tell the applicant (email + in-app); older profiles without an email are skipped
+        if (profile.ContactEmail != null)
+        {
+            outbox.Enqueue(
+                new ExpertEligibilityDecidedEvent(
+                    decision.Event.Id,
+                    profile.UserId,
+                    profile.ContactEmail,
+                    profile.DisplayName ?? profile.ContactEmail,
+                    application.Id,
+                    application.Status,
+                    now,
+                    application.EarliestReapplyAt,
+                    decision
+                        .Checks.Where(x => x.Result != EligibilityCriteria.Pass)
+                        .Select(x => new EligibilityIssue(x.Criterion, x.Result, x.Note))
+                        .ToArray()
+                ),
+                now
+            );
+        }
         await unitOfWork.SaveChangesAsync(ct);
         await tx.CommitAsync(ct);
         return await describer.DescribeAsync(application, ct);

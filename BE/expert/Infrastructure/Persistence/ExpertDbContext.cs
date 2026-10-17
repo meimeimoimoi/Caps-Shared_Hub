@@ -1,6 +1,7 @@
 using Caps.Expert.Domain.Applications;
 using Caps.Expert.Domain.Catalog;
 using Caps.Expert.Domain.Profiles;
+using Caps.Expert.Infrastructure.Messaging;
 using Microsoft.EntityFrameworkCore;
 
 namespace Caps.Expert.Infrastructure.Persistence;
@@ -22,6 +23,7 @@ public sealed class ExpertDbContext(DbContextOptions<ExpertDbContext> options) :
         Set<ExpertCompetencyAssessment>();
     public DbSet<ServiceOffering> ServiceOfferings => Set<ServiceOffering>();
     public DbSet<ServiceCatalogItem> ServiceCatalog => Set<ServiceCatalogItem>();
+    public DbSet<NotificationOutboxEntry> NotificationOutbox => Set<NotificationOutboxEntry>();
     public DbSet<AvailabilitySlot> AvailabilitySlots => Set<AvailabilitySlot>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -37,6 +39,7 @@ public sealed class ExpertDbContext(DbContextOptions<ExpertDbContext> options) :
             e.HasIndex(x => x.UserId).IsUnique().HasDatabaseName("ux_expert_profile_user");
             e.Property(x => x.DisplayName).HasColumnName("display_name").HasMaxLength(128);
             e.Property(x => x.Phone).HasColumnName("phone").HasMaxLength(32);
+            e.Property(x => x.ContactEmail).HasColumnName("contact_email").HasMaxLength(256);
             e.Property(x => x.YearsExperience).HasColumnName("years_experience");
             e.Property(x => x.Bio).HasColumnName("bio");
             e.Property(x => x.Title).HasColumnName("title");
@@ -204,6 +207,23 @@ public sealed class ExpertDbContext(DbContextOptions<ExpertDbContext> options) :
                 .HasForeignKey(x => x.ExpertProfileId)
                 .OnDelete(DeleteBehavior.Restrict)
                 .HasConstraintName("fk_expert_competency_assessment_profile");
+        });
+
+        modelBuilder.Entity<NotificationOutboxEntry>(e =>
+        {
+            e.ToTable("notification_outbox");
+            e.HasKey(x => x.Id);
+            e.Property(x => x.Id).HasColumnName("id");
+            e.Property(x => x.MessageType)
+                .HasColumnName("message_type")
+                .HasMaxLength(128)
+                .IsRequired();
+            e.Property(x => x.Payload).HasColumnName("payload").IsRequired();
+            e.Property(x => x.CreatedAt).HasColumnName("created_at").IsRequired();
+            e.Property(x => x.SentAt).HasColumnName("sent_at");
+            // The publisher scans unsent rows in creation order
+            e.HasIndex(x => new { x.SentAt, x.CreatedAt })
+                .HasDatabaseName("ix_notification_outbox_pending");
         });
 
         modelBuilder.Entity<ServiceCatalogItem>(e =>

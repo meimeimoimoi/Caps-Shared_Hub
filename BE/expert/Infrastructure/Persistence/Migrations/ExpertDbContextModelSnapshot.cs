@@ -440,6 +440,11 @@ namespace Caps.Expert.Infrastructure.Persistence.Migrations
                         .HasColumnType("text")
                         .HasColumnName("company");
 
+                    b.Property<string>("ContactEmail")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)")
+                        .HasColumnName("contact_email");
+
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
@@ -527,6 +532,40 @@ namespace Caps.Expert.Infrastructure.Persistence.Migrations
                         .HasDatabaseName("ix_expert_marketplace_feed");
 
                     b.ToTable("expert_profile", "expert");
+                });
+
+            modelBuilder.Entity("Caps.Expert.Infrastructure.Messaging.NotificationOutboxEntry", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("MessageType")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)")
+                        .HasColumnName("message_type");
+
+                    b.Property<string>("Payload")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("payload");
+
+                    b.Property<DateTimeOffset?>("SentAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("sent_at");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SentAt", "CreatedAt")
+                        .HasDatabaseName("ix_notification_outbox_pending");
+
+                    b.ToTable("notification_outbox", "expert");
                 });
 
             modelBuilder.Entity("Caps.Expert.Domain.Applications.EligibilityCheck", b =>

@@ -27,6 +27,13 @@ otherwise any NEED_MORE_INFORMATION → the applicant supplements the same appli
 EV-06 cannot pass below `ExpertPolicy:MinYearsExperience` declared years. Reviewers cannot decide their own application.
 `ELIGIBLE` is per expert; Gate 2 and final approval (per service) are not built yet.
 
+Each decision adds an `ExpertEligibilityDecidedEvent` to `expert.notification_outbox` in the same transaction;
+`ExpertNotificationPublisher` sends it to RabbitMQ (`ConnectionStrings:RabbitMq`) every 5 seconds, and the
+notification service emails the applicant and keeps an in-app notification. The address is
+`expert_profile.contact_email`, recorded from the token whenever the applicant saves, submits or supplements;
+profiles without one are not notified. `Expert:NotificationPublisherEnabled=false` stops publishing
+(Development only; messages wait in the outbox).
+
 ## Boundaries with other services
 
 - No foreign keys to `identity`: user ids are plain columns.

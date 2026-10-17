@@ -30,6 +30,7 @@ public sealed class ApplicationLoader(
             latest = await applications.FindLatestAsync(profile.Id, ct);
         }
 
+        profile.RecordContactEmail(applicant.Email);
         if (latest != null && !ExpertApplicationStatus.IsClosed(latest.Status))
             return (profile, latest);
 

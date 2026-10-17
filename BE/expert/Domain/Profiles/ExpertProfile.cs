@@ -32,6 +32,9 @@ public sealed class ExpertProfile
     public Guid UserId { get; private set; }
     public string? DisplayName { get; private set; }
     public string? Phone { get; private set; }
+
+    /// <summary>Email from the applicant's session, kept so decisions can be notified (no identity lookup).</summary>
+    public string? ContactEmail { get; private set; }
     public int? YearsExperience { get; private set; }
     public string? Bio { get; private set; }
     public string? Title { get; private set; }
@@ -85,6 +88,13 @@ public sealed class ExpertProfile
         Fields = details.Fields;
         Highlights = Clean(details.Highlights);
         UpdatedAt = now;
+    }
+
+    /// <summary>Keeps the latest email the applicant signed in with; blank values are ignored.</summary>
+    public void RecordContactEmail(string? email)
+    {
+        if (!string.IsNullOrWhiteSpace(email))
+            ContactEmail = email.Trim();
     }
 
     public void MirrorStatus(string status, DateTimeOffset now)

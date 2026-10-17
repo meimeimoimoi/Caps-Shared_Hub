@@ -44,6 +44,7 @@ public sealed class SupplementApplicationHandler(
 
         var now = clock.GetUtcNow();
         applications.AddEvent(application.Resubmit(applicant.UserId, note, now));
+        profile.RecordContactEmail(applicant.Email);
         profile.MirrorStatus(application.Status, now);
         await unitOfWork.SaveChangesAsync(ct);
         await tx.CommitAsync(ct);
