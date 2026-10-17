@@ -344,6 +344,12 @@
     "check": "I've verified it",
     "resent": "Email sent again.",
     "failed": "Couldn't send it. Please try again.",
-    "stillPending": "Your email isn't verified yet."
+    "stillPending": "Your email isn't verified yet.",
+    "reminderTitle": "Verify your email",
+    "reminderBody": "Enter the 6-digit code sent to {{email}}. You can keep filling in your application; only submitting needs a verified email."
+  },
+  "verifyReminder": {
+    "text": "{{email}} is not verified yet. You can fill in and save your application, but you need to verify it to submit.",
+    "action": "Enter verification code"
   }
 }

@@ -342,6 +342,12 @@
     "check": "Tôi đã xác nhận",
     "resent": "Đã gửi lại email.",
     "failed": "Chưa gửi được, vui lòng thử lại.",
-    "stillPending": "Email vẫn chưa được xác nhận."
+    "stillPending": "Email vẫn chưa được xác nhận.",
+    "reminderTitle": "Xác nhận email của bạn",
+    "reminderBody": "Nhập mã 6 số đã gửi tới {{email}}. Bạn vẫn có thể tiếp tục điền hồ sơ, chỉ bước nộp mới cần email đã xác nhận."
+  },
+  "verifyReminder": {
+    "text": "Email {{email}} chưa được xác nhận. Bạn vẫn điền và lưu hồ sơ được, nhưng cần xác nhận để nộp.",
+    "action": "Nhập mã xác nhận"
   }
 }

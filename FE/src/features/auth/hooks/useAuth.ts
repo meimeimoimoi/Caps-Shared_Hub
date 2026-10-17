@@ -6,6 +6,8 @@ import { useAuthStore } from '../store/authStore'
 import type { LoginFormValues, User } from '../types'
 import { useTranslation } from 'react-i18next'
 import { ApiError } from '@/lib/api-client'
+// Direct file import: the expert-context index re-exports hooks that import this feature
+import { hasExpertApplication } from '@/features/expert-context/api/expertContextApi'
 
 const unavailable = (e: unknown) =>
   e instanceof ApiError && (e.status == null || e.status >= 500)
@@ -32,15 +34,19 @@ export function useAuth() {
   const location = useLocation()
 
   // Shared by every sign-in path: store the session, then go to verification or back to the requested page
-  const enter = (u: User, token: string) => {
+  const enter = async (u: User, token: string) => {
     setSession(u, token)
     const state = {
       from: location.state?.from,
       fromState: location.state?.fromState,
     }
-    if (u.status === 'PENDING_VERIFICATION')
-      navigate('/verify-email', { replace: true, state })
-    else
+    if (u.status === 'PENDING_VERIFICATION') {
+      // Expert applicants may fill in their application before verifying; only submitting needs it,
+      // and the application page asks for the code itself
+      if (await hasExpertApplication())
+        navigate('/expert/application', { replace: true })
+      else navigate('/verify-email', { replace: true, state })
+    } else
       navigate(safeReturnPath(state.from), {
         replace: true,
         state: state.fromState,
@@ -52,7 +58,7 @@ export function useAuth() {
     setError(null)
     try {
       const { user: u, token } = await authApi.login(values)
-      enter(u, token)
+      await enter(u, token)
       return u
     } catch (e) {
       // BE trả chung 401 INVALID_CREDENTIALS cho email chưa đăng ký, sai mật khẩu và tài khoản
@@ -77,7 +83,7 @@ export function useAuth() {
     setError(null)
     try {
       const { user: u, token } = await authApi.loginWithGoogle(idToken)
-      enter(u, token)
+      await enter(u, token)
       return u
     } catch (e) {
       setError(

@@ -9,12 +9,21 @@ import type { VerifyPurpose } from '../hooks/useRegistrationForm'
 
 const COOLDOWN_SECONDS = 60
 
+const COPY = {
+  submit: { title: 'verifyEmail.title', body: 'verifyEmail.body' },
+  upload: { title: 'verifyEmail.uploadTitle', body: 'verifyEmail.uploadBody' },
+  reminder: {
+    title: 'verifyEmail.reminderTitle',
+    body: 'verifyEmail.reminderBody',
+  },
+} as const satisfies Record<VerifyPurpose, { title: string; body: string }>
+
 export interface EmailVerificationNoticeProps {
   email: string
   /** Re-checks the status (after the code is entered or the link is opened in another tab) */
   onCheck: () => Promise<void>
   onClose: () => void
-  /** Why the dialog opened: submitting, or uploading past the unverified file limit */
+  /** Why the dialog opened: submitting, uploading past the unverified file limit, or the reminder */
   purpose?: VerifyPurpose
 }
 
@@ -75,13 +84,8 @@ export function EmailVerificationNotice({
 
   return (
     <Modal
-      title={t(
-        purpose === 'upload' ? 'verifyEmail.uploadTitle' : 'verifyEmail.title'
-      )}
-      description={t(
-        purpose === 'upload' ? 'verifyEmail.uploadBody' : 'verifyEmail.body',
-        { email }
-      )}
+      title={t(COPY[purpose].title)}
+      description={t(COPY[purpose].body, { email })}
       onClose={onClose}
       footer={
         <button

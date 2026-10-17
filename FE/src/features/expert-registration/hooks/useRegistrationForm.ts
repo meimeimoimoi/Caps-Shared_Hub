@@ -19,7 +19,8 @@ import {
 } from '../api/applicationApi'
 import { messageFor } from './useApplicationLifecycle'
 
-export type VerifyPurpose = 'submit' | 'upload'
+/** Why the verification dialog opened: on submit, past the unverified upload limit, or from the reminder */
+export type VerifyPurpose = 'submit' | 'upload' | 'reminder'
 
 export interface UseRegistrationFormProps {
   application: ExpertApplication | null
@@ -263,7 +264,8 @@ export function useRegistrationForm({
       const latest = await applicationApi.get()
       if (latest) setApplication(latest)
       if (!latest?.emailVerified) return
-      if (verifyPurpose === 'upload') {
+      // Only a submit continues after verifying; upload and reminder just close the dialog
+      if (verifyPurpose !== 'submit') {
         setVerifyOpen(false)
         setFormErrors((p) =>
           Object.fromEntries(
@@ -369,6 +371,10 @@ export function useRegistrationForm({
     verifyOpen,
     verifyPurpose,
     closeVerify: () => setVerifyOpen(false),
+    openVerification: () => {
+      setVerifyPurpose('reminder')
+      setVerifyOpen(true)
+    },
     checkVerifiedAndSubmit,
     formErrors: Object.fromEntries(
       Object.entries(formErrors).map(([field, issue]) => [

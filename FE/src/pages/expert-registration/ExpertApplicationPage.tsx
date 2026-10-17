@@ -29,6 +29,7 @@ import { useRegistrationForm } from '../../features/expert-registration/hooks/us
 import { useApplicationLifecycle } from '../../features/expert-registration/hooks/useApplicationLifecycle'
 import { useExpertApplication } from '../../features/expert-registration/hooks/useExpertApplication'
 import { EmailVerificationNotice } from '../../features/expert-registration/components/EmailVerificationNotice'
+import { EmailVerificationReminder } from '../../features/expert-registration/components/EmailVerificationReminder'
 import { expertPageCls } from './expertPageClass'
 
 /* ── Shared sub-components ── */
@@ -108,6 +109,7 @@ export default function ExpertApplicationPage() {
     verifyOpen,
     verifyPurpose,
     closeVerify,
+    openVerification,
     checkVerifiedAndSubmit,
     formErrors,
     heading,
@@ -356,6 +358,12 @@ export default function ExpertApplicationPage() {
                 ))}
               </ol>
             </nav>
+            {application && !application.emailVerified && (
+              <EmailVerificationReminder
+                email={profile.email}
+                onVerify={openVerification}
+              />
+            )}
             {verifyOpen && application && !application.emailVerified && (
               <EmailVerificationNotice
                 email={profile.email}
