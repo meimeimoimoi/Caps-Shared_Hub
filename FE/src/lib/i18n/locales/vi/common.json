@@ -113,5 +113,12 @@
     "pages": "Tìm trang chức năng…",
     "noPages": "Không có trang phù hợp.",
     "knowledge": "Tìm số hiệu hoặc tên văn bản"
+  },
+  "notifications": {
+    "eligibility": {
+      "ELIGIBLE": "Hồ sơ chuyên gia của bạn đã đạt vòng xét duyệt điều kiện.",
+      "NEED_MORE_INFORMATION": "Hồ sơ chuyên gia của bạn cần bổ sung thông tin.",
+      "NOT_ELIGIBLE": "Hồ sơ chuyên gia của bạn chưa đạt điều kiện. Xem kết quả."
+    }
   }
 }

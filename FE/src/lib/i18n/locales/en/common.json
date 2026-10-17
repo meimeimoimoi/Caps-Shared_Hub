@@ -113,5 +113,12 @@
     "pages": "Find a page…",
     "noPages": "No matching pages.",
     "knowledge": "Search document number or title"
+  },
+  "notifications": {
+    "eligibility": {
+      "ELIGIBLE": "Your expert application passed the eligibility review.",
+      "NEED_MORE_INFORMATION": "Your expert application needs more information.",
+      "NOT_ELIGIBLE": "Your expert application was not eligible. See the result."
+    }
   }
 }

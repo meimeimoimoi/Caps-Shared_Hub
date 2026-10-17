@@ -22,6 +22,9 @@ interface AppHeaderProps {
     'isDark' | 'onToggleTheme'
   >
   notifications?: ShellNotification[]
+  /** Server-backed read state for the bell (see NotificationBell) */
+  onMarkNotificationsRead?: (ids: string[]) => void
+  onMarkAllNotificationsRead?: () => void
   onOpenNavigation?: () => void
   navigationButtonRef?: Ref<HTMLButtonElement>
   navigationButtonClassName?: string
@@ -35,6 +38,8 @@ export function AppHeader({
   context,
   account,
   notifications = [],
+  onMarkNotificationsRead,
+  onMarkAllNotificationsRead,
   onOpenNavigation,
   navigationButtonRef,
   navigationButtonClassName = 'md:hidden',
@@ -111,7 +116,11 @@ export function AppHeader({
               <Search size={20} aria-hidden="true" />
             </button>
           )}
-          <NotificationBell notifications={notifications} />
+          <NotificationBell
+            notifications={notifications}
+            onMarkRead={onMarkNotificationsRead}
+            onMarkAllRead={onMarkAllNotificationsRead}
+          />
           <AppAccountMenu
             {...account}
             onSignOut={
