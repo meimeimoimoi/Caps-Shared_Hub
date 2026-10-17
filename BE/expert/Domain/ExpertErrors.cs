@@ -87,4 +87,7 @@ public static class ExpertErrors
             "SUPPLEMENT_EMPTY",
             "Add an explanation or at least one new file."
         );
+
+    public static AppException ExpertNotFound() =>
+        new(ErrorType.NotFound, "EXPERT_NOT_FOUND", "Expert not found or not available.");
 }
