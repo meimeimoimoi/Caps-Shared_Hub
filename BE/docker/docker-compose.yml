@@ -17,6 +17,7 @@ services:
       CAPS_BILLING_DB_PASSWORD: ${CAPS_BILLING_DB_PASSWORD:?set it in docker/.env}
       CAPS_WORKFLOW_DB_PASSWORD: ${CAPS_WORKFLOW_DB_PASSWORD:?set it in docker/.env}
       CAPS_INGESTION_DB_PASSWORD: ${CAPS_INGESTION_DB_PASSWORD:?set it in docker/.env}
+      CAPS_NOTIFICATION_DB_PASSWORD: ${CAPS_NOTIFICATION_DB_PASSWORD:?set it in docker/.env}
     ports:
       - "5432:5432"
     volumes:
@@ -149,6 +150,8 @@ services:
       ConnectionStrings__Postgres: Host=postgres;Port=5432;Database=caps_db;Username=caps_expert;Password=${CAPS_EXPERT_DB_PASSWORD}
       # Shared session revocations written by auth (sign-out, password change)
       ConnectionStrings__Redis: redis:6379
+      # Gate 1 decisions go to the notification service through the outbox
+      ConnectionStrings__RabbitMq: amqp://guest:guest@rabbitmq:5672
       # Verify tokens with auth's public keys; plain HTTP is acceptable only inside this network
       Jwt__JwksUrl: http://auth:8080/.well-known/jwks.json
       Jwt__RequireHttpsMetadata: "false"
