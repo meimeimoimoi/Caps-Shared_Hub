@@ -125,6 +125,7 @@ export type QualificationStatus = keyof typeof QUALIFICATION_STATUS
 /** Gate 2 reviewers and System Admins (final approval) read qualifications through separate APIs */
 export type QualificationScope = 'review' | 'approval'
 export type FinalApprovalDecision = 'APPROVE' | 'RETURN_FOR_REVIEW'
+export type ServiceAccessAction = 'SUSPEND' | 'REINSTATE'
 export type CompetencyResult = 'PASS' | 'FAIL' | 'NEED_MORE_INFORMATION'
 export type CompetencyOutcome =
   | 'PENDING_FINAL_APPROVAL'
@@ -173,6 +174,10 @@ export interface QualificationDetail {
   competencyReviewerUserId: string | null
   /** True while the qualification waits for the System Admin final approval */
   canFinalApprove: boolean
+  /** Approved: a System Admin can suspend the service */
+  canSuspend: boolean
+  /** Suspended: a System Admin can reinstate the service */
+  canReinstate: boolean
 }
 
 export interface FinalApprovalInput {

@@ -6,6 +6,7 @@ export const Permission = {
   ExpertReview: 'ExpertReview',
   KnowledgeManage: 'KnowledgeManage',
   UserManage: 'UserManage',
+  ExpertApprove: 'ExpertApprove',
 } as const
 
 export type PermissionName = (typeof Permission)[keyof typeof Permission]

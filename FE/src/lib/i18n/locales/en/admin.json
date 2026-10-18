@@ -740,7 +740,8 @@
       "moreInfo": "Awaiting evidence",
       "finalApproval": "Awaiting final approval",
       "failed": "Not met",
-      "approved": "Approved"
+      "approved": "Approved",
+      "suspended": "Suspended"
     }
   },
   "competency": {
@@ -811,7 +812,11 @@
       "QUALIFICATION_NOT_PENDING_APPROVAL": "The qualification is no longer waiting for final approval; reload to see its status.",
       "FINAL_APPROVER_IS_REVIEWER": "The Gate 2 reviewer cannot give the final approval.",
       "FINAL_APPROVAL_NOTE_REQUIRED": "Explain why it goes back for review.",
-      "INVALID_FINAL_APPROVAL_DECISION": "The decision is invalid. Reload the page and try again."
+      "INVALID_FINAL_APPROVAL_DECISION": "The decision is invalid. Reload the page and try again.",
+      "SERVICE_NOT_APPROVED": "Only an approved service can be suspended; reload the page.",
+      "SERVICE_NOT_SUSPENDED": "The service is not suspended; reload the page.",
+      "SUSPENSION_NOTE_REQUIRED": "Give the reason for the suspension.",
+      "INVALID_SERVICE_ACCESS_ACTION": "The action is invalid. Reload the page and try again."
     }
   },
   "finalApproval": {
@@ -827,7 +832,16 @@
     "notPending": "This qualification is not waiting for final approval.",
     "toast": {
       "APPROVE": "Approved for service",
-      "RETURN_FOR_REVIEW": "Returned to competency review"
-    }
+      "RETURN_FOR_REVIEW": "Returned to competency review",
+      "SUSPEND": "Service suspended",
+      "REINSTATE": "Service reinstated"
+    },
+    "accessTitle": "Service status",
+    "suspendIntro": "Suspending hides this service from the Marketplace and stops new requests; running cases continue. The expert's other services are not affected.",
+    "reinstateIntro": "Reinstate so the expert can offer this service again.",
+    "suspendNoteLabel": "Reason for suspension (required)",
+    "reinstateNoteLabel": "Note (optional)",
+    "suspend": "Suspend service",
+    "reinstate": "Reinstate service"
   }
 }

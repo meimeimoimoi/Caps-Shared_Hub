@@ -151,6 +151,7 @@ export const QUALIFICATION_TABS = [
 export const APPROVAL_TABS = [
   { key: 'finalApproval', statuses: ['PENDING_FINAL_APPROVAL'], showCount: true },
   { key: 'approved', statuses: ['APPROVED_FOR_SERVICE'], showCount: false },
+  { key: 'suspended', statuses: ['SUSPENDED'], showCount: true },
 ] as const satisfies readonly {
   key: string
   statuses: readonly QualificationStatus[]

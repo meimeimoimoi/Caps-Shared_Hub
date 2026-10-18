@@ -10,6 +10,7 @@ import type {
   QualificationRow,
   QualificationScope,
   QualificationStatus,
+  ServiceAccessAction,
 } from '../types'
 
 // Gate 2 review (permission ExpertReview) and final approval (System Admin) read the same records
@@ -82,6 +83,8 @@ interface ReviewQualification {
   canDecide: boolean
   competencyReviewerUserId: string | null
   canFinalApprove: boolean
+  canSuspend: boolean
+  canReinstate: boolean
 }
 
 const toRow = (q: QueueItem): QualificationRow => ({
@@ -111,6 +114,8 @@ function toDetail(q: ReviewQualification): QualificationDetail {
     canDecide: q.canDecide,
     competencyReviewerUserId: q.competencyReviewerUserId,
     canFinalApprove: q.canFinalApprove,
+    canSuspend: q.canSuspend,
+    canReinstate: q.canReinstate,
     competencies: q.competencies,
     // Gate 1 view of the expert: the profile, document and Gate 1 result tabs read it as is
     profile: {
@@ -217,6 +222,18 @@ export async function decideCompetency(
 ): Promise<QualificationDetail> {
   const res = await api.post<Envelope<ReviewQualification>>(
     `${BASES.review}/${id}/competency-decision`,
+    body
+  )
+  return toDetail(res.data)
+}
+
+/** Suspends an approved service (note required) or reinstates a suspended one */
+export async function changeServiceAccess(
+  id: string,
+  body: { action: ServiceAccessAction; note: string | null }
+): Promise<QualificationDetail> {
+  const res = await api.post<Envelope<ReviewQualification>>(
+    `${BASES.approval}/${id}/service-access`,
     body
   )
   return toDetail(res.data)

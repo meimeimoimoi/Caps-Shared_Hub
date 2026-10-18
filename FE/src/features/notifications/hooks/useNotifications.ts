@@ -24,6 +24,13 @@ const competencyOutcomes = {
   FAIL: 'notifications.competency.FAIL',
 } as const
 
+const accessChanges = {
+  APPROVED: 'notifications.serviceAccess.APPROVED',
+  RETURNED_FOR_REVIEW: 'notifications.serviceAccess.RETURNED_FOR_REVIEW',
+  SUSPENDED: 'notifications.serviceAccess.SUSPENDED',
+  REINSTATED: 'notifications.serviceAccess.REINSTATED',
+} as const
+
 /**
  * The signed-in account's notifications for the header bell, rendered as shell items. Polled every
  * minute until real-time push exists; read state lives on the server.
@@ -69,8 +76,26 @@ export function useNotifications() {
     }
   }
 
+  // Final approval, return for review, suspension or reinstatement of one service
+  const accessItem = (n: AppNotification): ShellNotification | null => {
+    const change = n.data.change as keyof typeof accessChanges
+    if (!(change in accessChanges)) return null
+    return {
+      id: n.id,
+      text: t(accessChanges[change], {
+        service: typeof n.data.serviceName === 'string' ? n.data.serviceName : '',
+      }),
+      to:
+        typeof n.data.link === 'string' ? n.data.link : '/expert/qualifications',
+      tone:
+        change === 'APPROVED' || change === 'REINSTATED' ? undefined : 'warning',
+      read: n.readAt != null,
+    }
+  }
+
   const toShell = (n: AppNotification): ShellNotification | null => {
     if (n.type === 'EXPERT_COMPETENCY_DECIDED') return competencyItem(n)
+    if (n.type === 'EXPERT_SERVICE_ACCESS_CHANGED') return accessItem(n)
     if (n.type !== 'EXPERT_ELIGIBILITY_DECIDED') return null
     const outcome = n.data.outcome as keyof typeof outcomes
     if (!(outcome in outcomes)) return null

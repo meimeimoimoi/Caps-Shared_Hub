@@ -203,6 +203,7 @@ const SYSTEM_ADMIN = [Permission.UserManage] as const
 const EXPERT_REVIEW = [Permission.UserManage, Permission.ExpertReview] as const
 const KNOWLEDGE_ADMIN = [Permission.KnowledgeManage] as const
 const REVIEWER = [Permission.ExpertReview] as const
+const EXPERT_APPROVE = [Permission.ExpertApprove] as const
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -273,9 +274,8 @@ const router = createBrowserRouter(
         />
         <Route path="/admin/account" element={<AdminAccountPage />} />
       </Route>
-      {/* Rest of the admin area: system admins only */}
-      <Route element={<PermissionRoute anyOf={SYSTEM_ADMIN} />}>
-        {/* Final approval of Gate 2 results (System Admin, BR-E10) */}
+      {/* Final approval of Gate 2 results and service suspension (System Admin, BR-E10) */}
+      <Route element={<PermissionRoute anyOf={EXPERT_APPROVE} />}>
         <Route
           path="/admin/experts/approvals"
           element={<AdminQualificationsPage scope="approval" />}
@@ -284,6 +284,9 @@ const router = createBrowserRouter(
           path="/admin/experts/approvals/:id"
           element={<AdminQualificationDetailPage scope="approval" />}
         />
+      </Route>
+      {/* Rest of the admin area: system admins only */}
+      <Route element={<PermissionRoute anyOf={SYSTEM_ADMIN} />}>
         <Route path="/admin/disputes" element={<AdminDisputesPage />} />
         <Route
           path="/admin/disputes/:id"

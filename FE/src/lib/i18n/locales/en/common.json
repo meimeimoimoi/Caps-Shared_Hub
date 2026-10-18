@@ -124,6 +124,12 @@
       "PENDING_FINAL_APPROVAL": "You passed the competency review for {{service}}; final approval is pending",
       "NEED_MORE_INFORMATION": "{{service}} needs more competency evidence",
       "FAIL": "You did not pass the competency review for {{service}}"
+    },
+    "serviceAccess": {
+      "APPROVED": "You are approved to offer {{service}}",
+      "RETURNED_FOR_REVIEW": "Your {{service}} qualification went back to competency review",
+      "SUSPENDED": "{{service}} is suspended",
+      "REINSTATED": "{{service}} has been reinstated"
     }
   }
 }

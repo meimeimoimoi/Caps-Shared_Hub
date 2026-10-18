@@ -27,6 +27,7 @@ import { useQualificationReview } from '../../features/expert-vetting/hooks/useQ
 import type {
   FinalApprovalDecision,
   QualificationScope,
+  ServiceAccessAction,
 } from '../../features/expert-vetting/types'
 
 const DECISION_ERRORS = [
@@ -41,6 +42,10 @@ const DECISION_ERRORS = [
   'FINAL_APPROVER_IS_REVIEWER',
   'FINAL_APPROVAL_NOTE_REQUIRED',
   'INVALID_FINAL_APPROVAL_DECISION',
+  'SERVICE_NOT_APPROVED',
+  'SERVICE_NOT_SUSPENDED',
+  'SUSPENSION_NOTE_REQUIRED',
+  'INVALID_SERVICE_ACCESS_ACTION',
 ] as const
 type DecisionError = (typeof DECISION_ERRORS)[number]
 const isDecisionError = (code?: string): code is DecisionError =>
@@ -134,6 +139,15 @@ export default function AdminQualificationDetailPage({
       .then(() => {
         setTab('history')
         setToast(t(`admin:finalApproval.toast.${decision}`))
+      })
+      .catch((e: unknown) => setToast(errorText(e)))
+
+  const accessChange = (action: ServiceAccessAction, note: string) =>
+    review
+      .changeAccess(action, note)
+      .then(() => {
+        setTab('history')
+        setToast(t(`admin:finalApproval.toast.${action}`))
       })
       .catch((e: unknown) => setToast(errorText(e)))
 
@@ -263,12 +277,14 @@ export default function AdminQualificationDetailPage({
           <div className="space-y-4 md:space-y-6">
             <CompetencyResultCard detail={detail} />
             <FinalApprovalPanel
+              key={detail.status}
               detail={detail}
               isGate2Reviewer={
                 !!userId && userId === detail.competencyReviewerUserId
               }
               submitting={review.approving}
               onDecide={(decision, note) => void finalDecide(decision, note)}
+              onAccess={(action, note) => void accessChange(action, note)}
             />
           </div>
         ) : decided ? (

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
+  changeServiceAccess,
   decideCompetency,
   decideFinalApproval,
   getQualificationDetail,
@@ -12,6 +13,7 @@ import type {
   CompetencyResult,
   FinalApprovalDecision,
   QualificationScope,
+  ServiceAccessAction,
 } from '../types'
 import { competencyOutcome } from '../utils/applications'
 
@@ -89,6 +91,18 @@ export function useQualificationReview(
     },
   })
 
+  const access = useMutation({
+    mutationFn: (input: { action: ServiceAccessAction; note: string }) =>
+      changeServiceAccess(id, {
+        action: input.action,
+        note: input.note.trim() || null,
+      }),
+    onSuccess: async (updated) => {
+      qc.setQueryData(adminKeys.qualification(scope, id), updated)
+      await qc.invalidateQueries({ queryKey: adminKeys.qualifications(scope) })
+    },
+  })
+
   return {
     isLoading: detailQuery.isLoading,
     error: detailQuery.error,
@@ -105,7 +119,9 @@ export function useQualificationReview(
     deciding: decision.isPending,
     approve: (decision: FinalApprovalDecision, note: string) =>
       finalApproval.mutateAsync({ decision, note }),
-    approving: finalApproval.isPending,
+    approving: finalApproval.isPending || access.isPending,
+    changeAccess: (action: ServiceAccessAction, note: string) =>
+      access.mutateAsync({ action, note }),
     // Newest first
     history: [...(detail?.history ?? [])].sort((a, b) =>
       b.at.localeCompare(a.at)

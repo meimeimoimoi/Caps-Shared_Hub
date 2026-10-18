@@ -740,7 +740,8 @@
       "moreInfo": "Chờ bổ sung",
       "finalApproval": "Chờ phê duyệt cuối",
       "failed": "Chưa đạt",
-      "approved": "Đã phê duyệt"
+      "approved": "Đã phê duyệt",
+      "suspended": "Tạm ngưng"
     }
   },
   "competency": {
@@ -811,7 +812,11 @@
       "QUALIFICATION_NOT_PENDING_APPROVAL": "Hồ sơ không còn chờ phê duyệt cuối; tải lại để xem trạng thái mới.",
       "FINAL_APPROVER_IS_REVIEWER": "Người đánh giá Gate 2 không thể phê duyệt cuối cùng hồ sơ.",
       "FINAL_APPROVAL_NOTE_REQUIRED": "Ghi rõ lý do trả về đánh giá lại.",
-      "INVALID_FINAL_APPROVAL_DECISION": "Quyết định không hợp lệ. Tải lại trang rồi thử lại."
+      "INVALID_FINAL_APPROVAL_DECISION": "Quyết định không hợp lệ. Tải lại trang rồi thử lại.",
+      "SERVICE_NOT_APPROVED": "Chỉ tạm ngưng được dịch vụ đang được cung cấp; tải lại trang.",
+      "SERVICE_NOT_SUSPENDED": "Dịch vụ không ở trạng thái tạm ngưng; tải lại trang.",
+      "SUSPENSION_NOTE_REQUIRED": "Ghi rõ lý do tạm ngưng.",
+      "INVALID_SERVICE_ACCESS_ACTION": "Thao tác không hợp lệ. Tải lại trang rồi thử lại."
     }
   },
   "finalApproval": {
@@ -827,7 +832,16 @@
     "notPending": "Hồ sơ không ở bước chờ phê duyệt cuối.",
     "toast": {
       "APPROVE": "Đã phê duyệt cung cấp dịch vụ",
-      "RETURN_FOR_REVIEW": "Đã trả hồ sơ về đánh giá năng lực"
-    }
+      "RETURN_FOR_REVIEW": "Đã trả hồ sơ về đánh giá năng lực",
+      "SUSPEND": "Đã tạm ngưng dịch vụ",
+      "REINSTATE": "Đã mở lại dịch vụ"
+    },
+    "accessTitle": "Trạng thái dịch vụ",
+    "suspendIntro": "Tạm ngưng ẩn dịch vụ này khỏi Marketplace và không nhận yêu cầu mới; hồ sơ đang thực hiện vẫn tiếp tục. Dịch vụ khác của chuyên gia không bị ảnh hưởng.",
+    "reinstateIntro": "Mở lại để chuyên gia tiếp tục cung cấp dịch vụ này.",
+    "suspendNoteLabel": "Lý do tạm ngưng (bắt buộc)",
+    "reinstateNoteLabel": "Ghi chú (không bắt buộc)",
+    "suspend": "Tạm ngưng dịch vụ",
+    "reinstate": "Mở lại dịch vụ"
   }
 }
