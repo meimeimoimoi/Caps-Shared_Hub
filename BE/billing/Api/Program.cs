@@ -1,4 +1,5 @@
 using Caps.Billing.Api;
+using Caps.Billing.Api.Configuration;
 using Caps.Billing.Infrastructure;
 using Caps.Billing.Infrastructure.Persistence;
 using Caps.Common.Api;
@@ -9,6 +10,7 @@ var config = builder.Configuration;
 var postgres = config.GetRequiredConnectionString("Postgres");
 
 builder.Services.AddCommonApi(config, "billing");
+builder.Services.AddBillingSecrets(config, builder.Environment);
 builder.Services.AddBillingApplication();
 builder.Services.AddBillingInfrastructure(postgres);
 

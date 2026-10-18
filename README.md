@@ -59,7 +59,7 @@ flowchart LR
 | `gateway` | `5190` | API Gateway (YARP), điểm vào duy nhất | ✅ Hoạt động |
 | `auth` | `5194` | Identity: tài khoản, phiên, JWT (schema `identity`) | ✅ Hoạt động |
 | `expert` | `5198` | Hồ sơ đăng ký chuyên gia, minh chứng S3 (schema `expert`) | ✅ Hoạt động |
-| `billing` | `5220` | Thanh toán, ví, escrow, payout (schema `billing`) | 🚧 Mới có xem ví |
+| `billing` | `5220` | Thanh toán, ví, escrow, payout (schema `billing`) | 🚧 Ví, lịch sử ví, tài khoản ngân hàng |
 | `workflow` | `5030` | Tài liệu, hội thoại AI, review case (schema `workspace`, `review`) | 🚧 Chưa có API |
 | `ingestion` | `5004` | Pipeline nạp tài liệu (schema `knowledge`) | 🚧 Chưa có API |
 | `rag-query` | `5104` | RAG / Vector Search với pgvector | 🧱 Skeleton |
@@ -194,6 +194,7 @@ npm run dev     # http://localhost:5173
 | `/api/v1/experts/me/**` | `expert` | Token hợp lệ (`AuthSession`) |
 | `/api/v1/billing/**` | `billing` | Rate limit `api` |
 | `/api/v1/billing/wallet/**` | `billing` | Token hợp lệ (`AuthSession`) |
+| `/api/v1/billing/bank-accounts/**` | `billing` | Token hợp lệ (`AuthSession`) |
 
 ---
 
@@ -259,6 +260,6 @@ npm run dev     # http://localhost:5173
 **Còn lại**
 
 - MassTransit mới có contracts + config, chưa có consumer thật.
-- `billing` mới có `GET /api/v1/billing/wallet`; `workflow`, `ingestion` chưa có API; `rag-query`, `notification`, `read`, `cronjob` còn là skeleton.
+- `billing` mới có ví (`/wallet`, `/wallet/ledger`) và tài khoản ngân hàng (`/bank-accounts`); `workflow`, `ingestion` chưa có API; `rag-query`, `notification`, `read`, `cronjob` còn là skeleton.
 
 </details>
