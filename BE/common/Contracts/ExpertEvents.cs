@@ -56,3 +56,23 @@ public sealed record ExpertCompetencyDecidedEvent(
 /// <param name="Code">C1…C5.</param>
 /// <param name="Result">FAIL or NEED_MORE_INFORMATION.</param>
 public sealed record CompetencyIssue(string Code, string Result, string? Note);
+
+/// <summary>
+/// A System Admin changed whether an expert may offer a service: final approval, return for review,
+/// suspension or reinstatement. Published through the expert outbox; the notification service tells the expert.
+/// </summary>
+/// <param name="Id">Event id, also used to ignore a redelivered message.</param>
+/// <param name="Change">APPROVED, RETURNED_FOR_REVIEW, SUSPENDED or REINSTATED.</param>
+/// <param name="Note">The admin's note, shown to the expert.</param>
+public sealed record ExpertServiceAccessChangedEvent(
+    Guid Id,
+    Guid UserId,
+    string Email,
+    string DisplayName,
+    Guid QualificationId,
+    string ServiceCode,
+    string ServiceName,
+    string Change,
+    string? Note,
+    DateTimeOffset ChangedAt
+);
