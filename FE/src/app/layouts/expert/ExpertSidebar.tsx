@@ -7,6 +7,7 @@ import {
   Briefcase,
   CreditCard,
   IdCard,
+  BadgeCheck,
 } from 'lucide-react'
 import {
   AppSidebar,
@@ -52,6 +53,12 @@ export function ExpertSidebar({
           '/expert/application',
           t('expertApplication'),
           <ClipboardCheck size={18} />,
+          'application.view'
+        ),
+        item(
+          '/expert/qualifications',
+          t('expertQualifications'),
+          <BadgeCheck size={18} />,
           'application.view'
         ),
         item(

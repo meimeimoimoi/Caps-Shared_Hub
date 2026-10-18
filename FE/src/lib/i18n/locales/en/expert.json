@@ -565,5 +565,69 @@
       "reasonRequired": "Add a reason before submitting for approval.",
       "reasonLong": "Keep the reason within 1,000 characters."
     }
+  },
+  "qualifications": {
+    "title": "Competency review by service",
+    "description": "Once eligible, register each service to be assessed on competencies C1 – C5. The result of one service does not affect the others.",
+    "loading": "Loading…",
+    "notFound": "Qualification not found.",
+    "back": "Back to services",
+    "eligibilityRequired": "Pass the eligibility review (Gate 1) before registering a service.",
+    "openApplication": "Open your application",
+    "notRegistered": "Not registered",
+    "submittedAt": "Submitted {{date}}",
+    "reapplyFrom": "Can register again from {{date}}",
+    "view": "View details",
+    "register": "Register for competency review",
+    "registerAgain": "Register again",
+    "statusTitle": "Status",
+    "statusHelp": {
+      "COMPETENCY_REVIEW": "A reviewer is assessing your profile and files against competencies C1 – C5.",
+      "NEED_MORE_INFORMATION": "The reviewer needs more evidence for the competencies below. Upload files, then send the supplement.",
+      "PENDING_FINAL_APPROVAL": "You passed the competency review. Final approval by the System Admin is pending.",
+      "APPROVED_FOR_SERVICE": "You can offer this service. Next, set up its pricing.",
+      "SUSPENDED": "This service is suspended.",
+      "FAIL": "You did not pass the competency review for this service."
+    },
+    "competencies": {
+      "C1": "CIT knowledge for the service scope",
+      "C2": "AI Draft review and revision",
+      "C3": "Information and evidence review",
+      "C4": "Analysing and applying CIT rules",
+      "C5": "Professional judgment and verification conclusion"
+    },
+    "results": {
+      "PASS": "Met",
+      "NEED_MORE_INFORMATION": "More evidence needed",
+      "FAIL": "Not met"
+    },
+    "filesTitle": "Files",
+    "filesHelp": "The reviewer starts from the files in your application.",
+    "filesHelpSupplement": "Upload more files proving your competency (PDF, PNG or JPG, up to 10 MB).",
+    "addFile": "Upload a file ({{count}}/{{max}})",
+    "addedFile": "Supplement",
+    "removeFile": "Remove {{name}}",
+    "supplementTitle": "Send supplement",
+    "supplementNote": "Explanation (optional if you uploaded files)",
+    "supplementSubmit": "Send supplement",
+    "supplemented": "Supplement sent. The qualification is back in competency review.",
+    "historyTitle": "History",
+    "errors": {
+      "ELIGIBILITY_REQUIRED": "Pass the eligibility review first.",
+      "QUALIFICATION_EXISTS": "This service already has a qualification in progress.",
+      "REAPPLY_TOO_EARLY": "You cannot register this service again yet.",
+      "SERVICE_NOT_FOUND": "This service is no longer offered.",
+      "EVIDENCE_REQUIRED": "Choose a file to upload.",
+      "EVIDENCE_TOO_LARGE": "Files must be 10 MB or smaller.",
+      "EVIDENCE_INVALID_TYPE": "Only PDF, PNG or JPG files are allowed.",
+      "EVIDENCE_LIMIT": "This service already has the maximum number of files.",
+      "EVIDENCE_LOCKED": "Submitted files cannot be removed.",
+      "QUALIFICATION_LOCKED": "The qualification is not accepting a supplement; reload the page.",
+      "SUPPLEMENT_EMPTY": "Add an explanation or at least one new file.",
+      "EMAIL_NOT_VERIFIED": "Verify your email before sending a supplement.",
+      "open": "The file could not be opened.",
+      "loadFailed": "Services could not be loaded.",
+      "failed": "That did not work. Please try again."
+    }
   }
 }

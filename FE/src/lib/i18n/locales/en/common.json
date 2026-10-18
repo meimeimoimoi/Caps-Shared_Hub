@@ -119,6 +119,11 @@
       "ELIGIBLE": "Your expert application passed the eligibility review.",
       "NEED_MORE_INFORMATION": "Your expert application needs more information.",
       "NOT_ELIGIBLE": "Your expert application was not eligible. See the result."
+    },
+    "competency": {
+      "PENDING_FINAL_APPROVAL": "You passed the competency review for {{service}}; final approval is pending",
+      "NEED_MORE_INFORMATION": "{{service}} needs more competency evidence",
+      "FAIL": "You did not pass the competency review for {{service}}"
     }
   }
 }

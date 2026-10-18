@@ -48,6 +48,12 @@ const VerifyEmailPage = lazy(() => import('@/pages/VerifyEmailPage'))
 const ExpertRegistrationPage = lazy(
   () => import('@/pages/expert-registration/ExpertRegistrationPage')
 )
+const ExpertQualificationsPage = lazy(
+  () => import('@/pages/expert-dashboard/ExpertQualificationsPage')
+)
+const ExpertQualificationPage = lazy(
+  () => import('@/pages/expert-dashboard/ExpertQualificationPage')
+)
 const ExpertApplicationPage = lazy(
   () => import('@/pages/expert-registration/ExpertApplicationPage')
 )
@@ -349,6 +355,12 @@ const router = createBrowserRouter(
                 <ExpertApplicationPage />
               </ProtectedRoute>
             }
+          />
+          {/* Gate 2: service registration and competency evidence, open to every applicant */}
+          <Route path="qualifications" element={<ExpertQualificationsPage />} />
+          <Route
+            path="qualifications/:id"
+            element={<ExpertQualificationPage />}
           />
           {/* Locked areas open as the server grants capabilities (see RequireCapability) */}
           <Route

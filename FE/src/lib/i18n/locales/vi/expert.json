@@ -564,5 +564,69 @@
       "reasonRequired": "Bổ sung lý do trước khi gửi duyệt.",
       "reasonLong": "Lý do không được vượt quá 1.000 ký tự."
     }
+  },
+  "qualifications": {
+    "title": "Đánh giá năng lực theo dịch vụ",
+    "description": "Sau khi đủ điều kiện tham gia, đăng ký từng dịch vụ để được đánh giá năng lực C1 – C5. Kết quả của dịch vụ này không ảnh hưởng dịch vụ khác.",
+    "loading": "Đang tải…",
+    "notFound": "Không tìm thấy hồ sơ năng lực.",
+    "back": "Quay lại danh sách dịch vụ",
+    "eligibilityRequired": "Bạn cần đạt xét duyệt điều kiện tham gia (Gate 1) trước khi đăng ký dịch vụ.",
+    "openApplication": "Mở hồ sơ đăng ký",
+    "notRegistered": "Chưa đăng ký",
+    "submittedAt": "Nộp lúc {{date}}",
+    "reapplyFrom": "Được đăng ký lại từ {{date}}",
+    "view": "Xem chi tiết",
+    "register": "Đăng ký đánh giá năng lực",
+    "registerAgain": "Đăng ký lại",
+    "statusTitle": "Tình trạng",
+    "statusHelp": {
+      "COMPETENCY_REVIEW": "Người đánh giá đang xem hồ sơ và tài liệu của bạn theo từng năng lực C1 – C5.",
+      "NEED_MORE_INFORMATION": "Người đánh giá cần thêm bằng chứng cho các năng lực dưới đây. Tải tài liệu lên rồi gửi bổ sung.",
+      "PENDING_FINAL_APPROVAL": "Bạn đã đạt đánh giá năng lực. Hồ sơ đang chờ Quản trị hệ thống phê duyệt cuối.",
+      "APPROVED_FOR_SERVICE": "Bạn được cung cấp dịch vụ này. Bước tiếp theo là thiết lập giá dịch vụ.",
+      "SUSPENDED": "Dịch vụ này đang bị tạm ngưng.",
+      "FAIL": "Bạn chưa đạt đánh giá năng lực cho dịch vụ này."
+    },
+    "competencies": {
+      "C1": "Kiến thức Thuế TNDN phù hợp phạm vi dịch vụ",
+      "C2": "Rà soát và hiệu chỉnh AI Draft",
+      "C3": "Rà soát thông tin và bằng chứng",
+      "C4": "Phân tích và áp dụng quy định Thuế TNDN",
+      "C5": "Xét đoán nghề nghiệp và kết luận xác minh"
+    },
+    "results": {
+      "PASS": "Đạt",
+      "NEED_MORE_INFORMATION": "Cần bổ sung",
+      "FAIL": "Chưa đạt"
+    },
+    "filesTitle": "Tài liệu",
+    "filesHelp": "Người đánh giá dùng tài liệu đã nộp ở hồ sơ đăng ký làm căn cứ ban đầu.",
+    "filesHelpSupplement": "Tải thêm tài liệu chứng minh năng lực (PDF, PNG hoặc JPG, tối đa 10 MB).",
+    "addFile": "Tải tài liệu ({{count}}/{{max}})",
+    "addedFile": "Bổ sung",
+    "removeFile": "Xóa {{name}}",
+    "supplementTitle": "Gửi bổ sung",
+    "supplementNote": "Giải thích thêm (không bắt buộc nếu đã tải tài liệu)",
+    "supplementSubmit": "Gửi bổ sung",
+    "supplemented": "Đã gửi bổ sung. Hồ sơ quay lại bước đánh giá năng lực.",
+    "historyTitle": "Lịch sử",
+    "errors": {
+      "ELIGIBILITY_REQUIRED": "Bạn cần đạt xét duyệt điều kiện tham gia trước.",
+      "QUALIFICATION_EXISTS": "Dịch vụ này đã có hồ sơ năng lực đang xử lý.",
+      "REAPPLY_TOO_EARLY": "Chưa đến thời điểm được đăng ký lại dịch vụ này.",
+      "SERVICE_NOT_FOUND": "Dịch vụ không còn được cung cấp.",
+      "EVIDENCE_REQUIRED": "Chọn một tệp để tải lên.",
+      "EVIDENCE_TOO_LARGE": "Tệp phải nhỏ hơn 10 MB.",
+      "EVIDENCE_INVALID_TYPE": "Chỉ nhận tệp PDF, PNG hoặc JPG.",
+      "EVIDENCE_LIMIT": "Đã đạt số tài liệu tối đa cho dịch vụ này.",
+      "EVIDENCE_LOCKED": "Tài liệu đã nộp không thể xóa.",
+      "QUALIFICATION_LOCKED": "Hồ sơ không ở bước nhận bổ sung; tải lại trang.",
+      "SUPPLEMENT_EMPTY": "Thêm giải thích hoặc ít nhất một tài liệu mới.",
+      "EMAIL_NOT_VERIFIED": "Xác thực email trước khi gửi bổ sung.",
+      "open": "Không mở được tài liệu.",
+      "loadFailed": "Không tải được danh sách dịch vụ.",
+      "failed": "Chưa thực hiện được. Vui lòng thử lại."
+    }
   }
 }

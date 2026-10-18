@@ -119,6 +119,11 @@
       "ELIGIBLE": "Hồ sơ chuyên gia của bạn đã đạt vòng xét duyệt điều kiện.",
       "NEED_MORE_INFORMATION": "Hồ sơ chuyên gia của bạn cần bổ sung thông tin.",
       "NOT_ELIGIBLE": "Hồ sơ chuyên gia của bạn chưa đạt điều kiện. Xem kết quả."
+    },
+    "competency": {
+      "PENDING_FINAL_APPROVAL": "Bạn đã đạt đánh giá năng lực dịch vụ {{service}}, đang chờ phê duyệt cuối",
+      "NEED_MORE_INFORMATION": "Dịch vụ {{service}} cần bổ sung bằng chứng năng lực",
+      "FAIL": "Bạn chưa đạt đánh giá năng lực dịch vụ {{service}}"
     }
   }
 }

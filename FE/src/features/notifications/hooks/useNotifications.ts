@@ -18,6 +18,12 @@ const outcomes = {
   NOT_ELIGIBLE: 'notifications.eligibility.NOT_ELIGIBLE',
 } as const
 
+const competencyOutcomes = {
+  PENDING_FINAL_APPROVAL: 'notifications.competency.PENDING_FINAL_APPROVAL',
+  NEED_MORE_INFORMATION: 'notifications.competency.NEED_MORE_INFORMATION',
+  FAIL: 'notifications.competency.FAIL',
+} as const
+
 /**
  * The signed-in account's notifications for the header bell, rendered as shell items. Polled every
  * minute until real-time push exists; read state lives on the server.
@@ -47,7 +53,24 @@ export function useNotifications() {
     onSettled: refresh,
   })
 
+  // Gate 2 result for one service; the link opens that qualification
+  const competencyItem = (n: AppNotification): ShellNotification | null => {
+    const outcome = n.data.outcome as keyof typeof competencyOutcomes
+    if (!(outcome in competencyOutcomes)) return null
+    return {
+      id: n.id,
+      text: t(competencyOutcomes[outcome], {
+        service: typeof n.data.serviceName === 'string' ? n.data.serviceName : '',
+      }),
+      to:
+        typeof n.data.link === 'string' ? n.data.link : '/expert/qualifications',
+      tone: outcome === 'PENDING_FINAL_APPROVAL' ? undefined : 'warning',
+      read: n.readAt != null,
+    }
+  }
+
   const toShell = (n: AppNotification): ShellNotification | null => {
+    if (n.type === 'EXPERT_COMPETENCY_DECIDED') return competencyItem(n)
     if (n.type !== 'EXPERT_ELIGIBILITY_DECIDED') return null
     const outcome = n.data.outcome as keyof typeof outcomes
     if (!(outcome in outcomes)) return null
