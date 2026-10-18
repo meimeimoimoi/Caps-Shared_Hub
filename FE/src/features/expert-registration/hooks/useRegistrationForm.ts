@@ -37,6 +37,10 @@ export function useRegistrationForm({
   const user = useAuthStore((s) => s.user)
   const [profile, setProfile] = useState<Profile>(initial)
   const [step, setStep] = useState(0)
+  // Furthest step reached: every step up to it stays open, so going back never locks the later ones
+  const [furthest, setFurthest] = useState(0)
+  // Editing a section from the review step: "continue" saves and goes straight back to review
+  const [returnToReview, setReturnToReview] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   // File đang tải lên (chưa có trong phản hồi máy chủ) theo từng nhóm
   const [uploading, setUploading] = useState<Record<string, EvidenceFile[]>>({})
@@ -124,6 +128,8 @@ export function useRegistrationForm({
         }))
       }
     }
+    // The review confirmation says what is missing instead of the generic "required"
+    if (errors.confirmed) errors.confirmed = { key: 'validation.confirmed' }
     if (step === 1) {
       if (!fields.length) errors.expertise = { key: 'validation.expertise' }
       if (!files.CV?.some((f) => !f.uploading))
@@ -142,6 +148,9 @@ export function useRegistrationForm({
 
   function move(next: number) {
     setStep(next)
+    setFurthest((f) => Math.max(f, next))
+    // Leaving the review step to fix something: come back to it, not through every step again
+    setReturnToReview(next < 3 && (furthest >= 3 || step === 3))
     setError(null)
     setNotice(null)
     setFormErrors({})
@@ -217,7 +226,7 @@ export function useRegistrationForm({
       // Mỗi lần "Tiếp tục" đều lưu nháp để không mất dữ liệu khi đóng trang
       const saved = await persist()
       if (step < 3) {
-        move(step + 1)
+        move(returnToReview ? 3 : step + 1)
         return
       }
       // The expert service reads verification from the token: refresh it first in case the
@@ -387,6 +396,8 @@ export function useRegistrationForm({
     validateForm,
     update,
     move,
+    furthest,
+    returnToReview,
     chooseFiles,
     advance,
     clearFormError,

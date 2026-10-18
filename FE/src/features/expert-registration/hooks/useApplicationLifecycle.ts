@@ -51,7 +51,7 @@ export function messageFor(e: unknown): RegistrationMessage {
 
 const STATUS_LABEL: Record<ApplicationStatus, Stage> = {
   DRAFT: 'screening',
-  SUBMITTED: 'screening',
+  SUBMITTED: 'eligibility',
   AI_SCREENING: 'screening',
   NEED_MORE_INFORMATION: 'additional',
   NOT_ELIGIBLE: 'ineligible',

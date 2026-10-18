@@ -69,6 +69,8 @@ export interface ExpertApplication {
   canUpload: boolean
   canSubmit: boolean
   canSupplement: boolean
+  /** Files the application may hold now (lower until the email is verified) */
+  maxFiles: number
 }
 
 /* FE giữ khóa tiêu chí/lĩnh vực theo nhãn tiếng Anh (dùng cho i18n); BE dùng mã cố định */
@@ -114,8 +116,11 @@ export function stageOf(status: ApplicationStatus): Stage {
       return 'approved'
     case 'REJECTED':
       return 'failed'
-    default:
+    // Only when AI screening exists; until then a submitted application goes straight to Gate 1
+    case 'AI_SCREENING':
       return 'screening'
+    default:
+      return 'eligibility'
   }
 }
 
@@ -158,6 +163,11 @@ export function toFiles(
 const BASE = '/api/v1/experts/me/application'
 
 export const applicationApi = {
+  file: (id: string) =>
+    api.get<Blob>(`${BASE}/evidence/${encodeURIComponent(id)}/file`, {
+      responseType: 'blob',
+      timeout: 60_000,
+    }),
   /** null = chưa từng tạo hồ sơ */
   get: async () =>
     (await api.get<Envelope<ExpertApplication | null>>(BASE)).data,

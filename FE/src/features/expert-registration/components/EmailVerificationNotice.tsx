@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
-import { useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from 'react-i18next'
+import { CircleAlert, CircleCheck, Info } from 'lucide-react'
 import { Modal } from '@/components/ui/feedback/modal'
 import { ApiError } from '@/lib/api-client'
 import { authApi } from '@/features/auth/api/authApi'
@@ -18,6 +19,14 @@ const COPY = {
   },
 } as const satisfies Record<VerifyPurpose, { title: string; body: string }>
 
+type Message = 'resent' | 'failed' | 'stillPending'
+
+const MESSAGE_ICON = {
+  resent: CircleCheck,
+  failed: CircleAlert,
+  stillPending: Info,
+} as const satisfies Record<Message, unknown>
+
 export interface EmailVerificationNoticeProps {
   email: string
   /** Re-checks the status (after the code is entered or the link is opened in another tab) */
@@ -28,7 +37,7 @@ export interface EmailVerificationNoticeProps {
 }
 
 /* The application is filled in and saved before the email is verified; this dialog opens on submit,
- * or when an unverified account tries to upload more files than allowed. */
+ * from the reminder, or when an unverified account reaches its file limit. */
 export function EmailVerificationNotice({
   email,
   onCheck,
@@ -37,19 +46,19 @@ export function EmailVerificationNotice({
 }: EmailVerificationNoticeProps) {
   const { t } = useTranslation('expertRegistration')
   const [cooldown, setCooldown] = useState(0)
+  // A new code makes the typed one and its error stale: remount the field to start clean
+  const [codeRound, setCodeRound] = useState(0)
   const codeArea = useRef<HTMLDivElement>(null)
-  // Modal focus vào hộp thoại khi mở; chuyển sang ô mã đầu tiên để gõ ngay
+  // The modal focuses itself on open; move focus to the first code box so typing can start at once
   useEffect(() => {
     codeArea.current?.querySelector('input')?.focus()
-  }, [])
-  // Bấm link ở tab khác hoặc trên điện thoại: tự kiểm tra lại, dải nhắc biến mất khi đã xác nhận
+  }, [codeRound])
+  // Link opened in another tab or on a phone: check again; the dialog closes once verified
   useEmailVerifiedSignal(() => {
     void onCheck()
   }, true)
   const [busy, setBusy] = useState(false)
-  const [message, setMessage] = useState<
-    'resent' | 'failed' | 'stillPending' | null
-  >(null)
+  const [message, setMessage] = useState<Message | null>(null)
 
   useEffect(() => {
     if (cooldown <= 0) return
@@ -65,6 +74,7 @@ export function EmailVerificationNotice({
       .then(() => {
         setMessage('resent')
         setCooldown(COOLDOWN_SECONDS)
+        setCodeRound((n) => n + 1)
       })
       .catch((e) => {
         if (e instanceof ApiError && e.status === 429)
@@ -82,10 +92,23 @@ export function EmailVerificationNotice({
       .finally(() => setBusy(false))
   }
 
+  const MessageIcon = message ? MESSAGE_ICON[message] : null
+
   return (
     <Modal
       title={t(COPY[purpose].title)}
-      description={t(COPY[purpose].body, { email })}
+      description={
+        <Trans
+          t={t}
+          i18nKey={COPY[purpose].body}
+          values={{ email }}
+          components={{
+            strong: (
+              <strong className="text-ex-ink font-semibold break-words" />
+            ),
+          }}
+        />
+      }
       onClose={onClose}
       footer={
         <button
@@ -97,30 +120,55 @@ export function EmailVerificationNotice({
         </button>
       }
     >
-      <div ref={codeArea} className="mt-5">
-        <EmailCodeField tone="light" onVerified={() => void onCheck()} />
+      <div ref={codeArea} className="mt-6">
+        <EmailCodeField
+          key={codeRound}
+          tone="light"
+          onVerified={() => void onCheck()}
+        />
       </div>
-      <p className="!mt-4 !mb-0 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-[13px]">
-        <button
-          type="button"
-          className="cursor-pointer underline underline-offset-4 disabled:cursor-not-allowed disabled:opacity-60"
-          onClick={resend}
-          disabled={busy || cooldown > 0}
+
+      {message && MessageIcon && (
+        <p
+          role="status"
+          className="expert-verify-message"
+          data-tone={
+            message === 'failed'
+              ? 'error'
+              : message === 'resent'
+                ? 'ok'
+                : 'info'
+          }
         >
-          {cooldown > 0
-            ? t('verifyEmail.cooldown', { seconds: cooldown })
-            : t('verifyEmail.resend')}
-        </button>
-        <button
-          type="button"
-          className="cursor-pointer underline underline-offset-4 disabled:cursor-not-allowed disabled:opacity-60"
-          onClick={check}
-          disabled={busy}
-        >
-          {t('verifyEmail.check')}
-        </button>
-        {message && <span>{t(`verifyEmail.${message}`)}</span>}
-      </p>
+          <MessageIcon size={16} aria-hidden="true" />
+          <span>{t(`verifyEmail.${message}`)}</span>
+        </p>
+      )}
+
+      <dl className="expert-verify-help">
+        <div>
+          <dt>{t('verifyEmail.noCode')}</dt>
+          <dd>
+            {cooldown > 0 ? (
+              <span className="expert-verify-wait">
+                {t('verifyEmail.cooldown', { seconds: cooldown })}
+              </span>
+            ) : (
+              <button type="button" onClick={resend} disabled={busy}>
+                {t('verifyEmail.resend')}
+              </button>
+            )}
+          </dd>
+        </div>
+        <div>
+          <dt>{t('verifyEmail.usedLink')}</dt>
+          <dd>
+            <button type="button" onClick={check} disabled={busy}>
+              {t('verifyEmail.check')}
+            </button>
+          </dd>
+        </div>
+      </dl>
     </Modal>
   )
 }

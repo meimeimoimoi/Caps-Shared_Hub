@@ -1,23 +1,14 @@
 import { useTranslation } from 'react-i18next'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useFormatters } from '@/hooks/useFormatters'
-import { useLocation } from 'react-router-dom'
-import {
-  Check,
-  FileText,
-  Briefcase,
-  UserRound,
-  ChevronDown,
-} from 'lucide-react'
+import { useLocation, useNavigate } from 'react-router-dom'
+import { FileText, Briefcase, UserRound, ChevronDown } from 'lucide-react'
 import { useRegistrationMotion } from '../../features/expert-registration/hooks/useRegistrationMotion'
 import { useWizardMotion } from '../../features/expert-registration/hooks/useWizardMotion'
 import { useScrollReveal } from '@/hooks/useScrollReveal'
 import { mergeRefs } from '@/lib/merge-refs'
 
-import {
-  steps,
-  stepShortLabels,
-} from '../../features/expert-registration/constants'
+import { steps } from '../../features/expert-registration/constants'
 import { ApplicationStatus } from '../../features/expert-registration/components/ApplicationStatus'
 import { WizardFooter } from '../../features/expert-registration/components/WizardFooter'
 import { PersonalInformation } from '../../features/expert-registration/components/steps/PersonalInformation'
@@ -29,14 +20,12 @@ import { useRegistrationForm } from '../../features/expert-registration/hooks/us
 import { useApplicationLifecycle } from '../../features/expert-registration/hooks/useApplicationLifecycle'
 import { useExpertApplication } from '../../features/expert-registration/hooks/useExpertApplication'
 import { EmailVerificationNotice } from '../../features/expert-registration/components/EmailVerificationNotice'
-import { EmailVerificationReminder } from '../../features/expert-registration/components/EmailVerificationReminder'
+import { ApplicationProgressRail } from '../../features/expert-registration/components/ApplicationProgressRail'
 import { expertPageCls } from './expertPageClass'
 
 /* ── Shared sub-components ── */
 
 /* ── Reusable style constants ── */
-
-const panelCls = 'bg-ex-panel rounded-lg p-8 shadow-paper max-md:p-[18px_24px]'
 
 /** The signed-in user's expert application inside the Expert Portal: the draft wizard, then its review status. */
 export default function ExpertApplicationPage() {
@@ -57,10 +46,21 @@ export default function ExpertApplicationPage() {
     syncVerifiedSession,
   } = useExpertApplication()
   const location = useLocation()
-  // Set by /expert/register right after the account is created
-  const accountCreated =
-    (location.state as { accountCreated?: boolean } | null)?.accountCreated ===
-    true
+  const navigate = useNavigate()
+  // Set by /expert/register right after the account is created. Read once, then cleared from history
+  // so a reload or a later visit does not show the notice again.
+  const [accountCreated] = useState(
+    () =>
+      (location.state as { accountCreated?: boolean } | null)
+        ?.accountCreated === true
+  )
+  useEffect(() => {
+    if (location.state)
+      navigate(location.pathname + location.search, {
+        replace: true,
+        state: null,
+      })
+  }, [location.pathname, location.search, location.state, navigate])
   const {
     submitted,
     stage,
@@ -116,6 +116,8 @@ export default function ExpertApplicationPage() {
     errorRef,
     update,
     move,
+    furthest,
+    returnToReview,
     chooseFiles,
     advance,
     clearFormError,
@@ -134,21 +136,34 @@ export default function ExpertApplicationPage() {
       accountCreated ? t('messages.accountCreated') : '',
     ].find(Boolean) ?? ''
   const terminal = stage === 'ineligible' || stage === 'failed'
+  // No AI screening step yet: submission goes straight to the eligibility review (Gate 1)
   const timeline = [
     t('timeline.submission'),
-    t('timeline.screening'),
     t('timeline.eligibility'),
     t('timeline.competency'),
     t('timeline.final'),
   ]
-  const progress =
-    stage === 'screening'
-      ? 1
-      : ['eligibility', 'additional', 'eligible', 'ineligible'].includes(stage)
-        ? 2
-        : ['competency', 'failed', 'returned'].includes(stage)
-          ? 3
-          : 4
+  const progress = [
+    'screening',
+    'eligibility',
+    'additional',
+    'eligible',
+    'ineligible',
+  ].includes(stage)
+    ? 1
+    : ['competency', 'failed', 'returned'].includes(stage)
+      ? 2
+      : 3
+
+  // Files held by the whole application against the server's current limit
+  const uploadQuota = application
+    ? {
+        used: application.evidence.length,
+        max: application.maxFiles,
+        verified: application.emailVerified,
+        onVerify: openVerification,
+      }
+    : undefined
 
   const stepHeading = (
     <div className="expert-wizard-heading">
@@ -158,17 +173,18 @@ export default function ExpertApplicationPage() {
     </div>
   )
 
+  // The portal layout already pads and caps the page width; content uses all of it, like other portal pages
+  const widthCls = 'w-full'
+
   return (
     <div
       ref={mergeRefs(motionRef, scrollRevealRef)}
       className={`expert-application ${expertPageCls}`}
     >
       {/* ── Content (the Expert Portal layout owns <main>) ── */}
-      <div
-        className={`${submitted ? 'expert-status-main' : ''} mx-auto max-w-[1240px] px-6 py-12 pb-[70px] max-md:px-4 max-md:py-7 max-md:pb-10`}
-      >
+      <div className={`${widthCls} ${submitted ? 'expert-status-main' : ''}`}>
         {loading || loadFailed ? (
-          <section className={`${panelCls} expert-wizard`} aria-busy={loading}>
+          <section className="expert-wizard" aria-busy={loading}>
             {loading ? (
               <p role="status" className="text-ex-muted !mb-0">
                 {t('page.loading')}
@@ -265,17 +281,6 @@ export default function ExpertApplicationPage() {
                 <p className="expert-status-profile-note">
                   {t('documents.countNote')}
                 </p>
-                <a
-                  className="expert-status-view-link"
-                  href="#submitted-dossier"
-                  onClick={() => {
-                    const dossier = document.getElementById('submitted-dossier')
-                    if (dossier instanceof HTMLDetailsElement)
-                      dossier.open = true
-                  }}
-                >
-                  {t('page.view')} <ChevronDown size={16} aria-hidden="true" />
-                </a>
               </aside>
               <details className="expert-status-dossier" id="submitted-dossier">
                 <summary>
@@ -296,154 +301,106 @@ export default function ExpertApplicationPage() {
             </div>
           </>
         ) : (
-          /* ── Wizard ── */
-          <section
-            className={`${panelCls} expert-wizard ${step === 0 ? 'expert-wizard-personal' : ''}`}
-          >
-            <nav
-              aria-label={t('page.steps')}
-              className="expert-wizard-stepper mb-4"
+          /* ── Wizard: form beside its progress rail ── */
+          <div className="expert-application-layout">
+            <section
+              className={`expert-wizard ${step === 0 ? 'expert-wizard-personal' : ''}`}
             >
-              <ol className="expert-stepper-list">
-                {steps.map((s, i) => (
-                  <li className="expert-stepper-item" key={s}>
-                    <button
-                      type="button"
-                      disabled={i > step}
-                      onClick={() => move(i)}
-                      aria-label={t(
-                        i < step ? 'counts.completedStep' : 'counts.stepLabel',
-                        { step: format.number(i + 1), label: t(s) }
-                      )}
-                      aria-current={i === step ? 'step' : undefined}
-                      className="expert-stepper-btn"
-                    >
-                      <span
-                        className={`expert-stepper-bubble ${
-                          i < step
-                            ? 'expert-stepper-bubble--done'
-                            : i === step
-                              ? 'expert-stepper-bubble--active'
-                              : 'expert-stepper-bubble--upcoming'
-                        }`}
-                      >
-                        {i < step ? (
-                          <Check size={15} strokeWidth={3} aria-hidden="true" />
-                        ) : (
-                          i + 1
-                        )}
-                      </span>
-                      <span
-                        className={`expert-stepper-label ${
-                          i < step
-                            ? 'expert-stepper-label--done'
-                            : i === step
-                              ? 'expert-stepper-label--active'
-                              : 'expert-stepper-label--upcoming'
-                        }`}
-                      >
-                        {t(stepShortLabels[i])}
-                      </span>
-                    </button>
-
-                    {/* Connecting line */}
-                    {i < steps.length - 1 && (
-                      <div className="expert-stepper-track" aria-hidden="true">
-                        <div
-                          className={`expert-stepper-track-fill ${i < step ? 'expert-stepper-track-fill--done' : ''}`}
-                        />
-                      </div>
-                    )}
-                  </li>
-                ))}
-              </ol>
-            </nav>
-            {application && !application.emailVerified && (
-              <EmailVerificationReminder
-                email={profile.email}
-                onVerify={openVerification}
-              />
-            )}
-            {verifyOpen && application && !application.emailVerified && (
-              <EmailVerificationNotice
-                email={profile.email}
-                onCheck={checkVerifiedAndSubmit}
-                purpose={verifyPurpose}
-                onClose={closeVerify}
-              />
-            )}
-            <form noValidate onSubmit={advance}>
-              <div
-                ref={wizardBodyRef}
-                className="expert-wizard-body pt-4 pb-[30px]"
-                key={step}
-              >
-                {step !== 0 && stepHeading}
-                {step === 0 && (
-                  <PersonalInformation
-                    heading={stepHeading}
-                    profile={profile}
-                    formErrors={formErrors}
-                    avatar={avatar}
-                    avatarPreview={avatarPreview}
-                    independent={independent}
-                    onUpdate={(key, value) => {
-                      update(key, value)
-                      clearFormError(key)
-                    }}
-                    onAvatarChange={updateAvatar}
-                    onIndependentChange={setIndependentStatus}
-                    onError={setError}
-                  />
-                )}
-                {step === 1 && (
-                  <ProfessionalExperience
-                    profile={profile}
-                    fields={fields}
-                    cvFiles={files.CV ?? []}
-                    formErrors={formErrors}
-                    onUpdate={(key, value) => {
-                      update(key, value)
-                      clearFormError(key)
-                    }}
-                    onToggleField={toggleField}
-                    onCvFilesSelected={(f) => chooseFiles('CV', f)}
-                    onRemoveCvFile={(i) => removeFile('CV', i)}
-                  />
-                )}
-                {step === 2 && (
-                  <SupportingDocuments
-                    formErrors={formErrors}
-                    activeCriterion={activeCriterion}
-                    files={files}
-                    onCriterionSelect={setActiveCriterion}
-                    onFilesSelected={chooseFiles}
-                    onRemoveFile={removeFile}
-                  />
-                )}
-                {step === 3 && (
-                  <ReviewSubmit
-                    profile={profile}
-                    avatarPreview={avatarPreview}
-                    independent={independent}
-                    fields={fields}
-                    files={files}
-                    confirmed={confirmed}
-                    formErrors={formErrors}
-                    onConfirmedChange={toggleConfirmed}
-                    onEdit={() => move(0)}
-                  />
-                )}
-              </div>
-              <WizardFooter
-                step={step}
-                submitting={submitting}
-                draftSaved={draftSaved}
-                onSaveDraft={saveDraft}
-                onBack={() => move(step - 1)}
-              />
-            </form>
-          </section>
+              {verifyOpen && application && !application.emailVerified && (
+                <EmailVerificationNotice
+                  email={profile.email}
+                  onCheck={checkVerifiedAndSubmit}
+                  purpose={verifyPurpose}
+                  onClose={closeVerify}
+                />
+              )}
+              <form noValidate onSubmit={advance}>
+                <div
+                  ref={wizardBodyRef}
+                  className="expert-wizard-body pt-4 pb-[30px]"
+                  key={step}
+                >
+                  {step !== 0 && stepHeading}
+                  {step === 0 && (
+                    <PersonalInformation
+                      heading={stepHeading}
+                      profile={profile}
+                      formErrors={formErrors}
+                      avatar={avatar}
+                      avatarPreview={avatarPreview}
+                      independent={independent}
+                      onUpdate={(key, value) => {
+                        update(key, value)
+                        clearFormError(key)
+                      }}
+                      onAvatarChange={updateAvatar}
+                      onIndependentChange={setIndependentStatus}
+                      onError={setError}
+                    />
+                  )}
+                  {step === 1 && (
+                    <ProfessionalExperience
+                      profile={profile}
+                      fields={fields}
+                      cvFiles={files.CV ?? []}
+                      uploadQuota={uploadQuota}
+                      formErrors={formErrors}
+                      onUpdate={(key, value) => {
+                        update(key, value)
+                        clearFormError(key)
+                      }}
+                      onToggleField={toggleField}
+                      onCvFilesSelected={(f) => chooseFiles('CV', f)}
+                      onRemoveCvFile={(i) => removeFile('CV', i)}
+                    />
+                  )}
+                  {step === 2 && (
+                    <SupportingDocuments
+                      formErrors={formErrors}
+                      activeCriterion={activeCriterion}
+                      files={files}
+                      uploadQuota={uploadQuota}
+                      onCriterionSelect={setActiveCriterion}
+                      onFilesSelected={chooseFiles}
+                      onRemoveFile={removeFile}
+                    />
+                  )}
+                  {step === 3 && (
+                    <ReviewSubmit
+                      profile={profile}
+                      avatarPreview={avatarPreview}
+                      independent={independent}
+                      fields={fields}
+                      files={files}
+                      confirmed={confirmed}
+                      formErrors={formErrors}
+                      onConfirmedChange={toggleConfirmed}
+                      onEditStep={move}
+                    />
+                  )}
+                </div>
+                <WizardFooter
+                  step={step}
+                  returnToReview={returnToReview}
+                  submitting={submitting}
+                  draftSaved={draftSaved}
+                  onSaveDraft={saveDraft}
+                  onBack={() => move(step - 1)}
+                />
+              </form>
+            </section>
+            <ApplicationProgressRail
+              steps={steps}
+              step={step}
+              furthest={furthest}
+              onMove={move}
+              email={profile.email}
+              emailVerified={application?.emailVerified ?? false}
+              fileLimit={application?.maxFiles}
+              onVerify={openVerification}
+              missing={application?.missingRequirements ?? []}
+            />
+          </div>
         )}
         {(error || lifecycleError) && (
           <p

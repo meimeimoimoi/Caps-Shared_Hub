@@ -1,12 +1,5 @@
 import { Trans, useTranslation } from 'react-i18next'
-import {
-  ArrowRight,
-  Check,
-  ScanLine,
-  ShieldCheck,
-  Clock3,
-  CircleAlert,
-} from 'lucide-react'
+import { ArrowRight, Check, Clock3 } from 'lucide-react'
 import { labels } from '../constants'
 import type { Stage } from '../types'
 import { SupplementForm, type SupplementFormProps } from './SupplementForm'
@@ -102,12 +95,20 @@ export function ApplicationStatus({
     (i) => i.result === 'NEED_MORE_INFORMATION'
   )
   const ineligible = stage === 'ineligible'
+  // Colour of the status pill: problem, action needed, done, or still in review
+  const tone = terminal
+    ? 'danger'
+    : stage === 'additional' || supplement
+      ? 'warning'
+      : stage === 'approved' || stage === 'eligible'
+        ? 'success'
+        : 'progress'
 
   return (
     <>
       <div className="expert-status-header">
         <div className="min-w-0">
-          <h1 className="!text-[36px] !tracking-[-0.025em] [text-wrap:balance] md:!text-[48px]">
+          <h1 className="!text-[30px] !tracking-[-0.025em] [text-wrap:balance] md:!text-[34px]">
             {t(labels[stage])}
           </h1>
           <p className={mutedCls}>
@@ -153,26 +154,16 @@ export function ApplicationStatus({
       <section
         className={`expert-status-action ${terminal ? 'is-terminal' : ''}`}
       >
-        <div className="expert-status-action-top">
-          <span className="expert-status-state-icon" aria-hidden="true">
-            {terminal || stage === 'additional' ? (
-              <CircleAlert size={26} />
-            ) : stage === 'approved' || stage === 'eligible' ? (
-              <ShieldCheck size={26} />
-            ) : (
-              <ScanLine size={26} />
-            )}
-          </span>
-          <span className="expert-status-state-label">
-            {terminal
-              ? t('status.outcome')
-              : stage === 'additional' || supplement
-                ? t('status.action')
-                : stage === 'approved' || stage === 'eligible'
-                  ? t('status.complete')
-                  : t('status.inProgress')}
-          </span>
-        </div>
+        <span className="expert-status-pill" data-tone={tone}>
+          <span className="expert-status-pill-dot" aria-hidden="true" />
+          {terminal
+            ? t('status.outcome')
+            : stage === 'additional' || supplement
+              ? t('status.action')
+              : stage === 'approved' || stage === 'eligible'
+                ? t('status.complete')
+                : t('status.inProgress')}
+        </span>
         <h2>
           {supplement
             ? t('status.supplement')
@@ -182,7 +173,9 @@ export function ApplicationStatus({
                 ? t('status.selectedApproved')
                 : stage === 'screening'
                   ? t('status.screening')
-                  : t('status.next')}
+                  : stage === 'eligibility'
+                    ? t('status.eligibilityTitle')
+                    : t('status.next')}
         </h2>
         {supplement ? (
           <SupplementForm {...supplementFormProps} />
@@ -275,7 +268,6 @@ export function ApplicationStatus({
                     ? t('status.competencyDescription')
                     : t('status.finalDescription')}
             </p>
-            <p className={mutedCls}>{t('status.noDate')}</p>
           </>
         )}
         {!terminal &&
@@ -289,14 +281,14 @@ export function ApplicationStatus({
             </div>
           )}
         {visibleHistory.length > 0 && (
-          <details className="expert-status-history">
-            <summary>{t('status.history')}</summary>
-            <ul>
-              {visibleHistory.map((h, i) => (
+          <section className="expert-status-activity">
+            <h3>{t('status.history')}</h3>
+            <ol>
+              {[...visibleHistory].reverse().map((h, i) => (
                 <li key={i}>{h}</li>
               ))}
-            </ul>
-          </details>
+            </ol>
+          </section>
         )}
       </section>
     </>

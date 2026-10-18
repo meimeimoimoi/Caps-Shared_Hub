@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next'
-import { Info, Edit2 } from 'lucide-react'
+import { CircleAlert } from 'lucide-react'
+import { HelpTip } from '@/components/ui/feedback/help-tip'
 import type { EvidenceFile, Profile } from '../../types'
 import { RegistrationSummary } from './RegistrationSummary'
 
@@ -12,7 +13,8 @@ export interface ReviewSubmitProps {
   confirmed: boolean
   formErrors: Record<string, string>
   onConfirmedChange: (val: boolean) => void
-  onEdit: () => void
+  /** Opens the step that holds a section; saving there comes back to this review */
+  onEditStep: (step: number) => void
 }
 
 export function ReviewSubmit({
@@ -24,7 +26,7 @@ export function ReviewSubmit({
   confirmed,
   formErrors,
   onConfirmedChange,
-  onEdit,
+  onEditStep,
 }: ReviewSubmitProps) {
   const { t } = useTranslation('expertRegistration')
 
@@ -32,14 +34,7 @@ export function ReviewSubmit({
     <div className="expert-pro-review">
       <div className="expert-review-toolbar">
         <p>{t('review.guidance')}</p>
-        <button
-          type="button"
-          onClick={onEdit}
-          className="expert-review-edit"
-        >
-          <Edit2 size={14} />
-          {t('actions.edit')}
-        </button>
+        <HelpTip label={t('review.aiHelpLabel')}>{t('review.ai')}</HelpTip>
       </div>
 
       <RegistrationSummary
@@ -48,13 +43,8 @@ export function ReviewSubmit({
         independent={independent}
         fields={fields}
         files={files}
+        onEditStep={onEditStep}
       />
-
-      {/* ── AI Notice ── */}
-      <div className="expert-review-notice">
-        <Info className="expert-pro-notice-icon" aria-hidden="true" />
-        <p>{t('review.ai')}</p>
-      </div>
 
       {/* ── Confirmation Checkbox ── */}
       <div className="expert-review-confirmation">
@@ -72,7 +62,7 @@ export function ReviewSubmit({
               }
               required
             />
-            <span className="text-[14.5px] leading-relaxed font-medium text-text-strong">
+            <span className="text-text-strong text-[14.5px] leading-relaxed font-medium">
               {t('review.confirm')}
             </span>
           </label>
@@ -81,9 +71,10 @@ export function ReviewSubmit({
           <p
             id="error-confirmed"
             role="alert"
-            className="text-ex-error-text m-0 pl-[30px] text-[13px] font-medium"
+            className="expert-review-confirmation-error"
           >
-            {formErrors.confirmed}
+            <CircleAlert size={15} aria-hidden="true" />
+            <span>{formErrors.confirmed}</span>
           </p>
         )}
       </div>

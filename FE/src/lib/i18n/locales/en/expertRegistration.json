@@ -45,12 +45,18 @@
     "selected_other": "{{count}} files selected"
   },
   "files": {
+    "open": "View document",
+    "openNamed": "View {{name}} (opens in a new tab)",
+    "opening": "Opening document…",
+    "openError": "Could not load the document. Please try again.",
+    "popupBlocked": "Your browser blocked the new tab. Allow pop-ups and try again.",
     "remove": "Remove {{name}}",
     "choose": "Choose files for {{category}}",
     "meta": "{{extension}} · {{size}} · Uploaded",
     "uploading": "Uploading…",
     "uploadedSize": "{{size}} KB · Uploaded",
-    "localSize": "{{size}} KB · Selected locally"
+    "localSize": "{{size}} KB · Selected locally",
+    "view": "View"
   },
   "stages": {
     "screening": "AI-assisted screening",
@@ -148,7 +154,10 @@
     "submitting": "Submitting…",
     "edit": "Edit application",
     "send": "Send additional information",
-    "sending": "Sending…"
+    "sending": "Sending…",
+    "saveAndReview": "Save and back to review",
+    "editShort": "Edit",
+    "editSection": "Edit {{section}}"
   },
   "fields": {
     "fullName": "Full name",
@@ -171,7 +180,8 @@
     "introduction": "Introduction",
     "bio": "Short introduction",
     "bioPlaceholder": "Share your experience and who you help.",
-    "bioPublic": "May appear publicly once marketplace eligibility requirements are met."
+    "bioPublic": "May appear publicly once marketplace eligibility requirements are met.",
+    "birthHelp": "Enter it as day/month/year (DD/MM/YYYY), for example 15/08/1988. You can also pick it from the calendar."
   },
   "password": {
     "required": "Password *",
@@ -213,7 +223,8 @@
     "photoFormats": "JPG, PNG, WebP · max 5 MB",
     "photoError": "Choose a JPG, PNG or WebP image up to 5 MB.",
     "profile": "Profile",
-    "contactFromAccount": "From the account you just created."
+    "contactFromAccount": "Your email and phone come from the account you just created, so there is no need to enter them again.",
+    "contactHelpLabel": "Where contact details come from"
   },
   "experience": {
     "heading": "Professional experience",
@@ -237,12 +248,12 @@
     "fix": "Your information is still here. Update the following to continue.",
     "yearsUnit": "years",
     "cvRequired": "Curriculum vitae (CV) *",
-    "issueCount": "{{count}} details to complete"
+    "issueCount": "{{count}} details to complete",
+    "yearsHelp": "Total years you have worked directly in tax or accounting, in whole years. Shared Hub's current policy requires at least 5 years.",
+    "cvHelp": "Your CV is self-declared and helps the reviewer check your experience. Professional evidence is uploaded in the next step."
   },
   "documents": {
     "heading": "Supporting documents",
-    "guidance": "Organize evidence by eligibility criterion. The final required documents will be determined by the approved policy.",
-    "preview": "Documents are grouped by eligibility criteria; you don't need all five groups. Your CV was added in the previous step.",
     "categories": "Evidence categories",
     "evidence": "Provide relevant supporting evidence. Accepted document types and applicability must be confirmed by the eligibility policy.",
     "empty": "No documents selected.",
@@ -253,13 +264,17 @@
     "formats": "PDF, JPG or PNG · up to 10 MB each",
     "local": "selected locally",
     "countLabel": "Documents",
-    "countNote": "Selected documents are awaiting verification. File count does not indicate approval."
+    "countNote": "Selected documents are awaiting verification. File count does not indicate approval.",
+    "lead": "Upload evidence for each eligibility group. You don't need all five groups; your CV was added in the previous step.",
+    "none": "None yet",
+    "groupsDone": "{{done}} of {{total}} groups have documents"
   },
   "review": {
     "heading": "Review and submit",
     "guidance": "Review your information carefully before submitting your formal application.",
     "ai": "AI supports screening. Authorized reviewers assess eligibility and service competency. A System Admin performs final approval.",
-    "confirm": "I certify that the information provided in this application is accurate and complete."
+    "confirm": "I certify that the information provided in this application is accurate and complete.",
+    "aiHelpLabel": "Who reviews your application"
   },
   "supplement": {
     "guidance": "Provide a replacement document or an explanation as requested by the reviewer.",
@@ -303,14 +318,14 @@
     "preview": "Preview service review",
     "returned": "The final approver has returned the qualification to service competency review. This is not a new rejection or reapplication. The assigned reviewer will address the governance findings.",
     "aiDescription": "AI assists with extracting information and identifying missing or inconsistent evidence. An authorized reviewer makes the eligibility decision.",
-    "eligibilityDescription": "An authorized reviewer is checking your eligibility evidence. You do not need to take action right now.",
+    "eligibilityDescription": "An authorized reviewer is checking your eligibility evidence.",
     "competencyDescription": "An authorized reviewer is assessing your evidence for CIT document review (illustrative service). This decision applies only to this service.",
     "finalDescription": "Eligibility and service competency reviews have passed. A System Admin will perform the final governance check.",
-    "noDate": "No review completion date has been configured.",
     "noAction": "No action needed right now. Follow the review progress above.",
     "history": "Activity history",
     "toSupplement": "What to supplement",
-    "unmetCriteria": "Requirements not met"
+    "unmetCriteria": "Requirements not met",
+    "eligibilityTitle": "Your application is waiting for the eligibility review"
   },
   "page": {
     "title": "Expert registration",
@@ -318,7 +333,6 @@
     "submitted": "Submitted application",
     "applicant": "Expert applicant",
     "experience": "Experience",
-    "view": "View full application",
     "details": "Application details",
     "submittedInfo": "Your submitted information and supporting documents",
     "steps": "Application steps",
@@ -335,21 +349,59 @@
   },
   "verifyEmail": {
     "title": "Verify your email to submit",
-    "body": "We sent a 6-digit code to {{email}}. Your application is submitted as soon as you verify.",
+    "body": "Enter the 6-digit code just sent to <strong>{{email}}</strong>. Your application is submitted as soon as you verify.",
     "uploadTitle": "Verify your email to upload more documents",
-    "uploadBody": "Until your email is verified, an application can hold 3 files. Enter the 6-digit code sent to {{email}}, then choose the files again.",
+    "uploadBody": "Enter the 6-digit code just sent to <strong>{{email}}</strong> to upload more files. Files already uploaded are kept.",
     "later": "Later",
-    "resend": "Resend email",
-    "cooldown": "Resend in {{seconds}} seconds",
-    "check": "I've verified it",
-    "resent": "Email sent again.",
-    "failed": "Couldn't send it. Please try again.",
-    "stillPending": "Your email isn't verified yet.",
+    "resend": "Resend code",
+    "cooldown": "You can resend in {{seconds}} seconds",
+    "check": "Check again",
+    "resent": "A new code is on its way. The old one no longer works.",
+    "failed": "Couldn't send the code. Please try again.",
+    "stillPending": "Your email isn't verified yet. Enter the code or use the button in the email.",
     "reminderTitle": "Verify your email",
-    "reminderBody": "Enter the 6-digit code sent to {{email}}. You can keep filling in your application; only submitting needs a verified email."
+    "reminderBody": "Enter the 6-digit code just sent to <strong>{{email}}</strong>. Meanwhile you can keep filling in and saving your application.",
+    "noCode": "Didn't get the code?",
+    "usedLink": "Used the button in the email?"
   },
   "verifyReminder": {
-    "text": "{{email}} is not verified yet. You can fill in and save your application, but you need to verify it to submit.",
-    "action": "Enter verification code"
+    "title": "Verify your email to submit",
+    "body": "We sent a 6-digit code to <strong>{{email}}</strong>. You can keep filling in and saving your application meanwhile.",
+    "action": "Enter code"
+  },
+  "rail": {
+    "title": "Application progress",
+    "emailVerified": "Email verified",
+    "emailUnverified": "Email not verified",
+    "emailSentTo": "We sent a 6-digit code to",
+    "verify": "Enter verification code",
+    "requirementsTitle": "Needed to submit",
+    "requirementsDone": "All required information is in",
+    "missing": {
+      "phone": "Phone number",
+      "yearsExperience": "Years of experience",
+      "fields": "At least one field of expertise",
+      "cv": "CV file"
+    },
+    "stepCount": "Step {{current}} of {{total}}",
+    "stepCurrent": "In progress",
+    "stepDone": "Saved",
+    "fileLimit": "Until verified, the application holds up to {{max}} files."
+  },
+  "helpFor": "About {{label}}",
+  "criteriaHelp": {
+    "legal": "Shows you meet the basic legal conditions for the person who performs the service, including residence where it applies.",
+    "qualifications": "Evidence of your tax qualifications or certificates. The reviewer checks these rather than relying on your CV alone.",
+    "development": "Shows you keep your professional knowledge up to date where the applicable rules require it.",
+    "ethics": "Shows you follow professional ethics and do not collude in or assist breaches of tax law.",
+    "confidentiality": "Shows you keep user and taxpayer information confidential and use data only within the service."
+  },
+  "quota": {
+    "remaining": "{{used}} of {{max}} files used while your email is unverified.",
+    "verifyLink": "Verify your email to upload more",
+    "unverifiedTitle": "All {{max}} files used before email verification",
+    "unverifiedBody": "Verify your email to keep uploading. Files already uploaded are kept.",
+    "fullTitle": "The application holds the maximum of {{max}} files",
+    "fullBody": "Remove files you no longer need to add other documents."
   }
 }

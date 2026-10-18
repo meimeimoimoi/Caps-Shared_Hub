@@ -1,8 +1,9 @@
 import { useTranslation } from 'react-i18next'
 import { formControlClassName as inputCls } from '@/components/ui/forms/form-control'
 import { Check, CircleAlert, TriangleAlert } from 'lucide-react'
-import type { EvidenceFile, Profile } from '../../types'
+import type { EvidenceFile, Profile, UploadQuota } from '../../types'
 import { FormField } from '@/components/ui/forms/form-field'
+import { HelpTip } from '@/components/ui/feedback/help-tip'
 import { FileUploader } from '../FileUploader'
 import { expertiseOptions, expertiseKey } from '../../constants'
 
@@ -10,6 +11,7 @@ export interface ProfessionalExperienceProps {
   profile: Profile
   fields: string[]
   cvFiles: EvidenceFile[]
+  uploadQuota?: UploadQuota
   formErrors: Record<string, string>
   onUpdate: (key: keyof Profile, value: string) => void
   onToggleField: (field: string) => void
@@ -21,6 +23,7 @@ export function ProfessionalExperience({
   profile,
   fields,
   cvFiles,
+  uploadQuota,
   formErrors,
   onUpdate,
   onToggleField,
@@ -96,6 +99,7 @@ export function ProfessionalExperience({
         <div className="expert-pro-experience-grid">
           <FormField
             label={t('experience.taxYears')}
+            help={t('experience.yearsHelp')}
             htmlFor="experience-years"
             className="expert-years-stack"
             error={formErrors.years}
@@ -159,6 +163,9 @@ export function ProfessionalExperience({
           <h3 className="expert-pro-section-title">
             {t('experience.expertiseRequired')}
           </h3>
+          <HelpTip label={t('helpFor', { label: t('experience.expertise') })}>
+            {t('experience.expertiseNote')}
+          </HelpTip>
         </div>
 
         <fieldset
@@ -203,9 +210,6 @@ export function ProfessionalExperience({
               {formErrors.expertise}
             </p>
           )}
-          <p className="expert-pro-chip-hint">
-            {t('experience.expertiseNote')}
-          </p>
         </fieldset>
       </div>
 
@@ -215,11 +219,15 @@ export function ProfessionalExperience({
           <h3 className="expert-pro-section-title">
             {t('experience.cvRequired')}
           </h3>
+          <HelpTip label={t('helpFor', { label: t('experience.cv') })}>
+            {t('experience.cvHelp')}
+          </HelpTip>
         </div>
         <FileUploader
           id="CV"
           error={formErrors.CV}
           files={cvFiles}
+          quota={uploadQuota}
           onFilesSelected={onCvFilesSelected}
           onRemoveFile={onRemoveCvFile}
         />

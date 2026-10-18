@@ -21,7 +21,7 @@ export default function ExpertRegistrationPage() {
   const motionRef = useRegistrationMotion()
   const scrollRevealRef = useScrollReveal()
   const { application, setApplication, syncVerifiedSession } =
-    useExpertApplication()
+    useExpertApplication({ enabled: false })
   const {
     account,
     notice,
@@ -52,7 +52,7 @@ export default function ExpertRegistrationPage() {
   return (
     <div
       ref={mergeRefs(motionRef, scrollRevealRef)}
-      className={`expert-welcome expert-signup min-h-screen ${expertPageCls}`}
+      className={`expert-welcome expert-signup bg-ex-bg min-h-screen ${expertPageCls}`}
     >
       <main className="expert-signup-layout">
         <AccountIntroduction />
