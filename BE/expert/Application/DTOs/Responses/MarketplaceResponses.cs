@@ -1,6 +1,9 @@
 namespace Caps.Expert.Application.DTOs.Responses;
 
 /// <summary>One expert card in the marketplace list.</summary>
+/// <param name="VerifiedRate">Percent of delivered cases VERIFIED; null until the expert has enough cases.</param>
+/// <param name="Fee">Price of the chosen service, or the lowest price when no service is chosen.</param>
+/// <param name="Available">Takes new cases and has a free slot now.</param>
 public sealed record MarketplaceExpertItem(
     Guid Id,
     string? DisplayName,
@@ -9,7 +12,10 @@ public sealed record MarketplaceExpertItem(
     int? YearsExperience,
     decimal RatingAvg,
     int RatingCount,
-    long? MinFee
+    int? VerifiedRate,
+    int? TurnaroundHours,
+    long? Fee,
+    bool Available
 );
 
 /// <summary>A page of experts; HasMore avoids a COUNT(*) on every request.</summary>
@@ -36,5 +42,7 @@ public sealed record MarketplaceExpertDetail(
     int? TurnaroundHours,
     decimal RatingAvg,
     int RatingCount,
-    IReadOnlyList<MarketplaceOffering> Offerings
+    IReadOnlyList<MarketplaceOffering> Offerings,
+    bool Available,
+    int? VerifiedRate
 );

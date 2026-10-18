@@ -1,3 +1,4 @@
+using Caps.Expert.Application.Common;
 using Caps.Expert.Application.DTOs.Responses;
 
 namespace Caps.Expert.Application.Abstractions;
@@ -6,8 +7,7 @@ namespace Caps.Expert.Application.Abstractions;
 public interface IMarketplaceReader
 {
     Task<IReadOnlyList<MarketplaceExpertItem>> SearchAsync(
-        string? keyword,
-        string? field,
+        MarketplaceFilter filter,
         int skip,
         int take,
         CancellationToken ct

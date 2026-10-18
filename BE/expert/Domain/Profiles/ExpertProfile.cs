@@ -27,6 +27,15 @@ public sealed class ExpertProfile
     /// <summary>Most cases one expert may run at once.</summary>
     public const int MaxCapacity = 20;
 
+    /// <summary>Cases needed before the VERIFIED rate counts for ranking.</summary>
+    public const int MinCasesForRate = 5;
+
+    /// <summary>VERIFIED rate (percent) that puts an expert in the top ranking tier.</summary>
+    public const int VerifiedTargetPercent = 80;
+
+    /// <summary>Longest delivery promise an expert may give (30 days).</summary>
+    public const int MaxTurnaroundHours = 720;
+
     private ExpertProfile() { }
 
     public Guid Id { get; } = UuidV7.NewGuid();
@@ -55,6 +64,13 @@ public sealed class ExpertProfile
 
     /// <summary>Cases currently holding one of the expert's slots (changed by the case flow, not by the expert).</summary>
     public int ActiveCases { get; }
+
+    /// <summary>Cases delivered so far (updated by the case flow on delivery).</summary>
+    public int DeliveredCount { get; }
+
+    /// <summary>Delivered cases whose result was VERIFIED.</summary>
+    public int VerifiedCount { get; }
+
     public string? EligibilityNote { get; }
     public int? TurnaroundHours { get; private set; }
     public decimal RatingAvg { get; }
@@ -105,12 +121,29 @@ public sealed class ExpertProfile
     public bool IsApproved => Status == ExpertApplicationStatus.Approved;
 
     /// <summary>Turns taking new cases on or off and sets how many run at once; running cases are untouched.</summary>
-    public void SetAvailability(bool accepting, int capacity, DateTimeOffset now)
+    public void SetAvailability(
+        bool accepting,
+        int capacity,
+        int activeOfferings,
+        DateTimeOffset now
+    )
     {
         if (capacity < 1 || capacity > MaxCapacity)
             throw ExpertErrors.CapacityInvalid(MaxCapacity);
+        // Pausing is always allowed; taking cases needs something to sell and a delivery promise
+        if (accepting && (activeOfferings == 0 || TurnaroundHours is null))
+            throw ExpertErrors.NotReadyToAccept();
         ServiceStatus = accepting ? ExpertServiceStatus.Active : ExpertServiceStatus.Inactive;
         Capacity = capacity;
+        UpdatedAt = now;
+    }
+
+    /// <summary>Hours the expert promises from starting a review to delivering it (sets the case deadline).</summary>
+    public void SetTurnaroundHours(int hours, DateTimeOffset now)
+    {
+        if (hours < 1 || hours > MaxTurnaroundHours)
+            throw ExpertErrors.TurnaroundInvalid(MaxTurnaroundHours);
+        TurnaroundHours = hours;
         UpdatedAt = now;
     }
 

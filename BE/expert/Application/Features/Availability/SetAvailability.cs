@@ -22,7 +22,8 @@ public sealed class SetAvailabilityHandler(
     )
     {
         var profile = await profiles.GetApprovedAsync(command.UserId, ct);
-        profile.SetAvailability(command.Accepting, command.Capacity, clock.GetUtcNow());
+        var offerings = await profiles.CountActiveOfferingsAsync(profile.Id, ct);
+        profile.SetAvailability(command.Accepting, command.Capacity, offerings, clock.GetUtcNow());
         await unitOfWork.SaveChangesAsync(ct);
         return new(
             profile.ServiceStatus == ExpertServiceStatus.Active,

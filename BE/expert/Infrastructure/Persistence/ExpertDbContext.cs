@@ -33,7 +33,7 @@ public sealed class ExpertDbContext(DbContextOptions<ExpertDbContext> options) :
                 t =>
                     t.HasCheckConstraint(
                         "ck_expert_capacity",
-                        "capacity >= 0 AND active_cases >= 0"
+                        "capacity >= 0 AND active_cases >= 0 AND verified_count BETWEEN 0 AND delivered_count"
                     )
             );
             e.HasKey(x => x.Id);
@@ -61,6 +61,8 @@ public sealed class ExpertDbContext(DbContextOptions<ExpertDbContext> options) :
                 .IsRequired();
             e.Property(x => x.Capacity).HasColumnName("capacity").HasDefaultValue(0);
             e.Property(x => x.ActiveCases).HasColumnName("active_cases").HasDefaultValue(0);
+            e.Property(x => x.DeliveredCount).HasColumnName("delivered_count").HasDefaultValue(0);
+            e.Property(x => x.VerifiedCount).HasColumnName("verified_count").HasDefaultValue(0);
             e.Property(x => x.EligibilityNote).HasColumnName("eligibility_note");
             e.Property(x => x.TurnaroundHours).HasColumnName("turnaround_hours");
             e.Property(x => x.RatingAvg)
