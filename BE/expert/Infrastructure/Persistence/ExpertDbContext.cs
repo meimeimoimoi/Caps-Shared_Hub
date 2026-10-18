@@ -1,5 +1,6 @@
 using Caps.Expert.Domain.Applications;
 using Caps.Expert.Domain.Catalog;
+using Caps.Expert.Domain.Pricing;
 using Caps.Expert.Domain.Profiles;
 using Caps.Expert.Domain.Qualifications;
 using Caps.Expert.Infrastructure.Messaging;
@@ -23,7 +24,8 @@ public sealed class ExpertDbContext(DbContextOptions<ExpertDbContext> options) :
     public DbSet<ExpertServiceQualification> Qualifications => Set<ExpertServiceQualification>();
     public DbSet<QualificationEvent> QualificationEvents => Set<QualificationEvent>();
     public DbSet<CompetencyAssessment> CompetencyAssessments => Set<CompetencyAssessment>();
-    public DbSet<ServiceOffering> ServiceOfferings => Set<ServiceOffering>();
+    public DbSet<ServicePricingVersion> PricingVersions => Set<ServicePricingVersion>();
+    public DbSet<PricingEvent> PricingEvents => Set<PricingEvent>();
     public DbSet<ServiceCatalogItem> ServiceCatalog => Set<ServiceCatalogItem>();
     public DbSet<NotificationOutboxEntry> NotificationOutbox => Set<NotificationOutboxEntry>();
     public DbSet<AvailabilitySlot> AvailabilitySlots => Set<AvailabilitySlot>();
@@ -358,23 +360,67 @@ public sealed class ExpertDbContext(DbContextOptions<ExpertDbContext> options) :
             );
         });
 
-        modelBuilder.Entity<ServiceOffering>(e =>
+        modelBuilder.Entity<ServicePricingVersion>(e =>
         {
-            e.ToTable("service_offering");
+            e.ToTable("service_pricing_version");
             e.HasKey(x => x.Id);
             e.Property(x => x.Id).HasColumnName("id");
+            e.Property(x => x.QualificationId).HasColumnName("qualification_id");
             e.Property(x => x.ExpertProfileId).HasColumnName("expert_profile_id");
-            e.Property(x => x.ServiceType).HasColumnName("service_type").IsRequired();
-            e.Property(x => x.Fee).HasColumnName("fee");
-            e.Property(x => x.IsActive).HasColumnName("is_active").HasDefaultValue(true);
+            e.Property(x => x.ServiceCode)
+                .HasColumnName("service_code")
+                .HasMaxLength(64)
+                .IsRequired();
+            e.Property(x => x.Sequence).HasColumnName("sequence");
+            e.Property(x => x.Amount).HasColumnName("amount");
+            e.Property(x => x.EffectiveFrom).HasColumnName("effective_from");
+            e.Property(x => x.EffectiveTo).HasColumnName("effective_to");
+            e.Property(x => x.Reason).HasColumnName("reason").HasMaxLength(1000);
+            e.Property(x => x.Status).HasColumnName("status").HasMaxLength(32).IsRequired();
+            e.Property(x => x.ChangePercent).HasColumnName("change_percent");
+            e.Property(x => x.AutoApproved).HasColumnName("auto_approved");
+            e.Property(x => x.DecidedByUserId).HasColumnName("decided_by_user_id");
+            e.Property(x => x.DecisionNote).HasColumnName("decision_note");
+            e.Property(x => x.SubmittedAt).HasColumnName("submitted_at");
+            e.Property(x => x.DecidedAt).HasColumnName("decided_at");
             e.Property(x => x.CreatedAt).HasColumnName("created_at").IsRequired();
-            e.HasIndex(x => new { x.ExpertProfileId, x.IsActive })
-                .HasDatabaseName("ix_service_offering_active");
-            e.HasOne(x => x.ExpertProfile)
-                .WithMany(p => p.ServiceOfferings)
-                .HasForeignKey(x => x.ExpertProfileId)
-                .OnDelete(DeleteBehavior.Restrict)
-                .HasConstraintName("fk_service_offering_profile");
+            e.Property(x => x.UpdatedAt).HasColumnName("updated_at").IsRequired();
+            e.HasIndex(x => new { x.QualificationId, x.Sequence })
+                .IsUnique()
+                .HasDatabaseName("ux_service_pricing_version_sequence");
+            // At most one undecided version per service
+            e.HasIndex(x => x.QualificationId)
+                .IsUnique()
+                .HasFilter("status IN ('DRAFT', 'RETURN_FOR_REVISION', 'PENDING_APPROVAL')")
+                .HasDatabaseName("ux_service_pricing_version_open");
+            // Approval queue and portal lookups
+            e.HasIndex(x => new { x.Status, x.SubmittedAt })
+                .HasDatabaseName("ix_service_pricing_version_queue");
+            e.HasOne<ExpertServiceQualification>()
+                .WithMany()
+                .HasForeignKey(x => x.QualificationId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("fk_service_pricing_version_qualification");
+        });
+
+        modelBuilder.Entity<PricingEvent>(e =>
+        {
+            e.ToTable("pricing_event");
+            e.HasKey(x => x.Id);
+            e.Property(x => x.Id).HasColumnName("id");
+            e.Property(x => x.PricingVersionId).HasColumnName("pricing_version_id");
+            e.Property(x => x.QualificationId).HasColumnName("qualification_id");
+            e.Property(x => x.Action).HasColumnName("action").HasMaxLength(32).IsRequired();
+            e.Property(x => x.ActorUserId).HasColumnName("actor_user_id");
+            e.Property(x => x.Note).HasColumnName("note");
+            e.Property(x => x.CreatedAt).HasColumnName("created_at").IsRequired();
+            e.HasIndex(x => new { x.QualificationId, x.CreatedAt })
+                .HasDatabaseName("ix_pricing_event_qualification");
+            e.HasOne<ServicePricingVersion>()
+                .WithMany()
+                .HasForeignKey(x => x.PricingVersionId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("fk_pricing_event_version");
         });
 
         modelBuilder.Entity<AvailabilitySlot>(e =>

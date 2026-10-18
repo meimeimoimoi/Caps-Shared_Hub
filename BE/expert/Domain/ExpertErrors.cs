@@ -227,6 +227,86 @@ public static class ExpertErrors
             "Action must be SUSPEND or REINSTATE."
         );
 
+    public static AppException PricingNotAllowed(string qualificationStatus) =>
+        new(
+            ErrorType.Conflict,
+            "PRICING_NOT_ALLOWED",
+            $"Prices can only be set for an approved service; this one is {qualificationStatus}."
+        );
+
+    public static AppException PriceOutOfRange(long min, long max) =>
+        new(
+            ErrorType.Validation,
+            "PRICE_OUT_OF_RANGE",
+            $"Price must be between {min} and {max} VND."
+        );
+
+    public static AppException EffectiveDateInPast() =>
+        new(
+            ErrorType.Validation,
+            "EFFECTIVE_DATE_IN_PAST",
+            "The effective date cannot be in the past."
+        );
+
+    public static AppException PricingReasonRequired() =>
+        new(
+            ErrorType.Validation,
+            "PRICING_REASON_REQUIRED",
+            "Explain the price before submitting it."
+        );
+
+    public static AppException PricingReasonTooLong(int max) =>
+        new(
+            ErrorType.Validation,
+            "PRICING_REASON_TOO_LONG",
+            $"The reason can be at most {max} characters."
+        );
+
+    public static AppException PricingVersionLocked(string status) =>
+        new(
+            ErrorType.Conflict,
+            "PRICING_VERSION_LOCKED",
+            $"This price cannot be changed while {status}."
+        );
+
+    public static AppException PricingPendingApproval() =>
+        new(
+            ErrorType.Conflict,
+            "PRICING_PENDING_APPROVAL",
+            "A price change is waiting for approval; wait for the decision before changing it again."
+        );
+
+    public static AppException PricingRevisionConflict() =>
+        new(
+            ErrorType.Conflict,
+            "PRICING_REVISION_CONFLICT",
+            "The prices changed meanwhile; reload and try again."
+        );
+
+    public static AppException PricingVersionNotFound() =>
+        new(ErrorType.NotFound, "PRICING_VERSION_NOT_FOUND", "Pricing version not found.");
+
+    public static AppException PricingNotPending(string status) =>
+        new(
+            ErrorType.Conflict,
+            "PRICING_NOT_PENDING",
+            $"Only prices waiting for approval can be decided; this one is {status}."
+        );
+
+    public static AppException PricingNoteRequired() =>
+        new(
+            ErrorType.Validation,
+            "PRICING_NOTE_REQUIRED",
+            "Explain why the price is returned or rejected."
+        );
+
+    public static AppException InvalidPricingDecision() =>
+        new(
+            ErrorType.Validation,
+            "INVALID_PRICING_DECISION",
+            "Decision must be APPROVE, RETURN_FOR_REVISION or REJECT."
+        );
+
     public static AppException NewEvidenceRequired() =>
         new(
             ErrorType.Validation,

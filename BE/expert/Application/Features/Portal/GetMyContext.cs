@@ -4,6 +4,7 @@ using Caps.Expert.Application.Common;
 using Caps.Expert.Application.DTOs.Responses;
 using Caps.Expert.Domain.Catalog;
 using Caps.Expert.Domain.Portal;
+using Caps.Expert.Domain.Pricing;
 using Caps.Expert.Domain.Qualifications;
 
 namespace Caps.Expert.Application.Features.Portal;
@@ -24,6 +25,7 @@ public sealed class GetMyContextHandler(
     IExpertProfileRepository profiles,
     IExpertApplicationRepository applications,
     IQualificationRepository qualifications,
+    IPricingRepository pricing,
     IServiceCatalogRepository catalog,
     TimeProvider clock
 ) : IQueryHandler<GetMyContextQuery, ExpertContextResponse>
@@ -41,16 +43,24 @@ public sealed class GetMyContextHandler(
             profile == null ? null : await applications.FindLatestAsync(profile.Id, ct);
         var latest =
             profile == null ? [] : await qualifications.ListLatestByProfileAsync(profile.Id, ct);
+        var prices = profile == null ? [] : await pricing.ListByProfileAsync(profile.Id, ct);
         var services = await catalog.ListActiveAsync(ct);
+        var now = clock.GetUtcNow();
+        var today = PricingRules.BusinessDate(now);
 
         var readiness = services
             .Select(service =>
-                Readiness(
+            {
+                var qualification = latest.FirstOrDefault(x => x.ServiceCode == service.Code);
+                var versions = prices.Where(x => x.QualificationId == qualification?.Id).ToArray();
+                return Readiness(
                     service,
                     application?.Status,
-                    latest.FirstOrDefault(x => x.ServiceCode == service.Code)?.Status
-                )
-            )
+                    qualification?.Status,
+                    versions.FirstOrDefault(x => x.IsInEffect(today)),
+                    versions.FirstOrDefault(x => x.Status == PricingStatus.PendingApproval)
+                );
+            })
             .ToArray();
         var facts = new PortalFacts(
             AnyServiceApproved: latest.Any(x => x.Status == QualificationStatus.ApprovedForService),
@@ -67,16 +77,18 @@ public sealed class GetMyContextHandler(
             application?.Status,
             new(true, null, PortalAccessRules.CapabilitiesOf(facts)),
             readiness,
-            clock.GetUtcNow(),
+            now,
             Version
         );
     }
 
-    // No pricing yet: nothing is bookable; the reason comes from the qualification, or Gate 1 before one exists
+    // Availability is not built yet, so nothing is bookable; the reason follows the furthest step reached
     private static ServiceReadinessResponse Readiness(
         ServiceCatalogItem service,
         string? applicationStatus,
-        string? qualificationStatus
+        string? qualificationStatus,
+        ServicePricingVersion? inEffect,
+        ServicePricingVersion? pending
     ) =>
         new(
             service.Code,
@@ -88,9 +100,23 @@ public sealed class GetMyContextHandler(
             [
                 qualificationStatus == null
                     ? PortalAccessRules.ReasonBeforeQualification(applicationStatus)
-                    : PortalAccessRules.ReasonForQualification(qualificationStatus),
+                    : PortalAccessRules.ReasonForQualification(
+                        qualificationStatus,
+                        inEffect != null,
+                        pending != null
+                    ),
             ],
-            null,
-            null
+            inEffect == null
+                ? null
+                : new(
+                    $"v{inEffect.Sequence}",
+                    StartOfDay(inEffect.EffectiveFrom),
+                    inEffect.EffectiveTo is { } to ? StartOfDay(to.AddDays(1)) : null
+                ),
+            pending == null ? null : $"v{pending.Sequence}"
         );
+
+    // Business dates are Vietnam dates (UTC+7)
+    private static DateTimeOffset StartOfDay(DateOnly day) =>
+        new(day.ToDateTime(TimeOnly.MinValue), TimeSpan.FromHours(7));
 }

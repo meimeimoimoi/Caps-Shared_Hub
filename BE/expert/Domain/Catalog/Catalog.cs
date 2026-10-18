@@ -3,20 +3,6 @@ using Caps.Expert.Domain.Profiles;
 
 namespace Caps.Expert.Domain.Catalog;
 
-/// <summary>A service an approved expert sells; managed by a later phase (no API yet).</summary>
-public sealed class ServiceOffering
-{
-    private ServiceOffering() { }
-
-    public Guid Id { get; } = UuidV7.NewGuid();
-    public Guid ExpertProfileId { get; }
-    public ExpertProfile ExpertProfile { get; } = default!;
-    public string ServiceType { get; } = default!;
-    public long Fee { get; }
-    public bool IsActive { get; } = true;
-    public DateTimeOffset CreatedAt { get; }
-}
-
 /// <summary>A time slot an expert can be booked for; managed by a later phase (no API yet).</summary>
 public sealed class AvailabilitySlot
 {

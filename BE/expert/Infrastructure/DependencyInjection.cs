@@ -33,6 +33,7 @@ public static class DependencyInjection
         services.AddScoped<IQualificationRepository, QualificationRepository>();
         services.AddScoped<ICompetencyAssessmentRepository, CompetencyAssessmentRepository>();
         services.AddScoped<IQualificationEvidenceRepository, QualificationEvidenceRepository>();
+        services.AddScoped<IPricingRepository, PricingRepository>();
         services.AddScoped<IExpertNotificationOutbox, ExpertNotificationOutbox>();
         services.AddSingleton<IObjectStorage, S3ObjectStorage>();
         return services;

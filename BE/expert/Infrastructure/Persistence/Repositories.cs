@@ -1,6 +1,7 @@
 using Caps.Expert.Application.Abstractions;
 using Caps.Expert.Domain.Applications;
 using Caps.Expert.Domain.Catalog;
+using Caps.Expert.Domain.Pricing;
 using Caps.Expert.Domain.Profiles;
 using Caps.Expert.Domain.Qualifications;
 using Microsoft.EntityFrameworkCore;
@@ -316,4 +317,98 @@ public sealed class QualificationEvidenceRepository(ExpertDbContext db)
             x.QualificationId == qualification.Id
             || (x.QualificationId == null && x.ApplicationId == qualification.ApplicationId)
         );
+}
+
+/// <summary>EF Core store for Pricing Versions and their audit trail.</summary>
+public sealed class PricingRepository(ExpertDbContext db) : IPricingRepository
+{
+    private static readonly string[] OpenStatuses =
+    [
+        PricingStatus.Draft,
+        PricingStatus.ReturnForRevision,
+        PricingStatus.PendingApproval,
+    ];
+
+    public async Task<IReadOnlyList<ServicePricingVersion>> ListAsync(
+        Guid qualificationId,
+        CancellationToken ct
+    ) =>
+        await db
+            .PricingVersions.AsNoTracking()
+            .Where(x => x.QualificationId == qualificationId)
+            .OrderByDescending(x => x.Sequence)
+            .ToListAsync(ct);
+
+    public async Task<IReadOnlyList<ServicePricingVersion>> ListByProfileAsync(
+        Guid profileId,
+        CancellationToken ct
+    ) =>
+        await db
+            .PricingVersions.AsNoTracking()
+            .Where(x => x.ExpertProfileId == profileId)
+            .ToListAsync(ct);
+
+    public Task<ServicePricingVersion?> FindOpenAsync(Guid qualificationId, CancellationToken ct) =>
+        db.PricingVersions.SingleOrDefaultAsync(
+            x => x.QualificationId == qualificationId && OpenStatuses.Contains(x.Status),
+            ct
+        );
+
+    public Task<ServicePricingVersion?> FindLatestApprovedAsync(
+        Guid qualificationId,
+        CancellationToken ct
+    ) =>
+        db
+            .PricingVersions.Where(x =>
+                x.QualificationId == qualificationId && x.Status == PricingStatus.Approved
+            )
+            .OrderByDescending(x => x.Sequence)
+            .FirstOrDefaultAsync(ct);
+
+    public Task<ServicePricingVersion?> FindAsync(Guid versionId, CancellationToken ct) =>
+        db.PricingVersions.SingleOrDefaultAsync(x => x.Id == versionId, ct);
+
+    public async Task<int> MaxSequenceAsync(Guid qualificationId, CancellationToken ct) =>
+        await db
+            .PricingVersions.Where(x => x.QualificationId == qualificationId)
+            .MaxAsync(x => (int?)x.Sequence, ct)
+        ?? 0;
+
+    public Task<Guid?> FindExpertUserIdAsync(Guid versionId, CancellationToken ct) =>
+        db
+            .PricingVersions.Where(x => x.Id == versionId)
+            .Select(x =>
+                db.ExpertProfiles.Where(p => p.Id == x.ExpertProfileId)
+                    .Select(p => (Guid?)p.UserId)
+                    .FirstOrDefault()
+            )
+            .SingleOrDefaultAsync(ct);
+
+    public async Task<IReadOnlyList<ServicePricingVersion>> ListByStatusAsync(
+        string status,
+        CancellationToken ct
+    ) =>
+        await db
+            .PricingVersions.AsNoTracking()
+            .Where(x => x.Status == status)
+            .OrderBy(x => x.SubmittedAt)
+            .ToListAsync(ct);
+
+    public async Task<IReadOnlyList<PricingEvent>> ListEventsAsync(
+        Guid qualificationId,
+        CancellationToken ct
+    ) =>
+        await db
+            .PricingEvents.AsNoTracking()
+            .Where(x => x.QualificationId == qualificationId)
+            .OrderBy(x => x.CreatedAt)
+            .ThenBy(x => x.Id)
+            .ToListAsync(ct);
+
+    public Task<int> CountEventsAsync(Guid qualificationId, CancellationToken ct) =>
+        db.PricingEvents.CountAsync(x => x.QualificationId == qualificationId, ct);
+
+    public void Add(ServicePricingVersion version) => db.PricingVersions.Add(version);
+
+    public void AddEvents(IEnumerable<PricingEvent> events) => db.PricingEvents.AddRange(events);
 }

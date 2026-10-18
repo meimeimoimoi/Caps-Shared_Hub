@@ -59,7 +59,6 @@ public sealed class ExpertProfile
     public DateTimeOffset UpdatedAt { get; private set; }
 
     public ICollection<ExpertApplication> Applications { get; } = [];
-    public ICollection<ServiceOffering> ServiceOfferings { get; } = [];
     public ICollection<AvailabilitySlot> AvailabilitySlots { get; } = [];
 
     /// <summary>A new profile for the account, created on its first application.</summary>

@@ -1,4 +1,5 @@
 using Caps.Expert.Domain.Applications;
+using Caps.Expert.Domain.Pricing;
 using Caps.Expert.Domain.Qualifications;
 
 namespace Caps.Expert.Application;
@@ -15,8 +16,20 @@ public sealed class ExpertPolicyOptions
     /// <summary>expert.reapply_competency_fail_days: wait after Gate 2 FAIL for the same service (BR-E22).</summary>
     public int ReapplyCompetencyFailDays { get; set; } = 90;
 
+    /// <summary>pricing.min_price: lowest service price in VND (POL-MKT-02).</summary>
+    public long PricingMinPrice { get; set; } = 1_000_000;
+
+    /// <summary>pricing.max_price: highest service price in VND (POL-MKT-02).</summary>
+    public long PricingMaxPrice { get; set; } = 10_000_000;
+
+    /// <summary>pricing.auto_approve_max_change_percent: larger changes wait for a System Admin (BR-E17).</summary>
+    public int PricingAutoApproveMaxChangePercent { get; set; } = 50;
+
     public EligibilityPolicy Eligibility =>
         new(MinYearsExperience, TimeSpan.FromDays(ReapplyNotEligibleDays));
 
     public CompetencyPolicy Competency => new(TimeSpan.FromDays(ReapplyCompetencyFailDays));
+
+    public PricingPolicy Pricing =>
+        new(PricingMinPrice, PricingMaxPrice, PricingAutoApproveMaxChangePercent);
 }
