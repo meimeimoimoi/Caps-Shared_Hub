@@ -9,7 +9,11 @@ It does **not** own accounts or roles (identity service) or case handling (workf
 - Domain: `ExpertProfile`, `ExpertApplication` (status transitions + audit events), `ExpertEvidence`, `ApplicationRules`, `ExpertErrors`.
 - Application: one handler per use case under `Features/Applications`; ports under `Abstractions/`.
 - Infrastructure: `ExpertDbContext` (schema `expert`) + migrations, repositories, per-user advisory lock, S3 storage.
-- Api: `ApplicationsController`, host setup. Swagger shows each endpoint's codes.
+- Api: `ApplicationsController`, `MarketplaceController` (public search and profile), `AvailabilityController`
+  (the expert's capacity and on/off switch), host setup. Swagger shows each endpoint's codes.
+
+Slots: `capacity` = cases an expert runs at once, `active_cases` = cases running now. A case takes a slot when
+the expert accepts it and frees it on delivery. The marketplace lists experts with `active_cases < capacity`.
 
 ## Boundaries with other services
 

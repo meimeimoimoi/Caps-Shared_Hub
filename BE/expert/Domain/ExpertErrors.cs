@@ -90,4 +90,28 @@ public static class ExpertErrors
 
     public static AppException ExpertNotFound() =>
         new(ErrorType.NotFound, "EXPERT_NOT_FOUND", "Expert not found or not available.");
+
+    public static AppException NotApprovedForService() =>
+        new(
+            ErrorType.Forbidden,
+            "NOT_APPROVED_FOR_SERVICE",
+            "Only approved experts can take cases."
+        );
+
+    public static AppException CapacityInvalid(int max) =>
+        new(ErrorType.Validation, "CAPACITY_INVALID", $"Capacity must be between 1 and {max}.");
+
+    public static AppException NotReadyToAccept() =>
+        new(
+            ErrorType.RuleViolation,
+            "NOT_READY_TO_ACCEPT",
+            "Set at least one service price and your turnaround time before taking cases."
+        );
+
+    public static AppException TurnaroundInvalid(int max) =>
+        new(
+            ErrorType.Validation,
+            "TURNAROUND_INVALID",
+            $"Turnaround must be between 1 and {max} hours."
+        );
 }

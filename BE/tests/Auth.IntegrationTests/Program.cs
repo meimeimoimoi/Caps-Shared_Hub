@@ -31,6 +31,8 @@ var keyPath =
     ?? throw new Exception("AUTH_TEST_KEYS required.");
 var baseUrl = Environment.GetEnvironmentVariable("AUTH_TEST_URL") ?? "http://127.0.0.1:55190";
 var authUrl = Environment.GetEnvironmentVariable("AUTH_TEST_AUTH_URL") ?? "http://127.0.0.1:55194";
+var expertUrl =
+    Environment.GetEnvironmentVariable("AUTH_TEST_EXPERT_URL") ?? "http://127.0.0.1:55198";
 var jwtKeyPath =
     Environment.GetEnvironmentVariable("AUTH_TEST_JWT_KEY")
     ?? throw new Exception("AUTH_TEST_JWT_KEY required.");
@@ -438,6 +440,192 @@ Check(
     (await deviceA.DeleteAsync("/api/v1/users/me/avatar")).IsSuccessStatusCode
         && (await anonymous.GetAsync(avatarUrl)).StatusCode == HttpStatusCode.NotFound,
     "remove avatar"
+);
+
+// Expert availability (through the gateway) and the public marketplace (on the expert service directly:
+// the gateway has no marketplace route yet). Names carry a run id so rows left by earlier runs never match.
+const string availabilityPath = "/api/v1/experts/me/availability";
+var expertRole = Guid.Parse("10000000-0000-0000-0000-000000000002");
+using var market = new HttpClient { BaseAddress = new Uri(expertUrl) };
+async Task Sql(FormattableString sql)
+{
+    await using var db = new AuthDbContext(options);
+    await db.Database.ExecuteSqlInterpolatedAsync(sql);
+}
+Task<HttpResponseMessage> SetAvailability(HttpClient client, bool accepting, int capacity) =>
+    client.PutAsJsonAsync(availabilityPath, new { accepting, capacity });
+async Task<JsonElement[]> Market(string keyword, string query = "")
+{
+    var (_, json) = await ExpertCall(
+        market.GetAsync($"/api/v1/marketplace/experts?keyword={keyword}{query}")
+    );
+    return json.GetProperty("data").GetProperty("items").EnumerateArray().ToArray();
+}
+string[] Names(JsonElement[] items) =>
+    items.Select(i => i.GetProperty("displayName").GetString()!.Split(' ')[1]).ToArray();
+
+Check(
+    (
+        await anonymous.PutAsJsonAsync(availabilityPath, new { accepting = true, capacity = 3 })
+    ).StatusCode == HttpStatusCode.Unauthorized,
+    "availability needs a session"
+);
+Check(
+    (await SetAvailability(deviceA, true, 3)).StatusCode == HttpStatusCode.Forbidden,
+    "availability needs the ServiceManage permission"
+);
+
+// Two auth calls only (register, login): auth allows 30 requests a minute per address
+var run = Guid.NewGuid().ToString("N")[..10];
+using var expertClient = Client();
+var expertEmail = $"market-{run}@caps.test";
+var expertReg = await Post(
+    expertClient,
+    "/api/v1/auth/register",
+    new
+    {
+        email = expertEmail,
+        password,
+        displayName = "Market Expert",
+    }
+);
+var expertUserId = Guid.Parse(
+    expertReg.Json.GetProperty("data").GetProperty("user").GetProperty("userId").GetString()!
+);
+await Sql(
+    $"UPDATE identity.users SET status = 'ACTIVE', email_verified_at = now() WHERE id = {expertUserId}"
+);
+await Sql(
+    $"INSERT INTO identity.user_roles (user_id, role_id) VALUES ({expertUserId}, {expertRole})"
+);
+var expertLogin = await Post(
+    expertClient,
+    "/api/v1/auth/login",
+    new { email = expertEmail, password }
+);
+Bearer(expertClient, Access(expertLogin.Json));
+
+var notApproved = await ExpertCall(SetAvailability(expertClient, true, 3));
+Check(
+    notApproved.Status == HttpStatusCode.Forbidden
+        && Code(notApproved.Json) == "NOT_APPROVED_FOR_SERVICE",
+    "availability needs an approved expert profile"
+);
+var expertProfileId = Guid.NewGuid();
+await Sql(
+    $"INSERT INTO expert.expert_profile (id, user_id, display_name, status, created_at, updated_at) VALUES ({expertProfileId}, {expertUserId}, {"Market " + run}, 'APPROVED', now(), now())"
+);
+var notReady = await ExpertCall(SetAvailability(expertClient, true, 3));
+Check(
+    notReady.Status == HttpStatusCode.UnprocessableEntity
+        && Code(notReady.Json) == "NOT_READY_TO_ACCEPT",
+    "taking cases needs a service price and a turnaround"
+);
+Check(
+    (await SetAvailability(expertClient, false, 3)).IsSuccessStatusCode,
+    "pausing is allowed before the expert is ready"
+);
+await Sql($"UPDATE expert.expert_profile SET turnaround_hours = 48 WHERE id = {expertProfileId}");
+await Sql(
+    $"INSERT INTO expert.service_offering (id, expert_profile_id, service_type, fee, is_active, created_at) VALUES ({Guid.NewGuid()}, {expertProfileId}, 'cit-review', 700000, true, now())"
+);
+var badCapacity = await ExpertCall(SetAvailability(expertClient, true, 0));
+Check(
+    badCapacity.Status == HttpStatusCode.BadRequest && Code(badCapacity.Json) == "CAPACITY_INVALID",
+    "capacity must be between 1 and 20"
+);
+var accepting = await ExpertCall(SetAvailability(expertClient, true, 3));
+var acceptingData = accepting.Json.GetProperty("data");
+Check(
+    accepting.Status == HttpStatusCode.OK
+        && acceptingData.GetProperty("accepting").GetBoolean()
+        && acceptingData.GetProperty("capacity").GetInt32() == 3
+        && acceptingData.GetProperty("activeCases").GetInt32() == 0,
+    "expert turns taking cases on"
+);
+
+var listed = await Market(run);
+Check(
+    listed.Length == 1
+        && listed[0].GetProperty("available").GetBoolean()
+        && listed[0].GetProperty("fee").GetInt64() == 700000,
+    "marketplace lists the expert taking cases with the service price"
+);
+await SetAvailability(expertClient, false, 3);
+var paused = await Market(run);
+Check(
+    (await Market(run, "&openOnly=true")).Length == 0
+        && paused.Length == 1
+        && !paused[0].GetProperty("available").GetBoolean(),
+    "a paused expert stays listed as unavailable and openOnly hides them"
+);
+
+// Ranking: A has a free slot and 90% VERIFIED, B a free slot and a better rating but 60% VERIFIED,
+// C the best numbers but no free slot
+var rank = Guid.NewGuid().ToString("N")[..10];
+async Task<Guid> Seed(
+    string name,
+    int activeCases,
+    int verified,
+    int delivered,
+    decimal rating,
+    long fee
+)
+{
+    var id = Guid.NewGuid();
+    await Sql(
+        $"INSERT INTO expert.expert_profile (id, user_id, display_name, status, service_status, turnaround_hours, capacity, active_cases, delivered_count, verified_count, rating_avg, rating_count, created_at, updated_at) VALUES ({id}, {Guid.NewGuid()}, {"Rank " + name + " " + rank}, 'APPROVED', 'ACTIVE', 48, 3, {activeCases}, {delivered}, {verified}, {rating}, 20, now(), now())"
+    );
+    await Sql(
+        $"INSERT INTO expert.service_offering (id, expert_profile_id, service_type, fee, is_active, created_at) VALUES ({Guid.NewGuid()}, {id}, 'cit-review', {fee}, true, now())"
+    );
+    return id;
+}
+await Seed("A", activeCases: 0, verified: 9, delivered: 10, rating: 4.5m, fee: 800000);
+await Seed("B", activeCases: 0, verified: 6, delivered: 10, rating: 5.0m, fee: 500000);
+var expertC = await Seed(
+    "C",
+    activeCases: 3,
+    verified: 19,
+    delivered: 20,
+    rating: 5.0m,
+    fee: 1200000
+);
+Check(
+    Names(await Market(rank)).SequenceEqual(["A", "B", "C"]),
+    "recommended order: free slot and VERIFIED 80% first, full experts last"
+);
+Check(
+    Names(await Market(rank, "&openOnly=true")).SequenceEqual(["A", "B"]),
+    "openOnly keeps only experts with a free slot"
+);
+Check(
+    Names(await Market(rank, "&sort=price")).SequenceEqual(["B", "A", "C"]),
+    "price sort puts the cheapest first"
+);
+Check(
+    (await Market(rank, "&serviceType=cit-review")).Length == 3
+        && (await Market(rank, "&serviceType=not-sold")).Length == 0,
+    "serviceType keeps only experts selling that service"
+);
+Check(
+    (await market.GetAsync($"/api/v1/marketplace/experts?keyword={rank}&sort=abc")).StatusCode
+        == HttpStatusCode.BadRequest,
+    "unknown sort is rejected"
+);
+var detail = await ExpertCall(market.GetAsync($"/api/v1/marketplace/experts/{expertC}"));
+var detailData = detail.Json.GetProperty("data");
+Check(
+    detail.Status == HttpStatusCode.OK
+        && !detailData.GetProperty("available").GetBoolean()
+        && detailData.GetProperty("verifiedRate").GetInt32() == 95
+        && detailData.GetProperty("offerings").GetArrayLength() == 1,
+    "expert profile shows availability, VERIFIED rate and service packages"
+);
+var missing = await ExpertCall(market.GetAsync($"/api/v1/marketplace/experts/{Guid.NewGuid()}"));
+Check(
+    missing.Status == HttpStatusCode.NotFound && Code(missing.Json) == "EXPERT_NOT_FOUND",
+    "unknown expert profile is not found"
 );
 
 // Expert application (applicant side): files live in private storage; submitting requires a verified email.

@@ -325,6 +325,12 @@ namespace Caps.Expert.Infrastructure.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
+                    b.Property<int>("ActiveCases")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasColumnName("active_cases");
+
                     b.Property<DateTimeOffset?>("ApprovedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("approved_at");
@@ -341,6 +347,12 @@ namespace Caps.Expert.Infrastructure.Persistence.Migrations
                         .HasColumnType("date")
                         .HasColumnName("birth_date");
 
+                    b.Property<int>("Capacity")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasColumnName("capacity");
+
                     b.Property<string>("Company")
                         .HasColumnType("text")
                         .HasColumnName("company");
@@ -348,6 +360,12 @@ namespace Caps.Expert.Infrastructure.Persistence.Migrations
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
+
+                    b.Property<int>("DeliveredCount")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasColumnName("delivered_count");
 
                     b.Property<string>("DisplayName")
                         .HasMaxLength(128)
@@ -418,6 +436,12 @@ namespace Caps.Expert.Infrastructure.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("user_id");
 
+                    b.Property<int>("VerifiedCount")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasColumnName("verified_count");
+
                     b.Property<int?>("YearsExperience")
                         .HasColumnType("integer")
                         .HasColumnName("years_experience");
@@ -431,7 +455,10 @@ namespace Caps.Expert.Infrastructure.Persistence.Migrations
                     b.HasIndex("Status", "ServiceStatus")
                         .HasDatabaseName("ix_expert_marketplace_feed");
 
-                    b.ToTable("expert_profile", "expert");
+                    b.ToTable("expert_profile", "expert", t =>
+                        {
+                            t.HasCheckConstraint("ck_expert_capacity", "capacity >= 0 AND active_cases >= 0 AND verified_count BETWEEN 0 AND delivered_count");
+                        });
                 });
 
             modelBuilder.Entity("Caps.Expert.Domain.Applications.ExpertApplication", b =>

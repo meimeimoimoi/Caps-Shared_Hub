@@ -3,7 +3,6 @@ using Caps.Expert.Application.Abstractions;
 using Caps.Expert.Infrastructure.Persistence;
 using Caps.Expert.Infrastructure.Storage;
 using Microsoft.Extensions.DependencyInjection;
-using static Caps.Expert.Infrastructure.Persistence.ExpertEvidenceRepository;
 
 namespace Caps.Expert.Infrastructure;
 

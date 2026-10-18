@@ -28,7 +28,14 @@ public sealed class ExpertDbContext(DbContextOptions<ExpertDbContext> options) :
 
         modelBuilder.Entity<ExpertProfile>(e =>
         {
-            e.ToTable("expert_profile");
+            e.ToTable(
+                "expert_profile",
+                t =>
+                    t.HasCheckConstraint(
+                        "ck_expert_capacity",
+                        "capacity >= 0 AND active_cases >= 0 AND verified_count BETWEEN 0 AND delivered_count"
+                    )
+            );
             e.HasKey(x => x.Id);
             e.Property(x => x.Id).HasColumnName("id");
             e.Property(x => x.UserId).HasColumnName("user_id");
@@ -52,6 +59,10 @@ public sealed class ExpertDbContext(DbContextOptions<ExpertDbContext> options) :
                 .HasColumnName("service_status")
                 .HasDefaultValue("INACTIVE")
                 .IsRequired();
+            e.Property(x => x.Capacity).HasColumnName("capacity").HasDefaultValue(0);
+            e.Property(x => x.ActiveCases).HasColumnName("active_cases").HasDefaultValue(0);
+            e.Property(x => x.DeliveredCount).HasColumnName("delivered_count").HasDefaultValue(0);
+            e.Property(x => x.VerifiedCount).HasColumnName("verified_count").HasDefaultValue(0);
             e.Property(x => x.EligibilityNote).HasColumnName("eligibility_note");
             e.Property(x => x.TurnaroundHours).HasColumnName("turnaround_hours");
             e.Property(x => x.RatingAvg)
