@@ -35,3 +35,12 @@ export function safeReturnPath(value: unknown): string {
     ? value
     : DEFAULT_HOME
 }
+
+/** Customer sign-up must not inherit an expert portal destination from sign-in. */
+export function customerRegistrationReturnPath(value: unknown): string {
+  const destination = safeReturnPath(value)
+  const path = destination.split(/[?#]/)[0]
+  return path === '/expert' || path.startsWith('/expert/')
+    ? DEFAULT_HOME
+    : destination
+}

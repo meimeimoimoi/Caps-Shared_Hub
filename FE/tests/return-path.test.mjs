@@ -1,6 +1,18 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { DEFAULT_HOME, safeReturnPath } from '../src/features/auth/utils/returnPath.ts'
+import { customerRegistrationReturnPath, DEFAULT_HOME, safeReturnPath } from '../src/features/auth/utils/returnPath.ts'
+
+test('customer registration drops inherited expert portal destinations', () => {
+  for (const path of ['/expert', '/expert/application', '/expert/overview?scenario=normal', '/expert#application'])
+    assert.equal(customerRegistrationReturnPath(path), DEFAULT_HOME)
+})
+
+test('customer registration preserves customer destinations and public expert profiles', () => {
+  for (const path of ['/cases/new?expert=1', '/wallet', '/experts/1?service=review'])
+    assert.equal(customerRegistrationReturnPath(path), path)
+  assert.equal(customerRegistrationReturnPath(undefined), DEFAULT_HOME)
+  assert.equal(safeReturnPath('/expert/application'), '/expert/application')
+})
 
 test('client workspace pages survive the login round trip', () => {
   for (const p of [

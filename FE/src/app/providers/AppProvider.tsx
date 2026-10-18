@@ -33,11 +33,18 @@ export function AppProvider({ children }: AppProviderProps) {
   // The access token is not persisted, so api-client first gets one through the refresh cookie;
   // if that fails the session is cleared.
   React.useEffect(() => {
-    if (!useAuthStore.getState().isAuthenticated) return
+    const session = useAuthStore.getState()
+    if (!session.isAuthenticated) return
+    let cancelled = false
     authApi
       .me()
-      .then((user) => useAuthStore.getState().updateUser(user))
+      .then((user) => {
+        const current = useAuthStore.getState()
+        if (!cancelled && current.sessionScope === session.sessionScope && current.user?.id === user.id)
+          current.updateUser(user)
+      })
       .catch(() => undefined)
+    return () => { cancelled = true }
   }, [])
   return (
     <I18nextProvider i18n={i18n}>

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { safeReturnPath } from '../utils/returnPath'
+import { customerRegistrationReturnPath, safeReturnPath } from '../utils/returnPath'
 import { authApi } from '../api/authApi'
 import { useAuthStore } from '../store/authStore'
 import type { LoginFormValues, User } from '../types'
@@ -8,6 +8,7 @@ import { useTranslation } from 'react-i18next'
 import { ApiError } from '@/lib/api-client'
 // Direct file import: the expert-context index re-exports hooks that import this feature
 import { hasExpertApplication } from '@/features/expert-context/api/expertContextApi'
+import { EXPERT_ONBOARDING_KEY } from '@/features/expert-registration/hooks/useExpertApplication'
 
 const unavailable = (e: unknown) =>
   e instanceof ApiError && (e.status == null || e.status >= 500)
@@ -40,13 +41,13 @@ export function useAuth() {
       from: location.state?.from,
       fromState: location.state?.fromState,
     }
-    if (u.status === 'PENDING_VERIFICATION') {
-      // Expert applicants may fill in their application before verifying; only submitting needs it,
-      // and the application page asks for the code itself
-      if (await hasExpertApplication())
-        navigate('/expert/application', { replace: true })
-      else navigate('/verify-email', { replace: true, state })
-    } else
+    // Registration intent is persisted as an application, independently of email status or USER role.
+    const applicant = await hasExpertApplication()
+    if (applicant && (u.status === 'PENDING_VERIFICATION' || !state.from))
+      navigate(u.status === 'PENDING_VERIFICATION' ? '/expert/application' : '/expert', { replace: true })
+    else if (u.status === 'PENDING_VERIFICATION')
+      navigate('/verify-email', { replace: true, state })
+    else
       navigate(safeReturnPath(state.from), {
         replace: true,
         state: state.fromState,
@@ -117,11 +118,17 @@ export function useAuth() {
         displayName: values.name,
       })
       setSession(u, token)
-      // Tài khoản mới ở trạng thái PENDING_VERIFICATION: chờ người dùng bấm liên kết trong email
+      // A previous expert sign-up must not redirect this customer's verification link.
+      try {
+        localStorage.removeItem(EXPERT_ONBOARDING_KEY)
+      } catch {
+        // Storage may be unavailable; registration can still continue.
+      }
+      // New accounts verify their email before entering the customer workspace.
       navigate('/verify-email', {
         replace: true,
         state: {
-          from: location.state?.from,
+          from: customerRegistrationReturnPath(location.state?.from),
           fromState: location.state?.fromState,
           justRegistered: true,
         },
@@ -149,10 +156,11 @@ export function useAuth() {
   }
 
   const logout = async () => {
-    // Thu hồi refresh cookie phía BE; lỗi mạng vẫn đăng xuất cục bộ
+    // Revoke the refresh cookie; network failures still allow local sign-out.
     await authApi.logout().catch(() => undefined)
+    // Leave the protected route before clearing the session so its guard cannot capture a return path.
+    await navigate('/login', { replace: true, state: null, flushSync: true })
     clearSession()
-    navigate('/login', { replace: true })
   }
 
   return {
