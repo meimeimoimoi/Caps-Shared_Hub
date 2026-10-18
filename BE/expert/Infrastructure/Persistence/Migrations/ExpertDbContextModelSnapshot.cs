@@ -325,6 +325,12 @@ namespace Caps.Expert.Infrastructure.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
+                    b.Property<int>("ActiveCases")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasColumnName("active_cases");
+
                     b.Property<DateTimeOffset?>("ApprovedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("approved_at");
@@ -340,6 +346,12 @@ namespace Caps.Expert.Infrastructure.Persistence.Migrations
                     b.Property<DateOnly?>("BirthDate")
                         .HasColumnType("date")
                         .HasColumnName("birth_date");
+
+                    b.Property<int>("Capacity")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasColumnName("capacity");
 
                     b.Property<string>("Company")
                         .HasColumnType("text")
@@ -431,7 +443,10 @@ namespace Caps.Expert.Infrastructure.Persistence.Migrations
                     b.HasIndex("Status", "ServiceStatus")
                         .HasDatabaseName("ix_expert_marketplace_feed");
 
-                    b.ToTable("expert_profile", "expert");
+                    b.ToTable("expert_profile", "expert", t =>
+                        {
+                            t.HasCheckConstraint("ck_expert_capacity", "capacity >= 0 AND active_cases >= 0");
+                        });
                 });
 
             modelBuilder.Entity("Caps.Expert.Domain.Applications.ExpertApplication", b =>

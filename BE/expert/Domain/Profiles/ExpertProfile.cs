@@ -24,6 +24,9 @@ public sealed record ProfileDetails(
 /// </summary>
 public sealed class ExpertProfile
 {
+    /// <summary>Most cases one expert may run at once.</summary>
+    public const int MaxCapacity = 20;
+
     private ExpertProfile() { }
 
     public Guid Id { get; } = UuidV7.NewGuid();
@@ -45,7 +48,13 @@ public sealed class ExpertProfile
 
     /// <summary>Mirrors the latest application status for expert-level filtering/display.</summary>
     public string Status { get; private set; } = ExpertApplicationStatus.Draft;
-    public string ServiceStatus { get; } = ExpertServiceStatus.Inactive;
+    public string ServiceStatus { get; private set; } = ExpertServiceStatus.Inactive;
+
+    /// <summary>How many cases the expert works on at once (0 until the expert sets it).</summary>
+    public int Capacity { get; private set; }
+
+    /// <summary>Cases currently holding one of the expert's slots (changed by the case flow, not by the expert).</summary>
+    public int ActiveCases { get; }
     public string? EligibilityNote { get; }
     public int? TurnaroundHours { get; private set; }
     public decimal RatingAvg { get; }
@@ -90,6 +99,18 @@ public sealed class ExpertProfile
     public void MirrorStatus(string status, DateTimeOffset now)
     {
         Status = status;
+        UpdatedAt = now;
+    }
+
+    public bool IsApproved => Status == ExpertApplicationStatus.Approved;
+
+    /// <summary>Turns taking new cases on or off and sets how many run at once; running cases are untouched.</summary>
+    public void SetAvailability(bool accepting, int capacity, DateTimeOffset now)
+    {
+        if (capacity < 1 || capacity > MaxCapacity)
+            throw ExpertErrors.CapacityInvalid(MaxCapacity);
+        ServiceStatus = accepting ? ExpertServiceStatus.Active : ExpertServiceStatus.Inactive;
+        Capacity = capacity;
         UpdatedAt = now;
     }
 

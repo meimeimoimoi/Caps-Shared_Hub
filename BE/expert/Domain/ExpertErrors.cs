@@ -90,4 +90,14 @@ public static class ExpertErrors
 
     public static AppException ExpertNotFound() =>
         new(ErrorType.NotFound, "EXPERT_NOT_FOUND", "Expert not found or not available.");
+
+    public static AppException NotApprovedForService() =>
+        new(
+            ErrorType.Forbidden,
+            "NOT_APPROVED_FOR_SERVICE",
+            "Only approved experts can take cases."
+        );
+
+    public static AppException CapacityInvalid(int max) =>
+        new(ErrorType.Validation, "CAPACITY_INVALID", $"Capacity must be between 1 and {max}.");
 }

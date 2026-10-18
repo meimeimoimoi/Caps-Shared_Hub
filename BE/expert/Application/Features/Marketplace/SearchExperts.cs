@@ -7,8 +7,8 @@ namespace Caps.Expert.Application.Features.Marketplace;
 /// <summary>Search filters and page of the public expert list.</summary>
 public sealed record SearchExpertQuery(string? Keyword, string? Field, int Page, int PageSize);
 
-/// <summary>Lists approved, active experts that have an open slot.</summary>
-public sealed class SearchExpertHandler(IMarketplaceReader marketplace, TimeProvider clock)
+/// <summary>Lists approved experts taking new cases with a free slot (running cases below capacity).</summary>
+public sealed class SearchExpertHandler(IMarketplaceReader marketplace)
     : IQueryHandler<SearchExpertQuery, MarketplacePage>
 {
     private const int MaxPageSize = 50;
@@ -21,7 +21,6 @@ public sealed class SearchExpertHandler(IMarketplaceReader marketplace, TimeProv
         var rows = await marketplace.SearchAsync(
             query.Keyword,
             query.Field,
-            clock.GetUtcNow(),
             (page - 1) * size,
             size + 1,
             ct

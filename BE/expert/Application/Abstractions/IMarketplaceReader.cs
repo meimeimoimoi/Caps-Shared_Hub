@@ -8,7 +8,6 @@ public interface IMarketplaceReader
     Task<IReadOnlyList<MarketplaceExpertItem>> SearchAsync(
         string? keyword,
         string? field,
-        DateTimeOffset now,
         int skip,
         int take,
         CancellationToken ct

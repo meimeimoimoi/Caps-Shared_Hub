@@ -104,17 +104,13 @@ public sealed class ExpertEvidenceRepository(ExpertDbContext db) : IExpertEviden
         public async Task<IReadOnlyList<MarketplaceExpertItem>> SearchAsync(
             string? keyword,
             string? field,
-            DateTimeOffset now,
             int skip,
             int take,
             CancellationToken ct
         )
         {
-            var experts = Bookable()
-                .Where(p =>
-                    // EXISTS on ix_availability_slot_open; no slot rows are loaded
-                    db.AvailabilitySlots.Any(s => s.ExpertProfileId == p.Id && s.Status == "OPEN")
-                );
+            // A free slot = fewer running cases than capacity: a plain column compare, no subquery
+            var experts = Bookable().Where(p => p.ActiveCases < p.Capacity);
 
             if (!string.IsNullOrWhiteSpace(field))
             {
