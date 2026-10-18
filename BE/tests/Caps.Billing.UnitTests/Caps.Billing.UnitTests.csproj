@@ -11,6 +11,7 @@
     <PackageReference Include="xunit.runner.visualstudio" />
     <Using Include="Xunit" />
     <ProjectReference Include="..\..\billing\Domain\Domain.csproj" />
+    <ProjectReference Include="..\..\billing\Infrastructure\Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

@@ -11,6 +11,7 @@ var postgres = config.GetRequiredConnectionString("Postgres");
 
 builder.Services.AddCommonApi(config, "billing");
 builder.Services.AddBillingSecrets(config, builder.Environment);
+builder.Services.AddBillingPayments(config);
 builder.Services.AddBillingApplication();
 builder.Services.AddBillingInfrastructure(postgres);
 

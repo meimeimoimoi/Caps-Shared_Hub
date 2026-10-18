@@ -13,4 +13,6 @@ public interface ICreditLedgerRepository
     );
 
     Task<int> CountAsync(Guid userId, CancellationToken ct);
+
+    void Add(CreditLedger entry);
 }

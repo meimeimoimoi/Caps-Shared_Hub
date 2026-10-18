@@ -27,4 +27,41 @@ public static class BillingErrors
             "BANK_ACCOUNT_LIMIT",
             $"At most {max} bank accounts can be linked."
         );
+
+    public static AppException InvalidAmount() =>
+        new(ErrorType.Validation, "INVALID_AMOUNT", "Amount must be positive.");
+
+    public static AppException InvalidTopupAmount(long min, long max) =>
+        new(
+            ErrorType.Validation,
+            "INVALID_TOPUP_AMOUNT",
+            $"Top-up amount must be between {min} and {max} VND."
+        );
+
+    public static AppException PaymentUnavailable() =>
+        new(
+            ErrorType.Unavailable,
+            "PAYMENT_UNAVAILABLE",
+            "The payment provider is not available right now."
+        );
+
+    public static AppException PaymentConflict() =>
+        new(ErrorType.Conflict, "PAYMENT_CONFLICT", "Could not start the payment, please retry.");
+
+    public static AppException InvalidWebhookSignature() =>
+        new(
+            ErrorType.Validation,
+            "INVALID_WEBHOOK_SIGNATURE",
+            "The payment notification is malformed or its signature is invalid."
+        );
+
+    public static AppException PaymentAlreadySucceeded() =>
+        new(ErrorType.Conflict, "PAYMENT_ALREADY_SUCCEEDED", "The payment has already succeeded.");
+
+    public static AppException PaymentAmountMismatch() =>
+        new(
+            ErrorType.Conflict,
+            "PAYMENT_AMOUNT_MISMATCH",
+            "The paid amount does not match the payment."
+        );
 }

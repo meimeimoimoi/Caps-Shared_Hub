@@ -24,4 +24,6 @@ public sealed class CreditLedgerRepository(BillingDbContext db) : ICreditLedgerR
 
     public Task<int> CountAsync(Guid userId, CancellationToken ct) =>
         db.CreditLedgers.CountAsync(x => x.UserId == userId, ct);
+
+    public void Add(CreditLedger entry) => db.CreditLedgers.Add(entry);
 }
