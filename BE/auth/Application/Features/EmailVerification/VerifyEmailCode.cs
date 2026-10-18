@@ -1,3 +1,4 @@
+using Caps.Auth.Application.Abstractions.Messaging;
 using Caps.Auth.Application.Abstractions.Persistence;
 using Caps.Auth.Application.Common;
 using Caps.Auth.Application.DTOs.Responses;
@@ -15,6 +16,7 @@ public sealed class VerifyEmailCodeHandler(
     IUserRepository users,
     IVerificationTokenRepository tokens,
     ISessionIssuer sessions,
+    IAccountEventOutbox accountEvents,
     IUnitOfWork unitOfWork,
     AuthOptions options,
     TimeProvider clock
@@ -51,6 +53,7 @@ public sealed class VerifyEmailCodeHandler(
         }
         code.MarkUsed(now);
         user.VerifyEmail(now);
+        accountEvents.StatusChanged(user);
         await tokens.InvalidateUnusedAsync(user.Id, VerificationPurpose.VerifyEmail, now, ct);
         // Return a new ACTIVE session so the user continues right away without signing in again
         var session = await sessions.IssueAsync(user, ct);

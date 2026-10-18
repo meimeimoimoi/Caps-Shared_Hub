@@ -12,6 +12,7 @@ public sealed class AuthDbContext(DbContextOptions<AuthDbContext> options) : DbC
     public const string Schema = "identity";
 
     public DbSet<AuthEmailOutbox> EmailOutbox => Set<AuthEmailOutbox>();
+    public DbSet<AccountEventOutbox> AccountEventOutbox => Set<AccountEventOutbox>();
     public DbSet<Role> Roles => Set<Role>();
     public DbSet<User> Users => Set<User>();
     public DbSet<UserRole> UserRoles => Set<UserRole>();
@@ -31,6 +32,18 @@ public sealed class AuthDbContext(DbContextOptions<AuthDbContext> options) : DbC
             e.ToTable("auth_email_outbox");
             e.HasKey(x => x.Id);
             e.HasIndex(x => x.SentAt);
+        });
+        modelBuilder.Entity<AccountEventOutbox>(e =>
+        {
+            e.ToTable("account_event_outbox");
+            e.HasKey(x => x.Id);
+            e.Property(x => x.Id).HasColumnName("id");
+            e.Property(x => x.Payload).HasColumnName("payload").IsRequired();
+            e.Property(x => x.CreatedAt).HasColumnName("created_at").IsRequired();
+            e.Property(x => x.SentAt).HasColumnName("sent_at");
+            // The publisher scans unsent rows in creation order
+            e.HasIndex(x => new { x.SentAt, x.CreatedAt })
+                .HasDatabaseName("ix_account_event_outbox_pending");
         });
         var codes = new[]
         {

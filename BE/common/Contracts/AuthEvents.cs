@@ -17,3 +17,16 @@ public sealed record AuthEmailRequestedEvent(
     string? Code = null,
     DateTimeOffset? CodeExpiresAt = null
 );
+
+/// <summary>
+/// An account's status changed (e.g. PENDING_VERIFICATION → ACTIVE). Published by auth through its outbox so
+/// other services can keep their own copy, such as the expert Marketplace filter (BR-M01).
+/// </summary>
+/// <param name="Id">Event id, also used to ignore a redelivered message.</param>
+/// <param name="Status">The new account status, same values as the token's account_status claim.</param>
+public sealed record AccountStatusChangedEvent(
+    Guid Id,
+    Guid UserId,
+    string Status,
+    DateTimeOffset ChangedAt
+);

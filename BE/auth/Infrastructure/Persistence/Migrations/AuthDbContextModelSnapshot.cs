@@ -453,6 +453,34 @@ namespace auth.Migrations
                     b.ToTable("verification_token", "identity");
                 });
 
+            modelBuilder.Entity("Caps.Auth.Infrastructure.Persistence.AccountEventOutbox", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("Payload")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("payload");
+
+                    b.Property<DateTimeOffset?>("SentAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("sent_at");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SentAt", "CreatedAt")
+                        .HasDatabaseName("ix_account_event_outbox_pending");
+
+                    b.ToTable("account_event_outbox", "identity");
+                });
+
             modelBuilder.Entity("Caps.Auth.Infrastructure.Persistence.AuthEmailOutbox", b =>
                 {
                     b.Property<Guid>("Id")
