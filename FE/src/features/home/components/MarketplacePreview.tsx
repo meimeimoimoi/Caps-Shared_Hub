@@ -3,42 +3,32 @@ import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { ArrowRight, Info } from 'lucide-react'
 import { useFormatters } from '@/hooks/useFormatters'
+import { isExpertDemo } from '@/lib/expert-data-source'
 import { useSlaLabel } from '@/features/marketplace/hooks/useSlaLabel'
+import { useMarketplace } from '@/features/marketplace/hooks/useMarketplace'
+import { useServiceText } from '@/features/marketplace/hooks/useServiceText'
 import { FeaturedExperts } from '@/features/marketplace/components/FeaturedExperts'
-import {
-  EXPERTS,
-  featuredExperts,
-  SERVICE_IDS,
-} from '@/features/marketplace/fixtures'
+import { featuredExperts, serviceFacts } from '@/features/marketplace/model'
 import { HomeText } from './HomeText'
 import '../styles/market.css'
 
-/* Xem trước Sàn chuyên gia, đặt bên trong mục "Bản nháp nào cũng cần một người đọc lại" (không thêm dải
-   nền mới để giữ nhịp sáng/tối xen kẽ của trang chủ). Cùng nguồn dữ liệu với /marketplace nên giá "từ",
-   thời hạn và số chuyên gia luôn khớp trang Sàn. */
+/* Marketplace preview inside the "Bản nháp nào cũng cần một người đọc lại" section (no extra band, to keep
+   the home page's light/dark rhythm). Same query as /marketplace, so "from" price, delivery time and expert
+   count always match the Marketplace page. */
 
 export function MarketplacePreview() {
   const { t } = useTranslation('home')
   const { t: tm } = useTranslation('marketplace')
   const format = useFormatters()
   const sla = useSlaLabel()
+  const text = useServiceText()
+  const { data } = useMarketplace()
 
-  const services = useMemo(
-    () =>
-      SERVICE_IDS.map((id) => {
-        const offers = EXPERTS.flatMap((e) =>
-          e.offers[id] ? [e.offers[id]] : []
-        )
-        return {
-          id,
-          count: offers.length,
-          from: Math.min(...offers.map((o) => o.price)),
-          fastest: Math.min(...offers.map((o) => o.slaHours)),
-        }
-      }),
-    []
+  const services = useMemo(() => (data ? serviceFacts(data) : []), [data])
+  const featured = useMemo(
+    () => featuredExperts(data?.experts ?? [], 3),
+    [data]
   )
-  const featured = useMemo(() => featuredExperts(3), [])
 
   return (
     <section
@@ -79,20 +69,24 @@ export function MarketplacePreview() {
               className="r"
               style={{ '--i': String(4 + i) } as CSSProperties}
             >
-              <Link to={`/marketplace?service=${s.id}`}>
-                <span className="ms-name">{tm(`services.${s.id}.name`)}</span>
-                <span className="ms-desc">
-                  {tm(`services.${s.id}.deliverable`)}
-                </span>
+              <Link to={`/marketplace?service=${encodeURIComponent(s.id)}`}>
+                <span className="ms-name">{text.name(s.id, s.name)}</span>
+                {text.deliverable(s.id) && (
+                  <span className="ms-desc">{text.deliverable(s.id)}</span>
+                )}
                 <span className="ms-facts">
-                  <span>
-                    <small>{t('market.from')}</small>
-                    <b>{format.money(s.from)}</b>
-                  </span>
-                  <span>
-                    <small>{t('market.fastest')}</small>
-                    <b>{sla(s.fastest)}</b>
-                  </span>
+                  {s.from != null && (
+                    <span>
+                      <small>{t('market.from')}</small>
+                      <b>{format.money(s.from)}</b>
+                    </span>
+                  )}
+                  {s.fastest != null && (
+                    <span>
+                      <small>{t('market.fastest')}</small>
+                      <b>{sla(s.fastest)}</b>
+                    </span>
+                  )}
                   <span>
                     <small>{t('market.experts')}</small>
                     <b>{format.number(s.count)}</b>
@@ -104,15 +98,24 @@ export function MarketplacePreview() {
           ))}
         </ul>
 
-        <h4 className="market-sub r" style={{ '--i': '7' } as CSSProperties}>
-          {t('market.featured')}
-        </h4>
-        <FeaturedExperts experts={featured} revealFrom={8} />
+        {featured.length > 0 && (
+          <>
+            <h4
+              className="market-sub r"
+              style={{ '--i': '7' } as CSSProperties}
+            >
+              {t('market.featured')}
+            </h4>
+            <FeaturedExperts experts={featured} revealFrom={8} />
+          </>
+        )}
 
-        <p className="market-demo">
-          <Info size={15} aria-hidden="true" />
-          {tm('demo')}
-        </p>
+        {isExpertDemo && (
+          <p className="market-demo">
+            <Info size={15} aria-hidden="true" />
+            {tm('demo')}
+          </p>
+        )}
       </div>
     </section>
   )

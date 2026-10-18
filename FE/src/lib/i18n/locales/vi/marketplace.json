@@ -43,7 +43,11 @@
       "deliverable": "Chuyên gia trả lời một tình huống cụ thể bằng kết luận chuyên môn có căn cứ."
     },
     "fastest": "Bàn giao từ",
-    "experts": "Chuyên gia"
+    "experts": "Chuyên gia",
+    "HUMAN_VERIFICATION": {
+      "name": "Xác minh bởi chuyên gia",
+      "deliverable": "Rà soát bản nháp do AI soạn và cấp bản đã xác thực, hoặc nêu rõ lý do không thể xác thực."
+    }
   },
   "filters": {
     "label": "Lọc chuyên gia",
@@ -76,7 +80,8 @@
     "requestFor": "Gửi yêu cầu cho {{name}}",
     "expert": "Chuyên gia",
     "status": "Tình trạng",
-    "topics": "Chủ đề thường xử lý"
+    "topics": "Chủ đề thường xử lý",
+    "noReviews": "Chưa có đánh giá"
   },
   "sla": {
     "hours_other": "{{count}} giờ",
@@ -88,7 +93,9 @@
     "full": "Kín lịch",
     "fullDetail": "Nhận lại từ {{date}}",
     "paused": "Tạm ngưng",
-    "pausedDetail": "Chuyên gia đang tạm ngưng nhận yêu cầu"
+    "pausedDetail": "Chuyên gia đang tạm ngưng nhận yêu cầu",
+    "nextSlot": "Lịch trống gần nhất {{date}}",
+    "openAny": "Đang mở lịch nhận yêu cầu"
   },
   "trail": {
     "label": "Quá trình xác thực",
@@ -98,7 +105,9 @@
     "gate2Detail": "Kiểm tra năng lực cho dịch vụ này, đạt ngày {{date}}",
     "price": "Giá đã duyệt",
     "priceDetail": "Bảng giá phiên bản {{version}} đã được duyệt",
-    "badge": "Đã xác thực"
+    "badge": "Đã xác thực",
+    "gate1Passed": "Xác minh tư cách: đã đạt",
+    "gate2Passed": "Kiểm tra năng lực cho dịch vụ này: đã đạt"
   },
   "empty": {
     "title": "Không có chuyên gia nào khớp bộ lọc",
@@ -154,5 +163,10 @@
     "from": "Phí từ",
     "title": "Chuyên gia đang nhận việc",
     "lead": "Đã qua hai vòng thẩm định, có thể nhận yêu cầu ngay."
+  },
+  "list": {
+    "loading": "Đang tải danh sách chuyên gia",
+    "failed": "Chưa tải được danh sách chuyên gia",
+    "failedBody": "Kết nối đang gián đoạn nên chưa lấy được danh sách. Bạn thử lại sau giây lát."
   }
 }

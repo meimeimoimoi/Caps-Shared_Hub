@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import { Link, useSearchParams } from 'react-router-dom'
-import { Award, Info, Search, SearchX, Star } from 'lucide-react'
+import { Award, Info, RotateCw, Search, SearchX, Star } from 'lucide-react'
 import { useFormatters } from '@/hooks/useFormatters'
 import { CustomSelect } from '@/components/ui/forms/custom-select'
+import { isExpertDemo } from '@/lib/expert-data-source'
 import { MarketplaceFrame } from '@/features/marketplace/components/MarketplaceFrame'
 import {
   AvailabilityTag,
@@ -11,46 +12,42 @@ import {
   VerifiedBadge,
 } from '@/features/marketplace/components/ListingParts'
 import { useSlaLabel } from '@/features/marketplace/hooks/useSlaLabel'
+import { useMarketplace } from '@/features/marketplace/hooks/useMarketplace'
+import { useServiceText } from '@/features/marketplace/hooks/useServiceText'
+import { useFieldLabel } from '@/features/expert-vetting/hooks/useLabels'
 import {
   useRevealRows,
   withViewTransition,
 } from '@/features/marketplace/hooks/useListMotion'
-import consultationPhoto from '@/assets/generated/marketplace-consultation.png'
 import {
   canRequest,
-  EXPERTS,
-  isServiceId,
-  SERVICE_IDS,
-  type Expert,
-  type ServiceId,
-  type ServiceOffer,
-} from '@/features/marketplace/fixtures'
+  hasDeliverySla,
+  listingsFor,
+  serviceFacts,
+  type Listing,
+} from '@/features/marketplace/model'
+import type { MarketplaceData } from '@/features/marketplace/types'
+import consultationPhoto from '@/assets/generated/marketplace-consultation.png'
 
 type SortKey = 'recommended' | 'rating' | 'price' | 'sla'
 const SLA_LIMITS = [24, 48, 72, 168] as const
-
-type Listing = { expert: Expert; offer: ServiceOffer }
-
-/** Sàn hiển thị theo dịch vụ: chỉ chuyên gia đã được duyệt cho dịch vụ đang chọn, với giá + SLA của dịch vụ đó. */
-function listingsFor(service: ServiceId): Listing[] {
-  return EXPERTS.flatMap((expert) => {
-    const offer = expert.offers[service]
-    return offer ? [{ expert, offer }] : []
-  })
-}
+const EMPTY: MarketplaceData = { services: [], experts: [] }
 
 function ExpertRow({
   listing: { expert: e, offer },
   service,
+  showSla,
 }: {
   listing: Listing
-  service: ServiceId
+  service: string
+  showSla: boolean
 }) {
   const { t } = useTranslation('marketplace')
   const format = useFormatters()
   const sla = useSlaLabel()
+  const fieldLabel = useFieldLabel()
   const open = canRequest(e)
-  const profile = `/experts/${e.id}?service=${service}`
+  const profile = `/experts/${encodeURIComponent(e.id)}?service=${encodeURIComponent(service)}`
   return (
     <li
       className="mk-row"
@@ -71,28 +68,42 @@ function ExpertRow({
               pricingVersion={offer.pricingVersion}
             />
           </div>
-          <p className="mk-headline">{e.headline}</p>
-          <p className="mk-credential">
-            <Award size={15} aria-hidden="true" />
-            {e.credential}
-          </p>
+          {e.headline && <p className="mk-headline">{e.headline}</p>}
+          {e.credential && (
+            <p className="mk-credential">
+              <Award size={15} aria-hidden="true" />
+              {e.credential}
+            </p>
+          )}
           <p className="mk-meta">
-            <span className="mk-rating">
-              <Star size={14} aria-hidden="true" />
-              <b>{format.number(e.rating, { minimumFractionDigits: 2 })}</b>
-              <span className="sr-only">
-                {t('row.rating', { rating: e.rating })}
-              </span>
-            </span>
-            <span>{t('row.reviews', { count: e.reviews })}</span>
-            <span>{t('row.cases', { count: e.completedCases })}</span>
-            <span>{t('row.years', { count: e.years })}</span>
+            {e.reviews > 0 ? (
+              <>
+                <span className="mk-rating">
+                  <Star size={14} aria-hidden="true" />
+                  <b>{format.number(e.rating, { minimumFractionDigits: 2 })}</b>
+                  <span className="sr-only">
+                    {t('row.rating', { rating: e.rating })}
+                  </span>
+                </span>
+                <span>{t('row.reviews', { count: e.reviews })}</span>
+              </>
+            ) : (
+              <span>{t('row.noReviews')}</span>
+            )}
+            {e.completedCases != null && (
+              <span>{t('row.cases', { count: e.completedCases })}</span>
+            )}
+            {e.years != null && (
+              <span>{t('row.years', { count: e.years })}</span>
+            )}
           </p>
-          <ul className="mk-topics" aria-label={t('row.topics')}>
-            {e.topics.map((topic) => (
-              <li key={topic}>{topic}</li>
-            ))}
-          </ul>
+          {e.topics.length > 0 && (
+            <ul className="mk-topics" aria-label={t('row.topics')}>
+              {e.topics.map((topic) => (
+                <li key={topic}>{fieldLabel(topic)}</li>
+              ))}
+            </ul>
+          )}
         </div>
       </div>
 
@@ -101,10 +112,14 @@ function ExpertRow({
           <dt>{t('row.fee')}</dt>
           <dd className="mk-num-lg">{format.money(offer.price)}</dd>
         </div>
-        <div className="mk-cell mk-cell-sla">
-          <dt>{t('row.delivery')}</dt>
-          <dd className="mk-num-lg">{sla(offer.slaHours)}</dd>
-        </div>
+        {showSla && (
+          <div className="mk-cell mk-cell-sla">
+            <dt>{t('row.delivery')}</dt>
+            <dd className="mk-num-lg">
+              {offer.slaHours == null ? '—' : sla(offer.slaHours)}
+            </dd>
+          </div>
+        )}
         <div className="mk-cell mk-cell-avail">
           <dt>{t('row.status')}</dt>
           <dd>
@@ -135,18 +150,28 @@ export default function MarketplacePage() {
   const { t } = useTranslation('marketplace')
   const format = useFormatters()
   const sla = useSlaLabel()
+  const text = useServiceText()
+  const fieldLabel = useFieldLabel()
+  const query = useMarketplace()
+  const data = query.data ?? EMPTY
   const [params, setParams] = useSearchParams()
   const requested = params.get('service')
-  const service: ServiceId = isServiceId(requested) ? requested : 'cit-review'
+  const service =
+    data.services.find((s) => s.id === requested)?.id ??
+    data.services[0]?.id ??
+    ''
+  // Delivery SLA is hidden until the service catalog carries it (none in API mode yet)
+  const showSla = useMemo(() => hasDeliverySla(data.experts), [data])
 
-  const [query, setQuery] = useState('')
+  const [search, setSearch] = useState('')
   const [openOnly, setOpenOnly] = useState(false)
   const [slaMax, setSlaMax] = useState(0)
-  const [sort, setSort] = useState<SortKey>('recommended')
+  const [sortChoice, setSort] = useState<SortKey>('recommended')
+  const sort = showSla || sortChoice !== 'sla' ? sortChoice : 'recommended'
   const picker = useRef<HTMLDivElement>(null)
   const list = useRef<HTMLOListElement>(null)
 
-  // Trên màn hẹp bộ chọn dịch vụ cuộn ngang: đưa thẻ đang chọn vào khung (vd. mở bằng ?service=).
+  // On narrow screens the service picker scrolls sideways: bring the picked card into view (e.g. from ?service=).
   useEffect(() => {
     const box = picker.current
     const on = box?.querySelector<HTMLElement>('[data-on="true"]')
@@ -164,44 +189,35 @@ export default function MarketplacePage() {
     }
   }, [t])
 
-  const catalog = useMemo(
-    () =>
-      SERVICE_IDS.map((id) => {
-        const listings = listingsFor(id)
-        return {
-          id,
-          count: listings.length,
-          from: Math.min(...listings.map((l) => l.offer.price)),
-          fastest: Math.min(...listings.map((l) => l.offer.slaHours)),
-        }
-      }),
-    []
-  )
+  const catalog = useMemo(() => serviceFacts(data), [data])
 
-  const all = useMemo(() => listingsFor(service), [service])
+  const all = useMemo(() => listingsFor(data.experts, service), [data, service])
   const shown = useMemo(() => {
-    const needle = query.trim().toLocaleLowerCase('vi')
+    const needle = search.trim().toLocaleLowerCase('vi')
     const list = all.filter(({ expert: e, offer }) => {
       if (openOnly && !canRequest(e)) return false
-      if (slaMax && offer.slaHours > slaMax) return false
+      if (showSla && slaMax && (offer.slaHours ?? Infinity) > slaMax)
+        return false
       if (!needle) return true
-      return [e.name, e.headline, ...e.topics].some((text) =>
+      return [e.name, e.headline, ...e.topics.map(fieldLabel)].some((text) =>
         text.toLocaleLowerCase('vi').includes(needle)
       )
     })
     const byRating = (a: Listing, b: Listing) =>
       b.expert.rating - a.expert.rating || b.expert.reviews - a.expert.reviews
     const sorters: Record<SortKey, (a: Listing, b: Listing) => number> = {
-      // Người đang nhận việc lên trước: Availability quyết định có gửi được yêu cầu hay không.
+      // Experts taking work first: availability decides whether a request can be sent.
       recommended: (a, b) =>
         Number(canRequest(b.expert)) - Number(canRequest(a.expert)) ||
         byRating(a, b),
       rating: byRating,
       price: (a, b) => a.offer.price - b.offer.price,
-      sla: (a, b) => a.offer.slaHours - b.offer.slaHours || byRating(a, b),
+      sla: (a, b) =>
+        (a.offer.slaHours ?? Infinity) - (b.offer.slaHours ?? Infinity) ||
+        byRating(a, b),
     }
     return [...list].sort(sorters[sort])
-  }, [all, query, openOnly, slaMax, sort])
+  }, [all, search, openOnly, slaMax, sort, showSla, fieldLabel])
 
   const slaOptions = [
     { value: '0', label: t('filters.slaAny') },
@@ -214,14 +230,16 @@ export default function MarketplacePage() {
     { value: 'recommended', label: t('filters.sortRecommended') },
     { value: 'rating', label: t('filters.sortRating') },
     { value: 'price', label: t('filters.sortPrice') },
-    { value: 'sla', label: t('filters.sortSla') },
+    ...(showSla
+      ? [{ value: 'sla' as const, label: t('filters.sortSla') }]
+      : []),
   ]
   useRevealRows(list, [shown])
 
-  const filtered = query.trim() !== '' || openOnly || slaMax !== 0
+  const filtered = search.trim() !== '' || openOnly || slaMax !== 0
   const reset = () =>
     withViewTransition(() => {
-      setQuery('')
+      setSearch('')
       setOpenOnly(false)
       setSlaMax(0)
     })
@@ -255,60 +273,72 @@ export default function MarketplacePage() {
             </dl>
           </div>
 
-          <fieldset className="mk-services">
-            <legend>{t('services.label')}</legend>
-            <div
-              className="mk-tabs"
-              ref={picker}
-              style={{ '--on': SERVICE_IDS.indexOf(service) } as CSSProperties}
-            >
-              <span className="mk-tab-bar" aria-hidden="true" />
-              {catalog.map((s) => (
-                <label
-                  key={s.id}
-                  className="mk-service"
-                  data-on={s.id === service}
-                >
-                  <input
-                    type="radio"
-                    name="service"
-                    value={s.id}
-                    checked={s.id === service}
-                    onChange={() =>
-                      setParams(
-                        (prev) => {
-                          const next = new URLSearchParams(prev)
-                          next.set('service', s.id)
-                          return next
-                        },
-                        { replace: true, preventScrollReset: true }
-                      )
-                    }
-                  />
-                  <span className="mk-service-name">
-                    {t(`services.${s.id}.name`)}
-                  </span>
-                  <span className="mk-service-desc">
-                    {t(`services.${s.id}.deliverable`)}
-                  </span>
-                  <span className="mk-service-facts">
-                    <span>
-                      <small>{t('services.from')}</small>
-                      <b>{format.money(s.from)}</b>
+          {catalog.length > 0 && (
+            <fieldset className="mk-services">
+              <legend>{t('services.label')}</legend>
+              <div
+                className="mk-tabs"
+                ref={picker}
+                style={
+                  {
+                    '--on': catalog.findIndex((s) => s.id === service),
+                  } as CSSProperties
+                }
+              >
+                <span className="mk-tab-bar" aria-hidden="true" />
+                {catalog.map((s) => (
+                  <label
+                    key={s.id}
+                    className="mk-service"
+                    data-on={s.id === service}
+                  >
+                    <input
+                      type="radio"
+                      name="service"
+                      value={s.id}
+                      checked={s.id === service}
+                      onChange={() =>
+                        setParams(
+                          (prev) => {
+                            const next = new URLSearchParams(prev)
+                            next.set('service', s.id)
+                            return next
+                          },
+                          { replace: true, preventScrollReset: true }
+                        )
+                      }
+                    />
+                    <span className="mk-service-name">
+                      {text.name(s.id, s.name)}
                     </span>
-                    <span>
-                      <small>{t('services.fastest')}</small>
-                      <b>{sla(s.fastest)}</b>
+                    {text.deliverable(s.id) && (
+                      <span className="mk-service-desc">
+                        {text.deliverable(s.id)}
+                      </span>
+                    )}
+                    <span className="mk-service-facts">
+                      {s.from != null && (
+                        <span>
+                          <small>{t('services.from')}</small>
+                          <b>{format.money(s.from)}</b>
+                        </span>
+                      )}
+                      {s.fastest != null && (
+                        <span>
+                          <small>{t('services.fastest')}</small>
+                          <b>{sla(s.fastest)}</b>
+                        </span>
+                      )}
+                      <span>
+                        <small>{t('services.experts')}</small>
+                        <b>{format.number(s.count)}</b>
+                      </span>
                     </span>
-                    <span>
-                      <small>{t('services.experts')}</small>
-                      <b>{format.number(s.count)}</b>
-                    </span>
-                  </span>
-                </label>
-              ))}
-            </div>
-          </fieldset>
+                  </label>
+                ))}
+              </div>
+            </fieldset>
+          )}
         </div>
       </header>
 
@@ -325,25 +355,27 @@ export default function MarketplacePage() {
               <Search size={18} aria-hidden="true" />
               <input
                 type="search"
-                value={query}
+                value={search}
                 placeholder={t('filters.searchPlaceholder')}
                 onChange={(event) => {
                   const value = event.target.value
-                  withViewTransition(() => setQuery(value))
+                  withViewTransition(() => setSearch(value))
                 }}
               />
             </label>
-            <CustomSelect
-              className="mk-select"
-              triggerClassName="mk-select-trigger"
-              menuClassName="mk-select-menu"
-              label={t('filters.sla')}
-              value={String(slaMax)}
-              onChange={(value) =>
-                withViewTransition(() => setSlaMax(Number(value)))
-              }
-              options={slaOptions}
-            />
+            {showSla && (
+              <CustomSelect
+                className="mk-select"
+                triggerClassName="mk-select-trigger"
+                menuClassName="mk-select-menu"
+                label={t('filters.sla')}
+                value={String(slaMax)}
+                onChange={(value) =>
+                  withViewTransition(() => setSlaMax(Number(value)))
+                }
+                options={slaOptions}
+              />
+            )}
             <CustomSelect
               className="mk-select"
               triggerClassName="mk-select-trigger"
@@ -370,30 +402,56 @@ export default function MarketplacePage() {
 
           <div className="mk-summary">
             <p aria-live="polite">
-              {filtered
-                ? t('results.filtered', {
-                    count: shown.length,
-                    total: all.length,
-                  })
-                : t('results.count', { count: all.length })}
+              {query.isSuccess &&
+                (filtered
+                  ? t('results.filtered', {
+                      count: shown.length,
+                      total: all.length,
+                    })
+                  : t('results.count', { count: all.length }))}
             </p>
             {filtered && (
               <button type="button" className="mk-text-btn" onClick={reset}>
                 {t('filters.reset')}
               </button>
             )}
-            <p className="mk-demo">
-              <Info size={15} aria-hidden="true" />
-              {t('demo')}
-            </p>
+            {isExpertDemo && (
+              <p className="mk-demo">
+                <Info size={15} aria-hidden="true" />
+                {t('demo')}
+              </p>
+            )}
           </div>
 
-          {shown.length > 0 ? (
-            <div className="mk-sheet">
+          {query.isPending ? (
+            <div
+              className="mk-sheet mk-sheet-loading"
+              role="status"
+              aria-label={t('list.loading')}
+            >
+              <div className="mk-skel mk-skel-block" />
+              <div className="mk-skel mk-skel-block" />
+            </div>
+          ) : query.isError ? (
+            <div className="mk-empty">
+              <SearchX size={28} aria-hidden="true" />
+              <h2>{t('list.failed')}</h2>
+              <p>{t('list.failedBody')}</p>
+              <button
+                type="button"
+                className="mk-btn mk-btn-line"
+                onClick={() => void query.refetch()}
+              >
+                <RotateCw size={16} aria-hidden="true" />
+                {t('profile.retry')}
+              </button>
+            </div>
+          ) : shown.length > 0 ? (
+            <div className="mk-sheet" data-sla={showSla}>
               <div className="mk-list-head" aria-hidden="true">
                 <span>{t('row.expert')}</span>
                 <span>{t('row.fee')}</span>
-                <span>{t('row.delivery')}</span>
+                {showSla && <span>{t('row.delivery')}</span>}
                 <span>{t('row.status')}</span>
               </div>
               <ol className="mk-list" key={service} ref={list}>
@@ -402,6 +460,7 @@ export default function MarketplacePage() {
                     key={listing.expert.id}
                     listing={listing}
                     service={service}
+                    showSla={showSla}
                   />
                 ))}
               </ol>

@@ -1796,3 +1796,33 @@
     transform: scale(0.98);
   }
 }
+
+/* No Delivery SLA column (API mode until the service catalog carries an SLA) */
+#shub-home.mk .mk-sheet[data-sla='false'] {
+  --cols: minmax(0, 1fr) 136px 196px 144px;
+}
+#shub-home.mk .mk-sheet-loading {
+  display: grid;
+  gap: 16px;
+  padding: 16px;
+}
+#shub-home.mk .mk-sheet-loading .mk-skel-block {
+  height: 140px;
+}
+@media (max-width: 1280px) {
+  #shub-home.mk .mk-sheet[data-sla='false'] .mk-row {
+    grid-template-columns: 38px auto minmax(0, 1fr) auto;
+    grid-template-areas:
+      'who who who who'
+      '. fee avail act';
+  }
+}
+@media (max-width: 600px) {
+  #shub-home.mk .mk-sheet[data-sla='false'] .mk-row {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-areas:
+      'who who'
+      'fee avail'
+      'act act';
+  }
+}

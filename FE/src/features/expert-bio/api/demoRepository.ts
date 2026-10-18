@@ -17,7 +17,7 @@ let demoInput: ExpertBioInput = {
 }
 
 export async function demoBio(expertId: string): Promise<ExpertBio> {
-  // Chuyên gia mock của Sàn (id 1..8) dùng chung trang hồ sơ công khai này.
+  // Marketplace fixture experts (ids 1..8) share this public profile page.
   const { findExpert, SERVICE_IDS, SERVICE_NAMES } =
     await import('@/features/marketplace/fixtures')
   const listed = findExpert(expertId)
@@ -27,8 +27,8 @@ export async function demoBio(expertId: string): Promise<ExpertBio> {
       displayName: listed.name,
       avatarUrl: listed.avatar ?? null,
       headline: listed.headline,
-      location: listed.location,
-      yearsOfExperience: listed.years,
+      location: listed.location ?? '',
+      yearsOfExperience: listed.years ?? 0,
       bio: listed.bio,
       expertise: listed.topics,
       highlights: listed.highlights,
@@ -54,6 +54,10 @@ export async function demoBio(expertId: string): Promise<ExpertBio> {
         completedCases: listed.completedCases,
         eligibleSince: listed.eligibleSince,
         availability: listed.availability,
+        catalog: SERVICE_IDS.map((id) => ({
+          serviceId: id,
+          serviceName: SERVICE_NAMES[id],
+        })),
       },
     }
   const [{ createExpertContextFixture }, { getDemoPricing }] =

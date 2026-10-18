@@ -21,58 +21,33 @@ import {
   WifiOff,
 } from 'lucide-react'
 import { ApiError } from '@/lib/api-client'
+import { isExpertDemo } from '@/lib/expert-data-source'
 import { useAuthStore } from '@/features/auth/store/authStore'
 import { useFormatters } from '@/hooks/useFormatters'
 import { CustomSelect } from '@/components/ui/forms/custom-select'
-import {
-  useExpertBio,
-} from '@/features/expert-bio/hooks/useExpertBio'
 import { MarketplaceFrame } from '@/features/marketplace/components/MarketplaceFrame'
 import {
   AvailabilityTag,
   Avatar,
 } from '@/features/marketplace/components/ListingParts'
 import { useSlaLabel } from '@/features/marketplace/hooks/useSlaLabel'
+import { useServiceText } from '@/features/marketplace/hooks/useServiceText'
+import { useFieldLabel } from '@/features/expert-vetting/hooks/useLabels'
 import {
-  featuredExperts,
-  isServiceId,
-  SERVICE_IDS,
-} from '@/features/marketplace/fixtures'
+  useMarketplace,
+  usePublicExpert,
+} from '@/features/marketplace/hooks/useMarketplace'
+import { featuredExperts, initialsOf } from '@/features/marketplace/model'
 import { FeaturedExperts } from '@/features/marketplace/components/FeaturedExperts'
 import profilePhoto from '@/assets/generated/expert-profile-workspace.png'
 
-/* Hồ sơ công khai duy nhất của chuyên gia: mở từ Sàn ("Xem hồ sơ", "Gửi yêu cầu" kèm #gui-yeu-cau)
-   và từ nút "Xem trang công khai" của chuyên gia. Nội dung lấy từ cùng hợp đồng ExpertBio
-   với bản xem trước trong trình chỉnh sửa hồ sơ. */
+/* The expert's single public profile: opened from the Marketplace ("Xem hồ sơ", "Gửi yêu cầu" with
+   #gui-yeu-cau) and from the expert's "Xem trang công khai" button. It uses the same ExpertBio contract
+   as the bio editor preview; in API mode it comes from the public marketplace endpoint. */
 
 const REQUEST_ID = 'gui-yeu-cau'
 
 type Service = ExpertBio['services'][number]
-
-function initialsOf(name: string) {
-  // Họ + tên gọi, bỏ học vị/danh xưng ở đầu ("LS. Vũ Trọng Nghĩa" → "VN").
-  const parts = name
-    .replace(/^(ThS|TS|LS)\.\s*/i, '')
-    .split(/\s+/)
-    .filter(Boolean)
-  return (
-    (parts[0]?.[0] ?? '') + (parts.length > 1 ? parts[parts.length - 1][0] : '')
-  ).toUpperCase()
-}
-
-function useServiceText() {
-  const { t } = useTranslation('marketplace')
-  return {
-    name: (s: Pick<Service, 'serviceId' | 'serviceName'>) =>
-      isServiceId(s.serviceId)
-        ? t(`services.${s.serviceId}.name`)
-        : s.serviceName,
-    deliverable: (s: Pick<Service, 'serviceId'>) =>
-      isServiceId(s.serviceId)
-        ? t(`services.${s.serviceId}.deliverable`)
-        : null,
-  }
-}
 
 function ProfileHead({ bio }: { bio: ExpertBio }) {
   const { t } = useTranslation('marketplace')
@@ -109,7 +84,7 @@ function ProfileHead({ bio }: { bio: ExpertBio }) {
           <div className="mk-person-text">
             <h1>{bio.displayName}</h1>
             {bio.headline && <p className="mk-lead">{bio.headline}</p>}
-            {listing && (
+            {listing?.eligibleSince && (
               <p className="mk-eligible">
                 <ShieldCheck size={16} aria-hidden="true" />
                 {t('profile.verifiedSince', {
@@ -121,7 +96,7 @@ function ProfileHead({ bio }: { bio: ExpertBio }) {
         </div>
 
         <dl className="mk-stats">
-          {listing && (
+          {listing && listing.reviews > 0 && (
             <div>
               <dt>{t('row.reviews', { count: listing.reviews })}</dt>
               <dd>
@@ -130,17 +105,19 @@ function ProfileHead({ bio }: { bio: ExpertBio }) {
               </dd>
             </div>
           )}
-          {listing && (
+          {listing?.completedCases != null && (
             <div>
               <dt>{t('profile.casesLabel')}</dt>
               <dd>{format.number(listing.completedCases)}</dd>
             </div>
           )}
-          <div>
-            <dt>{t('profile.yearsLabel')}</dt>
-            <dd>{format.number(bio.yearsOfExperience)}</dd>
-          </div>
-          {listing && (
+          {bio.yearsOfExperience > 0 && (
+            <div>
+              <dt>{t('profile.yearsLabel')}</dt>
+              <dd>{format.number(bio.yearsOfExperience)}</dd>
+            </div>
+          )}
+          {listing?.credential && (
             <div className="mk-stat-text">
               <dt>{t('profile.credential')}</dt>
               <dd>{listing.credential}</dd>
@@ -171,13 +148,12 @@ function ServiceList({
   const format = useFormatters()
   const sla = useSlaLabel()
   const text = useServiceText()
-  // Sàn: hiện đủ danh mục, dịch vụ chưa qua Vòng 2 vẫn hiện nhưng không chọn được.
-  const catalog: Service[] = bio.listing
-    ? SERVICE_IDS.map(
-        (id) =>
-          bio.services.find((s) => s.serviceId === id) ?? {
-            serviceId: id,
-            serviceName: id,
+  // Demo listing shows the full catalog: services without Gate 2 stay visible but cannot be picked.
+  const catalog: Service[] = bio.listing?.catalog
+    ? bio.listing.catalog.map(
+        (c) =>
+          bio.services.find((s) => s.serviceId === c.serviceId) ?? {
+            ...c,
             price: null,
           }
       )
@@ -204,9 +180,13 @@ function ServiceList({
               onChange={() => onPick(s.serviceId)}
             />
             <span className="mk-offer-main">
-              <span className="mk-offer-name">{text.name(s)}</span>
-              {text.deliverable(s) && (
-                <span className="mk-offer-desc">{text.deliverable(s)}</span>
+              <span className="mk-offer-name">
+                {text.name(s.serviceId, s.serviceName)}
+              </span>
+              {text.deliverable(s.serviceId) && (
+                <span className="mk-offer-desc">
+                  {text.deliverable(s.serviceId)}
+                </span>
               )}
               {approved && s.approvedAt && (
                 <span className="mk-offer-gate">
@@ -251,8 +231,7 @@ function RequestPanel({
   const text = useServiceText()
   // Xem hồ sơ công khai; gửi yêu cầu (tạo Review Case, chốt giá — F5) mới cần đăng nhập.
   // Dev mở thẳng như ClientLayout để demo luồng không cần BE đăng nhập.
-  const signedIn =
-    useAuthStore((s) => s.isAuthenticated) || import.meta.env.DEV
+  const signedIn = useAuthStore((s) => s.isAuthenticated) || import.meta.env.DEV
   const navigate = useNavigate()
   const selected = bio.services.find((s) => s.serviceId === picked)
   const availability = bio.listing?.availability
@@ -278,7 +257,7 @@ function RequestPanel({
             onChange={onPick}
             options={bio.services.map((s) => ({
               value: s.serviceId,
-              label: text.name(s),
+              label: text.name(s.serviceId, s.serviceName),
             }))}
           />
 
@@ -349,6 +328,7 @@ function RequestPanel({
 
 function Profile({ bio, initial }: { bio: ExpertBio; initial: string | null }) {
   const { t } = useTranslation('marketplace')
+  const fieldLabel = useFieldLabel()
   const [picked, setPicked] = useState(
     () =>
       bio.services.find((s) => s.serviceId === initial)?.serviceId ??
@@ -393,7 +373,7 @@ function Profile({ bio, initial }: { bio: ExpertBio; initial: string | null }) {
               <h2 id="mk-topics">{t('profile.topics')}</h2>
               <ul className="mk-topics">
                 {bio.expertise.map((item) => (
-                  <li key={item}>{item}</li>
+                  <li key={item}>{fieldLabel(item)}</li>
                 ))}
               </ul>
             </section>
@@ -416,7 +396,8 @@ function ProfileMissing({
   onRetry: () => void
 }) {
   const { t } = useTranslation('marketplace')
-  const suggestions = featuredExperts(3, expertId)
+  const market = useMarketplace()
+  const suggestions = featuredExperts(market.data?.experts ?? [], 3, expertId)
   return (
     <>
       <header className="mk-head mk-head-profile mk-head-missing">
@@ -498,10 +479,12 @@ function ProfileMissing({
             <h2>{t('featured.title')}</h2>
             <p className="mk-muted">{t('featured.lead')}</p>
             <FeaturedExperts experts={suggestions} />
-            <p className="mk-demo">
-              <Info size={15} aria-hidden="true" />
-              {t('demo')}
-            </p>
+            {isExpertDemo && (
+              <p className="mk-demo">
+                <Info size={15} aria-hidden="true" />
+                {t('demo')}
+              </p>
+            )}
           </div>
         </main>
       )}
@@ -514,7 +497,7 @@ export default function ExpertPublicProfilePage() {
   const { expertId } = useParams()
   const { hash } = useLocation()
   const [params] = useSearchParams()
-  const query = useExpertBio(expertId)
+  const query = usePublicExpert(expertId)
   const bio = query.data
 
   useEffect(() => {
@@ -525,7 +508,7 @@ export default function ExpertPublicProfilePage() {
     }
   }, [bio, t])
 
-  // ScrollRestoration đã đưa về đầu trang; khung gửi yêu cầu chỉ có sau khi dữ liệu về nên tự cuộn tới #hash.
+  // ScrollRestoration already went to the top; the request panel only exists once data arrives, so scroll to #hash here.
   useEffect(() => {
     if (hash === `#${REQUEST_ID}` && bio)
       document.getElementById(REQUEST_ID)?.scrollIntoView({ block: 'start' })

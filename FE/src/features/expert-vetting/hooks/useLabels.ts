@@ -1,3 +1,4 @@
+import { useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { COMPETENCY_CODES, ELIGIBILITY_CODES } from '../constants'
 
@@ -37,11 +38,15 @@ const FIELD_KEYS = {
   TAX_ADVISORY: 'expertise.advisory',
 } as const
 
-/** Field label; demo fixtures already hold labels, so unknown values pass through */
+/** Field label; demo fixtures already hold labels, so unknown values pass through. Stable per language
+ *  so callers can use it in memo dependencies. */
 export function useFieldLabel() {
   const { t } = useTranslation('expertRegistration')
-  return (code: string) =>
-    Object.hasOwn(FIELD_KEYS, code)
-      ? t(FIELD_KEYS[code as keyof typeof FIELD_KEYS])
-      : code
+  return useCallback(
+    (code: string) =>
+      Object.hasOwn(FIELD_KEYS, code)
+        ? t(FIELD_KEYS[code as keyof typeof FIELD_KEYS])
+        : code,
+    [t]
+  )
 }

@@ -1,4 +1,4 @@
-import type { Availability } from '@/features/marketplace/fixtures'
+import type { Availability } from '@/features/marketplace/types'
 
 export interface ExpertBioInput {
   headline: string
@@ -18,19 +18,21 @@ export interface ExpertBio extends ExpertBioInput {
     serviceId: string
     serviceName: string
     price: string | null
-    /** Delivery SLA in calendar hours, from the approved pricing version. */
+    /** Delivery SLA in calendar hours from START; null when the source has none. */
     slaHours?: number | null
     pricingVersion?: string
     /** When Gate 2 + Final Approval made this service bookable. */
-    approvedAt?: string
+    approvedAt?: string | null
   }[]
   /** Marketplace standing; absent while the expert is not listed. */
   listing?: {
-    credential: string
+    credential: string | null
     rating: number
     reviews: number
-    completedCases: number
-    eligibleSince: string
+    completedCases: number | null
+    eligibleSince: string | null
     availability: Availability
+    /** Full service catalog to show unapproved services too (demo only; the public API lists none). */
+    catalog?: { serviceId: string; serviceName: string }[]
   }
 }
