@@ -59,7 +59,7 @@ flowchart LR
 | `gateway` | `5190` | API Gateway (YARP), điểm vào duy nhất | ✅ Hoạt động |
 | `auth` | `5194` | Identity: tài khoản, phiên, JWT (schema `identity`) | ✅ Hoạt động |
 | `expert` | `5198` | Hồ sơ đăng ký chuyên gia, minh chứng S3 (schema `expert`) | ✅ Hoạt động |
-| `billing` | `5220` | Thanh toán, ví, escrow, payout (schema `billing`) | 🚧 Ví, lịch sử ví, tài khoản ngân hàng, nạp tiền PayOS |
+| `billing` | `5220` | Thanh toán, ví, escrow, payout (schema `billing`) | 🚧 Ví, tài khoản ngân hàng, nạp tiền PayOS, admin xem payout |
 | `workflow` | `5030` | Tài liệu, hội thoại AI, review case (schema `workspace`, `review`) | 🚧 Chưa có API |
 | `ingestion` | `5004` | Pipeline nạp tài liệu (schema `knowledge`) | 🚧 Chưa có API |
 | `rag-query` | `5104` | RAG / Vector Search với pgvector | 🧱 Skeleton |
@@ -196,6 +196,7 @@ npm run dev     # http://localhost:5173
 | `/api/v1/billing/wallet/**` | `billing` | Token hợp lệ (`AuthSession`) |
 | `/api/v1/billing/bank-accounts/**` | `billing` | Token hợp lệ (`AuthSession`) |
 | `/api/v1/billing/payos/**` | `billing` | Qua `billing-v1`: `webhook` công khai (xác thực bằng chữ ký PayOS), `create-topup` do billing kiểm tra token |
+| `/api/v1/admin/billing/**` | `billing` | Token hợp lệ (`AuthSession`); billing kiểm tra quyền `PayoutManage` |
 
 ---
 
