@@ -39,8 +39,15 @@ public sealed class ExpertServiceQualification
     public bool NeedsInformation => Status == QualificationStatus.NeedMoreInformation;
 
     /// <summary>
+    /// A re-registration after FAIL that has not been sent for review yet: it needs new or updated
+    /// competency evidence before the reviewer sees it (BR-E22).
+    /// </summary>
+    public bool AwaitsNewEvidence => PreviousQualificationId != null && SubmittedAt == CreatedAt;
+
+    /// <summary>
     /// Registers the expert for a service, straight into competency review (state model 4.2, row 1).
-    /// Requires an ELIGIBLE Gate 1 application (BR-E07) and, after FAIL, the policy interval (BR-E22).
+    /// Requires an ELIGIBLE Gate 1 application (BR-E07) and, after FAIL, the policy interval (BR-E22);
+    /// a re-registration first waits for new competency evidence in NEED_MORE_INFORMATION.
     /// </summary>
     /// <param name="previous">The latest qualification of the same service, if any.</param>
     public static (ExpertServiceQualification Qualification, QualificationEvent Opened) Register(
@@ -57,9 +64,14 @@ public sealed class ExpertServiceQualification
             throw ExpertErrors.QualificationExists(previous.Status);
         if (previous?.EarliestReapplyAt > now)
             throw ExpertErrors.ReapplyTooEarly(previous.EarliestReapplyAt.Value);
+        var status =
+            previous == null
+                ? QualificationStatus.CompetencyReview
+                : QualificationStatus.NeedMoreInformation;
         var qualification = new ExpertServiceQualification
         {
             ExpertProfileId = eligibility.ExpertProfileId,
+            Status = status,
             ServiceCode = serviceCode,
             ApplicationId = eligibility.Id,
             PreviousQualificationId = previous?.Id,
@@ -71,7 +83,7 @@ public sealed class ExpertServiceQualification
             qualification.Id,
             actorUserId,
             null,
-            QualificationStatus.CompetencyReview,
+            status,
             null,
             now
         );
@@ -138,6 +150,42 @@ public sealed class ExpertServiceQualification
             .Select(x => CompetencyAssessment.Record(decided, x, reviewerUserId))
             .ToArray();
         return new(decided, assessments);
+    }
+
+    /// <summary>
+    /// Final approval by a System Admin (state model 4.2, rows 6–7): a governance check of the Gate 2
+    /// result, not a new assessment (BR-E10). APPROVE grants the service; RETURN_FOR_REVIEW sends it back
+    /// to competency review with a note and clears the Gate 2 result. The approver must differ from the
+    /// Gate 2 reviewer (BR-E33) and from the expert.
+    /// </summary>
+    public QualificationEvent DecideFinalApproval(
+        Guid approverUserId,
+        Guid applicantUserId,
+        string decision,
+        string? note,
+        DateTimeOffset now
+    )
+    {
+        if (Status != QualificationStatus.PendingFinalApproval)
+            throw ExpertErrors.QualificationNotPendingApproval(Status);
+        if (approverUserId == applicantUserId)
+            throw ExpertErrors.SelfReviewNotAllowed();
+        if (approverUserId == CompetencyReviewerUserId)
+            throw ExpertErrors.FinalApproverIsReviewer();
+        note = string.IsNullOrWhiteSpace(note) ? null : note.Trim();
+        switch (decision)
+        {
+            case FinalApprovalDecision.Approve:
+                return MoveTo(QualificationStatus.ApprovedForService, approverUserId, note, now);
+            case FinalApprovalDecision.ReturnForReview:
+                if (note == null)
+                    throw ExpertErrors.FinalApprovalNoteRequired();
+                DecidedAt = null;
+                CompetencyReviewerUserId = null;
+                return MoveTo(QualificationStatus.CompetencyReview, approverUserId, note, now);
+            default:
+                throw ExpertErrors.InvalidFinalApprovalDecision();
+        }
     }
 
     private QualificationEvent MoveTo(

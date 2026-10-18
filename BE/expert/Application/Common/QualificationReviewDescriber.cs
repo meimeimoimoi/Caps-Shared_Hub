@@ -78,7 +78,9 @@ public sealed class QualificationReviewDescriber(
                 ))
                 .ToArray(),
             CompetencyResults.ToResponses(results),
-            qualification.Status == QualificationStatus.CompetencyReview
+            qualification.Status == QualificationStatus.CompetencyReview,
+            qualification.CompetencyReviewerUserId?.ToString(),
+            qualification.Status == QualificationStatus.PendingFinalApproval
         );
     }
 }

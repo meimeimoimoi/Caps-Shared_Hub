@@ -26,6 +26,7 @@ public sealed record ServiceQualificationSummary(
 /// <summary>The expert's view of one qualification: files, history, results and the actions allowed now.</summary>
 /// <param name="Competencies">Per-competency results of the latest decision: what to supplement or why it was not met.</param>
 /// <param name="MaxFiles">Files that can be added for this service.</param>
+/// <param name="AwaitsNewEvidence">Re-registration after FAIL: a new file is required before it is reviewed (BR-E22).</param>
 public sealed record ExpertQualificationResponse(
     string Id,
     string ServiceCode,
@@ -42,7 +43,8 @@ public sealed record ExpertQualificationResponse(
     CompetencyResultResponse[] Competencies,
     bool CanUpload,
     bool CanSupplement,
-    int MaxFiles
+    int MaxFiles,
+    bool AwaitsNewEvidence
 );
 
 /// <summary>One competency's result in the latest Gate 2 decision.</summary>
@@ -75,6 +77,8 @@ public sealed record QualificationQueueItemResponse(
 /// </summary>
 /// <param name="ApplicationId">The ELIGIBLE Gate 1 application the qualification relies on.</param>
 /// <param name="CanDecide">True while the qualification waits for a Gate 2 decision.</param>
+/// <param name="CompetencyReviewerUserId">Who passed Gate 2; they cannot give the final approval (BR-E33).</param>
+/// <param name="CanFinalApprove">True while the qualification waits for the System Admin final approval.</param>
 public sealed record ReviewQualificationResponse(
     string Id,
     string ApplicantUserId,
@@ -93,5 +97,7 @@ public sealed record ReviewQualificationResponse(
     ReviewEventResponse[] History,
     EligibilityCheckResponse[] Eligibility,
     CompetencyResultResponse[] Competencies,
-    bool CanDecide
+    bool CanDecide,
+    string? CompetencyReviewerUserId,
+    bool CanFinalApprove
 );

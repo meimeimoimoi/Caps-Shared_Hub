@@ -171,6 +171,41 @@ public static class ExpertErrors
             $"Only qualifications in competency review can be decided; this one is {status}."
         );
 
+    public static AppException QualificationNotPendingApproval(string status) =>
+        new(
+            ErrorType.Conflict,
+            "QUALIFICATION_NOT_PENDING_APPROVAL",
+            $"Only qualifications waiting for final approval can be decided; this one is {status}."
+        );
+
+    public static AppException FinalApproverIsReviewer() =>
+        new(
+            ErrorType.Forbidden,
+            "FINAL_APPROVER_IS_REVIEWER",
+            "The Gate 2 reviewer cannot also give the final approval."
+        );
+
+    public static AppException InvalidFinalApprovalDecision() =>
+        new(
+            ErrorType.Validation,
+            "INVALID_FINAL_APPROVAL_DECISION",
+            "Decision must be APPROVE or RETURN_FOR_REVIEW."
+        );
+
+    public static AppException FinalApprovalNoteRequired() =>
+        new(
+            ErrorType.Validation,
+            "FINAL_APPROVAL_NOTE_REQUIRED",
+            "Explain what must be reviewed again."
+        );
+
+    public static AppException NewEvidenceRequired() =>
+        new(
+            ErrorType.Validation,
+            "NEW_EVIDENCE_REQUIRED",
+            "Upload new or updated competency evidence before sending a re-registration for review."
+        );
+
     public static AppException InvalidCompetencyCriteria() =>
         new(
             ErrorType.Validation,

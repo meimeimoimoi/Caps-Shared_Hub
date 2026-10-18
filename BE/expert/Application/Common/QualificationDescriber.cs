@@ -58,7 +58,8 @@ public sealed class QualificationDescriber(
             CompetencyResults.ToResponses(results),
             qualification.NeedsInformation && added < ApplicationRules.MaxFilesPerApplication,
             qualification.NeedsInformation && applicant.EmailVerified,
-            ApplicationRules.MaxFilesPerApplication
+            ApplicationRules.MaxFilesPerApplication,
+            qualification.AwaitsNewEvidence
         );
     }
 }

@@ -44,6 +44,9 @@ public sealed class SupplementQualificationHandler(
             qualification.SubmittedAt,
             ct
         );
+        // A re-registration after FAIL is only reviewed again with new competency evidence (BR-E22)
+        if (qualification.AwaitsNewEvidence && !addedFiles)
+            throw ExpertErrors.NewEvidenceRequired();
         if (note == null && !addedFiles)
             throw ExpertErrors.SupplementEmpty();
         qualifications.AddEvent(qualification.Resubmit(applicant.UserId, note, clock.GetUtcNow()));

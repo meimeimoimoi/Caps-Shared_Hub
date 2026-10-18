@@ -18,3 +18,12 @@ public static class QualificationStatus
     /// <summary>Every status except FAIL keeps the Expert-Service pair taken: only one such row may exist.</summary>
     public static bool IsClosed(string status) => status == Fail;
 }
+
+/// <summary>What a System Admin can decide at final approval.</summary>
+public static class FinalApprovalDecision
+{
+    public const string Approve = "APPROVE";
+
+    /// <summary>Missing records, unresolved flags or a process error: back to competency review.</summary>
+    public const string ReturnForReview = "RETURN_FOR_REVIEW";
+}

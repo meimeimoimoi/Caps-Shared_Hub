@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using Caps.Expert.Application.Common;
+using Caps.Expert.Application.Features.Approvals;
 using Caps.Expert.Application.Features.Qualifications;
 using Caps.Expert.Application.Features.Reviews;
 using Caps.Expert.Domain.Qualifications;
@@ -44,3 +45,13 @@ public sealed record CompetencyResultRequest(
     [MaxLength(2000)] string? Note,
     [MaxLength(50)] Guid[]? EvidenceIds
 );
+
+/// <summary>Final approval: APPROVE or RETURN_FOR_REVIEW; the note is required to return for review.</summary>
+public sealed record FinalApprovalRequest(
+    [Required, MaxLength(32)] string Decision,
+    [MaxLength(2000)] string? Note
+)
+{
+    public DecideFinalApprovalCommand ToCommand(Guid approverUserId, Guid qualificationId) =>
+        new(approverUserId, qualificationId, Decision, Note);
+}
