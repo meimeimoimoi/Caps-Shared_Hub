@@ -13,8 +13,7 @@ namespace Caps.Expert.Api.Controllers;
 /// Final approval of Gate 2 results by System Admins: a governance check per Expert-Service, not a new
 /// assessment. APPROVED_FOR_SERVICE lets the expert set up pricing for that service.
 /// </summary>
-// TODO: switch to a dedicated final-approval permission once the permission matrix defines one
-[ApiController, RequirePermission(Permission.UserManage)]
+[ApiController, RequirePermission(Permission.ExpertApprove)]
 [Route("api/v1/admin/experts/approvals")]
 public sealed class QualificationApprovalsController(ICurrentUser currentUser) : ControllerBase
 {
@@ -23,7 +22,7 @@ public sealed class QualificationApprovalsController(ICurrentUser currentUser) :
     /// <summary>Lists qualifications in one status, oldest submission first.</summary>
     /// <param name="status">Defaults to COMPETENCY_REVIEW; pass PENDING_FINAL_APPROVAL for the approval queue.</param>
     /// <response code="200">The queue (may be empty).</response>
-    /// <response code="403">Missing the UserManage permission.</response>
+    /// <response code="403">Missing the ExpertApprove permission.</response>
     [HttpGet]
     public async Task<IActionResult> List(
         [FromQuery] string? status,
@@ -41,7 +40,7 @@ public sealed class QualificationApprovalsController(ICurrentUser currentUser) :
 
     /// <summary>Returns one qualification with its records: Gate 1 and Gate 2 results, files and history.</summary>
     /// <response code="200">The qualification.</response>
-    /// <response code="403">Missing the UserManage permission.</response>
+    /// <response code="403">Missing the ExpertApprove permission.</response>
     /// <response code="404">QUALIFICATION_NOT_FOUND.</response>
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> Get(
@@ -57,7 +56,7 @@ public sealed class QualificationApprovalsController(ICurrentUser currentUser) :
 
     /// <summary>Downloads one file the qualification relies on.</summary>
     /// <response code="200">The file bytes.</response>
-    /// <response code="403">Missing the UserManage permission.</response>
+    /// <response code="403">Missing the ExpertApprove permission.</response>
     /// <response code="404">QUALIFICATION_NOT_FOUND or EVIDENCE_NOT_FOUND.</response>
     [HttpGet("{id:guid}/evidence/{evidenceId:guid}/file")]
     public async Task<IActionResult> OpenEvidence(
@@ -80,7 +79,7 @@ public sealed class QualificationApprovalsController(ICurrentUser currentUser) :
     /// </remarks>
     /// <response code="200">The qualification after the decision.</response>
     /// <response code="400">INVALID_FINAL_APPROVAL_DECISION or FINAL_APPROVAL_NOTE_REQUIRED.</response>
-    /// <response code="403">Missing the UserManage permission, FINAL_APPROVER_IS_REVIEWER or SELF_REVIEW_NOT_ALLOWED.</response>
+    /// <response code="403">Missing the ExpertApprove permission, FINAL_APPROVER_IS_REVIEWER or SELF_REVIEW_NOT_ALLOWED.</response>
     /// <response code="404">QUALIFICATION_NOT_FOUND.</response>
     /// <response code="409">QUALIFICATION_NOT_PENDING_APPROVAL.</response>
     /// <response code="503">SESSION_CHECK_UNAVAILABLE: the session could not be checked.</response>
@@ -90,6 +89,30 @@ public sealed class QualificationApprovalsController(ICurrentUser currentUser) :
         FinalApprovalRequest r,
         [FromServices]
             ICommandHandler<DecideFinalApprovalCommand, ReviewQualificationResponse> handler,
+        CancellationToken ct
+    )
+    {
+        var qualification = await handler.HandleAsync(r.ToCommand(UserId, id), ct);
+        return Ok(ApiResponse<ReviewQualificationResponse>.Ok(qualification));
+    }
+
+    /// <summary>Suspends an approved service or reinstates a suspended one.</summary>
+    /// <remarks>
+    /// SUSPEND (note required) hides the service from the Marketplace; running cases continue. REINSTATE makes
+    /// it available again. Other services of the expert are not affected.
+    /// </remarks>
+    /// <response code="200">The qualification after the change.</response>
+    /// <response code="400">INVALID_SERVICE_ACCESS_ACTION or SUSPENSION_NOTE_REQUIRED.</response>
+    /// <response code="403">Missing the ExpertApprove permission.</response>
+    /// <response code="404">QUALIFICATION_NOT_FOUND.</response>
+    /// <response code="409">SERVICE_NOT_APPROVED or SERVICE_NOT_SUSPENDED.</response>
+    /// <response code="503">SESSION_CHECK_UNAVAILABLE: the session could not be checked.</response>
+    [HttpPost("{id:guid}/service-access"), RequireSessionCheck]
+    public async Task<IActionResult> ChangeAccess(
+        Guid id,
+        ServiceAccessRequest r,
+        [FromServices]
+            ICommandHandler<ChangeServiceAccessCommand, ReviewQualificationResponse> handler,
         CancellationToken ct
     )
     {

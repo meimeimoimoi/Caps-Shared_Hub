@@ -11,4 +11,6 @@ public interface IExpertNotificationOutbox
     void Enqueue(ExpertEligibilityDecidedEvent message, DateTimeOffset now);
 
     void Enqueue(ExpertCompetencyDecidedEvent message, DateTimeOffset now);
+
+    void Enqueue(ExpertServiceAccessChangedEvent message, DateTimeOffset now);
 }

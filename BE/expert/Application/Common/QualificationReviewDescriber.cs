@@ -80,7 +80,9 @@ public sealed class QualificationReviewDescriber(
             CompetencyResults.ToResponses(results),
             qualification.Status == QualificationStatus.CompetencyReview,
             qualification.CompetencyReviewerUserId?.ToString(),
-            qualification.Status == QualificationStatus.PendingFinalApproval
+            qualification.Status == QualificationStatus.PendingFinalApproval,
+            qualification.Status == QualificationStatus.ApprovedForService,
+            qualification.Status == QualificationStatus.Suspended
         );
     }
 }

@@ -188,6 +188,35 @@ public sealed class ExpertServiceQualification
         }
     }
 
+    /// <summary>
+    /// Suspends an approved service (note required) or reinstates a suspended one (state model 4.2,
+    /// rows 8–9). Only this service is affected (BR-E25).
+    /// </summary>
+    public QualificationEvent ChangeServiceAccess(
+        Guid adminUserId,
+        string action,
+        string? note,
+        DateTimeOffset now
+    )
+    {
+        note = string.IsNullOrWhiteSpace(note) ? null : note.Trim();
+        switch (action)
+        {
+            case ServiceAccessAction.Suspend:
+                if (Status != QualificationStatus.ApprovedForService)
+                    throw ExpertErrors.ServiceNotApproved(Status);
+                if (note == null)
+                    throw ExpertErrors.SuspensionNoteRequired();
+                return MoveTo(QualificationStatus.Suspended, adminUserId, note, now);
+            case ServiceAccessAction.Reinstate:
+                if (Status != QualificationStatus.Suspended)
+                    throw ExpertErrors.ServiceNotSuspended(Status);
+                return MoveTo(QualificationStatus.ApprovedForService, adminUserId, note, now);
+            default:
+                throw ExpertErrors.InvalidServiceAccessAction();
+        }
+    }
+
     private QualificationEvent MoveTo(
         string status,
         Guid actorUserId,

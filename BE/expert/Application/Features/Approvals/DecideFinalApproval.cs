@@ -3,6 +3,7 @@ using Caps.Expert.Application.Abstractions;
 using Caps.Expert.Application.Common;
 using Caps.Expert.Application.DTOs.Responses;
 using Caps.Expert.Domain;
+using Caps.Expert.Domain.Qualifications;
 
 namespace Caps.Expert.Application.Features.Approvals;
 
@@ -21,6 +22,7 @@ public sealed record DecideFinalApprovalCommand(
 public sealed class DecideFinalApprovalHandler(
     IApplicantLock locks,
     IQualificationRepository qualifications,
+    IServiceAccessNotifier notifier,
     IQualificationReviewDescriber describer,
     IUnitOfWork unitOfWork,
     TimeProvider clock
@@ -40,14 +42,17 @@ public sealed class DecideFinalApprovalHandler(
         var qualification =
             await qualifications.FindWithProfileAsync(command.QualificationId, ct)
             ?? throw ExpertErrors.QualificationNotFound();
+        var decision = command.Decision.Trim().ToUpperInvariant();
         var decided = qualification.DecideFinalApproval(
             command.ApproverUserId,
             qualification.ExpertProfile.UserId,
-            command.Decision.Trim().ToUpperInvariant(),
+            decision,
             command.Note,
             clock.GetUtcNow()
         );
         qualifications.AddEvent(decided);
+        var change = decision == FinalApprovalDecision.Approve ? "APPROVED" : "RETURNED_FOR_REVIEW";
+        await notifier.EnqueueAsync(qualification, decided, change, ct);
         await unitOfWork.SaveChangesAsync(ct);
         await tx.CommitAsync(ct);
         return await describer.DescribeAsync(qualification, ct);

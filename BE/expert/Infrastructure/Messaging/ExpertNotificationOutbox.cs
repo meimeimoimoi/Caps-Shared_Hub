@@ -24,6 +24,14 @@ public sealed class ExpertNotificationOutbox(ExpertDbContext db) : IExpertNotifi
             now
         );
 
+    public void Enqueue(ExpertServiceAccessChangedEvent message, DateTimeOffset now) =>
+        Add(
+            message.Id,
+            nameof(ExpertServiceAccessChangedEvent),
+            JsonSerializer.Serialize(message),
+            now
+        );
+
     private void Add(Guid id, string type, string payload, DateTimeOffset now) =>
         db.NotificationOutbox.Add(
             new NotificationOutboxEntry

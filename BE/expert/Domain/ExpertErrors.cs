@@ -199,6 +199,34 @@ public static class ExpertErrors
             "Explain what must be reviewed again."
         );
 
+    public static AppException ServiceNotApproved(string status) =>
+        new(
+            ErrorType.Conflict,
+            "SERVICE_NOT_APPROVED",
+            $"Only an approved service can be suspended; this one is {status}."
+        );
+
+    public static AppException ServiceNotSuspended(string status) =>
+        new(
+            ErrorType.Conflict,
+            "SERVICE_NOT_SUSPENDED",
+            $"Only a suspended service can be reinstated; this one is {status}."
+        );
+
+    public static AppException SuspensionNoteRequired() =>
+        new(
+            ErrorType.Validation,
+            "SUSPENSION_NOTE_REQUIRED",
+            "Give the reason for the suspension."
+        );
+
+    public static AppException InvalidServiceAccessAction() =>
+        new(
+            ErrorType.Validation,
+            "INVALID_SERVICE_ACCESS_ACTION",
+            "Action must be SUSPEND or REINSTATE."
+        );
+
     public static AppException NewEvidenceRequired() =>
         new(
             ErrorType.Validation,

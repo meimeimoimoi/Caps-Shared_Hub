@@ -79,6 +79,8 @@ public sealed record QualificationQueueItemResponse(
 /// <param name="CanDecide">True while the qualification waits for a Gate 2 decision.</param>
 /// <param name="CompetencyReviewerUserId">Who passed Gate 2; they cannot give the final approval (BR-E33).</param>
 /// <param name="CanFinalApprove">True while the qualification waits for the System Admin final approval.</param>
+/// <param name="CanSuspend">Approved: a System Admin can suspend the service.</param>
+/// <param name="CanReinstate">Suspended: a System Admin can reinstate the service.</param>
 public sealed record ReviewQualificationResponse(
     string Id,
     string ApplicantUserId,
@@ -99,5 +101,7 @@ public sealed record ReviewQualificationResponse(
     CompetencyResultResponse[] Competencies,
     bool CanDecide,
     string? CompetencyReviewerUserId,
-    bool CanFinalApprove
+    bool CanFinalApprove,
+    bool CanSuspend,
+    bool CanReinstate
 );

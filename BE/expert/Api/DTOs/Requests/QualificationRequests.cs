@@ -55,3 +55,13 @@ public sealed record FinalApprovalRequest(
     public DecideFinalApprovalCommand ToCommand(Guid approverUserId, Guid qualificationId) =>
         new(approverUserId, qualificationId, Decision, Note);
 }
+
+/// <summary>SUSPEND (note required) or REINSTATE an approved service.</summary>
+public sealed record ServiceAccessRequest(
+    [Required, MaxLength(32)] string Action,
+    [MaxLength(2000)] string? Note
+)
+{
+    public ChangeServiceAccessCommand ToCommand(Guid adminUserId, Guid qualificationId) =>
+        new(adminUserId, qualificationId, Action, Note);
+}

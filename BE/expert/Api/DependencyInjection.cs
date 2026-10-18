@@ -15,6 +15,7 @@ public static class DependencyInjection
         services.AddScoped<IReviewDescriber, ReviewDescriber>();
         services.AddScoped<IQualificationDescriber, QualificationDescriber>();
         services.AddScoped<IQualificationReviewDescriber, QualificationReviewDescriber>();
+        services.AddScoped<IServiceAccessNotifier, ServiceAccessNotifier>();
         services.AddHandlersFromAssembly(typeof(SaveDraftHandler).Assembly);
         return services;
     }

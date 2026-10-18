@@ -162,4 +162,46 @@ public sealed class FinalApprovalTests
         Assert.False(again.AwaitsNewEvidence);
         Assert.Equal(QualificationStatus.CompetencyReview, again.Status);
     }
+
+    [Fact]
+    public void An_approved_service_can_be_suspended_with_a_reason_and_reinstated()
+    {
+        var q = Decided(CompetencyCriteria.Pass);
+        q.DecideFinalApproval(Admin, Expert, FinalApprovalDecision.Approve, null, Now);
+        Assert.Equal(
+            "SUSPENSION_NOTE_REQUIRED",
+            Errors.CodeOf(() =>
+                q.ChangeServiceAccess(Admin, ServiceAccessAction.Suspend, null, Now)
+            )
+        );
+
+        q.ChangeServiceAccess(Admin, ServiceAccessAction.Suspend, "Complaint under review", Now);
+        Assert.Equal(QualificationStatus.Suspended, q.Status);
+        q.ChangeServiceAccess(Admin, ServiceAccessAction.Reinstate, null, Now);
+
+        Assert.Equal(QualificationStatus.ApprovedForService, q.Status);
+    }
+
+    [Fact]
+    public void Only_approved_services_can_be_suspended_and_only_suspended_ones_reinstated()
+    {
+        var pending = Decided(CompetencyCriteria.Pass);
+
+        Assert.Equal(
+            "SERVICE_NOT_APPROVED",
+            Errors.CodeOf(() =>
+                pending.ChangeServiceAccess(Admin, ServiceAccessAction.Suspend, "x", Now)
+            )
+        );
+        Assert.Equal(
+            "SERVICE_NOT_SUSPENDED",
+            Errors.CodeOf(() =>
+                pending.ChangeServiceAccess(Admin, ServiceAccessAction.Reinstate, null, Now)
+            )
+        );
+        Assert.Equal(
+            "INVALID_SERVICE_ACCESS_ACTION",
+            Errors.CodeOf(() => pending.ChangeServiceAccess(Admin, "PAUSE", null, Now))
+        );
+    }
 }
