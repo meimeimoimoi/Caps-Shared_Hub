@@ -307,6 +307,38 @@ public static class ExpertErrors
             "Decision must be APPROVE, RETURN_FOR_REVISION or REJECT."
         );
 
+    public static AppException SlotInPast() =>
+        new(ErrorType.Validation, "SLOT_IN_PAST", "A slot must start in the future.");
+
+    public static AppException SlotTooFarAhead(int days) =>
+        new(
+            ErrorType.Validation,
+            "SLOT_TOO_FAR_AHEAD",
+            $"Slots can be opened at most {days} days ahead."
+        );
+
+    public static AppException SlotLengthInvalid(int minHours, int maxHours) =>
+        new(
+            ErrorType.Validation,
+            "SLOT_LENGTH_INVALID",
+            $"A slot must last between {minHours} and {maxHours} hours."
+        );
+
+    public static AppException SlotLimit(int max) =>
+        new(ErrorType.Conflict, "SLOT_LIMIT", $"At most {max} slots can be open at a time.");
+
+    public static AppException SlotOverlap() =>
+        new(ErrorType.Conflict, "SLOT_OVERLAP", "The slot overlaps another open slot.");
+
+    public static AppException SlotNotFound() =>
+        new(ErrorType.NotFound, "SLOT_NOT_FOUND", "Slot not found.");
+
+    public static AppException SlotLocked() =>
+        new(ErrorType.Conflict, "SLOT_LOCKED", "A booked slot cannot be removed.");
+
+    public static AppException ExpertNotFound() =>
+        new(ErrorType.NotFound, "EXPERT_NOT_FOUND", "Expert not found.");
+
     public static AppException NewEvidenceRequired() =>
         new(
             ErrorType.Validation,

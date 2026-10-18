@@ -44,6 +44,19 @@ public interface IQualificationRepository
         Guid qualificationId,
         CancellationToken ct
     );
+
+    /// <summary>
+    /// Approved qualifications taking requests, with their profiles, untracked: the Marketplace candidates
+    /// before price, slots and account status are checked.
+    /// </summary>
+    /// <param name="serviceCode">Only this service; null for every service.</param>
+    /// <param name="profileId">Only this expert; null for every expert.</param>
+    Task<IReadOnlyList<ExpertServiceQualification>> ListMarketplaceCandidatesAsync(
+        string? serviceCode,
+        Guid? profileId,
+        CancellationToken ct
+    );
+
     void Add(ExpertServiceQualification qualification);
     void AddEvent(QualificationEvent qualificationEvent);
 }

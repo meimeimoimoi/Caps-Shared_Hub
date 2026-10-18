@@ -17,6 +17,12 @@ public interface IPricingRepository
         CancellationToken ct
     );
 
+    /// <summary>Every version of the given qualifications, untracked (Marketplace prices).</summary>
+    Task<IReadOnlyList<ServicePricingVersion>> ListByQualificationsAsync(
+        IReadOnlyCollection<Guid> qualificationIds,
+        CancellationToken ct
+    );
+
     /// <summary>The undecided version (draft, returned or pending), tracked.</summary>
     Task<ServicePricingVersion?> FindOpenAsync(Guid qualificationId, CancellationToken ct);
 

@@ -44,6 +44,7 @@ public sealed class ExpertDbContext(DbContextOptions<ExpertDbContext> options) :
             e.Property(x => x.DisplayName).HasColumnName("display_name").HasMaxLength(128);
             e.Property(x => x.Phone).HasColumnName("phone").HasMaxLength(32);
             e.Property(x => x.ContactEmail).HasColumnName("contact_email").HasMaxLength(256);
+            e.Property(x => x.AccountStatus).HasColumnName("account_status").HasMaxLength(32);
             e.Property(x => x.YearsExperience).HasColumnName("years_experience");
             e.Property(x => x.Bio).HasColumnName("bio");
             e.Property(x => x.Title).HasColumnName("title");
@@ -213,6 +214,9 @@ public sealed class ExpertDbContext(DbContextOptions<ExpertDbContext> options) :
             e.Property(x => x.DecisionNote).HasColumnName("decision_note");
             e.Property(x => x.CompetencyReviewerUserId)
                 .HasColumnName("competency_reviewer_user_id");
+            e.Property(x => x.AcceptingRequests)
+                .HasColumnName("accepting_requests")
+                .HasDefaultValue(false);
             e.Property(x => x.PreviousQualificationId).HasColumnName("previous_qualification_id");
             e.Property(x => x.EarliestReapplyAt).HasColumnName("earliest_reapply_at");
             e.Property(x => x.CreatedAt).HasColumnName("created_at").IsRequired();

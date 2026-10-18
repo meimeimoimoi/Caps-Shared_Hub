@@ -36,6 +36,9 @@ public sealed class ExpertServiceQualification
     public DateTimeOffset CreatedAt { get; private set; }
     public DateTimeOffset UpdatedAt { get; private set; }
 
+    /// <summary>The expert takes new requests for this service; off until they turn it on.</summary>
+    public bool AcceptingRequests { get; private set; }
+
     public bool NeedsInformation => Status == QualificationStatus.NeedMoreInformation;
 
     /// <summary>
@@ -215,6 +218,15 @@ public sealed class ExpertServiceQualification
             default:
                 throw ExpertErrors.InvalidServiceAccessAction();
         }
+    }
+
+    /// <summary>Turns new requests on (approved service only) or off (always allowed).</summary>
+    public void SetAcceptingRequests(bool accepting, DateTimeOffset now)
+    {
+        if (accepting && Status != QualificationStatus.ApprovedForService)
+            throw ExpertErrors.ServiceNotApproved(Status);
+        AcceptingRequests = accepting;
+        UpdatedAt = now;
     }
 
     private QualificationEvent MoveTo(

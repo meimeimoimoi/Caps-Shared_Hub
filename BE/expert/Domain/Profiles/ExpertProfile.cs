@@ -35,6 +35,16 @@ public sealed class ExpertProfile
 
     /// <summary>Email from the applicant's session, kept so decisions can be notified (no identity lookup).</summary>
     public string? ContactEmail { get; private set; }
+
+    /// <summary>
+    /// Account status copied from auth (AccountStatusChangedEvent, or the token on the expert's own requests);
+    /// the Marketplace only lists ACTIVE accounts (BR-M01).
+    /// </summary>
+    public string? AccountStatus { get; private set; }
+
+    public bool IsAccountActive => AccountStatus == ActiveAccountStatus;
+
+    private const string ActiveAccountStatus = "ACTIVE";
     public int? YearsExperience { get; private set; }
     public string? Bio { get; private set; }
     public string? Title { get; private set; }
@@ -87,6 +97,13 @@ public sealed class ExpertProfile
         Fields = details.Fields;
         Highlights = Clean(details.Highlights);
         UpdatedAt = now;
+    }
+
+    /// <summary>Keeps the account status reported by auth; blank values are ignored.</summary>
+    public void RecordAccountStatus(string? status)
+    {
+        if (!string.IsNullOrWhiteSpace(status))
+            AccountStatus = status.Trim();
     }
 
     /// <summary>Keeps the latest email the applicant signed in with; blank values are ignored.</summary>

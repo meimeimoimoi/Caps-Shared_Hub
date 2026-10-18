@@ -26,6 +26,7 @@ public sealed class GetMyContextHandler(
     IExpertApplicationRepository applications,
     IQualificationRepository qualifications,
     IPricingRepository pricing,
+    IAvailabilityRepository availability,
     IServiceCatalogRepository catalog,
     TimeProvider clock
 ) : IQueryHandler<GetMyContextQuery, ExpertContextResponse>
@@ -47,6 +48,10 @@ public sealed class GetMyContextHandler(
         var services = await catalog.ListActiveAsync(ct);
         var now = clock.GetUtcNow();
         var today = PricingRules.BusinessDate(now);
+        var slots = profile == null ? [] : await availability.ListOpenAsync(profile.Id, now, ct);
+        // The expert's own token is the freshest account status
+        var accountActive = query.AccountStatus == ActiveAccount;
+        var hasOpenSlot = slots.Any(x => x.StartAt > now);
 
         var readiness = services
             .Select(service =>
@@ -56,9 +61,11 @@ public sealed class GetMyContextHandler(
                 return Readiness(
                     service,
                     application?.Status,
-                    qualification?.Status,
+                    qualification,
                     versions.FirstOrDefault(x => x.IsInEffect(today)),
-                    versions.FirstOrDefault(x => x.Status == PricingStatus.PendingApproval)
+                    versions.FirstOrDefault(x => x.Status == PricingStatus.PendingApproval),
+                    accountActive,
+                    hasOpenSlot
                 );
             })
             .ToArray();
@@ -82,30 +89,46 @@ public sealed class GetMyContextHandler(
         );
     }
 
-    // Availability is not built yet, so nothing is bookable; the reason follows the furthest step reached
+    private const string ActiveAccount = "ACTIVE";
+
+    // An approved service is bookable once BR-M01 holds; before that the reason follows the furthest step reached
     private static ServiceReadinessResponse Readiness(
         ServiceCatalogItem service,
         string? applicationStatus,
-        string? qualificationStatus,
+        ExpertServiceQualification? qualification,
         ServicePricingVersion? inEffect,
-        ServicePricingVersion? pending
-    ) =>
-        new(
+        ServicePricingVersion? pending,
+        bool accountActive,
+        bool hasOpenSlot
+    )
+    {
+        var accepting = qualification?.AcceptingRequests == true;
+        var facts =
+            qualification == null
+                ? null
+                : new ListingFacts(
+                    qualification.Status,
+                    accountActive,
+                    service.IsActive,
+                    inEffect != null,
+                    accepting,
+                    hasOpenSlot
+                );
+        string[] reasons = facts switch
+        {
+            null => [PortalAccessRules.ReasonBeforeQualification(applicationStatus)],
+            { QualificationStatus: QualificationStatus.ApprovedForService } =>
+                MarketplaceRules.Missing(facts, pending != null),
+            _ => [PortalAccessRules.ReasonForQualification(facts.QualificationStatus)],
+        };
+        return new(
             service.Code,
             service.Name,
-            qualificationStatus,
+            qualification?.Status,
             service.Status,
-            false,
-            false,
-            [
-                qualificationStatus == null
-                    ? PortalAccessRules.ReasonBeforeQualification(applicationStatus)
-                    : PortalAccessRules.ReasonForQualification(
-                        qualificationStatus,
-                        inEffect != null,
-                        pending != null
-                    ),
-            ],
+            accepting && hasOpenSlot,
+            facts != null && MarketplaceRules.IsListed(facts),
+            reasons,
             inEffect == null
                 ? null
                 : new(
@@ -115,6 +138,7 @@ public sealed class GetMyContextHandler(
                 ),
             pending == null ? null : $"v{pending.Sequence}"
         );
+    }
 
     // Business dates are Vietnam dates (UTC+7)
     private static DateTimeOffset StartOfDay(DateOnly day) =>

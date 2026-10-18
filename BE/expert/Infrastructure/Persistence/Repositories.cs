@@ -14,6 +14,9 @@ public sealed class ExpertProfileRepository(ExpertDbContext db) : IExpertProfile
     public Task<ExpertProfile?> FindByUserAsync(Guid userId, CancellationToken ct) =>
         db.ExpertProfiles.SingleOrDefaultAsync(x => x.UserId == userId, ct);
 
+    public Task<ExpertProfile?> FindAsync(Guid profileId, CancellationToken ct) =>
+        db.ExpertProfiles.AsNoTracking().SingleOrDefaultAsync(x => x.Id == profileId, ct);
+
     public void Add(ExpertProfile profile) => db.ExpertProfiles.Add(profile);
 }
 
@@ -247,6 +250,22 @@ public sealed class QualificationRepository(ExpertDbContext db) : IQualification
             .OrderBy(x => x.CreatedAt)
             .ToListAsync(ct);
 
+    public async Task<IReadOnlyList<ExpertServiceQualification>> ListMarketplaceCandidatesAsync(
+        string? serviceCode,
+        Guid? profileId,
+        CancellationToken ct
+    ) =>
+        await db
+            .Qualifications.AsNoTracking()
+            .Include(x => x.ExpertProfile)
+            .Where(x =>
+                x.Status == QualificationStatus.ApprovedForService
+                && x.AcceptingRequests
+                && (serviceCode == null || x.ServiceCode == serviceCode)
+                && (profileId == null || x.ExpertProfileId == profileId)
+            )
+            .ToListAsync(ct);
+
     public void Add(ExpertServiceQualification qualification) =>
         db.Qualifications.Add(qualification);
 
@@ -348,6 +367,15 @@ public sealed class PricingRepository(ExpertDbContext db) : IPricingRepository
             .Where(x => x.ExpertProfileId == profileId)
             .ToListAsync(ct);
 
+    public async Task<IReadOnlyList<ServicePricingVersion>> ListByQualificationsAsync(
+        IReadOnlyCollection<Guid> qualificationIds,
+        CancellationToken ct
+    ) =>
+        await db
+            .PricingVersions.AsNoTracking()
+            .Where(x => qualificationIds.Contains(x.QualificationId))
+            .ToListAsync(ct);
+
     public Task<ServicePricingVersion?> FindOpenAsync(Guid qualificationId, CancellationToken ct) =>
         db.PricingVersions.SingleOrDefaultAsync(
             x => x.QualificationId == qualificationId && OpenStatuses.Contains(x.Status),
@@ -411,4 +439,46 @@ public sealed class PricingRepository(ExpertDbContext db) : IPricingRepository
     public void Add(ServicePricingVersion version) => db.PricingVersions.Add(version);
 
     public void AddEvents(IEnumerable<PricingEvent> events) => db.PricingEvents.AddRange(events);
+}
+
+/// <summary>EF Core store for availability slots.</summary>
+public sealed class AvailabilityRepository(ExpertDbContext db) : IAvailabilityRepository
+{
+    public async Task<IReadOnlyList<AvailabilitySlot>> ListOpenAsync(
+        Guid profileId,
+        DateTimeOffset now,
+        CancellationToken ct
+    ) =>
+        await db
+            .AvailabilitySlots.AsNoTracking()
+            .Where(x =>
+                x.ExpertProfileId == profileId && x.Status == AvailabilitySlot.Open && x.EndAt > now
+            )
+            .OrderBy(x => x.StartAt)
+            .ToListAsync(ct);
+
+    public async Task<IReadOnlyList<AvailabilitySlot>> ListOpenAsync(
+        IReadOnlyCollection<Guid> profileIds,
+        DateTimeOffset now,
+        CancellationToken ct
+    ) =>
+        await db
+            .AvailabilitySlots.AsNoTracking()
+            .Where(x =>
+                profileIds.Contains(x.ExpertProfileId)
+                && x.Status == AvailabilitySlot.Open
+                && x.StartAt > now
+            )
+            .OrderBy(x => x.StartAt)
+            .ToListAsync(ct);
+
+    public Task<AvailabilitySlot?> FindAsync(Guid slotId, Guid profileId, CancellationToken ct) =>
+        db.AvailabilitySlots.SingleOrDefaultAsync(
+            x => x.Id == slotId && x.ExpertProfileId == profileId,
+            ct
+        );
+
+    public void Add(AvailabilitySlot slot) => db.AvailabilitySlots.Add(slot);
+
+    public void Remove(AvailabilitySlot slot) => db.AvailabilitySlots.Remove(slot);
 }
