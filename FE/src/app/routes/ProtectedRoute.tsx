@@ -9,16 +9,13 @@ import ForbiddenPage from '@/pages/ForbiddenPage'
 
 export function ProtectedRoute({
   children,
-  allowInDev = false,
 }: {
   children: React.ReactNode
-  /** Dev: cho xem UI khi chưa đăng nhập; production vẫn bắt đăng nhập */
-  allowInDev?: boolean
 }) {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
   const location = useLocation()
-  if (!isAuthenticated && !(allowInDev && import.meta.env.DEV)) {
-    // fromState: state gốc của trang đích (vd. câu hỏi gõ ở trang chủ), trả lại sau khi đăng nhập
+  if (!isAuthenticated) {
+    // Preserve the requested page and its state across sign-in.
     return (
       <Navigate
         to="/login"

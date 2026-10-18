@@ -19,8 +19,7 @@ const SECTIONS: [string, UserNavId][] = [
   ['/account', 'account'],
 ]
 
-/* Không gian khách hàng: Tổng quan, Hồ sơ thẩm định, Ví, Tài khoản. Sidebar dùng chung useUserNavigation.
- * Dev mở demo không cần đăng nhập (như StaffRoute); production bắt buộc phiên đăng nhập. */
+/** Customer workspace with authentication required in every environment. */
 export function ClientLayout() {
   const { t } = useTranslation('reviewCase')
   const authenticated = useAuthStore((s) => s.isAuthenticated)
@@ -34,7 +33,7 @@ export function ClientLayout() {
   const active = SECTIONS.find(([prefix]) => path.startsWith(prefix))?.[1]
   const groups = useUserNavigation(active)
 
-  if (!import.meta.env.DEV && !authenticated)
+  if (!authenticated)
     return (
       <Navigate to="/login" replace state={{ from: path + location.search }} />
     )

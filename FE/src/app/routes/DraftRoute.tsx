@@ -1,11 +1,10 @@
 import { Navigate, Outlet, useLocation } from 'react-router-dom'
 import { useAuthStore } from '@/features/auth/store/authStore'
-import { isDraftPreview } from '@/features/drafting/api/dataSource'
 
 export function DraftRoute() {
   const authenticated = useAuthStore((state) => state.isAuthenticated)
   const location = useLocation()
-  if (!authenticated && !isDraftPreview)
+  if (!authenticated)
     return (
       <Navigate
         to="/login"

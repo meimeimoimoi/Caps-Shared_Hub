@@ -215,7 +215,7 @@ const router = createBrowserRouter(
       <Route path="/experts/:expertId" element={<ExpertPublicProfilePage />} />
       <Route path="/marketplace" element={<MarketplacePage />} />
       <Route path="/pricing" element={<PricingPage />} />
-      {/* Không gian khách hàng; ClientLayout tự chặn khi chưa đăng nhập ở production. */}
+      {/* Customer workspace; ClientLayout requires authentication in every environment. */}
       <Route element={<ClientLayout />}>
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/cases" element={<CasesPage />} />
@@ -418,7 +418,7 @@ const router = createBrowserRouter(
       <Route
         path="/ai-assistant"
         element={
-          <ProtectedRoute allowInDev>
+          <ProtectedRoute>
             <AiAssistantPage />
           </ProtectedRoute>
         }
