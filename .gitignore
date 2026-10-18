@@ -40,3 +40,6 @@ pip-wheel-metadata/
 .coverage
 .coverage.*
 htmlcov/
+
+
+graphify-out
