@@ -17,6 +17,7 @@ builder.Services.AddCapsMessaging(
         x.AddConsumer<AuthEmailConsumer>();
         x.AddConsumer<ExpertEligibilityDecidedConsumer>();
         x.AddConsumer<ExpertCompetencyDecidedConsumer>();
+        x.AddConsumer<ExpertServiceAccessChangedConsumer>();
     }
 );
 var app = builder.Build();

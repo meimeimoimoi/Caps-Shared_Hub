@@ -110,6 +110,57 @@ public static class ExpertDecisionEmailTemplate
         return Render(copy, m.DisplayName, m.Email, m.DecidedAt, link, issues);
     }
 
+    private static (Copy Copy, string Label) ForAccess(string change, string service) =>
+        change switch
+        {
+            "APPROVED" => (
+                new(
+                    $"Bạn được cung cấp dịch vụ {service} – {Brand}",
+                    "Hồ sơ năng lực đã được phê duyệt",
+                    $"Chúc mừng! Quản trị hệ thống đã phê duyệt để bạn cung cấp dịch vụ {service}. Bước tiếp theo là thiết lập giá dịch vụ.",
+                    "Mở Cổng chuyên gia"
+                ),
+                "Đã phê duyệt"
+            ),
+            "RETURNED_FOR_REVIEW" => (
+                new(
+                    $"Hồ sơ năng lực dịch vụ {service} được đánh giá lại – {Brand}",
+                    "Hồ sơ được chuyển đánh giá lại",
+                    $"Quản trị hệ thống đã trả hồ sơ năng lực dịch vụ {service} về bước đánh giá năng lực. Bạn không cần làm gì thêm lúc này.",
+                    "Xem hồ sơ"
+                ),
+                "Đánh giá lại"
+            ),
+            "SUSPENDED" => (
+                new(
+                    $"Dịch vụ {service} tạm ngưng – {Brand}",
+                    "Dịch vụ của bạn đang tạm ngưng",
+                    $"Dịch vụ {service} tạm thời không hiển thị trên Marketplace. Các hồ sơ đang thực hiện vẫn tiếp tục.",
+                    "Xem chi tiết"
+                ),
+                "Tạm ngưng"
+            ),
+            _ => (
+                new(
+                    $"Dịch vụ {service} hoạt động trở lại – {Brand}",
+                    "Dịch vụ của bạn đã được mở lại",
+                    $"Quản trị hệ thống đã mở lại dịch vụ {service} cho bạn.",
+                    "Mở Cổng chuyên gia"
+                ),
+                "Mở lại"
+            ),
+        };
+
+    /// <summary>Final approval, return for review, suspension or reinstatement of one service.</summary>
+    public static Content Build(ExpertServiceAccessChangedEvent m, string link)
+    {
+        var (copy, label) = ForAccess(m.Change, m.ServiceName);
+        var issues = string.IsNullOrWhiteSpace(m.Note)
+            ? new List<Issue>()
+            : [new Issue(m.ServiceName, label, m.Note)];
+        return Render(copy, m.DisplayName, m.Email, m.ChangedAt, link, issues);
+    }
+
     private static string? Day(DateTimeOffset? at) =>
         at?.ToOffset(VietnamOffset).ToString("dd/MM/yyyy", CultureInfo.InvariantCulture);
 
