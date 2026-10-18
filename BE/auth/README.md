@@ -57,6 +57,12 @@ The existing Docker compose needs overrides for real JWT, durable DataProtection
 
 AuthSecurityAndEmailOutbox adds lockout/token version, email uniqueness, role seed and encrypted outbox. AuthPermissions adds profile/business permissions, normalizes existing emails and guards uniqueness after normalization. It assigns USER only to legacy users without any role. If role codes already exist under other IDs, reconcile the role seed before migration. Duplicate emails fail migration for manual reconciliation; no users are silently deleted. Validate on a staging copy before applying to an existing team database.
 
+## Account events
+
+Status changes (email verified, Google sign-up or link) add an `AccountStatusChangedEvent` to
+`identity.account_event_outbox` in the same transaction; `AccountEventPublisher` sends it to RabbitMQ with the email
+publisher (`Auth:EmailPublisherEnabled`). The expert service keeps a copy for the Marketplace filter.
+
 ## Session revocation across services
 
 Auth publishes revocations to Redis after the database commit; every service with `ConnectionStrings:Redis` checks them while validating the token, without calling auth.
