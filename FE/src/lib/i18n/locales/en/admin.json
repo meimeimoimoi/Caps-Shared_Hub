@@ -3,6 +3,7 @@
     "overview": "Overview",
     "expertReview": "Expert Review",
     "pendingExperts": "Pending Applications",
+    "competencyReview": "Competency review",
     "manageExperts": "Manage Experts",
     "operations": "Operations",
     "complaints": "Complaints",
@@ -725,6 +726,86 @@
       "SELF_REVIEW_NOT_ALLOWED": "You cannot review your own application.",
       "APPLICATION_NOT_IN_REVIEW": "This application no longer waits for a decision; reload to see its status.",
       "failed": "The decision was not recorded. Please try again."
+    }
+  },
+  "qualifications": {
+    "title": "Competency review by service",
+    "description": "Gate 2: eligible experts register each service separately. Assess C1 – C5 per service; a pass goes to the System Admin for final approval.",
+    "count": "qualifications",
+    "service": "Service",
+    "empty": "No qualifications.",
+    "tabs": {
+      "review": "Awaiting review",
+      "moreInfo": "Awaiting evidence",
+      "finalApproval": "Awaiting final approval",
+      "failed": "Not met"
+    }
+  },
+  "competency": {
+    "title": "Gate 2 · Competency for the service",
+    "subtitle": "Assess each competency C1 – C5. Every competency needs a note; Pass or Fail must cite at least one file. Years of experience or CV keywords never prove a competency on their own.",
+    "names": {
+      "C1": "CIT knowledge for the service scope",
+      "C2": "AI Draft review and revision",
+      "C3": "Information and evidence review",
+      "C4": "Analysing and applying CIT rules",
+      "C5": "Professional judgment and verification conclusion"
+    },
+    "hints": {
+      "C1": "Related tasks T2, T3.",
+      "C2": "Related tasks T2, T5.",
+      "C3": "Related task T1; supports decision T4.",
+      "C4": "Related tasks T3, T5.",
+      "C5": "Partly T2, T5; mainly T6."
+    },
+    "previous": "Last time: {{result}}",
+    "evidenceRequired": "Supporting files (required)",
+    "evidenceOptional": "Supporting files (optional when requesting more)",
+    "noFiles": "No files in this qualification yet.",
+    "noteRequired": "Assessment note (required)",
+    "notePlaceholder": "Basis of the assessment, or what is missing",
+    "remaining": "{{count}} competencies still need a result, a note or a supporting file",
+    "ready": "All {{count}} competencies assessed",
+    "outcome": {
+      "PENDING_FINAL_APPROVAL": {
+        "confirm": "Confirm competency met",
+        "notice": "The qualification goes to the System Admin for final approval, who must not be the Gate 2 reviewer. The expert is not on the Marketplace yet.",
+        "toast": "Competency recorded as met"
+      },
+      "NEED_MORE_INFORMATION": {
+        "confirm": "Request more evidence",
+        "notice": "The qualification goes back to the expert with the note of each competency to supplement, in the same qualification.",
+        "toast": "Request for more evidence sent"
+      },
+      "FAIL": {
+        "confirm": "Confirm not met",
+        "notice": "This service qualification closes. The expert can register the service again only after the policy wait. Other services are not affected. This cannot be undone.",
+        "toast": "Competency recorded as not met"
+      }
+    },
+    "dialog": {
+      "title": "Gate 2 conclusion for {{name}} · {{service}}?",
+      "noteLabel": "Overall note (optional)",
+      "placeholder": "The expert sees it with the results."
+    },
+    "resultTitle": "Gate 2 result",
+    "noDecision": "No Gate 2 conclusion yet.",
+    "handoff": "Waiting for the System Admin final approval.",
+    "reapplyAt": "The service can be registered again from {{date}}.",
+    "rail": {
+      "review": "Competency review",
+      "finalApproval": "Final approval",
+      "approved": "Approved"
+    },
+    "errors": {
+      "INVALID_COMPETENCY_CRITERIA": "Give exactly one result for each of C1 – C5.",
+      "INVALID_COMPETENCY_RESULT": "A result is invalid. Reload the page and try again.",
+      "COMPETENCY_NOTE_REQUIRED": "Every competency needs an assessment note.",
+      "COMPETENCY_EVIDENCE_REQUIRED": "Pass or Fail must cite at least one file.",
+      "COMPETENCY_EVIDENCE_UNKNOWN": "A cited file does not belong to this qualification. Reload and try again.",
+      "SELF_REVIEW_NOT_ALLOWED": "You cannot review your own qualification.",
+      "QUALIFICATION_NOT_IN_REVIEW": "The qualification is no longer awaiting review; reload to see its status.",
+      "failed": "The conclusion was not recorded. Please try again."
     }
   }
 }

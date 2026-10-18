@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next'
-import { ELIGIBILITY_CODES } from '../constants'
+import { COMPETENCY_CODES, ELIGIBILITY_CODES } from '../constants'
 
 type EligibilityCode = (typeof ELIGIBILITY_CODES)[number]
 const isEligibilityCode = (code: string): code is EligibilityCode =>
@@ -10,6 +10,21 @@ export function useEligibilityLabel() {
   const { t } = useTranslation('reviewer')
   return (code: string) =>
     isEligibilityCode(code) ? t(`eligibility.${code}`) : code
+}
+
+type CompetencyCode = (typeof COMPETENCY_CODES)[number]
+const isCompetencyCode = (code: string): code is CompetencyCode =>
+  (COMPETENCY_CODES as readonly string[]).includes(code)
+
+/** Name and task hint of a Gate 2 competency C1…C5 */
+export function useCompetencyLabel() {
+  const { t } = useTranslation('admin')
+  return {
+    name: (code: string) =>
+      isCompetencyCode(code) ? t(`competency.names.${code}`) : code,
+    hint: (code: string) =>
+      isCompetencyCode(code) ? t(`competency.hints.${code}`) : '',
+  }
 }
 
 /* Field codes of the expert service → wording of the registration form */

@@ -1,5 +1,7 @@
 import type {
   ApplicationDocument,
+  CompetencyOutcome,
+  CompetencyResult,
   EligibilityOutcome,
   EligibilityResult,
 } from '../types'
@@ -18,6 +20,15 @@ export function eligibilityOutcome(
   if (results.includes('FAIL')) return 'NOT_ELIGIBLE'
   if (results.includes('NEED_MORE_INFORMATION')) return 'NEED_MORE_INFORMATION'
   return 'ELIGIBLE'
+}
+
+/** Same rule as the server: any FAIL → FAIL, else any NEED_MORE_INFORMATION, else PENDING_FINAL_APPROVAL */
+export function competencyOutcome(
+  results: readonly (CompetencyResult | '')[]
+): CompetencyOutcome {
+  if (results.includes('FAIL')) return 'FAIL'
+  if (results.includes('NEED_MORE_INFORMATION')) return 'NEED_MORE_INFORMATION'
+  return 'PENDING_FINAL_APPROVAL'
 }
 
 /** Several files can share a code (e.g. two EV-02 files), so the evidence id comes first */

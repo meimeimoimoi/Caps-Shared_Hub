@@ -93,6 +93,12 @@ const AdminPendingExpertsPage = lazy(
 const AdminApplicationDetailPage = lazy(
   () => import('@/pages/admin/AdminApplicationDetailPage')
 )
+const AdminQualificationsPage = lazy(
+  () => import('@/pages/admin/AdminQualificationsPage')
+)
+const AdminQualificationDetailPage = lazy(
+  () => import('@/pages/admin/AdminQualificationDetailPage')
+)
 const AdminExpertsPage = lazy(() => import('@/pages/admin/AdminExpertsPage'))
 const AdminDisputesPage = lazy(() => import('@/pages/admin/AdminDisputesPage'))
 const AdminDisputeDetailPage = lazy(
@@ -250,6 +256,14 @@ const router = createBrowserRouter(
         <Route
           path="/admin/experts/:id"
           element={<AdminApplicationDetailPage />}
+        />
+        <Route
+          path="/admin/experts/qualifications"
+          element={<AdminQualificationsPage />}
+        />
+        <Route
+          path="/admin/experts/qualifications/:id"
+          element={<AdminQualificationDetailPage />}
         />
         <Route path="/admin/account" element={<AdminAccountPage />} />
       </Route>

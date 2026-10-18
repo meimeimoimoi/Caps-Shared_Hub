@@ -25,6 +25,16 @@ export const APPLICATION_STATUS = {
   REJECTED: { label: 'Bị từ chối', tone: 'danger' },
 } as const satisfies Record<string, StatusMeta>
 
+/* Gate 2 + final approval of one Expert-Service qualification (state model 4.2) */
+export const QUALIFICATION_STATUS = {
+  COMPETENCY_REVIEW: { label: 'Đang đánh giá năng lực', tone: 'accent' },
+  NEED_MORE_INFORMATION: { label: 'Cần bổ sung bằng chứng', tone: 'warning' },
+  PENDING_FINAL_APPROVAL: { label: 'Chờ phê duyệt cuối', tone: 'neutral' },
+  APPROVED_FOR_SERVICE: { label: 'Được cung cấp dịch vụ', tone: 'success' },
+  SUSPENDED: { label: 'Tạm ngưng', tone: 'warning' },
+  FAIL: { label: 'Chưa đạt năng lực', tone: 'danger' },
+} as const satisfies Record<string, StatusMeta>
+
 /* Flow 1 · Dịch vụ Expert (2 trạng thái độc lập) */
 export const SERVICE_STATUS = {
   INACTIVE: { label: 'Chưa hoạt động', tone: 'neutral' },

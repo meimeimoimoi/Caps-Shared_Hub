@@ -1,7 +1,10 @@
 import type {
   ApplicationStatus,
+  CompetencyOutcome,
+  CompetencyResult,
   EligibilityOutcome,
   EligibilityResult,
+  QualificationStatus,
 } from './types'
 
 // MOCK: admin đang đăng nhập. TODO(api): lấy từ authStore khi có đăng nhập admin
@@ -100,3 +103,52 @@ export type QueueTab = (typeof QUEUE_TABS)[number]['key']
 export const QUEUE_STATUSES = [
   ...new Set(QUEUE_TABS.flatMap((t) => t.statuses)),
 ] as ApplicationStatus[]
+
+/* Gate 2 competencies in display order (POL-EXP-02) */
+export const COMPETENCY_CODES = ['C1', 'C2', 'C3', 'C4', 'C5'] as const
+
+export const COMPETENCY_RESULTS = [
+  'PASS',
+  'NEED_MORE_INFORMATION',
+  'FAIL',
+] as const satisfies readonly CompetencyResult[]
+
+/* Derived Gate 2 outcome → wording of the confirm button, dialog notice and toast */
+export const COMPETENCY_OUTCOME = {
+  PENDING_FINAL_APPROVAL: {
+    confirm: 'competency.outcome.PENDING_FINAL_APPROVAL.confirm',
+    notice: 'competency.outcome.PENDING_FINAL_APPROVAL.notice',
+    toast: 'competency.outcome.PENDING_FINAL_APPROVAL.toast',
+  },
+  NEED_MORE_INFORMATION: {
+    confirm: 'competency.outcome.NEED_MORE_INFORMATION.confirm',
+    notice: 'competency.outcome.NEED_MORE_INFORMATION.notice',
+    toast: 'competency.outcome.NEED_MORE_INFORMATION.toast',
+  },
+  FAIL: {
+    confirm: 'competency.outcome.FAIL.confirm',
+    notice: 'competency.outcome.FAIL.notice',
+    toast: 'competency.outcome.FAIL.toast',
+  },
+} as const satisfies Record<
+  CompetencyOutcome,
+  { confirm: string; notice: string; toast: string }
+>
+
+/* Gate 2 queue tabs; the review API lists one status per request */
+export const QUALIFICATION_TABS = [
+  { key: 'review', statuses: ['COMPETENCY_REVIEW'], showCount: true },
+  { key: 'moreInfo', statuses: ['NEED_MORE_INFORMATION'], showCount: true },
+  { key: 'finalApproval', statuses: ['PENDING_FINAL_APPROVAL'], showCount: true },
+  { key: 'failed', statuses: ['FAIL'], showCount: false },
+] as const satisfies readonly {
+  key: string
+  statuses: readonly QualificationStatus[]
+  showCount: boolean
+}[]
+
+export type QualificationTab = (typeof QUALIFICATION_TABS)[number]['key']
+
+export const QUALIFICATION_STATUSES = [
+  ...new Set(QUALIFICATION_TABS.flatMap((t) => t.statuses)),
+] as QualificationStatus[]

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import {
+  ClipboardCheck,
   CreditCard,
   FileText,
   LayoutDashboard,
@@ -58,6 +59,7 @@ interface AdminLayoutProps extends ShellPageProps {
   section:
     | 'overview'
     | 'pending'
+    | 'competency'
     | 'experts'
     | 'disputes'
     | 'escrow'
@@ -102,6 +104,12 @@ export function AdminLayout({
           to: '/admin/experts/pending',
           active: section === 'pending',
           badge: pendingCount,
+        },
+        {
+          label: t('navigation.competencyReview'),
+          icon: ClipboardCheck,
+          to: '/admin/experts/qualifications',
+          active: section === 'competency',
         },
         {
           label: t('navigation.manageExperts'),
@@ -156,6 +164,7 @@ export function AdminLayout({
   ]
   const reviewerRoutes = [
     '/admin/experts/pending',
+    '/admin/experts/qualifications',
     '/admin/experts',
     '/admin/account',
   ]

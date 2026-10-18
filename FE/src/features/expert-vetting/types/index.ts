@@ -1,4 +1,8 @@
-import type { APPLICATION_STATUS, SERVICE_STATUS } from '@/lib/constants'
+import type {
+  APPLICATION_STATUS,
+  QUALIFICATION_STATUS,
+  SERVICE_STATUS,
+} from '@/lib/constants'
 
 export type ApplicationStatus = keyof typeof APPLICATION_STATUS
 
@@ -113,6 +117,72 @@ export interface EligibilityAssessment {
 
 export interface EligibilityDecisionInput {
   criteria: { code: string; result: EligibilityResult; note: string | null }[]
+  note: string | null
+}
+
+/* Gate 2 (competency) is decided per Expert-Service from C1…C5; the outcome is derived from the results */
+export type QualificationStatus = keyof typeof QUALIFICATION_STATUS
+export type CompetencyResult = 'PASS' | 'FAIL' | 'NEED_MORE_INFORMATION'
+export type CompetencyOutcome =
+  | 'PENDING_FINAL_APPROVAL'
+  | 'NEED_MORE_INFORMATION'
+  | 'FAIL'
+
+/** One qualification in the Gate 2 queue */
+export interface QualificationRow {
+  id: string
+  name: string
+  years: number
+  fields: string[]
+  serviceCode: string
+  status: QualificationStatus
+  submittedAt: string
+  /** Follows an earlier FAIL for the same service (BR-E23) */
+  isReapplication: boolean
+}
+
+/** One competency in the latest Gate 2 decision */
+export interface CompetencyCheck {
+  code: string
+  result: CompetencyResult
+  note: string
+  evidenceIds: string[]
+  decidedAt: string
+}
+
+export interface QualificationDetail {
+  id: string
+  serviceCode: string
+  serviceName: string
+  status: QualificationStatus
+  submittedAt: string
+  decidedAt: string | null
+  decisionNote: string | null
+  earliestReapplyAt: string | null
+  previousQualificationId: string | null
+  /** The expert as Gate 1 saw them, with the Gate 1 results; reuses the application tabs */
+  profile: ApplicationDetail
+  history: HistoryEntry[]
+  competencies: CompetencyCheck[]
+  /** True while the qualification waits for a Gate 2 decision */
+  canDecide: boolean
+}
+
+/** One competency in the reviewer's form; result is empty until chosen */
+export interface CompetencyAssessment {
+  code: string
+  result: CompetencyResult | ''
+  note: string
+  evidenceIds: string[]
+}
+
+export interface CompetencyDecisionInput {
+  competencies: {
+    code: string
+    result: CompetencyResult
+    note: string
+    evidenceIds: string[]
+  }[]
   note: string | null
 }
 
