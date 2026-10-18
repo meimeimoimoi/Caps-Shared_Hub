@@ -72,6 +72,9 @@ const ExpertPricingPage = lazy(
 const ExpertServicesPage = lazy(
   () => import('@/pages/expert-dashboard/ExpertServicesPage')
 )
+const ExpertAvailabilityPage = lazy(
+  () => import('@/pages/expert-dashboard/ExpertAvailabilityPage')
+)
 const ExpertCasesPage = lazy(
   () => import('@/pages/expert-dashboard/ExpertCasesPage')
 )
@@ -428,6 +431,14 @@ const router = createBrowserRouter(
             element={
               <RequireCapability capability="services.manage">
                 <ExpertServicesPage />
+              </RequireCapability>
+            }
+          />
+          <Route
+            path="availability"
+            element={
+              <RequireCapability capability="services.manage">
+                <ExpertAvailabilityPage />
               </RequireCapability>
             }
           />

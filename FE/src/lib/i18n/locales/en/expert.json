@@ -641,5 +641,52 @@
       "NEW_EVIDENCE_REQUIRED": "Upload at least one new file before sending it for review again."
     },
     "newEvidenceRequired": "This is a re-registration after a failed review. Upload new or updated competency evidence for the competencies not met, then send it for review."
+  },
+  "readiness": {
+    "APPLICATION_NOT_SUBMITTED": "Your application has not been submitted.",
+    "ELIGIBILITY_PENDING": "Your eligibility is being reviewed.",
+    "NOT_ELIGIBLE": "Your application did not meet eligibility.",
+    "COMPETENCY_REVIEW_PENDING": "Register this service for competency review.",
+    "COMPETENCY_REVIEW_IN_PROGRESS": "Competency review is in progress for this service.",
+    "COMPETENCY_NEED_MORE_INFORMATION": "More competency evidence is needed.",
+    "FINAL_APPROVAL_PENDING": "Waiting for final approval.",
+    "COMPETENCY_FAILED": "Competency review not passed for this service.",
+    "SERVICE_SUSPENDED": "This service is suspended.",
+    "PRICING_PENDING": "No approved price yet.",
+    "PRICING_IN_REVIEW": "A new price is waiting for an administrator.",
+    "REQUESTS_TURNED_OFF": "You turned off new requests for this service.",
+    "NO_OPEN_SLOTS": "No upcoming open slot.",
+    "ACCOUNT_INACTIVE": "Your account is not active."
+  },
+  "availabilityPage": {
+    "title": "Availability",
+    "description": "Open the slots in which you can take work and turn on requests per service. A service shows on the Marketplace once it is approved, priced, switched on and you have an open slot.",
+    "loading": "Loading…",
+    "servicesTitle": "Requests per service",
+    "servicesHelp": "Only approved services can be turned on. Turning one off hides it from the Marketplace; running cases continue.",
+    "noServices": "You have not registered any service.",
+    "accepting": "Taking requests",
+    "notAccepting": "Off",
+    "slotsTitle": "Open slots",
+    "slotsHelp": "Vietnam time. Each slot lasts {{min}}–{{max}} hours, without overlaps, at most {{count}} slots and up to {{days}} days ahead. Slots are shared by all services.",
+    "date": "Date",
+    "from": "From",
+    "to": "To",
+    "add": "Add slot",
+    "noSlots": "No upcoming slots.",
+    "remove": "Remove slot {{time}}",
+    "errors": {
+      "SLOT_IN_PAST": "A slot must start in the future.",
+      "SLOT_TOO_FAR_AHEAD": "The slot is too far ahead.",
+      "SLOT_LENGTH_INVALID": "The slot length is not allowed.",
+      "SLOT_LIMIT": "You reached the maximum number of slots.",
+      "SLOT_OVERLAP": "The slot overlaps another one.",
+      "SLOT_NOT_FOUND": "Slot not found; reload the page.",
+      "SLOT_LOCKED": "A booked slot cannot be removed.",
+      "SERVICE_NOT_APPROVED": "Only approved services can take requests.",
+      "EXPERT_NOT_FOUND": "You do not have an expert profile yet.",
+      "loadFailed": "Availability could not be loaded.",
+      "failed": "That did not work. Please try again."
+    }
   }
 }

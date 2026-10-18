@@ -66,7 +66,7 @@ export function OverviewReadiness({
                   : t('notReceivingBookings')}
               </span>
               {service.reasons.map((reason) => (
-                <p key={reason}>{display.demoCopy(reason)}</p>
+                <p key={reason}>{display.reason(reason)}</p>
               ))}
               {service.pendingPricingVersion && (
                 <p>

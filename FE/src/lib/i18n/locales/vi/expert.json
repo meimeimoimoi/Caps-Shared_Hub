@@ -640,5 +640,52 @@
       "NEW_EVIDENCE_REQUIRED": "Cần tải lên ít nhất một tài liệu mới trước khi gửi đánh giá lại."
     },
     "newEvidenceRequired": "Đây là lần đăng ký lại sau khi chưa đạt. Tải lên bằng chứng năng lực mới hoặc đã cập nhật cho các năng lực chưa đạt, rồi gửi để được đánh giá lại."
+  },
+  "readiness": {
+    "APPLICATION_NOT_SUBMITTED": "Chưa nộp hồ sơ đăng ký.",
+    "ELIGIBILITY_PENDING": "Hồ sơ đang được xét điều kiện tham gia.",
+    "NOT_ELIGIBLE": "Hồ sơ chưa đủ điều kiện tham gia.",
+    "COMPETENCY_REVIEW_PENDING": "Hãy đăng ký dịch vụ để được đánh giá năng lực.",
+    "COMPETENCY_REVIEW_IN_PROGRESS": "Đang đánh giá năng lực cho dịch vụ này.",
+    "COMPETENCY_NEED_MORE_INFORMATION": "Cần bổ sung bằng chứng năng lực.",
+    "FINAL_APPROVAL_PENDING": "Đang chờ phê duyệt cuối.",
+    "COMPETENCY_FAILED": "Chưa đạt đánh giá năng lực cho dịch vụ này.",
+    "SERVICE_SUSPENDED": "Dịch vụ đang tạm ngưng.",
+    "PRICING_PENDING": "Chưa có giá dịch vụ được duyệt.",
+    "PRICING_IN_REVIEW": "Giá mới đang chờ quản trị viên duyệt.",
+    "REQUESTS_TURNED_OFF": "Bạn đang tắt nhận yêu cầu cho dịch vụ này.",
+    "NO_OPEN_SLOTS": "Chưa có khung giờ nhận việc nào sắp tới.",
+    "ACCOUNT_INACTIVE": "Tài khoản chưa hoạt động."
+  },
+  "availabilityPage": {
+    "title": "Lịch nhận việc",
+    "description": "Mở khung giờ bạn có thể nhận việc và bật nhận yêu cầu cho từng dịch vụ. Dịch vụ chỉ hiện trên Marketplace khi đã được duyệt, có giá, đang bật nhận yêu cầu và còn khung giờ trống.",
+    "loading": "Đang tải…",
+    "servicesTitle": "Nhận yêu cầu theo dịch vụ",
+    "servicesHelp": "Chỉ bật được cho dịch vụ đã được duyệt. Tắt thì dịch vụ ẩn khỏi Marketplace; hồ sơ đang làm vẫn tiếp tục.",
+    "noServices": "Bạn chưa đăng ký dịch vụ nào.",
+    "accepting": "Đang nhận yêu cầu",
+    "notAccepting": "Đang tắt",
+    "slotsTitle": "Khung giờ trống",
+    "slotsHelp": "Giờ Việt Nam. Mỗi khung dài {{min}}–{{max}} giờ, không trùng nhau, tối đa {{count}} khung và mở trước tối đa {{days}} ngày. Khung giờ dùng chung cho mọi dịch vụ.",
+    "date": "Ngày",
+    "from": "Từ",
+    "to": "Đến",
+    "add": "Thêm khung giờ",
+    "noSlots": "Chưa có khung giờ nào sắp tới.",
+    "remove": "Xóa khung giờ {{time}}",
+    "errors": {
+      "SLOT_IN_PAST": "Khung giờ phải bắt đầu trong tương lai.",
+      "SLOT_TOO_FAR_AHEAD": "Khung giờ vượt quá thời gian được mở trước.",
+      "SLOT_LENGTH_INVALID": "Độ dài khung giờ không hợp lệ.",
+      "SLOT_LIMIT": "Đã đạt số khung giờ tối đa.",
+      "SLOT_OVERLAP": "Khung giờ trùng với khung đã có.",
+      "SLOT_NOT_FOUND": "Không tìm thấy khung giờ; tải lại trang.",
+      "SLOT_LOCKED": "Khung giờ đã được đặt, không thể xóa.",
+      "SERVICE_NOT_APPROVED": "Chỉ bật nhận yêu cầu cho dịch vụ đã được duyệt.",
+      "EXPERT_NOT_FOUND": "Bạn chưa có hồ sơ chuyên gia.",
+      "loadFailed": "Không tải được lịch nhận việc.",
+      "failed": "Chưa thực hiện được. Vui lòng thử lại."
+    }
   }
 }

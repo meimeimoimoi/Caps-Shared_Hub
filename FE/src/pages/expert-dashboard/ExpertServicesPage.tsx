@@ -242,7 +242,7 @@ function ServiceCard({ service }: { service: ServiceReadiness }) {
             <div className="ep-service-reasons">
               {service.reasons.map((r) => (
                 <p key={r} className="ep-readiness-reason">
-                  {display.demoCopy(r)}
+                  {display.reason(r)}
                 </p>
               ))}
             </div>

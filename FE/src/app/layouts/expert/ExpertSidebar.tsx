@@ -8,6 +8,7 @@ import {
   CreditCard,
   IdCard,
   BadgeCheck,
+  CalendarClock,
 } from 'lucide-react'
 import {
   AppSidebar,
@@ -89,6 +90,12 @@ export function ExpertSidebar({
           '/expert/services',
           t('myServices'),
           <Briefcase size={18} />,
+          'services.manage'
+        ),
+        item(
+          '/expert/availability',
+          t('availability'),
+          <CalendarClock size={18} />,
           'services.manage'
         ),
         item(
