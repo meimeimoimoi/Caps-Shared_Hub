@@ -16,6 +16,12 @@ public sealed class ServiceCatalogItem
     public string Name { get; private set; } = default!;
     public string Status { get; } = Active;
 
+    /// <summary>
+    /// Delivery SLA in calendar hours from START (BR-M27); snapshotted on the Review Case at request time
+    /// (BR-M35), so a later change never affects existing cases.
+    /// </summary>
+    public int DeliverySlaHours { get; private set; }
+
     /// <summary>Display order in lists.</summary>
     public int SortOrder { get; private set; }
     public DateTimeOffset CreatedAt { get; private set; }
@@ -25,6 +31,7 @@ public sealed class ServiceCatalogItem
     public static ServiceCatalogItem Create(
         string code,
         string name,
+        int deliverySlaHours,
         int sortOrder,
         DateTimeOffset now
     ) =>
@@ -32,6 +39,7 @@ public sealed class ServiceCatalogItem
         {
             Code = code,
             Name = name,
+            DeliverySlaHours = deliverySlaHours,
             SortOrder = sortOrder,
             CreatedAt = now,
         };

@@ -348,6 +348,7 @@ public sealed class ExpertDbContext(DbContextOptions<ExpertDbContext> options) :
                 .HasMaxLength(16)
                 .HasDefaultValue(ServiceCatalogItem.Active)
                 .IsRequired();
+            e.Property(x => x.DeliverySlaHours).HasColumnName("delivery_sla_hours");
             e.Property(x => x.SortOrder).HasColumnName("sort_order");
             e.Property(x => x.CreatedAt).HasColumnName("created_at").IsRequired();
             e.Ignore(x => x.IsActive);
@@ -358,6 +359,7 @@ public sealed class ExpertDbContext(DbContextOptions<ExpertDbContext> options) :
                     Code = "HUMAN_VERIFICATION",
                     Name = "Xác minh bởi chuyên gia",
                     Status = ServiceCatalogItem.Active,
+                    DeliverySlaHours = 72,
                     SortOrder = 1,
                     CreatedAt = new DateTimeOffset(2026, 10, 17, 0, 0, 0, TimeSpan.Zero),
                 }

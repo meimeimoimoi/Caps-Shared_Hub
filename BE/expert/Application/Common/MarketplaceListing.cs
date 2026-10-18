@@ -71,6 +71,7 @@ public sealed class MarketplaceListing(
                                 services[q.ServiceCode].Name,
                                 price!.Amount,
                                 $"v{price.Sequence}",
+                                services[q.ServiceCode].DeliverySlaHours,
                                 q.DecidedAt
                             )
                             : null;

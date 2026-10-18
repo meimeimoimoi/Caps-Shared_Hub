@@ -292,6 +292,10 @@ namespace Caps.Expert.Infrastructure.Persistence.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
 
+                    b.Property<int>("DeliverySlaHours")
+                        .HasColumnType("integer")
+                        .HasColumnName("delivery_sla_hours");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(128)
@@ -319,6 +323,7 @@ namespace Caps.Expert.Infrastructure.Persistence.Migrations
                         {
                             Code = "HUMAN_VERIFICATION",
                             CreatedAt = new DateTimeOffset(new DateTime(2026, 10, 17, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            DeliverySlaHours = 72,
                             Name = "Xác minh bởi chuyên gia",
                             SortOrder = 1,
                             Status = "ACTIVE"
