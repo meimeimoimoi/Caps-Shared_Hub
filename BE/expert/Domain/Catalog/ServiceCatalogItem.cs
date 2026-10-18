@@ -14,7 +14,7 @@ public sealed class ServiceCatalogItem
     /// <summary>Stable code used by qualifications, pricing and review cases.</summary>
     public string Code { get; private set; } = default!;
     public string Name { get; private set; } = default!;
-    public string Status { get; private set; } = Active;
+    public string Status { get; } = Active;
 
     /// <summary>Display order in lists.</summary>
     public int SortOrder { get; private set; }
