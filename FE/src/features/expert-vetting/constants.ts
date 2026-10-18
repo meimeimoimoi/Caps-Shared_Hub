@@ -147,8 +147,16 @@ export const QUALIFICATION_TABS = [
   showCount: boolean
 }[]
 
-export type QualificationTab = (typeof QUALIFICATION_TABS)[number]['key']
+/* Final approval queue (System Admin) */
+export const APPROVAL_TABS = [
+  { key: 'finalApproval', statuses: ['PENDING_FINAL_APPROVAL'], showCount: true },
+  { key: 'approved', statuses: ['APPROVED_FOR_SERVICE'], showCount: false },
+] as const satisfies readonly {
+  key: string
+  statuses: readonly QualificationStatus[]
+  showCount: boolean
+}[]
 
-export const QUALIFICATION_STATUSES = [
-  ...new Set(QUALIFICATION_TABS.flatMap((t) => t.statuses)),
-] as QualificationStatus[]
+export type QualificationTab =
+  | (typeof QUALIFICATION_TABS)[number]['key']
+  | (typeof APPROVAL_TABS)[number]['key']

@@ -122,6 +122,9 @@ export interface EligibilityDecisionInput {
 
 /* Gate 2 (competency) is decided per Expert-Service from C1…C5; the outcome is derived from the results */
 export type QualificationStatus = keyof typeof QUALIFICATION_STATUS
+/** Gate 2 reviewers and System Admins (final approval) read qualifications through separate APIs */
+export type QualificationScope = 'review' | 'approval'
+export type FinalApprovalDecision = 'APPROVE' | 'RETURN_FOR_REVIEW'
 export type CompetencyResult = 'PASS' | 'FAIL' | 'NEED_MORE_INFORMATION'
 export type CompetencyOutcome =
   | 'PENDING_FINAL_APPROVAL'
@@ -166,6 +169,15 @@ export interface QualificationDetail {
   competencies: CompetencyCheck[]
   /** True while the qualification waits for a Gate 2 decision */
   canDecide: boolean
+  /** Who passed Gate 2; they cannot give the final approval (BR-E33) */
+  competencyReviewerUserId: string | null
+  /** True while the qualification waits for the System Admin final approval */
+  canFinalApprove: boolean
+}
+
+export interface FinalApprovalInput {
+  decision: FinalApprovalDecision
+  note: string | null
 }
 
 /** One competency in the reviewer's form; result is empty until chosen */

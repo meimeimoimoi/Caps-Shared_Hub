@@ -275,6 +275,15 @@ const router = createBrowserRouter(
       </Route>
       {/* Rest of the admin area: system admins only */}
       <Route element={<PermissionRoute anyOf={SYSTEM_ADMIN} />}>
+        {/* Final approval of Gate 2 results (System Admin, BR-E10) */}
+        <Route
+          path="/admin/experts/approvals"
+          element={<AdminQualificationsPage scope="approval" />}
+        />
+        <Route
+          path="/admin/experts/approvals/:id"
+          element={<AdminQualificationDetailPage scope="approval" />}
+        />
         <Route path="/admin/disputes" element={<AdminDisputesPage />} />
         <Route
           path="/admin/disputes/:id"

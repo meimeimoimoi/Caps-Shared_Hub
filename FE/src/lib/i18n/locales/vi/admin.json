@@ -4,6 +4,7 @@
     "expertReview": "Xét duyệt Expert",
     "pendingExperts": "Hồ sơ chờ duyệt",
     "competencyReview": "Đánh giá năng lực",
+    "finalApproval": "Phê duyệt cuối",
     "manageExperts": "Quản lý Expert",
     "operations": "Vận hành",
     "complaints": "Khiếu nại",
@@ -738,7 +739,8 @@
       "review": "Chờ đánh giá",
       "moreInfo": "Chờ bổ sung",
       "finalApproval": "Chờ phê duyệt cuối",
-      "failed": "Chưa đạt"
+      "failed": "Chưa đạt",
+      "approved": "Đã phê duyệt"
     }
   },
   "competency": {
@@ -805,7 +807,27 @@
       "COMPETENCY_EVIDENCE_UNKNOWN": "Có tài liệu không thuộc hồ sơ này. Tải lại trang rồi thử lại.",
       "SELF_REVIEW_NOT_ALLOWED": "Bạn không thể tự đánh giá hồ sơ của chính mình.",
       "QUALIFICATION_NOT_IN_REVIEW": "Hồ sơ không còn chờ đánh giá; tải lại để xem trạng thái mới.",
-      "failed": "Chưa ghi nhận được kết luận. Vui lòng thử lại."
+      "failed": "Chưa ghi nhận được kết luận. Vui lòng thử lại.",
+      "QUALIFICATION_NOT_PENDING_APPROVAL": "Hồ sơ không còn chờ phê duyệt cuối; tải lại để xem trạng thái mới.",
+      "FINAL_APPROVER_IS_REVIEWER": "Người đánh giá Gate 2 không thể phê duyệt cuối cùng hồ sơ.",
+      "FINAL_APPROVAL_NOTE_REQUIRED": "Ghi rõ lý do trả về đánh giá lại.",
+      "INVALID_FINAL_APPROVAL_DECISION": "Quyết định không hợp lệ. Tải lại trang rồi thử lại."
+    }
+  },
+  "finalApproval": {
+    "title": "Phê duyệt cuối",
+    "description": "Kiểm tra quản trị kết quả Gate 2 theo từng dịch vụ: hồ sơ, kết quả hai Gate, bằng chứng và lịch sử. Không đánh giá lại năng lực.",
+    "panelTitle": "Phê duyệt cuối",
+    "intro": "Xác nhận kết quả Gate 2 đầy đủ và đúng quy trình. Phê duyệt cho phép chuyên gia thiết lập giá cho dịch vụ này.",
+    "sameReviewer": "Bạn là người đánh giá Gate 2 của hồ sơ này nên không thể phê duyệt cuối.",
+    "noteLabel": "Ghi chú (bắt buộc khi trả về đánh giá lại)",
+    "notePlaceholder": "Thiếu hồ sơ, cờ chưa xử lý hoặc sai quy trình",
+    "return": "Trả về đánh giá lại",
+    "approve": "Phê duyệt cung cấp dịch vụ",
+    "notPending": "Hồ sơ không ở bước chờ phê duyệt cuối.",
+    "toast": {
+      "APPROVE": "Đã phê duyệt cung cấp dịch vụ",
+      "RETURN_FOR_REVIEW": "Đã trả hồ sơ về đánh giá năng lực"
     }
   }
 }

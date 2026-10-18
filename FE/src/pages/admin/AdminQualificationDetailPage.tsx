@@ -8,6 +8,7 @@ import { ToolHeader } from '@/components/ui/layout/tool-header'
 import { DecisionBar } from '@/components/ui/actions/decision-bar'
 import { Toast } from '@/components/ui/feedback/toast'
 import { AdminLayout } from '@/app/layouts/admin/AdminLayout'
+import { useAuthStore } from '@/features/auth'
 import { useAdminNav } from '@/app/layouts/admin/useAdminNav'
 import { getQualificationFile } from '../../features/expert-vetting/api/qualificationApi'
 import { CompetencyDecisionDialog } from '../../features/expert-vetting/components/CompetencyDecisionDialog'
@@ -15,6 +16,7 @@ import { CompetencyResultCard } from '../../features/expert-vetting/components/C
 import { CompetencyReview } from '../../features/expert-vetting/components/CompetencyReview'
 import { DecisionCard } from '../../features/expert-vetting/components/DecisionSummary'
 import { DocumentsTab } from '../../features/expert-vetting/components/DocumentsTab'
+import { FinalApprovalPanel } from '../../features/expert-vetting/components/FinalApprovalPanel'
 import { HistoryTab } from '../../features/expert-vetting/components/HistoryTab'
 import { ProfileTab } from '../../features/expert-vetting/components/ProfileTab'
 import {
@@ -22,6 +24,10 @@ import {
   COMPETENCY_OUTCOME,
 } from '../../features/expert-vetting/constants'
 import { useQualificationReview } from '../../features/expert-vetting/hooks/useQualificationReview'
+import type {
+  FinalApprovalDecision,
+  QualificationScope,
+} from '../../features/expert-vetting/types'
 
 const DECISION_ERRORS = [
   'INVALID_COMPETENCY_CRITERIA',
@@ -31,6 +37,10 @@ const DECISION_ERRORS = [
   'COMPETENCY_EVIDENCE_UNKNOWN',
   'SELF_REVIEW_NOT_ALLOWED',
   'QUALIFICATION_NOT_IN_REVIEW',
+  'QUALIFICATION_NOT_PENDING_APPROVAL',
+  'FINAL_APPROVER_IS_REVIEWER',
+  'FINAL_APPROVAL_NOTE_REQUIRED',
+  'INVALID_FINAL_APPROVAL_DECISION',
 ] as const
 type DecisionError = (typeof DECISION_ERRORS)[number]
 const isDecisionError = (code?: string): code is DecisionError =>
@@ -46,12 +56,25 @@ const RAIL_STEP: Record<string, number> = {
   SUSPENDED: 3,
 }
 
-/** Gate 2 for one Expert-Service qualification: the expert's documents on the left, C1–C5 on the right */
-export default function AdminQualificationDetailPage() {
+/**
+ * One Expert-Service qualification: the expert's documents on the left; on the right the C1–C5 form
+ * (Gate 2 reviewer) or the Gate 2 result with the final approval actions (System Admin).
+ */
+export default function AdminQualificationDetailPage({
+  scope = 'review',
+}: {
+  scope?: QualificationScope
+}) {
   const { t } = useTranslation(['admin', 'common'])
   const { id = '' } = useParams()
   const nav = useAdminNav()
-  const review = useQualificationReview(id)
+  const review = useQualificationReview(id, scope)
+  const userId = useAuthStore((s) => s.user?.id)
+  const isApproval = scope === 'approval'
+  const section = isApproval ? 'approvals' : 'competency'
+  const listPath = isApproval
+    ? '/admin/experts/approvals'
+    : '/admin/experts/qualifications'
   const { detail } = review
   const [tab, setTab] = useState<TabKey>('profile')
   const [docKey, setDocKey] = useState<string>()
@@ -60,24 +83,23 @@ export default function AdminQualificationDetailPage() {
   const clearToast = useCallback(() => setToast(null), [])
 
   const listLink = (
-    <Link
-      to="/admin/experts/qualifications"
-      className="text-fg-muted hover:text-fg-strong"
-    >
-      {t('admin:navigation.competencyReview')}
+    <Link to={listPath} className="text-fg-muted hover:text-fg-strong">
+      {isApproval
+        ? t('admin:navigation.finalApproval')
+        : t('admin:navigation.competencyReview')}
     </Link>
   )
 
   if (!detail) {
     return (
-      <AdminLayout {...nav} section="competency" breadcrumb={listLink}>
+      <AdminLayout {...nav} section={section} breadcrumb={listLink}>
         <h1 className="text-h1-tool">
           {review.isLoading
             ? t('common:loading')
             : (review.error?.message ?? t('admin:detail.notFound', { id }))}
         </h1>
         <Link
-          to="/admin/experts/qualifications"
+          to={listPath}
           className="text-accent-text mt-3 inline-block underline"
         >
           {t('admin:detail.backToList')}
@@ -101,6 +123,20 @@ export default function AdminQualificationDetailPage() {
     document.getElementById(`tab-${key}`)?.focus()
   }
 
+  const errorText = (e: unknown) =>
+    e instanceof ApiError && isDecisionError(e.code)
+      ? t(`admin:competency.errors.${e.code}`)
+      : t('admin:competency.errors.failed')
+
+  const finalDecide = (decision: FinalApprovalDecision, note: string) =>
+    review
+      .approve(decision, note)
+      .then(() => {
+        setTab('history')
+        setToast(t(`admin:finalApproval.toast.${decision}`))
+      })
+      .catch((e: unknown) => setToast(errorText(e)))
+
   const finish = (note: string) => {
     const outcome = review.outcome
     return review
@@ -112,18 +148,14 @@ export default function AdminQualificationDetailPage() {
       })
       .catch((e: unknown) => {
         setConfirming(false)
-        setToast(
-          e instanceof ApiError && isDecisionError(e.code)
-            ? t(`admin:competency.errors.${e.code}`)
-            : t('admin:competency.errors.failed')
-        )
+        setToast(errorText(e))
       })
   }
 
   // Open a blank tab first so the browser does not block the popup after the download
   const openFile = (evidenceId: string) => {
     const win = window.open('', '_blank')
-    getQualificationFile(detail.id, evidenceId)
+    getQualificationFile(scope, detail.id, evidenceId)
       .then((blob) => {
         if (!blob || !win) throw new Error('no file')
         win.location.href = URL.createObjectURL(blob)
@@ -141,7 +173,7 @@ export default function AdminQualificationDetailPage() {
   return (
     <AdminLayout
       {...nav}
-      section="competency"
+      section={section}
       title={expert.name}
       breadcrumb={
         <>
@@ -227,7 +259,19 @@ export default function AdminQualificationDetailPage() {
           </div>
         </div>
 
-        {decided ? (
+        {isApproval ? (
+          <div className="space-y-4 md:space-y-6">
+            <CompetencyResultCard detail={detail} />
+            <FinalApprovalPanel
+              detail={detail}
+              isGate2Reviewer={
+                !!userId && userId === detail.competencyReviewerUserId
+              }
+              submitting={review.approving}
+              onDecide={(decision, note) => void finalDecide(decision, note)}
+            />
+          </div>
+        ) : decided ? (
           <CompetencyResultCard detail={detail} />
         ) : (
           <div className="lg:sticky lg:top-20 lg:max-h-[calc(100vh-160px)] lg:overflow-y-auto">
@@ -244,7 +288,7 @@ export default function AdminQualificationDetailPage() {
         )}
       </div>
 
-      {!decided && (
+      {!decided && !isApproval && (
         <DecisionBar
           className="-mx-4 mt-12 -mb-12 md:-mx-6 lg:-mx-8"
           blockers={

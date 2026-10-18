@@ -69,4 +69,6 @@ export interface Qualification {
   canUpload: boolean
   canSupplement: boolean
   maxFiles: number
+  /** Re-registration after FAIL: a new file is required before it is reviewed (BR-E22) */
+  awaitsNewEvidence: boolean
 }

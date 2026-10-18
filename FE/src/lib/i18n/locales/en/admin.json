@@ -4,6 +4,7 @@
     "expertReview": "Expert Review",
     "pendingExperts": "Pending Applications",
     "competencyReview": "Competency review",
+    "finalApproval": "Final approval",
     "manageExperts": "Manage Experts",
     "operations": "Operations",
     "complaints": "Complaints",
@@ -738,7 +739,8 @@
       "review": "Awaiting review",
       "moreInfo": "Awaiting evidence",
       "finalApproval": "Awaiting final approval",
-      "failed": "Not met"
+      "failed": "Not met",
+      "approved": "Approved"
     }
   },
   "competency": {
@@ -805,7 +807,27 @@
       "COMPETENCY_EVIDENCE_UNKNOWN": "A cited file does not belong to this qualification. Reload and try again.",
       "SELF_REVIEW_NOT_ALLOWED": "You cannot review your own qualification.",
       "QUALIFICATION_NOT_IN_REVIEW": "The qualification is no longer awaiting review; reload to see its status.",
-      "failed": "The conclusion was not recorded. Please try again."
+      "failed": "The conclusion was not recorded. Please try again.",
+      "QUALIFICATION_NOT_PENDING_APPROVAL": "The qualification is no longer waiting for final approval; reload to see its status.",
+      "FINAL_APPROVER_IS_REVIEWER": "The Gate 2 reviewer cannot give the final approval.",
+      "FINAL_APPROVAL_NOTE_REQUIRED": "Explain why it goes back for review.",
+      "INVALID_FINAL_APPROVAL_DECISION": "The decision is invalid. Reload the page and try again."
+    }
+  },
+  "finalApproval": {
+    "title": "Final approval",
+    "description": "Governance check of Gate 2 results per service: records, both Gate results, evidence and history. Competency is not re-assessed.",
+    "panelTitle": "Final approval",
+    "intro": "Confirm the Gate 2 result is complete and followed the process. Approval lets the expert set up pricing for this service.",
+    "sameReviewer": "You were the Gate 2 reviewer for this qualification, so you cannot give the final approval.",
+    "noteLabel": "Note (required to return for review)",
+    "notePlaceholder": "Missing records, unresolved flags or a process error",
+    "return": "Return for review",
+    "approve": "Approve for service",
+    "notPending": "This qualification is not waiting for final approval.",
+    "toast": {
+      "APPROVE": "Approved for service",
+      "RETURN_FOR_REVIEW": "Returned to competency review"
     }
   }
 }

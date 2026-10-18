@@ -627,7 +627,9 @@
       "EMAIL_NOT_VERIFIED": "Verify your email before sending a supplement.",
       "open": "The file could not be opened.",
       "loadFailed": "Services could not be loaded.",
-      "failed": "That did not work. Please try again."
-    }
+      "failed": "That did not work. Please try again.",
+      "NEW_EVIDENCE_REQUIRED": "Upload at least one new file before sending it for review again."
+    },
+    "newEvidenceRequired": "This is a re-registration after a failed review. Upload new or updated competency evidence for the competencies not met, then send it for review."
   }
 }

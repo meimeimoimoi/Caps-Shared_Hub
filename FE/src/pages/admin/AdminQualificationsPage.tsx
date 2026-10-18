@@ -3,33 +3,49 @@ import { cn } from '@/lib/utils'
 import { AdminLayout } from '@/app/layouts/admin/AdminLayout'
 import { useAdminNav } from '@/app/layouts/admin/useAdminNav'
 import { QualificationsTable } from '../../features/expert-vetting/components/QualificationsTable'
-import { QUALIFICATION_TABS } from '../../features/expert-vetting/constants'
-import { useQualificationQueue } from '../../features/expert-vetting/hooks/useQualificationQueue'
+import {
+  tabsOf,
+  useQualificationQueue,
+} from '../../features/expert-vetting/hooks/useQualificationQueue'
+import type { QualificationScope } from '../../features/expert-vetting/types'
 
-/** Gate 2 queue: Expert-Service qualifications waiting for competency review */
-export default function AdminQualificationsPage() {
+/** Gate 2 queue for reviewers, or the final approval queue for System Admins */
+export default function AdminQualificationsPage({
+  scope = 'review',
+}: {
+  scope?: QualificationScope
+}) {
   const nav = useAdminNav()
   const { t } = useTranslation(['admin', 'common'])
   const { tab, setTab, query, setQuery, countOf, paged, prev, next, isLoading, error } =
-    useQualificationQueue()
+    useQualificationQueue(scope)
+  const review = scope === 'review'
 
   return (
     <AdminLayout
       {...nav}
-      section="competency"
-      breadcrumb={t('navigation.competencyReview')}
+      section={review ? 'competency' : 'approvals'}
+      breadcrumb={
+        review ? t('navigation.competencyReview') : t('navigation.finalApproval')
+      }
       search={query}
       onSearchChange={setQuery}
     >
-      <h1 className="text-h1">{t('qualifications.title')}</h1>
-      <p className="text-fg-muted mt-3">{t('qualifications.description')}</p>
+      <h1 className="text-h1">
+        {review ? t('qualifications.title') : t('finalApproval.title')}
+      </h1>
+      <p className="text-fg-muted mt-3">
+        {review
+          ? t('qualifications.description')
+          : t('finalApproval.description')}
+      </p>
 
       <div
         role="group"
         aria-label={t('pendingExperts.filterAria')}
         className="mt-12 flex gap-7 overflow-x-auto"
       >
-        {QUALIFICATION_TABS.map(({ key, showCount }) => (
+        {tabsOf(scope).map(({ key, showCount }) => (
           <button
             key={key}
             type="button"
@@ -53,6 +69,9 @@ export default function AdminQualificationsPage() {
         onPrev={prev}
         onNext={next}
         empty={isLoading ? t('common:loading') : error?.message}
+        linkBase={
+          review ? '/admin/experts/qualifications' : '/admin/experts/approvals'
+        }
       />
     </AdminLayout>
   )

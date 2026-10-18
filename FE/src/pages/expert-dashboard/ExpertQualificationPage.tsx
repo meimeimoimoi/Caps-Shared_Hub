@@ -21,6 +21,7 @@ const ACTION_ERRORS = [
   'QUALIFICATION_LOCKED',
   'SUPPLEMENT_EMPTY',
   'EMAIL_NOT_VERIFIED',
+  'NEW_EVIDENCE_REQUIRED',
 ] as const
 type ActionError = (typeof ACTION_ERRORS)[number]
 const isActionError = (code?: string): code is ActionError =>
@@ -141,7 +142,9 @@ export default function ExpertQualificationPage() {
           {t('qualifications.statusTitle')}
         </h2>
         <p className="mt-2 text-sm">
-          {t(`qualifications.statusHelp.${data.status}`)}
+          {data.awaitsNewEvidence
+            ? t('qualifications.newEvidenceRequired')
+            : t(`qualifications.statusHelp.${data.status}`)}
         </p>
         {data.earliestReapplyAt && (
           <p className="mt-2 text-sm">

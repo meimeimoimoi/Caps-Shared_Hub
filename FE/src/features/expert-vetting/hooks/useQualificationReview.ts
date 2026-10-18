@@ -2,11 +2,17 @@ import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   decideCompetency,
+  decideFinalApproval,
   getQualificationDetail,
 } from '../api/qualificationApi'
 import { adminKeys } from '../api/queryKeys'
 import { COMPETENCY_CODES } from '../constants'
-import type { CompetencyAssessment, CompetencyResult } from '../types'
+import type {
+  CompetencyAssessment,
+  CompetencyResult,
+  FinalApprovalDecision,
+  QualificationScope,
+} from '../types'
 import { competencyOutcome } from '../utils/applications'
 
 /** Every competency needs a note; PASS and FAIL must also cite a file */
@@ -15,11 +21,14 @@ export const isComplete = (a: CompetencyAssessment) =>
   !!a.note.trim() &&
   (a.result === 'NEED_MORE_INFORMATION' || a.evidenceIds.length > 0)
 
-export function useQualificationReview(id: string) {
+export function useQualificationReview(
+  id: string,
+  scope: QualificationScope = 'review'
+) {
   const qc = useQueryClient()
   const detailQuery = useQuery({
-    queryKey: adminKeys.qualification(id),
-    queryFn: ({ signal }) => getQualificationDetail(id, signal),
+    queryKey: adminKeys.qualification(scope, id),
+    queryFn: ({ signal }) => getQualificationDetail(scope, id, signal),
   })
   const detail = detailQuery.data ?? undefined
 
@@ -62,9 +71,21 @@ export function useQualificationReview(id: string) {
         note: note.trim() || null,
       }),
     onSuccess: async (updated) => {
-      qc.setQueryData(adminKeys.qualification(id), updated)
+      qc.setQueryData(adminKeys.qualification(scope, id), updated)
       setEdits({})
-      await qc.invalidateQueries({ queryKey: adminKeys.qualifications() })
+      await qc.invalidateQueries({ queryKey: adminKeys.qualifications(scope) })
+    },
+  })
+
+  const finalApproval = useMutation({
+    mutationFn: (input: { decision: FinalApprovalDecision; note: string }) =>
+      decideFinalApproval(id, {
+        decision: input.decision,
+        note: input.note.trim() || null,
+      }),
+    onSuccess: async (updated) => {
+      qc.setQueryData(adminKeys.qualification(scope, id), updated)
+      await qc.invalidateQueries({ queryKey: adminKeys.qualifications(scope) })
     },
   })
 
@@ -82,6 +103,9 @@ export function useQualificationReview(id: string) {
     canDecide: !!detail?.canDecide && remaining === 0 && !decision.isPending,
     decide: (note = '') => decision.mutateAsync(note),
     deciding: decision.isPending,
+    approve: (decision: FinalApprovalDecision, note: string) =>
+      finalApproval.mutateAsync({ decision, note }),
+    approving: finalApproval.isPending,
     // Newest first
     history: [...(detail?.history ?? [])].sort((a, b) =>
       b.at.localeCompare(a.at)

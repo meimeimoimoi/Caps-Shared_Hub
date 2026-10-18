@@ -1,18 +1,22 @@
 import { api } from '@/lib/api-client'
 import { QUALIFICATION_STATUS } from '@/lib/constants'
 import { isExpertDemo } from '@/lib/expert-data-source'
-import { QUALIFICATION_STATUSES } from '../constants'
 import type {
   CompetencyCheck,
   CompetencyDecisionInput,
   EligibilityCheck,
+  FinalApprovalInput,
   QualificationDetail,
   QualificationRow,
+  QualificationScope,
   QualificationStatus,
 } from '../types'
 
-// Gate 2 review of Expert-Service qualifications (expert service, permission ExpertReview)
-const BASE = '/api/v1/admin/experts/qualifications'
+// Gate 2 review (permission ExpertReview) and final approval (System Admin) read the same records
+const BASES: Record<QualificationScope, string> = {
+  review: '/api/v1/admin/experts/qualifications',
+  approval: '/api/v1/admin/experts/approvals',
+}
 
 interface Envelope<T> {
   success: boolean
@@ -76,6 +80,8 @@ interface ReviewQualification {
   eligibility: EligibilityCheck[]
   competencies: CompetencyCheck[]
   canDecide: boolean
+  competencyReviewerUserId: string | null
+  canFinalApprove: boolean
 }
 
 const toRow = (q: QueueItem): QualificationRow => ({
@@ -103,6 +109,8 @@ function toDetail(q: ReviewQualification): QualificationDetail {
     earliestReapplyAt: q.earliestReapplyAt,
     previousQualificationId: q.previousQualificationId,
     canDecide: q.canDecide,
+    competencyReviewerUserId: q.competencyReviewerUserId,
+    canFinalApprove: q.canFinalApprove,
     competencies: q.competencies,
     // Gate 1 view of the expert: the profile, document and Gate 1 result tabs read it as is
     profile: {
@@ -146,35 +154,60 @@ function toDetail(q: ReviewQualification): QualificationDetail {
   }
 }
 
-/** Every qualification the queue tabs show; empty in demo mode (no Gate 2 fixtures) */
-export async function getQualifications(signal?: AbortSignal) {
+/** Every qualification in the given statuses; empty in demo mode (no Gate 2 fixtures) */
+export async function getQualifications(
+  scope: QualificationScope,
+  statuses: readonly QualificationStatus[],
+  signal?: AbortSignal
+) {
   if (isExpertDemo) return []
   const lists = await Promise.all(
-    QUALIFICATION_STATUSES.map((status) =>
-      api.get<Envelope<QueueItem[]>>(BASE, { params: { status }, signal })
+    statuses.map((status) =>
+      api.get<Envelope<QueueItem[]>>(BASES[scope], {
+        params: { status },
+        signal,
+      })
     )
   )
   return lists.flatMap((l) => l.data.map(toRow))
 }
 
 export async function getQualificationDetail(
+  scope: QualificationScope,
   id: string,
   signal?: AbortSignal
 ): Promise<QualificationDetail | null> {
   if (isExpertDemo) return null
-  const res = await api.get<Envelope<ReviewQualification>>(`${BASE}/${id}`, {
-    signal,
-  })
+  const res = await api.get<Envelope<ReviewQualification>>(
+    `${BASES[scope]}/${id}`,
+    { signal }
+  )
   return toDetail(res.data)
 }
 
 /** File content of one document the qualification can rely on */
-export async function getQualificationFile(id: string, evidenceId: string) {
+export async function getQualificationFile(
+  scope: QualificationScope,
+  id: string,
+  evidenceId: string
+) {
   if (isExpertDemo) return null
-  return api.get<Blob>(`${BASE}/${id}/evidence/${evidenceId}/file`, {
+  return api.get<Blob>(`${BASES[scope]}/${id}/evidence/${evidenceId}/file`, {
     responseType: 'blob',
     timeout: 60_000,
   })
+}
+
+/** Final approval by a System Admin: APPROVE or RETURN_FOR_REVIEW (note required) */
+export async function decideFinalApproval(
+  id: string,
+  body: FinalApprovalInput
+): Promise<QualificationDetail> {
+  const res = await api.post<Envelope<ReviewQualification>>(
+    `${BASES.approval}/${id}/final-decision`,
+    body
+  )
+  return toDetail(res.data)
 }
 
 /** Records the Gate 2 decision; the server derives the outcome from the results */
@@ -183,7 +216,7 @@ export async function decideCompetency(
   body: CompetencyDecisionInput
 ): Promise<QualificationDetail> {
   const res = await api.post<Envelope<ReviewQualification>>(
-    `${BASE}/${id}/competency-decision`,
+    `${BASES.review}/${id}/competency-decision`,
     body
   )
   return toDetail(res.data)

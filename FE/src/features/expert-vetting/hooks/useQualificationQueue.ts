@@ -3,16 +3,23 @@ import { useQuery } from '@tanstack/react-query'
 import { paginate } from '@/lib/utils'
 import { getQualifications } from '../api/qualificationApi'
 import { adminKeys } from '../api/queryKeys'
-import { QUALIFICATION_TABS, type QualificationTab } from '../constants'
-import type { QualificationStatus } from '../types'
+import {
+  APPROVAL_TABS,
+  QUALIFICATION_TABS,
+  type QualificationTab,
+} from '../constants'
+import type { QualificationScope, QualificationStatus } from '../types'
 import { foldVietnamese } from '../utils/applications'
 
-const statusesOf = (tab: QualificationTab): readonly QualificationStatus[] =>
-  QUALIFICATION_TABS.find((t) => t.key === tab)?.statuses ?? []
+export const tabsOf = (scope: QualificationScope) =>
+  scope === 'review' ? QUALIFICATION_TABS : APPROVAL_TABS
 
-/** Gate 2 queue: tabs by status, search by name, oldest submission first */
-export function useQualificationQueue() {
-  const [tab, setTabState] = useState<QualificationTab>('review')
+/** Gate 2 or final approval queue: tabs by status, search by name, oldest submission first */
+export function useQualificationQueue(scope: QualificationScope) {
+  const tabs = tabsOf(scope)
+  const statusesOf = (tab: QualificationTab): readonly QualificationStatus[] =>
+    tabs.find((t) => t.key === tab)?.statuses ?? []
+  const [tab, setTabState] = useState<QualificationTab>(tabs[0].key)
   const [query, setQueryState] = useState('')
   const [page, setPage] = useState(0)
 
@@ -21,8 +28,13 @@ export function useQualificationQueue() {
     isLoading,
     error,
   } = useQuery({
-    queryKey: adminKeys.qualifications(),
-    queryFn: ({ signal }) => getQualifications(signal),
+    queryKey: adminKeys.qualifications(scope),
+    queryFn: ({ signal }) =>
+      getQualifications(
+        scope,
+        tabs.flatMap((t) => t.statuses),
+        signal
+      ),
   })
   const countOf = (t: QualificationTab) =>
     qualifications.filter((q) => statusesOf(t).includes(q.status)).length

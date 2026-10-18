@@ -12,6 +12,8 @@ interface QualificationsTableProps {
   onNext: () => void
   /** Text when there are no rows, e.g. loading or an error */
   empty?: string
+  /** Detail page path prefix, e.g. /admin/experts/qualifications */
+  linkBase: string
 }
 
 /* Gate 2 queue: one row per Expert-Service qualification */
@@ -20,6 +22,7 @@ export function QualificationsTable({
   onPrev,
   onNext,
   empty,
+  linkBase,
 }: QualificationsTableProps) {
   const { t } = useTranslation('admin')
   const fieldLabel = useFieldLabel()
@@ -83,7 +86,7 @@ export function QualificationsTable({
                 </td>
                 <td className="text-right">
                   <Link
-                    to={`/admin/experts/qualifications/${q.id}`}
+                    to={`${linkBase}/${q.id}`}
                     aria-label={t('applicationsTable.viewLabel', {
                       name: q.name,
                     })}
