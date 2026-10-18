@@ -5,7 +5,7 @@ from app.core.models import embedding_model
 from app.core.qdrant import qdrant_client
 from app.config import settings
 
-def to_rfc3339(date_str: str, is_end: bool = False) -> str:
+def to_rfc3339(date_str: str | None, is_end: bool = False) -> str | None:
     if not date_str:
         return None
     clean_date = str(date_str).strip()

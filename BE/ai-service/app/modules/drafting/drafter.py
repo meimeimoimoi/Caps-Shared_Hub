@@ -2,25 +2,16 @@ import hashlib
 import json
 import re
 from app.core.models import llm_model
+from app.modules.drafting.prompts import build_draft_prompt
 
 class DocumentDrafter:
     @staticmethod
     def generate_draft(snapshot_data: dict, template_schema: dict, legal_context: str) -> dict:
-        prompt = f"""Bạn là Trợ lý soạn thảo văn bản giải trình Thuế TNDN.
-Dữ liệu đầu vào (Input Snapshot):
-{json.dumps(snapshot_data, ensure_ascii=False)}
-
-Cấu trúc mẫu biểu (Template):
-{json.dumps(template_schema, ensure_ascii=False)}
-
-Căn cứ luật:
-{legal_context}
-
-NGUYÊN TẮC BẤT DI BẤT DỊCH:
-1. Điền vào biểu mẫu dưới dạng JSON.
-2. TUYỆT ĐỐI KHÔNG TỰ BỊA RA SỐ LIỆU TÀI CHÍNH MỚI. Chỉ sử dụng đúng các con số có trong Input Snapshot.
-Trả về định dạng JSON duy nhất."""
-
+        prompt = build_draft_prompt(
+            snapshot_data=snapshot_data,
+            template_schema=template_schema,
+            legal_context=legal_context,
+        )
         res = llm_model.invoke(prompt)
         text = res.content.strip()
         match = re.search(r'\{.*\}', text, re.DOTALL)

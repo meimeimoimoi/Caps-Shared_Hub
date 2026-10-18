@@ -22,8 +22,10 @@ def chunk_and_embed(req: IngestDocRequest):
             raise HTTPException(status_code=400, detail="Không có nội dung để chunk.")
         kb_chunks = LegalIndexer.index_to_qdrant(chunks)
         return IngestDocResponse(status="SUCCESS", total_chunks=len(kb_chunks), kb_chunks=kb_chunks)
+    except HTTPException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e
 
 # API FLOW 3: Được gọi từ `rag-query` (.NET)
 @router.post("/chat/query", response_model=ChatQueryResponse)

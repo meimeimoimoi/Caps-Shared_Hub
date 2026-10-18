@@ -1,4 +1,5 @@
 from app.core.models import llm_model
+from app.modules.rag.prompts import build_grounded_answer_prompt
 
 class GroundedGenerator:
     @staticmethod
@@ -13,19 +14,11 @@ class GroundedGenerator:
 
         context = "\n---\n".join([h.payload["text_content"] for h in retrieved_chunks])
 
-        prompt = f"""Bạn là Trợ lý AI Pháp lý Thuế TNDN. Chỉ trả lời dựa trên Căn cứ pháp lý dưới đây.
-TUYỆT ĐỐI KHÔNG SUY DIỄN NGOÀI CĂN CỨ.
-
-Căn cứ pháp lý:
-{context}
-
-Kỳ thuế áp dụng: {period_str}
-Câu hỏi: {question}
-
-QUY TẮC:
-1. Nếu thông tin không đủ để kết luận, hãy trả lời chính xác: "Căn cứ pháp lý được cung cấp chưa đủ để đưa ra kết luận chắc chắn cho tình huống này."
-2. BẮT BUỘC liệt kê mục "Căn cứ pháp lý trích dẫn:" ở cuối câu trả lời (ghi rõ Tên văn bản, Số hiệu, Điều, Khoản)."""
-
+        prompt = build_grounded_answer_prompt(
+            question=question,
+            context=context,
+            period_str=period_str,
+        )
         res = llm_model.invoke(prompt)
 
         # Chuẩn hóa Citations trả về cho .NET
