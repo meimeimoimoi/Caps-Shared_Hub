@@ -16,6 +16,7 @@ public static class DependencyInjection
     {
         services.AddServiceDatabase<BillingDbContext>(connectionString, "Billing", "billing");
         services.AddScoped<ICreditWalletRepository, CreditWalletRepository>();
+        services.AddScoped<ICreditLedgerRepository, CreditLedgerRepository>();
         return services;
     }
 }
