@@ -10,6 +10,9 @@ public static class ApplicationRules
 
     public const string CvCode = "CV";
 
+    /// <summary>Files added to a Gate 2 qualification while the reviewer asks for more evidence.</summary>
+    public const string CompetencyCode = "COMPETENCY";
+
     /// <summary>Required CV + 5 eligibility evidence groups EV-01…EV-05 (EV-06 is years of experience).</summary>
     public static readonly string[] EvidenceCodes =
     [
@@ -56,6 +59,12 @@ public static class ApplicationRules
     {
         if (code != SupplementCode && !EvidenceCodes.Contains(code))
             throw ExpertErrors.InvalidEvidenceCode();
+        return ValidateContent(content);
+    }
+
+    /// <summary>Validates the bytes of an upload; returns the content type detected from them.</summary>
+    public static string ValidateContent(byte[] content)
+    {
         if (content.Length == 0)
             throw ExpertErrors.EvidenceRequired();
         if (content.Length > MaxFileBytes)

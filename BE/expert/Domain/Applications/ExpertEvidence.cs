@@ -1,4 +1,5 @@
 using Caps.Common.Domain;
+using Caps.Expert.Domain.Qualifications;
 
 namespace Caps.Expert.Domain.Applications;
 
@@ -11,6 +12,9 @@ public sealed class ExpertEvidence
     public Guid ExpertProfileId { get; private set; }
     public Guid ApplicationId { get; private set; }
     public ExpertApplication Application { get; } = default!;
+
+    /// <summary>Set for files added to a Gate 2 qualification; null for Gate 1 application files.</summary>
+    public Guid? QualificationId { get; private set; }
 
     /// <summary>Document group code: CV or EV-01…EV-05 (POL-EXP-01), or SUPPLEMENT.</summary>
     public string EvidenceType { get; private set; } = default!;
@@ -47,6 +51,35 @@ public sealed class ExpertEvidence
             CreatedAt = now,
         };
         evidence.FileUrl = $"experts/{userId}/{application.Id}/{evidence.Id}";
+        return evidence;
+    }
+
+    /// <summary>
+    /// Records a file added to a Gate 2 qualification. It stays linked to the Gate 1 application the
+    /// qualification relies on, but only the qualification lists it.
+    /// </summary>
+    /// <param name="contentType">Detected from the file bytes (see ApplicationRules.ValidateContent).</param>
+    public static ExpertEvidence CreateForQualification(
+        ExpertServiceQualification qualification,
+        Guid userId,
+        string fileName,
+        string contentType,
+        long sizeBytes,
+        DateTimeOffset now
+    )
+    {
+        var evidence = new ExpertEvidence
+        {
+            ExpertProfileId = qualification.ExpertProfileId,
+            ApplicationId = qualification.ApplicationId,
+            QualificationId = qualification.Id,
+            EvidenceType = ApplicationRules.CompetencyCode,
+            FileName = SafeName(fileName),
+            ContentType = contentType,
+            SizeBytes = sizeBytes,
+            CreatedAt = now,
+        };
+        evidence.FileUrl = $"experts/{userId}/qualifications/{qualification.Id}/{evidence.Id}";
         return evidence;
     }
 

@@ -2,6 +2,7 @@ using Caps.Expert.Application.Abstractions;
 using Caps.Expert.Domain.Applications;
 using Caps.Expert.Domain.Catalog;
 using Caps.Expert.Domain.Profiles;
+using Caps.Expert.Domain.Qualifications;
 using Microsoft.EntityFrameworkCore;
 
 namespace Caps.Expert.Infrastructure.Persistence;
@@ -74,16 +75,22 @@ public sealed class ExpertEvidenceRepository(ExpertDbContext db) : IExpertEviden
     ) =>
         await db
             .ExpertEvidences.AsNoTracking()
-            .Where(x => x.ApplicationId == applicationId)
+            .Where(x => x.ApplicationId == applicationId && x.QualificationId == null)
             .OrderBy(x => x.CreatedAt)
             .ToListAsync(ct);
 
     public Task<int> CountAsync(Guid applicationId, CancellationToken ct) =>
-        db.ExpertEvidences.CountAsync(x => x.ApplicationId == applicationId, ct);
+        db.ExpertEvidences.CountAsync(
+            x => x.ApplicationId == applicationId && x.QualificationId == null,
+            ct
+        );
 
     public Task<bool> HasCodeAsync(Guid applicationId, string code, CancellationToken ct) =>
         db.ExpertEvidences.AnyAsync(
-            x => x.ApplicationId == applicationId && x.EvidenceType == code,
+            x =>
+                x.ApplicationId == applicationId
+                && x.QualificationId == null
+                && x.EvidenceType == code,
             ct
         );
 
@@ -93,7 +100,10 @@ public sealed class ExpertEvidenceRepository(ExpertDbContext db) : IExpertEviden
         CancellationToken ct
     ) =>
         db.ExpertEvidences.AnyAsync(
-            x => x.ApplicationId == applicationId && x.CreatedAt > since,
+            x =>
+                x.ApplicationId == applicationId
+                && x.QualificationId == null
+                && x.CreatedAt > since,
             ct
         );
 
@@ -103,7 +113,8 @@ public sealed class ExpertEvidenceRepository(ExpertDbContext db) : IExpertEviden
         CancellationToken ct
     ) =>
         db.ExpertEvidences.SingleOrDefaultAsync(
-            x => x.Id == evidenceId && x.ApplicationId == applicationId,
+            x =>
+                x.Id == evidenceId && x.ApplicationId == applicationId && x.QualificationId == null,
             ct
         );
 
@@ -154,4 +165,155 @@ public sealed class ServiceCatalogRepository(ExpertDbContext db) : IServiceCatal
             .Where(x => x.Status == ServiceCatalogItem.Active)
             .OrderBy(x => x.SortOrder)
             .ToListAsync(ct);
+
+    public Task<ServiceCatalogItem?> FindAsync(string code, CancellationToken ct) =>
+        db.ServiceCatalog.AsNoTracking().SingleOrDefaultAsync(x => x.Code == code, ct);
+}
+
+/// <summary>EF Core store for Expert-Service qualifications and their history.</summary>
+public sealed class QualificationRepository(ExpertDbContext db) : IQualificationRepository
+{
+    public Task<ExpertServiceQualification?> FindLatestAsync(
+        Guid profileId,
+        string serviceCode,
+        CancellationToken ct
+    ) =>
+        db
+            .Qualifications.Where(x =>
+                x.ExpertProfileId == profileId && x.ServiceCode == serviceCode
+            )
+            .OrderByDescending(x => x.CreatedAt)
+            .FirstOrDefaultAsync(ct);
+
+    public async Task<IReadOnlyList<ExpertServiceQualification>> ListLatestByProfileAsync(
+        Guid profileId,
+        CancellationToken ct
+    )
+    {
+        var all = await db
+            .Qualifications.AsNoTracking()
+            .Where(x => x.ExpertProfileId == profileId)
+            .ToListAsync(ct);
+        return all.GroupBy(x => x.ServiceCode)
+            .Select(g => g.OrderByDescending(x => x.CreatedAt).First())
+            .ToList();
+    }
+
+    public Task<ExpertServiceQualification?> FindOwnedAsync(
+        Guid qualificationId,
+        Guid userId,
+        CancellationToken ct
+    ) =>
+        db
+            .Qualifications.Include(x => x.ExpertProfile)
+            .SingleOrDefaultAsync(
+                x => x.Id == qualificationId && x.ExpertProfile.UserId == userId,
+                ct
+            );
+
+    public Task<ExpertServiceQualification?> FindWithProfileAsync(
+        Guid qualificationId,
+        CancellationToken ct
+    ) =>
+        db
+            .Qualifications.Include(x => x.ExpertProfile)
+            .SingleOrDefaultAsync(x => x.Id == qualificationId, ct);
+
+    public Task<Guid?> FindApplicantUserIdAsync(Guid qualificationId, CancellationToken ct) =>
+        db
+            .Qualifications.Where(x => x.Id == qualificationId)
+            .Select(x => (Guid?)x.ExpertProfile.UserId)
+            .SingleOrDefaultAsync(ct);
+
+    public async Task<IReadOnlyList<ExpertServiceQualification>> ListByStatusAsync(
+        string status,
+        CancellationToken ct
+    ) =>
+        await db
+            .Qualifications.AsNoTracking()
+            .Include(x => x.ExpertProfile)
+            .Where(x => x.Status == status)
+            .OrderBy(x => x.SubmittedAt)
+            .ToListAsync(ct);
+
+    public async Task<IReadOnlyList<QualificationEvent>> ListEventsAsync(
+        Guid qualificationId,
+        CancellationToken ct
+    ) =>
+        await db
+            .QualificationEvents.AsNoTracking()
+            .Where(x => x.QualificationId == qualificationId)
+            .OrderBy(x => x.CreatedAt)
+            .ToListAsync(ct);
+
+    public void Add(ExpertServiceQualification qualification) =>
+        db.Qualifications.Add(qualification);
+
+    public void AddEvent(QualificationEvent qualificationEvent) =>
+        db.QualificationEvents.Add(qualificationEvent);
+}
+
+/// <summary>EF Core store for Gate 2 per-competency results and the files they cite.</summary>
+public sealed class CompetencyAssessmentRepository(ExpertDbContext db)
+    : ICompetencyAssessmentRepository
+{
+    public async Task<IReadOnlyList<CompetencyAssessment>> ListLatestAsync(
+        Guid qualificationId,
+        CancellationToken ct
+    )
+    {
+        var rows = db
+            .CompetencyAssessments.AsNoTracking()
+            .Where(x => x.QualificationId == qualificationId);
+        var latest = await rows.MaxAsync(x => (DateTimeOffset?)x.CreatedAt, ct);
+        if (latest == null)
+            return [];
+        var results = await rows.Where(x => x.CreatedAt == latest)
+            .Include(x => x.Evidence)
+            .ToListAsync(ct);
+        return results.OrderBy(x => Array.IndexOf(CompetencyCriteria.Codes, x.Competency)).ToList();
+    }
+
+    public void AddRange(IEnumerable<CompetencyAssessment> assessments) =>
+        db.CompetencyAssessments.AddRange(assessments);
+}
+
+/// <summary>EF Core store for the files a qualification can rely on.</summary>
+public sealed class QualificationEvidenceRepository(ExpertDbContext db)
+    : IQualificationEvidenceRepository
+{
+    public async Task<IReadOnlyList<ExpertEvidence>> ListAsync(
+        ExpertServiceQualification qualification,
+        CancellationToken ct
+    )
+    {
+        var files = await Usable(qualification).AsNoTracking().ToListAsync(ct);
+        return files.OrderBy(x => x.QualificationId != null).ThenBy(x => x.CreatedAt).ToList();
+    }
+
+    public Task<int> CountAddedAsync(Guid qualificationId, CancellationToken ct) =>
+        db.ExpertEvidences.CountAsync(x => x.QualificationId == qualificationId, ct);
+
+    public Task<bool> AnyAddedAfterAsync(
+        Guid qualificationId,
+        DateTimeOffset since,
+        CancellationToken ct
+    ) =>
+        db.ExpertEvidences.AnyAsync(
+            x => x.QualificationId == qualificationId && x.CreatedAt > since,
+            ct
+        );
+
+    public Task<ExpertEvidence?> FindAsync(
+        Guid evidenceId,
+        ExpertServiceQualification qualification,
+        CancellationToken ct
+    ) => Usable(qualification).SingleOrDefaultAsync(x => x.Id == evidenceId, ct);
+
+    // The Gate 1 application files plus those added for this qualification
+    private IQueryable<ExpertEvidence> Usable(ExpertServiceQualification qualification) =>
+        db.ExpertEvidences.Where(x =>
+            x.QualificationId == qualification.Id
+            || (x.QualificationId == null && x.ApplicationId == qualification.ApplicationId)
+        );
 }

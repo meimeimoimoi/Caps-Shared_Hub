@@ -9,4 +9,6 @@ namespace Caps.Expert.Application.Abstractions;
 public interface IExpertNotificationOutbox
 {
     void Enqueue(ExpertEligibilityDecidedEvent message, DateTimeOffset now);
+
+    void Enqueue(ExpertCompetencyDecidedEvent message, DateTimeOffset now);
 }

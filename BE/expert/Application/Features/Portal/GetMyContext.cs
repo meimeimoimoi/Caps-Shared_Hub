@@ -4,6 +4,7 @@ using Caps.Expert.Application.Common;
 using Caps.Expert.Application.DTOs.Responses;
 using Caps.Expert.Domain.Catalog;
 using Caps.Expert.Domain.Portal;
+using Caps.Expert.Domain.Qualifications;
 
 namespace Caps.Expert.Application.Features.Portal;
 
@@ -17,11 +18,12 @@ public sealed record GetMyContextQuery(
 
 /// <summary>
 /// Builds the Expert Portal context: stage, capabilities and one readiness entry per active catalog
-/// service. Until Expert-Service qualifications exist (Gate 2), readiness follows the Gate 1 application.
+/// service. Readiness follows the service's latest qualification (Gate 2), or the Gate 1 application before one exists.
 /// </summary>
 public sealed class GetMyContextHandler(
     IExpertProfileRepository profiles,
     IExpertApplicationRepository applications,
+    IQualificationRepository qualifications,
     IServiceCatalogRepository catalog,
     TimeProvider clock
 ) : IQueryHandler<GetMyContextQuery, ExpertContextResponse>
@@ -37,13 +39,21 @@ public sealed class GetMyContextHandler(
         var profile = await profiles.FindByUserAsync(applicant.UserId, ct);
         var application =
             profile == null ? null : await applications.FindLatestAsync(profile.Id, ct);
+        var latest =
+            profile == null ? [] : await qualifications.ListLatestByProfileAsync(profile.Id, ct);
         var services = await catalog.ListActiveAsync(ct);
 
         var readiness = services
-            .Select(service => Readiness(service, application?.Status))
+            .Select(service =>
+                Readiness(
+                    service,
+                    application?.Status,
+                    latest.FirstOrDefault(x => x.ServiceCode == service.Code)?.Status
+                )
+            )
             .ToArray();
         var facts = new PortalFacts(
-            AnyServiceApproved: false,
+            AnyServiceApproved: latest.Any(x => x.Status == QualificationStatus.ApprovedForService),
             AnyServiceBookable: readiness.Any(x => x.BookingAllowed),
             query.CanManageServices,
             query.CanWorkCases
@@ -62,19 +72,24 @@ public sealed class GetMyContextHandler(
         );
     }
 
-    // No qualification or pricing yet: nothing is bookable and the reason comes from Gate 1
+    // No pricing yet: nothing is bookable; the reason comes from the qualification, or Gate 1 before one exists
     private static ServiceReadinessResponse Readiness(
         ServiceCatalogItem service,
-        string? applicationStatus
+        string? applicationStatus,
+        string? qualificationStatus
     ) =>
         new(
             service.Code,
             service.Name,
-            null,
+            qualificationStatus,
             service.Status,
             false,
             false,
-            [PortalAccessRules.ReasonBeforeQualification(applicationStatus)],
+            [
+                qualificationStatus == null
+                    ? PortalAccessRules.ReasonBeforeQualification(applicationStatus)
+                    : PortalAccessRules.ReasonForQualification(qualificationStatus),
+            ],
             null,
             null
         );

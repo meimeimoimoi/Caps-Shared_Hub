@@ -9,12 +9,28 @@ namespace Caps.Expert.Infrastructure.Messaging;
 public sealed class ExpertNotificationOutbox(ExpertDbContext db) : IExpertNotificationOutbox
 {
     public void Enqueue(ExpertEligibilityDecidedEvent message, DateTimeOffset now) =>
+        Add(
+            message.Id,
+            nameof(ExpertEligibilityDecidedEvent),
+            JsonSerializer.Serialize(message),
+            now
+        );
+
+    public void Enqueue(ExpertCompetencyDecidedEvent message, DateTimeOffset now) =>
+        Add(
+            message.Id,
+            nameof(ExpertCompetencyDecidedEvent),
+            JsonSerializer.Serialize(message),
+            now
+        );
+
+    private void Add(Guid id, string type, string payload, DateTimeOffset now) =>
         db.NotificationOutbox.Add(
             new NotificationOutboxEntry
             {
-                Id = message.Id,
-                MessageType = nameof(ExpertEligibilityDecidedEvent),
-                Payload = JsonSerializer.Serialize(message),
+                Id = id,
+                MessageType = type,
+                Payload = payload,
                 CreatedAt = now,
             }
         );

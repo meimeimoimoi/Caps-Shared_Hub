@@ -217,6 +217,10 @@ namespace Caps.Expert.Infrastructure.Persistence.Migrations
                         .HasColumnType("jsonb")
                         .HasColumnName("parsed_meta");
 
+                    b.Property<Guid?>("QualificationId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("qualification_id");
+
                     b.Property<string>("ScreeningFlag")
                         .HasColumnType("text")
                         .HasColumnName("screening_flag");
@@ -232,6 +236,9 @@ namespace Caps.Expert.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("ExpertProfileId")
                         .HasDatabaseName("ix_expert_evidence_profile");
+
+                    b.HasIndex("QualificationId")
+                        .HasDatabaseName("ix_expert_evidence_qualification");
 
                     b.ToTable("expert_evidence", "expert");
                 });
@@ -272,63 +279,6 @@ namespace Caps.Expert.Infrastructure.Persistence.Migrations
                         .HasDatabaseName("ix_availability_slot_open");
 
                     b.ToTable("availability_slot", "expert");
-                });
-
-            modelBuilder.Entity("Caps.Expert.Domain.Catalog.ExpertCompetencyAssessment", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<Guid>("AssessorUserId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("assessor_user_id");
-
-                    b.Property<short>("C1Score")
-                        .HasColumnType("smallint")
-                        .HasColumnName("c1_score");
-
-                    b.Property<short>("C2Score")
-                        .HasColumnType("smallint")
-                        .HasColumnName("c2_score");
-
-                    b.Property<short>("C3Score")
-                        .HasColumnType("smallint")
-                        .HasColumnName("c3_score");
-
-                    b.Property<short>("C4Score")
-                        .HasColumnType("smallint")
-                        .HasColumnName("c4_score");
-
-                    b.Property<short>("C5Score")
-                        .HasColumnType("smallint")
-                        .HasColumnName("c5_score");
-
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at");
-
-                    b.Property<string>("Decision")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("decision");
-
-                    b.Property<Guid>("ExpertProfileId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("expert_profile_id");
-
-                    b.Property<string>("Rationale")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("rationale");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ExpertProfileId")
-                        .HasDatabaseName("ix_expert_competency_assessment_profile");
-
-                    b.ToTable("expert_competency_assessment", "expert");
                 });
 
             modelBuilder.Entity("Caps.Expert.Domain.Catalog.ServiceCatalogItem", b =>
@@ -534,6 +484,196 @@ namespace Caps.Expert.Infrastructure.Persistence.Migrations
                     b.ToTable("expert_profile", "expert");
                 });
 
+            modelBuilder.Entity("Caps.Expert.Domain.Qualifications.CompetencyAssessment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Competency")
+                        .IsRequired()
+                        .HasMaxLength(8)
+                        .HasColumnType("character varying(8)")
+                        .HasColumnName("competency");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid>("EventId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("event_id");
+
+                    b.Property<string>("Note")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("note");
+
+                    b.Property<Guid>("QualificationId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("qualification_id");
+
+                    b.Property<string>("Result")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("result");
+
+                    b.Property<Guid>("ReviewerUserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("reviewer_user_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EventId", "Competency")
+                        .IsUnique()
+                        .HasDatabaseName("ux_competency_assessment_decision");
+
+                    b.HasIndex("QualificationId", "CreatedAt")
+                        .HasDatabaseName("ix_competency_assessment_qualification");
+
+                    b.ToTable("competency_assessment", "expert");
+                });
+
+            modelBuilder.Entity("Caps.Expert.Domain.Qualifications.CompetencyAssessmentEvidence", b =>
+                {
+                    b.Property<Guid>("AssessmentId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("assessment_id");
+
+                    b.Property<Guid>("EvidenceId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("evidence_id");
+
+                    b.HasKey("AssessmentId", "EvidenceId");
+
+                    b.HasIndex("EvidenceId")
+                        .HasDatabaseName("ix_competency_assessment_evidence_file");
+
+                    b.ToTable("competency_assessment_evidence", "expert");
+                });
+
+            modelBuilder.Entity("Caps.Expert.Domain.Qualifications.ExpertServiceQualification", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("ApplicationId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("application_id");
+
+                    b.Property<Guid?>("CompetencyReviewerUserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("competency_reviewer_user_id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<DateTimeOffset?>("DecidedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("decided_at");
+
+                    b.Property<string>("DecisionNote")
+                        .HasColumnType("text")
+                        .HasColumnName("decision_note");
+
+                    b.Property<DateTimeOffset?>("EarliestReapplyAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("earliest_reapply_at");
+
+                    b.Property<Guid>("ExpertProfileId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("expert_profile_id");
+
+                    b.Property<Guid?>("PreviousQualificationId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("previous_qualification_id");
+
+                    b.Property<string>("ServiceCode")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("service_code");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("status");
+
+                    b.Property<DateTimeOffset>("SubmittedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("submitted_at");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ApplicationId");
+
+                    b.HasIndex("PreviousQualificationId");
+
+                    b.HasIndex("ServiceCode");
+
+                    b.HasIndex("ExpertProfileId", "ServiceCode")
+                        .IsUnique()
+                        .HasDatabaseName("ux_expert_service_qualification_active")
+                        .HasFilter("status <> 'FAIL'");
+
+                    b.HasIndex("Status", "SubmittedAt")
+                        .HasDatabaseName("ix_expert_service_qualification_queue");
+
+                    b.ToTable("expert_service_qualification", "expert");
+                });
+
+            modelBuilder.Entity("Caps.Expert.Domain.Qualifications.QualificationEvent", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("ActorUserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("actor_user_id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("FromStatus")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("from_status");
+
+                    b.Property<string>("Note")
+                        .HasColumnType("text")
+                        .HasColumnName("note");
+
+                    b.Property<Guid>("QualificationId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("qualification_id");
+
+                    b.Property<string>("ToStatus")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("to_status");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("QualificationId", "CreatedAt")
+                        .HasDatabaseName("ix_qualification_event");
+
+                    b.ToTable("qualification_event", "expert");
+                });
+
             modelBuilder.Entity("Caps.Expert.Infrastructure.Messaging.NotificationOutboxEntry", b =>
                 {
                     b.Property<Guid>("Id")
@@ -631,6 +771,12 @@ namespace Caps.Expert.Infrastructure.Persistence.Migrations
                         .IsRequired()
                         .HasConstraintName("fk_expert_evidence_profile");
 
+                    b.HasOne("Caps.Expert.Domain.Qualifications.ExpertServiceQualification", null)
+                        .WithMany()
+                        .HasForeignKey("QualificationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_expert_evidence_qualification");
+
                     b.Navigation("Application");
                 });
 
@@ -642,18 +788,6 @@ namespace Caps.Expert.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_availability_slot_profile");
-
-                    b.Navigation("ExpertProfile");
-                });
-
-            modelBuilder.Entity("Caps.Expert.Domain.Catalog.ExpertCompetencyAssessment", b =>
-                {
-                    b.HasOne("Caps.Expert.Domain.Profiles.ExpertProfile", "ExpertProfile")
-                        .WithMany()
-                        .HasForeignKey("ExpertProfileId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired()
-                        .HasConstraintName("fk_expert_competency_assessment_profile");
 
                     b.Navigation("ExpertProfile");
                 });
@@ -670,6 +804,82 @@ namespace Caps.Expert.Infrastructure.Persistence.Migrations
                     b.Navigation("ExpertProfile");
                 });
 
+            modelBuilder.Entity("Caps.Expert.Domain.Qualifications.CompetencyAssessment", b =>
+                {
+                    b.HasOne("Caps.Expert.Domain.Qualifications.QualificationEvent", null)
+                        .WithMany()
+                        .HasForeignKey("EventId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_competency_assessment_event");
+
+                    b.HasOne("Caps.Expert.Domain.Qualifications.ExpertServiceQualification", null)
+                        .WithMany()
+                        .HasForeignKey("QualificationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_competency_assessment_qualification");
+                });
+
+            modelBuilder.Entity("Caps.Expert.Domain.Qualifications.CompetencyAssessmentEvidence", b =>
+                {
+                    b.HasOne("Caps.Expert.Domain.Qualifications.CompetencyAssessment", null)
+                        .WithMany("Evidence")
+                        .HasForeignKey("AssessmentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_competency_assessment_evidence_assessment");
+
+                    b.HasOne("Caps.Expert.Domain.Applications.ExpertEvidence", null)
+                        .WithMany()
+                        .HasForeignKey("EvidenceId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_competency_assessment_evidence_file");
+                });
+
+            modelBuilder.Entity("Caps.Expert.Domain.Qualifications.ExpertServiceQualification", b =>
+                {
+                    b.HasOne("Caps.Expert.Domain.Applications.ExpertApplication", null)
+                        .WithMany()
+                        .HasForeignKey("ApplicationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_expert_service_qualification_application");
+
+                    b.HasOne("Caps.Expert.Domain.Profiles.ExpertProfile", "ExpertProfile")
+                        .WithMany()
+                        .HasForeignKey("ExpertProfileId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_expert_service_qualification_profile");
+
+                    b.HasOne("Caps.Expert.Domain.Qualifications.ExpertServiceQualification", null)
+                        .WithMany()
+                        .HasForeignKey("PreviousQualificationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_expert_service_qualification_previous");
+
+                    b.HasOne("Caps.Expert.Domain.Catalog.ServiceCatalogItem", null)
+                        .WithMany()
+                        .HasForeignKey("ServiceCode")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_expert_service_qualification_service");
+
+                    b.Navigation("ExpertProfile");
+                });
+
+            modelBuilder.Entity("Caps.Expert.Domain.Qualifications.QualificationEvent", b =>
+                {
+                    b.HasOne("Caps.Expert.Domain.Qualifications.ExpertServiceQualification", null)
+                        .WithMany()
+                        .HasForeignKey("QualificationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_qualification_event_qualification");
+                });
+
             modelBuilder.Entity("Caps.Expert.Domain.Applications.ExpertApplication", b =>
                 {
                     b.Navigation("Events");
@@ -684,6 +894,11 @@ namespace Caps.Expert.Infrastructure.Persistence.Migrations
                     b.Navigation("AvailabilitySlots");
 
                     b.Navigation("ServiceOfferings");
+                });
+
+            modelBuilder.Entity("Caps.Expert.Domain.Qualifications.CompetencyAssessment", b =>
+                {
+                    b.Navigation("Evidence");
                 });
 #pragma warning restore 612, 618
         }

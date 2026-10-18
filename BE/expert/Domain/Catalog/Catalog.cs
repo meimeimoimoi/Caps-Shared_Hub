@@ -30,24 +30,3 @@ public sealed class AvailabilitySlot
     public string Status { get; } = "OPEN";
     public DateTimeOffset CreatedAt { get; }
 }
-
-/// <summary>Gate 2 competency scoring by a reviewer; filled by a later phase (no API yet).</summary>
-public sealed class ExpertCompetencyAssessment
-{
-    private ExpertCompetencyAssessment() { }
-
-    public Guid Id { get; } = UuidV7.NewGuid();
-    public Guid ExpertProfileId { get; }
-    public ExpertProfile ExpertProfile { get; } = default!;
-
-    /// <summary>Reviewer account id from the identity service.</summary>
-    public Guid AssessorUserId { get; }
-    public short C1Score { get; }
-    public short C2Score { get; }
-    public short C3Score { get; }
-    public short C4Score { get; }
-    public short C5Score { get; }
-    public string Rationale { get; } = default!;
-    public string Decision { get; } = default!;
-    public DateTimeOffset CreatedAt { get; }
-}

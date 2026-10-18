@@ -1,6 +1,7 @@
 using Caps.Expert.Domain.Applications;
 using Caps.Expert.Domain.Catalog;
 using Caps.Expert.Domain.Profiles;
+using Caps.Expert.Domain.Qualifications;
 using Caps.Expert.Infrastructure.Messaging;
 using Microsoft.EntityFrameworkCore;
 
@@ -19,8 +20,9 @@ public sealed class ExpertDbContext(DbContextOptions<ExpertDbContext> options) :
     public DbSet<ExpertApplicationEvent> ExpertApplicationEvents => Set<ExpertApplicationEvent>();
     public DbSet<ExpertEvidence> ExpertEvidences => Set<ExpertEvidence>();
     public DbSet<EligibilityCheck> EligibilityChecks => Set<EligibilityCheck>();
-    public DbSet<ExpertCompetencyAssessment> ExpertCompetencyAssessments =>
-        Set<ExpertCompetencyAssessment>();
+    public DbSet<ExpertServiceQualification> Qualifications => Set<ExpertServiceQualification>();
+    public DbSet<QualificationEvent> QualificationEvents => Set<QualificationEvent>();
+    public DbSet<CompetencyAssessment> CompetencyAssessments => Set<CompetencyAssessment>();
     public DbSet<ServiceOffering> ServiceOfferings => Set<ServiceOffering>();
     public DbSet<ServiceCatalogItem> ServiceCatalog => Set<ServiceCatalogItem>();
     public DbSet<NotificationOutboxEntry> NotificationOutbox => Set<NotificationOutboxEntry>();
@@ -133,6 +135,7 @@ public sealed class ExpertDbContext(DbContextOptions<ExpertDbContext> options) :
             e.Property(x => x.Id).HasColumnName("id");
             e.Property(x => x.ExpertProfileId).HasColumnName("expert_profile_id");
             e.Property(x => x.ApplicationId).HasColumnName("application_id");
+            e.Property(x => x.QualificationId).HasColumnName("qualification_id");
             e.Property(x => x.EvidenceType).HasColumnName("evidence_type").IsRequired();
             e.Property(x => x.FileUrl).HasColumnName("file_url").IsRequired();
             e.Property(x => x.FileName).HasColumnName("file_name").HasMaxLength(255).IsRequired();
@@ -153,6 +156,12 @@ public sealed class ExpertDbContext(DbContextOptions<ExpertDbContext> options) :
                 .HasForeignKey(x => x.ApplicationId)
                 .OnDelete(DeleteBehavior.Restrict)
                 .HasConstraintName("fk_expert_evidence_application");
+            e.HasIndex(x => x.QualificationId).HasDatabaseName("ix_expert_evidence_qualification");
+            e.HasOne<ExpertServiceQualification>()
+                .WithMany()
+                .HasForeignKey(x => x.QualificationId)
+                .OnDelete(DeleteBehavior.Restrict)
+                .HasConstraintName("fk_expert_evidence_qualification");
         });
 
         modelBuilder.Entity<EligibilityCheck>(e =>
@@ -185,28 +194,124 @@ public sealed class ExpertDbContext(DbContextOptions<ExpertDbContext> options) :
                 .HasConstraintName("fk_eligibility_check_event");
         });
 
-        modelBuilder.Entity<ExpertCompetencyAssessment>(e =>
+        modelBuilder.Entity<ExpertServiceQualification>(e =>
         {
-            e.ToTable("expert_competency_assessment");
+            e.ToTable("expert_service_qualification");
             e.HasKey(x => x.Id);
             e.Property(x => x.Id).HasColumnName("id");
             e.Property(x => x.ExpertProfileId).HasColumnName("expert_profile_id");
-            e.Property(x => x.AssessorUserId).HasColumnName("assessor_user_id");
-            e.Property(x => x.C1Score).HasColumnName("c1_score");
-            e.Property(x => x.C2Score).HasColumnName("c2_score");
-            e.Property(x => x.C3Score).HasColumnName("c3_score");
-            e.Property(x => x.C4Score).HasColumnName("c4_score");
-            e.Property(x => x.C5Score).HasColumnName("c5_score");
-            e.Property(x => x.Rationale).HasColumnName("rationale").IsRequired();
-            e.Property(x => x.Decision).HasColumnName("decision").IsRequired();
+            e.Property(x => x.ServiceCode)
+                .HasColumnName("service_code")
+                .HasMaxLength(64)
+                .IsRequired();
+            e.Property(x => x.ApplicationId).HasColumnName("application_id");
+            e.Property(x => x.Status).HasColumnName("status").HasMaxLength(32).IsRequired();
+            e.Property(x => x.SubmittedAt).HasColumnName("submitted_at").IsRequired();
+            e.Property(x => x.DecidedAt).HasColumnName("decided_at");
+            e.Property(x => x.DecisionNote).HasColumnName("decision_note");
+            e.Property(x => x.CompetencyReviewerUserId)
+                .HasColumnName("competency_reviewer_user_id");
+            e.Property(x => x.PreviousQualificationId).HasColumnName("previous_qualification_id");
+            e.Property(x => x.EarliestReapplyAt).HasColumnName("earliest_reapply_at");
             e.Property(x => x.CreatedAt).HasColumnName("created_at").IsRequired();
-            e.HasIndex(x => x.ExpertProfileId)
-                .HasDatabaseName("ix_expert_competency_assessment_profile");
+            e.Property(x => x.UpdatedAt).HasColumnName("updated_at").IsRequired();
+            // Review queue filters by status and submission time
+            e.HasIndex(x => new { x.Status, x.SubmittedAt })
+                .HasDatabaseName("ix_expert_service_qualification_queue");
+            // One qualification per Expert-Service pair until it fails (BR-E12)
+            e.HasIndex(x => new { x.ExpertProfileId, x.ServiceCode })
+                .IsUnique()
+                .HasFilter("status <> 'FAIL'")
+                .HasDatabaseName("ux_expert_service_qualification_active");
             e.HasOne(x => x.ExpertProfile)
                 .WithMany()
                 .HasForeignKey(x => x.ExpertProfileId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("fk_expert_service_qualification_profile");
+            e.HasOne<ServiceCatalogItem>()
+                .WithMany()
+                .HasForeignKey(x => x.ServiceCode)
                 .OnDelete(DeleteBehavior.Restrict)
-                .HasConstraintName("fk_expert_competency_assessment_profile");
+                .HasConstraintName("fk_expert_service_qualification_service");
+            e.HasOne<ExpertApplication>()
+                .WithMany()
+                .HasForeignKey(x => x.ApplicationId)
+                .OnDelete(DeleteBehavior.Restrict)
+                .HasConstraintName("fk_expert_service_qualification_application");
+            e.HasOne<ExpertServiceQualification>()
+                .WithMany()
+                .HasForeignKey(x => x.PreviousQualificationId)
+                .OnDelete(DeleteBehavior.Restrict)
+                .HasConstraintName("fk_expert_service_qualification_previous");
+        });
+
+        modelBuilder.Entity<QualificationEvent>(e =>
+        {
+            e.ToTable("qualification_event");
+            e.HasKey(x => x.Id);
+            e.Property(x => x.Id).HasColumnName("id");
+            e.Property(x => x.QualificationId).HasColumnName("qualification_id");
+            e.Property(x => x.ActorUserId).HasColumnName("actor_user_id");
+            e.Property(x => x.FromStatus).HasColumnName("from_status").HasMaxLength(32);
+            e.Property(x => x.ToStatus).HasColumnName("to_status").HasMaxLength(32).IsRequired();
+            e.Property(x => x.Note).HasColumnName("note");
+            e.Property(x => x.CreatedAt).HasColumnName("created_at").IsRequired();
+            e.HasIndex(x => new { x.QualificationId, x.CreatedAt })
+                .HasDatabaseName("ix_qualification_event");
+            e.HasOne<ExpertServiceQualification>()
+                .WithMany()
+                .HasForeignKey(x => x.QualificationId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("fk_qualification_event_qualification");
+        });
+
+        modelBuilder.Entity<CompetencyAssessment>(e =>
+        {
+            e.ToTable("competency_assessment");
+            e.HasKey(x => x.Id);
+            e.Property(x => x.Id).HasColumnName("id");
+            e.Property(x => x.QualificationId).HasColumnName("qualification_id");
+            e.Property(x => x.EventId).HasColumnName("event_id");
+            e.Property(x => x.Competency).HasColumnName("competency").HasMaxLength(8).IsRequired();
+            e.Property(x => x.Result).HasColumnName("result").HasMaxLength(32).IsRequired();
+            e.Property(x => x.Note).HasColumnName("note").IsRequired();
+            e.Property(x => x.ReviewerUserId).HasColumnName("reviewer_user_id");
+            e.Property(x => x.CreatedAt).HasColumnName("created_at").IsRequired();
+            // One result per competency in each decision
+            e.HasIndex(x => new { x.EventId, x.Competency })
+                .IsUnique()
+                .HasDatabaseName("ux_competency_assessment_decision");
+            e.HasIndex(x => new { x.QualificationId, x.CreatedAt })
+                .HasDatabaseName("ix_competency_assessment_qualification");
+            e.HasOne<ExpertServiceQualification>()
+                .WithMany()
+                .HasForeignKey(x => x.QualificationId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("fk_competency_assessment_qualification");
+            e.HasOne<QualificationEvent>()
+                .WithMany()
+                .HasForeignKey(x => x.EventId)
+                .OnDelete(DeleteBehavior.Restrict)
+                .HasConstraintName("fk_competency_assessment_event");
+            e.HasMany(x => x.Evidence)
+                .WithOne()
+                .HasForeignKey(x => x.AssessmentId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("fk_competency_assessment_evidence_assessment");
+        });
+
+        modelBuilder.Entity<CompetencyAssessmentEvidence>(e =>
+        {
+            e.ToTable("competency_assessment_evidence");
+            e.HasKey(x => new { x.AssessmentId, x.EvidenceId });
+            e.Property(x => x.AssessmentId).HasColumnName("assessment_id");
+            e.Property(x => x.EvidenceId).HasColumnName("evidence_id");
+            e.HasIndex(x => x.EvidenceId).HasDatabaseName("ix_competency_assessment_evidence_file");
+            e.HasOne<ExpertEvidence>()
+                .WithMany()
+                .HasForeignKey(x => x.EvidenceId)
+                .OnDelete(DeleteBehavior.Restrict)
+                .HasConstraintName("fk_competency_assessment_evidence_file");
         });
 
         modelBuilder.Entity<NotificationOutboxEntry>(e =>

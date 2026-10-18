@@ -1,4 +1,5 @@
 using Caps.Expert.Domain.Applications;
+using Caps.Expert.Domain.Qualifications;
 
 namespace Caps.Expert.Domain.Portal;
 
@@ -68,6 +69,22 @@ public static class PortalAccessRules
             ExpertApplicationStatus.NotEligible => "NOT_ELIGIBLE",
             ExpertApplicationStatus.Eligible => "COMPETENCY_REVIEW_PENDING",
             _ => "ELIGIBILITY_PENDING",
+        };
+
+    /// <summary>
+    /// Why a service cannot take bookings yet once an Expert-Service qualification exists:
+    /// COMPETENCY_REVIEW_IN_PROGRESS, COMPETENCY_NEED_MORE_INFORMATION, FINAL_APPROVAL_PENDING,
+    /// COMPETENCY_FAILED, SERVICE_SUSPENDED or PRICING_PENDING.
+    /// </summary>
+    public static string ReasonForQualification(string qualificationStatus) =>
+        qualificationStatus switch
+        {
+            QualificationStatus.NeedMoreInformation => "COMPETENCY_NEED_MORE_INFORMATION",
+            QualificationStatus.PendingFinalApproval => "FINAL_APPROVAL_PENDING",
+            QualificationStatus.Fail => "COMPETENCY_FAILED",
+            QualificationStatus.Suspended => "SERVICE_SUSPENDED",
+            QualificationStatus.ApprovedForService => "PRICING_PENDING",
+            _ => "COMPETENCY_REVIEW_IN_PROGRESS",
         };
 
     public static string[] CapabilitiesOf(PortalFacts facts)

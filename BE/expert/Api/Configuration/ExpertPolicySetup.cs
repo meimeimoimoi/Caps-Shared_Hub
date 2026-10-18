@@ -16,7 +16,10 @@ public static class ExpertPolicySetup
             .AddOptions<ExpertPolicyOptions>()
             .Bind(config.GetSection("ExpertPolicy"))
             .Validate(
-                x => x.MinYearsExperience >= 0 && x.ReapplyNotEligibleDays >= 0,
+                x =>
+                    x.MinYearsExperience >= 0
+                    && x.ReapplyNotEligibleDays >= 0
+                    && x.ReapplyCompetencyFailDays >= 0,
                 "ExpertPolicy values cannot be negative."
             )
             .ValidateOnStart();

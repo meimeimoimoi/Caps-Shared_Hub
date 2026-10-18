@@ -136,4 +136,73 @@ public static class ExpertErrors
             "EXPERIENCE_BELOW_MINIMUM",
             $"EV-06 cannot pass: the declared experience is below {minYears} years."
         );
+
+    public static AppException ServiceNotFound() =>
+        new(ErrorType.NotFound, "SERVICE_NOT_FOUND", "Service not found or not offered.");
+
+    public static AppException EligibilityRequired() =>
+        new(
+            ErrorType.Conflict,
+            "ELIGIBILITY_REQUIRED",
+            "Pass the eligibility review (Gate 1) before registering for a service."
+        );
+
+    public static AppException QualificationNotFound() =>
+        new(ErrorType.NotFound, "QUALIFICATION_NOT_FOUND", "Service qualification not found.");
+
+    public static AppException QualificationExists(string status) =>
+        new(
+            ErrorType.Conflict,
+            "QUALIFICATION_EXISTS",
+            $"This service already has a qualification that is {status}."
+        );
+
+    public static AppException QualificationLocked(string status) =>
+        new(
+            ErrorType.Conflict,
+            "QUALIFICATION_LOCKED",
+            $"Qualification cannot be changed while {status}."
+        );
+
+    public static AppException QualificationNotInReview(string status) =>
+        new(
+            ErrorType.Conflict,
+            "QUALIFICATION_NOT_IN_REVIEW",
+            $"Only qualifications in competency review can be decided; this one is {status}."
+        );
+
+    public static AppException InvalidCompetencyCriteria() =>
+        new(
+            ErrorType.Validation,
+            "INVALID_COMPETENCY_CRITERIA",
+            "Give exactly one result for each of C1 to C5."
+        );
+
+    public static AppException InvalidCompetencyResult(string code) =>
+        new(
+            ErrorType.Validation,
+            "INVALID_COMPETENCY_RESULT",
+            $"Result of {code} must be PASS, FAIL or NEED_MORE_INFORMATION."
+        );
+
+    public static AppException CompetencyNoteRequired(string code) =>
+        new(
+            ErrorType.Validation,
+            "COMPETENCY_NOTE_REQUIRED",
+            $"Write the assessment note for {code}."
+        );
+
+    public static AppException CompetencyEvidenceRequired(string code) =>
+        new(
+            ErrorType.Validation,
+            "COMPETENCY_EVIDENCE_REQUIRED",
+            $"Cite at least one file supporting the result of {code}."
+        );
+
+    public static AppException CompetencyEvidenceUnknown(string code) =>
+        new(
+            ErrorType.Validation,
+            "COMPETENCY_EVIDENCE_UNKNOWN",
+            $"A file cited for {code} does not belong to this qualification."
+        );
 }

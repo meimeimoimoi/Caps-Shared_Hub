@@ -41,6 +41,13 @@ public sealed class ExpertNotificationPublisher(
                         )!;
                         await bus.Publish(message, ctx => ctx.MessageId = row.Id, stoppingToken);
                     }
+                    else if (row.MessageType == nameof(ExpertCompetencyDecidedEvent))
+                    {
+                        var message = JsonSerializer.Deserialize<ExpertCompetencyDecidedEvent>(
+                            row.Payload
+                        )!;
+                        await bus.Publish(message, ctx => ctx.MessageId = row.Id, stoppingToken);
+                    }
                     row.SentAt = clock.GetUtcNow();
                     row.Payload = "";
                 }
