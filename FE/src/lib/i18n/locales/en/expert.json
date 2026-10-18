@@ -564,7 +564,17 @@
       "datePast": "Choose today or a later date.",
       "reasonRequired": "Add a reason before submitting for approval.",
       "reasonLong": "Keep the reason within 1,000 characters."
-    }
+    },
+    "savedApi": "Draft saved. It has not been submitted.",
+    "submittedPending": "Submitted. The change is above the auto-approval threshold, so it waits for an administrator; the current price stays in place.",
+    "submittedApproved": "Approved automatically. The new price applies from the effective date you chose.",
+    "autoApprovalHelp": "The first price, or a change of at most {{percent}}% from the current price, is approved automatically. Larger changes need an administrator.",
+    "autoApproved": "Approved automatically ({{percent}}% change).",
+    "auditAutoApproved": "Approved automatically",
+    "auditApproved": "Approved by an administrator",
+    "auditReturned": "Returned for revision",
+    "auditRejected": "Rejected",
+    "auditSuperseded": "Replaced by a newer version"
   },
   "qualifications": {
     "title": "Competency review by service",

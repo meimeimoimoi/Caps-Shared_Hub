@@ -563,7 +563,17 @@
       "datePast": "Chọn ngày hôm nay hoặc một ngày trong tương lai.",
       "reasonRequired": "Bổ sung lý do trước khi gửi duyệt.",
       "reasonLong": "Lý do không được vượt quá 1.000 ký tự."
-    }
+    },
+    "savedApi": "Đã lưu bản nháp. Chưa gửi duyệt.",
+    "submittedPending": "Đã gửi. Mức thay đổi vượt ngưỡng tự duyệt nên đang chờ quản trị viên duyệt; giá hiện hành giữ nguyên.",
+    "submittedApproved": "Đã duyệt tự động. Giá mới áp dụng từ ngày hiệu lực bạn chọn.",
+    "autoApprovalHelp": "Giá đầu tiên, hoặc thay đổi không quá {{percent}}% so với giá đang áp dụng, được duyệt tự động. Thay đổi lớn hơn cần quản trị viên duyệt.",
+    "autoApproved": "Duyệt tự động (thay đổi {{percent}}%).",
+    "auditAutoApproved": "Duyệt tự động",
+    "auditApproved": "Quản trị viên đã duyệt",
+    "auditReturned": "Trả về để chỉnh sửa",
+    "auditRejected": "Bị từ chối",
+    "auditSuperseded": "Được thay bằng phiên bản mới"
   },
   "qualifications": {
     "title": "Đánh giá năng lực theo dịch vụ",

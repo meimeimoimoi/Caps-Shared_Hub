@@ -105,6 +105,9 @@ const AdminQualificationsPage = lazy(
 const AdminQualificationDetailPage = lazy(
   () => import('@/pages/admin/AdminQualificationDetailPage')
 )
+const AdminPricingApprovalsPage = lazy(
+  () => import('@/pages/admin/AdminPricingApprovalsPage')
+)
 const AdminExpertsPage = lazy(() => import('@/pages/admin/AdminExpertsPage'))
 const AdminDisputesPage = lazy(() => import('@/pages/admin/AdminDisputesPage'))
 const AdminDisputeDetailPage = lazy(
@@ -283,6 +286,11 @@ const router = createBrowserRouter(
         <Route
           path="/admin/experts/approvals/:id"
           element={<AdminQualificationDetailPage scope="approval" />}
+        />
+        {/* Price changes above the auto-approval threshold (POL-MKT-02) */}
+        <Route
+          path="/admin/experts/pricing"
+          element={<AdminPricingApprovalsPage />}
         />
       </Route>
       {/* Rest of the admin area: system admins only */}

@@ -21,15 +21,28 @@ export interface PricingVersion extends PricingInput {
   updatedAt: string
   effectiveTo: string | null
   reviewNote: string | null
+  /** Approved by the system: first price or a change within the threshold */
+  autoApproved?: boolean
+  /** Change from the price in effect at submission, in percent */
+  changePercent?: number | null
 }
 export interface PricingAudit {
   versionId: string
-  action: 'SAVED' | 'SUBMITTED'
+  action:
+    | 'SAVED'
+    | 'SUBMITTED'
+    | 'AUTO_APPROVED'
+    | 'APPROVED'
+    | 'RETURNED_FOR_REVISION'
+    | 'REJECTED'
+    | 'SUPERSEDED'
   at: string
   actor: string
 }
 export interface PricingWorkspace {
   revision: number
+  /** Changes up to this percent are approved at once; absent in demo data */
+  autoApproveMaxChangePercent?: number
   versions: PricingVersion[]
   audit: PricingAudit[]
 }

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import {
   BadgeCheck,
+  Banknote,
   ClipboardCheck,
   CreditCard,
   FileText,
@@ -62,6 +63,7 @@ interface AdminLayoutProps extends ShellPageProps {
     | 'pending'
     | 'competency'
     | 'approvals'
+    | 'pricingReview'
     | 'experts'
     | 'disputes'
     | 'escrow'
@@ -118,6 +120,12 @@ export function AdminLayout({
           icon: BadgeCheck,
           to: '/admin/experts/approvals',
           active: section === 'approvals',
+        },
+        {
+          label: t('navigation.pricingReview'),
+          icon: Banknote,
+          to: '/admin/experts/pricing',
+          active: section === 'pricingReview',
         },
         {
           label: t('navigation.manageExperts'),

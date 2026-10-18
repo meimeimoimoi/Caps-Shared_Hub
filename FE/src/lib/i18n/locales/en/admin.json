@@ -5,6 +5,7 @@
     "pendingExperts": "Pending Applications",
     "competencyReview": "Competency review",
     "finalApproval": "Final approval",
+    "pricingReview": "Service price review",
     "manageExperts": "Manage Experts",
     "operations": "Operations",
     "complaints": "Complaints",
@@ -843,5 +844,41 @@
     "reinstateNoteLabel": "Note (optional)",
     "suspend": "Suspend service",
     "reinstate": "Reinstate service"
+  },
+  "pricingReview": {
+    "title": "Service price review",
+    "description": "The first price and changes of at most 50% are approved automatically. This page only lists larger changes, which a System Admin decides.",
+    "tabs": {
+      "PENDING_APPROVAL": "Pending",
+      "RETURN_FOR_REVISION": "Returned",
+      "REJECTED": "Rejected"
+    },
+    "expert": "Expert · service",
+    "change": "Current → new price",
+    "effectiveFrom": "Effective from",
+    "reason": "Expert's reason",
+    "percent": "{{percent}}% change",
+    "empty": "No price changes.",
+    "approve": "Approve",
+    "return": "Return",
+    "reject": "Reject",
+    "noteRequired": "Note to the expert (required)",
+    "noteOptional": "Note (optional)",
+    "dialog": {
+      "APPROVE": "Approve the new price of {{name}}?",
+      "RETURN_FOR_REVISION": "Return the price to {{name}} for revision?",
+      "REJECT": "Reject the new price of {{name}}?"
+    },
+    "toast": {
+      "APPROVE": "New price approved",
+      "RETURN_FOR_REVISION": "Price returned for revision",
+      "REJECT": "New price rejected"
+    },
+    "errors": {
+      "PRICING_NOT_PENDING": "This price is no longer pending; reload the page.",
+      "PRICING_NOTE_REQUIRED": "Explain why it is returned or rejected.",
+      "INVALID_PRICING_DECISION": "The decision is invalid. Reload the page and try again.",
+      "failed": "The decision was not recorded. Please try again."
+    }
   }
 }
