@@ -72,7 +72,8 @@ public sealed class PayOsClient(HttpClient http, PayOsOptions options, ILogger<P
             return new PaymentLink(
                 data.GetProperty("checkoutUrl").GetString()!,
                 data.GetProperty("qrCode").GetString()!,
-                data.GetProperty("paymentLinkId").GetString()!
+                data.GetProperty("paymentLinkId").GetString()!,
+                ReadBeneficiary(data)
             );
         }
         catch (Exception e)
@@ -87,6 +88,23 @@ public sealed class PayOsClient(HttpClient http, PayOsOptions options, ILogger<P
             logger.LogWarning(e, "PayOS call failed for order {OrderCode}", request.OrderCode);
             throw BillingErrors.PaymentUnavailable();
         }
+    }
+
+    // Optional: without it the client can still use the QR code or the checkout page
+    private static PaymentBeneficiary? ReadBeneficiary(JsonElement data)
+    {
+        string? Text(string name) =>
+            data.TryGetProperty(name, out var v) && v.ValueKind == JsonValueKind.String
+                ? v.GetString()
+                : null;
+
+        var bin = Text("bin");
+        var accountNumber = Text("accountNumber");
+        var accountName = Text("accountName");
+        var description = Text("description");
+        return bin is null || accountNumber is null || accountName is null || description is null
+            ? null
+            : new PaymentBeneficiary(bin, accountNumber, accountName, description);
     }
 
     public PaymentNotice ReadNotice(string body)

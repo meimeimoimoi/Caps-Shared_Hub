@@ -15,7 +15,7 @@ public sealed class Settlement
     public long PlatformFeeAmount { get; private set; }
     public DateTimeOffset SettledAt { get; private set; }
 
-    public ICollection<PayoutTransaction> PayoutTransactions { get; private set; } = [];
+    public ICollection<PayoutTransaction> PayoutTransactions { get; } = [];
 
     /// <summary>
     /// The whole escrow goes to the expert minus the platform fee, rounded down in the expert's favour.

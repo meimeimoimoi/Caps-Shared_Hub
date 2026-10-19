@@ -55,6 +55,9 @@ public static class BillingErrors
             "The payment notification is malformed or its signature is invalid."
         );
 
+    public static AppException PaymentNotFound() =>
+        new(ErrorType.NotFound, "PAYMENT_NOT_FOUND", "Payment not found.");
+
     public static AppException PaymentAlreadySucceeded() =>
         new(ErrorType.Conflict, "PAYMENT_ALREADY_SUCCEEDED", "The payment has already succeeded.");
 

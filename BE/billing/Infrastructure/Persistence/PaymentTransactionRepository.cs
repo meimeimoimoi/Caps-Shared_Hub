@@ -15,5 +15,8 @@ public sealed class PaymentTransactionRepository(BillingDbContext db)
             )
             .SingleOrDefaultAsync(ct);
 
+    public Task<PaymentTransaction?> FindAsync(Guid id, CancellationToken ct) =>
+        db.PaymentTransactions.AsNoTracking().SingleOrDefaultAsync(x => x.Id == id, ct);
+
     public void Add(PaymentTransaction payment) => db.PaymentTransactions.Add(payment);
 }

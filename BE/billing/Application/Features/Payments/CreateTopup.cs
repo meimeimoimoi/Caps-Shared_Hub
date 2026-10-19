@@ -61,7 +61,11 @@ public sealed class CreateTopupHandler(
             payment.Amount,
             link.CheckoutUrl,
             link.QrCode,
-            expiresAt
+            expiresAt,
+            link.Beneficiary?.BankBin,
+            link.Beneficiary?.AccountNumber,
+            link.Beneficiary?.AccountName,
+            link.Beneficiary?.Description
         );
     }
 

@@ -19,8 +19,9 @@ public sealed class PayOsController(ICurrentUser currentUser) : ControllerBase
 
     /// <summary>Creates a PayOS payment link (checkout page and VietQR) to buy credits.</summary>
     /// <remarks>
-    /// The link expires after 15 minutes. Credits are added only when PayOS confirms the payment through the
-    /// webhook, so the client should refresh the wallet after the user returns from the checkout page.
+    /// The link expires after 15 minutes. Instead of opening checkoutUrl, the client can render qrCode (VietQR)
+    /// with bankBin, accountNumber, accountName and transferNote in its own page, then poll
+    /// GET topups/{paymentId}. Credits are added only when PayOS confirms the payment through the webhook.
     /// </remarks>
     /// <response code="200">The payment link.</response>
     /// <response code="400">Invalid input or INVALID_TOPUP_AMOUNT.</response>
@@ -36,6 +37,25 @@ public sealed class PayOsController(ICurrentUser currentUser) : ControllerBase
     {
         var topup = await handler.HandleAsync(r.ToCommand(UserId), ct);
         return Ok(ApiResponse<TopupResponse>.Ok(topup));
+    }
+
+    /// <summary>Returns the status of one of the signed-in user's top-ups.</summary>
+    /// <remarks>
+    /// Poll every few seconds while the QR code is shown, until status is SUCCEEDED (then refresh the wallet) or
+    /// expiresAt has passed.
+    /// </remarks>
+    /// <response code="200">The top-up status.</response>
+    /// <response code="401">Missing, invalid or revoked access token.</response>
+    /// <response code="404">PAYMENT_NOT_FOUND: unknown id or another user's payment.</response>
+    [HttpGet("topups/{paymentId:guid}")]
+    public async Task<IActionResult> GetTopup(
+        Guid paymentId,
+        [FromServices] IQueryHandler<GetTopupStatusQuery, TopupStatusResponse> handler,
+        CancellationToken ct
+    )
+    {
+        var topup = await handler.HandleAsync(new(UserId, paymentId), ct);
+        return Ok(ApiResponse<TopupStatusResponse>.Ok(topup));
     }
 
     /// <summary>Receives PayOS payment notifications (called by PayOS, not by clients).</summary>

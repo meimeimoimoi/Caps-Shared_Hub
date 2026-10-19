@@ -8,5 +8,8 @@ public interface IPaymentTransactionRepository
     /// <summary>Locks the row (FOR UPDATE) so concurrent notifications for one order run one at a time.</summary>
     Task<PaymentTransaction?> LockByOrderCodeAsync(string orderCode, CancellationToken ct);
 
+    /// <summary>Read-only, for display.</summary>
+    Task<PaymentTransaction?> FindAsync(Guid id, CancellationToken ct);
+
     void Add(PaymentTransaction payment);
 }

@@ -20,11 +20,11 @@ public sealed class PayoutTransaction
     public string? SnapBankName { get; private set; }
     public string? SnapAccountLast4 { get; private set; }
     public string? SnapHolderName { get; private set; }
-    public string Provider { get; private set; } = PaymentProvider.PayOs;
+    public string Provider { get; } = PaymentProvider.PayOs;
 
     // Set by the transfer flow (PayOS payouts), which is not built yet
     public string? ProviderRef { get; }
-    public string Status { get; private set; } = PayoutStatus.Pending;
+    public string Status { get; } = PayoutStatus.Pending;
     public int AttemptCount { get; }
     public string? LastError { get; }
     public DateTimeOffset CreatedAt { get; private set; }

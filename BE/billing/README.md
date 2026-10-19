@@ -26,6 +26,7 @@ PENDING expert payout) and staff refund. Payout transfers and disputes have tabl
 | GET | `/api/v1/billing/wallet/ledger` | signed in | `page`, `pageSize` (max 100), newest first |
 | GET / POST / DELETE | `/api/v1/billing/bank-accounts` | signed in, session check on writes | at most 5; every action returns the full list |
 | POST | `/api/v1/billing/payos/create-topup` | signed in, session check | 10,000–50,000,000 VND; link lives 15 minutes |
+| GET | `/api/v1/billing/payos/topups/{paymentId}` | signed in, own payments only | status for polling; another user's id answers 404 |
 | POST | `/api/v1/billing/payos/webhook` | anonymous, HMAC signature | called by PayOS; unknown orders are acknowledged |
 | GET | `/api/v1/admin/billing/payouts` | `PayoutManage`, session check | optional `status`, paging as the ledger |
 | POST | `/api/v1/admin/billing/escrows/{reviewCaseId}/release` | `PayoutManage`, session check | `expertUserId`, `platformFeePct` (0–100, fee rounded down) |
@@ -42,6 +43,9 @@ PENDING expert payout) and staff refund. Payout transfers and disputes have tabl
   can never credit twice. Hold moves credits from `Balance` to `Held`; release takes them out of `Held`
   (ledger amount 0); refund moves them back to `Balance`.
 - A FAILED payment can still become SUCCEEDED from the webhook: the link may exist even though its response was lost.
+- The client may skip the PayOS page: `create-topup` also returns the receiving account (`bankBin`, `accountNumber`,
+  `accountName`) and `transferNote`, shown next to the `qrCode` (VietQR). They are null when PayOS omits them, so the
+  client must fall back to the QR code or `checkoutUrl`. The client then polls `topups/{paymentId}`.
 - PayOS is called over plain `HttpClient`; signatures are made in `PayOsSignature` (no SDK). The webhook reads the
   raw body because the signature covers the exact JSON.
 - Account numbers are encrypted with Data Protection and hashed with HMAC. Losing the Data Protection keys makes
