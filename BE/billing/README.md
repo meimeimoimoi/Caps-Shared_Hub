@@ -6,8 +6,8 @@ It does **not** own accounts (auth), review cases themselves (workflow) or exper
 
 ## Status
 
-Database model and migrations only; no API yet. The entities still have public setters and no behavior. The
-first use case should turn them into entities with factories and rules (see AGENTS.md and `auth` as the model).
+Built: wallet and ledger reads, payout bank accounts, PayOS credit top-ups (link + webhook) and the staff payout
+list. Escrow, settlements, payout transfers and disputes have tables only: their entities have no behavior yet.
 
 | Entity | Purpose |
 |---|---|
@@ -16,6 +16,41 @@ first use case should turn them into entities with factories and rules (see AGEN
 | `Escrow`, `Settlement` | money held for a review case, then split into refund, expert payout and platform fee |
 | `BankAccount`, `PayoutTransaction` | expert bank accounts (number encrypted) and transfers after settlement |
 | `Dispute` | a complaint about a review case, decided by an arbiter |
+
+## Endpoints
+
+| Method | Path | Access | Notes |
+|---|---|---|---|
+| GET | `/api/v1/billing/wallet` | signed in | balance and held amount; no wallet yet gives zeros |
+| GET | `/api/v1/billing/wallet/ledger` | signed in | `page`, `pageSize` (max 100), newest first |
+| GET / POST / DELETE | `/api/v1/billing/bank-accounts` | signed in, session check on writes | at most 5; every action returns the full list |
+| POST | `/api/v1/billing/payos/create-topup` | signed in, session check | 10,000–50,000,000 VND; link lives 15 minutes |
+| POST | `/api/v1/billing/payos/webhook` | anonymous, HMAC signature | called by PayOS; unknown orders are acknowledged |
+| GET | `/api/v1/admin/billing/payouts` | `PayoutManage`, session check | optional `status`, paging as the ledger |
+
+## Rules to keep when changing code
+
+- Changes to a user's wallet or bank accounts run in a transaction and take `IBillingUserLock` first.
+  `FindForUpdateAsync` / `ListForUpdateAsync` do not lock rows themselves; they are only safe after that lock.
+- Lock order: the webhook locks the payment row (`FOR UPDATE`) and then the user lock. New flows that touch
+  both must use the same order, or they can deadlock.
+- Every wallet change writes exactly one `CreditLedger` row with a unique `IdempotencyKey`
+  (top-up: `payos:<orderCode>`), so a repeated notification can never credit twice.
+- A FAILED payment can still become SUCCEEDED from the webhook: the link may exist even though its response was lost.
+- PayOS is called over plain `HttpClient`; signatures are made in `PayOsSignature` (no SDK). The webhook reads the
+  raw body because the signature covers the exact JSON.
+- Account numbers are encrypted with Data Protection and hashed with HMAC. Losing the Data Protection keys makes
+  stored numbers unreadable; changing `Billing:AccountHashKey` breaks duplicate detection. A duplicate means the
+  same `BankBin` and the same number hash.
+
+## Configuration
+
+| Key | Where | Notes |
+|---|---|---|
+| `PayOS:ClientId`, `PayOS:ApiKey`, `PayOS:ChecksumKey` | user-secrets / environment | without them payments answer `PAYMENT_UNAVAILABLE` |
+| `PayOS:ReturnUrl`, `PayOS:CancelUrl` | appsettings | FE wallet page after checkout |
+| `Billing:AccountHashKey` | user-secrets / environment (dev value in `appsettings.Development.json`) | at least 32 characters |
+| `Billing:DataProtectionKeysPath` | environment | required outside Development |
 
 ## Boundaries with other services
 

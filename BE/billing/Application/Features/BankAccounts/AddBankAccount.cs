@@ -45,7 +45,8 @@ public sealed class AddBankAccountHandler(
         await using var tx = await unitOfWork.BeginTransactionAsync(ct);
         await userLock.AcquireAsync(command.UserId, ct);
         var linked = await accounts.ListForUpdateAsync(command.UserId, ct);
-        if (linked.Any(x => x.AccountNumberHash == number.Hash))
+        // Same digits at another bank are a different account (phone-number accounts are common)
+        if (linked.Any(x => x.BankBin == details.BankBin && x.AccountNumberHash == number.Hash))
             throw BillingErrors.BankAccountDuplicate();
         if (linked.Count >= BankAccountRules.MaxAccounts)
             throw BillingErrors.BankAccountLimit(BankAccountRules.MaxAccounts);
