@@ -18,8 +18,15 @@ public sealed class SearchExpertHandler(IMarketplaceReader marketplace)
     {
         var page = Math.Max(query.Page, 1);
         var size = Math.Clamp(query.PageSize, 1, MaxPageSize);
+        // Service codes are stored lowercase; a badly formed code just matches nothing (no 400 on search)
+        var filter = query.Filter with
+        {
+            ServiceType = string.IsNullOrWhiteSpace(query.Filter.ServiceType)
+                ? null
+                : query.Filter.ServiceType.Trim().ToLowerInvariant(),
+        };
         // One extra row tells whether a next page exists, without counting the whole table
-        var rows = await marketplace.SearchAsync(query.Filter, (page - 1) * size, size + 1, ct);
+        var rows = await marketplace.SearchAsync(filter, (page - 1) * size, size + 1, ct);
         return new(rows.Take(size).ToList(), page, rows.Count > size);
     }
 }

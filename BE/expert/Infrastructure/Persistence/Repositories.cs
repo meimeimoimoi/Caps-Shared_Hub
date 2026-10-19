@@ -2,6 +2,7 @@ using Caps.Expert.Application.Abstractions;
 using Caps.Expert.Application.Common;
 using Caps.Expert.Application.DTOs.Responses;
 using Caps.Expert.Domain.Applications;
+using Caps.Expert.Domain.Catalog;
 using Caps.Expert.Domain.Profiles;
 using Microsoft.EntityFrameworkCore;
 
@@ -115,25 +116,44 @@ public sealed class MarketplaceReader(ExpertDbContext db) : IMarketplaceReader
     )
     {
         var serviceType = filter.ServiceType;
-        // Per-expert values computed once in SQL, then reused by filters, sorting and the result
-        var rows = Approved()
-            .Select(p => new
-            {
-                Profile = p,
-                Available = p.ServiceStatus == ExpertServiceStatus.Active
-                    && p.ActiveCases < p.Capacity,
-                Trusted = p.DeliveredCount >= ExpertProfile.MinCasesForRate
-                    && p.VerifiedCount * 100
-                        >= ExpertProfile.VerifiedTargetPercent * p.DeliveredCount,
-                Fee = p
+        // Per-expert values computed once in SQL, then reused by filters, sorting and the result.
+        // With a service chosen, start from its packages (one active per expert): fee and turnaround
+        // are plain columns there instead of correlated subqueries run for every expert.
+        var rows =
+            serviceType == null
+                ? Approved()
+                    .Select(p => new
+                    {
+                        Profile = p,
+                        Available = p.ServiceStatus == ExpertServiceStatus.Active
+                            && p.ActiveCases < p.Capacity,
+                        Trusted = p.DeliveredCount >= ExpertProfile.MinCasesForRate
+                            && p.VerifiedCount * 100
+                                >= ExpertProfile.VerifiedTargetPercent * p.DeliveredCount,
+                        Fee = p.ServiceOfferings.Where(o => o.IsActive).Min(o => (long?)o.Fee),
+                        Turnaround = p
+                            .ServiceOfferings.Where(o => o.IsActive)
+                            .Min(o => (int?)o.TurnaroundHours),
+                    })
+                : db
                     .ServiceOfferings.Where(o =>
-                        o.IsActive && (serviceType == null || o.ServiceType == serviceType)
+                        o.IsActive
+                        && o.ServiceType == serviceType
+                        && o.ExpertProfile.Status == ExpertApplicationStatus.Approved
                     )
-                    .Min(o => (long?)o.Fee),
-            });
+                    .Select(o => new
+                    {
+                        Profile = o.ExpertProfile,
+                        Available = o.ExpertProfile.ServiceStatus == ExpertServiceStatus.Active
+                            && o.ExpertProfile.ActiveCases < o.ExpertProfile.Capacity,
+                        Trusted = o.ExpertProfile.DeliveredCount >= ExpertProfile.MinCasesForRate
+                            && o.ExpertProfile.VerifiedCount * 100
+                                >= ExpertProfile.VerifiedTargetPercent
+                                    * o.ExpertProfile.DeliveredCount,
+                        Fee = (long?)o.Fee,
+                        Turnaround = (int?)o.TurnaroundHours,
+                    });
 
-        if (serviceType != null)
-            rows = rows.Where(x => x.Fee != null); // only experts selling the chosen service
         if (filter.OpenOnly)
             rows = rows.Where(x => x.Available);
         if (!string.IsNullOrWhiteSpace(filter.Field))
@@ -142,7 +162,7 @@ public sealed class MarketplaceReader(ExpertDbContext db) : IMarketplaceReader
             rows = rows.Where(x => x.Profile.Fields.Contains(filter.Field));
         }
         if (filter.MaxTurnaroundHours is > 0)
-            rows = rows.Where(x => x.Profile.TurnaroundHours <= filter.MaxTurnaroundHours);
+            rows = rows.Where(x => x.Turnaround <= filter.MaxTurnaroundHours);
         if (!string.IsNullOrWhiteSpace(filter.Keyword))
         {
             // ponytail: ILIKE '%x%' scans; add pg_trgm or full-text search when the table grows
@@ -159,8 +179,8 @@ public sealed class MarketplaceReader(ExpertDbContext db) : IMarketplaceReader
             MarketplaceSort.Rating => rows.OrderByDescending(x => x.Profile.RatingAvg)
                 .ThenByDescending(x => x.Profile.RatingCount),
             MarketplaceSort.Price => rows.OrderBy(x => x.Fee == null).ThenBy(x => x.Fee), // unpriced last
-            MarketplaceSort.Turnaround => rows.OrderBy(x => x.Profile.TurnaroundHours == null)
-                .ThenBy(x => x.Profile.TurnaroundHours),
+            MarketplaceSort.Turnaround => rows.OrderBy(x => x.Turnaround == null)
+                .ThenBy(x => x.Turnaround), // experts selling nothing matching go last
             // Tiers: free slot first, then VERIFIED ≥ 80%, then quality inside the tier
             _ => rows.OrderByDescending(x => x.Available)
                 .ThenByDescending(x => x.Trusted)
@@ -188,7 +208,7 @@ public sealed class MarketplaceReader(ExpertDbContext db) : IMarketplaceReader
                 x.Profile.DeliveredCount >= ExpertProfile.MinCasesForRate
                     ? x.Profile.VerifiedCount * 100 / x.Profile.DeliveredCount
                     : null,
-                x.Profile.TurnaroundHours,
+                x.Turnaround,
                 x.Fee,
                 x.Available
             ))
@@ -208,12 +228,16 @@ public sealed class MarketplaceReader(ExpertDbContext db) : IMarketplaceReader
                 p.Fields,
                 p.YearsExperience,
                 p.Highlights,
-                p.TurnaroundHours,
                 p.RatingAvg,
                 p.RatingCount,
                 p.ServiceOfferings.Where(o => o.IsActive)
                     .OrderBy(o => o.Fee)
-                    .Select(o => new MarketplaceOffering(o.Id, o.ServiceType, o.Fee))
+                    .Select(o => new MarketplaceOffering(
+                        o.Id,
+                        o.ServiceType,
+                        o.Fee,
+                        o.TurnaroundHours
+                    ))
                     .ToList(),
                 p.ServiceStatus == ExpertServiceStatus.Active && p.ActiveCases < p.Capacity,
                 p.DeliveredCount >= ExpertProfile.MinCasesForRate
@@ -225,4 +249,58 @@ public sealed class MarketplaceReader(ExpertDbContext db) : IMarketplaceReader
     // Paused or full experts stay listed (labeled by Available); only approval decides visibility
     private IQueryable<ExpertProfile> Approved() =>
         db.ExpertProfiles.Where(p => p.Status == ExpertApplicationStatus.Approved);
+}
+
+/// <summary>EF Core store for platform fee history.</summary>
+public sealed class PlatformFeeRepository(ExpertDbContext db) : IPlatformFeeRepository
+{
+    public Task<PlatformFee?> FindCurrentAsync(
+        string serviceType,
+        DateTimeOffset now,
+        CancellationToken ct
+    ) =>
+        db
+            .PlatformFees.Where(f => f.ServiceType == serviceType && f.EffectiveFrom <= now)
+            .OrderByDescending(f => f.EffectiveFrom)
+            .FirstOrDefaultAsync(ct);
+
+    // ponytail: latest row per service via GROUP BY; fine for a handful of services
+    public async Task<IReadOnlyList<PlatformFee>> ListCurrentAsync(
+        DateTimeOffset now,
+        CancellationToken ct
+    ) =>
+        await db
+            .PlatformFees.AsNoTracking()
+            .Where(f => f.EffectiveFrom <= now)
+            .GroupBy(f => f.ServiceType)
+            .Select(g => g.OrderByDescending(f => f.EffectiveFrom).First())
+            .ToListAsync(ct);
+
+    public void Add(PlatformFee fee) => db.PlatformFees.Add(fee);
+}
+
+/// <summary>EF Core store for the experts' service packages.</summary>
+public sealed class ServiceOfferingRepository(ExpertDbContext db) : IServiceOfferingRepository
+{
+    public Task<ServiceOffering?> FindActiveAsync(
+        Guid profileId,
+        string serviceType,
+        CancellationToken ct
+    ) =>
+        db.ServiceOfferings.SingleOrDefaultAsync(
+            o => o.ExpertProfileId == profileId && o.ServiceType == serviceType && o.IsActive,
+            ct
+        );
+
+    public async Task<IReadOnlyList<ServiceOffering>> ListActiveAsync(
+        Guid profileId,
+        CancellationToken ct
+    ) =>
+        await db
+            .ServiceOfferings.AsNoTracking()
+            .Where(o => o.ExpertProfileId == profileId && o.IsActive)
+            .OrderBy(o => o.ServiceType)
+            .ToListAsync(ct);
+
+    public void Add(ServiceOffering offering) => db.ServiceOfferings.Add(offering);
 }
