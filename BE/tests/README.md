@@ -4,8 +4,8 @@
 |---|---|---|
 | `Caps.Architecture.Tests` | Layer rules (Domain/Application use no framework), services never use each other, `common` never uses a service, controllers never depend on Infrastructure, every layered service is checked, core public types have a summary | `dotnet test Caps.sln` |
 | `Caps.Auth.UnitTests` | Account rules: registration, lockout, email verification, token version, refresh and verification tokens | `dotnet test Caps.sln` |
-| `Caps.Expert.UnitTests` | Application lifecycle, file validation by content, field and birth date rules, missing requirements, availability and turnaround rules | `dotnet test Caps.sln` |
-| `Auth.IntegrationTests` | 89 end-to-end checks through the gateway: sign-up, sessions, CSRF, lockout, emails, RS256/JWKS, session revocation, expert availability and marketplace search (called on the expert service directly), expert application | `run-auth-integration.ps1` |
+| `Caps.Expert.UnitTests` | Application lifecycle, file validation by content, field and birth date rules, missing requirements, availability, service price and platform fee rules | `dotnet test Caps.sln` |
+| `Auth.IntegrationTests` | 124 end-to-end checks through the gateway: sign-up, sessions, CSRF, lockout, emails, RS256/JWKS, session revocation, expert availability, service pricing, platform fees and marketplace search (called on the expert service directly), expert application | `run-auth-integration.ps1` |
 
 ## Unit and architecture tests
 
