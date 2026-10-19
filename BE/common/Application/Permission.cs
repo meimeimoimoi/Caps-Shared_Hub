@@ -24,4 +24,5 @@ public enum Permission
 
     //SYSTEM_ADMIN
     UserManage,
+    PricingManage,
 }
