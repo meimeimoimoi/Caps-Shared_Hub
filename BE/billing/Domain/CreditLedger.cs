@@ -44,10 +44,54 @@ public sealed class CreditLedger
             Note = "Credit top-up",
             CreatedAt = now,
         };
+
+    /// <summary>Credits moved from the balance to held for a review case.</summary>
+    public static CreditLedger EscrowHold(CreditWallet wallet, Escrow escrow, DateTimeOffset now) =>
+        ForEscrow(wallet, escrow, LedgerEntryType.EscrowHold, -escrow.Amount, "hold", now);
+
+    /// <summary>
+    /// Held credits paid out. The balance does not change (amount 0), but the movement is still recorded
+    /// so every wallet change has its ledger entry.
+    /// </summary>
+    public static CreditLedger EscrowRelease(
+        CreditWallet wallet,
+        Escrow escrow,
+        DateTimeOffset now
+    ) => ForEscrow(wallet, escrow, LedgerEntryType.EscrowRelease, 0, "release", now);
+
+    /// <summary>Held credits returned to the balance.</summary>
+    public static CreditLedger EscrowRefund(
+        CreditWallet wallet,
+        Escrow escrow,
+        DateTimeOffset now
+    ) => ForEscrow(wallet, escrow, LedgerEntryType.EscrowRefund, escrow.Amount, "refund", now);
+
+    // One entry per escrow and step: the key is derived from the review case
+    private static CreditLedger ForEscrow(
+        CreditWallet wallet,
+        Escrow escrow,
+        string entryType,
+        long amount,
+        string step,
+        DateTimeOffset now
+    ) =>
+        new()
+        {
+            UserId = wallet.UserId,
+            EntryType = entryType,
+            Amount = amount,
+            BalanceAfter = wallet.Balance,
+            IdempotencyKey = $"escrow:{escrow.ReviewCaseId}:{step}",
+            Note = $"Escrow {step} ({escrow.Amount} held for review case {escrow.ReviewCaseId})",
+            CreatedAt = now,
+        };
 }
 
 /// <summary>Kinds of wallet movement.</summary>
 public static class LedgerEntryType
 {
     public const string Topup = "TOPUP";
+    public const string EscrowHold = "ESCROW_HOLD";
+    public const string EscrowRelease = "ESCROW_RELEASE";
+    public const string EscrowRefund = "ESCROW_REFUND";
 }

@@ -26,6 +26,8 @@ public static class DependencyInjection
         services.AddScoped<IBankAccountRepository, BankAccountRepository>();
         services.AddScoped<IPaymentTransactionRepository, PaymentTransactionRepository>();
         services.AddScoped<IPayoutRepository, PayoutRepository>();
+        services.AddScoped<IEscrowRepository, EscrowRepository>();
+        services.AddScoped<ISettlementRepository, SettlementRepository>();
         services.AddSingleton<IAccountNumberProtector, AccountNumberProtector>();
         services.AddHttpClient<IPaymentGateway, PayOsClient>(
             (sp, http) =>

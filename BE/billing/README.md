@@ -6,8 +6,9 @@ It does **not** own accounts (auth), review cases themselves (workflow) or exper
 
 ## Status
 
-Built: wallet and ledger reads, payout bank accounts, PayOS credit top-ups (link + webhook) and the staff payout
-list. Escrow, settlements, payout transfers and disputes have tables only: their entities have no behavior yet.
+Built: wallet and ledger reads, payout bank accounts, PayOS credit top-ups (link + webhook), the staff payout
+list and escrow: hold (use case only, no endpoint until workflow sends the case fee), staff release (settlement +
+PENDING expert payout) and staff refund. Payout transfers and disputes have tables only.
 
 | Entity | Purpose |
 |---|---|
@@ -27,15 +28,19 @@ list. Escrow, settlements, payout transfers and disputes have tables only: their
 | POST | `/api/v1/billing/payos/create-topup` | signed in, session check | 10,000–50,000,000 VND; link lives 15 minutes |
 | POST | `/api/v1/billing/payos/webhook` | anonymous, HMAC signature | called by PayOS; unknown orders are acknowledged |
 | GET | `/api/v1/admin/billing/payouts` | `PayoutManage`, session check | optional `status`, paging as the ledger |
+| POST | `/api/v1/admin/billing/escrows/{reviewCaseId}/release` | `PayoutManage`, session check | `expertUserId`, `platformFeePct` (0–100, fee rounded down) |
+| POST | `/api/v1/admin/billing/escrows/{reviewCaseId}/refund` | `PayoutManage`, session check | held credits back to the payer's balance |
 
 ## Rules to keep when changing code
 
 - Changes to a user's wallet or bank accounts run in a transaction and take `IBillingUserLock` first.
   `FindForUpdateAsync` / `ListForUpdateAsync` do not lock rows themselves; they are only safe after that lock.
-- Lock order: the webhook locks the payment row (`FOR UPDATE`) and then the user lock. New flows that touch
-  both must use the same order, or they can deadlock.
+- Lock order: a row first (`FOR UPDATE`: the payment in the webhook, the escrow in release/refund), then the
+  user lock. New flows that touch both must use the same order, or they can deadlock.
 - Every wallet change writes exactly one `CreditLedger` row with a unique `IdempotencyKey`
-  (top-up: `payos:<orderCode>`), so a repeated notification can never credit twice.
+  (top-up: `payos:<orderCode>`; escrow: `escrow:<reviewCaseId>:hold|release|refund`), so a repeated notification
+  can never credit twice. Hold moves credits from `Balance` to `Held`; release takes them out of `Held`
+  (ledger amount 0); refund moves them back to `Balance`.
 - A FAILED payment can still become SUCCEEDED from the webhook: the link may exist even though its response was lost.
 - PayOS is called over plain `HttpClient`; signatures are made in `PayOsSignature` (no SDK). The webhook reads the
   raw body because the signature covers the exact JSON.

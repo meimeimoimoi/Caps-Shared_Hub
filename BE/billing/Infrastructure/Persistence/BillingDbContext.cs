@@ -102,6 +102,8 @@ public sealed class BillingDbContext(DbContextOptions<BillingDbContext> options)
             e.ToTable("escrow");
             e.HasKey(x => x.Id);
             e.Property(x => x.Id).HasColumnName("id");
+            e.Property(x => x.UserId).HasColumnName("user_id");
+            e.HasIndex(x => x.UserId);
             e.Property(x => x.ReviewCaseId).HasColumnName("review_case_id");
             e.HasIndex(x => x.ReviewCaseId).IsUnique();
             e.Property(x => x.Amount).HasColumnName("amount");

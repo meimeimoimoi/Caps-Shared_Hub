@@ -8,7 +8,7 @@ namespace Caps.Billing.Application.Features.Payouts;
 /// <summary>Lists payouts for staff, optionally only those in one status.</summary>
 public sealed record ListPayoutsQuery(string? Status, int Page, int PageSize);
 
-/// <summary>Newest first; an empty page until settlements start creating payouts.</summary>
+/// <summary>Newest first; released escrows create the expert payouts.</summary>
 public sealed class ListPayoutsHandler(IPayoutRepository payouts)
     : IQueryHandler<ListPayoutsQuery, PayoutPageResponse>
 {
@@ -28,22 +28,7 @@ public sealed class ListPayoutsHandler(IPayoutRepository payouts)
             query.PageSize,
             ct
         );
-        var items = page.Select(x => new PayoutResponse(
-                x.Id.ToString(),
-                x.SettlementId.ToString(),
-                x.PayoutType,
-                x.RecipientUserId.ToString(),
-                x.Amount,
-                x.SnapBankName,
-                x.SnapAccountLast4,
-                x.SnapHolderName,
-                x.Status,
-                x.AttemptCount,
-                x.LastError,
-                x.CreatedAt,
-                x.CompletedAt
-            ))
-            .ToArray();
+        var items = page.Select(PayoutResponse.From).ToArray();
         return new PayoutPageResponse(items, query.Page, query.PageSize, total);
     }
 }

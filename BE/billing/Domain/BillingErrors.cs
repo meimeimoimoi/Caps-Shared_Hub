@@ -58,6 +58,29 @@ public static class BillingErrors
     public static AppException PaymentAlreadySucceeded() =>
         new(ErrorType.Conflict, "PAYMENT_ALREADY_SUCCEEDED", "The payment has already succeeded.");
 
+    public static AppException InsufficientCredits() =>
+        new(ErrorType.Conflict, "INSUFFICIENT_CREDITS", "The wallet balance is not enough.");
+
+    public static AppException EscrowNotFound() =>
+        new(ErrorType.NotFound, "ESCROW_NOT_FOUND", "No escrow exists for this review case.");
+
+    public static AppException EscrowAlreadyExists() =>
+        new(
+            ErrorType.Conflict,
+            "ESCROW_ALREADY_EXISTS",
+            "Credits are already held for this review case."
+        );
+
+    public static AppException EscrowNotHeld() =>
+        new(ErrorType.Conflict, "ESCROW_NOT_HELD", "The escrow has already been settled.");
+
+    public static AppException InvalidPlatformFee() =>
+        new(
+            ErrorType.Validation,
+            "INVALID_PLATFORM_FEE",
+            "The platform fee must be between 0 and 100 percent."
+        );
+
     public static AppException PaymentAmountMismatch() =>
         new(
             ErrorType.Conflict,

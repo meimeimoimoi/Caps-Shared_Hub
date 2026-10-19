@@ -113,7 +113,7 @@ namespace Caps.Billing.Infrastructure.Persistence.Migrations
                         .IsUnique()
                         .HasFilter("is_default AND deleted_at IS NULL");
 
-                    b.HasIndex(new[] { "UserId", "AccountNumberHash" }, "ux_bank_account_number")
+                    b.HasIndex(new[] { "UserId", "BankBin", "AccountNumberHash" }, "ux_bank_account_number")
                         .IsUnique()
                         .HasFilter("deleted_at IS NULL");
 
@@ -315,10 +315,16 @@ namespace Caps.Billing.Infrastructure.Persistence.Migrations
                         .HasColumnName("updated_at")
                         .HasDefaultValueSql("now()");
 
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
                     b.HasKey("Id");
 
                     b.HasIndex("ReviewCaseId")
                         .IsUnique();
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("escrow", "billing");
                 });
