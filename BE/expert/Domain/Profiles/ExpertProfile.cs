@@ -33,9 +33,6 @@ public sealed class ExpertProfile
     /// <summary>VERIFIED rate (percent) that puts an expert in the top ranking tier.</summary>
     public const int VerifiedTargetPercent = 80;
 
-    /// <summary>Longest delivery promise an expert may give (30 days).</summary>
-    public const int MaxTurnaroundHours = 720;
-
     private ExpertProfile() { }
 
     public Guid Id { get; } = UuidV7.NewGuid();
@@ -72,7 +69,10 @@ public sealed class ExpertProfile
     public int VerifiedCount { get; }
 
     public string? EligibilityNote { get; }
-    public int? TurnaroundHours { get; private set; }
+
+    /// <summary>Unused: each service offering has its own turnaround. Kept until the team drops the column.</summary>
+    public int? TurnaroundHours { get; }
+
     public decimal RatingAvg { get; }
     public int RatingCount { get; }
     public Guid? ApprovedBy { get; private set; }
@@ -130,20 +130,11 @@ public sealed class ExpertProfile
     {
         if (capacity < 1 || capacity > MaxCapacity)
             throw ExpertErrors.CapacityInvalid(MaxCapacity);
-        // Pausing is always allowed; taking cases needs something to sell and a delivery promise
-        if (accepting && (activeOfferings == 0 || TurnaroundHours is null))
+        // Pausing is always allowed; taking cases needs at least one service to sell
+        if (accepting && activeOfferings == 0)
             throw ExpertErrors.NotReadyToAccept();
         ServiceStatus = accepting ? ExpertServiceStatus.Active : ExpertServiceStatus.Inactive;
         Capacity = capacity;
-        UpdatedAt = now;
-    }
-
-    /// <summary>Hours the expert promises from starting a review to delivering it (sets the case deadline).</summary>
-    public void SetTurnaroundHours(int hours, DateTimeOffset now)
-    {
-        if (hours < 1 || hours > MaxTurnaroundHours)
-            throw ExpertErrors.TurnaroundInvalid(MaxTurnaroundHours);
-        TurnaroundHours = hours;
         UpdatedAt = now;
     }
 

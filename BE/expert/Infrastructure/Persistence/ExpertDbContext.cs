@@ -19,6 +19,9 @@ public sealed class ExpertDbContext(DbContextOptions<ExpertDbContext> options) :
     public DbSet<ExpertEvidence> ExpertEvidences => Set<ExpertEvidence>();
     public DbSet<ExpertCompetencyAssessment> ExpertCompetencyAssessments =>
         Set<ExpertCompetencyAssessment>();
+
+    public DbSet<PlatformFee> PlatformFees => Set<PlatformFee>();
+
     public DbSet<ServiceOffering> ServiceOfferings => Set<ServiceOffering>();
     public DbSet<AvailabilitySlot> AvailabilitySlots => Set<AvailabilitySlot>();
 
@@ -187,7 +190,14 @@ public sealed class ExpertDbContext(DbContextOptions<ExpertDbContext> options) :
 
         modelBuilder.Entity<ServiceOffering>(e =>
         {
-            e.ToTable("service_offering");
+            e.ToTable(
+                "service_offering",
+                t =>
+                    t.HasCheckConstraint(
+                        "ck_offering_values",
+                        "fee > 0 AND turnaround_hours BETWEEN 1 AND 720"
+                    )
+            );
             e.HasKey(x => x.Id);
             e.Property(x => x.Id).HasColumnName("id");
             e.Property(x => x.ExpertProfileId).HasColumnName("expert_profile_id");
@@ -202,6 +212,34 @@ public sealed class ExpertDbContext(DbContextOptions<ExpertDbContext> options) :
                 .HasForeignKey(x => x.ExpertProfileId)
                 .OnDelete(DeleteBehavior.Restrict)
                 .HasConstraintName("fk_service_offering_profile");
+            e.Property(x => x.TurnaroundHours)
+                .HasColumnName("turnaround_hours")
+                .HasDefaultValue(48);
+            // One active package per service per expert, even if two saves race
+            e.HasIndex(x => new { x.ExpertProfileId, x.ServiceType })
+                .IsUnique()
+                .HasFilter("is_active")
+                .HasDatabaseName("ux_offer_one_per_type");
+        });
+
+        modelBuilder.Entity<PlatformFee>(e =>
+        {
+            e.ToTable(
+                "platform_fee",
+                t => t.HasCheckConstraint("ck_platform_fee_percent", "percent BETWEEN 0 AND 99")
+            );
+            e.HasKey(x => x.Id);
+            e.Property(x => x.Id).HasColumnName("id");
+            e.Property(x => x.ServiceType)
+                .HasColumnName("service_type")
+                .HasMaxLength(50)
+                .IsRequired();
+            e.Property(x => x.Percent).HasColumnName("percent");
+            e.Property(x => x.EffectiveFrom).HasColumnName("effective_from");
+            e.Property(x => x.SetBy).HasColumnName("set_by");
+            // "Current rate of a service" = latest effective_from per service_type
+            e.HasIndex(x => new { x.ServiceType, x.EffectiveFrom })
+                .HasDatabaseName("ix_platform_fee_current");
         });
 
         modelBuilder.Entity<AvailabilitySlot>(e =>

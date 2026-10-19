@@ -3,18 +3,63 @@ using Caps.Expert.Domain.Profiles;
 
 namespace Caps.Expert.Domain.Catalog;
 
-/// <summary>A service an approved expert sells; managed by a later phase (no API yet).</summary>
+/// <summary>A service an approved expert sells at a price and delivery time the expert chooses.</summary>
 public sealed class ServiceOffering
 {
+    // ponytail: price limits guard against typos only; tune them when the business sets real bounds
+    public const long MinFee = 10_000;
+    public const long MaxFee = 1_000_000_000;
+    public const long FeeStep = 1_000;
+    public const int MaxTurnaroundHours = 720;
+
     private ServiceOffering() { }
 
     public Guid Id { get; } = UuidV7.NewGuid();
-    public Guid ExpertProfileId { get; }
+    public Guid ExpertProfileId { get; private set; }
     public ExpertProfile ExpertProfile { get; } = default!;
-    public string ServiceType { get; } = default!;
-    public long Fee { get; }
+    public string ServiceType { get; private set; } = default!;
+    public long Fee { get; private set; }
+
+    /// <summary>Hours from starting the review to delivering it; sets the case deadline.</summary>
+    public int TurnaroundHours { get; private set; }
     public bool IsActive { get; } = true;
-    public DateTimeOffset CreatedAt { get; }
+    public DateTimeOffset CreatedAt { get; private set; }
+
+    /// <summary>Starts selling a service; it must be one the administrator opened (has a platform fee).</summary>
+    public static ServiceOffering Create(
+        Guid expertProfileId,
+        PlatformFee rate,
+        long fee,
+        int turnaroundHours,
+        DateTimeOffset now
+    )
+    {
+        Validate(fee, turnaroundHours);
+        return new()
+        {
+            ExpertProfileId = expertProfileId,
+            ServiceType = rate.ServiceType,
+            Fee = fee,
+            TurnaroundHours = turnaroundHours,
+            CreatedAt = now,
+        };
+    }
+
+    /// <summary>New price and delivery time; cases already booked keep the price they were booked at.</summary>
+    public void Reprice(long fee, int turnaroundHours)
+    {
+        Validate(fee, turnaroundHours);
+        Fee = fee;
+        TurnaroundHours = turnaroundHours;
+    }
+
+    private static void Validate(long fee, int turnaroundHours)
+    {
+        if (fee is < MinFee or > MaxFee || fee % FeeStep != 0)
+            throw ExpertErrors.FeeInvalid(MinFee, MaxFee, FeeStep);
+        if (turnaroundHours is < 1 or > MaxTurnaroundHours)
+            throw ExpertErrors.TurnaroundInvalid(MaxTurnaroundHours);
+    }
 }
 
 /// <summary>A time slot an expert can be booked for; managed by a later phase (no API yet).</summary>

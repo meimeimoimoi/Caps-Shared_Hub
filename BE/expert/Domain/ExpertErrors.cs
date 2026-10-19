@@ -105,7 +105,7 @@ public static class ExpertErrors
         new(
             ErrorType.RuleViolation,
             "NOT_READY_TO_ACCEPT",
-            "Set at least one service price and your turnaround time before taking cases."
+            "Set at least one service price before taking cases."
         );
 
     public static AppException TurnaroundInvalid(int max) =>
@@ -113,5 +113,40 @@ public static class ExpertErrors
             ErrorType.Validation,
             "TURNAROUND_INVALID",
             $"Turnaround must be between 1 and {max} hours."
+        );
+
+    public static AppException ServiceTypeInvalid() =>
+        new(
+            ErrorType.Validation,
+            "SERVICE_TYPE_INVALID",
+            "Service code must be lowercase letter, digits and dashes (e.g. cit-review), at most 50 characters."
+        );
+
+    public static AppException ServiceTypeUnknown() =>
+        new(
+            ErrorType.NotFound,
+            "SERVICE_TYPE_UNKNOWN",
+            "This service is not open for pricing yet."
+        );
+
+    public static AppException PlatformFeeInvalid(int max) =>
+        new(
+            ErrorType.Validation,
+            "PLATFORM_FEE_INVALID",
+            $"Platform fee must be between 0 and {max} percent."
+        );
+
+    public static AppException FeeInvalid(long min, long max, long step) =>
+        new(
+            ErrorType.Validation,
+            "FEE_INVALID",
+            $"Fee must be between {min} and {max} VND, in steps of {step}."
+        );
+
+    public static AppException OfferingConflict() =>
+        new(
+            ErrorType.Conflict,
+            "OFFERING_CONFLICT",
+            "This service was changed at the same time. Reload and try again."
         );
 }

@@ -280,6 +280,42 @@ namespace Caps.Expert.Infrastructure.Persistence.Migrations
                     b.ToTable("expert_competency_assessment", "expert");
                 });
 
+            modelBuilder.Entity("Caps.Expert.Domain.Catalog.PlatformFee", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("EffectiveFrom")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("effective_from");
+
+                    b.Property<int>("Percent")
+                        .HasColumnType("integer")
+                        .HasColumnName("percent");
+
+                    b.Property<string>("ServiceType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("service_type");
+
+                    b.Property<Guid>("SetBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("set_by");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ServiceType", "EffectiveFrom")
+                        .HasDatabaseName("ix_platform_fee_current");
+
+                    b.ToTable("platform_fee", "expert", t =>
+                        {
+                            t.HasCheckConstraint("ck_platform_fee_percent", "percent BETWEEN 0 AND 99");
+                        });
+                });
+
             modelBuilder.Entity("Caps.Expert.Domain.Catalog.ServiceOffering", b =>
                 {
                     b.Property<Guid>("Id")
@@ -310,12 +346,26 @@ namespace Caps.Expert.Infrastructure.Persistence.Migrations
                         .HasColumnType("text")
                         .HasColumnName("service_type");
 
+                    b.Property<int>("TurnaroundHours")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(48)
+                        .HasColumnName("turnaround_hours");
+
                     b.HasKey("Id");
 
                     b.HasIndex("ExpertProfileId", "IsActive")
                         .HasDatabaseName("ix_service_offering_active");
 
-                    b.ToTable("service_offering", "expert");
+                    b.HasIndex("ExpertProfileId", "ServiceType")
+                        .IsUnique()
+                        .HasDatabaseName("ux_offer_one_per_type")
+                        .HasFilter("is_active");
+
+                    b.ToTable("service_offering", "expert", t =>
+                        {
+                            t.HasCheckConstraint("ck_offering_values", "fee > 0 AND turnaround_hours BETWEEN 1 AND 720");
+                        });
                 });
 
             modelBuilder.Entity("Caps.Expert.Domain.Profiles.ExpertProfile", b =>
