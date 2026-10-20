@@ -61,6 +61,9 @@ public static class IngestionErrors
             "effectiveFrom must not be after effectiveTo."
         );
 
+    public static AppException DocumentNotFound() =>
+        new(ErrorType.NotFound, "DOCUMENT_NOT_FOUND", "Document not found.");
+
     public static AppException DocumentDuplicate() =>
         new(ErrorType.Conflict, "DOCUMENT_DUPLICATE", "This file has already been uploaded.");
 

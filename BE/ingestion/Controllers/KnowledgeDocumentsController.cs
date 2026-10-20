@@ -38,6 +38,25 @@ public sealed class KnowledgeDocumentsController(ICurrentUser currentUser) : Con
         return Ok(ApiResponse<PageResponse<DocumentSummaryResponse>>.Ok(documents));
     }
 
+    /// <summary>Returns one document version for the split-screen review.</summary>
+    /// <remarks>
+    /// contentJson is the parsed text shown next to the original: fileUrl streams an uploaded file, while crawled
+    /// documents link to sourceUrl on the crawled site. metadata.ingest is the crawler's suggestion.
+    /// </remarks>
+    /// <response code="200">The document with its legal source and parsed content.</response>
+    /// <response code="403">Missing the KnowledgeManage permission.</response>
+    /// <response code="404">DOCUMENT_NOT_FOUND.</response>
+    [HttpGet("{id:guid}/preview")]
+    public async Task<IActionResult> Preview(
+        Guid id,
+        [FromServices] IQueryHandler<GetDocumentPreviewQuery, DocumentPreviewResponse> handler,
+        CancellationToken ct
+    )
+    {
+        var document = await handler.HandleAsync(new(id), ct);
+        return Ok(ApiResponse<DocumentPreviewResponse>.Ok(document));
+    }
+
     /// <summary>Uploads a legal document file for review (multipart form).</summary>
     /// <remarks>
     /// file: PDF or DOCX up to 20 MB, checked by its content. documentNumber, docType and title describe the
