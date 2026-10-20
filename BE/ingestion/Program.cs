@@ -1,6 +1,7 @@
 using Caps.Common.Api;
 using Caps.Common.Messaging;
 using Caps.Common.Persistence;
+using Caps.Ingestion.Configuration;
 using Caps.Ingestion.Data;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -9,6 +10,7 @@ var postgres = config.GetRequiredConnectionString("Postgres");
 
 builder.Services.AddCommonApi(config, "ingestion");
 builder.Services.AddServiceDatabase<IngestionDbContext>(postgres, "Ingestion", "knowledge");
+builder.Services.AddIngestionStorage(config, builder.Environment);
 
 // Publishes requests for the Python crawler worker (crawler/worker.py); nothing is consumed here
 builder.Services.AddCapsMessaging(config);

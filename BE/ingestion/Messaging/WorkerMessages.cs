@@ -12,3 +12,6 @@ public sealed record CrawlRequested(
     int? TopN,
     bool All
 );
+
+/// <summary>Asks the crawler worker to split an uploaded file into articles and post the content back.</summary>
+public sealed record DocumentParseRequested(Guid DocumentId);

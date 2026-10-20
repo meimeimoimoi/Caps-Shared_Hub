@@ -41,6 +41,29 @@ public static class IngestionErrors
     public static AppException InvalidContentJson() =>
         new(ErrorType.Validation, "INVALID_CONTENT_JSON", "content_json must be a JSON object.");
 
+    public static AppException FileRequired() =>
+        new(ErrorType.Validation, "FILE_REQUIRED", "File is required.");
+
+    public static AppException FileTooLarge(int maxBytes) =>
+        new(
+            ErrorType.Validation,
+            "FILE_TOO_LARGE",
+            $"File must be {maxBytes / 1024 / 1024} MB or smaller."
+        );
+
+    public static AppException FileInvalidType() =>
+        new(ErrorType.Validation, "FILE_INVALID_TYPE", "Only PDF or DOCX files are allowed.");
+
+    public static AppException InvalidEffectivePeriod() =>
+        new(
+            ErrorType.Validation,
+            "INVALID_EFFECTIVE_PERIOD",
+            "effectiveFrom must not be after effectiveTo."
+        );
+
+    public static AppException DocumentDuplicate() =>
+        new(ErrorType.Conflict, "DOCUMENT_DUPLICATE", "This file has already been uploaded.");
+
     public static AppException InternalKeyInvalid() =>
         new(ErrorType.Unauthorized, "INTERNAL_KEY_INVALID", "Missing or wrong internal key.");
 }
