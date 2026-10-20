@@ -17,6 +17,27 @@ public sealed class KnowledgeDocumentsController(ICurrentUser currentUser) : Con
 
     private Guid UserId => currentUser.RequireUserId();
 
+    /// <summary>Lists documents waiting for review (PENDING), oldest first.</summary>
+    /// <remarks>
+    /// page starts at 1; pageSize defaults to 20 and is at most 100. hasContent = false means the worker has not
+    /// split the uploaded file yet; lastError says why it could not.
+    /// </remarks>
+    /// <response code="200">The page with the total number of pending documents.</response>
+    /// <response code="400">INVALID_PAGING.</response>
+    /// <response code="403">Missing the KnowledgeManage permission.</response>
+    [HttpGet("pending")]
+    public async Task<IActionResult> ListPending(
+        [FromServices]
+            IQueryHandler<ListPendingDocumentsQuery, PageResponse<DocumentSummaryResponse>> handler,
+        CancellationToken ct,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20
+    )
+    {
+        var documents = await handler.HandleAsync(new(page, pageSize), ct);
+        return Ok(ApiResponse<PageResponse<DocumentSummaryResponse>>.Ok(documents));
+    }
+
     /// <summary>Uploads a legal document file for review (multipart form).</summary>
     /// <remarks>
     /// file: PDF or DOCX up to 20 MB, checked by its content. documentNumber, docType and title describe the
