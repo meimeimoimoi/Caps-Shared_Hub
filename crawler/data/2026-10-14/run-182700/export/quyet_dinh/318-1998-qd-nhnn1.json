@@ -1,0 +1,602 @@
+{
+  "schema_version": 2,
+  "exported_at": "2026-10-14T18:35:26",
+  "legal_source": {
+    "document_number": "318/1998/QĐ-NHNN1",
+    "doc_type": "Quyết định",
+    "issuing_authority": "Ngân hàng Nhà nước Việt Nam",
+    "title": "Quyết định số 318/1998/QĐ-NHNN1 ban hành Quy định việc lập và gửi báo cáo vay, trả nợ nước ngoài",
+    "metadata": {
+      "source": "vbpl",
+      "source_doc_id": "7451",
+      "detail_url": "https://vbpl.vn/van-ban/chi-tiet/7451",
+      "has_document_number": true,
+      "matched_keywords": [],
+      "keyword_groups": []
+    }
+  },
+  "knowledge_document": {
+    "source": "CRAWL_VBPL",
+    "file_hash": "355bed909d545ff5dced1f6f09d23e913d805bc98dc7d0be234c9f79c53b1993",
+    "file_hash_basis": "text",
+    "issued_date": "1998-09-24",
+    "effective_from": "1998-10-01",
+    "effective_to": "2001-04-01",
+    "content_json": {
+      "parse_status": "PARSED",
+      "preamble": "QUYẾT ĐỊNH\nCỦA THỐNG ĐỐC NGÂN HÀNG NHÀ NƯỚC SỐ 318/1998-QĐ-NHNN1\nNGÀY 24 THÁNG 9 NĂM 1998 BAN HÀNH QUY ĐỊNH VIỆC LẬP VÀ\nGỬI BÁO CÁO VAY, TRẢ NỢ NƯỚC NGOÀI\nTHỐNG ĐỐC NGÂN HÀNG NHÀ NƯỚC\n- Căn cứ Pháp lệnh kế toán và thống kê ngày 10/5/1988;\n- Căn cứ Luật Ngân hàng Nhà nước Việt Nam, Luật các tổ chức tín dụng ngày 12/12/1997;\n- Căn cứ Nghị định số 15/CP ngày 02/3/1993 của Chính phủ về nhiệm vụ, quyền hạn và trách nhiệm quản lý Nhà nước của Bộ, cơ quan ngang Bộ;\n- Theo đề nghị của Vụ trưởng Vụ Nghiên cứu kinh tế.\nQUYẾT ĐỊNH",
+      "chapters": [
+        {
+          "number": null,
+          "title": "",
+          "part": null,
+          "articles": [
+            {
+              "number": "1",
+              "title": "Nay ban hành kèm theo Quyết định này Quy định việc lập và gửi báo cáo vay, trả nợ nước ngoài.",
+              "section": null,
+              "units": []
+            },
+            {
+              "number": "2",
+              "title": "Trung tâm tin học có trách nhiệm mã hoá các chỉ tiêu báo cáo, thiết lập chương trình phần mềm và hướng dẫn về mặt tin học đối với các chỉ tiêu báo cáo quy định tại Điều 3.",
+              "section": null,
+              "units": []
+            },
+            {
+              "number": "3",
+              "title": "Quyết định này có hiệu lực thi hành kể từ ngày 01 tháng 10 năm 1998. Bỏ các chỉ tiêu báo cáo thống kê theo các biểu số E01, E02, E03, E06, E07, E17, E18, E19 và B10A ban hành kèm theo Quyết định số 404/1997/QĐ-NHNN1 ngày 06/12/1997; biểu số 1, 2, 3 ban hành kèm theo Quyết định số 207/QĐ-NH7 ngày 01/7/1997 và biểu số 4 ban hành kèm theo Công văn số 931/1997/CV-NHNN7 ngày 17/11/1997 của Thống đốc Ngân hàng Nhà nước, thay thế bằng các chỉ tiêu báo cáo thống kê theo các biểu số E20, E21, E22, E23 ban hành kèm theo Quyết định này.",
+              "section": null,
+              "units": []
+            },
+            {
+              "number": "4",
+              "title": "Chánh Văn phòng Thống đốc: Vụ trưởng Vụ nghiên cứu kinh tế; Thủ trưởng các đơn vị trực thuộc Ngân hàng Nhà nước Trung ương; Giám đốc chi nhánh Ngân hàng Nhà nước Tỉnh, Thành phố trực thuộc Trung ương; Chủ tịch Hội đồng quản trị, Tổng giám đốc (Giám đốc) các tổ chức tín dụng và các doanh nghiệp chịu trách nhiệm thi hành Quyết định này.",
+              "section": null,
+              "units": [
+                {
+                  "id": "d4-0",
+                  "label": "Mở đầu",
+                  "clause": null,
+                  "point": null,
+                  "text": "QUY ĐỊNH\nVIỆC LẬP VÀ GỬI BÁO CÁO VAY, TRẢ NỢ NƯỚC NGOÀI\n(Ban hành kèm theo Quyết định số 318/1998/QĐ-NHNN1\nngày 24 tháng 9 năm 1998 của Thống đốc Ngân hàng Nhà nước)\nI. BAN HÀNH MỚI: CÁC CHỈ TIÊU THÔNG TIN BÁO CÁO",
+                  "status": "AUTO"
+                },
+                {
+                  "id": "d4-1",
+                  "label": "Khoản 1",
+                  "clause": "1",
+                  "point": null,
+                  "text": "Biểu số E20 \"Báo cáo tổng hợp tình hình bảo lãnh vay vốn nước ngoài\", mã số từ E20110102 đến E2024xx13.",
+                  "status": "AUTO"
+                },
+                {
+                  "id": "d4-2",
+                  "label": "Khoản 2",
+                  "clause": "2",
+                  "point": null,
+                  "text": "Biểu số E21 \"Báo cáo chi tiết tình hình bảo lãnh vay vốn nước ngoài trung, dài hạn\". Gửi báo cáo bằng văn bản.",
+                  "status": "AUTO"
+                },
+                {
+                  "id": "d4-3",
+                  "label": "Khoản 3",
+                  "clause": "3",
+                  "point": null,
+                  "text": "Biểu số E22 \"Báo cáo tổng hợp tình hình vay vốn nước ngoài\", mã số từ E22010101 đến E 22020208.",
+                  "status": "AUTO"
+                },
+                {
+                  "id": "d4-4",
+                  "label": "Khoản 4",
+                  "clause": "4",
+                  "point": null,
+                  "text": "Biểu số E23 \"Báo cáo chi tiết tình hình vay nước ngoài trung và dài hạn không có bảo lãnh của Ngân hàng thương mại\". Gửi báo cáo bằng văn bản.\nII. GIẢI THÍCH NỘI DUNG CÁC MẪU BIỂU.\nBIỂU SỐ E20 \"BÁO CÁO TỔNG HỢP TÌNH HÌNH BẢO LÃNH\nVAY VỐN NƯỚC NGOÀI\"\n- Đơn vị lập báo cáo và nội dung báo cáo: Các Ngân hàng thương mại báo cáo các khoản bảo lãnh cho các doanh nghiệp (không phải là Ngân hàng thương mại).\n- Định kỳ báo cáo: Báo cáo hàng tháng.\nCột 1: Ngân hàng thương mại ghi rõ hình thức bảo lãnh trong trường hợp 4 \"Bảo lãnh dưới hình thức khác\" (Phần ngắn hạn; trung, dài hạn), ví dụ: Ngân hàng ký bảo lãnh trên hối phiếu và các hình thức bảo lãnh khác (nếu có).\nCột 2 (tổng số dư đầu kỳ): Là số tiền đã chấp nhận nợ hoặc đã rút vốn nhưng còn nợ, chưa thanh toán với nước ngoài tại thời điểm đầu kỳ báo cáo.\nCột 3 (số dư quá hạn đầu kỳ): Là số nợ đến hạn nhưng chưa thanh toán cho nước ngoài tại thời điểm đầu kỳ báo cáo.\nCột 4 (số dư Ngân hàng thanh toán thay đầu kỳ): Là số tiền Ngân hàng đã thanh toán cho nước ngoài thay doanh nghiệp, nhưng doanh nghiệp chưa hoàn trả lại cho Ngân hàng tại thời điểm đầu kỳ báo cáo.\nCột 5 (Số tiền cam kết bảo lãnh): Là số tiền cam kết bảo lãnh của Ngân hàng phát sinh thêm trong kỳ báo cáo, cụ thể:\n- Đối với L/C trả chậm: là trị giá L/C trả chậm mở thêm trong kỳ báo cáo.\n- Đối với bảo lãnh phát hành như: Là số tiền Ngân hàng cam kết bảo lãnh theo nội dung thư bảo lãnh.\n- Đối với kỳ phiếu: Là trị giá kỳ phiếu do Ngân hàng phát hành để nhận nợ.\nCột 6 (Số rút vốn): Là số tiền nhận nợ hoặc rút vốn phát sinh trong kỳ, cụ thể:\n- Đối với L/C trả chậm: Là số tiền chấp nhận nợ trên hối phiếu.\n- Đối với bảo lãnh phát hành thư: Là số rút vốn thực tế của doanh nghiệp vay vốn.\n- Đối với kỳ phiếu: Là trị giá kỳ phiếu do Ngân hàng phát hành để nhận nợ.\nCột 7 (tổng số tiền thanh toán): Là số tiền thanh toán cho nước ngoài trong kỳ báo cáo.\nCột 8 (số tiền Ngân hàng thanh toán thay) Là số tiền Ngân hàng phải thanh toán cho nước ngoài thay doanh nghiệp, phát sinh thêm trong kỳ báo cáo. Do đó, số tiền ghi tại cột 8 (chỉ tính riêng số tiền NH thanh toán thay phát sinh tăng, không bù trừ với số tiền NH thanh toán thay phát sinh giảm) là toàn bộ hoặc 1 phần số tiền ghi tại cột 7.\nCột 9 (số tiền quá hạn phát sinh tăng): Là số tiền quá hạn với nước ngoài phát sinh thêm trong kỳ báo cáo (tính riêng số nợ quá hạn phát sinh tăng, không bù trừ với số nợ quá hạn phát sinh giảm).\nCác cột 10, 11, 12: Tương tự như các cột 2, 3, 4, cụ thể cách tính như sau:\nCột 10 = cột 2 + cột 6 - (số tiền thanh toán gốc: 1 phần của cột 7).\nCột 11 = cột 3 + cột 9 - (số tiền quá hạn phát sinh giảm).\nCột 12 = cột 4 + cột 8 - (số tiền thanh toán thay phát sinh giảm).\nCột 13 (nghĩa vụ trả nợ nước ngoài kỳ tiếp theo): Là số tiền phải thanh toán cho nước ngoài trong kỳ báo cáo tiếp theo (đối với những khoản đã nhận nợ hoặc đã rút vốn). Cột này không bao gồm số dư quá hạn tại cột 11.\nBIỂU SỐ E21: \"BÁO CÁO CHI TIẾT TÌNH HÌNH BẢO LÃNH VAY VỐN NƯỚC NGOÀI TRUNG DÀI HẠN\".\n- Đơn vị lập báo cáo: Các Ngân hàng thương mại.\n- Định kỳ báo cáo: Báo cáo hàng quý.\nCột 1:\n- Mã số khoản vay: Là số hiệu khoản vay do Ngân hàng Nhà nước thông báo cho doanh nghiệp và Ngân hàng bảo lãnh. Ngân hàng thương mại phải báo cáo chính xác mã số khoản vay Ngân hàng Nhà nước đã thông báo.\n- Khoản (Tranche): Chỉ áp dụng đối với các khoản vay có nhiều khoản nhỏ với kế hoạch rút vốn, trả nợ, đồng tiền, lãi suất...khác nhau. Các khoản vay có phân chia thành các khoản (tranche) như: Hiệp định tín dụng khung, trong đó các khoản vay riêng lẻ trong khuôn khổ Hiệp định được coi là các khoản; Một số hợp đồng vay vốn nước ngoài khác. Trong trường hợp này, Ngân hàng bảo lãnh phải báo cáo chi tiết từng giao dịch của các khoản đó.\n- Đồng tiền giao dịch: Ghi đồng tiền thực hiện cho từng giao dịch rút vốn hoặc chuyển tiền thanh toán (gốc, lãi, phí) cho nước ngoài trong quý báo cáo. Tương ứng với chỉ tiêu này, ghi ngày thực hiện tại cột 5 và số tiền phát sinh tại các cột 6, 7, 8, 9.\nVí dụ:\n(Đồng tiền giao dịch)\nCột 5\nCột 6\nCách điền:\nUSD\n20/8/98\n100\nNgoài ra, Ngân hàng thương mại ghi rõ hình thức bảo lãnh trong trường hợp 4 \"Bảo lãnh dưới hình thức khác\" (phần IV), ví dụ: Ngân hàng ký bảo lãnh trên hối phiếu và các hình thức bảo lãnh khác (nếu có).\nCột 2 (số dư đầu kỳ): Là số tiền đã chấp nhận nợ hoặc đã rút vốn nhưng còn nợ, chưa thanh toán với nước ngoài tại thời điểm đầu kỳ báo cáo.\nCột 3 (số dư quá hạn đầu kỳ): Là số nợ đến hạn nhưng chưa thanh toán cho nước ngoài tại thời điểm đầu kỳ báo cáo.\nCột 4 (số dư Ngân hàng thanh toán thay đầu kỳ): Là số tiền Ngân hàng đã thanh toán cho nước ngoài thay doanh nghiệp, nhưng doanh nghiệp chưa hoàn trả lại cho Ngân hàng tại thời điểm đầu kỳ báo cáo.\nCột 5 (ngày thực hiện): Là ngày rút vốn hoặc thanh toán các khoản gốc, lãi, phí trong kỳ báo cáo. Cột này ghi ngày của các khoản phát sinh tại các cột 6,7,8,9\nCột 6 (số rút vốn): Là số tiền nhận nợ hoặc rút vốn phát sinh trong kỳ, cụ thể:\n- Đối với L/C trả chậm: Là số tiền chậm nhận nợ trên hối phiếu.\n- Đối với bảo lãnh phát hành thư: Là số rút vốn thực tế của doanh nghiệp vay vốn.\n- Đối với kỳ phiếu: Là trị giá kỳ phiếu do Ngân hàng phát hành để nhận nợ.\nCột 7, 8, 9: Tương ứng là số tiền gốc, lãi, phí đã thanh toán cho nước ngoài trong kỳ báo cáo.\nCột 10 (số tiền Ngân hàng thanh toán thay): Là số tiền Ngân hàng đã thanh toán cho nước ngoài thay doanh nghiệp phát sinh thêm trong kỳ báo cáo. Do đó, số tiền ghi tại cột 9 là một phần (hoặc toàn bộ) tổng số tiền ghi tại cột 7, 8, 9.\nCột 11 (số tiền quá hạn phát sinh tăng): Là số tiền quá hạn với nước ngoài phát sinh thêm trong kỳ báo cáo (tính riêng số nợ quá hạn phát sinh tăng, không bù trừ với số nợ quá hạn phát sinh giảm).\nCác cột 12, 13, 14: Tương tự như các cột 2, 3, 4, cụ thể cách tính như sau:\nCột 12 = cột 2 + cột 6 - cột 7\nCột 13 = cột 3 + cột 11 - (số tiền quá hạn phát sinh giảm)\nCột 14 = cột 4 + cột 10 - (số tiền thanh toán thay phát sinh giảm)\nBIỂU SỐ E22: BÁO CÁO TỔNG HỢP TÌNH HÌNH VAY VỐN\nNƯỚC NGOÀI.\n- Đơn vị lập báo cáo: Các Ngân hàng thương mại.\n- Định kỳ báo cáo: Báo cáo hàng tháng.\nĐối với Phần I (biểu số E22): Ngân hàng vay nước ngoài:\nNgân hàng thương mại báo cáo Ngân hàng Nhà nước về các khoản vay ngắn , trung dài hạn (có hoặc không có bảo lãnh của Ngân hàng khác) mà ngân hàng đó vay. Các hình thức vay nước ngoài của Ngân hàng thương mại bao gồm: Vay trực tiếp qua hợp đồng tín dụng, thấu chi tài khoản, Hiệp định tín dụng khung...\nCột 2 (số dư đầu kỳ): Là số vốn Ngân hàng đã rút vốn nhưng chưa thanh toán với nước ngoài tại thời điểm đầu kỳ báo cáo.\nCột 3 (số dư quá hạn đầu kỳ): Là số nợ đến hạn nhưng Ngân hàng chưa thanh toán cho nước ngoài tại thời điểm đầu kỳ báo cáo.\nCột 4 (số rút vốn): Là số tiền Ngân hàng đã rút trong kỳ báo cáo.\nCột 5 (số tiền thanh toán cho nước ngoài): Là số tiền (gốc,lãi, phí,) Ngân hàng đã thanh toán cho nước ngoài trong kỳ báo cáo.\nCột 6 (số tiền quá hạn PS tăng): là số tiền quá hạn với nước ngoài phát sinh thêm trong kỳ báo cáo (tính riêng số nợ quá hạn phát sinh tăng, không bù trừ với số nợ quá hạn phát sinh giảm).\nCác cột 7, 8: Tương tự như các cột 2, 3, cụ thể cách tính như sau:\nCột 7 = cột 2 + cột 4 - (số tiền thanh toán gốc:1 phần của cột 5)\nCột 8 = Cột 3 + cột 6 - (số tiền quá hạn PS giảm)\nCột 9 (nghĩa vụ trả nợ nước ngoài kỳ tiếp theo): Là số tiền Ngân hàng phải thanh toán cho nước ngoài trong kỳ báo cáo tiếp theo (đối với những khoản vay đã thực hiện rút vốn ). Cột này không bao gồm số dư quá hạn tại cột 8.\nĐối với Phần II (biểu số E22): Doanh nghiệp vay nước ngoài:\nNgân hàng thương mại phải theo dõi và báo cáo tổng hợp cho Ngân hàng Nhà nước các chỉ tiêu trong mẫu biểu đối với các khoản vay của doanh nghiệp (không phải Ngân hàng thương mại) không có bảo lãnh của Ngân hàng thương mại, Ngân hàng thương mại chỉ làm dịch vụ thanh toán, chuyển tiền (kể cả những khoản vay do Ngân hàng Nhà nước bảo lãnh). Các khoản vay của doanh nghiệp không có bảo lãnh của Ngân hàng thương mại bao gồm: Vay trực tiếp, nhờ thu chấp nhận hối phiếu, thanh toán ghi sổ...\nBIỂU SỐ E23: BÁO CÁO CHI TIẾT TÌNH HÌNH VAY NƯỚC NGOÀI TRUNG VÀ DÀI HẠN KHÔNG CÓ BẢO LÃNH CỦA NGÂN HÀNG THƯƠNG MẠI.\n- Đơn vị lập báo cáo: Các doanh nghiệp báo cáo trực tiếp cho vụ Quản lý Ngoại hối - Ngân hàng Nhà nước đối với các khoản vay nước ngoài không có bảo lãnh của Ngân hàng thương mại; Các Ngân hàng thương mại báo cáo các khoản vay nước ngoài của mình (có hoặc không có bảo lãnh của Ngân hàng thương mại khác).\n- Định kỳ báo cáo: Báo cáo hàng quý.\nCột 1:\n- Mã số khoản vay: Là số hiệu khoản vay do Ngân hàng Nhà nước thông báo cho đơn vị lập báo cáo.\n- Khoản (tranche): chỉ áp dụng đối với những khoản vay có nhiều khoản nhỏ với kế hoạch rút vốn, trả nợ, đồng tiền, lãi suất... khác nhau. Các khoản vay có phân chia thành các khoản (tranche) như: Hiệp định tín dụng khung, trong đó các khoản vay riêng lẻ trong khuôn khổ Hiệp định được coi là các khoản; Một số hợp đồng vay vốn nước ngoài khác. Trong trường hợp này, đơn vị lập báo cáo phải báo cáo chi tiết từng giao dịch của các khoản vay đó.\n- Đồng tiền giao dịch: ghi đồng tiền thực hiện cho từng giao dịch rút vốn hoặc chuyển tiền thanh toán (gốc, lãi, phí) cho nước ngoài trong quý báo cáo. Tương ứng với chỉ tiêu này, ghi ngày thực hiện tại cột 4 và số tiền phát sinh tại các cột 5, 6, 7, 8.\nVí dụ:\n(Đồng tiền giao dịch)\nCột 4\nCột 6\nCách điền:\nUSD\n20/8/98\n100\nCột 2 (Số dư đầu kỳ): Là số vốn đã rút nhưng còn nợ, chưa thanh toán với nước ngoài tại thời điểm đầu kỳ báo cáo.\nCột 3 (Số dư quá hạn đầu kỳ): Là số nợ đến hạn nhưng chưa thanh toán cho nước ngoài tại thời điểm đầu kỳ báo cáo.\nCột 4 (ngày thực hiện): Là ngày rút vốn hoặc thanh toán các khoản gốc, lãi, phí trong kỳ báo cáo. Cột này ghi ngày của các khoản phát sinh tại các cột 5, 6, 7, 8.\nCột 5 (số rút vốn): Là số tiền Ngân hàng đã rút trong kỳ báo cáo. Cột 6, 7, 8: Tương ứng là số tiền gốc, lãi, phí đã thanh toán cho nước ngoài trong kỳ báo cáo.\nCột 9 (số tiền quá hạn PS tăng): Là số tiền quá hạn với nước ngoài phát sinh thêm trong kỳ báo cáo (tính riêng số nợ quá hạn phát sinh tăng, không bù trừ với số nợ quá hạn phát sinh giảm).\nCác cột 10, 11: Tương tự như các cột 2, 3, cụ thể cách tính như sau:\nCột 10 = cột 2 + cột 5 - cột 6\nCột 11 = cột 3 + cột 9 - (số tiền quá hạn PS giảm)\nIII. QUY ĐỊNH CHUNG VỀ VIỆC LẬP VÀ GỬI BÁO CÁO",
+                  "status": "AUTO"
+                },
+                {
+                  "id": "d4-5",
+                  "label": "Khoản 1",
+                  "clause": "1",
+                  "point": null,
+                  "text": "Đối với các biểu báo cáo số E20 và E22: đơn vị lập báo cáo phải báo cáo chính xác theo mã số khoản vay. Ngân hàng Nhà nước sẽ thông báo mã số cho doanh nghiệp vay và Ngân hàng bảo lãnh sau khi ban hành các mẫu báo cáo này.",
+                  "status": "WARNING",
+                  "warning": "Khoản 1 đứng sau Khoản 4 (dự kiến Khoản 5)"
+                },
+                {
+                  "id": "d4-6",
+                  "label": "Khoản 2",
+                  "clause": "2",
+                  "point": null,
+                  "text": "Việc gửi báo cáo thực hiện như sau:",
+                  "status": "AUTO"
+                },
+                {
+                  "id": "d4-7",
+                  "label": "Khoản 2 · Điểm a",
+                  "clause": "2",
+                  "point": "a",
+                  "text": "Đối với các báo cáo hàng tháng theo biểu số E20 và biểu số E22 của Ngân hàng thương mại.\n- Trước mắt, khi NHNNVN chưa thực hiện việc truyền các chỉ tiêu báo cáo qua mạng máy tính, hàng tháng chậm nhất vào ngày 10 của tháng tiếp theo, các Ngân hàng thương mại (kể cả Hội sở chính và Chi nhánh trực thuộc) thực hiện gửi báo cáo bằng văn bản như sau:\nTrụ sở chính các Ngân hàng thương mại tổng hợp số liệu báo cáo toàn hệ thống gửi vụ Quản lý Ngoại hối - Ngân hàng Nhà nước Trung ương; Hội sở, Chi nhánh các Ngân hàng thương mại gửi báo cáo cho Chi nhánh Ngân hàng Nhà nước Tỉnh, Thành phố để tổng hợp và sử dụng tại địa phương.\n- Khi Trung tâm tin học NHNNVN đã thực hiện được việc truyền các chỉ tiêu báo cáo qua mạng máy tính, việc gửi các chỉ tiêu báo cáo được thực hiện như sau:\nHàng tháng, chậm nhất vào ngày 10 của tháng tiếp theo, trụ sở chính các Ngân hàng thương mại tổng hợp số liệu của toàn hệ thống và truyền cho bộ phận tin học của Chi nhánh NHNN Tỉnh, TP (riêng 4 Ngân hàng thương mại quốc doanh truyền trực tiếp số liệu toàn hệ thống cho Trung tâm tin học NHNNVN); Trong ngày 11, bộ phận tin học của chi nhánh NHNN Tỉnh, TP truyền số liệu toàn hệ thống của từng Ngân hàng thương mại cho Trung tâm tin học NHNNVN; Trong ngày 12, Trung tâm tin học NHNNVN truyền số liệu toàn hệ thống của từng Ngân hàng thương mại cho Vụ Quản lý Ngoại hối (riêng đối với số liệu của 4 Ngân hàng thương mại Quốc doanh, Trung tâm tin học NHNNVN truyền cho Vụ Quản lý Ngoại hối trong ngày 11). Chi nhánh Ngân hàng Nhà nước Tỉnh, Thành phố tổng hợp số liệu của các chi nhánh, hội sở các NNTM trên địa bàn để theo dõi, quản lý và sử dụng tại địa phương, báo cáo Vụ Quản lý Ngoại hối, NHNNVN khi có yêu cầu.",
+                  "status": "AUTO"
+                },
+                {
+                  "id": "d4-8",
+                  "label": "Khoản 2 · Điểm b",
+                  "clause": "2",
+                  "point": "b",
+                  "text": "Đối với các báo cáo hàng quý theo biểu số E21 và biểu số E23 của doanh nghiệp (kể cả NHTM): chậm nhất là ngày 10 của tháng đầu quý tiếp theo, đơn vị lập báo cáo gửi báo bằng văn bản trực tiếp cho Vụ quản lý ngoại hối NHNN; doanh nghiệp (kể cả hội sở NHTM, chi nhánh NHTM) gửi báo cáo cho chi nhánh NHNN tỉnh, thành phố để tổng hợp toàn địa bàn, sử dụng tại địa phương và gửi báo cáo cho Vụ quản lý ngoại hối - NHNN khi có yêu cầu.",
+                  "status": "AUTO"
+                },
+                {
+                  "id": "d4-9",
+                  "label": "Khoản 3",
+                  "clause": "3",
+                  "point": null,
+                  "text": "Về chuyển đổi số dư và tỉ giá quy đổi giữa các đồng tiền; Số dư đầu kỳ báo cáo của tháng (hoặc quý) này phải bằng số dư cuối kỳ báo cáo của tháng (hoặc quý) trước. Khi thực hiện các giao dịch (rút vốn, trả nợ) với những đồng tiền khác nhau, việc chuyển đổi các đồng tiền ra đơn vị thống nhất USD được áp dụng theo tỷ giá chính thức do NHNN công bố vào ngày cuối của kỳ báo cáo.",
+                  "status": "AUTO"
+                },
+                {
+                  "id": "d4-10",
+                  "label": "Khoản 4",
+                  "clause": "4",
+                  "point": null,
+                  "text": "Về đơn vị tính: Tất cả các số liệu báo cáo đều thống nhất lấy đơn vị 1000 ( làm tròn không lấy phần thập phân). Các báo cáo tháng, quý đổi ra 1000 USD; các báo cáo quý lấy đơn vị 1000 nguyên tệ.",
+                  "status": "AUTO"
+                },
+                {
+                  "id": "d4-11",
+                  "label": "Khoản 5",
+                  "clause": "5",
+                  "point": null,
+                  "text": "Về phạm vi báo cáo: Đối với biểu số E20 và biểu số E22, NHTM phải gửi báo cáo theo quy định, kể cả không có số liệu phát sinh trong kỳ báo cáo. Đối với biểu số E21, NHTM phải báo cáo chi tiết từng khoản bảo lãnh, kể cả các khoản không có số liệu phát sinh trong kỳ báo cáo. Đối với biểu số E23, trong trường hợp trong quý báo cáo không có số liệu phát sinh thì đơn vị lập báo cáo chỉ cần có thông báo bằng văn bản, trong đó ghi rõ \" Quý ... khoản vay... (ghi mã số) của doanh nghiệp (hoặc Ngân hàng) X không có số liệu phát sinh\".",
+                  "status": "AUTO"
+                },
+                {
+                  "id": "d4-12",
+                  "label": "Khoản 6",
+                  "clause": "6",
+                  "point": null,
+                  "text": "Thời gian thực hiện báo cáo mới:\n- Đối với báo cáo tháng (biểu số E20, E22), NHTM bắt đầu thực hiện gửi báo cáo số liệu từ tháng 10 năm 1998.\n- Đối với báo cáo quý (biểu số E21, E23), các doanh nghiệp, NHTM bắt đầu thực hiện gửi báo cáo số liệu từ quý IV năm 1998./.\nMã số E20\nBáo cáo tổng hợp tình hình bảo lãnh vay vốn nước ngoài\nE20\nBC tháng - Đơn vị: Quý 1000 USD\nE20110102\nThông số dư đầu kỳ các khoản BL,ngắn hạn h.thức LC trả chậm\nE20110103\nSố dư quá hạn đầu kỳ - BL ngắn hạn - LC trả chậm\nE20110104\nSố dư NH thanh toán thay đầu kỳ -BL ngắn hạn - LC trả chậm\nE20110105\nSố tiền cam kết BL PSinh trong kỳ-BL ngắn hạn-LC trả chậm\nE20110106\nSố rút vốn Psinh trong kỳ- BL ngắn hạn- LC trả chậm\nE20110107\nTổng số tiền t.toán cho N.ngoài-BL ngắn hạn-LC trả chậm\nE20110108\nSố tiền NH t.toán thay trong kỳ-BL ngắn hạn-LC trả chậm\nE20220209\nSố tiền quá hạn PS thêm trong kỳ-BL ngắn hạn-LC trả chậm\nE20110110\nTổng số dư cuối kỳ-BL ngắn hạn-LC trả chậm\nE20110111\nSố dư quá hạn cuối kỳ-BL ngắn hạn-LC trả chậm\nE20110112\nSố dư NH thanh toán thay cuối kỳ-BL ngắn hạn-LC trả chậm\nE20110113\nNghĩa vụ trả nợ N.ngoài kỳ tới-BL ngắn hạn-LC trả chậm\nE20120102\nTổng số dư đầu kỳ các khoản BL ngắn hạn h.thức P.hành thư\nE20120103\nSố dư quá hạn đầu kỳ-BL ngắn hạn-phát hành thư\nE20120104\nSố dư NH thanh toán thay đầu kỳ-BL ngắn hạn-P.hành thư\nE20120105\nSố tiền cam kết BL P.sinh trong kỳ-BL ngắn hạn-P.hành thư\nE20120106\nSố rút vốn P.sinh trong kỳ-BL ngắn hạn-Phát hành thư\nE20120107\nTổng số tiền t.toán N.ngoài-BL ngắn hạn-P.hành thư\nE20120108\nSố tiền NH t.toán thay trong kỳ-BL ngắn hạn-Phát hành thư\nE20120109\nSố tiền quá hạn PS thêm trong kỳ.BL ngắn hạn - P.hành thư\nE20120110\nTổng số dư cuối kỳ-BL ngắn hạn - Phát hành thư\nE20120111\nSố dư quá hạn cuối kỳ - BL ngắn hạn-Phát hành thư\nE20120112\nSố dư NH thanh toán thay cuối kỳ-BL ngắn hạn-Phát hành thư\nE20120113\nNghĩa vụ trả nợ N.ngoài kỳ tới-BL ngắn hạn-Phát hành thư\nE20130102\nT.số dư đầu kỳ các khoản BL ngắn hạn h.t P.hành kỳ phiếu\nE20130103\nSố dư quá hạn đầu kỳ-BL ngắn hạn - PH kỳ phiếu\nE20130104\nSố dư NH thanh toán thay đầu kỳ-BL ngắn hạn-PH kỳ phiếu\nE20130105\nSố tiền cam kết BL P.sinh trong kỳ-BL ngắn hạn-PH kỳ phiếu\nE20130106\nSố rút vốn P.sinh trong kỳ-BL ngắn hạn-PH kỳ phiếu\nE20130107\nTổng số tiền thanh toán cho Nngoài-BL ngắn hạn-PH kỳ phiếu\nE20130108\nSố tiền NH t.toán thay trong kỳ-BL ngắn hạn - PH kỳ phiếu\nE20130109\nSố tiền quá hạn PS thêm trong kỳ-BL ngắn hạn-PH kỳ phiếu\nE20130110\nTổng số dư cuối kỳ-BL ngắn hạn-PH kỳ phiếu\nE20130111\nSố dư quá hạn cuối kỳ-BL ngắn hạn-PH kỳ phiếu\nE20130112\nSố dư NH thanh toán thay cuối kỳ- BL ngắn hạn-PH kỳ phiếu\nE20130113\nNghĩa vụ trả nợ N.ngoài kỳ tới-BL ngắn hạn-PH kỳ phiếu\nE20140101\nTên hình thức BL khác thứ 1 - BL ngắn hạn.\nE20140102\nTổng số dư đầu kỳ-BL ngắn hạn dưới hình thức khác thứ 1\nE20140103\nSố dư quá hạn đầu kỳ. Ngắn hạn-h.thức khác thứ 1\nE20140104\nSố dư NH thanh toán thay đầu kỳ-Ngắn hạn-h.thức khác thứ 1\nE20140105\nSố cam kết BL. Psinh trong kỳ-Ngắn hạn-h.thức khác thứ 1\nE20140106\nSố rút vốn P.sinh trong kỳ-ngắn hạn-h.thức khác thứ 1\nE20140107\nTổng số tiền t.toán cho N.ngoài-ngắn hạn-h.thức khác thứ 1\nE20140108\nSố tiền NH t.toán thay trong kỳ-Ngắn hạn-h.thức khác thứ 1\nE20140109\nSố tiền quá hạn PSthêm trong kỳ-ngắn hạn-H.thức khác thứ 1\nE20140110\nTổng số dư cuối kỳ ngắn hạn-h.thức khác thứ 1\nE20140111\nSố dư quá hạn cuối kỳ ngắn hạn-h.thức khác thứ 1\nE20140112\nSố dư NH thanh toán thay cuối kỳ-Ngắn hạn-h.thức khác thứ1\nE20140113\nNghĩa vụ trả nợ N.ngoài kỳ tới-Ngắn hạn-h.thức khác thứ 1\nE2014xx01\nTên hình thức BL khác thứ xx - loại ngắn hạn\nE2014xx02\nTổng số dư đầu kỳ-BL ngắn hạn dưới hình thức khác thứ xx\nE2014xx03\nSố dư quá hạn đầu kỳ-ngắn hạn-h.thức khác thứ xx\nE2014xx04\nSố dư NHthanh toán thay đầu kỳ-ngắn hạn-h.thức khác thứ xx\nE2014xx05\nSố tiền C.kết BL Psinh trong kỳ-ngắn hạn h.thức khác thứxx\nE2014xx06\nSố rút vốn p.sinh trong kỳ-ngắn hạn-h.thức khác thứ xx\nE2014xx07\nTổngsố tiền t.toán cho N.ngoài-Ngắn hạn-h.thức khác thứ xx\nE2014xx08\nSố tiền NH t.toán thay trong kỳ-ngắn hạn-h.thức khác thứ xx\nE2014xx09\nSố tiền quá hạn PS thêm trongkỳ-ngắn hạn-h.thức khác thứxx\nE2014xx10\nTổng số dư cuối kỳ-ngắn hạn-h.thức khác thứ xx\nE2014xx11\nSố dư quá hạn cuối kỳ-ngắn hạn-h.thức khác thứ xx\nE2014xx12\nSố dư NH t.toán thay cuối kỳ ngắn hạn-h.thức khác thứ xx\nE2014xx13\nNghĩa vụ trả nợ N.ngoài kỳ tới-ngắn hạn-h.thức khác thứ xx\nE20210202\nT.số dư đầu kỳ các khoản BLtrung dài hạn h.thức LC trảchậm\nE20210104\nSố dư NH thanh toán thay đầu kỳ-trung dài hạn-LC trả chậm\nE20210105\nSốtiền cam kết BL Psinh trong kỳ-trung dài hạn-LC trả chậm\nE20210106\nSố rút vốn PSinh trong kỳ-trung dài hạn - LC trả chậm\nE20210107\nTổng số tiền t.toán cho N.ngoài-trung dài hạn-LC trả chậm\nE20210108\nSố tiền NH t.toán thay trong kỳ-trung dài hạn-LC trả chậm\nE20210109\nSố tiền quá hạn PS thêm trong kỳ-trung dài hạn-LC trả chậm\nÊ20210110\nTổng số dư cuối kỳ-trung dài hạn - LC trả chậm\nE20210111\nSố dư quá hạn cuối kỳ-trung dài hạn-LC trả chậm\nE20210112\nSố dư NH t.toán thay cuối kỳ-trung dài hạn-LC trả chậm\nE20210113\nNghĩa vụ trả nợ N.ngoài kỳ tới-trung dài hạn-LC trả chậm\nE20220102\nT.số dư đầu kỳ các khoản BL trung dài hạn h.thức PH thư\nE20220103\nSố dư quá hạn đầu kỳ-trung dài hạn-phát hành thư\nE20220104\nSố dư NH thanh toán thay đầu kỳ-trung dài hạn-p.hành thư\nE20220106\nSố rút vốn phát sinh trong kỳ-trung dài hạn-phát hành thư\nE20220107\nTổng số tiền t.toán chp Nngoài-trung dài hạn-P.hành thư\nE20220108\nSố tiền NH t.toán thay trong kỳ-Trung dài hạn-P.hành thư\nE20220109\nSố tiền quá hạn PS thêm trong kỳ-Trung dài hạn-P.hành thư\nE20220110\nTổng số dư cuối kỳ-trung dài hạn-phát hành thư\nE20220111\nSố dư quá hạn cuối kỳ-Trung dài hạn-phát hành thư\nE20220112\nSố dư NH thanh toán thay cuối kỳ-trung dài hạn-P. hành thư\nE20220113\nNghĩa vụ trả nợ N.ngoài kỳ tới-Trung dài hạn-P.hành thư\nE20230102\nT.số dư đầu kỳ các khoản BLtrung dài hạn h.thức PH kỳphiếu\nE20230103\nSố dư quá hạn đầu kỳ trung dài hạn-PH kỳ phiếu\nE20230104\nSố dư NH t.toán thay đầu kỳ-trung dài hạn-PH kỳ phiếu\nE20230105\nSố tiền cam kết BL PS trong kỳ-trung dài hạn-PH kỳ phiếu.\nE20230106\nSố rút vốn PS trong kỳ-trung dài hạn-PH kỳ phiếu\nE20230107\nTổng số tiền t.toán cho N.ngoài-Trung dài hạn-PH kỳ phiếu\nE20230108\nSố tiền N.hàng TT thay trong kỳ-Trung dài hạn-PH kỳ phiếu\nE20230109\nSố tiền quá hạn PS thêm trong kỳ-trung dài hạn-PHkỳ phiếu\nE20230110\nTổng số dư cuối kỳ-trung dài hạn-PH kỳ phiếu\nE20230111\nSố dư quá hạn cuối kỳ-trung dài hạn-PH kỳ phiếu\nE20230112\nSố dư NH t.toán thay cuối kỳ-trung dài hạn-PH kỳ phiếu\nE20230113\nNghĩa vụ trả nợ N.ngoài kỳ tới-trung dài hạn-PH kỳ phiếu\nE20240101\nTên hình thức BL khác thứ 1 - trung dài hạn\nE20240102\nT.số dư đầu kỳ BL trung dài hạn dưới hình thức khác thứ 1\nE20240103\nSố dư quá hạn đầu kỳ-trung dài hạn-H.thức khác 1\nE20240104\nSố dư NH t.toán thay đầu kỳ-trung dài hạn-h.thức khác 1\nE20240105\nSố tiền cam kết BL-PS trong kỳ-trung dài hạn-h.thức khác 1\nE20240106\nSố rút vốn PS trong kỳ-trung dài hạn-H.thức khác 1\nE20240107\nTổng số tiền t.toán cho N.ngoài-trung dài hạn-h.thức khác1\nE20240108\nSố tiền NH t.toán thay trong kỳ-trung dài hạn-Hthức khác 1\nE20240109\nSố tiền quá hạn PS thêm trong kỳ-Trung dài hạn-HT khác 1\nE20240110\nTổng số dư cuối kỳ-trung dài hạn-hình thức khác 1\nE20240111\nSố dư quá hạn cuối kỳ-trung dài hạn-HT khác 1\nE20240112\nSố dư NH t.toán thay cuối kỳ-trung dài hạn-H.thức khác 1\nE20240113\nNghĩa vụ trả nợ N.ngoài kỳ tới-trung dài hạn-h.thức khác 1\nE2024xx01\nTên hình thức BL khác thứ xx-trung dài hạn\nE2024xx02\nT.số dư đầu kỳ BL trung dài hạn dưới hình thức khác thứ xx\nE0224xx03\nSố dư quá hạn đầu kỳ-trung dài hạn hình thức khác xx\nE2024xx04\nSố dư NH t.toán thay đầu kỳ-trung dài hạn-HT khác xx\nE2024xx05\nSố tiền cam kết BL-PS trong kỳ-trung dài hạn-HT khác xx\nE2024xx06\nSố rút vốn PS trong kỳ-trung dài hạn-hình thức khác xx\nE2024xx07\nTổng số tiền t.toán cho N.ngoài-trung dài hạn-HT khác xx\nE2024xx08\nSố tiền NH t.toán thay trong kỳ-trung dài hạn-HT khác xx\nE2024xx09\nSố tiền quá hạn PS thêm trong kỳ-trung dài hạn HT khác xx\nE2024xx10\nTổng số dư cuối kỳ-trung dài hạn-HT khác xx\nE2024xx11\nSố dư quá hạn cuối kỳ-Trung dài hạn-HT khác xx\nE2024xx12\nSố dư NH t.toán thay cuối kỳ-trung dài hạn-HT khác xx\nE2024xx13\nNghĩa vụ trả nợ nước ngoài kỳ tới-trung dài hạn-HT khác xx\nE22\nBáo cáo tổng hợp tình hình vay vốn nước ngoài\nE22\nBC tháng-đơn vị: Quý 1000 USD\nE22010101\nTổng số dư đầu kỳ các khoản NH vay N.ngoài ngắn hạn\nE22010102\nSố dư quá hạn đầu kỳ các khoản N.hàng vay N.ngoài ngắn hạn\nH22010103\nSố rút vốn p.sinh trong kỳ-N.hàng vay nước ngoài ngắn hạn\nE22010104\nSốtiền t.toán cho N.ngoài trong kỳ-NH vay N.ngoài ngắn hạn\nE22010105\nSố tiền quá hạn PS tăng trong kỳ-NH vay N.ngoài ngắn hạn\nE22010106\nTổng số dư cuối kỳ các khoản NH vay N.ngoài ngắn hạn\nE22010107\nSốdư quá hạn cuối kỳ các khoản N.hàng vay N.ngoài ngắn hạn\nE22010108\nNghĩa vụ trả nợ N.ngoài kỳ tới-N.hàng vay N.ngoài ngắn hạn\nE22010201\nT.số dư đầu kỳ các khoản N.hàng vay N.ngoài trung dài hạn\nE22010202\nSố dư quá hạn đầu kỳ-N.hàng vay N.ngoài trung dài hạn.\nE22010203\nSố rút vốn PS trong kỳ-NH vay nước ngoài trung dài hạn\nE22010204\nSố tiền T.toán cho N.ngoài trong kỳ-NH vay N.ngoài trung dài dạn.\nE22010205\nSố tiền quá hạn PStăng trong kỳ NH vay Nngoài trung dàihạn\nE22010206\nTổng số dư cuối kỳ-N.hàng vay N.ngoài trung dài hạn\nE22010207\nSố dư quá hạn cuối kỳ-N.hàng vay N.ngoài trung dài hạn\nE22010208\nNghĩa vụ trả nợ N.ngoài kỳ tới-NH vay N.ngoài trung dàihạn\nE22020101\nTổng số dư đầu kỳ các khoản D.nghiệp vay N.ngoài ngắn hạn\nE22020102\nSố dư quá hạn đầu kỳ các khoản DN vay N.ngoài ngắn hạn\nE22020103\nSố rút vốn PS trong kỳ-DN vay N.ngoài ngắn hạn\nE22020104\nSố tiền t.toán cho N.ngoài trong kỳ-DN vay N.ngoài ngắnhạn\nE22020105\nSố tiền quá hạn PS tăng trong kỳ-DN vay N.ngoài ngắn hạn\nE22020106\nTổng số dư cuối kỳ các khoản DN vay N.ngoài ngắn hạn\nE22020107\nSố dư quá hạn cuối kỳ các khoản DN vay N.ngoài ngắn hạn\nE22020108\nNghĩa vụ trả nợ N.ngoài kỳ tới-DN vay Nngoài ngắn hạn\nE22020201\nT.số dư đầu kỳ các khoản D.nghiệp vay N.ngoài trung dàihạn\nE22020202\nSố dư quá hạn đầu kỳ-D.nghiệp vay N.ngoài trung dài hạn\nE22020203\nSố rút vốn PS trong kỳ DN vay N.ngoài trung dài hạn\nE22020204\nSố tiền t.toán cho N.ngoài trong kỳ DN vay N.ngoài trung dài hạn.\nE22020205\nSố tiền quá hạn PStăng trong kỳ-DN vay N.ngoài trung dàihạn\nE22020206\nTổng số dư cuối kỳ - DN vay N.ngoài trung dài hạn.\nE22020207\nSố dư quá hạn cuối kỳ-DN vay N.ngoài trung dài hạn\nE22020208\nNghĩa vụ trả nợ N.ngoài kỳ tới DN vay N.ngoài trung dàihạn\nĐơn vị lập báo cáo: ngân hàng...\n(Điện thoại:... Fax:...)\nĐơn vị nhận báo cáo: Vụ QLNH\nBÁO CÁO TỔNG HỢP TÌNH HÌNH BẢO LÃNH VAY VỐN NƯỚC NGOÀI\n(tháng... năm...)\nBIỂU SỐ E20\nĐơn vị: Quy 1000 USD\nChỉ tiêu\nSố dư đầu kỳ\nPhát sinh trong kỳ\nSố dư cuối kỳ\nNghĩa vụ trả nợ nước ngoài kỳ tiếp theo\nTổng số\nTrong đó quá hạn\nNH thanh toán thay\nSố tiền cam kết bảo lãnh\nSố rút vốn\nSố tiền thanh toán cho nước ngoài\nSố tiền quá hạn PS tăng\nTổng số\nTrong đó quá hạn\nNH thanh toán thay\nTổng số\nTrong đó NH thanh toán thay\n1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11\n12\n13\nI. Ngắn hạn (tổng số)",
+                  "status": "AUTO"
+                },
+                {
+                  "id": "d4-13",
+                  "label": "Khoản 1",
+                  "clause": "1",
+                  "point": null,
+                  "text": "L/C trả chậm",
+                  "status": "WARNING",
+                  "warning": "Khoản 1 đứng sau Khoản 6 (dự kiến Khoản 7)"
+                },
+                {
+                  "id": "d4-14",
+                  "label": "Khoản 2",
+                  "clause": "2",
+                  "point": null,
+                  "text": "Bảo lãnh P.hành thư",
+                  "status": "AUTO"
+                },
+                {
+                  "id": "d4-15",
+                  "label": "Khoản 3",
+                  "clause": "3",
+                  "point": null,
+                  "text": "Bảo lãnh P.hành kỳ phiếu.",
+                  "status": "AUTO"
+                },
+                {
+                  "id": "d4-16",
+                  "label": "Khoản 4",
+                  "clause": "4",
+                  "point": null,
+                  "text": "Bảo lãnh dưới hình thức khác\nII. Trung dài hạn (T.số)",
+                  "status": "AUTO"
+                },
+                {
+                  "id": "d4-17",
+                  "label": "Khoản 1",
+                  "clause": "1",
+                  "point": null,
+                  "text": "L/C trả chậm",
+                  "status": "WARNING",
+                  "warning": "Khoản 1 đứng sau Khoản 4 (dự kiến Khoản 5)"
+                },
+                {
+                  "id": "d4-18",
+                  "label": "Khoản 2",
+                  "clause": "2",
+                  "point": null,
+                  "text": "Bảo lãnh P.hành thư",
+                  "status": "AUTO"
+                },
+                {
+                  "id": "d4-19",
+                  "label": "Khoản 3",
+                  "clause": "3",
+                  "point": null,
+                  "text": "Bảo lãnh phát hành kỳ phiếu",
+                  "status": "AUTO"
+                },
+                {
+                  "id": "d4-20",
+                  "label": "Khoản 4",
+                  "clause": "4",
+                  "point": null,
+                  "text": "Bảo lãnh dưới hình thức khác\nIII. Tổng cộng (I+II)\nLập biểu\nKiểm soát\n.... ngày....tháng....năm 19...\n(Ký, ghi rõ họ tên)\n(Ký, ghi rõ họ tên)\n(Ký tên, đóng dấu)\nĐơn vị lập báo cáo\n(Điện thoại:..., Fax:....)\nĐơn vị nhận báo cáo: vụ QLNH\nBIỂU SỐ E21\nBÁO CÁO CHI TIẾT TÌNH HÌNH BẢO LÃNH VAY VỐN NƯỚC NGOÀI TRUNG, DÀI HẠN.\n( Quý ..... năm.....)\nĐơn vị: 1000 nguyên tệ\nChỉ tiêu\nSố dư đầu kỳ\nPhát sinh trong kỳ\nSố dư cuối kỳ\nTổng số\nTrong đó quá hạn\nNH thanh toán thay\nNgày thực hiện\nSố rút vốn\nSố tiền thanh toán cho nước ngoài\nSố tiền NH thanh toán thay\nSố tiềnquá hạn PS tăng\nTổng số\nTrong đó quá hạn\nNH thanh toán thay\nGốc\nLãi\nPhí\n1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11\n12\n13\n14\nI. L/C trả chậm\n* Mã số khoản vay 1\n- Khoản 1\n+ Đồng tiền giao dịch 1\n+ Đồng tiền giao dịch 2\n- Khoản 2\n+ Đồng tiền giao dịch 1\n+ Đồng tiền giao dịch 2\n* Mã số khoản vay 2\n- Khoản 1\n+ Đồng tiền giao dịch 1\n+ Đồng tiền giao dịch 2\n- Khoản 2\n+ Đồng tiền giao dịch 1\n+ Đồng tiền giao dịch 2\nII. Bảo lãnh P.hành thư\n* Mã số khoản vay 1\n- Khoản 1\n+ Đồng tiền giao dịch 1\n+ Đồng tiền giao dịch 2\n- Khoản 2\n+ Đồng tiền giao dịch 1\n+ Đồng tiền giao dịch 2\n* Mã số khoản vay 2\n- Khoản 1\n+ Đồng tiền giao dịch 1\n+ Đồng tiền giao dịch 2\n- Khoản 2\n+ Đồng tiền giao dịch 1\n+ Đồng tiền giao dịch 2\nIII. Bảo lãnh phát hành kỳ phiếu\n* Mã số khoản vay 1\n- Khoản 1\n+ Đồng tiền giao dịch 1\n+ Đồng tiền giao dịch 2\n- Khoản 2\n+ Đồng tiền giao dịch 1\n+ Đồng tiền giao dịch 2\n* Mã số khoản vay 2\n- Khoản 1\n+ Đồng tiền giao dịch 1\n+ Đồng tiền giao dịch 2\n- Khoản 2\n+ Đồng tiền giao dịch 1\n+ Đồng tiền giao dịch 2\nIV. Bảo lãnh dưới hình thức khác.\nA/ Ký bảo lãnh trên hối phiếu.\n* Mã số khoản vay 1\n- Khoản 1\n+ Đồng tiền giao dịch 1\n+ Đồng tiền giao dịch 2\n- Khoản 2\n+ Đồng tiền giao dịch 1\n+ Đồng tiền giao dịch 2\n* Mã số khoản vay 2\n+ Đồng tiền giao dịch 1\n+ Đồng tiền giao dịch 2\n+ Giao dịch 2(đồng tiền)\n- Khoản 2\n+ Đồng tiền giao dịch 1\n+ Đồng tiền giao dịch 2\nB/ ...................\nLập biểu\n(Ký ghi rõ họ tên)\nKiểm soát\n(Ký ghi rõ họ tên)\n...ngày ... tháng...năm .....\nThủ trưởng đơn vị\n(Ký tên đóng dấu)\nĐơn vị lập báo cáo: ngân hàng...\n(Điện thoại:...., Fax:....)\nĐơn vị nhận báo cáo: Vụ quản lý ngoại hối\nBIỂU SỐ E22\nBÁO CÁO TỔNG HỢP TÌNH HÌNH VAY VỐN NƯỚC NGOÀI\n(Tháng... năm...)\nVốn tự có cuối kỳ quy 1000 USD: Đơn vị: Quy 1000 USD\nChỉ tiêu\nSố dư đầu kỳ\nPhát sinh trong kỳ\nSố dư cuối kỳ\nNghĩa vụ trả nợ nước ngoài kỳ tiếp theo\nTổng số\nTrong đó quá hạn\nSố rút vốn\nSố tiền thanh toán cho nước ngoài\nSố tiền quá hạn PS tăng\nTổng số\nTrong đó quá hạn\nI. N.hàng vay nước ngoài(A+B)\nA/ Ngắn hạn (tổng số)\nB/ Trung dài hạn (tổng số)\nII.DN vay nước ngoài (A+B)\nA/ Ngắn hạn (tổng số)\nB/ Trung dài hạn (tổng số)\nGhi chú: \"II. Doanh nghiệp vay nước ngoài\" Là các khoản vay của doanh nghiệp không có bảo lãnh của Ngân hàng:\nNgân hàng chỉ làm dịch vụ chuyển tiền, thanh toán.\nLập biể\nu (Ký,ghi rõ họ tên)\nKiểm soát\n(Ký ghi rõ họ tên)\n... ngày... tháng... năm\nThủ trưởng đơn vị\n(Ký tên, đóng dấu)\nĐơn vị lập báo cáo.....\nĐịa chỉ:\nTel... Fax:...\nĐơn vị nhận báo cáo: Vụ QLNH\nBIỂU SỐ E23\nBÁO CÁO CHI TIẾT TÌNH HÌNH VAY NƯỚC NGOÀI TRUNG VÀ DÀI HẠN KHÔNG CÓ BẢO LÃNH\nCỦA NGÂN HÀNG THƯƠNG MẠI\n( Quý... năm 199...)\nĐơn vị: 1000 nguyên tệ\nChỉ tiêu\nSố dư đầu kỳ\nPhát sinh trong kỳ\nSố dư cuối kỳ\nTổng số\nTrong đó quá hạn\nNgày thực hiện\nSố rút vốn\nSố tiền thành toán cho nước ngoài\nSố tiền quá hạn phát sinh tăng\nTổng số\nTrong đó quá hạn\nGốc\nLãi\nPhí\n1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11\n* Mã số khoản vay 1\n- Khoản 1\n+ Đồng tiền giao dịch 1\n+ Đồng tiền giao dịch 2\n- Khoản 2\n+ Đóng tiền giao dịch 1\n+ Đóng tiền giao dịch 2\n* Mã số khoản vay 2\n- Khoản 1\n+ Đồng tiền giao dịch 1\n+ Đồng tiền giao dịch 2\n- Khoản 2\n+ Đồng tiền giao dịch 1\n+ Đồng tiền giao dịch 2\nLập bảng\n(Ký, ghi rõ họ tên)\nKiểm soát\n(Ký, ghi rõ họ tên)\n... ngày... tháng... năm 199..\nThủ trưởng đơn vị\n(Ký tên, đóng dấu)\nNGÂN HÀNG NHÀ NƯỚC VIỆT NAM\nCỘNG HOÀ XÃ HỘI CHỦ NGHĨA VIỆT NAM\nĐộc lập - Tự do - Hạnh phúc\nVỤ NGHIÊN CỨU KINH TẾ\nSố: 492/NCKT7\nHà nội, ngày 29 tháng 9 năm 1998\nV/v triển khai thực hiện\nQĐ sửa đổi CDTTBC kế toán\nvà thống kê ngân hàng.\nKính gửi: - Ông(Bà) Giám đốc Chi nhánh Ngân hàng\nNhà nước, Tỉnh, Thành phố.\n- Ông(Bà) Tổng giám đốc(Giám đốc) tổ chức tín dụng.\nNgày 24 tháng 9 năm 1998, Thống đốc Ngân hàng Nhà nước đã ký Quyết định số 318/1998/QĐ-NHNN1, ban hành mới các chỉ tiêu báo cáo vay, trả nợ nước ngoài theo các biểu số E20, E21, E22 và E23, áp dụng từ báo cáo tháng 10/1998.\nĐề nghị Ông (Bà) Tổng giám đốc (Giám đốc) tổ chức tín dụng hướng dẫn triển khai thực hiện kịp thời đến các đơn vị trực thuộc trong toàn hệ thống và đến các doanh nghiệp liên quan. Ông (Bà) giám đốc chi nhánh Ngân hàng Nhà nước Tỉnh, Thành phố tổ chức triển khai, chỉ đạo các tổ chức tín dụng trên địa bàn thực hiện tốt Quyết định của Thống đốc Ngân hàng Nhà nước.\nTrong quá trình thực hiện, nếu đơn vị có vướng mắc cần báo cáo kịp thời về NHTW để nghiên cứu, hướng dẫn.",
+                  "status": "AUTO"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "closing": "Nơi nhận: T/L THỐNG ĐỐC NGÂN HÀNG NHÀ NƯỚC\n- Như trên K/T VỤ TRƯỞNG VỤ NGHIÊN CỨU KINH TẾ\n- Lưu VP, Vụ NCKT Phó vụ trưởng\nVũ Đình Cơ",
+      "appendices": [],
+      "warnings": []
+    },
+    "ingest": {
+      "suggested_status": "APPROVED",
+      "pending_reasons": []
+    },
+    "metadata": {
+      "tinh_trang_hieu_luc": "Hết hiệu lực toàn bộ",
+      "text_source": "detail_page_dom",
+      "ocr_required": false,
+      "scraped_at": "2026-10-14T18:32:53.250348",
+      "attachments": []
+    }
+  },
+  "chunks": [
+    {
+      "chunk_index": 0,
+      "article": "1",
+      "clause": null,
+      "point": null,
+      "path": "Điều 1",
+      "part": 1,
+      "total_parts": 1,
+      "char_count": 226,
+      "text": "Quyết định 318/1998/QĐ-NHNN1 — Điều 1. Nay ban hành kèm theo Quyết định này Quy định việc lập và gửi báo cáo vay, trả nợ nước ngoài.\nNay ban hành kèm theo Quyết định này Quy định việc lập và gửi báo cáo vay, trả nợ nước ngoài.",
+      "effective_from": "1998-10-01",
+      "effective_to": "2001-04-01"
+    },
+    {
+      "chunk_index": 1,
+      "article": "2",
+      "clause": null,
+      "point": null,
+      "path": "Điều 2",
+      "part": 1,
+      "total_parts": 1,
+      "char_count": 382,
+      "text": "Quyết định 318/1998/QĐ-NHNN1 — Điều 2. Trung tâm tin học có trách nhiệm mã hoá các chỉ tiêu báo cáo, thiết lập chương trình phần mềm và hướng dẫn về mặt tin học đối với các chỉ tiêu báo cáo quy định tại Điều 3.\nTrung tâm tin học có trách nhiệm mã hoá các chỉ tiêu báo cáo, thiết lập chương trình phần mềm và hướng dẫn về mặt tin học đối với các chỉ tiêu báo cáo quy định tại Điều 3.",
+      "effective_from": "1998-10-01",
+      "effective_to": "2001-04-01"
+    },
+    {
+      "chunk_index": 2,
+      "article": "3",
+      "clause": null,
+      "point": null,
+      "path": "Điều 3",
+      "part": 1,
+      "total_parts": 1,
+      "char_count": 1102,
+      "text": "Quyết định 318/1998/QĐ-NHNN1 — Điều 3. Quyết định này có hiệu lực thi hành kể từ ngày 01 tháng 10 năm 1998. Bỏ các chỉ tiêu báo cáo thống kê theo các biểu số E01, E02, E03, E06, E07, E17, E18, E19 và B10A ban hành kèm theo Quyết định số 404/1997/QĐ-NHNN1 ngày 06/12/1997; biểu số 1, 2, 3 ban hành kèm theo Quyết định số 207/QĐ-NH7 ngày 01/7/1997 và biểu số 4 ban hành kèm theo Công văn số 931/1997/CV-NHNN7 ngày 17/11/1997 của Thống đốc Ngân hàng Nhà nước, thay thế bằng các chỉ tiêu báo cáo thống kê theo các biểu số E20, E21, E22, E23 ban hành kèm theo Quyết định này.\nQuyết định này có hiệu lực thi hành kể từ ngày 01 tháng 10 năm 1998. Bỏ các chỉ tiêu báo cáo thống kê theo các biểu số E01, E02, E03, E06, E07, E17, E18, E19 và B10A ban hành kèm theo Quyết định số 404/1997/QĐ-NHNN1 ngày 06/12/1997; biểu số 1, 2, 3 ban hành kèm theo Quyết định số 207/QĐ-NH7 ngày 01/7/1997 và biểu số 4 ban hành kèm theo Công văn số 931/1997/CV-NHNN7 ngày 17/11/1997 của Thống đốc Ngân hàng Nhà nước, thay thế bằng các chỉ tiêu báo cáo thống kê theo các biểu số E20, E21, E22, E23 ban hành kèm theo Quyết định này.",
+      "effective_from": "1998-10-01",
+      "effective_to": "2001-04-01"
+    },
+    {
+      "chunk_index": 3,
+      "article": "4",
+      "clause": null,
+      "point": null,
+      "path": "Điều 4",
+      "part": 1,
+      "total_parts": 1,
+      "char_count": 589,
+      "text": "Quyết định 318/1998/QĐ-NHNN1 — Điều 4. Chánh Văn phòng Thống đốc: Vụ trưởng Vụ nghiên cứu kinh tế; Thủ trưởng các đơn vị trực thuộc Ngân hàng Nhà nước Trung ương; Giám đốc chi nhánh Ngân hàng Nhà nước Tỉnh, Thành phố trực thuộc Trung ương; Chủ tịch Hội đồng quản trị, Tổng giám đốc (Giám đốc) các tổ chức tín dụng và các doanh nghiệp chịu trách nhiệm thi hành Quyết định này.\nQUY ĐỊNH\nVIỆC LẬP VÀ GỬI BÁO CÁO VAY, TRẢ NỢ NƯỚC NGOÀI\n(Ban hành kèm theo Quyết định số 318/1998/QĐ-NHNN1\nngày 24 tháng 9 năm 1998 của Thống đốc Ngân hàng Nhà nước)\nI. BAN HÀNH MỚI: CÁC CHỈ TIÊU THÔNG TIN BÁO CÁO",
+      "effective_from": "1998-10-01",
+      "effective_to": "2001-04-01"
+    },
+    {
+      "chunk_index": 4,
+      "article": "4",
+      "clause": "1",
+      "point": null,
+      "path": "Điều 4 · Khoản 1",
+      "part": 1,
+      "total_parts": 1,
+      "char_count": 750,
+      "text": "Quyết định 318/1998/QĐ-NHNN1 — Điều 4. Chánh Văn phòng Thống đốc: Vụ trưởng Vụ nghiên cứu kinh tế; Thủ trưởng các đơn vị trực thuộc Ngân hàng Nhà nước Trung ương; Giám đốc chi nhánh Ngân hàng Nhà nước Tỉnh, Thành phố trực thuộc Trung ương; Chủ tịch Hội đồng quản trị, Tổng giám đốc (Giám đốc) các tổ chức tín dụng và các doanh nghiệp chịu trách nhiệm thi hành Quyết định này. — Khoản 1\n1. Biểu số E20 \"Báo cáo tổng hợp tình hình bảo lãnh vay vốn nước ngoài\", mã số từ E20110102 đến E2024xx13.\n1. Đối với các biểu báo cáo số E20 và E22: đơn vị lập báo cáo phải báo cáo chính xác theo mã số khoản vay. Ngân hàng Nhà nước sẽ thông báo mã số cho doanh nghiệp vay và Ngân hàng bảo lãnh sau khi ban hành các mẫu báo cáo này.\n1. L/C trả chậm\n1. L/C trả chậm",
+      "effective_from": "1998-10-01",
+      "effective_to": "2001-04-01"
+    },
+    {
+      "chunk_index": 5,
+      "article": "4",
+      "clause": "2",
+      "point": null,
+      "path": "Điều 4 · Khoản 2",
+      "part": 1,
+      "total_parts": 2,
+      "char_count": 1368,
+      "text": "Quyết định 318/1998/QĐ-NHNN1 — Điều 4. Chánh Văn phòng Thống đốc: Vụ trưởng Vụ nghiên cứu kinh tế; Thủ trưởng các đơn vị trực thuộc Ngân hàng Nhà nước Trung ương; Giám đốc chi nhánh Ngân hàng Nhà nước Tỉnh, Thành phố trực thuộc Trung ương; Chủ tịch Hội đồng quản trị, Tổng giám đốc (Giám đốc) các tổ chức tín dụng và các doanh nghiệp chịu trách nhiệm thi hành Quyết định này. — Khoản 2\n2. Biểu số E21 \"Báo cáo chi tiết tình hình bảo lãnh vay vốn nước ngoài trung, dài hạn\". Gửi báo cáo bằng văn bản.\n2. Việc gửi báo cáo thực hiện như sau:\n2. Bảo lãnh P.hành thư\n2. Bảo lãnh P.hành thư\na) Đối với các báo cáo hàng tháng theo biểu số E20 và biểu số E22 của Ngân hàng thương mại.\n- Trước mắt, khi NHNNVN chưa thực hiện việc truyền các chỉ tiêu báo cáo qua mạng máy tính, hàng tháng chậm nhất vào ngày 10 của tháng tiếp theo, các Ngân hàng thương mại (kể cả Hội sở chính và Chi nhánh trực thuộc) thực hiện gửi báo cáo bằng văn bản như sau:\nTrụ sở chính các Ngân hàng thương mại tổng hợp số liệu báo cáo toàn hệ thống gửi vụ Quản lý Ngoại hối - Ngân hàng Nhà nước Trung ương; Hội sở, Chi nhánh các Ngân hàng thương mại gửi báo cáo cho Chi nhánh Ngân hàng Nhà nước Tỉnh, Thành phố để tổng hợp và sử dụng tại địa phương.\n- Khi Trung tâm tin học NHNNVN đã thực hiện được việc truyền các chỉ tiêu báo cáo qua mạng máy tính, việc gửi các chỉ tiêu báo cáo được thực hiện như sau:",
+      "effective_from": "1998-10-01",
+      "effective_to": "2001-04-01"
+    },
+    {
+      "chunk_index": 6,
+      "article": "4",
+      "clause": "2",
+      "point": null,
+      "path": "Điều 4 · Khoản 2",
+      "part": 2,
+      "total_parts": 2,
+      "char_count": 1300,
+      "text": "Quyết định 318/1998/QĐ-NHNN1 — Điều 4. Chánh Văn phòng Thống đốc: Vụ trưởng Vụ nghiên cứu kinh tế; Thủ trưởng các đơn vị trực thuộc Ngân hàng Nhà nước Trung ương; Giám đốc chi nhánh Ngân hàng Nhà nước Tỉnh, Thành phố trực thuộc Trung ương; Chủ tịch Hội đồng quản trị, Tổng giám đốc (Giám đốc) các tổ chức tín dụng và các doanh nghiệp chịu trách nhiệm thi hành Quyết định này. — Khoản 2\nHàng tháng, chậm nhất vào ngày 10 của tháng tiếp theo, trụ sở chính các Ngân hàng thương mại tổng hợp số liệu của toàn hệ thống và truyền cho bộ phận tin học của Chi nhánh NHNN Tỉnh, TP (riêng 4 Ngân hàng thương mại quốc doanh truyền trực tiếp số liệu toàn hệ thống cho Trung tâm tin học NHNNVN); Trong ngày 11, bộ phận tin học của chi nhánh NHNN Tỉnh, TP truyền số liệu toàn hệ thống của từng Ngân hàng thương mại cho Trung tâm tin học NHNNVN; Trong ngày 12, Trung tâm tin học NHNNVN truyền số liệu toàn hệ thống của từng Ngân hàng thương mại cho Vụ Quản lý Ngoại hối (riêng đối với số liệu của 4 Ngân hàng thương mại Quốc doanh, Trung tâm tin học NHNNVN truyền cho Vụ Quản lý Ngoại hối trong ngày 11). Chi nhánh Ngân hàng Nhà nước Tỉnh, Thành phố tổng hợp số liệu của các chi nhánh, hội sở các NNTM trên địa bàn để theo dõi, quản lý và sử dụng tại địa phương, báo cáo Vụ Quản lý Ngoại hối, NHNNVN khi có yêu cầu.",
+      "effective_from": "1998-10-01",
+      "effective_to": "2001-04-01"
+    },
+    {
+      "chunk_index": 7,
+      "article": "4",
+      "clause": "2",
+      "point": "b",
+      "path": "Điều 4 · Khoản 2 · Điểm b",
+      "part": 1,
+      "total_parts": 1,
+      "char_count": 819,
+      "text": "Quyết định 318/1998/QĐ-NHNN1 — Điều 4. Chánh Văn phòng Thống đốc: Vụ trưởng Vụ nghiên cứu kinh tế; Thủ trưởng các đơn vị trực thuộc Ngân hàng Nhà nước Trung ương; Giám đốc chi nhánh Ngân hàng Nhà nước Tỉnh, Thành phố trực thuộc Trung ương; Chủ tịch Hội đồng quản trị, Tổng giám đốc (Giám đốc) các tổ chức tín dụng và các doanh nghiệp chịu trách nhiệm thi hành Quyết định này. — Khoản 2\nb) Đối với các báo cáo hàng quý theo biểu số E21 và biểu số E23 của doanh nghiệp (kể cả NHTM): chậm nhất là ngày 10 của tháng đầu quý tiếp theo, đơn vị lập báo cáo gửi báo bằng văn bản trực tiếp cho Vụ quản lý ngoại hối NHNN; doanh nghiệp (kể cả hội sở NHTM, chi nhánh NHTM) gửi báo cáo cho chi nhánh NHNN tỉnh, thành phố để tổng hợp toàn địa bàn, sử dụng tại địa phương và gửi báo cáo cho Vụ quản lý ngoại hối - NHNN khi có yêu cầu.",
+      "effective_from": "1998-10-01",
+      "effective_to": "2001-04-01"
+    },
+    {
+      "chunk_index": 8,
+      "article": "4",
+      "clause": "3",
+      "point": null,
+      "path": "Điều 4 · Khoản 3",
+      "part": 1,
+      "total_parts": 1,
+      "char_count": 925,
+      "text": "Quyết định 318/1998/QĐ-NHNN1 — Điều 4. Chánh Văn phòng Thống đốc: Vụ trưởng Vụ nghiên cứu kinh tế; Thủ trưởng các đơn vị trực thuộc Ngân hàng Nhà nước Trung ương; Giám đốc chi nhánh Ngân hàng Nhà nước Tỉnh, Thành phố trực thuộc Trung ương; Chủ tịch Hội đồng quản trị, Tổng giám đốc (Giám đốc) các tổ chức tín dụng và các doanh nghiệp chịu trách nhiệm thi hành Quyết định này. — Khoản 3\n3. Biểu số E22 \"Báo cáo tổng hợp tình hình vay vốn nước ngoài\", mã số từ E22010101 đến E 22020208.\n3. Về chuyển đổi số dư và tỉ giá quy đổi giữa các đồng tiền; Số dư đầu kỳ báo cáo của tháng (hoặc quý) này phải bằng số dư cuối kỳ báo cáo của tháng (hoặc quý) trước. Khi thực hiện các giao dịch (rút vốn, trả nợ) với những đồng tiền khác nhau, việc chuyển đổi các đồng tiền ra đơn vị thống nhất USD được áp dụng theo tỷ giá chính thức do NHNN công bố vào ngày cuối của kỳ báo cáo.\n3. Bảo lãnh P.hành kỳ phiếu.\n3. Bảo lãnh phát hành kỳ phiếu",
+      "effective_from": "1998-10-01",
+      "effective_to": "2001-04-01"
+    },
+    {
+      "chunk_index": 9,
+      "article": "4",
+      "clause": "4",
+      "point": null,
+      "path": "Điều 4 · Khoản 4",
+      "part": 1,
+      "total_parts": 10,
+      "char_count": 1955,
+      "text": "Quyết định 318/1998/QĐ-NHNN1 — Điều 4. Chánh Văn phòng Thống đốc: Vụ trưởng Vụ nghiên cứu kinh tế; Thủ trưởng các đơn vị trực thuộc Ngân hàng Nhà nước Trung ương; Giám đốc chi nhánh Ngân hàng Nhà nước Tỉnh, Thành phố trực thuộc Trung ương; Chủ tịch Hội đồng quản trị, Tổng giám đốc (Giám đốc) các tổ chức tín dụng và các doanh nghiệp chịu trách nhiệm thi hành Quyết định này. — Khoản 4\n4. Biểu số E23 \"Báo cáo chi tiết tình hình vay nước ngoài trung và dài hạn không có bảo lãnh của Ngân hàng thương mại\". Gửi báo cáo bằng văn bản.\nII. GIẢI THÍCH NỘI DUNG CÁC MẪU BIỂU.\nBIỂU SỐ E20 \"BÁO CÁO TỔNG HỢP TÌNH HÌNH BẢO LÃNH\nVAY VỐN NƯỚC NGOÀI\"\n- Đơn vị lập báo cáo và nội dung báo cáo: Các Ngân hàng thương mại báo cáo các khoản bảo lãnh cho các doanh nghiệp (không phải là Ngân hàng thương mại).\n- Định kỳ báo cáo: Báo cáo hàng tháng.\nCột 1: Ngân hàng thương mại ghi rõ hình thức bảo lãnh trong trường hợp 4 \"Bảo lãnh dưới hình thức khác\" (Phần ngắn hạn; trung, dài hạn), ví dụ: Ngân hàng ký bảo lãnh trên hối phiếu và các hình thức bảo lãnh khác (nếu có).\nCột 2 (tổng số dư đầu kỳ): Là số tiền đã chấp nhận nợ hoặc đã rút vốn nhưng còn nợ, chưa thanh toán với nước ngoài tại thời điểm đầu kỳ báo cáo.\nCột 3 (số dư quá hạn đầu kỳ): Là số nợ đến hạn nhưng chưa thanh toán cho nước ngoài tại thời điểm đầu kỳ báo cáo.\nCột 4 (số dư Ngân hàng thanh toán thay đầu kỳ): Là số tiền Ngân hàng đã thanh toán cho nước ngoài thay doanh nghiệp, nhưng doanh nghiệp chưa hoàn trả lại cho Ngân hàng tại thời điểm đầu kỳ báo cáo.\nCột 5 (Số tiền cam kết bảo lãnh): Là số tiền cam kết bảo lãnh của Ngân hàng phát sinh thêm trong kỳ báo cáo, cụ thể:\n- Đối với L/C trả chậm: là trị giá L/C trả chậm mở thêm trong kỳ báo cáo.\n- Đối với bảo lãnh phát hành như: Là số tiền Ngân hàng cam kết bảo lãnh theo nội dung thư bảo lãnh.\n- Đối với kỳ phiếu: Là trị giá kỳ phiếu do Ngân hàng phát hành để nhận nợ.\nCột 6 (Số rút vốn): Là số tiền nhận nợ hoặc rút vốn phát sinh trong kỳ, cụ thể:",
+      "effective_from": "1998-10-01",
+      "effective_to": "2001-04-01"
+    },
+    {
+      "chunk_index": 10,
+      "article": "4",
+      "clause": "4",
+      "point": null,
+      "path": "Điều 4 · Khoản 4",
+      "part": 2,
+      "total_parts": 10,
+      "char_count": 1895,
+      "text": "Quyết định 318/1998/QĐ-NHNN1 — Điều 4. Chánh Văn phòng Thống đốc: Vụ trưởng Vụ nghiên cứu kinh tế; Thủ trưởng các đơn vị trực thuộc Ngân hàng Nhà nước Trung ương; Giám đốc chi nhánh Ngân hàng Nhà nước Tỉnh, Thành phố trực thuộc Trung ương; Chủ tịch Hội đồng quản trị, Tổng giám đốc (Giám đốc) các tổ chức tín dụng và các doanh nghiệp chịu trách nhiệm thi hành Quyết định này. — Khoản 4\n- Đối với L/C trả chậm: Là số tiền chấp nhận nợ trên hối phiếu.\n- Đối với bảo lãnh phát hành thư: Là số rút vốn thực tế của doanh nghiệp vay vốn.\n- Đối với kỳ phiếu: Là trị giá kỳ phiếu do Ngân hàng phát hành để nhận nợ.\nCột 7 (tổng số tiền thanh toán): Là số tiền thanh toán cho nước ngoài trong kỳ báo cáo.\nCột 8 (số tiền Ngân hàng thanh toán thay) Là số tiền Ngân hàng phải thanh toán cho nước ngoài thay doanh nghiệp, phát sinh thêm trong kỳ báo cáo. Do đó, số tiền ghi tại cột 8 (chỉ tính riêng số tiền NH thanh toán thay phát sinh tăng, không bù trừ với số tiền NH thanh toán thay phát sinh giảm) là toàn bộ hoặc 1 phần số tiền ghi tại cột 7.\nCột 9 (số tiền quá hạn phát sinh tăng): Là số tiền quá hạn với nước ngoài phát sinh thêm trong kỳ báo cáo (tính riêng số nợ quá hạn phát sinh tăng, không bù trừ với số nợ quá hạn phát sinh giảm).\nCác cột 10, 11, 12: Tương tự như các cột 2, 3, 4, cụ thể cách tính như sau:\nCột 10 = cột 2 + cột 6 - (số tiền thanh toán gốc: 1 phần của cột 7).\nCột 11 = cột 3 + cột 9 - (số tiền quá hạn phát sinh giảm).\nCột 12 = cột 4 + cột 8 - (số tiền thanh toán thay phát sinh giảm).\nCột 13 (nghĩa vụ trả nợ nước ngoài kỳ tiếp theo): Là số tiền phải thanh toán cho nước ngoài trong kỳ báo cáo tiếp theo (đối với những khoản đã nhận nợ hoặc đã rút vốn). Cột này không bao gồm số dư quá hạn tại cột 11.\nBIỂU SỐ E21: \"BÁO CÁO CHI TIẾT TÌNH HÌNH BẢO LÃNH VAY VỐN NƯỚC NGOÀI TRUNG DÀI HẠN\".\n- Đơn vị lập báo cáo: Các Ngân hàng thương mại.\n- Định kỳ báo cáo: Báo cáo hàng quý.\nCột 1:",
+      "effective_from": "1998-10-01",
+      "effective_to": "2001-04-01"
+    },
+    {
+      "chunk_index": 11,
+      "article": "4",
+      "clause": "4",
+      "point": null,
+      "path": "Điều 4 · Khoản 4",
+      "part": 3,
+      "total_parts": 10,
+      "char_count": 1806,
+      "text": "Quyết định 318/1998/QĐ-NHNN1 — Điều 4. Chánh Văn phòng Thống đốc: Vụ trưởng Vụ nghiên cứu kinh tế; Thủ trưởng các đơn vị trực thuộc Ngân hàng Nhà nước Trung ương; Giám đốc chi nhánh Ngân hàng Nhà nước Tỉnh, Thành phố trực thuộc Trung ương; Chủ tịch Hội đồng quản trị, Tổng giám đốc (Giám đốc) các tổ chức tín dụng và các doanh nghiệp chịu trách nhiệm thi hành Quyết định này. — Khoản 4\n- Mã số khoản vay: Là số hiệu khoản vay do Ngân hàng Nhà nước thông báo cho doanh nghiệp và Ngân hàng bảo lãnh. Ngân hàng thương mại phải báo cáo chính xác mã số khoản vay Ngân hàng Nhà nước đã thông báo.\n- Khoản (Tranche): Chỉ áp dụng đối với các khoản vay có nhiều khoản nhỏ với kế hoạch rút vốn, trả nợ, đồng tiền, lãi suất...khác nhau. Các khoản vay có phân chia thành các khoản (tranche) như: Hiệp định tín dụng khung, trong đó các khoản vay riêng lẻ trong khuôn khổ Hiệp định được coi là các khoản; Một số hợp đồng vay vốn nước ngoài khác. Trong trường hợp này, Ngân hàng bảo lãnh phải báo cáo chi tiết từng giao dịch của các khoản đó.\n- Đồng tiền giao dịch: Ghi đồng tiền thực hiện cho từng giao dịch rút vốn hoặc chuyển tiền thanh toán (gốc, lãi, phí) cho nước ngoài trong quý báo cáo. Tương ứng với chỉ tiêu này, ghi ngày thực hiện tại cột 5 và số tiền phát sinh tại các cột 6, 7, 8, 9.\nVí dụ:\n(Đồng tiền giao dịch)\nCột 5\nCột 6\nCách điền:\nUSD\n20/8/98\n100\nNgoài ra, Ngân hàng thương mại ghi rõ hình thức bảo lãnh trong trường hợp 4 \"Bảo lãnh dưới hình thức khác\" (phần IV), ví dụ: Ngân hàng ký bảo lãnh trên hối phiếu và các hình thức bảo lãnh khác (nếu có).\nCột 2 (số dư đầu kỳ): Là số tiền đã chấp nhận nợ hoặc đã rút vốn nhưng còn nợ, chưa thanh toán với nước ngoài tại thời điểm đầu kỳ báo cáo.\nCột 3 (số dư quá hạn đầu kỳ): Là số nợ đến hạn nhưng chưa thanh toán cho nước ngoài tại thời điểm đầu kỳ báo cáo.",
+      "effective_from": "1998-10-01",
+      "effective_to": "2001-04-01"
+    },
+    {
+      "chunk_index": 12,
+      "article": "4",
+      "clause": "4",
+      "point": null,
+      "path": "Điều 4 · Khoản 4",
+      "part": 4,
+      "total_parts": 10,
+      "char_count": 1950,
+      "text": "Quyết định 318/1998/QĐ-NHNN1 — Điều 4. Chánh Văn phòng Thống đốc: Vụ trưởng Vụ nghiên cứu kinh tế; Thủ trưởng các đơn vị trực thuộc Ngân hàng Nhà nước Trung ương; Giám đốc chi nhánh Ngân hàng Nhà nước Tỉnh, Thành phố trực thuộc Trung ương; Chủ tịch Hội đồng quản trị, Tổng giám đốc (Giám đốc) các tổ chức tín dụng và các doanh nghiệp chịu trách nhiệm thi hành Quyết định này. — Khoản 4\nCột 4 (số dư Ngân hàng thanh toán thay đầu kỳ): Là số tiền Ngân hàng đã thanh toán cho nước ngoài thay doanh nghiệp, nhưng doanh nghiệp chưa hoàn trả lại cho Ngân hàng tại thời điểm đầu kỳ báo cáo.\nCột 5 (ngày thực hiện): Là ngày rút vốn hoặc thanh toán các khoản gốc, lãi, phí trong kỳ báo cáo. Cột này ghi ngày của các khoản phát sinh tại các cột 6,7,8,9\nCột 6 (số rút vốn): Là số tiền nhận nợ hoặc rút vốn phát sinh trong kỳ, cụ thể:\n- Đối với L/C trả chậm: Là số tiền chậm nhận nợ trên hối phiếu.\n- Đối với bảo lãnh phát hành thư: Là số rút vốn thực tế của doanh nghiệp vay vốn.\n- Đối với kỳ phiếu: Là trị giá kỳ phiếu do Ngân hàng phát hành để nhận nợ.\nCột 7, 8, 9: Tương ứng là số tiền gốc, lãi, phí đã thanh toán cho nước ngoài trong kỳ báo cáo.\nCột 10 (số tiền Ngân hàng thanh toán thay): Là số tiền Ngân hàng đã thanh toán cho nước ngoài thay doanh nghiệp phát sinh thêm trong kỳ báo cáo. Do đó, số tiền ghi tại cột 9 là một phần (hoặc toàn bộ) tổng số tiền ghi tại cột 7, 8, 9.\nCột 11 (số tiền quá hạn phát sinh tăng): Là số tiền quá hạn với nước ngoài phát sinh thêm trong kỳ báo cáo (tính riêng số nợ quá hạn phát sinh tăng, không bù trừ với số nợ quá hạn phát sinh giảm).\nCác cột 12, 13, 14: Tương tự như các cột 2, 3, 4, cụ thể cách tính như sau:\nCột 12 = cột 2 + cột 6 - cột 7\nCột 13 = cột 3 + cột 11 - (số tiền quá hạn phát sinh giảm)\nCột 14 = cột 4 + cột 10 - (số tiền thanh toán thay phát sinh giảm)\nBIỂU SỐ E22: BÁO CÁO TỔNG HỢP TÌNH HÌNH VAY VỐN\nNƯỚC NGOÀI.\n- Đơn vị lập báo cáo: Các Ngân hàng thương mại.\n- Định kỳ báo cáo: Báo cáo hàng tháng.",
+      "effective_from": "1998-10-01",
+      "effective_to": "2001-04-01"
+    },
+    {
+      "chunk_index": 13,
+      "article": "4",
+      "clause": "4",
+      "point": null,
+      "path": "Điều 4 · Khoản 4",
+      "part": 5,
+      "total_parts": 10,
+      "char_count": 1836,
+      "text": "Quyết định 318/1998/QĐ-NHNN1 — Điều 4. Chánh Văn phòng Thống đốc: Vụ trưởng Vụ nghiên cứu kinh tế; Thủ trưởng các đơn vị trực thuộc Ngân hàng Nhà nước Trung ương; Giám đốc chi nhánh Ngân hàng Nhà nước Tỉnh, Thành phố trực thuộc Trung ương; Chủ tịch Hội đồng quản trị, Tổng giám đốc (Giám đốc) các tổ chức tín dụng và các doanh nghiệp chịu trách nhiệm thi hành Quyết định này. — Khoản 4\nĐối với Phần I (biểu số E22): Ngân hàng vay nước ngoài:\nNgân hàng thương mại báo cáo Ngân hàng Nhà nước về các khoản vay ngắn , trung dài hạn (có hoặc không có bảo lãnh của Ngân hàng khác) mà ngân hàng đó vay. Các hình thức vay nước ngoài của Ngân hàng thương mại bao gồm: Vay trực tiếp qua hợp đồng tín dụng, thấu chi tài khoản, Hiệp định tín dụng khung...\nCột 2 (số dư đầu kỳ): Là số vốn Ngân hàng đã rút vốn nhưng chưa thanh toán với nước ngoài tại thời điểm đầu kỳ báo cáo.\nCột 3 (số dư quá hạn đầu kỳ): Là số nợ đến hạn nhưng Ngân hàng chưa thanh toán cho nước ngoài tại thời điểm đầu kỳ báo cáo.\nCột 4 (số rút vốn): Là số tiền Ngân hàng đã rút trong kỳ báo cáo.\nCột 5 (số tiền thanh toán cho nước ngoài): Là số tiền (gốc,lãi, phí,) Ngân hàng đã thanh toán cho nước ngoài trong kỳ báo cáo.\nCột 6 (số tiền quá hạn PS tăng): là số tiền quá hạn với nước ngoài phát sinh thêm trong kỳ báo cáo (tính riêng số nợ quá hạn phát sinh tăng, không bù trừ với số nợ quá hạn phát sinh giảm).\nCác cột 7, 8: Tương tự như các cột 2, 3, cụ thể cách tính như sau:\nCột 7 = cột 2 + cột 4 - (số tiền thanh toán gốc:1 phần của cột 5)\nCột 8 = Cột 3 + cột 6 - (số tiền quá hạn PS giảm)\nCột 9 (nghĩa vụ trả nợ nước ngoài kỳ tiếp theo): Là số tiền Ngân hàng phải thanh toán cho nước ngoài trong kỳ báo cáo tiếp theo (đối với những khoản vay đã thực hiện rút vốn ). Cột này không bao gồm số dư quá hạn tại cột 8.\nĐối với Phần II (biểu số E22): Doanh nghiệp vay nước ngoài:",
+      "effective_from": "1998-10-01",
+      "effective_to": "2001-04-01"
+    },
+    {
+      "chunk_index": 14,
+      "article": "4",
+      "clause": "4",
+      "point": null,
+      "path": "Điều 4 · Khoản 4",
+      "part": 6,
+      "total_parts": 10,
+      "char_count": 1879,
+      "text": "Quyết định 318/1998/QĐ-NHNN1 — Điều 4. Chánh Văn phòng Thống đốc: Vụ trưởng Vụ nghiên cứu kinh tế; Thủ trưởng các đơn vị trực thuộc Ngân hàng Nhà nước Trung ương; Giám đốc chi nhánh Ngân hàng Nhà nước Tỉnh, Thành phố trực thuộc Trung ương; Chủ tịch Hội đồng quản trị, Tổng giám đốc (Giám đốc) các tổ chức tín dụng và các doanh nghiệp chịu trách nhiệm thi hành Quyết định này. — Khoản 4\nNgân hàng thương mại phải theo dõi và báo cáo tổng hợp cho Ngân hàng Nhà nước các chỉ tiêu trong mẫu biểu đối với các khoản vay của doanh nghiệp (không phải Ngân hàng thương mại) không có bảo lãnh của Ngân hàng thương mại, Ngân hàng thương mại chỉ làm dịch vụ thanh toán, chuyển tiền (kể cả những khoản vay do Ngân hàng Nhà nước bảo lãnh). Các khoản vay của doanh nghiệp không có bảo lãnh của Ngân hàng thương mại bao gồm: Vay trực tiếp, nhờ thu chấp nhận hối phiếu, thanh toán ghi sổ...\nBIỂU SỐ E23: BÁO CÁO CHI TIẾT TÌNH HÌNH VAY NƯỚC NGOÀI TRUNG VÀ DÀI HẠN KHÔNG CÓ BẢO LÃNH CỦA NGÂN HÀNG THƯƠNG MẠI.\n- Đơn vị lập báo cáo: Các doanh nghiệp báo cáo trực tiếp cho vụ Quản lý Ngoại hối - Ngân hàng Nhà nước đối với các khoản vay nước ngoài không có bảo lãnh của Ngân hàng thương mại; Các Ngân hàng thương mại báo cáo các khoản vay nước ngoài của mình (có hoặc không có bảo lãnh của Ngân hàng thương mại khác).\n- Định kỳ báo cáo: Báo cáo hàng quý.\nCột 1:\n- Mã số khoản vay: Là số hiệu khoản vay do Ngân hàng Nhà nước thông báo cho đơn vị lập báo cáo.\n- Khoản (tranche): chỉ áp dụng đối với những khoản vay có nhiều khoản nhỏ với kế hoạch rút vốn, trả nợ, đồng tiền, lãi suất... khác nhau. Các khoản vay có phân chia thành các khoản (tranche) như: Hiệp định tín dụng khung, trong đó các khoản vay riêng lẻ trong khuôn khổ Hiệp định được coi là các khoản; Một số hợp đồng vay vốn nước ngoài khác. Trong trường hợp này, đơn vị lập báo cáo phải báo cáo chi tiết từng giao dịch của các khoản vay đó.",
+      "effective_from": "1998-10-01",
+      "effective_to": "2001-04-01"
+    },
+    {
+      "chunk_index": 15,
+      "article": "4",
+      "clause": "4",
+      "point": null,
+      "path": "Điều 4 · Khoản 4",
+      "part": 7,
+      "total_parts": 10,
+      "char_count": 1974,
+      "text": "Quyết định 318/1998/QĐ-NHNN1 — Điều 4. Chánh Văn phòng Thống đốc: Vụ trưởng Vụ nghiên cứu kinh tế; Thủ trưởng các đơn vị trực thuộc Ngân hàng Nhà nước Trung ương; Giám đốc chi nhánh Ngân hàng Nhà nước Tỉnh, Thành phố trực thuộc Trung ương; Chủ tịch Hội đồng quản trị, Tổng giám đốc (Giám đốc) các tổ chức tín dụng và các doanh nghiệp chịu trách nhiệm thi hành Quyết định này. — Khoản 4\n- Đồng tiền giao dịch: ghi đồng tiền thực hiện cho từng giao dịch rút vốn hoặc chuyển tiền thanh toán (gốc, lãi, phí) cho nước ngoài trong quý báo cáo. Tương ứng với chỉ tiêu này, ghi ngày thực hiện tại cột 4 và số tiền phát sinh tại các cột 5, 6, 7, 8.\nVí dụ:\n(Đồng tiền giao dịch)\nCột 4\nCột 6\nCách điền:\nUSD\n20/8/98\n100\nCột 2 (Số dư đầu kỳ): Là số vốn đã rút nhưng còn nợ, chưa thanh toán với nước ngoài tại thời điểm đầu kỳ báo cáo.\nCột 3 (Số dư quá hạn đầu kỳ): Là số nợ đến hạn nhưng chưa thanh toán cho nước ngoài tại thời điểm đầu kỳ báo cáo.\nCột 4 (ngày thực hiện): Là ngày rút vốn hoặc thanh toán các khoản gốc, lãi, phí trong kỳ báo cáo. Cột này ghi ngày của các khoản phát sinh tại các cột 5, 6, 7, 8.\nCột 5 (số rút vốn): Là số tiền Ngân hàng đã rút trong kỳ báo cáo. Cột 6, 7, 8: Tương ứng là số tiền gốc, lãi, phí đã thanh toán cho nước ngoài trong kỳ báo cáo.\nCột 9 (số tiền quá hạn PS tăng): Là số tiền quá hạn với nước ngoài phát sinh thêm trong kỳ báo cáo (tính riêng số nợ quá hạn phát sinh tăng, không bù trừ với số nợ quá hạn phát sinh giảm).\nCác cột 10, 11: Tương tự như các cột 2, 3, cụ thể cách tính như sau:\nCột 10 = cột 2 + cột 5 - cột 6\nCột 11 = cột 3 + cột 9 - (số tiền quá hạn PS giảm)\nIII. QUY ĐỊNH CHUNG VỀ VIỆC LẬP VÀ GỬI BÁO CÁO\n4. Về đơn vị tính: Tất cả các số liệu báo cáo đều thống nhất lấy đơn vị 1000 ( làm tròn không lấy phần thập phân). Các báo cáo tháng, quý đổi ra 1000 USD; các báo cáo quý lấy đơn vị 1000 nguyên tệ.\n4. Bảo lãnh dưới hình thức khác\nII. Trung dài hạn (T.số)\n4. Bảo lãnh dưới hình thức khác\nIII. Tổng cộng (I+II)\nLập biểu\nKiểm soát",
+      "effective_from": "1998-10-01",
+      "effective_to": "2001-04-01"
+    },
+    {
+      "chunk_index": 16,
+      "article": "4",
+      "clause": "4",
+      "point": null,
+      "path": "Điều 4 · Khoản 4",
+      "part": 8,
+      "total_parts": 10,
+      "char_count": 1985,
+      "text": "Quyết định 318/1998/QĐ-NHNN1 — Điều 4. Chánh Văn phòng Thống đốc: Vụ trưởng Vụ nghiên cứu kinh tế; Thủ trưởng các đơn vị trực thuộc Ngân hàng Nhà nước Trung ương; Giám đốc chi nhánh Ngân hàng Nhà nước Tỉnh, Thành phố trực thuộc Trung ương; Chủ tịch Hội đồng quản trị, Tổng giám đốc (Giám đốc) các tổ chức tín dụng và các doanh nghiệp chịu trách nhiệm thi hành Quyết định này. — Khoản 4\n.... ngày....tháng....năm 19...\n(Ký, ghi rõ họ tên)\n(Ký, ghi rõ họ tên)\n(Ký tên, đóng dấu)\nĐơn vị lập báo cáo\n(Điện thoại:..., Fax:....)\nĐơn vị nhận báo cáo: vụ QLNH\nBIỂU SỐ E21\nBÁO CÁO CHI TIẾT TÌNH HÌNH BẢO LÃNH VAY VỐN NƯỚC NGOÀI TRUNG, DÀI HẠN.\n( Quý ..... năm.....)\nĐơn vị: 1000 nguyên tệ\nChỉ tiêu\nSố dư đầu kỳ\nPhát sinh trong kỳ\nSố dư cuối kỳ\nTổng số\nTrong đó quá hạn\nNH thanh toán thay\nNgày thực hiện\nSố rút vốn\nSố tiền thanh toán cho nước ngoài\nSố tiền NH thanh toán thay\nSố tiềnquá hạn PS tăng\nTổng số\nTrong đó quá hạn\nNH thanh toán thay\nGốc\nLãi\nPhí\n1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11\n12\n13\n14\nI. L/C trả chậm\n* Mã số khoản vay 1\n- Khoản 1\n+ Đồng tiền giao dịch 1\n+ Đồng tiền giao dịch 2\n- Khoản 2\n+ Đồng tiền giao dịch 1\n+ Đồng tiền giao dịch 2\n* Mã số khoản vay 2\n- Khoản 1\n+ Đồng tiền giao dịch 1\n+ Đồng tiền giao dịch 2\n- Khoản 2\n+ Đồng tiền giao dịch 1\n+ Đồng tiền giao dịch 2\nII. Bảo lãnh P.hành thư\n* Mã số khoản vay 1\n- Khoản 1\n+ Đồng tiền giao dịch 1\n+ Đồng tiền giao dịch 2\n- Khoản 2\n+ Đồng tiền giao dịch 1\n+ Đồng tiền giao dịch 2\n* Mã số khoản vay 2\n- Khoản 1\n+ Đồng tiền giao dịch 1\n+ Đồng tiền giao dịch 2\n- Khoản 2\n+ Đồng tiền giao dịch 1\n+ Đồng tiền giao dịch 2\nIII. Bảo lãnh phát hành kỳ phiếu\n* Mã số khoản vay 1\n- Khoản 1\n+ Đồng tiền giao dịch 1\n+ Đồng tiền giao dịch 2\n- Khoản 2\n+ Đồng tiền giao dịch 1\n+ Đồng tiền giao dịch 2\n* Mã số khoản vay 2\n- Khoản 1\n+ Đồng tiền giao dịch 1\n+ Đồng tiền giao dịch 2\n- Khoản 2\n+ Đồng tiền giao dịch 1\n+ Đồng tiền giao dịch 2\nIV. Bảo lãnh dưới hình thức khác.\nA/ Ký bảo lãnh trên hối phiếu.\n* Mã số khoản vay 1\n- Khoản 1\n+ Đồng tiền giao dịch 1",
+      "effective_from": "1998-10-01",
+      "effective_to": "2001-04-01"
+    },
+    {
+      "chunk_index": 17,
+      "article": "4",
+      "clause": "4",
+      "point": null,
+      "path": "Điều 4 · Khoản 4",
+      "part": 9,
+      "total_parts": 10,
+      "char_count": 1987,
+      "text": "Quyết định 318/1998/QĐ-NHNN1 — Điều 4. Chánh Văn phòng Thống đốc: Vụ trưởng Vụ nghiên cứu kinh tế; Thủ trưởng các đơn vị trực thuộc Ngân hàng Nhà nước Trung ương; Giám đốc chi nhánh Ngân hàng Nhà nước Tỉnh, Thành phố trực thuộc Trung ương; Chủ tịch Hội đồng quản trị, Tổng giám đốc (Giám đốc) các tổ chức tín dụng và các doanh nghiệp chịu trách nhiệm thi hành Quyết định này. — Khoản 4\n+ Đồng tiền giao dịch 2\n- Khoản 2\n+ Đồng tiền giao dịch 1\n+ Đồng tiền giao dịch 2\n* Mã số khoản vay 2\n+ Đồng tiền giao dịch 1\n+ Đồng tiền giao dịch 2\n+ Giao dịch 2(đồng tiền)\n- Khoản 2\n+ Đồng tiền giao dịch 1\n+ Đồng tiền giao dịch 2\nB/ ...................\nLập biểu\n(Ký ghi rõ họ tên)\nKiểm soát\n(Ký ghi rõ họ tên)\n...ngày ... tháng...năm .....\nThủ trưởng đơn vị\n(Ký tên đóng dấu)\nĐơn vị lập báo cáo: ngân hàng...\n(Điện thoại:...., Fax:....)\nĐơn vị nhận báo cáo: Vụ quản lý ngoại hối\nBIỂU SỐ E22\nBÁO CÁO TỔNG HỢP TÌNH HÌNH VAY VỐN NƯỚC NGOÀI\n(Tháng... năm...)\nVốn tự có cuối kỳ quy 1000 USD: Đơn vị: Quy 1000 USD\nChỉ tiêu\nSố dư đầu kỳ\nPhát sinh trong kỳ\nSố dư cuối kỳ\nNghĩa vụ trả nợ nước ngoài kỳ tiếp theo\nTổng số\nTrong đó quá hạn\nSố rút vốn\nSố tiền thanh toán cho nước ngoài\nSố tiền quá hạn PS tăng\nTổng số\nTrong đó quá hạn\nI. N.hàng vay nước ngoài(A+B)\nA/ Ngắn hạn (tổng số)\nB/ Trung dài hạn (tổng số)\nII.DN vay nước ngoài (A+B)\nA/ Ngắn hạn (tổng số)\nB/ Trung dài hạn (tổng số)\nGhi chú: \"II. Doanh nghiệp vay nước ngoài\" Là các khoản vay của doanh nghiệp không có bảo lãnh của Ngân hàng:\nNgân hàng chỉ làm dịch vụ chuyển tiền, thanh toán.\nLập biể\nu (Ký,ghi rõ họ tên)\nKiểm soát\n(Ký ghi rõ họ tên)\n... ngày... tháng... năm\nThủ trưởng đơn vị\n(Ký tên, đóng dấu)\nĐơn vị lập báo cáo.....\nĐịa chỉ:\nTel... Fax:...\nĐơn vị nhận báo cáo: Vụ QLNH\nBIỂU SỐ E23\nBÁO CÁO CHI TIẾT TÌNH HÌNH VAY NƯỚC NGOÀI TRUNG VÀ DÀI HẠN KHÔNG CÓ BẢO LÃNH\nCỦA NGÂN HÀNG THƯƠNG MẠI\n( Quý... năm 199...)\nĐơn vị: 1000 nguyên tệ\nChỉ tiêu\nSố dư đầu kỳ\nPhát sinh trong kỳ\nSố dư cuối kỳ\nTổng số\nTrong đó quá hạn\nNgày thực hiện\nSố rút vốn",
+      "effective_from": "1998-10-01",
+      "effective_to": "2001-04-01"
+    },
+    {
+      "chunk_index": 18,
+      "article": "4",
+      "clause": "4",
+      "point": null,
+      "path": "Điều 4 · Khoản 4",
+      "part": 10,
+      "total_parts": 10,
+      "char_count": 1966,
+      "text": "Quyết định 318/1998/QĐ-NHNN1 — Điều 4. Chánh Văn phòng Thống đốc: Vụ trưởng Vụ nghiên cứu kinh tế; Thủ trưởng các đơn vị trực thuộc Ngân hàng Nhà nước Trung ương; Giám đốc chi nhánh Ngân hàng Nhà nước Tỉnh, Thành phố trực thuộc Trung ương; Chủ tịch Hội đồng quản trị, Tổng giám đốc (Giám đốc) các tổ chức tín dụng và các doanh nghiệp chịu trách nhiệm thi hành Quyết định này. — Khoản 4\nSố tiền thành toán cho nước ngoài\nSố tiền quá hạn phát sinh tăng\nTổng số\nTrong đó quá hạn\nGốc\nLãi\nPhí\n1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11\n* Mã số khoản vay 1\n- Khoản 1\n+ Đồng tiền giao dịch 1\n+ Đồng tiền giao dịch 2\n- Khoản 2\n+ Đóng tiền giao dịch 1\n+ Đóng tiền giao dịch 2\n* Mã số khoản vay 2\n- Khoản 1\n+ Đồng tiền giao dịch 1\n+ Đồng tiền giao dịch 2\n- Khoản 2\n+ Đồng tiền giao dịch 1\n+ Đồng tiền giao dịch 2\nLập bảng\n(Ký, ghi rõ họ tên)\nKiểm soát\n(Ký, ghi rõ họ tên)\n... ngày... tháng... năm 199..\nThủ trưởng đơn vị\n(Ký tên, đóng dấu)\nNGÂN HÀNG NHÀ NƯỚC VIỆT NAM\nCỘNG HOÀ XÃ HỘI CHỦ NGHĨA VIỆT NAM\nĐộc lập - Tự do - Hạnh phúc\nVỤ NGHIÊN CỨU KINH TẾ\nSố: 492/NCKT7\nHà nội, ngày 29 tháng 9 năm 1998\nV/v triển khai thực hiện\nQĐ sửa đổi CDTTBC kế toán\nvà thống kê ngân hàng.\nKính gửi: - Ông(Bà) Giám đốc Chi nhánh Ngân hàng\nNhà nước, Tỉnh, Thành phố.\n- Ông(Bà) Tổng giám đốc(Giám đốc) tổ chức tín dụng.\nNgày 24 tháng 9 năm 1998, Thống đốc Ngân hàng Nhà nước đã ký Quyết định số 318/1998/QĐ-NHNN1, ban hành mới các chỉ tiêu báo cáo vay, trả nợ nước ngoài theo các biểu số E20, E21, E22 và E23, áp dụng từ báo cáo tháng 10/1998.\nĐề nghị Ông (Bà) Tổng giám đốc (Giám đốc) tổ chức tín dụng hướng dẫn triển khai thực hiện kịp thời đến các đơn vị trực thuộc trong toàn hệ thống và đến các doanh nghiệp liên quan. Ông (Bà) giám đốc chi nhánh Ngân hàng Nhà nước Tỉnh, Thành phố tổ chức triển khai, chỉ đạo các tổ chức tín dụng trên địa bàn thực hiện tốt Quyết định của Thống đốc Ngân hàng Nhà nước.\nTrong quá trình thực hiện, nếu đơn vị có vướng mắc cần báo cáo kịp thời về NHTW để nghiên cứu, hướng dẫn.",
+      "effective_from": "1998-10-01",
+      "effective_to": "2001-04-01"
+    },
+    {
+      "chunk_index": 19,
+      "article": "4",
+      "clause": "5",
+      "point": null,
+      "path": "Điều 4 · Khoản 5",
+      "part": 1,
+      "total_parts": 1,
+      "char_count": 919,
+      "text": "Quyết định 318/1998/QĐ-NHNN1 — Điều 4. Chánh Văn phòng Thống đốc: Vụ trưởng Vụ nghiên cứu kinh tế; Thủ trưởng các đơn vị trực thuộc Ngân hàng Nhà nước Trung ương; Giám đốc chi nhánh Ngân hàng Nhà nước Tỉnh, Thành phố trực thuộc Trung ương; Chủ tịch Hội đồng quản trị, Tổng giám đốc (Giám đốc) các tổ chức tín dụng và các doanh nghiệp chịu trách nhiệm thi hành Quyết định này. — Khoản 5\n5. Về phạm vi báo cáo: Đối với biểu số E20 và biểu số E22, NHTM phải gửi báo cáo theo quy định, kể cả không có số liệu phát sinh trong kỳ báo cáo. Đối với biểu số E21, NHTM phải báo cáo chi tiết từng khoản bảo lãnh, kể cả các khoản không có số liệu phát sinh trong kỳ báo cáo. Đối với biểu số E23, trong trường hợp trong quý báo cáo không có số liệu phát sinh thì đơn vị lập báo cáo chỉ cần có thông báo bằng văn bản, trong đó ghi rõ \" Quý ... khoản vay... (ghi mã số) của doanh nghiệp (hoặc Ngân hàng) X không có số liệu phát sinh\".",
+      "effective_from": "1998-10-01",
+      "effective_to": "2001-04-01"
+    },
+    {
+      "chunk_index": 20,
+      "article": "4",
+      "clause": "6",
+      "point": null,
+      "path": "Điều 4 · Khoản 6",
+      "part": 1,
+      "total_parts": 7,
+      "char_count": 1984,
+      "text": "Quyết định 318/1998/QĐ-NHNN1 — Điều 4. Chánh Văn phòng Thống đốc: Vụ trưởng Vụ nghiên cứu kinh tế; Thủ trưởng các đơn vị trực thuộc Ngân hàng Nhà nước Trung ương; Giám đốc chi nhánh Ngân hàng Nhà nước Tỉnh, Thành phố trực thuộc Trung ương; Chủ tịch Hội đồng quản trị, Tổng giám đốc (Giám đốc) các tổ chức tín dụng và các doanh nghiệp chịu trách nhiệm thi hành Quyết định này. — Khoản 6\n6. Thời gian thực hiện báo cáo mới:\n- Đối với báo cáo tháng (biểu số E20, E22), NHTM bắt đầu thực hiện gửi báo cáo số liệu từ tháng 10 năm 1998.\n- Đối với báo cáo quý (biểu số E21, E23), các doanh nghiệp, NHTM bắt đầu thực hiện gửi báo cáo số liệu từ quý IV năm 1998./.\nMã số E20\nBáo cáo tổng hợp tình hình bảo lãnh vay vốn nước ngoài\nE20\nBC tháng - Đơn vị: Quý 1000 USD\nE20110102\nThông số dư đầu kỳ các khoản BL,ngắn hạn h.thức LC trả chậm\nE20110103\nSố dư quá hạn đầu kỳ - BL ngắn hạn - LC trả chậm\nE20110104\nSố dư NH thanh toán thay đầu kỳ -BL ngắn hạn - LC trả chậm\nE20110105\nSố tiền cam kết BL PSinh trong kỳ-BL ngắn hạn-LC trả chậm\nE20110106\nSố rút vốn Psinh trong kỳ- BL ngắn hạn- LC trả chậm\nE20110107\nTổng số tiền t.toán cho N.ngoài-BL ngắn hạn-LC trả chậm\nE20110108\nSố tiền NH t.toán thay trong kỳ-BL ngắn hạn-LC trả chậm\nE20220209\nSố tiền quá hạn PS thêm trong kỳ-BL ngắn hạn-LC trả chậm\nE20110110\nTổng số dư cuối kỳ-BL ngắn hạn-LC trả chậm\nE20110111\nSố dư quá hạn cuối kỳ-BL ngắn hạn-LC trả chậm\nE20110112\nSố dư NH thanh toán thay cuối kỳ-BL ngắn hạn-LC trả chậm\nE20110113\nNghĩa vụ trả nợ N.ngoài kỳ tới-BL ngắn hạn-LC trả chậm\nE20120102\nTổng số dư đầu kỳ các khoản BL ngắn hạn h.thức P.hành thư\nE20120103\nSố dư quá hạn đầu kỳ-BL ngắn hạn-phát hành thư\nE20120104\nSố dư NH thanh toán thay đầu kỳ-BL ngắn hạn-P.hành thư\nE20120105\nSố tiền cam kết BL P.sinh trong kỳ-BL ngắn hạn-P.hành thư\nE20120106\nSố rút vốn P.sinh trong kỳ-BL ngắn hạn-Phát hành thư\nE20120107\nTổng số tiền t.toán N.ngoài-BL ngắn hạn-P.hành thư\nE20120108\nSố tiền NH t.toán thay trong kỳ-BL ngắn hạn-Phát hành thư\nE20120109",
+      "effective_from": "1998-10-01",
+      "effective_to": "2001-04-01"
+    },
+    {
+      "chunk_index": 21,
+      "article": "4",
+      "clause": "6",
+      "point": null,
+      "path": "Điều 4 · Khoản 6",
+      "part": 2,
+      "total_parts": 7,
+      "char_count": 1988,
+      "text": "Quyết định 318/1998/QĐ-NHNN1 — Điều 4. Chánh Văn phòng Thống đốc: Vụ trưởng Vụ nghiên cứu kinh tế; Thủ trưởng các đơn vị trực thuộc Ngân hàng Nhà nước Trung ương; Giám đốc chi nhánh Ngân hàng Nhà nước Tỉnh, Thành phố trực thuộc Trung ương; Chủ tịch Hội đồng quản trị, Tổng giám đốc (Giám đốc) các tổ chức tín dụng và các doanh nghiệp chịu trách nhiệm thi hành Quyết định này. — Khoản 6\nSố tiền quá hạn PS thêm trong kỳ.BL ngắn hạn - P.hành thư\nE20120110\nTổng số dư cuối kỳ-BL ngắn hạn - Phát hành thư\nE20120111\nSố dư quá hạn cuối kỳ - BL ngắn hạn-Phát hành thư\nE20120112\nSố dư NH thanh toán thay cuối kỳ-BL ngắn hạn-Phát hành thư\nE20120113\nNghĩa vụ trả nợ N.ngoài kỳ tới-BL ngắn hạn-Phát hành thư\nE20130102\nT.số dư đầu kỳ các khoản BL ngắn hạn h.t P.hành kỳ phiếu\nE20130103\nSố dư quá hạn đầu kỳ-BL ngắn hạn - PH kỳ phiếu\nE20130104\nSố dư NH thanh toán thay đầu kỳ-BL ngắn hạn-PH kỳ phiếu\nE20130105\nSố tiền cam kết BL P.sinh trong kỳ-BL ngắn hạn-PH kỳ phiếu\nE20130106\nSố rút vốn P.sinh trong kỳ-BL ngắn hạn-PH kỳ phiếu\nE20130107\nTổng số tiền thanh toán cho Nngoài-BL ngắn hạn-PH kỳ phiếu\nE20130108\nSố tiền NH t.toán thay trong kỳ-BL ngắn hạn - PH kỳ phiếu\nE20130109\nSố tiền quá hạn PS thêm trong kỳ-BL ngắn hạn-PH kỳ phiếu\nE20130110\nTổng số dư cuối kỳ-BL ngắn hạn-PH kỳ phiếu\nE20130111\nSố dư quá hạn cuối kỳ-BL ngắn hạn-PH kỳ phiếu\nE20130112\nSố dư NH thanh toán thay cuối kỳ- BL ngắn hạn-PH kỳ phiếu\nE20130113\nNghĩa vụ trả nợ N.ngoài kỳ tới-BL ngắn hạn-PH kỳ phiếu\nE20140101\nTên hình thức BL khác thứ 1 - BL ngắn hạn.\nE20140102\nTổng số dư đầu kỳ-BL ngắn hạn dưới hình thức khác thứ 1\nE20140103\nSố dư quá hạn đầu kỳ. Ngắn hạn-h.thức khác thứ 1\nE20140104\nSố dư NH thanh toán thay đầu kỳ-Ngắn hạn-h.thức khác thứ 1\nE20140105\nSố cam kết BL. Psinh trong kỳ-Ngắn hạn-h.thức khác thứ 1\nE20140106\nSố rút vốn P.sinh trong kỳ-ngắn hạn-h.thức khác thứ 1\nE20140107\nTổng số tiền t.toán cho N.ngoài-ngắn hạn-h.thức khác thứ 1\nE20140108\nSố tiền NH t.toán thay trong kỳ-Ngắn hạn-h.thức khác thứ 1\nE20140109",
+      "effective_from": "1998-10-01",
+      "effective_to": "2001-04-01"
+    },
+    {
+      "chunk_index": 22,
+      "article": "4",
+      "clause": "6",
+      "point": null,
+      "path": "Điều 4 · Khoản 6",
+      "part": 3,
+      "total_parts": 7,
+      "char_count": 1957,
+      "text": "Quyết định 318/1998/QĐ-NHNN1 — Điều 4. Chánh Văn phòng Thống đốc: Vụ trưởng Vụ nghiên cứu kinh tế; Thủ trưởng các đơn vị trực thuộc Ngân hàng Nhà nước Trung ương; Giám đốc chi nhánh Ngân hàng Nhà nước Tỉnh, Thành phố trực thuộc Trung ương; Chủ tịch Hội đồng quản trị, Tổng giám đốc (Giám đốc) các tổ chức tín dụng và các doanh nghiệp chịu trách nhiệm thi hành Quyết định này. — Khoản 6\nSố tiền quá hạn PSthêm trong kỳ-ngắn hạn-H.thức khác thứ 1\nE20140110\nTổng số dư cuối kỳ ngắn hạn-h.thức khác thứ 1\nE20140111\nSố dư quá hạn cuối kỳ ngắn hạn-h.thức khác thứ 1\nE20140112\nSố dư NH thanh toán thay cuối kỳ-Ngắn hạn-h.thức khác thứ1\nE20140113\nNghĩa vụ trả nợ N.ngoài kỳ tới-Ngắn hạn-h.thức khác thứ 1\nE2014xx01\nTên hình thức BL khác thứ xx - loại ngắn hạn\nE2014xx02\nTổng số dư đầu kỳ-BL ngắn hạn dưới hình thức khác thứ xx\nE2014xx03\nSố dư quá hạn đầu kỳ-ngắn hạn-h.thức khác thứ xx\nE2014xx04\nSố dư NHthanh toán thay đầu kỳ-ngắn hạn-h.thức khác thứ xx\nE2014xx05\nSố tiền C.kết BL Psinh trong kỳ-ngắn hạn h.thức khác thứxx\nE2014xx06\nSố rút vốn p.sinh trong kỳ-ngắn hạn-h.thức khác thứ xx\nE2014xx07\nTổngsố tiền t.toán cho N.ngoài-Ngắn hạn-h.thức khác thứ xx\nE2014xx08\nSố tiền NH t.toán thay trong kỳ-ngắn hạn-h.thức khác thứ xx\nE2014xx09\nSố tiền quá hạn PS thêm trongkỳ-ngắn hạn-h.thức khác thứxx\nE2014xx10\nTổng số dư cuối kỳ-ngắn hạn-h.thức khác thứ xx\nE2014xx11\nSố dư quá hạn cuối kỳ-ngắn hạn-h.thức khác thứ xx\nE2014xx12\nSố dư NH t.toán thay cuối kỳ ngắn hạn-h.thức khác thứ xx\nE2014xx13\nNghĩa vụ trả nợ N.ngoài kỳ tới-ngắn hạn-h.thức khác thứ xx\nE20210202\nT.số dư đầu kỳ các khoản BLtrung dài hạn h.thức LC trảchậm\nE20210104\nSố dư NH thanh toán thay đầu kỳ-trung dài hạn-LC trả chậm\nE20210105\nSốtiền cam kết BL Psinh trong kỳ-trung dài hạn-LC trả chậm\nE20210106\nSố rút vốn PSinh trong kỳ-trung dài hạn - LC trả chậm\nE20210107\nTổng số tiền t.toán cho N.ngoài-trung dài hạn-LC trả chậm\nE20210108\nSố tiền NH t.toán thay trong kỳ-trung dài hạn-LC trả chậm\nE20210109",
+      "effective_from": "1998-10-01",
+      "effective_to": "2001-04-01"
+    },
+    {
+      "chunk_index": 23,
+      "article": "4",
+      "clause": "6",
+      "point": null,
+      "path": "Điều 4 · Khoản 6",
+      "part": 4,
+      "total_parts": 7,
+      "char_count": 1990,
+      "text": "Quyết định 318/1998/QĐ-NHNN1 — Điều 4. Chánh Văn phòng Thống đốc: Vụ trưởng Vụ nghiên cứu kinh tế; Thủ trưởng các đơn vị trực thuộc Ngân hàng Nhà nước Trung ương; Giám đốc chi nhánh Ngân hàng Nhà nước Tỉnh, Thành phố trực thuộc Trung ương; Chủ tịch Hội đồng quản trị, Tổng giám đốc (Giám đốc) các tổ chức tín dụng và các doanh nghiệp chịu trách nhiệm thi hành Quyết định này. — Khoản 6\nSố tiền quá hạn PS thêm trong kỳ-trung dài hạn-LC trả chậm\nÊ20210110\nTổng số dư cuối kỳ-trung dài hạn - LC trả chậm\nE20210111\nSố dư quá hạn cuối kỳ-trung dài hạn-LC trả chậm\nE20210112\nSố dư NH t.toán thay cuối kỳ-trung dài hạn-LC trả chậm\nE20210113\nNghĩa vụ trả nợ N.ngoài kỳ tới-trung dài hạn-LC trả chậm\nE20220102\nT.số dư đầu kỳ các khoản BL trung dài hạn h.thức PH thư\nE20220103\nSố dư quá hạn đầu kỳ-trung dài hạn-phát hành thư\nE20220104\nSố dư NH thanh toán thay đầu kỳ-trung dài hạn-p.hành thư\nE20220106\nSố rút vốn phát sinh trong kỳ-trung dài hạn-phát hành thư\nE20220107\nTổng số tiền t.toán chp Nngoài-trung dài hạn-P.hành thư\nE20220108\nSố tiền NH t.toán thay trong kỳ-Trung dài hạn-P.hành thư\nE20220109\nSố tiền quá hạn PS thêm trong kỳ-Trung dài hạn-P.hành thư\nE20220110\nTổng số dư cuối kỳ-trung dài hạn-phát hành thư\nE20220111\nSố dư quá hạn cuối kỳ-Trung dài hạn-phát hành thư\nE20220112\nSố dư NH thanh toán thay cuối kỳ-trung dài hạn-P. hành thư\nE20220113\nNghĩa vụ trả nợ N.ngoài kỳ tới-Trung dài hạn-P.hành thư\nE20230102\nT.số dư đầu kỳ các khoản BLtrung dài hạn h.thức PH kỳphiếu\nE20230103\nSố dư quá hạn đầu kỳ trung dài hạn-PH kỳ phiếu\nE20230104\nSố dư NH t.toán thay đầu kỳ-trung dài hạn-PH kỳ phiếu\nE20230105\nSố tiền cam kết BL PS trong kỳ-trung dài hạn-PH kỳ phiếu.\nE20230106\nSố rút vốn PS trong kỳ-trung dài hạn-PH kỳ phiếu\nE20230107\nTổng số tiền t.toán cho N.ngoài-Trung dài hạn-PH kỳ phiếu\nE20230108\nSố tiền N.hàng TT thay trong kỳ-Trung dài hạn-PH kỳ phiếu\nE20230109\nSố tiền quá hạn PS thêm trong kỳ-trung dài hạn-PHkỳ phiếu\nE20230110\nTổng số dư cuối kỳ-trung dài hạn-PH kỳ phiếu\nE20230111",
+      "effective_from": "1998-10-01",
+      "effective_to": "2001-04-01"
+    },
+    {
+      "chunk_index": 24,
+      "article": "4",
+      "clause": "6",
+      "point": null,
+      "path": "Điều 4 · Khoản 6",
+      "part": 5,
+      "total_parts": 7,
+      "char_count": 1990,
+      "text": "Quyết định 318/1998/QĐ-NHNN1 — Điều 4. Chánh Văn phòng Thống đốc: Vụ trưởng Vụ nghiên cứu kinh tế; Thủ trưởng các đơn vị trực thuộc Ngân hàng Nhà nước Trung ương; Giám đốc chi nhánh Ngân hàng Nhà nước Tỉnh, Thành phố trực thuộc Trung ương; Chủ tịch Hội đồng quản trị, Tổng giám đốc (Giám đốc) các tổ chức tín dụng và các doanh nghiệp chịu trách nhiệm thi hành Quyết định này. — Khoản 6\nSố dư quá hạn cuối kỳ-trung dài hạn-PH kỳ phiếu\nE20230112\nSố dư NH t.toán thay cuối kỳ-trung dài hạn-PH kỳ phiếu\nE20230113\nNghĩa vụ trả nợ N.ngoài kỳ tới-trung dài hạn-PH kỳ phiếu\nE20240101\nTên hình thức BL khác thứ 1 - trung dài hạn\nE20240102\nT.số dư đầu kỳ BL trung dài hạn dưới hình thức khác thứ 1\nE20240103\nSố dư quá hạn đầu kỳ-trung dài hạn-H.thức khác 1\nE20240104\nSố dư NH t.toán thay đầu kỳ-trung dài hạn-h.thức khác 1\nE20240105\nSố tiền cam kết BL-PS trong kỳ-trung dài hạn-h.thức khác 1\nE20240106\nSố rút vốn PS trong kỳ-trung dài hạn-H.thức khác 1\nE20240107\nTổng số tiền t.toán cho N.ngoài-trung dài hạn-h.thức khác1\nE20240108\nSố tiền NH t.toán thay trong kỳ-trung dài hạn-Hthức khác 1\nE20240109\nSố tiền quá hạn PS thêm trong kỳ-Trung dài hạn-HT khác 1\nE20240110\nTổng số dư cuối kỳ-trung dài hạn-hình thức khác 1\nE20240111\nSố dư quá hạn cuối kỳ-trung dài hạn-HT khác 1\nE20240112\nSố dư NH t.toán thay cuối kỳ-trung dài hạn-H.thức khác 1\nE20240113\nNghĩa vụ trả nợ N.ngoài kỳ tới-trung dài hạn-h.thức khác 1\nE2024xx01\nTên hình thức BL khác thứ xx-trung dài hạn\nE2024xx02\nT.số dư đầu kỳ BL trung dài hạn dưới hình thức khác thứ xx\nE0224xx03\nSố dư quá hạn đầu kỳ-trung dài hạn hình thức khác xx\nE2024xx04\nSố dư NH t.toán thay đầu kỳ-trung dài hạn-HT khác xx\nE2024xx05\nSố tiền cam kết BL-PS trong kỳ-trung dài hạn-HT khác xx\nE2024xx06\nSố rút vốn PS trong kỳ-trung dài hạn-hình thức khác xx\nE2024xx07\nTổng số tiền t.toán cho N.ngoài-trung dài hạn-HT khác xx\nE2024xx08\nSố tiền NH t.toán thay trong kỳ-trung dài hạn-HT khác xx\nE2024xx09\nSố tiền quá hạn PS thêm trong kỳ-trung dài hạn HT khác xx\nE2024xx10",
+      "effective_from": "1998-10-01",
+      "effective_to": "2001-04-01"
+    },
+    {
+      "chunk_index": 25,
+      "article": "4",
+      "clause": "6",
+      "point": null,
+      "path": "Điều 4 · Khoản 6",
+      "part": 6,
+      "total_parts": 7,
+      "char_count": 1978,
+      "text": "Quyết định 318/1998/QĐ-NHNN1 — Điều 4. Chánh Văn phòng Thống đốc: Vụ trưởng Vụ nghiên cứu kinh tế; Thủ trưởng các đơn vị trực thuộc Ngân hàng Nhà nước Trung ương; Giám đốc chi nhánh Ngân hàng Nhà nước Tỉnh, Thành phố trực thuộc Trung ương; Chủ tịch Hội đồng quản trị, Tổng giám đốc (Giám đốc) các tổ chức tín dụng và các doanh nghiệp chịu trách nhiệm thi hành Quyết định này. — Khoản 6\nTổng số dư cuối kỳ-trung dài hạn-HT khác xx\nE2024xx11\nSố dư quá hạn cuối kỳ-Trung dài hạn-HT khác xx\nE2024xx12\nSố dư NH t.toán thay cuối kỳ-trung dài hạn-HT khác xx\nE2024xx13\nNghĩa vụ trả nợ nước ngoài kỳ tới-trung dài hạn-HT khác xx\nE22\nBáo cáo tổng hợp tình hình vay vốn nước ngoài\nE22\nBC tháng-đơn vị: Quý 1000 USD\nE22010101\nTổng số dư đầu kỳ các khoản NH vay N.ngoài ngắn hạn\nE22010102\nSố dư quá hạn đầu kỳ các khoản N.hàng vay N.ngoài ngắn hạn\nH22010103\nSố rút vốn p.sinh trong kỳ-N.hàng vay nước ngoài ngắn hạn\nE22010104\nSốtiền t.toán cho N.ngoài trong kỳ-NH vay N.ngoài ngắn hạn\nE22010105\nSố tiền quá hạn PS tăng trong kỳ-NH vay N.ngoài ngắn hạn\nE22010106\nTổng số dư cuối kỳ các khoản NH vay N.ngoài ngắn hạn\nE22010107\nSốdư quá hạn cuối kỳ các khoản N.hàng vay N.ngoài ngắn hạn\nE22010108\nNghĩa vụ trả nợ N.ngoài kỳ tới-N.hàng vay N.ngoài ngắn hạn\nE22010201\nT.số dư đầu kỳ các khoản N.hàng vay N.ngoài trung dài hạn\nE22010202\nSố dư quá hạn đầu kỳ-N.hàng vay N.ngoài trung dài hạn.\nE22010203\nSố rút vốn PS trong kỳ-NH vay nước ngoài trung dài hạn\nE22010204\nSố tiền T.toán cho N.ngoài trong kỳ-NH vay N.ngoài trung dài dạn.\nE22010205\nSố tiền quá hạn PStăng trong kỳ NH vay Nngoài trung dàihạn\nE22010206\nTổng số dư cuối kỳ-N.hàng vay N.ngoài trung dài hạn\nE22010207\nSố dư quá hạn cuối kỳ-N.hàng vay N.ngoài trung dài hạn\nE22010208\nNghĩa vụ trả nợ N.ngoài kỳ tới-NH vay N.ngoài trung dàihạn\nE22020101\nTổng số dư đầu kỳ các khoản D.nghiệp vay N.ngoài ngắn hạn\nE22020102\nSố dư quá hạn đầu kỳ các khoản DN vay N.ngoài ngắn hạn\nE22020103\nSố rút vốn PS trong kỳ-DN vay N.ngoài ngắn hạn\nE22020104",
+      "effective_from": "1998-10-01",
+      "effective_to": "2001-04-01"
+    },
+    {
+      "chunk_index": 26,
+      "article": "4",
+      "clause": "6",
+      "point": null,
+      "path": "Điều 4 · Khoản 6",
+      "part": 7,
+      "total_parts": 7,
+      "char_count": 1796,
+      "text": "Quyết định 318/1998/QĐ-NHNN1 — Điều 4. Chánh Văn phòng Thống đốc: Vụ trưởng Vụ nghiên cứu kinh tế; Thủ trưởng các đơn vị trực thuộc Ngân hàng Nhà nước Trung ương; Giám đốc chi nhánh Ngân hàng Nhà nước Tỉnh, Thành phố trực thuộc Trung ương; Chủ tịch Hội đồng quản trị, Tổng giám đốc (Giám đốc) các tổ chức tín dụng và các doanh nghiệp chịu trách nhiệm thi hành Quyết định này. — Khoản 6\nSố tiền t.toán cho N.ngoài trong kỳ-DN vay N.ngoài ngắnhạn\nE22020105\nSố tiền quá hạn PS tăng trong kỳ-DN vay N.ngoài ngắn hạn\nE22020106\nTổng số dư cuối kỳ các khoản DN vay N.ngoài ngắn hạn\nE22020107\nSố dư quá hạn cuối kỳ các khoản DN vay N.ngoài ngắn hạn\nE22020108\nNghĩa vụ trả nợ N.ngoài kỳ tới-DN vay Nngoài ngắn hạn\nE22020201\nT.số dư đầu kỳ các khoản D.nghiệp vay N.ngoài trung dàihạn\nE22020202\nSố dư quá hạn đầu kỳ-D.nghiệp vay N.ngoài trung dài hạn\nE22020203\nSố rút vốn PS trong kỳ DN vay N.ngoài trung dài hạn\nE22020204\nSố tiền t.toán cho N.ngoài trong kỳ DN vay N.ngoài trung dài hạn.\nE22020205\nSố tiền quá hạn PStăng trong kỳ-DN vay N.ngoài trung dàihạn\nE22020206\nTổng số dư cuối kỳ - DN vay N.ngoài trung dài hạn.\nE22020207\nSố dư quá hạn cuối kỳ-DN vay N.ngoài trung dài hạn\nE22020208\nNghĩa vụ trả nợ N.ngoài kỳ tới DN vay N.ngoài trung dàihạn\nĐơn vị lập báo cáo: ngân hàng...\n(Điện thoại:... Fax:...)\nĐơn vị nhận báo cáo: Vụ QLNH\nBÁO CÁO TỔNG HỢP TÌNH HÌNH BẢO LÃNH VAY VỐN NƯỚC NGOÀI\n(tháng... năm...)\nBIỂU SỐ E20\nĐơn vị: Quy 1000 USD\nChỉ tiêu\nSố dư đầu kỳ\nPhát sinh trong kỳ\nSố dư cuối kỳ\nNghĩa vụ trả nợ nước ngoài kỳ tiếp theo\nTổng số\nTrong đó quá hạn\nNH thanh toán thay\nSố tiền cam kết bảo lãnh\nSố rút vốn\nSố tiền thanh toán cho nước ngoài\nSố tiền quá hạn PS tăng\nTổng số\nTrong đó quá hạn\nNH thanh toán thay\nTổng số\nTrong đó NH thanh toán thay\n1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11\n12\n13\nI. Ngắn hạn (tổng số)",
+      "effective_from": "1998-10-01",
+      "effective_to": "2001-04-01"
+    }
+  ]
+}

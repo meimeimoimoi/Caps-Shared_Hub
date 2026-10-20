@@ -2,24 +2,7 @@
 
 # Caps-Shared Hub
 
-**Monorepo gồm Backend .NET 8 Microservices và Frontend React 19**
-
-![.NET](https://img.shields.io/badge/.NET-8.0-512BD4?logo=dotnet&logoColor=white)
-![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)
-![Vite](https://img.shields.io/badge/Vite-646CFF?logo=vite&logoColor=white)
-![TailwindCSS](https://img.shields.io/badge/Tailwind-v4-06B6D4?logo=tailwindcss&logoColor=white)
-![PostgreSQL](https://img.shields.io/badge/PostgreSQL-pgvector-4169E1?logo=postgresql&logoColor=white)
-![Redis](https://img.shields.io/badge/Redis-DC382D?logo=redis&logoColor=white)
-![RabbitMQ](https://img.shields.io/badge/RabbitMQ-FF6600?logo=rabbitmq&logoColor=white)
-![Docker](https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=white)
-
-[Yêu cầu](#-yêu-cầu-môi-trường) ·
-[Kiến trúc](#-kiến-trúc) ·
-[Khởi chạy](#-khởi-chạy-nhanh) ·
-[Quy ước](#-quy-ước-team) ·
-[Tài liệu](#-tài-liệu)
-
-</div>
+Monorepo gồm **Backend (.NET 8 Microservices)**, **Frontend (React 19 + Vite + TailwindCSS v4)** và **Crawler văn bản pháp luật (Python)**.
 
 ---
 
@@ -95,13 +78,21 @@ Caps-Shared_Hub/
 │   │   └── main.tsx              # React entry point
 │   ├── scripts/check-architecture.mjs
 │   ├── .env.example              # Mẫu biến môi trường
-│   └── README.md                 # Frontend architecture and conventions
-├── docs/                         # Tài liệu nghiệp vụ, backend, frontend, testing
-├── AGENTS.md                     # Quy tắc khi sửa code (cho người và AI agent)
+│   └── package.json
+├── crawler/                      # Python: cào vbpl.vn + vbpq.mof.gov.vn, OCR,
+│                                 # tách Điều/Khoản → data/export/*.json cho BE/ingestion
 └── README.md                     # File này
 ```
 
-</details>
+Chi tiết từng phía: [BE/README.md](BE/README.md) · [FE/README.md](FE/README.md) · [crawler/README.md](crawler/README.md).
+
+Luồng request giai đoạn kiến trúc:
+
+```text
+Browser (FE :5173) → Gateway (:5190) → Auth (:5194) → Postgres (schema auth)
+                           │                    └── JWT (HS256, dev)
+                           └── /healthz, /readyz mỗi service
+```
 
 ---
 
@@ -198,6 +189,24 @@ npm run dev     # http://localhost:5173
 | `/api/v1/billing/bank-accounts/**` | `billing` | Token hợp lệ (`AuthSession`) |
 | `/api/v1/billing/payos/**` | `billing` | Qua `billing-v1`: `webhook` công khai (xác thực bằng chữ ký PayOS), `create-topup` do billing kiểm tra token |
 | `/api/v1/admin/billing/**` | `billing` | Token hợp lệ (`AuthSession`); billing kiểm tra quyền `PayoutManage` |
+
+### 3.4. Crawler văn bản pháp luật (Python 3.13)
+
+Cào văn bản từ vbpl.vn và vbpq.mof.gov.vn (Bộ Tài chính), tách Chương/Điều/Khoản/Điểm và
+xuất chunk JSON theo schema `knowledge` (`legal_source`, `knowledge_document`, `kb_chunk`).
+
+```powershell
+cd crawler
+pip install -r requirements.txt
+playwright install chromium
+
+python scraper_agent.py --sources vbpl,mof --top-n 3   # 1. cào: data/text, data/metadata.json
+python scraper_agent.py --export-only                  # 2. tách Điều/Khoản: data/export/**/*.json
+python -m pytest tests -q
+```
+
+- OCR (PDF scan của vbpq.mof.gov.vn) cần cài Tesseract + gói tiếng Việt — xem [crawler/README.md](crawler/README.md).
+- `BE/ingestion` chưa có API nhận file export; ràng buộc `ck_kd_source` trong `BE/SHFT_PostgreSQL.sql` cần thêm `CRAWL_MOF`.
 
 ---
 
