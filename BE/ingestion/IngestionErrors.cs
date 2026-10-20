@@ -21,4 +21,19 @@ public static class IngestionErrors
 
     public static AppException CrawlAlreadyRunning() =>
         new(ErrorType.Conflict, "CRAWL_ALREADY_RUNNING", "A crawl job is already running.");
+
+    public static AppException CrawlJobNotFound() =>
+        new(ErrorType.NotFound, "CRAWL_JOB_NOT_FOUND", "Crawl job not found.");
+
+    public static AppException CrawlJobNotRunning() =>
+        new(ErrorType.Conflict, "CRAWL_JOB_NOT_RUNNING", "The crawl job has already finished.");
+
+    public static AppException InvalidDocumentSource(string source) =>
+        new(ErrorType.Validation, "INVALID_DOCUMENT_SOURCE", $"Unknown document source: {source}.");
+
+    public static AppException InvalidContentJson() =>
+        new(ErrorType.Validation, "INVALID_CONTENT_JSON", "content_json must be a JSON object.");
+
+    public static AppException InternalKeyInvalid() =>
+        new(ErrorType.Unauthorized, "INTERNAL_KEY_INVALID", "Missing or wrong internal key.");
 }
