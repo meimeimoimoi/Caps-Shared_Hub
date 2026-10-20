@@ -3,6 +3,13 @@ using Caps.Ingestion.Features.Documents;
 
 namespace Caps.Ingestion.DTOs.Requests;
 
+/// <summary>Rejects a pending document; the reason is kept with it.</summary>
+public sealed record RejectDocumentRequest([Required, MaxLength(1000)] string Reason)
+{
+    public RejectDocumentCommand ToCommand(Guid reviewerUserId, Guid documentId) =>
+        new(reviewerUserId, documentId, Reason);
+}
+
 /// <summary>A legal document file uploaded by a Knowledge Admin, with the metadata of its legal source.</summary>
 public sealed class UploadDocumentRequest
 {

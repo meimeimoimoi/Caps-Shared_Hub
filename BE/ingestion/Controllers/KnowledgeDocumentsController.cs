@@ -75,6 +75,29 @@ public sealed class KnowledgeDocumentsController(ICurrentUser currentUser) : Con
         return File(file.Content, file.ContentType, file.FileName);
     }
 
+    /// <summary>Rejects a pending document with a reason.</summary>
+    /// <remarks>
+    /// Only PENDING documents can be rejected; the document then leaves the pending queue. The reason (at most
+    /// 1000 characters) is kept as rejectionReason, and approvedBy/approvedAt record who decided and when.
+    /// </remarks>
+    /// <response code="200">Rejected.</response>
+    /// <response code="400">Invalid body or REJECTION_REASON_REQUIRED.</response>
+    /// <response code="403">Missing the KnowledgeManage permission.</response>
+    /// <response code="404">DOCUMENT_NOT_FOUND.</response>
+    /// <response code="409">DOCUMENT_NOT_PENDING: the document was already decided.</response>
+    /// <response code="503">SESSION_CHECK_UNAVAILABLE: the session could not be checked.</response>
+    [HttpPost("{id:guid}/reject"), RequireSessionCheck]
+    public async Task<IActionResult> Reject(
+        Guid id,
+        RejectDocumentRequest r,
+        [FromServices] ICommandHandler<RejectDocumentCommand> handler,
+        CancellationToken ct
+    )
+    {
+        await handler.HandleAsync(r.ToCommand(UserId, id), ct);
+        return Ok(ApiResponse.Message("Document rejected."));
+    }
+
     /// <summary>Uploads a legal document file for review (multipart form).</summary>
     /// <remarks>
     /// file: PDF or DOCX up to 20 MB, checked by its content. documentNumber, docType and title describe the

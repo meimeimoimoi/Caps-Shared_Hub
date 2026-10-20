@@ -4,4 +4,5 @@ namespace Caps.Ingestion.Constants;
 public static class DocumentStatuses
 {
     public const string Pending = "PENDING";
+    public const string Rejected = "REJECTED";
 }

@@ -78,6 +78,9 @@ public static class IngestionErrors
             "The document has already been decided and can no longer change."
         );
 
+    public static AppException RejectionReasonRequired() =>
+        new(ErrorType.Validation, "REJECTION_REASON_REQUIRED", "A rejection reason is required.");
+
     public static AppException InvalidParseResult() =>
         new(ErrorType.Validation, "INVALID_PARSE_RESULT", "Send either contentJson or error.");
 
