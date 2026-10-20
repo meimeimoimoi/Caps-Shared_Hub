@@ -81,7 +81,7 @@ public sealed class KnowledgeDocumentsController(ICurrentUser currentUser) : Con
     /// 1000 characters) is kept as rejectionReason, and approvedBy/approvedAt record who decided and when.
     /// </remarks>
     /// <response code="200">Rejected.</response>
-    /// <response code="400">Invalid body or REJECTION_REASON_REQUIRED.</response>
+    /// <response code="400">The reason is missing, blank or longer than 1000 characters.</response>
     /// <response code="403">Missing the KnowledgeManage permission.</response>
     /// <response code="404">DOCUMENT_NOT_FOUND.</response>
     /// <response code="409">DOCUMENT_NOT_PENDING: the document was already decided.</response>

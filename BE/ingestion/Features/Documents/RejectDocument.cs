@@ -18,8 +18,6 @@ public sealed class RejectDocumentHandler(IngestionDbContext db, TimeProvider cl
     public async Task HandleAsync(RejectDocumentCommand command, CancellationToken ct)
     {
         var reason = command.Reason.Trim();
-        if (reason.Length == 0)
-            throw IngestionErrors.RejectionReasonRequired();
         var now = clock.GetUtcNow();
         var updated = await db
             .KnowledgeDocuments.Where(x =>
