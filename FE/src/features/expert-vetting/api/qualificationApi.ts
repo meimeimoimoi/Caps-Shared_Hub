@@ -1,6 +1,5 @@
 import { api } from '@/lib/api-client'
 import { QUALIFICATION_STATUS } from '@/lib/constants'
-import { isExpertDemo } from '@/lib/expert-data-source'
 import type {
   CompetencyCheck,
   CompetencyDecisionInput,
@@ -159,13 +158,12 @@ function toDetail(q: ReviewQualification): QualificationDetail {
   }
 }
 
-/** Every qualification in the given statuses; empty in demo mode (no Gate 2 fixtures) */
+/** Every qualification in the given statuses, loaded from the server. */
 export async function getQualifications(
   scope: QualificationScope,
   statuses: readonly QualificationStatus[],
   signal?: AbortSignal
 ) {
-  if (isExpertDemo) return []
   const lists = await Promise.all(
     statuses.map((status) =>
       api.get<Envelope<QueueItem[]>>(BASES[scope], {
@@ -182,7 +180,6 @@ export async function getQualificationDetail(
   id: string,
   signal?: AbortSignal
 ): Promise<QualificationDetail | null> {
-  if (isExpertDemo) return null
   const res = await api.get<Envelope<ReviewQualification>>(
     `${BASES[scope]}/${id}`,
     { signal }
@@ -196,7 +193,6 @@ export async function getQualificationFile(
   id: string,
   evidenceId: string
 ) {
-  if (isExpertDemo) return null
   return api.get<Blob>(`${BASES[scope]}/${id}/evidence/${evidenceId}/file`, {
     responseType: 'blob',
     timeout: 60_000,

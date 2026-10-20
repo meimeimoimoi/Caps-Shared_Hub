@@ -2413,19 +2413,19 @@ html,body,#root{height:100%}
 
 .expert-pro-experience-grid .expert-form-field.expert-years-field {
   display: grid;
-  grid-template-columns: auto 96px;
+  grid-template-columns: minmax(0, max-content) 112px;
   justify-content: start;
   align-items: center;
   gap: 8px 16px;
   max-width: none;
   margin-bottom: 0;
 }
-.expert-years-field > label { margin: 0; line-height: 1.5; }
-.expert-years-field > input { width: 100%; min-width: 0; }
+.expert-years-field > div:first-child { min-width: 0; }
+.expert-years-field > .expert-years-input { width: 100%; min-width: 0; }
 .expert-years-field > .expert-field-error { grid-column: 1 / -1; }
 @media (max-width: 480px) {
   .expert-pro-experience-grid .expert-form-field.expert-years-field {
-    grid-template-columns: minmax(0, auto) 80px;
+    grid-template-columns: minmax(0, auto) 96px;
     column-gap: 12px;
   }
 }
@@ -2819,12 +2819,12 @@ html,body,#root{height:100%}
   .expert-contact-readonly dl { grid-template-columns: minmax(0, 1fr); }
 }
 
-/* ── Bước Kinh nghiệm chuyên môn ── */
-/* Số năm: nhãn ở trên, ô vừa đủ cho 2 chữ số kèm đơn vị "năm" */
+/* Professional experience step */
+/* Keep the years input compact, with room for the value and localized unit. */
 .expert-years-input { position: relative; display: flex; align-items: center; max-width: 180px; }
 .expert-years-input > input { width: 100%; padding-right: 52px !important; }
 .expert-years-input > span { position: absolute; right: 14px; color: var(--ui-text-muted); font-size: 14px; pointer-events: none; }
-/* Ẩn mũi tên tăng/giảm của ô số; vẫn gõ được và dùng phím mũi tên */
+/* Hide number spinners while preserving typing and arrow-key input. */
 .expert-years-input > input { appearance: textfield; -moz-appearance: textfield; }
 .expert-years-input > input::-webkit-inner-spin-button,
 .expert-years-input > input::-webkit-outer-spin-button { margin: 0; -webkit-appearance: none; }

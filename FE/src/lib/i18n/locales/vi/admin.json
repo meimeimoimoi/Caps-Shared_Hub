@@ -1,4 +1,23 @@
 {
+  "reviewWorkspace": {
+    "reference": "Mã hồ sơ",
+    "progress": "Tiến độ đánh giá",
+    "criteria": "tiêu chí hoàn tất",
+    "assessmentHint": "Đối chiếu thông tin hồ sơ, chọn kết quả và ghi chú cho từng tiêu chí.",
+    "criteriaNavigation": "Chọn tiêu chí đánh giá",
+    "notAssessed": "Chưa đánh giá",
+    "missingNote": "Thiếu ghi chú",
+    "assessmentResult": "Kết quả đánh giá",
+    "optionalNotePlaceholder": "Nhập căn cứ hoặc nhận xét đánh giá…",
+    "noteHint": "Thêm ghi chú để hoàn tất tiêu chí này.",
+    "noteVisibility": "Người đăng ký sẽ xem được ghi chú này.",
+    "previousCriterion": "Tiêu chí trước",
+    "nextIncomplete": "Mục chưa hoàn tất tiếp theo",
+    "allComplete": "Đã hoàn tất mọi tiêu chí",
+    "completeCurrent": "Hoàn tất tiêu chí hiện tại",
+    "continueReview": "Tiếp tục đánh giá"
+  },
+  "dashboardApiPending": "Thống kê tổng quan chưa được kết nối dữ liệu. Bạn vẫn có thể phê duyệt cuối và duyệt giá dịch vụ từ menu. Các mục quản trị khác đang chờ tích hợp API.",
   "navigation": {
     "overview": "Tổng quan",
     "expertReview": "Xét duyệt Expert",

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { customerRegistrationReturnPath, safeReturnPath } from '../utils/returnPath'
+import { customerRegistrationReturnPath, expertLoginReturnPath, safeReturnPath } from '../utils/returnPath'
+import { hasAnyPermission, Permission, staffHomePath } from '../utils/permissions'
 import { authApi } from '../api/authApi'
 import { useAuthStore } from '../store/authStore'
 import type { LoginFormValues, User } from '../types'
@@ -41,10 +42,19 @@ export function useAuth() {
       from: location.state?.from,
       fromState: location.state?.fromState,
     }
-    // Registration intent is persisted as an application, independently of email status or USER role.
-    const applicant = await hasExpertApplication()
-    if (applicant && (u.status === 'PENDING_VERIFICATION' || !state.from))
-      navigate(u.status === 'PENDING_VERIFICATION' ? '/expert/application' : '/expert', { replace: true })
+    const staffHome = staffHomePath(u)
+    if (staffHome && u.status !== 'PENDING_VERIFICATION') {
+      navigate(safeReturnPath(state.from, staffHome), {
+        replace: true,
+        state: state.fromState,
+      })
+      return
+    }
+    // Existing experts may have permissions without an application created by the current onboarding flow.
+    const applicant = hasAnyPermission(u, [Permission.ServiceManage, Permission.CaseWork])
+      || await hasExpertApplication()
+    if (applicant)
+      navigate(u.status === 'PENDING_VERIFICATION' ? '/expert/application' : expertLoginReturnPath(state.from), { replace: true, state: state.fromState })
     else if (u.status === 'PENDING_VERIFICATION')
       navigate('/verify-email', { replace: true, state })
     else

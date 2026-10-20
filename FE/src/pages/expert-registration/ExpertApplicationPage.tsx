@@ -133,7 +133,7 @@ export default function ExpertApplicationPage() {
     [
       notice,
       lifecycleNotice,
-      accountCreated ? t('messages.accountCreated') : '',
+      accountCreated && step === 0 ? t('messages.accountCreated') : '',
     ].find(Boolean) ?? ''
   const terminal = stage === 'ineligible' || stage === 'failed'
   // No AI screening step yet: submission goes straight to the eligibility review (Gate 1)
@@ -396,7 +396,6 @@ export default function ExpertApplicationPage() {
               onMove={move}
               email={profile.email}
               emailVerified={application?.emailVerified ?? false}
-              fileLimit={application?.maxFiles}
               onVerify={openVerification}
               missing={application?.missingRequirements ?? []}
             />

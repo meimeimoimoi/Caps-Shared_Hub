@@ -16,46 +16,53 @@ import {
 import { disputesKeys } from '@/features/disputes-escrow/api/queryKeys'
 import { disputeHoursLeft } from '@/features/disputes-escrow/utils/disputes'
 import { usePricing } from '@/features/service-pricing/hooks/usePricing'
+import { hasAnyPermission, Permission, useAuthStore } from '@/features/auth'
+import { isExpertDemo } from '@/lib/expert-data-source'
 
-/** Badge sidebar + chuông cho System Admin, gom từ nhiều feature; truyền thẳng vào AdminLayout.
- * Chuông là nơi duy nhất báo việc gấp (dashboard không lặp lại). Cùng query key với các màn chi tiết nên dùng chung cache. */
-export function useAdminNav() {
+/** Shared staff badges only request APIs the current account can access. */
+export function useAdminNav(enabled = true) {
   const { t } = useTranslation('admin')
   const [now] = useState(() => Date.now())
+  const user = useAuthStore((s) => s.user)
+  const canReview = enabled && hasAnyPermission(user, [Permission.ExpertReview])
+  const canViewDemoOperations = enabled && isExpertDemo && hasAnyPermission(user, [Permission.UserManage])
   const applications = useQuery({
     queryKey: adminKeys.applications(),
     queryFn: ({ signal }) => getApplications(signal),
+    enabled: canReview,
   })
   const disputes = useQuery({
     queryKey: disputesKeys.disputes(),
     queryFn: ({ signal }) => getDisputes(signal),
+    enabled: canViewDemoOperations,
   })
   const escrows = useQuery({
     queryKey: disputesKeys.escrows(),
     queryFn: ({ signal }) => getEscrows(signal),
+    enabled: canViewDemoOperations,
   })
-  const tiers = usePricing().data?.tiers ?? []
+  const pricing = usePricing(canViewDemoOperations)
+  const tiers = canViewDemoOperations ? pricing.data?.tiers ?? [] : []
 
-  const pending = (applications.data ?? []).filter(
+  const pending = (canReview ? applications.data ?? [] : []).filter(
     (a) => a.status === PENDING_STATUS
   )
   const overdue = pending.filter(
     (a) => waitedDays(a.submittedAt, now) > SLA_DAYS
   ).length
-  const open = (disputes.data ?? []).filter((d) => !d.resolvedAt)
+  const open = (canViewDemoOperations ? disputes.data ?? [] : []).filter((d) => !d.resolvedAt)
   const nearestHours = open.length
     ? Math.min(...open.map((d) => disputeHoursLeft(d, now)))
     : 0
-  const payoutFailed = (escrows.data ?? []).filter(
+  const payoutFailed = (canViewDemoOperations ? escrows.data ?? [] : []).filter(
     (e) => e.status === 'PAYOUT_FAILED'
   ).length
-  const refundFailed = (escrows.data ?? []).filter(
+  const refundFailed = (canViewDemoOperations ? escrows.data ?? [] : []).filter(
     (e) => e.status === 'REFUND_FAILED'
   ).length
   const outsideRange = tiers.reduce((s, tier) => s + tier.outsideRange, 0)
 
-  // ponytail: thông báo suy ra từ số đếm; thay bằng API thông báo khi BE có
-  // Thứ tự theo mức độ: hạn trọng tài và tiền trước, cảnh báo nhẹ sau
+  // Derive notifications from accessible queues, ordered by urgency.
   const notifications: ShellNotification[] = [
     open.length > 0 && {
       id: 'disputes',
@@ -84,13 +91,13 @@ export function useAdminNav() {
         count: overdue,
         days: SLA_DAYS,
       }),
-      to: '/admin/experts/pending',
+      to: '/reviewer/gate-1',
       tone: 'warning' as const,
     },
     pending.length > 0 && {
       id: 'pending',
       text: t('notifications.pending', { count: pending.length }),
-      to: '/admin/experts/pending',
+      to: '/reviewer/gate-1',
     },
     outsideRange > 0 && {
       id: 'outside-range',

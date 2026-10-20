@@ -9,6 +9,8 @@ import {
   RouterProvider,
   ScrollRestoration,
   useLocation,
+  useParams,
+  useSearchParams,
 } from 'react-router-dom'
 import { MotionPage } from '@/components/ui/motion'
 import { PermissionRoute, ProtectedRoute } from './ProtectedRoute'
@@ -21,15 +23,9 @@ import { AccountSettings, Permission } from '@/features/auth'
 import { DraftLayout } from '../layouts/drafts/DraftLayout'
 import { ClientLayout } from '../layouts/client/ClientLayout'
 const ReviewerLayout = lazy(() => import('../layouts/reviewer/ReviewerLayout'))
-const ReviewerQueuePage = lazy(
-  () => import('@/pages/reviewer/ReviewerQueuePage')
-)
-const ReviewerAssessmentPage = lazy(
-  () => import('@/pages/reviewer/ReviewerAssessmentPage')
-)
-const ReviewerHistoryPage = lazy(
-  () => import('@/pages/reviewer/ReviewerHistoryPage')
-)
+const ReviewerQueuePage = lazy(() => import('@/pages/reviewer/ReviewerQueuePage'))
+const ReviewerAssessmentPage = lazy(() => import('@/pages/reviewer/ReviewerAssessmentPage'))
+const ReviewerHistoryPage = lazy(() => import('@/pages/reviewer/ReviewerHistoryPage'))
 const DraftListPage = lazy(() => import('@/pages/drafts/DraftListPage'))
 const DraftTemplatePage = lazy(() => import('@/pages/drafts/DraftTemplatePage'))
 const DraftTemplateDetailPage = lazy(
@@ -42,6 +38,7 @@ const DraftGenerationPage = lazy(
 const DraftPreviewPage = lazy(() => import('@/pages/drafts/DraftPreviewPage'))
 const DraftHistoryPage = lazy(() => import('@/pages/drafts/DraftHistoryPage'))
 const LoginPage = lazy(() => import('@/pages/LoginPage'))
+const LegalPage = lazy(() => import('@/pages/LegalPage'))
 const RegisterPage = lazy(() => import('@/pages/RegisterPage'))
 const ResetPasswordPage = lazy(() => import('@/pages/ResetPasswordPage'))
 const VerifyEmailPage = lazy(() => import('@/pages/VerifyEmailPage'))
@@ -96,12 +93,6 @@ const ExpertPublicProfilePage = lazy(
 )
 const DashboardPage = lazy(() => import('../../pages/DashboardPage'))
 const NotFoundPage = lazy(() => import('../../pages/NotFoundPage'))
-const AdminPendingExpertsPage = lazy(
-  () => import('@/pages/admin/AdminPendingExpertsPage')
-)
-const AdminApplicationDetailPage = lazy(
-  () => import('@/pages/admin/AdminApplicationDetailPage')
-)
 const AdminQualificationsPage = lazy(
   () => import('@/pages/admin/AdminQualificationsPage')
 )
@@ -206,10 +197,28 @@ function RouteMotion() {
 
 // Permissions from the auth service (BE PermissionMatrix) that open each staff area
 const SYSTEM_ADMIN = [Permission.UserManage] as const
-const EXPERT_REVIEW = [Permission.UserManage, Permission.ExpertReview] as const
+const EXPERT_REVIEW = [Permission.ExpertReview] as const
+const STAFF_ACCOUNT = [Permission.UserManage, Permission.ExpertReview] as const
 const KNOWLEDGE_ADMIN = [Permission.KnowledgeManage] as const
 const REVIEWER = [Permission.ExpertReview] as const
 const EXPERT_APPROVE = [Permission.ExpertApprove] as const
+
+/** Preserve bookmarks that used the old gate query parameter. */
+function ReviewerHome() {
+  const [params] = useSearchParams()
+  const gate = params.get('gate')
+  if (gate === 'GATE_1' || gate === 'GATE_2') {
+    return <Navigate to={gate === 'GATE_1' ? '/reviewer/gate-1' : '/reviewer/gate-2'} replace />
+  }
+  return <ReviewerQueuePage />
+}
+
+/** Keep old review bookmarks inside the Reviewer workspace. */
+function ReviewerAssessmentRedirect({ gate }: { gate: 'gate-1' | 'gate-2' }) {
+  const { id } = useParams()
+  const base = `/reviewer/${gate}`
+  return <Navigate to={`${base}/${encodeURIComponent(id ?? '')}`} replace />
+}
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -227,6 +236,8 @@ const router = createBrowserRouter(
     >
       <Route path="/" element={<HomePage />} />
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/terms" element={<LegalPage kind="terms" />} />
+      <Route path="/privacy" element={<LegalPage kind="privacy" />} />
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route path="/verify-email" element={<VerifyEmailPage />} />
@@ -243,10 +254,12 @@ const router = createBrowserRouter(
         <Route path="/wallet" element={<WalletPage />} />
         <Route path="/account" element={<AccountSettings role="client" />} />
       </Route>
-      {/* Reviewer workspace (demo data until the reviewer API exists); needs ExpertReview */}
+      {/* Reviewer owns Gate 1 and Gate 2; all data and decisions use the review APIs. */}
       <Route element={<PermissionRoute anyOf={REVIEWER} />}>
         <Route path="/reviewer" element={<ReviewerLayout />}>
-          <Route index element={<ReviewerQueuePage />} />
+          <Route index element={<ReviewerHome />} />
+          <Route path="gate-1" element={<ReviewerQueuePage gate="GATE_1" />} />
+          <Route path="gate-2" element={<ReviewerQueuePage gate="GATE_2" />} />
           <Route
             path="gate-1/:id"
             element={<ReviewerAssessmentPage gate="GATE_1" />}
@@ -259,25 +272,26 @@ const router = createBrowserRouter(
           <Route path="account" element={<AccountSettings role="reviewer" />} />
         </Route>
       </Route>
-      {/* Expert applications: system admins and author reviewers */}
+      {/* Gate 1 and Gate 2 reviews require ExpertReview on both FE and BE. */}
       <Route element={<PermissionRoute anyOf={EXPERT_REVIEW} />}>
-        <Route path="/admin/experts" element={<AdminExpertsPage />} />
         <Route
           path="/admin/experts/pending"
-          element={<AdminPendingExpertsPage />}
+          element={<Navigate to="/reviewer/gate-1" replace />}
         />
         <Route
           path="/admin/experts/:id"
-          element={<AdminApplicationDetailPage />}
+          element={<ReviewerAssessmentRedirect gate="gate-1" />}
         />
         <Route
           path="/admin/experts/qualifications"
-          element={<AdminQualificationsPage />}
+          element={<Navigate to="/reviewer/gate-2" replace />}
         />
         <Route
           path="/admin/experts/qualifications/:id"
-          element={<AdminQualificationDetailPage />}
+          element={<ReviewerAssessmentRedirect gate="gate-2" />}
         />
+      </Route>
+      <Route element={<PermissionRoute anyOf={STAFF_ACCOUNT} />}>
         <Route path="/admin/account" element={<AdminAccountPage />} />
       </Route>
       {/* Final approval of Gate 2 results and service suspension (System Admin, BR-E10) */}
@@ -298,6 +312,7 @@ const router = createBrowserRouter(
       </Route>
       {/* Rest of the admin area: system admins only */}
       <Route element={<PermissionRoute anyOf={SYSTEM_ADMIN} />}>
+        <Route path="/admin/experts" element={<AdminExpertsPage />} />
         <Route path="/admin/disputes" element={<AdminDisputesPage />} />
         <Route
           path="/admin/disputes/:id"

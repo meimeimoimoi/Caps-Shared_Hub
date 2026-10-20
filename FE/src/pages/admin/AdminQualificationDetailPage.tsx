@@ -7,7 +7,7 @@ import { QUALIFICATION_STATUS } from '@/lib/constants'
 import { ToolHeader } from '@/components/ui/layout/tool-header'
 import { DecisionBar } from '@/components/ui/actions/decision-bar'
 import { Toast } from '@/components/ui/feedback/toast'
-import { AdminLayout } from '@/app/layouts/admin/AdminLayout'
+import { ReviewPageLayout } from '@/features/expert-vetting/components/ReviewPageLayout'
 import { useAuthStore } from '@/features/auth'
 import { useAdminNav } from '@/app/layouts/admin/useAdminNav'
 import { getQualificationFile } from '../../features/expert-vetting/api/qualificationApi'
@@ -67,19 +67,21 @@ const RAIL_STEP: Record<string, number> = {
  */
 export default function AdminQualificationDetailPage({
   scope = 'review',
+  embedded = false,
 }: {
   scope?: QualificationScope
+  embedded?: boolean
 }) {
   const { t } = useTranslation(['admin', 'common'])
   const { id = '' } = useParams()
-  const nav = useAdminNav()
+  const nav = useAdminNav(!embedded)
   const review = useQualificationReview(id, scope)
   const userId = useAuthStore((s) => s.user?.id)
   const isApproval = scope === 'approval'
   const section = isApproval ? 'approvals' : 'competency'
   const listPath = isApproval
     ? '/admin/experts/approvals'
-    : '/admin/experts/qualifications'
+    : embedded ? '/reviewer/gate-2' : '/admin/experts/qualifications'
   const { detail } = review
   const [tab, setTab] = useState<TabKey>('profile')
   const [docKey, setDocKey] = useState<string>()
@@ -97,7 +99,7 @@ export default function AdminQualificationDetailPage({
 
   if (!detail) {
     return (
-      <AdminLayout {...nav} section={section} breadcrumb={listLink}>
+      <ReviewPageLayout embedded={embedded} {...nav} section={section} breadcrumb={listLink}>
         <h1 className="text-h1-tool">
           {review.isLoading
             ? t('common:loading')
@@ -109,7 +111,7 @@ export default function AdminQualificationDetailPage({
         >
           {t('admin:detail.backToList')}
         </Link>
-      </AdminLayout>
+      </ReviewPageLayout>
     )
   }
 
@@ -185,7 +187,8 @@ export default function AdminQualificationDetailPage({
   const years = t('admin:detail.meta.years', { count: expert.years })
 
   return (
-    <AdminLayout
+    <ReviewPageLayout
+      embedded={embedded}
       {...nav}
       section={section}
       title={expert.name}
@@ -341,6 +344,6 @@ export default function AdminQualificationDetailPage({
         />
       )}
       {toast && <Toast message={toast} onDone={clearToast} />}
-    </AdminLayout>
+    </ReviewPageLayout>
   )
 }

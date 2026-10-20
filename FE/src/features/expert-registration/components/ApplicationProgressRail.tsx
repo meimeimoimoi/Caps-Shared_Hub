@@ -25,8 +25,6 @@ export interface ApplicationProgressRailProps {
   onMove: (step: number) => void
   email: string
   emailVerified: boolean
-  /** Current file limit, shown while the email is unverified */
-  fileLimit?: number
   /** Opens the verification dialog */
   onVerify: () => void
   /** Codes from the server; empty when everything required is there */
@@ -44,7 +42,6 @@ export function ApplicationProgressRail({
   onMove,
   email,
   emailVerified,
-  fileLimit,
   onVerify,
   missing,
 }: ApplicationProgressRailProps) {
@@ -124,13 +121,8 @@ export function ApplicationProgressRail({
               <span>{t('rail.emailUnverified')}</span>
             </p>
             <p className="expert-rail-note">
-              {t('rail.emailSentTo')} <strong>{email}</strong>
+              <strong>{email}</strong>
             </p>
-            {fileLimit != null && (
-              <p className="expert-rail-note">
-                {t('rail.fileLimit', { max: format.number(fileLimit) })}
-              </p>
-            )}
             <button
               type="button"
               className="expert-rail-action"

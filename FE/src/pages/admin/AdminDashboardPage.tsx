@@ -29,6 +29,8 @@ import { usePricing } from '../../features/service-pricing/hooks/usePricing'
 import { BarList } from '../../features/admin-analytics/components/BarList'
 import { GrowthSection } from '../../features/admin-analytics/components/GrowthSection'
 import { KpiCard } from '../../features/admin-analytics/components/KpiCard'
+import { hasAnyPermission, Permission, useAuthStore } from '@/features/auth'
+import { isExpertDemo } from '@/lib/expert-data-source'
 
 /* Tổng quan System Admin: chỉ số, tăng trưởng, chỗ đang tắc. Việc gấp nằm ở chuông thông báo (useAdminNav). Số liệu dùng chung cache với các màn chi tiết */
 export default function AdminDashboardPage() {
@@ -36,24 +38,30 @@ export default function AdminDashboardPage() {
   const { t } = useTranslation('admin')
   const f = useFormatters()
   const [now] = useState(() => Date.now())
+  const user = useAuthStore((s) => s.user)
+  const canReview = hasAnyPermission(user, [Permission.ExpertReview])
 
   const applications = useQuery({
     queryKey: adminKeys.applications(),
     queryFn: ({ signal }) => getApplications(signal),
+    enabled: canReview,
   })
   const experts = useQuery({
     queryKey: adminKeys.experts(),
     queryFn: ({ signal }) => getExperts(signal),
+    enabled: isExpertDemo,
   })
   const disputes = useQuery({
     queryKey: disputesKeys.disputes(),
     queryFn: ({ signal }) => getDisputes(signal),
+    enabled: isExpertDemo,
   })
   const escrows = useQuery({
     queryKey: disputesKeys.escrows(),
     queryFn: ({ signal }) => getEscrows(signal),
+    enabled: isExpertDemo,
   })
-  const pricing = usePricing()
+  const pricing = usePricing(isExpertDemo)
   const loading = [applications, experts, disputes, escrows, pricing].some(
     (q) => q.isLoading
   )
@@ -93,9 +101,14 @@ export default function AdminDashboardPage() {
     >
       <h1 className="text-h1">{t('dashboard.title')}</h1>
       <p className="text-fg-muted mt-3">{t('dashboard.description')}</p>
+      {!isExpertDemo && (
+        <p role="status" className="bg-desk-2 text-fg-muted mt-6 rounded-lg p-4 text-sm">
+          {t('dashboardApiPending')}
+        </p>
+      )}
 
       <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <KpiCard
+        {canReview && <KpiCard
           label={t('dashboard.kpi.pending')}
           value={applications.data && pending.length}
           note={
@@ -104,8 +117,8 @@ export default function AdminDashboardPage() {
               : t('dashboard.kpi.pendingOnTime')
           }
           warn={overdue.length > 0}
-          to="/admin/experts/pending"
-        />
+          to="/reviewer/gate-1"
+        />}
         <KpiCard
           label={t('dashboard.kpi.experts')}
           value={experts.data && active}
@@ -143,11 +156,11 @@ export default function AdminDashboardPage() {
         />
       </div>
 
-      <GrowthSection />
+      {isExpertDemo && <GrowthSection />}
 
       {/* Chỗ đang tắc: hồ sơ dồn ở bước nào, tiền kẹt ở đâu */}
       <div className="mt-6 grid gap-4 lg:grid-cols-2">
-        <BarList
+        {canReview && <BarList
           id="dash-vetting"
           title={t('dashboard.vetting')}
           empty={loading ? t('dashboard.loading') : t('dashboard.noData')}
@@ -162,7 +175,7 @@ export default function AdminDashboardPage() {
               display: f.number(count),
             }
           })}
-        />
+        />}
         <BarList
           id="dash-escrow"
           title={t('dashboard.escrow')}

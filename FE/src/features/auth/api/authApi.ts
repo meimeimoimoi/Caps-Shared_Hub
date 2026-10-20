@@ -78,7 +78,7 @@ export const authApi = {
   login: async (values: LoginFormValues) => {
     const res = await api.post<BackendEnvelope<BackendAuthPayload>>(
       '/api/v1/auth/login',
-      { email: values.email, password: values.password },
+      { email: values.email, password: values.password, rememberMe: values.rememberMe ?? false },
       withCookie,
     )
     return toSession(res.data)

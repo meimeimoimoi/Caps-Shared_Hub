@@ -1,5 +1,6 @@
 import { useCallback, useState, type KeyboardEvent } from 'react'
 import { Link, useParams } from 'react-router-dom'
+import { ArrowLeft } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { ApiError } from '@/lib/api-client'
 import {
@@ -11,7 +12,7 @@ import { ToolHeader } from '@/components/ui/layout/tool-header'
 import { CaseHeader } from '@/components/ui/layout/case-header'
 import { DecisionBar } from '@/components/ui/actions/decision-bar'
 import { Toast } from '@/components/ui/feedback/toast'
-import { AdminLayout } from '@/app/layouts/admin/AdminLayout'
+import { ReviewPageLayout } from '@/features/expert-vetting/components/ReviewPageLayout'
 import { getEvidenceFile } from '../../features/expert-vetting/api/adminApi'
 import { AiScreeningTab } from '../../features/expert-vetting/components/AiScreeningTab'
 import { DecisionDialog } from '../../features/expert-vetting/components/DecisionDialog'
@@ -32,6 +33,7 @@ import { formatDate } from '../../features/expert-vetting/utils/applications'
 import { useAdminNav } from '@/app/layouts/admin/useAdminNav'
 import { useApplicationReview } from '../../features/expert-vetting/hooks/useApplicationReview'
 import { useTranslation } from 'react-i18next'
+import { StatusBadge } from '@/components/ui/display/status-badge'
 
 const DECISION_ERRORS = [
   'INVALID_ELIGIBILITY_CRITERIA',
@@ -47,10 +49,10 @@ const isDecisionError = (code?: string): code is DecisionError =>
 
 type TabKey = 'profile' | 'documents' | 'ai' | 'history'
 
-export default function AdminApplicationDetailPage() {
+export default function AdminApplicationDetailPage({ embedded = false }: { embedded?: boolean }) {
   const { t } = useTranslation(['admin', 'common'])
   const { id = '' } = useParams()
-  const nav = useAdminNav()
+  const nav = useAdminNav(!embedded)
   const review = useApplicationReview(id)
   const { detail, status } = review
   // AI screening is postponed: the tab only exists for demo fixtures
@@ -68,19 +70,21 @@ export default function AdminApplicationDetailPage() {
   const [confirming, setConfirming] = useState(false)
   const [toast, setToast] = useState<string | null>(null)
   const clearToast = useCallback(() => setToast(null), [])
+  const listPath = embedded ? '/reviewer/gate-1' : '/admin/experts/pending'
 
   const listLink = (
     <Link
-      to="/admin/experts/pending"
-      className="text-fg-muted hover:text-fg-strong"
+      to={listPath}
+      className="text-fg-muted hover:text-fg-strong inline-flex min-h-10 items-center gap-2 rounded focus-visible:outline-2 focus-visible:outline-offset-4"
     >
-      {t('admin:navigation.pendingExperts')}
+      <ArrowLeft size={16} aria-hidden="true" />{t('admin:navigation.pendingExperts')}
     </Link>
   )
 
   if (!detail || !status) {
     return (
-      <AdminLayout
+      <ReviewPageLayout
+        embedded={embedded}
         {...nav}
         section="pending"
         breadcrumb={listLink}
@@ -92,16 +96,16 @@ export default function AdminApplicationDetailPage() {
             : (review.error?.message ?? t('admin:detail.notFound', { id }))}
         </h1>
         <Link
-          to="/admin/experts/pending"
+          to={listPath}
           className="text-accent-text mt-3 inline-block underline"
         >
           {t('admin:detail.backToList')}
         </Link>
-      </AdminLayout>
+      </ReviewPageLayout>
     )
   }
 
-  // Tab ARIA: mũi tên trái/phải, Home/End chuyển tab và chuyển focus theo
+  // Arrow keys, Home and End move both the selected tab and keyboard focus.
   const onTabKey = (e: KeyboardEvent<HTMLDivElement>) => {
     const i = tabs.findIndex((t) => t.key === tab)
     const next = {
@@ -174,7 +178,8 @@ export default function AdminApplicationDetailPage() {
   const years = t('admin:detail.meta.years', { count: detail.years })
 
   return (
-    <AdminLayout
+    <ReviewPageLayout
+      embedded={embedded}
       {...nav}
       section="pending"
       title={detail.name}
@@ -187,7 +192,7 @@ export default function AdminApplicationDetailPage() {
         </>
       }
     >
-      {decided ? (
+      {embedded ? null : decided ? (
         <CaseHeader
           code={detail.id}
           title={detail.name}
@@ -208,14 +213,27 @@ export default function AdminApplicationDetailPage() {
         />
       )}
 
-      <div className="mt-6 grid items-start gap-4 md:gap-6 lg:grid-cols-[minmax(420px,1fr)_340px]">
-        {/* ── Left: tabs ── */}
-        <div className="min-w-0">
+      <div className="mt-6 grid items-start gap-6 lg:grid-cols-[minmax(280px,0.78fr)_minmax(0,1.22fr)]">
+        {/* Reference information stays available beside the assessment. */}
+        <div className="border-border bg-surface order-2 min-w-0 overflow-hidden rounded-2xl border lg:order-1">
+          {embedded && (
+            <header className="border-border border-b px-5 py-5 sm:px-6">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <h1 className="text-text-strong min-w-0 text-xl font-semibold tracking-tight break-words">{detail.name}</h1>
+                <StatusBadge status={APPLICATION_STATUS[status]} />
+              </div>
+              <p className="text-text-muted mt-1 text-sm leading-6">{jobTitle}</p>
+              <dl className="text-text-muted mt-4 space-y-2 text-xs">
+                <div className="flex flex-wrap gap-x-2 gap-y-1"><dt>{t('reviewWorkspace.reference')}</dt><dd className="text-text-strong min-w-0 break-all">{detail.id}</dd></div>
+                <div className="flex flex-wrap gap-x-2 gap-y-1"><dt>{t('detail.meta.submitted')}</dt><dd className="text-text-strong tabular-nums">{formatDate(detail.submittedAt)}</dd></div>
+              </dl>
+            </header>
+          )}
           <div
             role="tablist"
             aria-label={t('admin:detail.tabAria')}
             onKeyDown={onTabKey}
-            className="mb-4 flex gap-7 overflow-x-auto"
+            className="border-border bg-surface-muted/40 flex gap-5 overflow-x-auto border-b px-5 pt-2 sm:px-6"
           >
             {tabs.map(({ key, label }) => (
               <button
@@ -228,13 +246,14 @@ export default function AdminApplicationDetailPage() {
                 tabIndex={tab === key ? 0 : -1}
                 onClick={() => setTab(key)}
                 className={cn(
-                  'border-b-2 pb-2 whitespace-nowrap',
+                  '-mb-px min-h-12 shrink-0 border-b-2 px-1 py-3 text-sm whitespace-nowrap transition-colors focus-visible:outline-2 focus-visible:outline-offset-[-3px]',
                   tab === key
                     ? 'border-indicator text-fg-strong font-semibold'
                     : 'text-fg-muted border-transparent'
                 )}
               >
                 {label}
+                {key === 'documents' && <span className="bg-surface-muted text-text-muted ml-2 rounded px-1.5 py-0.5 text-xs tabular-nums">{detail.documents.length}</span>}
               </button>
             ))}
           </div>
@@ -243,6 +262,8 @@ export default function AdminApplicationDetailPage() {
             role="tabpanel"
             id={`panel-${tab}`}
             aria-labelledby={`tab-${tab}`}
+            tabIndex={0}
+            className="p-5 focus-visible:outline-2 focus-visible:outline-offset-[-3px] sm:p-6"
           >
             {tab === 'ai' && detail.screening && (
               <AiScreeningTab
@@ -274,9 +295,9 @@ export default function AdminApplicationDetailPage() {
           </div>
         </div>
 
-        {/* ── Right: Gate 1 form, or the latest result once decided ── */}
+        {/* The primary workspace is wider than the reference panel. */}
         {decided ? (
-          <div className="space-y-4 md:space-y-6">
+          <div className="order-1 space-y-4 md:space-y-6 lg:order-2">
             <DecisionCard detail={detail} />
             {detail.screening && (
               <AiSummaryCard
@@ -288,21 +309,17 @@ export default function AdminApplicationDetailPage() {
             )}
           </div>
         ) : (
-          <div className="lg:sticky lg:top-20 lg:max-h-[calc(100vh-160px)] lg:overflow-y-auto">
+          <div className="order-1 min-w-0 lg:order-2">
             <EligibilityReview
+              key={detail.id}
               detail={detail}
               assessments={review.assessments}
               disabled={review.deciding}
               onResult={review.setResult}
               onNote={review.setNote}
             />
-          </div>
-        )}
-      </div>
-
-      {!decided && (
         <DecisionBar
-          className="-mx-4 mt-12 -mb-12 md:-mx-6 lg:-mx-8"
+          className="!static !mx-0 !mt-4 !mb-0 !flex-col !items-stretch !gap-4 !rounded-xl !border !border-[var(--ui-border)] !bg-[var(--ui-surface)] !px-5 !py-4 !shadow-none [&>div]:!ml-0 [&>div]:w-full [&>div]:justify-end [&_.btn]:min-h-11 [&_.btn]:h-auto [&_.btn]:whitespace-normal [&_.btn]:py-3"
           blockers={blockers}
           ready={`${t('admin:eligibility.ready', {
             count: ELIGIBILITY_CODES.length,
@@ -314,7 +331,11 @@ export default function AdminApplicationDetailPage() {
             disabled: !review.canDecide,
           }}
         />
-      )}
+          </div>
+        )}
+      </div>
+
+
 
       {confirming && (
         <DecisionDialog
@@ -327,6 +348,6 @@ export default function AdminApplicationDetailPage() {
         />
       )}
       {toast && <Toast message={toast} onDone={clearToast} />}
-    </AdminLayout>
+    </ReviewPageLayout>
   )
 }

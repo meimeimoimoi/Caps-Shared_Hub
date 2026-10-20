@@ -40,6 +40,8 @@ export function messageFor(e: unknown): RegistrationMessage {
       case 'EVIDENCE_INVALID_TYPE':
       case 'EVIDENCE_TOO_LARGE':
         return { key: 'validation.file' }
+      case 'EVIDENCE_DUPLICATE':
+        return { key: 'validation.duplicateCv' }
       case 'EVIDENCE_LIMIT':
         return { key: 'messages.fileLimit' }
       case 'EVIDENCE_LIMIT_UNVERIFIED':

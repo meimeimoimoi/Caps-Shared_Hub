@@ -10,13 +10,14 @@
     "phoneInvalid": "Use a Vietnamese number.",
     "expertise": "Select at least one area of expertise.",
     "cv": "Choose your CV to continue.",
+    "duplicateCv": "This CV is already in your application. Please choose a file with different content.",
     "file": "This file selection could not be added. Choose PDF, JPG or PNG files, each no larger than 10 MB.",
     "confirmed": "Confirm that your application is accurate before continuing.",
     "supplement": "Add a document or an explanation."
   },
   "messages": {
     "draftSaved": "Draft saved. You can come back and finish your application at any time.",
-    "accountCreated": "Account created and a verification email sent. You can keep filling in your application now.",
+    "accountCreated": "Account created. You can continue completing your application.",
     "emailTaken": "This email already has an account. Sign in to continue your application.",
     "tooManyRequests": "Too many attempts. Please wait a moment and try again.",
     "unavailable": "Can't reach the server. Please try again in a few minutes.",
@@ -194,13 +195,13 @@
     "low": "Low",
     "empty": "Empty",
     "complete": "All password requirements met",
-    "guidance": "At least 12 characters, with uppercase and lowercase letters, a number and a symbol.",
+    "guidance": "At least 8 characters, including uppercase and lowercase letters, a number and a special character.",
     "met": "Met: ",
     "notMet": "Not met: ",
     "label": "Password",
     "confirmLabel": "Confirm password",
     "short": {
-      "length": "12+ characters",
+      "length": "8+ characters",
       "uppercase": "Uppercase",
       "lowercase": "Lowercase",
       "number": "Number",
@@ -397,7 +398,7 @@
     "confidentiality": "Shows you keep user and taxpayer information confidential and use data only within the service."
   },
   "quota": {
-    "remaining": "{{used}} of {{max}} files used while your email is unverified.",
+    "remaining": "{{used}} of {{max}} files uploaded.",
     "verifyLink": "Verify your email to upload more",
     "unverifiedTitle": "All {{max}} files used before email verification",
     "unverifiedBody": "Verify your email to keep uploading. Files already uploaded are kept.",

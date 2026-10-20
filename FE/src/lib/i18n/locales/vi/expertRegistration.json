@@ -10,13 +10,14 @@
     "phoneInvalid": "Sử dụng số điện thoại Việt Nam.",
     "expertise": "Chọn ít nhất một lĩnh vực chuyên môn.",
     "cv": "Chọn CV của bạn để tiếp tục.",
+    "duplicateCv": "CV này đã có trong hồ sơ. Vui lòng chọn file có nội dung khác.",
     "file": "Không thể thêm các file đã chọn. Chọn file PDF, JPG hoặc PNG, mỗi file không quá 10 MB.",
     "confirmed": "Xác nhận thông tin hồ sơ là chính xác trước khi tiếp tục.",
     "supplement": "Thêm tài liệu hoặc nội dung giải thích."
   },
   "messages": {
     "draftSaved": "Đã lưu nháp. Bạn có thể quay lại hoàn thiện hồ sơ bất cứ lúc nào.",
-    "accountCreated": "Đã tạo tài khoản và gửi email xác nhận. Bạn có thể tiếp tục khai hồ sơ ngay.",
+    "accountCreated": "Đã tạo tài khoản. Bạn có thể tiếp tục hoàn thiện hồ sơ.",
     "emailTaken": "Email này đã có tài khoản. Hãy đăng nhập để tiếp tục hồ sơ.",
     "tooManyRequests": "Bạn thao tác quá nhanh. Vui lòng đợi một lát rồi thử lại.",
     "unavailable": "Không kết nối được máy chủ. Vui lòng thử lại sau ít phút.",
@@ -192,13 +193,13 @@
     "low": "Yếu",
     "empty": "Chưa nhập",
     "complete": "Đã đáp ứng tất cả yêu cầu mật khẩu",
-    "guidance": "Ít nhất 12 ký tự, gồm chữ hoa, chữ thường, chữ số và ký tự đặc biệt.",
+    "guidance": "Ít nhất 8 ký tự, gồm chữ hoa, chữ thường, số và ký tự đặc biệt.",
     "met": "Đã đạt: ",
     "notMet": "Chưa đạt: ",
     "label": "Mật khẩu",
     "confirmLabel": "Xác nhận mật khẩu",
     "short": {
-      "length": "12+ ký tự",
+      "length": "8+ ký tự",
       "uppercase": "Chữ hoa",
       "lowercase": "Chữ thường",
       "number": "Chữ số",
@@ -395,7 +396,7 @@
     "confidentiality": "Chứng minh bạn bảo mật thông tin của người dùng và người nộp thuế, chỉ dùng dữ liệu trong phạm vi dịch vụ."
   },
   "quota": {
-    "remaining": "Đã dùng {{used}}/{{max}} file cho tài khoản chưa xác nhận email.",
+    "remaining": "Đã tải {{used}}/{{max}} file.",
     "verifyLink": "Xác nhận email để tải thêm",
     "unverifiedTitle": "Đã dùng hết {{max}} file khi chưa xác nhận email",
     "unverifiedBody": "Xác nhận email để tiếp tục tải tài liệu. Các file đã tải vẫn được giữ.",

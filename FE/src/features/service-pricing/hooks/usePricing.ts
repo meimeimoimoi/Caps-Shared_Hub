@@ -9,11 +9,12 @@ import type { NewTierInput, PackageInput, TierChangeInput } from '../types'
 
 const KEY = ['private', 'admin', 'pricing'] as const
 
-export function usePricing() {
+export function usePricing(enabled = true) {
   const qc = useQueryClient()
   const query = useQuery({
     queryKey: KEY,
     queryFn: ({ signal }) => getPricing(signal),
+    enabled,
   })
   const refresh = () => qc.invalidateQueries({ queryKey: KEY })
   return {

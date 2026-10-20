@@ -141,10 +141,7 @@ export function FileUploader({
           {t('quota.remaining', {
             used: format.number(quota.used),
             max: format.number(quota.max),
-          })}{' '}
-          <button type="button" onClick={quota.onVerify}>
-            {t('quota.verifyLink')}
-          </button>
+          })}
         </p>
       )}
       {error && !full && (

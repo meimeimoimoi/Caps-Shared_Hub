@@ -134,11 +134,13 @@ function toDetail(a: ReviewApplication): ApplicationDetail {
 }
 
 /* ── Expert vetting (Gate 1) ── */
-export async function getApplications(signal?: AbortSignal) {
-  if (isExpertDemo) return structuredClone((await fixtures()).mockApplications)
+export async function getApplications(
+  signal?: AbortSignal,
+  statuses: readonly ApplicationStatus[] = QUEUE_STATUSES
+) {
   // The API lists one status per request; the queue tabs need all of them
   const lists = await Promise.all(
-    QUEUE_STATUSES.map((status) =>
+    statuses.map((status) =>
       api.get<Envelope<ReviewQueueItem[]>>(REVIEW_BASE, {
         params: { status },
         signal,
@@ -148,13 +150,11 @@ export async function getApplications(signal?: AbortSignal) {
   return lists.flatMap((l) => l.data.map(toQueueRow))
 }
 
-/** null = not found (demo); the API turns 404 into an ApiError */
+/** The API turns missing or inaccessible applications into an ApiError. */
 export async function getApplicationDetail(
   id: string,
   signal?: AbortSignal
 ): Promise<ApplicationDetail | null> {
-  if (isExpertDemo)
-    return (await fixtures()).getMockApplicationDetail(id) ?? null
   const res = await api.get<Envelope<ReviewApplication>>(
     `${REVIEW_BASE}/${id}`,
     { signal }
@@ -162,9 +162,8 @@ export async function getApplicationDetail(
   return toDetail(res.data)
 }
 
-/** File content of one uploaded document; null in demo (fixtures have no files) */
+/** File content of one uploaded document from the review API. */
 export async function getEvidenceFile(id: string, evidenceId: string) {
-  if (isExpertDemo) return null
   return api.get<Blob>(`${REVIEW_BASE}/${id}/evidence/${evidenceId}/file`, {
     responseType: 'blob',
     timeout: 60_000,
@@ -176,11 +175,6 @@ export async function decideEligibility(
   id: string,
   body: EligibilityDecisionInput
 ): Promise<ApplicationDetail | null> {
-  if (isExpertDemo) {
-    const f = await fixtures()
-    f.decideMockEligibility(id, body)
-    return f.getMockApplicationDetail(id) ?? null
-  }
   const res = await api.post<Envelope<ReviewApplication>>(
     `${REVIEW_BASE}/${id}/eligibility-decision`,
     body

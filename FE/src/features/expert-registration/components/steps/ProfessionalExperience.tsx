@@ -34,61 +34,11 @@ export function ProfessionalExperience({
 
   const EXPERTISE_OPTIONS = expertiseOptions
 
-  const issues = Object.entries(formErrors).filter(([, message]) => !!message)
-  const labels: Record<string, string> = {
-    years: t('experience.years'),
-    highlights: t('experience.highlights'),
-    expertise: t('experience.expertise'),
-    CV: t('experience.cv'),
-  }
-  function focusField(key: string) {
-    const container = document.getElementById(`validation-${key}`)
-    const target =
-      container instanceof HTMLInputElement
-        ? container
-        : (container?.querySelector<HTMLInputElement>('input') ??
-          document.querySelector<HTMLInputElement>(`[name="${key}"]`))
-    target?.focus({ preventScroll: true })
-    ;(container ?? target)?.scrollIntoView({
-      behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches
-        ? 'instant'
-        : 'smooth',
-      block: 'center',
-    })
-  }
-
   return (
     <div className="expert-pro-experience">
       <p className="expert-pro-subtitle">{t('experience.guidance')}</p>
 
       {/* ── Section: Experience overview ── */}
-      {issues.length > 0 && (
-        <div
-          className="expert-validation-summary"
-          aria-label={t('experience.issues')}
-        >
-          <CircleAlert size={21} aria-hidden="true" />
-          <div>
-            <h3>
-              {issues.length === 1
-                ? t('experience.issue')
-                : t('experience.issueCount', { count: issues.length })}
-            </h3>
-            <p>{t('experience.fix')}</p>
-            <ul>
-              {issues.map(([key, message]) => (
-                <li key={key}>
-                  <button type="button" onClick={() => focusField(key)}>
-                    <strong>{labels[key] ?? key}</strong>
-                    <span>{message}</span>
-                    <span aria-hidden="true">&rarr;</span>
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-      )}
       <div className="expert-pro-section">
         <div className="expert-pro-section-header">
           <h3 className="expert-pro-section-title">
@@ -101,7 +51,7 @@ export function ProfessionalExperience({
             label={t('experience.taxYears')}
             help={t('experience.yearsHelp')}
             htmlFor="experience-years"
-            className="expert-years-stack"
+            className="expert-years-field"
             error={formErrors.years}
             errorId="error-years"
           >

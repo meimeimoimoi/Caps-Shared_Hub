@@ -38,7 +38,7 @@ export interface AccountCreationProps {
   /** Lỗi từ máy chủ khi tạo tài khoản: email (dưới ô Email) và lỗi chung (trên nút tạo) */
   serverEmailError?: string
   serverError?: string
-  // Supply destinations only once genuine policy routes are available.
+  // Callers may override the default policy destinations.
   policyRoutes?: { terms?: string; privacy?: string }
 }
 
@@ -62,7 +62,7 @@ export function AccountCreation({
   onSubmit,
   serverEmailError,
   serverError,
-  policyRoutes,
+  policyRoutes = { terms: '/terms', privacy: '/privacy' },
 }: AccountCreationProps) {
   const { t } = useTranslation(['expertRegistration', 'auth'])
 
@@ -411,12 +411,12 @@ export function AccountCreation({
               i18nKey="consent"
               components={{
                 terms: policyRoutes?.terms ? (
-                  <Link to={policyRoutes.terms} />
+                  <Link to={policyRoutes.terms} target="_blank" rel="noopener noreferrer" />
                 ) : (
                   <span className="expert-policy-text" />
                 ),
                 privacy: policyRoutes?.privacy ? (
-                  <Link to={policyRoutes.privacy} />
+                  <Link to={policyRoutes.privacy} target="_blank" rel="noopener noreferrer" />
                 ) : (
                   <span className="expert-policy-text" />
                 ),

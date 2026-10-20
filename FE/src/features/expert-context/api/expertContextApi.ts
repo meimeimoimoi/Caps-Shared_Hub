@@ -50,7 +50,7 @@ export async function getExpertContext(
 }
 
 /**
- * Whether the signed-in account has started an expert application. Used right after sign-in, so an
+ * Whether the signed-in account has an expert profile or application. Used right after sign-in, so an
  * applicant who has not verified the email goes back to the application instead of the verification wall.
  * Failures propagate so a temporary outage cannot misclassify an applicant as a customer.
  */
@@ -58,5 +58,5 @@ export async function hasExpertApplication(): Promise<boolean> {
   const response = await api.get<{ data: ExpertContext }>(
     '/api/v1/experts/me/context'
   )
-  return response.data.applicationStatus != null
+  return response.data.expertId != null || response.data.applicationStatus != null
 }

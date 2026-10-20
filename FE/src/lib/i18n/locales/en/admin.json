@@ -1,4 +1,23 @@
 {
+  "reviewWorkspace": {
+    "reference": "Application reference",
+    "progress": "Assessment progress",
+    "criteria": "criteria completed",
+    "assessmentHint": "Check the application details, then record a result and notes for each criterion.",
+    "criteriaNavigation": "Select an assessment criterion",
+    "notAssessed": "Not assessed",
+    "missingNote": "Note required",
+    "assessmentResult": "Assessment result",
+    "optionalNotePlaceholder": "Add supporting reasons or assessment notes…",
+    "noteHint": "Add a note to complete this criterion.",
+    "noteVisibility": "The applicant will be able to read this note.",
+    "previousCriterion": "Previous criterion",
+    "nextIncomplete": "Next incomplete criterion",
+    "allComplete": "All criteria completed",
+    "completeCurrent": "Complete the current criterion",
+    "continueReview": "Continue assessment"
+  },
+  "dashboardApiPending": "Overview statistics are not connected yet. Final approvals and service price reviews are available from the menu. Other administration areas are awaiting API integration.",
   "navigation": {
     "overview": "Overview",
     "expertReview": "Expert Review",

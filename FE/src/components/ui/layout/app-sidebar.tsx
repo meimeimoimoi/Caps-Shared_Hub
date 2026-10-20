@@ -24,6 +24,7 @@ interface AppSidebarProps {
   groups: SidebarGroup[]
   navigationLabel: string
   collapsed?: boolean
+  badgeVariant?: 'accent' | 'muted'
   onToggleCollapse?: () => void
   onNavigate?: () => void
   onClose?: () => void
@@ -34,6 +35,7 @@ export function AppSidebar({
   groups,
   navigationLabel,
   collapsed = false,
+  badgeVariant = 'accent',
   onToggleCollapse,
   onNavigate,
   onClose,
@@ -129,7 +131,7 @@ export function AppSidebar({
                         className="bg-indicator absolute top-2 right-2 size-2 rounded-full"
                       />
                     ) : (
-                      <span className="bg-indicator absolute top-1/2 right-3.5 grid min-h-5 min-w-5 -translate-y-1/2 place-items-center rounded-full px-1.5 text-xs font-semibold text-[var(--ui-on-accent)] tabular-nums">
+                      <span className={`absolute top-1/2 right-3.5 inline-flex h-5 min-w-6 -translate-y-1/2 items-center justify-center px-1.5 font-sans text-[11px] leading-none font-medium tabular-nums ${badgeVariant === 'muted' ? 'bg-indicator rounded-md text-[var(--ui-on-accent)]' : 'bg-indicator rounded-full text-[var(--ui-on-accent)]'}`}>
                         {item.badge}
                       </span>
                     ))}

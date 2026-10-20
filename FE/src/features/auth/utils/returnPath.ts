@@ -1,5 +1,5 @@
-/** Trang khách hàng vào sau khi đăng nhập/đăng ký khi không có trang nào cần quay lại. */
-export const DEFAULT_HOME = '/drafts'
+/** Customer destination after sign-in or sign-up when there is no page to return to. */
+export const DEFAULT_HOME = '/ai-assistant'
 
 // Chỉ quay về các khu vực đã biết; loại URL dạng //host, vòng lặp về /login và route lạ.
 const allowedSections = [
@@ -18,22 +18,31 @@ const allowedSections = [
   '/reviewer',
 ]
 
-export function safeReturnPath(value: unknown): string {
+export function safeReturnPath(value: unknown, fallback = DEFAULT_HOME): string {
   if (
     typeof value !== 'string' ||
     !value.startsWith('/') ||
     value.startsWith('//')
   )
-    return DEFAULT_HOME
+    return fallback
   const path = value.split(/[?#]/)[0]
-  // Router chuẩn hóa '.'/'..', nên '/drafts/../admin' sẽ thoát khỏi khu được phép
+  // Reject dot segments before router normalization can escape an allowed section.
   if (path.includes('\\') || /(^|\/)\.{1,2}(\/|$)/.test(path))
-    return DEFAULT_HOME
+    return fallback
   return allowedSections.some(
     (section) => path === section || path.startsWith(`${section}/`)
   )
     ? value
-    : DEFAULT_HOME
+    : fallback
+}
+
+/** Expert sign-in only resumes destinations inside the expert workspace. */
+export function expertLoginReturnPath(value: unknown): string {
+  const destination = safeReturnPath(value, '/expert')
+  const path = destination.split(/[?#]/)[0]
+  return path === '/expert' || path.startsWith('/expert/')
+    ? destination
+    : '/expert'
 }
 
 /** Customer sign-up must not inherit an expert portal destination from sign-in. */
