@@ -2,6 +2,7 @@ using Caps.Common.Application;
 using Caps.Common.Security;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -24,6 +25,7 @@ public static class CommonApiExtensions
         services.AddControllers();
         services.AddEndpointsApiExplorer();
         services.AddCapsSwagger(serviceName);
+        services.AddSingleton(new SwaggerUiRoute($"/swagger/{serviceName}"));
         services.TryAddSingleton(TimeProvider.System);
         services.AddExceptionHandler<GlobalExceptionHandler>();
         services.AddProblemDetails();
@@ -52,6 +54,11 @@ public static class CommonApiExtensions
         app.UseAuthorization();
         app.MapControllers();
         // Liveness: the process answers. Readiness: its dependencies (database) answer too.
+        app.MapGet("/health", () => Results.Text("Healthy", "text/plain"))
+            .AllowAnonymous()
+            .WithTags("Health")
+            .WithSummary("Checks whether the service is running.")
+            .Produces<string>(StatusCodes.Status200OK, "text/plain");
         app.MapHealthChecks("/healthz", new HealthCheckOptions { Predicate = _ => false });
         app.MapHealthChecks(
             "/readyz",
@@ -59,9 +66,33 @@ public static class CommonApiExtensions
         );
         if (app.Environment.IsDevelopment())
         {
+            var uiRoute = app.Services.GetRequiredService<SwaggerUiRoute>().Path;
+            // Serve the index internally so the browser keeps the service URL.
+            app.Use(
+                async (context, next) =>
+                {
+                    var originalPath = context.Request.Path;
+                    if (originalPath == uiRoute)
+                        context.Request.Path = "/swagger/index.html";
+                    try
+                    {
+                        await next(context);
+                    }
+                    finally
+                    {
+                        context.Request.Path = originalPath;
+                    }
+                }
+            );
             app.UseSwagger();
-            app.UseSwaggerUI();
+            app.UseSwaggerUI(options =>
+            {
+                options.RoutePrefix = "swagger";
+                options.SwaggerEndpoint("/swagger/v1/swagger.json", "API v1");
+            });
         }
         return app;
     }
+
+    private sealed record SwaggerUiRoute(string Path);
 }

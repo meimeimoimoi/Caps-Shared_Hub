@@ -29,13 +29,13 @@ Write-Host "==========================================================" -Foregro
 
 # Build the solution.
 if (-not $NoBuild) {
-    Write-Host "`n[1/3] Dang build Caps.sln..." -ForegroundColor Yellow
+    Write-Host "`n[1/3] Building Caps.sln..." -ForegroundColor Yellow
     dotnet build $slnPath --nologo -v m
     if ($LASTEXITCODE -ne 0) {
-        Write-Error "Build that bai. Vui long kiem tra loi tren."
+        Write-Error "Build failed. Check the errors above."
         exit $LASTEXITCODE
     }
-    Write-Host "-> Build thanh cong!" -ForegroundColor Green
+    Write-Host "-> Build succeeded!" -ForegroundColor Green
 }
 
 # Projects use the current layered and single-project service layouts.
@@ -61,7 +61,7 @@ $servicesToRun = if ($CoreOnly) {
     $dbServices + $otherServices
 }
 
-Write-Host "`n[2/3] Khoi chay cac service o nen..." -ForegroundColor Yellow
+Write-Host "`n[2/3] Starting services in the background..." -ForegroundColor Yellow
 
 # Validate every selected project before starting any service.
 foreach ($svc in $servicesToRun) {
@@ -86,14 +86,14 @@ foreach ($svc in $servicesToRun) {
         $env:ASPNETCORE_ENVIRONMENT = $previousEnvironment
     }
 }
-Write-Host "`n[3/3] Da gui lenh khoi chay. Kiem tra log va /readyz de xac nhan!" -ForegroundColor Green
+Write-Host "`n[3/3] Start commands sent. Check the logs and /readyz to confirm readiness." -ForegroundColor Green
 Write-Host "==========================================================" -ForegroundColor Cyan
-Write-Host "Danh sach endpoint Swagger / OpenAPI UI:" -ForegroundColor White
-Write-Host "  - auth:        http://localhost:5194/openapi-ui" -ForegroundColor Gray
-Write-Host "  - expert:      http://localhost:5198/openapi-ui" -ForegroundColor Gray
-Write-Host "  - billing:     http://localhost:5220/openapi-ui" -ForegroundColor Gray
-Write-Host "  - workflow:    http://localhost:5030/openapi-ui" -ForegroundColor Gray
-Write-Host "  - ingestion:   http://localhost:5004/openapi-ui" -ForegroundColor Gray
-Write-Host "  - gateway:     http://localhost:5190/swagger" -ForegroundColor Gray
+Write-Host "Swagger UI endpoints (Development only):" -ForegroundColor White
+Write-Host "  - auth:        http://localhost:5194/swagger/auth" -ForegroundColor Gray
+Write-Host "  - expert:      http://localhost:5198/swagger/expert" -ForegroundColor Gray
+Write-Host "  - billing:     http://localhost:5220/swagger/billing" -ForegroundColor Gray
+Write-Host "  - workflow:    http://localhost:5030/swagger/workflow" -ForegroundColor Gray
+Write-Host "  - ingestion:   http://localhost:5004/swagger/ingestion" -ForegroundColor Gray
+Write-Host "  - gateway:     http://localhost:5190/swagger/gateway" -ForegroundColor Gray
 Write-Host "==========================================================" -ForegroundColor Cyan
-Write-Host "De dung tat ca cac service: chay .\stop-all-services.ps1" -ForegroundColor Yellow
+Write-Host "To stop all services from BE/: run .\scripts\stop-all-services.ps1" -ForegroundColor Yellow
