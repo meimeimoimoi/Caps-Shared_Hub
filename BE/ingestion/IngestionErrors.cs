@@ -71,6 +71,16 @@ public static class IngestionErrors
             "Only uploaded documents keep their original file; open sourceUrl instead."
         );
 
+    public static AppException DocumentNotPending() =>
+        new(
+            ErrorType.Conflict,
+            "DOCUMENT_NOT_PENDING",
+            "The document has already been decided and can no longer change."
+        );
+
+    public static AppException InvalidParseResult() =>
+        new(ErrorType.Validation, "INVALID_PARSE_RESULT", "Send either contentJson or error.");
+
     public static AppException DocumentDuplicate() =>
         new(ErrorType.Conflict, "DOCUMENT_DUPLICATE", "This file has already been uploaded.");
 

@@ -26,6 +26,22 @@ public sealed record CompleteCrawlJobRequest(
         );
 }
 
+/// <summary>The worker's result for an uploaded file: contentJson, or error when it could not be split.</summary>
+/// <param name="ContentJson">Same shape as content_json in a crawler export file.</param>
+public sealed record SaveParsedContentRequest(
+    JsonElement? ContentJson,
+    [MaxLength(2000)] string? Error
+)
+{
+    public SaveParsedContentCommand ToCommand(Guid documentId)
+    {
+        if (ContentJson is { ValueKind: not JsonValueKind.Object })
+            throw IngestionErrors.InvalidContentJson();
+        var error = string.IsNullOrWhiteSpace(Error) ? null : Error.Trim();
+        return new(documentId, ContentJson?.GetRawText(), error);
+    }
+}
+
 /// <summary>
 /// One crawler export file (schema_version 2), posted by the worker exactly as written to export/.
 /// Field names follow the file (snake_case); chunks are ignored until the document is indexed.

@@ -76,4 +76,26 @@ public sealed class InternalIngestController : ControllerBase
         var file = await handler.HandleAsync(new(id), ct);
         return File(file.Content, file.ContentType, file.FileName);
     }
+
+    /// <summary>Saves what the worker made of an uploaded file.</summary>
+    /// <remarks>
+    /// Send contentJson (same shape as in a crawler export) or error. Content clears an earlier error; an
+    /// error is shown to the reviewer as lastError. Only PENDING documents change.
+    /// </remarks>
+    /// <response code="200">Saved.</response>
+    /// <response code="400">INVALID_PARSE_RESULT or INVALID_CONTENT_JSON.</response>
+    /// <response code="401">INTERNAL_KEY_INVALID.</response>
+    /// <response code="404">DOCUMENT_NOT_FOUND.</response>
+    /// <response code="409">DOCUMENT_NOT_PENDING.</response>
+    [HttpPost("documents/{id:guid}/content")]
+    public async Task<IActionResult> SaveDocumentContent(
+        Guid id,
+        SaveParsedContentRequest r,
+        [FromServices] ICommandHandler<SaveParsedContentCommand> handler,
+        CancellationToken ct
+    )
+    {
+        await handler.HandleAsync(r.ToCommand(id), ct);
+        return Ok(ApiResponse.Message("Content saved."));
+    }
 }
