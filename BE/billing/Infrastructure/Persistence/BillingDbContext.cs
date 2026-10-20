@@ -102,6 +102,8 @@ public sealed class BillingDbContext(DbContextOptions<BillingDbContext> options)
             e.ToTable("escrow");
             e.HasKey(x => x.Id);
             e.Property(x => x.Id).HasColumnName("id");
+            e.Property(x => x.UserId).HasColumnName("user_id");
+            e.HasIndex(x => x.UserId);
             e.Property(x => x.ReviewCaseId).HasColumnName("review_case_id");
             e.HasIndex(x => x.ReviewCaseId).IsUnique();
             e.Property(x => x.Amount).HasColumnName("amount");
@@ -154,6 +156,21 @@ public sealed class BillingDbContext(DbContextOptions<BillingDbContext> options)
             e.Property(x => x.AccountLast4).HasColumnName("account_last4").IsRequired();
             e.Property(x => x.AccountHolderName).HasColumnName("account_holder_name").IsRequired();
             e.HasIndex(x => x.UserId);
+            // At most one default and no duplicate number per bank among a user's linked (not deleted) accounts
+            e.HasIndex(x => x.UserId, "ux_bank_account_default")
+                .IsUnique()
+                .HasFilter("is_default AND deleted_at IS NULL");
+            e.HasIndex(
+                    x => new
+                    {
+                        x.UserId,
+                        x.BankBin,
+                        x.AccountNumberHash,
+                    },
+                    "ux_bank_account_number"
+                )
+                .IsUnique()
+                .HasFilter("deleted_at IS NULL");
             e.Property(x => x.IsDefault).HasColumnName("is_default").HasDefaultValue(false);
             e.Property(x => x.Status)
                 .HasColumnName("status")
