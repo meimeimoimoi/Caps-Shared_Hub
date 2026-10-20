@@ -9,11 +9,21 @@ services:
     environment:
       POSTGRES_DB: caps_db
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgrespassword
+      # Passwords come from docker/.env (copy docker/.env.example)
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set it in docker/.env}
+      # One role per service, created by postgres/init-service-roles.sh on first start
+      CAPS_AUTH_DB_PASSWORD: ${CAPS_AUTH_DB_PASSWORD:?set it in docker/.env}
+      CAPS_EXPERT_DB_PASSWORD: ${CAPS_EXPERT_DB_PASSWORD:?set it in docker/.env}
+      CAPS_BILLING_DB_PASSWORD: ${CAPS_BILLING_DB_PASSWORD:?set it in docker/.env}
+      CAPS_WORKFLOW_DB_PASSWORD: ${CAPS_WORKFLOW_DB_PASSWORD:?set it in docker/.env}
+      CAPS_INGESTION_DB_PASSWORD: ${CAPS_INGESTION_DB_PASSWORD:?set it in docker/.env}
+      CAPS_NOTIFICATION_DB_PASSWORD: ${CAPS_NOTIFICATION_DB_PASSWORD:?set it in docker/.env}
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./postgres/init-service-roles.sh:/docker-entrypoint-initdb.d/10-service-roles.sh:ro
+      - ./postgres/db:/caps-db:ro
     networks:
       - caps_network
     healthcheck:
@@ -60,27 +70,102 @@ services:
       timeout: 10s
       retries: 5
 
+  # Test mailbox: catches every email sent by notification, view at http://localhost:8025
+  mailpit:
+    image: axllent/mailpit:v1.21
+    container_name: caps_mailpit
+    restart: always
+    ports:
+      - "1025:1025" # SMTP
+      - "8025:8025" # Giao diện web
+    networks:
+      - caps_network
+
+  # S3-compatible object storage (SeaweedFS): stores expert applications/evidence.
+  # S3 API: http://localhost:8333 · file browser: http://localhost:8899 · dev keys in seaweedfs/s3.json
+  seaweedfs:
+    image: chrislusf/seaweedfs:3.97
+    container_name: caps_seaweedfs
+    restart: always
+    command: server -dir=/data -s3 -s3.config=/etc/seaweedfs/s3.json
+    ports:
+      - "8333:8333" # S3 API
+      - "8899:8888" # Filer (duyệt file khi dev); 8888 hay bị Windows/Hyper-V giữ
+    volumes:
+      - seaweedfs_data:/data
+      - ./seaweedfs/s3.json:/etc/seaweedfs/s3.json:ro
+    networks:
+      - caps_network
+
   auth:
     build:
       context: ..
       dockerfile: docker/Dockerfile.service
       args:
         SERVICE_NAME: auth
+        PROJECT: auth/Api/Api.csproj
+        APP_NAME: Caps.Auth.Api
     container_name: caps_auth
     restart: always
     environment:
       ASPNETCORE_ENVIRONMENT: Production
       ASPNETCORE_URLS: http://+:8080
-      ConnectionStrings__Postgres: Host=postgres;Port=5432;Database=caps_db;Username=postgres;Password=postgrespassword
+      ConnectionStrings__Postgres: Host=postgres;Port=5432;Database=caps_db;Username=caps_auth;Password=${CAPS_AUTH_DB_PASSWORD}
       ConnectionStrings__Redis: redis:6379
       ConnectionStrings__RabbitMq: amqp://guest:guest@rabbitmq:5672
-      Jwt__Key: CHANGE_ME_dev_only_min_32_chars_1234567890
+      # Only auth holds the private key: create secrets/jwt-signing-key.pem first (see .env.example)
+      Jwt__SigningKeys__0__PrivateKeyPath: /run/secrets/jwt_signing_key
+      # Read the client IP from X-Forwarded-For only when the request comes from the gateway (fixed IP below)
+      Auth__KnownProxies__0: 172.28.0.10
+      # Production requires durable data protection keys (encrypted email outbox); kept in a volume
+      Auth__DataProtectionKeysPath: /var/lib/caps-auth/keys
+    secrets:
+      - jwt_signing_key
+    volumes:
+      - auth_keys:/var/lib/caps-auth/keys
+    # Published for local debugging only; in production expose the gateway alone
     ports:
       - "5194:8080"
     depends_on:
       postgres:
         condition: service_healthy
       rabbitmq:
+        condition: service_healthy
+    networks:
+      - caps_network
+
+  expert:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.service
+      args:
+        SERVICE_NAME: expert
+        PROJECT: expert/Api/Api.csproj
+        APP_NAME: Caps.Expert.Api
+    container_name: caps_expert
+    restart: always
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__Postgres: Host=postgres;Port=5432;Database=caps_db;Username=caps_expert;Password=${CAPS_EXPERT_DB_PASSWORD}
+      # Shared session revocations written by auth (sign-out, password change)
+      ConnectionStrings__Redis: redis:6379
+      # Gate 1 decisions go to the notification service through the outbox
+      ConnectionStrings__RabbitMq: amqp://guest:guest@rabbitmq:5672
+      # Verify tokens with auth's public keys; plain HTTP is acceptable only inside this network
+      Jwt__JwksUrl: http://auth:8080/.well-known/jwks.json
+      Jwt__RequireHttpsMetadata: "false"
+      # SeaweedFS dev keys (seaweedfs/s3.json); real deployments use a secret store
+      Storage__ServiceUrl: http://seaweedfs:8333
+      Storage__AccessKey: caps-dev-access
+      Storage__SecretKey: caps-dev-secret-change-me
+    # Published for local debugging only; in production expose the gateway alone
+    ports:
+      - "5198:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     networks:
       - caps_network
@@ -96,19 +181,36 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: Production
       ASPNETCORE_URLS: http://+:8080
-      Jwt__Key: CHANGE_ME_dev_only_min_32_chars_1234567890
+      # Verify tokens with auth's public keys; plain HTTP is acceptable only inside this network
+      Jwt__JwksUrl: http://auth:8080/.well-known/jwks.json
+      Jwt__RequireHttpsMetadata: "false"
+      # Inside the compose network services are reached by name, not localhost
+      ReverseProxy__Clusters__auth-cluster__Destinations__auth__Address: http://auth:8080
+      ReverseProxy__Clusters__expert-cluster__Destinations__expert__Address: http://expert:8080
     ports:
       - "5190:8080"
     depends_on:
       - auth
+      - expert
     networks:
-      - caps_network
+      caps_network:
+        # Fixed so auth can trust forwarded client IPs from this address only (Auth__KnownProxies__0)
+        ipv4_address: 172.28.0.10
 
 networks:
   caps_network:
     driver: bridge
+    ipam:
+      config:
+        - subnet: 172.28.0.0/16
+
+secrets:
+  jwt_signing_key:
+    file: ./secrets/jwt-signing-key.pem
 
 volumes:
   postgres_data:
   redis_data:
   rabbitmq_data:
+  seaweedfs_data:
+  auth_keys:

@@ -1,10 +1,14 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
+  <PropertyGroup>
+    <RootNamespace>Caps.Cronjob</RootNamespace>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
     <PackageReference Include="Swashbuckle.AspNetCore" />
     <PackageReference Include="OpenApiUi" />
-    <ProjectReference Include="..\common\common.csproj" />
+    <ProjectReference Include="..\common\Api\Api.csproj" />
   </ItemGroup>
 
 </Project>

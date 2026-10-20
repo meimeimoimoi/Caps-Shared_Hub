@@ -5,22 +5,41 @@ on:
     branches: [ main, prod, test-ci-cd ]
     paths:
       - 'BE/**'
+      - '.editorconfig'
       - '.github/workflows/be-ci.yml'
+  # Every pull request that touches the backend, whatever its target branch
   pull_request:
-    branches: [ main, prod, test-ci-cd ]
     paths:
       - 'BE/**'
+      - '.editorconfig'
       - '.github/workflows/be-ci.yml'
   workflow_dispatch:
 
 jobs:
   be-ci:
-    name: Build & Test Backend (.NET 8)
+    name: Format, build & test backend (.NET 8)
     runs-on: ubuntu-latest
 
     defaults:
       run:
         working-directory: BE
+
+    # Infrastructure the integration tests need (same ports as local development)
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: caps_auth_test
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 55432:5432
+        options: >-
+          --health-cmd "pg_isready -U caps_auth_test"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
 
     steps:
       - name: Checkout repository
@@ -31,11 +50,36 @@ jobs:
         with:
           global-json-file: BE/global.json
 
-      - name: Restore dependencies
-        run: dotnet restore Caps.sln
+      - name: Restore tools and packages
+        run: |
+          dotnet tool restore
+          dotnet restore Caps.sln
 
-      - name: Build solution
-        run: dotnet build Caps.sln --no-restore -c Release
+      - name: Check formatting (CSharpier)
+        run: dotnet csharpier check .
 
-      - name: Run Tests
-        run: dotnet test Caps.sln --no-build -c Release --verbosity normal
+      - name: Build (analyzer and style warnings fail the build)
+        run: dotnet build Caps.sln --no-restore -warnaserror
+
+      - name: Architecture tests
+        run: dotnet test Caps.sln --no-build
+
+      # SeaweedFS needs a command and a config file, which service containers cannot pass
+      - name: Start object storage for expert evidence
+        run: |
+          docker run -d --name seaweedfs -p 8333:8333 \
+            -v "$PWD/docker/seaweedfs/s3.json:/etc/seaweedfs/s3.json:ro" \
+            chrislusf/seaweedfs:3.97 server -dir=/data -s3 -s3.config=/etc/seaweedfs/s3.json
+          for i in $(seq 1 30); do curl -s -o /dev/null http://localhost:8333 && exit 0; sleep 2; done
+          echo "SeaweedFS did not start" && docker logs seaweedfs && exit 1
+
+      - name: Integration tests (auth, expert, gateway)
+        shell: pwsh
+        run: ./tests/run-auth-integration.ps1
+
+      - name: Upload service logs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: service-logs
+          path: .tmp/auth-tests/

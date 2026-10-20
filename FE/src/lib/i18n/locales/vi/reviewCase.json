@@ -1,0 +1,508 @@
+{
+  "pageTitle": "Hồ sơ thẩm định",
+  "retry": "Thử lại",
+  "marketplace": "Sàn chuyên gia",
+  "demo": {
+    "disclosure": "Demo · Dữ liệu minh họa. Thao tác chỉ đổi trạng thái trong trình duyệt và đặt lại khi đổi kịch bản.",
+    "scenarios": {
+      "PENDING_EXPERT_RESPONSE": "1 · Chờ chuyên gia nhận",
+      "DECLINED_BY_EXPERT": "1b · Chuyên gia từ chối",
+      "EXPERT_RESPONSE_TIMEOUT": "1c · Chuyên gia không phản hồi",
+      "WITHDRAWN": "1d · Bạn rút yêu cầu",
+      "AWAITING_PAYMENT": "2 · Chờ thanh toán (24 giờ)",
+      "CANCELLED_UNPAID": "2b · Hủy do chưa thanh toán",
+      "PAYMENT_CONFIRMED": "3 · Đã thanh toán, chờ bắt đầu",
+      "CANCELLED": "3b · Chuyên gia không bắt đầu",
+      "USER_CANCELLED_BEFORE_START": "3c · Bạn hủy trước khi bắt đầu",
+      "IN_REVIEW": "3 · Đang thẩm định",
+      "OVERDUE": "3 · Quá hạn bàn giao · gia hạn 24 giờ",
+      "AWAITING_USER_INFORMATION": "4 · Chờ bạn bổ sung",
+      "VERIFIED": "5 · Bàn giao · VERIFIED",
+      "CANNOT_VERIFY": "5 · Bàn giao · CANNOT_VERIFY",
+      "COMPLETED": "6 · Hoàn tất · bạn nghiệm thu",
+      "AUTO_CONFIRMED": "6 · Hoàn tất · tự xác nhận",
+      "DISPUTED": "7 · Đang tranh chấp",
+      "RESOLVED": "7 · Đã giải quyết tranh chấp",
+      "USER_CANCELLED": "4 · Chấm dứt · bạn hủy",
+      "USER_NON_RESPONSE": "4 · Chấm dứt · không phản hồi",
+      "NON_RESPONSE_CHALLENGED": "4 · Chấm dứt · đang khiếu nại",
+      "EXPERT_ABANDON": "4 · Chấm dứt · chuyên gia bỏ dở",
+      "SYSTEM_ERROR": "4 · Chấm dứt · lỗi hệ thống"
+    }
+  },
+  "status": {
+    "PENDING_EXPERT_RESPONSE": "Chờ chuyên gia nhận",
+    "DECLINED_BY_EXPERT": "Chuyên gia từ chối",
+    "EXPERT_RESPONSE_TIMEOUT": "Chuyên gia không phản hồi",
+    "WITHDRAWN": "Đã rút yêu cầu",
+    "AWAITING_PAYMENT": "Chờ thanh toán",
+    "CANCELLED_UNPAID": "Đã hủy · chưa thanh toán",
+    "PAYMENT_CONFIRMED": "Chờ bắt đầu thẩm định",
+    "CANCELLED": "Đã hủy",
+    "IN_REVIEW": "Đang thẩm định",
+    "AWAITING_USER_INFORMATION": "Chờ bạn bổ sung",
+    "AWAITING_ACCEPTANCE": "Chờ nghiệm thu",
+    "DISPUTED": "Đang tranh chấp",
+    "RESOLVED": "Đã giải quyết tranh chấp",
+    "COMPLETED": "Hoàn tất",
+    "TERMINATED": "Đã chấm dứt"
+  },
+  "rail": {
+    "accept": "Chuyên gia nhận",
+    "payment": "Thanh toán",
+    "start": "Bắt đầu",
+    "review": "Thẩm định",
+    "acceptance": "Nghiệm thu"
+  },
+  "meta": {
+    "expert": "Chuyên gia",
+    "service": "Dịch vụ",
+    "fee": "Phí dịch vụ",
+    "requested": "Gửi yêu cầu"
+  },
+  "countdown": {
+    "ms": "{{m}}:{{s}}",
+    "hm": "{{h}} giờ {{m}} phút",
+    "dh": "{{d}} ngày {{h}} giờ",
+    "left": "còn lại",
+    "until": "Hạn {{date}}",
+    "expired": "Đã hết hạn"
+  },
+  "next": {
+    "you": "Việc của bạn",
+    "expert": "Việc tiếp theo · Chuyên gia",
+    "admin": "Việc tiếp theo · Ban giải quyết tranh chấp",
+    "closed": "Hồ sơ đã đóng"
+  },
+  "panel": {
+    "PENDING_EXPERT_RESPONSE": {
+      "title": "Đang chờ {{name}} nhận yêu cầu",
+      "body": "Chuyên gia đang xem phạm vi dịch vụ, gói hồ sơ và thời hạn thực hiện. Bạn chưa phải thanh toán. Khi chuyên gia nhận, bạn có 24 giờ để thanh toán giữ lịch.",
+      "due": "Hạn chuyên gia phản hồi",
+      "cancel": "Rút yêu cầu"
+    },
+    "DECLINED_BY_EXPERT": {
+      "title": "{{name}} đã từ chối yêu cầu",
+      "body": "Bạn chưa thanh toán nên không bị trừ tiền. Bạn có thể gửi hồ sơ này cho chuyên gia khác trên Sàn.",
+      "cta": "Chọn chuyên gia khác"
+    },
+    "EXPERT_RESPONSE_TIMEOUT": {
+      "title": "{{name}} không phản hồi trong 24 giờ",
+      "body": "Yêu cầu đã tự đóng và bạn không bị trừ tiền. Bạn có thể gửi hồ sơ này cho chuyên gia khác trên Sàn.",
+      "cta": "Chọn chuyên gia khác"
+    },
+    "WITHDRAWN": {
+      "title": "Bạn đã rút yêu cầu",
+      "body": "Yêu cầu đã đóng trước khi chuyên gia nhận và bạn không bị trừ tiền.",
+      "cta": "Tìm chuyên gia"
+    },
+    "AWAITING_PAYMENT": {
+      "title": "Thanh toán để giữ lịch thẩm định",
+      "body": "{{name}} đã nhận hồ sơ. Lịch đang được khóa cho bạn; quá 24 giờ chưa thanh toán, yêu cầu tự hủy và lịch được giải phóng.",
+      "timer": "Hạn thanh toán",
+      "amount": "Số tiền thanh toán",
+      "method": "Chuyển khoản qua PayOS",
+      "cta": "Thanh toán {{amount}}",
+      "escrow": "Khoản thanh toán được Shared Hub giữ hộ tới khi bạn nghiệm thu.",
+      "link": "Mỗi link thanh toán PayOS có hiệu lực 15 phút. Link hết hạn thì bạn tạo link mới, miễn còn trong hạn thanh toán.",
+      "cancel": "Hủy yêu cầu"
+    },
+    "CANCELLED_UNPAID": {
+      "title": "Yêu cầu đã hủy do chưa thanh toán",
+      "body": "Hạn thanh toán 24 giờ đã hết. Lịch của chuyên gia đã được giải phóng và bạn không bị trừ tiền.",
+      "cta": "Gửi lại yêu cầu"
+    },
+    "PAYMENT_CONFIRMED": {
+      "title": "Đã giữ khoản thanh toán, chờ chuyên gia bắt đầu",
+      "body": "Chuyên gia cần xác nhận bắt đầu thẩm định trong hạn. Quá hạn, hồ sơ tự hủy và bạn được hoàn 100%.",
+      "due": "Hạn bắt đầu",
+      "cancel": "Hủy và nhận hoàn 100%"
+    },
+    "CANCELLED": {
+      "UNPAID": {
+        "title": "Bạn đã hủy yêu cầu",
+        "body": "Bạn hủy trước khi thanh toán nên không bị trừ tiền. Lịch của chuyên gia đã được giải phóng."
+      },
+      "USER_CANCELLED_BEFORE_START": {
+        "title": "Bạn đã hủy trước khi chuyên gia bắt đầu",
+        "body": "Khoản thanh toán được hoàn toàn bộ cho bạn."
+      },
+      "EXPERT_START_TIMEOUT": {
+        "title": "Đã hủy · chuyên gia không bắt đầu đúng hạn",
+        "body": "Khoản thanh toán được hoàn toàn bộ cho bạn theo chính sách hoàn tiền."
+      }
+    },
+    "IN_REVIEW": {
+      "title": "Chuyên gia đang thẩm định hồ sơ",
+      "body": "Bạn sẽ được thông báo khi chuyên gia cần bổ sung thông tin và khi kết quả được bàn giao.",
+      "overdue": "Chuyên gia đã quá hạn bàn giao. Hồ sơ được gia hạn 24 giờ; hết gia hạn mà chưa bàn giao, hồ sơ chấm dứt và bạn được hoàn 100%.",
+      "due": "Hạn bàn giao",
+      "grace": "Hết gia hạn bàn giao",
+      "progress": "Tiến độ thẩm định",
+      "cancel": "Yêu cầu hủy hồ sơ"
+    },
+    "AWAITING_USER_INFORMATION": {
+      "title": "Chuyên gia cần bạn bổ sung thông tin",
+      "from": "Yêu cầu từ {{name}} · {{date}}",
+      "items": "Cần cung cấp",
+      "due": "Hạn phản hồi",
+      "warning": "Quá 72 giờ không phản hồi, hồ sơ chấm dứt và chuyên gia vẫn nhận 80% phí. Nếu bạn đã phản hồi đúng hạn, bạn có 72 giờ sau đó để khiếu nại.",
+      "response": "Nội dung phản hồi",
+      "responseHint": "Trả lời từng mục chuyên gia yêu cầu. Tối đa 2.000 ký tự.",
+      "files": "Tài liệu đính kèm",
+      "filesHint": "PDF, Excel hoặc ảnh chụp, tối đa 20 MB mỗi tệp.",
+      "required": "Nhập nội dung phản hồi hoặc đính kèm ít nhất một tài liệu.",
+      "submit": "Gửi phản hồi",
+      "answered": "Phản hồi của bạn"
+    },
+    "AWAITING_ACCEPTANCE": {
+      "title": "Kết quả đã bàn giao, mời bạn nghiệm thu",
+      "body": "Xem kết quả bên dưới rồi nghiệm thu hoặc báo cáo vấn đề. Hết hạn mà không thao tác, hệ thống tự xác nhận hoàn tất.",
+      "due": "Hạn nghiệm thu",
+      "accept": "Nghiệm thu kết quả",
+      "report": "Báo cáo vấn đề",
+      "principle": "Phí trả cho hoạt động thẩm định của chuyên gia, không phụ thuộc việc hồ sơ đạt VERIFIED."
+    },
+    "COMPLETED": {
+      "title": "Hồ sơ đã hoàn tất",
+      "USER_ACCEPTED": "Bạn đã nghiệm thu kết quả. Khoản thanh toán đã được quyết toán.",
+      "AUTO_CONFIRMED": "Hết hạn nghiệm thu, hệ thống tự xác nhận hoàn tất và quyết toán."
+    },
+    "DISPUTED": {
+      "title": "Khiếu nại đang được xem xét",
+      "body": "Khoản thanh toán được giữ nguyên, chưa chi trả cho chuyên gia cho tới khi có quyết định.",
+      "issue": "Vấn đề",
+      "description": "Nội dung",
+      "opened": "Gửi lúc",
+      "sla": "Dispute Admin phản hồi trong {{hours}} giờ.",
+      "escalation": "Nếu tranh chấp cần đánh giá chuyên môn, hồ sơ được chuyển tới chuyên gia thẩm định độc lập; quản trị viên không thay thế kết luận chuyên môn."
+    },
+    "RESOLVED": {
+      "title": "Tranh chấp đã có quyết định",
+      "decision": "Quyết định",
+      "reason": "Lý do",
+      "decidedBy": "Người quyết định",
+      "decidedAt": "Thời điểm"
+    },
+    "TERMINATED": {
+      "title": "Hồ sơ đã chấm dứt",
+      "USER_NON_RESPONSE": "Bạn không phản hồi yêu cầu bổ sung trong 72 giờ.",
+      "USER_CANCELLED": "Bạn yêu cầu hủy sau khi chuyên gia đã bắt đầu thẩm định.",
+      "EXPERT_ABANDON": "Chuyên gia không bàn giao kết quả trong thời hạn dịch vụ.",
+      "SYSTEM_ERROR": "Lỗi hệ thống khiến hồ sơ không thể tiếp tục.",
+      "challengeBody": "Nếu bạn đã phản hồi đúng hạn hoặc yêu cầu bổ sung không hợp lệ, bạn có thể khiếu nại. Khoản thanh toán được giữ nguyên tới khi hết hạn khiếu nại hoặc có quyết định.",
+      "challengeDue": "Hạn khiếu nại",
+      "challenge": "Khiếu nại quyết định",
+      "challengeOpen": "Khiếu nại đang được xem xét. Hồ sơ vẫn ở trạng thái chấm dứt; khoản thanh toán được giữ nguyên tới khi có quyết định.",
+      "challengeIssue": "Khiếu nại quyết định chấm dứt do không phản hồi"
+    }
+  },
+  "tasks": {
+    "T1": "Rà soát thông tin và chứng từ",
+    "T2": "Rà soát AI Draft",
+    "T3": "Đối chiếu căn cứ pháp lý",
+    "T4": "Yêu cầu bổ sung khi cần",
+    "T5": "Tạo bản hiệu chỉnh chuyên gia",
+    "T6": "Kết luận chuyên môn",
+    "done": "Xong",
+    "current": "Đang làm",
+    "todo": "Chưa tới"
+  },
+  "result": {
+    "title": "Kết quả thẩm định",
+    "VERIFIED": "Đã xác minh",
+    "CANNOT_VERIFY": "Không thể xác minh",
+    "by": "{{name}} · bàn giao {{date}}",
+    "verifiedVersion": "Phiên bản đã xác minh",
+    "immutable": "Bất biến · liên kết hồ sơ {{id}}",
+    "conclusion": "Kết luận chuyên môn",
+    "notes": "Ghi chú và căn cứ",
+    "summary": "Tóm tắt rà soát",
+    "rationale": "Căn cứ chuyên môn",
+    "findings": "Phát hiện"
+  },
+  "settlement": {
+    "title": "Quyết toán",
+    "gross": "Đã thanh toán",
+    "refund": "Hoàn cho bạn",
+    "expert": "Chuyên gia nhận",
+    "platform": "Phí nền tảng",
+    "policy": "Chính sách áp dụng",
+    "settledAt": "Quyết toán lúc",
+    "ref": "Mã giao dịch",
+    "once": "Mỗi hồ sơ chỉ áp dụng một kết quả quyết toán cho khoản thanh toán này.",
+    "types": {
+      "NORMAL": "Hoàn tất bình thường",
+      "TERMINATION": "Chấm dứt hồ sơ",
+      "DISPUTE": "Sau tranh chấp"
+    },
+    "rules": {
+      "USER_ACCEPTED": "Bạn nghiệm thu",
+      "AUTO_CONFIRMED": "Tự xác nhận sau 72 giờ",
+      "USER_NON_RESPONSE": "Không phản hồi yêu cầu bổ sung",
+      "USER_CANCELLED": "Bạn hủy sau khi bắt đầu",
+      "EXPERT_START_TIMEOUT": "Chuyên gia không bắt đầu đúng hạn",
+      "USER_CANCELLED_BEFORE_START": "Bạn hủy trước khi bắt đầu",
+      "EXPERT_ABANDON": "Chuyên gia bỏ dở",
+      "SYSTEM_ERROR": "Lỗi hệ thống",
+      "RESOLVE_REFUND_USER": "Hoàn tiền cho bạn",
+      "RESOLVE_PAY_EXPERT": "Chi trả chuyên gia",
+      "RESOLVE_PARTIAL": "Quyết toán một phần"
+    }
+  },
+  "package": {
+    "title": "Gói hồ sơ thẩm định",
+    "locked": "Khóa lúc {{date}}",
+    "pending": "Gói hồ sơ được khóa khi bạn gửi yêu cầu.",
+    "aiDraft": "AI Draft",
+    "snapshot": "Snapshot đầu vào",
+    "template": "Mẫu biểu",
+    "citations": "Căn cứ trích dẫn",
+    "documents": "Tài liệu kèm theo",
+    "note": "Phiên bản bạn tạo sau thời điểm khóa không thay thế gói chuyên gia đang thẩm định."
+  },
+  "funds": {
+    "title": "Khoản thanh toán",
+    "none": "Chưa thanh toán",
+    "held": "Đang giữ hộ",
+    "locked": "Giữ nguyên · tranh chấp",
+    "settled": "Đã quyết toán"
+  },
+  "timeline": {
+    "title": "Nhật ký hồ sơ",
+    "actors": {
+      "USER": "Bạn",
+      "EXPERT": "Chuyên gia",
+      "SYSTEM": "Hệ thống",
+      "ADMIN": "Quản trị viên"
+    },
+    "events": {
+      "requested": "Gửi yêu cầu thẩm định · khóa gói hồ sơ",
+      "withdrawn": "Rút yêu cầu",
+      "declined": "Từ chối yêu cầu",
+      "responseTimeout": "Chuyên gia không phản hồi trong 24 giờ",
+      "accepted": "Nhận yêu cầu · khóa lịch",
+      "paymentExpired": "Hết hạn thanh toán · giải phóng lịch",
+      "paid": "Thanh toán thành công · giữ hộ",
+      "cancelled": "Hủy yêu cầu",
+      "startTimeout": "Chuyên gia không bắt đầu đúng hạn",
+      "started": "Bắt đầu thẩm định",
+      "infoRequested": "Gửi yêu cầu bổ sung",
+      "infoAnswered": "Phản hồi yêu cầu bổ sung",
+      "overdue": "Quá hạn bàn giao · bắt đầu gia hạn",
+      "delivered": "Bàn giao kết quả",
+      "userAccepted": "Nghiệm thu kết quả",
+      "autoConfirmed": "Tự xác nhận hoàn tất",
+      "disputed": "Báo cáo vấn đề",
+      "challenged": "Khiếu nại quyết định chấm dứt",
+      "resolved": "Ra quyết định tranh chấp",
+      "terminated": "Chấm dứt hồ sơ",
+      "settled": "Hết hạn khiếu nại · quyết toán"
+    }
+  },
+  "dialogs": {
+    "accept": {
+      "title": "Nghiệm thu kết quả?",
+      "body": "Hồ sơ chuyển sang Hoàn tất và khoản thanh toán được quyết toán: chuyên gia nhận 80%, nền tảng 20%. Sau khi nghiệm thu, bạn không thể báo cáo vấn đề.",
+      "confirm": "Nghiệm thu"
+    },
+    "cancel": {
+      "title": "Hủy hồ sơ đang thẩm định?",
+      "body": "Chuyên gia đã bắt đầu làm việc nên hồ sơ được quyết toán theo chính sách hủy:",
+      "confirm": "Xác nhận hủy",
+      "keep": "Tiếp tục thẩm định"
+    },
+    "earlyCancel": {
+      "keep": "Giữ yêu cầu",
+      "PENDING_EXPERT_RESPONSE": {
+        "title": "Rút yêu cầu thẩm định?",
+        "body": "Chuyên gia chưa nhận nên bạn không bị trừ tiền. Muốn thẩm định lại, bạn gửi yêu cầu mới.",
+        "confirm": "Rút yêu cầu"
+      },
+      "AWAITING_PAYMENT": {
+        "title": "Hủy yêu cầu thẩm định?",
+        "body": "Bạn chưa thanh toán nên không bị trừ tiền. Lịch của chuyên gia sẽ được giải phóng.",
+        "confirm": "Hủy yêu cầu"
+      },
+      "PAYMENT_CONFIRMED": {
+        "title": "Hủy trước khi chuyên gia bắt đầu?",
+        "body": "Chuyên gia chưa bắt đầu nên bạn được hoàn 100% khoản đã thanh toán.",
+        "confirm": "Hủy và hoàn tiền"
+      }
+    },
+    "report": {
+      "title": "Báo cáo vấn đề với kết quả",
+      "body": "Khoản thanh toán được giữ nguyên cho tới khi có quyết định giải quyết tranh chấp.",
+      "issue": "Loại vấn đề",
+      "issuePlaceholder": "Chọn loại vấn đề",
+      "issues": {
+        "DELIVERABLE_INCOMPLETE": "Thiếu nội dung bàn giao",
+        "SLA_BREACH": "Vi phạm thời hạn dịch vụ",
+        "OBLIGATION_NOT_MET": "Không thực hiện nghĩa vụ bắt buộc",
+        "PROFESSIONAL_JUDGMENT": "Không đồng ý với kết luận chuyên môn"
+      },
+      "description": "Mô tả chi tiết",
+      "descriptionHint": "Nêu cụ thể nội dung, vị trí trong kết quả và bằng chứng liên quan.",
+      "issueRequired": "Chọn loại vấn đề.",
+      "descriptionRequired": "Mô tả tối thiểu 20 ký tự để Dispute Admin có đủ thông tin xem xét.",
+      "submit": "Gửi khiếu nại"
+    },
+    "challenge": {
+      "title": "Khiếu nại quyết định chấm dứt",
+      "body": "Khiếu nại được xử lý như một tranh chấp riêng. Hồ sơ vẫn ở trạng thái chấm dứt; khoản thanh toán được giữ nguyên tới khi có quyết định.",
+      "description": "Lý do khiếu nại",
+      "descriptionHint": "Nêu thời điểm bạn đã phản hồi hoặc lý do yêu cầu bổ sung không hợp lệ, kèm bằng chứng nếu có.",
+      "submit": "Gửi khiếu nại"
+    }
+  },
+  "toast": {
+    "paid": "Thanh toán thành công. Khoản tiền đang được giữ hộ.",
+    "answered": "Đã gửi phản hồi. Hồ sơ quay lại trạng thái đang thẩm định.",
+    "accepted": "Đã nghiệm thu. Hồ sơ hoàn tất.",
+    "disputed": "Đã gửi khiếu nại. Khoản thanh toán được giữ nguyên.",
+    "cancelled": "Đã hủy hồ sơ và quyết toán theo chính sách hủy.",
+    "withdrawn": "Đã rút yêu cầu. Bạn không bị trừ tiền.",
+    "cancelledEarly": "Đã hủy yêu cầu.",
+    "challenged": "Đã gửi khiếu nại. Khoản thanh toán được giữ nguyên.",
+    "expired": "Hết hạn thanh toán. Yêu cầu đã tự hủy.",
+    "rated": "Đã gửi đánh giá. Cảm ơn bạn."
+  },
+  "notFound": {
+    "title": "Không tìm thấy hồ sơ",
+    "body": "Mã hồ sơ không tồn tại hoặc bạn không có quyền xem."
+  },
+  "request": {
+    "title": "Gửi yêu cầu thẩm định",
+    "lead": "Chọn hồ sơ AI cần chuyên gia xác minh. Bạn chưa phải thanh toán cho tới khi chuyên gia nhận yêu cầu.",
+    "drafts": "Hồ sơ cần thẩm định",
+    "draftMeta": "{{aiDraft}} · {{snapshot}} · {{template}}",
+    "draftCounts": "{{citations}} căn cứ · {{documents}} tài liệu",
+    "draftRequired": "Chọn một hồ sơ để gửi thẩm định.",
+    "noDrafts": "Bạn chưa có hồ sơ AI nào sẵn sàng thẩm định.",
+    "noDraftsCta": "Tạo hồ sơ",
+    "scope": "Ghi chú phạm vi cho chuyên gia",
+    "scopeHint": "Không bắt buộc. Nêu điểm bạn muốn chuyên gia tập trung, tối đa 1.000 ký tự.",
+    "files": "Tài liệu bổ sung",
+    "filesHint": "Không bắt buộc. PDF, Excel hoặc ảnh chụp, tối đa 20 MB mỗi tệp.",
+    "consent": "Tôi hiểu: sau khi chuyên gia nhận, tôi có 24 giờ để thanh toán; khoản thanh toán được giữ hộ tới khi nghiệm thu; phí trả cho hoạt động thẩm định, không phụ thuộc kết quả VERIFIED.",
+    "consentRequired": "Xác nhận điều khoản để gửi yêu cầu.",
+    "submit": "Gửi yêu cầu thẩm định",
+    "summary": "Tóm tắt yêu cầu",
+    "priceOnRequest": "Báo giá sau",
+    "nextTitle": "Điều gì xảy ra tiếp theo",
+    "steps": {
+      "s1": "Chuyên gia xem gói hồ sơ rồi nhận hoặc từ chối.",
+      "s2": "Bạn có 24 giờ để thanh toán giữ lịch; mỗi link PayOS có hiệu lực 15 phút.",
+      "s3": "Chuyên gia thẩm định, bàn giao kết quả; bạn có 72 giờ để nghiệm thu."
+    },
+    "serviceMissing": "Gói dịch vụ này không còn mở nhận. Chọn lại trên hồ sơ chuyên gia.",
+    "expertMissing": "Không tải được hồ sơ chuyên gia.",
+    "backToProfile": "Về hồ sơ chuyên gia"
+  },
+  "nav": {
+    "label": "Không gian khách hàng",
+    "work": "Công việc",
+    "account": "Tài khoản",
+    "dashboard": "Tổng quan",
+    "cases": "Hồ sơ thẩm định",
+    "drafts": "Hồ sơ AI",
+    "assistant": "Trợ lý AI",
+    "marketplace": "Sàn chuyên gia",
+    "wallet": "Ví & credit",
+    "profile": "Tài khoản của tôi"
+  },
+  "dashboard": {
+    "greeting": "Chào {{name}}",
+    "lead": "Theo dõi hồ sơ thẩm định, việc cần xử lý và credit của bạn.",
+    "todo": "Việc cần bạn xử lý",
+    "todoEmpty": "Không có việc nào cần bạn xử lý lúc này.",
+    "recent": "Hồ sơ gần đây",
+    "viewAll": "Xem tất cả",
+    "quick": "Bắt đầu nhanh",
+    "newDraft": "Tạo hồ sơ AI",
+    "findExpert": "Tìm chuyên gia thẩm định",
+    "askAi": "Hỏi trợ lý AI",
+    "credits": "Credit khả dụng",
+    "topUp": "Xem ví",
+    "cta": {
+      "AWAITING_PAYMENT": "Thanh toán",
+      "AWAITING_USER_INFORMATION": "Gửi bổ sung",
+      "AWAITING_ACCEPTANCE": "Nghiệm thu"
+    }
+  },
+  "cases": {
+    "lead": "Mọi yêu cầu thẩm định bạn đã gửi, từ lúc chờ chuyên gia nhận tới khi quyết toán.",
+    "new": "Tìm chuyên gia",
+    "filterLabel": "Lọc theo trạng thái",
+    "filters": {
+      "all": "Tất cả",
+      "action": "Cần bạn xử lý",
+      "active": "Đang xử lý",
+      "closed": "Đã đóng"
+    },
+    "cols": {
+      "case": "Hồ sơ",
+      "expert": "Chuyên gia",
+      "status": "Trạng thái",
+      "updated": "Cập nhật",
+      "fee": "Phí"
+    },
+    "empty": "Không có hồ sơ nào ở mục này.",
+    "emptyAll": "Bạn chưa gửi yêu cầu thẩm định nào."
+  },
+  "wallet": {
+    "lead": "Credit dùng cho trợ lý AI và tải bản nháp. Phí thẩm định chuyên gia được thanh toán riêng cho từng hồ sơ.",
+    "available": "Credit khả dụng",
+    "held": "Đang giữ tạm",
+    "heldHint": "Giữ khi gửi câu hỏi; trừ khi câu hỏi được đưa vào tra cứu, hoàn lại nếu câu hỏi ngoài phạm vi.",
+    "unit_one": "{{count}} credit",
+    "unit_other": "{{count}} credit",
+    "packages": "Gói nạp credit",
+    "recommended": "Gợi ý",
+    "priceTbd": "Chưa chốt giá",
+    "buy": "Nạp qua PayOS",
+    "buyUnavailable": "Gói chưa có giá nên chưa mở bán.",
+    "rates": "Bảng giá credit",
+    "free": "Miễn phí",
+    "tbd": "Chưa chốt",
+    "rateCols": {
+      "action": "Thao tác",
+      "when": "Khi nào tính",
+      "credits": "Credit"
+    },
+    "ledger": "Lịch sử credit",
+    "ledgerCols": {
+      "date": "Thời gian",
+      "entry": "Giao dịch",
+      "amount": "Thay đổi",
+      "balance": "Số dư"
+    },
+    "types": {
+      "TOPUP": "Nạp credit",
+      "HOLD": "Giữ tạm",
+      "CAPTURE": "Trừ credit",
+      "RELEASE": "Hoàn giữ tạm",
+      "RESTORE": "Hoàn credit do lỗi hệ thống"
+    },
+    "escrow": "Phí thẩm định đang giữ hộ",
+    "escrowEmpty": "Không có khoản nào đang được giữ hộ.",
+    "escrowNote": "Shared Hub giữ hộ phí thẩm định tới khi bạn nghiệm thu hoặc có quyết định tranh chấp."
+  },
+  "rating": {
+    "title": "Đánh giá chuyên gia",
+    "hint": "Đánh giá hiển thị công khai trên hồ sơ chuyên gia.",
+    "star_one": "{{count}} sao",
+    "star_other": "{{count}} sao",
+    "comment": "Nhận xét",
+    "commentHint": "Không bắt buộc. Tối đa 1.000 ký tự.",
+    "required": "Chọn số sao để gửi đánh giá.",
+    "submit": "Gửi đánh giá",
+    "yours": "Đánh giá của bạn"
+  },
+  "files": {
+    "choose": "Chọn tệp",
+    "none": "Chưa chọn tệp",
+    "count_one": "{{count}} tệp đã chọn",
+    "count_other": "{{count}} tệp đã chọn"
+  }
+}

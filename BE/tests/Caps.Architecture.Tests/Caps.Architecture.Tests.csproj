@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+    <Using Include="Xunit" />
+    <!-- The API projects pull in every layer of their service -->
+    <ProjectReference Include="..\..\auth\Api\Api.csproj" />
+    <ProjectReference Include="..\..\expert\Api\Api.csproj" />
+    <ProjectReference Include="..\..\billing\Api\Api.csproj" />
+    <ProjectReference Include="..\..\workflow\Api\Api.csproj" />
+    <ProjectReference Include="..\..\ingestion\ingestion.csproj" />
+    <ProjectReference Include="..\..\notification\notification.csproj" />
+    <ProjectReference Include="..\..\gateway\gateway.csproj" />
+  </ItemGroup>
+
+</Project>

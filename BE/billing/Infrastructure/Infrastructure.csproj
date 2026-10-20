@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>Caps.Billing.Infrastructure</RootNamespace>
+    <AssemblyName>Caps.Billing.Infrastructure</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
+    <ProjectReference Include="..\Application\Application.csproj" />
+    <ProjectReference Include="..\..\common\Persistence\Persistence.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,27 @@
+{
+  "home": "Về trang chủ",
+  "draftTitle": "Bản nháp — chưa có hiệu lực",
+  "draftNotice": "Nội dung phục vụ rà soát và thử nghiệm giao diện. Nhóm vận hành cần xác nhận thông tin, rà soát pháp lý và phê duyệt trước khi dùng làm điều khoản hoặc thông báo chính thức. Việc tích ô trên form thử nghiệm không biến bản nháp này thành thỏa thuận chính thức.",
+  "terms": {
+    "title": "Điều khoản dịch vụ",
+    "intro": "Dự thảo nguyên tắc sử dụng nền tảng Shared Hub dành cho khách hàng và chuyên gia.",
+    "sections": [
+      { "title": "Phạm vi dịch vụ", "body": "Shared Hub hỗ trợ tra cứu thông tin thuế, tương tác với trợ lý AI, soạn thảo tài liệu và kết nối chuyên gia thẩm định. Tính năng cung cấp thực tế phụ thuộc trạng thái tài khoản và dịch vụ đã được mở." },
+      { "title": "Tài khoản và trách nhiệm sử dụng", "body": "Người dùng cần cung cấp thông tin chính xác, bảo vệ thông tin đăng nhập và chỉ tải lên dữ liệu mà mình có quyền sử dụng. Không sử dụng nền tảng để giả mạo, truy cập trái phép, phát tán nội dung vi phạm hoặc làm gián đoạn hệ thống." },
+      { "title": "Nội dung AI và thẩm định chuyên gia", "body": "Nội dung do AI tạo có thể thiếu hoặc sai thông tin. Người dùng cần kiểm tra căn cứ, thời điểm áp dụng và tính phù hợp trước khi sử dụng. Bản nháp AI không mặc nhiên là kết luận chuyên môn đã được chuyên gia thẩm định; phạm vi thẩm định cần được xác định riêng cho từng dịch vụ." },
+      { "title": "Dịch vụ có phí và xử lý tranh chấp", "body": "Trước khi triển khai chính thức, nhóm cần công bố rõ giá, phạm vi công việc, thời hạn bàn giao, điều kiện hủy, hoàn tiền và quy trình khiếu nại. Bản nháp này chưa xác lập phí, cam kết hoàn tiền hoặc giới hạn trách nhiệm." },
+      { "title": "Thông tin cần hoàn thiện trước khi công bố", "body": "Cần bổ sung tên pháp lý và địa chỉ đơn vị vận hành, đầu mối liên hệ, ngày có hiệu lực, điều kiện hạn chế hoặc chấm dứt tài khoản, quyền đối với nội dung, quy trình thông báo thay đổi và cơ chế giải quyết tranh chấp phù hợp." }
+    ]
+  },
+  "privacy": {
+    "title": "Chính sách quyền riêng tư",
+    "intro": "Dự thảo thông báo xử lý dữ liệu cho Shared Hub; phạm vi cuối cùng phải được đối chiếu với cách hệ thống vận hành thực tế.",
+    "sections": [
+      { "title": "Nhóm dữ liệu cần mô tả", "body": "Phạm vi dự kiến gồm thông tin tài khoản và liên hệ; hồ sơ chuyên gia và minh chứng; câu hỏi AI, dữ liệu nhập, tài liệu tải lên và bản nháp; thông tin yêu cầu dịch vụ, giao dịch và nhật ký kỹ thuật. Nhóm cần xác nhận chính xác từng loại dữ liệu thực sự được thu thập." },
+      { "title": "Mục đích xử lý dự kiến", "body": "Dữ liệu dự kiến phục vụ xác thực tài khoản, cung cấp chức năng soạn thảo và AI, xét duyệt hồ sơ chuyên gia, thực hiện dịch vụ, gửi thông báo và bảo vệ hệ thống. Mục đích, căn cứ xử lý và cơ chế đồng ý cần được xác định cụ thể trước khi công bố." },
+      { "title": "Bên tiếp nhận và dịch vụ bên ngoài", "body": "Cần công bố các bên có thể tiếp nhận dữ liệu, bao gồm chuyên gia hoặc người đánh giá theo nhiệm vụ và các nhà cung cấp hạ tầng, email, thanh toán, AI nếu được sử dụng. Chưa xác nhận trong bản nháp này việc lưu trữ ở quốc gia nào, chuyển dữ liệu ra nước ngoài hoặc dùng dữ liệu để huấn luyện AI." },
+      { "title": "Lưu trữ, bảo vệ và yêu cầu của người dùng", "body": "Cần xác định thời hạn lưu giữ theo từng loại dữ liệu, cách xóa và xử lý bản sao lưu, biện pháp bảo vệ, cũng như đầu mối tiếp nhận yêu cầu truy cập, chỉnh sửa, xóa hoặc các yêu cầu khác theo quy định áp dụng. Không có thời hạn phản hồi hoặc cam kết xóa cụ thể nào được xác lập bởi bản nháp này." },
+      { "title": "Thông tin cần hoàn thiện trước khi công bố", "body": "Cần bổ sung đơn vị chịu trách nhiệm xử lý dữ liệu, kênh liên hệ quyền riêng tư, danh sách nhà cung cấp, cookie và lưu trữ trình duyệt thực tế, thời hạn lưu giữ, quy trình sự cố, ngày có hiệu lực và cơ chế thông báo thay đổi. Chỉ công bố sau khi đối chiếu sản phẩm và rà soát pháp lý." }
+    ]
+  }
+}

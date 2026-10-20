@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>Caps.Expert.Application</RootNamespace>
+    <AssemblyName>Caps.Expert.Application</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Domain\Domain.csproj" />
+    <ProjectReference Include="..\..\common\Application\Application.csproj" />
+    <ProjectReference Include="..\..\common\Contracts\Contracts.csproj" />
+  </ItemGroup>
+
+</Project>

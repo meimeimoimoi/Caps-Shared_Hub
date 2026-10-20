@@ -1,10 +1,11 @@
-using ingestion.Entities;
-using ingestion.Entities.Stubs;
+using Caps.Ingestion.Entities;
 using Microsoft.EntityFrameworkCore;
 
-namespace ingestion.Data;
+namespace Caps.Ingestion.Data;
 
-public sealed class IngestionDbContext(DbContextOptions<IngestionDbContext> options) : DbContext(options)
+/// <summary>The ingestion service's database (schema knowledge): legal sources and their indexed chunks.</summary>
+public sealed class IngestionDbContext(DbContextOptions<IngestionDbContext> options)
+    : DbContext(options)
 {
     public DbSet<LegalSource> LegalSources => Set<LegalSource>();
     public DbSet<LegalAmendment> LegalAmendments => Set<LegalAmendment>();
@@ -12,20 +13,12 @@ public sealed class IngestionDbContext(DbContextOptions<IngestionDbContext> opti
     public DbSet<KbChunk> KbChunks => Set<KbChunk>();
     public DbSet<CrawlJob> CrawlJobs => Set<CrawlJob>();
 
-    // Identity stub
-    public DbSet<UserStub> Users => Set<UserStub>();
-
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.HasDefaultSchema("knowledge");
 
-        // UserStub excluded from migrations
-        modelBuilder.Entity<UserStub>(e =>
-        {
-            e.ToTable("users", "identity", t => t.ExcludeFromMigrations());
-            e.HasKey(x => x.Id);
-            e.Property(x => x.Id).HasColumnName("id");
-        });
+        // User ids are plain columns: users live in the auth service,
+        // so there are no cross-service foreign keys and each service migrates on its own.
 
         // LegalSource
         modelBuilder.Entity<LegalSource>(e =>
@@ -38,8 +31,15 @@ public sealed class IngestionDbContext(DbContextOptions<IngestionDbContext> opti
             e.Property(x => x.DocType).HasColumnName("doc_type").IsRequired();
             e.Property(x => x.IssuingAuthority).HasColumnName("issuing_authority");
             e.Property(x => x.Title).HasColumnName("title").IsRequired();
-            e.Property(x => x.Metadata).HasColumnName("metadata").HasColumnType("jsonb").HasDefaultValue("{}").IsRequired();
-            e.Property(x => x.CreatedAt).HasColumnName("created_at").HasDefaultValueSql("now()").IsRequired();
+            e.Property(x => x.Metadata)
+                .HasColumnName("metadata")
+                .HasColumnType("jsonb")
+                .HasDefaultValue("{}")
+                .IsRequired();
+            e.Property(x => x.CreatedAt)
+                .HasColumnName("created_at")
+                .HasDefaultValueSql("now()")
+                .IsRequired();
         });
 
         // LegalAmendment
@@ -49,9 +49,17 @@ public sealed class IngestionDbContext(DbContextOptions<IngestionDbContext> opti
             e.HasKey(x => new { x.AmendingSourceId, x.AmendedSourceId });
             e.Property(x => x.AmendingSourceId).HasColumnName("amending_source_id");
             e.Property(x => x.AmendedSourceId).HasColumnName("amended_source_id");
-            e.Property(x => x.RelationType).HasColumnName("relation_type").HasDefaultValue("AMENDS").IsRequired();
-            e.Property(x => x.AffectedArticles).HasColumnName("affected_articles").HasColumnType("jsonb");
-            e.Property(x => x.CreatedAt).HasColumnName("created_at").HasDefaultValueSql("now()").IsRequired();
+            e.Property(x => x.RelationType)
+                .HasColumnName("relation_type")
+                .HasDefaultValue("AMENDS")
+                .IsRequired();
+            e.Property(x => x.AffectedArticles)
+                .HasColumnName("affected_articles")
+                .HasColumnType("jsonb");
+            e.Property(x => x.CreatedAt)
+                .HasColumnName("created_at")
+                .HasDefaultValueSql("now()")
+                .IsRequired();
 
             e.HasOne(x => x.AmendingSource)
                 .WithMany(s => s.AmendingAmendments)
@@ -82,18 +90,29 @@ public sealed class IngestionDbContext(DbContextOptions<IngestionDbContext> opti
             e.Property(x => x.IssuedDate).HasColumnName("issued_date");
             e.Property(x => x.EffectiveFrom).HasColumnName("effective_from");
             e.Property(x => x.EffectiveTo).HasColumnName("effective_to");
-            e.Property(x => x.Status).HasColumnName("status").HasDefaultValue("PENDING").IsRequired();
+            e.Property(x => x.Status)
+                .HasColumnName("status")
+                .HasDefaultValue("PENDING")
+                .IsRequired();
             e.Property(x => x.RejectionReason).HasColumnName("rejection_reason");
             e.Property(x => x.ApprovedBy).HasColumnName("approved_by");
             e.Property(x => x.ApprovedAt).HasColumnName("approved_at");
             e.Property(x => x.IndexedAt).HasColumnName("indexed_at");
             e.Property(x => x.RetryCount).HasColumnName("retry_count").HasDefaultValue(0);
             e.Property(x => x.LastError).HasColumnName("last_error");
-            e.Property(x => x.Metadata).HasColumnName("metadata").HasColumnType("jsonb").HasDefaultValue("{}").IsRequired();
-            e.Property(x => x.CreatedAt).HasColumnName("created_at").HasDefaultValueSql("now()").IsRequired();
+            e.Property(x => x.Metadata)
+                .HasColumnName("metadata")
+                .HasColumnType("jsonb")
+                .HasDefaultValue("{}")
+                .IsRequired();
+            e.Property(x => x.CreatedAt)
+                .HasColumnName("created_at")
+                .HasDefaultValueSql("now()")
+                .IsRequired();
 
             e.HasIndex(x => new { x.LegalSourceId, x.VersionNo }).IsUnique();
-            e.HasIndex(x => new { x.Status, x.CreatedAt }).HasDatabaseName("ix_knowledge_document_4");
+            e.HasIndex(x => new { x.Status, x.CreatedAt })
+                .HasDatabaseName("ix_knowledge_document_4");
 
             e.HasOne(x => x.LegalSource)
                 .WithMany(s => s.KnowledgeDocuments)
@@ -104,16 +123,6 @@ public sealed class IngestionDbContext(DbContextOptions<IngestionDbContext> opti
                 .WithMany(j => j.KnowledgeDocuments)
                 .HasForeignKey(x => x.CrawlJobId)
                 .HasConstraintName("fk_knowledge_document_19");
-
-            e.HasOne<UserStub>()
-                .WithMany()
-                .HasForeignKey(x => x.UploadedBy)
-                .HasConstraintName("fk_knowledge_document_20");
-
-            e.HasOne<UserStub>()
-                .WithMany()
-                .HasForeignKey(x => x.ApprovedBy)
-                .HasConstraintName("fk_knowledge_document_21");
         });
 
         // KbChunk
@@ -132,8 +141,15 @@ public sealed class IngestionDbContext(DbContextOptions<IngestionDbContext> opti
             e.Property(x => x.Page).HasColumnName("page");
             e.Property(x => x.EffectiveFrom).HasColumnName("effective_from");
             e.Property(x => x.EffectiveTo).HasColumnName("effective_to");
-            e.Property(x => x.Metadata).HasColumnName("metadata").HasColumnType("jsonb").HasDefaultValue("{}").IsRequired();
-            e.Property(x => x.CreatedAt).HasColumnName("created_at").HasDefaultValueSql("now()").IsRequired();
+            e.Property(x => x.Metadata)
+                .HasColumnName("metadata")
+                .HasColumnType("jsonb")
+                .HasDefaultValue("{}")
+                .IsRequired();
+            e.Property(x => x.CreatedAt)
+                .HasColumnName("created_at")
+                .HasDefaultValueSql("now()")
+                .IsRequired();
 
             e.HasIndex(x => new { x.KnowledgeDocumentId, x.ChunkIndex }).IsUnique();
 
@@ -152,16 +168,17 @@ public sealed class IngestionDbContext(DbContextOptions<IngestionDbContext> opti
             e.Property(x => x.Id).HasColumnName("id");
             e.Property(x => x.TriggerType).HasColumnName("trigger_type").IsRequired();
             e.Property(x => x.TriggeredBy).HasColumnName("triggered_by");
-            e.Property(x => x.Status).HasColumnName("status").HasDefaultValue("RUNNING").IsRequired();
+            e.Property(x => x.Status)
+                .HasColumnName("status")
+                .HasDefaultValue("RUNNING")
+                .IsRequired();
             e.Property(x => x.DocsFound).HasColumnName("docs_found").HasDefaultValue(0);
             e.Property(x => x.Detail).HasColumnName("detail").HasColumnType("jsonb");
-            e.Property(x => x.StartedAt).HasColumnName("started_at").HasDefaultValueSql("now()").IsRequired();
+            e.Property(x => x.StartedAt)
+                .HasColumnName("started_at")
+                .HasDefaultValueSql("now()")
+                .IsRequired();
             e.Property(x => x.FinishedAt).HasColumnName("finished_at");
-
-            e.HasOne<UserStub>()
-                .WithMany()
-                .HasForeignKey(x => x.TriggeredBy)
-                .HasConstraintName("fk_crawl_job_23");
         });
     }
 }

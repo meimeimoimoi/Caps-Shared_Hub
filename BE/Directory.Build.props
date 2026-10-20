@@ -9,5 +9,17 @@
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
     <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
     <Deterministic>true</Deterministic>
+    <!-- Static analysis: the recommended .NET rules plus the code style in /.editorconfig, reported at build.
+         CI builds with -warnaserror, so a warning never reaches the shared branches. -->
+    <AnalysisLevel>latest-recommended</AnalysisLevel>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <!-- Needed for unused-using detection (IDE0005) and Swagger XML comments; undocumented members and
+         partially documented parameters are fine -->
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);CS1591;CS1573</NoWarn>
   </PropertyGroup>
+  <!-- Same analyzers in every IDE, the build and CI; build-time only, never shipped -->
+  <ItemGroup>
+    <PackageReference Include="Roslynator.Analyzers" PrivateAssets="all" />
+  </ItemGroup>
 </Project>

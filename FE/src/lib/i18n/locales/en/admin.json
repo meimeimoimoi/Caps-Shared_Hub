@@ -1,0 +1,903 @@
+{
+  "reviewWorkspace": {
+    "reference": "Application reference",
+    "progress": "Assessment progress",
+    "criteria": "criteria completed",
+    "assessmentHint": "Check the application details, then record a result and notes for each criterion.",
+    "criteriaNavigation": "Select an assessment criterion",
+    "notAssessed": "Not assessed",
+    "missingNote": "Note required",
+    "assessmentResult": "Assessment result",
+    "optionalNotePlaceholder": "Add supporting reasons or assessment notes…",
+    "noteHint": "Add a note to complete this criterion.",
+    "noteVisibility": "The applicant will be able to read this note.",
+    "previousCriterion": "Previous criterion",
+    "nextIncomplete": "Next incomplete criterion",
+    "allComplete": "All criteria completed",
+    "completeCurrent": "Complete the current criterion",
+    "continueReview": "Continue assessment"
+  },
+  "dashboardApiPending": "Overview statistics are not connected yet. Final approvals and service price reviews are available from the menu. Other administration areas are awaiting API integration.",
+  "navigation": {
+    "overview": "Overview",
+    "expertReview": "Expert Review",
+    "pendingExperts": "Pending Applications",
+    "competencyReview": "Competency review",
+    "finalApproval": "Final approval",
+    "pricingReview": "Service price review",
+    "manageExperts": "Manage Experts",
+    "operations": "Operations",
+    "complaints": "Complaints",
+    "payouts": "Payouts",
+    "pricing": "Pricing Framework",
+    "system": "System",
+    "accounts": "Accounts",
+    "settings": "Settings",
+    "users": "Users"
+  },
+  "dashboard": {
+    "title": "Overview",
+    "description": "What needs attention first, and how the platform is doing.",
+    "attention": {
+      "dispute": "{{count}} open disputes, the nearest is due in {{hours}} h",
+      "payoutFailed": "{{count}} failed payouts need a retry",
+      "slaOverdue": "{{count}} expert applications waiting over {{days}} days",
+      "outsideRange": "{{count}} experts priced outside the range"
+    },
+    "kpi": {
+      "pending": "Pending applications",
+      "pendingOverdue": "{{count}} past the review deadline",
+      "pendingOnTime": "All within the review deadline",
+      "experts": "Active experts",
+      "expertsNote": "{{suspended}} suspended · {{total}} total",
+      "held": "Funds held",
+      "heldNote": "{{amount}} locked by disputes",
+      "disputes": "Open disputes",
+      "disputesNote": "Nearest due in {{hours}} h",
+      "disputesNone": "No disputes"
+    },
+    "vetting": "Expert review",
+    "escrow": "Escrow funds",
+    "upcoming": {
+      "title": "Coming up",
+      "priceChange": "New price range: {{group}}",
+      "empty": "No scheduled changes."
+    },
+    "loading": "Loading figures…",
+    "growth": {
+      "title": "Growth",
+      "filterLabel": "View by",
+      "month": "Monthly",
+      "quarter": "Quarterly",
+      "platformFee": "Platform revenue",
+      "gmv": "Transaction value",
+      "newUsers": "New users",
+      "totalUsers": "Total users",
+      "versus": "vs {{period}}",
+      "moneyChart": "Money flow by period",
+      "usersChart": "New users by period",
+      "expertPayout": "Expert payouts",
+      "refunds": "Refunds",
+      "clients": "Clients",
+      "experts": "Experts",
+      "table": "Show as table",
+      "period": "Period",
+      "total": "Total",
+      "quarterLabel": "Q{{quarter}} {{year}}",
+      "mock": "Sample figures until the backend statistics API is ready.",
+      "partial": "{{period}} (to date)",
+      "latest": "Latest closed period: {{period}}. The current period is shown on the charts only.",
+      "notEnough": "Not enough closed periods to compare yet.",
+      "monthTick": "{{name}}"
+    },
+    "noData": "No data yet."
+  },
+  "search": {
+    "placeholder": "Search by name or email"
+  },
+  "notifications": {
+    "label": "Notifications",
+    "pending": "{{count}} Expert applications awaiting capability review",
+    "refundFailed": "{{count}} client refunds failed"
+  },
+  "pendingExperts": {
+    "title": "Pending Applications",
+    "description": "Applications that have passed document screening and legal verification, waiting for System Admin capability assessment.",
+    "filterAria": "Filter by status"
+  },
+  "experts": {
+    "title": "Manage Experts",
+    "description": "Approved Experts. Only Experts with active services will appear on the Marketplace.",
+    "serviceStatus": "Service Status",
+    "allStatuses": "All",
+    "field": "Field",
+    "allFields": "All fields",
+    "expertCount": "Expert(s)",
+    "table": {
+      "expert": "Expert",
+      "field": "Field",
+      "serviceStatus": "Service Status",
+      "reviewFee": "Review Fee",
+      "activeCases": "Active Cases",
+      "approvedAt": "Approved At"
+    },
+    "noResults": "No Expert matches the filter.",
+    "drawer": {
+      "viewApplication": "View application",
+      "suspend": "Suspend service",
+      "resume": "Resume service",
+      "info": "Details",
+      "email": "Email",
+      "experience": "Experience",
+      "fields": "Fields",
+      "service": "Service",
+      "fee": "Review fee",
+      "schedule": "Working schedule",
+      "active": "Active cases",
+      "activeValue": "{{active}}/{{capacity}} cases",
+      "review": "Vetting",
+      "result": "Result",
+      "reviewer": "Reviewed by",
+      "approvedAt": "Approved on",
+      "application": "Application",
+      "history": "Activity log"
+    }
+  },
+  "applicationsTable": {
+    "sortBy": "Sort by: oldest submitted first",
+    "applicationCount": "application(s)",
+    "table": {
+      "id": "Application ID",
+      "applicant": "Applicant",
+      "experienceYears": "Years Exp",
+      "aiScreening": "AI Screening",
+      "submittedAt": "Submitted At",
+      "waited": "Waited"
+    },
+    "aiFlags": "{{count}} items to review",
+    "noNotes": "No notes",
+    "overdue": "Overdue",
+    "days": "{{count}} days",
+    "noApplications": "No applications.",
+    "actions": "Actions",
+    "view": "View details",
+    "viewLabel": "View application of {{name}}",
+    "reapplication": "Reapplication"
+  },
+  "queue": {
+    "tabs": {
+      "review": "Pending Review",
+      "moreInfo": "Need More Info",
+      "notEligible": "Not Eligible",
+      "eligible": "Eligible"
+    }
+  },
+  "decision": {
+    "supplement": {
+      "title": "Request Supplement",
+      "notice": "Application moved to Need More Info. Applicant will receive an email with the items below.",
+      "itemsLabel": "Items to Supplement (Select at least 1)",
+      "messageLabel": "Message",
+      "defaultMessage": "Please provide the following information to complete the capability assessment.",
+      "confirm": "Send Supplement Request",
+      "noteLabel": "Message sent to applicant",
+      "noSuggestions": "No suggested items.",
+      "itemAria": "What to supplement for {{item}}",
+      "itemPlaceholder": "Say exactly what needs to be added",
+      "pickOne": "Pick at least 1 item."
+    },
+    "label": {
+      "supplement": "Request Supplement"
+    }
+  },
+  "detail": {
+    "tabs": {
+      "profile": "Profile",
+      "documents": "Documents",
+      "ai": "AI Screening",
+      "history": "History"
+    },
+    "notFound": "Application {{id}} not found",
+    "backToList": "Back to list",
+    "tabAria": "Application Info",
+    "meta": {
+      "jobTitle": "Job Title",
+      "experience": "Experience",
+      "years": "{{count}} year(s)",
+      "submitted": "Submitted"
+    },
+    "blockers": {
+      "flags": "{{count}} AI flags unreviewed"
+    },
+    "scoreSummary": {
+      "level": "Level {{level}}",
+      "unscored": "Unscored"
+    },
+    "profile": {
+      "personal": "Personal Information",
+      "name": "Full Name",
+      "dob": "Date of Birth",
+      "title": "Job Title & Company",
+      "location": "Location",
+      "bio": "Bio",
+      "experience": "Experience",
+      "years": "Years of experience",
+      "fields": "Fields",
+      "cv": "Curriculum Vitae (CV)",
+      "noCv": "No CV provided",
+      "highlights": "Experience Highlights"
+    },
+    "history": {
+      "title": "Operation History",
+      "reviewer": "Reviewer"
+    },
+    "documents": {
+      "select": "Select document",
+      "noPreview": "No preview available for this document.",
+      "pageNote": "Notes for page {{page}}",
+      "aiReviewed": "AI · Reviewed",
+      "unmark": "Unmark",
+      "mark": "Mark as reviewed",
+      "pageOf": "{{code}} · page {{page}}/{{total}}",
+      "open": "Open file",
+      "openFailed": "Could not open the file. Please try again."
+    },
+    "aiScreening": {
+      "declared": "Declared",
+      "present": "Present in document",
+      "missing": "Missing",
+      "inconsistent": "Inconsistent",
+      "results": "AI Screening Results",
+      "overview": "Overview",
+      "checked": "{{count}} items checked",
+      "flags": "{{count}} items need review",
+      "allReviewed": "reviewed by System Admin",
+      "noFlags": "no items need review.",
+      "reviewed": "Reviewed",
+      "viewDetail": "View AI screening details",
+      "ranAt": "Ran at {{time}}",
+      "rerunAt": ", re-run after supplement at {{time}}",
+      "review": "Needs review",
+      "reviewedCount": "Reviewed {{done}}/{{total}}",
+      "legalTitle": "Legal document checks",
+      "colItem": "Check",
+      "colResult": "AI result",
+      "colNote": "AI note",
+      "colDocument": "Document",
+      "documentReviewed": "{{document}} · Reviewed"
+    },
+    "competency": {
+      "title": "Competency Review",
+      "subtitle": "Scoring scale based on review policy",
+      "level": "Level {{level}}",
+      "evidence": "Evidence (required)"
+    },
+    "decisionTitle": "System Admin decision"
+  },
+  "disputes": {
+    "title": "Disputes",
+    "intro": "{{count}} disputes awaiting a decision. Each dispute must be decided within {{hours}} hours of opening, extended once by 48 hours when escalated to a professional reviewer; escrow funds stay locked until then.",
+    "col": {
+      "caseId": "Case ID",
+      "case": "Case",
+      "ground": "Ground",
+      "opened": "Opened",
+      "status": "Status",
+      "left": "Time left",
+      "actions": "Actions"
+    },
+    "hours": "{{hours}} h",
+    "view": "View details",
+    "viewLabel": "View dispute {{id}}",
+    "empty": "No disputes yet.",
+    "resolved": "Decided",
+    "badge": {
+      "open": "Disputed",
+      "challenge": "Challenged · case terminated",
+      "escalated": "Escalated to professional review"
+    },
+    "notFound": "Dispute {{id}} not found",
+    "back": "Back",
+    "caseTitle": "Dispute · {{title}}",
+    "meta": {
+      "kind": "Type",
+      "client": "Client",
+      "expert": "Expert",
+      "ground": "Ground"
+    },
+    "kind": {
+      "DELIVERY_ISSUE": "Dispute on the delivered result",
+      "USER_NON_RESPONSE_CHALLENGE": "Challenge of a no-response termination"
+    },
+    "evidence": "Evidence: AI draft vs. expert revision",
+    "complaint": {
+      "title": "Client complaint",
+      "issue": "Issue",
+      "description": "Description",
+      "attachment": "Evidence"
+    },
+    "auditLog": "Case audit log",
+    "decided": "Arbitration decision recorded",
+    "decision": {
+      "title": "Arbitration decision",
+      "timeLeft": "{{left}} h of {{total}} h left",
+      "lockedTitle": "Funds are locked",
+      "lockedBody": "Nothing is paid out automatically until a decision is made.",
+      "outcome": "Outcome (required)",
+      "reason": "Reason (required)",
+      "reasonHint": "Sent to both the Client and the expert",
+      "submit": "Record decision",
+      "done": "Decision recorded"
+    },
+    "escalation": {
+      "hint": "Disputes about professional judgment or a CIT conclusion go to an Authorized Reviewer. The decision deadline is extended by {{hours}} hours, once.",
+      "action": "Escalate to professional review",
+      "done": "Escalated to professional review; the decision deadline was extended.",
+      "logged": "Escalated to an Authorized Reviewer; decision deadline extended by 48 hours",
+      "toast": "Escalated to professional review"
+    },
+    "outcome": {
+      "RESOLVE_REFUND_USER": {
+        "label": "Uphold · refund the client",
+        "hint": "The complaint is justified: the expert breached an obligation, or the client responded on time / the information request was not valid",
+        "split": "Client refund 100% · Expert 0% · Platform 0%"
+      },
+      "RESOLVE_PAY_EXPERT": {
+        "label": "Dismiss · pay the expert",
+        "hint": "The complaint is not justified; the expert did the work properly",
+        "split": "Client refund 0% · Expert 80% · Platform 20%"
+      },
+      "RESOLVE_PARTIAL": {
+        "label": "Partial settlement",
+        "hint": "Both sides fell partly short",
+        "split": "Client refund 50% · Expert 40% · Platform 10%"
+      }
+    }
+  },
+  "escrow": {
+    "title": "Refunds and payouts",
+    "intro": "Paid out 80/20 after acceptance; refunds follow the termination matrix and dispute decisions.",
+    "col": {
+      "caseId": "Case ID",
+      "client": "Client",
+      "expert": "Expert",
+      "amount": "Amount (₫)",
+      "status": "Escrow status",
+      "next": "Next milestone",
+      "actions": "Actions"
+    },
+    "refunded": "{{reason}} · {{percent}}% refunded",
+    "retry": "Retry",
+    "retrying": "Retrying…",
+    "retried": "Payout retried for case {{id}}",
+    "empty": "No Escrow records yet.",
+    "matrix": {
+      "title": "Case termination matrix",
+      "case": "Termination case",
+      "client": "Client refund",
+      "expert": "Expert",
+      "platform": "Platform"
+    },
+    "nextLabel": {
+      "DISPUTE_LOCKED": "decide by",
+      "HELD": "auto-confirms",
+      "PAYOUT_SCHEDULED": "payout on",
+      "PAID": "paid on",
+      "REFUNDED": "refunded on",
+      "PAYOUT_FAILED": "failed on",
+      "REFUND_PENDING": "pending since",
+      "REFUND_FAILED": "failed on"
+    },
+    "termination": {
+      "USER_NON_RESPONSE": {
+        "label": "Client did not answer the information request within 72 hours",
+        "short": "Client no response"
+      },
+      "USER_CANCELLED": {
+        "label": "Client cancelled during the review",
+        "short": "Client cancelled in review"
+      },
+      "USER_CANCELLED_BEFORE_START": {
+        "label": "Client cancelled after paying, before the expert started",
+        "short": "Cancelled before start"
+      },
+      "EXPERT_ABANDON": {
+        "label": "Expert did not deliver after the deadline and the 24-hour grace period",
+        "short": "Expert abandoned"
+      },
+      "SYSTEM_ERROR": {
+        "label": "System error",
+        "short": "System error"
+      },
+      "EXPERT_START_TIMEOUT": {
+        "label": "Expert did not start within 24 hours",
+        "short": "Expert did not start"
+      }
+    },
+    "status": {
+      "ALL": "All",
+      "HELD": "Awaiting acceptance",
+      "DISPUTE_LOCKED": "Dispute lock",
+      "PAYOUT_SCHEDULED": "Payout scheduled · 7 days",
+      "PAID": "Paid out",
+      "REFUNDED": "Refunded",
+      "PAYOUT_FAILED": "Payout failed",
+      "REFUND_PENDING": "Refund pending",
+      "REFUND_FAILED": "Refund failed"
+    },
+    "filterLabel": "Filter by status",
+    "items": "{{count}} records",
+    "export": "Export reconciliation CSV",
+    "view": "View details",
+    "viewLabel": "View record {{id}}",
+    "noMatch": "No records match this filter.",
+    "retryBlocked": "Cannot retry: the expert needs to update their payout account.",
+    "drawer": {
+      "title": "Record {{id}}",
+      "parties": "{{client}} → {{expert}}",
+      "split": "Split",
+      "expected": "Expected on acceptance",
+      "total": "Client paid",
+      "toClient": "Client refund",
+      "toExpert": "Expert receives",
+      "toPlatform": "Platform fee",
+      "paidAt": "Paid at",
+      "payosRef": "PayOS transaction",
+      "account": "Payout account",
+      "reason": "Refund reason",
+      "failure": "Failure reason",
+      "fixAccount": "Retrying will keep failing until the expert updates their payout account.",
+      "dispute": "View dispute",
+      "history": "Log",
+      "refundAccount": "Refund account",
+      "refundRef": "Refund transaction",
+      "fixRefund": "Contact the client for a new refund account, transfer the money, then mark it refunded."
+    },
+    "csv": {
+      "caseId": "Case ID",
+      "client": "Client",
+      "expert": "Expert",
+      "amount": "Amount",
+      "status": "Status",
+      "toClient": "Client refund",
+      "toExpert": "Expert receives",
+      "toPlatform": "Platform fee",
+      "paidAt": "Paid at",
+      "payosRef": "PayOS ref",
+      "refundRef": "Refund transaction"
+    },
+    "refund": {
+      "mark": "Mark as refunded",
+      "title": "Confirm {{amount}} refunded to the client?",
+      "body": "Only mark it once the money has reached {{account}}.",
+      "ref": "Bank transaction ID (required)",
+      "refHint": "Used to reconcile with the bank statement.",
+      "confirm": "Confirm refund",
+      "cancel": "Cancel",
+      "missingRef": "Enter the bank transaction ID.",
+      "done": "Marked case {{id}} as refunded",
+      "logged": "Marked as refunded, transaction {{ref}}"
+    },
+    "groups": {
+      "action": "Needs action",
+      "holding": "Held in the system",
+      "holdingTotal": "Total {{amount}}",
+      "done": "Completed"
+    },
+    "searchLabel": "Search case ID, client, expert or PayOS ref"
+  },
+  "pricing": {
+    "title": "Service pricing",
+    "tabsLabel": "Pricing settings",
+    "tabs": {
+      "review-fee": {
+        "label": "Expert review fees",
+        "intro": "Experts set their review fee within each template group's range. Changes apply to new requests only, from the effective date."
+      },
+      "credit": {
+        "label": "Credits and packages",
+        "intro": "Credit prices for the AI assistant and drafting, and the packages shown on the paywall."
+      },
+      "history": {
+        "label": "Change history",
+        "intro": "Every change to fee ranges, credit prices and packages, newest first."
+      }
+    },
+    "saved": "Saved {{name}}",
+    "share": {
+      "platform": "Platform fee",
+      "expert": "Expert receives",
+      "note": "Set by platform policy, not editable here. Clients never see the split; they only see the fee the expert sets."
+    },
+    "tiers": {
+      "title": "Ranges by template group",
+      "add": "Add template group",
+      "col": {
+        "group": "Template group",
+        "range": "Current range",
+        "step": "Step",
+        "accepting": "Experts accepting",
+        "outside": "Outside range",
+        "from": "Effective from",
+        "scheduled": "Scheduled change"
+      },
+      "templates": "{{count}} templates",
+      "changeFrom": "Changes from {{date}}",
+      "scheduledCount": "{{count}} scheduled changes",
+      "scheduledLine": "{{group}}: {{range}} from {{from}}, created by {{by}} on {{created}}. Can be cancelled before it takes effect."
+    },
+    "credit": {
+      "rates": "Credit prices",
+      "col": {
+        "action": "Action",
+        "when": "Charged when",
+        "price": "Price"
+      },
+      "pendingRate": "[to be confirmed]",
+      "credits": "{{count}} credits",
+      "packages": "PayOS packages",
+      "addPackage": "Add package",
+      "pcol": {
+        "name": "Package",
+        "credits": "Credits",
+        "price": "Price",
+        "status": "Status",
+        "order": "Paywall order"
+      },
+      "editLabel": "Edit {{name}}",
+      "pendingPrice": "[package price]",
+      "onSale": "On sale",
+      "offSale": "Off sale",
+      "recommended": " · recommended",
+      "note": "Price changes apply to new top-ups only; purchased credits stay as they are."
+    },
+    "package": {
+      "edit": "Edit {{name}}",
+      "add": "Add package",
+      "description": "On-sale packages appear on the paywall. Price changes apply to new top-ups only; purchased credits stay as they are.",
+      "cancel": "Cancel",
+      "saving": "Saving…",
+      "save": "Save package",
+      "create": "Add package",
+      "name": "Package name (required)",
+      "nameHint": "The name clients see on the paywall.",
+      "namePlaceholder": "e.g. Pack 30",
+      "credits": "Credits (required)",
+      "price": "Price",
+      "perCredit": "{{amount}} ₫ per credit",
+      "priceEmpty": "Leave empty if the price is not set yet.",
+      "order": "Paywall order (required)",
+      "orderHint": "1 = shown first.",
+      "display": "Paywall display",
+      "onSale": "On sale",
+      "onSaleHint": "Turn off to hide from the paywall without deleting.",
+      "recommended": "Recommended on the paywall",
+      "recommendedHint": "Highlights the suggested package; keep only one.",
+      "noPrice": "A package without a price cannot be sold even when on. The paywall only shows priced packages."
+    },
+    "tier": {
+      "new": "Add template group",
+      "notFound": "Template group {{id}} not found",
+      "current": "Current: {{range}}, step {{step}}, from {{from}}",
+      "newIntro": "Experts who accept this group will set their review fee within the range you create, from the effective date.",
+      "newRange": "New range",
+      "range": "Fee range",
+      "group": "Template group name (required)",
+      "groupHint": "The name clients see when choosing what to have reviewed.",
+      "groupPlaceholder": "e.g. Transfer pricing",
+      "min": "Minimum fee (required)",
+      "max": "Maximum fee (required)",
+      "step": "Step (required)",
+      "stepHint": "Experts can only set multiples of the step.",
+      "from": "Effective from (required)",
+      "fromHint": "Tomorrow at the earliest.",
+      "reasonChange": "Reason for the change (required)",
+      "reasonCreate": "Reason for the group (required)",
+      "reasonChangePlaceholder": "e.g. Refund cases often need several periods reconciled",
+      "reasonCreatePlaceholder": "e.g. Add transfer pricing forms under Decree 132/2020",
+      "reasonHint": "Saved to the change history and sent with the notice to experts.",
+      "previewTitle": "What experts will see when setting a fee",
+      "preview": "Current range: {{range}} · you receive {{share}}%",
+      "afterTitle": "After creating",
+      "afterNoExpertTitle": "No expert accepts the new group yet",
+      "afterNoExpert": "From the effective date, experts see this group under Services and can opt in with a fee within the range.",
+      "afterMarketTitle": "Clients only see it once an expert accepts",
+      "afterMarket": "The group appears on the Marketplace when at least one active expert accepts it.",
+      "impact": "Impact",
+      "inGroup": "Experts in group",
+      "outside": "Outside new range",
+      "activeCases": "Active cases",
+      "below": "below the new minimum",
+      "above": "above the new maximum",
+      "outsideNoteTitle": "Experts outside the range keep their fee until they update it",
+      "outsideNote": "They get a notice asking them to update and stay on the Marketplace at their current fee.",
+      "casesNoteTitle": "{{count}} active cases keep their price",
+      "casesNote": "Paid cases keep exactly the amount already paid.",
+      "blocker": {
+        "group": "Template group name is missing",
+        "bounds": "Enter both the minimum and maximum",
+        "order": "The minimum must be below the maximum",
+        "step": "Fees must be multiples of the step",
+        "date": "Must take effect from tomorrow onward",
+        "reason": "A reason is required"
+      },
+      "readyChange": "Applies to new requests from {{date}} · notifies {{count}} experts",
+      "readyCreate": "Opens for expert pricing from {{date}}",
+      "cancel": "Cancel",
+      "saving": "Saving…",
+      "schedule": "Schedule",
+      "create": "Create group",
+      "scheduled": "Scheduled a new range for {{name}} from {{date}}",
+      "created": "Created {{name}}, open from {{date}}"
+    }
+  },
+  "users": {
+    "title": "Users",
+    "description": "Every account on the platform. Locking an account blocks sign-in; their data and history are kept.",
+    "role": {
+      "label": "Role",
+      "all": "All roles",
+      "CLIENT": "Client",
+      "EXPERT": "Expert",
+      "REVIEWER": "Reviewer",
+      "KNOWLEDGE_ADMIN": "Knowledge Admin",
+      "SYSTEM_ADMIN": "System Admin"
+    },
+    "status": {
+      "label": "Status",
+      "all": "All statuses",
+      "ACTIVE": "Active",
+      "LOCKED": "Locked"
+    },
+    "count": "{{count}} accounts",
+    "col": {
+      "user": "User",
+      "role": "Role",
+      "status": "Status",
+      "created": "Created",
+      "lastLogin": "Last sign-in",
+      "actions": "Actions"
+    },
+    "never": "Never signed in",
+    "view": "View details",
+    "viewLabel": "View {{name}}",
+    "empty": "No accounts match these filters.",
+    "drawer": {
+      "email": "Email",
+      "role": "Role",
+      "status": "Status",
+      "created": "Created",
+      "lastLogin": "Last sign-in",
+      "lockReason": "Lock reason",
+      "history": "Account log",
+      "expertLink": "View the expert's services",
+      "self": "This is your own account and cannot be locked."
+    },
+    "action": {
+      "lock": "Lock account",
+      "unlock": "Unlock",
+      "reset": "Send password reset email",
+      "cancel": "Cancel",
+      "lockTitle": "Lock {{name}}?",
+      "lockBody": "They cannot sign in until unlocked. Work in progress is not deleted.",
+      "lockReason": "Reason (required)",
+      "lockReasonHint": "Saved to the account log.",
+      "lockConfirm": "Lock account",
+      "unlockTitle": "Unlock {{name}}?",
+      "unlockBody": "They can sign in again right away.",
+      "unlockNote": "Note (optional)",
+      "unlockConfirm": "Unlock",
+      "resetTitle": "Send a password reset email?",
+      "resetBody": "A reset link goes to {{email}}. You never see or set the password for them.",
+      "resetConfirm": "Send email",
+      "locked": "Locked {{name}}",
+      "unlocked": "Unlocked {{name}}",
+      "resetSent": "Password reset email sent to {{email}}"
+    }
+  },
+  "eligibility": {
+    "title": "Gate 1 · Eligibility",
+    "subtitle": "Assess each requirement EV-01 – EV-06. The overall outcome is derived automatically. Eligible does not list the expert on the Marketplace yet: per-service competency review and final approval follow.",
+    "results": {
+      "PASS": "Pass",
+      "NEED_MORE_INFORMATION": "More info",
+      "FAIL": "Fail"
+    },
+    "noteRequired": "Note to the applicant (required)",
+    "noteOptional": "Note (optional)",
+    "notePlaceholder": "State what is missing or why it is not met",
+    "experienceHint": "Declared {{years}} years; minimum {{min}} years.",
+    "experienceBelow": "Below the minimum, so Pass is not available.",
+    "previous": "Previously: {{result}}",
+    "remaining": "{{count}} requirement(s) without a result or a required note",
+    "ready": "All {{count}}/{{total}} requirements assessed",
+    "outcomeLabel": "Overall outcome",
+    "outcome": {
+      "ELIGIBLE": {
+        "confirm": "Confirm eligible",
+        "notice": "The applicant is told they meet the eligibility requirements. Next is the competency review for each service; the profile is not on the Marketplace yet.",
+        "toast": "Eligibility confirmed"
+      },
+      "NEED_MORE_INFORMATION": {
+        "confirm": "Request more information",
+        "notice": "The application goes back to the applicant with the note of each requirement to supplement. They supplement the same application.",
+        "toast": "More information requested"
+      },
+      "NOT_ELIGIBLE": {
+        "confirm": "Confirm not eligible",
+        "notice": "The application is closed. The applicant sees the note of each failed requirement and can only apply again after the policy waiting period. This cannot be undone.",
+        "toast": "Recorded as not eligible"
+      }
+    },
+    "dialog": {
+      "title": "Record the Gate 1 outcome for {{name}}?",
+      "noteLabel": "Overall note (optional)",
+      "placeholder": "Shown to the applicant with the results."
+    },
+    "resultTitle": "Gate 1 result",
+    "decidedAt": "Decided at {{time}}",
+    "reapplyAt": "A new application is allowed from {{date}}.",
+    "noDecision": "No Gate 1 decision yet.",
+    "notReviewable": "This application is not waiting for a Gate 1 decision.",
+    "errors": {
+      "INVALID_ELIGIBILITY_CRITERIA": "Give exactly one result for each of EV-01 – EV-06.",
+      "INVALID_ELIGIBILITY_RESULT": "A result is invalid. Reload the page and try again.",
+      "ELIGIBILITY_NOTE_REQUIRED": "A failed or incomplete requirement needs a note.",
+      "EXPERIENCE_BELOW_MINIMUM": "EV-06 cannot pass: the declared experience is below the minimum.",
+      "SELF_REVIEW_NOT_ALLOWED": "You cannot review your own application.",
+      "APPLICATION_NOT_IN_REVIEW": "This application no longer waits for a decision; reload to see its status.",
+      "failed": "The decision was not recorded. Please try again."
+    }
+  },
+  "qualifications": {
+    "title": "Competency review by service",
+    "description": "Gate 2: eligible experts register each service separately. Assess C1 – C5 per service; a pass goes to the System Admin for final approval.",
+    "count": "qualifications",
+    "service": "Service",
+    "empty": "No qualifications.",
+    "tabs": {
+      "review": "Awaiting review",
+      "moreInfo": "Awaiting evidence",
+      "finalApproval": "Awaiting final approval",
+      "failed": "Not met",
+      "approved": "Approved",
+      "suspended": "Suspended"
+    }
+  },
+  "competency": {
+    "title": "Gate 2 · Competency for the service",
+    "subtitle": "Assess each competency C1 – C5. Every competency needs a note; Pass or Fail must cite at least one file. Years of experience or CV keywords never prove a competency on their own.",
+    "names": {
+      "C1": "CIT knowledge for the service scope",
+      "C2": "AI Draft review and revision",
+      "C3": "Information and evidence review",
+      "C4": "Analysing and applying CIT rules",
+      "C5": "Professional judgment and verification conclusion"
+    },
+    "hints": {
+      "C1": "Related tasks T2, T3.",
+      "C2": "Related tasks T2, T5.",
+      "C3": "Related task T1; supports decision T4.",
+      "C4": "Related tasks T3, T5.",
+      "C5": "Partly T2, T5; mainly T6."
+    },
+    "previous": "Last time: {{result}}",
+    "evidenceRequired": "Supporting files (required)",
+    "evidenceOptional": "Supporting files (optional when requesting more)",
+    "noFiles": "No files in this qualification yet.",
+    "noteRequired": "Assessment note (required)",
+    "notePlaceholder": "Basis of the assessment, or what is missing",
+    "remaining": "{{count}} competencies still need a result, a note or a supporting file",
+    "ready": "All {{count}} competencies assessed",
+    "outcome": {
+      "PENDING_FINAL_APPROVAL": {
+        "confirm": "Confirm competency met",
+        "notice": "The qualification goes to the System Admin for final approval, who must not be the Gate 2 reviewer. The expert is not on the Marketplace yet.",
+        "toast": "Competency recorded as met"
+      },
+      "NEED_MORE_INFORMATION": {
+        "confirm": "Request more evidence",
+        "notice": "The qualification goes back to the expert with the note of each competency to supplement, in the same qualification.",
+        "toast": "Request for more evidence sent"
+      },
+      "FAIL": {
+        "confirm": "Confirm not met",
+        "notice": "This service qualification closes. The expert can register the service again only after the policy wait. Other services are not affected. This cannot be undone.",
+        "toast": "Competency recorded as not met"
+      }
+    },
+    "dialog": {
+      "title": "Gate 2 conclusion for {{name}} · {{service}}?",
+      "noteLabel": "Overall note (optional)",
+      "placeholder": "The expert sees it with the results."
+    },
+    "resultTitle": "Gate 2 result",
+    "noDecision": "No Gate 2 conclusion yet.",
+    "handoff": "Waiting for the System Admin final approval.",
+    "reapplyAt": "The service can be registered again from {{date}}.",
+    "rail": {
+      "review": "Competency review",
+      "finalApproval": "Final approval",
+      "approved": "Approved"
+    },
+    "errors": {
+      "INVALID_COMPETENCY_CRITERIA": "Give exactly one result for each of C1 – C5.",
+      "INVALID_COMPETENCY_RESULT": "A result is invalid. Reload the page and try again.",
+      "COMPETENCY_NOTE_REQUIRED": "Every competency needs an assessment note.",
+      "COMPETENCY_EVIDENCE_REQUIRED": "Pass or Fail must cite at least one file.",
+      "COMPETENCY_EVIDENCE_UNKNOWN": "A cited file does not belong to this qualification. Reload and try again.",
+      "SELF_REVIEW_NOT_ALLOWED": "You cannot review your own qualification.",
+      "QUALIFICATION_NOT_IN_REVIEW": "The qualification is no longer awaiting review; reload to see its status.",
+      "failed": "The conclusion was not recorded. Please try again.",
+      "QUALIFICATION_NOT_PENDING_APPROVAL": "The qualification is no longer waiting for final approval; reload to see its status.",
+      "FINAL_APPROVER_IS_REVIEWER": "The Gate 2 reviewer cannot give the final approval.",
+      "FINAL_APPROVAL_NOTE_REQUIRED": "Explain why it goes back for review.",
+      "INVALID_FINAL_APPROVAL_DECISION": "The decision is invalid. Reload the page and try again.",
+      "SERVICE_NOT_APPROVED": "Only an approved service can be suspended; reload the page.",
+      "SERVICE_NOT_SUSPENDED": "The service is not suspended; reload the page.",
+      "SUSPENSION_NOTE_REQUIRED": "Give the reason for the suspension.",
+      "INVALID_SERVICE_ACCESS_ACTION": "The action is invalid. Reload the page and try again."
+    }
+  },
+  "finalApproval": {
+    "title": "Final approval",
+    "description": "Governance check of Gate 2 results per service: records, both Gate results, evidence and history. Competency is not re-assessed.",
+    "panelTitle": "Final approval",
+    "intro": "Confirm the Gate 2 result is complete and followed the process. Approval lets the expert set up pricing for this service.",
+    "sameReviewer": "You were the Gate 2 reviewer for this qualification, so you cannot give the final approval.",
+    "noteLabel": "Note (required to return for review)",
+    "notePlaceholder": "Missing records, unresolved flags or a process error",
+    "return": "Return for review",
+    "approve": "Approve for service",
+    "notPending": "This qualification is not waiting for final approval.",
+    "toast": {
+      "APPROVE": "Approved for service",
+      "RETURN_FOR_REVIEW": "Returned to competency review",
+      "SUSPEND": "Service suspended",
+      "REINSTATE": "Service reinstated"
+    },
+    "accessTitle": "Service status",
+    "suspendIntro": "Suspending hides this service from the Marketplace and stops new requests; running cases continue. The expert's other services are not affected.",
+    "reinstateIntro": "Reinstate so the expert can offer this service again.",
+    "suspendNoteLabel": "Reason for suspension (required)",
+    "reinstateNoteLabel": "Note (optional)",
+    "suspend": "Suspend service",
+    "reinstate": "Reinstate service"
+  },
+  "pricingReview": {
+    "title": "Service price review",
+    "description": "The first price and changes of at most 50% are approved automatically. This page only lists larger changes, which a System Admin decides.",
+    "tabs": {
+      "PENDING_APPROVAL": "Pending",
+      "RETURN_FOR_REVISION": "Returned",
+      "REJECTED": "Rejected"
+    },
+    "expert": "Expert · service",
+    "change": "Current → new price",
+    "effectiveFrom": "Effective from",
+    "reason": "Expert's reason",
+    "percent": "{{percent}}% change",
+    "empty": "No price changes.",
+    "approve": "Approve",
+    "return": "Return",
+    "reject": "Reject",
+    "noteRequired": "Note to the expert (required)",
+    "noteOptional": "Note (optional)",
+    "dialog": {
+      "APPROVE": "Approve the new price of {{name}}?",
+      "RETURN_FOR_REVISION": "Return the price to {{name}} for revision?",
+      "REJECT": "Reject the new price of {{name}}?"
+    },
+    "toast": {
+      "APPROVE": "New price approved",
+      "RETURN_FOR_REVISION": "Price returned for revision",
+      "REJECT": "New price rejected"
+    },
+    "errors": {
+      "PRICING_NOT_PENDING": "This price is no longer pending; reload the page.",
+      "PRICING_NOTE_REQUIRED": "Explain why it is returned or rejected.",
+      "INVALID_PRICING_DECISION": "The decision is invalid. Reload the page and try again.",
+      "failed": "The decision was not recorded. Please try again."
+    }
+  }
+}

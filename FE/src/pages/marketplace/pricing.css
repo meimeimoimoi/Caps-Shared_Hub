@@ -1,0 +1,123 @@
+/* Trang Bảng giá credit AI (/pricing) — dùng token #shub-home của public-site.css */
+#shub-home .ai-hero {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  padding: calc(var(--gutter) + 120px) var(--gutter) 132px;
+  color: var(--text-primary);
+  background: radial-gradient(120% 90% at 85% 10%, #6b2606 0%, var(--canvas-deep) 55%, var(--canvas) 100%);
+}
+#shub-home .ai-hero video { z-index: -2; }
+#shub-home .ai-hero-shade {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background:
+    linear-gradient(90deg, rgb(5 9 14 / 0.9) 0%, rgb(5 9 14 / 0.55) 55%, rgb(5 9 14 / 0.3) 100%),
+    linear-gradient(180deg, transparent 70%, var(--canvas) 100%);
+}
+#shub-home .ai-hero-body { display: grid; gap: 48px; align-items: end; }
+@media (min-width: 1024px) {
+  #shub-home .ai-hero-body { grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); }
+}
+#shub-home .ai-hero-copy h1 {
+  margin-top: 18px;
+  font-family: var(--f-display);
+  font-size: clamp(40px, 5vw, 64px);
+  line-height: 1.04;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  text-shadow: var(--tshadow);
+}
+@media (max-width: 639px) { #shub-home .ai-hero-copy h1 br { display: none; } }
+#shub-home .ai-hero-copy > p:last-child {
+  max-width: 46ch;
+  margin-top: 20px;
+  font-size: var(--s-body);
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+#shub-home .ai-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--accent);
+  background: rgb(255 255 255 / 0.06);
+  border: 1px solid rgb(255 255 255 / 0.12);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.08);
+  backdrop-filter: blur(8px);
+}
+#shub-home .ai-packages { display: grid; gap: 14px; align-items: end; }
+@media (min-width: 640px) { #shub-home .ai-packages { grid-template-columns: 1fr 1.18fr 1fr; } }
+/* Kính mờ: viền trong 1px + bóng trong mô phỏng mép khúc xạ */
+#shub-home .ai-pkg {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 22px;
+  border-radius: 22px;
+  border: 1px solid rgb(255 255 255 / 0.12);
+  background: rgb(255 255 255 / 0.07);
+  backdrop-filter: blur(14px) saturate(140%);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.12), 0 24px 48px -28px rgb(0 0 0 / 0.7);
+  transition: transform 0.35s var(--ease-out), border-color 0.35s;
+}
+#shub-home .ai-pkg:hover { transform: translateY(-4px); border-color: rgb(255 255 255 / 0.24); }
+#shub-home .ai-pkg-pick { padding: 28px 22px; border-color: rgb(255 122 0 / 0.55); background: rgb(255 122 0 / 0.14); }
+@media (min-width: 640px) {
+  #shub-home .ai-pkg-pick { transform: translateY(-18px); }
+  #shub-home .ai-pkg-pick:hover { transform: translateY(-22px); }
+}
+#shub-home .ai-pkg-name { display: flex; justify-content: space-between; gap: 8px; font-weight: 700; color: var(--text-secondary); }
+#shub-home .ai-pkg-name span {
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  background: var(--accent);
+  color: var(--ink);
+}
+#shub-home .ai-pkg-credits {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin-top: 6px;
+  font-size: 44px;
+  line-height: 1;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  font-variant-numeric: tabular-nums;
+}
+#shub-home .ai-pkg-credits small { font-size: 15px; font-weight: 600; letter-spacing: 0; color: var(--text-secondary); }
+#shub-home .ai-pkg-price { margin-bottom: 12px; font-size: 14px; color: var(--text-secondary); }
+#shub-home .ai-pkg .btn:active, #shub-home .ai-cta .btn:active { transform: scale(0.98); }
+@media (prefers-reduced-motion: reduce) {
+  #shub-home .ai-pkg, #shub-home .ai-pkg-pick { transition: none; }
+  #shub-home .ai-pkg:hover, #shub-home .ai-pkg-pick:hover { transform: none; }
+}
+#shub-home .ai-rates {
+  display: grid;
+  gap: 32px;
+  padding: 24px var(--gutter) 112px;
+}
+@media (min-width: 1024px) { #shub-home .ai-rates { grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr); gap: 64px; } }
+#shub-home .ai-rates h2 { font-family: var(--f-display); font-size: clamp(30px, 3vw, 40px); line-height: 1.1; font-weight: 600; }
+#shub-home .ai-rates > div > p { max-width: 44ch; margin-top: 12px; color: var(--text-secondary); }
+#shub-home .ai-cta { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 24px; }
+#shub-home .ai-rows > div {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 4px 16px;
+  padding: 16px 0;
+  border-top: 1px solid var(--line);
+}
+#shub-home .ai-rows > div:last-child { border-bottom: 1px solid var(--line); }
+#shub-home .ai-rows dt { flex: 1 1 12rem; font-weight: 600; color: var(--text-primary); }
+#shub-home .ai-rows dt small { display: block; font-size: 14px; font-weight: 400; color: var(--text-secondary); }
+#shub-home .ai-rows dd { font-weight: 700; white-space: nowrap; font-variant-numeric: tabular-nums; color: var(--text-primary); }

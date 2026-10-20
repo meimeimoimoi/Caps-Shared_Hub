@@ -1,0 +1,64 @@
+@layer components {
+  .expert-portal .ep-case-detail {
+    --case-accent: var(--ui-accent-text);
+    --case-accent-bg: var(--ui-accent-soft);
+    --case-muted: var(--ui-text-muted);
+    font-family: var(--font-sans);
+  }
+
+
+  .expert-portal .ep-case-detail h1,
+  .expert-portal .ep-review-preparation h2 {
+    font-family: var(--font-serif);
+    font-weight: 600;
+  }
+
+  .expert-portal .ep-case-detail .ep-button-primary {
+    background: var(--ui-accent);
+    background-image: none;
+    color: var(--ui-on-accent) !important;
+    border-color: var(--ui-accent);
+    box-shadow: none;
+    backdrop-filter: none;
+    transition: background-color var(--motion-feedback) var(--motion-ease-enter), transform var(--motion-feedback) var(--motion-ease-enter);
+  }
+
+  .expert-portal .ep-case-detail .ep-button-primary:hover:not(:disabled) {
+    background: var(--ui-accent-hover);
+    box-shadow: none;
+    transform: translateY(-1px);
+  }
+
+  .expert-portal .ep-case-detail .ep-button-primary:active:not(:disabled) {
+    background: var(--ui-accent-active);
+    transform: translateY(0);
+  }
+
+  .expert-portal .ep-case-detail .ep-button-primary:focus-visible {
+    outline: 2px solid var(--case-accent);
+    outline-offset: 3px;
+  }
+
+  .expert-portal .ep-review-preparation p,
+  .expert-portal .ep-review-preparation small {
+    color: var(--case-muted);
+  }
+
+  .expert-portal .ep-review-start {
+    border: 1px solid var(--case-accent);
+    background: var(--case-accent-bg);
+    color: var(--case-accent);
+  }
+
+  .expert-portal .ep-review-start-label {
+    color: var(--case-accent);
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .expert-portal .ep-review-start-button {
+    min-height: 48px;
+    font-size: 14px;
+    white-space: normal;
+  }
+}

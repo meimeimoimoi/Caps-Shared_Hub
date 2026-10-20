@@ -1,0 +1,903 @@
+{
+  "reviewWorkspace": {
+    "reference": "Mã hồ sơ",
+    "progress": "Tiến độ đánh giá",
+    "criteria": "tiêu chí hoàn tất",
+    "assessmentHint": "Đối chiếu thông tin hồ sơ, chọn kết quả và ghi chú cho từng tiêu chí.",
+    "criteriaNavigation": "Chọn tiêu chí đánh giá",
+    "notAssessed": "Chưa đánh giá",
+    "missingNote": "Thiếu ghi chú",
+    "assessmentResult": "Kết quả đánh giá",
+    "optionalNotePlaceholder": "Nhập căn cứ hoặc nhận xét đánh giá…",
+    "noteHint": "Thêm ghi chú để hoàn tất tiêu chí này.",
+    "noteVisibility": "Người đăng ký sẽ xem được ghi chú này.",
+    "previousCriterion": "Tiêu chí trước",
+    "nextIncomplete": "Mục chưa hoàn tất tiếp theo",
+    "allComplete": "Đã hoàn tất mọi tiêu chí",
+    "completeCurrent": "Hoàn tất tiêu chí hiện tại",
+    "continueReview": "Tiếp tục đánh giá"
+  },
+  "dashboardApiPending": "Thống kê tổng quan chưa được kết nối dữ liệu. Bạn vẫn có thể phê duyệt cuối và duyệt giá dịch vụ từ menu. Các mục quản trị khác đang chờ tích hợp API.",
+  "navigation": {
+    "overview": "Tổng quan",
+    "expertReview": "Xét duyệt Expert",
+    "pendingExperts": "Hồ sơ chờ duyệt",
+    "competencyReview": "Đánh giá năng lực",
+    "finalApproval": "Phê duyệt cuối",
+    "pricingReview": "Duyệt giá dịch vụ",
+    "manageExperts": "Quản lý Expert",
+    "operations": "Vận hành",
+    "complaints": "Khiếu nại",
+    "payouts": "Hoàn tiền và chi trả",
+    "pricing": "Khung giá dịch vụ",
+    "system": "Hệ thống",
+    "accounts": "Tài khoản",
+    "settings": "Cấu hình",
+    "users": "Người dùng"
+  },
+  "dashboard": {
+    "title": "Tổng quan",
+    "description": "Việc cần xử lý trước và tình trạng chung của hệ thống.",
+    "attention": {
+      "dispute": "{{count}} khiếu nại đang mở, gần nhất còn {{hours}} giờ trước hạn trọng tài",
+      "payoutFailed": "{{count}} khoản chi trả lỗi, cần thử lại",
+      "slaOverdue": "{{count}} hồ sơ Expert chờ quá {{days}} ngày",
+      "outsideRange": "{{count}} Expert đặt giá ngoài khung"
+    },
+    "kpi": {
+      "pending": "Hồ sơ chờ duyệt",
+      "pendingOverdue": "{{count}} quá hạn xử lý",
+      "pendingOnTime": "Đều trong hạn xử lý",
+      "experts": "Expert đang hoạt động",
+      "expertsNote": "{{suspended}} tạm ngưng · tổng {{total}}",
+      "held": "Tiền đang giữ",
+      "heldNote": "{{amount}} bị khóa do tranh chấp",
+      "disputes": "Khiếu nại đang mở",
+      "disputesNote": "Gần nhất còn {{hours}} giờ",
+      "disputesNone": "Không có khiếu nại"
+    },
+    "vetting": "Xét duyệt Expert",
+    "escrow": "Dòng tiền Escrow",
+    "upcoming": {
+      "title": "Sắp diễn ra",
+      "priceChange": "Khung giá mới: {{group}}",
+      "empty": "Chưa có thay đổi nào lên lịch."
+    },
+    "loading": "Đang tải số liệu…",
+    "growth": {
+      "title": "Tăng trưởng",
+      "filterLabel": "Xem theo",
+      "month": "Theo tháng",
+      "quarter": "Theo quý",
+      "platformFee": "Doanh thu nền tảng",
+      "gmv": "Giá trị giao dịch",
+      "newUsers": "Người dùng mới",
+      "totalUsers": "Tổng người dùng",
+      "versus": "so với {{period}}",
+      "moneyChart": "Dòng tiền theo kỳ",
+      "usersChart": "Người dùng mới theo kỳ",
+      "expertPayout": "Chi trả chuyên gia",
+      "refunds": "Hoàn tiền",
+      "clients": "Client",
+      "experts": "Expert",
+      "table": "Xem dạng bảng",
+      "period": "Kỳ",
+      "total": "Tổng",
+      "quarterLabel": "Q{{quarter}}/{{year}}",
+      "mock": "Số liệu minh họa, chờ API thống kê của BE.",
+      "partial": "{{period}} (đến nay)",
+      "latest": "Kỳ đã chốt gần nhất: {{period}}. Kỳ đang diễn ra chỉ hiện trên biểu đồ.",
+      "notEnough": "Chưa đủ 2 kỳ đã chốt để so sánh.",
+      "monthTick": "T{{month}}"
+    },
+    "noData": "Chưa có số liệu."
+  },
+  "search": {
+    "placeholder": "Tìm theo tên hoặc email"
+  },
+  "notifications": {
+    "label": "Thông báo",
+    "pending": "{{count}} hồ sơ Expert chờ đánh giá năng lực",
+    "refundFailed": "{{count}} khoản hoàn tiền cho Client bị lỗi"
+  },
+  "pendingExperts": {
+    "title": "Hồ sơ chờ duyệt",
+    "description": "Hồ sơ đã qua đối soát tài liệu và kiểm tra giấy tờ pháp lý, đang chờ System Admin đánh giá năng lực.",
+    "filterAria": "Lọc theo trạng thái"
+  },
+  "experts": {
+    "title": "Quản lý Expert",
+    "description": "Expert đã được duyệt. Chỉ Expert có dịch vụ đang hoạt động mới hiển thị trên Marketplace.",
+    "serviceStatus": "Trạng thái dịch vụ",
+    "allStatuses": "Tất cả",
+    "field": "Lĩnh vực",
+    "allFields": "Tất cả lĩnh vực",
+    "expertCount": "Expert",
+    "table": {
+      "expert": "Expert",
+      "field": "Lĩnh vực",
+      "serviceStatus": "Trạng thái dịch vụ",
+      "reviewFee": "Phí rà soát",
+      "activeCases": "Đang nhận",
+      "approvedAt": "Ngày duyệt"
+    },
+    "noResults": "Không có Expert nào khớp bộ lọc.",
+    "drawer": {
+      "viewApplication": "Xem đơn đăng ký",
+      "suspend": "Tạm ngưng dịch vụ",
+      "resume": "Mở lại dịch vụ",
+      "info": "Thông tin",
+      "email": "Email",
+      "experience": "Kinh nghiệm",
+      "fields": "Lĩnh vực",
+      "service": "Dịch vụ",
+      "fee": "Phí rà soát",
+      "schedule": "Lịch nhận việc",
+      "active": "Đang nhận",
+      "activeValue": "{{active}}/{{capacity}} hồ sơ",
+      "review": "Xét duyệt",
+      "result": "Kết quả",
+      "reviewer": "Người duyệt",
+      "approvedAt": "Ngày duyệt",
+      "application": "Đơn đăng ký",
+      "history": "Lịch sử thao tác"
+    }
+  },
+  "applicationsTable": {
+    "sortBy": "Sắp xếp: nộp sớm nhất trước",
+    "applicationCount": "hồ sơ",
+    "table": {
+      "id": "Mã đơn",
+      "applicant": "Người đăng ký",
+      "experienceYears": "Số năm KN",
+      "aiScreening": "Kết quả AI sàng lọc",
+      "submittedAt": "Ngày nộp",
+      "waited": "Đã chờ"
+    },
+    "aiFlags": "{{count}} mục cần xem lại",
+    "noNotes": "Không có ghi chú",
+    "overdue": "Quá hạn",
+    "days": "{{count}} ngày",
+    "noApplications": "Không có hồ sơ nào.",
+    "actions": "Thao tác",
+    "view": "Xem chi tiết",
+    "viewLabel": "Xem chi tiết hồ sơ {{name}}",
+    "reapplication": "Nộp lại"
+  },
+  "queue": {
+    "tabs": {
+      "review": "Chờ đánh giá",
+      "moreInfo": "Cần bổ sung",
+      "notEligible": "Không đủ điều kiện",
+      "eligible": "Đủ điều kiện"
+    }
+  },
+  "decision": {
+    "supplement": {
+      "title": "Yêu cầu bổ sung",
+      "notice": "Đơn chuyển sang Cần bổ sung. Người đăng ký nhận email kèm các mục dưới đây.",
+      "itemsLabel": "Mục cần bổ sung (chọn ít nhất 1)",
+      "messageLabel": "Lời nhắn",
+      "defaultMessage": "Anh/chị vui lòng bổ sung các nội dung trên để hoàn tất đánh giá năng lực.",
+      "confirm": "Gửi yêu cầu bổ sung",
+      "noteLabel": "Nội dung gửi người đăng ký",
+      "noSuggestions": "Không có mục nào được gợi ý.",
+      "itemAria": "Nội dung cần bổ sung cho {{item}}",
+      "itemPlaceholder": "Nêu rõ nội dung cần bổ sung",
+      "pickOne": "Chọn ít nhất 1 mục."
+    },
+    "label": {
+      "supplement": "Yêu cầu bổ sung"
+    }
+  },
+  "detail": {
+    "tabs": {
+      "profile": "Hồ sơ",
+      "documents": "Tài liệu",
+      "ai": "AI sàng lọc",
+      "history": "Lịch sử"
+    },
+    "notFound": "Không tìm thấy hồ sơ {{id}}",
+    "backToList": "Quay lại danh sách",
+    "tabAria": "Thông tin hồ sơ",
+    "meta": {
+      "jobTitle": "Chức danh",
+      "experience": "Kinh nghiệm",
+      "years": "{{count}} năm",
+      "submitted": "Nộp"
+    },
+    "blockers": {
+      "flags": "{{count}} mục AI cần xem lại chưa được xem xét"
+    },
+    "scoreSummary": {
+      "level": "Mức {{level}}",
+      "unscored": "Chưa chấm"
+    },
+    "profile": {
+      "personal": "Thông tin cá nhân",
+      "name": "Họ và tên",
+      "dob": "Ngày sinh",
+      "title": "Chức danh, đơn vị",
+      "location": "Tỉnh/Thành phố",
+      "bio": "Giới thiệu",
+      "experience": "Kinh nghiệm",
+      "years": "Số năm kinh nghiệm",
+      "fields": "Lĩnh vực",
+      "cv": "Sơ yếu lý lịch (CV)",
+      "noCv": "Chưa nộp CV",
+      "highlights": "Kinh nghiệm nổi bật"
+    },
+    "history": {
+      "title": "Lịch sử thao tác",
+      "reviewer": "Người đánh giá"
+    },
+    "documents": {
+      "select": "Chọn tài liệu",
+      "noPreview": "Chưa có bản xem trước cho tài liệu này.",
+      "pageNote": "Ghi chú cho trang {{page}}",
+      "aiReviewed": "AI · Đã xem xét",
+      "unmark": "Bỏ đánh dấu",
+      "mark": "Đánh dấu đã xem xét",
+      "pageOf": "{{code}} · trang {{page}}/{{total}}",
+      "open": "Mở file",
+      "openFailed": "Không mở được file. Vui lòng thử lại."
+    },
+    "aiScreening": {
+      "declared": "Đã kê khai",
+      "present": "Có trong hồ sơ",
+      "missing": "Thiếu",
+      "inconsistent": "Không nhất quán",
+      "results": "Kết quả AI sàng lọc",
+      "overview": "Tổng quan",
+      "checked": "{{count}} mục đã kiểm tra",
+      "flags": "{{count}} mục cần xem lại",
+      "allReviewed": "đã được System Admin xem xét",
+      "noFlags": "không có mục cần xem lại.",
+      "reviewed": "Đã xem xét",
+      "viewDetail": "Xem chi tiết AI sàng lọc",
+      "ranAt": "Chạy lúc {{time}}",
+      "rerunAt": ", chạy lại sau bổ sung lúc {{time}}",
+      "review": "Cần xem lại",
+      "reviewedCount": "Đã xem xét {{done}}/{{total}}",
+      "legalTitle": "Kiểm tra giấy tờ pháp lý",
+      "colItem": "Mục kiểm tra",
+      "colResult": "Kết quả AI",
+      "colNote": "Ghi chú AI",
+      "colDocument": "Tài liệu",
+      "documentReviewed": "{{document}} · Đã xem xét"
+    },
+    "competency": {
+      "title": "Đánh giá năng lực",
+      "subtitle": "Thang chấm theo quy chế xét duyệt",
+      "level": "Mức {{level}}",
+      "evidence": "Căn cứ đánh giá (bắt buộc)"
+    },
+    "decisionTitle": "Quyết định của System Admin"
+  },
+  "disputes": {
+    "title": "Khiếu nại",
+    "intro": "{{count}} khiếu nại đang chờ trọng tài. Mỗi khiếu nại phải có quyết định trong {{hours}} giờ kể từ khi mở, gia hạn một lần thêm 48 giờ khi chuyển cấp chuyên môn; tiền Escrow bị khóa tới lúc đó.",
+    "col": {
+      "caseId": "Mã hồ sơ",
+      "case": "Hồ sơ",
+      "ground": "Căn cứ khiếu nại",
+      "opened": "Mở ngày",
+      "status": "Trạng thái",
+      "left": "Còn lại",
+      "actions": "Thao tác"
+    },
+    "hours": "{{hours}} giờ",
+    "view": "Xem chi tiết",
+    "viewLabel": "Xem chi tiết khiếu nại {{id}}",
+    "empty": "Chưa có khiếu nại nào.",
+    "resolved": "Đã có quyết định",
+    "badge": {
+      "open": "Đang tranh chấp",
+      "challenge": "Đang khiếu nại · hồ sơ đã chấm dứt",
+      "escalated": "Đã chuyển cấp chuyên môn"
+    },
+    "notFound": "Không tìm thấy khiếu nại {{id}}",
+    "back": "Quay lại",
+    "caseTitle": "Tranh chấp · {{title}}",
+    "meta": {
+      "kind": "Loại",
+      "client": "Client",
+      "expert": "Chuyên gia",
+      "ground": "Căn cứ"
+    },
+    "kind": {
+      "DELIVERY_ISSUE": "Khiếu nại kết quả bàn giao",
+      "USER_NON_RESPONSE_CHALLENGE": "Khiếu nại quyết định chấm dứt do không phản hồi"
+    },
+    "evidence": "Bằng chứng: bản nháp AI so với bản chuyên gia sửa",
+    "complaint": {
+      "title": "Khiếu nại của Client",
+      "issue": "Vấn đề",
+      "description": "Mô tả",
+      "attachment": "Bằng chứng"
+    },
+    "auditLog": "Nhật ký hồ sơ (audit log)",
+    "decided": "Đã ra quyết định trọng tài",
+    "decision": {
+      "title": "Quyết định trọng tài",
+      "timeLeft": "Còn {{left}} giờ / {{total}} giờ",
+      "lockedTitle": "Tiền đang bị khóa",
+      "lockedBody": "Không giải ngân tự động cho tới khi có quyết định.",
+      "outcome": "Kết quả (bắt buộc)",
+      "reason": "Lý do quyết định (bắt buộc)",
+      "reasonHint": "Gửi cho cả Client và chuyên gia",
+      "submit": "Ra quyết định",
+      "done": "Đã ra quyết định"
+    },
+    "escalation": {
+      "hint": "Tranh chấp cần xét đoán chuyên môn hoặc kết luận Thuế TNDN phải chuyển cho Authorized Reviewer. Hạn quyết định được cộng thêm {{hours}} giờ, chỉ một lần.",
+      "action": "Chuyển cấp chuyên môn",
+      "done": "Đã chuyển cấp chuyên môn; hạn quyết định đã được gia hạn.",
+      "logged": "Chuyển cấp chuyên môn cho Authorized Reviewer; gia hạn quyết định thêm 48 giờ",
+      "toast": "Đã chuyển cấp chuyên môn"
+    },
+    "outcome": {
+      "RESOLVE_REFUND_USER": {
+        "label": "Chấp thuận khiếu nại · hoàn tiền Client",
+        "hint": "Khiếu nại có căn cứ: chuyên gia vi phạm nghĩa vụ, hoặc Client đã phản hồi đúng hạn / yêu cầu bổ sung không hợp lệ",
+        "split": "Hoàn Client 100% · Chuyên gia 0% · Nền tảng 0%"
+      },
+      "RESOLVE_PAY_EXPERT": {
+        "label": "Bác khiếu nại · chi trả chuyên gia",
+        "hint": "Khiếu nại không có căn cứ; chuyên gia làm đúng, đủ trách nhiệm",
+        "split": "Hoàn Client 0% · Chuyên gia 80% · Nền tảng 20%"
+      },
+      "RESOLVE_PARTIAL": {
+        "label": "Quyết toán một phần",
+        "hint": "Có thiếu sót một phần từ cả hai phía",
+        "split": "Hoàn Client 50% · Chuyên gia 40% · Nền tảng 10%"
+      }
+    }
+  },
+  "escrow": {
+    "title": "Hoàn tiền và chi trả",
+    "intro": "Chi trả 80/20 sau nghiệm thu; hoàn tiền theo ma trận chấm dứt và quyết định tranh chấp.",
+    "col": {
+      "caseId": "Mã hồ sơ",
+      "client": "Client",
+      "expert": "Chuyên gia",
+      "amount": "Số tiền (₫)",
+      "status": "Trạng thái Escrow",
+      "next": "Mốc tiếp theo",
+      "actions": "Thao tác"
+    },
+    "refunded": "{{reason}} · hoàn {{percent}}%",
+    "retry": "Thử lại",
+    "retrying": "Đang thử lại…",
+    "retried": "Đã chi trả lại hồ sơ {{id}}",
+    "empty": "Chưa có khoản Escrow nào.",
+    "matrix": {
+      "title": "Ma trận chấm dứt hồ sơ",
+      "case": "Tình huống chấm dứt",
+      "client": "Hoàn Client",
+      "expert": "Chuyên gia",
+      "platform": "Nền tảng"
+    },
+    "nextLabel": {
+      "DISPUTE_LOCKED": "quyết định trước",
+      "HELD": "tự xác nhận",
+      "PAYOUT_SCHEDULED": "chi trả ngày",
+      "PAID": "chi trả ngày",
+      "REFUNDED": "hoàn ngày",
+      "PAYOUT_FAILED": "lỗi ngày",
+      "REFUND_PENDING": "chờ hoàn từ",
+      "REFUND_FAILED": "lỗi ngày"
+    },
+    "termination": {
+      "USER_NON_RESPONSE": {
+        "label": "Client không phản hồi yêu cầu bổ sung trong 72 giờ",
+        "short": "Client không phản hồi"
+      },
+      "USER_CANCELLED": {
+        "label": "Client hủy khi chuyên gia đang rà soát",
+        "short": "Client hủy khi đang rà soát"
+      },
+      "USER_CANCELLED_BEFORE_START": {
+        "label": "Client hủy sau khi thanh toán, trước khi chuyên gia bắt đầu",
+        "short": "Hủy trước khi bắt đầu"
+      },
+      "EXPERT_ABANDON": {
+        "label": "Chuyên gia không bàn giao sau hạn và 24 giờ gia hạn",
+        "short": "Chuyên gia bỏ dở"
+      },
+      "SYSTEM_ERROR": {
+        "label": "Lỗi hệ thống",
+        "short": "Lỗi hệ thống"
+      },
+      "EXPERT_START_TIMEOUT": {
+        "label": "Chuyên gia quá 24 giờ chưa bắt đầu",
+        "short": "Chuyên gia chưa bắt đầu"
+      }
+    },
+    "status": {
+      "ALL": "Tất cả",
+      "HELD": "Chờ nghiệm thu",
+      "DISPUTE_LOCKED": "Khóa tranh chấp",
+      "PAYOUT_SCHEDULED": "Chờ chi trả · 7 ngày",
+      "PAID": "Đã chi trả",
+      "REFUNDED": "Đã hoàn",
+      "PAYOUT_FAILED": "Chi trả lỗi",
+      "REFUND_PENDING": "Chờ hoàn",
+      "REFUND_FAILED": "Hoàn lỗi"
+    },
+    "filterLabel": "Lọc theo trạng thái",
+    "items": "{{count}} khoản",
+    "export": "Xuất CSV đối soát",
+    "view": "Xem chi tiết",
+    "viewLabel": "Xem chi tiết khoản {{id}}",
+    "noMatch": "Không có khoản nào khớp bộ lọc.",
+    "retryBlocked": "Không thử lại được: chuyên gia cần cập nhật tài khoản nhận tiền.",
+    "drawer": {
+      "title": "Khoản tiền {{id}}",
+      "parties": "{{client}} → {{expert}}",
+      "split": "Chia tiền",
+      "expected": "Dự kiến khi nghiệm thu",
+      "total": "Client đã thanh toán",
+      "toClient": "Hoàn Client",
+      "toExpert": "Chuyên gia nhận",
+      "toPlatform": "Phí nền tảng",
+      "paidAt": "Thanh toán lúc",
+      "payosRef": "Mã giao dịch PayOS",
+      "account": "Tài khoản nhận",
+      "reason": "Lý do hoàn",
+      "failure": "Lý do lỗi",
+      "fixAccount": "Thử lại sẽ không thành công cho tới khi chuyên gia cập nhật tài khoản nhận tiền.",
+      "dispute": "Xem khiếu nại",
+      "history": "Nhật ký",
+      "refundAccount": "Tài khoản nhận hoàn",
+      "refundRef": "Mã giao dịch hoàn",
+      "fixRefund": "Cần liên hệ Client lấy tài khoản nhận hoàn mới, chuyển khoản rồi đánh dấu đã hoàn."
+    },
+    "csv": {
+      "caseId": "Mã hồ sơ",
+      "client": "Client",
+      "expert": "Chuyên gia",
+      "amount": "Số tiền",
+      "status": "Trạng thái",
+      "toClient": "Hoàn Client",
+      "toExpert": "Chuyên gia nhận",
+      "toPlatform": "Phí nền tảng",
+      "paidAt": "Thanh toán lúc",
+      "payosRef": "Mã PayOS",
+      "refundRef": "Mã giao dịch hoàn"
+    },
+    "refund": {
+      "mark": "Đánh dấu đã hoàn",
+      "title": "Xác nhận đã hoàn {{amount}} cho Client?",
+      "body": "Chỉ đánh dấu sau khi tiền đã chuyển tới {{account}}.",
+      "ref": "Mã giao dịch ngân hàng (bắt buộc)",
+      "refHint": "Dùng để đối soát với sao kê.",
+      "confirm": "Xác nhận đã hoàn",
+      "cancel": "Hủy",
+      "missingRef": "Nhập mã giao dịch ngân hàng.",
+      "done": "Đã đánh dấu hoàn tiền hồ sơ {{id}}",
+      "logged": "Đánh dấu đã hoàn tiền, mã giao dịch {{ref}}"
+    },
+    "groups": {
+      "action": "Cần xử lý",
+      "holding": "Đang giữ trong hệ thống",
+      "holdingTotal": "Tổng {{amount}}",
+      "done": "Đã hoàn tất"
+    },
+    "searchLabel": "Tìm mã hồ sơ, Client, chuyên gia hoặc mã PayOS"
+  },
+  "pricing": {
+    "title": "Khung giá dịch vụ",
+    "tabsLabel": "Cấu hình giá",
+    "tabs": {
+      "review-fee": {
+        "label": "Phí rà soát chuyên gia",
+        "intro": "Expert đặt phí rà soát trong khung của từng nhóm mẫu biểu. Thay đổi chỉ áp dụng cho yêu cầu mới, từ ngày hiệu lực."
+      },
+      "credit": {
+        "label": "Credit và gói nạp",
+        "intro": "Đơn giá credit cho trợ lý AI và soạn nháp, và các gói nạp hiện trên paywall."
+      },
+      "history": {
+        "label": "Lịch sử thay đổi",
+        "intro": "Mọi thay đổi khung giá, đơn giá credit và gói nạp, mới nhất trước."
+      }
+    },
+    "saved": "Đã lưu {{name}}",
+    "share": {
+      "platform": "Phí nền tảng",
+      "expert": "Chuyên gia nhận",
+      "note": "Tỷ lệ theo chính sách nền tảng, không chỉnh ở màn này. Client không thấy tỷ lệ chia; chỉ thấy phí rà soát chuyên gia đặt."
+    },
+    "tiers": {
+      "title": "Khung theo nhóm mẫu biểu",
+      "add": "Thêm nhóm mẫu biểu",
+      "col": {
+        "group": "Nhóm mẫu biểu",
+        "range": "Khung hiện hành",
+        "step": "Bước giá",
+        "accepting": "Expert đang nhận",
+        "outside": "Ngoài khung",
+        "from": "Hiệu lực từ",
+        "scheduled": "Thay đổi đã lên lịch"
+      },
+      "templates": "{{count}} mẫu",
+      "changeFrom": "Có thay đổi từ {{date}}",
+      "scheduledCount": "{{count}} thay đổi đã lên lịch",
+      "scheduledLine": "{{group}}: {{range}} từ {{from}}, do {{by}} tạo ngày {{created}}. Có thể hủy trước ngày hiệu lực."
+    },
+    "credit": {
+      "rates": "Đơn giá",
+      "col": {
+        "action": "Thao tác",
+        "when": "Khi nào tính",
+        "price": "Giá"
+      },
+      "pendingRate": "[chờ chốt]",
+      "credits": "{{count}} credit",
+      "packages": "Gói nạp qua PayOS",
+      "addPackage": "Thêm gói",
+      "pcol": {
+        "name": "Gói",
+        "credits": "Số credit",
+        "price": "Giá bán",
+        "status": "Trạng thái",
+        "order": "Thứ tự trên paywall"
+      },
+      "editLabel": "Sửa {{name}}",
+      "pendingPrice": "[giá gói]",
+      "onSale": "Đang bán",
+      "offSale": "Ngừng bán",
+      "recommended": " · gợi ý",
+      "note": "Đổi giá gói chỉ áp dụng cho lần nạp mới; credit đã nạp giữ nguyên."
+    },
+    "package": {
+      "edit": "Sửa {{name}}",
+      "add": "Thêm gói nạp",
+      "description": "Gói hiện trên paywall khi đang bán. Đổi giá chỉ áp dụng cho lần nạp mới; credit đã nạp giữ nguyên.",
+      "cancel": "Hủy",
+      "saving": "Đang lưu…",
+      "save": "Lưu gói",
+      "create": "Thêm gói",
+      "name": "Tên gói (bắt buộc)",
+      "nameHint": "Tên Client thấy trên paywall.",
+      "namePlaceholder": "vd. Gói 30",
+      "credits": "Số credit (bắt buộc)",
+      "price": "Giá bán",
+      "perCredit": "{{amount}} đ mỗi credit",
+      "priceEmpty": "Bỏ trống nếu chưa chốt giá.",
+      "order": "Thứ tự trên paywall (bắt buộc)",
+      "orderHint": "1 = hiện đầu tiên.",
+      "display": "Hiển thị trên paywall",
+      "onSale": "Đang bán",
+      "onSaleHint": "Tắt để ẩn khỏi paywall mà không xóa gói.",
+      "recommended": "Gợi ý trên paywall",
+      "recommendedHint": "Đánh dấu gói nên chọn; nên chỉ có một gói gợi ý.",
+      "noPrice": "Gói chưa có giá sẽ không bán được dù đang bật. Paywall chỉ hiện gói có giá."
+    },
+    "tier": {
+      "new": "Thêm nhóm mẫu biểu",
+      "notFound": "Không tìm thấy nhóm mẫu biểu {{id}}",
+      "current": "Đang áp dụng: {{range}}, bước {{step}}, từ {{from}}",
+      "newIntro": "Expert nhận nhóm này sẽ đặt phí rà soát trong khung bạn tạo, từ ngày hiệu lực.",
+      "newRange": "Khung mới",
+      "range": "Khung giá",
+      "group": "Tên nhóm mẫu biểu (bắt buộc)",
+      "groupHint": "Tên Client thấy khi chọn loại hồ sơ cần rà soát.",
+      "groupPlaceholder": "vd. Chuyển giá liên kết",
+      "min": "Phí tối thiểu (bắt buộc)",
+      "max": "Phí tối đa (bắt buộc)",
+      "step": "Bước giá (bắt buộc)",
+      "stepHint": "Expert chỉ đặt được bội số của bước giá.",
+      "from": "Hiệu lực từ (bắt buộc)",
+      "fromHint": "Sớm nhất là ngày mai.",
+      "reasonChange": "Lý do thay đổi (bắt buộc)",
+      "reasonCreate": "Lý do tạo nhóm (bắt buộc)",
+      "reasonChangePlaceholder": "vd. Hồ sơ hoàn thuế thường cần đối chiếu nhiều kỳ",
+      "reasonCreatePlaceholder": "vd. Thêm mẫu biểu chuyển giá theo Nghị định 132/2020",
+      "reasonHint": "Lưu vào lịch sử thay đổi và gửi kèm thông báo cho Expert.",
+      "previewTitle": "Expert sẽ thấy khi đặt giá",
+      "preview": "Khung hiện hành: {{range}} · bạn nhận {{share}}%",
+      "afterTitle": "Sau khi tạo",
+      "afterNoExpertTitle": "Nhóm mới chưa có Expert nào nhận",
+      "afterNoExpert": "Từ ngày hiệu lực, Expert thấy nhóm này trong mục Dịch vụ và tự bật nhận nếu muốn, với giá trong khung.",
+      "afterMarketTitle": "Client chỉ thấy khi có Expert nhận",
+      "afterMarket": "Nhóm hiện trên Marketplace khi có ít nhất một Expert đang hoạt động nhận nhóm này.",
+      "impact": "Ảnh hưởng",
+      "inGroup": "Expert trong nhóm",
+      "outside": "Ngoài khung mới",
+      "activeCases": "Case đang chạy",
+      "below": "dưới mức tối thiểu mới",
+      "above": "trên mức tối đa mới",
+      "outsideNoteTitle": "Expert ngoài khung giữ giá cũ cho tới khi tự sửa",
+      "outsideNote": "Hệ thống gửi thông báo đề nghị cập nhật. Họ vẫn hiện trên Marketplace với giá hiện tại.",
+      "casesNoteTitle": "{{count}} case đang chạy không đổi giá",
+      "casesNote": "Case đã thanh toán giữ đúng số tiền đã trả.",
+      "blocker": {
+        "group": "Thiếu tên nhóm mẫu biểu",
+        "bounds": "Nhập đủ mức tối thiểu và tối đa",
+        "order": "Mức tối thiểu phải nhỏ hơn mức tối đa",
+        "step": "Mức giá phải chia hết cho bước giá",
+        "date": "Hiệu lực phải từ ngày mai trở đi",
+        "reason": "Thiếu lý do thay đổi"
+      },
+      "readyChange": "Áp dụng cho yêu cầu mới từ {{date}} · gửi thông báo cho {{count}} Expert",
+      "readyCreate": "Mở cho Expert đặt giá từ {{date}}",
+      "cancel": "Hủy",
+      "saving": "Đang lưu…",
+      "schedule": "Lên lịch áp dụng",
+      "create": "Tạo nhóm",
+      "scheduled": "Đã lên lịch khung mới cho {{name}} từ {{date}}",
+      "created": "Đã tạo nhóm {{name}}, mở từ {{date}}"
+    }
+  },
+  "users": {
+    "title": "Người dùng",
+    "description": "Mọi tài khoản trên nền tảng. Khóa tài khoản để chặn đăng nhập; dữ liệu và lịch sử của họ vẫn được giữ.",
+    "role": {
+      "label": "Vai trò",
+      "all": "Tất cả vai trò",
+      "CLIENT": "Client",
+      "EXPERT": "Chuyên gia",
+      "REVIEWER": "Reviewer",
+      "KNOWLEDGE_ADMIN": "Knowledge Admin",
+      "SYSTEM_ADMIN": "System Admin"
+    },
+    "status": {
+      "label": "Trạng thái",
+      "all": "Tất cả trạng thái",
+      "ACTIVE": "Đang hoạt động",
+      "LOCKED": "Đã khóa"
+    },
+    "count": "{{count}} tài khoản",
+    "col": {
+      "user": "Người dùng",
+      "role": "Vai trò",
+      "status": "Trạng thái",
+      "created": "Ngày tạo",
+      "lastLogin": "Đăng nhập gần nhất",
+      "actions": "Thao tác"
+    },
+    "never": "Chưa đăng nhập",
+    "view": "Xem chi tiết",
+    "viewLabel": "Xem chi tiết {{name}}",
+    "empty": "Không có tài khoản nào khớp bộ lọc.",
+    "drawer": {
+      "email": "Email",
+      "role": "Vai trò",
+      "status": "Trạng thái",
+      "created": "Ngày tạo",
+      "lastLogin": "Đăng nhập gần nhất",
+      "lockReason": "Lý do khóa",
+      "history": "Nhật ký tài khoản",
+      "expertLink": "Xem dịch vụ của chuyên gia",
+      "self": "Đây là tài khoản của bạn, không tự khóa được."
+    },
+    "action": {
+      "lock": "Khóa tài khoản",
+      "unlock": "Mở khóa",
+      "reset": "Gửi email đặt lại mật khẩu",
+      "cancel": "Hủy",
+      "lockTitle": "Khóa {{name}}?",
+      "lockBody": "Người này không đăng nhập được cho tới khi mở khóa. Việc đang làm dở không bị xóa.",
+      "lockReason": "Lý do khóa (bắt buộc)",
+      "lockReasonHint": "Lưu vào nhật ký tài khoản.",
+      "lockConfirm": "Khóa tài khoản",
+      "unlockTitle": "Mở khóa {{name}}?",
+      "unlockBody": "Người này đăng nhập lại được ngay.",
+      "unlockNote": "Ghi chú (không bắt buộc)",
+      "unlockConfirm": "Mở khóa",
+      "resetTitle": "Gửi email đặt lại mật khẩu?",
+      "resetBody": "Hệ thống gửi link đặt lại tới {{email}}. Bạn không thấy và không đặt mật khẩu hộ người dùng.",
+      "resetConfirm": "Gửi email",
+      "locked": "Đã khóa {{name}}",
+      "unlocked": "Đã mở khóa {{name}}",
+      "resetSent": "Đã gửi email đặt lại mật khẩu tới {{email}}"
+    }
+  },
+  "eligibility": {
+    "title": "Gate 1 · Điều kiện tham gia",
+    "subtitle": "Đánh giá từng yêu cầu EV-01 – EV-06. Kết quả chung được suy ra tự động. Đủ điều kiện chưa đưa chuyên gia lên Marketplace: còn đánh giá năng lực từng dịch vụ và phê duyệt cuối.",
+    "results": {
+      "PASS": "Đạt",
+      "NEED_MORE_INFORMATION": "Cần bổ sung",
+      "FAIL": "Không đạt"
+    },
+    "noteRequired": "Ghi chú gửi người đăng ký (bắt buộc)",
+    "noteOptional": "Ghi chú (không bắt buộc)",
+    "notePlaceholder": "Nêu rõ cần bổ sung gì hoặc vì sao chưa đạt",
+    "experienceHint": "Kê khai {{years}} năm; tối thiểu {{min}} năm.",
+    "experienceBelow": "Dưới mức tối thiểu nên không thể chọn Đạt.",
+    "previous": "Lần trước: {{result}}",
+    "remaining": "Còn {{count}} yêu cầu chưa chọn kết quả hoặc thiếu ghi chú",
+    "ready": "Đã đánh giá đủ {{count}}/{{total}} yêu cầu",
+    "outcomeLabel": "Kết quả chung",
+    "outcome": {
+      "ELIGIBLE": {
+        "confirm": "Xác nhận đủ điều kiện",
+        "notice": "Người đăng ký được thông báo đủ điều kiện tham gia. Bước tiếp theo là đánh giá năng lực cho từng dịch vụ; hồ sơ chưa hiển thị trên Marketplace.",
+        "toast": "Đã xác nhận đủ điều kiện"
+      },
+      "NEED_MORE_INFORMATION": {
+        "confirm": "Gửi yêu cầu bổ sung",
+        "notice": "Hồ sơ trả về người đăng ký kèm ghi chú của từng yêu cầu cần bổ sung. Họ bổ sung trên cùng hồ sơ.",
+        "toast": "Đã gửi yêu cầu bổ sung"
+      },
+      "NOT_ELIGIBLE": {
+        "confirm": "Xác nhận không đủ điều kiện",
+        "notice": "Hồ sơ đóng lại. Người đăng ký thấy ghi chú của từng yêu cầu không đạt và chỉ nộp hồ sơ mới được sau thời gian chờ theo chính sách. Không thể hoàn tác.",
+        "toast": "Đã ghi nhận không đủ điều kiện"
+      }
+    },
+    "dialog": {
+      "title": "Kết luận Gate 1 cho {{name}}?",
+      "noteLabel": "Ghi chú chung (không bắt buộc)",
+      "placeholder": "Người đăng ký xem được cùng kết quả."
+    },
+    "resultTitle": "Kết quả Gate 1",
+    "decidedAt": "Quyết định lúc {{time}}",
+    "reapplyAt": "Được nộp hồ sơ mới từ {{date}}.",
+    "noDecision": "Chưa có kết luận Gate 1.",
+    "notReviewable": "Hồ sơ không ở bước chờ kết luận Gate 1.",
+    "errors": {
+      "INVALID_ELIGIBILITY_CRITERIA": "Cần đúng một kết quả cho mỗi yêu cầu EV-01 – EV-06.",
+      "INVALID_ELIGIBILITY_RESULT": "Có kết quả không hợp lệ. Tải lại trang rồi thử lại.",
+      "ELIGIBILITY_NOTE_REQUIRED": "Yêu cầu không đạt hoặc cần bổ sung phải có ghi chú.",
+      "EXPERIENCE_BELOW_MINIMUM": "EV-06 không thể Đạt: kinh nghiệm kê khai dưới mức tối thiểu.",
+      "SELF_REVIEW_NOT_ALLOWED": "Bạn không thể tự đánh giá hồ sơ của chính mình.",
+      "APPLICATION_NOT_IN_REVIEW": "Hồ sơ không còn chờ kết luận; tải lại để xem trạng thái mới.",
+      "failed": "Chưa ghi nhận được kết luận. Vui lòng thử lại."
+    }
+  },
+  "qualifications": {
+    "title": "Đánh giá năng lực theo dịch vụ",
+    "description": "Gate 2: chuyên gia đã đủ điều kiện đăng ký từng dịch vụ. Đánh giá C1 – C5 cho từng dịch vụ; đạt thì chuyển System Admin phê duyệt cuối.",
+    "count": "hồ sơ năng lực",
+    "service": "Dịch vụ",
+    "empty": "Không có hồ sơ năng lực nào.",
+    "tabs": {
+      "review": "Chờ đánh giá",
+      "moreInfo": "Chờ bổ sung",
+      "finalApproval": "Chờ phê duyệt cuối",
+      "failed": "Chưa đạt",
+      "approved": "Đã phê duyệt",
+      "suspended": "Tạm ngưng"
+    }
+  },
+  "competency": {
+    "title": "Gate 2 · Năng lực theo dịch vụ",
+    "subtitle": "Đánh giá từng năng lực C1 – C5. Mỗi năng lực cần ghi chú; Đạt hoặc Không đạt phải chọn ít nhất một tài liệu làm căn cứ. Số năm kinh nghiệm hay từ khóa trong CV không tự chứng minh năng lực.",
+    "names": {
+      "C1": "Kiến thức Thuế TNDN phù hợp phạm vi dịch vụ",
+      "C2": "Rà soát và hiệu chỉnh AI Draft",
+      "C3": "Rà soát thông tin và bằng chứng",
+      "C4": "Phân tích và áp dụng quy định Thuế TNDN",
+      "C5": "Xét đoán nghề nghiệp và kết luận xác minh"
+    },
+    "hints": {
+      "C1": "Liên quan nhiệm vụ T2, T3.",
+      "C2": "Liên quan nhiệm vụ T2, T5.",
+      "C3": "Liên quan nhiệm vụ T1; hỗ trợ quyết định T4.",
+      "C4": "Liên quan nhiệm vụ T3, T5.",
+      "C5": "Liên quan T2 một phần, T5; trọng tâm T6."
+    },
+    "previous": "Lần trước: {{result}}",
+    "evidenceRequired": "Tài liệu làm căn cứ (bắt buộc)",
+    "evidenceOptional": "Tài liệu làm căn cứ (không bắt buộc khi cần bổ sung)",
+    "noFiles": "Hồ sơ chưa có tài liệu nào.",
+    "noteRequired": "Ghi chú đánh giá (bắt buộc)",
+    "notePlaceholder": "Căn cứ đánh giá, hoặc cần bổ sung gì",
+    "remaining": "Còn {{count}} năng lực chưa chọn kết quả, thiếu ghi chú hoặc thiếu tài liệu căn cứ",
+    "ready": "Đã đánh giá đủ {{count}} năng lực",
+    "outcome": {
+      "PENDING_FINAL_APPROVAL": {
+        "confirm": "Xác nhận đạt năng lực",
+        "notice": "Hồ sơ chuyển System Admin phê duyệt cuối. Người phê duyệt cuối phải khác người đánh giá Gate 2. Chuyên gia chưa hiển thị trên Marketplace.",
+        "toast": "Đã ghi nhận đạt năng lực"
+      },
+      "NEED_MORE_INFORMATION": {
+        "confirm": "Gửi yêu cầu bổ sung",
+        "notice": "Hồ sơ trả về chuyên gia kèm ghi chú của từng năng lực cần bổ sung. Chuyên gia bổ sung trên cùng hồ sơ năng lực.",
+        "toast": "Đã gửi yêu cầu bổ sung"
+      },
+      "FAIL": {
+        "confirm": "Xác nhận chưa đạt",
+        "notice": "Hồ sơ năng lực của dịch vụ này đóng lại. Chuyên gia chỉ đăng ký lại dịch vụ sau thời gian chờ theo chính sách. Dịch vụ khác không bị ảnh hưởng. Không thể hoàn tác.",
+        "toast": "Đã ghi nhận chưa đạt năng lực"
+      }
+    },
+    "dialog": {
+      "title": "Kết luận Gate 2 cho {{name}} · {{service}}?",
+      "noteLabel": "Ghi chú chung (không bắt buộc)",
+      "placeholder": "Chuyên gia xem được cùng kết quả."
+    },
+    "resultTitle": "Kết quả Gate 2",
+    "noDecision": "Chưa có kết luận Gate 2.",
+    "handoff": "Đang chờ System Admin phê duyệt cuối.",
+    "reapplyAt": "Được đăng ký lại dịch vụ từ {{date}}.",
+    "rail": {
+      "review": "Đánh giá năng lực",
+      "finalApproval": "Phê duyệt cuối",
+      "approved": "Được cung cấp"
+    },
+    "errors": {
+      "INVALID_COMPETENCY_CRITERIA": "Cần đúng một kết quả cho mỗi năng lực C1 – C5.",
+      "INVALID_COMPETENCY_RESULT": "Có kết quả không hợp lệ. Tải lại trang rồi thử lại.",
+      "COMPETENCY_NOTE_REQUIRED": "Mỗi năng lực phải có ghi chú đánh giá.",
+      "COMPETENCY_EVIDENCE_REQUIRED": "Kết quả Đạt hoặc Không đạt phải chọn ít nhất một tài liệu làm căn cứ.",
+      "COMPETENCY_EVIDENCE_UNKNOWN": "Có tài liệu không thuộc hồ sơ này. Tải lại trang rồi thử lại.",
+      "SELF_REVIEW_NOT_ALLOWED": "Bạn không thể tự đánh giá hồ sơ của chính mình.",
+      "QUALIFICATION_NOT_IN_REVIEW": "Hồ sơ không còn chờ đánh giá; tải lại để xem trạng thái mới.",
+      "failed": "Chưa ghi nhận được kết luận. Vui lòng thử lại.",
+      "QUALIFICATION_NOT_PENDING_APPROVAL": "Hồ sơ không còn chờ phê duyệt cuối; tải lại để xem trạng thái mới.",
+      "FINAL_APPROVER_IS_REVIEWER": "Người đánh giá Gate 2 không thể phê duyệt cuối cùng hồ sơ.",
+      "FINAL_APPROVAL_NOTE_REQUIRED": "Ghi rõ lý do trả về đánh giá lại.",
+      "INVALID_FINAL_APPROVAL_DECISION": "Quyết định không hợp lệ. Tải lại trang rồi thử lại.",
+      "SERVICE_NOT_APPROVED": "Chỉ tạm ngưng được dịch vụ đang được cung cấp; tải lại trang.",
+      "SERVICE_NOT_SUSPENDED": "Dịch vụ không ở trạng thái tạm ngưng; tải lại trang.",
+      "SUSPENSION_NOTE_REQUIRED": "Ghi rõ lý do tạm ngưng.",
+      "INVALID_SERVICE_ACCESS_ACTION": "Thao tác không hợp lệ. Tải lại trang rồi thử lại."
+    }
+  },
+  "finalApproval": {
+    "title": "Phê duyệt cuối",
+    "description": "Kiểm tra quản trị kết quả Gate 2 theo từng dịch vụ: hồ sơ, kết quả hai Gate, bằng chứng và lịch sử. Không đánh giá lại năng lực.",
+    "panelTitle": "Phê duyệt cuối",
+    "intro": "Xác nhận kết quả Gate 2 đầy đủ và đúng quy trình. Phê duyệt cho phép chuyên gia thiết lập giá cho dịch vụ này.",
+    "sameReviewer": "Bạn là người đánh giá Gate 2 của hồ sơ này nên không thể phê duyệt cuối.",
+    "noteLabel": "Ghi chú (bắt buộc khi trả về đánh giá lại)",
+    "notePlaceholder": "Thiếu hồ sơ, cờ chưa xử lý hoặc sai quy trình",
+    "return": "Trả về đánh giá lại",
+    "approve": "Phê duyệt cung cấp dịch vụ",
+    "notPending": "Hồ sơ không ở bước chờ phê duyệt cuối.",
+    "toast": {
+      "APPROVE": "Đã phê duyệt cung cấp dịch vụ",
+      "RETURN_FOR_REVIEW": "Đã trả hồ sơ về đánh giá năng lực",
+      "SUSPEND": "Đã tạm ngưng dịch vụ",
+      "REINSTATE": "Đã mở lại dịch vụ"
+    },
+    "accessTitle": "Trạng thái dịch vụ",
+    "suspendIntro": "Tạm ngưng ẩn dịch vụ này khỏi Marketplace và không nhận yêu cầu mới; hồ sơ đang thực hiện vẫn tiếp tục. Dịch vụ khác của chuyên gia không bị ảnh hưởng.",
+    "reinstateIntro": "Mở lại để chuyên gia tiếp tục cung cấp dịch vụ này.",
+    "suspendNoteLabel": "Lý do tạm ngưng (bắt buộc)",
+    "reinstateNoteLabel": "Ghi chú (không bắt buộc)",
+    "suspend": "Tạm ngưng dịch vụ",
+    "reinstate": "Mở lại dịch vụ"
+  },
+  "pricingReview": {
+    "title": "Duyệt giá dịch vụ",
+    "description": "Giá đầu tiên và thay đổi không quá 50% được hệ thống duyệt tự động. Trang này chỉ gồm các thay đổi lớn hơn ngưỡng, cần System Admin quyết định.",
+    "tabs": {
+      "PENDING_APPROVAL": "Chờ duyệt",
+      "RETURN_FOR_REVISION": "Đã trả về",
+      "REJECTED": "Đã từ chối"
+    },
+    "expert": "Chuyên gia · dịch vụ",
+    "change": "Giá hiện hành → giá mới",
+    "effectiveFrom": "Hiệu lực từ",
+    "reason": "Lý do của chuyên gia",
+    "percent": "Thay đổi {{percent}}%",
+    "empty": "Không có thay đổi giá nào.",
+    "approve": "Duyệt",
+    "return": "Trả về",
+    "reject": "Từ chối",
+    "noteRequired": "Ghi chú gửi chuyên gia (bắt buộc)",
+    "noteOptional": "Ghi chú (không bắt buộc)",
+    "dialog": {
+      "APPROVE": "Duyệt giá mới cho {{name}}?",
+      "RETURN_FOR_REVISION": "Trả giá về cho {{name}} chỉnh sửa?",
+      "REJECT": "Từ chối giá mới của {{name}}?"
+    },
+    "toast": {
+      "APPROVE": "Đã duyệt giá mới",
+      "RETURN_FOR_REVISION": "Đã trả giá về chỉnh sửa",
+      "REJECT": "Đã từ chối giá mới"
+    },
+    "errors": {
+      "PRICING_NOT_PENDING": "Giá này không còn chờ duyệt; tải lại trang.",
+      "PRICING_NOTE_REQUIRED": "Ghi rõ lý do trả về hoặc từ chối.",
+      "INVALID_PRICING_DECISION": "Quyết định không hợp lệ. Tải lại trang rồi thử lại.",
+      "failed": "Chưa ghi nhận được quyết định. Vui lòng thử lại."
+    }
+  }
+}

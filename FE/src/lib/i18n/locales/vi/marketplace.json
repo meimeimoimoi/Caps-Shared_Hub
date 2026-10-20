@@ -1,0 +1,172 @@
+{
+  "meta": {
+    "title": "Sàn Chuyên gia | Shared Hub"
+  },
+  "nav": {
+    "label": "Điều hướng chính",
+    "home": "Trang chủ",
+    "marketplace": "Sàn chuyên gia",
+    "aiAssistant": "Tra cứu AI",
+    "workspace": "Không gian soạn thảo"
+  },
+  "skip": "Bỏ qua tới danh sách chuyên gia",
+  "title": "Chuyên gia thẩm định <em>hồ sơ TNDN</em>",
+  "lead": "Mỗi chuyên gia đều được duyệt riêng cho dịch vụ họ nhận.",
+  "demo": "Dữ liệu minh họa, sẽ thay bằng hồ sơ thật khi Sàn được kết nối.",
+  "proof": {
+    "gate1": {
+      "term": "Vòng 1",
+      "detail": "Xác minh tư cách"
+    },
+    "gate2": {
+      "term": "Vòng 2",
+      "detail": "Kiểm tra năng lực"
+    },
+    "escrow": {
+      "term": "Ký quỹ",
+      "detail": "Giữ tiền đến khi nghiệm thu"
+    }
+  },
+  "services": {
+    "label": "Dịch vụ bạn cần",
+    "from": "Giá từ",
+    "cit-review": {
+      "name": "Thẩm định bản nháp TNDN",
+      "deliverable": "Rà soát bản nháp do AI soạn và cấp bản đã xác thực, hoặc nêu rõ lý do không thể xác thực."
+    },
+    "cit-compliance": {
+      "name": "Đánh giá tuân thủ TNDN",
+      "deliverable": "Rà soát bộ hồ sơ quyết toán, lập danh mục rủi ro có trích dẫn Điều, Khoản."
+    },
+    "cit-consultation": {
+      "name": "Kết luận tình huống TNDN",
+      "deliverable": "Chuyên gia trả lời một tình huống cụ thể bằng kết luận chuyên môn có căn cứ."
+    },
+    "fastest": "Bàn giao từ",
+    "experts": "Chuyên gia",
+    "HUMAN_VERIFICATION": {
+      "name": "Xác minh bởi chuyên gia",
+      "deliverable": "Rà soát bản nháp do AI soạn và cấp bản đã xác thực, hoặc nêu rõ lý do không thể xác thực."
+    }
+  },
+  "filters": {
+    "label": "Lọc chuyên gia",
+    "search": "Tìm theo tên hoặc chủ đề",
+    "searchPlaceholder": "Ví dụ: chi phí lãi vay",
+    "openOnly": "Chỉ người đang nhận việc",
+    "sla": "Thời hạn bàn giao",
+    "slaAny": "Mọi thời hạn",
+    "sort": "Sắp xếp",
+    "sortRecommended": "Đề xuất",
+    "sortRating": "Đánh giá cao nhất",
+    "sortPrice": "Phí thấp nhất",
+    "sortSla": "Bàn giao nhanh nhất",
+    "reset": "Xóa bộ lọc",
+    "slaMax": "Tối đa {{duration}}"
+  },
+  "results": {
+    "count_other": "{{count}} chuyên gia cung cấp dịch vụ này",
+    "filtered_other": "{{count}} trên {{total}} chuyên gia khớp bộ lọc"
+  },
+  "row": {
+    "fee": "Phí dịch vụ",
+    "delivery": "Bàn giao",
+    "rating": "{{rating}} trên 5",
+    "reviews_other": "{{count}} đánh giá",
+    "cases_other": "{{count}} hồ sơ đã làm",
+    "years_other": "{{count}} năm kinh nghiệm",
+    "profile": "Xem hồ sơ",
+    "request": "Gửi yêu cầu",
+    "requestFor": "Gửi yêu cầu cho {{name}}",
+    "expert": "Chuyên gia",
+    "status": "Tình trạng",
+    "topics": "Chủ đề thường xử lý",
+    "noReviews": "Chưa có đánh giá"
+  },
+  "sla": {
+    "hours_other": "{{count}} giờ",
+    "days_other": "{{count}} ngày"
+  },
+  "availability": {
+    "open": "Đang nhận việc",
+    "openDetail": "Phản hồi trong {{hours}} giờ",
+    "full": "Kín lịch",
+    "fullDetail": "Nhận lại từ {{date}}",
+    "paused": "Tạm ngưng",
+    "pausedDetail": "Chuyên gia đang tạm ngưng nhận yêu cầu",
+    "nextSlot": "Lịch trống gần nhất {{date}}",
+    "openAny": "Đang mở lịch nhận yêu cầu"
+  },
+  "trail": {
+    "label": "Quá trình xác thực",
+    "gate1": "Vòng 1",
+    "gate1Detail": "Xác minh tư cách, đạt ngày {{date}}",
+    "gate2": "Vòng 2",
+    "gate2Detail": "Kiểm tra năng lực cho dịch vụ này, đạt ngày {{date}}",
+    "price": "Giá đã duyệt",
+    "priceDetail": "Bảng giá phiên bản {{version}} đã được duyệt",
+    "badge": "Đã xác thực",
+    "gate1Passed": "Xác minh tư cách: đã đạt",
+    "gate2Passed": "Kiểm tra năng lực cho dịch vụ này: đã đạt"
+  },
+  "empty": {
+    "title": "Không có chuyên gia nào khớp bộ lọc",
+    "body": "Thử nới thời hạn bàn giao, mức phí, hoặc bỏ điều kiện chỉ người đang nhận việc.",
+    "noOffers": "Chưa có chuyên gia nào được duyệt cho dịch vụ này."
+  },
+  "profile": {
+    "back": "Sàn chuyên gia",
+    "loading": "Đang tải hồ sơ chuyên gia",
+    "notFound": "Hồ sơ này không còn trên Sàn",
+    "unavailable": "Chưa tải được hồ sơ",
+    "unavailableBody": "Kết nối đang gián đoạn nên chưa lấy được thông tin chuyên gia. Bạn thử lại sau giây lát.",
+    "retry": "Thử lại",
+    "about": "Giới thiệu",
+    "topics": "Chủ đề TNDN thường xử lý",
+    "highlights": "Kinh nghiệm nổi bật",
+    "credential": "Chứng chỉ",
+    "location": "Nơi làm việc",
+    "notOffered": "Chưa được duyệt",
+    "book": {
+      "title": "Gửi yêu cầu thẩm định",
+      "service": "Dịch vụ",
+      "noServices": "Chuyên gia chưa mở dịch vụ nào để đặt.",
+      "fee": "Phí dịch vụ",
+      "delivery": "Thời hạn bàn giao",
+      "response": "Tình trạng",
+      "lock": "Giá, thời hạn và chính sách được chốt tại lúc gửi yêu cầu.",
+      "cta": "Gửi yêu cầu thẩm định",
+      "ctaUnavailable": "Chuyên gia chưa nhận yêu cầu",
+      "steps": "Sau khi gửi",
+      "step1": "Chuyên gia xác nhận nhận việc",
+      "step2": "Bạn ký quỹ 100% phí trong 24 giờ sau khi chuyên gia nhận",
+      "step3": "Chuyên gia bắt đầu trong 24 giờ, bàn giao đúng hạn",
+      "step4": "Bạn nghiệm thu trong 72 giờ, sau đó tiền mới được chuyển",
+      "ctaSignIn": "Đăng nhập để gửi yêu cầu"
+    },
+    "verifiedSince": "Đã xác minh tư cách từ {{date}}",
+    "casesLabel": "Hồ sơ đã làm",
+    "yearsLabel": "Năm kinh nghiệm",
+    "servicesTitle": "Dịch vụ và phí",
+    "servicesLead": "Mỗi dịch vụ được kiểm tra năng lực và duyệt giá riêng. Chọn một dịch vụ để gửi yêu cầu.",
+    "approvedOn": "Đạt vòng 2 ngày {{date}}",
+    "deliveredIn": "Bàn giao trong {{duration}}",
+    "breadcrumb": "Đường dẫn",
+    "notFoundBody": "Chuyên gia có thể đã tạm ẩn hồ sơ, hoặc đường dẫn không đúng. Bạn có thể chọn một chuyên gia khác đã được xác thực.",
+    "missingCrumb": "Không tìm thấy",
+    "failedCrumb": "Lỗi tải hồ sơ",
+    "missingCode": "Mã hồ sơ: {{id}}",
+    "home": "Về trang chủ",
+    "browse": "Về Sàn chuyên gia"
+  },
+  "featured": {
+    "from": "Phí từ",
+    "title": "Chuyên gia đang nhận việc",
+    "lead": "Đã qua hai vòng thẩm định, có thể nhận yêu cầu ngay."
+  },
+  "list": {
+    "loading": "Đang tải danh sách chuyên gia",
+    "failed": "Chưa tải được danh sách chuyên gia",
+    "failedBody": "Kết nối đang gián đoạn nên chưa lấy được danh sách. Bạn thử lại sau giây lát."
+  }
+}
