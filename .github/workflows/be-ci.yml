@@ -5,12 +5,14 @@ on:
     branches: [ main, prod, test-ci-cd ]
     paths:
       - 'BE/**'
+      - '!BE/ai-service/**'
       - '.editorconfig'
       - '.github/workflows/be-ci.yml'
   # Every pull request that touches the backend, whatever its target branch
   pull_request:
     paths:
       - 'BE/**'
+      - '!BE/ai-service/**'
       - '.editorconfig'
       - '.github/workflows/be-ci.yml'
   workflow_dispatch:
@@ -61,7 +63,7 @@ jobs:
       - name: Build (analyzer and style warnings fail the build)
         run: dotnet build Caps.sln --no-restore -warnaserror
 
-      - name: Architecture tests
+      - name: Unit & architecture tests
         run: dotnet test Caps.sln --no-build
 
       # SeaweedFS needs a command and a config file, which service containers cannot pass
