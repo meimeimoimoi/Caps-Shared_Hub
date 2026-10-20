@@ -103,8 +103,23 @@ pip install pytest
 python -m pytest tests -q
 ```
 
-Lưu ý backend: ràng buộc `ck_kd_source` trong `BE/SHFT_PostgreSQL.sql` hiện chỉ cho
-`CRAWL_VBPL`/`MANUAL_UPLOAD` → cần thêm `CRAWL_MOF` khi làm API ingestion.
+Lưu ý backend: API ingestion nhận cả `CRAWL_MOF`; ràng buộc `ck_kd_source` trong bản thiết kế
+`BE/SHFT_PostgreSQL.sql` vẫn chỉ ghi `CRAWL_VBPL`/`MANUAL_UPLOAD`.
+
+## Worker nối BE ingestion (`worker.py`)
+
+Knowledge Admin bấm "crawl" hoặc upload file trên web → BE ingestion gửi message qua RabbitMQ → worker:
+
+- `CrawlRequested`: chạy pipeline như `scraper_agent.py --sources ... --top-n N --export` (hoặc `--all`) với từ khoá
+  mặc định, gửi từng file trong `export/manifest.json` về `POST /internal/crawl-jobs/{id}/documents`, rồi báo
+  `SUCCEEDED`/`FAILED`. Gửi lại cùng file không tạo bản trùng (BE so `file_hash`).
+- `DocumentParseRequested`: tải file admin upload, trích text (PDF: text layer, OCR nếu có Tesseract; DOCX: đọc
+  `word/document.xml`), tách Điều/Khoản rồi gửi `content_json` về BE; lỗi thì BE hiện `lastError`.
+
+```bash
+cp .env.example .env    # điền INTERNAL_API_KEY = InternalApi:Key của ingestion
+python worker.py        # chạy ít nhất 1 lần trước khi kích hoạt crawl để tạo queue
+```
 
 ## Nguồn vbpq.mof.gov.vn (Bộ Tài chính) + OCR
 
