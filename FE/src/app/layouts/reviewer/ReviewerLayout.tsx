@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Link, Outlet, useLocation, useSearchParams } from 'react-router-dom'
+import { Outlet, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import {
   ClipboardCheck,
@@ -13,31 +13,25 @@ import {
   AppSidebar,
   type SidebarGroup,
 } from '@/components/ui/layout/app-sidebar'
-import { DemoBanner } from '@/components/ui/feedback/demo-banner'
-import { CustomSelect } from '@/components/ui/forms/custom-select'
-import { Button } from '@/components/ui/actions/button'
-import { Modal } from '@/components/ui/feedback/modal'
 import { useDialogMotion } from '@/components/ui/motion'
-import { ReviewerProvider, useReviewer } from '@/features/reviewer'
+import { useReviewerQueue } from '@/features/reviewer/useReviewerQueue'
 import { useAccount } from '@/features/auth'
 
 function ReviewerShell() {
   const { t } = useTranslation(['reviewer', 'common'])
-  const { state, actor, readOnly, setReadOnly, query, setQuery, reset } =
-    useReviewer()
+  const { openCounts } = useReviewerQueue({ enabled: false })
+  const [query, setQuery] = useState('')
   const location = useLocation()
   const account = useAccount('reviewer')
-  const [params] = useSearchParams()
   const [collapsed, setCollapsed] = useState(false)
-  const [confirmReset, setConfirmReset] = useState(false)
   const drawer = useRef<HTMLDialogElement>(null)
   const trigger = useRef<HTMLButtonElement>(null)
   useDialogMotion(drawer, 'drawer-left')
-  const gate = location.pathname.includes('/gate-1/')
+  const gate = /^\/reviewer\/gate-1(?:\/|$)/.test(location.pathname)
     ? 'GATE_1'
-    : location.pathname.includes('/gate-2/')
+    : /^\/reviewer\/gate-2(?:\/|$)/.test(location.pathname)
       ? 'GATE_2'
-      : params.get('gate')
+      : null
   const isHistory = location.pathname.endsWith('/history')
   const isAccount = location.pathname.endsWith('/account')
   const title = isAccount
@@ -54,13 +48,10 @@ function ReviewerShell() {
   }, [title])
   const isQueue =
     location.pathname === '/reviewer' || location.pathname === '/reviewer/'
-  const openCount = (stage?: string) =>
-    state.records.filter(
-      (row) =>
-        row.assignedTo === actor.id &&
-        ['PENDING_REVIEW', 'NEED_MORE_INFORMATION'].includes(row.status) &&
-        (!stage || row.gate === stage)
-    ).length
+  const openCount = (stage?: 'GATE_1' | 'GATE_2') => stage
+    ? openCounts[stage]
+    : openCounts.GATE_1 != null && openCounts.GATE_2 != null
+      ? openCounts.GATE_1 + openCounts.GATE_2 : undefined
   const groups: SidebarGroup[] = [
     {
       id: 'reviewer',
@@ -76,7 +67,7 @@ function ReviewerShell() {
         },
         {
           id: 'gate1',
-          to: '/reviewer?gate=GATE_1',
+          to: '/reviewer/gate-1',
           label: t('gate1'),
           icon: <FileCheck2 size={18} />,
           active: !isHistory && gate === 'GATE_1',
@@ -84,7 +75,7 @@ function ReviewerShell() {
         },
         {
           id: 'gate2',
-          to: '/reviewer?gate=GATE_2',
+          to: '/reviewer/gate-2',
           label: t('gate2'),
           icon: <ClipboardCheck size={18} />,
           active: !isHistory && gate === 'GATE_2',
@@ -113,7 +104,7 @@ function ReviewerShell() {
       ],
     },
   ]
-  const sidebarProps = { groups, navigationLabel: t('workspace') }
+  const sidebarProps = { groups, navigationLabel: t('workspace'), badgeVariant: 'muted' as const }
   const close = () => drawer.current?.close()
   return (
     <div className="bg-canvas text-text min-h-svh">
@@ -169,94 +160,17 @@ function ReviewerShell() {
               item.to ? [{ to: item.to, label: item.label }] : []
             )}
         />
-        <DemoBanner
-          controls={
-            <>
-              <CustomSelect
-                label={t('accessMode')}
-                value={readOnly ? 'read' : 'assigned'}
-                options={[
-                  { value: 'assigned', label: t('assignedMode') },
-                  { value: 'read', label: t('readOnlyMode') },
-                ]}
-                onChange={(value) => setReadOnly(value === 'read')}
-                className="[&>span]:sr-only"
-                triggerClassName="!w-52"
-              />
-              {(isQueue || isHistory) && (
-                <Button
-                  variant="ghost"
-                  className="min-h-11"
-                  onClick={() => setConfirmReset(true)}
-                >
-                  {t('reset')}
-                </Button>
-              )}
-            </>
-          }
-        >
-          {t('demo')}
-        </DemoBanner>
         <main
           id="reviewer-main"
           tabIndex={-1}
           className="mx-auto w-full max-w-[1440px] px-4 py-8 sm:px-6 lg:px-8"
         >
-          <Outlet />
+          <Outlet context={{ query, setQuery }} />
         </main>
       </div>
-      {confirmReset && (
-        <Modal
-          title={t('resetTitle')}
-          description={t('resetConfirm')}
-          onClose={() => setConfirmReset(false)}
-          footer={
-            <>
-              <Button
-                variant="outline"
-                className="min-h-11"
-                onClick={() => setConfirmReset(false)}
-              >
-                {t('common:actions.cancel')}
-              </Button>
-              <Button
-                variant="destructive"
-                className="min-h-11"
-                onClick={() => {
-                  reset()
-                  setConfirmReset(false)
-                }}
-              >
-                {t('reset')}
-              </Button>
-            </>
-          }
-        />
-      )}
     </div>
   )
 }
 export default function ReviewerLayout() {
-  const { t } = useTranslation(['reviewer', 'common'])
-  const mode = import.meta.env.VITE_REVIEWER_DATA_SOURCE ?? 'demo'
-  if (!import.meta.env.DEV || mode !== 'demo')
-    return (
-      <main className="bg-canvas text-text min-h-svh p-8">
-        <h1 className="text-text-strong text-2xl font-semibold">
-          {t('unavailable')}
-        </h1>
-        <p className="mt-3 max-w-xl">{t('unavailableBody')}</p>
-        <Link
-          to="/dashboard"
-          className="text-accent-text mt-6 inline-flex min-h-11 items-center"
-        >
-          {t('common:actions.dashboard')}
-        </Link>
-      </main>
-    )
-  return (
-    <ReviewerProvider>
-      <ReviewerShell />
-    </ReviewerProvider>
-  )
+  return <ReviewerShell />
 }

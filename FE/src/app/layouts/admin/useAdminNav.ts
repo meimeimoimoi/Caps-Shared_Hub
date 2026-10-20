@@ -4,45 +4,72 @@ import { useTranslation } from 'react-i18next'
 import type { ShellNotification } from '../NotificationBell'
 import { getApplications } from '@/features/expert-vetting/api/adminApi'
 import { adminKeys } from '@/features/expert-vetting/api/queryKeys'
-import { SLA_DAYS, waitedDays } from '@/features/expert-vetting/utils/applications'
-import { getDisputes, getEscrows } from '@/features/disputes-escrow/api/disputesApi'
+import { PENDING_STATUS } from '@/features/expert-vetting/constants'
+import {
+  SLA_DAYS,
+  waitedDays,
+} from '@/features/expert-vetting/utils/applications'
+import {
+  getDisputes,
+  getEscrows,
+} from '@/features/disputes-escrow/api/disputesApi'
 import { disputesKeys } from '@/features/disputes-escrow/api/queryKeys'
 import { disputeHoursLeft } from '@/features/disputes-escrow/utils/disputes'
 import { usePricing } from '@/features/service-pricing/hooks/usePricing'
+import { hasAnyPermission, Permission, useAuthStore } from '@/features/auth'
+import { isExpertDemo } from '@/lib/expert-data-source'
 
-/** Badge sidebar + chuông cho System Admin, gom từ nhiều feature; truyền thẳng vào AdminLayout.
- * Chuông là nơi duy nhất báo việc gấp (dashboard không lặp lại). Cùng query key với các màn chi tiết nên dùng chung cache. */
-export function useAdminNav() {
+/** Shared staff badges only request APIs the current account can access. */
+export function useAdminNav(enabled = true) {
   const { t } = useTranslation('admin')
   const [now] = useState(() => Date.now())
+  const user = useAuthStore((s) => s.user)
+  const canReview = enabled && hasAnyPermission(user, [Permission.ExpertReview])
+  const canViewDemoOperations = enabled && isExpertDemo && hasAnyPermission(user, [Permission.UserManage])
   const applications = useQuery({
     queryKey: adminKeys.applications(),
     queryFn: ({ signal }) => getApplications(signal),
+    enabled: canReview,
   })
   const disputes = useQuery({
     queryKey: disputesKeys.disputes(),
     queryFn: ({ signal }) => getDisputes(signal),
+    enabled: canViewDemoOperations,
   })
   const escrows = useQuery({
     queryKey: disputesKeys.escrows(),
     queryFn: ({ signal }) => getEscrows(signal),
+    enabled: canViewDemoOperations,
   })
-  const tiers = usePricing().data?.tiers ?? []
+  const pricing = usePricing(canViewDemoOperations)
+  const tiers = canViewDemoOperations ? pricing.data?.tiers ?? [] : []
 
-  const pending = (applications.data ?? []).filter((a) => a.status === 'CAPABILITY_REVIEW')
-  const overdue = pending.filter((a) => waitedDays(a.submittedAt, now) > SLA_DAYS).length
-  const open = (disputes.data ?? []).filter((d) => !d.resolvedAt)
-  const nearestHours = open.length ? Math.min(...open.map((d) => disputeHoursLeft(d, now))) : 0
-  const payoutFailed = (escrows.data ?? []).filter((e) => e.status === 'PAYOUT_FAILED').length
-  const refundFailed = (escrows.data ?? []).filter((e) => e.status === 'REFUND_FAILED').length
+  const pending = (canReview ? applications.data ?? [] : []).filter(
+    (a) => a.status === PENDING_STATUS
+  )
+  const overdue = pending.filter(
+    (a) => waitedDays(a.submittedAt, now) > SLA_DAYS
+  ).length
+  const open = (canViewDemoOperations ? disputes.data ?? [] : []).filter((d) => !d.resolvedAt)
+  const nearestHours = open.length
+    ? Math.min(...open.map((d) => disputeHoursLeft(d, now)))
+    : 0
+  const payoutFailed = (canViewDemoOperations ? escrows.data ?? [] : []).filter(
+    (e) => e.status === 'PAYOUT_FAILED'
+  ).length
+  const refundFailed = (canViewDemoOperations ? escrows.data ?? [] : []).filter(
+    (e) => e.status === 'REFUND_FAILED'
+  ).length
   const outsideRange = tiers.reduce((s, tier) => s + tier.outsideRange, 0)
 
-  // ponytail: thông báo suy ra từ số đếm; thay bằng API thông báo khi BE có
-  // Thứ tự theo mức độ: hạn trọng tài và tiền trước, cảnh báo nhẹ sau
+  // Derive notifications from accessible queues, ordered by urgency.
   const notifications: ShellNotification[] = [
     open.length > 0 && {
       id: 'disputes',
-      text: t('dashboard.attention.dispute', { count: open.length, hours: nearestHours }),
+      text: t('dashboard.attention.dispute', {
+        count: open.length,
+        hours: nearestHours,
+      }),
       to: '/admin/disputes',
       tone: 'warning' as const,
     },
@@ -60,14 +87,17 @@ export function useAdminNav() {
     },
     overdue > 0 && {
       id: 'sla-overdue',
-      text: t('dashboard.attention.slaOverdue', { count: overdue, days: SLA_DAYS }),
-      to: '/admin/experts/pending',
+      text: t('dashboard.attention.slaOverdue', {
+        count: overdue,
+        days: SLA_DAYS,
+      }),
+      to: '/reviewer/gate-1',
       tone: 'warning' as const,
     },
     pending.length > 0 && {
       id: 'pending',
       text: t('notifications.pending', { count: pending.length }),
-      to: '/admin/experts/pending',
+      to: '/reviewer/gate-1',
     },
     outsideRange > 0 && {
       id: 'outside-range',
@@ -76,5 +106,9 @@ export function useAdminNav() {
     },
   ].filter((n): n is ShellNotification => !!n)
 
-  return { pendingCount: pending.length, disputeCount: open.length, notifications }
+  return {
+    pendingCount: pending.length,
+    disputeCount: open.length,
+    notifications,
+  }
 }

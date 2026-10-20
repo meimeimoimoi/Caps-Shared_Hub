@@ -69,7 +69,8 @@ async Task<(HttpResponseMessage Response, JsonElement Json)> Post(
     return (r, json);
 }
 string Access(JsonElement j) => j.GetProperty("data").GetProperty("accessToken").GetString()!;
-string Refresh(HttpResponseMessage r) => r.Headers.GetValues("Set-Cookie").Single().Split(';')[0];
+string Refresh(HttpResponseMessage r) =>
+    string.Join("; ", r.Headers.GetValues("Set-Cookie").Select(cookie => cookie.Split(';')[0]));
 void Bearer(HttpClient c, string access) =>
     c.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", access);
 async Task<string> EmailToken(string email, string purpose)
@@ -123,7 +124,7 @@ Bearer(c, initialAccess);
 var initialRefresh = Refresh(reg.Response);
 Check(
     reg.Response.Headers.GetValues("Set-Cookie")
-        .Single()
+        .Single(cookie => cookie.StartsWith("caps_refresh="))
         .Contains("httponly", StringComparison.OrdinalIgnoreCase),
     "refresh cookie HttpOnly"
 );
@@ -452,14 +453,19 @@ async Task<(HttpStatusCode Status, JsonElement Json)> ExpertCall(Task<HttpRespon
         body.Length == 0 ? default : JsonDocument.Parse(body).RootElement.Clone()
     );
 }
-Task<HttpResponseMessage> Upload(HttpClient client, string code, byte[] bytes)
+Task<HttpResponseMessage> Upload(
+    HttpClient client,
+    string code,
+    byte[] bytes,
+    string fileName = "evidence.pdf"
+)
 {
     var file = new ByteArrayContent(bytes);
     file.Headers.ContentType = new MediaTypeHeaderValue("application/pdf");
     var form = new MultipartFormDataContent
     {
         { new StringContent(code), "code" },
-        { file, "file", "evidence.pdf" },
+        { file, "file", fileName },
     };
     return client.PostAsync(expertBase + "/evidence", form);
 }
@@ -511,6 +517,33 @@ Check(
 );
 var cv = await ExpertCall(Upload(deviceA, "CV", pdf));
 var cvId = cv.Json.GetProperty("data").GetProperty("evidence")[0].GetProperty("id").GetString();
+var duplicateCv = await ExpertCall(Upload(deviceA, "CV", pdf));
+Check(
+    duplicateCv.Status == HttpStatusCode.Conflict && Code(duplicateCv.Json) == "EVIDENCE_DUPLICATE",
+    "uploading the same CV twice is rejected"
+);
+var renamedCv = await ExpertCall(Upload(deviceA, "CV", pdf, "renamed-cv.pdf"));
+Check(
+    renamedCv.Status == HttpStatusCode.Conflict && Code(renamedCv.Json) == "EVIDENCE_DUPLICATE",
+    "renaming a duplicate CV does not bypass content checks"
+);
+var changedCv = await ExpertCall(Upload(deviceA, "CV", "%PDF-1.5\n%%EOF\n"u8.ToArray()));
+Check(
+    changedCv.Status == HttpStatusCode.OK
+        && changedCv.Json.GetProperty("data").GetProperty("evidence").GetArrayLength() == 2,
+    "a CV with the same name and size but different content is accepted without storing duplicates"
+);
+var parallelCvUploads = await Task.WhenAll(
+    ExpertCall(Upload(deviceA, "CV", "%PDF-1.6\n%%EOF\n"u8.ToArray())),
+    ExpertCall(Upload(deviceA, "CV", "%PDF-1.6\n%%EOF\n"u8.ToArray(), "parallel-copy.pdf"))
+);
+Check(
+    parallelCvUploads.Count(x => x.Status == HttpStatusCode.OK) == 1
+        && parallelCvUploads.Count(x =>
+            x.Status == HttpStatusCode.Conflict && Code(x.Json) == "EVIDENCE_DUPLICATE"
+        ) == 1,
+    "concurrent duplicate CV uploads store only one file"
+);
 var draft = await ExpertCall(
     deviceA.PutAsJsonAsync(
         expertBase,

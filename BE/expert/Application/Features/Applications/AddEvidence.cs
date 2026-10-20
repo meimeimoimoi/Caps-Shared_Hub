@@ -1,7 +1,9 @@
+using System.Security.Cryptography;
 using Caps.Common.Application;
 using Caps.Expert.Application.Abstractions;
 using Caps.Expert.Application.Common;
 using Caps.Expert.Application.DTOs.Responses;
+using Caps.Expert.Domain;
 using Caps.Expert.Domain.Applications;
 
 namespace Caps.Expert.Application.Features.Applications;
@@ -39,6 +41,24 @@ public sealed class AddEvidenceHandler(
         await locks.AcquireAsync(command.Applicant.UserId, ct);
         var (profile, application) = await loader.OpenOrCreateAsync(command.Applicant, ct);
         application.EnsureAcceptsFile(supplement);
+        if (command.Code == ApplicationRules.CvCode)
+        {
+            // Check stored bytes, not names, under the applicant lock to serialize repeated uploads.
+            var contentHash = SHA256.HashData(command.Content);
+            var existingFiles = await evidences.ListAsync(application.Id, ct);
+            foreach (
+                var existing in existingFiles.Where(x =>
+                    x.EvidenceType == ApplicationRules.CvCode
+                    && x.SizeBytes == command.Content.Length
+                )
+            )
+            {
+                await using var stream = await storage.OpenAsync(existing.FileUrl, ct);
+                var existingHash = await SHA256.HashDataAsync(stream, ct);
+                if (contentHash.AsSpan().SequenceEqual(existingHash))
+                    throw ExpertErrors.EvidenceDuplicate();
+            }
+        }
         ApplicationRules.EnsureRoomForFile(
             await evidences.CountAsync(application.Id, ct),
             command.Applicant.EmailVerified

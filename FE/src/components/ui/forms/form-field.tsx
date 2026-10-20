@@ -35,10 +35,16 @@ export function FormField({
         className
       )}
     >
-      <div className="flex items-start gap-2">
+      {/* The help icon sits right after the label text, not at the far end of the row */}
+      <div
+        className={cn('flex gap-1.5', htmlFor ? 'items-center' : 'items-start')}
+      >
         <label
           htmlFor={htmlFor}
-          className="flex min-w-0 flex-1 flex-col gap-[7px] text-sm font-semibold"
+          className={cn(
+            'flex min-w-0 flex-col gap-[7px] text-sm font-semibold',
+            !htmlFor && 'flex-1'
+          )}
         >
           <span>{label}</span>
           {!htmlFor && children}

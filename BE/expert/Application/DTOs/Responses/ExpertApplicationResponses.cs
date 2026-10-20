@@ -2,6 +2,8 @@ namespace Caps.Expert.Application.DTOs.Responses;
 
 /// <summary>The applicant's view of their application: details, files, history and the actions allowed now.</summary>
 /// <param name="MissingRequirements">Still missing before submit: phone, yearsExperience, fields, CV.</param>
+/// <param name="MaxFiles">Files the application may hold right now: lower until the email is verified.</param>
+/// <param name="Eligibility">Per-requirement results of the latest Gate 1 decision: what to supplement or why it was not met (BR-E28).</param>
 public sealed record ExpertApplicationResponse(
     string Id,
     string Status,
@@ -14,12 +16,14 @@ public sealed record ExpertApplicationResponse(
     ExpertApplicationProfile Profile,
     ExpertEvidenceResponse[] Evidence,
     ExpertApplicationEventResponse[] History,
+    EligibilityCheckResponse[] Eligibility,
     string[] MissingRequirements,
     bool EmailVerified,
     bool CanEdit,
     bool CanUpload,
     bool CanSubmit,
-    bool CanSupplement
+    bool CanSupplement,
+    int MaxFiles
 );
 
 /// <summary>The applicant details shown in the application form.</summary>

@@ -8,7 +8,8 @@ namespace Caps.Expert.Application.Common;
 /// <summary>Combines the application, profile, files and history, and works out the allowed actions.</summary>
 public sealed class ApplicationDescriber(
     IExpertApplicationRepository applications,
-    IExpertEvidenceRepository evidences
+    IExpertEvidenceRepository evidences,
+    IEligibilityCheckRepository eligibility
 ) : IApplicationDescriber
 {
     public async Task<ExpertApplicationResponse> DescribeAsync(
@@ -20,10 +21,14 @@ public sealed class ApplicationDescriber(
     {
         var files = await evidences.ListAsync(application.Id, ct);
         var history = await applications.ListEventsAsync(application.Id, ct);
+        var checks = await eligibility.ListLatestAsync(application.Id, ct);
         var missing = profile.MissingRequirements(
             files.Any(x => x.EvidenceType == ApplicationRules.CvCode)
         );
         var verified = applicant.EmailVerified;
+        var maxFiles = verified
+            ? ApplicationRules.MaxFilesPerApplication
+            : ApplicationRules.MaxFilesBeforeVerification;
         return new(
             application.Id.ToString(),
             application.Status,
@@ -66,12 +71,21 @@ public sealed class ApplicationDescriber(
                     x.ActorUserId == applicant.UserId
                 ))
                 .ToArray(),
+            checks
+                .Select(x => new EligibilityCheckResponse(
+                    x.Criterion,
+                    x.Result,
+                    x.Note,
+                    x.CreatedAt
+                ))
+                .ToArray(),
             missing,
             verified,
             application.CanEdit,
-            application.AcceptsFiles && files.Count < ApplicationRules.MaxFilesPerApplication,
+            application.AcceptsFiles && files.Count < maxFiles,
             application.CanEdit && verified && missing.Length == 0,
-            application.NeedsInformation && verified
+            application.NeedsInformation && verified,
+            maxFiles
         );
     }
 }

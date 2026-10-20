@@ -93,7 +93,7 @@ real generation, billing and Flow 5 end-to-end checks require the agreed backend
 
 ## Development configuration and verification
 
-See [README.md](../README.md) and [.env.example](../.env.example) for setup. Isolated preview requires both `VITE_DRAFT_DATA_SOURCE=mock` and `VITE_DRAFT_DEMO_ACCESS=true` in development; restart Vite after changing environment values. Mock alone does not bypass authentication. Production ignores mock/demo-access flags and uses authenticated API flows.
+See [README.md](../README.md) and [.env.example](../.env.example) for setup. Development preview uses `VITE_DRAFT_DATA_SOURCE=mock`; restart Vite after changing environment values. Authentication is required in every environment, including mock mode. Production ignores mock data flags and uses authenticated API flows.
 
 Run `npm run build` and `npm run lint` after changing source. Current scripts do not retain the earlier local adapter/render test suite; historical assertions are not a current executable acceptance suite.
 

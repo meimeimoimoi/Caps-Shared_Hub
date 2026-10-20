@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { ArrowLeft, CircleAlert, FilePlus2 } from 'lucide-react'
 import { FormField } from '@/components/ui/forms/form-field'
-import { useExpertBio } from '@/features/expert-bio/hooks/useExpertBio'
+import { usePublicExpert } from '@/features/marketplace/hooks/useMarketplace'
 import { FilePicker, Initials } from '@/features/review-case/components/CaseUi'
 import { fieldClass, useCaseFormat } from '@/features/review-case/ui'
 import { DEMO_CASES, REVIEWABLE_DRAFTS } from '@/features/review-case/fixtures'
@@ -28,7 +28,7 @@ export default function ReviewRequestPage() {
   const navigate = useNavigate()
   const [params] = useSearchParams()
   const expertId = params.get('expert') ?? undefined
-  const query = useExpertBio(expertId)
+  const query = usePublicExpert(expertId)
   const bio = query.data
   const service = bio?.services.find(
     (s) => s.serviceId === params.get('service')

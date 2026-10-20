@@ -32,3 +32,12 @@ export interface Profile {
   years: string
   highlights: string
 }
+
+/** How many files the whole application may hold now; the limit rises once the email is verified. */
+export interface UploadQuota {
+  used: number
+  max: number
+  verified: boolean
+  /** Opens the email verification dialog */
+  onVerify: () => void
+}

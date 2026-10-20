@@ -3,6 +3,7 @@ import { useTheme } from '@/hooks/useTheme'
 import { useRef, useState } from 'react'
 import { Outlet, useSearchParams, useLocation } from 'react-router-dom'
 import { isExpertDemo } from '@/lib/expert-data-source'
+import { EXPERT_APPLICATION_PATH } from '@/features/expert-context'
 import { ExpertHeader } from './ExpertHeader'
 import { ExpertSidebar } from './ExpertSidebar'
 import { CustomSelect } from '@/components/ui/forms/custom-select'
@@ -17,6 +18,7 @@ const scenarioOptions = [
   { value: 'stale', key: 'demo.scenarios.stale' },
   { value: 'inconsistent', key: 'demo.scenarios.inconsistent' },
   { value: 'error', key: 'demo.scenarios.error' },
+  { value: 'applicant', key: 'demo.scenarios.applicant' },
   { value: 'denied', key: 'demo.scenarios.denied' },
   { value: 'context-error', key: 'demo.scenarios.contextError' },
 ] as const
@@ -24,6 +26,8 @@ const scenarioOptions = [
 export function ExpertLayout() {
   const { t } = useTranslation(['common', 'navigation'])
   const location = useLocation()
+  // The application always uses the real API, so it never shows the demo banner
+  const realDataPage = location.pathname === EXPERT_APPLICATION_PATH
   const interactivePricing = /^\/expert\/services\/[^/]+\/pricing$/.test(
     location.pathname
   )
@@ -75,7 +79,7 @@ export function ExpertLayout() {
       </dialog>
       <div className="ep-workspace">
         <ExpertHeader openNavigation={open} />
-        {isExpertDemo && (
+        {isExpertDemo && !realDataPage && (
           <DemoBanner
             controls={
               <CustomSelect

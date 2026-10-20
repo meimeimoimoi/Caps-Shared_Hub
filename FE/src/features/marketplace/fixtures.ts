@@ -1,7 +1,8 @@
-/* Dữ liệu mock Sàn Chuyên gia: danh sách ở /marketplace và hồ sơ /experts/:id (chế độ demo).
-   Mô hình theo Flow 5 / POL-MKT-01: một chuyên gia chỉ xuất hiện cho một dịch vụ khi đã
-   APPROVED_FOR_SERVICE (Gate 2 theo dịch vụ) và có Pricing Version APPROVED còn hiệu lực;
-   giá + Delivery SLA thuộc cặp Chuyên gia–Dịch vụ. Thay bằng API khi BE có endpoint marketplace. */
+/* Marketplace demo data for /marketplace and /experts/:id (VITE_EXPERT_DATA_SOURCE=mock; API mode reads
+   the expert service). Follows Flow 5 / POL-MKT-01: an expert is listed for a service only once
+   APPROVED_FOR_SERVICE (per-service Gate 2) with an APPROVED Pricing Version in effect; price and
+   Delivery SLA belong to the Expert–Service pair. */
+import type { Expert, MarketplaceData } from './types'
 
 /* Ảnh chân dung minh họa (chọn từ bộ ảnh mẫu của nhóm, thu về 240×240 WebP); thay bằng ảnh chuyên gia tải lên khi có API. */
 import avatarDoHoangLong from './assets/avatars/do-hoang-long.webp'
@@ -27,50 +28,12 @@ export const SERVICE_NAMES: Record<ServiceId, string> = {
   'cit-consultation': 'CIT consultation',
 }
 
-export const isServiceId = (value: unknown): value is ServiceId =>
-  SERVICE_IDS.includes(value as ServiceId)
+/** A fixture expert; summary is kept for the demo copy but not shown. */
+type FixtureExpert = Expert & { summary: string }
 
-/** Ưu đãi đã được duyệt cho một cặp Chuyên gia–Dịch vụ. */
-export type ServiceOffer = {
-  price: number
-  /** Delivery SLA (giờ lịch) tính từ khi chuyên gia START review. */
-  slaHours: number
-  pricingVersion: string
-  /** Ngày Gate 2 = PASS và Final Approval cho dịch vụ này. */
-  approvedAt: string
-}
-
-export type Availability =
-  | { state: 'open'; responseHours: number }
-  | { state: 'full'; reopensAt: string }
-  | { state: 'paused' }
-
-export type Expert = {
-  id: number
-  name: string
-  initials: string
-  /** Ảnh đại diện (URL); thiếu thì giao diện hiện chữ viết tắt */
-  avatar?: string
-  headline: string
-  credential: string
-  location: string
-  years: number
-  rating: number
-  reviews: number
-  completedCases: number
-  /** Ngày Gate 1 (điều kiện tham gia ở cấp Expert) = PASS. */
-  eligibleSince: string
-  availability: Availability
-  offers: Partial<Record<ServiceId, ServiceOffer>>
-  topics: string[]
-  summary: string
-  bio: string
-  highlights: string[]
-}
-
-export const EXPERTS: Expert[] = [
+export const EXPERTS: FixtureExpert[] = [
   {
-    id: 1,
+    id: '1',
     name: 'Đỗ Hoàng Long',
     initials: 'ĐL',
     avatar: avatarDoHoangLong,
@@ -107,7 +70,7 @@ export const EXPERTS: Expert[] = [
     ],
   },
   {
-    id: 2,
+    id: '2',
     name: 'ThS. Nguyễn Mai Phương',
     initials: 'MP',
     avatar: avatarNguyenMaiPhuong,
@@ -144,7 +107,7 @@ export const EXPERTS: Expert[] = [
     ],
   },
   {
-    id: 3,
+    id: '3',
     name: 'LS. Vũ Trọng Nghĩa',
     initials: 'TN',
     avatar: avatarVuTrongNghia,
@@ -181,7 +144,7 @@ export const EXPERTS: Expert[] = [
     ],
   },
   {
-    id: 4,
+    id: '4',
     name: 'Trần Thị Thu Hằng',
     initials: 'TH',
     avatar: avatarTranThiThuHang,
@@ -209,7 +172,7 @@ export const EXPERTS: Expert[] = [
     highlights: ['Hơn 90 hồ sơ quyết toán ngành xây dựng đã bàn giao'],
   },
   {
-    id: 5,
+    id: '5',
     name: 'Lê Khắc Tuấn',
     initials: 'KT',
     avatar: avatarLeKhacTuan,
@@ -243,7 +206,7 @@ export const EXPERTS: Expert[] = [
     highlights: ['Chuẩn bị hồ sơ cho 30+ đợt kiểm tra thuế tại doanh nghiệp'],
   },
   {
-    id: 6,
+    id: '6',
     name: 'Bùi Minh Triết',
     initials: 'BT',
     avatar: avatarBuiMinhTriet,
@@ -286,7 +249,7 @@ export const EXPERTS: Expert[] = [
     ],
   },
   {
-    id: 7,
+    id: '7',
     name: 'Phạm Thanh Thảo',
     initials: 'PT',
     avatar: avatarPhamThanhThao,
@@ -320,7 +283,7 @@ export const EXPERTS: Expert[] = [
     highlights: ['Kiểm toán viên cấp cao 7 năm tại công ty kiểm toán độc lập'],
   },
   {
-    id: 8,
+    id: '8',
     name: 'LS. Hoàng Quốc Hưng',
     initials: 'HQ',
     avatar: avatarHoangQuocHung,
@@ -356,17 +319,10 @@ export const EXPERTS: Expert[] = [
 ]
 
 export const findExpert = (id: string | undefined) =>
-  EXPERTS.find((e) => String(e.id) === id)
+  EXPERTS.find((e) => e.id === id)
 
-/** Chỉ được gửi yêu cầu khi chuyên gia đang nhận việc (Availability tại thời điểm tìm kiếm). */
-export const canRequest = (e: Expert) => e.availability.state === 'open'
-
-/** Phí thấp nhất trong các dịch vụ chuyên gia đã được duyệt */
-export const lowestFee = (e: Expert) =>
-  Math.min(...Object.values(e.offers).map((offer) => offer.price))
-
-/** Chuyên gia đang nhận việc có đánh giá cao nhất (trừ excludeId nếu có) */
-export const featuredExperts = (count: number, excludeId?: string) =>
-  EXPERTS.filter((e) => canRequest(e) && String(e.id) !== excludeId)
-    .sort((a, b) => b.rating - a.rating || b.reviews - a.reviews)
-    .slice(0, count)
+/** Demo catalog: every fixture service, even one no expert offers. */
+export const demoMarketplace = (): MarketplaceData => ({
+  services: SERVICE_IDS.map((id) => ({ id, name: SERVICE_NAMES[id] })),
+  experts: EXPERTS,
+})

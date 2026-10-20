@@ -40,6 +40,8 @@ public sealed class SubmitApplicationHandler(
 
         var now = clock.GetUtcNow();
         applications.AddEvent(application.Submit(applicant.UserId, now));
+        profile.RecordContactEmail(applicant.Email);
+        profile.RecordAccountStatus(applicant.AccountStatus);
         profile.MirrorStatus(application.Status, now);
         await unitOfWork.SaveChangesAsync(ct);
         await tx.CommitAsync(ct);

@@ -77,6 +77,7 @@
       "stale": "Stale data",
       "inconsistent": "Version mismatch",
       "error": "Dashboard error",
+      "applicant": "Applicant",
       "denied": "Access denied",
       "contextError": "Access check error"
     },
@@ -112,5 +113,23 @@
     "pages": "Find a page…",
     "noPages": "No matching pages.",
     "knowledge": "Search document number or title"
+  },
+  "notifications": {
+    "eligibility": {
+      "ELIGIBLE": "Your expert application passed the eligibility review.",
+      "NEED_MORE_INFORMATION": "Your expert application needs more information.",
+      "NOT_ELIGIBLE": "Your expert application was not eligible. See the result."
+    },
+    "competency": {
+      "PENDING_FINAL_APPROVAL": "You passed the competency review for {{service}}; final approval is pending",
+      "NEED_MORE_INFORMATION": "{{service}} needs more competency evidence",
+      "FAIL": "You did not pass the competency review for {{service}}"
+    },
+    "serviceAccess": {
+      "APPROVED": "You are approved to offer {{service}}",
+      "RETURNED_FOR_REVIEW": "Your {{service}} qualification went back to competency review",
+      "SUSPENDED": "{{service}} is suspended",
+      "REINSTATED": "{{service}} has been reinstated"
+    }
   }
 }

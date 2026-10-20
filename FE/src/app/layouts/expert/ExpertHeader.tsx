@@ -3,9 +3,11 @@ import { Settings } from 'lucide-react'
 import { AppHeader } from '@/components/ui/layout/app-header'
 import { useAccount, useAuth } from '@/features/auth'
 import { useExpertContext } from '@/features/expert-context'
+import { useNotifications } from '@/features/notifications'
 import { useTranslation } from 'react-i18next'
 
 const pageKeys = {
+  application: 'expertApplication',
   overview: 'overview',
   queue: 'workQueue',
   active: 'activeCases',
@@ -27,6 +29,7 @@ export function ExpertHeader({
   const { logout } = useAuth()
   // Ảnh đại diện dùng chung với trang Settings: đổi ở đó là header đổi theo
   const { avatarUrl } = useAccount('expert')
+  const bell = useNotifications()
   const location = useLocation()
   const pageKey = location.pathname.startsWith('/expert/cases/')
     ? 'pages.caseDetail'
@@ -39,6 +42,9 @@ export function ExpertHeader({
           {t(`navigation:${pageKey}`)}
         </span>
       }
+      notifications={bell.notifications}
+      onMarkNotificationsRead={bell.onMarkRead}
+      onMarkAllNotificationsRead={bell.onMarkAllRead}
       onOpenNavigation={openNavigation}
       navigationButtonClassName="min-[960px]:hidden"
       searchLinks={Object.entries(pageKeys).map(([path, key]) => ({

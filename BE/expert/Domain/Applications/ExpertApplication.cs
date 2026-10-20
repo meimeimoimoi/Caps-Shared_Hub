@@ -20,7 +20,7 @@ public sealed class ExpertApplication
     /// <summary>Latest submission (first submit or supplement); full history is in Events.</summary>
     public DateTimeOffset? SubmittedAt { get; private set; }
     public DateTimeOffset? DecidedAt { get; private set; }
-    public string? DecisionNote { get; }
+    public string? DecisionNote { get; private set; }
     public Guid? PreviousApplicationId { get; private set; }
     public DateTimeOffset? EarliestReapplyAt { get; private set; }
     public DateTimeOffset CreatedAt { get; private set; }
@@ -41,6 +41,8 @@ public sealed class ExpertApplication
         DateTimeOffset now
     )
     {
+        if (previous?.Status == ExpertApplicationStatus.Eligible)
+            throw ExpertErrors.AlreadyEligible();
         if (previous?.EarliestReapplyAt > now)
             throw ExpertErrors.ReapplyTooEarly(previous.EarliestReapplyAt.Value);
         var application = new ExpertApplication
@@ -86,6 +88,7 @@ public sealed class ExpertApplication
     public ExpertApplicationEvent Submit(Guid actorUserId, DateTimeOffset now)
     {
         EnsureEditable();
+        SubmittedAt = now;
         return MoveTo(ExpertApplicationStatus.Submitted, actorUserId, null, now);
     }
 
@@ -94,7 +97,45 @@ public sealed class ExpertApplication
     {
         if (!NeedsInformation)
             throw ExpertErrors.ApplicationLocked(Status);
+        SubmittedAt = now;
         return MoveTo(ExpertApplicationStatus.Submitted, actorUserId, note, now);
+    }
+
+    /// <summary>
+    /// Gate 1 decision by an authorized reviewer (BR-E04). The outcome follows from the requirement results:
+    /// any FAIL → NOT_ELIGIBLE (closed, reapply after the policy interval, BR-E21); otherwise any
+    /// NEED_MORE_INFORMATION → back to the applicant in the same application (BR-E05); all PASS → ELIGIBLE.
+    /// </summary>
+    /// <param name="applicantUserId">Owner of the application; reviewers cannot decide their own.</param>
+    /// <param name="yearsExperience">Declared years, the basis of EV-06.</param>
+    public EligibilityDecision DecideEligibility(
+        Guid reviewerUserId,
+        Guid applicantUserId,
+        int? yearsExperience,
+        IReadOnlyCollection<CriterionResult> results,
+        string? note,
+        EligibilityPolicy policy,
+        DateTimeOffset now
+    )
+    {
+        if (Status != ExpertApplicationStatus.Submitted)
+            throw ExpertErrors.ApplicationNotInReview(Status);
+        if (reviewerUserId == applicantUserId)
+            throw ExpertErrors.SelfReviewNotAllowed();
+        var cleaned = EligibilityRules.Validate(results, yearsExperience, policy);
+        var status = EligibilityRules.Outcome(cleaned);
+
+        note = string.IsNullOrWhiteSpace(note) ? null : note.Trim();
+        DecisionNote = note;
+        if (status != ExpertApplicationStatus.NeedMoreInformation)
+            DecidedAt = now;
+        if (status == ExpertApplicationStatus.NotEligible)
+            EarliestReapplyAt = now + policy.ReapplyAfterNotEligible;
+        var decided = MoveTo(status, reviewerUserId, note, now);
+        var checks = cleaned
+            .Select(x => EligibilityCheck.Record(decided, x, reviewerUserId))
+            .ToArray();
+        return new(decided, checks);
     }
 
     private ExpertApplicationEvent MoveTo(
@@ -106,7 +147,6 @@ public sealed class ExpertApplication
     {
         var recorded = ExpertApplicationEvent.Record(Id, actorUserId, Status, status, note, now);
         Status = status;
-        SubmittedAt = now;
         UpdatedAt = now;
         return recorded;
     }

@@ -15,7 +15,7 @@ dist-ssr
 
 # Env (keep .env.example, ignore real secrets)
 .env
-.env.*.local    
+.env.*
 !.env.example
 
 # Test / cache

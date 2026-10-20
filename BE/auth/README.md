@@ -6,7 +6,7 @@ Auth owns schema identity, users/roles/permissions and sessions. Clients call YA
 
 All mutations under /api/v1/auth require X-Caps-Client: spa. Browser Origin must be in Cors:AllowedOrigins. Requests use application/json. Access tokens use Authorization: Bearer; refresh tokens only use HttpOnly cookie caps_refresh, SameSite=Strict, path /api/v1/auth. Frontend must send credentials: include for login/register/refresh/logout and implement refresh single-flight. Use same-site gateway/frontend hosting; cross-site deployments require a reviewed cookie/CSRF policy change.
 
-- POST /api/v1/auth/register — email, password (12–128 characters), displayName. Always USER, initially PENDING_VERIFICATION. Returns accessToken/expiresIn/user and refresh cookie. Token has no business roles until verified.
+- POST /api/v1/auth/register — email, password (8–128 characters, including uppercase and lowercase letters, a number and a special character), displayName. Always USER, initially PENDING_VERIFICATION. Returns accessToken/expiresIn/user and refresh cookie. Token has no business roles until verified.
 - POST /api/v1/auth/login — email/password. SHA256 demo hashes are rejected; those users must reset password.
 - POST /api/v1/auth/refresh-token — cookie only; rotates once. Replaying a rotated token revokes ALL refresh sessions of that user and increments token version (conservative policy). A token revoked by logout or a password change/reset is only rejected, so a stale device cannot sign the user out of their new session.
 - POST /api/v1/auth/logout — bearer plus cookie. Revokes the current refresh session and this device's access token in every service (shared Redis revocation). Refreshing with that revoked cookie returns 401.
@@ -14,7 +14,7 @@ All mutations under /api/v1/auth require X-Caps-Client: spa. Browser Origin must
 - POST /api/v1/auth/resend-verification — limited bearer; 60-second cooldown; invalidates earlier links.
 - POST /api/v1/auth/forgot-password — email. Generic response even for missing user/cooldown.
 - POST /api/v1/auth/reset-password — token/password. Single use; revokes refresh sessions and increments token version.
-- POST /api/v1/auth/change-password — bearer plus cookie; currentPassword/newPassword (12–128). 400 CURRENT_PASSWORD_INVALID or PASSWORD_UNCHANGED. Revokes every session, then returns a new session (accessToken + refresh cookie) for the calling device.
+- POST /api/v1/auth/change-password — bearer plus cookie; currentPassword/newPassword (new password: 8–128 characters, including uppercase and lowercase letters, a number and a special character). 400 CURRENT_PASSWORD_INVALID or PASSWORD_UNCHANGED. Revokes every session, then returns a new session (accessToken + refresh cookie) for the calling device.
 - GET /api/v1/users/me — bearer, including limited pending session. Returns profile/status/roles/permissions from DB.
 - PUT /api/v1/users/me — active bearer; displayName/phone.
 - PUT /api/v1/users/me/avatar — active bearer; multipart field file, JPEG/PNG/WebP detected from content, max 2 MB (400 AVATAR_INVALID_TYPE / AVATAR_TOO_LARGE). Returns the updated profile; avatarUrl is a gateway-relative path. DELETE /api/v1/users/me/avatar removes it.
@@ -56,6 +56,12 @@ The existing Docker compose needs overrides for real JWT, durable DataProtection
 ## Migrations
 
 AuthSecurityAndEmailOutbox adds lockout/token version, email uniqueness, role seed and encrypted outbox. AuthPermissions adds profile/business permissions, normalizes existing emails and guards uniqueness after normalization. It assigns USER only to legacy users without any role. If role codes already exist under other IDs, reconcile the role seed before migration. Duplicate emails fail migration for manual reconciliation; no users are silently deleted. Validate on a staging copy before applying to an existing team database.
+
+## Account events
+
+Status changes (email verified, Google sign-up or link) add an `AccountStatusChangedEvent` to
+`identity.account_event_outbox` in the same transaction; `AccountEventPublisher` sends it to RabbitMQ with the email
+publisher (`Auth:EmailPublisherEnabled`). The expert service keeps a copy for the Marketplace filter.
 
 ## Session revocation across services
 

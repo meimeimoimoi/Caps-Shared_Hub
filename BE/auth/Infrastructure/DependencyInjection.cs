@@ -1,7 +1,9 @@
 using Caps.Auth.Application.Abstractions.Email;
+using Caps.Auth.Application.Abstractions.Messaging;
 using Caps.Auth.Application.Abstractions.Persistence;
 using Caps.Auth.Application.Abstractions.Security;
 using Caps.Auth.Infrastructure.Email;
+using Caps.Auth.Infrastructure.Messaging;
 using Caps.Auth.Infrastructure.Persistence;
 using Caps.Auth.Infrastructure.Persistence.Repositories;
 using Caps.Auth.Infrastructure.Security;
@@ -32,6 +34,7 @@ public static class DependencyInjection
         services.AddScoped<IUserAvatarRepository, UserAvatarRepository>();
         services.AddScoped<IBusinessProfileRepository, BusinessProfileRepository>();
         services.AddScoped<IAuthEmailOutbox, AuthEmailOutboxWriter>();
+        services.AddScoped<IAccountEventOutbox, AccountEventOutboxWriter>();
         services.AddSingleton<IPasswordHasher, AspNetPasswordHasher>();
         services.AddSingleton<IAccessTokenIssuer, JwtAccessTokenIssuer>();
         services.AddSingleton<IGoogleIdTokenValidator, GoogleIdTokenValidator>();

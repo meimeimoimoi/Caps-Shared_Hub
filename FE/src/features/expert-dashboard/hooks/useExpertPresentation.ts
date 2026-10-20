@@ -31,6 +31,25 @@ const qualificationKeys = {
   SUSPENDED: 'suspendedForService',
   FAIL: 'competencyFailed',
 } as const
+// Readiness reason codes from the portal context (why a service cannot take bookings yet)
+const reasonCodes = [
+  'APPLICATION_NOT_SUBMITTED',
+  'ELIGIBILITY_PENDING',
+  'NOT_ELIGIBLE',
+  'COMPETENCY_REVIEW_PENDING',
+  'COMPETENCY_REVIEW_IN_PROGRESS',
+  'COMPETENCY_NEED_MORE_INFORMATION',
+  'FINAL_APPROVAL_PENDING',
+  'COMPETENCY_FAILED',
+  'SERVICE_SUSPENDED',
+  'PRICING_PENDING',
+  'PRICING_IN_REVIEW',
+  'REQUESTS_TURNED_OFF',
+  'NO_OPEN_SLOTS',
+  'ACCOUNT_INACTIVE',
+] as const
+const isReasonCode = (value: string): value is (typeof reasonCodes)[number] =>
+  (reasonCodes as readonly string[]).includes(value)
 const serviceKeys = {
   ACTIVE: 'active',
   INACTIVE: 'inactive',
@@ -104,6 +123,13 @@ export function useExpertPresentation() {
     actionLabel: (value: string) => translate(actionKeys, value),
     demoCopy: (value: string) =>
       isExpertDemo ? translate(demoCopyKeys, value) : value,
+    /** Readiness reason: server codes are translated, demo sentences keep their demo copy */
+    reason: (value: string) =>
+      isReasonCode(value)
+        ? t(`readiness.${value}`)
+        : isExpertDemo
+          ? translate(demoCopyKeys, value)
+          : value,
     deadline: (at: string | null, timezone: string) => {
       if (!at) return t('noDeadlineSupplied')
       if (!Number.isFinite(Date.parse(at))) return t('deadlineUnavailable')

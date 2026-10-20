@@ -78,7 +78,7 @@ src/
 
 [Router source](src/app/routes/index.tsx) owns the route inventory. Admin and Knowledge role/auth guards remain TODOs there; registered routes do not imply production authorization is complete.
 
-Expert workspace routes use `ExpertRoute`; demo access is configured separately from production authentication.
+Expert workspace routes use `ExpertRoute`; authentication is required in every environment, including demo mode.
 
 ## Scripts
 
@@ -98,13 +98,12 @@ For an isolated development preview, add to `.env.development.local` and restart
 
 ```env
 VITE_DRAFT_DATA_SOURCE=mock
-VITE_DRAFT_DEMO_ACCESS=true
 VITE_DRAFT_MOCK_SCENARIO=ready
 VITE_DRAFT_MOCK_LATENCY_MS=350
 ```
 
-Open `/drafts`. Mock alone does not bypass authentication; `DEMO_ACCESS` is a separate
-development-only opt-in. Production always uses API and authentication. Demo data is
+Sign in, then open `/drafts`. Mock data does not bypass authentication in any
+environment. Production always uses API and authentication. Demo data is
 synthetic, held in memory, separated by session/scenario, and resets on reload.
 The scenario selector and reset action are only shown in mock mode. There is no
 automatic mock fallback when HTTP fails. Do not enter confidential data in demo mode.

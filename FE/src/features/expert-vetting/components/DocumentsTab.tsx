@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { cn } from '@/lib/utils'
 import { MarginNote } from '@/components/ui/display/margin-note'
 import type { ApplicationDocument } from '../types'
+import { documentKey } from '../utils/applications'
 
 interface DocumentsTabProps {
   documents: ApplicationDocument[]
@@ -10,6 +11,7 @@ interface DocumentsTabProps {
   initialCode?: string
   reviewedFlags: string[]
   onToggleReviewed: (flagId: string) => void
+  onOpenFile: (evidenceId: string) => void
 }
 
 export function DocumentsTab({
@@ -17,19 +19,18 @@ export function DocumentsTab({
   initialCode,
   reviewedFlags,
   onToggleReviewed,
+  onOpenFile,
 }: DocumentsTabProps) {
   const { t } = useTranslation('admin')
-  // Mở sẵn tài liệu có cờ AI (nếu có) để admin xem ngay chỗ cần xem lại
-  const [code, setCode] = useState(
-    () =>
-      initialCode ??
-      (
-        documents.find((d) =>
-          d.pages.some((p) => p.notes.some((n) => n.flagId))
-        ) ?? documents[0]
-      )?.code
-  )
-  const doc = documents.find((d) => d.code === code)
+  // Open the document with an AI flag first (demo) so the admin sees what to check
+  const [selected, setSelected] = useState(() => {
+    const first =
+      documents.find((d) =>
+        d.pages.some((p) => p.notes.some((n) => n.flagId))
+      ) ?? documents[0]
+    return initialCode ?? (first && documentKey(first))
+  })
+  const doc = documents.find((d) => documentKey(d) === selected)
 
   return (
     <div className="space-y-4">
@@ -40,13 +41,13 @@ export function DocumentsTab({
       >
         {documents.map((d) => (
           <button
-            key={d.code}
+            key={documentKey(d)}
             type="button"
-            aria-pressed={d.code === code}
-            onClick={() => setCode(d.code)}
+            aria-pressed={documentKey(d) === selected}
+            onClick={() => setSelected(documentKey(d))}
             className={cn(
               'rounded-control flex items-center gap-2 border px-2.5 py-1 text-sm',
-              d.code === code
+              documentKey(d) === selected
                 ? 'bg-paper border-indicator text-fg-strong shadow-control border-b-2 font-semibold'
                 : 'bg-desk-2 border-border text-fg hover:bg-paper'
             )}
@@ -57,10 +58,24 @@ export function DocumentsTab({
         ))}
       </div>
 
-      {doc && doc.pages.length === 0 && (
-        <p className="paper text-fg-muted p-5 md:p-6">
-          {t('detail.documents.noPreview')}
-        </p>
+      {doc?.evidenceId ? (
+        <div className="paper flex flex-wrap items-center justify-between gap-3 p-5 md:p-6">
+          <span className="text-fg-strong font-semibold">{doc.name}</span>
+          <button
+            type="button"
+            onClick={() => onOpenFile(doc.evidenceId!)}
+            className="btn btn-press btn-secondary"
+          >
+            {t('detail.documents.open')}
+          </button>
+        </div>
+      ) : (
+        doc &&
+        doc.pages.length === 0 && (
+          <p className="paper text-fg-muted p-5 md:p-6">
+            {t('detail.documents.noPreview')}
+          </p>
+        )
       )}
 
       {/* TODO(api): khi có file thật thì hiển thị PDF/ảnh gốc, ghi chú theo trang lấy từ API */}

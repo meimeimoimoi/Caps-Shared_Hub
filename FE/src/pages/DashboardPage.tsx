@@ -1,23 +1,19 @@
 import { useEffect, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link, Navigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { ArrowRight, Bot, CircleCheck, FilePlus2, Store } from 'lucide-react'
 import { StatusBadge } from '@/components/ui/display/status-badge'
-import { useAuthStore } from '@/features/auth'
 import { useAccount } from '@/features/auth/hooks/useAccount'
-import { useExpertContext } from '@/features/expert-context'
 import { Countdown } from '@/features/review-case/components/CaseUi'
 import { DEMO_CASES, demoCase } from '@/features/review-case/fixtures'
 import { ACTION_STATUSES, useCaseFormat } from '@/features/review-case/ui'
 import { WALLET } from '@/features/wallet/fixtures'
 import { CASE_STATUS } from '@/lib/constants'
 
-/* Tổng quan của client. Chuyên gia đăng nhập thật vẫn được chuyển sang cổng Expert như trước. */
+/** Customer overview; expert portal access does not change the selected workspace. */
 export default function DashboardPage() {
   const { t } = useTranslation('reviewCase')
   const f = useCaseFormat()
-  const authenticated = useAuthStore((s) => s.isAuthenticated)
-  const context = useExpertContext()
   const account = useAccount('client')
   const cases = useMemo(
     () =>
@@ -31,9 +27,6 @@ export default function DashboardPage() {
   useEffect(() => {
     document.title = `${t('nav.dashboard')} | Shared Hub`
   }, [t])
-
-  if (authenticated && context.data?.portalAccess.allowed)
-    return <Navigate to="/expert/overview" replace />
 
   const quick = [
     { to: '/drafts', label: t('dashboard.newDraft'), icon: FilePlus2 },

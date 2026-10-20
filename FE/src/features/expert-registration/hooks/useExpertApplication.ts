@@ -1,7 +1,9 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { useAuthStore } from '@/features/auth/store/authStore'
 import { authApi } from '@/features/auth/api/authApi'
 import { applicationApi, type ExpertApplication } from '../api/applicationApi'
+import { queryClient } from '@/lib/query-client'
 
 /** Đánh dấu người dùng đang đăng ký chuyên gia: trang xác thực email đưa họ quay lại wizard. */
 export const EXPERT_ONBOARDING_KEY = 'caps-expert-onboarding'
@@ -14,55 +16,28 @@ export function markExpertOnboarding() {
   }
 }
 
-interface Loaded {
-  /** Hồ sơ này thuộc user nào; đổi tài khoản thì coi như chưa tải */
-  userId: string
-  application: ExpertApplication | null
-  failed: boolean
-}
-
-/** Hồ sơ đăng ký chuyên gia lấy từ máy chủ; mọi thay đổi đều đi qua API rồi cập nhật lại từ phản hồi. */
-export function useExpertApplication() {
+/** Server-owned application, shared across sign-up and the application page within one session. */
+export function useExpertApplication({ enabled = true } = {}) {
   const userId = useAuthStore((s) =>
     s.isAuthenticated ? (s.user?.id ?? null) : null
   )
-  const [loaded, setLoaded] = useState<Loaded | null>(null)
-
-  const reload = useCallback(async () => {
-    const id = useAuthStore.getState().user?.id
-    if (!id) return
-    try {
-      setLoaded({
-        userId: id,
-        application: await applicationApi.get(),
-        failed: false,
-      })
-    } catch {
-      setLoaded({ userId: id, application: null, failed: true })
-    }
-  }, [])
-
-  useEffect(() => {
-    if (!userId) return
-    let cancelled = false
-    applicationApi.get().then(
-      (application) => {
-        if (!cancelled) setLoaded({ userId, application, failed: false })
-      },
-      () => {
-        if (!cancelled) setLoaded({ userId, application: null, failed: true })
-      }
-    )
-    return () => {
-      cancelled = true
-    }
-  }, [userId])
-
-  const current = loaded && loaded.userId === userId ? loaded : null
+  const sessionScope = useAuthStore((s) => s.sessionScope)
+  const query = useQuery({
+    queryKey: ['private', userId, sessionScope, 'expert-application'],
+    // Share in-flight reads across StrictMode mounts without aborting and restarting them.
+    queryFn: () => applicationApi.get(),
+    enabled: enabled && !!userId,
+    staleTime: 30_000,
+    retry: false,
+  })
 
   const setApplication = useCallback((application: ExpertApplication) => {
-    const id = useAuthStore.getState().user?.id
-    if (id) setLoaded({ userId: id, application, failed: false })
+    const session = useAuthStore.getState()
+    if (!session.isAuthenticated || !session.user) return
+    const key = ['private', session.user.id, session.sessionScope, 'expert-application']
+    // A read started before saving must not overwrite the newer mutation response.
+    void queryClient.cancelQueries({ queryKey: key, exact: true })
+    queryClient.setQueryData(key, application)
   }, [])
 
   /**
@@ -81,11 +56,11 @@ export function useExpertApplication() {
   }, [])
 
   return {
-    application: current?.application ?? null,
+    application: query.data ?? null,
     setApplication,
-    loading: !!userId && !current,
-    loadFailed: current?.failed ?? false,
-    reload,
+    loading: enabled && !!userId && query.isPending,
+    loadFailed: query.isError,
+    reload: query.refetch,
     syncVerifiedSession,
   }
 }

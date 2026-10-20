@@ -1,3 +1,4 @@
+using Caps.Auth.Application.Abstractions.Messaging;
 using Caps.Auth.Application.Abstractions.Persistence;
 using Caps.Auth.Application.Common;
 using Caps.Auth.Domain;
@@ -13,6 +14,7 @@ public sealed record VerifyEmailCommand(string Token);
 public sealed class VerifyEmailHandler(
     IVerificationTokenRedeemer redeemer,
     IVerificationTokenRepository tokens,
+    IAccountEventOutbox accountEvents,
     IUnitOfWork unitOfWork,
     TimeProvider clock
 ) : ICommandHandler<VerifyEmailCommand>
@@ -31,6 +33,7 @@ public sealed class VerifyEmailHandler(
         var now = clock.GetUtcNow();
         token.MarkUsed(now);
         user.VerifyEmail(now);
+        accountEvents.StatusChanged(user);
         // Once verified via the link, the 6-digit code from the same email can no longer be used
         await tokens.InvalidateUnusedAsync(user.Id, VerificationPurpose.VerifyEmailCode, now, ct);
         // The old restricted session does not gain ACTIVE rights; the client refreshes to get them.

@@ -1,8 +1,30 @@
 {
+  "reviewWorkspace": {
+    "reference": "Application reference",
+    "progress": "Assessment progress",
+    "criteria": "criteria completed",
+    "assessmentHint": "Check the application details, then record a result and notes for each criterion.",
+    "criteriaNavigation": "Select an assessment criterion",
+    "notAssessed": "Not assessed",
+    "missingNote": "Note required",
+    "assessmentResult": "Assessment result",
+    "optionalNotePlaceholder": "Add supporting reasons or assessment notes…",
+    "noteHint": "Add a note to complete this criterion.",
+    "noteVisibility": "The applicant will be able to read this note.",
+    "previousCriterion": "Previous criterion",
+    "nextIncomplete": "Next incomplete criterion",
+    "allComplete": "All criteria completed",
+    "completeCurrent": "Complete the current criterion",
+    "continueReview": "Continue assessment"
+  },
+  "dashboardApiPending": "Overview statistics are not connected yet. Final approvals and service price reviews are available from the menu. Other administration areas are awaiting API integration.",
   "navigation": {
     "overview": "Overview",
     "expertReview": "Expert Review",
     "pendingExperts": "Pending Applications",
+    "competencyReview": "Competency review",
+    "finalApproval": "Final approval",
+    "pricingReview": "Service price review",
     "manageExperts": "Manage Experts",
     "operations": "Operations",
     "complaints": "Complaints",
@@ -139,32 +161,18 @@
     "noApplications": "No applications.",
     "actions": "Actions",
     "view": "View details",
-    "viewLabel": "View application of {{name}}"
+    "viewLabel": "View application of {{name}}",
+    "reapplication": "Reapplication"
   },
   "queue": {
     "tabs": {
       "review": "Pending Review",
-      "screening": "Screening",
       "moreInfo": "Need More Info",
       "notEligible": "Not Eligible",
-      "done": "Processed"
+      "eligible": "Eligible"
     }
   },
   "decision": {
-    "approve": {
-      "title": "Approve application for",
-      "notice": "Applicant will receive an email and can setup services. The profile will only appear on Marketplace when services are active.",
-      "noteLabel": "Internal Note",
-      "placeholder": "Optional. Only visible to System Admin.",
-      "confirm": "Approve Application"
-    },
-    "reject": {
-      "title": "Reject application for",
-      "notice": "Applicant will receive an email with your provided reason. This cannot be undone.",
-      "noteLabel": "Rejection Reason (Required)",
-      "placeholder": "Clearly state the criteria not met so the applicant understands",
-      "confirm": "Reject Application"
-    },
     "supplement": {
       "title": "Request Supplement",
       "notice": "Application moved to Need More Info. Applicant will receive an email with the items below.",
@@ -178,19 +186,7 @@
       "itemPlaceholder": "Say exactly what needs to be added",
       "pickOne": "Pick at least 1 item."
     },
-    "log": {
-      "approve": "Approved application.",
-      "reject": "Rejected application. Email sent with reason.",
-      "supplement": "Requested application supplement. Email sent with items needed."
-    },
-    "toast": {
-      "approve": "Application approved",
-      "reject": "Application rejected",
-      "supplement": "Supplement request sent"
-    },
     "label": {
-      "approve": "Approve",
-      "reject": "Reject",
       "supplement": "Request Supplement"
     }
   },
@@ -211,10 +207,8 @@
       "submitted": "Submitted"
     },
     "blockers": {
-      "criteria": "{{count}} criteria unreviewed or missing evidence",
       "flags": "{{count}} AI flags unreviewed"
     },
-    "ready": "{{count}}/{{total}} criteria reviewed with evidence",
     "scoreSummary": {
       "level": "Level {{level}}",
       "unscored": "Unscored"
@@ -234,7 +228,8 @@
       "highlights": "Experience Highlights"
     },
     "history": {
-      "title": "Operation History"
+      "title": "Operation History",
+      "reviewer": "Reviewer"
     },
     "documents": {
       "select": "Select document",
@@ -243,7 +238,9 @@
       "aiReviewed": "AI · Reviewed",
       "unmark": "Unmark",
       "mark": "Mark as reviewed",
-      "pageOf": "{{code}} · page {{page}}/{{total}}"
+      "pageOf": "{{code}} · page {{page}}/{{total}}",
+      "open": "Open file",
+      "openFailed": "Could not open the file. Please try again."
     },
     "aiScreening": {
       "declared": "Declared",
@@ -696,6 +693,211 @@
       "locked": "Locked {{name}}",
       "unlocked": "Unlocked {{name}}",
       "resetSent": "Password reset email sent to {{email}}"
+    }
+  },
+  "eligibility": {
+    "title": "Gate 1 · Eligibility",
+    "subtitle": "Assess each requirement EV-01 – EV-06. The overall outcome is derived automatically. Eligible does not list the expert on the Marketplace yet: per-service competency review and final approval follow.",
+    "results": {
+      "PASS": "Pass",
+      "NEED_MORE_INFORMATION": "More info",
+      "FAIL": "Fail"
+    },
+    "noteRequired": "Note to the applicant (required)",
+    "noteOptional": "Note (optional)",
+    "notePlaceholder": "State what is missing or why it is not met",
+    "experienceHint": "Declared {{years}} years; minimum {{min}} years.",
+    "experienceBelow": "Below the minimum, so Pass is not available.",
+    "previous": "Previously: {{result}}",
+    "remaining": "{{count}} requirement(s) without a result or a required note",
+    "ready": "All {{count}}/{{total}} requirements assessed",
+    "outcomeLabel": "Overall outcome",
+    "outcome": {
+      "ELIGIBLE": {
+        "confirm": "Confirm eligible",
+        "notice": "The applicant is told they meet the eligibility requirements. Next is the competency review for each service; the profile is not on the Marketplace yet.",
+        "toast": "Eligibility confirmed"
+      },
+      "NEED_MORE_INFORMATION": {
+        "confirm": "Request more information",
+        "notice": "The application goes back to the applicant with the note of each requirement to supplement. They supplement the same application.",
+        "toast": "More information requested"
+      },
+      "NOT_ELIGIBLE": {
+        "confirm": "Confirm not eligible",
+        "notice": "The application is closed. The applicant sees the note of each failed requirement and can only apply again after the policy waiting period. This cannot be undone.",
+        "toast": "Recorded as not eligible"
+      }
+    },
+    "dialog": {
+      "title": "Record the Gate 1 outcome for {{name}}?",
+      "noteLabel": "Overall note (optional)",
+      "placeholder": "Shown to the applicant with the results."
+    },
+    "resultTitle": "Gate 1 result",
+    "decidedAt": "Decided at {{time}}",
+    "reapplyAt": "A new application is allowed from {{date}}.",
+    "noDecision": "No Gate 1 decision yet.",
+    "notReviewable": "This application is not waiting for a Gate 1 decision.",
+    "errors": {
+      "INVALID_ELIGIBILITY_CRITERIA": "Give exactly one result for each of EV-01 – EV-06.",
+      "INVALID_ELIGIBILITY_RESULT": "A result is invalid. Reload the page and try again.",
+      "ELIGIBILITY_NOTE_REQUIRED": "A failed or incomplete requirement needs a note.",
+      "EXPERIENCE_BELOW_MINIMUM": "EV-06 cannot pass: the declared experience is below the minimum.",
+      "SELF_REVIEW_NOT_ALLOWED": "You cannot review your own application.",
+      "APPLICATION_NOT_IN_REVIEW": "This application no longer waits for a decision; reload to see its status.",
+      "failed": "The decision was not recorded. Please try again."
+    }
+  },
+  "qualifications": {
+    "title": "Competency review by service",
+    "description": "Gate 2: eligible experts register each service separately. Assess C1 – C5 per service; a pass goes to the System Admin for final approval.",
+    "count": "qualifications",
+    "service": "Service",
+    "empty": "No qualifications.",
+    "tabs": {
+      "review": "Awaiting review",
+      "moreInfo": "Awaiting evidence",
+      "finalApproval": "Awaiting final approval",
+      "failed": "Not met",
+      "approved": "Approved",
+      "suspended": "Suspended"
+    }
+  },
+  "competency": {
+    "title": "Gate 2 · Competency for the service",
+    "subtitle": "Assess each competency C1 – C5. Every competency needs a note; Pass or Fail must cite at least one file. Years of experience or CV keywords never prove a competency on their own.",
+    "names": {
+      "C1": "CIT knowledge for the service scope",
+      "C2": "AI Draft review and revision",
+      "C3": "Information and evidence review",
+      "C4": "Analysing and applying CIT rules",
+      "C5": "Professional judgment and verification conclusion"
+    },
+    "hints": {
+      "C1": "Related tasks T2, T3.",
+      "C2": "Related tasks T2, T5.",
+      "C3": "Related task T1; supports decision T4.",
+      "C4": "Related tasks T3, T5.",
+      "C5": "Partly T2, T5; mainly T6."
+    },
+    "previous": "Last time: {{result}}",
+    "evidenceRequired": "Supporting files (required)",
+    "evidenceOptional": "Supporting files (optional when requesting more)",
+    "noFiles": "No files in this qualification yet.",
+    "noteRequired": "Assessment note (required)",
+    "notePlaceholder": "Basis of the assessment, or what is missing",
+    "remaining": "{{count}} competencies still need a result, a note or a supporting file",
+    "ready": "All {{count}} competencies assessed",
+    "outcome": {
+      "PENDING_FINAL_APPROVAL": {
+        "confirm": "Confirm competency met",
+        "notice": "The qualification goes to the System Admin for final approval, who must not be the Gate 2 reviewer. The expert is not on the Marketplace yet.",
+        "toast": "Competency recorded as met"
+      },
+      "NEED_MORE_INFORMATION": {
+        "confirm": "Request more evidence",
+        "notice": "The qualification goes back to the expert with the note of each competency to supplement, in the same qualification.",
+        "toast": "Request for more evidence sent"
+      },
+      "FAIL": {
+        "confirm": "Confirm not met",
+        "notice": "This service qualification closes. The expert can register the service again only after the policy wait. Other services are not affected. This cannot be undone.",
+        "toast": "Competency recorded as not met"
+      }
+    },
+    "dialog": {
+      "title": "Gate 2 conclusion for {{name}} · {{service}}?",
+      "noteLabel": "Overall note (optional)",
+      "placeholder": "The expert sees it with the results."
+    },
+    "resultTitle": "Gate 2 result",
+    "noDecision": "No Gate 2 conclusion yet.",
+    "handoff": "Waiting for the System Admin final approval.",
+    "reapplyAt": "The service can be registered again from {{date}}.",
+    "rail": {
+      "review": "Competency review",
+      "finalApproval": "Final approval",
+      "approved": "Approved"
+    },
+    "errors": {
+      "INVALID_COMPETENCY_CRITERIA": "Give exactly one result for each of C1 – C5.",
+      "INVALID_COMPETENCY_RESULT": "A result is invalid. Reload the page and try again.",
+      "COMPETENCY_NOTE_REQUIRED": "Every competency needs an assessment note.",
+      "COMPETENCY_EVIDENCE_REQUIRED": "Pass or Fail must cite at least one file.",
+      "COMPETENCY_EVIDENCE_UNKNOWN": "A cited file does not belong to this qualification. Reload and try again.",
+      "SELF_REVIEW_NOT_ALLOWED": "You cannot review your own qualification.",
+      "QUALIFICATION_NOT_IN_REVIEW": "The qualification is no longer awaiting review; reload to see its status.",
+      "failed": "The conclusion was not recorded. Please try again.",
+      "QUALIFICATION_NOT_PENDING_APPROVAL": "The qualification is no longer waiting for final approval; reload to see its status.",
+      "FINAL_APPROVER_IS_REVIEWER": "The Gate 2 reviewer cannot give the final approval.",
+      "FINAL_APPROVAL_NOTE_REQUIRED": "Explain why it goes back for review.",
+      "INVALID_FINAL_APPROVAL_DECISION": "The decision is invalid. Reload the page and try again.",
+      "SERVICE_NOT_APPROVED": "Only an approved service can be suspended; reload the page.",
+      "SERVICE_NOT_SUSPENDED": "The service is not suspended; reload the page.",
+      "SUSPENSION_NOTE_REQUIRED": "Give the reason for the suspension.",
+      "INVALID_SERVICE_ACCESS_ACTION": "The action is invalid. Reload the page and try again."
+    }
+  },
+  "finalApproval": {
+    "title": "Final approval",
+    "description": "Governance check of Gate 2 results per service: records, both Gate results, evidence and history. Competency is not re-assessed.",
+    "panelTitle": "Final approval",
+    "intro": "Confirm the Gate 2 result is complete and followed the process. Approval lets the expert set up pricing for this service.",
+    "sameReviewer": "You were the Gate 2 reviewer for this qualification, so you cannot give the final approval.",
+    "noteLabel": "Note (required to return for review)",
+    "notePlaceholder": "Missing records, unresolved flags or a process error",
+    "return": "Return for review",
+    "approve": "Approve for service",
+    "notPending": "This qualification is not waiting for final approval.",
+    "toast": {
+      "APPROVE": "Approved for service",
+      "RETURN_FOR_REVIEW": "Returned to competency review",
+      "SUSPEND": "Service suspended",
+      "REINSTATE": "Service reinstated"
+    },
+    "accessTitle": "Service status",
+    "suspendIntro": "Suspending hides this service from the Marketplace and stops new requests; running cases continue. The expert's other services are not affected.",
+    "reinstateIntro": "Reinstate so the expert can offer this service again.",
+    "suspendNoteLabel": "Reason for suspension (required)",
+    "reinstateNoteLabel": "Note (optional)",
+    "suspend": "Suspend service",
+    "reinstate": "Reinstate service"
+  },
+  "pricingReview": {
+    "title": "Service price review",
+    "description": "The first price and changes of at most 50% are approved automatically. This page only lists larger changes, which a System Admin decides.",
+    "tabs": {
+      "PENDING_APPROVAL": "Pending",
+      "RETURN_FOR_REVISION": "Returned",
+      "REJECTED": "Rejected"
+    },
+    "expert": "Expert · service",
+    "change": "Current → new price",
+    "effectiveFrom": "Effective from",
+    "reason": "Expert's reason",
+    "percent": "{{percent}}% change",
+    "empty": "No price changes.",
+    "approve": "Approve",
+    "return": "Return",
+    "reject": "Reject",
+    "noteRequired": "Note to the expert (required)",
+    "noteOptional": "Note (optional)",
+    "dialog": {
+      "APPROVE": "Approve the new price of {{name}}?",
+      "RETURN_FOR_REVISION": "Return the price to {{name}} for revision?",
+      "REJECT": "Reject the new price of {{name}}?"
+    },
+    "toast": {
+      "APPROVE": "New price approved",
+      "RETURN_FOR_REVISION": "Price returned for revision",
+      "REJECT": "New price rejected"
+    },
+    "errors": {
+      "PRICING_NOT_PENDING": "This price is no longer pending; reload the page.",
+      "PRICING_NOTE_REQUIRED": "Explain why it is returned or rejected.",
+      "INVALID_PRICING_DECISION": "The decision is invalid. Reload the page and try again.",
+      "failed": "The decision was not recorded. Please try again."
     }
   }
 }

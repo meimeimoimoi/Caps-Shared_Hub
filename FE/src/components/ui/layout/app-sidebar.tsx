@@ -1,6 +1,6 @@
 import { useId, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
-import { PanelLeftClose, PanelLeftOpen, X } from 'lucide-react'
+import { Lock, PanelLeftClose, PanelLeftOpen, X } from 'lucide-react'
 import { BrandLogo } from '@/components/ui/display/brand-logo'
 import brandMark from '@/assets/logo-icon.svg'
 import { useTranslation } from 'react-i18next'
@@ -12,6 +12,8 @@ export interface SidebarItem {
   icon: ReactNode
   active?: boolean
   badge?: ReactNode
+  /** Locked item (no `to`): shows a lock and explains when it opens */
+  lockedHint?: string
 }
 export interface SidebarGroup {
   id: string
@@ -22,6 +24,7 @@ interface AppSidebarProps {
   groups: SidebarGroup[]
   navigationLabel: string
   collapsed?: boolean
+  badgeVariant?: 'accent' | 'muted'
   onToggleCollapse?: () => void
   onNavigate?: () => void
   onClose?: () => void
@@ -32,6 +35,7 @@ export function AppSidebar({
   groups,
   navigationLabel,
   collapsed = false,
+  badgeVariant = 'accent',
   onToggleCollapse,
   onNavigate,
   onClose,
@@ -109,7 +113,17 @@ export function AppSidebar({
                   >
                     {item.label}
                     {item.badge != null && collapsed && `, ${item.badge}`}
+                    {item.lockedHint && (
+                      <span className="sr-only">. {item.lockedHint}</span>
+                    )}
                   </span>
+                  {item.lockedHint && !collapsed && (
+                    <Lock
+                      size={14}
+                      aria-hidden="true"
+                      className="absolute top-1/2 right-3.5 -translate-y-1/2"
+                    />
+                  )}
                   {item.badge != null &&
                     (collapsed ? (
                       <span
@@ -117,7 +131,7 @@ export function AppSidebar({
                         className="bg-indicator absolute top-2 right-2 size-2 rounded-full"
                       />
                     ) : (
-                      <span className="bg-indicator absolute top-1/2 right-3.5 grid min-h-5 min-w-5 -translate-y-1/2 place-items-center rounded-full px-1.5 text-xs font-semibold text-[var(--ui-on-accent)] tabular-nums">
+                      <span className={`absolute top-1/2 right-3.5 inline-flex h-5 min-w-6 -translate-y-1/2 items-center justify-center px-1.5 font-sans text-[11px] leading-none font-medium tabular-nums ${badgeVariant === 'muted' ? 'bg-indicator rounded-md text-[var(--ui-on-accent)]' : 'bg-indicator rounded-full text-[var(--ui-on-accent)]'}`}>
                         {item.badge}
                       </span>
                     ))}
@@ -140,7 +154,7 @@ export function AppSidebar({
                   key={item.id}
                   type="button"
                   disabled
-                  title={item.label}
+                  title={item.lockedHint ?? item.label}
                   className={className}
                 >
                   {content}

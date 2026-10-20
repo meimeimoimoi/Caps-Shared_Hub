@@ -93,8 +93,8 @@ export function SocialView({
             ns="auth"
             i18nKey="legal"
             components={{
-              terms: <a href="#" className={LEGAL_LINK_CLASS} />,
-              privacy: <a href="#" className={LEGAL_LINK_CLASS} />,
+              terms: <a href="/terms" target="_blank" rel="noopener noreferrer" className={LEGAL_LINK_CLASS} />,
+              privacy: <a href="/privacy" target="_blank" rel="noopener noreferrer" className={LEGAL_LINK_CLASS} />,
             }}
           />
         </p>

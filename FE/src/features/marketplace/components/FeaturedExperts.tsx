@@ -3,11 +3,12 @@ import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { Award, ShieldCheck, Star } from 'lucide-react'
 import { useFormatters } from '@/hooks/useFormatters'
-import { lowestFee, type Expert } from '../fixtures'
+import { lowestFee } from '../model'
+import type { Expert } from '../types'
 import '../styles/featured.css'
 
-/** Thẻ chuyên gia gọn: dùng ở mục xem trước Sàn trên trang chủ và ở hồ sơ không tìm thấy.
- *  revealFrom: trang chủ truyền thứ tự bắt đầu để thẻ tham gia hiệu ứng .r của mục chứa nó. */
+/** Compact expert cards: used by the Marketplace preview on the home page and on a missing profile.
+ *  revealFrom: the home page passes a start index so the cards join its section's .r reveal. */
 export function FeaturedExperts({
   experts,
   revealFrom,
@@ -52,16 +53,26 @@ export function FeaturedExperts({
                 </span>
               </span>
             </span>
-            <span className="me-headline">{e.headline}</span>
-            <span className="me-credential">
-              <Award size={15} aria-hidden="true" />
-              {e.credential}
-            </span>
+            {e.headline && <span className="me-headline">{e.headline}</span>}
+            {e.credential && (
+              <span className="me-credential">
+                <Award size={15} aria-hidden="true" />
+                {e.credential}
+              </span>
+            )}
             <span className="me-foot">
               <span className="me-rating">
-                <Star size={15} aria-hidden="true" />
-                <b>{format.number(e.rating, { minimumFractionDigits: 2 })}</b>
-                {t('row.reviews', { count: e.reviews })}
+                {e.reviews > 0 ? (
+                  <>
+                    <Star size={15} aria-hidden="true" />
+                    <b>
+                      {format.number(e.rating, { minimumFractionDigits: 2 })}
+                    </b>
+                    {t('row.reviews', { count: e.reviews })}
+                  </>
+                ) : (
+                  t('row.noReviews')
+                )}
               </span>
               <span className="me-fee">
                 <small>{t('featured.from')}</small>

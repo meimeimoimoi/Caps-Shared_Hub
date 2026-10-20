@@ -6,10 +6,61 @@ It does **not** own accounts or roles (identity service) or case handling (workf
 
 ## Project layout
 
-- Domain: `ExpertProfile`, `ExpertApplication` (status transitions + audit events), `ExpertEvidence`, `ApplicationRules`, `ExpertErrors`.
-- Application: one handler per use case under `Features/Applications`; ports under `Abstractions/`.
+- Domain: `ExpertProfile`, `ExpertApplication` (status transitions + audit events), `ExpertEvidence`, `ApplicationRules`, `EligibilityRules` + `EligibilityCheck` (Gate 1), `ExpertServiceQualification` + `CompetencyRules` + `CompetencyAssessment` (Gate 2), `ExpertErrors`.
+- Application: one handler per use case under `Features/Applications` and `Features/Qualifications` (expert) and `Features/Reviews` (Gate 1 and Gate 2 reviewer); ports under `Abstractions/`.
 - Infrastructure: `ExpertDbContext` (schema `expert`) + migrations, repositories, per-user advisory lock, S3 storage.
-- Api: `ApplicationsController`, host setup. Swagger shows each endpoint's codes.
+- Api: `ApplicationsController` + `QualificationsController` (expert), `ApplicationReviewsController` + `QualificationReviewsController` (reviewer, permission `ExpertReview`), host setup. Swagger shows each endpoint's codes.
+
+## Expert Portal context
+
+`GET /api/v1/experts/me/context` tells the portal what the signed-in account may open. Capabilities:
+`application.view` (always), `services.manage` + `profile.public` (a service approved), `cases.work` + `income.view`
+(a service can take bookings); the EXPERT role's `ServiceManage` / `CaseWork` permissions grant them too.
+`services` has one readiness entry per ACTIVE row of `expert.service_catalog` (seeded with `HUMAN_VERIFICATION`);
+adding a service is a new catalog row, not a code change.
+
+## Gate 1 (eligibility review)
+
+A reviewer gives PASS / FAIL / NEED_MORE_INFORMATION for each of EV-01…EV-06 (a note is required unless PASS).
+The outcome follows: any FAIL → `NOT_ELIGIBLE` (new application allowed after `ExpertPolicy:ReapplyNotEligibleDays`),
+otherwise any NEED_MORE_INFORMATION → the applicant supplements the same application, all PASS → `ELIGIBLE`.
+EV-06 cannot pass below `ExpertPolicy:MinYearsExperience` declared years. Reviewers cannot decide their own application.
+`ELIGIBLE` is per expert; Gate 2 is per service (below).
+
+Each decision adds an `ExpertEligibilityDecidedEvent` to `expert.notification_outbox` in the same transaction;
+`ExpertNotificationPublisher` sends it to RabbitMQ (`ConnectionStrings:RabbitMq`) every 5 seconds, and the
+notification service emails the applicant and keeps an in-app notification. The address is
+`expert_profile.contact_email`, recorded from the token whenever the applicant saves, submits or supplements;
+profiles without one are not notified. `Expert:NotificationPublisherEnabled=false` stops publishing
+(Development only; messages wait in the outbox).
+
+## Gate 2 (competency review per service)
+
+After `ELIGIBLE`, the expert registers each catalog service (`POST /api/v1/experts/me/qualifications`), which
+opens an `expert_service_qualification` in `COMPETENCY_REVIEW`. The reviewer gives PASS / FAIL /
+NEED_MORE_INFORMATION for each of C1…C5 (`POST /api/v1/admin/experts/qualifications/{id}/competency-decision`);
+every result needs a note, and PASS or FAIL must cite at least one file of the qualification (its Gate 1 files
+plus the files added for the service, code `COMPETENCY`). One file may support several competencies
+(`competency_assessment_evidence`). The outcome follows: any FAIL → `FAIL` (the service can be registered again
+after `ExpertPolicy:ReapplyCompetencyFailDays`, linked to the failed one), otherwise any NEED_MORE_INFORMATION →
+the expert uploads files and supplements the same qualification, all PASS → `PENDING_FINAL_APPROVAL`.
+The Gate 2 reviewer is stored so final approval (not built yet) can require someone else (BR-E33).
+Each decision publishes an `ExpertCompetencyDecidedEvent` through the same outbox.
+
+## Pricing, availability and the Marketplace
+
+- Pricing (`/api/v1/experts/me/pricing/{serviceCode}`): every change is a new `service_pricing_version`; the first price
+  or a change of at most `ExpertPolicy:PricingAutoApproveMaxChangePercent` (50%) is approved by the system, larger
+  changes wait for a System Admin at `/api/v1/admin/experts/pricing` (permission `ExpertApprove`).
+- Availability (`/api/v1/experts/me/availability`): open slots in `availability_slot`, shared by all services (1–12 hours,
+  no overlaps, at most 50 open, up to 90 days ahead), and a per-service `accepting_requests` switch.
+- Delivery SLA: `service_catalog.delivery_sla_hours` (calendar hours from START, 72 for `HUMAN_VERIFICATION`); the
+  Marketplace returns it as `slaHours` and the Review Case snapshots it at request time (BR-M35).
+- Marketplace (`GET /api/v1/marketplace/experts`, public): an Expert–Service is listed when the account is ACTIVE, the
+  service is APPROVED_FOR_SERVICE and ACTIVE in the catalog, a price is in effect today, requests are on and the expert
+  has a future open slot (BR-M01, `MarketplaceRules`). The portal context reports the missing step as a reason code.
+- `expert_profile.account_status` is kept in sync by `AccountStatusChangedConsumer` (event published by auth) and by
+  the token whenever the expert saves something.
 
 ## Boundaries with other services
 
@@ -25,7 +76,7 @@ It does **not** own accounts or roles (identity service) or case handling (workf
 dotnet run --project expert/Api    # http://localhost:5198/healthz, Swagger at /swagger
 ~~~
 
-The gateway routes `/api/v1/experts/**` here. Development applies migrations on startup and needs SeaweedFS
+The gateway routes `/api/v1/experts/**` and `/api/v1/admin/experts/**` here. Development applies migrations on startup and needs SeaweedFS
 (S3 API on :8333) for evidence files.
 
 EF commands: `dotnet ef migrations add <Name> --project expert/Infrastructure --startup-project expert/Api --output-dir Persistence/Migrations`.

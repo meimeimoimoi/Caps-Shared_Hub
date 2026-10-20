@@ -43,7 +43,11 @@
       "deliverable": "The expert answers one specific situation with a grounded professional conclusion."
     },
     "fastest": "Delivered in",
-    "experts": "Experts"
+    "experts": "Experts",
+    "HUMAN_VERIFICATION": {
+      "name": "Expert verification",
+      "deliverable": "Reviews the AI-prepared draft and issues a verified version, or states why it cannot be verified."
+    }
   },
   "filters": {
     "label": "Filter experts",
@@ -81,7 +85,8 @@
     "requestFor": "Send a request to {{name}}",
     "expert": "Expert",
     "status": "Availability",
-    "topics": "Topics handled"
+    "topics": "Topics handled",
+    "noReviews": "No reviews yet"
   },
   "sla": {
     "hours_one": "{{count}} hour",
@@ -95,7 +100,9 @@
     "full": "Fully booked",
     "fullDetail": "Reopens on {{date}}",
     "paused": "Paused",
-    "pausedDetail": "This expert has paused new requests"
+    "pausedDetail": "This expert has paused new requests",
+    "nextSlot": "Next open slot {{date}}",
+    "openAny": "Open for requests"
   },
   "trail": {
     "label": "Verification trail",
@@ -105,7 +112,9 @@
     "gate2Detail": "Competency for this service, passed on {{date}}",
     "price": "Fee {{version}}",
     "priceDetail": "Fee schedule {{version}} approved",
-    "badge": "Verified"
+    "badge": "Verified",
+    "gate1Passed": "Eligibility check: passed",
+    "gate2Passed": "Competency check for this service: passed"
   },
   "empty": {
     "title": "No experts match these filters",
@@ -161,5 +170,10 @@
     "from": "From",
     "title": "Experts taking requests",
     "lead": "Verified in two rounds and ready to take your request."
+  },
+  "list": {
+    "loading": "Loading experts",
+    "failed": "Couldn't load the experts",
+    "failedBody": "The connection was interrupted, so the list could not be loaded. Please try again in a moment."
   }
 }

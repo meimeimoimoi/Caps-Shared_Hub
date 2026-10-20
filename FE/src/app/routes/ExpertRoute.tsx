@@ -5,7 +5,6 @@ import { Link, Navigate, Outlet, useLocation } from 'react-router-dom'
 import { useAuth, useAuthStore } from '@/features/auth'
 import { useExpertContext } from '@/features/expert-context'
 import { ApiError } from '@/lib/api-client'
-import { isExpertDemo } from '@/lib/expert-data-source'
 import '../layouts/expert/expert-theme.css'
 
 export function ExpertRoute() {
@@ -15,31 +14,33 @@ export function ExpertRoute() {
   const authenticated = useAuthStore((s) => s.isAuthenticated)
   const location = useLocation()
   const path = location.pathname
-  const title = path.endsWith('/pricing')
-    ? t('pricing.title')
-    : path.includes('/settings')
-      ? t('settings')
-      : path.endsWith('/overview')
-        ? t('overview')
-        : path.endsWith('/queue')
-          ? t('workQueue')
-          : path.endsWith('/active')
-            ? t('activeCasesAlternative')
-            : path.endsWith('/services')
-              ? t('services')
-              : path.endsWith('/bio')
-                ? t('publicProfile')
-              : path.endsWith('/income')
-                ? t('income')
-                : path.endsWith('/cases')
-                  ? t('cases')
-                  : t('caseDetails')
+  const title = path.endsWith('/application')
+    ? t('expertApplication')
+    : path.endsWith('/pricing')
+      ? t('pricing.title')
+      : path.includes('/settings')
+        ? t('settings')
+        : path.endsWith('/overview')
+          ? t('overview')
+          : path.endsWith('/queue')
+            ? t('workQueue')
+            : path.endsWith('/active')
+              ? t('activeCasesAlternative')
+              : path.endsWith('/services')
+                ? t('services')
+                : path.endsWith('/bio')
+                  ? t('publicProfile')
+                  : path.endsWith('/income')
+                    ? t('income')
+                    : path.endsWith('/cases')
+                      ? t('cases')
+                      : t('caseDetails')
   useEffect(() => {
     document.title = `${title} | Shared Hub`
   }, [title])
   const context = useExpertContext()
   const { logout } = useAuth()
-  if (!authenticated && !isExpertDemo)
+  if (!authenticated)
     return (
       <Navigate
         to="/login"

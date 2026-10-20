@@ -12,6 +12,12 @@ public static class DependencyInjection
     {
         services.AddScoped<IApplicationLoader, ApplicationLoader>();
         services.AddScoped<IApplicationDescriber, ApplicationDescriber>();
+        services.AddScoped<IReviewDescriber, ReviewDescriber>();
+        services.AddScoped<IQualificationDescriber, QualificationDescriber>();
+        services.AddScoped<IQualificationReviewDescriber, QualificationReviewDescriber>();
+        services.AddScoped<IServiceAccessNotifier, ServiceAccessNotifier>();
+        services.AddScoped<IPricingDescriber, PricingDescriber>();
+        services.AddScoped<IMarketplaceListing, MarketplaceListing>();
         services.AddHandlersFromAssembly(typeof(SaveDraftHandler).Assembly);
         return services;
     }

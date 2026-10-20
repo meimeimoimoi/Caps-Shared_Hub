@@ -13,6 +13,9 @@ public sealed record Applicant(Guid UserId, string Email, bool EmailVerified)
     public static Applicant From(ICurrentUser user) =>
         new(user.RequireUserId(), user.Email ?? "", user.AccountStatus == ActiveStatus);
 
+    /// <summary>The token's account status, recorded on the profile for the Marketplace filter.</summary>
+    public string AccountStatus => EmailVerified ? ActiveStatus : "PENDING_VERIFICATION";
+
     /// <summary>Name shown until the applicant saves one: the local part of the email.</summary>
     public string DefaultName => Email.Split('@')[0];
 }

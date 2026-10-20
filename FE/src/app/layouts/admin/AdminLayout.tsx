@@ -1,5 +1,8 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import {
+  BadgeCheck,
+  Banknote,
+  ClipboardCheck,
   CreditCard,
   FileText,
   LayoutDashboard,
@@ -58,6 +61,9 @@ interface AdminLayoutProps extends ShellPageProps {
   section:
     | 'overview'
     | 'pending'
+    | 'competency'
+    | 'approvals'
+    | 'pricingReview'
     | 'experts'
     | 'disputes'
     | 'escrow'
@@ -75,11 +81,11 @@ export function AdminLayout({
   ...page
 }: AdminLayoutProps) {
   const { t } = useTranslation('admin')
-  // Author reviewers share this shell for expert applications; hide what only system admins can open
-  const isSystemAdmin = hasAnyPermission(
-    useAuthStore((s) => s.user),
-    [Permission.UserManage]
-  )
+  // Match navigation to the permissions enforced by each API.
+  const user = useAuthStore((s) => s.user)
+  const canReview = hasAnyPermission(user, [Permission.ExpertReview])
+  const canApprove = hasAnyPermission(user, [Permission.ExpertApprove])
+  const isSystemAdmin = hasAnyPermission(user, [Permission.UserManage])
   const allGroups: NavGroup[] = [
     {
       // Không tiêu đề nhóm: AppSidebar chỉ hiện tiêu đề khi có chữ
@@ -99,9 +105,27 @@ export function AdminLayout({
         {
           label: t('navigation.pendingExperts'),
           icon: FileText,
-          to: '/admin/experts/pending',
+          to: '/reviewer/gate-1',
           active: section === 'pending',
           badge: pendingCount,
+        },
+        {
+          label: t('navigation.competencyReview'),
+          icon: ClipboardCheck,
+          to: '/reviewer/gate-2',
+          active: section === 'competency',
+        },
+        {
+          label: t('navigation.finalApproval'),
+          icon: BadgeCheck,
+          to: '/admin/experts/approvals',
+          active: section === 'approvals',
+        },
+        {
+          label: t('navigation.pricingReview'),
+          icon: Banknote,
+          to: '/admin/experts/pricing',
+          active: section === 'pricingReview',
         },
         {
           label: t('navigation.manageExperts'),
@@ -155,18 +179,31 @@ export function AdminLayout({
     },
   ]
   const reviewerRoutes = [
-    '/admin/experts/pending',
-    '/admin/experts',
-    '/admin/account',
+    '/reviewer/gate-1',
+    '/reviewer/gate-2',
   ]
-  const nav = isSystemAdmin
-    ? allGroups
-    : allGroups
-        .map((g) => ({
-          ...g,
-          items: g.items.filter((i) => i.to && reviewerRoutes.includes(i.to)),
-        }))
-        .filter((g) => g.items.length > 0)
+  const approvalRoutes = ['/admin/experts/approvals', '/admin/experts/pricing']
+  const adminRoutes = [
+    '/admin',
+    '/admin/experts',
+    '/admin/disputes',
+    '/admin/escrow',
+    '/admin/pricing',
+    '/admin/users',
+  ]
+  const nav = allGroups
+    .map((g) => ({
+      ...g,
+      items: g.items.filter((i) => {
+        if (!i.to) return false
+        if (reviewerRoutes.includes(i.to)) return canReview
+        if (approvalRoutes.includes(i.to)) return canApprove
+        if (i.to === '/admin/account') return isSystemAdmin || canReview
+        if (adminRoutes.includes(i.to)) return isSystemAdmin
+        return false
+      }),
+    }))
+    .filter((g) => g.items.length > 0)
 
   return <RoleShell nav={nav} {...page} />
 }

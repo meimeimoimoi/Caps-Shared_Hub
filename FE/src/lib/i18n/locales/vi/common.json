@@ -77,6 +77,7 @@
       "stale": "Dữ liệu chưa cập nhật",
       "inconsistent": "Phiên bản không khớp",
       "error": "Lỗi bảng tổng quan",
+      "applicant": "Đang nộp hồ sơ",
       "denied": "Không có quyền truy cập",
       "contextError": "Lỗi kiểm tra quyền truy cập"
     },
@@ -112,5 +113,23 @@
     "pages": "Tìm trang chức năng…",
     "noPages": "Không có trang phù hợp.",
     "knowledge": "Tìm số hiệu hoặc tên văn bản"
+  },
+  "notifications": {
+    "eligibility": {
+      "ELIGIBLE": "Hồ sơ chuyên gia của bạn đã đạt vòng xét duyệt điều kiện.",
+      "NEED_MORE_INFORMATION": "Hồ sơ chuyên gia của bạn cần bổ sung thông tin.",
+      "NOT_ELIGIBLE": "Hồ sơ chuyên gia của bạn chưa đạt điều kiện. Xem kết quả."
+    },
+    "competency": {
+      "PENDING_FINAL_APPROVAL": "Bạn đã đạt đánh giá năng lực dịch vụ {{service}}, đang chờ phê duyệt cuối",
+      "NEED_MORE_INFORMATION": "Dịch vụ {{service}} cần bổ sung bằng chứng năng lực",
+      "FAIL": "Bạn chưa đạt đánh giá năng lực dịch vụ {{service}}"
+    },
+    "serviceAccess": {
+      "APPROVED": "Bạn được phê duyệt cung cấp dịch vụ {{service}}",
+      "RETURNED_FOR_REVIEW": "Hồ sơ năng lực dịch vụ {{service}} được chuyển đánh giá lại",
+      "SUSPENDED": "Dịch vụ {{service}} đang tạm ngưng",
+      "REINSTATED": "Dịch vụ {{service}} đã được mở lại"
+    }
   }
 }

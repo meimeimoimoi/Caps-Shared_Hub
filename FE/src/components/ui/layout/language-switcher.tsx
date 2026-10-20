@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next'
 import { CustomSelect } from '@/components/ui/forms/custom-select'
 import { isLanguage } from '@/lib/i18n/language'
 import { Languages } from 'lucide-react'
+import { cn } from '@/lib/utils'
 
 const options = [
   { value: 'vi' as const, label: 'Tiếng Việt' },
@@ -14,32 +15,54 @@ export function LanguageSwitcher({
   variant?: 'default' | 'overlay' | 'account'
 }) {
   const { t, i18n } = useTranslation('common')
+  const current = isLanguage(i18n.language) ? i18n.language : 'vi'
+
+  if (variant === 'account') {
+    return (
+      <fieldset className="m-0 min-w-0 border-0 px-3 pt-3 pb-2">
+        <legend className="sr-only">{t('language.label')}</legend>
+        <div
+          aria-hidden="true"
+          className="text-text-strong mb-2.5 flex items-center gap-3 text-sm font-medium"
+        >
+          <Languages size={18} className="text-text-muted shrink-0" />
+          {t('language.label')}
+        </div>
+        <div className="bg-surface-muted grid grid-cols-2 gap-1 rounded-lg p-1">
+          {options.map((option) => (
+            <button
+              key={option.value}
+              type="button"
+              lang={option.value}
+              aria-pressed={current === option.value}
+              onClick={() => {
+                void i18n.changeLanguage(option.value)
+              }}
+              className={cn(
+                'flex min-h-9 cursor-pointer items-center justify-center rounded-md px-2 text-sm transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-text motion-reduce:transition-none',
+                current === option.value
+                  ? 'bg-surface text-accent-text font-semibold shadow-sm'
+                  : 'text-text-muted hover:text-text-strong'
+              )}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
+      </fieldset>
+    )
+  }
+
   return (
     <CustomSelect
       label={t('language.label')}
-      value={isLanguage(i18n.language) ? i18n.language : 'vi'}
+      value={current}
       options={options}
       onChange={(language) => {
         void i18n.changeLanguage(language)
       }}
-      className={`relative text-sm [&>span]:sr-only ${variant === 'account' ? 'w-full' : 'shrink-0'} ${variant === 'overlay' ? 'language-switcher--overlay' : ''}`}
-      triggerLeading={
-        variant === 'account' ? (
-          <span className="text-text-strong flex min-w-0 flex-1 items-center gap-3">
-            <Languages
-              size={18}
-              aria-hidden="true"
-              className="text-text-muted shrink-0"
-            />
-            <span>{t('language.label')}</span>
-          </span>
-        ) : undefined
-      }
-      triggerClassName={
-        variant === 'account'
-          ? '!w-full !gap-3 !border-0 !bg-transparent !px-3 !py-2.5 !text-sm !font-medium !text-text-muted whitespace-nowrap tracking-normal [word-spacing:normal] transition-colors hover:!bg-surface-muted'
-          : '!w-36 border-border hover:bg-surface-muted focus-visible:!outline-none focus-visible:!border-text-muted'
-      }
+      className={`relative shrink-0 text-sm [&>span]:sr-only ${variant === 'overlay' ? 'language-switcher--overlay' : ''}`}
+      triggerClassName="!w-36 border-border hover:bg-surface-muted focus-visible:!outline-none focus-visible:!border-text-muted"
       menuClassName="!left-auto !w-44 !rounded-xl !p-1.5"
     />
   )

@@ -10,13 +10,14 @@
     "phoneInvalid": "Sử dụng số điện thoại Việt Nam.",
     "expertise": "Chọn ít nhất một lĩnh vực chuyên môn.",
     "cv": "Chọn CV của bạn để tiếp tục.",
+    "duplicateCv": "CV này đã có trong hồ sơ. Vui lòng chọn file có nội dung khác.",
     "file": "Không thể thêm các file đã chọn. Chọn file PDF, JPG hoặc PNG, mỗi file không quá 10 MB.",
     "confirmed": "Xác nhận thông tin hồ sơ là chính xác trước khi tiếp tục.",
     "supplement": "Thêm tài liệu hoặc nội dung giải thích."
   },
   "messages": {
     "draftSaved": "Đã lưu nháp. Bạn có thể quay lại hoàn thiện hồ sơ bất cứ lúc nào.",
-    "accountCreated": "Đã tạo tài khoản và gửi email xác nhận. Bạn có thể tiếp tục khai hồ sơ ngay.",
+    "accountCreated": "Đã tạo tài khoản. Bạn có thể tiếp tục hoàn thiện hồ sơ.",
     "emailTaken": "Email này đã có tài khoản. Hãy đăng nhập để tiếp tục hồ sơ.",
     "tooManyRequests": "Bạn thao tác quá nhanh. Vui lòng đợi một lát rồi thử lại.",
     "unavailable": "Không kết nối được máy chủ. Vui lòng thử lại sau ít phút.",
@@ -29,7 +30,8 @@
     "supplementSent": "Đã gửi thông tin bổ sung. Hồ sơ quay lại hàng chờ đánh giá.",
     "loadFailed": "Không tải được hồ sơ. Kiểm tra kết nối rồi thử lại.",
     "emailDisposable": "Không nhận email dùng một lần. Kết quả xét duyệt sẽ gửi qua email, hãy dùng email bạn kiểm tra thường xuyên.",
-    "emailDomain": "Tên miền email này không nhận được thư. Kiểm tra lại địa chỉ email."
+    "emailDomain": "Tên miền email này không nhận được thư. Kiểm tra lại địa chỉ email.",
+    "alreadyEligible": "Điều kiện tham gia của bạn đã được xác nhận; không cần nộp hồ sơ mới."
   },
   "consent": "Tôi đồng ý với <terms>điều khoản và điều kiện</terms> cùng <privacy>chính sách quyền riêng tư</privacy>.",
   "counts": {
@@ -42,12 +44,18 @@
     "selected_other": "Đã chọn {{count}} file"
   },
   "files": {
+    "open": "Xem tài liệu",
+    "openNamed": "Xem {{name}} (mở trong tab mới)",
+    "opening": "Đang mở tài liệu…",
+    "openError": "Không tải được tài liệu. Vui lòng thử lại.",
+    "popupBlocked": "Trình duyệt đã chặn tab mới. Hãy cho phép cửa sổ bật lên rồi thử lại.",
     "remove": "Xóa {{name}}",
     "choose": "Chọn file cho {{category}}",
     "meta": "{{extension}} · {{size}} · Đã tải lên",
     "uploading": "Đang tải lên…",
     "uploadedSize": "{{size}} KB · Đã tải lên",
-    "localSize": "{{size}} KB · Đã chọn trên thiết bị"
+    "localSize": "{{size}} KB · Đã chọn trên thiết bị",
+    "view": "Xem"
   },
   "stages": {
     "screening": "Sàng lọc có AI hỗ trợ",
@@ -73,7 +81,8 @@
     "qualifications": "Năng lực chuyên môn",
     "development": "Cập nhật kiến thức chuyên môn",
     "ethics": "Đạo đức nghề nghiệp",
-    "confidentiality": "Bảo mật thông tin"
+    "confidentiality": "Bảo mật thông tin",
+    "experience": "Kinh nghiệm thuế – kế toán"
   },
   "expertise": {
     "cit": "Thuế thu nhập doanh nghiệp",
@@ -90,7 +99,8 @@
     "hidePassword": "Ẩn mật khẩu",
     "showPassword": "Hiện mật khẩu",
     "hideConfirmation": "Ẩn mật khẩu xác nhận",
-    "showConfirmation": "Hiện mật khẩu xác nhận"
+    "showConfirmation": "Hiện mật khẩu xác nhận",
+    "reapplyFrom": "Bạn có thể nộp hồ sơ mới từ {{date}}, kèm minh chứng mới hoặc cập nhật có liên quan."
   },
   "introduction": {
     "heading": "Đóng góp chuyên môn.",
@@ -143,7 +153,10 @@
     "submitting": "Đang nộp…",
     "edit": "Chỉnh sửa hồ sơ",
     "send": "Gửi thông tin bổ sung",
-    "sending": "Đang gửi…"
+    "sending": "Đang gửi…",
+    "saveAndReview": "Lưu và quay lại kiểm tra",
+    "editShort": "Sửa",
+    "editSection": "Sửa {{section}}"
   },
   "fields": {
     "fullName": "Họ và tên",
@@ -166,7 +179,8 @@
     "introduction": "Giới thiệu",
     "bio": "Giới thiệu ngắn",
     "bioPlaceholder": "Chia sẻ kinh nghiệm và đối tượng bạn hỗ trợ.",
-    "bioPublic": "Có thể được hiển thị công khai khi đáp ứng các điều kiện tham gia marketplace."
+    "bioPublic": "Có thể được hiển thị công khai khi đáp ứng các điều kiện tham gia marketplace.",
+    "birthHelp": "Nhập theo dạng ngày/tháng/năm (NN/TT/NNNN), ví dụ 15/08/1988. Bạn cũng có thể chọn ngày từ lịch."
   },
   "password": {
     "required": "Mật khẩu *",
@@ -179,13 +193,13 @@
     "low": "Yếu",
     "empty": "Chưa nhập",
     "complete": "Đã đáp ứng tất cả yêu cầu mật khẩu",
-    "guidance": "Ít nhất 12 ký tự, gồm chữ hoa, chữ thường, chữ số và ký tự đặc biệt.",
+    "guidance": "Ít nhất 8 ký tự, gồm chữ hoa, chữ thường, số và ký tự đặc biệt.",
     "met": "Đã đạt: ",
     "notMet": "Chưa đạt: ",
     "label": "Mật khẩu",
     "confirmLabel": "Xác nhận mật khẩu",
     "short": {
-      "length": "12+ ký tự",
+      "length": "8+ ký tự",
       "uppercase": "Chữ hoa",
       "lowercase": "Chữ thường",
       "number": "Chữ số",
@@ -208,7 +222,8 @@
     "photoFormats": "JPG, PNG, WebP · tối đa 5 MB",
     "photoError": "Chọn ảnh JPG, PNG hoặc WebP không quá 5 MB.",
     "profile": "Ảnh đại diện",
-    "contactFromAccount": "Lấy từ tài khoản bạn vừa tạo."
+    "contactFromAccount": "Email và số điện thoại lấy từ tài khoản bạn vừa tạo, nên không cần nhập lại ở đây.",
+    "contactHelpLabel": "Thông tin liên hệ lấy từ đâu"
   },
   "experience": {
     "heading": "Kinh nghiệm chuyên môn",
@@ -232,12 +247,12 @@
     "fix": "Thông tin của bạn vẫn được giữ nguyên. Cập nhật các mục sau để tiếp tục.",
     "yearsUnit": "năm",
     "cvRequired": "Hồ sơ kinh nghiệm (CV) *",
-    "issueCount": "{{count}} thông tin cần hoàn thiện"
+    "issueCount": "{{count}} thông tin cần hoàn thiện",
+    "yearsHelp": "Tổng số năm bạn trực tiếp làm công việc thuế hoặc kế toán, tính tròn năm. Chính sách hiện tại của Shared Hub yêu cầu tối thiểu 5 năm.",
+    "cvHelp": "CV là thông tin tự khai, giúp người đánh giá đối chiếu kinh nghiệm của bạn. Bằng chứng chuyên môn được nộp ở bước tiếp theo."
   },
   "documents": {
     "heading": "Tài liệu minh chứng",
-    "guidance": "Sắp xếp minh chứng theo tiêu chí điều kiện tham gia. Các tài liệu bắt buộc cuối cùng được xác định theo chính sách đã phê duyệt.",
-    "preview": "Tài liệu được sắp theo tiêu chí điều kiện tham gia; không bắt buộc đủ cả năm nhóm. CV được nộp ở bước trước.",
     "categories": "Nhóm minh chứng",
     "evidence": "Cung cấp minh chứng liên quan. Loại tài liệu được chấp nhận và phạm vi áp dụng phải được xác nhận theo chính sách điều kiện tham gia.",
     "empty": "Chưa chọn tài liệu.",
@@ -248,13 +263,17 @@
     "formats": "PDF, JPG hoặc PNG · tối đa 10 MB mỗi file",
     "local": "được chọn trên thiết bị",
     "countLabel": "Tài liệu",
-    "countNote": "Các tài liệu đã chọn đang chờ xác minh. Số lượng file không thể hiện việc đã được phê duyệt."
+    "countNote": "Các tài liệu đã chọn đang chờ xác minh. Số lượng file không thể hiện việc đã được phê duyệt.",
+    "lead": "Tải minh chứng theo từng nhóm điều kiện tham gia. Không bắt buộc đủ cả năm nhóm; CV đã nộp ở bước trước.",
+    "none": "Chưa tải",
+    "groupsDone": "Đã có tài liệu cho {{done}}/{{total}} nhóm"
   },
   "review": {
     "heading": "Kiểm tra và nộp hồ sơ",
     "guidance": "Kiểm tra kỹ thông tin trước khi nộp hồ sơ chính thức.",
     "ai": "AI hỗ trợ sàng lọc. Người đánh giá được ủy quyền đánh giá điều kiện tham gia và năng lực dịch vụ. Quản trị viên hệ thống thực hiện phê duyệt cuối cùng.",
-    "confirm": "Tôi xác nhận thông tin cung cấp trong hồ sơ này là chính xác và đầy đủ."
+    "confirm": "Tôi xác nhận thông tin cung cấp trong hồ sơ này là chính xác và đầy đủ.",
+    "aiHelpLabel": "Ai đánh giá hồ sơ của bạn"
   },
   "supplement": {
     "guidance": "Cung cấp tài liệu thay thế hoặc nội dung giải thích theo yêu cầu của người đánh giá.",
@@ -298,12 +317,14 @@
     "preview": "Xem thử đánh giá dịch vụ",
     "returned": "Người phê duyệt cuối cùng đã trả hồ sơ năng lực về bước đánh giá năng lực dịch vụ. Đây không phải lần từ chối mới hay yêu cầu nộp lại. Người đánh giá được phân công sẽ xử lý các phát hiện về quản trị.",
     "aiDescription": "AI hỗ trợ trích xuất thông tin và phát hiện minh chứng thiếu hoặc không nhất quán. Người đánh giá được ủy quyền quyết định điều kiện tham gia.",
-    "eligibilityDescription": "Người đánh giá được ủy quyền đang kiểm tra minh chứng điều kiện tham gia. Hiện bạn chưa cần thực hiện hành động.",
+    "eligibilityDescription": "Người đánh giá được ủy quyền đang kiểm tra minh chứng điều kiện tham gia của bạn.",
     "competencyDescription": "Người đánh giá được ủy quyền đang đánh giá minh chứng cho dịch vụ rà soát tài liệu thuế TNDN (dịch vụ minh họa). Quyết định này chỉ áp dụng cho dịch vụ đó.",
     "finalDescription": "Đã đạt bước đánh giá điều kiện tham gia và năng lực dịch vụ. Quản trị viên hệ thống sẽ thực hiện kiểm tra quản trị cuối cùng.",
-    "noDate": "Chưa cấu hình ngày hoàn tất đánh giá.",
     "noAction": "Hiện chưa cần thực hiện hành động. Theo dõi tiến trình đánh giá ở trên.",
-    "history": "Lịch sử hoạt động"
+    "history": "Lịch sử hoạt động",
+    "toSupplement": "Nội dung cần bổ sung",
+    "unmetCriteria": "Yêu cầu chưa đạt",
+    "eligibilityTitle": "Hồ sơ đang chờ đánh giá điều kiện tham gia"
   },
   "page": {
     "title": "Đăng ký chuyên gia",
@@ -311,7 +332,6 @@
     "submitted": "Hồ sơ đã nộp",
     "applicant": "Người đăng ký chuyên gia",
     "experience": "Kinh nghiệm",
-    "view": "Xem toàn bộ hồ sơ",
     "details": "Chi tiết hồ sơ",
     "submittedInfo": "Thông tin và tài liệu minh chứng bạn đã nộp",
     "steps": "Các bước đăng ký",
@@ -328,15 +348,59 @@
   },
   "verifyEmail": {
     "title": "Xác nhận email để nộp hồ sơ",
-    "body": "Mã 6 số đã gửi tới {{email}}. Xác nhận xong, hồ sơ được nộp ngay.",
+    "body": "Nhập mã 6 số vừa gửi tới <strong>{{email}}</strong>. Xác nhận xong, hồ sơ được nộp ngay.",
     "uploadTitle": "Xác nhận email để tải thêm tài liệu",
-    "uploadBody": "Khi chưa xác nhận email, hồ sơ chỉ chứa được 3 file. Nhập mã 6 số đã gửi tới {{email}}, sau đó chọn lại file cần tải.",
+    "uploadBody": "Nhập mã 6 số vừa gửi tới <strong>{{email}}</strong> để tải thêm file. Các file đã tải vẫn được giữ.",
     "later": "Để sau",
-    "resend": "Gửi lại email",
-    "cooldown": "Gửi lại sau {{seconds}} giây",
-    "check": "Tôi đã xác nhận",
-    "resent": "Đã gửi lại email.",
-    "failed": "Chưa gửi được, vui lòng thử lại.",
-    "stillPending": "Email vẫn chưa được xác nhận."
+    "resend": "Gửi lại mã",
+    "cooldown": "Gửi lại được sau {{seconds}} giây",
+    "check": "Kiểm tra lại",
+    "resent": "Đã gửi mã mới. Mã cũ không còn dùng được.",
+    "failed": "Chưa gửi được mã, vui lòng thử lại.",
+    "stillPending": "Email vẫn chưa được xác nhận. Hãy nhập mã hoặc bấm nút trong email.",
+    "reminderTitle": "Xác nhận email của bạn",
+    "reminderBody": "Nhập mã 6 số vừa gửi tới <strong>{{email}}</strong>. Trong lúc chờ, bạn vẫn điền và lưu hồ sơ bình thường.",
+    "noCode": "Chưa nhận được mã?",
+    "usedLink": "Đã bấm nút xác nhận trong email?"
+  },
+  "verifyReminder": {
+    "title": "Xác nhận email để nộp hồ sơ",
+    "body": "Mã 6 số đã gửi tới <strong>{{email}}</strong>. Trong lúc chờ, bạn vẫn điền và lưu hồ sơ bình thường.",
+    "action": "Nhập mã"
+  },
+  "rail": {
+    "title": "Tiến độ hồ sơ",
+    "emailVerified": "Email đã xác nhận",
+    "emailUnverified": "Email chưa xác nhận",
+    "emailSentTo": "Mã 6 số đã gửi tới",
+    "verify": "Nhập mã xác nhận",
+    "requirementsTitle": "Cần có để nộp hồ sơ",
+    "requirementsDone": "Đã đủ thông tin bắt buộc",
+    "missing": {
+      "phone": "Số điện thoại",
+      "yearsExperience": "Số năm kinh nghiệm",
+      "fields": "Ít nhất một lĩnh vực chuyên môn",
+      "cv": "File CV"
+    },
+    "stepCount": "Bước {{current}}/{{total}}",
+    "stepCurrent": "Đang điền",
+    "stepDone": "Đã lưu",
+    "fileLimit": "Khi chưa xác nhận, hồ sơ chứa tối đa {{max}} file."
+  },
+  "helpFor": "Giải thích về {{label}}",
+  "criteriaHelp": {
+    "legal": "Chứng minh bạn đáp ứng điều kiện pháp lý cơ bản của người trực tiếp thực hiện dịch vụ, gồm điều kiện cư trú khi được áp dụng.",
+    "qualifications": "Bằng chứng về năng lực hoặc chứng chỉ chuyên môn thuế. Người đánh giá kiểm tra tài liệu này thay vì chỉ dựa vào CV.",
+    "development": "Chứng minh bạn cập nhật kiến thức chuyên môn, nghiệp vụ khi quy định áp dụng yêu cầu.",
+    "ethics": "Chứng minh bạn tuân thủ chuẩn đạo đức nghề nghiệp và không thông đồng hay hỗ trợ hành vi vi phạm pháp luật thuế.",
+    "confidentiality": "Chứng minh bạn bảo mật thông tin của người dùng và người nộp thuế, chỉ dùng dữ liệu trong phạm vi dịch vụ."
+  },
+  "quota": {
+    "remaining": "Đã tải {{used}}/{{max}} file.",
+    "verifyLink": "Xác nhận email để tải thêm",
+    "unverifiedTitle": "Đã dùng hết {{max}} file khi chưa xác nhận email",
+    "unverifiedBody": "Xác nhận email để tiếp tục tải tài liệu. Các file đã tải vẫn được giữ.",
+    "fullTitle": "Hồ sơ đã có tối đa {{max}} file",
+    "fullBody": "Xóa bớt file không cần thiết nếu muốn thêm tài liệu khác."
   }
 }

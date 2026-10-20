@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next'
 import { cn } from '@/lib/utils'
 
 const menuRow =
-  'flex min-h-11 w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-medium transition-colors hover:bg-surface-muted'
+  'flex min-h-11 w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-medium transition-colors hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-text motion-reduce:transition-none'
 
 interface AccountLink {
   label: string
@@ -119,7 +119,7 @@ export function AppAccountMenu({
       {open && (
         <div
           id={panelId}
-          className="bg-surface text-text-strong shadow-overlay absolute top-full right-0 z-50 mt-2 max-h-[calc(100dvh-96px)] min-h-56 w-[min(320px,calc(100vw-24px))] overflow-y-auto rounded-xl p-1.5 font-sans tracking-normal [word-spacing:normal]"
+          className="bg-surface text-text-strong border-border absolute top-full right-0 z-50 mt-2 max-h-[calc(100dvh-96px)] w-[min(288px,calc(100vw-24px))] overflow-y-auto rounded-xl border p-1.5 shadow-lg font-sans tracking-normal [word-spacing:normal]"
         >
           {links.length > 0 && (
             <nav aria-label={t('account.navigation')} className="space-y-0.5">

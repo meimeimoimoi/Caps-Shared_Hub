@@ -52,6 +52,14 @@ npm run dev        # :5173
 
 **Xong việc nghĩa là:** `dotnet build Caps.sln` pass (nếu sửa BE) và `npm run build` pass (nếu sửa FE). Nếu không chạy được, nói rõ chưa kiểm tra, không báo "đã xong".
 
+## Tối ưu token khi kiểm tra
+
+- Gom các chỉnh sửa liên quan rồi mới chạy build; không build sau từng chỉnh sửa nhỏ. Trước khi hoàn tất thay đổi code, vẫn phải chạy build BE/FE tương ứng theo yêu cầu ở trên.
+- Chọn test theo hành vi và phạm vi bị ảnh hưởng; chỉ chạy toàn bộ test khi thay đổi có ảnh hưởng rộng, kiểm tra hẹp chưa đủ, hoặc quy trình PR/CI yêu cầu. Không chạy thêm lint/typecheck riêng nếu build đã bao gồm cùng bước kiểm tra và không có lý do cụ thể.
+- Sau khi kiểm tra pass, chỉ chạy lại khi có thay đổi có thể ảnh hưởng kết quả, lỗi mới hoặc nghi vấn chưa được giải quyết. Thay đổi chỉ ở tài liệu/rule không cần build/test ứng dụng.
+- Giới hạn log trả về cho AI: ưu tiên mã thoát, tóm tắt pass/fail, lỗi và cảnh báo liên quan; không đưa toàn bộ danh sách bundle/file hay log thành công dài vào ngữ cảnh. Khi cần, lưu log đầy đủ vào thư mục tạm và đọc đúng phần để chẩn đoán; không che lỗi hoặc làm mất mã thoát của lệnh gốc.
+- Khi lỗi do môi trường, xác định nguyên nhân trước khi thử lại; không lặp cùng lệnh nếu chưa có thay đổi có thể khắc phục. Báo rõ kiểm tra nào đã pass, fail hoặc chưa chạy; không suy đoán kết quả.
+
 ## Backend (.NET 8)
 
 - Pin SDK trong `BE/global.json` (8.0.421). Thuộc tính chung (net8.0, Nullable, ImplicitUsings, LangVersion) nằm ở `Directory.Build.props`, không lặp lại trong `.csproj`.

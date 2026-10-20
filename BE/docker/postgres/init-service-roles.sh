@@ -24,3 +24,4 @@ service_role caps_expert "$CAPS_EXPERT_DB_PASSWORD" expert
 service_role caps_billing "$CAPS_BILLING_DB_PASSWORD" billing
 service_role caps_workflow "$CAPS_WORKFLOW_DB_PASSWORD" workspace review
 service_role caps_ingestion "$CAPS_INGESTION_DB_PASSWORD" knowledge
+service_role caps_notification "$CAPS_NOTIFICATION_DB_PASSWORD" notification

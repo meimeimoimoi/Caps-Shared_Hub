@@ -9,12 +9,17 @@ export interface ShellNotification {
   text: string
   to: string
   tone?: 'warning'
+  /** Read state from the server; ignored unless the bell gets onMarkRead */
+  read?: boolean
 }
 
 interface NotificationBellProps {
   notifications: ShellNotification[]
   /** Kích cỡ nút theo header gọi nó */
   className?: string
+  /** Server-backed read state: called with the ids to mark; without it, read state stays in the browser */
+  onMarkRead?: (ids: string[]) => void
+  onMarkAllRead?: () => void
 }
 
 // ponytail: trạng thái đã đọc lưu theo trình duyệt; chuyển sang API khi BE có thông báo thật
@@ -34,12 +39,22 @@ function loadRead(): string[] {
 export function NotificationBell({
   notifications,
   className,
+  onMarkRead,
+  onMarkAllRead,
 }: NotificationBellProps) {
   const id = useId()
   const [read, setRead] = useState(loadRead)
-  const unread = notifications.filter((n) => !read.includes(keyOf(n)))
+  const serverBacked = Boolean(onMarkRead)
+  const isReadItem = (n: ShellNotification) =>
+    serverBacked ? Boolean(n.read) : read.includes(keyOf(n))
+  const unread = notifications.filter((n) => !isReadItem(n))
 
-  const markRead = (items: ShellNotification[]) => {
+  const markRead = (items: ShellNotification[], all = false) => {
+    if (onMarkRead) {
+      if (all && onMarkAllRead) onMarkAllRead()
+      else onMarkRead(items.filter((n) => !n.read).map((n) => n.id))
+      return
+    }
     // Chỉ giữ khóa của thông báo còn tồn tại để localStorage không phình mãi
     const current = new Set(notifications.map(keyOf))
     const next = [...new Set([...read, ...items.map(keyOf)])].filter((k) =>
@@ -89,7 +104,7 @@ export function NotificationBell({
           {unread.length > 0 && (
             <button
               type="button"
-              onClick={() => markRead(notifications)}
+              onClick={() => markRead(notifications, true)}
               className="text-accent-text text-caption font-semibold underline-offset-4 hover:underline"
             >
               Đánh dấu đã đọc tất cả
@@ -99,7 +114,7 @@ export function NotificationBell({
         {notifications.length ? (
           <ul className="divide-border-subtle divide-y">
             {notifications.map((n) => {
-              const isRead = read.includes(keyOf(n))
+              const isRead = isReadItem(n)
               return (
                 <li key={n.id} className="flex items-stretch">
                   <Link

@@ -8,6 +8,7 @@ import { useRef, type ReactNode } from 'react'
 import { Camera, User, ImagePlus } from 'lucide-react'
 import type { Profile } from '../../types'
 import { FormField } from '@/components/ui/forms/form-field'
+import { HelpTip } from '@/components/ui/feedback/help-tip'
 import { DatePicker } from '@/components/ui/forms/date-picker'
 import { Combobox } from '@/components/ui/forms/combobox'
 import { provinces } from '../../constants'
@@ -184,6 +185,7 @@ export function PersonalInformation({
           <FormField
             htmlFor="profile-birth"
             label={t('fields.birth')}
+            help={t('fields.birthHelp')}
             error={formErrors.birth}
             errorId="error-birth"
           >
@@ -201,6 +203,11 @@ export function PersonalInformation({
       <div className="expert-pro-section">
         <div className="expert-pro-section-header">
           <h3 className="expert-pro-section-title">{t('personal.contact')}</h3>
+          {contactFromAccount && (
+            <HelpTip label={t('personal.contactHelpLabel')}>
+              {t('personal.contactFromAccount')}
+            </HelpTip>
+          )}
         </div>
         {contactFromAccount ? (
           <div className="expert-contact-readonly">
@@ -214,7 +221,6 @@ export function PersonalInformation({
                 <dd>{formatVietnamPhone(profile.phone)}</dd>
               </div>
             </dl>
-            <p>{t('personal.contactFromAccount')}</p>
           </div>
         ) : (
           <div className="expert-personal-grid">
@@ -306,16 +312,13 @@ export function PersonalInformation({
               maxLength={1000}
               onChange={(e) => handleUpdate('bio', e.target.value)}
               aria-invalid={!!formErrors.bio}
-              aria-describedby={`profile-bio-hint profile-bio-count${formErrors.bio ? ' error-bio' : ''}`}
+              aria-describedby={`profile-bio-count${formErrors.bio ? ' error-bio' : ''}`}
               placeholder={t('fields.bioPlaceholder')}
               rows={4}
               className={`${inputCls} min-h-[110px] resize-y ${formErrors.bio ? '!border-ex-error-text focus:ring-danger/20 focus:ring-2' : ''}`}
             />
           </FormField>
           <div className="expert-bio-footer">
-            <p id="profile-bio-hint" className="expert-bio-hint">
-              {t('fields.bioPublic')}
-            </p>
             <p
               id="profile-bio-count"
               className="expert-bio-count"

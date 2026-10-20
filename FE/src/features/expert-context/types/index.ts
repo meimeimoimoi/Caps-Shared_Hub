@@ -7,16 +7,29 @@ export interface ServiceReadiness {
   availability: boolean
   bookingAllowed: boolean
   reasons: string[]
-  pricing: { version: string; effectiveFrom: string; effectiveTo: string | null } | null
+  pricing: {
+    version: string
+    effectiveFrom: string
+    effectiveTo: string | null
+  } | null
   pendingPricingVersion: string | null
 }
 
 export interface ExpertContext {
-  expertId: string
+  /** Expert profile id; null before the first application is saved */
+  expertId: string | null
   displayName: string
   email: string
   accountStatus: string
-  portalAccess: { allowed: boolean; reason: string | null; capabilities: string[] }
+  /** APPLICATION, SERVICE_SETUP or ACTIVE */
+  stage: string
+  /** Latest Gate 1 application status; null when none exists */
+  applicationStatus: string | null
+  portalAccess: {
+    allowed: boolean
+    reason: string | null
+    capabilities: string[]
+  }
   generatedAt: string
   version: string
   services: ServiceReadiness[]

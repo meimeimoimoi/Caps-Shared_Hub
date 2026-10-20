@@ -33,7 +33,7 @@ export function usePendingApplications() {
         statusesOf(tab).includes(a.status) &&
         (!q ||
           foldVietnamese(a.name).includes(q) ||
-          foldVietnamese(a.email).includes(q))
+          foldVietnamese(a.email ?? '').includes(q))
     )
     .sort((a, b) => a.submittedAt.localeCompare(b.submittedAt))
   return {
@@ -55,4 +55,3 @@ export function usePendingApplications() {
     next: () => setPage((p) => p + 1),
   }
 }
-

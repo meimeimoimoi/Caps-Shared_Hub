@@ -33,7 +33,7 @@ public sealed class PasswordsController(ICurrentUser currentUser, RefreshCookie 
     /// <summary>Sets a new password with the token from the reset link.</summary>
     /// <remarks>Signs out every device and clears any lockout; the user signs in again with the new password.</remarks>
     /// <response code="200">Password changed.</response>
-    /// <response code="400">Invalid input (password shorter than 12 characters) or PASSWORD_UNCHANGED (same as the current password; the link stays usable).</response>
+    /// <response code="400">Invalid input (password shorter than 8 characters or missing required character types) or PASSWORD_UNCHANGED (same as the current password; the link stays usable).</response>
     /// <response code="401">INVALID_CREDENTIALS: unknown, expired or used link.</response>
     [AllowAnonymous, HttpPost("reset-password")]
     public async Task<IActionResult> Reset(

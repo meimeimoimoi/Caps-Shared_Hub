@@ -1,8 +1,30 @@
 {
+  "reviewWorkspace": {
+    "reference": "Mã hồ sơ",
+    "progress": "Tiến độ đánh giá",
+    "criteria": "tiêu chí hoàn tất",
+    "assessmentHint": "Đối chiếu thông tin hồ sơ, chọn kết quả và ghi chú cho từng tiêu chí.",
+    "criteriaNavigation": "Chọn tiêu chí đánh giá",
+    "notAssessed": "Chưa đánh giá",
+    "missingNote": "Thiếu ghi chú",
+    "assessmentResult": "Kết quả đánh giá",
+    "optionalNotePlaceholder": "Nhập căn cứ hoặc nhận xét đánh giá…",
+    "noteHint": "Thêm ghi chú để hoàn tất tiêu chí này.",
+    "noteVisibility": "Người đăng ký sẽ xem được ghi chú này.",
+    "previousCriterion": "Tiêu chí trước",
+    "nextIncomplete": "Mục chưa hoàn tất tiếp theo",
+    "allComplete": "Đã hoàn tất mọi tiêu chí",
+    "completeCurrent": "Hoàn tất tiêu chí hiện tại",
+    "continueReview": "Tiếp tục đánh giá"
+  },
+  "dashboardApiPending": "Thống kê tổng quan chưa được kết nối dữ liệu. Bạn vẫn có thể phê duyệt cuối và duyệt giá dịch vụ từ menu. Các mục quản trị khác đang chờ tích hợp API.",
   "navigation": {
     "overview": "Tổng quan",
     "expertReview": "Xét duyệt Expert",
     "pendingExperts": "Hồ sơ chờ duyệt",
+    "competencyReview": "Đánh giá năng lực",
+    "finalApproval": "Phê duyệt cuối",
+    "pricingReview": "Duyệt giá dịch vụ",
     "manageExperts": "Quản lý Expert",
     "operations": "Vận hành",
     "complaints": "Khiếu nại",
@@ -139,32 +161,18 @@
     "noApplications": "Không có hồ sơ nào.",
     "actions": "Thao tác",
     "view": "Xem chi tiết",
-    "viewLabel": "Xem chi tiết hồ sơ {{name}}"
+    "viewLabel": "Xem chi tiết hồ sơ {{name}}",
+    "reapplication": "Nộp lại"
   },
   "queue": {
     "tabs": {
       "review": "Chờ đánh giá",
-      "screening": "Đang đối soát",
       "moreInfo": "Cần bổ sung",
       "notEligible": "Không đủ điều kiện",
-      "done": "Đã xử lý"
+      "eligible": "Đủ điều kiện"
     }
   },
   "decision": {
-    "approve": {
-      "title": "Duyệt đơn đăng ký của",
-      "notice": "Người đăng ký sẽ nhận email và có thể thiết lập dịch vụ. Hồ sơ chỉ hiển thị trên Marketplace khi dịch vụ đang hoạt động.",
-      "noteLabel": "Ghi chú nội bộ",
-      "placeholder": "Không bắt buộc. Chỉ System Admin xem được.",
-      "confirm": "Duyệt đơn đăng ký"
-    },
-    "reject": {
-      "title": "Từ chối đơn đăng ký của",
-      "notice": "Người đăng ký sẽ nhận email kèm lý do bạn nhập. Không thể hoàn tác.",
-      "noteLabel": "Lý do từ chối (bắt buộc)",
-      "placeholder": "Nêu rõ tiêu chí chưa đáp ứng để người đăng ký hiểu",
-      "confirm": "Từ chối đơn đăng ký"
-    },
     "supplement": {
       "title": "Yêu cầu bổ sung",
       "notice": "Đơn chuyển sang Cần bổ sung. Người đăng ký nhận email kèm các mục dưới đây.",
@@ -178,19 +186,7 @@
       "itemPlaceholder": "Nêu rõ nội dung cần bổ sung",
       "pickOne": "Chọn ít nhất 1 mục."
     },
-    "log": {
-      "approve": "Duyệt đơn đăng ký.",
-      "reject": "Từ chối đơn đăng ký. Đã gửi email kèm lý do.",
-      "supplement": "Yêu cầu bổ sung hồ sơ. Đã gửi email kèm nội dung cần bổ sung."
-    },
-    "toast": {
-      "approve": "Đã duyệt đơn đăng ký",
-      "reject": "Đã từ chối đơn đăng ký",
-      "supplement": "Đã gửi yêu cầu bổ sung"
-    },
     "label": {
-      "approve": "Duyệt",
-      "reject": "Từ chối",
       "supplement": "Yêu cầu bổ sung"
     }
   },
@@ -211,10 +207,8 @@
       "submitted": "Nộp"
     },
     "blockers": {
-      "criteria": "Còn {{count}} tiêu chí chưa chấm hoặc chưa ghi căn cứ",
       "flags": "{{count}} mục AI cần xem lại chưa được xem xét"
     },
-    "ready": "Đã chấm và ghi căn cứ đủ {{count}}/{{total}} tiêu chí",
     "scoreSummary": {
       "level": "Mức {{level}}",
       "unscored": "Chưa chấm"
@@ -234,7 +228,8 @@
       "highlights": "Kinh nghiệm nổi bật"
     },
     "history": {
-      "title": "Lịch sử thao tác"
+      "title": "Lịch sử thao tác",
+      "reviewer": "Người đánh giá"
     },
     "documents": {
       "select": "Chọn tài liệu",
@@ -243,7 +238,9 @@
       "aiReviewed": "AI · Đã xem xét",
       "unmark": "Bỏ đánh dấu",
       "mark": "Đánh dấu đã xem xét",
-      "pageOf": "{{code}} · trang {{page}}/{{total}}"
+      "pageOf": "{{code}} · trang {{page}}/{{total}}",
+      "open": "Mở file",
+      "openFailed": "Không mở được file. Vui lòng thử lại."
     },
     "aiScreening": {
       "declared": "Đã kê khai",
@@ -696,6 +693,211 @@
       "locked": "Đã khóa {{name}}",
       "unlocked": "Đã mở khóa {{name}}",
       "resetSent": "Đã gửi email đặt lại mật khẩu tới {{email}}"
+    }
+  },
+  "eligibility": {
+    "title": "Gate 1 · Điều kiện tham gia",
+    "subtitle": "Đánh giá từng yêu cầu EV-01 – EV-06. Kết quả chung được suy ra tự động. Đủ điều kiện chưa đưa chuyên gia lên Marketplace: còn đánh giá năng lực từng dịch vụ và phê duyệt cuối.",
+    "results": {
+      "PASS": "Đạt",
+      "NEED_MORE_INFORMATION": "Cần bổ sung",
+      "FAIL": "Không đạt"
+    },
+    "noteRequired": "Ghi chú gửi người đăng ký (bắt buộc)",
+    "noteOptional": "Ghi chú (không bắt buộc)",
+    "notePlaceholder": "Nêu rõ cần bổ sung gì hoặc vì sao chưa đạt",
+    "experienceHint": "Kê khai {{years}} năm; tối thiểu {{min}} năm.",
+    "experienceBelow": "Dưới mức tối thiểu nên không thể chọn Đạt.",
+    "previous": "Lần trước: {{result}}",
+    "remaining": "Còn {{count}} yêu cầu chưa chọn kết quả hoặc thiếu ghi chú",
+    "ready": "Đã đánh giá đủ {{count}}/{{total}} yêu cầu",
+    "outcomeLabel": "Kết quả chung",
+    "outcome": {
+      "ELIGIBLE": {
+        "confirm": "Xác nhận đủ điều kiện",
+        "notice": "Người đăng ký được thông báo đủ điều kiện tham gia. Bước tiếp theo là đánh giá năng lực cho từng dịch vụ; hồ sơ chưa hiển thị trên Marketplace.",
+        "toast": "Đã xác nhận đủ điều kiện"
+      },
+      "NEED_MORE_INFORMATION": {
+        "confirm": "Gửi yêu cầu bổ sung",
+        "notice": "Hồ sơ trả về người đăng ký kèm ghi chú của từng yêu cầu cần bổ sung. Họ bổ sung trên cùng hồ sơ.",
+        "toast": "Đã gửi yêu cầu bổ sung"
+      },
+      "NOT_ELIGIBLE": {
+        "confirm": "Xác nhận không đủ điều kiện",
+        "notice": "Hồ sơ đóng lại. Người đăng ký thấy ghi chú của từng yêu cầu không đạt và chỉ nộp hồ sơ mới được sau thời gian chờ theo chính sách. Không thể hoàn tác.",
+        "toast": "Đã ghi nhận không đủ điều kiện"
+      }
+    },
+    "dialog": {
+      "title": "Kết luận Gate 1 cho {{name}}?",
+      "noteLabel": "Ghi chú chung (không bắt buộc)",
+      "placeholder": "Người đăng ký xem được cùng kết quả."
+    },
+    "resultTitle": "Kết quả Gate 1",
+    "decidedAt": "Quyết định lúc {{time}}",
+    "reapplyAt": "Được nộp hồ sơ mới từ {{date}}.",
+    "noDecision": "Chưa có kết luận Gate 1.",
+    "notReviewable": "Hồ sơ không ở bước chờ kết luận Gate 1.",
+    "errors": {
+      "INVALID_ELIGIBILITY_CRITERIA": "Cần đúng một kết quả cho mỗi yêu cầu EV-01 – EV-06.",
+      "INVALID_ELIGIBILITY_RESULT": "Có kết quả không hợp lệ. Tải lại trang rồi thử lại.",
+      "ELIGIBILITY_NOTE_REQUIRED": "Yêu cầu không đạt hoặc cần bổ sung phải có ghi chú.",
+      "EXPERIENCE_BELOW_MINIMUM": "EV-06 không thể Đạt: kinh nghiệm kê khai dưới mức tối thiểu.",
+      "SELF_REVIEW_NOT_ALLOWED": "Bạn không thể tự đánh giá hồ sơ của chính mình.",
+      "APPLICATION_NOT_IN_REVIEW": "Hồ sơ không còn chờ kết luận; tải lại để xem trạng thái mới.",
+      "failed": "Chưa ghi nhận được kết luận. Vui lòng thử lại."
+    }
+  },
+  "qualifications": {
+    "title": "Đánh giá năng lực theo dịch vụ",
+    "description": "Gate 2: chuyên gia đã đủ điều kiện đăng ký từng dịch vụ. Đánh giá C1 – C5 cho từng dịch vụ; đạt thì chuyển System Admin phê duyệt cuối.",
+    "count": "hồ sơ năng lực",
+    "service": "Dịch vụ",
+    "empty": "Không có hồ sơ năng lực nào.",
+    "tabs": {
+      "review": "Chờ đánh giá",
+      "moreInfo": "Chờ bổ sung",
+      "finalApproval": "Chờ phê duyệt cuối",
+      "failed": "Chưa đạt",
+      "approved": "Đã phê duyệt",
+      "suspended": "Tạm ngưng"
+    }
+  },
+  "competency": {
+    "title": "Gate 2 · Năng lực theo dịch vụ",
+    "subtitle": "Đánh giá từng năng lực C1 – C5. Mỗi năng lực cần ghi chú; Đạt hoặc Không đạt phải chọn ít nhất một tài liệu làm căn cứ. Số năm kinh nghiệm hay từ khóa trong CV không tự chứng minh năng lực.",
+    "names": {
+      "C1": "Kiến thức Thuế TNDN phù hợp phạm vi dịch vụ",
+      "C2": "Rà soát và hiệu chỉnh AI Draft",
+      "C3": "Rà soát thông tin và bằng chứng",
+      "C4": "Phân tích và áp dụng quy định Thuế TNDN",
+      "C5": "Xét đoán nghề nghiệp và kết luận xác minh"
+    },
+    "hints": {
+      "C1": "Liên quan nhiệm vụ T2, T3.",
+      "C2": "Liên quan nhiệm vụ T2, T5.",
+      "C3": "Liên quan nhiệm vụ T1; hỗ trợ quyết định T4.",
+      "C4": "Liên quan nhiệm vụ T3, T5.",
+      "C5": "Liên quan T2 một phần, T5; trọng tâm T6."
+    },
+    "previous": "Lần trước: {{result}}",
+    "evidenceRequired": "Tài liệu làm căn cứ (bắt buộc)",
+    "evidenceOptional": "Tài liệu làm căn cứ (không bắt buộc khi cần bổ sung)",
+    "noFiles": "Hồ sơ chưa có tài liệu nào.",
+    "noteRequired": "Ghi chú đánh giá (bắt buộc)",
+    "notePlaceholder": "Căn cứ đánh giá, hoặc cần bổ sung gì",
+    "remaining": "Còn {{count}} năng lực chưa chọn kết quả, thiếu ghi chú hoặc thiếu tài liệu căn cứ",
+    "ready": "Đã đánh giá đủ {{count}} năng lực",
+    "outcome": {
+      "PENDING_FINAL_APPROVAL": {
+        "confirm": "Xác nhận đạt năng lực",
+        "notice": "Hồ sơ chuyển System Admin phê duyệt cuối. Người phê duyệt cuối phải khác người đánh giá Gate 2. Chuyên gia chưa hiển thị trên Marketplace.",
+        "toast": "Đã ghi nhận đạt năng lực"
+      },
+      "NEED_MORE_INFORMATION": {
+        "confirm": "Gửi yêu cầu bổ sung",
+        "notice": "Hồ sơ trả về chuyên gia kèm ghi chú của từng năng lực cần bổ sung. Chuyên gia bổ sung trên cùng hồ sơ năng lực.",
+        "toast": "Đã gửi yêu cầu bổ sung"
+      },
+      "FAIL": {
+        "confirm": "Xác nhận chưa đạt",
+        "notice": "Hồ sơ năng lực của dịch vụ này đóng lại. Chuyên gia chỉ đăng ký lại dịch vụ sau thời gian chờ theo chính sách. Dịch vụ khác không bị ảnh hưởng. Không thể hoàn tác.",
+        "toast": "Đã ghi nhận chưa đạt năng lực"
+      }
+    },
+    "dialog": {
+      "title": "Kết luận Gate 2 cho {{name}} · {{service}}?",
+      "noteLabel": "Ghi chú chung (không bắt buộc)",
+      "placeholder": "Chuyên gia xem được cùng kết quả."
+    },
+    "resultTitle": "Kết quả Gate 2",
+    "noDecision": "Chưa có kết luận Gate 2.",
+    "handoff": "Đang chờ System Admin phê duyệt cuối.",
+    "reapplyAt": "Được đăng ký lại dịch vụ từ {{date}}.",
+    "rail": {
+      "review": "Đánh giá năng lực",
+      "finalApproval": "Phê duyệt cuối",
+      "approved": "Được cung cấp"
+    },
+    "errors": {
+      "INVALID_COMPETENCY_CRITERIA": "Cần đúng một kết quả cho mỗi năng lực C1 – C5.",
+      "INVALID_COMPETENCY_RESULT": "Có kết quả không hợp lệ. Tải lại trang rồi thử lại.",
+      "COMPETENCY_NOTE_REQUIRED": "Mỗi năng lực phải có ghi chú đánh giá.",
+      "COMPETENCY_EVIDENCE_REQUIRED": "Kết quả Đạt hoặc Không đạt phải chọn ít nhất một tài liệu làm căn cứ.",
+      "COMPETENCY_EVIDENCE_UNKNOWN": "Có tài liệu không thuộc hồ sơ này. Tải lại trang rồi thử lại.",
+      "SELF_REVIEW_NOT_ALLOWED": "Bạn không thể tự đánh giá hồ sơ của chính mình.",
+      "QUALIFICATION_NOT_IN_REVIEW": "Hồ sơ không còn chờ đánh giá; tải lại để xem trạng thái mới.",
+      "failed": "Chưa ghi nhận được kết luận. Vui lòng thử lại.",
+      "QUALIFICATION_NOT_PENDING_APPROVAL": "Hồ sơ không còn chờ phê duyệt cuối; tải lại để xem trạng thái mới.",
+      "FINAL_APPROVER_IS_REVIEWER": "Người đánh giá Gate 2 không thể phê duyệt cuối cùng hồ sơ.",
+      "FINAL_APPROVAL_NOTE_REQUIRED": "Ghi rõ lý do trả về đánh giá lại.",
+      "INVALID_FINAL_APPROVAL_DECISION": "Quyết định không hợp lệ. Tải lại trang rồi thử lại.",
+      "SERVICE_NOT_APPROVED": "Chỉ tạm ngưng được dịch vụ đang được cung cấp; tải lại trang.",
+      "SERVICE_NOT_SUSPENDED": "Dịch vụ không ở trạng thái tạm ngưng; tải lại trang.",
+      "SUSPENSION_NOTE_REQUIRED": "Ghi rõ lý do tạm ngưng.",
+      "INVALID_SERVICE_ACCESS_ACTION": "Thao tác không hợp lệ. Tải lại trang rồi thử lại."
+    }
+  },
+  "finalApproval": {
+    "title": "Phê duyệt cuối",
+    "description": "Kiểm tra quản trị kết quả Gate 2 theo từng dịch vụ: hồ sơ, kết quả hai Gate, bằng chứng và lịch sử. Không đánh giá lại năng lực.",
+    "panelTitle": "Phê duyệt cuối",
+    "intro": "Xác nhận kết quả Gate 2 đầy đủ và đúng quy trình. Phê duyệt cho phép chuyên gia thiết lập giá cho dịch vụ này.",
+    "sameReviewer": "Bạn là người đánh giá Gate 2 của hồ sơ này nên không thể phê duyệt cuối.",
+    "noteLabel": "Ghi chú (bắt buộc khi trả về đánh giá lại)",
+    "notePlaceholder": "Thiếu hồ sơ, cờ chưa xử lý hoặc sai quy trình",
+    "return": "Trả về đánh giá lại",
+    "approve": "Phê duyệt cung cấp dịch vụ",
+    "notPending": "Hồ sơ không ở bước chờ phê duyệt cuối.",
+    "toast": {
+      "APPROVE": "Đã phê duyệt cung cấp dịch vụ",
+      "RETURN_FOR_REVIEW": "Đã trả hồ sơ về đánh giá năng lực",
+      "SUSPEND": "Đã tạm ngưng dịch vụ",
+      "REINSTATE": "Đã mở lại dịch vụ"
+    },
+    "accessTitle": "Trạng thái dịch vụ",
+    "suspendIntro": "Tạm ngưng ẩn dịch vụ này khỏi Marketplace và không nhận yêu cầu mới; hồ sơ đang thực hiện vẫn tiếp tục. Dịch vụ khác của chuyên gia không bị ảnh hưởng.",
+    "reinstateIntro": "Mở lại để chuyên gia tiếp tục cung cấp dịch vụ này.",
+    "suspendNoteLabel": "Lý do tạm ngưng (bắt buộc)",
+    "reinstateNoteLabel": "Ghi chú (không bắt buộc)",
+    "suspend": "Tạm ngưng dịch vụ",
+    "reinstate": "Mở lại dịch vụ"
+  },
+  "pricingReview": {
+    "title": "Duyệt giá dịch vụ",
+    "description": "Giá đầu tiên và thay đổi không quá 50% được hệ thống duyệt tự động. Trang này chỉ gồm các thay đổi lớn hơn ngưỡng, cần System Admin quyết định.",
+    "tabs": {
+      "PENDING_APPROVAL": "Chờ duyệt",
+      "RETURN_FOR_REVISION": "Đã trả về",
+      "REJECTED": "Đã từ chối"
+    },
+    "expert": "Chuyên gia · dịch vụ",
+    "change": "Giá hiện hành → giá mới",
+    "effectiveFrom": "Hiệu lực từ",
+    "reason": "Lý do của chuyên gia",
+    "percent": "Thay đổi {{percent}}%",
+    "empty": "Không có thay đổi giá nào.",
+    "approve": "Duyệt",
+    "return": "Trả về",
+    "reject": "Từ chối",
+    "noteRequired": "Ghi chú gửi chuyên gia (bắt buộc)",
+    "noteOptional": "Ghi chú (không bắt buộc)",
+    "dialog": {
+      "APPROVE": "Duyệt giá mới cho {{name}}?",
+      "RETURN_FOR_REVISION": "Trả giá về cho {{name}} chỉnh sửa?",
+      "REJECT": "Từ chối giá mới của {{name}}?"
+    },
+    "toast": {
+      "APPROVE": "Đã duyệt giá mới",
+      "RETURN_FOR_REVISION": "Đã trả giá về chỉnh sửa",
+      "REJECT": "Đã từ chối giá mới"
+    },
+    "errors": {
+      "PRICING_NOT_PENDING": "Giá này không còn chờ duyệt; tải lại trang.",
+      "PRICING_NOTE_REQUIRED": "Ghi rõ lý do trả về hoặc từ chối.",
+      "INVALID_PRICING_DECISION": "Quyết định không hợp lệ. Tải lại trang rồi thử lại.",
+      "failed": "Chưa ghi nhận được quyết định. Vui lòng thử lại."
     }
   }
 }

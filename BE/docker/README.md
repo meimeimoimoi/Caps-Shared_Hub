@@ -50,6 +50,18 @@ address only (`Auth__KnownProxies__0`), so auth's rate limit counts real client 
 existing network keeps its old settings: run `docker compose down` once before `up`. Ports 5194 and 5198 are
 published for local debugging; a real deployment publishes the gateway alone.
 
+## Adding a service role to an existing volume
+
+`init-service-roles.sh` runs only on a new volume. For a role added later (for example `caps_notification`), add its
+password to docker/.env, recreate the container so it sees the variable, then run the same SQL file inside it:
+
+~~~powershell
+docker compose -f docker/docker-compose.yml up -d postgres
+docker exec caps_postgres sh -c 'psql -X -U postgres -d caps_db -v dbname=caps_db -v role=caps_notification -v schema=notification -v password="$CAPS_NOTIFICATION_DB_PASSWORD" -f /caps-db/service-role.sql'
+~~~
+
+Then set the service connection with `scripts/set-connections.ps1 -Service notification`.
+
 ## Changing a role password later
 
 Change the role password through a PostgreSQL administrator, then update docker/.env for containers and run scripts/set-connections.ps1 for local hosts. The connection script does not change server passwords.

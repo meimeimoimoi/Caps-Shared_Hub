@@ -1,3 +1,4 @@
+using Caps.Auth.Application.Abstractions.Messaging;
 using Caps.Auth.Application.Abstractions.Persistence;
 using Caps.Auth.Application.Abstractions.Security;
 using Caps.Auth.Application.Common;
@@ -19,6 +20,7 @@ public sealed class GoogleLoginHandler(
     IGoogleIdTokenValidator google,
     IUserRepository users,
     ISessionIssuer sessions,
+    IAccountEventOutbox accountEvents,
     IUnitOfWork unitOfWork,
     TimeProvider clock
 ) : ICommandHandler<GoogleLoginCommand, SessionResult>
@@ -38,7 +40,11 @@ public sealed class GoogleLoginHandler(
         await using var tx = await unitOfWork.BeginTransactionAsync(ct);
         var user = await users.GetLockedAsync(id.Value, ct);
         user.EnsureCanSignIn();
+        var wasPending = user.IsPendingVerification;
         user.LinkGoogle(identity.Subject, clock.GetUtcNow());
+        // Linking a verified Google account activates a pending account
+        if (wasPending && !user.IsPendingVerification)
+            accountEvents.StatusChanged(user);
         var session = await sessions.IssueAsync(user, ct);
         await unitOfWork.SaveChangesAsync(ct);
         await tx.CommitAsync(ct);
@@ -54,6 +60,7 @@ public sealed class GoogleLoginHandler(
             clock.GetUtcNow()
         );
         await users.AddAsync(user, RoleCodes.User, ct);
+        accountEvents.StatusChanged(user);
         var session = await sessions.IssueAsync(user, ct, isNew: true);
         try
         {

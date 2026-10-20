@@ -6,11 +6,12 @@ import {
   CheckCircle2,
   CircleAlert,
   Loader2,
+  Lock,
 } from 'lucide-react'
 import { useRef, useState } from 'react'
 import { useFormatters } from '@/hooks/useFormatters'
 import { criterionKey } from '../constants'
-import type { EvidenceFile } from '../types'
+import type { EvidenceFile, UploadQuota } from '../types'
 
 export interface FileUploaderProps {
   id: string
@@ -18,6 +19,8 @@ export interface FileUploaderProps {
   files: EvidenceFile[]
   /** Hồ sơ đã nộp: chỉ xem, không thêm file */
   disabled?: boolean
+  /** Files used across the whole application and the current limit */
+  quota?: UploadQuota
   onFilesSelected: (files: FileList | null) => void
   onRemoveFile: (index: number) => void
 }
@@ -27,6 +30,7 @@ export function FileUploader({
   error,
   files,
   disabled = false,
+  quota,
   onFilesSelected,
   onRemoveFile,
 }: FileUploaderProps) {
@@ -48,9 +52,38 @@ export function FileUploader({
     }
   }
 
+  // No room left: show why and how to get more instead of a drop zone that only fails
+  const full = !!quota && quota.used >= quota.max
+
   return (
     <div className="expert-file-uploader mb-6">
-      {!disabled && (
+      {!disabled && full && (
+        <div className="expert-file-quota-full" role="status">
+          <span className="expert-file-dropzone-icon" aria-hidden="true">
+            <Lock size={20} strokeWidth={2} />
+          </span>
+          <span className="expert-file-dropzone-text">
+            <strong>
+              {t(quota.verified ? 'quota.fullTitle' : 'quota.unverifiedTitle', {
+                max: format.number(quota.max),
+              })}
+            </strong>
+            <span>
+              {t(quota.verified ? 'quota.fullBody' : 'quota.unverifiedBody')}
+            </span>
+          </span>
+          {!quota.verified && (
+            <button
+              type="button"
+              className="expert-rail-action expert-file-quota-action"
+              onClick={quota.onVerify}
+            >
+              {t('rail.verify')}
+            </button>
+          )}
+        </div>
+      )}
+      {!disabled && !full && (
         <label
           className={`expert-file-dropzone ${error ? 'expert-file-dropzone--invalid' : ''}`}
           data-dragging={dragging}
@@ -102,7 +135,16 @@ export function FileUploader({
           />
         </label>
       )}
-      {error && (
+      {/* Remaining room before verifying, so the limit is known before it blocks */}
+      {!disabled && !full && quota && !quota.verified && (
+        <p className="expert-file-quota">
+          {t('quota.remaining', {
+            used: format.number(quota.used),
+            max: format.number(quota.max),
+          })}
+        </p>
+      )}
+      {error && !full && (
         <p
           id={`error-${id}`}
           className="expert-validation-message"

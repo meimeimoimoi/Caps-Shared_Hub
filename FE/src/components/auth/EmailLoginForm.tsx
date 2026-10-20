@@ -101,7 +101,7 @@ export function EmailLoginForm({
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [rememberMe, setRememberMe] = useState(true)
+  const [rememberMe, setRememberMe] = useState(false)
   const [showPw, setShowPw] = useState(false)
   const [capsLock, setCapsLock] = useState(false)
   const [submitted, setSubmitted] = useState(false)
@@ -226,13 +226,6 @@ export function EmailLoginForm({
               <label htmlFor={pwId} className={cn(LABEL_CLASS, 'mb-0')}>
                 {t('password.label')}
               </label>
-              <button
-                type="button"
-                onClick={onForgot}
-                className={cn(LINK_CLASS, 'text-[12.5px]')}
-              >
-                {t('email.forgot')}
-              </button>
             </div>
             <div className="relative flex items-center">
               <input
@@ -289,20 +282,29 @@ export function EmailLoginForm({
             ) : null}
           </div>
 
-          <div className="mb-5 flex items-center">
-            <input
-              id={rememberId}
-              type="checkbox"
-              checked={rememberMe}
-              onChange={(event) => setRememberMe(event.target.checked)}
-              className="app-custom-checkbox"
-            />
-            <label
-              htmlFor={rememberId}
-              className="cursor-pointer pl-2.5 text-[13px] text-white/70 select-none hover:text-white/90"
+          <div className="mb-5 flex items-center justify-between gap-3">
+            <div className="flex min-h-11 items-center">
+              <input
+                id={rememberId}
+                type="checkbox"
+                checked={rememberMe}
+                onChange={(event) => setRememberMe(event.target.checked)}
+                className="app-custom-checkbox"
+              />
+              <label
+                htmlFor={rememberId}
+                className="cursor-pointer pl-2.5 text-[13px] text-white/70 select-none hover:text-white/90"
+              >
+                {t('email.remember')}
+              </label>
+            </div>
+            <button
+              type="button"
+              onClick={onForgot}
+              className={cn(LINK_CLASS, 'min-h-11 shrink-0 text-[12.5px]')}
             >
-              {t('email.remember')}
-            </label>
+              {t('email.forgot')}
+            </button>
           </div>
 
           <button

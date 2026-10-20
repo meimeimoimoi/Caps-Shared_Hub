@@ -1,7 +1,7 @@
 import { api, apiClient, ApiError } from '@/lib/api-client'
 import { i18n } from '@/lib/i18n'
 import { isExpertDemo } from '@/lib/expert-data-source'
-import { isSignedIn } from '@/lib/access-token'
+import { getAccessToken, isSignedIn } from '@/lib/access-token'
 import type { LoginFormValues, User } from '../types'
 
 interface BackendEnvelope<T> {
@@ -71,11 +71,14 @@ function toSession(p: BackendAuthPayload): { user: User; token: string } {
  * must send cookies. The access token stays in memory (lib/access-token). */
 const withCookie = { withCredentials: true } as const
 
+// Share overlapping profile reads, including StrictMode's repeated mount, without caching results.
+const profileReads = new Map<string | null, Promise<User>>()
+
 export const authApi = {
   login: async (values: LoginFormValues) => {
     const res = await api.post<BackendEnvelope<BackendAuthPayload>>(
       '/api/v1/auth/login',
-      { email: values.email, password: values.password },
+      { email: values.email, password: values.password, rememberMe: values.rememberMe ?? false },
       withCookie,
     )
     return toSession(res.data)
@@ -109,9 +112,16 @@ export const authApi = {
   logout: async () => {
     await api.post('/api/v1/auth/logout', {}, withCookie)
   },
-  me: async () => {
-    const res = await api.get<BackendEnvelope<BackendMe>>('/api/v1/users/me')
-    return toUser(res.data)
+  me: () => {
+    const key = getAccessToken()
+    let pending = profileReads.get(key)
+    if (!pending) {
+      pending = api.get<BackendEnvelope<BackendMe>>('/api/v1/users/me')
+        .then((res) => toUser(res.data))
+        .finally(() => profileReads.delete(key))
+      profileReads.set(key, pending)
+    }
+    return pending
   },
   /** Token lấy từ liên kết trong email xác thực; chỉ dùng được một lần. */
   verifyEmail: async (token: string) => {

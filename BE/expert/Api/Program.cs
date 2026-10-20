@@ -12,6 +12,8 @@ var postgres = config.GetRequiredConnectionString("Postgres");
 
 builder.Services.AddCommonApi(config, "expert");
 builder.Services.AddExpertStorage(config, env);
+builder.Services.AddExpertPolicy(config);
+builder.Services.AddExpertNotifications(config, env);
 builder.Services.AddExpertApplication();
 builder.Services.AddExpertInfrastructure(postgres);
 

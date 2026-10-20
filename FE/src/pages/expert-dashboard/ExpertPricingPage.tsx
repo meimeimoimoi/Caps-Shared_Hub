@@ -60,7 +60,7 @@ export default function ExpertPricingPage() {
     <PricingService
       key={context.data!.expertId + ':' + service.serviceId}
       service={service}
-      expertId={context.data!.expertId}
+      expertId={context.data!.expertId ?? ''}
       activeAccount={context.data!.accountStatus === 'ACTIVE'}
       back={back}
     />
@@ -115,14 +115,6 @@ function PricingService({
             <p>{t('pricing.restrictedHelp')}</p>
           </div>
         </div>
-      ) : !isExpertDemo ? (
-        <div className="epr-notice" role="status">
-          <Info size={20} aria-hidden="true" />
-          <div>
-            <h2>{t('pricing.apiUnavailable')}</h2>
-            <p>{t('pricing.apiUnavailableHelp')}</p>
-          </div>
-        </div>
       ) : query.isError ? (
         <div className="ep-empty">
           <h2>{t('pricing.loadFailed')}</h2>
@@ -136,7 +128,6 @@ function PricingService({
         </div>
       ) : (
         <PricingEditor
-          service={service}
           data={query.data}
           mutation={mutation}
         />
@@ -145,12 +136,20 @@ function PricingService({
   )
 }
 
+const AUDIT_LABELS = {
+  SAVED: 'pricing.auditSaved',
+  SUBMITTED: 'pricing.auditSubmitted',
+  AUTO_APPROVED: 'pricing.auditAutoApproved',
+  APPROVED: 'pricing.auditApproved',
+  RETURNED_FOR_REVISION: 'pricing.auditReturned',
+  REJECTED: 'pricing.auditRejected',
+  SUPERSEDED: 'pricing.auditSuperseded',
+} as const
+
 function PricingEditor({
-  service,
   data,
   mutation,
 }: {
-  service: ServiceReadiness
   data: PricingWorkspace
   mutation: ReturnType<typeof useExpertPricing>['mutation']
 }) {
@@ -160,9 +159,18 @@ function PricingEditor({
   const working =
     data.versions.find((v) => editableStatus(v.status)) ??
     data.versions.find((v) => v.status === 'PENDING_APPROVAL')
+  // The approved version that applies today (a superseded one stays in effect until its end date)
+  const today = businessDate()
   const effective = data.versions.find(
-    (v) => v.id === service.pricing?.version && v.status === 'APPROVED'
+    (v) =>
+      (v.status === 'APPROVED' || v.status === 'SUPERSEDED') &&
+      v.effectiveFrom <= today &&
+      (!v.effectiveTo || v.effectiveTo >= today)
   )
+  const label = (versionId: string) => {
+    const version = data.versions.find((v) => v.id === versionId)
+    return version ? 'v' + version.sequence : versionId
+  }
   const initial: PricingInput = working
     ? {
         amount: working.amount,
@@ -178,7 +186,9 @@ function PricingEditor({
   const [baseline, setBaseline] = useState(initial)
   const [revision, setRevision] = useState(data.revision)
   const [errors, setErrors] = useState<PricingErrors>({})
-  const [feedback, setFeedback] = useState<'saved' | 'submitted' | null>(null)
+  const [feedback, setFeedback] = useState<
+    'saved' | 'submitted' | 'savedApi' | 'submittedPending' | 'submittedApproved' | null
+  >(null)
   const pending = data.versions.some((v) => v.status === 'PENDING_APPROVAL')
   const busy = mutation.isPending
   const dirty = JSON.stringify(input) !== JSON.stringify(baseline)
@@ -216,9 +226,10 @@ function PricingEditor({
       { input, revision, submit },
       {
         onSuccess: (next) => {
-          const version = next.versions.find(
-            (v) => v.status === (submit ? 'PENDING_APPROVAL' : 'DRAFT')
-          )!
+          // The version just saved has the highest sequence (it may be auto-approved on submit)
+          const version = next.versions.reduce((a, b) =>
+            b.sequence > a.sequence ? b : a
+          )
           const saved = {
             amount: version.amount,
             effectiveFrom: version.effectiveFrom,
@@ -227,7 +238,17 @@ function PricingEditor({
           setInput(saved)
           setBaseline(saved)
           setRevision(next.revision)
-          setFeedback(submit ? 'submitted' : 'saved')
+          setFeedback(
+            isExpertDemo
+              ? submit
+                ? 'submitted'
+                : 'saved'
+              : !submit
+                ? 'savedApi'
+                : version.status === 'APPROVED'
+                  ? 'submittedApproved'
+                  : 'submittedPending'
+          )
         },
       }
     )
@@ -244,10 +265,12 @@ function PricingEditor({
           : 'ep-status-neutral'
   return (
     <>
-      <div className="epr-notice epr-demo">
-        <Info size={18} aria-hidden="true" />
-        <p>{t('pricing.demo')}</p>
-      </div>
+      {isExpertDemo && (
+        <div className="epr-notice epr-demo">
+          <Info size={18} aria-hidden="true" />
+          <p>{t('pricing.demo')}</p>
+        </div>
+      )}
       {blocker.state === 'blocked' && (
         <div className="epr-navigation" role="alert">
           <p>{busy ? t('pricing.saving') : t('pricing.unsaved')}</p>
@@ -282,7 +305,7 @@ function PricingEditor({
             <span
               className={'ep-status ' + statusClass(working?.status ?? 'DRAFT')}
             >
-              {working?.id ?? t('pricing.unsavedVersion')} ·{' '}
+              {working ? label(working.id) : t('pricing.unsavedVersion')} ·{' '}
               {status(working?.status ?? 'DRAFT')}
             </span>
           </div>
@@ -423,7 +446,7 @@ function PricingEditor({
                   ? format.money(effective.amount)
                   : t('noEffectivePricing')}
               </dd>
-              <dd>{effective?.id ?? '—'}</dd>
+              <dd>{effective ? label(effective.id) : '—'}</dd>
             </div>
             <div>
               <dt>{t('pricing.proposed')}</dt>
@@ -435,7 +458,13 @@ function PricingEditor({
           </dl>
           <div className="epr-policy">
             <CheckCircle2 size={18} aria-hidden="true" />
-            <p>{t('pricing.approvalHelp')}</p>
+            <p>
+              {data.autoApproveMaxChangePercent == null
+                ? t('pricing.approvalHelp')
+                : t('pricing.autoApprovalHelp', {
+                    percent: data.autoApproveMaxChangePercent,
+                  })}
+            </p>
           </div>
           <p>{t('pricing.snapshotHelp')}</p>
           <p>{t('pricing.slaHelp')}</p>
@@ -463,7 +492,7 @@ function PricingEditor({
               {data.versions.map((version) => (
                 <tr key={version.id}>
                   <th scope="row">
-                    {version.id}
+                    {label(version.id)}
                     {version.id === effective?.id && (
                       <span className="epr-current-label">
                         {t('pricing.current')}
@@ -481,6 +510,13 @@ function PricingEditor({
                       <summary>{t('pricing.details')}</summary>
                       <p>{version.reason || t('pricing.noReason')}</p>
                       {version.reviewNote && <p>{version.reviewNote}</p>}
+                      {version.autoApproved && (
+                        <p>
+                          {t('pricing.autoApproved', {
+                            percent: version.changePercent ?? 0,
+                          })}
+                        </p>
+                      )}
                       <p>
                         {t('pricing.updatedAt', {
                           date: format.timestamp(
@@ -514,12 +550,7 @@ function PricingEditor({
             {[...data.audit].reverse().map((event, index) => (
               <li key={event.at + index}>
                 <span>
-                  {event.versionId} ·{' '}
-                  {t(
-                    event.action === 'SAVED'
-                      ? 'pricing.auditSaved'
-                      : 'pricing.auditSubmitted'
-                  )}
+                  {label(event.versionId)} · {t(AUDIT_LABELS[event.action])}
                 </span>
                 <time dateTime={event.at}>
                   {format.timestamp(event.at, 'Asia/Ho_Chi_Minh', {

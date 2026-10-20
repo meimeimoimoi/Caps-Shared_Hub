@@ -1,5 +1,6 @@
 using Caps.Auth.Application.Abstractions;
 using Caps.Auth.Infrastructure.Email;
+using Caps.Auth.Infrastructure.Messaging;
 using Caps.Common.Messaging;
 
 namespace Caps.Auth.Api.Configuration;
@@ -21,6 +22,8 @@ public static class AuthEmailSetup
         {
             services.AddCapsMessaging(config);
             services.AddHostedService<AuthEmailPublisher>();
+            // Account status changes share the broker connection (expert keeps a copy for the Marketplace)
+            services.AddHostedService<AccountEventPublisher>();
         }
         else if (!env.IsDevelopment())
         {

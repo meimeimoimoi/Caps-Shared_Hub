@@ -1,5 +1,6 @@
 using Caps.Common.Persistence;
 using Caps.Expert.Application.Abstractions;
+using Caps.Expert.Infrastructure.Messaging;
 using Caps.Expert.Infrastructure.Persistence;
 using Caps.Expert.Infrastructure.Storage;
 using Microsoft.Extensions.DependencyInjection;
@@ -27,6 +28,14 @@ public static class DependencyInjection
         services.AddScoped<IExpertProfileRepository, ExpertProfileRepository>();
         services.AddScoped<IExpertApplicationRepository, ExpertApplicationRepository>();
         services.AddScoped<IExpertEvidenceRepository, ExpertEvidenceRepository>();
+        services.AddScoped<IEligibilityCheckRepository, EligibilityCheckRepository>();
+        services.AddScoped<IServiceCatalogRepository, ServiceCatalogRepository>();
+        services.AddScoped<IQualificationRepository, QualificationRepository>();
+        services.AddScoped<ICompetencyAssessmentRepository, CompetencyAssessmentRepository>();
+        services.AddScoped<IQualificationEvidenceRepository, QualificationEvidenceRepository>();
+        services.AddScoped<IPricingRepository, PricingRepository>();
+        services.AddScoped<IAvailabilityRepository, AvailabilityRepository>();
+        services.AddScoped<IExpertNotificationOutbox, ExpertNotificationOutbox>();
         services.AddSingleton<IObjectStorage, S3ObjectStorage>();
         return services;
     }

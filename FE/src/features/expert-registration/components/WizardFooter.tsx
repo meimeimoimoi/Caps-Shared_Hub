@@ -5,10 +5,13 @@ import {
   Save,
   Loader2,
   CheckCircle2,
+  ListChecks,
 } from 'lucide-react'
 
 export interface WizardFooterProps {
   step: number
+  /** Editing a section from the review step: the primary action saves and goes back to review */
+  returnToReview?: boolean
   submitting: boolean
   draftSaved: boolean
   onSaveDraft: () => void
@@ -17,6 +20,7 @@ export interface WizardFooterProps {
 
 export function WizardFooter({
   step,
+  returnToReview = false,
   submitting,
   draftSaved,
   onSaveDraft,
@@ -61,12 +65,19 @@ export function WizardFooter({
               aria-hidden="true"
             />
           )}
+          {returnToReview && step < 3 && (
+            <ListChecks size={16} aria-hidden="true" />
+          )}
           {step === 3 && submitting
             ? t('actions.submitting')
             : step === 3
               ? t('actions.submit')
-              : t('actions.continue')}
-          {!(step === 3 && submitting) && <ArrowRight size={16} />}
+              : returnToReview
+                ? t('actions.saveAndReview')
+                : t('actions.continue')}
+          {!(step === 3 && submitting) && !(returnToReview && step < 3) && (
+            <ArrowRight size={16} />
+          )}
         </button>
       </div>
     </footer>

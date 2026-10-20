@@ -7,6 +7,7 @@ import { SLA_DAYS, formatDate, waitedDays } from '../utils/applications'
 
 import { useTranslation } from 'react-i18next'
 import { useMotion } from '@/components/ui/motion'
+import { useFieldLabel } from '../hooks/useLabels'
 
 interface ApplicationsTableProps {
   paged: Paged<ExpertApplication>
@@ -23,6 +24,7 @@ export function ApplicationsTable({
   empty,
 }: ApplicationsTableProps) {
   const { t } = useTranslation('admin')
+  const fieldLabel = useFieldLabel()
   const { rows, total } = paged
   const motion = useMotion<HTMLTableSectionElement>({
     preset: 'fade',
@@ -71,8 +73,16 @@ export function ApplicationsTable({
                 <td>
                   <div className="text-fg-strong text-base font-semibold">
                     {a.name}
+                    {a.isReapplication && (
+                      <span className="text-fg-muted ml-2 text-sm font-normal">
+                        · {t('applicationsTable.reapplication')}
+                      </span>
+                    )}
                   </div>
-                  <div className="text-fg-muted">{a.email}</div>
+                  {/* The review API returns fields instead of the email */}
+                  <div className="text-fg-muted">
+                    {a.email ?? a.fields?.map(fieldLabel).join(', ')}
+                  </div>
                 </td>
                 <td className="num text-right">{a.years}</td>
                 <td>

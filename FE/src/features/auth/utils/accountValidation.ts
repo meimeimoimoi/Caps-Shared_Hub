@@ -7,8 +7,8 @@ export function passwordRequirements(password: string) {
   return [
     {
       key: 'passwordRules.length',
-      label: 'At least 12 characters',
-      met: password.length >= 12,
+      label: 'At least 8 characters',
+      met: password.length >= 8,
     },
     {
       key: 'passwordRules.uppercase',
@@ -51,7 +51,7 @@ const legacyMessages = {
   phoneRequired: 'Please enter your phone number.',
   phoneInvalid: 'Use a Vietnamese number.',
   passwordRequired: 'Please enter a password.',
-  passwordRules: 'Complete all five password requirements below.',
+  passwordRules: 'Use at least 8 characters, including uppercase and lowercase letters, a number and a special character.',
   confirmationRequired: 'Please confirm your password.',
   passwordMismatch:
     'Passwords do not match. Enter the same password in both fields.',

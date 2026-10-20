@@ -2,7 +2,7 @@ import { useId } from 'react'
 import { Check, ShieldCheck } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useFormatters } from '@/hooks/useFormatters'
-import type { Availability } from '../fixtures'
+import type { Availability } from '../types'
 
 export function AvailabilityTag({
   availability,
@@ -13,9 +13,21 @@ export function AvailabilityTag({
 }) {
   const { t } = useTranslation('marketplace')
   const format = useFormatters()
+  const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone
   const detail =
     availability.state === 'open'
-      ? t('availability.openDetail', { hours: availability.responseHours })
+      ? availability.nextSlotAt
+        ? t('availability.nextSlot', {
+            date: format.timestamp(availability.nextSlotAt, timeZone, {
+              day: 'numeric',
+              month: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit',
+            }),
+          })
+        : availability.responseHours != null
+          ? t('availability.openDetail', { hours: availability.responseHours })
+          : t('availability.openAny')
       : availability.state === 'full'
         ? t('availability.fullDetail', {
             date: format.dateOnly(availability.reopensAt),
@@ -36,23 +48,27 @@ export function AvailabilityTag({
   )
 }
 
-/** Gate 1 (cấp Expert) → Gate 2 (cấp Expert–Dịch vụ) → Pricing Version đã duyệt: mọi chuyên gia trên Sàn đều đạt
-    cả ba, nên gom thành một huy hiệu; ngày đạt từng điều kiện mở ra khi rê chuột hoặc focus. */
+/** Gate 1 (expert level) → Gate 2 (Expert–Service) → approved Pricing Version: every listed expert passed all
+    three, so they collapse into one badge; the dates open on hover or focus (omitted when unknown). */
 export function VerifiedBadge({
   eligibleSince,
   approvedAt,
   pricingVersion,
 }: {
-  eligibleSince: string
-  approvedAt: string
+  eligibleSince: string | null
+  approvedAt: string | null
   pricingVersion: string
 }) {
   const { t } = useTranslation('marketplace')
   const format = useFormatters()
   const id = useId()
   const steps = [
-    t('trail.gate1Detail', { date: format.dateOnly(eligibleSince) }),
-    t('trail.gate2Detail', { date: format.dateOnly(approvedAt) }),
+    eligibleSince
+      ? t('trail.gate1Detail', { date: format.dateOnly(eligibleSince) })
+      : t('trail.gate1Passed'),
+    approvedAt
+      ? t('trail.gate2Detail', { date: format.dateOnly(approvedAt) })
+      : t('trail.gate2Passed'),
     t('trail.priceDetail', { version: pricingVersion }),
   ]
   return (
@@ -74,7 +90,7 @@ export function VerifiedBadge({
   )
 }
 
-/** Ảnh đại diện; chưa có ảnh thì hiện chữ viết tắt. Ảnh mang tính trang trí (tên đứng ngay cạnh) nên alt rỗng. */
+/** Avatar; falls back to initials. Decorative (the name sits next to it), so alt is empty. */
 export function Avatar({
   src,
   text,
