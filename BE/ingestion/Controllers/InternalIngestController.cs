@@ -61,4 +61,19 @@ public sealed class InternalIngestController : ControllerBase
         var job = await handler.HandleAsync(r.ToCommand(id), ct);
         return Ok(ApiResponse<CrawlJobResponse>.Ok(job));
     }
+
+    /// <summary>Downloads an uploaded original so the worker can split it into articles.</summary>
+    /// <response code="200">The file bytes.</response>
+    /// <response code="401">INTERNAL_KEY_INVALID.</response>
+    /// <response code="404">DOCUMENT_NOT_FOUND or DOCUMENT_FILE_NOT_STORED.</response>
+    [HttpGet("documents/{id:guid}/file")]
+    public async Task<IActionResult> OpenDocumentFile(
+        Guid id,
+        [FromServices] IQueryHandler<OpenDocumentFileQuery, DocumentFile> handler,
+        CancellationToken ct
+    )
+    {
+        var file = await handler.HandleAsync(new(id), ct);
+        return File(file.Content, file.ContentType, file.FileName);
+    }
 }
