@@ -28,6 +28,13 @@ public static class IngestionErrors
     public static AppException CrawlJobNotRunning() =>
         new(ErrorType.Conflict, "CRAWL_JOB_NOT_RUNNING", "The crawl job has already finished.");
 
+    public static AppException InvalidCrawlJobStatus(string status) =>
+        new(
+            ErrorType.Validation,
+            "INVALID_CRAWL_JOB_STATUS",
+            $"A crawl job finishes as SUCCEEDED or FAILED, not {status}."
+        );
+
     public static AppException InvalidDocumentSource(string source) =>
         new(ErrorType.Validation, "INVALID_DOCUMENT_SOURCE", $"Unknown document source: {source}.");
 

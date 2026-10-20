@@ -2,6 +2,7 @@ using Caps.Common.Api;
 using Caps.Common.Application;
 using Caps.Ingestion.DTOs.Requests;
 using Caps.Ingestion.DTOs.Responses;
+using Caps.Ingestion.Features.CrawlJobs;
 using Caps.Ingestion.Features.Documents;
 using Caps.Ingestion.Security;
 using Microsoft.AspNetCore.Mvc;
@@ -37,5 +38,27 @@ public sealed class InternalIngestController : ControllerBase
     {
         var document = await handler.HandleAsync(r.ToCommand(id), ct);
         return Ok(ApiResponse<ImportedDocumentResponse>.Ok(document));
+    }
+
+    /// <summary>Records the end of a crawl job.</summary>
+    /// <remarks>
+    /// status: SUCCEEDED or FAILED. detail (the worker's summary or error) is kept under detail.result,
+    /// next to the original request.
+    /// </remarks>
+    /// <response code="200">The finished job.</response>
+    /// <response code="400">Invalid body or INVALID_CRAWL_JOB_STATUS.</response>
+    /// <response code="401">INTERNAL_KEY_INVALID.</response>
+    /// <response code="404">CRAWL_JOB_NOT_FOUND.</response>
+    /// <response code="409">CRAWL_JOB_NOT_RUNNING.</response>
+    [HttpPost("crawl-jobs/{id:guid}/complete")]
+    public async Task<IActionResult> CompleteCrawlJob(
+        Guid id,
+        CompleteCrawlJobRequest r,
+        [FromServices] ICommandHandler<CompleteCrawlJobCommand, CrawlJobResponse> handler,
+        CancellationToken ct
+    )
+    {
+        var job = await handler.HandleAsync(r.ToCommand(id), ct);
+        return Ok(ApiResponse<CrawlJobResponse>.Ok(job));
     }
 }

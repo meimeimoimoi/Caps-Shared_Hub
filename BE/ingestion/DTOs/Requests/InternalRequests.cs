@@ -2,9 +2,29 @@ using System.ComponentModel.DataAnnotations;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
+using Caps.Ingestion.Features.CrawlJobs;
 using Caps.Ingestion.Features.Documents;
 
 namespace Caps.Ingestion.DTOs.Requests;
+
+/// <summary>The worker's final report on a crawl job.</summary>
+/// <param name="Status">SUCCEEDED or FAILED.</param>
+/// <param name="DocsFound">Documents the crawl exported.</param>
+/// <param name="Detail">Summary of the exported documents, or the error.</param>
+public sealed record CompleteCrawlJobRequest(
+    [Required, MaxLength(16)] string Status,
+    [Range(0, int.MaxValue)] int DocsFound,
+    JsonElement? Detail
+)
+{
+    public CompleteCrawlJobCommand ToCommand(Guid crawlJobId) =>
+        new(
+            crawlJobId,
+            Status.Trim().ToUpperInvariant(),
+            DocsFound,
+            Detail is { } detail ? JsonSerializer.SerializeToNode(detail) : null
+        );
+}
 
 /// <summary>
 /// One crawler export file (schema_version 2), posted by the worker exactly as written to export/.
