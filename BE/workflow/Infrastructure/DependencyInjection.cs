@@ -1,4 +1,5 @@
 using Caps.Common.Persistence;
+using Caps.Workflow.Application.Abstractions;
 using Caps.Workflow.Infrastructure.Persistence;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -19,6 +20,9 @@ public static class DependencyInjection
             "workspace",
             "review"
         );
+        services.AddScoped<IReviewCaseRepository, ReviewCaseRepository>();
+        services.AddScoped<ICaseMessageRepository, CaseMessageRepository>();
+        services.AddScoped<ICaseReadMarkerRepository, CaseReadMarkerRepository>();
         return services;
     }
 }
