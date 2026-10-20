@@ -87,6 +87,9 @@ public static class IngestionErrors
     public static AppException DocumentDuplicate() =>
         new(ErrorType.Conflict, "DOCUMENT_DUPLICATE", "This file has already been uploaded.");
 
+    public static AppException SourceNotFound() =>
+        new(ErrorType.NotFound, "SOURCE_NOT_FOUND", "Legal source not found.");
+
     public static AppException InternalKeyInvalid() =>
         new(ErrorType.Unauthorized, "INTERNAL_KEY_INVALID", "Missing or wrong internal key.");
 }

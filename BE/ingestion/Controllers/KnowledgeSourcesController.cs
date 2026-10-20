@@ -38,4 +38,24 @@ public sealed class KnowledgeSourcesController : ControllerBase
         var sources = await handler.HandleAsync(new(q, docType, page, pageSize), ct);
         return Ok(ApiResponse<PageResponse<LegalSourceResponse>>.Ok(sources));
     }
+
+    /// <summary>Returns the amendment family tree of a legal source.</summary>
+    /// <remarks>
+    /// The root is the original source, found by following what this source amends; each node's children are
+    /// the sources amending it, at most 10 levels deep. A source without recorded links is a single node.
+    /// </remarks>
+    /// <response code="200">The root node with its children.</response>
+    /// <response code="401">Missing, invalid or revoked access token.</response>
+    /// <response code="403">The account is not active.</response>
+    /// <response code="404">SOURCE_NOT_FOUND.</response>
+    [HttpGet("{id:guid}/tree")]
+    public async Task<IActionResult> Tree(
+        Guid id,
+        [FromServices] IQueryHandler<GetSourceTreeQuery, AmendmentTreeNodeResponse> handler,
+        CancellationToken ct
+    )
+    {
+        var tree = await handler.HandleAsync(new(id), ct);
+        return Ok(ApiResponse<AmendmentTreeNodeResponse>.Ok(tree));
+    }
 }
