@@ -37,7 +37,10 @@ public sealed class SessionsController(ICurrentUser currentUser, RefreshCookie r
     }
 
     /// <summary>Signs in with email and password.</summary>
-    /// <remarks>Five wrong passwords lock the account for 15 minutes. Unknown email, wrong password and lockout all return the same error.</remarks>
+    /// <remarks>
+    /// Five wrong passwords lock the account for 15 minutes. Unknown email, wrong password and lockout all return the same error.
+    /// RememberMe keeps the refresh cookie across browser restarts; otherwise a session cookie is issued.
+    /// </remarks>
     /// <response code="200">Signed in; access token in the body, refresh token in the cookie.</response>
     /// <response code="401">INVALID_CREDENTIALS.</response>
     /// <response code="429">Too many requests from this IP.</response>
@@ -49,7 +52,7 @@ public sealed class SessionsController(ICurrentUser currentUser, RefreshCookie r
     )
     {
         var session = await handler.HandleAsync(new(r.Email, r.Password), ct);
-        return Ok(refreshCookie.Issue(Response, session));
+        return Ok(refreshCookie.Issue(Response, session, r.RememberMe));
     }
 
     /// <summary>Signs in with a Google ID token, creating the account on first use.</summary>

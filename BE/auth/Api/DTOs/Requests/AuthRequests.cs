@@ -6,7 +6,8 @@ namespace Caps.Auth.Api.DTOs.Requests;
 /// <summary>Body of POST /auth/login.</summary>
 public sealed record LoginRequest(
     [Required, EmailAddress, MaxLength(256)] string Email,
-    [Required, MaxLength(128)] string Password
+    [Required, MaxLength(128)] string Password,
+    bool RememberMe = false
 );
 
 /// <summary>Body of POST /auth/google: the ID token (credential) from Google Identity Services.</summary>
@@ -15,7 +16,16 @@ public sealed record GoogleLoginRequest([Required, MaxLength(4096)] string IdTok
 /// <summary>Body of POST /auth/register; the display name is optional (falls back to the email's local part).</summary>
 public sealed record RegisterRequest(
     [Required, EmailAddress, MaxLength(256)] string Email,
-    [Required, MinLength(12), MaxLength(128)] string Password,
+    [
+        Required,
+        MinLength(8),
+        MaxLength(128),
+        RegularExpression(
+            @"(?s)\A(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[^\p{L}\p{N}\s]).*\z",
+            ErrorMessage = "Password must include uppercase and lowercase letters, a number and a special character."
+        )
+    ]
+        string Password,
     [MaxLength(128)] string? DisplayName = null
 );
 
@@ -31,13 +41,31 @@ public sealed record TokenRequest([Required, MaxLength(256)] string Token);
 /// <summary>The token from the password reset email and the new password.</summary>
 public sealed record ResetPasswordRequest(
     [Required, MaxLength(256)] string Token,
-    [Required, MinLength(12), MaxLength(128)] string Password
+    [
+        Required,
+        MinLength(8),
+        MaxLength(128),
+        RegularExpression(
+            @"(?s)\A(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[^\p{L}\p{N}\s]).*\z",
+            ErrorMessage = "Password must include uppercase and lowercase letters, a number and a special character."
+        )
+    ]
+        string Password
 );
 
 /// <summary>Change while signed in: the current password proves it is the account owner.</summary>
 public sealed record ChangePasswordRequest(
     [Required, MaxLength(128)] string CurrentPassword,
-    [Required, MinLength(12), MaxLength(128)] string NewPassword
+    [
+        Required,
+        MinLength(8),
+        MaxLength(128),
+        RegularExpression(
+            @"(?s)\A(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[^\p{L}\p{N}\s]).*\z",
+            ErrorMessage = "Password must include uppercase and lowercase letters, a number and a special character."
+        )
+    ]
+        string NewPassword
 );
 
 /// <summary>Editable profile fields of the signed-in account.</summary>
