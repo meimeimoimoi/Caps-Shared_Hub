@@ -4,6 +4,9 @@ using Caps.Ingestion.Entities;
 
 namespace Caps.Ingestion.DTOs.Responses;
 
+/// <summary>The stored original of an uploaded document, ready to stream.</summary>
+public sealed record DocumentFile(Stream Content, string ContentType, string FileName);
+
 /// <summary>
 /// One document version for the split-screen review: its legal source, metadata and parsed content, shown
 /// next to the original.

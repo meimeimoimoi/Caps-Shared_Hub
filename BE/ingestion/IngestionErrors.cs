@@ -64,6 +64,13 @@ public static class IngestionErrors
     public static AppException DocumentNotFound() =>
         new(ErrorType.NotFound, "DOCUMENT_NOT_FOUND", "Document not found.");
 
+    public static AppException DocumentFileNotStored() =>
+        new(
+            ErrorType.NotFound,
+            "DOCUMENT_FILE_NOT_STORED",
+            "Only uploaded documents keep their original file; open sourceUrl instead."
+        );
+
     public static AppException DocumentDuplicate() =>
         new(ErrorType.Conflict, "DOCUMENT_DUPLICATE", "This file has already been uploaded.");
 

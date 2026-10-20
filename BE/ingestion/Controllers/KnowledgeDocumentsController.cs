@@ -57,6 +57,24 @@ public sealed class KnowledgeDocumentsController(ICurrentUser currentUser) : Con
         return Ok(ApiResponse<DocumentPreviewResponse>.Ok(document));
     }
 
+    /// <summary>Downloads the original file of an uploaded document.</summary>
+    /// <remarks>Crawled documents have no stored file: open sourceUrl from the preview instead.</remarks>
+    /// <response code="200">The file bytes.</response>
+    /// <response code="403">Missing the KnowledgeManage permission.</response>
+    /// <response code="404">DOCUMENT_NOT_FOUND or DOCUMENT_FILE_NOT_STORED.</response>
+    [HttpGet("{id:guid}/file")]
+    public async Task<IActionResult> OpenFile(
+        Guid id,
+        [FromServices] IQueryHandler<OpenDocumentFileQuery, DocumentFile> handler,
+        CancellationToken ct
+    )
+    {
+        var file = await handler.HandleAsync(new(id), ct);
+        Response.Headers.XContentTypeOptions = "nosniff";
+        Response.Headers.CacheControl = "private, no-store";
+        return File(file.Content, file.ContentType, file.FileName);
+    }
+
     /// <summary>Uploads a legal document file for review (multipart form).</summary>
     /// <remarks>
     /// file: PDF or DOCX up to 20 MB, checked by its content. documentNumber, docType and title describe the
