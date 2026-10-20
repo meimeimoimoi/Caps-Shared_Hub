@@ -15,6 +15,26 @@ public sealed class KnowledgeCrawlJobsController(ICurrentUser currentUser) : Con
 {
     private Guid UserId => currentUser.RequireUserId();
 
+    /// <summary>Lists crawl runs, newest first.</summary>
+    /// <remarks>
+    /// page starts at 1; pageSize defaults to 20 and is at most 100. Once a job has finished, detail.result
+    /// holds the worker's summary or error.
+    /// </remarks>
+    /// <response code="200">The page with the total number of runs.</response>
+    /// <response code="400">INVALID_PAGING.</response>
+    /// <response code="403">Missing the KnowledgeManage permission.</response>
+    [HttpGet]
+    public async Task<IActionResult> List(
+        [FromServices] IQueryHandler<ListCrawlJobsQuery, PageResponse<CrawlJobResponse>> handler,
+        CancellationToken ct,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20
+    )
+    {
+        var jobs = await handler.HandleAsync(new(page, pageSize), ct);
+        return Ok(ApiResponse<PageResponse<CrawlJobResponse>>.Ok(jobs));
+    }
+
     /// <summary>Starts a manual crawl; the crawler worker runs it in the background.</summary>
     /// <remarks>
     /// sources: vbpl and/or mof. topN = newest documents per document type (crawler default 3);
