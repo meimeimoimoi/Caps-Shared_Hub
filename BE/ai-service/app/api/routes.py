@@ -1,6 +1,7 @@
 import json
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, status
+from app.schemas.errors import ErrorMessage
 from app.schemas.ingestion_dto import IngestDocRequest, IngestDocResponse
 from app.schemas.chat_dto import ChatQueryRequest, ChatQueryResponse
 from app.schemas.drafting_dto import GenerateDraftRequest, GenerateDraftResponse
@@ -10,49 +11,51 @@ from app.modules.rag.router import ScopeRouter
 from app.modules.rag.retriever import TemporalRetriever
 from app.modules.rag.generator import GroundedGenerator
 from app.modules.drafting.drafter import DocumentDrafter
+from app.schemas.statuses import ScopeResult, AnswerStatus, OperationStatus
+from app.schemas.answers import (
+    OUT_OF_SCOPE_ANSWER,
+    TAX_PERIOD_CLARIFICATION_ANSWER,
+)
 
 router = APIRouter(prefix="/api/v1")
 
-# API FLOW 2: Được gọi từ `ingestion` (.NET)
+# API FLOW 2: Called by ingestion (.NET).
 @router.post("/kb/chunk-and-embed", response_model=IngestDocResponse)
 def chunk_and_embed(req: IngestDocRequest):
-    try:
-        chunks = LegalChunker.chunk_document(req.model_dump())
-        if not chunks:
-            raise HTTPException(status_code=400, detail="Không có nội dung để chunk.")
-        kb_chunks = LegalIndexer.index_to_qdrant(chunks)
-        return IngestDocResponse(status="SUCCESS", total_chunks=len(kb_chunks), kb_chunks=kb_chunks)
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e)) from e
+    chunks = LegalChunker.chunk_document(req.model_dump())
+    if not chunks:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail=ErrorMessage.EMPTY_DOCUMENT
+        )
+    kb_chunks = LegalIndexer.index_to_qdrant(chunks)
+    return IngestDocResponse(status=OperationStatus.SUCCESS, total_chunks=len(kb_chunks), kb_chunks=kb_chunks)
 
 # API FLOW 3: Được gọi từ `rag-query` (.NET)
 @router.post("/chat/query", response_model=ChatQueryResponse)
 def chat_query(req: ChatQueryRequest):
-    # 1. Phân loại Scope & Bóc tách ngày
-    analysis = ScopeRouter.analyze(req.question)
+    # Classify scope and resolve the requested tax period.
+    analysis = ScopeRouter.analyze(req.question, req.user_tax_period)
 
-    if not analysis.get("is_cit"):
+    if not analysis.is_cit:
         return ChatQueryResponse(
-            scope_result="OUT_OF_SCOPE",
-            answer_status="REJECTED",
+            scope_result=ScopeResult.OUT_OF_SCOPE,
+            answer_status=AnswerStatus.REJECTED,
             period_start=None, period_end=None,
-            answer="Câu hỏi nằm ngoài phạm vi tư vấn Thuế Thu nhập Doanh nghiệp (CIT).",
+            answer=OUT_OF_SCOPE_ANSWER,
             citations=[]
         )
 
-    if analysis.get("needs_clarification"):
+    if analysis.needs_clarification or not analysis.period_start or not analysis.period_end:
         return ChatQueryResponse(
-            scope_result="IN_SCOPE",
-            answer_status="NEED_CLARIFICATION",
+            scope_result=ScopeResult.IN_SCOPE,
+            answer_status=AnswerStatus.NEED_CLARIFICATION,
             period_start=None, period_end=None,
-            answer=analysis.get("clarification_msg") or "Vui lòng cho biết giao dịch này phát sinh vào năm/kỳ tính thuế nào.",
+            answer=analysis.clarification_msg or TAX_PERIOD_CLARIFICATION_ANSWER,
             citations=[]
         )
 
-    p_start = analysis.get("period_start") or "2024-01-01"
-    p_end = analysis.get("period_end") or "2024-12-31"
+    p_start = analysis.period_start.isoformat()
+    p_end = analysis.period_end.isoformat()
 
     # 2. Truy xuất Temporal Vector từ Qdrant
     retrieved = TemporalRetriever.retrieve(req.question, p_start, p_end)
@@ -61,7 +64,7 @@ def chat_query(req: ChatQueryRequest):
     res = GroundedGenerator.generate_answer(req.question, retrieved, f"{p_start} đến {p_end}")
 
     return ChatQueryResponse(
-        scope_result="IN_SCOPE",
+        scope_result=ScopeResult.IN_SCOPE,
         answer_status=res["answer_status"],
         period_start=p_start,
         period_end=p_end,
@@ -84,7 +87,7 @@ def draft_document(req: GenerateDraftRequest):
     citations = [{"legal_source_id": h.payload.get("legal_source_id"), "article": h.payload.get("article")} for h in retrieved]
 
     return GenerateDraftResponse(
-        status="SUCCESS",
+        status=OperationStatus.SUCCESS,
         content=result["content"],
         content_hash=result["content_hash"],
         has_unauthorized_numbers=result["has_unauthorized_numbers"],

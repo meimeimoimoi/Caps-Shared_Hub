@@ -10,6 +10,7 @@ from qdrant_client.models import (
 from app.core.models import embedding_model
 from app.core.qdrant import qdrant_client
 from app.config import settings
+from app.schemas.statuses import DocumentStatus
 
 def to_rfc3339(date_str: str, is_end: bool = False) -> str:
     """Chuyển đổi YYYY-MM-DD sang chuẩn RFC 3339 cho Qdrant"""
@@ -35,7 +36,7 @@ class TemporalRetriever:
         # 3. effective_to >= kỳ thuế bắt đầu HOẶC chưa hết hiệu lực (null/empty)
         temporal_filter = Filter(
             must=[
-                FieldCondition(key="status", match=MatchValue(value="APPROVED")),
+                FieldCondition(key="status", match=MatchValue(value=DocumentStatus.APPROVED)),
                 FieldCondition(
                     key="effective_from",
                     range=DatetimeRange(lte=rfc_end)

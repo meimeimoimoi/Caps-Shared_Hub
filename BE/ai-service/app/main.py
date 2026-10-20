@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from contextlib import asynccontextmanager
 from app.core.qdrant import init_qdrant
 from app.api.routes import router
+from app.api.exception_handlers import register_exception_handlers
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -16,6 +17,7 @@ app = FastAPI(
     lifespan=lifespan
 )
 
+register_exception_handlers(app)
 app.include_router(router)
 
 @app.get("/health")

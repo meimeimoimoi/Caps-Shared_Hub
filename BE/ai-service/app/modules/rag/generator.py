@@ -1,5 +1,7 @@
 from app.core.models import llm_model
 from app.modules.rag.prompts import build_grounded_answer_prompt
+from app.schemas.answers import INSUFFICIENT_KNOWLEDGE_ANSWER
+from app.schemas.statuses import AnswerStatus
 
 class GroundedGenerator:
     @staticmethod
@@ -7,8 +9,8 @@ class GroundedGenerator:
         # Step 5: Retrieval Sufficiency Check
         if not retrieved_chunks:
             return {
-                "answer_status": "INSUFFICIENT_KNOWLEDGE",
-                "answer": "Kho tri thức hiện chưa có căn cứ pháp lý đã được phê duyệt áp dụng cho kỳ thuế này. Hệ thống đề xuất bạn chuyển tiếp câu hỏi cho Chuyên gia để thẩm định.",
+                "answer_status": AnswerStatus.INSUFFICIENT_KNOWLEDGE,
+                "answer": INSUFFICIENT_KNOWLEDGE_ANSWER,
                 "citations": []
             }
 
@@ -34,7 +36,7 @@ class GroundedGenerator:
             })
 
         return {
-            "answer_status": "SUCCESS",
+            "answer_status": AnswerStatus.SUCCESS,
             "answer": res.content,
             "citations": citations
         }

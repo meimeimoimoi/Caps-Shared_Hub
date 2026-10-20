@@ -2,6 +2,8 @@ import hashlib
 import json
 import re
 from app.core.models import llm_model
+from app.core.ai_response import parse_ai_response
+from app.schemas.ai_results import DraftContent
 from app.modules.drafting.prompts import build_draft_prompt
 
 class DocumentDrafter:
@@ -13,16 +15,14 @@ class DocumentDrafter:
             legal_context=legal_context,
         )
         res = llm_model.invoke(prompt)
-        text = res.content.strip()
-        match = re.search(r'\{.*\}', text, re.DOTALL)
-        draft_content = json.loads(match.group(0)) if match else {"raw": text}
+        draft_content = parse_ai_response(res.content, DraftContent).root
 
-        # Guardrail: Kiểm tra xem AI có tự bịa số không
+        # Guardrail: detect numbers absent from the input snapshot.
         input_numbers = set(re.findall(r'\b\d+(?:[.,]\d+)?\b', json.dumps(snapshot_data)))
         output_numbers = set(re.findall(r'\b\d+(?:[.,]\d+)?\b', json.dumps(draft_content)))
         unauthorized = list(output_numbers - input_numbers)
 
-        # Tính mã băm SHA-256 để bảo vệ tính bất biến
+        # Hash the canonical content for integrity checks.
         content_hash = hashlib.sha256(json.dumps(draft_content, sort_keys=True).encode('utf-8')).hexdigest()
 
         return {

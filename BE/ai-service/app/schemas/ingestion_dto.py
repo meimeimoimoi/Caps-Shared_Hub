@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 from typing import Optional, List, Dict, Any
+from app.schemas.statuses import OperationStatus
 
 class IngestDocRequest(BaseModel):
     knowledge_document_id: str
@@ -21,6 +22,6 @@ class KbChunkItem(BaseModel):
     metadata: Dict[str, Any]
 
 class IngestDocResponse(BaseModel):
-    status: str
+    status: OperationStatus
     total_chunks: int
     kb_chunks: List[KbChunkItem]

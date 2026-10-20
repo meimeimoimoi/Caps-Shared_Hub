@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 from typing import Optional, List
+from app.schemas.statuses import ScopeResult, AnswerStatus
 
 class ChatQueryRequest(BaseModel):
     question: str
@@ -13,8 +14,8 @@ class CitationItem(BaseModel):
     point: Optional[str] = None
 
 class ChatQueryResponse(BaseModel):
-    scope_result: str
-    answer_status: str
+    scope_result: ScopeResult
+    answer_status: AnswerStatus
     period_start: Optional[str]
     period_end: Optional[str]
     answer: str

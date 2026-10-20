@@ -1,17 +1,13 @@
-import json
-import re
+from app.core.ai_response import parse_ai_response
+from app.schemas.ai_results import ScopeAnalysis
 from app.modules.rag.prompts import build_scope_prompt
 from app.core.models import llm_model
 
 class ScopeRouter:
     @staticmethod
-    def analyze(question: str) -> dict:
+    def analyze(question: str, user_tax_period: str | None = None) -> ScopeAnalysis:
         prompt = build_scope_prompt(question)
+        if user_tax_period:
+            prompt += f"\nKỳ thuế do người dùng cung cấp: {user_tax_period}"
         res = llm_model.invoke(prompt)
-        text = res.content.strip()
-        
-        # Bóc tách JSON an toàn bằng Regex
-        match = re.search(r'\{.*\}', text, re.DOTALL)
-        if match:
-            return json.loads(match.group(0))
-        return {"is_cit": True, "period_start": None, "period_end": None, "needs_clarification": False}
+        return parse_ai_response(res.content, ScopeAnalysis)
