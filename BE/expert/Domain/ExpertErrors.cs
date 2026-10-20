@@ -64,6 +64,9 @@ public static class ExpertErrors
     public static AppException EvidenceNotFound() =>
         new(ErrorType.NotFound, "EVIDENCE_NOT_FOUND", "File not found.");
 
+    public static AppException EvidenceDuplicate() =>
+        new(ErrorType.Conflict, "EVIDENCE_DUPLICATE", "This CV has already been uploaded.");
+
     public static AppException EvidenceLocked() =>
         new(ErrorType.Conflict, "EVIDENCE_LOCKED", "Submitted files cannot be removed.");
 
