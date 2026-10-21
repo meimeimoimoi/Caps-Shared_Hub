@@ -25,4 +25,7 @@ public enum Permission
     //SYSTEM_ADMIN
     UserManage,
     PayoutManage,
+
+    /// <summary>Final approval of Gate 2 results and suspending or reinstating an approved service.</summary>
+    ExpertApprove,
 }
