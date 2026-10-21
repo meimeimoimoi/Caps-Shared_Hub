@@ -81,12 +81,6 @@ export function SocialView({
             {t('email.create')}
           </Link>
         </p>
-        <p className="mt-1.5 text-center text-[12.5px] leading-[1.6] text-white/45">
-          {t('register.expertPrompt')}{' '}
-          <Link to="/expert/register" className={LINK_CLASS}>
-            {t('register.expertLink')}
-          </Link>
-        </p>
 
         <p className="mt-6 border-t border-white/8 pt-5 text-center text-[11.5px] leading-[1.6] text-white/40">
           <Trans

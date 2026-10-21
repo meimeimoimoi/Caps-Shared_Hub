@@ -42,9 +42,7 @@ const LegalPage = lazy(() => import('@/pages/LegalPage'))
 const RegisterPage = lazy(() => import('@/pages/RegisterPage'))
 const ResetPasswordPage = lazy(() => import('@/pages/ResetPasswordPage'))
 const VerifyEmailPage = lazy(() => import('@/pages/VerifyEmailPage'))
-const ExpertRegistrationPage = lazy(
-  () => import('@/pages/expert-registration/ExpertRegistrationPage')
-)
+const WelcomePage = lazy(() => import('@/pages/WelcomePage'))
 const ExpertQualificationsPage = lazy(
   () => import('@/pages/expert-dashboard/ExpertQualificationsPage')
 )
@@ -241,7 +239,17 @@ const router = createBrowserRouter(
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route path="/verify-email" element={<VerifyEmailPage />} />
-      <Route path="/expert/register" element={<ExpertRegistrationPage />} />
+      {/* Experts sign up on the same page as customers (first step: choose the role) */}
+      <Route path="/expert/register" element={<Navigate to="/register" replace />} />
+      {/* Asked once after a Google sign-in created the account, or after verifying on another device */}
+      <Route
+        path="/welcome"
+        element={
+          <ProtectedRoute>
+            <WelcomePage />
+          </ProtectedRoute>
+        }
+      />
       <Route path="/experts/:expertId" element={<ExpertPublicProfilePage />} />
       <Route path="/marketplace" element={<MarketplacePage />} />
       <Route path="/pricing" element={<PricingPage />} />
@@ -385,7 +393,7 @@ const router = createBrowserRouter(
       <Route element={<ExpertRoute />}>
         <Route path="/expert" element={<ExpertLayout />}>
           <Route index element={<ExpertHome />} />
-          {/* The applicant's own application and review progress; signing up happens at /expert/register */}
+          {/* The applicant's own application and review progress; signing up happens at /register */}
           <Route
             path="application"
             element={

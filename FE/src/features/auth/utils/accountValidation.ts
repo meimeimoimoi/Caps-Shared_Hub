@@ -111,17 +111,15 @@ export function validateAccountIssues(
   } satisfies Record<AccountField, Issue | undefined>)
 }
 
-export type SignupField = 'name' | 'email' | 'password' | 'terms'
+export type SignupField = 'email' | 'password' | 'terms'
 
-/** Đăng ký khách hàng: gọn hơn hồ sơ chuyên gia (không số điện thoại, không nhập lại mật khẩu). */
+/** Sign-up for customers and experts: email, password and terms only; the name comes later. */
 export function validateSignupIssues(values: {
-  name: string
   email: string
   password: string
   terms: boolean
 }): Partial<Record<SignupField, Issue>> {
   return compact({
-    name: nameIssue(values.name),
     email: emailIssue(values.email),
     password: passwordIssue(values.password),
     terms: values.terms ? undefined : 'terms',
