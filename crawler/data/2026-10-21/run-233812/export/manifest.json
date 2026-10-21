@@ -1,0 +1,99 @@
+{
+  "schema_version": 2,
+  "generated_at": "2026-10-21T23:41:33",
+  "documents": [
+    {
+      "file": "van_ban_hop_nhat/25-vbhn-btc.json",
+      "document_number": "25/VBHN-BTC",
+      "source": "vbpl",
+      "text_source": "detail_page_dom",
+      "doc_type": "Văn bản hợp nhất",
+      "parse_status": "PARSED",
+      "articles": 7,
+      "chunks": 19,
+      "suggested_status": "APPROVED",
+      "warnings": [],
+      "unit_warnings": 0
+    },
+    {
+      "file": "thong_tu/71-2025-tt-btc.json",
+      "document_number": "71/2025/TT-BTC",
+      "source": "vbpl",
+      "text_source": "detail_page_dom",
+      "doc_type": "Thông tư",
+      "parse_status": "PARSED",
+      "articles": 2,
+      "chunks": 10,
+      "suggested_status": "APPROVED",
+      "warnings": [],
+      "unit_warnings": 0
+    },
+    {
+      "file": "thong_tu/73-2024-tt-btc.json",
+      "document_number": "73/2024/TT-BTC",
+      "source": "vbpl",
+      "text_source": "detail_page_dom",
+      "doc_type": "Thông tư",
+      "parse_status": "PARSED",
+      "articles": 7,
+      "chunks": 19,
+      "suggested_status": "APPROVED",
+      "warnings": [],
+      "unit_warnings": 0
+    },
+    {
+      "file": "thong_tu/43-2024-tt-btc.json",
+      "document_number": "43/2024/TT-BTC",
+      "source": "vbpl",
+      "text_source": "detail_page_dom",
+      "doc_type": "Thông tư",
+      "parse_status": "PARSED",
+      "articles": 2,
+      "chunks": 44,
+      "suggested_status": "APPROVED",
+      "warnings": [],
+      "unit_warnings": 14
+    },
+    {
+      "file": "nghi_dinh/70-2024-nd-cp.json",
+      "document_number": "70/2024/NĐ-CP",
+      "source": "vbpl",
+      "text_source": "detail_page_dom",
+      "doc_type": "Nghị định",
+      "parse_status": "PARSED",
+      "articles": 38,
+      "chunks": 170,
+      "suggested_status": "APPROVED",
+      "warnings": [],
+      "unit_warnings": 0
+    },
+    {
+      "file": "nghi_dinh/59-2019-nd-cp.json",
+      "document_number": "59/2019/NĐ-CP",
+      "source": "vbpl",
+      "text_source": "detail_page_dom",
+      "doc_type": "Nghị định",
+      "parse_status": "PARSED",
+      "articles": 89,
+      "chunks": 250,
+      "suggested_status": "APPROVED",
+      "warnings": [],
+      "unit_warnings": 0
+    },
+    {
+      "file": "khong_xac_dinh/64-2025-tt-btc.json",
+      "document_number": "64/2025/TT-BTC",
+      "source": "vbpl",
+      "text_source": "unavailable",
+      "doc_type": "Không xác định",
+      "parse_status": "PARSE_FAILED",
+      "articles": 0,
+      "chunks": 0,
+      "suggested_status": "PENDING",
+      "warnings": [
+        "Không tìm thấy Điều nào trong văn bản"
+      ],
+      "unit_warnings": 0
+    }
+  ]
+}
