@@ -2,12 +2,11 @@ name: Frontend CI
 
 on:
   push:
-    branches: [ "main", "fe_dev", "test-ci-cd" ]
+    branches: [ main, prod, fe_dev, test-ci-cd ]
     paths:
       - "FE/**"
       - ".github/workflows/fe-ci.yml"
   pull_request:
-    branches: [ "main", "fe_dev", "test-ci-cd" ]
     paths:
       - "FE/**"
       - ".github/workflows/fe-ci.yml"
@@ -47,6 +46,8 @@ jobs:
       - name: Unit tests
         run: npm test
 
-      # Runner ubuntu-latest có sẵn Google Chrome; Playwright dùng channel 'chrome'
+      # Runner ubuntu-latest has Google Chrome pre-installed; Playwright uses channel 'chrome'
       - name: E2E flow tests (Playwright)
         run: npm run test:e2e
+        env:
+          VITE_API_GATEWAY_URL: "http://localhost:5190"

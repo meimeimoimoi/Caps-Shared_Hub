@@ -202,6 +202,14 @@ namespace Caps.Expert.Infrastructure.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("expert_profile_id");
 
+                    b.Property<DateTimeOffset?>("ExtractedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("extracted_at");
+
+                    b.Property<string>("ExtractionStatus")
+                        .HasColumnType("text")
+                        .HasColumnName("extraction_status");
+
                     b.Property<string>("FileName")
                         .IsRequired()
                         .HasMaxLength(255)
@@ -228,6 +236,10 @@ namespace Caps.Expert.Infrastructure.Persistence.Migrations
                     b.Property<long>("SizeBytes")
                         .HasColumnType("bigint")
                         .HasColumnName("size_bytes");
+
+                    b.Property<string>("SourceUrl")
+                        .HasColumnType("text")
+                        .HasColumnName("source_url");
 
                     b.HasKey("Id");
 

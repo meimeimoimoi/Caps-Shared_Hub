@@ -1,0 +1,211 @@
+# Production compose: pulls pre-built images from ghcr.io.
+# Meant to run on the VPS after `docker compose pull && docker compose up -d`.
+# Infrastructure services (postgres, redis, rabbitmq, seaweedfs) stay identical to development.
+# Copy .env.example → .env, fill real passwords, and create secrets/jwt-signing-key.pem before first start.
+
+services:
+  postgres:
+    image: ankane/pgvector:v0.5.1
+    container_name: caps_postgres
+    restart: always
+    environment:
+      POSTGRES_DB: caps_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set it in .env}
+      CAPS_AUTH_DB_PASSWORD: ${CAPS_AUTH_DB_PASSWORD:?set it in .env}
+      CAPS_EXPERT_DB_PASSWORD: ${CAPS_EXPERT_DB_PASSWORD:?set it in .env}
+      CAPS_BILLING_DB_PASSWORD: ${CAPS_BILLING_DB_PASSWORD:?set it in .env}
+      CAPS_WORKFLOW_DB_PASSWORD: ${CAPS_WORKFLOW_DB_PASSWORD:?set it in .env}
+      CAPS_INGESTION_DB_PASSWORD: ${CAPS_INGESTION_DB_PASSWORD:?set it in .env}
+      CAPS_NOTIFICATION_DB_PASSWORD: ${CAPS_NOTIFICATION_DB_PASSWORD:?set it in .env}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./postgres/init-service-roles.sh:/docker-entrypoint-initdb.d/10-service-roles.sh:ro
+      - ./postgres/db:/caps-db:ro
+    networks:
+      - caps_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: caps_redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - caps_network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: caps_rabbitmq
+    restart: always
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-guest}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS:-guest}
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - caps_network
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+
+  seaweedfs:
+    image: chrislusf/seaweedfs:3.97
+    container_name: caps_seaweedfs
+    restart: always
+    command: server -dir=/data -s3 -s3.config=/etc/seaweedfs/s3.json
+    ports:
+      - "8333:8333"
+    volumes:
+      - seaweedfs_data:/data
+      - ./seaweedfs/s3.json:/etc/seaweedfs/s3.json:ro
+    networks:
+      - caps_network
+
+  # ── Application services (pre-built images from ghcr.io) ──
+
+  auth:
+    image: ghcr.io/${GHCR_OWNER:-meimeimoimoi}/caps-auth:latest
+    container_name: caps_auth
+    restart: always
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__Postgres: Host=postgres;Port=5432;Database=caps_db;Username=caps_auth;Password=${CAPS_AUTH_DB_PASSWORD}
+      ConnectionStrings__Redis: redis:6379
+      ConnectionStrings__RabbitMq: amqp://${RABBITMQ_USER:-guest}:${RABBITMQ_PASS:-guest}@rabbitmq:5672
+      Jwt__SigningKeys__0__PrivateKeyPath: /run/secrets/jwt_signing_key
+      Auth__KnownProxies__0: 172.28.0.10
+      Auth__DataProtectionKeysPath: /var/lib/caps-auth/keys
+    secrets:
+      - jwt_signing_key
+    volumes:
+      - auth_keys:/var/lib/caps-auth/keys
+    ports:
+      - "5194:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - caps_network
+
+  expert:
+    image: ghcr.io/${GHCR_OWNER:-meimeimoimoi}/caps-expert:latest
+    container_name: caps_expert
+    restart: always
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__Postgres: Host=postgres;Port=5432;Database=caps_db;Username=caps_expert;Password=${CAPS_EXPERT_DB_PASSWORD}
+      ConnectionStrings__Redis: redis:6379
+      ConnectionStrings__RabbitMq: amqp://${RABBITMQ_USER:-guest}:${RABBITMQ_PASS:-guest}@rabbitmq:5672
+      Jwt__JwksUrl: http://auth:8080/.well-known/jwks.json
+      Jwt__RequireHttpsMetadata: "false"
+      Storage__ServiceUrl: http://seaweedfs:8333
+      Storage__AccessKey: ${SEAWEEDFS_ACCESS_KEY:-caps-dev-access}
+      Storage__SecretKey: ${SEAWEEDFS_SECRET_KEY:-caps-dev-secret-change-me}
+    ports:
+      - "5198:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - caps_network
+
+  gateway:
+    image: ghcr.io/${GHCR_OWNER:-meimeimoimoi}/caps-gateway:latest
+    container_name: caps_gateway
+    restart: always
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: http://+:8080
+      Jwt__JwksUrl: http://auth:8080/.well-known/jwks.json
+      Jwt__RequireHttpsMetadata: "false"
+      ReverseProxy__Clusters__auth-cluster__Destinations__auth__Address: http://auth:8080
+      ReverseProxy__Clusters__expert-cluster__Destinations__expert__Address: http://expert:8080
+    ports:
+      - "5190:8080"
+    depends_on:
+      - auth
+      - expert
+    networks:
+      caps_network:
+        ipv4_address: 172.28.0.10
+
+  frontend:
+    image: ghcr.io/${GHCR_OWNER:-meimeimoimoi}/caps-frontend:latest
+    container_name: caps_frontend
+    restart: always
+    ports:
+      - "80:80"
+    depends_on:
+      - gateway
+    networks:
+      - caps_network
+
+  ai-service:
+    image: ghcr.io/${GHCR_OWNER:-meimeimoimoi}/caps-ai-service:latest
+    container_name: caps_ai_service
+    restart: always
+    environment:
+      OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://host.docker.internal:11434}
+      QDRANT_URL: ${QDRANT_URL:-http://host.docker.internal:6333}
+    ports:
+      - "8000:8000"
+    networks:
+      - caps_network
+
+  crawler:
+    image: ghcr.io/${GHCR_OWNER:-meimeimoimoi}/caps-crawler:latest
+    container_name: caps_crawler
+    # Not a long-running service; started manually or by cron on the host.
+    # Example: docker compose run --rm crawler --all --sources vbpl,mof --export
+    profiles:
+      - tools
+    volumes:
+      - crawler_data:/app/data
+    networks:
+      - caps_network
+
+networks:
+  caps_network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.28.0.0/16
+
+secrets:
+  jwt_signing_key:
+    file: ./secrets/jwt-signing-key.pem
+
+volumes:
+  postgres_data:
+  redis_data:
+  rabbitmq_data:
+  seaweedfs_data:
+  auth_keys:
+  crawler_data:
+
