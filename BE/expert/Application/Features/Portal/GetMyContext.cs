@@ -85,7 +85,8 @@ public sealed class GetMyContextHandler(
             new(true, null, PortalAccessRules.CapabilitiesOf(facts)),
             readiness,
             now,
-            Version
+            Version,
+            profile?.Phone
         );
     }
 

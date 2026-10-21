@@ -99,6 +99,19 @@ public sealed class ExpertProfile
         UpdatedAt = now;
     }
 
+    /// <summary>
+    /// Changes the professional name and contact phone after the draft stage (settings page). Unlike a draft
+    /// save, neither may be cleared: reviewers and customers rely on them. Submitted snapshots are not touched.
+    /// </summary>
+    public void UpdateContact(string? displayName, string? phone, DateTimeOffset now)
+    {
+        var name = Clean(displayName) ?? throw ExpertErrors.ContactRequired("displayName");
+        var contactPhone = Clean(phone) ?? throw ExpertErrors.ContactRequired("phone");
+        DisplayName = name;
+        Phone = contactPhone;
+        UpdatedAt = now;
+    }
+
     /// <summary>Keeps the account status reported by auth; blank values are ignored.</summary>
     public void RecordAccountStatus(string? status)
     {
