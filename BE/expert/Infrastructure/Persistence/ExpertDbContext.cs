@@ -147,6 +147,9 @@ public sealed class ExpertDbContext(DbContextOptions<ExpertDbContext> options) :
             e.Property(x => x.ParsedMeta).HasColumnName("parsed_meta").HasColumnType("jsonb");
             e.Property(x => x.ScreeningFlag).HasColumnName("screening_flag");
             e.Property(x => x.CreatedAt).HasColumnName("created_at").IsRequired();
+            e.Property(x => x.SourceUrl).HasColumnName("source_url");
+            e.Property(x => x.ExtractionStatus).HasColumnName("extraction_status");
+            e.Property(x => x.ExtractedAt).HasColumnName("extracted_at");
             e.HasIndex(x => x.ExpertProfileId).HasDatabaseName("ix_expert_evidence_profile");
             e.HasIndex(x => x.ApplicationId).HasDatabaseName("ix_expert_evidence_application");
             e.HasOne<ExpertProfile>()
