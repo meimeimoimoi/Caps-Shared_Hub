@@ -233,7 +233,7 @@
     "photoFormats": "JPG, PNG, WebP · tối đa 5 MB",
     "photoError": "Chọn ảnh JPG, PNG hoặc WebP không quá 5 MB.",
     "profile": "Ảnh đại diện",
-    "contactFromAccount": "Email và số điện thoại lấy từ tài khoản bạn vừa tạo, nên không cần nhập lại ở đây.",
+    "contactFromAccount": "Email lấy từ tài khoản và không thay đổi được. Số điện thoại được điền sẵn từ tài khoản (nếu có); bạn có thể dùng số công việc khác.",
     "contactHelpLabel": "Thông tin liên hệ lấy từ đâu"
   },
   "experience": {

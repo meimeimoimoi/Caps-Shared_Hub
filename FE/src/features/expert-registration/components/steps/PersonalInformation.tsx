@@ -1,14 +1,12 @@
 import { useTranslation } from 'react-i18next'
 import { formControlClassName as inputCls } from '@/components/ui/forms/form-control'
-import {
-  formatVietnamPhone,
-  normalizeVietnamPhone,
-} from '@/lib/validation/vietnamPhone'
+import { formatVietnamPhone } from '@/lib/validation/vietnamPhone'
 import { useRef, type ReactNode } from 'react'
 import { Camera, User, ImagePlus } from 'lucide-react'
 import type { Profile } from '../../types'
 import { FormField } from '@/components/ui/forms/form-field'
 import { HelpTip } from '@/components/ui/feedback/help-tip'
+import { PhoneAccountNotice } from '@/features/auth/components/PhoneAccountNotice'
 import { DatePicker } from '@/components/ui/forms/date-picker'
 import { Combobox } from '@/components/ui/forms/combobox'
 import { provinces } from '../../constants'
@@ -42,10 +40,9 @@ export function PersonalInformation({
   const format = useFormatters()
 
   const photoInputRef = useRef<HTMLInputElement>(null)
-  // Email và số điện thoại đã nhập và kiểm tra ở bước tạo tài khoản: chỉ hiện lại để xác nhận.
-  // Thiếu hoặc sai (vd. mở lại bản nháp cũ) thì vẫn cho nhập như trước.
-  const contactFromAccount =
-    !!profile.email.trim() && !!normalizeVietnamPhone(profile.phone)
+  // The account email is shown read-only (it cannot be changed); the phone stays editable because an
+  // expert may use a work number, and it is pre-filled from the account when the account has one
+  const contactFromAccount = !!profile.email.trim()
   const handleUpdate = (key: keyof Profile, value: string) => {
     onUpdate(key, value)
   }
@@ -209,21 +206,17 @@ export function PersonalInformation({
             </HelpTip>
           )}
         </div>
-        {contactFromAccount ? (
-          <div className="expert-contact-readonly">
-            <dl>
-              <div>
-                <dt>{t('fields.email')}</dt>
-                <dd>{profile.email}</dd>
-              </div>
-              <div>
-                <dt>{t('fields.phone')}</dt>
-                <dd>{formatVietnamPhone(profile.phone)}</dd>
-              </div>
-            </dl>
-          </div>
-        ) : (
-          <div className="expert-personal-grid">
+        <div className="expert-personal-grid">
+          {contactFromAccount ? (
+            <div className="expert-contact-readonly">
+              <dl>
+                <div>
+                  <dt>{t('fields.email')}</dt>
+                  <dd>{profile.email}</dd>
+                </div>
+              </dl>
+            </div>
+          ) : (
             <FormField
               htmlFor="profile-email"
               label={t('fields.emailRequired')}
@@ -232,6 +225,7 @@ export function PersonalInformation({
             >
               {renderInput('email', true, 'email')}
             </FormField>
+          )}
             <FormField
               htmlFor="profile-phone"
               label={t('fields.phoneVietnam')}
@@ -254,9 +248,9 @@ export function PersonalInformation({
                 </svg>
                 {renderInput('phone', true, 'tel')}
               </div>
+              <PhoneAccountNotice phone={profile.phone} />
             </FormField>
-          </div>
-        )}
+        </div>
       </div>
 
       {/* â”€â”€ Section: Professional profile â”€â”€ */}

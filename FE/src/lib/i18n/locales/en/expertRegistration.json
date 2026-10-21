@@ -235,7 +235,7 @@
     "photoFormats": "JPG, PNG, WebP · max 5 MB",
     "photoError": "Choose a JPG, PNG or WebP image up to 5 MB.",
     "profile": "Profile",
-    "contactFromAccount": "Your email and phone come from the account you just created, so there is no need to enter them again.",
+    "contactFromAccount": "Your email comes from your account and cannot be changed. The phone is pre-filled from your account when it has one; you may use a different work number.",
     "contactHelpLabel": "Where contact details come from"
   },
   "experience": {

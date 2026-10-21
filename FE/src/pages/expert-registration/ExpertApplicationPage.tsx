@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next'
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { useFormatters } from '@/hooks/useFormatters'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { FileText, Briefcase, UserRound, ChevronDown } from 'lucide-react'
@@ -21,7 +21,6 @@ import { useApplicationLifecycle } from '../../features/expert-registration/hook
 import { useExpertApplication } from '../../features/expert-registration/hooks/useExpertApplication'
 import { useQualificationOverview } from '@/features/expert-qualifications/hooks/useQualifications'
 import type { Stage } from '../../features/expert-registration/types'
-import { EmailVerificationNotice } from '../../features/expert-registration/components/EmailVerificationNotice'
 import { ApplicationProgressRail } from '../../features/expert-registration/components/ApplicationProgressRail'
 import { expertPageCls } from './expertPageClass'
 
@@ -45,17 +44,9 @@ export default function ExpertApplicationPage() {
     loading,
     loadFailed,
     reload,
-    syncVerifiedSession,
   } = useExpertApplication()
   const location = useLocation()
   const navigate = useNavigate()
-  // Set by /expert/register right after the account is created. Read once, then cleared from history
-  // so a reload or a later visit does not show the notice again.
-  const [accountCreated] = useState(
-    () =>
-      (location.state as { accountCreated?: boolean } | null)
-        ?.accountCreated === true
-  )
   useEffect(() => {
     if (location.state)
       navigate(location.pathname + location.search, {
@@ -88,7 +79,6 @@ export default function ExpertApplicationPage() {
   } = useApplicationLifecycle({
     application,
     setApplication,
-    syncVerifiedSession,
   })
 
   const {
@@ -107,11 +97,6 @@ export default function ExpertApplicationPage() {
     avatarPreview,
     independent,
     draftSaved,
-    verifyOpen,
-    verifyPurpose,
-    closeVerify,
-    openVerification,
-    checkVerifiedAndSubmit,
     formErrors,
     heading,
     errorRef,
@@ -130,14 +115,10 @@ export default function ExpertApplicationPage() {
     removeFile,
     toggleConfirmed,
     saveDraft,
-  } = useRegistrationForm({ application, setApplication, syncVerifiedSession })
+  } = useRegistrationForm({ application, setApplication })
   const wizardBodyRef = useWizardMotion(step, !submitted)
   const visibleNotice =
-    [
-      notice,
-      lifecycleNotice,
-      accountCreated && step === 0 ? t('messages.accountCreated') : '',
-    ].find(Boolean) ?? ''
+    [notice, lifecycleNotice].find(Boolean) ?? ''
   // Eligibility only opens the service step: the furthest service qualification decides where the expert is
   const overview = useQualificationOverview()
   const serviceStep = (
@@ -177,8 +158,6 @@ export default function ExpertApplicationPage() {
     ? {
         used: application.evidence.length,
         max: application.maxFiles,
-        verified: application.emailVerified,
-        onVerify: openVerification,
       }
     : undefined
 
@@ -323,14 +302,6 @@ export default function ExpertApplicationPage() {
             <section
               className={`expert-wizard ${step === 0 ? 'expert-wizard-personal' : ''}`}
             >
-              {verifyOpen && application && !application.emailVerified && (
-                <EmailVerificationNotice
-                  email={profile.email}
-                  onCheck={checkVerifiedAndSubmit}
-                  purpose={verifyPurpose}
-                  onClose={closeVerify}
-                />
-              )}
               <form noValidate onSubmit={advance}>
                 <div
                   ref={wizardBodyRef}
@@ -413,9 +384,6 @@ export default function ExpertApplicationPage() {
               step={step}
               furthest={furthest}
               onMove={move}
-              email={profile.email}
-              emailVerified={application?.emailVerified ?? false}
-              onVerify={openVerification}
               missing={application?.missingRequirements ?? []}
             />
           </div>

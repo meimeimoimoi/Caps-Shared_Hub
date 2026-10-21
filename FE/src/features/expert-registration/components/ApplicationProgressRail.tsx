@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next'
-import { Check, CheckCircle2, MailWarning } from 'lucide-react'
+import { Check, CheckCircle2 } from 'lucide-react'
 import { useFormatters } from '@/hooks/useFormatters'
 import type { steps as wizardSteps } from '../constants'
 
@@ -23,26 +23,18 @@ export interface ApplicationProgressRailProps {
   /** Furthest step reached; steps up to it stay open */
   furthest: number
   onMove: (step: number) => void
-  email: string
-  emailVerified: boolean
-  /** Opens the verification dialog */
-  onVerify: () => void
   /** Codes from the server; empty when everything required is there */
   missing: string[]
 }
 
 /**
- * Side rail of the application wizard: where the applicant is, whether the email is verified, and what
- * still blocks submitting. Sticks beside the form on wide screens and sits above it on narrow ones.
+ * Side rail of the application wizard: where the applicant is and what still blocks submitting. Sticks beside the form on wide screens and sits above it on narrow ones.
  */
 export function ApplicationProgressRail({
   steps,
   step,
   furthest,
   onMove,
-  email,
-  emailVerified,
-  onVerify,
   missing,
 }: ApplicationProgressRailProps) {
   const { t } = useTranslation('expertRegistration')
@@ -106,32 +98,6 @@ export function ApplicationProgressRail({
             )
           })}
         </ol>
-      </section>
-
-      <section className="expert-rail-block">
-        {emailVerified ? (
-          <p className="expert-rail-status" data-tone="ok">
-            <CheckCircle2 size={18} aria-hidden="true" />
-            <span>{t('rail.emailVerified')}</span>
-          </p>
-        ) : (
-          <>
-            <p className="expert-rail-status" data-tone="warn">
-              <MailWarning size={18} aria-hidden="true" />
-              <span>{t('rail.emailUnverified')}</span>
-            </p>
-            <p className="expert-rail-note">
-              <strong>{email}</strong>
-            </p>
-            <button
-              type="button"
-              className="expert-rail-action"
-              onClick={onVerify}
-            >
-              {t('rail.verify')}
-            </button>
-          </>
-        )}
       </section>
 
       <section className="expert-rail-block">

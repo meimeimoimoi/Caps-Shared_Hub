@@ -38,7 +38,4 @@ export interface Profile {
 export interface UploadQuota {
   used: number
   max: number
-  verified: boolean
-  /** Opens the email verification dialog */
-  onVerify: () => void
 }

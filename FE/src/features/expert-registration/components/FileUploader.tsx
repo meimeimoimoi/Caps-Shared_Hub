@@ -98,23 +98,10 @@ export function FileUploader({
           </span>
           <span className="expert-file-dropzone-text">
             <strong>
-              {t(quota.verified ? 'quota.fullTitle' : 'quota.unverifiedTitle', {
-                max: format.number(quota.max),
-              })}
+              {t('quota.fullTitle', { max: format.number(quota.max) })}
             </strong>
-            <span>
-              {t(quota.verified ? 'quota.fullBody' : 'quota.unverifiedBody')}
-            </span>
+            <span>{t('quota.fullBody')}</span>
           </span>
-          {!quota.verified && (
-            <button
-              type="button"
-              className="expert-rail-action expert-file-quota-action"
-              onClick={quota.onVerify}
-            >
-              {t('rail.verify')}
-            </button>
-          )}
         </div>
       )}
       {!disabled && !full && (
@@ -231,15 +218,6 @@ export function FileUploader({
             </p>
           )}
         </div>
-      )}
-      {/* Remaining room before verifying, so the limit is known before it blocks */}
-      {!disabled && !full && quota && !quota.verified && (
-        <p className="expert-file-quota">
-          {t('quota.remaining', {
-            used: format.number(quota.used),
-            max: format.number(quota.max),
-          })}
-        </p>
       )}
       {error && !full && (
         <p

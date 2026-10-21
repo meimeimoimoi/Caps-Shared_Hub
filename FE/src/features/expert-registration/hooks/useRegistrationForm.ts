@@ -19,19 +19,15 @@ import {
 } from '../api/applicationApi'
 import { messageFor } from './useApplicationLifecycle'
 
-/** Why the verification dialog opened: on submit, past the unverified upload limit, or from the reminder */
-export type VerifyPurpose = 'submit' | 'upload' | 'reminder'
-
 export interface UseRegistrationFormProps {
   application: ExpertApplication | null
   setApplication: (app: ExpertApplication) => void
-  syncVerifiedSession: () => Promise<void>
 }
 
+/** The draft wizard. Only verified accounts reach it (route guard), so it never asks for verification. */
 export function useRegistrationForm({
   application,
   setApplication,
-  syncVerifiedSession,
 }: UseRegistrationFormProps) {
   const { t } = useTranslation('expertRegistration')
   const user = useAuthStore((s) => s.user)
@@ -54,12 +50,6 @@ export function useRegistrationForm({
   const [localPreview, setLocalPreview] = useState('')
   const [independent, setIndependent] = useState(true)
   const [draftSaved, setDraftSaved] = useState(false)
-  // The code dialog opens when submitting, or when uploading past the unverified file limit;
-  // once verified it submits (submit) or just closes so uploading can continue (upload)
-  const [verifyOpen, setVerifyOpen] = useState(false)
-  const [verifyPurpose, setVerifyPurpose] = useState<VerifyPurpose>('submit')
-  // Nhập mã và tín hiệu "đã xác nhận" có thể báo cùng lúc: chỉ nộp một lần
-  const verifyCheck = useRef(false)
   const [formErrors, setFormErrors] = useState<
     Record<string, RegistrationMessage>
   >({})
@@ -73,6 +63,8 @@ export function useRegistrationForm({
     setHydratedKey(sourceKey)
     if (application) {
       const next = toProfile(application)
+      // Pre-fill the contact phone from the account; filling it does not save the draft
+      if (!next.phone && user?.phone) next.phone = user.phone
       setProfile(next)
       setFields(toFields(application))
       setIndependent(!next.company)
@@ -81,6 +73,7 @@ export function useRegistrationForm({
         ...p,
         name: p.name || user.name,
         email: user.email,
+        phone: p.phone || user.phone || '',
       }))
     }
   }
@@ -195,12 +188,6 @@ export function useRegistrationForm({
         setApplication(await applicationApi.upload(evidenceCode(key), file))
       } catch (e) {
         setFormErrors((p) => ({ ...p, [key]: messageFor(e) }))
-        // The remaining files would hit the same limit: ask for verification instead
-        if (e instanceof ApiError && e.code === 'EVIDENCE_LIMIT_UNVERIFIED') {
-          setVerifyPurpose('upload')
-          setVerifyOpen(true)
-          break
-        }
       } finally {
         setUploading((p) => ({
           ...p,
@@ -223,18 +210,10 @@ export function useRegistrationForm({
 
     setSubmitting(true)
     try {
-      // Mỗi lần "Tiếp tục" đều lưu nháp để không mất dữ liệu khi đóng trang
-      const saved = await persist()
+      // Every "Continue" saves the draft so nothing is lost when the page closes
+      await persist()
       if (step < 3) {
         move(returnToReview ? 3 : step + 1)
-        return
-      }
-      // The expert service reads verification from the token: refresh it first in case the
-      // email was verified in another tab or on another device, then re-read the application
-      const verified = saved.emailVerified || (await refreshVerification())
-      if (!verified) {
-        setVerifyPurpose('submit')
-        setVerifyOpen(true)
         return
       }
       await submitNow()
@@ -258,10 +237,6 @@ export function useRegistrationForm({
           ? { key: 'links.duplicate' }
           : messageFor(e)
       setFormErrors((p) => ({ ...p, [criterion]: message }))
-      if (e instanceof ApiError && e.code === 'EVIDENCE_LIMIT_UNVERIFIED') {
-        setVerifyPurpose('upload')
-        setVerifyOpen(true)
-      }
       return false
     } finally {
       setSubmitting(false)
@@ -269,56 +244,12 @@ export function useRegistrationForm({
   }
 
   async function submitNow() {
-    await syncVerifiedSession()
     if (avatar && useAuthStore.getState().user?.status === 'ACTIVE') {
       const url = await authApi.uploadAvatar(avatar)
       useAuthStore.getState().updateUser({ avatarUrl: url })
       setAvatar(null)
     }
     setApplication(await applicationApi.submit())
-  }
-
-  /** Refreshes the session and reports whether the application now sees a verified email. */
-  async function refreshVerification() {
-    await syncVerifiedSession()
-    const latest = await applicationApi.get()
-    if (latest) setApplication(latest)
-    return !!latest?.emailVerified
-  }
-
-  /** Runs after the code is entered or the link is opened (another tab): once verified, closes the
-   * dialog and submits, or only lifts the upload limit when the dialog was opened by an upload. */
-  async function checkVerifiedAndSubmit() {
-    if (verifyCheck.current) return
-    verifyCheck.current = true
-    try {
-      await syncVerifiedSession()
-      const latest = await applicationApi.get()
-      if (latest) setApplication(latest)
-      if (!latest?.emailVerified) return
-      // Only a submit continues after verifying; upload and reminder just close the dialog
-      if (verifyPurpose !== 'submit') {
-        setVerifyOpen(false)
-        setFormErrors((p) =>
-          Object.fromEntries(
-            Object.entries(p).filter(
-              ([, issue]) => issue.key !== 'messages.verifyForMoreFiles'
-            )
-          )
-        )
-        return
-      }
-      if (latest.status !== 'DRAFT') return
-      setVerifyOpen(false)
-      setSubmitting(true)
-      setError(null)
-      await submitNow()
-    } catch (err) {
-      setError(messageFor(err))
-    } finally {
-      verifyCheck.current = false
-      setSubmitting(false)
-    }
   }
 
   function clearFormError(key: string) {
@@ -400,14 +331,6 @@ export function useRegistrationForm({
     avatarPreview: localPreview || user?.avatarUrl || '',
     independent,
     draftSaved,
-    verifyOpen,
-    verifyPurpose,
-    closeVerify: () => setVerifyOpen(false),
-    openVerification: () => {
-      setVerifyPurpose('reminder')
-      setVerifyOpen(true)
-    },
-    checkVerifiedAndSubmit,
     formErrors: Object.fromEntries(
       Object.entries(formErrors).map(([field, issue]) => [
         field,
