@@ -17,7 +17,8 @@ public sealed class AddEvidenceLinkHandler(
     IExpertEvidenceRepository evidences,
     IApplicationDescriber describer,
     IUnitOfWork unitOfWork,
-    TimeProvider clock
+    TimeProvider clock,
+    IRealtimeNotifier realtime
 ) : ICommandHandler<AddEvidenceLinkCommand, ExpertApplicationResponse>
 {
     public async Task<ExpertApplicationResponse> HandleAsync(
@@ -55,6 +56,13 @@ public sealed class AddEvidenceLinkHandler(
         application.Touch(now);
         await unitOfWork.SaveChangesAsync(ct);
         await tx.CommitAsync(ct);
+        // Reviewers see new or removed evidence without reloading
+        await realtime.ChangedAsync(
+            ExpertRealtimeTopics.Applications,
+            [command.Applicant.UserId],
+            [Permission.ExpertReview],
+            ct
+        );
         return await describer.DescribeAsync(command.Applicant, profile, application, ct);
     }
 }

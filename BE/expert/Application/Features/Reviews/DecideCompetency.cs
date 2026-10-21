@@ -30,7 +30,8 @@ public sealed class DecideCompetencyHandler(
     IQualificationReviewDescriber describer,
     ExpertPolicyOptions policy,
     IUnitOfWork unitOfWork,
-    TimeProvider clock
+    TimeProvider clock,
+    IRealtimeNotifier realtime
 ) : ICommandHandler<DecideCompetencyCommand, ReviewQualificationResponse>
 {
     public async Task<ReviewQualificationResponse> HandleAsync(
@@ -88,6 +89,12 @@ public sealed class DecideCompetencyHandler(
         }
         await unitOfWork.SaveChangesAsync(ct);
         await tx.CommitAsync(ct);
+        await realtime.ChangedAsync(
+            ExpertRealtimeTopics.Qualifications,
+            [applicantUserId],
+            [Permission.ExpertReview, Permission.ExpertApprove],
+            ct
+        );
         return await describer.DescribeAsync(qualification, ct);
     }
 }

@@ -17,7 +17,8 @@ public sealed class RemoveEvidenceHandler(
     IObjectStorage storage,
     IApplicationDescriber describer,
     IUnitOfWork unitOfWork,
-    TimeProvider clock
+    TimeProvider clock,
+    IRealtimeNotifier realtime
 ) : ICommandHandler<RemoveEvidenceCommand, ExpertApplicationResponse>
 {
     public async Task<ExpertApplicationResponse> HandleAsync(
@@ -40,6 +41,13 @@ public sealed class RemoveEvidenceHandler(
         // Delete the file only once the row is gone, so a failure never leaves a row without its file
         if (!evidence.IsLink)
             await storage.DeleteQuietlyAsync(evidence.FileUrl);
+        // Reviewers see new or removed evidence without reloading
+        await realtime.ChangedAsync(
+            ExpertRealtimeTopics.Applications,
+            [command.Applicant.UserId],
+            [Permission.ExpertReview],
+            ct
+        );
         return await describer.DescribeAsync(command.Applicant, profile, application, ct);
     }
 }

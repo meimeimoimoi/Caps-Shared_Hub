@@ -22,7 +22,8 @@ public sealed class RemoveQualificationEvidenceHandler(
     IObjectStorage storage,
     IQualificationDescriber describer,
     IUnitOfWork unitOfWork,
-    TimeProvider clock
+    TimeProvider clock,
+    IRealtimeNotifier realtime
 ) : ICommandHandler<RemoveQualificationEvidenceCommand, ExpertQualificationResponse>
 {
     public async Task<ExpertQualificationResponse> HandleAsync(
@@ -47,6 +48,13 @@ public sealed class RemoveQualificationEvidenceHandler(
         await tx.CommitAsync(ct);
         // Delete the file only once the row is gone, so a failure never leaves a row without its file
         await storage.DeleteQuietlyAsync(evidence.FileUrl);
+        // Reviewers see new or removed evidence without reloading
+        await realtime.ChangedAsync(
+            ExpertRealtimeTopics.Qualifications,
+            [applicant.UserId],
+            [Permission.ExpertReview],
+            ct
+        );
         return await describer.DescribeAsync(applicant, qualification, ct);
     }
 }

@@ -22,7 +22,8 @@ public sealed class RegisterForServiceHandler(
     IServiceCatalogRepository catalog,
     IQualificationDescriber describer,
     IUnitOfWork unitOfWork,
-    TimeProvider clock
+    TimeProvider clock,
+    IRealtimeNotifier realtime
 ) : ICommandHandler<RegisterForServiceCommand, ExpertQualificationResponse>
 {
     public async Task<ExpertQualificationResponse> HandleAsync(
@@ -55,6 +56,12 @@ public sealed class RegisterForServiceHandler(
         qualifications.AddEvent(opened);
         await unitOfWork.SaveChangesAsync(ct);
         await tx.CommitAsync(ct);
+        await realtime.ChangedAsync(
+            ExpertRealtimeTopics.Qualifications,
+            [applicant.UserId],
+            [Permission.ExpertReview],
+            ct
+        );
         return await describer.DescribeAsync(applicant, qualification, ct);
     }
 }

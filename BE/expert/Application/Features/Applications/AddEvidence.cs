@@ -25,7 +25,8 @@ public sealed class AddEvidenceHandler(
     IObjectStorage storage,
     IApplicationDescriber describer,
     IUnitOfWork unitOfWork,
-    TimeProvider clock
+    TimeProvider clock,
+    IRealtimeNotifier realtime
 ) : ICommandHandler<AddEvidenceCommand, ExpertApplicationResponse>
 {
     public async Task<ExpertApplicationResponse> HandleAsync(
@@ -89,6 +90,13 @@ public sealed class AddEvidenceHandler(
             await storage.DeleteQuietlyAsync(evidence.FileUrl);
             throw;
         }
+        // Reviewers see new or removed evidence without reloading
+        await realtime.ChangedAsync(
+            ExpertRealtimeTopics.Applications,
+            [command.Applicant.UserId],
+            [Permission.ExpertReview],
+            ct
+        );
         return await describer.DescribeAsync(command.Applicant, profile, application, ct);
     }
 }

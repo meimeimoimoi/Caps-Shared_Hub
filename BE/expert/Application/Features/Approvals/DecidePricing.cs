@@ -1,5 +1,6 @@
 using Caps.Common.Application;
 using Caps.Expert.Application.Abstractions;
+using Caps.Expert.Application.Common;
 using Caps.Expert.Application.DTOs.Responses;
 using Caps.Expert.Domain;
 
@@ -18,7 +19,8 @@ public sealed class DecidePricingHandler(
     IApplicantLock locks,
     IPricingRepository pricing,
     IUnitOfWork unitOfWork,
-    TimeProvider clock
+    TimeProvider clock,
+    IRealtimeNotifier realtime
 ) : ICommandHandler<DecidePricingCommand, ServicePricingResponse>
 {
     public async Task<ServicePricingResponse> HandleAsync(
@@ -45,6 +47,12 @@ public sealed class DecidePricingHandler(
         pricing.AddEvents(events);
         await unitOfWork.SaveChangesAsync(ct);
         await tx.CommitAsync(ct);
+        await realtime.ChangedAsync(
+            ExpertRealtimeTopics.Pricing,
+            [expertUserId],
+            [Permission.ExpertApprove],
+            ct
+        );
         return Common.PricingDescriber.ToResponse(version);
     }
 }

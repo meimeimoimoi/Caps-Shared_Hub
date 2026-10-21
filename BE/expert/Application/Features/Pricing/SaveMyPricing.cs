@@ -32,7 +32,8 @@ public sealed class SaveMyPricingHandler(
     IPricingDescriber describer,
     ExpertPolicyOptions policy,
     IUnitOfWork unitOfWork,
-    TimeProvider clock
+    TimeProvider clock,
+    IRealtimeNotifier realtime
 ) : ICommandHandler<SaveMyPricingCommand, PricingWorkspaceResponse>
 {
     public async Task<PricingWorkspaceResponse> HandleAsync(
@@ -91,6 +92,12 @@ public sealed class SaveMyPricingHandler(
         pricing.AddEvents(events);
         await unitOfWork.SaveChangesAsync(ct);
         await tx.CommitAsync(ct);
+        await realtime.ChangedAsync(
+            ExpertRealtimeTopics.Pricing,
+            [applicant.UserId],
+            [Permission.ExpertApprove],
+            ct
+        );
         return await describer.DescribeAsync(qualification, ct);
     }
 }

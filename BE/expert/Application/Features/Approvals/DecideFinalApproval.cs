@@ -25,7 +25,8 @@ public sealed class DecideFinalApprovalHandler(
     IServiceAccessNotifier notifier,
     IQualificationReviewDescriber describer,
     IUnitOfWork unitOfWork,
-    TimeProvider clock
+    TimeProvider clock,
+    IRealtimeNotifier realtime
 ) : ICommandHandler<DecideFinalApprovalCommand, ReviewQualificationResponse>
 {
     public async Task<ReviewQualificationResponse> HandleAsync(
@@ -55,6 +56,12 @@ public sealed class DecideFinalApprovalHandler(
         await notifier.EnqueueAsync(qualification, decided, change, ct);
         await unitOfWork.SaveChangesAsync(ct);
         await tx.CommitAsync(ct);
+        await realtime.ChangedAsync(
+            ExpertRealtimeTopics.Qualifications,
+            [applicantUserId],
+            [Permission.ExpertReview, Permission.ExpertApprove],
+            ct
+        );
         return await describer.DescribeAsync(qualification, ct);
     }
 }

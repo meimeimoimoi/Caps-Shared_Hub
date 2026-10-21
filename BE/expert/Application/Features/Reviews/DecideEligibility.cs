@@ -28,7 +28,8 @@ public sealed class DecideEligibilityHandler(
     IReviewDescriber describer,
     ExpertPolicyOptions policy,
     IUnitOfWork unitOfWork,
-    TimeProvider clock
+    TimeProvider clock,
+    IRealtimeNotifier realtime
 ) : ICommandHandler<DecideEligibilityCommand, ReviewApplicationResponse>
 {
     public async Task<ReviewApplicationResponse> HandleAsync(
@@ -83,6 +84,12 @@ public sealed class DecideEligibilityHandler(
         }
         await unitOfWork.SaveChangesAsync(ct);
         await tx.CommitAsync(ct);
+        await realtime.ChangedAsync(
+            ExpertRealtimeTopics.Applications,
+            [profile.UserId],
+            [Permission.ExpertReview],
+            ct
+        );
         return await describer.DescribeAsync(application, ct);
     }
 }

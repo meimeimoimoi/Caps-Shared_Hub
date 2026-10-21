@@ -20,7 +20,8 @@ public sealed class SupplementQualificationHandler(
     IQualificationEvidenceRepository evidences,
     IQualificationDescriber describer,
     IUnitOfWork unitOfWork,
-    TimeProvider clock
+    TimeProvider clock,
+    IRealtimeNotifier realtime
 ) : ICommandHandler<SupplementQualificationCommand, ExpertQualificationResponse>
 {
     public async Task<ExpertQualificationResponse> HandleAsync(
@@ -52,6 +53,12 @@ public sealed class SupplementQualificationHandler(
         qualifications.AddEvent(qualification.Resubmit(applicant.UserId, note, clock.GetUtcNow()));
         await unitOfWork.SaveChangesAsync(ct);
         await tx.CommitAsync(ct);
+        await realtime.ChangedAsync(
+            ExpertRealtimeTopics.Qualifications,
+            [applicant.UserId],
+            [Permission.ExpertReview],
+            ct
+        );
         return await describer.DescribeAsync(applicant, qualification, ct);
     }
 }

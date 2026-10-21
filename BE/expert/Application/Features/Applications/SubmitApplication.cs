@@ -18,7 +18,8 @@ public sealed class SubmitApplicationHandler(
     IExpertEvidenceRepository evidences,
     IApplicationDescriber describer,
     IUnitOfWork unitOfWork,
-    TimeProvider clock
+    TimeProvider clock,
+    IRealtimeNotifier realtime
 ) : ICommandHandler<SubmitApplicationCommand, ExpertApplicationResponse>
 {
     public async Task<ExpertApplicationResponse> HandleAsync(
@@ -45,6 +46,12 @@ public sealed class SubmitApplicationHandler(
         profile.MirrorStatus(application.Status, now);
         await unitOfWork.SaveChangesAsync(ct);
         await tx.CommitAsync(ct);
+        await realtime.ChangedAsync(
+            ExpertRealtimeTopics.Applications,
+            [applicant.UserId],
+            [Permission.ExpertReview],
+            ct
+        );
         return await describer.DescribeAsync(applicant, profile, application, ct);
     }
 }
