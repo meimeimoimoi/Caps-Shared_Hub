@@ -32,8 +32,7 @@ public sealed class SupplementApplicationHandler(
         var (profile, application) = await loader.GetCurrentAsync(applicant.UserId, ct);
         if (!application.NeedsInformation)
             throw ExpertErrors.ApplicationLocked(application.Status);
-        if (!applicant.EmailVerified)
-            throw ExpertErrors.EmailNotVerified();
+        applicant.EnsureVerified();
         var note = string.IsNullOrWhiteSpace(command.Note) ? null : command.Note.Trim();
         var addedFiles = await evidences.AnyAddedAfterAsync(
             application.Id,

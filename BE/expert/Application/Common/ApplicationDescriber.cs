@@ -26,9 +26,7 @@ public sealed class ApplicationDescriber(
             files.Any(x => x.EvidenceType == ApplicationRules.CvCode)
         );
         var verified = applicant.EmailVerified;
-        var maxFiles = verified
-            ? ApplicationRules.MaxFilesPerApplication
-            : ApplicationRules.MaxFilesBeforeVerification;
+        var maxFiles = ApplicationRules.MaxFilesPerApplication;
         return new(
             application.Id.ToString(),
             application.Status,

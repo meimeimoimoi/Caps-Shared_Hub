@@ -36,6 +36,7 @@ public sealed class SaveDraftHandler(
         CancellationToken ct
     )
     {
+        command.Applicant.EnsureVerified();
         var now = clock.GetUtcNow();
         var fields = ApplicationRules.NormalizeFields(command.Fields);
         ApplicationRules.ValidateBirthDate(command.BirthDate, now);

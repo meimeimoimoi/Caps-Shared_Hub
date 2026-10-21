@@ -35,6 +35,7 @@ public static class ExpertErrors
     public static AppException InvalidBirthDate() =>
         new(ErrorType.Validation, "INVALID_BIRTH_DATE", "Birth date is invalid.");
 
+
     public static AppException InvalidEvidenceCode() =>
         new(ErrorType.Validation, "INVALID_EVIDENCE_CODE", "Unknown evidence category.");
 
@@ -68,13 +69,6 @@ public static class ExpertErrors
     public static AppException EvidenceLimit(int max) =>
         new(ErrorType.Conflict, "EVIDENCE_LIMIT", $"An application can hold at most {max} files.");
 
-    public static AppException EvidenceLimitUnverified(int max) =>
-        new(
-            ErrorType.Forbidden,
-            "EVIDENCE_LIMIT_UNVERIFIED",
-            $"Verify your email address to upload more than {max} files."
-        );
-
     public static AppException EvidenceNotFound() =>
         new(ErrorType.NotFound, "EVIDENCE_NOT_FOUND", "File not found.");
 
@@ -88,7 +82,7 @@ public static class ExpertErrors
         new(
             ErrorType.Forbidden,
             "EMAIL_NOT_VERIFIED",
-            "Verify your email address before submitting."
+            "Verify your email address before changing your expert application."
         );
 
     public static AppException ApplicationIncomplete(IEnumerable<string> missing) =>

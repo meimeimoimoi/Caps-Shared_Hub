@@ -35,6 +35,7 @@ public sealed class AddEvidenceHandler(
     )
     {
         // Reject a bad file before touching the database
+        command.Applicant.EnsureVerified();
         var contentType = ApplicationRules.ValidateFile(command.Code, command.Content);
         var supplement = command.Code == ApplicationRules.SupplementCode;
 
@@ -61,10 +62,7 @@ public sealed class AddEvidenceHandler(
                     throw ExpertErrors.EvidenceDuplicate();
             }
         }
-        ApplicationRules.EnsureRoomForFile(
-            await evidences.CountAsync(application.Id, ct),
-            command.Applicant.EmailVerified
-        );
+        ApplicationRules.EnsureRoomForFile(await evidences.CountAsync(application.Id, ct));
 
         var now = clock.GetUtcNow();
         var evidence = ExpertEvidence.Create(

@@ -82,22 +82,14 @@ public static class ApplicationRules
             && !host.EndsWith(".internal", StringComparison.OrdinalIgnoreCase);
     }
 
-    /// <summary>Max files per application: unverified accounts can upload too, so abuse must be capped.</summary>
+    /// <summary>Max files per application, so one application cannot fill the storage.</summary>
     public const int MaxFilesPerApplication = 20;
 
-    /// <summary>
-    /// Max files before the email is verified: enough to start the draft (CV and a few documents) while an
-    /// account that is never verified cannot fill the storage.
-    /// </summary>
-    public const int MaxFilesBeforeVerification = 3;
-
     /// <summary>Checks that one more file fits, given how many the application already holds.</summary>
-    public static void EnsureRoomForFile(int currentCount, bool emailVerified)
+    public static void EnsureRoomForFile(int currentCount)
     {
         if (currentCount >= MaxFilesPerApplication)
             throw ExpertErrors.EvidenceLimit(MaxFilesPerApplication);
-        if (!emailVerified && currentCount >= MaxFilesBeforeVerification)
-            throw ExpertErrors.EvidenceLimitUnverified(MaxFilesBeforeVerification);
     }
 
     /// <summary>Validates an uploaded file; returns the content type detected from its bytes.</summary>

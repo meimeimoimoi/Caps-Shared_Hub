@@ -32,8 +32,7 @@ public sealed class SubmitApplicationHandler(
         await locks.AcquireAsync(applicant.UserId, ct);
         var (profile, application) = await loader.GetCurrentAsync(applicant.UserId, ct);
         application.EnsureEditable();
-        if (!applicant.EmailVerified)
-            throw ExpertErrors.EmailNotVerified();
+        applicant.EnsureVerified();
         var hasCv = await evidences.HasCodeAsync(application.Id, ApplicationRules.CvCode, ct);
         var missing = profile.MissingRequirements(hasCv);
         if (missing.Length > 0)

@@ -26,6 +26,7 @@ public sealed class RemoveEvidenceHandler(
         CancellationToken ct
     )
     {
+        command.Applicant.EnsureVerified();
         await using var tx = await unitOfWork.BeginTransactionAsync(ct);
         await locks.AcquireAsync(command.Applicant.UserId, ct);
         var (profile, application) = await loader.GetCurrentAsync(command.Applicant.UserId, ct);

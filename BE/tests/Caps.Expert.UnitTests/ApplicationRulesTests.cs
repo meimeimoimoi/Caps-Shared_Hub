@@ -145,26 +145,14 @@ public sealed class ApplicationRulesTests
     }
 
     [Fact]
-    public void An_unverified_account_can_hold_only_a_few_files()
-    {
-        var max = ApplicationRules.MaxFilesBeforeVerification;
-
-        ApplicationRules.EnsureRoomForFile(max - 1, emailVerified: false);
-        Assert.Equal(
-            "EVIDENCE_LIMIT_UNVERIFIED",
-            Errors.CodeOf(() => ApplicationRules.EnsureRoomForFile(max, emailVerified: false))
-        );
-    }
-
-    [Fact]
-    public void A_verified_account_can_fill_the_whole_application()
+    public void An_application_holds_at_most_the_file_limit()
     {
         var max = ApplicationRules.MaxFilesPerApplication;
 
-        ApplicationRules.EnsureRoomForFile(max - 1, emailVerified: true);
+        ApplicationRules.EnsureRoomForFile(max - 1);
         Assert.Equal(
             "EVIDENCE_LIMIT",
-            Errors.CodeOf(() => ApplicationRules.EnsureRoomForFile(max, emailVerified: true))
+            Errors.CodeOf(() => ApplicationRules.EnsureRoomForFile(max))
         );
     }
 

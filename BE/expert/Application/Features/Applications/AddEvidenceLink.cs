@@ -26,6 +26,7 @@ public sealed class AddEvidenceLinkHandler(
         CancellationToken ct
     )
     {
+        command.Applicant.EnsureVerified();
         var url = ApplicationRules.ValidateUrl(command.SourceUrl);
         if (
             command.Code != ApplicationRules.SupplementCode
@@ -42,7 +43,7 @@ public sealed class AddEvidenceLinkHandler(
         var existing = await evidences.ListAsync(application.Id, ct);
         if (existing.Any(x => x.EvidenceType == command.Code && x.SourceUrl == url))
             throw ExpertErrors.EvidenceDuplicate();
-        ApplicationRules.EnsureRoomForFile(existing.Count, command.Applicant.EmailVerified);
+        ApplicationRules.EnsureRoomForFile(existing.Count);
 
         var now = clock.GetUtcNow();
         var evidence = ExpertEvidence.CreateFromUrl(
