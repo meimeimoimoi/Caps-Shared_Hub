@@ -7,4 +7,10 @@ export const adminKeys = {
     [...adminKeys.all, 'qualifications', scope] as const,
   qualification: (scope: string, id: string) =>
     [...adminKeys.all, 'qualification', scope, id] as const,
+  /** Server-paged queues and their counts; invalidate queueAll() after any decision */
+  queueAll: () => [...adminKeys.all, 'queue'] as const,
+  queue: (scope: string, params: object) =>
+    [...adminKeys.all, 'queue', scope, params] as const,
+  queueCounts: (scope: string) =>
+    [...adminKeys.all, 'queue', 'counts', scope] as const,
 }

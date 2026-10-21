@@ -59,6 +59,7 @@ public sealed record CompetencyResultResponse(
 
 /// <summary>One qualification in the reviewer's Gate 2 queue.</summary>
 /// <param name="IsReapplication">True when it follows an earlier FAIL for the same service (BR-E23).</param>
+/// <param name="ServiceName">Catalog name shown to reviewers; null when the service is no longer active.</param>
 public sealed record QualificationQueueItemResponse(
     string Id,
     string ApplicantUserId,
@@ -68,7 +69,8 @@ public sealed record QualificationQueueItemResponse(
     string ServiceCode,
     string Status,
     DateTimeOffset SubmittedAt,
-    bool IsReapplication
+    bool IsReapplication,
+    string? ServiceName = null
 );
 
 /// <summary>

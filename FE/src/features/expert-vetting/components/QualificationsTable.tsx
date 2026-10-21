@@ -78,7 +78,7 @@ export function QualificationsTable({
                     {q.fields.map(fieldLabel).join(', ')}
                   </div>
                 </td>
-                <td>{q.serviceCode}</td>
+                <td>{q.serviceName ?? q.serviceCode}</td>
                 <td className="num text-right">{q.years}</td>
                 <td className="num text-right">{formatDate(q.submittedAt)}</td>
                 <td className="text-right">

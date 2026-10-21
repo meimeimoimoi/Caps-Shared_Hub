@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using Caps.Common.Api;
 using Caps.Common.Application;
 using Caps.Common.Security;
@@ -36,6 +37,39 @@ public sealed class QualificationApprovalsController(ICurrentUser currentUser) :
     {
         var queue = await handler.HandleAsync(new(status), ct);
         return Ok(ApiResponse<IReadOnlyList<QualificationQueueItemResponse>>.Ok(queue));
+    }
+
+    /// <summary>Lists one page of qualifications in the given statuses, oldest submission first.</summary>
+    /// <remarks>Repeat status for several statuses. q matches the expert's name or email, or the service name.</remarks>
+    /// <response code="200">The page with the total number of matching qualifications.</response>
+    /// <response code="400">INVALID_PAGING.</response>
+    /// <response code="403">Missing the ExpertApprove permission.</response>
+    [HttpGet("queue")]
+    public async Task<IActionResult> Queue(
+        [FromServices] IQueryHandler<SearchReviewQueueQuery, ReviewQueuePageResponse> handler,
+        CancellationToken ct,
+        [FromQuery] string[]? status = null,
+        [FromQuery, MaxLength(SearchReviewQueueHandler.MaxSearchLength)] string? q = null,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 10
+    )
+    {
+        var query = new SearchReviewQueueQuery([], status ?? [], q, page, pageSize);
+        var queue = await handler.HandleAsync(query, ct);
+        return Ok(ApiResponse<ReviewQueuePageResponse>.Ok(queue));
+    }
+
+    /// <summary>Counts qualifications per status, for the approval tabs.</summary>
+    /// <response code="200">Counts keyed by status.</response>
+    /// <response code="403">Missing the ExpertApprove permission.</response>
+    [HttpGet("queue/counts")]
+    public async Task<IActionResult> QueueCounts(
+        [FromServices] IQueryHandler<CountReviewQueueQuery, ReviewQueueCountsResponse> handler,
+        CancellationToken ct
+    )
+    {
+        var counts = await handler.HandleAsync(new CountReviewQueueQuery(), ct);
+        return Ok(ApiResponse<ReviewQueueCountsResponse>.Ok(counts));
     }
 
     /// <summary>Returns one qualification with its records: Gate 1 and Gate 2 results, files and history.</summary>

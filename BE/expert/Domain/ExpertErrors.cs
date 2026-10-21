@@ -22,6 +22,13 @@ public static class ExpertErrors
             $"A new application is allowed from {allowedFrom:O}."
         );
 
+    public static AppException InvalidPaging(int maxPageSize) =>
+        new(
+            ErrorType.Validation,
+            "INVALID_PAGING",
+            $"page must be at least 1 and pageSize between 1 and {maxPageSize}."
+        );
+
     public static AppException InvalidField(string field) =>
         new(ErrorType.Validation, "INVALID_FIELD", $"Unknown expertise field: {field}.");
 

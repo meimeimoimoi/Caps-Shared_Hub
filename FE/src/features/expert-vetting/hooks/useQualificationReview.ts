@@ -76,6 +76,7 @@ export function useQualificationReview(
       qc.setQueryData(adminKeys.qualification(scope, id), updated)
       setEdits({})
       await qc.invalidateQueries({ queryKey: adminKeys.qualifications(scope) })
+      await qc.invalidateQueries({ queryKey: adminKeys.queueAll() })
     },
   })
 
@@ -88,6 +89,7 @@ export function useQualificationReview(
     onSuccess: async (updated) => {
       qc.setQueryData(adminKeys.qualification(scope, id), updated)
       await qc.invalidateQueries({ queryKey: adminKeys.qualifications(scope) })
+      await qc.invalidateQueries({ queryKey: adminKeys.queueAll() })
     },
   })
 
@@ -100,6 +102,7 @@ export function useQualificationReview(
     onSuccess: async (updated) => {
       qc.setQueryData(adminKeys.qualification(scope, id), updated)
       await qc.invalidateQueries({ queryKey: adminKeys.qualifications(scope) })
+      await qc.invalidateQueries({ queryKey: adminKeys.queueAll() })
     },
   })
 

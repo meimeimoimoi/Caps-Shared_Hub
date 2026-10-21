@@ -1,0 +1,48 @@
+using Caps.Expert.Application.DTOs.Responses;
+
+namespace Caps.Expert.Application.Abstractions;
+
+/// <summary>
+/// Read side of the review queues. Filtering, counting and ordering (oldest submission first) run in the
+/// database, so a page never loads the whole queue.
+/// </summary>
+public interface IReviewQueueReader
+{
+    /// <summary>Applications in these statuses whose expert name or email contains the search text.</summary>
+    Task<int> CountApplicationsAsync(
+        IReadOnlyCollection<string> statuses,
+        string? search,
+        CancellationToken ct
+    );
+
+    /// <summary>The first <paramref name="take"/> matching applications, oldest submission first.</summary>
+    Task<IReadOnlyList<ReviewQueueRowResponse>> ListApplicationsAsync(
+        IReadOnlyCollection<string> statuses,
+        string? search,
+        int take,
+        CancellationToken ct
+    );
+
+    /// <summary>Qualifications in these statuses matching the expert name, email or one of the service codes.</summary>
+    Task<int> CountQualificationsAsync(
+        IReadOnlyCollection<string> statuses,
+        string? search,
+        IReadOnlyCollection<string> matchingServiceCodes,
+        CancellationToken ct
+    );
+
+    /// <summary>The first <paramref name="take"/> matching qualifications, oldest submission first.</summary>
+    Task<IReadOnlyList<ReviewQueueRowResponse>> ListQualificationsAsync(
+        IReadOnlyCollection<string> statuses,
+        string? search,
+        IReadOnlyCollection<string> matchingServiceCodes,
+        int take,
+        CancellationToken ct
+    );
+
+    /// <summary>Applications per status.</summary>
+    Task<IReadOnlyDictionary<string, int>> CountApplicationsByStatusAsync(CancellationToken ct);
+
+    /// <summary>Qualifications per status.</summary>
+    Task<IReadOnlyDictionary<string, int>> CountQualificationsByStatusAsync(CancellationToken ct);
+}

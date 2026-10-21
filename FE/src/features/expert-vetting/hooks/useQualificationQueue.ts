@@ -1,68 +1,79 @@
 import { useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
-import { paginate } from '@/lib/utils'
-import { getQualifications } from '../api/qualificationApi'
+import { keepPreviousData, useQuery } from '@tanstack/react-query'
+import { useDebouncedValue } from '@/hooks/useDebouncedValue'
 import { adminKeys } from '../api/queryKeys'
+import {
+  countOf as sumCounts,
+  getReviewQueueCounts,
+  searchReviewQueue,
+  toPaged,
+  toQualificationRow,
+} from '../api/reviewQueueApi'
 import {
   APPROVAL_TABS,
   QUALIFICATION_TABS,
   type QualificationTab,
 } from '../constants'
 import type { QualificationScope, QualificationStatus } from '../types'
-import { foldVietnamese } from '../utils/applications'
+
+const PAGE_SIZE = 10
 
 export const tabsOf = (scope: QualificationScope) =>
   scope === 'review' ? QUALIFICATION_TABS : APPROVAL_TABS
 
-/** Gate 2 or final approval queue: tabs by status, search by name, oldest submission first */
+/**
+ * Competency or final approval queue: only the visible tab's page is loaded (filtered, searched and ordered
+ * on the server); tab counts come from the counts endpoint.
+ */
 export function useQualificationQueue(scope: QualificationScope) {
   const tabs = tabsOf(scope)
   const statusesOf = (tab: QualificationTab): readonly QualificationStatus[] =>
     tabs.find((t) => t.key === tab)?.statuses ?? []
   const [tab, setTabState] = useState<QualificationTab>(tabs[0].key)
   const [query, setQueryState] = useState('')
-  const [page, setPage] = useState(0)
+  const [page, setPage] = useState(1)
+  const search = useDebouncedValue(query)
 
-  const {
-    data: qualifications = [],
-    isLoading,
-    error,
-  } = useQuery({
-    queryKey: adminKeys.qualifications(scope),
-    queryFn: ({ signal }) =>
-      getQualifications(
-        scope,
-        tabs.flatMap((t) => t.statuses),
-        signal
-      ),
+  const params = {
+    applicationStatuses: [],
+    qualificationStatuses: statusesOf(tab),
+    search,
+    page,
+    pageSize: PAGE_SIZE,
+  }
+  const list = useQuery({
+    queryKey: adminKeys.queue(scope, params),
+    queryFn: ({ signal }) => searchReviewQueue(scope, params, signal),
+    // Keep the current rows on screen while the next page loads
+    placeholderData: keepPreviousData,
   })
-  const countOf = (t: QualificationTab) =>
-    qualifications.filter((q) => statusesOf(t).includes(q.status)).length
-
-  const q = foldVietnamese(query.trim())
-  const rows = qualifications
-    .filter(
-      (x) =>
-        statusesOf(tab).includes(x.status) &&
-        (!q || foldVietnamese(x.name).includes(q))
-    )
-    .sort((a, b) => a.submittedAt.localeCompare(b.submittedAt))
+  const counts = useQuery({
+    queryKey: adminKeys.queueCounts(scope),
+    queryFn: ({ signal }) => getReviewQueueCounts(scope, signal),
+  })
+  const data = list.data
   return {
-    isLoading,
-    error,
+    isLoading: list.isLoading,
+    error: list.error,
     tab,
     setTab: (t: QualificationTab) => {
       setTabState(t)
-      setPage(0)
+      setPage(1)
     },
     query,
     setQuery: (v: string) => {
       setQueryState(v)
-      setPage(0)
+      setPage(1)
     },
-    countOf,
-    paged: paginate(rows, page),
-    prev: () => setPage((p) => p - 1),
+    countOf: (t: QualificationTab) =>
+      sumCounts(counts.data?.qualifications, statusesOf(t)) ?? 0,
+    paged: toPaged(
+      (data?.items ?? []).map(toQualificationRow),
+      data?.page ?? page,
+      data?.pageSize ?? PAGE_SIZE,
+      data?.total ?? 0
+    ),
+    prev: () => setPage((p) => Math.max(1, p - 1)),
     next: () => setPage((p) => p + 1),
   }
 }

@@ -64,6 +64,7 @@ export interface ApplicationDocument {
   pages: DocumentPage[]
   /** Uploaded file on the server; opened through the review API */
   evidenceId?: string
+  sourceUrl?: string | null
 }
 
 export interface ApplicationDetail extends ExpertApplication {
@@ -139,6 +140,8 @@ export interface QualificationRow {
   years: number
   fields: string[]
   serviceCode: string
+  /** Catalog name; the queue falls back to the code when the service is no longer active */
+  serviceName?: string
   status: QualificationStatus
   submittedAt: string
   /** Follows an earlier FAIL for the same service (BR-E23) */

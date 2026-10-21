@@ -126,5 +126,9 @@
     "experience": "Experience is below the policy threshold. Mark Tax and accounting experience as not met and choose Not eligible when the declared years are verified.",
     "evidence": "An evidence reference is unavailable. Select evidence from this application.",
     "flags": "Verify and resolve the flagged discrepancies before passing the application."
-  }
+  },
+  "queuePagination": "Review queue pages",
+  "yearsExperience_one": "{{count}} year of experience",
+  "yearsExperience_other": "{{count}} years of experience",
+  "reapplication": "Reapplication"
 }
