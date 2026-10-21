@@ -14,7 +14,10 @@ ghi vào `warnings` (unit có status "WARNING") để người duyệt kiểm tr
 
 import re
 from dataclasses import dataclass, field
-from typing import List, Optional
+from typing import Dict, List, Optional
+
+from src.references import find_references
+from src.vbhn import MARKER_RE, parse_footnote, split_footnotes
 
 # ------------------------------------------------------------
 #  Regex nhận diện dòng tiêu đề cấu trúc
@@ -57,6 +60,11 @@ def _base_number(number: str) -> Optional[int]:
 # ------------------------------------------------------------
 #  Cấu trúc dữ liệu
 # ------------------------------------------------------------
+def _references(article: str, unit: "Unit") -> dict:
+    refs = find_references(unit.text, article, unit.clause)
+    return {"references": refs} if refs else {}
+
+
 @dataclass
 class Unit:
     """Một đơn vị nội dung trong Điều: đoạn mở đầu, 1 Khoản hoặc 1 Điểm."""
@@ -65,6 +73,7 @@ class Unit:
     point: Optional[str] = None
     lines: List[str] = field(default_factory=list)
     warning: Optional[str] = None
+    notes: List[int] = field(default_factory=list)  # VBHN footnote markers
 
     @property
     def label(self) -> str:
@@ -86,6 +95,7 @@ class Article:
     title: str = ""
     section: Optional[str] = None
     units: List[Unit] = field(default_factory=list)
+    notes: List[int] = field(default_factory=list)  # VBHN markers on the article heading
 
     @property
     def text(self) -> str:
@@ -117,6 +127,10 @@ class ParsedDocument:
     closing: List[str] = field(default_factory=list)
     appendices: List[Appendix] = field(default_factory=list)
     warnings: List[str] = field(default_factory=list)
+    # VBHN only: markers on the title/preamble and the footnote texts {n: text}
+    consolidated: bool = False
+    doc_notes: List[int] = field(default_factory=list)
+    footnotes: Dict[int, str] = field(default_factory=dict)
 
     @property
     def articles(self) -> List[Article]:
@@ -126,9 +140,14 @@ class ParsedDocument:
     def parse_status(self) -> str:
         return "PARSED" if self.articles else "PARSE_FAILED"
 
+    def _amendments(self, notes: List[int]) -> dict:
+        unique = list(dict.fromkeys(notes))
+        found = [parse_footnote(n, self.footnotes[n]) for n in unique if n in self.footnotes]
+        return {"amendments": found} if found else {}
+
     def to_content_json(self) -> dict:
         """Dạng JSON lưu vào `knowledge_document.content_json`."""
-        return {
+        content = {
             "parse_status": self.parse_status,
             "preamble": "\n".join(self.preamble).strip(),
             "chapters": [
@@ -150,6 +169,9 @@ class ParsedDocument:
                                     "text": u.text,
                                     "status": "WARNING" if u.warning else "AUTO",
                                     **({"warning": u.warning} if u.warning else {}),
+                                    # Article-level notes apply to every unit of the article
+                                    **self._amendments(a.notes + u.notes),
+                                    **_references(a.number, u),
                                 }
                                 for i, u in enumerate(a.units)
                             ],
@@ -163,14 +185,17 @@ class ParsedDocument:
             "appendices": [{"title": ap.title, "text": ap.text} for ap in self.appendices],
             "warnings": list(self.warnings),
         }
+        if self.consolidated:
+            content["document_notes"] = self._amendments(self.doc_notes).get("amendments", [])
+        return content
 
 
 # ------------------------------------------------------------
 #  Parser
 # ------------------------------------------------------------
 class _Parser:
-    def __init__(self) -> None:
-        self.doc = ParsedDocument()
+    def __init__(self, consolidated: bool = False) -> None:
+        self.doc = ParsedDocument(consolidated=consolidated)
         self.phase = "preamble"  # preamble -> body -> closing
         self.part: Optional[str] = None
         self.section: Optional[str] = None
@@ -245,8 +270,30 @@ class _Parser:
         self.article.units.append(unit)
         self.unit = unit
 
+    def _attach_notes(self, notes: List[int]) -> None:
+        if self.phase == "preamble" or self.article is None or self.appendix is not None:
+            self.doc.doc_notes.extend(notes)
+        elif self.unit is not None:
+            self.unit.notes.extend(notes)
+        else:
+            self.article.notes.extend(notes)
+
     # --- main loop -----------------------------------------------
     def feed(self, raw_line: str) -> None:
+        # VBHN: "[n]" follows the provision it annotates; the footnote list itself is in the closing
+        if not self.doc.consolidated or self.phase == "closing":
+            self._feed(raw_line)
+            return
+        notes = [int(n) for n in MARKER_RE.findall(raw_line)]
+        if not notes:
+            self._feed(raw_line)
+            return
+        line = MARKER_RE.sub("", raw_line).strip()
+        if line:
+            self._feed(line)
+        self._attach_notes(notes)
+
+    def _feed(self, raw_line: str) -> None:
         line = raw_line.strip().replace(" ", " ")
         if _is_blank(line):
             return
@@ -349,12 +396,14 @@ class _Parser:
                 self.doc.warnings.append(f"Điều {article.number} không có nội dung")
         if not self.doc.articles:
             self.doc.warnings.append("Không tìm thấy Điều nào trong văn bản")
+        if self.doc.consolidated:
+            self.doc.closing, self.doc.footnotes = split_footnotes(self.doc.closing)
         return self.doc
 
 
-def parse_legal_text(text: Optional[str]) -> ParsedDocument:
-    """Tách cấu trúc một văn bản pháp luật từ toàn văn dạng text."""
-    parser = _Parser()
+def parse_legal_text(text: Optional[str], consolidated: bool = False) -> ParsedDocument:
+    """Tách cấu trúc một văn bản pháp luật từ toàn văn dạng text (`consolidated`: VBHN có chú thích [n])."""
+    parser = _Parser(consolidated)
     for line in (text or "").splitlines():
         # Bỏ header "# key: value" mà save_text_file ghi vào đầu file .txt
         if parser.phase == "preamble" and line.startswith("# "):

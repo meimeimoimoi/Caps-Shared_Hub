@@ -22,23 +22,30 @@ XEM THÊM: PLAN.md để hiểu chi tiết pipeline và cách xử lý khi selec
 import argparse
 import json
 import sys
-from typing import Dict, List, Optional, Set
+from typing import Dict, List, Optional, Set, Tuple
 
 from tqdm import tqdm
 
 import config
-from src.search_client import search_and_download_all_types
+from src.search_client import (
+    fetch_documents_by_ids,
+    fetch_relations_by_ids,
+    search_and_download_all_types,
+)
 from src.detail_scraper import scrape_document_detail
 from src.exporter import export_records, get_export_dir, parse_export_format
 from src.keywords import KeywordPlan, KeywordSearch, load_keyword_plan
 from src.models import LegalDocument
 from src.mof_client import collect_mof_documents
 from src.normalize import doc_number_key
+from src.vbhn import latest_base_vbhn, resolve_vbhn_id
 from src.storage import (
     ensure_document_text,
     load_all_runs_records,
     load_existing_metadata,
+    load_relations_cache,
     purge_invalid_metadata,
+    save_relations_cache,
     save_metadata,
     save_text_file,
     write_metadata_records,
@@ -169,6 +176,16 @@ def parse_args():
         default=None,
         help="Thư mục lượt cào cũ cho --export-only/--purge-invalid; mặc định chọn lượt mới nhất.",
     )
+    parser.add_argument(
+        "--no-relations",
+        action="store_true",
+        help="Không cào thêm văn bản liên quan (sửa đổi/thay thế/hướng dẫn) theo tab Lược đồ",
+    )
+    parser.add_argument(
+        "--refresh-relations",
+        action="store_true",
+        help="Đọc lại Lược đồ của văn bản đã cào ở lượt trước thay vì dùng quan hệ đã lưu",
+    )
     return parser.parse_args()
 
 
@@ -267,17 +284,20 @@ def _previous_state(skip_existing: bool):
     """doc_id đã cào theo nguồn + số hiệu vbpl đã có, gom từ MỌI lượt cào trước."""
     done_ids: Dict[str, Set[str]] = {"vbpl": set(), "mof": set()}
     vbpl_numbers: Set[str] = set()
+    vbpl_records: Dict[str, dict] = {}
     if not skip_existing:
-        return done_ids, vbpl_numbers
+        return done_ids, vbpl_numbers, vbpl_records
     for rec in load_all_runs_records().values():
         source = rec.get("source") or "vbpl"
         if rec.get("doc_id"):
             done_ids.setdefault(source, set()).add(str(rec["doc_id"]))
         if source == "vbpl":
+            if rec.get("doc_id"):
+                vbpl_records[str(rec["doc_id"])] = rec
             key = doc_number_key(rec.get("so_hieu"))
             if key:
                 vbpl_numbers.add(key)
-    return done_ids, vbpl_numbers
+    return done_ids, vbpl_numbers, vbpl_records
 
 
 def _retag(collected: Dict[str, LegalDocument], source: str, ids: List[str],
@@ -291,6 +311,90 @@ def _retag(collected: Dict[str, LegalDocument], source: str, ids: List[str],
     return touched
 
 
+def relation_targets(
+    sources: List[Tuple[str, Optional[str], List[dict], List[dict]]], known_ids: Set[str]
+) -> List[Tuple[str, dict]]:
+    """
+    (doc_id, so_hieu, relations, vbhn) of crawled documents -> documents to fetch one hop away,
+    as (target doc_id, related_from): FOLLOW_RELATION_CODES plus the newest VBHN the document
+    is the base of. No known ids, no duplicates.
+    """
+    seen = set(known_ids)
+    targets = []
+    for doc_id, so_hieu, relations, vbhn in sources:
+        links = [
+            (rel.get("doc_id"), rel.get("type"), rel.get("direction"))
+            for rel in relations or [] if rel.get("code") in config.FOLLOW_RELATION_CODES
+        ]
+        latest = latest_base_vbhn(doc_id, vbhn)
+        if latest:
+            links.append((resolve_vbhn_id(latest, relations), "hop_nhat", "in"))
+        for target, relation, direction in links:
+            if not target or target in seen:
+                continue
+            seen.add(target)
+            targets.append((target, {
+                "doc_id": doc_id,
+                "so_hieu": so_hieu,
+                "relation": relation,
+                "direction": direction,
+            }))
+    return targets
+
+
+def follow_relations(
+    docs: List[LegalDocument],
+    known_ids: Set[str],
+    headless: bool,
+    skip_download: bool = False,
+    previous: Optional[Dict[str, dict]] = None,
+    refresh: bool = False,
+) -> List[LegalDocument]:
+    """
+    Fetch documents related to `docs` (crawled this run) and to `previous` (doc_id -> record
+    from an earlier run, skipped this run). One hop: relations of fetched documents are
+    stored but not followed.
+    """
+    sources = [(d.doc_id, d.so_hieu, d.relations, d.vbhn) for d in docs if d.source == "vbpl" and d.doc_id]
+
+    # Skipped documents were not revisited: use cached / stored "Lược đồ" data, read the rest
+    previous = previous or {}
+    cache = load_relations_cache()
+    missing = []
+    for doc_id, rec in previous.items():
+        stored = rec if "relations" in rec and "vbhn" in rec else None
+        luoc_do = None if refresh else cache.get(doc_id, stored)
+        if luoc_do is None:
+            missing.append(doc_id)
+        else:
+            sources.append((doc_id, rec.get("so_hieu"), luoc_do["relations"], luoc_do["vbhn"]))
+    if missing:
+        logger.info(f"\n### DOC LUOC DO {len(missing)} VAN BAN DA CAO TRUOC DO ###\n")
+        fetched = fetch_relations_by_ids(missing, headless)
+        cache.update(fetched)
+        save_relations_cache(cache)
+        sources += [
+            (doc_id, previous[doc_id].get("so_hieu"), luoc_do["relations"], luoc_do["vbhn"])
+            for doc_id, luoc_do in fetched.items()
+        ]
+
+    targets = relation_targets(sources, known_ids)
+    logger.info(f"\n### CAO {len(targets)} VAN BAN LIEN QUAN (1 buoc) ###\n")
+    if not targets:
+        return []
+
+    origin = dict(targets)
+    related = []
+    for item in fetch_documents_by_ids(list(origin), headless, skip_download):
+        if not item.api_detail:
+            logger.warning(f"  [LIEN QUAN] Bo id={item.doc_id}: khong lay duoc metadata ({item.download_error}).")
+            continue
+        doc = ensure_document_text(scrape_document_detail(item))
+        doc.related_from = origin[item.doc_id]
+        related.append(doc)
+    return related
+
+
 def run_keyword_pipeline(
     plan: KeywordPlan,
     sources: List[str],
@@ -300,16 +404,19 @@ def run_keyword_pipeline(
     skip_existing: bool = True,
     count_only: bool = False,
     export_formats: tuple = ("json",),
+    relations: bool = True,
+    refresh_relations: bool = False,
 ) -> List[dict]:
     """
     Cào theo bộ từ khoá: mỗi từ khoá đi hết các trang kết quả của từng nguồn, chỉ giữ
     văn bản có tên khớp, bỏ văn bản đã có (lượt này + lượt trước) và lưu metadata.json
     sau MỖI từ khoá để bị ngắt giữa chừng thì chạy lại là tiếp tục được.
     """
-    done_ids, vbpl_numbers = _previous_state(skip_existing and not count_only)
+    done_ids, vbpl_numbers, previous_vbpl = _previous_state(skip_existing and not count_only)
     n_previous = sum(len(v) for v in done_ids.values())
     collected: Dict[str, LegalDocument] = {}
     report: List[dict] = []
+    skipped_vbpl: Set[str] = set()
 
     logger.info("=" * 70)
     logger.info(f"CAO THEO BO TU KHOA: {plan.path} ({len(plan.searches)} luot tim, nhom {plan.groups})")
@@ -354,6 +461,7 @@ def run_keyword_pipeline(
                 fresh.append(doc)
                 n_new += 1
             touched += _retag(collected, "vbpl", st["skipped_ids"], search)
+            skipped_vbpl.update(st["skipped_ids"])
             row["vbpl"] = {"listed": st["listed"], "matched": st["matched"],
                            "new": n_new, "already": len(st["skipped_ids"])}
 
@@ -390,6 +498,19 @@ def run_keyword_pipeline(
     _log_keyword_report(report, count_only)
     if count_only:
         return report
+
+    if relations and "vbpl" in sources:
+        crawled_ids = {d.doc_id for d in collected.values()}
+        previous = {i: previous_vbpl[i] for i in skipped_vbpl if i in previous_vbpl and i not in crawled_ids}
+        related = follow_relations(
+            list(collected.values()), done_ids["vbpl"], headless,
+            skip_download=skip_download, previous=previous, refresh=refresh_relations,
+        )
+        if related:
+            for doc in related:
+                save_text_file(doc)
+                collected[doc.unique_key] = doc
+            save_metadata(related)
 
     (config.DATA_DIR / "keyword_report.json").write_text(
         json.dumps({"keywords_file": str(plan.path), "sources": sources, "searches": report},
@@ -496,6 +617,7 @@ def run_pipeline(
     export: bool = False,
     sources: List[str] = None,
     export_formats: tuple = ("json",),
+    relations: bool = True,
 ):
     sources = sources or list(config.DEFAULT_SOURCES)
     logger.info("=" * 70)
@@ -519,6 +641,10 @@ def run_pipeline(
     if not documents:
         logger.error("KHONG co van ban nao tu cac nguon da chon. Dung pipeline.")
         return
+
+    if relations:
+        documents += follow_relations(documents, {d.doc_id for d in documents if d.doc_id},
+                                      headless, skip_download)
 
     # --- LUU METADATA ---
     logger.info(f"\n### GIAI DOAN 3/3: LUU METADATA ###\n")
@@ -661,6 +787,8 @@ def main():
                 export=args.export,
                 skip_existing=not args.no_skip_existing,
                 export_formats=export_formats,
+                relations=not args.no_relations,
+                refresh_relations=args.refresh_relations,
             )
         except KeyboardInterrupt:
             logger.warning("Đã dừng (Ctrl+C). Dữ liệu đến từ khoá trước đã được lưu; chạy lại để tiếp tục.")
@@ -680,6 +808,7 @@ def main():
             export=args.export,
             sources=sources,
             export_formats=export_formats,
+            relations=not args.no_relations,
         )
     except KeyboardInterrupt:
         logger.warning("Đã dừng bởi người dùng (Ctrl+C).")

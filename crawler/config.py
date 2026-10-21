@@ -48,6 +48,20 @@ DETAIL_CONTENT_TIMEOUT_MS = 25_000
 # Số trang tối đa sẽ duyệt khi tìm mỗi loại văn bản.
 MAX_RESULT_PAGES = 5
 
+# Relation codes of the vbpl "Lược đồ" tab (same code for both directions).
+# Unknown codes are kept under their raw code.
+RELATION_TYPES = {
+    "3": "can_cu",
+    "4": "dan_chieu",
+    "7": "hop_nhat",
+    "8": "huong_dan_ap_dung",
+    "9": "quy_dinh_chi_tiet",
+    "10": "sua_doi_mot_phan",
+    "12": "thay_the_toan_bo",
+}
+# Followed one hop; 3 (legal basis) and 4 (citations) are too broad, stored only.
+FOLLOW_RELATION_CODES = {"8", "9", "10", "12"}
+
 
 # ============================================================
 #  2. URL & SELECTOR (có thể cần cập nhật nếu giao diện trang thay đổi)
