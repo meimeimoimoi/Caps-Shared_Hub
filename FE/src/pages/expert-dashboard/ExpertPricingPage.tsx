@@ -6,8 +6,19 @@ import {
   useLocation,
   useParams,
 } from 'react-router-dom'
-import { ArrowLeft, CheckCircle2, Clock3, Info, Save, Send } from 'lucide-react'
+import {
+  ArrowLeft,
+  CheckCircle2,
+  Clock3,
+  Info,
+  Save,
+  Send,
+  ArrowRight,
+  PencilLine,
+  ChevronDown,
+} from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import { HelpTip } from '@/components/ui/feedback/help-tip'
 import {
   useExpertContext,
   type ServiceReadiness,
@@ -127,24 +138,11 @@ function PricingService({
           {t('pricing.loading')}
         </div>
       ) : (
-        <PricingEditor
-          data={query.data}
-          mutation={mutation}
-        />
+        <PricingEditor data={query.data} mutation={mutation} />
       )}
     </div>
   )
 }
-
-const AUDIT_LABELS = {
-  SAVED: 'pricing.auditSaved',
-  SUBMITTED: 'pricing.auditSubmitted',
-  AUTO_APPROVED: 'pricing.auditAutoApproved',
-  APPROVED: 'pricing.auditApproved',
-  RETURNED_FOR_REVISION: 'pricing.auditReturned',
-  REJECTED: 'pricing.auditRejected',
-  SUPERSEDED: 'pricing.auditSuperseded',
-} as const
 
 function PricingEditor({
   data,
@@ -169,8 +167,13 @@ function PricingEditor({
   )
   const label = (versionId: string) => {
     const version = data.versions.find((v) => v.id === versionId)
-    return version ? 'v' + version.sequence : versionId
+    return version
+      ? t('pricingUx.record', { number: version.sequence })
+      : t('pricingUx.recordHeading')
   }
+  const scheduled = data.versions
+    .filter((v) => v.status === 'APPROVED' && v.effectiveFrom > today)
+    .sort((a, b) => a.effectiveFrom.localeCompare(b.effectiveFrom))[0]
   const initial: PricingInput = working
     ? {
         amount: working.amount,
@@ -178,18 +181,30 @@ function PricingEditor({
         reason: working.reason,
       }
     : {
-        amount: effective?.amount ?? '',
-        effectiveFrom: businessDate(),
+        amount: effective?.amount ?? scheduled?.amount ?? '',
+        effectiveFrom: scheduled?.effectiveFrom ?? businessDate(),
         reason: '',
       }
+  const savedPrice = effective ?? scheduled
+  const [editing, setEditing] = useState(false)
   const [input, setInput] = useState(initial)
   const [baseline, setBaseline] = useState(initial)
   const [revision, setRevision] = useState(data.revision)
   const [errors, setErrors] = useState<PricingErrors>({})
   const [feedback, setFeedback] = useState<
-    'saved' | 'submitted' | 'savedApi' | 'submittedPending' | 'submittedApproved' | null
+    | 'saved'
+    | 'submitted'
+    | 'savedApi'
+    | 'submittedPending'
+    | 'submittedApproved'
+    | null
   >(null)
   const pending = data.versions.some((v) => v.status === 'PENDING_APPROVAL')
+  const showEditor =
+    !pending &&
+    (editing ||
+      !!data.versions.find((v) => editableStatus(v.status)) ||
+      !savedPrice)
   const busy = mutation.isPending
   const dirty = JSON.stringify(input) !== JSON.stringify(baseline)
   const blocker = useBlocker(
@@ -238,6 +253,7 @@ function PricingEditor({
           setInput(saved)
           setBaseline(saved)
           setRevision(next.revision)
+          if (submit) setEditing(false)
           setFeedback(
             isExpertDemo
               ? submit
@@ -292,277 +308,379 @@ function PricingEditor({
           )}
         </div>
       )}
-      <div className="epr-layout">
-        <section className="epr-editor" aria-labelledby="epr-editor-title">
-          <div className="epr-section-title">
-            <h2 id="epr-editor-title">
-              {pending
-                ? t('pricing.pendingTitle')
-                : working
-                  ? t('pricing.editDraft')
-                  : t('pricing.newVersion')}
-            </h2>
-            <span
-              className={'ep-status ' + statusClass(working?.status ?? 'DRAFT')}
-            >
-              {working ? label(working.id) : t('pricing.unsavedVersion')} ·{' '}
-              {status(working?.status ?? 'DRAFT')}
-            </span>
+      {feedback && (
+        <p role="status" className="epr-success">
+          {t(`pricing.${feedback}`)}
+        </p>
+      )}
+      {savedPrice && !showEditor && (
+        <section
+          className="epr-current-card"
+          aria-labelledby="epr-current-heading"
+        >
+          <div className="epr-current-header">
+            <div>
+              <h2 id="epr-current-heading">
+                {t(
+                  effective
+                    ? 'pricingUx.currentHeading'
+                    : 'pricingUx.scheduledHeading'
+                )}
+              </h2>
+              <p className="epr-current-amount">
+                {format.money(savedPrice.amount)}
+                <span>{t('pricingUx.perBooking')}</span>
+              </p>
+              <p className="epr-current-date">
+                {t('pricingFrom', {
+                  date: format.dateOnly(savedPrice.effectiveFrom),
+                })}
+              </p>
+            </div>
+            {!pending && (
+              <button
+                type="button"
+                className="ep-button"
+                onClick={() => setEditing(true)}
+              >
+                <PencilLine size={16} aria-hidden="true" />
+                {t('pricingUx.changePrice')}
+              </button>
+            )}
           </div>
-          <p className="epr-section-help">
-            {pending ? t('pricing.pendingHelp') : t('pricing.editorHelp')}
-          </p>
-          {working?.reviewNote && (
-            <div className="epr-review-note">
-              <h3>{t('pricing.reviewNote')}</h3>
-              <p>{working.reviewNote}</p>
+          {!pending && (
+            <div className="epr-next-step">
+              <div>
+                <h3>{t('pricingUx.nextHeading')}</h3>
+                <p>{t('pricingUx.nextHelp')}</p>
+              </div>
+              <Link
+                className="ep-button ep-button-primary"
+                to="/expert/availability"
+              >
+                {t('pricingUx.nextAction')}
+                <ArrowRight size={16} aria-hidden="true" />
+              </Link>
             </div>
           )}
-          <form
-            ref={formRef}
-            noValidate
-            onSubmit={(event) => {
-              event.preventDefault()
-              save(true)
-            }}
-            aria-busy={busy}
-          >
-            <fieldset disabled={pending || busy}>
-              <div className="epr-field">
-                <label htmlFor="epr-amount">
-                  {t('pricing.amount')} <span>VND</span>
-                </label>
-                <input
-                  id="epr-amount"
-                  name="amount"
-                  type="text"
-                  inputMode="numeric"
-                  autoComplete="off"
-                  value={input.amount}
-                  onChange={(event) => update('amount', event.target.value)}
-                  aria-invalid={Boolean(errors.amount)}
-                  aria-describedby={
-                    'epr-amount-help' +
-                    (errors.amount ? ' epr-amount-error' : '')
-                  }
-                />
-                <p id="epr-amount-help">{t('pricing.amountHelp')}</p>
-                {errors.amount && (
-                  <p id="epr-amount-error" className="epr-field-error">
-                    {t(`pricing.errors.${errors.amount}`)}
-                  </p>
-                )}
-              </div>
-              <div className="epr-field">
-                <label htmlFor="epr-date">{t('pricing.effectiveFrom')}</label>
-                <input
-                  id="epr-date"
-                  name="effectiveFrom"
-                  type="date"
-                  min={businessDate()}
-                  value={input.effectiveFrom}
-                  onChange={(event) =>
-                    update('effectiveFrom', event.target.value)
-                  }
-                  aria-invalid={Boolean(errors.effectiveFrom)}
-                  aria-describedby={
-                    'epr-date-help' +
-                    (errors.effectiveFrom ? ' epr-date-error' : '')
-                  }
-                />
-                <p id="epr-date-help">{t('pricing.dateHelp')}</p>
-                {errors.effectiveFrom && (
-                  <p id="epr-date-error" className="epr-field-error">
-                    {t(`pricing.errors.${errors.effectiveFrom}`)}
-                  </p>
-                )}
-              </div>
-              <div className="epr-field">
-                <label htmlFor="epr-reason">{t('pricing.reason')}</label>
-                <textarea
-                  id="epr-reason"
-                  name="reason"
-                  rows={4}
-                  maxLength={1000}
-                  value={input.reason}
-                  onChange={(event) => update('reason', event.target.value)}
-                  aria-invalid={Boolean(errors.reason)}
-                  aria-describedby={
-                    'epr-reason-help' +
-                    (errors.reason ? ' epr-reason-error' : '')
-                  }
-                />
-                <div className="epr-field-meta">
-                  <p id="epr-reason-help">{t('pricing.reasonHelp')}</p>
-                  <span>{format.number(input.reason.length)}/1,000</span>
-                </div>
-                {errors.reason && (
-                  <p id="epr-reason-error" className="epr-field-error">
-                    {t(`pricing.errors.${errors.reason}`)}
-                  </p>
-                )}
-              </div>
-            </fieldset>
-            {!pending && (
-              <div className="epr-form-actions">
-                <button
-                  className="ep-button"
-                  type="button"
-                  disabled={busy}
-                  onClick={() => save(false)}
-                >
-                  <Save size={16} aria-hidden="true" />
-                  {t('pricing.saveDraft')}
-                </button>
-                <button
-                  className="ep-button ep-button-primary"
-                  type="submit"
-                  disabled={busy}
-                >
-                  <Send size={16} aria-hidden="true" />
-                  {busy ? t('pricing.saving') : t('pricing.submit')}
-                </button>
-              </div>
-            )}
-            <div className="epr-feedback" aria-live="polite">
-              {feedback && (
-                <p className="epr-success">{t(`pricing.${feedback}`)}</p>
-              )}
-            </div>
-            {mutation.isError && (
-              <p role="alert" className="epr-field-error">
-                {t('pricing.saveFailed')}
-              </p>
-            )}
-          </form>
         </section>
-        <aside className="epr-summary" aria-labelledby="epr-summary-title">
-          <h2 id="epr-summary-title">{t('pricing.summary')}</h2>
-          <dl>
-            <div>
-              <dt>{t('pricing.current')}</dt>
-              <dd className="epr-price">
-                {effective
-                  ? format.money(effective.amount)
-                  : t('noEffectivePricing')}
-              </dd>
-              <dd>{effective ? label(effective.id) : '—'}</dd>
+      )}
+      {pending && working && (
+        <section className="epr-current-card" role="status">
+          <h2>{t('pricingUx.pendingHeading')}</h2>
+          <p className="epr-current-amount">
+            {format.money(working.amount)}
+            <span>{t('pricingUx.perBooking')}</span>
+          </p>
+          <p className="epr-current-date">
+            {t('pricingFrom', { date: format.dateOnly(working.effectiveFrom) })}
+          </p>
+          <p>{t('pricingUx.pendingHelp')}</p>
+        </section>
+      )}
+      {showEditor && (
+        <div className="epr-layout">
+          <section className="epr-editor" aria-labelledby="epr-editor-title">
+            <div className="epr-section-title">
+              <div className="relative flex items-center gap-2">
+                <h2 id="epr-editor-title">
+                  {pending
+                    ? t('pricing.pendingTitle')
+                    : working
+                      ? t('pricingUx.editDraft')
+                      : t(
+                          savedPrice
+                            ? 'pricingUx.changePrice'
+                            : 'pricingUx.firstPrice'
+                        )}
+                </h2>
+                <HelpTip
+                  className="!static"
+                  label={t('pricing.help', { label: t('pricing.newVersion') })}
+                >
+                  {pending ? t('pricing.pendingHelp') : t('pricing.editorHelp')}
+                </HelpTip>
+              </div>
+              <span
+                className={
+                  'ep-status ' + statusClass(working?.status ?? 'DRAFT')
+                }
+              >
+                {working ? label(working.id) : t('pricing.unsavedVersion')} ·{' '}
+                {status(working?.status ?? 'DRAFT')}
+              </span>
             </div>
-            <div>
-              <dt>{t('pricing.proposed')}</dt>
-              <dd className="epr-proposed-price">
-                {/^\d+$/.test(input.amount) ? format.money(input.amount) : '—'}
-              </dd>
-              <dd>{format.dateOnly(input.effectiveFrom)}</dd>
-            </div>
-          </dl>
-          <div className="epr-policy">
-            <CheckCircle2 size={18} aria-hidden="true" />
-            <p>
-              {data.autoApproveMaxChangePercent == null
-                ? t('pricing.approvalHelp')
-                : t('pricing.autoApprovalHelp', {
-                    percent: data.autoApproveMaxChangePercent,
-                  })}
-            </p>
-          </div>
-          <p>{t('pricing.snapshotHelp')}</p>
-          <p>{t('pricing.slaHelp')}</p>
-        </aside>
-      </div>
-      <section className="epr-history" aria-labelledby="epr-history-title">
-        <h2 id="epr-history-title">{t('pricing.history')}</h2>
-        <p>{t('pricing.historyHelp')}</p>
-        <div
-          className="epr-table-scroll"
-          role="region"
-          tabIndex={0}
-          aria-label={t('pricing.history')}
-        >
-          <table>
-            <thead>
-              <tr>
-                <th scope="col">{t('pricing.version')}</th>
-                <th scope="col">{t('pricing.amount')}</th>
-                <th scope="col">{t('pricing.versionStatus')}</th>
-                <th scope="col">{t('pricing.effectiveDate')}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {data.versions.map((version) => (
-                <tr key={version.id}>
-                  <th scope="row">
-                    {label(version.id)}
-                    {version.id === effective?.id && (
-                      <span className="epr-current-label">
-                        {t('pricing.current')}
-                      </span>
-                    )}
-                  </th>
-                  <td>{format.money(version.amount)}</td>
-                  <td>
-                    <span
-                      className={'ep-status ' + statusClass(version.status)}
+            {working?.reviewNote && (
+              <div className="epr-review-note">
+                <h3>{t('pricing.reviewNote')}</h3>
+                <p>{working.reviewNote}</p>
+              </div>
+            )}
+            <form
+              ref={formRef}
+              noValidate
+              onSubmit={(event) => {
+                event.preventDefault()
+                save(true)
+              }}
+              aria-busy={busy}
+            >
+              <fieldset disabled={pending || busy}>
+                <div className="epr-field">
+                  <div className="relative flex items-center gap-2">
+                    <label htmlFor="epr-amount">{t('pricing.amount')}</label>
+                    <HelpTip
+                      className="!static"
+                      label={t('pricing.help', { label: t('pricing.amount') })}
                     >
-                      {status(version.status)}
-                    </span>
-                    <details>
-                      <summary>{t('pricing.details')}</summary>
-                      <p>{version.reason || t('pricing.noReason')}</p>
-                      {version.reviewNote && <p>{version.reviewNote}</p>}
-                      {version.autoApproved && (
+                      {t('pricing.amountHelp')}
+                    </HelpTip>
+                  </div>
+                  <div className="epr-amount-control">
+                    <input
+                      id="epr-amount"
+                      name="amount"
+                      type="text"
+                      inputMode="numeric"
+                      autoComplete="off"
+                      placeholder="1000000"
+                      value={input.amount}
+                      onChange={(event) => update('amount', event.target.value)}
+                      aria-invalid={Boolean(errors.amount)}
+                      aria-describedby={
+                        errors.amount ? 'epr-amount-error' : undefined
+                      }
+                    />
+                    <span aria-hidden="true">VND</span>
+                  </div>
+                  {errors.amount && (
+                    <p id="epr-amount-error" className="epr-field-error">
+                      {t(`pricing.errors.${errors.amount}`)}
+                    </p>
+                  )}
+                </div>
+                <div className="epr-field">
+                  <div className="relative flex items-center gap-2">
+                    <label htmlFor="epr-date">
+                      {t('pricing.effectiveFrom')}
+                    </label>
+                    <HelpTip
+                      className="!static"
+                      label={t('pricing.help', {
+                        label: t('pricing.effectiveFrom'),
+                      })}
+                    >
+                      {t('pricing.dateHelp')}
+                    </HelpTip>
+                  </div>
+                  <input
+                    id="epr-date"
+                    name="effectiveFrom"
+                    type="date"
+                    min={businessDate()}
+                    value={input.effectiveFrom}
+                    onChange={(event) =>
+                      update('effectiveFrom', event.target.value)
+                    }
+                    aria-invalid={Boolean(errors.effectiveFrom)}
+                    aria-describedby={
+                      errors.effectiveFrom ? 'epr-date-error' : undefined
+                    }
+                  />
+                  {errors.effectiveFrom && (
+                    <p id="epr-date-error" className="epr-field-error">
+                      {t(`pricing.errors.${errors.effectiveFrom}`)}
+                    </p>
+                  )}
+                </div>
+                <div className="epr-field epr-reason-field">
+                  <div className="relative flex items-center gap-2">
+                    <label htmlFor="epr-reason">{t('pricing.reason')}</label>
+                    <HelpTip
+                      className="!static"
+                      label={t('pricing.help', { label: t('pricing.reason') })}
+                    >
+                      {t('pricing.reasonHelp')}
+                    </HelpTip>
+                  </div>
+                  <textarea
+                    id="epr-reason"
+                    name="reason"
+                    rows={4}
+                    placeholder={t('pricing.reasonPlaceholder')}
+                    maxLength={1000}
+                    value={input.reason}
+                    onChange={(event) => update('reason', event.target.value)}
+                    aria-invalid={Boolean(errors.reason)}
+                    aria-describedby={
+                      errors.reason ? 'epr-reason-error' : undefined
+                    }
+                  />
+                  <div className="epr-field-meta">
+                    <span>{format.number(input.reason.length)}/1,000</span>
+                  </div>
+                  {errors.reason && (
+                    <p id="epr-reason-error" className="epr-field-error">
+                      {t(`pricing.errors.${errors.reason}`)}
+                    </p>
+                  )}
+                </div>
+              </fieldset>
+              {!pending && (
+                <div className="epr-form-actions">
+                  {savedPrice && editing && !working && <button type="button" className="ep-button" disabled={busy} onClick={() => { setInput(baseline); setErrors({}); setEditing(false) }}>{t('pricingUx.cancel')}</button>}
+                  <button
+                    className="ep-button"
+                    type="button"
+                    disabled={busy}
+                    onClick={() => save(false)}
+                  >
+                    <Save size={16} aria-hidden="true" />
+                    {t('pricing.saveDraft')}
+                  </button>
+                  <button
+                    className="ep-button ep-button-primary"
+                    type="submit"
+                    disabled={busy}
+                  >
+                    <Send size={16} aria-hidden="true" />
+                    {busy ? t('pricing.saving') : t('pricingUx.submit')}
+                  </button>
+                </div>
+              )}
+              {mutation.isError && (
+                <p role="alert" className="epr-field-error">
+                  {t('pricing.saveFailed')}
+                </p>
+              )}
+            </form>
+          </section>
+          <aside className="epr-summary" aria-labelledby="epr-summary-title">
+            <div className="relative flex items-center gap-2">
+              <h2 id="epr-summary-title">{t('pricing.summary')}</h2>
+              <HelpTip
+                className="!static"
+                label={t('pricing.help', { label: t('pricing.summary') })}
+              >
+                <div className="space-y-2">
+                  <p>
+                    {data.autoApproveMaxChangePercent == null
+                      ? t('pricing.approvalHelp')
+                      : t('pricing.autoApprovalHelp', {
+                          percent: data.autoApproveMaxChangePercent,
+                        })}
+                  </p>
+                  <p>{t('pricing.snapshotHelp')}</p>
+                  <p>{t('pricing.slaHelp')}</p>
+                </div>
+              </HelpTip>
+            </div>
+            <dl>
+              <div>
+                <dt>{t('pricing.current')}</dt>
+                <dd className={effective ? 'epr-price' : 'epr-no-price'}>
+                  {effective
+                    ? format.money(effective.amount)
+                    : t('noEffectivePricing')}
+                </dd>
+              </div>
+              <div>
+                <dt>{t('pricing.proposed')}</dt>
+                <dd className="epr-proposed-price">
+                  {/^\d+$/.test(input.amount)
+                    ? format.money(input.amount)
+                    : t('pricing.enterAmount')}
+                </dd>
+                <dd>{format.dateOnly(input.effectiveFrom)}</dd>
+              </div>
+            </dl>
+          </aside>
+        </div>
+      )}
+      <details className="epr-history epr-history-disclosure">
+        <summary>
+          <h2>{t('pricingUx.history')}</h2>
+          <ChevronDown size={18} aria-hidden="true" />
+        </summary>
+        {data.versions.length === 0 ? (
+          <div className="epr-history-empty">
+            <Clock3 size={22} aria-hidden="true" />
+            <div>
+              <h3>{t('pricing.historyEmpty')}</h3>
+            </div>
+          </div>
+        ) : (
+          <div
+            className="epr-table-scroll"
+            role="region"
+            tabIndex={0}
+            aria-label={t('pricing.history')}
+          >
+            <table>
+              <thead>
+                <tr>
+                  <th scope="col">{t('pricingUx.recordHeading')}</th>
+                  <th scope="col">{t('pricing.amount')}</th>
+                  <th scope="col">{t('pricing.versionStatus')}</th>
+                  <th scope="col">{t('pricing.effectiveDate')}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {data.versions.map((version) => (
+                  <tr key={version.id}>
+                    <th scope="row">
+                      {label(version.id)}
+                      {version.id === effective?.id && (
+                        <span className="epr-current-label">
+                          {t('pricing.current')}
+                        </span>
+                      )}
+                    </th>
+                    <td>{format.money(version.amount)}</td>
+                    <td>
+                      <span
+                        className={'ep-status ' + statusClass(version.status)}
+                      >
+                        {status(version.status)}
+                      </span>
+                      <details>
+                        <summary>{t('pricing.details')}</summary>
+                        <p>{version.reason || t('pricing.noReason')}</p>
+                        {version.reviewNote && <p>{version.reviewNote}</p>}
+                        {version.autoApproved && (
+                          <p>
+                            {t('pricing.autoApproved', {
+                              percent: version.changePercent ?? 0,
+                            })}
+                          </p>
+                        )}
                         <p>
-                          {t('pricing.autoApproved', {
-                            percent: version.changePercent ?? 0,
+                          {t('pricing.updatedAt', {
+                            date: format.timestamp(
+                              version.updatedAt,
+                              'Asia/Ho_Chi_Minh'
+                            ),
+                          })}
+                        </p>
+                      </details>
+                    </td>
+                    <td>
+                      {format.dateOnly(version.effectiveFrom)}
+                      {version.effectiveTo && (
+                        <p>
+                          {t('pricing.until', {
+                            date: format.dateOnly(version.effectiveTo),
                           })}
                         </p>
                       )}
-                      <p>
-                        {t('pricing.updatedAt', {
-                          date: format.timestamp(
-                            version.updatedAt,
-                            'Asia/Ho_Chi_Minh'
-                          ),
-                        })}
-                      </p>
-                    </details>
-                  </td>
-                  <td>
-                    {format.dateOnly(version.effectiveFrom)}
-                    {version.effectiveTo && (
-                      <p>
-                        {t('pricing.until', {
-                          date: format.dateOnly(version.effectiveTo),
-                        })}
-                      </p>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </section>
-      {data.audit.length > 0 && (
-        <section className="epr-audit">
-          <h2>{t('pricing.activity')}</h2>
-          <ol>
-            {[...data.audit].reverse().map((event, index) => (
-              <li key={event.at + index}>
-                <span>
-                  {label(event.versionId)} · {t(AUDIT_LABELS[event.action])}
-                </span>
-                <time dateTime={event.at}>
-                  {format.timestamp(event.at, 'Asia/Ho_Chi_Minh', {
-                    dateStyle: 'medium',
-                    timeStyle: 'short',
-                  })}
-                </time>
-              </li>
-            ))}
-          </ol>
-        </section>
-      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </details>
     </>
   )
 }
