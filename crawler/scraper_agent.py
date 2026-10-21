@@ -30,22 +30,24 @@ import config
 from src.search_client import (
     fetch_documents_by_ids,
     fetch_relations_by_ids,
+    find_document_ids,
     search_and_download_all_types,
 )
 from src.detail_scraper import scrape_document_detail
+from src.legal_parser import referenced_documents
 from src.exporter import export_records, get_export_dir, parse_export_format
 from src.keywords import KeywordPlan, KeywordSearch, load_keyword_plan
 from src.models import LegalDocument
 from src.mof_client import collect_mof_documents
-from src.normalize import doc_number_key
-from src.vbhn import latest_base_vbhn, resolve_vbhn_id
+from src.normalize import _DOC_NUM_RE, doc_number_key
+from src.vbhn import DOC_TYPE as VBHN_DOC_TYPE, latest_base_vbhn, resolve_vbhn_id
 from src.storage import (
     ensure_document_text,
     load_all_runs_records,
     load_existing_metadata,
-    load_relations_cache,
+    load_cache,
     purge_invalid_metadata,
-    save_relations_cache,
+    save_cache,
     save_metadata,
     save_text_file,
     write_metadata_records,
@@ -342,6 +344,55 @@ def relation_targets(
     return targets
 
 
+def reference_targets(
+    sources: List[Tuple[str, Optional[str], Optional[str], Optional[str], List[dict]]],
+    known_numbers: Set[str],
+    known_ids: Set[str],
+    headless: bool,
+) -> List[Tuple[str, dict]]:
+    """
+    (doc_id, so_hieu, text, loai_van_ban, relations) of keyword-matched documents -> the other
+    documents their provisions refer to by number, as (doc_id, related_from). The id comes from
+    the referring document's "Lược đồ" titles, then the reference_ids cache, then a vbpl search.
+    """
+    wanted: List[Tuple[str, dict, Optional[str]]] = []  # (number, related_from, id from Lược đồ)
+    seen_numbers = set(known_numbers)
+    for doc_id, so_hieu, text, doc_type, relations in sources:
+        seen_numbers.add(doc_number_key(so_hieu))
+        by_number = {
+            doc_number_key(n): rel["doc_id"]
+            for rel in relations or [] for n in _DOC_NUM_RE.findall(rel.get("title") or "")
+        }
+        for number in referenced_documents(text, consolidated=doc_type == VBHN_DOC_TYPE):
+            key = doc_number_key(number)
+            if not key or key in seen_numbers:
+                continue
+            seen_numbers.add(key)
+            origin = {"doc_id": doc_id, "so_hieu": so_hieu,
+                      "relation": "dan_chieu_noi_dung", "direction": "out"}
+            wanted.append((number, origin, by_number.get(key)))
+
+    cache = load_cache("reference_ids")
+    to_search = [n for n, _, rel_id in wanted if not rel_id and doc_number_key(n) not in cache]
+    if to_search:
+        logger.info(f"\n### TIM THEO SO HIEU {len(to_search)} VAN BAN DUOC DAN CHIEU ###\n")
+        # Only hits are cached: an empty search can also be a network failure
+        cache.update({doc_number_key(n): i for n, i in find_document_ids(to_search, headless).items()})
+        save_cache("reference_ids", cache)
+
+    targets, seen_ids, not_found = [], set(known_ids), []
+    for number, origin, rel_id in wanted:
+        doc_id = rel_id or cache.get(doc_number_key(number))
+        if not doc_id:
+            not_found.append(number)
+        elif doc_id not in seen_ids:
+            seen_ids.add(doc_id)
+            targets.append((doc_id, origin))
+    if not_found:
+        logger.warning(f"  [DAN CHIEU] Khong tim thay tren vbpl: {', '.join(not_found)}")
+    return targets
+
+
 def follow_relations(
     docs: List[LegalDocument],
     known_ids: Set[str],
@@ -349,17 +400,18 @@ def follow_relations(
     skip_download: bool = False,
     previous: Optional[Dict[str, dict]] = None,
     refresh: bool = False,
+    known_numbers: Optional[Set[str]] = None,
 ) -> List[LegalDocument]:
     """
-    Fetch documents related to `docs` (crawled this run) and to `previous` (doc_id -> record
-    from an earlier run, skipped this run). One hop: relations of fetched documents are
-    stored but not followed.
+    Fetch documents related to `docs` (keyword matches crawled this run) and to `previous`
+    (doc_id -> record from an earlier run, skipped this run); with `known_numbers`, also the
+    documents their text refers to. One hop: fetched documents are stored but not followed.
     """
     sources = [(d.doc_id, d.so_hieu, d.relations, d.vbhn) for d in docs if d.source == "vbpl" and d.doc_id]
 
     # Skipped documents were not revisited: use cached / stored "Lược đồ" data, read the rest
     previous = previous or {}
-    cache = load_relations_cache()
+    cache = load_cache("relations_cache")
     missing = []
     for doc_id, rec in previous.items():
         stored = rec if "relations" in rec and "vbhn" in rec else None
@@ -372,13 +424,20 @@ def follow_relations(
         logger.info(f"\n### DOC LUOC DO {len(missing)} VAN BAN DA CAO TRUOC DO ###\n")
         fetched = fetch_relations_by_ids(missing, headless)
         cache.update(fetched)
-        save_relations_cache(cache)
+        save_cache("relations_cache", cache)
         sources += [
             (doc_id, previous[doc_id].get("so_hieu"), luoc_do["relations"], luoc_do["vbhn"])
             for doc_id, luoc_do in fetched.items()
         ]
 
     targets = relation_targets(sources, known_ids)
+    if known_numbers is not None:
+        relations_by_id = {doc_id: relations for doc_id, _, relations, _ in sources}
+        ref_sources = [(d.doc_id, d.so_hieu, d.noi_dung_text, d.loai_van_ban, relations_by_id.get(d.doc_id))
+                       for d in docs]
+        ref_sources += [(doc_id, rec.get("so_hieu"), rec.get("noi_dung_text"), rec.get("loai_van_ban"),
+                         relations_by_id.get(doc_id)) for doc_id, rec in previous.items()]
+        targets += reference_targets(ref_sources, known_numbers, known_ids | {t for t, _ in targets}, headless)
     logger.info(f"\n### CAO {len(targets)} VAN BAN LIEN QUAN (1 buoc) ###\n")
     if not targets:
         return []
@@ -505,6 +564,7 @@ def run_keyword_pipeline(
         related = follow_relations(
             list(collected.values()), done_ids["vbpl"], headless,
             skip_download=skip_download, previous=previous, refresh=refresh_relations,
+            known_numbers=vbpl_numbers,
         )
         if related:
             for doc in related:
@@ -643,8 +703,10 @@ def run_pipeline(
         return
 
     if relations:
-        documents += follow_relations(documents, {d.doc_id for d in documents if d.doc_id},
-                                      headless, skip_download)
+        documents += follow_relations(
+            documents, {d.doc_id for d in documents if d.doc_id}, headless, skip_download,
+            known_numbers={doc_number_key(d.so_hieu) for d in documents} - {None},
+        )
 
     # --- LUU METADATA ---
     logger.info(f"\n### GIAI DOAN 3/3: LUU METADATA ###\n")

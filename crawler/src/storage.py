@@ -208,13 +208,10 @@ def load_all_runs_records() -> Dict[str, dict]:
 
 
 
-def _relations_cache_file() -> Path:
-    return config.DATA_ROOT / "relations_cache.json"
-
-
-def load_relations_cache() -> Dict[str, dict]:
-    """doc_id -> {"relations", "vbhn"} read from "Lược đồ" for documents skipped from earlier runs."""
-    path = _relations_cache_file()
+def load_cache(name: str) -> dict:
+    """data/<name>.json shared by all runs: "relations_cache" (doc_id -> {"relations", "vbhn"}
+    of skipped documents), "reference_ids" (document number key -> doc_id)."""
+    path = config.DATA_ROOT / f"{name}.json"
     if not path.is_file():
         return {}
     try:
@@ -224,8 +221,8 @@ def load_relations_cache() -> Dict[str, dict]:
         return {}
 
 
-def save_relations_cache(cache: Dict[str, dict]) -> None:
-    path = _relations_cache_file()
+def save_cache(name: str, cache: dict) -> None:
+    path = config.DATA_ROOT / f"{name}.json"
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(cache, ensure_ascii=False, indent=2), encoding="utf-8")
 

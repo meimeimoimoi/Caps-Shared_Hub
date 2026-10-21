@@ -56,3 +56,21 @@ def test_parser_adds_references_to_units():
     assert any(r["doc"] == "self" for r in refs)
     # Units without references keep their previous shape
     assert any("references" not in u for c in content["chapters"] for a in c["articles"] for u in a["units"])
+
+
+def test_doc_type_for_number():
+    from src.references import doc_type_for_number
+
+    assert doc_type_for_number("58/2020/TT-BTC") == "Thông tư"
+    assert doc_type_for_number("326/2026/NĐ-CP") == "Nghị định"
+    assert doc_type_for_number("58/2008/TTLT-BTC-BTNMT") == "Thông tư liên tịch"
+    assert doc_type_for_number("38/2019/QH14") == "Luật"
+    assert doc_type_for_number("25/VBHN-BTC") is None
+
+
+def test_referenced_documents_of_a_fixture():
+    from src.legal_parser import referenced_documents
+
+    fixture = ROOT / "tests" / "fixtures" / "text" / "thong_tu" / "69-2026-tt-bxd.txt"
+    numbers = referenced_documents(fixture.read_text(encoding="utf-8"))
+    assert "326/2026/NĐ-CP" in numbers and len(numbers) == len(set(numbers))

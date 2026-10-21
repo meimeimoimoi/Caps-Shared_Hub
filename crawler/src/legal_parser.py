@@ -410,3 +410,16 @@ def parse_legal_text(text: Optional[str], consolidated: bool = False) -> ParsedD
             continue
         parser.feed(line)
     return parser.finish()
+
+
+def referenced_documents(text: Optional[str], consolidated: bool = False) -> List[str]:
+    """Numbers of the other documents the provisions refer to ("... Nghị định số X"), in order."""
+    content = parse_legal_text(text, consolidated).to_content_json()
+    numbers: List[str] = []
+    for chapter in content["chapters"]:
+        for article in chapter["articles"]:
+            for unit in article["units"]:
+                for ref in unit.get("references", []):
+                    if ref["doc"] != "self" and ref["doc"] not in numbers:
+                        numbers.append(ref["doc"])
+    return numbers

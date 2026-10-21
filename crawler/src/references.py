@@ -58,3 +58,16 @@ def find_references(text: str, article: str, clause: Optional[str] = None) -> Li
         if ref != own and ref not in unique:
             unique.append(ref)
     return unique
+
+
+# Code after the year in a document number -> type name used by the vbpl search filter
+_TYPE_BY_CODE = {
+    "TT": "Thông tư", "TTLT": "Thông tư liên tịch", "ND": "Nghị định", "QD": "Quyết định",
+    "NQ": "Nghị quyết", "CT": "Chỉ thị", "QH": "Luật",
+}
+
+
+def doc_type_for_number(number: str) -> Optional[str]:
+    """"58/2020/TT-BTC" -> "Thông tư", "38/2019/QH14" -> "Luật"; None for an unknown code."""
+    code = (number or "").split("/")[-1].split("-")[0].upper().replace("Đ", "D")
+    return _TYPE_BY_CODE.get(re.sub(r"\d+$", "", code))

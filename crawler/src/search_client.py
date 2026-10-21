@@ -51,6 +51,8 @@ from slugify import slugify
 import config
 from src.logger_setup import setup_logger
 from src.models import SearchResultItem
+from src.normalize import doc_number_key
+from src.references import doc_type_for_number
 from src.rsc import (
     build_detail_url,
     find_document_detail,
@@ -820,6 +822,27 @@ def fetch_relations_by_ids(doc_ids: List[str], headless: bool = True) -> Dict[st
             browser.close()
     return found
 
+
+
+def find_document_ids(numbers: List[str], headless: bool = True) -> Dict[str, str]:
+    """Search vbpl for each document number: {number: doc_id} for the ones found."""
+    found: Dict[str, str] = {}
+    for number in numbers:
+        doc_type = doc_type_for_number(number)
+        if not doc_type:
+            logger.warning(f"[TIM SO HIEU] Khong suy ra duoc loai van ban: {number}")
+            continue
+        key = doc_number_key(number)
+        logger.info(f"[TIM SO HIEU] {number} ({doc_type})")
+        # shortcut: one browser session per number (~40 s each), share one session if the list grows large
+        items = search_and_download_by_type(
+            keyword=number, doc_type=doc_type, top_n=1, headless=headless,
+            listing_only=True, save_debug=False,
+            item_filter=lambda title, doc_num: doc_number_key(doc_num) == key if doc_num else None,
+        )
+        if items:
+            found[number] = items[0].doc_id
+    return found
 
 def _guess_so_hieu(item: SearchResultItem) -> str:
     """Lấy số hiệu văn bản từ api_item.docNum, fallback sang regex trong tiêu đề."""

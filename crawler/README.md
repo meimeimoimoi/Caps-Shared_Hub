@@ -8,6 +8,8 @@ bao gồm cả nội dung text và file PDF/DOC gốc.
 📄 Xem **[PLAN.md](./PLAN.md)** để đọc kế hoạch chi tiết đầy đủ (kiến trúc,
 lý do kỹ thuật, rủi ro, checklist).
 
+🤖 Làm ai-service / RAG? Đọc **[HOW_IT_WORKS.md](./HOW_IT_WORKS.md)**: văn bản pháp luật cơ bản, cách cào, cấu trúc file JSON, VBHN, dẫn chiếu và việc ai-service cần làm.
+
 > **Vị trí trong repo:** `Caps-Shared_Hub/crawler/` — project Python độc lập, không thuộc
 > solution .NET trong `BE/`. Mọi lệnh bên dưới chạy từ thư mục `crawler/`. Dữ liệu sinh ra
 > (`data/`, `logs/`) không được commit; file `data/<ngày>/<lượt>/export/**/*.json` là đầu vào cho `BE/ingestion`.
@@ -184,6 +186,7 @@ Hệ thống được thiết kế tối ưu với 3 giai đoạn (Pipeline):
 
 Mỗi văn bản vbpl.vn được đọc thêm tab **Lược đồ** và lưu vào `relations` trong `metadata.json` (`code`, `type`, `direction`: `out` = văn bản này tác động lên văn bản kia, `in` = ngược lại). File export không chứa `relations`, chỉ có `related_from` và `vbhn_*`.
 Sau khi cào theo từ khoá, tool cào thêm **1 bước** các văn bản có quan hệ hướng dẫn / quy định chi tiết / sửa đổi / thay thế (`FOLLOW_RELATION_CODES` trong `config.py`); căn cứ ban hành và dẫn chiếu chỉ được lưu, không cào. Văn bản lấy theo cách này có `related_from` và `matched_keywords` rỗng.
+Cùng bước đó, tool cào thêm các văn bản được **dẫn chiếu có số hiệu** trong nội dung (`references` của unit, ví dụ "khoản 2 Điều 4 Thông tư số 58/2020/TT-BTC"), chỉ lấy từ văn bản **khớp từ khoá** (1 bước), với `related_from.relation = "dan_chieu_noi_dung"`. Id được lấy theo thứ tự: tiêu đề trong Lược đồ của chính văn bản dẫn chiếu → cache `data/reference_ids.json` → tìm trên vbpl theo số hiệu (khoảng 40 giây mỗi số hiệu; chỉ lưu kết quả tìm thấy). Số hiệu đã cào hoặc không tìm được thì bỏ qua, có log. `--no-relations` tắt cả phần này.
 Văn bản đã cào ở lượt trước vẫn được đi theo quan hệ: dùng `relations` đã lưu hoặc `data/relations_cache.json`, thiếu thì chỉ mở tab Lược đồ. Dùng `--refresh-relations` để bắt văn bản sửa đổi mới ban hành.
 
 ## Văn bản hợp nhất (VBHN)

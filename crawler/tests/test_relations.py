@@ -96,7 +96,7 @@ def _follow(monkeypatch, tmp_path, previous, cache=None, refresh=False, read_ok=
 
     monkeypatch.setattr(config, "DATA_ROOT", tmp_path)
     if cache is not None:
-        storage.save_relations_cache(cache)
+        storage.save_cache("relations_cache", cache)
     reads, fetched = [], []
 
     def fake_read(ids, headless):
@@ -112,7 +112,7 @@ def _follow(monkeypatch, tmp_path, previous, cache=None, refresh=False, read_ok=
     monkeypatch.setattr(scraper_agent, "ensure_document_text", lambda doc: doc)
     related = scraper_agent.follow_relations([], set(previous), False, previous=previous, refresh=refresh)
     assert all(d.related_from for d in related)
-    return fetched, reads, storage.load_relations_cache()
+    return fetched, reads, storage.load_cache("relations_cache")
 
 
 def test_skipped_documents_use_cache_then_record_then_network(monkeypatch, tmp_path):
@@ -140,3 +140,45 @@ def test_refresh_rereads_stored_relations(monkeypatch, tmp_path):
     fetched, reads, _ = _follow(monkeypatch, tmp_path, previous, cache={"a": _luoc_do("from-cache")}, refresh=True)
 
     assert reads == ["a"] and fetched == ["from-network"]
+
+
+def _ref_text(*numbers):
+    return "Điều 1. Phạm vi\n1. " + "; ".join(f"theo khoản 2 Điều 4 Thông tư số {n}" for n in numbers) + "."
+
+
+def test_reference_targets_resolve_ids_in_order(monkeypatch, tmp_path):
+    from src import storage
+
+    monkeypatch.setattr(config, "DATA_ROOT", tmp_path)
+    storage.save_cache("reference_ids", {"3/2020/TT-BTC": "id-cached"})
+    searched = []
+
+    def fake_find(numbers, headless):
+        searched.append(list(numbers))
+        return {"4/2020/TT-BTC": "id-searched"}
+
+    monkeypatch.setattr(scraper_agent, "find_document_ids", fake_find)
+    relations = [{"code": "9", "direction": "out", "doc_id": "id-luoc-do",
+                  "title": "Thông tư số 2/2020/TT-BTC hướng dẫn ..."}]
+    text = _ref_text("1/2020/TT-BTC", "2/2020/TT-BTC", "3/2020/TT-BTC", "4/2020/TT-BTC", "5/2020/TT-BTC",
+                     "9/2024/TT-BTC")
+    sources = [("me", "9/2024/TT-BTC", text, "Thông tư", relations)]
+
+    targets = scraper_agent.reference_targets(sources, known_numbers={"1/2020/TT-BTC"}, known_ids=set(), headless=False)
+
+    # 1/2020 already crawled, 9/2024 is the document itself
+    assert [t for t, _ in targets] == ["id-luoc-do", "id-cached", "id-searched"]
+    assert targets[0][1] == {"doc_id": "me", "so_hieu": "9/2024/TT-BTC",
+                             "relation": "dan_chieu_noi_dung", "direction": "out"}
+    # One search for what neither Lược đồ nor the cache knows; misses are not cached
+    assert searched == [["4/2020/TT-BTC", "5/2020/TT-BTC"]]
+    assert storage.load_cache("reference_ids") == {"3/2020/TT-BTC": "id-cached", "4/2020/TT-BTC": "id-searched"}
+
+
+def test_reference_targets_skip_known_ids(monkeypatch, tmp_path):
+    monkeypatch.setattr(config, "DATA_ROOT", tmp_path)
+    monkeypatch.setattr(scraper_agent, "find_document_ids", lambda numbers, headless: {})
+    relations = [{"code": "9", "direction": "out", "doc_id": "already", "title": "Thông tư số 2/2020/TT-BTC"}]
+    sources = [("me", "9/2024/TT-BTC", _ref_text("2/2020/TT-BTC"), "Thông tư", relations)]
+
+    assert scraper_agent.reference_targets(sources, set(), known_ids={"already"}, headless=False) == []
