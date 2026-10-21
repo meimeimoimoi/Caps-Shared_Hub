@@ -302,7 +302,16 @@ public sealed class WorkflowDbContext(DbContextOptions<WorkflowDbContext> option
         // ReviewCase
         modelBuilder.Entity<ReviewCase>(e =>
         {
-            e.ToTable("review_case", "review");
+            // Backs ReviewCase.Request: the frozen offer must stay valid
+            e.ToTable(
+                "review_case",
+                "review",
+                t =>
+                    t.HasCheckConstraint(
+                        "ck_case_offer",
+                        "fee > 0 AND platform_fee_pct BETWEEN 0 AND 99 AND turnaround_hours BETWEEN 1 AND 720"
+                    )
+            );
             e.HasKey(x => x.Id);
             e.Property(x => x.Id).HasColumnName("id");
             e.Property(x => x.DocumentId).HasColumnName("document_id");
@@ -313,6 +322,7 @@ public sealed class WorkflowDbContext(DbContextOptions<WorkflowDbContext> option
             e.Property(x => x.ServiceOfferingId).HasColumnName("service_offering_id");
             e.Property(x => x.Fee).HasColumnName("fee");
             e.Property(x => x.PlatformFeePct).HasColumnName("platform_fee_pct");
+            e.Property(x => x.TurnaroundHours).HasColumnName("turnaround_hours");
             e.Property(x => x.ProblemDescription).HasColumnName("problem_description").IsRequired();
             e.Property(x => x.ExpectedOutcome).HasColumnName("expected_outcome");
             e.Property(x => x.Status)
