@@ -322,7 +322,8 @@ export function RoleShell({
         <main
           id="admin-main"
           tabIndex={-1}
-          className="animate-enter min-w-0 px-4 py-12 md:px-6 lg:px-8"
+          // Skip-link target only: clicking empty space focuses it, which must not draw a focus ring
+          className="animate-enter min-w-0 px-4 py-12 outline-none md:px-6 lg:px-8"
         >
           {children}
         </main>
