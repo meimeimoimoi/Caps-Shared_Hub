@@ -19,6 +19,8 @@ export interface ExpertContext {
   /** Expert profile id; null before the first application is saved */
   expertId: string | null
   displayName: string
+  /** Contact phone of the expert profile; null before it is saved */
+  phone?: string | null
   email: string
   accountStatus: string
   /** APPLICATION, SERVICE_SETUP or ACTIVE */

@@ -1,4 +1,21 @@
 {
+  "contact": {
+    "title": "Thông tin liên hệ chuyên gia",
+    "description": "Tên và số điện thoại người đánh giá và khách hàng nhìn thấy. Thay đổi không cần xét duyệt lại; hồ sơ đã nộp giữ nguyên thông tin lúc nộp.",
+    "nameHint": "Tên nghề nghiệp, có thể khác tên tài khoản.",
+    "phone": "Số điện thoại liên hệ",
+    "phoneHint": "Có thể là số công việc, khác số trong tài khoản.",
+    "nameRequired": "Vui lòng nhập họ tên.",
+    "phoneRequired": "Vui lòng nhập số điện thoại.",
+    "phoneInvalid": "Số điện thoại không hợp lệ.",
+    "save": "Lưu thay đổi",
+    "saving": "Đang lưu…",
+    "saved": "Đã lưu.",
+    "failed": "Chưa lưu được. Vui lòng thử lại.",
+    "noProfileYet": "Lưu hồ sơ chuyên gia lần đầu để chỉnh thông tin liên hệ ở đây.",
+    "emailLocked": "Email không thể thay đổi",
+    "emailLockedBody": "Email gắn với tài khoản và dùng để nhận thông báo. Ảnh đại diện đổi được ở trên."
+  },
   "pricingUx": {
     "currentHeading": "Mức phí bạn đang áp dụng",
     "scheduledHeading": "Mức phí đã duyệt, chờ ngày áp dụng",

@@ -1,4 +1,21 @@
 {
+  "contact": {
+    "title": "Expert contact details",
+    "description": "The name and phone reviewers and customers see. Changes need no new review; submitted applications keep the details they were submitted with.",
+    "nameHint": "Your professional name; it may differ from the account name.",
+    "phone": "Contact phone",
+    "phoneHint": "May be a work number, different from the one on your account.",
+    "nameRequired": "Please enter your name.",
+    "phoneRequired": "Please enter a phone number.",
+    "phoneInvalid": "The phone number is not valid.",
+    "save": "Save changes",
+    "saving": "Saving…",
+    "saved": "Saved.",
+    "failed": "Could not save. Please try again.",
+    "noProfileYet": "Save your expert application once to edit these contact details here.",
+    "emailLocked": "Email cannot be changed",
+    "emailLockedBody": "Your email belongs to the account and receives notifications. You can change your profile photo above."
+  },
   "pricingUx": {
     "currentHeading": "Your current fee",
     "scheduledHeading": "Approved fee, awaiting its start date",
