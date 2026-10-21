@@ -20,7 +20,7 @@ projects: Domain, Application, Infrastructure and Api.
 ## API
 
 Through the gateway (`/api/v1/knowledge/**`). `KnowledgeManage` = KNOWLEDGE_ADMIN; the source catalog only needs an
-active account.
+active account. Request/response shapes, error codes and the worker endpoints: [API.md](API.md).
 
 | Method | Route | Who | Purpose |
 |---|---|---|---|
