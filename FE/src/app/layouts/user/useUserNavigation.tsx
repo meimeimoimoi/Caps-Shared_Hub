@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
+  BriefcaseBusiness,
   FileText,
   FolderCheck,
   LayoutDashboard,
@@ -26,6 +27,7 @@ export type UserNavId =
   | 'cases'
   | 'wallet'
   | 'account'
+  | 'expert-portal'
 
 interface UserNavigationOptions {
   /** Giữ query (vd. kịch bản demo) khi chuyển giữa các trang /drafts */
@@ -99,6 +101,13 @@ export function useUserNavigation(
           label: t('cases'),
           icon: <FolderCheck size={18} />,
           badge: waiting || undefined,
+        },
+        {
+          // Applying and the Expert Portal use the same account; /expert opens the application first
+          id: 'expert-portal',
+          to: '/expert',
+          label: t('expertPortalLink'),
+          icon: <BriefcaseBusiness size={18} />,
         },
       ]),
     },
