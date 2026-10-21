@@ -34,6 +34,7 @@ interface QueueItem {
   status: QualificationStatus
   submittedAt: string
   isReapplication: boolean
+  serviceName?: string | null
 }
 
 interface ReviewQualification {
@@ -65,6 +66,7 @@ interface ReviewQualification {
     id: string
     code: string
     fileName: string
+    sourceUrl?: string | null
     contentType: string
     sizeBytes: number
     uploadedAt: string
@@ -92,6 +94,7 @@ const toRow = (q: QueueItem): QualificationRow => ({
   years: q.yearsExperience ?? 0,
   fields: q.fields,
   serviceCode: q.serviceCode,
+  serviceName: q.serviceName ?? undefined,
   status: q.status,
   submittedAt: q.submittedAt,
   isReapplication: q.isReapplication,
@@ -133,7 +136,8 @@ function toDetail(q: ReviewQualification): QualificationDetail {
       highlights: p.highlights ?? '',
       documents: q.evidence.map((e) => ({
         code: e.code,
-        name: e.fileName,
+        name: e.sourceUrl || e.fileName,
+        sourceUrl: e.sourceUrl,
         pages: [],
         evidenceId: e.id,
       })),

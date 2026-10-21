@@ -1,4 +1,5 @@
 import { Trans, useTranslation } from 'react-i18next'
+import { Link } from 'react-router-dom'
 import { ArrowRight, Check, Clock3 } from 'lucide-react'
 import { labels } from '../constants'
 import type { Stage } from '../types'
@@ -16,6 +17,8 @@ export interface EligibilityIssue {
 export interface ApplicationStatusProps {
   profileName: string
   stage: Stage
+  /** Service whose qualification is furthest along, once the expert is eligible */
+  serviceName?: string
   eligibilityIssues?: EligibilityIssue[]
   /** Formatted earliest date for a new application after NOT_ELIGIBLE */
   reapplyAt?: string | null
@@ -30,7 +33,6 @@ export interface ApplicationStatusProps {
   showScenario?: boolean
   onStageChange: (stage: Stage) => void
   onRequestSupplement: () => void
-  onPreviewServiceReview: () => void
 }
 
 const btnBase =
@@ -86,7 +88,7 @@ export function ApplicationStatus({
   showScenario = false,
   onStageChange,
   onRequestSupplement,
-  onPreviewServiceReview,
+  serviceName = '',
 }: ApplicationStatusProps) {
   const { t } = useTranslation('expertRegistration')
 
@@ -240,6 +242,7 @@ export function ApplicationStatus({
               <Trans
                 ns="expertRegistration"
                 i18nKey="dynamic.approved"
+                values={{ service: serviceName }}
                 components={{ service: <strong /> }}
               />
             </p>
@@ -250,10 +253,11 @@ export function ApplicationStatus({
           <>
             <p>{t('status.eligible')}</p>
             <p>{t('status.catalogue')}</p>
-            <button onClick={onPreviewServiceReview} className={btnPrimary}>
+            {/* Gate 2 starts when the expert registers a service; it creates the qualification reviewers see */}
+            <Link to="/expert/qualifications" className={btnPrimary}>
               {t('status.preview')}
               <ArrowRight size={16} />
-            </button>
+            </Link>
           </>
         ) : stage === 'returned' ? (
           <p>{t('status.returned')}</p>
@@ -265,9 +269,15 @@ export function ApplicationStatus({
                 : stage === 'eligibility'
                   ? t('status.eligibilityDescription')
                   : stage === 'competency'
-                    ? t('status.competencyDescription')
+                    ? t('status.competencyDescription', { service: serviceName })
                     : t('status.finalDescription')}
             </p>
+            {(stage === 'competency' || stage === 'final') && (
+              <Link to="/expert/qualifications" className={btnBase}>
+                {t('status.viewQualifications')}
+                <ArrowRight size={16} />
+              </Link>
+            )}
           </>
         )}
         {!terminal &&

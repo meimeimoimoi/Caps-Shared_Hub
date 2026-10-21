@@ -9,7 +9,7 @@
     "phoneRequired": "Vui lòng nhập số điện thoại.",
     "phoneInvalid": "Sử dụng số điện thoại Việt Nam.",
     "expertise": "Chọn ít nhất một lĩnh vực chuyên môn.",
-    "cv": "Chọn CV của bạn để tiếp tục.",
+    "cv": "Tải CV hoặc thêm liên kết CV công khai để tiếp tục.",
     "duplicateCv": "CV này đã có trong hồ sơ. Vui lòng chọn file có nội dung khác.",
     "file": "Không thể thêm các file đã chọn. Chọn file PDF, JPG hoặc PNG, mỗi file không quá 10 MB.",
     "confirmed": "Xác nhận thông tin hồ sơ là chính xác trước khi tiếp tục.",
@@ -42,6 +42,17 @@
     "characters": "{{length}} / {{maximum}} ký tự",
     "file_other": "{{count}} file",
     "selected_other": "Đã chọn {{count}} file"
+  },
+  "links": {
+    "evidenceLabel": "Hoặc thêm liên kết minh chứng công khai",
+    "evidenceHelp": "Dán liên kết đến tài liệu của nhóm này. Bật quyền xem công khai, không yêu cầu đăng nhập. Liên kết được tính vào giới hạn minh chứng.",
+    "label": "Hoặc thêm liên kết CV công khai",
+    "add": "Thêm liên kết",
+    "adding": "Đang lưu…",
+    "help": "Dán link CV, LinkedIn hoặc website. Bật quyền xem công khai, không yêu cầu đăng nhập. Liên kết được tính vào giới hạn minh chứng.",
+    "invalid": "Nhập URL HTTP hoặc HTTPS công khai, không chứa tài khoản/mật khẩu và không quá 2048 ký tự.",
+    "duplicate": "Liên kết này đã có trong hồ sơ. Vui lòng dùng liên kết khác.",
+    "saved": "Liên kết đã lưu"
   },
   "files": {
     "open": "Xem tài liệu",
@@ -94,7 +105,7 @@
   },
   "dynamic": {
     "reapply": "Chính sách hiện tại yêu cầu chờ ít nhất {{days}} ngày trước khi nộp lại, cùng minh chứng mới hoặc cập nhật có liên quan. Ngày quyết định thực tế, ngày sớm nhất được nộp lại và tiêu chí chưa đạt phải lấy từ dịch vụ đánh giá.",
-    "approved": "Phê duyệt của bạn áp dụng cho <service>dịch vụ rà soát tài liệu thuế TNDN (dịch vụ minh họa)</service>.",
+    "approved": "Phê duyệt của bạn áp dụng cho dịch vụ <service>{{service}}</service>.",
     "application": "Hồ sơ · {{name}}",
     "hidePassword": "Ẩn mật khẩu",
     "showPassword": "Hiện mật khẩu",
@@ -284,6 +295,7 @@
     "explanation": "Nội dung giải thích"
   },
   "status": {
+    "viewQualifications": "Xem hồ sơ năng lực",
     "eligibleNext": "Bước tiếp theo là đánh giá năng lực riêng cho từng dịch vụ.",
     "track": "Theo dõi hồ sơ và xem bước tiếp theo.",
     "notApproved": "Chưa được phê duyệt",
@@ -313,12 +325,12 @@
     "priceNext": "Tiếp theo, cấu hình giá dịch vụ và gửi phê duyệt. Để hiển thị trên marketplace cần có tài khoản hoạt động, dịch vụ hoạt động, phê duyệt cho dịch vụ và giá đã phê duyệt còn hiệu lực.",
     "priceDisconnected": "Thiết lập giá chưa được kết nối. Trạng thái nhận việc và thiết lập chi trả sẽ được xử lý trong giai đoạn triển khai tiếp theo.",
     "eligible": "Điều kiện tham gia chung của bạn đã được phê duyệt. Bạn có thể chuẩn bị minh chứng năng lực cho từng dịch vụ muốn cung cấp.",
-    "catalogue": "Việc chọn dịch vụ và yêu cầu minh chứng C1–C5 sẽ sử dụng danh mục dịch vụ đã được xác nhận.",
-    "preview": "Xem thử đánh giá dịch vụ",
+    "catalogue": "Chọn dịch vụ bạn muốn cung cấp và nộp minh chứng năng lực cho từng dịch vụ.",
+    "preview": "Đăng ký đánh giá năng lực dịch vụ",
     "returned": "Người phê duyệt cuối cùng đã trả hồ sơ năng lực về bước đánh giá năng lực dịch vụ. Đây không phải lần từ chối mới hay yêu cầu nộp lại. Người đánh giá được phân công sẽ xử lý các phát hiện về quản trị.",
     "aiDescription": "AI hỗ trợ trích xuất thông tin và phát hiện minh chứng thiếu hoặc không nhất quán. Người đánh giá được ủy quyền quyết định điều kiện tham gia.",
     "eligibilityDescription": "Người đánh giá được ủy quyền đang kiểm tra minh chứng điều kiện tham gia của bạn.",
-    "competencyDescription": "Người đánh giá được ủy quyền đang đánh giá minh chứng cho dịch vụ rà soát tài liệu thuế TNDN (dịch vụ minh họa). Quyết định này chỉ áp dụng cho dịch vụ đó.",
+    "competencyDescription": "Người đánh giá được ủy quyền đang đánh giá năng lực của bạn cho dịch vụ {{service}}. Quyết định này chỉ áp dụng cho dịch vụ đó.",
     "finalDescription": "Đã đạt bước đánh giá điều kiện tham gia và năng lực dịch vụ. Quản trị viên hệ thống sẽ thực hiện kiểm tra quản trị cuối cùng.",
     "noAction": "Hiện chưa cần thực hiện hành động. Theo dõi tiến trình đánh giá ở trên.",
     "history": "Lịch sử hoạt động",

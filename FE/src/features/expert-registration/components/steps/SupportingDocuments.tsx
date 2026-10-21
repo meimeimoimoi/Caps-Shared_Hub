@@ -23,6 +23,7 @@ export interface SupportingDocumentsProps {
   onCriterionSelect: (criterion: string) => void
   onFilesSelected: (criterion: string, files: FileList | null) => void
   onRemoveFile: (criterion: string, index: number) => void
+  onAddLink: (criterion: string, url: string) => Promise<boolean>
 }
 
 export function SupportingDocuments({
@@ -33,29 +34,39 @@ export function SupportingDocuments({
   onCriterionSelect,
   onFilesSelected,
   onRemoveFile,
+  onAddLink,
 }: SupportingDocumentsProps) {
   const { t } = useTranslation('expertRegistration')
   const format = useFormatters()
   const key = criterionKey(activeCriterion)
   const title = key ? t(key) : activeCriterion
   const helpKey = key ? CRITERION_HELP[key] : undefined
+  const completedGroups = criteria.filter((c) =>
+    files[c]?.some((f) => !f.uploading)
+  ).length
 
   return (
     <div className="expert-pro-documents">
-      <p className="expert-pro-subtitle">{t('documents.lead')}</p>
+      <p className="expert-pro-subtitle w-full !max-w-none">{t('documents.lead')}</p>
 
       {/* ── Tabs and Upload Area ── */}
       <div className="expert-pro-tabs-container">
         {/* Group navigation: one panel, a status mark and file count per group */}
         <nav className="expert-doc-nav" aria-label={t('documents.categories')}>
-          <p className="expert-doc-nav-summary">
-            {t('documents.groupsDone', {
-              done: format.number(
-                criteria.filter((c) => (files[c]?.length ?? 0) > 0).length
-              ),
-              total: format.number(criteria.length),
-            })}
-          </p>
+          <div className="expert-doc-nav-heading">
+            <p className="expert-doc-nav-summary">
+              {t('documents.groupsDone', {
+                done: format.number(completedGroups),
+                total: format.number(criteria.length),
+              })}
+            </p>
+            <progress
+              className="expert-doc-nav-progress"
+              value={completedGroups}
+              max={criteria.length}
+              aria-label={t('documents.categories')}
+            />
+          </div>
           <div
             className="expert-pro-tab-list"
             role="tablist"
@@ -102,7 +113,7 @@ export function SupportingDocuments({
         <section
           key={activeCriterion}
           id="evidence-panel"
-          className="expert-pro-section"
+          className="expert-pro-section expert-evidence-panel"
           role="tabpanel"
           aria-labelledby={`evidence-tab-${criteria.indexOf(activeCriterion)}`}
         >
@@ -122,6 +133,7 @@ export function SupportingDocuments({
             quota={uploadQuota}
             onFilesSelected={(f) => onFilesSelected(activeCriterion, f)}
             onRemoveFile={(i) => onRemoveFile(activeCriterion, i)}
+            onAddLink={(url) => onAddLink(activeCriterion, url)}
           />
         </section>
       </div>

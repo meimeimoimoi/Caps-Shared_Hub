@@ -141,6 +141,13 @@ export default function AdminApplicationDetailPage({ embedded = false }: { embed
       })
   }
 
+  // Show a file in the document viewer of the reference panel, beside the assessment
+  const showDocument = (key: string) => {
+    setDocKey(key)
+    setTab('documents')
+    requestAnimationFrame(() => document.getElementById('panel-documents')?.scrollIntoView({ block: 'nearest', behavior: 'smooth' }))
+  }
+
   // Open a blank tab first so the browser does not block the popup after the download
   const openFile = (evidenceId: string) => {
     const win = window.open('', '_blank')
@@ -213,27 +220,29 @@ export default function AdminApplicationDetailPage({ embedded = false }: { embed
         />
       )}
 
-      <div className="mt-6 grid items-start gap-6 lg:grid-cols-[minmax(280px,0.78fr)_minmax(0,1.22fr)]">
+      {embedded && (
+        <header className="min-w-0">
+          <div className="flex flex-wrap items-center gap-3">
+            <h1 className="text-text-strong !font-sans text-xl font-semibold tracking-tight break-words">{detail.name}</h1>
+            <StatusBadge status={APPLICATION_STATUS[status]} />
+          </div>
+          <dl className="text-text-muted mt-1.5 flex flex-wrap items-center gap-x-1.5 gap-y-1 text-sm [&>div+div]:before:mr-1.5 [&>div+div]:before:content-['·']">
+            {jobTitle && <div><dt className="sr-only">{t('detail.meta.jobTitle')}</dt><dd className="inline">{jobTitle}</dd></div>}
+            <div><dt className="sr-only">{t('detail.meta.experience')}</dt><dd className="inline tabular-nums">{years}</dd></div>
+            <div><dt className="inline">{t('detail.meta.submitted')} </dt><dd className="inline tabular-nums">{formatDate(detail.submittedAt)}</dd></div>
+            <div><dt className="inline">{t('reviewWorkspace.reference')} </dt><dd title={detail.id} className="inline tabular-nums">{detail.id.slice(0, 8)}</dd></div>
+          </dl>
+        </header>
+      )}
+
+      <div className="mt-5 grid items-start gap-5 xl:grid-cols-[minmax(300px,0.8fr)_minmax(0,1.2fr)]">
         {/* Reference information stays available beside the assessment. */}
-        <div className="border-border bg-surface order-2 min-w-0 overflow-hidden rounded-2xl border lg:order-1">
-          {embedded && (
-            <header className="border-border border-b px-5 py-5 sm:px-6">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <h1 className="text-text-strong min-w-0 text-xl font-semibold tracking-tight break-words">{detail.name}</h1>
-                <StatusBadge status={APPLICATION_STATUS[status]} />
-              </div>
-              <p className="text-text-muted mt-1 text-sm leading-6">{jobTitle}</p>
-              <dl className="text-text-muted mt-4 space-y-2 text-xs">
-                <div className="flex flex-wrap gap-x-2 gap-y-1"><dt>{t('reviewWorkspace.reference')}</dt><dd className="text-text-strong min-w-0 break-all">{detail.id}</dd></div>
-                <div className="flex flex-wrap gap-x-2 gap-y-1"><dt>{t('detail.meta.submitted')}</dt><dd className="text-text-strong tabular-nums">{formatDate(detail.submittedAt)}</dd></div>
-              </dl>
-            </header>
-          )}
+        <div className="border-border bg-surface order-2 min-w-0 overflow-hidden rounded-lg border xl:sticky xl:top-6 xl:order-1">
           <div
             role="tablist"
             aria-label={t('admin:detail.tabAria')}
             onKeyDown={onTabKey}
-            className="border-border bg-surface-muted/40 flex gap-5 overflow-x-auto border-b px-5 pt-2 sm:px-6"
+            className="border-border flex gap-4 overflow-x-auto border-b px-4"
           >
             {tabs.map(({ key, label }) => (
               <button
@@ -246,14 +255,14 @@ export default function AdminApplicationDetailPage({ embedded = false }: { embed
                 tabIndex={tab === key ? 0 : -1}
                 onClick={() => setTab(key)}
                 className={cn(
-                  '-mb-px min-h-12 shrink-0 border-b-2 px-1 py-3 text-sm whitespace-nowrap transition-colors focus-visible:outline-2 focus-visible:outline-offset-[-3px]',
+                  '-mb-px min-h-11 shrink-0 border-b-2 px-0.5 text-sm whitespace-nowrap transition-colors focus-visible:outline-2 focus-visible:outline-offset-[-3px]',
                   tab === key
-                    ? 'border-indicator text-fg-strong font-semibold'
+                    ? 'border-text-strong text-fg-strong font-medium'
                     : 'text-fg-muted border-transparent'
                 )}
               >
                 {label}
-                {key === 'documents' && <span className="bg-surface-muted text-text-muted ml-2 rounded px-1.5 py-0.5 text-xs tabular-nums">{detail.documents.length}</span>}
+                {key === 'documents' && <span className="text-text-muted ml-1.5 text-xs tabular-nums">{detail.documents.length}</span>}
               </button>
             ))}
           </div>
@@ -263,7 +272,7 @@ export default function AdminApplicationDetailPage({ embedded = false }: { embed
             id={`panel-${tab}`}
             aria-labelledby={`tab-${tab}`}
             tabIndex={0}
-            className="p-5 focus-visible:outline-2 focus-visible:outline-offset-[-3px] sm:p-6"
+            className="p-4 focus-visible:outline-2 focus-visible:outline-offset-[-3px]"
           >
             {tab === 'ai' && detail.screening && (
               <AiScreeningTab
@@ -284,11 +293,13 @@ export default function AdminApplicationDetailPage({ embedded = false }: { embed
             )}
             {tab === 'documents' && (
               <DocumentsTab
+                key={docKey}
                 documents={detail.documents}
                 initialCode={docKey}
                 reviewedFlags={review.reviewedFlags}
                 onToggleReviewed={review.toggleFlagReviewed}
                 onOpenFile={openFile}
+                loadFile={(evidenceId) => getEvidenceFile(detail.id, evidenceId)}
               />
             )}
             {tab === 'history' && <HistoryTab history={review.history} />}
@@ -297,7 +308,7 @@ export default function AdminApplicationDetailPage({ embedded = false }: { embed
 
         {/* The primary workspace is wider than the reference panel. */}
         {decided ? (
-          <div className="order-1 space-y-4 md:space-y-6 lg:order-2">
+          <div className="order-1 space-y-4 md:space-y-6 xl:order-2">
             <DecisionCard detail={detail} />
             {detail.screening && (
               <AiSummaryCard
@@ -309,7 +320,7 @@ export default function AdminApplicationDetailPage({ embedded = false }: { embed
             )}
           </div>
         ) : (
-          <div className="order-1 min-w-0 lg:order-2">
+          <div className="order-1 min-w-0 xl:order-2">
             <EligibilityReview
               key={detail.id}
               detail={detail}
@@ -317,9 +328,10 @@ export default function AdminApplicationDetailPage({ embedded = false }: { embed
               disabled={review.deciding}
               onResult={review.setResult}
               onNote={review.setNote}
+              onShowDocument={showDocument}
             />
         <DecisionBar
-          className="!static !mx-0 !mt-4 !mb-0 !flex-col !items-stretch !gap-4 !rounded-xl !border !border-[var(--ui-border)] !bg-[var(--ui-surface)] !px-5 !py-4 !shadow-none [&>div]:!ml-0 [&>div]:w-full [&>div]:justify-end [&_.btn]:min-h-11 [&_.btn]:h-auto [&_.btn]:whitespace-normal [&_.btn]:py-3"
+          className="!static !mx-0 !mt-4 !mb-0 !flex-col !items-stretch !gap-4 !rounded-lg !border !border-[var(--ui-border)] !bg-[var(--ui-surface)] !px-4 !py-3 !shadow-none [&>div]:!ml-0 [&>div]:w-full [&>div]:justify-end [&_.btn]:min-h-11 [&_.btn]:h-auto [&_.btn]:whitespace-normal [&_.btn]:py-3"
           blockers={blockers}
           ready={`${t('admin:eligibility.ready', {
             count: ELIGIBILITY_CODES.length,

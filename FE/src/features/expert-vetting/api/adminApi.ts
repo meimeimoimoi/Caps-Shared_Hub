@@ -62,6 +62,7 @@ interface ReviewApplication {
     id: string
     code: string
     fileName: string
+    sourceUrl?: string | null
     contentType: string
     sizeBytes: number
     uploadedAt: string
@@ -110,7 +111,8 @@ function toDetail(a: ReviewApplication): ApplicationDetail {
     highlights: p.highlights ?? '',
     documents: a.evidence.map((e) => ({
       code: e.code,
-      name: e.fileName,
+      name: e.sourceUrl || e.fileName,
+      sourceUrl: e.sourceUrl,
       pages: [],
       evidenceId: e.id,
     })),

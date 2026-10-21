@@ -51,6 +51,10 @@ export function RegistrationSummary({
   ]
 
   async function openFile(file: EvidenceFile) {
+    if (file.sourceUrl && /^https?:\/\//i.test(file.sourceUrl)) {
+      window.open(file.sourceUrl, '_blank', 'noopener,noreferrer')
+      return
+    }
     setFileError(null)
     const preview = window.open('about:blank', '_blank')
     if (!preview) {
@@ -258,7 +262,9 @@ export function RegistrationSummary({
                               {file.name}
                             </span>
                             <span className="expert-doc-meta">
-                              {t('files.meta', { extension, size })}
+                              {file.sourceUrl
+                                ? t('links.saved')
+                                : t('files.meta', { extension, size })}
                             </span>
                             {fileError?.id === file.id && (
                               <span role="alert" className="expert-doc-error">

@@ -62,7 +62,7 @@ export function DecisionDialog({
           <li key={a.code} className="py-2">
             <div className="flex justify-between gap-4">
               <span className="text-fg-muted">
-                <span className="num">{a.code}</span> {label(a.code)}
+                {label(a.code)}
               </span>
               <span
                 className={cn(

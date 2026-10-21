@@ -32,6 +32,7 @@ export interface QualificationFile {
   id: string
   code: string
   fileName: string
+  sourceUrl?: string | null
   contentType: string
   sizeBytes: number
   uploadedAt: string

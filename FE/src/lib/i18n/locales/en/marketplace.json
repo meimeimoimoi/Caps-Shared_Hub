@@ -15,11 +15,11 @@
   "demo": "Illustrative data. Real expert profiles replace it once the Marketplace is connected.",
   "proof": {
     "gate1": {
-      "term": "Gate 1",
+      "term": "Round 1",
       "detail": "Eligible to practise"
     },
     "gate2": {
-      "term": "Gate 2",
+      "term": "Round 2",
       "detail": "Competent for the service"
     },
     "escrow": {
@@ -106,9 +106,9 @@
   },
   "trail": {
     "label": "Verification trail",
-    "gate1": "Gate 1",
+    "gate1": "Round 1",
     "gate1Detail": "Eligibility, passed on {{date}}",
-    "gate2": "Gate 2",
+    "gate2": "Round 2",
     "gate2Detail": "Competency for this service, passed on {{date}}",
     "price": "Fee {{version}}",
     "priceDetail": "Fee schedule {{version}} approved",
@@ -156,7 +156,7 @@
     "yearsLabel": "Years of experience",
     "servicesTitle": "Services and fees",
     "servicesLead": "Each service is competency-checked and priced separately. Pick one to send a request.",
-    "approvedOn": "Passed Gate 2 on {{date}}",
+    "approvedOn": "Passed round 2 on {{date}}",
     "deliveredIn": "Delivered in {{duration}}",
     "breadcrumb": "Breadcrumb",
     "notFoundBody": "The expert may have hidden their profile, or the link is wrong. You can pick another verified expert.",

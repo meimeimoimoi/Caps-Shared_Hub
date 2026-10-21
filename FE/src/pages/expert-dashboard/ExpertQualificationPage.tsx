@@ -224,7 +224,11 @@ export default function ExpertQualificationPage() {
             >
               <button
                 type="button"
-                onClick={() => open(e.id)}
+                onClick={() => {
+                  if (e.sourceUrl && /^https?:\/\//i.test(e.sourceUrl))
+                    window.open(e.sourceUrl, '_blank', 'noopener,noreferrer')
+                  else open(e.id)
+                }}
                 className="inline-flex min-h-11 items-center gap-2 text-left text-[var(--ep-accent-text)]"
               >
                 <FileText size={15} aria-hidden="true" />
@@ -232,7 +236,7 @@ export default function ExpertQualificationPage() {
                   {e.code === 'COMPETENCY'
                     ? t('qualifications.addedFile')
                     : e.code}{' '}
-                  · {e.fileName}
+                  · {e.sourceUrl || e.fileName}
                 </span>
               </button>
               {e.canRemove && (
@@ -241,7 +245,7 @@ export default function ExpertQualificationPage() {
                   className="min-h-11"
                   disabled={busy}
                   aria-label={t('qualifications.removeFile', {
-                    name: e.fileName,
+                    name: e.sourceUrl || e.fileName,
                   })}
                   onClick={() => {
                     setMessage(null)

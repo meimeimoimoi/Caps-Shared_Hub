@@ -19,6 +19,8 @@ import { ReviewSubmit } from '../../features/expert-registration/components/step
 import { useRegistrationForm } from '../../features/expert-registration/hooks/useRegistrationForm'
 import { useApplicationLifecycle } from '../../features/expert-registration/hooks/useApplicationLifecycle'
 import { useExpertApplication } from '../../features/expert-registration/hooks/useExpertApplication'
+import { useQualificationOverview } from '@/features/expert-qualifications/hooks/useQualifications'
+import type { Stage } from '../../features/expert-registration/types'
 import { EmailVerificationNotice } from '../../features/expert-registration/components/EmailVerificationNotice'
 import { ApplicationProgressRail } from '../../features/expert-registration/components/ApplicationProgressRail'
 import { expertPageCls } from './expertPageClass'
@@ -63,7 +65,7 @@ export default function ExpertApplicationPage() {
   }, [location.pathname, location.search, location.state, navigate])
   const {
     submitted,
-    stage,
+    stage: applicationStage,
     history,
     eligibilityIssues,
     reapplyAt,
@@ -79,7 +81,6 @@ export default function ExpertApplicationPage() {
     submitSupplement,
     changeStage,
     requestSupplement,
-    previewServiceReview,
     setSupplementFile,
     setExplanation,
     cancelSupplement,
@@ -119,6 +120,8 @@ export default function ExpertApplicationPage() {
     furthest,
     returnToReview,
     chooseFiles,
+    addCvLink,
+    addEvidenceLink,
     advance,
     clearFormError,
     updateAvatar,
@@ -135,6 +138,20 @@ export default function ExpertApplicationPage() {
       lifecycleNotice,
       accountCreated && step === 0 ? t('messages.accountCreated') : '',
     ].find(Boolean) ?? ''
+  // Eligibility only opens the service step: the furthest service qualification decides where the expert is
+  const overview = useQualificationOverview()
+  const serviceStep = (
+    [
+      ['APPROVED_FOR_SERVICE', 'approved'],
+      ['PENDING_FINAL_APPROVAL', 'final'],
+      ['COMPETENCY_REVIEW', 'competency'],
+      ['NEED_MORE_INFORMATION', 'competency'],
+    ] as const
+  )
+    .map(([status, step]) => ({ step: step as Stage, service: overview.data?.services.find((s) => s.status === status) }))
+    .find((x) => x.service)
+  const stage: Stage =
+    applicationStage === 'eligible' && serviceStep ? serviceStep.step : applicationStage
   const terminal = stage === 'ineligible' || stage === 'failed'
   // No AI screening step yet: submission goes straight to the eligibility review (Gate 1)
   const timeline = [
@@ -143,7 +160,7 @@ export default function ExpertApplicationPage() {
     t('timeline.competency'),
     t('timeline.final'),
   ]
-  const progress = [
+  const progress = stage === 'approved' ? timeline.length : [
     'screening',
     'eligibility',
     'additional',
@@ -208,6 +225,7 @@ export default function ExpertApplicationPage() {
               <ApplicationStatus
                 profileName={profile.name}
                 stage={stage}
+                serviceName={serviceStep?.service?.serviceName}
                 eligibilityIssues={eligibilityIssues}
                 reapplyAt={reapplyAt}
                 decisionNote={decisionNote}
@@ -229,7 +247,6 @@ export default function ExpertApplicationPage() {
                 }}
                 onStageChange={changeStage}
                 onRequestSupplement={requestSupplement}
-                onPreviewServiceReview={previewServiceReview}
               />
               <aside className="expert-status-profile">
                 <div className="expert-status-profile-heading">
@@ -352,6 +369,7 @@ export default function ExpertApplicationPage() {
                       onToggleField={toggleField}
                       onCvFilesSelected={(f) => chooseFiles('CV', f)}
                       onRemoveCvFile={(i) => removeFile('CV', i)}
+                      onAddCvLink={addCvLink}
                     />
                   )}
                   {step === 2 && (
@@ -362,6 +380,7 @@ export default function ExpertApplicationPage() {
                       uploadQuota={uploadQuota}
                       onCriterionSelect={setActiveCriterion}
                       onFilesSelected={chooseFiles}
+                      onAddLink={addEvidenceLink}
                       onRemoveFile={removeFile}
                     />
                   )}

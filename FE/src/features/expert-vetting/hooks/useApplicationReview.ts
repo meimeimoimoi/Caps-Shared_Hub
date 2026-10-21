@@ -22,7 +22,9 @@ export function useApplicationReview(id: string) {
   })
   const detail = detailQuery.data ?? undefined
 
-  // Only the reviewer's edits; EV-06 starts from the result the declared years point to
+  // Only the reviewer's edits. A re-review starts from the previous decision: requirements that passed keep
+  // their result and note, the ones sent back start empty so they are judged again on the new evidence.
+  // The experience requirement otherwise starts from the result the declared years point to.
   const [edits, setEdits] = useState<
     Record<string, Partial<EligibilityAssessment>>
   >({})
@@ -30,15 +32,20 @@ export function useApplicationReview(id: string) {
   const [log, setLog] = useState<HistoryEntry[]>([])
 
   const assessments: EligibilityAssessment[] = ELIGIBILITY_CODES.map(
-    (code) => ({
-      code,
-      result:
-        code === EXPERIENCE_CODE
-          ? (detail?.suggestedExperienceResult ?? '')
-          : '',
-      note: '',
-      ...edits[code],
-    })
+    (code) => {
+      const previous = detail?.eligibility.find((item) => item.code === code)
+      const passed = previous?.result === 'PASS'
+      return {
+        code,
+        result: passed
+          ? 'PASS'
+          : code === EXPERIENCE_CODE
+            ? (detail?.suggestedExperienceResult ?? '')
+            : '',
+        note: passed ? (previous.note ?? '') : '',
+        ...edits[code],
+      }
+    }
   )
   const remaining = assessments.filter(
     (a) => !a.result || (needsNote(a) && !a.note.trim())
@@ -97,6 +104,7 @@ export function useApplicationReview(id: string) {
       qc.setQueryData(adminKeys.application(id), updated)
       setEdits({})
       await qc.invalidateQueries({ queryKey: adminKeys.applications() })
+      await qc.invalidateQueries({ queryKey: adminKeys.queueAll() })
     },
   })
 

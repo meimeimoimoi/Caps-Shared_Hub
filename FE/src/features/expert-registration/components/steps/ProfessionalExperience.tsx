@@ -17,6 +17,7 @@ export interface ProfessionalExperienceProps {
   onToggleField: (field: string) => void
   onCvFilesSelected: (files: FileList | null) => void
   onRemoveCvFile: (index: number) => void
+  onAddCvLink?: (url: string) => Promise<boolean>
 }
 
 export function ProfessionalExperience({
@@ -29,6 +30,7 @@ export function ProfessionalExperience({
   onToggleField,
   onCvFilesSelected,
   onRemoveCvFile,
+  onAddCvLink,
 }: ProfessionalExperienceProps) {
   const { t } = useTranslation('expertRegistration')
 
@@ -180,6 +182,7 @@ export function ProfessionalExperience({
           quota={uploadQuota}
           onFilesSelected={onCvFilesSelected}
           onRemoveFile={onRemoveCvFile}
+          onAddLink={onAddCvLink}
         />
       </div>
     </div>

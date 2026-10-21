@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next'
+import { FileText } from 'lucide-react'
 import type { ReactNode } from 'react'
 import type { ApplicationDetail } from '../types'
 import { documentKey, formatDate } from '../utils/applications'
@@ -19,15 +20,12 @@ function InfoSection({
 }) {
   return (
     <section className="min-w-0">
-      <h2 className="text-text-strong font-sans text-lg font-semibold tracking-tight">{title}</h2>
-      <dl className="divide-border-subtle mt-3 divide-y">
+      <h2 className="text-text-strong !font-sans !text-sm font-semibold">{title}</h2>
+      <dl className="mt-2">
         {rows.map(({ label, value }) => (
-          <div
-            key={label}
-            className="grid gap-1.5 py-3.5"
-          >
+          <div key={label} className="grid grid-cols-[minmax(0,9rem)_minmax(0,1fr)] gap-3 py-2">
             <dt className="text-fg-muted text-sm">{label}</dt>
-            <dd className="text-fg-strong min-w-0 text-sm leading-6 break-words">{value || '—'}</dd>
+            <dd className="text-fg-strong min-w-0 text-sm break-words">{value || '—'}</dd>
           </div>
         ))}
       </dl>
@@ -41,7 +39,7 @@ export function ProfileTab({ detail, onOpenDocument }: ProfileTabProps) {
   const cv = detail.documents.find((d) => d.code === 'CV')
 
   return (
-    <div className="divide-border space-y-7 divide-y [&>section+section]:pt-7">
+    <div className="divide-border space-y-4 divide-y [&>section+section]:pt-4">
       <InfoSection
         title={t('detail.profile.personal')}
         rows={[
@@ -50,11 +48,11 @@ export function ProfileTab({ detail, onOpenDocument }: ProfileTabProps) {
             label: t('detail.profile.dob'),
             value: <span className="tabular-nums">{detail.birthDate && !Number.isNaN(Date.parse(detail.birthDate)) ? formatDate(detail.birthDate) : '—'}</span>,
           },
+          { label: t('detail.profile.location'), value: detail.location },
           {
             label: t('detail.profile.title'),
             value: [detail.jobTitle, detail.company].filter(Boolean).join(' · '),
           },
-          { label: t('detail.profile.location'), value: detail.location },
           { label: t('detail.profile.bio'), value: detail.bio },
         ]}
       />
@@ -79,9 +77,10 @@ export function ProfileTab({ detail, onOpenDocument }: ProfileTabProps) {
               <button
                 type="button"
                 onClick={() => onOpenDocument(documentKey(cv))}
-                className="text-accent-text min-h-10 py-2 text-left font-medium break-all underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2"
+                className="text-text-strong focus-visible:ring-[var(--ui-border-strong)] inline-flex max-w-full items-center gap-1.5 rounded-sm text-left font-medium hover:underline focus-visible:ring-2 focus-visible:outline-none"
               >
-                {cv.name}
+                <FileText size={14} aria-hidden="true" className="text-text-muted shrink-0" />
+                <span className="min-w-0 truncate">{cv.name}</span>
               </button>
             ) : (
               <span className="text-fg-muted">{t('detail.profile.noCv')}</span>

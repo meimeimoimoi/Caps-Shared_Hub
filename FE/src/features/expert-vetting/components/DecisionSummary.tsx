@@ -56,7 +56,7 @@ export function DecisionCard({ detail }: { detail: ApplicationDetail }) {
           <li key={c.code} className="py-2">
             <div className="flex justify-between gap-4">
               <span className="text-fg-muted">
-                <span className="num">{c.code}</span> {label(c.code)}
+                {label(c.code)}
               </span>
               <span
                 className={cn(

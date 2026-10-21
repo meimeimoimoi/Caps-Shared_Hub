@@ -9,7 +9,7 @@
     "phoneRequired": "Please enter your phone number.",
     "phoneInvalid": "Use a Vietnamese number.",
     "expertise": "Select at least one area of expertise.",
-    "cv": "Choose your CV to continue.",
+    "cv": "Upload your CV or add a public CV link to continue.",
     "duplicateCv": "This CV is already in your application. Please choose a file with different content.",
     "file": "This file selection could not be added. Choose PDF, JPG or PNG files, each no larger than 10 MB.",
     "confirmed": "Confirm that your application is accurate before continuing.",
@@ -44,6 +44,17 @@
     "file_other": "{{count}} files",
     "selected_one": "{{count}} file selected",
     "selected_other": "{{count}} files selected"
+  },
+  "links": {
+    "evidenceLabel": "Or add a public evidence link",
+    "evidenceHelp": "Paste a document URL for this group. Allow public viewing without signing in. Links count toward the evidence limit.",
+    "label": "Or add a public CV link",
+    "add": "Add link",
+    "adding": "Saving…",
+    "help": "Paste a CV, LinkedIn or website URL. Allow public viewing without signing in. Links count toward the evidence limit.",
+    "invalid": "Enter a public HTTP or HTTPS URL without credentials, up to 2048 characters.",
+    "duplicate": "This link is already in your application. Please use another link.",
+    "saved": "Link saved"
   },
   "files": {
     "open": "View document",
@@ -96,7 +107,7 @@
   },
   "dynamic": {
     "reapply": "The current policy requires at least {{days}} days before reapplying, plus relevant new or updated evidence. Your actual decision date, earliest reapplication date and failed criteria must come from the assessment service.",
-    "approved": "Your approval applies to <service>CIT document review (illustrative service)</service>.",
+    "approved": "Your approval applies to the <service>{{service}}</service> service.",
     "application": "Application · {{name}}",
     "hidePassword": "Hide password",
     "showPassword": "Show password",
@@ -286,6 +297,7 @@
     "explanation": "Explanation"
   },
   "status": {
+    "viewQualifications": "View competency reviews",
     "eligibleNext": "Your next step is a separate qualification for each service.",
     "track": "Track your application and see what happens next.",
     "notApproved": "Not approved",
@@ -315,12 +327,12 @@
     "priceNext": "Next, configure your service price and submit it for approval. Marketplace visibility requires an active account, active service, service approval and an approved price that is currently effective.",
     "priceDisconnected": "Pricing setup is not connected yet. Service availability and payout settings will be handled in the next implementation phase.",
     "eligible": "Your general eligibility is approved. You can now prepare competency evidence for each service you wish to offer.",
-    "catalogue": "Service selection and the C1–C5 evidence requirements will use the confirmed service catalogue.",
-    "preview": "Preview service review",
+    "catalogue": "Choose the services you want to offer and submit competency evidence for each one.",
+    "preview": "Register a service for competency review",
     "returned": "The final approver has returned the qualification to service competency review. This is not a new rejection or reapplication. The assigned reviewer will address the governance findings.",
     "aiDescription": "AI assists with extracting information and identifying missing or inconsistent evidence. An authorized reviewer makes the eligibility decision.",
     "eligibilityDescription": "An authorized reviewer is checking your eligibility evidence.",
-    "competencyDescription": "An authorized reviewer is assessing your evidence for CIT document review (illustrative service). This decision applies only to this service.",
+    "competencyDescription": "An authorized reviewer is assessing your competency for {{service}}. This decision applies only to this service.",
     "finalDescription": "Eligibility and service competency reviews have passed. A System Admin will perform the final governance check.",
     "noAction": "No action needed right now. Follow the review progress above.",
     "history": "Activity history",

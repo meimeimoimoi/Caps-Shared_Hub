@@ -15,7 +15,7 @@ export function CompetencyResultCard({
   const { t } = useTranslation('admin')
   const label = useCompetencyLabel()
   const fileName = new Map(
-    detail.profile.documents.map((d) => [d.evidenceId, `${d.code} · ${d.name}`])
+    detail.profile.documents.map((d) => [d.evidenceId, d.name])
   )
   return (
     <section className="paper p-5 md:p-6">
@@ -40,7 +40,7 @@ export function CompetencyResultCard({
             <li key={c.code} className="py-2">
               <div className="flex justify-between gap-4">
                 <span className="text-fg-muted">
-                  <span className="num">{c.code}</span> {label.name(c.code)}
+                  {label.name(c.code)}
                 </span>
                 <span
                   className={cn(

@@ -48,6 +48,7 @@ export interface ExpertApplication {
     sizeBytes: number
     uploadedAt: string
     canRemove: boolean
+    sourceUrl?: string | null
   }[]
   history: {
     fromStatus: ApplicationStatus | null
@@ -143,7 +144,7 @@ export function toProfile(app: ExpertApplication): Profile {
 export const toFields = (app: ExpertApplication) =>
   app.profile.fields.map((code) => FIELD_BY_CODE[code] ?? code)
 
-/** Gom file theo tiêu chí như form đang dùng; file bổ sung nằm riêng dưới mã SUPPLEMENT */
+/** Groups evidence by form criterion; supplementary evidence uses the SUPPLEMENT key. */
 export function toFiles(
   app: ExpertApplication
 ): Record<string, EvidenceFile[]> {
@@ -152,9 +153,10 @@ export function toFiles(
     const key = CRITERION_BY_CODE[e.code] ?? e.code
     ;(files[key] ??= []).push({
       id: e.id,
-      name: e.fileName,
+      name: e.sourceUrl || e.fileName,
       size: e.sizeBytes,
       canRemove: e.canRemove,
+      sourceUrl: e.sourceUrl,
     })
   }
   return files
@@ -199,6 +201,13 @@ export const applicationApi = {
   },
   remove: async (id: string) =>
     (await api.del<Envelope<ExpertApplication>>(`${BASE}/evidence/${id}`)).data,
+  addLink: async (code: string, sourceUrl: string) =>
+    (
+      await api.post<Envelope<ExpertApplication>>(`${BASE}/evidence/link`, {
+        code,
+        sourceUrl,
+      })
+    ).data,
   submit: async () =>
     (await api.post<Envelope<ExpertApplication>>(`${BASE}/submit`)).data,
   supplement: async (note: string) =>

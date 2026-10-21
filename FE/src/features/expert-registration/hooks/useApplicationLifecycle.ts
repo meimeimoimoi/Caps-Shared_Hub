@@ -42,6 +42,8 @@ export function messageFor(e: unknown): RegistrationMessage {
         return { key: 'validation.file' }
       case 'EVIDENCE_DUPLICATE':
         return { key: 'validation.duplicateCv' }
+      case 'EVIDENCE_INVALID_URL':
+        return { key: 'links.invalid' }
       case 'EVIDENCE_LIMIT':
         return { key: 'messages.fileLimit' }
       case 'EVIDENCE_LIMIT_UNVERIFIED':
@@ -225,7 +227,6 @@ export function useApplicationLifecycle({
       setError(null)
     },
     requestSupplement: () => setSupplement(true),
-    previewServiceReview: () => setPreviewStage('competency'),
     cancelSupplement: () => setSupplement(false),
   }
 }

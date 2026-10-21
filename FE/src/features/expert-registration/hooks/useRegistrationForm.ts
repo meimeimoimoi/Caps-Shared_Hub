@@ -245,6 +245,29 @@ export function useRegistrationForm({
     }
   }
 
+  async function addEvidenceLink(criterion: string, sourceUrl: string): Promise<boolean> {
+    if (submitting) return false
+    setSubmitting(true)
+    clearFormError(criterion)
+    try {
+      setApplication(await applicationApi.addLink(evidenceCode(criterion), sourceUrl))
+      return true
+    } catch (e) {
+      const message: RegistrationMessage =
+        e instanceof ApiError && e.code === 'EVIDENCE_DUPLICATE'
+          ? { key: 'links.duplicate' }
+          : messageFor(e)
+      setFormErrors((p) => ({ ...p, [criterion]: message }))
+      if (e instanceof ApiError && e.code === 'EVIDENCE_LIMIT_UNVERIFIED') {
+        setVerifyPurpose('upload')
+        setVerifyOpen(true)
+      }
+      return false
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
   async function submitNow() {
     await syncVerifiedSession()
     if (avatar && useAuthStore.getState().user?.status === 'ACTIVE') {
@@ -399,6 +422,8 @@ export function useRegistrationForm({
     furthest,
     returnToReview,
     chooseFiles,
+    addCvLink: (url: string) => addEvidenceLink('CV', url),
+    addEvidenceLink,
     advance,
     clearFormError,
     updateAvatar,

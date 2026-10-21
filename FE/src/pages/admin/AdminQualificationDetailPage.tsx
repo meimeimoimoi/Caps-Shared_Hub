@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils'
 import { ApiError } from '@/lib/api-client'
 import { QUALIFICATION_STATUS } from '@/lib/constants'
 import { ToolHeader } from '@/components/ui/layout/tool-header'
+import { StatusBadge } from '@/components/ui/display/status-badge'
 import { DecisionBar } from '@/components/ui/actions/decision-bar'
 import { Toast } from '@/components/ui/feedback/toast'
 import { ReviewPageLayout } from '@/features/expert-vetting/components/ReviewPageLayout'
@@ -183,6 +184,15 @@ export default function AdminQualificationDetailPage({
   }
 
   const expert = detail.profile
+  const expertName = !expert.name.trim() || /^[\da-f]{8}(?:-[\da-f]{4}){3}-[\da-f]{12}$/i.test(expert.name)
+    ? t('admin:reviewWorkspace.unnamedApplicant')
+    : expert.name
+  // Show a file in the document viewer of the reference panel, beside the form
+  const showDocument = (key: string) => {
+    setDocKey(key)
+    setTab('documents')
+    requestAnimationFrame(() => document.getElementById('panel-documents')?.scrollIntoView({ block: 'nearest', behavior: 'smooth' }))
+  }
   const decided = !detail.canDecide
   const years = t('admin:detail.meta.years', { count: expert.years })
 
@@ -191,19 +201,32 @@ export default function AdminQualificationDetailPage({
       embedded={embedded}
       {...nav}
       section={section}
-      title={expert.name}
+      title={expertName}
       breadcrumb={
         <>
           {listLink} <span aria-hidden="true">/</span>{' '}
           <span className="text-fg-strong" aria-current="page">
-            {expert.name}
+            {expertName}
           </span>
         </>
       }
     >
+      {embedded ? (
+        <header className="min-w-0">
+          <div className="flex flex-wrap items-center gap-3">
+            <h1 className="text-text-strong !font-sans text-xl font-semibold tracking-tight break-words">{expertName}</h1>
+            <StatusBadge status={QUALIFICATION_STATUS[detail.status]} />
+          </div>
+          <dl className="text-text-muted mt-1.5 flex flex-wrap items-center gap-x-1.5 gap-y-1 text-sm [&>div+div]:before:mr-1.5 [&>div+div]:before:content-['·']">
+            <div><dt className="sr-only">{t('admin:competency.serviceLabel')}</dt><dd className="text-text-strong inline font-medium">{detail.serviceName}</dd></div>
+            <div><dt className="sr-only">{t('admin:detail.meta.experience')}</dt><dd className="inline tabular-nums">{years}</dd></div>
+            <div><dt className="inline">{t('admin:reviewWorkspace.reference')} </dt><dd title={detail.id} className="inline tabular-nums">{detail.id.slice(0, 8)}</dd></div>
+          </dl>
+        </header>
+      ) : (
       <ToolHeader
         code={detail.id}
-        subtitle={[expert.name, detail.serviceName, years]
+        subtitle={[expertName, detail.serviceName, years]
           .filter(Boolean)
           .join(' · ')}
         rail={{
@@ -215,14 +238,16 @@ export default function AdminQualificationDetailPage({
           current: RAIL_STEP[detail.status] ?? 0,
         }}
       />
+      )}
 
-      <div className="mt-6 grid items-start gap-4 md:gap-6 lg:grid-cols-[minmax(420px,1fr)_380px]">
-        <div className="min-w-0">
+      <div className="mt-5 grid items-start gap-5 xl:grid-cols-[minmax(300px,0.8fr)_minmax(0,1.2fr)]">
+        {/* Reference panel: profile, documents with the in-page viewer, history */}
+        <div className="border-border bg-surface order-2 min-w-0 overflow-hidden rounded-lg border xl:sticky xl:top-6 xl:order-1">
           <div
             role="tablist"
             aria-label={t('admin:detail.tabAria')}
             onKeyDown={onTabKey}
-            className="mb-4 flex gap-7 overflow-x-auto"
+            className="border-border flex gap-4 overflow-x-auto border-b px-4"
           >
             {TABS.map((key) => (
               <button
@@ -235,13 +260,14 @@ export default function AdminQualificationDetailPage({
                 tabIndex={tab === key ? 0 : -1}
                 onClick={() => setTab(key)}
                 className={cn(
-                  'border-b-2 pb-2 whitespace-nowrap',
+                  '-mb-px min-h-11 shrink-0 border-b-2 px-0.5 text-sm whitespace-nowrap transition-colors',
                   tab === key
-                    ? 'border-indicator text-fg-strong font-semibold'
+                    ? 'border-text-strong text-fg-strong font-medium'
                     : 'text-fg-muted border-transparent'
                 )}
               >
                 {t(`admin:detail.tabs.${key}`)}
+                {key === 'documents' && <span className="text-text-muted ml-1.5 text-xs tabular-nums">{expert.documents.length}</span>}
               </button>
             ))}
           </div>
@@ -249,7 +275,7 @@ export default function AdminQualificationDetailPage({
             role="tabpanel"
             id={`panel-${tab}`}
             aria-labelledby={`tab-${tab}`}
-            className="space-y-4 md:space-y-6"
+            className="space-y-4 p-4"
           >
             {tab === 'profile' && (
               <>
@@ -265,11 +291,13 @@ export default function AdminQualificationDetailPage({
             )}
             {tab === 'documents' && (
               <DocumentsTab
+                key={docKey}
                 documents={expert.documents}
                 initialCode={docKey}
                 reviewedFlags={[]}
                 onToggleReviewed={() => undefined}
                 onOpenFile={openFile}
+                loadFile={(evidenceId) => getQualificationFile(scope, detail.id, evidenceId)}
               />
             )}
             {tab === 'history' && <HistoryTab history={review.history} />}
@@ -277,7 +305,7 @@ export default function AdminQualificationDetailPage({
         </div>
 
         {isApproval ? (
-          <div className="space-y-4 md:space-y-6">
+          <div className="order-1 space-y-4 md:space-y-6 xl:order-2">
             <CompetencyResultCard detail={detail} />
             <FinalApprovalPanel
               key={detail.status}
@@ -291,9 +319,11 @@ export default function AdminQualificationDetailPage({
             />
           </div>
         ) : decided ? (
-          <CompetencyResultCard detail={detail} />
+          <div className="order-1 xl:order-2">
+            <CompetencyResultCard detail={detail} />
+          </div>
         ) : (
-          <div className="lg:sticky lg:top-20 lg:max-h-[calc(100vh-160px)] lg:overflow-y-auto">
+          <div className="order-1 min-w-0 xl:order-2">
             <CompetencyReview
               assessments={review.assessments}
               documents={expert.documents}
@@ -302,14 +332,10 @@ export default function AdminQualificationDetailPage({
               onResult={review.setResult}
               onNote={review.setNote}
               onToggleEvidence={review.toggleEvidence}
+              onShowDocument={showDocument}
             />
-          </div>
-        )}
-      </div>
-
-      {!decided && !isApproval && (
         <DecisionBar
-          className="-mx-4 mt-12 -mb-12 md:-mx-6 lg:-mx-8"
+          className="!static !mx-0 !mt-4 !mb-0 !flex-col !items-stretch !gap-4 !rounded-lg !border !border-[var(--ui-border)] !bg-[var(--ui-surface)] !px-4 !py-3 !shadow-none [&>div]:!ml-0 [&>div]:w-full [&>div]:justify-end [&_.btn]:min-h-11 [&_.btn]:h-auto [&_.btn]:whitespace-normal [&_.btn]:py-3"
           blockers={
             review.remaining > 0
               ? [
@@ -330,7 +356,9 @@ export default function AdminQualificationDetailPage({
             disabled: !review.canDecide,
           }}
         />
-      )}
+          </div>
+        )}
+      </div>
 
       {confirming && (
         <CompetencyDecisionDialog

@@ -1,5 +1,6 @@
 {
   "reviewWorkspace": {
+    "unnamedApplicant": "Applicant name not provided",
     "reference": "Application reference",
     "progress": "Assessment progress",
     "criteria": "criteria completed",
@@ -232,13 +233,25 @@
       "reviewer": "Reviewer"
     },
     "documents": {
+      "supplement": "Supplementary file",
+      "view": "View",
+      "previous": "Previous file",
+      "next": "Next file",
+      "newTab": "Open in a new tab",
+      "linkHint": "External links cannot be shown inside the page.",
+      "openLink": "Open link",
+      "loading": "Loading file",
+      "empty": "No files in this application.",
+      "cv": "CV",
+      "forCriterion": "Supporting files",
+      "noneForCriterion": "The applicant attached no files for this requirement.",
       "select": "Select document",
       "noPreview": "No preview available for this document.",
       "pageNote": "Notes for page {{page}}",
       "aiReviewed": "AI · Reviewed",
       "unmark": "Unmark",
       "mark": "Mark as reviewed",
-      "pageOf": "{{code}} · page {{page}}/{{total}}",
+      "pageOf": "Page {{page}}/{{total}}",
       "open": "Open file",
       "openFailed": "Could not open the file. Please try again."
     },
@@ -696,8 +709,8 @@
     }
   },
   "eligibility": {
-    "title": "Gate 1 · Eligibility",
-    "subtitle": "Assess each requirement EV-01 – EV-06. The overall outcome is derived automatically. Eligible does not list the expert on the Marketplace yet: per-service competency review and final approval follow.",
+    "title": "Eligibility",
+    "subtitle": "Assess each requirement. The overall outcome is derived automatically. Eligible does not list the expert on the Marketplace yet: per-service competency review and final approval follow.",
     "results": {
       "PASS": "Pass",
       "NEED_MORE_INFORMATION": "More info",
@@ -730,20 +743,20 @@
       }
     },
     "dialog": {
-      "title": "Record the Gate 1 outcome for {{name}}?",
+      "title": "Record the eligibility outcome for {{name}}?",
       "noteLabel": "Overall note (optional)",
       "placeholder": "Shown to the applicant with the results."
     },
-    "resultTitle": "Gate 1 result",
+    "resultTitle": "Eligibility result",
     "decidedAt": "Decided at {{time}}",
     "reapplyAt": "A new application is allowed from {{date}}.",
-    "noDecision": "No Gate 1 decision yet.",
-    "notReviewable": "This application is not waiting for a Gate 1 decision.",
+    "noDecision": "No eligibility decision yet.",
+    "notReviewable": "This application is not waiting for an eligibility decision.",
     "errors": {
-      "INVALID_ELIGIBILITY_CRITERIA": "Give exactly one result for each of EV-01 – EV-06.",
+      "INVALID_ELIGIBILITY_CRITERIA": "Give exactly one result for each requirement.",
       "INVALID_ELIGIBILITY_RESULT": "A result is invalid. Reload the page and try again.",
       "ELIGIBILITY_NOTE_REQUIRED": "A failed or incomplete requirement needs a note.",
-      "EXPERIENCE_BELOW_MINIMUM": "EV-06 cannot pass: the declared experience is below the minimum.",
+      "EXPERIENCE_BELOW_MINIMUM": "The experience requirement cannot pass: the declared experience is below the minimum.",
       "SELF_REVIEW_NOT_ALLOWED": "You cannot review your own application.",
       "APPLICATION_NOT_IN_REVIEW": "This application no longer waits for a decision; reload to see its status.",
       "failed": "The decision was not recorded. Please try again."
@@ -751,7 +764,7 @@
   },
   "qualifications": {
     "title": "Competency review by service",
-    "description": "Gate 2: eligible experts register each service separately. Assess C1 – C5 per service; a pass goes to the System Admin for final approval.",
+    "description": "Eligible experts register each service separately. Assess competency per service; a pass goes to the System Admin for final approval.",
     "count": "qualifications",
     "service": "Service",
     "empty": "No qualifications.",
@@ -765,8 +778,11 @@
     }
   },
   "competency": {
-    "title": "Gate 2 · Competency for the service",
-    "subtitle": "Assess each competency C1 – C5. Every competency needs a note; Pass or Fail must cite at least one file. Years of experience or CV keywords never prove a competency on their own.",
+    "incomplete": "Note or file missing",
+    "evidenceHint": "Select at least one file to support a Pass or Fail result.",
+    "serviceLabel": "Service",
+    "title": "Competency for the service",
+    "subtitle": "Assess each competency. Every competency needs a note; Pass or Fail must cite at least one file. Years of experience or CV keywords never prove a competency on their own.",
     "names": {
       "C1": "CIT knowledge for the service scope",
       "C2": "AI Draft review and revision",
@@ -775,11 +791,11 @@
       "C5": "Professional judgment and verification conclusion"
     },
     "hints": {
-      "C1": "Related tasks T2, T3.",
-      "C2": "Related tasks T2, T5.",
-      "C3": "Related task T1; supports decision T4.",
-      "C4": "Related tasks T3, T5.",
-      "C5": "Partly T2, T5; mainly T6."
+      "C1": "Used when checking legal grounds and applicable rules, and when reviewing AI output.",
+      "C2": "Used when reviewing and revising AI-generated results and documents.",
+      "C3": "Used when reviewing information and evidence, and deciding whether to request more.",
+      "C4": "Used when checking legal grounds and applicable rules, and when revising results.",
+      "C5": "Used when confirming the review result; partly when reviewing and revising AI output."
     },
     "previous": "Last time: {{result}}",
     "evidenceRequired": "Supporting files (required)",
@@ -792,7 +808,7 @@
     "outcome": {
       "PENDING_FINAL_APPROVAL": {
         "confirm": "Confirm competency met",
-        "notice": "The qualification goes to the System Admin for final approval, who must not be the Gate 2 reviewer. The expert is not on the Marketplace yet.",
+        "notice": "The qualification goes to the System Admin for final approval, who must not be the competency reviewer. The expert is not on the Marketplace yet.",
         "toast": "Competency recorded as met"
       },
       "NEED_MORE_INFORMATION": {
@@ -807,12 +823,12 @@
       }
     },
     "dialog": {
-      "title": "Gate 2 conclusion for {{name}} · {{service}}?",
+      "title": "Competency conclusion for {{name}} · {{service}}?",
       "noteLabel": "Overall note (optional)",
       "placeholder": "The expert sees it with the results."
     },
-    "resultTitle": "Gate 2 result",
-    "noDecision": "No Gate 2 conclusion yet.",
+    "resultTitle": "Competency result",
+    "noDecision": "No competency conclusion yet.",
     "handoff": "Waiting for the System Admin final approval.",
     "reapplyAt": "The service can be registered again from {{date}}.",
     "rail": {
@@ -821,7 +837,7 @@
       "approved": "Approved"
     },
     "errors": {
-      "INVALID_COMPETENCY_CRITERIA": "Give exactly one result for each of C1 – C5.",
+      "INVALID_COMPETENCY_CRITERIA": "Give exactly one result for each competency.",
       "INVALID_COMPETENCY_RESULT": "A result is invalid. Reload the page and try again.",
       "COMPETENCY_NOTE_REQUIRED": "Every competency needs an assessment note.",
       "COMPETENCY_EVIDENCE_REQUIRED": "Pass or Fail must cite at least one file.",
@@ -830,7 +846,7 @@
       "QUALIFICATION_NOT_IN_REVIEW": "The qualification is no longer awaiting review; reload to see its status.",
       "failed": "The conclusion was not recorded. Please try again.",
       "QUALIFICATION_NOT_PENDING_APPROVAL": "The qualification is no longer waiting for final approval; reload to see its status.",
-      "FINAL_APPROVER_IS_REVIEWER": "The Gate 2 reviewer cannot give the final approval.",
+      "FINAL_APPROVER_IS_REVIEWER": "The competency reviewer cannot give the final approval.",
       "FINAL_APPROVAL_NOTE_REQUIRED": "Explain why it goes back for review.",
       "INVALID_FINAL_APPROVAL_DECISION": "The decision is invalid. Reload the page and try again.",
       "SERVICE_NOT_APPROVED": "Only an approved service can be suspended; reload the page.",
@@ -841,10 +857,10 @@
   },
   "finalApproval": {
     "title": "Final approval",
-    "description": "Governance check of Gate 2 results per service: records, both Gate results, evidence and history. Competency is not re-assessed.",
+    "description": "Governance check of competency results per service: records, eligibility and competency results, evidence and history. Competency is not re-assessed.",
     "panelTitle": "Final approval",
-    "intro": "Confirm the Gate 2 result is complete and followed the process. Approval lets the expert set up pricing for this service.",
-    "sameReviewer": "You were the Gate 2 reviewer for this qualification, so you cannot give the final approval.",
+    "intro": "Confirm the competency result is complete and followed the process. Approval lets the expert set up pricing for this service.",
+    "sameReviewer": "You were the competency reviewer for this qualification, so you cannot give the final approval.",
     "noteLabel": "Note (required to return for review)",
     "notePlaceholder": "Missing records, unresolved flags or a process error",
     "return": "Return for review",
