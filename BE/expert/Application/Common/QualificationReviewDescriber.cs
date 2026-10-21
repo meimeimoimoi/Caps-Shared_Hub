@@ -56,7 +56,8 @@ public sealed class QualificationReviewDescriber(
                     x.FileName,
                     x.ContentType,
                     x.SizeBytes,
-                    x.CreatedAt
+                    x.CreatedAt,
+                    x.SourceUrl
                 ))
                 .ToArray(),
             history

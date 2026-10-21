@@ -56,7 +56,8 @@ public sealed record ReviewEvidenceResponse(
     string FileName,
     string ContentType,
     long SizeBytes,
-    DateTimeOffset UploadedAt
+    DateTimeOffset UploadedAt,
+    string? SourceUrl = null
 );
 
 /// <summary>One status change, with who made it.</summary>

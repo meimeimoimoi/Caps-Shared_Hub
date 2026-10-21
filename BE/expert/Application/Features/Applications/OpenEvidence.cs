@@ -17,6 +17,8 @@ public sealed class OpenEvidenceHandler(IExpertEvidenceRepository evidences, IOb
         var evidence =
             await evidences.FindOwnedAsync(query.EvidenceId, query.UserId, ct)
             ?? throw ExpertErrors.EvidenceNotFound();
+        if (evidence.IsLink)
+            throw ExpertErrors.EvidenceNotFound();
         var content = await storage.OpenAsync(evidence.FileUrl, ct);
         return new(content, evidence.ContentType, evidence.FileName);
     }

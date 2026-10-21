@@ -81,7 +81,25 @@ public sealed class ApplicationsController(ICurrentUser currentUser) : Controlle
         return Result(application);
     }
 
-    /// <summary>Removes a file that has not been submitted yet.</summary>
+    /// <summary>Adds a public CV or supporting evidence link.</summary>
+    /// <remarks>JSON fields: code (CV, EV-01…EV-05, or SUPPLEMENT) and sourceUrl. HTTP(S) URLs only, at most 2048 characters. Links share file limits and submission rules. The server does not download or verify remote content.</remarks>
+    /// <response code="200">The application with the new link.</response>
+    /// <response code="400">EVIDENCE_INVALID_URL, INVALID_EVIDENCE_CODE or SUPPLEMENT_NOT_REQUESTED.</response>
+    /// <response code="403">EVIDENCE_LIMIT_UNVERIFIED.</response>
+    /// <response code="409">EVIDENCE_DUPLICATE, EVIDENCE_LIMIT or APPLICATION_LOCKED.</response>
+    [HttpPost("evidence/link")]
+    public async Task<IActionResult> AddEvidenceLink(
+        AddEvidenceLinkRequest request,
+        [FromServices] ICommandHandler<AddEvidenceLinkCommand, ExpertApplicationResponse> handler,
+        CancellationToken ct
+    )
+    {
+        var command = new AddEvidenceLinkCommand(Applicant, request.Code ?? "", request.SourceUrl);
+        var application = await handler.HandleAsync(command, ct);
+        return Result(application);
+    }
+
+    /// <summary>Removes a file or link that has not been submitted yet.</summary>
     /// <response code="200">The application without the file.</response>
     /// <response code="404">EVIDENCE_NOT_FOUND or APPLICATION_NOT_FOUND.</response>
     /// <response code="409">EVIDENCE_LOCKED: submitted files are kept as history.</response>

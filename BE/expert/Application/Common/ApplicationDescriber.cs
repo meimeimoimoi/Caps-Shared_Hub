@@ -59,7 +59,8 @@ public sealed class ApplicationDescriber(
                     x.ContentType,
                     x.SizeBytes,
                     x.CreatedAt,
-                    application.CanRemove(x)
+                    application.CanRemove(x),
+                    x.SourceUrl
                 ))
                 .ToArray(),
             history

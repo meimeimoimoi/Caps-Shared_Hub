@@ -75,14 +75,20 @@ public sealed class ExpertEvidence
         DateTimeOffset now
     )
     {
-        // TODO: Enable URL validation once ApplicationRules.ValidateUrl is implemented.
-        // ApplicationRules.ValidateUrl(sourceUrl);
+        if (
+            code != ApplicationRules.SupplementCode
+            && !ApplicationRules.EvidenceCodes.Contains(code)
+        )
+        {
+            throw ExpertErrors.InvalidEvidenceCode();
+        }
+        var url = ApplicationRules.ValidateUrl(sourceUrl);
         return new ExpertEvidence
         {
             ExpertProfileId = application.ExpertProfileId,
             ApplicationId = application.Id,
             EvidenceType = code,
-            SourceUrl = sourceUrl,
+            SourceUrl = url,
             FileUrl = "",
             FileName = "",
             ContentType = "text/uri-list",

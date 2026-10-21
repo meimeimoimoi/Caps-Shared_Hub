@@ -21,6 +21,20 @@ adding a service is a new catalog row, not a code change.
 
 ## Gate 1 (eligibility review)
 
+Applicants can attach a public CV or supporting link through the gateway:
+`POST /api/v1/experts/me/application/evidence/link` with JSON
+`{"code":"CV","sourceUrl":"https://example.com/cv.pdf"}`.
+Codes and application status rules are the same as file uploads; links count toward the shared
+20-evidence limit (3 before email verification). Repeating the same normalized URL in the same group
+returns `EVIDENCE_DUPLICATE`. An invalid URL returns `EVIDENCE_INVALID_URL`.
+Only absolute HTTP(S) URLs without credentials are accepted, with a maximum length of 2048 characters;
+local host names and private IP literals are rejected. This is URL validation only: the service does
+not resolve DNS, check sharing permissions, download content or run extraction.
+Application and qualification evidence responses expose `sourceUrl` (null for uploaded files),
+including reviewer responses. Clients should open that URL for links instead of the file endpoint;
+file endpoints return 404 for link evidence. A CV link satisfies the CV submission requirement.
+The existing evidence DELETE endpoint removes links under the same rules as files.
+
 A reviewer gives PASS / FAIL / NEED_MORE_INFORMATION for each of EV-01…EV-06 (a note is required unless PASS).
 The outcome follows: any FAIL → `NOT_ELIGIBLE` (new application allowed after `ExpertPolicy:ReapplyNotEligibleDays`),
 otherwise any NEED_MORE_INFORMATION → the applicant supplements the same application, all PASS → `ELIGIBLE`.

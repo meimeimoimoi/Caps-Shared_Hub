@@ -10,6 +10,105 @@ public sealed class ApplicationRulesTests
     private static readonly DateTimeOffset Now = new(2026, 10, 13, 8, 0, 0, TimeSpan.Zero);
     private static readonly byte[] Pdf = Encoding.ASCII.GetBytes("%PDF-1.7 minimal");
 
+    [Theory]
+    [InlineData(" https://www.linkedin.com/in/expert ", "https://www.linkedin.com/in/expert")]
+    [InlineData("https://EXAMPLE.com", "https://example.com/")]
+    [InlineData("http://example.com/cv.pdf?share=public", "http://example.com/cv.pdf?share=public")]
+    public void Public_links_are_trimmed_and_normalized(string input, string expected)
+    {
+        Assert.Equal(expected, ApplicationRules.ValidateUrl(input));
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("/cv.pdf")]
+    [InlineData("javascript:alert(1)")]
+    [InlineData("file:///cv.pdf")]
+    [InlineData("ftp://example.com/cv.pdf")]
+    [InlineData("https://user:password@example.com/cv")]
+    [InlineData("http://localhost/cv")]
+    [InlineData("http://a.localhost/cv")]
+    [InlineData("http://server.local/cv")]
+    [InlineData("http://server.internal/cv")]
+    [InlineData("http://intranet/cv")]
+    [InlineData("http://127.0.0.1/cv")]
+    [InlineData("http://10.0.0.1/cv")]
+    [InlineData("http://172.16.0.1/cv")]
+    [InlineData("http://192.168.1.1/cv")]
+    [InlineData("http://169.254.169.254/cv")]
+    [InlineData("http://100.64.0.1/cv")]
+    [InlineData("http://[::1]/cv")]
+    [InlineData("http://[::ffff:127.0.0.1]/cv")]
+    [InlineData("http://[fe80::1]/cv")]
+    [InlineData("https://example.com/cv\n.pdf")]
+    public void Missing_unsafe_or_local_links_are_rejected(string? input)
+    {
+        Assert.Equal(
+            "EVIDENCE_INVALID_URL",
+            Errors.CodeOf(() => ApplicationRules.ValidateUrl(input))
+        );
+    }
+
+    [Fact]
+    public void Oversized_links_are_rejected()
+    {
+        var url = "https://example.com/" + new string('a', 2048);
+        Assert.Equal(
+            "EVIDENCE_INVALID_URL",
+            Errors.CodeOf(() => ApplicationRules.ValidateUrl(url))
+        );
+    }
+
+    [Fact]
+    public void A_cv_link_is_recorded_without_a_storage_object_and_can_be_removed_from_a_draft()
+    {
+        var userId = Guid.NewGuid();
+        var application = ExpertApplication.Open(Guid.NewGuid(), null, userId, Now).Application;
+        var evidence = ExpertEvidence.CreateFromUrl(
+            application,
+            userId,
+            "CV",
+            " https://example.com/cv ",
+            Now
+        );
+
+        Assert.True(evidence.IsLink);
+        Assert.Equal("https://example.com/cv", evidence.SourceUrl);
+        Assert.Equal("CV", evidence.EvidenceType);
+        Assert.Equal(application.Id, evidence.ApplicationId);
+        Assert.Empty(evidence.FileUrl);
+        Assert.Equal(0, evidence.SizeBytes);
+        Assert.True(application.CanRemove(evidence));
+        application.Submit(userId, Now.AddMinutes(1));
+        Assert.False(application.CanRemove(evidence));
+    }
+
+    [Fact]
+    public void The_link_factory_enforces_url_and_group_validation()
+    {
+        var userId = Guid.NewGuid();
+        var application = ExpertApplication.Open(Guid.NewGuid(), null, userId, Now).Application;
+        Assert.Equal(
+            "EVIDENCE_INVALID_URL",
+            Errors.CodeOf(() =>
+                ExpertEvidence.CreateFromUrl(application, userId, "CV", "javascript:alert(1)", Now)
+            )
+        );
+        Assert.Equal(
+            "INVALID_EVIDENCE_CODE",
+            Errors.CodeOf(() =>
+                ExpertEvidence.CreateFromUrl(
+                    application,
+                    userId,
+                    "EV-99",
+                    "https://example.com",
+                    Now
+                )
+            )
+        );
+    }
+
     [Fact]
     public void A_pdf_is_accepted_and_its_type_comes_from_the_bytes()
     {

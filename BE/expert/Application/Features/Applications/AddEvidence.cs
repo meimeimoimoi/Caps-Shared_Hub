@@ -49,6 +49,7 @@ public sealed class AddEvidenceHandler(
             foreach (
                 var existing in existingFiles.Where(x =>
                     x.EvidenceType == ApplicationRules.CvCode
+                    && !x.IsLink
                     && x.SizeBytes == command.Content.Length
                 )
             )

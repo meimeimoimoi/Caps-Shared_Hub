@@ -50,7 +50,8 @@ public sealed class ReviewDescriber(
                     x.FileName,
                     x.ContentType,
                     x.SizeBytes,
-                    x.CreatedAt
+                    x.CreatedAt,
+                    x.SourceUrl
                 ))
                 .ToArray(),
             history

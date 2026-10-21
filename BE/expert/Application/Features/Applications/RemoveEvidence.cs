@@ -38,7 +38,8 @@ public sealed class RemoveEvidenceHandler(
         await unitOfWork.SaveChangesAsync(ct);
         await tx.CommitAsync(ct);
         // Delete the file only once the row is gone, so a failure never leaves a row without its file
-        await storage.DeleteQuietlyAsync(evidence.FileUrl);
+        if (!evidence.IsLink)
+            await storage.DeleteQuietlyAsync(evidence.FileUrl);
         return await describer.DescribeAsync(command.Applicant, profile, application, ct);
     }
 }

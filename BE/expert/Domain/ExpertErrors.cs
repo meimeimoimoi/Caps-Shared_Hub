@@ -41,6 +41,13 @@ public static class ExpertErrors
     public static AppException EvidenceRequired() =>
         new(ErrorType.Validation, "EVIDENCE_REQUIRED", "File is required.");
 
+    public static AppException EvidenceInvalidUrl() =>
+        new(
+            ErrorType.Validation,
+            "EVIDENCE_INVALID_URL",
+            "Enter a public HTTP or HTTPS URL without credentials (at most 2048 characters)."
+        );
+
     public static AppException EvidenceTooLarge() =>
         new(ErrorType.Validation, "EVIDENCE_TOO_LARGE", "File must be 10 MB or smaller.");
 

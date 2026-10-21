@@ -49,7 +49,8 @@ public sealed record ExpertEvidenceResponse(
     string ContentType,
     long SizeBytes,
     DateTimeOffset UploadedAt,
-    bool CanRemove
+    bool CanRemove,
+    string? SourceUrl = null
 );
 
 /// <summary>One status change in the application's history.</summary>

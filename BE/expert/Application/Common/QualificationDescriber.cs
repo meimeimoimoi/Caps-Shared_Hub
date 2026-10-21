@@ -43,7 +43,8 @@ public sealed class QualificationDescriber(
                     x.ContentType,
                     x.SizeBytes,
                     x.CreatedAt,
-                    qualification.CanRemove(x)
+                    qualification.CanRemove(x),
+                    x.SourceUrl
                 ))
                 .ToArray(),
             history
