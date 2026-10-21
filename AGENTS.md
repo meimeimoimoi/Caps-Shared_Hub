@@ -20,6 +20,12 @@ Tổng quan, cách chạy, route: xem [README.md](README.md). File này chỉ ch
 - Đổi cấu trúc thư mục, `Directory.Build.props`, `Directory.Packages.props`, `global.json`.
 - Xóa file, hoặc thao tác git phá hủy (`reset --hard`, `push --force`, xóa branch).
 
+Hỏi lại để làm rõ yêu cầu (đỡ tốn token hơn tìm sai hướng):
+
+- Yêu cầu chưa rõ hoặc điều người dùng nói không khớp với code: kiểm tra nhanh một lần, rồi hỏi **một câu ngắn**, kèm 2–3 lựa chọn để bấm chọn. Ví dụ: "Flow 1 theo file nào?", "Chỉ trả lời hay sửa luôn?", "SignalR bạn cài ở nhánh nào?". Không grep toàn repo, mọi nhánh, lịch sử commit để tự đoán.
+- Yêu cầu đã rõ hoặc có cách làm mặc định hợp lý: làm luôn, không hỏi.
+- Tối đa một lượt hỏi cho mỗi yêu cầu.
+
 ## Lệnh thường dùng
 
 Hạ tầng (Postgres+pgvector, Redis, RabbitMQ) — PowerShell, chạy ở `BE/`:
