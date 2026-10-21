@@ -329,6 +329,9 @@ def scrape_document_detail(item: SearchResultItem) -> LegalDocument:
     n_dl = sum(1 for a in doc.attachments if a.downloaded)
     logger.info(f"  -> {len(doc.attachments)} file dinh kem ({n_dl} da tai).")
 
+    doc.relations = list(item.relations or [])
+    doc.vbhn = list(item.vbhn or [])
+
     # --- Lỗi ---
     if item.download_error and n_dl == 0:
         doc.error = item.download_error
