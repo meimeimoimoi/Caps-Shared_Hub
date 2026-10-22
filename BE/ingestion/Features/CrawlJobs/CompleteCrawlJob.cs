@@ -3,6 +3,7 @@ using Caps.Common.Application;
 using Caps.Ingestion.Constants;
 using Caps.Ingestion.Data;
 using Caps.Ingestion.DTOs.Responses;
+using Caps.Ingestion.Realtime;
 using Microsoft.EntityFrameworkCore;
 
 namespace Caps.Ingestion.Features.CrawlJobs;
@@ -20,7 +21,8 @@ public sealed record CompleteCrawlJobCommand(
 public sealed class CompleteCrawlJobHandler(
     IngestionDbContext db,
     IUnitOfWork unitOfWork,
-    TimeProvider clock
+    TimeProvider clock,
+    ICrawlJobNotifier notifier
 ) : ICommandHandler<CompleteCrawlJobCommand, CrawlJobResponse>
 {
     private static readonly string[] FinalStatuses =
@@ -43,6 +45,8 @@ public sealed class CompleteCrawlJobHandler(
             throw IngestionErrors.CrawlJobNotRunning();
         job.Finish(command.Status, command.DocsFound, command.Detail, clock.GetUtcNow());
         await unitOfWork.SaveChangesAsync(ct);
-        return CrawlJobResponse.From(job);
+        var response = CrawlJobResponse.From(job);
+        await notifier.JobUpdatedAsync(response, ct);
+        return response;
     }
 }

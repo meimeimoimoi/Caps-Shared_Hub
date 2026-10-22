@@ -2,6 +2,8 @@ using System.Text.Json.Nodes;
 using Caps.Common.Application;
 using Caps.Ingestion.Constants;
 using Caps.Ingestion.Data;
+using Caps.Ingestion.DTOs.Responses;
+using Caps.Ingestion.Realtime;
 using Microsoft.EntityFrameworkCore;
 
 namespace Caps.Ingestion.Features.CrawlJobs;
@@ -17,11 +19,12 @@ public sealed record ReportCrawlProgressCommand(
     string? Message
 );
 
-/// <summary>Stores the latest milestone of a RUNNING job, so admins can poll it.</summary>
+/// <summary>Stores the latest milestone of a RUNNING job and pushes it to connected admins.</summary>
 public sealed class ReportCrawlProgressHandler(
     IngestionDbContext db,
     IUnitOfWork unitOfWork,
-    TimeProvider clock
+    TimeProvider clock,
+    ICrawlJobNotifier notifier
 ) : ICommandHandler<ReportCrawlProgressCommand>
 {
     public async Task HandleAsync(ReportCrawlProgressCommand command, CancellationToken ct)
@@ -40,5 +43,6 @@ public sealed class ReportCrawlProgressHandler(
         };
         job.ReportProgress(progress, clock.GetUtcNow());
         await unitOfWork.SaveChangesAsync(ct);
+        await notifier.JobUpdatedAsync(CrawlJobResponse.From(job), ct);
     }
 }
