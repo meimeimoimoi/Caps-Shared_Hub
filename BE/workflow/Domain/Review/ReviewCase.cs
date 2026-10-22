@@ -10,6 +10,9 @@ public sealed class ReviewCase
     public Guid SourceVersionId { get; set; }
     public Guid RequesterUserId { get; set; }
     public Guid ExpertProfileId { get; set; }
+
+    // Tokens carry user ids only and the expert schema is off limits, so the expert's user id is copied here
+    public Guid ExpertUserId { get; set; }
     public Guid? SlotId { get; set; }
     public Guid? ServiceOfferingId { get; set; }
     public long Fee { get; set; }
@@ -39,4 +42,29 @@ public sealed class ReviewCase
     public ICollection<InfoRequest> InfoRequests { get; set; } = [];
     public ICollection<ReviewAttachment> Attachments { get; set; } = [];
     public ICollection<ReviewStatusHistory> StatusHistories { get; set; } = [];
+
+    private static readonly string[] ClosedStatuses =
+    [
+        "COMPLETED",
+        "TERMINATED",
+        "EXPERT_DECLINED",
+        "REQUEST_EXPIRED",
+    ];
+
+    /// <summary>The chat role of a party to this case; anyone else is told the case does not exist.</summary>
+    public string ParticipantRoleOf(Guid userId)
+    {
+        if (userId == RequesterUserId)
+            return CaseParticipant.Client;
+        if (userId == ExpertUserId)
+            return CaseParticipant.Expert;
+        throw WorkflowErrors.ReviewCaseNotFound();
+    }
+
+    /// <summary>New messages are only accepted until the case ends.</summary>
+    public void EnsureChatOpen()
+    {
+        if (ClosedStatuses.Contains(Status))
+            throw WorkflowErrors.ChatClosed(Status);
+    }
 }
