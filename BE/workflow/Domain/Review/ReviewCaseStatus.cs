@@ -5,10 +5,8 @@ public static class ReviewCaseStatus
 {
     public const string PendingExpertResponse = "PENDING_EXPERT_RESPONSE";
     public const string ExpertDeclined = "EXPERT_DECLINED";
-    public const string RequestExpired = "REQUEST_EXPIRED";
     public const string AwaitingPayment = "AWAITING_PAYMENT";
     public const string CancelledUnpaid = "CANCELLED_UNPAID";
-    public const string PaymentConfirmed = "PAYMENT_CONFIRMED";
     public const string ExpertTimeout = "EXPERT_TIMEOUT";
     public const string InReview = "IN_REVIEW";
     public const string AwaitingUserInformation = "AWAITING_USER_INFORMATION";

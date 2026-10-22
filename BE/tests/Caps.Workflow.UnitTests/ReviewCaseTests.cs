@@ -22,13 +22,19 @@ public sealed class ReviewCaseTests
             )
             .Case;
 
-    // Started at Now with a 48h turnaround: delivery due at Now + 48h
-    private static ReviewCase InReview()
+    // Paid at Now: the expert must answer by Now + 24h
+    private static ReviewCase Paid()
     {
         var reviewCase = NewCase();
-        reviewCase.Accept(Expert, ExpertUser, Now);
         reviewCase.ConfirmPayment(Now);
-        reviewCase.Start(Expert, ExpertUser, Now);
+        return reviewCase;
+    }
+
+    // Accepted at Now with a 48h turnaround: delivery due at Now + 48h
+    private static ReviewCase InReview()
+    {
+        var reviewCase = Paid();
+        reviewCase.Accept(Expert, ExpertUser, Now);
         return reviewCase;
     }
 
@@ -36,16 +42,15 @@ public sealed class ReviewCaseTests
     public void Happy_path_sets_every_deadline()
     {
         var reviewCase = NewCase();
-        Assert.Equal(Now.AddHours(24), reviewCase.ResponseDeadline);
-
-        reviewCase.Accept(Expert, ExpertUser, Now);
         Assert.Equal(ReviewCaseStatus.AwaitingPayment, reviewCase.Status);
         Assert.Equal(Now.AddMinutes(15), reviewCase.PaymentDeadline);
 
         reviewCase.ConfirmPayment(Now.AddMinutes(5));
-        Assert.Equal(Now.AddMinutes(5).AddHours(24), reviewCase.StartDeadline);
+        Assert.Equal(ReviewCaseStatus.PendingExpertResponse, reviewCase.Status);
+        Assert.Equal(Now.AddMinutes(5).AddHours(24), reviewCase.ResponseDeadline);
 
-        reviewCase.Start(Expert, ExpertUser, Now.AddHours(1));
+        reviewCase.Accept(Expert, ExpertUser, Now.AddHours(1));
+        Assert.Equal(ReviewCaseStatus.InReview, reviewCase.Status);
         Assert.Equal(Now.AddHours(49), reviewCase.DeliveryDeadline);
 
         reviewCase.Deliver(
@@ -82,7 +87,7 @@ public sealed class ReviewCaseTests
         Assert.Equal("Check my CIT return", reviewCase.ProblemDescription);
         Assert.Null(reviewCase.ExpectedOutcome);
         Assert.Null(opened.FromStatus);
-        Assert.Equal(ReviewCaseStatus.PendingExpertResponse, opened.ToStatus);
+        Assert.Equal(ReviewCaseStatus.AwaitingPayment, opened.ToStatus);
     }
 
     [Theory]
@@ -117,7 +122,14 @@ public sealed class ReviewCaseTests
     public void Another_expert_gets_not_found() =>
         Assert.Equal(
             "REVIEW_CASE_NOT_FOUND",
-            Errors.CodeOf(() => NewCase().Accept(Guid.NewGuid(), ExpertUser, Now))
+            Errors.CodeOf(() => Paid().Accept(Guid.NewGuid(), ExpertUser, Now))
+        );
+
+    [Fact]
+    public void Expert_cannot_accept_before_payment() =>
+        Assert.Equal(
+            "CASE_STATUS_INVALID",
+            Errors.CodeOf(() => NewCase().Accept(Expert, ExpertUser, Now))
         );
 
     [Fact]
@@ -136,55 +148,31 @@ public sealed class ReviewCaseTests
     public void Accepting_after_the_response_deadline_is_rejected() =>
         Assert.Equal(
             "CASE_DEADLINE_PASSED",
-            Errors.CodeOf(() => NewCase().Accept(Expert, ExpertUser, Now.AddHours(24)))
+            Errors.CodeOf(() => Paid().Accept(Expert, ExpertUser, Now.AddHours(24)))
         );
 
     [Fact]
-    public void Paying_twice_is_rejected()
-    {
-        var reviewCase = NewCase();
-        reviewCase.Accept(Expert, ExpertUser, Now);
-        reviewCase.ConfirmPayment(Now);
-
-        Assert.Equal("CASE_STATUS_INVALID", Errors.CodeOf(() => reviewCase.ConfirmPayment(Now)));
-    }
+    public void Paying_twice_is_rejected() =>
+        Assert.Equal("CASE_STATUS_INVALID", Errors.CodeOf(() => Paid().ConfirmPayment(Now)));
 
     [Fact]
-    public void Late_payment_is_rejected_so_billing_refunds_it()
-    {
-        var reviewCase = NewCase();
-        reviewCase.Accept(Expert, ExpertUser, Now);
-
+    public void Late_payment_is_rejected_so_billing_refunds_it() =>
         Assert.Equal(
             "CASE_DEADLINE_PASSED",
-            Errors.CodeOf(() => reviewCase.ConfirmPayment(Now.AddMinutes(15)))
+            Errors.CodeOf(() => NewCase().ConfirmPayment(Now.AddMinutes(15)))
         );
-    }
-
-    [Fact]
-    public void Starting_after_the_start_deadline_is_rejected()
-    {
-        var reviewCase = NewCase();
-        reviewCase.Accept(Expert, ExpertUser, Now);
-        reviewCase.ConfirmPayment(Now);
-
-        Assert.Equal(
-            "CASE_DEADLINE_PASSED",
-            Errors.CodeOf(() => reviewCase.Start(Expert, ExpertUser, Now.AddHours(24)))
-        );
-    }
 
     [Fact]
     public void Decline_needs_a_reason() =>
         Assert.Equal(
             "TEXT_REQUIRED",
-            Errors.CodeOf(() => NewCase().Decline(Expert, ExpertUser, " ", Now))
+            Errors.CodeOf(() => Paid().Decline(Expert, ExpertUser, " ", Now))
         );
 
     [Fact]
     public void Decline_keeps_the_reason()
     {
-        var reviewCase = NewCase();
+        var reviewCase = Paid();
 
         reviewCase.Decline(Expert, ExpertUser, "Out of my field", Now);
 
@@ -225,38 +213,24 @@ public sealed class ReviewCaseTests
     }
 
     [Fact]
-    public void Unanswered_request_expires_once()
+    public void Unpaid_case_is_cancelled_once_after_15_minutes()
     {
         var reviewCase = NewCase();
-
-        Assert.Null(reviewCase.ExpireIfOverdue(Now.AddHours(23)));
-        Assert.Equal(
-            ReviewCaseStatus.RequestExpired,
-            reviewCase.ExpireIfOverdue(Now.AddHours(24))?.ToStatus
-        );
-        Assert.Null(reviewCase.ExpireIfOverdue(Now.AddHours(48))); // a second cron run changes nothing
-    }
-
-    [Fact]
-    public void Unpaid_case_is_cancelled_after_15_minutes()
-    {
-        var reviewCase = NewCase();
-        reviewCase.Accept(Expert, ExpertUser, Now);
 
         Assert.Null(reviewCase.ExpireIfOverdue(Now.AddMinutes(14)));
         Assert.Equal(
             ReviewCaseStatus.CancelledUnpaid,
             reviewCase.ExpireIfOverdue(Now.AddMinutes(15))?.ToStatus
         );
+        Assert.Null(reviewCase.ExpireIfOverdue(Now.AddHours(1))); // a second cron run changes nothing
     }
 
     [Fact]
-    public void Expert_who_never_starts_times_out()
+    public void Paid_request_the_expert_never_answers_times_out()
     {
-        var reviewCase = NewCase();
-        reviewCase.Accept(Expert, ExpertUser, Now);
-        reviewCase.ConfirmPayment(Now);
+        var reviewCase = Paid();
 
+        Assert.Null(reviewCase.ExpireIfOverdue(Now.AddHours(23)));
         Assert.Equal(
             ReviewCaseStatus.ExpertTimeout,
             reviewCase.ExpireIfOverdue(Now.AddHours(24))?.ToStatus

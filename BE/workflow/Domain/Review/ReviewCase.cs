@@ -17,7 +17,6 @@ public sealed class ReviewCase
     // ponytail: response window not given by the spec, 24h until the team decides
     public static readonly TimeSpan ResponseWindow = TimeSpan.FromHours(24);
     public static readonly TimeSpan PaymentWindow = TimeSpan.FromMinutes(15);
-    public static readonly TimeSpan StartWindow = TimeSpan.FromHours(24);
     public static readonly TimeSpan InformationWindow = TimeSpan.FromHours(72);
     public static readonly TimeSpan AcceptanceWindow = TimeSpan.FromHours(72);
 
@@ -47,7 +46,7 @@ public sealed class ReviewCase
 
     public string ProblemDescription { get; private set; } = default!;
     public string? ExpectedOutcome { get; private set; }
-    public string Status { get; private set; } = ReviewCaseStatus.PendingExpertResponse;
+    public string Status { get; private set; } = ReviewCaseStatus.AwaitingPayment;
     public string? Result { get; private set; }
     public string? CannotVerifyReason { get; private set; }
     public string? ReviewSummary { get; private set; }
@@ -57,7 +56,9 @@ public sealed class ReviewCase
     public DateTimeOffset? AcceptedAt { get; private set; }
     public DateTimeOffset? PaymentDeadline { get; private set; }
     public DateTimeOffset? PaidAt { get; private set; }
-    public DateTimeOffset? StartDeadline { get; private set; }
+
+    /// <summary>Unused: accepting starts the review at once; kept because the column exists.</summary>
+    public DateTimeOffset? StartDeadline { get; }
     public DateTimeOffset? StartedAt { get; private set; }
     public DateTimeOffset? DeliveryDeadline { get; private set; }
     public DateTimeOffset? DeliveredAt { get; private set; }
@@ -105,7 +106,9 @@ public sealed class ReviewCase
             TurnaroundHours = offer.TurnaroundHours,
             ProblemDescription = RequiredText(problemDescription, "Problem description"),
             ExpectedOutcome = OptionalText(expectedOutcome, "Expected outcome"),
-            ResponseDeadline = now + ResponseWindow,
+            PaymentDeadline = now + PaymentWindow,
+            // The column is NOT NULL: latest possible deadline until payment sets the real one
+            ResponseDeadline = now + PaymentWindow + ResponseWindow,
             CreatedAt = now,
             UpdatedAt = now,
         };
@@ -138,15 +141,18 @@ public sealed class ReviewCase
         }
     }
 
+    /// <summary>The expert takes the paid request and the review starts; the handler adds one to their active cases.</summary>
     public ReviewStatusHistory Accept(Guid expertProfileId, Guid actorUserId, DateTimeOffset now)
     {
         EnsureExpert(expertProfileId);
         EnsureStep(ReviewCaseStatus.PendingExpertResponse, ResponseDeadline, now);
         AcceptedAt = now;
-        PaymentDeadline = now + PaymentWindow;
-        return MoveTo(ReviewCaseStatus.AwaitingPayment, actorUserId, null, now);
+        StartedAt = now;
+        DeliveryDeadline = now + TimeSpan.FromHours(TurnaroundHours);
+        return MoveTo(ReviewCaseStatus.InReview, actorUserId, null, now);
     }
 
+    /// <summary>The expert turns the paid request down; the caller refunds the client in full.</summary>
     public ReviewStatusHistory Decline(
         Guid expertProfileId,
         Guid actorUserId,
@@ -160,22 +166,16 @@ public sealed class ReviewCase
         return MoveTo(ReviewCaseStatus.ExpertDeclined, actorUserId, DeclineReason, now);
     }
 
-    /// <summary>Billing confirmed the money. A late payment throws, so the caller refunds it.</summary>
+    /// <summary>
+    /// Billing confirmed the money; the expert now has the response window to accept. A late payment
+    /// throws, so the caller refunds it.
+    /// </summary>
     public ReviewStatusHistory ConfirmPayment(DateTimeOffset now)
     {
         EnsureStep(ReviewCaseStatus.AwaitingPayment, PaymentDeadline, now);
         PaidAt = now;
-        StartDeadline = now + StartWindow;
-        return MoveTo(ReviewCaseStatus.PaymentConfirmed, null, null, now);
-    }
-
-    public ReviewStatusHistory Start(Guid expertProfileId, Guid actorUserId, DateTimeOffset now)
-    {
-        EnsureExpert(expertProfileId);
-        EnsureStep(ReviewCaseStatus.PaymentConfirmed, StartDeadline, now);
-        StartedAt = now;
-        DeliveryDeadline = now + TimeSpan.FromHours(TurnaroundHours);
-        return MoveTo(ReviewCaseStatus.InReview, actorUserId, null, now);
+        ResponseDeadline = now + ResponseWindow;
+        return MoveTo(ReviewCaseStatus.PendingExpertResponse, null, null, now);
     }
 
     public (InfoRequest Request, ReviewStatusHistory History) RequestInformation(
@@ -262,11 +262,10 @@ public sealed class ReviewCase
     {
         var status = Status switch
         {
-            ReviewCaseStatus.PendingExpertResponse when now >= ResponseDeadline =>
-                ReviewCaseStatus.RequestExpired,
             ReviewCaseStatus.AwaitingPayment when now >= PaymentDeadline =>
                 ReviewCaseStatus.CancelledUnpaid,
-            ReviewCaseStatus.PaymentConfirmed when now >= StartDeadline =>
+            // Paid but never accepted: the caller refunds the client in full
+            ReviewCaseStatus.PendingExpertResponse when now >= ResponseDeadline =>
                 ReviewCaseStatus.ExpertTimeout,
             ReviewCaseStatus.AwaitingAcceptance when now >= AcceptanceDeadline =>
                 ReviewCaseStatus.AutoConfirmed,
