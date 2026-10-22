@@ -75,9 +75,7 @@ export default function ExpertApplicationPage() {
     notice: lifecycleNotice,
     submitting: lifecycleSubmitting,
     errorRef: lifecycleErrorRef,
-    canPreviewStages,
     submitSupplement,
-    changeStage,
     requestSupplement,
     setSupplementFile,
     setExplanation,
@@ -261,7 +259,6 @@ export default function ExpertApplicationPage() {
                 timeline={timeline}
                 progress={progress}
                 history={history}
-                showScenario={canPreviewStages}
                 supplementFormProps={{
                   file: supplementFile,
                   explanation,
@@ -272,7 +269,6 @@ export default function ExpertApplicationPage() {
                   onBack: cancelSupplement,
                   onSubmit: submitSupplement,
                 }}
-                onStageChange={changeStage}
                 onRequestSupplement={requestSupplement}
               />
               <aside className="expert-status-profile">

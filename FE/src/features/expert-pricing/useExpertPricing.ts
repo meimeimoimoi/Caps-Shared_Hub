@@ -1,7 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAuthStore } from '@/features/auth'
-import { isExpertDemo } from '@/lib/expert-data-source'
-import { getDemoPricing, updateDemoPricing } from './demoRepository'
 import { getPricing, savePricing } from './pricingApi'
 import type { PricingInput } from './model'
 export function useExpertPricing(
@@ -12,16 +10,12 @@ export function useExpertPricing(
   const sessionScope = useAuthStore((s) => s.sessionScope)
   const scope = expertId + ':' + sessionScope
   const client = useQueryClient()
-  const source = isExpertDemo ? 'demo' : 'api'
-  const queryKey = ['private', scope, 'expert-pricing', source, serviceId]
+  const queryKey = ['private', scope, 'expert-pricing', serviceId]
   const query = useQuery({
     queryKey,
-    queryFn: ({ signal }) =>
-      isExpertDemo
-        ? getDemoPricing(scope, serviceId)
-        : getPricing(serviceId, signal),
+    queryFn: ({ signal }) => getPricing(serviceId, signal),
     enabled: qualified,
-    staleTime: isExpertDemo ? Infinity : 0,
+    staleTime: 0,
   })
   const mutation = useMutation({
     mutationFn: async ({
@@ -33,13 +27,7 @@ export function useExpertPricing(
       revision: number
       submit: boolean
     }) => {
-      if (!isExpertDemo) return savePricing(serviceId, input, revision, submit)
-      return updateDemoPricing(scope, serviceId, input, {
-        qualified,
-        expectedRevision: revision,
-        submit,
-        actor: expertId,
-      })
+      return savePricing(serviceId, input, revision, submit)
     },
     onSuccess: (data) => {
       client.setQueryData(queryKey, data)

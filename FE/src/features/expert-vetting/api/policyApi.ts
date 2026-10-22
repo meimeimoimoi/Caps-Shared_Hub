@@ -1,5 +1,4 @@
 import { api } from '@/lib/api-client'
-import { isExpertDemo } from '@/lib/expert-data-source'
 
 interface Envelope<T> {
   success: boolean
@@ -8,9 +7,7 @@ interface Envelope<T> {
 }
 
 export type PolicySettingKey =
-  | 'MinYearsExperience'
-  | 'ReapplyNotEligibleDays'
-  | 'ReapplyCompetencyFailDays'
+  'MinYearsExperience' | 'ReapplyNotEligibleDays' | 'ReapplyCompetencyFailDays'
 
 /** One adjustable expert policy value; updatedAt is null while the default applies */
 export interface PolicySetting {
@@ -35,15 +32,8 @@ export interface PolicySettingChange {
 
 const BASE = '/api/v1/admin/experts/policy'
 
-const DEMO_SETTINGS: PolicySetting[] = [
-  { key: 'MinYearsExperience', value: 5, defaultValue: 5, minValue: 0, maxValue: 50, updatedAt: null, updatedByUserId: null },
-  { key: 'ReapplyNotEligibleDays', value: 30, defaultValue: 30, minValue: 0, maxValue: 365, updatedAt: null, updatedByUserId: null },
-  { key: 'ReapplyCompetencyFailDays', value: 90, defaultValue: 90, minValue: 0, maxValue: 365, updatedAt: null, updatedByUserId: null },
-]
-
 /** Values in force with their defaults and ranges (System Admin, ExpertApprove) */
 export async function getExpertPolicy(signal?: AbortSignal) {
-  if (isExpertDemo) return DEMO_SETTINGS
   const res = await api.get<Envelope<{ settings: PolicySetting[] }>>(BASE, {
     signal,
   })
@@ -67,9 +57,8 @@ export async function updateExpertPolicy(
   return res.data.settings
 }
 
-/** Most recent changes first; empty in demo mode */
+/** Most recent changes first */
 export async function getExpertPolicyHistory(signal?: AbortSignal) {
-  if (isExpertDemo) return []
   const res = await api.get<Envelope<PolicySettingChange[]>>(
     `${BASE}/history`,
     { signal }

@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ApiError } from '@/lib/api-client'
-import { isExpertDemo } from '@/lib/expert-data-source'
 import { useFormatters } from '@/hooks/useFormatters'
 import { criterionKey, labels } from '../constants'
 import type { Stage } from '../types'
@@ -82,7 +81,6 @@ export function useApplicationLifecycle({
   const { t } = useTranslation('expertRegistration')
   const format = useFormatters()
   // Chỉ dùng ở chế độ demo khi dev: xem thử giao diện các giai đoạn, không đổi dữ liệu thật
-  const [previewStage, setPreviewStage] = useState<Stage | null>(null)
 
   const [supplement, setSupplement] = useState(false)
   const [supplementFile, setSupplementFile] = useState<File | null>(null)
@@ -101,8 +99,7 @@ export function useApplicationLifecycle({
   }, [error])
 
   const submitted = !!application && application.status !== 'DRAFT'
-  const stage: Stage =
-    previewStage ?? (application ? stageOf(application.status) : 'screening')
+  const stage: Stage = application ? stageOf(application.status) : 'screening'
 
   const history = (application?.history ?? [])
     .filter((h) => h.fromStatus != null)
@@ -178,13 +175,6 @@ export function useApplicationLifecycle({
     submitting,
     errorRef,
     submitSupplement,
-    /** Ô xem thử giai đoạn chỉ hiện ở chế độ demo khi dev */
-    canPreviewStages: isExpertDemo,
-    changeStage: (s: Stage) => {
-      setPreviewStage(s)
-      setSupplement(false)
-      setError(null)
-    },
     requestSupplement: () => setSupplement(true),
     cancelSupplement: () => setSupplement(false),
   }

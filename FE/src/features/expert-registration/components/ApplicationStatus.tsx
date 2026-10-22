@@ -4,7 +4,6 @@ import { ArrowRight, Check, Clock3 } from 'lucide-react'
 import { labels } from '../constants'
 import type { Stage } from '../types'
 import { SupplementForm, type SupplementFormProps } from './SupplementForm'
-import { ScenarioSelect } from './ScenarioSelect'
 
 /** Gate 1 requirement to supplement or not met, with the reviewer's note */
 export interface EligibilityIssue {
@@ -32,8 +31,6 @@ export interface ApplicationStatusProps {
   history: string[]
   supplementFormProps: SupplementFormProps
   /** Ô xem thử các giai đoạn: chỉ ở chế độ demo khi dev */
-  showScenario?: boolean
-  onStageChange: (stage: Stage) => void
   onRequestSupplement: () => void
 }
 
@@ -88,8 +85,6 @@ export function ApplicationStatus({
   progress,
   history,
   supplementFormProps,
-  showScenario = false,
-  onStageChange,
   onRequestSupplement,
   serviceName = '',
 }: ApplicationStatusProps) {
@@ -127,9 +122,6 @@ export function ApplicationStatus({
               : t('status.track')}
           </p>
         </div>
-        {showScenario && (
-          <ScenarioSelect value={stage} onChange={onStageChange} />
-        )}
       </div>
 
       <ol className="expert-status-timeline">

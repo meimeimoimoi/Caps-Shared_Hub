@@ -1,5 +1,4 @@
 import { api } from '@/lib/api-client'
-import { isExpertDemo } from '@/lib/expert-data-source'
 
 interface Envelope<T> {
   success: boolean
@@ -8,9 +7,7 @@ interface Envelope<T> {
 }
 
 export type PricingReviewStatus =
-  | 'PENDING_APPROVAL'
-  | 'RETURN_FOR_REVISION'
-  | 'REJECTED'
+  'PENDING_APPROVAL' | 'RETURN_FOR_REVISION' | 'REJECTED'
 export type PricingDecision = 'APPROVE' | 'RETURN_FOR_REVISION' | 'REJECT'
 
 /** A price change above the auto-approval threshold */
@@ -34,12 +31,11 @@ export interface PricingReviewItem {
 
 const BASE = '/api/v1/admin/experts/pricing'
 
-/** Price changes in the given statuses; empty in demo mode */
+/** Price changes in the given statuses */
 export async function getPricingReviews(
   statuses: readonly PricingReviewStatus[],
   signal?: AbortSignal
 ) {
-  if (isExpertDemo) return []
   const lists = await Promise.all(
     statuses.map((status) =>
       api.get<Envelope<PricingReviewItem[]>>(BASE, {
