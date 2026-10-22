@@ -74,13 +74,41 @@ def export_payloads(export_dir: Path) -> Iterator[Tuple[dict, dict]]:
             yield entry, json.loads((export_dir / entry["file"]).read_text(encoding="utf-8"))
 
 
-def post_export(job_id: str, export_dir: Path) -> list:
+def progress_reporter(job_id: str, min_interval: float = 2.0):
+    """on_progress callback for the pipeline: posts milestones, at most every `min_interval` s within a stage."""
+    last = {"stage": None, "at": 0.0}
+
+    def report(stage: str, done: int, total=None, message=None) -> None:
+        now = time.monotonic()
+        if stage == last["stage"] and now - last["at"] < min_interval and done != total:
+            return
+        last.update(stage=stage, at=now)
+        body = {"stage": stage, "done": done, "total": total, "message": message}
+        # The job is published just before ingestion commits it, so the first report may briefly get a 404
+        for attempt in range(3):
+            try:
+                call("POST", f"/internal/crawl-jobs/{job_id}/progress", json=body)
+                return
+            except requests.HTTPError as exc:
+                if exc.response.status_code != 404 or attempt == 2:
+                    break
+                time.sleep(1)
+            except Exception:
+                break
+        # Progress is informational: a failed report must not stop the crawl
+        logger.warning(f"Crawl job {job_id}: progress {stage} {done}/{total} not sent")
+    return report
+
+
+def post_export(job_id: str, export_dir: Path, report=None) -> list:
     """Sends every exported document to the job; returns one summary line per document."""
     summary = []
     # Documents reached through a relation go last, so ingestion finds the source they are linked to
     exported = sorted(export_payloads(export_dir),
                       key=lambda e: e[1]["legal_source"]["metadata"].get("related_from") is not None)
-    for entry, payload in exported:
+    for i, (entry, payload) in enumerate(exported):
+        if report:
+            report("POSTING", i, len(exported), entry["document_number"])
         result = call("POST", f"/internal/crawl-jobs/{job_id}/documents", json=payload).json()["data"]
         summary.append({
             "documentNumber": entry["document_number"],
@@ -88,6 +116,9 @@ def post_export(job_id: str, export_dir: Path) -> list:
             "documentId": result["documentId"],
             "imported": result["imported"],
         })
+    if report:
+        # Always sent (done == total), so the job does not keep a throttled milestone like 0/N
+        report("POSTING", len(exported), len(exported))
     return summary
 
 
@@ -99,6 +130,7 @@ def complete(job_id: str, status: str, docs_found: int, detail: dict) -> None:
 def handle_crawl(message: dict) -> None:
     job_id = message["crawlJobId"]
     logger.info(f"Crawl job {job_id}: {message}")
+    report = progress_reporter(job_id)
     try:
         config.start_new_run()
         scraper_agent.run_pipeline(
@@ -108,8 +140,9 @@ def handle_crawl(message: dict) -> None:
             headless=config.HEADLESS,
             export=True,
             sources=message.get("sources") or list(config.DEFAULT_SOURCES),
+            on_progress=report,
         )
-        documents = post_export(job_id, get_export_dir())
+        documents = post_export(job_id, get_export_dir(), report)
         complete(job_id, "SUCCEEDED", len(documents),
                  {"runDir": str(config.DATA_DIR), "documents": documents})
         logger.info(f"Crawl job {job_id}: {len(documents)} documents sent")
