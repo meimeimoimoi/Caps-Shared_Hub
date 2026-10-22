@@ -52,7 +52,7 @@ Each decision publishes an `ExpertCompetencyDecidedEvent` through the same outbo
 - Platform fee (`/api/v1/experts/admin/platform-fees/{serviceCode}`, permission `PricingManage`): a System Admin sets
   the platform's percent (0–99) of each catalog service. `platform_fee` is append-only; the current rate is the latest
   row, and review cases freeze the percent they were booked with. Setting the first rate opens the service for pricing.
-- Expert price (`/api/v1/experts/me/services/{serviceCode}`, permission `ServiceManage`): experts approved for the
+- Expert price (`/api/v1/experts/me/services/{serviceCode}`, signed in; Gate 2 checked by the domain): experts approved for the
   service (Gate 2) set their own fee (10,000–1,000,000,000 VND, steps of 1,000) and delivery time (1–720 hours) to
   compete; no approval. One `service_offering` per expert and service; responses show the net amount after
   the platform fee.
