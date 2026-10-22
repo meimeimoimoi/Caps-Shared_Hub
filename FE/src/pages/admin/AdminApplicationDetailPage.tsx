@@ -10,12 +10,12 @@ import {
 } from '@/lib/constants'
 import { ToolHeader } from '@/components/ui/layout/tool-header'
 import { CaseHeader } from '@/components/ui/layout/case-header'
-import { DecisionBar } from '@/components/ui/actions/decision-bar'
 import { Toast } from '@/components/ui/feedback/toast'
 import { ReviewPageLayout } from '@/features/expert-vetting/components/ReviewPageLayout'
 import { getEvidenceFile } from '../../features/expert-vetting/api/adminApi'
 import { AiScreeningTab } from '../../features/expert-vetting/components/AiScreeningTab'
 import { DecisionDialog } from '../../features/expert-vetting/components/DecisionDialog'
+import { EligibilityDecisionPanel } from '../../features/expert-vetting/components/EligibilityDecisionPanel'
 import { EligibilityReview } from '../../features/expert-vetting/components/EligibilityReview'
 import {
   DecisionCard,
@@ -26,7 +26,6 @@ import { HistoryTab } from '../../features/expert-vetting/components/HistoryTab'
 import { ProfileTab } from '../../features/expert-vetting/components/ProfileTab'
 import {
   CURRENT_ADMIN,
-  ELIGIBILITY_CODES,
   ELIGIBILITY_OUTCOME,
 } from '../../features/expert-vetting/constants'
 import { formatDate } from '../../features/expert-vetting/utils/applications'
@@ -235,14 +234,20 @@ export default function AdminApplicationDetailPage({ embedded = false }: { embed
         </header>
       )}
 
-      <div className="mt-5 grid items-start gap-5 xl:grid-cols-[minmax(300px,0.8fr)_minmax(0,1.2fr)]">
-        {/* Reference information stays available beside the assessment. */}
-        <div className="border-border bg-surface order-2 min-w-0 overflow-hidden rounded-lg border xl:sticky xl:top-6 xl:order-1">
+      {/* While assessing, the reference panel widens when a document is open so files are readable beside the
+          editor. Once decided, the columns stay fixed: the record is read on the left and the short result card
+          does not jump in width when switching tabs. */}
+      {/* Both columns share the row height: the assessment sets it and the reference panel scrolls inside it */}
+      <div className={cn('mt-5 grid items-start gap-5 xl:items-stretch', decided ? 'xl:grid-cols-[minmax(0,1.25fr)_minmax(320px,0.75fr)]' : tab === 'documents' ? 'xl:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]' : 'xl:grid-cols-[minmax(300px,0.8fr)_minmax(0,1.2fr)]')}>
+        {/* Reference information stays available beside the assessment; it scrolls inside the viewport */}
+        {/* While assessing, the panel takes the editor's height and scrolls inside it. Once decided it shows
+            everything at its own height and the result card beside it stretches to match, so nothing scrolls */}
+        <div className={cn('border-border bg-surface order-2 min-w-0 overflow-hidden rounded-lg border xl:order-1 xl:flex xl:flex-col', !decided && 'xl:h-0 xl:min-h-full')}>
           <div
             role="tablist"
             aria-label={t('admin:detail.tabAria')}
             onKeyDown={onTabKey}
-            className="border-border flex gap-4 overflow-x-auto border-b px-4"
+            className="border-border flex shrink-0 gap-4 overflow-x-auto border-b px-4"
           >
             {tabs.map(({ key, label }) => (
               <button
@@ -255,7 +260,7 @@ export default function AdminApplicationDetailPage({ embedded = false }: { embed
                 tabIndex={tab === key ? 0 : -1}
                 onClick={() => setTab(key)}
                 className={cn(
-                  '-mb-px min-h-11 shrink-0 border-b-2 px-0.5 text-sm whitespace-nowrap transition-colors focus-visible:outline-2 focus-visible:outline-offset-[-3px]',
+                  '-mb-px min-h-11 shrink-0 border-b-2 px-0.5 text-sm whitespace-nowrap transition-colors focus-visible:!outline-none focus-visible:text-text-strong focus-visible:underline focus-visible:underline-offset-4',
                   tab === key
                     ? 'border-text-strong text-fg-strong font-medium'
                     : 'text-fg-muted border-transparent'
@@ -272,7 +277,7 @@ export default function AdminApplicationDetailPage({ embedded = false }: { embed
             id={`panel-${tab}`}
             aria-labelledby={`tab-${tab}`}
             tabIndex={0}
-            className="p-4 focus-visible:outline-2 focus-visible:outline-offset-[-3px]"
+            className={cn('p-4 focus-visible:outline-2 focus-visible:outline-offset-[-3px]', !decided && 'xl:min-h-0 xl:flex-1 xl:overflow-y-auto')}
           >
             {tab === 'ai' && detail.screening && (
               <AiScreeningTab
@@ -295,6 +300,7 @@ export default function AdminApplicationDetailPage({ embedded = false }: { embed
               <DocumentsTab
                 key={docKey}
                 documents={detail.documents}
+                submissions={detail.submissions ?? []}
                 initialCode={docKey}
                 reviewedFlags={review.reviewedFlags}
                 onToggleReviewed={review.toggleFlagReviewed}
@@ -302,14 +308,15 @@ export default function AdminApplicationDetailPage({ embedded = false }: { embed
                 loadFile={(evidenceId) => getEvidenceFile(detail.id, evidenceId)}
               />
             )}
-            {tab === 'history' && <HistoryTab history={review.history} />}
+            {tab === 'history' && <HistoryTab variant="panel" history={review.history} />}
           </div>
         </div>
 
         {/* The primary workspace is wider than the reference panel. */}
         {decided ? (
-          <div className="order-1 space-y-4 md:space-y-6 xl:order-2">
-            <DecisionCard detail={detail} />
+          <div className="order-1 space-y-4 md:space-y-6 xl:order-2 xl:flex xl:flex-col">
+            {/* Stretches to the reference panel's height so both cards end on the same line */}
+            <DecisionCard detail={detail} className="xl:flex-1" />
             {detail.screening && (
               <AiSummaryCard
                 screening={detail.screening}
@@ -320,7 +327,7 @@ export default function AdminApplicationDetailPage({ embedded = false }: { embed
             )}
           </div>
         ) : (
-          <div className="order-1 min-w-0 xl:order-2">
+          <div className="order-1 min-w-0 xl:order-2 xl:flex xl:min-h-[36rem] xl:flex-col">
             <EligibilityReview
               key={detail.id}
               detail={detail}
@@ -328,20 +335,15 @@ export default function AdminApplicationDetailPage({ embedded = false }: { embed
               disabled={review.deciding}
               onResult={review.setResult}
               onNote={review.setNote}
+              setAsideNote={review.setAsideNote}
+              onRestoreNote={review.restoreNote}
               onShowDocument={showDocument}
             />
-        <DecisionBar
-          className="!static !mx-0 !mt-4 !mb-0 !flex-col !items-stretch !gap-4 !rounded-lg !border !border-[var(--ui-border)] !bg-[var(--ui-surface)] !px-4 !py-3 !shadow-none [&>div]:!ml-0 [&>div]:w-full [&>div]:justify-end [&_.btn]:min-h-11 [&_.btn]:h-auto [&_.btn]:whitespace-normal [&_.btn]:py-3"
+        <EligibilityDecisionPanel
+          outcome={review.outcome}
           blockers={blockers}
-          ready={`${t('admin:eligibility.ready', {
-            count: ELIGIBILITY_CODES.length,
-            total: ELIGIBILITY_CODES.length,
-          })} · ${t('admin:eligibility.outcomeLabel')}: ${APPLICATION_STATUS[review.outcome].label}`}
-          primary={{
-            label: t(`admin:${ELIGIBILITY_OUTCOME[review.outcome].confirm}`),
-            onClick: () => setConfirming(true),
-            disabled: !review.canDecide,
-          }}
+          disabled={!review.canDecide}
+          onConfirm={() => setConfirming(true)}
         />
           </div>
         )}

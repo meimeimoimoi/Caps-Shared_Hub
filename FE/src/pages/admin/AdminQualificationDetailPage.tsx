@@ -300,7 +300,7 @@ export default function AdminQualificationDetailPage({
                 loadFile={(evidenceId) => getQualificationFile(scope, detail.id, evidenceId)}
               />
             )}
-            {tab === 'history' && <HistoryTab history={review.history} />}
+            {tab === 'history' && <HistoryTab variant="panel" history={review.history} />}
           </div>
         </div>
 

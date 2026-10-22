@@ -10,6 +10,7 @@ import type {
   EligibilityResult,
   Expert,
   ExpertApplication,
+  CriterionDeclaration,
   Submission,
 } from '../types'
 
@@ -82,6 +83,9 @@ interface ReviewApplication {
   canDecide: boolean
   /** Every submission, first one first, with the statements agreed to (details above come from the latest) */
   submissions?: Submission[]
+  notApplicableCriteria?: string[]
+  criterionDeclarations?: CriterionDeclaration[]
+  declarationPassedCriteria?: string[]
 }
 
 const toQueueRow = (a: ReviewQueueItem): ExpertApplication => ({
@@ -118,6 +122,7 @@ function toDetail(a: ReviewApplication): ApplicationDetail {
       sourceUrl: e.sourceUrl,
       pages: [],
       evidenceId: e.id,
+      uploadedAt: e.uploadedAt,
     })),
     // Empty actor = a reviewer; the history tab shows a generic label
     history: a.history.map((h) => {
@@ -125,7 +130,8 @@ function toDetail(a: ReviewApplication): ApplicationDetail {
       return {
         at: h.at,
         actor: h.byApplicant ? name : '',
-        text: h.note ? `${label}: ${h.note}` : `${label}.`,
+        // A status name is a label, not a sentence: no trailing full stop
+        text: h.note ? `${label}: ${h.note}` : label,
       }
     }),
     eligibility: a.eligibility,
@@ -133,6 +139,9 @@ function toDetail(a: ReviewApplication): ApplicationDetail {
     suggestedExperienceResult: a.suggestedExperienceResult,
     canDecide: a.canDecide,
     submissions: a.submissions ?? [],
+    notApplicableCriteria: a.notApplicableCriteria ?? [],
+    criterionDeclarations: a.criterionDeclarations ?? [],
+    declarationPassedCriteria: a.declarationPassedCriteria ?? [],
     decidedAt: a.decidedAt,
     decisionNote: a.decisionNote,
     earliestReapplyAt: a.earliestReapplyAt,

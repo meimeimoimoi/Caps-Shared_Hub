@@ -37,7 +37,12 @@ export const ELIGIBILITY_RESULTS = [
   'PASS',
   'NEED_MORE_INFORMATION',
   'FAIL',
+  'NOT_APPLICABLE',
 ] as const satisfies readonly EligibilityResult[]
+
+/** Results that count as met: PASS, and NOT_APPLICABLE where the policy allows it */
+export const isEligibilityMet = (result: EligibilityResult | '') =>
+  result === 'PASS' || result === 'NOT_APPLICABLE'
 
 /* Derived outcome → wording of the confirm button, dialog notice and toast */
 export const ELIGIBILITY_OUTCOME = {

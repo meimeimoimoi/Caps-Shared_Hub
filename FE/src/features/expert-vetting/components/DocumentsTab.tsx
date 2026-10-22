@@ -1,8 +1,9 @@
 import { useTranslation } from 'react-i18next'
 import { useState } from 'react'
 import { MarginNote } from '@/components/ui/display/margin-note'
-import type { ApplicationDocument } from '../types'
-import { documentKey } from '../utils/applications'
+import { cn } from '@/lib/utils'
+import type { ApplicationDocument, Submission } from '../types'
+import { documentKey, documentsBySubmission, formatDate } from '../utils/applications'
 import { EvidenceList } from './EvidenceList'
 import { DocumentPreview } from './DocumentPreview'
 
@@ -15,6 +16,8 @@ interface DocumentsTabProps {
   onOpenFile: (evidenceId: string) => void
   /** Fetches an uploaded file for the in-page preview */
   loadFile: (evidenceId: string) => Promise<Blob | null | undefined>
+  /** Submissions of the application; with more than one, files are grouped by the submission that sent them */
+  submissions?: Submission[]
 }
 
 export function DocumentsTab({
@@ -24,8 +27,12 @@ export function DocumentsTab({
   onToggleReviewed,
   onOpenFile,
   loadFile,
+  submissions = [],
 }: DocumentsTabProps) {
   const { t } = useTranslation('admin')
+  // Grouped only once the applicant has supplemented; previous/next follows the order shown
+  const groups = submissions.length > 1 ? documentsBySubmission(documents, submissions) : null
+  if (groups) documents = groups.flatMap((g) => g.documents)
   // Open the document with an AI flag first (demo) so the admin sees what to check
   const [selected, setSelected] = useState(() => {
     const first =
@@ -39,12 +46,27 @@ export function DocumentsTab({
 
   return (
     <div className="space-y-4">
-      <EvidenceList
-        documents={documents}
-        selectedKey={selected}
-        onSelect={setSelected}
-        emptyText={t('detail.documents.empty')}
-      />
+      {/* A long file list scrolls inside a fixed frame (about three rows) so the preview stays in view */}
+      <div className={cn('border-border overflow-y-auto rounded-md border [&>ul]:rounded-none [&>ul]:border-0', groups ? 'max-h-[13rem]' : 'max-h-[10.5rem]')}>
+        {groups ? (
+          groups.map((g) => (
+            <section key={g.number ?? 'pending'} className="[&>ul]:rounded-none [&>ul]:border-0" aria-label={g.number == null ? t('detail.documents.afterLatest') : t('detail.documents.round', { number: g.number, date: formatDate(g.submittedAt!) })}>
+              <h4 className="bg-surface-muted text-text-muted sticky top-0 z-10 flex items-center justify-between gap-2 px-3 py-1.5 text-xs font-medium">
+                <span>{g.number == null ? t('detail.documents.afterLatest') : t('detail.documents.round', { number: g.number, date: formatDate(g.submittedAt!) })}</span>
+                <span className="tabular-nums">{t('detail.documents.count', { count: g.documents.length })}</span>
+              </h4>
+              <EvidenceList documents={g.documents} selectedKey={selected} onSelect={setSelected} emptyText="" />
+            </section>
+          ))
+        ) : (
+          <EvidenceList
+            documents={documents}
+            selectedKey={selected}
+            onSelect={setSelected}
+            emptyText={t('detail.documents.empty')}
+          />
+        )}
+      </div>
       {doc && index >= 0 && (doc.evidenceId || doc.sourceUrl) && (
         <DocumentPreview
           key={selected}

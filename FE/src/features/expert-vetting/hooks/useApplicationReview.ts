@@ -2,7 +2,12 @@ import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { decideEligibility, getApplicationDetail } from '../api/adminApi'
 import { adminKeys } from '../api/queryKeys'
-import { CURRENT_ADMIN, ELIGIBILITY_CODES, EXPERIENCE_CODE } from '../constants'
+import {
+  CURRENT_ADMIN,
+  ELIGIBILITY_CODES,
+  EXPERIENCE_CODE,
+  isEligibilityMet,
+} from '../constants'
 import type {
   EligibilityAssessment,
   EligibilityResult,
@@ -22,31 +27,36 @@ export function useApplicationReview(id: string) {
   })
   const detail = detailQuery.data ?? undefined
 
-  // Only the reviewer's edits. A re-review starts from the previous decision: requirements that passed keep
-  // their result and note, the ones sent back start empty so they are judged again on the new evidence.
+  // Only the reviewer's edits. A re-review starts from the previous decision: requirements that passed (or were
+  // not applicable) keep their result and note, the ones sent back start empty so they are judged again.
   // The experience requirement otherwise starts from the result the declared years point to.
   const [edits, setEdits] = useState<
     Record<string, Partial<EligibilityAssessment>>
   >({})
   const [flagReviews, setFlagReviews] = useState<Record<string, string>>({}) // flagId → reviewed at
+  // Notes written for "need more information" or "fail", set aside when the reviewer switches to PASS so a
+  // passed criterion is not saved with a note that says the opposite; restorable while the page is open
+  const [setAside, setSetAside] = useState<Record<string, string>>({})
   const [log, setLog] = useState<HistoryEntry[]>([])
 
-  const assessments: EligibilityAssessment[] = ELIGIBILITY_CODES.map(
-    (code) => {
-      const previous = detail?.eligibility.find((item) => item.code === code)
-      const passed = previous?.result === 'PASS'
-      return {
-        code,
-        result: passed
-          ? 'PASS'
-          : code === EXPERIENCE_CODE
-            ? (detail?.suggestedExperienceResult ?? '')
-            : '',
-        note: passed ? (previous.note ?? '') : '',
-        ...edits[code],
-      }
+  const declarationPassed = detail?.declarationPassedCriteria ?? []
+  const assessments: EligibilityAssessment[] = ELIGIBILITY_CODES.map((code) => {
+    // Proven by the statement the applicant agreed to: PASS unless the reviewer has grounds and changes it
+    if (declarationPassed.includes(code))
+      return { code, result: 'PASS', note: '', ...edits[code] }
+    const previous = detail?.eligibility.find((item) => item.code === code)
+    const passed = !!previous && isEligibilityMet(previous.result)
+    return {
+      code,
+      result: passed
+        ? previous.result
+        : code === EXPERIENCE_CODE
+          ? (detail?.suggestedExperienceResult ?? '')
+          : '',
+      note: passed ? (previous.note ?? '') : '',
+      ...edits[code],
     }
-  )
+  })
   const remaining = assessments.filter(
     (a) => !a.result || (needsNote(a) && !a.note.trim())
   ).length
@@ -114,8 +124,29 @@ export function useApplicationReview(id: string) {
     detail,
     status: detail?.status,
     assessments,
-    setResult: (code: string, result: EligibilityResult) =>
-      update(code, { result }),
+    setResult: (code: string, result: EligibilityResult) => {
+      const current = assessments.find((a) => a.code === code)
+      const note = current?.note.trim() ?? ''
+      if (result === 'PASS' && current && needsNote(current) && note) {
+        setSetAside((s) => ({ ...s, [code]: current.note }))
+        update(code, { result, note: '' })
+        return
+      }
+      // Back to a result that needs a note: bring the set-aside note back if nothing new was written
+      if (result !== 'PASS' && !note && setAside[code]) {
+        update(code, { result, note: setAside[code] })
+        setSetAside(({ [code]: _, ...rest }) => rest)
+        return
+      }
+      update(code, { result })
+    },
+    /** Note moved aside when the criterion was switched to PASS, if any */
+    setAsideNote: (code: string) => setAside[code],
+    restoreNote: (code: string) => {
+      if (!setAside[code]) return
+      update(code, { note: setAside[code] })
+      setSetAside(({ [code]: _, ...rest }) => rest)
+    },
     setNote: (code: string, note: string) => update(code, { note }),
     requestFromFlags,
     remaining,

@@ -96,9 +96,10 @@ export function DocumentPreview({ document: doc, index, total, onPrevious, onNex
         ) : preview.state === 'failed' ? (
           <p role="alert" className="text-text-muted p-6 text-sm">{t('detail.documents.openFailed')}</p>
         ) : preview.kind === 'image' ? (
-          <img src={preview.url} alt={doc.name} className="max-h-[70vh] w-full object-contain" />
+          <img src={preview.url} alt={doc.name} className="max-h-[80vh] w-full object-contain" />
         ) : preview.kind === 'pdf' ? (
-          <iframe src={preview.url} title={doc.name} className="h-[70vh] w-full" />
+          // Fit the page to the width and keep an A4 frame, so the page fills the viewer instead of floating in it
+          <iframe src={`${preview.url}#view=FitH`} title={doc.name} className="aspect-[210/297] max-h-[80vh] w-full" />
         ) : (
           <div className="flex flex-col items-center gap-3 p-6 text-center">
             <FileText size={22} aria-hidden="true" className="text-text-muted" />

@@ -65,6 +65,8 @@ export interface ApplicationDocument {
   /** Uploaded file on the server; opened through the review API */
   evidenceId?: string
   sourceUrl?: string | null
+  /** When the file or link was added; places it in the submission that sent it (S19 Step 2) */
+  uploadedAt?: string
 }
 
 export interface ApplicationDetail extends ExpertApplication {
@@ -94,6 +96,12 @@ export interface ApplicationDetail extends ExpertApplication {
   canDecide: boolean
   /** Every submission, first one first, with the statements agreed to; empty in demo data */
   submissions?: Submission[]
+  /** Criteria the reviewer may mark NOT_APPLICABLE (with a reason); empty in demo data */
+  notApplicableCriteria?: string[]
+  /** Statements of the latest submission under each criterion they support (EV-04, EV-05) */
+  criterionDeclarations?: CriterionDeclaration[]
+  /** Criteria passed by an agreed statement (EV-04, EV-05); the server records PASS, the reviewer does not judge them */
+  declarationPassedCriteria?: string[]
   decidedAt: string | null
   decisionNote: string | null
   earliestReapplyAt: string | null
@@ -106,8 +114,23 @@ export interface Submission {
   declarations: { code: string; language: string; text: string }[]
 }
 
-/* Gate 1 (eligibility) is decided per expert from EV-01…EV-06; the outcome is derived from the results */
-export type EligibilityResult = 'PASS' | 'FAIL' | 'NEED_MORE_INFORMATION'
+/** A statement the applicant agreed to, shown under the criterion it supports */
+export interface CriterionDeclaration {
+  criterion: string
+  code: string
+  language: string
+  text: string
+  agreedAt: string
+  agreedByUserId: string
+}
+
+/* Gate 1 (eligibility) is decided per expert from EV-01…EV-06; the outcome is derived from the results.
+ * NOT_APPLICABLE is allowed only on the criteria the policy lists and counts as PASS */
+export type EligibilityResult =
+  | 'PASS'
+  | 'FAIL'
+  | 'NEED_MORE_INFORMATION'
+  | 'NOT_APPLICABLE'
 export type EligibilityOutcome =
   'ELIGIBLE' | 'NOT_ELIGIBLE' | 'NEED_MORE_INFORMATION'
 
@@ -116,6 +139,8 @@ export interface EligibilityCheck {
   result: EligibilityResult
   note: string | null
   decidedAt: string
+  /** EV-06 minimum years in force when decided; null for older decisions */
+  appliedMinYearsExperience?: number | null
 }
 
 /** One requirement in the reviewer's form; result is empty until chosen */

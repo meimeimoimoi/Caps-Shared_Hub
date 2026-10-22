@@ -34,7 +34,8 @@
     "system": "System",
     "accounts": "Accounts",
     "settings": "Settings",
-    "users": "Users"
+    "users": "Users",
+    "expertPolicy": "Expert policy"
   },
   "dashboard": {
     "title": "Overview",
@@ -215,7 +216,7 @@
       "unscored": "Unscored"
     },
     "submission": {
-      "title": "Submission {{number}} · {{date}}",
+      "title": "Statements · submission {{number}} · {{date}}",
       "agreed": "Agreed:",
       "earlier": "Earlier submissions: {{dates}}"
     },
@@ -231,13 +232,19 @@
       "fields": "Fields",
       "cv": "Curriculum Vitae (CV)",
       "noCv": "No CV provided",
-      "highlights": "Experience Highlights"
+      "highlights": "Experience Highlights",
+      "aboveMinimum": "Meets the {{min}}-year minimum",
+      "belowMinimum": "Below the {{min}}-year minimum"
     },
     "history": {
       "title": "Operation History",
       "reviewer": "Reviewer"
     },
     "documents": {
+      "round": "Submission {{number}} · {{date}}",
+      "afterLatest": "Added after the latest submission (not submitted yet)",
+      "count_one": "{{count}} file",
+      "count_other": "{{count}} files",
       "supplement": "Supplementary file",
       "view": "View",
       "previous": "Previous file",
@@ -719,7 +726,8 @@
     "results": {
       "PASS": "Pass",
       "NEED_MORE_INFORMATION": "More info",
-      "FAIL": "Fail"
+      "FAIL": "Fail",
+      "NOT_APPLICABLE": "Not applicable"
     },
     "noteRequired": "Note to the applicant (required)",
     "noteOptional": "Note (optional)",
@@ -750,7 +758,11 @@
     "dialog": {
       "title": "Record the eligibility outcome for {{name}}?",
       "noteLabel": "Overall note (optional)",
-      "placeholder": "Shown to the applicant with the results."
+      "placeholder": "Shown to the applicant with the results.",
+      "sent": "Sent to the applicant with notes ({{count}})",
+      "notApplicable": "Not applicable – kept internal, not sent to the applicant ({{count}})",
+      "passed": "Passed ({{count}})",
+      "addNote": "Add an overall note (optional)"
     },
     "resultTitle": "Eligibility result",
     "decidedAt": "Decided at {{time}}",
@@ -765,7 +777,28 @@
       "SELF_REVIEW_NOT_ALLOWED": "You cannot review your own application.",
       "APPLICATION_NOT_IN_REVIEW": "This application no longer waits for a decision; reload to see its status.",
       "failed": "The decision was not recorded. Please try again."
-    }
+    },
+    "declarations": {
+      "contest": "Grounds against the statement?",
+      "contesting": "Recording grounds against the statement. Choose a result and give the reason.",
+      "keep": "Keep pass by statement",
+      "title": "Agreed statements",
+      "agreedAt": "Agreed at {{time}} (on submission)",
+      "passed": "Passed by the statement the applicant agreed to. Change it only with grounds against the statement.",
+      "meta": "By the statement the applicant agreed to",
+      "chip": "By statement"
+    },
+    "summary": "{{met}}/{{total}} criteria met",
+    "noteSetAside": "The earlier note was removed because the criterion now passes.",
+    "restoreNote": "Restore note",
+    "experienceMeta": "Declared {{years}} years · minimum {{min}} years when decided",
+    "overallNote": "Overall note",
+    "groups": {
+      "toAssess": "To assess",
+      "byDeclaration": "Passed by statement"
+    },
+    "progress": "{{done}}/{{total}} assessed",
+    "readyShort": "All assessed, ready to decide"
   },
   "qualifications": {
     "title": "Competency review by service",
@@ -919,6 +952,54 @@
       "PRICING_NOTE_REQUIRED": "Explain why it is returned or rejected.",
       "INVALID_PRICING_DECISION": "The decision is invalid. Reload the page and try again.",
       "failed": "The decision was not recorded. Please try again."
+    }
+  },
+  "expertPolicy": {
+    "title": "Expert policy",
+    "helpLabel": "About the expert policy",
+    "help": "Values used when reviewing expert eligibility and competency. Changes apply to later decisions right away, without a restart; past decisions keep the values in force when they were made. Every change needs a reason and is kept in the history.",
+    "settings": {
+      "MinYearsExperience": {
+        "label": "Minimum years of experience",
+        "help": "Threshold of criterion EV-06 (tax and accounting experience). Applications declaring fewer years cannot pass it. Default {{defaultValue}} years; allowed {{min}}–{{max}}.",
+        "unit": "years"
+      },
+      "ReapplyNotEligibleDays": {
+        "label": "Wait after not eligible",
+        "help": "Days an expert waits before a new application after a Not eligible decision. Default {{defaultValue}} days; allowed {{min}}–{{max}}.",
+        "unit": "days"
+      },
+      "ReapplyCompetencyFailDays": {
+        "label": "Wait after failing competency",
+        "help": "Days an expert waits before registering the same service again after failing the competency review. Default {{defaultValue}} days; allowed {{min}}–{{max}}.",
+        "unit": "days"
+      }
+    },
+    "outOfRange": "Enter a whole number from {{min}} to {{max}}.",
+    "updated": "Last changed {{time}} · {{actor}}",
+    "usingDefault": "Using the default value.",
+    "you": "You",
+    "reason": "Reason for the change (required)",
+    "reasonPlaceholder": "For example: per the policy decision of …",
+    "save": "Save changes",
+    "saved": "Expert policy saved",
+    "historyTitle": "Change history",
+    "history": {
+      "time": "Time",
+      "setting": "Setting",
+      "change": "Old → new value",
+      "actor": "Changed by",
+      "reason": "Reason",
+      "empty": "No changes yet."
+    },
+    "errors": {
+      "POLICY_CHANGED": "Someone else just changed these values. They have been reloaded; check them and save again.",
+      "POLICY_EXPECTED_VALUE_REQUIRED": "The current value is missing. Reload the page and try again.",
+      "POLICY_SETTING_OUT_OF_RANGE": "A value is outside its allowed range.",
+      "POLICY_REASON_REQUIRED": "Give the reason for the change.",
+      "POLICY_REASON_TOO_LONG": "The reason can be at most 1000 characters.",
+      "UNKNOWN_POLICY_SETTING": "Unknown setting. Reload the page and try again.",
+      "failed": "The change was not saved. Please try again."
     }
   }
 }

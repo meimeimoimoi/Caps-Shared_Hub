@@ -34,7 +34,8 @@
     "system": "Hệ thống",
     "accounts": "Tài khoản",
     "settings": "Cấu hình",
-    "users": "Người dùng"
+    "users": "Người dùng",
+    "expertPolicy": "Chính sách chuyên gia"
   },
   "dashboard": {
     "title": "Tổng quan",
@@ -215,7 +216,7 @@
       "unscored": "Chưa chấm"
     },
     "submission": {
-      "title": "Bản nộp lần {{number}} · {{date}}",
+      "title": "Cam kết · bản nộp lần {{number}} · {{date}}",
       "agreed": "Đã cam kết:",
       "earlier": "Các lần nộp trước: {{dates}}"
     },
@@ -231,13 +232,18 @@
       "fields": "Lĩnh vực",
       "cv": "Sơ yếu lý lịch (CV)",
       "noCv": "Chưa nộp CV",
-      "highlights": "Kinh nghiệm nổi bật"
+      "highlights": "Kinh nghiệm nổi bật",
+      "aboveMinimum": "Đạt mức tối thiểu {{min}} năm",
+      "belowMinimum": "Dưới mức tối thiểu {{min}} năm"
     },
     "history": {
       "title": "Lịch sử thao tác",
       "reviewer": "Người đánh giá"
     },
     "documents": {
+      "round": "Lần nộp {{number}} · {{date}}",
+      "afterLatest": "Thêm sau lần nộp gần nhất (chưa nộp)",
+      "count_other": "{{count}} tệp",
       "supplement": "Tài liệu bổ sung",
       "view": "Xem",
       "previous": "Tài liệu trước",
@@ -719,7 +725,8 @@
     "results": {
       "PASS": "Đạt",
       "NEED_MORE_INFORMATION": "Cần bổ sung",
-      "FAIL": "Không đạt"
+      "FAIL": "Không đạt",
+      "NOT_APPLICABLE": "Không áp dụng"
     },
     "noteRequired": "Ghi chú gửi người đăng ký (bắt buộc)",
     "noteOptional": "Ghi chú (không bắt buộc)",
@@ -750,7 +757,11 @@
     "dialog": {
       "title": "Kết luận xét điều kiện cho {{name}}?",
       "noteLabel": "Ghi chú chung (không bắt buộc)",
-      "placeholder": "Người đăng ký xem được cùng kết quả."
+      "placeholder": "Người đăng ký xem được cùng kết quả.",
+      "sent": "Gửi cho người đăng ký kèm ghi chú ({{count}})",
+      "notApplicable": "Không áp dụng – lưu nội bộ, không gửi người đăng ký ({{count}})",
+      "passed": "Đạt ({{count}})",
+      "addNote": "Thêm ghi chú chung (không bắt buộc)"
     },
     "resultTitle": "Kết quả xét điều kiện",
     "decidedAt": "Quyết định lúc {{time}}",
@@ -765,7 +776,28 @@
       "SELF_REVIEW_NOT_ALLOWED": "Bạn không thể tự đánh giá hồ sơ của chính mình.",
       "APPLICATION_NOT_IN_REVIEW": "Hồ sơ không còn chờ kết luận; tải lại để xem trạng thái mới.",
       "failed": "Chưa ghi nhận được kết luận. Vui lòng thử lại."
-    }
+    },
+    "declarations": {
+      "contest": "Có căn cứ không đạt?",
+      "contesting": "Đang ghi nhận căn cứ trái với cam kết. Chọn kết quả và ghi rõ lý do.",
+      "keep": "Giữ Đạt theo cam kết",
+      "title": "Cam kết đã đồng ý",
+      "agreedAt": "Đồng ý lúc {{time}} (khi nộp hồ sơ)",
+      "passed": "Đạt theo cam kết người nộp đã đồng ý. Chỉ đổi khi có căn cứ trái với cam kết.",
+      "meta": "Theo cam kết người nộp đã đồng ý",
+      "chip": "Theo cam kết"
+    },
+    "summary": "{{met}}/{{total}} tiêu chí đạt",
+    "noteSetAside": "Đã bỏ ghi chú cũ vì tiêu chí chuyển sang Đạt.",
+    "restoreNote": "Khôi phục ghi chú",
+    "experienceMeta": "Khai báo {{years}} năm · mức tối thiểu {{min}} năm khi quyết định",
+    "overallNote": "Ghi chú chung",
+    "groups": {
+      "toAssess": "Cần đánh giá",
+      "byDeclaration": "Đạt theo cam kết"
+    },
+    "progress": "Đã đánh giá {{done}}/{{total}}",
+    "readyShort": "Đã đánh giá đủ, sẵn sàng kết luận"
   },
   "qualifications": {
     "title": "Đánh giá năng lực theo dịch vụ",
@@ -919,6 +951,54 @@
       "PRICING_NOTE_REQUIRED": "Ghi rõ lý do trả về hoặc từ chối.",
       "INVALID_PRICING_DECISION": "Quyết định không hợp lệ. Tải lại trang rồi thử lại.",
       "failed": "Chưa ghi nhận được quyết định. Vui lòng thử lại."
+    }
+  },
+  "expertPolicy": {
+    "title": "Chính sách chuyên gia",
+    "helpLabel": "Về chính sách chuyên gia",
+    "help": "Các tham số dùng khi xét điều kiện và năng lực chuyên gia. Thay đổi có hiệu lực ngay cho các quyết định sau, không cần khởi động lại; quyết định đã ra giữ nguyên giá trị lúc quyết định. Mỗi lần sửa phải ghi lý do và được lưu lịch sử.",
+    "settings": {
+      "MinYearsExperience": {
+        "label": "Số năm kinh nghiệm tối thiểu",
+        "help": "Ngưỡng của tiêu chí EV-06 (kinh nghiệm thuế – kế toán). Hồ sơ kê khai dưới ngưỡng không thể được chấm Đạt. Mặc định {{defaultValue}} năm; cho phép {{min}}–{{max}}.",
+        "unit": "năm"
+      },
+      "ReapplyNotEligibleDays": {
+        "label": "Thời gian chờ sau khi không đủ điều kiện",
+        "help": "Số ngày chuyên gia phải chờ trước khi nộp hồ sơ mới sau kết luận Không đủ điều kiện. Mặc định {{defaultValue}} ngày; cho phép {{min}}–{{max}}.",
+        "unit": "ngày"
+      },
+      "ReapplyCompetencyFailDays": {
+        "label": "Thời gian chờ sau khi không đạt năng lực",
+        "help": "Số ngày chuyên gia phải chờ trước khi đăng ký lại cùng dịch vụ sau kết quả Không đạt ở bước đánh giá năng lực. Mặc định {{defaultValue}} ngày; cho phép {{min}}–{{max}}.",
+        "unit": "ngày"
+      }
+    },
+    "outOfRange": "Nhập số nguyên từ {{min}} đến {{max}}.",
+    "updated": "Sửa lần cuối {{time}} · {{actor}}",
+    "usingDefault": "Đang dùng giá trị mặc định.",
+    "you": "Bạn",
+    "reason": "Lý do thay đổi (bắt buộc)",
+    "reasonPlaceholder": "Ví dụ: cập nhật theo quyết định chính sách ngày …",
+    "save": "Lưu thay đổi",
+    "saved": "Đã lưu chính sách chuyên gia",
+    "historyTitle": "Lịch sử thay đổi",
+    "history": {
+      "time": "Thời điểm",
+      "setting": "Tham số",
+      "change": "Giá trị cũ → mới",
+      "actor": "Người sửa",
+      "reason": "Lý do",
+      "empty": "Chưa có thay đổi nào."
+    },
+    "errors": {
+      "POLICY_CHANGED": "Giá trị vừa được người khác thay đổi. Đã tải lại, kiểm tra rồi lưu lại.",
+      "POLICY_EXPECTED_VALUE_REQUIRED": "Thiếu giá trị đang áp dụng. Tải lại trang rồi thử lại.",
+      "POLICY_SETTING_OUT_OF_RANGE": "Có giá trị nằm ngoài khoảng cho phép.",
+      "POLICY_REASON_REQUIRED": "Ghi lý do thay đổi.",
+      "POLICY_REASON_TOO_LONG": "Lý do tối đa 1000 ký tự.",
+      "UNKNOWN_POLICY_SETTING": "Tham số không hợp lệ. Tải lại trang rồi thử lại.",
+      "failed": "Chưa lưu được thay đổi. Vui lòng thử lại."
     }
   }
 }
