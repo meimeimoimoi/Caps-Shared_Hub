@@ -30,6 +30,7 @@ import config
 from src.logger_setup import setup_logger
 from src.models import Attachment, LegalDocument, SearchResultItem
 from src.normalize import resolve_so_hieu
+from src.references import doc_type_for_number
 from src.rsc import fix_mojibake, is_mojibake
 
 logger = setup_logger(__name__, config.LOG_DIR)
@@ -289,6 +290,9 @@ def scrape_document_detail(item: SearchResultItem) -> LegalDocument:
     doc.so_hieu = resolve_so_hieu(doc.so_hieu, doc.tieu_de)
     if doc.so_hieu == "UNKNOWN":
         logger.warning(f"  -> Khong lay duoc 'So ky hieu' cho id={item.doc_id}.")
+    # Docs fetched by id (related docs) have no search filter type to fall back on
+    if doc.loai_van_ban == "Không xác định":
+        doc.loai_van_ban = doc_type_for_number(doc.so_hieu) or doc.loai_van_ban
 
     # --- Thông tin ban hành ---
     doc.co_quan_ban_hanh = _clean_agency(
