@@ -214,6 +214,11 @@
       "level": "Level {{level}}",
       "unscored": "Unscored"
     },
+    "submission": {
+      "title": "Submission {{number}} · {{date}}",
+      "agreed": "Agreed:",
+      "earlier": "Earlier submissions: {{dates}}"
+    },
     "profile": {
       "personal": "Personal Information",
       "name": "Full Name",

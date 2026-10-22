@@ -214,6 +214,11 @@
       "level": "Mức {{level}}",
       "unscored": "Chưa chấm"
     },
+    "submission": {
+      "title": "Bản nộp lần {{number}} · {{date}}",
+      "agreed": "Đã cam kết:",
+      "earlier": "Các lần nộp trước: {{dates}}"
+    },
     "profile": {
       "personal": "Thông tin cá nhân",
       "name": "Họ và tên",

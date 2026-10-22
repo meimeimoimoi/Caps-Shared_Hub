@@ -92,9 +92,18 @@ export interface ApplicationDetail extends ExpertApplication {
   suggestedExperienceResult: EligibilityResult
   /** True while the application waits for a Gate 1 decision */
   canDecide: boolean
+  /** Every submission, first one first, with the statements agreed to; empty in demo data */
+  submissions?: Submission[]
   decidedAt: string | null
   decisionNote: string | null
   earliestReapplyAt: string | null
+}
+
+/** One submission (first submit or supplement) and the statements the applicant agreed to */
+export interface Submission {
+  number: number
+  submittedAt: string
+  declarations: { code: string; language: string; text: string }[]
 }
 
 /* Gate 1 (eligibility) is decided per expert from EV-01…EV-06; the outcome is derived from the results */

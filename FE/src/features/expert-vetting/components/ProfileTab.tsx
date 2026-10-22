@@ -37,6 +37,8 @@ export function ProfileTab({ detail, onOpenDocument }: ProfileTabProps) {
   const { t } = useTranslation('admin')
   const fieldLabel = useFieldLabel()
   const cv = detail.documents.find((d) => d.code === 'CV')
+  const submissions = detail.submissions ?? []
+  const latest = submissions.at(-1)
 
   return (
     <div className="divide-border space-y-4 divide-y [&>section+section]:pt-4">
@@ -89,6 +91,37 @@ export function ProfileTab({ detail, onOpenDocument }: ProfileTabProps) {
           { label: t('detail.profile.highlights'), value: detail.highlights },
         ]}
       />
+      {/* Details above are the latest submission's snapshot; each submission keeps its own statements */}
+      {latest && (
+        <section className="min-w-0">
+          <h2 className="text-text-strong !font-sans !text-sm font-semibold">
+            {t('detail.submission.title', {
+              number: latest.number,
+              date: formatDate(latest.submittedAt),
+            })}
+          </h2>
+          <ul className="mt-2 space-y-2">
+            {latest.declarations.map((d) => (
+              <li key={d.code} className="text-fg-strong text-sm">
+                <span className="text-fg-muted">
+                  {t('detail.submission.agreed')}
+                </span>{' '}
+                “{d.text}”
+              </li>
+            ))}
+          </ul>
+          {submissions.length > 1 && (
+            <p className="text-fg-muted mt-2 text-xs">
+              {t('detail.submission.earlier', {
+                dates: submissions
+                  .slice(0, -1)
+                  .map((x) => formatDate(x.submittedAt))
+                  .join(', '),
+              })}
+            </p>
+          )}
+        </section>
+      )}
     </div>
   )
 }

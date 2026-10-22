@@ -10,6 +10,7 @@ import type {
   EligibilityResult,
   Expert,
   ExpertApplication,
+  Submission,
 } from '../types'
 
 /* Demo mode reads fixtures (a copy, so React Query sees new data);
@@ -79,6 +80,8 @@ interface ReviewApplication {
   minYearsExperience: number
   suggestedExperienceResult: EligibilityResult
   canDecide: boolean
+  /** Every submission, first one first, with the statements agreed to (details above come from the latest) */
+  submissions?: Submission[]
 }
 
 const toQueueRow = (a: ReviewQueueItem): ExpertApplication => ({
@@ -129,6 +132,7 @@ function toDetail(a: ReviewApplication): ApplicationDetail {
     minYearsExperience: a.minYearsExperience,
     suggestedExperienceResult: a.suggestedExperienceResult,
     canDecide: a.canDecide,
+    submissions: a.submissions ?? [],
     decidedAt: a.decidedAt,
     decisionNote: a.decisionNote,
     earliestReapplyAt: a.earliestReapplyAt,
