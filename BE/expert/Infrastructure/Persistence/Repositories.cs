@@ -338,107 +338,50 @@ public sealed class QualificationEvidenceRepository(ExpertDbContext db)
         );
 }
 
-/// <summary>EF Core store for Pricing Versions and their audit trail.</summary>
-public sealed class PricingRepository(ExpertDbContext db) : IPricingRepository
+/// <summary>EF Core store for platform fee history.</summary>
+public sealed class PlatformFeeRepository(ExpertDbContext db) : IPlatformFeeRepository
 {
-    private static readonly string[] OpenStatuses =
-    [
-        PricingStatus.Draft,
-        PricingStatus.ReturnForRevision,
-        PricingStatus.PendingApproval,
-    ];
+    public Task<PlatformFee?> FindCurrentAsync(string serviceCode, CancellationToken ct) =>
+        db
+            .PlatformFees.Where(f => f.ServiceCode == serviceCode)
+            .OrderByDescending(f => f.EffectiveFrom)
+            .FirstOrDefaultAsync(ct);
 
-    public async Task<IReadOnlyList<ServicePricingVersion>> ListAsync(
-        Guid qualificationId,
-        CancellationToken ct
-    ) =>
+    // ponytail: latest row per service via GROUP BY; fine for a handful of services
+    public async Task<IReadOnlyList<PlatformFee>> ListCurrentAsync(CancellationToken ct) =>
         await db
-            .PricingVersions.AsNoTracking()
-            .Where(x => x.QualificationId == qualificationId)
-            .OrderByDescending(x => x.Sequence)
+            .PlatformFees.AsNoTracking()
+            .GroupBy(f => f.ServiceCode)
+            .Select(g => g.OrderByDescending(f => f.EffectiveFrom).First())
             .ToListAsync(ct);
 
-    public async Task<IReadOnlyList<ServicePricingVersion>> ListByProfileAsync(
+    public void Add(PlatformFee fee) => db.PlatformFees.Add(fee);
+}
+
+/// <summary>EF Core store for the services experts sell.</summary>
+public sealed class ServiceOfferingRepository(ExpertDbContext db) : IServiceOfferingRepository
+{
+    public Task<ServiceOffering?> FindAsync(
         Guid profileId,
+        string serviceCode,
         CancellationToken ct
     ) =>
-        await db
-            .PricingVersions.AsNoTracking()
-            .Where(x => x.ExpertProfileId == profileId)
-            .ToListAsync(ct);
-
-    public async Task<IReadOnlyList<ServicePricingVersion>> ListByQualificationsAsync(
-        IReadOnlyCollection<Guid> qualificationIds,
-        CancellationToken ct
-    ) =>
-        await db
-            .PricingVersions.AsNoTracking()
-            .Where(x => qualificationIds.Contains(x.QualificationId))
-            .ToListAsync(ct);
-
-    public Task<ServicePricingVersion?> FindOpenAsync(Guid qualificationId, CancellationToken ct) =>
-        db.PricingVersions.SingleOrDefaultAsync(
-            x => x.QualificationId == qualificationId && OpenStatuses.Contains(x.Status),
+        db.ServiceOfferings.SingleOrDefaultAsync(
+            o => o.ExpertProfileId == profileId && o.ServiceCode == serviceCode,
             ct
         );
 
-    public Task<ServicePricingVersion?> FindLatestApprovedAsync(
-        Guid qualificationId,
-        CancellationToken ct
-    ) =>
-        db
-            .PricingVersions.Where(x =>
-                x.QualificationId == qualificationId && x.Status == PricingStatus.Approved
-            )
-            .OrderByDescending(x => x.Sequence)
-            .FirstOrDefaultAsync(ct);
-
-    public Task<ServicePricingVersion?> FindAsync(Guid versionId, CancellationToken ct) =>
-        db.PricingVersions.SingleOrDefaultAsync(x => x.Id == versionId, ct);
-
-    public async Task<int> MaxSequenceAsync(Guid qualificationId, CancellationToken ct) =>
-        await db
-            .PricingVersions.Where(x => x.QualificationId == qualificationId)
-            .MaxAsync(x => (int?)x.Sequence, ct)
-        ?? 0;
-
-    public Task<Guid?> FindExpertUserIdAsync(Guid versionId, CancellationToken ct) =>
-        db
-            .PricingVersions.Where(x => x.Id == versionId)
-            .Select(x =>
-                db.ExpertProfiles.Where(p => p.Id == x.ExpertProfileId)
-                    .Select(p => (Guid?)p.UserId)
-                    .FirstOrDefault()
-            )
-            .SingleOrDefaultAsync(ct);
-
-    public async Task<IReadOnlyList<ServicePricingVersion>> ListByStatusAsync(
-        string status,
+    public async Task<IReadOnlyList<ServiceOffering>> ListAsync(
+        IReadOnlyCollection<Guid> profileIds,
         CancellationToken ct
     ) =>
         await db
-            .PricingVersions.AsNoTracking()
-            .Where(x => x.Status == status)
-            .OrderBy(x => x.SubmittedAt)
+            .ServiceOfferings.AsNoTracking()
+            .Where(o => profileIds.Contains(o.ExpertProfileId))
+            .OrderBy(o => o.ServiceCode)
             .ToListAsync(ct);
 
-    public async Task<IReadOnlyList<PricingEvent>> ListEventsAsync(
-        Guid qualificationId,
-        CancellationToken ct
-    ) =>
-        await db
-            .PricingEvents.AsNoTracking()
-            .Where(x => x.QualificationId == qualificationId)
-            .OrderBy(x => x.CreatedAt)
-            .ThenBy(x => x.Id)
-            .ToListAsync(ct);
-
-    public Task<int> CountEventsAsync(Guid qualificationId, CancellationToken ct) =>
-        db.PricingEvents.CountAsync(x => x.QualificationId == qualificationId, ct);
-
-    public void Add(ServicePricingVersion version) => db.PricingVersions.Add(version);
-
-    public void AddEvents(IEnumerable<PricingEvent> events) => db.PricingEvents.AddRange(events);
+    public void Add(ServiceOffering offering) => db.ServiceOfferings.Add(offering);
 }
 
 /// <summary>EF Core store for availability slots.</summary>

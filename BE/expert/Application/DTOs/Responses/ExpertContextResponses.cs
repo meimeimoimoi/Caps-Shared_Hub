@@ -34,13 +34,8 @@ public sealed record ServiceReadinessResponse(
     bool Availability,
     bool BookingAllowed,
     string[] Reasons,
-    PricingVersionResponse? Pricing,
-    string? PendingPricingVersion
+    ServicePriceResponse? Pricing
 );
 
-/// <summary>The approved price version in effect.</summary>
-public sealed record PricingVersionResponse(
-    string Version,
-    DateTimeOffset EffectiveFrom,
-    DateTimeOffset? EffectiveTo
-);
+/// <summary>The expert's own price for the service; null until one is set.</summary>
+public sealed record ServicePriceResponse(long Fee, int TurnaroundHours, DateTimeOffset UpdatedAt);

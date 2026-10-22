@@ -49,15 +49,19 @@ Each decision publishes an `ExpertCompetencyDecidedEvent` through the same outbo
 
 ## Pricing, availability and the Marketplace
 
-- Pricing (`/api/v1/experts/me/pricing/{serviceCode}`): every change is a new `service_pricing_version`; the first price
-  or a change of at most `ExpertPolicy:PricingAutoApproveMaxChangePercent` (50%) is approved by the system, larger
-  changes wait for a System Admin at `/api/v1/admin/experts/pricing` (permission `ExpertApprove`).
+- Platform fee (`/api/v1/experts/admin/platform-fees/{serviceCode}`, permission `PricingManage`): a System Admin sets
+  the platform's percent (0–99) of each catalog service. `platform_fee` is append-only; the current rate is the latest
+  row, and review cases freeze the percent they were booked with. Setting the first rate opens the service for pricing.
+- Expert price (`/api/v1/experts/me/services/{serviceCode}`, permission `ServiceManage`): experts approved for the
+  service (Gate 2) set their own fee (10,000–1,000,000,000 VND, steps of 1,000) and delivery time (1–720 hours) to
+  compete; no approval. One `service_offering` per expert and service; responses show the net amount after
+  the platform fee.
 - Availability (`/api/v1/experts/me/availability`): open slots in `availability_slot`, shared by all services (1–12 hours,
   no overlaps, at most 50 open, up to 90 days ahead), and a per-service `accepting_requests` switch.
-- Delivery SLA: `service_catalog.delivery_sla_hours` (calendar hours from START, 72 for `HUMAN_VERIFICATION`); the
-  Marketplace returns it as `slaHours` and the Review Case snapshots it at request time (BR-M35).
+- Delivery time: the expert's `service_offering.turnaround_hours`; the Marketplace returns it as `slaHours` and the
+  Review Case snapshots it at request time.
 - Marketplace (`GET /api/v1/marketplace/experts`, public): an Expert–Service is listed when the account is ACTIVE, the
-  service is APPROVED_FOR_SERVICE and ACTIVE in the catalog, a price is in effect today, requests are on and the expert
+  service is APPROVED_FOR_SERVICE and ACTIVE in the catalog, the expert has set a price, requests are on and the expert
   has a future open slot (BR-M01, `MarketplaceRules`). The portal context reports the missing step as a reason code.
 - `expert_profile.account_status` is kept in sync by `AccountStatusChangedConsumer` (event published by auth) and by
   the token whenever the expert saves something.

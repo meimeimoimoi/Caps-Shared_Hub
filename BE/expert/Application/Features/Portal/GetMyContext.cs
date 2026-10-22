@@ -25,7 +25,7 @@ public sealed class GetMyContextHandler(
     IExpertProfileRepository profiles,
     IExpertApplicationRepository applications,
     IQualificationRepository qualifications,
-    IPricingRepository pricing,
+    IServiceOfferingRepository offerings,
     IAvailabilityRepository availability,
     IServiceCatalogRepository catalog,
     TimeProvider clock
@@ -44,10 +44,9 @@ public sealed class GetMyContextHandler(
             profile == null ? null : await applications.FindLatestAsync(profile.Id, ct);
         var latest =
             profile == null ? [] : await qualifications.ListLatestByProfileAsync(profile.Id, ct);
-        var prices = profile == null ? [] : await pricing.ListByProfileAsync(profile.Id, ct);
+        var prices = profile == null ? [] : await offerings.ListAsync([profile.Id], ct);
         var services = await catalog.ListActiveAsync(ct);
         var now = clock.GetUtcNow();
-        var today = PricingRules.BusinessDate(now);
         var slots = profile == null ? [] : await availability.ListOpenAsync(profile.Id, now, ct);
         // The expert's own token is the freshest account status
         var accountActive = query.AccountStatus == ActiveAccount;
@@ -57,13 +56,11 @@ public sealed class GetMyContextHandler(
             .Select(service =>
             {
                 var qualification = latest.FirstOrDefault(x => x.ServiceCode == service.Code);
-                var versions = prices.Where(x => x.QualificationId == qualification?.Id).ToArray();
                 return Readiness(
                     service,
                     application?.Status,
                     qualification,
-                    versions.FirstOrDefault(x => x.IsInEffect(today)),
-                    versions.FirstOrDefault(x => x.Status == PricingStatus.PendingApproval),
+                    prices.FirstOrDefault(x => x.ServiceCode == service.Code),
                     accountActive,
                     hasOpenSlot
                 );
@@ -96,8 +93,7 @@ public sealed class GetMyContextHandler(
         ServiceCatalogItem service,
         string? applicationStatus,
         ExpertServiceQualification? qualification,
-        ServicePricingVersion? inEffect,
-        ServicePricingVersion? pending,
+        ServiceOffering? offering,
         bool accountActive,
         bool hasOpenSlot
     )
@@ -110,7 +106,7 @@ public sealed class GetMyContextHandler(
                     qualification.Status,
                     accountActive,
                     service.IsActive,
-                    inEffect != null,
+                    offering != null,
                     accepting,
                     hasOpenSlot
                 );
@@ -118,7 +114,7 @@ public sealed class GetMyContextHandler(
         {
             null => [PortalAccessRules.ReasonBeforeQualification(applicationStatus)],
             { QualificationStatus: QualificationStatus.ApprovedForService } =>
-                MarketplaceRules.Missing(facts, pending != null),
+                MarketplaceRules.Missing(facts),
             _ => [PortalAccessRules.ReasonForQualification(facts.QualificationStatus)],
         };
         return new(
@@ -129,18 +125,9 @@ public sealed class GetMyContextHandler(
             accepting && hasOpenSlot,
             facts != null && MarketplaceRules.IsListed(facts),
             reasons,
-            inEffect == null
+            offering == null
                 ? null
-                : new(
-                    $"v{inEffect.Sequence}",
-                    StartOfDay(inEffect.EffectiveFrom),
-                    inEffect.EffectiveTo is { } to ? StartOfDay(to.AddDays(1)) : null
-                ),
-            pending == null ? null : $"v{pending.Sequence}"
+                : new(offering.Fee, offering.TurnaroundHours, offering.UpdatedAt)
         );
     }
-
-    // Business dates are Vietnam dates (UTC+7)
-    private static DateTimeOffset StartOfDay(DateOnly day) =>
-        new(day.ToDateTime(TimeOnly.MinValue), TimeSpan.FromHours(7));
 }

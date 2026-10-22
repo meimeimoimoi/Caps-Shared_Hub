@@ -19,11 +19,8 @@ public static class ExpertPolicySetup
                 x =>
                     x.MinYearsExperience >= 0
                     && x.ReapplyNotEligibleDays >= 0
-                    && x.ReapplyCompetencyFailDays >= 0
-                    && x.PricingMinPrice > 0
-                    && x.PricingMaxPrice >= x.PricingMinPrice
-                    && x.PricingAutoApproveMaxChangePercent >= 0,
-                "ExpertPolicy values cannot be negative and the price range must be valid."
+                    && x.ReapplyCompetencyFailDays >= 0,
+                "ExpertPolicy values cannot be negative."
             )
             .ValidateOnStart();
         services.AddSingleton(sp => sp.GetRequiredService<IOptions<ExpertPolicyOptions>>().Value);

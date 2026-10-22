@@ -232,82 +232,44 @@ public static class ExpertErrors
 
     public static AppException PricingNotAllowed(string qualificationStatus) =>
         new(
-            ErrorType.Conflict,
+            ErrorType.Forbidden,
             "PRICING_NOT_ALLOWED",
-            $"Prices can only be set for an approved service; this one is {qualificationStatus}."
+            $"Only experts approved for this service can price it; the service is {qualificationStatus}."
         );
 
-    public static AppException PriceOutOfRange(long min, long max) =>
+    public static AppException PlatformFeeInvalid(int max) =>
         new(
             ErrorType.Validation,
-            "PRICE_OUT_OF_RANGE",
-            $"Price must be between {min} and {max} VND."
+            "PLATFORM_FEE_INVALID",
+            $"Platform fee must be between 0 and {max} percent."
         );
 
-    public static AppException EffectiveDateInPast() =>
+    public static AppException PlatformFeeNotSet() =>
+        new(
+            ErrorType.RuleViolation,
+            "PLATFORM_FEE_NOT_SET",
+            "The platform fee of this service is not set yet, so it cannot be priced."
+        );
+
+    public static AppException FeeInvalid(long min, long max, long step) =>
         new(
             ErrorType.Validation,
-            "EFFECTIVE_DATE_IN_PAST",
-            "The effective date cannot be in the past."
+            "FEE_INVALID",
+            $"Fee must be between {min} and {max} VND, in steps of {step}."
         );
 
-    public static AppException PricingReasonRequired() =>
+    public static AppException TurnaroundInvalid(int max) =>
         new(
             ErrorType.Validation,
-            "PRICING_REASON_REQUIRED",
-            "Explain the price before submitting it."
+            "TURNAROUND_INVALID",
+            $"Turnaround must be between 1 and {max} hours."
         );
 
-    public static AppException PricingReasonTooLong(int max) =>
-        new(
-            ErrorType.Validation,
-            "PRICING_REASON_TOO_LONG",
-            $"The reason can be at most {max} characters."
-        );
-
-    public static AppException PricingVersionLocked(string status) =>
+    public static AppException OfferingConflict() =>
         new(
             ErrorType.Conflict,
-            "PRICING_VERSION_LOCKED",
-            $"This price cannot be changed while {status}."
-        );
-
-    public static AppException PricingPendingApproval() =>
-        new(
-            ErrorType.Conflict,
-            "PRICING_PENDING_APPROVAL",
-            "A price change is waiting for approval; wait for the decision before changing it again."
-        );
-
-    public static AppException PricingRevisionConflict() =>
-        new(
-            ErrorType.Conflict,
-            "PRICING_REVISION_CONFLICT",
-            "The prices changed meanwhile; reload and try again."
-        );
-
-    public static AppException PricingVersionNotFound() =>
-        new(ErrorType.NotFound, "PRICING_VERSION_NOT_FOUND", "Pricing version not found.");
-
-    public static AppException PricingNotPending(string status) =>
-        new(
-            ErrorType.Conflict,
-            "PRICING_NOT_PENDING",
-            $"Only prices waiting for approval can be decided; this one is {status}."
-        );
-
-    public static AppException PricingNoteRequired() =>
-        new(
-            ErrorType.Validation,
-            "PRICING_NOTE_REQUIRED",
-            "Explain why the price is returned or rejected."
-        );
-
-    public static AppException InvalidPricingDecision() =>
-        new(
-            ErrorType.Validation,
-            "INVALID_PRICING_DECISION",
-            "Decision must be APPROVE, RETURN_FOR_REVISION or REJECT."
+            "OFFERING_CONFLICT",
+            "This service was changed at the same time. Reload and try again."
         );
 
     public static AppException SlotInPast() =>

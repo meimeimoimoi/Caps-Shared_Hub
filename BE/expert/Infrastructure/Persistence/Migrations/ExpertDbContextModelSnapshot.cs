@@ -342,108 +342,20 @@ namespace Caps.Expert.Infrastructure.Persistence.Migrations
                         });
                 });
 
-            modelBuilder.Entity("Caps.Expert.Domain.Pricing.PricingEvent", b =>
+            modelBuilder.Entity("Caps.Expert.Domain.Pricing.PlatformFee", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
-                    b.Property<string>("Action")
-                        .IsRequired()
-                        .HasMaxLength(32)
-                        .HasColumnType("character varying(32)")
-                        .HasColumnName("action");
-
-                    b.Property<Guid?>("ActorUserId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("actor_user_id");
-
-                    b.Property<DateTimeOffset>("CreatedAt")
+                    b.Property<DateTimeOffset>("EffectiveFrom")
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at");
-
-                    b.Property<string>("Note")
-                        .HasColumnType("text")
-                        .HasColumnName("note");
-
-                    b.Property<Guid>("PricingVersionId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("pricing_version_id");
-
-                    b.Property<Guid>("QualificationId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("qualification_id");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("PricingVersionId");
-
-                    b.HasIndex("QualificationId", "CreatedAt")
-                        .HasDatabaseName("ix_pricing_event_qualification");
-
-                    b.ToTable("pricing_event", "expert");
-                });
-
-            modelBuilder.Entity("Caps.Expert.Domain.Pricing.ServicePricingVersion", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<long>("Amount")
-                        .HasColumnType("bigint")
-                        .HasColumnName("amount");
-
-                    b.Property<bool>("AutoApproved")
-                        .HasColumnType("boolean")
-                        .HasColumnName("auto_approved");
-
-                    b.Property<int?>("ChangePercent")
-                        .HasColumnType("integer")
-                        .HasColumnName("change_percent");
-
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at");
-
-                    b.Property<DateTimeOffset?>("DecidedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("decided_at");
-
-                    b.Property<Guid?>("DecidedByUserId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("decided_by_user_id");
-
-                    b.Property<string>("DecisionNote")
-                        .HasColumnType("text")
-                        .HasColumnName("decision_note");
-
-                    b.Property<DateOnly>("EffectiveFrom")
-                        .HasColumnType("date")
                         .HasColumnName("effective_from");
 
-                    b.Property<DateOnly?>("EffectiveTo")
-                        .HasColumnType("date")
-                        .HasColumnName("effective_to");
-
-                    b.Property<Guid>("ExpertProfileId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("expert_profile_id");
-
-                    b.Property<Guid>("QualificationId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("qualification_id");
-
-                    b.Property<string>("Reason")
-                        .HasMaxLength(1000)
-                        .HasColumnType("character varying(1000)")
-                        .HasColumnName("reason");
-
-                    b.Property<int>("Sequence")
+                    b.Property<int>("Percent")
                         .HasColumnType("integer")
-                        .HasColumnName("sequence");
+                        .HasColumnName("percent");
 
                     b.Property<string>("ServiceCode")
                         .IsRequired()
@@ -451,15 +363,49 @@ namespace Caps.Expert.Infrastructure.Persistence.Migrations
                         .HasColumnType("character varying(64)")
                         .HasColumnName("service_code");
 
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(32)
-                        .HasColumnType("character varying(32)")
-                        .HasColumnName("status");
+                    b.Property<Guid>("SetBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("set_by");
 
-                    b.Property<DateTimeOffset?>("SubmittedAt")
+                    b.HasKey("Id");
+
+                    b.HasIndex("ServiceCode", "EffectiveFrom")
+                        .HasDatabaseName("ix_platform_fee_current");
+
+                    b.ToTable("platform_fee", "expert", t =>
+                        {
+                            t.HasCheckConstraint("ck_platform_fee_percent", "percent BETWEEN 0 AND 99");
+                        });
+                });
+
+            modelBuilder.Entity("Caps.Expert.Domain.Pricing.ServiceOffering", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("submitted_at");
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid>("ExpertProfileId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("expert_profile_id");
+
+                    b.Property<long>("Fee")
+                        .HasColumnType("bigint")
+                        .HasColumnName("fee");
+
+                    b.Property<string>("ServiceCode")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("service_code");
+
+                    b.Property<int>("TurnaroundHours")
+                        .HasColumnType("integer")
+                        .HasColumnName("turnaround_hours");
 
                     b.Property<DateTimeOffset>("UpdatedAt")
                         .HasColumnType("timestamp with time zone")
@@ -467,19 +413,16 @@ namespace Caps.Expert.Infrastructure.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("QualificationId")
+                    b.HasIndex("ServiceCode");
+
+                    b.HasIndex("ExpertProfileId", "ServiceCode")
                         .IsUnique()
-                        .HasDatabaseName("ux_service_pricing_version_open")
-                        .HasFilter("status IN ('DRAFT', 'RETURN_FOR_REVISION', 'PENDING_APPROVAL')");
+                        .HasDatabaseName("ux_offering_one_per_service");
 
-                    b.HasIndex("QualificationId", "Sequence")
-                        .IsUnique()
-                        .HasDatabaseName("ux_service_pricing_version_sequence");
-
-                    b.HasIndex("Status", "SubmittedAt")
-                        .HasDatabaseName("ix_service_pricing_version_queue");
-
-                    b.ToTable("service_pricing_version", "expert");
+                    b.ToTable("service_offering", "expert", t =>
+                        {
+                            t.HasCheckConstraint("ck_offering_values", "fee > 0 AND turnaround_hours BETWEEN 1 AND 720");
+                        });
                 });
 
             modelBuilder.Entity("Caps.Expert.Domain.Profiles.ExpertProfile", b =>
@@ -922,24 +865,31 @@ namespace Caps.Expert.Infrastructure.Persistence.Migrations
                     b.Navigation("ExpertProfile");
                 });
 
-            modelBuilder.Entity("Caps.Expert.Domain.Pricing.PricingEvent", b =>
+            modelBuilder.Entity("Caps.Expert.Domain.Pricing.PlatformFee", b =>
                 {
-                    b.HasOne("Caps.Expert.Domain.Pricing.ServicePricingVersion", null)
+                    b.HasOne("Caps.Expert.Domain.Catalog.ServiceCatalogItem", null)
                         .WithMany()
-                        .HasForeignKey("PricingVersionId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .HasForeignKey("ServiceCode")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
-                        .HasConstraintName("fk_pricing_event_version");
+                        .HasConstraintName("fk_platform_fee_service");
                 });
 
-            modelBuilder.Entity("Caps.Expert.Domain.Pricing.ServicePricingVersion", b =>
+            modelBuilder.Entity("Caps.Expert.Domain.Pricing.ServiceOffering", b =>
                 {
-                    b.HasOne("Caps.Expert.Domain.Qualifications.ExpertServiceQualification", null)
+                    b.HasOne("Caps.Expert.Domain.Profiles.ExpertProfile", null)
                         .WithMany()
-                        .HasForeignKey("QualificationId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .HasForeignKey("ExpertProfileId")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
-                        .HasConstraintName("fk_service_pricing_version_qualification");
+                        .HasConstraintName("fk_service_offering_profile");
+
+                    b.HasOne("Caps.Expert.Domain.Catalog.ServiceCatalogItem", null)
+                        .WithMany()
+                        .HasForeignKey("ServiceCode")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_service_offering_service");
                 });
 
             modelBuilder.Entity("Caps.Expert.Domain.Qualifications.CompetencyAssessment", b =>
