@@ -153,14 +153,48 @@ def iter_rsc_rows(payload: str) -> Iterator[Tuple[str, Any]]:
         m = _ROW_RE.match(line)
         if m:
             if buf_id is not None:
-                yield buf_id, _decode_row_value("\n".join(buf))
+                yield from _split_row(buf_id, "\n".join(buf))
             buf_id = m.group(1)
             buf = [m.group(2)]
         elif buf_id is not None:
             buf.append(line)
 
     if buf_id is not None:
-        yield buf_id, _decode_row_value("\n".join(buf))
+        yield from _split_row(buf_id, "\n".join(buf))
+
+
+_TEXT_ROW_LEN_RE = re.compile(r"^T([0-9a-fA-F]+),")
+_TRAILING_ROW_RE = re.compile(r">([0-9a-fA-F]+):(?=[\[{])")
+
+
+def _split_row(row_id: str, raw: str) -> Iterator[Tuple[str, Any]]:
+    """
+    A text row ("T<hex byte length>,<text>") has no trailing newline, so the next row
+    (e.g. the metadata "1:{...}" after "</html>") sits on the same line. Cut it at the
+    declared length when that lands on a row start; otherwise (bytes lost to mojibake)
+    keep the whole chunk as before.
+    """
+    m = _TEXT_ROW_LEN_RE.match(raw)
+    if m:
+        body = raw[m.end():].encode("utf-8")
+        length = int(m.group(1), 16)
+        rest = body[length:].decode("utf-8", errors="replace")
+        if rest and _ROW_RE.match(rest):
+            yield row_id, body[:length].decode("utf-8", errors="replace")
+            yield from iter_rsc_rows(rest)
+            return
+        # Length is off: split at the last "><id>:{" / "><id>:[" whose tail is valid JSON
+        text = raw[m.end():]
+        tail = None
+        for tail in _TRAILING_ROW_RE.finditer(text):
+            pass
+        if tail:
+            value = _decode_row_value(text[tail.start() + 1 + len(tail.group(1)) + 1:])
+            if isinstance(value, (dict, list)):
+                yield row_id, text[:tail.start() + 1]
+                yield tail.group(1), value
+                return
+    yield row_id, _decode_row_value(raw)
 
 
 def _decode_row_value(raw: str) -> Any:
@@ -218,6 +252,72 @@ def find_document_detail(payload: str) -> Optional[dict]:
             return value
     return None
 
+
+
+def find_document_relations(payload: str, relation_types: Optional[dict] = None) -> Optional[List[dict]]:
+    """
+    Read the "Lược đồ" (relation diagram) row of a detail-page payload.
+
+    The row looks like {"documentNamesByType": {code: [{id, name, effectAllType}]},
+    "documentNamesBySource": {...}}. ByType = this document acts on the target
+    ("out"), BySource = the target acts on this document ("in").
+    Returns None when the payload has no such row.
+    """
+    relation_types = relation_types or {}
+    for _row_id, value in iter_rsc_rows(payload):
+        if not (isinstance(value, dict) and "documentNamesByType" in value):
+            continue
+        relations = []
+        for key, direction in (("documentNamesByType", "out"), ("documentNamesBySource", "in")):
+            for code, targets in (value.get(key) or {}).items():
+                for target in targets or []:
+                    if not isinstance(target, dict) or not target.get("id"):
+                        continue
+                    name = target.get("name")
+                    # "<<ccr:...>>" is an unresolved RSC reference, not a title
+                    if not isinstance(name, str) or name.startswith("<<"):
+                        name = None
+                    relations.append({
+                        "code": str(code),
+                        "type": relation_types.get(str(code), str(code)),
+                        "direction": direction,
+                        "doc_id": str(target["id"]),
+                        "title": name,
+                    })
+        return relations
+    return None
+
+
+def find_vbhn_list(payload: str) -> Optional[List[dict]]:
+    """
+    Consolidated documents (VBHN) that merged this document:
+    [{"vbhnDocument": {...}, "mergedDocuments": [...]}] -> flat dicts, one per docNum.
+    Returns None when the payload has no such row (an empty list is indistinguishable
+    from other empty actions).
+    """
+    for _row_id, value in iter_rsc_rows(payload):
+        if not (isinstance(value, list) and value and isinstance(value[0], dict)
+                and "vbhnDocument" in value[0]):
+            continue
+        out, seen = [], set()
+        for entry in value:
+            vbhn = entry.get("vbhnDocument") or {}
+            # The same VBHN can be listed twice under different ids
+            if not vbhn.get("id") or vbhn.get("docNum") in seen:
+                continue
+            seen.add(vbhn.get("docNum"))
+            out.append({
+                "id": str(vbhn["id"]),
+                "doc_num": vbhn.get("docNum"),
+                "issue_date": (vbhn.get("issueDate") or "")[:10] or None,
+                "merged": [
+                    {"id": str(m["id"]), "doc_num": m.get("docNum"),
+                     "issue_date": (m.get("issueDate") or "")[:10] or None}
+                    for m in entry.get("mergedDocuments") or [] if m.get("id")
+                ],
+            })
+        return out
+    return None
 
 def find_full_text_html(payload: str) -> Optional[str]:
     """

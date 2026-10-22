@@ -15,7 +15,7 @@ public sealed class ReviewCaseTests
                 Client,
                 Guid.NewGuid(),
                 Guid.NewGuid(),
-                new ReviewOffer(Expert, Guid.NewGuid(), fee, (short)pct, hours),
+                new ReviewOffer(Expert, ExpertUser, Guid.NewGuid(), fee, (short)pct, hours),
                 "Check my CIT return",
                 null,
                 Now
@@ -71,7 +71,7 @@ public sealed class ReviewCaseTests
     [Fact]
     public void Request_freezes_the_offer_and_records_the_opening()
     {
-        var offer = new ReviewOffer(Expert, Guid.NewGuid(), 1_000_000, 20, 48);
+        var offer = new ReviewOffer(Expert, ExpertUser, Guid.NewGuid(), 1_000_000, 20, 48);
         var (reviewCase, opened) = ReviewCase.Request(
             Client,
             Guid.NewGuid(),
@@ -110,7 +110,7 @@ public sealed class ReviewCaseTests
                     Client,
                     Guid.NewGuid(),
                     Guid.NewGuid(),
-                    new ReviewOffer(Expert, Guid.NewGuid(), 1_000_000, 20, 48),
+                    new ReviewOffer(Expert, ExpertUser, Guid.NewGuid(), 1_000_000, 20, 48),
                     text,
                     null,
                     Now

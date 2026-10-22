@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Caps.Workflow.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(WorkflowDbContext))]
-    [Migration("20261021100424_ReviewCaseTurnaround")]
+    [Migration("20261022105156_ReviewCaseTurnaround")]
     partial class ReviewCaseTurnaround
     {
         /// <inheritdoc />
@@ -25,6 +25,72 @@ namespace Caps.Workflow.Infrastructure.Persistence.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
+
+            modelBuilder.Entity("Caps.Workflow.Domain.Review.CaseMessage", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasMaxLength(4000)
+                        .HasColumnType("character varying(4000)")
+                        .HasColumnName("content");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid>("ReviewCaseId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("review_case_id");
+
+                    b.Property<string>("SenderRole")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("sender_role");
+
+                    b.Property<Guid>("SenderUserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("sender_user_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ReviewCaseId", "CreatedAt")
+                        .HasDatabaseName("ix_case_message_2");
+
+                    b.ToTable("case_message", "review");
+                });
+
+            modelBuilder.Entity("Caps.Workflow.Domain.Review.CaseReadMarker", b =>
+                {
+                    b.Property<Guid>("ReviewCaseId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("review_case_id");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.Property<DateTimeOffset>("LastReadAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("last_read_at");
+
+                    b.Property<Guid>("LastReadMessageId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("last_read_message_id");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("ReviewCaseId", "UserId");
+
+                    b.ToTable("case_read_marker", "review");
+                });
 
             modelBuilder.Entity("Caps.Workflow.Domain.Review.InfoRequest", b =>
                 {
@@ -177,6 +243,10 @@ namespace Caps.Workflow.Infrastructure.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("expert_profile_id");
 
+                    b.Property<Guid>("ExpertUserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("expert_user_id");
+
                     b.Property<long>("Fee")
                         .HasColumnType("bigint")
                         .HasColumnName("fee");
@@ -261,6 +331,9 @@ namespace Caps.Workflow.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("ExpertProfileId", "Status")
                         .HasDatabaseName("ix_review_case_4");
+
+                    b.HasIndex("ExpertUserId", "Status")
+                        .HasDatabaseName("ix_review_case_7");
 
                     b.HasIndex("RequesterUserId", "Status")
                         .HasDatabaseName("ix_review_case_6");
@@ -812,6 +885,26 @@ namespace Caps.Workflow.Infrastructure.Persistence.Migrations
                         .IsUnique();
 
                     b.ToTable("template_version", "workspace");
+                });
+
+            modelBuilder.Entity("Caps.Workflow.Domain.Review.CaseMessage", b =>
+                {
+                    b.HasOne("Caps.Workflow.Domain.Review.ReviewCase", null)
+                        .WithMany()
+                        .HasForeignKey("ReviewCaseId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_case_message_55");
+                });
+
+            modelBuilder.Entity("Caps.Workflow.Domain.Review.CaseReadMarker", b =>
+                {
+                    b.HasOne("Caps.Workflow.Domain.Review.ReviewCase", null)
+                        .WithMany()
+                        .HasForeignKey("ReviewCaseId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_case_read_marker_56");
                 });
 
             modelBuilder.Entity("Caps.Workflow.Domain.Review.InfoRequest", b =>

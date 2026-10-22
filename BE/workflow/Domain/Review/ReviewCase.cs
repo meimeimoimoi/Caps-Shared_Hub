@@ -5,6 +5,7 @@ namespace Caps.Workflow.Domain.Review;
 /// <summary>The expert's price and turnaround for one service, frozen into a case when the client books it.</summary>
 public sealed record ReviewOffer(
     Guid ExpertProfileId,
+    Guid ExpertUserId,
     Guid ServiceOfferingId,
     long Fee,
     short PlatformFeePct,
@@ -34,6 +35,9 @@ public sealed class ReviewCase
     public Guid SourceVersionId { get; private set; }
     public Guid RequesterUserId { get; private set; }
     public Guid ExpertProfileId { get; private set; }
+
+    // Tokens carry user ids only and the expert schema is off limits, so the expert's user id is copied here
+    public Guid ExpertUserId { get; private set; }
 
     /// <summary>Unused since capacity replaced slots; kept because the column exists.</summary>
     public Guid? SlotId { get; }
@@ -100,6 +104,7 @@ public sealed class ReviewCase
             DocumentId = documentId,
             SourceVersionId = sourceVersionId,
             ExpertProfileId = offer.ExpertProfileId,
+            ExpertUserId = offer.ExpertUserId,
             ServiceOfferingId = offer.ServiceOfferingId,
             Fee = offer.Fee,
             PlatformFeePct = offer.PlatformFeePct,
@@ -296,6 +301,37 @@ public sealed class ReviewCase
         TerminationReason = UserNonResponse;
         CompletedAt = now;
         return MoveTo(ReviewCaseStatus.Terminated, null, UserNonResponse, now);
+    }
+
+    /// <summary>The chat role of a party to this case; anyone else is told the case does not exist.</summary>
+    public string ParticipantRoleOf(Guid userId)
+    {
+        if (userId == RequesterUserId)
+        {
+            return CaseParticipant.Client;
+        }
+        if (userId == ExpertUserId)
+        {
+            return CaseParticipant.Expert;
+        }
+        throw WorkflowErrors.ReviewCaseNotFound();
+    }
+
+    /// <summary>New messages are only accepted until the case ends.</summary>
+    public void EnsureChatOpen()
+    {
+        if (
+            Status
+            is ReviewCaseStatus.Completed
+                or ReviewCaseStatus.AutoConfirmed
+                or ReviewCaseStatus.Terminated
+                or ReviewCaseStatus.ExpertDeclined
+                or ReviewCaseStatus.ExpertTimeout
+                or ReviewCaseStatus.CancelledUnpaid
+        )
+        {
+            throw WorkflowErrors.ChatClosed(Status);
+        }
     }
 
     private void EnsureStatus(string expected)

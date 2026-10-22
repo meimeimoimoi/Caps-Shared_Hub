@@ -1,0 +1,65 @@
+{
+  "schema_version": 2,
+  "exported_at": "2026-10-21T23:41:33",
+  "legal_source": {
+    "document_number": "64/2025/TT-BTC",
+    "doc_type": "Không xác định",
+    "issuing_authority": "Bộ T�i ch�nh",
+    "title": "Th�ng tư số 64/2025/TT-BTC Quy định mức thu, miễn một số khoản ph�, lệ ph�\nnhằm hỗ trợ cho doanh nghiệp, người d�n",
+    "metadata": {
+      "source": "vbpl",
+      "source_doc_id": "179085",
+      "detail_url": "https://vbpl.vn/van-ban/chi-tiet/179085",
+      "has_document_number": true,
+      "matched_keywords": [],
+      "keyword_groups": [],
+      "related_from": {
+        "doc_id": "170888",
+        "so_hieu": "73/2024/TT-BTC",
+        "relation": "quy_dinh_chi_tiet",
+        "direction": "in"
+      },
+      "vbhn": [],
+      "vbhn_latest": null,
+      "vbhn_outdated": true,
+      "vbhn_missing": [
+        {
+          "doc_id": "186990",
+          "title": "Thông tư số 11/2026/TT-BTС Quy định mức thu, chế độ thu, nộp phí thuộc lĩnh vực đường sắt"
+        }
+      ]
+    }
+  },
+  "knowledge_document": {
+    "source": "CRAWL_VBPL",
+    "file_hash": "db9e5caad70341bb24dccc53dfc820c0895a55a63167ac5f846479ef75d0c59b",
+    "file_hash_basis": "source_id",
+    "issued_date": "2025-06-30",
+    "effective_from": "2025-07-01",
+    "effective_to": "2027-01-01",
+    "content_json": {
+      "parse_status": "PARSE_FAILED",
+      "preamble": "",
+      "chapters": [],
+      "closing": "",
+      "appendices": [],
+      "warnings": [
+        "Không tìm thấy Điều nào trong văn bản"
+      ]
+    },
+    "ingest": {
+      "suggested_status": "PENDING",
+      "pending_reasons": [
+        "NO_TEXT"
+      ]
+    },
+    "metadata": {
+      "tinh_trang_hieu_luc": "Hết hiệu lực một phần",
+      "text_source": "unavailable",
+      "ocr_required": false,
+      "scraped_at": "2026-10-21T23:41:33.093342",
+      "attachments": []
+    }
+  },
+  "chunks": []
+}

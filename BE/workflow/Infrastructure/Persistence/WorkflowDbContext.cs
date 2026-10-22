@@ -25,6 +25,8 @@ public sealed class WorkflowDbContext(DbContextOptions<WorkflowDbContext> option
     public DbSet<InfoRequest> InfoRequests => Set<InfoRequest>();
     public DbSet<ReviewAttachment> ReviewAttachments => Set<ReviewAttachment>();
     public DbSet<ReviewStatusHistory> ReviewStatusHistories => Set<ReviewStatusHistory>();
+    public DbSet<CaseMessage> CaseMessages => Set<CaseMessage>();
+    public DbSet<CaseReadMarker> CaseReadMarkers => Set<CaseReadMarker>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -318,6 +320,7 @@ public sealed class WorkflowDbContext(DbContextOptions<WorkflowDbContext> option
             e.Property(x => x.SourceVersionId).HasColumnName("source_version_id");
             e.Property(x => x.RequesterUserId).HasColumnName("requester_user_id");
             e.Property(x => x.ExpertProfileId).HasColumnName("expert_profile_id");
+            e.Property(x => x.ExpertUserId).HasColumnName("expert_user_id");
             e.Property(x => x.SlotId).HasColumnName("slot_id");
             e.Property(x => x.ServiceOfferingId).HasColumnName("service_offering_id");
             e.Property(x => x.Fee).HasColumnName("fee");
@@ -358,6 +361,7 @@ public sealed class WorkflowDbContext(DbContextOptions<WorkflowDbContext> option
                 .HasDatabaseName("ix_review_case_4");
             e.HasIndex(x => new { x.RequesterUserId, x.Status })
                 .HasDatabaseName("ix_review_case_6");
+            e.HasIndex(x => new { x.ExpertUserId, x.Status }).HasDatabaseName("ix_review_case_7");
 
             e.HasOne<Document>()
                 .WithMany()
@@ -491,6 +495,52 @@ public sealed class WorkflowDbContext(DbContextOptions<WorkflowDbContext> option
                 .WithMany(c => c.StatusHistories)
                 .HasForeignKey(x => x.ReviewCaseId)
                 .HasConstraintName("fk_review_status_history_54");
+        });
+
+        // CaseMessage
+        modelBuilder.Entity<CaseMessage>(e =>
+        {
+            e.ToTable("case_message", "review");
+            e.HasKey(x => x.Id);
+            e.Property(x => x.Id).HasColumnName("id");
+            e.Property(x => x.ReviewCaseId).HasColumnName("review_case_id");
+            e.Property(x => x.SenderUserId).HasColumnName("sender_user_id");
+            e.Property(x => x.SenderRole)
+                .HasColumnName("sender_role")
+                .HasMaxLength(16)
+                .IsRequired();
+            e.Property(x => x.Content)
+                .HasColumnName("content")
+                .HasMaxLength(CaseMessage.MaxLength)
+                .IsRequired();
+            e.Property(x => x.CreatedAt).HasColumnName("created_at").IsRequired();
+
+            e.HasIndex(x => new { x.ReviewCaseId, x.CreatedAt })
+                .HasDatabaseName("ix_case_message_2");
+
+            e.HasOne<ReviewCase>()
+                .WithMany()
+                .HasForeignKey(x => x.ReviewCaseId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("fk_case_message_55");
+        });
+
+        // CaseReadMarker
+        modelBuilder.Entity<CaseReadMarker>(e =>
+        {
+            e.ToTable("case_read_marker", "review");
+            e.HasKey(x => new { x.ReviewCaseId, x.UserId });
+            e.Property(x => x.ReviewCaseId).HasColumnName("review_case_id");
+            e.Property(x => x.UserId).HasColumnName("user_id");
+            e.Property(x => x.LastReadMessageId).HasColumnName("last_read_message_id");
+            e.Property(x => x.LastReadAt).HasColumnName("last_read_at").IsRequired();
+            e.Property(x => x.UpdatedAt).HasColumnName("updated_at").IsRequired();
+
+            e.HasOne<ReviewCase>()
+                .WithMany()
+                .HasForeignKey(x => x.ReviewCaseId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("fk_case_read_marker_56");
         });
     }
 }
