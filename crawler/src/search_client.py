@@ -37,7 +37,7 @@ import re
 import shutil
 import time
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Set
+from typing import Any, Callable, Dict, List, Optional, Set, Tuple
 
 from playwright.sync_api import (
     Page,
@@ -51,9 +51,13 @@ from slugify import slugify
 import config
 from src.logger_setup import setup_logger
 from src.models import SearchResultItem
+from src.normalize import doc_number_key
+from src.references import doc_type_for_number
 from src.rsc import (
     build_detail_url,
     find_document_detail,
+    find_document_relations,
+    find_vbhn_list,
     find_full_text_html,
     find_search_result,
     fix_mojibake,
@@ -594,41 +598,28 @@ def _visit_detail_page(
     logger.info(f"  [VAO TRANG] {item.requested_url}")
     n_before = len(listener.detail_payloads)
 
-    try:
-        page.goto(item.requested_url, wait_until="domcontentloaded",
-                  timeout=config.PLAYWRIGHT_TIMEOUT_MS)
-    except PlaywrightTimeoutError:
-        try:
-            page.goto(item.requested_url, wait_until="commit",
-                      timeout=config.PLAYWRIGHT_TIMEOUT_MS)
-        except Exception as e:
-            item.download_error = f"goto_failed: {e}"
-            logger.error(f"  [VAO TRANG FAIL] {e}")
-            return item
+    error = _goto(page, item.requested_url)
+    if error:
+        item.download_error = error
+        return item
 
     # --- URL thực sự đã vào ---
     item.visited_url = page.url
     logger.info(f"  [VAO TRANG OK] page.url = {item.visited_url}")
 
-    try:
-        page.wait_for_load_state("networkidle", timeout=15_000)
-    except PlaywrightTimeoutError:
-        pass
-
     # --- Metadata + toàn văn từ server action của trang chi tiết ---
-    payload = listener.wait_for_detail(
-        config.DETAIL_CONTENT_TIMEOUT_MS, min_count=n_before
-    )
-    if payload:
-        detail = find_document_detail(payload)
-        if detail:
-            item.api_detail = detail
-            logger.info(f"  [API CHI TIET] Nhan/tieu de lay duoc tu server.")
-        html = find_full_text_html(payload)
-        if html:
-            # Giữ HTML thô để lớp detail_scraper bóc tách text sạch
-            item.full_text = html
-            logger.info(f"  [TOAN VAN] Nhan duoc {len(html):,} ký tự HTML toàn văn.")
+    listener.wait_for_detail(config.DETAIL_CONTENT_TIMEOUT_MS, min_count=n_before)
+    # The page sends several detail payloads (metadata, provision tree, history...): scan all
+    new_payloads = listener.detail_payloads[n_before:]
+    detail = next(filter(None, map(find_document_detail, new_payloads)), None)
+    if detail:
+        item.api_detail = detail
+        logger.info(f"  [API CHI TIET] Nhan/tieu de lay duoc tu server.")
+    html = next(filter(None, map(find_full_text_html, new_payloads)), None)
+    if html:
+        # Giữ HTML thô để lớp detail_scraper bóc tách text sạch
+        item.full_text = html
+        logger.info(f"  [TOAN VAN] Nhan duoc {len(html):,} ký tự HTML toàn văn.")
 
     # --- Ưu tiên lấy text trực tiếp từ DOM (đã render sẵn) ---
     dom_title = _read_title_from_dom(page)
@@ -642,6 +633,10 @@ def _visit_detail_page(
         item.full_text = dom_text
         logger.info(f"  [TOAN VAN DOM] {len(dom_text):,} ký tự.")
 
+    # Documents fetched by id have no search filter: take the type from the payload
+    if not item.doc_type:
+        item.doc_type = ((item.api_detail or {}).get("docType") or {}).get("name")
+
     # --- Tải file ---
     so_hieu = _guess_so_hieu(item)
     paths = _download_files_from_detail(
@@ -653,8 +648,201 @@ def _visit_detail_page(
     elif not skip_download:
         item.download_error = item.download_error or "khong co file dinh kem"
 
+    # Last: leaves the page, so everything above must be read first
+    luoc_do = _read_luoc_do(page, item.doc_id)
+    item.relations = luoc_do["relations"] or []
+    item.vbhn = luoc_do["vbhn"]
+    item.api_detail = item.api_detail or luoc_do["detail"]
     return item
 
+
+def _new_session(p: Playwright, headless: bool):
+    """Open browser + context + page with the payload listener attached."""
+    browser = p.chromium.launch(headless=headless)
+    context = browser.new_context(
+        user_agent=config.USER_AGENT,
+        locale="vi-VN",
+        viewport={"width": 1440, "height": 1000},
+        accept_downloads=True,
+    )
+    # Chặn script quảng cáo/bảo đồ của BizNext cho nhẹ & nhanh
+    context.route("**/*biznext*", lambda r: r.abort())
+
+    page = context.new_page()
+    page.set_default_timeout(config.PLAYWRIGHT_TIMEOUT_MS)
+    _install_overlay_killer(page)
+
+    listener = _PayloadListener()
+    listener.attach(page)
+    return browser, context, page, listener
+
+
+_LUOC_DO_URL_RE = re.compile(r"/van-ban/chi-tiet/[^/?]+\?tabs=luoc-do")
+_SINGLE_ID_BODY_RE = re.compile(r'\s*\[\s*"?([0-9a-zA-Z\-]{1,64})"?\s*\]\s*')
+
+
+def _read_luoc_do(page: Page, doc_id: str) -> dict:
+    """
+    Open the "Lược đồ" tab of a document. Returns {"relations": list or None if they could
+    not be read, "detail": metadata the page also loads (exact bytes, unlike the CDP
+    listener), "vbhn": consolidated documents that merged it}.
+    """
+    found: List[List[dict]] = []
+    details: List[dict] = []
+    vbhns: List[List[dict]] = []
+
+    def handle(route):
+        req = route.request
+        m = _SINGLE_ID_BODY_RE.fullmatch(req.post_data or "") if req.method == "POST" else None
+        if not m:
+            return route.continue_()
+        if m.group(1) != doc_id:
+            # The tab also loads the full text of every related document: not needed
+            return route.abort()
+        # Read the body here: with many responses the CDP buffer evicts it before the listener
+        resp = route.fetch()
+        text = fix_mojibake(resp.body().decode("utf-8", errors="replace"))
+        relations = find_document_relations(text, config.RELATION_TYPES)
+        if relations is not None:
+            found.append(relations)
+        detail = find_document_detail(text)
+        if detail:
+            details.append(detail)
+        vbhn = find_vbhn_list(text)
+        if vbhn is not None:
+            vbhns.append(vbhn)
+        route.fulfill(response=resp)
+
+    page.route(_LUOC_DO_URL_RE, handle)
+    try:
+        # The tab sometimes loads without firing its server actions: retry once from a blank page
+        for attempt in range(2):
+            if attempt:
+                logger.info("  [LUOC DO] Thu lai.")
+                page.goto("about:blank")
+            # Navigate instead of clicking: after the "Tải về" modal the tab click is ignored
+            error = _goto(page, build_detail_url(doc_id, config.BASE_URL) + "?tabs=luoc-do")
+            if error:
+                logger.warning(f"  [LUOC DO] {error}")
+                continue
+            deadline = time.monotonic() + config.DETAIL_CONTENT_TIMEOUT_MS / 1000
+            # A VBHN page has no relations action: stop once its metadata says so
+            is_vbhn = lambda: any(d.get("isConsolidatedDocument") for d in details)  # noqa: E731
+            while not found and not is_vbhn() and time.monotonic() < deadline:
+                page.wait_for_timeout(250)
+            if found or is_vbhn():
+                # The VBHN list usually arrives a little after the relations
+                try:
+                    page.wait_for_load_state("networkidle", timeout=5_000)
+                except PlaywrightTimeoutError:
+                    pass
+                break
+    except Exception as e:  # noqa: BLE001 - relations are optional, never fail the crawl
+        logger.warning(f"  [LUOC DO] Loi: {e}")
+        return {"relations": None, "detail": None, "vbhn": []}
+    finally:
+        page.unroute(_LUOC_DO_URL_RE, handle)
+    result = {
+        "relations": found[0] if found else None,
+        "detail": details[0] if details else None,
+        "vbhn": vbhns[0] if vbhns else [],
+    }
+    if not found:
+        logger.warning("  [LUOC DO] Het thoi gian cho payload quan he.")
+    else:
+        logger.info(f"  [LUOC DO] {len(found[0])} quan he, {len(result['vbhn'])} VBHN.")
+    return result
+
+
+def _goto(page: Page, url: str) -> Optional[str]:
+    """Navigate and wait for the page to settle; returns an error message on failure."""
+    try:
+        page.goto(url, wait_until="domcontentloaded", timeout=config.PLAYWRIGHT_TIMEOUT_MS)
+    except PlaywrightTimeoutError:
+        try:
+            page.goto(url, wait_until="commit", timeout=config.PLAYWRIGHT_TIMEOUT_MS)
+        except Exception as e:  # noqa: BLE001
+            logger.error(f"  [VAO TRANG FAIL] {e}")
+            return f"goto_failed: {e}"
+    try:
+        page.wait_for_load_state("networkidle", timeout=15_000)
+    except PlaywrightTimeoutError:
+        pass
+    return None
+
+
+def fetch_documents_by_ids(
+    doc_ids: List[str], headless: bool = True, skip_download: bool = False
+) -> List[SearchResultItem]:
+    """Visit detail pages by id (no search step), same as a search hit would be visited."""
+    results: List[SearchResultItem] = []
+    if not doc_ids:
+        return results
+    with sync_playwright() as p:
+        browser, context, page, listener = _new_session(p, headless)
+        try:
+            for i, doc_id in enumerate(doc_ids, 1):
+                url = build_detail_url(doc_id, config.BASE_URL)
+                logger.info(f"[LIEN QUAN {i}/{len(doc_ids)}] id={doc_id}")
+                item = SearchResultItem(
+                    title=f"Van ban {doc_id}",
+                    detail_url=url,
+                    doc_id=doc_id,
+                    doc_id_type=guess_id_type(doc_id),
+                    requested_url=url,
+                )
+                results.append(_visit_detail_page(page, listener, item, skip_download=skip_download))
+                _polite_delay()
+        except Exception as e:
+            logger.error(f"[LIEN QUAN] LOI NGHIEM TRONG: {e}", exc_info=True)
+        finally:
+            context.close()
+            browser.close()
+    return results
+
+
+def fetch_relations_by_ids(doc_ids: List[str], headless: bool = True) -> Dict[str, dict]:
+    """Read only the "Lược đồ" tab of each document: {doc_id: {"relations", "vbhn"}}, no full text, no downloads."""
+    found: Dict[str, dict] = {}
+    if not doc_ids:
+        return found
+    with sync_playwright() as p:
+        browser, context, page, _listener = _new_session(p, headless)
+        try:
+            for i, doc_id in enumerate(doc_ids, 1):
+                logger.info(f"[LUOC DO {i}/{len(doc_ids)}] id={doc_id}")
+                luoc_do = _read_luoc_do(page, doc_id)
+                if luoc_do["relations"] is not None:  # failures are retried on the next run
+                    found[doc_id] = {"relations": luoc_do["relations"], "vbhn": luoc_do["vbhn"]}
+                _polite_delay()
+        except Exception as e:
+            logger.error(f"[LUOC DO] LOI NGHIEM TRONG: {e}", exc_info=True)
+        finally:
+            context.close()
+            browser.close()
+    return found
+
+
+
+def find_document_ids(numbers: List[str], headless: bool = True) -> Dict[str, str]:
+    """Search vbpl for each document number: {number: doc_id} for the ones found."""
+    found: Dict[str, str] = {}
+    for number in numbers:
+        doc_type = doc_type_for_number(number)
+        if not doc_type:
+            logger.warning(f"[TIM SO HIEU] Khong suy ra duoc loai van ban: {number}")
+            continue
+        key = doc_number_key(number)
+        logger.info(f"[TIM SO HIEU] {number} ({doc_type})")
+        # shortcut: one browser session per number (~40 s each), share one session if the list grows large
+        items = search_and_download_by_type(
+            keyword=number, doc_type=doc_type, top_n=1, headless=headless,
+            listing_only=True, save_debug=False,
+            item_filter=lambda title, doc_num: doc_number_key(doc_num) == key if doc_num else None,
+        )
+        if items:
+            found[number] = items[0].doc_id
+    return found
 
 def _guess_so_hieu(item: SearchResultItem) -> str:
     """Lấy số hiệu văn bản từ api_item.docNum, fallback sang regex trong tiêu đề."""
@@ -710,22 +898,7 @@ def search_and_download_by_type(
     search_url = config.SEARCH_URL
 
     with sync_playwright() as p:
-        browser = p.chromium.launch(headless=headless)
-        context = browser.new_context(
-            user_agent=config.USER_AGENT,
-            locale="vi-VN",
-            viewport={"width": 1440, "height": 1000},
-            accept_downloads=True,
-        )
-        # Chặn script quảng cáo/bảo đồ của BizNext cho nhẹ & nhanh
-        context.route("**/*biznext*", lambda r: r.abort())
-
-        page = context.new_page()
-        page.set_default_timeout(config.PLAYWRIGHT_TIMEOUT_MS)
-        _install_overlay_killer(page)
-
-        listener = _PayloadListener()
-        listener.attach(page)
+        browser, context, page, listener = _new_session(p, headless)
 
         try:
             # ── Bước 1: Mở trang tìm kiếm ────────────────────────────
