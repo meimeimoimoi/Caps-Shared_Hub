@@ -12,6 +12,11 @@ namespace Caps.Expert.Application.DTOs.Responses;
 /// and sends back only the codes and the language.
 /// </param>
 /// <param name="Eligibility">Per-requirement results of the latest Gate 1 decision: what to supplement or why it was not met (BR-E28).</param>
+/// <param name="MinYearsExperience">EV-06 minimum years in force now.</param>
+/// <param name="ChangesRequired">
+/// Re-application after NOT_ELIGIBLE: criteria that failed before and still need updated information or new
+/// evidence before submitting (POL-EXP-REAPP); empty otherwise.
+/// </param>
 public sealed record ExpertApplicationResponse(
     string Id,
     string Status,
@@ -33,7 +38,9 @@ public sealed record ExpertApplicationResponse(
     bool CanSupplement,
     int MaxFiles,
     string[] RequiredEvidence,
-    DeclarationResponse[] Declarations
+    DeclarationResponse[] Declarations,
+    int MinYearsExperience,
+    string[] ChangesRequired
 );
 
 /// <summary>One statement as shown to the applicant, or as recorded on a submission.</summary>

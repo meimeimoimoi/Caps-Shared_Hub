@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Caps.Expert.Domain.Applications;
 using Caps.Expert.Domain.Catalog;
+using Caps.Expert.Domain.Policies;
 using Caps.Expert.Domain.Pricing;
 using Caps.Expert.Domain.Profiles;
 using Caps.Expert.Domain.Qualifications;
@@ -30,6 +31,8 @@ public sealed class ExpertDbContext(DbContextOptions<ExpertDbContext> options) :
     public DbSet<ServiceCatalogItem> ServiceCatalog => Set<ServiceCatalogItem>();
     public DbSet<NotificationOutboxEntry> NotificationOutbox => Set<NotificationOutboxEntry>();
     public DbSet<AvailabilitySlot> AvailabilitySlots => Set<AvailabilitySlot>();
+    public DbSet<PolicySetting> PolicySettings => Set<PolicySetting>();
+    public DbSet<PolicySettingChange> PolicySettingChanges => Set<PolicySettingChange>();
 
     private static readonly JsonSerializerOptions SnapshotJson = new(JsonSerializerDefaults.Web);
 
@@ -191,6 +194,8 @@ public sealed class ExpertDbContext(DbContextOptions<ExpertDbContext> options) :
             e.Property(x => x.Criterion).HasColumnName("criterion").HasMaxLength(16).IsRequired();
             e.Property(x => x.Result).HasColumnName("result").HasMaxLength(32).IsRequired();
             e.Property(x => x.Note).HasColumnName("note");
+            e.Property(x => x.AppliedMinYearsExperience)
+                .HasColumnName("applied_min_years_experience");
             e.Property(x => x.ReviewerUserId).HasColumnName("reviewer_user_id");
             e.Property(x => x.CreatedAt).HasColumnName("created_at").IsRequired();
             // One result per requirement in each decision
@@ -465,6 +470,33 @@ public sealed class ExpertDbContext(DbContextOptions<ExpertDbContext> options) :
                 .HasForeignKey(x => x.ExpertProfileId)
                 .OnDelete(DeleteBehavior.Restrict)
                 .HasConstraintName("fk_availability_slot_profile");
+        });
+
+        modelBuilder.Entity<PolicySetting>(e =>
+        {
+            e.ToTable("policy_setting");
+            e.HasKey(x => x.Key);
+            e.Property(x => x.Key).HasColumnName("key").HasMaxLength(64);
+            e.Property(x => x.Value).HasColumnName("value");
+            e.Property(x => x.UpdatedByUserId).HasColumnName("updated_by_user_id");
+            e.Property(x => x.UpdatedAt).HasColumnName("updated_at").IsRequired();
+        });
+
+        modelBuilder.Entity<PolicySettingChange>(e =>
+        {
+            e.ToTable("policy_setting_change");
+            e.HasKey(x => x.Id);
+            e.Property(x => x.Id).HasColumnName("id");
+            e.Property(x => x.Key).HasColumnName("key").HasMaxLength(64).IsRequired();
+            e.Property(x => x.OldValue).HasColumnName("old_value");
+            e.Property(x => x.NewValue).HasColumnName("new_value");
+            e.Property(x => x.Reason)
+                .HasColumnName("reason")
+                .HasMaxLength(PolicySetting.MaxReasonLength)
+                .IsRequired();
+            e.Property(x => x.ChangedByUserId).HasColumnName("changed_by_user_id");
+            e.Property(x => x.ChangedAt).HasColumnName("changed_at").IsRequired();
+            e.HasIndex(x => x.ChangedAt).HasDatabaseName("ix_policy_setting_change_changed_at");
         });
     }
 }

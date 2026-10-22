@@ -39,7 +39,15 @@ A reviewer gives PASS / FAIL / NEED_MORE_INFORMATION for each of EV-01…EV-06 (
 The outcome follows: any FAIL → `NOT_ELIGIBLE` (new application allowed after `ExpertPolicy:ReapplyNotEligibleDays`),
 otherwise any NEED_MORE_INFORMATION → the applicant supplements the same application, all PASS → `ELIGIBLE`.
 EV-06 cannot pass below `ExpertPolicy:MinYearsExperience` declared years. Reviewers cannot decide their own application.
+`NOT_APPLICABLE` is allowed only on `ExpertPolicy:NotApplicableCriteria` (EV-03), needs a note and counts as PASS.
+EV-04/EV-05 show the statements mapped by `ExpertPolicy:DeclarationCriteria`. A new application after `NOT_ELIGIBLE`
+can only be submitted with a material change for each failed criterion (`MATERIAL_CHANGE_REQUIRED` otherwise).
 `ELIGIBLE` is per expert; Gate 2 is per service (below).
+
+`MinYearsExperience`, `ReapplyNotEligibleDays` and `ReapplyCompetencyFailDays` in `appsettings.json` are only
+defaults: a System Admin (`ExpertApprove`) changes them at `GET/PUT /api/v1/admin/experts/policy` (history at
+`.../policy/history`), stored in `expert.policy_setting` / `expert.policy_setting_change`. Handlers read them
+through `IExpertPolicyProvider`; each Gate 1 decision stores the minimum it applied.
 
 Each decision adds an `ExpertEligibilityDecidedEvent` to `expert.notification_outbox` in the same transaction;
 `ExpertNotificationPublisher` sends it to RabbitMQ (`ConnectionStrings:RabbitMq`) every 5 seconds, and the

@@ -22,6 +22,7 @@ public sealed class SubmitApplicationHandler(
     IApplicationLoader loader,
     IExpertApplicationRepository applications,
     IExpertEvidenceRepository evidences,
+    IReapplicationChecker reapplication,
     IApplicationDescriber describer,
     ExpertPolicyOptions policy,
     IUnitOfWork unitOfWork,
@@ -42,12 +43,19 @@ public sealed class SubmitApplicationHandler(
         applicant.EnsureVerified();
         var submission = policy.Submission;
         var files = await evidences.ListAsync(application.Id, ct);
-        var missing = profile.MissingRequirements(
-            files.Select(x => x.EvidenceType).Distinct().ToArray(),
-            submission
-        );
+        var evidenceCodes = files.Select(x => x.EvidenceType).Distinct().ToArray();
+        var missing = profile.MissingRequirements(evidenceCodes, submission);
         if (missing.Length > 0)
             throw ExpertErrors.ApplicationIncomplete(missing);
+        // After NOT_ELIGIBLE, waiting is not enough: each failed criterion needs a change (POL-EXP-REAPP)
+        var unchanged = await reapplication.MissingChangesAsync(
+            application,
+            profile,
+            evidenceCodes,
+            ct
+        );
+        if (unchanged.Length > 0)
+            throw ExpertErrors.MaterialChangeRequired(unchanged);
         var declarations = submission.Resolve(command.DeclarationCodes, command.Language);
 
         var now = clock.GetUtcNow();

@@ -154,7 +154,9 @@ public sealed class ExpertApplication
             EarliestReapplyAt = now + policy.ReapplyAfterNotEligible;
         var decided = MoveTo(status, reviewerUserId, note, now);
         var checks = cleaned
-            .Select(x => EligibilityCheck.Record(decided, x, reviewerUserId))
+            .Select(x =>
+                EligibilityCheck.Record(decided, x, reviewerUserId, policy.MinYearsExperience)
+            )
             .ToArray();
         return new(decided, checks);
     }

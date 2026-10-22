@@ -26,7 +26,8 @@ public sealed class DecideEligibilityHandler(
     IEligibilityCheckRepository eligibility,
     IExpertNotificationOutbox outbox,
     IReviewDescriber describer,
-    ExpertPolicyOptions policy,
+    IExpertPolicyProvider policies,
+    ExpertPolicyOptions options,
     IUnitOfWork unitOfWork,
     TimeProvider clock,
     IRealtimeNotifier realtime
@@ -52,20 +53,27 @@ public sealed class DecideEligibilityHandler(
             await applications.ListEventsAsync(application.Id, ct)
         );
 
+        var policy = await policies.GetEligibilityAsync(ct);
+        // EV-04/EV-05 pass on the statement agreed to in the submission unless the reviewer sent another
+        // result with grounds; older submissions have no statement, so the reviewer judges them as usual
+        var proven =
+            snapshot != null ? options.Submission.CriteriaProvenBy(snapshot.Declarations) : [];
+        var criteria = EligibilityRules.PassByDeclarations(command.Criteria, proven);
         var now = clock.GetUtcNow();
         var decision = application.DecideEligibility(
             command.ReviewerUserId,
             profile.UserId,
             snapshot != null ? snapshot.YearsExperience : profile.YearsExperience,
-            command.Criteria,
+            criteria,
             command.Note,
-            policy.Eligibility,
+            policy,
             now
         );
         applications.AddEvent(decision.Event);
         eligibility.AddRange(decision.Checks);
         profile.MirrorStatus(application.Status, now);
-        // Tell the applicant (email + in-app); older profiles without an email are skipped
+        // Tell the applicant (email + in-app); older profiles without an email are skipped.
+        // NOT_APPLICABLE needs no action from the applicant, so only FAIL and NEED_MORE_INFORMATION are listed
         if (profile.ContactEmail != null)
         {
             outbox.Enqueue(
@@ -79,7 +87,7 @@ public sealed class DecideEligibilityHandler(
                     now,
                     application.EarliestReapplyAt,
                     decision
-                        .Checks.Where(x => x.Result != EligibilityCriteria.Pass)
+                        .Checks.Where(x => EligibilityCriteria.IsIssue(x.Result))
                         .Select(x => new EligibilityIssue(x.Criterion, x.Result, x.Note))
                         .ToArray()
                 ),

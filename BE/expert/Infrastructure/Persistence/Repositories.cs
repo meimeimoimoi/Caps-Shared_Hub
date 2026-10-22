@@ -1,6 +1,7 @@
 using Caps.Expert.Application.Abstractions;
 using Caps.Expert.Domain.Applications;
 using Caps.Expert.Domain.Catalog;
+using Caps.Expert.Domain.Policies;
 using Caps.Expert.Domain.Pricing;
 using Caps.Expert.Domain.Profiles;
 using Caps.Expert.Domain.Qualifications;
@@ -481,4 +482,25 @@ public sealed class AvailabilityRepository(ExpertDbContext db) : IAvailabilityRe
     public void Add(AvailabilitySlot slot) => db.AvailabilitySlots.Add(slot);
 
     public void Remove(AvailabilitySlot slot) => db.AvailabilitySlots.Remove(slot);
+}
+
+/// <summary>EF Core store for policy values changed by a System Admin and their history.</summary>
+public sealed class PolicySettingRepository(ExpertDbContext db) : IPolicySettingRepository
+{
+    public async Task<IReadOnlyList<PolicySetting>> ListAsync(CancellationToken ct) =>
+        await db.PolicySettings.ToListAsync(ct);
+
+    public async Task<IReadOnlyList<PolicySettingChange>> ListChangesAsync(
+        int limit,
+        CancellationToken ct
+    ) =>
+        await db
+            .PolicySettingChanges.AsNoTracking()
+            .OrderByDescending(x => x.ChangedAt)
+            .Take(limit)
+            .ToListAsync(ct);
+
+    public void Add(PolicySetting setting) => db.PolicySettings.Add(setting);
+
+    public void AddChange(PolicySettingChange change) => db.PolicySettingChanges.Add(change);
 }

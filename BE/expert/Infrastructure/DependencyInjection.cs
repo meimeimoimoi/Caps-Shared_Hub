@@ -37,6 +37,8 @@ public static class DependencyInjection
         services.AddScoped<IPricingRepository, PricingRepository>();
         services.AddScoped<IAvailabilityRepository, AvailabilityRepository>();
         services.AddScoped<IExpertNotificationOutbox, ExpertNotificationOutbox>();
+        services.AddScoped<IPolicySettingRepository, PolicySettingRepository>();
+        services.AddScoped<IExpertPolicyProvider, ExpertPolicyProvider>();
         services.AddSingleton<IObjectStorage, S3ObjectStorage>();
         return services;
     }

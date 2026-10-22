@@ -28,7 +28,7 @@ public sealed class DecideCompetencyHandler(
     IServiceCatalogRepository catalog,
     IExpertNotificationOutbox outbox,
     IQualificationReviewDescriber describer,
-    ExpertPolicyOptions policy,
+    IExpertPolicyProvider policies,
     IUnitOfWork unitOfWork,
     TimeProvider clock,
     IRealtimeNotifier realtime
@@ -51,6 +51,7 @@ public sealed class DecideCompetencyHandler(
         var profile = qualification.ExpertProfile;
         var files = await evidences.ListAsync(qualification, ct);
 
+        var policy = await policies.GetCompetencyAsync(ct);
         var now = clock.GetUtcNow();
         var decision = qualification.DecideCompetency(
             command.ReviewerUserId,
@@ -58,7 +59,7 @@ public sealed class DecideCompetencyHandler(
             command.Competencies,
             files.Select(x => x.Id).ToHashSet(),
             command.Note,
-            policy.Competency,
+            policy,
             now
         );
         qualifications.AddEvent(decision.Event);

@@ -140,7 +140,7 @@ public static class ExpertErrors
         new(
             ErrorType.Validation,
             "INVALID_ELIGIBILITY_RESULT",
-            $"Result of {code} must be PASS, FAIL or NEED_MORE_INFORMATION."
+            $"Result of {code} must be PASS, FAIL or NEED_MORE_INFORMATION (NOT_APPLICABLE only where the policy allows it)."
         );
 
     public static AppException EligibilityNoteRequired(string code) =>
@@ -399,5 +399,47 @@ public static class ExpertErrors
             ErrorType.Validation,
             "COMPETENCY_EVIDENCE_UNKNOWN",
             $"A file cited for {code} does not belong to this qualification."
+        );
+
+    public static AppException MaterialChangeRequired(IEnumerable<string> criteria) =>
+        new(
+            ErrorType.Conflict,
+            "MATERIAL_CHANGE_REQUIRED",
+            $"Update your information or add new evidence for: {string.Join(", ", criteria)}."
+        );
+
+    public static AppException UnknownPolicySetting(string key) =>
+        new(ErrorType.Validation, "UNKNOWN_POLICY_SETTING", $"Unknown policy setting: {key}.");
+
+    public static AppException PolicySettingOutOfRange(string key, int min, int max) =>
+        new(
+            ErrorType.Validation,
+            "POLICY_SETTING_OUT_OF_RANGE",
+            $"{key} must be a whole number between {min} and {max}."
+        );
+
+    public static AppException PolicyReasonRequired() =>
+        new(ErrorType.Validation, "POLICY_REASON_REQUIRED", "Give the reason for the change.");
+
+    public static AppException PolicyReasonTooLong(int max) =>
+        new(
+            ErrorType.Validation,
+            "POLICY_REASON_TOO_LONG",
+            $"The reason can be at most {max} characters."
+        );
+
+    public static AppException PolicyExpectedValueRequired(string key) =>
+        new(
+            ErrorType.Validation,
+            "POLICY_EXPECTED_VALUE_REQUIRED",
+            $"Send the value of {key} you are changing from."
+        );
+
+    /// <summary>Someone else changed the value since it was read; nothing was saved.</summary>
+    public static AppException PolicyChanged(string key) =>
+        new(
+            ErrorType.Conflict,
+            "POLICY_CHANGED",
+            $"{key} was changed by someone else. Reload and try again."
         );
 }

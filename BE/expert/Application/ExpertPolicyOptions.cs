@@ -1,10 +1,14 @@
 using Caps.Expert.Domain.Applications;
+using Caps.Expert.Domain.Policies;
 using Caps.Expert.Domain.Pricing;
-using Caps.Expert.Domain.Qualifications;
 
 namespace Caps.Expert.Application;
 
-/// <summary>Expert policy settings ("ExpertPolicy" section); values are policy parameters, not code (BR-E29).</summary>
+/// <summary>
+/// Expert policy settings ("ExpertPolicy" section); values are policy parameters, not code (BR-E29).
+/// MinYearsExperience and the reapply intervals are only defaults: a System Admin can change them at runtime,
+/// so read them through IExpertPolicyProvider.
+/// </summary>
 public sealed class ExpertPolicyOptions
 {
     /// <summary>EV-06 minimum years of tax/accounting experience (BR-E11).</summary>
@@ -37,11 +41,31 @@ public sealed class ExpertPolicyOptions
     /// </summary>
     public Declaration[]? Declarations { get; set; }
 
+    /// <summary>Eligibility criteria each statement supports, by statement code. Null uses the default mapping.</summary>
+    public Dictionary<string, string[]>? DeclarationCriteria { get; set; }
+
+    /// <summary>Criteria a reviewer may mark NOT_APPLICABLE (with a reason). Null uses the default: EV-03.</summary>
+    public string[]? NotApplicableCriteria { get; set; }
+
     private static readonly string[] DefaultRequiredEvidenceCodes =
     [
         ApplicationRules.CvCode,
         EligibilityCriteria.LegalEligibility,
         EligibilityCriteria.ProfessionalQualification,
+    ];
+
+    private static readonly Dictionary<string, string[]> DefaultDeclarationCriteria = new()
+    {
+        [DeclarationCodes.ProfessionalConduct] =
+        [
+            EligibilityCriteria.ProfessionalEthics,
+            EligibilityCriteria.Confidentiality,
+        ],
+    };
+
+    private static readonly string[] DefaultNotApplicableCriteria =
+    [
+        EligibilityCriteria.ContinuingEducation,
     ];
 
     private static readonly Declaration[] DefaultDeclarations =
@@ -71,13 +95,21 @@ public sealed class ExpertPolicyOptions
     public SubmissionPolicy Submission =>
         new(
             RequiredEvidenceCodes ?? DefaultRequiredEvidenceCodes,
-            Declarations ?? DefaultDeclarations
+            Declarations ?? DefaultDeclarations,
+            DeclarationCriteria ?? DefaultDeclarationCriteria
         );
 
-    public EligibilityPolicy Eligibility =>
-        new(MinYearsExperience, TimeSpan.FromDays(ReapplyNotEligibleDays));
+    public string[] AllowedNotApplicableCriteria =>
+        NotApplicableCriteria ?? DefaultNotApplicableCriteria;
 
-    public CompetencyPolicy Competency => new(TimeSpan.FromDays(ReapplyCompetencyFailDays));
+    /// <summary>Configured defaults of the values a System Admin can change, by PolicySettingKeys name.</summary>
+    public IReadOnlyDictionary<string, int> AdjustableDefaults =>
+        new Dictionary<string, int>
+        {
+            [PolicySettingKeys.MinYearsExperience] = MinYearsExperience,
+            [PolicySettingKeys.ReapplyNotEligibleDays] = ReapplyNotEligibleDays,
+            [PolicySettingKeys.ReapplyCompetencyFailDays] = ReapplyCompetencyFailDays,
+        };
 
     public PricingPolicy Pricing =>
         new(PricingMinPrice, PricingMaxPrice, PricingAutoApproveMaxChangePercent);

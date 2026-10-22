@@ -137,12 +137,14 @@ public sealed class ApplicationsController(ICurrentUser currentUser) : Controlle
     /// Requires a verified email, phone, years of experience, at least one field, a file or link in every required
     /// evidence group (requiredEvidence in the application) and every statement (declarations). The body sends
     /// only the declaration codes and the language; a snapshot of the declared details is stored with the submission.
+    /// A re-application after NOT_ELIGIBLE also needs, for each failed criterion, changed details or a file or link
+    /// in its evidence group (EV-06: changed years); changesRequired in the application lists what is still missing.
     /// </remarks>
     /// <response code="200">The submitted application.</response>
     /// <response code="400">APPLICATION_INCOMPLETE (missing items listed in the message) or DECLARATION_REQUIRED.</response>
     /// <response code="403">EMAIL_NOT_VERIFIED.</response>
     /// <response code="404">APPLICATION_NOT_FOUND.</response>
-    /// <response code="409">APPLICATION_LOCKED.</response>
+    /// <response code="409">APPLICATION_LOCKED, or MATERIAL_CHANGE_REQUIRED (failed criteria listed in the message).</response>
     [HttpPost("submit")]
     public async Task<IActionResult> Submit(
         [FromBody(EmptyBodyBehavior = EmptyBodyBehavior.Allow)] SubmitExpertApplicationRequest? r,

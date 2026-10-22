@@ -39,7 +39,13 @@ public static class EligibilityCriteria
     public const string Fail = "FAIL";
     public const string NeedMoreInformation = "NEED_MORE_INFORMATION";
 
-    public static readonly string[] Results = [Pass, Fail, NeedMoreInformation];
+    /// <summary>The framework does not require this criterion; allowed only where the policy says so, with a reason.</summary>
+    public const string NotApplicable = "NOT_APPLICABLE";
+
+    public static readonly string[] Results = [Pass, Fail, NeedMoreInformation, NotApplicable];
+
+    /// <summary>True for results the applicant must act on (FAIL, NEED_MORE_INFORMATION).</summary>
+    public static bool IsIssue(string result) => result is Fail or NeedMoreInformation;
 }
 
 /// <summary>The reviewer's result for one requirement; the note is required unless it passed.</summary>

@@ -18,6 +18,16 @@ public sealed record ReviewQueueItemResponse(
 /// <param name="CanDecide">True while the application waits for a Gate 1 decision.</param>
 /// <param name="Profile">Details from the snapshot of the latest submission (the live profile only for drafts).</param>
 /// <param name="Submissions">Every submission, first one first, with the statements agreed to.</param>
+/// <param name="NotApplicableCriteria">Criteria the reviewer may mark NOT_APPLICABLE (with a reason).</param>
+/// <param name="CriterionDeclarations">
+/// Statements of the latest submission that support a criterion (EV-04, EV-05), one entry per criterion and
+/// statement, so the reviewer judges each criterion on the wording the applicant agreed to.
+/// </param>
+/// <param name="DeclarationPassedCriteria">
+/// Criteria passed by an agreed statement of the latest submission (EV-04, EV-05). They pass by default with
+/// a note saying so; a reviewer with grounds against the statement may send FAIL or NEED_MORE_INFORMATION
+/// with a note instead.
+/// </param>
 public sealed record ReviewApplicationResponse(
     string Id,
     string ApplicantUserId,
@@ -35,7 +45,21 @@ public sealed record ReviewApplicationResponse(
     int MinYearsExperience,
     string SuggestedExperienceResult,
     bool CanDecide,
-    ReviewSubmissionResponse[] Submissions
+    ReviewSubmissionResponse[] Submissions,
+    string[] NotApplicableCriteria,
+    CriterionDeclarationResponse[] CriterionDeclarations,
+    string[] DeclarationPassedCriteria
+);
+
+/// <summary>A statement the applicant agreed to, shown under the criterion it supports.</summary>
+/// <param name="AgreedAt">Time of the submission that recorded the statement.</param>
+public sealed record CriterionDeclarationResponse(
+    string Criterion,
+    string Code,
+    string Language,
+    string Text,
+    DateTimeOffset AgreedAt,
+    string AgreedByUserId
 );
 
 /// <summary>One submission (first submit or supplement) with the statements agreed to.</summary>
@@ -81,9 +105,11 @@ public sealed record ReviewEventResponse(
 );
 
 /// <summary>One requirement's result in the latest Gate 1 decision.</summary>
+/// <param name="AppliedMinYearsExperience">EV-06 minimum years in force when decided; null for older decisions.</param>
 public sealed record EligibilityCheckResponse(
     string Code,
     string Result,
     string? Note,
-    DateTimeOffset DecidedAt
+    DateTimeOffset DecidedAt,
+    int? AppliedMinYearsExperience = null
 );

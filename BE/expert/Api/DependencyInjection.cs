@@ -18,6 +18,8 @@ public static class DependencyInjection
         services.AddScoped<IServiceAccessNotifier, ServiceAccessNotifier>();
         services.AddScoped<IPricingDescriber, PricingDescriber>();
         services.AddScoped<IMarketplaceListing, MarketplaceListing>();
+        services.AddScoped<IReapplicationChecker, ReapplicationChecker>();
+        services.AddScoped<IPolicyDescriber, PolicyDescriber>();
         services.AddHandlersFromAssembly(typeof(SaveDraftHandler).Assembly);
         return services;
     }

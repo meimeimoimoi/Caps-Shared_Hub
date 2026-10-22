@@ -74,9 +74,14 @@ public sealed class ApplicationReviewsController(ICurrentUser currentUser) : Con
 
     /// <summary>Records the Gate 1 decision from the results of EV-01…EV-06.</summary>
     /// <remarks>
-    /// Any FAIL → NOT_ELIGIBLE (closed; a new application is allowed after the policy wait, 30 days).
+    /// Any FAIL → NOT_ELIGIBLE (closed; a new application is allowed after the policy wait, 30 days by default).
     /// Otherwise any NEED_MORE_INFORMATION → back to the applicant, who supplements the same application.
     /// All PASS → ELIGIBLE. Every result other than PASS needs a note, shown to the applicant.
+    /// NOT_APPLICABLE is allowed only on the criteria in notApplicableCriteria (EV-03 by default), needs a note,
+    /// counts as PASS and is not sent to the applicant as an issue. Criteria proven by an agreed statement
+    /// (declarationPassedCriteria: EV-04, EV-05) pass by default: PASS or no entry records PASS with a note
+    /// saying it came from the statement; FAIL or NEED_MORE_INFORMATION with a note is kept when the reviewer
+    /// has grounds against the statement. The EV-06 minimum in force is stored with the decision.
     /// </remarks>
     /// <response code="200">The application after the decision.</response>
     /// <response code="400">INVALID_ELIGIBILITY_CRITERIA, INVALID_ELIGIBILITY_RESULT, ELIGIBILITY_NOTE_REQUIRED or EXPERIENCE_BELOW_MINIMUM.</response>

@@ -34,6 +34,10 @@ namespace Caps.Expert.Infrastructure.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("application_id");
 
+                    b.Property<int?>("AppliedMinYearsExperience")
+                        .HasColumnType("integer")
+                        .HasColumnName("applied_min_years_experience");
+
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
@@ -344,6 +348,73 @@ namespace Caps.Expert.Infrastructure.Persistence.Migrations
                             SortOrder = 1,
                             Status = "ACTIVE"
                         });
+                });
+
+            modelBuilder.Entity("Caps.Expert.Domain.Policies.PolicySetting", b =>
+                {
+                    b.Property<string>("Key")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("key");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<Guid>("UpdatedByUserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("updated_by_user_id");
+
+                    b.Property<int>("Value")
+                        .HasColumnType("integer")
+                        .HasColumnName("value");
+
+                    b.HasKey("Key");
+
+                    b.ToTable("policy_setting", "expert");
+                });
+
+            modelBuilder.Entity("Caps.Expert.Domain.Policies.PolicySettingChange", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("ChangedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("changed_at");
+
+                    b.Property<Guid>("ChangedByUserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("changed_by_user_id");
+
+                    b.Property<string>("Key")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("key");
+
+                    b.Property<int>("NewValue")
+                        .HasColumnType("integer")
+                        .HasColumnName("new_value");
+
+                    b.Property<int>("OldValue")
+                        .HasColumnType("integer")
+                        .HasColumnName("old_value");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("reason");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ChangedAt")
+                        .HasDatabaseName("ix_policy_setting_change_changed_at");
+
+                    b.ToTable("policy_setting_change", "expert");
                 });
 
             modelBuilder.Entity("Caps.Expert.Domain.Pricing.PricingEvent", b =>

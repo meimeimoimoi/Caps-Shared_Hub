@@ -10,6 +10,8 @@ public sealed class ApplicationDescriber(
     IExpertApplicationRepository applications,
     IExpertEvidenceRepository evidences,
     IEligibilityCheckRepository eligibility,
+    IReapplicationChecker reapplication,
+    IExpertPolicyProvider policies,
     ExpertPolicyOptions policy
 ) : IApplicationDescriber
 {
@@ -24,10 +26,15 @@ public sealed class ApplicationDescriber(
         var history = await applications.ListEventsAsync(application.Id, ct);
         var checks = await eligibility.ListLatestAsync(application.Id, ct);
         var submission = policy.Submission;
-        var missing = profile.MissingRequirements(
-            files.Select(x => x.EvidenceType).Distinct().ToArray(),
-            submission
+        var evidenceCodes = files.Select(x => x.EvidenceType).Distinct().ToArray();
+        var missing = profile.MissingRequirements(evidenceCodes, submission);
+        var changesRequired = await reapplication.MissingChangesAsync(
+            application,
+            profile,
+            evidenceCodes,
+            ct
         );
+        var eligibilityPolicy = await policies.GetEligibilityAsync(ct);
         var verified = applicant.EmailVerified;
         var maxFiles = ApplicationRules.MaxFilesPerApplication;
         return new(
@@ -78,20 +85,23 @@ public sealed class ApplicationDescriber(
                     x.Criterion,
                     x.Result,
                     x.Note,
-                    x.CreatedAt
+                    x.CreatedAt,
+                    x.AppliedMinYearsExperience
                 ))
                 .ToArray(),
             missing,
             verified,
             application.CanEdit,
             application.AcceptsFiles && files.Count < maxFiles,
-            application.CanEdit && verified && missing.Length == 0,
+            application.CanEdit && verified && missing.Length == 0 && changesRequired.Length == 0,
             application.NeedsInformation && verified,
             maxFiles,
             submission.RequiredEvidenceCodes,
             submission
                 .Declarations.Select(x => new DeclarationResponse(x.Code, x.Language, x.Text))
-                .ToArray()
+                .ToArray(),
+            eligibilityPolicy.MinYearsExperience,
+            changesRequired
         );
     }
 }
