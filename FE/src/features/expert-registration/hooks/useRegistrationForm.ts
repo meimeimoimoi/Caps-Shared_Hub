@@ -14,6 +14,7 @@ import {
   PROFILE_STEP,
   DOCUMENTS_STEP,
   DECLARED_CRITERIA,
+  REAPPLY_NOTICE_ID,
   REVIEW_STEP,
 } from '../constants'
 import type { EvidenceFile, Profile } from '../types'
@@ -138,7 +139,8 @@ export function useRegistrationForm({
     )
   }, [application?.declarations, declarationLanguage])
   const allAgreed =
-    declarations.length > 0 && declarations.every((d) => agreed.includes(d.code))
+    declarations.length > 0 &&
+    declarations.every((d) => agreed.includes(d.code))
 
   const editable = !application || application.canEdit || supplementing
 
@@ -167,7 +169,10 @@ export function useRegistrationForm({
 
   useEffect(() => {
     if (!dirty.current) return
-    const id = setTimeout(() => void autoSaveNowRef.current(), AUTO_SAVE_DELAY_MS)
+    const id = setTimeout(
+      () => void autoSaveNowRef.current(),
+      AUTO_SAVE_DELAY_MS
+    )
     return () => clearTimeout(id)
   }, [profile, fields, independent])
 
@@ -208,9 +213,10 @@ export function useRegistrationForm({
         errors.CV = { key: 'validation.cv' }
     }
     if (step >= DOCUMENTS_STEP) {
-      const missingGroup = criteria.find((criterion) =>
-        application?.requiredEvidence.includes(evidenceCode(criterion)) &&
-        !files[criterion]?.some((file) => !file.uploading)
+      const missingGroup = criteria.find(
+        (criterion) =>
+          application?.requiredEvidence.includes(evidenceCode(criterion)) &&
+          !files[criterion]?.some((file) => !file.uploading)
       )
       if (missingGroup) {
         errors[missingGroup] = { key: 'validation.evidenceRequired' }
@@ -219,7 +225,10 @@ export function useRegistrationForm({
       }
       if (!agreed.includes('PROFESSIONAL_CONDUCT')) {
         errors.conduct = { key: 'validation.conductRequired' }
-        if (!missingGroup) setActiveCriterion(criteria.find((c) => DECLARED_CRITERIA.includes(evidenceCode(c)))!)
+        if (!missingGroup)
+          setActiveCriterion(
+            criteria.find((c) => DECLARED_CRITERIA.includes(evidenceCode(c)))!
+          )
         if (step === REVIEW_STEP) setStep(DOCUMENTS_STEP)
       }
     }
@@ -274,7 +283,6 @@ export function useRegistrationForm({
     void autoSaveNowRef.current()
   }
 
-
   async function chooseFiles(key: string, incoming: FileList | null) {
     if (!incoming) return
     const selected = Array.from(incoming)
@@ -313,6 +321,15 @@ export function useRegistrationForm({
     }
   }
 
+  /** Brings the re-application warning of the review step into view and moves focus to it */
+  function focusReapplyNotice() {
+    requestAnimationFrame(() => {
+      const notice = document.getElementById(REAPPLY_NOTICE_ID)
+      notice?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      notice?.focus({ preventScroll: true })
+    })
+  }
+
   async function advance(e: FormEvent<HTMLFormElement>) {
     e.preventDefault()
     if (submitting) return
@@ -327,26 +344,44 @@ export function useRegistrationForm({
     setSubmitting(true)
     try {
       // Every "Continue" saves the draft so nothing is lost when the page closes
-      await persist()
+      const saved = await persist()
       if (step < REVIEW_STEP) {
         move(returnToReview ? REVIEW_STEP : step + 1)
         return
       }
+      // Re-applying after NOT_ELIGIBLE: the saved draft says which failed criteria still lack a change, so
+      // point at the warning that names them instead of sending a submission the server will refuse
+      if (saved.changesRequired?.length) {
+        focusReapplyNotice()
+        return
+      }
       await submitNow()
     } catch (err) {
+      if (err instanceof ApiError && err.code === 'MATERIAL_CHANGE_REQUIRED') {
+        // The page was out of date (e.g. a file removed in another tab): reload so the warning lists the
+        // criteria again, and keep the error message general
+        const current = await applicationApi.get().catch(() => null)
+        if (current) setApplication(current)
+        focusReapplyNotice()
+      }
       setError(messageFor(err))
     } finally {
       setSubmitting(false)
     }
   }
 
-  async function addEvidenceLink(criterion: string, sourceUrl: string): Promise<boolean> {
+  async function addEvidenceLink(
+    criterion: string,
+    sourceUrl: string
+  ): Promise<boolean> {
     if (submitting) return false
     setSubmitting(true)
     clearFormError(criterion)
     try {
       edited.current = true
-      setApplication(await applicationApi.addLink(evidenceCode(criterion), sourceUrl))
+      setApplication(
+        await applicationApi.addLink(evidenceCode(criterion), sourceUrl)
+      )
       return true
     } catch (e) {
       const message: RegistrationMessage =
@@ -428,7 +463,9 @@ export function useRegistrationForm({
   }
 
   function toggleAgreed(code: string, val: boolean) {
-    setAgreed((p) => (val ? [...new Set([...p, code])] : p.filter((c) => c !== code)))
+    setAgreed((p) =>
+      val ? [...new Set([...p, code])] : p.filter((c) => c !== code)
+    )
     clearFormError('confirmed')
     if (code === 'PROFESSIONAL_CONDUCT') clearFormError('conduct')
   }

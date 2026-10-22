@@ -60,10 +60,14 @@ export interface ExpertApplication {
   /** Per-requirement results of the latest Gate 1 decision (EV-01…EV-06) */
   eligibility: {
     code: string
-    result: 'PASS' | 'FAIL' | 'NEED_MORE_INFORMATION'
+    result: 'PASS' | 'FAIL' | 'NEED_MORE_INFORMATION' | 'NOT_APPLICABLE'
     note: string | null
     decidedAt: string
   }[]
+  /** EV-06 minimum years in force now (set by a System Admin); absent in demo data */
+  minYearsExperience?: number
+  /** Re-application after NOT_ELIGIBLE: failed criteria that still need updated details or new evidence */
+  changesRequired?: string[]
   missingRequirements: string[]
   emailVerified: boolean
   canEdit: boolean

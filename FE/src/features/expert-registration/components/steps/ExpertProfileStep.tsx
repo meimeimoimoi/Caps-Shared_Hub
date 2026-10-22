@@ -26,6 +26,8 @@ export interface ExpertProfileStepProps {
   profile: Profile
   fields: string[]
   cvFiles: EvidenceFile[]
+  /** EV-06 minimum in force; unknown in demo data, then no threshold is shown */
+  minYearsExperience?: number
   uploadQuota?: UploadQuota
   formErrors: Record<string, string>
   avatar: File | null
@@ -48,6 +50,7 @@ export function ExpertProfileStep({
   profile,
   fields,
   cvFiles,
+  minYearsExperience,
   uploadQuota,
   formErrors,
   avatar,
@@ -153,7 +156,11 @@ export function ExpertProfileStep({
         <div className="expert-personal-grid">
           <FormField
             label={t('experience.taxYears')}
-            help={t('experience.yearsHelp')}
+            help={
+              minYearsExperience != null
+                ? t('experience.yearsHelp', { min: minYearsExperience })
+                : undefined
+            }
             htmlFor="experience-years"
             error={formErrors.years}
             errorId="error-years"
@@ -200,14 +207,16 @@ export function ExpertProfileStep({
           </FormField>
         </div>
 
-        {profile.years !== '' && Number(profile.years) < 5 && (
+        {minYearsExperience != null &&
+          profile.years !== '' &&
+          Number(profile.years) < minYearsExperience && (
           <div className="expert-pro-notice expert-pro-notice--warn">
             <TriangleAlert
               size={16}
               aria-hidden="true"
               className="expert-pro-notice-icon"
             />
-            <p>{t('experience.minimum')}</p>
+            <p>{t('experience.minimum', { min: minYearsExperience })}</p>
           </div>
         )}
 

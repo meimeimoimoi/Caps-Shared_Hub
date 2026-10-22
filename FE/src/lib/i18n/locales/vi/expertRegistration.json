@@ -50,7 +50,8 @@
     "loadFailed": "Không tải được hồ sơ. Kiểm tra kết nối rồi thử lại.",
     "emailDisposable": "Không nhận email dùng một lần. Kết quả xét duyệt sẽ gửi qua email, hãy dùng email bạn kiểm tra thường xuyên.",
     "emailDomain": "Tên miền email này không nhận được thư. Kiểm tra lại địa chỉ email.",
-    "alreadyEligible": "Điều kiện tham gia của bạn đã được xác nhận; không cần nộp hồ sơ mới."
+    "alreadyEligible": "Điều kiện tham gia của bạn đã được xác nhận; không cần nộp hồ sơ mới.",
+    "materialChange": "Hồ sơ nộp lại cần cập nhật thông tin hoặc bổ sung minh chứng mới. Xem mục cần cập nhật ở đầu trang."
   },
   "consent": "Tôi đồng ý với <terms>điều khoản và điều kiện</terms> cùng <privacy>chính sách quyền riêng tư</privacy>.",
   "counts": {
@@ -123,14 +124,15 @@
     "advisory": "Tư vấn thuế"
   },
   "dynamic": {
-    "reapply": "Chính sách hiện tại yêu cầu chờ ít nhất {{days}} ngày trước khi nộp lại, cùng minh chứng mới hoặc cập nhật có liên quan. Ngày quyết định thực tế, ngày sớm nhất được nộp lại và tiêu chí chưa đạt phải lấy từ dịch vụ đánh giá.",
     "approved": "Phê duyệt của bạn áp dụng cho dịch vụ <service>{{service}}</service>.",
     "application": "Hồ sơ · {{name}}",
     "hidePassword": "Ẩn mật khẩu",
     "showPassword": "Hiện mật khẩu",
     "hideConfirmation": "Ẩn mật khẩu xác nhận",
     "showConfirmation": "Hiện mật khẩu xác nhận",
-    "reapplyFrom": "Bạn có thể nộp hồ sơ mới từ {{date}}, kèm minh chứng mới hoặc cập nhật có liên quan."
+    "reapplyFrom": "Bạn có thể nộp hồ sơ mới từ {{date}}, kèm minh chứng mới hoặc cập nhật có liên quan.",
+    "decidedAt": "Ngày quyết định: {{date}}.",
+    "changeBeforeReapply": "Khi nộp lại cần cập nhật thông tin hoặc bổ sung minh chứng cho: {{criteria}}."
   },
   "introduction": {
     "heading": "Đóng góp chuyên môn.",
@@ -266,7 +268,7 @@
     "taxYears": "Số năm kinh nghiệm thuế và kế toán *",
     "highlights": "Kinh nghiệm nổi bật",
     "placeholder": "Mô tả trách nhiệm và kinh nghiệm liên quan.",
-    "minimum": "Chính sách điều kiện tham gia hiện tại yêu cầu ít nhất 5 năm kinh nghiệm. Bạn vẫn có thể nộp hồ sơ; người đánh giá được ủy quyền sẽ quyết định điều kiện tham gia.",
+    "minimum": "Chính sách điều kiện tham gia hiện tại yêu cầu ít nhất {{min}} năm kinh nghiệm. Bạn vẫn có thể nộp hồ sơ; người đánh giá được ủy quyền sẽ quyết định điều kiện tham gia.",
     "expertise": "Lĩnh vực chuyên môn",
     "expertiseRequired": "Lĩnh vực chuyên môn *",
     "required": "Bắt buộc",
@@ -281,7 +283,7 @@
     "yearsUnit": "năm",
     "cvRequired": "Hồ sơ kinh nghiệm (CV) *",
     "issueCount": "{{count}} thông tin cần hoàn thiện",
-    "yearsHelp": "Tổng số năm bạn trực tiếp làm công việc thuế hoặc kế toán, tính tròn năm. Chính sách hiện tại của Shared Hub yêu cầu tối thiểu 5 năm.",
+    "yearsHelp": "Tổng số năm bạn trực tiếp làm công việc thuế hoặc kế toán, tính tròn năm. Chính sách hiện tại của Shared Hub yêu cầu tối thiểu {{min}} năm.",
     "cvHelp": "CV là thông tin tự khai, giúp người đánh giá đối chiếu kinh nghiệm của bạn. Bằng chứng chuyên môn được nộp ở bước tiếp theo."
   },
   "documents": {
@@ -366,7 +368,8 @@
     "history": "Lịch sử hoạt động",
     "toSupplement": "Nội dung cần bổ sung",
     "unmetCriteria": "Yêu cầu chưa đạt",
-    "eligibilityTitle": "Hồ sơ đang chờ đánh giá điều kiện tham gia"
+    "eligibilityTitle": "Hồ sơ đang chờ đánh giá điều kiện tham gia",
+    "reapplyAfterWait": "Bạn có thể nộp lại sau thời gian chờ theo chính sách, kèm minh chứng mới hoặc cập nhật có liên quan."
   },
   "page": {
     "title": "Đăng ký chuyên gia",
@@ -476,5 +479,9 @@
     "close": "Đóng",
     "accepted": "Đã đồng ý cam kết",
     "pending": "Chưa đồng ý cam kết"
+  },
+  "reapply": {
+    "editProfile": "Sửa thông tin hồ sơ",
+    "addEvidence": "Bổ sung minh chứng"
   }
 }

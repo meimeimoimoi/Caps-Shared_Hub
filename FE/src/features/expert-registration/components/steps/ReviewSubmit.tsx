@@ -1,9 +1,11 @@
 import { useTranslation } from 'react-i18next'
-import { CircleAlert } from 'lucide-react'
+import { CircleAlert, TriangleAlert } from 'lucide-react'
 import { HelpTip } from '@/components/ui/feedback/help-tip'
 import { formControlClassName as inputCls } from '@/components/ui/forms/form-control'
 import type { EvidenceFile, Profile } from '../../types'
 import type { Declaration } from '../../api/applicationApi'
+import { DOCUMENTS_STEP, PROFILE_STEP, REAPPLY_NOTICE_ID } from '../../constants'
+import { eligibilityCriterionKey } from '../../hooks/useApplicationLifecycle'
 import { RegistrationSummary } from './RegistrationSummary'
 
 export interface ReviewSubmitProps {
@@ -14,6 +16,8 @@ export interface ReviewSubmitProps {
   files: Record<string, EvidenceFile[]>
   /** Server codes of the evidence groups that need a file */
   requiredEvidence: string[]
+  /** Re-application after NOT_ELIGIBLE: failed criteria that still need updated details or new evidence */
+  changesRequired?: string[]
   /** Statements to agree to, worded by the server in the interface language */
   declarations: Declaration[]
   /** Codes of the statements ticked */
@@ -43,8 +47,13 @@ export function ReviewSubmit({
   onAgreedChange,
   onEditStep,
   supplement,
+  changesRequired = [],
 }: ReviewSubmitProps) {
   const { t } = useTranslation('expertRegistration')
+  const changeLabels = changesRequired.map((code) => {
+    const key = eligibilityCriterionKey(code)
+    return key ? t(key) : code
+  })
 
   return (
     <div className="expert-pro-review">
@@ -52,6 +61,23 @@ export function ReviewSubmit({
         <p>{t('review.guidance')}</p>
         <HelpTip label={t('review.aiHelpLabel')}>{t('review.ai')}</HelpTip>
       </div>
+
+      {changeLabels.length > 0 && (
+        <div id={REAPPLY_NOTICE_ID} tabIndex={-1} className="expert-pro-notice expert-pro-notice--warn outline-none" role="status">
+          <TriangleAlert size={16} aria-hidden="true" className="expert-pro-notice-icon" />
+          <div>
+            <p>{t('dynamic.changeBeforeReapply', { criteria: changeLabels.join(', ') })}</p>
+            <div className="mt-2 flex flex-wrap gap-3">
+              <button type="button" className="font-semibold underline" onClick={() => onEditStep(PROFILE_STEP)}>
+                {t('reapply.editProfile')}
+              </button>
+              <button type="button" className="font-semibold underline" onClick={() => onEditStep(DOCUMENTS_STEP)}>
+                {t('reapply.addEvidence')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <RegistrationSummary
         profile={profile}

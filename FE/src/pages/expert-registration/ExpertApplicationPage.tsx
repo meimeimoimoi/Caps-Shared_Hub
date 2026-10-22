@@ -66,6 +66,7 @@ export default function ExpertApplicationPage() {
     history,
     eligibilityIssues,
     reapplyAt,
+    decidedAt,
     decisionNote,
     supplement,
     explanation,
@@ -253,6 +254,7 @@ export default function ExpertApplicationPage() {
                 serviceName={serviceStep?.service?.serviceName}
                 eligibilityIssues={eligibilityIssues}
                 reapplyAt={reapplyAt}
+                decidedAt={decidedAt}
                 decisionNote={decisionNote}
                 supplement={supplement}
                 terminal={terminal}
@@ -361,6 +363,7 @@ export default function ExpertApplicationPage() {
                       profile={profile}
                       fields={fields}
                       cvFiles={files.CV ?? []}
+                      minYearsExperience={application?.minYearsExperience}
                       uploadQuota={uploadQuota}
                       formErrors={formErrors}
                       avatar={avatar}
@@ -401,6 +404,7 @@ export default function ExpertApplicationPage() {
                       fields={fields}
                       files={files}
                       requiredEvidence={application?.requiredEvidence ?? []}
+                      changesRequired={application?.changesRequired ?? []}
                       declarations={declarations}
                       agreed={agreed}
                       formErrors={formErrors}

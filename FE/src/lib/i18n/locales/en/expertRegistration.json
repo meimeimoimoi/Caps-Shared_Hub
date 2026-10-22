@@ -50,7 +50,8 @@
     "loadFailed": "We couldn't load your application. Check your connection and try again.",
     "emailDisposable": "Temporary email addresses aren't accepted. Review results are sent by email, so use one you check regularly.",
     "emailDomain": "This email domain can't receive email. Check the address.",
-    "alreadyEligible": "Your eligibility has already been confirmed; no new application is needed."
+    "alreadyEligible": "Your eligibility has already been confirmed; no new application is needed.",
+    "materialChange": "A new application needs updated information or new evidence first. See what to update at the top of the page."
   },
   "consent": "I agree to the <terms>terms and conditions</terms> and <privacy>privacy policy</privacy>.",
   "counts": {
@@ -125,14 +126,15 @@
     "advisory": "Tax advisory"
   },
   "dynamic": {
-    "reapply": "The current policy requires at least {{days}} days before reapplying, plus relevant new or updated evidence. Your actual decision date, earliest reapplication date and failed criteria must come from the assessment service.",
     "approved": "Your approval applies to the <service>{{service}}</service> service.",
     "application": "Application · {{name}}",
     "hidePassword": "Hide password",
     "showPassword": "Show password",
     "hideConfirmation": "Hide confirmation password",
     "showConfirmation": "Show confirmation password",
-    "reapplyFrom": "You can submit a new application from {{date}}, with new or updated relevant evidence."
+    "reapplyFrom": "You can submit a new application from {{date}}, with new or updated relevant evidence.",
+    "decidedAt": "Decision date: {{date}}.",
+    "changeBeforeReapply": "When you reapply, update your details or add evidence for: {{criteria}}."
   },
   "introduction": {
     "heading": "Bring your expertise.",
@@ -268,7 +270,7 @@
     "taxYears": "Years of tax and accounting experience *",
     "highlights": "Experience highlights",
     "placeholder": "Describe relevant responsibilities and experience.",
-    "minimum": "The current eligibility policy requires at least 5 years. You can still submit; an authorized reviewer makes the eligibility decision.",
+    "minimum": "The current eligibility policy requires at least {{min}} years. You can still submit; an authorized reviewer makes the eligibility decision.",
     "expertise": "Areas of expertise",
     "expertiseRequired": "Areas of expertise *",
     "required": "Required",
@@ -283,7 +285,7 @@
     "yearsUnit": "years",
     "cvRequired": "Curriculum vitae (CV) *",
     "issueCount": "{{count}} details to complete",
-    "yearsHelp": "Total years you have worked directly in tax or accounting, in whole years. Shared Hub's current policy requires at least 5 years.",
+    "yearsHelp": "Total years you have worked directly in tax or accounting, in whole years. Shared Hub's current policy requires at least {{min}} years.",
     "cvHelp": "Your CV is self-declared and helps the reviewer check your experience. Professional evidence is uploaded in the next step."
   },
   "documents": {
@@ -368,7 +370,8 @@
     "history": "Activity history",
     "toSupplement": "What to supplement",
     "unmetCriteria": "Requirements not met",
-    "eligibilityTitle": "Your application is waiting for the eligibility review"
+    "eligibilityTitle": "Your application is waiting for the eligibility review",
+    "reapplyAfterWait": "You can reapply after the waiting period set by the policy, with new or updated relevant evidence."
   },
   "page": {
     "title": "Expert registration",
@@ -478,5 +481,9 @@
     "close": "Close",
     "accepted": "Commitment accepted",
     "pending": "Commitment not accepted"
+  },
+  "reapply": {
+    "editProfile": "Edit your details",
+    "addEvidence": "Add evidence"
   }
 }

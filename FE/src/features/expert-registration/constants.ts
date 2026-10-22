@@ -18,6 +18,9 @@ export const PROFILE_STEP = 0
 export const DOCUMENTS_STEP = 1
 export const REVIEW_STEP = 2
 
+/** Element id of the review step's warning listing failed criteria still without a change */
+export const REAPPLY_NOTICE_ID = 'reapply-changes'
+
 /** Gate 1 requirement codes as the server stores them (POL-EXP-01); code never writes the raw strings */
 export const EligibilityCriterion = {
   legalEligibility: 'EV-01',

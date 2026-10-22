@@ -3023,6 +3023,8 @@ html,body,#root{height:100%}
 .expert-commitment-modal dialog::backdrop { background: color-mix(in srgb, var(--ui-shadow) 45%, transparent); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
 /* The page behind stays still while the dialog is open */
 html:has(.expert-commitment-modal dialog[open]) { overflow: hidden; }
+/* Any modal dialog (confirmations, drawers) keeps the page behind it from scrolling */
+html:has(dialog:modal) { overflow: hidden; }
 .expert-commitment-modal dialog > div > div:first-child {
   padding: 28px 32px; overscroll-behavior: contain;
   mask-image: linear-gradient(to bottom, #000 calc(100% - var(--expert-commitment-fade)), transparent);
@@ -3095,7 +3097,8 @@ html:has(.expert-commitment-modal dialog[open]) { overflow: hidden; }
 .expert-review-confirmation-error { display: flex; align-items: center; gap: 6px; margin: 0; padding-left: 18px; color: var(--ui-danger); font-size: 13px; font-weight: 500; }
 
 /* Application status: connected stepper, a status pill, visible activity and framed side panels */
-.expert-status-layout { align-items: start !important; gap: 24px 28px !important; }
+/* The status card and the submitted-profile panel share the row height */
+.expert-status-layout { align-items: stretch !important; gap: 24px 28px !important; }
 .expert-status-header { padding-bottom: 20px !important; }
 .expert-status-timeline { gap: 0 !important; margin: 4px 0 8px !important; }
 .expert-status-stage { position: relative; border-top: 0 !important; padding-top: 0 !important; padding-right: 12px; font-size: 14px !important; font-weight: 600; color: var(--ui-text-muted) !important; }
@@ -3130,7 +3133,7 @@ html:has(.expert-commitment-modal dialog[open]) { overflow: hidden; }
 .expert-status-activity li:not(:last-child)::after { content: ''; position: absolute; left: 7.5px; top: 18px; bottom: 2px; width: 1px; background: var(--ui-border); }
 .expert-status-activity li:first-child { color: var(--ui-text-strong); }
 
-.expert-status-profile { align-self: start !important; padding: 24px !important; border: 1px solid var(--ui-border); border-radius: 14px !important; background: var(--ui-surface) !important; }
+.expert-status-profile { align-self: stretch !important; padding: 24px !important; border: 1px solid var(--ui-border); border-radius: 14px !important; background: var(--ui-surface) !important; }
 .expert-status-profile-heading h3 { font-size: 20px !important; }
 .expert-status-applicant { padding: 20px 0 !important; }
 .expert-status-dossier { padding: 0 24px; border: 1px solid var(--ui-border) !important; border-radius: 14px; background: var(--ui-surface); }

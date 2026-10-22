@@ -10,7 +10,7 @@ import { ScenarioSelect } from './ScenarioSelect'
 export interface EligibilityIssue {
   code: string
   label: string
-  result: 'FAIL' | 'NEED_MORE_INFORMATION' | 'PASS'
+  result: 'FAIL' | 'NEED_MORE_INFORMATION'
   note: string
 }
 
@@ -22,6 +22,8 @@ export interface ApplicationStatusProps {
   eligibilityIssues?: EligibilityIssue[]
   /** Formatted earliest date for a new application after NOT_ELIGIBLE */
   reapplyAt?: string | null
+  /** Formatted time of the closing decision */
+  decidedAt?: string | null
   decisionNote?: string | null
   supplement: boolean
   terminal: boolean
@@ -78,6 +80,7 @@ export function ApplicationStatus({
   stage,
   eligibilityIssues = [],
   reapplyAt = null,
+  decidedAt = null,
   decisionNote = null,
   supplement,
   terminal,
@@ -97,6 +100,8 @@ export function ApplicationStatus({
     (i) => i.result === 'NEED_MORE_INFORMATION'
   )
   const ineligible = stage === 'ineligible'
+  // POL-EXP-REAPP: a new application needs a change for every failed criterion, not only the wait
+  const toChange = eligibilityIssues.filter((i) => i.result === 'FAIL')
   // Colour of the status pill: problem, action needed, done, or still in review
   const tone = terminal
     ? 'danger'
@@ -229,11 +234,21 @@ export function ApplicationStatus({
                 </>
               )}
             </div>
+            {ineligible && decidedAt && (
+              <p>{t('dynamic.decidedAt', { date: decidedAt })}</p>
+            )}
             <p>
               {ineligible && reapplyAt
                 ? t('dynamic.reapplyFrom', { date: reapplyAt })
-                : t('dynamic.reapply', { days: ineligible ? 30 : 90 })}
+                : t('status.reapplyAfterWait')}
             </p>
+            {ineligible && toChange.length > 0 && (
+              <p>
+                {t('dynamic.changeBeforeReapply', {
+                  criteria: toChange.map((i) => i.label).join(', '),
+                })}
+              </p>
+            )}
             <p>{t('status.corrections')}</p>
           </>
         ) : stage === 'approved' ? (
