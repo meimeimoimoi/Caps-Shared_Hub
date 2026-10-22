@@ -31,6 +31,9 @@ public sealed class ExpertApplication
 
     public bool CanEdit => Status == ExpertApplicationStatus.Draft;
     public bool NeedsInformation => Status == ExpertApplicationStatus.NeedMoreInformation;
+
+    /// <summary>Declared details can be changed while drafting and while more information is requested.</summary>
+    public bool CanEditDetails => CanEdit || NeedsInformation;
     public bool AcceptsFiles => CanEdit || NeedsInformation;
 
     /// <summary>Opens a new draft; refused while the previous result still blocks re-applying.</summary>
@@ -69,6 +72,12 @@ public sealed class ExpertApplication
             throw ExpertErrors.ApplicationLocked(Status);
     }
 
+    public void EnsureDetailsEditable()
+    {
+        if (!CanEditDetails)
+            throw ExpertErrors.ApplicationLocked(Status);
+    }
+
     /// <summary>Throws unless the application can take a new file now.</summary>
     /// <param name="supplement">Supplementary files are only accepted while more information is requested.</param>
     public void EnsureAcceptsFile(bool supplement)
@@ -85,20 +94,32 @@ public sealed class ExpertApplication
 
     public void Touch(DateTimeOffset now) => UpdatedAt = now;
 
-    public ExpertApplicationEvent Submit(Guid actorUserId, DateTimeOffset now)
+    /// <summary>Submits the draft for screening and records the submission event.</summary>
+    /// <param name="snapshot">What the applicant declared, kept on the submission event.</param>
+    public ExpertApplicationEvent Submit(
+        Guid actorUserId,
+        DateTimeOffset now,
+        ProfileSnapshot? snapshot = null
+    )
     {
         EnsureEditable();
         SubmittedAt = now;
-        return MoveTo(ExpertApplicationStatus.Submitted, actorUserId, null, now);
+        return MoveTo(ExpertApplicationStatus.Submitted, actorUserId, null, now, snapshot);
     }
 
     /// <summary>BR-E05: after supplementing, return to the pending step (Gate 1 after submission).</summary>
-    public ExpertApplicationEvent Resubmit(Guid actorUserId, string? note, DateTimeOffset now)
+    /// <param name="snapshot">What the applicant declared for this submission, kept on its event.</param>
+    public ExpertApplicationEvent Resubmit(
+        Guid actorUserId,
+        string? note,
+        DateTimeOffset now,
+        ProfileSnapshot? snapshot = null
+    )
     {
         if (!NeedsInformation)
             throw ExpertErrors.ApplicationLocked(Status);
         SubmittedAt = now;
-        return MoveTo(ExpertApplicationStatus.Submitted, actorUserId, note, now);
+        return MoveTo(ExpertApplicationStatus.Submitted, actorUserId, note, now, snapshot);
     }
 
     /// <summary>
@@ -142,10 +163,19 @@ public sealed class ExpertApplication
         string status,
         Guid actorUserId,
         string? note,
-        DateTimeOffset now
+        DateTimeOffset now,
+        ProfileSnapshot? snapshot = null
     )
     {
-        var recorded = ExpertApplicationEvent.Record(Id, actorUserId, Status, status, note, now);
+        var recorded = ExpertApplicationEvent.Record(
+            Id,
+            actorUserId,
+            Status,
+            status,
+            note,
+            now,
+            snapshot
+        );
         Status = status;
         UpdatedAt = now;
         return recorded;

@@ -21,6 +21,9 @@ public sealed class ReviewDescriber(
         var files = await evidences.ListAsync(application.Id, ct);
         var history = await applications.ListEventsAsync(application.Id, ct);
         var checks = await eligibility.ListLatestAsync(application.Id, ct);
+        // Reviewers judge what was submitted, not the profile as edited since (snapshot of the latest submission)
+        var snapshot = ExpertApplicationEvent.LatestSnapshot(history);
+        var years = snapshot != null ? snapshot.YearsExperience : profile.YearsExperience;
         return new(
             application.Id.ToString(),
             profile.UserId.ToString(),
@@ -31,18 +34,7 @@ public sealed class ReviewDescriber(
             application.EarliestReapplyAt,
             application.PreviousApplicationId?.ToString(),
             application.CreatedAt,
-            new(
-                profile.DisplayName,
-                profile.Phone,
-                profile.BirthDate,
-                profile.Title,
-                profile.Company,
-                profile.Location,
-                profile.Bio,
-                profile.YearsExperience,
-                profile.Fields,
-                profile.Highlights
-            ),
+            SnapshotProfiles.ToReviewProfile(snapshot, profile),
             files
                 .Select(x => new ReviewEvidenceResponse(
                     x.Id.ToString(),
@@ -73,8 +65,9 @@ public sealed class ReviewDescriber(
                 ))
                 .ToArray(),
             policy.MinYearsExperience,
-            EligibilityRules.SuggestExperience(profile.YearsExperience, policy.Eligibility),
-            application.Status == ExpertApplicationStatus.Submitted
+            EligibilityRules.SuggestExperience(years, policy.Eligibility),
+            application.Status == ExpertApplicationStatus.Submitted,
+            SnapshotProfiles.Submissions(history)
         );
     }
 }

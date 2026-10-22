@@ -9,7 +9,8 @@ namespace Caps.Expert.Application.Common;
 public sealed class ApplicationDescriber(
     IExpertApplicationRepository applications,
     IExpertEvidenceRepository evidences,
-    IEligibilityCheckRepository eligibility
+    IEligibilityCheckRepository eligibility,
+    ExpertPolicyOptions policy
 ) : IApplicationDescriber
 {
     public async Task<ExpertApplicationResponse> DescribeAsync(
@@ -22,8 +23,10 @@ public sealed class ApplicationDescriber(
         var files = await evidences.ListAsync(application.Id, ct);
         var history = await applications.ListEventsAsync(application.Id, ct);
         var checks = await eligibility.ListLatestAsync(application.Id, ct);
+        var submission = policy.Submission;
         var missing = profile.MissingRequirements(
-            files.Any(x => x.EvidenceType == ApplicationRules.CvCode)
+            files.Select(x => x.EvidenceType).Distinct().ToArray(),
+            submission
         );
         var verified = applicant.EmailVerified;
         var maxFiles = ApplicationRules.MaxFilesPerApplication;
@@ -84,7 +87,11 @@ public sealed class ApplicationDescriber(
             application.AcceptsFiles && files.Count < maxFiles,
             application.CanEdit && verified && missing.Length == 0,
             application.NeedsInformation && verified,
-            maxFiles
+            maxFiles,
+            submission.RequiredEvidenceCodes,
+            submission
+                .Declarations.Select(x => new DeclarationResponse(x.Code, x.Language, x.Text))
+                .ToArray()
         );
     }
 }

@@ -16,6 +16,8 @@ public sealed record ReviewQueueItemResponse(
 /// <summary>The reviewer's view of an application: details, files, history and the latest Gate 1 results.</summary>
 /// <param name="SuggestedExperienceResult">EV-06 result the declared years point to; the reviewer confirms it.</param>
 /// <param name="CanDecide">True while the application waits for a Gate 1 decision.</param>
+/// <param name="Profile">Details from the snapshot of the latest submission (the live profile only for drafts).</param>
+/// <param name="Submissions">Every submission, first one first, with the statements agreed to.</param>
 public sealed record ReviewApplicationResponse(
     string Id,
     string ApplicantUserId,
@@ -32,7 +34,15 @@ public sealed record ReviewApplicationResponse(
     EligibilityCheckResponse[] Eligibility,
     int MinYearsExperience,
     string SuggestedExperienceResult,
-    bool CanDecide
+    bool CanDecide,
+    ReviewSubmissionResponse[] Submissions
+);
+
+/// <summary>One submission (first submit or supplement) with the statements agreed to.</summary>
+public sealed record ReviewSubmissionResponse(
+    int Number,
+    DateTimeOffset SubmittedAt,
+    DeclarationResponse[] Declarations
 );
 
 /// <summary>Applicant details as entered in the application.</summary>

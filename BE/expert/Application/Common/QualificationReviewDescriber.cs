@@ -1,5 +1,6 @@
 using Caps.Expert.Application.Abstractions;
 using Caps.Expert.Application.DTOs.Responses;
+using Caps.Expert.Domain.Applications;
 using Caps.Expert.Domain.Qualifications;
 
 namespace Caps.Expert.Application.Common;
@@ -10,7 +11,8 @@ public sealed class QualificationReviewDescriber(
     IQualificationEvidenceRepository evidences,
     IEligibilityCheckRepository eligibility,
     ICompetencyAssessmentRepository assessments,
-    IServiceCatalogRepository catalog
+    IServiceCatalogRepository catalog,
+    IExpertApplicationRepository applications
 ) : IQualificationReviewDescriber
 {
     public async Task<ReviewQualificationResponse> DescribeAsync(
@@ -24,6 +26,10 @@ public sealed class QualificationReviewDescriber(
         var checks = await eligibility.ListLatestAsync(qualification.ApplicationId, ct);
         var results = await assessments.ListLatestAsync(qualification.Id, ct);
         var service = await catalog.FindAsync(qualification.ServiceCode, ct);
+        // Gate 2 shows what was submitted in the eligible Gate 1 application, not later profile edits
+        var snapshot = ExpertApplicationEvent.LatestSnapshot(
+            await applications.ListEventsAsync(qualification.ApplicationId, ct)
+        );
         return new(
             qualification.Id.ToString(),
             profile.UserId.ToString(),
@@ -37,18 +43,7 @@ public sealed class QualificationReviewDescriber(
             qualification.PreviousQualificationId?.ToString(),
             qualification.ApplicationId.ToString(),
             qualification.CreatedAt,
-            new(
-                profile.DisplayName,
-                profile.Phone,
-                profile.BirthDate,
-                profile.Title,
-                profile.Company,
-                profile.Location,
-                profile.Bio,
-                profile.YearsExperience,
-                profile.Fields,
-                profile.Highlights
-            ),
+            SnapshotProfiles.ToReviewProfile(snapshot, profile),
             files
                 .Select(x => new ReviewEvidenceResponse(
                     x.Id.ToString(),

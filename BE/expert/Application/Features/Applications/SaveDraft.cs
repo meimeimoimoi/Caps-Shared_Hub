@@ -44,7 +44,8 @@ public sealed class SaveDraftHandler(
         await using var tx = await unitOfWork.BeginTransactionAsync(ct);
         await locks.AcquireAsync(command.Applicant.UserId, ct);
         var (profile, application) = await loader.OpenOrCreateAsync(command.Applicant, ct);
-        application.EnsureEditable();
+        // Details stay editable while more information is requested; each submission keeps its own snapshot
+        application.EnsureDetailsEditable();
         var details = new ProfileDetails(
             command.DisplayName,
             command.Phone,

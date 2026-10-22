@@ -16,7 +16,18 @@ public sealed class ExpertApplicationEvent
     public string? FromStatus { get; private set; }
     public string ToStatus { get; private set; } = default!;
     public string? Note { get; private set; }
+
+    /// <summary>What the applicant declared, set only on submissions (to SUBMITTED); never changed afterwards.</summary>
+    public ProfileSnapshot? ProfileSnapshot { get; private set; }
     public DateTimeOffset CreatedAt { get; private set; }
+
+    /// <summary>The snapshot of the latest submission in the history, or null before the first one.</summary>
+    public static ProfileSnapshot? LatestSnapshot(IEnumerable<ExpertApplicationEvent> history) =>
+        history
+            .Where(x => x.ProfileSnapshot != null)
+            .OrderBy(x => x.CreatedAt)
+            .LastOrDefault()
+            ?.ProfileSnapshot;
 
     public static ExpertApplicationEvent Record(
         Guid applicationId,
@@ -24,7 +35,8 @@ public sealed class ExpertApplicationEvent
         string? fromStatus,
         string toStatus,
         string? note,
-        DateTimeOffset now
+        DateTimeOffset now,
+        ProfileSnapshot? snapshot = null
     ) =>
         new()
         {
@@ -33,6 +45,7 @@ public sealed class ExpertApplicationEvent
             FromStatus = fromStatus,
             ToStatus = toStatus,
             Note = note,
+            ProfileSnapshot = snapshot,
             CreatedAt = now,
         };
 }

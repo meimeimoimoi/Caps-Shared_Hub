@@ -7,8 +7,14 @@ using Caps.Expert.Domain.Applications;
 
 namespace Caps.Expert.Application.Features.Applications;
 
-/// <summary>Submits the applicant's draft for review.</summary>
-public sealed record SubmitApplicationCommand(Applicant Applicant);
+/// <summary>Submits the applicant's draft for review with the statements agreed to.</summary>
+/// <param name="DeclarationCodes">Codes of the statements ticked; the stored wording always comes from the server.</param>
+/// <param name="Language">Language the statements were shown in (vi or en).</param>
+public sealed record SubmitApplicationCommand(
+    Applicant Applicant,
+    string[]? DeclarationCodes = null,
+    string? Language = null
+);
 
 /// <summary>Submits a complete draft from a verified account and locks it.</summary>
 public sealed class SubmitApplicationHandler(
@@ -17,6 +23,7 @@ public sealed class SubmitApplicationHandler(
     IExpertApplicationRepository applications,
     IExpertEvidenceRepository evidences,
     IApplicationDescriber describer,
+    ExpertPolicyOptions policy,
     IUnitOfWork unitOfWork,
     TimeProvider clock,
     IRealtimeNotifier realtime
@@ -33,13 +40,19 @@ public sealed class SubmitApplicationHandler(
         var (profile, application) = await loader.GetCurrentAsync(applicant.UserId, ct);
         application.EnsureEditable();
         applicant.EnsureVerified();
-        var hasCv = await evidences.HasCodeAsync(application.Id, ApplicationRules.CvCode, ct);
-        var missing = profile.MissingRequirements(hasCv);
+        var submission = policy.Submission;
+        var files = await evidences.ListAsync(application.Id, ct);
+        var missing = profile.MissingRequirements(
+            files.Select(x => x.EvidenceType).Distinct().ToArray(),
+            submission
+        );
         if (missing.Length > 0)
             throw ExpertErrors.ApplicationIncomplete(missing);
+        var declarations = submission.Resolve(command.DeclarationCodes, command.Language);
 
         var now = clock.GetUtcNow();
-        applications.AddEvent(application.Submit(applicant.UserId, now));
+        var snapshot = ProfileSnapshot.Of(profile, applicant.Email, declarations);
+        applications.AddEvent(application.Submit(applicant.UserId, now, snapshot));
         profile.RecordContactEmail(applicant.Email);
         profile.RecordAccountStatus(applicant.AccountStatus);
         profile.MirrorStatus(application.Status, now);

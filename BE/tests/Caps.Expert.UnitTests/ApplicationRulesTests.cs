@@ -181,10 +181,11 @@ public sealed class ApplicationRulesTests
     public void A_profile_lists_what_is_missing_before_submission()
     {
         var profile = ExpertProfile.Create(Guid.NewGuid(), "applicant", Now);
+        var policy = new SubmissionPolicy([ApplicationRules.CvCode], []);
 
         Assert.Equal(
             ["phone", "yearsExperience", "fields", "CV"],
-            profile.MissingRequirements(hasCv: false)
+            profile.MissingRequirements([], policy)
         );
 
         profile.UpdateDetails(
@@ -202,7 +203,7 @@ public sealed class ApplicationRulesTests
             ),
             Now
         );
-        Assert.Empty(profile.MissingRequirements(hasCv: true));
+        Assert.Empty(profile.MissingRequirements([ApplicationRules.CvCode], policy));
         Assert.Equal("applicant", profile.DisplayName);
     }
 }

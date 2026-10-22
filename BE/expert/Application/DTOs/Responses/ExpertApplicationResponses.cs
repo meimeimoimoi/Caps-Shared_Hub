@@ -1,8 +1,16 @@
 namespace Caps.Expert.Application.DTOs.Responses;
 
 /// <summary>The applicant's view of their application: details, files, history and the actions allowed now.</summary>
-/// <param name="MissingRequirements">Still missing before submit: phone, yearsExperience, fields, CV.</param>
+/// <param name="MissingRequirements">
+/// Still missing before submit: phone, yearsExperience, fields, then each required evidence group without a
+/// file or link (e.g. CV, EV-01, EV-02).
+/// </param>
 /// <param name="MaxFiles">Files the application may hold.</param>
+/// <param name="RequiredEvidence">Evidence groups that must hold a file or link before submitting.</param>
+/// <param name="Declarations">
+/// Statements to agree to when submitting, in every language; the client shows the wording of its language
+/// and sends back only the codes and the language.
+/// </param>
 /// <param name="Eligibility">Per-requirement results of the latest Gate 1 decision: what to supplement or why it was not met (BR-E28).</param>
 public sealed record ExpertApplicationResponse(
     string Id,
@@ -23,8 +31,13 @@ public sealed record ExpertApplicationResponse(
     bool CanUpload,
     bool CanSubmit,
     bool CanSupplement,
-    int MaxFiles
+    int MaxFiles,
+    string[] RequiredEvidence,
+    DeclarationResponse[] Declarations
 );
+
+/// <summary>One statement as shown to the applicant, or as recorded on a submission.</summary>
+public sealed record DeclarationResponse(string Code, string Language, string Text);
 
 /// <summary>The applicant details shown in the application form.</summary>
 public sealed record ExpertApplicationProfile(

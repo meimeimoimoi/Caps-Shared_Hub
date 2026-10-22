@@ -47,12 +47,16 @@ public sealed class DecideEligibilityHandler(
             await applications.FindWithProfileAsync(command.ApplicationId, ct)
             ?? throw ExpertErrors.ApplicationNotFound();
         var profile = application.ExpertProfile;
+        // EV-06 is judged on the years in the submitted snapshot, not on later edits
+        var snapshot = ExpertApplicationEvent.LatestSnapshot(
+            await applications.ListEventsAsync(application.Id, ct)
+        );
 
         var now = clock.GetUtcNow();
         var decision = application.DecideEligibility(
             command.ReviewerUserId,
             profile.UserId,
-            profile.YearsExperience,
+            snapshot != null ? snapshot.YearsExperience : profile.YearsExperience,
             command.Criteria,
             command.Note,
             policy.Eligibility,

@@ -18,11 +18,11 @@ public static class ApplicationRules
     public static readonly string[] EvidenceCodes =
     [
         CvCode,
-        "EV-01",
-        "EV-02",
-        "EV-03",
-        "EV-04",
-        "EV-05",
+        EligibilityCriteria.LegalEligibility,
+        EligibilityCriteria.ProfessionalQualification,
+        EligibilityCriteria.ContinuingEducation,
+        EligibilityCriteria.ProfessionalEthics,
+        EligibilityCriteria.Confidentiality,
     ];
 
     public static readonly string[] FieldCodes =

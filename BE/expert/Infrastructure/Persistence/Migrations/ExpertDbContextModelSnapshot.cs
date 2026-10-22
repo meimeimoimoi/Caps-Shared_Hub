@@ -160,6 +160,10 @@ namespace Caps.Expert.Infrastructure.Persistence.Migrations
                         .HasColumnType("text")
                         .HasColumnName("note");
 
+                    b.Property<string>("ProfileSnapshot")
+                        .HasColumnType("jsonb")
+                        .HasColumnName("profile_snapshot");
+
                     b.Property<string>("ToStatus")
                         .IsRequired()
                         .HasColumnType("text")

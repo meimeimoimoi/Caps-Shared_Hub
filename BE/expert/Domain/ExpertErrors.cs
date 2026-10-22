@@ -35,6 +35,13 @@ public static class ExpertErrors
     public static AppException InvalidBirthDate() =>
         new(ErrorType.Validation, "INVALID_BIRTH_DATE", "Birth date is invalid.");
 
+    public static AppException DeclarationRequired(string code) =>
+        new(
+            ErrorType.Validation,
+            "DECLARATION_REQUIRED",
+            $"Agree to the {code} statement before submitting."
+        );
+
     public static AppException ContactRequired(string field) =>
         new(ErrorType.Validation, "CONTACT_REQUIRED", $"{field} is required.");
 

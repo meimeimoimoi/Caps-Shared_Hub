@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Caps.Expert.Domain.Applications;
 using Caps.Expert.Domain.Catalog;
 using Caps.Expert.Domain.Pricing;
@@ -29,6 +30,8 @@ public sealed class ExpertDbContext(DbContextOptions<ExpertDbContext> options) :
     public DbSet<ServiceCatalogItem> ServiceCatalog => Set<ServiceCatalogItem>();
     public DbSet<NotificationOutboxEntry> NotificationOutbox => Set<NotificationOutboxEntry>();
     public DbSet<AvailabilitySlot> AvailabilitySlots => Set<AvailabilitySlot>();
+
+    private static readonly JsonSerializerOptions SnapshotJson = new(JsonSerializerDefaults.Web);
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -121,6 +124,14 @@ public sealed class ExpertDbContext(DbContextOptions<ExpertDbContext> options) :
             e.Property(x => x.FromStatus).HasColumnName("from_status");
             e.Property(x => x.ToStatus).HasColumnName("to_status").IsRequired();
             e.Property(x => x.Note).HasColumnName("note");
+            // Written once on a submission and never changed, so a plain JSON conversion is enough
+            e.Property(x => x.ProfileSnapshot)
+                .HasColumnName("profile_snapshot")
+                .HasColumnType("jsonb")
+                .HasConversion(
+                    v => JsonSerializer.Serialize(v, SnapshotJson),
+                    v => JsonSerializer.Deserialize<ProfileSnapshot>(v, SnapshotJson)
+                );
             e.Property(x => x.CreatedAt).HasColumnName("created_at").IsRequired();
             e.HasIndex(x => new { x.ApplicationId, x.CreatedAt })
                 .HasDatabaseName("ix_expert_application_event");

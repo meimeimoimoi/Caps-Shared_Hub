@@ -7,6 +7,7 @@ using Caps.Expert.Application.Features.Applications;
 using Caps.Expert.Domain.Applications;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace Caps.Expert.Api.Controllers;
 
@@ -41,7 +42,7 @@ public sealed class ApplicationsController(ICurrentUser currentUser) : Controlle
     /// <response code="200">The saved draft.</response>
     /// <response code="400">INVALID_FIELD or INVALID_BIRTH_DATE.</response>
     /// <response code="403">EMAIL_NOT_VERIFIED.</response>
-    /// <response code="409">APPLICATION_LOCKED (already submitted) or REAPPLY_TOO_EARLY.</response>
+    /// <response code="409">APPLICATION_LOCKED (submitted and not waiting for more information) or REAPPLY_TOO_EARLY.</response>
     [HttpPut]
     public async Task<IActionResult> Save(
         SaveExpertApplicationRequest r,
@@ -131,26 +132,33 @@ public sealed class ApplicationsController(ICurrentUser currentUser) : Controlle
         return File(file.Content, file.ContentType, file.FileName);
     }
 
-    /// <summary>Submits the draft for review.</summary>
-    /// <remarks>Requires a verified email (refresh the session after verifying), phone, years of experience, at least one field and a CV.</remarks>
+    /// <summary>Submits the draft for review with the statements agreed to.</summary>
+    /// <remarks>
+    /// Requires a verified email, phone, years of experience, at least one field, a file or link in every required
+    /// evidence group (requiredEvidence in the application) and every statement (declarations). The body sends
+    /// only the declaration codes and the language; a snapshot of the declared details is stored with the submission.
+    /// </remarks>
     /// <response code="200">The submitted application.</response>
-    /// <response code="400">APPLICATION_INCOMPLETE (missing items listed in the message).</response>
+    /// <response code="400">APPLICATION_INCOMPLETE (missing items listed in the message) or DECLARATION_REQUIRED.</response>
     /// <response code="403">EMAIL_NOT_VERIFIED.</response>
     /// <response code="404">APPLICATION_NOT_FOUND.</response>
     /// <response code="409">APPLICATION_LOCKED.</response>
     [HttpPost("submit")]
     public async Task<IActionResult> Submit(
+        [FromBody(EmptyBodyBehavior = EmptyBodyBehavior.Allow)] SubmitExpertApplicationRequest? r,
         [FromServices] ICommandHandler<SubmitApplicationCommand, ExpertApplicationResponse> handler,
         CancellationToken ct
     )
     {
-        var application = await handler.HandleAsync(new(Applicant), ct);
+        var command = (r ?? new SubmitExpertApplicationRequest(null, null)).ToCommand(Applicant);
+        var application = await handler.HandleAsync(command, ct);
         return Result(application);
     }
 
-    /// <summary>Sends the extra information a reviewer asked for (explanation and/or new files).</summary>
+    /// <summary>Sends the extra information a reviewer asked for (explanation, new files and/or changed details).</summary>
+    /// <remarks>The statements are agreed to again; a new snapshot of the declared details is stored.</remarks>
     /// <response code="200">The application, back in the review queue.</response>
-    /// <response code="400">SUPPLEMENT_EMPTY: add an explanation or at least one new file.</response>
+    /// <response code="400">SUPPLEMENT_EMPTY (nothing new: no explanation, file or changed detail), APPLICATION_INCOMPLETE or DECLARATION_REQUIRED.</response>
     /// <response code="403">EMAIL_NOT_VERIFIED.</response>
     /// <response code="404">APPLICATION_NOT_FOUND.</response>
     /// <response code="409">APPLICATION_LOCKED: no information was requested.</response>
@@ -162,7 +170,7 @@ public sealed class ApplicationsController(ICurrentUser currentUser) : Controlle
         CancellationToken ct
     )
     {
-        var application = await handler.HandleAsync(new(Applicant, r.Note), ct);
+        var application = await handler.HandleAsync(r.ToCommand(Applicant), ct);
         return Result(application);
     }
 }
