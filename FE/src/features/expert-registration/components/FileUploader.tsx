@@ -8,6 +8,7 @@ import {
   Loader2,
   Lock,
   Link2,
+  FileImage,
 } from 'lucide-react'
 import { useRef, useState } from 'react'
 import { formControlClassName } from '@/components/ui/forms/form-control'
@@ -19,7 +20,7 @@ export interface FileUploaderProps {
   id: string
   error?: string
   files: EvidenceFile[]
-  /** Hồ sơ đã nộp: chỉ xem, không thêm file */
+  /** Submitted applications are read-only. */
   disabled?: boolean
   /** Files used across the whole application and the current limit */
   quota?: UploadQuota
@@ -161,7 +162,9 @@ export function FileUploader({
           <label htmlFor={`link-${id}`} className="block text-sm font-medium">
             {t(id === 'CV' ? 'links.label' : 'links.evidenceLabel')}
           </label>
-          <div className="flex flex-col gap-2 sm:flex-row">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-start">
+            <div className="relative min-w-0 flex-1">
+              <Link2 size={17} aria-hidden="true" className="text-ex-muted pointer-events-none absolute left-3 top-1/2 -translate-y-1/2" />
             <input
               id={`link-${id}`}
               type="text"
@@ -175,7 +178,7 @@ export function FileUploader({
               disabled={addingLink}
               aria-invalid={linkError || undefined}
               aria-describedby={`link-help-${id}${linkError ? ` link-error-${id}` : ''}`}
-              className={`${formControlClassName} min-w-0 flex-1`}
+              className={`${formControlClassName} !min-h-12 min-w-0 !pl-10`}
               onChange={(e) => {
                 setSourceUrl(e.target.value)
                 setLinkError(false)
@@ -187,9 +190,10 @@ export function FileUploader({
                 }
               }}
             />
+            </div>
             <button
               type="button"
-              className="btn btn-secondary shrink-0"
+              className="btn btn-secondary !min-h-12 shrink-0 disabled:cursor-not-allowed disabled:!opacity-60"
               disabled={addingLink || !sourceUrl.trim()}
               onClick={() => void addLink()}
             >
@@ -199,13 +203,11 @@ export function FileUploader({
                   className="animate-spin motion-reduce:animate-none"
                   aria-hidden="true"
                 />
-              ) : (
-                <Link2 size={16} aria-hidden="true" />
-              )}
+              ) : null}
               {t(addingLink ? 'links.adding' : 'links.add')}
             </button>
           </div>
-          <p id={`link-help-${id}`} className="text-ex-muted w-full !max-w-none text-sm">
+          <p id={`link-help-${id}`} className="text-ex-muted !m-0 w-full !max-w-none text-[12px] leading-relaxed">
             {t(id === 'CV' ? 'links.help' : 'links.evidenceHelp')}
           </p>
           {linkError && (
@@ -238,7 +240,7 @@ export function FileUploader({
               aria-busy={f.uploading || undefined}
             >
               <span className="expert-file-item-icon" aria-hidden="true">
-                {f.sourceUrl ? <Link2 size={18} /> : <FileText size={18} />}
+                {f.sourceUrl ? <Link2 size={18} /> : /\.(png|jpe?g)$/i.test(f.name) ? <FileImage size={18} /> : <FileText size={18} />}
               </span>
               <span className="expert-file-item-info">
                 {f.sourceUrl && /^https?:\/\//i.test(f.sourceUrl) ? (
@@ -252,7 +254,7 @@ export function FileUploader({
                     {f.name}
                   </a>
                 ) : (
-                  <span className="expert-file-item-name">{f.name}</span>
+                  <span className="expert-file-item-name" title={f.name}>{f.name}</span>
                 )}
                 <span className="expert-file-item-meta">
                   {f.uploading ? (
@@ -283,6 +285,7 @@ export function FileUploader({
                   type="button"
                   className="expert-file-item-remove"
                   aria-label={t('files.remove', { name: f.name })}
+                  title={t('files.remove', { name: f.name })}
                   onClick={() => onRemoveFile(i)}
                 >
                   <X size={16} />

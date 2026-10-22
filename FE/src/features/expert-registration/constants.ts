@@ -1,19 +1,38 @@
 import type { Stage, Profile } from './types'
 
 export const steps = [
-  'personal.heading',
-  'experience.heading',
+  'profileStep.heading',
   'documents.heading',
   'review.heading',
 ] as const
 
-// Nhãn ngắn một dòng cho thanh bước; tên đầy đủ (steps) vẫn dùng cho tiêu đề và trình đọc màn hình
+// One-line labels for the step rail; the full names (steps) stay for headings and screen readers
 export const stepShortLabels = [
-  'stepper.personal',
-  'stepper.experience',
+  'stepper.profile',
   'stepper.documents',
   'stepper.review',
 ] as const
+
+/** Wizard steps by meaning, so no code compares against bare step numbers */
+export const PROFILE_STEP = 0
+export const DOCUMENTS_STEP = 1
+export const REVIEW_STEP = 2
+
+/** Gate 1 requirement codes as the server stores them (POL-EXP-01); code never writes the raw strings */
+export const EligibilityCriterion = {
+  legalEligibility: 'EV-01',
+  professionalQualification: 'EV-02',
+  continuingEducation: 'EV-03',
+  professionalEthics: 'EV-04',
+  confidentiality: 'EV-05',
+  taxAccountingExperience: 'EV-06',
+} as const
+
+/** Groups proven by the professional conduct statement at submission; a file is optional */
+export const DECLARED_CRITERIA: readonly string[] = [
+  EligibilityCriterion.professionalEthics,
+  EligibilityCriterion.confidentiality,
+]
 
 export const criteria: readonly string[] = [
   'Legal eligibility',

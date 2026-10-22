@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import { Check, CheckCircle2 } from 'lucide-react'
 import { useFormatters } from '@/hooks/useFormatters'
+import { EligibilityCriterion } from '../constants'
 import type { steps as wizardSteps } from '../constants'
 
 /** Server codes of what is still missing before submitting (ExpertProfile.MissingRequirements). */
@@ -9,6 +10,9 @@ const MISSING_LABEL = {
   yearsExperience: 'rail.missing.yearsExperience',
   fields: 'rail.missing.fields',
   CV: 'rail.missing.cv',
+  [EligibilityCriterion.legalEligibility]: 'rail.missing.legalEligibility',
+  [EligibilityCriterion.professionalQualification]:
+    'rail.missing.professionalQualification',
 } as const
 
 const missingLabel = (code: string) =>

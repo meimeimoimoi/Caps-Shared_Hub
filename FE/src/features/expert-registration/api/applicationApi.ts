@@ -1,5 +1,5 @@
 import { api } from '@/lib/api-client'
-import { criteria, expertiseOptions } from '../constants'
+import { EligibilityCriterion, expertiseOptions } from '../constants'
 import type { EvidenceFile, Profile, Stage } from '../types'
 
 interface Envelope<T> {
@@ -70,15 +70,30 @@ export interface ExpertApplication {
   canUpload: boolean
   canSubmit: boolean
   canSupplement: boolean
-  /** Files the application may hold now (lower until the email is verified) */
+  /** Files the application may hold */
   maxFiles: number
+  /** Evidence groups that must hold a file or link before submitting (e.g. CV, EV-01, EV-02) */
+  requiredEvidence: string[]
+  /** Statements to agree to when submitting, in every language; send back only codes and language */
+  declarations: Declaration[]
 }
 
-/* FE giữ khóa tiêu chí/lĩnh vực theo nhãn tiếng Anh (dùng cho i18n); BE dùng mã cố định */
-const CRITERION_CODES: Record<string, string> = Object.fromEntries([
-  ['CV', 'CV'],
-  ...criteria.map((c, i) => [c, `EV-0${i + 1}`]),
-])
+/** One statement as worded by the server */
+export interface Declaration {
+  code: string
+  language: string
+  text: string
+}
+
+/* The form keys criteria and fields by their English labels (i18n keys); the server uses fixed codes */
+const CRITERION_CODES: Record<string, string> = {
+  CV: 'CV',
+  'Legal eligibility': EligibilityCriterion.legalEligibility,
+  'Professional qualifications': EligibilityCriterion.professionalQualification,
+  'Continuing professional development': EligibilityCriterion.continuingEducation,
+  'Professional ethics': EligibilityCriterion.professionalEthics,
+  Confidentiality: EligibilityCriterion.confidentiality,
+}
 const FIELD_CODES: Record<string, string> = {
   'Corporate income tax': 'CORPORATE_INCOME_TAX',
   'Tax finalization': 'TAX_FINALIZATION',
@@ -208,12 +223,24 @@ export const applicationApi = {
         sourceUrl,
       })
     ).data,
-  submit: async () =>
-    (await api.post<Envelope<ExpertApplication>>(`${BASE}/submit`)).data,
-  supplement: async (note: string) =>
+  /** Sends only the codes of the statements ticked and their language; the server stores its own wording */
+  submit: async (declarationCodes: string[], language: string) =>
+    (
+      await api.post<Envelope<ExpertApplication>>(`${BASE}/submit`, {
+        declarationCodes,
+        language,
+      })
+    ).data,
+  supplement: async (
+    note: string,
+    declarationCodes: string[] = [],
+    language?: string
+  ) =>
     (
       await api.post<Envelope<ExpertApplication>>(`${BASE}/supplement`, {
         note,
+        declarationCodes,
+        language,
       })
     ).data,
 }

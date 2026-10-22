@@ -1,12 +1,24 @@
 import { useTranslation } from 'react-i18next'
 import { useState } from 'react'
 import { HelpTip } from '@/components/ui/feedback/help-tip'
-import { applicationApi } from '../../api/applicationApi'
+import { applicationApi, evidenceCode } from '../../api/applicationApi'
 import { formatVietnamPhone } from '@/lib/validation/vietnamPhone'
-import { FileText, FileImage, ExternalLink, PencilLine } from 'lucide-react'
+import {
+  CircleCheck,
+  FileText,
+  FileImage,
+  ExternalLink,
+  PencilLine,
+} from 'lucide-react'
 import type { EvidenceFile, Profile } from '../../types'
 import { useFormatters } from '@/hooks/useFormatters'
-import { criteria, criterionKey, expertiseKey } from '../../constants'
+import {
+  criteria,
+  criterionKey,
+  DECLARED_CRITERIA,
+  expertiseKey,
+} from '../../constants'
+import { DOCUMENTS_STEP, PROFILE_STEP } from '../../constants'
 
 export interface RegistrationSummaryProps {
   profile: Profile
@@ -14,7 +26,11 @@ export interface RegistrationSummaryProps {
   independent: boolean
   fields: string[]
   files: Record<string, EvidenceFile[]>
-  /** Opens the wizard step that holds a section (0 personal, 1 experience, 2 documents); omitted when read-only */
+  /** Server codes of the groups that need a file; an empty group outside it reads as optional */
+  requiredEvidence?: string[]
+  /** Whether the ethics and confidentiality commitment is accepted; omitted when not shown */
+  conductAgreed?: boolean
+  /** Opens the wizard step that holds a section (profile or documents); omitted when read-only */
   onEditStep?: (step: number) => void
 }
 
@@ -23,6 +39,8 @@ export function RegistrationSummary({
   avatarPreview,
   fields,
   files,
+  requiredEvidence,
+  conductAgreed,
   onEditStep,
 }: RegistrationSummaryProps) {
   const { t } = useTranslation('expertRegistration')
@@ -42,9 +60,20 @@ export function RegistrationSummary({
           ? t(criterionKey(category)!)
           : category
   // CV first, then the eligibility groups in policy order, then supplements and anything else
+  const isOptional = (category: string) =>
+    !!requiredEvidence &&
+    category !== 'CV' &&
+    criteria.includes(category) &&
+    !requiredEvidence.includes(evidenceCode(category))
   const order = ['CV', ...criteria]
+  // Ethics and confidentiality are proven by the commitment, so they appear only when a file was added
   const documentGroups: [string, EvidenceFile[]][] = [
-    ...order.map((c): [string, EvidenceFile[]] => [c, files[c] ?? []]),
+    ...order
+      .map((c): [string, EvidenceFile[]] => [c, files[c] ?? []])
+      .filter(
+        ([c, list]) =>
+          list.length > 0 || !DECLARED_CRITERIA.includes(evidenceCode(c))
+      ),
     ...Object.entries(files).filter(
       ([c, list]) => !order.includes(c) && list.length > 0
     ),
@@ -99,7 +128,7 @@ export function RegistrationSummary({
       <section className="expert-pro-section">
         <div className="expert-pro-section-header">
           <h3 className="expert-pro-section-title">{t('personal.heading')}</h3>
-          {editButton(0, t('personal.heading'))}
+          {editButton(PROFILE_STEP, t('personal.heading'))}
         </div>
 
         {avatarPreview && (
@@ -156,7 +185,7 @@ export function RegistrationSummary({
             <h3 className="expert-pro-section-title">
               {t('experience.heading')}
             </h3>
-            {editButton(1, t('experience.heading'))}
+            {editButton(PROFILE_STEP, t('experience.heading'))}
           </div>
 
           <dl className="expert-review-details">
@@ -216,7 +245,7 @@ export function RegistrationSummary({
             <HelpTip label={t('helpFor', { label: t('documents.heading') })}>
               {t('documents.countNote')}
             </HelpTip>
-            {editButton(2, t('documents.heading'))}
+            {editButton(DOCUMENTS_STEP, t('documents.heading'))}
           </div>
 
           {/* Every group in a fixed order, empty ones included, so gaps are visible before submitting */}
@@ -230,9 +259,13 @@ export function RegistrationSummary({
                 <header className="expert-doc-group-head">
                   <h4>{groupLabel(category)}</h4>
                   <span data-empty={list.length === 0 || undefined}>
-                    {list.length === 0
-                      ? t('documents.none')
-                      : t('counts.file', { count: list.length })}
+                    {list.length > 0
+                      ? t('counts.file', { count: list.length })
+                      : t(
+                          isOptional(category)
+                            ? 'documents.optional'
+                            : 'documents.none'
+                        )}
                   </span>
                 </header>
                 {list.length > 0 && (
@@ -295,6 +328,29 @@ export function RegistrationSummary({
                 )}
               </section>
             ))}
+            {conductAgreed !== undefined && (
+              <section
+                className="expert-doc-group"
+                aria-label={t('commitment.sectionTitle')}
+              >
+                <header className="expert-doc-group-head">
+                  <h4>{t('commitment.sectionTitle')}</h4>
+                  <span
+                    className="expert-doc-commitment"
+                    data-accepted={conductAgreed || undefined}
+                  >
+                    {conductAgreed && (
+                      <CircleCheck size={14} aria-hidden="true" />
+                    )}
+                    {t(
+                      conductAgreed
+                        ? 'commitment.accepted'
+                        : 'commitment.pending'
+                    )}
+                  </span>
+                </header>
+              </section>
+            )}
           </div>
         </section>
       </div>

@@ -1017,12 +1017,13 @@
   align-items: center;
   gap: 12px;
   padding: 12px 14px;
-  border-radius: 10px;
-  background: var(--ui-surface-muted);
+  border: 1px solid var(--ui-border);
+  border-radius: 8px;
+  background: var(--ui-surface);
   margin-bottom: 8px;
   transition: background var(--motion-feedback) var(--motion-ease-enter);
 }
-.expert-file-item:hover { background: var(--ui-canvas); }
+.expert-file-item:hover { background: var(--ui-surface-muted); }
 .expert-file-item-icon {
   display: flex;
   align-items: center;
@@ -1030,12 +1031,12 @@
   width: 36px;
   height: 36px;
   border-radius: 8px;
-  background: linear-gradient(135deg, var(--ui-info-soft), var(--ui-info-soft));
-  color: var(--ui-info);
+  background: var(--ui-surface-muted);
+  color: var(--ui-text-muted);
   flex-shrink: 0;
 }
 .expert-file-item-info { flex: 1; min-width: 0; }
-.expert-file-item-name { display: block; font-size: 13.5px; font-weight: 600; color: var(--ui-text-strong); line-height: 1.4; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.expert-file-item-name { display: block; font-size: 13.5px; font-weight: 600; color: var(--ui-text-strong); line-height: 1.4; overflow-wrap: anywhere; }
 .expert-file-item-meta {
   display: flex;
   align-items: center;
@@ -1043,14 +1044,17 @@
   font-size: 12px;
   color: var(--ui-text-muted);
   margin-top: 2px;
+  flex-wrap: wrap;
 }
+.expert-file-item-meta svg { flex-shrink: 0; }
+.expert-file-item[aria-busy='true'] .expert-file-item-meta svg { color: var(--ui-text-muted); }
 .expert-file-item-meta svg { color: var(--ui-success); }
 .expert-file-item-remove {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
+  width: 44px;
+  height: 44px;
   border-radius: 8px;
   border: 0;
   background: transparent;
@@ -2925,6 +2929,8 @@ html,body,#root{height:100%}
 .expert-doc-group-head h4 { margin: 0 !important; font-family: inherit !important; font-size: 13px !important; font-weight: 600; color: var(--ui-text-strong); }
 .expert-doc-group-head span { flex-shrink: 0; font-size: 12px; color: var(--ui-text-muted); font-variant-numeric: tabular-nums; }
 .expert-doc-group-head span[data-empty] { font-style: italic; }
+.expert-doc-group-head .expert-doc-commitment { display: inline-flex; align-items: center; gap: 4px; }
+.expert-doc-group-head .expert-doc-commitment[data-accepted] { color: var(--ui-success); font-weight: 600; }
 .expert-doc-group:has(> ul) .expert-doc-group-head { padding-bottom: 4px; }
 .expert-doc-group ul { margin: 0 -8px; padding: 0 0 8px; list-style: none; }
 .expert-doc-row { display: flex; align-items: center; gap: 12px; padding: 8px; border-radius: 8px; }
@@ -2968,8 +2974,82 @@ html,body,#root{height:100%}
 .expert-pro-tab[aria-selected='true'] .expert-doc-nav-label { font-weight: 600; }
 .expert-doc-nav-count { flex-shrink: 0; min-width: 20px; color: var(--ui-text-muted); font-size: 12px; font-variant-numeric: tabular-nums; text-align: right; }
 .expert-pro-tab[data-has-files] .expert-doc-nav-count { color: var(--ui-text-strong); font-weight: 600; }
-/* Supporting evidence: roomy group labels, secondary status and a contained upload panel. */
+/* Evidence documents and the shared commitment form two distinct tasks on one page. */
 .expert-pro-documents .expert-pro-tabs-container { align-items: stretch; }
+.expert-evidence-progress { display: grid; grid-template-columns: minmax(0, 1fr) minmax(120px, 240px); align-items: center; gap: 20px; padding: 16px 0; margin-bottom: 20px; border-bottom: 1px solid var(--ui-border); }
+.expert-evidence-progress .expert-doc-nav-summary { margin: 0 !important; color: var(--ui-text-strong); font-size: 13px; font-weight: 600; }
+.expert-evidence-section-label { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; color: var(--ui-text-strong); }
+.expert-evidence-section-label h3 { margin: 0; font-size: 16px; font-weight: 600; }
+.expert-evidence-commitment { margin-top: 28px; padding: 24px; border: 1px solid var(--ui-border); border-radius: 14px; background: var(--ui-surface); }
+.expert-evidence-commitment-heading { display: flex; align-items: center; gap: 12px; }
+.expert-evidence-commitment-heading > svg { flex-shrink: 0; color: var(--ui-accent-text); }
+.expert-evidence-commitment-heading > div { flex: 1; min-width: 0; }
+.expert-evidence-commitment-heading h3 { margin: 0; color: var(--ui-text-strong); font-size: 16px; font-weight: 600; }
+/* An optional group never reads as unfinished: a dashed mark instead of the empty required circle */
+.expert-pro-tab[data-optional]:not([data-has-files]) .expert-doc-nav-mark { color: var(--ui-text-muted); }
+.expert-pro-documents .expert-pro-tab[aria-invalid='true'] { outline: 1px solid var(--ui-danger); outline-offset: -1px; }
+@container (max-width: 540px) {
+  .expert-evidence-progress { grid-template-columns: minmax(0, 1fr); gap: 12px; }
+  .expert-evidence-commitment { padding: 18px; margin-top: 20px; }
+  .expert-evidence-commitment-heading { flex-wrap: wrap; }
+  .expert-evidence-commitment-heading > div { flex-basis: calc(100% - 34px); }
+  .expert-evidence-commitment-heading :is(.expert-commitment-done, .expert-commitment-read) { margin-left: 34px; }
+}
+/* Scope dialog presentation and compact layouts to the evidence page. */
+.expert-application .expert-evidence-section-label h3,
+.expert-application .expert-doc-nav-heading h3,
+.expert-application .expert-evidence-commitment-heading h3 { margin: 0; font-family: var(--font-sans); font-size: 16px; line-height: 1.4; }
+.expert-application .expert-doc-nav-heading h3 { font-size: 14px; }
+.expert-evidence-commitment[data-accepted] .expert-evidence-commitment-heading > svg { color: var(--ui-success); }
+.expert-commitment-read { display: inline-flex; justify-content: center; align-items: center; gap: 8px; min-height: 44px; padding: 10px 14px; border: 1px solid var(--ui-border-control); border-radius: 8px; background: var(--ui-surface); color: var(--ui-accent-text); font-size: 13px; font-weight: 600; }
+.expert-commitment-read:hover { background: var(--ui-accent-soft); }
+.expert-commitment-read[data-primary] { border-color: var(--ui-accent); background: var(--ui-accent); color: var(--ui-on-accent); }
+.expert-commitment-read[data-primary]:hover { background: var(--ui-accent-hover); }
+/* Accepted: a quiet confirmation and a text action instead of a badge beside a framed button */
+.expert-evidence-commitment[data-accepted] { border-color: color-mix(in srgb, var(--ui-success) 35%, var(--ui-border)); }
+.expert-commitment-done { display: inline-flex; flex-shrink: 0; align-items: center; gap: 6px; color: var(--ui-success); font-size: 13px; font-weight: 600; }
+.expert-evidence-commitment[data-accepted] .expert-commitment-read { min-height: 36px; padding: 6px 10px; border-color: transparent; background: none; }
+.expert-evidence-commitment[data-accepted] .expert-commitment-read:hover { background: var(--ui-accent-soft); }
+.expert-commitment-read[aria-invalid='true'] { outline: 2px solid var(--ui-danger); outline-offset: 2px; }
+/* Footer note while the accept button waits for the end of the text */
+.expert-commitment-read-hint { margin: 0 auto 0 0 !important; align-self: center; color: var(--ui-text-muted); font-size: 13px; }
+.expert-commitment-read:focus-visible { outline: 2px solid var(--ui-accent-text); outline-offset: 3px; }
+.expert-commitment-error { margin-top: 12px !important; padding-left: 34px; }
+.expert-commitment-modal dialog { max-width: 1000px; }
+/* The statement must be read in full: the scrollbar is hidden (hide-scrollbar), so the edge fades while more text remains below. */
+@property --expert-commitment-fade { syntax: '<length>'; inherits: false; initial-value: 0px; }
+@keyframes expert-commitment-fade { from { --expert-commitment-fade: 56px; } 92% { --expert-commitment-fade: 56px; } to { --expert-commitment-fade: 0px; } }
+/* Blur the page behind so only the commitment holds attention */
+.expert-commitment-modal dialog::backdrop { background: color-mix(in srgb, var(--ui-shadow) 45%, transparent); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
+/* The page behind stays still while the dialog is open */
+html:has(.expert-commitment-modal dialog[open]) { overflow: hidden; }
+.expert-commitment-modal dialog > div > div:first-child {
+  padding: 28px 32px; overscroll-behavior: contain;
+  mask-image: linear-gradient(to bottom, #000 calc(100% - var(--expert-commitment-fade)), transparent);
+}
+@supports (animation-timeline: scroll()) {
+  .expert-commitment-modal dialog > div > div:first-child { animation: expert-commitment-fade linear both; animation-timeline: scroll(self); }
+}
+.expert-application .expert-commitment-modal h2 { margin: 0; font-size: 28px; line-height: 1.25; text-wrap: balance; }
+.expert-commitment-details { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px 32px; margin-top: 28px; font-size: 14px; line-height: 1.7; }
+.expert-application .expert-commitment-details h3 { display: flex; align-items: center; gap: 10px; margin: 0; font-family: var(--font-sans); font-size: 17px; line-height: 1.4; }
+.expert-commitment-details h3 svg { flex-shrink: 0; color: var(--ui-accent-text); }
+.expert-commitment-section-heading { display: flex; align-items: center; gap: 6px; margin-bottom: 14px; }
+.expert-commitment-details ul { margin: 0; }
+.expert-commitment-details li { padding-left: 2px; }
+/* Key duties stand out so the list can be scanned before reading every word */
+.expert-commitment-details li { color: var(--ui-text-muted); }
+.expert-commitment-details li strong { color: var(--ui-accent-text); font-weight: 600; }
+.expert-commitment-details li::marker { color: var(--ui-accent-text); }
+@media (max-width: 720px) {
+  .ep-workspace:has(.expert-pro-documents) { margin-left: 0; width: 100%; }
+  .expert-application:has(.expert-pro-documents) .expert-progress-rail { display: block; }
+  .expert-application:has(.expert-pro-documents) .expert-rail-block { display: none; }
+  .expert-application:has(.expert-pro-documents) .expert-rail-steps { display: none; }
+  .expert-commitment-modal dialog > div > div:first-child { padding: 20px; }
+  .expert-application .expert-commitment-modal h2 { font-size: 23px; }
+  .expert-commitment-details { grid-template-columns: minmax(0, 1fr); gap: 24px; }
+}
 .expert-pro-documents .expert-evidence-panel { display: flex; flex-direction: column; }
 .expert-evidence-panel .expert-file-uploader { display: flex; flex: 1; flex-direction: column; }
 .expert-evidence-panel .expert-file-dropzone { flex: 1; }

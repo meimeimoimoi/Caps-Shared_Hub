@@ -1,5 +1,24 @@
 {
+  "profileStep": {
+    "heading": "Hồ sơ chuyên gia",
+    "moreTitle": "Thông tin thêm",
+    "moreHint": "Không bắt buộc, giúp hồ sơ đầy đủ hơn"
+  },
+  "autoSave": {
+    "saving": "Đang lưu…",
+    "saved": "Đã lưu lúc {{time}}",
+    "failed": "Lưu thất bại.",
+    "retry": "Thử lại"
+  },
+  "supplementStep": {
+    "reviewerNote": "Người đánh giá yêu cầu:",
+    "noteLabel": "Giải thích bổ sung",
+    "notePlaceholder": "Mô tả những gì bạn đã bổ sung hoặc làm rõ",
+    "noteHint": "Không bắt buộc nếu bạn đã sửa thông tin hoặc tải thêm minh chứng."
+  },
   "validation": {
+    "evidenceRequired": "Thêm ít nhất một file hoặc liên kết minh chứng đã lưu để tiếp tục.",
+    "conductRequired": "Vui lòng đọc và đồng ý cam kết đạo đức nghề nghiệp và bảo mật thông tin.",
     "required": "Trường này là bắt buộc.",
     "email": "Vui lòng nhập địa chỉ email hợp lệ.",
     "validValue": "Vui lòng nhập giá trị hợp lệ.",
@@ -16,7 +35,7 @@
     "supplement": "Thêm tài liệu hoặc nội dung giải thích."
   },
   "messages": {
-    "draftSaved": "Đã lưu nháp. Bạn có thể quay lại hoàn thiện hồ sơ bất cứ lúc nào.",
+    "draftSaved": "Bạn có thể quay lại hoàn thiện sau.",
     "accountCreated": "Đã tạo tài khoản. Bạn có thể tiếp tục hoàn thiện hồ sơ.",
     "emailTaken": "Email này đã có tài khoản. Hãy đăng nhập để tiếp tục hồ sơ.",
     "tooManyRequests": "Bạn thao tác quá nhanh. Vui lòng đợi một lát rồi thử lại.",
@@ -46,10 +65,10 @@
   "links": {
     "evidenceLabel": "Hoặc thêm liên kết minh chứng công khai",
     "evidenceHelp": "Dán liên kết đến tài liệu của nhóm này. Bật quyền xem công khai, không yêu cầu đăng nhập. Liên kết được tính vào giới hạn minh chứng.",
-    "label": "Hoặc thêm liên kết CV công khai",
-    "add": "Thêm liên kết",
+    "label": "Hoặc dùng liên kết CV",
+    "add": "Thêm",
     "adding": "Đang lưu…",
-    "help": "Dán link CV, LinkedIn hoặc website. Bật quyền xem công khai, không yêu cầu đăng nhập. Liên kết được tính vào giới hạn minh chứng.",
+    "help": "CV, LinkedIn hoặc website phải xem được không cần đăng nhập. Mỗi liên kết tính là một minh chứng.",
     "invalid": "Nhập URL HTTP hoặc HTTPS công khai, không chứa tài khoản/mật khẩu và không quá 2048 ký tự.",
     "duplicate": "Liên kết này đã có trong hồ sơ. Vui lòng dùng liên kết khác.",
     "saved": "Liên kết đã lưu"
@@ -153,6 +172,7 @@
     "namePlaceholder": "Nguyễn Văn An"
   },
   "actions": {
+    "resubmit": "Nộp bổ sung",
     "signIn": "Đăng nhập",
     "create": "Tạo tài khoản",
     "creating": "Đang tạo…",
@@ -170,6 +190,7 @@
     "editSection": "Sửa {{section}}"
   },
   "fields": {
+    "phonePlaceholder": "Nhập số điện thoại của bạn",
     "fullName": "Họ và tên",
     "fullNameRequired": "Họ và tên *",
     "namePlaceholder": "Họ và tên của bạn",
@@ -239,6 +260,7 @@
   "experience": {
     "heading": "Kinh nghiệm chuyên môn",
     "guidance": "Giúp người đánh giá hiểu kinh nghiệm thuế và kế toán của bạn.",
+    "expertisePlaceholder": "Chọn một hoặc nhiều lĩnh vực",
     "overview": "Tổng quan kinh nghiệm",
     "years": "Số năm kinh nghiệm",
     "taxYears": "Số năm kinh nghiệm thuế và kế toán *",
@@ -248,7 +270,7 @@
     "expertise": "Lĩnh vực chuyên môn",
     "expertiseRequired": "Lĩnh vực chuyên môn *",
     "required": "Bắt buộc",
-    "expertiseNote": "Các thông tin này mô tả chuyên môn của bạn, không đồng nghĩa được phê duyệt cung cấp dịch vụ.",
+    "expertiseNote": "Lĩnh vực chỉ để giới thiệu chuyên môn của bạn. Dịch vụ bạn cung cấp sẽ đăng ký riêng sau khi hồ sơ đạt điều kiện tham gia (Gate 1).",
     "cv": "Hồ sơ kinh nghiệm (CV)",
     "taxAccounting": "Kinh nghiệm thuế và kế toán",
     "none": "Chưa chọn",
@@ -263,6 +285,14 @@
     "cvHelp": "CV là thông tin tự khai, giúp người đánh giá đối chiếu kinh nghiệm của bạn. Bằng chứng chuyên môn được nộp ở bước tiếp theo."
   },
   "documents": {
+    "sectionTitle": "Tài liệu chứng minh năng lực",
+    "navigationTitle": "Chọn nhóm tài liệu",
+    "navigationHint": "Hai nhóm bắt buộc, một nhóm tùy chọn.",
+    "optional": "Không bắt buộc",
+    "optionalGroup": "Không bắt buộc — bổ sung chứng nhận đào tạo, hội thảo hoặc hoạt động cập nhật kiến thức nếu có.",
+    "required": "bắt buộc",
+    "requiredGroup": "Nhóm này bắt buộc có ít nhất một file hoặc link đã lưu trước khi tiếp tục.",
+    "declaredGroup": "Bạn cam kết nội dung này ở bước nộp hồ sơ; tải file nếu có.",
     "heading": "Tài liệu minh chứng",
     "categories": "Nhóm minh chứng",
     "evidence": "Cung cấp minh chứng liên quan. Loại tài liệu được chấp nhận và phạm vi áp dụng phải được xác nhận theo chính sách điều kiện tham gia.",
@@ -275,9 +305,9 @@
     "local": "được chọn trên thiết bị",
     "countLabel": "Tài liệu",
     "countNote": "Các tài liệu đã chọn đang chờ xác minh. Số lượng file không thể hiện việc đã được phê duyệt.",
-    "lead": "Tải minh chứng theo từng nhóm điều kiện tham gia. Không bắt buộc đủ cả năm nhóm; CV đã nộp ở bước trước.",
+    "lead": "Hoàn thiện minh chứng pháp lý và chuyên môn, sau đó đọc và xác nhận cam kết bên dưới. Bạn có thể lưu nháp để bổ sung sau.",
     "none": "Chưa tải",
-    "groupsDone": "Đã có tài liệu cho {{done}}/{{total}} nhóm"
+    "groupsDone": "Đã hoàn thành {{done}}/{{total}} yêu cầu bắt buộc"
   },
   "review": {
     "heading": "Kiểm tra và nộp hồ sơ",
@@ -353,8 +383,7 @@
     "retry": "Thử lại"
   },
   "stepper": {
-    "personal": "Cá nhân",
-    "experience": "Kinh nghiệm",
+    "profile": "Hồ sơ",
     "documents": "Minh chứng",
     "review": "Nộp hồ sơ"
   },
@@ -392,7 +421,9 @@
       "phone": "Số điện thoại",
       "yearsExperience": "Số năm kinh nghiệm",
       "fields": "Ít nhất một lĩnh vực chuyên môn",
-      "cv": "File CV"
+      "cv": "File CV",
+      "legalEligibility": "Minh chứng năng lực pháp lý",
+      "professionalQualification": "Chứng chỉ chuyên môn thuế"
     },
     "stepCount": "Bước {{current}}/{{total}}",
     "stepCurrent": "Đang điền",
@@ -414,5 +445,36 @@
     "unverifiedBody": "Xác nhận email để tiếp tục tải tài liệu. Các file đã tải vẫn được giữ.",
     "fullTitle": "Hồ sơ đã có tối đa {{max}} file",
     "fullBody": "Xóa bớt file không cần thiết nếu muốn thêm tài liệu khác."
+  },
+  "commitment": {
+    "checkboxHint": "Đọc đầy đủ nội dung trước khi xác nhận. Không cần tải thêm tài liệu.",
+    "ethicsIntro": "Làm việc trung thực, độc lập và trong phạm vi chuyên môn.",
+    "privacyIntro": "Bảo vệ thông tin trong quá trình tiếp nhận và thực hiện dịch vụ.",
+    "ethics4": "Chỉ nhận công việc <b>phù hợp với năng lực</b>; <b>làm rõ phạm vi dịch vụ</b> và các giới hạn chuyên môn trước khi thực hiện.",
+    "ethics5": "<b>Thông báo kịp thời</b> khi phát hiện sai sót hoặc không thể tiếp tục bảo đảm <b>tính khách quan</b>; phối hợp làm rõ và khắc phục.",
+    "privacy4": "<b>Không sao chép, đăng tải</b>, dùng làm ví dụ công khai hoặc sử dụng dữ liệu khách hàng cho <b>mục đích cá nhân</b> khi chưa được phép.",
+    "privacy5": "Chỉ cho <b>người được phép</b> tiếp cận dữ liệu cần thiết; <b>giữ bí mật</b> thông tin ngay cả <b>sau khi kết thúc dịch vụ</b>.",
+    "sectionTitle": "Cam kết đạo đức & bảo mật",
+    "sectionHint": "Một lần xác nhận cho cả đạo đức nghề nghiệp và bảo mật thông tin.",
+    "label": "Tôi cam kết tuân thủ đạo đức nghề nghiệp và bảo mật thông tin",
+    "hint": "Một cam kết chung áp dụng cho cả EV4 và EV5. Không cần tải tài liệu cho hai nhóm này.",
+    "title": "Cam kết đạo đức nghề nghiệp và bảo mật thông tin",
+    "description": "Vui lòng đọc cả hai phần trước khi đồng ý. Cam kết được ghi nhận cùng hồ sơ khi bạn nộp.",
+    "ethics1": "Cung cấp thông tin <b>trung thực</b>, thực hiện công việc <b>trong phạm vi năng lực</b> chuyên môn của mình.",
+    "ethics2": "<b>Công khai xung đột lợi ích</b> và <b>không lợi dụng</b> hồ sơ hoặc thông tin khách hàng để trục lợi.",
+    "ethics3": "<b>Không thông đồng</b>, hỗ trợ gian lận hoặc hành vi <b>vi phạm pháp luật thuế</b>.",
+    "privacy1": "<b>Chỉ sử dụng</b> thông tin và tài liệu của người dùng <b>để thực hiện dịch vụ đã thỏa thuận</b>.",
+    "privacy2": "<b>Không tiết lộ</b> hoặc chia sẻ thông tin trái phép; <b>bảo vệ tài liệu và tài khoản</b> truy cập.",
+    "privacy3": "<b>Thông báo cho Shared Hub</b> khi phát hiện <b>sự cố hoặc nguy cơ lộ thông tin</b> để phối hợp xử lý.",
+    "read": "Xem nội dung cam kết",
+    "later": "Để sau",
+    "accept": "Tôi đã đọc và đồng ý",
+    "open": "Đọc và xác nhận cam kết",
+    "scrollToAccept": "Đọc hết nội dung để đồng ý",
+    "reviewAgain": "Xem lại",
+    "withdraw": "Hủy đồng ý",
+    "close": "Đóng",
+    "accepted": "Đã đồng ý cam kết",
+    "pending": "Chưa đồng ý cam kết"
   }
 }

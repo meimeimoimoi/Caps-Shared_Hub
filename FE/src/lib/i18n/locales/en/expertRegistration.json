@@ -1,5 +1,24 @@
 {
+  "profileStep": {
+    "heading": "Expert profile",
+    "moreTitle": "More details",
+    "moreHint": "Optional, makes your profile more complete"
+  },
+  "autoSave": {
+    "saving": "Saving…",
+    "saved": "Saved at {{time}}",
+    "failed": "Could not save.",
+    "retry": "Retry"
+  },
+  "supplementStep": {
+    "reviewerNote": "The reviewer asked for:",
+    "noteLabel": "Explanation",
+    "notePlaceholder": "Describe what you added or clarified",
+    "noteHint": "Optional when you changed your details or uploaded more evidence."
+  },
   "validation": {
+    "evidenceRequired": "Add at least one uploaded file or saved evidence link to continue.",
+    "conductRequired": "Read and accept the professional ethics and confidentiality commitment.",
     "required": "This field is required.",
     "email": "Please enter a valid email address.",
     "validValue": "Please enter a valid value.",
@@ -16,7 +35,7 @@
     "supplement": "Add a document or an explanation."
   },
   "messages": {
-    "draftSaved": "Draft saved. You can come back and finish your application at any time.",
+    "draftSaved": "You can come back and finish it later.",
     "accountCreated": "Account created. You can continue completing your application.",
     "emailTaken": "This email already has an account. Sign in to continue your application.",
     "tooManyRequests": "Too many attempts. Please wait a moment and try again.",
@@ -155,6 +174,7 @@
     "namePlaceholder": "Jane Nguyen"
   },
   "actions": {
+    "resubmit": "Send additional information",
     "signIn": "Sign in",
     "create": "Create account",
     "creating": "Creating…",
@@ -172,6 +192,7 @@
     "editSection": "Edit {{section}}"
   },
   "fields": {
+    "phonePlaceholder": "Enter your phone number",
     "fullName": "Full name",
     "fullNameRequired": "Full name *",
     "namePlaceholder": "Your full name",
@@ -241,6 +262,7 @@
   "experience": {
     "heading": "Professional experience",
     "guidance": "Help reviewers understand your tax and accounting experience.",
+    "expertisePlaceholder": "Choose one or more fields",
     "overview": "Experience overview",
     "years": "Years of experience",
     "taxYears": "Years of tax and accounting experience *",
@@ -250,7 +272,7 @@
     "expertise": "Areas of expertise",
     "expertiseRequired": "Areas of expertise *",
     "required": "Required",
-    "expertiseNote": "These describe your background. They do not grant approval to offer a service.",
+    "expertiseNote": "Fields only describe your expertise. The services you offer are registered separately once your application meets the eligibility requirements (Gate 1).",
     "cv": "Curriculum vitae",
     "taxAccounting": "Tax and accounting experience",
     "none": "None selected",
@@ -265,6 +287,14 @@
     "cvHelp": "Your CV is self-declared and helps the reviewer check your experience. Professional evidence is uploaded in the next step."
   },
   "documents": {
+    "sectionTitle": "Evidence of eligibility and expertise",
+    "navigationTitle": "Choose an evidence group",
+    "navigationHint": "Two required groups and one optional group.",
+    "optional": "Optional",
+    "optionalGroup": "Optional — add certificates for training, seminars or continuing education if available.",
+    "required": "required",
+    "requiredGroup": "This group requires at least one uploaded file or saved link before continuing.",
+    "declaredGroup": "You confirm this with a statement when you submit; upload a file if you have one.",
     "heading": "Supporting documents",
     "categories": "Evidence categories",
     "evidence": "Provide relevant supporting evidence. Accepted document types and applicability must be confirmed by the eligibility policy.",
@@ -277,9 +307,9 @@
     "local": "selected locally",
     "countLabel": "Documents",
     "countNote": "Selected documents are awaiting verification. File count does not indicate approval.",
-    "lead": "Upload evidence for each eligibility group. You don't need all five groups; your CV was added in the previous step.",
+    "lead": "Add your legal and professional evidence, then read and accept the commitment below. You can save a draft and finish later.",
     "none": "None yet",
-    "groupsDone": "{{done}} of {{total}} groups have documents"
+    "groupsDone": "{{done}} of {{total}} required conditions completed"
   },
   "review": {
     "heading": "Review and submit",
@@ -355,8 +385,7 @@
     "retry": "Try again"
   },
   "stepper": {
-    "personal": "Personal",
-    "experience": "Experience",
+    "profile": "Profile",
     "documents": "Evidence",
     "review": "Submit"
   },
@@ -394,7 +423,9 @@
       "phone": "Phone number",
       "yearsExperience": "Years of experience",
       "fields": "At least one field of expertise",
-      "cv": "CV file"
+      "cv": "CV file",
+      "legalEligibility": "Legal eligibility evidence",
+      "professionalQualification": "Tax professional certificate"
     },
     "stepCount": "Step {{current}} of {{total}}",
     "stepCurrent": "In progress",
@@ -416,5 +447,36 @@
     "unverifiedBody": "Verify your email to keep uploading. Files already uploaded are kept.",
     "fullTitle": "The application holds the maximum of {{max}} files",
     "fullBody": "Remove files you no longer need to add other documents."
+  },
+  "commitment": {
+    "checkboxHint": "Read the full commitment before confirming. No additional documents are required.",
+    "ethicsIntro": "Work with integrity, independence and within your expertise.",
+    "privacyIntro": "Protect information when receiving and performing a service.",
+    "ethics4": "Accept work <b>within your competence</b>; <b>clarify the service scope</b> and professional limitations before starting.",
+    "ethics5": "<b>Promptly report</b> errors or an inability to <b>remain objective</b>; cooperate in clarifying and correcting the issue.",
+    "privacy4": "<b>Do not copy, publish</b>, use as a public example or use client data for <b>personal purposes</b> without permission.",
+    "privacy5": "Limit access to necessary data to <b>authorized people</b>; <b>maintain confidentiality</b> even <b>after the service ends</b>.",
+    "sectionTitle": "Ethics & confidentiality commitment",
+    "sectionHint": "One confirmation covers both professional ethics and information confidentiality.",
+    "label": "I commit to professional ethics and information confidentiality",
+    "hint": "One shared commitment covers both EV4 and EV5. No documents are required for these groups.",
+    "title": "Professional ethics and confidentiality commitment",
+    "description": "Read both sections before agreeing. Your commitment is recorded with your application when you submit.",
+    "ethics1": "Provide <b>truthful information</b> and work <b>within your professional competence</b>.",
+    "ethics2": "<b>Disclose conflicts of interest</b> and <b>do not misuse</b> client applications or information for personal gain.",
+    "ethics3": "<b>Do not collude</b> in or support fraud or <b>tax law violations</b>.",
+    "privacy1": "<b>Use</b> user information and documents <b>only to perform the agreed service</b>.",
+    "privacy2": "<b>Do not disclose</b> or share information without authorization; <b>protect documents and access accounts</b>.",
+    "privacy3": "<b>Notify Shared Hub</b> of any <b>incident or suspected information exposure</b> so it can be addressed.",
+    "read": "Read the commitment",
+    "later": "Later",
+    "accept": "I have read and agree",
+    "open": "Read and confirm the commitment",
+    "scrollToAccept": "Read to the end to agree",
+    "reviewAgain": "Review",
+    "withdraw": "Withdraw agreement",
+    "close": "Close",
+    "accepted": "Commitment accepted",
+    "pending": "Commitment not accepted"
   }
 }

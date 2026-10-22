@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next'
-import { Info } from 'lucide-react'
+import { Info, LoaderCircle } from 'lucide-react'
 import { usePhoneAccountCheck } from '../hooks/usePhoneAccountCheck'
 
 /* Neutral note under an expert phone field: a different number is allowed (work phone), so the
@@ -31,21 +31,22 @@ export function PhoneAccountNotice({
     >
       <Info aria-hidden="true" size={15} className="mt-[2px] flex-none" />
       <div className="min-w-0">
-        <p>
+        <p className="!m-0">
           {check.status === 'different'
             ? t('phoneCheck.different', { phone: check.accountPhone })
             : t('phoneCheck.accountEmpty')}
         </p>
-        {check.failed && <p role="alert">{t('phoneCheck.failed')}</p>}
+        {check.failed && <p role="alert" className="text-ex-error-text !mb-0 !mt-2">{t('phoneCheck.failed')}</p>}
         <div className="mt-1.5 flex flex-wrap gap-3">
           <button
             type="button"
             disabled={check.saving}
             aria-busy={check.saving}
             onClick={() => void check.saveToAccount()}
-            className="font-semibold underline underline-offset-2"
+            className="inline-flex items-center gap-1.5 rounded-md font-semibold underline underline-offset-2 focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-wait disabled:opacity-60"
           >
-            {check.status === 'different'
+            {check.saving && <LoaderCircle size={14} aria-hidden="true" className="motion-safe:animate-spin" />}
+            {check.saving ? t('accountProfile.saving') : check.status === 'different'
               ? t('phoneCheck.updateAccount')
               : t('phoneCheck.saveToAccount')}
           </button>
@@ -53,7 +54,7 @@ export function PhoneAccountNotice({
             type="button"
             disabled={check.saving}
             onClick={check.keepDifferent}
-            className="underline underline-offset-2"
+            className="rounded-md underline underline-offset-2 focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-wait disabled:opacity-60"
           >
             {check.status === 'different'
               ? t('phoneCheck.keepDifferent')
