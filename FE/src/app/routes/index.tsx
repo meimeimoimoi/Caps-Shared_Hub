@@ -100,6 +100,9 @@ const AdminQualificationDetailPage = lazy(
 const AdminPricingApprovalsPage = lazy(
   () => import('@/pages/admin/AdminPricingApprovalsPage')
 )
+const AdminExpertPolicyPage = lazy(
+  () => import('@/pages/admin/AdminExpertPolicyPage')
+)
 const AdminExpertsPage = lazy(() => import('@/pages/admin/AdminExpertsPage'))
 const AdminDisputesPage = lazy(() => import('@/pages/admin/AdminDisputesPage'))
 const AdminDisputeDetailPage = lazy(
@@ -316,6 +319,11 @@ const router = createBrowserRouter(
         <Route
           path="/admin/experts/pricing"
           element={<AdminPricingApprovalsPage />}
+        />
+        {/* Expert policy values a System Admin changes without a restart (BR-E29) */}
+        <Route
+          path="/admin/experts/policy"
+          element={<AdminExpertPolicyPage />}
         />
       </Route>
       {/* Rest of the admin area: system admins only */}

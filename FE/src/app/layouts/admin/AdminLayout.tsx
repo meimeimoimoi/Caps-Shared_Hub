@@ -7,6 +7,7 @@ import {
   FileText,
   LayoutDashboard,
   Flag,
+  SlidersHorizontal,
   Tag,
   UserRound,
   Users,
@@ -64,6 +65,7 @@ interface AdminLayoutProps extends ShellPageProps {
     | 'competency'
     | 'approvals'
     | 'pricingReview'
+    | 'expertPolicy'
     | 'experts'
     | 'disputes'
     | 'escrow'
@@ -128,6 +130,12 @@ export function AdminLayout({
           active: section === 'pricingReview',
         },
         {
+          label: t('navigation.expertPolicy'),
+          icon: SlidersHorizontal,
+          to: '/admin/experts/policy',
+          active: section === 'expertPolicy',
+        },
+        {
           label: t('navigation.manageExperts'),
           icon: Users,
           to: '/admin/experts',
@@ -182,7 +190,11 @@ export function AdminLayout({
     '/reviewer/gate-1',
     '/reviewer/gate-2',
   ]
-  const approvalRoutes = ['/admin/experts/approvals', '/admin/experts/pricing']
+  const approvalRoutes = [
+    '/admin/experts/approvals',
+    '/admin/experts/pricing',
+    '/admin/experts/policy',
+  ]
   const adminRoutes = [
     '/admin',
     '/admin/experts',
