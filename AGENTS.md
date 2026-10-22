@@ -95,6 +95,7 @@ npm run dev        # :5173
 
 - Tính năng mới: `src/features/<ten>/` gồm `components/`, `hooks/`, `store/` (zustand), `api/`, `types/`. Tham khảo `features/auth/`.
 - UI nguyên tử dùng chung (kiểu shadcn) vào `src/components/ui/`.
+- Không thêm dòng mô tả nhỏ (chữ xám) dưới tiêu đề, tiêu đề khối hay nhãn trường. Giải thích cần thiết đặt trong `HelpTip` (`components/ui/feedback/help-tip.tsx`) cạnh tiêu đề; câu chỉ lặp lại tiêu đề thì bỏ.
 - Route mới khai báo trong `src/app/routes/`: lazy-load, bọc `ProtectedRoute` nếu cần đăng nhập.
 - **Gọi API qua `lib/api-client` (`api.get/post`)**. Không import `axios` trực tiếp trong component.
 - Server state dùng React Query (QueryClient ở `src/app/`); client state dùng zustand trong `store/` của feature.
