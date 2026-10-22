@@ -27,6 +27,7 @@ from slugify import slugify
 
 import config
 from src.legal_parser import Article, ParsedDocument, Unit, parse_legal_text
+from src import vbhn
 from src.logger_setup import setup_logger
 from src.normalize import has_document_number, parse_vn_date
 
@@ -225,7 +226,7 @@ def build_payload(rec: dict) -> dict:
     """Dựng payload ingestion cho 1 bản ghi metadata (đã qua normalize_record)."""
     text = rec.get("noi_dung_text") or ""
     source = rec.get("source") or "vbpl"
-    parsed = parse_legal_text(text)
+    parsed = parse_legal_text(text, consolidated=rec.get("loai_van_ban") == vbhn.DOC_TYPE)
     content = parsed.to_content_json()
     chunks = build_chunks(rec, parsed) if parsed.parse_status == "PARSED" else []
     file_hash, file_hash_basis = _file_hash(rec, text)
@@ -246,6 +247,11 @@ def build_payload(rec: dict) -> dict:
                 # Vì sao văn bản được lấy (chế độ --keywords-file) - giúp người duyệt lọc nhanh
                 "matched_keywords": rec.get("matched_keywords") or [],
                 "keyword_groups": rec.get("keyword_groups") or [],
+                # Set when fetched only via a "Lược đồ" relation; the full list stays in metadata.json
+                "related_from": rec.get("related_from"),
+                # VBHN that merged this document; vbhn_outdated = amendments it does not merge yet
+                "vbhn": rec.get("vbhn") or [],
+                **vbhn.vbhn_status(rec.get("doc_id"), rec.get("relations"), rec.get("vbhn")),
             },
         },
         "knowledge_document": {
@@ -263,6 +269,9 @@ def build_payload(rec: dict) -> dict:
                 "ocr_required": rec.get("ocr_required", False),
                 "scraped_at": rec.get("scraped_at"),
                 "attachments": rec.get("attachments") or [],
+                # VBHN: vbpl gives no effective date; the text applies from its latest merged amendment
+                **({"vbhn_effective_from": vbhn.latest_effective_date(parsed.footnotes)}
+                   if parsed.consolidated else {}),
             },
         },
         "chunks": chunks,

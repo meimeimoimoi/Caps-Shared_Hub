@@ -62,6 +62,12 @@ class LegalDocument:
     # Chế độ --keywords-file: những từ khoá / nhóm đã tìm ra văn bản này
     matched_keywords: List[str] = field(default_factory=list)
     keyword_groups: List[str] = field(default_factory=list)
+    # "Lược đồ" relations ({code, type, direction, doc_id, title}) and, for documents
+    # fetched only because of a relation, which document led here
+    relations: List[dict] = field(default_factory=list)
+    related_from: Optional[dict] = None
+    # Consolidated documents (VBHN) that merged this one: {id, doc_num, issue_date, merged}
+    vbhn: List[dict] = field(default_factory=list)
 
     def add_keyword(self, term: str, group: str) -> None:
         if term not in self.matched_keywords:
@@ -130,3 +136,5 @@ class SearchResultItem:
     downloaded_path: Optional[str] = None   # File đầu tiên tải thành công (giữ tương thích cũ)
     downloaded_paths: List[str] = field(default_factory=list)  # Tất cả file đã tải
     download_error: Optional[str] = None
+    relations: List[dict] = field(default_factory=list)  # parsed "Lược đồ" tab
+    vbhn: List[dict] = field(default_factory=list)  # VBHN list loaded by the same page

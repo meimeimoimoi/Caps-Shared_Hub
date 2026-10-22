@@ -8,6 +8,8 @@ bao gồm cả nội dung text và file PDF/DOC gốc.
 📄 Xem **[PLAN.md](./PLAN.md)** để đọc kế hoạch chi tiết đầy đủ (kiến trúc,
 lý do kỹ thuật, rủi ro, checklist).
 
+🤖 Làm ai-service / RAG? Đọc **[HOW_IT_WORKS.md](./HOW_IT_WORKS.md)**: văn bản pháp luật cơ bản, cách cào, cấu trúc file JSON, VBHN, dẫn chiếu và việc ai-service cần làm.
+
 > **Vị trí trong repo:** `Caps-Shared_Hub/crawler/` — project Python độc lập, không thuộc
 > solution .NET trong `BE/`. Mọi lệnh bên dưới chạy từ thư mục `crawler/`. Dữ liệu sinh ra
 > (`data/`, `logs/`) không được commit; file `data/<ngày>/<lượt>/export/**/*.json` là đầu vào cho `BE/ingestion`.
@@ -97,6 +99,8 @@ Mỗi file khớp schema `knowledge` của backend (`BE/ingestion/Entities`):
 
 Những chỗ đánh số bất thường được ghi `warnings` / unit `status: "WARNING"` để duyệt tay.
 
+Unit có `references`: các Điều/Khoản/Điểm mà unit đó dẫn chiếu tới, dạng `{doc, article, clause, point}`; `doc` là `"self"` hoặc số hiệu văn bản khác. Chỉ lấy dẫn chiếu rõ ràng: "… Luật/Nghị định/Thông tư này", "khoản N Điều này", "điểm x khoản này", "… Nghị định số 08/2015/NĐ-CP". Bỏ "khoản N Điều M" không ghi văn bản, dẫn chiếu theo tên Luật (không có số hiệu), và dẫn chiếu nằm trong đoạn trích “…” của văn bản sửa đổi.
+
 ```bash
 # Test bộ tách
 pip install pytest
@@ -175,6 +179,25 @@ Hệ thống được thiết kế tối ưu với 3 giai đoạn (Pipeline):
 | `--run-dir` | lượt mới nhất | Chọn lượt cũ cho `--export-only` hoặc `--purge-invalid`, ví dụ `data/2026-10-11/run-083015` |
 | `--keywords-file` | (tắt) | Cào hết theo bộ từ khoá TOML (vd `keywords/thue_tndn.toml`), chỉ giữ văn bản có tên khớp; thay cho `--keyword`/`--top-n`. Xem RUN_COMMANDS.md mục 4.1 |
 | `--no-skip-existing` | (tắt) | Với `--keywords-file`: không bỏ qua văn bản đã cào ở các lượt trước |
+| `--no-relations` | (tắt) | Không cào thêm văn bản liên quan theo tab Lược đồ |
+| `--refresh-relations` | (tắt) | Đọc lại Lược đồ của văn bản đã cào ở lượt trước thay vì dùng quan hệ đã lưu |
+
+## Văn bản liên quan (tab Lược đồ)
+
+Mỗi văn bản vbpl.vn được đọc thêm tab **Lược đồ** và lưu vào `relations` trong `metadata.json` (`code`, `type`, `direction`: `out` = văn bản này tác động lên văn bản kia, `in` = ngược lại). File export không chứa `relations`, chỉ có `related_from` và `vbhn_*`.
+Sau khi cào theo từ khoá, tool cào thêm **1 bước** các văn bản có quan hệ hướng dẫn / quy định chi tiết / sửa đổi / thay thế (`FOLLOW_RELATION_CODES` trong `config.py`); căn cứ ban hành và dẫn chiếu chỉ được lưu, không cào. Văn bản lấy theo cách này có `related_from` và `matched_keywords` rỗng.
+Cùng bước đó, tool cào thêm các văn bản được **dẫn chiếu có số hiệu** trong nội dung (`references` của unit, ví dụ "khoản 2 Điều 4 Thông tư số 58/2020/TT-BTC"), chỉ lấy từ văn bản **khớp từ khoá** (1 bước), với `related_from.relation = "dan_chieu_noi_dung"`. Id được lấy theo thứ tự: tiêu đề trong Lược đồ của chính văn bản dẫn chiếu → cache `data/reference_ids.json` → tìm trên vbpl theo số hiệu (khoảng 40 giây mỗi số hiệu; chỉ lưu kết quả tìm thấy). Số hiệu đã cào hoặc không tìm được thì bỏ qua, có log. `--no-relations` tắt cả phần này.
+Văn bản đã cào ở lượt trước vẫn được đi theo quan hệ: dùng `relations` đã lưu hoặc `data/relations_cache.json`, thiếu thì chỉ mở tab Lược đồ. Dùng `--refresh-relations` để bắt văn bản sửa đổi mới ban hành.
+
+## Văn bản hợp nhất (VBHN)
+
+VBHN là bản đã ghép sẵn các sửa đổi; mỗi Điều/Khoản/Điểm bị tác động có chú thích `[n]` ghi văn bản sửa đổi và ngày hiệu lực.
+
+- Mỗi văn bản vbpl lưu `vbhn`: các VBHN đã gộp nó (đọc cùng lúc với tab Lược đồ).
+- Tool cào thêm (1 bước, `related_from.relation = "hop_nhat"`) VBHN **mới nhất** mà văn bản là **văn bản gốc**: văn bản có ngày ban hành sớm nhất trong `merged`. Luật sửa nhiều luật xuất hiện trong VBHN của từng luật bị sửa, nhưng không phải văn bản gốc của các VBHN đó.
+- Khi tách VBHN, marker `[n]` được gỡ khỏi text và chuyển thành `amendments` của unit (`type`, `source_number`, `effective_from`, `text`). Marker ở tiêu đề Điều áp dụng cho mọi unit của Điều đó; marker ở tiêu đề hoặc phần mở đầu nằm trong `content_json.document_notes`.
+- Export của VBHN có `knowledge_document.metadata.vbhn_effective_from` (vbpl không ghi ngày hiệu lực cho VBHN, nên lấy ngày hiệu lực muộn nhất trong các chú thích).
+- Export của văn bản gốc có `vbhn_latest`, `vbhn_outdated` và `vbhn_missing`: các văn bản sửa đổi một phần (Lược đồ mã 10, chiều vào) mà VBHN mới nhất chưa gộp, cần đọc kèm cho tới khi có VBHN mới.
 
 ## Lưu ý đạo đức & pháp lý khi cào dữ liệu
 

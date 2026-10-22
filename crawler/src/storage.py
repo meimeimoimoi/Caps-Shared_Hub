@@ -207,6 +207,25 @@ def load_all_runs_records() -> Dict[str, dict]:
     return out
 
 
+
+def load_cache(name: str) -> dict:
+    """data/<name>.json shared by all runs: "relations_cache" (doc_id -> {"relations", "vbhn"}
+    of skipped documents), "reference_ids" (document number key -> doc_id)."""
+    path = config.DATA_ROOT / f"{name}.json"
+    if not path.is_file():
+        return {}
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except Exception as e:
+        logger.warning(f"Bỏ qua {path}: không đọc được ({e})")
+        return {}
+
+
+def save_cache(name: str, cache: dict) -> None:
+    path = config.DATA_ROOT / f"{name}.json"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(cache, ensure_ascii=False, indent=2), encoding="utf-8")
+
 def _migrate_placeholder_urls(records: Dict[str, dict]) -> int:
     """
     Chuẩn hóa các bản ghi cũ từ các lần chạy trước: `detail_url` từng bị ghi
