@@ -8,13 +8,32 @@ It does **not** own accounts (auth), expert profiles and availability (expert) o
 
 | Area | Entities | API |
 |---|---|---|
-| Documents (`workspace`) | `Template` → `TemplateVersion` (field schema), `Document` → `InputSnapshot` (form data) → `DocumentVersion` (immutable once sent to review) | Not yet |
+| Templates (`workspace`) | `Template` → `TemplateVersion` (field schema, `DRAFT` → `PUBLISHED` → `DEPRECATED`) | Done except publishing, see below |
+| Documents (`workspace`) | `Document` → `InputSnapshot` (form data) → `DocumentVersion` (immutable once sent to review) | Not yet |
 | AI chat (`workspace`) | `Conversation` → `ChatMessage` (with citations), `AiQuota` (free questions), `AiUsage` (how each answer was paid) | Not yet |
 | Expert review (`review`) | `ReviewCase` (request → payment → delivery → acceptance), `ReviewTask`, `InfoRequest`, `ReviewAttachment`, `ReviewStatusHistory` | Not yet (no case creation) |
 | Case chat (`review`) | `CaseMessage` (text between the two parties), `CaseReadMarker` (last message each party has read) | Done, see below |
 
-Apart from the case chat, entities still have public setters and no behavior; the next use cases should turn
+Apart from the case chat and templates, entities still have public setters and no behavior; the next use cases should turn
 them into entities with factories and rules (see AGENTS.md and `auth` as the model).
+
+## Templates
+
+The library users draft from (Flow 4, step 1–2). Routed by the gateway (`templates-v1`, `admin-templates-v1`).
+
+| Method | Endpoint | Who | Description |
+|---|---|---|---|
+| GET | `/api/v1/templates` | Signed-in user | Active templates with a `PUBLISHED` version: `[{ id, code, name, description, versionId, versionNo, updatedAt }]`. |
+| GET | `/api/v1/templates/{id}/schema` | Signed-in user | `{ templateId, templateVersionId, versionNo, fieldSchema }` of the published version; `fieldSchema` is the stored JSON array. |
+| POST | `/api/v1/admin/templates` | Permission `KnowledgeManage` | `{ code, name, description?, fieldSchema }`. Creates the template on first use of `code`, updates name/description, then overwrites the latest version while it is `DRAFT` or starts version N+1 as `DRAFT`. Published versions never change. |
+
+Rules:
+
+- `fieldSchema` must be a non-empty JSON array of objects (`FIELD_SCHEMA_INVALID`); code and name are required
+  (`TEMPLATE_INVALID`). Unknown, inactive or unpublished templates give `404 TEMPLATE_NOT_FOUND`.
+- Users only see `PUBLISHED` versions, so a new template stays hidden until it is published.
+
+Not done yet: publish / deprecate endpoint, a database rule allowing a single `PUBLISHED` version per template.
 
 ## Case chat (client ↔ expert)
 
