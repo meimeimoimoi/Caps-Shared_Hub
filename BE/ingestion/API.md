@@ -57,6 +57,7 @@ Path tính từ `/api/v1/knowledge`.
 |---|---|---|---|
 | POST | `/crawl-jobs` | KnowledgeManage | Kích hoạt crawl |
 | GET | `/crawl-jobs` | KnowledgeManage | Lịch sử crawl |
+| GET | `/crawl-jobs/{id}` | KnowledgeManage | Một job, kèm tiến trình (gọi lại định kỳ khi `RUNNING`) |
 | POST | `/documents/upload` | KnowledgeManage | Upload PDF/DOCX |
 | GET | `/documents/pending` | KnowledgeManage | Hàng chờ duyệt |
 | GET | `/documents/{id}/preview` | KnowledgeManage | Xem một văn bản để duyệt |
@@ -137,6 +138,27 @@ Lịch sử crawl, mới nhất trước. Item có dạng như response ở trê
 
 Lỗi: 400 `INVALID_PAGING`.
 
+### GET `/crawl-jobs/{id}`
+
+Một job, cùng dạng như trên. Trong lúc job `RUNNING`, `detail.progress` là mốc mới nhất worker báo về; FE gọi lại
+3–5 giây một lần và dừng khi `status` khác `RUNNING`. Khi job xong, `progress` giữ mốc cuối cùng.
+
+```json
+"progress": { "stage": "DETAILS", "done": 3, "total": 12, "message": "vbpl.vn", "updatedAt": "2026-10-22T10:15:02+00:00" }
+```
+
+| `stage` | Ý nghĩa |
+|---|---|
+| `SEARCHING` | vbpl: đang tìm, mở trang và tải file của loại văn bản thứ `done` trên `total` (`message` = loại); mof: chưa biết `total` |
+| `DETAILS` | Đang đọc chi tiết / trích text văn bản thứ `done` trên `total` |
+| `RELATIONS` | Đang cào văn bản liên quan; `message` cho biết bước con: đọc Lược đồ, tìm số hiệu được dẫn chiếu, cào văn bản liên quan (`done`/`total` đếm lại từ 0 ở mỗi bước con) |
+| `EXPORTING` | Đang tách Điều/Khoản và xuất file |
+| `POSTING` | Đang gửi văn bản thứ `done` trên `total` về ingestion (`message` = số hiệu) |
+
+`total` có thể null. Job tạo trước khi có tính năng này hoặc worker cũ thì không có `progress`.
+
+Lỗi: 404 `CRAWL_JOB_NOT_FOUND`.
+
 ## 5. Văn bản (document)
 
 ### POST `/documents/upload`
@@ -216,7 +238,7 @@ Response gồm các field của bản tóm tắt (trừ `hasContent`) và thêm:
 | `uploadedBy` | Người upload (văn bản upload) |
 | `rejectionReason` | Lý do từ chối |
 | `approvedBy`, `approvedAt` | Người và thời điểm quyết định, kể cả khi từ chối |
-| `metadata` | Văn bản upload: `{ fileName, contentType, sizeBytes }`. Văn bản crawl: thông tin từ crawler như `tinh_trang_hieu_luc`; `ingest.suggested_status` (`APPROVED`/`PENDING`) và `ingest.pending_reasons` là gợi ý cho người duyệt; văn bản hợp nhất (VBHN) có `vbhn_effective_from` vì `effectiveFrom` luôn null (vbpl không ghi ngày hiệu lực của VBHN) |
+| `metadata` | Văn bản upload: `{ fileName, contentType, sizeBytes }`. Văn bản crawl: thông tin từ crawler như `tinh_trang_hieu_luc`; `ingest.suggested_status` (`APPROVED`/`PENDING`) và `ingest.pending_reasons` là gợi ý cho người duyệt (`NO_TEXT`: không có toàn văn, cần upload file; `PARSE_FAILED`: không tách được; `OLD_FORMAT`: văn bản kiểu cũ tách theo mục I, II…, mọi unit là WARNING; `OCR_TEXT`: chữ đọc từ ảnh); văn bản hợp nhất (VBHN) có `vbhn_effective_from` vì `effectiveFrom` luôn null (vbpl không ghi ngày hiệu lực của VBHN) |
 | `contentJson` | Nội dung đã tách (cấu trúc bên dưới); null khi file upload chưa tách xong |
 | `fileUrl` | Chỉ có với văn bản upload: `/api/v1/knowledge/documents/{id}/file` |
 | `sourceUrl` | Chỉ có với văn bản crawl: trang văn bản trên site nguồn, ví dụ `https://vbpl.vn/van-ban/chi-tiet/173118` |
@@ -240,6 +262,8 @@ Cấu trúc `contentJson`:
           "number": "1",
           "title": "Phạm vi điều chỉnh",
           "section": null,                // Mục (nếu có)
+          // Chỉ có ở văn bản kiểu cũ không có "Điều": "Phần" (A, B…) hoặc "Mục" (I, II… hoặc A.I, A.II…);
+          // number khi đó là chữ / số La Mã. Không có key này = Điều
           "units": [
             { "id": "d1-0", "label": "Mở đầu", "clause": null, "point": null, "text": "…", "status": "AUTO" },
             { "id": "d1-1", "label": "Khoản 1", "clause": "1", "point": null, "text": "…", "status": "AUTO" },
@@ -371,6 +395,7 @@ ingestion chưa cấu hình key thì trả 401 `INTERNAL_KEY_INVALID`. Cách đ�
 | Method | Path | Body | Response `data` |
 |---|---|---|---|
 | POST | `/internal/crawl-jobs/{id}/documents` | Một file export của crawler | `{ "documentId", "imported" }` |
+| POST | `/internal/crawl-jobs/{id}/progress` | `{ "stage", "done", "total", "message" }` | `{}`, message `Progress saved.` |
 | POST | `/internal/crawl-jobs/{id}/complete` | `{ "status", "docsFound", "detail" }` | Crawl job |
 | GET | `/internal/documents/{id}/file` | | File gốc, như `/documents/{id}/file` |
 | POST | `/internal/documents/{id}/content` | `{ "contentJson" }` hoặc `{ "error" }` | `{}`, message `Content saved.` |
@@ -396,6 +421,10 @@ Văn bản được tạo ở trạng thái `PENDING`, là version mới của n
 đang `RUNNING`. Với hash đã có, quan hệ sửa đổi mới vẫn được ghi. Worker gửi văn bản có `related_from` sau cùng để nguồn
 liên quan đã có sẵn.
 Lỗi: 400 `INVALID_DOCUMENT_SOURCE`, `INVALID_CONTENT_JSON`; 404 `CRAWL_JOB_NOT_FOUND`; 409 `CRAWL_JOB_NOT_RUNNING`.
+
+**Tiến trình** (`/progress`): `stage` bắt buộc (≤ 32, lưu dạng chữ hoa), `done` ≥ 0, `total` ≥ 0 hoặc null, `message`
+≤ 500. Ghi đè `detail.progress` của job. Worker gửi tối đa 2 giây một lần trong cùng một giai đoạn và bỏ qua lỗi.
+Lỗi: 404 `CRAWL_JOB_NOT_FOUND`; 409 `CRAWL_JOB_NOT_RUNNING`.
 
 **Kết thúc job** (`/complete`): `status` là `SUCCEEDED` hoặc `FAILED` (không phân biệt hoa thường), `docsFound` ≥ 0,
 `detail` là JSON bất kỳ và được lưu vào `detail.result`.

@@ -35,6 +35,25 @@ public sealed class KnowledgeCrawlJobsController(ICurrentUser currentUser) : Con
         return Ok(ApiResponse<PageResponse<CrawlJobResponse>>.Ok(jobs));
     }
 
+    /// <summary>Gets one crawl job; poll it every few seconds while it is RUNNING.</summary>
+    /// <remarks>
+    /// detail.progress is the worker's latest milestone: { stage (SEARCHING, DETAILS, RELATIONS, EXPORTING,
+    /// POSTING), done, total, message, updatedAt }. Once finished, detail.result holds the summary or error.
+    /// </remarks>
+    /// <response code="200">The job.</response>
+    /// <response code="403">Missing the KnowledgeManage permission.</response>
+    /// <response code="404">CRAWL_JOB_NOT_FOUND.</response>
+    [HttpGet("{id:guid}")]
+    public async Task<IActionResult> Get(
+        Guid id,
+        [FromServices] IQueryHandler<GetCrawlJobQuery, CrawlJobResponse> handler,
+        CancellationToken ct
+    )
+    {
+        var job = await handler.HandleAsync(new(id), ct);
+        return Ok(ApiResponse<CrawlJobResponse>.Ok(job));
+    }
+
     /// <summary>Starts a manual crawl; the crawler worker runs it in the background.</summary>
     /// <remarks>
     /// sources: vbpl and/or mof. topN = newest documents per document type (crawler default 3);

@@ -26,6 +26,7 @@ active account. Request/response shapes, error codes and the worker endpoints: [
 |---|---|---|---|
 | POST | `/crawl-jobs` | KnowledgeManage | start a crawl (`sources`: vbpl/mof, `topN` or `all`); 409 while one runs |
 | GET | `/crawl-jobs?page&pageSize` | KnowledgeManage | crawl runs, newest first |
+| GET | `/crawl-jobs/{id}` | KnowledgeManage | one run; poll while RUNNING, `detail.progress` = worker's latest milestone |
 | POST | `/documents/upload` | KnowledgeManage | multipart PDF/DOCX (20 MB) + source metadata → new PENDING version |
 | GET | `/documents/pending?page&pageSize` | KnowledgeManage | review queue, oldest first |
 | GET | `/documents/{id}/preview` | KnowledgeManage | metadata + `contentJson` + `fileUrl`/`sourceUrl` |

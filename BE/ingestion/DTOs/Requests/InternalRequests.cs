@@ -26,6 +26,22 @@ public sealed record CompleteCrawlJobRequest(
         );
 }
 
+/// <summary>A milestone of a running crawl job.</summary>
+/// <param name="Stage">SEARCHING, DETAILS, RELATIONS, EXPORTING or POSTING.</param>
+/// <param name="Done">Items finished in the stage.</param>
+/// <param name="Total">Items in the stage, when known.</param>
+/// <param name="Message">Short text for the admin.</param>
+public sealed record ReportCrawlProgressRequest(
+    [Required, MaxLength(32)] string Stage,
+    [Range(0, int.MaxValue)] int Done,
+    [Range(0, int.MaxValue)] int? Total,
+    [MaxLength(500)] string? Message
+)
+{
+    public ReportCrawlProgressCommand ToCommand(Guid crawlJobId) =>
+        new(crawlJobId, Stage.Trim().ToUpperInvariant(), Done, Total, Message?.Trim());
+}
+
 /// <summary>The worker's result for an uploaded file: contentJson, or error when it could not be split.</summary>
 /// <param name="ContentJson">Same shape as content_json in a crawler export file.</param>
 public sealed record SaveParsedContentRequest(

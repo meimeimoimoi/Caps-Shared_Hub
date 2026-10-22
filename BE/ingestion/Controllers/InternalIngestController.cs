@@ -41,6 +41,28 @@ public sealed class InternalIngestController : ControllerBase
         return Ok(ApiResponse<ImportedDocumentResponse>.Ok(document));
     }
 
+    /// <summary>Records the latest milestone of a running crawl job.</summary>
+    /// <remarks>
+    /// Replaces detail.progress ({ stage, done, total, message, updatedAt }); admins poll it through
+    /// GET /api/v1/knowledge/crawl-jobs/{id}.
+    /// </remarks>
+    /// <response code="200">Progress saved.</response>
+    /// <response code="400">Invalid body.</response>
+    /// <response code="401">INTERNAL_KEY_INVALID.</response>
+    /// <response code="404">CRAWL_JOB_NOT_FOUND.</response>
+    /// <response code="409">CRAWL_JOB_NOT_RUNNING.</response>
+    [HttpPost("crawl-jobs/{id:guid}/progress")]
+    public async Task<IActionResult> ReportCrawlProgress(
+        Guid id,
+        ReportCrawlProgressRequest r,
+        [FromServices] ICommandHandler<ReportCrawlProgressCommand> handler,
+        CancellationToken ct
+    )
+    {
+        await handler.HandleAsync(r.ToCommand(id), ct);
+        return Ok(ApiResponse.Message("Progress saved."));
+    }
+
     /// <summary>Records the end of a crawl job.</summary>
     /// <remarks>
     /// status: SUCCEEDED or FAILED. detail (the worker's summary or error) is kept under detail.result,
