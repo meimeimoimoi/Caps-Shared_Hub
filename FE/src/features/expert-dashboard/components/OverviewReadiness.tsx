@@ -1,5 +1,6 @@
 import { useExpertPresentation } from '@/features/expert-dashboard/hooks/useExpertPresentation'
 import { useTranslation } from 'react-i18next'
+import { useFormatters } from '@/hooks/useFormatters'
 import {
   ExpertPanel,
   ExpertPanelHeader,
@@ -16,6 +17,7 @@ export function OverviewReadiness({
 }) {
   const { t } = useTranslation('expert')
   const display = useExpertPresentation()
+  const format = useFormatters()
 
   const open = services.filter((service) => service.bookingAllowed).length
   return (
@@ -68,18 +70,6 @@ export function OverviewReadiness({
               {service.reasons.map((reason) => (
                 <p key={reason}>{display.reason(reason)}</p>
               ))}
-              {service.pendingPricingVersion && (
-                <p>
-                  {t('pricingPending', {
-                    version: service.pendingPricingVersion,
-                  })}{' '}
-                  {service.pricing
-                    ? t('pricingEffective', {
-                        version: service.pricing.version,
-                      })
-                    : ''}
-                </p>
-              )}
               <details>
                 <summary>{t('readinessDetails')}</summary>
                 <dl>
@@ -100,7 +90,9 @@ export function OverviewReadiness({
                   <div>
                     <dt>{t('approvedPrice')}</dt>
                     <dd>
-                      {service.pricing?.version ?? t('noEffectivePricing')}
+                      {service.pricing
+                        ? format.money(service.pricing.fee)
+                        : t('noEffectivePricing')}
                     </dd>
                   </div>
                 </dl>

@@ -24,7 +24,7 @@
     "pendingExperts": "Hồ sơ chờ duyệt",
     "competencyReview": "Đánh giá năng lực",
     "finalApproval": "Phê duyệt cuối",
-    "pricingReview": "Duyệt giá dịch vụ",
+    "platformFees": "Phí nền tảng",
     "manageExperts": "Quản lý Expert",
     "operations": "Vận hành",
     "complaints": "Khiếu nại",
@@ -864,40 +864,25 @@
     "suspend": "Tạm ngưng dịch vụ",
     "reinstate": "Mở lại dịch vụ"
   },
-  "pricingReview": {
-    "title": "Duyệt giá dịch vụ",
-    "description": "Giá đầu tiên và thay đổi không quá 50% được hệ thống duyệt tự động. Trang này chỉ gồm các thay đổi lớn hơn ngưỡng, cần System Admin quyết định.",
-    "tabs": {
-      "PENDING_APPROVAL": "Chờ duyệt",
-      "RETURN_FOR_REVISION": "Đã trả về",
-      "REJECTED": "Đã từ chối"
-    },
-    "expert": "Chuyên gia · dịch vụ",
-    "change": "Giá hiện hành → giá mới",
-    "effectiveFrom": "Hiệu lực từ",
-    "reason": "Lý do của chuyên gia",
-    "percent": "Thay đổi {{percent}}%",
-    "empty": "Không có thay đổi giá nào.",
-    "approve": "Duyệt",
-    "return": "Trả về",
-    "reject": "Từ chối",
-    "noteRequired": "Ghi chú gửi chuyên gia (bắt buộc)",
-    "noteOptional": "Ghi chú (không bắt buộc)",
-    "dialog": {
-      "APPROVE": "Duyệt giá mới cho {{name}}?",
-      "RETURN_FOR_REVISION": "Trả giá về cho {{name}} chỉnh sửa?",
-      "REJECT": "Từ chối giá mới của {{name}}?"
-    },
-    "toast": {
-      "APPROVE": "Đã duyệt giá mới",
-      "RETURN_FOR_REVISION": "Đã trả giá về chỉnh sửa",
-      "REJECT": "Đã từ chối giá mới"
-    },
+  "platformFees": {
+    "title": "Phí nền tảng",
+    "description": "Đặt phần trăm nền tảng giữ lại cho mỗi dịch vụ. Chuyên gia tự đặt giá của mình; case đã tạo giữ nguyên phí tại thời điểm đặt.",
+    "service": "Dịch vụ",
+    "percent": "Phí nền tảng",
+    "effectiveFrom": "Áp dụng từ",
+    "notSet": "Chưa đặt",
+    "set": "Đặt phí",
+    "change": "Thay đổi",
+    "empty": "Chưa có dịch vụ nào trong danh mục.",
+    "dialog": "Phí nền tảng · {{name}}",
+    "percentLabel": "Phần trăm (0–{{max}})",
+    "dialogHelp": "Phí mới áp dụng ngay cho yêu cầu mới. Lần đặt đầu tiên mở dịch vụ cho chuyên gia đặt giá.",
+    "save": "Lưu phí",
+    "saved": "Đã cập nhật phí nền tảng cho {{name}}.",
     "errors": {
-      "PRICING_NOT_PENDING": "Giá này không còn chờ duyệt; tải lại trang.",
-      "PRICING_NOTE_REQUIRED": "Ghi rõ lý do trả về hoặc từ chối.",
-      "INVALID_PRICING_DECISION": "Quyết định không hợp lệ. Tải lại trang rồi thử lại.",
-      "failed": "Chưa ghi nhận được quyết định. Vui lòng thử lại."
+      "PLATFORM_FEE_INVALID": "Phí nền tảng phải từ 0 đến 99%.",
+      "SERVICE_NOT_FOUND": "Dịch vụ không còn trong danh mục.",
+      "failed": "Không thể lưu phí nền tảng. Hãy thử lại."
     }
   }
 }

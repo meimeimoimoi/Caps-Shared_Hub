@@ -104,7 +104,7 @@
     "gate2": "Vòng 2",
     "gate2Detail": "Kiểm tra năng lực cho dịch vụ này, đạt ngày {{date}}",
     "price": "Giá đã duyệt",
-    "priceDetail": "Bảng giá phiên bản {{version}} đã được duyệt",
+    "priceSet": "Đã tự đặt giá dịch vụ",
     "badge": "Đã xác thực",
     "gate1Passed": "Xác minh tư cách: đã đạt",
     "gate2Passed": "Kiểm tra năng lực cho dịch vụ này: đã đạt"

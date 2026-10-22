@@ -7,12 +7,12 @@ export interface ServiceReadiness {
   availability: boolean
   bookingAllowed: boolean
   reasons: string[]
+  /** The expert's own price for the service; null until one is set */
   pricing: {
-    version: string
-    effectiveFrom: string
-    effectiveTo: string | null
+    fee: number
+    turnaroundHours: number
+    updatedAt: string
   } | null
-  pendingPricingVersion: string | null
 }
 
 export interface ExpertContext {

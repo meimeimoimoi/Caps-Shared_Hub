@@ -99,8 +99,8 @@ const AdminQualificationsPage = lazy(
 const AdminQualificationDetailPage = lazy(
   () => import('@/pages/admin/AdminQualificationDetailPage')
 )
-const AdminPricingApprovalsPage = lazy(
-  () => import('@/pages/admin/AdminPricingApprovalsPage')
+const AdminPlatformFeesPage = lazy(
+  () => import('@/pages/admin/AdminPlatformFeesPage')
 )
 const AdminExpertsPage = lazy(() => import('@/pages/admin/AdminExpertsPage'))
 const AdminDisputesPage = lazy(() => import('@/pages/admin/AdminDisputesPage'))
@@ -202,6 +202,7 @@ const STAFF_ACCOUNT = [Permission.UserManage, Permission.ExpertReview] as const
 const KNOWLEDGE_ADMIN = [Permission.KnowledgeManage] as const
 const REVIEWER = [Permission.ExpertReview] as const
 const EXPERT_APPROVE = [Permission.ExpertApprove] as const
+const PRICING_MANAGE = [Permission.PricingManage] as const
 
 /** Preserve bookmarks that used the old gate query parameter. */
 function ReviewerHome() {
@@ -304,10 +305,16 @@ const router = createBrowserRouter(
           path="/admin/experts/approvals/:id"
           element={<AdminQualificationDetailPage scope="approval" />}
         />
-        {/* Price changes above the auto-approval threshold (POL-MKT-02) */}
+      </Route>
+      {/* Platform fee per service; experts set their own prices (System Admin) */}
+      <Route element={<PermissionRoute anyOf={PRICING_MANAGE} />}>
+        <Route
+          path="/admin/platform-fees"
+          element={<AdminPlatformFeesPage />}
+        />
         <Route
           path="/admin/experts/pricing"
-          element={<AdminPricingApprovalsPage />}
+          element={<Navigate to="/admin/platform-fees" replace />}
         />
       </Route>
       {/* Rest of the admin area: system admins only */}

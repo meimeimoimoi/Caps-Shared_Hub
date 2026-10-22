@@ -69,7 +69,6 @@ export function expertFromDto(dto: MarketplaceExpertDto): Expert {
         {
           price: s.price,
           slaHours: s.slaHours,
-          pricingVersion: s.pricingVersion,
           approvedAt: businessDate(s.approvedAt),
         },
       ])
@@ -109,7 +108,6 @@ export function bioFromDto(dto: MarketplaceExpertDto): ExpertBio {
       serviceName: s.serviceName,
       price: String(s.price),
       slaHours: s.slaHours,
-      pricingVersion: s.pricingVersion,
       approvedAt: businessDate(s.approvedAt),
     })),
     listing: {

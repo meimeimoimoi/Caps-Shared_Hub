@@ -2,6 +2,7 @@ import { Link, useLocation } from 'react-router-dom'
 import '@/features/expert-pricing/pricing.css'
 import { useExpertPresentation } from '@/features/expert-dashboard/hooks/useExpertPresentation'
 import { useTranslation } from 'react-i18next'
+import { useFormatters } from '@/hooks/useFormatters'
 import {
   useExpertContext,
   type ServiceReadiness,
@@ -83,6 +84,7 @@ export default function ExpertServicesPage() {
 
 function ServiceCard({ service }: { service: ServiceReadiness }) {
   const location = useLocation()
+  const format = useFormatters()
   const display = useExpertPresentation()
   const { t } = useTranslation('expert')
 
@@ -208,36 +210,19 @@ function ServiceCard({ service }: { service: ServiceReadiness }) {
                 <span className="ep-detail-label">{t('effectivePricing')}</span>
                 <span>
                   {service.pricing
-                    ? service.pricing.version
+                    ? format.money(service.pricing.fee)
                     : t('noEffectivePricing')}
                 </span>
                 {service.pricing && (
                   <span className="ep-detail-sub">
-                    {t('pricingFrom', {
-                      date: display.timestamp(
-                        service.pricing.effectiveFrom,
-                        'Asia/Ho_Chi_Minh',
-                        { day: '2-digit', month: 'short', year: 'numeric' }
-                      ),
+                    {t('pricing.deliveryIn', {
+                      hours: service.pricing.turnaroundHours,
                     })}
                   </span>
                 )}
               </div>
             </div>
           </div>
-          {service.pendingPricingVersion && (
-            <div className="ep-service-pricing-note">
-              <DollarSign size={14} aria-hidden="true" />
-              <span>
-                {t('pricingPending', {
-                  version: service.pendingPricingVersion,
-                })}{' '}
-                {service.pricing
-                  ? t('pricingEffective', { version: service.pricing.version })
-                  : t('noApprovedPricingIsCurrentlyEffective')}
-              </span>
-            </div>
-          )}
           {service.reasons.length > 0 && (
             <div className="ep-service-reasons">
               {service.reasons.map((r) => (

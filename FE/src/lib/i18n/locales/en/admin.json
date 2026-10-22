@@ -24,7 +24,7 @@
     "pendingExperts": "Pending Applications",
     "competencyReview": "Competency review",
     "finalApproval": "Final approval",
-    "pricingReview": "Service price review",
+    "platformFees": "Platform fees",
     "manageExperts": "Manage Experts",
     "operations": "Operations",
     "complaints": "Complaints",
@@ -864,40 +864,25 @@
     "suspend": "Suspend service",
     "reinstate": "Reinstate service"
   },
-  "pricingReview": {
-    "title": "Service price review",
-    "description": "The first price and changes of at most 50% are approved automatically. This page only lists larger changes, which a System Admin decides.",
-    "tabs": {
-      "PENDING_APPROVAL": "Pending",
-      "RETURN_FOR_REVISION": "Returned",
-      "REJECTED": "Rejected"
-    },
-    "expert": "Expert · service",
-    "change": "Current → new price",
+  "platformFees": {
+    "title": "Platform fees",
+    "description": "Set the percent the platform keeps for each service. Experts set their own prices; booked cases keep the fee they were booked with.",
+    "service": "Service",
+    "percent": "Platform fee",
     "effectiveFrom": "Effective from",
-    "reason": "Expert's reason",
-    "percent": "{{percent}}% change",
-    "empty": "No price changes.",
-    "approve": "Approve",
-    "return": "Return",
-    "reject": "Reject",
-    "noteRequired": "Note to the expert (required)",
-    "noteOptional": "Note (optional)",
-    "dialog": {
-      "APPROVE": "Approve the new price of {{name}}?",
-      "RETURN_FOR_REVISION": "Return the price to {{name}} for revision?",
-      "REJECT": "Reject the new price of {{name}}?"
-    },
-    "toast": {
-      "APPROVE": "New price approved",
-      "RETURN_FOR_REVISION": "Price returned for revision",
-      "REJECT": "New price rejected"
-    },
+    "notSet": "Not set",
+    "set": "Set fee",
+    "change": "Change",
+    "empty": "No services in the catalog yet.",
+    "dialog": "Platform fee · {{name}}",
+    "percentLabel": "Percent (0–{{max}})",
+    "dialogHelp": "The new fee applies at once to new requests. The first fee opens the service for experts to price.",
+    "save": "Save fee",
+    "saved": "Platform fee updated for {{name}}.",
     "errors": {
-      "PRICING_NOT_PENDING": "This price is no longer pending; reload the page.",
-      "PRICING_NOTE_REQUIRED": "Explain why it is returned or rejected.",
-      "INVALID_PRICING_DECISION": "The decision is invalid. Reload the page and try again.",
-      "failed": "The decision was not recorded. Please try again."
+      "PLATFORM_FEE_INVALID": "The platform fee must be 0 to 99%.",
+      "SERVICE_NOT_FOUND": "This service is no longer in the catalog.",
+      "failed": "Could not save the platform fee. Please try again."
     }
   }
 }

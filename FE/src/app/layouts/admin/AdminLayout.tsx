@@ -63,7 +63,7 @@ interface AdminLayoutProps extends ShellPageProps {
     | 'pending'
     | 'competency'
     | 'approvals'
-    | 'pricingReview'
+    | 'platformFees'
     | 'experts'
     | 'disputes'
     | 'escrow'
@@ -85,6 +85,7 @@ export function AdminLayout({
   const user = useAuthStore((s) => s.user)
   const canReview = hasAnyPermission(user, [Permission.ExpertReview])
   const canApprove = hasAnyPermission(user, [Permission.ExpertApprove])
+  const canManagePricing = hasAnyPermission(user, [Permission.PricingManage])
   const isSystemAdmin = hasAnyPermission(user, [Permission.UserManage])
   const allGroups: NavGroup[] = [
     {
@@ -122,10 +123,10 @@ export function AdminLayout({
           active: section === 'approvals',
         },
         {
-          label: t('navigation.pricingReview'),
+          label: t('navigation.platformFees'),
           icon: Banknote,
-          to: '/admin/experts/pricing',
-          active: section === 'pricingReview',
+          to: '/admin/platform-fees',
+          active: section === 'platformFees',
         },
         {
           label: t('navigation.manageExperts'),
@@ -182,7 +183,7 @@ export function AdminLayout({
     '/reviewer/gate-1',
     '/reviewer/gate-2',
   ]
-  const approvalRoutes = ['/admin/experts/approvals', '/admin/experts/pricing']
+  const approvalRoutes = ['/admin/experts/approvals']
   const adminRoutes = [
     '/admin',
     '/admin/experts',
@@ -198,6 +199,7 @@ export function AdminLayout({
         if (!i.to) return false
         if (reviewerRoutes.includes(i.to)) return canReview
         if (approvalRoutes.includes(i.to)) return canApprove
+        if (i.to === '/admin/platform-fees') return canManagePricing
         if (i.to === '/admin/account') return isSystemAdmin || canReview
         if (adminRoutes.includes(i.to)) return isSystemAdmin
         return false

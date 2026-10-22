@@ -111,7 +111,7 @@
     "gate2": "Gate 2",
     "gate2Detail": "Competency for this service, passed on {{date}}",
     "price": "Fee {{version}}",
-    "priceDetail": "Fee schedule {{version}} approved",
+    "priceSet": "Set their own service fee",
     "badge": "Verified",
     "gate1Passed": "Eligibility check: passed",
     "gate2Passed": "Competency check for this service: passed"
