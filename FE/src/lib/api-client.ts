@@ -14,7 +14,7 @@ export class ApiError extends Error {
   }
 }
 
-function getApiBaseUrl() {
+export function getApiBaseUrl() {
   const fromEnv = import.meta.env.VITE_API_URL as string | undefined
   if (fromEnv && fromEnv.trim().length > 0) return fromEnv.replace(/\/$/, '')
   return '/api'
