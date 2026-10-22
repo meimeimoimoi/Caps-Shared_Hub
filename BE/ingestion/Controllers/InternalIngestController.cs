@@ -19,8 +19,9 @@ public sealed class InternalIngestController : ControllerBase
     /// <summary>Imports one document found by a crawl job.</summary>
     /// <remarks>
     /// Body: one crawler export file (schema_version 2) as written to export/; chunks are ignored. The document
-    /// becomes a PENDING version of its legal source. A file hash already stored is skipped (imported = false),
-    /// so resending is safe.
+    /// becomes a PENDING version of its legal source. legal_source.metadata.related_from of an amending or
+    /// replacing relation adds a legal_amendment link to that source when it is already imported. A file hash
+    /// already stored is skipped (imported = false, only a new link is saved), so resending is safe.
     /// </remarks>
     /// <response code="200">The document id and whether it was new.</response>
     /// <response code="400">Invalid body, INVALID_DOCUMENT_SOURCE or INVALID_CONTENT_JSON.</response>

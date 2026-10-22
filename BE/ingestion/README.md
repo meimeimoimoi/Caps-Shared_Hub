@@ -34,8 +34,8 @@ active account. Request/response shapes, error codes and the worker endpoints: [
 | GET | `/sources?q&docType&page&pageSize` | active account | search by number/title, with amendment links |
 | GET | `/sources/{id}/tree` | active account | amendment family tree (from `legal_amendment`) |
 
-Nothing writes `legal_amendment` yet (crawler exports carry no amendment links), so a tree is a single node until
-links are extracted by the parser or entered by an admin.
+`legal_amendment` is written by the crawl import from `legal_source.metadata.related_from` (vbpl "Lược đồ" relations
+`sua_doi_mot_phan` → `AMENDS`, `thay_the_toan_bo` → `REPLACES`), when the other source is already imported.
 
 ## Crawler worker
 

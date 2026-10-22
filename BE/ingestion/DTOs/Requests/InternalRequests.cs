@@ -79,8 +79,29 @@ public sealed record CrawledDocumentRequest(
             document.EffectiveFrom,
             document.EffectiveTo,
             content.GetRawText(),
-            metadata.ToJsonString()
+            metadata.ToJsonString(),
+            Amendment(sourceMetadata["related_from"])
         );
+    }
+
+    // "Lược đồ" relations that change the other document; guidance, VBHN and citation links are not amendments
+    private static readonly Dictionary<string, string> AmendmentTypes = new()
+    {
+        ["sua_doi_mot_phan"] = "AMENDS",
+        ["thay_the_toan_bo"] = "REPLACES",
+    };
+
+    /// <summary>related_from as an amendment; direction "in" means this document acts on the other one.</summary>
+    private static CrawledAmendment? Amendment(JsonNode? relatedFrom)
+    {
+        var number = relatedFrom?["so_hieu"]?.GetValue<string>().Trim();
+        var relation = relatedFrom?["relation"]?.GetValue<string>() ?? "";
+        var direction = relatedFrom?["direction"]?.GetValue<string>();
+        if (string.IsNullOrEmpty(number) || direction is not ("in" or "out"))
+            return null;
+        return AmendmentTypes.TryGetValue(relation, out var type)
+            ? new(number, type, AmendsOther: direction == "in")
+            : null;
     }
 
     private static JsonObject ObjectOrEmpty(JsonElement? value) =>

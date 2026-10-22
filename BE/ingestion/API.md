@@ -216,7 +216,7 @@ Response gồm các field của bản tóm tắt (trừ `hasContent`) và thêm:
 | `uploadedBy` | Người upload (văn bản upload) |
 | `rejectionReason` | Lý do từ chối |
 | `approvedBy`, `approvedAt` | Người và thời điểm quyết định, kể cả khi từ chối |
-| `metadata` | Văn bản upload: `{ fileName, contentType, sizeBytes }`. Văn bản crawl: thông tin từ crawler như `tinh_trang_hieu_luc`; `ingest.suggested_status` (`APPROVED`/`PENDING`) và `ingest.pending_reasons` là gợi ý cho người duyệt |
+| `metadata` | Văn bản upload: `{ fileName, contentType, sizeBytes }`. Văn bản crawl: thông tin từ crawler như `tinh_trang_hieu_luc`; `ingest.suggested_status` (`APPROVED`/`PENDING`) và `ingest.pending_reasons` là gợi ý cho người duyệt; văn bản hợp nhất (VBHN) có `vbhn_effective_from` vì `effectiveFrom` luôn null (vbpl không ghi ngày hiệu lực của VBHN) |
 | `contentJson` | Nội dung đã tách (cấu trúc bên dưới); null khi file upload chưa tách xong |
 | `fileUrl` | Chỉ có với văn bản upload: `/api/v1/knowledge/documents/{id}/file` |
 | `sourceUrl` | Chỉ có với văn bản crawl: trang văn bản trên site nguồn, ví dụ `https://vbpl.vn/van-ban/chi-tiet/173118` |
@@ -243,7 +243,16 @@ Cấu trúc `contentJson`:
           "units": [
             { "id": "d1-0", "label": "Mở đầu", "clause": null, "point": null, "text": "…", "status": "AUTO" },
             { "id": "d1-1", "label": "Khoản 1", "clause": "1", "point": null, "text": "…", "status": "AUTO" },
-            { "id": "d1-2", "label": "Khoản 1 · Điểm a", "clause": "1", "point": "a", "text": "…", "status": "WARNING", "warning": "…" }
+            { "id": "d1-2", "label": "Khoản 1 · Điểm a", "clause": "1", "point": "a", "text": "…", "status": "WARNING", "warning": "…" },
+            {
+              "id": "d1-3", "label": "Khoản 2", "clause": "2", "point": null, "text": "…", "status": "AUTO",
+              // Chỉ có khi unit dẫn chiếu tới điều khoản khác; doc là "self" (chính văn bản này) hoặc số hiệu
+              "references": [{ "doc": "70/2024/NĐ-CP", "article": "21", "clause": "3", "point": null }],
+              // Chỉ có ở VBHN: chú thích [n] gắn với unit (hoặc với cả Điều)
+              "amendments": [
+                { "note": 3, "type": "sửa đổi, bổ sung", "source_number": "71/2025/TT-BTC", "effective_from": "2025-07-01", "text": "Khoản này được sửa đổi, bổ sung …" }
+              ]
+            }
           ]
         }
       ]
@@ -251,12 +260,14 @@ Cấu trúc `contentJson`:
   ],
   "closing": "Nơi nhận: …",
   "appendices": [{ "title": "Phụ lục I", "text": "…" }],
-  "warnings": ["Số Điều không liên tiếp: Điều 2 -> Điều 1"]
+  "warnings": ["Số Điều không liên tiếp: Điều 2 -> Điều 1"],
+  "document_notes": []                    // chỉ có ở VBHN: chú thích ở tiêu đề / phần mở đầu, cùng dạng amendments
 }
 ```
 
 `units` là từng đoạn mở đầu, Khoản hoặc Điểm của một Điều. Unit có `status: "WARNING"` (kèm `warning`) là chỗ đánh số
-bất thường cần người duyệt xem lại; `warnings` ở cuối là cảnh báo cho cả văn bản.
+bất thường cần người duyệt xem lại; `warnings` ở cuối là cảnh báo cho cả văn bản. Trong `amendments`, `type`,
+`source_number` và `effective_from` có thể null khi crawler không đọc được từ chú thích; `text` luôn có.
 
 Lỗi: 404 `DOCUMENT_NOT_FOUND`.
 
@@ -346,8 +357,8 @@ cha; ở gốc cả hai là null. Cây sâu tối đa 10 tầng; quan hệ vòng
 }
 ```
 
-Hiện chưa có luồng nào ghi bảng `legal_amendment` (file export của crawler không có quan hệ sửa đổi), nên cây luôn chỉ có
-một node và `amends`/`amendedBy` ở `/sources` luôn rỗng.
+Bảng `legal_amendment` được ghi khi import văn bản crawl có `related_from` (xem mục 7), nên chỉ có quan hệ giữa văn bản
+khớp từ khoá và văn bản crawler cào thêm theo tab "Lược đồ" của vbpl. `affectedArticles` hiện luôn null.
 
 Lỗi: 404 `SOURCE_NOT_FOUND`.
 
@@ -373,6 +384,7 @@ snake_case:
 | `legal_source.document_number`, `doc_type`, `title` | Bắt buộc; `document_number` ≤ 256, `doc_type` ≤ 128 |
 | `legal_source.issuing_authority` | ≤ 512 |
 | `legal_source.metadata.detail_url` | Thành `sourceUrl` của văn bản |
+| `legal_source.metadata.related_from` | `{ so_hieu, relation, direction }`: văn bản crawler đi từ đó tới văn bản này. `relation` `sua_doi_mot_phan` / `thay_the_toan_bo` ghi quan hệ `AMENDS` / `REPLACES` với nguồn số hiệu `so_hieu` (`direction: "in"`: văn bản này sửa văn bản kia, `"out"`: ngược lại), chỉ khi nguồn đó đã được import; quan hệ khác bị bỏ qua |
 | `knowledge_document.source` | `CRAWL_VBPL` hoặc `CRAWL_MOF` |
 | `knowledge_document.file_hash` | SHA-256 dạng hex chữ thường; hash đã có thì không tạo mới, trả `imported: false` kèm `documentId` cũ |
 | `knowledge_document.content_json` | Bắt buộc, phải là object |
@@ -381,7 +393,8 @@ snake_case:
 | `chunks` | Bị bỏ qua (dành cho bước index) |
 
 Văn bản được tạo ở trạng thái `PENDING`, là version mới của nguồn cùng số hiệu (nguồn được tạo nếu chưa có). Job phải
-đang `RUNNING`.
+đang `RUNNING`. Với hash đã có, quan hệ sửa đổi mới vẫn được ghi. Worker gửi văn bản có `related_from` sau cùng để nguồn
+liên quan đã có sẵn.
 Lỗi: 400 `INVALID_DOCUMENT_SOURCE`, `INVALID_CONTENT_JSON`; 404 `CRAWL_JOB_NOT_FOUND`; 409 `CRAWL_JOB_NOT_RUNNING`.
 
 **Kết thúc job** (`/complete`): `status` là `SUCCEEDED` hoặc `FAILED` (không phân biệt hoa thường), `docsFound` ≥ 0,
@@ -429,5 +442,5 @@ Chỉ có ở API nội bộ: `INTERNAL_KEY_INVALID` (401), `CRAWL_JOB_NOT_FOUND
 
 - API duyệt văn bản (`APPROVED`), tách chunk và index vào vector store.
 - Sửa metadata của nguồn văn bản, xoá văn bản.
-- Ghi quan hệ sửa đổi (`legal_amendment`).
+- Quan hệ sửa đổi giữa hai văn bản cùng khớp từ khoá (export chỉ có `related_from`), `affectedArticles`, quan hệ VBHN.
 - Chọn từ khoá hoặc loại văn bản khi crawl; crawl theo lịch (`SCHEDULED`).

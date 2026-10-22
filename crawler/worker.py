@@ -77,7 +77,10 @@ def export_payloads(export_dir: Path) -> Iterator[Tuple[dict, dict]]:
 def post_export(job_id: str, export_dir: Path) -> list:
     """Sends every exported document to the job; returns one summary line per document."""
     summary = []
-    for entry, payload in export_payloads(export_dir):
+    # Documents reached through a relation go last, so ingestion finds the source they are linked to
+    exported = sorted(export_payloads(export_dir),
+                      key=lambda e: e[1]["legal_source"]["metadata"].get("related_from") is not None)
+    for entry, payload in exported:
         result = call("POST", f"/internal/crawl-jobs/{job_id}/documents", json=payload).json()["data"]
         summary.append({
             "documentNumber": entry["document_number"],

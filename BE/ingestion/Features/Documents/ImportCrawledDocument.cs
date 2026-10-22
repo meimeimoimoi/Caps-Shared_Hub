@@ -9,6 +9,7 @@ namespace Caps.Ingestion.Features.Documents;
 
 /// <summary>One document a crawl job found, from the worker's export file (JSON columns as raw text).</summary>
 /// <param name="SourceUrl">Page of the document on the crawled site; the original file is not stored.</param>
+/// <param name="Amendment">Amendment between this document and the one the crawler reached it from, if any.</param>
 public sealed record ImportCrawledDocumentCommand(
     Guid CrawlJobId,
     string DocumentNumber,
@@ -23,12 +24,23 @@ public sealed record ImportCrawledDocumentCommand(
     DateOnly? EffectiveFrom,
     DateOnly? EffectiveTo,
     string ContentJson,
-    string Metadata
+    string Metadata,
+    CrawledAmendment? Amendment
+);
+
+/// <summary>An amendment link between the imported document and another legal source, found by its number.</summary>
+/// <param name="RelationType">AMENDS or REPLACES.</param>
+/// <param name="AmendsOther">True when the imported document amends the other one, false when it is amended by it.</param>
+public sealed record CrawledAmendment(
+    string OtherDocumentNumber,
+    string RelationType,
+    bool AmendsOther
 );
 
 /// <summary>
-/// Adds the document as a new PENDING version of its legal source (created on first sight). Idempotent: a file
-/// hash that is already stored is skipped, so the worker may resend after a failure.
+/// Adds the document as a new PENDING version of its legal source (created on first sight) and records its
+/// amendment link. Idempotent: a file hash that is already stored is skipped (only a new link is saved), so the
+/// worker may resend after a failure.
 /// </summary>
 public sealed class ImportCrawledDocumentHandler(
     IngestionDbContext db,
@@ -73,7 +85,15 @@ public sealed class ImportCrawledDocumentHandler(
             .Select(x => (Guid?)x.Id)
             .FirstOrDefaultAsync(ct);
         if (existingId is { } id)
+        {
+            // A document crawled before may come back through a relation; a source created here stays unsaved
+            if (source != candidate && await LinkAsync(source, command.Amendment, now, ct))
+            {
+                await unitOfWork.SaveChangesAsync(ct);
+                await tx.CommitAsync(ct);
+            }
             return new(id, Imported: false);
+        }
 
         var document = new KnowledgeDocument
         {
@@ -92,8 +112,46 @@ public sealed class ImportCrawledDocumentHandler(
             CreatedAt = now,
         };
         db.KnowledgeDocuments.Add(document);
+        await LinkAsync(source, command.Amendment, now, ct);
         await unitOfWork.SaveChangesAsync(ct);
         await tx.CommitAsync(ct);
         return new(document.Id, Imported: true);
+    }
+
+    /// <summary>Adds the amendment link; false when there is none, it is already stored or the other source is unknown.</summary>
+    private async Task<bool> LinkAsync(
+        LegalSource source,
+        CrawledAmendment? amendment,
+        DateTimeOffset now,
+        CancellationToken ct
+    )
+    {
+        if (amendment is null)
+            return false;
+        // shortcut: the other source must be imported first (the worker posts documents reached through a
+        // relation last); a link to a source imported later is lost, look for it then if other clients appear
+        var other = await db.LegalSources.FirstOrDefaultAsync(
+            x => x.DocumentNumber == amendment.OtherDocumentNumber,
+            ct
+        );
+        if (other is null || other.Id == source.Id)
+            return false;
+        var (amending, amended) = amendment.AmendsOther ? (source, other) : (other, source);
+        var linked = await db.LegalAmendments.AnyAsync(
+            x => x.AmendingSourceId == amending.Id && x.AmendedSourceId == amended.Id,
+            ct
+        );
+        if (linked)
+            return false;
+        db.LegalAmendments.Add(
+            new LegalAmendment
+            {
+                AmendingSource = amending,
+                AmendedSource = amended,
+                RelationType = amendment.RelationType,
+                CreatedAt = now,
+            }
+        );
+        return true;
     }
 }
