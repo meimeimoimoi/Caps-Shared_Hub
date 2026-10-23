@@ -3,6 +3,7 @@ using Caps.Expert.Application.Abstractions;
 using Caps.Expert.Domain.Applications;
 using Caps.Expert.Domain.Policies;
 using Caps.Expert.Domain.Qualifications;
+using Caps.Expert.Domain.Reviews;
 using Microsoft.EntityFrameworkCore;
 
 namespace Caps.Expert.Infrastructure.Persistence;
@@ -30,6 +31,12 @@ public sealed class ExpertPolicyProvider(ExpertDbContext db, ExpertPolicyOptions
     {
         var current = await LoadAsync(ct);
         return new(TimeSpan.FromDays(current[PolicySettingKeys.ReapplyCompetencyFailDays]));
+    }
+
+    public async Task<ReviewClaimPolicy> GetReviewClaimAsync(CancellationToken ct)
+    {
+        var current = await LoadAsync(ct);
+        return new(TimeSpan.FromHours(current[PolicySettingKeys.ReviewClaimHours]));
     }
 
     private async Task<IReadOnlyDictionary<string, int>> LoadAsync(CancellationToken ct)

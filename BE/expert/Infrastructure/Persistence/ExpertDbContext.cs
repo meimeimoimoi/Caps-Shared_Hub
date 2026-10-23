@@ -5,6 +5,7 @@ using Caps.Expert.Domain.Policies;
 using Caps.Expert.Domain.Pricing;
 using Caps.Expert.Domain.Profiles;
 using Caps.Expert.Domain.Qualifications;
+using Caps.Expert.Domain.Reviews;
 using Caps.Expert.Infrastructure.Messaging;
 using Microsoft.EntityFrameworkCore;
 
@@ -33,6 +34,8 @@ public sealed class ExpertDbContext(DbContextOptions<ExpertDbContext> options) :
     public DbSet<AvailabilitySlot> AvailabilitySlots => Set<AvailabilitySlot>();
     public DbSet<PolicySetting> PolicySettings => Set<PolicySetting>();
     public DbSet<PolicySettingChange> PolicySettingChanges => Set<PolicySettingChange>();
+    public DbSet<ReviewClaimEvent> ReviewClaimEvents => Set<ReviewClaimEvent>();
+    public DbSet<KnownReviewer> KnownReviewers => Set<KnownReviewer>();
 
     private static readonly JsonSerializerOptions SnapshotJson = new(JsonSerializerDefaults.Web);
 
@@ -97,9 +100,15 @@ public sealed class ExpertDbContext(DbContextOptions<ExpertDbContext> options) :
             e.Property(x => x.EarliestReapplyAt).HasColumnName("earliest_reapply_at");
             e.Property(x => x.CreatedAt).HasColumnName("created_at").IsRequired();
             e.Property(x => x.UpdatedAt).HasColumnName("updated_at").IsRequired();
+            e.Property(x => x.ClaimedByUserId).HasColumnName("claimed_by_user_id");
+            e.Property(x => x.ClaimedAt).HasColumnName("claimed_at");
             // Review queue filters by status and submission time
             e.HasIndex(x => new { x.Status, x.SubmittedAt })
                 .HasDatabaseName("ix_expert_application_queue");
+            // "Mine" filter of the review queue
+            e.HasIndex(x => x.ClaimedByUserId)
+                .HasFilter("claimed_by_user_id IS NOT NULL")
+                .HasDatabaseName("ix_expert_application_claimed_by");
             // An expert can have only one open application at a time
             e.HasIndex(x => x.ExpertProfileId)
                 .IsUnique()
@@ -240,9 +249,15 @@ public sealed class ExpertDbContext(DbContextOptions<ExpertDbContext> options) :
             e.Property(x => x.EarliestReapplyAt).HasColumnName("earliest_reapply_at");
             e.Property(x => x.CreatedAt).HasColumnName("created_at").IsRequired();
             e.Property(x => x.UpdatedAt).HasColumnName("updated_at").IsRequired();
+            e.Property(x => x.ClaimedByUserId).HasColumnName("claimed_by_user_id");
+            e.Property(x => x.ClaimedAt).HasColumnName("claimed_at");
             // Review queue filters by status and submission time
             e.HasIndex(x => new { x.Status, x.SubmittedAt })
                 .HasDatabaseName("ix_expert_service_qualification_queue");
+            // "Mine" filter of the review queue
+            e.HasIndex(x => x.ClaimedByUserId)
+                .HasFilter("claimed_by_user_id IS NOT NULL")
+                .HasDatabaseName("ix_expert_service_qualification_claimed_by");
             // One qualification per Expert-Service pair until it fails (BR-E12)
             e.HasIndex(x => new { x.ExpertProfileId, x.ServiceCode })
                 .IsUnique()
@@ -497,6 +512,39 @@ public sealed class ExpertDbContext(DbContextOptions<ExpertDbContext> options) :
             e.Property(x => x.ChangedByUserId).HasColumnName("changed_by_user_id");
             e.Property(x => x.ChangedAt).HasColumnName("changed_at").IsRequired();
             e.HasIndex(x => x.ChangedAt).HasDatabaseName("ix_policy_setting_change_changed_at");
+        });
+
+        modelBuilder.Entity<ReviewClaimEvent>(e =>
+        {
+            e.ToTable("review_claim_event");
+            e.HasKey(x => x.Id);
+            e.Property(x => x.Id).HasColumnName("id");
+            e.Property(x => x.Gate).HasColumnName("gate").HasMaxLength(16).IsRequired();
+            e.Property(x => x.ReviewId).HasColumnName("review_id");
+            e.Property(x => x.Action).HasColumnName("action").HasMaxLength(16).IsRequired();
+            e.Property(x => x.ActorUserId).HasColumnName("actor_user_id");
+            e.Property(x => x.HolderUserId).HasColumnName("holder_user_id");
+            e.Property(x => x.PreviousHolderUserId).HasColumnName("previous_holder_user_id");
+            e.Property(x => x.Reason)
+                .HasColumnName("reason")
+                .HasMaxLength(ReviewClaimRules.MaxReasonLength);
+            e.Property(x => x.CreatedAt).HasColumnName("created_at").IsRequired();
+            e.HasIndex(x => new
+                {
+                    x.Gate,
+                    x.ReviewId,
+                    x.CreatedAt,
+                })
+                .HasDatabaseName("ix_review_claim_event_review");
+        });
+
+        modelBuilder.Entity<KnownReviewer>(e =>
+        {
+            e.ToTable("known_reviewer");
+            e.HasKey(x => x.UserId);
+            e.Property(x => x.UserId).HasColumnName("user_id").ValueGeneratedNever();
+            e.Property(x => x.Email).HasColumnName("email").HasMaxLength(320);
+            e.Property(x => x.LastSeenAt).HasColumnName("last_seen_at").IsRequired();
         });
     }
 }

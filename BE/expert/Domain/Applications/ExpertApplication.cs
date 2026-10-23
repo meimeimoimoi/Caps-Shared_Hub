@@ -1,5 +1,6 @@
 using Caps.Common.Domain;
 using Caps.Expert.Domain.Profiles;
+using Caps.Expert.Domain.Reviews;
 
 namespace Caps.Expert.Domain.Applications;
 
@@ -26,6 +27,12 @@ public sealed class ExpertApplication
     public DateTimeOffset CreatedAt { get; private set; }
     public DateTimeOffset UpdatedAt { get; private set; }
 
+    /// <summary>Reviewer working on the review; kept through NEED_MORE_INFORMATION, cleared by the final result.</summary>
+    public Guid? ClaimedByUserId { get; private set; }
+
+    /// <summary>When the claim started or was last renewed by a resubmission; the hold counts from here.</summary>
+    public DateTimeOffset? ClaimedAt { get; private set; }
+
     public ICollection<ExpertEvidence> Evidences { get; } = [];
     public ICollection<ExpertApplicationEvent> Events { get; } = [];
 
@@ -35,6 +42,112 @@ public sealed class ExpertApplication
     /// <summary>Declared details can be changed while drafting and while more information is requested.</summary>
     public bool CanEditDetails => CanEdit || NeedsInformation;
     public bool AcceptsFiles => CanEdit || NeedsInformation;
+
+    /// <summary>Only applications waiting for a Gate 1 decision can be claimed.</summary>
+    public bool IsClaimable => Status == ExpertApplicationStatus.Submitted;
+
+    /// <summary>The reviewer holding the application now, or null when it is free (never claimed or expired).</summary>
+    public Guid? ClaimHolder(DateTimeOffset now, TimeSpan hold) =>
+        ReviewClaimRules.IsActive(ClaimedByUserId, ClaimedAt, NeedsInformation, now, hold)
+            ? ClaimedByUserId
+            : null;
+
+    public DateTimeOffset? ClaimExpiresAt(TimeSpan hold) =>
+        ReviewClaimRules.ExpiresAt(ClaimedByUserId, ClaimedAt, NeedsInformation, hold);
+
+    /// <summary>
+    /// Checks that the reviewer may claim the application and returns the history entry, or null when they
+    /// already hold it. The caller stores the claim with one conditional update, so of two reviewers claiming
+    /// at once only one wins.
+    /// </summary>
+    public ReviewClaimEvent? Claim(
+        Guid reviewerUserId,
+        Guid applicantUserId,
+        DateTimeOffset now,
+        TimeSpan hold
+    )
+    {
+        if (!IsClaimable)
+            throw ExpertErrors.ApplicationNotInReview(Status);
+        if (reviewerUserId == applicantUserId)
+            throw ExpertErrors.SelfReviewNotAllowed();
+        var holder = ClaimHolder(now, hold);
+        if (holder == reviewerUserId)
+            return null;
+        if (holder != null)
+            throw ExpertErrors.ReviewClaimed();
+        var expired = ClaimedByUserId == reviewerUserId ? null : ClaimedByUserId;
+        return ReviewClaimEvent.Record(
+            ReviewGate.Eligibility,
+            Id,
+            ReviewClaimAction.Claim,
+            reviewerUserId,
+            reviewerUserId,
+            expired,
+            null,
+            now
+        );
+    }
+
+    /// <summary>Throws unless the reviewer holds the application now (decisions need an active claim).</summary>
+    public void EnsureClaimedBy(Guid reviewerUserId, DateTimeOffset now, TimeSpan hold)
+    {
+        if (ClaimHolder(now, hold) != reviewerUserId)
+            throw ExpertErrors.ReviewNotClaimed();
+    }
+
+    /// <summary>The holder gives the application back to the shared queue.</summary>
+    public ReviewClaimEvent Release(Guid reviewerUserId, DateTimeOffset now, TimeSpan hold)
+    {
+        EnsureClaimedBy(reviewerUserId, now, hold);
+        ClaimedByUserId = null;
+        ClaimedAt = null;
+        UpdatedAt = now;
+        return ReviewClaimEvent.Record(
+            ReviewGate.Eligibility,
+            Id,
+            ReviewClaimAction.Release,
+            reviewerUserId,
+            null,
+            reviewerUserId,
+            null,
+            now
+        );
+    }
+
+    /// <summary>
+    /// A System Admin hands the application to another reviewer (reason required); the hold restarts. The new
+    /// reviewer cannot be the applicant.
+    /// </summary>
+    public ReviewClaimEvent Reassign(
+        Guid adminUserId,
+        Guid reviewerUserId,
+        Guid applicantUserId,
+        string? reason,
+        DateTimeOffset now,
+        TimeSpan hold
+    )
+    {
+        if (!IsClaimable && !NeedsInformation)
+            throw ExpertErrors.ApplicationNotInReview(Status);
+        if (reviewerUserId == applicantUserId)
+            throw ExpertErrors.SelfReviewNotAllowed();
+        var cleaned = ReviewClaimRules.CleanReason(reason);
+        var previous = ClaimHolder(now, hold);
+        ClaimedByUserId = reviewerUserId;
+        ClaimedAt = now;
+        UpdatedAt = now;
+        return ReviewClaimEvent.Record(
+            ReviewGate.Eligibility,
+            Id,
+            ReviewClaimAction.Reassign,
+            adminUserId,
+            reviewerUserId,
+            previous,
+            cleaned,
+            now
+        );
+    }
 
     /// <summary>Opens a new draft; refused while the previous result still blocks re-applying.</summary>
     public static (ExpertApplication Application, ExpertApplicationEvent Opened) Open(
@@ -119,6 +232,9 @@ public sealed class ExpertApplication
         if (!NeedsInformation)
             throw ExpertErrors.ApplicationLocked(Status);
         SubmittedAt = now;
+        // The reviewer who asked for more keeps the application; the hold restarts from the resubmission
+        if (ClaimedByUserId != null)
+            ClaimedAt = now;
         return MoveTo(ExpertApplicationStatus.Submitted, actorUserId, note, now, snapshot);
     }
 
@@ -152,6 +268,12 @@ public sealed class ExpertApplication
             DecidedAt = now;
         if (status == ExpertApplicationStatus.NotEligible)
             EarliestReapplyAt = now + policy.ReapplyAfterNotEligible;
+        // A final result frees the reviewer; NEED_MORE_INFORMATION keeps them for the resubmission
+        if (status != ExpertApplicationStatus.NeedMoreInformation)
+        {
+            ClaimedByUserId = null;
+            ClaimedAt = null;
+        }
         var decided = MoveTo(status, reviewerUserId, note, now);
         var checks = cleaned
             .Select(x =>

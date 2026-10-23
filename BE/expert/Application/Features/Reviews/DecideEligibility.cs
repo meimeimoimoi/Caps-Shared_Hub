@@ -18,7 +18,8 @@ public sealed record DecideEligibilityCommand(
 
 /// <summary>
 /// Records the Gate 1 decision. Runs under the applicant's lock, so it cannot interleave with the
-/// applicant's own changes or with another reviewer deciding the same application.
+/// applicant's own changes or with another reviewer deciding the same application. Only the reviewer holding
+/// the application decides; a final result frees it, NEED_MORE_INFORMATION keeps it for the resubmission.
 /// </summary>
 public sealed class DecideEligibilityHandler(
     IApplicantLock locks,
@@ -48,6 +49,10 @@ public sealed class DecideEligibilityHandler(
             await applications.FindWithProfileAsync(command.ApplicationId, ct)
             ?? throw ExpertErrors.ApplicationNotFound();
         var profile = application.ExpertProfile;
+        var now = clock.GetUtcNow();
+        // Only the reviewer holding the application decides it, checked before any business rule
+        var hold = (await policies.GetReviewClaimAsync(ct)).Hold;
+        application.EnsureClaimedBy(command.ReviewerUserId, now, hold);
         // EV-06 is judged on the years in the submitted snapshot, not on later edits
         var snapshot = ExpertApplicationEvent.LatestSnapshot(
             await applications.ListEventsAsync(application.Id, ct)
@@ -59,7 +64,6 @@ public sealed class DecideEligibilityHandler(
         var proven =
             snapshot != null ? options.Submission.CriteriaProvenBy(snapshot.Declarations) : [];
         var criteria = EligibilityRules.PassByDeclarations(command.Criteria, proven);
-        var now = clock.GetUtcNow();
         var decision = application.DecideEligibility(
             command.ReviewerUserId,
             profile.UserId,

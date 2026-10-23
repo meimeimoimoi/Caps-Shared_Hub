@@ -14,13 +14,17 @@ namespace Caps.Expert.Api.Controllers;
 /// </summary>
 [ApiController, RequirePermission(Permission.ExpertReview)]
 [Route("api/v1/admin/experts/review-queue")]
-public sealed class ReviewQueueController : ControllerBase
+public sealed class ReviewQueueController(ICurrentUser currentUser) : ControllerBase
 {
+    private Guid UserId => currentUser.RequireUserId();
+
     /// <summary>Lists one page of the queue, oldest submission first.</summary>
     /// <remarks>
     /// Repeat applicationStatus and qualificationStatus to include several statuses; leave one out to skip that
     /// kind of record (e.g. only qualificationStatus for the competency queue). q matches the expert's name or
-    /// email, and the service name of a qualification.
+    /// email, and the service name of a qualification. claim keeps MINE (held by the caller), UNCLAIMED (held by
+    /// nobody, expired claims included), ALL, or by default MINE_OR_UNCLAIMED. Each row carries its holder.
+    /// Opening the queue also records the caller as a reviewer a System Admin can hand reviews to.
     /// </remarks>
     /// <response code="200">The page with the total number of matching records.</response>
     /// <response code="400">INVALID_PAGING.</response>
@@ -28,27 +32,35 @@ public sealed class ReviewQueueController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> List(
         [FromServices] IQueryHandler<SearchReviewQueueQuery, ReviewQueuePageResponse> handler,
+        [FromServices] ICommandHandler<RecordReviewerCommand> recorder,
         CancellationToken ct,
         [FromQuery] string[]? applicationStatus = null,
         [FromQuery] string[]? qualificationStatus = null,
         [FromQuery, MaxLength(SearchReviewQueueHandler.MaxSearchLength)] string? q = null,
         [FromQuery] int page = 1,
-        [FromQuery] int pageSize = 10
+        [FromQuery] int pageSize = 10,
+        [FromQuery, MaxLength(32)] string? claim = null
     )
     {
+        await recorder.HandleAsync(new(UserId, currentUser.Email), ct);
         var query = new SearchReviewQueueQuery(
             applicationStatus ?? [],
             qualificationStatus ?? [],
             q,
             page,
-            pageSize
+            pageSize,
+            UserId,
+            claim
         );
         var queue = await handler.HandleAsync(query, ct);
         return Ok(ApiResponse<ReviewQueuePageResponse>.Ok(queue));
     }
 
     /// <summary>Counts applications and qualifications per status.</summary>
-    /// <remarks>For tab counts and sidebar badges; no records are returned.</remarks>
+    /// <remarks>
+    /// For tab counts and sidebar badges; no records are returned. availableApplications and
+    /// availableQualifications only count what the caller holds or nobody holds.
+    /// </remarks>
     /// <response code="200">Counts keyed by status.</response>
     /// <response code="403">Missing the ExpertReview permission.</response>
     [HttpGet("counts")]
@@ -57,7 +69,7 @@ public sealed class ReviewQueueController : ControllerBase
         CancellationToken ct
     )
     {
-        var counts = await handler.HandleAsync(new CountReviewQueueQuery(), ct);
+        var counts = await handler.HandleAsync(new CountReviewQueueQuery(UserId), ct);
         return Ok(ApiResponse<ReviewQueueCountsResponse>.Ok(counts));
     }
 }

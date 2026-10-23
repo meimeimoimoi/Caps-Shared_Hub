@@ -18,7 +18,8 @@ public sealed record DecideCompetencyCommand(
 
 /// <summary>
 /// Records the Gate 2 decision. Runs under the expert's lock, so it cannot interleave with the expert's own
-/// changes or with another reviewer deciding the same qualification.
+/// changes or with another reviewer deciding the same qualification. Only the reviewer holding the
+/// qualification decides; a final result frees it, NEED_MORE_INFORMATION keeps it for the resubmission.
 /// </summary>
 public sealed class DecideCompetencyHandler(
     IApplicantLock locks,
@@ -49,10 +50,13 @@ public sealed class DecideCompetencyHandler(
             await qualifications.FindWithProfileAsync(command.QualificationId, ct)
             ?? throw ExpertErrors.QualificationNotFound();
         var profile = qualification.ExpertProfile;
+        var now = clock.GetUtcNow();
+        // Only the reviewer holding the qualification decides it, checked before any business rule
+        var hold = (await policies.GetReviewClaimAsync(ct)).Hold;
+        qualification.EnsureClaimedBy(command.ReviewerUserId, now, hold);
         var files = await evidences.ListAsync(qualification, ct);
 
         var policy = await policies.GetCompetencyAsync(ct);
-        var now = clock.GetUtcNow();
         var decision = qualification.DecideCompetency(
             command.ReviewerUserId,
             profile.UserId,

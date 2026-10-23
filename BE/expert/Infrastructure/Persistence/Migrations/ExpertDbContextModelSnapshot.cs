@@ -85,6 +85,14 @@ namespace Caps.Expert.Infrastructure.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
+                    b.Property<DateTimeOffset?>("ClaimedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("claimed_at");
+
+                    b.Property<Guid?>("ClaimedByUserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("claimed_by_user_id");
+
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
@@ -123,6 +131,10 @@ namespace Caps.Expert.Infrastructure.Persistence.Migrations
                         .HasColumnName("updated_at");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ClaimedByUserId")
+                        .HasDatabaseName("ix_expert_application_claimed_by")
+                        .HasFilter("claimed_by_user_id IS NOT NULL");
 
                     b.HasIndex("ExpertProfileId")
                         .IsUnique()
@@ -770,6 +782,14 @@ namespace Caps.Expert.Infrastructure.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("application_id");
 
+                    b.Property<DateTimeOffset?>("ClaimedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("claimed_at");
+
+                    b.Property<Guid?>("ClaimedByUserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("claimed_by_user_id");
+
                     b.Property<Guid?>("CompetencyReviewerUserId")
                         .HasColumnType("uuid")
                         .HasColumnName("competency_reviewer_user_id");
@@ -821,6 +841,10 @@ namespace Caps.Expert.Infrastructure.Persistence.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("ApplicationId");
+
+                    b.HasIndex("ClaimedByUserId")
+                        .HasDatabaseName("ix_expert_service_qualification_claimed_by")
+                        .HasFilter("claimed_by_user_id IS NOT NULL");
 
                     b.HasIndex("PreviousQualificationId");
 
@@ -877,6 +901,78 @@ namespace Caps.Expert.Infrastructure.Persistence.Migrations
                         .HasDatabaseName("ix_qualification_event");
 
                     b.ToTable("qualification_event", "expert");
+                });
+
+            modelBuilder.Entity("Caps.Expert.Domain.Reviews.KnownReviewer", b =>
+                {
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.Property<string>("Email")
+                        .HasMaxLength(320)
+                        .HasColumnType("character varying(320)")
+                        .HasColumnName("email");
+
+                    b.Property<DateTimeOffset>("LastSeenAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("last_seen_at");
+
+                    b.HasKey("UserId");
+
+                    b.ToTable("known_reviewer", "expert");
+                });
+
+            modelBuilder.Entity("Caps.Expert.Domain.Reviews.ReviewClaimEvent", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("action");
+
+                    b.Property<Guid>("ActorUserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("actor_user_id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("Gate")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("gate");
+
+                    b.Property<Guid?>("HolderUserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("holder_user_id");
+
+                    b.Property<Guid?>("PreviousHolderUserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("previous_holder_user_id");
+
+                    b.Property<string>("Reason")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("reason");
+
+                    b.Property<Guid>("ReviewId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("review_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Gate", "ReviewId", "CreatedAt")
+                        .HasDatabaseName("ix_review_claim_event_review");
+
+                    b.ToTable("review_claim_event", "expert");
                 });
 
             modelBuilder.Entity("Caps.Expert.Infrastructure.Messaging.NotificationOutboxEntry", b =>

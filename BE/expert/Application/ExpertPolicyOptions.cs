@@ -20,6 +20,9 @@ public sealed class ExpertPolicyOptions
     /// <summary>expert.reapply_competency_fail_days: wait after Gate 2 FAIL for the same service (BR-E22).</summary>
     public int ReapplyCompetencyFailDays { get; set; } = 90;
 
+    /// <summary>expert.review_claim_hours: how long a reviewer keeps a claimed review.</summary>
+    public int ReviewClaimHours { get; set; } = 72;
+
     /// <summary>pricing.min_price: lowest service price in VND (POL-MKT-02).</summary>
     public long PricingMinPrice { get; set; } = 1_000_000;
 
@@ -109,6 +112,7 @@ public sealed class ExpertPolicyOptions
             [PolicySettingKeys.MinYearsExperience] = MinYearsExperience,
             [PolicySettingKeys.ReapplyNotEligibleDays] = ReapplyNotEligibleDays,
             [PolicySettingKeys.ReapplyCompetencyFailDays] = ReapplyCompetencyFailDays,
+            [PolicySettingKeys.ReviewClaimHours] = ReviewClaimHours,
         };
 
     public PricingPolicy Pricing =>

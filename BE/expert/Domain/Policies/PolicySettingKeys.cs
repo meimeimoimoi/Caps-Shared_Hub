@@ -18,6 +18,9 @@ public static class PolicySettingKeys
     /// <summary>Days to wait before registering the same service again after Gate 2 FAIL (BR-E22).</summary>
     public const string ReapplyCompetencyFailDays = "ReapplyCompetencyFailDays";
 
+    /// <summary>Hours a reviewer keeps a claimed review before it returns to the shared queue.</summary>
+    public const string ReviewClaimHours = "ReviewClaimHours";
+
     /// <summary>
     /// Every adjustable value with its allowed range, in display order. The reapply intervals start at the
     /// minimums of BR-E21/BR-E22, so an admin can only lengthen them: lowering them would waive the wait,
@@ -31,6 +34,7 @@ public static class PolicySettingKeys
         [MinYearsExperience] = new(0, 50),
         [ReapplyNotEligibleDays] = new(30, 365),
         [ReapplyCompetencyFailDays] = new(90, 365),
+        [ReviewClaimHours] = new(4, 336),
     };
 
     public static readonly string[] All =
@@ -38,6 +42,7 @@ public static class PolicySettingKeys
         MinYearsExperience,
         ReapplyNotEligibleDays,
         ReapplyCompetencyFailDays,
+        ReviewClaimHours,
     ];
 
     /// <summary>

@@ -23,6 +23,7 @@ public sealed record ReviewQueueItemResponse(
 /// Statements of the latest submission that support a criterion (EV-04, EV-05), one entry per criterion and
 /// statement, so the reviewer judges each criterion on the wording the applicant agreed to.
 /// </param>
+/// <param name="Claim">Who works on the application now and the claim history; decisions need an active claim.</param>
 /// <param name="DeclarationPassedCriteria">
 /// Criteria passed by an agreed statement of the latest submission (EV-04, EV-05). They pass by default with
 /// a note saying so; a reviewer with grounds against the statement may send FAIL or NEED_MORE_INFORMATION
@@ -48,7 +49,8 @@ public sealed record ReviewApplicationResponse(
     ReviewSubmissionResponse[] Submissions,
     string[] NotApplicableCriteria,
     CriterionDeclarationResponse[] CriterionDeclarations,
-    string[] DeclarationPassedCriteria
+    string[] DeclarationPassedCriteria,
+    ReviewClaimStateResponse Claim
 );
 
 /// <summary>A statement the applicant agreed to, shown under the criterion it supports.</summary>

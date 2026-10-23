@@ -1,5 +1,6 @@
 using Caps.Expert.Domain.Applications;
 using Caps.Expert.Domain.Qualifications;
+using Caps.Expert.Domain.Reviews;
 
 namespace Caps.Expert.Application.Abstractions;
 
@@ -14,4 +15,7 @@ public interface IExpertPolicyProvider
 
     /// <summary>Gate 2 policy: wait before registering the same service again after FAIL.</summary>
     Task<CompetencyPolicy> GetCompetencyAsync(CancellationToken ct);
+
+    /// <summary>How long a reviewer keeps a claimed Gate 1 or Gate 2 review.</summary>
+    Task<ReviewClaimPolicy> GetReviewClaimAsync(CancellationToken ct);
 }

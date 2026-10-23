@@ -2,6 +2,7 @@ using Caps.Common.Application;
 using Caps.Expert.Application.Abstractions;
 using Caps.Expert.Application.DTOs.Responses;
 using Caps.Expert.Domain;
+using Caps.Expert.Domain.Reviews;
 
 namespace Caps.Expert.Application.Features.Reviews;
 
@@ -9,18 +10,23 @@ namespace Caps.Expert.Application.Features.Reviews;
 /// One page of the review queue. Applications are included only for the given application statuses and
 /// qualifications only for the given qualification statuses, so one call can serve a single gate or both.
 /// </summary>
+/// <param name="ClaimFilter">MINE, UNCLAIMED, ALL or (default) MINE_OR_UNCLAIMED, relative to the viewer.</param>
 public sealed record SearchReviewQueueQuery(
     IReadOnlyList<string> ApplicationStatuses,
     IReadOnlyList<string> QualificationStatuses,
     string? Search,
     int Page,
-    int PageSize
+    int PageSize,
+    Guid ViewerUserId,
+    string? ClaimFilter
 );
 
 /// <summary>Counts and pages in the database; when both gates are asked for, merges the two by submission time.</summary>
 public sealed class SearchReviewQueueHandler(
     IReviewQueueReader queue,
-    IServiceCatalogRepository catalog
+    IServiceCatalogRepository catalog,
+    IExpertPolicyProvider policies,
+    TimeProvider clock
 ) : IQueryHandler<SearchReviewQueueQuery, ReviewQueuePageResponse>
 {
     public const int MaxPageSize = 100;
@@ -54,6 +60,14 @@ public sealed class SearchReviewQueueHandler(
                     .Select(x => x.Key)
                     .ToArray();
 
+        // Claims expire when read, so the filter and each row use the same server time
+        var scope = new ReviewQueueScope(
+            ReviewClaimFilter.Normalize(query.ClaimFilter),
+            query.ViewerUserId,
+            clock.GetUtcNow(),
+            (await policies.GetReviewClaimAsync(ct)).Hold
+        );
+
         // Each source returns its first skip + pageSize rows; merging them gives the exact page
         var skip = (query.Page - 1) * query.PageSize;
         var take = skip + query.PageSize;
@@ -61,8 +75,10 @@ public sealed class SearchReviewQueueHandler(
         var rows = new List<ReviewQueueRowResponse>();
         if (applicationStatuses.Length > 0)
         {
-            total += await queue.CountApplicationsAsync(applicationStatuses, search, ct);
-            rows.AddRange(await queue.ListApplicationsAsync(applicationStatuses, search, take, ct));
+            total += await queue.CountApplicationsAsync(applicationStatuses, search, scope, ct);
+            rows.AddRange(
+                await queue.ListApplicationsAsync(applicationStatuses, search, scope, take, ct)
+            );
         }
         if (qualificationStatuses.Length > 0)
         {
@@ -70,6 +86,7 @@ public sealed class SearchReviewQueueHandler(
                 qualificationStatuses,
                 search,
                 serviceCodes,
+                scope,
                 ct
             );
             rows.AddRange(
@@ -77,6 +94,7 @@ public sealed class SearchReviewQueueHandler(
                     qualificationStatuses,
                     search,
                     serviceCodes,
+                    scope,
                     take,
                     ct
                 )

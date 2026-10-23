@@ -2,6 +2,7 @@ using Caps.Expert.Application.Abstractions;
 using Caps.Expert.Application.DTOs.Responses;
 using Caps.Expert.Domain.Applications;
 using Caps.Expert.Domain.Qualifications;
+using Caps.Expert.Domain.Reviews;
 
 namespace Caps.Expert.Application.Common;
 
@@ -12,7 +13,10 @@ public sealed class QualificationReviewDescriber(
     IEligibilityCheckRepository eligibility,
     ICompetencyAssessmentRepository assessments,
     IServiceCatalogRepository catalog,
-    IExpertApplicationRepository applications
+    IExpertApplicationRepository applications,
+    IExpertPolicyProvider policies,
+    IReviewClaimDescriber claims,
+    TimeProvider clock
 ) : IQualificationReviewDescriber
 {
     public async Task<ReviewQualificationResponse> DescribeAsync(
@@ -29,6 +33,17 @@ public sealed class QualificationReviewDescriber(
         // Gate 2 shows what was submitted in the eligible Gate 1 application, not later profile edits
         var snapshot = ExpertApplicationEvent.LatestSnapshot(
             await applications.ListEventsAsync(qualification.ApplicationId, ct)
+        );
+        var hold = (await policies.GetReviewClaimAsync(ct)).Hold;
+        var claim = await claims.DescribeAsync(
+            ReviewGate.Competency,
+            qualification.Id,
+            qualification.ClaimHolder(clock.GetUtcNow(), hold),
+            qualification.ClaimedAt,
+            qualification.ClaimExpiresAt(hold),
+            qualification.IsClaimable,
+            profile.UserId,
+            ct
         );
         return new(
             qualification.Id.ToString(),
@@ -78,7 +93,8 @@ public sealed class QualificationReviewDescriber(
             qualification.CompetencyReviewerUserId?.ToString(),
             qualification.Status == QualificationStatus.PendingFinalApproval,
             qualification.Status == QualificationStatus.ApprovedForService,
-            qualification.Status == QualificationStatus.Suspended
+            qualification.Status == QualificationStatus.Suspended,
+            claim
         );
     }
 }

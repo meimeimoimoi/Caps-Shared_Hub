@@ -442,4 +442,41 @@ public static class ExpertErrors
             "POLICY_CHANGED",
             $"{key} was changed by someone else. Reload and try again."
         );
+
+    /// <summary>Another reviewer holds the review; the caller reloads it to see who.</summary>
+    public static AppException ReviewClaimed() =>
+        new(
+            ErrorType.Conflict,
+            "REVIEW_CLAIMED",
+            "Another reviewer is already working on this review."
+        );
+
+    /// <summary>The review returned to the queue or belongs to another reviewer; nothing was saved.</summary>
+    public static AppException ReviewNotClaimed() =>
+        new(
+            ErrorType.Conflict,
+            "REVIEW_NOT_CLAIMED",
+            "Claim this review before deciding it; it is not yours or your claim has expired."
+        );
+
+    public static AppException ClaimReassignReasonRequired() =>
+        new(
+            ErrorType.Validation,
+            "CLAIM_REASSIGN_REASON_REQUIRED",
+            "Give the reason for handing the review to another reviewer."
+        );
+
+    public static AppException ClaimReassignReasonTooLong(int max) =>
+        new(
+            ErrorType.Validation,
+            "CLAIM_REASSIGN_REASON_TOO_LONG",
+            $"The reason can be at most {max} characters."
+        );
+
+    public static AppException ReviewerNotFound() =>
+        new(
+            ErrorType.NotFound,
+            "REVIEWER_NOT_FOUND",
+            "Reviewer not found; they must open the review queue at least once."
+        );
 }

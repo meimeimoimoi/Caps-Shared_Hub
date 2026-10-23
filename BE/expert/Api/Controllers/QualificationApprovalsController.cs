@@ -6,6 +6,7 @@ using Caps.Expert.Api.DTOs.Requests;
 using Caps.Expert.Application.DTOs.Responses;
 using Caps.Expert.Application.Features.Approvals;
 using Caps.Expert.Application.Features.Reviews;
+using Caps.Expert.Domain.Reviews;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Caps.Expert.Api.Controllers;
@@ -54,7 +55,15 @@ public sealed class QualificationApprovalsController(ICurrentUser currentUser) :
         [FromQuery] int pageSize = 10
     )
     {
-        var query = new SearchReviewQueueQuery([], status ?? [], q, page, pageSize);
+        var query = new SearchReviewQueueQuery(
+            [],
+            status ?? [],
+            q,
+            page,
+            pageSize,
+            UserId,
+            ReviewClaimFilter.All
+        );
         var queue = await handler.HandleAsync(query, ct);
         return Ok(ApiResponse<ReviewQueuePageResponse>.Ok(queue));
     }
@@ -68,7 +77,7 @@ public sealed class QualificationApprovalsController(ICurrentUser currentUser) :
         CancellationToken ct
     )
     {
-        var counts = await handler.HandleAsync(new CountReviewQueueQuery(), ct);
+        var counts = await handler.HandleAsync(new CountReviewQueueQuery(UserId), ct);
         return Ok(ApiResponse<ReviewQueueCountsResponse>.Ok(counts));
     }
 

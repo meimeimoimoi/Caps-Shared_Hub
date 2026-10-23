@@ -1,6 +1,7 @@
 using Caps.Common.Domain;
 using Caps.Expert.Domain.Applications;
 using Caps.Expert.Domain.Profiles;
+using Caps.Expert.Domain.Reviews;
 
 namespace Caps.Expert.Domain.Qualifications;
 
@@ -39,7 +40,25 @@ public sealed class ExpertServiceQualification
     /// <summary>The expert takes new requests for this service; off until they turn it on.</summary>
     public bool AcceptingRequests { get; private set; }
 
+    /// <summary>Reviewer working on Gate 2; kept through NEED_MORE_INFORMATION, cleared by the final result.</summary>
+    public Guid? ClaimedByUserId { get; private set; }
+
+    /// <summary>When the claim started or was last renewed (resubmission, return from final approval).</summary>
+    public DateTimeOffset? ClaimedAt { get; private set; }
+
     public bool NeedsInformation => Status == QualificationStatus.NeedMoreInformation;
+
+    /// <summary>Only qualifications waiting for a Gate 2 decision can be claimed.</summary>
+    public bool IsClaimable => Status == QualificationStatus.CompetencyReview;
+
+    /// <summary>The reviewer holding the qualification now, or null when it is free (never claimed or expired).</summary>
+    public Guid? ClaimHolder(DateTimeOffset now, TimeSpan hold) =>
+        ReviewClaimRules.IsActive(ClaimedByUserId, ClaimedAt, NeedsInformation, now, hold)
+            ? ClaimedByUserId
+            : null;
+
+    public DateTimeOffset? ClaimExpiresAt(TimeSpan hold) =>
+        ReviewClaimRules.ExpiresAt(ClaimedByUserId, ClaimedAt, NeedsInformation, hold);
 
     /// <summary>
     /// A re-registration after FAIL that has not been sent for review yet: it needs new or updated
@@ -106,12 +125,109 @@ public sealed class ExpertServiceQualification
 
     public void Touch(DateTimeOffset now) => UpdatedAt = now;
 
+    /// <summary>
+    /// Checks that the reviewer may claim the qualification and returns the history entry, or null when they
+    /// already hold it. The caller stores the claim with one conditional update, so of two reviewers claiming
+    /// at once only one wins.
+    /// </summary>
+    public ReviewClaimEvent? Claim(
+        Guid reviewerUserId,
+        Guid applicantUserId,
+        DateTimeOffset now,
+        TimeSpan hold
+    )
+    {
+        if (!IsClaimable)
+            throw ExpertErrors.QualificationNotInReview(Status);
+        if (reviewerUserId == applicantUserId)
+            throw ExpertErrors.SelfReviewNotAllowed();
+        var holder = ClaimHolder(now, hold);
+        if (holder == reviewerUserId)
+            return null;
+        if (holder != null)
+            throw ExpertErrors.ReviewClaimed();
+        var expired = ClaimedByUserId == reviewerUserId ? null : ClaimedByUserId;
+        return ReviewClaimEvent.Record(
+            ReviewGate.Competency,
+            Id,
+            ReviewClaimAction.Claim,
+            reviewerUserId,
+            reviewerUserId,
+            expired,
+            null,
+            now
+        );
+    }
+
+    /// <summary>Throws unless the reviewer holds the qualification now (decisions need an active claim).</summary>
+    public void EnsureClaimedBy(Guid reviewerUserId, DateTimeOffset now, TimeSpan hold)
+    {
+        if (ClaimHolder(now, hold) != reviewerUserId)
+            throw ExpertErrors.ReviewNotClaimed();
+    }
+
+    /// <summary>The holder gives the qualification back to the shared queue.</summary>
+    public ReviewClaimEvent Release(Guid reviewerUserId, DateTimeOffset now, TimeSpan hold)
+    {
+        EnsureClaimedBy(reviewerUserId, now, hold);
+        ClaimedByUserId = null;
+        ClaimedAt = null;
+        UpdatedAt = now;
+        return ReviewClaimEvent.Record(
+            ReviewGate.Competency,
+            Id,
+            ReviewClaimAction.Release,
+            reviewerUserId,
+            null,
+            reviewerUserId,
+            null,
+            now
+        );
+    }
+
+    /// <summary>
+    /// A System Admin hands the qualification to another reviewer (reason required); the hold restarts. The
+    /// new reviewer cannot be the expert.
+    /// </summary>
+    public ReviewClaimEvent Reassign(
+        Guid adminUserId,
+        Guid reviewerUserId,
+        Guid applicantUserId,
+        string? reason,
+        DateTimeOffset now,
+        TimeSpan hold
+    )
+    {
+        if (!IsClaimable && !NeedsInformation)
+            throw ExpertErrors.QualificationNotInReview(Status);
+        if (reviewerUserId == applicantUserId)
+            throw ExpertErrors.SelfReviewNotAllowed();
+        var cleaned = ReviewClaimRules.CleanReason(reason);
+        var previous = ClaimHolder(now, hold);
+        ClaimedByUserId = reviewerUserId;
+        ClaimedAt = now;
+        UpdatedAt = now;
+        return ReviewClaimEvent.Record(
+            ReviewGate.Competency,
+            Id,
+            ReviewClaimAction.Reassign,
+            adminUserId,
+            reviewerUserId,
+            previous,
+            cleaned,
+            now
+        );
+    }
+
     /// <summary>After supplementing, back to competency review in the same qualification (row 3).</summary>
     public QualificationEvent Resubmit(Guid actorUserId, string? note, DateTimeOffset now)
     {
         if (!NeedsInformation)
             throw ExpertErrors.QualificationLocked(Status);
         SubmittedAt = now;
+        // The reviewer who asked for more keeps the qualification; the hold restarts from the resubmission
+        if (ClaimedByUserId != null)
+            ClaimedAt = now;
         return MoveTo(QualificationStatus.CompetencyReview, actorUserId, note, now);
     }
 
@@ -148,6 +264,12 @@ public sealed class ExpertServiceQualification
             CompetencyReviewerUserId = reviewerUserId;
         if (status == QualificationStatus.Fail)
             EarliestReapplyAt = now + policy.ReapplyAfterFail;
+        // A final result frees the reviewer; NEED_MORE_INFORMATION keeps them for the resubmission
+        if (status != QualificationStatus.NeedMoreInformation)
+        {
+            ClaimedByUserId = null;
+            ClaimedAt = null;
+        }
         var decided = MoveTo(status, reviewerUserId, note, now);
         var assessments = cleaned
             .Select(x => CompetencyAssessment.Record(decided, x, reviewerUserId))
@@ -184,6 +306,9 @@ public sealed class ExpertServiceQualification
                 if (note == null)
                     throw ExpertErrors.FinalApprovalNoteRequired();
                 DecidedAt = null;
+                // Back to the reviewer who passed Gate 2, who knows the case; the hold restarts
+                ClaimedByUserId = CompetencyReviewerUserId;
+                ClaimedAt = CompetencyReviewerUserId != null ? now : null;
                 CompetencyReviewerUserId = null;
                 return MoveTo(QualificationStatus.CompetencyReview, approverUserId, note, now);
             default:

@@ -83,6 +83,7 @@ public sealed record QualificationQueueItemResponse(
 /// <param name="CanFinalApprove">True while the qualification waits for the System Admin final approval.</param>
 /// <param name="CanSuspend">Approved: a System Admin can suspend the service.</param>
 /// <param name="CanReinstate">Suspended: a System Admin can reinstate the service.</param>
+/// <param name="Claim">Who works on the Gate 2 review now and the claim history; decisions need an active claim.</param>
 public sealed record ReviewQualificationResponse(
     string Id,
     string ApplicantUserId,
@@ -105,5 +106,6 @@ public sealed record ReviewQualificationResponse(
     string? CompetencyReviewerUserId,
     bool CanFinalApprove,
     bool CanSuspend,
-    bool CanReinstate
+    bool CanReinstate,
+    ReviewClaimStateResponse Claim
 );

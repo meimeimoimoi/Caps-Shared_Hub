@@ -39,6 +39,8 @@ public static class DependencyInjection
         services.AddScoped<IExpertNotificationOutbox, ExpertNotificationOutbox>();
         services.AddScoped<IPolicySettingRepository, PolicySettingRepository>();
         services.AddScoped<IExpertPolicyProvider, ExpertPolicyProvider>();
+        services.AddScoped<IReviewClaimEventRepository, ReviewClaimEventRepository>();
+        services.AddScoped<IKnownReviewerRepository, KnownReviewerRepository>();
         services.AddSingleton<IObjectStorage, S3ObjectStorage>();
         return services;
     }

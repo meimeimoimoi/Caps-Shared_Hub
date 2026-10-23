@@ -3,7 +3,7 @@ using Caps.Expert.Application.Features.Policies;
 
 namespace Caps.Expert.Api.DTOs.Requests;
 
-/// <summary>New policy values by key (MinYearsExperience, ReapplyNotEligibleDays, ReapplyCompetencyFailDays) and why.</summary>
+/// <summary>New policy values by key (see PolicySettingKeys, e.g. MinYearsExperience, ReviewClaimHours) and why.</summary>
 /// <param name="Values">Only keys present are changed; a value equal to the current one is ignored.</param>
 /// <param name="Expected">For every key in Values, the value read before editing; a mismatch returns POLICY_CHANGED.</param>
 /// <param name="Reason">Required; recorded with every change.</param>

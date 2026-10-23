@@ -1,6 +1,7 @@
 using Caps.Expert.Application.Abstractions;
 using Caps.Expert.Application.DTOs.Responses;
 using Caps.Expert.Domain.Applications;
+using Caps.Expert.Domain.Reviews;
 
 namespace Caps.Expert.Application.Common;
 
@@ -10,7 +11,9 @@ public sealed class ReviewDescriber(
     IExpertEvidenceRepository evidences,
     IEligibilityCheckRepository eligibility,
     IExpertPolicyProvider policies,
-    ExpertPolicyOptions options
+    ExpertPolicyOptions options,
+    IReviewClaimDescriber claims,
+    TimeProvider clock
 ) : IReviewDescriber
 {
     public async Task<ReviewApplicationResponse> DescribeAsync(
@@ -26,6 +29,17 @@ public sealed class ReviewDescriber(
         var snapshot = ExpertApplicationEvent.LatestSnapshot(history);
         var years = snapshot != null ? snapshot.YearsExperience : profile.YearsExperience;
         var policy = await policies.GetEligibilityAsync(ct);
+        var hold = (await policies.GetReviewClaimAsync(ct)).Hold;
+        var claim = await claims.DescribeAsync(
+            ReviewGate.Eligibility,
+            application.Id,
+            application.ClaimHolder(clock.GetUtcNow(), hold),
+            application.ClaimedAt,
+            application.ClaimExpiresAt(hold),
+            application.IsClaimable,
+            profile.UserId,
+            ct
+        );
         return new(
             application.Id.ToString(),
             profile.UserId.ToString(),
@@ -73,7 +87,8 @@ public sealed class ReviewDescriber(
             SnapshotProfiles.Submissions(history),
             policy.NotApplicableCriteria ?? [],
             CriterionDeclarations(history, options.Submission),
-            snapshot != null ? options.Submission.CriteriaProvenBy(snapshot.Declarations) : []
+            snapshot != null ? options.Submission.CriteriaProvenBy(snapshot.Declarations) : [],
+            claim
         );
     }
 

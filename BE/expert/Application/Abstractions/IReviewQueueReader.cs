@@ -12,6 +12,7 @@ public interface IReviewQueueReader
     Task<int> CountApplicationsAsync(
         IReadOnlyCollection<string> statuses,
         string? search,
+        ReviewQueueScope scope,
         CancellationToken ct
     );
 
@@ -19,6 +20,7 @@ public interface IReviewQueueReader
     Task<IReadOnlyList<ReviewQueueRowResponse>> ListApplicationsAsync(
         IReadOnlyCollection<string> statuses,
         string? search,
+        ReviewQueueScope scope,
         int take,
         CancellationToken ct
     );
@@ -28,6 +30,7 @@ public interface IReviewQueueReader
         IReadOnlyCollection<string> statuses,
         string? search,
         IReadOnlyCollection<string> matchingServiceCodes,
+        ReviewQueueScope scope,
         CancellationToken ct
     );
 
@@ -36,6 +39,7 @@ public interface IReviewQueueReader
         IReadOnlyCollection<string> statuses,
         string? search,
         IReadOnlyCollection<string> matchingServiceCodes,
+        ReviewQueueScope scope,
         int take,
         CancellationToken ct
     );
@@ -45,4 +49,16 @@ public interface IReviewQueueReader
 
     /// <summary>Qualifications per status.</summary>
     Task<IReadOnlyDictionary<string, int>> CountQualificationsByStatusAsync(CancellationToken ct);
+
+    /// <summary>Applications per status that the scope's claim filter keeps.</summary>
+    Task<IReadOnlyDictionary<string, int>> CountApplicationsByStatusAsync(
+        ReviewQueueScope scope,
+        CancellationToken ct
+    );
+
+    /// <summary>Qualifications per status that the scope's claim filter keeps.</summary>
+    Task<IReadOnlyDictionary<string, int>> CountQualificationsByStatusAsync(
+        ReviewQueueScope scope,
+        CancellationToken ct
+    );
 }

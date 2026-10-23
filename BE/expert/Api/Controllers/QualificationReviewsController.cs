@@ -72,6 +72,45 @@ public sealed class QualificationReviewsController(ICurrentUser currentUser) : C
         return File(file.Content, file.ContentType, file.FileName);
     }
 
+    /// <summary>Takes the qualification from the shared queue so only the caller can decide it.</summary>
+    /// <remarks>
+    /// One conditional update: of two reviewers claiming at once only one wins. Claiming again while holding it
+    /// changes nothing. The claim lasts ReviewClaimHours (policy, 72 by default) and is kept while more
+    /// information is requested; the resubmission restarts it. A final decision frees the qualification.
+    /// </remarks>
+    /// <response code="200">The qualification with the caller as holder.</response>
+    /// <response code="403">Missing the ExpertReview permission, or SELF_REVIEW_NOT_ALLOWED.</response>
+    /// <response code="404">QUALIFICATION_NOT_FOUND.</response>
+    /// <response code="409">REVIEW_CLAIMED (another reviewer holds it) or QUALIFICATION_NOT_IN_REVIEW.</response>
+    [HttpPost("{id:guid}/claim")]
+    public async Task<IActionResult> Claim(
+        Guid id,
+        [FromServices]
+            ICommandHandler<ClaimQualificationCommand, ReviewQualificationResponse> handler,
+        CancellationToken ct
+    )
+    {
+        var qualification = await handler.HandleAsync(new(UserId, currentUser.Email, id), ct);
+        return Ok(ApiResponse<ReviewQualificationResponse>.Ok(qualification));
+    }
+
+    /// <summary>Gives the qualification back to the shared queue.</summary>
+    /// <response code="200">The qualification without a holder.</response>
+    /// <response code="403">Missing the ExpertReview permission.</response>
+    /// <response code="404">QUALIFICATION_NOT_FOUND.</response>
+    /// <response code="409">REVIEW_NOT_CLAIMED: the caller does not hold it.</response>
+    [HttpPost("{id:guid}/release")]
+    public async Task<IActionResult> Release(
+        Guid id,
+        [FromServices]
+            ICommandHandler<ReleaseQualificationCommand, ReviewQualificationResponse> handler,
+        CancellationToken ct
+    )
+    {
+        var qualification = await handler.HandleAsync(new(UserId, id), ct);
+        return Ok(ApiResponse<ReviewQualificationResponse>.Ok(qualification));
+    }
+
     /// <summary>Records the Gate 2 decision from the results of C1…C5.</summary>
     /// <remarks>
     /// Every competency needs a note; PASS and FAIL must cite at least one file of the qualification.
@@ -83,7 +122,7 @@ public sealed class QualificationReviewsController(ICurrentUser currentUser) : C
     /// <response code="400">INVALID_COMPETENCY_CRITERIA, INVALID_COMPETENCY_RESULT, COMPETENCY_NOTE_REQUIRED, COMPETENCY_EVIDENCE_REQUIRED or COMPETENCY_EVIDENCE_UNKNOWN.</response>
     /// <response code="403">Missing the ExpertReview permission, or SELF_REVIEW_NOT_ALLOWED.</response>
     /// <response code="404">QUALIFICATION_NOT_FOUND.</response>
-    /// <response code="409">QUALIFICATION_NOT_IN_REVIEW: only COMPETENCY_REVIEW qualifications can be decided.</response>
+    /// <response code="409">QUALIFICATION_NOT_IN_REVIEW (only COMPETENCY_REVIEW qualifications can be decided) or REVIEW_NOT_CLAIMED (claim it first; it returned to the queue or belongs to another reviewer).</response>
     /// <response code="503">SESSION_CHECK_UNAVAILABLE: the session could not be checked.</response>
     [HttpPost("{id:guid}/competency-decision"), RequireSessionCheck]
     public async Task<IActionResult> Decide(
