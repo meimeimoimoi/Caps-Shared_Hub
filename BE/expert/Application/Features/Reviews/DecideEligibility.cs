@@ -71,8 +71,12 @@ public sealed class DecideEligibilityHandler(
         var work = await policies.GetReviewWorkAsync(ct);
         InformationRequestRules.EnsureAllowed(
             EligibilityRules.Outcome(criteria),
-            InformationRequestRules.Count(history.Select(x => (x.FromStatus, x.ToStatus))),
-            work.MaxInformationRequests
+            InformationRequestRules.Count(
+                history.Select(x => (x.FromStatus, x.ToStatus)),
+                ExpertApplicationStatus.NeedMoreInformation
+            ),
+            work.MaxInformationRequests,
+            ExpertApplicationStatus.NeedMoreInformation
         );
         var decision = application.DecideEligibility(
             command.ReviewerUserId,
@@ -157,7 +161,7 @@ public sealed class DecideEligibilityHandler(
             application,
             service!.Code,
             null,
-            application.ExpertProfile.UserId,
+            SystemActor.UserId,
             now,
             ServiceAutoRegistration.Note
         );

@@ -239,7 +239,8 @@
     },
     "history": {
       "title": "Operation History",
-      "reviewer": "Reviewer"
+      "reviewer": "Reviewer",
+      "system": "System"
     },
     "documents": {
       "round": "Submission {{number}} · {{date}}",

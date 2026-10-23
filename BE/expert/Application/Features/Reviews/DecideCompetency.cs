@@ -63,12 +63,14 @@ public sealed class DecideCompetencyHandler(
         var rounds = InformationRequestRules.Count(
             (await qualifications.ListEventsAsync(qualification.Id, ct)).Select(x =>
                 (x.FromStatus, x.ToStatus)
-            )
+            ),
+            QualificationStatus.NeedMoreInformation
         );
         InformationRequestRules.EnsureAllowed(
             CompetencyRules.Outcome(command.Competencies),
             rounds,
-            work.MaxInformationRequests
+            work.MaxInformationRequests,
+            QualificationStatus.NeedMoreInformation
         );
         var decision = qualification.DecideCompetency(
             command.ReviewerUserId,

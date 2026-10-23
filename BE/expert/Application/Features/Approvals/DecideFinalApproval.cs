@@ -4,6 +4,7 @@ using Caps.Expert.Application.Common;
 using Caps.Expert.Application.DTOs.Responses;
 using Caps.Expert.Domain;
 using Caps.Expert.Domain.Qualifications;
+using Caps.Expert.Domain.Reviews;
 
 namespace Caps.Expert.Application.Features.Approvals;
 
@@ -22,6 +23,7 @@ public sealed record DecideFinalApprovalCommand(
 public sealed class DecideFinalApprovalHandler(
     IApplicantLock locks,
     IQualificationRepository qualifications,
+    IReviewClaimEventRepository claimEvents,
     IServiceAccessNotifier notifier,
     IQualificationReviewDescriber describer,
     IUnitOfWork unitOfWork,
@@ -44,14 +46,38 @@ public sealed class DecideFinalApprovalHandler(
             await qualifications.FindWithProfileAsync(command.QualificationId, ct)
             ?? throw ExpertErrors.QualificationNotFound();
         var decision = command.Decision.Trim().ToUpperInvariant();
+        var now = clock.GetUtcNow();
         var decided = qualification.DecideFinalApproval(
             command.ApproverUserId,
             qualification.ExpertProfile.UserId,
             decision,
             command.Note,
-            clock.GetUtcNow()
+            now
         );
         qualifications.AddEvent(decided);
+        // A return hands the review back to the Gate 2 reviewer; keep that hand-over in the claim history (R11)
+        if (
+            decision == FinalApprovalDecision.ReturnForReview
+            && qualification.ClaimedByUserId is Guid holder
+        )
+        {
+            claimEvents.Add(
+                ReviewClaimEvent.Record(
+                    ReviewGate.Competency,
+                    qualification.Id,
+                    ReviewClaimAction.Reassign,
+                    command.ApproverUserId,
+                    holder,
+                    null,
+                    // The return note may be longer than a claim reason; the full note stays on the status event
+                    decided.Note
+                        is { Length: > ReviewClaimRules.MaxReasonLength } longNote
+                        ? longNote[..ReviewClaimRules.MaxReasonLength]
+                        : decided.Note,
+                    now
+                )
+            );
+        }
         var change = decision == FinalApprovalDecision.Approve ? "APPROVED" : "RETURNED_FOR_REVIEW";
         await notifier.EnqueueAsync(qualification, decided, change, ct);
         await unitOfWork.SaveChangesAsync(ct);

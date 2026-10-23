@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import { cn } from '@/lib/utils'
+import { SYSTEM_ACTOR } from '../constants'
 import type { HistoryEntry } from '../types'
 import { formatDateTime } from '../utils/applications'
 
@@ -24,7 +25,7 @@ export function HistoryTab({
           <div className="min-w-0 flex-1">
             <p className="text-text-strong text-sm leading-6 font-medium break-words">{h.text}</p>
             <p className="text-text-muted mt-0.5 flex flex-wrap items-center gap-x-1.5 text-xs">
-              {h.actor === 'AI' ? <span className="badge-ai">AI</span> : <span>{h.actor || t('detail.history.reviewer')}</span>}
+              {h.actor === 'AI' ? <span className="badge-ai">AI</span> : h.actor === SYSTEM_ACTOR ? <span>{t('detail.history.system')}</span> : <span>{h.actor || t('detail.history.reviewer')}</span>}
               <span aria-hidden="true">·</span>
               <time dateTime={h.at} className="tabular-nums">{formatDateTime(h.at)}</time>
             </p>

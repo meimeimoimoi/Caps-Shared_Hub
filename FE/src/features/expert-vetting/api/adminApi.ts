@@ -1,7 +1,7 @@
 import { api } from '@/lib/api-client'
 import { APPLICATION_STATUS } from '@/lib/constants'
 import { isExpertDemo } from '@/lib/expert-data-source'
-import { CURRENT_ADMIN, QUEUE_STATUSES } from '../constants'
+import { CURRENT_ADMIN, QUEUE_STATUSES, SYSTEM_ACTOR } from '../constants'
 import type {
   ApplicationDetail,
   ApplicationStatus,
@@ -78,6 +78,8 @@ interface ReviewApplication {
     at: string
     actorUserId: string
     byApplicant: boolean
+    /** Made by the system itself (e.g. registering the only service after Gate 1) */
+    bySystem?: boolean
   }[]
   eligibility: EligibilityCheck[]
   minYearsExperience: number
@@ -133,7 +135,7 @@ function toDetail(a: ReviewApplication): ApplicationDetail {
       const label = APPLICATION_STATUS[h.toStatus]?.label ?? h.toStatus
       return {
         at: h.at,
-        actor: h.byApplicant ? name : '',
+        actor: h.bySystem ? SYSTEM_ACTOR : h.byApplicant ? name : '',
         // A status name is a label, not a sentence: no trailing full stop
         text: h.note ? `${label}: ${h.note}` : label,
       }

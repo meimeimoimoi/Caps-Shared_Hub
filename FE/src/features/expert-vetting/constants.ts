@@ -33,6 +33,9 @@ export const ELIGIBILITY_CODES = [
 ] as const
 export const EXPERIENCE_CODE = 'EV-06'
 
+/** History actor for changes the system made on its own; the history tab shows it as "System" */
+export const SYSTEM_ACTOR = 'SYSTEM'
+
 export const ELIGIBILITY_RESULTS = [
   'PASS',
   'NEED_MORE_INFORMATION',

@@ -1,5 +1,6 @@
 import { api } from '@/lib/api-client'
 import { QUALIFICATION_STATUS } from '@/lib/constants'
+import { SYSTEM_ACTOR } from '../constants'
 import type {
   CompetencyCheck,
   CompetencyDecisionInput,
@@ -81,6 +82,8 @@ interface ReviewQualification {
     at: string
     actorUserId: string
     byApplicant: boolean
+    /** Made by the system itself (e.g. registering the only service after Gate 1) */
+    bySystem?: boolean
   }[]
   eligibility: EligibilityCheck[]
   competencies: CompetencyCheck[]
@@ -164,7 +167,7 @@ function toDetail(q: ReviewQualification): QualificationDetail {
       const label = QUALIFICATION_STATUS[h.toStatus]?.label ?? h.toStatus
       return {
         at: h.at,
-        actor: h.byApplicant ? name : '',
+        actor: h.bySystem ? SYSTEM_ACTOR : h.byApplicant ? name : '',
         text: h.note ? `${label}: ${h.note}` : `${label}.`,
       }
     }),

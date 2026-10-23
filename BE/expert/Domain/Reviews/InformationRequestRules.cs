@@ -7,23 +7,30 @@ namespace Caps.Expert.Domain.Reviews;
 /// </summary>
 public static class InformationRequestRules
 {
-    private const string NeedMoreInformation = "NEED_MORE_INFORMATION";
-
     /// <summary>
     /// Rounds asked for so far: decisions that moved the review to NEED_MORE_INFORMATION. The opening event of a
     /// re-registration (no previous status) waits for new evidence and is not a round.
     /// </summary>
-    public static int Count(IEnumerable<(string? FromStatus, string ToStatus)> history) =>
-        history.Count(x => x.FromStatus != null && x.ToStatus == NeedMoreInformation);
+    /// <param name="needMoreInformation">The gate's own NEED_MORE_INFORMATION status constant.</param>
+    public static int Count(
+        IEnumerable<(string? FromStatus, string ToStatus)> history,
+        string needMoreInformation
+    ) => history.Count(x => x.FromStatus != null && x.ToStatus == needMoreInformation);
 
     /// <summary>True while one more round can still be asked for.</summary>
     public static bool CanRequest(int roundsSoFar, int maxRounds) => roundsSoFar < maxRounds;
 
     /// <summary>Throws when the decision asks for more information after the last allowed round.</summary>
     /// <param name="outcome">The status the decision leads to.</param>
-    public static void EnsureAllowed(string outcome, int roundsSoFar, int maxRounds)
+    /// <param name="needMoreInformation">The gate's own NEED_MORE_INFORMATION status constant.</param>
+    public static void EnsureAllowed(
+        string outcome,
+        int roundsSoFar,
+        int maxRounds,
+        string needMoreInformation
+    )
     {
-        if (outcome == NeedMoreInformation && !CanRequest(roundsSoFar, maxRounds))
+        if (outcome == needMoreInformation && !CanRequest(roundsSoFar, maxRounds))
             throw ExpertErrors.InformationRequestLimit(maxRounds);
     }
 }

@@ -25,12 +25,14 @@ public static class CompetencySubmissions
     }
 
     /// <summary>Rounds used from the status history against the policy limit.</summary>
+    /// <param name="needMoreInformation">The gate's own NEED_MORE_INFORMATION status constant.</param>
     public static InformationRoundsResponse Rounds(
         IEnumerable<(string? FromStatus, string ToStatus)> history,
-        int max
+        int max,
+        string needMoreInformation
     )
     {
-        var used = InformationRequestRules.Count(history);
+        var used = InformationRequestRules.Count(history, needMoreInformation);
         return new(used, max, InformationRequestRules.CanRequest(used, max));
     }
 }

@@ -1,5 +1,6 @@
 using Caps.Expert.Application.Abstractions;
 using Caps.Expert.Application.DTOs.Responses;
+using Caps.Expert.Domain;
 using Caps.Expert.Domain.Applications;
 using Caps.Expert.Domain.Qualifications;
 using Caps.Expert.Domain.Reviews;
@@ -81,7 +82,8 @@ public sealed class QualificationReviewDescriber(
                     x.Note,
                     x.CreatedAt,
                     x.ActorUserId.ToString(),
-                    x.ActorUserId == profile.UserId
+                    x.ActorUserId == profile.UserId,
+                    x.ActorUserId == SystemActor.UserId
                 ))
                 .ToArray(),
             checks
@@ -102,7 +104,8 @@ public sealed class QualificationReviewDescriber(
             CompetencySubmissions.ToResponses(links, descriptions),
             CompetencySubmissions.Rounds(
                 history.Select(x => (x.FromStatus, x.ToStatus)),
-                work.MaxInformationRequests
+                work.MaxInformationRequests,
+                QualificationStatus.NeedMoreInformation
             )
         );
     }

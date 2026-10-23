@@ -239,7 +239,8 @@
     },
     "history": {
       "title": "Lịch sử thao tác",
-      "reviewer": "Người đánh giá"
+      "reviewer": "Người đánh giá",
+      "system": "Hệ thống"
     },
     "documents": {
       "round": "Lần nộp {{number}} · {{date}}",

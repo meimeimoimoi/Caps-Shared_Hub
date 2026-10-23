@@ -105,7 +105,8 @@ public sealed class ApplicationDescriber(
             changesRequired,
             CompetencySubmissions.Rounds(
                 history.Select(x => (x.FromStatus, x.ToStatus)),
-                work.MaxInformationRequests
+                work.MaxInformationRequests,
+                ExpertApplicationStatus.NeedMoreInformation
             )
         );
     }

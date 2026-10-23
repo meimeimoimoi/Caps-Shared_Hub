@@ -99,13 +99,15 @@ public sealed record ReviewEvidenceResponse(
 );
 
 /// <summary>One status change, with who made it.</summary>
+/// <param name="BySystem">Made by the system itself, not by a person (see SystemActor).</param>
 public sealed record ReviewEventResponse(
     string? FromStatus,
     string ToStatus,
     string? Note,
     DateTimeOffset At,
     string ActorUserId,
-    bool ByApplicant
+    bool ByApplicant,
+    bool BySystem = false
 );
 
 /// <summary>One requirement's result in the latest Gate 1 decision.</summary>
