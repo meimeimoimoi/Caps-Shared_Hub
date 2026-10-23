@@ -18,6 +18,7 @@ public sealed class QualificationReviewDescriber(
     IExpertPolicyProvider policies,
     ICompetencyEvidenceRepository competencyEvidence,
     IReviewClaimDescriber claims,
+    IKnownReviewerRepository reviewers,
     TimeProvider clock
 ) : IQualificationReviewDescriber
 {
@@ -41,6 +42,14 @@ public sealed class QualificationReviewDescriber(
         var finalApproval = await policies.GetFinalApprovalAsync(ct);
         var links = await competencyEvidence.ListLinksAsync(qualification.Id, ct);
         var descriptions = await competencyEvidence.ListDescriptionsAsync(qualification.Id, ct);
+        // V3: the reviewer sees why a System Admin sent the qualification back
+        var openReturn = FinalApprovalRules.OpenReturn(history);
+        var returnedBy =
+            openReturn == null
+                ? null
+                : (await reviewers.FindEmailsAsync([openReturn.ActorUserId], ct)).GetValueOrDefault(
+                    openReturn.ActorUserId
+                );
         var claim = await claims.DescribeAsync(
             ReviewGate.Competency,
             qualification.Id,
@@ -114,7 +123,15 @@ public sealed class QualificationReviewDescriber(
             qualification.Status == QualificationStatus.PendingFinalApproval
             && qualification.DecidedAt is DateTimeOffset passedAt
                 ? FinalApprovalRules.DueAt(passedAt, finalApproval)
-                : null
+                : null,
+            openReturn == null
+                ? null
+                : new FinalApprovalReturnResponse(
+                    openReturn.Note,
+                    openReturn.ActorUserId.ToString(),
+                    returnedBy,
+                    openReturn.CreatedAt
+                )
         );
     }
 }

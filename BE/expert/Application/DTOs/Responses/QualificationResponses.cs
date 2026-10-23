@@ -100,6 +100,7 @@ public sealed record QualificationQueueItemResponse(
 /// <param name="Submitted">Per competency C1…C5: the expert's description and the files tied to it (E8, M7).</param>
 /// <param name="Rounds">Rounds of more information asked for so far; on the last round NEED_MORE_INFORMATION is refused.</param>
 /// <param name="FinalApprovalDueAt">While waiting for final approval: when it is due (D8); null otherwise.</param>
+/// <param name="LastReturn">The return from final approval the Gate 2 reviewer still has to act on; null otherwise.</param>
 public sealed record ReviewQualificationResponse(
     string Id,
     string ApplicantUserId,
@@ -126,5 +127,15 @@ public sealed record ReviewQualificationResponse(
     ReviewClaimStateResponse Claim,
     CompetencySubmissionResponse[] Submitted,
     InformationRoundsResponse Rounds,
-    DateTimeOffset? FinalApprovalDueAt = null
+    DateTimeOffset? FinalApprovalDueAt = null,
+    FinalApprovalReturnResponse? LastReturn = null
+);
+
+/// <summary>A System Admin's return of a Gate 2 PASS to the reviewer, with the required reason.</summary>
+/// <param name="ActorEmail">The admin's email as last seen; null when unknown.</param>
+public sealed record FinalApprovalReturnResponse(
+    string? Note,
+    string ActorUserId,
+    string? ActorEmail,
+    DateTimeOffset At
 );

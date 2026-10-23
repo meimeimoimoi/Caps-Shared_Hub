@@ -27,6 +27,21 @@ public static class FinalApprovalRules
         IEnumerable<(string? FromStatus, string ToStatus)> history
     ) => policyMax + CountReturns(history);
 
+    /// <summary>
+    /// The latest return when the qualification has not passed Gate 2 again since, so the reviewer sees why it
+    /// came back; null otherwise.
+    /// </summary>
+    /// <param name="history">Status history, oldest first.</param>
+    public static QualificationEvent? OpenReturn(IEnumerable<QualificationEvent> history) =>
+        history.LastOrDefault(x =>
+            x.ToStatus == QualificationStatus.PendingFinalApproval
+            || IsReturn(x.FromStatus, x.ToStatus)
+        )
+            is { } last
+        && IsReturn(last.FromStatus, last.ToStatus)
+            ? last
+            : null;
+
     /// <summary>The status the expert sees: waiting for final approval reads as competency review (D4).</summary>
     public static string ExpertStatus(string status) =>
         status == QualificationStatus.PendingFinalApproval
