@@ -27,6 +27,8 @@ export interface FileUploaderProps {
   onFilesSelected: (files: FileList | null) => void
   onRemoveFile: (index: number) => void
   onAddLink?: (url: string) => Promise<boolean>
+  /** Name of what the files are for, read by screen readers; defaults to the evidence group of the id */
+  categoryLabel?: string
 }
 
 export function FileUploader({
@@ -38,6 +40,7 @@ export function FileUploader({
   onFilesSelected,
   onRemoveFile,
   onAddLink,
+  categoryLabel,
 }: FileUploaderProps) {
   const { t } = useTranslation('expertRegistration')
   const format = useFormatters()
@@ -139,12 +142,12 @@ export function FileUploader({
             aria-invalid={!!error}
             aria-describedby={error ? `error-${id}` : undefined}
             aria-label={t('files.choose', {
-              category:
+              category: categoryLabel ?? (
                 id === 'CV'
                   ? t('experience.cv')
                   : criterionKey(id)
                     ? t(criterionKey(id)!)
-                    : id,
+                    : id),
             })}
             type="file"
             accept=".pdf,.jpg,.jpeg,.png"

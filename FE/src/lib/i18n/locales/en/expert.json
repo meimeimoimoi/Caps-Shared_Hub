@@ -657,7 +657,8 @@
       "PENDING_FINAL_APPROVAL": "You passed the competency review. Final approval by the System Admin is pending.",
       "APPROVED_FOR_SERVICE": "You can offer this service. Next, set up its pricing.",
       "SUSPENDED": "This service is suspended.",
-      "FAIL": "You did not pass the competency review for this service."
+      "FAIL": "You did not pass the competency review for this service.",
+      "PREPARING": "Prepare evidence for the competencies below, then submit it for assessment. Reviewers do not see it yet."
     },
     "competencies": {
       "C1": "CIT knowledge for the service scope",
@@ -691,16 +692,79 @@
       "EVIDENCE_TOO_LARGE": "Files must be 10 MB or smaller.",
       "EVIDENCE_INVALID_TYPE": "Only PDF, PNG or JPG files are allowed.",
       "EVIDENCE_LIMIT": "This service already has the maximum number of files.",
-      "EVIDENCE_LOCKED": "Submitted files cannot be removed.",
-      "QUALIFICATION_LOCKED": "The qualification is not accepting a supplement; reload the page.",
+      "EVIDENCE_LOCKED": "Submitted evidence cannot be removed or lose a competency.",
+      "QUALIFICATION_LOCKED": "The assessment is not accepting evidence; reload the page.",
       "SUPPLEMENT_EMPTY": "Add an explanation or at least one new file.",
       "EMAIL_NOT_VERIFIED": "Verify your email before sending a supplement.",
       "open": "The file could not be opened.",
       "loadFailed": "Services could not be loaded.",
       "failed": "That did not work. Please try again.",
-      "NEW_EVIDENCE_REQUIRED": "Upload at least one new file before sending it for review again."
+      "NEW_EVIDENCE_REQUIRED": "Upload at least one new file before sending it for review again.",
+      "EVIDENCE_INVALID_URL": "Enter a public http or https link.",
+      "EVIDENCE_NOT_FOUND": "Evidence not found; reload the page.",
+      "EVIDENCE_COMPETENCY_REQUIRED": "Tie the evidence to at least one competency.",
+      "INVALID_COMPETENCY_CODE": "Unknown competency; reload the page.",
+      "COMPETENCY_DESCRIPTION_TOO_LONG": "The description can be at most 1000 characters.",
+      "COMPETENCY_EVIDENCE_MISSING": "Add at least one piece of evidence before submitting.",
+      "COMPETENCY_NEW_EVIDENCE_REQUIRED": "Each competency not passed last time needs at least one new piece of evidence."
     },
-    "newEvidenceRequired": "This is a re-registration after a failed review. Upload new or updated competency evidence for the competencies not met, then send it for review."
+    "newEvidenceRequired": "This is a re-registration after a failed review. Upload new or updated competency evidence for the competencies not met, then send it for review.",
+    "titleSingle": "Competency assessment",
+    "descriptionSingle": "Once you are eligible, your competency assessment opens automatically. Submit evidence for each competency for the reviewer.",
+    "prepare": "Submit evidence",
+    "rounds": "Information round {{used}}/{{max}}",
+    "guide": {
+      "C1": {
+        "what": "How well you know corporate income tax law.",
+        "send": "A corporate income tax certificate or course; returns or finalisation files you prepared or reviewed (client details masked).",
+        "avoid": "A general degree unrelated to tax."
+      },
+      "C2": {
+        "what": "Whether you have re-read and corrected files or reports drafted by someone else (or by software).",
+        "send": "A review copy with your corrections (client details masked); a letter confirming your reviewer or cross-check role.",
+        "avoid": "Files you prepared yourself with no review part."
+      },
+      "C3": {
+        "what": "Whether you check documents and figures for accuracy and completeness.",
+        "send": "Document check minutes, a file review checklist, a management letter.",
+        "avoid": "Photos of documents without your comments."
+      },
+      "C4": {
+        "what": "Whether you match provisions of the law to answer a specific case.",
+        "send": "An advisory opinion or reply letter citing provisions; a case analysis.",
+        "avoid": "A copy of the law text."
+      },
+      "C5": {
+        "what": "Whether you have reached professional conclusions and taken responsibility for them.",
+        "send": "A signed report with your conclusion; a decision accepting or rejecting an expense with reasons.",
+        "avoid": "Documents without a conclusion of yours."
+      }
+    },
+    "evidence": {
+      "title": "Competency evidence",
+      "help": "Each file supports one or more competencies; one file can serve several. PDF, JPG, PNG (up to 10 MB) or a public link. You do not need all five; the reviewer may ask for more.",
+      "mask": "Mask client details (names, tax codes, amounts where needed) before uploading.",
+      "newRequired": "Re-registration after not passing: add at least one new piece of evidence for: {{names}}.",
+      "competencies": "Competencies",
+      "fileCount_one": "{{count}} item",
+      "fileCount_other": "{{count}} items",
+      "covered": "{{count}}/{{total}} competencies have evidence",
+      "submit": "Submit for assessment",
+      "submitted": "Evidence submitted. Your assessment is now in the reviewers’ queue.",
+      "whatIs": "What this competency is",
+      "send": "Send",
+      "avoid": "Do not send",
+      "linkLabel": "Link",
+      "tieHere": "Use for this competency",
+      "tiedTo": "Tied competencies",
+      "tieMore": "Tie to more competencies",
+      "tiedTitle": "Evidence for this competency",
+      "none": "No evidence for this competency yet.",
+      "others": "Evidence sent for other competencies ({{count}})",
+      "description": "Short description (optional)",
+      "descriptionPlaceholder": "What the evidence shows you did for this competency",
+      "saveDescription": "Save description"
+    }
   },
   "readiness": {
     "APPLICATION_NOT_SUBMITTED": "Your application has not been submitted.",
@@ -716,7 +780,8 @@
     "PRICING_IN_REVIEW": "A new price is waiting for an administrator.",
     "REQUESTS_TURNED_OFF": "You turned off new requests for this service.",
     "NO_OPEN_SLOTS": "No upcoming open slot.",
-    "ACCOUNT_INACTIVE": "Your account is not active."
+    "ACCOUNT_INACTIVE": "Your account is not active.",
+    "COMPETENCY_EVIDENCE_PENDING": "Submit competency evidence to be assessed."
   },
   "availabilityPage": {
     "title": "Availability",
@@ -748,5 +813,6 @@
       "loadFailed": "Availability could not be loaded.",
       "failed": "That did not work. Please try again."
     }
-  }
+  },
+  "preparingEvidence": "Preparing competency evidence"
 }

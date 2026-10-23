@@ -656,7 +656,8 @@
       "PENDING_FINAL_APPROVAL": "Bạn đã đạt đánh giá năng lực. Hồ sơ đang chờ Quản trị hệ thống phê duyệt cuối.",
       "APPROVED_FOR_SERVICE": "Bạn được cung cấp dịch vụ này. Bước tiếp theo là thiết lập giá dịch vụ.",
       "SUSPENDED": "Dịch vụ này đang bị tạm ngưng.",
-      "FAIL": "Bạn chưa đạt đánh giá năng lực cho dịch vụ này."
+      "FAIL": "Bạn chưa đạt đánh giá năng lực cho dịch vụ này.",
+      "PREPARING": "Chuẩn bị minh chứng cho các năng lực bên dưới rồi bấm Nộp để đánh giá. Hồ sơ chưa vào hàng chờ của người đánh giá."
     },
     "competencies": {
       "C1": "Kiến thức Thuế TNDN phù hợp phạm vi dịch vụ",
@@ -690,16 +691,79 @@
       "EVIDENCE_TOO_LARGE": "Tệp phải nhỏ hơn 10 MB.",
       "EVIDENCE_INVALID_TYPE": "Chỉ nhận tệp PDF, PNG hoặc JPG.",
       "EVIDENCE_LIMIT": "Đã đạt số tài liệu tối đa cho dịch vụ này.",
-      "EVIDENCE_LOCKED": "Tài liệu đã nộp không thể xóa.",
-      "QUALIFICATION_LOCKED": "Hồ sơ không ở bước nhận bổ sung; tải lại trang.",
+      "EVIDENCE_LOCKED": "Minh chứng đã nộp không thể xóa hoặc bỏ năng lực đã gắn.",
+      "QUALIFICATION_LOCKED": "Hồ sơ không ở bước nhận minh chứng; tải lại trang.",
       "SUPPLEMENT_EMPTY": "Thêm giải thích hoặc ít nhất một tài liệu mới.",
       "EMAIL_NOT_VERIFIED": "Xác thực email trước khi gửi bổ sung.",
       "open": "Không mở được tài liệu.",
       "loadFailed": "Không tải được danh sách dịch vụ.",
       "failed": "Chưa thực hiện được. Vui lòng thử lại.",
-      "NEW_EVIDENCE_REQUIRED": "Cần tải lên ít nhất một tài liệu mới trước khi gửi đánh giá lại."
+      "NEW_EVIDENCE_REQUIRED": "Cần tải lên ít nhất một tài liệu mới trước khi gửi đánh giá lại.",
+      "EVIDENCE_INVALID_URL": "Đường dẫn phải là địa chỉ http hoặc https công khai.",
+      "EVIDENCE_NOT_FOUND": "Không tìm thấy minh chứng; tải lại trang.",
+      "EVIDENCE_COMPETENCY_REQUIRED": "Gắn minh chứng với ít nhất một năng lực.",
+      "INVALID_COMPETENCY_CODE": "Năng lực không hợp lệ; tải lại trang.",
+      "COMPETENCY_DESCRIPTION_TOO_LONG": "Mô tả tối đa 1000 ký tự.",
+      "COMPETENCY_EVIDENCE_MISSING": "Thêm ít nhất một minh chứng trước khi nộp.",
+      "COMPETENCY_NEW_EVIDENCE_REQUIRED": "Mỗi năng lực chưa đạt lần trước cần ít nhất một minh chứng mới."
     },
-    "newEvidenceRequired": "Đây là lần đăng ký lại sau khi chưa đạt. Tải lên bằng chứng năng lực mới hoặc đã cập nhật cho các năng lực chưa đạt, rồi gửi để được đánh giá lại."
+    "newEvidenceRequired": "Đây là lần đăng ký lại sau khi chưa đạt. Tải lên bằng chứng năng lực mới hoặc đã cập nhật cho các năng lực chưa đạt, rồi gửi để được đánh giá lại.",
+    "titleSingle": "Đánh giá năng lực",
+    "descriptionSingle": "Sau khi đủ điều kiện tham gia, hồ sơ đánh giá năng lực được mở sẵn. Nộp minh chứng cho từng năng lực để người đánh giá xem xét.",
+    "prepare": "Nộp minh chứng",
+    "rounds": "Vòng bổ sung {{used}}/{{max}}",
+    "guide": {
+      "C1": {
+        "what": "Bạn hiểu luật thuế TNDN tới đâu.",
+        "send": "Chứng chỉ hoặc khóa học về thuế TNDN; tờ khai, hồ sơ quyết toán TNDN bạn từng lập hoặc rà soát (đã che thông tin khách hàng).",
+        "avoid": "Bằng đại học chung chung, không liên quan đến thuế."
+      },
+      "C2": {
+        "what": "Bạn có từng đọc lại và sửa hồ sơ, báo cáo do người khác (hoặc máy) soạn.",
+        "send": "Bản rà soát có ghi chú sửa (đã che thông tin khách hàng); thư xác nhận vai trò soát xét, kiểm tra chéo.",
+        "avoid": "Hồ sơ do chính bạn lập mà không có phần soát xét."
+      },
+      "C3": {
+        "what": "Bạn có kiểm tra chứng từ, số liệu xem có đúng và đủ không.",
+        "send": "Biên bản kiểm tra chứng từ, checklist rà soát hồ sơ, thư quản lý (management letter).",
+        "avoid": "Ảnh chụp chứng từ không có nhận xét của bạn."
+      },
+      "C4": {
+        "what": "Bạn có đối chiếu điều luật để trả lời một tình huống cụ thể.",
+        "send": "Ý kiến tư vấn hoặc công văn trả lời có trích điều luật; bài phân tích tình huống.",
+        "avoid": "Bài viết chép lại nguyên văn luật."
+      },
+      "C5": {
+        "what": "Bạn có từng đưa ra kết luận chuyên môn và chịu trách nhiệm về kết luận đó.",
+        "send": "Báo cáo có kết luận và chữ ký của bạn; quyết định chấp nhận hoặc từ chối một khoản chi phí kèm lý do.",
+        "avoid": "Tài liệu không có kết luận của bạn."
+      }
+    },
+    "evidence": {
+      "title": "Minh chứng năng lực",
+      "help": "Mỗi tài liệu gắn với một hoặc nhiều năng lực; một tài liệu dùng được cho nhiều năng lực. Nhận PDF, JPG, PNG (tối đa 10 MB) hoặc đường dẫn công khai. Không bắt buộc đủ 5 năng lực; người đánh giá có thể yêu cầu bổ sung.",
+      "mask": "Che thông tin khách hàng (tên, mã số thuế, số tiền nếu cần) trước khi tải lên.",
+      "newRequired": "Lần đăng ký lại sau khi chưa đạt: cần ít nhất một minh chứng mới cho: {{names}}.",
+      "competencies": "Các năng lực",
+      "fileCount_one": "{{count}} minh chứng",
+      "fileCount_other": "{{count}} minh chứng",
+      "covered": "{{count}}/{{total}} năng lực đã có minh chứng",
+      "submit": "Nộp để đánh giá",
+      "submitted": "Đã nộp minh chứng. Hồ sơ đã vào hàng chờ đánh giá năng lực.",
+      "whatIs": "Năng lực này là gì",
+      "send": "Nên gửi",
+      "avoid": "Không nên gửi",
+      "linkLabel": "Đường dẫn",
+      "tieHere": "Gắn vào năng lực này",
+      "tiedTo": "Năng lực đã gắn",
+      "tieMore": "Gắn thêm năng lực",
+      "tiedTitle": "Minh chứng của năng lực này",
+      "none": "Chưa có minh chứng cho năng lực này.",
+      "others": "Minh chứng đã gửi cho năng lực khác ({{count}})",
+      "description": "Mô tả ngắn (không bắt buộc)",
+      "descriptionPlaceholder": "Minh chứng trên cho thấy bạn đã làm gì cho năng lực này",
+      "saveDescription": "Lưu mô tả"
+    }
   },
   "readiness": {
     "APPLICATION_NOT_SUBMITTED": "Chưa nộp hồ sơ đăng ký.",
@@ -715,7 +779,8 @@
     "PRICING_IN_REVIEW": "Giá mới đang chờ quản trị viên duyệt.",
     "REQUESTS_TURNED_OFF": "Bạn đang tắt nhận yêu cầu cho dịch vụ này.",
     "NO_OPEN_SLOTS": "Chưa có khung giờ nhận việc nào sắp tới.",
-    "ACCOUNT_INACTIVE": "Tài khoản chưa hoạt động."
+    "ACCOUNT_INACTIVE": "Tài khoản chưa hoạt động.",
+    "COMPETENCY_EVIDENCE_PENDING": "Nộp minh chứng năng lực để được đánh giá."
   },
   "availabilityPage": {
     "title": "Lịch nhận việc",
@@ -747,5 +812,6 @@
       "loadFailed": "Không tải được lịch nhận việc.",
       "failed": "Chưa thực hiện được. Vui lòng thử lại."
     }
-  }
+  },
+  "preparingEvidence": "Chuẩn bị minh chứng năng lực"
 }

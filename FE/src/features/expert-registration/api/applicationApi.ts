@@ -68,6 +68,8 @@ export interface ExpertApplication {
   minYearsExperience?: number
   /** Re-application after NOT_ELIGIBLE: failed criteria that still need updated details or new evidence */
   changesRequired?: string[]
+  /** Rounds of more information asked for so far and the policy limit */
+  rounds?: { used: number; max: number; canRequestMore: boolean }
   missingRequirements: string[]
   emailVerified: boolean
   canEdit: boolean

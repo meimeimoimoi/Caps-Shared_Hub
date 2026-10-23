@@ -1,5 +1,6 @@
 /** Expert-Service qualification status (Gate 2 and final approval) */
 export type QualificationStatus =
+  | 'PREPARING'
   | 'COMPETENCY_REVIEW'
   | 'NEED_MORE_INFORMATION'
   | 'PENDING_FINAL_APPROVAL'
@@ -72,4 +73,26 @@ export interface Qualification {
   maxFiles: number
   /** Re-registration after FAIL: a new file is required before it is reviewed (BR-E22) */
   awaitsNewEvidence: boolean
+  /** PREPARING with at least one file tied to a competency: it can be sent for review */
+  canSubmit: boolean
+  /** Per competency: the expert's description and the files tied to it */
+  submitted: CompetencySubmission[]
+  /** Re-registration after FAIL: failed competencies still without a new file */
+  newEvidenceRequiredFor: string[]
+  /** Rounds of more information asked for so far and the limit */
+  rounds: InformationRounds
+}
+
+/** What the expert sent for one competency: a short description and the files tied to it */
+export interface CompetencySubmission {
+  code: string
+  description: string | null
+  evidenceIds: string[]
+}
+
+/** Rounds of "more information needed" used and the policy limit */
+export interface InformationRounds {
+  used: number
+  max: number
+  canRequestMore: boolean
 }

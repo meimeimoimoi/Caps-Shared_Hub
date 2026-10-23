@@ -24,6 +24,7 @@ const activityKeys = {
 } as const satisfies Record<ActivityType, ParseKeys<'expert'>>
 // Expert-Service Qualification states (Gate 2 and Final Approval), business tab 04, section 4.2
 const qualificationKeys = {
+  PREPARING: 'preparingEvidence',
   COMPETENCY_REVIEW: 'competencyReview',
   NEED_MORE_INFORMATION: 'needMoreEvidence',
   PENDING_FINAL_APPROVAL: 'awaitingFinalApproval',
@@ -37,6 +38,7 @@ const reasonCodes = [
   'ELIGIBILITY_PENDING',
   'NOT_ELIGIBLE',
   'COMPETENCY_REVIEW_PENDING',
+  'COMPETENCY_EVIDENCE_PENDING',
   'COMPETENCY_REVIEW_IN_PROGRESS',
   'COMPETENCY_NEED_MORE_INFORMATION',
   'FINAL_APPROVAL_PENDING',

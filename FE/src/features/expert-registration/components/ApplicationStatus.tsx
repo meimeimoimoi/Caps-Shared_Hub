@@ -24,6 +24,8 @@ export interface ApplicationStatusProps {
   /** Formatted time of the closing decision */
   decidedAt?: string | null
   decisionNote?: string | null
+  /** Rounds of more information asked for so far and the policy limit */
+  rounds?: { used: number; max: number }
   supplement: boolean
   terminal: boolean
   timeline: string[]
@@ -79,6 +81,7 @@ export function ApplicationStatus({
   reapplyAt = null,
   decidedAt = null,
   decisionNote = null,
+  rounds,
   supplement,
   terminal,
   timeline,
@@ -181,6 +184,11 @@ export function ApplicationStatus({
         ) : stage === 'additional' ? (
           <>
             <p>{t('status.additional')}</p>
+            {!!rounds?.used && (
+              <p className={mutedCls}>
+                {t('status.rounds', { used: rounds.used, max: rounds.max })}
+              </p>
+            )}
             <div className={noteCls}>
               {toSupplement.length ? (
                 <IssueList
@@ -260,7 +268,8 @@ export function ApplicationStatus({
           <>
             <p>{t('status.eligible')}</p>
             <p>{t('status.catalogue')}</p>
-            {/* Gate 2 starts when the expert registers a service; it creates the qualification reviewers see */}
+            {/* Next step: competency evidence. With one service it was opened automatically; otherwise the expert
+                registers a service there first */}
             <Link to="/expert/qualifications" className={btnPrimary}>
               {t('status.preview')}
               <ArrowRight size={16} />

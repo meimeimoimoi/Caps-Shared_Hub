@@ -254,6 +254,7 @@ export default function ExpertApplicationPage() {
                 reapplyAt={reapplyAt}
                 decidedAt={decidedAt}
                 decisionNote={decisionNote}
+                rounds={application?.rounds}
                 supplement={supplement}
                 terminal={terminal}
                 timeline={timeline}
