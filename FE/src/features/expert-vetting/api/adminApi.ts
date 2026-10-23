@@ -11,6 +11,7 @@ import type {
   Expert,
   ExpertApplication,
   CriterionDeclaration,
+  InformationRounds,
   ReviewClaimState,
   Submission,
 } from '../types'
@@ -88,6 +89,7 @@ interface ReviewApplication {
   criterionDeclarations?: CriterionDeclaration[]
   declarationPassedCriteria?: string[]
   claim?: ReviewClaimState
+  rounds?: InformationRounds
 }
 
 const toQueueRow = (a: ReviewQueueItem): ExpertApplication => ({
@@ -148,6 +150,7 @@ function toDetail(a: ReviewApplication): ApplicationDetail {
     decisionNote: a.decisionNote,
     earliestReapplyAt: a.earliestReapplyAt,
     claim: a.claim,
+    rounds: a.rounds,
   }
 }
 

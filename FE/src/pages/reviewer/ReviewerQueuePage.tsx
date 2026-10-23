@@ -12,6 +12,7 @@ import { useFormatters } from '@/hooks/useFormatters'
 import { useDebouncedValue } from '@/hooks/useDebouncedValue'
 import { useFieldLabel } from '@/features/expert-vetting/hooks/useLabels'
 import { Input } from '@/components/ui/forms/input'
+import { isOverdue } from '@/features/expert-vetting/hooks/useReviewSlaDays'
 import { Toast } from '@/components/ui/feedback/toast'
 import { ApiError } from '@/lib/api-client'
 import { claimApplication } from '@/features/expert-vetting/api/adminApi'
@@ -44,7 +45,7 @@ export default function ReviewerQueuePage({ history = false, gate: routeGate = '
   const filterKey = `${history}:${search}:${gate}:${status}:${claimFilter}`
   const [paging, setPaging] = useState({ key: filterKey, page: 1, pageSize: 10 })
   const page = paging.key === filterKey ? paging.page : 1
-  const { records, total, isLoading, isFetching, error, refresh } = useReviewerQueue({
+  const { records, total, slaDays, isLoading, isFetching, error, refresh } = useReviewerQueue({
     gate,
     mode: history ? 'HISTORY' : status === 'ALL' ? 'ALL' : 'OPEN',
     search,
@@ -189,7 +190,16 @@ export default function ReviewerQueuePage({ history = false, gate: routeGate = '
                     </div>
                     <div className="text-text-muted w-full text-xs tabular-nums md:w-44 md:shrink-0">
                       <time dateTime={row.submittedAt} className="text-text block text-sm">{format.timestamp(row.submittedAt, 'Asia/Bangkok', { dateStyle: 'medium' })}</time>
-                      <span>{row.open ? `${waited(row.submittedAt)} · ` : ''}{reference(row.id)}</span>
+                      <span>
+                        {row.open && (
+                          <span className={isOverdue(waitedDays(row.submittedAt), slaDays) ? 'text-warning font-medium' : undefined}>
+                            {waited(row.submittedAt)}
+                            {isOverdue(waitedDays(row.submittedAt), slaDays) && <span className="sr-only"> ({t('overdue', { days: slaDays })})</span>}
+                            {' · '}
+                          </span>
+                        )}
+                        {reference(row.id)}
+                      </span>
                     </div>
                     <div className="md:w-52 md:shrink-0">
                       <div className="[&>*]:whitespace-nowrap"><StatusBadge status={row.statusMeta} /></div>

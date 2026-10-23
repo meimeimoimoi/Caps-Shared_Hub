@@ -38,6 +38,8 @@ interface ReviewQueuePage {
   page: number
   pageSize: number
   total: number
+  /** Days a review may wait before it is flagged (policy) */
+  slaDays?: number
 }
 
 export interface ReviewQueueCounts {
@@ -46,6 +48,8 @@ export interface ReviewQueueCounts {
   /** Per status, only what the caller holds or nobody holds */
   availableApplications?: Record<string, number>
   availableQualifications?: Record<string, number>
+  /** Days a review may wait before it is flagged (policy) */
+  slaDays?: number
 }
 
 /** Which reviews to show by who holds them; the server default is MINE_OR_UNCLAIMED */

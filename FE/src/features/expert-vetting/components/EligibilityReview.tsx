@@ -120,8 +120,12 @@ export function EligibilityReview({ detail, assessments, disabled, onResult, onN
     setContested((codes) => codes.filter((code) => code !== assessment.code))
   }
   // NOT_APPLICABLE is offered only where the server's policy allows it
+  // M4: on the last allowed round the reviewer passes or fails; a result already chosen stays visible
+  const lastRound = !!detail.rounds && !detail.rounds.canRequestMore
   const results = ELIGIBILITY_RESULTS.filter(
-    (result) => result !== 'NOT_APPLICABLE' || (detail.notApplicableCriteria ?? []).includes(assessment.code)
+    (result) =>
+      (result !== 'NOT_APPLICABLE' || (detail.notApplicableCriteria ?? []).includes(assessment.code)) &&
+      (result !== 'NEED_MORE_INFORMATION' || !lastRound || assessment.result === result)
   )
   const moveTo = (code: string) => {
     setActiveCode(code)
@@ -136,8 +140,21 @@ export function EligibilityReview({ detail, assessments, disabled, onResult, onN
             <h2 id="eligibility-title" className="text-text-strong !font-sans !text-base font-semibold">{t('eligibility.title')}</h2>
             <HelpTip label={t('eligibility.title')}>{t('reviewWorkspace.assessmentHint')}</HelpTip>
           </div>
-          <span role="status" aria-label={t('reviewWorkspace.progress')} className="text-text-muted text-sm tabular-nums">{t('eligibility.progress', { done: completed, total: toAssess.length })}</span>
+          <div className="flex flex-wrap items-center gap-2">
+            {!!detail.rounds?.used && (
+              <span className="bg-surface-muted text-text-muted rounded px-1.5 py-0.5 text-xs tabular-nums">
+                {t('rounds.label', { used: detail.rounds.used, max: detail.rounds.max })}
+              </span>
+            )}
+            <span role="status" aria-label={t('reviewWorkspace.progress')} className="text-text-muted text-sm tabular-nums">{t('eligibility.progress', { done: completed, total: toAssess.length })}</span>
+          </div>
         </div>
+        {lastRound && (
+          <p role="note" className="text-warning mt-2 flex items-center gap-1.5 text-sm">
+            {t('rounds.last')}
+            <HelpTip label={t('rounds.last')}>{t('rounds.lastHelp', { max: detail.rounds?.max })}</HelpTip>
+          </p>
+        )}
         <progress value={completed} max={toAssess.length} aria-label={t('reviewWorkspace.progress')} className="mt-3 block h-1 w-full overflow-hidden rounded-full [&::-webkit-progress-bar]:bg-[var(--ui-surface-muted)] [&::-webkit-progress-value]:bg-[var(--ui-text-strong)] [&::-moz-progress-bar]:bg-[var(--ui-text-strong)]" />
       </header>
 

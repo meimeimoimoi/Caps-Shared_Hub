@@ -8,7 +8,6 @@ import type {
 } from '../types'
 export { foldVietnamese, formatDate, formatDateTime } from '@/lib/utils'
 
-export const SLA_DAYS = 7
 const DAY_MS = 86_400_000
 
 export const waitedDays = (iso: string, now = Date.now()) =>

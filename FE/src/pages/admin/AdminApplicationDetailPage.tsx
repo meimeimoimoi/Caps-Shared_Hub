@@ -44,6 +44,7 @@ const DECISION_ERRORS = [
   'SELF_REVIEW_NOT_ALLOWED',
   'APPLICATION_NOT_IN_REVIEW',
   'REVIEW_NOT_CLAIMED',
+  'INFORMATION_REQUEST_LIMIT',
 ] as const
 type DecisionError = (typeof DECISION_ERRORS)[number]
 const isDecisionError = (code?: string): code is DecisionError =>

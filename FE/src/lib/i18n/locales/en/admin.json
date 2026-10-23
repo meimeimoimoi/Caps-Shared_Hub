@@ -294,8 +294,6 @@
     },
     "competency": {
       "title": "Competency Review",
-      "subtitle": "Scoring scale based on review policy",
-      "level": "Level {{level}}",
       "evidence": "Evidence (required)"
     },
     "decisionTitle": "System Admin decision"
@@ -778,7 +776,8 @@
       "SELF_REVIEW_NOT_ALLOWED": "You cannot review your own application.",
       "APPLICATION_NOT_IN_REVIEW": "This application no longer waits for a decision; reload to see its status.",
       "failed": "The decision was not recorded. Please try again.",
-      "REVIEW_NOT_CLAIMED": "You no longer hold this review (the hold expired or it was handed on). Reloaded the review."
+      "REVIEW_NOT_CLAIMED": "You no longer hold this review (the hold expired or it was handed on). Reloaded the review.",
+      "INFORMATION_REQUEST_LIMIT": "No information rounds are left. Pass or fail on the evidence at hand."
     },
     "declarations": {
       "contest": "Grounds against the statement?",
@@ -893,8 +892,62 @@
       "SERVICE_NOT_SUSPENDED": "The service is not suspended; reload the page.",
       "SUSPENSION_NOTE_REQUIRED": "Give the reason for the suspension.",
       "INVALID_SERVICE_ACCESS_ACTION": "The action is invalid. Reload the page and try again.",
-      "REVIEW_NOT_CLAIMED": "You no longer hold this review (the hold expired or it was handed on). Reloaded the review."
-    }
+      "REVIEW_NOT_CLAIMED": "You no longer hold this review (the hold expired or it was handed on). Reloaded the review.",
+      "INFORMATION_REQUEST_LIMIT": "No information rounds are left. Pass or fail on the evidence at hand."
+    },
+    "definitions": {
+      "C1": "Knows corporate income tax law within the verification service: taxable income, deductible expenses, incentives and finalisation.",
+      "C2": "Re-reads and corrects drafts (including AI drafts): finds what is wrong or missing and fixes it.",
+      "C3": "Checks that the client’s information and documents are accurate and sufficient, or asks for more.",
+      "C4": "Matches specific provisions to the client’s case and applies them correctly.",
+      "C5": "Makes the final verification conclusion and is responsible for it."
+    },
+    "guide": {
+      "C1": {
+        "PASS": "A corporate income tax certificate or course and a tax file prepared or reviewed.",
+        "NEED_MORE_INFORMATION": "Only one of the two.",
+        "FAIL": "Nothing related to corporate income tax."
+      },
+      "C2": {
+        "PASS": "A review copy or correction notes showing errors found and fixed.",
+        "NEED_MORE_INFORMATION": "Only a CV or a description, no file proving it.",
+        "FAIL": "Files show only own work, never reviewing someone else’s."
+      },
+      "C3": {
+        "PASS": "Document check minutes or a checklist with the expert’s comments.",
+        "NEED_MORE_INFORMATION": "Files without visible comments.",
+        "FAIL": "No experience checking documents."
+      },
+      "C4": {
+        "PASS": "An opinion or analysis citing the right provisions for a specific case.",
+        "NEED_MORE_INFORMATION": "A case without the legal basis.",
+        "FAIL": "Wrong provisions, or unrelated to corporate income tax."
+      },
+      "C5": {
+        "PASS": "A professional conclusion the expert made and is responsible for.",
+        "NEED_MORE_INFORMATION": "Took part, but it is unclear who concluded.",
+        "FAIL": "No conclusion of the expert."
+      }
+    },
+    "guideTitle": "When to choose each level",
+    "guideNote": "This guidance keeps results consistent; you still judge and give your reasons.",
+    "whenLabel": "{{result}} when: {{text}}",
+    "steps": {
+      "evidence": "1. What the expert sent for this competency",
+      "result": "2. Result",
+      "note": "3. Note for the expert"
+    },
+    "noDescription": "The expert wrote no description for this competency.",
+    "noTiedFiles": "The expert tied no evidence to this competency.",
+    "otherFiles": "Other evidence of the record ({{count}})",
+    "open": "Open",
+    "cite": "Cite",
+    "linkLabel": "Link",
+    "citedCount": "Cited: {{count}} evidence",
+    "graded": "Assessed {{done}}/{{total}}",
+    "conclude": "Conclude",
+    "nextCompetency": "Next competency",
+    "expertDescription": "Expert’s description"
   },
   "finalApproval": {
     "title": "Final approval",
@@ -964,7 +1017,7 @@
     "settings": {
       "MinYearsExperience": {
         "label": "Minimum years of experience",
-        "help": "Threshold of criterion EV-06 (tax and accounting experience). Applications declaring fewer years cannot pass it. Default {{defaultValue}} years; allowed {{min}}–{{max}}.",
+        "help": "Threshold of the tax and accounting experience criterion. Declared experience below it cannot pass. Default {{defaultValue}} years; allowed {{min}}–{{max}}.",
         "unit": "years"
       },
       "ReapplyNotEligibleDays": {
@@ -981,6 +1034,16 @@
         "label": "Review hold period",
         "help": "Hours a reviewer keeps a claimed review. Without a decision by then it returns to the shared queue; time spent waiting for the expert does not count. Default {{defaultValue}} hours; allowed {{min}}–{{max}}.",
         "unit": "hours"
+      },
+      "MaxInformationRequests": {
+        "label": "Maximum information rounds",
+        "help": "How many times a reviewer may ask the expert for more information on one review, for both eligibility and competency. When they are used up the reviewer must pass or fail. Default {{defaultValue}}; allowed {{min}}–{{max}}.",
+        "unit": "rounds"
+      },
+      "ReviewSlaDays": {
+        "label": "Review waiting limit",
+        "help": "Days a review may wait for a reviewer before the queue highlights it. A warning only; nothing happens automatically. Default {{defaultValue}} days; allowed {{min}}–{{max}}.",
+        "unit": "days"
       }
     },
     "outOfRange": "Enter a whole number from {{min}} to {{max}}.",
@@ -1080,5 +1143,10 @@
       "QUALIFICATION_NOT_IN_REVIEW": "The review is no longer open. Reload the list.",
       "failed": "Could not reassign. Please try again."
     }
+  },
+  "rounds": {
+    "label": "Information round {{used}}/{{max}}",
+    "last": "This is the last information round",
+    "lastHelp": "All {{max}} information rounds allowed by the policy were used. Pass or fail on the evidence at hand."
   }
 }

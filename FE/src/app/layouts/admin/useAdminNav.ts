@@ -5,10 +5,8 @@ import type { ShellNotification } from '../NotificationBell'
 import { getApplications } from '@/features/expert-vetting/api/adminApi'
 import { adminKeys } from '@/features/expert-vetting/api/queryKeys'
 import { PENDING_STATUS } from '@/features/expert-vetting/constants'
-import {
-  SLA_DAYS,
-  waitedDays,
-} from '@/features/expert-vetting/utils/applications'
+import { waitedDays } from '@/features/expert-vetting/utils/applications'
+import { isOverdue, useReviewSlaDays } from '@/features/expert-vetting/hooks/useReviewSlaDays'
 import {
   getDisputes,
   getEscrows,
@@ -26,6 +24,8 @@ export function useAdminNav(enabled = true) {
   const user = useAuthStore((s) => s.user)
   const canReview = enabled && hasAnyPermission(user, [Permission.ExpertReview])
   const canViewDemoOperations = enabled && isExpertDemo && hasAnyPermission(user, [Permission.UserManage])
+  // Waiting limit comes from the expert policy (System Admin setting), never a constant here
+  const slaDays = useReviewSlaDays(canReview)
   const applications = useQuery({
     queryKey: adminKeys.applications(),
     queryFn: ({ signal }) => getApplications(signal),
@@ -47,8 +47,8 @@ export function useAdminNav(enabled = true) {
   const pending = (canReview ? applications.data ?? [] : []).filter(
     (a) => a.status === PENDING_STATUS
   )
-  const overdue = pending.filter(
-    (a) => waitedDays(a.submittedAt, now) > SLA_DAYS
+  const overdue = pending.filter((a) =>
+    isOverdue(waitedDays(a.submittedAt, now), slaDays)
   ).length
   const open = (canViewDemoOperations ? disputes.data ?? [] : []).filter((d) => !d.resolvedAt)
   const nearestHours = open.length
@@ -89,7 +89,7 @@ export function useAdminNav(enabled = true) {
       id: 'sla-overdue',
       text: t('dashboard.attention.slaOverdue', {
         count: overdue,
-        days: SLA_DAYS,
+        days: slaDays,
       }),
       to: '/reviewer/gate-1',
       tone: 'warning' as const,

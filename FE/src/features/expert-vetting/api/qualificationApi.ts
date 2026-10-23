@@ -9,6 +9,8 @@ import type {
   QualificationRow,
   QualificationScope,
   QualificationStatus,
+  CompetencySubmission,
+  InformationRounds,
   ReviewClaimState,
   ServiceAccessAction,
 } from '../types'
@@ -88,6 +90,8 @@ interface ReviewQualification {
   canSuspend: boolean
   canReinstate: boolean
   claim?: ReviewClaimState
+  submitted?: CompetencySubmission[]
+  rounds?: InformationRounds
 }
 
 const toRow = (q: QueueItem): QualificationRow => ({
@@ -121,6 +125,8 @@ function toDetail(q: ReviewQualification): QualificationDetail {
     canSuspend: q.canSuspend,
     canReinstate: q.canReinstate,
     claim: q.claim,
+    submitted: q.submitted ?? [],
+    rounds: q.rounds,
     competencies: q.competencies,
     // Gate 1 view of the expert: the profile, document and Gate 1 result tabs read it as is
     profile: {

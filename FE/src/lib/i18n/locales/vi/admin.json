@@ -293,8 +293,6 @@
     },
     "competency": {
       "title": "Đánh giá năng lực",
-      "subtitle": "Thang chấm theo quy chế xét duyệt",
-      "level": "Mức {{level}}",
       "evidence": "Căn cứ đánh giá (bắt buộc)"
     },
     "decisionTitle": "Quyết định của System Admin"
@@ -777,7 +775,8 @@
       "SELF_REVIEW_NOT_ALLOWED": "Bạn không thể tự đánh giá hồ sơ của chính mình.",
       "APPLICATION_NOT_IN_REVIEW": "Hồ sơ không còn chờ kết luận; tải lại để xem trạng thái mới.",
       "failed": "Chưa ghi nhận được kết luận. Vui lòng thử lại.",
-      "REVIEW_NOT_CLAIMED": "Bạn không còn giữ hồ sơ này (đã quá hạn hoặc đã chuyển cho người khác). Đã tải lại hồ sơ."
+      "REVIEW_NOT_CLAIMED": "Bạn không còn giữ hồ sơ này (đã quá hạn hoặc đã chuyển cho người khác). Đã tải lại hồ sơ.",
+      "INFORMATION_REQUEST_LIMIT": "Đã hết số vòng yêu cầu bổ sung. Chọn Đạt hoặc Không đạt dựa trên minh chứng hiện có."
     },
     "declarations": {
       "contest": "Có căn cứ không đạt?",
@@ -892,8 +891,62 @@
       "SERVICE_NOT_SUSPENDED": "Dịch vụ không ở trạng thái tạm ngưng; tải lại trang.",
       "SUSPENSION_NOTE_REQUIRED": "Ghi rõ lý do tạm ngưng.",
       "INVALID_SERVICE_ACCESS_ACTION": "Thao tác không hợp lệ. Tải lại trang rồi thử lại.",
-      "REVIEW_NOT_CLAIMED": "Bạn không còn giữ hồ sơ này (đã quá hạn hoặc đã chuyển cho người khác). Đã tải lại hồ sơ."
-    }
+      "REVIEW_NOT_CLAIMED": "Bạn không còn giữ hồ sơ này (đã quá hạn hoặc đã chuyển cho người khác). Đã tải lại hồ sơ.",
+      "INFORMATION_REQUEST_LIMIT": "Đã hết số vòng yêu cầu bổ sung. Chọn Đạt hoặc Không đạt dựa trên minh chứng hiện có."
+    },
+    "definitions": {
+      "C1": "Hiểu luật thuế TNDN trong phạm vi dịch vụ xác minh: căn cứ tính thuế, chi phí được trừ, ưu đãi và quyết toán.",
+      "C2": "Đọc lại và sửa bản nháp (kể cả bản do AI soạn): phát hiện chỗ sai, thiếu và sửa cho đúng.",
+      "C3": "Kiểm tra thông tin và chứng từ khách gửi có đúng, đủ để kết luận hay cần yêu cầu bổ sung.",
+      "C4": "Đối chiếu điều luật cụ thể với tình huống của khách và áp dụng đúng.",
+      "C5": "Ra kết luận xác minh cuối cùng và chịu trách nhiệm về kết luận đó."
+    },
+    "guide": {
+      "C1": {
+        "PASS": "Có chứng chỉ hoặc khóa học thuế TNDN và hồ sơ TNDN từng lập hoặc rà soát.",
+        "NEED_MORE_INFORMATION": "Chỉ có một trong hai.",
+        "FAIL": "Không có gì liên quan đến thuế TNDN."
+      },
+      "C2": {
+        "PASS": "Có bản rà soát hoặc ghi chú sửa thể hiện việc tìm ra và sửa lỗi.",
+        "NEED_MORE_INFORMATION": "Chỉ có CV hoặc lời mô tả, chưa có file chứng minh.",
+        "FAIL": "File cho thấy chỉ tự lập, chưa từng soát xét hồ sơ của người khác."
+      },
+      "C3": {
+        "PASS": "Có biên bản hoặc checklist kiểm tra chứng từ kèm nhận xét của chuyên gia.",
+        "NEED_MORE_INFORMATION": "Có file nhưng không thấy phần nhận xét.",
+        "FAIL": "Không có kinh nghiệm kiểm tra chứng từ."
+      },
+      "C4": {
+        "PASS": "Có ý kiến hoặc bài phân tích trích đúng điều luật cho tình huống cụ thể.",
+        "NEED_MORE_INFORMATION": "Có tình huống nhưng không thấy căn cứ luật.",
+        "FAIL": "Trích sai luật hoặc không liên quan đến thuế TNDN."
+      },
+      "C5": {
+        "PASS": "Có kết luận chuyên môn do chuyên gia đưa ra và chịu trách nhiệm.",
+        "NEED_MORE_INFORMATION": "Có tham gia nhưng không rõ ai kết luận.",
+        "FAIL": "Không có kết luận nào của chuyên gia."
+      }
+    },
+    "guideTitle": "Khi nào chọn mức nào",
+    "guideNote": "Đây là hướng dẫn để chấm đồng đều; bạn vẫn tự xét đoán và ghi lý do.",
+    "whenLabel": "{{result}} khi: {{text}}",
+    "steps": {
+      "evidence": "1. Chuyên gia gửi gì cho năng lực này",
+      "result": "2. Kết quả",
+      "note": "3. Ghi chú cho chuyên gia"
+    },
+    "noDescription": "Chuyên gia không viết mô tả cho năng lực này.",
+    "noTiedFiles": "Chuyên gia chưa gắn minh chứng nào cho năng lực này.",
+    "otherFiles": "Các minh chứng khác của hồ sơ ({{count}})",
+    "open": "Mở",
+    "cite": "Căn cứ",
+    "linkLabel": "Đường dẫn",
+    "citedCount": "Căn cứ: {{count}} minh chứng",
+    "graded": "Đã chấm {{done}}/{{total}}",
+    "conclude": "Kết luận hồ sơ",
+    "nextCompetency": "Năng lực tiếp",
+    "expertDescription": "Mô tả của chuyên gia"
   },
   "finalApproval": {
     "title": "Phê duyệt cuối",
@@ -963,7 +1016,7 @@
     "settings": {
       "MinYearsExperience": {
         "label": "Số năm kinh nghiệm tối thiểu",
-        "help": "Ngưỡng của tiêu chí EV-06 (kinh nghiệm thuế – kế toán). Hồ sơ kê khai dưới ngưỡng không thể được chấm Đạt. Mặc định {{defaultValue}} năm; cho phép {{min}}–{{max}}.",
+        "help": "Ngưỡng của tiêu chí kinh nghiệm thuế – kế toán. Hồ sơ kê khai dưới ngưỡng không thể được chấm Đạt. Mặc định {{defaultValue}} năm; cho phép {{min}}–{{max}}.",
         "unit": "năm"
       },
       "ReapplyNotEligibleDays": {
@@ -980,6 +1033,16 @@
         "label": "Thời hạn giữ hồ sơ",
         "help": "Số giờ người đánh giá được giữ một hồ sơ đã nhận. Quá hạn mà chưa kết luận thì hồ sơ tự về hàng chờ chung; thời gian chờ chuyên gia bổ sung không tính. Mặc định {{defaultValue}} giờ; cho phép {{min}}–{{max}}.",
         "unit": "giờ"
+      },
+      "MaxInformationRequests": {
+        "label": "Số vòng yêu cầu bổ sung tối đa",
+        "help": "Số lần người đánh giá được yêu cầu chuyên gia bổ sung cho một hồ sơ, áp dụng cả xác minh điều kiện và đánh giá năng lực. Hết số vòng thì phải kết luận Đạt hoặc Không đạt. Mặc định {{defaultValue}}; cho phép {{min}}–{{max}}.",
+        "unit": "vòng"
+      },
+      "ReviewSlaDays": {
+        "label": "Thời hạn chấm hồ sơ",
+        "help": "Số ngày một hồ sơ được chờ người đánh giá trước khi hàng chờ tô màu cảnh báo. Chỉ để cảnh báo, hệ thống không tự xử lý. Mặc định {{defaultValue}} ngày; cho phép {{min}}–{{max}}.",
+        "unit": "ngày"
       }
     },
     "outOfRange": "Nhập số nguyên từ {{min}} đến {{max}}.",
@@ -1079,5 +1142,10 @@
       "QUALIFICATION_NOT_IN_REVIEW": "Hồ sơ không còn ở bước chờ đánh giá. Tải lại danh sách.",
       "failed": "Chưa chuyển được. Vui lòng thử lại."
     }
+  },
+  "rounds": {
+    "label": "Vòng bổ sung {{used}}/{{max}}",
+    "last": "Đây là vòng bổ sung cuối",
+    "lastHelp": "Đã dùng hết {{max}} vòng yêu cầu bổ sung theo chính sách. Chọn Đạt hoặc Không đạt dựa trên minh chứng hiện có."
   }
 }

@@ -6,7 +6,6 @@ import { ApiError } from '@/lib/api-client'
 import { QUALIFICATION_STATUS } from '@/lib/constants'
 import { ToolHeader } from '@/components/ui/layout/tool-header'
 import { StatusBadge } from '@/components/ui/display/status-badge'
-import { DecisionBar } from '@/components/ui/actions/decision-bar'
 import { Toast } from '@/components/ui/feedback/toast'
 import { ReviewPageLayout } from '@/features/expert-vetting/components/ReviewPageLayout'
 import { useAuthStore } from '@/features/auth'
@@ -21,10 +20,8 @@ import { DocumentsTab } from '../../features/expert-vetting/components/Documents
 import { FinalApprovalPanel } from '../../features/expert-vetting/components/FinalApprovalPanel'
 import { HistoryTab } from '../../features/expert-vetting/components/HistoryTab'
 import { ProfileTab } from '../../features/expert-vetting/components/ProfileTab'
-import {
-  COMPETENCY_CODES,
-  COMPETENCY_OUTCOME,
-} from '../../features/expert-vetting/constants'
+import { COMPETENCY_OUTCOME } from '../../features/expert-vetting/constants'
+import { formatDate } from '../../features/expert-vetting/utils/applications'
 import { useQualificationReview } from '../../features/expert-vetting/hooks/useQualificationReview'
 import { useReviewClaim } from '../../features/expert-vetting/hooks/useReviewClaim'
 import type {
@@ -42,6 +39,7 @@ const DECISION_ERRORS = [
   'SELF_REVIEW_NOT_ALLOWED',
   'QUALIFICATION_NOT_IN_REVIEW',
   'REVIEW_NOT_CLAIMED',
+  'INFORMATION_REQUEST_LIMIT',
   'QUALIFICATION_NOT_PENDING_APPROVAL',
   'FINAL_APPROVER_IS_REVIEWER',
   'FINAL_APPROVAL_NOTE_REQUIRED',
@@ -240,6 +238,7 @@ export default function AdminQualificationDetailPage({
           <dl className="text-text-muted mt-1.5 flex flex-wrap items-center gap-x-1.5 gap-y-1 text-sm [&>div+div]:before:mr-1.5 [&>div+div]:before:content-['·']">
             <div><dt className="sr-only">{t('admin:competency.serviceLabel')}</dt><dd className="text-text-strong inline font-medium">{detail.serviceName}</dd></div>
             <div><dt className="sr-only">{t('admin:detail.meta.experience')}</dt><dd className="inline tabular-nums">{years}</dd></div>
+            <div><dt className="inline">{t('admin:detail.meta.submitted')} </dt><dd className="inline tabular-nums">{formatDate(detail.submittedAt)}</dd></div>
             <div><dt className="inline">{t('admin:reviewWorkspace.reference')} </dt><dd title={detail.id} className="inline tabular-nums">{detail.id.slice(0, 8)}</dd></div>
           </dl>
         </header>
@@ -361,34 +360,16 @@ export default function AdminQualificationDetailPage({
               assessments={review.assessments}
               documents={expert.documents}
               previous={detail.competencies}
+              submitted={detail.submitted}
+              rounds={detail.rounds}
               disabled={review.deciding || readOnly}
               onResult={review.setResult}
               onNote={review.setNote}
               onToggleEvidence={review.toggleEvidence}
               onShowDocument={showDocument}
+              onConclude={() => setConfirming(true)}
+              canConclude={review.canDecide && !readOnly}
             />
-        <DecisionBar
-          className="!static !mx-0 !mt-4 !mb-0 !flex-col !items-stretch !gap-4 !rounded-lg !border !border-[var(--ui-border)] !bg-[var(--ui-surface)] !px-4 !py-3 !shadow-none [&>div]:!ml-0 [&>div]:w-full [&>div]:justify-end [&_.btn]:min-h-11 [&_.btn]:h-auto [&_.btn]:whitespace-normal [&_.btn]:py-3"
-          blockers={
-            review.remaining > 0
-              ? [
-                  {
-                    text: t('admin:competency.remaining', {
-                      count: review.remaining,
-                    }),
-                  },
-                ]
-              : []
-          }
-          ready={`${t('admin:competency.ready', {
-            count: COMPETENCY_CODES.length,
-          })} · ${t('admin:eligibility.outcomeLabel')}: ${QUALIFICATION_STATUS[review.outcome].label}`}
-          primary={{
-            label: t(`admin:${COMPETENCY_OUTCOME[review.outcome].confirm}`),
-            onClick: () => setConfirming(true),
-            disabled: !review.canDecide || readOnly,
-          }}
-        />
           </div>
         )}
       </div>

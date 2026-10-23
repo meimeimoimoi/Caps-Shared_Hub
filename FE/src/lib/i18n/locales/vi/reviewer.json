@@ -143,5 +143,6 @@
   "holderSomeone": "Người đánh giá khác",
   "claimAction": "Nhận",
   "claimTaken": "Hồ sơ vừa được người khác nhận.",
-  "claimFailed": "Chưa nhận được hồ sơ. Vui lòng thử lại."
+  "claimFailed": "Chưa nhận được hồ sơ. Vui lòng thử lại.",
+  "overdue": "chờ quá {{days}} ngày"
 }

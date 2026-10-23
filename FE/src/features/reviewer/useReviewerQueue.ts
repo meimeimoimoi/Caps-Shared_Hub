@@ -94,6 +94,8 @@ export function useReviewerQueue({
   return {
     records: (query.data?.items ?? []).map(toRecord),
     total: query.data?.total ?? 0,
+    /** Days a review may wait before it is flagged (policy); undefined until loaded */
+    slaDays: query.data?.slaDays,
     isLoading: query.isLoading,
     isFetching: query.isFetching,
     error: query.error,

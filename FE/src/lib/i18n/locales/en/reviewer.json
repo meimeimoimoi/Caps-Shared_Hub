@@ -144,5 +144,6 @@
   "holderSomeone": "Another reviewer",
   "claimAction": "Claim",
   "claimTaken": "Another reviewer just claimed this review.",
-  "claimFailed": "Could not claim the review. Please try again."
+  "claimFailed": "Could not claim the review. Please try again.",
+  "overdue": "waiting over {{days}} days"
 }

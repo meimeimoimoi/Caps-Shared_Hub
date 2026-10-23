@@ -107,6 +107,22 @@ export interface ApplicationDetail extends ExpertApplication {
   earliestReapplyAt: string | null
   /** Who works on the review now; decisions need an active claim (absent in older responses) */
   claim?: ReviewClaimState
+  /** Rounds of more information asked for so far and the policy limit */
+  rounds?: InformationRounds
+}
+
+/** Rounds of "more information needed" used and the policy limit; on the last round it cannot be chosen */
+export interface InformationRounds {
+  used: number
+  max: number
+  canRequestMore: boolean
+}
+
+/** What the expert sent for one competency: a short description and the files tied to it */
+export interface CompetencySubmission {
+  code: string
+  description: string | null
+  evidenceIds: string[]
 }
 
 /** The reviewer working on a review now; expiresAt comes from the server clock, never the browser's */
@@ -250,6 +266,9 @@ export interface QualificationDetail {
   canReinstate: boolean
   /** Who works on the Gate 2 review now; decisions need an active claim */
   claim?: ReviewClaimState
+  /** Per competency: the expert's description and the files tied to it */
+  submitted: CompetencySubmission[]
+  rounds?: InformationRounds
 }
 
 export interface FinalApprovalInput {
