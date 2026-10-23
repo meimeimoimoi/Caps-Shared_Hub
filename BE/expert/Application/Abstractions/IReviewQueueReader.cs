@@ -34,7 +34,10 @@ public interface IReviewQueueReader
         CancellationToken ct
     );
 
-    /// <summary>The first <paramref name="take"/> matching qualifications, oldest submission first.</summary>
+    /// <summary>
+    /// The first <paramref name="take"/> matching qualifications, oldest submission first; those waiting for
+    /// final approval are ordered by their Gate 2 PASS time, so overdue ones come first.
+    /// </summary>
     Task<IReadOnlyList<ReviewQueueRowResponse>> ListQualificationsAsync(
         IReadOnlyCollection<string> statuses,
         string? search,
@@ -43,6 +46,9 @@ public interface IReviewQueueReader
         int take,
         CancellationToken ct
     );
+
+    /// <summary>Qualifications waiting for final approval whose Gate 2 PASS is older than the given time.</summary>
+    Task<int> CountFinalApprovalsPassedBeforeAsync(DateTimeOffset passedBefore, CancellationToken ct);
 
     /// <summary>Applications per status.</summary>
     Task<IReadOnlyDictionary<string, int>> CountApplicationsByStatusAsync(CancellationToken ct);

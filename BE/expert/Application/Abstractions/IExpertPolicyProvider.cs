@@ -21,4 +21,7 @@ public interface IExpertPolicyProvider
 
     /// <summary>Information rounds per review and the queue waiting time, for Gate 1 and Gate 2.</summary>
     Task<ReviewWorkPolicy> GetReviewWorkAsync(CancellationToken ct);
+
+    /// <summary>How long the final approval may take after Gate 2 PASS.</summary>
+    Task<FinalApprovalPolicy> GetFinalApprovalAsync(CancellationToken ct);
 }

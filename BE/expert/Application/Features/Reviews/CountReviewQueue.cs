@@ -23,10 +23,11 @@ public sealed class CountReviewQueueHandler(
     {
         var applications = await queue.CountApplicationsByStatusAsync(ct);
         var qualifications = await queue.CountQualificationsByStatusAsync(ct);
+        var now = clock.GetUtcNow();
         var scope = new ReviewQueueScope(
             ReviewClaimFilter.MineOrUnclaimed,
             query.ViewerUserId,
-            clock.GetUtcNow(),
+            now,
             (await policies.GetReviewClaimAsync(ct)).Hold
         );
         return new ReviewQueueCountsResponse(
@@ -34,7 +35,12 @@ public sealed class CountReviewQueueHandler(
             qualifications,
             await queue.CountApplicationsByStatusAsync(scope, ct),
             await queue.CountQualificationsByStatusAsync(scope, ct),
-            (await policies.GetReviewWorkAsync(ct)).SlaDays
+            (await policies.GetReviewWorkAsync(ct)).SlaDays,
+            // Overdue: passed more than the due days ago (D8)
+            await queue.CountFinalApprovalsPassedBeforeAsync(
+                now.AddDays(-(await policies.GetFinalApprovalAsync(ct)).DueDays),
+                ct
+            )
         );
     }
 }

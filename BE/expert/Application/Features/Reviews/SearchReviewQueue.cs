@@ -2,6 +2,7 @@ using Caps.Common.Application;
 using Caps.Expert.Application.Abstractions;
 using Caps.Expert.Application.DTOs.Responses;
 using Caps.Expert.Domain;
+using Caps.Expert.Domain.Qualifications;
 using Caps.Expert.Domain.Reviews;
 
 namespace Caps.Expert.Application.Features.Reviews;
@@ -100,7 +101,9 @@ public sealed class SearchReviewQueueHandler(
                 )
             );
         }
-        var items = rows.OrderBy(x => x.SubmittedAt ?? DateTimeOffset.MinValue)
+        var finalApproval = await policies.GetFinalApprovalAsync(ct);
+        // Same order as the sources: final approvals by Gate 2 PASS time, the rest by submission
+        var items = rows.OrderBy(x => x.PassedAt ?? x.SubmittedAt ?? DateTimeOffset.MinValue)
             .ThenBy(x => x.Id, StringComparer.Ordinal)
             .Skip(skip)
             .Take(query.PageSize)
@@ -110,6 +113,19 @@ public sealed class SearchReviewQueueHandler(
                     : x with
                     {
                         ServiceName = services.GetValueOrDefault(x.ServiceCode),
+                    }
+            )
+            .Select(x =>
+                x.PassedAt is not DateTimeOffset passedAt
+                    ? x
+                    : x with
+                    {
+                        FinalApprovalDueAt = FinalApprovalRules.DueAt(passedAt, finalApproval),
+                        FinalApprovalOverdue = FinalApprovalRules.IsOverdue(
+                            passedAt,
+                            finalApproval,
+                            scope.Now
+                        ),
                     }
             )
             .ToArray();

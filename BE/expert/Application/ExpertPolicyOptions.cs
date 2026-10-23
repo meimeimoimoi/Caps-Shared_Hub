@@ -29,6 +29,9 @@ public sealed class ExpertPolicyOptions
     /// <summary>expert.review_sla_days: days a review may wait before the queue flags it (M5).</summary>
     public int ReviewSlaDays { get; set; } = 7;
 
+    /// <summary>expert.final_approval_days: days the final approval may take before the queue flags it (D8).</summary>
+    public int FinalApprovalDays { get; set; } = 3;
+
     /// <summary>pricing.min_price: lowest service price in VND (POL-MKT-02).</summary>
     public long PricingMinPrice { get; set; } = 1_000_000;
 
@@ -121,6 +124,7 @@ public sealed class ExpertPolicyOptions
             [PolicySettingKeys.ReviewClaimHours] = ReviewClaimHours,
             [PolicySettingKeys.MaxInformationRequests] = MaxInformationRequests,
             [PolicySettingKeys.ReviewSlaDays] = ReviewSlaDays,
+            [PolicySettingKeys.FinalApprovalDays] = FinalApprovalDays,
         };
 
     public PricingPolicy Pricing =>

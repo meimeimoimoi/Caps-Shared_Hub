@@ -48,6 +48,12 @@ public sealed class ExpertPolicyProvider(ExpertDbContext db, ExpertPolicyOptions
         );
     }
 
+    public async Task<FinalApprovalPolicy> GetFinalApprovalAsync(CancellationToken ct)
+    {
+        var current = await LoadAsync(ct);
+        return new(current[PolicySettingKeys.FinalApprovalDays]);
+    }
+
     private async Task<IReadOnlyDictionary<string, int>> LoadAsync(CancellationToken ct)
     {
         if (values != null)

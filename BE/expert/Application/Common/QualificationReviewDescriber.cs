@@ -38,6 +38,7 @@ public sealed class QualificationReviewDescriber(
         );
         var hold = (await policies.GetReviewClaimAsync(ct)).Hold;
         var work = await policies.GetReviewWorkAsync(ct);
+        var finalApproval = await policies.GetFinalApprovalAsync(ct);
         var links = await competencyEvidence.ListLinksAsync(qualification.Id, ct);
         var descriptions = await competencyEvidence.ListDescriptionsAsync(qualification.Id, ct);
         var claim = await claims.DescribeAsync(
@@ -109,7 +110,11 @@ public sealed class QualificationReviewDescriber(
                     history.Select(x => (x.FromStatus, x.ToStatus))
                 ),
                 QualificationStatus.NeedMoreInformation
-            )
+            ),
+            qualification.Status == QualificationStatus.PendingFinalApproval
+            && qualification.DecidedAt is DateTimeOffset passedAt
+                ? FinalApprovalRules.DueAt(passedAt, finalApproval)
+                : null
         );
     }
 }

@@ -36,6 +36,23 @@ public sealed class QualificationDescriber(
             status == QualificationStatus.CompetencyReview
             && results.Count > 0
             && results.All(x => x.Result == CompetencyCriteria.Pass);
+        // D8: Gate 2 is expected within the review waiting time from the latest submission (or return), the
+        // final approval within its due time from the Gate 2 PASS
+        var finalApproval = await policies.GetFinalApprovalAsync(ct);
+        var reviewStartedAt = history
+            .Where(x => x.ToStatus == QualificationStatus.CompetencyReview)
+            .Select(x => (DateTimeOffset?)x.CreatedAt)
+            .Max();
+        var expectedResultBy = qualification.Status switch
+        {
+            QualificationStatus.PendingFinalApproval
+                when qualification.DecidedAt is DateTimeOffset passedAt => FinalApprovalRules.DueAt(
+                passedAt,
+                finalApproval
+            ),
+            QualificationStatus.CompetencyReview => reviewStartedAt?.AddDays(work.SlaDays),
+            _ => (DateTimeOffset?)null,
+        };
         // E7: a re-registration after FAIL names the failed competencies still without a new file
         string[] newEvidenceRequired = [];
         if (
@@ -96,7 +113,8 @@ public sealed class QualificationDescriber(
                     history.Select(x => (x.FromStatus, x.ToStatus))
                 ),
                 QualificationStatus.NeedMoreInformation
-            )
+            ),
+            expectedResultBy
         );
     }
 }

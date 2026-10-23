@@ -27,6 +27,9 @@ public static class PolicySettingKeys
     /// <summary>Days a review may wait for a reviewer before the queue flags it (M5, warning only).</summary>
     public const string ReviewSlaDays = "ReviewSlaDays";
 
+    /// <summary>Days the final approval may take after Gate 2 PASS before the queue flags it (D8, warning only).</summary>
+    public const string FinalApprovalDays = "FinalApprovalDays";
+
     /// <summary>
     /// Every adjustable value with its allowed range, in display order. The reapply intervals start at the
     /// minimums of BR-E21/BR-E22, so an admin can only lengthen them: lowering them would waive the wait,
@@ -43,6 +46,7 @@ public static class PolicySettingKeys
         [ReviewClaimHours] = new(4, 336),
         [MaxInformationRequests] = new(1, 5),
         [ReviewSlaDays] = new(1, 30),
+        [FinalApprovalDays] = new(1, 30),
     };
 
     public static readonly string[] All =
@@ -53,6 +57,7 @@ public static class PolicySettingKeys
         ReviewClaimHours,
         MaxInformationRequests,
         ReviewSlaDays,
+        FinalApprovalDays,
     ];
 
     /// <summary>

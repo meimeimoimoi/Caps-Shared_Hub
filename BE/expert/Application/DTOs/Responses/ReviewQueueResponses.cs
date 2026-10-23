@@ -9,6 +9,9 @@ namespace Caps.Expert.Application.DTOs.Responses;
 /// <param name="ClaimedByEmail">That reviewer's email as last seen; null when unknown.</param>
 /// <param name="ClaimExpiresAt">When the claim lapses; null while waiting for the expert or when free.</param>
 /// <param name="HeldByMe">True when the caller holds it.</param>
+/// <param name="PassedAt">When Gate 2 passed, while the qualification waits for final approval; null otherwise.</param>
+/// <param name="FinalApprovalDueAt">When the final approval is due (policy FinalApprovalDays); null otherwise.</param>
+/// <param name="FinalApprovalOverdue">True once that time has passed; the row is listed first and flagged.</param>
 public sealed record ReviewQueueRowResponse(
     string Id,
     string Gate,
@@ -24,7 +27,10 @@ public sealed record ReviewQueueRowResponse(
     string? ClaimedByUserId = null,
     string? ClaimedByEmail = null,
     DateTimeOffset? ClaimExpiresAt = null,
-    bool HeldByMe = false
+    bool HeldByMe = false,
+    DateTimeOffset? PassedAt = null,
+    DateTimeOffset? FinalApprovalDueAt = null,
+    bool FinalApprovalOverdue = false
 );
 
 /// <summary>One page of the review queue, oldest submission first, with the number of matching rows.</summary>
@@ -41,10 +47,12 @@ public sealed record ReviewQueuePageResponse(
 /// <param name="AvailableApplications">Per status, only those held by the caller or by nobody.</param>
 /// <param name="AvailableQualifications">Per status, only those held by the caller or by nobody.</param>
 /// <param name="SlaDays">Days a review may wait before it is flagged (policy ReviewSlaDays).</param>
+/// <param name="FinalApprovalOverdue">Qualifications waiting for final approval past their due time (D8).</param>
 public sealed record ReviewQueueCountsResponse(
     IReadOnlyDictionary<string, int> Applications,
     IReadOnlyDictionary<string, int> Qualifications,
     IReadOnlyDictionary<string, int> AvailableApplications,
     IReadOnlyDictionary<string, int> AvailableQualifications,
-    int SlaDays
+    int SlaDays,
+    int FinalApprovalOverdue
 );

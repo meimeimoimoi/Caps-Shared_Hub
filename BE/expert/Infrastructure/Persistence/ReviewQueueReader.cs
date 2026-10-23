@@ -49,6 +49,9 @@ public sealed class ReviewQueueReader(ExpertDbContext db) : IReviewQueueReader
                     null,
                     null,
                     null,
+                    false,
+                    null,
+                    null,
                     false
                 ),
                 x.ClaimedByUserId != null
@@ -85,8 +88,13 @@ public sealed class ReviewQueueReader(ExpertDbContext db) : IReviewQueueReader
     )
     {
         var expiredBefore = scope.ExpiredBefore;
+        // Final approval waits from the Gate 2 PASS, so the oldest pass (the overdue ones) comes first
         var rows = await Qualifications(statuses, search, matchingServiceCodes, scope)
-            .OrderBy(x => x.SubmittedAt)
+            .OrderBy(x =>
+                x.Status == QualificationStatus.PendingFinalApproval
+                    ? x.DecidedAt
+                    : (DateTimeOffset?)x.SubmittedAt
+            )
             .ThenBy(x => x.Id)
             .Take(take)
             .Select(x => new QueueRow(
@@ -105,6 +113,9 @@ public sealed class ReviewQueueReader(ExpertDbContext db) : IReviewQueueReader
                     null,
                     null,
                     null,
+                    false,
+                    x.Status == QualificationStatus.PendingFinalApproval ? x.DecidedAt : null,
+                    null,
                     false
                 ),
                 x.ClaimedByUserId != null
@@ -122,6 +133,18 @@ public sealed class ReviewQueueReader(ExpertDbContext db) : IReviewQueueReader
             .ToListAsync(ct);
         return rows.ConvertAll(x => x.ToResponse(scope));
     }
+
+    public Task<int> CountFinalApprovalsPassedBeforeAsync(
+        DateTimeOffset passedBefore,
+        CancellationToken ct
+    ) =>
+        db.Qualifications.AsNoTracking()
+            .CountAsync(
+                x =>
+                    x.Status == QualificationStatus.PendingFinalApproval
+                    && x.DecidedAt < passedBefore,
+                ct
+            );
 
     public async Task<IReadOnlyDictionary<string, int>> CountApplicationsByStatusAsync(
         CancellationToken ct

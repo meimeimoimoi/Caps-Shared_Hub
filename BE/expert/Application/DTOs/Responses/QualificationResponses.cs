@@ -31,6 +31,10 @@ public sealed record ServiceQualificationSummary(
 /// <param name="Submitted">Per competency C1…C5: the expert's description and the files tied to it.</param>
 /// <param name="NewEvidenceRequiredFor">Re-registration after FAIL: failed competencies still without a new file (E7).</param>
 /// <param name="Rounds">Rounds of more information asked for so far and the limit.</param>
+/// <param name="ExpectedResultBy">
+/// While under review: when a result is expected, from the Gate 2 waiting time and then the final approval due
+/// time (D8); null otherwise.
+/// </param>
 public sealed record ExpertQualificationResponse(
     string Id,
     string ServiceCode,
@@ -52,7 +56,8 @@ public sealed record ExpertQualificationResponse(
     bool CanSubmit,
     CompetencySubmissionResponse[] Submitted,
     string[] NewEvidenceRequiredFor,
-    InformationRoundsResponse Rounds
+    InformationRoundsResponse Rounds,
+    DateTimeOffset? ExpectedResultBy = null
 );
 
 /// <summary>One competency's result in the latest Gate 2 decision.</summary>
@@ -94,6 +99,7 @@ public sealed record QualificationQueueItemResponse(
 /// <param name="Claim">Who works on the Gate 2 review now and the claim history; decisions need an active claim.</param>
 /// <param name="Submitted">Per competency C1…C5: the expert's description and the files tied to it (E8, M7).</param>
 /// <param name="Rounds">Rounds of more information asked for so far; on the last round NEED_MORE_INFORMATION is refused.</param>
+/// <param name="FinalApprovalDueAt">While waiting for final approval: when it is due (D8); null otherwise.</param>
 public sealed record ReviewQualificationResponse(
     string Id,
     string ApplicantUserId,
@@ -119,5 +125,6 @@ public sealed record ReviewQualificationResponse(
     bool CanReinstate,
     ReviewClaimStateResponse Claim,
     CompetencySubmissionResponse[] Submitted,
-    InformationRoundsResponse Rounds
+    InformationRoundsResponse Rounds,
+    DateTimeOffset? FinalApprovalDueAt = null
 );
