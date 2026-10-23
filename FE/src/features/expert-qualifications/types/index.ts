@@ -81,6 +81,8 @@ export interface Qualification {
   newEvidenceRequiredFor: string[]
   /** Rounds of more information asked for so far and the limit */
   rounds: InformationRounds
+  /** While under review: when a result is expected (policy); null otherwise */
+  expectedResultBy?: string | null
 }
 
 /** What the expert sent for one competency: a short description and the files tied to it */

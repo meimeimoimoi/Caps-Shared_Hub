@@ -4,10 +4,12 @@ import { useTranslation } from 'react-i18next'
 import { ArrowLeft, FileText, Link2 } from 'lucide-react'
 import { ApiError } from '@/lib/api-client'
 import { Button } from '@/components/ui/actions/button'
+import { HelpTip } from '@/components/ui/feedback/help-tip'
 import { useExpertPresentation } from '@/features/expert-dashboard/hooks/useExpertPresentation'
 import {
   COMPETENCY_CODES,
   CompetencyEvidenceStep,
+  ServiceNextSteps,
   openOwnFile,
   useQualification,
   type QualificationFile,
@@ -129,6 +131,9 @@ export default function ExpertQualificationPage() {
   const issues = data.competencies.filter((c) => c.result !== 'PASS')
   const needsInfo = data.status === 'NEED_MORE_INFORMATION'
   const preparing = data.status === 'PREPARING'
+  // Gate 2 and final approval read as one review to the expert; evidence is locked meanwhile (D4, D5)
+  const underReview =
+    data.status === 'COMPETENCY_REVIEW' || data.status === 'PENDING_FINAL_APPROVAL'
   const busy = q.upload.isPending || q.remove.isPending || q.supplement.isPending
 
   return (
@@ -162,6 +167,17 @@ export default function ExpertQualificationPage() {
             ? t('qualifications.newEvidenceRequired')
             : t(`qualifications.statusHelp.${data.status}`)}
         </p>
+        {underReview && data.expectedResultBy && (
+          <p className="mt-2 text-sm font-semibold text-[var(--ep-ink)]">
+            {t('qualifications.expectedBy', {
+              date: display.timestamp(data.expectedResultBy, 'Asia/Ho_Chi_Minh', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+              }),
+            })}
+          </p>
+        )}
         {data.earliestReapplyAt && (
           <p className="mt-2 text-sm">
             {t('qualifications.reapplyFrom', {
@@ -197,6 +213,10 @@ export default function ExpertQualificationPage() {
         )}
       </section>
 
+      {data.status === 'APPROVED_FOR_SERVICE' && (
+        <ServiceNextSteps serviceCode={data.serviceCode} />
+      )}
+
       {preparing || needsInfo ? (
         <CompetencyEvidenceStep
           data={data}
@@ -224,9 +244,16 @@ export default function ExpertQualificationPage() {
         />
       ) : (
         <section className="mt-6 rounded-lg border border-[var(--ep-border)] bg-[var(--ep-surface)] p-5">
-          <h2 className="font-semibold text-[var(--ep-ink)]">
-            {t('qualifications.filesTitle')}
-          </h2>
+          <div className="flex items-center gap-1.5">
+            <h2 className="font-semibold text-[var(--ep-ink)]">
+              {t('qualifications.filesTitle')}
+            </h2>
+            {underReview && (
+              <HelpTip label={t('qualifications.filesTitle')}>
+                {t('qualifications.lockedHelp')}
+              </HelpTip>
+            )}
+          </div>
           <ul className="mt-3 divide-y divide-[var(--ep-line)] text-sm">
             {data.evidence
               .filter((e) => e.code === 'COMPETENCY')
