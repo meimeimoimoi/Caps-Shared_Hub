@@ -76,12 +76,15 @@ interface AdminLayoutProps extends ShellPageProps {
     | 'account'
   pendingCount: number
   disputeCount?: number
+  /** Final approvals past their due time */
+  approvalOverdueCount?: number
 }
 
 export function AdminLayout({
   section,
   pendingCount,
   disputeCount,
+  approvalOverdueCount,
   ...page
 }: AdminLayoutProps) {
   const { t } = useTranslation('admin')
@@ -124,6 +127,7 @@ export function AdminLayout({
           icon: BadgeCheck,
           to: '/admin/experts/approvals',
           active: section === 'approvals',
+          badge: approvalOverdueCount,
         },
         {
           label: t('navigation.assignments'),

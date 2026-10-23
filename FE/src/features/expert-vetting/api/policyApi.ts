@@ -11,6 +11,9 @@ export type PolicySettingKey =
   | 'ReapplyNotEligibleDays'
   | 'ReapplyCompetencyFailDays'
   | 'ReviewClaimHours'
+  | 'MaxInformationRequests'
+  | 'ReviewSlaDays'
+  | 'FinalApprovalDays'
 
 /** One adjustable expert policy value; updatedAt is null while the default applies */
 export interface PolicySetting {

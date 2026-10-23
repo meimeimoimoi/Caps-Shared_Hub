@@ -229,6 +229,10 @@ export interface QualificationRow {
   submittedAt: string
   /** Follows an earlier FAIL for the same service (BR-E23) */
   isReapplication: boolean
+  /** Waiting for final approval: when it is due (policy) */
+  finalApprovalDueAt?: string | null
+  /** Past that time: flagged and listed first */
+  finalApprovalOverdue?: boolean
 }
 
 /** One competency in the latest Gate 2 decision */
@@ -269,6 +273,18 @@ export interface QualificationDetail {
   /** Per competency: the expert's description and the files tied to it */
   submitted: CompetencySubmission[]
   rounds?: InformationRounds
+  /** Waiting for final approval: when it is due (policy) */
+  finalApprovalDueAt?: string | null
+  /** The return from final approval the Gate 2 reviewer still has to act on */
+  lastReturn?: FinalApprovalReturn | null
+}
+
+/** A System Admin's return of a Gate 2 PASS to the reviewer; never shown to the expert */
+export interface FinalApprovalReturn {
+  note: string | null
+  actorUserId: string
+  actorEmail: string | null
+  at: string
 }
 
 export interface FinalApprovalInput {

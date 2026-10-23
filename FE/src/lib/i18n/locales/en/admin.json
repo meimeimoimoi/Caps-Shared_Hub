@@ -45,6 +45,7 @@
       "dispute": "{{count}} open disputes, the nearest is due in {{hours}} h",
       "payoutFailed": "{{count}} failed payouts need a retry",
       "slaOverdue": "{{count}} expert applications waiting over {{days}} days",
+      "finalApprovalOverdue": "{{count}} records past the final approval limit",
       "outsideRange": "{{count}} experts priced outside the range"
     },
     "kpi": {
@@ -954,10 +955,14 @@
     "title": "Final approval",
     "description": "Governance check of competency results per service: records, eligibility and competency results, evidence and history. Competency is not re-assessed.",
     "panelTitle": "Final approval",
-    "intro": "Confirm the competency result is complete and followed the process. Approval lets the expert set up pricing for this service.",
+    "intro": "Final approval confirms the reviewer's result; it does not assess competency again. Approval lets the expert set up pricing for this service. Return only when the result does not state its grounds clearly; the reason is not sent to the expert.",
+    "helpLabel": "What final approval is",
+    "dueOn": "Due {{date}}",
+    "overdue": "Overdue",
+    "dueLabel": "Final approval due",
     "sameReviewer": "You were the competency reviewer for this qualification, so you cannot give the final approval.",
     "noteLabel": "Note (required to return for review)",
-    "notePlaceholder": "Missing records, unresolved flags or a process error",
+    "notePlaceholder": "For example: the assessment note does not state its grounds",
     "return": "Return for review",
     "approve": "Approve for service",
     "notPending": "This qualification is not waiting for final approval.",
@@ -1044,6 +1049,11 @@
       "ReviewSlaDays": {
         "label": "Review waiting limit",
         "help": "Days a review may wait for a reviewer before the queue highlights it. A warning only; nothing happens automatically. Default {{defaultValue}} days; allowed {{min}}–{{max}}.",
+        "unit": "days"
+      },
+      "FinalApprovalDays": {
+        "label": "Final approval limit",
+        "help": "Days the final approval may take after the competency review passes. Past that, the record is marked red and moved to the top of the queue; it is never approved automatically. Experts see the expected result date from this limit. A change applies to how due dates are counted from the moment it is saved. Default {{defaultValue}} days; allowed {{min}}–{{max}}.",
         "unit": "days"
       }
     },
@@ -1144,6 +1154,12 @@
       "QUALIFICATION_NOT_IN_REVIEW": "The review is no longer open. Reload the list.",
       "failed": "Could not reassign. Please try again."
     }
+  },
+  "finalReturn": {
+    "title": "Returned at final approval",
+    "by": "{{actor}} · {{time}}",
+    "admin": "System Admin",
+    "help": "A System Admin returned this record because the result does not state its grounds clearly. Review it again and state the grounds; each return adds one more information round. The expert is not told about the return."
   },
   "rounds": {
     "label": "Information round {{used}}/{{max}}",

@@ -63,7 +63,7 @@ export function QualificationsTable({
             return (
               <tr
                 key={q.id}
-                className="border-border-subtle border-t [&>td]:px-4 [&>td]:py-2"
+                className={`border-border-subtle border-t [&>td]:px-4 [&>td]:py-2 ${q.finalApprovalOverdue ? 'bg-danger/5' : ''}`}
               >
                 <td>
                   <div className="text-fg-strong text-base font-semibold">
@@ -83,6 +83,23 @@ export function QualificationsTable({
                 <td className="num text-right">{formatDate(q.submittedAt)}</td>
                 <td className="text-right">
                   {t('applicationsTable.days', { count: days })}
+                  {/* Final approval rows show their due date; overdue ones are red and listed first */}
+                  {q.finalApprovalDueAt && (
+                    <div
+                      className={
+                        q.finalApprovalOverdue
+                          ? 'text-danger font-semibold'
+                          : 'text-fg-muted'
+                      }
+                    >
+                      {q.finalApprovalOverdue
+                        ? `${t('finalApproval.overdue')} · `
+                        : ''}
+                      {t('finalApproval.dueOn', {
+                        date: formatDate(q.finalApprovalDueAt),
+                      })}
+                    </div>
+                  )}
                 </td>
                 <td className="text-right">
                   <Link

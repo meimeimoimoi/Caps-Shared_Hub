@@ -12,6 +12,7 @@ import type {
   QualificationStatus,
   CompetencySubmission,
   InformationRounds,
+  FinalApprovalReturn,
   ReviewClaimState,
   ServiceAccessAction,
 } from '../types'
@@ -95,6 +96,8 @@ interface ReviewQualification {
   claim?: ReviewClaimState
   submitted?: CompetencySubmission[]
   rounds?: InformationRounds
+  finalApprovalDueAt?: string | null
+  lastReturn?: FinalApprovalReturn | null
 }
 
 const toRow = (q: QueueItem): QualificationRow => ({
@@ -130,6 +133,8 @@ function toDetail(q: ReviewQualification): QualificationDetail {
     claim: q.claim,
     submitted: q.submitted ?? [],
     rounds: q.rounds,
+    finalApprovalDueAt: q.finalApprovalDueAt ?? null,
+    lastReturn: q.lastReturn ?? null,
     competencies: q.competencies,
     // Gate 1 view of the expert: the profile, document and Gate 1 result tabs read it as is
     profile: {

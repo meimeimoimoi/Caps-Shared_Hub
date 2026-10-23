@@ -31,6 +31,9 @@ export interface ReviewQueueRow {
   /** Server time when the claim lapses; null while waiting for the expert */
   claimExpiresAt?: string | null
   heldByMe?: boolean
+  /** Waiting for final approval: when it is due and whether that has passed */
+  finalApprovalDueAt?: string | null
+  finalApprovalOverdue?: boolean
 }
 
 interface ReviewQueuePage {
@@ -50,6 +53,8 @@ export interface ReviewQueueCounts {
   availableQualifications?: Record<string, number>
   /** Days a review may wait before it is flagged (policy) */
   slaDays?: number
+  /** Qualifications past the final approval due time */
+  finalApprovalOverdue?: number
 }
 
 /** Which reviews to show by who holds them; the server default is MINE_OR_UNCLAIMED */
@@ -153,4 +158,6 @@ export const toQualificationRow = (r: ReviewQueueRow): QualificationRow => ({
   status: r.status as QualificationStatus,
   submittedAt: r.submittedAt ?? '',
   isReapplication: r.isReapplication,
+  finalApprovalDueAt: r.finalApprovalDueAt ?? null,
+  finalApprovalOverdue: r.finalApprovalOverdue ?? false,
 })

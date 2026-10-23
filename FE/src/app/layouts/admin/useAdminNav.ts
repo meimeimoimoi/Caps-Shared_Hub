@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import type { ShellNotification } from '../NotificationBell'
 import { getApplications } from '@/features/expert-vetting/api/adminApi'
+import { getReviewQueueCounts } from '@/features/expert-vetting/api/reviewQueueApi'
 import { adminKeys } from '@/features/expert-vetting/api/queryKeys'
 import { PENDING_STATUS } from '@/features/expert-vetting/constants'
 import { waitedDays } from '@/features/expert-vetting/utils/applications'
@@ -23,6 +24,7 @@ export function useAdminNav(enabled = true) {
   const [now] = useState(() => Date.now())
   const user = useAuthStore((s) => s.user)
   const canReview = enabled && hasAnyPermission(user, [Permission.ExpertReview])
+  const canApprove = enabled && hasAnyPermission(user, [Permission.ExpertApprove])
   const canViewDemoOperations = enabled && isExpertDemo && hasAnyPermission(user, [Permission.UserManage])
   // Waiting limit comes from the expert policy (System Admin setting), never a constant here
   const slaDays = useReviewSlaDays(canReview)
@@ -31,6 +33,13 @@ export function useAdminNav(enabled = true) {
     queryFn: ({ signal }) => getApplications(signal),
     enabled: canReview,
   })
+  // Final approvals past their due time (policy); same cache as the approval queue tabs
+  const approvalCounts = useQuery({
+    queryKey: adminKeys.queueCounts('approval'),
+    queryFn: ({ signal }) => getReviewQueueCounts('approval', signal),
+    enabled: canApprove,
+  })
+  const approvalOverdue = canApprove ? approvalCounts.data?.finalApprovalOverdue ?? 0 : 0
   const disputes = useQuery({
     queryKey: disputesKeys.disputes(),
     queryFn: ({ signal }) => getDisputes(signal),
@@ -85,6 +94,12 @@ export function useAdminNav(enabled = true) {
       to: '/admin/escrow',
       tone: 'warning' as const,
     },
+    approvalOverdue > 0 && {
+      id: 'final-approval-overdue',
+      text: t('dashboard.attention.finalApprovalOverdue', { count: approvalOverdue }),
+      to: '/admin/experts/approvals',
+      tone: 'warning' as const,
+    },
     overdue > 0 && {
       id: 'sla-overdue',
       text: t('dashboard.attention.slaOverdue', {
@@ -109,6 +124,7 @@ export function useAdminNav(enabled = true) {
   return {
     pendingCount: pending.length,
     disputeCount: open.length,
+    approvalOverdueCount: approvalOverdue,
     notifications,
   }
 }

@@ -45,6 +45,7 @@
       "dispute": "{{count}} khiếu nại đang mở, gần nhất còn {{hours}} giờ trước hạn trọng tài",
       "payoutFailed": "{{count}} khoản chi trả lỗi, cần thử lại",
       "slaOverdue": "{{count}} hồ sơ Expert chờ quá {{days}} ngày",
+      "finalApprovalOverdue": "{{count}} hồ sơ quá hạn phê duyệt cuối",
       "outsideRange": "{{count}} Expert đặt giá ngoài khung"
     },
     "kpi": {
@@ -953,10 +954,14 @@
     "title": "Phê duyệt cuối",
     "description": "Kiểm tra quản trị kết quả đánh giá năng lực theo từng dịch vụ: hồ sơ, kết quả xét điều kiện và đánh giá năng lực, bằng chứng và lịch sử. Không đánh giá lại năng lực.",
     "panelTitle": "Phê duyệt cuối",
-    "intro": "Xác nhận kết quả đánh giá năng lực đầy đủ và đúng quy trình. Phê duyệt cho phép chuyên gia thiết lập giá cho dịch vụ này.",
+    "intro": "Duyệt cuối xác nhận kết quả của người đánh giá, không chấm lại chuyên môn. Phê duyệt cho phép chuyên gia thiết lập giá cho dịch vụ này. Chỉ trả về khi kết quả chấm chưa rõ căn cứ; lý do trả về không gửi cho chuyên gia.",
+    "helpLabel": "Phê duyệt cuối là gì",
+    "dueOn": "Hạn {{date}}",
+    "overdue": "Quá hạn",
+    "dueLabel": "Hạn phê duyệt cuối",
     "sameReviewer": "Bạn là người đánh giá năng lực của hồ sơ này nên không thể phê duyệt cuối.",
     "noteLabel": "Ghi chú (bắt buộc khi trả về đánh giá lại)",
-    "notePlaceholder": "Thiếu hồ sơ, cờ chưa xử lý hoặc sai quy trình",
+    "notePlaceholder": "Ví dụ: ghi chú đánh giá chưa nêu căn cứ cụ thể",
     "return": "Trả về đánh giá lại",
     "approve": "Phê duyệt cung cấp dịch vụ",
     "notPending": "Hồ sơ không ở bước chờ phê duyệt cuối.",
@@ -1043,6 +1048,11 @@
       "ReviewSlaDays": {
         "label": "Thời hạn chấm hồ sơ",
         "help": "Số ngày một hồ sơ được chờ người đánh giá trước khi hàng chờ tô màu cảnh báo. Chỉ để cảnh báo, hệ thống không tự xử lý. Mặc định {{defaultValue}} ngày; cho phép {{min}}–{{max}}.",
+        "unit": "ngày"
+      },
+      "FinalApprovalDays": {
+        "label": "Hạn duyệt cuối",
+        "help": "Số ngày phê duyệt cuối được phép kéo dài kể từ khi hồ sơ đạt đánh giá năng lực. Quá hạn thì hồ sơ được tô đỏ và đưa lên đầu hàng chờ; hệ thống không bao giờ tự duyệt. Chuyên gia thấy ngày dự kiến có kết quả theo hạn này. Thay đổi áp dụng cho cách tính hạn từ lúc lưu. Mặc định {{defaultValue}} ngày; cho phép {{min}}–{{max}}.",
         "unit": "ngày"
       }
     },
@@ -1143,6 +1153,12 @@
       "QUALIFICATION_NOT_IN_REVIEW": "Hồ sơ không còn ở bước chờ đánh giá. Tải lại danh sách.",
       "failed": "Chưa chuyển được. Vui lòng thử lại."
     }
+  },
+  "finalReturn": {
+    "title": "Bị trả về ở bước duyệt cuối",
+    "by": "{{actor}} · {{time}}",
+    "admin": "System Admin",
+    "help": "System Admin trả hồ sơ về vì kết quả chấm chưa rõ căn cứ. Chấm lại và ghi rõ căn cứ; mỗi lần bị trả về được thêm một vòng yêu cầu bổ sung. Chuyên gia không được báo về lần trả về này."
   },
   "rounds": {
     "label": "Vòng bổ sung {{used}}/{{max}}",

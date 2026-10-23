@@ -18,6 +18,7 @@ import { CompetencyReview } from '../../features/expert-vetting/components/Compe
 import { DecisionCard } from '../../features/expert-vetting/components/DecisionSummary'
 import { DocumentsTab } from '../../features/expert-vetting/components/DocumentsTab'
 import { FinalApprovalPanel } from '../../features/expert-vetting/components/FinalApprovalPanel'
+import { FinalApprovalReturnNotice } from '../../features/expert-vetting/components/FinalApprovalReturnNotice'
 import { HistoryTab } from '../../features/expert-vetting/components/HistoryTab'
 import { ProfileTab } from '../../features/expert-vetting/components/ProfileTab'
 import { COMPETENCY_OUTCOME } from '../../features/expert-vetting/constants'
@@ -355,7 +356,8 @@ export default function AdminQualificationDetailPage({
             <CompetencyResultCard detail={detail} />
           </div>
         ) : (
-          <div className="order-1 min-w-0 xl:order-2">
+          <div className="order-1 min-w-0 space-y-4 xl:order-2">
+            {detail.lastReturn && <FinalApprovalReturnNotice value={detail.lastReturn} />}
             <CompetencyReview
               assessments={review.assessments}
               documents={expert.documents}
