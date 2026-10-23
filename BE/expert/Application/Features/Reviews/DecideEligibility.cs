@@ -5,6 +5,8 @@ using Caps.Expert.Application.Common;
 using Caps.Expert.Application.DTOs.Responses;
 using Caps.Expert.Domain;
 using Caps.Expert.Domain.Applications;
+using Caps.Expert.Domain.Qualifications;
+using Caps.Expert.Domain.Reviews;
 
 namespace Caps.Expert.Application.Features.Reviews;
 
@@ -25,6 +27,8 @@ public sealed class DecideEligibilityHandler(
     IApplicantLock locks,
     IExpertApplicationRepository applications,
     IEligibilityCheckRepository eligibility,
+    IQualificationRepository qualifications,
+    IServiceCatalogRepository catalog,
     IExpertNotificationOutbox outbox,
     IReviewDescriber describer,
     IExpertPolicyProvider policies,
@@ -54,9 +58,8 @@ public sealed class DecideEligibilityHandler(
         var hold = (await policies.GetReviewClaimAsync(ct)).Hold;
         application.EnsureClaimedBy(command.ReviewerUserId, now, hold);
         // EV-06 is judged on the years in the submitted snapshot, not on later edits
-        var snapshot = ExpertApplicationEvent.LatestSnapshot(
-            await applications.ListEventsAsync(application.Id, ct)
-        );
+        var history = await applications.ListEventsAsync(application.Id, ct);
+        var snapshot = ExpertApplicationEvent.LatestSnapshot(history);
 
         var policy = await policies.GetEligibilityAsync(ct);
         // EV-04/EV-05 pass on the statement agreed to in the submission unless the reviewer sent another
@@ -64,6 +67,13 @@ public sealed class DecideEligibilityHandler(
         var proven =
             snapshot != null ? options.Submission.CriteriaProvenBy(snapshot.Declarations) : [];
         var criteria = EligibilityRules.PassByDeclarations(command.Criteria, proven);
+        // M4: after the last allowed round the reviewer decides with the evidence at hand
+        var work = await policies.GetReviewWorkAsync(ct);
+        InformationRequestRules.EnsureAllowed(
+            EligibilityRules.Outcome(criteria),
+            InformationRequestRules.Count(history.Select(x => (x.FromStatus, x.ToStatus))),
+            work.MaxInformationRequests
+        );
         var decision = application.DecideEligibility(
             command.ReviewerUserId,
             profile.UserId,
@@ -76,6 +86,7 @@ public sealed class DecideEligibilityHandler(
         applications.AddEvent(decision.Event);
         eligibility.AddRange(decision.Checks);
         profile.MirrorStatus(application.Status, now);
+        var registered = await RegisterOnlyServiceAsync(application, now, ct);
         // Tell the applicant (email + in-app); older profiles without an email are skipped.
         // NOT_APPLICABLE needs no action from the applicant, so only FAIL and NEED_MORE_INFORMATION are listed
         if (profile.ContactEmail != null)
@@ -106,6 +117,52 @@ public sealed class DecideEligibilityHandler(
             [Permission.ExpertReview],
             ct
         );
+        if (registered)
+        {
+            await realtime.ChangedAsync(
+                ExpertRealtimeTopics.Qualifications,
+                [profile.UserId],
+                [Permission.ExpertReview],
+                ct
+            );
+        }
         return await describer.DescribeAsync(application, ct);
+    }
+
+    /// <summary>
+    /// Q2: ELIGIBLE while the catalog offers exactly one service opens its competency assessment (PREPARING) in
+    /// the same transaction. Skipped when the expert already has a qualification for it (Q3), so it never
+    /// fails the Gate 1 decision.
+    /// </summary>
+    private async Task<bool> RegisterOnlyServiceAsync(
+        ExpertApplication application,
+        DateTimeOffset now,
+        CancellationToken ct
+    )
+    {
+        if (application.Status != ExpertApplicationStatus.Eligible)
+            return false;
+        var service = ServiceAutoRegistration.OnlyService(await catalog.ListActiveAsync(ct));
+        var existing =
+            service == null
+                ? null
+                : await qualifications.FindLatestAsync(
+                    application.ExpertProfileId,
+                    service.Code,
+                    ct
+                );
+        if (!ServiceAutoRegistration.ShouldRegister(service, existing))
+            return false;
+        var (qualification, opened) = ExpertServiceQualification.Register(
+            application,
+            service!.Code,
+            null,
+            application.ExpertProfile.UserId,
+            now,
+            ServiceAutoRegistration.Note
+        );
+        qualifications.Add(qualification);
+        qualifications.AddEvent(opened);
+        return true;
     }
 }

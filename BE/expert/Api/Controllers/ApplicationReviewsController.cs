@@ -120,12 +120,15 @@ public sealed class ApplicationReviewsController(ICurrentUser currentUser) : Con
     /// (declarationPassedCriteria: EV-04, EV-05) pass by default: PASS or no entry records PASS with a note
     /// saying it came from the statement; FAIL or NEED_MORE_INFORMATION with a note is kept when the reviewer
     /// has grounds against the statement. The EV-06 minimum in force is stored with the decision.
+    /// ELIGIBLE while the catalog offers a single service also opens that service's competency assessment in
+    /// PREPARING (skipped when the expert already has one for it). NEED_MORE_INFORMATION is refused with
+    /// INFORMATION_REQUEST_LIMIT once the MaxInformationRequests rounds (policy, 2 by default) were used.
     /// </remarks>
     /// <response code="200">The application after the decision.</response>
     /// <response code="400">INVALID_ELIGIBILITY_CRITERIA, INVALID_ELIGIBILITY_RESULT, ELIGIBILITY_NOTE_REQUIRED or EXPERIENCE_BELOW_MINIMUM.</response>
     /// <response code="403">Missing the ExpertReview permission, or SELF_REVIEW_NOT_ALLOWED.</response>
     /// <response code="404">APPLICATION_NOT_FOUND.</response>
-    /// <response code="409">APPLICATION_NOT_IN_REVIEW (only SUBMITTED applications can be decided) or REVIEW_NOT_CLAIMED (claim it first; it returned to the queue or belongs to another reviewer).</response>
+    /// <response code="409">APPLICATION_NOT_IN_REVIEW (only SUBMITTED applications can be decided) , REVIEW_NOT_CLAIMED (claim it first; it returned to the queue or belongs to another reviewer) or INFORMATION_REQUEST_LIMIT.</response>
     /// <response code="503">SESSION_CHECK_UNAVAILABLE: the session could not be checked.</response>
     [HttpPost("{id:guid}/eligibility-decision"), RequireSessionCheck]
     public async Task<IActionResult> Decide(
