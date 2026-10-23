@@ -73,7 +73,7 @@ public static class PortalAccessRules
 
     /// <summary>
     /// Why a service cannot take bookings yet once an Expert-Service qualification exists:
-    /// COMPETENCY_REVIEW_IN_PROGRESS, COMPETENCY_NEED_MORE_INFORMATION, FINAL_APPROVAL_PENDING,
+    /// COMPETENCY_EVIDENCE_PENDING, COMPETENCY_REVIEW_IN_PROGRESS, COMPETENCY_NEED_MORE_INFORMATION, FINAL_APPROVAL_PENDING,
     /// COMPETENCY_FAILED, SERVICE_SUSPENDED, PRICING_PENDING, PRICING_IN_REVIEW or AVAILABILITY_PENDING.
     /// </summary>
     /// <param name="priceInEffect">An approved price applies today.</param>
@@ -85,6 +85,7 @@ public static class PortalAccessRules
     ) =>
         qualificationStatus switch
         {
+            QualificationStatus.Preparing => "COMPETENCY_EVIDENCE_PENDING",
             QualificationStatus.NeedMoreInformation => "COMPETENCY_NEED_MORE_INFORMATION",
             QualificationStatus.PendingFinalApproval => "FINAL_APPROVAL_PENDING",
             QualificationStatus.Fail => "COMPETENCY_FAILED",

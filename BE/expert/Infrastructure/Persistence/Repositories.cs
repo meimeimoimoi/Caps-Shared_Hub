@@ -607,3 +607,53 @@ public sealed class KnownReviewerRepository(ExpertDbContext db) : IKnownReviewer
 
     public void Add(KnownReviewer reviewer) => db.KnownReviewers.Add(reviewer);
 }
+
+/// <summary>EF Core store for files tied to competencies and the expert's descriptions.</summary>
+public sealed class CompetencyEvidenceRepository(ExpertDbContext db) : ICompetencyEvidenceRepository
+{
+    public async Task<IReadOnlyList<CompetencyEvidenceLink>> ListLinksAsync(
+        Guid qualificationId,
+        CancellationToken ct
+    ) =>
+        await db
+            .CompetencyEvidenceLinks.AsNoTracking()
+            .Where(x => x.QualificationId == qualificationId)
+            .OrderBy(x => x.CreatedAt)
+            .ToListAsync(ct);
+
+    public async Task<IReadOnlyList<CompetencyEvidenceLink>> ListLinksForEvidenceAsync(
+        Guid evidenceId,
+        CancellationToken ct
+    ) => await db.CompetencyEvidenceLinks.Where(x => x.EvidenceId == evidenceId).ToListAsync(ct);
+
+    public async Task<IReadOnlyList<CompetencyDescription>> ListDescriptionsAsync(
+        Guid qualificationId,
+        CancellationToken ct
+    ) =>
+        await db
+            .CompetencyDescriptions.AsNoTracking()
+            .Where(x => x.QualificationId == qualificationId)
+            .ToListAsync(ct);
+
+    public Task<CompetencyDescription?> FindDescriptionAsync(
+        Guid qualificationId,
+        string competency,
+        CancellationToken ct
+    ) =>
+        db.CompetencyDescriptions.SingleOrDefaultAsync(
+            x => x.QualificationId == qualificationId && x.Competency == competency,
+            ct
+        );
+
+    public void AddLinks(IEnumerable<CompetencyEvidenceLink> links) =>
+        db.CompetencyEvidenceLinks.AddRange(links);
+
+    public void RemoveLinks(IEnumerable<CompetencyEvidenceLink> links) =>
+        db.CompetencyEvidenceLinks.RemoveRange(links);
+
+    public void AddDescription(CompetencyDescription description) =>
+        db.CompetencyDescriptions.Add(description);
+
+    public void RemoveDescription(CompetencyDescription description) =>
+        db.CompetencyDescriptions.Remove(description);
+}

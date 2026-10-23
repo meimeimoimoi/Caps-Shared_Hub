@@ -39,6 +39,7 @@ public sealed class FinalApprovalTests
         var q = ExpertServiceQualification
             .Register(Eligible(), "HUMAN_VERIFICATION", null, Expert, Now)
             .Qualification;
+        q.Submit(Expert, 1, Now);
         q.DecideCompetency(
             Reviewer,
             Expert,

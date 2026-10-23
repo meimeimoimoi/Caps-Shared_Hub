@@ -30,6 +30,7 @@ public sealed class ReviewDescriber(
         var years = snapshot != null ? snapshot.YearsExperience : profile.YearsExperience;
         var policy = await policies.GetEligibilityAsync(ct);
         var hold = (await policies.GetReviewClaimAsync(ct)).Hold;
+        var work = await policies.GetReviewWorkAsync(ct);
         var claim = await claims.DescribeAsync(
             ReviewGate.Eligibility,
             application.Id,
@@ -88,7 +89,11 @@ public sealed class ReviewDescriber(
             policy.NotApplicableCriteria ?? [],
             CriterionDeclarations(history, options.Submission),
             snapshot != null ? options.Submission.CriteriaProvenBy(snapshot.Declarations) : [],
-            claim
+            claim,
+            CompetencySubmissions.Rounds(
+                history.Select(x => (x.FromStatus, x.ToStatus)),
+                work.MaxInformationRequests
+            )
         );
     }
 

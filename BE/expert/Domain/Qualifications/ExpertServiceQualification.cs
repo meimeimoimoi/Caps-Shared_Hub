@@ -48,6 +48,12 @@ public sealed class ExpertServiceQualification
 
     public bool NeedsInformation => Status == QualificationStatus.NeedMoreInformation;
 
+    /// <summary>Registered and gathering competency evidence before the first submission (E1).</summary>
+    public bool IsPreparing => Status == QualificationStatus.Preparing;
+
+    /// <summary>The expert can add, tie and remove evidence: while preparing or when more is requested (E3).</summary>
+    public bool AcceptsEvidence => IsPreparing || NeedsInformation;
+
     /// <summary>Only qualifications waiting for a Gate 2 decision can be claimed.</summary>
     public bool IsClaimable => Status == QualificationStatus.CompetencyReview;
 
@@ -67,17 +73,19 @@ public sealed class ExpertServiceQualification
     public bool AwaitsNewEvidence => PreviousQualificationId != null && SubmittedAt == CreatedAt;
 
     /// <summary>
-    /// Registers the expert for a service, straight into competency review (state model 4.2, row 1).
-    /// Requires an ELIGIBLE Gate 1 application (BR-E07) and, after FAIL, the policy interval (BR-E22);
-    /// a re-registration first waits for new competency evidence in NEED_MORE_INFORMATION.
+    /// Registers the expert for a service. The first registration opens in PREPARING, where the expert submits
+    /// competency evidence (E1); a re-registration after FAIL waits for new evidence in NEED_MORE_INFORMATION.
+    /// Requires an ELIGIBLE Gate 1 application (BR-E07) and, after FAIL, the policy interval (BR-E22).
     /// </summary>
     /// <param name="previous">The latest qualification of the same service, if any.</param>
+    /// <param name="note">History note, e.g. for the automatic registration after Gate 1.</param>
     public static (ExpertServiceQualification Qualification, QualificationEvent Opened) Register(
         ExpertApplication eligibility,
         string serviceCode,
         ExpertServiceQualification? previous,
         Guid actorUserId,
-        DateTimeOffset now
+        DateTimeOffset now,
+        string? note = null
     )
     {
         if (eligibility.Status != ExpertApplicationStatus.Eligible)
@@ -88,7 +96,7 @@ public sealed class ExpertServiceQualification
             throw ExpertErrors.ReapplyTooEarly(previous.EarliestReapplyAt.Value);
         var status =
             previous == null
-                ? QualificationStatus.CompetencyReview
+                ? QualificationStatus.Preparing
                 : QualificationStatus.NeedMoreInformation;
         var qualification = new ExpertServiceQualification
         {
@@ -106,22 +114,57 @@ public sealed class ExpertServiceQualification
             actorUserId,
             null,
             status,
-            null,
+            note,
             now
         );
         return (qualification, opened);
     }
 
-    /// <summary>Files are only accepted while more information is requested.</summary>
+    /// <summary>Files and links are accepted while preparing or while more information is requested.</summary>
     public void EnsureAcceptsFile()
     {
-        if (!NeedsInformation)
+        if (!AcceptsEvidence)
             throw ExpertErrors.QualificationLocked(Status);
     }
 
     /// <summary>Only files added since the latest submission can be removed; earlier ones are historical evidence.</summary>
     public bool CanRemove(ExpertEvidence evidence) =>
-        NeedsInformation && evidence.QualificationId == Id && evidence.CreatedAt > SubmittedAt;
+        AcceptsEvidence && evidence.QualificationId == Id && evidence.CreatedAt > SubmittedAt;
+
+    /// <summary>
+    /// Competencies of the expert's own files can be changed while evidence is accepted. A file already
+    /// submitted keeps the competencies it was reviewed under: more can be added, none removed.
+    /// </summary>
+    /// <param name="current">Competencies the file supports now.</param>
+    /// <param name="next">Competencies it should support.</param>
+    public void EnsureCanTie(
+        ExpertEvidence evidence,
+        IEnumerable<string> current,
+        IEnumerable<string> next
+    )
+    {
+        if (!AcceptsEvidence)
+            throw ExpertErrors.QualificationLocked(Status);
+        if (evidence.QualificationId != Id)
+            throw ExpertErrors.EvidenceNotFound();
+        if (!CanRemove(evidence) && current.Except(next).Any())
+            throw ExpertErrors.EvidenceLocked();
+    }
+
+    /// <summary>
+    /// The expert sends the prepared evidence for review (E5): PREPARING → COMPETENCY_REVIEW, which puts the
+    /// qualification in the reviewer queue. At least one file tied to a competency is required.
+    /// </summary>
+    /// <param name="tiedFiles">Files of this qualification tied to at least one competency.</param>
+    public QualificationEvent Submit(Guid actorUserId, int tiedFiles, DateTimeOffset now)
+    {
+        if (!IsPreparing)
+            throw ExpertErrors.QualificationLocked(Status);
+        if (tiedFiles < 1)
+            throw ExpertErrors.CompetencyEvidenceMissing();
+        SubmittedAt = now;
+        return MoveTo(QualificationStatus.CompetencyReview, actorUserId, null, now);
+    }
 
     public void Touch(DateTimeOffset now) => UpdatedAt = now;
 

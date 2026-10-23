@@ -122,7 +122,7 @@ public sealed class QualificationReviewsController(ICurrentUser currentUser) : C
     /// <response code="400">INVALID_COMPETENCY_CRITERIA, INVALID_COMPETENCY_RESULT, COMPETENCY_NOTE_REQUIRED, COMPETENCY_EVIDENCE_REQUIRED or COMPETENCY_EVIDENCE_UNKNOWN.</response>
     /// <response code="403">Missing the ExpertReview permission, or SELF_REVIEW_NOT_ALLOWED.</response>
     /// <response code="404">QUALIFICATION_NOT_FOUND.</response>
-    /// <response code="409">QUALIFICATION_NOT_IN_REVIEW (only COMPETENCY_REVIEW qualifications can be decided) or REVIEW_NOT_CLAIMED (claim it first; it returned to the queue or belongs to another reviewer).</response>
+    /// <response code="409">QUALIFICATION_NOT_IN_REVIEW (only COMPETENCY_REVIEW qualifications can be decided) , REVIEW_NOT_CLAIMED (claim it first; it returned to the queue or belongs to another reviewer) or INFORMATION_REQUEST_LIMIT (the last allowed round of more information was used).</response>
     /// <response code="503">SESSION_CHECK_UNAVAILABLE: the session could not be checked.</response>
     [HttpPost("{id:guid}/competency-decision"), RequireSessionCheck]
     public async Task<IActionResult> Decide(

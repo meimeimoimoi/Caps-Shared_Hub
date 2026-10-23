@@ -33,7 +33,8 @@ public sealed class CountReviewQueueHandler(
             applications,
             qualifications,
             await queue.CountApplicationsByStatusAsync(scope, ct),
-            await queue.CountQualificationsByStatusAsync(scope, ct)
+            await queue.CountQualificationsByStatusAsync(scope, ct),
+            (await policies.GetReviewWorkAsync(ct)).SlaDays
         );
     }
 }

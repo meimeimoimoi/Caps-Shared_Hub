@@ -27,6 +27,10 @@ public sealed record ServiceQualificationSummary(
 /// <param name="Competencies">Per-competency results of the latest decision: what to supplement or why it was not met.</param>
 /// <param name="MaxFiles">Files that can be added for this service.</param>
 /// <param name="AwaitsNewEvidence">Re-registration after FAIL: a new file is required before it is reviewed (BR-E22).</param>
+/// <param name="CanSubmit">PREPARING with at least one file tied to a competency: it can be sent for review (E5).</param>
+/// <param name="Submitted">Per competency C1…C5: the expert's description and the files tied to it.</param>
+/// <param name="NewEvidenceRequiredFor">Re-registration after FAIL: failed competencies still without a new file (E7).</param>
+/// <param name="Rounds">Rounds of more information asked for so far and the limit.</param>
 public sealed record ExpertQualificationResponse(
     string Id,
     string ServiceCode,
@@ -44,7 +48,11 @@ public sealed record ExpertQualificationResponse(
     bool CanUpload,
     bool CanSupplement,
     int MaxFiles,
-    bool AwaitsNewEvidence
+    bool AwaitsNewEvidence,
+    bool CanSubmit,
+    CompetencySubmissionResponse[] Submitted,
+    string[] NewEvidenceRequiredFor,
+    InformationRoundsResponse Rounds
 );
 
 /// <summary>One competency's result in the latest Gate 2 decision.</summary>
@@ -84,6 +92,8 @@ public sealed record QualificationQueueItemResponse(
 /// <param name="CanSuspend">Approved: a System Admin can suspend the service.</param>
 /// <param name="CanReinstate">Suspended: a System Admin can reinstate the service.</param>
 /// <param name="Claim">Who works on the Gate 2 review now and the claim history; decisions need an active claim.</param>
+/// <param name="Submitted">Per competency C1…C5: the expert's description and the files tied to it (E8, M7).</param>
+/// <param name="Rounds">Rounds of more information asked for so far; on the last round NEED_MORE_INFORMATION is refused.</param>
 public sealed record ReviewQualificationResponse(
     string Id,
     string ApplicantUserId,
@@ -107,5 +117,7 @@ public sealed record ReviewQualificationResponse(
     bool CanFinalApprove,
     bool CanSuspend,
     bool CanReinstate,
-    ReviewClaimStateResponse Claim
+    ReviewClaimStateResponse Claim,
+    CompetencySubmissionResponse[] Submitted,
+    InformationRoundsResponse Rounds
 );

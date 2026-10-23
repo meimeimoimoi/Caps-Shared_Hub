@@ -15,6 +15,7 @@ public sealed class QualificationReviewDescriber(
     IServiceCatalogRepository catalog,
     IExpertApplicationRepository applications,
     IExpertPolicyProvider policies,
+    ICompetencyEvidenceRepository competencyEvidence,
     IReviewClaimDescriber claims,
     TimeProvider clock
 ) : IQualificationReviewDescriber
@@ -35,6 +36,9 @@ public sealed class QualificationReviewDescriber(
             await applications.ListEventsAsync(qualification.ApplicationId, ct)
         );
         var hold = (await policies.GetReviewClaimAsync(ct)).Hold;
+        var work = await policies.GetReviewWorkAsync(ct);
+        var links = await competencyEvidence.ListLinksAsync(qualification.Id, ct);
+        var descriptions = await competencyEvidence.ListDescriptionsAsync(qualification.Id, ct);
         var claim = await claims.DescribeAsync(
             ReviewGate.Competency,
             qualification.Id,
@@ -94,7 +98,12 @@ public sealed class QualificationReviewDescriber(
             qualification.Status == QualificationStatus.PendingFinalApproval,
             qualification.Status == QualificationStatus.ApprovedForService,
             qualification.Status == QualificationStatus.Suspended,
-            claim
+            claim,
+            CompetencySubmissions.ToResponses(links, descriptions),
+            CompetencySubmissions.Rounds(
+                history.Select(x => (x.FromStatus, x.ToStatus)),
+                work.MaxInformationRequests
+            )
         );
     }
 }

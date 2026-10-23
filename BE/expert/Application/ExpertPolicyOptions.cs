@@ -23,6 +23,12 @@ public sealed class ExpertPolicyOptions
     /// <summary>expert.review_claim_hours: how long a reviewer keeps a claimed review.</summary>
     public int ReviewClaimHours { get; set; } = 72;
 
+    /// <summary>expert.max_information_requests: rounds of "more information needed" per review (M4).</summary>
+    public int MaxInformationRequests { get; set; } = 2;
+
+    /// <summary>expert.review_sla_days: days a review may wait before the queue flags it (M5).</summary>
+    public int ReviewSlaDays { get; set; } = 7;
+
     /// <summary>pricing.min_price: lowest service price in VND (POL-MKT-02).</summary>
     public long PricingMinPrice { get; set; } = 1_000_000;
 
@@ -113,6 +119,8 @@ public sealed class ExpertPolicyOptions
             [PolicySettingKeys.ReapplyNotEligibleDays] = ReapplyNotEligibleDays,
             [PolicySettingKeys.ReapplyCompetencyFailDays] = ReapplyCompetencyFailDays,
             [PolicySettingKeys.ReviewClaimHours] = ReviewClaimHours,
+            [PolicySettingKeys.MaxInformationRequests] = MaxInformationRequests,
+            [PolicySettingKeys.ReviewSlaDays] = ReviewSlaDays,
         };
 
     public PricingPolicy Pricing =>

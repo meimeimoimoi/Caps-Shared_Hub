@@ -41,6 +41,7 @@ public static class DependencyInjection
         services.AddScoped<IExpertPolicyProvider, ExpertPolicyProvider>();
         services.AddScoped<IReviewClaimEventRepository, ReviewClaimEventRepository>();
         services.AddScoped<IKnownReviewerRepository, KnownReviewerRepository>();
+        services.AddScoped<ICompetencyEvidenceRepository, CompetencyEvidenceRepository>();
         services.AddSingleton<IObjectStorage, S3ObjectStorage>();
         return services;
     }

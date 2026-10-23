@@ -473,6 +473,45 @@ public static class ExpertErrors
             $"The reason can be at most {max} characters."
         );
 
+    public static AppException InformationRequestLimit(int max) =>
+        new(
+            ErrorType.Conflict,
+            "INFORMATION_REQUEST_LIMIT",
+            $"More information has already been requested {max} times; decide with the evidence at hand."
+        );
+
+    public static AppException EvidenceCompetencyRequired() =>
+        new(
+            ErrorType.Validation,
+            "EVIDENCE_COMPETENCY_REQUIRED",
+            "Tie the file to at least one competency."
+        );
+
+    public static AppException InvalidCompetencyCode() =>
+        new(ErrorType.Validation, "INVALID_COMPETENCY_CODE", "Unknown competency.");
+
+    public static AppException CompetencyDescriptionTooLong(int max) =>
+        new(
+            ErrorType.Validation,
+            "COMPETENCY_DESCRIPTION_TOO_LONG",
+            $"The description can be at most {max} characters."
+        );
+
+    public static AppException CompetencyEvidenceMissing() =>
+        new(
+            ErrorType.Validation,
+            "COMPETENCY_EVIDENCE_MISSING",
+            "Add at least one file or link tied to a competency before submitting."
+        );
+
+    /// <summary>E7: each competency that failed needs a new file tied to it.</summary>
+    public static AppException CompetencyNewEvidenceRequired(IEnumerable<string> competencies) =>
+        new(
+            ErrorType.Validation,
+            "COMPETENCY_NEW_EVIDENCE_REQUIRED",
+            $"Add new evidence for: {string.Join(", ", competencies)}."
+        );
+
     public static AppException ReviewerNotFound() =>
         new(
             ErrorType.NotFound,

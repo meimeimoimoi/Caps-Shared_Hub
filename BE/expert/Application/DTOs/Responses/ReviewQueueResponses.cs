@@ -28,19 +28,23 @@ public sealed record ReviewQueueRowResponse(
 );
 
 /// <summary>One page of the review queue, oldest submission first, with the number of matching rows.</summary>
+/// <param name="SlaDays">Days a review may wait before it is flagged (policy ReviewSlaDays).</param>
 public sealed record ReviewQueuePageResponse(
     ReviewQueueRowResponse[] Items,
     int Page,
     int PageSize,
-    int Total
+    int Total,
+    int SlaDays
 );
 
 /// <summary>Rows per status, for tab counts and sidebar badges, without loading the rows.</summary>
 /// <param name="AvailableApplications">Per status, only those held by the caller or by nobody.</param>
 /// <param name="AvailableQualifications">Per status, only those held by the caller or by nobody.</param>
+/// <param name="SlaDays">Days a review may wait before it is flagged (policy ReviewSlaDays).</param>
 public sealed record ReviewQueueCountsResponse(
     IReadOnlyDictionary<string, int> Applications,
     IReadOnlyDictionary<string, int> Qualifications,
     IReadOnlyDictionary<string, int> AvailableApplications,
-    IReadOnlyDictionary<string, int> AvailableQualifications
+    IReadOnlyDictionary<string, int> AvailableQualifications,
+    int SlaDays
 );

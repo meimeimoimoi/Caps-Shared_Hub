@@ -35,6 +35,7 @@ public sealed class ApplicationDescriber(
             ct
         );
         var eligibilityPolicy = await policies.GetEligibilityAsync(ct);
+        var work = await policies.GetReviewWorkAsync(ct);
         var verified = applicant.EmailVerified;
         var maxFiles = ApplicationRules.MaxFilesPerApplication;
         return new(
@@ -101,7 +102,11 @@ public sealed class ApplicationDescriber(
                 .Declarations.Select(x => new DeclarationResponse(x.Code, x.Language, x.Text))
                 .ToArray(),
             eligibilityPolicy.MinYearsExperience,
-            changesRequired
+            changesRequired,
+            CompetencySubmissions.Rounds(
+                history.Select(x => (x.FromStatus, x.ToStatus)),
+                work.MaxInformationRequests
+            )
         );
     }
 }

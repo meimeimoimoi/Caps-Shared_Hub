@@ -5,6 +5,7 @@ using Caps.Expert.Application.Common;
 using Caps.Expert.Application.DTOs.Responses;
 using Caps.Expert.Domain;
 using Caps.Expert.Domain.Qualifications;
+using Caps.Expert.Domain.Reviews;
 
 namespace Caps.Expert.Application.Features.Reviews;
 
@@ -57,6 +58,18 @@ public sealed class DecideCompetencyHandler(
         var files = await evidences.ListAsync(qualification, ct);
 
         var policy = await policies.GetCompetencyAsync(ct);
+        // M4: after the last allowed round the reviewer passes or fails with the evidence at hand
+        var work = await policies.GetReviewWorkAsync(ct);
+        var rounds = InformationRequestRules.Count(
+            (await qualifications.ListEventsAsync(qualification.Id, ct)).Select(x =>
+                (x.FromStatus, x.ToStatus)
+            )
+        );
+        InformationRequestRules.EnsureAllowed(
+            CompetencyRules.Outcome(command.Competencies),
+            rounds,
+            work.MaxInformationRequests
+        );
         var decision = qualification.DecideCompetency(
             command.ReviewerUserId,
             profile.UserId,

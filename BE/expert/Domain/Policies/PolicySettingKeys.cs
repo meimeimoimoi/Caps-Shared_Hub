@@ -21,6 +21,12 @@ public static class PolicySettingKeys
     /// <summary>Hours a reviewer keeps a claimed review before it returns to the shared queue.</summary>
     public const string ReviewClaimHours = "ReviewClaimHours";
 
+    /// <summary>Rounds of "more information needed" a Gate 1 or Gate 2 review may ask for (M4).</summary>
+    public const string MaxInformationRequests = "MaxInformationRequests";
+
+    /// <summary>Days a review may wait for a reviewer before the queue flags it (M5, warning only).</summary>
+    public const string ReviewSlaDays = "ReviewSlaDays";
+
     /// <summary>
     /// Every adjustable value with its allowed range, in display order. The reapply intervals start at the
     /// minimums of BR-E21/BR-E22, so an admin can only lengthen them: lowering them would waive the wait,
@@ -35,6 +41,8 @@ public static class PolicySettingKeys
         [ReapplyNotEligibleDays] = new(30, 365),
         [ReapplyCompetencyFailDays] = new(90, 365),
         [ReviewClaimHours] = new(4, 336),
+        [MaxInformationRequests] = new(1, 5),
+        [ReviewSlaDays] = new(1, 30),
     };
 
     public static readonly string[] All =
@@ -43,6 +51,8 @@ public static class PolicySettingKeys
         ReapplyNotEligibleDays,
         ReapplyCompetencyFailDays,
         ReviewClaimHours,
+        MaxInformationRequests,
+        ReviewSlaDays,
     ];
 
     /// <summary>

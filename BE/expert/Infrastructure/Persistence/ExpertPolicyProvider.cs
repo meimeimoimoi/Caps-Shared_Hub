@@ -39,6 +39,15 @@ public sealed class ExpertPolicyProvider(ExpertDbContext db, ExpertPolicyOptions
         return new(TimeSpan.FromHours(current[PolicySettingKeys.ReviewClaimHours]));
     }
 
+    public async Task<ReviewWorkPolicy> GetReviewWorkAsync(CancellationToken ct)
+    {
+        var current = await LoadAsync(ct);
+        return new(
+            current[PolicySettingKeys.MaxInformationRequests],
+            current[PolicySettingKeys.ReviewSlaDays]
+        );
+    }
+
     private async Task<IReadOnlyDictionary<string, int>> LoadAsync(CancellationToken ct)
     {
         if (values != null)

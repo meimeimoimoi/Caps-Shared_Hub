@@ -18,4 +18,7 @@ public interface IExpertPolicyProvider
 
     /// <summary>How long a reviewer keeps a claimed Gate 1 or Gate 2 review.</summary>
     Task<ReviewClaimPolicy> GetReviewClaimAsync(CancellationToken ct);
+
+    /// <summary>Information rounds per review and the queue waiting time, for Gate 1 and Gate 2.</summary>
+    Task<ReviewWorkPolicy> GetReviewWorkAsync(CancellationToken ct);
 }

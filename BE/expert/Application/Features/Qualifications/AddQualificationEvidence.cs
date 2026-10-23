@@ -4,15 +4,17 @@ using Caps.Expert.Application.Common;
 using Caps.Expert.Application.DTOs.Responses;
 using Caps.Expert.Domain;
 using Caps.Expert.Domain.Applications;
+using Caps.Expert.Domain.Qualifications;
 
 namespace Caps.Expert.Application.Features.Qualifications;
 
-/// <summary>Uploads one competency evidence file to a qualification waiting for more information.</summary>
+/// <summary>Uploads one competency evidence file, tied to one or more competencies (E3).</summary>
 public sealed record AddQualificationEvidenceCommand(
     Applicant Applicant,
     Guid QualificationId,
     string FileName,
-    byte[] Content
+    byte[] Content,
+    IReadOnlyList<string>? Competencies = null
 );
 
 /// <summary>Validates an upload by its content, stores it and records it on the qualification.</summary>
@@ -21,6 +23,7 @@ public sealed class AddQualificationEvidenceHandler(
     IQualificationRepository qualifications,
     IQualificationEvidenceRepository qualificationEvidence,
     IExpertEvidenceRepository evidences,
+    ICompetencyEvidenceRepository competencyEvidence,
     IObjectStorage storage,
     IQualificationDescriber describer,
     IUnitOfWork unitOfWork,
@@ -35,6 +38,7 @@ public sealed class AddQualificationEvidenceHandler(
     {
         // Reject a bad file before touching the database
         var contentType = ApplicationRules.ValidateContent(command.Content);
+        var codes = CompetencyEvidenceRules.CleanCodes(command.Competencies);
         var applicant = command.Applicant;
         await using var tx = await unitOfWork.BeginTransactionAsync(ct);
         await locks.AcquireAsync(applicant.UserId, ct);
@@ -60,6 +64,11 @@ public sealed class AddQualificationEvidenceHandler(
         );
         await storage.PutAsync(evidence.FileUrl, command.Content, contentType, ct);
         evidences.Add(evidence);
+        competencyEvidence.AddLinks(
+            codes.Select(code =>
+                CompetencyEvidenceLink.Create(qualification.Id, evidence.Id, code, now)
+            )
+        );
         qualification.Touch(now);
         try
         {

@@ -46,8 +46,10 @@ public sealed class RemoveQualificationEvidenceHandler(
         qualification.Touch(clock.GetUtcNow());
         await unitOfWork.SaveChangesAsync(ct);
         await tx.CommitAsync(ct);
-        // Delete the file only once the row is gone, so a failure never leaves a row without its file
-        await storage.DeleteQuietlyAsync(evidence.FileUrl);
+        // Delete the file only once the row is gone, so a failure never leaves a row without its file; a link
+        // has no stored file. Its competency links go with the row.
+        if (!evidence.IsLink)
+            await storage.DeleteQuietlyAsync(evidence.FileUrl);
         // Reviewers see new or removed evidence without reloading
         await realtime.ChangedAsync(
             ExpertRealtimeTopics.Qualifications,

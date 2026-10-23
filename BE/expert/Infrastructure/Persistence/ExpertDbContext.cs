@@ -36,6 +36,8 @@ public sealed class ExpertDbContext(DbContextOptions<ExpertDbContext> options) :
     public DbSet<PolicySettingChange> PolicySettingChanges => Set<PolicySettingChange>();
     public DbSet<ReviewClaimEvent> ReviewClaimEvents => Set<ReviewClaimEvent>();
     public DbSet<KnownReviewer> KnownReviewers => Set<KnownReviewer>();
+    public DbSet<CompetencyEvidenceLink> CompetencyEvidenceLinks => Set<CompetencyEvidenceLink>();
+    public DbSet<CompetencyDescription> CompetencyDescriptions => Set<CompetencyDescription>();
 
     private static readonly JsonSerializerOptions SnapshotJson = new(JsonSerializerDefaults.Web);
 
@@ -536,6 +538,47 @@ public sealed class ExpertDbContext(DbContextOptions<ExpertDbContext> options) :
                     x.CreatedAt,
                 })
                 .HasDatabaseName("ix_review_claim_event_review");
+        });
+
+        modelBuilder.Entity<CompetencyEvidenceLink>(e =>
+        {
+            e.ToTable("competency_evidence_link");
+            e.HasKey(x => new { x.EvidenceId, x.Competency });
+            e.Property(x => x.QualificationId).HasColumnName("qualification_id");
+            e.Property(x => x.EvidenceId).HasColumnName("evidence_id");
+            e.Property(x => x.Competency).HasColumnName("competency").HasMaxLength(8);
+            e.Property(x => x.CreatedAt).HasColumnName("created_at").IsRequired();
+            e.HasIndex(x => x.QualificationId)
+                .HasDatabaseName("ix_competency_evidence_link_qualification");
+            // Removing a file removes the competencies it was tied to
+            e.HasOne<ExpertEvidence>()
+                .WithMany()
+                .HasForeignKey(x => x.EvidenceId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("fk_competency_evidence_link_evidence");
+            e.HasOne<ExpertServiceQualification>()
+                .WithMany()
+                .HasForeignKey(x => x.QualificationId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("fk_competency_evidence_link_qualification");
+        });
+
+        modelBuilder.Entity<CompetencyDescription>(e =>
+        {
+            e.ToTable("competency_description");
+            e.HasKey(x => new { x.QualificationId, x.Competency });
+            e.Property(x => x.QualificationId).HasColumnName("qualification_id");
+            e.Property(x => x.Competency).HasColumnName("competency").HasMaxLength(8);
+            e.Property(x => x.Text)
+                .HasColumnName("text")
+                .HasMaxLength(CompetencyEvidenceRules.MaxDescriptionLength)
+                .IsRequired();
+            e.Property(x => x.UpdatedAt).HasColumnName("updated_at").IsRequired();
+            e.HasOne<ExpertServiceQualification>()
+                .WithMany()
+                .HasForeignKey(x => x.QualificationId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("fk_competency_description_qualification");
         });
 
         modelBuilder.Entity<KnownReviewer>(e =>

@@ -765,6 +765,59 @@ namespace Caps.Expert.Infrastructure.Persistence.Migrations
                     b.ToTable("competency_assessment_evidence", "expert");
                 });
 
+            modelBuilder.Entity("Caps.Expert.Domain.Qualifications.CompetencyDescription", b =>
+                {
+                    b.Property<Guid>("QualificationId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("qualification_id");
+
+                    b.Property<string>("Competency")
+                        .HasMaxLength(8)
+                        .HasColumnType("character varying(8)")
+                        .HasColumnName("competency");
+
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("text");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("QualificationId", "Competency");
+
+                    b.ToTable("competency_description", "expert");
+                });
+
+            modelBuilder.Entity("Caps.Expert.Domain.Qualifications.CompetencyEvidenceLink", b =>
+                {
+                    b.Property<Guid>("EvidenceId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("evidence_id");
+
+                    b.Property<string>("Competency")
+                        .HasMaxLength(8)
+                        .HasColumnType("character varying(8)")
+                        .HasColumnName("competency");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid>("QualificationId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("qualification_id");
+
+                    b.HasKey("EvidenceId", "Competency");
+
+                    b.HasIndex("QualificationId")
+                        .HasDatabaseName("ix_competency_evidence_link_qualification");
+
+                    b.ToTable("competency_evidence_link", "expert");
+                });
+
             modelBuilder.Entity("Caps.Expert.Domain.Qualifications.ExpertServiceQualification", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1145,6 +1198,33 @@ namespace Caps.Expert.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_competency_assessment_evidence_file");
+                });
+
+            modelBuilder.Entity("Caps.Expert.Domain.Qualifications.CompetencyDescription", b =>
+                {
+                    b.HasOne("Caps.Expert.Domain.Qualifications.ExpertServiceQualification", null)
+                        .WithMany()
+                        .HasForeignKey("QualificationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_competency_description_qualification");
+                });
+
+            modelBuilder.Entity("Caps.Expert.Domain.Qualifications.CompetencyEvidenceLink", b =>
+                {
+                    b.HasOne("Caps.Expert.Domain.Applications.ExpertEvidence", null)
+                        .WithMany()
+                        .HasForeignKey("EvidenceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_competency_evidence_link_evidence");
+
+                    b.HasOne("Caps.Expert.Domain.Qualifications.ExpertServiceQualification", null)
+                        .WithMany()
+                        .HasForeignKey("QualificationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_competency_evidence_link_qualification");
                 });
 
             modelBuilder.Entity("Caps.Expert.Domain.Qualifications.ExpertServiceQualification", b =>

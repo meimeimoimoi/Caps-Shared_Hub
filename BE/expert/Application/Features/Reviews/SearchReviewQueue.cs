@@ -113,7 +113,8 @@ public sealed class SearchReviewQueueHandler(
                     }
             )
             .ToArray();
-        return new ReviewQueuePageResponse(items, query.Page, query.PageSize, total);
+        var work = await policies.GetReviewWorkAsync(ct);
+        return new ReviewQueuePageResponse(items, query.Page, query.PageSize, total, work.SlaDays);
     }
 
     private static string[] Normalize(IReadOnlyList<string>? statuses) =>

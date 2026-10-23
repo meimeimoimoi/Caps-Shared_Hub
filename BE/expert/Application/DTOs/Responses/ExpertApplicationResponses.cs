@@ -40,7 +40,8 @@ public sealed record ExpertApplicationResponse(
     string[] RequiredEvidence,
     DeclarationResponse[] Declarations,
     int MinYearsExperience,
-    string[] ChangesRequired
+    string[] ChangesRequired,
+    InformationRoundsResponse Rounds
 );
 
 /// <summary>One statement as shown to the applicant, or as recorded on a submission.</summary>

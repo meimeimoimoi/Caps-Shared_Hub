@@ -3,6 +3,10 @@ namespace Caps.Expert.Domain.Reviews;
 /// <summary>How long a reviewer keeps a claimed review before it returns to the shared queue.</summary>
 public sealed record ReviewClaimPolicy(TimeSpan Hold);
 
+/// <summary>Limits on review work shared by Gate 1 and Gate 2: information rounds (M4) and waiting time (M5).</summary>
+/// <param name="SlaDays">Days a review may wait for a reviewer before the queue flags it; a warning only.</param>
+public sealed record ReviewWorkPolicy(int MaxInformationRequests, int SlaDays);
+
 /// <summary>The two review gates that share the claim rules; same names as the review queue rows.</summary>
 public static class ReviewGate
 {
