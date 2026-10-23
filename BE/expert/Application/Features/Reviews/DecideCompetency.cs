@@ -59,17 +59,19 @@ public sealed class DecideCompetencyHandler(
 
         var policy = await policies.GetCompetencyAsync(ct);
         // M4: after the last allowed round the reviewer passes or fails with the evidence at hand
+        // D9: every return from final approval adds one round
         var work = await policies.GetReviewWorkAsync(ct);
+        var history = (await qualifications.ListEventsAsync(qualification.Id, ct))
+            .Select(x => (x.FromStatus, x.ToStatus))
+            .ToArray();
         var rounds = InformationRequestRules.Count(
-            (await qualifications.ListEventsAsync(qualification.Id, ct)).Select(x =>
-                (x.FromStatus, x.ToStatus)
-            ),
+            history,
             QualificationStatus.NeedMoreInformation
         );
         InformationRequestRules.EnsureAllowed(
             CompetencyRules.Outcome(command.Competencies),
             rounds,
-            work.MaxInformationRequests,
+            FinalApprovalRules.MaxInformationRequests(work.MaxInformationRequests, history),
             QualificationStatus.NeedMoreInformation
         );
         var decision = qualification.DecideCompetency(

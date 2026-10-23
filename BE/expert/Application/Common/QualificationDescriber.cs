@@ -91,7 +91,10 @@ public sealed class QualificationDescriber(
             newEvidenceRequired,
             CompetencySubmissions.Rounds(
                 history.Select(x => (x.FromStatus, x.ToStatus)),
-                work.MaxInformationRequests,
+                FinalApprovalRules.MaxInformationRequests(
+                    work.MaxInformationRequests,
+                    history.Select(x => (x.FromStatus, x.ToStatus))
+                ),
                 QualificationStatus.NeedMoreInformation
             )
         );
