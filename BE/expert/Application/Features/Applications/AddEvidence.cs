@@ -25,7 +25,8 @@ public sealed class AddEvidenceHandler(
     IObjectStorage storage,
     IApplicationDescriber describer,
     IUnitOfWork unitOfWork,
-    TimeProvider clock
+    TimeProvider clock,
+    IRealtimeNotifier realtime
 ) : ICommandHandler<AddEvidenceCommand, ExpertApplicationResponse>
 {
     public async Task<ExpertApplicationResponse> HandleAsync(
@@ -34,6 +35,7 @@ public sealed class AddEvidenceHandler(
     )
     {
         // Reject a bad file before touching the database
+        command.Applicant.EnsureVerified();
         var contentType = ApplicationRules.ValidateFile(command.Code, command.Content);
         var supplement = command.Code == ApplicationRules.SupplementCode;
 
@@ -49,6 +51,7 @@ public sealed class AddEvidenceHandler(
             foreach (
                 var existing in existingFiles.Where(x =>
                     x.EvidenceType == ApplicationRules.CvCode
+                    && !x.IsLink
                     && x.SizeBytes == command.Content.Length
                 )
             )
@@ -59,10 +62,7 @@ public sealed class AddEvidenceHandler(
                     throw ExpertErrors.EvidenceDuplicate();
             }
         }
-        ApplicationRules.EnsureRoomForFile(
-            await evidences.CountAsync(application.Id, ct),
-            command.Applicant.EmailVerified
-        );
+        ApplicationRules.EnsureRoomForFile(await evidences.CountAsync(application.Id, ct));
 
         var now = clock.GetUtcNow();
         var evidence = ExpertEvidence.Create(
@@ -88,6 +88,13 @@ public sealed class AddEvidenceHandler(
             await storage.DeleteQuietlyAsync(evidence.FileUrl);
             throw;
         }
+        // Reviewers see new or removed evidence without reloading
+        await realtime.ChangedAsync(
+            ExpertRealtimeTopics.Applications,
+            [command.Applicant.UserId],
+            [Permission.ExpertReview],
+            ct
+        );
         return await describer.DescribeAsync(command.Applicant, profile, application, ct);
     }
 }

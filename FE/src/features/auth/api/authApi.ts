@@ -27,6 +27,8 @@ interface BackendAuthPayload {
   accessToken: string
   expiresIn: number
   user: BackendMe
+  /** True only on the response that created the account */
+  isNewAccount?: boolean
 }
 
 export function toUser(me: BackendMe): User {
@@ -63,8 +65,16 @@ function localized(e: unknown, codes: Record<string, AuthKey>) {
   return e
 }
 
-function toSession(p: BackendAuthPayload): { user: User; token: string } {
-  return { user: toUser(p.user), token: p.accessToken }
+function toSession(p: BackendAuthPayload): {
+  user: User
+  token: string
+  isNewAccount: boolean
+} {
+  return {
+    user: toUser(p.user),
+    token: p.accessToken,
+    isNewAccount: p.isNewAccount ?? false,
+  }
 }
 
 /* The refresh token is an HttpOnly cookie (path /api/v1/auth), so every /api/v1/auth call
@@ -108,6 +118,11 @@ export const authApi = {
       withCookie,
     )
     return toSession(res.data)
+  },
+  /** Display name and phone of the signed-in account (PUT replaces both, so send the current name too). */
+  updateProfile: async (body: { displayName: string; phone: string | null }) => {
+    const res = await api.put<BackendEnvelope<BackendMe>>('/api/v1/users/me', body)
+    return toUser(res.data)
   },
   logout: async () => {
     await api.post('/api/v1/auth/logout', {}, withCookie)

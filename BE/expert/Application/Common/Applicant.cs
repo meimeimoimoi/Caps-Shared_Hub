@@ -1,4 +1,5 @@
 using Caps.Common.Application;
+using Caps.Expert.Domain;
 
 namespace Caps.Expert.Application.Common;
 
@@ -18,4 +19,11 @@ public sealed record Applicant(Guid UserId, string Email, bool EmailVerified)
 
     /// <summary>Name shown until the applicant saves one: the local part of the email.</summary>
     public string DefaultName => Email.Split('@')[0];
+
+    /// <summary>Every change to the application requires a verified email (the account must be ACTIVE).</summary>
+    public void EnsureVerified()
+    {
+        if (!EmailVerified)
+            throw ExpertErrors.EmailNotVerified();
+    }
 }

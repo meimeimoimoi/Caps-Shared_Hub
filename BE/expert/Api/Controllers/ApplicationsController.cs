@@ -7,12 +7,13 @@ using Caps.Expert.Application.Features.Applications;
 using Caps.Expert.Domain.Applications;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace Caps.Expert.Api.Controllers;
 
 /// <summary>
-/// The signed-in user's own expert application. Unverified accounts can still save drafts
-/// and upload files; only submitting and supplementing require a verified email.
+/// The signed-in user's own expert application. Every change (draft, files, submit, supplement)
+/// requires a verified email; unverified accounts get EMAIL_NOT_VERIFIED.
 /// </summary>
 [ApiController, Authorize(Policy = "AuthSession"), Route("api/v1/experts/me/application")]
 public sealed class ApplicationsController(ICurrentUser currentUser) : ControllerBase
@@ -40,7 +41,8 @@ public sealed class ApplicationsController(ICurrentUser currentUser) : Controlle
     /// <remarks>Name and phone are kept with the application; they do not change the account profile.</remarks>
     /// <response code="200">The saved draft.</response>
     /// <response code="400">INVALID_FIELD or INVALID_BIRTH_DATE.</response>
-    /// <response code="409">APPLICATION_LOCKED (already submitted) or REAPPLY_TOO_EARLY.</response>
+    /// <response code="403">EMAIL_NOT_VERIFIED.</response>
+    /// <response code="409">APPLICATION_LOCKED (submitted and not waiting for more information) or REAPPLY_TOO_EARLY.</response>
     [HttpPut]
     public async Task<IActionResult> Save(
         SaveExpertApplicationRequest r,
@@ -53,10 +55,10 @@ public sealed class ApplicationsController(ICurrentUser currentUser) : Controlle
     }
 
     /// <summary>Uploads one evidence file (multipart fields <c>code</c> and <c>file</c>).</summary>
-    /// <remarks>Codes: CV, EV-01…EV-05, or SUPPLEMENT while more information is requested. PDF, PNG or JPG up to 10 MB, at most 20 files (3 until the email is verified).</remarks>
+    /// <remarks>Codes: CV, EV-01…EV-05, or SUPPLEMENT while more information is requested. PDF, PNG or JPG up to 10 MB, at most 20 files.</remarks>
     /// <response code="200">The application with the new file.</response>
     /// <response code="400">EVIDENCE_REQUIRED, EVIDENCE_TOO_LARGE, EVIDENCE_INVALID_TYPE, INVALID_EVIDENCE_CODE (unknown group) or SUPPLEMENT_NOT_REQUESTED.</response>
-    /// <response code="403">EVIDENCE_LIMIT_UNVERIFIED: at most 3 files until the email is verified (refresh the session after verifying).</response>
+    /// <response code="403">EMAIL_NOT_VERIFIED.</response>
     /// <response code="409">EVIDENCE_LIMIT or APPLICATION_LOCKED.</response>
     [HttpPost("evidence")]
     [RequestSizeLimit(UploadLimit), RequestFormLimits(MultipartBodyLengthLimit = UploadLimit)]
@@ -81,7 +83,25 @@ public sealed class ApplicationsController(ICurrentUser currentUser) : Controlle
         return Result(application);
     }
 
-    /// <summary>Removes a file that has not been submitted yet.</summary>
+    /// <summary>Adds a public CV or supporting evidence link.</summary>
+    /// <remarks>JSON fields: code (CV, EV-01…EV-05, or SUPPLEMENT) and sourceUrl. HTTP(S) URLs only, at most 2048 characters. Links share file limits and submission rules. The server does not download or verify remote content.</remarks>
+    /// <response code="200">The application with the new link.</response>
+    /// <response code="400">EVIDENCE_INVALID_URL, INVALID_EVIDENCE_CODE or SUPPLEMENT_NOT_REQUESTED.</response>
+    /// <response code="403">EMAIL_NOT_VERIFIED.</response>
+    /// <response code="409">EVIDENCE_DUPLICATE, EVIDENCE_LIMIT or APPLICATION_LOCKED.</response>
+    [HttpPost("evidence/link")]
+    public async Task<IActionResult> AddEvidenceLink(
+        AddEvidenceLinkRequest request,
+        [FromServices] ICommandHandler<AddEvidenceLinkCommand, ExpertApplicationResponse> handler,
+        CancellationToken ct
+    )
+    {
+        var command = new AddEvidenceLinkCommand(Applicant, request.Code ?? "", request.SourceUrl);
+        var application = await handler.HandleAsync(command, ct);
+        return Result(application);
+    }
+
+    /// <summary>Removes a file or link that has not been submitted yet.</summary>
     /// <response code="200">The application without the file.</response>
     /// <response code="404">EVIDENCE_NOT_FOUND or APPLICATION_NOT_FOUND.</response>
     /// <response code="409">EVIDENCE_LOCKED: submitted files are kept as history.</response>
@@ -112,26 +132,35 @@ public sealed class ApplicationsController(ICurrentUser currentUser) : Controlle
         return File(file.Content, file.ContentType, file.FileName);
     }
 
-    /// <summary>Submits the draft for review.</summary>
-    /// <remarks>Requires a verified email (refresh the session after verifying), phone, years of experience, at least one field and a CV.</remarks>
+    /// <summary>Submits the draft for review with the statements agreed to.</summary>
+    /// <remarks>
+    /// Requires a verified email, phone, years of experience, at least one field, a file or link in every required
+    /// evidence group (requiredEvidence in the application) and every statement (declarations). The body sends
+    /// only the declaration codes and the language; a snapshot of the declared details is stored with the submission.
+    /// A re-application after NOT_ELIGIBLE also needs, for each failed criterion, changed details or a file or link
+    /// in its evidence group (EV-06: changed years); changesRequired in the application lists what is still missing.
+    /// </remarks>
     /// <response code="200">The submitted application.</response>
-    /// <response code="400">APPLICATION_INCOMPLETE (missing items listed in the message).</response>
+    /// <response code="400">APPLICATION_INCOMPLETE (missing items listed in the message) or DECLARATION_REQUIRED.</response>
     /// <response code="403">EMAIL_NOT_VERIFIED.</response>
     /// <response code="404">APPLICATION_NOT_FOUND.</response>
-    /// <response code="409">APPLICATION_LOCKED.</response>
+    /// <response code="409">APPLICATION_LOCKED, or MATERIAL_CHANGE_REQUIRED (failed criteria listed in the message).</response>
     [HttpPost("submit")]
     public async Task<IActionResult> Submit(
+        [FromBody(EmptyBodyBehavior = EmptyBodyBehavior.Allow)] SubmitExpertApplicationRequest? r,
         [FromServices] ICommandHandler<SubmitApplicationCommand, ExpertApplicationResponse> handler,
         CancellationToken ct
     )
     {
-        var application = await handler.HandleAsync(new(Applicant), ct);
+        var command = (r ?? new SubmitExpertApplicationRequest(null, null)).ToCommand(Applicant);
+        var application = await handler.HandleAsync(command, ct);
         return Result(application);
     }
 
-    /// <summary>Sends the extra information a reviewer asked for (explanation and/or new files).</summary>
+    /// <summary>Sends the extra information a reviewer asked for (explanation, new files and/or changed details).</summary>
+    /// <remarks>The statements are agreed to again; a new snapshot of the declared details is stored.</remarks>
     /// <response code="200">The application, back in the review queue.</response>
-    /// <response code="400">SUPPLEMENT_EMPTY: add an explanation or at least one new file.</response>
+    /// <response code="400">SUPPLEMENT_EMPTY (nothing new: no explanation, file or changed detail), APPLICATION_INCOMPLETE or DECLARATION_REQUIRED.</response>
     /// <response code="403">EMAIL_NOT_VERIFIED.</response>
     /// <response code="404">APPLICATION_NOT_FOUND.</response>
     /// <response code="409">APPLICATION_LOCKED: no information was requested.</response>
@@ -143,7 +172,7 @@ public sealed class ApplicationsController(ICurrentUser currentUser) : Controlle
         CancellationToken ct
     )
     {
-        var application = await handler.HandleAsync(new(Applicant, r.Note), ct);
+        var application = await handler.HandleAsync(r.ToCommand(Applicant), ct);
         return Result(application);
     }
 }

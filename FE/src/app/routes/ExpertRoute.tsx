@@ -5,6 +5,7 @@ import { Link, Navigate, Outlet, useLocation } from 'react-router-dom'
 import { useAuth, useAuthStore } from '@/features/auth'
 import { useExpertContext } from '@/features/expert-context'
 import { ApiError } from '@/lib/api-client'
+import { PendingVerificationRedirect } from './ProtectedRoute'
 import '../layouts/expert/expert-theme.css'
 
 export function ExpertRoute() {
@@ -12,6 +13,9 @@ export function ExpertRoute() {
   const { t } = useTranslation('expert')
 
   const authenticated = useAuthStore((s) => s.isAuthenticated)
+  const pending = useAuthStore(
+    (s) => s.user?.status === 'PENDING_VERIFICATION'
+  )
   const location = useLocation()
   const path = location.pathname
   const title = path.endsWith('/application')
@@ -48,6 +52,8 @@ export function ExpertRoute() {
         state={{ from: location.pathname + location.search }}
       />
     )
+  // The application and every other portal page need a verified email
+  if (pending) return <PendingVerificationRedirect />
   const denied =
     context.error instanceof ApiError && context.error.status === 403
   if (context.isPending)

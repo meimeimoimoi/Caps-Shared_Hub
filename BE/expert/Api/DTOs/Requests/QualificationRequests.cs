@@ -16,6 +16,20 @@ public sealed record RegisterForServiceRequest([Required, MaxLength(64)] string 
 /// <summary>Sends the qualification back to competency review, with an optional note.</summary>
 public sealed record SupplementQualificationRequest([MaxLength(2000)] string? Note);
 
+/// <summary>A public link as competency evidence and the competencies (C1…C5) it supports.</summary>
+public sealed record AddQualificationEvidenceLinkRequest(
+    [MaxLength(2048)] string? SourceUrl,
+    [MaxLength(5)] string[]? Competencies
+);
+
+/// <summary>The competencies (C1…C5) one competency file supports; at least one.</summary>
+public sealed record EvidenceCompetenciesRequest([MaxLength(5)] string[]? Competencies);
+
+/// <summary>The expert's short explanation for one competency; empty clears it.</summary>
+public sealed record CompetencyDescriptionRequest(
+    [MaxLength(CompetencyEvidenceRules.MaxDescriptionLength)] string? Text
+);
+
 /// <summary>
 /// Gate 2 decision: one result per competency C1…C5. The outcome is derived from them
 /// (any FAIL → FAIL, else any NEED_MORE_INFORMATION → NEED_MORE_INFORMATION, else PENDING_FINAL_APPROVAL).

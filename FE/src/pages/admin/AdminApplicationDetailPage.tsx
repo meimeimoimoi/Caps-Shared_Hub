@@ -10,12 +10,13 @@ import {
 } from '@/lib/constants'
 import { ToolHeader } from '@/components/ui/layout/tool-header'
 import { CaseHeader } from '@/components/ui/layout/case-header'
-import { DecisionBar } from '@/components/ui/actions/decision-bar'
 import { Toast } from '@/components/ui/feedback/toast'
 import { ReviewPageLayout } from '@/features/expert-vetting/components/ReviewPageLayout'
 import { getEvidenceFile } from '../../features/expert-vetting/api/adminApi'
 import { AiScreeningTab } from '../../features/expert-vetting/components/AiScreeningTab'
+import { ClaimBar } from '../../features/expert-vetting/components/ClaimBar'
 import { DecisionDialog } from '../../features/expert-vetting/components/DecisionDialog'
+import { EligibilityDecisionPanel } from '../../features/expert-vetting/components/EligibilityDecisionPanel'
 import { EligibilityReview } from '../../features/expert-vetting/components/EligibilityReview'
 import {
   DecisionCard,
@@ -26,12 +27,12 @@ import { HistoryTab } from '../../features/expert-vetting/components/HistoryTab'
 import { ProfileTab } from '../../features/expert-vetting/components/ProfileTab'
 import {
   CURRENT_ADMIN,
-  ELIGIBILITY_CODES,
   ELIGIBILITY_OUTCOME,
 } from '../../features/expert-vetting/constants'
 import { formatDate } from '../../features/expert-vetting/utils/applications'
 import { useAdminNav } from '@/app/layouts/admin/useAdminNav'
 import { useApplicationReview } from '../../features/expert-vetting/hooks/useApplicationReview'
+import { useReviewClaim } from '../../features/expert-vetting/hooks/useReviewClaim'
 import { useTranslation } from 'react-i18next'
 import { StatusBadge } from '@/components/ui/display/status-badge'
 
@@ -42,6 +43,8 @@ const DECISION_ERRORS = [
   'EXPERIENCE_BELOW_MINIMUM',
   'SELF_REVIEW_NOT_ALLOWED',
   'APPLICATION_NOT_IN_REVIEW',
+  'REVIEW_NOT_CLAIMED',
+  'INFORMATION_REQUEST_LIMIT',
 ] as const
 type DecisionError = (typeof DECISION_ERRORS)[number]
 const isDecisionError = (code?: string): code is DecisionError =>
@@ -55,6 +58,7 @@ export default function AdminApplicationDetailPage({ embedded = false }: { embed
   const nav = useAdminNav(!embedded)
   const review = useApplicationReview(id)
   const { detail, status } = review
+  const claim = useReviewClaim('GATE_1', id, detail?.claim)
   // AI screening is postponed: the tab only exists for demo fixtures
   const tabs = [
     { key: 'profile', label: t('admin:detail.tabs.profile') },
@@ -126,6 +130,17 @@ export default function AdminApplicationDetailPage({ embedded = false }: { embed
       ? t(`admin:eligibility.errors.${e.code}`)
       : t('admin:eligibility.errors.failed')
 
+  const claimError = (e: unknown) =>
+    e instanceof ApiError && (e.code === 'REVIEW_CLAIMED' || e.code === 'REVIEW_NOT_CLAIMED')
+      ? t(`admin:claim.errors.${e.code}`)
+      : t('admin:claim.errors.failed')
+  const takeClaim = () => void claim.claim().catch((e: unknown) => setToast(claimError(e)))
+  const releaseClaim = () =>
+    void claim
+      .release()
+      .then(() => setToast(t('admin:claim.released')))
+      .catch((e: unknown) => setToast(claimError(e)))
+
   const finish = (note: string) => {
     const outcome = review.outcome
     return review
@@ -139,6 +154,13 @@ export default function AdminApplicationDetailPage({ embedded = false }: { embed
         setConfirming(false)
         setToast(errorText(e))
       })
+  }
+
+  // Show a file in the document viewer of the reference panel, beside the assessment
+  const showDocument = (key: string) => {
+    setDocKey(key)
+    setTab('documents')
+    requestAnimationFrame(() => document.getElementById('panel-documents')?.scrollIntoView({ block: 'nearest', behavior: 'smooth' }))
   }
 
   // Open a blank tab first so the browser does not block the popup after the download
@@ -174,6 +196,9 @@ export default function AdminApplicationDetailPage({ embedded = false }: { embed
       : RAIL_APPLICATION[RAIL_APPLICATION.length - 1],
   ]
   const decided = !detail.canDecide
+  // Only the reviewer holding the application can assess it; everyone else reads it
+  const readOnly = !claim.heldByMe
+  const history = [...review.history, ...claim.history].sort((a, b) => b.at.localeCompare(a.at))
   const jobTitle = [detail.jobTitle, detail.company].filter(Boolean).join(', ')
   const years = t('admin:detail.meta.years', { count: detail.years })
 
@@ -213,27 +238,46 @@ export default function AdminApplicationDetailPage({ embedded = false }: { embed
         />
       )}
 
-      <div className="mt-6 grid items-start gap-6 lg:grid-cols-[minmax(280px,0.78fr)_minmax(0,1.22fr)]">
-        {/* Reference information stays available beside the assessment. */}
-        <div className="border-border bg-surface order-2 min-w-0 overflow-hidden rounded-2xl border lg:order-1">
-          {embedded && (
-            <header className="border-border border-b px-5 py-5 sm:px-6">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <h1 className="text-text-strong min-w-0 text-xl font-semibold tracking-tight break-words">{detail.name}</h1>
-                <StatusBadge status={APPLICATION_STATUS[status]} />
-              </div>
-              <p className="text-text-muted mt-1 text-sm leading-6">{jobTitle}</p>
-              <dl className="text-text-muted mt-4 space-y-2 text-xs">
-                <div className="flex flex-wrap gap-x-2 gap-y-1"><dt>{t('reviewWorkspace.reference')}</dt><dd className="text-text-strong min-w-0 break-all">{detail.id}</dd></div>
-                <div className="flex flex-wrap gap-x-2 gap-y-1"><dt>{t('detail.meta.submitted')}</dt><dd className="text-text-strong tabular-nums">{formatDate(detail.submittedAt)}</dd></div>
-              </dl>
-            </header>
-          )}
+      {embedded && (
+        <header className="min-w-0">
+          <div className="flex flex-wrap items-center gap-3">
+            <h1 className="text-text-strong !font-sans text-xl font-semibold tracking-tight break-words">{detail.name}</h1>
+            <StatusBadge status={APPLICATION_STATUS[status]} />
+          </div>
+          <dl className="text-text-muted mt-1.5 flex flex-wrap items-center gap-x-1.5 gap-y-1 text-sm [&>div+div]:before:mr-1.5 [&>div+div]:before:content-['·']">
+            {jobTitle && <div><dt className="sr-only">{t('detail.meta.jobTitle')}</dt><dd className="inline">{jobTitle}</dd></div>}
+            <div><dt className="sr-only">{t('detail.meta.experience')}</dt><dd className="inline tabular-nums">{years}</dd></div>
+            <div><dt className="inline">{t('detail.meta.submitted')} </dt><dd className="inline tabular-nums">{formatDate(detail.submittedAt)}</dd></div>
+            <div><dt className="inline">{t('reviewWorkspace.reference')} </dt><dd title={detail.id} className="inline tabular-nums">{detail.id.slice(0, 8)}</dd></div>
+          </dl>
+        </header>
+      )}
+
+      <div className="mt-5">
+        <ClaimBar
+          current={claim.current}
+          canClaim={claim.canClaim}
+          claimable={detail.canDecide}
+          pending={claim.pending}
+          onClaim={takeClaim}
+          onRelease={releaseClaim}
+        />
+      </div>
+
+      {/* While assessing, the reference panel widens when a document is open so files are readable beside the
+          editor. Once decided, the columns stay fixed: the record is read on the left and the short result card
+          does not jump in width when switching tabs. */}
+      {/* Both columns share the row height: the assessment sets it and the reference panel scrolls inside it */}
+      <div className={cn('mt-5 grid items-start gap-5 xl:items-stretch', decided ? 'xl:grid-cols-[minmax(0,1.25fr)_minmax(320px,0.75fr)]' : tab === 'documents' ? 'xl:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]' : 'xl:grid-cols-[minmax(300px,0.8fr)_minmax(0,1.2fr)]')}>
+        {/* Reference information stays available beside the assessment; it scrolls inside the viewport */}
+        {/* While assessing, the panel takes the editor's height and scrolls inside it. Once decided it shows
+            everything at its own height and the result card beside it stretches to match, so nothing scrolls */}
+        <div className={cn('border-border bg-surface order-2 min-w-0 overflow-hidden rounded-lg border xl:order-1 xl:flex xl:flex-col', !decided && 'xl:h-0 xl:min-h-full')}>
           <div
             role="tablist"
             aria-label={t('admin:detail.tabAria')}
             onKeyDown={onTabKey}
-            className="border-border bg-surface-muted/40 flex gap-5 overflow-x-auto border-b px-5 pt-2 sm:px-6"
+            className="border-border flex shrink-0 gap-4 overflow-x-auto border-b px-4"
           >
             {tabs.map(({ key, label }) => (
               <button
@@ -246,14 +290,14 @@ export default function AdminApplicationDetailPage({ embedded = false }: { embed
                 tabIndex={tab === key ? 0 : -1}
                 onClick={() => setTab(key)}
                 className={cn(
-                  '-mb-px min-h-12 shrink-0 border-b-2 px-1 py-3 text-sm whitespace-nowrap transition-colors focus-visible:outline-2 focus-visible:outline-offset-[-3px]',
+                  '-mb-px min-h-11 shrink-0 border-b-2 px-0.5 text-sm whitespace-nowrap transition-colors focus-visible:!outline-none focus-visible:text-text-strong focus-visible:underline focus-visible:underline-offset-4',
                   tab === key
-                    ? 'border-indicator text-fg-strong font-semibold'
+                    ? 'border-text-strong text-fg-strong font-medium'
                     : 'text-fg-muted border-transparent'
                 )}
               >
                 {label}
-                {key === 'documents' && <span className="bg-surface-muted text-text-muted ml-2 rounded px-1.5 py-0.5 text-xs tabular-nums">{detail.documents.length}</span>}
+                {key === 'documents' && <span className="text-text-muted ml-1.5 text-xs tabular-nums">{detail.documents.length}</span>}
               </button>
             ))}
           </div>
@@ -263,7 +307,7 @@ export default function AdminApplicationDetailPage({ embedded = false }: { embed
             id={`panel-${tab}`}
             aria-labelledby={`tab-${tab}`}
             tabIndex={0}
-            className="p-5 focus-visible:outline-2 focus-visible:outline-offset-[-3px] sm:p-6"
+            className={cn('p-4 focus-visible:outline-2 focus-visible:outline-offset-[-3px]', !decided && 'xl:min-h-0 xl:flex-1 xl:overflow-y-auto')}
           >
             {tab === 'ai' && detail.screening && (
               <AiScreeningTab
@@ -284,21 +328,25 @@ export default function AdminApplicationDetailPage({ embedded = false }: { embed
             )}
             {tab === 'documents' && (
               <DocumentsTab
+                key={docKey}
                 documents={detail.documents}
+                submissions={detail.submissions ?? []}
                 initialCode={docKey}
                 reviewedFlags={review.reviewedFlags}
                 onToggleReviewed={review.toggleFlagReviewed}
                 onOpenFile={openFile}
+                loadFile={(evidenceId) => getEvidenceFile(detail.id, evidenceId)}
               />
             )}
-            {tab === 'history' && <HistoryTab history={review.history} />}
+            {tab === 'history' && <HistoryTab variant="panel" history={history} />}
           </div>
         </div>
 
         {/* The primary workspace is wider than the reference panel. */}
         {decided ? (
-          <div className="order-1 space-y-4 md:space-y-6 lg:order-2">
-            <DecisionCard detail={detail} />
+          <div className="order-1 space-y-4 md:space-y-6 xl:order-2 xl:flex xl:flex-col">
+            {/* Stretches to the reference panel's height so both cards end on the same line */}
+            <DecisionCard detail={detail} className="xl:flex-1" />
             {detail.screening && (
               <AiSummaryCard
                 screening={detail.screening}
@@ -309,27 +357,23 @@ export default function AdminApplicationDetailPage({ embedded = false }: { embed
             )}
           </div>
         ) : (
-          <div className="order-1 min-w-0 lg:order-2">
+          <div className="order-1 min-w-0 xl:order-2 xl:flex xl:min-h-[36rem] xl:flex-col">
             <EligibilityReview
               key={detail.id}
               detail={detail}
               assessments={review.assessments}
-              disabled={review.deciding}
+              disabled={review.deciding || readOnly}
               onResult={review.setResult}
               onNote={review.setNote}
+              setAsideNote={review.setAsideNote}
+              onRestoreNote={review.restoreNote}
+              onShowDocument={showDocument}
             />
-        <DecisionBar
-          className="!static !mx-0 !mt-4 !mb-0 !flex-col !items-stretch !gap-4 !rounded-xl !border !border-[var(--ui-border)] !bg-[var(--ui-surface)] !px-5 !py-4 !shadow-none [&>div]:!ml-0 [&>div]:w-full [&>div]:justify-end [&_.btn]:min-h-11 [&_.btn]:h-auto [&_.btn]:whitespace-normal [&_.btn]:py-3"
+        <EligibilityDecisionPanel
+          outcome={review.outcome}
           blockers={blockers}
-          ready={`${t('admin:eligibility.ready', {
-            count: ELIGIBILITY_CODES.length,
-            total: ELIGIBILITY_CODES.length,
-          })} · ${t('admin:eligibility.outcomeLabel')}: ${APPLICATION_STATUS[review.outcome].label}`}
-          primary={{
-            label: t(`admin:${ELIGIBILITY_OUTCOME[review.outcome].confirm}`),
-            onClick: () => setConfirming(true),
-            disabled: !review.canDecide,
-          }}
+          disabled={!review.canDecide || readOnly}
+          onConfirm={() => setConfirming(true)}
         />
           </div>
         )}

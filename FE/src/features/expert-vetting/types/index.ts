@@ -64,6 +64,9 @@ export interface ApplicationDocument {
   pages: DocumentPage[]
   /** Uploaded file on the server; opened through the review API */
   evidenceId?: string
+  sourceUrl?: string | null
+  /** When the file or link was added; places it in the submission that sent it (S19 Step 2) */
+  uploadedAt?: string
 }
 
 export interface ApplicationDetail extends ExpertApplication {
@@ -91,13 +94,92 @@ export interface ApplicationDetail extends ExpertApplication {
   suggestedExperienceResult: EligibilityResult
   /** True while the application waits for a Gate 1 decision */
   canDecide: boolean
+  /** Every submission, first one first, with the statements agreed to; empty in demo data */
+  submissions?: Submission[]
+  /** Criteria the reviewer may mark NOT_APPLICABLE (with a reason); empty in demo data */
+  notApplicableCriteria?: string[]
+  /** Statements of the latest submission under each criterion they support (EV-04, EV-05) */
+  criterionDeclarations?: CriterionDeclaration[]
+  /** Criteria passed by an agreed statement (EV-04, EV-05); the server records PASS, the reviewer does not judge them */
+  declarationPassedCriteria?: string[]
   decidedAt: string | null
   decisionNote: string | null
   earliestReapplyAt: string | null
+  /** Who works on the review now; decisions need an active claim (absent in older responses) */
+  claim?: ReviewClaimState
+  /** Rounds of more information asked for so far and the policy limit */
+  rounds?: InformationRounds
 }
 
-/* Gate 1 (eligibility) is decided per expert from EV-01…EV-06; the outcome is derived from the results */
-export type EligibilityResult = 'PASS' | 'FAIL' | 'NEED_MORE_INFORMATION'
+/** Rounds of "more information needed" used and the policy limit; on the last round it cannot be chosen */
+export interface InformationRounds {
+  used: number
+  max: number
+  canRequestMore: boolean
+}
+
+/** What the expert sent for one competency: a short description and the files tied to it */
+export interface CompetencySubmission {
+  code: string
+  description: string | null
+  evidenceIds: string[]
+}
+
+/** The reviewer working on a review now; expiresAt comes from the server clock, never the browser's */
+export interface ReviewClaim {
+  holderUserId: string
+  holderEmail: string | null
+  claimedAt: string
+  /** Null while the review waits for the expert (the hold does not run) */
+  expiresAt: string | null
+  heldByMe: boolean
+}
+
+/** One change of a review's claim: CLAIM with a previous holder means that holder's claim had expired */
+export interface ReviewClaimEvent {
+  action: 'CLAIM' | 'RELEASE' | 'REASSIGN'
+  actorUserId: string
+  actorEmail: string | null
+  holderUserId: string | null
+  holderEmail: string | null
+  previousHolderUserId: string | null
+  previousHolderEmail: string | null
+  reason: string | null
+  at: string
+}
+
+export interface ReviewClaimState {
+  /** Null when nobody holds the review (never claimed, released, decided or expired) */
+  current: ReviewClaim | null
+  /** True while the review waits for a decision and the caller may take it */
+  canClaim: boolean
+  history: ReviewClaimEvent[]
+}
+
+/** One submission (first submit or supplement) and the statements the applicant agreed to */
+export interface Submission {
+  number: number
+  submittedAt: string
+  declarations: { code: string; language: string; text: string }[]
+}
+
+/** A statement the applicant agreed to, shown under the criterion it supports */
+export interface CriterionDeclaration {
+  criterion: string
+  code: string
+  language: string
+  text: string
+  agreedAt: string
+  agreedByUserId: string
+}
+
+/* Gate 1 (eligibility) is decided per expert from EV-01…EV-06; the outcome is derived from the results.
+ * NOT_APPLICABLE is allowed only on the criteria the policy lists and counts as PASS */
+export type EligibilityResult =
+  | 'PASS'
+  | 'FAIL'
+  | 'NEED_MORE_INFORMATION'
+  | 'NOT_APPLICABLE'
 export type EligibilityOutcome =
   'ELIGIBLE' | 'NOT_ELIGIBLE' | 'NEED_MORE_INFORMATION'
 
@@ -106,6 +188,8 @@ export interface EligibilityCheck {
   result: EligibilityResult
   note: string | null
   decidedAt: string
+  /** EV-06 minimum years in force when decided; null for older decisions */
+  appliedMinYearsExperience?: number | null
 }
 
 /** One requirement in the reviewer's form; result is empty until chosen */
@@ -139,10 +223,16 @@ export interface QualificationRow {
   years: number
   fields: string[]
   serviceCode: string
+  /** Catalog name; the queue falls back to the code when the service is no longer active */
+  serviceName?: string
   status: QualificationStatus
   submittedAt: string
   /** Follows an earlier FAIL for the same service (BR-E23) */
   isReapplication: boolean
+  /** Waiting for final approval: when it is due (policy) */
+  finalApprovalDueAt?: string | null
+  /** Past that time: flagged and listed first */
+  finalApprovalOverdue?: boolean
 }
 
 /** One competency in the latest Gate 2 decision */
@@ -178,6 +268,23 @@ export interface QualificationDetail {
   canSuspend: boolean
   /** Suspended: a System Admin can reinstate the service */
   canReinstate: boolean
+  /** Who works on the Gate 2 review now; decisions need an active claim */
+  claim?: ReviewClaimState
+  /** Per competency: the expert's description and the files tied to it */
+  submitted: CompetencySubmission[]
+  rounds?: InformationRounds
+  /** Waiting for final approval: when it is due (policy) */
+  finalApprovalDueAt?: string | null
+  /** The return from final approval the Gate 2 reviewer still has to act on */
+  lastReturn?: FinalApprovalReturn | null
+}
+
+/** A System Admin's return of a Gate 2 PASS to the reviewer; never shown to the expert */
+export interface FinalApprovalReturn {
+  note: string | null
+  actorUserId: string
+  actorEmail: string | null
+  at: string
 }
 
 export interface FinalApprovalInput {

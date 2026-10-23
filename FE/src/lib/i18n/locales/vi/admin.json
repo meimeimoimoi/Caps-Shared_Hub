@@ -1,5 +1,6 @@
 {
   "reviewWorkspace": {
+    "unnamedApplicant": "Người đăng ký chưa cập nhật tên",
     "reference": "Mã hồ sơ",
     "progress": "Tiến độ đánh giá",
     "criteria": "tiêu chí hoàn tất",
@@ -33,7 +34,9 @@
     "system": "Hệ thống",
     "accounts": "Tài khoản",
     "settings": "Cấu hình",
-    "users": "Người dùng"
+    "users": "Người dùng",
+    "expertPolicy": "Chính sách chuyên gia",
+    "assignments": "Phân công người chấm"
   },
   "dashboard": {
     "title": "Tổng quan",
@@ -42,6 +45,7 @@
       "dispute": "{{count}} khiếu nại đang mở, gần nhất còn {{hours}} giờ trước hạn trọng tài",
       "payoutFailed": "{{count}} khoản chi trả lỗi, cần thử lại",
       "slaOverdue": "{{count}} hồ sơ Expert chờ quá {{days}} ngày",
+      "finalApprovalOverdue": "{{count}} hồ sơ quá hạn phê duyệt cuối",
       "outsideRange": "{{count}} Expert đặt giá ngoài khung"
     },
     "kpi": {
@@ -213,6 +217,11 @@
       "level": "Mức {{level}}",
       "unscored": "Chưa chấm"
     },
+    "submission": {
+      "title": "Cam kết · bản nộp lần {{number}} · {{date}}",
+      "agreed": "Đã cam kết:",
+      "earlier": "Các lần nộp trước: {{dates}}"
+    },
     "profile": {
       "personal": "Thông tin cá nhân",
       "name": "Họ và tên",
@@ -225,20 +234,38 @@
       "fields": "Lĩnh vực",
       "cv": "Sơ yếu lý lịch (CV)",
       "noCv": "Chưa nộp CV",
-      "highlights": "Kinh nghiệm nổi bật"
+      "highlights": "Kinh nghiệm nổi bật",
+      "aboveMinimum": "Đạt mức tối thiểu {{min}} năm",
+      "belowMinimum": "Dưới mức tối thiểu {{min}} năm"
     },
     "history": {
       "title": "Lịch sử thao tác",
-      "reviewer": "Người đánh giá"
+      "reviewer": "Người đánh giá",
+      "system": "Hệ thống"
     },
     "documents": {
+      "round": "Lần nộp {{number}} · {{date}}",
+      "afterLatest": "Thêm sau lần nộp gần nhất (chưa nộp)",
+      "count_other": "{{count}} tệp",
+      "supplement": "Tài liệu bổ sung",
+      "view": "Xem",
+      "previous": "Tài liệu trước",
+      "next": "Tài liệu sau",
+      "newTab": "Mở trong tab mới",
+      "linkHint": "Liên kết ngoài không xem trực tiếp được trong trang.",
+      "openLink": "Mở liên kết",
+      "loading": "Đang tải tài liệu",
+      "empty": "Hồ sơ chưa có tài liệu nào.",
+      "cv": "Sơ yếu lý lịch (CV)",
+      "forCriterion": "Tài liệu minh chứng",
+      "noneForCriterion": "Người nộp chưa đính kèm tài liệu cho yêu cầu này.",
       "select": "Chọn tài liệu",
       "noPreview": "Chưa có bản xem trước cho tài liệu này.",
       "pageNote": "Ghi chú cho trang {{page}}",
       "aiReviewed": "AI · Đã xem xét",
       "unmark": "Bỏ đánh dấu",
       "mark": "Đánh dấu đã xem xét",
-      "pageOf": "{{code}} · trang {{page}}/{{total}}",
+      "pageOf": "Trang {{page}}/{{total}}",
       "open": "Mở file",
       "openFailed": "Không mở được file. Vui lòng thử lại."
     },
@@ -268,8 +295,6 @@
     },
     "competency": {
       "title": "Đánh giá năng lực",
-      "subtitle": "Thang chấm theo quy chế xét duyệt",
-      "level": "Mức {{level}}",
       "evidence": "Căn cứ đánh giá (bắt buộc)"
     },
     "decisionTitle": "Quyết định của System Admin"
@@ -696,12 +721,13 @@
     }
   },
   "eligibility": {
-    "title": "Gate 1 · Điều kiện tham gia",
-    "subtitle": "Đánh giá từng yêu cầu EV-01 – EV-06. Kết quả chung được suy ra tự động. Đủ điều kiện chưa đưa chuyên gia lên Marketplace: còn đánh giá năng lực từng dịch vụ và phê duyệt cuối.",
+    "title": "Điều kiện tham gia",
+    "subtitle": "Đánh giá từng yêu cầu. Kết quả chung được suy ra tự động. Đủ điều kiện chưa đưa chuyên gia lên Marketplace: còn đánh giá năng lực từng dịch vụ và phê duyệt cuối.",
     "results": {
       "PASS": "Đạt",
       "NEED_MORE_INFORMATION": "Cần bổ sung",
-      "FAIL": "Không đạt"
+      "FAIL": "Không đạt",
+      "NOT_APPLICABLE": "Không áp dụng"
     },
     "noteRequired": "Ghi chú gửi người đăng ký (bắt buộc)",
     "noteOptional": "Ghi chú (không bắt buộc)",
@@ -730,28 +756,55 @@
       }
     },
     "dialog": {
-      "title": "Kết luận Gate 1 cho {{name}}?",
+      "title": "Kết luận xét điều kiện cho {{name}}?",
       "noteLabel": "Ghi chú chung (không bắt buộc)",
-      "placeholder": "Người đăng ký xem được cùng kết quả."
+      "placeholder": "Người đăng ký xem được cùng kết quả.",
+      "sent": "Gửi cho người đăng ký kèm ghi chú ({{count}})",
+      "notApplicable": "Không áp dụng – lưu nội bộ, không gửi người đăng ký ({{count}})",
+      "passed": "Đạt ({{count}})",
+      "addNote": "Thêm ghi chú chung (không bắt buộc)"
     },
-    "resultTitle": "Kết quả Gate 1",
+    "resultTitle": "Kết quả xét điều kiện",
     "decidedAt": "Quyết định lúc {{time}}",
     "reapplyAt": "Được nộp hồ sơ mới từ {{date}}.",
-    "noDecision": "Chưa có kết luận Gate 1.",
-    "notReviewable": "Hồ sơ không ở bước chờ kết luận Gate 1.",
+    "noDecision": "Chưa có kết luận xét điều kiện.",
+    "notReviewable": "Hồ sơ không ở bước chờ kết luận xét điều kiện.",
     "errors": {
-      "INVALID_ELIGIBILITY_CRITERIA": "Cần đúng một kết quả cho mỗi yêu cầu EV-01 – EV-06.",
+      "INVALID_ELIGIBILITY_CRITERIA": "Cần đúng một kết quả cho mỗi yêu cầu.",
       "INVALID_ELIGIBILITY_RESULT": "Có kết quả không hợp lệ. Tải lại trang rồi thử lại.",
       "ELIGIBILITY_NOTE_REQUIRED": "Yêu cầu không đạt hoặc cần bổ sung phải có ghi chú.",
-      "EXPERIENCE_BELOW_MINIMUM": "EV-06 không thể Đạt: kinh nghiệm kê khai dưới mức tối thiểu.",
+      "EXPERIENCE_BELOW_MINIMUM": "Yêu cầu kinh nghiệm không thể Đạt: số năm kinh nghiệm kê khai dưới mức tối thiểu.",
       "SELF_REVIEW_NOT_ALLOWED": "Bạn không thể tự đánh giá hồ sơ của chính mình.",
       "APPLICATION_NOT_IN_REVIEW": "Hồ sơ không còn chờ kết luận; tải lại để xem trạng thái mới.",
-      "failed": "Chưa ghi nhận được kết luận. Vui lòng thử lại."
-    }
+      "failed": "Chưa ghi nhận được kết luận. Vui lòng thử lại.",
+      "REVIEW_NOT_CLAIMED": "Bạn không còn giữ hồ sơ này (đã quá hạn hoặc đã chuyển cho người khác). Đã tải lại hồ sơ.",
+      "INFORMATION_REQUEST_LIMIT": "Đã hết số vòng yêu cầu bổ sung. Chọn Đạt hoặc Không đạt dựa trên minh chứng hiện có."
+    },
+    "declarations": {
+      "contest": "Có căn cứ không đạt?",
+      "contesting": "Đang ghi nhận căn cứ trái với cam kết. Chọn kết quả và ghi rõ lý do.",
+      "keep": "Giữ Đạt theo cam kết",
+      "title": "Cam kết đã đồng ý",
+      "agreedAt": "Đồng ý lúc {{time}} (khi nộp hồ sơ)",
+      "passed": "Đạt theo cam kết người nộp đã đồng ý. Chỉ đổi khi có căn cứ trái với cam kết.",
+      "meta": "Theo cam kết người nộp đã đồng ý",
+      "chip": "Theo cam kết"
+    },
+    "summary": "{{met}}/{{total}} tiêu chí đạt",
+    "noteSetAside": "Đã bỏ ghi chú cũ vì tiêu chí chuyển sang Đạt.",
+    "restoreNote": "Khôi phục ghi chú",
+    "experienceMeta": "Khai báo {{years}} năm · mức tối thiểu {{min}} năm khi quyết định",
+    "overallNote": "Ghi chú chung",
+    "groups": {
+      "toAssess": "Cần đánh giá",
+      "byDeclaration": "Đạt theo cam kết"
+    },
+    "progress": "Đã đánh giá {{done}}/{{total}}",
+    "readyShort": "Đã đánh giá đủ, sẵn sàng kết luận"
   },
   "qualifications": {
     "title": "Đánh giá năng lực theo dịch vụ",
-    "description": "Gate 2: chuyên gia đã đủ điều kiện đăng ký từng dịch vụ. Đánh giá C1 – C5 cho từng dịch vụ; đạt thì chuyển System Admin phê duyệt cuối.",
+    "description": "Chuyên gia đã đủ điều kiện đăng ký từng dịch vụ. Đánh giá năng lực cho từng dịch vụ; đạt thì chuyển System Admin phê duyệt cuối.",
     "count": "hồ sơ năng lực",
     "service": "Dịch vụ",
     "empty": "Không có hồ sơ năng lực nào.",
@@ -765,8 +818,11 @@
     }
   },
   "competency": {
-    "title": "Gate 2 · Năng lực theo dịch vụ",
-    "subtitle": "Đánh giá từng năng lực C1 – C5. Mỗi năng lực cần ghi chú; Đạt hoặc Không đạt phải chọn ít nhất một tài liệu làm căn cứ. Số năm kinh nghiệm hay từ khóa trong CV không tự chứng minh năng lực.",
+    "incomplete": "Thiếu ghi chú hoặc tài liệu",
+    "evidenceHint": "Chọn ít nhất một tài liệu làm căn cứ cho kết quả Đạt hoặc Không đạt.",
+    "serviceLabel": "Dịch vụ",
+    "title": "Năng lực theo dịch vụ",
+    "subtitle": "Đánh giá từng năng lực. Mỗi năng lực cần ghi chú; Đạt hoặc Không đạt phải chọn ít nhất một tài liệu làm căn cứ. Số năm kinh nghiệm hay từ khóa trong CV không tự chứng minh năng lực.",
     "names": {
       "C1": "Kiến thức Thuế TNDN phù hợp phạm vi dịch vụ",
       "C2": "Rà soát và hiệu chỉnh AI Draft",
@@ -775,11 +831,11 @@
       "C5": "Xét đoán nghề nghiệp và kết luận xác minh"
     },
     "hints": {
-      "C1": "Liên quan nhiệm vụ T2, T3.",
-      "C2": "Liên quan nhiệm vụ T2, T5.",
-      "C3": "Liên quan nhiệm vụ T1; hỗ trợ quyết định T4.",
-      "C4": "Liên quan nhiệm vụ T3, T5.",
-      "C5": "Liên quan T2 một phần, T5; trọng tâm T6."
+      "C1": "Dùng khi kiểm tra căn cứ, quy định áp dụng và rà soát kết quả do AI tạo.",
+      "C2": "Dùng khi rà soát và hiệu chỉnh kết quả, tài liệu do AI tạo.",
+      "C3": "Dùng khi rà soát thông tin, bằng chứng và quyết định có cần yêu cầu bổ sung.",
+      "C4": "Dùng khi kiểm tra căn cứ, quy định áp dụng và hiệu chỉnh kết quả.",
+      "C5": "Dùng khi xác nhận kết quả rà soát; một phần khi rà soát và hiệu chỉnh kết quả do AI tạo."
     },
     "previous": "Lần trước: {{result}}",
     "evidenceRequired": "Tài liệu làm căn cứ (bắt buộc)",
@@ -792,7 +848,7 @@
     "outcome": {
       "PENDING_FINAL_APPROVAL": {
         "confirm": "Xác nhận đạt năng lực",
-        "notice": "Hồ sơ chuyển System Admin phê duyệt cuối. Người phê duyệt cuối phải khác người đánh giá Gate 2. Chuyên gia chưa hiển thị trên Marketplace.",
+        "notice": "Hồ sơ chuyển System Admin phê duyệt cuối. Người phê duyệt cuối phải khác người đánh giá năng lực. Chuyên gia chưa hiển thị trên Marketplace.",
         "toast": "Đã ghi nhận đạt năng lực"
       },
       "NEED_MORE_INFORMATION": {
@@ -807,12 +863,12 @@
       }
     },
     "dialog": {
-      "title": "Kết luận Gate 2 cho {{name}} · {{service}}?",
+      "title": "Kết luận đánh giá năng lực cho {{name}} · {{service}}?",
       "noteLabel": "Ghi chú chung (không bắt buộc)",
       "placeholder": "Chuyên gia xem được cùng kết quả."
     },
-    "resultTitle": "Kết quả Gate 2",
-    "noDecision": "Chưa có kết luận Gate 2.",
+    "resultTitle": "Kết quả đánh giá năng lực",
+    "noDecision": "Chưa có kết luận đánh giá năng lực.",
     "handoff": "Đang chờ System Admin phê duyệt cuối.",
     "reapplyAt": "Được đăng ký lại dịch vụ từ {{date}}.",
     "rail": {
@@ -821,7 +877,7 @@
       "approved": "Được cung cấp"
     },
     "errors": {
-      "INVALID_COMPETENCY_CRITERIA": "Cần đúng một kết quả cho mỗi năng lực C1 – C5.",
+      "INVALID_COMPETENCY_CRITERIA": "Cần đúng một kết quả cho mỗi năng lực.",
       "INVALID_COMPETENCY_RESULT": "Có kết quả không hợp lệ. Tải lại trang rồi thử lại.",
       "COMPETENCY_NOTE_REQUIRED": "Mỗi năng lực phải có ghi chú đánh giá.",
       "COMPETENCY_EVIDENCE_REQUIRED": "Kết quả Đạt hoặc Không đạt phải chọn ít nhất một tài liệu làm căn cứ.",
@@ -830,23 +886,82 @@
       "QUALIFICATION_NOT_IN_REVIEW": "Hồ sơ không còn chờ đánh giá; tải lại để xem trạng thái mới.",
       "failed": "Chưa ghi nhận được kết luận. Vui lòng thử lại.",
       "QUALIFICATION_NOT_PENDING_APPROVAL": "Hồ sơ không còn chờ phê duyệt cuối; tải lại để xem trạng thái mới.",
-      "FINAL_APPROVER_IS_REVIEWER": "Người đánh giá Gate 2 không thể phê duyệt cuối cùng hồ sơ.",
+      "FINAL_APPROVER_IS_REVIEWER": "Người đánh giá năng lực không thể phê duyệt cuối cùng hồ sơ.",
       "FINAL_APPROVAL_NOTE_REQUIRED": "Ghi rõ lý do trả về đánh giá lại.",
       "INVALID_FINAL_APPROVAL_DECISION": "Quyết định không hợp lệ. Tải lại trang rồi thử lại.",
       "SERVICE_NOT_APPROVED": "Chỉ tạm ngưng được dịch vụ đang được cung cấp; tải lại trang.",
       "SERVICE_NOT_SUSPENDED": "Dịch vụ không ở trạng thái tạm ngưng; tải lại trang.",
       "SUSPENSION_NOTE_REQUIRED": "Ghi rõ lý do tạm ngưng.",
-      "INVALID_SERVICE_ACCESS_ACTION": "Thao tác không hợp lệ. Tải lại trang rồi thử lại."
-    }
+      "INVALID_SERVICE_ACCESS_ACTION": "Thao tác không hợp lệ. Tải lại trang rồi thử lại.",
+      "REVIEW_NOT_CLAIMED": "Bạn không còn giữ hồ sơ này (đã quá hạn hoặc đã chuyển cho người khác). Đã tải lại hồ sơ.",
+      "INFORMATION_REQUEST_LIMIT": "Đã hết số vòng yêu cầu bổ sung. Chọn Đạt hoặc Không đạt dựa trên minh chứng hiện có."
+    },
+    "definitions": {
+      "C1": "Hiểu luật thuế TNDN trong phạm vi dịch vụ xác minh: căn cứ tính thuế, chi phí được trừ, ưu đãi và quyết toán.",
+      "C2": "Đọc lại và sửa bản nháp (kể cả bản do AI soạn): phát hiện chỗ sai, thiếu và sửa cho đúng.",
+      "C3": "Kiểm tra thông tin và chứng từ khách gửi có đúng, đủ để kết luận hay cần yêu cầu bổ sung.",
+      "C4": "Đối chiếu điều luật cụ thể với tình huống của khách và áp dụng đúng.",
+      "C5": "Ra kết luận xác minh cuối cùng và chịu trách nhiệm về kết luận đó."
+    },
+    "guide": {
+      "C1": {
+        "PASS": "Có chứng chỉ hoặc khóa học thuế TNDN và hồ sơ TNDN từng lập hoặc rà soát.",
+        "NEED_MORE_INFORMATION": "Chỉ có một trong hai.",
+        "FAIL": "Không có gì liên quan đến thuế TNDN."
+      },
+      "C2": {
+        "PASS": "Có bản rà soát hoặc ghi chú sửa thể hiện việc tìm ra và sửa lỗi.",
+        "NEED_MORE_INFORMATION": "Chỉ có CV hoặc lời mô tả, chưa có file chứng minh.",
+        "FAIL": "File cho thấy chỉ tự lập, chưa từng soát xét hồ sơ của người khác."
+      },
+      "C3": {
+        "PASS": "Có biên bản hoặc checklist kiểm tra chứng từ kèm nhận xét của chuyên gia.",
+        "NEED_MORE_INFORMATION": "Có file nhưng không thấy phần nhận xét.",
+        "FAIL": "Không có kinh nghiệm kiểm tra chứng từ."
+      },
+      "C4": {
+        "PASS": "Có ý kiến hoặc bài phân tích trích đúng điều luật cho tình huống cụ thể.",
+        "NEED_MORE_INFORMATION": "Có tình huống nhưng không thấy căn cứ luật.",
+        "FAIL": "Trích sai luật hoặc không liên quan đến thuế TNDN."
+      },
+      "C5": {
+        "PASS": "Có kết luận chuyên môn do chuyên gia đưa ra và chịu trách nhiệm.",
+        "NEED_MORE_INFORMATION": "Có tham gia nhưng không rõ ai kết luận.",
+        "FAIL": "Không có kết luận nào của chuyên gia."
+      }
+    },
+    "guideTitle": "Khi nào chọn mức nào",
+    "guideNote": "Đây là hướng dẫn để chấm đồng đều; bạn vẫn tự xét đoán và ghi lý do.",
+    "whenLabel": "{{result}} khi: {{text}}",
+    "steps": {
+      "evidence": "1. Chuyên gia gửi gì cho năng lực này",
+      "result": "2. Kết quả",
+      "note": "3. Ghi chú cho chuyên gia"
+    },
+    "noDescription": "Chuyên gia không viết mô tả cho năng lực này.",
+    "noTiedFiles": "Chuyên gia chưa gắn minh chứng nào cho năng lực này.",
+    "otherFiles": "Các minh chứng khác của hồ sơ ({{count}})",
+    "open": "Mở",
+    "cite": "Căn cứ",
+    "linkLabel": "Đường dẫn",
+    "citedCount": "Căn cứ: {{count}} minh chứng",
+    "graded": "Đã chấm {{done}}/{{total}}",
+    "conclude": "Kết luận hồ sơ",
+    "nextCompetency": "Năng lực tiếp",
+    "expertDescription": "Mô tả của chuyên gia"
   },
   "finalApproval": {
     "title": "Phê duyệt cuối",
-    "description": "Kiểm tra quản trị kết quả Gate 2 theo từng dịch vụ: hồ sơ, kết quả hai Gate, bằng chứng và lịch sử. Không đánh giá lại năng lực.",
+    "description": "Kiểm tra quản trị kết quả đánh giá năng lực theo từng dịch vụ: hồ sơ, kết quả xét điều kiện và đánh giá năng lực, bằng chứng và lịch sử. Không đánh giá lại năng lực.",
     "panelTitle": "Phê duyệt cuối",
-    "intro": "Xác nhận kết quả Gate 2 đầy đủ và đúng quy trình. Phê duyệt cho phép chuyên gia thiết lập giá cho dịch vụ này.",
-    "sameReviewer": "Bạn là người đánh giá Gate 2 của hồ sơ này nên không thể phê duyệt cuối.",
+    "intro": "Duyệt cuối xác nhận kết quả của người đánh giá, không chấm lại chuyên môn. Phê duyệt cho phép chuyên gia thiết lập giá cho dịch vụ này. Chỉ trả về khi kết quả chấm chưa rõ căn cứ; lý do trả về không gửi cho chuyên gia.",
+    "helpLabel": "Phê duyệt cuối là gì",
+    "dueOn": "Hạn {{date}}",
+    "overdue": "Quá hạn",
+    "dueLabel": "Hạn phê duyệt cuối",
+    "sameReviewer": "Bạn là người đánh giá năng lực của hồ sơ này nên không thể phê duyệt cuối.",
     "noteLabel": "Ghi chú (bắt buộc khi trả về đánh giá lại)",
-    "notePlaceholder": "Thiếu hồ sơ, cờ chưa xử lý hoặc sai quy trình",
+    "notePlaceholder": "Ví dụ: ghi chú đánh giá chưa nêu căn cứ cụ thể",
     "return": "Trả về đánh giá lại",
     "approve": "Phê duyệt cung cấp dịch vụ",
     "notPending": "Hồ sơ không ở bước chờ phê duyệt cuối.",
@@ -884,5 +999,155 @@
       "SERVICE_NOT_FOUND": "Dịch vụ không còn trong danh mục.",
       "failed": "Không thể lưu phí nền tảng. Hãy thử lại."
     }
+  },
+  "expertPolicy": {
+    "title": "Chính sách chuyên gia",
+    "helpLabel": "Về chính sách chuyên gia",
+    "help": "Các tham số dùng khi xét điều kiện và năng lực chuyên gia. Thay đổi có hiệu lực ngay cho các quyết định sau, không cần khởi động lại; quyết định đã ra giữ nguyên giá trị lúc quyết định. Mỗi lần sửa phải ghi lý do và được lưu lịch sử.",
+    "settings": {
+      "MinYearsExperience": {
+        "label": "Số năm kinh nghiệm tối thiểu",
+        "help": "Ngưỡng của tiêu chí kinh nghiệm thuế – kế toán. Hồ sơ kê khai dưới ngưỡng không thể được chấm Đạt. Mặc định {{defaultValue}} năm; cho phép {{min}}–{{max}}.",
+        "unit": "năm"
+      },
+      "ReapplyNotEligibleDays": {
+        "label": "Thời gian chờ sau khi không đủ điều kiện",
+        "help": "Số ngày chuyên gia phải chờ trước khi nộp hồ sơ mới sau kết luận Không đủ điều kiện. Mặc định {{defaultValue}} ngày; cho phép {{min}}–{{max}}.",
+        "unit": "ngày"
+      },
+      "ReapplyCompetencyFailDays": {
+        "label": "Thời gian chờ sau khi không đạt năng lực",
+        "help": "Số ngày chuyên gia phải chờ trước khi đăng ký lại cùng dịch vụ sau kết quả Không đạt ở bước đánh giá năng lực. Mặc định {{defaultValue}} ngày; cho phép {{min}}–{{max}}.",
+        "unit": "ngày"
+      },
+      "ReviewClaimHours": {
+        "label": "Thời hạn giữ hồ sơ",
+        "help": "Số giờ người đánh giá được giữ một hồ sơ đã nhận. Quá hạn mà chưa kết luận thì hồ sơ tự về hàng chờ chung; thời gian chờ chuyên gia bổ sung không tính. Mặc định {{defaultValue}} giờ; cho phép {{min}}–{{max}}.",
+        "unit": "giờ"
+      },
+      "MaxInformationRequests": {
+        "label": "Số vòng yêu cầu bổ sung tối đa",
+        "help": "Số lần người đánh giá được yêu cầu chuyên gia bổ sung cho một hồ sơ, áp dụng cả xác minh điều kiện và đánh giá năng lực. Hết số vòng thì phải kết luận Đạt hoặc Không đạt. Mặc định {{defaultValue}}; cho phép {{min}}–{{max}}.",
+        "unit": "vòng"
+      },
+      "ReviewSlaDays": {
+        "label": "Thời hạn chấm hồ sơ",
+        "help": "Số ngày một hồ sơ được chờ người đánh giá trước khi hàng chờ tô màu cảnh báo. Chỉ để cảnh báo, hệ thống không tự xử lý. Mặc định {{defaultValue}} ngày; cho phép {{min}}–{{max}}.",
+        "unit": "ngày"
+      },
+      "FinalApprovalDays": {
+        "label": "Hạn duyệt cuối",
+        "help": "Số ngày phê duyệt cuối được phép kéo dài kể từ khi hồ sơ đạt đánh giá năng lực. Quá hạn thì hồ sơ được tô đỏ và đưa lên đầu hàng chờ; hệ thống không bao giờ tự duyệt. Chuyên gia thấy ngày dự kiến có kết quả theo hạn này. Thay đổi áp dụng cho cách tính hạn từ lúc lưu. Mặc định {{defaultValue}} ngày; cho phép {{min}}–{{max}}.",
+        "unit": "ngày"
+      }
+    },
+    "outOfRange": "Nhập số nguyên từ {{min}} đến {{max}}.",
+    "updated": "Sửa lần cuối {{time}} · {{actor}}",
+    "usingDefault": "Đang dùng giá trị mặc định.",
+    "you": "Bạn",
+    "reason": "Lý do thay đổi (bắt buộc)",
+    "reasonPlaceholder": "Ví dụ: cập nhật theo quyết định chính sách ngày …",
+    "save": "Lưu thay đổi",
+    "saved": "Đã lưu chính sách chuyên gia",
+    "historyTitle": "Lịch sử thay đổi",
+    "history": {
+      "time": "Thời điểm",
+      "setting": "Tham số",
+      "change": "Giá trị cũ → mới",
+      "actor": "Người sửa",
+      "reason": "Lý do",
+      "empty": "Chưa có thay đổi nào."
+    },
+    "errors": {
+      "POLICY_CHANGED": "Giá trị vừa được người khác thay đổi. Đã tải lại, kiểm tra rồi lưu lại.",
+      "POLICY_EXPECTED_VALUE_REQUIRED": "Thiếu giá trị đang áp dụng. Tải lại trang rồi thử lại.",
+      "POLICY_SETTING_OUT_OF_RANGE": "Có giá trị nằm ngoài khoảng cho phép.",
+      "POLICY_REASON_REQUIRED": "Ghi lý do thay đổi.",
+      "POLICY_REASON_TOO_LONG": "Lý do tối đa 1000 ký tự.",
+      "UNKNOWN_POLICY_SETTING": "Tham số không hợp lệ. Tải lại trang rồi thử lại.",
+      "failed": "Chưa lưu được thay đổi. Vui lòng thử lại."
+    }
+  },
+  "claim": {
+    "free": "Chưa ai nhận hồ sơ này",
+    "take": "Nhận hồ sơ",
+    "mine": "Bạn đang xử lý",
+    "expiresIn": "tự trả về hàng chờ {{time}}",
+    "waitingForExpert": "đang chờ chuyên gia bổ sung",
+    "release": "Trả về hàng chờ",
+    "released": "Đã trả hồ sơ về hàng chờ",
+    "heldBy": "Đang được {{holder}} xem",
+    "someone": "một người đánh giá khác",
+    "helpLabel": "Về việc nhận hồ sơ",
+    "help": "Mỗi hồ sơ chỉ một người đánh giá tại một thời điểm. Nhận hồ sơ trước khi chấm; người khác chỉ xem được. Hồ sơ vẫn thuộc về bạn khi yêu cầu bổ sung, và quay lại đúng bạn khi chuyên gia nộp lại. Quá thời hạn giữ (System Admin cấu hình) mà chưa kết luận thì hồ sơ tự về hàng chờ chung.",
+    "history": {
+      "claim": "Nhận hồ sơ",
+      "claimAfterExpiry": "Nhận hồ sơ sau khi {{previous}} quá thời hạn giữ",
+      "release": "Trả hồ sơ về hàng chờ",
+      "reassign": "Chuyển hồ sơ cho {{holder}}: {{reason}}"
+    },
+    "errors": {
+      "REVIEW_CLAIMED": "Hồ sơ vừa được người khác nhận. Đã tải lại để hiện người đang giữ.",
+      "REVIEW_NOT_CLAIMED": "Bạn không còn giữ hồ sơ này (đã quá hạn hoặc đã chuyển cho người khác). Đã tải lại hồ sơ.",
+      "failed": "Chưa thực hiện được. Vui lòng thử lại."
+    }
+  },
+  "assignments": {
+    "title": "Phân công người chấm",
+    "helpLabel": "Về phân công người chấm",
+    "help": "Các hồ sơ đang mở ở bước xác minh điều kiện và đánh giá năng lực, kèm người đang giữ. Chuyển hồ sơ cho người đánh giá khác khi người giữ vắng mặt hoặc cần cân đối công việc; lý do được lưu trong lịch sử hồ sơ.",
+    "gateFilter": "Bước đánh giá",
+    "gates": {
+      "ALL": "Cả hai bước",
+      "GATE_1": "Xác minh điều kiện",
+      "GATE_2": "Đánh giá năng lực"
+    },
+    "claimFilter": "Người xử lý",
+    "claims": {
+      "ALL": "Mọi hồ sơ",
+      "UNCLAIMED": "Chưa ai nhận"
+    },
+    "columns": {
+      "expert": "Chuyên gia",
+      "gate": "Bước",
+      "submitted": "Ngày nộp",
+      "status": "Trạng thái",
+      "holder": "Người xử lý",
+      "actions": "Thao tác"
+    },
+    "until": "đến {{time}}",
+    "reassign": "Chuyển người chấm",
+    "done": "Đã chuyển người chấm",
+    "empty": "Không có hồ sơ đang mở.",
+    "pagination": "Phân trang danh sách phân công",
+    "dialog": {
+      "title": "Chuyển người chấm hồ sơ của {{name}}",
+      "reviewer": "Người đánh giá nhận hồ sơ",
+      "reviewerHelp": "Danh sách gồm người đánh giá đã từng mở hàng chờ đánh giá. Không thể chuyển cho chính chuyên gia của hồ sơ.",
+      "choose": "Chọn người đánh giá",
+      "reason": "Lý do chuyển (bắt buộc)",
+      "reasonPlaceholder": "Ví dụ: người đang giữ nghỉ phép đến hết tuần",
+      "confirm": "Chuyển hồ sơ"
+    },
+    "errors": {
+      "CLAIM_REASSIGN_REASON_REQUIRED": "Ghi lý do chuyển người chấm.",
+      "CLAIM_REASSIGN_REASON_TOO_LONG": "Lý do tối đa 1000 ký tự.",
+      "REVIEWER_NOT_FOUND": "Không tìm thấy người đánh giá này. Họ cần mở hàng chờ đánh giá ít nhất một lần.",
+      "SELF_REVIEW_NOT_ALLOWED": "Không thể chuyển hồ sơ cho chính chuyên gia của hồ sơ.",
+      "APPLICATION_NOT_IN_REVIEW": "Hồ sơ không còn ở bước chờ đánh giá. Tải lại danh sách.",
+      "QUALIFICATION_NOT_IN_REVIEW": "Hồ sơ không còn ở bước chờ đánh giá. Tải lại danh sách.",
+      "failed": "Chưa chuyển được. Vui lòng thử lại."
+    }
+  },
+  "finalReturn": {
+    "title": "Bị trả về ở bước duyệt cuối",
+    "by": "{{actor}} · {{time}}",
+    "admin": "System Admin",
+    "help": "System Admin trả hồ sơ về vì kết quả chấm chưa rõ căn cứ. Chấm lại và ghi rõ căn cứ; mỗi lần bị trả về được thêm một vòng yêu cầu bổ sung. Chuyên gia không được báo về lần trả về này."
+  },
+  "rounds": {
+    "label": "Vòng bổ sung {{used}}/{{max}}",
+    "last": "Đây là vòng bổ sung cuối",
+    "lastHelp": "Đã dùng hết {{max}} vòng yêu cầu bổ sung theo chính sách. Chọn Đạt hoặc Không đạt dựa trên minh chứng hiện có."
   }
 }

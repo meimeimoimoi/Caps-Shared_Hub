@@ -1,5 +1,5 @@
 import { api } from '@/lib/api-client'
-import { criteria, expertiseOptions } from '../constants'
+import { EligibilityCriterion, expertiseOptions } from '../constants'
 import type { EvidenceFile, Profile, Stage } from '../types'
 
 interface Envelope<T> {
@@ -48,6 +48,7 @@ export interface ExpertApplication {
     sizeBytes: number
     uploadedAt: string
     canRemove: boolean
+    sourceUrl?: string | null
   }[]
   history: {
     fromStatus: ApplicationStatus | null
@@ -59,25 +60,46 @@ export interface ExpertApplication {
   /** Per-requirement results of the latest Gate 1 decision (EV-01…EV-06) */
   eligibility: {
     code: string
-    result: 'PASS' | 'FAIL' | 'NEED_MORE_INFORMATION'
+    result: 'PASS' | 'FAIL' | 'NEED_MORE_INFORMATION' | 'NOT_APPLICABLE'
     note: string | null
     decidedAt: string
   }[]
+  /** EV-06 minimum years in force now (set by a System Admin); absent in demo data */
+  minYearsExperience?: number
+  /** Re-application after NOT_ELIGIBLE: failed criteria that still need updated details or new evidence */
+  changesRequired?: string[]
+  /** Rounds of more information asked for so far and the policy limit */
+  rounds?: { used: number; max: number; canRequestMore: boolean }
   missingRequirements: string[]
   emailVerified: boolean
   canEdit: boolean
   canUpload: boolean
   canSubmit: boolean
   canSupplement: boolean
-  /** Files the application may hold now (lower until the email is verified) */
+  /** Files the application may hold */
   maxFiles: number
+  /** Evidence groups that must hold a file or link before submitting (e.g. CV, EV-01, EV-02) */
+  requiredEvidence: string[]
+  /** Statements to agree to when submitting, in every language; send back only codes and language */
+  declarations: Declaration[]
 }
 
-/* FE giữ khóa tiêu chí/lĩnh vực theo nhãn tiếng Anh (dùng cho i18n); BE dùng mã cố định */
-const CRITERION_CODES: Record<string, string> = Object.fromEntries([
-  ['CV', 'CV'],
-  ...criteria.map((c, i) => [c, `EV-0${i + 1}`]),
-])
+/** One statement as worded by the server */
+export interface Declaration {
+  code: string
+  language: string
+  text: string
+}
+
+/* The form keys criteria and fields by their English labels (i18n keys); the server uses fixed codes */
+const CRITERION_CODES: Record<string, string> = {
+  CV: 'CV',
+  'Legal eligibility': EligibilityCriterion.legalEligibility,
+  'Professional qualifications': EligibilityCriterion.professionalQualification,
+  'Continuing professional development': EligibilityCriterion.continuingEducation,
+  'Professional ethics': EligibilityCriterion.professionalEthics,
+  Confidentiality: EligibilityCriterion.confidentiality,
+}
 const FIELD_CODES: Record<string, string> = {
   'Corporate income tax': 'CORPORATE_INCOME_TAX',
   'Tax finalization': 'TAX_FINALIZATION',
@@ -143,7 +165,7 @@ export function toProfile(app: ExpertApplication): Profile {
 export const toFields = (app: ExpertApplication) =>
   app.profile.fields.map((code) => FIELD_BY_CODE[code] ?? code)
 
-/** Gom file theo tiêu chí như form đang dùng; file bổ sung nằm riêng dưới mã SUPPLEMENT */
+/** Groups evidence by form criterion; supplementary evidence uses the SUPPLEMENT key. */
 export function toFiles(
   app: ExpertApplication
 ): Record<string, EvidenceFile[]> {
@@ -152,9 +174,10 @@ export function toFiles(
     const key = CRITERION_BY_CODE[e.code] ?? e.code
     ;(files[key] ??= []).push({
       id: e.id,
-      name: e.fileName,
+      name: e.sourceUrl || e.fileName,
       size: e.sizeBytes,
       canRemove: e.canRemove,
+      sourceUrl: e.sourceUrl,
     })
   }
   return files
@@ -199,12 +222,31 @@ export const applicationApi = {
   },
   remove: async (id: string) =>
     (await api.del<Envelope<ExpertApplication>>(`${BASE}/evidence/${id}`)).data,
-  submit: async () =>
-    (await api.post<Envelope<ExpertApplication>>(`${BASE}/submit`)).data,
-  supplement: async (note: string) =>
+  addLink: async (code: string, sourceUrl: string) =>
+    (
+      await api.post<Envelope<ExpertApplication>>(`${BASE}/evidence/link`, {
+        code,
+        sourceUrl,
+      })
+    ).data,
+  /** Sends only the codes of the statements ticked and their language; the server stores its own wording */
+  submit: async (declarationCodes: string[], language: string) =>
+    (
+      await api.post<Envelope<ExpertApplication>>(`${BASE}/submit`, {
+        declarationCodes,
+        language,
+      })
+    ).data,
+  supplement: async (
+    note: string,
+    declarationCodes: string[] = [],
+    language?: string
+  ) =>
     (
       await api.post<Envelope<ExpertApplication>>(`${BASE}/supplement`, {
         note,
+        declarationCodes,
+        language,
       })
     ).data,
 }

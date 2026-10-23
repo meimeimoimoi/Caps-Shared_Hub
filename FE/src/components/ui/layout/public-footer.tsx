@@ -71,7 +71,7 @@ export function PublicFooter({ anchorBase = '' }: { anchorBase?: string }) {
                 <Link to="/login">{t('footer.login')}</Link>
               </li>
               <li>
-                <Link to="/expert/register">{t('footer.expertSignup')}</Link>
+                <Link to="/register">{t('footer.expertSignup')}</Link>
               </li>
             </ul>
           </nav>

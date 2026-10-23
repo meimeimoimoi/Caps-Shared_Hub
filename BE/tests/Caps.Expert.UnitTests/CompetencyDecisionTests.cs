@@ -35,10 +35,16 @@ public sealed class CompetencyDecisionTests
     private static ExpertServiceQualification Registered(
         ExpertServiceQualification? previous = null,
         DateTimeOffset? at = null
-    ) =>
-        ExpertServiceQualification
+    )
+    {
+        var qualification = ExpertServiceQualification
             .Register(Eligible(), Service, previous, Applicant, at ?? Now)
             .Qualification;
+        // A first registration is prepared, then submitted with its evidence into competency review
+        if (previous == null)
+            qualification.Submit(Applicant, 1, at ?? Now);
+        return qualification;
+    }
 
     /// <summary>All five competencies PASS citing the CV, with the given overrides.</summary>
     private static CompetencyResult[] Results(params CompetencyResult[] overrides) =>
@@ -78,7 +84,7 @@ public sealed class CompetencyDecisionTests
     }
 
     [Fact]
-    public void Registering_starts_competency_review_on_the_eligible_application()
+    public void Registering_starts_preparing_on_the_eligible_application()
     {
         var application = Eligible();
 
@@ -90,11 +96,11 @@ public sealed class CompetencyDecisionTests
             Now
         );
 
-        Assert.Equal(QualificationStatus.CompetencyReview, qualification.Status);
+        Assert.Equal(QualificationStatus.Preparing, qualification.Status);
         Assert.Equal(application.Id, qualification.ApplicationId);
         Assert.Equal(Now, qualification.SubmittedAt);
         Assert.Null(opened.FromStatus);
-        Assert.Equal(QualificationStatus.CompetencyReview, opened.ToStatus);
+        Assert.Equal(QualificationStatus.Preparing, opened.ToStatus);
     }
 
     [Fact]

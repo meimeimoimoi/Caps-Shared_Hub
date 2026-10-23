@@ -1,8 +1,11 @@
+using System.Text.Json;
 using Caps.Expert.Domain.Applications;
 using Caps.Expert.Domain.Catalog;
+using Caps.Expert.Domain.Policies;
 using Caps.Expert.Domain.Pricing;
 using Caps.Expert.Domain.Profiles;
 using Caps.Expert.Domain.Qualifications;
+using Caps.Expert.Domain.Reviews;
 using Caps.Expert.Infrastructure.Messaging;
 using Microsoft.EntityFrameworkCore;
 
@@ -29,6 +32,14 @@ public sealed class ExpertDbContext(DbContextOptions<ExpertDbContext> options) :
     public DbSet<ServiceCatalogItem> ServiceCatalog => Set<ServiceCatalogItem>();
     public DbSet<NotificationOutboxEntry> NotificationOutbox => Set<NotificationOutboxEntry>();
     public DbSet<AvailabilitySlot> AvailabilitySlots => Set<AvailabilitySlot>();
+    public DbSet<PolicySetting> PolicySettings => Set<PolicySetting>();
+    public DbSet<PolicySettingChange> PolicySettingChanges => Set<PolicySettingChange>();
+    public DbSet<ReviewClaimEvent> ReviewClaimEvents => Set<ReviewClaimEvent>();
+    public DbSet<KnownReviewer> KnownReviewers => Set<KnownReviewer>();
+    public DbSet<CompetencyEvidenceLink> CompetencyEvidenceLinks => Set<CompetencyEvidenceLink>();
+    public DbSet<CompetencyDescription> CompetencyDescriptions => Set<CompetencyDescription>();
+
+    private static readonly JsonSerializerOptions SnapshotJson = new(JsonSerializerDefaults.Web);
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -91,9 +102,15 @@ public sealed class ExpertDbContext(DbContextOptions<ExpertDbContext> options) :
             e.Property(x => x.EarliestReapplyAt).HasColumnName("earliest_reapply_at");
             e.Property(x => x.CreatedAt).HasColumnName("created_at").IsRequired();
             e.Property(x => x.UpdatedAt).HasColumnName("updated_at").IsRequired();
+            e.Property(x => x.ClaimedByUserId).HasColumnName("claimed_by_user_id");
+            e.Property(x => x.ClaimedAt).HasColumnName("claimed_at");
             // Review queue filters by status and submission time
             e.HasIndex(x => new { x.Status, x.SubmittedAt })
                 .HasDatabaseName("ix_expert_application_queue");
+            // "Mine" filter of the review queue
+            e.HasIndex(x => x.ClaimedByUserId)
+                .HasFilter("claimed_by_user_id IS NOT NULL")
+                .HasDatabaseName("ix_expert_application_claimed_by");
             // An expert can have only one open application at a time
             e.HasIndex(x => x.ExpertProfileId)
                 .IsUnique()
@@ -121,6 +138,14 @@ public sealed class ExpertDbContext(DbContextOptions<ExpertDbContext> options) :
             e.Property(x => x.FromStatus).HasColumnName("from_status");
             e.Property(x => x.ToStatus).HasColumnName("to_status").IsRequired();
             e.Property(x => x.Note).HasColumnName("note");
+            // Written once on a submission and never changed, so a plain JSON conversion is enough
+            e.Property(x => x.ProfileSnapshot)
+                .HasColumnName("profile_snapshot")
+                .HasColumnType("jsonb")
+                .HasConversion(
+                    v => JsonSerializer.Serialize(v, SnapshotJson),
+                    v => JsonSerializer.Deserialize<ProfileSnapshot>(v, SnapshotJson)
+                );
             e.Property(x => x.CreatedAt).HasColumnName("created_at").IsRequired();
             e.HasIndex(x => new { x.ApplicationId, x.CreatedAt })
                 .HasDatabaseName("ix_expert_application_event");
@@ -180,6 +205,8 @@ public sealed class ExpertDbContext(DbContextOptions<ExpertDbContext> options) :
             e.Property(x => x.Criterion).HasColumnName("criterion").HasMaxLength(16).IsRequired();
             e.Property(x => x.Result).HasColumnName("result").HasMaxLength(32).IsRequired();
             e.Property(x => x.Note).HasColumnName("note");
+            e.Property(x => x.AppliedMinYearsExperience)
+                .HasColumnName("applied_min_years_experience");
             e.Property(x => x.ReviewerUserId).HasColumnName("reviewer_user_id");
             e.Property(x => x.CreatedAt).HasColumnName("created_at").IsRequired();
             // One result per requirement in each decision
@@ -224,9 +251,15 @@ public sealed class ExpertDbContext(DbContextOptions<ExpertDbContext> options) :
             e.Property(x => x.EarliestReapplyAt).HasColumnName("earliest_reapply_at");
             e.Property(x => x.CreatedAt).HasColumnName("created_at").IsRequired();
             e.Property(x => x.UpdatedAt).HasColumnName("updated_at").IsRequired();
+            e.Property(x => x.ClaimedByUserId).HasColumnName("claimed_by_user_id");
+            e.Property(x => x.ClaimedAt).HasColumnName("claimed_at");
             // Review queue filters by status and submission time
             e.HasIndex(x => new { x.Status, x.SubmittedAt })
                 .HasDatabaseName("ix_expert_service_qualification_queue");
+            // "Mine" filter of the review queue
+            e.HasIndex(x => x.ClaimedByUserId)
+                .HasFilter("claimed_by_user_id IS NOT NULL")
+                .HasDatabaseName("ix_expert_service_qualification_claimed_by");
             // One qualification per Expert-Service pair until it fails (BR-E12)
             e.HasIndex(x => new { x.ExpertProfileId, x.ServiceCode })
                 .IsUnique()
@@ -453,6 +486,107 @@ public sealed class ExpertDbContext(DbContextOptions<ExpertDbContext> options) :
                 .HasForeignKey(x => x.ExpertProfileId)
                 .OnDelete(DeleteBehavior.Restrict)
                 .HasConstraintName("fk_availability_slot_profile");
+        });
+
+        modelBuilder.Entity<PolicySetting>(e =>
+        {
+            e.ToTable("policy_setting");
+            e.HasKey(x => x.Key);
+            e.Property(x => x.Key).HasColumnName("key").HasMaxLength(64);
+            e.Property(x => x.Value).HasColumnName("value");
+            e.Property(x => x.UpdatedByUserId).HasColumnName("updated_by_user_id");
+            e.Property(x => x.UpdatedAt).HasColumnName("updated_at").IsRequired();
+        });
+
+        modelBuilder.Entity<PolicySettingChange>(e =>
+        {
+            e.ToTable("policy_setting_change");
+            e.HasKey(x => x.Id);
+            e.Property(x => x.Id).HasColumnName("id");
+            e.Property(x => x.Key).HasColumnName("key").HasMaxLength(64).IsRequired();
+            e.Property(x => x.OldValue).HasColumnName("old_value");
+            e.Property(x => x.NewValue).HasColumnName("new_value");
+            e.Property(x => x.Reason)
+                .HasColumnName("reason")
+                .HasMaxLength(PolicySetting.MaxReasonLength)
+                .IsRequired();
+            e.Property(x => x.ChangedByUserId).HasColumnName("changed_by_user_id");
+            e.Property(x => x.ChangedAt).HasColumnName("changed_at").IsRequired();
+            e.HasIndex(x => x.ChangedAt).HasDatabaseName("ix_policy_setting_change_changed_at");
+        });
+
+        modelBuilder.Entity<ReviewClaimEvent>(e =>
+        {
+            e.ToTable("review_claim_event");
+            e.HasKey(x => x.Id);
+            e.Property(x => x.Id).HasColumnName("id");
+            e.Property(x => x.Gate).HasColumnName("gate").HasMaxLength(16).IsRequired();
+            e.Property(x => x.ReviewId).HasColumnName("review_id");
+            e.Property(x => x.Action).HasColumnName("action").HasMaxLength(16).IsRequired();
+            e.Property(x => x.ActorUserId).HasColumnName("actor_user_id");
+            e.Property(x => x.HolderUserId).HasColumnName("holder_user_id");
+            e.Property(x => x.PreviousHolderUserId).HasColumnName("previous_holder_user_id");
+            e.Property(x => x.Reason)
+                .HasColumnName("reason")
+                .HasMaxLength(ReviewClaimRules.MaxReasonLength);
+            e.Property(x => x.CreatedAt).HasColumnName("created_at").IsRequired();
+            e.HasIndex(x => new
+                {
+                    x.Gate,
+                    x.ReviewId,
+                    x.CreatedAt,
+                })
+                .HasDatabaseName("ix_review_claim_event_review");
+        });
+
+        modelBuilder.Entity<CompetencyEvidenceLink>(e =>
+        {
+            e.ToTable("competency_evidence_link");
+            e.HasKey(x => new { x.EvidenceId, x.Competency });
+            e.Property(x => x.QualificationId).HasColumnName("qualification_id");
+            e.Property(x => x.EvidenceId).HasColumnName("evidence_id");
+            e.Property(x => x.Competency).HasColumnName("competency").HasMaxLength(8);
+            e.Property(x => x.CreatedAt).HasColumnName("created_at").IsRequired();
+            e.HasIndex(x => x.QualificationId)
+                .HasDatabaseName("ix_competency_evidence_link_qualification");
+            // Removing a file removes the competencies it was tied to
+            e.HasOne<ExpertEvidence>()
+                .WithMany()
+                .HasForeignKey(x => x.EvidenceId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("fk_competency_evidence_link_evidence");
+            e.HasOne<ExpertServiceQualification>()
+                .WithMany()
+                .HasForeignKey(x => x.QualificationId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("fk_competency_evidence_link_qualification");
+        });
+
+        modelBuilder.Entity<CompetencyDescription>(e =>
+        {
+            e.ToTable("competency_description");
+            e.HasKey(x => new { x.QualificationId, x.Competency });
+            e.Property(x => x.QualificationId).HasColumnName("qualification_id");
+            e.Property(x => x.Competency).HasColumnName("competency").HasMaxLength(8);
+            e.Property(x => x.Text)
+                .HasColumnName("text")
+                .HasMaxLength(CompetencyEvidenceRules.MaxDescriptionLength)
+                .IsRequired();
+            e.Property(x => x.UpdatedAt).HasColumnName("updated_at").IsRequired();
+            e.HasOne<ExpertServiceQualification>()
+                .WithMany()
+                .HasForeignKey(x => x.QualificationId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("fk_competency_description_qualification");
+        });
+
+        modelBuilder.Entity<KnownReviewer>(e =>
+        {
+            e.ToTable("known_reviewer");
+            e.HasKey(x => x.UserId);
+            e.Property(x => x.UserId).HasColumnName("user_id").ValueGeneratedNever();
+            e.Property(x => x.Email).HasColumnName("email").HasMaxLength(320);
+            e.Property(x => x.LastSeenAt).HasColumnName("last_seen_at").IsRequired();
         });
     }
 }

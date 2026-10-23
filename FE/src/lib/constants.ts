@@ -27,6 +27,7 @@ export const APPLICATION_STATUS = {
 
 /* Gate 2 + final approval of one Expert-Service qualification (state model 4.2) */
 export const QUALIFICATION_STATUS = {
+  PREPARING: { label: 'Chuẩn bị minh chứng', tone: 'neutral' },
   COMPETENCY_REVIEW: { label: 'Đang đánh giá năng lực', tone: 'accent' },
   NEED_MORE_INFORMATION: { label: 'Cần bổ sung bằng chứng', tone: 'warning' },
   PENDING_FINAL_APPROVAL: { label: 'Chờ phê duyệt cuối', tone: 'neutral' },

@@ -7,6 +7,7 @@ import { AppSidebar } from '@/components/ui/layout/app-sidebar'
 import { useDialogMotion } from '@/components/ui/motion'
 import { useAuthStore } from '@/features/auth'
 import { useAccount } from '@/features/auth/hooks/useAccount'
+import { PendingVerificationRedirect } from '@/app/routes/ProtectedRoute'
 import {
   useUserNavigation,
   type UserNavId,
@@ -23,6 +24,9 @@ const SECTIONS: [string, UserNavId][] = [
 export function ClientLayout() {
   const { t } = useTranslation('reviewCase')
   const authenticated = useAuthStore((s) => s.isAuthenticated)
+  const pending = useAuthStore(
+    (s) => s.user?.status === 'PENDING_VERIFICATION'
+  )
   const account = useAccount('client')
   const location = useLocation()
   const path = location.pathname
@@ -37,6 +41,8 @@ export function ClientLayout() {
     return (
       <Navigate to="/login" replace state={{ from: path + location.search }} />
     )
+  if (pending)
+    return <PendingVerificationRedirect />
 
   const page = path.startsWith('/cases/new')
     ? t('request.title')

@@ -49,6 +49,7 @@ public sealed class PricingTests
     private static ExpertServiceQualification Approved()
     {
         var q = Registered();
+        q.Submit(Expert, 1, Now);
         q.DecideCompetency(
             Reviewer,
             Expert,

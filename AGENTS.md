@@ -20,6 +20,12 @@ Tổng quan, cách chạy, route: xem [README.md](README.md). File này chỉ ch
 - Đổi cấu trúc thư mục, `Directory.Build.props`, `Directory.Packages.props`, `global.json`.
 - Xóa file, hoặc thao tác git phá hủy (`reset --hard`, `push --force`, xóa branch).
 
+Hỏi lại để làm rõ yêu cầu (đỡ tốn token hơn tìm sai hướng):
+
+- Yêu cầu chưa rõ hoặc điều người dùng nói không khớp với code: kiểm tra nhanh một lần, rồi hỏi **một câu ngắn**, kèm 2–3 lựa chọn để bấm chọn. Ví dụ: "Flow 1 theo file nào?", "Chỉ trả lời hay sửa luôn?", "SignalR bạn cài ở nhánh nào?". Không grep toàn repo, mọi nhánh, lịch sử commit để tự đoán.
+- Yêu cầu đã rõ hoặc có cách làm mặc định hợp lý: làm luôn, không hỏi.
+- Tối đa một lượt hỏi cho mỗi yêu cầu.
+
 ## Lệnh thường dùng
 
 Hạ tầng (Postgres+pgvector, Redis, RabbitMQ) — PowerShell, chạy ở `BE/`:
@@ -89,6 +95,7 @@ npm run dev        # :5173
 
 - Tính năng mới: `src/features/<ten>/` gồm `components/`, `hooks/`, `store/` (zustand), `api/`, `types/`. Tham khảo `features/auth/`.
 - UI nguyên tử dùng chung (kiểu shadcn) vào `src/components/ui/`.
+- Không thêm dòng mô tả nhỏ (chữ xám) dưới tiêu đề, tiêu đề khối hay nhãn trường. Giải thích cần thiết đặt trong `HelpTip` (`components/ui/feedback/help-tip.tsx`) cạnh tiêu đề; câu chỉ lặp lại tiêu đề thì bỏ.
 - Route mới khai báo trong `src/app/routes/`: lazy-load, bọc `ProtectedRoute` nếu cần đăng nhập.
 - **Gọi API qua `lib/api-client` (`api.get/post`)**. Không import `axios` trực tiếp trong component.
 - Server state dùng React Query (QueryClient ở `src/app/`); client state dùng zustand trong `store/` của feature.

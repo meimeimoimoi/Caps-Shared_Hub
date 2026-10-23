@@ -1,9 +1,11 @@
 using Caps.Expert.Application.Abstractions;
 using Caps.Expert.Domain.Applications;
 using Caps.Expert.Domain.Catalog;
+using Caps.Expert.Domain.Policies;
 using Caps.Expert.Domain.Pricing;
 using Caps.Expert.Domain.Profiles;
 using Caps.Expert.Domain.Qualifications;
+using Caps.Expert.Domain.Reviews;
 using Microsoft.EntityFrameworkCore;
 
 namespace Caps.Expert.Infrastructure.Persistence;
@@ -63,6 +65,38 @@ public sealed class ExpertApplicationRepository(ExpertDbContext db) : IExpertApp
             .Where(x => x.ApplicationId == applicationId)
             .OrderBy(x => x.CreatedAt)
             .ToListAsync(ct);
+
+    public async Task<bool> TryClaimAsync(
+        ExpertApplication application,
+        Guid reviewerUserId,
+        DateTimeOffset now,
+        DateTimeOffset expiredBefore,
+        CancellationToken ct
+    )
+    {
+        // One conditional UPDATE, never read-then-write: the row is only taken while it is still free
+        var updated = await db
+            .ExpertApplications.Where(x =>
+                x.Id == application.Id
+                && x.Status == ExpertApplicationStatus.Submitted
+                && (
+                    x.ClaimedByUserId == null
+                    || x.ClaimedByUserId == reviewerUserId
+                    || x.ClaimedAt <= expiredBefore
+                )
+            )
+            .ExecuteUpdateAsync(
+                s =>
+                    s.SetProperty(x => x.ClaimedByUserId, reviewerUserId)
+                        .SetProperty(x => x.ClaimedAt, now)
+                        .SetProperty(x => x.UpdatedAt, now),
+                ct
+            );
+        if (updated == 0)
+            return false;
+        await db.Entry(application).ReloadAsync(ct);
+        return true;
+    }
 
     public void Add(ExpertApplication application) => db.ExpertApplications.Add(application);
 
@@ -266,6 +300,38 @@ public sealed class QualificationRepository(ExpertDbContext db) : IQualification
             )
             .ToListAsync(ct);
 
+    public async Task<bool> TryClaimAsync(
+        ExpertServiceQualification qualification,
+        Guid reviewerUserId,
+        DateTimeOffset now,
+        DateTimeOffset expiredBefore,
+        CancellationToken ct
+    )
+    {
+        // One conditional UPDATE, never read-then-write: the row is only taken while it is still free
+        var updated = await db
+            .Qualifications.Where(x =>
+                x.Id == qualification.Id
+                && x.Status == QualificationStatus.CompetencyReview
+                && (
+                    x.ClaimedByUserId == null
+                    || x.ClaimedByUserId == reviewerUserId
+                    || x.ClaimedAt <= expiredBefore
+                )
+            )
+            .ExecuteUpdateAsync(
+                s =>
+                    s.SetProperty(x => x.ClaimedByUserId, reviewerUserId)
+                        .SetProperty(x => x.ClaimedAt, now)
+                        .SetProperty(x => x.UpdatedAt, now),
+                ct
+            );
+        if (updated == 0)
+            return false;
+        await db.Entry(qualification).ReloadAsync(ct);
+        return true;
+    }
+
     public void Add(ExpertServiceQualification qualification) =>
         db.Qualifications.Add(qualification);
 
@@ -424,4 +490,113 @@ public sealed class AvailabilityRepository(ExpertDbContext db) : IAvailabilityRe
     public void Add(AvailabilitySlot slot) => db.AvailabilitySlots.Add(slot);
 
     public void Remove(AvailabilitySlot slot) => db.AvailabilitySlots.Remove(slot);
+}
+
+/// <summary>EF Core store for policy values changed by a System Admin and their history.</summary>
+public sealed class PolicySettingRepository(ExpertDbContext db) : IPolicySettingRepository
+{
+    public async Task<IReadOnlyList<PolicySetting>> ListAsync(CancellationToken ct) =>
+        await db.PolicySettings.ToListAsync(ct);
+
+    public async Task<IReadOnlyList<PolicySettingChange>> ListChangesAsync(
+        int limit,
+        CancellationToken ct
+    ) =>
+        await db
+            .PolicySettingChanges.AsNoTracking()
+            .OrderByDescending(x => x.ChangedAt)
+            .Take(limit)
+            .ToListAsync(ct);
+
+    public void Add(PolicySetting setting) => db.PolicySettings.Add(setting);
+
+    public void AddChange(PolicySettingChange change) => db.PolicySettingChanges.Add(change);
+}
+
+/// <summary>EF Core store for the claim history of reviews.</summary>
+public sealed class ReviewClaimEventRepository(ExpertDbContext db) : IReviewClaimEventRepository
+{
+    public async Task<IReadOnlyList<ReviewClaimEvent>> ListAsync(
+        string gate,
+        Guid reviewId,
+        CancellationToken ct
+    ) =>
+        await db
+            .ReviewClaimEvents.AsNoTracking()
+            .Where(x => x.Gate == gate && x.ReviewId == reviewId)
+            .OrderBy(x => x.CreatedAt)
+            .ToListAsync(ct);
+
+    public void Add(ReviewClaimEvent claimEvent) => db.ReviewClaimEvents.Add(claimEvent);
+}
+
+/// <summary>EF Core store for the reviewers this service has seen.</summary>
+public sealed class KnownReviewerRepository(ExpertDbContext db) : IKnownReviewerRepository
+{
+    public Task<KnownReviewer?> FindAsync(Guid userId, CancellationToken ct) =>
+        db.KnownReviewers.SingleOrDefaultAsync(x => x.UserId == userId, ct);
+
+    public async Task<IReadOnlyDictionary<Guid, string?>> FindEmailsAsync(
+        IReadOnlyCollection<Guid> userIds,
+        CancellationToken ct
+    ) =>
+        await db
+            .KnownReviewers.AsNoTracking()
+            .Where(x => userIds.Contains(x.UserId))
+            .ToDictionaryAsync(x => x.UserId, x => x.Email, ct);
+
+    public async Task<IReadOnlyList<KnownReviewer>> ListAsync(CancellationToken ct) =>
+        await db.KnownReviewers.AsNoTracking().OrderBy(x => x.Email).ToListAsync(ct);
+
+    public void Add(KnownReviewer reviewer) => db.KnownReviewers.Add(reviewer);
+}
+
+/// <summary>EF Core store for files tied to competencies and the expert's descriptions.</summary>
+public sealed class CompetencyEvidenceRepository(ExpertDbContext db) : ICompetencyEvidenceRepository
+{
+    public async Task<IReadOnlyList<CompetencyEvidenceLink>> ListLinksAsync(
+        Guid qualificationId,
+        CancellationToken ct
+    ) =>
+        await db
+            .CompetencyEvidenceLinks.AsNoTracking()
+            .Where(x => x.QualificationId == qualificationId)
+            .OrderBy(x => x.CreatedAt)
+            .ToListAsync(ct);
+
+    public async Task<IReadOnlyList<CompetencyEvidenceLink>> ListLinksForEvidenceAsync(
+        Guid evidenceId,
+        CancellationToken ct
+    ) => await db.CompetencyEvidenceLinks.Where(x => x.EvidenceId == evidenceId).ToListAsync(ct);
+
+    public async Task<IReadOnlyList<CompetencyDescription>> ListDescriptionsAsync(
+        Guid qualificationId,
+        CancellationToken ct
+    ) =>
+        await db
+            .CompetencyDescriptions.AsNoTracking()
+            .Where(x => x.QualificationId == qualificationId)
+            .ToListAsync(ct);
+
+    public Task<CompetencyDescription?> FindDescriptionAsync(
+        Guid qualificationId,
+        string competency,
+        CancellationToken ct
+    ) =>
+        db.CompetencyDescriptions.SingleOrDefaultAsync(
+            x => x.QualificationId == qualificationId && x.Competency == competency,
+            ct
+        );
+
+    public void AddLinks(IEnumerable<CompetencyEvidenceLink> links) =>
+        db.CompetencyEvidenceLinks.AddRange(links);
+
+    public void RemoveLinks(IEnumerable<CompetencyEvidenceLink> links) =>
+        db.CompetencyEvidenceLinks.RemoveRange(links);
+
+    public void AddDescription(CompetencyDescription description) =>
+        db.CompetencyDescriptions.Add(description);
+
+    public void RemoveDescription(CompetencyDescription description) =>
+        db.CompetencyDescriptions.Remove(description);
 }

@@ -3,6 +3,7 @@ using Caps.Contracts;
 using Caps.Notification.Data;
 using Caps.Notification.Email;
 using Caps.Notification.Entities;
+using Caps.Notification.Features.Realtime;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -17,7 +18,8 @@ public sealed class ExpertCompetencyDecidedConsumer(
     NotificationDbContext db,
     IEmailSender sender,
     IOptions<AppLinkOptions> links,
-    TimeProvider clock
+    TimeProvider clock,
+    NotificationPush push
 ) : IConsumer<ExpertCompetencyDecidedEvent>
 {
     public const string Type = "EXPERT_COMPETENCY_DECIDED";
@@ -48,6 +50,7 @@ public sealed class ExpertCompetencyDecidedConsumer(
             notification = UserNotification.Create(m.UserId, m.Id, Type, data, m.DecidedAt);
             db.Notifications.Add(notification);
             await db.SaveChangesAsync(ct);
+            await push.CreatedAsync(notification, ct);
         }
         if (notification.EmailSentAt != null)
             return;

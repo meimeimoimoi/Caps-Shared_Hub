@@ -1,5 +1,6 @@
 using Caps.Common.Application;
 using Caps.Expert.Application.Abstractions;
+using Caps.Expert.Application.Common;
 using Caps.Expert.Application.DTOs.Responses;
 using Caps.Expert.Domain;
 using Caps.Expert.Domain.Pricing;
@@ -14,7 +15,8 @@ public sealed class SetPlatformFeeHandler(
     IServiceCatalogRepository catalog,
     IPlatformFeeRepository fees,
     IUnitOfWork unitOfWork,
-    TimeProvider clock
+    TimeProvider clock,
+    IRealtimeNotifier realtime
 ) : ICommandHandler<SetPlatformFeeCommand, PlatformFeeResponse>
 {
     public async Task<PlatformFeeResponse> HandleAsync(
@@ -27,6 +29,13 @@ public sealed class SetPlatformFeeHandler(
         var fee = PlatformFee.Set(service, command.Percent, command.AdminId, clock.GetUtcNow());
         fees.Add(fee);
         await unitOfWork.SaveChangesAsync(ct);
+        // Other admins on the platform fee page see the new rate at once
+        await realtime.ChangedAsync(
+            ExpertRealtimeTopics.Pricing,
+            [],
+            [Permission.PricingManage],
+            ct
+        );
         return new(fee.ServiceCode, service.Name, fee.Percent, fee.EffectiveFrom);
     }
 }

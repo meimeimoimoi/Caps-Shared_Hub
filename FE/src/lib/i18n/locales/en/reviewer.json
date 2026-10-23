@@ -126,5 +126,24 @@
     "experience": "Experience is below the policy threshold. Mark Tax and accounting experience as not met and choose Not eligible when the declared years are verified.",
     "evidence": "An evidence reference is unavailable. Select evidence from this application.",
     "flags": "Verify and resolve the flagged discrepancies before passing the application."
-  }
+  },
+  "queuePagination": "Review queue pages",
+  "yearsExperience_one": "{{count}} year of experience",
+  "yearsExperience_other": "{{count}} years of experience",
+  "reapplication": "Reapplication",
+  "claimFilter": "Reviewer",
+  "claimFilters": {
+    "MINE_OR_UNCLAIMED": "Mine and unclaimed",
+    "MINE": "Mine",
+    "UNCLAIMED": "Unclaimed",
+    "ALL": "All"
+  },
+  "holderLabel": "Reviewer",
+  "holderMe": "You",
+  "holderNone": "Unclaimed",
+  "holderSomeone": "Another reviewer",
+  "claimAction": "Claim",
+  "claimTaken": "Another reviewer just claimed this review.",
+  "claimFailed": "Could not claim the review. Please try again.",
+  "overdue": "waiting over {{days}} days"
 }

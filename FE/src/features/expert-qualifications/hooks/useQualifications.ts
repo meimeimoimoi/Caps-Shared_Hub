@@ -1,6 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   addQualificationFile,
+  addQualificationLink,
+  saveCompetencyDescription,
+  setEvidenceCompetencies,
+  submitQualification,
   getQualification,
   getQualifications,
   qualificationKeys,
@@ -46,7 +50,27 @@ export function useQualification(id: string) {
     queryFn: ({ signal }) => getQualification(id, signal),
   })
   const upload = useMutation({
-    mutationFn: (file: File) => addQualificationFile(id, file),
+    mutationFn: (input: { file: File; competencies: string[] }) =>
+      addQualificationFile(id, input.file, input.competencies),
+    onSuccess: refresh,
+  })
+  const addLink = useMutation({
+    mutationFn: (input: { url: string; competencies: string[] }) =>
+      addQualificationLink(id, input.url, input.competencies),
+    onSuccess: refresh,
+  })
+  const tie = useMutation({
+    mutationFn: (input: { evidenceId: string; competencies: string[] }) =>
+      setEvidenceCompetencies(id, input.evidenceId, input.competencies),
+    onSuccess: refresh,
+  })
+  const describe = useMutation({
+    mutationFn: (input: { code: string; text: string }) =>
+      saveCompetencyDescription(id, input.code, input.text),
+    onSuccess: refresh,
+  })
+  const submit = useMutation({
+    mutationFn: () => submitQualification(id),
     onSuccess: refresh,
   })
   const remove = useMutation({
@@ -57,5 +81,5 @@ export function useQualification(id: string) {
     mutationFn: (note: string) => supplementQualification(id, note),
     onSuccess: refresh,
   })
-  return { ...query, upload, remove, supplement }
+  return { ...query, upload, addLink, tie, describe, submit, remove, supplement }
 }

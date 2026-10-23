@@ -1,4 +1,58 @@
 {
+  "contact": {
+    "title": "Thông tin liên hệ chuyên gia",
+    "description": "Tên và số điện thoại người đánh giá và khách hàng nhìn thấy. Thay đổi không cần xét duyệt lại; hồ sơ đã nộp giữ nguyên thông tin lúc nộp.",
+    "nameHint": "Tên nghề nghiệp, có thể khác tên tài khoản.",
+    "phone": "Số điện thoại liên hệ",
+    "phoneHint": "Có thể là số công việc, khác số trong tài khoản.",
+    "nameRequired": "Vui lòng nhập họ tên.",
+    "phoneRequired": "Vui lòng nhập số điện thoại.",
+    "phoneInvalid": "Số điện thoại không hợp lệ.",
+    "save": "Lưu thay đổi",
+    "saving": "Đang lưu…",
+    "saved": "Đã lưu.",
+    "failed": "Chưa lưu được. Vui lòng thử lại.",
+    "noProfileYet": "Lưu hồ sơ chuyên gia lần đầu để chỉnh thông tin liên hệ ở đây.",
+    "emailLocked": "Email không thể thay đổi",
+    "emailLockedBody": "Email gắn với tài khoản và dùng để nhận thông báo. Ảnh đại diện đổi được ở trên."
+  },
+  "pricingUx": {
+    "currentHeading": "Mức phí bạn đang áp dụng",
+    "scheduledHeading": "Mức phí đã duyệt, chờ ngày áp dụng",
+    "perBooking": "/ lượt đặt dịch vụ",
+    "changePrice": "Thay đổi mức phí",
+    "firstPrice": "Đặt mức phí dịch vụ",
+    "editDraft": "Hoàn thiện mức phí đang lưu nháp",
+    "submit": "Lưu và gửi duyệt",
+    "nextHeading": "Tiếp theo: sẵn sàng nhận việc",
+    "nextHelp": "Bật nhận yêu cầu cho dịch vụ và thêm khung giờ trống trong lịch nhận việc.",
+    "nextAction": "Thiết lập lịch nhận việc",
+    "pendingHeading": "Mức phí mới đang chờ duyệt",
+    "pendingHelp": "Bạn không cần gửi lại. Mức phí này chỉ được áp dụng sau khi được duyệt và đến ngày hiệu lực; mức phí hiện tại vẫn giữ nguyên.",
+    "history": "Xem lịch sử thiết lập giá",
+    "record": "Lần thiết lập {{number}}",
+    "recordHeading": "Lần thiết lập",
+    "cancel": "Hủy thay đổi"
+  },
+  "serviceSetup": {
+    "title": "Dịch vụ của tôi",
+    "description": "Thiết lập giá và lịch nhận việc để dịch vụ sẵn sàng đón khách hàng.",
+    "toPrepare": "Chưa sẵn sàng nhận việc",
+    "loading": "Đang tải dịch vụ…",
+    "loadFailed": "Không tải được dịch vụ. Vui lòng thử lại.",
+    "retry": "Thử lại",
+    "review": "Xem hồ sơ dịch vụ",
+    "readyHelp": "Dịch vụ đã đáp ứng các điều kiện nhận đặt dịch vụ.",
+    "approvedHelp": "Đã được phê duyệt chuyên môn. Kiểm tra giá và lịch nhận việc bên dưới để bắt đầu nhận yêu cầu.",
+    "reviewHelp": "Theo dõi kết quả hồ sơ dịch vụ trước khi thiết lập nhận việc.",
+    "settingUp": "Đang thiết lập",
+    "availability": "Nhận yêu cầu và lịch trống",
+    "availabilityReady": "Đã bật nhận yêu cầu và có lịch trống",
+    "availabilityMissing": "Cần bật nhận yêu cầu và có lịch trống",
+    "remaining": "Điều kiện còn thiếu để nhận đặt dịch vụ",
+    "configurePrice": "Thiết lập giá dịch vụ",
+    "configureAvailability": "Thiết lập lịch nhận việc"
+  },
   "required": "Bắt buộc",
   "evidenceValidation": "Kiểm tra minh chứng",
   "aiDraftAssessment": "Đánh giá bản nháp AI",
@@ -194,9 +248,9 @@
   "noServicesRegistered": "Chưa đăng ký dịch vụ",
   "youHaveNotRegisteredForAnyServicesYetServiceRegistrationIsAvailableThroughTheExpertOnboardingFlow": "Bạn chưa đăng ký dịch vụ nào. Có thể đăng ký dịch vụ trong luồng đăng ký chuyên gia.",
   "approvedForService": "Đã được duyệt cho dịch vụ",
-  "competencyReview": "Đang đánh giá năng lực",
+  "competencyReview": "Đang thẩm định năng lực",
   "needMoreEvidence": "Cần bổ sung bằng chứng",
-  "awaitingFinalApproval": "Chờ phê duyệt cuối",
+  "awaitingFinalApproval": "Đang thẩm định năng lực",
   "suspendedForService": "Bị đình chỉ dịch vụ",
   "competencyFailed": "Không đạt năng lực cho dịch vụ",
   "notReceivingBookings": "Không nhận đặt dịch vụ",
@@ -490,7 +544,13 @@
   "demoQualificationPending": "Điều kiện chuyên môn cho dịch vụ đang chờ phê duyệt cuối.",
   "demoAccessDenied": "Tài khoản này không có quyền truy cập không gian chuyên gia.",
   "pricing": {
-    "title": "Cấu hình giá dịch vụ",
+    "help": "Hướng dẫn: {{label}}",
+    "reasonPlaceholder": "Giải thích cơ sở của mức phí hoặc nội dung thay đổi…",
+    "firstPriceHelp": "Tạo mức giá đầu tiên để tiếp tục thiết lập dịch vụ.",
+    "enterAmount": "Chưa nhập mức phí",
+    "historyEmpty": "Chưa có phiên bản giá",
+    "historyEmptyHelp": "Khi bạn lưu bản nháp hoặc gửi duyệt, phiên bản giá sẽ xuất hiện tại đây.",
+    "title": "Phí dịch vụ",
     "back": "Quay lại dịch vụ",
     "loading": "Đang tải cấu hình giá…",
     "notFound": "Không tìm thấy dịch vụ",
@@ -512,6 +572,15 @@
     "snapshotHelp": "Các case đã tạo giữ nguyên mức giá và phí nền tảng tại thời điểm đặt dịch vụ.",
     "configure": "Cấu hình giá",
     "view": "Xem cấu hình giá",
+    "errors": {
+      "feeInvalid": "Mức phí phải từ 10.000 đến 1.000.000.000 VND và chia hết cho 1.000.",
+      "turnaroundInvalid": "Thời gian trả kết quả phải từ 1 đến 720 giờ.",
+      "PRICING_NOT_ALLOWED": "Bạn chưa được duyệt cho dịch vụ này hoặc dịch vụ đang bị tạm ngưng.",
+      "PLATFORM_FEE_NOT_SET": "Dịch vụ chưa được mở đặt giá.",
+      "FEE_INVALID": "Mức phí không hợp lệ.",
+      "TURNAROUND_INVALID": "Thời gian trả kết quả không hợp lệ.",
+      "OFFERING_CONFLICT": "Giá vừa được thay đổi ở nơi khác. Tải lại trang rồi thử lại."
+    },
     "setPrice": "Đặt giá dịch vụ",
     "editPrice": "Cập nhật giá dịch vụ",
     "turnaround": "Thời gian trả kết quả",
@@ -527,24 +596,15 @@
     "confirm": "Xác nhận và lưu",
     "youReceiveLabel": "Bạn thực nhận",
     "afterFee": "sau {{percent}}% phí nền tảng",
-    "confirmHelp": "Giá mới áp dụng ngay cho request mới và hiện trên marketplace. Các request khách đã gửi giữ nguyên giá cũ.",
-    "errors": {
-      "feeInvalid": "Mức phí phải từ 10.000 đến 1.000.000.000 VND và chia hết cho 1.000.",
-      "turnaroundInvalid": "Thời gian trả kết quả phải từ 1 đến 720 giờ.",
-      "PRICING_NOT_ALLOWED": "Bạn chưa được duyệt cho dịch vụ này hoặc dịch vụ đang bị tạm ngưng.",
-      "PLATFORM_FEE_NOT_SET": "Dịch vụ chưa được mở đặt giá.",
-      "FEE_INVALID": "Mức phí không hợp lệ.",
-      "TURNAROUND_INVALID": "Thời gian trả kết quả không hợp lệ.",
-      "OFFERING_CONFLICT": "Giá vừa được thay đổi ở nơi khác. Tải lại trang rồi thử lại."
-    }
+    "confirmHelp": "Giá mới áp dụng ngay cho request mới và hiện trên marketplace. Các request khách đã gửi giữ nguyên giá cũ."
   },
   "qualifications": {
     "title": "Đánh giá năng lực theo dịch vụ",
-    "description": "Sau khi đủ điều kiện tham gia, đăng ký từng dịch vụ để được đánh giá năng lực C1 – C5. Kết quả của dịch vụ này không ảnh hưởng dịch vụ khác.",
+    "description": "Sau khi đủ điều kiện tham gia, đăng ký từng dịch vụ để được đánh giá năng lực. Kết quả của dịch vụ này không ảnh hưởng dịch vụ khác.",
     "loading": "Đang tải…",
     "notFound": "Không tìm thấy hồ sơ năng lực.",
     "back": "Quay lại danh sách dịch vụ",
-    "eligibilityRequired": "Bạn cần đạt xét duyệt điều kiện tham gia (Gate 1) trước khi đăng ký dịch vụ.",
+    "eligibilityRequired": "Bạn cần đạt xét duyệt điều kiện tham gia trước khi đăng ký dịch vụ.",
     "openApplication": "Mở hồ sơ đăng ký",
     "notRegistered": "Chưa đăng ký",
     "submittedAt": "Nộp lúc {{date}}",
@@ -554,12 +614,13 @@
     "registerAgain": "Đăng ký lại",
     "statusTitle": "Tình trạng",
     "statusHelp": {
-      "COMPETENCY_REVIEW": "Người đánh giá đang xem hồ sơ và tài liệu của bạn theo từng năng lực C1 – C5.",
+      "COMPETENCY_REVIEW": "Hồ sơ năng lực của bạn đang được thẩm định và xác nhận trước khi cấp quyền cung cấp dịch vụ. Trong thời gian này bạn không sửa được minh chứng.",
       "NEED_MORE_INFORMATION": "Người đánh giá cần thêm bằng chứng cho các năng lực dưới đây. Tải tài liệu lên rồi gửi bổ sung.",
-      "PENDING_FINAL_APPROVAL": "Bạn đã đạt đánh giá năng lực. Hồ sơ đang chờ Quản trị hệ thống phê duyệt cuối.",
+      "PENDING_FINAL_APPROVAL": "Hồ sơ năng lực của bạn đang được thẩm định và xác nhận trước khi cấp quyền cung cấp dịch vụ. Trong thời gian này bạn không sửa được minh chứng.",
       "APPROVED_FOR_SERVICE": "Bạn được cung cấp dịch vụ này. Bước tiếp theo là thiết lập giá dịch vụ.",
       "SUSPENDED": "Dịch vụ này đang bị tạm ngưng.",
-      "FAIL": "Bạn chưa đạt đánh giá năng lực cho dịch vụ này."
+      "FAIL": "Bạn chưa đạt đánh giá năng lực cho dịch vụ này.",
+      "PREPARING": "Chuẩn bị minh chứng cho các năng lực bên dưới rồi bấm Nộp để đánh giá. Hồ sơ chưa vào hàng chờ của người đánh giá."
     },
     "competencies": {
       "C1": "Kiến thức Thuế TNDN phù hợp phạm vi dịch vụ",
@@ -584,6 +645,18 @@
     "supplementSubmit": "Gửi bổ sung",
     "supplemented": "Đã gửi bổ sung. Hồ sơ quay lại bước đánh giá năng lực.",
     "historyTitle": "Lịch sử",
+    "expectedBy": "Dự kiến có kết quả trước ngày {{date}}",
+    "lockedHelp": "Hồ sơ đang được thẩm định nên chưa sửa được minh chứng. Bạn sửa được khi người đánh giá yêu cầu bổ sung.",
+    "nextSteps": {
+      "title": "Bước tiếp theo",
+      "help": "Dịch vụ hiện trên Marketplace khi đủ cả ba bước: có giá đang áp dụng, bật nhận yêu cầu và còn khung giờ trống.",
+      "pricing": "Đặt giá dịch vụ",
+      "availability": "Bật nhận yêu cầu và mở khung giờ",
+      "marketplace": "Hiện trên Marketplace",
+      "done": "Xong",
+      "todo": "Chưa",
+      "open": "Mở"
+    },
     "errors": {
       "ELIGIBILITY_REQUIRED": "Bạn cần đạt xét duyệt điều kiện tham gia trước.",
       "QUALIFICATION_EXISTS": "Dịch vụ này đã có hồ sơ năng lực đang xử lý.",
@@ -593,32 +666,96 @@
       "EVIDENCE_TOO_LARGE": "Tệp phải nhỏ hơn 10 MB.",
       "EVIDENCE_INVALID_TYPE": "Chỉ nhận tệp PDF, PNG hoặc JPG.",
       "EVIDENCE_LIMIT": "Đã đạt số tài liệu tối đa cho dịch vụ này.",
-      "EVIDENCE_LOCKED": "Tài liệu đã nộp không thể xóa.",
-      "QUALIFICATION_LOCKED": "Hồ sơ không ở bước nhận bổ sung; tải lại trang.",
+      "EVIDENCE_LOCKED": "Minh chứng đã nộp không thể xóa hoặc bỏ năng lực đã gắn.",
+      "QUALIFICATION_LOCKED": "Hồ sơ không ở bước nhận minh chứng; tải lại trang.",
       "SUPPLEMENT_EMPTY": "Thêm giải thích hoặc ít nhất một tài liệu mới.",
       "EMAIL_NOT_VERIFIED": "Xác thực email trước khi gửi bổ sung.",
       "open": "Không mở được tài liệu.",
       "loadFailed": "Không tải được danh sách dịch vụ.",
       "failed": "Chưa thực hiện được. Vui lòng thử lại.",
-      "NEW_EVIDENCE_REQUIRED": "Cần tải lên ít nhất một tài liệu mới trước khi gửi đánh giá lại."
+      "NEW_EVIDENCE_REQUIRED": "Cần tải lên ít nhất một tài liệu mới trước khi gửi đánh giá lại.",
+      "EVIDENCE_INVALID_URL": "Đường dẫn phải là địa chỉ http hoặc https công khai.",
+      "EVIDENCE_NOT_FOUND": "Không tìm thấy minh chứng; tải lại trang.",
+      "EVIDENCE_COMPETENCY_REQUIRED": "Gắn minh chứng với ít nhất một năng lực.",
+      "INVALID_COMPETENCY_CODE": "Năng lực không hợp lệ; tải lại trang.",
+      "COMPETENCY_DESCRIPTION_TOO_LONG": "Mô tả tối đa 1000 ký tự.",
+      "COMPETENCY_EVIDENCE_MISSING": "Thêm ít nhất một minh chứng trước khi nộp.",
+      "COMPETENCY_NEW_EVIDENCE_REQUIRED": "Mỗi năng lực chưa đạt lần trước cần ít nhất một minh chứng mới."
     },
-    "newEvidenceRequired": "Đây là lần đăng ký lại sau khi chưa đạt. Tải lên bằng chứng năng lực mới hoặc đã cập nhật cho các năng lực chưa đạt, rồi gửi để được đánh giá lại."
+    "newEvidenceRequired": "Đây là lần đăng ký lại sau khi chưa đạt. Tải lên bằng chứng năng lực mới hoặc đã cập nhật cho các năng lực chưa đạt, rồi gửi để được đánh giá lại.",
+    "titleSingle": "Đánh giá năng lực",
+    "descriptionSingle": "Sau khi đủ điều kiện tham gia, hồ sơ đánh giá năng lực được mở sẵn. Nộp minh chứng cho từng năng lực để người đánh giá xem xét.",
+    "prepare": "Nộp minh chứng",
+    "rounds": "Vòng bổ sung {{used}}/{{max}}",
+    "guide": {
+      "C1": {
+        "what": "Bạn hiểu luật thuế TNDN tới đâu.",
+        "send": "Chứng chỉ hoặc khóa học về thuế TNDN; tờ khai, hồ sơ quyết toán TNDN bạn từng lập hoặc rà soát (đã che thông tin khách hàng).",
+        "avoid": "Bằng đại học chung chung, không liên quan đến thuế."
+      },
+      "C2": {
+        "what": "Bạn có từng đọc lại và sửa hồ sơ, báo cáo do người khác (hoặc máy) soạn.",
+        "send": "Bản rà soát có ghi chú sửa (đã che thông tin khách hàng); thư xác nhận vai trò soát xét, kiểm tra chéo.",
+        "avoid": "Hồ sơ do chính bạn lập mà không có phần soát xét."
+      },
+      "C3": {
+        "what": "Bạn có kiểm tra chứng từ, số liệu xem có đúng và đủ không.",
+        "send": "Biên bản kiểm tra chứng từ, checklist rà soát hồ sơ, thư quản lý (management letter).",
+        "avoid": "Ảnh chụp chứng từ không có nhận xét của bạn."
+      },
+      "C4": {
+        "what": "Bạn có đối chiếu điều luật để trả lời một tình huống cụ thể.",
+        "send": "Ý kiến tư vấn hoặc công văn trả lời có trích điều luật; bài phân tích tình huống.",
+        "avoid": "Bài viết chép lại nguyên văn luật."
+      },
+      "C5": {
+        "what": "Bạn có từng đưa ra kết luận chuyên môn và chịu trách nhiệm về kết luận đó.",
+        "send": "Báo cáo có kết luận và chữ ký của bạn; quyết định chấp nhận hoặc từ chối một khoản chi phí kèm lý do.",
+        "avoid": "Tài liệu không có kết luận của bạn."
+      }
+    },
+    "evidence": {
+      "title": "Minh chứng năng lực",
+      "help": "Mỗi tài liệu gắn với một hoặc nhiều năng lực; một tài liệu dùng được cho nhiều năng lực. Nhận PDF, JPG, PNG (tối đa 10 MB) hoặc đường dẫn công khai. Không bắt buộc đủ 5 năng lực; người đánh giá có thể yêu cầu bổ sung.",
+      "mask": "Che thông tin khách hàng (tên, mã số thuế, số tiền nếu cần) trước khi tải lên.",
+      "newRequired": "Lần đăng ký lại sau khi chưa đạt: cần ít nhất một minh chứng mới cho: {{names}}.",
+      "competencies": "Các năng lực",
+      "fileCount_one": "{{count}} minh chứng",
+      "fileCount_other": "{{count}} minh chứng",
+      "covered": "{{count}}/{{total}} năng lực đã có minh chứng",
+      "submit": "Nộp để đánh giá",
+      "submitted": "Đã nộp minh chứng. Hồ sơ đã vào hàng chờ đánh giá năng lực.",
+      "whatIs": "Năng lực này là gì",
+      "send": "Nên gửi",
+      "avoid": "Không nên gửi",
+      "linkLabel": "Đường dẫn",
+      "tieHere": "Gắn vào năng lực này",
+      "tiedTo": "Năng lực đã gắn",
+      "tieMore": "Gắn thêm năng lực",
+      "tiedTitle": "Minh chứng của năng lực này",
+      "none": "Chưa có minh chứng cho năng lực này.",
+      "others": "Minh chứng đã gửi cho năng lực khác ({{count}})",
+      "description": "Mô tả ngắn (không bắt buộc)",
+      "descriptionPlaceholder": "Minh chứng trên cho thấy bạn đã làm gì cho năng lực này",
+      "saveDescription": "Lưu mô tả"
+    }
   },
   "readiness": {
     "APPLICATION_NOT_SUBMITTED": "Chưa nộp hồ sơ đăng ký.",
     "ELIGIBILITY_PENDING": "Hồ sơ đang được xét điều kiện tham gia.",
     "NOT_ELIGIBLE": "Hồ sơ chưa đủ điều kiện tham gia.",
     "COMPETENCY_REVIEW_PENDING": "Hãy đăng ký dịch vụ để được đánh giá năng lực.",
-    "COMPETENCY_REVIEW_IN_PROGRESS": "Đang đánh giá năng lực cho dịch vụ này.",
+    "COMPETENCY_REVIEW_IN_PROGRESS": "Đang thẩm định năng lực cho dịch vụ này.",
     "COMPETENCY_NEED_MORE_INFORMATION": "Cần bổ sung bằng chứng năng lực.",
-    "FINAL_APPROVAL_PENDING": "Đang chờ phê duyệt cuối.",
+    "FINAL_APPROVAL_PENDING": "Đang thẩm định năng lực cho dịch vụ này.",
     "COMPETENCY_FAILED": "Chưa đạt đánh giá năng lực cho dịch vụ này.",
     "SERVICE_SUSPENDED": "Dịch vụ đang tạm ngưng.",
     "PRICING_PENDING": "Chưa có giá dịch vụ được duyệt.",
     "PRICING_IN_REVIEW": "Giá mới đang chờ quản trị viên duyệt.",
     "REQUESTS_TURNED_OFF": "Bạn đang tắt nhận yêu cầu cho dịch vụ này.",
     "NO_OPEN_SLOTS": "Chưa có khung giờ nhận việc nào sắp tới.",
-    "ACCOUNT_INACTIVE": "Tài khoản chưa hoạt động."
+    "ACCOUNT_INACTIVE": "Tài khoản chưa hoạt động.",
+    "COMPETENCY_EVIDENCE_PENDING": "Nộp minh chứng năng lực để được đánh giá."
   },
   "availabilityPage": {
     "title": "Lịch nhận việc",
@@ -650,5 +787,6 @@
       "loadFailed": "Không tải được lịch nhận việc.",
       "failed": "Chưa thực hiện được. Vui lòng thử lại."
     }
-  }
+  },
+  "preparingEvidence": "Chuẩn bị minh chứng năng lực"
 }

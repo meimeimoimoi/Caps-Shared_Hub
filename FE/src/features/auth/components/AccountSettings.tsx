@@ -8,6 +8,7 @@ import { LanguageSwitcher } from '@/components/ui/layout/language-switcher'
 import { useAccount, type AccountRole } from '../hooks/useAccount'
 import { AvatarUploader } from './AvatarUploader'
 import { ChangePasswordForm } from './ChangePasswordForm'
+import { AccountProfileForm } from './AccountProfileForm'
 
 const ROLE_LABEL = {
   admin: 'accountSettings.roleAdmin',
@@ -66,15 +67,17 @@ export function AccountSettings({ role }: { role: AccountRole }) {
                 onChange={account.saveAvatar}
               />
             </div>
+            {/* A signed-in account edits its name and phone; the demo account only shows them */}
+            {!account.isDemo && <AccountProfileForm />}
             <div className="divide-border-subtle border-border-subtle mt-5 divide-y border-t">
-              <Row label={t('accountSettings.fullName')}>
-                {account.name}
-                {account.isDemo && (
+              {account.isDemo && (
+                <Row label={t('accountSettings.fullName')}>
+                  {account.name}
                   <span className="text-warning text-caption ml-2">
                     · {t('accountSettings.demo')}
                   </span>
-                )}
-              </Row>
+                </Row>
+              )}
               <Row label={t('accountSettings.email')}>
                 <span className="break-all">{account.email}</span>
               </Row>

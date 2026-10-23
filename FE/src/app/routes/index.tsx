@@ -42,9 +42,7 @@ const LegalPage = lazy(() => import('@/pages/LegalPage'))
 const RegisterPage = lazy(() => import('@/pages/RegisterPage'))
 const ResetPasswordPage = lazy(() => import('@/pages/ResetPasswordPage'))
 const VerifyEmailPage = lazy(() => import('@/pages/VerifyEmailPage'))
-const ExpertRegistrationPage = lazy(
-  () => import('@/pages/expert-registration/ExpertRegistrationPage')
-)
+const WelcomePage = lazy(() => import('@/pages/WelcomePage'))
 const ExpertQualificationsPage = lazy(
   () => import('@/pages/expert-dashboard/ExpertQualificationsPage')
 )
@@ -96,11 +94,17 @@ const NotFoundPage = lazy(() => import('../../pages/NotFoundPage'))
 const AdminQualificationsPage = lazy(
   () => import('@/pages/admin/AdminQualificationsPage')
 )
+const AdminReviewAssignmentsPage = lazy(
+  () => import('@/pages/admin/AdminReviewAssignmentsPage')
+)
 const AdminQualificationDetailPage = lazy(
   () => import('@/pages/admin/AdminQualificationDetailPage')
 )
 const AdminPlatformFeesPage = lazy(
   () => import('@/pages/admin/AdminPlatformFeesPage')
+)
+const AdminExpertPolicyPage = lazy(
+  () => import('@/pages/admin/AdminExpertPolicyPage')
 )
 const AdminExpertsPage = lazy(() => import('@/pages/admin/AdminExpertsPage'))
 const AdminDisputesPage = lazy(() => import('@/pages/admin/AdminDisputesPage'))
@@ -242,7 +246,17 @@ const router = createBrowserRouter(
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route path="/verify-email" element={<VerifyEmailPage />} />
-      <Route path="/expert/register" element={<ExpertRegistrationPage />} />
+      {/* Experts sign up on the same page as customers (first step: choose the role) */}
+      <Route path="/expert/register" element={<Navigate to="/register" replace />} />
+      {/* Asked once after a Google sign-in created the account, or after verifying on another device */}
+      <Route
+        path="/welcome"
+        element={
+          <ProtectedRoute>
+            <WelcomePage />
+          </ProtectedRoute>
+        }
+      />
       <Route path="/experts/:expertId" element={<ExpertPublicProfilePage />} />
       <Route path="/marketplace" element={<MarketplacePage />} />
       <Route path="/pricing" element={<PricingPage />} />
@@ -304,6 +318,16 @@ const router = createBrowserRouter(
         <Route
           path="/admin/experts/approvals/:id"
           element={<AdminQualificationDetailPage scope="approval" />}
+        />
+        {/* Who works on each open Gate 1 and Gate 2 review; handing a review to another reviewer */}
+        <Route
+          path="/admin/experts/assignments"
+          element={<AdminReviewAssignmentsPage />}
+        />
+        {/* Expert policy values a System Admin changes without a restart (BR-E29) */}
+        <Route
+          path="/admin/experts/policy"
+          element={<AdminExpertPolicyPage />}
         />
       </Route>
       {/* Platform fee per service; experts set their own prices (System Admin) */}
@@ -392,7 +416,7 @@ const router = createBrowserRouter(
       <Route element={<ExpertRoute />}>
         <Route path="/expert" element={<ExpertLayout />}>
           <Route index element={<ExpertHome />} />
-          {/* The applicant's own application and review progress; signing up happens at /expert/register */}
+          {/* The applicant's own application and review progress; signing up happens at /register */}
           <Route
             path="application"
             element={

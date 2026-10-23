@@ -1,5 +1,6 @@
 using Caps.Common.Application;
 using Caps.Expert.Application.Abstractions;
+using Caps.Expert.Application.Common;
 using Caps.Expert.Application.DTOs.Responses;
 using Caps.Expert.Domain;
 using Caps.Expert.Domain.Pricing;
@@ -21,7 +22,8 @@ public sealed class SetMyServiceHandler(
     IPlatformFeeRepository fees,
     IServiceOfferingRepository offerings,
     IUnitOfWork unitOfWork,
-    TimeProvider clock
+    TimeProvider clock,
+    IRealtimeNotifier realtime
 ) : ICommandHandler<SetMyServiceCommand, MyServiceResponse>
 {
     public async Task<MyServiceResponse> HandleAsync(
@@ -64,6 +66,8 @@ public sealed class SetMyServiceHandler(
             // Two first saves of the same service at once: the unique index let only one through
             throw ExpertErrors.OfferingConflict();
         }
+        // The expert's other open tabs refresh the price and readiness at once
+        await realtime.ChangedAsync(ExpertRealtimeTopics.Pricing, [command.UserId], [], ct);
 
         return new(
             offering.ServiceCode,

@@ -19,6 +19,9 @@ public sealed class EligibilityCheck
     public string Result { get; private set; } = default!;
     public string? Note { get; private set; }
 
+    /// <summary>EV-06 minimum years in force when decided; null for decisions recorded before it was stored.</summary>
+    public int? AppliedMinYearsExperience { get; private set; }
+
     /// <summary>Account id from the identity service (no foreign key across services).</summary>
     public Guid ReviewerUserId { get; private set; }
     public DateTimeOffset CreatedAt { get; private set; }
@@ -26,7 +29,8 @@ public sealed class EligibilityCheck
     public static EligibilityCheck Record(
         ExpertApplicationEvent decision,
         CriterionResult result,
-        Guid reviewerUserId
+        Guid reviewerUserId,
+        int appliedMinYearsExperience
     ) =>
         new()
         {
@@ -35,6 +39,7 @@ public sealed class EligibilityCheck
             Criterion = result.Code,
             Result = result.Result,
             Note = result.Note,
+            AppliedMinYearsExperience = appliedMinYearsExperience,
             ReviewerUserId = reviewerUserId,
             CreatedAt = decision.CreatedAt,
         };

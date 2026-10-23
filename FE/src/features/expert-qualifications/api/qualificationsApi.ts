@@ -28,20 +28,55 @@ export async function getQualification(id: string, signal?: AbortSignal) {
   return res.data
 }
 
-/** Registers for a service; the qualification starts in competency review */
+/** Registers for a service; the qualification starts in PREPARING (competency evidence first) */
 export async function registerForService(serviceCode: string) {
   const res = await api.post<Envelope<Qualification>>(BASE, { serviceCode })
   return res.data
 }
 
-export async function addQualificationFile(id: string, file: File) {
+/** Uploads one file tied to the given competencies (C1…C5) */
+export async function addQualificationFile(id: string, file: File, competencies: string[]) {
   const form = new FormData()
   form.append('file', file)
+  for (const code of competencies) form.append('competencies', code)
   const res = await api.post<Envelope<Qualification>>(
     `${BASE}/${id}/evidence`,
     form,
     { headers: { 'Content-Type': 'multipart/form-data' }, timeout: 60_000 }
   )
+  return res.data
+}
+
+/** Adds a public link as competency evidence; reviewers open it directly */
+export async function addQualificationLink(id: string, sourceUrl: string, competencies: string[]) {
+  const res = await api.post<Envelope<Qualification>>(`${BASE}/${id}/evidence/link`, {
+    sourceUrl,
+    competencies,
+  })
+  return res.data
+}
+
+/** Sets the competencies one competency file supports (a submitted file can only gain competencies) */
+export async function setEvidenceCompetencies(id: string, evidenceId: string, competencies: string[]) {
+  const res = await api.put<Envelope<Qualification>>(
+    `${BASE}/${id}/evidence/${evidenceId}/competencies`,
+    { competencies }
+  )
+  return res.data
+}
+
+/** Saves the short description of one competency; empty text clears it */
+export async function saveCompetencyDescription(id: string, code: string, text: string) {
+  const res = await api.put<Envelope<Qualification>>(
+    `${BASE}/${id}/competencies/${code}/description`,
+    { text: text.trim() || null }
+  )
+  return res.data
+}
+
+/** PREPARING → competency review once at least one file is tied to a competency */
+export async function submitQualification(id: string) {
+  const res = await api.post<Envelope<Qualification>>(`${BASE}/${id}/submit`)
   return res.data
 }
 
