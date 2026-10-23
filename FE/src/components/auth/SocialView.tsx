@@ -43,21 +43,21 @@ export function SocialView({
   return (
     <div
       ref={motion}
-      className={cn('relative z-2 w-full max-w-[440px]', className)}
+      className={cn('relative z-2 w-full max-w-[500px]', className)}
     >
-      <div className={CARD_CLASS}>
+      <div className={cn(CARD_CLASS, 'py-10 sm:px-9')}>
         <AuthBrandHeader title={t('social.title')} />
 
         <button
           type="button"
           onClick={onContinueEmail}
-          className={cn(PRIMARY_BUTTON_CLASS, 'font-sans')}
+          className={cn(PRIMARY_BUTTON_CLASS, 'min-h-12 font-sans')}
         >
           <Mail aria-hidden="true" size={18} />
           <span>{t('actions.email')}</span>
         </button>
 
-        <div className="my-5 flex items-center gap-4 text-[11.5px] font-medium tracking-[0.08em] text-white/35 uppercase">
+        <div className="my-6 flex items-center gap-4 text-[11.5px] font-medium tracking-[0.08em] text-white/35 uppercase">
           <span aria-hidden="true" className="h-px flex-1 bg-white/10" />
           {t('actions.or')}
           <span aria-hidden="true" className="h-px flex-1 bg-white/10" />
@@ -68,21 +68,21 @@ export function SocialView({
             type="button"
             onClick={onGoogleUnavailable}
             disabled={isLoading}
-            className={cn(SECONDARY_BUTTON_CLASS, 'font-sans')}
+            className={cn(SECONDARY_BUTTON_CLASS, 'min-h-12 font-sans')}
           >
             <GoogleIcon size={18} />
             <span>{t('actions.google')}</span>
           </button>
         </GoogleSignInButton>
 
-        <p className="mt-5 text-center text-[13px] leading-[1.6] text-white/55">
+        <p className="mt-7 text-center text-[13px] leading-[1.6] text-white/55">
           {t('email.noAccount')}{' '}
           <Link to="/register" state={returnState} className={LINK_CLASS}>
             {t('email.create')}
           </Link>
         </p>
 
-        <p className="mt-6 border-t border-white/8 pt-5 text-center text-[11.5px] leading-[1.6] text-white/40">
+        <p className="mt-6 border-t border-white/8 pt-5 text-center text-[11.5px] leading-[1.6] text-pretty text-white/40">
           <Trans
             ns="auth"
             i18nKey="legal"

@@ -163,7 +163,7 @@ export function EmailLoginForm({
   return (
     <div
       ref={motion}
-      className={cn('relative z-2 w-full max-w-[440px]', className)}
+      className={cn('relative z-2 w-full max-w-[500px]', className)}
     >
       <div className={CARD_CLASS}>
         <AuthCardHeader
