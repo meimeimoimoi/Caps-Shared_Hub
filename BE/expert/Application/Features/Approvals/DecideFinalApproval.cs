@@ -78,13 +78,15 @@ public sealed class DecideFinalApprovalHandler(
                 )
             );
         }
-        var change = decision == FinalApprovalDecision.Approve ? "APPROVED" : "RETURNED_FOR_REVIEW";
-        await notifier.EnqueueAsync(qualification, decided, change, ct);
+        // A return stays between the admin and the reviewer: the expert is told only of the approval (D3)
+        var approved = decision == FinalApprovalDecision.Approve;
+        if (approved)
+            await notifier.EnqueueAsync(qualification, decided, "APPROVED", ct);
         await unitOfWork.SaveChangesAsync(ct);
         await tx.CommitAsync(ct);
         await realtime.ChangedAsync(
             ExpertRealtimeTopics.Qualifications,
-            [applicantUserId],
+            approved ? [applicantUserId] : [],
             [Permission.ExpertReview, Permission.ExpertApprove],
             ct
         );

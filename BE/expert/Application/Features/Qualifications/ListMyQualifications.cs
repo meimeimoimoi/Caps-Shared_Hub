@@ -52,7 +52,8 @@ public sealed class ListMyQualificationsHandler(
                         service.Code,
                         service.Name,
                         q?.Id.ToString(),
-                        q?.Status,
+                        // D4: waiting for final approval reads as competency review
+                        q == null ? null : FinalApprovalRules.ExpertStatus(q.Status),
                         q?.SubmittedAt,
                         q?.EarliestReapplyAt,
                         canRegister

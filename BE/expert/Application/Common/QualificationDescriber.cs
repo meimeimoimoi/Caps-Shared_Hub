@@ -29,6 +29,13 @@ public sealed class QualificationDescriber(
         var links = await competencyEvidence.ListLinksAsync(qualification.Id, ct);
         var descriptions = await competencyEvidence.ListDescriptionsAsync(qualification.Id, ct);
         var work = await policies.GetReviewWorkAsync(ct);
+        // D4: waiting for final approval reads as competency review, and a Gate 2 PASS stays hidden until the
+        // final result, so a return never shows the expert a step back
+        var status = FinalApprovalRules.ExpertStatus(qualification.Status);
+        var passHidden =
+            status == QualificationStatus.CompetencyReview
+            && results.Count > 0
+            && results.All(x => x.Result == CompetencyCriteria.Pass);
         // E7: a re-registration after FAIL names the failed competencies still without a new file
         string[] newEvidenceRequired = [];
         if (
@@ -45,10 +52,10 @@ public sealed class QualificationDescriber(
             qualification.Id.ToString(),
             qualification.ServiceCode,
             service?.Name ?? qualification.ServiceCode,
-            qualification.Status,
+            status,
             qualification.SubmittedAt,
-            qualification.DecidedAt,
-            qualification.DecisionNote,
+            passHidden ? null : qualification.DecidedAt,
+            passHidden ? null : qualification.DecisionNote,
             qualification.EarliestReapplyAt,
             qualification.PreviousQualificationId?.ToString(),
             qualification.CreatedAt,
@@ -65,15 +72,16 @@ public sealed class QualificationDescriber(
                 ))
                 .ToArray(),
             history
+                .Where(x => !FinalApprovalRules.IsInternal(x.FromStatus, x.ToStatus))
                 .Select(x => new ExpertApplicationEventResponse(
-                    x.FromStatus,
+                    x.FromStatus is string from ? FinalApprovalRules.ExpertStatus(from) : null,
                     x.ToStatus,
                     x.Note,
                     x.CreatedAt,
                     x.ActorUserId == applicant.UserId
                 ))
                 .ToArray(),
-            CompetencyResults.ToResponses(results),
+            passHidden ? [] : CompetencyResults.ToResponses(results),
             qualification.AcceptsEvidence && added < ApplicationRules.MaxFilesPerApplication,
             qualification.NeedsInformation && applicant.EmailVerified,
             ApplicationRules.MaxFilesPerApplication,
