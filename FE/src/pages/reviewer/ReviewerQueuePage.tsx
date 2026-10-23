@@ -1,7 +1,8 @@
-import { useId, useState } from 'react'
+import { useCallback, useId, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { ArrowRight, Inbox, ListFilter, RefreshCw, Search } from 'lucide-react'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { ArrowRight, Hand, Inbox, ListFilter, RefreshCw, Search, UserRound } from 'lucide-react'
 import { useReviewerQueue, useReviewerSearch } from '@/features/reviewer/useReviewerQueue'
 import { StatusBadge } from '@/components/ui/display/status-badge'
 import { CustomSelect } from '@/components/ui/forms/custom-select'
@@ -11,6 +12,14 @@ import { useFormatters } from '@/hooks/useFormatters'
 import { useDebouncedValue } from '@/hooks/useDebouncedValue'
 import { useFieldLabel } from '@/features/expert-vetting/hooks/useLabels'
 import { Input } from '@/components/ui/forms/input'
+import { Toast } from '@/components/ui/feedback/toast'
+import { ApiError } from '@/lib/api-client'
+import { claimApplication } from '@/features/expert-vetting/api/adminApi'
+import { claimQualification } from '@/features/expert-vetting/api/qualificationApi'
+import { adminKeys } from '@/features/expert-vetting/api/queryKeys'
+import type { ClaimFilter } from '@/features/expert-vetting/api/reviewQueueApi'
+
+const CLAIM_FILTERS: ClaimFilter[] = ['MINE_OR_UNCLAIMED', 'MINE', 'UNCLAIMED', 'ALL']
 
 export default function ReviewerQueuePage({ history = false, gate: routeGate = 'ALL' }: { history?: boolean; gate?: 'ALL' | 'GATE_1' | 'GATE_2' }) {
   const { t } = useTranslation('reviewer')
@@ -25,9 +34,14 @@ export default function ReviewerQueuePage({ history = false, gate: routeGate = '
     else navigate(value === 'GATE_1' ? '/reviewer/gate-1' : value === 'GATE_2' ? '/reviewer/gate-2' : '/reviewer')
   }
   const [status, setStatus] = useState('OPEN')
+  // Default: what this reviewer can work on (held by them or by nobody)
+  const [claimFilter, setClaimFilter] = useState<ClaimFilter>('MINE_OR_UNCLAIMED')
+  const [toast, setToast] = useState<string | null>(null)
+  const clearToast = useCallback(() => setToast(null), [])
+  const qc = useQueryClient()
   // Paging, search and status filtering run on the server; the search waits for typing to pause
   const search = useDebouncedValue(query)
-  const filterKey = `${history}:${search}:${gate}:${status}`
+  const filterKey = `${history}:${search}:${gate}:${status}:${claimFilter}`
   const [paging, setPaging] = useState({ key: filterKey, page: 1, pageSize: 10 })
   const page = paging.key === filterKey ? paging.page : 1
   const { records, total, isLoading, isFetching, error, refresh } = useReviewerQueue({
@@ -36,6 +50,7 @@ export default function ReviewerQueuePage({ history = false, gate: routeGate = '
     search,
     page,
     pageSize: paging.pageSize,
+    claim: claimFilter,
   })
   const rows = records
   const waitedDays = (iso: string) => Math.max(0, Math.floor((Date.now() - new Date(iso).getTime()) / 86_400_000))
@@ -46,12 +61,31 @@ export default function ReviewerQueuePage({ history = false, gate: routeGate = '
     setQuery('')
     if (history) setHistoryGate('ALL')
     setStatus('OPEN')
+    setClaimFilter('MINE_OR_UNCLAIMED')
   }
   const searchId = useId()
   const title = t(history ? 'history' : gate === 'GATE_1' ? 'gate1' : gate === 'GATE_2' ? 'gate2' : 'queue')
   const description = t(history ? 'liveHistoryIntro' : gate === 'GATE_1' ? 'gate1QueueIntro' : gate === 'GATE_2' ? 'gate2QueueIntro' : 'queueIntro')
   const reviewPath = (row: (typeof records)[number]) =>
     `/reviewer/${row.gate === 'GATE_1' ? 'gate-1' : 'gate-2'}/${row.id}`
+  // Claiming from the list opens the review; another reviewer winning first shows who in the refreshed row
+  const take = useMutation({
+    mutationFn: async (row: (typeof records)[number]) => {
+      if (row.gate === 'GATE_1') await claimApplication(row.id)
+      else await claimQualification(row.id)
+    },
+    onSuccess: (_, row) => navigate(reviewPath(row)),
+    onError: (e: unknown) => {
+      setToast(
+        e instanceof ApiError && e.code === 'REVIEW_CLAIMED'
+          ? t('claimTaken')
+          : t('claimFailed')
+      )
+      void qc.invalidateQueries({ queryKey: adminKeys.queueAll() })
+    },
+  })
+  const holder = (row: (typeof records)[number]) =>
+    row.heldByMe ? t('holderMe') : row.held ? (row.holderEmail ?? t('holderSomeone')) : t('holderNone')
   // The link covers its whole row (after:inset-0), so the row is the click target
   const reference = (id: string) => (
     <span title={id} aria-label={`${t('referenceLabel')}: ${id}`} className="tabular-nums">
@@ -96,6 +130,17 @@ export default function ReviewerQueuePage({ history = false, gate: routeGate = '
               triggerClassName="!h-8 !min-h-8 !w-auto !gap-2 !rounded-md !px-2.5 !py-0 text-sm !shadow-none"
             />
           )}
+          {!history && (
+            <CustomSelect
+              label={t('claimFilter')}
+              value={claimFilter}
+              options={CLAIM_FILTERS.map((value) => ({ value, label: t(`claimFilters.${value}`) }))}
+              onChange={(value) => setClaimFilter(value as ClaimFilter)}
+              triggerLeading={<UserRound size={14} aria-hidden="true" className="text-text-muted" />}
+              className="flex min-w-0 flex-col text-xs [&>span]:sr-only"
+              triggerClassName="!h-8 !min-h-8 !w-auto !gap-2 !rounded-md !px-2.5 !py-0 text-sm !shadow-none"
+            />
+          )}
           {(routeGate === 'ALL' || history) && (
             <CustomSelect
               label={t('gateFilter')}
@@ -112,7 +157,7 @@ export default function ReviewerQueuePage({ history = false, gate: routeGate = '
               <RefreshCw size={14} aria-hidden="true" className={isFetching ? 'animate-spin motion-reduce:animate-none' : ''} />
             </button>
           </div>
-          {(query || status !== 'OPEN' || (history && gate !== 'ALL')) && <div className="flex w-full justify-end text-xs">
+          {(query || status !== 'OPEN' || claimFilter !== 'MINE_OR_UNCLAIMED' || (history && gate !== 'ALL')) && <div className="flex w-full justify-end text-xs">
             <button type="button" onClick={clear} className="text-text-strong focus-visible:ring-[var(--ui-border-strong)] rounded px-1 py-1 font-medium hover:underline focus-visible:ring-2 focus-visible:outline-none">{t('clearFilters')}</button>
           </div>}
         </div>
@@ -146,7 +191,27 @@ export default function ReviewerQueuePage({ history = false, gate: routeGate = '
                       <time dateTime={row.submittedAt} className="text-text block text-sm">{format.timestamp(row.submittedAt, 'Asia/Bangkok', { dateStyle: 'medium' })}</time>
                       <span>{row.open ? `${waited(row.submittedAt)} · ` : ''}{reference(row.id)}</span>
                     </div>
-                    <div className="md:w-52 md:shrink-0 [&>*]:whitespace-nowrap"><StatusBadge status={row.statusMeta} /></div>
+                    <div className="md:w-52 md:shrink-0">
+                      <div className="[&>*]:whitespace-nowrap"><StatusBadge status={row.statusMeta} /></div>
+                      {!history && (
+                        <p className="text-text-muted mt-1 flex min-w-0 items-center gap-1 text-xs">
+                          <span className="shrink-0">{t('holderLabel')}:</span>
+                          <span className={row.heldByMe ? 'text-text-strong truncate font-medium' : 'truncate'}>{holder(row)}</span>
+                        </p>
+                      )}
+                    </div>
+                    {!history && row.claimable && !row.held && (
+                      <Button
+                        variant="outline"
+                        disabled={take.isPending}
+                        onClick={() => take.mutate(row)}
+                        aria-label={`${t('claimAction')}: ${row.name}`}
+                        className="relative z-10 ml-auto h-9 shrink-0 gap-1.5"
+                      >
+                        <Hand size={14} aria-hidden="true" />
+                        {t('claimAction')}
+                      </Button>
+                    )}
                     <Link
                       to={reviewPath(row)}
                       aria-label={`${t(row.open ? 'openReview' : 'viewReview')}: ${row.name}`}
@@ -165,7 +230,7 @@ export default function ReviewerQueuePage({ history = false, gate: routeGate = '
             <Inbox size={20} strokeWidth={1.75} aria-hidden="true" className="text-text-muted mb-3" />
             <h2 className="text-text-strong text-sm font-medium">{t('noReviews')}</h2>
             <p className="text-text-muted mt-1 max-w-sm text-sm">{t('noReviewsBody')}</p>
-            {(query || status !== 'OPEN') && <Button variant="outline" className="mt-4" onClick={clear}>{t('clearFilters')}</Button>}
+            {(query || status !== 'OPEN' || claimFilter !== 'MINE_OR_UNCLAIMED') && <Button variant="outline" className="mt-4" onClick={clear}>{t('clearFilters')}</Button>}
           </div>
         )}
         {!isLoading && total > 0 && (
@@ -182,6 +247,7 @@ export default function ReviewerQueuePage({ history = false, gate: routeGate = '
           </div>
         )}
       </section>
+      {toast && <Toast message={toast} onDone={clearToast} />}
     </div>
   )
 }

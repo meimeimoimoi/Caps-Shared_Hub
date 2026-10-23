@@ -5,6 +5,7 @@ import {
   countOf,
   getReviewQueueCounts,
   searchReviewQueue,
+  type ClaimFilter,
   type ReviewQueueRow,
 } from '@/features/expert-vetting/api/reviewQueueApi'
 import { APPLICATION_STATUS, QUALIFICATION_STATUS } from '@/lib/constants'
@@ -50,6 +51,11 @@ const toRecord = (row: ReviewQueueRow) => {
       ? APPLICATION_STATUS[row.status as keyof typeof APPLICATION_STATUS]
       : QUALIFICATION_STATUS[row.status as keyof typeof QUALIFICATION_STATUS],
     open: (gate1 ? openApplications : openQualifications).includes(row.status),
+    /** Waits for a decision (not for the expert), so a reviewer can claim it */
+    claimable: row.status === (gate1 ? 'SUBMITTED' : 'COMPETENCY_REVIEW'),
+    holderEmail: row.claimedByEmail ?? null,
+    held: !!row.claimedByUserId,
+    heldByMe: !!row.heldByMe,
   }
 }
 
@@ -63,14 +69,23 @@ export function useReviewerQueue({
   search = '',
   page = 1,
   pageSize = 10,
+  claim,
 }: {
   gate?: string
   mode?: Mode
   search?: string
   page?: number
   pageSize?: number
+  /** Who holds the reviews to show; history ignores it and shows everything */
+  claim?: ClaimFilter
 } = {}) {
-  const params = { ...statusesFor(gate, mode), search, page, pageSize }
+  const params = {
+    ...statusesFor(gate, mode),
+    search,
+    page,
+    pageSize,
+    claim: mode === 'HISTORY' ? ('ALL' as const) : claim,
+  }
   const query = useQuery({
     queryKey: adminKeys.queue('review', params),
     queryFn: ({ signal }) => searchReviewQueue('review', params, signal),
@@ -86,15 +101,15 @@ export function useReviewerQueue({
   }
 }
 
-/** Open work per gate for the sidebar badges: one grouped count, no rows */
+/** Open work per gate for the sidebar badges (held by me or by nobody): one grouped count, no rows */
 export function useReviewerCounts() {
   const { data } = useQuery({
     queryKey: adminKeys.queueCounts('review'),
     queryFn: ({ signal }) => getReviewQueueCounts('review', signal),
   })
   return {
-    GATE_1: countOf(data?.applications, openApplications),
-    GATE_2: countOf(data?.qualifications, openQualifications),
+    GATE_1: countOf(data?.availableApplications ?? data?.applications, openApplications),
+    GATE_2: countOf(data?.availableQualifications ?? data?.qualifications, openQualifications),
   }
 }
 

@@ -11,6 +11,7 @@ import type {
   Expert,
   ExpertApplication,
   CriterionDeclaration,
+  ReviewClaimState,
   Submission,
 } from '../types'
 
@@ -86,6 +87,7 @@ interface ReviewApplication {
   notApplicableCriteria?: string[]
   criterionDeclarations?: CriterionDeclaration[]
   declarationPassedCriteria?: string[]
+  claim?: ReviewClaimState
 }
 
 const toQueueRow = (a: ReviewQueueItem): ExpertApplication => ({
@@ -145,6 +147,7 @@ function toDetail(a: ReviewApplication): ApplicationDetail {
     decidedAt: a.decidedAt,
     decisionNote: a.decisionNote,
     earliestReapplyAt: a.earliestReapplyAt,
+    claim: a.claim,
   }
 }
 
@@ -194,6 +197,18 @@ export async function decideEligibility(
     `${REVIEW_BASE}/${id}/eligibility-decision`,
     body
   )
+  return toDetail(res.data)
+}
+
+/** Takes the application from the shared queue; REVIEW_CLAIMED when another reviewer won */
+export async function claimApplication(id: string): Promise<ApplicationDetail> {
+  const res = await api.post<Envelope<ReviewApplication>>(`${REVIEW_BASE}/${id}/claim`)
+  return toDetail(res.data)
+}
+
+/** Gives the application back to the shared queue */
+export async function releaseApplication(id: string): Promise<ApplicationDetail> {
+  const res = await api.post<Envelope<ReviewApplication>>(`${REVIEW_BASE}/${id}/release`)
   return toDetail(res.data)
 }
 

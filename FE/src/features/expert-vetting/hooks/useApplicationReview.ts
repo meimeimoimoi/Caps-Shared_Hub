@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { decideEligibility, getApplicationDetail } from '../api/adminApi'
 import { adminKeys } from '../api/queryKeys'
+import { isClaimConflict } from './useReviewClaim'
 import {
   CURRENT_ADMIN,
   ELIGIBILITY_CODES,
@@ -115,6 +116,10 @@ export function useApplicationReview(id: string) {
       setEdits({})
       await qc.invalidateQueries({ queryKey: adminKeys.applications() })
       await qc.invalidateQueries({ queryKey: adminKeys.queueAll() })
+    },
+    // The claim expired or moved to another reviewer: reload to show who holds it now
+    onError: (e: unknown) => {
+      if (isClaimConflict(e)) void qc.invalidateQueries({ queryKey: adminKeys.application(id) })
     },
   })
 

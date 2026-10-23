@@ -12,6 +12,7 @@ import { ReviewPageLayout } from '@/features/expert-vetting/components/ReviewPag
 import { useAuthStore } from '@/features/auth'
 import { useAdminNav } from '@/app/layouts/admin/useAdminNav'
 import { getQualificationFile } from '../../features/expert-vetting/api/qualificationApi'
+import { ClaimBar } from '../../features/expert-vetting/components/ClaimBar'
 import { CompetencyDecisionDialog } from '../../features/expert-vetting/components/CompetencyDecisionDialog'
 import { CompetencyResultCard } from '../../features/expert-vetting/components/CompetencyResultCard'
 import { CompetencyReview } from '../../features/expert-vetting/components/CompetencyReview'
@@ -25,6 +26,7 @@ import {
   COMPETENCY_OUTCOME,
 } from '../../features/expert-vetting/constants'
 import { useQualificationReview } from '../../features/expert-vetting/hooks/useQualificationReview'
+import { useReviewClaim } from '../../features/expert-vetting/hooks/useReviewClaim'
 import type {
   FinalApprovalDecision,
   QualificationScope,
@@ -39,6 +41,7 @@ const DECISION_ERRORS = [
   'COMPETENCY_EVIDENCE_UNKNOWN',
   'SELF_REVIEW_NOT_ALLOWED',
   'QUALIFICATION_NOT_IN_REVIEW',
+  'REVIEW_NOT_CLAIMED',
   'QUALIFICATION_NOT_PENDING_APPROVAL',
   'FINAL_APPROVER_IS_REVIEWER',
   'FINAL_APPROVAL_NOTE_REQUIRED',
@@ -78,6 +81,7 @@ export default function AdminQualificationDetailPage({
   const nav = useAdminNav(!embedded)
   const review = useQualificationReview(id, scope)
   const userId = useAuthStore((s) => s.user?.id)
+  const claim = useReviewClaim('GATE_2', id, review.detail?.claim)
   const isApproval = scope === 'approval'
   const section = isApproval ? 'approvals' : 'competency'
   const listPath = isApproval
@@ -154,6 +158,17 @@ export default function AdminQualificationDetailPage({
       })
       .catch((e: unknown) => setToast(errorText(e)))
 
+  const claimError = (e: unknown) =>
+    e instanceof ApiError && (e.code === 'REVIEW_CLAIMED' || e.code === 'REVIEW_NOT_CLAIMED')
+      ? t(`admin:claim.errors.${e.code}`)
+      : t('admin:claim.errors.failed')
+  const takeClaim = () => void claim.claim().catch((e: unknown) => setToast(claimError(e)))
+  const releaseClaim = () =>
+    void claim
+      .release()
+      .then(() => setToast(t('admin:claim.released')))
+      .catch((e: unknown) => setToast(claimError(e)))
+
   const finish = (note: string) => {
     const outcome = review.outcome
     return review
@@ -194,6 +209,11 @@ export default function AdminQualificationDetailPage({
     requestAnimationFrame(() => document.getElementById('panel-documents')?.scrollIntoView({ block: 'nearest', behavior: 'smooth' }))
   }
   const decided = !detail.canDecide
+  // Only the reviewer holding the qualification can assess it; everyone else reads it
+  const readOnly = !claim.heldByMe
+  const history = isApproval
+    ? review.history
+    : [...review.history, ...claim.history].sort((a, b) => b.at.localeCompare(a.at))
   const years = t('admin:detail.meta.years', { count: expert.years })
 
   return (
@@ -238,6 +258,19 @@ export default function AdminQualificationDetailPage({
           current: RAIL_STEP[detail.status] ?? 0,
         }}
       />
+      )}
+
+      {!isApproval && (
+        <div className="mt-5">
+          <ClaimBar
+            current={claim.current}
+            canClaim={claim.canClaim}
+            claimable={detail.canDecide}
+            pending={claim.pending}
+            onClaim={takeClaim}
+            onRelease={releaseClaim}
+          />
+        </div>
       )}
 
       <div className="mt-5 grid items-start gap-5 xl:grid-cols-[minmax(300px,0.8fr)_minmax(0,1.2fr)]">
@@ -300,7 +333,7 @@ export default function AdminQualificationDetailPage({
                 loadFile={(evidenceId) => getQualificationFile(scope, detail.id, evidenceId)}
               />
             )}
-            {tab === 'history' && <HistoryTab variant="panel" history={review.history} />}
+            {tab === 'history' && <HistoryTab variant="panel" history={history} />}
           </div>
         </div>
 
@@ -328,7 +361,7 @@ export default function AdminQualificationDetailPage({
               assessments={review.assessments}
               documents={expert.documents}
               previous={detail.competencies}
-              disabled={review.deciding}
+              disabled={review.deciding || readOnly}
               onResult={review.setResult}
               onNote={review.setNote}
               onToggleEvidence={review.toggleEvidence}
@@ -353,7 +386,7 @@ export default function AdminQualificationDetailPage({
           primary={{
             label: t(`admin:${COMPETENCY_OUTCOME[review.outcome].confirm}`),
             onClick: () => setConfirming(true),
-            disabled: !review.canDecide,
+            disabled: !review.canDecide || readOnly,
           }}
         />
           </div>

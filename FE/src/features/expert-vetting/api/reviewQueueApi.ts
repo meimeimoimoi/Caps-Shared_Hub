@@ -25,6 +25,12 @@ export interface ReviewQueueRow {
   status: string
   submittedAt: string | null
   isReapplication: boolean
+  /** Reviewer holding it now; null when nobody does (an expired claim counts as nobody) */
+  claimedByUserId?: string | null
+  claimedByEmail?: string | null
+  /** Server time when the claim lapses; null while waiting for the expert */
+  claimExpiresAt?: string | null
+  heldByMe?: boolean
 }
 
 interface ReviewQueuePage {
@@ -37,7 +43,13 @@ interface ReviewQueuePage {
 export interface ReviewQueueCounts {
   applications: Record<string, number>
   qualifications: Record<string, number>
+  /** Per status, only what the caller holds or nobody holds */
+  availableApplications?: Record<string, number>
+  availableQualifications?: Record<string, number>
 }
+
+/** Which reviews to show by who holds them; the server default is MINE_OR_UNCLAIMED */
+export type ClaimFilter = 'MINE_OR_UNCLAIMED' | 'MINE' | 'UNCLAIMED' | 'ALL'
 
 export interface ReviewQueueParams {
   /** Leave empty to leave applications out of the page */
@@ -48,6 +60,8 @@ export interface ReviewQueueParams {
   /** First page is 1 */
   page: number
   pageSize: number
+  /** Reviewer queue only; leave out for the server default (mine or unclaimed) */
+  claim?: ClaimFilter
 }
 
 const REVIEW = '/api/v1/admin/experts/review-queue'
@@ -74,6 +88,7 @@ export async function searchReviewQueue(
           q: search,
           page: params.page,
           pageSize: params.pageSize,
+          claim: params.claim,
         }
   const res = await api.get<Envelope<ReviewQueuePage>>(scope === 'approval' ? APPROVAL : REVIEW, {
     params: query,

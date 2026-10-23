@@ -35,7 +35,8 @@
     "accounts": "Accounts",
     "settings": "Settings",
     "users": "Users",
-    "expertPolicy": "Expert policy"
+    "expertPolicy": "Expert policy",
+    "assignments": "Review assignments"
   },
   "dashboard": {
     "title": "Overview",
@@ -776,7 +777,8 @@
       "EXPERIENCE_BELOW_MINIMUM": "The experience requirement cannot pass: the declared experience is below the minimum.",
       "SELF_REVIEW_NOT_ALLOWED": "You cannot review your own application.",
       "APPLICATION_NOT_IN_REVIEW": "This application no longer waits for a decision; reload to see its status.",
-      "failed": "The decision was not recorded. Please try again."
+      "failed": "The decision was not recorded. Please try again.",
+      "REVIEW_NOT_CLAIMED": "You no longer hold this review (the hold expired or it was handed on). Reloaded the review."
     },
     "declarations": {
       "contest": "Grounds against the statement?",
@@ -890,7 +892,8 @@
       "SERVICE_NOT_APPROVED": "Only an approved service can be suspended; reload the page.",
       "SERVICE_NOT_SUSPENDED": "The service is not suspended; reload the page.",
       "SUSPENSION_NOTE_REQUIRED": "Give the reason for the suspension.",
-      "INVALID_SERVICE_ACCESS_ACTION": "The action is invalid. Reload the page and try again."
+      "INVALID_SERVICE_ACCESS_ACTION": "The action is invalid. Reload the page and try again.",
+      "REVIEW_NOT_CLAIMED": "You no longer hold this review (the hold expired or it was handed on). Reloaded the review."
     }
   },
   "finalApproval": {
@@ -973,6 +976,11 @@
         "label": "Wait after failing competency",
         "help": "Days an expert waits before registering the same service again after failing the competency review. Default {{defaultValue}} days; allowed {{min}}–{{max}}.",
         "unit": "days"
+      },
+      "ReviewClaimHours": {
+        "label": "Review hold period",
+        "help": "Hours a reviewer keeps a claimed review. Without a decision by then it returns to the shared queue; time spent waiting for the expert does not count. Default {{defaultValue}} hours; allowed {{min}}–{{max}}.",
+        "unit": "hours"
       }
     },
     "outOfRange": "Enter a whole number from {{min}} to {{max}}.",
@@ -1000,6 +1008,77 @@
       "POLICY_REASON_TOO_LONG": "The reason can be at most 1000 characters.",
       "UNKNOWN_POLICY_SETTING": "Unknown setting. Reload the page and try again.",
       "failed": "The change was not saved. Please try again."
+    }
+  },
+  "claim": {
+    "free": "Nobody has claimed this review",
+    "take": "Claim review",
+    "mine": "You are working on this",
+    "expiresIn": "returns to the queue {{time}}",
+    "waitingForExpert": "waiting for the expert to supplement",
+    "release": "Return to queue",
+    "released": "Returned to the queue",
+    "heldBy": "{{holder}} is working on this",
+    "someone": "another reviewer",
+    "helpLabel": "About claiming reviews",
+    "help": "One reviewer per review at a time. Claim a review before assessing it; others can only read it. It stays yours while more information is requested and comes back to you when the expert resubmits. If you do not decide within the hold period (set by a System Admin), it returns to the shared queue.",
+    "history": {
+      "claim": "Claimed the review",
+      "claimAfterExpiry": "Claimed the review after {{previous}}'s hold expired",
+      "release": "Returned the review to the queue",
+      "reassign": "Handed the review to {{holder}}: {{reason}}"
+    },
+    "errors": {
+      "REVIEW_CLAIMED": "Another reviewer just claimed this review. Reloaded to show who holds it.",
+      "REVIEW_NOT_CLAIMED": "You no longer hold this review (the hold expired or it was handed on). Reloaded the review.",
+      "failed": "That did not work. Please try again."
+    }
+  },
+  "assignments": {
+    "title": "Review assignments",
+    "helpLabel": "About review assignments",
+    "help": "Open eligibility and competency reviews with the reviewer holding each one. Hand a review to another reviewer when the holder is away or to balance the work; the reason is kept in the review history.",
+    "gateFilter": "Review step",
+    "gates": {
+      "ALL": "Both steps",
+      "GATE_1": "Eligibility",
+      "GATE_2": "Competency"
+    },
+    "claimFilter": "Reviewer",
+    "claims": {
+      "ALL": "All reviews",
+      "UNCLAIMED": "Unclaimed"
+    },
+    "columns": {
+      "expert": "Expert",
+      "gate": "Step",
+      "submitted": "Submitted",
+      "status": "Status",
+      "holder": "Reviewer",
+      "actions": "Actions"
+    },
+    "until": "until {{time}}",
+    "reassign": "Reassign",
+    "done": "Review reassigned",
+    "empty": "No open reviews.",
+    "pagination": "Review assignments pagination",
+    "dialog": {
+      "title": "Reassign {{name}}'s review",
+      "reviewer": "New reviewer",
+      "reviewerHelp": "Lists reviewers who have opened the review queue. A review cannot go to its own expert.",
+      "choose": "Choose a reviewer",
+      "reason": "Reason (required)",
+      "reasonPlaceholder": "e.g. the current reviewer is on leave until the end of the week",
+      "confirm": "Reassign"
+    },
+    "errors": {
+      "CLAIM_REASSIGN_REASON_REQUIRED": "Give the reason for the reassignment.",
+      "CLAIM_REASSIGN_REASON_TOO_LONG": "The reason can be at most 1000 characters.",
+      "REVIEWER_NOT_FOUND": "Reviewer not found. They must open the review queue at least once.",
+      "SELF_REVIEW_NOT_ALLOWED": "A review cannot be handed to its own expert.",
+      "APPLICATION_NOT_IN_REVIEW": "The review is no longer open. Reload the list.",
+      "QUALIFICATION_NOT_IN_REVIEW": "The review is no longer open. Reload the list.",
+      "failed": "Could not reassign. Please try again."
     }
   }
 }

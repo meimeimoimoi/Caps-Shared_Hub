@@ -94,6 +94,9 @@ const NotFoundPage = lazy(() => import('../../pages/NotFoundPage'))
 const AdminQualificationsPage = lazy(
   () => import('@/pages/admin/AdminQualificationsPage')
 )
+const AdminReviewAssignmentsPage = lazy(
+  () => import('@/pages/admin/AdminReviewAssignmentsPage')
+)
 const AdminQualificationDetailPage = lazy(
   () => import('@/pages/admin/AdminQualificationDetailPage')
 )
@@ -314,6 +317,11 @@ const router = createBrowserRouter(
         <Route
           path="/admin/experts/approvals/:id"
           element={<AdminQualificationDetailPage scope="approval" />}
+        />
+        {/* Who works on each open Gate 1 and Gate 2 review; handing a review to another reviewer */}
+        <Route
+          path="/admin/experts/assignments"
+          element={<AdminReviewAssignmentsPage />}
         />
         {/* Price changes above the auto-approval threshold (POL-MKT-02) */}
         <Route

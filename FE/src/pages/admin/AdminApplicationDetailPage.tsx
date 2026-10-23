@@ -14,6 +14,7 @@ import { Toast } from '@/components/ui/feedback/toast'
 import { ReviewPageLayout } from '@/features/expert-vetting/components/ReviewPageLayout'
 import { getEvidenceFile } from '../../features/expert-vetting/api/adminApi'
 import { AiScreeningTab } from '../../features/expert-vetting/components/AiScreeningTab'
+import { ClaimBar } from '../../features/expert-vetting/components/ClaimBar'
 import { DecisionDialog } from '../../features/expert-vetting/components/DecisionDialog'
 import { EligibilityDecisionPanel } from '../../features/expert-vetting/components/EligibilityDecisionPanel'
 import { EligibilityReview } from '../../features/expert-vetting/components/EligibilityReview'
@@ -31,6 +32,7 @@ import {
 import { formatDate } from '../../features/expert-vetting/utils/applications'
 import { useAdminNav } from '@/app/layouts/admin/useAdminNav'
 import { useApplicationReview } from '../../features/expert-vetting/hooks/useApplicationReview'
+import { useReviewClaim } from '../../features/expert-vetting/hooks/useReviewClaim'
 import { useTranslation } from 'react-i18next'
 import { StatusBadge } from '@/components/ui/display/status-badge'
 
@@ -41,6 +43,7 @@ const DECISION_ERRORS = [
   'EXPERIENCE_BELOW_MINIMUM',
   'SELF_REVIEW_NOT_ALLOWED',
   'APPLICATION_NOT_IN_REVIEW',
+  'REVIEW_NOT_CLAIMED',
 ] as const
 type DecisionError = (typeof DECISION_ERRORS)[number]
 const isDecisionError = (code?: string): code is DecisionError =>
@@ -54,6 +57,7 @@ export default function AdminApplicationDetailPage({ embedded = false }: { embed
   const nav = useAdminNav(!embedded)
   const review = useApplicationReview(id)
   const { detail, status } = review
+  const claim = useReviewClaim('GATE_1', id, detail?.claim)
   // AI screening is postponed: the tab only exists for demo fixtures
   const tabs = [
     { key: 'profile', label: t('admin:detail.tabs.profile') },
@@ -125,6 +129,17 @@ export default function AdminApplicationDetailPage({ embedded = false }: { embed
       ? t(`admin:eligibility.errors.${e.code}`)
       : t('admin:eligibility.errors.failed')
 
+  const claimError = (e: unknown) =>
+    e instanceof ApiError && (e.code === 'REVIEW_CLAIMED' || e.code === 'REVIEW_NOT_CLAIMED')
+      ? t(`admin:claim.errors.${e.code}`)
+      : t('admin:claim.errors.failed')
+  const takeClaim = () => void claim.claim().catch((e: unknown) => setToast(claimError(e)))
+  const releaseClaim = () =>
+    void claim
+      .release()
+      .then(() => setToast(t('admin:claim.released')))
+      .catch((e: unknown) => setToast(claimError(e)))
+
   const finish = (note: string) => {
     const outcome = review.outcome
     return review
@@ -180,6 +195,9 @@ export default function AdminApplicationDetailPage({ embedded = false }: { embed
       : RAIL_APPLICATION[RAIL_APPLICATION.length - 1],
   ]
   const decided = !detail.canDecide
+  // Only the reviewer holding the application can assess it; everyone else reads it
+  const readOnly = !claim.heldByMe
+  const history = [...review.history, ...claim.history].sort((a, b) => b.at.localeCompare(a.at))
   const jobTitle = [detail.jobTitle, detail.company].filter(Boolean).join(', ')
   const years = t('admin:detail.meta.years', { count: detail.years })
 
@@ -233,6 +251,17 @@ export default function AdminApplicationDetailPage({ embedded = false }: { embed
           </dl>
         </header>
       )}
+
+      <div className="mt-5">
+        <ClaimBar
+          current={claim.current}
+          canClaim={claim.canClaim}
+          claimable={detail.canDecide}
+          pending={claim.pending}
+          onClaim={takeClaim}
+          onRelease={releaseClaim}
+        />
+      </div>
 
       {/* While assessing, the reference panel widens when a document is open so files are readable beside the
           editor. Once decided, the columns stay fixed: the record is read on the left and the short result card
@@ -308,7 +337,7 @@ export default function AdminApplicationDetailPage({ embedded = false }: { embed
                 loadFile={(evidenceId) => getEvidenceFile(detail.id, evidenceId)}
               />
             )}
-            {tab === 'history' && <HistoryTab variant="panel" history={review.history} />}
+            {tab === 'history' && <HistoryTab variant="panel" history={history} />}
           </div>
         </div>
 
@@ -332,7 +361,7 @@ export default function AdminApplicationDetailPage({ embedded = false }: { embed
               key={detail.id}
               detail={detail}
               assessments={review.assessments}
-              disabled={review.deciding}
+              disabled={review.deciding || readOnly}
               onResult={review.setResult}
               onNote={review.setNote}
               setAsideNote={review.setAsideNote}
@@ -342,7 +371,7 @@ export default function AdminApplicationDetailPage({ embedded = false }: { embed
         <EligibilityDecisionPanel
           outcome={review.outcome}
           blockers={blockers}
-          disabled={!review.canDecide}
+          disabled={!review.canDecide || readOnly}
           onConfirm={() => setConfirming(true)}
         />
           </div>

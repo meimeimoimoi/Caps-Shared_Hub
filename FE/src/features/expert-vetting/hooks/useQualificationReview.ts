@@ -7,6 +7,7 @@ import {
   getQualificationDetail,
 } from '../api/qualificationApi'
 import { adminKeys } from '../api/queryKeys'
+import { isClaimConflict } from './useReviewClaim'
 import { COMPETENCY_CODES } from '../constants'
 import type {
   CompetencyAssessment,
@@ -77,6 +78,10 @@ export function useQualificationReview(
       setEdits({})
       await qc.invalidateQueries({ queryKey: adminKeys.qualifications(scope) })
       await qc.invalidateQueries({ queryKey: adminKeys.queueAll() })
+    },
+    // The claim expired or moved to another reviewer: reload to show who holds it now
+    onError: (e: unknown) => {
+      if (isClaimConflict(e)) void qc.invalidateQueries({ queryKey: adminKeys.qualification(scope, id) })
     },
   })
 

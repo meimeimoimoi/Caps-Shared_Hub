@@ -11,6 +11,7 @@ export const adminKeys = {
   queueAll: () => [...adminKeys.all, 'queue'] as const,
   queue: (scope: string, params: object) =>
     [...adminKeys.all, 'queue', scope, params] as const,
+  reviewers: () => [...adminKeys.all, 'reviewers'] as const,
   queueCounts: (scope: string) =>
     [...adminKeys.all, 'queue', 'counts', scope] as const,
 }

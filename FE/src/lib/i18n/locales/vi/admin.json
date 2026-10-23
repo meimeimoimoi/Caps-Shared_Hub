@@ -35,7 +35,8 @@
     "accounts": "Tài khoản",
     "settings": "Cấu hình",
     "users": "Người dùng",
-    "expertPolicy": "Chính sách chuyên gia"
+    "expertPolicy": "Chính sách chuyên gia",
+    "assignments": "Phân công người chấm"
   },
   "dashboard": {
     "title": "Tổng quan",
@@ -775,7 +776,8 @@
       "EXPERIENCE_BELOW_MINIMUM": "Yêu cầu kinh nghiệm không thể Đạt: số năm kinh nghiệm kê khai dưới mức tối thiểu.",
       "SELF_REVIEW_NOT_ALLOWED": "Bạn không thể tự đánh giá hồ sơ của chính mình.",
       "APPLICATION_NOT_IN_REVIEW": "Hồ sơ không còn chờ kết luận; tải lại để xem trạng thái mới.",
-      "failed": "Chưa ghi nhận được kết luận. Vui lòng thử lại."
+      "failed": "Chưa ghi nhận được kết luận. Vui lòng thử lại.",
+      "REVIEW_NOT_CLAIMED": "Bạn không còn giữ hồ sơ này (đã quá hạn hoặc đã chuyển cho người khác). Đã tải lại hồ sơ."
     },
     "declarations": {
       "contest": "Có căn cứ không đạt?",
@@ -889,7 +891,8 @@
       "SERVICE_NOT_APPROVED": "Chỉ tạm ngưng được dịch vụ đang được cung cấp; tải lại trang.",
       "SERVICE_NOT_SUSPENDED": "Dịch vụ không ở trạng thái tạm ngưng; tải lại trang.",
       "SUSPENSION_NOTE_REQUIRED": "Ghi rõ lý do tạm ngưng.",
-      "INVALID_SERVICE_ACCESS_ACTION": "Thao tác không hợp lệ. Tải lại trang rồi thử lại."
+      "INVALID_SERVICE_ACCESS_ACTION": "Thao tác không hợp lệ. Tải lại trang rồi thử lại.",
+      "REVIEW_NOT_CLAIMED": "Bạn không còn giữ hồ sơ này (đã quá hạn hoặc đã chuyển cho người khác). Đã tải lại hồ sơ."
     }
   },
   "finalApproval": {
@@ -972,6 +975,11 @@
         "label": "Thời gian chờ sau khi không đạt năng lực",
         "help": "Số ngày chuyên gia phải chờ trước khi đăng ký lại cùng dịch vụ sau kết quả Không đạt ở bước đánh giá năng lực. Mặc định {{defaultValue}} ngày; cho phép {{min}}–{{max}}.",
         "unit": "ngày"
+      },
+      "ReviewClaimHours": {
+        "label": "Thời hạn giữ hồ sơ",
+        "help": "Số giờ người đánh giá được giữ một hồ sơ đã nhận. Quá hạn mà chưa kết luận thì hồ sơ tự về hàng chờ chung; thời gian chờ chuyên gia bổ sung không tính. Mặc định {{defaultValue}} giờ; cho phép {{min}}–{{max}}.",
+        "unit": "giờ"
       }
     },
     "outOfRange": "Nhập số nguyên từ {{min}} đến {{max}}.",
@@ -999,6 +1007,77 @@
       "POLICY_REASON_TOO_LONG": "Lý do tối đa 1000 ký tự.",
       "UNKNOWN_POLICY_SETTING": "Tham số không hợp lệ. Tải lại trang rồi thử lại.",
       "failed": "Chưa lưu được thay đổi. Vui lòng thử lại."
+    }
+  },
+  "claim": {
+    "free": "Chưa ai nhận hồ sơ này",
+    "take": "Nhận hồ sơ",
+    "mine": "Bạn đang xử lý",
+    "expiresIn": "tự trả về hàng chờ {{time}}",
+    "waitingForExpert": "đang chờ chuyên gia bổ sung",
+    "release": "Trả về hàng chờ",
+    "released": "Đã trả hồ sơ về hàng chờ",
+    "heldBy": "Đang được {{holder}} xem",
+    "someone": "một người đánh giá khác",
+    "helpLabel": "Về việc nhận hồ sơ",
+    "help": "Mỗi hồ sơ chỉ một người đánh giá tại một thời điểm. Nhận hồ sơ trước khi chấm; người khác chỉ xem được. Hồ sơ vẫn thuộc về bạn khi yêu cầu bổ sung, và quay lại đúng bạn khi chuyên gia nộp lại. Quá thời hạn giữ (System Admin cấu hình) mà chưa kết luận thì hồ sơ tự về hàng chờ chung.",
+    "history": {
+      "claim": "Nhận hồ sơ",
+      "claimAfterExpiry": "Nhận hồ sơ sau khi {{previous}} quá thời hạn giữ",
+      "release": "Trả hồ sơ về hàng chờ",
+      "reassign": "Chuyển hồ sơ cho {{holder}}: {{reason}}"
+    },
+    "errors": {
+      "REVIEW_CLAIMED": "Hồ sơ vừa được người khác nhận. Đã tải lại để hiện người đang giữ.",
+      "REVIEW_NOT_CLAIMED": "Bạn không còn giữ hồ sơ này (đã quá hạn hoặc đã chuyển cho người khác). Đã tải lại hồ sơ.",
+      "failed": "Chưa thực hiện được. Vui lòng thử lại."
+    }
+  },
+  "assignments": {
+    "title": "Phân công người chấm",
+    "helpLabel": "Về phân công người chấm",
+    "help": "Các hồ sơ đang mở ở bước xác minh điều kiện và đánh giá năng lực, kèm người đang giữ. Chuyển hồ sơ cho người đánh giá khác khi người giữ vắng mặt hoặc cần cân đối công việc; lý do được lưu trong lịch sử hồ sơ.",
+    "gateFilter": "Bước đánh giá",
+    "gates": {
+      "ALL": "Cả hai bước",
+      "GATE_1": "Xác minh điều kiện",
+      "GATE_2": "Đánh giá năng lực"
+    },
+    "claimFilter": "Người xử lý",
+    "claims": {
+      "ALL": "Mọi hồ sơ",
+      "UNCLAIMED": "Chưa ai nhận"
+    },
+    "columns": {
+      "expert": "Chuyên gia",
+      "gate": "Bước",
+      "submitted": "Ngày nộp",
+      "status": "Trạng thái",
+      "holder": "Người xử lý",
+      "actions": "Thao tác"
+    },
+    "until": "đến {{time}}",
+    "reassign": "Chuyển người chấm",
+    "done": "Đã chuyển người chấm",
+    "empty": "Không có hồ sơ đang mở.",
+    "pagination": "Phân trang danh sách phân công",
+    "dialog": {
+      "title": "Chuyển người chấm hồ sơ của {{name}}",
+      "reviewer": "Người đánh giá nhận hồ sơ",
+      "reviewerHelp": "Danh sách gồm người đánh giá đã từng mở hàng chờ đánh giá. Không thể chuyển cho chính chuyên gia của hồ sơ.",
+      "choose": "Chọn người đánh giá",
+      "reason": "Lý do chuyển (bắt buộc)",
+      "reasonPlaceholder": "Ví dụ: người đang giữ nghỉ phép đến hết tuần",
+      "confirm": "Chuyển hồ sơ"
+    },
+    "errors": {
+      "CLAIM_REASSIGN_REASON_REQUIRED": "Ghi lý do chuyển người chấm.",
+      "CLAIM_REASSIGN_REASON_TOO_LONG": "Lý do tối đa 1000 ký tự.",
+      "REVIEWER_NOT_FOUND": "Không tìm thấy người đánh giá này. Họ cần mở hàng chờ đánh giá ít nhất một lần.",
+      "SELF_REVIEW_NOT_ALLOWED": "Không thể chuyển hồ sơ cho chính chuyên gia của hồ sơ.",
+      "APPLICATION_NOT_IN_REVIEW": "Hồ sơ không còn ở bước chờ đánh giá. Tải lại danh sách.",
+      "QUALIFICATION_NOT_IN_REVIEW": "Hồ sơ không còn ở bước chờ đánh giá. Tải lại danh sách.",
+      "failed": "Chưa chuyển được. Vui lòng thử lại."
     }
   }
 }

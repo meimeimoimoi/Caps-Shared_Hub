@@ -130,5 +130,19 @@
   "queuePagination": "Review queue pages",
   "yearsExperience_one": "{{count}} year of experience",
   "yearsExperience_other": "{{count}} years of experience",
-  "reapplication": "Reapplication"
+  "reapplication": "Reapplication",
+  "claimFilter": "Reviewer",
+  "claimFilters": {
+    "MINE_OR_UNCLAIMED": "Mine and unclaimed",
+    "MINE": "Mine",
+    "UNCLAIMED": "Unclaimed",
+    "ALL": "All"
+  },
+  "holderLabel": "Reviewer",
+  "holderMe": "You",
+  "holderNone": "Unclaimed",
+  "holderSomeone": "Another reviewer",
+  "claimAction": "Claim",
+  "claimTaken": "Another reviewer just claimed this review.",
+  "claimFailed": "Could not claim the review. Please try again."
 }

@@ -105,6 +105,39 @@ export interface ApplicationDetail extends ExpertApplication {
   decidedAt: string | null
   decisionNote: string | null
   earliestReapplyAt: string | null
+  /** Who works on the review now; decisions need an active claim (absent in older responses) */
+  claim?: ReviewClaimState
+}
+
+/** The reviewer working on a review now; expiresAt comes from the server clock, never the browser's */
+export interface ReviewClaim {
+  holderUserId: string
+  holderEmail: string | null
+  claimedAt: string
+  /** Null while the review waits for the expert (the hold does not run) */
+  expiresAt: string | null
+  heldByMe: boolean
+}
+
+/** One change of a review's claim: CLAIM with a previous holder means that holder's claim had expired */
+export interface ReviewClaimEvent {
+  action: 'CLAIM' | 'RELEASE' | 'REASSIGN'
+  actorUserId: string
+  actorEmail: string | null
+  holderUserId: string | null
+  holderEmail: string | null
+  previousHolderUserId: string | null
+  previousHolderEmail: string | null
+  reason: string | null
+  at: string
+}
+
+export interface ReviewClaimState {
+  /** Null when nobody holds the review (never claimed, released, decided or expired) */
+  current: ReviewClaim | null
+  /** True while the review waits for a decision and the caller may take it */
+  canClaim: boolean
+  history: ReviewClaimEvent[]
 }
 
 /** One submission (first submit or supplement) and the statements the applicant agreed to */
@@ -215,6 +248,8 @@ export interface QualificationDetail {
   canSuspend: boolean
   /** Suspended: a System Admin can reinstate the service */
   canReinstate: boolean
+  /** Who works on the Gate 2 review now; decisions need an active claim */
+  claim?: ReviewClaimState
 }
 
 export interface FinalApprovalInput {

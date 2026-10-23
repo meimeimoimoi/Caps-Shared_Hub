@@ -9,6 +9,7 @@ import {
   Flag,
   SlidersHorizontal,
   Tag,
+  UserCog,
   UserRound,
   Users,
   UsersRound,
@@ -66,6 +67,7 @@ interface AdminLayoutProps extends ShellPageProps {
     | 'approvals'
     | 'pricingReview'
     | 'expertPolicy'
+    | 'assignments'
     | 'experts'
     | 'disputes'
     | 'escrow'
@@ -122,6 +124,12 @@ export function AdminLayout({
           icon: BadgeCheck,
           to: '/admin/experts/approvals',
           active: section === 'approvals',
+        },
+        {
+          label: t('navigation.assignments'),
+          icon: UserCog,
+          to: '/admin/experts/assignments',
+          active: section === 'assignments',
         },
         {
           label: t('navigation.pricingReview'),
@@ -192,6 +200,7 @@ export function AdminLayout({
   ]
   const approvalRoutes = [
     '/admin/experts/approvals',
+    '/admin/experts/assignments',
     '/admin/experts/pricing',
     '/admin/experts/policy',
   ]

@@ -9,6 +9,7 @@ import type {
   QualificationRow,
   QualificationScope,
   QualificationStatus,
+  ReviewClaimState,
   ServiceAccessAction,
 } from '../types'
 
@@ -86,6 +87,7 @@ interface ReviewQualification {
   canFinalApprove: boolean
   canSuspend: boolean
   canReinstate: boolean
+  claim?: ReviewClaimState
 }
 
 const toRow = (q: QueueItem): QualificationRow => ({
@@ -118,6 +120,7 @@ function toDetail(q: ReviewQualification): QualificationDetail {
     canFinalApprove: q.canFinalApprove,
     canSuspend: q.canSuspend,
     canReinstate: q.canReinstate,
+    claim: q.claim,
     competencies: q.competencies,
     // Gate 1 view of the expert: the profile, document and Gate 1 result tabs read it as is
     profile: {
@@ -224,6 +227,18 @@ export async function decideCompetency(
     `${BASES.review}/${id}/competency-decision`,
     body
   )
+  return toDetail(res.data)
+}
+
+/** Takes the qualification from the shared Gate 2 queue; REVIEW_CLAIMED when another reviewer won */
+export async function claimQualification(id: string): Promise<QualificationDetail> {
+  const res = await api.post<Envelope<ReviewQualification>>(`${BASES.review}/${id}/claim`)
+  return toDetail(res.data)
+}
+
+/** Gives the qualification back to the shared Gate 2 queue */
+export async function releaseQualification(id: string): Promise<QualificationDetail> {
+  const res = await api.post<Envelope<ReviewQualification>>(`${BASES.review}/${id}/release`)
   return toDetail(res.data)
 }
 

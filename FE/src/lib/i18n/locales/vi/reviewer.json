@@ -129,5 +129,19 @@
   },
   "queuePagination": "Phân trang hàng đợi đánh giá",
   "yearsExperience": "{{count}} năm kinh nghiệm",
-  "reapplication": "Nộp lại"
+  "reapplication": "Nộp lại",
+  "claimFilter": "Người xử lý",
+  "claimFilters": {
+    "MINE_OR_UNCLAIMED": "Của tôi và chưa ai nhận",
+    "MINE": "Của tôi",
+    "UNCLAIMED": "Chưa ai nhận",
+    "ALL": "Tất cả"
+  },
+  "holderLabel": "Người xử lý",
+  "holderMe": "Bạn",
+  "holderNone": "Chưa ai nhận",
+  "holderSomeone": "Người đánh giá khác",
+  "claimAction": "Nhận",
+  "claimTaken": "Hồ sơ vừa được người khác nhận.",
+  "claimFailed": "Chưa nhận được hồ sơ. Vui lòng thử lại."
 }

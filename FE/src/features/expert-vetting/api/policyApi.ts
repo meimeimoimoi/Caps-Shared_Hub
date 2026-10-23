@@ -7,7 +7,10 @@ interface Envelope<T> {
 }
 
 export type PolicySettingKey =
-  'MinYearsExperience' | 'ReapplyNotEligibleDays' | 'ReapplyCompetencyFailDays'
+  | 'MinYearsExperience'
+  | 'ReapplyNotEligibleDays'
+  | 'ReapplyCompetencyFailDays'
+  | 'ReviewClaimHours'
 
 /** One adjustable expert policy value; updatedAt is null while the default applies */
 export interface PolicySetting {
