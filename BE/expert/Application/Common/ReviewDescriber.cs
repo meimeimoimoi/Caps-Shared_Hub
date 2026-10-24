@@ -1,6 +1,8 @@
 using Caps.Expert.Application.Abstractions;
 using Caps.Expert.Application.DTOs.Responses;
+using Caps.Expert.Domain;
 using Caps.Expert.Domain.Applications;
+using Caps.Expert.Domain.Reviews;
 
 namespace Caps.Expert.Application.Common;
 
@@ -9,7 +11,10 @@ public sealed class ReviewDescriber(
     IExpertApplicationRepository applications,
     IExpertEvidenceRepository evidences,
     IEligibilityCheckRepository eligibility,
-    ExpertPolicyOptions policy
+    IExpertPolicyProvider policies,
+    ExpertPolicyOptions options,
+    IReviewClaimDescriber claims,
+    TimeProvider clock
 ) : IReviewDescriber
 {
     public async Task<ReviewApplicationResponse> DescribeAsync(
@@ -21,6 +26,22 @@ public sealed class ReviewDescriber(
         var files = await evidences.ListAsync(application.Id, ct);
         var history = await applications.ListEventsAsync(application.Id, ct);
         var checks = await eligibility.ListLatestAsync(application.Id, ct);
+        // Reviewers judge what was submitted, not the profile as edited since (snapshot of the latest submission)
+        var snapshot = ExpertApplicationEvent.LatestSnapshot(history);
+        var years = snapshot != null ? snapshot.YearsExperience : profile.YearsExperience;
+        var policy = await policies.GetEligibilityAsync(ct);
+        var hold = (await policies.GetReviewClaimAsync(ct)).Hold;
+        var work = await policies.GetReviewWorkAsync(ct);
+        var claim = await claims.DescribeAsync(
+            ReviewGate.Eligibility,
+            application.Id,
+            application.ClaimHolder(clock.GetUtcNow(), hold),
+            application.ClaimedAt,
+            application.ClaimExpiresAt(hold),
+            application.IsClaimable,
+            profile.UserId,
+            ct
+        );
         return new(
             application.Id.ToString(),
             profile.UserId.ToString(),
@@ -31,18 +52,7 @@ public sealed class ReviewDescriber(
             application.EarliestReapplyAt,
             application.PreviousApplicationId?.ToString(),
             application.CreatedAt,
-            new(
-                profile.DisplayName,
-                profile.Phone,
-                profile.BirthDate,
-                profile.Title,
-                profile.Company,
-                profile.Location,
-                profile.Bio,
-                profile.YearsExperience,
-                profile.Fields,
-                profile.Highlights
-            ),
+            SnapshotProfiles.ToReviewProfile(snapshot, profile),
             files
                 .Select(x => new ReviewEvidenceResponse(
                     x.Id.ToString(),
@@ -50,7 +60,8 @@ public sealed class ReviewDescriber(
                     x.FileName,
                     x.ContentType,
                     x.SizeBytes,
-                    x.CreatedAt
+                    x.CreatedAt,
+                    x.SourceUrl
                 ))
                 .ToArray(),
             history
@@ -60,7 +71,8 @@ public sealed class ReviewDescriber(
                     x.Note,
                     x.CreatedAt,
                     x.ActorUserId.ToString(),
-                    x.ActorUserId == profile.UserId
+                    x.ActorUserId == profile.UserId,
+                    x.ActorUserId == SystemActor.UserId
                 ))
                 .ToArray(),
             checks
@@ -68,12 +80,56 @@ public sealed class ReviewDescriber(
                     x.Criterion,
                     x.Result,
                     x.Note,
-                    x.CreatedAt
+                    x.CreatedAt,
+                    x.AppliedMinYearsExperience
                 ))
                 .ToArray(),
             policy.MinYearsExperience,
-            EligibilityRules.SuggestExperience(profile.YearsExperience, policy.Eligibility),
-            application.Status == ExpertApplicationStatus.Submitted
+            EligibilityRules.SuggestExperience(years, policy),
+            application.Status == ExpertApplicationStatus.Submitted,
+            SnapshotProfiles.Submissions(history),
+            policy.NotApplicableCriteria ?? [],
+            CriterionDeclarations(history, options.Submission),
+            snapshot != null ? options.Submission.CriteriaProvenBy(snapshot.Declarations) : [],
+            claim,
+            CompetencySubmissions.Rounds(
+                history.Select(x => (x.FromStatus, x.ToStatus)),
+                work.MaxInformationRequests,
+                ExpertApplicationStatus.NeedMoreInformation
+            )
         );
+    }
+
+    /// <summary>
+    /// Statements of the latest submission under each criterion they support. The mapping comes from the
+    /// current configuration by statement code, so statements stored before it existed still resolve.
+    /// </summary>
+    private static CriterionDeclarationResponse[] CriterionDeclarations(
+        IEnumerable<ExpertApplicationEvent> history,
+        SubmissionPolicy submission
+    )
+    {
+        var latest = history
+            .Where(x => x.ProfileSnapshot != null)
+            .OrderBy(x => x.CreatedAt)
+            .LastOrDefault();
+        if (latest == null)
+            return [];
+        return EligibilityCriteria
+            .Codes.SelectMany(criterion =>
+            {
+                var codes = submission.DeclarationCodesFor(criterion);
+                return latest
+                    .ProfileSnapshot!.Declarations.Where(d => codes.Contains(d.Code))
+                    .Select(d => new CriterionDeclarationResponse(
+                        criterion,
+                        d.Code,
+                        d.Language,
+                        d.Text,
+                        latest.CreatedAt,
+                        latest.ActorUserId.ToString()
+                    ));
+            })
+            .ToArray();
     }
 }

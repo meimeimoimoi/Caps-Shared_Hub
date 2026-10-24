@@ -31,7 +31,7 @@ public sealed class ExpertEvidence
     /// <summary>External URL (LinkedIn, website) supplied by the applicant; null for file-only evidence.</summary>
     public string? SourceUrl { get; private set; }
 
-    /// <summary>Content extraction status for link evidence: PENDING, EXTRACTED or FAILED; null for file-only evidence.</summary>
+    /// <summary>Content extraction status: PENDING, EXTRACTED or FAILED; null when nothing is extracted (files, and links, which people open directly).</summary>
     public string? ExtractionStatus { get; private set; }
 
     /// <summary>When the link content was successfully extracted.</summary>
@@ -75,22 +75,50 @@ public sealed class ExpertEvidence
         DateTimeOffset now
     )
     {
-        // TODO: Enable URL validation once ApplicationRules.ValidateUrl is implemented.
-        // ApplicationRules.ValidateUrl(sourceUrl);
+        if (
+            code != ApplicationRules.SupplementCode
+            && !ApplicationRules.EvidenceCodes.Contains(code)
+        )
+        {
+            throw ExpertErrors.InvalidEvidenceCode();
+        }
+        var url = ApplicationRules.ValidateUrl(sourceUrl);
         return new ExpertEvidence
         {
             ExpertProfileId = application.ExpertProfileId,
             ApplicationId = application.Id,
             EvidenceType = code,
-            SourceUrl = sourceUrl,
+            SourceUrl = url,
             FileUrl = "",
             FileName = "",
             ContentType = "text/uri-list",
             SizeBytes = 0,
-            ExtractionStatus = ExtractionStatuses.Pending,
             CreatedAt = now,
         };
     }
+
+    /// <summary>
+    /// Records a link added to a Gate 2 qualification. Reviewers open it directly; nothing is downloaded or
+    /// extracted (I3).
+    /// </summary>
+    public static ExpertEvidence CreateLinkForQualification(
+        ExpertServiceQualification qualification,
+        string sourceUrl,
+        DateTimeOffset now
+    ) =>
+        new()
+        {
+            ExpertProfileId = qualification.ExpertProfileId,
+            ApplicationId = qualification.ApplicationId,
+            QualificationId = qualification.Id,
+            EvidenceType = ApplicationRules.CompetencyCode,
+            SourceUrl = ApplicationRules.ValidateUrl(sourceUrl),
+            FileUrl = "",
+            FileName = "",
+            ContentType = "text/uri-list",
+            SizeBytes = 0,
+            CreatedAt = now,
+        };
 
     /// <summary>
     /// Records a file added to a Gate 2 qualification. It stays linked to the Gate 1 application the

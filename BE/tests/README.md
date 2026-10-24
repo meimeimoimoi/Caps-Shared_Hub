@@ -6,7 +6,7 @@
 | `Caps.Auth.UnitTests` | Account rules: registration, lockout, email verification, token version, refresh and verification tokens | `dotnet test Caps.sln` |
 | `Caps.Workflow.UnitTests` | Review case lifecycle: frozen offer, who may act, step deadlines, information requests and the cron timeouts | `dotnet test Caps.sln` |
 | `Caps.Expert.UnitTests` | Application lifecycle, file validation by content, field and birth date rules, missing requirements | `dotnet test Caps.sln` |
-| `Auth.IntegrationTests` | 73 end-to-end checks through the gateway: sign-up, sessions, CSRF, lockout, emails, RS256/JWKS, session revocation, expert application | `run-auth-integration.ps1` |
+| `Auth.IntegrationTests` | 76 end-to-end checks through the gateway: sign-up, sessions, CSRF, lockout, emails, RS256/JWKS, session revocation, expert application | `run-auth-integration.ps1` |
 
 ## Unit and architecture tests
 

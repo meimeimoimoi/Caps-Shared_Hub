@@ -1,5 +1,5 @@
 import { api } from '@/lib/api-client'
-import { isExpertDemo } from '@/lib/expert-data-source'
+import { isKnowledgeDemo } from '@/lib/knowledge-data-source'
 import type { ManagedTemplate, NewTemplateInput } from '../types'
 
 /* Quản lý template cho Knowledge Admin. Dev chạy demo thì đọc fixtures; mutation demo sửa thẳng fixtures.
@@ -8,7 +8,7 @@ const fixtures = () => import('./fixtures')
 const BASE = '/api/knowledge/templates'
 
 export async function getTemplates(signal?: AbortSignal) {
-  if (isExpertDemo) return structuredClone((await fixtures()).mockTemplates)
+  if (isKnowledgeDemo) return structuredClone((await fixtures()).mockTemplates)
   return api.get<ManagedTemplate[]>(BASE, { signal })
 }
 
@@ -16,7 +16,7 @@ export async function getTemplate(
   id: string,
   signal?: AbortSignal
 ): Promise<ManagedTemplate | null> {
-  if (isExpertDemo) {
+  if (isKnowledgeDemo) {
     const tpl = (await fixtures()).mockTemplates.find((x) => x.id === id)
     return tpl ? structuredClone(tpl) : null
   }
@@ -29,7 +29,7 @@ export async function setTemplateStatus(
   status: ManagedTemplate['status'],
   actor: string
 ) {
-  if (isExpertDemo) {
+  if (isKnowledgeDemo) {
     const tpl = (await fixtures()).mockTemplates.find((x) => x.id === id)
     if (!tpl) return
     tpl.status = status
@@ -50,7 +50,7 @@ export async function createTemplate(
   input: NewTemplateInput,
   actor: string
 ): Promise<string> {
-  if (isExpertDemo) {
+  if (isKnowledgeDemo) {
     const list = (await fixtures()).mockTemplates
     const at = new Date().toISOString()
     const id = `tpl-${Date.now().toString(36)}`

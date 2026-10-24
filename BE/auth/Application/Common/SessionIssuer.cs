@@ -30,7 +30,7 @@ public sealed class SessionIssuer(
         refreshTokens.Add(
             AuthRefreshToken.Issue(user.Id, OpaqueTokens.Hash(raw), now, expiry, rotatedFrom)
         );
-        return new(new(access.Value, access.ExpiresInSeconds, me), raw, expiry);
+        return new(new(access.Value, access.ExpiresInSeconds, me, isNew), raw, expiry);
     }
 
     public async Task RevokeAllAsync(User user, CancellationToken ct)

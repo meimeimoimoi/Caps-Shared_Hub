@@ -3,7 +3,8 @@ import { TriangleAlert } from 'lucide-react'
 import type { Paged } from '@/lib/utils'
 import { TablePager } from '@/components/ui/navigation/table-pager'
 import type { ExpertApplication } from '../types'
-import { SLA_DAYS, formatDate, waitedDays } from '../utils/applications'
+import { formatDate, waitedDays } from '../utils/applications'
+import { isOverdue, useReviewSlaDays } from '../hooks/useReviewSlaDays'
 
 import { useTranslation } from 'react-i18next'
 import { useMotion } from '@/components/ui/motion'
@@ -23,6 +24,7 @@ export function ApplicationsTable({
   onNext,
   empty,
 }: ApplicationsTableProps) {
+  const slaDays = useReviewSlaDays()
   const { t } = useTranslation('admin')
   const fieldLabel = useFieldLabel()
   const { rows, total } = paged
@@ -102,7 +104,7 @@ export function ApplicationsTable({
                 </td>
                 <td className="num text-right">{formatDate(a.submittedAt)}</td>
                 <td className="text-right">
-                  {days > SLA_DAYS ? (
+                  {isOverdue(days, slaDays) ? (
                     <span className="text-warning inline-flex items-center gap-1.5">
                       <TriangleAlert
                         size={14}

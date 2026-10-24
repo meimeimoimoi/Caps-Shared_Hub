@@ -5,6 +5,7 @@ using Caps.Expert.Application.Common;
 using Caps.Expert.Application.DTOs.Responses;
 using Caps.Expert.Domain;
 using Caps.Expert.Domain.Qualifications;
+using Caps.Expert.Domain.Reviews;
 
 namespace Caps.Expert.Application.Features.Reviews;
 
@@ -18,7 +19,8 @@ public sealed record DecideCompetencyCommand(
 
 /// <summary>
 /// Records the Gate 2 decision. Runs under the expert's lock, so it cannot interleave with the expert's own
-/// changes or with another reviewer deciding the same qualification.
+/// changes or with another reviewer deciding the same qualification. Only the reviewer holding the
+/// qualification decides; a final result frees it, NEED_MORE_INFORMATION keeps it for the resubmission.
 /// </summary>
 public sealed class DecideCompetencyHandler(
     IApplicantLock locks,
@@ -28,9 +30,10 @@ public sealed class DecideCompetencyHandler(
     IServiceCatalogRepository catalog,
     IExpertNotificationOutbox outbox,
     IQualificationReviewDescriber describer,
-    ExpertPolicyOptions policy,
+    IExpertPolicyProvider policies,
     IUnitOfWork unitOfWork,
-    TimeProvider clock
+    TimeProvider clock,
+    IRealtimeNotifier realtime
 ) : ICommandHandler<DecideCompetencyCommand, ReviewQualificationResponse>
 {
     public async Task<ReviewQualificationResponse> HandleAsync(
@@ -48,16 +51,36 @@ public sealed class DecideCompetencyHandler(
             await qualifications.FindWithProfileAsync(command.QualificationId, ct)
             ?? throw ExpertErrors.QualificationNotFound();
         var profile = qualification.ExpertProfile;
+        var now = clock.GetUtcNow();
+        // Only the reviewer holding the qualification decides it, checked before any business rule
+        var hold = (await policies.GetReviewClaimAsync(ct)).Hold;
+        qualification.EnsureClaimedBy(command.ReviewerUserId, now, hold);
         var files = await evidences.ListAsync(qualification, ct);
 
-        var now = clock.GetUtcNow();
+        var policy = await policies.GetCompetencyAsync(ct);
+        // M4: after the last allowed round the reviewer passes or fails with the evidence at hand
+        // D9: every return from final approval adds one round
+        var work = await policies.GetReviewWorkAsync(ct);
+        var history = (await qualifications.ListEventsAsync(qualification.Id, ct))
+            .Select(x => (x.FromStatus, x.ToStatus))
+            .ToArray();
+        var rounds = InformationRequestRules.Count(
+            history,
+            QualificationStatus.NeedMoreInformation
+        );
+        InformationRequestRules.EnsureAllowed(
+            CompetencyRules.Outcome(command.Competencies),
+            rounds,
+            FinalApprovalRules.MaxInformationRequests(work.MaxInformationRequests, history),
+            QualificationStatus.NeedMoreInformation
+        );
         var decision = qualification.DecideCompetency(
             command.ReviewerUserId,
             profile.UserId,
             command.Competencies,
             files.Select(x => x.Id).ToHashSet(),
             command.Note,
-            policy.Competency,
+            policy,
             now
         );
         qualifications.AddEvent(decision.Event);
@@ -88,6 +111,12 @@ public sealed class DecideCompetencyHandler(
         }
         await unitOfWork.SaveChangesAsync(ct);
         await tx.CommitAsync(ct);
+        await realtime.ChangedAsync(
+            ExpertRealtimeTopics.Qualifications,
+            [applicantUserId],
+            [Permission.ExpertReview, Permission.ExpertApprove],
+            ct
+        );
         return await describer.DescribeAsync(qualification, ct);
     }
 }

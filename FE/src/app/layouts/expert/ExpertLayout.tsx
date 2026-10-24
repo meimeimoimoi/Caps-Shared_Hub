@@ -107,7 +107,7 @@ export function ExpertLayout() {
         )}
         <main
           id="expert-main"
-          className={`ep-main ${location.pathname === '/expert/overview' ? 'ep-main-overview max-w-450 [padding:32px_36px] max-[1251px]:[padding:28px_24px] max-[720px]:[padding:24px_16px]' : location.pathname.startsWith('/expert/settings/') ? 'mx-0 max-w-none p-6 max-md:p-4' : ''}`}
+          className={`ep-main outline-none ${location.pathname === '/expert/overview' ? 'ep-main-overview max-w-450 [padding:32px_36px] max-[1251px]:[padding:28px_24px] max-[720px]:[padding:24px_16px]' : location.pathname.startsWith('/expert/settings/') ? 'mx-0 max-w-none p-6 max-md:p-4' : ''}`}
           tabIndex={-1}
         >
           <Outlet />

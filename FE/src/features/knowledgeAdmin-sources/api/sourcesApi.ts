@@ -1,5 +1,5 @@
 import { api } from '@/lib/api-client'
-import { isExpertDemo } from '@/lib/expert-data-source'
+import { isKnowledgeDemo } from '@/lib/knowledge-data-source'
 import type { Frequency } from '../constants'
 import type { CollectionOverview, SourceInput } from '../types'
 
@@ -10,12 +10,12 @@ const fixtures = () => import('./fixtures')
 const BASE = '/api/knowledge/collection'
 
 export async function getCollectionOverview(signal?: AbortSignal) {
-  if (isExpertDemo) return structuredClone((await fixtures()).mockOverview)
+  if (isKnowledgeDemo) return structuredClone((await fixtures()).mockOverview)
   return api.get<CollectionOverview>(BASE, { signal })
 }
 
 export async function saveSchedule(frequency: Frequency) {
-  if (isExpertDemo) {
+  if (isKnowledgeDemo) {
     ;(await fixtures()).mockOverview.schedule.frequency = frequency
     return
   }
@@ -24,7 +24,7 @@ export async function saveSchedule(frequency: Frequency) {
 
 /** Chạy thu thập ngay; kết quả về sau, xem ở Lịch sử thu thập */
 export async function runCollectionNow() {
-  if (isExpertDemo) {
+  if (isKnowledgeDemo) {
     // MOCK: TODO(auth) actor lấy từ tài khoản đang đăng nhập
     ;(await fixtures()).mockOverview.runs.unshift({
       at: new Date().toISOString(),
@@ -42,7 +42,7 @@ export async function runCollectionNow() {
 
 /** Thêm nguồn (không có id) hoặc sửa nguồn có sẵn */
 export async function saveSource(input: SourceInput, id?: string) {
-  if (isExpertDemo) {
+  if (isKnowledgeDemo) {
     const sources = (await fixtures()).mockOverview.sources
     const existing = sources.find((s) => s.id === id)
     if (existing) Object.assign(existing, input)

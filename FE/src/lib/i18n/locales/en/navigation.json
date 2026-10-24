@@ -1,4 +1,6 @@
 {
+  "customerArea": "Customer area",
+  "expertPortalLink": "Become an expert",
   "draftScenarios": {
     "ready": "Ready",
     "empty": "Empty",

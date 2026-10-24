@@ -1,6 +1,6 @@
 # AGENTS.md — Caps-Shared Hub
 
-Monorepo: **BE** (.NET 8 microservices) + **FE** (React 19 + Vite + TailwindCSS v4).
+Monorepo: **BE** (.NET 9 microservices) + **FE** (React 19 + Vite + TailwindCSS v4).
 Tổng quan, cách chạy, route: xem [README.md](README.md). File này chỉ chứa **quy tắc khi sửa code**.
 
 ## Nguyên tắc chung
@@ -19,6 +19,12 @@ Tổng quan, cách chạy, route: xem [README.md](README.md). File này chỉ ch
 - Đổi schema DB, thêm migration, đổi contract message (MassTransit) hoặc route YARP.
 - Đổi cấu trúc thư mục, `Directory.Build.props`, `Directory.Packages.props`, `global.json`.
 - Xóa file, hoặc thao tác git phá hủy (`reset --hard`, `push --force`, xóa branch).
+
+Hỏi lại để làm rõ yêu cầu (đỡ tốn token hơn tìm sai hướng):
+
+- Yêu cầu chưa rõ hoặc điều người dùng nói không khớp với code: kiểm tra nhanh một lần, rồi hỏi **một câu ngắn**, kèm 2–3 lựa chọn để bấm chọn. Ví dụ: "Flow 1 theo file nào?", "Chỉ trả lời hay sửa luôn?", "SignalR bạn cài ở nhánh nào?". Không grep toàn repo, mọi nhánh, lịch sử commit để tự đoán.
+- Yêu cầu đã rõ hoặc có cách làm mặc định hợp lý: làm luôn, không hỏi.
+- Tối đa một lượt hỏi cho mỗi yêu cầu.
 
 ## Lệnh thường dùng
 
@@ -60,9 +66,9 @@ npm run dev        # :5173
 - Giới hạn log trả về cho AI: ưu tiên mã thoát, tóm tắt pass/fail, lỗi và cảnh báo liên quan; không đưa toàn bộ danh sách bundle/file hay log thành công dài vào ngữ cảnh. Khi cần, lưu log đầy đủ vào thư mục tạm và đọc đúng phần để chẩn đoán; không che lỗi hoặc làm mất mã thoát của lệnh gốc.
 - Khi lỗi do môi trường, xác định nguyên nhân trước khi thử lại; không lặp cùng lệnh nếu chưa có thay đổi có thể khắc phục. Báo rõ kiểm tra nào đã pass, fail hoặc chưa chạy; không suy đoán kết quả.
 
-## Backend (.NET 8)
+## Backend (.NET 9)
 
-- Pin SDK trong `BE/global.json` (8.0.421). Thuộc tính chung (net8.0, Nullable, ImplicitUsings, LangVersion) nằm ở `Directory.Build.props`, không lặp lại trong `.csproj`.
+- Pin SDK trong `BE/global.json` (9.0.318). Thuộc tính chung (net9.0, Nullable, ImplicitUsings, LangVersion) nằm ở `Directory.Build.props`, không lặp lại trong `.csproj`.
 - **Version package chỉ pin trong `Directory.Packages.props`** (Central Package Management). `.csproj` dùng `<PackageReference Include="..." />` **không có `Version`**.
 - **Service nhiều nghiệp vụ theo Clean Architecture** (mẫu: `auth/`): 4 project `Domain` / `Application` / `Infrastructure` / `Api`, thư mục service giữ chữ thường. Namespace và assembly giữ dạng `Caps.<Service>.<Layer>`; khai báo `RootNamespace` và `AssemblyName` trong từng `.csproj`.
   - `Domain`: entity có hành vi (quy tắc nghiệp vụ nằm trong entity), hằng số, `<Service>Errors`. Không tham chiếu EF Core/ASP.NET.
@@ -81,7 +87,7 @@ npm run dev        # :5173
   - `AddCommonApi` / `UseCommonApi`: controller, Swagger (bearer + XML), lỗi chung, `/healthz` (sống) và `/readyz` (DB), JWT, thu hồi phiên, CORS, `TimeProvider`.
   - `config.GetRequiredConnectionString("Postgres")` + `AddServiceDatabase<TContext>(conn, "<Service>", "<schema>")` trong `Add<Service>Infrastructure`: DbContext, bảng lịch sử migration, `IUnitOfWork`, health check DB.
   - `app.MigrateInDevelopment<TContext>()` trước `UseCommonApi()` (tắt bằng `Database:ApplyMigrations=false`).
-- Trước khi push: `dotnet csharpier format .` rồi `dotnet build Caps.sln -warnaserror` và `dotnet test Caps.sln` phải sạch; CI chạy đúng các bước này cùng 73 integration test.
+- Trước khi push: `dotnet csharpier format .` rồi `dotnet build Caps.sln -warnaserror` và `dotnet test Caps.sln` phải sạch; CI chạy đúng các bước này cùng 76 integration test.
 - Mọi request từ client đi qua Gateway (`:5190`), không gọi thẳng service từ FE.
 - Messaging dùng MassTransit; hiện mới có contracts + config, chưa có consumer thật.
 
@@ -89,6 +95,7 @@ npm run dev        # :5173
 
 - Tính năng mới: `src/features/<ten>/` gồm `components/`, `hooks/`, `store/` (zustand), `api/`, `types/`. Tham khảo `features/auth/`.
 - UI nguyên tử dùng chung (kiểu shadcn) vào `src/components/ui/`.
+- Không thêm dòng mô tả nhỏ (chữ xám) dưới tiêu đề, tiêu đề khối hay nhãn trường. Giải thích cần thiết đặt trong `HelpTip` (`components/ui/feedback/help-tip.tsx`) cạnh tiêu đề; câu chỉ lặp lại tiêu đề thì bỏ.
 - Route mới khai báo trong `src/app/routes/`: lazy-load, bọc `ProtectedRoute` nếu cần đăng nhập.
 - **Gọi API qua `lib/api-client` (`api.get/post`)**. Không import `axios` trực tiếp trong component.
 - Server state dùng React Query (QueryClient ở `src/app/`); client state dùng zustand trong `store/` của feature.

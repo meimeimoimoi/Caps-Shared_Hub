@@ -1,6 +1,6 @@
 # Caps-Shared Hub - Backend Services
 
-Hệ thống Backend xây dựng theo kiến trúc **Microservices / Modular Architecture** trên nền **.NET 8 (C#)**, tích hợp **RAG (AI/Vector Search)** và cơ chế lưu trữ **PostgreSQL Schema-per-Service**.
+Hệ thống Backend xây dựng theo kiến trúc **Microservices / Modular Architecture** trên nền **.NET 9 (C#)**, tích hợp **RAG (AI/Vector Search)** và cơ chế lưu trữ **PostgreSQL Schema-per-Service**.
 
 ---
 
@@ -44,7 +44,7 @@ Mỗi thư mục có README riêng: service lo việc gì, không lo việc gì,
 ## Hướng dẫn Khởi chạy Nhanh (Quick Start)
 
 ### Yêu cầu môi trường
-* **.NET 8.0 SDK**
+* **.NET 9.0 SDK**
 * **Docker Desktop**
 
 ### Các bước thực hiện

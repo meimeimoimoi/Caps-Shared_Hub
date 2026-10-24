@@ -26,6 +26,8 @@ public sealed class OpenQualificationEvidenceHandler(
         var evidence =
             await evidences.FindAsync(query.EvidenceId, qualification, ct)
             ?? throw ExpertErrors.EvidenceNotFound();
+        if (evidence.IsLink)
+            throw ExpertErrors.EvidenceNotFound();
         var content = await storage.OpenAsync(evidence.FileUrl, ct);
         return new(content, evidence.ContentType, evidence.FileName);
     }

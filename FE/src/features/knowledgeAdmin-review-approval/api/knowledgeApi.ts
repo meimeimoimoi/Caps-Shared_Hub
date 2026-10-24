@@ -1,5 +1,5 @@
 import { api } from '@/lib/api-client'
-import { isExpertDemo } from '@/lib/expert-data-source'
+import { isKnowledgeDemo } from '@/lib/knowledge-data-source'
 import type { QueueFilter } from '../constants'
 import type {
   ApproveInput,
@@ -18,13 +18,13 @@ const fixtures = () => import('./fixtures')
 const BASE = '/api/knowledge'
 
 export async function getPipelineSummary(signal?: AbortSignal) {
-  if (isExpertDemo) return structuredClone((await fixtures()).mockSummary)
+  if (isKnowledgeDemo) return structuredClone((await fixtures()).mockSummary)
   return api.get<PipelineSummary>(`${BASE}/pipeline/summary`, { signal })
 }
 
 /** stage = 'collect' → mọi văn bản thu thập trong tháng; 'failed' → văn bản đang lỗi */
 export async function getDocuments(stage: QueueFilter, signal?: AbortSignal) {
-  if (isExpertDemo) {
+  if (isKnowledgeDemo) {
     const docs = structuredClone((await fixtures()).mockDocuments)
     if (stage === 'collect') return docs
     if (stage === 'failed') return docs.filter((d) => d.failure)
@@ -38,7 +38,7 @@ export async function getDocuments(stage: QueueFilter, signal?: AbortSignal) {
 
 /** Thử lại ngay bước bị lỗi (index hoặc bóc tách) */
 export async function retryDocument(documentId: string) {
-  if (isExpertDemo) {
+  if (isKnowledgeDemo) {
     const f = await fixtures()
     const d = f.mockDocuments.find((x) => x.id === documentId)
     if (!d?.failure) return
@@ -57,7 +57,7 @@ export async function getVersionComparison(
   documentId: string,
   signal?: AbortSignal
 ): Promise<VersionComparison | null> {
-  if (isExpertDemo) {
+  if (isKnowledgeDemo) {
     const c = (await fixtures()).mockComparisons[documentId]
     return c ? structuredClone(c) : null
   }
@@ -85,7 +85,7 @@ export async function getDocumentDetail(
   documentId: string,
   signal?: AbortSignal
 ): Promise<DocumentDetail | null> {
-  if (isExpertDemo) {
+  if (isKnowledgeDemo) {
     const d = (await fixtures()).getMockDetail(documentId)
     const retired = retiredDemo.get(documentId)
     if (!d || !retired) return d
@@ -107,7 +107,7 @@ export async function getDocumentReview(
   documentId: string,
   signal?: AbortSignal
 ): Promise<DocumentReview | null> {
-  if (isExpertDemo) {
+  if (isKnowledgeDemo) {
     const r = (await fixtures()).mockReviews[documentId]
     return r ? structuredClone(r) : null
   }
@@ -123,7 +123,7 @@ async function findUnitDemo(documentId: string, unitId: string) {
 }
 
 export async function markUnitReviewed(documentId: string, unitId: string) {
-  if (isExpertDemo) {
+  if (isKnowledgeDemo) {
     const u = await findUnitDemo(documentId, unitId)
     if (u) u.status = 'REVIEWED'
     return
@@ -133,7 +133,7 @@ export async function markUnitReviewed(documentId: string, unitId: string) {
 
 /** Sửa nội dung một đơn vị; sửa xong coi như đã rà soát */
 export async function saveUnitText(documentId: string, unitId: string, text: string) {
-  if (isExpertDemo) {
+  if (isKnowledgeDemo) {
     const u = await findUnitDemo(documentId, unitId)
     if (u) Object.assign(u, { text, status: 'REVIEWED' })
     return
@@ -143,19 +143,19 @@ export async function saveUnitText(documentId: string, unitId: string, text: str
 
 /** Duyệt nội dung → chuyển sang bước Index */
 export async function approveDocument(documentId: string, body: ApproveInput) {
-  if (isExpertDemo) return leaveReviewDemo(documentId, 'index')
+  if (isKnowledgeDemo) return leaveReviewDemo(documentId, 'index')
   await api.post(`${BASE}/documents/${documentId}/approve`, body)
 }
 
 export async function rejectDocument(documentId: string, reason: string) {
-  if (isExpertDemo) return leaveReviewDemo(documentId, null)
+  if (isKnowledgeDemo) return leaveReviewDemo(documentId, null)
   await api.post(`${BASE}/documents/${documentId}/reject`, { reason })
 }
 
 /** REPROCESS_REQUIRED: send the version back to parsing; it must come back to review (BR-K08) */
 export async function reprocessDocument(documentId: string, reason: string) {
   if (!reason.trim()) throw new Error('Vui lòng nhập lý do.')
-  if (isExpertDemo) return leaveReviewDemo(documentId, 'parse')
+  if (isKnowledgeDemo) return leaveReviewDemo(documentId, 'parse')
   throw new Error('Chức năng bóc tách lại chưa được kết nối với máy chủ.')
 }
 
@@ -165,7 +165,7 @@ const retiredDemo = new Map<string, { at: string; reason: string }>()
 /** Stop using an indexed version; RAG no longer retrieves it (FR-054) */
 export async function retireDocument(documentId: string, reason: string) {
   if (!reason.trim()) throw new Error('Vui lòng nhập lý do.')
-  if (isExpertDemo) {
+  if (isKnowledgeDemo) {
     retiredDemo.set(documentId, { at: new Date().toISOString(), reason })
     return
   }
@@ -174,19 +174,19 @@ export async function retireDocument(documentId: string, reason: string) {
 
 /** Chấp nhận phiên bản mới, chuyển sang bước Bóc tách */
 export async function continueVersionReview(documentId: string) {
-  if (isExpertDemo) return leaveReviewDemo(documentId, 'parse')
+  if (isKnowledgeDemo) return leaveReviewDemo(documentId, 'parse')
   await api.post(`${BASE}/documents/${documentId}/version/continue`)
 }
 
 export async function rejectVersion(documentId: string, reason: string) {
-  if (isExpertDemo) return leaveReviewDemo(documentId, null)
+  if (isKnowledgeDemo) return leaveReviewDemo(documentId, null)
   await api.post(`${BASE}/documents/${documentId}/version/reject`, { reason })
 }
 
 /* ── Tải lên ── */
 /** Kết quả các lần tải lên gần đây của người dùng, mới nhất trước */
 export async function getUploads(signal?: AbortSignal) {
-  if (isExpertDemo) return structuredClone((await fixtures()).mockUploads)
+  if (isKnowledgeDemo) return structuredClone((await fixtures()).mockUploads)
   return api.get<UploadResult[]>(`${BASE}/uploads`, { signal })
 }
 
@@ -196,7 +196,7 @@ export async function uploadDocument(
   meta: UploadMeta,
   onProgress: (percent: number) => void
 ) {
-  if (isExpertDemo) {
+  if (isKnowledgeDemo) {
     onProgress(100)
     // MOCK: file mới luôn vào hàng đợi; BE mới biết trùng/phiên bản mới/lỗi bóc tách
     ;(await fixtures()).mockUploads.unshift({

@@ -126,5 +126,23 @@
     "experience": "Kinh nghiệm dưới ngưỡng chính sách. Đánh dấu Kinh nghiệm Thuế – Kế toán không đáp ứng và chọn Không đủ điều kiện khi số năm đã được xác minh.",
     "evidence": "Bằng chứng không còn tồn tại. Chọn bằng chứng thuộc hồ sơ này.",
     "flags": "Xác minh và xử lý các điểm cảnh báo trước khi cho hồ sơ đạt."
-  }
+  },
+  "queuePagination": "Phân trang hàng đợi đánh giá",
+  "yearsExperience": "{{count}} năm kinh nghiệm",
+  "reapplication": "Nộp lại",
+  "claimFilter": "Người xử lý",
+  "claimFilters": {
+    "MINE_OR_UNCLAIMED": "Của tôi và chưa ai nhận",
+    "MINE": "Của tôi",
+    "UNCLAIMED": "Chưa ai nhận",
+    "ALL": "Tất cả"
+  },
+  "holderLabel": "Người xử lý",
+  "holderMe": "Bạn",
+  "holderNone": "Chưa ai nhận",
+  "holderSomeone": "Người đánh giá khác",
+  "claimAction": "Nhận",
+  "claimTaken": "Hồ sơ vừa được người khác nhận.",
+  "claimFailed": "Chưa nhận được hồ sơ. Vui lòng thử lại.",
+  "overdue": "chờ quá {{days}} ngày"
 }

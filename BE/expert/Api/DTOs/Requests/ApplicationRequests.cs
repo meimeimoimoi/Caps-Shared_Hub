@@ -36,5 +36,29 @@ public sealed record SaveExpertApplicationRequest(
         );
 }
 
-/// <summary>Resubmits an application after more information was requested, with an optional note.</summary>
-public sealed record SupplementExpertApplicationRequest([MaxLength(2000)] string? Note);
+/// <summary>
+/// Submits the draft with the codes of the statements ticked and the language they were shown in; the stored
+/// wording always comes from the server.
+/// </summary>
+public sealed record SubmitExpertApplicationRequest(
+    [MaxLength(10)] string[]? DeclarationCodes,
+    [MaxLength(10)] string? Language
+)
+{
+    public SubmitApplicationCommand ToCommand(Applicant applicant) =>
+        new(applicant, DeclarationCodes, Language);
+}
+
+/// <summary>
+/// Resubmits an application after more information was requested, with an optional note and the statements
+/// agreed to again for this submission.
+/// </summary>
+public sealed record SupplementExpertApplicationRequest(
+    [MaxLength(2000)] string? Note,
+    [MaxLength(10)] string[]? DeclarationCodes = null,
+    [MaxLength(10)] string? Language = null
+)
+{
+    public SupplementApplicationCommand ToCommand(Applicant applicant) =>
+        new(applicant, Note, DeclarationCodes, Language);
+}

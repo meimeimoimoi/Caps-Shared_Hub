@@ -137,7 +137,7 @@ export function AppSidebar({
                     ))}
                 </>
               )
-              const className = `relative flex min-h-11 items-center gap-3 overflow-hidden rounded-[10px] py-3 text-sm whitespace-nowrap transition-[color,background-color,padding] duration-[var(--motion-exit)] ease-[var(--motion-ease-enter)] focus-visible:!outline-white ${collapsed ? 'pr-2 pl-[18px]' : 'px-3.5'} ${item.active ? 'bg-white/10 font-semibold !text-white before:absolute before:inset-y-3 before:left-0 before:w-[3px] before:rounded-r before:bg-[var(--ui-indicator)]' : 'font-medium !text-[var(--ui-sidebar-text)]'} ${item.to ? 'hover:bg-white/10 hover:!text-white' : 'w-full cursor-not-allowed text-left opacity-55'}`
+              const className = `relative flex min-h-11 items-center gap-3 overflow-hidden rounded-[10px] py-3 text-sm whitespace-nowrap transition-[color,background-color,padding] duration-[var(--motion-exit)] ease-[var(--motion-ease-enter)] focus-visible:!outline-2 focus-visible:!outline-offset-[-2px] focus-visible:!outline-white/45 ${collapsed ? 'pr-2 pl-[18px]' : 'px-3.5'} ${item.active ? 'bg-white/10 font-semibold !text-white before:absolute before:inset-y-3 before:left-0 before:w-[3px] before:rounded-r before:bg-[var(--ui-indicator)]' : 'font-medium !text-[var(--ui-sidebar-text)]'} ${item.to ? 'hover:bg-white/10 hover:!text-white' : 'w-full cursor-not-allowed text-left opacity-55'}`
               return item.to ? (
                 <Link
                   key={item.id}
@@ -175,7 +175,7 @@ export function AppSidebar({
             title={t(collapsed ? 'navigation.expand' : 'navigation.collapse')}
             aria-expanded={!collapsed}
             aria-controls={navigationId}
-            className="rounded-control flex size-11 items-center justify-center transition-colors hover:bg-white/10 hover:text-white focus-visible:!outline-white"
+            className="rounded-control flex size-11 items-center justify-center transition-colors hover:bg-white/10 hover:text-white focus-visible:!outline-2 focus-visible:!outline-offset-[-2px] focus-visible:!outline-white/45"
           >
             {collapsed ? (
               <PanelLeftOpen size={20} aria-hidden="true" />

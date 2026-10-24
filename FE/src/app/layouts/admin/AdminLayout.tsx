@@ -7,7 +7,9 @@ import {
   FileText,
   LayoutDashboard,
   Flag,
+  SlidersHorizontal,
   Tag,
+  UserCog,
   UserRound,
   Users,
   UsersRound,
@@ -63,7 +65,9 @@ interface AdminLayoutProps extends ShellPageProps {
     | 'pending'
     | 'competency'
     | 'approvals'
-    | 'pricingReview'
+    | 'platformFees'
+    | 'expertPolicy'
+    | 'assignments'
     | 'experts'
     | 'disputes'
     | 'escrow'
@@ -72,12 +76,15 @@ interface AdminLayoutProps extends ShellPageProps {
     | 'account'
   pendingCount: number
   disputeCount?: number
+  /** Final approvals past their due time */
+  approvalOverdueCount?: number
 }
 
 export function AdminLayout({
   section,
   pendingCount,
   disputeCount,
+  approvalOverdueCount,
   ...page
 }: AdminLayoutProps) {
   const { t } = useTranslation('admin')
@@ -85,6 +92,7 @@ export function AdminLayout({
   const user = useAuthStore((s) => s.user)
   const canReview = hasAnyPermission(user, [Permission.ExpertReview])
   const canApprove = hasAnyPermission(user, [Permission.ExpertApprove])
+  const canManagePricing = hasAnyPermission(user, [Permission.PricingManage])
   const isSystemAdmin = hasAnyPermission(user, [Permission.UserManage])
   const allGroups: NavGroup[] = [
     {
@@ -120,12 +128,25 @@ export function AdminLayout({
           icon: BadgeCheck,
           to: '/admin/experts/approvals',
           active: section === 'approvals',
+          badge: approvalOverdueCount,
         },
         {
-          label: t('navigation.pricingReview'),
+          label: t('navigation.assignments'),
+          icon: UserCog,
+          to: '/admin/experts/assignments',
+          active: section === 'assignments',
+        },
+        {
+          label: t('navigation.platformFees'),
           icon: Banknote,
-          to: '/admin/experts/pricing',
-          active: section === 'pricingReview',
+          to: '/admin/platform-fees',
+          active: section === 'platformFees',
+        },
+        {
+          label: t('navigation.expertPolicy'),
+          icon: SlidersHorizontal,
+          to: '/admin/experts/policy',
+          active: section === 'expertPolicy',
         },
         {
           label: t('navigation.manageExperts'),
@@ -182,7 +203,11 @@ export function AdminLayout({
     '/reviewer/gate-1',
     '/reviewer/gate-2',
   ]
-  const approvalRoutes = ['/admin/experts/approvals', '/admin/experts/pricing']
+  const approvalRoutes = [
+    '/admin/experts/approvals',
+    '/admin/experts/assignments',
+    '/admin/experts/policy',
+  ]
   const adminRoutes = [
     '/admin',
     '/admin/experts',
@@ -198,6 +223,7 @@ export function AdminLayout({
         if (!i.to) return false
         if (reviewerRoutes.includes(i.to)) return canReview
         if (approvalRoutes.includes(i.to)) return canApprove
+        if (i.to === '/admin/platform-fees') return canManagePricing
         if (i.to === '/admin/account') return isSystemAdmin || canReview
         if (adminRoutes.includes(i.to)) return isSystemAdmin
         return false
@@ -322,7 +348,8 @@ export function RoleShell({
         <main
           id="admin-main"
           tabIndex={-1}
-          className="animate-enter min-w-0 px-4 py-12 md:px-6 lg:px-8"
+          // Skip-link target only: clicking empty space focuses it, which must not draw a focus ring
+          className="animate-enter min-w-0 px-4 py-12 outline-none md:px-6 lg:px-8"
         >
           {children}
         </main>

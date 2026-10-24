@@ -41,7 +41,6 @@ export async function demoBio(expertId: string): Promise<ExpertBio> {
                 serviceName: SERVICE_NAMES[id],
                 price: String(offer.price),
                 slaHours: offer.slaHours,
-                pricingVersion: offer.pricingVersion,
                 approvedAt: offer.approvedAt,
               },
             ]
@@ -60,7 +59,7 @@ export async function demoBio(expertId: string): Promise<ExpertBio> {
         })),
       },
     }
-  const [{ createExpertContextFixture }, { getDemoPricing }] =
+  const [{ createExpertContextFixture }, { getDemoServices }] =
     await Promise.all([
       import('@/features/expert-context/api/fixtures'),
       import('@/features/expert-pricing/demoRepository'),
@@ -79,9 +78,10 @@ export async function demoBio(expertId: string): Promise<ExpertBio> {
         serviceId: s.serviceId,
         serviceName: s.serviceName,
         price:
-          getDemoPricing(scope, s.serviceId).versions.find(
-            (v) => v.status === 'APPROVED'
-          )?.amount ?? null,
+          String(
+            getDemoServices(scope).find((v) => v.serviceCode === s.serviceId)
+              ?.fee ?? ''
+          ) || null,
       })),
   }
 }

@@ -3,7 +3,6 @@ export type ServiceOffer = {
   price: number
   /** Delivery SLA in calendar hours from START; null when the source has none. */
   slaHours: number | null
-  pricingVersion: string
   /** When Gate 2 + Final Approval made this service bookable. */
   approvedAt: string | null
 }
@@ -68,7 +67,6 @@ export interface MarketplaceExpertDto {
     serviceCode: string
     serviceName: string
     price: number
-    pricingVersion: string
     /** Delivery SLA in calendar hours from START (service catalog, BR-M27). */
     slaHours: number
     approvedAt: string | null

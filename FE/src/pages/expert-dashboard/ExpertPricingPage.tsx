@@ -1,29 +1,36 @@
 import { useEffect, useRef, useState } from 'react'
-import {
-  Link,
-  useBeforeUnload,
-  useBlocker,
-  useLocation,
-  useParams,
-} from 'react-router-dom'
-import { ArrowLeft, CheckCircle2, Clock3, Info, Save, Send } from 'lucide-react'
+import { Link, useLocation, useParams } from 'react-router-dom'
+import { ArrowLeft, CheckCircle2, Clock3, Info, Save } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import {
   useExpertContext,
   type ServiceReadiness,
 } from '@/features/expert-context'
+import { Modal } from '@/components/ui/feedback/modal'
 import { useFormatters } from '@/hooks/useFormatters'
+import { ApiError } from '@/lib/api-client'
 import { isExpertDemo } from '@/lib/expert-data-source'
 import { useExpertPricing } from '@/features/expert-pricing/useExpertPricing'
 import {
-  businessDate,
-  editableStatus,
+  netOf,
   validatePricing,
+  type MyService,
   type PricingErrors,
   type PricingInput,
-  type PricingWorkspace,
 } from '@/features/expert-pricing/model'
 import '@/features/expert-pricing/pricing.css'
+
+// Server error codes with their own message (anything else falls back to saveFailed)
+const SAVE_ERRORS = [
+  'PRICING_NOT_ALLOWED',
+  'PLATFORM_FEE_NOT_SET',
+  'FEE_INVALID',
+  'TURNAROUND_INVALID',
+  'OFFERING_CONFLICT',
+] as const
+type SaveError = (typeof SAVE_ERRORS)[number]
+const isSaveError = (code?: string): code is SaveError =>
+  (SAVE_ERRORS as readonly (string | undefined)[]).includes(code)
 
 export default function ExpertPricingPage() {
   const { serviceId } = useParams()
@@ -108,13 +115,10 @@ function PricingService({
         </span>
       </div>
       {!qualified ? (
-        <div className="epr-notice" role="status">
-          <Info size={20} aria-hidden="true" />
-          <div>
-            <h2>{t('pricing.restricted')}</h2>
-            <p>{t('pricing.restrictedHelp')}</p>
-          </div>
-        </div>
+        <Notice
+          title={t('pricing.restricted')}
+          text={t('pricing.restrictedHelp')}
+        />
       ) : query.isError ? (
         <div className="ep-empty">
           <h2>{t('pricing.loadFailed')}</h2>
@@ -122,97 +126,61 @@ function PricingService({
             {t('pricing.retry')}
           </button>
         </div>
-      ) : !query.data ? (
+      ) : query.data === undefined ? (
         <div role="status" className="ep-skeleton ep-skeleton-section">
           {t('pricing.loading')}
         </div>
+      ) : query.data === null ? (
+        <Notice title={t('pricing.notOpen')} text={t('pricing.notOpenHelp')} />
       ) : (
-        <PricingEditor
-          data={query.data}
-          mutation={mutation}
-        />
+        <PricingEditor service={query.data} mutation={mutation} />
       )}
     </div>
   )
 }
 
-const AUDIT_LABELS = {
-  SAVED: 'pricing.auditSaved',
-  SUBMITTED: 'pricing.auditSubmitted',
-  AUTO_APPROVED: 'pricing.auditAutoApproved',
-  APPROVED: 'pricing.auditApproved',
-  RETURNED_FOR_REVISION: 'pricing.auditReturned',
-  REJECTED: 'pricing.auditRejected',
-  SUPERSEDED: 'pricing.auditSuperseded',
-} as const
+function Notice({ title, text }: { title: string; text: string }) {
+  return (
+    <div className="epr-notice" role="status">
+      <Info size={20} aria-hidden="true" />
+      <div>
+        <h2>{title}</h2>
+        <p>{text}</p>
+      </div>
+    </div>
+  )
+}
 
 function PricingEditor({
-  data,
+  service,
   mutation,
 }: {
-  data: PricingWorkspace
+  service: MyService
   mutation: ReturnType<typeof useExpertPricing>['mutation']
 }) {
-  const { t } = useTranslation('expert')
+  const { t } = useTranslation(['expert', 'common'])
   const format = useFormatters()
   const formRef = useRef<HTMLFormElement>(null)
-  const working =
-    data.versions.find((v) => editableStatus(v.status)) ??
-    data.versions.find((v) => v.status === 'PENDING_APPROVAL')
-  // The approved version that applies today (a superseded one stays in effect until its end date)
-  const today = businessDate()
-  const effective = data.versions.find(
-    (v) =>
-      (v.status === 'APPROVED' || v.status === 'SUPERSEDED') &&
-      v.effectiveFrom <= today &&
-      (!v.effectiveTo || v.effectiveTo >= today)
-  )
-  const label = (versionId: string) => {
-    const version = data.versions.find((v) => v.id === versionId)
-    return version ? 'v' + version.sequence : versionId
+  const initial: PricingInput = {
+    fee: service.fee == null ? '' : String(service.fee),
+    turnaroundHours:
+      service.turnaroundHours == null ? '' : String(service.turnaroundHours),
   }
-  const initial: PricingInput = working
-    ? {
-        amount: working.amount,
-        effectiveFrom: working.effectiveFrom,
-        reason: working.reason,
-      }
-    : {
-        amount: effective?.amount ?? '',
-        effectiveFrom: businessDate(),
-        reason: '',
-      }
   const [input, setInput] = useState(initial)
-  const [baseline, setBaseline] = useState(initial)
-  const [revision, setRevision] = useState(data.revision)
   const [errors, setErrors] = useState<PricingErrors>({})
-  const [feedback, setFeedback] = useState<
-    'saved' | 'submitted' | 'savedApi' | 'submittedPending' | 'submittedApproved' | null
-  >(null)
-  const pending = data.versions.some((v) => v.status === 'PENDING_APPROVAL')
+  const [saved, setSaved] = useState(false)
+  // A saved price applies at once with no approval, so the expert confirms it first
+  const [confirming, setConfirming] = useState(false)
   const busy = mutation.isPending
-  const dirty = JSON.stringify(input) !== JSON.stringify(baseline)
-  const blocker = useBlocker(
-    ({ currentLocation, nextLocation }) =>
-      (dirty || busy) &&
-      currentLocation.pathname + currentLocation.search !==
-        nextLocation.pathname + nextLocation.search
-  )
-  useBeforeUnload((event) => {
-    if (dirty || busy) {
-      event.preventDefault()
-      event.returnValue = ''
-    }
-  })
   const update = (key: keyof PricingInput, value: string) => {
     setInput((previous) => ({ ...previous, [key]: value }))
     setErrors((previous) => ({ ...previous, [key]: undefined }))
-    setFeedback(null)
+    setSaved(false)
     mutation.reset()
   }
-  const save = (submit: boolean) => {
-    if (busy || pending) return
-    const issues = validatePricing(input, submit)
+  const review = () => {
+    if (busy) return
+    const issues = validatePricing(input)
     setErrors(issues)
     if (Object.keys(issues).length) {
       const first = Object.keys(issues)[0]
@@ -221,48 +189,25 @@ function PricingEditor({
         ?.focus()
       return
     }
-    setFeedback(null)
-    mutation.mutate(
-      { input, revision, submit },
-      {
-        onSuccess: (next) => {
-          // The version just saved has the highest sequence (it may be auto-approved on submit)
-          const version = next.versions.reduce((a, b) =>
-            b.sequence > a.sequence ? b : a
-          )
-          const saved = {
-            amount: version.amount,
-            effectiveFrom: version.effectiveFrom,
-            reason: version.reason,
-          }
-          setInput(saved)
-          setBaseline(saved)
-          setRevision(next.revision)
-          setFeedback(
-            isExpertDemo
-              ? submit
-                ? 'submitted'
-                : 'saved'
-              : !submit
-                ? 'savedApi'
-                : version.status === 'APPROVED'
-                  ? 'submittedApproved'
-                  : 'submittedPending'
-          )
-        },
-      }
-    )
+    setConfirming(true)
   }
-  const status = (value: PricingWorkspace['versions'][number]['status']) =>
-    t(`pricing.status.${value}`)
-  const statusClass = (value: string) =>
-    value === 'APPROVED'
-      ? 'ep-status-ready'
-      : value === 'PENDING_APPROVAL' || value === 'RETURN_FOR_REVISION'
-        ? 'ep-status-paused'
-        : value === 'REJECTED'
-          ? 'ep-status-danger'
-          : 'ep-status-neutral'
+  const save = () =>
+    mutation.mutate(input, {
+      onSuccess: (next) => {
+        setInput({
+          fee: String(next.fee),
+          turnaroundHours: String(next.turnaroundHours),
+        })
+        setSaved(true)
+      },
+      onSettled: () => setConfirming(false),
+    })
+  const failure = mutation.error
+  const saveError =
+    failure instanceof ApiError && isSaveError(failure.code)
+      ? t(`pricing.errors.${failure.code}`)
+      : t('pricing.saveFailed')
+  const proposedFee = /^\d+$/.test(input.fee.trim()) ? Number(input.fee) : null
   return (
     <>
       {isExpertDemo && (
@@ -271,167 +216,94 @@ function PricingEditor({
           <p>{t('pricing.demo')}</p>
         </div>
       )}
-      {blocker.state === 'blocked' && (
-        <div className="epr-navigation" role="alert">
-          <p>{busy ? t('pricing.saving') : t('pricing.unsaved')}</p>
-          <button
-            className="ep-button"
-            type="button"
-            onClick={() => blocker.reset()}
-          >
-            {t('pricing.stay')}
-          </button>
-          {!busy && (
-            <button
-              className="ep-button"
-              type="button"
-              onClick={() => blocker.proceed()}
-            >
-              {t('pricing.leave')}
-            </button>
-          )}
-        </div>
-      )}
       <div className="epr-layout">
         <section className="epr-editor" aria-labelledby="epr-editor-title">
           <div className="epr-section-title">
             <h2 id="epr-editor-title">
-              {pending
-                ? t('pricing.pendingTitle')
-                : working
-                  ? t('pricing.editDraft')
-                  : t('pricing.newVersion')}
+              {service.fee == null
+                ? t('pricing.setPrice')
+                : t('pricing.editPrice')}
             </h2>
-            <span
-              className={'ep-status ' + statusClass(working?.status ?? 'DRAFT')}
-            >
-              {working ? label(working.id) : t('pricing.unsavedVersion')} ·{' '}
-              {status(working?.status ?? 'DRAFT')}
-            </span>
           </div>
-          <p className="epr-section-help">
-            {pending ? t('pricing.pendingHelp') : t('pricing.editorHelp')}
-          </p>
-          {working?.reviewNote && (
-            <div className="epr-review-note">
-              <h3>{t('pricing.reviewNote')}</h3>
-              <p>{working.reviewNote}</p>
-            </div>
-          )}
+          <p className="epr-section-help">{t('pricing.editorHelp')}</p>
           <form
             ref={formRef}
             noValidate
             onSubmit={(event) => {
               event.preventDefault()
-              save(true)
+              review()
             }}
             aria-busy={busy}
           >
-            <fieldset disabled={pending || busy}>
+            <fieldset disabled={busy}>
               <div className="epr-field">
-                <label htmlFor="epr-amount">
+                <label htmlFor="epr-fee">
                   {t('pricing.amount')} <span>VND</span>
                 </label>
                 <input
-                  id="epr-amount"
-                  name="amount"
+                  id="epr-fee"
+                  name="fee"
                   type="text"
                   inputMode="numeric"
                   autoComplete="off"
-                  value={input.amount}
-                  onChange={(event) => update('amount', event.target.value)}
-                  aria-invalid={Boolean(errors.amount)}
+                  value={input.fee}
+                  onChange={(event) => update('fee', event.target.value)}
+                  aria-invalid={Boolean(errors.fee)}
                   aria-describedby={
-                    'epr-amount-help' +
-                    (errors.amount ? ' epr-amount-error' : '')
+                    'epr-fee-help' + (errors.fee ? ' epr-fee-error' : '')
                   }
                 />
-                <p id="epr-amount-help">{t('pricing.amountHelp')}</p>
-                {errors.amount && (
-                  <p id="epr-amount-error" className="epr-field-error">
-                    {t(`pricing.errors.${errors.amount}`)}
+                <p id="epr-fee-help">{t('pricing.amountHelp')}</p>
+                {errors.fee && (
+                  <p id="epr-fee-error" className="epr-field-error">
+                    {t(`pricing.errors.${errors.fee}`)}
                   </p>
                 )}
               </div>
               <div className="epr-field">
-                <label htmlFor="epr-date">{t('pricing.effectiveFrom')}</label>
+                <label htmlFor="epr-hours">
+                  {t('pricing.turnaround')} <span>{t('pricing.hours')}</span>
+                </label>
                 <input
-                  id="epr-date"
-                  name="effectiveFrom"
-                  type="date"
-                  min={businessDate()}
-                  value={input.effectiveFrom}
+                  id="epr-hours"
+                  name="turnaroundHours"
+                  type="text"
+                  inputMode="numeric"
+                  autoComplete="off"
+                  value={input.turnaroundHours}
                   onChange={(event) =>
-                    update('effectiveFrom', event.target.value)
+                    update('turnaroundHours', event.target.value)
                   }
-                  aria-invalid={Boolean(errors.effectiveFrom)}
+                  aria-invalid={Boolean(errors.turnaroundHours)}
                   aria-describedby={
-                    'epr-date-help' +
-                    (errors.effectiveFrom ? ' epr-date-error' : '')
+                    'epr-hours-help' +
+                    (errors.turnaroundHours ? ' epr-hours-error' : '')
                   }
                 />
-                <p id="epr-date-help">{t('pricing.dateHelp')}</p>
-                {errors.effectiveFrom && (
-                  <p id="epr-date-error" className="epr-field-error">
-                    {t(`pricing.errors.${errors.effectiveFrom}`)}
-                  </p>
-                )}
-              </div>
-              <div className="epr-field">
-                <label htmlFor="epr-reason">{t('pricing.reason')}</label>
-                <textarea
-                  id="epr-reason"
-                  name="reason"
-                  rows={4}
-                  maxLength={1000}
-                  value={input.reason}
-                  onChange={(event) => update('reason', event.target.value)}
-                  aria-invalid={Boolean(errors.reason)}
-                  aria-describedby={
-                    'epr-reason-help' +
-                    (errors.reason ? ' epr-reason-error' : '')
-                  }
-                />
-                <div className="epr-field-meta">
-                  <p id="epr-reason-help">{t('pricing.reasonHelp')}</p>
-                  <span>{format.number(input.reason.length)}/1,000</span>
-                </div>
-                {errors.reason && (
-                  <p id="epr-reason-error" className="epr-field-error">
-                    {t(`pricing.errors.${errors.reason}`)}
+                <p id="epr-hours-help">{t('pricing.turnaroundHelp')}</p>
+                {errors.turnaroundHours && (
+                  <p id="epr-hours-error" className="epr-field-error">
+                    {t(`pricing.errors.${errors.turnaroundHours}`)}
                   </p>
                 )}
               </div>
             </fieldset>
-            {!pending && (
-              <div className="epr-form-actions">
-                <button
-                  className="ep-button"
-                  type="button"
-                  disabled={busy}
-                  onClick={() => save(false)}
-                >
-                  <Save size={16} aria-hidden="true" />
-                  {t('pricing.saveDraft')}
-                </button>
-                <button
-                  className="ep-button ep-button-primary"
-                  type="submit"
-                  disabled={busy}
-                >
-                  <Send size={16} aria-hidden="true" />
-                  {busy ? t('pricing.saving') : t('pricing.submit')}
-                </button>
-              </div>
-            )}
+            <div className="epr-form-actions">
+              <button
+                className="ep-button ep-button-primary"
+                type="submit"
+                disabled={busy}
+              >
+                <Save size={16} aria-hidden="true" />
+                {busy ? t('pricing.saving') : t('pricing.save')}
+              </button>
+            </div>
             <div className="epr-feedback" aria-live="polite">
-              {feedback && (
-                <p className="epr-success">{t(`pricing.${feedback}`)}</p>
-              )}
+              {saved && <p className="epr-success">{t('pricing.saved')}</p>}
             </div>
             {mutation.isError && (
               <p role="alert" className="epr-field-error">
-                {t('pricing.saveFailed')}
+                {saveError}
               </p>
             )}
           </form>
@@ -442,126 +314,101 @@ function PricingEditor({
             <div>
               <dt>{t('pricing.current')}</dt>
               <dd className="epr-price">
-                {effective
-                  ? format.money(effective.amount)
-                  : t('noEffectivePricing')}
+                {service.fee == null
+                  ? t('noEffectivePricing')
+                  : format.money(service.fee)}
               </dd>
-              <dd>{effective ? label(effective.id) : '—'}</dd>
+              <dd>
+                {service.netAmount == null
+                  ? '—'
+                  : t('pricing.youReceive', {
+                      amount: format.money(service.netAmount),
+                    })}
+              </dd>
             </div>
             <div>
               <dt>{t('pricing.proposed')}</dt>
               <dd className="epr-proposed-price">
-                {/^\d+$/.test(input.amount) ? format.money(input.amount) : '—'}
+                {proposedFee == null ? '—' : format.money(proposedFee)}
               </dd>
-              <dd>{format.dateOnly(input.effectiveFrom)}</dd>
+              <dd>
+                {proposedFee == null
+                  ? '—'
+                  : t('pricing.youReceive', {
+                      amount: format.money(
+                        netOf(proposedFee, service.platformFeePercent)
+                      ),
+                    })}
+              </dd>
             </div>
           </dl>
           <div className="epr-policy">
             <CheckCircle2 size={18} aria-hidden="true" />
             <p>
-              {data.autoApproveMaxChangePercent == null
-                ? t('pricing.approvalHelp')
-                : t('pricing.autoApprovalHelp', {
-                    percent: data.autoApproveMaxChangePercent,
-                  })}
+              {t('pricing.platformFeeHelp', {
+                percent: service.platformFeePercent,
+              })}
             </p>
           </div>
           <p>{t('pricing.snapshotHelp')}</p>
-          <p>{t('pricing.slaHelp')}</p>
         </aside>
       </div>
-      <section className="epr-history" aria-labelledby="epr-history-title">
-        <h2 id="epr-history-title">{t('pricing.history')}</h2>
-        <p>{t('pricing.historyHelp')}</p>
-        <div
-          className="epr-table-scroll"
-          role="region"
-          tabIndex={0}
-          aria-label={t('pricing.history')}
+      {confirming && proposedFee != null && (
+        <Modal
+          title={t('pricing.confirmTitle')}
+          onClose={() => !busy && setConfirming(false)}
+          preventClose={busy}
+          onSubmit={save}
+          footer={
+            <>
+              <button
+                type="button"
+                className="ep-button"
+                disabled={busy}
+                onClick={() => setConfirming(false)}
+              >
+                {t('common:actions.cancel')}
+              </button>
+              <button
+                type="submit"
+                className="ep-button ep-button-primary"
+                disabled={busy}
+              >
+                {busy ? t('pricing.saving') : t('pricing.confirm')}
+              </button>
+            </>
+          }
         >
-          <table>
-            <thead>
-              <tr>
-                <th scope="col">{t('pricing.version')}</th>
-                <th scope="col">{t('pricing.amount')}</th>
-                <th scope="col">{t('pricing.versionStatus')}</th>
-                <th scope="col">{t('pricing.effectiveDate')}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {data.versions.map((version) => (
-                <tr key={version.id}>
-                  <th scope="row">
-                    {label(version.id)}
-                    {version.id === effective?.id && (
-                      <span className="epr-current-label">
-                        {t('pricing.current')}
-                      </span>
-                    )}
-                  </th>
-                  <td>{format.money(version.amount)}</td>
-                  <td>
-                    <span
-                      className={'ep-status ' + statusClass(version.status)}
-                    >
-                      {status(version.status)}
-                    </span>
-                    <details>
-                      <summary>{t('pricing.details')}</summary>
-                      <p>{version.reason || t('pricing.noReason')}</p>
-                      {version.reviewNote && <p>{version.reviewNote}</p>}
-                      {version.autoApproved && (
-                        <p>
-                          {t('pricing.autoApproved', {
-                            percent: version.changePercent ?? 0,
-                          })}
-                        </p>
-                      )}
-                      <p>
-                        {t('pricing.updatedAt', {
-                          date: format.timestamp(
-                            version.updatedAt,
-                            'Asia/Ho_Chi_Minh'
-                          ),
-                        })}
-                      </p>
-                    </details>
-                  </td>
-                  <td>
-                    {format.dateOnly(version.effectiveFrom)}
-                    {version.effectiveTo && (
-                      <p>
-                        {t('pricing.until', {
-                          date: format.dateOnly(version.effectiveTo),
-                        })}
-                      </p>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </section>
-      {data.audit.length > 0 && (
-        <section className="epr-audit">
-          <h2>{t('pricing.activity')}</h2>
-          <ol>
-            {[...data.audit].reverse().map((event, index) => (
-              <li key={event.at + index}>
-                <span>
-                  {label(event.versionId)} · {t(AUDIT_LABELS[event.action])}
-                </span>
-                <time dateTime={event.at}>
-                  {format.timestamp(event.at, 'Asia/Ho_Chi_Minh', {
-                    dateStyle: 'medium',
-                    timeStyle: 'short',
-                  })}
-                </time>
-              </li>
-            ))}
-          </ol>
-        </section>
+          <dl className="[&_dt]:text-fg-muted mt-2 grid gap-3 text-sm [&_dd]:text-right [&_dd]:font-semibold [&>div]:flex [&>div]:justify-between [&>div]:gap-4">
+            <div>
+              <dt>{t('pricing.amount')}</dt>
+              <dd>
+                {service.fee == null
+                  ? format.money(proposedFee)
+                  : `${format.money(service.fee)} → ${format.money(proposedFee)}`}
+              </dd>
+            </div>
+            <div>
+              <dt>{t('pricing.youReceiveLabel')}</dt>
+              <dd>
+                {format.money(netOf(proposedFee, service.platformFeePercent))} (
+                {t('pricing.afterFee', { percent: service.platformFeePercent })}
+                )
+              </dd>
+            </div>
+            <div>
+              <dt>{t('pricing.turnaround')}</dt>
+              <dd>
+                {t('pricing.deliveryIn', {
+                  hours: Number(input.turnaroundHours),
+                })}
+              </dd>
+            </div>
+          </dl>
+          <p className="text-fg-muted mt-4 text-sm">
+            {t('pricing.confirmHelp')}
+          </p>
+        </Modal>
       )}
     </>
   )

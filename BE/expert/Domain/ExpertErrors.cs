@@ -22,11 +22,28 @@ public static class ExpertErrors
             $"A new application is allowed from {allowedFrom:O}."
         );
 
+    public static AppException InvalidPaging(int maxPageSize) =>
+        new(
+            ErrorType.Validation,
+            "INVALID_PAGING",
+            $"page must be at least 1 and pageSize between 1 and {maxPageSize}."
+        );
+
     public static AppException InvalidField(string field) =>
         new(ErrorType.Validation, "INVALID_FIELD", $"Unknown expertise field: {field}.");
 
     public static AppException InvalidBirthDate() =>
         new(ErrorType.Validation, "INVALID_BIRTH_DATE", "Birth date is invalid.");
+
+    public static AppException DeclarationRequired(string code) =>
+        new(
+            ErrorType.Validation,
+            "DECLARATION_REQUIRED",
+            $"Agree to the {code} statement before submitting."
+        );
+
+    public static AppException ContactRequired(string field) =>
+        new(ErrorType.Validation, "CONTACT_REQUIRED", $"{field} is required.");
 
     public static AppException InvalidEvidenceCode() =>
         new(ErrorType.Validation, "INVALID_EVIDENCE_CODE", "Unknown evidence category.");
@@ -41,6 +58,13 @@ public static class ExpertErrors
     public static AppException EvidenceRequired() =>
         new(ErrorType.Validation, "EVIDENCE_REQUIRED", "File is required.");
 
+    public static AppException EvidenceInvalidUrl() =>
+        new(
+            ErrorType.Validation,
+            "EVIDENCE_INVALID_URL",
+            "Enter a public HTTP or HTTPS URL without credentials (at most 2048 characters)."
+        );
+
     public static AppException EvidenceTooLarge() =>
         new(ErrorType.Validation, "EVIDENCE_TOO_LARGE", "File must be 10 MB or smaller.");
 
@@ -53,13 +77,6 @@ public static class ExpertErrors
 
     public static AppException EvidenceLimit(int max) =>
         new(ErrorType.Conflict, "EVIDENCE_LIMIT", $"An application can hold at most {max} files.");
-
-    public static AppException EvidenceLimitUnverified(int max) =>
-        new(
-            ErrorType.Forbidden,
-            "EVIDENCE_LIMIT_UNVERIFIED",
-            $"Verify your email address to upload more than {max} files."
-        );
 
     public static AppException EvidenceNotFound() =>
         new(ErrorType.NotFound, "EVIDENCE_NOT_FOUND", "File not found.");
@@ -74,7 +91,7 @@ public static class ExpertErrors
         new(
             ErrorType.Forbidden,
             "EMAIL_NOT_VERIFIED",
-            "Verify your email address before submitting."
+            "Verify your email address before changing your expert application."
         );
 
     public static AppException ApplicationIncomplete(IEnumerable<string> missing) =>
@@ -123,7 +140,7 @@ public static class ExpertErrors
         new(
             ErrorType.Validation,
             "INVALID_ELIGIBILITY_RESULT",
-            $"Result of {code} must be PASS, FAIL or NEED_MORE_INFORMATION."
+            $"Result of {code} must be PASS, FAIL or NEED_MORE_INFORMATION (NOT_APPLICABLE only where the policy allows it)."
         );
 
     public static AppException EligibilityNoteRequired(string code) =>
@@ -232,82 +249,44 @@ public static class ExpertErrors
 
     public static AppException PricingNotAllowed(string qualificationStatus) =>
         new(
-            ErrorType.Conflict,
+            ErrorType.Forbidden,
             "PRICING_NOT_ALLOWED",
-            $"Prices can only be set for an approved service; this one is {qualificationStatus}."
+            $"Only experts approved for this service can price it; the service is {qualificationStatus}."
         );
 
-    public static AppException PriceOutOfRange(long min, long max) =>
+    public static AppException PlatformFeeInvalid(int max) =>
         new(
             ErrorType.Validation,
-            "PRICE_OUT_OF_RANGE",
-            $"Price must be between {min} and {max} VND."
+            "PLATFORM_FEE_INVALID",
+            $"Platform fee must be between 0 and {max} percent."
         );
 
-    public static AppException EffectiveDateInPast() =>
+    public static AppException PlatformFeeNotSet() =>
+        new(
+            ErrorType.RuleViolation,
+            "PLATFORM_FEE_NOT_SET",
+            "The platform fee of this service is not set yet, so it cannot be priced."
+        );
+
+    public static AppException FeeInvalid(long min, long max, long step) =>
         new(
             ErrorType.Validation,
-            "EFFECTIVE_DATE_IN_PAST",
-            "The effective date cannot be in the past."
+            "FEE_INVALID",
+            $"Fee must be between {min} and {max} VND, in steps of {step}."
         );
 
-    public static AppException PricingReasonRequired() =>
+    public static AppException TurnaroundInvalid(int max) =>
         new(
             ErrorType.Validation,
-            "PRICING_REASON_REQUIRED",
-            "Explain the price before submitting it."
+            "TURNAROUND_INVALID",
+            $"Turnaround must be between 1 and {max} hours."
         );
 
-    public static AppException PricingReasonTooLong(int max) =>
-        new(
-            ErrorType.Validation,
-            "PRICING_REASON_TOO_LONG",
-            $"The reason can be at most {max} characters."
-        );
-
-    public static AppException PricingVersionLocked(string status) =>
+    public static AppException OfferingConflict() =>
         new(
             ErrorType.Conflict,
-            "PRICING_VERSION_LOCKED",
-            $"This price cannot be changed while {status}."
-        );
-
-    public static AppException PricingPendingApproval() =>
-        new(
-            ErrorType.Conflict,
-            "PRICING_PENDING_APPROVAL",
-            "A price change is waiting for approval; wait for the decision before changing it again."
-        );
-
-    public static AppException PricingRevisionConflict() =>
-        new(
-            ErrorType.Conflict,
-            "PRICING_REVISION_CONFLICT",
-            "The prices changed meanwhile; reload and try again."
-        );
-
-    public static AppException PricingVersionNotFound() =>
-        new(ErrorType.NotFound, "PRICING_VERSION_NOT_FOUND", "Pricing version not found.");
-
-    public static AppException PricingNotPending(string status) =>
-        new(
-            ErrorType.Conflict,
-            "PRICING_NOT_PENDING",
-            $"Only prices waiting for approval can be decided; this one is {status}."
-        );
-
-    public static AppException PricingNoteRequired() =>
-        new(
-            ErrorType.Validation,
-            "PRICING_NOTE_REQUIRED",
-            "Explain why the price is returned or rejected."
-        );
-
-    public static AppException InvalidPricingDecision() =>
-        new(
-            ErrorType.Validation,
-            "INVALID_PRICING_DECISION",
-            "Decision must be APPROVE, RETURN_FOR_REVISION or REJECT."
+            "OFFERING_CONFLICT",
+            "This service was changed at the same time. Reload and try again."
         );
 
     public static AppException SlotInPast() =>
@@ -382,5 +361,123 @@ public static class ExpertErrors
             ErrorType.Validation,
             "COMPETENCY_EVIDENCE_UNKNOWN",
             $"A file cited for {code} does not belong to this qualification."
+        );
+
+    public static AppException MaterialChangeRequired(IEnumerable<string> criteria) =>
+        new(
+            ErrorType.Conflict,
+            "MATERIAL_CHANGE_REQUIRED",
+            $"Update your information or add new evidence for: {string.Join(", ", criteria)}."
+        );
+
+    public static AppException UnknownPolicySetting(string key) =>
+        new(ErrorType.Validation, "UNKNOWN_POLICY_SETTING", $"Unknown policy setting: {key}.");
+
+    public static AppException PolicySettingOutOfRange(string key, int min, int max) =>
+        new(
+            ErrorType.Validation,
+            "POLICY_SETTING_OUT_OF_RANGE",
+            $"{key} must be a whole number between {min} and {max}."
+        );
+
+    public static AppException PolicyReasonRequired() =>
+        new(ErrorType.Validation, "POLICY_REASON_REQUIRED", "Give the reason for the change.");
+
+    public static AppException PolicyReasonTooLong(int max) =>
+        new(
+            ErrorType.Validation,
+            "POLICY_REASON_TOO_LONG",
+            $"The reason can be at most {max} characters."
+        );
+
+    public static AppException PolicyExpectedValueRequired(string key) =>
+        new(
+            ErrorType.Validation,
+            "POLICY_EXPECTED_VALUE_REQUIRED",
+            $"Send the value of {key} you are changing from."
+        );
+
+    /// <summary>Someone else changed the value since it was read; nothing was saved.</summary>
+    public static AppException PolicyChanged(string key) =>
+        new(
+            ErrorType.Conflict,
+            "POLICY_CHANGED",
+            $"{key} was changed by someone else. Reload and try again."
+        );
+
+    /// <summary>Another reviewer holds the review; the caller reloads it to see who.</summary>
+    public static AppException ReviewClaimed() =>
+        new(
+            ErrorType.Conflict,
+            "REVIEW_CLAIMED",
+            "Another reviewer is already working on this review."
+        );
+
+    /// <summary>The review returned to the queue or belongs to another reviewer; nothing was saved.</summary>
+    public static AppException ReviewNotClaimed() =>
+        new(
+            ErrorType.Conflict,
+            "REVIEW_NOT_CLAIMED",
+            "Claim this review before deciding it; it is not yours or your claim has expired."
+        );
+
+    public static AppException ClaimReassignReasonRequired() =>
+        new(
+            ErrorType.Validation,
+            "CLAIM_REASSIGN_REASON_REQUIRED",
+            "Give the reason for handing the review to another reviewer."
+        );
+
+    public static AppException ClaimReassignReasonTooLong(int max) =>
+        new(
+            ErrorType.Validation,
+            "CLAIM_REASSIGN_REASON_TOO_LONG",
+            $"The reason can be at most {max} characters."
+        );
+
+    public static AppException InformationRequestLimit(int max) =>
+        new(
+            ErrorType.Conflict,
+            "INFORMATION_REQUEST_LIMIT",
+            $"More information has already been requested {max} times; decide with the evidence at hand."
+        );
+
+    public static AppException EvidenceCompetencyRequired() =>
+        new(
+            ErrorType.Validation,
+            "EVIDENCE_COMPETENCY_REQUIRED",
+            "Tie the file to at least one competency."
+        );
+
+    public static AppException InvalidCompetencyCode() =>
+        new(ErrorType.Validation, "INVALID_COMPETENCY_CODE", "Unknown competency.");
+
+    public static AppException CompetencyDescriptionTooLong(int max) =>
+        new(
+            ErrorType.Validation,
+            "COMPETENCY_DESCRIPTION_TOO_LONG",
+            $"The description can be at most {max} characters."
+        );
+
+    public static AppException CompetencyEvidenceMissing() =>
+        new(
+            ErrorType.Validation,
+            "COMPETENCY_EVIDENCE_MISSING",
+            "Add at least one file or link tied to a competency before submitting."
+        );
+
+    /// <summary>E7: each competency that failed needs a new file tied to it.</summary>
+    public static AppException CompetencyNewEvidenceRequired(IEnumerable<string> competencies) =>
+        new(
+            ErrorType.Validation,
+            "COMPETENCY_NEW_EVIDENCE_REQUIRED",
+            $"Add new evidence for: {string.Join(", ", competencies)}."
+        );
+
+    public static AppException ReviewerNotFound() =>
+        new(
+            ErrorType.NotFound,
+            "REVIEWER_NOT_FOUND",
+            "Reviewer not found; they must open the review queue at least once."
         );
 }

@@ -8,6 +8,8 @@ export default defineConfig({
   testDir: 'e2e',
   fullyParallel: true,
   retries: process.env.CI ? 1 : 0,
+  // The dev server compiles lazy routes on first hit; with parallel sign-ins 5s is too tight
+  expect: { timeout: 10_000 },
   use: {
     baseURL: `http://localhost:${port}`,
     channel: 'chrome',

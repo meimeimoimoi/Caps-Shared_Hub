@@ -7,18 +7,20 @@ export interface ServiceReadiness {
   availability: boolean
   bookingAllowed: boolean
   reasons: string[]
+  /** The expert's own price for the service; null until one is set */
   pricing: {
-    version: string
-    effectiveFrom: string
-    effectiveTo: string | null
+    fee: number
+    turnaroundHours: number
+    updatedAt: string
   } | null
-  pendingPricingVersion: string | null
 }
 
 export interface ExpertContext {
   /** Expert profile id; null before the first application is saved */
   expertId: string | null
   displayName: string
+  /** Contact phone of the expert profile; null before it is saved */
+  phone?: string | null
   email: string
   accountStatus: string
   /** APPLICATION, SERVICE_SETUP or ACTIVE */

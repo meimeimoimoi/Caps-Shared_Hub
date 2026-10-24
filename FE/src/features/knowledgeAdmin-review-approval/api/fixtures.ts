@@ -1,4 +1,4 @@
-/* Dữ liệu demo cho knowledgeApi.ts khi chạy dev (isExpertDemo). */
+/* Dữ liệu demo cho knowledgeApi.ts khi chạy dev (isKnowledgeDemo). */
 import type {
   DocumentDetail,
   DocumentReview,

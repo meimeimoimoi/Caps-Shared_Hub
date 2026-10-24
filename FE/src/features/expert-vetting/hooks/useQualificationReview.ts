@@ -7,6 +7,7 @@ import {
   getQualificationDetail,
 } from '../api/qualificationApi'
 import { adminKeys } from '../api/queryKeys'
+import { isClaimConflict } from './useReviewClaim'
 import { COMPETENCY_CODES } from '../constants'
 import type {
   CompetencyAssessment,
@@ -76,6 +77,11 @@ export function useQualificationReview(
       qc.setQueryData(adminKeys.qualification(scope, id), updated)
       setEdits({})
       await qc.invalidateQueries({ queryKey: adminKeys.qualifications(scope) })
+      await qc.invalidateQueries({ queryKey: adminKeys.queueAll() })
+    },
+    // The claim expired or moved to another reviewer: reload to show who holds it now
+    onError: (e: unknown) => {
+      if (isClaimConflict(e)) void qc.invalidateQueries({ queryKey: adminKeys.qualification(scope, id) })
     },
   })
 
@@ -88,6 +94,7 @@ export function useQualificationReview(
     onSuccess: async (updated) => {
       qc.setQueryData(adminKeys.qualification(scope, id), updated)
       await qc.invalidateQueries({ queryKey: adminKeys.qualifications(scope) })
+      await qc.invalidateQueries({ queryKey: adminKeys.queueAll() })
     },
   })
 
@@ -100,6 +107,7 @@ export function useQualificationReview(
     onSuccess: async (updated) => {
       qc.setQueryData(adminKeys.qualification(scope, id), updated)
       await qc.invalidateQueries({ queryKey: adminKeys.qualifications(scope) })
+      await qc.invalidateQueries({ queryKey: adminKeys.queueAll() })
     },
   })
 
