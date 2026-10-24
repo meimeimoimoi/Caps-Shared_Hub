@@ -26,7 +26,7 @@ export function FinalSection() {
         </div>
         <p className="expert r" style={{ '--i': '2' } as CSSProperties}>
           {t('final.expert')}{' '}
-          <Link to="/expert/register">{t('footer.expertSignup')}</Link>
+          <Link to="/register">{t('footer.expertSignup')}</Link>
         </p>
       </div>
       <div className="final-visual" id="finalVisual" aria-hidden="true">

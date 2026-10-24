@@ -20,7 +20,6 @@ export interface ExpertBio extends ExpertBioInput {
     price: string | null
     /** Delivery SLA in calendar hours from START; null when the source has none. */
     slaHours?: number | null
-    pricingVersion?: string
     /** When Gate 2 + Final Approval made this service bookable. */
     approvedAt?: string | null
   }[]

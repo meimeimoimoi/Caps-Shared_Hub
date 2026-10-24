@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { HelpTip } from '@/components/ui/feedback/help-tip'
+import { formatDate } from '../utils/applications'
 import type {
   FinalApprovalDecision,
   QualificationDetail,
@@ -26,10 +28,13 @@ export function FinalApprovalPanel({
   const { t } = useTranslation('admin')
   const [note, setNote] = useState('')
   const [tried, setTried] = useState(false)
+  const [now] = useState(() => Date.now())
   const noteMissing = tried && !note.trim()
   const approval = detail.canFinalApprove
   const access = detail.canSuspend || detail.canReinstate
   const locked = submitting || (approval && isGate2Reviewer)
+  const due = approval ? detail.finalApprovalDueAt : null
+  const overdue = !!due && new Date(due).getTime() < now
 
   if (!approval && !access)
     return (
@@ -49,18 +54,29 @@ export function FinalApprovalPanel({
 
   return (
     <section className="paper p-5 md:p-6">
-      <h2 className="text-h2">
-        {approval
-          ? t('finalApproval.panelTitle')
-          : t('finalApproval.accessTitle')}
-      </h2>
-      <p className="text-fg-muted mt-1 text-sm">
-        {approval
-          ? t('finalApproval.intro')
-          : detail.canSuspend
-            ? t('finalApproval.suspendIntro')
-            : t('finalApproval.reinstateIntro')}
-      </p>
+      <div className="flex flex-wrap items-center gap-2">
+        <h2 className="text-h2">
+          {approval
+            ? t('finalApproval.panelTitle')
+            : t('finalApproval.accessTitle')}
+        </h2>
+        <HelpTip label={t('finalApproval.helpLabel')}>
+          {approval
+            ? t('finalApproval.intro')
+            : detail.canSuspend
+              ? t('finalApproval.suspendIntro')
+              : t('finalApproval.reinstateIntro')}
+        </HelpTip>
+        {due && (
+          <span
+            aria-label={t('finalApproval.dueLabel')}
+            className={`rounded-control ml-auto px-2 py-0.5 text-sm font-semibold ${overdue ? 'bg-danger/10 text-danger' : 'bg-sunken text-fg-strong'}`}
+          >
+            {overdue ? `${t('finalApproval.overdue')} · ` : ''}
+            {t('finalApproval.dueOn', { date: formatDate(due) })}
+          </span>
+        )}
+      </div>
       {approval && isGate2Reviewer && (
         <p
           role="status"

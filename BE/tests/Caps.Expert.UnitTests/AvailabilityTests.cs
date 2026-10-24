@@ -89,29 +89,24 @@ public sealed class AvailabilityTests
     public void The_missing_step_is_reported_in_the_order_the_expert_fixes_it()
     {
         Assert.Equal(
-            ["PRICING_IN_REVIEW"],
-            MarketplaceRules.Missing(Listed() with { PriceInEffect = false }, true)
-        );
-        Assert.Equal(
             ["PRICING_PENDING"],
             MarketplaceRules.Missing(
                 Listed() with
                 {
                     PriceInEffect = false,
                     AcceptingRequests = false,
-                },
-                false
+                }
             )
         );
         Assert.Equal(
             ["REQUESTS_TURNED_OFF"],
-            MarketplaceRules.Missing(Listed() with { AcceptingRequests = false }, false)
+            MarketplaceRules.Missing(Listed() with { AcceptingRequests = false })
         );
         Assert.Equal(
             ["NO_OPEN_SLOTS"],
-            MarketplaceRules.Missing(Listed() with { HasOpenSlot = false }, false)
+            MarketplaceRules.Missing(Listed() with { HasOpenSlot = false })
         );
-        Assert.Empty(MarketplaceRules.Missing(Listed(), false));
+        Assert.Empty(MarketplaceRules.Missing(Listed()));
     }
 
     [Fact]

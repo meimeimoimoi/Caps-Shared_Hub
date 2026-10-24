@@ -23,6 +23,13 @@ moves the message to the error queue (no retry policy is configured yet).
 - `Features/Notifications/`: `GET /api/v1/notifications/me` (newest 20 + unread count),
   `POST /api/v1/notifications/me/{id}/read`, `POST /api/v1/notifications/me/read-all`; routed by the gateway
   with `AuthSession`. The FE renders the text from `type` + `data`.
+- `Features/Realtime/`: SignalR hub at `/api/v1/notifications/hub` (gateway route without `AuthSession`,
+  because a WebSocket carries the token in `access_token`; the hub itself requires `AuthSession`). After a
+  notification row is stored, `notificationCreated` `{ id, type }` goes to every connection of that account and
+  the FE refetches. Any service can also push a data change: inject `IRealtimeNotifier` (registered by
+  `AddCapsMessaging`) and call `ChangedAsync(topic, userIds, permissions)` after committing; the hub puts each
+  connection in `permission:<name>` groups, and `RealtimeChangedConsumer` sends `changed` `{ topic }`. Add the
+  topic to `topicParts` in the FE `useNotificationStream` (an unknown topic refetches every private query). Single instance only: several instances would need a backplane (e.g. Redis).
 - `Data/`, `Entities/`, `Migrations/`: the notification schema
   (`dotnet ef migrations add <Name> --project notification --output-dir Migrations`).
 - `Email/`: `IEmailSender` and the SMTP implementation. A new channel (another provider, SMS) is a new sender,

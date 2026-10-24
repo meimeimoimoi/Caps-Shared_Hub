@@ -1,57 +1,64 @@
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { Link, useLocation } from 'react-router-dom'
 import {
   RegisterForm,
   type RegisterFormValues,
 } from '@/components/auth/RegisterForm'
 import { VideoBackground } from '@/components/auth/VideoBackground'
-import {
-  CARD_CLASS,
-  PRIMARY_BUTTON_CLASS,
-  SECONDARY_BUTTON_CLASS,
-} from '@/components/auth/EmailLoginForm'
+import { LINK_CLASS } from '@/components/auth/EmailLoginForm'
 import { LanguageToggle as AuthLanguageToggle } from '@/components/ui/layout/language-toggle'
 import { useAuth } from '../features/auth/hooks/useAuth'
-import { SignedInNotice } from '../features/auth/components/SignedInNotice'
-import { DEFAULT_HOME } from '../features/auth/utils/returnPath'
+import { RoleChoice } from '../features/auth/components/RoleChoice'
+import { SignedInRedirect } from '../features/auth/components/SignedInRedirect'
+import type { SignupRole } from '../features/auth/utils/signupRole'
 
-const signedInClasses = {
-  card: CARD_CLASS,
-  title:
-    'text-center text-[22px] leading-[1.2] font-bold tracking-[-0.025em] text-white',
-  body: 'mt-3 text-center text-[14.5px] leading-[1.55] text-white/75 [&_strong]:text-white',
-  primary: PRIMARY_BUTTON_CLASS,
-  secondary: SECONDARY_BUTTON_CLASS,
-}
-
-/* Đăng ký khách hàng. Chuyên gia đăng ký ở /expert/register (luồng nhiều bước, tài khoản riêng). */
+/* One sign-up page for customers and experts in two steps: choose what you want, then the form
+ * (or Google). The choice only picks the page after verification; it is kept in page state, so a
+ * reload asks again. */
 export default function RegisterPage() {
   const { t } = useTranslation('auth')
   useEffect(() => {
     document.title = `${t('register.pageTitle')} | Shared Hub`
   }, [t])
-  const nameInput = useRef<HTMLInputElement>(null)
-  const { register, isLoading, error, user, isAuthenticated } = useAuth()
+  const emailInput = useRef<HTMLInputElement>(null)
+  const returnState = useLocation().state
+  const { register, loginWithGoogle, isLoading, error, isAuthenticated } =
+    useAuth()
+  const [role, setRole] = useState<SignupRole | null>(null)
+  // Kept while switching back to the first step, so the typed values survive a change of choice
+  const [draft, setDraft] = useState<RegisterFormValues | null>(null)
 
   useEffect(() => {
-    nameInput.current?.focus()
-  }, [])
+    if (role) emailInput.current?.focus()
+  }, [role])
 
-  // The account created here signs in right away; it goes on to /verify-email, not to the notice
+  // The account created here signs in right away; it goes on to /verify-email, not to the redirect
   const [registering, setRegistering] = useState(false)
 
   const submit = async (values: RegisterFormValues) => {
+    if (!role) return
     setRegistering(true)
     try {
-      await register(values)
+      await register(values, role)
+    } catch {
+      // useAuth keeps the form and exposes the API error so the user can retry
+      setRegistering(false)
+    }
+  }
+
+  const google = async (idToken: string) => {
+    if (!role) return
+    setRegistering(true)
+    try {
+      await loginWithGoogle(idToken, role)
     } catch {
       setRegistering(false)
-      // useAuth giữ nguyên form và trả lỗi API để người dùng thử lại.
     }
   }
 
   return (
-    <main className="login-material relative isolate flex min-h-svh flex-col items-center justify-center overflow-hidden bg-[var(--ui-login-canvas)] px-6 py-12 text-[var(--ui-login-text)] max-sm:pt-20">
+    <main className="login-material relative isolate flex min-h-svh flex-col items-center justify-center overflow-hidden bg-[var(--ui-login-canvas)] px-6 py-6 text-[var(--ui-login-text)] max-sm:pt-20">
       <VideoBackground />
       <div className="fixed top-[max(1rem,env(safe-area-inset-top))] right-[max(1rem,env(safe-area-inset-right))] z-50">
         <AuthLanguageToggle />
@@ -60,23 +67,34 @@ export default function RegisterPage() {
         aria-hidden="true"
         className="pointer-events-none absolute inset-0 bg-black/30"
       />
-      {/* Already signed in (often restored silently from the refresh cookie): name the account
-          instead of showing a form that would replace its session. */}
       {isAuthenticated && !registering ? (
-        <div className="relative z-2 w-full max-w-[440px]">
-          <SignedInNotice
-            continueTo={
-              user?.roles?.includes('EXPERT') ? '/expert' : DEFAULT_HOME
-            }
-            classes={signedInClasses}
-          />
-        </div>
-      ) : (
+        <SignedInRedirect />
+      ) : role ? (
         <RegisterForm
+          role={role}
+          initialValues={draft}
+          onChangeRole={(values) => {
+            setDraft(values)
+            setRole(null)
+          }}
           onSubmit={submit}
-          nameInputRef={nameInput}
+          onGoogle={google}
+          emailInputRef={emailInput}
           isLoading={isLoading}
           error={error}
+        />
+      ) : (
+        <RoleChoice
+          title={t('roleChoice.title')}
+          onChoose={setRole}
+          footer={
+            <p className="mt-5 text-center text-[13px] leading-[1.6] text-white/55">
+              {t('register.haveAccount')}{' '}
+              <Link to="/login" state={returnState} className={LINK_CLASS}>
+                {t('register.signIn')}
+              </Link>
+            </p>
+          }
         />
       )}
     </main>

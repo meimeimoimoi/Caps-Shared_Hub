@@ -59,6 +59,7 @@ public sealed class SessionsController(ICurrentUser currentUser, RefreshCookie r
     /// <remarks>
     /// An existing account with the same verified email is linked to the Google account (and verified if it was pending).
     /// New accounts are active immediately and have no password until one is set through forgot-password.
+    /// isNewAccount is true only when this call created the account, so the client can ask for the user's role once.
     /// </remarks>
     /// <response code="200">Signed in; access token in the body, refresh token in the cookie.</response>
     /// <response code="400">Invalid input or GOOGLE_EMAIL_UNVERIFIED.</response>

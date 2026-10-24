@@ -29,13 +29,13 @@ public static class MarketplaceRules
         && f.HasOpenSlot;
 
     /// <summary>
-    /// Why an approved service is not listed yet, in the order the expert fixes them: PRICING_IN_REVIEW,
-    /// PRICING_PENDING, REQUESTS_TURNED_OFF, NO_OPEN_SLOTS or ACCOUNT_INACTIVE; empty when listed.
+    /// Why an approved service is not listed yet, in the order the expert fixes them: PRICING_PENDING,
+    /// REQUESTS_TURNED_OFF, NO_OPEN_SLOTS or ACCOUNT_INACTIVE; empty when listed.
     /// </summary>
-    public static string[] Missing(ListingFacts f, bool priceInReview)
+    public static string[] Missing(ListingFacts f)
     {
         if (!f.PriceInEffect)
-            return [priceInReview ? "PRICING_IN_REVIEW" : "PRICING_PENDING"];
+            return ["PRICING_PENDING"];
         if (!f.AcceptingRequests)
             return ["REQUESTS_TURNED_OFF"];
         if (!f.HasOpenSlot)

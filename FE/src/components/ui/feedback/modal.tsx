@@ -4,7 +4,10 @@ import { useTranslation } from 'react-i18next'
 import { useDialogMotion } from '@/components/ui/motion'
 
 interface ModalProps {
+  bodyClassName?: string
   title: ReactNode
+  /** Shown right after the title, e.g. a HelpTip; kept outside the heading element */
+  titleAddon?: ReactNode
   description?: ReactNode
   children?: ReactNode
   footer: ReactNode
@@ -20,7 +23,9 @@ interface ModalProps {
 /* Native <dialog>: trình duyệt lo focus trap, phím Esc và backdrop.
  * Mount = mở, unmount = đóng. */
 export function Modal({
+  bodyClassName = '',
   title,
+  titleAddon,
   description,
   children,
   footer,
@@ -50,11 +55,14 @@ export function Modal({
 
   const body = (
     <>
-      <div className="min-h-0 overflow-y-auto p-5 md:p-6">
+      <div className={`min-h-0 overflow-y-auto p-5 md:p-6 ${bodyClassName}`}>
         <div className="flex items-start justify-between gap-4">
-          <h2 id={titleId} className="text-h2">
-            {title}
-          </h2>
+          <div className="flex min-w-0 items-center gap-2">
+            <h2 id={titleId} className="text-h2">
+              {title}
+            </h2>
+            {titleAddon}
+          </div>
           <button
             type="button"
             onClick={onClose}

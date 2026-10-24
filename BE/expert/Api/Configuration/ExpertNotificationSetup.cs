@@ -1,3 +1,4 @@
+using Caps.Common.Application;
 using Caps.Common.Messaging;
 using Caps.Expert.Infrastructure.Messaging;
 
@@ -24,6 +25,10 @@ public static class ExpertNotificationSetup
             throw new InvalidOperationException(
                 "Notification publishing may only be disabled in Development."
             );
+        }
+        else
+        {
+            services.AddScoped<IRealtimeNotifier, NoRealtimeNotifier>();
         }
         return services;
     }

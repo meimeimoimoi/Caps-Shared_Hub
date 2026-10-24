@@ -7,6 +7,7 @@ namespace Caps.Expert.Application.DTOs.Responses;
 /// <param name="ExpertId">Expert profile id; null before the first application is saved.</param>
 /// <param name="Stage">APPLICATION, SERVICE_SETUP or ACTIVE.</param>
 /// <param name="ApplicationStatus">Status of the latest application; null when none exists.</param>
+/// <param name="Phone">Contact phone of the expert profile; null before it is saved.</param>
 public sealed record ExpertContextResponse(
     string? ExpertId,
     string DisplayName,
@@ -17,7 +18,8 @@ public sealed record ExpertContextResponse(
     PortalAccessResponse PortalAccess,
     ServiceReadinessResponse[] Services,
     DateTimeOffset GeneratedAt,
-    string Version
+    string Version,
+    string? Phone = null
 );
 
 /// <summary>Portal entry and the capabilities granted now.</summary>
@@ -34,13 +36,8 @@ public sealed record ServiceReadinessResponse(
     bool Availability,
     bool BookingAllowed,
     string[] Reasons,
-    PricingVersionResponse? Pricing,
-    string? PendingPricingVersion
+    ServicePriceResponse? Pricing
 );
 
-/// <summary>The approved price version in effect.</summary>
-public sealed record PricingVersionResponse(
-    string Version,
-    DateTimeOffset EffectiveFrom,
-    DateTimeOffset? EffectiveTo
-);
+/// <summary>The expert's own price for the service; null until one is set.</summary>
+public sealed record ServicePriceResponse(long Fee, int TurnaroundHours, DateTimeOffset UpdatedAt);

@@ -15,7 +15,7 @@ public sealed class LayerRules
         "AWSSDK",
     ];
 
-    public static TheoryData<string> Services => new(Assemblies.LayeredServices);
+    public static TheoryData<string> Services => [.. Assemblies.LayeredServices];
 
     [Theory]
     [MemberData(nameof(Services))]
