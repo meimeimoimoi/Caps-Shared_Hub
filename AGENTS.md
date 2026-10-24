@@ -87,7 +87,7 @@ npm run dev        # :5173
   - `AddCommonApi` / `UseCommonApi`: controller, Swagger (bearer + XML), lỗi chung, `/healthz` (sống) và `/readyz` (DB), JWT, thu hồi phiên, CORS, `TimeProvider`.
   - `config.GetRequiredConnectionString("Postgres")` + `AddServiceDatabase<TContext>(conn, "<Service>", "<schema>")` trong `Add<Service>Infrastructure`: DbContext, bảng lịch sử migration, `IUnitOfWork`, health check DB.
   - `app.MigrateInDevelopment<TContext>()` trước `UseCommonApi()` (tắt bằng `Database:ApplyMigrations=false`).
-- Trước khi push: `dotnet csharpier format .` rồi `dotnet build Caps.sln -warnaserror` và `dotnet test Caps.sln` phải sạch; CI chạy đúng các bước này cùng 73 integration test.
+- Trước khi push: `dotnet csharpier format .` rồi `dotnet build Caps.sln -warnaserror` và `dotnet test Caps.sln` phải sạch; CI chạy đúng các bước này cùng 76 integration test.
 - Mọi request từ client đi qua Gateway (`:5190`), không gọi thẳng service từ FE.
 - Messaging dùng MassTransit; hiện mới có contracts + config, chưa có consumer thật.
 

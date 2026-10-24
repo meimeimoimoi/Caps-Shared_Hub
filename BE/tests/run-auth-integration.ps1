@@ -7,6 +7,8 @@ $env:ASPNETCORE_ENVIRONMENT = "Development"
 $env:ConnectionStrings__Postgres = $Connection
 $env:Auth__DataProtectionKeysPath = Join-Path $repoRoot ".tmp/auth-test-keys"
 $env:Auth__EmailPublisherEnabled = "false"
+# CI has no RabbitMQ: the expert outbox publisher and real-time pushes are off in tests
+$env:Expert__NotificationPublisherEnabled = "false"
 $env:Logging__LogLevel__Default = "Warning"
 $env:Logging__LogLevel__Microsoft = "Warning"
 $env:AUTH_TEST_CONNECTION = $Connection

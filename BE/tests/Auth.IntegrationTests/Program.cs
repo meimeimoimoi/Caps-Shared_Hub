@@ -480,21 +480,9 @@ var pendingReg = await Post(
 Bearer(applicant, Access(pendingReg.Json));
 var pendingUpload = await ExpertCall(Upload(applicant, "CV", pdf));
 Check(
-    pendingUpload.Status == HttpStatusCode.OK
-        && pendingUpload.Json.GetProperty("data").GetProperty("status").GetString() == "DRAFT",
-    "unverified applicant can save a draft with files"
-);
-var pendingSubmit = await ExpertCall(applicant.PostAsync(expertBase + "/submit", null));
-Check(
-    pendingSubmit.Status == HttpStatusCode.Forbidden
-        && Code(pendingSubmit.Json) == "EMAIL_NOT_VERIFIED",
-    "expert application submit requires a verified email"
-);
-var draftSupplement = await ExpertCall(Upload(applicant, "SUPPLEMENT", pdf));
-Check(
-    draftSupplement.Status == HttpStatusCode.BadRequest
-        && Code(draftSupplement.Json) == "SUPPLEMENT_NOT_REQUESTED",
-    "supplementary files are only accepted when more information is requested"
+    pendingUpload.Status == HttpStatusCode.Forbidden
+        && Code(pendingUpload.Json) == "EMAIL_NOT_VERIFIED",
+    "changing the expert application requires a verified email"
 );
 
 var fakeUpload = await ExpertCall(Upload(deviceA, "EV-01", "<svg onload=alert(1)>"u8.ToArray()));
@@ -509,6 +497,12 @@ Check(
     "submit without an application returns not found"
 );
 await deviceA.PutAsJsonAsync(expertBase, new { yearsExperience = 8 });
+var draftSupplement = await ExpertCall(Upload(deviceA, "SUPPLEMENT", pdf));
+Check(
+    draftSupplement.Status == HttpStatusCode.BadRequest
+        && Code(draftSupplement.Json) == "SUPPLEMENT_NOT_REQUESTED",
+    "supplementary files are only accepted when more information is requested"
+);
 var incomplete = await ExpertCall(deviceA.PostAsync(expertBase + "/submit", null));
 Check(
     incomplete.Status == HttpStatusCode.BadRequest
@@ -544,6 +538,10 @@ Check(
         ) == 1,
     "concurrent duplicate CV uploads store only one file"
 );
+
+// Submitting also needs the legal eligibility (EV-01) and tax qualification (EV-02) evidence
+await ExpertCall(Upload(deviceA, "EV-01", "%PDF-1.4 ev01"u8.ToArray()));
+await ExpertCall(Upload(deviceA, "EV-02", "%PDF-1.4 ev02"u8.ToArray()));
 var draft = await ExpertCall(
     deviceA.PutAsJsonAsync(
         expertBase,
@@ -560,7 +558,12 @@ Check(
         && draft.Json.GetProperty("data").GetProperty("canSubmit").GetBoolean(),
     "complete draft can be submitted"
 );
-var submitted = await ExpertCall(deviceA.PostAsync(expertBase + "/submit", null));
+var submitted = await ExpertCall(
+    deviceA.PostAsJsonAsync(
+        expertBase + "/submit",
+        new { declarationCodes = new[] { "ACCURACY", "PROFESSIONAL_CONDUCT" }, language = "vi" }
+    )
+);
 Check(
     submitted.Status == HttpStatusCode.OK
         && submitted.Json.GetProperty("data").GetProperty("status").GetString() == "SUBMITTED",
