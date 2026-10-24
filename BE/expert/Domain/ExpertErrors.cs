@@ -275,11 +275,25 @@ public static class ExpertErrors
             $"Fee must be between {min} and {max} VND, in steps of {step}."
         );
 
-    public static AppException TurnaroundInvalid(int max) =>
+    public static AppException TurnaroundInvalid(int minDays, int maxDays) =>
         new(
             ErrorType.Validation,
             "TURNAROUND_INVALID",
-            $"Turnaround must be between 1 and {max} hours."
+            $"Turnaround must be whole days between {minDays} and {maxDays}."
+        );
+
+    public static AppException PlatformFeeTooSoon(int noticeDays, DateOnly earliest) =>
+        new(
+            ErrorType.Validation,
+            "PLATFORM_FEE_TOO_SOON",
+            $"A platform fee change must be announced {noticeDays} days ahead; it can take effect on {earliest:yyyy-MM-dd} at the earliest."
+        );
+
+    public static AppException PlatformFeeNotPending() =>
+        new(
+            ErrorType.Conflict,
+            "PLATFORM_FEE_NOT_PENDING",
+            "There is no pending platform fee change to cancel. Reload and try again."
         );
 
     public static AppException OfferingConflict() =>
@@ -398,6 +412,13 @@ public static class ExpertErrors
         );
 
     /// <summary>Someone else changed the value since it was read; nothing was saved.</summary>
+    public static AppException PolicyRangeInverted(string minKey, string maxKey) =>
+        new(
+            ErrorType.Validation,
+            "POLICY_RANGE_INVERTED",
+            $"{minKey} may not be greater than {maxKey}."
+        );
+
     public static AppException PolicyChanged(string key) =>
         new(
             ErrorType.Conflict,

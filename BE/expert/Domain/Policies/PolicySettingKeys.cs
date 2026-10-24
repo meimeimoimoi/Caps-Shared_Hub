@@ -1,3 +1,5 @@
+using Caps.Expert.Domain.Pricing;
+
 namespace Caps.Expert.Domain.Policies;
 
 /// <summary>Allowed range of one adjustable policy value.</summary>
@@ -30,6 +32,24 @@ public static class PolicySettingKeys
     /// <summary>Days the final approval may take after Gate 2 PASS before the queue flags it (D8, warning only).</summary>
     public const string FinalApprovalDays = "FinalApprovalDays";
 
+    /// <summary>Lowest price an expert may set for a service, in VND.</summary>
+    public const string PricingMinFee = "PricingMinFee";
+
+    /// <summary>Highest price an expert may set for a service, in VND.</summary>
+    public const string PricingMaxFee = "PricingMaxFee";
+
+    /// <summary>Shortest turnaround an expert may promise, in days.</summary>
+    public const string TurnaroundMinDays = "TurnaroundMinDays";
+
+    /// <summary>Longest turnaround an expert may promise, in days.</summary>
+    public const string TurnaroundMaxDays = "TurnaroundMaxDays";
+
+    /// <summary>Days ahead a platform fee change must be announced before it takes effect.</summary>
+    public const string PlatformFeeNoticeDays = "PlatformFeeNoticeDays";
+
+    /// <summary>Price change, in percent of the old price, above which the expert sees a red warning.</summary>
+    public const string PriceChangeWarningPercent = "PriceChangeWarningPercent";
+
     /// <summary>
     /// Every adjustable value with its allowed range, in display order. The reapply intervals start at the
     /// minimums of BR-E21/BR-E22, so an admin can only lengthen them: lowering them would waive the wait,
@@ -47,7 +67,21 @@ public static class PolicySettingKeys
         [MaxInformationRequests] = new(1, 5),
         [ReviewSlaDays] = new(1, 30),
         [FinalApprovalDays] = new(1, 30),
+        // The outer limits of the price and turnaround ranges are the technical bounds of ServiceOffering
+        [PricingMinFee] = new(ServiceOffering.TechnicalMinFee, ServiceOffering.TechnicalMaxFee),
+        [PricingMaxFee] = new(ServiceOffering.TechnicalMinFee, ServiceOffering.TechnicalMaxFee),
+        [TurnaroundMinDays] = new(1, ServiceOffering.TechnicalMaxTurnaroundDays),
+        [TurnaroundMaxDays] = new(1, ServiceOffering.TechnicalMaxTurnaroundDays),
+        [PlatformFeeNoticeDays] = new(1, 30),
+        [PriceChangeWarningPercent] = new(10, 200),
     };
+
+    /// <summary>Minimum and maximum keys of the same range; the minimum may not exceed the maximum.</summary>
+    private static readonly (string Min, string Max)[] OrderedPairs =
+    [
+        (PricingMinFee, PricingMaxFee),
+        (TurnaroundMinDays, TurnaroundMaxDays),
+    ];
 
     public static readonly string[] All =
     [
@@ -58,6 +92,12 @@ public static class PolicySettingKeys
         MaxInformationRequests,
         ReviewSlaDays,
         FinalApprovalDays,
+        PricingMinFee,
+        PricingMaxFee,
+        TurnaroundMinDays,
+        TurnaroundMaxDays,
+        PlatformFeeNoticeDays,
+        PriceChangeWarningPercent,
     ];
 
     /// <summary>
@@ -74,5 +114,15 @@ public static class PolicySettingKeys
             throw ExpertErrors.UnknownPolicySetting(key);
         if (value < range.Min || value > range.Max)
             throw ExpertErrors.PolicySettingOutOfRange(key, range.Min, range.Max);
+    }
+
+    /// <summary>Throws when the values in force after a change would put a range minimum above its maximum.</summary>
+    public static void EnsureOrdered(IReadOnlyDictionary<string, int> values)
+    {
+        foreach (var (min, max) in OrderedPairs)
+        {
+            if (values[min] > values[max])
+                throw ExpertErrors.PolicyRangeInverted(min, max);
+        }
     }
 }

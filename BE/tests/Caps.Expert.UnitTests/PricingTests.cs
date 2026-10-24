@@ -21,8 +21,15 @@ public sealed class PricingTests
         Now
     );
 
+    // Default admin policy: 500,000 to 30,000,000 VND, 1 to 7 days, 7 days notice, warning above 50%
+    private static readonly PricingPolicy Policy = new(500_000, 30_000_000, 1, 7, 7, 50);
+
+    // First rate of the service: takes effect at once
     private static PlatformFee Rate(int percent = 20) =>
-        PlatformFee.Set(Service, percent, Admin, Now);
+        PlatformFee.Set(Service, percent, null, false, Policy.FeeNoticeDays, Admin, Now);
+
+    private static ServiceOffering Offer(ExpertServiceQualification? q, long fee, int hours) =>
+        ServiceOffering.Create(q, Rate(), fee, hours, Policy, Expert, Now).Offering;
 
     // Gate 1 passed and Gate 2 registered for the service, competency not decided yet
     private static ExpertServiceQualification Registered()
@@ -74,20 +81,20 @@ public sealed class PricingTests
     [InlineData(25, 1_000_000, 750_000)]
     [InlineData(33, 1_000_000, 670_000)]
     [InlineData(0, 1_234_000, 1_234_000)]
-    [InlineData(99, 10_000, 100)]
+    [InlineData(50, 500_000, 250_000)]
     public void Net_amount_removes_the_platform_fee(int percent, long fee, long net) =>
         Assert.Equal(net, Rate(percent).NetOf(fee));
 
     [Theory]
     [InlineData(-1)]
-    [InlineData(100)]
-    public void Platform_fee_must_be_0_to_99(int percent) =>
+    [InlineData(51)]
+    public void Platform_fee_must_be_0_to_50(int percent) =>
         Assert.Equal("PLATFORM_FEE_INVALID", Errors.CodeOf(() => Rate(percent)));
 
     [Fact]
     public void Platform_fee_belongs_to_the_catalog_service()
     {
-        var rate = PlatformFee.Set(Service, 20, Admin, Now);
+        var rate = Rate();
 
         Assert.Equal("HUMAN_VERIFICATION", rate.ServiceCode);
         Assert.Equal((Admin, Now), (rate.SetBy, rate.EffectiveFrom));
@@ -98,7 +105,7 @@ public sealed class PricingTests
     {
         var q = Approved();
 
-        var offering = ServiceOffering.Create(q, Rate(), 1_500_000, 48, Now);
+        var offering = Offer(q, 1_500_000, 48);
 
         Assert.Equal(q.ExpertProfileId, offering.ExpertProfileId);
         Assert.Equal("HUMAN_VERIFICATION", offering.ServiceCode);
@@ -109,49 +116,44 @@ public sealed class PricingTests
     public void Expert_not_approved_for_the_service_cannot_price_it() =>
         Assert.Equal(
             "PRICING_NOT_ALLOWED",
-            Errors.CodeOf(() => ServiceOffering.Create(Registered(), Rate(), 1_000_000, 48, Now))
+            Errors.CodeOf(() => Offer(Registered(), 1_000_000, 48))
         );
 
     [Fact]
     public void Expert_never_registered_for_the_service_cannot_price_it() =>
-        Assert.Equal(
-            "PRICING_NOT_ALLOWED",
-            Errors.CodeOf(() => ServiceOffering.Create(null, Rate(), 1_000_000, 48, Now))
-        );
+        Assert.Equal("PRICING_NOT_ALLOWED", Errors.CodeOf(() => Offer(null, 1_000_000, 48)));
 
     [Theory]
-    [InlineData(9_000)]
-    [InlineData(10_500)]
-    [InlineData(1_000_001_000)]
+    [InlineData(490_000)]
+    [InlineData(505_000)]
+    [InlineData(30_010_000)]
     [InlineData(0)]
     public void Fee_outside_the_range_or_step_is_rejected(long fee) =>
-        Assert.Equal(
-            "FEE_INVALID",
-            Errors.CodeOf(() => ServiceOffering.Create(Approved(), Rate(), fee, 48, Now))
-        );
+        Assert.Equal("FEE_INVALID", Errors.CodeOf(() => Offer(Approved(), fee, 48)));
 
     [Theory]
-    [InlineData(10_000)]
-    [InlineData(1_000_000_000)]
+    [InlineData(500_000)]
+    [InlineData(30_000_000)]
     public void Fee_limits_are_allowed(long fee) =>
-        Assert.Equal(fee, ServiceOffering.Create(Approved(), Rate(), fee, 48, Now).Fee);
+        Assert.Equal(fee, Offer(Approved(), fee, 48).Fee);
 
     [Theory]
     [InlineData(0)]
-    [InlineData(721)]
-    public void Turnaround_outside_1_to_720_hours_is_rejected(int hours) =>
+    [InlineData(12)]
+    [InlineData(192)]
+    public void Turnaround_outside_whole_days_1_to_7_is_rejected(int hours) =>
         Assert.Equal(
             "TURNAROUND_INVALID",
-            Errors.CodeOf(() => ServiceOffering.Create(Approved(), Rate(), 1_000_000, hours, Now))
+            Errors.CodeOf(() => Offer(Approved(), 1_000_000, hours))
         );
 
     [Fact]
     public void Repricing_changes_price_and_time()
     {
         var q = Approved();
-        var offering = ServiceOffering.Create(q, Rate(), 1_000_000, 48, Now);
+        var offering = Offer(q, 1_000_000, 48);
 
-        offering.Reprice(q, 2_000_000, 24, Now.AddDays(1));
+        offering.Reprice(q, 2_000_000, 24, Policy, Expert, Now.AddDays(1));
 
         Assert.Equal((2_000_000L, 24), (offering.Fee, offering.TurnaroundHours));
         Assert.Equal(Now.AddDays(1), offering.UpdatedAt);
@@ -161,12 +163,12 @@ public sealed class PricingTests
     public void Suspended_service_cannot_be_repriced()
     {
         var q = Approved();
-        var offering = ServiceOffering.Create(q, Rate(), 1_000_000, 48, Now);
+        var offering = Offer(q, 1_000_000, 48);
         q.ChangeServiceAccess(Admin, ServiceAccessAction.Suspend, "Complaints under review", Now);
 
         Assert.Equal(
             "PRICING_NOT_ALLOWED",
-            Errors.CodeOf(() => offering.Reprice(q, 2_000_000, 24, Now))
+            Errors.CodeOf(() => offering.Reprice(q, 2_000_000, 24, Policy, Expert, Now))
         );
     }
 }

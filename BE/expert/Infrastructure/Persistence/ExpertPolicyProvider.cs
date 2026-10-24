@@ -2,6 +2,7 @@ using Caps.Expert.Application;
 using Caps.Expert.Application.Abstractions;
 using Caps.Expert.Domain.Applications;
 using Caps.Expert.Domain.Policies;
+using Caps.Expert.Domain.Pricing;
 using Caps.Expert.Domain.Qualifications;
 using Caps.Expert.Domain.Reviews;
 using Microsoft.EntityFrameworkCore;
@@ -52,6 +53,19 @@ public sealed class ExpertPolicyProvider(ExpertDbContext db, ExpertPolicyOptions
     {
         var current = await LoadAsync(ct);
         return new(current[PolicySettingKeys.FinalApprovalDays]);
+    }
+
+    public async Task<PricingPolicy> GetPricingAsync(CancellationToken ct)
+    {
+        var current = await LoadAsync(ct);
+        return new(
+            current[PolicySettingKeys.PricingMinFee],
+            current[PolicySettingKeys.PricingMaxFee],
+            current[PolicySettingKeys.TurnaroundMinDays],
+            current[PolicySettingKeys.TurnaroundMaxDays],
+            current[PolicySettingKeys.PlatformFeeNoticeDays],
+            current[PolicySettingKeys.PriceChangeWarningPercent]
+        );
     }
 
     private async Task<IReadOnlyDictionary<string, int>> LoadAsync(CancellationToken ct)

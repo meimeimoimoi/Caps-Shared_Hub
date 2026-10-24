@@ -1,4 +1,5 @@
 using Caps.Expert.Domain.Applications;
+using Caps.Expert.Domain.Pricing;
 using Caps.Expert.Domain.Qualifications;
 using Caps.Expert.Domain.Reviews;
 
@@ -24,4 +25,7 @@ public interface IExpertPolicyProvider
 
     /// <summary>How long the final approval may take after Gate 2 PASS.</summary>
     Task<FinalApprovalPolicy> GetFinalApprovalAsync(CancellationToken ct);
+
+    /// <summary>Price and turnaround ranges, platform fee notice and the price change warning.</summary>
+    Task<PricingPolicy> GetPricingAsync(CancellationToken ct);
 }

@@ -20,7 +20,10 @@ public sealed class ServicesController(ICurrentUser currentUser) : ControllerBas
     private Guid UserId => currentUser.RequireUserId();
 
     /// <summary>Lists every service open for pricing with its platform fee and the expert's price.</summary>
-    /// <remarks>Fee, turnaroundHours and netAmount are null for services the expert has not priced yet.</remarks>
+    /// <remarks>
+    /// Fee, turnaroundHours and netAmount are null for services the expert has not priced yet; limits are the
+    /// price and turnaround ranges in force; pendingPlatformFee is an announced fee change.
+    /// </remarks>
     /// <response code="200">One row per service that has a platform fee.</response>
     [HttpGet]
     public async Task<IActionResult> List(
@@ -38,7 +41,7 @@ public sealed class ServicesController(ICurrentUser currentUser) : ControllerBas
     /// fee. netAmount = fee × (100 − platformFeePercent) / 100, rounded down. Booked cases keep their price.
     /// </remarks>
     /// <response code="200">The saved price with the platform fee and net amount.</response>
-    /// <response code="400">FEE_INVALID or TURNAROUND_INVALID.</response>
+    /// <response code="400">FEE_INVALID or TURNAROUND_INVALID: outside the admin's ranges.</response>
     /// <response code="403">PRICING_NOT_ALLOWED: not approved for this service (Gate 2) or it is suspended.</response>
     /// <response code="409">OFFERING_CONFLICT: saved twice at the same time.</response>
     /// <response code="422">PLATFORM_FEE_NOT_SET: the service is not open for pricing yet.</response>
@@ -56,5 +59,23 @@ public sealed class ServicesController(ICurrentUser currentUser) : ControllerBas
             ct
         );
         return Ok(ApiResponse<MyServiceResponse>.Ok(service));
+    }
+
+    /// <summary>Lists every price the expert saved for one service, most recent first.</summary>
+    /// <remarks>The history is append-only; booked cases keep the price frozen on them.</remarks>
+    /// <response code="200">Old and new price and turnaround of each save; empty before the first price.</response>
+    [HttpGet("{serviceCode}/history")]
+    public async Task<IActionResult> History(
+        string serviceCode,
+        [FromServices]
+            IQueryHandler<
+            ListMyServiceHistoryQuery,
+            IReadOnlyList<ServiceOfferingChangeResponse>
+        > handler,
+        CancellationToken ct
+    )
+    {
+        var history = await handler.HandleAsync(new(UserId, serviceCode), ct);
+        return Ok(ApiResponse<IReadOnlyList<ServiceOfferingChangeResponse>>.Ok(history));
     }
 }
