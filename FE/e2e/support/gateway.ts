@@ -38,7 +38,8 @@ export async function gateway(page: Page, applicant = false, verified = true) {
     } else if (path.endsWith('/experts/me/application')) {
       if (method === 'PUT') application = draft()
       data = application
-    }
+    } else if (path === '/api/v1/marketplace/experts') data = [listedExpert()]
+    else if (path === '/api/v1/marketplace/experts/1') data = listedExpert()
     await route.fulfill({ json: { success: true, data } })
   })
   return { calls, user, failContext: () => { contextFailure = true } }
@@ -53,6 +54,18 @@ function draft() {
       yearsExperience: null, fields: [], highlights: null },
     evidence: [], history: [], eligibility: [], missingRequirements: [], emailVerified: false,
     canEdit: true, canUpload: true, canSubmit: false, canSupplement: false,
+  }
+}
+
+// The public marketplace reads the expert service; expert 1 matches the client-flow demo cases
+function listedExpert() {
+  return {
+    expertId: '1', displayName: 'Đỗ Hoàng Long', title: 'Đại lý thuế', company: null,
+    location: 'TP. Hồ Chí Minh', yearsExperience: 16, fields: [], bio: null, highlights: null,
+    ratingAvg: 4.95, ratingCount: 58,
+    services: [{ serviceCode: 'cit-review', serviceName: 'CIT draft verification',
+      price: 2_400_000, slaHours: 48, approvedAt: '2026-03-19T00:00:00Z' }],
+    nextOpenSlotAt: null, openSlotCount: 0,
   }
 }
 
