@@ -982,7 +982,7 @@
   },
   "platformFees": {
     "title": "Platform fees",
-    "description": "Set the percent the platform keeps for each service. Experts set their own prices; booked cases keep the fee they were booked with.",
+    "description": "The percent of each request price the platform keeps. Experts set their own prices; requests already sent keep the fee they were sent with. Every change, raise or cut, must be announced ahead as the policy sets, with at most one pending change per service.",
     "service": "Service",
     "percent": "Platform fee",
     "effectiveFrom": "Effective from",
@@ -992,14 +992,27 @@
     "empty": "No services in the catalog yet.",
     "dialog": "Platform fee · {{name}}",
     "percentLabel": "Percent (0–{{max}})",
-    "dialogHelp": "The new fee applies at once to new requests. The first fee opens the service for experts to price.",
+    "dialogHelp": "Requests clients already sent keep the fee they were sent with.",
     "save": "Save fee",
-    "saved": "Platform fee updated for {{name}}.",
+    "saved": "Platform fee saved for {{name}}.",
     "errors": {
-      "PLATFORM_FEE_INVALID": "The platform fee must be 0 to 99%.",
+      "PLATFORM_FEE_INVALID": "The platform fee must be 0 to {{max}}%.",
       "SERVICE_NOT_FOUND": "This service is no longer in the catalog.",
-      "failed": "Could not save the platform fee. Please try again."
-    }
+      "failed": "Could not save the platform fee. Please try again.",
+      "PLATFORM_FEE_TOO_SOON": "A change must be announced at least {{days}} days ahead. Pick a later date.",
+      "PLATFORM_FEE_NOT_PENDING": "There is no pending change any more. Reload the page."
+    },
+    "helpLabel": "About platform fees",
+    "pending": "Pending change",
+    "pendingValue": "{{percent}}% · effective from {{date}}",
+    "cancelPending": "Cancel change",
+    "cancelled": "Cancelled the platform fee change for {{name}}.",
+    "effectiveOnLabel": "Effective from",
+    "effectiveOnHelp": "A change must be announced at least {{days}} days ahead, so {{date}} at the earliest. A new schedule replaces the pending change, if any.",
+    "example": "What experts receive per request",
+    "examplePrice": "Price",
+    "exampleNet": "Received: current → new",
+    "firstFeeHelp": "The first fee applies at once and opens the service for experts to price."
   },
   "expertPolicy": {
     "title": "Expert policy",
@@ -1040,6 +1053,36 @@
         "label": "Final approval limit",
         "help": "Days the final approval may take after the competency review passes. Past that, the record is marked red and moved to the top of the queue; it is never approved automatically. Experts see the expected result date from this limit. A change applies to how due dates are counted from the moment it is saved. Default {{defaultValue}} days; allowed {{min}}–{{max}}.",
         "unit": "days"
+      },
+      "PricingMinFee": {
+        "label": "Minimum price",
+        "help": "The lowest price an expert may set per request. Applies from the next price save; prices already set are not changed. Default {{defaultValue}} VND; allowed {{min}}–{{max}}.",
+        "unit": "VND"
+      },
+      "PricingMaxFee": {
+        "label": "Maximum price",
+        "help": "The highest price an expert may set per request; not below the minimum price. Applies from the next price save. Default {{defaultValue}} VND; allowed {{min}}–{{max}}.",
+        "unit": "VND"
+      },
+      "TurnaroundMinDays": {
+        "label": "Shortest delivery time",
+        "help": "The fewest days an expert may promise to deliver in. Default {{defaultValue}} days; allowed {{min}}–{{max}}.",
+        "unit": "days"
+      },
+      "TurnaroundMaxDays": {
+        "label": "Longest delivery time",
+        "help": "The most days an expert may promise to deliver in; not shorter than the shortest. Default {{defaultValue}} days; allowed {{min}}–{{max}}.",
+        "unit": "days"
+      },
+      "PlatformFeeNoticeDays": {
+        "label": "Platform fee change notice",
+        "help": "Minimum days between scheduling a platform fee change and it taking effect, for raises and cuts alike. Default {{defaultValue}} days; allowed {{min}}–{{max}}.",
+        "unit": "days"
+      },
+      "PriceChangeWarningPercent": {
+        "label": "Price change warning",
+        "help": "When an expert changes the price by more than this against the old price, the confirmation shows a red warning. Warning only, never blocks. Default {{defaultValue}}%; allowed {{min}}–{{max}}.",
+        "unit": "%"
       }
     },
     "outOfRange": "Enter a whole number from {{min}} to {{max}}.",
@@ -1061,6 +1104,7 @@
     },
     "errors": {
       "POLICY_CHANGED": "Someone else just changed these values. They have been reloaded; check them and save again.",
+      "POLICY_RANGE_INVERTED": "A minimum may not be greater than its maximum (price, delivery time).",
       "POLICY_EXPECTED_VALUE_REQUIRED": "The current value is missing. Reload the page and try again.",
       "POLICY_SETTING_OUT_OF_RANGE": "A value is outside its allowed range.",
       "POLICY_REASON_REQUIRED": "Give the reason for the change.",

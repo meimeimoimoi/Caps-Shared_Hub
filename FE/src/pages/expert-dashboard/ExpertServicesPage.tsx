@@ -106,7 +106,7 @@ function ServiceCard({ service }: { service: ServiceReadiness }) {
       label: t('effectivePricing'),
       done: !!service.pricing,
       value: service.pricing
-        ? `${format.money(service.pricing.fee)} · ${t('pricing.deliveryIn', { hours: service.pricing.turnaroundHours })}`
+        ? `${format.money(service.pricing.fee)} · ${t('pricing.deliveryIn', { days: Math.ceil(service.pricing.turnaroundHours / 24) })}`
         : t('noEffectivePricing'),
     },
     {

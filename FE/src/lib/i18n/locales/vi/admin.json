@@ -981,24 +981,37 @@
   },
   "platformFees": {
     "title": "Phí nền tảng",
-    "description": "Đặt phần trăm nền tảng giữ lại cho mỗi dịch vụ. Chuyên gia tự đặt giá của mình; case đã tạo giữ nguyên phí tại thời điểm đặt.",
+    "description": "Phần trăm nền tảng giữ lại trên Giá của mỗi yêu cầu. Chuyên gia tự đặt Giá; yêu cầu đã gửi giữ nguyên Phí nền tảng lúc gửi. Mọi thay đổi, tăng hay giảm, phải báo trước theo chính sách và chỉ có một thay đổi đang chờ cho mỗi dịch vụ.",
     "service": "Dịch vụ",
     "percent": "Phí nền tảng",
-    "effectiveFrom": "Áp dụng từ",
+    "effectiveFrom": "Có hiệu lực từ ngày",
     "notSet": "Chưa đặt",
     "set": "Đặt phí",
     "change": "Thay đổi",
     "empty": "Chưa có dịch vụ nào trong danh mục.",
     "dialog": "Phí nền tảng · {{name}}",
     "percentLabel": "Phần trăm (0–{{max}})",
-    "dialogHelp": "Phí mới áp dụng ngay cho yêu cầu mới. Lần đặt đầu tiên mở dịch vụ cho chuyên gia đặt giá.",
+    "dialogHelp": "Yêu cầu khách đã gửi giữ nguyên Phí nền tảng lúc gửi.",
     "save": "Lưu phí",
-    "saved": "Đã cập nhật phí nền tảng cho {{name}}.",
+    "saved": "Đã lưu phí nền tảng cho {{name}}.",
     "errors": {
-      "PLATFORM_FEE_INVALID": "Phí nền tảng phải từ 0 đến 99%.",
+      "PLATFORM_FEE_INVALID": "Phí nền tảng phải từ 0 đến {{max}}%.",
       "SERVICE_NOT_FOUND": "Dịch vụ không còn trong danh mục.",
-      "failed": "Không thể lưu phí nền tảng. Hãy thử lại."
-    }
+      "failed": "Không thể lưu phí nền tảng. Hãy thử lại.",
+      "PLATFORM_FEE_TOO_SOON": "Thay đổi phải báo trước ít nhất {{days}} ngày. Chọn ngày muộn hơn.",
+      "PLATFORM_FEE_NOT_PENDING": "Không còn thay đổi nào đang chờ. Tải lại trang."
+    },
+    "helpLabel": "Về phí nền tảng",
+    "pending": "Thay đổi đang chờ",
+    "pendingValue": "{{percent}}% · có hiệu lực từ ngày {{date}}",
+    "cancelPending": "Hủy thay đổi",
+    "cancelled": "Đã hủy thay đổi phí nền tảng của {{name}}.",
+    "effectiveOnLabel": "Có hiệu lực từ ngày",
+    "effectiveOnHelp": "Thay đổi phải báo trước ít nhất {{days}} ngày, nên sớm nhất là ngày {{date}}. Đặt lịch mới sẽ thay thế thay đổi đang chờ (nếu có).",
+    "example": "Chuyên gia thực nhận mỗi yêu cầu",
+    "examplePrice": "Giá",
+    "exampleNet": "Thực nhận: hiện tại → mới",
+    "firstFeeHelp": "Phí đầu tiên có hiệu lực ngay và mở dịch vụ cho chuyên gia đặt giá."
   },
   "expertPolicy": {
     "title": "Chính sách chuyên gia",
@@ -1039,6 +1052,36 @@
         "label": "Hạn duyệt cuối",
         "help": "Số ngày phê duyệt cuối được phép kéo dài kể từ khi hồ sơ đạt đánh giá năng lực. Quá hạn thì hồ sơ được tô đỏ và đưa lên đầu hàng chờ; hệ thống không bao giờ tự duyệt. Chuyên gia thấy ngày dự kiến có kết quả theo hạn này. Thay đổi áp dụng cho cách tính hạn từ lúc lưu. Mặc định {{defaultValue}} ngày; cho phép {{min}}–{{max}}.",
         "unit": "ngày"
+      },
+      "PricingMinFee": {
+        "label": "Giá tối thiểu",
+        "help": "Giá thấp nhất chuyên gia được đặt cho mỗi yêu cầu. Thay đổi áp dụng cho lần lưu giá tiếp theo; giá đã đặt không bị sửa. Mặc định {{defaultValue}} đ; cho phép {{min}}–{{max}}.",
+        "unit": "đ"
+      },
+      "PricingMaxFee": {
+        "label": "Giá tối đa",
+        "help": "Giá cao nhất chuyên gia được đặt cho mỗi yêu cầu, không được thấp hơn Giá tối thiểu. Thay đổi áp dụng cho lần lưu giá tiếp theo. Mặc định {{defaultValue}} đ; cho phép {{min}}–{{max}}.",
+        "unit": "đ"
+      },
+      "TurnaroundMinDays": {
+        "label": "Thời gian trả kết quả ngắn nhất",
+        "help": "Số ngày ít nhất chuyên gia được hứa trả kết quả. Mặc định {{defaultValue}} ngày; cho phép {{min}}–{{max}}.",
+        "unit": "ngày"
+      },
+      "TurnaroundMaxDays": {
+        "label": "Thời gian trả kết quả dài nhất",
+        "help": "Số ngày nhiều nhất chuyên gia được hứa trả kết quả, không được ngắn hơn mức ngắn nhất. Mặc định {{defaultValue}} ngày; cho phép {{min}}–{{max}}.",
+        "unit": "ngày"
+      },
+      "PlatformFeeNoticeDays": {
+        "label": "Báo trước khi đổi phí nền tảng",
+        "help": "Số ngày tối thiểu từ lúc đặt lịch đến khi Phí nền tảng mới có hiệu lực, áp dụng cả khi tăng và khi giảm. Mặc định {{defaultValue}} ngày; cho phép {{min}}–{{max}}.",
+        "unit": "ngày"
+      },
+      "PriceChangeWarningPercent": {
+        "label": "Ngưỡng cảnh báo đổi giá",
+        "help": "Chuyên gia đổi Giá chênh hơn ngưỡng này so với Giá cũ thì hộp xác nhận hiện cảnh báo đỏ. Chỉ cảnh báo, không chặn. Mặc định {{defaultValue}}%; cho phép {{min}}–{{max}}.",
+        "unit": "%"
       }
     },
     "outOfRange": "Nhập số nguyên từ {{min}} đến {{max}}.",
@@ -1060,6 +1103,7 @@
     },
     "errors": {
       "POLICY_CHANGED": "Giá trị vừa được người khác thay đổi. Đã tải lại, kiểm tra rồi lưu lại.",
+      "POLICY_RANGE_INVERTED": "Giá trị tối thiểu không được lớn hơn giá trị tối đa (Giá, Thời gian trả kết quả).",
       "POLICY_EXPECTED_VALUE_REQUIRED": "Thiếu giá trị đang áp dụng. Tải lại trang rồi thử lại.",
       "POLICY_SETTING_OUT_OF_RANGE": "Có giá trị nằm ngoài khoảng cho phép.",
       "POLICY_REASON_REQUIRED": "Ghi lý do thay đổi.",
