@@ -1,8 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAuthStore } from '@/features/auth'
 import { isExpertDemo } from '@/lib/expert-data-source'
-import { getDemoServices, updateDemoService } from './demoRepository'
-import { getMyServices, saveMyService } from './pricingApi'
+import {
+  getDemoHistory,
+  getDemoServices,
+  updateDemoService,
+} from './demoRepository'
+import { getMyServiceHistory, getMyServices, saveMyService } from './pricingApi'
 import type { PricingInput } from './model'
 
 /** The expert's price for one service; data is null when the service is not open for pricing */
@@ -16,6 +20,7 @@ export function useExpertPricing(
   const client = useQueryClient()
   const source = isExpertDemo ? 'demo' : 'api'
   const queryKey = ['private', scope, 'expert-services', source]
+  const historyKey = [...queryKey, serviceId, 'history']
   const query = useQuery({
     queryKey,
     queryFn: ({ signal }) =>
@@ -24,6 +29,15 @@ export function useExpertPricing(
     staleTime: isExpertDemo ? Infinity : 0,
     select: (list) => list.find((s) => s.serviceCode === serviceId) ?? null,
   })
+  const history = useQuery({
+    queryKey: historyKey,
+    queryFn: ({ signal }) =>
+      isExpertDemo
+        ? getDemoHistory(scope, serviceId)
+        : getMyServiceHistory(serviceId, signal),
+    enabled: qualified,
+    staleTime: isExpertDemo ? Infinity : 0,
+  })
   const mutation = useMutation({
     mutationFn: async (input: PricingInput) =>
       isExpertDemo
@@ -31,11 +45,12 @@ export function useExpertPricing(
         : saveMyService(serviceId, input),
     onSuccess: () => {
       void client.invalidateQueries({ queryKey })
+      void client.invalidateQueries({ queryKey: historyKey })
       // Readiness (marketplace listing) depends on having a price
       void client.invalidateQueries({
         predicate: (query) => query.queryKey.includes('expert-context'),
       })
     },
   })
-  return { query, mutation }
+  return { query, history, mutation }
 }

@@ -55,6 +55,17 @@ public sealed class UpdateExpertPolicyHandler(
             if (inForce != expected)
                 throw ExpertErrors.PolicyChanged(key);
         }
+        // A range minimum may not end up above its maximum, whichever side the change touched
+        var after = defaults.ToDictionary(
+            x => x.Key,
+            x =>
+                stored.TryGetValue(x.Key, out var setting)
+                    ? PolicySettingKeys.Clamp(x.Key, setting.Value)
+                    : x.Value
+        );
+        foreach (var (key, value) in command.Values)
+            after[key] = value;
+        PolicySettingKeys.EnsureOrdered(after);
         foreach (var (key, value) in command.Values)
         {
             if (stored.TryGetValue(key, out var setting))

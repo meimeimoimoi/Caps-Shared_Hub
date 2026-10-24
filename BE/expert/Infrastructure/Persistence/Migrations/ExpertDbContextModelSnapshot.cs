@@ -18,7 +18,7 @@ namespace Caps.Expert.Infrastructure.Persistence.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasDefaultSchema("expert")
-                .HasAnnotation("ProductVersion", "8.0.14")
+                .HasAnnotation("ProductVersion", "9.0.9")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -436,6 +436,14 @@ namespace Caps.Expert.Infrastructure.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
+                    b.Property<DateTimeOffset?>("CancelledAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("cancelled_at");
+
+                    b.Property<Guid?>("CancelledBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("cancelled_by");
+
                     b.Property<DateTimeOffset>("EffectiveFrom")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("effective_from");
@@ -461,7 +469,17 @@ namespace Caps.Expert.Infrastructure.Persistence.Migrations
 
                     b.ToTable("platform_fee", "expert", t =>
                         {
-                            t.HasCheckConstraint("ck_platform_fee_percent", "percent BETWEEN 0 AND 99");
+                            t.HasCheckConstraint("ck_platform_fee_percent", "percent BETWEEN 0 AND 50");
+                        });
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("01929e3a-0000-7000-8000-000000000020"),
+                            EffectiveFrom = new DateTimeOffset(new DateTime(2026, 10, 17, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Percent = 20,
+                            ServiceCode = "HUMAN_VERIFICATION",
+                            SetBy = new Guid("00000000-0000-0000-0000-000000000000")
                         });
                 });
 
@@ -510,6 +528,61 @@ namespace Caps.Expert.Infrastructure.Persistence.Migrations
                         {
                             t.HasCheckConstraint("ck_offering_values", "fee > 0 AND turnaround_hours BETWEEN 1 AND 720");
                         });
+                });
+
+            modelBuilder.Entity("Caps.Expert.Domain.Pricing.ServiceOfferingChange", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("ChangedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("changed_at");
+
+                    b.Property<Guid>("ChangedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("changed_by");
+
+                    b.Property<Guid>("ExpertProfileId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("expert_profile_id");
+
+                    b.Property<long>("NewFee")
+                        .HasColumnType("bigint")
+                        .HasColumnName("new_fee");
+
+                    b.Property<int>("NewTurnaroundHours")
+                        .HasColumnType("integer")
+                        .HasColumnName("new_turnaround_hours");
+
+                    b.Property<Guid>("OfferingId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("offering_id");
+
+                    b.Property<long?>("OldFee")
+                        .HasColumnType("bigint")
+                        .HasColumnName("old_fee");
+
+                    b.Property<int?>("OldTurnaroundHours")
+                        .HasColumnType("integer")
+                        .HasColumnName("old_turnaround_hours");
+
+                    b.Property<string>("ServiceCode")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("service_code");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OfferingId");
+
+                    b.HasIndex("ExpertProfileId", "ServiceCode", "ChangedAt")
+                        .HasDatabaseName("ix_offering_change_history");
+
+                    b.ToTable("service_offering_change", "expert");
                 });
 
             modelBuilder.Entity("Caps.Expert.Domain.Profiles.ExpertProfile", b =>
@@ -562,7 +635,7 @@ namespace Caps.Expert.Infrastructure.Persistence.Migrations
                         .HasColumnType("text")
                         .HasColumnName("eligibility_note");
 
-                    b.Property<string[]>("Fields")
+                    b.PrimitiveCollection<string[]>("Fields")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasColumnType("text[]")
@@ -1114,6 +1187,16 @@ namespace Caps.Expert.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_service_offering_service");
+                });
+
+            modelBuilder.Entity("Caps.Expert.Domain.Pricing.ServiceOfferingChange", b =>
+                {
+                    b.HasOne("Caps.Expert.Domain.Pricing.ServiceOffering", null)
+                        .WithMany()
+                        .HasForeignKey("OfferingId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_offering_change_offering");
                 });
 
             modelBuilder.Entity("Caps.Expert.Domain.Qualifications.CompetencyAssessment", b =>

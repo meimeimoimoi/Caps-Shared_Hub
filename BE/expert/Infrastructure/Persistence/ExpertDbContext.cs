@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Caps.Expert.Domain;
 using Caps.Expert.Domain.Applications;
 using Caps.Expert.Domain.Catalog;
 using Caps.Expert.Domain.Policies;
@@ -29,6 +30,7 @@ public sealed class ExpertDbContext(DbContextOptions<ExpertDbContext> options) :
     public DbSet<CompetencyAssessment> CompetencyAssessments => Set<CompetencyAssessment>();
     public DbSet<PlatformFee> PlatformFees => Set<PlatformFee>();
     public DbSet<ServiceOffering> ServiceOfferings => Set<ServiceOffering>();
+    public DbSet<ServiceOfferingChange> ServiceOfferingChanges => Set<ServiceOfferingChange>();
     public DbSet<ServiceCatalogItem> ServiceCatalog => Set<ServiceCatalogItem>();
     public DbSet<NotificationOutboxEntry> NotificationOutbox => Set<NotificationOutboxEntry>();
     public DbSet<AvailabilitySlot> AvailabilitySlots => Set<AvailabilitySlot>();
@@ -406,7 +408,7 @@ public sealed class ExpertDbContext(DbContextOptions<ExpertDbContext> options) :
         {
             e.ToTable(
                 "platform_fee",
-                t => t.HasCheckConstraint("ck_platform_fee_percent", "percent BETWEEN 0 AND 99")
+                t => t.HasCheckConstraint("ck_platform_fee_percent", "percent BETWEEN 0 AND 50")
             );
             e.HasKey(x => x.Id);
             e.Property(x => x.Id).HasColumnName("id");
@@ -417,6 +419,8 @@ public sealed class ExpertDbContext(DbContextOptions<ExpertDbContext> options) :
             e.Property(x => x.Percent).HasColumnName("percent");
             e.Property(x => x.EffectiveFrom).HasColumnName("effective_from");
             e.Property(x => x.SetBy).HasColumnName("set_by");
+            e.Property(x => x.CancelledAt).HasColumnName("cancelled_at");
+            e.Property(x => x.CancelledBy).HasColumnName("cancelled_by");
             // "Current rate of a service" = latest effective_from per service_code
             e.HasIndex(x => new { x.ServiceCode, x.EffectiveFrom })
                 .HasDatabaseName("ix_platform_fee_current");
@@ -425,6 +429,17 @@ public sealed class ExpertDbContext(DbContextOptions<ExpertDbContext> options) :
                 .HasForeignKey(x => x.ServiceCode)
                 .OnDelete(DeleteBehavior.Restrict)
                 .HasConstraintName("fk_platform_fee_service");
+            // Starting rate of the MVP core service (overview: 20% platform commission), set by the system
+            e.HasData(
+                new
+                {
+                    Id = Guid.Parse("01929e3a-0000-7000-8000-000000000020"),
+                    ServiceCode = "HUMAN_VERIFICATION",
+                    Percent = 20,
+                    EffectiveFrom = new DateTimeOffset(2026, 10, 17, 0, 0, 0, TimeSpan.Zero),
+                    SetBy = SystemActor.UserId,
+                }
+            );
         });
 
         modelBuilder.Entity<ServiceOffering>(e =>
@@ -462,6 +477,38 @@ public sealed class ExpertDbContext(DbContextOptions<ExpertDbContext> options) :
                 .HasForeignKey(x => x.ServiceCode)
                 .OnDelete(DeleteBehavior.Restrict)
                 .HasConstraintName("fk_service_offering_service");
+        });
+
+        modelBuilder.Entity<ServiceOfferingChange>(e =>
+        {
+            // Append-only: a trigger created in the migration rejects UPDATE and DELETE
+            e.ToTable("service_offering_change");
+            e.HasKey(x => x.Id);
+            e.Property(x => x.Id).HasColumnName("id");
+            e.Property(x => x.OfferingId).HasColumnName("offering_id");
+            e.Property(x => x.ExpertProfileId).HasColumnName("expert_profile_id");
+            e.Property(x => x.ServiceCode)
+                .HasColumnName("service_code")
+                .HasMaxLength(64)
+                .IsRequired();
+            e.Property(x => x.OldFee).HasColumnName("old_fee");
+            e.Property(x => x.NewFee).HasColumnName("new_fee");
+            e.Property(x => x.OldTurnaroundHours).HasColumnName("old_turnaround_hours");
+            e.Property(x => x.NewTurnaroundHours).HasColumnName("new_turnaround_hours");
+            e.Property(x => x.ChangedBy).HasColumnName("changed_by");
+            e.Property(x => x.ChangedAt).HasColumnName("changed_at").IsRequired();
+            e.HasIndex(x => new
+                {
+                    x.ExpertProfileId,
+                    x.ServiceCode,
+                    x.ChangedAt,
+                })
+                .HasDatabaseName("ix_offering_change_history");
+            e.HasOne<ServiceOffering>()
+                .WithMany()
+                .HasForeignKey(x => x.OfferingId)
+                .OnDelete(DeleteBehavior.Restrict)
+                .HasConstraintName("fk_offering_change_offering");
         });
 
         modelBuilder.Entity<AvailabilitySlot>(e =>

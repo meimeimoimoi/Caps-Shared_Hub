@@ -14,6 +14,12 @@ export type PolicySettingKey =
   | 'MaxInformationRequests'
   | 'ReviewSlaDays'
   | 'FinalApprovalDays'
+  | 'PricingMinFee'
+  | 'PricingMaxFee'
+  | 'TurnaroundMinDays'
+  | 'TurnaroundMaxDays'
+  | 'PlatformFeeNoticeDays'
+  | 'PriceChangeWarningPercent'
 
 /** One adjustable expert policy value; updatedAt is null while the default applies */
 export interface PolicySetting {

@@ -1,24 +1,39 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, useLocation, useParams } from 'react-router-dom'
-import { ArrowLeft, CheckCircle2, Clock3, Info, Save } from 'lucide-react'
+import {
+  AlertTriangle,
+  ArrowLeft,
+  CheckCircle2,
+  Clock3,
+  Info,
+  Save,
+} from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import {
   useExpertContext,
   type ServiceReadiness,
 } from '@/features/expert-context'
+import { HelpTip } from '@/components/ui/feedback/help-tip'
 import { Modal } from '@/components/ui/feedback/modal'
 import { useFormatters } from '@/hooks/useFormatters'
 import { ApiError } from '@/lib/api-client'
 import { isExpertDemo } from '@/lib/expert-data-source'
 import { useExpertPricing } from '@/features/expert-pricing/useExpertPricing'
 import {
+  HOURS_PER_DAY,
+  isBigChange,
   netOf,
   validatePricing,
   type MyService,
+  type PriceChange,
   type PricingErrors,
   type PricingInput,
 } from '@/features/expert-pricing/model'
 import '@/features/expert-pricing/pricing.css'
+
+const LOCAL_TIME_ZONE = 'Asia/Ho_Chi_Minh'
+// Whole days, rounding up an older price saved in hours
+const toDays = (hours: number) => Math.ceil(hours / HOURS_PER_DAY)
 
 // Server error codes with their own message (anything else falls back to saveFailed)
 const SAVE_ERRORS = [
@@ -88,7 +103,7 @@ function PricingService({
   const { t } = useTranslation('expert')
   const qualified =
     activeAccount && service.qualificationStatus === 'APPROVED_FOR_SERVICE'
-  const { query, mutation } = useExpertPricing(
+  const { query, history, mutation } = useExpertPricing(
     expertId,
     service.serviceId,
     qualified
@@ -133,7 +148,11 @@ function PricingService({
       ) : query.data === null ? (
         <Notice title={t('pricing.notOpen')} text={t('pricing.notOpenHelp')} />
       ) : (
-        <PricingEditor service={query.data} mutation={mutation} />
+        <PricingEditor
+          service={query.data}
+          mutation={mutation}
+          history={history.data ?? []}
+        />
       )}
     </div>
   )
@@ -154,18 +173,27 @@ function Notice({ title, text }: { title: string; text: string }) {
 function PricingEditor({
   service,
   mutation,
+  history,
 }: {
   service: MyService
   mutation: ReturnType<typeof useExpertPricing>['mutation']
+  history: PriceChange[]
 }) {
   const { t } = useTranslation(['expert', 'common'])
   const format = useFormatters()
   const formRef = useRef<HTMLFormElement>(null)
   const initial: PricingInput = {
     fee: service.fee == null ? '' : String(service.fee),
-    turnaroundHours:
-      service.turnaroundHours == null ? '' : String(service.turnaroundHours),
+    turnaroundDays:
+      service.turnaroundHours == null
+        ? ''
+        : String(toDays(service.turnaroundHours)),
   }
+  const { limits } = service
+  const dayOptions = Array.from(
+    { length: limits.maxTurnaroundDays - limits.minTurnaroundDays + 1 },
+    (_, i) => limits.minTurnaroundDays + i
+  )
   const [input, setInput] = useState(initial)
   const [errors, setErrors] = useState<PricingErrors>({})
   const [saved, setSaved] = useState(false)
@@ -180,7 +208,7 @@ function PricingEditor({
   }
   const review = () => {
     if (busy) return
-    const issues = validatePricing(input)
+    const issues = validatePricing(input, limits)
     setErrors(issues)
     if (Object.keys(issues).length) {
       const first = Object.keys(issues)[0]
@@ -196,7 +224,7 @@ function PricingEditor({
       onSuccess: (next) => {
         setInput({
           fee: String(next.fee),
-          turnaroundHours: String(next.turnaroundHours),
+          turnaroundDays: String(toDays(next.turnaroundHours ?? 0)),
         })
         setSaved(true)
       },
@@ -208,12 +236,36 @@ function PricingEditor({
       ? t(`pricing.errors.${failure.code}`)
       : t('pricing.saveFailed')
   const proposedFee = /^\d+$/.test(input.fee.trim()) ? Number(input.fee) : null
+  const bigChange =
+    proposedFee != null &&
+    isBigChange(service.fee, proposedFee, limits.changeWarningPercent)
+  const pending = service.pendingPlatformFee
   return (
     <>
       {isExpertDemo && (
         <div className="epr-notice epr-demo">
           <Info size={18} aria-hidden="true" />
           <p>{t('pricing.demo')}</p>
+        </div>
+      )}
+      {pending && (
+        <div className="epr-notice" role="status">
+          <Info size={20} aria-hidden="true" />
+          <p>
+            {t('pricing.pendingFee', {
+              date: format.dateOnly(pending.effectiveFrom.slice(0, 10)),
+              from: service.platformFeePercent,
+              to: pending.percent,
+            })}
+            {service.fee != null &&
+              ' ' +
+                t('pricing.pendingFeeNet', {
+                  amount: format.money(netOf(service.fee, pending.percent)),
+                  current: format.money(
+                    netOf(service.fee, service.platformFeePercent)
+                  ),
+                })}
+          </p>
         </div>
       )}
       <div className="epr-layout">
@@ -224,8 +276,10 @@ function PricingEditor({
                 ? t('pricing.setPrice')
                 : t('pricing.editPrice')}
             </h2>
+            <HelpTip label={t('pricing.editorHelpLabel')}>
+              {t('pricing.editorHelp')}
+            </HelpTip>
           </div>
-          <p className="epr-section-help">{t('pricing.editorHelp')}</p>
           <form
             ref={formRef}
             noValidate
@@ -253,37 +307,59 @@ function PricingEditor({
                     'epr-fee-help' + (errors.fee ? ' epr-fee-error' : '')
                   }
                 />
-                <p id="epr-fee-help">{t('pricing.amountHelp')}</p>
+                <p id="epr-fee-help">
+                  {t('pricing.amountHelp', {
+                    min: format.money(limits.minFee),
+                    max: format.money(limits.maxFee),
+                    step: format.money(limits.feeStep),
+                  })}
+                </p>
                 {errors.fee && (
                   <p id="epr-fee-error" className="epr-field-error">
-                    {t(`pricing.errors.${errors.fee}`)}
+                    {t(`pricing.errors.${errors.fee}`, {
+                      min: format.money(limits.minFee),
+                      max: format.money(limits.maxFee),
+                      step: format.money(limits.feeStep),
+                    })}
                   </p>
                 )}
               </div>
               <div className="epr-field">
-                <label htmlFor="epr-hours">
-                  {t('pricing.turnaround')} <span>{t('pricing.hours')}</span>
+                <label htmlFor="epr-days">
+                  {t('pricing.turnaround')} <span>{t('pricing.days')}</span>
                 </label>
-                <input
-                  id="epr-hours"
-                  name="turnaroundHours"
-                  type="text"
-                  inputMode="numeric"
-                  autoComplete="off"
-                  value={input.turnaroundHours}
+                <select
+                  id="epr-days"
+                  name="turnaroundDays"
+                  value={input.turnaroundDays}
                   onChange={(event) =>
-                    update('turnaroundHours', event.target.value)
+                    update('turnaroundDays', event.target.value)
                   }
-                  aria-invalid={Boolean(errors.turnaroundHours)}
+                  aria-invalid={Boolean(errors.turnaroundDays)}
                   aria-describedby={
-                    'epr-hours-help' +
-                    (errors.turnaroundHours ? ' epr-hours-error' : '')
+                    'epr-days-help' +
+                    (errors.turnaroundDays ? ' epr-days-error' : '')
                   }
-                />
-                <p id="epr-hours-help">{t('pricing.turnaroundHelp')}</p>
-                {errors.turnaroundHours && (
-                  <p id="epr-hours-error" className="epr-field-error">
-                    {t(`pricing.errors.${errors.turnaroundHours}`)}
+                >
+                  <option value="">{t('pricing.chooseDays')}</option>
+                  {dayOptions.map((days) => (
+                    <option key={days} value={String(days)}>
+                      {t('pricing.dayCount', { count: days })}
+                    </option>
+                  ))}
+                </select>
+                <p id="epr-days-help">
+                  {t('pricing.turnaroundHelp', {
+                    min: limits.minTurnaroundDays,
+                    max: limits.maxTurnaroundDays,
+                  })}
+                </p>
+                {errors.turnaroundDays && (
+                  <p id="epr-days-error" className="epr-field-error">
+                    {t(`pricing.errors.${errors.turnaroundDays}`, {
+                      min: limits.minTurnaroundDays,
+                      max: limits.maxTurnaroundDays,
+                    })}
                   </p>
                 )}
               </div>
@@ -353,6 +429,48 @@ function PricingEditor({
           <p>{t('pricing.snapshotHelp')}</p>
         </aside>
       </div>
+      <section className="epr-editor" aria-labelledby="epr-history-title">
+        <div className="epr-section-title">
+          <h2 id="epr-history-title">{t('pricing.historyTitle')}</h2>
+        </div>
+        {history.length === 0 ? (
+          <p>{t('pricing.historyNone')}</p>
+        ) : (
+          <table className="w-full text-sm">
+            <thead className="text-fg-muted">
+              <tr className="[&>th]:py-2 [&>th]:text-left [&>th]:font-semibold">
+                <th>{t('pricing.historyTime')}</th>
+                <th>{t('pricing.amount')}</th>
+                <th>{t('pricing.turnaround')}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {history.map((change) => (
+                <tr
+                  key={change.changedAt}
+                  className="border-border-subtle border-t [&>td]:py-2"
+                >
+                  <td className="num">
+                    {format.timestamp(change.changedAt, LOCAL_TIME_ZONE)}
+                  </td>
+                  <td className="num">
+                    {change.oldFee == null
+                      ? format.money(change.newFee)
+                      : `${format.money(change.oldFee)} → ${format.money(change.newFee)}`}
+                  </td>
+                  <td className="num">
+                    {change.oldTurnaroundHours == null
+                      ? t('pricing.dayCount', {
+                          count: toDays(change.newTurnaroundHours),
+                        })
+                      : `${t('pricing.dayCount', { count: toDays(change.oldTurnaroundHours) })} → ${t('pricing.dayCount', { count: toDays(change.newTurnaroundHours) })}`}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </section>
       {confirming && proposedFee != null && (
         <Modal
           title={t('pricing.confirmTitle')}
@@ -379,6 +497,19 @@ function PricingEditor({
             </>
           }
         >
+          {bigChange && (
+            <div
+              role="alert"
+              className="border-danger text-danger rounded-control mt-2 flex gap-2 border p-3 text-sm font-semibold"
+            >
+              <AlertTriangle size={18} aria-hidden="true" />
+              <p>
+                {t('pricing.bigChange', {
+                  percent: limits.changeWarningPercent,
+                })}
+              </p>
+            </div>
+          )}
           <dl className="[&_dt]:text-fg-muted mt-2 grid gap-3 text-sm [&_dd]:text-right [&_dd]:font-semibold [&>div]:flex [&>div]:justify-between [&>div]:gap-4">
             <div>
               <dt>{t('pricing.amount')}</dt>
@@ -400,7 +531,7 @@ function PricingEditor({
               <dt>{t('pricing.turnaround')}</dt>
               <dd>
                 {t('pricing.deliveryIn', {
-                  hours: Number(input.turnaroundHours),
+                  days: Number(input.turnaroundDays),
                 })}
               </dd>
             </div>

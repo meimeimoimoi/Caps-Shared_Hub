@@ -31,6 +31,24 @@ public sealed class ExpertPolicyOptions
     /// <summary>expert.final_approval_days: days the final approval may take before the queue flags it (D8).</summary>
     public int FinalApprovalDays { get; set; } = 3;
 
+    /// <summary>pricing.min_fee: lowest price an expert may set, in VND (POL-MKT-02).</summary>
+    public int PricingMinFee { get; set; } = 500_000;
+
+    /// <summary>pricing.max_fee: highest price an expert may set, in VND (POL-MKT-02).</summary>
+    public int PricingMaxFee { get; set; } = 30_000_000;
+
+    /// <summary>pricing.turnaround_min_days: shortest turnaround an expert may promise.</summary>
+    public int TurnaroundMinDays { get; set; } = 1;
+
+    /// <summary>pricing.turnaround_max_days: longest turnaround an expert may promise.</summary>
+    public int TurnaroundMaxDays { get; set; } = 7;
+
+    /// <summary>pricing.platform_fee_notice_days: days ahead a platform fee change must be announced.</summary>
+    public int PlatformFeeNoticeDays { get; set; } = 7;
+
+    /// <summary>pricing.change_warning_percent: price change that shows the expert a red warning.</summary>
+    public int PriceChangeWarningPercent { get; set; } = 50;
+
     /// <summary>
     /// Evidence groups that must hold a file or link before submitting (BR-E02). Null uses the default:
     /// CV, legal eligibility (EV-01) and tax professional qualification (EV-02).
@@ -115,5 +133,11 @@ public sealed class ExpertPolicyOptions
             [PolicySettingKeys.MaxInformationRequests] = MaxInformationRequests,
             [PolicySettingKeys.ReviewSlaDays] = ReviewSlaDays,
             [PolicySettingKeys.FinalApprovalDays] = FinalApprovalDays,
+            [PolicySettingKeys.PricingMinFee] = PricingMinFee,
+            [PolicySettingKeys.PricingMaxFee] = PricingMaxFee,
+            [PolicySettingKeys.TurnaroundMinDays] = TurnaroundMinDays,
+            [PolicySettingKeys.TurnaroundMaxDays] = TurnaroundMaxDays,
+            [PolicySettingKeys.PlatformFeeNoticeDays] = PlatformFeeNoticeDays,
+            [PolicySettingKeys.PriceChangeWarningPercent] = PriceChangeWarningPercent,
         };
 }
