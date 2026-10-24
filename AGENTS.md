@@ -1,6 +1,6 @@
 # AGENTS.md — Caps-Shared Hub
 
-Monorepo: **BE** (.NET 8 microservices) + **FE** (React 19 + Vite + TailwindCSS v4).
+Monorepo: **BE** (.NET 9 microservices) + **FE** (React 19 + Vite + TailwindCSS v4).
 Tổng quan, cách chạy, route: xem [README.md](README.md). File này chỉ chứa **quy tắc khi sửa code**.
 
 ## Nguyên tắc chung
@@ -66,9 +66,9 @@ npm run dev        # :5173
 - Giới hạn log trả về cho AI: ưu tiên mã thoát, tóm tắt pass/fail, lỗi và cảnh báo liên quan; không đưa toàn bộ danh sách bundle/file hay log thành công dài vào ngữ cảnh. Khi cần, lưu log đầy đủ vào thư mục tạm và đọc đúng phần để chẩn đoán; không che lỗi hoặc làm mất mã thoát của lệnh gốc.
 - Khi lỗi do môi trường, xác định nguyên nhân trước khi thử lại; không lặp cùng lệnh nếu chưa có thay đổi có thể khắc phục. Báo rõ kiểm tra nào đã pass, fail hoặc chưa chạy; không suy đoán kết quả.
 
-## Backend (.NET 8)
+## Backend (.NET 9)
 
-- Pin SDK trong `BE/global.json` (8.0.421). Thuộc tính chung (net8.0, Nullable, ImplicitUsings, LangVersion) nằm ở `Directory.Build.props`, không lặp lại trong `.csproj`.
+- Pin SDK trong `BE/global.json` (9.0.318). Thuộc tính chung (net9.0, Nullable, ImplicitUsings, LangVersion) nằm ở `Directory.Build.props`, không lặp lại trong `.csproj`.
 - **Version package chỉ pin trong `Directory.Packages.props`** (Central Package Management). `.csproj` dùng `<PackageReference Include="..." />` **không có `Version`**.
 - **Service nhiều nghiệp vụ theo Clean Architecture** (mẫu: `auth/`): 4 project `Domain` / `Application` / `Infrastructure` / `Api`, thư mục service giữ chữ thường. Namespace và assembly giữ dạng `Caps.<Service>.<Layer>`; khai báo `RootNamespace` và `AssemblyName` trong từng `.csproj`.
   - `Domain`: entity có hành vi (quy tắc nghiệp vụ nằm trong entity), hằng số, `<Service>Errors`. Không tham chiếu EF Core/ASP.NET.

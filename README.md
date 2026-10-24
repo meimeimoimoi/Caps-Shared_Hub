@@ -2,7 +2,7 @@
 
 # Caps-Shared Hub
 
-Monorepo gồm **Backend (.NET 8 Microservices)**, **Frontend (React 19 + Vite + TailwindCSS v4)** và **Crawler văn bản pháp luật (Python)**.
+Monorepo gồm **Backend (.NET 9 Microservices)**, **Frontend (React 19 + Vite + TailwindCSS v4)** và **Crawler văn bản pháp luật (Python)**.
 
 ---
 
@@ -10,7 +10,7 @@ Monorepo gồm **Backend (.NET 8 Microservices)**, **Frontend (React 19 + Vite +
 
 | Công cụ | Phiên bản | Ghi chú |
 |---|---|---|
-| **.NET SDK** | `8.0.421` | Pin trong `BE/global.json` |
+| **.NET SDK** | `9.0.318` | Pin trong `BE/global.json` |
 | **Node.js** | `20+` | FE đang chạy Node 24 |
 | **Docker Desktop** | Mới nhất | Postgres/pgvector, Redis, RabbitMQ, Mailpit, SeaweedFS |
 
@@ -57,7 +57,7 @@ flowchart LR
 Caps-Shared_Hub/
 ├── BE/
 │   ├── Caps.sln                  # Solution: 10 services + common (7 libs)
-│   ├── Directory.Build.props     # Props chung: net8.0, Nullable, ImplicitUsings, LangVersion
+│   ├── Directory.Build.props     # Props chung: net9.0, Nullable, ImplicitUsings, LangVersion
 │   ├── Directory.Packages.props  # Central Package Management — nơi duy nhất pin version
 │   ├── gateway/                  # API Gateway (YARP)
 │   ├── auth/  expert/  billing/  workflow/   # Clean Architecture: Domain/Application/Infrastructure/Api
