@@ -43,7 +43,7 @@ public static class ExpertDecisionEmailTemplate
             "ELIGIBLE" => new(
                 $"Hồ sơ chuyên gia đã qua vòng xét duyệt điều kiện – {Brand}",
                 "Hồ sơ của bạn đã đạt điều kiện",
-                "Chúc mừng! Hồ sơ đăng ký chuyên gia của bạn đáp ứng các điều kiện ban đầu. Bạn có thể tiếp tục bước tiếp theo trong Cổng chuyên gia.",
+                "Chúc mừng! Hồ sơ đăng ký chuyên gia của bạn đáp ứng các điều kiện ban đầu. Bước tiếp theo: nộp minh chứng năng lực trong Cổng chuyên gia.",
                 "Mở Cổng chuyên gia"
             ),
             "NEED_MORE_INFORMATION" => new(

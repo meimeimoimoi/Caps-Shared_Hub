@@ -1,7 +1,11 @@
 import { useTranslation } from 'react-i18next'
-import { CircleAlert } from 'lucide-react'
+import { CircleAlert, TriangleAlert } from 'lucide-react'
 import { HelpTip } from '@/components/ui/feedback/help-tip'
+import { formControlClassName as inputCls } from '@/components/ui/forms/form-control'
 import type { EvidenceFile, Profile } from '../../types'
+import type { Declaration } from '../../api/applicationApi'
+import { DOCUMENTS_STEP, PROFILE_STEP, REAPPLY_NOTICE_ID } from '../../constants'
+import { eligibilityCriterionKey } from '../../hooks/useApplicationLifecycle'
 import { RegistrationSummary } from './RegistrationSummary'
 
 export interface ReviewSubmitProps {
@@ -10,9 +14,22 @@ export interface ReviewSubmitProps {
   independent: boolean
   fields: string[]
   files: Record<string, EvidenceFile[]>
-  confirmed: boolean
+  /** Server codes of the evidence groups that need a file */
+  requiredEvidence: string[]
+  /** Re-application after NOT_ELIGIBLE: failed criteria that still need updated details or new evidence */
+  changesRequired?: string[]
+  /** Statements to agree to, worded by the server in the interface language */
+  declarations: Declaration[]
+  /** Codes of the statements ticked */
+  agreed: string[]
   formErrors: Record<string, string>
-  onConfirmedChange: (val: boolean) => void
+  onAgreedChange: (code: string, val: boolean) => void
+  /** Set while more information is requested: the step resubmits with an optional explanation */
+  supplement?: {
+    note: string
+    onNoteChange: (value: string) => void
+    reviewerNote: string | null
+  }
   /** Opens the step that holds a section; saving there comes back to this review */
   onEditStep: (step: number) => void
 }
@@ -23,12 +40,20 @@ export function ReviewSubmit({
   independent,
   fields,
   files,
-  confirmed,
+  requiredEvidence,
+  declarations,
+  agreed,
   formErrors,
-  onConfirmedChange,
+  onAgreedChange,
   onEditStep,
+  supplement,
+  changesRequired = [],
 }: ReviewSubmitProps) {
   const { t } = useTranslation('expertRegistration')
+  const changeLabels = changesRequired.map((code) => {
+    const key = eligibilityCriterionKey(code)
+    return key ? t(key) : code
+  })
 
   return (
     <div className="expert-pro-review">
@@ -37,36 +62,86 @@ export function ReviewSubmit({
         <HelpTip label={t('review.aiHelpLabel')}>{t('review.ai')}</HelpTip>
       </div>
 
+      {changeLabels.length > 0 && (
+        <div id={REAPPLY_NOTICE_ID} tabIndex={-1} className="expert-pro-notice expert-pro-notice--warn outline-none" role="status">
+          <TriangleAlert size={16} aria-hidden="true" className="expert-pro-notice-icon" />
+          <div>
+            <p>{t('dynamic.changeBeforeReapply', { criteria: changeLabels.join(', ') })}</p>
+            <div className="mt-2 flex flex-wrap gap-3">
+              <button type="button" className="font-semibold underline" onClick={() => onEditStep(PROFILE_STEP)}>
+                {t('reapply.editProfile')}
+              </button>
+              <button type="button" className="font-semibold underline" onClick={() => onEditStep(DOCUMENTS_STEP)}>
+                {t('reapply.addEvidence')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <RegistrationSummary
         profile={profile}
         avatarPreview={avatarPreview}
         independent={independent}
         fields={fields}
         files={files}
+        requiredEvidence={requiredEvidence}
+        conductAgreed={agreed.includes('PROFESSIONAL_CONDUCT')}
         onEditStep={onEditStep}
       />
 
-      {/* ── Confirmation Checkbox ── */}
-      <div className="expert-review-confirmation">
-        <div className="expert-review-confirmation-row">
-          <label className="flex cursor-pointer items-start gap-3">
-            <input
-              name="confirmed"
-              className="expert-custom-checkbox"
-              type="checkbox"
-              checked={confirmed}
-              onChange={(e) => onConfirmedChange(e.target.checked)}
-              aria-invalid={!!formErrors.confirmed}
-              aria-describedby={
-                formErrors.confirmed ? 'error-confirmed' : undefined
-              }
-              required
-            />
-            <span className="text-text-strong text-[14.5px] leading-relaxed font-medium">
-              {t('review.confirm')}
-            </span>
+      {/* What the reviewer asked for, and the applicant's explanation (supplement only) */}
+      {supplement && (
+        <div className="expert-review-confirmation">
+          {supplement.reviewerNote && (
+            <p className="text-ex-muted mb-3 text-[13.5px]">
+              <strong>{t('supplementStep.reviewerNote')}</strong>{' '}
+              {supplement.reviewerNote}
+            </p>
+          )}
+          <label htmlFor="supplement-note" className="font-medium">
+            {t('supplementStep.noteLabel')}
           </label>
+          <textarea
+            id="supplement-note"
+            className={`${inputCls} mt-2 min-h-[110px] w-full resize-y`}
+            rows={4}
+            maxLength={2000}
+            value={supplement.note}
+            onChange={(e) => supplement.onNoteChange(e.target.value)}
+            placeholder={t('supplementStep.notePlaceholder')}
+          />
+          <p className="text-ex-muted mt-1 text-[12.5px]">
+            {t('supplementStep.noteHint')}
+          </p>
         </div>
+      )}
+
+      {/* Conduct is accepted in the evidence step and listed with the documents; only accuracy is confirmed here */}
+      <div className="expert-review-confirmation">
+        {declarations
+          .filter((d) => d.code !== 'PROFESSIONAL_CONDUCT')
+          .map((d) => (
+            <div key={d.code} className="expert-review-confirmation-row">
+              <label className="flex cursor-pointer items-start gap-3">
+                <input
+                  name="confirmed"
+                  className="expert-custom-checkbox"
+                  type="checkbox"
+                  checked={agreed.includes(d.code)}
+                  onChange={(e) => onAgreedChange(d.code, e.target.checked)}
+                  aria-invalid={!!formErrors.confirmed}
+                  aria-describedby={
+                    formErrors.confirmed ? 'error-confirmed' : undefined
+                  }
+                  required
+                />
+                <span className="text-text-strong text-[14.5px] leading-relaxed font-medium">
+                  {d.text}
+                </span>
+              </label>
+            </div>
+          ))}
         {formErrors.confirmed && (
           <p
             id="error-confirmed"

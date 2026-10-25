@@ -1,65 +1,54 @@
 namespace Caps.Expert.Application.DTOs.Responses;
 
-/// <summary>The expert's prices for one approved service: every version, the audit trail and the policy.</summary>
-/// <param name="Revision">Send it back when saving; a different value means someone changed the prices meanwhile.</param>
-/// <param name="AutoApproveMaxChangePercent">Changes up to this percent from the price in effect are approved at once.</param>
-/// <param name="CanEdit">The service is approved and no change is waiting for a System Admin.</param>
-public sealed record PricingWorkspaceResponse(
-    string QualificationId,
+/// <summary>
+/// One service open for pricing and the expert's price for it: the fee set and what the expert receives after the
+/// platform fee. Fee, TurnaroundHours and NetAmount are null until the expert prices the service.
+/// </summary>
+/// <param name="PendingPlatformFee">An announced platform fee change that has not taken effect yet.</param>
+/// <param name="Limits">The ranges the price and turnaround must fall within (admin policy).</param>
+public sealed record MyServiceResponse(
+    string ServiceCode,
+    long? Fee,
+    int? TurnaroundHours,
+    int PlatformFeePercent,
+    long? NetAmount,
+    PendingPlatformFeeResponse? PendingPlatformFee,
+    PricingLimitsResponse Limits
+);
+
+/// <summary>The price and turnaround ranges in force, and the change that shows a red warning.</summary>
+public sealed record PricingLimitsResponse(
+    long MinFee,
+    long MaxFee,
+    long FeeStep,
+    int MinTurnaroundDays,
+    int MaxTurnaroundDays,
+    int ChangeWarningPercent
+);
+
+/// <summary>A platform fee change waiting for its effective date.</summary>
+public sealed record PendingPlatformFeeResponse(int Percent, DateTimeOffset EffectiveFrom);
+
+/// <summary>
+/// One catalog service with its platform fee in force (null until the first one) and any pending change.
+/// </summary>
+/// <param name="EarliestEffectiveOn">First day a new change may take effect, given the notice days.</param>
+public sealed record PlatformFeeResponse(
     string ServiceCode,
     string ServiceName,
-    int Revision,
-    long MinPrice,
-    long MaxPrice,
-    int AutoApproveMaxChangePercent,
-    bool CanEdit,
-    ServicePricingResponse[] Versions,
-    PricingAuditResponse[] Audit
+    int? Percent,
+    DateTimeOffset? EffectiveFrom,
+    PendingPlatformFeeResponse? Pending,
+    DateOnly EarliestEffectiveOn,
+    int NoticeDays,
+    int MaxPercent
 );
 
-/// <summary>One Pricing Version.</summary>
-/// <param name="ChangePercent">Change from the price in effect at submission; null for the first price.</param>
-/// <param name="ReviewNote">The System Admin's note when returned, rejected or approved with a note.</param>
-public sealed record ServicePricingResponse(
-    string Id,
-    int Sequence,
-    long Amount,
-    DateOnly? EffectiveFrom,
-    DateOnly? EffectiveTo,
-    string? Reason,
-    string Status,
-    bool AutoApproved,
-    int? ChangePercent,
-    string? ReviewNote,
-    DateTimeOffset? SubmittedAt,
-    DateTimeOffset CreatedAt,
-    DateTimeOffset UpdatedAt
-);
-
-/// <summary>One audit entry; Actor is EXPERT, ADMIN or SYSTEM.</summary>
-public sealed record PricingAuditResponse(
-    string VersionId,
-    string Action,
-    DateTimeOffset At,
-    string Actor,
-    string? Note
-);
-
-/// <summary>A price change waiting for (or decided by) a System Admin.</summary>
-/// <param name="CurrentAmount">The latest approved price the change is measured against.</param>
-public sealed record PricingReviewItemResponse(
-    string Id,
-    string QualificationId,
-    string ExpertUserId,
-    string? DisplayName,
-    string ServiceCode,
-    int Sequence,
-    long Amount,
-    long? CurrentAmount,
-    int? ChangePercent,
-    DateOnly EffectiveFrom,
-    string? Reason,
-    string Status,
-    DateTimeOffset? SubmittedAt,
-    string? DecisionNote
+/// <summary>One saved price of the expert's offering, old and new values side by side.</summary>
+public sealed record ServiceOfferingChangeResponse(
+    long? OldFee,
+    long NewFee,
+    int? OldTurnaroundHours,
+    int NewTurnaroundHours,
+    DateTimeOffset ChangedAt
 );

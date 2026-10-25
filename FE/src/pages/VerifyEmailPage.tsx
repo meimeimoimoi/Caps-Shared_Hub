@@ -7,12 +7,14 @@ import { ApiError } from '@/lib/api-client'
 import { authApi } from '@/features/auth/api/authApi'
 import { useLinkToken } from '@/features/auth/hooks/useLinkToken'
 import { useAuth, useAuthStore } from '@/features/auth'
-import { safeReturnPath } from '@/features/auth/utils/returnPath'
 import {
   notifyEmailVerified,
   useEmailVerifiedSignal,
 } from '@/features/auth/utils/emailVerifiedSignal'
-import { EXPERT_ONBOARDING_KEY } from '@/features/expert-registration/hooks/useExpertApplication'
+import {
+  isSignupRole,
+  signupDestination,
+} from '@/features/auth/utils/signupRole'
 import { VideoBackground } from '@/components/auth/VideoBackground'
 import { EmailCodeField } from '@/components/auth/EmailCodeField'
 import { LanguageToggle as AuthLanguageToggle } from '@/components/ui/layout/language-toggle'
@@ -25,6 +27,26 @@ import {
 
 const COOLDOWN_SECONDS = 60
 const BUTTON_LINK_CLASS = cn(PRIMARY_BUTTON_CLASS, 'font-sans no-underline')
+
+type VerifyState = {
+  from?: unknown
+  fromState?: unknown
+  role?: unknown
+  justRegistered?: boolean
+} | null
+
+/**
+ * The page after a verified email: the role chosen at sign-up when this tab still knows it, otherwise
+ * the one-time role question (link opened on another device), which also finds an existing application.
+ */
+function afterVerification(state: VerifyState): { to: string; state: unknown } {
+  if (isSignupRole(state?.role))
+    return { to: signupDestination(state.role, state.from), state: state.fromState }
+  return {
+    to: '/welcome',
+    state: { welcome: true, from: state?.from, fromState: state?.fromState },
+  }
+}
 
 /* Email verification after sign-up.
  * - No token: remind the user to open the email and offer to resend the link.
@@ -39,15 +61,11 @@ export default function VerifyEmailPage() {
   const authenticated = useAuthStore((s) => s.isAuthenticated)
   const location = useLocation()
 
-  // Đã kích hoạt (kể cả vừa xác nhận ở tab khác): đi tiếp tới trang người dùng định vào
-  if (!token && authenticated && user?.status === 'ACTIVE')
-    return (
-      <Navigate
-        to={safeReturnPath(location.state?.from)}
-        replace
-        state={location.state?.fromState}
-      />
-    )
+  // Already active (also when verified in another tab): continue with the sign-up choice
+  if (!token && authenticated && user?.status === 'ACTIVE') {
+    const next = afterVerification(location.state as VerifyState)
+    return <Navigate to={next.to} replace state={next.state} />
+  }
 
   return (
     <main className="login-material relative isolate flex min-h-svh flex-col items-center justify-center overflow-hidden bg-[var(--ui-login-canvas)] px-6 py-12 text-[var(--ui-login-text)] max-sm:pt-20">
@@ -76,16 +94,6 @@ function ConfirmToken({ token }: { token: string }) {
     'verifying'
   )
   const [signedIn, setSignedIn] = useState(false)
-  // Đăng ký từ cổng chuyên gia: xác nhận xong quay lại wizard; xóa dấu để lần sau không bị dẫn nhầm
-  const [expertOnboarding] = useState(() => {
-    try {
-      const flagged = localStorage.getItem(EXPERT_ONBOARDING_KEY) === '1'
-      localStorage.removeItem(EXPERT_ONBOARDING_KEY)
-      return flagged
-    } catch {
-      return false
-    }
-  })
   // Token chỉ dùng được một lần: chặn StrictMode gọi effect hai lần
   const started = useRef(false)
 
@@ -149,17 +157,10 @@ function ConfirmToken({ token }: { token: string }) {
         signedIn ? (
           <button
             type="button"
-            onClick={() =>
-              navigate(
-                expertOnboarding
-                  ? '/expert/application'
-                  : safeReturnPath(location.state?.from),
-                {
-                  replace: true,
-                  state: location.state?.fromState,
-                }
-              )
-            }
+            onClick={() => {
+              const next = afterVerification(location.state as VerifyState)
+              navigate(next.to, { replace: true, state: next.state })
+            }}
             className={cn(PRIMARY_BUTTON_CLASS, 'font-sans')}
           >
             {t('verify.continue')}
@@ -167,11 +168,8 @@ function ConfirmToken({ token }: { token: string }) {
         ) : (
           <Link
             to="/login"
-            state={
-              expertOnboarding
-                ? { view: 'email', from: '/expert/application' }
-                : { view: 'email' }
-            }
+            // Usually another device: the sign-up choice is unknown, so ask once after signing in
+            state={{ view: 'email', afterVerification: true }}
             className={BUTTON_LINK_CLASS}
           >
             {t('verify.signIn')}

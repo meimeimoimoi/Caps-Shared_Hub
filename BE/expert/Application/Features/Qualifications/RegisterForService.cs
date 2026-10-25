@@ -11,8 +11,9 @@ namespace Caps.Expert.Application.Features.Qualifications;
 public sealed record RegisterForServiceCommand(Applicant Applicant, string ServiceCode);
 
 /// <summary>
-/// Opens a qualification in competency review. Runs under the applicant's lock, so two requests cannot
-/// open the same service twice.
+/// Opens a qualification: PREPARING the first time (the expert then submits competency evidence), or waiting
+/// for new evidence after FAIL. Runs under the applicant's lock, so two requests cannot open the same service
+/// twice.
 /// </summary>
 public sealed class RegisterForServiceHandler(
     IApplicantLock locks,
@@ -22,7 +23,8 @@ public sealed class RegisterForServiceHandler(
     IServiceCatalogRepository catalog,
     IQualificationDescriber describer,
     IUnitOfWork unitOfWork,
-    TimeProvider clock
+    TimeProvider clock,
+    IRealtimeNotifier realtime
 ) : ICommandHandler<RegisterForServiceCommand, ExpertQualificationResponse>
 {
     public async Task<ExpertQualificationResponse> HandleAsync(
@@ -55,6 +57,12 @@ public sealed class RegisterForServiceHandler(
         qualifications.AddEvent(opened);
         await unitOfWork.SaveChangesAsync(ct);
         await tx.CommitAsync(ct);
+        await realtime.ChangedAsync(
+            ExpertRealtimeTopics.Qualifications,
+            [applicant.UserId],
+            [Permission.ExpertReview],
+            ct
+        );
         return await describer.DescribeAsync(applicant, qualification, ct);
     }
 }

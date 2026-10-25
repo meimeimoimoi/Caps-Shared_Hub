@@ -10,13 +10,14 @@ export type Stage =
   | 'failed'
   | 'returned'
 
-/** File minh chứng đã lưu trên máy chủ (hoặc đang tải lên) */
+/** Evidence file or public link saved on the server (or being uploaded). */
 export interface EvidenceFile {
-  /** Rỗng khi đang tải lên */
+  /** Empty while uploading. */
   id: string
   name: string
   size: number
   canRemove: boolean
+  sourceUrl?: string | null
   uploading?: boolean
 }
 
@@ -37,7 +38,4 @@ export interface Profile {
 export interface UploadQuota {
   used: number
   max: number
-  verified: boolean
-  /** Opens the email verification dialog */
-  onVerify: () => void
 }

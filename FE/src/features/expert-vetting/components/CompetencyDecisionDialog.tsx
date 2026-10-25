@@ -67,7 +67,7 @@ export function CompetencyDecisionDialog({
           <li key={a.code} className="py-2">
             <div className="flex justify-between gap-4">
               <span className="text-fg-muted">
-                <span className="num">{a.code}</span> {label.name(a.code)}
+                {label.name(a.code)}
               </span>
               <span
                 className={cn(

@@ -49,6 +49,17 @@ export async function getExpertContext(
   return response.data
 }
 
+/** Professional name and contact phone, edited from the expert settings; neither may be blank. */
+export async function updateExpertContact(body: {
+  displayName: string
+  phone: string
+}): Promise<{ displayName: string; phone: string | null }> {
+  const response = await api.put<{
+    data: { displayName: string; phone: string | null }
+  }>('/api/v1/experts/me/profile', body)
+  return response.data
+}
+
 /**
  * Whether the signed-in account has an expert profile or application. Used right after sign-in, so an
  * applicant who has not verified the email goes back to the application instead of the verification wall.

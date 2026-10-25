@@ -1,7 +1,7 @@
 import { api } from '@/lib/api-client'
 import { APPLICATION_STATUS } from '@/lib/constants'
 import { isExpertDemo } from '@/lib/expert-data-source'
-import { CURRENT_ADMIN, QUEUE_STATUSES } from '../constants'
+import { CURRENT_ADMIN, QUEUE_STATUSES, SYSTEM_ACTOR } from '../constants'
 import type {
   ApplicationDetail,
   ApplicationStatus,
@@ -10,6 +10,10 @@ import type {
   EligibilityResult,
   Expert,
   ExpertApplication,
+  CriterionDeclaration,
+  InformationRounds,
+  ReviewClaimState,
+  Submission,
 } from '../types'
 
 /* Demo mode reads fixtures (a copy, so React Query sees new data);
@@ -62,6 +66,7 @@ interface ReviewApplication {
     id: string
     code: string
     fileName: string
+    sourceUrl?: string | null
     contentType: string
     sizeBytes: number
     uploadedAt: string
@@ -73,11 +78,20 @@ interface ReviewApplication {
     at: string
     actorUserId: string
     byApplicant: boolean
+    /** Made by the system itself (e.g. registering the only service after Gate 1) */
+    bySystem?: boolean
   }[]
   eligibility: EligibilityCheck[]
   minYearsExperience: number
   suggestedExperienceResult: EligibilityResult
   canDecide: boolean
+  /** Every submission, first one first, with the statements agreed to (details above come from the latest) */
+  submissions?: Submission[]
+  notApplicableCriteria?: string[]
+  criterionDeclarations?: CriterionDeclaration[]
+  declarationPassedCriteria?: string[]
+  claim?: ReviewClaimState
+  rounds?: InformationRounds
 }
 
 const toQueueRow = (a: ReviewQueueItem): ExpertApplication => ({
@@ -110,26 +124,35 @@ function toDetail(a: ReviewApplication): ApplicationDetail {
     highlights: p.highlights ?? '',
     documents: a.evidence.map((e) => ({
       code: e.code,
-      name: e.fileName,
+      name: e.sourceUrl || e.fileName,
+      sourceUrl: e.sourceUrl,
       pages: [],
       evidenceId: e.id,
+      uploadedAt: e.uploadedAt,
     })),
     // Empty actor = a reviewer; the history tab shows a generic label
     history: a.history.map((h) => {
       const label = APPLICATION_STATUS[h.toStatus]?.label ?? h.toStatus
       return {
         at: h.at,
-        actor: h.byApplicant ? name : '',
-        text: h.note ? `${label}: ${h.note}` : `${label}.`,
+        actor: h.bySystem ? SYSTEM_ACTOR : h.byApplicant ? name : '',
+        // A status name is a label, not a sentence: no trailing full stop
+        text: h.note ? `${label}: ${h.note}` : label,
       }
     }),
     eligibility: a.eligibility,
     minYearsExperience: a.minYearsExperience,
     suggestedExperienceResult: a.suggestedExperienceResult,
     canDecide: a.canDecide,
+    submissions: a.submissions ?? [],
+    notApplicableCriteria: a.notApplicableCriteria ?? [],
+    criterionDeclarations: a.criterionDeclarations ?? [],
+    declarationPassedCriteria: a.declarationPassedCriteria ?? [],
     decidedAt: a.decidedAt,
     decisionNote: a.decisionNote,
     earliestReapplyAt: a.earliestReapplyAt,
+    claim: a.claim,
+    rounds: a.rounds,
   }
 }
 
@@ -179,6 +202,18 @@ export async function decideEligibility(
     `${REVIEW_BASE}/${id}/eligibility-decision`,
     body
   )
+  return toDetail(res.data)
+}
+
+/** Takes the application from the shared queue; REVIEW_CLAIMED when another reviewer won */
+export async function claimApplication(id: string): Promise<ApplicationDetail> {
+  const res = await api.post<Envelope<ReviewApplication>>(`${REVIEW_BASE}/${id}/claim`)
+  return toDetail(res.data)
+}
+
+/** Gives the application back to the shared queue */
+export async function releaseApplication(id: string): Promise<ApplicationDetail> {
+  const res = await api.post<Envelope<ReviewApplication>>(`${REVIEW_BASE}/${id}/release`)
   return toDetail(res.data)
 }
 

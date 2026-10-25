@@ -6,7 +6,7 @@ namespace Caps.Architecture.Tests;
 /// <summary>Controllers only map HTTP to use cases: they depend on Application types, never on Infrastructure.</summary>
 public sealed class ControllerRules
 {
-    public static TheoryData<string> Services => new(Assemblies.LayeredServices);
+    public static TheoryData<string> Services => [.. Assemblies.LayeredServices];
 
     [Theory]
     [MemberData(nameof(Services))]

@@ -16,7 +16,6 @@ import {
   QUEUE_TABS,
 } from '../../features/expert-vetting/constants'
 import {
-  SLA_DAYS,
   waitedDays,
 } from '../../features/expert-vetting/utils/applications'
 import {
@@ -30,6 +29,7 @@ import { BarList } from '../../features/admin-analytics/components/BarList'
 import { GrowthSection } from '../../features/admin-analytics/components/GrowthSection'
 import { KpiCard } from '../../features/admin-analytics/components/KpiCard'
 import { hasAnyPermission, Permission, useAuthStore } from '@/features/auth'
+import { isOverdue, useReviewSlaDays } from '@/features/expert-vetting/hooks/useReviewSlaDays'
 import { isExpertDemo } from '@/lib/expert-data-source'
 
 /* Tổng quan System Admin: chỉ số, tăng trưởng, chỗ đang tắc. Việc gấp nằm ở chuông thông báo (useAdminNav). Số liệu dùng chung cache với các màn chi tiết */
@@ -40,6 +40,7 @@ export default function AdminDashboardPage() {
   const [now] = useState(() => Date.now())
   const user = useAuthStore((s) => s.user)
   const canReview = hasAnyPermission(user, [Permission.ExpertReview])
+  const slaDays = useReviewSlaDays(canReview)
 
   const applications = useQuery({
     queryKey: adminKeys.applications(),
@@ -68,8 +69,8 @@ export default function AdminDashboardPage() {
 
   const apps = applications.data ?? []
   const pending = apps.filter((a) => a.status === PENDING_STATUS)
-  const overdue = pending.filter(
-    (a) => waitedDays(a.submittedAt, now) > SLA_DAYS
+  const overdue = pending.filter((a) =>
+    isOverdue(waitedDays(a.submittedAt, now), slaDays)
   )
 
   const expertList = experts.data ?? []

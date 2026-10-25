@@ -65,7 +65,6 @@ function ExpertRow({
             <VerifiedBadge
               eligibleSince={e.eligibleSince}
               approvedAt={offer.approvedAt}
-              pricingVersion={offer.pricingVersion}
             />
           </div>
           {e.headline && <p className="mk-headline">{e.headline}</p>}

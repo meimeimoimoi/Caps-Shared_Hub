@@ -22,6 +22,8 @@ public sealed class OpenApplicationEvidenceHandler(
         var evidence =
             await evidences.FindAsync(query.EvidenceId, query.ApplicationId, ct)
             ?? throw ExpertErrors.EvidenceNotFound();
+        if (evidence.IsLink)
+            throw ExpertErrors.EvidenceNotFound();
         var content = await storage.OpenAsync(evidence.FileUrl, ct);
         return new(content, evidence.ContentType, evidence.FileName);
     }

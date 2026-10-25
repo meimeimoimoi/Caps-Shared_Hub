@@ -48,16 +48,14 @@ export function AvailabilityTag({
   )
 }
 
-/** Gate 1 (expert level) → Gate 2 (Expert–Service) → approved Pricing Version: every listed expert passed all
+/** Gate 1 (expert level) → Gate 2 (Expert–Service) → the expert's own price: every listed expert passed all
     three, so they collapse into one badge; the dates open on hover or focus (omitted when unknown). */
 export function VerifiedBadge({
   eligibleSince,
   approvedAt,
-  pricingVersion,
 }: {
   eligibleSince: string | null
   approvedAt: string | null
-  pricingVersion: string
 }) {
   const { t } = useTranslation('marketplace')
   const format = useFormatters()
@@ -69,7 +67,7 @@ export function VerifiedBadge({
     approvedAt
       ? t('trail.gate2Detail', { date: format.dateOnly(approvedAt) })
       : t('trail.gate2Passed'),
-    t('trail.priceDetail', { version: pricingVersion }),
+    t('trail.priceSet'),
   ]
   return (
     <span className="mk-verified" tabIndex={0} aria-describedby={id}>

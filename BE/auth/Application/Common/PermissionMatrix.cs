@@ -43,8 +43,10 @@ public static class PermissionMatrix
             Permission.KnowledgeManage => KnowledgeAdmin,
 
             //SYSTEM_ADMIN
-            Permission.UserManage or Permission.PayoutManage or Permission.ExpertApprove =>
-                SystemAdmin,
+            Permission.UserManage
+            or Permission.PayoutManage
+            or Permission.ExpertApprove
+            or Permission.PricingManage => SystemAdmin,
         };
 #pragma warning restore CS8524
 }

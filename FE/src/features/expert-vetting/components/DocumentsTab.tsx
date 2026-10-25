@@ -1,17 +1,23 @@
 import { useTranslation } from 'react-i18next'
 import { useState } from 'react'
-import { cn } from '@/lib/utils'
 import { MarginNote } from '@/components/ui/display/margin-note'
-import type { ApplicationDocument } from '../types'
-import { documentKey } from '../utils/applications'
+import { cn } from '@/lib/utils'
+import type { ApplicationDocument, Submission } from '../types'
+import { documentKey, documentsBySubmission, formatDate } from '../utils/applications'
+import { EvidenceList } from './EvidenceList'
+import { DocumentPreview } from './DocumentPreview'
 
 interface DocumentsTabProps {
   documents: ApplicationDocument[]
-  /** Mở sẵn tài liệu này (vd. bấm link CV ở tab Hồ sơ) */
+  /** Document to show first, e.g. after the CV link on the profile tab */
   initialCode?: string
   reviewedFlags: string[]
   onToggleReviewed: (flagId: string) => void
   onOpenFile: (evidenceId: string) => void
+  /** Fetches an uploaded file for the in-page preview */
+  loadFile: (evidenceId: string) => Promise<Blob | null | undefined>
+  /** Submissions of the application; with more than one, files are grouped by the submission that sent them */
+  submissions?: Submission[]
 }
 
 export function DocumentsTab({
@@ -20,8 +26,13 @@ export function DocumentsTab({
   reviewedFlags,
   onToggleReviewed,
   onOpenFile,
+  loadFile,
+  submissions = [],
 }: DocumentsTabProps) {
   const { t } = useTranslation('admin')
+  // Grouped only once the applicant has supplemented; previous/next follows the order shown
+  const groups = submissions.length > 1 ? documentsBySubmission(documents, submissions) : null
+  if (groups) documents = groups.flatMap((g) => g.documents)
   // Open the document with an AI flag first (demo) so the admin sees what to check
   const [selected, setSelected] = useState(() => {
     const first =
@@ -30,52 +41,43 @@ export function DocumentsTab({
       ) ?? documents[0]
     return initialCode ?? (first && documentKey(first))
   })
-  const doc = documents.find((d) => documentKey(d) === selected)
+  const index = documents.findIndex((d) => documentKey(d) === selected)
+  const doc = documents[index]
 
   return (
     <div className="space-y-4">
-      <div
-        role="group"
-        aria-label={t('detail.documents.select')}
-        className="flex flex-wrap gap-2"
-      >
-        {documents.map((d) => (
-          <button
-            key={documentKey(d)}
-            type="button"
-            aria-pressed={documentKey(d) === selected}
-            onClick={() => setSelected(documentKey(d))}
-            className={cn(
-              'rounded-control flex items-center gap-2 border px-2.5 py-1 text-sm',
-              documentKey(d) === selected
-                ? 'bg-paper border-indicator text-fg-strong shadow-control border-b-2 font-semibold'
-                : 'bg-desk-2 border-border text-fg hover:bg-paper'
-            )}
-          >
-            <span className="text-fg-muted num font-normal">{d.code}</span>
-            {d.name}
-          </button>
-        ))}
+      {/* A long file list scrolls inside a fixed frame (about three rows) so the preview stays in view */}
+      <div className={cn('border-border overflow-y-auto rounded-md border [&>ul]:rounded-none [&>ul]:border-0', groups ? 'max-h-[13rem]' : 'max-h-[10.5rem]')}>
+        {groups ? (
+          groups.map((g) => (
+            <section key={g.number ?? 'pending'} className="[&>ul]:rounded-none [&>ul]:border-0" aria-label={g.number == null ? t('detail.documents.afterLatest') : t('detail.documents.round', { number: g.number, date: formatDate(g.submittedAt!) })}>
+              <h4 className="bg-surface-muted text-text-muted sticky top-0 z-10 flex items-center justify-between gap-2 px-3 py-1.5 text-xs font-medium">
+                <span>{g.number == null ? t('detail.documents.afterLatest') : t('detail.documents.round', { number: g.number, date: formatDate(g.submittedAt!) })}</span>
+                <span className="tabular-nums">{t('detail.documents.count', { count: g.documents.length })}</span>
+              </h4>
+              <EvidenceList documents={g.documents} selectedKey={selected} onSelect={setSelected} emptyText="" />
+            </section>
+          ))
+        ) : (
+          <EvidenceList
+            documents={documents}
+            selectedKey={selected}
+            onSelect={setSelected}
+            emptyText={t('detail.documents.empty')}
+          />
+        )}
       </div>
-
-      {doc?.evidenceId ? (
-        <div className="paper flex flex-wrap items-center justify-between gap-3 p-5 md:p-6">
-          <span className="text-fg-strong font-semibold">{doc.name}</span>
-          <button
-            type="button"
-            onClick={() => onOpenFile(doc.evidenceId!)}
-            className="btn btn-press btn-secondary"
-          >
-            {t('detail.documents.open')}
-          </button>
-        </div>
-      ) : (
-        doc &&
-        doc.pages.length === 0 && (
-          <p className="paper text-fg-muted p-5 md:p-6">
-            {t('detail.documents.noPreview')}
-          </p>
-        )
+      {doc && index >= 0 && (doc.evidenceId || doc.sourceUrl) && (
+        <DocumentPreview
+          key={selected}
+          document={doc}
+          index={index}
+          total={documents.length}
+          onPrevious={() => setSelected(documentKey(documents[index - 1]))}
+          onNext={() => setSelected(documentKey(documents[index + 1]))}
+          loadFile={loadFile}
+          onOpenFile={onOpenFile}
+        />
       )}
 
       {/* TODO(api): khi có file thật thì hiển thị PDF/ảnh gốc, ghi chú theo trang lấy từ API */}
@@ -87,7 +89,6 @@ export function DocumentsTab({
               <h3 className="text-fg-strong font-semibold">{doc.name}</h3>
               <span className="text-fg-muted num shrink-0 text-sm">
                 {t('detail.documents.pageOf', {
-                  code: doc.code,
                   page: i + 1,
                   total: doc.pages.length,
                 })}

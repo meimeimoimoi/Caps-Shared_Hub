@@ -26,11 +26,12 @@ for (const [area, paths] of Object.entries(areas)) {
   })
 }
 
-test('both signup forms remain public', async ({ page }) => {
+// One public sign-up page; the old expert sign-up link lands on it
+test('sign-up stays public and starts with the role choice', async ({ page }) => {
   for (const path of ['/register', '/expert/register']) {
     await page.goto(path)
-    await expect(page).toHaveURL(new RegExp(`${path}$`))
-    await expect(page.locator('input[name="email"]')).toBeVisible()
-    await expect(page.locator('button[type="submit"]')).toBeVisible()
+    await expect(page).toHaveURL(/\/register$/)
+    await expect(page.getByRole('button', { name: /Khách hàng/ })).toBeVisible()
+    await expect(page.getByRole('button', { name: /Chuyên gia/ })).toBeVisible()
   }
 })

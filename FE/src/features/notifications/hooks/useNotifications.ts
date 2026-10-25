@@ -32,8 +32,8 @@ const accessChanges = {
 } as const
 
 /**
- * The signed-in account's notifications for the header bell, rendered as shell items. Polled every
- * minute until real-time push exists; read state lives on the server.
+ * The signed-in account's notifications for the header bell, rendered as shell items. New ones arrive
+ * through NotificationStream (SignalR); polling every minute is the fallback. Read state lives on the server.
  */
 export function useNotifications() {
   const { t } = useTranslation('common')

@@ -14,12 +14,12 @@ import {
   type SidebarGroup,
 } from '@/components/ui/layout/app-sidebar'
 import { useDialogMotion } from '@/components/ui/motion'
-import { useReviewerQueue } from '@/features/reviewer/useReviewerQueue'
+import { useReviewerCounts } from '@/features/reviewer/useReviewerQueue'
 import { useAccount } from '@/features/auth'
 
 function ReviewerShell() {
   const { t } = useTranslation(['reviewer', 'common'])
-  const { openCounts } = useReviewerQueue({ enabled: false })
+  const openCounts = useReviewerCounts()
   const [query, setQuery] = useState('')
   const location = useLocation()
   const account = useAccount('reviewer')
@@ -163,7 +163,8 @@ function ReviewerShell() {
         <main
           id="reviewer-main"
           tabIndex={-1}
-          className="mx-auto w-full max-w-[1440px] px-4 py-8 sm:px-6 lg:px-8"
+          // Skip-link target only: clicking empty space focuses it, which must not draw a focus ring
+          className="mx-auto w-full max-w-[1440px] px-4 py-8 outline-none sm:px-6 lg:px-8"
         >
           <Outlet context={{ query, setQuery }} />
         </main>
