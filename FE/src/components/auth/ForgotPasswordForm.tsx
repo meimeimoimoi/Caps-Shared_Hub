@@ -61,7 +61,7 @@ export function ForgotPasswordForm({ onBack }: { onBack: () => void }) {
   }
 
   return (
-    <div ref={motion} className="relative z-2 w-full max-w-[440px]">
+    <div ref={motion} className="relative z-2 w-full max-w-[500px]">
       <div className={CARD_CLASS}>
         {sent ? (
           <div className="pt-4 text-center" role="status">

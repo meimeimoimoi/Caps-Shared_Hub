@@ -3,6 +3,7 @@ import { ThemeProvider } from './ThemeProvider'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClient } from '@/lib/query-client'
 import { useAuthStore } from '@/features/auth'
+import { NotificationStream } from '@/features/notifications'
 import { SESSION_EXPIRED_EVENT, SESSION_REFRESHED_EVENT } from '@/lib/session-events'
 import { authApi, toUser, type BackendMe } from '@/features/auth/api/authApi'
 import { I18nextProvider } from 'react-i18next'
@@ -50,6 +51,7 @@ export function AppProvider({ children }: AppProviderProps) {
     <I18nextProvider i18n={i18n}>
       <ThemeProvider>
         <QueryClientProvider client={queryClient}>
+          <NotificationStream />
           <div className="bg-desk-2 text-fg min-h-screen antialiased">
             {children}
           </div>

@@ -1,5 +1,6 @@
 {
   "reviewWorkspace": {
+    "unnamedApplicant": "Applicant name not provided",
     "reference": "Application reference",
     "progress": "Assessment progress",
     "criteria": "criteria completed",
@@ -24,7 +25,7 @@
     "pendingExperts": "Pending Applications",
     "competencyReview": "Competency review",
     "finalApproval": "Final approval",
-    "pricingReview": "Service price review",
+    "platformFees": "Platform fees",
     "manageExperts": "Manage Experts",
     "operations": "Operations",
     "complaints": "Complaints",
@@ -33,7 +34,9 @@
     "system": "System",
     "accounts": "Accounts",
     "settings": "Settings",
-    "users": "Users"
+    "users": "Users",
+    "expertPolicy": "Expert policy",
+    "assignments": "Review assignments"
   },
   "dashboard": {
     "title": "Overview",
@@ -42,6 +45,7 @@
       "dispute": "{{count}} open disputes, the nearest is due in {{hours}} h",
       "payoutFailed": "{{count}} failed payouts need a retry",
       "slaOverdue": "{{count}} expert applications waiting over {{days}} days",
+      "finalApprovalOverdue": "{{count}} records past the final approval limit",
       "outsideRange": "{{count}} experts priced outside the range"
     },
     "kpi": {
@@ -213,6 +217,11 @@
       "level": "Level {{level}}",
       "unscored": "Unscored"
     },
+    "submission": {
+      "title": "Statements · submission {{number}} · {{date}}",
+      "agreed": "Agreed:",
+      "earlier": "Earlier submissions: {{dates}}"
+    },
     "profile": {
       "personal": "Personal Information",
       "name": "Full Name",
@@ -225,20 +234,39 @@
       "fields": "Fields",
       "cv": "Curriculum Vitae (CV)",
       "noCv": "No CV provided",
-      "highlights": "Experience Highlights"
+      "highlights": "Experience Highlights",
+      "aboveMinimum": "Meets the {{min}}-year minimum",
+      "belowMinimum": "Below the {{min}}-year minimum"
     },
     "history": {
       "title": "Operation History",
-      "reviewer": "Reviewer"
+      "reviewer": "Reviewer",
+      "system": "System"
     },
     "documents": {
+      "round": "Submission {{number}} · {{date}}",
+      "afterLatest": "Added after the latest submission (not submitted yet)",
+      "count_one": "{{count}} file",
+      "count_other": "{{count}} files",
+      "supplement": "Supplementary file",
+      "view": "View",
+      "previous": "Previous file",
+      "next": "Next file",
+      "newTab": "Open in a new tab",
+      "linkHint": "External links cannot be shown inside the page.",
+      "openLink": "Open link",
+      "loading": "Loading file",
+      "empty": "No files in this application.",
+      "cv": "CV",
+      "forCriterion": "Supporting files",
+      "noneForCriterion": "The applicant attached no files for this requirement.",
       "select": "Select document",
       "noPreview": "No preview available for this document.",
       "pageNote": "Notes for page {{page}}",
       "aiReviewed": "AI · Reviewed",
       "unmark": "Unmark",
       "mark": "Mark as reviewed",
-      "pageOf": "{{code}} · page {{page}}/{{total}}",
+      "pageOf": "Page {{page}}/{{total}}",
       "open": "Open file",
       "openFailed": "Could not open the file. Please try again."
     },
@@ -268,8 +296,6 @@
     },
     "competency": {
       "title": "Competency Review",
-      "subtitle": "Scoring scale based on review policy",
-      "level": "Level {{level}}",
       "evidence": "Evidence (required)"
     },
     "decisionTitle": "System Admin decision"
@@ -696,12 +722,13 @@
     }
   },
   "eligibility": {
-    "title": "Gate 1 · Eligibility",
-    "subtitle": "Assess each requirement EV-01 – EV-06. The overall outcome is derived automatically. Eligible does not list the expert on the Marketplace yet: per-service competency review and final approval follow.",
+    "title": "Eligibility",
+    "subtitle": "Assess each requirement. The overall outcome is derived automatically. Eligible does not list the expert on the Marketplace yet: per-service competency review and final approval follow.",
     "results": {
       "PASS": "Pass",
       "NEED_MORE_INFORMATION": "More info",
-      "FAIL": "Fail"
+      "FAIL": "Fail",
+      "NOT_APPLICABLE": "Not applicable"
     },
     "noteRequired": "Note to the applicant (required)",
     "noteOptional": "Note (optional)",
@@ -730,28 +757,55 @@
       }
     },
     "dialog": {
-      "title": "Record the Gate 1 outcome for {{name}}?",
+      "title": "Record the eligibility outcome for {{name}}?",
       "noteLabel": "Overall note (optional)",
-      "placeholder": "Shown to the applicant with the results."
+      "placeholder": "Shown to the applicant with the results.",
+      "sent": "Sent to the applicant with notes ({{count}})",
+      "notApplicable": "Not applicable – kept internal, not sent to the applicant ({{count}})",
+      "passed": "Passed ({{count}})",
+      "addNote": "Add an overall note (optional)"
     },
-    "resultTitle": "Gate 1 result",
+    "resultTitle": "Eligibility result",
     "decidedAt": "Decided at {{time}}",
     "reapplyAt": "A new application is allowed from {{date}}.",
-    "noDecision": "No Gate 1 decision yet.",
-    "notReviewable": "This application is not waiting for a Gate 1 decision.",
+    "noDecision": "No eligibility decision yet.",
+    "notReviewable": "This application is not waiting for an eligibility decision.",
     "errors": {
-      "INVALID_ELIGIBILITY_CRITERIA": "Give exactly one result for each of EV-01 – EV-06.",
+      "INVALID_ELIGIBILITY_CRITERIA": "Give exactly one result for each requirement.",
       "INVALID_ELIGIBILITY_RESULT": "A result is invalid. Reload the page and try again.",
       "ELIGIBILITY_NOTE_REQUIRED": "A failed or incomplete requirement needs a note.",
-      "EXPERIENCE_BELOW_MINIMUM": "EV-06 cannot pass: the declared experience is below the minimum.",
+      "EXPERIENCE_BELOW_MINIMUM": "The experience requirement cannot pass: the declared experience is below the minimum.",
       "SELF_REVIEW_NOT_ALLOWED": "You cannot review your own application.",
       "APPLICATION_NOT_IN_REVIEW": "This application no longer waits for a decision; reload to see its status.",
-      "failed": "The decision was not recorded. Please try again."
-    }
+      "failed": "The decision was not recorded. Please try again.",
+      "REVIEW_NOT_CLAIMED": "You no longer hold this review (the hold expired or it was handed on). Reloaded the review.",
+      "INFORMATION_REQUEST_LIMIT": "No information rounds are left. Pass or fail on the evidence at hand."
+    },
+    "declarations": {
+      "contest": "Grounds against the statement?",
+      "contesting": "Recording grounds against the statement. Choose a result and give the reason.",
+      "keep": "Keep pass by statement",
+      "title": "Agreed statements",
+      "agreedAt": "Agreed at {{time}} (on submission)",
+      "passed": "Passed by the statement the applicant agreed to. Change it only with grounds against the statement.",
+      "meta": "By the statement the applicant agreed to",
+      "chip": "By statement"
+    },
+    "summary": "{{met}}/{{total}} criteria met",
+    "noteSetAside": "The earlier note was removed because the criterion now passes.",
+    "restoreNote": "Restore note",
+    "experienceMeta": "Declared {{years}} years · minimum {{min}} years when decided",
+    "overallNote": "Overall note",
+    "groups": {
+      "toAssess": "To assess",
+      "byDeclaration": "Passed by statement"
+    },
+    "progress": "{{done}}/{{total}} assessed",
+    "readyShort": "All assessed, ready to decide"
   },
   "qualifications": {
     "title": "Competency review by service",
-    "description": "Gate 2: eligible experts register each service separately. Assess C1 – C5 per service; a pass goes to the System Admin for final approval.",
+    "description": "Eligible experts register each service separately. Assess competency per service; a pass goes to the System Admin for final approval.",
     "count": "qualifications",
     "service": "Service",
     "empty": "No qualifications.",
@@ -765,8 +819,11 @@
     }
   },
   "competency": {
-    "title": "Gate 2 · Competency for the service",
-    "subtitle": "Assess each competency C1 – C5. Every competency needs a note; Pass or Fail must cite at least one file. Years of experience or CV keywords never prove a competency on their own.",
+    "incomplete": "Note or file missing",
+    "evidenceHint": "Select at least one file to support a Pass or Fail result.",
+    "serviceLabel": "Service",
+    "title": "Competency for the service",
+    "subtitle": "Assess each competency. Every competency needs a note; Pass or Fail must cite at least one file. Years of experience or CV keywords never prove a competency on their own.",
     "names": {
       "C1": "CIT knowledge for the service scope",
       "C2": "AI Draft review and revision",
@@ -775,11 +832,11 @@
       "C5": "Professional judgment and verification conclusion"
     },
     "hints": {
-      "C1": "Related tasks T2, T3.",
-      "C2": "Related tasks T2, T5.",
-      "C3": "Related task T1; supports decision T4.",
-      "C4": "Related tasks T3, T5.",
-      "C5": "Partly T2, T5; mainly T6."
+      "C1": "Used when checking legal grounds and applicable rules, and when reviewing AI output.",
+      "C2": "Used when reviewing and revising AI-generated results and documents.",
+      "C3": "Used when reviewing information and evidence, and deciding whether to request more.",
+      "C4": "Used when checking legal grounds and applicable rules, and when revising results.",
+      "C5": "Used when confirming the review result; partly when reviewing and revising AI output."
     },
     "previous": "Last time: {{result}}",
     "evidenceRequired": "Supporting files (required)",
@@ -792,7 +849,7 @@
     "outcome": {
       "PENDING_FINAL_APPROVAL": {
         "confirm": "Confirm competency met",
-        "notice": "The qualification goes to the System Admin for final approval, who must not be the Gate 2 reviewer. The expert is not on the Marketplace yet.",
+        "notice": "The qualification goes to the System Admin for final approval, who must not be the competency reviewer. The expert is not on the Marketplace yet.",
         "toast": "Competency recorded as met"
       },
       "NEED_MORE_INFORMATION": {
@@ -807,12 +864,12 @@
       }
     },
     "dialog": {
-      "title": "Gate 2 conclusion for {{name}} · {{service}}?",
+      "title": "Competency conclusion for {{name}} · {{service}}?",
       "noteLabel": "Overall note (optional)",
       "placeholder": "The expert sees it with the results."
     },
-    "resultTitle": "Gate 2 result",
-    "noDecision": "No Gate 2 conclusion yet.",
+    "resultTitle": "Competency result",
+    "noDecision": "No competency conclusion yet.",
     "handoff": "Waiting for the System Admin final approval.",
     "reapplyAt": "The service can be registered again from {{date}}.",
     "rail": {
@@ -821,7 +878,7 @@
       "approved": "Approved"
     },
     "errors": {
-      "INVALID_COMPETENCY_CRITERIA": "Give exactly one result for each of C1 – C5.",
+      "INVALID_COMPETENCY_CRITERIA": "Give exactly one result for each competency.",
       "INVALID_COMPETENCY_RESULT": "A result is invalid. Reload the page and try again.",
       "COMPETENCY_NOTE_REQUIRED": "Every competency needs an assessment note.",
       "COMPETENCY_EVIDENCE_REQUIRED": "Pass or Fail must cite at least one file.",
@@ -830,23 +887,82 @@
       "QUALIFICATION_NOT_IN_REVIEW": "The qualification is no longer awaiting review; reload to see its status.",
       "failed": "The conclusion was not recorded. Please try again.",
       "QUALIFICATION_NOT_PENDING_APPROVAL": "The qualification is no longer waiting for final approval; reload to see its status.",
-      "FINAL_APPROVER_IS_REVIEWER": "The Gate 2 reviewer cannot give the final approval.",
+      "FINAL_APPROVER_IS_REVIEWER": "The competency reviewer cannot give the final approval.",
       "FINAL_APPROVAL_NOTE_REQUIRED": "Explain why it goes back for review.",
       "INVALID_FINAL_APPROVAL_DECISION": "The decision is invalid. Reload the page and try again.",
       "SERVICE_NOT_APPROVED": "Only an approved service can be suspended; reload the page.",
       "SERVICE_NOT_SUSPENDED": "The service is not suspended; reload the page.",
       "SUSPENSION_NOTE_REQUIRED": "Give the reason for the suspension.",
-      "INVALID_SERVICE_ACCESS_ACTION": "The action is invalid. Reload the page and try again."
-    }
+      "INVALID_SERVICE_ACCESS_ACTION": "The action is invalid. Reload the page and try again.",
+      "REVIEW_NOT_CLAIMED": "You no longer hold this review (the hold expired or it was handed on). Reloaded the review.",
+      "INFORMATION_REQUEST_LIMIT": "No information rounds are left. Pass or fail on the evidence at hand."
+    },
+    "definitions": {
+      "C1": "Knows corporate income tax law within the verification service: taxable income, deductible expenses, incentives and finalisation.",
+      "C2": "Re-reads and corrects drafts (including AI drafts): finds what is wrong or missing and fixes it.",
+      "C3": "Checks that the client’s information and documents are accurate and sufficient, or asks for more.",
+      "C4": "Matches specific provisions to the client’s case and applies them correctly.",
+      "C5": "Makes the final verification conclusion and is responsible for it."
+    },
+    "guide": {
+      "C1": {
+        "PASS": "A corporate income tax certificate or course and a tax file prepared or reviewed.",
+        "NEED_MORE_INFORMATION": "Only one of the two.",
+        "FAIL": "Nothing related to corporate income tax."
+      },
+      "C2": {
+        "PASS": "A review copy or correction notes showing errors found and fixed.",
+        "NEED_MORE_INFORMATION": "Only a CV or a description, no file proving it.",
+        "FAIL": "Files show only own work, never reviewing someone else’s."
+      },
+      "C3": {
+        "PASS": "Document check minutes or a checklist with the expert’s comments.",
+        "NEED_MORE_INFORMATION": "Files without visible comments.",
+        "FAIL": "No experience checking documents."
+      },
+      "C4": {
+        "PASS": "An opinion or analysis citing the right provisions for a specific case.",
+        "NEED_MORE_INFORMATION": "A case without the legal basis.",
+        "FAIL": "Wrong provisions, or unrelated to corporate income tax."
+      },
+      "C5": {
+        "PASS": "A professional conclusion the expert made and is responsible for.",
+        "NEED_MORE_INFORMATION": "Took part, but it is unclear who concluded.",
+        "FAIL": "No conclusion of the expert."
+      }
+    },
+    "guideTitle": "When to choose each level",
+    "guideNote": "This guidance keeps results consistent; you still judge and give your reasons.",
+    "whenLabel": "{{result}} when: {{text}}",
+    "steps": {
+      "evidence": "1. What the expert sent for this competency",
+      "result": "2. Result",
+      "note": "3. Note for the expert"
+    },
+    "noDescription": "The expert wrote no description for this competency.",
+    "noTiedFiles": "The expert tied no evidence to this competency.",
+    "otherFiles": "Other evidence of the record ({{count}})",
+    "open": "Open",
+    "cite": "Cite",
+    "linkLabel": "Link",
+    "citedCount": "Cited: {{count}} evidence",
+    "graded": "Assessed {{done}}/{{total}}",
+    "conclude": "Conclude",
+    "nextCompetency": "Next competency",
+    "expertDescription": "Expert’s description"
   },
   "finalApproval": {
     "title": "Final approval",
-    "description": "Governance check of Gate 2 results per service: records, both Gate results, evidence and history. Competency is not re-assessed.",
+    "description": "Governance check of competency results per service: records, eligibility and competency results, evidence and history. Competency is not re-assessed.",
     "panelTitle": "Final approval",
-    "intro": "Confirm the Gate 2 result is complete and followed the process. Approval lets the expert set up pricing for this service.",
-    "sameReviewer": "You were the Gate 2 reviewer for this qualification, so you cannot give the final approval.",
+    "intro": "Final approval confirms the reviewer's result; it does not assess competency again. Approval lets the expert set up pricing for this service. Return only when the result does not state its grounds clearly; the reason is not sent to the expert.",
+    "helpLabel": "What final approval is",
+    "dueOn": "Due {{date}}",
+    "overdue": "Overdue",
+    "dueLabel": "Final approval due",
+    "sameReviewer": "You were the competency reviewer for this qualification, so you cannot give the final approval.",
     "noteLabel": "Note (required to return for review)",
-    "notePlaceholder": "Missing records, unresolved flags or a process error",
+    "notePlaceholder": "For example: the assessment note does not state its grounds",
     "return": "Return for review",
     "approve": "Approve for service",
     "notPending": "This qualification is not waiting for final approval.",
@@ -864,40 +980,219 @@
     "suspend": "Suspend service",
     "reinstate": "Reinstate service"
   },
-  "pricingReview": {
-    "title": "Service price review",
-    "description": "The first price and changes of at most 50% are approved automatically. This page only lists larger changes, which a System Admin decides.",
-    "tabs": {
-      "PENDING_APPROVAL": "Pending",
-      "RETURN_FOR_REVISION": "Returned",
-      "REJECTED": "Rejected"
-    },
-    "expert": "Expert · service",
-    "change": "Current → new price",
+  "platformFees": {
+    "title": "Platform fees",
+    "description": "The percent of each request price the platform keeps. Experts set their own prices; requests already sent keep the fee they were sent with. Every change, raise or cut, must be announced ahead as the policy sets, with at most one pending change per service.",
+    "service": "Service",
+    "percent": "Platform fee",
     "effectiveFrom": "Effective from",
-    "reason": "Expert's reason",
-    "percent": "{{percent}}% change",
-    "empty": "No price changes.",
-    "approve": "Approve",
-    "return": "Return",
-    "reject": "Reject",
-    "noteRequired": "Note to the expert (required)",
-    "noteOptional": "Note (optional)",
-    "dialog": {
-      "APPROVE": "Approve the new price of {{name}}?",
-      "RETURN_FOR_REVISION": "Return the price to {{name}} for revision?",
-      "REJECT": "Reject the new price of {{name}}?"
+    "notSet": "Not set",
+    "set": "Set fee",
+    "change": "Change",
+    "empty": "No services in the catalog yet.",
+    "dialog": "Platform fee · {{name}}",
+    "percentLabel": "Percent (0–{{max}})",
+    "dialogHelp": "Requests clients already sent keep the fee they were sent with.",
+    "save": "Save fee",
+    "saved": "Platform fee saved for {{name}}.",
+    "errors": {
+      "PLATFORM_FEE_INVALID": "The platform fee must be 0 to {{max}}%.",
+      "SERVICE_NOT_FOUND": "This service is no longer in the catalog.",
+      "failed": "Could not save the platform fee. Please try again.",
+      "PLATFORM_FEE_TOO_SOON": "A change must be announced at least {{days}} days ahead. Pick a later date.",
+      "PLATFORM_FEE_NOT_PENDING": "There is no pending change any more. Reload the page."
     },
-    "toast": {
-      "APPROVE": "New price approved",
-      "RETURN_FOR_REVISION": "Price returned for revision",
-      "REJECT": "New price rejected"
+    "helpLabel": "About platform fees",
+    "pending": "Pending change",
+    "pendingValue": "{{percent}}% · effective from {{date}}",
+    "cancelPending": "Cancel change",
+    "cancelled": "Cancelled the platform fee change for {{name}}.",
+    "effectiveOnLabel": "Effective from",
+    "effectiveOnHelp": "A change must be announced at least {{days}} days ahead, so {{date}} at the earliest. A new schedule replaces the pending change, if any.",
+    "example": "What experts receive per request",
+    "examplePrice": "Price",
+    "exampleNet": "Received: current → new",
+    "firstFeeHelp": "The first fee applies at once and opens the service for experts to price."
+  },
+  "expertPolicy": {
+    "title": "Expert policy",
+    "helpLabel": "About the expert policy",
+    "help": "Values used when reviewing expert eligibility and competency. Changes apply to later decisions right away, without a restart; past decisions keep the values in force when they were made. Every change needs a reason and is kept in the history.",
+    "settings": {
+      "MinYearsExperience": {
+        "label": "Minimum years of experience",
+        "help": "Threshold of the tax and accounting experience criterion. Declared experience below it cannot pass. Default {{defaultValue}} years; allowed {{min}}–{{max}}.",
+        "unit": "years"
+      },
+      "ReapplyNotEligibleDays": {
+        "label": "Wait after not eligible",
+        "help": "Days an expert waits before a new application after a Not eligible decision. Default {{defaultValue}} days; allowed {{min}}–{{max}}.",
+        "unit": "days"
+      },
+      "ReapplyCompetencyFailDays": {
+        "label": "Wait after failing competency",
+        "help": "Days an expert waits before registering the same service again after failing the competency review. Default {{defaultValue}} days; allowed {{min}}–{{max}}.",
+        "unit": "days"
+      },
+      "ReviewClaimHours": {
+        "label": "Review hold period",
+        "help": "Hours a reviewer keeps a claimed review. Without a decision by then it returns to the shared queue; time spent waiting for the expert does not count. Default {{defaultValue}} hours; allowed {{min}}–{{max}}.",
+        "unit": "hours"
+      },
+      "MaxInformationRequests": {
+        "label": "Maximum information rounds",
+        "help": "How many times a reviewer may ask the expert for more information on one review, for both eligibility and competency. When they are used up the reviewer must pass or fail. Default {{defaultValue}}; allowed {{min}}–{{max}}.",
+        "unit": "rounds"
+      },
+      "ReviewSlaDays": {
+        "label": "Review waiting limit",
+        "help": "Days a review may wait for a reviewer before the queue highlights it. A warning only; nothing happens automatically. Default {{defaultValue}} days; allowed {{min}}–{{max}}.",
+        "unit": "days"
+      },
+      "FinalApprovalDays": {
+        "label": "Final approval limit",
+        "help": "Days the final approval may take after the competency review passes. Past that, the record is marked red and moved to the top of the queue; it is never approved automatically. Experts see the expected result date from this limit. A change applies to how due dates are counted from the moment it is saved. Default {{defaultValue}} days; allowed {{min}}–{{max}}.",
+        "unit": "days"
+      },
+      "PricingMinFee": {
+        "label": "Minimum price",
+        "help": "The lowest price an expert may set per request. Applies from the next price save; prices already set are not changed. Default {{defaultValue}} VND; allowed {{min}}–{{max}}.",
+        "unit": "VND"
+      },
+      "PricingMaxFee": {
+        "label": "Maximum price",
+        "help": "The highest price an expert may set per request; not below the minimum price. Applies from the next price save. Default {{defaultValue}} VND; allowed {{min}}–{{max}}.",
+        "unit": "VND"
+      },
+      "TurnaroundMinDays": {
+        "label": "Shortest delivery time",
+        "help": "The fewest days an expert may promise to deliver in. Default {{defaultValue}} days; allowed {{min}}–{{max}}.",
+        "unit": "days"
+      },
+      "TurnaroundMaxDays": {
+        "label": "Longest delivery time",
+        "help": "The most days an expert may promise to deliver in; not shorter than the shortest. Default {{defaultValue}} days; allowed {{min}}–{{max}}.",
+        "unit": "days"
+      },
+      "PlatformFeeNoticeDays": {
+        "label": "Platform fee change notice",
+        "help": "Minimum days between scheduling a platform fee change and it taking effect, for raises and cuts alike. Default {{defaultValue}} days; allowed {{min}}–{{max}}.",
+        "unit": "days"
+      },
+      "PriceChangeWarningPercent": {
+        "label": "Price change warning",
+        "help": "When an expert changes the price by more than this against the old price, the confirmation shows a red warning. Warning only, never blocks. Default {{defaultValue}}%; allowed {{min}}–{{max}}.",
+        "unit": "%"
+      }
+    },
+    "outOfRange": "Enter a whole number from {{min}} to {{max}}.",
+    "updated": "Last changed {{time}} · {{actor}}",
+    "usingDefault": "Using the default value.",
+    "you": "You",
+    "reason": "Reason for the change (required)",
+    "reasonPlaceholder": "For example: per the policy decision of …",
+    "save": "Save changes",
+    "saved": "Expert policy saved",
+    "historyTitle": "Change history",
+    "history": {
+      "time": "Time",
+      "setting": "Setting",
+      "change": "Old → new value",
+      "actor": "Changed by",
+      "reason": "Reason",
+      "empty": "No changes yet."
     },
     "errors": {
-      "PRICING_NOT_PENDING": "This price is no longer pending; reload the page.",
-      "PRICING_NOTE_REQUIRED": "Explain why it is returned or rejected.",
-      "INVALID_PRICING_DECISION": "The decision is invalid. Reload the page and try again.",
-      "failed": "The decision was not recorded. Please try again."
+      "POLICY_CHANGED": "Someone else just changed these values. They have been reloaded; check them and save again.",
+      "POLICY_RANGE_INVERTED": "A minimum may not be greater than its maximum (price, delivery time).",
+      "POLICY_EXPECTED_VALUE_REQUIRED": "The current value is missing. Reload the page and try again.",
+      "POLICY_SETTING_OUT_OF_RANGE": "A value is outside its allowed range.",
+      "POLICY_REASON_REQUIRED": "Give the reason for the change.",
+      "POLICY_REASON_TOO_LONG": "The reason can be at most 1000 characters.",
+      "UNKNOWN_POLICY_SETTING": "Unknown setting. Reload the page and try again.",
+      "failed": "The change was not saved. Please try again."
     }
+  },
+  "claim": {
+    "free": "Nobody has claimed this review",
+    "take": "Claim review",
+    "mine": "You are working on this",
+    "expiresIn": "returns to the queue {{time}}",
+    "waitingForExpert": "waiting for the expert to supplement",
+    "release": "Return to queue",
+    "released": "Returned to the queue",
+    "heldBy": "{{holder}} is working on this",
+    "someone": "another reviewer",
+    "helpLabel": "About claiming reviews",
+    "help": "One reviewer per review at a time. Claim a review before assessing it; others can only read it. It stays yours while more information is requested and comes back to you when the expert resubmits. If you do not decide within the hold period (set by a System Admin), it returns to the shared queue.",
+    "history": {
+      "claim": "Claimed the review",
+      "claimAfterExpiry": "Claimed the review after {{previous}}'s hold expired",
+      "release": "Returned the review to the queue",
+      "reassign": "Handed the review to {{holder}}: {{reason}}"
+    },
+    "errors": {
+      "REVIEW_CLAIMED": "Another reviewer just claimed this review. Reloaded to show who holds it.",
+      "REVIEW_NOT_CLAIMED": "You no longer hold this review (the hold expired or it was handed on). Reloaded the review.",
+      "failed": "That did not work. Please try again."
+    }
+  },
+  "assignments": {
+    "title": "Review assignments",
+    "helpLabel": "About review assignments",
+    "help": "Open eligibility and competency reviews with the reviewer holding each one. Hand a review to another reviewer when the holder is away or to balance the work; the reason is kept in the review history.",
+    "gateFilter": "Review step",
+    "gates": {
+      "ALL": "Both steps",
+      "GATE_1": "Eligibility",
+      "GATE_2": "Competency"
+    },
+    "claimFilter": "Reviewer",
+    "claims": {
+      "ALL": "All reviews",
+      "UNCLAIMED": "Unclaimed"
+    },
+    "columns": {
+      "expert": "Expert",
+      "gate": "Step",
+      "submitted": "Submitted",
+      "status": "Status",
+      "holder": "Reviewer",
+      "actions": "Actions"
+    },
+    "until": "until {{time}}",
+    "reassign": "Reassign",
+    "done": "Review reassigned",
+    "empty": "No open reviews.",
+    "pagination": "Review assignments pagination",
+    "dialog": {
+      "title": "Reassign {{name}}'s review",
+      "reviewer": "New reviewer",
+      "reviewerHelp": "Lists reviewers who have opened the review queue. A review cannot go to its own expert.",
+      "choose": "Choose a reviewer",
+      "reason": "Reason (required)",
+      "reasonPlaceholder": "e.g. the current reviewer is on leave until the end of the week",
+      "confirm": "Reassign"
+    },
+    "errors": {
+      "CLAIM_REASSIGN_REASON_REQUIRED": "Give the reason for the reassignment.",
+      "CLAIM_REASSIGN_REASON_TOO_LONG": "The reason can be at most 1000 characters.",
+      "REVIEWER_NOT_FOUND": "Reviewer not found. They must open the review queue at least once.",
+      "SELF_REVIEW_NOT_ALLOWED": "A review cannot be handed to its own expert.",
+      "APPLICATION_NOT_IN_REVIEW": "The review is no longer open. Reload the list.",
+      "QUALIFICATION_NOT_IN_REVIEW": "The review is no longer open. Reload the list.",
+      "failed": "Could not reassign. Please try again."
+    }
+  },
+  "finalReturn": {
+    "title": "Returned at final approval",
+    "by": "{{actor}} · {{time}}",
+    "admin": "System Admin",
+    "help": "A System Admin returned this record because the result does not state its grounds clearly. Review it again and state the grounds; each return adds one more information round. The expert is not told about the return."
+  },
+  "rounds": {
+    "label": "Information round {{used}}/{{max}}",
+    "last": "This is the last information round",
+    "lastHelp": "All {{max}} information rounds allowed by the policy were used. Pass or fail on the evidence at hand."
   }
 }

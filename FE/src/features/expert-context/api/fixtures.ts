@@ -1,13 +1,22 @@
 import { useAuthStore } from '@/features/auth/store/authStore'
-import { getDemoPricing } from '@/features/expert-pricing/demoRepository'
+import { getDemoServices } from '@/features/expert-pricing/demoRepository'
 import type { ExpertContext } from '../types'
 
 export function createExpertContextFixture(): ExpertContext {
   const scope = 'demo-expert:' + useAuthStore.getState().sessionScope
-  const pending = (serviceId: string) =>
-    getDemoPricing(scope, serviceId).versions.find(
-      (v) => v.status === 'PENDING_APPROVAL'
-    )?.id ?? null
+  // Readiness shows the price saved on the demo pricing page
+  const pricing = (serviceId: string) => {
+    const service = getDemoServices(scope).find(
+      (s) => s.serviceCode === serviceId
+    )
+    return service?.fee != null && service.turnaroundHours != null
+      ? {
+          fee: service.fee,
+          turnaroundHours: service.turnaroundHours,
+          updatedAt: '2026-09-01T00:00:00Z',
+        }
+      : null
+  }
   return {
     expertId: 'demo-expert',
     displayName: 'Minh Anh Nguyen',
@@ -37,12 +46,7 @@ export function createExpertContextFixture(): ExpertContext {
         availability: true,
         bookingAllowed: true,
         reasons: [],
-        pricing: {
-          version: 'PR-003',
-          effectiveFrom: '2026-09-01T00:00:00Z',
-          effectiveTo: null,
-        },
-        pendingPricingVersion: pending('cit-review'),
+        pricing: pricing('cit-review'),
       },
       {
         serviceId: 'cit-consultation',
@@ -54,12 +58,7 @@ export function createExpertContextFixture(): ExpertContext {
         reasons: [
           'Availability is off for this service. Existing cases remain accessible.',
         ],
-        pricing: {
-          version: 'PR-002',
-          effectiveFrom: '2026-09-01T00:00:00Z',
-          effectiveTo: null,
-        },
-        pendingPricingVersion: pending('cit-consultation'),
+        pricing: pricing('cit-consultation'),
       },
       {
         serviceId: 'cit-compliance',
@@ -70,7 +69,6 @@ export function createExpertContextFixture(): ExpertContext {
         bookingAllowed: false,
         reasons: ['Service qualification is awaiting final approval.'],
         pricing: null,
-        pendingPricingVersion: null,
       },
     ],
   }

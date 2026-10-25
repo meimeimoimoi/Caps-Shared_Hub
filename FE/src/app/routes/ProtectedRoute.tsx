@@ -13,6 +13,9 @@ export function ProtectedRoute({
   children: React.ReactNode
 }) {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
+  const pending = useAuthStore(
+    (s) => s.user?.status === 'PENDING_VERIFICATION'
+  )
   const location = useLocation()
   if (!isAuthenticated) {
     // Preserve the requested page and its state across sign-in.
@@ -27,7 +30,25 @@ export function ProtectedRoute({
       />
     )
   }
+  // Every signed-in area needs a verified email; the requested page opens after verifying
+  if (pending)
+    return <PendingVerificationRedirect />
   return <>{children}</>
+}
+
+/** Sends an account that has not verified its email to /verify-email, keeping the requested page. */
+export function PendingVerificationRedirect() {
+  const location = useLocation()
+  return (
+    <Navigate
+      to="/verify-email"
+      replace
+      state={{
+        from: location.pathname + location.search + location.hash,
+        fromState: location.state,
+      }}
+    />
+  )
 }
 
 /** Staff areas (Admin, Knowledge, Reviewer), in every environment: signed out goes to /login,

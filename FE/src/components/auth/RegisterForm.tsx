@@ -2,6 +2,7 @@ import { useId, useRef, useState, type FormEvent, type Ref } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import { Link, useLocation } from 'react-router-dom'
 import {
+  ArrowLeft,
   ArrowRight,
   Check,
   CircleAlert,
@@ -10,12 +11,13 @@ import {
   Loader2,
   Lock,
   Mail,
-  UserRound,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { mergeRefs } from '@/lib/merge-refs'
-import { AuthBrandHeader } from './AuthBrandHeader'
 import { EmailSuggestion } from './EmailSuggestion'
+import { GoogleIcon } from './GoogleIcon'
+import { GoogleSignInButton } from './GoogleSignInButton'
+import type { SignupRole } from '@/features/auth/utils/signupRole'
 import {
   passwordRequirements,
   validateSignupIssues,
@@ -31,17 +33,25 @@ import {
   LABEL_CLASS,
   LINK_CLASS,
   PRIMARY_BUTTON_CLASS,
+  SECONDARY_BUTTON_CLASS,
 } from './EmailLoginForm'
 
 export type RegisterFormValues = {
-  name: string
   email: string
   password: string
 }
 
 export type RegisterFormProps = {
+  /** Chosen in the first step; changes the heading and adds the expert note */
+  role: SignupRole
+  /** Values typed before going back to change the choice */
+  initialValues?: RegisterFormValues | null
+  /** Back to the first step, keeping what was typed */
+  onChangeRole: (values: RegisterFormValues) => void
   onSubmit: (values: RegisterFormValues) => void
-  nameInputRef?: Ref<HTMLInputElement>
+  /** Receives the Google ID token */
+  onGoogle: (idToken: string) => void
+  emailInputRef?: Ref<HTMLInputElement>
   isLoading?: boolean
   error?: string | null
 }
@@ -49,13 +59,18 @@ export type RegisterFormProps = {
 const LEGAL_LINK_CLASS =
   'rounded-sm text-white/80 underline decoration-white/30 underline-offset-2 transition-colors hover:text-white hover:decoration-white/70'
 
-const order: SignupField[] = ['name', 'email', 'password', 'terms']
+const order: SignupField[] = ['email', 'password', 'terms']
 
-/* Đăng ký khách hàng: chỉ họ tên, email, mật khẩu và đồng ý điều khoản.
- * Chuyên gia có luồng riêng nhiều bước ở /expert/register. */
+/* Second sign-up step, the same for customers and experts: email, password and terms, or Google.
+ * The name is filled in later (expert profile or account page); until then the server uses the email's
+ * local part. The step before it picked the role. */
 export function RegisterForm({
+  role,
+  initialValues,
+  onChangeRole,
   onSubmit,
-  nameInputRef,
+  onGoogle,
+  emailInputRef,
   isLoading = false,
   error,
 }: RegisterFormProps) {
@@ -65,9 +80,8 @@ export function RegisterForm({
   const returnState = useLocation().state
 
   const [values, setValues] = useState({
-    name: '',
-    email: '',
-    password: '',
+    email: initialValues?.email ?? '',
+    password: initialValues?.password ?? '',
     terms: false,
   })
   const [errors, setErrors] = useState<ReturnType<typeof validateSignupIssues>>(
@@ -76,8 +90,8 @@ export function RegisterForm({
   const [submitted, setSubmitted] = useState(false)
   const [showPw, setShowPw] = useState(false)
   const [pwFocused, setPwFocused] = useState(false)
+  const [googleUnavailable, setGoogleUnavailable] = useState(false)
 
-  const nameRef = useRef<HTMLInputElement>(null)
   const emailRef = useRef<HTMLInputElement>(null)
   const passwordRef = useRef<HTMLInputElement>(null)
   const termsRef = useRef<HTMLInputElement>(null)
@@ -98,8 +112,8 @@ export function RegisterForm({
     setErrors((prev) => ({ ...prev, [field]: undefined }))
   }
 
-  // Ô trống chỉ báo lỗi sau lần bấm tạo tài khoản đầu tiên; trước đó chỉ bắt sai định dạng
-  function blur(field: 'name' | 'email') {
+  // An empty field is only reported after the first submit; before that only the format is checked
+  function blur(field: 'email') {
     if (!values[field].trim() && !submitted) return
     setErrors((prev) => ({
       ...prev,
@@ -116,7 +130,6 @@ export function RegisterForm({
     const first = order.find((field) => next[field])
     if (first) {
       const target = {
-        name: nameRef,
         email: emailRef,
         password: passwordRef,
         terms: termsRef,
@@ -124,7 +137,6 @@ export function RegisterForm({
       return target.current?.focus()
     }
     onSubmit({
-      name: values.name.trim(),
       email: values.email.trim(),
       password: values.password,
     })
@@ -136,8 +148,31 @@ export function RegisterForm({
 
   return (
     <div ref={motion} className="relative z-2 w-full max-w-[440px]">
-      <div className={CARD_CLASS}>
-        <AuthBrandHeader title={t('register.title')} />
+      {/* Tighter than the sign-in card so the whole form fits a laptop screen without scrolling */}
+      <div className={cn(CARD_CLASS, 'pt-6 pb-6')}>
+        <div className="relative mb-5 px-10 text-center">
+          {/* Back returns to the role choice and keeps what was typed */}
+          <button
+            type="button"
+            onClick={() =>
+              onChangeRole({
+                email: values.email,
+                password: values.password,
+              })
+            }
+            aria-label={t('actions.back')}
+            title={t('actions.back')}
+            className="motion-interactive absolute top-0 left-0 grid size-9 place-items-center rounded-lg text-white/55 hover:bg-white/8 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
+          >
+            <ArrowLeft aria-hidden="true" size={18} />
+          </button>
+          <h1 className="font-sans text-[22px] leading-[1.25] font-bold tracking-[-0.025em] text-white max-[420px]:text-[20px]">
+            {t(role === 'expert' ? 'register.titleExpert' : 'register.title')}
+          </h1>
+          <p className="mt-1 text-[13px] leading-[1.45] text-[var(--body)]">
+            {t(role === 'expert' ? 'register.expertIntro' : 'register.description')}
+          </p>
+        </div>
 
         {error && !isLoading && (
           <div
@@ -154,45 +189,13 @@ export function RegisterForm({
         )}
 
         <form onSubmit={handleSubmit} noValidate aria-busy={isLoading}>
-          <div className="mb-4">
-            <label htmlFor={fieldId('name')} className={LABEL_CLASS}>
-              {t('register.nameLabel')}
-            </label>
-            <div className="relative flex items-center">
-              <input
-                ref={mergeRefs(nameRef, nameInputRef)}
-                id={fieldId('name')}
-                name="name"
-                value={values.name}
-                onChange={(e) => change('name', e.target.value)}
-                onBlur={() => blur('name')}
-                readOnly={isLoading}
-                placeholder={t('register.namePlaceholder')}
-                autoComplete="name"
-                aria-invalid={errors.name ? true : undefined}
-                aria-describedby={describe('name')}
-                className={cn(
-                  INPUT_CLASS,
-                  'font-sans',
-                  errors.name && INPUT_ERROR_CLASS
-                )}
-              />
-              <UserRound aria-hidden="true" className={FIELD_ICON_CLASS} />
-            </div>
-            {errors.name && (
-              <FieldMessage id={errorId('name')}>
-                {t(`validation.${errors.name}`)}
-              </FieldMessage>
-            )}
-          </div>
-
-          <div className="mb-4">
+          <div className="mb-3">
             <label htmlFor={fieldId('email')} className={LABEL_CLASS}>
               {t('email.label')}
             </label>
             <div className="relative flex items-center">
               <input
-                ref={emailRef}
+                ref={mergeRefs(emailRef, emailInputRef)}
                 id={fieldId('email')}
                 name="email"
                 type="email"
@@ -226,7 +229,7 @@ export function RegisterForm({
             />
           </div>
 
-          <div className="mb-4">
+          <div className="mb-3">
             <label htmlFor={fieldId('password')} className={LABEL_CLASS}>
               {t('password.label')}
             </label>
@@ -318,7 +321,7 @@ export function RegisterForm({
             )}
           </div>
 
-          <div className="mb-5">
+          <div className="mb-3.5">
             <div className="flex items-start">
               <input
                 ref={termsRef}
@@ -378,17 +381,32 @@ export function RegisterForm({
           </span>
         </form>
 
-        <p className="mt-5 text-center text-[13px] leading-[1.6] text-white/55">
+        <div className="my-3 flex items-center gap-4 text-[11.5px] font-medium tracking-[0.08em] text-white/35 uppercase">
+          <span aria-hidden="true" className="h-px flex-1 bg-white/10" />
+          {t('register.continueWith')}
+          <span aria-hidden="true" className="h-px flex-1 bg-white/10" />
+        </div>
+        <GoogleSignInButton onCredential={onGoogle} disabled={isLoading}>
+          <button
+            type="button"
+            onClick={() => setGoogleUnavailable(true)}
+            disabled={isLoading}
+            className={cn(SECONDARY_BUTTON_CLASS, 'font-sans')}
+          >
+            <GoogleIcon size={18} />
+            <span>{t('actions.google')}</span>
+          </button>
+        </GoogleSignInButton>
+        {googleUnavailable && (
+          <p role="status" className="mt-3 text-center text-[12.5px] leading-[1.5] text-white/65">
+            {t('googleUnavailable')}
+          </p>
+        )}
+
+        <p className="mt-3 text-center text-[13px] leading-[1.6] text-white/55">
           {t('register.haveAccount')}{' '}
           <Link to="/login" state={returnState} className={LINK_CLASS}>
             {t('register.signIn')}
-          </Link>
-        </p>
-
-        <p className="mt-1.5 text-center text-[12.5px] leading-[1.6] text-white/45">
-          {t('register.expertPrompt')}{' '}
-          <Link to="/expert/register" className={LINK_CLASS}>
-            {t('register.expertLink')}
           </Link>
         </p>
       </div>

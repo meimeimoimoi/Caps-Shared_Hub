@@ -13,6 +13,7 @@ import { Link, NavLink, useLocation, useParams } from 'react-router-dom'
 import { useExpertContext } from '@/features/expert-context'
 import { AvatarUploader, ChangePasswordForm, useAccount } from '@/features/auth'
 import { isExpertDemo } from '@/lib/expert-data-source'
+import { ExpertContactForm } from '../../features/expert-dashboard/components/ExpertContactForm'
 import {
   DashboardSectionState,
   DashboardSkeleton,
@@ -165,7 +166,7 @@ export default function ExpertSettingsPage() {
           {section === 'account' && (
             <>
               <div className="ep-settings-identity flex items-center gap-[18px] [padding:28px_0_12px] max-[768px]:gap-3 max-[768px]:[&_>_div:last-child]:min-w-0 [&_p]:mt-[3px] [&_p]:wrap-anywhere [&_p]:text-[var(--ep-muted)] [&_strong]:text-[17px]">
-                {/* Ảnh đại diện dùng chung (features/auth); họ tên, email đã có ở các dòng bên dưới */}
+                {/* Shared avatar control (features/auth); name and email are in the rows below */}
                 <div>
                   <AvatarUploader
                     name={data.displayName}
@@ -182,13 +183,6 @@ export default function ExpertSettingsPage() {
               <dl className="ep-settings-rows m-0 [&_>_div]:grid [&_>_div]:grid-cols-[minmax(150px,_1fr)_minmax(0,_1.3fr)] [&_>_div]:gap-6 [&_>_div]:[padding:24px_0] [&_>_div]:[border-bottom:1px_solid_var(--ep-border)] max-[768px]:[&_>_div]:grid-cols-[1fr] max-[768px]:[&_>_div]:gap-[10px] max-[768px]:[&_>_div]:[padding:20px_0] [&_dd]:m-0 [&_dd]:wrap-anywhere [&_dt]:font-semibold [&_dt_small]:mt-[5px] [&_dt_small]:block [&_dt_small]:text-[12px] [&_dt_small]:font-normal [&_dt_small]:text-[var(--ep-muted)]">
                 <div>
                   <dt>
-                    {t('fullName')}
-                    <small>{t('theNameAssociatedWithYourAccount')}</small>
-                  </dt>
-                  <dd>{data.displayName}</dd>
-                </div>
-                <div>
-                  <dt>
                     {t('emailAddress')}
                     <small>{t('yourAccountContactEmail')}</small>
                   </dt>
@@ -196,9 +190,28 @@ export default function ExpertSettingsPage() {
                 </div>
               </dl>
               <div className="ep-settings-note mt-6 rounded-lg bg-[var(--ep-surface-raised)] bg-none [padding:16px_18px] text-[13px] text-[var(--ep-muted)] [&_p]:mt-1 [&_p]:text-[var(--ep-muted)]">
-                <strong>{t('accountDetailsAreViewonly')}</strong>
-                <p>{t('nameEmailAndProfilePhotoUpdatesAreNotAvailableYet')}</p>
+                <strong>{t('contact.emailLocked')}</strong>
+                <p>{t('contact.emailLockedBody')}</p>
               </div>
+              <h3 className="mt-8 text-[15px] font-semibold">
+                {t('contact.title')}
+              </h3>
+              <p className="mt-1 text-[12.5px] text-[var(--ep-muted)]">
+                {t('contact.description')}
+              </p>
+              {data.expertId ? (
+                <ExpertContactForm
+                  // Reset the form when the saved values change
+                  key={`${data.displayName}|${data.phone ?? ''}`}
+                  displayName={data.displayName}
+                  phone={data.phone}
+                  onSaved={() => void context.refetch()}
+                />
+              ) : (
+                <p className="mt-3 text-[13px] text-[var(--ep-muted)]">
+                  {t('contact.noProfileYet')}
+                </p>
+              )}
             </>
           )}
           {section === 'expert-profile' && (

@@ -1,161 +1,85 @@
-/* Pricing Version state model (business tab 04, section 5); SUPERSEDED marks an approved version replaced by a newer one */
-export type PricingStatus =
-  | 'DRAFT'
-  | 'PENDING_APPROVAL'
-  | 'APPROVED'
-  | 'RETURN_FOR_REVISION'
-  | 'REJECTED'
-  | 'SUPERSEDED'
-/** Price range of the service (pricing.min_price / pricing.max_price, business tab 03) */
-export const PRICE_RANGE = { min: 1_000_000, max: 10_000_000 } as const
-export interface PricingInput {
-  amount: string
+/** Price and delivery limits set by the System Admin (expert policy); the server checks the same rules */
+export interface PricingLimits {
+  minFee: number
+  maxFee: number
+  feeStep: number
+  minTurnaroundDays: number
+  maxTurnaroundDays: number
+  /** A price change above this percent of the old price shows a red warning before saving */
+  changeWarningPercent: number
+}
+
+/** A platform fee change announced ahead that has not taken effect yet */
+export interface PendingPlatformFee {
+  percent: number
   effectiveFrom: string
-  reason: string
 }
-export interface PricingVersion extends PricingInput {
-  id: string
-  sequence: number
-  status: PricingStatus
-  createdAt: string
-  updatedAt: string
-  effectiveTo: string | null
-  reviewNote: string | null
-  /** Approved by the system: first price or a change within the threshold */
-  autoApproved?: boolean
-  /** Change from the price in effect at submission, in percent */
-  changePercent?: number | null
+
+/** One service open for pricing; fee, turnaroundHours and netAmount are null until the expert prices it */
+export interface MyService {
+  serviceCode: string
+  fee: number | null
+  turnaroundHours: number | null
+  platformFeePercent: number
+  netAmount: number | null
+  pendingPlatformFee: PendingPlatformFee | null
+  limits: PricingLimits
 }
-export interface PricingAudit {
-  versionId: string
-  action:
-    | 'SAVED'
-    | 'SUBMITTED'
-    | 'AUTO_APPROVED'
-    | 'APPROVED'
-    | 'RETURNED_FOR_REVISION'
-    | 'REJECTED'
-    | 'SUPERSEDED'
-  at: string
-  actor: string
+
+/** One saved price, old and new values side by side; old values are null for the first price */
+export interface PriceChange {
+  oldFee: number | null
+  newFee: number
+  oldTurnaroundHours: number | null
+  newTurnaroundHours: number
+  changedAt: string
 }
-export interface PricingWorkspace {
-  revision: number
-  /** Changes up to this percent are approved at once; absent in demo data */
-  autoApproveMaxChangePercent?: number
-  versions: PricingVersion[]
-  audit: PricingAudit[]
+
+export interface PricingInput {
+  fee: string
+  turnaroundDays: string
 }
+
 export type PricingErrors = Partial<
-  Record<
-    keyof PricingInput,
-    | 'amountInvalid'
-    | 'amountOutOfRange'
-    | 'dateInvalid'
-    | 'datePast'
-    | 'reasonRequired'
-    | 'reasonLong'
-  >
+  Record<keyof PricingInput, 'feeInvalid' | 'turnaroundInvalid'>
 >
-export const editableStatus = (status: PricingStatus) =>
-  status === 'DRAFT' || status === 'RETURN_FOR_REVISION'
-export function businessDate(now = new Date()) {
-  const parts = new Intl.DateTimeFormat('en-CA', {
-    timeZone: 'Asia/Ho_Chi_Minh',
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  }).formatToParts(now)
-  const part = (type: string) => parts.find((p) => p.type === type)?.value
-  return part('year') + '-' + part('month') + '-' + part('day')
-}
+
+export const HOURS_PER_DAY = 24
+
+const whole = (value: string) =>
+  /^\d+$/.test(value.trim()) ? Number(value.trim()) : NaN
+
+/** Same rules as the server, so most mistakes are caught before saving */
 export function validatePricing(
   input: PricingInput,
-  submitting: boolean,
-  today = businessDate()
+  limits: PricingLimits
 ): PricingErrors {
   const errors: PricingErrors = {}
+  const fee = whole(input.fee)
   if (
-    !/^\d+$/.test(input.amount) ||
-    !Number.isSafeInteger(Number(input.amount)) ||
-    Number(input.amount) <= 0
+    !(
+      fee >= limits.minFee &&
+      fee <= limits.maxFee &&
+      fee % limits.feeStep === 0
+    )
   )
-    errors.amount = 'amountInvalid'
-  else if (
-    Number(input.amount) < PRICE_RANGE.min ||
-    Number(input.amount) > PRICE_RANGE.max
-  )
-    errors.amount = 'amountOutOfRange'
-  const date = new Date(input.effectiveFrom + 'T00:00:00Z')
-  if (
-    !/^\d{4}-\d{2}-\d{2}$/.test(input.effectiveFrom) ||
-    !Number.isFinite(date.getTime()) ||
-    date.toISOString().slice(0, 10) !== input.effectiveFrom
-  )
-    errors.effectiveFrom = 'dateInvalid'
-  else if (input.effectiveFrom < today) errors.effectiveFrom = 'datePast'
-  if (submitting && !input.reason.trim()) errors.reason = 'reasonRequired'
-  if (input.reason.length > 1000) errors.reason = 'reasonLong'
+    errors.fee = 'feeInvalid'
+  const days = whole(input.turnaroundDays)
+  if (!(days >= limits.minTurnaroundDays && days <= limits.maxTurnaroundDays))
+    errors.turnaroundDays = 'turnaroundInvalid'
   return errors
 }
-export class PricingConflict extends Error {}
-/** Demo domain transition only. A server must enforce the same rules independently. */
-export function changePricing(
-  workspace: PricingWorkspace,
-  input: PricingInput,
-  options: {
-    qualified: boolean
-    expectedRevision: number
-    submit: boolean
-    actor: string
-    now?: Date
-  }
-): PricingWorkspace {
-  if (!options.qualified) throw new PricingConflict('NOT_QUALIFIED')
-  if (options.expectedRevision !== workspace.revision)
-    throw new PricingConflict('REVISION_CONFLICT')
-  if (workspace.versions.some((v) => v.status === 'PENDING_APPROVAL'))
-    throw new PricingConflict('PENDING_APPROVAL')
-  if (
-    Object.keys(
-      validatePricing(input, options.submit, businessDate(options.now))
-    ).length
-  )
-    throw new PricingConflict('INVALID_INPUT')
-  const versions = structuredClone(workspace.versions)
-  let draft = versions.find((v) => editableStatus(v.status))
-  const at = (options.now ?? new Date()).toISOString()
-  if (!draft) {
-    const sequence = Math.max(0, ...versions.map((v) => v.sequence)) + 1
-    draft = {
-      ...input,
-      id: 'PR-' + String(sequence).padStart(3, '0'),
-      sequence,
-      status: 'DRAFT',
-      createdAt: at,
-      updatedAt: at,
-      effectiveTo: null,
-      reviewNote: null,
-    }
-    versions.unshift(draft)
-  }
-  Object.assign(draft, input, {
-    amount: String(Number(input.amount)),
-    reason: input.reason.trim(),
-    updatedAt: at,
-    status: options.submit ? 'PENDING_APPROVAL' : 'DRAFT',
-  })
-  return {
-    revision: workspace.revision + 1,
-    versions,
-    audit: [
-      ...workspace.audit,
-      {
-        versionId: draft.id,
-        action: options.submit ? 'SUBMITTED' : 'SAVED',
-        at,
-        actor: options.actor,
-      },
-    ],
-  }
-}
+
+/** What the expert receives after the platform fee, rounded down like the server */
+export const netOf = (fee: number, percent: number) =>
+  Math.floor((fee * (100 - percent)) / 100)
+
+/** True when the new price differs from the old one by more than the warning percent */
+export const isBigChange = (
+  oldFee: number | null,
+  newFee: number,
+  warningPercent: number
+) =>
+  oldFee != null &&
+  oldFee > 0 &&
+  (Math.abs(newFee - oldFee) * 100) / oldFee > warningPercent

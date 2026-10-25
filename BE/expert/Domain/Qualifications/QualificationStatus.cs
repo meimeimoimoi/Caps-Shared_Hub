@@ -3,6 +3,11 @@ namespace Caps.Expert.Domain.Qualifications;
 /// <summary>Statuses of an Expert-Service Qualification (state model 4.2).</summary>
 public static class QualificationStatus
 {
+    /// <summary>
+    /// Registered; the expert gathers competency evidence and submits it (E1). Not in the reviewer queue yet.
+    /// </summary>
+    public const string Preparing = "PREPARING";
+
     /// <summary>Waiting for an authorized reviewer to assess C1–C5 for the service.</summary>
     public const string CompetencyReview = "COMPETENCY_REVIEW";
     public const string NeedMoreInformation = "NEED_MORE_INFORMATION";

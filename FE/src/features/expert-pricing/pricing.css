@@ -203,114 +203,6 @@
   font-size: 14px;
   line-height: 1.7;
 }
-.epr-history {
-  margin-top: 12px;
-  min-width: 0;
-}
-.epr-history > p {
-  margin-top: 8px;
-  line-height: 1.65;
-}
-.epr-table-scroll {
-  overflow: auto;
-  margin-top: 20px;
-  border: 1px solid var(--ep-line);
-  border-radius: 12px;
-}
-.epr-history table {
-  border-collapse: collapse;
-  text-align: left;
-  width: 100%;
-  min-width: 580px;
-  font-size: 14px;
-}
-.epr-history th,
-.epr-history td {
-  padding: 16px 20px;
-  vertical-align: top;
-}
-.epr-history thead {
-  background: var(--ep-surface-raised);
-}
-.epr-history tbody {
-  background: var(--ep-surface);
-}
-.epr-history tbody tr + tr {
-  border-top: 1px solid var(--ep-line);
-}
-.epr-history tbody th {
-  white-space: nowrap;
-  font-weight: 600;
-}
-.epr-history td {
-  font-variant-numeric: tabular-nums;
-}
-.epr-history details {
-  max-width: 34ch;
-  margin-top: 10px;
-}
-.epr-history summary {
-  color: var(--ep-muted);
-  font-size: 13px;
-  min-height: 32px;
-}
-.epr-history details p {
-  margin-top: 8px;
-  font-size: 13px;
-  line-height: 1.65;
-  overflow-wrap: anywhere;
-}
-.epr-current-label {
-  display: block;
-  margin-top: 6px;
-  font-size: 12px;
-  font-weight: 400;
-  color: var(--ep-success);
-}
-.epr-review-note {
-  margin-top: 20px;
-  background: var(--ep-warning-bg);
-  padding: 16px;
-  border-radius: 8px;
-}
-.expert-portal .epr-review-note p {
-  color: var(--ep-warning);
-  margin-top: 6px;
-}
-.epr-navigation {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 12px;
-  padding: 16px 20px;
-  border: 1px solid var(--ep-line);
-  border-radius: 12px;
-  background: var(--ep-surface);
-}
-.epr-navigation p {
-  flex: 1 1 250px;
-}
-.epr-audit {
-  border-top: 1px solid var(--ep-line);
-  padding-top: 24px;
-}
-.epr-audit ol {
-  list-style: none;
-  padding: 0;
-  margin: 16px 0 0;
-  display: grid;
-  gap: 12px;
-}
-.epr-audit li {
-  display: flex;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 8px 24px;
-}
-.epr-audit time {
-  color: var(--ep-muted);
-  font-size: 13px;
-}
 .ep-service-pricing-actions {
   display: flex;
   justify-content: flex-end;
@@ -338,9 +230,5 @@
   .epr-summary dl {
     grid-template-columns: minmax(0, 1fr);
     gap: 16px;
-  }
-  .epr-history th,
-  .epr-history td {
-    padding: 14px 16px;
   }
 }

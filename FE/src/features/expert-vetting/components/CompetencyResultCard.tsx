@@ -15,8 +15,10 @@ export function CompetencyResultCard({
   const { t } = useTranslation('admin')
   const label = useCompetencyLabel()
   const fileName = new Map(
-    detail.profile.documents.map((d) => [d.evidenceId, `${d.code} · ${d.name}`])
+    detail.profile.documents.map((d) => [d.evidenceId, d.name])
   )
+  const description = (code: string) =>
+    detail.submitted.find((s) => s.code === code)?.description
   return (
     <section className="paper p-5 md:p-6">
       <h2 className="text-h2">{t('competency.resultTitle')}</h2>
@@ -40,7 +42,7 @@ export function CompetencyResultCard({
             <li key={c.code} className="py-2">
               <div className="flex justify-between gap-4">
                 <span className="text-fg-muted">
-                  <span className="num">{c.code}</span> {label.name(c.code)}
+                  {label.name(c.code)}
                 </span>
                 <span
                   className={cn(
@@ -56,6 +58,16 @@ export function CompetencyResultCard({
                 </span>
               </div>
               <p className="text-fg mt-1 whitespace-pre-line">{c.note}</p>
+              {description(c.code) && (
+                <div className="border-border mt-2 border-l-2 pl-3">
+                  <p className="text-fg-muted text-xs font-medium">
+                    {t('competency.expertDescription')}
+                  </p>
+                  <p className="text-fg whitespace-pre-line">
+                    {description(c.code)}
+                  </p>
+                </div>
+              )}
               {c.evidenceIds.length > 0 && (
                 <p className="text-fg-muted mt-1">
                   {c.evidenceIds.map((id) => fileName.get(id) ?? id).join(', ')}

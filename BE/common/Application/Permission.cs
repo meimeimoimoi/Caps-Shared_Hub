@@ -28,4 +28,7 @@ public enum Permission
 
     /// <summary>Final approval of Gate 2 results and suspending or reinstating an approved service.</summary>
     ExpertApprove,
+
+    /// <summary>Setting the platform fee of each service.</summary>
+    PricingManage,
 }

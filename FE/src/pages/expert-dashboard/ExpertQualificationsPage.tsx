@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { ArrowRight, Info } from 'lucide-react'
 import { ApiError } from '@/lib/api-client'
 import { Button } from '@/components/ui/actions/button'
+import { HelpTip } from '@/components/ui/feedback/help-tip'
 import { useExpertPresentation } from '@/features/expert-dashboard/hooks/useExpertPresentation'
 import {
   useQualificationOverview,
@@ -12,6 +13,7 @@ import {
 } from '@/features/expert-qualifications'
 
 const STATUS_CLASS: Record<QualificationStatus, string> = {
+  PREPARING: 'ep-status-paused',
   COMPETENCY_REVIEW: 'ep-status-neutral',
   NEED_MORE_INFORMATION: 'ep-status-paused',
   PENDING_FINAL_APPROVAL: 'ep-status-neutral',
@@ -30,7 +32,10 @@ type RegisterError = (typeof REGISTER_ERRORS)[number]
 const isRegisterError = (code?: string): code is RegisterError =>
   (REGISTER_ERRORS as readonly (string | undefined)[]).includes(code)
 
-/** Gate 2 entry: after Gate 1 the expert registers each service for competency review */
+/**
+ * Gate 2 entry. While the catalog offers one service it is registered automatically when Gate 1 passes, so
+ * the page reads as the competency assessment itself (Q6); with several services the expert registers each.
+ */
 export default function ExpertQualificationsPage() {
   const { t } = useTranslation('expert')
   const display = useExpertPresentation()
@@ -39,6 +44,7 @@ export default function ExpertQualificationsPage() {
   const register = useRegisterForService()
   const [error, setError] = useState<string | null>(null)
   const data = overview.data
+  const single = data?.services.length === 1
   const date = (at: string) =>
     display.timestamp(at, 'Asia/Ho_Chi_Minh', {
       day: '2-digit',
@@ -62,9 +68,11 @@ export default function ExpertQualificationsPage() {
   return (
     <>
       <div className="ep-page-heading">
-        <div>
-          <h1>{t('qualifications.title')}</h1>
-          <p>{t('qualifications.description')}</p>
+        <div className="flex items-center gap-1.5">
+          <h1>{single ? t('qualifications.titleSingle') : t('qualifications.title')}</h1>
+          <HelpTip label={single ? t('qualifications.titleSingle') : t('qualifications.title')}>
+            {single ? t('qualifications.descriptionSingle') : t('qualifications.description')}
+          </HelpTip>
         </div>
       </div>
 
@@ -145,7 +153,7 @@ export default function ExpertQualificationsPage() {
                     to={`/expert/qualifications/${s.qualificationId}`}
                     className="btn btn-press btn-secondary inline-flex min-h-11 items-center no-underline"
                   >
-                    {t('qualifications.view')}
+                    {s.status === 'PREPARING' ? t('qualifications.prepare') : t('qualifications.view')}
                   </Link>
                 )}
                 {s.canRegister && (

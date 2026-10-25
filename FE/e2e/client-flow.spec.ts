@@ -1,10 +1,18 @@
 import { expect, test, type Page } from '@playwright/test'
+import { gateway, login } from './support/gateway'
 
-/* Flow 5 phía client, chạy trên dữ liệu demo (dev, chưa đăng nhập).
- * Mỗi test là một nhánh của Business Flow; số tiền kiểm theo ma trận quyết toán. */
+/* Client side of Flow 5 on the dev demo data. The customer workspace requires sign-in, so each test
+ * signs in through a mocked gateway first. Each test is one branch of the Business Flow; amounts follow
+ * the settlement matrix. */
 
 const heading = (page: Page, name: string | RegExp) =>
   page.getByRole('heading', { name })
+
+test.beforeEach(async ({ page }) => {
+  await gateway(page)
+  await login(page)
+  await expect(page).toHaveURL(/\/ai-assistant$/)
+})
 
 test('Bước 1 · gửi yêu cầu từ Sàn tới hồ sơ chờ chuyên gia nhận', async ({
   page,

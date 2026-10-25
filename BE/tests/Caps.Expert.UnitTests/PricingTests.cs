@@ -1,4 +1,5 @@
 using Caps.Expert.Domain.Applications;
+using Caps.Expert.Domain.Catalog;
 using Caps.Expert.Domain.Pricing;
 using Caps.Expert.Domain.Qualifications;
 
@@ -6,15 +7,32 @@ namespace Caps.Expert.UnitTests;
 
 public sealed class PricingTests
 {
-    // 01:00 UTC = 08:00 in Vietnam, so the business date is 2026-10-18
-    private static readonly DateTimeOffset Now = new(2026, 10, 18, 1, 0, 0, TimeSpan.Zero);
-    private static readonly DateOnly Today = new(2026, 10, 18);
+    private static readonly DateTimeOffset Now = new(2026, 10, 22, 8, 0, 0, TimeSpan.Zero);
     private static readonly Guid Expert = Guid.NewGuid();
     private static readonly Guid Reviewer = Guid.NewGuid();
     private static readonly Guid Admin = Guid.NewGuid();
-    private static readonly PricingPolicy Policy = new(1_000_000, 10_000_000, 50);
+    private static readonly Guid Cv = Guid.NewGuid();
 
-    private static ExpertServiceQualification Approved()
+    private static readonly ServiceCatalogItem Service = ServiceCatalogItem.Create(
+        "HUMAN_VERIFICATION",
+        "Human verification",
+        72,
+        1,
+        Now
+    );
+
+    // Default admin policy: 500,000 to 30,000,000 VND, 1 to 7 days, 7 days notice, warning above 50%
+    private static readonly PricingPolicy Policy = new(500_000, 30_000_000, 1, 7, 7, 50);
+
+    // First rate of the service: takes effect at once
+    private static PlatformFee Rate(int percent = 20) =>
+        PlatformFee.Set(Service, percent, null, false, Policy.FeeNoticeDays, Admin, Now);
+
+    private static ServiceOffering Offer(ExpertServiceQualification? q, long fee, int hours) =>
+        ServiceOffering.Create(q, Rate(), fee, hours, Policy, Expert, Now).Offering;
+
+    // Gate 1 passed and Gate 2 registered for the service, competency not decided yet
+    private static ExpertServiceQualification Registered()
     {
         var application = ExpertApplication.Open(Guid.NewGuid(), null, Expert, Now).Application;
         application.Submit(Expert, Now);
@@ -29,10 +47,16 @@ public sealed class PricingTests
             new(5, TimeSpan.FromDays(30)),
             Now
         );
-        var q = ExpertServiceQualification
-            .Register(application, "HUMAN_VERIFICATION", null, Expert, Now)
+        return ExpertServiceQualification
+            .Register(application, Service.Code, null, Expert, Now)
             .Qualification;
-        var cv = Guid.NewGuid();
+    }
+
+    // Gate 2 passed and finally approved: the expert may sell the service
+    private static ExpertServiceQualification Approved()
+    {
+        var q = Registered();
+        q.Submit(Expert, 1, Now);
         q.DecideCompetency(
             Reviewer,
             Expert,
@@ -40,11 +64,11 @@ public sealed class PricingTests
                 .Codes.Select(code => new CompetencyResult(
                     code,
                     CompetencyCriteria.Pass,
-                    "ok",
-                    [cv]
+                    "note",
+                    [Cv]
                 ))
                 .ToArray(),
-            new HashSet<Guid> { cv },
+            new HashSet<Guid> { Cv },
             null,
             new(TimeSpan.FromDays(90)),
             Now
@@ -53,151 +77,98 @@ public sealed class PricingTests
         return q;
     }
 
-    private static ServicePricingVersion Submitted(
-        ExpertServiceQualification q,
-        long amount,
-        ServicePricingVersion? current,
-        int sequence = 1,
-        DateOnly? from = null
-    )
+    [Theory]
+    [InlineData(25, 1_000_000, 750_000)]
+    [InlineData(33, 1_000_000, 670_000)]
+    [InlineData(0, 1_234_000, 1_234_000)]
+    [InlineData(50, 500_000, 250_000)]
+    public void Net_amount_removes_the_platform_fee(int percent, long fee, long net) =>
+        Assert.Equal(net, Rate(percent).NetOf(fee));
+
+    [Theory]
+    [InlineData(-1)]
+    [InlineData(51)]
+    public void Platform_fee_must_be_0_to_50(int percent) =>
+        Assert.Equal("PLATFORM_FEE_INVALID", Errors.CodeOf(() => Rate(percent)));
+
+    [Fact]
+    public void Platform_fee_belongs_to_the_catalog_service()
     {
-        var v = ServicePricingVersion.CreateDraft(q, sequence, Now);
-        v.Save(Expert, amount, from ?? Today, "Market rate", Policy, Now);
-        v.Submit(Expert, current, Policy, Now);
-        return v;
+        var rate = Rate();
+
+        Assert.Equal("HUMAN_VERIFICATION", rate.ServiceCode);
+        Assert.Equal((Admin, Now), (rate.SetBy, rate.EffectiveFrom));
     }
 
     [Fact]
-    public void The_first_price_in_range_is_approved_by_the_system()
-    {
-        var v = Submitted(Approved(), 2_000_000, null);
-
-        Assert.Equal(PricingStatus.Approved, v.Status);
-        Assert.True(v.AutoApproved);
-        Assert.Null(v.DecidedByUserId);
-        Assert.Null(v.ChangePercent);
-    }
-
-    [Fact]
-    public void A_change_within_the_threshold_is_approved_and_supersedes_the_old_price()
+    public void Approved_expert_prices_the_service()
     {
         var q = Approved();
-        var first = Submitted(q, 2_000_000, null);
 
-        var second = Submitted(q, 2_800_000, first, 2, Today.AddDays(7));
+        var offering = Offer(q, 1_500_000, 48);
 
-        Assert.Equal(PricingStatus.Approved, second.Status);
-        Assert.Equal(40, second.ChangePercent);
-        Assert.Equal(PricingStatus.Superseded, first.Status);
-        Assert.Equal(Today.AddDays(6), first.EffectiveTo);
-        Assert.True(first.IsInEffect(Today));
-        Assert.False(first.IsInEffect(Today.AddDays(7)));
-        Assert.True(second.IsInEffect(Today.AddDays(7)));
+        Assert.Equal(q.ExpertProfileId, offering.ExpertProfileId);
+        Assert.Equal("HUMAN_VERIFICATION", offering.ServiceCode);
+        Assert.Equal((1_500_000L, 48), (offering.Fee, offering.TurnaroundHours));
     }
 
     [Fact]
-    public void A_change_above_the_threshold_waits_for_a_system_admin()
+    public void Expert_not_approved_for_the_service_cannot_price_it() =>
+        Assert.Equal(
+            "PRICING_NOT_ALLOWED",
+            Errors.CodeOf(() => Offer(Registered(), 1_000_000, 48))
+        );
+
+    [Fact]
+    public void Expert_never_registered_for_the_service_cannot_price_it() =>
+        Assert.Equal("PRICING_NOT_ALLOWED", Errors.CodeOf(() => Offer(null, 1_000_000, 48)));
+
+    [Theory]
+    [InlineData(490_000)]
+    [InlineData(505_000)]
+    [InlineData(30_010_000)]
+    [InlineData(0)]
+    public void Fee_outside_the_range_or_step_is_rejected(long fee) =>
+        Assert.Equal("FEE_INVALID", Errors.CodeOf(() => Offer(Approved(), fee, 48)));
+
+    [Theory]
+    [InlineData(500_000)]
+    [InlineData(30_000_000)]
+    public void Fee_limits_are_allowed(long fee) =>
+        Assert.Equal(fee, Offer(Approved(), fee, 48).Fee);
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(12)]
+    [InlineData(192)]
+    public void Turnaround_outside_whole_days_1_to_7_is_rejected(int hours) =>
+        Assert.Equal(
+            "TURNAROUND_INVALID",
+            Errors.CodeOf(() => Offer(Approved(), 1_000_000, hours))
+        );
+
+    [Fact]
+    public void Repricing_changes_price_and_time()
     {
         var q = Approved();
-        var first = Submitted(q, 2_000_000, null);
+        var offering = Offer(q, 1_000_000, 48);
 
-        var second = Submitted(q, 4_000_000, first, 2);
+        offering.Reprice(q, 2_000_000, 24, Policy, Expert, Now.AddDays(1));
 
-        Assert.Equal(PricingStatus.PendingApproval, second.Status);
-        Assert.Equal(100, second.ChangePercent);
-        Assert.False(second.AutoApproved);
-        Assert.Equal(PricingStatus.Approved, first.Status);
+        Assert.Equal((2_000_000L, 24), (offering.Fee, offering.TurnaroundHours));
+        Assert.Equal(Now.AddDays(1), offering.UpdatedAt);
     }
 
     [Fact]
-    public void An_admin_decides_pending_changes_and_must_explain_a_return_or_rejection()
+    public void Suspended_service_cannot_be_repriced()
     {
         var q = Approved();
-        var first = Submitted(q, 2_000_000, null);
-        var pending = Submitted(q, 4_000_000, first, 2);
-        Assert.Equal(
-            "PRICING_NOTE_REQUIRED",
-            Errors.CodeOf(() =>
-                pending.Decide(Admin, PricingDecision.ReturnForRevision, null, first, Now)
-            )
-        );
-
-        pending.Decide(Admin, PricingDecision.Approve, null, first, Now);
-
-        Assert.Equal(PricingStatus.Approved, pending.Status);
-        Assert.Equal(Admin, pending.DecidedByUserId);
-        Assert.Equal(PricingStatus.Superseded, first.Status);
-    }
-
-    [Fact]
-    public void A_returned_price_can_be_edited_and_submitted_again()
-    {
-        var q = Approved();
-        var first = Submitted(q, 2_000_000, null);
-        var pending = Submitted(q, 4_000_000, first, 2);
-        pending.Decide(Admin, PricingDecision.ReturnForRevision, "Too steep", first, Now);
-
-        pending.Save(Expert, 2_500_000, Today, "Smaller step", Policy, Now);
-        pending.Submit(Expert, first, Policy, Now);
-
-        Assert.Equal(PricingStatus.Approved, pending.Status);
-        Assert.True(pending.AutoApproved);
-    }
-
-    [Fact]
-    public void Out_of_range_amounts_past_dates_and_missing_reasons_are_refused()
-    {
-        var v = ServicePricingVersion.CreateDraft(Approved(), 1, Now);
-
-        Assert.Equal(
-            "PRICE_OUT_OF_RANGE",
-            Errors.CodeOf(() => v.Save(Expert, 500_000, Today, "x", Policy, Now))
-        );
-        Assert.Equal(
-            "EFFECTIVE_DATE_IN_PAST",
-            Errors.CodeOf(() => v.Save(Expert, 2_000_000, Today.AddDays(-1), "x", Policy, Now))
-        );
-        v.Save(Expert, 2_000_000, Today, null, Policy, Now);
-        Assert.Equal(
-            "PRICING_REASON_REQUIRED",
-            Errors.CodeOf(() => v.Submit(Expert, null, Policy, Now))
-        );
-    }
-
-    [Fact]
-    public void Approved_prices_are_never_edited()
-    {
-        var v = Submitted(Approved(), 2_000_000, null);
-
-        Assert.Equal(
-            "PRICING_VERSION_LOCKED",
-            Errors.CodeOf(() => v.Save(Expert, 3_000_000, Today, "x", Policy, Now))
-        );
-    }
-
-    [Fact]
-    public void Drafts_need_an_approved_service()
-    {
-        var application = ExpertApplication.Open(Guid.NewGuid(), null, Expert, Now).Application;
-        application.Submit(Expert, Now);
-        application.DecideEligibility(
-            Reviewer,
-            Expert,
-            6,
-            EligibilityCriteria
-                .Codes.Select(code => new CriterionResult(code, EligibilityCriteria.Pass, null))
-                .ToArray(),
-            null,
-            new(5, TimeSpan.FromDays(30)),
-            Now
-        );
-        var inReview = ExpertServiceQualification
-            .Register(application, "HUMAN_VERIFICATION", null, Expert, Now)
-            .Qualification;
+        var offering = Offer(q, 1_000_000, 48);
+        q.ChangeServiceAccess(Admin, ServiceAccessAction.Suspend, "Complaints under review", Now);
 
         Assert.Equal(
             "PRICING_NOT_ALLOWED",
-            Errors.CodeOf(() => ServicePricingVersion.CreateDraft(inReview, 1, Now))
+            Errors.CodeOf(() => offering.Reprice(q, 2_000_000, 24, Policy, Expert, Now))
         );
     }
 }

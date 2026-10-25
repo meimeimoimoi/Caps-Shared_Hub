@@ -1,13 +1,13 @@
-# Multi-stage Dockerfile Template for .NET 8 Microservices
+# Multi-stage Dockerfile Template for .NET 9 Microservices
 # Usage (single-project service): docker build -f docker/Dockerfile.service --build-arg SERVICE_NAME=gateway -t caps-gateway:latest .
 # Usage (layered service): add --build-arg PROJECT=auth/Api/Api.csproj --build-arg APP_NAME=Caps.Auth.Api
 
-FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
+FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS base
 WORKDIR /app
 EXPOSE 8080
 EXPOSE 8081
 
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 ARG SERVICE_NAME
 # Single-project services use the defaults; layered services (e.g. auth) pass their Api project
 ARG PROJECT=${SERVICE_NAME}/${SERVICE_NAME}.csproj

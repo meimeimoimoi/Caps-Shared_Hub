@@ -1,8 +1,9 @@
 import { useLocation } from 'react-router-dom'
-import { Settings } from 'lucide-react'
+import { Settings, UserRound } from 'lucide-react'
 import { AppHeader } from '@/components/ui/layout/app-header'
 import { useAccount, useAuth } from '@/features/auth'
 import { useExpertContext } from '@/features/expert-context'
+import { DEFAULT_HOME } from '@/features/auth/utils/returnPath'
 import { useNotifications } from '@/features/notifications'
 import { useTranslation } from 'react-i18next'
 
@@ -61,6 +62,12 @@ export function ExpertHeader({
             to: `/expert/settings/account${location.search}`,
             icon: <Settings size={17} />,
             active: location.pathname.startsWith('/expert/settings'),
+          },
+          {
+            // One account, two roles: switch to the customer area without signing out
+            label: t('navigation:customerArea'),
+            to: DEFAULT_HOME,
+            icon: <UserRound size={17} />,
           },
         ],
       }}

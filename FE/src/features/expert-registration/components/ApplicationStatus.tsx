@@ -1,25 +1,31 @@
 import { Trans, useTranslation } from 'react-i18next'
+import { Link } from 'react-router-dom'
 import { ArrowRight, Check, Clock3 } from 'lucide-react'
 import { labels } from '../constants'
 import type { Stage } from '../types'
 import { SupplementForm, type SupplementFormProps } from './SupplementForm'
-import { ScenarioSelect } from './ScenarioSelect'
 
 /** Gate 1 requirement to supplement or not met, with the reviewer's note */
 export interface EligibilityIssue {
   code: string
   label: string
-  result: 'FAIL' | 'NEED_MORE_INFORMATION' | 'PASS'
+  result: 'FAIL' | 'NEED_MORE_INFORMATION'
   note: string
 }
 
 export interface ApplicationStatusProps {
   profileName: string
   stage: Stage
+  /** Service whose qualification is furthest along, once the expert is eligible */
+  serviceName?: string
   eligibilityIssues?: EligibilityIssue[]
   /** Formatted earliest date for a new application after NOT_ELIGIBLE */
   reapplyAt?: string | null
+  /** Formatted time of the closing decision */
+  decidedAt?: string | null
   decisionNote?: string | null
+  /** Rounds of more information asked for so far and the policy limit */
+  rounds?: { used: number; max: number }
   supplement: boolean
   terminal: boolean
   timeline: string[]
@@ -27,10 +33,7 @@ export interface ApplicationStatusProps {
   history: string[]
   supplementFormProps: SupplementFormProps
   /** Ô xem thử các giai đoạn: chỉ ở chế độ demo khi dev */
-  showScenario?: boolean
-  onStageChange: (stage: Stage) => void
   onRequestSupplement: () => void
-  onPreviewServiceReview: () => void
 }
 
 const btnBase =
@@ -76,17 +79,17 @@ export function ApplicationStatus({
   stage,
   eligibilityIssues = [],
   reapplyAt = null,
+  decidedAt = null,
   decisionNote = null,
+  rounds,
   supplement,
   terminal,
   timeline,
   progress,
   history,
   supplementFormProps,
-  showScenario = false,
-  onStageChange,
   onRequestSupplement,
-  onPreviewServiceReview,
+  serviceName = '',
 }: ApplicationStatusProps) {
   const { t } = useTranslation('expertRegistration')
 
@@ -95,6 +98,8 @@ export function ApplicationStatus({
     (i) => i.result === 'NEED_MORE_INFORMATION'
   )
   const ineligible = stage === 'ineligible'
+  // POL-EXP-REAPP: a new application needs a change for every failed criterion, not only the wait
+  const toChange = eligibilityIssues.filter((i) => i.result === 'FAIL')
   // Colour of the status pill: problem, action needed, done, or still in review
   const tone = terminal
     ? 'danger'
@@ -120,9 +125,6 @@ export function ApplicationStatus({
               : t('status.track')}
           </p>
         </div>
-        {showScenario && (
-          <ScenarioSelect value={stage} onChange={onStageChange} />
-        )}
       </div>
 
       <ol className="expert-status-timeline">
@@ -182,6 +184,11 @@ export function ApplicationStatus({
         ) : stage === 'additional' ? (
           <>
             <p>{t('status.additional')}</p>
+            {!!rounds?.used && (
+              <p className={mutedCls}>
+                {t('status.rounds', { used: rounds.used, max: rounds.max })}
+              </p>
+            )}
             <div className={noteCls}>
               {toSupplement.length ? (
                 <IssueList
@@ -227,11 +234,21 @@ export function ApplicationStatus({
                 </>
               )}
             </div>
+            {ineligible && decidedAt && (
+              <p>{t('dynamic.decidedAt', { date: decidedAt })}</p>
+            )}
             <p>
               {ineligible && reapplyAt
                 ? t('dynamic.reapplyFrom', { date: reapplyAt })
-                : t('dynamic.reapply', { days: ineligible ? 30 : 90 })}
+                : t('status.reapplyAfterWait')}
             </p>
+            {ineligible && toChange.length > 0 && (
+              <p>
+                {t('dynamic.changeBeforeReapply', {
+                  criteria: toChange.map((i) => i.label).join(', '),
+                })}
+              </p>
+            )}
             <p>{t('status.corrections')}</p>
           </>
         ) : stage === 'approved' ? (
@@ -240,6 +257,7 @@ export function ApplicationStatus({
               <Trans
                 ns="expertRegistration"
                 i18nKey="dynamic.approved"
+                values={{ service: serviceName }}
                 components={{ service: <strong /> }}
               />
             </p>
@@ -250,10 +268,12 @@ export function ApplicationStatus({
           <>
             <p>{t('status.eligible')}</p>
             <p>{t('status.catalogue')}</p>
-            <button onClick={onPreviewServiceReview} className={btnPrimary}>
+            {/* Next step: competency evidence. With one service it was opened automatically; otherwise the expert
+                registers a service there first */}
+            <Link to="/expert/qualifications" className={btnPrimary}>
               {t('status.preview')}
               <ArrowRight size={16} />
-            </button>
+            </Link>
           </>
         ) : stage === 'returned' ? (
           <p>{t('status.returned')}</p>
@@ -265,9 +285,15 @@ export function ApplicationStatus({
                 : stage === 'eligibility'
                   ? t('status.eligibilityDescription')
                   : stage === 'competency'
-                    ? t('status.competencyDescription')
+                    ? t('status.competencyDescription', { service: serviceName })
                     : t('status.finalDescription')}
             </p>
+            {(stage === 'competency' || stage === 'final') && (
+              <Link to="/expert/qualifications" className={btnBase}>
+                {t('status.viewQualifications')}
+                <ArrowRight size={16} />
+              </Link>
+            )}
           </>
         )}
         {!terminal &&

@@ -1,4 +1,4 @@
-/* Dữ liệu demo cho sourcesApi.ts khi chạy dev (isExpertDemo). */
+/* Dữ liệu demo cho sourcesApi.ts khi chạy dev (isKnowledgeDemo). */
 import type { CollectionOverview } from '../types'
 
 const daysAgo = (n: number) =>
