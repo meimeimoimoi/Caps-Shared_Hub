@@ -19,7 +19,7 @@ on:
 
 jobs:
   be-ci:
-    name: Format, build & test backend (.NET 8)
+    name: Format, build & test backend (.NET 9)
     runs-on: ubuntu-latest
 
     defaults:

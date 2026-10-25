@@ -22,14 +22,13 @@ public sealed record MarketplaceExpertResponse(
 );
 
 /// <summary>One bookable service of a listed expert.</summary>
-/// <param name="PricingVersion">The approved version in effect, e.g. v2; snapshotted on the case.</param>
-/// <param name="SlaHours">Delivery SLA in calendar hours from START, from the service catalog.</param>
+/// <param name="Price">The expert's own price for the service; snapshotted on the case.</param>
+/// <param name="SlaHours">Delivery time in hours from accepting the case, set by the expert.</param>
 /// <param name="ApprovedAt">When the service was approved (final approval).</param>
 public sealed record MarketplaceServiceResponse(
     string ServiceCode,
     string ServiceName,
     long Price,
-    string PricingVersion,
     int SlaHours,
     DateTimeOffset? ApprovedAt
 );

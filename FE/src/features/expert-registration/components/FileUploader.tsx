@@ -7,8 +7,11 @@ import {
   CircleAlert,
   Loader2,
   Lock,
+  Link2,
+  FileImage,
 } from 'lucide-react'
 import { useRef, useState } from 'react'
+import { formControlClassName } from '@/components/ui/forms/form-control'
 import { useFormatters } from '@/hooks/useFormatters'
 import { criterionKey } from '../constants'
 import type { EvidenceFile, UploadQuota } from '../types'
@@ -17,12 +20,15 @@ export interface FileUploaderProps {
   id: string
   error?: string
   files: EvidenceFile[]
-  /** Hồ sơ đã nộp: chỉ xem, không thêm file */
+  /** Submitted applications are read-only. */
   disabled?: boolean
   /** Files used across the whole application and the current limit */
   quota?: UploadQuota
   onFilesSelected: (files: FileList | null) => void
   onRemoveFile: (index: number) => void
+  onAddLink?: (url: string) => Promise<boolean>
+  /** Name of what the files are for, read by screen readers; defaults to the evidence group of the id */
+  categoryLabel?: string
 }
 
 export function FileUploader({
@@ -33,11 +39,43 @@ export function FileUploader({
   quota,
   onFilesSelected,
   onRemoveFile,
+  onAddLink,
+  categoryLabel,
 }: FileUploaderProps) {
   const { t } = useTranslation('expertRegistration')
   const format = useFormatters()
 
   const [dragging, setDragging] = useState(false)
+  const [sourceUrl, setSourceUrl] = useState('')
+  const [addingLink, setAddingLink] = useState(false)
+  const [linkError, setLinkError] = useState(false)
+  const linkPending = useRef(false)
+  async function addLink() {
+    if (!onAddLink || linkPending.current || disabled || full) return
+    const value = sourceUrl.trim()
+    try {
+      const parsed = new URL(value)
+      if (
+        !['https:', 'http:'].includes(parsed.protocol) ||
+        parsed.username ||
+        parsed.password ||
+        value.length > 2048
+      )
+        throw new Error('Invalid URL')
+    } catch {
+      setLinkError(true)
+      return
+    }
+    setLinkError(false)
+    linkPending.current = true
+    setAddingLink(true)
+    try {
+      if (await onAddLink(value)) setSourceUrl('')
+    } finally {
+      linkPending.current = false
+      setAddingLink(false)
+    }
+  }
   const dragDepth = useRef(0)
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault()
@@ -64,23 +102,10 @@ export function FileUploader({
           </span>
           <span className="expert-file-dropzone-text">
             <strong>
-              {t(quota.verified ? 'quota.fullTitle' : 'quota.unverifiedTitle', {
-                max: format.number(quota.max),
-              })}
+              {t('quota.fullTitle', { max: format.number(quota.max) })}
             </strong>
-            <span>
-              {t(quota.verified ? 'quota.fullBody' : 'quota.unverifiedBody')}
-            </span>
+            <span>{t('quota.fullBody')}</span>
           </span>
-          {!quota.verified && (
-            <button
-              type="button"
-              className="expert-rail-action expert-file-quota-action"
-              onClick={quota.onVerify}
-            >
-              {t('rail.verify')}
-            </button>
-          )}
         </div>
       )}
       {!disabled && !full && (
@@ -117,12 +142,12 @@ export function FileUploader({
             aria-invalid={!!error}
             aria-describedby={error ? `error-${id}` : undefined}
             aria-label={t('files.choose', {
-              category:
+              category: categoryLabel ?? (
                 id === 'CV'
                   ? t('experience.cv')
                   : criterionKey(id)
                     ? t(criterionKey(id)!)
-                    : id,
+                    : id),
             })}
             type="file"
             accept=".pdf,.jpg,.jpeg,.png"
@@ -135,14 +160,69 @@ export function FileUploader({
           />
         </label>
       )}
-      {/* Remaining room before verifying, so the limit is known before it blocks */}
-      {!disabled && !full && quota && !quota.verified && (
-        <p className="expert-file-quota">
-          {t('quota.remaining', {
-            used: format.number(quota.used),
-            max: format.number(quota.max),
-          })}
-        </p>
+      {!disabled && !full && onAddLink && (
+        <div className="mt-4 space-y-2">
+          <label htmlFor={`link-${id}`} className="block text-sm font-medium">
+            {t(id === 'CV' ? 'links.label' : 'links.evidenceLabel')}
+          </label>
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-start">
+            <div className="relative min-w-0 flex-1">
+              <Link2 size={17} aria-hidden="true" className="text-ex-muted pointer-events-none absolute left-3 top-1/2 -translate-y-1/2" />
+            <input
+              id={`link-${id}`}
+              type="text"
+              inputMode="url"
+              autoCapitalize="none"
+              autoCorrect="off"
+              spellCheck={false}
+              value={sourceUrl}
+              maxLength={2048}
+              placeholder={id === 'CV' ? 'https://example.com/cv' : 'https://example.com/document'}
+              disabled={addingLink}
+              aria-invalid={linkError || undefined}
+              aria-describedby={`link-help-${id}${linkError ? ` link-error-${id}` : ''}`}
+              className={`${formControlClassName} !min-h-12 min-w-0 !pl-10`}
+              onChange={(e) => {
+                setSourceUrl(e.target.value)
+                setLinkError(false)
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault()
+                  void addLink()
+                }
+              }}
+            />
+            </div>
+            <button
+              type="button"
+              className="btn btn-secondary !min-h-12 shrink-0 disabled:cursor-not-allowed disabled:!opacity-60"
+              disabled={addingLink || !sourceUrl.trim()}
+              onClick={() => void addLink()}
+            >
+              {addingLink ? (
+                <Loader2
+                  size={16}
+                  className="animate-spin motion-reduce:animate-none"
+                  aria-hidden="true"
+                />
+              ) : null}
+              {t(addingLink ? 'links.adding' : 'links.add')}
+            </button>
+          </div>
+          <p id={`link-help-${id}`} className="text-ex-muted !m-0 w-full !max-w-none text-[12px] leading-relaxed">
+            {t(id === 'CV' ? 'links.help' : 'links.evidenceHelp')}
+          </p>
+          {linkError && (
+            <p
+              id={`link-error-${id}`}
+              role="alert"
+              className="expert-validation-message"
+            >
+              {t('links.invalid')}
+            </p>
+          )}
+        </div>
       )}
       {error && !full && (
         <p
@@ -163,10 +243,22 @@ export function FileUploader({
               aria-busy={f.uploading || undefined}
             >
               <span className="expert-file-item-icon" aria-hidden="true">
-                <FileText size={18} />
+                {f.sourceUrl ? <Link2 size={18} /> : /\.(png|jpe?g)$/i.test(f.name) ? <FileImage size={18} /> : <FileText size={18} />}
               </span>
               <span className="expert-file-item-info">
-                <span className="expert-file-item-name">{f.name}</span>
+                {f.sourceUrl && /^https?:\/\//i.test(f.sourceUrl) ? (
+                  <a
+                    className="expert-file-item-name break-all underline underline-offset-4"
+                    href={f.sourceUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={t('files.openNamed', { name: f.name })}
+                  >
+                    {f.name}
+                  </a>
+                ) : (
+                  <span className="expert-file-item-name" title={f.name}>{f.name}</span>
+                )}
                 <span className="expert-file-item-meta">
                   {f.uploading ? (
                     <>
@@ -180,11 +272,13 @@ export function FileUploader({
                   ) : (
                     <>
                       <CheckCircle2 size={12} aria-hidden="true" />
-                      {t('files.uploadedSize', {
-                        size: format.number(Math.max(1, f.size / 1024), {
-                          maximumFractionDigits: 0,
-                        }),
-                      })}
+                      {f.sourceUrl
+                        ? t('links.saved')
+                        : t('files.uploadedSize', {
+                            size: format.number(Math.max(1, f.size / 1024), {
+                              maximumFractionDigits: 0,
+                            }),
+                          })}
                     </>
                   )}
                 </span>
@@ -194,6 +288,7 @@ export function FileUploader({
                   type="button"
                   className="expert-file-item-remove"
                   aria-label={t('files.remove', { name: f.name })}
+                  title={t('files.remove', { name: f.name })}
                   onClick={() => onRemoveFile(i)}
                 >
                   <X size={16} />

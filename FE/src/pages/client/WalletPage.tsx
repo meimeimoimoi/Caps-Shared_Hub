@@ -196,7 +196,7 @@ export default function WalletPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {payments.data?.payments.map((p) => (
+                  {payments.data?.payments?.map((p) => (
                     <tr
                       key={p.id}
                       className="border-border-subtle border-t [&>td]:px-4 [&>td]:py-3"
@@ -224,7 +224,7 @@ export default function WalletPage() {
                     </tr>
                   ))}
                   {payments.isLoading && <SkeletonRows cols={4} />}
-                  {!payments.isLoading && !payments.data?.payments.length && (
+                  {!payments.isLoading && !payments.data?.payments?.length && (
                     <tr className="border-border-subtle border-t">
                       <td
                         colSpan={4}

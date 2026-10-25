@@ -1,4 +1,4 @@
-/* Dữ liệu demo cho templatesApi.ts khi chạy dev (isExpertDemo).
+/* Dữ liệu demo cho templatesApi.ts khi chạy dev (isKnowledgeDemo).
  * Lấy template từ fixtures soạn nháp để tên, mô tả, trường khớp với những gì người dùng thấy. */
 import { templates } from '@/features/drafting/api/fixtures'
 import type { ManagedTemplate } from '../types'

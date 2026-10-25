@@ -1,5 +1,6 @@
 import { api } from '@/lib/api-client'
 import { QUALIFICATION_STATUS } from '@/lib/constants'
+import { SYSTEM_ACTOR } from '../constants'
 import type {
   CompetencyCheck,
   CompetencyDecisionInput,
@@ -9,6 +10,10 @@ import type {
   QualificationRow,
   QualificationScope,
   QualificationStatus,
+  CompetencySubmission,
+  InformationRounds,
+  FinalApprovalReturn,
+  ReviewClaimState,
   ServiceAccessAction,
 } from '../types'
 
@@ -34,6 +39,7 @@ interface QueueItem {
   status: QualificationStatus
   submittedAt: string
   isReapplication: boolean
+  serviceName?: string | null
 }
 
 interface ReviewQualification {
@@ -65,6 +71,7 @@ interface ReviewQualification {
     id: string
     code: string
     fileName: string
+    sourceUrl?: string | null
     contentType: string
     sizeBytes: number
     uploadedAt: string
@@ -76,6 +83,8 @@ interface ReviewQualification {
     at: string
     actorUserId: string
     byApplicant: boolean
+    /** Made by the system itself (e.g. registering the only service after Gate 1) */
+    bySystem?: boolean
   }[]
   eligibility: EligibilityCheck[]
   competencies: CompetencyCheck[]
@@ -84,6 +93,11 @@ interface ReviewQualification {
   canFinalApprove: boolean
   canSuspend: boolean
   canReinstate: boolean
+  claim?: ReviewClaimState
+  submitted?: CompetencySubmission[]
+  rounds?: InformationRounds
+  finalApprovalDueAt?: string | null
+  lastReturn?: FinalApprovalReturn | null
 }
 
 const toRow = (q: QueueItem): QualificationRow => ({
@@ -92,6 +106,7 @@ const toRow = (q: QueueItem): QualificationRow => ({
   years: q.yearsExperience ?? 0,
   fields: q.fields,
   serviceCode: q.serviceCode,
+  serviceName: q.serviceName ?? undefined,
   status: q.status,
   submittedAt: q.submittedAt,
   isReapplication: q.isReapplication,
@@ -115,6 +130,11 @@ function toDetail(q: ReviewQualification): QualificationDetail {
     canFinalApprove: q.canFinalApprove,
     canSuspend: q.canSuspend,
     canReinstate: q.canReinstate,
+    claim: q.claim,
+    submitted: q.submitted ?? [],
+    rounds: q.rounds,
+    finalApprovalDueAt: q.finalApprovalDueAt ?? null,
+    lastReturn: q.lastReturn ?? null,
     competencies: q.competencies,
     // Gate 1 view of the expert: the profile, document and Gate 1 result tabs read it as is
     profile: {
@@ -133,7 +153,8 @@ function toDetail(q: ReviewQualification): QualificationDetail {
       highlights: p.highlights ?? '',
       documents: q.evidence.map((e) => ({
         code: e.code,
-        name: e.fileName,
+        name: e.sourceUrl || e.fileName,
+        sourceUrl: e.sourceUrl,
         pages: [],
         evidenceId: e.id,
       })),
@@ -151,7 +172,7 @@ function toDetail(q: ReviewQualification): QualificationDetail {
       const label = QUALIFICATION_STATUS[h.toStatus]?.label ?? h.toStatus
       return {
         at: h.at,
-        actor: h.byApplicant ? name : '',
+        actor: h.bySystem ? SYSTEM_ACTOR : h.byApplicant ? name : '',
         text: h.note ? `${label}: ${h.note}` : `${label}.`,
       }
     }),
@@ -220,6 +241,18 @@ export async function decideCompetency(
     `${BASES.review}/${id}/competency-decision`,
     body
   )
+  return toDetail(res.data)
+}
+
+/** Takes the qualification from the shared Gate 2 queue; REVIEW_CLAIMED when another reviewer won */
+export async function claimQualification(id: string): Promise<QualificationDetail> {
+  const res = await api.post<Envelope<ReviewQualification>>(`${BASES.review}/${id}/claim`)
+  return toDetail(res.data)
+}
+
+/** Gives the qualification back to the shared Gate 2 queue */
+export async function releaseQualification(id: string): Promise<QualificationDetail> {
+  const res = await api.post<Envelope<ReviewQualification>>(`${BASES.review}/${id}/release`)
   return toDetail(res.data)
 }
 

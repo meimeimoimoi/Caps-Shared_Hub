@@ -57,6 +57,20 @@ public interface IQualificationRepository
         CancellationToken ct
     );
 
+    /// <summary>
+    /// Stores the claim with one conditional update: only while the qualification waits for Gate 2 and is free,
+    /// expired or already the reviewer's. Returns false when another reviewer won; on success the tracked
+    /// qualification is reloaded.
+    /// </summary>
+    /// <param name="expiredBefore">Claims started before this time have expired.</param>
+    Task<bool> TryClaimAsync(
+        ExpertServiceQualification qualification,
+        Guid reviewerUserId,
+        DateTimeOffset now,
+        DateTimeOffset expiredBefore,
+        CancellationToken ct
+    );
+
     void Add(ExpertServiceQualification qualification);
     void AddEvent(QualificationEvent qualificationEvent);
 }

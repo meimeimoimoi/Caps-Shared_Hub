@@ -27,7 +27,7 @@ export default function NotFoundPage() {
           </Link>
           <div className="mt-8 flex flex-col items-start gap-2 border-t border-border pt-6 text-[14px] md:mt-10">
             <span className="text-fg-muted">{t('notFound.joinExpert')}</span>
-            <Link to="/expert/register" className="inline-flex min-h-8 items-center gap-1.5 font-semibold underline decoration-border-control underline-offset-[5px] hover:text-accent-text hover:decoration-current">{t('actions.registerExpert')} <ArrowUpRight size={16} aria-hidden="true" /></Link>
+            <Link to="/register" className="inline-flex min-h-8 items-center gap-1.5 font-semibold underline decoration-border-control underline-offset-[5px] hover:text-accent-text hover:decoration-current">{t('actions.registerExpert')} <ArrowUpRight size={16} aria-hidden="true" /></Link>
           </div>
         </section>
       </main>

@@ -9,7 +9,10 @@ namespace Caps.Expert.Application.Common;
 public sealed class ApplicationDescriber(
     IExpertApplicationRepository applications,
     IExpertEvidenceRepository evidences,
-    IEligibilityCheckRepository eligibility
+    IEligibilityCheckRepository eligibility,
+    IReapplicationChecker reapplication,
+    IExpertPolicyProvider policies,
+    ExpertPolicyOptions policy
 ) : IApplicationDescriber
 {
     public async Task<ExpertApplicationResponse> DescribeAsync(
@@ -22,13 +25,19 @@ public sealed class ApplicationDescriber(
         var files = await evidences.ListAsync(application.Id, ct);
         var history = await applications.ListEventsAsync(application.Id, ct);
         var checks = await eligibility.ListLatestAsync(application.Id, ct);
-        var missing = profile.MissingRequirements(
-            files.Any(x => x.EvidenceType == ApplicationRules.CvCode)
+        var submission = policy.Submission;
+        var evidenceCodes = files.Select(x => x.EvidenceType).Distinct().ToArray();
+        var missing = profile.MissingRequirements(evidenceCodes, submission);
+        var changesRequired = await reapplication.MissingChangesAsync(
+            application,
+            profile,
+            evidenceCodes,
+            ct
         );
+        var eligibilityPolicy = await policies.GetEligibilityAsync(ct);
+        var work = await policies.GetReviewWorkAsync(ct);
         var verified = applicant.EmailVerified;
-        var maxFiles = verified
-            ? ApplicationRules.MaxFilesPerApplication
-            : ApplicationRules.MaxFilesBeforeVerification;
+        var maxFiles = ApplicationRules.MaxFilesPerApplication;
         return new(
             application.Id.ToString(),
             application.Status,
@@ -59,7 +68,8 @@ public sealed class ApplicationDescriber(
                     x.ContentType,
                     x.SizeBytes,
                     x.CreatedAt,
-                    application.CanRemove(x)
+                    application.CanRemove(x),
+                    x.SourceUrl
                 ))
                 .ToArray(),
             history
@@ -76,16 +86,28 @@ public sealed class ApplicationDescriber(
                     x.Criterion,
                     x.Result,
                     x.Note,
-                    x.CreatedAt
+                    x.CreatedAt,
+                    x.AppliedMinYearsExperience
                 ))
                 .ToArray(),
             missing,
             verified,
             application.CanEdit,
             application.AcceptsFiles && files.Count < maxFiles,
-            application.CanEdit && verified && missing.Length == 0,
+            application.CanEdit && verified && missing.Length == 0 && changesRequired.Length == 0,
             application.NeedsInformation && verified,
-            maxFiles
+            maxFiles,
+            submission.RequiredEvidenceCodes,
+            submission
+                .Declarations.Select(x => new DeclarationResponse(x.Code, x.Language, x.Text))
+                .ToArray(),
+            eligibilityPolicy.MinYearsExperience,
+            changesRequired,
+            CompetencySubmissions.Rounds(
+                history.Select(x => (x.FromStatus, x.ToStatus)),
+                work.MaxInformationRequests,
+                ExpertApplicationStatus.NeedMoreInformation
+            )
         );
     }
 }

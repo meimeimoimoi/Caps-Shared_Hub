@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next'
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { useFormatters } from '@/hooks/useFormatters'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { FileText, Briefcase, UserRound, ChevronDown } from 'lucide-react'
@@ -8,18 +8,23 @@ import { useWizardMotion } from '../../features/expert-registration/hooks/useWiz
 import { useScrollReveal } from '@/hooks/useScrollReveal'
 import { mergeRefs } from '@/lib/merge-refs'
 
-import { steps } from '../../features/expert-registration/constants'
+import {
+  DOCUMENTS_STEP,
+  PROFILE_STEP,
+  REVIEW_STEP,
+  steps,
+} from '../../features/expert-registration/constants'
 import { ApplicationStatus } from '../../features/expert-registration/components/ApplicationStatus'
 import { WizardFooter } from '../../features/expert-registration/components/WizardFooter'
-import { PersonalInformation } from '../../features/expert-registration/components/steps/PersonalInformation'
-import { ProfessionalExperience } from '../../features/expert-registration/components/steps/ProfessionalExperience'
+import { ExpertProfileStep } from '../../features/expert-registration/components/steps/ExpertProfileStep'
 import { SupportingDocuments } from '../../features/expert-registration/components/steps/SupportingDocuments'
 import { RegistrationSummary } from '../../features/expert-registration/components/steps/RegistrationSummary'
 import { ReviewSubmit } from '../../features/expert-registration/components/steps/ReviewSubmit'
 import { useRegistrationForm } from '../../features/expert-registration/hooks/useRegistrationForm'
 import { useApplicationLifecycle } from '../../features/expert-registration/hooks/useApplicationLifecycle'
 import { useExpertApplication } from '../../features/expert-registration/hooks/useExpertApplication'
-import { EmailVerificationNotice } from '../../features/expert-registration/components/EmailVerificationNotice'
+import { useQualificationOverview } from '@/features/expert-qualifications/hooks/useQualifications'
+import type { Stage } from '../../features/expert-registration/types'
 import { ApplicationProgressRail } from '../../features/expert-registration/components/ApplicationProgressRail'
 import { expertPageCls } from './expertPageClass'
 
@@ -31,6 +36,8 @@ import { expertPageCls } from './expertPageClass'
 export default function ExpertApplicationPage() {
   const { t } = useTranslation('expertRegistration')
   const format = useFormatters()
+  const { i18n } = useTranslation()
+  const i18nLocale = i18n.language?.startsWith('en') ? 'en-GB' : 'vi-VN'
   useEffect(() => {
     document.title = `${t('page.title')} | Shared Hub`
   }, [t])
@@ -43,17 +50,9 @@ export default function ExpertApplicationPage() {
     loading,
     loadFailed,
     reload,
-    syncVerifiedSession,
   } = useExpertApplication()
   const location = useLocation()
   const navigate = useNavigate()
-  // Set by /expert/register right after the account is created. Read once, then cleared from history
-  // so a reload or a later visit does not show the notice again.
-  const [accountCreated] = useState(
-    () =>
-      (location.state as { accountCreated?: boolean } | null)
-        ?.accountCreated === true
-  )
   useEffect(() => {
     if (location.state)
       navigate(location.pathname + location.search, {
@@ -63,10 +62,11 @@ export default function ExpertApplicationPage() {
   }, [location.pathname, location.search, location.state, navigate])
   const {
     submitted,
-    stage,
+    stage: applicationStage,
     history,
     eligibilityIssues,
     reapplyAt,
+    decidedAt,
     decisionNote,
     supplement,
     explanation,
@@ -75,11 +75,8 @@ export default function ExpertApplicationPage() {
     notice: lifecycleNotice,
     submitting: lifecycleSubmitting,
     errorRef: lifecycleErrorRef,
-    canPreviewStages,
     submitSupplement,
-    changeStage,
     requestSupplement,
-    previewServiceReview,
     setSupplementFile,
     setExplanation,
     cancelSupplement,
@@ -87,7 +84,6 @@ export default function ExpertApplicationPage() {
   } = useApplicationLifecycle({
     application,
     setApplication,
-    syncVerifiedSession,
   })
 
   const {
@@ -98,7 +94,15 @@ export default function ExpertApplicationPage() {
     fields,
     activeCriterion,
     setActiveCriterion,
-    confirmed,
+    declarations,
+    agreed,
+    toggleAgreed,
+    supplementing,
+    supplementNote,
+    setSupplementNote,
+    autoSave,
+    flushAutoSave,
+    retryAutoSave,
     error,
     setError,
     notice,
@@ -106,11 +110,6 @@ export default function ExpertApplicationPage() {
     avatarPreview,
     independent,
     draftSaved,
-    verifyOpen,
-    verifyPurpose,
-    closeVerify,
-    openVerification,
-    checkVerifiedAndSubmit,
     formErrors,
     heading,
     errorRef,
@@ -119,22 +118,38 @@ export default function ExpertApplicationPage() {
     furthest,
     returnToReview,
     chooseFiles,
+    addCvLink,
+    addEvidenceLink,
     advance,
     clearFormError,
     updateAvatar,
-    setIndependentStatus,
     toggleField,
     removeFile,
-    toggleConfirmed,
     saveDraft,
-  } = useRegistrationForm({ application, setApplication, syncVerifiedSession })
-  const wizardBodyRef = useWizardMotion(step, !submitted)
+  } = useRegistrationForm({ application, setApplication })
+  // While more information is requested the wizard opens again: details, files and an explanation,
+  // then the last step resubmits (same Application)
+  const showWizard = !submitted || (supplement && supplementing)
+  useEffect(() => {
+    if (supplement && application && !supplementing) cancelSupplement()
+  }, [supplement, application, supplementing, cancelSupplement])
+  const wizardBodyRef = useWizardMotion(step, showWizard)
   const visibleNotice =
+    [notice, lifecycleNotice].find(Boolean) ?? ''
+  // Eligibility only opens the service step: the furthest service qualification decides where the expert is
+  const overview = useQualificationOverview()
+  const serviceStep = (
     [
-      notice,
-      lifecycleNotice,
-      accountCreated && step === 0 ? t('messages.accountCreated') : '',
-    ].find(Boolean) ?? ''
+      ['APPROVED_FOR_SERVICE', 'approved'],
+      ['PENDING_FINAL_APPROVAL', 'final'],
+      ['COMPETENCY_REVIEW', 'competency'],
+      ['NEED_MORE_INFORMATION', 'competency'],
+    ] as const
+  )
+    .map(([status, step]) => ({ step: step as Stage, service: overview.data?.services.find((s) => s.status === status) }))
+    .find((x) => x.service)
+  const stage: Stage =
+    applicationStage === 'eligible' && serviceStep ? serviceStep.step : applicationStage
   const terminal = stage === 'ineligible' || stage === 'failed'
   // No AI screening step yet: submission goes straight to the eligibility review (Gate 1)
   const timeline = [
@@ -143,7 +158,7 @@ export default function ExpertApplicationPage() {
     t('timeline.competency'),
     t('timeline.final'),
   ]
-  const progress = [
+  const progress = stage === 'approved' ? timeline.length : [
     'screening',
     'eligibility',
     'additional',
@@ -160,10 +175,36 @@ export default function ExpertApplicationPage() {
     ? {
         used: application.evidence.length,
         max: application.maxFiles,
-        verified: application.emailVerified,
-        onVerify: openVerification,
       }
     : undefined
+
+  // Auto-save status of the draft (only after the user changed something), shown beside the save button
+  const autoSaveStatus =
+    autoSave.status === 'idle' ? null : (
+    <>
+      {autoSave.status === 'saving'
+        ? t('autoSave.saving')
+        : autoSave.status === 'saved'
+          ? t('autoSave.saved', {
+              time: autoSave.at?.toLocaleTimeString(i18nLocale, {
+                hour: '2-digit',
+                minute: '2-digit',
+              }),
+            })
+          : (
+              <>
+                {t('autoSave.failed')}{' '}
+                <button
+                  type="button"
+                  className="underline underline-offset-4"
+                  onClick={retryAutoSave}
+                >
+                  {t('autoSave.retry')}
+                </button>
+              </>
+            )}
+    </>
+    )
 
   const stepHeading = (
     <div className="expert-wizard-heading">
@@ -202,21 +243,23 @@ export default function ExpertApplicationPage() {
               </div>
             )}
           </section>
-        ) : submitted ? (
+        ) : !showWizard ? (
           <>
             <div className="expert-status-layout">
               <ApplicationStatus
                 profileName={profile.name}
                 stage={stage}
+                serviceName={serviceStep?.service?.serviceName}
                 eligibilityIssues={eligibilityIssues}
                 reapplyAt={reapplyAt}
+                decidedAt={decidedAt}
                 decisionNote={decisionNote}
+                rounds={application?.rounds}
                 supplement={supplement}
                 terminal={terminal}
                 timeline={timeline}
                 progress={progress}
                 history={history}
-                showScenario={canPreviewStages}
                 supplementFormProps={{
                   file: supplementFile,
                   explanation,
@@ -227,9 +270,7 @@ export default function ExpertApplicationPage() {
                   onBack: cancelSupplement,
                   onSubmit: submitSupplement,
                 }}
-                onStageChange={changeStage}
                 onRequestSupplement={requestSupplement}
-                onPreviewServiceReview={previewServiceReview}
               />
               <aside className="expert-status-profile">
                 <div className="expert-status-profile-heading">
@@ -304,47 +345,26 @@ export default function ExpertApplicationPage() {
           /* ── Wizard: form beside its progress rail ── */
           <div className="expert-application-layout">
             <section
-              className={`expert-wizard ${step === 0 ? 'expert-wizard-personal' : ''}`}
+              className={`expert-wizard ${step === PROFILE_STEP ? 'expert-wizard-personal' : ''}`}
             >
-              {verifyOpen && application && !application.emailVerified && (
-                <EmailVerificationNotice
-                  email={profile.email}
-                  onCheck={checkVerifiedAndSubmit}
-                  purpose={verifyPurpose}
-                  onClose={closeVerify}
-                />
-              )}
-              <form noValidate onSubmit={advance}>
+              <form noValidate onSubmit={advance} onBlurCapture={flushAutoSave}>
                 <div
                   ref={wizardBodyRef}
                   className="expert-wizard-body pt-4 pb-[30px]"
                   key={step}
                 >
-                  {step !== 0 && stepHeading}
-                  {step === 0 && (
-                    <PersonalInformation
+                  {step !== PROFILE_STEP && stepHeading}
+                  {step === PROFILE_STEP && (
+                    <ExpertProfileStep
                       heading={stepHeading}
-                      profile={profile}
-                      formErrors={formErrors}
-                      avatar={avatar}
-                      avatarPreview={avatarPreview}
-                      independent={independent}
-                      onUpdate={(key, value) => {
-                        update(key, value)
-                        clearFormError(key)
-                      }}
-                      onAvatarChange={updateAvatar}
-                      onIndependentChange={setIndependentStatus}
-                      onError={setError}
-                    />
-                  )}
-                  {step === 1 && (
-                    <ProfessionalExperience
                       profile={profile}
                       fields={fields}
                       cvFiles={files.CV ?? []}
+                      minYearsExperience={application?.minYearsExperience}
                       uploadQuota={uploadQuota}
                       formErrors={formErrors}
+                      avatar={avatar}
+                      avatarPreview={avatarPreview}
                       onUpdate={(key, value) => {
                         update(key, value)
                         clearFormError(key)
@@ -352,38 +372,60 @@ export default function ExpertApplicationPage() {
                       onToggleField={toggleField}
                       onCvFilesSelected={(f) => chooseFiles('CV', f)}
                       onRemoveCvFile={(i) => removeFile('CV', i)}
+                      onAddCvLink={addCvLink}
+                      onAvatarChange={updateAvatar}
+                      onError={setError}
                     />
                   )}
-                  {step === 2 && (
+                  {step === DOCUMENTS_STEP && (
                     <SupportingDocuments
+                      declarations={declarations}
+                      agreed={agreed}
+                      onAgreedChange={toggleAgreed}
+                      requiredEvidence={application?.requiredEvidence ?? []}
                       formErrors={formErrors}
                       activeCriterion={activeCriterion}
                       files={files}
                       uploadQuota={uploadQuota}
                       onCriterionSelect={setActiveCriterion}
                       onFilesSelected={chooseFiles}
+                      onAddLink={addEvidenceLink}
                       onRemoveFile={removeFile}
                     />
                   )}
-                  {step === 3 && (
+                  {step === REVIEW_STEP && (
                     <ReviewSubmit
                       profile={profile}
                       avatarPreview={avatarPreview}
                       independent={independent}
                       fields={fields}
                       files={files}
-                      confirmed={confirmed}
+                      requiredEvidence={application?.requiredEvidence ?? []}
+                      changesRequired={application?.changesRequired ?? []}
+                      declarations={declarations}
+                      agreed={agreed}
                       formErrors={formErrors}
-                      onConfirmedChange={toggleConfirmed}
+                      onAgreedChange={toggleAgreed}
                       onEditStep={move}
+                      supplement={
+                        supplementing
+                          ? {
+                              note: supplementNote,
+                              onNoteChange: setSupplementNote,
+                              reviewerNote: decisionNote,
+                            }
+                          : undefined
+                      }
                     />
                   )}
                 </div>
                 <WizardFooter
                   step={step}
+                  supplementing={supplementing}
                   returnToReview={returnToReview}
                   submitting={submitting}
                   draftSaved={draftSaved}
+                  status={autoSaveStatus}
                   onSaveDraft={saveDraft}
                   onBack={() => move(step - 1)}
                 />
@@ -394,9 +436,6 @@ export default function ExpertApplicationPage() {
               step={step}
               furthest={furthest}
               onMove={move}
-              email={profile.email}
-              emailVerified={application?.emailVerified ?? false}
-              onVerify={openVerification}
               missing={application?.missingRequirements ?? []}
             />
           </div>
@@ -413,7 +452,7 @@ export default function ExpertApplicationPage() {
         )}
         {visibleNotice && (
           <p
-            className="text-ex-notice-text bg-ex-notice-bg animate-expert-fade-in col-span-full !mt-5 p-[15px] motion-reduce:animate-none"
+            className="text-ex-notice-text bg-ex-notice-bg animate-expert-fade-in col-span-full !mt-5 rounded-[5px] p-[15px] motion-reduce:animate-none"
             role="status"
           >
             {visibleNotice}

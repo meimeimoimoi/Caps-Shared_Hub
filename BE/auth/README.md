@@ -35,7 +35,7 @@ EF commands: `dotnet ef migrations add <Name> --project auth/Infrastructure --st
 
 ## Local setup (PowerShell from BE)
 
-Use .NET SDK 8.0.421 (global.json), PostgreSQL and RabbitMQ. The Postgres connection string is not stored in appsettings. Each service connects with its own PostgreSQL role, which owns only its schema. Provision the roles separately, then store the existing connection string in User Secrets:
+Use .NET SDK 9.0.318 (global.json), PostgreSQL and RabbitMQ. The Postgres connection string is not stored in appsettings. Each service connects with its own PostgreSQL role, which owns only its schema. Provision the roles separately, then store the existing connection string in User Secrets:
 
 ~~~powershell
 .\scripts\set-connections.ps1 -Service auth

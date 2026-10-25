@@ -9,8 +9,10 @@ namespace Caps.Expert.Application.Features.Reviews;
 public sealed record ListQualificationsForReviewQuery(string? Status);
 
 /// <summary>Lists qualifications in one status, oldest submission first.</summary>
-public sealed class ListQualificationsForReviewHandler(IQualificationRepository qualifications)
-    : IQueryHandler<ListQualificationsForReviewQuery, IReadOnlyList<QualificationQueueItemResponse>>
+public sealed class ListQualificationsForReviewHandler(
+    IQualificationRepository qualifications,
+    IServiceCatalogRepository catalog
+) : IQueryHandler<ListQualificationsForReviewQuery, IReadOnlyList<QualificationQueueItemResponse>>
 {
     public async Task<IReadOnlyList<QualificationQueueItemResponse>> HandleAsync(
         ListQualificationsForReviewQuery query,
@@ -21,6 +23,8 @@ public sealed class ListQualificationsForReviewHandler(IQualificationRepository 
             ? QualificationStatus.CompetencyReview
             : query.Status.Trim().ToUpperInvariant();
         var found = await qualifications.ListByStatusAsync(status, ct);
+        // Reviewers read the service name, never the catalog code
+        var names = (await catalog.ListActiveAsync(ct)).ToDictionary(x => x.Code, x => x.Name);
         return found
             .Select(x => new QualificationQueueItemResponse(
                 x.Id.ToString(),
@@ -31,7 +35,8 @@ public sealed class ListQualificationsForReviewHandler(IQualificationRepository 
                 x.ServiceCode,
                 x.Status,
                 x.SubmittedAt,
-                x.PreviousQualificationId != null
+                x.PreviousQualificationId != null,
+                names.GetValueOrDefault(x.ServiceCode)
             ))
             .ToArray();
     }

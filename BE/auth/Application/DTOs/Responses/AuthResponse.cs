@@ -1,7 +1,13 @@
 namespace Caps.Auth.Application.DTOs.Responses;
 
 /// <summary>What sign-in, sign-up and refresh return: the access token and the user it belongs to.</summary>
-public sealed record AuthResponse(string AccessToken, int ExpiresIn, MeResponse User);
+/// <param name="IsNewAccount">True only on the response that created the account (sign-up or a first Google sign-in).</param>
+public sealed record AuthResponse(
+    string AccessToken,
+    int ExpiresIn,
+    MeResponse User,
+    bool IsNewAccount = false
+);
 
 /// <summary>The signed-in user as the FE shows it; roles and permissions match the access token.</summary>
 public sealed record MeResponse(

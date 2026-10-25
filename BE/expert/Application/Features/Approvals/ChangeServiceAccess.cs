@@ -22,7 +22,8 @@ public sealed class ChangeServiceAccessHandler(
     IServiceAccessNotifier notifier,
     IQualificationReviewDescriber describer,
     IUnitOfWork unitOfWork,
-    TimeProvider clock
+    TimeProvider clock,
+    IRealtimeNotifier realtime
 ) : ICommandHandler<ChangeServiceAccessCommand, ReviewQualificationResponse>
 {
     public async Task<ReviewQualificationResponse> HandleAsync(
@@ -50,6 +51,12 @@ public sealed class ChangeServiceAccessHandler(
         await notifier.EnqueueAsync(qualification, changed, change, ct);
         await unitOfWork.SaveChangesAsync(ct);
         await tx.CommitAsync(ct);
+        await realtime.ChangedAsync(
+            ExpertRealtimeTopics.Qualifications,
+            [applicantUserId],
+            [Permission.ExpertReview, Permission.ExpertApprove],
+            ct
+        );
         return await describer.DescribeAsync(qualification, ct);
     }
 }

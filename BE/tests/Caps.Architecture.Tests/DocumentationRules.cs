@@ -10,13 +10,14 @@ namespace Caps.Architecture.Tests;
 public sealed class DocumentationRules
 {
     public static TheoryData<string> CoreAssemblies =>
-        new(
-            Assemblies
-                .LayeredServices.SelectMany(s =>
-                    new[] { "Domain", "Application" }.Select(l => Assemblies.Layer(s, l))
-                )
-                .Concat(["Caps.Common.Domain", "Caps.Common.Application", "Caps.Contracts"])
-        );
+        [
+            .. Assemblies.LayeredServices.SelectMany(s =>
+                new[] { "Domain", "Application" }.Select(l => Assemblies.Layer(s, l))
+            ),
+            "Caps.Common.Domain",
+            "Caps.Common.Application",
+            "Caps.Contracts",
+        ];
 
     [Theory]
     [MemberData(nameof(CoreAssemblies))]

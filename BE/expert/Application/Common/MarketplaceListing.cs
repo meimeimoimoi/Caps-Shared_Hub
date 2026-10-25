@@ -1,14 +1,13 @@
 using Caps.Expert.Application.Abstractions;
 using Caps.Expert.Application.DTOs.Responses;
 using Caps.Expert.Domain.Portal;
-using Caps.Expert.Domain.Pricing;
 
 namespace Caps.Expert.Application.Common;
 
 /// <summary>Applies BR-M01 to every candidate Expert–Service and groups the bookable ones by expert.</summary>
 public sealed class MarketplaceListing(
     IQualificationRepository qualifications,
-    IPricingRepository pricing,
+    IServiceOfferingRepository offerings,
     IAvailabilityRepository availability,
     IServiceCatalogRepository catalog,
     TimeProvider clock
@@ -21,7 +20,6 @@ public sealed class MarketplaceListing(
     )
     {
         var now = clock.GetUtcNow();
-        var today = PricingRules.BusinessDate(now);
         var candidates = await qualifications.ListMarketplaceCandidatesAsync(
             serviceCode,
             profileId,
@@ -29,15 +27,9 @@ public sealed class MarketplaceListing(
         );
         if (candidates.Count == 0)
             return [];
-        var prices = await pricing.ListByQualificationsAsync(
-            candidates.Select(x => x.Id).ToArray(),
-            ct
-        );
-        var slots = await availability.ListOpenAsync(
-            candidates.Select(x => x.ExpertProfileId).Distinct().ToArray(),
-            now,
-            ct
-        );
+        var profileIds = candidates.Select(x => x.ExpertProfileId).Distinct().ToArray();
+        var prices = await offerings.ListAsync(profileIds, ct);
+        var slots = await availability.ListOpenAsync(profileIds, now, ct);
         var services = (await catalog.ListActiveAsync(ct)).ToDictionary(x => x.Code);
 
         return candidates
@@ -53,7 +45,7 @@ public sealed class MarketplaceListing(
                     .Select(q =>
                     {
                         var price = prices.FirstOrDefault(p =>
-                            p.QualificationId == q.Id && p.IsInEffect(today)
+                            p.ExpertProfileId == profile.Id && p.ServiceCode == q.ServiceCode
                         );
                         var listed = MarketplaceRules.IsListed(
                             new(
@@ -69,9 +61,8 @@ public sealed class MarketplaceListing(
                             ? new MarketplaceServiceResponse(
                                 q.ServiceCode,
                                 services[q.ServiceCode].Name,
-                                price!.Amount,
-                                $"v{price.Sequence}",
-                                services[q.ServiceCode].DeliverySlaHours,
+                                price!.Fee,
+                                price.TurnaroundHours,
                                 q.DecidedAt
                             )
                             : null;
