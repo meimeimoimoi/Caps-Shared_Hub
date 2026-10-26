@@ -12,6 +12,7 @@ public sealed class IngestionDbContext(DbContextOptions<IngestionDbContext> opti
     public DbSet<KnowledgeDocument> KnowledgeDocuments => Set<KnowledgeDocument>();
     public DbSet<KbChunk> KbChunks => Set<KbChunk>();
     public DbSet<CrawlJob> CrawlJobs => Set<CrawlJob>();
+    public DbSet<SystemConfig> SystemConfigs => Set<SystemConfig>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -180,5 +181,19 @@ public sealed class IngestionDbContext(DbContextOptions<IngestionDbContext> opti
                 .IsRequired();
             e.Property(x => x.FinishedAt).HasColumnName("finished_at");
         });
+
+        //Systemconfig
+        modelBuilder.Entity<SystemConfig>(e =>
+        {
+            e.ToTable("system_config");
+            e.HasKey(x => x.Key);
+            e.Property(x => x.Key).HasColumnName("key").HasMaxLength(64);
+            e.Property(x => x.Value).HasColumnName("value").HasColumnType("jsonb").IsRequired();
+            e.Property(x => x.Description).HasColumnName("description");
+            e.Property(x => x.UpdatedBy).HasColumnName("updated_by");
+            e.Property(x => x.UpdatedAt).HasColumnName("updated_at").HasDefaultValueSql("now()");
+        });
+
     }
 }
+

@@ -1,6 +1,6 @@
-using ingestion.Dtos;
+using Caps.Ingestion.Dtos;
 
-namespace ingestion.Services.Interface;
+namespace Caps.Ingestion.Services.Interface;
 
 public interface IKnowledgeDocumentService
 {

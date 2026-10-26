@@ -1,4 +1,4 @@
-namespace ingestion.Dtos;
+namespace Caps.Ingestion.Dtos;
 
 public class KnowledgeDocumentDtos
 {
