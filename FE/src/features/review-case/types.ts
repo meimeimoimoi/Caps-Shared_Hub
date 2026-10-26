@@ -124,3 +124,18 @@ export type IssueCode =
   | 'SLA_BREACH'
   | 'OBLIGATION_NOT_MET'
   | 'PROFESSIONAL_JUDGMENT'
+
+/** One message of the case chat between the client and the expert. */
+export interface CaseChatMessage {
+  id: string
+  senderUserId: string
+  senderRole: 'CLIENT' | 'EXPERT'
+  content: string
+  createdAt: string
+}
+
+/** Messages the signed-in user has not read yet in one case. */
+export interface CaseUnread {
+  reviewCaseId: string
+  unreadCount: number
+}
