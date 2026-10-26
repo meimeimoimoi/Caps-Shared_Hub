@@ -308,4 +308,21 @@ public sealed class ReviewCaseTests
         Assert.Equal(ReviewCase.UserNonResponse, reviewCase.TerminationReason);
         Assert.Null(reviewCase.TerminateForNoResponse(request, Now.AddHours(96))); // second run is a no-op
     }
+
+    [Fact]
+    public void Expert_cannot_book_their_own_service() =>
+        Assert.Equal(
+            "CASE_SELF_REVIEW",
+            Errors.CodeOf(() =>
+                ReviewCase.Request(
+                    ExpertUser,
+                    Guid.NewGuid(),
+                    Guid.NewGuid(),
+                    new ReviewOffer(Expert, ExpertUser, Guid.NewGuid(), 1_000_000, 20, 48),
+                    "Check my CIT return",
+                    null,
+                    Now
+                )
+            )
+        );
 }

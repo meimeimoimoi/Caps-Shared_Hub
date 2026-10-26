@@ -49,6 +49,26 @@ public static class WorkflowErrors
             "This information request is already answered or expired."
         );
 
+    public static AppException DocumentNotFound() =>
+        new(ErrorType.NotFound, "DOCUMENT_NOT_FOUND", "Document version not found.");
+
+    public static AppException ExpertServiceUnavailable() =>
+        new(
+            ErrorType.NotFound,
+            "EXPERT_SERVICE_UNAVAILABLE",
+            "This expert does not offer this service right now."
+        );
+
+    public static AppException ServiceLinkUnavailable(string service) =>
+        new(
+            ErrorType.Unavailable,
+            "SERVICE_LINK_UNAVAILABLE",
+            $"The {service} service cannot be reached yet; try again later."
+        );
+
+    public static AppException SelfReview() =>
+        new(ErrorType.RuleViolation, "CASE_SELF_REVIEW", "You cannot book your own service.");
+
     public static AppException ChatClosed(string status) =>
         new(
             ErrorType.Conflict,

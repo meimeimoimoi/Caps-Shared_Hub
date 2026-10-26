@@ -9,6 +9,42 @@ public sealed class ReviewCaseRepository(WorkflowDbContext db) : IReviewCaseRepo
 {
     public Task<ReviewCase?> FindAsync(Guid reviewCaseId, CancellationToken ct) =>
         db.ReviewCases.AsNoTracking().SingleOrDefaultAsync(x => x.Id == reviewCaseId, ct);
+
+    public void Add(ReviewCase reviewCase) => db.ReviewCases.Add(reviewCase);
+
+    public void AddHistory(ReviewStatusHistory history) => db.ReviewStatusHistories.Add(history);
+
+    //Row clock until the transaction ends, so a user action the expiry job never both move the case
+    public Task<ReviewCase?> FindForUpdateAsync(Guid reviewCaseId, CancellationToken ct) =>
+        db
+            .ReviewCases.FromSqlInterpolated(
+                $"SELECT * FROM review.review_case WHERE id = {reviewCaseId} FOR UPDATE"
+            )
+            .SingleOrDefaultAsync(x => x.Id == reviewCaseId, ct);
+
+    //newest 100, no paging; add a cursor like the chat when use have more cases
+    public async Task<IReadOnlyList<ReviewCase>> ListForUserAsync(
+        Guid userId,
+        CancellationToken ct
+    ) =>
+        await db
+            .ReviewCases.AsNoTracking()
+            .Where(x => x.RequesterUserId == userId || x.ExpertUserId == userId)
+            .OrderByDescending(x => x.CreatedAt)
+            .Take(100)
+            .ToListAsync(ct);
+}
+
+/// <summary>EF Core store for the expert's questions to the client.</summary>
+public sealed class InfoRequestRepository(WorkflowDbContext db) : IInfoRequestRepository
+{
+    public Task<InfoRequest?> FindOpenForUpdateAsync(Guid reviewCaseId, CancellationToken ct) =>
+        db.InfoRequests.SingleOrDefaultAsync(
+            x => x.ReviewCaseId == reviewCaseId && x.Status == InfoRequest.Open,
+            ct
+        );
+
+    public void Add(InfoRequest request) => db.InfoRequests.Add(request);
 }
 
 /// <summary>EF Core store for review case messages.</summary>
@@ -75,4 +111,22 @@ public sealed class CaseReadMarkerRepository(WorkflowDbContext db) : ICaseReadMa
         );
 
     public void Add(CaseReadMarker marker) => db.CaseReadMarkers.Add(marker);
+}
+
+/// <summary>EF Core reads of the client's documents.</summary>
+public sealed class DocumentRepository(WorkflowDbContext db) : IDocumentRepository
+{
+    public Task<bool> OwnsVersionAsync(
+        Guid userId,
+        Guid documentId,
+        Guid versionId,
+        CancellationToken ct
+    ) =>
+        db.DocumentVersions.AnyAsync(
+            v =>
+                v.Id == versionId
+                && v.DocumentId == documentId
+                && db.Documents.Any(d => d.Id == documentId && d.OwnerUserId == userId),
+            ct
+        );
 }

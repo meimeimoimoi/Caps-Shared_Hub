@@ -1,5 +1,6 @@
 using Caps.Common.Persistence;
 using Caps.Workflow.Application.Abstractions;
+using Caps.Workflow.Infrastructure.Integrations;
 using Caps.Workflow.Infrastructure.Persistence;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -23,6 +24,10 @@ public static class DependencyInjection
         services.AddScoped<IReviewCaseRepository, ReviewCaseRepository>();
         services.AddScoped<ICaseMessageRepository, CaseMessageRepository>();
         services.AddScoped<ICaseReadMarkerRepository, CaseReadMarkerRepository>();
+        services.AddScoped<IDocumentRepository, DocumentRepository>();
+        services.AddScoped<IInfoRequestRepository, InfoRequestRepository>();
+        services.AddScoped<IExpertOfferings, PendingExpertOfferings>();
+        services.AddScoped<IEscrows, PendingEscrows>();
         return services;
     }
 }

@@ -98,6 +98,11 @@ public sealed class ReviewCase
             throw WorkflowErrors.OfferInvalid();
         }
 
+        // An expert booking their own service would inflate their marketplace ranking
+        if (offer.ExpertUserId == requesterUserId)
+        {
+            throw WorkflowErrors.SelfReview();
+        }
         var reviewCase = new ReviewCase
         {
             RequesterUserId = requesterUserId,
