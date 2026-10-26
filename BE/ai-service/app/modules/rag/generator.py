@@ -3,6 +3,7 @@ from app.modules.rag.prompts import build_grounded_answer_prompt
 from app.schemas.answers import INSUFFICIENT_KNOWLEDGE_ANSWER
 from app.schemas.statuses import AnswerStatus
 
+
 class GroundedGenerator:
     @staticmethod
     def generate_answer(question: str, retrieved_chunks: list, period_str: str) -> dict:
@@ -11,7 +12,7 @@ class GroundedGenerator:
             return {
                 "answer_status": AnswerStatus.INSUFFICIENT_KNOWLEDGE,
                 "answer": INSUFFICIENT_KNOWLEDGE_ANSWER,
-                "citations": []
+                "citations": [],
             }
 
         context = "\n---\n".join([h.payload["text_content"] for h in retrieved_chunks])
@@ -27,16 +28,18 @@ class GroundedGenerator:
         citations = []
         for h in retrieved_chunks:
             p = h.payload
-            citations.append({
-                "legal_source_id": p.get("legal_source_id"),
-                "document_number": p.get("document_number"),
-                "article": p.get("article"),
-                "clause": p.get("clause"),
-                "point": p.get("point")
-            })
+            citations.append(
+                {
+                    "legal_source_id": p.get("legal_source_id"),
+                    "document_number": p.get("document_number"),
+                    "article": p.get("article"),
+                    "clause": p.get("clause"),
+                    "point": p.get("point"),
+                }
+            )
 
         return {
             "answer_status": AnswerStatus.SUCCESS,
             "answer": res.content,
-            "citations": citations
+            "citations": citations,
         }

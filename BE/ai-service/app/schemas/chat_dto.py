@@ -1,10 +1,14 @@
+from typing import List, Optional  # noqa: UP035
+
 from pydantic import BaseModel
-from typing import Optional, List
-from app.schemas.statuses import ScopeResult, AnswerStatus
+
+from app.schemas.statuses import AnswerStatus, ScopeResult
+
 
 class ChatQueryRequest(BaseModel):
     question: str
     user_tax_period: Optional[str] = None
+
 
 class CitationItem(BaseModel):
     legal_source_id: Optional[str] = None
@@ -12,6 +16,7 @@ class CitationItem(BaseModel):
     article: Optional[str] = None
     clause: Optional[str] = None
     point: Optional[str] = None
+
 
 class ChatQueryResponse(BaseModel):
     scope_result: ScopeResult

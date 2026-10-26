@@ -1,7 +1,8 @@
 from app.core.ai_response import parse_ai_response
-from app.schemas.ai_results import ScopeAnalysis
-from app.modules.rag.prompts import build_scope_prompt
 from app.core.models import llm_model
+from app.modules.rag.prompts import build_scope_prompt
+from app.schemas.ai_results import ScopeAnalysis
+
 
 class ScopeRouter:
     @staticmethod
