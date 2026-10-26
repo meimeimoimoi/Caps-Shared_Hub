@@ -109,6 +109,26 @@ public sealed class CaseChatTests
         );
     }
 
+    // Unpaid or not yet accepted: no free questions before the expert takes the case
+    [Fact]
+    public void Chat_opens_only_when_the_expert_accepts()
+    {
+        var reviewCase = Requested();
+        Assert.Equal(
+            "CHAT_CLOSED",
+            Errors.CodeOf(() => CaseMessage.Post(reviewCase, Client, "Hi", Now))
+        );
+
+        reviewCase.ConfirmPayment(Now);
+        Assert.Equal(
+            "CHAT_CLOSED",
+            Errors.CodeOf(() => CaseMessage.Post(reviewCase, Client, "Hi", Now))
+        );
+
+        reviewCase.Accept(ExpertProfile, Expert, Now);
+        Assert.Equal("Hi", CaseMessage.Post(reviewCase, Client, "Hi", Now).Content);
+    }
+
     [Theory]
     [InlineData(null)]
     [InlineData("")]

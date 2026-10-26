@@ -322,17 +322,19 @@ public sealed class ReviewCase
         throw WorkflowErrors.ReviewCaseNotFound();
     }
 
-    /// <summary>New messages are only accepted until the case ends.</summary>
+    /// <summary>
+    /// New messages are accepted from the expert's acceptance until the case ends, so an unpaid booking
+    /// cannot be used for free questions.
+    /// </summary>
     public void EnsureChatOpen()
     {
         if (
             Status
-            is ReviewCaseStatus.Completed
-                or ReviewCaseStatus.AutoConfirmed
-                or ReviewCaseStatus.Terminated
-                or ReviewCaseStatus.ExpertDeclined
-                or ReviewCaseStatus.ExpertTimeout
-                or ReviewCaseStatus.CancelledUnpaid
+            is not (
+                ReviewCaseStatus.InReview
+                or ReviewCaseStatus.AwaitingUserInformation
+                or ReviewCaseStatus.AwaitingAcceptance
+            )
         )
         {
             throw WorkflowErrors.ChatClosed(Status);

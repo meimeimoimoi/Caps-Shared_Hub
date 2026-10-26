@@ -42,7 +42,7 @@ public sealed class ReviewCaseMessagesController(ICurrentUser currentUser) : Con
     /// <response code="200">The stored message.</response>
     /// <response code="400">MESSAGE_EMPTY or MESSAGE_TOO_LONG.</response>
     /// <response code="404">REVIEW_CASE_NOT_FOUND (also when the caller is not a party).</response>
-    /// <response code="409">CHAT_CLOSED: the case has ended.</response>
+    /// <response code="409">CHAT_CLOSED: the expert has not accepted yet, or the case has ended.</response>
     [HttpPost("{caseId:guid}/messages")]
     public async Task<IActionResult> Send(
         Guid caseId,
