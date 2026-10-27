@@ -62,6 +62,13 @@ public static class JwtServiceCollectionExtensions
                     o.Events = new JwtBearerEvents
                     {
                         OnTokenValidated = SessionRevocationCheck.OnTokenValidated,
+                        // WebSockets/SSE cannot send headers; SignalR puts the token in the query, accepted only on hub paths
+                        OnMessageReceived = ctx =>
+                        {
+                            if (ctx.Request.Path.Value?.Contains("/hubs/") == true)
+                                ctx.Token ??= ctx.Request.Query["access_token"];
+                            return Task.CompletedTask;
+                        },
                     };
                     o.TokenValidationParameters = new TokenValidationParameters
                     {

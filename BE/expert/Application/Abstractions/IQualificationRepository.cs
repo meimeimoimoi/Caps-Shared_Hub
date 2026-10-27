@@ -47,7 +47,7 @@ public interface IQualificationRepository
 
     /// <summary>
     /// Approved qualifications taking requests, with their profiles, untracked: the Marketplace candidates
-    /// before price, slots and account status are checked.
+    /// before price, capacity and account status are checked.
     /// </summary>
     /// <param name="serviceCode">Only this service; null for every service.</param>
     /// <param name="profileId">Only this expert; null for every expert.</param>

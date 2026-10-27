@@ -1,0 +1,152 @@
+using System.ComponentModel.DataAnnotations;
+using System.Text.Json;
+using System.Text.Json.Nodes;
+using System.Text.Json.Serialization;
+using Caps.Ingestion.Features.CrawlJobs;
+using Caps.Ingestion.Features.Documents;
+
+namespace Caps.Ingestion.DTOs.Requests;
+
+/// <summary>The worker's final report on a crawl job.</summary>
+/// <param name="Status">SUCCEEDED or FAILED.</param>
+/// <param name="DocsFound">Documents the crawl exported.</param>
+/// <param name="Detail">Summary of the exported documents, or the error.</param>
+public sealed record CompleteCrawlJobRequest(
+    [Required, MaxLength(16)] string Status,
+    [Range(0, int.MaxValue)] int DocsFound,
+    JsonElement? Detail
+)
+{
+    public CompleteCrawlJobCommand ToCommand(Guid crawlJobId) =>
+        new(
+            crawlJobId,
+            Status.Trim().ToUpperInvariant(),
+            DocsFound,
+            Detail is { } detail ? JsonSerializer.SerializeToNode(detail) : null
+        );
+}
+
+/// <summary>A milestone of a running crawl job.</summary>
+/// <param name="Stage">SEARCHING, DETAILS, RELATIONS, EXPORTING or POSTING.</param>
+/// <param name="Done">Items finished in the stage.</param>
+/// <param name="Total">Items in the stage, when known.</param>
+/// <param name="Message">Short text for the admin.</param>
+public sealed record ReportCrawlProgressRequest(
+    [Required, MaxLength(32)] string Stage,
+    [Range(0, int.MaxValue)] int Done,
+    [Range(0, int.MaxValue)] int? Total,
+    [MaxLength(500)] string? Message
+)
+{
+    public ReportCrawlProgressCommand ToCommand(Guid crawlJobId) =>
+        new(crawlJobId, Stage.Trim().ToUpperInvariant(), Done, Total, Message?.Trim());
+}
+
+/// <summary>The worker's result for an uploaded file: contentJson, or error when it could not be split.</summary>
+/// <param name="ContentJson">Same shape as content_json in a crawler export file.</param>
+public sealed record SaveParsedContentRequest(
+    JsonElement? ContentJson,
+    [MaxLength(2000)] string? Error
+)
+{
+    public SaveParsedContentCommand ToCommand(Guid documentId)
+    {
+        if (ContentJson is { ValueKind: not JsonValueKind.Object })
+            throw IngestionErrors.InvalidContentJson();
+        var error = string.IsNullOrWhiteSpace(Error) ? null : Error.Trim();
+        return new(documentId, ContentJson?.GetRawText(), error);
+    }
+}
+
+/// <summary>
+/// One crawler export file (schema_version 2), posted by the worker exactly as written to export/.
+/// Field names follow the file (snake_case); chunks are ignored until the document is indexed.
+/// </summary>
+public sealed record CrawledDocumentRequest(
+    [property: JsonPropertyName("schema_version")] [Range(2, 2)] int SchemaVersion,
+    [property: JsonPropertyName("legal_source")] [Required] CrawledLegalSourceRequest LegalSource,
+    [property: JsonPropertyName("knowledge_document")]
+    [Required]
+        CrawledKnowledgeDocumentRequest KnowledgeDocument
+)
+{
+    public ImportCrawledDocumentCommand ToCommand(Guid crawlJobId)
+    {
+        var source = LegalSource;
+        var document = KnowledgeDocument;
+        if (document.ContentJson is not { ValueKind: JsonValueKind.Object } content)
+            throw IngestionErrors.InvalidContentJson();
+        // The worker's hints for the reviewer (suggested status, pending reasons) stay with the document
+        var metadata = ObjectOrEmpty(document.Metadata);
+        if (document.Ingest is { } ingest)
+            metadata["ingest"] = JsonSerializer.SerializeToNode(ingest);
+        var sourceMetadata = ObjectOrEmpty(source.Metadata);
+        return new(
+            crawlJobId,
+            source.DocumentNumber.Trim(),
+            source.DocType.Trim(),
+            source.IssuingAuthority?.Trim(),
+            source.Title.Trim(),
+            sourceMetadata.ToJsonString(),
+            document.Source,
+            document.FileHash,
+            sourceMetadata["detail_url"]?.GetValue<string>(),
+            document.IssuedDate,
+            document.EffectiveFrom,
+            document.EffectiveTo,
+            content.GetRawText(),
+            metadata.ToJsonString(),
+            Amendment(sourceMetadata["related_from"])
+        );
+    }
+
+    // "Lược đồ" relations that change the other document; guidance, VBHN and citation links are not amendments
+    private static readonly Dictionary<string, string> AmendmentTypes = new()
+    {
+        ["sua_doi_mot_phan"] = "AMENDS",
+        ["thay_the_toan_bo"] = "REPLACES",
+    };
+
+    /// <summary>related_from as an amendment; direction "in" means this document acts on the other one.</summary>
+    private static CrawledAmendment? Amendment(JsonNode? relatedFrom)
+    {
+        var number = relatedFrom?["so_hieu"]?.GetValue<string>().Trim();
+        var relation = relatedFrom?["relation"]?.GetValue<string>() ?? "";
+        var direction = relatedFrom?["direction"]?.GetValue<string>();
+        if (string.IsNullOrEmpty(number) || direction is not ("in" or "out"))
+            return null;
+        return AmendmentTypes.TryGetValue(relation, out var type)
+            ? new(number, type, AmendsOther: direction == "in")
+            : null;
+    }
+
+    private static JsonObject ObjectOrEmpty(JsonElement? value) =>
+        value is { ValueKind: JsonValueKind.Object } o ? JsonObject.Create(o)! : [];
+}
+
+/// <summary>The legal_source part of an export file.</summary>
+public sealed record CrawledLegalSourceRequest(
+    [property: JsonPropertyName("document_number")]
+    [Required, MaxLength(256)]
+        string DocumentNumber,
+    [property: JsonPropertyName("doc_type")] [Required, MaxLength(128)] string DocType,
+    [property: JsonPropertyName("issuing_authority")] [MaxLength(512)] string? IssuingAuthority,
+    [property: JsonPropertyName("title")] [Required] string Title,
+    [property: JsonPropertyName("metadata")] JsonElement? Metadata
+);
+
+/// <summary>The knowledge_document part of an export file.</summary>
+/// <param name="Source">CRAWL_VBPL or CRAWL_MOF.</param>
+/// <param name="FileHash">SHA-256 (hex) the crawler computed; the same hash is imported only once.</param>
+public sealed record CrawledKnowledgeDocumentRequest(
+    [property: JsonPropertyName("source")] [Required, MaxLength(32)] string Source,
+    [property: JsonPropertyName("file_hash")]
+    [Required, RegularExpression("^[0-9a-f]{64}$")]
+        string FileHash,
+    [property: JsonPropertyName("issued_date")] DateOnly? IssuedDate,
+    [property: JsonPropertyName("effective_from")] DateOnly? EffectiveFrom,
+    [property: JsonPropertyName("effective_to")] DateOnly? EffectiveTo,
+    [property: JsonPropertyName("content_json")] [Required] JsonElement? ContentJson,
+    [property: JsonPropertyName("ingest")] JsonElement? Ingest,
+    [property: JsonPropertyName("metadata")] JsonElement? Metadata
+);

@@ -33,7 +33,6 @@ public sealed class ExpertDbContext(DbContextOptions<ExpertDbContext> options) :
     public DbSet<ServiceOfferingChange> ServiceOfferingChanges => Set<ServiceOfferingChange>();
     public DbSet<ServiceCatalogItem> ServiceCatalog => Set<ServiceCatalogItem>();
     public DbSet<NotificationOutboxEntry> NotificationOutbox => Set<NotificationOutboxEntry>();
-    public DbSet<AvailabilitySlot> AvailabilitySlots => Set<AvailabilitySlot>();
     public DbSet<PolicySetting> PolicySettings => Set<PolicySetting>();
     public DbSet<PolicySettingChange> PolicySettingChanges => Set<PolicySettingChange>();
     public DbSet<ReviewClaimEvent> ReviewClaimEvents => Set<ReviewClaimEvent>();
@@ -49,7 +48,14 @@ public sealed class ExpertDbContext(DbContextOptions<ExpertDbContext> options) :
 
         modelBuilder.Entity<ExpertProfile>(e =>
         {
-            e.ToTable("expert_profile");
+            e.ToTable(
+                "expert_profile",
+                t =>
+                    t.HasCheckConstraint(
+                        "ck_expert_capacity",
+                        "capacity BETWEEN 0 AND 20 AND active_cases >= 0"
+                    )
+            );
             e.HasKey(x => x.Id);
             e.Property(x => x.Id).HasColumnName("id");
             e.Property(x => x.UserId).HasColumnName("user_id");
@@ -82,6 +88,8 @@ public sealed class ExpertDbContext(DbContextOptions<ExpertDbContext> options) :
                 .HasColumnType("numeric(3,2)")
                 .HasDefaultValue(0m);
             e.Property(x => x.RatingCount).HasColumnName("rating_count").HasDefaultValue(0);
+            e.Property(x => x.Capacity).HasColumnName("capacity").HasDefaultValue(0);
+            e.Property(x => x.ActiveCases).HasColumnName("active_cases").HasDefaultValue(0);
             e.Property(x => x.ApprovedBy).HasColumnName("approved_by");
             e.Property(x => x.ApprovedAt).HasColumnName("approved_at");
             e.Property(x => x.CreatedAt).HasColumnName("created_at").IsRequired();
@@ -509,30 +517,6 @@ public sealed class ExpertDbContext(DbContextOptions<ExpertDbContext> options) :
                 .HasForeignKey(x => x.OfferingId)
                 .OnDelete(DeleteBehavior.Restrict)
                 .HasConstraintName("fk_offering_change_offering");
-        });
-
-        modelBuilder.Entity<AvailabilitySlot>(e =>
-        {
-            e.ToTable("availability_slot");
-            e.HasKey(x => x.Id);
-            e.Property(x => x.Id).HasColumnName("id");
-            e.Property(x => x.ExpertProfileId).HasColumnName("expert_profile_id");
-            e.Property(x => x.StartAt).HasColumnName("start_at").IsRequired();
-            e.Property(x => x.EndAt).HasColumnName("end_at").IsRequired();
-            e.Property(x => x.Status).HasColumnName("status").HasDefaultValue("OPEN").IsRequired();
-            e.Property(x => x.CreatedAt).HasColumnName("created_at").IsRequired();
-            e.HasIndex(x => new
-                {
-                    x.ExpertProfileId,
-                    x.Status,
-                    x.StartAt,
-                })
-                .HasDatabaseName("ix_availability_slot_open");
-            e.HasOne(x => x.ExpertProfile)
-                .WithMany(p => p.AvailabilitySlots)
-                .HasForeignKey(x => x.ExpertProfileId)
-                .OnDelete(DeleteBehavior.Restrict)
-                .HasConstraintName("fk_availability_slot_profile");
         });
 
         modelBuilder.Entity<PolicySetting>(e =>

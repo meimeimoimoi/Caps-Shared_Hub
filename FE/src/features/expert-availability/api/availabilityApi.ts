@@ -17,15 +17,9 @@ export async function getAvailability(signal?: AbortSignal) {
   return (await api.get<Envelope<MyAvailability>>(BASE, { signal })).data
 }
 
-/** Opens a slot; times are ISO strings with an offset */
-export async function addSlot(startAt: string, endAt: string) {
-  return (
-    await api.post<Envelope<MyAvailability>>(`${BASE}/slots`, { startAt, endAt })
-  ).data
-}
-
-export async function removeSlot(id: string) {
-  return (await api.del<Envelope<MyAvailability>>(`${BASE}/slots/${id}`)).data
+/** Sets how many cases the expert runs at once (1–20) */
+export async function setCapacity(capacity: number) {
+  return (await api.put<Envelope<MyAvailability>>(BASE, { capacity })).data
 }
 
 /** Turns new requests on or off for one service */
