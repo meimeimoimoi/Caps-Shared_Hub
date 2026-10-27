@@ -410,6 +410,18 @@ namespace Caps.Expert.Infrastructure.Persistence.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("effective_from");
 
+                    b.Property<int>("LateCancelHours")
+                        .HasColumnType("integer")
+                        .HasColumnName("late_cancel_hours");
+
+                    b.Property<int>("LatePenaltyHours")
+                        .HasColumnType("integer")
+                        .HasColumnName("late_penalty_hours");
+
+                    b.Property<int>("LatePenaltyPercent")
+                        .HasColumnType("integer")
+                        .HasColumnName("late_penalty_percent");
+
                     b.Property<int>("Percent")
                         .HasColumnType("integer")
                         .HasColumnName("percent");
@@ -431,6 +443,8 @@ namespace Caps.Expert.Infrastructure.Persistence.Migrations
 
                     b.ToTable("platform_fee", "expert", t =>
                         {
+                            t.HasCheckConstraint("ck_platform_fee_late_rule", "late_penalty_hours >= 0 AND late_penalty_percent >= 0 AND percent + late_penalty_percent <= 100 AND late_cancel_hours BETWEEN late_penalty_hours AND 720");
+
                             t.HasCheckConstraint("ck_platform_fee_percent", "percent BETWEEN 0 AND 50");
                         });
 
@@ -439,6 +453,9 @@ namespace Caps.Expert.Infrastructure.Persistence.Migrations
                         {
                             Id = new Guid("01929e3a-0000-7000-8000-000000000020"),
                             EffectiveFrom = new DateTimeOffset(new DateTime(2026, 10, 17, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            LateCancelHours = 72,
+                            LatePenaltyHours = 24,
+                            LatePenaltyPercent = 30,
                             Percent = 20,
                             ServiceCode = "HUMAN_VERIFICATION",
                             SetBy = new Guid("00000000-0000-0000-0000-000000000000")
