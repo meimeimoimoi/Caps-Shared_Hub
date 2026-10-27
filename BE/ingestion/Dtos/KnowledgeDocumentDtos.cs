@@ -1,3 +1,3 @@
 namespace ingestion.Dtos;
 
-public class KnowledgeDocumentDtos { }
+public class KnowledgeDocumentDtos;

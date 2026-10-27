@@ -3,7 +3,7 @@ using System.Text.Json.Nodes;
 using Caps.Ingestion.Data;
 using Caps.Ingestion.Entities;
 using ingestion.Dtos;
-using ingestion.Services.Interface;
+using ingestion.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using static Caps.Ingestion.Dtos.AiServiceDtos;
 

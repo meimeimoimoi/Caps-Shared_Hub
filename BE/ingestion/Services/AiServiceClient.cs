@@ -1,7 +1,6 @@
-using System.Net.Http.Json;
 using System.Text.Json;
 using Caps.Ingestion.Dtos;
-using ingestion.Services.Interface;
+using ingestion.Services.Interfaces;
 
 namespace ingestion.Services;
 
