@@ -8,13 +8,15 @@ namespace Caps.Workflow.UnitTests;
 
 public sealed class SendCaseMessageTests
 {
+    private static readonly DateTimeOffset Now = new(2026, 10, 20, 1, 0, 0, TimeSpan.Zero);
     private static readonly Guid Client = Guid.NewGuid();
     private static readonly Guid Expert = Guid.NewGuid();
+    private static readonly Guid ExpertProfile = Guid.NewGuid();
 
     [Fact]
     public async Task A_saved_message_is_pushed_to_both_parties()
     {
-        var reviewCase = Case("IN_REVIEW");
+        var reviewCase = InReview();
         var (handler, notifier, unitOfWork) = Handler(reviewCase);
 
         var sent = await handler.HandleAsync(new(Client, reviewCase.Id, " Hi "), default);
@@ -30,7 +32,7 @@ public sealed class SendCaseMessageTests
     [Fact]
     public async Task A_rejected_message_is_not_pushed()
     {
-        var reviewCase = Case("COMPLETED");
+        var reviewCase = Completed();
         var (handler, notifier, _) = Handler(reviewCase);
 
         await Assert.ThrowsAsync<Caps.Common.Domain.AppException>(() =>
@@ -40,13 +42,33 @@ public sealed class SendCaseMessageTests
         Assert.Empty(notifier.Pushes);
     }
 
-    private static ReviewCase Case(string status) =>
-        new()
-        {
-            RequesterUserId = Client,
-            ExpertUserId = Expert,
-            Status = status,
-        };
+    // Built through the real domain steps: requested, paid and accepted, so the chat is open
+    private static ReviewCase InReview()
+    {
+        var reviewCase = ReviewCase
+            .Request(
+                Client,
+                Guid.NewGuid(),
+                Guid.NewGuid(),
+                new ReviewOffer(ExpertProfile, Expert, Guid.NewGuid(), 1_000_000, 20, 48),
+                "Check my CIT return",
+                null,
+                Now
+            )
+            .Case;
+        reviewCase.ConfirmPayment(Now);
+        reviewCase.Accept(ExpertProfile, Expert, Now);
+        return reviewCase;
+    }
+
+    // Delivered and confirmed by the client: the chat is closed
+    private static ReviewCase Completed()
+    {
+        var reviewCase = InReview();
+        reviewCase.Deliver(ExpertProfile, Expert, ReviewCase.Verified, "Looks right", null, Now);
+        reviewCase.Confirm(Client, Now);
+        return reviewCase;
+    }
 
     private static (SendCaseMessageHandler, FakeNotifier, FakeUnitOfWork) Handler(
         ReviewCase reviewCase
@@ -100,6 +122,18 @@ public sealed class SendCaseMessageTests
     {
         public Task<ReviewCase?> FindAsync(Guid reviewCaseId, CancellationToken ct) =>
             Task.FromResult<ReviewCase?>(reviewCase.Id == reviewCaseId ? reviewCase : null);
+
+        public Task<ReviewCase?> FindForUpdateAsync(Guid reviewCaseId, CancellationToken ct) =>
+            throw new NotSupportedException();
+
+        public Task<IReadOnlyList<ReviewCase>> ListForUserAsync(
+            Guid userId,
+            CancellationToken ct
+        ) => throw new NotSupportedException();
+
+        public void Add(ReviewCase reviewCase) => throw new NotSupportedException();
+
+        public void AddHistory(ReviewStatusHistory history) => throw new NotSupportedException();
     }
 
     private sealed class FakeMessages : ICaseMessageRepository
