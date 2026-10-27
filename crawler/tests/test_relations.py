@@ -99,11 +99,11 @@ def _follow(monkeypatch, tmp_path, previous, cache=None, refresh=False, read_ok=
         storage.save_cache("relations_cache", cache)
     reads, fetched = [], []
 
-    def fake_read(ids, headless):
+    def fake_read(ids, headless, on_progress=None):
         reads.extend(ids)
         return {i: _luoc_do("from-network") for i in ids} if read_ok else {}
 
-    def fake_fetch(ids, headless, skip_download):
+    def fake_fetch(ids, headless, skip_download, on_progress=None):
         fetched.extend(ids)
         return [SearchResultItem(title=i, detail_url="", doc_id=i, api_detail={"id": i, "docNum": i}) for i in ids]
 
@@ -153,7 +153,7 @@ def test_reference_targets_resolve_ids_in_order(monkeypatch, tmp_path):
     storage.save_cache("reference_ids", {"3/2020/TT-BTC": "id-cached"})
     searched = []
 
-    def fake_find(numbers, headless):
+    def fake_find(numbers, headless, on_progress=None):
         searched.append(list(numbers))
         return {"4/2020/TT-BTC": "id-searched"}
 
@@ -177,7 +177,7 @@ def test_reference_targets_resolve_ids_in_order(monkeypatch, tmp_path):
 
 def test_reference_targets_skip_known_ids(monkeypatch, tmp_path):
     monkeypatch.setattr(config, "DATA_ROOT", tmp_path)
-    monkeypatch.setattr(scraper_agent, "find_document_ids", lambda numbers, headless: {})
+    monkeypatch.setattr(scraper_agent, "find_document_ids", lambda numbers, headless, on_progress=None: {})
     relations = [{"code": "9", "direction": "out", "doc_id": "already", "title": "Thông tư số 2/2020/TT-BTC"}]
     sources = [("me", "9/2024/TT-BTC", _ref_text("2/2020/TT-BTC"), "Thông tư", relations)]
 

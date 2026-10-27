@@ -37,6 +37,12 @@ public static class ExpertPolicySetup
             )
             .Validate(
                 x =>
+                    x.PricingMinFee <= x.PricingMaxFee
+                    && x.TurnaroundMinDays <= x.TurnaroundMaxDays,
+                "ExpertPolicy price and turnaround minimums cannot exceed their maximums."
+            )
+            .Validate(
+                x =>
                     x.AllowedNotApplicableCriteria.All(EligibilityCriteria.Codes.Contains)
                     && (x.Submission.DeclarationCriteria ?? new Dictionary<string, string[]>())
                         .Values.SelectMany(c => c)

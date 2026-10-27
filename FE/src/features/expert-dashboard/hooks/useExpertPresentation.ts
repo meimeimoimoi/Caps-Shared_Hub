@@ -47,7 +47,7 @@ const reasonCodes = [
   'PRICING_PENDING',
   'PRICING_IN_REVIEW',
   'REQUESTS_TURNED_OFF',
-  'NO_OPEN_SLOTS',
+  'CAPACITY_NOT_SET',
   'ACCOUNT_INACTIVE',
 ] as const
 const isReasonCode = (value: string): value is (typeof reasonCodes)[number] =>

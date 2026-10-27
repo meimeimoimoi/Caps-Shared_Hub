@@ -1,6 +1,9 @@
+from typing import Any, Dict, List  # noqa: UP035
+
 from pydantic import BaseModel
-from typing import Dict, Any, List
+
 from app.schemas.statuses import OperationStatus
+
 
 class GenerateDraftRequest(BaseModel):
     document_id: str
@@ -8,6 +11,7 @@ class GenerateDraftRequest(BaseModel):
     template_schema: Dict[str, Any]
     period_start: str
     period_end: str
+
 
 class GenerateDraftResponse(BaseModel):
     status: OperationStatus

@@ -407,19 +407,50 @@ public sealed class QualificationEvidenceRepository(ExpertDbContext db)
 /// <summary>EF Core store for platform fee history.</summary>
 public sealed class PlatformFeeRepository(ExpertDbContext db) : IPlatformFeeRepository
 {
-    public Task<PlatformFee?> FindCurrentAsync(string serviceCode, CancellationToken ct) =>
-        db
-            .PlatformFees.Where(f => f.ServiceCode == serviceCode)
+    public Task<PlatformFee?> FindCurrentAsync(
+        string serviceCode,
+        DateTimeOffset now,
+        CancellationToken ct
+    ) =>
+        InForce(now)
+            .Where(f => f.ServiceCode == serviceCode)
             .OrderByDescending(f => f.EffectiveFrom)
             .FirstOrDefaultAsync(ct);
 
     // ponytail: latest row per service via GROUP BY; fine for a handful of services
-    public async Task<IReadOnlyList<PlatformFee>> ListCurrentAsync(CancellationToken ct) =>
-        await db
-            .PlatformFees.AsNoTracking()
+    public async Task<IReadOnlyList<PlatformFee>> ListCurrentAsync(
+        DateTimeOffset now,
+        CancellationToken ct
+    ) =>
+        await InForce(now)
+            .AsNoTracking()
             .GroupBy(f => f.ServiceCode)
             .Select(g => g.OrderByDescending(f => f.EffectiveFrom).First())
             .ToListAsync(ct);
+
+    public async Task<IReadOnlyList<PlatformFee>> ListPendingAsync(
+        string serviceCode,
+        DateTimeOffset now,
+        CancellationToken ct
+    ) =>
+        await db
+            .PlatformFees.Where(f =>
+                f.ServiceCode == serviceCode && f.CancelledAt == null && f.EffectiveFrom > now
+            )
+            .ToListAsync(ct);
+
+    public async Task<IReadOnlyList<PlatformFee>> ListAllPendingAsync(
+        DateTimeOffset now,
+        CancellationToken ct
+    ) =>
+        await db
+            .PlatformFees.AsNoTracking()
+            .Where(f => f.CancelledAt == null && f.EffectiveFrom > now)
+            .ToListAsync(ct);
+
+    // Rates that took effect and were not cancelled before that
+    private IQueryable<PlatformFee> InForce(DateTimeOffset now) =>
+        db.PlatformFees.Where(f => f.CancelledAt == null && f.EffectiveFrom <= now);
 
     public void Add(PlatformFee fee) => db.PlatformFees.Add(fee);
 }
@@ -447,49 +478,20 @@ public sealed class ServiceOfferingRepository(ExpertDbContext db) : IServiceOffe
             .OrderBy(o => o.ServiceCode)
             .ToListAsync(ct);
 
-    public void Add(ServiceOffering offering) => db.ServiceOfferings.Add(offering);
-}
-
-/// <summary>EF Core store for availability slots.</summary>
-public sealed class AvailabilityRepository(ExpertDbContext db) : IAvailabilityRepository
-{
-    public async Task<IReadOnlyList<AvailabilitySlot>> ListOpenAsync(
+    public async Task<IReadOnlyList<ServiceOfferingChange>> ListChangesAsync(
         Guid profileId,
-        DateTimeOffset now,
+        string serviceCode,
         CancellationToken ct
     ) =>
         await db
-            .AvailabilitySlots.AsNoTracking()
-            .Where(x =>
-                x.ExpertProfileId == profileId && x.Status == AvailabilitySlot.Open && x.EndAt > now
-            )
-            .OrderBy(x => x.StartAt)
+            .ServiceOfferingChanges.AsNoTracking()
+            .Where(x => x.ExpertProfileId == profileId && x.ServiceCode == serviceCode)
+            .OrderByDescending(x => x.ChangedAt)
             .ToListAsync(ct);
 
-    public async Task<IReadOnlyList<AvailabilitySlot>> ListOpenAsync(
-        IReadOnlyCollection<Guid> profileIds,
-        DateTimeOffset now,
-        CancellationToken ct
-    ) =>
-        await db
-            .AvailabilitySlots.AsNoTracking()
-            .Where(x =>
-                profileIds.Contains(x.ExpertProfileId)
-                && x.Status == AvailabilitySlot.Open
-                && x.StartAt > now
-            )
-            .OrderBy(x => x.StartAt)
-            .ToListAsync(ct);
+    public void Add(ServiceOffering offering) => db.ServiceOfferings.Add(offering);
 
-    public Task<AvailabilitySlot?> FindAsync(Guid slotId, Guid profileId, CancellationToken ct) =>
-        db.AvailabilitySlots.SingleOrDefaultAsync(
-            x => x.Id == slotId && x.ExpertProfileId == profileId,
-            ct
-        );
-
-    public void Add(AvailabilitySlot slot) => db.AvailabilitySlots.Add(slot);
-
-    public void Remove(AvailabilitySlot slot) => db.AvailabilitySlots.Remove(slot);
+    public void AddChange(ServiceOfferingChange change) => db.ServiceOfferingChanges.Add(change);
 }
 
 /// <summary>EF Core store for policy values changed by a System Admin and their history.</summary>

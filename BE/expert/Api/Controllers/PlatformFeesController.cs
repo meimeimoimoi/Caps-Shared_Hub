@@ -18,8 +18,10 @@ public sealed class PlatformFeesController(ICurrentUser currentUser) : Controlle
 {
     private Guid UserId => currentUser.RequireUserId();
 
-    /// <summary>Lists every active catalog service with its current platform fee.</summary>
-    /// <response code="200">One row per service; percent is null until the first fee is set.</response>
+    /// <summary>Lists every active catalog service with its platform fee and any pending change.</summary>
+    /// <response code="200">
+    /// One row per service; percent is null until the first fee is set, pending is the announced change.
+    /// </response>
     /// <response code="403">Missing the PricingManage permission.</response>
     [HttpGet]
     public async Task<IActionResult> List(
@@ -32,10 +34,13 @@ public sealed class PlatformFeesController(ICurrentUser currentUser) : Controlle
         return Ok(ApiResponse<IReadOnlyList<PlatformFeeResponse>>.Ok(rates));
     }
 
-    /// <summary>Sets a new platform fee for a catalog service, effective now.</summary>
-    /// <remarks>Cases already booked keep the percent frozen on them; only new bookings use the new rate.</remarks>
-    /// <response code="200">The new rate.</response>
-    /// <response code="400">PLATFORM_FEE_INVALID: outside 0 to 99.</response>
+    /// <summary>Announces a new platform fee for a catalog service from effectiveOn.</summary>
+    /// <remarks>
+    /// A change, raise or cut, must start at least the PlatformFeeNoticeDays policy ahead and replaces a change
+    /// still pending. The first fee of a service applies at once. Cases already booked keep their percent.
+    /// </remarks>
+    /// <response code="200">The service row with the rate in force and the pending change.</response>
+    /// <response code="400">PLATFORM_FEE_INVALID: outside 0 to 50; PLATFORM_FEE_TOO_SOON: before the earliest day.</response>
     /// <response code="403">Missing the PricingManage permission.</response>
     /// <response code="404">SERVICE_NOT_FOUND: not a catalog service.</response>
     /// <response code="503">SESSION_CHECK_UNAVAILABLE: the session could not be checked.</response>
@@ -47,7 +52,28 @@ public sealed class PlatformFeesController(ICurrentUser currentUser) : Controlle
         CancellationToken ct
     )
     {
-        var rate = await handler.HandleAsync(new(UserId, serviceCode, r.Percent), ct);
+        var rate = await handler.HandleAsync(
+            new(UserId, serviceCode, r.Percent, r.EffectiveOn),
+            ct
+        );
+        return Ok(ApiResponse<PlatformFeeResponse>.Ok(rate));
+    }
+
+    /// <summary>Cancels the pending platform fee change of a catalog service.</summary>
+    /// <remarks>The rate in force stays; the cancelled change is kept as history.</remarks>
+    /// <response code="200">The service row without the pending change.</response>
+    /// <response code="403">Missing the PricingManage permission.</response>
+    /// <response code="404">SERVICE_NOT_FOUND: not a catalog service.</response>
+    /// <response code="409">PLATFORM_FEE_NOT_PENDING: nothing pending to cancel.</response>
+    /// <response code="503">SESSION_CHECK_UNAVAILABLE: the session could not be checked.</response>
+    [HttpDelete("{serviceCode}/pending"), RequireSessionCheck]
+    public async Task<IActionResult> CancelPending(
+        string serviceCode,
+        [FromServices] ICommandHandler<CancelPlatformFeeCommand, PlatformFeeResponse> handler,
+        CancellationToken ct
+    )
+    {
+        var rate = await handler.HandleAsync(new(UserId, serviceCode), ct);
         return Ok(ApiResponse<PlatformFeeResponse>.Ok(rate));
     }
 }

@@ -10,9 +10,9 @@ using Microsoft.AspNetCore.Mvc;
 namespace Caps.Expert.Api.Controllers;
 
 /// <summary>
-/// The signed-in expert's availability: open slots shared by all services and a per-service switch for new
-/// requests. A service is listed on the Marketplace once it is approved, priced, switched on and the expert
-/// has an open slot (BR-M01).
+/// The signed-in expert's availability: how many cases they run at once (capacity, shared by all services) and
+/// a per-service switch for new requests. A service is listed on the Marketplace once it is approved, priced,
+/// switched on and the expert has set a capacity (BR-M01); a full expert stays listed as full.
 /// </summary>
 [ApiController, Authorize(Policy = "AuthSession"), Route("api/v1/experts/me/availability")]
 public sealed class AvailabilityController(ICurrentUser currentUser) : ControllerBase
@@ -22,7 +22,7 @@ public sealed class AvailabilityController(ICurrentUser currentUser) : Controlle
     private static OkObjectResult Result(MyAvailabilityResponse data) =>
         new(ApiResponse<MyAvailabilityResponse>.Ok(data));
 
-    /// <summary>Returns the open slots, the request switch of each service and the slot rules.</summary>
+    /// <summary>Returns the capacity, the cases holding a slot and the request switch of each service.</summary>
     /// <response code="200">The availability view (empty before the expert has a profile).</response>
     [HttpGet]
     public async Task<IActionResult> Get(
@@ -34,34 +34,22 @@ public sealed class AvailabilityController(ICurrentUser currentUser) : Controlle
         return Result(view);
     }
 
-    /// <summary>Opens a slot.</summary>
-    /// <response code="200">The availability view with the new slot.</response>
-    /// <response code="400">SLOT_IN_PAST, SLOT_TOO_FAR_AHEAD or SLOT_LENGTH_INVALID.</response>
+    /// <summary>Sets how many cases the expert runs at once, shared by all their services.</summary>
+    /// <remarks>
+    /// Running cases are never touched: lowering the capacity below them only stops new cases until enough
+    /// end. A slot is taken when the expert accepts a case, not when the client pays.
+    /// </remarks>
+    /// <response code="200">The availability view with the new capacity.</response>
+    /// <response code="400">CAPACITY_INVALID: outside 1–20.</response>
     /// <response code="404">EXPERT_NOT_FOUND: no expert profile yet.</response>
-    /// <response code="409">SLOT_OVERLAP or SLOT_LIMIT.</response>
-    [HttpPost("slots")]
-    public async Task<IActionResult> AddSlot(
-        AddSlotRequest r,
-        [FromServices] ICommandHandler<AddSlotCommand, MyAvailabilityResponse> handler,
+    [HttpPut]
+    public async Task<IActionResult> SetCapacity(
+        CapacityRequest r,
+        [FromServices] ICommandHandler<SetCapacityCommand, MyAvailabilityResponse> handler,
         CancellationToken ct
     )
     {
-        var view = await handler.HandleAsync(r.ToCommand(Applicant), ct);
-        return Result(view);
-    }
-
-    /// <summary>Removes an open slot.</summary>
-    /// <response code="200">The availability view without the slot.</response>
-    /// <response code="404">EXPERT_NOT_FOUND or SLOT_NOT_FOUND.</response>
-    /// <response code="409">SLOT_LOCKED: the slot is booked.</response>
-    [HttpDelete("slots/{id:guid}")]
-    public async Task<IActionResult> RemoveSlot(
-        Guid id,
-        [FromServices] ICommandHandler<RemoveSlotCommand, MyAvailabilityResponse> handler,
-        CancellationToken ct
-    )
-    {
-        var view = await handler.HandleAsync(new(Applicant, id), ct);
+        var view = await handler.HandleAsync(new(Applicant, r.Capacity), ct);
         return Result(view);
     }
 

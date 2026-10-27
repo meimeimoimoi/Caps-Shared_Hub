@@ -12,11 +12,11 @@ export type Availability =
       state: 'open'
       /** Demo listing: typical response time. */
       responseHours?: number
-      /** API listing: earliest open availability slot. */
-      nextSlotAt?: string | null
-      slotCount?: number
+      /** API listing: cases the expert can still accept now. */
+      freeSlots?: number
     }
-  | { state: 'full'; reopensAt: string }
+  /** Demo listing gives the reopening date; the API only knows the expert is full now. */
+  | { state: 'full'; reopensAt?: string }
   | { state: 'paused' }
 
 /** One expert as the Marketplace shows them, whatever the data source. */
@@ -71,6 +71,6 @@ export interface MarketplaceExpertDto {
     slaHours: number
     approvedAt: string | null
   }[]
-  nextOpenSlotAt: string | null
-  openSlotCount: number
+  /** Cases the expert can still accept now; 0 means full (listed, not bookable). */
+  freeSlots: number
 }

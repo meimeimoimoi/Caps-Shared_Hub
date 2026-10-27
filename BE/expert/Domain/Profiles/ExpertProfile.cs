@@ -1,6 +1,5 @@
 using Caps.Common.Domain;
 using Caps.Expert.Domain.Applications;
-using Caps.Expert.Domain.Catalog;
 
 namespace Caps.Expert.Domain.Profiles;
 
@@ -63,13 +62,25 @@ public sealed class ExpertProfile
     public int? TurnaroundHours { get; private set; }
     public decimal RatingAvg { get; }
     public int RatingCount { get; }
+
+    /// <summary>Most cases one expert may run at once.</summary>
+    public const int MaxCapacity = 20;
+
+    /// <summary>How many cases the expert runs at once; 0 until the expert sets it.</summary>
+    public int Capacity { get; private set; }
+
+    /// <summary>Accepted cases holding a slot; changed by the case flow, never by the expert.</summary>
+    public int ActiveCases { get; }
+
+    /// <summary>Slots still free for a new case (0 when full or not set).</summary>
+    public int FreeSlots => Math.Max(0, Capacity - ActiveCases);
+
     public Guid? ApprovedBy { get; private set; }
     public DateTimeOffset? ApprovedAt { get; private set; }
     public DateTimeOffset CreatedAt { get; private set; }
     public DateTimeOffset UpdatedAt { get; private set; }
 
     public ICollection<ExpertApplication> Applications { get; } = [];
-    public ICollection<AvailabilitySlot> AvailabilitySlots { get; } = [];
 
     /// <summary>A new profile for the account, created on its first application.</summary>
     /// <param name="defaultName">Shown until the applicant saves a name (e.g. the email's local part).</param>
@@ -96,6 +107,15 @@ public sealed class ExpertProfile
         YearsExperience = details.YearsExperience;
         Fields = details.Fields;
         Highlights = Clean(details.Highlights);
+        UpdatedAt = now;
+    }
+
+    /// <summary>Sets how many cases run at once; running cases are untouched even when it goes lower.</summary>
+    public void SetCapacity(int capacity, DateTimeOffset now)
+    {
+        if (capacity < 1 || capacity > MaxCapacity)
+            throw ExpertErrors.CapacityInvalid(MaxCapacity);
+        Capacity = capacity;
         UpdatedAt = now;
     }
 

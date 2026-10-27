@@ -9,7 +9,7 @@ namespace Caps.Expert.Api.Controllers;
 
 /// <summary>
 /// Public Marketplace (no sign-in): experts listed per BR-M01 (account ACTIVE, service APPROVED_FOR_SERVICE and
-/// ACTIVE, approved price in effect, requests on, an open slot). CV and evidence are never returned.
+/// ACTIVE, approved price in effect, requests on, a capacity set). CV and evidence are never returned.
 /// </summary>
 [ApiController, AllowAnonymous, Route("api/v1/marketplace/experts")]
 public sealed class MarketplaceController : ControllerBase

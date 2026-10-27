@@ -24,6 +24,7 @@ const SAVE_ERRORS = [
   'UNKNOWN_POLICY_SETTING',
   'POLICY_EXPECTED_VALUE_REQUIRED',
   'POLICY_CHANGED',
+  'POLICY_RANGE_INVERTED',
 ] as const
 type SaveError = (typeof SAVE_ERRORS)[number]
 const isSaveError = (code?: string): code is SaveError =>

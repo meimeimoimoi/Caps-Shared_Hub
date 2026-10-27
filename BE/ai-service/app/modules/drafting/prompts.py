@@ -1,5 +1,6 @@
 import json
 
+
 def build_draft_prompt(
     snapshot_data: dict,
     template_schema: dict,
@@ -7,7 +8,7 @@ def build_draft_prompt(
 ) -> str:
     snapshot_json = json.dumps(snapshot_data, ensure_ascii=False)
     template_json = json.dumps(template_schema, ensure_ascii=False)
-    
+
     return f"""Bạn là Trợ lý soạn thảo văn bản giải trình Thuế TNDN.
 Dữ liệu đầu vào (Input Snapshot):
 {snapshot_json}

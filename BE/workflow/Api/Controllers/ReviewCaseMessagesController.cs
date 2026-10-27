@@ -10,7 +10,8 @@ namespace Caps.Workflow.Api.Controllers;
 
 /// <summary>
 /// Text chat between the requester (client) and the expert of a review case. Only the two parties of the
-/// case can read or write; to anyone else the case does not exist. Clients poll with the <c>after</c> cursor.
+/// case can read or write; to anyone else the case does not exist. New messages are pushed over the chat hub
+/// (CaseMessageCreated); the <c>after</c> cursor catches up after a reconnect.
 /// </summary>
 [ApiController, Authorize, Route("api/v1/review-cases")]
 public sealed class ReviewCaseMessagesController(ICurrentUser currentUser) : ControllerBase
@@ -20,7 +21,7 @@ public sealed class ReviewCaseMessagesController(ICurrentUser currentUser) : Con
     /// <summary>Returns a page of the case's messages, oldest first.</summary>
     /// <remarks>
     /// Without cursors: the newest messages. <c>before</c>: older messages (scrolling back).
-    /// <c>after</c>: messages newer than the given one (polling). <c>limit</c> defaults to 30, at most 100.
+    /// <c>after</c>: messages newer than the given one (catch-up after a reconnect). <c>limit</c> defaults to 30, at most 100.
     /// </remarks>
     /// <response code="200">The messages (may be empty).</response>
     /// <response code="404">REVIEW_CASE_NOT_FOUND (also when the caller is not a party) or MESSAGE_NOT_FOUND (cursor).</response>

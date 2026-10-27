@@ -5,8 +5,52 @@ crawled or uploaded, reviewed by an admin, split into chunks and indexed in the 
 
 ## Status
 
-Database model and migrations only; no API or pipeline yet. One project (see AGENTS.md: simple services stay in
-one project, split into folders by feature). If the pipeline grows real business rules, move it to the four Clean Architecture projects: Domain, Application, Infrastructure and Api.
+Knowledge Admin API (crawl jobs, uploads, review queue, reject) and the source catalog are in place; approving,
+chunking and indexing are not built yet. One project (see AGENTS.md: simple services stay in one project, split
+into folders by feature). If the pipeline grows real business rules, move it to the four Clean Architecture
+projects: Domain, Application, Infrastructure and Api.
+
+| Folder | Content |
+|---|---|
+| `Controllers/` | public API (through the gateway) and `InternalIngestController` for the crawler worker |
+| `Features/<group>/` | one use case per file: command/query + handler |
+| `DTOs/`, `Constants/`, `Messaging/` | request/response shapes, column values, messages for the worker |
+| `Storage/`, `Configuration/`, `Security/` | S3 storage (copied from expert), startup setup, internal key filter |
+
+## API
+
+Through the gateway (`/api/v1/knowledge/**`). `KnowledgeManage` = KNOWLEDGE_ADMIN; the source catalog only needs an
+active account. Request/response shapes, error codes and the worker endpoints: [API.md](API.md).
+
+| Method | Route | Who | Purpose |
+|---|---|---|---|
+| POST | `/crawl-jobs` | KnowledgeManage | start a crawl (`sources`: vbpl/mof, `topN` or `all`); 409 while one runs |
+| GET | `/crawl-jobs?page&pageSize` | KnowledgeManage | crawl runs, newest first |
+| GET | `/crawl-jobs/{id}` | KnowledgeManage | one run; poll while RUNNING, `detail.progress` = worker's latest milestone |
+| POST | `/documents/upload` | KnowledgeManage | multipart PDF/DOCX (20 MB) + source metadata → new PENDING version |
+| GET | `/documents/pending?page&pageSize` | KnowledgeManage | review queue, oldest first |
+| GET | `/documents/{id}/preview` | KnowledgeManage | metadata + `contentJson` + `fileUrl`/`sourceUrl` |
+| GET | `/documents/{id}/file` | KnowledgeManage | original of an upload (crawled originals are not stored) |
+| POST | `/documents/{id}/reject` | KnowledgeManage | `{reason}`; PENDING → REJECTED, 409 otherwise |
+| GET | `/sources?q&docType&page&pageSize` | active account | search by number/title, with amendment links |
+| GET | `/sources/{id}/tree` | active account | amendment family tree (from `legal_amendment`) |
+
+`legal_amendment` is written by the crawl import from `legal_source.metadata.related_from` (vbpl "Lược đồ" relations
+`sua_doi_mot_phan` → `AMENDS`, `thay_the_toan_bo` → `REPLACES`), when the other source is already imported.
+
+## Crawler worker
+
+`crawler/worker.py` does the slow work. Ingestion publishes `CrawlRequested` and `DocumentParseRequested`
+(`Messaging/WorkerMessages.cs`) through MassTransit; the worker reads them from RabbitMQ and calls back the
+`/internal/**` endpoints with the `X-Internal-Key` header. The gateway does not route `/internal`.
+
+1. Set the same random key on both sides (never commit it):
+   `dotnet user-secrets set "InternalApi:Key" "<key>" --project ingestion` and `INTERNAL_API_KEY=<key>` in
+   `crawler/.env` (see `crawler/.env.example`). An empty key rejects every internal call.
+2. Start the worker once so it declares its queues; messages published before that are dropped.
+3. A job still RUNNING after 12 hours (worker stopped mid-run) is marked FAILED by the next trigger.
+
+Uploaded files go to the `caps-knowledge` bucket (SeaweedFS dev keys in `appsettings.Development.json`).
 
 | Entity | Purpose |
 |---|---|
