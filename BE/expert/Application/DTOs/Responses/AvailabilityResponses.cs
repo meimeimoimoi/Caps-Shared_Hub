@@ -1,21 +1,14 @@
 namespace Caps.Expert.Application.DTOs.Responses;
 
-/// <summary>The expert's open slots, per-service request switches and the slot rules.</summary>
+/// <summary>How many cases the expert runs at once and the per-service request switches.</summary>
+/// <param name="Capacity">Cases at once, 0 until the expert sets it.</param>
+/// <param name="ActiveCases">Accepted cases currently holding a slot (set by the case flow).</param>
+/// <param name="MaxCapacity">Highest capacity the expert may set.</param>
 public sealed record MyAvailabilityResponse(
-    AvailabilitySlotResponse[] Slots,
-    ServiceAvailabilityResponse[] Services,
-    int MinHours,
-    int MaxHours,
-    int MaxOpenSlots,
-    int MaxDaysAhead
-);
-
-/// <summary>One slot in which the expert can take new work.</summary>
-public sealed record AvailabilitySlotResponse(
-    string Id,
-    DateTimeOffset StartAt,
-    DateTimeOffset EndAt,
-    string Status
+    int Capacity,
+    int ActiveCases,
+    int MaxCapacity,
+    ServiceAvailabilityResponse[] Services
 );
 
 /// <summary>Whether the expert takes new requests for one service.</summary>

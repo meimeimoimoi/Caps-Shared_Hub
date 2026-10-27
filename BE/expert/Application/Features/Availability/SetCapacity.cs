@@ -6,22 +6,21 @@ using Caps.Expert.Domain;
 
 namespace Caps.Expert.Application.Features.Availability;
 
-/// <summary>Removes one of the expert's open slots.</summary>
-public sealed record RemoveSlotCommand(Applicant Applicant, Guid SlotId);
+/// <summary>Sets how many cases the expert runs at once (shared by all their services).</summary>
+public sealed record SetCapacityCommand(Applicant Applicant, int Capacity);
 
-/// <summary>Only open slots can be removed; other people's slots return SLOT_NOT_FOUND.</summary>
-public sealed class RemoveSlotHandler(
+/// <summary>Changes the capacity under the expert's lock; running cases are never touched.</summary>
+public sealed class SetCapacityHandler(
     IApplicantLock locks,
     IExpertProfileRepository profiles,
     IQualificationRepository qualifications,
-    IAvailabilityRepository availability,
     IServiceCatalogRepository catalog,
     IUnitOfWork unitOfWork,
     TimeProvider clock
-) : ICommandHandler<RemoveSlotCommand, MyAvailabilityResponse>
+) : ICommandHandler<SetCapacityCommand, MyAvailabilityResponse>
 {
     public async Task<MyAvailabilityResponse> HandleAsync(
-        RemoveSlotCommand command,
+        SetCapacityCommand command,
         CancellationToken ct
     )
     {
@@ -31,16 +30,12 @@ public sealed class RemoveSlotHandler(
         var profile =
             await profiles.FindByUserAsync(applicant.UserId, ct)
             ?? throw ExpertErrors.ExpertNotFound();
-        var slot =
-            await availability.FindAsync(command.SlotId, profile.Id, ct)
-            ?? throw ExpertErrors.SlotNotFound();
-        slot.EnsureRemovable();
-        availability.Remove(slot);
+        profile.RecordAccountStatus(applicant.AccountStatus);
+        profile.SetCapacity(command.Capacity, clock.GetUtcNow());
         await unitOfWork.SaveChangesAsync(ct);
         await tx.CommitAsync(ct);
-        var open = await availability.ListOpenAsync(profile.Id, clock.GetUtcNow(), ct);
         var latest = await qualifications.ListLatestByProfileAsync(profile.Id, ct);
         var names = (await catalog.ListActiveAsync(ct)).ToDictionary(x => x.Code, x => x.Name);
-        return GetMyAvailabilityHandler.Describe(open, latest, names);
+        return GetMyAvailabilityHandler.Describe(profile, latest, names);
     }
 }

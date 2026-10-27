@@ -36,7 +36,6 @@ public static class DependencyInjection
         services.AddScoped<IQualificationEvidenceRepository, QualificationEvidenceRepository>();
         services.AddScoped<IPlatformFeeRepository, PlatformFeeRepository>();
         services.AddScoped<IServiceOfferingRepository, ServiceOfferingRepository>();
-        services.AddScoped<IAvailabilityRepository, AvailabilityRepository>();
         services.AddScoped<IExpertNotificationOutbox, ExpertNotificationOutbox>();
         services.AddScoped<IPolicySettingRepository, PolicySettingRepository>();
         services.AddScoped<IExpertPolicyProvider, ExpertPolicyProvider>();

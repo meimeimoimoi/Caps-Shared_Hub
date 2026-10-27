@@ -1,11 +1,3 @@
-/** One window in which the expert can take new work, shared by all services */
-export interface AvailabilitySlot {
-  id: string
-  startAt: string
-  endAt: string
-  status: 'OPEN'
-}
-
 /** Whether the expert takes new requests for one service */
 export interface ServiceAvailability {
   serviceCode: string
@@ -17,10 +9,10 @@ export interface ServiceAvailability {
 }
 
 export interface MyAvailability {
-  slots: AvailabilitySlot[]
+  /** Cases the expert runs at once, shared by all services; 0 until set */
+  capacity: number
+  /** Accepted cases holding a slot, kept by the case flow */
+  activeCases: number
+  maxCapacity: number
   services: ServiceAvailability[]
-  minHours: number
-  maxHours: number
-  maxOpenSlots: number
-  maxDaysAhead: number
 }
