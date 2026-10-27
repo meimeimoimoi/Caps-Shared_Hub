@@ -14,12 +14,30 @@ import {
   cancelPendingPlatformFee,
   getPlatformFees,
   setPlatformFee,
+  type LateRule,
   type PlatformFee,
 } from '../../features/expert-vetting/api/platformFeeApi'
 import { formatDate } from '../../features/expert-vetting/utils/applications'
 
+const LATE_FIELDS = ['penaltyHours', 'penaltyPercent', 'cancelHours'] as const
+type LateDraft = Record<(typeof LATE_FIELDS)[number], string>
+// Suggested rule for a service that has none yet
+const DEFAULT_LATE: LateRule = {
+  penaltyHours: 24,
+  penaltyPercent: 30,
+  cancelHours: 72,
+}
+// Mirrors PlatformFee.MaxLateHours on the server
+const MAX_LATE_HOURS = 720
+const toDraft = (late: LateRule): LateDraft => ({
+  penaltyHours: String(late.penaltyHours),
+  penaltyPercent: String(late.penaltyPercent),
+  cancelHours: String(late.cancelHours),
+})
+
 const SAVE_ERRORS = [
   'PLATFORM_FEE_INVALID',
+  'LATE_RULE_INVALID',
   'PLATFORM_FEE_TOO_SOON',
   'PLATFORM_FEE_NOT_PENDING',
   'SERVICE_NOT_FOUND',
@@ -38,6 +56,7 @@ export default function AdminPlatformFeesPage() {
   const qc = useQueryClient()
   const [editing, setEditing] = useState<PlatformFee | null>(null)
   const [percent, setPercent] = useState('')
+  const [late, setLate] = useState<LateDraft>(toDraft(DEFAULT_LATE))
   const [effectiveOn, setEffectiveOn] = useState('')
   const [toast, setToast] = useState<string | null>(null)
   const clearToast = useCallback(() => setToast(null), [])
@@ -51,8 +70,15 @@ export default function AdminPlatformFeesPage() {
     mutationFn: (input: {
       serviceCode: string
       percent: number
+      late: LateRule
       effectiveOn: string | null
-    }) => setPlatformFee(input.serviceCode, input.percent, input.effectiveOn),
+    }) =>
+      setPlatformFee(
+        input.serviceCode,
+        input.percent,
+        input.late,
+        input.effectiveOn
+      ),
     onSuccess: () => qc.invalidateQueries({ queryKey: key }),
   })
   const cancel = useMutation({
@@ -64,10 +90,22 @@ export default function AdminPlatformFeesPage() {
   const maxPercent = editing?.maxPercent ?? 0
   // The very first fee applies at once; any later change needs its effective day
   const needsDate = editing?.percent != null
+  const lateRule: LateRule = {
+    penaltyHours: Number(late.penaltyHours),
+    penaltyPercent: Number(late.penaltyPercent),
+    cancelHours: Number(late.cancelHours),
+  }
+  // Same rule as the server: the penalty comes out of what the platform fee leaves the expert
+  const lateValid =
+    LATE_FIELDS.every((f) => /^\d+$/.test(late[f].trim())) &&
+    value + lateRule.penaltyPercent <= 100 &&
+    lateRule.cancelHours >= lateRule.penaltyHours &&
+    lateRule.cancelHours <= MAX_LATE_HOURS
   const valid =
     /^\d+$/.test(percent.trim()) &&
     value >= 0 &&
     value <= maxPercent &&
+    lateValid &&
     (!needsDate ||
       (effectiveOn !== '' && effectiveOn >= editing!.earliestEffectiveOn))
 
@@ -77,12 +115,14 @@ export default function AdminPlatformFeesPage() {
         ? t(`admin:platformFees.errors.${e.code}`, {
             days: editing?.noticeDays,
             max: maxPercent,
+            maxHours: MAX_LATE_HOURS,
           })
         : t('admin:platformFees.errors.failed')
     )
   const open = (row: PlatformFee) => {
     setEditing(row)
     setPercent(row.percent == null ? '' : String(row.percent))
+    setLate(toDraft(row.late ?? DEFAULT_LATE))
     setEffectiveOn(row.percent == null ? '' : row.earliestEffectiveOn)
   }
   const confirm = () => {
@@ -91,6 +131,7 @@ export default function AdminPlatformFeesPage() {
       .mutateAsync({
         serviceCode: editing.serviceCode,
         percent: value,
+        late: lateRule,
         effectiveOn: needsDate ? effectiveOn : null,
       })
       .then(() => {
@@ -121,11 +162,12 @@ export default function AdminPlatformFeesPage() {
       </div>
 
       <section className="paper mt-12 overflow-x-auto">
-        <table className="w-full min-w-[720px] text-sm">
+        <table className="w-full min-w-215 text-sm">
           <thead className="bg-sunken text-fg-muted">
             <tr className="[&>th]:px-4 [&>th]:py-3 [&>th]:text-left [&>th]:font-semibold">
               <th>{t('admin:platformFees.service')}</th>
               <th>{t('admin:platformFees.percent')}</th>
+              <th>{t('admin:platformFees.late')}</th>
               <th>{t('admin:platformFees.effectiveFrom')}</th>
               <th>{t('admin:platformFees.pending')}</th>
               <th>
@@ -155,6 +197,11 @@ export default function AdminPlatformFeesPage() {
                   ) : (
                     `${row.percent}%`
                   )}
+                </td>
+                <td className="num">
+                  {row.late
+                    ? t('admin:platformFees.lateValue', { ...row.late })
+                    : '—'}
                 </td>
                 <td className="num">
                   {row.effectiveFrom ? formatDate(row.effectiveFrom) : '—'}
@@ -193,7 +240,7 @@ export default function AdminPlatformFeesPage() {
             {rows.length === 0 && (
               <tr className="border-border-subtle border-t">
                 <td
-                  colSpan={5}
+                  colSpan={6}
                   className="text-fg-muted px-4 py-10 text-center"
                 >
                   {query.isLoading
@@ -242,6 +289,35 @@ export default function AdminPlatformFeesPage() {
               className="border-border-control rounded-control shadow-control bg-paper border px-3 py-2 text-base font-normal"
             />
           </label>
+          <fieldset className="mt-4">
+            <legend className="flex items-center gap-2 text-sm font-semibold">
+              {t('admin:platformFees.late')}
+              <HelpTip label={t('admin:platformFees.late')}>
+                {t('admin:platformFees.lateHelp', { maxHours: MAX_LATE_HOURS })}
+              </HelpTip>
+            </legend>
+            <div className="mt-2 grid gap-3 sm:grid-cols-3">
+              {LATE_FIELDS.map((field) => (
+                <label
+                  key={field}
+                  className="flex flex-col gap-2 text-sm font-semibold"
+                >
+                  {t(`admin:platformFees.lateFields.${field}`)}
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    autoComplete="off"
+                    value={late[field]}
+                    onChange={(e) =>
+                      setLate((d) => ({ ...d, [field]: e.target.value }))
+                    }
+                    aria-invalid={!lateValid}
+                    className="border-border-control rounded-control shadow-control bg-paper border px-3 py-2 text-base font-normal"
+                  />
+                </label>
+              ))}
+            </div>
+          </fieldset>
           {needsDate && (
             <label className="mt-4 flex flex-col gap-2 text-sm font-semibold">
               <span className="flex items-center gap-2">
