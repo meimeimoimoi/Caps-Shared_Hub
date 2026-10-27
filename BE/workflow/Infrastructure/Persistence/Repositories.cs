@@ -23,16 +23,19 @@ public sealed class ReviewCaseRepository(WorkflowDbContext db) : IReviewCaseRepo
             .SingleOrDefaultAsync(x => x.Id == reviewCaseId, ct);
 
     //newest 100, no paging; add a cursor like the chat when use have more cases
-    public async Task<IReadOnlyList<ReviewCase>> ListForUserAsync(
-        Guid userId,
-        CancellationToken ct
-    ) =>
-        await db
+    public async Task<IReadOnlyList<ReviewCase>> ListForUserAsync(Guid userId, CancellationToken ct)
+    {
+        var unpaid = ReviewCase.UnpaidStatuses;
+        return await db
             .ReviewCases.AsNoTracking()
-            .Where(x => x.RequesterUserId == userId || x.ExpertUserId == userId)
+            .Where(x =>
+                x.RequesterUserId == userId
+                || (x.ExpertUserId == userId && !unpaid.Contains(x.Status))
+            )
             .OrderByDescending(x => x.CreatedAt)
             .Take(100)
             .ToListAsync(ct);
+    }
 }
 
 /// <summary>EF Core store for the expert's questions to the client.</summary>

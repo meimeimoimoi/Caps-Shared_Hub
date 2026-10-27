@@ -19,7 +19,7 @@ public sealed record ReviewCaseResponse(
     string ProblemDescription,
     string? ExpectedOutcome,
     DateTimeOffset? PaymentDeadline,
-    DateTimeOffset ResponseDeadline,
+    DateTimeOffset? ResponseDeadline,
     DateTimeOffset? DeliveryDeadline,
     DateTimeOffset? AcceptanceDeadline,
     DateTimeOffset CreatedAt
@@ -41,7 +41,7 @@ public sealed record ReviewCaseResponse(
             c.ProblemDescription,
             c.ExpectedOutcome,
             c.PaymentDeadline,
-            c.ResponseDeadline,
+            ReviewCase.UnpaidStatuses.Contains(c.Status) ? null : c.ResponseDeadline,
             c.DeliveryDeadline,
             c.AcceptanceDeadline,
             c.CreatedAt

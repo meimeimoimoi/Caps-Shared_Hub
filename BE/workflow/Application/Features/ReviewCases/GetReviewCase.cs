@@ -20,7 +20,7 @@ public sealed class GetReviewCaseHandler(IReviewCaseRepository cases)
         var reviewCase =
             await cases.FindAsync(query.ReviewCaseId, ct)
             ?? throw WorkflowErrors.ReviewCaseNotFound();
-        reviewCase.ParticipantRoleOf(query.UserId);
+        reviewCase.EnsureVisibleTo(query.UserId);
         return ReviewCaseResponse.From(reviewCase);
     }
 }

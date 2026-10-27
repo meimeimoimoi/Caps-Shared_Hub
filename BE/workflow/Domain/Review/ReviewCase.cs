@@ -28,6 +28,13 @@ public sealed class ReviewCase
     public const string CannotVerify = "CANNOT_VERIFY";
     public const string UserNonResponse = "USER_NON_RESPONSE";
 
+    /// <summary>The client has not paid: the expert never sees these, and no response deadline runs yet.</summary>
+    public static readonly string[] UnpaidStatuses =
+    [
+        ReviewCaseStatus.AwaitingPayment,
+        ReviewCaseStatus.CancelledUnpaid,
+    ];
+
     private ReviewCase() { }
 
     public Guid Id { get; } = UuidV7.NewGuid();
@@ -138,6 +145,18 @@ public sealed class ReviewCase
     public void EnsureExpert(Guid expertProfileId)
     {
         if (expertProfileId != ExpertProfileId)
+        {
+            throw WorkflowErrors.ReviewCaseNotFound();
+        }
+    }
+
+    /// <summary>The client sees the case from the request; the expert only once it is paid.</summary>
+    public void EnsureVisibleTo(Guid userId)
+    {
+        var visible =
+            userId == RequesterUserId
+            || (userId == ExpertUserId && !UnpaidStatuses.Contains(Status));
+        if (!visible)
         {
             throw WorkflowErrors.ReviewCaseNotFound();
         }

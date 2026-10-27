@@ -325,4 +325,22 @@ public sealed class ReviewCaseTests
                 )
             )
         );
+
+    [Fact]
+    public void Expert_sees_the_case_only_once_it_is_paid()
+    {
+        var reviewCase = NewCase();
+        reviewCase.EnsureVisibleTo(Client); // the client always sees it
+        Assert.Equal(
+            "REVIEW_CASE_NOT_FOUND",
+            Errors.CodeOf(() => reviewCase.EnsureVisibleTo(ExpertUser))
+        );
+
+        reviewCase.ConfirmPayment(Now);
+        reviewCase.EnsureVisibleTo(ExpertUser); // paid: now visible
+        Assert.Equal(
+            "REVIEW_CASE_NOT_FOUND",
+            Errors.CodeOf(() => reviewCase.EnsureVisibleTo(Guid.NewGuid()))
+        );
+    }
 }
