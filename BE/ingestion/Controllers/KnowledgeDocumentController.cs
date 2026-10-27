@@ -1,6 +1,3 @@
 namespace ingestion.Controllers;
 
-public class KnowledgeDocumentController
-{
-    
-}
+public class KnowledgeDocumentController { }
