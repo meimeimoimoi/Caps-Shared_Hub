@@ -94,6 +94,13 @@ export function useNotifications() {
   }
 
   const toShell = (n: AppNotification): ShellNotification | null => {
+    if (n.type === 'REVIEW_CASE_REQUESTED')
+      return {
+        id: n.id,
+        text: t('notifications.reviewCase.requested'),
+        to: typeof n.data.link === 'string' ? n.data.link : '/expert/cases',
+        read: n.readAt != null,
+      }
     if (n.type === 'EXPERT_COMPETENCY_DECIDED') return competencyItem(n)
     if (n.type === 'EXPERT_SERVICE_ACCESS_CHANGED') return accessItem(n)
     if (n.type !== 'EXPERT_ELIGIBILITY_DECIDED') return null

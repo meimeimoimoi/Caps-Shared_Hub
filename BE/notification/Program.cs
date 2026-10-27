@@ -6,6 +6,7 @@ using Caps.Notification.Data;
 using Caps.Notification.Features.AuthEmails;
 using Caps.Notification.Features.ExpertDecisions;
 using Caps.Notification.Features.Realtime;
+using Caps.Notification.Features.ReviewCases;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddCommonApi(builder.Configuration, "notification");
@@ -20,6 +21,9 @@ builder.Services.AddCapsMessaging(
         x.AddConsumer<ExpertEligibilityDecidedConsumer>();
         x.AddConsumer<ExpertCompetencyDecidedConsumer>();
         x.AddConsumer<ExpertServiceAccessChangedConsumer>();
+        x.AddConsumer<RealtimeChangedConsumer>();
+        x.AddConsumer<ExpertServiceAccessChangedConsumer>();
+        x.AddConsumer<ReviewCaseRequestedConsumer>();
         x.AddConsumer<RealtimeChangedConsumer>();
     }
 );

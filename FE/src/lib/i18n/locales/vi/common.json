@@ -130,6 +130,9 @@
       "RETURNED_FOR_REVIEW": "Hồ sơ năng lực dịch vụ {{service}} được chuyển đánh giá lại",
       "SUSPENDED": "Dịch vụ {{service}} đang tạm ngưng",
       "REINSTATED": "Dịch vụ {{service}} đã được mở lại"
+    },
+    "reviewCase": {
+      "requested": "Bạn có yêu cầu review mới. Hãy nhận hoặc từ chối trước hạn phản hồi."
     }
   }
 }
