@@ -14,6 +14,7 @@ builder.Services.AddCommonApi(config, "workflow");
 builder.Services.AddWorkflowApplication();
 builder.Services.AddWorkflowInfrastructure(postgres);
 builder.Services.AddWorkflowRealtime();
+builder.Services.AddWorkflowNotifications(config, builder.Environment);
 
 var app = builder.Build();
 app.MigrateInDevelopment<WorkflowDbContext>();

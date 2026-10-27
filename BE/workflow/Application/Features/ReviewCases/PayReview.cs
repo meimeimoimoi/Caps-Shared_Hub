@@ -15,6 +15,7 @@ public sealed record PayReviewCommand(Guid UserId, Guid ReviewCaseId);
 public sealed class PayReviewHandler(
     IReviewCaseRepository cases,
     IEscrows escrows,
+    IReviewCaseEvents events,
     IUnitOfWork unitOfWork,
     TimeProvider clock
 ) : ICommandHandler<PayReviewCommand, ReviewCaseResponse>
@@ -37,6 +38,8 @@ public sealed class PayReviewHandler(
         // a failed save after the hold leaves credits held; the expiry job refunds it
         await unitOfWork.SaveChangesAsync(ct);
         await tx.CommitAsync(ct);
+        // After the commit, so the expert is never told about a payment that rolled back
+        await events.RequestedAsync(reviewCase, ct);
         return ReviewCaseResponse.From(reviewCase);
     }
 }
