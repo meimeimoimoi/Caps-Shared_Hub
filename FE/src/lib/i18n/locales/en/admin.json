@@ -1000,7 +1000,8 @@
       "SERVICE_NOT_FOUND": "This service is no longer in the catalog.",
       "failed": "Could not save the platform fee. Please try again.",
       "PLATFORM_FEE_TOO_SOON": "A change must be announced at least {{days}} days ahead. Pick a later date.",
-      "PLATFORM_FEE_NOT_PENDING": "There is no pending change any more. Reload the page."
+      "PLATFORM_FEE_NOT_PENDING": "There is no pending change any more. Reload the page.",
+      "LATE_RULE_INVALID": "Invalid late delivery rule: hours must be 0 to {{maxHours}}, the cancel hours not below the penalty hours, and the penalty plus the platform fee at most 100%."
     },
     "helpLabel": "About platform fees",
     "pending": "Pending change",
@@ -1012,7 +1013,15 @@
     "example": "What experts receive per request",
     "examplePrice": "Price",
     "exampleNet": "Received: current → new",
-    "firstFeeHelp": "The first fee applies at once and opens the service for experts to price."
+    "firstFeeHelp": "The first fee applies at once and opens the service for experts to price.",
+    "late": "Late delivery",
+    "lateValue": "Late ≤{{penaltyHours}}h: {{penaltyPercent}}% back · ≤{{cancelHours}}h: 100% back",
+    "lateHelp": "Counted from the delivery deadline. Late within the penalty hours: the client gets the penalty percent back from the expert's share (the platform keeps its fee). Later, up to the cancel hours: the client gets everything back. Not delivered past the cancel hours: the request is cancelled and fully refunded. At most {{maxHours}} hours; the penalty plus the platform fee may not exceed 100%. Requests already sent keep the rule they were sent with.",
+    "lateFields": {
+      "penaltyHours": "Penalty hours",
+      "penaltyPercent": "Penalty %",
+      "cancelHours": "Cancel hours"
+    }
   },
   "expertPolicy": {
     "title": "Expert policy",

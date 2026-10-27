@@ -44,7 +44,9 @@ public sealed class ListMyServicesHandler(
                     offering?.TurnaroundHours,
                     rate.Percent,
                     offering == null ? null : rate.NetOf(offering.Fee),
-                    next == null ? null : new(next.Percent, next.EffectiveFrom),
+                    next == null
+                        ? null
+                        : new(next.Percent, PlatformFeeRows.LateOf(next), next.EffectiveFrom),
                     limits
                 );
             })
