@@ -275,44 +275,6 @@ namespace Caps.Expert.Infrastructure.Persistence.Migrations
                     b.ToTable("expert_evidence", "expert");
                 });
 
-            modelBuilder.Entity("Caps.Expert.Domain.Catalog.AvailabilitySlot", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at");
-
-                    b.Property<DateTimeOffset>("EndAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("end_at");
-
-                    b.Property<Guid>("ExpertProfileId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("expert_profile_id");
-
-                    b.Property<DateTimeOffset>("StartAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("start_at");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("text")
-                        .HasDefaultValue("OPEN")
-                        .HasColumnName("status");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ExpertProfileId", "Status", "StartAt")
-                        .HasDatabaseName("ix_availability_slot_open");
-
-                    b.ToTable("availability_slot", "expert");
-                });
-
             modelBuilder.Entity("Caps.Expert.Domain.Catalog.ServiceCatalogItem", b =>
                 {
                     b.Property<string>("Code")
@@ -597,6 +559,12 @@ namespace Caps.Expert.Infrastructure.Persistence.Migrations
                         .HasColumnType("character varying(32)")
                         .HasColumnName("account_status");
 
+                    b.Property<int>("ActiveCases")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasColumnName("active_cases");
+
                     b.Property<DateTimeOffset?>("ApprovedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("approved_at");
@@ -612,6 +580,12 @@ namespace Caps.Expert.Infrastructure.Persistence.Migrations
                     b.Property<DateOnly?>("BirthDate")
                         .HasColumnType("date")
                         .HasColumnName("birth_date");
+
+                    b.Property<int>("Capacity")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasColumnName("capacity");
 
                     b.Property<string>("Company")
                         .HasColumnType("text")
@@ -708,7 +682,10 @@ namespace Caps.Expert.Infrastructure.Persistence.Migrations
                     b.HasIndex("Status", "ServiceStatus")
                         .HasDatabaseName("ix_expert_marketplace_feed");
 
-                    b.ToTable("expert_profile", "expert");
+                    b.ToTable("expert_profile", "expert", t =>
+                        {
+                            t.HasCheckConstraint("ck_expert_capacity", "capacity BETWEEN 0 AND 20 AND active_cases >= 0");
+                        });
                 });
 
             modelBuilder.Entity("Caps.Expert.Domain.Qualifications.CompetencyAssessment", b =>
@@ -1150,18 +1127,6 @@ namespace Caps.Expert.Infrastructure.Persistence.Migrations
                     b.Navigation("Application");
                 });
 
-            modelBuilder.Entity("Caps.Expert.Domain.Catalog.AvailabilitySlot", b =>
-                {
-                    b.HasOne("Caps.Expert.Domain.Profiles.ExpertProfile", "ExpertProfile")
-                        .WithMany("AvailabilitySlots")
-                        .HasForeignKey("ExpertProfileId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired()
-                        .HasConstraintName("fk_availability_slot_profile");
-
-                    b.Navigation("ExpertProfile");
-                });
-
             modelBuilder.Entity("Caps.Expert.Domain.Pricing.PlatformFee", b =>
                 {
                     b.HasOne("Caps.Expert.Domain.Catalog.ServiceCatalogItem", null)
@@ -1312,8 +1277,6 @@ namespace Caps.Expert.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("Caps.Expert.Domain.Profiles.ExpertProfile", b =>
                 {
                     b.Navigation("Applications");
-
-                    b.Navigation("AvailabilitySlots");
                 });
 
             modelBuilder.Entity("Caps.Expert.Domain.Qualifications.CompetencyAssessment", b =>
