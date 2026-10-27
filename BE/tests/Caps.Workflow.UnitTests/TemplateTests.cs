@@ -40,6 +40,23 @@ public sealed class TemplateTests
         Assert.Equal(changed, saved.FieldSchema);
     }
 
+    [Fact]
+    public void Publishing_a_draft_deprecates_the_previous_version_and_locks_it()
+    {
+        var template = NewTemplate();
+        var v1 = TemplateVersion.SaveDraft(template, null, Fields, Admin, Now);
+        v1.Publish(null);
+
+        var v2 = TemplateVersion.SaveDraft(template, v1, Fields, Admin, Now);
+        v2.Publish(v1);
+
+        Assert.Equal(2, v2.VersionNo);
+        Assert.Equal(TemplateVersionStatus.Published, v2.Status);
+        Assert.Equal(TemplateVersionStatus.Deprecated, v1.Status);
+        Assert.Equal("TEMPLATE_NO_DRAFT", Errors.CodeOf(() => v2.Publish(v2)));
+        Assert.Equal(TemplateVersionStatus.Published, v2.Status);
+    }
+
     [Theory]
     [InlineData(null)]
     [InlineData("not json")]

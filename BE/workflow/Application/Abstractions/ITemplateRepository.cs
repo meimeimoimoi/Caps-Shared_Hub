@@ -17,6 +17,9 @@ public interface ITemplateRepository
     /// <summary>The template's highest version, tracked.</summary>
     Task<TemplateVersion?> FindLatestVersionAsync(Guid templateId, CancellationToken ct);
 
+    /// <summary>The template's published version, tracked; unlike <see cref="FindPublishedAsync"/> it ignores <c>IsActive</c>.</summary>
+    Task<TemplateVersion?> FindPublishedVersionAsync(Guid templateId, CancellationToken ct);
+
     void Add(Template newTemplate);
 
     void Add(TemplateVersion version);

@@ -99,6 +99,12 @@ public sealed class TemplateRepository(WorkflowDbContext db) : ITemplateReposito
             .OrderByDescending(x => x.VersionNo)
             .FirstOrDefaultAsync(ct);
 
+    public Task<TemplateVersion?> FindPublishedVersionAsync(Guid templateId, CancellationToken ct) =>
+        db.TemplateVersions.SingleOrDefaultAsync(
+            x => x.TemplateId == templateId && x.Status == TemplateVersionStatus.Published,
+            ct
+        );
+
     public void Add(Template newTemplate) => db.Templates.Add(newTemplate);
 
     public void Add(TemplateVersion version) => db.TemplateVersions.Add(version);

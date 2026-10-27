@@ -34,4 +34,21 @@ public sealed class AdminTemplatesController(ICurrentUser currentUser) : Control
         var version = await handler.HandleAsync(r.ToCommand(UserId), ct);
         return Ok(ApiResponse<TemplateVersionResponse>.Ok(version));
     }
+
+    /// <summary>Publishes the template's draft version so users can draft from it.</summary>
+    /// <remarks>The previously published version becomes DEPRECATED; documents made from it keep their fields.</remarks>
+    /// <response code="200">The published version.</response>
+    /// <response code="403">Missing the KnowledgeManage permission.</response>
+    /// <response code="404">TEMPLATE_NOT_FOUND.</response>
+    /// <response code="409">TEMPLATE_NO_DRAFT: the latest version is already published.</response>
+    [HttpPost("{id:guid}/publish")]
+    public async Task<IActionResult> Publish(
+        Guid id,
+        [FromServices] ICommandHandler<PublishTemplateCommand, TemplateVersionResponse> handler,
+        CancellationToken ct
+    )
+    {
+        var version = await handler.HandleAsync(new(id), ct);
+        return Ok(ApiResponse<TemplateVersionResponse>.Ok(version));
+    }
 }

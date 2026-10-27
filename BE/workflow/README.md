@@ -8,7 +8,7 @@ It does **not** own accounts (auth), expert profiles and availability (expert) o
 
 | Area | Entities | API |
 |---|---|---|
-| Templates (`workspace`) | `Template` → `TemplateVersion` (field schema, `DRAFT` → `PUBLISHED` → `DEPRECATED`) | Done except publishing, see below |
+| Templates (`workspace`) | `Template` → `TemplateVersion` (field schema, `DRAFT` → `PUBLISHED` → `DEPRECATED`) | Done, see below |
 | Documents (`workspace`) | `Document` → `InputSnapshot` (form data) → `DocumentVersion` (immutable once sent to review) | Not yet |
 | AI chat (`workspace`) | `Conversation` → `ChatMessage` (with citations), `AiQuota` (free questions), `AiUsage` (how each answer was paid) | Not yet |
 | Expert review (`review`) | `ReviewCase` (request → payment → delivery → acceptance), `ReviewTask`, `InfoRequest`, `ReviewAttachment`, `ReviewStatusHistory` | Not yet (no case creation) |
@@ -27,13 +27,15 @@ The library users draft from (Flow 4, step 1–2). Routed by the gateway (`templ
 | GET | `/api/v1/templates/{id}/schema` | Signed-in user | `{ templateId, templateVersionId, versionNo, fieldSchema }` of the published version; `fieldSchema` is the stored JSON array. |
 | POST | `/api/v1/admin/templates` | Permission `KnowledgeManage` | `{ code, name, description?, fieldSchema }`. Creates the template on first use of `code`, updates name/description, then overwrites the latest version while it is `DRAFT` or starts version N+1 as `DRAFT`. Published versions never change. |
 
+| POST | `/api/v1/admin/templates/{id}/publish` | Permission `KnowledgeManage` | Publishes the latest version (must be `DRAFT`, else `409 TEMPLATE_NO_DRAFT`); the previously published version becomes `DEPRECATED`. |
+
 Rules:
 
 - `fieldSchema` must be a non-empty JSON array of objects (`FIELD_SCHEMA_INVALID`); code and name are required
   (`TEMPLATE_INVALID`). Unknown, inactive or unpublished templates give `404 TEMPLATE_NOT_FOUND`.
 - Users only see `PUBLISHED` versions, so a new template stays hidden until it is published.
 
-Not done yet: publish / deprecate endpoint, a database rule allowing a single `PUBLISHED` version per template.
+Not done yet: deactivating a template, a database rule allowing a single `PUBLISHED` version per template (the publish endpoint keeps it so today).
 
 ## Case chat (client ↔ expert)
 

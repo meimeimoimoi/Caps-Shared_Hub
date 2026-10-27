@@ -14,7 +14,7 @@ public sealed class TemplateVersion
 
     public int VersionNo { get; private set; }
     public string FieldSchema { get; private set; } = default!; // jsonb
-    public string Status { get; } = TemplateVersionStatus.Draft;
+    public string Status { get; private set; } = TemplateVersionStatus.Draft;
     public Guid CreatedBy { get; private set; }
     public DateTimeOffset CreatedAt { get; private set; }
 
@@ -44,6 +44,19 @@ public sealed class TemplateVersion
             CreatedBy = createdBy,
             CreatedAt = now,
         };
+    }
+
+    /// <summary>
+    /// Makes this draft the version users draft from and retires <paramref name="current"/>, so a template
+    /// has at most one published version.
+    /// </summary>
+    public void Publish(TemplateVersion? current)
+    {
+        if (Status != TemplateVersionStatus.Draft)
+            throw WorkflowErrors.TemplateNoDraft();
+        if (current != null)
+            current.Status = TemplateVersionStatus.Deprecated;
+        Status = TemplateVersionStatus.Published;
     }
 
     // The form is built from this list, so it must be a non-empty array of field objects

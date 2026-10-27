@@ -30,6 +30,13 @@ public static class WorkflowErrors
     public static AppException TemplateInvalid(string field) =>
         new(ErrorType.Validation, "TEMPLATE_INVALID", $"{field} is required.");
 
+    public static AppException TemplateNoDraft() =>
+        new(
+            ErrorType.Conflict,
+            "TEMPLATE_NO_DRAFT",
+            "The template has no draft version to publish."
+        );
+
     public static AppException FieldSchemaInvalid() =>
         new(
             ErrorType.Validation,
