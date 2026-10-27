@@ -27,7 +27,18 @@ public sealed class PricingTests
 
     // First rate of the service: takes effect at once
     private static PlatformFee Rate(int percent = 20) =>
-                PlatformFee.Set(Service, percent, 24, 30, 72, null, false, Policy.FeeNoticeDays, Admin, Now);
+        PlatformFee.Set(
+            Service,
+            percent,
+            24,
+            30,
+            72,
+            null,
+            false,
+            Policy.FeeNoticeDays,
+            Admin,
+            Now
+        );
 
     private static ServiceOffering Offer(ExpertServiceQualification? q, long fee, int hours) =>
         ServiceOffering.Create(q, Rate(), fee, hours, Policy, Expert, Now).Offering;
@@ -97,14 +108,29 @@ public sealed class PricingTests
     [InlineData(20, 24, 81, 72)] // penalty + platform fee over 100%
     [InlineData(20, 24, 30, 23)] // cancel before the penalty band ends
     [InlineData(20, 24, 30, 721)] // past the cap
-    public void A_late_rule_out_of_range_is_rejected(int percent, int hours, int penalty, int cancel)
+    public void A_late_rule_out_of_range_is_rejected(
+        int percent,
+        int hours,
+        int penalty,
+        int cancel
+    )
     {
         var e = Assert.Throws<AppException>(() =>
-            PlatformFee.Set(Service, percent, hours, penalty, cancel, null, false, Policy.FeeNoticeDays, Admin, Now)
+            PlatformFee.Set(
+                Service,
+                percent,
+                hours,
+                penalty,
+                cancel,
+                null,
+                false,
+                Policy.FeeNoticeDays,
+                Admin,
+                Now
+            )
         );
         Assert.Equal("LATE_RULE_INVALID", e.Code);
     }
-
 
     [Fact]
     public void Platform_fee_belongs_to_the_catalog_service()
