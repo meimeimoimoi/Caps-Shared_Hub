@@ -18,8 +18,9 @@ public static class PlatformFeeRows
             service.Code,
             service.Name,
             current?.Percent,
+            current == null ? null : LateOf(current),
             current?.EffectiveFrom,
-            pending == null ? null : new(pending.Percent, pending.EffectiveFrom),
+            pending == null ? null : new(pending.Percent, LateOf(pending), pending.EffectiveFrom),
             PlatformFee.EarliestEffectiveOn(now, policy.FeeNoticeDays),
             policy.FeeNoticeDays,
             PlatformFee.MaxPercent
@@ -34,4 +35,7 @@ public static class PlatformFeeRows
             policy.MaxTurnaroundDays,
             policy.ChangeWarningPercent
         );
+
+    public static LateRuleResponse LateOf(PlatformFee fee) =>
+        new(fee.LatePenaltyHours, fee.LatePenaltyPercent, fee.LateCancelHours);
 }

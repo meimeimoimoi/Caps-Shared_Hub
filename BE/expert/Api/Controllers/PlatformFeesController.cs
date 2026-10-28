@@ -40,7 +40,8 @@ public sealed class PlatformFeesController(ICurrentUser currentUser) : Controlle
     /// still pending. The first fee of a service applies at once. Cases already booked keep their percent.
     /// </remarks>
     /// <response code="200">The service row with the rate in force and the pending change.</response>
-    /// <response code="400">PLATFORM_FEE_INVALID: outside 0 to 50; PLATFORM_FEE_TOO_SOON: before the earliest day.</response>
+    /// <response code="400">PLATFORM_FEE_INVALID: outside 0 to 50; PLATFORM_FEE_TOO_SOON: before the earliest day.
+    /// LATE_RULE_INVALID: the late hours or penalty are out of range.</response>
     /// <response code="403">Missing the PricingManage permission.</response>
     /// <response code="404">SERVICE_NOT_FOUND: not a catalog service.</response>
     /// <response code="503">SESSION_CHECK_UNAVAILABLE: the session could not be checked.</response>
@@ -53,7 +54,15 @@ public sealed class PlatformFeesController(ICurrentUser currentUser) : Controlle
     )
     {
         var rate = await handler.HandleAsync(
-            new(UserId, serviceCode, r.Percent, r.EffectiveOn),
+            new(
+                UserId,
+                serviceCode,
+                r.Percent,
+                r.LatePenaltyHours,
+                r.LatePenaltyPercent,
+                r.LateCancelHours,
+                r.EffectiveOn
+            ),
             ct
         );
         return Ok(ApiResponse<PlatformFeeResponse>.Ok(rate));
