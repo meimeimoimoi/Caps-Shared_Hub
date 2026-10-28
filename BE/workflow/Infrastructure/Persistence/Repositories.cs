@@ -1,5 +1,6 @@
 using Caps.Workflow.Application.Abstractions;
 using Caps.Workflow.Domain.Review;
+using Caps.Workflow.Domain.Workspace;
 using Microsoft.EntityFrameworkCore;
 
 namespace Caps.Workflow.Infrastructure.Persistence;
@@ -75,4 +76,45 @@ public sealed class CaseReadMarkerRepository(WorkflowDbContext db) : ICaseReadMa
         );
 
     public void Add(CaseReadMarker marker) => db.CaseReadMarkers.Add(marker);
+}
+
+/// <summary>EF Core store for document templates and their versions.</summary>
+public sealed class TemplateRepository(WorkflowDbContext db) : ITemplateRepository
+{
+    public async Task<IReadOnlyList<TemplateVersion>> ListPublishedAsync(CancellationToken ct) =>
+        await Published().OrderBy(x => x.Template.Name).ToListAsync(ct);
+
+    public Task<TemplateVersion?> FindPublishedAsync(Guid templateId, CancellationToken ct) =>
+        Published()
+            .Where(x => x.TemplateId == templateId)
+            .OrderByDescending(x => x.VersionNo)
+            .FirstOrDefaultAsync(ct);
+
+    public Task<Template?> FindByCodeAsync(string code, CancellationToken ct) =>
+        db.Templates.SingleOrDefaultAsync(x => x.Code == code, ct);
+
+    public Task<TemplateVersion?> FindLatestVersionAsync(Guid templateId, CancellationToken ct) =>
+        db
+            .TemplateVersions.Where(x => x.TemplateId == templateId)
+            .OrderByDescending(x => x.VersionNo)
+            .FirstOrDefaultAsync(ct);
+
+    public Task<TemplateVersion?> FindPublishedVersionAsync(
+        Guid templateId,
+        CancellationToken ct
+    ) =>
+        db.TemplateVersions.SingleOrDefaultAsync(
+            x => x.TemplateId == templateId && x.Status == TemplateVersionStatus.Published,
+            ct
+        );
+
+    public void Add(Template newTemplate) => db.Templates.Add(newTemplate);
+
+    public void Add(TemplateVersion version) => db.TemplateVersions.Add(version);
+
+    private IQueryable<TemplateVersion> Published() =>
+        db
+            .TemplateVersions.AsNoTracking()
+            .Include(x => x.Template)
+            .Where(x => x.Status == TemplateVersionStatus.Published && x.Template.IsActive);
 }
