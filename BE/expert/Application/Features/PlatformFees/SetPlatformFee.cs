@@ -15,6 +15,9 @@ public sealed record SetPlatformFeeCommand(
     Guid AdminId,
     string ServiceCode,
     int Percent,
+    int LatePenaltyHours,
+    int LatePenaltyPercent,
+    int LateCancelHours,
     DateOnly? EffectiveOn
 );
 
@@ -45,6 +48,9 @@ public sealed class SetPlatformFeeHandler(
         var fee = PlatformFee.Set(
             service,
             command.Percent,
+            command.LatePenaltyHours,
+            command.LatePenaltyPercent,
+            command.LateCancelHours,
             command.EffectiveOn,
             current != null,
             policy.FeeNoticeDays,

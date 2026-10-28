@@ -999,7 +999,8 @@
       "SERVICE_NOT_FOUND": "Dịch vụ không còn trong danh mục.",
       "failed": "Không thể lưu phí nền tảng. Hãy thử lại.",
       "PLATFORM_FEE_TOO_SOON": "Thay đổi phải báo trước ít nhất {{days}} ngày. Chọn ngày muộn hơn.",
-      "PLATFORM_FEE_NOT_PENDING": "Không còn thay đổi nào đang chờ. Tải lại trang."
+      "PLATFORM_FEE_NOT_PENDING": "Không còn thay đổi nào đang chờ. Tải lại trang.",
+      "LATE_RULE_INVALID": "Quy định giao trễ không hợp lệ: số giờ từ 0 đến {{maxHours}}, số giờ hủy không nhỏ hơn số giờ phạt, % phạt cộng phí nền tảng không quá 100%."
     },
     "helpLabel": "Về phí nền tảng",
     "pending": "Thay đổi đang chờ",
@@ -1011,7 +1012,15 @@
     "example": "Chuyên gia thực nhận mỗi yêu cầu",
     "examplePrice": "Giá",
     "exampleNet": "Thực nhận: hiện tại → mới",
-    "firstFeeHelp": "Phí đầu tiên có hiệu lực ngay và mở dịch vụ cho chuyên gia đặt giá."
+    "firstFeeHelp": "Phí đầu tiên có hiệu lực ngay và mở dịch vụ cho chuyên gia đặt giá.",
+    "late": "Giao trễ",
+    "lateValue": "Trễ ≤{{penaltyHours}}h: hoàn {{penaltyPercent}}% · ≤{{cancelHours}}h: hoàn 100%",
+    "lateHelp": "Tính từ hạn giao bài. Trễ trong số giờ phạt: khách được hoàn % phạt, trừ vào phần của chuyên gia (nền tảng vẫn giữ phí). Trễ hơn đến số giờ hủy: khách được hoàn toàn bộ. Quá số giờ hủy mà chưa giao: yêu cầu bị hủy và hoàn toàn bộ. Tối đa {{maxHours}} giờ; % phạt cộng phí nền tảng không quá 100%. Yêu cầu đã gửi giữ nguyên quy định lúc gửi.",
+    "lateFields": {
+      "penaltyHours": "Số giờ phạt",
+      "penaltyPercent": "% phạt",
+      "cancelHours": "Số giờ hủy"
+    }
   },
   "expertPolicy": {
     "title": "Chính sách chuyên gia",

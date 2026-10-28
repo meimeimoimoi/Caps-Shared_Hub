@@ -416,7 +416,15 @@ public sealed class ExpertDbContext(DbContextOptions<ExpertDbContext> options) :
         {
             e.ToTable(
                 "platform_fee",
-                t => t.HasCheckConstraint("ck_platform_fee_percent", "percent BETWEEN 0 AND 50")
+                t =>
+                {
+                    t.HasCheckConstraint("ck_platform_fee_percent", "percent BETWEEN 0 AND 50");
+                    // The penalty comes out of the expert's share: never more than what the platform fee leaves
+                    t.HasCheckConstraint(
+                        "ck_platform_fee_late_rule",
+                        "late_penalty_hours >= 0 AND late_penalty_percent >= 0 AND percent + late_penalty_percent <= 100 AND late_cancel_hours BETWEEN late_penalty_hours AND 720"
+                    );
+                }
             );
             e.HasKey(x => x.Id);
             e.Property(x => x.Id).HasColumnName("id");
@@ -425,6 +433,9 @@ public sealed class ExpertDbContext(DbContextOptions<ExpertDbContext> options) :
                 .HasMaxLength(64)
                 .IsRequired();
             e.Property(x => x.Percent).HasColumnName("percent");
+            e.Property(x => x.LatePenaltyHours).HasColumnName("late_penalty_hours");
+            e.Property(x => x.LatePenaltyPercent).HasColumnName("late_penalty_percent");
+            e.Property(x => x.LateCancelHours).HasColumnName("late_cancel_hours");
             e.Property(x => x.EffectiveFrom).HasColumnName("effective_from");
             e.Property(x => x.SetBy).HasColumnName("set_by");
             e.Property(x => x.CancelledAt).HasColumnName("cancelled_at");
@@ -444,6 +455,9 @@ public sealed class ExpertDbContext(DbContextOptions<ExpertDbContext> options) :
                     Id = Guid.Parse("01929e3a-0000-7000-8000-000000000020"),
                     ServiceCode = "HUMAN_VERIFICATION",
                     Percent = 20,
+                    LatePenaltyHours = 24,
+                    LatePenaltyPercent = 30,
+                    LateCancelHours = 72,
                     EffectiveFrom = new DateTimeOffset(2026, 10, 17, 0, 0, 0, TimeSpan.Zero),
                     SetBy = SystemActor.UserId,
                 }
