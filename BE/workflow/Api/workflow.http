@@ -1,0 +1,76 @@
+@base = http://localhost:5190
+@access = replace-with-access-token-of-a-KNOWLEDGE_ADMIN
+@templateId = replace-with-templateId-from-save
+
+### Save template draft: explanation letter for non-deductible expenses
+POST {{base}}/api/v1/admin/templates
+Authorization: Bearer {{access}}
+Content-Type: application/json
+
+{
+  "code": "CV_GIAI_TRINH_CP_KDT",
+  "name": "Công văn giải trình chi phí không được trừ",
+  "description": "Giải trình với cơ quan thuế các khoản chi phí bị loại khi xác định thu nhập chịu thuế TNDN.",
+  "fieldSchema": [
+    { "id": "documentNo", "label": "Số công văn", "type": "text", "required": true },
+    { "id": "issueDate", "label": "Ngày công văn", "type": "date", "required": true },
+    { "id": "issuePlace", "label": "Nơi lập", "type": "text", "required": true },
+    { "id": "taxAuthority", "label": "Kính gửi (cơ quan thuế)", "type": "text", "required": true },
+    { "id": "companyName", "label": "Tên doanh nghiệp", "type": "text", "required": true },
+    { "id": "taxCode", "label": "Mã số thuế", "type": "text", "required": true, "pattern": "^\\d{10}(-\\d{3})?$" },
+    { "id": "address", "label": "Địa chỉ trụ sở", "type": "text", "required": true },
+    { "id": "representative", "label": "Người đại diện theo pháp luật", "type": "text", "required": true },
+    { "id": "position", "label": "Chức vụ", "type": "text", "required": true },
+    { "id": "taxYear", "label": "Kỳ tính thuế (năm)", "type": "year", "required": true },
+    { "id": "referenceNotice", "label": "Căn cứ (thông báo / biên bản của cơ quan thuế)", "type": "text" },
+    {
+      "id": "expenses",
+      "label": "Các khoản chi phí không được trừ",
+      "type": "table",
+      "required": true,
+      "columns": [
+        { "id": "description", "label": "Nội dung khoản chi", "type": "text", "required": true },
+        { "id": "voucherNo", "label": "Số chứng từ", "type": "text" },
+        { "id": "voucherDate", "label": "Ngày chứng từ", "type": "date" },
+        { "id": "amount", "label": "Số tiền (VNĐ)", "type": "money", "required": true },
+        {
+          "id": "reason",
+          "label": "Lý do không được trừ",
+          "type": "select",
+          "required": true,
+          "options": [
+            "Không có hóa đơn, chứng từ hợp pháp",
+            "Thanh toán từ 20 triệu đồng không qua ngân hàng",
+            "Không liên quan đến hoạt động sản xuất kinh doanh",
+            "Vượt mức khống chế theo quy định",
+            "Khác"
+          ]
+        },
+        { "id": "explanation", "label": "Nội dung giải trình", "type": "textarea", "required": true },
+        { "id": "legalBasis", "label": "Căn cứ pháp lý", "type": "text" }
+      ]
+    },
+    { "id": "totalAmount", "label": "Tổng số tiền không được trừ (VNĐ)", "type": "money", "required": true },
+    { "id": "adjustment", "label": "Phương án xử lý (điều chỉnh trên tờ khai 03/TNDN)", "type": "textarea", "required": true },
+    { "id": "attachments", "label": "Tài liệu kèm theo", "type": "textarea" }
+  ]
+}
+
+### Publish the draft (templateId from the response above)
+POST {{base}}/api/v1/admin/templates/{{templateId}}/publish
+Authorization: Bearer {{access}}
+
+### Users see it once published
+GET {{base}}/api/v1/templates
+Authorization: Bearer {{access}}
+
+### Form fields for the input screen
+GET {{base}}/api/v1/templates/{{templateId}}/schema
+Authorization: Bearer {{access}}
+
+### 400 FIELD_SCHEMA_INVALID: empty schema
+POST {{base}}/api/v1/admin/templates
+Authorization: Bearer {{access}}
+Content-Type: application/json
+
+{ "code": "CV_GIAI_TRINH_CP_KDT", "name": "Công văn giải trình chi phí không được trừ", "fieldSchema": [] }
