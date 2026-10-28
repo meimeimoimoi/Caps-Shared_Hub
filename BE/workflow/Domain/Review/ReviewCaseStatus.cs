@@ -14,4 +14,5 @@ public static class ReviewCaseStatus
     public const string Completed = "COMPLETED";
     public const string AutoConfirmed = "AUTO_CONFIRMED";
     public const string Terminated = "TERMINATED";
+    public const string DeliveryOverdue = "DELIVERY_OVERDUE";
 }

@@ -9,13 +9,30 @@ public sealed class ReviewCaseTests
     private static readonly Guid ExpertUser = Guid.NewGuid();
     private static readonly Guid Client = Guid.NewGuid();
 
-    private static ReviewCase NewCase(long fee = 1_000_000, int pct = 20, int hours = 48) =>
+    private static ReviewCase NewCase(
+        long fee = 1_000_000,
+        int pct = 20,
+        int hours = 48,
+        int penaltyHours = 24,
+        int penaltyPct = 30,
+        int cancelHours = 72
+    ) =>
         ReviewCase
             .Request(
                 Client,
                 Guid.NewGuid(),
                 Guid.NewGuid(),
-                new ReviewOffer(Expert, ExpertUser, Guid.NewGuid(), fee, (short)pct, hours),
+                new ReviewOffer(
+                    Expert,
+                    ExpertUser,
+                    Guid.NewGuid(),
+                    fee,
+                    (short)pct,
+                    hours,
+                    penaltyHours,
+                    (short)penaltyPct,
+                    cancelHours
+                ),
                 "Check my CIT return",
                 null,
                 Now
@@ -71,7 +88,17 @@ public sealed class ReviewCaseTests
     [Fact]
     public void Request_freezes_the_offer_and_records_the_opening()
     {
-        var offer = new ReviewOffer(Expert, ExpertUser, Guid.NewGuid(), 1_000_000, 20, 48);
+        var offer = new ReviewOffer(
+            Expert,
+            ExpertUser,
+            Guid.NewGuid(),
+            1_000_000,
+            20,
+            48,
+            24,
+            30,
+            72
+        );
         var (reviewCase, opened) = ReviewCase.Request(
             Client,
             Guid.NewGuid(),
@@ -110,7 +137,17 @@ public sealed class ReviewCaseTests
                     Client,
                     Guid.NewGuid(),
                     Guid.NewGuid(),
-                    new ReviewOffer(Expert, ExpertUser, Guid.NewGuid(), 1_000_000, 20, 48),
+                    new ReviewOffer(
+                        Expert,
+                        ExpertUser,
+                        Guid.NewGuid(),
+                        1_000_000,
+                        20,
+                        48,
+                        24,
+                        30,
+                        72
+                    ),
                     text,
                     null,
                     Now
@@ -250,8 +287,15 @@ public sealed class ReviewCaseTests
     }
 
     [Fact]
-    public void Case_in_review_has_no_timeout() =>
-        Assert.Null(InReview().ExpireIfOverdue(Now.AddDays(30)));
+    public void Case_in_review_times_out_only_past_the_late_cancel_hours()
+    {
+        // Due at Now + 48h, cancelled from Now + 48h + 72h
+        Assert.Null(InReview().ExpireIfOverdue(Now.AddHours(119)));
+
+        var reviewCase = InReview();
+        reviewCase.ExpireIfOverdue(Now.AddHours(120));
+        Assert.Equal(ReviewCaseStatus.DeliveryOverdue, reviewCase.Status);
+    }
 
     [Fact]
     public void Answer_in_time_resumes_review_and_pushes_the_delivery_deadline()
@@ -318,7 +362,17 @@ public sealed class ReviewCaseTests
                     ExpertUser,
                     Guid.NewGuid(),
                     Guid.NewGuid(),
-                    new ReviewOffer(Expert, ExpertUser, Guid.NewGuid(), 1_000_000, 20, 48),
+                    new ReviewOffer(
+                        Expert,
+                        ExpertUser,
+                        Guid.NewGuid(),
+                        1_000_000,
+                        20,
+                        48,
+                        24,
+                        30,
+                        72
+                    ),
                     "Check my CIT return",
                     null,
                     Now
@@ -343,4 +397,92 @@ public sealed class ReviewCaseTests
             Errors.CodeOf(() => reviewCase.EnsureVisibleTo(Guid.NewGuid()))
         );
     }
+
+    [Theory]
+    [InlineData(48, 0, 0, 200_000, 800_000)] // on time
+    [InlineData(58, 30, 300_000, 200_000, 500_000)] // 10h late
+    [InlineData(72, 30, 300_000, 200_000, 500_000)] // exactly at the end of the penalty band
+    [InlineData(78, 100, 1_000_000, 0, 0)] // 30h late
+    public void Late_delivery_moves_the_experts_share_back_to_the_client(
+        int deliveredAfterHours,
+        int refundPct,
+        long refund,
+        long platform,
+        long expert
+    )
+    {
+        var reviewCase = InReview();
+        reviewCase.Deliver(
+            Expert,
+            ExpertUser,
+            ReviewCase.Verified,
+            "Done",
+            null,
+            Now.AddHours(deliveredAfterHours)
+        );
+
+        Assert.Equal(refundPct, reviewCase.LateRefundPct);
+        Assert.Equal(new ReviewSettlement(refund, platform, expert), reviewCase.Settle());
+    }
+
+    [Fact]
+    public void Delivery_past_the_late_cancel_hours_is_rejected() =>
+        Assert.Equal(
+            "CASE_DEADLINE_PASSED",
+            Errors.CodeOf(() =>
+                InReview()
+                    .Deliver(
+                        Expert,
+                        ExpertUser,
+                        ReviewCase.Verified,
+                        "Done",
+                        null,
+                        Now.AddHours(120)
+                    )
+            )
+        );
+
+    [Fact]
+    public void The_expert_may_ask_for_information_twice()
+    {
+        var reviewCase = InReview();
+        for (var i = 0; i < ReviewCase.MaxInfoRequests; i++)
+        {
+            var (request, _) = reviewCase.RequestInformation(
+                Expert,
+                ExpertUser,
+                "More please",
+                Now
+            );
+            reviewCase.ProvideInformation(request, Client, "Here", Now);
+        }
+
+        Assert.Equal(
+            "INFO_REQUEST_LIMIT",
+            Errors.CodeOf(() => reviewCase.RequestInformation(Expert, ExpertUser, "Again", Now))
+        );
+    }
+
+    [Theory]
+    [InlineData(20, -1, 30, 72)] // negative hours
+    [InlineData(20, 24, 81, 72)] // penalty + platform fee over 100%
+    [InlineData(20, 24, 30, 23)] // cancel before the penalty band ends
+    [InlineData(20, 24, 30, 721)] // past the cap
+    public void Invalid_late_rule_is_rejected(
+        int pct,
+        int penaltyHours,
+        int penaltyPct,
+        int cancelHours
+    ) =>
+        Assert.Equal(
+            "CASE_OFFER_INVALID",
+            Errors.CodeOf(() =>
+                NewCase(
+                    pct: pct,
+                    penaltyHours: penaltyHours,
+                    penaltyPct: penaltyPct,
+                    cancelHours: cancelHours
+                )
+            )
+        );
 }

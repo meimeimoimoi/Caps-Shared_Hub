@@ -2,15 +2,24 @@ using Caps.Common.Domain;
 
 namespace Caps.Workflow.Domain.Review;
 
-/// <summary>The expert's price and turnaround for one service, frozen into a case when the client books it.</summary>
+/// <summary>
+/// The expert's price and turnaround for one service plus the service's late delivery rule, frozen into a
+/// case when the client books it.
+/// </summary>
 public sealed record ReviewOffer(
     Guid ExpertProfileId,
     Guid ExpertUserId,
     Guid ServiceOfferingId,
     long Fee,
     short PlatformFeePct,
-    int TurnaroundHours
+    int TurnaroundHours,
+    int LatePenaltyHours,
+    short LatePenaltyPct,
+    int LateCancelHours
 );
+
+/// <summary>How the held fee splits when a case completes, in VND.</summary>
+public sealed record ReviewSettlement(long ClientRefund, long PlatformFee, long ExpertAmount);
 
 /// <summary>An expert review of one document version, from request through payment and delivery to acceptance.</summary>
 public sealed class ReviewCase
@@ -24,6 +33,7 @@ public sealed class ReviewCase
     public const int MaxTurnaroundHours = 720;
     public const int MaxPlatformFeePct = 99;
     public const int MaxTextLength = 4000;
+    public const int MaxInfoRequests = 2;
     public const string Verified = "VERIFIED";
     public const string CannotVerify = "CANNOT_VERIFY";
     public const string UserNonResponse = "USER_NON_RESPONSE";
@@ -54,6 +64,21 @@ public sealed class ReviewCase
     public long Fee { get; private set; }
     public short PlatformFeePct { get; private set; }
     public int TurnaroundHours { get; private set; }
+
+    /// <summary>
+    /// Late rule frozen at booking: up to LatePenaltyHours late the client gets LatePenaltyPct back from the
+    /// expert's share, later the whole fee; past LateCancelHours the case is cancelled.
+    /// </summary>
+    public int LatePenaltyHours { get; private set; }
+    public short LatePenaltyPct { get; private set; }
+    public int LateCancelHours { get; private set; }
+
+    /// <summary>Share of the fee returned to the client for a late delivery, set when the expert delivers.</summary>
+    public short LateRefundPct { get; private set; }
+    public int InfoRequestCount { get; private set; }
+
+    // After this the expert can no longer deliver and the expiry job refunds the client
+    private DateTimeOffset? CancelAt => DeliveryDeadline + TimeSpan.FromHours(LateCancelHours);
 
     public string ProblemDescription { get; private set; } = default!;
     public string? ExpectedOutcome { get; private set; }
@@ -100,6 +125,11 @@ public sealed class ReviewCase
             || offer.PlatformFeePct > MaxPlatformFeePct
             || offer.TurnaroundHours < 1
             || offer.TurnaroundHours > MaxTurnaroundHours
+            || offer.LatePenaltyHours < 0
+            || offer.LatePenaltyPct < 0
+            || offer.PlatformFeePct + offer.LatePenaltyPct > 100
+            || offer.LateCancelHours < offer.LatePenaltyHours
+            || offer.LateCancelHours > MaxTurnaroundHours
         )
         {
             throw WorkflowErrors.OfferInvalid();
@@ -121,6 +151,9 @@ public sealed class ReviewCase
             Fee = offer.Fee,
             PlatformFeePct = offer.PlatformFeePct,
             TurnaroundHours = offer.TurnaroundHours,
+            LatePenaltyHours = offer.LatePenaltyHours,
+            LatePenaltyPct = offer.LatePenaltyPct,
+            LateCancelHours = offer.LateCancelHours,
             ProblemDescription = RequiredText(problemDescription, "Problem description"),
             ExpectedOutcome = OptionalText(expectedOutcome, "Expected outcome"),
             PaymentDeadline = now + PaymentWindow,
@@ -216,6 +249,11 @@ public sealed class ReviewCase
     {
         EnsureExpert(expertProfileId);
         EnsureStatus(ReviewCaseStatus.InReview);
+        // The clock pauses while the client answer, so unlimited question would stretch the deadline forever
+        if (InfoRequestCount >= MaxInfoRequests)
+        {
+            throw WorkflowErrors.InfoRequestLimit(MaxInfoRequests);
+        }
         var request = InfoRequest.Create(
             Id,
             actorUserId,
@@ -223,6 +261,7 @@ public sealed class ReviewCase
             now + InformationWindow,
             now
         );
+        InfoRequestCount++;
         return (request, MoveTo(ReviewCaseStatus.AwaitingUserInformation, actorUserId, null, now));
     }
 
@@ -255,7 +294,7 @@ public sealed class ReviewCase
     )
     {
         EnsureExpert(expertProfileId);
-        EnsureStatus(ReviewCaseStatus.InReview);
+        EnsureStep(ReviewCaseStatus.InReview, CancelAt, now);
         if (result is not (Verified or CannotVerify))
         {
             throw WorkflowErrors.ResultInvalid();
@@ -266,7 +305,11 @@ public sealed class ReviewCase
             result == CannotVerify
                 ? RequiredText(cannotVerifyReason, "Cannot-verify reason")
                 : null;
-
+        var late = now - DeliveryDeadline!.Value;
+        LateRefundPct =
+            late <= TimeSpan.Zero ? (short)0
+            : late <= TimeSpan.FromHours(LatePenaltyHours) ? LatePenaltyPct
+            : (short)100;
         Result = result;
         ReviewSummary = text;
         CannotVerifyReason = reason;
@@ -284,6 +327,17 @@ public sealed class ReviewCase
     }
 
     /// <summary>
+    /// The split of the held fee: a late delivery's refund comes out of the expert's share, and a full refund
+    /// leaves the platform nothing either.
+    /// </summary>
+    public ReviewSettlement Settle()
+    {
+        var refund = Fee * LateRefundPct / 100;
+        var platform = LateRefundPct == 100 ? 0 : Fee * PlatformFeePct / 100;
+        return new(refund, platform, Fee - refund - platform);
+    }
+
+    /// <summary>
     /// Moves an overdue case to its timeout status (used by the crons). Returns null when nothing is
     /// overdue, so a cron that runs twice changes nothing.
     /// </summary>
@@ -298,6 +352,8 @@ public sealed class ReviewCase
                 ReviewCaseStatus.ExpertTimeout,
             ReviewCaseStatus.AwaitingAcceptance when now >= AcceptanceDeadline =>
                 ReviewCaseStatus.AutoConfirmed,
+            // Not delivered by the last late hour: the caller refund client full
+            ReviewCaseStatus.InReview when now >= CancelAt => ReviewCaseStatus.DeliveryOverdue,
             _ => null,
         };
         if (status is null)

@@ -49,6 +49,13 @@ public static class WorkflowErrors
             "This information request is already answered or expired."
         );
 
+    public static AppException InfoRequestLimit(int max) =>
+        new(
+            ErrorType.Conflict,
+            "INFO_REQUEST_LIMIT",
+            $"The expert may ask for more information at most {max} times per case."
+        );
+
     public static AppException DocumentNotFound() =>
         new(ErrorType.NotFound, "DOCUMENT_NOT_FOUND", "Document version not found.");
 

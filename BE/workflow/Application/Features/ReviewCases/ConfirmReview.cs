@@ -27,13 +27,8 @@ public sealed class ConfirmReviewHandler(
             ?? throw WorkflowErrors.ReviewCaseNotFound();
         var completed = reviewCase.Confirm(command.UserId, clock.GetUtcNow());
 
-        //Release before saving: if billing fails the case stays awaiting acceptance and can be retried
-        await escrows.ReleaseAsync(
-            reviewCase.Id,
-            reviewCase.ExpertUserId,
-            reviewCase.PlatformFeePct,
-            ct
-        );
+        // Release before saving: if billing fails the case stays awaiting acceptance and can be retried
+        await escrows.ReleaseAsync(reviewCase.Id, reviewCase.ExpertUserId, reviewCase.Settle(), ct);
 
         cases.AddHistory(completed);
         await unitOfWork.SaveChangesAsync(ct);

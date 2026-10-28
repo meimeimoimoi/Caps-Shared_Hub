@@ -312,6 +312,9 @@ public sealed class WorkflowDbContext(DbContextOptions<WorkflowDbContext> option
                     t.HasCheckConstraint(
                         "ck_case_offer",
                         "fee > 0 AND platform_fee_pct BETWEEN 0 AND 99 AND turnaround_hours BETWEEN 1 AND 720"
+                            + " AND late_penalty_hours >= 0 AND late_penalty_pct >= 0"
+                            + " AND platform_fee_pct + late_penalty_pct <= 100"
+                            + " AND late_cancel_hours BETWEEN late_penalty_hours AND 720"
                     )
             );
             e.HasKey(x => x.Id);
@@ -326,6 +329,11 @@ public sealed class WorkflowDbContext(DbContextOptions<WorkflowDbContext> option
             e.Property(x => x.Fee).HasColumnName("fee");
             e.Property(x => x.PlatformFeePct).HasColumnName("platform_fee_pct");
             e.Property(x => x.TurnaroundHours).HasColumnName("turnaround_hours");
+            e.Property(x => x.LatePenaltyHours).HasColumnName("late_penalty_hours");
+            e.Property(x => x.LatePenaltyPct).HasColumnName("late_penalty_pct");
+            e.Property(x => x.LateCancelHours).HasColumnName("late_cancel_hours");
+            e.Property(x => x.LateRefundPct).HasColumnName("late_refund_pct");
+            e.Property(x => x.InfoRequestCount).HasColumnName("info_request_count");
             e.Property(x => x.ProblemDescription).HasColumnName("problem_description").IsRequired();
             e.Property(x => x.ExpectedOutcome).HasColumnName("expected_outcome");
             e.Property(x => x.Status)

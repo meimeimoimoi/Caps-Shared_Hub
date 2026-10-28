@@ -15,7 +15,17 @@ public sealed class CaseChatTests
                 Client,
                 Guid.NewGuid(),
                 Guid.NewGuid(),
-                new ReviewOffer(ExpertProfile, Expert, Guid.NewGuid(), 1_000_000, 20, 48),
+                new ReviewOffer(
+                    ExpertProfile,
+                    Expert,
+                    Guid.NewGuid(),
+                    1_000_000,
+                    20,
+                    48,
+                    24,
+                    30,
+                    72
+                ),
                 "Check my CIT return",
                 null,
                 Now

@@ -18,7 +18,7 @@ namespace Caps.Workflow.Infrastructure.Persistence.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasDefaultSchema("workspace")
-                .HasAnnotation("ProductVersion", "8.0.14")
+                .HasAnnotation("ProductVersion", "9.0.9")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -248,6 +248,26 @@ namespace Caps.Workflow.Infrastructure.Persistence.Migrations
                         .HasColumnType("bigint")
                         .HasColumnName("fee");
 
+                    b.Property<int>("InfoRequestCount")
+                        .HasColumnType("integer")
+                        .HasColumnName("info_request_count");
+
+                    b.Property<int>("LateCancelHours")
+                        .HasColumnType("integer")
+                        .HasColumnName("late_cancel_hours");
+
+                    b.Property<int>("LatePenaltyHours")
+                        .HasColumnType("integer")
+                        .HasColumnName("late_penalty_hours");
+
+                    b.Property<short>("LatePenaltyPct")
+                        .HasColumnType("smallint")
+                        .HasColumnName("late_penalty_pct");
+
+                    b.Property<short>("LateRefundPct")
+                        .HasColumnType("smallint")
+                        .HasColumnName("late_refund_pct");
+
                     b.Property<DateTimeOffset?>("PaidAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("paid_at");
@@ -337,7 +357,7 @@ namespace Caps.Workflow.Infrastructure.Persistence.Migrations
 
                     b.ToTable("review_case", "review", t =>
                         {
-                            t.HasCheckConstraint("ck_case_offer", "fee > 0 AND platform_fee_pct BETWEEN 0 AND 99 AND turnaround_hours BETWEEN 1 AND 720");
+                            t.HasCheckConstraint("ck_case_offer", "fee > 0 AND platform_fee_pct BETWEEN 0 AND 99 AND turnaround_hours BETWEEN 1 AND 720 AND late_penalty_hours >= 0 AND late_penalty_pct >= 0 AND platform_fee_pct + late_penalty_pct <= 100 AND late_cancel_hours BETWEEN late_penalty_hours AND 720");
                         });
                 });
 

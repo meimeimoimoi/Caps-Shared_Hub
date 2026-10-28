@@ -29,7 +29,7 @@ public sealed class PendingEscrows : IEscrows
     public Task ReleaseAsync(
         Guid reviewCaseId,
         Guid expertUserId,
-        int platformFeePct,
+        ReviewSettlement settlement,
         CancellationToken ct
     ) => throw WorkflowErrors.ServiceLinkUnavailable("billing");
 }

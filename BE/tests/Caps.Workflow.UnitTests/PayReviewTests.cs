@@ -44,7 +44,17 @@ public sealed class PayReviewTests
                 Client,
                 Guid.NewGuid(),
                 Guid.NewGuid(),
-                new ReviewOffer(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), 1_000_000, 20, 48),
+                new ReviewOffer(
+                    Guid.NewGuid(),
+                    Guid.NewGuid(),
+                    Guid.NewGuid(),
+                    1_000_000,
+                    20,
+                    48,
+                    24,
+                    30,
+                    72
+                ),
                 "Check my CIT return",
                 null,
                 TimeProvider.System.GetUtcNow()
@@ -102,7 +112,7 @@ public sealed class PayReviewTests
         public Task ReleaseAsync(
             Guid reviewCaseId,
             Guid expertUserId,
-            int platformFeePct,
+            ReviewSettlement settlement,
             CancellationToken ct
         ) => throw new NotSupportedException();
     }

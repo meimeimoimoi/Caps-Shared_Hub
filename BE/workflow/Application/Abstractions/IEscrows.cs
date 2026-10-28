@@ -1,3 +1,5 @@
+using Caps.Workflow.Domain.Review;
+
 namespace Caps.Workflow.Application.Abstractions;
 
 /// <summary>The billing escrow that holds the client's payment for a review case.</summary>
@@ -13,7 +15,7 @@ public interface IEscrows
     Task ReleaseAsync(
         Guid reviewCaseId,
         Guid expertUserId,
-        int platformFeePct,
+        ReviewSettlement settlement,
         CancellationToken ct
     );
 }

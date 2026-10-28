@@ -114,7 +114,7 @@ public sealed class ReviewCasesController(ICurrentUser currentUser) : Controller
     /// <response code="200">The case, AWAITING_USER_INFORMATION.</response>
     /// <response code="400">TEXT_REQUIRED or TEXT_TOO_LONG.</response>
     /// <response code="404">REVIEW_CASE_NOT_FOUND.</response>
-    /// <response code="409">CASE_STATUS_INVALID.</response>
+    // <response code="409">CASE_STATUS_INVALID or INFO_REQUEST_LIMIT (asked twice already).</response>
     [HttpPost("{caseId:guid}/request-information")]
     public async Task<IActionResult> RequestInformation(
         Guid caseId,
@@ -148,7 +148,7 @@ public sealed class ReviewCasesController(ICurrentUser currentUser) : Controller
     /// <response code="200">The case, AWAITING_ACCEPTANCE.</response>
     /// <response code="400">RESULT_INVALID, TEXT_REQUIRED or TEXT_TOO_LONG.</response>
     /// <response code="404">REVIEW_CASE_NOT_FOUND.</response>
-    /// <response code="409">CASE_STATUS_INVALID.</response>
+    /// <response code="409">CASE_STATUS_INVALID or CASE_DEADLINE_PASSED (past the late cancel hours).</response>
     [HttpPost("{caseId:guid}/deliver")]
     public async Task<IActionResult> Deliver(
         Guid caseId,
