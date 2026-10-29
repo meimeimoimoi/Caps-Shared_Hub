@@ -1,6 +1,7 @@
 using Caps.Common.Persistence;
 using Caps.Workflow.Application.Abstractions;
 using Caps.Workflow.Infrastructure.Integrations;
+using Caps.Workflow.Infrastructure.Jobs;
 using Caps.Workflow.Infrastructure.Persistence;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -45,6 +46,8 @@ public static class DependencyInjection
         services.AddScoped<IExpertSlots>(sp => sp.GetRequiredService<ExpertServiceClient>());
         services.AddHttpClient<BillingServiceClient>(http => Link(http, config, "Billing"));
         services.AddScoped<IEscrows>(sp => sp.GetRequiredService<BillingServiceClient>());
+        // The expiry job refunds and settles through these links
+        services.AddHostedService<ReviewCaseExpiryJob>();
         return services;
     }
 
