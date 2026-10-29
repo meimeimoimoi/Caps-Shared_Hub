@@ -94,11 +94,12 @@ export function useNotifications() {
   }
 
   const toShell = (n: AppNotification): ShellNotification | null => {
-    if (n.type === 'REVIEW_CASE_REQUESTED')
+        if (n.type === 'REVIEW_CASE_INFO_REQUESTED')
       return {
         id: n.id,
-        text: t('notifications.reviewCase.requested'),
-        to: typeof n.data.link === 'string' ? n.data.link : '/expert/cases',
+        text: t('notifications.reviewCase.infoRequested'),
+        to: typeof n.data.link === 'string' ? n.data.link : '/cases',
+        tone: 'warning',
         read: n.readAt != null,
       }
     if (n.type === 'EXPERT_COMPETENCY_DECIDED') return competencyItem(n)

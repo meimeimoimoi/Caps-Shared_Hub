@@ -132,7 +132,8 @@
       "REINSTATED": "{{service}} has been reinstated"
     },
     "reviewCase": {
-      "requested": "You have a new review request. Accept or decline it before the response deadline."
+      "requested": "You have a new review request. Accept or decline it before the response deadline.",
+      "infoRequested": "The expert needs more information from you. Answer before the deadline so your case is not closed."
     }
   }
 }

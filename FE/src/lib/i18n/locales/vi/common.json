@@ -132,7 +132,8 @@
       "REINSTATED": "Dịch vụ {{service}} đã được mở lại"
     },
     "reviewCase": {
-      "requested": "Bạn có yêu cầu review mới. Hãy nhận hoặc từ chối trước hạn phản hồi."
+      "requested": "Bạn có yêu cầu review mới. Hãy nhận hoặc từ chối trước hạn phản hồi.",
+      "infoRequested": "Chuyên gia cần bạn bổ sung thông tin. Hãy trả lời trước hạn để hồ sơ không bị kết thúc."
     }
   }
 }

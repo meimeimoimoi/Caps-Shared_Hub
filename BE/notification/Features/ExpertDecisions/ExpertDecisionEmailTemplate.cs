@@ -110,6 +110,31 @@ public static class ExpertDecisionEmailTemplate
         return Render(copy, m.DisplayName, m.Email, m.DecidedAt, link, issues);
     }
 
+    /// <summary>
+    /// Review cases reuse this layout: the expert asked the client something, and the case ends if they do not
+    /// answer in time.
+    /// </summary>
+    public static Content Build(ReviewCaseInfoRequestedEvent m, string email, string link)
+    {
+        var due = m
+            .DueAt.ToOffset(VietnamOffset)
+            .ToString("HH:mm dd/MM/yyyy", CultureInfo.InvariantCulture);
+        var copy = new Copy(
+            $"Chuyên gia cần bạn bổ sung thông tin – {Brand}",
+            "Chuyên gia cần bạn bổ sung thông tin",
+            $"Chuyên gia đang rà soát hồ sơ của bạn và có câu hỏi bên dưới. Vui lòng trả lời trước {due}; quá hạn, hồ sơ sẽ kết thúc và bạn chỉ được hoàn một phần phí.",
+            "Trả lời chuyên gia"
+        );
+        return Render(
+            copy,
+            "bạn",
+            email,
+            m.OccurredAt,
+            link,
+            [new Issue("Câu hỏi của chuyên gia", $"hạn {due}", m.Message)]
+        );
+    }
+
     private static (Copy Copy, string Label) ForAccess(string change, string service) =>
         change switch
         {
