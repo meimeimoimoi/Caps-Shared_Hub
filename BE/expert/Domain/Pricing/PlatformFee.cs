@@ -32,6 +32,15 @@ public sealed class PlatformFee
 
     /// <summary>Later than LatePenaltyHours the client gets the whole fee back; past this the case is cancelled.</summary>
     public int LateCancelHours { get; private set; }
+
+    /// <summary>
+    /// The client did not answer the expert's question within this many hours: the case ends and the fee splits
+    /// into NoResponseRefundPercent for the client, NoResponseExpertPercent for the expert and the rest for the platform.
+    /// </summary>
+    public int NoResponseHours { get; private set; }
+    public int NoResponseRefundPercent { get; private set; }
+    public int NoResponseExpertPercent { get; private set; }
+
     public DateTimeOffset EffectiveFrom { get; private set; }
 
     /// <summary>System Admin account that set this rate.</summary>
@@ -58,6 +67,9 @@ public sealed class PlatformFee
         int latePenaltyHours,
         int latePenaltyPercent,
         int lateCancelHours,
+        int noResponseHours,
+        int noResponseRefundPercent,
+        int noResponseExpertPercent,
         DateOnly? effectiveOn,
         bool hasCurrentRate,
         int noticeDays,
@@ -77,6 +89,16 @@ public sealed class PlatformFee
         )
         {
             throw ExpertErrors.LateRuleInvalid(MaxLateHours);
+        }
+        // Admins set the client's and the expert's shares; the platform keeps the rest, so the parts always add up
+        if (
+            noResponseHours is < 1 or > MaxLateHours
+            || noResponseRefundPercent < 0
+            || noResponseExpertPercent < 0
+            || noResponseRefundPercent + noResponseExpertPercent > 100
+        )
+        {
+            throw ExpertErrors.NoResponseRuleInvalid(MaxLateHours);
         }
         DateTimeOffset effectiveFrom;
         if (!hasCurrentRate && effectiveOn == null)
@@ -100,6 +122,9 @@ public sealed class PlatformFee
             LatePenaltyHours = latePenaltyHours,
             LatePenaltyPercent = latePenaltyPercent,
             LateCancelHours = lateCancelHours,
+            NoResponseHours = noResponseHours,
+            NoResponseRefundPercent = noResponseRefundPercent,
+            NoResponseExpertPercent = noResponseExpertPercent,
             EffectiveFrom = effectiveFrom,
             SetBy = adminId,
         };

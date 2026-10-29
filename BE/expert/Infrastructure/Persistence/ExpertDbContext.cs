@@ -440,6 +440,11 @@ public sealed class ExpertDbContext(DbContextOptions<ExpertDbContext> options) :
                         "ck_platform_fee_late_rule",
                         "late_penalty_hours >= 0 AND late_penalty_percent >= 0 AND percent + late_penalty_percent <= 100 AND late_cancel_hours BETWEEN late_penalty_hours AND 720"
                     );
+                    // The client's and the expert's shares of a no-response case; the platform keeps the rest
+                    t.HasCheckConstraint(
+                        "ck_platform_fee_no_response_rule",
+                        "no_response_hours BETWEEN 1 AND 720 AND no_response_refund_percent >= 0 AND no_response_expert_percent >= 0 AND no_response_refund_percent + no_response_expert_percent <= 100"
+                    );
                 }
             );
             e.HasKey(x => x.Id);
@@ -452,6 +457,9 @@ public sealed class ExpertDbContext(DbContextOptions<ExpertDbContext> options) :
             e.Property(x => x.LatePenaltyHours).HasColumnName("late_penalty_hours");
             e.Property(x => x.LatePenaltyPercent).HasColumnName("late_penalty_percent");
             e.Property(x => x.LateCancelHours).HasColumnName("late_cancel_hours");
+            e.Property(x => x.NoResponseHours).HasColumnName("no_response_hours");
+            e.Property(x => x.NoResponseRefundPercent).HasColumnName("no_response_refund_percent");
+            e.Property(x => x.NoResponseExpertPercent).HasColumnName("no_response_expert_percent");
             e.Property(x => x.EffectiveFrom).HasColumnName("effective_from");
             e.Property(x => x.SetBy).HasColumnName("set_by");
             e.Property(x => x.CancelledAt).HasColumnName("cancelled_at");
@@ -474,6 +482,9 @@ public sealed class ExpertDbContext(DbContextOptions<ExpertDbContext> options) :
                     LatePenaltyHours = 24,
                     LatePenaltyPercent = 30,
                     LateCancelHours = 72,
+                    NoResponseHours = 72,
+                    NoResponseRefundPercent = 50,
+                    NoResponseExpertPercent = 30,
                     EffectiveFrom = new DateTimeOffset(2026, 10, 17, 0, 0, 0, TimeSpan.Zero),
                     SetBy = SystemActor.UserId,
                 }

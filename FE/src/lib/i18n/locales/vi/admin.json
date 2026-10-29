@@ -1000,7 +1000,8 @@
       "failed": "Không thể lưu phí nền tảng. Hãy thử lại.",
       "PLATFORM_FEE_TOO_SOON": "Thay đổi phải báo trước ít nhất {{days}} ngày. Chọn ngày muộn hơn.",
       "PLATFORM_FEE_NOT_PENDING": "Không còn thay đổi nào đang chờ. Tải lại trang.",
-      "LATE_RULE_INVALID": "Quy định giao trễ không hợp lệ: số giờ từ 0 đến {{maxHours}}, số giờ hủy không nhỏ hơn số giờ phạt, % phạt cộng phí nền tảng không quá 100%."
+      "LATE_RULE_INVALID": "Quy định giao trễ không hợp lệ: số giờ từ 0 đến {{maxHours}}, số giờ hủy không nhỏ hơn số giờ phạt, % phạt cộng phí nền tảng không quá 100%.",
+      "NO_RESPONSE_RULE_INVALID": "Quy định khi khách không trả lời không hợp lệ: số giờ từ 1 đến {{maxHours}}, % hoàn cộng % chuyên gia không quá 100%."
     },
     "helpLabel": "Về phí nền tảng",
     "pending": "Thay đổi đang chờ",
@@ -1020,6 +1021,14 @@
       "penaltyHours": "Số giờ phạt",
       "penaltyPercent": "% phạt",
       "cancelHours": "Số giờ hủy"
+    },
+    "noResponse": "Client không trả lời",
+    "noResponseValue": "Sau {{hours}}h: hoàn {{refundPercent}}% · chuyên gia {{expertPercent}}% · nền tảng {{platformPercent}}%",
+    "noResponseHelp": "Khi chuyên gia hỏi thêm thông tin mà khách không trả lời trong số giờ này, yêu cầu được đóng và phí chia theo tỉ lệ: % hoàn cho khách, % trả cho chuyên gia, nền tảng giữ phần còn lại. Số giờ từ 1 đến {{maxHours}}; % hoàn cộng % chuyên gia không quá 100%. Yêu cầu đã gửi giữ nguyên quy định lúc gửi.",
+    "noResponseFields": {
+      "hours": "Số giờ chờ",
+      "refundPercent": "% hoàn cho khách",
+      "expertPercent": "% cho chuyên gia"
     }
   },
   "expertPolicy": {

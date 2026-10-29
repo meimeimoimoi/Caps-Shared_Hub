@@ -268,6 +268,13 @@ public static class ExpertErrors
             $"Late hours must be 0 to {maxHours} with the cancel hours not below the penalty hours, and the penalty plus the platform fee at most 100 percent."
         );
 
+    public static AppException NoResponseRuleInvalid(int maxHours) =>
+        new(
+            ErrorType.Validation,
+            "NO_RESPONSE_RULE_INVALID",
+            $"The no-response hours must be 1 to {maxHours}, and the client's plus the expert's share at most 100 percent."
+        );
+
     public static AppException PlatformFeeNotSet() =>
         new(
             ErrorType.RuleViolation,

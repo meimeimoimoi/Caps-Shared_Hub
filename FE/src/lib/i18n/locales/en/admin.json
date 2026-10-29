@@ -1001,7 +1001,8 @@
       "failed": "Could not save the platform fee. Please try again.",
       "PLATFORM_FEE_TOO_SOON": "A change must be announced at least {{days}} days ahead. Pick a later date.",
       "PLATFORM_FEE_NOT_PENDING": "There is no pending change any more. Reload the page.",
-      "LATE_RULE_INVALID": "Invalid late delivery rule: hours must be 0 to {{maxHours}}, the cancel hours not below the penalty hours, and the penalty plus the platform fee at most 100%."
+      "LATE_RULE_INVALID": "Invalid late delivery rule: hours must be 0 to {{maxHours}}, the cancel hours not below the penalty hours, and the penalty plus the platform fee at most 100%.",
+      "NO_RESPONSE_RULE_INVALID": "Invalid client silence rule: hours must be 1 to {{maxHours}}, and refund plus expert at most 100%."
     },
     "helpLabel": "About platform fees",
     "pending": "Pending change",
@@ -1021,6 +1022,14 @@
       "penaltyHours": "Penalty hours",
       "penaltyPercent": "Penalty %",
       "cancelHours": "Cancel hours"
+    },
+    "noResponse": "Client silence",
+    "noResponseValue": "After {{hours}}h: {{refundPercent}}% back · expert {{expertPercent}}% · platform {{platformPercent}}%",
+    "noResponseHelp": "When the expert asks for more information and the client does not answer within these hours, the request closes and the fee splits: the refund percent goes back to the client, the expert percent to the expert, and the platform keeps the rest. Hours from 1 to {{maxHours}}; refund plus expert at most 100%. Requests already sent keep the rule they were sent with.",
+    "noResponseFields": {
+      "hours": "Hours to wait",
+      "refundPercent": "Client refund %",
+      "expertPercent": "Expert %"
     }
   },
   "expertPolicy": {
