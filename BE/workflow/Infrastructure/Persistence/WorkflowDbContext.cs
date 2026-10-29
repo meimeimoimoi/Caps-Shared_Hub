@@ -315,6 +315,9 @@ public sealed class WorkflowDbContext(DbContextOptions<WorkflowDbContext> option
                             + " AND late_penalty_hours >= 0 AND late_penalty_pct >= 0"
                             + " AND platform_fee_pct + late_penalty_pct <= 100"
                             + " AND late_cancel_hours BETWEEN late_penalty_hours AND 720"
+                            + " AND no_response_hours BETWEEN 1 AND 720"
+                            + " AND no_response_refund_pct >= 0 AND no_response_expert_pct >= 0"
+                            + " AND no_response_refund_pct + no_response_expert_pct <= 100"
                     )
             );
             e.HasKey(x => x.Id);
@@ -332,6 +335,9 @@ public sealed class WorkflowDbContext(DbContextOptions<WorkflowDbContext> option
             e.Property(x => x.LatePenaltyHours).HasColumnName("late_penalty_hours");
             e.Property(x => x.LatePenaltyPct).HasColumnName("late_penalty_pct");
             e.Property(x => x.LateCancelHours).HasColumnName("late_cancel_hours");
+            e.Property(x => x.NoResponseHours).HasColumnName("no_response_hours");
+            e.Property(x => x.NoResponseRefundPct).HasColumnName("no_response_refund_pct");
+            e.Property(x => x.NoResponseExpertPct).HasColumnName("no_response_expert_pct");
             e.Property(x => x.LateRefundPct).HasColumnName("late_refund_pct");
             e.Property(x => x.InfoRequestCount).HasColumnName("info_request_count");
             e.Property(x => x.ProblemDescription).HasColumnName("problem_description").IsRequired();

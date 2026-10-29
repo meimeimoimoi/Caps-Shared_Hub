@@ -15,7 +15,10 @@ public sealed record ReviewOffer(
     int TurnaroundHours,
     int LatePenaltyHours,
     short LatePenaltyPct,
-    int LateCancelHours
+    int LateCancelHours,
+    int NoResponseHours,
+    short NoResponseRefundPct,
+    short NoResponseExpertPct
 );
 
 /// <summary>How the held fee splits when a case completes, in VND.</summary>
@@ -27,7 +30,6 @@ public sealed class ReviewCase
     // ponytail: response window not given by the spec, 24h until the team decides
     public static readonly TimeSpan ResponseWindow = TimeSpan.FromHours(24);
     public static readonly TimeSpan PaymentWindow = TimeSpan.FromMinutes(15);
-    public static readonly TimeSpan InformationWindow = TimeSpan.FromHours(72);
     public static readonly TimeSpan AcceptanceWindow = TimeSpan.FromHours(72);
 
     public const int MaxTurnaroundHours = 720;
@@ -76,6 +78,14 @@ public sealed class ReviewCase
     /// <summary>Share of the fee returned to the client for a late delivery, set when the expert delivers.</summary>
     public short LateRefundPct { get; private set; }
     public int InfoRequestCount { get; private set; }
+
+    /// <summary>
+    /// Client-silence rule frozen at booking: no answer within NoResponseHours ends the case, the client gets
+    /// NoResponseRefundPct back, the expert NoResponseExpertPct, and the platform keeps the rest.
+    /// </summary>
+    public int NoResponseHours { get; private set; }
+    public short NoResponseRefundPct { get; private set; }
+    public short NoResponseExpertPct { get; private set; }
 
     // After this the expert can no longer deliver and the expiry job refunds the client
     private DateTimeOffset? CancelAt => DeliveryDeadline + TimeSpan.FromHours(LateCancelHours);
@@ -130,6 +140,11 @@ public sealed class ReviewCase
             || offer.PlatformFeePct + offer.LatePenaltyPct > 100
             || offer.LateCancelHours < offer.LatePenaltyHours
             || offer.LateCancelHours > MaxTurnaroundHours
+            || offer.NoResponseHours < 1
+            || offer.NoResponseHours > MaxTurnaroundHours
+            || offer.NoResponseRefundPct < 0
+            || offer.NoResponseExpertPct < 0
+            || offer.NoResponseRefundPct + offer.NoResponseExpertPct > 100
         )
         {
             throw WorkflowErrors.OfferInvalid();
@@ -154,6 +169,9 @@ public sealed class ReviewCase
             LatePenaltyHours = offer.LatePenaltyHours,
             LatePenaltyPct = offer.LatePenaltyPct,
             LateCancelHours = offer.LateCancelHours,
+            NoResponseHours = offer.NoResponseHours,
+            NoResponseRefundPct = offer.NoResponseRefundPct,
+            NoResponseExpertPct = offer.NoResponseExpertPct,
             ProblemDescription = RequiredText(problemDescription, "Problem description"),
             ExpectedOutcome = OptionalText(expectedOutcome, "Expected outcome"),
             PaymentDeadline = now + PaymentWindow,
@@ -258,7 +276,7 @@ public sealed class ReviewCase
             Id,
             actorUserId,
             RequiredText(message, "Message"),
-            now + InformationWindow,
+            now + TimeSpan.FromHours(NoResponseHours),
             now
         );
         InfoRequestCount++;
@@ -327,11 +345,18 @@ public sealed class ReviewCase
     }
 
     /// <summary>
-    /// The split of the held fee: a late delivery's refund comes out of the expert's share, and a full refund
-    /// leaves the platform nothing either.
+    /// The split of the held fee. A client who went silent gets the shares frozen at booking (the platform keeps
+    /// the rest); otherwise a late delivery's refund comes out of the expert's share, and a full refund leaves
+    /// the platform nothing either.
     /// </summary>
     public ReviewSettlement Settle()
     {
+        if (TerminationReason == UserNonResponse)
+        {
+            var back = Fee * NoResponseRefundPct / 100;
+            var paid = Fee * NoResponseExpertPct / 100;
+            return new(back, Fee - back - paid, paid);
+        }
         var refund = Fee * LateRefundPct / 100;
         var platform = LateRefundPct == 100 ? 0 : Fee * PlatformFeePct / 100;
         return new(refund, platform, Fee - refund - platform);

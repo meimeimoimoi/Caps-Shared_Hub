@@ -49,6 +49,9 @@ public sealed class GetReviewOfferHandler(
             fee.LatePenaltyHours,
             fee.LatePenaltyPercent,
             fee.LateCancelHours,
+            fee.NoResponseHours,
+            fee.NoResponseRefundPercent,
+            fee.NoResponseExpertPercent,
             profile.FreeSlots
         );
     }

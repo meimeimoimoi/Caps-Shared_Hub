@@ -15,23 +15,28 @@ public sealed class ReviewCaseTests
         int hours = 48,
         int penaltyHours = 24,
         int penaltyPct = 30,
-        int cancelHours = 72
+        int cancelHours = 72,
+        int silenceHours = 72,
+        int silenceRefund = 50,
+        int silenceExpert = 30
     ) =>
         ReviewCase
             .Request(
                 Client,
                 Guid.NewGuid(),
                 Guid.NewGuid(),
-                new ReviewOffer(
+                Offers.Sample(
                     Expert,
                     ExpertUser,
-                    Guid.NewGuid(),
                     fee,
                     (short)pct,
                     hours,
                     penaltyHours,
                     (short)penaltyPct,
-                    cancelHours
+                    cancelHours,
+                    silenceHours,
+                    (short)silenceRefund,
+                    (short)silenceExpert
                 ),
                 "Check my CIT return",
                 null,
@@ -88,17 +93,7 @@ public sealed class ReviewCaseTests
     [Fact]
     public void Request_freezes_the_offer_and_records_the_opening()
     {
-        var offer = new ReviewOffer(
-            Expert,
-            ExpertUser,
-            Guid.NewGuid(),
-            1_000_000,
-            20,
-            48,
-            24,
-            30,
-            72
-        );
+        var offer = Offers.Sample(Expert, ExpertUser);
         var (reviewCase, opened) = ReviewCase.Request(
             Client,
             Guid.NewGuid(),
@@ -137,17 +132,7 @@ public sealed class ReviewCaseTests
                     Client,
                     Guid.NewGuid(),
                     Guid.NewGuid(),
-                    new ReviewOffer(
-                        Expert,
-                        ExpertUser,
-                        Guid.NewGuid(),
-                        1_000_000,
-                        20,
-                        48,
-                        24,
-                        30,
-                        72
-                    ),
+                    Offers.Sample(Expert, ExpertUser),
                     text,
                     null,
                     Now
@@ -354,6 +339,52 @@ public sealed class ReviewCaseTests
     }
 
     [Fact]
+    public void A_silent_client_gets_the_shares_frozen_at_booking()
+    {
+        var reviewCase = InReview();
+        var (request, _) = reviewCase.RequestInformation(
+            Expert,
+            ExpertUser,
+            "Send the invoices",
+            Now
+        );
+        reviewCase.TerminateForNoResponse(request, Now.AddHours(72));
+
+        // 50% back to the client, 30% to the expert, the platform keeps the remaining 20%
+        Assert.Equal(new ReviewSettlement(500_000, 200_000, 300_000), reviewCase.Settle());
+    }
+
+    [Fact]
+    public void The_answer_deadline_uses_the_hours_frozen_at_booking()
+    {
+        var reviewCase = NewCase(silenceHours: 24);
+        reviewCase.ConfirmPayment(Now);
+        reviewCase.Accept(Expert, ExpertUser, Now);
+        var (request, _) = reviewCase.RequestInformation(
+            Expert,
+            ExpertUser,
+            "Send the invoices",
+            Now
+        );
+
+        Assert.Null(reviewCase.TerminateForNoResponse(request, Now.AddHours(23)));
+        Assert.NotNull(reviewCase.TerminateForNoResponse(request, Now.AddHours(24)));
+    }
+
+    [Theory]
+    [InlineData(0, 50, 30)] // no hours
+    [InlineData(721, 50, 30)] // past the cap
+    [InlineData(72, -1, 30)] // negative share
+    [InlineData(72, 80, 30)] // client + expert over 100%
+    public void Invalid_no_response_rule_is_rejected(int hours, int refund, int expert) =>
+        Assert.Equal(
+            "CASE_OFFER_INVALID",
+            Errors.CodeOf(() =>
+                NewCase(silenceHours: hours, silenceRefund: refund, silenceExpert: expert)
+            )
+        );
+
+    [Fact]
     public void Expert_cannot_book_their_own_service() =>
         Assert.Equal(
             "CASE_SELF_REVIEW",
@@ -362,17 +393,7 @@ public sealed class ReviewCaseTests
                     ExpertUser,
                     Guid.NewGuid(),
                     Guid.NewGuid(),
-                    new ReviewOffer(
-                        Expert,
-                        ExpertUser,
-                        Guid.NewGuid(),
-                        1_000_000,
-                        20,
-                        48,
-                        24,
-                        30,
-                        72
-                    ),
+                    Offers.Sample(Expert, ExpertUser),
                     "Check my CIT return",
                     null,
                     Now

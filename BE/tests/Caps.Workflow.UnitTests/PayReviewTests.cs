@@ -44,17 +44,7 @@ public sealed class PayReviewTests
                 Client,
                 Guid.NewGuid(),
                 Guid.NewGuid(),
-                new ReviewOffer(
-                    Guid.NewGuid(),
-                    Guid.NewGuid(),
-                    Guid.NewGuid(),
-                    1_000_000,
-                    20,
-                    48,
-                    24,
-                    30,
-                    72
-                ),
+                Offers.Sample(Guid.NewGuid(), Guid.NewGuid()),
                 "Check my CIT return",
                 null,
                 TimeProvider.System.GetUtcNow()

@@ -55,7 +55,10 @@ public sealed class ExpertServiceClient(HttpClient http, ILogger<ExpertServiceCl
             offer.TurnaroundHours,
             offer.LatePenaltyHours,
             (short)offer.LatePenaltyPercent,
-            offer.LateCancelHours
+            offer.LateCancelHours,
+            offer.NoResponseHours,
+            (short)offer.NoResponseRefundPercent,
+            (short)offer.NoResponseExpertPercent
         );
     }
 
@@ -95,6 +98,9 @@ public sealed class ExpertServiceClient(HttpClient http, ILogger<ExpertServiceCl
         int LatePenaltyHours,
         int LatePenaltyPercent,
         int LateCancelHours,
+        int NoResponseHours,
+        int NoResponseRefundPercent,
+        int NoResponseExpertPercent,
         int FreeSlots
     );
 }

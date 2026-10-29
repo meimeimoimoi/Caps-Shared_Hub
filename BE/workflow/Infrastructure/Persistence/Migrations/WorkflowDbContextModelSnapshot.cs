@@ -268,6 +268,18 @@ namespace Caps.Workflow.Infrastructure.Persistence.Migrations
                         .HasColumnType("smallint")
                         .HasColumnName("late_refund_pct");
 
+                    b.Property<short>("NoResponseExpertPct")
+                        .HasColumnType("smallint")
+                        .HasColumnName("no_response_expert_pct");
+
+                    b.Property<int>("NoResponseHours")
+                        .HasColumnType("integer")
+                        .HasColumnName("no_response_hours");
+
+                    b.Property<short>("NoResponseRefundPct")
+                        .HasColumnType("smallint")
+                        .HasColumnName("no_response_refund_pct");
+
                     b.Property<DateTimeOffset?>("PaidAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("paid_at");
@@ -357,7 +369,7 @@ namespace Caps.Workflow.Infrastructure.Persistence.Migrations
 
                     b.ToTable("review_case", "review", t =>
                         {
-                            t.HasCheckConstraint("ck_case_offer", "fee > 0 AND platform_fee_pct BETWEEN 0 AND 99 AND turnaround_hours BETWEEN 1 AND 720 AND late_penalty_hours >= 0 AND late_penalty_pct >= 0 AND platform_fee_pct + late_penalty_pct <= 100 AND late_cancel_hours BETWEEN late_penalty_hours AND 720");
+                            t.HasCheckConstraint("ck_case_offer", "fee > 0 AND platform_fee_pct BETWEEN 0 AND 99 AND turnaround_hours BETWEEN 1 AND 720 AND late_penalty_hours >= 0 AND late_penalty_pct >= 0 AND platform_fee_pct + late_penalty_pct <= 100 AND late_cancel_hours BETWEEN late_penalty_hours AND 720 AND no_response_hours BETWEEN 1 AND 720 AND no_response_refund_pct >= 0 AND no_response_expert_pct >= 0 AND no_response_refund_pct + no_response_expert_pct <= 100");
                         });
                 });
 

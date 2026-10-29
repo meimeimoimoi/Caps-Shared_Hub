@@ -50,17 +50,7 @@ public sealed class AcceptReviewTests
                 Client,
                 Guid.NewGuid(),
                 Guid.NewGuid(),
-                new ReviewOffer(
-                    ExpertProfile,
-                    Expert,
-                    Guid.NewGuid(),
-                    1_000_000,
-                    20,
-                    48,
-                    24,
-                    30,
-                    72
-                ),
+                Offers.Sample(ExpertProfile, Expert),
                 "Check my CIT return",
                 null,
                 TimeProvider.System.GetUtcNow()
