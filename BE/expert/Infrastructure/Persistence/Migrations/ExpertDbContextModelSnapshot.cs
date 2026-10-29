@@ -564,6 +564,29 @@ namespace Caps.Expert.Infrastructure.Persistence.Migrations
                     b.ToTable("service_offering_change", "expert");
                 });
 
+            modelBuilder.Entity("Caps.Expert.Domain.Profiles.ExpertCaseSlot", b =>
+                {
+                    b.Property<Guid>("ReviewCaseId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("review_case_id");
+
+                    b.Property<Guid>("ExpertProfileId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("expert_profile_id");
+
+                    b.Property<DateTimeOffset>("TakenAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("taken_at");
+
+                    b.HasKey("ReviewCaseId");
+
+                    b.HasIndex("ExpertProfileId")
+                        .HasDatabaseName("ix_expert_case_slot_profile");
+
+                    b.ToTable("expert_case_slot", "expert");
+                });
+
             modelBuilder.Entity("Caps.Expert.Domain.Profiles.ExpertProfile", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1179,6 +1202,16 @@ namespace Caps.Expert.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_offering_change_offering");
+                });
+
+            modelBuilder.Entity("Caps.Expert.Domain.Profiles.ExpertCaseSlot", b =>
+                {
+                    b.HasOne("Caps.Expert.Domain.Profiles.ExpertProfile", null)
+                        .WithMany()
+                        .HasForeignKey("ExpertProfileId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_expert_case_slot_profile");
                 });
 
             modelBuilder.Entity("Caps.Expert.Domain.Qualifications.CompetencyAssessment", b =>

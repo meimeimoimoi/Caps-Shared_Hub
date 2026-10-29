@@ -29,6 +29,7 @@ public sealed class ExpertDbContext(DbContextOptions<ExpertDbContext> options) :
     public DbSet<QualificationEvent> QualificationEvents => Set<QualificationEvent>();
     public DbSet<CompetencyAssessment> CompetencyAssessments => Set<CompetencyAssessment>();
     public DbSet<PlatformFee> PlatformFees => Set<PlatformFee>();
+    public DbSet<ExpertCaseSlot> ExpertCaseSlots => Set<ExpertCaseSlot>();
     public DbSet<ServiceOffering> ServiceOfferings => Set<ServiceOffering>();
     public DbSet<ServiceOfferingChange> ServiceOfferingChanges => Set<ServiceOfferingChange>();
     public DbSet<ServiceCatalogItem> ServiceCatalog => Set<ServiceCatalogItem>();
@@ -96,6 +97,21 @@ public sealed class ExpertDbContext(DbContextOptions<ExpertDbContext> options) :
             e.Property(x => x.UpdatedAt).HasColumnName("updated_at").IsRequired();
             e.HasIndex(x => new { x.Status, x.ServiceStatus })
                 .HasDatabaseName("ix_expert_marketplace_feed");
+        });
+
+        modelBuilder.Entity<ExpertCaseSlot>(e =>
+        {
+            e.ToTable("expert_case_slot");
+            e.HasKey(x => x.ReviewCaseId);
+            e.Property(x => x.ReviewCaseId).HasColumnName("review_case_id");
+            e.Property(x => x.ExpertProfileId).HasColumnName("expert_profile_id");
+            e.Property(x => x.TakenAt).HasColumnName("taken_at");
+            e.HasIndex(x => x.ExpertProfileId).HasDatabaseName("ix_expert_case_slot_profile");
+            e.HasOne<ExpertProfile>()
+                .WithMany()
+                .HasForeignKey(x => x.ExpertProfileId)
+                .OnDelete(DeleteBehavior.Restrict)
+                .HasConstraintName("fk_expert_case_slot_profile");
         });
 
         modelBuilder.Entity<ExpertApplication>(e =>

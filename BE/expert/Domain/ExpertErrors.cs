@@ -157,9 +157,6 @@ public static class ExpertErrors
             $"EV-06 cannot pass: the declared experience is below {minYears} years."
         );
 
-    public static AppException ServiceNotFound() =>
-        new(ErrorType.NotFound, "SERVICE_NOT_FOUND", "Service not found or not offered.");
-
     public static AppException EligibilityRequired() =>
         new(
             ErrorType.Conflict,
@@ -254,6 +251,9 @@ public static class ExpertErrors
             $"Only experts approved for this service can price it; the service is {qualificationStatus}."
         );
 
+    public static AppException ServiceNotFound() =>
+        new(ErrorType.NotFound, "SERVICE_NOT_FOUND", "Service not found or not offered.");
+
     public static AppException PlatformFeeInvalid(int max) =>
         new(
             ErrorType.Validation,
@@ -315,6 +315,23 @@ public static class ExpertErrors
 
     public static AppException ExpertNotFound() =>
         new(ErrorType.NotFound, "EXPERT_NOT_FOUND", "Expert not found.");
+
+    public static AppException ExpertNotBookable() =>
+        new(
+            ErrorType.NotFound,
+            "EXPERT_NOT_BOOKABLE",
+            "The expert does not offer this service right now."
+        );
+
+    public static AppException ExpertFull() =>
+        new(ErrorType.Conflict, "EXPERT_FULL", "The expert has no free slot.");
+
+    public static AppException CaseSlotConflict() =>
+        new(
+            ErrorType.Conflict,
+            "CASE_SLOT_CONFLICT",
+            "This review case already holds a slot of another expert."
+        );
 
     public static AppException NewEvidenceRequired() =>
         new(
