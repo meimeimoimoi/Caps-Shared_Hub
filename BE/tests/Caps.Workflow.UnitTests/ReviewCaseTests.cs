@@ -203,6 +203,25 @@ public sealed class ReviewCaseTests
     }
 
     [Fact]
+    public void A_full_expert_closes_a_waiting_request_as_declined_by_the_system()
+    {
+        var reviewCase = Paid();
+
+        var history = reviewCase.CloseForFullExpert(Now);
+
+        Assert.Equal(ReviewCaseStatus.ExpertDeclined, reviewCase.Status);
+        Assert.Equal(ReviewCase.ExpertFull, reviewCase.DeclineReason);
+        Assert.Null(history.ActorUserId);
+    }
+
+    [Fact]
+    public void Only_a_waiting_request_closes_for_a_full_expert() =>
+        Assert.Equal(
+            "CASE_STATUS_INVALID",
+            Errors.CodeOf(() => InReview().CloseForFullExpert(Now))
+        );
+
+    [Fact]
     public void Cannot_verify_needs_a_reason() =>
         Assert.Equal(
             "TEXT_REQUIRED",

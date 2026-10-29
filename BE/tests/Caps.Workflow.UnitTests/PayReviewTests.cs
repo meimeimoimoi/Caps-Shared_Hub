@@ -123,6 +123,11 @@ public sealed class PayReviewTests
         public Task<ReviewCase?> FindAsync(Guid reviewCaseId, CancellationToken ct) =>
             throw new NotSupportedException();
 
+        public Task<IReadOnlyList<Guid>> ListPendingIdsAsync(
+            Guid expertProfileId,
+            CancellationToken ct
+        ) => throw new NotSupportedException();
+
         public Task<IReadOnlyList<ReviewCase>> ListForUserAsync(
             Guid userId,
             CancellationToken ct

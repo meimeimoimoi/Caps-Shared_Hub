@@ -39,6 +39,7 @@ public sealed class ReviewCase
     public const string Verified = "VERIFIED";
     public const string CannotVerify = "CANNOT_VERIFY";
     public const string UserNonResponse = "USER_NON_RESPONSE";
+    public const string ExpertFull = "EXPERT_FULL";
 
     /// <summary>The client has not paid: the expert never sees these, and no response deadline runs yet.</summary>
     public static readonly string[] UnpaidStatuses =
@@ -244,6 +245,17 @@ public sealed class ReviewCase
         EnsureStatus(ReviewCaseStatus.PendingExpertResponse);
         DeclineReason = RequiredText(reason, "Decline reason");
         return MoveTo(ReviewCaseStatus.ExpertDeclined, actorUserId, DeclineReason, now);
+    }
+
+    /// <summary>
+    /// The expert took their last slot while this paid request waited: the system closes it as declined and the
+    /// caller refunds the client in full.
+    /// </summary>
+    public ReviewStatusHistory CloseForFullExpert(DateTimeOffset now)
+    {
+        EnsureStatus(ReviewCaseStatus.PendingExpertResponse);
+        DeclineReason = ExpertFull;
+        return MoveTo(ReviewCaseStatus.ExpertDeclined, null, ExpertFull, now);
     }
 
     /// <summary>

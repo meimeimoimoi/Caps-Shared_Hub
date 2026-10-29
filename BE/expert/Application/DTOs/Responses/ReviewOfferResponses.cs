@@ -18,3 +18,6 @@ public sealed record ReviewOfferResponse(
     int NoResponseExpertPercent,
     int FreeSlots
 );
+
+/// <summary>What the expert has left after a case took its slot.</summary>
+public sealed record CaseSlotResponse(int FreeSlots);

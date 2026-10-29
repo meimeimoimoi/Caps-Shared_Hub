@@ -62,7 +62,7 @@ public sealed class ExpertServiceClient(HttpClient http, ILogger<ExpertServiceCl
         );
     }
 
-    public async Task TakeAsync(Guid expertProfileId, Guid reviewCaseId, CancellationToken ct)
+    public async Task<int> TakeAsync(Guid expertProfileId, Guid reviewCaseId, CancellationToken ct)
     {
         using var response = await ServiceCalls.SendAsync(
             http,
@@ -71,6 +71,8 @@ public sealed class ExpertServiceClient(HttpClient http, ILogger<ExpertServiceCl
             logger,
             ct
         );
+        var body = await response.Content.ReadFromJsonAsync<Envelope<SlotData>>(ct);
+        return body?.Data?.FreeSlots ?? throw WorkflowErrors.ServiceLinkUnavailable(Service);
     }
 
     public async Task ReleaseAsync(Guid expertProfileId, Guid reviewCaseId, CancellationToken ct)
@@ -88,6 +90,8 @@ public sealed class ExpertServiceClient(HttpClient http, ILogger<ExpertServiceCl
         $"internal/experts/{expertProfileId}/slots/{reviewCaseId}";
 
     private sealed record Envelope<T>(T? Data);
+
+    private sealed record SlotData(int FreeSlots);
 
     private sealed record OfferData(
         Guid ExpertUserId,

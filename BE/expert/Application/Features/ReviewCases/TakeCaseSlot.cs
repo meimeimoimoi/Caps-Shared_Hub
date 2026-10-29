@@ -15,21 +15,19 @@ public sealed class TakeCaseSlotHandler(
     IExpertCaseSlots slots,
     IUnitOfWork unitOfWork,
     TimeProvider clock
-) : ICommandHandler<TakeCaseSlotCommand>
+) : ICommandHandler<TakeCaseSlotCommand, int>
 {
-    public async Task HandleAsync(TakeCaseSlotCommand command, CancellationToken ct)
+    public async Task<int> HandleAsync(TakeCaseSlotCommand command, CancellationToken ct)
     {
         await using var tx = await unitOfWork.BeginTransactionAsync(ct);
-        var taken = await slots.TakeAsync(
-            command.ExpertProfileId,
-            command.ReviewCaseId,
-            clock.GetUtcNow(),
-            ct
-        );
-        if (!taken)
-        {
-            throw ExpertErrors.ExpertFull();
-        }
+        var freeSlots =
+            await slots.TakeAsync(
+                command.ExpertProfileId,
+                command.ReviewCaseId,
+                clock.GetUtcNow(),
+                ct
+            ) ?? throw ExpertErrors.ExpertFull();
         await tx.CommitAsync(ct);
+        return freeSlots;
     }
 }

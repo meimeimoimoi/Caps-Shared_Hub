@@ -126,6 +126,11 @@ public sealed class SendCaseMessageTests
         public Task<ReviewCase?> FindForUpdateAsync(Guid reviewCaseId, CancellationToken ct) =>
             throw new NotSupportedException();
 
+        public Task<IReadOnlyList<Guid>> ListPendingIdsAsync(
+            Guid expertProfileId,
+            CancellationToken ct
+        ) => throw new NotSupportedException();
+
         public Task<IReadOnlyList<ReviewCase>> ListForUserAsync(
             Guid userId,
             CancellationToken ct

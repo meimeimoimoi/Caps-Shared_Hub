@@ -31,19 +31,19 @@ public sealed class InternalCasesController : ControllerBase
     }
 
     /// <summary>The expert accepted the case: it takes one slot. Safe to repeat for the same case.</summary>
-    /// <response code="204">The case holds a slot.</response>
+    /// <response code="200">The case holds a slot; freeSlots is what the expert has left.</response>
     /// <response code="401">INTERNAL_KEY_INVALID.</response>
     /// <response code="409">EXPERT_FULL: no free slot; CASE_SLOT_CONFLICT: the case holds another expert's slot.</response>
     [HttpPut("slots/{reviewCaseId:guid}")]
     public async Task<IActionResult> TakeSlot(
         Guid profileId,
         Guid reviewCaseId,
-        [FromServices] ICommandHandler<TakeCaseSlotCommand> handler,
+        [FromServices] ICommandHandler<TakeCaseSlotCommand, int> handler,
         CancellationToken ct
     )
     {
-        await handler.HandleAsync(new(profileId, reviewCaseId), ct);
-        return NoContent();
+        var freeSlots = await handler.HandleAsync(new(profileId, reviewCaseId), ct);
+        return Ok(ApiResponse<CaseSlotResponse>.Ok(new(freeSlots)));
     }
 
     /// <summary>The case ended: its slot is free again. Safe to repeat.</summary>

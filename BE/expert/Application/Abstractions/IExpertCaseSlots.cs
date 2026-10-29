@@ -4,10 +4,10 @@ namespace Caps.Expert.Application.Abstractions;
 public interface IExpertCaseSlots
 {
     /// <summary>
-    /// Takes a slot for the case; false when the expert is full. Must run in a transaction: the caller
-    /// commits only on true, so a full expert leaves nothing behind.
+    /// Takes a slot for the case and returns the expert's free slots left; null when the expert is full. Must
+    /// run in a transaction: the caller commits only on a value, so a full expert leaves nothing behind.
     /// </summary>
-    Task<bool> TakeAsync(
+    Task<int?> TakeAsync(
         Guid profileId,
         Guid reviewCaseId,
         DateTimeOffset now,

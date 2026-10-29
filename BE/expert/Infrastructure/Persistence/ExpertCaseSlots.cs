@@ -10,7 +10,7 @@ namespace Caps.Expert.Infrastructure.Persistence;
 /// </summary>
 public sealed class ExpertCaseSlots(ExpertDbContext db) : IExpertCaseSlots
 {
-    public async Task<bool> TakeAsync(
+    public async Task<int?> TakeAsync(
         Guid profileId,
         Guid reviewCaseId,
         DateTimeOffset now,
@@ -32,7 +32,9 @@ public sealed class ExpertCaseSlots(ExpertDbContext db) : IExpertCaseSlots
                 x => x.ReviewCaseId == reviewCaseId && x.ExpertProfileId == profileId,
                 ct
             );
-            return sameExpert ? true : throw ExpertErrors.CaseSlotConflict();
+            return sameExpert
+                ? await FreeSlotsAsync(profileId, ct)
+                : throw ExpertErrors.CaseSlotConflict();
         }
         var counted = await db.Database.ExecuteSqlInterpolatedAsync(
             $"""
@@ -41,7 +43,7 @@ public sealed class ExpertCaseSlots(ExpertDbContext db) : IExpertCaseSlots
             """,
             ct
         );
-        return counted == 1;
+        return counted == 1 ? await FreeSlotsAsync(profileId, ct) : null;
     }
 
     public Task ReleaseAsync(Guid profileId, Guid reviewCaseId, CancellationToken ct) =>
@@ -57,4 +59,11 @@ public sealed class ExpertCaseSlots(ExpertDbContext db) : IExpertCaseSlots
             """,
             ct
         );
+
+    // Inside the caller's transaction, so it counts the slot this take just added
+    private Task<int> FreeSlotsAsync(Guid profileId, CancellationToken ct) =>
+        db
+            .ExpertProfiles.Where(x => x.Id == profileId)
+            .Select(x => x.Capacity - x.ActiveCases)
+            .SingleAsync(ct);
 }

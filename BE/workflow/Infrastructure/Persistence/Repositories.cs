@@ -36,6 +36,18 @@ public sealed class ReviewCaseRepository(WorkflowDbContext db) : IReviewCaseRepo
             .Take(100)
             .ToListAsync(ct);
     }
+
+    public async Task<IReadOnlyList<Guid>> ListPendingIdsAsync(
+        Guid expertProfileId,
+        CancellationToken ct
+    ) =>
+        await db
+            .ReviewCases.Where(x =>
+                x.ExpertProfileId == expertProfileId
+                && x.Status == ReviewCaseStatus.PendingExpertResponse
+            )
+            .Select(x => x.Id)
+            .ToListAsync(ct);
 }
 
 /// <summary>EF Core store for the expert's questions to the client.</summary>

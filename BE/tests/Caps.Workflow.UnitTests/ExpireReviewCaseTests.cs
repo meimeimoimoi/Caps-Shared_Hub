@@ -240,7 +240,7 @@ public sealed class ExpireReviewCaseTests
     {
         public List<(Guid, Guid)> Released { get; } = [];
 
-        public Task TakeAsync(Guid expertProfileId, Guid reviewCaseId, CancellationToken ct) =>
+        public Task<int> TakeAsync(Guid expertProfileId, Guid reviewCaseId, CancellationToken ct) =>
             throw new NotSupportedException();
 
         public Task ReleaseAsync(Guid expertProfileId, Guid reviewCaseId, CancellationToken ct)
@@ -280,6 +280,11 @@ public sealed class ExpireReviewCaseTests
 
         public Task<ReviewCase?> FindAsync(Guid reviewCaseId, CancellationToken ct) =>
             throw new NotSupportedException();
+
+        public Task<IReadOnlyList<Guid>> ListPendingIdsAsync(
+            Guid expertProfileId,
+            CancellationToken ct
+        ) => throw new NotSupportedException();
 
         public Task<IReadOnlyList<ReviewCase>> ListForUserAsync(
             Guid userId,
