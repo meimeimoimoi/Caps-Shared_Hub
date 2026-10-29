@@ -11,6 +11,7 @@ public sealed record AcceptReviewCommand(Guid UserId, Guid ReviewCaseId);
 /// <summary>Starts the review; the delivery deadline counts from now with the frozen turnaround.</summary>
 public sealed class AccpetReviewHandler(
     IReviewCaseRepository cases,
+    IExpertSlots slots,
     IUnitOfWork unitOfWork,
     TimeProvider clock
 ) : ICommandHandler<AcceptReviewCommand, ReviewCaseResponse>
@@ -37,7 +38,9 @@ public sealed class AccpetReviewHandler(
             clock.GetUtcNow()
         );
         cases.AddHistory(accepted);
-        //expert active_cases not counted yet; added with the expert adapter
+        // Atomic in the expert service: a full expert fails here and the case stays pending. A failed save after
+        // the take leaves a slot held; retrying the accept reuses it (the slot is keyed by case)
+        await slots.TakeAsync(reviewCase.ExpertProfileId, reviewCase.Id, ct);
         await unitOfWork.SaveChangesAsync(ct);
         await tx.CommitAsync(ct);
         return ReviewCaseResponse.From(reviewCase);

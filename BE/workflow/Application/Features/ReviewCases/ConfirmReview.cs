@@ -8,10 +8,14 @@ namespace Caps.Workflow.Application.Features.ReviewCases;
 /// <summary>The client accepts the delivered result.</summary>
 public sealed record ConfirmReviewCommand(Guid UserId, Guid ReviewCaseId);
 
-/// <summary>Completes the case and releases the escrow to the expert minus the frozen platform fee.</summary>
+/// <summary>
+/// Completes the case, settles the escrow with the frozen platform fee and any late refund, and frees the
+/// expert's slot.
+/// </summary>
 public sealed class ConfirmReviewHandler(
     IReviewCaseRepository cases,
     IEscrows escrows,
+    IExpertSlots slots,
     IUnitOfWork unitOfWork,
     TimeProvider clock
 ) : ICommandHandler<ConfirmReviewCommand, ReviewCaseResponse>
@@ -29,6 +33,8 @@ public sealed class ConfirmReviewHandler(
 
         // Release before saving: if billing fails the case stays awaiting acceptance and can be retried
         await escrows.ReleaseAsync(reviewCase.Id, reviewCase.ExpertUserId, reviewCase.Settle(), ct);
+        // Both calls are idempotent, so a retry after a failure here settles and frees nothing twice
+        await slots.ReleaseAsync(reviewCase.ExpertProfileId, reviewCase.Id, ct);
 
         cases.AddHistory(completed);
         await unitOfWork.SaveChangesAsync(ct);
