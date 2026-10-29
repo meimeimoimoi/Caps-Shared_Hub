@@ -96,7 +96,12 @@ public sealed class SetMyServiceHandler(
             rate.NetOf(offering.Fee),
             pending == null
                 ? null
-                : new(pending.Percent, PlatformFeeRows.LateOf(pending), pending.EffectiveFrom),
+                : new(
+                    pending.Percent,
+                    PlatformFeeRows.LateOf(pending),
+                    PlatformFeeRows.NoResponseOf(pending),
+                    pending.EffectiveFrom
+                ),
             PlatformFeeRows.Limits(policy)
         );
     }

@@ -33,6 +33,9 @@ public sealed class PricingTests
             24,
             30,
             72,
+            72,
+            50,
+            30,
             null,
             false,
             Policy.FeeNoticeDays,
@@ -122,6 +125,9 @@ public sealed class PricingTests
                 hours,
                 penalty,
                 cancel,
+                72,
+                50,
+                30,
                 null,
                 false,
                 Policy.FeeNoticeDays,
@@ -130,6 +136,43 @@ public sealed class PricingTests
             )
         );
         Assert.Equal("LATE_RULE_INVALID", e.Code);
+    }
+
+    [Theory]
+    [InlineData(0, 50, 30)] // no hours
+    [InlineData(721, 50, 30)] // past the cap
+    [InlineData(72, -1, 30)] // negative share
+    [InlineData(72, 80, 30)] // client + expert over 100%
+    public void A_no_response_rule_out_of_range_is_rejected(int hours, int refund, int expert)
+    {
+        var e = Assert.Throws<AppException>(() =>
+            PlatformFee.Set(
+                Service,
+                20,
+                24,
+                30,
+                72,
+                hours,
+                refund,
+                expert,
+                null,
+                false,
+                Policy.FeeNoticeDays,
+                Admin,
+                Now
+            )
+        );
+        Assert.Equal("NO_RESPONSE_RULE_INVALID", e.Code);
+    }
+
+    [Fact]
+    public void The_no_response_rule_is_kept_with_the_rate()
+    {
+        var rate = Rate();
+
+        Assert.Equal(72, rate.NoResponseHours);
+        Assert.Equal(50, rate.NoResponseRefundPercent);
+        Assert.Equal(30, rate.NoResponseExpertPercent);
     }
 
     [Fact]
