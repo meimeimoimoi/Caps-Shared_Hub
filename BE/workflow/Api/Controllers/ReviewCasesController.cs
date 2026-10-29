@@ -49,6 +49,7 @@ public sealed class ReviewCasesController(ICurrentUser currentUser) : Controller
     /// <response code="200">The case, AWAITING_PAYMENT.</response>
     /// <response code="400">TEXT_REQUIRED or TEXT_TOO_LONG.</response>
     /// <response code="404">DOCUMENT_NOT_FOUND or EXPERT_SERVICE_UNAVAILABLE.</response>
+    /// <response code="409">REVIEW_CASE_ALREADY_OPEN: this version already has an open case with the expert.</response>
     /// <response code="503">SERVICE_LINK_UNAVAILABLE: the expert service cannot be reached.</response>
     [HttpPost]
     public async Task<IActionResult> Create(

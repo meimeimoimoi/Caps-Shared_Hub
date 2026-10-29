@@ -376,6 +376,11 @@ public sealed class WorkflowDbContext(DbContextOptions<WorkflowDbContext> option
             e.HasIndex(x => new { x.RequesterUserId, x.Status })
                 .HasDatabaseName("ix_review_case_6");
             e.HasIndex(x => new { x.ExpertUserId, x.Status }).HasDatabaseName("ix_review_case_7");
+            // One running case per document version and expert; a closed case frees the pair
+            e.HasIndex(x => new { x.SourceVersionId, x.ExpertProfileId })
+                .IsUnique()
+                .HasFilter($"status IN ('{string.Join("', '", ReviewCase.OpenStatuses)}')")
+                .HasDatabaseName("ux_review_case_open");
 
             e.HasOne<Document>()
                 .WithMany()

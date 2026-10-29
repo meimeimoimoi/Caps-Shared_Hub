@@ -61,7 +61,15 @@ public sealed class RequestReviewHandler(
         );
         cases.Add(reviewCase);
         cases.AddHistory(opened);
-        await unitOfWork.SaveChangesAsync(ct);
+        try
+        {
+            await unitOfWork.SaveChangesAsync(ct);
+        }
+        catch (UniqueConstraintException)
+        {
+            // The partial unique index also stops two bookings sent at the same moment
+            throw WorkflowErrors.CaseAlreadyOpen();
+        }
         return ReviewCaseResponse.From(reviewCase);
     }
 }

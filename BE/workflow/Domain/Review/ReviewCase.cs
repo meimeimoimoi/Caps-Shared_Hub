@@ -48,6 +48,16 @@ public sealed class ReviewCase
         ReviewCaseStatus.CancelledUnpaid,
     ];
 
+    /// <summary>A case still running: one document version holds at most one per expert.</summary>
+    public static readonly string[] OpenStatuses =
+    [
+        ReviewCaseStatus.AwaitingPayment,
+        ReviewCaseStatus.PendingExpertResponse,
+        ReviewCaseStatus.InReview,
+        ReviewCaseStatus.AwaitingUserInformation,
+        ReviewCaseStatus.AwaitingAcceptance,
+    ];
+
     private ReviewCase() { }
 
     public Guid Id { get; } = UuidV7.NewGuid();

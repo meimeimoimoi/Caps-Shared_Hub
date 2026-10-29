@@ -35,6 +35,13 @@ public static class WorkflowErrors
     public static AppException TextTooLong(string field, int max) =>
         new(ErrorType.Validation, "TEXT_TOO_LONG", $"{field} must be at most {max} characters.");
 
+    public static AppException CaseAlreadyOpen() =>
+        new(
+            ErrorType.Conflict,
+            "REVIEW_CASE_ALREADY_OPEN",
+            "This document version already has an open review with this expert."
+        );
+
     public static AppException ResultInvalid() =>
         new(
             ErrorType.Validation,
