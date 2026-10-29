@@ -297,6 +297,10 @@ namespace Caps.Workflow.Infrastructure.Persistence.Migrations
                         .HasColumnType("text")
                         .HasColumnName("problem_description");
 
+                    b.Property<string>("RequesterEmail")
+                        .HasColumnType("text")
+                        .HasColumnName("requester_email");
+
                     b.Property<Guid>("RequesterUserId")
                         .HasColumnType("uuid")
                         .HasColumnName("requester_user_id");

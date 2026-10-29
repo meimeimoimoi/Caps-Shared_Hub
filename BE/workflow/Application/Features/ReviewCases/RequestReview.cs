@@ -9,6 +9,7 @@ namespace Caps.Workflow.Application.Features.ReviewCases;
 /// <summary>A client asks an expert to review one version of their document.</summary>
 public sealed record RequestReviewCommand(
     Guid UserId,
+    string? UserEmail,
     Guid DocumentId,
     Guid SourceVersionId,
     Guid ExpertProfileId,
@@ -52,6 +53,7 @@ public sealed class RequestReviewHandler(
             ?? throw WorkflowErrors.ExpertServiceUnavailable();
         var (reviewCase, opened) = ReviewCase.Request(
             command.UserId,
+            command.UserEmail,
             command.DocumentId,
             command.SourceVersionId,
             offer,

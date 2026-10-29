@@ -325,6 +325,7 @@ public sealed class WorkflowDbContext(DbContextOptions<WorkflowDbContext> option
             e.Property(x => x.DocumentId).HasColumnName("document_id");
             e.Property(x => x.SourceVersionId).HasColumnName("source_version_id");
             e.Property(x => x.RequesterUserId).HasColumnName("requester_user_id");
+            e.Property(x => x.RequesterEmail).HasColumnName("requester_email");
             e.Property(x => x.ExpertProfileId).HasColumnName("expert_profile_id");
             e.Property(x => x.ExpertUserId).HasColumnName("expert_user_id");
             e.Property(x => x.SlotId).HasColumnName("slot_id");

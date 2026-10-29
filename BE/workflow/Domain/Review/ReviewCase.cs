@@ -64,6 +64,11 @@ public sealed class ReviewCase
     public Guid DocumentId { get; private set; }
     public Guid SourceVersionId { get; private set; }
     public Guid RequesterUserId { get; private set; }
+
+    // The token carries the client's email; kept so they can be emailed when the expert asks them something.
+    // Null for cases booked before it was kept
+    public string? RequesterEmail { get; private set; }
+
     public Guid ExpertProfileId { get; private set; }
 
     // Tokens carry user ids only and the expert schema is off limits, so the expert's user id is copied here
@@ -131,6 +136,7 @@ public sealed class ReviewCase
 
     public static (ReviewCase Case, ReviewStatusHistory Opened) Request(
         Guid requesterUserId,
+        string? requesterEmail,
         Guid documentId,
         Guid sourceVersionId,
         ReviewOffer offer,
@@ -169,6 +175,7 @@ public sealed class ReviewCase
         var reviewCase = new ReviewCase
         {
             RequesterUserId = requesterUserId,
+            RequesterEmail = requesterEmail,
             DocumentId = documentId,
             SourceVersionId = sourceVersionId,
             ExpertProfileId = offer.ExpertProfileId,

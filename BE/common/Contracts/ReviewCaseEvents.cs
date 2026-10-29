@@ -17,3 +17,18 @@ public sealed record ReviewCaseRequestedEvent(
     DateTimeOffset ResponseDeadline,
     DateTimeOffset OccurredAt
 );
+
+/// <summary>
+/// The expert asked the client for more information; the case ends if the client does not answer by DueAt.
+/// Published by the workflow service after committing; the notification service tells and emails the client.
+/// </summary>
+/// <param name="RequesterEmail">Copied from the client's token at booking; null for older cases (no email).</param>
+public sealed record ReviewCaseInfoRequestedEvent(
+    Guid Id,
+    Guid ReviewCaseId,
+    Guid RequesterUserId,
+    string? RequesterEmail,
+    string Message,
+    DateTimeOffset DueAt,
+    DateTimeOffset OccurredAt
+);

@@ -23,6 +23,7 @@ public sealed class ReviewCaseTests
         ReviewCase
             .Request(
                 Client,
+                "client@caps.test",
                 Guid.NewGuid(),
                 Guid.NewGuid(),
                 Offers.Sample(
@@ -96,6 +97,7 @@ public sealed class ReviewCaseTests
         var offer = Offers.Sample(Expert, ExpertUser);
         var (reviewCase, opened) = ReviewCase.Request(
             Client,
+            "client@caps.test",
             Guid.NewGuid(),
             Guid.NewGuid(),
             offer,
@@ -108,6 +110,8 @@ public sealed class ReviewCaseTests
         Assert.Equal(48, reviewCase.TurnaroundHours);
         Assert.Equal("Check my CIT return", reviewCase.ProblemDescription);
         Assert.Null(reviewCase.ExpectedOutcome);
+        // Kept so the client can be emailed when the expert later asks them something
+        Assert.Equal("client@caps.test", reviewCase.RequesterEmail);
         Assert.Null(opened.FromStatus);
         Assert.Equal(ReviewCaseStatus.AwaitingPayment, opened.ToStatus);
     }
@@ -130,6 +134,7 @@ public sealed class ReviewCaseTests
             Errors.CodeOf(() =>
                 ReviewCase.Request(
                     Client,
+                    "client@caps.test",
                     Guid.NewGuid(),
                     Guid.NewGuid(),
                     Offers.Sample(Expert, ExpertUser),
@@ -410,6 +415,7 @@ public sealed class ReviewCaseTests
             Errors.CodeOf(() =>
                 ReviewCase.Request(
                     ExpertUser,
+                    "client@caps.test",
                     Guid.NewGuid(),
                     Guid.NewGuid(),
                     Offers.Sample(Expert, ExpertUser),

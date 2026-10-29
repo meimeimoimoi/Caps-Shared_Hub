@@ -13,6 +13,7 @@ public sealed class CaseChatTests
         ReviewCase
             .Request(
                 Client,
+                "client@caps.test",
                 Guid.NewGuid(),
                 Guid.NewGuid(),
                 Offers.Sample(ExpertProfile, Expert),

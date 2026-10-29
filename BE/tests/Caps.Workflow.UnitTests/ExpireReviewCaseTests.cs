@@ -149,6 +149,7 @@ public sealed class ExpireReviewCaseTests
         ReviewCase
             .Request(
                 Client,
+                "client@caps.test",
                 Guid.NewGuid(),
                 Guid.NewGuid(),
                 Offers.Sample(ExpertProfile, Expert),

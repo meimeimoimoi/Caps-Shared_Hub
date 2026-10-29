@@ -48,6 +48,7 @@ public sealed class RequestReviewTests
     private static RequestReviewCommand Command() =>
         new(
             Client,
+            "client@caps.test",
             Guid.NewGuid(),
             Guid.NewGuid(),
             ExpertProfile,

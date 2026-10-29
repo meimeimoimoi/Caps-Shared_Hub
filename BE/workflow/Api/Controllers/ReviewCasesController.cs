@@ -58,7 +58,7 @@ public sealed class ReviewCasesController(ICurrentUser currentUser) : Controller
         CancellationToken ct
     )
     {
-        var reviewCase = await handler.HandleAsync(r.ToCommand(UserId), ct);
+        var reviewCase = await handler.HandleAsync(r.ToCommand(UserId, currentUser.Email), ct);
         return Ok(ApiResponse<ReviewCaseResponse>.Ok(reviewCase));
     }
 

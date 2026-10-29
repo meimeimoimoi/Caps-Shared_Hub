@@ -42,6 +42,7 @@ public sealed class PayReviewTests
         ReviewCase
             .Request(
                 Client,
+                "client@caps.test",
                 Guid.NewGuid(),
                 Guid.NewGuid(),
                 Offers.Sample(Guid.NewGuid(), Guid.NewGuid()),
@@ -89,6 +90,12 @@ public sealed class PayReviewTests
             Requested.Add(reviewCase.Id);
             return Task.CompletedTask;
         }
+
+        public Task InfoRequestedAsync(
+            ReviewCase reviewCase,
+            InfoRequest request,
+            CancellationToken ct
+        ) => throw new NotSupportedException();
     }
 
     private sealed class FakeEscrows(bool fail = false) : IEscrows

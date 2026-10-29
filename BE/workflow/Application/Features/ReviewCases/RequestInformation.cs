@@ -12,6 +12,7 @@ public sealed record RequestInformationCommand(Guid UserId, Guid ReviewCaseId, s
 public sealed class RequestInformationHandler(
     IReviewCaseRepository cases,
     IInfoRequestRepository infoRequests,
+    IReviewCaseEvents events,
     IUnitOfWork unitOfWork,
     TimeProvider clock
 ) : ICommandHandler<RequestInformationCommand, ReviewCaseResponse>
@@ -40,6 +41,8 @@ public sealed class RequestInformationHandler(
         cases.AddHistory(paused);
         await unitOfWork.SaveChangesAsync(ct);
         await tx.CommitAsync(ct);
+        // After the commit, so the client is never told about a question that was rolled back
+        await events.InfoRequestedAsync(reviewCase, request, ct);
         return ReviewCaseResponse.From(reviewCase);
     }
 }

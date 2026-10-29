@@ -12,9 +12,10 @@ public sealed record RequestReviewRequest(
     string? ExpectedOutcome
 )
 {
-    public RequestReviewCommand ToCommand(Guid userId) =>
+    public RequestReviewCommand ToCommand(Guid userId, string? email) =>
         new(
             userId,
+            email,
             DocumentId,
             SourceVersionId,
             ExpertProfileId,

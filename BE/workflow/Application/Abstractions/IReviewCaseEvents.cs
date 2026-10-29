@@ -7,4 +7,7 @@ public interface IReviewCaseEvents
 {
     /// <summary>The case was paid and now waits for the expert.</summary>
     Task RequestedAsync(ReviewCase reviewCase, CancellationToken ct);
+
+    /// <summary>The expert asked the client for information; the client is told and emailed.</summary>
+    Task InfoRequestedAsync(ReviewCase reviewCase, InfoRequest request, CancellationToken ct);
 }
