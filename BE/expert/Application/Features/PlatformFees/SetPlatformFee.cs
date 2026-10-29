@@ -18,6 +18,9 @@ public sealed record SetPlatformFeeCommand(
     int LatePenaltyHours,
     int LatePenaltyPercent,
     int LateCancelHours,
+    int NoResponseHours,
+    int NoResponseRefundPercent,
+    int NoResponseExpertPercent,
     DateOnly? EffectiveOn
 );
 
@@ -51,6 +54,9 @@ public sealed class SetPlatformFeeHandler(
             command.LatePenaltyHours,
             command.LatePenaltyPercent,
             command.LateCancelHours,
+            command.NoResponseHours,
+            command.NoResponseRefundPercent,
+            command.NoResponseExpertPercent,
             command.EffectiveOn,
             current != null,
             policy.FeeNoticeDays,

@@ -61,6 +61,9 @@ public sealed class PlatformFeesController(ICurrentUser currentUser) : Controlle
                 r.LatePenaltyHours,
                 r.LatePenaltyPercent,
                 r.LateCancelHours,
+                r.NoResponseHours,
+                r.NoResponseRefundPercent,
+                r.NoResponseExpertPercent,
                 r.EffectiveOn
             ),
             ct
