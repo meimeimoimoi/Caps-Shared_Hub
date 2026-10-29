@@ -17,6 +17,13 @@ export interface LateRule {
   cancelHours: number
 }
 
+/** Client silence: after `hours` the case ends; refundPercent to the client, expertPercent to the expert, the platform keeps the rest. */
+export interface NoResponseRule {
+  hours: number
+  refundPercent: number
+  expertPercent: number
+}
+
 /**
  * One catalog service with the platform fee in force (percent is null until the first fee is set), the change
  * announced ahead if any, and the first day a new change may take effect (YYYY-MM-DD, Vietnam time).
@@ -26,8 +33,14 @@ export interface PlatformFee {
   serviceName: string
   percent: number | null
   late: LateRule | null
+  noResponse: NoResponseRule | null
   effectiveFrom: string | null
-  pending: { percent: number; late: LateRule; effectiveFrom: string } | null
+  pending: {
+    percent: number
+    late: LateRule
+    noResponse: NoResponseRule
+    effectiveFrom: string
+  } | null
   earliestEffectiveOn: string
   noticeDays: number
   maxPercent: number
@@ -50,6 +63,7 @@ export async function setPlatformFee(
   serviceCode: string,
   percent: number,
   late: LateRule,
+  noResponse: NoResponseRule,
   effectiveOn: string | null
 ) {
   const res = await api.put<Envelope<PlatformFee>>(
@@ -59,6 +73,9 @@ export async function setPlatformFee(
       latePenaltyHours: late.penaltyHours,
       latePenaltyPercent: late.penaltyPercent,
       lateCancelHours: late.cancelHours,
+      noResponseHours: noResponse.hours,
+      noResponseRefundPercent: noResponse.refundPercent,
+      noResponseExpertPercent: noResponse.expertPercent,
       effectiveOn,
     }
   )

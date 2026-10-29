@@ -15,6 +15,7 @@ import {
   getPlatformFees,
   setPlatformFee,
   type LateRule,
+  type NoResponseRule,
   type PlatformFee,
 } from '../../features/expert-vetting/api/platformFeeApi'
 import { formatDate } from '../../features/expert-vetting/utils/applications'
@@ -34,10 +35,25 @@ const toDraft = (late: LateRule): LateDraft => ({
   penaltyPercent: String(late.penaltyPercent),
   cancelHours: String(late.cancelHours),
 })
+const NO_RESPONSE_FIELDS = ['hours', 'refundPercent', 'expertPercent'] as const
+type NoResponseDraft = Record<(typeof NO_RESPONSE_FIELDS)[number], string>
+// Suggested split for a service that has none yet; the platform keeps the remaining 20%
+const DEFAULT_NO_RESPONSE: NoResponseRule = {
+  hours: 72,
+  refundPercent: 50,
+  expertPercent: 30,
+}
+const toNoResponseDraft = (rule: NoResponseRule): NoResponseDraft => ({
+  hours: String(rule.hours),
+  refundPercent: String(rule.refundPercent),
+  expertPercent: String(rule.expertPercent),
+})
+const isWhole = (text: string) => /^\d+$/.test(text.trim())
 
 const SAVE_ERRORS = [
   'PLATFORM_FEE_INVALID',
   'LATE_RULE_INVALID',
+  'NO_RESPONSE_RULE_INVALID',
   'PLATFORM_FEE_TOO_SOON',
   'PLATFORM_FEE_NOT_PENDING',
   'SERVICE_NOT_FOUND',
@@ -48,6 +64,53 @@ const isSaveError = (code?: string): code is SaveError =>
 // Sample prices that show the admin what experts receive before and after the change
 const SAMPLE_PRICES = [500_000, 1_000_000, 2_000_000]
 
+/** The numeric inputs of one case rule (late delivery, client silence) under its legend and help */
+function RuleFields<K extends string>({
+  legend,
+  help,
+  fields,
+  label,
+  draft,
+  onChange,
+  invalid,
+}: {
+  legend: string
+  help: string
+  fields: readonly K[]
+  label: (field: K) => string
+  draft: Record<K, string>
+  onChange: (field: K, value: string) => void
+  invalid: boolean
+}) {
+  return (
+    <fieldset className="mt-4">
+      <legend className="flex items-center gap-2 text-sm font-semibold">
+        {legend}
+        <HelpTip label={legend}>{help}</HelpTip>
+      </legend>
+      <div className="mt-2 grid gap-3 sm:grid-cols-3">
+        {fields.map((field) => (
+          <label
+            key={field}
+            className="flex flex-col gap-2 text-sm font-semibold"
+          >
+            {label(field)}
+            <input
+              type="text"
+              inputMode="numeric"
+              autoComplete="off"
+              value={draft[field]}
+              onChange={(e) => onChange(field, e.target.value)}
+              aria-invalid={invalid}
+              className="border-border-control rounded-control shadow-control bg-paper border px-3 py-2 text-base font-normal"
+            />
+          </label>
+        ))}
+      </div>
+    </fieldset>
+  )
+}
+
 /** The platform's percent of each service; experts set their own prices on top of it */
 export default function AdminPlatformFeesPage() {
   const nav = useAdminNav()
@@ -57,6 +120,9 @@ export default function AdminPlatformFeesPage() {
   const [editing, setEditing] = useState<PlatformFee | null>(null)
   const [percent, setPercent] = useState('')
   const [late, setLate] = useState<LateDraft>(toDraft(DEFAULT_LATE))
+  const [noResponse, setNoResponse] = useState<NoResponseDraft>(
+    toNoResponseDraft(DEFAULT_NO_RESPONSE)
+  )
   const [effectiveOn, setEffectiveOn] = useState('')
   const [toast, setToast] = useState<string | null>(null)
   const clearToast = useCallback(() => setToast(null), [])
@@ -71,12 +137,14 @@ export default function AdminPlatformFeesPage() {
       serviceCode: string
       percent: number
       late: LateRule
+      noResponse: NoResponseRule
       effectiveOn: string | null
     }) =>
       setPlatformFee(
         input.serviceCode,
         input.percent,
         input.late,
+        input.noResponse,
         input.effectiveOn
       ),
     onSuccess: () => qc.invalidateQueries({ queryKey: key }),
@@ -97,15 +165,27 @@ export default function AdminPlatformFeesPage() {
   }
   // Same rule as the server: the penalty comes out of what the platform fee leaves the expert
   const lateValid =
-    LATE_FIELDS.every((f) => /^\d+$/.test(late[f].trim())) &&
+    LATE_FIELDS.every((f) => isWhole(late[f])) &&
     value + lateRule.penaltyPercent <= 100 &&
     lateRule.cancelHours >= lateRule.penaltyHours &&
     lateRule.cancelHours <= MAX_LATE_HOURS
+  const noResponseRule: NoResponseRule = {
+    hours: Number(noResponse.hours),
+    refundPercent: Number(noResponse.refundPercent),
+    expertPercent: Number(noResponse.expertPercent),
+  }
+  // Same rule as the server: the platform keeps what the client and the expert do not get
+  const noResponseValid =
+    NO_RESPONSE_FIELDS.every((f) => isWhole(noResponse[f])) &&
+    noResponseRule.hours >= 1 &&
+    noResponseRule.hours <= MAX_LATE_HOURS &&
+    noResponseRule.refundPercent + noResponseRule.expertPercent <= 100
   const valid =
-    /^\d+$/.test(percent.trim()) &&
+    isWhole(percent) &&
     value >= 0 &&
     value <= maxPercent &&
     lateValid &&
+    noResponseValid &&
     (!needsDate ||
       (effectiveOn !== '' && effectiveOn >= editing!.earliestEffectiveOn))
 
@@ -123,6 +203,7 @@ export default function AdminPlatformFeesPage() {
     setEditing(row)
     setPercent(row.percent == null ? '' : String(row.percent))
     setLate(toDraft(row.late ?? DEFAULT_LATE))
+    setNoResponse(toNoResponseDraft(row.noResponse ?? DEFAULT_NO_RESPONSE))
     setEffectiveOn(row.percent == null ? '' : row.earliestEffectiveOn)
   }
   const confirm = () => {
@@ -132,6 +213,7 @@ export default function AdminPlatformFeesPage() {
         serviceCode: editing.serviceCode,
         percent: value,
         late: lateRule,
+        noResponse: noResponseRule,
         effectiveOn: needsDate ? effectiveOn : null,
       })
       .then(() => {
@@ -162,12 +244,13 @@ export default function AdminPlatformFeesPage() {
       </div>
 
       <section className="paper mt-12 overflow-x-auto">
-        <table className="w-full min-w-215 text-sm">
+        <table className="w-full min-w-260 text-sm">
           <thead className="bg-sunken text-fg-muted">
             <tr className="[&>th]:px-4 [&>th]:py-3 [&>th]:text-left [&>th]:font-semibold">
               <th>{t('admin:platformFees.service')}</th>
               <th>{t('admin:platformFees.percent')}</th>
               <th>{t('admin:platformFees.late')}</th>
+              <th>{t('admin:platformFees.noResponse')}</th>
               <th>{t('admin:platformFees.effectiveFrom')}</th>
               <th>{t('admin:platformFees.pending')}</th>
               <th>
@@ -201,6 +284,17 @@ export default function AdminPlatformFeesPage() {
                 <td className="num">
                   {row.late
                     ? t('admin:platformFees.lateValue', { ...row.late })
+                    : '—'}
+                </td>
+                <td className="num">
+                  {row.noResponse
+                    ? t('admin:platformFees.noResponseValue', {
+                        ...row.noResponse,
+                        platformPercent:
+                          100 -
+                          row.noResponse.refundPercent -
+                          row.noResponse.expertPercent,
+                      })
                     : '—'}
                 </td>
                 <td className="num">
@@ -240,7 +334,7 @@ export default function AdminPlatformFeesPage() {
             {rows.length === 0 && (
               <tr className="border-border-subtle border-t">
                 <td
-                  colSpan={6}
+                  colSpan={7}
                   className="text-fg-muted px-4 py-10 text-center"
                 >
                   {query.isLoading
@@ -289,35 +383,32 @@ export default function AdminPlatformFeesPage() {
               className="border-border-control rounded-control shadow-control bg-paper border px-3 py-2 text-base font-normal"
             />
           </label>
-          <fieldset className="mt-4">
-            <legend className="flex items-center gap-2 text-sm font-semibold">
-              {t('admin:platformFees.late')}
-              <HelpTip label={t('admin:platformFees.late')}>
-                {t('admin:platformFees.lateHelp', { maxHours: MAX_LATE_HOURS })}
-              </HelpTip>
-            </legend>
-            <div className="mt-2 grid gap-3 sm:grid-cols-3">
-              {LATE_FIELDS.map((field) => (
-                <label
-                  key={field}
-                  className="flex flex-col gap-2 text-sm font-semibold"
-                >
-                  {t(`admin:platformFees.lateFields.${field}`)}
-                  <input
-                    type="text"
-                    inputMode="numeric"
-                    autoComplete="off"
-                    value={late[field]}
-                    onChange={(e) =>
-                      setLate((d) => ({ ...d, [field]: e.target.value }))
-                    }
-                    aria-invalid={!lateValid}
-                    className="border-border-control rounded-control shadow-control bg-paper border px-3 py-2 text-base font-normal"
-                  />
-                </label>
-              ))}
-            </div>
-          </fieldset>
+          <RuleFields
+            legend={t('admin:platformFees.late')}
+            help={t('admin:platformFees.lateHelp', {
+              maxHours: MAX_LATE_HOURS,
+            })}
+            fields={LATE_FIELDS}
+            label={(field) => t(`admin:platformFees.lateFields.${field}`)}
+            draft={late}
+            onChange={(field, text) =>
+              setLate((d) => ({ ...d, [field]: text }))
+            }
+            invalid={!lateValid}
+          />
+          <RuleFields
+            legend={t('admin:platformFees.noResponse')}
+            help={t('admin:platformFees.noResponseHelp', {
+              maxHours: MAX_LATE_HOURS,
+            })}
+            fields={NO_RESPONSE_FIELDS}
+            label={(field) => t(`admin:platformFees.noResponseFields.${field}`)}
+            draft={noResponse}
+            onChange={(field, text) =>
+              setNoResponse((d) => ({ ...d, [field]: text }))
+            }
+            invalid={!noResponseValid}
+          />
           {needsDate && (
             <label className="mt-4 flex flex-col gap-2 text-sm font-semibold">
               <span className="flex items-center gap-2">
