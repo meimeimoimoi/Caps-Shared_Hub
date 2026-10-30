@@ -3,6 +3,7 @@ using Caps.Common.Application;
 using Caps.Common.Security;
 using Caps.Workflow.Api.DTOs.Requests;
 using Caps.Workflow.Application.DTOs.Responses;
+using Caps.Workflow.Application.Features.Attachments;
 using Caps.Workflow.Application.Features.Disputes;
 using Microsoft.AspNetCore.Mvc;
 
@@ -65,5 +66,38 @@ public sealed class AdminDisputesController(ICurrentUser currentUser) : Controll
     {
         var dispute = await handler.HandleAsync(new(caseId), ct);
         return Ok(ApiResponse<DisputeResponse>.Ok(dispute));
+    }
+
+    /// <summary>Returns the case's files, to weigh a dispute.</summary>
+    /// <response code="200">The files (may be empty).</response>
+    /// <response code="403">Missing the DisputeResolve permission.</response>
+    /// <response code="404">REVIEW_CASE_NOT_FOUND.</response>
+    [HttpGet("{caseId:guid}/attachments")]
+    public async Task<IActionResult> ListAttachments(
+        Guid caseId,
+        [FromServices] IQueryHandler<ListAttachmentsQuery, AttachmentResponse[]> handler,
+        CancellationToken ct
+    )
+    {
+        var files = await handler.HandleAsync(new(null, caseId), ct);
+        return Ok(ApiResponse<AttachmentResponse[]>.Ok(files));
+    }
+
+    /// <summary>Downloads one of the case's files.</summary>
+    /// <response code="200">The file bytes.</response>
+    /// <response code="403">Missing the DisputeResolve permission.</response>
+    /// <response code="404">REVIEW_CASE_NOT_FOUND or ATTACHMENT_NOT_FOUND.</response>
+    [HttpGet("{caseId:guid}/attachments/{attachmentId:guid}/file")]
+    public async Task<IActionResult> OpenAttachment(
+        Guid caseId,
+        Guid attachmentId,
+        [FromServices] IQueryHandler<OpenAttachmentQuery, AttachmentFile> handler,
+        CancellationToken ct
+    )
+    {
+        var file = await handler.HandleAsync(new(null, caseId, attachmentId), ct);
+        Response.Headers.XContentTypeOptions = "nosniff";
+        Response.Headers.CacheControl = "private, no-store";
+        return File(file.Content, file.ContentType, file.FileName);
     }
 }

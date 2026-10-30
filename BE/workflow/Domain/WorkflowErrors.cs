@@ -129,4 +129,34 @@ public static class WorkflowErrors
 
     public static AppException MessageNotFound() =>
         new(ErrorType.NotFound, "MESSAGE_NOT_FOUND", "Message not found in this case.");
+
+    public static AppException AttachmentRequired() =>
+        new(ErrorType.Validation, "ATTACHMENT_REQUIRED", "Choose a file to upload.");
+
+    public static AppException AttachmentTooLarge(int maxBytes) =>
+        new(
+            ErrorType.Validation,
+            "ATTACHMENT_TOO_LARGE",
+            $"A file may be at most {maxBytes / 1024 / 1024} MB."
+        );
+
+    public static AppException AttachmentTypeInvalid() =>
+        new(
+            ErrorType.Validation,
+            "ATTACHMENT_TYPE_INVALID",
+            "Upload a PDF, JPEG, PNG, WebP or Word (.docx) file."
+        );
+
+    public static AppException AttachmentsClosed(string status) =>
+        new(
+            ErrorType.Conflict,
+            "ATTACHMENTS_CLOSED",
+            $"Files cannot be added while the case is {status}."
+        );
+
+    public static AppException AttachmentLimit(int max) =>
+        new(ErrorType.Conflict, "ATTACHMENT_LIMIT", $"A case holds at most {max} files.");
+
+    public static AppException AttachmentNotFound() =>
+        new(ErrorType.NotFound, "ATTACHMENT_NOT_FOUND", "File not found.");
 }

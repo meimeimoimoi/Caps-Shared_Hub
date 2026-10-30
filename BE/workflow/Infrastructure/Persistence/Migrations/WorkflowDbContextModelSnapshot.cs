@@ -149,6 +149,12 @@ namespace Caps.Workflow.Infrastructure.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
+                    b.Property<string>("ContentType")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)")
+                        .HasColumnName("content_type");
+
                     b.Property<string>("FileName")
                         .IsRequired()
                         .HasColumnType("text")
@@ -166,6 +172,10 @@ namespace Caps.Workflow.Infrastructure.Persistence.Migrations
                     b.Property<Guid>("ReviewCaseId")
                         .HasColumnType("uuid")
                         .HasColumnName("review_case_id");
+
+                    b.Property<long>("SizeBytes")
+                        .HasColumnType("bigint")
+                        .HasColumnName("size_bytes");
 
                     b.Property<DateTimeOffset>("UploadedAt")
                         .ValueGeneratedOnAdd()

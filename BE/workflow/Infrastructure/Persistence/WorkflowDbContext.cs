@@ -510,6 +510,11 @@ public sealed class WorkflowDbContext(DbContextOptions<WorkflowDbContext> option
             e.Property(x => x.InfoRequestId).HasColumnName("info_request_id");
             e.Property(x => x.FileUrl).HasColumnName("file_url").IsRequired();
             e.Property(x => x.FileName).HasColumnName("file_name").IsRequired();
+            e.Property(x => x.ContentType)
+                .HasColumnName("content_type")
+                .HasMaxLength(128)
+                .IsRequired();
+            e.Property(x => x.SizeBytes).HasColumnName("size_bytes");
             e.Property(x => x.UploadedBy).HasColumnName("uploaded_by");
             e.Property(x => x.UploadedAt)
                 .HasColumnName("uploaded_at")

@@ -173,3 +173,31 @@ public sealed class DocumentRepository(WorkflowDbContext db) : IDocumentReposito
             ct
         );
 }
+
+/// <summary>EF Core store for the files added to review cases.</summary>
+public sealed class ReviewAttachmentRepository(WorkflowDbContext db) : IReviewAttachmentRepository
+{
+    public Task<int> CountAsync(Guid reviewCaseId, CancellationToken ct) =>
+        db.ReviewAttachments.CountAsync(x => x.ReviewCaseId == reviewCaseId, ct);
+
+    public async Task<IReadOnlyList<ReviewAttachment>> ListAsync(
+        Guid reviewCaseId,
+        CancellationToken ct
+    ) =>
+        await db
+            .ReviewAttachments.AsNoTracking()
+            .Where(x => x.ReviewCaseId == reviewCaseId)
+            .OrderBy(x => x.UploadedAt)
+            .ToListAsync(ct);
+
+    public Task<ReviewAttachment?> FindAsync(
+        Guid reviewCaseId,
+        Guid attachmentId,
+        CancellationToken ct
+    ) =>
+        db
+            .ReviewAttachments.AsNoTracking()
+            .SingleOrDefaultAsync(x => x.Id == attachmentId && x.ReviewCaseId == reviewCaseId, ct);
+
+    public void Add(ReviewAttachment attachment) => db.ReviewAttachments.Add(attachment);
+}

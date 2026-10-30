@@ -3,6 +3,7 @@ using Caps.Workflow.Application.Abstractions;
 using Caps.Workflow.Infrastructure.Integrations;
 using Caps.Workflow.Infrastructure.Jobs;
 using Caps.Workflow.Infrastructure.Persistence;
+using Caps.Workflow.Infrastructure.Storage;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -29,6 +30,8 @@ public static class DependencyInjection
         services.AddScoped<IDocumentRepository, DocumentRepository>();
         services.AddScoped<IInfoRequestRepository, InfoRequestRepository>();
         services.AddScoped<IReviewDisputeRepository, ReviewDisputeRepository>();
+        services.AddScoped<IReviewAttachmentRepository, ReviewAttachmentRepository>();
+        services.AddSingleton<IObjectStorage, S3ObjectStorage>();
         return services;
     }
 
