@@ -63,6 +63,34 @@ public static class WorkflowErrors
             $"The expert may ask for more information at most {max} times per case."
         );
 
+    public static AppException DisputeReasonInvalid() =>
+        new(
+            ErrorType.Validation,
+            "DISPUTE_REASON_INVALID",
+            "Choose one of the listed dispute reasons."
+        );
+
+    public static AppException DisputeStatementExists() =>
+        new(
+            ErrorType.Conflict,
+            "DISPUTE_STATEMENT_EXISTS",
+            "The expert has already explained this dispute."
+        );
+
+    public static AppException DisputeAlreadyExtended() =>
+        new(
+            ErrorType.Conflict,
+            "DISPUTE_ALREADY_EXTENDED",
+            "The decision window was already extended once."
+        );
+
+    public static AppException DisputeRefundInvalid() =>
+        new(
+            ErrorType.Validation,
+            "DISPUTE_REFUND_INVALID",
+            "The refund must be between 0 and 100 percent."
+        );
+
     public static AppException DocumentNotFound() =>
         new(ErrorType.NotFound, "DOCUMENT_NOT_FOUND", "Document version not found.");
 

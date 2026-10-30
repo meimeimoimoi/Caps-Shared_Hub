@@ -27,7 +27,7 @@ public sealed record ReviewSettlement(long ClientRefund, long PlatformFee, long 
 /// <summary>An expert review of one document version, from request through payment and delivery to acceptance.</summary>
 public sealed class ReviewCase
 {
-    // ponytail: response window not given by the spec, 24h until the team decides
+    // response window not given by the spec, 24h until the team decides
     public static readonly TimeSpan ResponseWindow = TimeSpan.FromHours(24);
     public static readonly TimeSpan PaymentWindow = TimeSpan.FromMinutes(15);
     public static readonly TimeSpan AcceptanceWindow = TimeSpan.FromHours(72);
@@ -56,6 +56,7 @@ public sealed class ReviewCase
         ReviewCaseStatus.InReview,
         ReviewCaseStatus.AwaitingUserInformation,
         ReviewCaseStatus.AwaitingAcceptance,
+        ReviewCaseStatus.Disputed,
     ];
 
     private ReviewCase() { }
@@ -93,6 +94,9 @@ public sealed class ReviewCase
 
     /// <summary>Share of the fee returned to the client for a late delivery, set when the expert delivers.</summary>
     public short LateRefundPct { get; private set; }
+
+    /// <summary>Share of the fee the admin returned to the client when deciding a dispute; null otherwise.</summary>
+    public short? DisputeRefundPct { get; private set; }
     public int InfoRequestCount { get; private set; }
 
     /// <summary>
@@ -374,12 +378,103 @@ public sealed class ReviewCase
     }
 
     /// <summary>
+    /// The client complains about the delivery before accepting it; auto-confirm stops until an admin decides.
+    /// Once per case: a case never returns to awaiting acceptance.
+    /// </summary>
+    public (ReviewDispute Dispute, ReviewStatusHistory History) OpenDispute(
+        Guid requesterUserId,
+        string? reason,
+        string? description,
+        DateTimeOffset now
+    )
+    {
+        EnsureRequester(requesterUserId);
+        EnsureStep(ReviewCaseStatus.AwaitingAcceptance, AcceptanceDeadline, now);
+        if (reason is null || !ReviewDispute.Reasons.Contains(reason))
+        {
+            throw WorkflowErrors.DisputeReasonInvalid();
+        }
+        var dispute = ReviewDispute.Create(
+            Id,
+            reason,
+            RequiredText(description, "Description"),
+            now
+        );
+        return (dispute, MoveTo(ReviewCaseStatus.Disputed, requesterUserId, reason, now));
+    }
+
+    /// <summary>The expert's one explanation, for the admin to read before deciding.</summary>
+    public void AddExpertStatement(
+        ReviewDispute dispute,
+        Guid expertProfileId,
+        string? statement,
+        DateTimeOffset now
+    )
+    {
+        EnsureExpert(expertProfileId);
+        EnsureDispute(dispute);
+        dispute.AddStatement(RequiredText(statement, "Statement"), now);
+    }
+
+    /// <summary>The admin's decision: the client gets refundPct of the fee back; the caller settles the escrow.</summary>
+    public ReviewStatusHistory ResolveDispute(
+        ReviewDispute dispute,
+        Guid adminUserId,
+        short refundPct,
+        string? note,
+        DateTimeOffset now
+    )
+    {
+        EnsureDispute(dispute);
+        if (refundPct is < 0 or > 100)
+        {
+            throw WorkflowErrors.DisputeRefundInvalid();
+        }
+        var reason = RequiredText(note, "Decision note");
+        dispute.Resolve(adminUserId, refundPct, reason, now);
+        DisputeRefundPct = refundPct;
+        CompletedAt = now;
+        return MoveTo(ReviewCaseStatus.Resolved, adminUserId, reason, now);
+    }
+
+    /// <summary>The client drops the complaint, which accepts the delivery; the caller settles as for a confirm.</summary>
+    public ReviewStatusHistory WithdrawDispute(
+        ReviewDispute dispute,
+        Guid requesterUserId,
+        DateTimeOffset now
+    )
+    {
+        EnsureRequester(requesterUserId);
+        EnsureDispute(dispute);
+        dispute.Withdraw(now);
+        CompletedAt = now;
+        return MoveTo(ReviewCaseStatus.Completed, requesterUserId, null, now);
+    }
+
+    private void EnsureDispute(ReviewDispute dispute)
+    {
+        EnsureStatus(ReviewCaseStatus.Disputed);
+        if (dispute.ReviewCaseId != Id)
+        {
+            throw WorkflowErrors.ReviewCaseNotFound();
+        }
+    }
+
+    /// <summary>
     /// The split of the held fee. A client who went silent gets the shares frozen at booking (the platform keeps
     /// the rest); otherwise a late delivery's refund comes out of the expert's share, and a full refund leaves
     /// the platform nothing either.
     /// </summary>
     public ReviewSettlement Settle()
     {
+        // The admin's decision replaces every other rule; the rest of the fee splits by the frozen pletform
+        if (DisputeRefundPct is { } pct)
+        {
+            var back = Fee * pct / 100;
+            var fee = (Fee - back) * PlatformFeePct / 100;
+            return new(back, fee, Fee - back - fee);
+        }
+
         if (TerminationReason == UserNonResponse)
         {
             var back = Fee * NoResponseRefundPct / 100;
