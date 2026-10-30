@@ -23,6 +23,7 @@ public sealed class WorkflowDbContext(DbContextOptions<WorkflowDbContext> option
     public DbSet<ReviewCase> ReviewCases => Set<ReviewCase>();
     public DbSet<ReviewTask> ReviewTasks => Set<ReviewTask>();
     public DbSet<InfoRequest> InfoRequests => Set<InfoRequest>();
+    public DbSet<ReviewDispute> ReviewDisputes => Set<ReviewDispute>();
     public DbSet<ReviewAttachment> ReviewAttachments => Set<ReviewAttachment>();
     public DbSet<ReviewStatusHistory> ReviewStatusHistories => Set<ReviewStatusHistory>();
     public DbSet<CaseMessage> CaseMessages => Set<CaseMessage>();
@@ -340,6 +341,7 @@ public sealed class WorkflowDbContext(DbContextOptions<WorkflowDbContext> option
             e.Property(x => x.NoResponseRefundPct).HasColumnName("no_response_refund_pct");
             e.Property(x => x.NoResponseExpertPct).HasColumnName("no_response_expert_pct");
             e.Property(x => x.LateRefundPct).HasColumnName("late_refund_pct");
+            e.Property(x => x.DisputeRefundPct).HasColumnName("dispute_refund_pct");
             e.Property(x => x.InfoRequestCount).HasColumnName("info_request_count");
             e.Property(x => x.ProblemDescription).HasColumnName("problem_description").IsRequired();
             e.Property(x => x.ExpectedOutcome).HasColumnName("expected_outcome");
@@ -459,6 +461,42 @@ public sealed class WorkflowDbContext(DbContextOptions<WorkflowDbContext> option
                 .WithMany(c => c.InfoRequests)
                 .HasForeignKey(x => x.ReviewCaseId)
                 .HasConstraintName("fk_info_request_49");
+        });
+
+        // ReviewDispute
+        modelBuilder.Entity<ReviewDispute>(e =>
+        {
+            e.ToTable(
+                "review_dispute",
+                "review",
+                t =>
+                    t.HasCheckConstraint("ck_review_dispute_refund", "refund_pct BETWEEN 0 AND 100")
+            );
+            e.HasKey(x => x.Id);
+            e.Property(x => x.Id).HasColumnName("id");
+            e.Property(x => x.ReviewCaseId).HasColumnName("review_case_id");
+            e.Property(x => x.Reason).HasColumnName("reason").HasMaxLength(64).IsRequired();
+            e.Property(x => x.Description).HasColumnName("description").IsRequired();
+            e.Property(x => x.Status).HasColumnName("status").HasMaxLength(16).IsRequired();
+            e.Property(x => x.OpenedAt).HasColumnName("opened_at");
+            e.Property(x => x.DecideBy).HasColumnName("decide_by");
+            e.Property(x => x.Extended).HasColumnName("extended");
+            e.Property(x => x.ExpertStatement).HasColumnName("expert_statement");
+            e.Property(x => x.ExpertStatementAt).HasColumnName("expert_statement_at");
+            e.Property(x => x.ResolvedBy).HasColumnName("resolved_by");
+            e.Property(x => x.RefundPct).HasColumnName("refund_pct");
+            e.Property(x => x.ResolutionNote).HasColumnName("resolution_note");
+            e.Property(x => x.ClosedAt).HasColumnName("closed_at");
+
+            // One dispute per case; the admin queue reads open disputes by deadline
+            e.HasIndex(x => x.ReviewCaseId).IsUnique().HasDatabaseName("ux_review_dispute_case");
+            e.HasIndex(x => new { x.Status, x.DecideBy })
+                .HasDatabaseName("ix_review_dispute_queue");
+
+            e.HasOne<ReviewCase>()
+                .WithMany()
+                .HasForeignKey(x => x.ReviewCaseId)
+                .HasConstraintName("fk_review_dispute_case");
         });
 
         // ReviewAttachment

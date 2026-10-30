@@ -28,6 +28,7 @@ public static class DependencyInjection
         services.AddScoped<ICaseReadMarkerRepository, CaseReadMarkerRepository>();
         services.AddScoped<IDocumentRepository, DocumentRepository>();
         services.AddScoped<IInfoRequestRepository, InfoRequestRepository>();
+        services.AddScoped<IReviewDisputeRepository, ReviewDisputeRepository>();
         return services;
     }
 

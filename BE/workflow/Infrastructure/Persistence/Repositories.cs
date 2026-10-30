@@ -50,6 +50,15 @@ public sealed class ReviewCaseRepository(WorkflowDbContext db) : IReviewCaseRepo
             .ToListAsync(ct);
 }
 
+/// <summary>EF Core store for client disputes; a case has at most one.</summary>
+public sealed class ReviewDisputeRepository(WorkflowDbContext db) : IReviewDisputeRepository
+{
+    public Task<ReviewDispute?> FindByCaseAsync(Guid reviewCaseId, CancellationToken ct) =>
+        db.ReviewDisputes.SingleOrDefaultAsync(x => x.ReviewCaseId == reviewCaseId, ct);
+
+    public void Add(ReviewDispute dispute) => db.ReviewDisputes.Add(dispute);
+}
+
 /// <summary>EF Core store for the expert's questions to the client.</summary>
 public sealed class InfoRequestRepository(WorkflowDbContext db) : IInfoRequestRepository
 {

@@ -91,6 +91,9 @@ public static class WorkflowErrors
             "The refund must be between 0 and 100 percent."
         );
 
+    public static AppException DisputeNotFound() =>
+        new(ErrorType.NotFound, "DISPUTE_NOT_FOUND", "This case has no dispute.");
+
     public static AppException DocumentNotFound() =>
         new(ErrorType.NotFound, "DOCUMENT_NOT_FOUND", "Document version not found.");
 
