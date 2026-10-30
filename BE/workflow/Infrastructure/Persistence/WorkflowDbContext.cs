@@ -331,6 +331,7 @@ public sealed class WorkflowDbContext(DbContextOptions<WorkflowDbContext> option
             e.Property(x => x.ExpertUserId).HasColumnName("expert_user_id");
             e.Property(x => x.SlotId).HasColumnName("slot_id");
             e.Property(x => x.ServiceOfferingId).HasColumnName("service_offering_id");
+            e.Property(x => x.ServiceCode).HasColumnName("service_code").HasMaxLength(64);
             e.Property(x => x.Fee).HasColumnName("fee");
             e.Property(x => x.PlatformFeePct).HasColumnName("platform_fee_pct");
             e.Property(x => x.TurnaroundHours).HasColumnName("turnaround_hours");

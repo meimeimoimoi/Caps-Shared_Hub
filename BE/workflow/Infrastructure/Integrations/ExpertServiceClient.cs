@@ -50,6 +50,7 @@ public sealed class ExpertServiceClient(HttpClient http, ILogger<ExpertServiceCl
             expertProfileId,
             offer.ExpertUserId,
             offer.ServiceOfferingId,
+            serviceCode,
             offer.Fee,
             (short)offer.PlatformFeePercent,
             offer.TurnaroundHours,

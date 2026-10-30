@@ -112,6 +112,8 @@ public sealed class ReviewCaseTests
         Assert.Null(reviewCase.ExpectedOutcome);
         // Kept so the client can be emailed when the expert later asks them something
         Assert.Equal("client@caps.test", reviewCase.RequesterEmail);
+        // Kept so suspending the service refunds only that service's waiting requests
+        Assert.Equal("HUMAN_VERIFICATION", reviewCase.ServiceCode);
         Assert.Null(opened.FromStatus);
         Assert.Equal(ReviewCaseStatus.AwaitingPayment, opened.ToStatus);
     }
@@ -212,7 +214,7 @@ public sealed class ReviewCaseTests
     {
         var reviewCase = Paid();
 
-        var history = reviewCase.CloseForFullExpert(Now);
+        var history = reviewCase.CloseUnanswered(ReviewCase.ExpertFull, Now);
 
         Assert.Equal(ReviewCaseStatus.ExpertDeclined, reviewCase.Status);
         Assert.Equal(ReviewCase.ExpertFull, reviewCase.DeclineReason);
@@ -223,7 +225,7 @@ public sealed class ReviewCaseTests
     public void Only_a_waiting_request_closes_for_a_full_expert() =>
         Assert.Equal(
             "CASE_STATUS_INVALID",
-            Errors.CodeOf(() => InReview().CloseForFullExpert(Now))
+            Errors.CodeOf(() => InReview().CloseUnanswered(ReviewCase.ExpertFull, Now))
         );
 
     [Fact]

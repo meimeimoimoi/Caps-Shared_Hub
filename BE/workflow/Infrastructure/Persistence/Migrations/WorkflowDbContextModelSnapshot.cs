@@ -321,6 +321,11 @@ namespace Caps.Workflow.Infrastructure.Persistence.Migrations
                         .HasColumnType("text")
                         .HasColumnName("review_summary");
 
+                    b.Property<string>("ServiceCode")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("service_code");
+
                     b.Property<Guid?>("ServiceOfferingId")
                         .HasColumnType("uuid")
                         .HasColumnName("service_offering_id");

@@ -19,12 +19,14 @@ internal static class Offers
         int lateCancelHours = 72,
         int noResponseHours = 72,
         short noResponseRefundPct = 50,
-        short noResponseExpertPct = 30
+        short noResponseExpertPct = 30,
+        string serviceCode = "HUMAN_VERIFICATION"
     ) =>
         new(
             expertProfileId,
             expertUserId,
             Guid.NewGuid(),
+            serviceCode,
             fee,
             platformFeePct,
             turnaroundHours,

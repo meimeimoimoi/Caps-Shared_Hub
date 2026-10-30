@@ -21,5 +21,9 @@ public interface IReviewCaseRepository
     Task<IReadOnlyList<ReviewCase>> ListForUserAsync(Guid userId, CancellationToken ct);
 
     /// <summary>Ids of the expert's paid requests still waiting for an answer.</summary>
-    Task<IReadOnlyList<Guid>> ListPendingIdsAsync(Guid expertProfileId, CancellationToken ct);
+    Task<IReadOnlyList<Guid>> ListPendingIdsAsync(
+        Guid expertUserId,
+        string? serviceCode,
+        CancellationToken ct
+    );
 }

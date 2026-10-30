@@ -29,14 +29,14 @@ public sealed partial class ReviewCase
     }
 
     /// <summary>
-    /// The expert took their last slot while this paid request waited: the system closes it as declined and the
-    /// caller refunds the client in full.
+    /// The expert can no longer answer this paid request (EXPERT_FULL, SERVICE_SUSPENDED): the system closes it as
+    /// declined and the caller refunds the client in full.
     /// </summary>
-    public ReviewStatusHistory CloseForFullExpert(DateTimeOffset now)
+    public ReviewStatusHistory CloseUnanswered(string reason, DateTimeOffset now)
     {
         EnsureStatus(ReviewCaseStatus.PendingExpertResponse);
-        DeclineReason = ExpertFull;
-        return MoveTo(ReviewCaseStatus.ExpertDeclined, null, ExpertFull, now);
+        DeclineReason = reason;
+        return MoveTo(ReviewCaseStatus.ExpertDeclined, null, reason, now);
     }
 
     /// <summary>

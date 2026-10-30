@@ -16,7 +16,10 @@ public static class WorkflowNotificationSetup
     {
         if (config.GetValue("Workflow:NotificationPublisherEnabled", true))
         {
-            services.AddCapsMessaging(config);
+            services.AddCapsMessaging(
+                config,
+                x => x.AddConsumer<RefundOnServiceSuspendedConsumer>()
+            );
             services.AddScoped<IReviewCaseEvents, MassTransitReviewCaseEvents>();
         }
         else if (!env.IsDevelopment())

@@ -38,12 +38,14 @@ public sealed class ReviewCaseRepository(WorkflowDbContext db) : IReviewCaseRepo
     }
 
     public async Task<IReadOnlyList<Guid>> ListPendingIdsAsync(
-        Guid expertProfileId,
+        Guid expertUserId,
+        string? serviceCode,
         CancellationToken ct
     ) =>
         await db
             .ReviewCases.Where(x =>
-                x.ExpertProfileId == expertProfileId
+                x.ExpertUserId == expertUserId
+                && (serviceCode == null || x.ServiceCode == serviceCode)
                 && x.Status == ReviewCaseStatus.PendingExpertResponse
             )
             .Select(x => x.Id)

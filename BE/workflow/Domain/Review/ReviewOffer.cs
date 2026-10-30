@@ -8,6 +8,7 @@ public sealed record ReviewOffer(
     Guid ExpertProfileId,
     Guid ExpertUserId,
     Guid ServiceOfferingId,
+    string ServiceCode,
     long Fee,
     short PlatformFeePct,
     int TurnaroundHours,

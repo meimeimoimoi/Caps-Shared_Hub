@@ -18,6 +18,7 @@ public sealed partial class ReviewCase
     public const string CannotVerify = "CANNOT_VERIFY";
     public const string UserNonResponse = "USER_NON_RESPONSE";
     public const string ExpertFull = "EXPERT_FULL";
+    public const string ServiceSuspended = "SERVICE_SUSPENDED";
 
     /// <summary>The client has not paid: the expert never sees these, and no response deadline runs yet.</summary>
     public static readonly string[] UnpaidStatuses =
@@ -56,6 +57,9 @@ public sealed partial class ReviewCase
     /// <summary>Unused since capacity replaced slots; kept because the column exists.</summary>
     public Guid? SlotId { get; }
     public Guid? ServiceOfferingId { get; private set; }
+
+    /// <summary>The booked service, so suspending it refunds only its requests; null for cases booked before it was kept.</summary>
+    public string? ServiceCode { get; private set; }
 
     /// <summary>Price, platform fee and turnaround frozen at booking; later price changes do not touch them.</summary>
     public long Fee { get; private set; }
@@ -163,6 +167,7 @@ public sealed partial class ReviewCase
             ExpertProfileId = offer.ExpertProfileId,
             ExpertUserId = offer.ExpertUserId,
             ServiceOfferingId = offer.ServiceOfferingId,
+            ServiceCode = offer.ServiceCode,
             Fee = offer.Fee,
             PlatformFeePct = offer.PlatformFeePct,
             TurnaroundHours = offer.TurnaroundHours,

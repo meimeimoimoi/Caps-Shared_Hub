@@ -131,7 +131,8 @@ public sealed class PayReviewTests
             throw new NotSupportedException();
 
         public Task<IReadOnlyList<Guid>> ListPendingIdsAsync(
-            Guid expertProfileId,
+            Guid expertUserId,
+            string? serviceCode,
             CancellationToken ct
         ) => throw new NotSupportedException();
 

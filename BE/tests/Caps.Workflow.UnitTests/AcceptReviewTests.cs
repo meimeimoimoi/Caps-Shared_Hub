@@ -1,6 +1,7 @@
 using Caps.Common.Application;
 using Caps.Common.Domain;
 using Caps.Workflow.Application.Abstractions;
+using Caps.Workflow.Application.Common;
 using Caps.Workflow.Application.Features.ReviewCases;
 using Caps.Workflow.Domain;
 using Caps.Workflow.Domain.Review;
@@ -133,7 +134,17 @@ public sealed class AcceptReviewTests
         FakeUnitOfWork unitOfWork,
         FakeEscrows escrows,
         params ReviewCase[] cases
-    ) => new(new FakeCases(cases), slots, escrows, unitOfWork, TimeProvider.System);
+    )
+    {
+        var fakeCases = new FakeCases(cases);
+        return new(
+            fakeCases,
+            slots,
+            new WaitingRequestRefunds(fakeCases, escrows, unitOfWork, TimeProvider.System),
+            unitOfWork,
+            TimeProvider.System
+        );
+    }
 
     private sealed class FakeSlots(FakeUnitOfWork unitOfWork, bool full = false, int freeLeft = 2)
         : IExpertSlots
@@ -210,13 +221,15 @@ public sealed class AcceptReviewTests
             Task.FromResult(cases.SingleOrDefault(x => x.Id == reviewCaseId));
 
         public Task<IReadOnlyList<Guid>> ListPendingIdsAsync(
-            Guid expertProfileId,
+            Guid expertUserId,
+            string? serviceCode,
             CancellationToken ct
         ) =>
             Task.FromResult<IReadOnlyList<Guid>>(
                 cases
                     .Where(x =>
-                        x.ExpertProfileId == expertProfileId
+                        x.ExpertUserId == expertUserId
+                        && (serviceCode is null || x.ServiceCode == serviceCode)
                         && x.Status == ReviewCaseStatus.PendingExpertResponse
                     )
                     .Select(x => x.Id)
