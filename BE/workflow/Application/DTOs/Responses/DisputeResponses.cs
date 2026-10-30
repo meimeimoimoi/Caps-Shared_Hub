@@ -34,3 +34,15 @@ public sealed record DisputeResponse(
             d.ClosedAt
         );
 }
+
+/// <summary>An open dispute in the admin queue, with what the admin needs to decide it.</summary>
+/// <param name="Overdue">Past the decision window (48 hours, or 96 once extended); nothing is decided automatically.</param>
+public sealed record AdminDisputeResponse(
+    string ReviewCaseId,
+    long Fee,
+    short PlatformFeePct,
+    string? Result,
+    string? ReviewSummary,
+    bool Overdue,
+    DisputeResponse Dispute
+);

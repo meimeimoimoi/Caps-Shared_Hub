@@ -192,6 +192,10 @@ public sealed class DisputeHandlerTests
         public Task<ReviewDispute?> FindByCaseAsync(Guid reviewCaseId, CancellationToken ct) =>
             Task.FromResult(stored.SingleOrDefault(x => x.ReviewCaseId == reviewCaseId));
 
+        public Task<IReadOnlyList<(ReviewDispute Dispute, ReviewCase Case)>> ListOpenAsync(
+            CancellationToken ct
+        ) => throw new NotSupportedException();
+
         public void Add(ReviewDispute dispute)
         {
             stored.Add(dispute);

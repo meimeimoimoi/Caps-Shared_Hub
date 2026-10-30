@@ -57,6 +57,23 @@ public sealed class ReviewDisputeRepository(WorkflowDbContext db) : IReviewDispu
         db.ReviewDisputes.SingleOrDefaultAsync(x => x.ReviewCaseId == reviewCaseId, ct);
 
     public void Add(ReviewDispute dispute) => db.ReviewDisputes.Add(dispute);
+
+    // the 200 earliest deadlines, no paging; add a cursor when the queue grows
+    public async Task<IReadOnlyList<(ReviewDispute Dispute, ReviewCase Case)>> ListOpenAsync(
+        CancellationToken ct
+    )
+    {
+        var rows = await (
+            from d in db.ReviewDisputes.AsNoTracking()
+            join c in db.ReviewCases.AsNoTracking() on d.ReviewCaseId equals c.Id
+            where d.Status == ReviewDispute.Open
+            orderby d.DecideBy
+            select new { d, c }
+        )
+            .Take(200)
+            .ToListAsync(ct);
+        return rows.ConvertAll(x => (x.d, x.c));
+    }
 }
 
 /// <summary>EF Core store for the expert's questions to the client.</summary>
