@@ -16,6 +16,13 @@ internal sealed class RecordedEvents : IReviewCaseEvents
         CancellationToken ct
     ) => Task.CompletedTask;
 
+    public Task ResponseDueAsync(
+        Guid reviewCaseId,
+        Guid expertUserId,
+        DateTimeOffset responseDeadline,
+        CancellationToken ct
+    ) => Task.CompletedTask;
+
     public Task StatusChangedAsync(
         ReviewCase reviewCase,
         ReviewStatusHistory history,

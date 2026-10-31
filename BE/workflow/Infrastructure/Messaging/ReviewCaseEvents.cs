@@ -72,6 +72,24 @@ public sealed class MassTransitReviewCaseEvents(
             ct
         );
 
+    public Task ResponseDueAsync(
+        Guid reviewCaseId,
+        Guid expertUserId,
+        DateTimeOffset responseDeadline,
+        CancellationToken ct
+    ) =>
+        PublishAsync(
+            new ReviewCaseResponseDueEvent(
+                Guid.NewGuid(),
+                reviewCaseId,
+                expertUserId,
+                responseDeadline,
+                clock.GetUtcNow()
+            ),
+            reviewCaseId,
+            ct
+        );
+
     private async Task PublishAsync<T>(T message, Guid caseId, CancellationToken ct)
         where T : class
     {
@@ -109,6 +127,13 @@ public sealed class NoReviewCaseEvents : IReviewCaseEvents
     public Task StatusChangedAsync(
         ReviewCase reviewCase,
         ReviewStatusHistory history,
+        CancellationToken ct
+    ) => Task.CompletedTask;
+
+    public Task ResponseDueAsync(
+        Guid reviewCaseId,
+        Guid expertUserId,
+        DateTimeOffset responseDeadline,
         CancellationToken ct
     ) => Task.CompletedTask;
 }

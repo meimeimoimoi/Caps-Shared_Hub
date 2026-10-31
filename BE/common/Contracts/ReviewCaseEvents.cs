@@ -51,3 +51,15 @@ public sealed record ReviewCaseStatusChangedEvent(
     Guid ExpertUserId,
     DateTimeOffset OccurredAt
 );
+
+/// <summary>
+/// A paid request still waits for the expert a few hours before the response deadline. Published once per case
+/// by the workflow service; the notification service reminds the expert in the app.
+/// </summary>
+public sealed record ReviewCaseResponseDueEvent(
+    Guid Id,
+    Guid ReviewCaseId,
+    Guid ExpertUserId,
+    DateTimeOffset ResponseDeadline,
+    DateTimeOffset OccurredAt
+);

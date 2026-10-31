@@ -17,4 +17,12 @@ public interface IReviewCaseEvents
         ReviewStatusHistory history,
         CancellationToken ct
     );
+
+    /// <summary>A waiting request is close to its response deadline; called once per case.</summary>
+    Task ResponseDueAsync(
+        Guid reviewCaseId,
+        Guid expertUserId,
+        DateTimeOffset responseDeadline,
+        CancellationToken ct
+    );
 }

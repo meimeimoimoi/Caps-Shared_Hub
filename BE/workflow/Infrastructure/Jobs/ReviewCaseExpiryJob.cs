@@ -1,4 +1,5 @@
 using Caps.Common.Application;
+using Caps.Workflow.Application.Abstractions;
 using Caps.Workflow.Application.Features.ReviewCases;
 using Caps.Workflow.Domain.Review;
 using Caps.Workflow.Infrastructure.Persistence;
@@ -25,6 +26,7 @@ public sealed class ReviewCaseExpiryJob(
         do
         {
             // Each run tries every overdue case once, so a case billing keeps refusing cannot starve the others
+            await RemindAsync(stoppingToken);
             var tried = new List<Guid>();
             while (await FindOverdueAsync(tried, stoppingToken) is { Count: > 0 } batch)
             {
@@ -88,5 +90,45 @@ public sealed class ReviewCaseExpiryJob(
                 reviewCaseId
             );
         }
+    }
+
+    // Marks and reads the due cases in one statement, so two instances never remind the same case twice.
+    // ponytail: a publish lost after the mark means no reminder for that case; the deadline still refunds
+    private async Task RemindAsync(CancellationToken ct)
+    {
+        try
+        {
+            using var scope = scopes.CreateScope();
+            var db = scope.ServiceProvider.GetRequiredService<WorkflowDbContext>();
+            var events = scope.ServiceProvider.GetRequiredService<IReviewCaseEvents>();
+            var now = clock.GetUtcNow();
+            var due = await db
+                .Database.SqlQuery<DueReminder>(
+                    $"""
+                    UPDATE review.review_case SET reminder_sent_at = {now}
+                    WHERE status = {ReviewCaseStatus.PendingExpertResponse}
+                        AND reminder_sent_at IS NULL
+                        AND response_deadline > {now}
+                        AND response_deadline - make_interval(hours => {ReviewCase.ReminderHours}) <= {now}
+                    RETURNING id AS "Id", expert_user_id AS "ExpertUserId", response_deadline AS "ResponseDeadline"
+                    """
+                )
+                .ToListAsync(ct);
+            foreach (var r in due)
+            {
+                await events.ResponseDueAsync(r.Id, r.ExpertUserId, r.ResponseDeadline, ct);
+            }
+        }
+        catch (Exception e) when (!ct.IsCancellationRequested)
+        {
+            logger.LogWarning(e, "Response reminders could not be sent; retrying next minute.");
+        }
+    }
+
+    private sealed class DueReminder
+    {
+        public Guid Id { get; init; }
+        public Guid ExpertUserId { get; init; }
+        public DateTimeOffset ResponseDeadline { get; init; }
     }
 }

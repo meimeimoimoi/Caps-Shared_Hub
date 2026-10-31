@@ -323,6 +323,10 @@ namespace Caps.Workflow.Infrastructure.Persistence.Migrations
                         .HasColumnType("text")
                         .HasColumnName("rating_comment");
 
+                    b.Property<DateTimeOffset?>("ReminderSentAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("reminder_sent_at");
+
                     b.Property<string>("RequesterEmail")
                         .HasColumnType("text")
                         .HasColumnName("requester_email");

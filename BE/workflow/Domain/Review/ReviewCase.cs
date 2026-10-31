@@ -14,6 +14,9 @@ public sealed partial class ReviewCase
     public const int MaxPlatformFeePct = 99;
     public const int MaxTextLength = 4000;
     public const int MaxInfoRequests = 2;
+
+    /// <summary>How long before the response deadline the expert is reminded of a waiting request.</summary>
+    public const int ReminderHours = 3;
     public const string Verified = "VERIFIED";
     public const string CannotVerify = "CANNOT_VERIFY";
     public const string UserNonResponse = "USER_NON_RESPONSE";
@@ -101,6 +104,9 @@ public sealed partial class ReviewCase
     public string? DeclineReason { get; private set; }
     public string? TerminationReason { get; private set; }
     public DateTimeOffset ResponseDeadline { get; private set; }
+
+    /// <summary>Set by the expiry job when it reminds the expert; a case is reminded once.</summary>
+    public DateTimeOffset? ReminderSentAt { get; }
     public DateTimeOffset? AcceptedAt { get; private set; }
     public DateTimeOffset? PaymentDeadline { get; private set; }
     public DateTimeOffset? PaidAt { get; private set; }
