@@ -22,6 +22,8 @@ public sealed record ReviewCaseResponse(
     DateTimeOffset? ResponseDeadline,
     DateTimeOffset? DeliveryDeadline,
     DateTimeOffset? AcceptanceDeadline,
+    short? Rating,
+    string? RatingComment,
     DateTimeOffset CreatedAt
 )
 {
@@ -44,6 +46,8 @@ public sealed record ReviewCaseResponse(
             ReviewCase.UnpaidStatuses.Contains(c.Status) ? null : c.ResponseDeadline,
             c.DeliveryDeadline,
             c.AcceptanceDeadline,
+            c.Rating,
+            c.RatingComment,
             c.CreatedAt
         );
 }

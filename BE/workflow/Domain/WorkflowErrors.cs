@@ -159,4 +159,17 @@ public static class WorkflowErrors
 
     public static AppException AttachmentNotFound() =>
         new(ErrorType.NotFound, "ATTACHMENT_NOT_FOUND", "File not found.");
+
+    public static AppException RatingClosed(string status) =>
+        new(
+            ErrorType.Conflict,
+            "RATING_CLOSED",
+            $"A case can be rated only once it is over; it is {status}."
+        );
+
+    public static AppException RatingExists() =>
+        new(ErrorType.Conflict, "RATING_EXISTS", "This case was already rated.");
+
+    public static AppException RatingInvalid(int max) =>
+        new(ErrorType.Validation, "RATING_INVALID", $"The rating must be from 1 to {max} stars.");
 }

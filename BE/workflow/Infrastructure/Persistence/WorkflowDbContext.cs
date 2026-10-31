@@ -343,6 +343,9 @@ public sealed class WorkflowDbContext(DbContextOptions<WorkflowDbContext> option
             e.Property(x => x.NoResponseExpertPct).HasColumnName("no_response_expert_pct");
             e.Property(x => x.LateRefundPct).HasColumnName("late_refund_pct");
             e.Property(x => x.DisputeRefundPct).HasColumnName("dispute_refund_pct");
+            e.Property(x => x.Rating).HasColumnName("rating");
+            e.Property(x => x.RatingComment).HasColumnName("rating_comment");
+            e.Property(x => x.RatedAt).HasColumnName("rated_at");
             e.Property(x => x.InfoRequestCount).HasColumnName("info_request_count");
             e.Property(x => x.ProblemDescription).HasColumnName("problem_description").IsRequired();
             e.Property(x => x.ExpectedOutcome).HasColumnName("expected_outcome");

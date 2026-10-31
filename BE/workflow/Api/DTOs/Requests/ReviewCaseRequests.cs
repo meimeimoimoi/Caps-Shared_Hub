@@ -37,3 +37,6 @@ public sealed record DeliverReviewRequest(
     string? Summary,
     string? CannotVerifyReason
 );
+
+/// <summary>1 to 5 stars for the expert, with an optional comment.</summary>
+public sealed record RateReviewRequest(int Stars, string? Comment);

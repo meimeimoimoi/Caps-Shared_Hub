@@ -311,6 +311,18 @@ namespace Caps.Workflow.Infrastructure.Persistence.Migrations
                         .HasColumnType("text")
                         .HasColumnName("problem_description");
 
+                    b.Property<DateTimeOffset?>("RatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("rated_at");
+
+                    b.Property<short?>("Rating")
+                        .HasColumnType("smallint")
+                        .HasColumnName("rating");
+
+                    b.Property<string>("RatingComment")
+                        .HasColumnType("text")
+                        .HasColumnName("rating_comment");
+
                     b.Property<string>("RequesterEmail")
                         .HasColumnType("text")
                         .HasColumnName("requester_email");

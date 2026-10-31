@@ -48,6 +48,7 @@ public static class DependencyInjection
         services.AddHttpClient<ExpertServiceClient>(http => Link(http, config, "Expert"));
         services.AddScoped<IExpertOfferings>(sp => sp.GetRequiredService<ExpertServiceClient>());
         services.AddScoped<IExpertSlots>(sp => sp.GetRequiredService<ExpertServiceClient>());
+        services.AddScoped<IExpertRatings>(sp => sp.GetRequiredService<ExpertServiceClient>());
         services.AddHttpClient<BillingServiceClient>(http => Link(http, config, "Billing"));
         services.AddScoped<IEscrows>(sp => sp.GetRequiredService<BillingServiceClient>());
         // The expiry job refunds and settles through these links

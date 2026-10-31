@@ -180,4 +180,26 @@ public sealed class ReviewCasesController(ICurrentUser currentUser) : Controller
         var reviewCase = await handler.HandleAsync(new(UserId, caseId), ct);
         return Ok(ApiResponse<ReviewCaseResponse>.Ok(reviewCase));
     }
+
+    /// <summary>The client rates the expert once the case is over (COMPLETED, AUTO_CONFIRMED or RESOLVED).</summary>
+    /// <remarks>Once per case, cannot be changed; it counts into the expert's marketplace rating.</remarks>
+    /// <response code="200">The rated case.</response>
+    /// <response code="400">RATING_INVALID or TEXT_TOO_LONG.</response>
+    /// <response code="404">REVIEW_CASE_NOT_FOUND (also for the expert).</response>
+    /// <response code="409">RATING_CLOSED or RATING_EXISTS.</response>
+    /// <response code="503">SERVICE_LINK_UNAVAILABLE.</response>
+    [HttpPost("{caseId:guid}/rating")]
+    public async Task<IActionResult> Rate(
+        Guid caseId,
+        RateReviewRequest request,
+        [FromServices] ICommandHandler<RateReviewCommand, ReviewCaseResponse> handler,
+        CancellationToken ct
+    )
+    {
+        var reviewCase = await handler.HandleAsync(
+            new(UserId, caseId, request.Stars, request.Comment),
+            ct
+        );
+        return Ok(ApiResponse<ReviewCaseResponse>.Ok(reviewCase));
+    }
 }

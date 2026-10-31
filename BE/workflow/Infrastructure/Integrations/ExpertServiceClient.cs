@@ -10,7 +10,8 @@ namespace Caps.Workflow.Infrastructure.Integrations;
 /// <summary>The expert service's /internal endpoints: the offer a new case freezes, and capacity slots.</summary>
 public sealed class ExpertServiceClient(HttpClient http, ILogger<ExpertServiceClient> logger)
     : IExpertOfferings,
-        IExpertSlots
+        IExpertSlots,
+        IExpertRatings
 {
     private const string Service = "expert";
 
@@ -81,6 +82,25 @@ public sealed class ExpertServiceClient(HttpClient http, ILogger<ExpertServiceCl
         using var response = await ServiceCalls.SendAsync(
             http,
             new(HttpMethod.Delete, SlotPath(expertProfileId, reviewCaseId)),
+            Service,
+            logger,
+            ct
+        );
+    }
+
+    public async Task RecordAsync(
+        Guid expertProfileId,
+        Guid reviewCaseId,
+        short stars,
+        CancellationToken ct
+    )
+    {
+        using var response = await ServiceCalls.SendAsync(
+            http,
+            new(HttpMethod.Put, $"internal/experts/{expertProfileId}/ratings/{reviewCaseId}")
+            {
+                Content = JsonContent.Create(new { stars }),
+            },
             Service,
             logger,
             ct
