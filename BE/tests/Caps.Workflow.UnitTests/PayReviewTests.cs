@@ -1,4 +1,5 @@
 using Caps.Common.Application;
+using Caps.Common.Domain;
 using Caps.Workflow.Application.Abstractions;
 using Caps.Workflow.Application.Features.ReviewCases;
 using Caps.Workflow.Domain.Review;
@@ -38,6 +39,26 @@ public sealed class PayReviewTests
         Assert.Empty(events.Requested);
     }
 
+    [Fact]
+    public async Task A_service_no_longer_bookable_takes_no_money()
+    {
+        // Suspended or full since booking: paying would only end in a refund 24 hours later
+        var reviewCase = Requested();
+        var tx = new FakeTransaction();
+        var events = new FakeEvents(tx);
+        var escrows = new FakeEscrows();
+
+        var e = await Assert.ThrowsAsync<AppException>(() =>
+            Handler(reviewCase, tx, events, escrows, bookable: false)
+                .HandleAsync(new(Client, reviewCase.Id), default)
+        );
+
+        Assert.Equal("EXPERT_SERVICE_UNAVAILABLE", e.Code);
+        Assert.Equal(0, escrows.Holds);
+        Assert.False(tx.Committed);
+        Assert.Empty(events.Requested);
+    }
+
     private static ReviewCase Requested() =>
         ReviewCase
             .Request(
@@ -56,10 +77,12 @@ public sealed class PayReviewTests
         ReviewCase reviewCase,
         FakeTransaction tx,
         FakeEvents events,
-        FakeEscrows escrows
+        FakeEscrows escrows,
+        bool bookable = true
     ) =>
         new(
             new FakeCases(reviewCase),
+            new FakeOfferings(bookable),
             escrows,
             events,
             new FakeUnitOfWork(tx),
@@ -111,10 +134,27 @@ public sealed class PayReviewTests
         ) => throw new NotSupportedException();
     }
 
+    private sealed class FakeOfferings(bool bookable) : IExpertOfferings
+    {
+        public Task<ReviewOffer?> FindAsync(
+            Guid expertProfileId,
+            string serviceCode,
+            CancellationToken ct
+        ) =>
+            Task.FromResult(
+                bookable ? Offers.Sample(expertProfileId, Guid.NewGuid()) : (ReviewOffer?)null
+            );
+    }
+
     private sealed class FakeEscrows(bool fail = false) : IEscrows
     {
-        public Task HoldAsync(Guid userId, Guid reviewCaseId, long amount, CancellationToken ct) =>
-            fail ? throw new InvalidOperationException("billing down") : Task.CompletedTask;
+        public int Holds { get; private set; }
+
+        public Task HoldAsync(Guid userId, Guid reviewCaseId, long amount, CancellationToken ct)
+        {
+            Holds++;
+            return fail ? throw new InvalidOperationException("billing down") : Task.CompletedTask;
+        }
 
         public Task RefundAsync(Guid reviewCaseId, CancellationToken ct) =>
             throw new NotSupportedException();

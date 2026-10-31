@@ -14,6 +14,7 @@ public sealed record PayReviewCommand(Guid UserId, Guid ReviewCaseId);
 /// </summary>
 public sealed class PayReviewHandler(
     IReviewCaseRepository cases,
+    IExpertOfferings offerings,
     IEscrows escrows,
     IReviewCaseEvents events,
     IUnitOfWork unitOfWork,
@@ -31,6 +32,14 @@ public sealed class PayReviewHandler(
             ?? throw WorkflowErrors.ReviewCaseNotFound();
         reviewCase.EnsureRequester(command.UserId);
         var paid = reviewCase.ConfirmPayment(clock.GetUtcNow());
+        //Suspended, unpriced or full since booking: paying would only end in a refund at the response deadline
+        if (
+            reviewCase.ServiceCode is { } serviceCode
+            && await offerings.FindAsync(reviewCase.ExpertProfileId, serviceCode, ct) is null
+        )
+        {
+            throw WorkflowErrors.ExpertServiceUnavailable();
+        }
 
         // Billing allows one escrow per case, so a double click fails there instead of paying twice
         await escrows.HoldAsync(command.UserId, reviewCase.Id, reviewCase.Fee, ct);
