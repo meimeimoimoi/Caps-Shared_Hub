@@ -17,6 +17,7 @@ public sealed class ExpireReviewCaseHandler(
     IInfoRequestRepository infoRequests,
     IEscrows escrows,
     IExpertSlots slots,
+    IReviewCaseEvents events,
     IUnitOfWork unitOfWork,
     TimeProvider clock
 ) : ICommandHandler<ExpireReviewCaseCommand>
@@ -64,5 +65,6 @@ public sealed class ExpireReviewCaseHandler(
         cases.AddHistory(history);
         await unitOfWork.SaveChangesAsync(ct);
         await tx.CommitAsync(ct);
+        await events.StatusChangedAsync(reviewCase, history, ct);
     }
 }

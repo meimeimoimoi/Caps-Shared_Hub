@@ -23,6 +23,7 @@ public sealed class ResolveDisputeHandler(
     IReviewDisputeRepository disputes,
     IEscrows escrows,
     IExpertSlots slots,
+    IReviewCaseEvents events,
     IUnitOfWork unitOfWork,
     TimeProvider clock
 ) : ICommandHandler<ResolveDisputeCommand, DisputeResponse>
@@ -54,6 +55,7 @@ public sealed class ResolveDisputeHandler(
         cases.AddHistory(resolved);
         await unitOfWork.SaveChangesAsync(ct);
         await tx.CommitAsync(ct);
+        await events.StatusChangedAsync(reviewcase, resolved, ct);
         return DisputeResponse.From(dispute);
     }
 }

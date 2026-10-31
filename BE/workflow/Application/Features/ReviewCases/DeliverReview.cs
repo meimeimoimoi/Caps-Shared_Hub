@@ -18,6 +18,7 @@ public sealed record DeliverReviewCommand(
 /// <summary>Hands the result to the client, who then has the acceptance window to confirm.</summary>
 public sealed class DeliverReviewHandler(
     IReviewCaseRepository cases,
+    IReviewCaseEvents events,
     IUnitOfWork unitOfWork,
     TimeProvider clock
 ) : ICommandHandler<DeliverReviewCommand, ReviewCaseResponse>
@@ -47,6 +48,7 @@ public sealed class DeliverReviewHandler(
         cases.AddHistory(delivered);
         await unitOfWork.SaveChangesAsync(ct);
         await tx.CommitAsync(ct);
+        await events.StatusChangedAsync(reviewCase, delivered, ct);
         return ReviewCaseResponse.From(reviewCase);
     }
 }

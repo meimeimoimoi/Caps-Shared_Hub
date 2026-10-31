@@ -23,6 +23,7 @@ public sealed class DisputeHandlerTests
         var response = await new OpenDisputeHandler(
             run.Cases,
             run.Disputes,
+            new RecordedEvents(),
             run.UnitOfWork,
             TimeProvider.System
         ).HandleAsync(new(Client, run.Case.Id, "SLA_BREACH", "Delivered late"), default);
@@ -179,6 +180,7 @@ public sealed class DisputeHandlerTests
                 Disputes,
                 Escrows,
                 Slots,
+                new RecordedEvents(),
                 UnitOfWork,
                 TimeProvider.System
             ).HandleAsync(new(userId, Case.Id), default);

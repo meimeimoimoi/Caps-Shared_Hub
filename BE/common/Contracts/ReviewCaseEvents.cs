@@ -32,3 +32,22 @@ public sealed record ReviewCaseInfoRequestedEvent(
     DateTimeOffset DueAt,
     DateTimeOffset OccurredAt
 );
+
+/// <summary>
+/// A review case moved to another status. Published by the workflow service after committing; the notification
+/// service decides who hears about it. Booking (ReviewCaseRequestedEvent) and questions
+/// (ReviewCaseInfoRequestedEvent) keep their own events. No contact details of one party ever reach the other.
+/// </summary>
+/// <param name="Note">The step's note when it has one: decline reason, dispute reason or the admin's decision.</param>
+/// <param name="RequesterEmail">Only to email the client themselves; null for older cases.</param>
+public sealed record ReviewCaseStatusChangedEvent(
+    Guid Id,
+    Guid ReviewCaseId,
+    string? FromStatus,
+    string ToStatus,
+    string? Note,
+    Guid RequesterUserId,
+    string? RequesterEmail,
+    Guid ExpertUserId,
+    DateTimeOffset OccurredAt
+);

@@ -12,6 +12,7 @@ public sealed record ProvideInformationCommand(Guid UserId, Guid ReviewCaseId, s
 public sealed class ProvideInformationHandler(
     IReviewCaseRepository cases,
     IInfoRequestRepository infoRequests,
+    IReviewCaseEvents events,
     IUnitOfWork unitOfWork,
     TimeProvider clock
 ) : ICommandHandler<ProvideInformationCommand, ReviewCaseResponse>
@@ -39,6 +40,7 @@ public sealed class ProvideInformationHandler(
         cases.AddHistory(resumed);
         await unitOfWork.SaveChangesAsync(ct);
         await tx.CommitAsync(ct);
+        await events.StatusChangedAsync(reviewCase, resumed, ct);
         return ReviewCaseResponse.From(reviewCase);
     }
 }

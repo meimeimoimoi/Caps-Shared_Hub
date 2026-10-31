@@ -140,7 +140,14 @@ public sealed class AcceptReviewTests
         return new(
             fakeCases,
             slots,
-            new WaitingRequestRefunds(fakeCases, escrows, unitOfWork, TimeProvider.System),
+            new WaitingRequestRefunds(
+                fakeCases,
+                escrows,
+                new RecordedEvents(),
+                unitOfWork,
+                TimeProvider.System
+            ),
+            new RecordedEvents(),
             unitOfWork,
             TimeProvider.System
         );

@@ -16,6 +16,7 @@ public sealed class ConfirmReviewHandler(
     IReviewCaseRepository cases,
     IEscrows escrows,
     IExpertSlots slots,
+    IReviewCaseEvents events,
     IUnitOfWork unitOfWork,
     TimeProvider clock
 ) : ICommandHandler<ConfirmReviewCommand, ReviewCaseResponse>
@@ -39,6 +40,7 @@ public sealed class ConfirmReviewHandler(
         cases.AddHistory(completed);
         await unitOfWork.SaveChangesAsync(ct);
         await tx.CommitAsync(ct);
+        await events.StatusChangedAsync(reviewCase, completed, ct);
         return ReviewCaseResponse.From(reviewCase);
     }
 }

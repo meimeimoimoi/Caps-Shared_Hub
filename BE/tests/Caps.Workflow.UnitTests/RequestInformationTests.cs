@@ -56,6 +56,12 @@ public sealed class RequestInformationTests
 
     private sealed class FakeEvents(FakeUnitOfWork unitOfWork) : IReviewCaseEvents
     {
+        public Task StatusChangedAsync(
+            ReviewCase reviewCase,
+            ReviewStatusHistory history,
+            CancellationToken ct
+        ) => throw new NotSupportedException();
+
         public List<(ReviewCase, InfoRequest)> InfoRequested { get; } = [];
         public bool CommittedFirst { get; private set; }
 

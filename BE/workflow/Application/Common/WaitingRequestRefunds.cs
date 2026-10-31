@@ -13,6 +13,7 @@ namespace Caps.Workflow.Application.Common;
 public sealed class WaitingRequestRefunds(
     IReviewCaseRepository cases,
     IEscrows escrows,
+    IReviewCaseEvents events,
     IUnitOfWork unitOfWork,
     TimeProvider clock
 )
@@ -35,9 +36,11 @@ public sealed class WaitingRequestRefunds(
                 }
                 // Refund before closing: a failure leaves the request waiting, never closed with the money held
                 await escrows.RefundAsync(id, ct);
-                cases.AddHistory(waiting.CloseUnanswered(reason, clock.GetUtcNow()));
+                var closed = waiting.CloseUnanswered(reason, clock.GetUtcNow());
+                cases.AddHistory(closed);
                 await unitOfWork.SaveChangesAsync(ct);
                 await tx.CommitAsync(ct);
+                await events.StatusChangedAsync(waiting, closed, ct);
             }
             catch (AppException) when (!ct.IsCancellationRequested)
             {

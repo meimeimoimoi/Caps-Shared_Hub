@@ -15,6 +15,7 @@ public sealed class AccpetReviewHandler(
     IReviewCaseRepository cases,
     IExpertSlots slots,
     WaitingRequestRefunds refunds,
+    IReviewCaseEvents events,
     IUnitOfWork unitOfWork,
     TimeProvider clock
 ) : ICommandHandler<AcceptReviewCommand, ReviewCaseResponse>
@@ -46,6 +47,7 @@ public sealed class AccpetReviewHandler(
         var freeSlots = await slots.TakeAsync(reviewCase.ExpertProfileId, reviewCase.Id, ct);
         await unitOfWork.SaveChangesAsync(ct);
         await tx.CommitAsync(ct);
+        await events.StatusChangedAsync(reviewCase, accepted, ct);
         if (freeSlots == 0)
         {
             // The expert is full: the other paid requests could only wait out the response deadline

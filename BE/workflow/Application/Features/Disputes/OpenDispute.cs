@@ -17,6 +17,7 @@ public sealed record OpenDisputeCommand(
 public sealed class OpenDisputeHandler(
     IReviewCaseRepository cases,
     IReviewDisputeRepository disputes,
+    IReviewCaseEvents events,
     IUnitOfWork unitOfWork,
     TimeProvider clock
 ) : ICommandHandler<OpenDisputeCommand, DisputeResponse>
@@ -38,6 +39,7 @@ public sealed class OpenDisputeHandler(
         cases.AddHistory(opened);
         await unitOfWork.SaveChangesAsync(ct);
         await tx.CommitAsync(ct);
+        await events.StatusChangedAsync(reviewCase, opened, ct);
         return DisputeResponse.From(dispute);
     }
 }

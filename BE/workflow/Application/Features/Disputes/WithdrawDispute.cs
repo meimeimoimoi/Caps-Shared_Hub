@@ -14,6 +14,7 @@ public sealed class WithdrawDisputeHandler(
     IReviewDisputeRepository disputes,
     IEscrows escrows,
     IExpertSlots slots,
+    IReviewCaseEvents events,
     IUnitOfWork unitOfWork,
     TimeProvider clock
 ) : ICommandHandler<WithdrawDisputeCommand, ReviewCaseResponse>
@@ -41,6 +42,7 @@ public sealed class WithdrawDisputeHandler(
         cases.AddHistory(completed);
         await unitOfWork.SaveChangesAsync(ct);
         await tx.CommitAsync(ct);
+        await events.StatusChangedAsync(reviewCase, completed, ct);
         return ReviewCaseResponse.From(reviewCase);
     }
 }

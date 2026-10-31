@@ -37,6 +37,7 @@ public sealed class ExpireReviewCaseTests
         await run.ExpireAsync();
 
         Assert.Equal(ReviewCaseStatus.ExpertTimeout, reviewCase.Status);
+        Assert.Equal([ReviewCaseStatus.ExpertTimeout], run.Events.StatusChanges);
         Assert.Equal(["refund"], run.Escrows.Calls);
         Assert.True(run.Escrows.CalledBeforeSave);
         // No slot was taken before acceptance, so none is freed
@@ -130,6 +131,7 @@ public sealed class ExpireReviewCaseTests
         Assert.Equal("SERVICE_LINK_UNAVAILABLE", e.Code);
         Assert.False(run.UnitOfWork.Saved);
         Assert.False(run.UnitOfWork.Committed);
+        Assert.Empty(run.Events.StatusChanges);
     }
 
     [Fact]
@@ -182,6 +184,7 @@ public sealed class ExpireReviewCaseTests
     {
         public FakeUnitOfWork UnitOfWork { get; } = new();
         public FakeSlots Slots { get; } = new();
+        public RecordedEvents Events { get; } = new();
         public FakeEscrows Escrows { get; private set; } = default!;
 
         public Task ExpireAsync()
@@ -192,6 +195,7 @@ public sealed class ExpireReviewCaseTests
                 new FakeInfoRequests(openRequest),
                 Escrows,
                 Slots,
+                Events,
                 UnitOfWork,
                 new Clock(now)
             ).HandleAsync(new(reviewCase.Id), default);

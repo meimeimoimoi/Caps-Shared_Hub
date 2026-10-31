@@ -20,11 +20,13 @@ public sealed class RefundSuspendedServiceTests
         var running = Paid("HUMAN_VERIFICATION");
         running.Accept(ExpertProfile, Expert, TimeProvider.System.GetUtcNow());
         var escrows = new FakeEscrows();
+        var events = new RecordedEvents();
 
-        await Handler(escrows, waiting, otherService, running)
+        await Handler(escrows, events, waiting, otherService, running)
             .HandleAsync(new(Expert, "HUMAN_VERIFICATION"), default);
 
         Assert.Equal([waiting.Id], escrows.Refunded);
+        Assert.Equal([ReviewCaseStatus.ExpertDeclined], events.StatusChanges);
         Assert.Equal(ReviewCaseStatus.ExpertDeclined, waiting.Status);
         Assert.Equal(ReviewCase.ServiceSuspended, waiting.DeclineReason);
         Assert.Equal(ReviewCaseStatus.PendingExpertResponse, otherService.Status);
@@ -38,7 +40,7 @@ public sealed class RefundSuspendedServiceTests
         var waiting = Paid("HUMAN_VERIFICATION");
         var escrows = new FakeEscrows();
 
-        await Handler(escrows, waiting)
+        await Handler(escrows, new RecordedEvents(), waiting)
             .HandleAsync(new(Guid.NewGuid(), "HUMAN_VERIFICATION"), default);
 
         Assert.Empty(escrows.Refunded);
@@ -47,6 +49,7 @@ public sealed class RefundSuspendedServiceTests
 
     private static RefundSuspendedServiceHandler Handler(
         FakeEscrows escrows,
+        RecordedEvents events,
         params ReviewCase[] cases
     )
     {
@@ -54,7 +57,7 @@ public sealed class RefundSuspendedServiceTests
         var unitOfWork = new FakeUnitOfWork();
         return new(
             fakeCases,
-            new WaitingRequestRefunds(fakeCases, escrows, unitOfWork, TimeProvider.System)
+            new WaitingRequestRefunds(fakeCases, escrows, events, unitOfWork, TimeProvider.System)
         );
     }
 

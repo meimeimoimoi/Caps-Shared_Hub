@@ -51,6 +51,27 @@ public sealed class MassTransitReviewCaseEvents(
             ct
         );
 
+    public Task StatusChangedAsync(
+        ReviewCase reviewCase,
+        ReviewStatusHistory history,
+        CancellationToken ct
+    ) =>
+        PublishAsync(
+            new ReviewCaseStatusChangedEvent(
+                Guid.NewGuid(),
+                reviewCase.Id,
+                history.FromStatus,
+                history.ToStatus,
+                history.Note,
+                reviewCase.RequesterUserId,
+                reviewCase.RequesterEmail,
+                reviewCase.ExpertUserId,
+                clock.GetUtcNow()
+            ),
+            reviewCase.Id,
+            ct
+        );
+
     private async Task PublishAsync<T>(T message, Guid caseId, CancellationToken ct)
         where T : class
     {
@@ -66,7 +87,7 @@ public sealed class MassTransitReviewCaseEvents(
             // The step is committed: a lost notification must not turn it into an error for the caller
             logger.LogWarning(
                 e,
-                "Review case {CaseId}: {Event} was not publisher",
+                "Review case {CaseId}: {Event} was not published.",
                 caseId,
                 typeof(T).Name
             );
@@ -82,6 +103,12 @@ public sealed class NoReviewCaseEvents : IReviewCaseEvents
     public Task InfoRequestedAsync(
         ReviewCase reviewCase,
         InfoRequest request,
+        CancellationToken ct
+    ) => Task.CompletedTask;
+
+    public Task StatusChangedAsync(
+        ReviewCase reviewCase,
+        ReviewStatusHistory history,
         CancellationToken ct
     ) => Task.CompletedTask;
 }

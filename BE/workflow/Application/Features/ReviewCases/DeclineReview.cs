@@ -12,6 +12,7 @@ public sealed record DeclineReviewCommand(Guid UserId, Guid ReviewCaseId, string
 public sealed class DeclineReviewHandler(
     IReviewCaseRepository cases,
     IEscrows escrows,
+    IReviewCaseEvents events,
     IUnitOfWork unitOfWork,
     TimeProvider clock
 ) : ICommandHandler<DeclineReviewCommand, ReviewCaseResponse>
@@ -42,6 +43,7 @@ public sealed class DeclineReviewHandler(
         cases.AddHistory(declined);
         await unitOfWork.SaveChangesAsync(ct);
         await tx.CommitAsync(ct);
+        await events.StatusChangedAsync(reviewCase, declined, ct);
         return ReviewCaseResponse.From(reviewCase);
     }
 }

@@ -10,4 +10,11 @@ public interface IReviewCaseEvents
 
     /// <summary>The expert asked the client for information; the client is told and emailed.</summary>
     Task InfoRequestedAsync(ReviewCase reviewCase, InfoRequest request, CancellationToken ct);
+
+    /// <summary>The case moved to another status; called after the step is committed.</summary>
+    Task StatusChangedAsync(
+        ReviewCase reviewCase,
+        ReviewStatusHistory history,
+        CancellationToken ct
+    );
 }

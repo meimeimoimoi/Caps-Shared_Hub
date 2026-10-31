@@ -132,6 +132,7 @@ public sealed class AdminDisputeHandlerTests
                 Disputes,
                 Escrows,
                 Slots,
+                new RecordedEvents(),
                 UnitOfWork,
                 new Clock(T0.AddHours(5))
             ).HandleAsync(new(Admin, Case.Id, pct, "Partly late"), default);
