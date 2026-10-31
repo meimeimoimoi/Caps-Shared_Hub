@@ -15,16 +15,31 @@ public sealed class ExpireReviewCaseTests
     private static readonly Guid Expert = Guid.NewGuid();
 
     [Fact]
-    public async Task An_unpaid_case_is_cancelled_without_touching_money()
+    public async Task An_unpaid_case_without_a_hold_is_cancelled()
     {
         var reviewCase = Booked();
-        var run = new Run(reviewCase, T0.AddMinutes(16));
+        var run = new Run(reviewCase, T0.AddMinutes(16), noEscrow: true);
 
         await run.ExpireAsync();
 
         Assert.Equal(ReviewCaseStatus.CancelledUnpaid, reviewCase.Status);
         Assert.Empty(run.Escrows.Calls);
         Assert.Empty(run.Slots.Released);
+        Assert.True(run.UnitOfWork.Committed);
+    }
+
+    [Fact]
+    public async Task A_hold_left_by_a_failed_payment_is_refunded_when_the_case_is_cancelled()
+    {
+        // Billing held the credits but the payment was never saved, so the case still reads unpaid
+        var reviewCase = Booked();
+        var run = new Run(reviewCase, T0.AddMinutes(16));
+
+        await run.ExpireAsync();
+
+        Assert.Equal(ReviewCaseStatus.CancelledUnpaid, reviewCase.Status);
+        Assert.Equal(["refund"], run.Escrows.Calls);
+        Assert.True(run.Escrows.CalledBeforeSave);
         Assert.True(run.UnitOfWork.Committed);
     }
 
@@ -179,7 +194,8 @@ public sealed class ExpireReviewCaseTests
         ReviewCase reviewCase,
         DateTimeOffset now,
         InfoRequest? openRequest = null,
-        bool billingDown = false
+        bool billingDown = false,
+        bool noEscrow = false
     )
     {
         public FakeUnitOfWork UnitOfWork { get; } = new();
@@ -189,7 +205,7 @@ public sealed class ExpireReviewCaseTests
 
         public Task ExpireAsync()
         {
-            Escrows = new FakeEscrows(UnitOfWork, billingDown);
+            Escrows = new FakeEscrows(UnitOfWork, billingDown, noEscrow);
             return new ExpireReviewCaseHandler(
                 new FakeCases(reviewCase),
                 new FakeInfoRequests(openRequest),
@@ -207,7 +223,8 @@ public sealed class ExpireReviewCaseTests
         public override DateTimeOffset GetUtcNow() => now;
     }
 
-    private sealed class FakeEscrows(FakeUnitOfWork unitOfWork, bool down) : IEscrows
+    private sealed class FakeEscrows(FakeUnitOfWork unitOfWork, bool down, bool noEscrow = false)
+        : IEscrows
     {
         public List<string> Calls { get; } = [];
         public ReviewSettlement? Settlement { get; private set; }
@@ -216,7 +233,14 @@ public sealed class ExpireReviewCaseTests
         public Task HoldAsync(Guid userId, Guid reviewCaseId, long amount, CancellationToken ct) =>
             throw new NotSupportedException();
 
-        public Task RefundAsync(Guid reviewCaseId, CancellationToken ct) => Record("refund");
+        public Task RefundAsync(Guid reviewCaseId, CancellationToken ct) =>
+            noEscrow
+                ? throw new AppException(
+                    ErrorType.NotFound,
+                    "ESCROW_NOT_FOUND",
+                    "No escrow exists for this review case."
+                )
+                : Record("refund");
 
         public Task ReleaseAsync(
             Guid reviewCaseId,

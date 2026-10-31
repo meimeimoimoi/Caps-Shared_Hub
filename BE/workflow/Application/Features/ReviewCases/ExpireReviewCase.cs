@@ -1,4 +1,5 @@
 using Caps.Common.Application;
+using Caps.Common.Domain;
 using Caps.Workflow.Application.Abstractions;
 using Caps.Workflow.Domain.Review;
 
@@ -45,6 +46,17 @@ public sealed class ExpireReviewCaseHandler(
         // Money before saving: if billing fails nothing is saved and the next run retries; every call is idempotent
         switch (reviewCase.Status)
         {
+            case ReviewCaseStatus.CancelledUnpaid:
+                // A payment whose save failed after billing held the credits still reads unpaid: refund that hold
+                try
+                {
+                    await escrows.RefundAsync(reviewCase.Id, ct);
+                }
+                catch (AppException e) when (e.Code == "ESCROW_NOT_FOUND")
+                {
+                    // The usual case: the client never paid
+                }
+                break;
             case ReviewCaseStatus.ExpertTimeout:
                 await escrows.RefundAsync(reviewCase.Id, ct);
                 break;
