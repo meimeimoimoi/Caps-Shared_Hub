@@ -25,6 +25,7 @@ builder.Services.AddCapsMessaging(
         x.AddConsumer<ExpertServiceAccessChangedConsumer>();
         x.AddConsumer<ReviewCaseRequestedConsumer>();
         x.AddConsumer<ReviewCaseInfoRequestedConsumer>();
+        x.AddConsumer<ReviewCaseStatusChangedConsumer>();
         x.AddConsumer<RealtimeChangedConsumer>();
     }
 );

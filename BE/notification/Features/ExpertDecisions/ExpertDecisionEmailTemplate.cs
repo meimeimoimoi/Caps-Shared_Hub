@@ -135,6 +135,72 @@ public static class ExpertDecisionEmailTemplate
         );
     }
 
+    private static Copy ForStatus(string status) =>
+        status switch
+        {
+            "EXPERT_DECLINED" => new(
+                $"Chuyên gia chưa nhận hồ sơ của bạn – {Brand}",
+                "Chuyên gia chưa nhận hồ sơ",
+                "Chuyên gia không thể nhận hồ sơ này. Toàn bộ phí đã được hoàn vào ví của bạn; bạn có thể chọn chuyên gia khác.",
+                "Xem hồ sơ"
+            ),
+            "EXPERT_TIMEOUT" => new(
+                $"Chuyên gia chưa phản hồi kịp – {Brand}",
+                "Chuyên gia chưa phản hồi kịp",
+                "Chuyên gia không phản hồi trong thời hạn. Toàn bộ phí đã được hoàn vào ví của bạn; bạn có thể chọn chuyên gia khác.",
+                "Xem hồ sơ"
+            ),
+            "AWAITING_ACCEPTANCE" => new(
+                $"Chuyên gia đã gửi kết quả rà soát – {Brand}",
+                "Kết quả rà soát đã sẵn sàng",
+                "Chuyên gia đã gửi kết quả. Hãy xem và xác nhận, hoặc gửi khiếu nại nếu kết quả chưa đạt, trước hạn ghi trong hồ sơ; quá hạn, hệ thống sẽ tự xác nhận.",
+                "Xem kết quả"
+            ),
+            "DELIVERY_OVERDUE" => new(
+                $"Hồ sơ quá hạn giao kết quả – {Brand}",
+                "Chuyên gia không giao kết quả đúng hạn",
+                "Chuyên gia không giao kết quả trong thời hạn cho phép. Toàn bộ phí đã được hoàn vào ví của bạn.",
+                "Xem hồ sơ"
+            ),
+            "RESOLVED" => new(
+                $"Khiếu nại của bạn đã có kết quả – {Brand}",
+                "Khiếu nại đã được giải quyết",
+                "Quản trị hệ thống đã xem xét khiếu nại của bạn. Số tiền hoàn (nếu có) đã vào ví; chi tiết ở trong hồ sơ.",
+                "Xem kết quả"
+            ),
+            _ => new(
+                $"Hồ sơ rà soát đã kết thúc – {Brand}",
+                "Hồ sơ đã kết thúc",
+                "Hồ sơ kết thúc vì chưa nhận được thông tin bổ sung đúng hạn. Phần phí được hoàn theo quy định đã vào ví của bạn.",
+                "Xem hồ sơ"
+            ),
+        };
+
+    /// <summary>A review case step the client must know about: a refund, a delivery to accept, or an ending.</summary>
+    public static Content Build(ReviewCaseStatusChangedEvent m, string email, string link)
+    {
+        var issues = string.IsNullOrWhiteSpace(m.Note)
+            ? new List<Issue>()
+            : [new Issue("Ghi chú", "", m.Note)];
+        return Render(ForStatus(m.ToStatus), "bạn", email, m.OccurredAt, link, issues);
+    }
+
+    /// <summary>Tells the operations inbox a client opened a dispute; it must be decided within 48 hours.</summary>
+    public static Content BuildDisputeAlert(
+        ReviewCaseStatusChangedEvent m,
+        string email,
+        string link
+    )
+    {
+        var copy = new Copy(
+            $"Có khiếu nại mới cần xử lý – {Brand}",
+            "Có khiếu nại mới",
+            "Một khách hàng vừa khiếu nại kết quả rà soát. Khiếu nại cần được quyết định trong 48 giờ.",
+            "Mở khiếu nại"
+        );
+        return Render(copy, "Quản trị viên", email, m.OccurredAt, link, []);
+    }
+
     private static (Copy Copy, string Label) ForAccess(string change, string service) =>
         change switch
         {
