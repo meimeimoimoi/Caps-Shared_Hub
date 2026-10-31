@@ -31,6 +31,29 @@ const accessChanges = {
   REINSTATED: 'notifications.serviceAccess.REINSTATED',
 } as const
 
+// One bell line per review case step; IN_REVIEW reads differently for the client and the expert
+const caseSteps = {
+  accepted: 'notifications.reviewCase.status.accepted',
+  answered: 'notifications.reviewCase.status.answered',
+  EXPERT_DECLINED: 'notifications.reviewCase.status.EXPERT_DECLINED',
+  EXPERT_TIMEOUT: 'notifications.reviewCase.status.EXPERT_TIMEOUT',
+  AWAITING_ACCEPTANCE: 'notifications.reviewCase.status.AWAITING_ACCEPTANCE',
+  COMPLETED: 'notifications.reviewCase.status.COMPLETED',
+  AUTO_CONFIRMED: 'notifications.reviewCase.status.AUTO_CONFIRMED',
+  DELIVERY_OVERDUE: 'notifications.reviewCase.status.DELIVERY_OVERDUE',
+  DISPUTED: 'notifications.reviewCase.status.DISPUTED',
+  RESOLVED: 'notifications.reviewCase.status.RESOLVED',
+  TERMINATED: 'notifications.reviewCase.status.TERMINATED',
+} as const
+
+const warningSteps = new Set([
+  'EXPERT_DECLINED',
+  'EXPERT_TIMEOUT',
+  'DELIVERY_OVERDUE',
+  'DISPUTED',
+  'TERMINATED',
+])
+
 /**
  * The signed-in account's notifications for the header bell, rendered as shell items. New ones arrive
  * through NotificationStream (SignalR); polling every minute is the fallback. Read state lives on the server.
@@ -93,8 +116,42 @@ export function useNotifications() {
     }
   }
 
+  // A review case moved on: the text comes from the new status
+  const caseStepItem = (n: AppNotification): ShellNotification | null => {
+    const step =
+      n.data.toStatus === 'IN_REVIEW'
+        ? n.data.fromStatus === 'AWAITING_USER_INFORMATION'
+          ? 'answered'
+          : 'accepted'
+        : (n.data.toStatus as keyof typeof caseSteps)
+    if (!(step in caseSteps)) return null
+    return {
+      id: n.id,
+      text: t(caseSteps[step]),
+      to: typeof n.data.link === 'string' ? n.data.link : '/cases',
+      tone: warningSteps.has(step) ? 'warning' : undefined,
+      read: n.readAt != null,
+    }
+  }
+
   const toShell = (n: AppNotification): ShellNotification | null => {
-        if (n.type === 'REVIEW_CASE_INFO_REQUESTED')
+    if (
+      n.type === 'REVIEW_CASE_REQUESTED' ||
+      n.type === 'REVIEW_CASE_RESPONSE_DUE'
+    )
+      return {
+        id: n.id,
+        text: t(
+          n.type === 'REVIEW_CASE_REQUESTED'
+            ? 'notifications.reviewCase.requested'
+            : 'notifications.reviewCase.responseDue',
+        ),
+        to: typeof n.data.link === 'string' ? n.data.link : '/expert/cases',
+        tone: n.type === 'REVIEW_CASE_RESPONSE_DUE' ? 'warning' : undefined,
+        read: n.readAt != null,
+      }
+    if (n.type === 'REVIEW_CASE_STATUS_CHANGED') return caseStepItem(n)
+    if (n.type === 'REVIEW_CASE_INFO_REQUESTED')
       return {
         id: n.id,
         text: t('notifications.reviewCase.infoRequested'),

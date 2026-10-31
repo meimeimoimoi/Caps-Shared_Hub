@@ -133,7 +133,21 @@
     },
     "reviewCase": {
       "requested": "Bạn có yêu cầu review mới. Hãy nhận hoặc từ chối trước hạn phản hồi.",
-      "infoRequested": "Chuyên gia cần bạn bổ sung thông tin. Hãy trả lời trước hạn để hồ sơ không bị kết thúc."
+      "infoRequested": "Chuyên gia cần bạn bổ sung thông tin. Hãy trả lời trước hạn để hồ sơ không bị kết thúc.",
+      "responseDue": "Một yêu cầu review sắp hết hạn phản hồi. Hãy nhận hoặc từ chối trước khi khách hàng được hoàn tiền.",
+      "status": {
+        "accepted": "Chuyên gia đã nhận hồ sơ và bắt đầu rà soát.",
+        "answered": "Khách hàng đã trả lời câu hỏi của bạn; hồ sơ tiếp tục.",
+        "EXPERT_DECLINED": "Chuyên gia chưa nhận hồ sơ. Phí đã được hoàn vào ví.",
+        "EXPERT_TIMEOUT": "Chuyên gia không phản hồi kịp. Phí đã được hoàn vào ví.",
+        "AWAITING_ACCEPTANCE": "Chuyên gia đã gửi kết quả. Hãy xác nhận hoặc khiếu nại trước hạn.",
+        "COMPLETED": "Khách hàng đã xác nhận kết quả rà soát.",
+        "AUTO_CONFIRMED": "Kết quả rà soát đã được tự động xác nhận.",
+        "DELIVERY_OVERDUE": "Hồ sơ quá hạn giao kết quả; phí đã được hoàn cho khách hàng.",
+        "DISPUTED": "Khách hàng đã khiếu nại kết quả. Bạn có thể gửi giải trình.",
+        "RESOLVED": "Khiếu nại đã có quyết định của quản trị viên.",
+        "TERMINATED": "Hồ sơ đã kết thúc vì thông tin bổ sung không được gửi đúng hạn."
+      }
     }
   }
 }

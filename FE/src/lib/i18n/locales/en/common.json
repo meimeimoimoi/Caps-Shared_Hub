@@ -133,7 +133,21 @@
     },
     "reviewCase": {
       "requested": "You have a new review request. Accept or decline it before the response deadline.",
-      "infoRequested": "The expert needs more information from you. Answer before the deadline so your case is not closed."
+      "infoRequested": "The expert needs more information from you. Answer before the deadline so your case is not closed.",
+      "responseDue": "A review request is close to its response deadline. Accept or decline it before the client is refunded.",
+      "status": {
+        "accepted": "The expert accepted your case and started the review.",
+        "answered": "The client answered your question; the case goes on.",
+        "EXPERT_DECLINED": "The expert did not take your case. The fee is back in your wallet.",
+        "EXPERT_TIMEOUT": "The expert did not answer in time. The fee is back in your wallet.",
+        "AWAITING_ACCEPTANCE": "The expert delivered the result. Accept it or raise a dispute before the deadline.",
+        "COMPLETED": "The client accepted the review result.",
+        "AUTO_CONFIRMED": "The review result was accepted automatically.",
+        "DELIVERY_OVERDUE": "The case missed its delivery deadline; the client was refunded.",
+        "DISPUTED": "The client disputed the result. You can send an explanation.",
+        "RESOLVED": "An admin decided the dispute.",
+        "TERMINATED": "The case ended because the requested information did not arrive in time."
+      }
     }
   }
 }
