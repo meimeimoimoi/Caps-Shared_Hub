@@ -28,3 +28,6 @@ public sealed record EligibilityCriterionRequest(
     [Required, MaxLength(32)] string Result,
     [MaxLength(2000)] string? Note
 );
+
+/// <summary>Stars a client gave a finished review case (1 to 5, checked by workflow).</summary>
+public sealed record CaseRatingRequest(short Stars);

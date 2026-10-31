@@ -30,6 +30,7 @@ public sealed class ExpertDbContext(DbContextOptions<ExpertDbContext> options) :
     public DbSet<CompetencyAssessment> CompetencyAssessments => Set<CompetencyAssessment>();
     public DbSet<PlatformFee> PlatformFees => Set<PlatformFee>();
     public DbSet<ExpertCaseSlot> ExpertCaseSlots => Set<ExpertCaseSlot>();
+    public DbSet<ExpertCaseRating> ExpertCaseRatings => Set<ExpertCaseRating>();
     public DbSet<ServiceOffering> ServiceOfferings => Set<ServiceOffering>();
     public DbSet<ServiceOfferingChange> ServiceOfferingChanges => Set<ServiceOfferingChange>();
     public DbSet<ServiceCatalogItem> ServiceCatalog => Set<ServiceCatalogItem>();
@@ -112,6 +113,22 @@ public sealed class ExpertDbContext(DbContextOptions<ExpertDbContext> options) :
                 .HasForeignKey(x => x.ExpertProfileId)
                 .OnDelete(DeleteBehavior.Restrict)
                 .HasConstraintName("fk_expert_case_slot_profile");
+        });
+
+        modelBuilder.Entity<ExpertCaseRating>(e =>
+        {
+            e.ToTable("expert_case_rating");
+            e.HasKey(x => x.ReviewCaseId);
+            e.Property(x => x.ReviewCaseId).HasColumnName("review_case_id");
+            e.Property(x => x.ExpertProfileId).HasColumnName("expert_profile_id");
+            e.Property(x => x.Stars).HasColumnName("stars");
+            e.Property(x => x.RatedAt).HasColumnName("rated_at");
+            e.HasIndex(x => x.ExpertProfileId).HasDatabaseName("ix_expert_case_rating_profile");
+            e.HasOne<ExpertProfile>()
+                .WithMany()
+                .HasForeignKey(x => x.ExpertProfileId)
+                .OnDelete(DeleteBehavior.Restrict)
+                .HasConstraintName("fk_expert_case_rating_profile");
         });
 
         modelBuilder.Entity<ExpertApplication>(e =>

@@ -1,6 +1,7 @@
 using Caps.Common.Api;
 using Caps.Common.Application;
 using Caps.Common.Security;
+using Caps.Expert.Api.DTOs.Requests;
 using Caps.Expert.Application.DTOs.Responses;
 using Caps.Expert.Application.Features.ReviewCases;
 using Microsoft.AspNetCore.Mvc;
@@ -58,6 +59,22 @@ public sealed class InternalCasesController : ControllerBase
     )
     {
         await handler.HandleAsync(new(profileId, reviewCaseId), ct);
+        return NoContent();
+    }
+
+    /// <summary>The client rated the finished case: it counts into the expert's rating. Safe to repeat.</summary>
+    /// <response code="204">The rating is counted (a repeat changes nothing).</response>
+    /// <response code="401">INTERNAL_KEY_INVALID.</response>
+    [HttpPut("ratings/{reviewCaseId:guid}")]
+    public async Task<IActionResult> RecordRating(
+        Guid profileId,
+        Guid reviewCaseId,
+        CaseRatingRequest request,
+        [FromServices] ICommandHandler<RecordCaseRatingCommand> handler,
+        CancellationToken ct
+    )
+    {
+        await handler.HandleAsync(new(profileId, reviewCaseId, request.Stars), ct);
         return NoContent();
     }
 }
