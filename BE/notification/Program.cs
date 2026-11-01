@@ -27,6 +27,7 @@ builder.Services.AddCapsMessaging(
         x.AddConsumer<ReviewCaseInfoRequestedConsumer>();
         x.AddConsumer<ReviewCaseStatusChangedConsumer>();
         x.AddConsumer<ReviewCaseResponseDueConsumer>();
+        x.AddConsumer<ReviewCaseDisputeOverdueConsumer>();
         x.AddConsumer<RealtimeChangedConsumer>();
     }
 );

@@ -201,6 +201,27 @@ public static class ExpertDecisionEmailTemplate
         return Render(copy, "Quản trị viên", email, m.OccurredAt, link, []);
     }
 
+    /// <summary>Tells the operations inbox a dispute passed its decision deadline without a decision.</summary>
+    public static Content BuildDisputeOverdueAlert(
+        ReviewCaseDisputeOverdueEvent m,
+        string email,
+        string link
+    )
+    {
+        var due = m
+            .DecideBy.ToOffset(VietnamOffset)
+            .ToString("HH:mm dd/MM/yyyy", CultureInfo.InvariantCulture);
+        var copy = new Copy(
+            $"Khiếu nại quá hạn chưa được quyết định – {Brand}",
+            "Khiếu nại đã quá hạn",
+            m.Extended
+                ? $"Khiếu nại đã quá hạn gia hạn lúc {due} mà chưa có quyết định. Không thể gia hạn thêm; vui lòng quyết định ngay."
+                : $"Khiếu nại đã quá hạn quyết định lúc {due}. Vui lòng quyết định, hoặc gia hạn một lần thêm 48 giờ.",
+            "Mở khiếu nại"
+        );
+        return Render(copy, "Quản trị viên", email, m.OccurredAt, link, []);
+    }
+
     private static (Copy Copy, string Label) ForAccess(string change, string service) =>
         change switch
         {
