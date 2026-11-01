@@ -17,4 +17,5 @@ public static class ReviewCaseStatus
     public const string DeliveryOverdue = "DELIVERY_OVERDUE";
     public const string Disputed = "DISPUTED";
     public const string Resolved = "RESOLVED";
+    public const string Withdrawn = "WITHDRAWN";
 }

@@ -29,6 +29,22 @@ public sealed partial class ReviewCase
     }
 
     /// <summary>
+    /// The client takes the request back before the expert answers. Unpaid, it ends like an unpaid case that
+    /// expired (the expert never saw it); paid, it is WITHDRAWN and the caller refunds the fee in full.
+    /// </summary>
+    public ReviewStatusHistory Withdraw(Guid requesterUserId, DateTimeOffset now)
+    {
+        EnsureRequester(requesterUserId);
+        var next = Status switch
+        {
+            ReviewCaseStatus.AwaitingPayment => ReviewCaseStatus.CancelledUnpaid,
+            ReviewCaseStatus.PendingExpertResponse => ReviewCaseStatus.Withdrawn,
+            _ => throw WorkflowErrors.CaseStatusInvalid(Status),
+        };
+        return MoveTo(next, requesterUserId, ClientWithdrew, now);
+    }
+
+    /// <summary>
     /// The expert can no longer answer this paid request (EXPERT_FULL, SERVICE_SUSPENDED): the system closes it as
     /// declined and the caller refunds the client in full.
     /// </summary>

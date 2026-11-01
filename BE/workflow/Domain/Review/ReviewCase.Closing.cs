@@ -42,7 +42,8 @@ public sealed partial class ReviewCase
             or ReviewCaseStatus.Terminated => Settle(),
             ReviewCaseStatus.ExpertDeclined
             or ReviewCaseStatus.ExpertTimeout
-            or ReviewCaseStatus.DeliveryOverdue => new(Fee, 0, 0),
+            or ReviewCaseStatus.DeliveryOverdue
+            or ReviewCaseStatus.Withdrawn => new(Fee, 0, 0),
             _ => null,
         };
 
