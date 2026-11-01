@@ -316,14 +316,18 @@ export function CasePanel({
                   })}
                 </span>
                 <span className="text-fg-strong">{c.infoRequest.message}</span>
-                <span className="text-fg-muted mt-2 text-sm">
-                  {t('panel.AWAITING_USER_INFORMATION.items')}
-                </span>
-                <ul className="list-disc space-y-1 pl-5">
-                  {c.infoRequest.items.map((i) => (
-                    <li key={i}>{i}</li>
-                  ))}
-                </ul>
+                {!!c.infoRequest.items?.length && (
+                  <>
+                    <span className="text-fg-muted mt-2 text-sm">
+                      {t('panel.AWAITING_USER_INFORMATION.items')}
+                    </span>
+                    <ul className="list-disc space-y-1 pl-5">
+                      {c.infoRequest.items.map((i) => (
+                        <li key={i}>{i}</li>
+                      ))}
+                    </ul>
+                  </>
+                )}
               </div>
               {c.due?.info && (
                 <Deadline

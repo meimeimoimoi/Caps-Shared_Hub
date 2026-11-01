@@ -13,18 +13,25 @@ export function SettlementReceipt({
 }) {
   const { t } = useTranslation('reviewCase')
   const f = useCaseFormat()
-  const { type, split } = SETTLEMENT_POLICY[settlement.rule]
-  const money = settle(amount, settlement.rule)
+  const { type } = SETTLEMENT_POLICY[settlement.rule]
+  // The backend's settled amounts win; the policy split is only an estimate for fixture cases
+  const a = settlement.amounts
+  const money = a
+    ? {
+        gross: amount,
+        refund: a.clientRefund,
+        expert: a.expertAmount,
+        platform: a.platformFee,
+      }
+    : settle(amount, settlement.rule)
+  const pct = (value: number) =>
+    money.gross ? Math.round((value * 100) / money.gross) : 0
   const parts = [
-    { key: 'refund', pct: split[0], value: money.refund, swatch: 'bg-success' },
-    { key: 'expert', pct: split[1], value: money.expert, swatch: 'bg-ink' },
-    {
-      key: 'platform',
-      pct: split[2],
-      value: money.platform,
-      swatch: 'bg-border-control',
-    },
+    { key: 'refund', value: money.refund, swatch: 'bg-success' },
+    { key: 'expert', value: money.expert, swatch: 'bg-ink' },
+    { key: 'platform', value: money.platform, swatch: 'bg-border-control' },
   ] as const
+  const shown = parts.map((p) => ({ ...p, pct: pct(p.value) }))
 
   return (
     <section className="paper p-6 md:p-8" aria-labelledby="settlement-title">
@@ -42,7 +49,7 @@ export function SettlementReceipt({
         aria-hidden="true"
         className="bg-track mt-6 flex h-2 gap-0.5 overflow-hidden rounded-full"
       >
-        {parts.map(
+        {shown.map(
           (p) =>
             p.pct > 0 && (
               <span
@@ -55,7 +62,7 @@ export function SettlementReceipt({
       </div>
 
       <dl className="mt-5">
-        {parts.map((p) => (
+        {shown.map((p) => (
           <div
             key={p.key}
             className="border-border-subtle flex items-center justify-between gap-4 border-b py-3"
