@@ -27,6 +27,7 @@ public sealed class ReviewCaseExpiryJob(
         {
             // Each run tries every overdue case once, so a case billing keeps refusing cannot starve the others
             await RemindAsync(stoppingToken);
+            await AlertOverdueDisputesAsync(stoppingToken);
             var tried = new List<Guid>();
             while (await FindOverdueAsync(tried, stoppingToken) is { Count: > 0 } batch)
             {
@@ -128,10 +129,51 @@ public sealed class ReviewCaseExpiryJob(
         }
     }
 
+    // Marks and reads the overdue disputes in one statement, so two instances never alert the same deadline twice
+    private async Task AlertOverdueDisputesAsync(CancellationToken ct)
+    {
+        try
+        {
+            using var scope = scopes.CreateScope();
+            var db = scope.ServiceProvider.GetRequiredService<WorkflowDbContext>();
+            var events = scope.ServiceProvider.GetRequiredService<IReviewCaseEvents>();
+            var now = clock.GetUtcNow();
+            await using var tx = await db.Database.BeginTransactionAsync(ct);
+            var overdue = await db
+                .Database.SqlQuery<OverdueDispute>(
+                    $"""
+                    UPDATE review.review_dispute SET overdue_alerted_at = {now}
+                    WHERE status = {ReviewDispute.Open}
+                        AND overdue_alerted_at IS NULL
+                        AND decide_by <= {now}
+                    RETURNING review_case_id AS "ReviewCaseId", decide_by AS "DecideBy", extended AS "Extended"
+                    """
+                )
+                .ToListAsync(ct);
+            foreach (var d in overdue)
+            {
+                await events.DisputeOverdueAsync(d.ReviewCaseId, d.DecideBy, d.Extended, ct);
+            }
+            await db.SaveChangesAsync(ct);
+            await tx.CommitAsync(ct);
+        }
+        catch (Exception e) when (!ct.IsCancellationRequested)
+        {
+            logger.LogWarning(e, "Overdue dispute alerts could not be sent; retrying next minute.");
+        }
+    }
+
     private sealed class DueReminder
     {
         public Guid Id { get; init; }
         public Guid ExpertUserId { get; init; }
         public DateTimeOffset ResponseDeadline { get; init; }
+    }
+
+    private sealed class OverdueDispute
+    {
+        public Guid ReviewCaseId { get; init; }
+        public DateTimeOffset DecideBy { get; init; }
+        public bool Extended { get; init; }
     }
 }

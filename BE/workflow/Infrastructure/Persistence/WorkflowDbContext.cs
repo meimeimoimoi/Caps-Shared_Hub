@@ -488,6 +488,7 @@ public sealed class WorkflowDbContext(DbContextOptions<WorkflowDbContext> option
             e.Property(x => x.OpenedAt).HasColumnName("opened_at");
             e.Property(x => x.DecideBy).HasColumnName("decide_by");
             e.Property(x => x.Extended).HasColumnName("extended");
+            e.Property(x => x.OverdueAlertedAt).HasColumnName("overdue_alerted_at");
             e.Property(x => x.ExpertStatement).HasColumnName("expert_statement");
             e.Property(x => x.ExpertStatementAt).HasColumnName("expert_statement_at");
             e.Property(x => x.ResolvedBy).HasColumnName("resolved_by");

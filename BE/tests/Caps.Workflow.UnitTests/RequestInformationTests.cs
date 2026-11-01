@@ -56,6 +56,13 @@ public sealed class RequestInformationTests
 
     private sealed class FakeEvents(FakeUnitOfWork unitOfWork) : IReviewCaseEvents
     {
+        public Task DisputeOverdueAsync(
+            Guid reviewCaseId,
+            DateTimeOffset decideBy,
+            bool extended,
+            CancellationToken ct
+        ) => throw new NotSupportedException();
+
         public Task ResponseDueAsync(
             Guid reviewCaseId,
             Guid expertUserId,

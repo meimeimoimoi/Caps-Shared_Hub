@@ -34,6 +34,9 @@ public sealed class ReviewDispute
     /// <summary>When the admin should have decided; extended once by another window.</summary>
     public DateTimeOffset DecideBy { get; private set; }
     public bool Extended { get; private set; }
+
+    /// <summary>Set by the expiry job when it alerts the operations inbox; cleared by an extension.</summary>
+    public DateTimeOffset? OverdueAlertedAt { get; private set; }
     public string? ExpertStatement { get; private set; }
     public DateTimeOffset? ExpertStatementAt { get; private set; }
     public Guid? ResolvedBy { get; private set; }
@@ -69,6 +72,7 @@ public sealed class ReviewDispute
         }
         Extended = true;
         DecideBy += DecisionWindow;
+        OverdueAlertedAt = null;
     }
 
     internal void AddStatement(string statement, DateTimeOffset now)

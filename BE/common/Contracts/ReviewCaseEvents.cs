@@ -63,3 +63,16 @@ public sealed record ReviewCaseResponseDueEvent(
     DateTimeOffset ResponseDeadline,
     DateTimeOffset OccurredAt
 );
+
+/// <summary>
+/// An open dispute passed its decision deadline without a decision. Published once per deadline by the workflow
+/// service (again after an extension runs out); the notification service emails the operations inbox.
+/// </summary>
+/// <param name="Extended">True when the deadline that passed was already the extended one.</param>
+public sealed record ReviewCaseDisputeOverdueEvent(
+    Guid Id,
+    Guid ReviewCaseId,
+    DateTimeOffset DecideBy,
+    bool Extended,
+    DateTimeOffset OccurredAt
+);

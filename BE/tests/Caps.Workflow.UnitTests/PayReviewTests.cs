@@ -104,6 +104,13 @@ public sealed class PayReviewTests
 
     private sealed class FakeEvents(FakeTransaction tx) : IReviewCaseEvents
     {
+        public Task DisputeOverdueAsync(
+            Guid reviewCaseId,
+            DateTimeOffset decideBy,
+            bool extended,
+            CancellationToken ct
+        ) => throw new NotSupportedException();
+
         public Task ResponseDueAsync(
             Guid reviewCaseId,
             Guid expertUserId,

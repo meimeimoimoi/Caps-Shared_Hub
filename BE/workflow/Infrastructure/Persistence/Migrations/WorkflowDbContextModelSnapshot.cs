@@ -453,6 +453,10 @@ namespace Caps.Workflow.Infrastructure.Persistence.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("opened_at");
 
+                    b.Property<DateTimeOffset?>("OverdueAlertedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("overdue_alerted_at");
+
                     b.Property<string>("Reason")
                         .IsRequired()
                         .HasMaxLength(64)

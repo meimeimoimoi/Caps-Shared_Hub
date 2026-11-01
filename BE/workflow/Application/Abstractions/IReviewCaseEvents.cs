@@ -25,4 +25,12 @@ public interface IReviewCaseEvents
         DateTimeOffset responseDeadline,
         CancellationToken ct
     );
+
+    /// <summary>An open dispute passed its decision deadline; called once per deadline.</summary>
+    Task DisputeOverdueAsync(
+        Guid reviewCaseId,
+        DateTimeOffset decideBy,
+        bool extended,
+        CancellationToken ct
+    );
 }

@@ -23,6 +23,13 @@ internal sealed class RecordedEvents : IReviewCaseEvents
         CancellationToken ct
     ) => Task.CompletedTask;
 
+    public Task DisputeOverdueAsync(
+        Guid reviewCaseId,
+        DateTimeOffset decideBy,
+        bool extended,
+        CancellationToken ct
+    ) => Task.CompletedTask;
+
     public Task StatusChangedAsync(
         ReviewCase reviewCase,
         ReviewStatusHistory history,
