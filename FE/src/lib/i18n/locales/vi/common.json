@@ -146,7 +146,8 @@
         "DELIVERY_OVERDUE": "Hồ sơ quá hạn giao kết quả; phí đã được hoàn cho khách hàng.",
         "DISPUTED": "Khách hàng đã khiếu nại kết quả. Bạn có thể gửi giải trình.",
         "RESOLVED": "Khiếu nại đã có quyết định của quản trị viên.",
-        "TERMINATED": "Hồ sơ đã kết thúc vì thông tin bổ sung không được gửi đúng hạn."
+        "TERMINATED": "Hồ sơ đã kết thúc vì thông tin bổ sung không được gửi đúng hạn.",
+        "WITHDRAWN": "Khách hàng đã rút yêu cầu review; phí đã được hoàn cho khách hàng."
       }
     }
   }

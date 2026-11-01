@@ -44,6 +44,7 @@ const caseSteps = {
   DISPUTED: 'notifications.reviewCase.status.DISPUTED',
   RESOLVED: 'notifications.reviewCase.status.RESOLVED',
   TERMINATED: 'notifications.reviewCase.status.TERMINATED',
+  WITHDRAWN: 'notifications.reviewCase.status.WITHDRAWN',
 } as const
 
 const warningSteps = new Set([

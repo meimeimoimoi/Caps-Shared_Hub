@@ -146,7 +146,8 @@
         "DELIVERY_OVERDUE": "The case missed its delivery deadline; the client was refunded.",
         "DISPUTED": "The client disputed the result. You can send an explanation.",
         "RESOLVED": "An admin decided the dispute.",
-        "TERMINATED": "The case ended because the requested information did not arrive in time."
+        "TERMINATED": "The case ended because the requested information did not arrive in time.",
+        "WITHDRAWN": "The client withdrew the review request; the fee was refunded to the client."
       }
     }
   }
