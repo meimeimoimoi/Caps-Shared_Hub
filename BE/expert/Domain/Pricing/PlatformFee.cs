@@ -24,6 +24,9 @@ public sealed class PlatformFee
 
     /// <summary>Longest late window an admin may set, the same cap as a turnaround.</summary>
     public const int MaxLateHours = 720;
+
+    /// <summary>Most hours a client gets to answer one question; two questions keep the pause within 144 hours.</summary>
+    public const int MaxNoResponseHours = 72;
     public int Percent { get; private set; }
 
     /// <summary>Up to this many hours late, the client gets LatePenaltyPercent of the fee back from the expert's share.</summary>
@@ -92,13 +95,13 @@ public sealed class PlatformFee
         }
         // Admins set the client's and the expert's shares; the platform keeps the rest, so the parts always add up
         if (
-            noResponseHours is < 1 or > MaxLateHours
+            noResponseHours is < 1 or > MaxNoResponseHours
             || noResponseRefundPercent < 0
             || noResponseExpertPercent < 0
             || noResponseRefundPercent + noResponseExpertPercent > 100
         )
         {
-            throw ExpertErrors.NoResponseRuleInvalid(MaxLateHours);
+            throw ExpertErrors.NoResponseRuleInvalid(MaxNoResponseHours);
         }
         DateTimeOffset effectiveFrom;
         if (!hasCurrentRate && effectiveOn == null)

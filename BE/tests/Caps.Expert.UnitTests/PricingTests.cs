@@ -140,7 +140,7 @@ public sealed class PricingTests
 
     [Theory]
     [InlineData(0, 50, 30)] // no hours
-    [InlineData(721, 50, 30)] // past the cap
+    [InlineData(73, 50, 30)] // past 72 hours: two questions would pause the case over 144 hours
     [InlineData(72, -1, 30)] // negative share
     [InlineData(72, 80, 30)] // client + expert over 100%
     public void A_no_response_rule_out_of_range_is_rejected(int hours, int refund, int expert)
