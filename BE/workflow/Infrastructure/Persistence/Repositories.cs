@@ -87,6 +87,16 @@ public sealed class InfoRequestRepository(WorkflowDbContext db) : IInfoRequestRe
             ct
         );
 
+    public async Task<IReadOnlyList<InfoRequest>> ListAsync(
+        Guid reviewCaseId,
+        CancellationToken ct
+    ) =>
+        await db
+            .InfoRequests.AsNoTracking()
+            .Where(x => x.ReviewCaseId == reviewCaseId)
+            .OrderBy(x => x.CreatedAt)
+            .ToListAsync(ct);
+
     public void Add(InfoRequest request) => db.InfoRequests.Add(request);
 }
 

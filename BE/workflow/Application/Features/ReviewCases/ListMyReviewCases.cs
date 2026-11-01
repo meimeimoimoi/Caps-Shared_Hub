@@ -17,6 +17,6 @@ public sealed class ListMyReviewCaseHandler(IReviewCaseRepository cases)
     )
     {
         var list = await cases.ListForUserAsync(query.UserId, ct);
-        return list.Select(ReviewCaseResponse.From).ToArray();
+        return list.Select(c => ReviewCaseResponse.From(c)).ToArray();
     }
 }

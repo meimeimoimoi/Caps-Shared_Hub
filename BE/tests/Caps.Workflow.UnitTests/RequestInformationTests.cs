@@ -96,6 +96,11 @@ public sealed class RequestInformationTests
 
     private sealed class FakeInfoRequests : IInfoRequestRepository
     {
+        public Task<IReadOnlyList<InfoRequest>> ListAsync(
+            Guid reviewCaseId,
+            CancellationToken ct
+        ) => throw new NotSupportedException();
+
         public InfoRequest? Added { get; private set; }
 
         public void Add(InfoRequest request) => Added = request;

@@ -30,6 +30,23 @@ public sealed partial class ReviewCase
     }
 
     /// <summary>
+    /// How the fee ended up, once the case is over: the split for a delivered or terminated case, a full refund
+    /// for one the expert never took or never delivered; null while it runs or when nothing was paid.
+    /// </summary>
+    public ReviewSettlement? Outcome() =>
+        Status switch
+        {
+            ReviewCaseStatus.Completed
+            or ReviewCaseStatus.AutoConfirmed
+            or ReviewCaseStatus.Resolved
+            or ReviewCaseStatus.Terminated => Settle(),
+            ReviewCaseStatus.ExpertDeclined
+            or ReviewCaseStatus.ExpertTimeout
+            or ReviewCaseStatus.DeliveryOverdue => new(Fee, 0, 0),
+            _ => null,
+        };
+
+    /// <summary>
     /// Moves an overdue case to its timeout status (used by the crons). Returns null when nothing is
     /// overdue, so a cron that runs twice changes nothing.
     /// </summary>

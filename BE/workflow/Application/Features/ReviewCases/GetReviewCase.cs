@@ -8,9 +8,11 @@ namespace Caps.Workflow.Application.Features.ReviewCases;
 /// <summary>One case seen by one of its parties.</summary>
 public sealed record GetReviewCaseQuery(Guid UserId, Guid ReviewCaseId);
 
-/// <summary>Returns the case; to anyone but its client or expert it does not exist.</summary>
-public sealed class GetReviewCaseHandler(IReviewCaseRepository cases)
-    : IQueryHandler<GetReviewCaseQuery, ReviewCaseResponse>
+/// <summary>Returns the case with the expert's questions; to anyone but its client or expert it does not exist.</summary>.
+public sealed class GetReviewCaseHandler(
+    IReviewCaseRepository cases,
+    IInfoRequestRepository infoRequests
+) : IQueryHandler<GetReviewCaseQuery, ReviewCaseResponse>
 {
     public async Task<ReviewCaseResponse> HandleAsync(
         GetReviewCaseQuery query,
@@ -21,6 +23,7 @@ public sealed class GetReviewCaseHandler(IReviewCaseRepository cases)
             await cases.FindAsync(query.ReviewCaseId, ct)
             ?? throw WorkflowErrors.ReviewCaseNotFound();
         reviewCase.EnsureVisibleTo(query.UserId);
-        return ReviewCaseResponse.From(reviewCase);
+        var questions = await infoRequests.ListAsync(reviewCase.Id, ct);
+        return ReviewCaseResponse.From(reviewCase, questions);
     }
 }

@@ -10,4 +10,7 @@ public interface IInfoRequestRepository
 
     /// <summary>Tracks a new question.</summary>
     void Add(InfoRequest request);
+
+    /// <summary>The case's questions, oldest first, untracked.</summary>
+    Task<IReadOnlyList<InfoRequest>> ListAsync(Guid reviewCaseId, CancellationToken ct);
 }

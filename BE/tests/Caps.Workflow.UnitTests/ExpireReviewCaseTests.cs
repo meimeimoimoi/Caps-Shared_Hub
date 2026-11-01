@@ -328,6 +328,11 @@ public sealed class ExpireReviewCaseTests
 
     private sealed class FakeInfoRequests(InfoRequest? openRequest) : IInfoRequestRepository
     {
+        public Task<IReadOnlyList<InfoRequest>> ListAsync(
+            Guid reviewCaseId,
+            CancellationToken ct
+        ) => throw new NotSupportedException();
+
         public Task<InfoRequest?> FindOpenForUpdateAsync(Guid reviewCaseId, CancellationToken ct) =>
             Task.FromResult(openRequest);
 
