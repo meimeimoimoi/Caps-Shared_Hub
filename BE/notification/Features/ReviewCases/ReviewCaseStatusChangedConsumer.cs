@@ -36,6 +36,7 @@ public sealed class ReviewCaseStatusChangedConsumer(
             "COMPLETED" or "DISPUTED" => (false, false, true),
             "AUTO_CONFIRMED" => (true, false, true),
             "DELIVERY_OVERDUE" or "RESOLVED" or "TERMINATED" => (true, true, true),
+            "WITHDRAWN" => (false, false, true),
             _ => (false, false, false),
         };
 
