@@ -3,10 +3,7 @@ using Caps.Common.Application;
 using Caps.Common.Security;
 using Caps.Ingestion.Dtos;
 using Caps.Ingestion.Services.Interface;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace Caps.Ingestion.Controllers
 {

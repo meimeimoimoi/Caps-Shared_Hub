@@ -1,5 +1,6 @@
 using Caps.Workflow.Application.Abstractions;
 using Caps.Workflow.Domain.Review;
+using Caps.Workflow.Domain.Workspace;
 using Microsoft.EntityFrameworkCore;
 
 namespace Caps.Workflow.Infrastructure.Persistence;
@@ -75,4 +76,16 @@ public sealed class CaseReadMarkerRepository(WorkflowDbContext db) : ICaseReadMa
         );
 
     public void Add(CaseReadMarker marker) => db.CaseReadMarkers.Add(marker);
+}
+
+public sealed class ConversationRepository(WorkflowDbContext db) : IConversationRepository
+{
+    public async Task<Conversation?> FindAsync(Guid id, CancellationToken ct = default)
+        => await db.Conversations.FirstOrDefaultAsync(c => c.Id == id, ct);
+    public async Task<IReadOnlyList<Conversation>> ListByUserIdAsync(Guid userId, CancellationToken ct = default)
+        => await db.Conversations
+            .Where(c => c.UserId == userId)
+            .OrderByDescending(c => c.UpdatedAt)
+            .ToListAsync(ct);
+    public void Add(Conversation conversation) => db.Conversations.Add(conversation);
 }
