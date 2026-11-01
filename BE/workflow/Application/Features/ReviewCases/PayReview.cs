@@ -44,11 +44,11 @@ public sealed class PayReviewHandler(
         // Billing allows one escrow per case, so a double click fails there instead of paying twice
         await escrows.HoldAsync(command.UserId, reviewCase.Id, reviewCase.Fee, ct);
         cases.AddHistory(paid);
+        // Saved with the step: the outbox sends it only once this transaction commits
+        await events.RequestedAsync(reviewCase, ct);
         // a failed save after the hold leaves credits held; the expiry job refunds it
         await unitOfWork.SaveChangesAsync(ct);
         await tx.CommitAsync(ct);
-        // After the commit, so the expert is never told about a payment that rolled back
-        await events.RequestedAsync(reviewCase, ct);
         return ReviewCaseResponse.From(reviewCase);
     }
 }

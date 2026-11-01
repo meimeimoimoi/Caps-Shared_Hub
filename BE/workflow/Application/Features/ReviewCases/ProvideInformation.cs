@@ -38,9 +38,9 @@ public sealed class ProvideInformationHandler(
             clock.GetUtcNow()
         );
         cases.AddHistory(resumed);
+        await events.StatusChangedAsync(reviewCase, resumed, ct);
         await unitOfWork.SaveChangesAsync(ct);
         await tx.CommitAsync(ct);
-        await events.StatusChangedAsync(reviewCase, resumed, ct);
         return ReviewCaseResponse.From(reviewCase);
     }
 }

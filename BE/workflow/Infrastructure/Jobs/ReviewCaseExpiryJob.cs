@@ -93,7 +93,6 @@ public sealed class ReviewCaseExpiryJob(
     }
 
     // Marks and reads the due cases in one statement, so two instances never remind the same case twice.
-    // ponytail: a publish lost after the mark means no reminder for that case; the deadline still refunds
     private async Task RemindAsync(CancellationToken ct)
     {
         try
@@ -102,6 +101,8 @@ public sealed class ReviewCaseExpiryJob(
             var db = scope.ServiceProvider.GetRequiredService<WorkflowDbContext>();
             var events = scope.ServiceProvider.GetRequiredService<IReviewCaseEvents>();
             var now = clock.GetUtcNow();
+            // The mark and the outbox rows commit together: a reminder is sent exactly when its case is marked
+            await using var tx = await db.Database.BeginTransactionAsync(ct);
             var due = await db
                 .Database.SqlQuery<DueReminder>(
                     $"""
@@ -118,6 +119,8 @@ public sealed class ReviewCaseExpiryJob(
             {
                 await events.ResponseDueAsync(r.Id, r.ExpertUserId, r.ResponseDeadline, ct);
             }
+            await db.SaveChangesAsync(ct);
+            await tx.CommitAsync(ct);
         }
         catch (Exception e) when (!ct.IsCancellationRequested)
         {

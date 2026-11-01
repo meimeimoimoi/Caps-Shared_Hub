@@ -41,9 +41,9 @@ public sealed class DeclineReviewHandler(
         //Refund before saving: if billing fails the case stays pending and the expert can retry
         await escrows.RefundAsync(reviewCase.Id, ct);
         cases.AddHistory(declined);
+        await events.StatusChangedAsync(reviewCase, declined, ct);
         await unitOfWork.SaveChangesAsync(ct);
         await tx.CommitAsync(ct);
-        await events.StatusChangedAsync(reviewCase, declined, ct);
         return ReviewCaseResponse.From(reviewCase);
     }
 }

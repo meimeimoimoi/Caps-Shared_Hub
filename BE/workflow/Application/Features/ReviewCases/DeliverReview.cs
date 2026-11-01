@@ -46,9 +46,9 @@ public sealed class DeliverReviewHandler(
             clock.GetUtcNow()
         );
         cases.AddHistory(delivered);
+        await events.StatusChangedAsync(reviewCase, delivered, ct);
         await unitOfWork.SaveChangesAsync(ct);
         await tx.CommitAsync(ct);
-        await events.StatusChangedAsync(reviewCase, delivered, ct);
         return ReviewCaseResponse.From(reviewCase);
     }
 }

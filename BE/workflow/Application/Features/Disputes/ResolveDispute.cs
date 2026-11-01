@@ -53,9 +53,9 @@ public sealed class ResolveDisputeHandler(
         await slots.ReleaseAsync(reviewcase.ExpertProfileId, reviewcase.Id, ct);
 
         cases.AddHistory(resolved);
+        await events.StatusChangedAsync(reviewcase, resolved, ct);
         await unitOfWork.SaveChangesAsync(ct);
         await tx.CommitAsync(ct);
-        await events.StatusChangedAsync(reviewcase, resolved, ct);
         return DisputeResponse.From(dispute);
     }
 }

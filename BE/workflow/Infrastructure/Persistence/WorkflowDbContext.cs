@@ -1,5 +1,6 @@
 using Caps.Workflow.Domain.Review;
 using Caps.Workflow.Domain.Workspace;
+using Caps.Workflow.Infrastructure.Messaging;
 using Microsoft.EntityFrameworkCore;
 
 namespace Caps.Workflow.Infrastructure.Persistence;
@@ -28,6 +29,7 @@ public sealed class WorkflowDbContext(DbContextOptions<WorkflowDbContext> option
     public DbSet<ReviewStatusHistory> ReviewStatusHistories => Set<ReviewStatusHistory>();
     public DbSet<CaseMessage> CaseMessages => Set<CaseMessage>();
     public DbSet<CaseReadMarker> CaseReadMarkers => Set<CaseReadMarker>();
+    public DbSet<EventOutboxEntry> EventOutbox => Set<EventOutboxEntry>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -609,6 +611,24 @@ public sealed class WorkflowDbContext(DbContextOptions<WorkflowDbContext> option
                 .HasForeignKey(x => x.ReviewCaseId)
                 .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("fk_case_read_marker_56");
+        });
+
+        modelBuilder.Entity<EventOutboxEntry>(e =>
+        {
+            e.ToTable("event_outbox", "review");
+            e.HasKey(x => x.Id);
+            e.Property(x => x.Id).HasColumnName("id");
+            e.Property(x => x.MessageType)
+                .HasColumnName("message_type")
+                .HasMaxLength(200)
+                .IsRequired();
+            e.Property(x => x.Payload).HasColumnName("payload").IsRequired();
+            e.Property(x => x.CreatedAt).HasColumnName("created_at");
+            e.Property(x => x.SentAt).HasColumnName("sent_at");
+            // The publisher reads only unsent rows, oldest first
+            e.HasIndex(x => x.CreatedAt)
+                .HasFilter("sent_at IS NULL")
+                .HasDatabaseName("ix_event_outbox_unsent");
         });
     }
 }

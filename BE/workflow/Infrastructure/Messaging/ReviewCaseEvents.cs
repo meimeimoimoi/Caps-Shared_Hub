@@ -1,22 +1,17 @@
+using System.Text.Json;
 using Caps.Contracts;
 using Caps.Workflow.Application.Abstractions;
 using Caps.Workflow.Domain.Review;
-using MassTransit;
-using Microsoft.Extensions.Logging;
+using Caps.Workflow.Infrastructure.Persistence;
 
 namespace Caps.Workflow.Infrastructure.Messaging;
 
 /// <summary>Publishes review case events to RabbitMQ for the notification service.</summary>
 // published after commit without an outbox; a broker outage loses the notification (the case and
 // the money are already saved and the expert still sees the case in their list). Add an outbox if that matters.
-public sealed class MassTransitReviewCaseEvents(
-    IPublishEndpoint publisher,
-    TimeProvider clock,
-    ILogger<MassTransitReviewCaseEvents> logger
-) : IReviewCaseEvents
+public sealed class OutboxReviewCaseEvents(WorkflowDbContext db, TimeProvider clock)
+    : IReviewCaseEvents
 {
-    private static readonly TimeSpan PublishTimeout = TimeSpan.FromSeconds(5);
-
     public Task RequestedAsync(ReviewCase reviewCase, CancellationToken ct) =>
         PublishAsync(
             new ReviewCaseRequestedEvent(
@@ -90,26 +85,20 @@ public sealed class MassTransitReviewCaseEvents(
             ct
         );
 
-    private async Task PublishAsync<T>(T message, Guid caseId, CancellationToken ct)
+    // Saved with the step by the caller's SaveChanges; the event id doubles as the row id
+    private Task PublishAsync<T>(T message, Guid caseId, CancellationToken ct)
         where T : class
     {
-        using var timeout = CancellationTokenSource.CreateLinkedTokenSource(ct);
-        timeout.CancelAfter(PublishTimeout);
-        try
-        {
-            await publisher.Publish(message, timeout.Token);
-        }
-        catch (Exception e)
-            when (e is not OperationCanceledException || !ct.IsCancellationRequested)
-        {
-            // The step is committed: a lost notification must not turn it into an error for the caller
-            logger.LogWarning(
-                e,
-                "Review case {CaseId}: {Event} was not published.",
-                caseId,
-                typeof(T).Name
-            );
-        }
+        db.EventOutbox.Add(
+            new EventOutboxEntry
+            {
+                Id = (Guid)typeof(T).GetProperty("Id")!.GetValue(message)!,
+                MessageType = typeof(T).FullName!,
+                Payload = JsonSerializer.Serialize(message),
+                CreatedAt = clock.GetUtcNow(),
+            }
+        );
+        return Task.CompletedTask;
     }
 }
 

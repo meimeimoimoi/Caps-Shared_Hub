@@ -39,10 +39,10 @@ public sealed class RequestInformationHandler(
         );
         infoRequests.Add(request);
         cases.AddHistory(paused);
+        // Saved with the step: the outbox sends it only once this transaction commits
+        await events.InfoRequestedAsync(reviewCase, request, ct);
         await unitOfWork.SaveChangesAsync(ct);
         await tx.CommitAsync(ct);
-        // After the commit, so the client is never told about a question that was rolled back
-        await events.InfoRequestedAsync(reviewCase, request, ct);
         return ReviewCaseResponse.From(reviewCase);
     }
 }

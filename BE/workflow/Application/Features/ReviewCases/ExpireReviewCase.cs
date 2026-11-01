@@ -75,8 +75,8 @@ public sealed class ExpireReviewCaseHandler(
                 break;
         }
         cases.AddHistory(history);
+        await events.StatusChangedAsync(reviewCase, history, ct);
         await unitOfWork.SaveChangesAsync(ct);
         await tx.CommitAsync(ct);
-        await events.StatusChangedAsync(reviewCase, history, ct);
     }
 }

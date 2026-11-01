@@ -38,9 +38,9 @@ public sealed class WaitingRequestRefunds(
                 await escrows.RefundAsync(id, ct);
                 var closed = waiting.CloseUnanswered(reason, clock.GetUtcNow());
                 cases.AddHistory(closed);
+                await events.StatusChangedAsync(waiting, closed, ct);
                 await unitOfWork.SaveChangesAsync(ct);
                 await tx.CommitAsync(ct);
-                await events.StatusChangedAsync(waiting, closed, ct);
             }
             catch (AppException) when (!ct.IsCancellationRequested)
             {

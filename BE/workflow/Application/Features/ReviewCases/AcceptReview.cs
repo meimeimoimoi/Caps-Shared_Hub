@@ -45,9 +45,9 @@ public sealed class AccpetReviewHandler(
         // Atomic in the expert service: a full expert fails here and the case stays pending. A failed save after
         // the take leaves a slot held; retrying the accept reuses it (the slot is keyed by case)
         var freeSlots = await slots.TakeAsync(reviewCase.ExpertProfileId, reviewCase.Id, ct);
+        await events.StatusChangedAsync(reviewCase, accepted, ct);
         await unitOfWork.SaveChangesAsync(ct);
         await tx.CommitAsync(ct);
-        await events.StatusChangedAsync(reviewCase, accepted, ct);
         if (freeSlots == 0)
         {
             // The expert is full: the other paid requests could only wait out the response deadline

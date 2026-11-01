@@ -20,7 +20,8 @@ public static class WorkflowNotificationSetup
                 config,
                 x => x.AddConsumer<RefundOnServiceSuspendedConsumer>()
             );
-            services.AddScoped<IReviewCaseEvents, MassTransitReviewCaseEvents>();
+            services.AddScoped<IReviewCaseEvents, OutboxReviewCaseEvents>();
+            services.AddHostedService<ReviewCaseEventPublisher>();
         }
         else if (!env.IsDevelopment())
         {

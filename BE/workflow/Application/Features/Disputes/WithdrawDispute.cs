@@ -40,9 +40,9 @@ public sealed class WithdrawDisputeHandler(
         await slots.ReleaseAsync(reviewCase.ExpertProfileId, reviewCase.Id, ct);
 
         cases.AddHistory(completed);
+        await events.StatusChangedAsync(reviewCase, completed, ct);
         await unitOfWork.SaveChangesAsync(ct);
         await tx.CommitAsync(ct);
-        await events.StatusChangedAsync(reviewCase, completed, ct);
         return ReviewCaseResponse.From(reviewCase);
     }
 }

@@ -11,7 +11,7 @@ public sealed class PayReviewTests
     private static readonly Guid Client = Guid.NewGuid();
 
     [Fact]
-    public async Task The_expert_is_told_only_after_the_payment_commits()
+    public async Task The_request_event_is_saved_with_the_payment()
     {
         var reviewCase = Requested();
         var tx = new FakeTransaction();
@@ -21,7 +21,7 @@ public sealed class PayReviewTests
             .HandleAsync(new(Client, reviewCase.Id), default);
 
         Assert.Equal([reviewCase.Id], events.Requested);
-        Assert.True(events.CommittedFirst);
+        Assert.True(events.EnqueuedBeforeCommit);
     }
 
     [Fact]
@@ -118,11 +118,11 @@ public sealed class PayReviewTests
         ) => throw new NotSupportedException();
 
         public List<Guid> Requested { get; } = [];
-        public bool CommittedFirst { get; private set; }
+        public bool EnqueuedBeforeCommit { get; private set; }
 
         public Task RequestedAsync(ReviewCase reviewCase, CancellationToken ct)
         {
-            CommittedFirst = tx.Committed;
+            EnqueuedBeforeCommit = !tx.Committed;
             Requested.Add(reviewCase.Id);
             return Task.CompletedTask;
         }

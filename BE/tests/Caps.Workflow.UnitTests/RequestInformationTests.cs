@@ -12,7 +12,7 @@ public sealed class RequestInformationTests
     private static readonly Guid Expert = Guid.NewGuid();
 
     [Fact]
-    public async Task The_client_is_told_about_the_question_after_it_is_saved()
+    public async Task The_question_event_is_saved_with_the_question()
     {
         var reviewCase = InReview();
         var unitOfWork = new FakeUnitOfWork();
@@ -31,7 +31,7 @@ public sealed class RequestInformationTests
         Assert.Equal(reviewCase.Id, told.Id);
         Assert.Same(requests.Added, question);
         Assert.Equal("client@caps.test", told.RequesterEmail);
-        Assert.True(events.CommittedFirst);
+        Assert.True(events.EnqueuedBeforeCommit);
     }
 
     private static ReviewCase InReview()
@@ -70,7 +70,7 @@ public sealed class RequestInformationTests
         ) => throw new NotSupportedException();
 
         public List<(ReviewCase, InfoRequest)> InfoRequested { get; } = [];
-        public bool CommittedFirst { get; private set; }
+        public bool EnqueuedBeforeCommit { get; private set; }
 
         public Task RequestedAsync(ReviewCase reviewCase, CancellationToken ct) =>
             throw new NotSupportedException();
@@ -81,7 +81,7 @@ public sealed class RequestInformationTests
             CancellationToken ct
         )
         {
-            CommittedFirst = unitOfWork.Committed;
+            EnqueuedBeforeCommit = !unitOfWork.Committed;
             InfoRequested.Add((reviewCase, request));
             return Task.CompletedTask;
         }

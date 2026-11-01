@@ -37,9 +37,9 @@ public sealed class OpenDisputeHandler(
         );
         disputes.Add(dispute);
         cases.AddHistory(opened);
+        await events.StatusChangedAsync(reviewCase, opened, ct);
         await unitOfWork.SaveChangesAsync(ct);
         await tx.CommitAsync(ct);
-        await events.StatusChangedAsync(reviewCase, opened, ct);
         return DisputeResponse.From(dispute);
     }
 }

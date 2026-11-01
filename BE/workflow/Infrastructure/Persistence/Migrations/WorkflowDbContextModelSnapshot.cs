@@ -1039,6 +1039,41 @@ namespace Caps.Workflow.Infrastructure.Persistence.Migrations
                     b.ToTable("template_version", "workspace");
                 });
 
+            modelBuilder.Entity("Caps.Workflow.Infrastructure.Messaging.EventOutboxEntry", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("MessageType")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("message_type");
+
+                    b.Property<string>("Payload")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("payload");
+
+                    b.Property<DateTimeOffset?>("SentAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("sent_at");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedAt")
+                        .HasDatabaseName("ix_event_outbox_unsent")
+                        .HasFilter("sent_at IS NULL");
+
+                    b.ToTable("event_outbox", "review");
+                });
+
             modelBuilder.Entity("Caps.Workflow.Domain.Review.CaseMessage", b =>
                 {
                     b.HasOne("Caps.Workflow.Domain.Review.ReviewCase", null)
