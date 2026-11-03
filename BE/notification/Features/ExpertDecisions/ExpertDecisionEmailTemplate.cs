@@ -135,9 +135,19 @@ public static class ExpertDecisionEmailTemplate
         );
     }
 
-    private static Copy ForStatus(string status) =>
+    // Same code as the workflow service sets when an expert gives up an accepted case
+    private const string ExpertWithdrew = "EXPERT_WITHDREW";
+
+    private static Copy ForStatus(string status, string? note) =>
         status switch
         {
+            // The expert accepted, then gave the case up before delivering
+            "EXPERT_DECLINED" when note == ExpertWithdrew => new(
+                $"Chuyên gia dừng rà soát hồ sơ của bạn – {Brand}",
+                "Chuyên gia không thể tiếp tục hồ sơ",
+                "Chuyên gia đã dừng rà soát hồ sơ này trước khi giao kết quả. Toàn bộ phí đã được hoàn vào ví của bạn; bạn có thể chọn chuyên gia khác.",
+                "Xem hồ sơ"
+            ),
             "EXPERT_DECLINED" => new(
                 $"Chuyên gia chưa nhận hồ sơ của bạn – {Brand}",
                 "Chuyên gia chưa nhận hồ sơ",
@@ -179,10 +189,12 @@ public static class ExpertDecisionEmailTemplate
     /// <summary>A review case step the client must know about: a refund, a delivery to accept, or an ending.</summary>
     public static Content Build(ReviewCaseStatusChangedEvent m, string email, string link)
     {
-        var issues = string.IsNullOrWhiteSpace(m.Note)
-            ? new List<Issue>()
-            : [new Issue("Ghi chú", "", m.Note)];
-        return Render(ForStatus(m.ToStatus), "bạn", email, m.OccurredAt, link, issues);
+        // EXPERT_WITHDREW is a code the copy already explains, not a note to show
+        var issues =
+            string.IsNullOrWhiteSpace(m.Note) || m.Note == ExpertWithdrew
+                ? new List<Issue>()
+                : [new Issue("Ghi chú", "", m.Note)];
+        return Render(ForStatus(m.ToStatus, m.Note), "bạn", email, m.OccurredAt, link, issues);
     }
 
     /// <summary>Tells the operations inbox a client opened a dispute; it must be decided within 48 hours.</summary>

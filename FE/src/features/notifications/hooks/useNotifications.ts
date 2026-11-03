@@ -36,6 +36,7 @@ const caseSteps = {
   accepted: 'notifications.reviewCase.status.accepted',
   answered: 'notifications.reviewCase.status.answered',
   EXPERT_DECLINED: 'notifications.reviewCase.status.EXPERT_DECLINED',
+  expertWithdrew: 'notifications.reviewCase.status.expertWithdrew',
   EXPERT_TIMEOUT: 'notifications.reviewCase.status.EXPERT_TIMEOUT',
   AWAITING_ACCEPTANCE: 'notifications.reviewCase.status.AWAITING_ACCEPTANCE',
   COMPLETED: 'notifications.reviewCase.status.COMPLETED',
@@ -49,6 +50,7 @@ const caseSteps = {
 
 const warningSteps = new Set([
   'EXPERT_DECLINED',
+  'expertWithdrew',
   'EXPERT_TIMEOUT',
   'DELIVERY_OVERDUE',
   'DISPUTED',
@@ -124,7 +126,9 @@ export function useNotifications() {
         ? n.data.fromStatus === 'AWAITING_USER_INFORMATION'
           ? 'answered'
           : 'accepted'
-        : (n.data.toStatus as keyof typeof caseSteps)
+        : n.data.note === 'EXPERT_WITHDREW'
+          ? 'expertWithdrew'
+          : (n.data.toStatus as keyof typeof caseSteps)
     if (!(step in caseSteps)) return null
     return {
       id: n.id,

@@ -29,6 +29,26 @@ public sealed partial class ReviewCase
     }
 
     /// <summary>
+    /// The expert gives up an accepted case before delivering it. It ends as declined (EXPERT_WITHDREW) and the
+    /// caller refunds the client in full and frees the slot, so the client never waits out the late rule.
+    /// </summary>
+    public ReviewStatusHistory WithdrawAccepted(
+        Guid expertProfileId,
+        Guid actorUserId,
+        string? reason,
+        DateTimeOffset now
+    )
+    {
+        EnsureExpert(expertProfileId);
+        if (Status is not (ReviewCaseStatus.InReview or ReviewCaseStatus.AwaitingUserInformation))
+        {
+            throw WorkflowErrors.CaseStatusInvalid(Status);
+        }
+        DeclineReason = RequiredText(reason, "Withdraw reason");
+        return MoveTo(ReviewCaseStatus.ExpertDeclined, actorUserId, ExpertWithdrew, now);
+    }
+
+    /// <summary>
     /// The client takes the request back before the expert answers. Unpaid, it ends like an unpaid case that
     /// expired (the expert never saw it); paid, it is WITHDRAWN and the caller refunds the fee in full.
     /// </summary>

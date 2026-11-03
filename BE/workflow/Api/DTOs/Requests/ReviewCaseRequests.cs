@@ -25,7 +25,7 @@ public sealed record RequestReviewRequest(
         );
 }
 
-/// <summary>Why the expert turns the request down.</summary>
+/// <summary>Why the expert turns the request down, or gives up a case they accepted.</summary>
 public sealed record DeclineReviewRequest(string? Reason);
 
 /// <summary>A question from the expert or an answer from the client, up to 4000 characters.</summary>

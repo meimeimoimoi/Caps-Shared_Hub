@@ -139,6 +139,7 @@
         "accepted": "The expert accepted your case and started the review.",
         "answered": "The client answered your question; the case goes on.",
         "EXPERT_DECLINED": "The expert did not take your case. The fee is back in your wallet.",
+        "expertWithdrew": "The expert stopped reviewing your case before delivering. The fee is back in your wallet.",
         "EXPERT_TIMEOUT": "The expert did not answer in time. The fee is back in your wallet.",
         "AWAITING_ACCEPTANCE": "The expert delivered the result. Accept it or raise a dispute before the deadline.",
         "COMPLETED": "The client accepted the review result.",

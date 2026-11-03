@@ -111,6 +111,25 @@ public sealed class ReviewCasesController(ICurrentUser currentUser) : Controller
         return Ok(ApiResponse<ReviewCaseResponse>.Ok(reviewCase));
     }
 
+    /// <summary>The expert gives up a case they accepted but have not delivered; the client is refunded in full.</summary>
+    /// <remarks>Allowed in IN_REVIEW and AWAITING_USER_INFORMATION. The case ends EXPERT_DECLINED with the note EXPERT_WITHDREW and the expert's slot is freed.</remarks>
+    /// <response code="200">The case, EXPERT_DECLINED.</response>
+    /// <response code="400">TEXT_REQUIRED or TEXT_TOO_LONG (reason).</response>
+    /// <response code="404">REVIEW_CASE_NOT_FOUND.</response>
+    /// <response code="409">CASE_STATUS_INVALID: not accepted yet, already delivered or over.</response>
+    /// <response code="503">SERVICE_LINK_UNAVAILABLE or SESSION_CHECK_UNAVAILABLE.</response>
+    [HttpPost("{caseId:guid}/expert-withdraw"), RequireSessionCheck]
+    public async Task<IActionResult> ExpertWithdraw(
+        Guid caseId,
+        DeclineReviewRequest r,
+        [FromServices] ICommandHandler<ExpertWithdrawReviewCommand, ReviewCaseResponse> handler,
+        CancellationToken ct
+    )
+    {
+        var reviewCase = await handler.HandleAsync(new(UserId, caseId, r.Reason), ct);
+        return Ok(ApiResponse<ReviewCaseResponse>.Ok(reviewCase));
+    }
+
     /// <summary>The client withdraws a request the expert has not answered yet.</summary>
     /// <remarks>Unpaid: the case is CANCELLED_UNPAID. Paid: it is WITHDRAWN and the fee is refunded in full.</remarks>
     /// <response code="200">The case, CANCELLED_UNPAID or WITHDRAWN.</response>

@@ -23,6 +23,7 @@ public sealed partial class ReviewCase
     public const string ExpertFull = "EXPERT_FULL";
     public const string ServiceSuspended = "SERVICE_SUSPENDED";
     public const string ClientWithdrew = "CLIENT_WITHDREW";
+    public const string ExpertWithdrew = "EXPERT_WITHDREW";
 
     /// <summary>The client has not paid: the expert never sees these, and no response deadline runs yet.</summary>
     public static readonly string[] UnpaidStatuses =
