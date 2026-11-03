@@ -214,6 +214,88 @@ public sealed class DisputeTests
         Assert.Equal(new ReviewSettlement(0, 200_000, 800_000), reviewCase.Settle());
     }
 
+    // Fee 1,000,000, 20% platform fee, late rule 24h / 30%: delivered 10h late, so accepting refunds 300,000
+    [Theory]
+    [InlineData(0, 300_000, 200_000, 500_000)]
+    [InlineData(50, 650_000, 100_000, 250_000)]
+    [InlineData(100, 1_000_000, 0, 0)]
+    public void A_decision_on_a_late_delivery_keeps_the_late_refund(
+        short pct,
+        long refund,
+        long platform,
+        long expert
+    )
+    {
+        var (reviewCase, dispute) = DisputedLate(lateHours: 10);
+
+        reviewCase.ResolveDispute(
+            dispute,
+            Admin,
+            pct,
+            "Partly delivered",
+            LateDelivery(10).AddHours(2)
+        );
+
+        Assert.Equal(new ReviewSettlement(refund, platform, expert), reviewCase.Settle());
+    }
+
+    [Fact]
+    public void A_decision_cannot_pay_an_expert_whose_lateness_refunded_everything()
+    {
+        // 30h late is past the 24h penalty window: the client already gets the whole fee back
+        var (reviewCase, dispute) = DisputedLate(lateHours: 30);
+
+        reviewCase.ResolveDispute(
+            dispute,
+            Admin,
+            0,
+            "Content was fine",
+            LateDelivery(30).AddHours(2)
+        );
+
+        Assert.Equal(new ReviewSettlement(1_000_000, 0, 0), reviewCase.Settle());
+    }
+
+    [Fact]
+    public void Withdrawing_a_dispute_on_a_late_delivery_keeps_the_late_refund()
+    {
+        var (reviewCase, dispute) = DisputedLate(lateHours: 10);
+
+        reviewCase.WithdrawDispute(dispute, Client, LateDelivery(10).AddHours(2));
+
+        Assert.Equal(new ReviewSettlement(300_000, 200_000, 500_000), reviewCase.Settle());
+    }
+
+    // Accepted at Now - 1h with a 48h turnaround, so the delivery deadline is Now + 47h
+    private static DateTimeOffset LateDelivery(int lateHours) => Now.AddHours(47 + lateHours);
+
+    private static (ReviewCase Case, ReviewDispute Dispute) DisputedLate(int lateHours)
+    {
+        var reviewCase = ReviewCase
+            .Request(
+                Client,
+                "client@caps.test",
+                Guid.NewGuid(),
+                Guid.NewGuid(),
+                Offers.Sample(Expert, ExpertUser),
+                "Check my CIT return",
+                null,
+                Now.AddHours(-2)
+            )
+            .Case;
+        reviewCase.ConfirmPayment(Now.AddHours(-2));
+        reviewCase.Accept(Expert, ExpertUser, Now.AddHours(-1));
+        var delivered = LateDelivery(lateHours);
+        reviewCase.Deliver(Expert, ExpertUser, ReviewCase.Verified, "All good", null, delivered);
+        var (dispute, _) = reviewCase.OpenDispute(
+            Client,
+            Reason,
+            "The VAT part is missing",
+            delivered.AddHours(1)
+        );
+        return (reviewCase, dispute);
+    }
+
     [Fact]
     public void A_closed_dispute_cannot_be_decided()
     {

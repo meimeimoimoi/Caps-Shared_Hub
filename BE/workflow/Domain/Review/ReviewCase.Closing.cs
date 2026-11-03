@@ -6,18 +6,11 @@ public sealed partial class ReviewCase
     /// <summary>
     /// The split of the held fee. A client who went silent gets the shares frozen at booking (the platform keeps
     /// the rest); otherwise a late delivery's refund comes out of the expert's share, and a full refund leaves
-    /// the platform nothing either.
+    /// the platform nothing either. An admin's dispute decision refunds its percentage of what the client would
+    /// pay on accepting, so the late refund is never lost.
     /// </summary>
     public ReviewSettlement Settle()
     {
-        // The admin's decision replaces every other rule; the rest of the fee splits by the frozen pletform
-        if (DisputeRefundPct is { } pct)
-        {
-            var back = Fee * pct / 100;
-            var fee = (Fee - back) * PlatformFeePct / 100;
-            return new(back, fee, Fee - back - fee);
-        }
-
         if (TerminationReason == UserNonResponse)
         {
             var back = Fee * NoResponseRefundPct / 100;
@@ -26,6 +19,12 @@ public sealed partial class ReviewCase
         }
         var refund = Fee * LateRefundPct / 100;
         var platform = LateRefundPct == 100 ? 0 : Fee * PlatformFeePct / 100;
+        if (DisputeRefundPct is { } pct)
+        {
+            // The platform and the expert each give up pct of the share they would get on accepting
+            refund += (Fee - refund) * pct / 100;
+            platform = platform * (100 - pct) / 100;
+        }
         return new(refund, platform, Fee - refund - platform);
     }
 
