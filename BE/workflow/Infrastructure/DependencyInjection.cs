@@ -32,6 +32,7 @@ public static class DependencyInjection
         services.AddScoped<IReviewDisputeRepository, ReviewDisputeRepository>();
         services.AddScoped<IReviewAttachmentRepository, ReviewAttachmentRepository>();
         services.AddSingleton<IObjectStorage, S3ObjectStorage>();
+        services.AddScoped<ITemplateRepository, TemplateRepository>();
         return services;
     }
 

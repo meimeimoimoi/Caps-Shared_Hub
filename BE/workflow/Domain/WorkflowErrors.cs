@@ -172,4 +172,24 @@ public static class WorkflowErrors
 
     public static AppException RatingInvalid(int max) =>
         new(ErrorType.Validation, "RATING_INVALID", $"The rating must be from 1 to {max} stars.");
+
+    public static AppException TemplateNotFound() =>
+        new(ErrorType.NotFound, "TEMPLATE_NOT_FOUND", "Template not found.");
+
+    public static AppException TemplateInvalid(string field) =>
+        new(ErrorType.Validation, "TEMPLATE_INVALID", $"{field} is required.");
+
+    public static AppException TemplateNoDraft() =>
+        new(
+            ErrorType.Conflict,
+            "TEMPLATE_NO_DRAFT",
+            "The template has no draft version to publish."
+        );
+
+    public static AppException FieldSchemaInvalid() =>
+        new(
+            ErrorType.Validation,
+            "FIELD_SCHEMA_INVALID",
+            "Field schema must be a non-empty JSON array of field objects."
+        );
 }
