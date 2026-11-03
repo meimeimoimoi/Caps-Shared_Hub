@@ -174,6 +174,7 @@ export type TimelineEvent =
   | 'terminated'
   | 'settled'
 
+// SLA_BREACH is no longer offered (the late rule refunds a late delivery); kept to label older disputes
 export type IssueCode =
   | 'DELIVERABLE_INCOMPLETE'
   | 'SLA_BREACH'

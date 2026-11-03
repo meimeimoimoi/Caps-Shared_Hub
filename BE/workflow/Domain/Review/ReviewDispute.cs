@@ -13,11 +13,13 @@ public sealed class ReviewDispute
     public const string Withdrawn = "WITHDRAWN";
     public static readonly TimeSpan DecisionWindow = TimeSpan.FromHours(48);
 
-    /// <summary>Why the client complains: the same codes as the FE dispute form.</summary>
+    /// <summary>
+    /// Why the client complains: the same codes as the FE dispute form. No code for a late delivery: the late
+    /// rule frozen on the case already refunds it, so a complaint about it would pay the client twice.
+    /// </summary>
     public static readonly string[] Reasons =
     [
         "DELIVERABLE_INCOMPLETE",
-        "SLA_BREACH",
         "OBLIGATION_NOT_MET",
         "PROFESSIONAL_JUDGMENT",
     ];

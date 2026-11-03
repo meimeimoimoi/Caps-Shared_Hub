@@ -26,7 +26,7 @@ public sealed class DisputeHandlerTests
             new RecordedEvents(),
             run.UnitOfWork,
             TimeProvider.System
-        ).HandleAsync(new(Client, run.Case.Id, "SLA_BREACH", "Delivered late"), default);
+        ).HandleAsync(new(Client, run.Case.Id, "OBLIGATION_NOT_MET", "Delivered late"), default);
 
         Assert.Equal(ReviewDispute.Open, response.Status);
         Assert.Single(run.Disputes.Added);
@@ -105,7 +105,7 @@ public sealed class DisputeHandlerTests
             handler.HandleAsync(new(Stranger, run.Case.Id), default)
         );
 
-        Assert.Equal("SLA_BREACH", seen.Reason);
+        Assert.Equal("OBLIGATION_NOT_MET", seen.Reason);
         Assert.Equal("REVIEW_CASE_NOT_FOUND", e.Code);
     }
 
@@ -158,7 +158,7 @@ public sealed class DisputeHandlerTests
             {
                 var (opened, _) = reviewCase.OpenDispute(
                     Client,
-                    "SLA_BREACH",
+                    "OBLIGATION_NOT_MET",
                     "Delivered late",
                     TimeProvider.System.GetUtcNow()
                 );

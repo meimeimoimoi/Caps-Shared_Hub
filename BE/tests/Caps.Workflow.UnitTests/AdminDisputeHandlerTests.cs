@@ -91,7 +91,7 @@ public sealed class AdminDisputeHandlerTests
         Assert.Equal(run.Case.Id.ToString(), item.ReviewCaseId);
         Assert.Equal(1_000_000, item.Fee);
         Assert.Equal(overdue, item.Overdue);
-        Assert.Equal("SLA_BREACH", item.Dispute.Reason);
+        Assert.Equal("OBLIGATION_NOT_MET", item.Dispute.Reason);
     }
 
     // Delivered at T0, disputed at T0 + 1h
@@ -114,7 +114,12 @@ public sealed class AdminDisputeHandlerTests
             Case.ConfirmPayment(T0.AddHours(-2));
             Case.Accept(ExpertProfile, Expert, T0.AddHours(-1));
             Case.Deliver(ExpertProfile, Expert, ReviewCase.Verified, "All good", null, T0);
-            (Dispute, _) = Case.OpenDispute(Client, "SLA_BREACH", "Delivered late", T0.AddHours(1));
+            (Dispute, _) = Case.OpenDispute(
+                Client,
+                "OBLIGATION_NOT_MET",
+                "Delivered late",
+                T0.AddHours(1)
+            );
             Disputes = new FakeDisputes(Case, Dispute);
             Escrows = new FakeEscrows(UnitOfWork, billingDown);
         }

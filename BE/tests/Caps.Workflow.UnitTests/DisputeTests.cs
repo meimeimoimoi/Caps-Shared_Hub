@@ -95,6 +95,8 @@ public sealed class DisputeTests
 
     [Theory]
     [InlineData("NOT_A_REASON", "Missing part", "DISPUTE_REASON_INVALID")]
+    // Lateness is refunded by the late rule, so it is no reason to dispute
+    [InlineData("SLA_BREACH", "Delivered late", "DISPUTE_REASON_INVALID")]
     [InlineData(null, "Missing part", "DISPUTE_REASON_INVALID")]
     [InlineData(Reason, "  ", "TEXT_REQUIRED")]
     public void A_dispute_needs_a_known_reason_and_a_description(
