@@ -1,27 +1,3 @@
--- SHFT: PostgreSQL conversion from Pasted markdown.md.
--- Kiểm tra: chạy toàn bộ migration trên PGlite 0.5.8 / PostgreSQL 18.3.
--- 34 kiểm tra PASS; bao gồm đối chiếu 46 bảng/toàn bộ số cột và 80 FK.
--- Chưa kiểm thử multi-session concurrency hoặc môi trường PostgreSQL server đích.
--- Mục tiêu PostgreSQL 16+; migration khởi tạo, chạy MỘT LẦN trên database trống.
--- psql -X -v ON_ERROR_STOP=1 -d shft -f SHFT_PostgreSQL.sql
--- Không DROP dữ liệu; toàn bộ DDL nằm trong một transaction.
--- CẦN ĐỌC TRƯỚC KHI DÙNG:
--- 1. Nguồn có 46 bảng, 80 FK, KHÔNG có bất kỳ khai báo Enum nào.
---    Chỉ roles_code có đủ 4 giá trị được mô tả nên dùng enum thật.
---    Các kiểu còn thiếu dùng DOMAIN AS text cùng tên: KHÔNG kiểm tra tập giá trị.
---    Đây là bản chuyển đổi bảo toàn cấu trúc, CHƯA phải migration production hoàn chỉnh.
---    Phải bổ sung danh sách giá trị chính thức trước khi đưa vào production.
--- 2. UUID do ứng dụng .NET Guid.CreateVersion7() cung cấp, không tự thay bằng UUID v4.
--- 3. [BỔ SUNG] đánh dấu ràng buộc suy ra hợp lý ngoài CHECK viết rõ trong nguồn.
--- 4. Các phần chưa đủ dữ kiện được ghi ở mục CUỐI FILE; không tự bịa enum/seed tiền.
--- 5. Cần quyền cài extension btree_gist, hoặc DBA cài trước vào schema public.
--- 6. Tài khoản ứng dụng không nên sở hữu bảng, có quyền DDL hoặc TRUNCATE.
---    Trigger UPDATE/DELETE không thay thế phân quyền; owner có thể vô hiệu trigger.
--- 7. Ghi tiền và đổi trạng thái phải qua backend đáng tin cậy, trong transaction.
--- 8. Nguồn tham khảo cú pháp:
---    https://www.postgresql.org/docs/16/sql-createdomain.html
---    https://www.postgresql.org/docs/16/ddl-constraints.html
---    https://www.postgresql.org/docs/16/btree-gist.html
 
 BEGIN;
 SET LOCAL search_path = public, pg_catalog;
