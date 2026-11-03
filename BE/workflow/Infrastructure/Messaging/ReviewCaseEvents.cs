@@ -7,8 +7,6 @@ using Caps.Workflow.Infrastructure.Persistence;
 namespace Caps.Workflow.Infrastructure.Messaging;
 
 /// <summary>Publishes review case events to RabbitMQ for the notification service.</summary>
-// published after commit without an outbox; a broker outage loses the notification (the case and
-// the money are already saved and the expert still sees the case in their list). Add an outbox if that matters.
 public sealed class OutboxReviewCaseEvents(WorkflowDbContext db, TimeProvider clock)
     : IReviewCaseEvents
 {
