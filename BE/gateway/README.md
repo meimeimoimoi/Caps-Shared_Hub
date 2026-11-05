@@ -12,6 +12,7 @@ and rejects invalid tokens early on signed-in routes. It has no database and no 
 | `/api/v1/users/**` | auth | no: avatars are public images |
 | `/api/v1/experts/me/**` | expert (5198) | yes (`AuthSession`) |
 | `/api/v1/experts/**` | expert | no |
+| `/api/v1/knowledge/{crawl-jobs,documents,sources,hubs}/**` | ingestion (5004) | yes (`AuthSession`); `/internal/**` is never routed |
 
 The gateway only checks that the token is valid. Every service checks it again and decides what the user may
 do, so a request that bypasses the gateway gains nothing.
