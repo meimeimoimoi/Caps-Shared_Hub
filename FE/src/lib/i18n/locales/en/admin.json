@@ -1212,5 +1212,22 @@
     "label": "Information round {{used}}/{{max}}",
     "last": "This is the last information round",
     "lastHelp": "All {{max}} information rounds allowed by the policy were used. Pass or fail on the evidence at hand."
+  },
+  "payouts": {
+    "title": "Payouts to experts",
+    "filter": "Status",
+    "all": "All",
+    "empty": "No payouts yet.",
+    "noAccount": "The expert has no default account",
+    "col": {
+      "createdAt": "Created",
+      "recipient": "Recipient",
+      "account": "Receiving account",
+      "amount": "Amount",
+      "status": "Status"
+    },
+    "status": {
+      "PENDING": "Awaiting transfer"
+    }
   }
 }
