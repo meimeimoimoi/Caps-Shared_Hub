@@ -24,6 +24,7 @@ import {
   useEscrows,
 } from '../../features/disputes-escrow/hooks/useEscrows'
 import { EscrowDrawer } from '../../features/disputes-escrow/components/EscrowDrawer'
+import { PayoutsTable } from '../../features/disputes-escrow/components/PayoutsTable'
 import { escrowSplit } from '../../features/disputes-escrow/utils/escrow'
 import { usePricing } from '../../features/service-pricing/hooks/usePricing'
 import type { Escrow } from '../../features/disputes-escrow/types'
@@ -375,6 +376,8 @@ export default function AdminEscrowPage() {
               onPageSizeChange={escrows.setPageSize}
             />
           </section>
+
+          <PayoutsTable />
 
           {selected && (
             <EscrowDrawer

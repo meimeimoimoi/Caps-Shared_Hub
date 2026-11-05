@@ -1657,5 +1657,22 @@
     "noResults": "Không có đơn khớp với từ khóa.",
     "limitReached": "Đã miễn 2/2 lần trong 90 ngày",
     "limitReachedHint": "Chuyên gia đã dùng hết 2 lượt miễn trong 90 ngày, chỉ có thể từ chối đơn này."
+  },
+  "payouts": {
+    "title": "Lệnh chi trả cho chuyên gia",
+    "filter": "Trạng thái",
+    "all": "Tất cả",
+    "empty": "Chưa có lệnh chi nào.",
+    "noAccount": "Chuyên gia chưa có tài khoản mặc định",
+    "col": {
+      "createdAt": "Tạo lúc",
+      "recipient": "Người nhận",
+      "account": "Tài khoản nhận",
+      "amount": "Số tiền",
+      "status": "Trạng thái"
+    },
+    "status": {
+      "PENDING": "Chờ chuyển khoản"
+    }
   }
 }

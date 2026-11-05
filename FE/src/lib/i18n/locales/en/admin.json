@@ -1667,5 +1667,22 @@
     "noResults": "No requests match your search.",
     "limitReached": "Excused 2/2 times in 90 days",
     "limitReachedHint": "This expert has used both excuses for the last 90 days; this request can only be declined."
+  },
+  "payouts": {
+    "title": "Payouts to experts",
+    "filter": "Status",
+    "all": "All",
+    "empty": "No payouts yet.",
+    "noAccount": "The expert has no default account",
+    "col": {
+      "createdAt": "Created",
+      "recipient": "Recipient",
+      "account": "Receiving account",
+      "amount": "Amount",
+      "status": "Status"
+    },
+    "status": {
+      "PENDING": "Awaiting transfer"
+    }
   }
 }
