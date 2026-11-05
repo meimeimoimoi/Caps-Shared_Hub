@@ -155,6 +155,8 @@ export interface UploadResult {
 
 /** Thông tin bắt buộc khi tải văn bản lên (ngày dạng yyyy-mm-dd) */
 export interface UploadMeta {
+  /** Title of the legal source; asked on upload only (review shows it in the header) */
+  title?: string
   number: string
   docType: string
   issuer: string

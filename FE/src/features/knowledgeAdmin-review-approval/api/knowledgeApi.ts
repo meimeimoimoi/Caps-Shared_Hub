@@ -1,5 +1,10 @@
-import { api } from '@/lib/api-client'
+import { api, ApiError } from '@/lib/api-client'
 import { isKnowledgeDemo } from '@/lib/knowledge-data-source'
+import {
+  rejectedResult,
+  uploadedResult,
+  type UploadedDocumentDto,
+} from './uploadMappers'
 import type { QueueFilter } from '../constants'
 import type {
   ApproveInput,
@@ -16,6 +21,13 @@ import type {
  * TODO(api): đối chiếu lại đường dẫn endpoint với BE khi có Swagger. */
 const fixtures = () => import('./fixtures')
 const BASE = '/api/knowledge'
+const DOCUMENTS = '/api/v1/knowledge/documents'
+
+interface Envelope<T> {
+  success: boolean
+  data: T
+  message?: string
+}
 
 export async function getPipelineSummary(signal?: AbortSignal) {
   if (isKnowledgeDemo) return structuredClone((await fixtures()).mockSummary)
@@ -184,10 +196,13 @@ export async function rejectVersion(documentId: string, reason: string) {
 }
 
 /* ── Tải lên ── */
+// shortcut: uploads made in this tab only; read them from the API once ingestion lists past uploads
+const sessionUploads: UploadResult[] = []
+
 /** Kết quả các lần tải lên gần đây của người dùng, mới nhất trước */
-export async function getUploads(signal?: AbortSignal) {
+export async function getUploads(): Promise<UploadResult[]> {
   if (isKnowledgeDemo) return structuredClone((await fixtures()).mockUploads)
-  return api.get<UploadResult[]>(`${BASE}/uploads`, { signal })
+  return [...sessionUploads]
 }
 
 /** onProgress nhận 0–100 theo số byte đã gửi */
@@ -211,11 +226,33 @@ export async function uploadDocument(
   }
   const body = new FormData()
   body.append('file', file)
-  Object.entries(meta).forEach(([k, v]) => body.append(k, v))
-  // apiClient mặc định gửi JSON; FormData cần header multipart
-  await api.post(`${BASE}/documents`, body, {
-    headers: { 'Content-Type': 'multipart/form-data' },
-    onUploadProgress: (e) =>
-      e.total && onProgress(Math.round((e.loaded / e.total) * 100)),
-  })
+  body.append('documentNumber', meta.number)
+  body.append('docType', meta.docType)
+  body.append('issuingAuthority', meta.issuer)
+  body.append('title', meta.title ?? '')
+  if (meta.issuedAt) body.append('issuedDate', meta.issuedAt)
+  if (meta.effectiveAt) body.append('effectiveFrom', meta.effectiveAt)
+  const at = new Date().toISOString()
+  try {
+    // apiClient mặc định gửi JSON; FormData cần header multipart
+    const res = await api.post<Envelope<UploadedDocumentDto>>(
+      `${DOCUMENTS}/upload`,
+      body,
+      {
+        headers: { 'Content-Type': 'multipart/form-data' },
+        // A 20 MB file on a slow line outlasts the default 15 s timeout
+        timeout: 120_000,
+        onUploadProgress: (e) =>
+          e.total && onProgress(Math.round((e.loaded / e.total) * 100)),
+      }
+    )
+    sessionUploads.unshift(uploadedResult(file.name, res.data))
+  } catch (e) {
+    const rejected =
+      e instanceof ApiError
+        ? rejectedResult(file.name, meta.number, e.code, at)
+        : null
+    if (!rejected) throw e
+    sessionUploads.unshift(rejected)
+  }
 }

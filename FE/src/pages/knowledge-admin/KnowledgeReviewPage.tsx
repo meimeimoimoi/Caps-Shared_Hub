@@ -114,7 +114,7 @@ function ReviewWorkspace({
   }
 
   const total = articles.length
-  const metaMissing = Object.values(meta).some((v) => !v.trim())
+  const metaMissing = Object.values(meta).some((v) => !v?.trim())
   const blockers = [
     warnings > 0 && {
       text: `${warnings} mục cần kiểm tra chưa xử lý`,
