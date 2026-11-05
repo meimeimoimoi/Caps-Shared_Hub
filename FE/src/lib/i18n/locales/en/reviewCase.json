@@ -471,6 +471,7 @@
       "credits": "Credits"
     },
     "ledger": "Credit history",
+    "ledgerEmpty": "No movements yet.",
     "ledgerCols": {
       "date": "Time",
       "entry": "Transaction",
@@ -482,7 +483,10 @@
       "HOLD": "Hold",
       "CAPTURE": "Charge",
       "RELEASE": "Hold released",
-      "RESTORE": "Restored after a system error"
+      "RESTORE": "Restored after a system error",
+      "ESCROW_HOLD": "Review fee held",
+      "ESCROW_RELEASE": "Review fee paid to the expert",
+      "ESCROW_REFUND": "Review fee refunded"
     },
     "escrow": "Review fees on hold",
     "escrowEmpty": "No payments are on hold.",

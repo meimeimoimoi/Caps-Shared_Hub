@@ -1,16 +1,23 @@
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { ShieldCheck } from 'lucide-react'
 import { mockPricing } from '@/features/service-pricing/api/fixtures'
 import { DEMO_CASES, demoCase } from '@/features/review-case/fixtures'
 import { fundsOf, useCaseFormat } from '@/features/review-case/ui'
-import { LEDGER, WALLET } from '@/features/wallet/fixtures'
+import {
+  LEDGER_PAGE_SIZE,
+  useLedger,
+  useWallet,
+} from '@/features/wallet/hooks/useWallet'
 import { useCreditOverview } from '@/features/credits/hooks/useCreditOverview'
 import type { PaymentTransaction } from '@/features/credits/types'
 import { StatusBadge } from '@/components/ui/display/status-badge'
 import { SkeletonRows } from '@/components/ui/display/skeleton-rows'
+import { Pagination } from '@/components/ui/navigation/pagination'
+import { useFormatters } from '@/hooks/useFormatters'
 import type { StatusMeta } from '@/lib/constants'
+import { isExpertDemo } from '@/lib/expert-data-source'
 import { cn } from '@/lib/utils'
 
 const PAYMENT_TONE = {
@@ -26,7 +33,12 @@ export default function WalletPage() {
   const { t } = useTranslation('reviewCase')
   const { t: tc } = useTranslation('client')
   const f = useCaseFormat()
-  const payments = useCreditOverview()
+  const format = useFormatters()
+  const wallet = useWallet().data
+  const [page, setPage] = useState(1)
+  const ledger = useLedger(page)
+  // Billing has no list of PayOS payments yet, so the table is demo only
+  const payments = useCreditOverview(isExpertDemo)
   const { creditPackages, creditRates } = mockPricing
   const held = useMemo(
     () =>
@@ -52,16 +64,16 @@ export default function WalletPage() {
         <div>
           <p className="eyebrow">{t('wallet.available')}</p>
           <p className="num text-fg-strong mt-1 text-[3rem] leading-none font-semibold tracking-tight">
-            {WALLET.available}
+            {format.number(wallet?.balance ?? 0)}
           </p>
           <p className="text-fg-muted mt-1 text-sm">
-            {t('wallet.unit', { count: WALLET.available })}
+            {t('wallet.unit', { count: wallet?.balance ?? 0 })}
           </p>
         </div>
         <div className="sm:border-border sm:border-l sm:pl-6">
           <p className="eyebrow">{t('wallet.held')}</p>
           <p className="num text-fg-strong text-h2 mt-1 font-semibold">
-            {t('wallet.unit', { count: WALLET.held })}
+            {t('wallet.unit', { count: wallet?.held ?? 0 })}
           </p>
           <p className="text-fg-muted mt-1 text-sm">{t('wallet.heldHint')}</p>
         </div>
@@ -142,7 +154,7 @@ export default function WalletPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {LEDGER.map((e) => (
+                  {ledger.data?.items.map((e) => (
                     <tr
                       key={e.id}
                       className="border-border-subtle border-t [&>td]:px-4 [&>td]:py-3"
@@ -154,7 +166,9 @@ export default function WalletPage() {
                         <span className="text-fg-strong font-semibold">
                           {t(`wallet.types.${e.type}`)}
                         </span>
-                        <span className="text-fg-muted block">{e.note}</span>
+                        {e.note && (
+                          <span className="text-fg-muted block">{e.note}</span>
+                        )}
                         <span className="num text-fg-muted block text-xs sm:hidden">
                           {f.at(e.at)}
                         </span>
@@ -165,79 +179,107 @@ export default function WalletPage() {
                           e.amount > 0 ? 'text-success' : 'text-fg-strong'
                         )}
                       >
-                        {e.amount > 0 ? `+${e.amount}` : e.amount}
+                        {e.amount > 0
+                          ? `+${format.number(e.amount)}`
+                          : format.number(e.amount)}
                       </td>
                       <td className="num text-fg-muted text-right">
-                        {e.balanceAfter}
+                        {format.number(e.balanceAfter)}
                       </td>
                     </tr>
                   ))}
-                </tbody>
-              </table>
-            </div>
-          </section>
-
-          <section aria-labelledby="w-payments">
-            <h2 id="w-payments" className="text-h2">
-              {tc('credits.paymentsTitle')}
-            </h2>
-            <div className="paper mt-4 overflow-x-auto">
-              <table className="w-full text-sm sm:min-w-[36rem]">
-                <thead className="bg-sunken text-fg-muted text-left">
-                  <tr className="[&>th]:px-4 [&>th]:py-3 [&>th]:font-semibold [&>th]:whitespace-nowrap">
-                    <th scope="col" className="max-sm:hidden">
-                      {tc('credits.col.time')}
-                    </th>
-                    <th scope="col">{tc('credits.col.purpose')}</th>
-                    <th scope="col" className="text-right">
-                      {tc('credits.col.amount')}
-                    </th>
-                    <th scope="col">{tc('credits.col.status')}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {payments.data?.payments?.map((p) => (
-                    <tr
-                      key={p.id}
-                      className="border-border-subtle border-t [&>td]:px-4 [&>td]:py-3"
-                    >
-                      <td className="num text-fg-muted whitespace-nowrap max-sm:hidden">
-                        {f.at(p.createdAt)}
-                      </td>
-                      <td>
-                        <span className="text-fg-strong font-semibold">
-                          {tc(`credits.purpose.${p.purpose}`)}
-                        </span>
-                        <span className="num text-fg-muted block text-xs">
-                          {p.orderCode}
-                        </span>
-                      </td>
-                      <td className="num text-right">{f.money(p.amount)}</td>
-                      <td>
-                        <StatusBadge
-                          status={{
-                            label: tc(`credits.paymentStatus.${p.status}`),
-                            tone: PAYMENT_TONE[p.status],
-                          }}
-                        />
-                      </td>
-                    </tr>
-                  ))}
-                  {payments.isLoading && <SkeletonRows cols={4} />}
-                  {!payments.isLoading && !payments.data?.payments?.length && (
+                  {ledger.isLoading && <SkeletonRows cols={4} />}
+                  {!ledger.isLoading && !ledger.data?.items.length && (
                     <tr className="border-border-subtle border-t">
                       <td
                         colSpan={4}
                         className="text-fg-muted px-4 py-10 text-center"
                       >
-                        {payments.error?.message ?? tc('credits.emptyPayments')}
+                        {ledger.error?.message ?? t('wallet.ledgerEmpty')}
                       </td>
                     </tr>
                   )}
                 </tbody>
               </table>
             </div>
+            {(ledger.data?.total ?? 0) > LEDGER_PAGE_SIZE && (
+              <div className="mt-3">
+                <Pagination
+                  page={page}
+                  pageSize={LEDGER_PAGE_SIZE}
+                  total={ledger.data?.total ?? 0}
+                  onPageChange={setPage}
+                  label={t('wallet.ledger')}
+                />
+              </div>
+            )}
           </section>
+
+          {isExpertDemo && (
+            <section aria-labelledby="w-payments">
+              <h2 id="w-payments" className="text-h2">
+                {tc('credits.paymentsTitle')}
+              </h2>
+              <div className="paper mt-4 overflow-x-auto">
+                <table className="w-full text-sm sm:min-w-[36rem]">
+                  <thead className="bg-sunken text-fg-muted text-left">
+                    <tr className="[&>th]:px-4 [&>th]:py-3 [&>th]:font-semibold [&>th]:whitespace-nowrap">
+                      <th scope="col" className="max-sm:hidden">
+                        {tc('credits.col.time')}
+                      </th>
+                      <th scope="col">{tc('credits.col.purpose')}</th>
+                      <th scope="col" className="text-right">
+                        {tc('credits.col.amount')}
+                      </th>
+                      <th scope="col">{tc('credits.col.status')}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {payments.data?.payments?.map((p) => (
+                      <tr
+                        key={p.id}
+                        className="border-border-subtle border-t [&>td]:px-4 [&>td]:py-3"
+                      >
+                        <td className="num text-fg-muted whitespace-nowrap max-sm:hidden">
+                          {f.at(p.createdAt)}
+                        </td>
+                        <td>
+                          <span className="text-fg-strong font-semibold">
+                            {tc(`credits.purpose.${p.purpose}`)}
+                          </span>
+                          <span className="num text-fg-muted block text-xs">
+                            {p.orderCode}
+                          </span>
+                        </td>
+                        <td className="num text-right">{f.money(p.amount)}</td>
+                        <td>
+                          <StatusBadge
+                            status={{
+                              label: tc(`credits.paymentStatus.${p.status}`),
+                              tone: PAYMENT_TONE[p.status],
+                            }}
+                          />
+                        </td>
+                      </tr>
+                    ))}
+                    {payments.isLoading && <SkeletonRows cols={4} />}
+                    {!payments.isLoading &&
+                      !payments.data?.payments?.length && (
+                        <tr className="border-border-subtle border-t">
+                          <td
+                            colSpan={4}
+                            className="text-fg-muted px-4 py-10 text-center"
+                          >
+                            {payments.error?.message ??
+                              tc('credits.emptyPayments')}
+                          </td>
+                        </tr>
+                      )}
+                  </tbody>
+                </table>
+              </div>
+            </section>
+          )}
         </div>
 
         <aside className="min-w-0 space-y-8">
