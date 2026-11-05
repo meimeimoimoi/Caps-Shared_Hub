@@ -380,6 +380,26 @@
     }
   },
   "escrow": {
+    "notConnected": "Thao tác này chưa được kết nối với máy chủ.",
+    "settle": {
+      "release": "Chi trả cho chuyên gia",
+      "refund": "Hoàn cho khách hàng",
+      "expertId": "ID tài khoản chuyên gia",
+      "expertIdHelp": "Hệ thống thanh toán chưa lưu chuyên gia của hồ sơ, nên cần nhập ID tài khoản của chuyên gia nhận tiền (lấy từ hồ sơ rà soát).",
+      "expertIdInvalid": "Nhập đúng ID tài khoản (dạng GUID) của chuyên gia nhận tiền.",
+      "fee": "Phí nền tảng (%)",
+      "releaseSummary": "Chuyên gia nhận {{expert}}, phí nền tảng {{fee}} (làm tròn xuống). Lệnh chi được tạo ở trạng thái chờ chuyển khoản.",
+      "refundSummary": "Hoàn {{amount}} vào ví credit của khách hàng. Không có chuyển khoản ngân hàng.",
+      "confirmRelease": "Xác nhận chi trả",
+      "confirmRefund": "Xác nhận hoàn tiền",
+      "cancel": "Hủy",
+      "released": "Đã chi trả hồ sơ {{id}}",
+      "refunded": "Đã hoàn tiền hồ sơ {{id}}",
+      "notHeld": "Khoản này đã được chi trả hoặc hoàn trước đó.",
+      "notFound": "Không tìm thấy khoản giữ hộ của hồ sơ này.",
+      "invalidFee": "Phí nền tảng phải là số nguyên từ 0 đến 100.",
+      "unavailable": "Chưa kiểm tra được phiên đăng nhập. Vui lòng thử lại."
+    },
     "title": "Hoàn tiền và chi trả",
     "intro": "Chi trả 80/20 sau nghiệm thu; hoàn tiền theo ma trận chấm dứt và quyết định tranh chấp.",
     "col": {

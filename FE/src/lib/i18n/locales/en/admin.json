@@ -381,6 +381,26 @@
     }
   },
   "escrow": {
+    "notConnected": "This action is not connected to the server yet.",
+    "settle": {
+      "release": "Pay the expert",
+      "refund": "Refund the client",
+      "expertId": "Expert account ID",
+      "expertIdHelp": "Billing does not store the expert of a review case yet, so enter the account ID of the expert to pay (from the review case).",
+      "expertIdInvalid": "Enter the expert's account ID (a GUID).",
+      "fee": "Platform fee (%)",
+      "releaseSummary": "The expert gets {{expert}}, the platform fee is {{fee}} (rounded down). A payout is created, waiting for the transfer.",
+      "refundSummary": "{{amount}} goes back to the client's credit wallet. No bank transfer is made.",
+      "confirmRelease": "Confirm payout",
+      "confirmRefund": "Confirm refund",
+      "cancel": "Cancel",
+      "released": "Paid out case {{id}}",
+      "refunded": "Refunded case {{id}}",
+      "notHeld": "This escrow was already paid out or refunded.",
+      "notFound": "No escrow was found for this case.",
+      "invalidFee": "The platform fee must be a whole number from 0 to 100.",
+      "unavailable": "Your session could not be checked. Please try again."
+    },
     "title": "Refunds and payouts",
     "intro": "Paid out 80/20 after acceptance; refunds follow the termination matrix and dispute decisions.",
     "col": {
