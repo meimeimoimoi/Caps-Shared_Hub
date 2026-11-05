@@ -10,6 +10,7 @@ import {
   useLedger,
   useWallet,
 } from '@/features/wallet/hooks/useWallet'
+import { TopupDialog } from '@/features/wallet/components/TopupDialog'
 import { useCreditOverview } from '@/features/credits/hooks/useCreditOverview'
 import type { PaymentTransaction } from '@/features/credits/types'
 import { StatusBadge } from '@/components/ui/display/status-badge'
@@ -39,6 +40,8 @@ export default function WalletPage() {
   const ledger = useLedger(page)
   // Billing has no list of PayOS payments yet, so the table is demo only
   const payments = useCreditOverview(isExpertDemo)
+  // null = closed; 0 = opened without a package, the user types the amount
+  const [topupAmount, setTopupAmount] = useState<number | null>(null)
   const { creditPackages, creditRates } = mockPricing
   const held = useMemo(
     () =>
@@ -69,6 +72,13 @@ export default function WalletPage() {
           <p className="text-fg-muted mt-1 text-sm">
             {t('wallet.unit', { count: wallet?.balance ?? 0 })}
           </p>
+          <button
+            type="button"
+            onClick={() => setTopupAmount(0)}
+            className="btn btn-press btn-primary mt-4"
+          >
+            {t('wallet.topup.open')}
+          </button>
         </div>
         <div className="sm:border-border sm:border-l sm:pl-6">
           <p className="eyebrow">{t('wallet.held')}</p>
@@ -116,6 +126,7 @@ export default function WalletPage() {
                     <button
                       type="button"
                       disabled={p.price == null}
+                      onClick={() => setTopupAmount(p.price ?? 0)}
                       title={
                         p.price == null ? t('wallet.buyUnavailable') : undefined
                       }
@@ -361,6 +372,12 @@ export default function WalletPage() {
           </section>
         </aside>
       </div>
+      {topupAmount !== null && (
+        <TopupDialog
+          initialAmount={topupAmount || undefined}
+          onClose={() => setTopupAmount(null)}
+        />
+      )}
     </>
   )
 }

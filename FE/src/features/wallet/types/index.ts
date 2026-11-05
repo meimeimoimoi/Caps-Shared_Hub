@@ -35,3 +35,29 @@ export interface LedgerPage {
   pageSize: number
   total: number
 }
+
+/** A started top-up (billing TopupResponse); credits arrive only when PayOS confirms the transfer */
+export interface Topup {
+  paymentId: string
+  orderCode: number
+  amount: number
+  checkoutUrl: string
+  /** VietQR payload to draw as a QR code */
+  qrCode: string
+  expiresAt: string
+  /** Receiving account; null when PayOS did not return it (then use the QR code or checkoutUrl) */
+  bankBin: string | null
+  accountNumber: string | null
+  accountName: string | null
+  /** Must be kept exactly on a manual transfer: PayOS matches the payment by it */
+  transferNote: string | null
+}
+
+export interface TopupStatus {
+  paymentId: string
+  orderCode: number
+  amount: number
+  status: 'PENDING' | 'SUCCEEDED' | 'FAILED'
+  expiresAt: string
+  paidAt: string | null
+}
