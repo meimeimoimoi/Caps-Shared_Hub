@@ -29,6 +29,7 @@ PENDING expert payout) and staff refund. Payout transfers and disputes have tabl
 | GET | `/api/v1/billing/payos/topups/{paymentId}` | signed in, own payments only | status for polling; another user's id answers 404 |
 | POST | `/api/v1/billing/payos/webhook` | anonymous, HMAC signature | called by PayOS; unknown orders are acknowledged |
 | GET | `/api/v1/admin/billing/payouts` | `PayoutManage`, session check | optional `status`, paging as the ledger |
+| GET | `/api/v1/admin/billing/escrows` | `PayoutManage`, session check | optional `status` (HELD, RELEASED, REFUNDED), paging as the ledger |
 | POST | `/api/v1/admin/billing/escrows/{reviewCaseId}/release` | `PayoutManage`, session check | `expertUserId`, `platformFeePct` (0–100, fee rounded down) |
 | POST | `/api/v1/admin/billing/escrows/{reviewCaseId}/refund` | `PayoutManage`, session check | held credits back to the payer's balance |
 
