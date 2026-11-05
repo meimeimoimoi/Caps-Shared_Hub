@@ -13,6 +13,7 @@ import {
   SOURCE_STATUS,
 } from '../../features/knowledgeAdmin-sources/constants'
 import { useCollection } from '../../features/knowledgeAdmin-sources/hooks/useCollection'
+import { runResult } from '../../features/knowledgeAdmin-sources/api/mappers'
 
 const headCls =
   'bg-sunken text-fg-muted [&>th]:px-4 [&>th]:py-3 [&>th]:font-semibold'
@@ -63,16 +64,18 @@ export default function KnowledgeSourcesPage() {
         </p>
       ) : (
         <div className="mt-8 space-y-6">
-          <ScheduleCard
-            key={data.schedule.frequency}
-            schedule={data.schedule}
-            onSave={(f) =>
-              collection
-                .saveSchedule(f)
-                .then(() => setToast('Đã lưu lịch thu thập'))
-                .catch((e: Error) => setToast(e.message))
-            }
-          />
+          {data.schedule && (
+            <ScheduleCard
+              key={data.schedule.frequency}
+              schedule={data.schedule}
+              onSave={(f) =>
+                collection
+                  .saveSchedule(f)
+                  .then(() => setToast('Đã lưu lịch thu thập'))
+                  .catch((e: Error) => setToast(e.message))
+              }
+            />
+          )}
 
           <section className="paper overflow-x-auto">
             <div className="flex items-center justify-between px-4 py-3">
@@ -141,18 +144,17 @@ export default function KnowledgeSourcesPage() {
               </thead>
               <tbody>
                 {data.runs.map((r) => (
-                  <tr key={r.at} className={rowCls}>
+                  <tr key={r.id ?? r.at} className={rowCls}>
                     <td className="num">{formatDateTime(r.at)}</td>
                     <td>
                       {RUN_TRIGGER[r.trigger]}
                       {r.actor && ` · ${r.actor}`}
                     </td>
-                    <td className="num">
-                      {r.newDocs} mới · {r.newVersions} phiên bản mới ·{' '}
-                      {r.unchanged} không đổi
-                    </td>
+                    <td className="num">{runResult(r)}</td>
                     <td>
-                      {r.errors > 0 ? (
+                      {r.status === 'FAILED' ? (
+                        <span className="text-danger">{r.note}</span>
+                      ) : r.errors > 0 ? (
                         <span className="text-warning inline-flex items-center gap-1.5">
                           <TriangleAlert size={14} aria-hidden="true" />
                           <span className="num">{r.errors}</span> lỗi trích xuất
