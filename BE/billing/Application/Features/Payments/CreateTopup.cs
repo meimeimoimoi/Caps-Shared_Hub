@@ -5,14 +5,15 @@ using Caps.Common.Application;
 
 namespace Caps.Billing.Application.Features.Payments;
 
-/// <summary>Starts buying credits for <paramref name="Amount"/> VND.</summary>
-public sealed record CreateTopupCommand(Guid UserId, long Amount);
+/// <summary>Starts buying the credit package <paramref name="PackageId"/>.</summary>
+public sealed record CreateTopupCommand(Guid UserId, Guid PackageId);
 
 /// <summary>
 /// Saves the payment before calling the provider, so a notification can always find it. If the link cannot be
 /// created the payment is marked FAILED and the error is returned.
 /// </summary>
 public sealed class CreateTopupHandler(
+    ICreditPackageRepository packages,
     IPaymentTransactionRepository payments,
     IPaymentGateway gateway,
     IUnitOfWork unitOfWork,
@@ -21,9 +22,12 @@ public sealed class CreateTopupHandler(
 {
     public async Task<TopupResponse> HandleAsync(CreateTopupCommand command, CancellationToken ct)
     {
+        var package =
+            await packages.FindAsync(command.PackageId, ct)
+            ?? throw BillingErrors.CreditPackageNotFound();
         var now = clock.GetUtcNow();
         var orderCode = NewOrderCode(now);
-        var payment = PaymentTransaction.StartTopup(command.UserId, command.Amount, orderCode, now);
+        var payment = PaymentTransaction.StartTopup(command.UserId, package, orderCode, now);
         payments.Add(payment);
         try
         {

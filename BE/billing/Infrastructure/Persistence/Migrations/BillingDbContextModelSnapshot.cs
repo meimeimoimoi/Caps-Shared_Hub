@@ -18,7 +18,7 @@ namespace Caps.Billing.Infrastructure.Persistence.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasDefaultSchema("billing")
-                .HasAnnotation("ProductVersion", "8.0.14")
+                .HasAnnotation("ProductVersion", "9.0.9")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -184,6 +184,55 @@ namespace Caps.Billing.Infrastructure.Persistence.Migrations
                     b.ToTable("credit_ledger", "billing");
                 });
 
+            modelBuilder.Entity("Caps.Billing.Domain.CreditPackage", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<long>("Credits")
+                        .HasColumnType("bigint")
+                        .HasColumnName("credits");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("name");
+
+                    b.Property<bool>("OnSale")
+                        .HasColumnType("boolean")
+                        .HasColumnName("on_sale");
+
+                    b.Property<long?>("Price")
+                        .HasColumnType("bigint")
+                        .HasColumnName("price");
+
+                    b.Property<bool>("Recommended")
+                        .HasColumnType("boolean")
+                        .HasColumnName("recommended");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer")
+                        .HasColumnName("sort_order");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("credit_package", "billing");
+                });
+
             modelBuilder.Entity("Caps.Billing.Domain.CreditWallet", b =>
                 {
                     b.Property<Guid>("UserId")
@@ -345,6 +394,10 @@ namespace Caps.Billing.Infrastructure.Persistence.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at")
                         .HasDefaultValueSql("now()");
+
+                    b.Property<long>("Credits")
+                        .HasColumnType("bigint")
+                        .HasColumnName("credits");
 
                     b.Property<string>("OrderCode")
                         .IsRequired()

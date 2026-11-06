@@ -6,12 +6,13 @@ It does **not** own accounts (auth), review cases themselves (workflow) or exper
 
 ## Status
 
-Built: wallet and ledger reads, payout bank accounts, PayOS credit top-ups (link + webhook), the staff payout
+Built: wallet and ledger reads, payout bank accounts, credit packages, PayOS credit top-ups (link + webhook), the staff payout
 list and escrow: hold (use case only, no endpoint until workflow sends the case fee), staff release (settlement +
 PENDING expert payout) and staff refund. Payout transfers and disputes have tables only.
 
 | Entity | Purpose |
 |---|---|
+| `CreditPackage` | what can be bought: credits for a price in VND (the only way to buy credits) |
 | `PaymentTransaction` | a payment through PayOS, for credits or a review case |
 | `CreditWallet`, `CreditLedger` | prepaid credits and their append-only movements (idempotency key per movement) |
 | `Escrow`, `Settlement` | money held for a review case, then split into refund, expert payout and platform fee |
@@ -25,9 +26,11 @@ PENDING expert payout) and staff refund. Payout transfers and disputes have tabl
 | GET | `/api/v1/billing/wallet` | signed in | balance and held amount; no wallet yet gives zeros |
 | GET | `/api/v1/billing/wallet/ledger` | signed in | `page`, `pageSize` (max 100), newest first |
 | GET / POST / DELETE | `/api/v1/billing/bank-accounts` | signed in, session check on writes | at most 5; every action returns the full list |
-| POST | `/api/v1/billing/payos/create-topup` | signed in, session check | 10,000–50,000,000 VND; link lives 15 minutes |
+| GET | `/api/v1/billing/credit-packages` | anonymous | packages on sale in display order; `price` null = not buyable yet |
+| POST | `/api/v1/billing/payos/create-topup` | signed in, session check | `packageId`; pays its price, adds its credits; link lives 15 minutes |
 | GET | `/api/v1/billing/payos/topups/{paymentId}` | signed in, own payments only | status for polling; another user's id answers 404 |
 | POST | `/api/v1/billing/payos/webhook` | anonymous, HMAC signature | called by PayOS; unknown orders are acknowledged |
+| GET / POST / PUT `{id}` | `/api/v1/admin/billing/credit-packages` | `PricingManage`, session check | every package, including off sale; price 10,000–50,000,000 VND or null |
 | GET | `/api/v1/admin/billing/payouts` | `PayoutManage`, session check | optional `status`, paging as the ledger |
 | POST | `/api/v1/admin/billing/escrows/{reviewCaseId}/release` | `PayoutManage`, session check | `expertUserId`, `platformFeePct` (0–100, fee rounded down) |
 | POST | `/api/v1/admin/billing/escrows/{reviewCaseId}/refund` | `PayoutManage`, session check | held credits back to the payer's balance |
@@ -42,6 +45,8 @@ PENDING expert payout) and staff refund. Payout transfers and disputes have tabl
   (top-up: `payos:<orderCode>`; escrow: `escrow:<reviewCaseId>:hold|release|refund`), so a repeated notification
   can never credit twice. Hold moves credits from `Balance` to `Held`; release takes them out of `Held`
   (ledger amount 0); refund moves them back to `Balance`.
+- A top-up stores the package's price (`Amount`) and credits (`Credits`) when it starts; the webhook credits
+  `Credits`, so editing a package never changes payments already started.
 - A FAILED payment can still become SUCCEEDED from the webhook: the link may exist even though its response was lost.
 - The client may skip the PayOS page: `create-topup` also returns the receiving account (`bankBin`, `accountNumber`,
   `accountName`) and `transferNote`, shown next to the `qrCode` (VietQR). They are null when PayOS omits them, so the

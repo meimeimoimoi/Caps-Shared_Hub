@@ -17,16 +17,18 @@ public sealed class PayOsController(ICurrentUser currentUser) : ControllerBase
 
     private Guid UserId => currentUser.RequireUserId();
 
-    /// <summary>Creates a PayOS payment link (checkout page and VietQR) to buy credits.</summary>
+    /// <summary>Creates a PayOS payment link (checkout page and VietQR) to buy a credit package.</summary>
     /// <remarks>
-    /// The link expires after 15 minutes. Instead of opening checkoutUrl, the client can render qrCode (VietQR)
-    /// with bankBin, accountNumber, accountName and transferNote in its own page, then poll
+    /// The amount is the package's price and the package's credits are added on payment; packages are the only
+    /// way to buy credits. The link expires after 15 minutes. Instead of opening checkoutUrl, the client can render
+    /// qrCode (VietQR) with bankBin, accountNumber, accountName and transferNote in its own page, then poll
     /// GET topups/{paymentId}. Credits are added only when PayOS confirms the payment through the webhook.
     /// </remarks>
     /// <response code="200">The payment link.</response>
-    /// <response code="400">Invalid input or INVALID_TOPUP_AMOUNT.</response>
+    /// <response code="400">Invalid input.</response>
     /// <response code="401">Missing, invalid or revoked access token.</response>
-    /// <response code="409">PAYMENT_CONFLICT: retry.</response>
+    /// <response code="404">CREDIT_PACKAGE_NOT_FOUND.</response>
+    /// <response code="409">CREDIT_PACKAGE_NOT_FOR_SALE (off sale or no price), or PAYMENT_CONFLICT: retry.</response>
     /// <response code="503">PAYMENT_UNAVAILABLE or SESSION_CHECK_UNAVAILABLE.</response>
     [HttpPost("create-topup"), RequireSessionCheck]
     public async Task<IActionResult> CreateTopup(
