@@ -14,6 +14,7 @@ export const toFieldId = (label: string) =>
 export function templateIssues(input: NewTemplateInput): string[] {
   const issues: string[] = []
   if (!input.fileName) issues.push('Chọn file mẫu (.docx).')
+  if (!input.code.trim()) issues.push('Nhập mã template.')
   if (!input.title.trim()) issues.push('Nhập tên template.')
   if (!input.category) issues.push('Chọn nhóm template.')
   if (input.fields.length === 0)

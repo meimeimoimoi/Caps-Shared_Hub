@@ -57,6 +57,7 @@ export default function KnowledgeTemplateNewPage() {
   const [file, setFile] = useState<File | null>(null)
   const [fileError, setFileError] = useState<string | null>(null)
   const [dragging, setDragging] = useState(false)
+  const [code, setCode] = useState('')
   const [title, setTitle] = useState('')
   const [category, setCategory] = useState('')
   const [description, setDescription] = useState('')
@@ -67,6 +68,7 @@ export default function KnowledgeTemplateNewPage() {
   const [error, setError] = useState<string | null>(null)
   const input = {
     fileName: file?.name ?? '',
+    code: code.trim(),
     title: title.trim(),
     description: description.trim(),
     category,
@@ -214,6 +216,14 @@ export default function KnowledgeTemplateNewPage() {
           <h2 id="new-info" className="text-h2">
             Thông tin chung
           </h2>
+          <Field label="Mã template (bắt buộc)">
+            <input
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
+              placeholder="vd. 03/TNDN"
+              className={`${inputCls} num max-w-56`}
+            />
+          </Field>
           <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_14rem]">
             <Field label="Tên template (bắt buộc)">
               <input
