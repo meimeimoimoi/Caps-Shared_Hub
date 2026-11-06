@@ -16,7 +16,7 @@ public sealed class Conversation
 
     public static Conversation Create(Guid userId, string? title, DateTimeOffset now)
     {
-        var cleanTitle = string.IsNullOrWhiteSpace(title) ? null : title.Trim();
+        var cleanTitle = string.IsNullOrWhiteSpace(title) ? "New Conversation" : title.Trim();
 
         return new Conversation
         {
@@ -41,4 +41,5 @@ public sealed class Conversation
     {
         UpdatedAt = now;
     }
+
 }

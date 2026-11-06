@@ -11,8 +11,8 @@ public class WorkflowErrors
     public static AppException Conversation_NotFound(Guid id) =>
         new(ErrorType.NotFound, "WORKFLOW_CONVERSATION_NOT_FOUND", $"Conversation with Id '{id}' was not found.");
 
-    public static AppException Conversation_AccessDenied(Guid id) =>
-        new(ErrorType.Forbidden, "WORKFLOW_CONVERSATION_ACCESS_DENIED", $"Access denied to conversation with Id '{id}'.");
+    public static AppException Conversation_AccessDenied() =>
+        new(ErrorType.Forbidden, "WORKFLOW_CONVERSATION_ACCESS_DENIED", $"Access denied to conversation");
 
     public static AppException Messasge_NotFound(Guid id) =>
         new(ErrorType.NotFound, "WORKFLOW_MESSAGE_NOT_FOUND", $"Message with Id '{id}' was not found.");

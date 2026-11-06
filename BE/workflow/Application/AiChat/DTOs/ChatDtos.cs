@@ -7,7 +7,7 @@ using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 
 namespace Caps.Workflow.Application.AiChat.DTOs;
-public class ChatDtos
+public static class ChatDtos
 {
     public sealed record ConversationsSummaryDto(
         Guid iD,
