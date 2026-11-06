@@ -1211,5 +1211,22 @@
     "label": "Vòng bổ sung {{used}}/{{max}}",
     "last": "Đây là vòng bổ sung cuối",
     "lastHelp": "Đã dùng hết {{max}} vòng yêu cầu bổ sung theo chính sách. Chọn Đạt hoặc Không đạt dựa trên minh chứng hiện có."
+  },
+  "payouts": {
+    "title": "Lệnh chi trả cho chuyên gia",
+    "filter": "Trạng thái",
+    "all": "Tất cả",
+    "empty": "Chưa có lệnh chi nào.",
+    "noAccount": "Chuyên gia chưa có tài khoản mặc định",
+    "col": {
+      "createdAt": "Tạo lúc",
+      "recipient": "Người nhận",
+      "account": "Tài khoản nhận",
+      "amount": "Số tiền",
+      "status": "Trạng thái"
+    },
+    "status": {
+      "PENDING": "Chờ chuyển khoản"
+    }
   }
 }
