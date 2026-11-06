@@ -21,7 +21,7 @@ interface MetaFieldsProps {
   narrow?: boolean
 }
 
-/* 5 ô metadata bắt buộc của văn bản; dùng trong dialog tải lên và màn rà soát */
+/* Metadata fields of a document, all required; the title field shows only when value.title is set (upload) */
 export function MetaFields({ value, onChange, narrow }: MetaFieldsProps) {
   const set = (k: keyof UploadMeta) => (v: string) =>
     onChange({ ...value, [k]: v })
@@ -29,6 +29,17 @@ export function MetaFields({ value, onChange, narrow }: MetaFieldsProps) {
 
   return (
     <div className="space-y-4">
+      {value.title !== undefined && (
+        <Field label="Tên văn bản (bắt buộc)">
+          <input
+            required
+            value={value.title}
+            onChange={(e) => set('title')(e.target.value)}
+            placeholder="vd. Hướng dẫn về thuế thu nhập doanh nghiệp"
+            className={inputCls}
+          />
+        </Field>
+      )}
       <div className={pair}>
         <Field label="Số hiệu văn bản (bắt buộc)">
           <input
