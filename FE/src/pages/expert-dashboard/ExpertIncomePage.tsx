@@ -1,4 +1,5 @@
 import { useExpertPresentation } from '@/features/expert-dashboard/hooks/useExpertPresentation'
+import { BankAccountsSection } from '@/features/bank-accounts/components/BankAccountsSection'
 import { useTranslation } from 'react-i18next'
 
 import {
@@ -121,6 +122,8 @@ export default function ExpertIncomePage() {
           ))}
         </div>
       </div>
+
+      <BankAccountsSection />
 
       <div className="ep-cases-toolbar mt-8">
         <h3>{t('transactionHistory')}</h3>

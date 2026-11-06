@@ -787,5 +787,33 @@
       "failed": "That did not work. Please try again."
     }
   },
-  "preparingEvidence": "Preparing competency evidence"
+  "preparingEvidence": "Preparing competency evidence",
+  "bankAccounts": {
+    "title": "Payout accounts",
+    "add": "Add account",
+    "addTitle": "Add a payout account",
+    "bank": "Bank",
+    "pickBank": "Choose a bank",
+    "accountNumber": "Account number",
+    "holder": "Account holder",
+    "actions": "Actions",
+    "default": "Default",
+    "makeDefault": "Make this the default payout account",
+    "loading": "Loading…",
+    "empty": "No account linked yet. Payouts go to the default account.",
+    "save": "Save account",
+    "saving": "Saving…",
+    "cancel": "Cancel",
+    "added": "Account added",
+    "removed": "Account removed",
+    "removeLabel": "Remove account {{account}}",
+    "removeTitle": "Remove account {{account}}?",
+    "removeBody": "Payouts already created keep this account's details. If it is the default, the newest remaining account becomes the default.",
+    "removeConfirm": "Remove account",
+    "duplicate": "This account is already linked.",
+    "limit": "You can link at most {{count}} accounts.",
+    "invalid": "The account details are not valid. Check the number (6–19 digits) and the holder name.",
+    "notFound": "This account no longer exists.",
+    "unavailable": "Your session could not be checked. Please try again."
+  }
 }
