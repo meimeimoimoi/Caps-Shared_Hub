@@ -7,7 +7,7 @@ import { useAccount } from '@/features/auth/hooks/useAccount'
 import { Countdown } from '@/features/review-case/components/CaseUi'
 import { DEMO_CASES, demoCase } from '@/features/review-case/fixtures'
 import { ACTION_STATUSES, useCaseFormat } from '@/features/review-case/ui'
-import { WALLET } from '@/features/wallet/fixtures'
+import { useWallet } from '@/features/wallet/hooks/useWallet'
 import { CASE_STATUS } from '@/lib/constants'
 
 /** Customer overview; expert portal access does not change the selected workspace. */
@@ -15,6 +15,7 @@ export default function DashboardPage() {
   const { t } = useTranslation('reviewCase')
   const f = useCaseFormat()
   const account = useAccount('client')
+  const wallet = useWallet().data
   const cases = useMemo(
     () =>
       DEMO_CASES.map((d) => demoCase(d.id)!).sort((a, b) =>
@@ -152,10 +153,11 @@ export default function DashboardPage() {
               {t('dashboard.credits')}
             </h2>
             <p className="num text-fg-strong mt-2 text-[2.25rem] leading-none font-semibold">
-              {WALLET.available}
+              {wallet?.balance ?? 0}
             </p>
             <p className="text-fg-muted mt-1 text-sm">
-              {t('wallet.held')}: {t('wallet.unit', { count: WALLET.held })}
+              {t('wallet.held')}:{' '}
+              {t('wallet.unit', { count: wallet?.held ?? 0 })}
             </p>
             <Link to="/wallet" className="btn btn-secondary mt-4 w-full">
               {t('dashboard.topUp')}

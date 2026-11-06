@@ -471,6 +471,7 @@
       "credits": "Credit"
     },
     "ledger": "Lịch sử credit",
+    "ledgerEmpty": "Chưa có giao dịch nào.",
     "ledgerCols": {
       "date": "Thời gian",
       "entry": "Giao dịch",
@@ -482,7 +483,10 @@
       "HOLD": "Giữ tạm",
       "CAPTURE": "Trừ credit",
       "RELEASE": "Hoàn giữ tạm",
-      "RESTORE": "Hoàn credit do lỗi hệ thống"
+      "RESTORE": "Hoàn credit do lỗi hệ thống",
+      "ESCROW_HOLD": "Giữ phí thẩm định",
+      "ESCROW_RELEASE": "Chuyển phí thẩm định cho chuyên gia",
+      "ESCROW_REFUND": "Hoàn phí thẩm định"
     },
     "escrow": "Phí thẩm định đang giữ hộ",
     "escrowEmpty": "Không có khoản nào đang được giữ hộ.",
