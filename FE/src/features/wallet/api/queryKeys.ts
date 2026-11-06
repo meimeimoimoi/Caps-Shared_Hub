@@ -5,4 +5,6 @@ export const walletKeys = {
   ledger: (page: number) => [...walletKeys.ledgers(), page] as const,
   topup: (paymentId: string) =>
     [...walletKeys.all, 'topup', paymentId] as const,
+  // Public: the pricing page shows them without sign-in
+  packages: ['public', 'credit-packages'] as const,
 }

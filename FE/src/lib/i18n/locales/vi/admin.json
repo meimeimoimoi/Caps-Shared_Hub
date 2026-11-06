@@ -571,6 +571,7 @@
       },
       "editLabel": "Sửa {{name}}",
       "pendingPrice": "[giá gói]",
+      "empty": "Chưa có gói nạp nào.",
       "onSale": "Đang bán",
       "offSale": "Ngừng bán",
       "recommended": " · gợi ý",

@@ -572,6 +572,7 @@
       },
       "editLabel": "Edit {{name}}",
       "pendingPrice": "[package price]",
+      "empty": "No credit packages yet.",
       "onSale": "On sale",
       "offSale": "Off sale",
       "recommended": " · recommended",

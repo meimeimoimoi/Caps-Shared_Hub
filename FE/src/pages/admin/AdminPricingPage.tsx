@@ -5,13 +5,18 @@ import { Info, Plus } from 'lucide-react'
 import { cn, formatDate, formatDateTime } from '@/lib/utils'
 import { useNavToast } from '@/hooks/useNavToast'
 import { StatusBadge } from '@/components/ui/display/status-badge'
+import { SkeletonRows } from '@/components/ui/display/skeleton-rows'
 import { Toast } from '@/components/ui/feedback/toast'
 import { AdminLayout } from '@/app/layouts/admin/AdminLayout'
 import { useAdminNav } from '@/app/layouts/admin/useAdminNav'
-import { usePricing } from '../../features/service-pricing/hooks/usePricing'
+import {
+  useCreditPackages,
+  usePricing,
+} from '../../features/service-pricing/hooks/usePricing'
 import { PackageDialog } from '../../features/service-pricing/components/PackageDialog'
 import type {
   CreditPackage,
+  CreditRate,
   PackageInput,
   PricingOverview,
 } from '../../features/service-pricing/types'
@@ -126,7 +131,17 @@ export default function AdminPricingPage() {
         aria-labelledby={`tab-${tab}`}
         className="mt-6"
       >
-        {!data ? (
+        {tab === 'credit' ? (
+          // Packages load from billing on their own, so this tab does not wait for the overview
+          <CreditTab
+            rates={data?.creditRates}
+            onSave={(input) =>
+              pricing
+                .savePackage(input)
+                .then(() => setToast(t('pricing.saved', { name: input.name })))
+            }
+          />
+        ) : !data ? (
           isLoading ? (
             // Khung xương cỡ bảng khung giá để trang không giật khi dữ liệu về
             <div role="status" className="paper h-72 motion-safe:animate-pulse">
@@ -139,15 +154,6 @@ export default function AdminPricingPage() {
           )
         ) : tab === 'review-fee' ? (
           <ReviewFeeTab data={data} />
-        ) : tab === 'credit' ? (
-          <CreditTab
-            data={data}
-            onSave={(input) =>
-              pricing
-                .savePackage(input)
-                .then(() => setToast(t('pricing.saved', { name: input.name })))
-            }
-          />
         ) : (
           <section className="paper">
             <ol className="divide-border-subtle divide-y">
@@ -306,56 +312,67 @@ function ReviewFeeTab({ data }: { data: PricingOverview }) {
 
 /* Tab "Credit và gói nạp": đơn giá từng thao tác + gói nạp bán qua PayOS */
 function CreditTab({
-  data,
+  rates,
   onSave,
 }: {
-  data: PricingOverview
+  /** Undefined while the pricing overview (which holds the rates) is not available */
+  rates?: CreditRate[]
   onSave: (input: PackageInput) => Promise<unknown>
 }) {
   const { t } = useTranslation('admin')
+  const packages = useCreditPackages()
+  const list = packages.data ?? []
   // Giá chưa chốt hoặc kèm điều kiện tô cam để Admin thấy còn phải xử lý
   const pending = 'text-accent-text font-semibold'
   // undefined = dialog đóng, null = thêm gói, CreditPackage = sửa gói đó
   const [editing, setEditing] = useState<CreditPackage | null>()
   return (
     <>
-      <h2 className="text-h2">{t('pricing.credit.rates')}</h2>
-      <section className="paper mt-3 overflow-x-auto">
-        <table className="w-full min-w-150 text-sm">
-          <thead>
-            <tr className={headCls}>
-              <th className="text-left">{t('pricing.credit.col.action')}</th>
-              <th className="text-left">{t('pricing.credit.col.when')}</th>
-              <th className="text-right">{t('pricing.credit.col.price')}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {data.creditRates.map((r) => (
-              <tr key={r.id} className={rowCls}>
-                <td className="text-fg-strong font-semibold">{r.action}</td>
-                <td className="text-fg-muted">{r.when}</td>
-                <td className="num text-right whitespace-nowrap">
-                  {r.credits === null ? (
-                    <span className={pending}>
-                      {t('pricing.credit.pendingRate')}
-                    </span>
-                  ) : r.note ? (
-                    <span className={pending}>
-                      {r.credits} · {r.note}
-                    </span>
-                  ) : (
-                    <span className="text-fg-strong font-semibold">
-                      {t('pricing.credit.credits', { count: r.credits })}
-                    </span>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </section>
+      {rates && (
+        <>
+          <h2 className="text-h2">{t('pricing.credit.rates')}</h2>
+          <section className="paper mt-3 mb-10 overflow-x-auto">
+            <table className="w-full min-w-150 text-sm">
+              <thead>
+                <tr className={headCls}>
+                  <th className="text-left">
+                    {t('pricing.credit.col.action')}
+                  </th>
+                  <th className="text-left">{t('pricing.credit.col.when')}</th>
+                  <th className="text-right">
+                    {t('pricing.credit.col.price')}
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {rates.map((r) => (
+                  <tr key={r.id} className={rowCls}>
+                    <td className="text-fg-strong font-semibold">{r.action}</td>
+                    <td className="text-fg-muted">{r.when}</td>
+                    <td className="num text-right whitespace-nowrap">
+                      {r.credits === null ? (
+                        <span className={pending}>
+                          {t('pricing.credit.pendingRate')}
+                        </span>
+                      ) : r.note ? (
+                        <span className={pending}>
+                          {r.credits} · {r.note}
+                        </span>
+                      ) : (
+                        <span className="text-fg-strong font-semibold">
+                          {t('pricing.credit.credits', { count: r.credits })}
+                        </span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </section>
+        </>
+      )}
 
-      <div className="mt-10 flex items-center justify-between gap-4">
+      <div className="flex items-center justify-between gap-4">
         <h2 className="text-h2">{t('pricing.credit.packages')}</h2>
         <button
           type="button"
@@ -378,7 +395,15 @@ function CreditTab({
             </tr>
           </thead>
           <tbody>
-            {[...data.creditPackages]
+            {packages.isLoading && <SkeletonRows cols={5} />}
+            {!packages.isLoading && list.length === 0 && (
+              <tr className={rowCls}>
+                <td colSpan={5} className="text-fg-muted py-10 text-center">
+                  {packages.error?.message ?? t('pricing.credit.empty')}
+                </td>
+              </tr>
+            )}
+            {[...list]
               .sort((a, b) => a.order - b.order)
               .map((p) => (
                 <tr key={p.id} className={rowCls}>
@@ -422,9 +447,7 @@ function CreditTab({
         <PackageDialog
           key={editing?.id ?? 'new'}
           pkg={editing ?? undefined}
-          nextOrder={
-            Math.max(0, ...data.creditPackages.map((p) => p.order)) + 1
-          }
+          nextOrder={Math.max(0, ...list.map((p) => p.order)) + 1}
           onClose={() => setEditing(undefined)}
           onSave={onSave}
         />

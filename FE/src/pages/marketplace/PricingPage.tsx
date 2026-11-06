@@ -8,21 +8,20 @@ import { PublicFooter } from '@/components/ui/layout/public-footer'
 import { PublicNavigation } from '@/components/ui/layout/public-navigation'
 import { useAuthStore } from '@/features/auth/store/authStore'
 import { mockPricing } from '@/features/service-pricing/api/fixtures'
+import { useCreditPackages } from '@/features/wallet/hooks/useWallet'
 import '@/styles/public-site.css'
 import './pricing.css'
 
 /* Bảng giá quota AI (credit), trên khung public chung (#shub-home). Phí thẩm định chuyên gia tính riêng trên Sàn.
- * ponytail: gói/đơn giá đọc fixture cấu hình Admin; cần endpoint giá công khai khi BE có. */
+ * Packages come from billing; rates still come from the Admin fixture until billing serves them. */
 
-const { creditRates, creditPackages } = mockPricing
+const { creditRates } = mockPricing
 const vnd = (n: number) => `${new Intl.NumberFormat('vi-VN').format(n)}đ`
-const packages = [...creditPackages]
-  .filter((p) => p.onSale)
-  .sort((a, b) => a.order - b.order)
 
 export default function PricingPage() {
   const { t } = useTranslation('home')
   const authenticated = useAuthStore((s) => s.isAuthenticated)
+  const packages = useCreditPackages().data ?? []
   useEffect(() => {
     document.title = 'Bảng giá credit AI | Shared Hub'
   }, [])

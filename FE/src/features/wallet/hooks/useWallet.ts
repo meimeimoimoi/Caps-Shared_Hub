@@ -1,8 +1,15 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
-import { getLedger, getWallet } from '../api/walletApi'
+import { getCreditPackages, getLedger, getWallet } from '../api/walletApi'
 import { walletKeys } from '../api/queryKeys'
 
 export const LEDGER_PAGE_SIZE = 10
+
+export function useCreditPackages() {
+  return useQuery({
+    queryKey: walletKeys.packages,
+    queryFn: ({ signal }) => getCreditPackages(signal),
+  })
+}
 
 export function useWallet() {
   return useQuery({

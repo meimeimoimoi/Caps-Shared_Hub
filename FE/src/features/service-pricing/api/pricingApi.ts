@@ -1,6 +1,7 @@
 import { api } from '@/lib/api-client'
 import { isExpertDemo } from '@/lib/expert-data-source'
 import type {
+  CreditPackage,
   NewTierInput,
   PackageInput,
   PricingOverview,
@@ -13,6 +14,8 @@ const vnd = (n: number) => n.toLocaleString('vi-VN')
  * TODO(api): đối chiếu lại đường dẫn endpoint với BE khi có Swagger. */
 const fixtures = () => import('./fixtures')
 const BASE = '/api/admin/pricing'
+// Billing owns credit packages (PricingManage permission)
+const PACKAGES = '/api/v1/admin/billing/credit-packages'
 
 export async function getPricing(signal?: AbortSignal) {
   if (isExpertDemo) return structuredClone((await fixtures()).mockPricing)
@@ -67,7 +70,19 @@ export async function createTier(body: NewTierInput): Promise<string> {
   return (await api.post<{ id: string }>(`${BASE}/tiers`, body)).id
 }
 
-/** Thêm gói (không có id) hoặc sửa gói nạp credit */
+/** Every credit package, including those off sale, in display order */
+export async function getCreditPackages(
+  signal?: AbortSignal
+): Promise<CreditPackage[]> {
+  if (isExpertDemo)
+    return structuredClone((await fixtures()).mockPricing.creditPackages).sort(
+      (a, b) => a.order - b.order
+    )
+  const res = await api.get<{ data: CreditPackage[] }>(PACKAGES, { signal })
+  return res.data
+}
+
+/** Adds a package (no id) or changes one */
 export async function savePackage(body: PackageInput) {
   if (isExpertDemo) {
     const p = (await fixtures()).mockPricing
@@ -83,6 +98,7 @@ export async function savePackage(body: PackageInput) {
     })
     return
   }
-  if (body.id) await api.put(`${BASE}/packages/${body.id}`, body)
-  else await api.post(`${BASE}/packages`, body)
+  const { id, ...data } = body
+  if (id) await api.put(`${PACKAGES}/${encodeURIComponent(id)}`, data)
+  else await api.post(PACKAGES, data)
 }
