@@ -12,6 +12,7 @@ import {
 import { knowledgeKeys } from '../../features/knowledgeAdmin-review-approval/api/queryKeys'
 import { useCollection } from '../../features/knowledgeAdmin-sources/hooks/useCollection'
 import { RUN_TRIGGER } from '../../features/knowledgeAdmin-sources/constants'
+import { runResult } from '../../features/knowledgeAdmin-sources/api/mappers'
 import { REVIEW_SLA_DAYS } from '../../features/knowledgeAdmin-review-approval/constants'
 import { KnowledgeGrowth } from '../../features/knowledgeAdmin-analytics/components/KnowledgeGrowth'
 import { useKnowledgeStats } from '../../features/knowledgeAdmin-analytics/hooks/useKnowledgeStats'
@@ -187,17 +188,20 @@ export default function KnowledgeDashboardPage() {
         {runs.length ? (
           <ul className="divide-border-subtle mt-3 divide-y text-sm">
             {runs.map((r) => (
-              <li key={r.at} className="flex flex-wrap gap-x-4 gap-y-1 py-2.5">
+              <li
+                key={r.id ?? r.at}
+                className="flex flex-wrap gap-x-4 gap-y-1 py-2.5"
+              >
                 <span className="text-fg-muted num w-14 shrink-0">
                   {formatDayMonth(r.at)}
                 </span>
                 <span className="text-fg-muted w-20 shrink-0">
                   {RUN_TRIGGER[r.trigger]}
                 </span>
-                <span className="text-fg-strong">
-                  {r.newDocs} văn bản mới · {r.newVersions} phiên bản mới ·{' '}
-                  {r.unchanged} không đổi
-                </span>
+                <span className="text-fg-strong">{runResult(r)}</span>
+                {r.status === 'FAILED' && (
+                  <span className="text-danger font-semibold">{r.note}</span>
+                )}
                 {r.errors > 0 && (
                   <span className="text-danger font-semibold">
                     {r.errors} lỗi
