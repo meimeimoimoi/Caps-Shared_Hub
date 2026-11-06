@@ -20,6 +20,12 @@ public interface ITemplateRepository
     /// <summary>The template's published version, tracked; unlike <see cref="FindPublishedAsync"/> it ignores <c>IsActive</c>.</summary>
     Task<TemplateVersion?> FindPublishedVersionAsync(Guid templateId, CancellationToken ct);
 
+    /// <summary>Every template with all its versions (drafts included), untracked, by name.</summary>
+    Task<IReadOnlyList<Template>> ListWithVersionsAsync(CancellationToken ct);
+
+    /// <summary>The template with all its versions (drafts included), untracked.</summary>
+    Task<Template?> FindWithVersionsAsync(Guid templateId, CancellationToken ct);
+
     void Add(Template newTemplate);
 
     void Add(TemplateVersion version);
