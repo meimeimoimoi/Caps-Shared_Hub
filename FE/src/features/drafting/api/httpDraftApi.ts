@@ -1,5 +1,10 @@
 import { api, apiClient, ApiError } from '@/lib/api-client'
 import type { DraftApi, RequestContext } from '../types'
+import {
+  toTemplateVersion,
+  type TemplateSchemaDto,
+  type TemplateSummaryDto,
+} from './templateMappers'
 
 // Proposed direct DTO contract, not a statement that these endpoints already exist.
 // With the existing /api fallback, omit a duplicate prefix. Absolute gateway URLs retain /api.
@@ -15,9 +20,44 @@ const config = (ctx: RequestContext, key?: string) => ({
   signal: ctx.signal,
   headers: key ? { 'Idempotency-Key': key } : undefined,
 })
+
+// The template catalog is served by workflow; the workspace endpoints below are still a proposal
+const TEMPLATES = '/api/v1/templates'
+interface Envelope<T> {
+  success: boolean
+  data: T
+  message?: string
+}
+
+async function publishedTemplates(ctx: RequestContext) {
+  const res = await api.get<Envelope<TemplateSummaryDto[]>>(
+    TEMPLATES,
+    config(ctx)
+  )
+  return res.data
+}
+
+async function withFields(summary: TemplateSummaryDto, ctx: RequestContext) {
+  const res = await api.get<Envelope<TemplateSchemaDto>>(
+    `${TEMPLATES}/${path(summary.id)}/schema`,
+    config(ctx)
+  )
+  return toTemplateVersion(summary, res.data)
+}
+
 export const httpDraftApi: DraftApi = {
-  templates: (ctx) => api.get(`${base}/templates`, config(ctx)),
-  template: (id, ctx) => api.get(`${base}/templates/${path(id)}`, config(ctx)),
+  // shortcut: one schema request per template because the list has no fields; add them to the list when the catalog grows
+  templates: async (ctx) =>
+    Promise.all((await publishedTemplates(ctx)).map((s) => withFields(s, ctx))),
+  // Drafts pin a version id but the API looks templates up by template id, so find it in the published list
+  template: async (id, ctx) => {
+    const summary = (await publishedTemplates(ctx)).find(
+      (s) => s.versionId === id || s.id === id
+    )
+    if (!summary)
+      throw new ApiError('Template not found.', 404, 'TEMPLATE_NOT_FOUND')
+    return withFields(summary, ctx)
+  },
   list: (ctx) => api.get(`${base}/workspaces`, config(ctx)),
   workspace: (id, ctx) =>
     api.get(`${base}/workspaces/${path(id)}`, config(ctx)),
