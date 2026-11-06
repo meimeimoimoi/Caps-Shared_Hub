@@ -139,6 +139,12 @@ const KnowledgeDocumentPage = lazy(
 const KnowledgeDocumentsPage = lazy(
   () => import('@/pages/knowledge-admin/KnowledgeDocumentsPage')
 )
+const KnowledgeLegalSourcesPage = lazy(
+  () => import('@/pages/knowledge-admin/KnowledgeLegalSourcesPage')
+)
+const KnowledgeLegalSourcePage = lazy(
+  () => import('@/pages/knowledge-admin/KnowledgeLegalSourcePage')
+)
 const KnowledgeUploadsPage = lazy(
   () => import('@/pages/knowledge-admin/KnowledgeUploadsPage')
 )
@@ -389,6 +395,14 @@ const router = createBrowserRouter(
         <Route
           path="/knowledge/documents/:id/review"
           element={<KnowledgeReviewPage />}
+        />
+        <Route
+          path="/knowledge/legal-sources"
+          element={<KnowledgeLegalSourcesPage />}
+        />
+        <Route
+          path="/knowledge/legal-sources/:id"
+          element={<KnowledgeLegalSourcePage />}
         />
       </Route>
 
