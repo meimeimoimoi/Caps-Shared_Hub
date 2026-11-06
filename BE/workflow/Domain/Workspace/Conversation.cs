@@ -11,5 +11,34 @@ public sealed class Conversation
     public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
     public DateTimeOffset UpdatedAt { get; set; } = DateTimeOffset.UtcNow;
 
-    public ICollection<ChatMessage> Messages { get; set; } = [];
+    private readonly List<ChatMessage> _messages = [];
+    public IReadOnlyCollection<ChatMessage> Messages => _messages.AsReadOnly();
+
+    public static Conversation Create(Guid userId, string? title, DateTimeOffset now)
+    {
+        var cleanTitle = string.IsNullOrWhiteSpace(title) ? null : title.Trim();
+
+        return new Conversation
+        {
+            Id = Guid.NewGuid(),
+            UserId = userId,
+            Title = cleanTitle,
+            CreatedAt = now,
+            UpdatedAt = now
+        };
+    }
+
+    public void UpdateTitle(string titile, DateTimeOffset now)
+    {
+        if (!string.IsNullOrWhiteSpace(titile))
+        {
+            Title = titile.Trim();
+            UpdatedAt = now;
+        }
+    }
+
+    public void Touch(DateTimeOffset now)
+    {
+        UpdatedAt = now;
+    }
 }

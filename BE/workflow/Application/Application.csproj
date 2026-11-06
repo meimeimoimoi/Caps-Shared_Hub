@@ -14,4 +14,8 @@
     <ProjectReference Include="..\..\common\Application\Application.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="AiChat\Commands\" />
+  </ItemGroup>
+
 </Project>
