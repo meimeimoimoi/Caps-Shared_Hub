@@ -37,7 +37,7 @@ public sealed class CreditLedger
         {
             UserId = wallet.UserId,
             EntryType = LedgerEntryType.Topup,
-            Amount = payment.Amount,
+            Amount = payment.Credits,
             BalanceAfter = wallet.Balance,
             IdempotencyKey = $"{payment.Provider.ToLowerInvariant()}:{payment.OrderCode}",
             RefPaymentId = payment.Id,

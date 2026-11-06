@@ -1,6 +1,6 @@
 namespace Caps.Billing.Domain;
 
-/// <summary>Limits of credit top-ups. Amounts are in VND; one VND buys one credit.</summary>
+/// <summary>Limits of credit top-ups, in VND. The credits bought come from the package, not the amount.</summary>
 public static class PaymentRules
 {
     public const long MinTopupAmount = 10_000;

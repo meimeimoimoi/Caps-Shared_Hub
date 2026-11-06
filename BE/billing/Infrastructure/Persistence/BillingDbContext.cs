@@ -15,6 +15,7 @@ public sealed class BillingDbContext(DbContextOptions<BillingDbContext> options)
     public DbSet<BankAccount> BankAccounts => Set<BankAccount>();
     public DbSet<PayoutTransaction> PayoutTransactions => Set<PayoutTransaction>();
     public DbSet<Dispute> Disputes => Set<Dispute>();
+    public DbSet<CreditPackage> CreditPackages => Set<CreditPackage>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -37,6 +38,28 @@ public sealed class BillingDbContext(DbContextOptions<BillingDbContext> options)
                 .IsRequired();
         });
 
+        // CreditPackage
+        modelBuilder.Entity<CreditPackage>(e =>
+        {
+            e.ToTable("credit_package");
+            e.HasKey(x => x.Id);
+            e.Property(x => x.Id).HasColumnName("id");
+            e.Property(x => x.Name).HasColumnName("name").IsRequired();
+            e.Property(x => x.Credits).HasColumnName("credits");
+            e.Property(x => x.Price).HasColumnName("price");
+            e.Property(x => x.OnSale).HasColumnName("on_sale");
+            e.Property(x => x.Recommended).HasColumnName("recommended");
+            e.Property(x => x.SortOrder).HasColumnName("sort_order");
+            e.Property(x => x.CreatedAt)
+                .HasColumnName("created_at")
+                .HasDefaultValueSql("now()")
+                .IsRequired();
+            e.Property(x => x.UpdatedAt)
+                .HasColumnName("updated_at")
+                .HasDefaultValueSql("now()")
+                .IsRequired();
+        });
+
         // PaymentTransaction
         modelBuilder.Entity<PaymentTransaction>(e =>
         {
@@ -47,6 +70,7 @@ public sealed class BillingDbContext(DbContextOptions<BillingDbContext> options)
             e.Property(x => x.ReviewCaseId).HasColumnName("review_case_id");
             e.Property(x => x.Purpose).HasColumnName("purpose").IsRequired();
             e.Property(x => x.Amount).HasColumnName("amount");
+            e.Property(x => x.Credits).HasColumnName("credits");
             e.Property(x => x.Provider)
                 .HasColumnName("provider")
                 .HasDefaultValue("PAYOS")

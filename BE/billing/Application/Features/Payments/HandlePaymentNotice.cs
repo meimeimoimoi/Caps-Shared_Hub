@@ -47,7 +47,7 @@ public sealed class HandlePaymentNoticeHandler(
             wallet = CreditWallet.Open(payment.UserId, now);
             wallets.Add(wallet);
         }
-        wallet.Credit(payment.Amount, now);
+        wallet.Credit(payment.Credits, now);
         ledger.Add(CreditLedger.Topup(wallet, payment, now));
         try
         {

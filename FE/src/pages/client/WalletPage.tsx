@@ -5,8 +5,10 @@ import { ShieldCheck } from 'lucide-react'
 import { mockPricing } from '@/features/service-pricing/api/fixtures'
 import { DEMO_CASES, demoCase } from '@/features/review-case/fixtures'
 import { fundsOf, useCaseFormat } from '@/features/review-case/ui'
+import type { CreditPackage } from '@/features/service-pricing/types'
 import {
   LEDGER_PAGE_SIZE,
+  useCreditPackages,
   useLedger,
   useWallet,
 } from '@/features/wallet/hooks/useWallet'
@@ -29,7 +31,7 @@ const PAYMENT_TONE = {
 } as const satisfies Record<PaymentTransaction['status'], StatusMeta['tone']>
 
 /* Ví & credit của client: số dư, gói nạp + đơn giá (cấu hình Admin), sổ credit, giao dịch thanh toán PayOS, phí thẩm định đang giữ hộ.
- * ponytail: gói/đơn giá đọc thẳng từ fixture Admin; cần endpoint công khai khi BE có. */
+ * Packages come from billing; rates still come from the Admin fixture until billing serves them. */
 export default function WalletPage() {
   const { t } = useTranslation('reviewCase')
   const { t: tc } = useTranslation('client')
@@ -40,9 +42,11 @@ export default function WalletPage() {
   const ledger = useLedger(page)
   // Billing has no list of PayOS payments yet, so the table is demo only
   const payments = useCreditOverview(isExpertDemo)
-  // null = closed; 0 = opened without a package, the user types the amount
-  const [topupAmount, setTopupAmount] = useState<number | null>(null)
-  const { creditPackages, creditRates } = mockPricing
+  // Credits can only be bought as a package
+  const packages = useCreditPackages()
+  const onSale = packages.data ?? []
+  const [buying, setBuying] = useState<CreditPackage | null>(null)
+  const { creditRates } = mockPricing
   const held = useMemo(
     () =>
       DEMO_CASES.map((d) => demoCase(d.id)!).filter((c) =>
@@ -72,13 +76,12 @@ export default function WalletPage() {
           <p className="text-fg-muted mt-1 text-sm">
             {t('wallet.unit', { count: wallet?.balance ?? 0 })}
           </p>
-          <button
-            type="button"
-            onClick={() => setTopupAmount(0)}
-            className="btn btn-press btn-primary mt-4"
+          <a
+            href="#w-packages"
+            className="btn btn-press btn-primary mt-4 no-underline"
           >
             {t('wallet.topup.open')}
-          </button>
+          </a>
         </div>
         <div className="sm:border-border sm:border-l sm:pl-6">
           <p className="eyebrow">{t('wallet.held')}</p>
@@ -96,48 +99,48 @@ export default function WalletPage() {
               {t('wallet.packages')}
             </h2>
             <ul className="mt-4 grid gap-4 sm:grid-cols-3">
-              {[...creditPackages]
-                .filter((p) => p.onSale)
-                .sort((a, b) => a.order - b.order)
-                .map((p) => (
-                  <li
-                    key={p.id}
-                    className={cn(
-                      'paper flex flex-col p-5',
-                      p.recommended && 'ring-indicator ring-2'
+              {onSale.map((p) => (
+                <li
+                  key={p.id}
+                  className={cn(
+                    'paper flex flex-col p-5',
+                    p.recommended && 'ring-indicator ring-2'
+                  )}
+                >
+                  <p className="text-fg-strong flex items-center justify-between gap-2 font-semibold">
+                    {p.name}
+                    {p.recommended && (
+                      <span className="text-accent-text text-caption font-bold uppercase">
+                        {t('wallet.recommended')}
+                      </span>
                     )}
+                  </p>
+                  <p className="num text-fg-strong text-h2 mt-3 font-semibold">
+                    {t('wallet.unit', { count: p.credits })}
+                  </p>
+                  <p className="text-fg-muted num text-sm">
+                    {p.price == null ? t('wallet.priceTbd') : f.money(p.price)}
+                  </p>
+                  <button
+                    type="button"
+                    disabled={p.price == null}
+                    onClick={() => setBuying(p)}
+                    title={
+                      p.price == null ? t('wallet.buyUnavailable') : undefined
+                    }
+                    className="btn btn-press btn-primary mt-5"
                   >
-                    <p className="text-fg-strong flex items-center justify-between gap-2 font-semibold">
-                      {p.name}
-                      {p.recommended && (
-                        <span className="text-accent-text text-caption font-bold uppercase">
-                          {t('wallet.recommended')}
-                        </span>
-                      )}
-                    </p>
-                    <p className="num text-fg-strong text-h2 mt-3 font-semibold">
-                      {t('wallet.unit', { count: p.credits })}
-                    </p>
-                    <p className="text-fg-muted num text-sm">
-                      {p.price == null
-                        ? t('wallet.priceTbd')
-                        : f.money(p.price)}
-                    </p>
-                    <button
-                      type="button"
-                      disabled={p.price == null}
-                      onClick={() => setTopupAmount(p.price ?? 0)}
-                      title={
-                        p.price == null ? t('wallet.buyUnavailable') : undefined
-                      }
-                      className="btn btn-press btn-primary mt-5"
-                    >
-                      {t('wallet.buy')}
-                    </button>
-                  </li>
-                ))}
+                    {t('wallet.buy')}
+                  </button>
+                </li>
+              ))}
             </ul>
-            {creditPackages.every((p) => p.price == null) && (
+            {!packages.isLoading && onSale.length === 0 && (
+              <p className="text-fg-muted mt-3 text-sm">
+                {packages.error?.message ?? t('wallet.noPackages')}
+              </p>
+            )}
+            {onSale.length > 0 && onSale.every((p) => p.price == null) && (
               <p className="text-fg-muted mt-3 text-sm">
                 {t('wallet.buyUnavailable')}
               </p>
@@ -372,12 +375,7 @@ export default function WalletPage() {
           </section>
         </aside>
       </div>
-      {topupAmount !== null && (
-        <TopupDialog
-          initialAmount={topupAmount || undefined}
-          onClose={() => setTopupAmount(null)}
-        />
-      )}
+      {buying && <TopupDialog pkg={buying} onClose={() => setBuying(null)} />}
     </>
   )
 }

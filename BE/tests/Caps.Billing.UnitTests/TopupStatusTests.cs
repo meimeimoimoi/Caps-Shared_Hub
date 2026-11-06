@@ -12,7 +12,7 @@ public sealed class TopupStatusTests
 
     private static readonly PaymentTransaction Payment = PaymentTransaction.StartTopup(
         Buyer,
-        50_000,
+        CreditPackage.Create(new("Gói 30", 30, 50_000, true, false, 1), Now),
         1792261576000123,
         Now
     );

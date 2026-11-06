@@ -5,12 +5,10 @@ import { CircleCheck } from 'lucide-react'
 import { Modal } from '@/components/ui/feedback/modal'
 import { useFormatters } from '@/hooks/useFormatters'
 import { Countdown } from '@/features/review-case/components/CaseUi'
-import { createTopup, TOPUP_MAX, TOPUP_MIN } from '../api/walletApi'
+import type { CreditPackage } from '@/features/service-pricing/types'
+import { createTopup } from '../api/walletApi'
 import { useTopupStatus } from '../hooks/useTopup'
 import type { Topup } from '../types'
-
-const inputCls =
-  'border-border-control rounded-control shadow-control bg-paper h-control num w-full border px-3 text-base font-normal'
 
 function Row({ label, children }: { label: string; children: ReactNode }) {
   return (
@@ -21,41 +19,31 @@ function Row({ label, children }: { label: string; children: ReactNode }) {
   )
 }
 
-/* Top-up through PayOS: pick an amount, then pay the VietQR code (or the PayOS page) before it expires.
- * Credits arrive when PayOS confirms the transfer; the dialog keeps asking billing until then. */
+/* Buying a credit package through PayOS: confirm the package, then pay the VietQR code (or the PayOS page)
+ * before it expires. Credits arrive when PayOS confirms the transfer; the dialog keeps asking billing until then. */
 export function TopupDialog({
-  initialAmount,
+  pkg,
   onClose,
 }: {
-  initialAmount?: number
+  /** A package with a price; billing charges its current price */
+  pkg: CreditPackage
   onClose: () => void
 }) {
   const { t } = useTranslation('reviewCase')
   const format = useFormatters()
-  const [amount, setAmount] = useState(
-    initialAmount ? String(initialAmount) : ''
-  )
   const [topup, setTopup] = useState<Topup | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
   const [expired, setExpired] = useState(false)
   const status = useTopupStatus(topup).data?.status
   const expire = useCallback(() => setExpired(true), [])
-  const value = Number(amount)
   const paid = status === 'SUCCEEDED'
   const ended = !paid && (expired || status === 'FAILED')
 
   const start = () => {
-    if (!Number.isInteger(value) || value < TOPUP_MIN || value > TOPUP_MAX)
-      return setError(
-        t('wallet.topup.range', {
-          min: format.money(TOPUP_MIN),
-          max: format.money(TOPUP_MAX),
-        })
-      )
     setBusy(true)
     setError(null)
-    createTopup(value)
+    createTopup(pkg.id)
       .then((created) => {
         setExpired(false)
         setTopup(created)
@@ -89,17 +77,15 @@ export function TopupDialog({
           </>
         }
       >
-        <label className="flex flex-col gap-1.5 text-sm font-semibold">
-          {t('wallet.topup.amount')}
-          <input
-            required
-            inputMode="numeric"
-            value={amount}
-            onChange={(e) => setAmount(e.target.value.replace(/\D/g, ''))}
-            placeholder="100000"
-            className={inputCls}
-          />
-        </label>
+        <dl className="grid gap-3 text-sm sm:grid-cols-3">
+          <Row label={t('wallet.topup.package')}>{pkg.name}</Row>
+          <Row label={t('wallet.topup.credits')}>
+            {t('wallet.unit', { count: pkg.credits })}
+          </Row>
+          <Row label={t('wallet.topup.amount')}>
+            {format.money(pkg.price ?? 0)}
+          </Row>
+        </dl>
         {error && (
           <p role="alert" className="text-danger mt-2 text-sm">
             {error}

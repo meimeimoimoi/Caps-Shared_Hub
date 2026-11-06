@@ -1,6 +1,7 @@
 import { api, ApiError } from '@/lib/api-client'
 import { i18n } from '@/lib/i18n'
 import { isExpertDemo } from '@/lib/expert-data-source'
+import type { CreditPackage } from '@/features/service-pricing/types'
 import type {
   LedgerPage,
   LedgerType,
@@ -14,12 +15,13 @@ const fixtures = () => import('../fixtures')
 const WALLET = '/api/v1/billing/wallet'
 const PAYOS = '/api/v1/billing/payos'
 
-/** Top-up limits in VND, as billing checks them (PaymentRules) */
+/** Package price limits in VND, as billing checks them (PaymentRules) */
 export const TOPUP_MIN = 10_000
 export const TOPUP_MAX = 50_000_000
 
 type TopupKey =
   | 'wallet.topup.invalid'
+  | 'wallet.topup.notForSale'
   | 'wallet.topup.conflict'
   | 'wallet.topup.unavailable'
   | 'wallet.topup.demo'
@@ -27,6 +29,8 @@ type TopupKey =
 // Billing errors a top-up can hit; other errors keep the server message
 const TOPUP_ERRORS: Record<string, TopupKey> = {
   INVALID_TOPUP_AMOUNT: 'wallet.topup.invalid',
+  CREDIT_PACKAGE_NOT_FOUND: 'wallet.topup.notForSale',
+  CREDIT_PACKAGE_NOT_FOR_SALE: 'wallet.topup.notForSale',
   PAYMENT_CONFLICT: 'wallet.topup.conflict',
   PAYMENT_UNAVAILABLE: 'wallet.topup.unavailable',
   SESSION_CHECK_UNAVAILABLE: 'wallet.topup.unavailable',
@@ -91,12 +95,30 @@ export async function getLedger(
   }
 }
 
-/** Starts a PayOS top-up; the link and its QR code can be paid for 15 minutes */
-export async function createTopup(amount: number): Promise<Topup> {
+/** Packages on sale in display order (public); price null = shown but not buyable yet */
+export async function getCreditPackages(
+  signal?: AbortSignal
+): Promise<CreditPackage[]> {
+  if (isExpertDemo) {
+    const { mockPricing } =
+      await import('@/features/service-pricing/api/fixtures')
+    return mockPricing.creditPackages
+      .filter((p) => p.onSale)
+      .sort((a, b) => a.order - b.order)
+  }
+  const res = await api.get<Envelope<CreditPackage[]>>(
+    '/api/v1/billing/credit-packages',
+    { signal }
+  )
+  return res.data
+}
+
+/** Buys a package through PayOS; billing reads its price and credits. The QR code can be paid for 15 minutes */
+export async function createTopup(packageId: string): Promise<Topup> {
   if (isExpertDemo) throw new Error(translated('wallet.topup.demo'))
   try {
     const res = await api.post<Envelope<Topup>>(`${PAYOS}/create-topup`, {
-      amount,
+      packageId,
     })
     return res.data
   } catch (e) {
