@@ -45,6 +45,7 @@ public class SendChatMessage
 
             var now = timeProvider.GetUtcNow();
 
+            // 1. Check or initialize AI Quota
             var quota = await aiQuotaRepository.GetByUserIdAsync(command.UserId, ct);
             if(quota is null)
             {
@@ -115,9 +116,9 @@ public class SendChatMessage
             // 6. Update conversation title if needed and touch updated_at
             if (conversation.Title == "New Conversation")
             {
-                var autoTitle = command.Content.Length > 60
-                    ? command.Content[..57] + "..."
-                    : command.Content;
+                var autoTitle = command.content.Length > 60
+                    ? command.content[..57] + "..."
+                    : command.content;
                 conversation.UpdateTitle(autoTitle, now);
             }
             else

@@ -43,7 +43,7 @@ public static class ChatDtos
         DateOnly? PeriodEnd,
         string? ScopeResult,
         string? AnswerStatus,
-        IReadOnlyList<CitationDto> Citations,
+        IReadOnlyList<CitationDto>? Citations,
         DateTimeOffset CreatedAt
         );
 
@@ -58,6 +58,7 @@ public static class ChatDtos
         Guid SourceMessageId,
         string SuggestedTitle,
         DateOnly?  PeriodStart,
+        DateOnly? PeriodEnd,
         IReadOnlyList<CitationDto> Citations,
         string InitialDataJson
         );
