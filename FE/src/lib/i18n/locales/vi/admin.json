@@ -18,7 +18,6 @@
     "completeCurrent": "Hoàn tất tiêu chí hiện tại",
     "continueReview": "Tiếp tục đánh giá"
   },
-  "dashboardApiPending": "Thống kê tổng quan chưa được kết nối dữ liệu. Bạn vẫn có thể phê duyệt cuối và duyệt giá dịch vụ từ menu. Các mục quản trị khác đang chờ tích hợp API.",
   "navigation": {
     "overview": "Tổng quan",
     "expertReview": "Xét duyệt Expert",
@@ -53,18 +52,21 @@
       "pendingOverdue": "{{count}} quá hạn xử lý",
       "pendingOnTime": "Đều trong hạn xử lý",
       "experts": "Expert đang hoạt động",
-      "expertsNote": "{{suspended}} tạm ngưng · tổng {{total}}",
+      "expertsNote": "{{suspended}} tạm ngưng · {{added}} mới trong tháng này",
       "held": "Tiền đang giữ",
-      "heldNote": "{{amount}} bị khóa do tranh chấp",
-      "disputes": "Khiếu nại đang mở",
-      "disputesNote": "Gần nhất còn {{hours}} giờ",
-      "disputesNone": "Không có khiếu nại"
+      "heldNote": "{{count}} case đang chờ nghiệm thu"
     },
     "vetting": "Xét duyệt Expert",
     "escrow": "Dòng tiền Escrow",
+    "money": {
+      "held": "Đang giữ chờ nghiệm thu",
+      "payoutPending": "Chờ chi trả cho Expert",
+      "payoutOther": "Chi trả {{status}}",
+      "refunded": "Đã hoàn tiền"
+    },
     "upcoming": {
       "title": "Sắp diễn ra",
-      "priceChange": "Khung giá mới: {{group}}",
+      "feeChange": "Phí nền tảng mới cho {{service}}: {{percent}}%",
       "empty": "Chưa có thay đổi nào lên lịch."
     },
     "loading": "Đang tải số liệu…",
@@ -82,13 +84,10 @@
       "usersChart": "Người dùng mới theo kỳ",
       "expertPayout": "Chi trả chuyên gia",
       "refunds": "Hoàn tiền",
-      "clients": "Client",
-      "experts": "Expert",
       "table": "Xem dạng bảng",
       "period": "Kỳ",
       "total": "Tổng",
       "quarterLabel": "Q{{quarter}}/{{year}}",
-      "mock": "Số liệu minh họa, chờ API thống kê của BE.",
       "partial": "{{period}} (đến nay)",
       "latest": "Kỳ đã chốt gần nhất: {{period}}. Kỳ đang diễn ra chỉ hiện trên biểu đồ.",
       "notEnough": "Chưa đủ 2 kỳ đã chốt để so sánh.",

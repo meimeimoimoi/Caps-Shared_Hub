@@ -18,7 +18,6 @@
     "completeCurrent": "Complete the current criterion",
     "continueReview": "Continue assessment"
   },
-  "dashboardApiPending": "Overview statistics are not connected yet. Final approvals and service price reviews are available from the menu. Other administration areas are awaiting API integration.",
   "navigation": {
     "overview": "Overview",
     "expertReview": "Expert Review",
@@ -53,18 +52,21 @@
       "pendingOverdue": "{{count}} past the review deadline",
       "pendingOnTime": "All within the review deadline",
       "experts": "Active experts",
-      "expertsNote": "{{suspended}} suspended · {{total}} total",
+      "expertsNote": "{{suspended}} suspended · {{added}} new this month",
       "held": "Funds held",
-      "heldNote": "{{amount}} locked by disputes",
-      "disputes": "Open disputes",
-      "disputesNote": "Nearest due in {{hours}} h",
-      "disputesNone": "No disputes"
+      "heldNote": "{{count}} cases awaiting acceptance"
     },
     "vetting": "Expert review",
     "escrow": "Escrow funds",
+    "money": {
+      "held": "Held until acceptance",
+      "payoutPending": "Owed to experts",
+      "payoutOther": "Payouts {{status}}",
+      "refunded": "Refunded"
+    },
     "upcoming": {
       "title": "Coming up",
-      "priceChange": "New price range: {{group}}",
+      "feeChange": "New platform fee for {{service}}: {{percent}}%",
       "empty": "No scheduled changes."
     },
     "loading": "Loading figures…",
@@ -82,13 +84,10 @@
       "usersChart": "New users by period",
       "expertPayout": "Expert payouts",
       "refunds": "Refunds",
-      "clients": "Clients",
-      "experts": "Experts",
       "table": "Show as table",
       "period": "Period",
       "total": "Total",
       "quarterLabel": "Q{{quarter}} {{year}}",
-      "mock": "Sample figures until the backend statistics API is ready.",
       "partial": "{{period}} (to date)",
       "latest": "Latest closed period: {{period}}. The current period is shown on the charts only.",
       "notEnough": "Not enough closed periods to compare yet.",

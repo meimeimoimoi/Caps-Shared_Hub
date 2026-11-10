@@ -40,7 +40,7 @@ export function GrowthSection() {
   const cur = closed.at(-1)
   const prev = closed.at(-2)
   const gmv = (p: StatPeriod) => p.expertPayout + p.platformFee + p.refunds
-  const newUsers = (p: StatPeriod) => p.newClients + p.newExperts
+  const newUsers = (p: StatPeriod) => p.newUsers
   const percent = (ratio: number) =>
     f.number(ratio, {
       style: 'percent',
@@ -164,27 +164,20 @@ export function GrowthSection() {
                 title={t('dashboard.growth.usersChart')}
                 series={[
                   {
-                    name: t('dashboard.growth.clients'),
+                    name: t('dashboard.growth.newUsers'),
                     color: 'var(--ui-series-1)',
-                  },
-                  {
-                    name: t('dashboard.growth.experts'),
-                    color: 'var(--ui-series-2)',
                   },
                 ]}
                 columns={periods.map((p) => ({
                   label: periodLabel(p),
                   tick: tick(p),
-                  values: [p.newClients, p.newExperts],
+                  values: [p.newUsers],
                 }))}
                 format={(v) => f.number(v)}
                 {...chartProps}
               />
             </div>
           </div>
-          <p className="text-fg-muted text-caption mt-2">
-            {t('dashboard.growth.mock')}
-          </p>
         </>
       ) : (
         <p className="paper text-fg-muted mt-4 px-5 py-8 text-sm">

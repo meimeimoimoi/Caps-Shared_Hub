@@ -2,37 +2,34 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useQuery } from '@tanstack/react-query'
-import { ESCROW_STATUS } from '@/lib/constants'
 import { useFormatters } from '@/hooks/useFormatters'
 import { AdminLayout } from '@/app/layouts/admin/AdminLayout'
 import { useAdminNav } from '@/app/layouts/admin/useAdminNav'
-import {
-  getApplications,
-  getExperts,
-} from '../../features/expert-vetting/api/adminApi'
+import { getApplications } from '../../features/expert-vetting/api/adminApi'
+import { getPlatformFees } from '../../features/expert-vetting/api/platformFeeApi'
 import { adminKeys } from '../../features/expert-vetting/api/queryKeys'
 import {
   PENDING_STATUS,
   QUEUE_TABS,
 } from '../../features/expert-vetting/constants'
+import { waitedDays } from '../../features/expert-vetting/utils/applications'
 import {
-  waitedDays,
-} from '../../features/expert-vetting/utils/applications'
-import {
-  getDisputes,
-  getEscrows,
-} from '../../features/disputes-escrow/api/disputesApi'
-import { disputesKeys } from '../../features/disputes-escrow/api/queryKeys'
-import { disputeHoursLeft } from '../../features/disputes-escrow/utils/disputes'
-import { usePricing } from '../../features/service-pricing/hooks/usePricing'
+  getBillingStats,
+  getExpertStats,
+  statsKeys,
+} from '../../features/admin-analytics/api/statsApi'
 import { BarList } from '../../features/admin-analytics/components/BarList'
 import { GrowthSection } from '../../features/admin-analytics/components/GrowthSection'
 import { KpiCard } from '../../features/admin-analytics/components/KpiCard'
+import type { StatusTotal } from '../../features/admin-analytics/types'
 import { hasAnyPermission, Permission, useAuthStore } from '@/features/auth'
 import { isOverdue, useReviewSlaDays } from '@/features/expert-vetting/hooks/useReviewSlaDays'
-import { isExpertDemo } from '@/lib/expert-data-source'
 
-/* Tổng quan System Admin: chỉ số, tăng trưởng, chỗ đang tắc. Việc gấp nằm ở chuông thông báo (useAdminNav). Số liệu dùng chung cache với các màn chi tiết */
+/* Same months as the monthly growth chart, so the billing request is shared with it */
+const BILLING_MONTHS = 12
+
+/* System Admin overview: key figures, growth and where work is stuck. Urgent items live in the
+ * notification bell (useAdminNav). Each block only calls the API the account has permission for. */
 export default function AdminDashboardPage() {
   const nav = useAdminNav()
   const { t } = useTranslation('admin')
@@ -40,6 +37,10 @@ export default function AdminDashboardPage() {
   const [now] = useState(() => Date.now())
   const user = useAuthStore((s) => s.user)
   const canReview = hasAnyPermission(user, [Permission.ExpertReview])
+  const canApprove = hasAnyPermission(user, [Permission.ExpertApprove])
+  const canSeeMoney = hasAnyPermission(user, [Permission.PayoutManage])
+  const canSeeUsers = hasAnyPermission(user, [Permission.UserManage])
+  const canSetFees = hasAnyPermission(user, [Permission.PricingManage])
   const slaDays = useReviewSlaDays(canReview)
 
   const applications = useQuery({
@@ -47,25 +48,23 @@ export default function AdminDashboardPage() {
     queryFn: ({ signal }) => getApplications(signal),
     enabled: canReview,
   })
+  // Only the current month is needed: experts approved this month
   const experts = useQuery({
-    queryKey: adminKeys.experts(),
-    queryFn: ({ signal }) => getExperts(signal),
-    enabled: isExpertDemo,
+    queryKey: statsKeys.experts(1),
+    queryFn: ({ signal }) => getExpertStats(1, signal),
+    enabled: canApprove,
   })
-  const disputes = useQuery({
-    queryKey: disputesKeys.disputes(),
-    queryFn: ({ signal }) => getDisputes(signal),
-    enabled: isExpertDemo,
+  const billing = useQuery({
+    queryKey: statsKeys.billing(BILLING_MONTHS),
+    queryFn: ({ signal }) => getBillingStats(BILLING_MONTHS, signal),
+    enabled: canSeeMoney,
   })
-  const escrows = useQuery({
-    queryKey: disputesKeys.escrows(),
-    queryFn: ({ signal }) => getEscrows(signal),
-    enabled: isExpertDemo,
+  const fees = useQuery({
+    queryKey: [...adminKeys.all, 'platform-fees'],
+    queryFn: ({ signal }) => getPlatformFees(signal),
+    enabled: canSetFees,
   })
-  const pricing = usePricing(isExpertDemo)
-  const loading = [applications, experts, disputes, escrows, pricing].some(
-    (q) => q.isLoading
-  )
+  const loading = [applications, experts, billing, fees].some((q) => q.isLoading)
 
   const apps = applications.data ?? []
   const pending = apps.filter((a) => a.status === PENDING_STATUS)
@@ -73,26 +72,27 @@ export default function AdminDashboardPage() {
     isOverdue(waitedDays(a.submittedAt, now), slaDays)
   )
 
-  const expertList = experts.data ?? []
-  const active = expertList.filter((e) => e.serviceStatus === 'ACTIVE').length
-  const suspended = expertList.filter(
-    (e) => e.serviceStatus === 'SUSPENDED'
-  ).length
+  const find = (list: StatusTotal[] | undefined, status: string) =>
+    list?.find((x) => x.status === status) ?? { status, count: 0, amount: 0 }
+  const held = find(billing.data?.escrows, 'HELD')
+  // Money still in the system: held for open cases, then owed to experts or already refunded
+  const moneyRows = billing.data
+    ? [
+        { key: 'held', total: held },
+        ...billing.data.payouts.map((p) => ({ key: `payout-${p.status}`, total: p })),
+        { key: 'refunded', total: find(billing.data.escrows, 'REFUNDED') },
+      ].filter((r) => r.total.amount > 0)
+    : []
+  const moneyLabel = (key: string, total: StatusTotal) =>
+    key === 'held'
+      ? t('dashboard.money.held')
+      : key === 'refunded'
+        ? t('dashboard.money.refunded')
+        : total.status === 'PENDING'
+          ? t('dashboard.money.payoutPending')
+          : t('dashboard.money.payoutOther', { status: total.status })
 
-  const open = (disputes.data ?? []).filter((d) => !d.resolvedAt)
-  const nearestHours = open.length
-    ? Math.min(...open.map((d) => disputeHoursLeft(d, now)))
-    : null
-
-  const escrowList = escrows.data ?? []
-  const sumBy = (status: keyof typeof ESCROW_STATUS) =>
-    escrowList
-      .filter((e) => e.status === status)
-      .reduce((s, e) => s + e.amount, 0)
-  const locked = sumBy('DISPUTE_LOCKED')
-
-  const tiers = pricing.data?.tiers ?? []
-  const scheduled = tiers.filter((tier) => tier.scheduled)
+  const scheduledFees = (fees.data ?? []).filter((fee) => fee.pending)
 
   return (
     <AdminLayout
@@ -102,13 +102,8 @@ export default function AdminDashboardPage() {
     >
       <h1 className="text-h1">{t('dashboard.title')}</h1>
       <p className="text-fg-muted mt-3">{t('dashboard.description')}</p>
-      {!isExpertDemo && (
-        <p role="status" className="bg-desk-2 text-fg-muted mt-6 rounded-lg p-4 text-sm">
-          {t('dashboardApiPending')}
-        </p>
-      )}
 
-      <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         {canReview && <KpiCard
           label={t('dashboard.kpi.pending')}
           value={applications.data && pending.length}
@@ -120,46 +115,27 @@ export default function AdminDashboardPage() {
           warn={overdue.length > 0}
           to="/reviewer/gate-1"
         />}
-        <KpiCard
+        {canApprove && <KpiCard
           label={t('dashboard.kpi.experts')}
-          value={experts.data && active}
+          value={experts.data?.servingExperts}
           note={t('dashboard.kpi.expertsNote', {
-            suspended,
-            total: expertList.length,
+            suspended: experts.data?.suspendedExperts ?? 0,
+            added: experts.data?.periods.at(-1)?.newExperts ?? 0,
           })}
           to="/admin/experts"
-        />
-        <KpiCard
+        />}
+        {canSeeMoney && <KpiCard
           label={t('dashboard.kpi.held')}
-          // Cùng tổng với nhóm "Đang giữ trong hệ thống" ở trang Hoàn tiền & chi trả
-          value={
-            escrows.data &&
-            sumBy('HELD') +
-              locked +
-              sumBy('PAYOUT_SCHEDULED') +
-              sumBy('REFUND_PENDING')
-          }
+          value={billing.data && held.amount}
           format={(n) => f.money(n)}
-          note={t('dashboard.kpi.heldNote', { amount: f.money(locked) })}
-          warn={locked > 0}
+          note={t('dashboard.kpi.heldNote', { count: held.count })}
           to="/admin/escrow"
-        />
-        <KpiCard
-          label={t('dashboard.kpi.disputes')}
-          value={disputes.data && open.length}
-          note={
-            nearestHours !== null
-              ? t('dashboard.kpi.disputesNote', { hours: nearestHours })
-              : t('dashboard.kpi.disputesNone')
-          }
-          warn={nearestHours !== null}
-          to="/admin/disputes"
-        />
+        />}
       </div>
 
-      {isExpertDemo && <GrowthSection />}
+      {canSeeUsers && canSeeMoney && <GrowthSection />}
 
-      {/* Chỗ đang tắc: hồ sơ dồn ở bước nào, tiền kẹt ở đâu */}
+      {/* Where work is stuck: which step applications pile up at, where money waits */}
       <div className="mt-6 grid gap-4 lg:grid-cols-2">
         {canReview && <BarList
           id="dash-vetting"
@@ -177,45 +153,43 @@ export default function AdminDashboardPage() {
             }
           })}
         />}
-        <BarList
+        {canSeeMoney && <BarList
           id="dash-escrow"
           title={t('dashboard.escrow')}
           empty={loading ? t('dashboard.loading') : t('dashboard.noData')}
-          rows={(Object.keys(ESCROW_STATUS) as (keyof typeof ESCROW_STATUS)[])
-            .map((status) => ({ status, amount: sumBy(status) }))
-            .filter((r) => r.amount > 0)
-            .map((r) => ({
-              key: r.status,
-              label: t(`escrow.status.${r.status}`),
-              value: r.amount,
-              display: f.money(r.amount),
-              warn:
-                r.status === 'PAYOUT_FAILED' || r.status === 'REFUND_FAILED',
-            }))}
-        />
+          rows={moneyRows.map((r) => ({
+            key: r.key,
+            label: moneyLabel(r.key, r.total),
+            value: r.total.amount,
+            display: f.money(r.total.amount),
+          }))}
+        />}
       </div>
 
-      {/* Sắp diễn ra (kho tri thức không hiện: System Admin không có quyền xem) */}
-      <section className="paper mt-6 p-5" aria-labelledby="dash-upcoming">
+      {/* Coming up: platform fee changes announced ahead (the knowledge base is hidden: System Admin cannot see it) */}
+      {canSetFees && <section className="paper mt-6 p-5" aria-labelledby="dash-upcoming">
         <h2 id="dash-upcoming" className="text-h2">
           {t('dashboard.upcoming.title')}
         </h2>
-        {scheduled.length ? (
+        {scheduledFees.length ? (
           <ul className="divide-border-subtle mt-3 divide-y text-sm">
-            {scheduled.map((tier) => (
-              <li key={tier.id}>
+            {scheduledFees.map((fee) => (
+              <li key={fee.serviceCode}>
                 <Link
-                  to={`/admin/pricing/${tier.id}`}
+                  to="/admin/platform-fees"
                   className="hover:bg-desk-2 -mx-2 flex gap-4 rounded px-2 py-2.5 no-underline"
                 >
                   <span className="text-fg-muted num w-14 shrink-0">
-                    {f.dateOnly(tier.scheduled!.effectiveFrom.slice(0, 10), {
+                    {f.dateOnly(fee.pending!.effectiveFrom.slice(0, 10), {
                       day: '2-digit',
                       month: '2-digit',
                     })}
                   </span>
                   <span className="text-fg-strong">
-                    {t('dashboard.upcoming.priceChange', { group: tier.group })}
+                    {t('dashboard.upcoming.feeChange', {
+                      service: fee.serviceName,
+                      percent: fee.pending!.percent,
+                    })}
                   </span>
                 </Link>
               </li>
@@ -226,7 +200,7 @@ export default function AdminDashboardPage() {
             {t('dashboard.upcoming.empty')}
           </p>
         )}
-      </section>
+      </section>}
     </AdminLayout>
   )
 }
