@@ -1,3 +1,4 @@
+using Caps.Workflow.Application.Abstractions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,7 +12,7 @@ public interface IRagQueryClient
     /// <summary>
     /// Calls internal rag-query service to retrieve AI answer and legal citations.
     /// </summary>
-    Task<InternalRagQueryResponse> QueryAsync(
-        InternalRagQueryRequest request,
+    Task<RagQueryResponse> QueryAsync(
+        RagQueryRequest request,
         CancellationToken cancellationToken = default);
 }
