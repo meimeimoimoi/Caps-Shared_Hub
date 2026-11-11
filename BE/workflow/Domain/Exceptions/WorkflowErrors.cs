@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 namespace Caps.Workflow.Domain.Exceptions;
 public class WorkflowErrors
 {
+    // conversation
     public static AppException Conversation_NotFound(Guid id) =>
         new(ErrorType.NotFound, "WORKFLOW_CONVERSATION_NOT_FOUND", $"Conversation with Id '{id}' was not found.");
 
@@ -28,4 +29,26 @@ public class WorkflowErrors
 
     public static AppException NoAnswerableMessageForDraftTransfer() =>
         new(ErrorType.Validation, "WORKFLOW_NO_ANSWERABLE_MESSAGE_FOR_DRAFT", "No answered AI message is available in this conversation to transfer into a draft.");
+
+    // document & draft
+    public static AppException Document_NotFound(Guid id) =>
+        new(ErrorType.NotFound, "WORKFLOW_DOCUMENT_NOT_FOUND", $"Document with Id '{id}' was not found.");
+
+    public static AppException Document_AccessDenied() =>
+        new(ErrorType.Forbidden, "WORKFLOW_DOCUMENT_ACCESS_DENIED", "You do not have permission to access or modify this document.");
+
+    public static AppException Document_InvalidPeriod() =>
+        new(ErrorType.Validation, "WORKFLOW_DOCUMENT_INVALID_PERIOD", "Document period end date must be greater than or equal to period start date.");
+
+    public static AppException Snapshot_NotFound(Guid id) =>
+        new(ErrorType.NotFound, "WORKFLOW_SNAPSHOT_NOT_FOUND", $"Input snapshot with Id '{id}' was not found for this document.");
+
+    public static AppException Snapshot_Required() =>
+        new(ErrorType.Validation, "WORKFLOW_SNAPSHOT_REQUIRED", "No snapshot found. Please create an input snapshot before generating an AI draft.");
+
+    public static AppException DocumentVersion_NotFound(Guid id) =>
+        new(ErrorType.NotFound, "WORKFLOW_DOCUMENT_VERSION_NOT_FOUND", $"Document version with Id '{id}' was not found.");
+
+    public static AppException OllamaGenerationFailed(string reason) =>
+        new(ErrorType.RuleViolation, "WORKFLOW_OLLAMA_GENERATION_FAILED", $"Local AI drafting failed: {reason}");
 }

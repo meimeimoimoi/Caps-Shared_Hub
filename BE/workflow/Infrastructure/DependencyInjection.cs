@@ -35,6 +35,8 @@ public static class DependencyInjection
         {
             client.BaseAddress = new Uri(ragServiceBaseUrl);
             client.Timeout = TimeSpan.FromSeconds(60);
+            client.BaseAddress = new Uri(configuration["Ai:OllamaUrl"] ?? "http://localhost:11434");
+            client.Timeout = TimeSpan.FromMinutes(3); // qwen2.5:7b drafting may take up to a few minutes on local CPU/GPU
         });
 
         return services;
