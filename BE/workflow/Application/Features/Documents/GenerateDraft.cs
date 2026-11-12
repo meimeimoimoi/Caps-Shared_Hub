@@ -1,27 +1,28 @@
+using System.Security.Cryptography;
+using System.Text;
+using System.Text.Json;
 using Caps.Common.Application;
 using Caps.Common.Domain;
 using Caps.Workflow.Application.Abstractions.Documents;
 using Caps.Workflow.Domain.Exceptions;
 using Caps.Workflow.Domain.Workspace;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Cryptography;
-using System.Text;
-using System.Threading.Tasks;
 using static Caps.Workflow.Application.Features.Documents.DTOs.DocumentDtos;
 
 namespace Caps.Workflow.Application.Features.Documents;
-public class GenerateDraft
+
+/// <summary>Use case for generating an AI document draft version via Ollama.</summary>
+public static class GenerateDraft
 {
+    /// <summary>Command to generate a new AI draft version for a document.</summary>
     public sealed record GenerateDraftCommand(
         Guid DocumentId,
         Guid UserId,
         Guid? SnapshotId,
         Guid? TemplateVersionId,
         string? Citations
-        );
+    );
 
+    /// <summary>Handles resolving the input snapshot, calling Ollama to draft content, hashing, and persisting the new version.</summary>
     public sealed class GenerateDraftHandler(
         IDocumentRepository documentRepository,
         IInputSnapshotRepository inputSnapshotRepository,
@@ -29,23 +30,23 @@ public class GenerateDraft
         IOllamaDraftService ollamaDraftService,
         IUnitOfWork unitOfWork,
         TimeProvider timeProvider
-        ) : ICommandHandler<GenerateDraftCommand, DocumentVersionDetailDto>
+    ) : ICommandHandler<GenerateDraftCommand, DocumentVersionDetailDto>
     {
         public async Task<DocumentVersionDetailDto> HandleAsync(GenerateDraftCommand command, CancellationToken ct)
         {
             var document = await documentRepository.GetByIdAsync(command.DocumentId, ct);
-            if(document is null)
+            if (document is null)
             {
                 throw WorkflowErrors.Document_NotFound(command.DocumentId);
             }
 
-            if(document.OwnerUserId != command.UserId)
+            if (document.OwnerUserId != command.UserId)
             {
                 throw WorkflowErrors.Document_AccessDenied();
             }
 
             InputSnapshot? snapshot;
-            // 1 resolve snapshot
+            // 1. Resolve snapshot
             if (command.SnapshotId.HasValue)
             {
                 snapshot = await inputSnapshotRepository.GetByIdAsync(command.SnapshotId.Value, ct);
@@ -56,31 +57,37 @@ public class GenerateDraft
             }
             else
             {
-                snapshot = await inputSnapshotRepository.GetLastestByDocumtnIdAsync(document.Id, ct);
-                if(snapshot is null)
+                snapshot = await inputSnapshotRepository.GetLatestByDocumentIdAsync(document.Id, ct);
+                if (snapshot is null)
                 {
                     throw WorkflowErrors.Snapshot_Required();
                 }
             }
 
-            // 2 Generate JSON draft content via Ollama
+            // 2. Load template schema (if a TemplateVersionId is provided) and normalize citations for jsonb
+            var templateSchema = command.TemplateVersionId.HasValue
+                ? await documentRepository.GetTemplateFieldSchemaAsync(command.TemplateVersionId.Value, ct)
+                : null;
+            var normalizedCitations = NormalizeJsonb(command.Citations);
+
+            // 3. Generate JSON draft content via Ollama
             var generatedContent = await ollamaDraftService.GenerateDraftAsync(
                 title: document.Title,
                 periodStart: document.PeriodStart,
                 periodEnd: document.PeriodEnd,
                 snapshotData: snapshot.Data,
-                templateSchema: null,
-                citations: command.Citations,
+                templateSchema: templateSchema,
+                citations: normalizedCitations,
                 ct: ct
-                );
+            );
 
-            // 3 Compute SHA-256 hash of Content
+            // 4. Compute SHA-256 hash of Content
             var hashBytes = SHA256.HashData(Encoding.UTF8.GetBytes(generatedContent));
-            var contentHash = Convert.ToHexString( hashBytes );
+            var contentHash = Convert.ToHexString(hashBytes);
 
-            // 4 Resolve next version number & persist
+            // 5. Resolve next version number & persist
             var nextVersionNo = await documentVersionRepository.GetNextVersionNoAsync(document.Id, ct);
-            var now = DateTime.UtcNow;
+            var now = timeProvider.GetUtcNow();
 
             var documentVersion = new DocumentVersion
             {
@@ -90,7 +97,7 @@ public class GenerateDraft
                 VersionType = "AI_DRAFT",
                 InputSnapshotId = snapshot.Id,
                 TemplateVersionId = command.TemplateVersionId,
-                Citations = command.Citations,
+                Citations = normalizedCitations,
                 DraftAssessment = "AI_GENERATED_PENDING_REVIEW",
                 ReviewCaseId = null,
                 FileUrl = null,
@@ -103,7 +110,7 @@ public class GenerateDraft
 
             document.UpdatedAt = now;
 
-            await documentVersionRepository.AddAsync( documentVersion, ct );
+            await documentVersionRepository.AddAsync(documentVersion, ct);
             await unitOfWork.SaveChangesAsync(ct);
 
             return new DocumentVersionDetailDto(
@@ -120,7 +127,26 @@ public class GenerateDraft
                 documentVersion.IsImmutable,
                 documentVersion.CreatedBy,
                 documentVersion.CreatedAt
-                );
+            );
+        }
+
+        private static string? NormalizeJsonb(string? raw)
+        {
+            if (string.IsNullOrWhiteSpace(raw))
+            {
+                return null;
+            }
+
+            var trimmed = raw.Trim();
+            try
+            {
+                using var _ = JsonDocument.Parse(trimmed);
+                return trimmed;
+            }
+            catch (JsonException)
+            {
+                return JsonSerializer.Serialize(trimmed);
+            }
         }
     }
 }

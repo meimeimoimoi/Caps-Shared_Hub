@@ -22,11 +22,11 @@ class IngestDocRequest(BaseModel):
     document_number: str
     title: str
     doc_type: Optional[str] = None
-    effective_from: Optional[str] = None  # Định dạng: YYYY-MM-DD
+    effective_from: Optional[str] = None  # Format: YYYY-MM-DD
     effective_to: Optional[str] = None
-    vbhn_effective_from: Optional[str] = None  # Cho văn bản hợp nhất
-    content_json: Dict[str, Any]  # Dữ liệu bóc tách văn bản
-    chunks: Optional[List[CrawlerChunkItem]] = []
+    vbhn_effective_from: Optional[str] = None  # For consolidated legal documents (VBHN)
+    content_json: Optional[Dict[str, Any]] = None  # Parsed document structure
+    chunks: Optional[List[CrawlerChunkItem]] = None
 
 
 class KbChunkItem(BaseModel):

@@ -45,6 +45,7 @@ class LegalIndexer:
                 "knowledge_document_id": c["doc_id"],
                 "legal_source_id": c["source_id"],
                 "document_number": c["doc_number"],
+                "document_title": c.get("doc_title") or "",
                 "article": c["article"],
                 "clause": c["clause"],
                 "point": c["point"],

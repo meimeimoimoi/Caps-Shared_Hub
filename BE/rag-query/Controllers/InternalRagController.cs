@@ -1,6 +1,5 @@
 using Caps.RagQuery.Services.Interface;
 using Microsoft.AspNetCore.Mvc;
-using rag_query.Services.Interface;
 using static Caps.RagQuery.Dtos.RagQueryDtos;
 
 namespace Caps.RagQuery.Controllers;

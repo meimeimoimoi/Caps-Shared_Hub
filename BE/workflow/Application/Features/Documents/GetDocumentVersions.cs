@@ -1,35 +1,34 @@
 using Caps.Common.Application;
 using Caps.Workflow.Application.Abstractions.Documents;
 using Caps.Workflow.Domain.Exceptions;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using static Caps.Workflow.Application.Features.Documents.DTOs.DocumentDtos;
 
 namespace Caps.Workflow.Application.Features.Documents;
-public class GetDocumentVersions
+
+/// <summary>Use case for listing all versions of a document.</summary>
+public static class GetDocumentVersions
 {
+    /// <summary>Query to retrieve the version history of a document.</summary>
     public sealed record GetDocumentVersionsQuery(
         Guid DocumentId,
         Guid UserId
-        );
+    );
 
+    /// <summary>Handles verifying document ownership and returning version summaries.</summary>
     public sealed class GetDocumentVersionHandler(
         IDocumentRepository documentRepository,
         IDocumentVersionRepository versionRepository
-        ) : IQueryHandler<GetDocumentVersionsQuery, IReadOnlyList<DocumentVersionSummaryDto>>
+    ) : IQueryHandler<GetDocumentVersionsQuery, IReadOnlyList<DocumentVersionSummaryDto>>
     {
         public async Task<IReadOnlyList<DocumentVersionSummaryDto>> HandleAsync(GetDocumentVersionsQuery query, CancellationToken ct)
         {
             var document = await documentRepository.GetByIdAsync(query.DocumentId, ct);
-            if(document is null)
+            if (document is null)
             {
                 throw WorkflowErrors.Document_NotFound(query.DocumentId);
             }
 
-            if(document.OwnerUserId != query.UserId)
+            if (document.OwnerUserId != query.UserId)
             {
                 throw WorkflowErrors.Document_AccessDenied();
             }
@@ -47,8 +46,7 @@ public class GetDocumentVersions
                 v.IsImmutable,
                 v.CreatedBy,
                 v.CreatedAt
-                )).ToList();
-
+            )).ToList();
         }
     }
 }

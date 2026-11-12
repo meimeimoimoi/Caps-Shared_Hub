@@ -62,7 +62,8 @@ public class ChatAiClient : IChatAiClient
             Article: c.Article,
             Clause: c.Clause,
             Point: c.Point,
-            DocNumber: c.DocNumber,
+            DocNumber: c.DocumentNumber ?? string.Empty,
+            DocTitle: c.DocTitle ?? c.DocumentNumber ?? string.Empty,
             Text: c.Text,
             EffectiveFrom: c.EffectiveFrom,
             EffectiveTo: c.EffectiveTo

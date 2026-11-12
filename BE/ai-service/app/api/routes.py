@@ -27,9 +27,8 @@ def chunk_and_embed(req: IngestDocRequest):
     try:
         chunks_to_index = []
 
-        # Nếu crawler đã có sẵn chunk
+        # Use pre-built chunks if provided by the caller
         if req.chunks and len(req.chunks) > 0:
-            # xác định ngày hiệu lực mặc định (ưu tiên vbhn_effective_from nếu có)
             default_eff_from = req.effective_from or req.vbhn_effective_from
 
             for c in req.chunks:
@@ -38,6 +37,7 @@ def chunk_and_embed(req: IngestDocRequest):
                         "doc_id": req.knowledge_document_id,
                         "source_id": req.legal_source_id,
                         "doc_number": req.document_number,
+                        "doc_title": req.title,
                         "article": f"Điều {c.article}"
                         if c.article and not str(c.article).startswith("Điều")
                         else c.article,
@@ -52,28 +52,35 @@ def chunk_and_embed(req: IngestDocRequest):
                         "text": c.text,
                     }
                 )
-
-            # crawler chưa cắt chunks
-            else:
-                if not req.content_json:
-                    raise HTTPException(
-                        status_code=400, detail=ErrorChunkEmpty.EMPTY_CHUNK
-                    )
-                    chunks_to_index = LegalChunker.chunk_document(req.model_dump())
-
-            if not chunks_to_index:
-                raise HTTPException(status_code=400, detail=ErrorMessage.INTERNAL_ERROR)
-
-                # embed và đẩy lên qdrant
-                kb_chunks = LegalIndexer.index_to_qdrant(chunks_to_index)
-
-                return IngestDocResponse(
-                    status=OperationStatus.SUCCESS,
-                    total_chunks=len(kb_chunks),
-                    kb_chunks=kb_chunks,
+        else:
+            # Otherwise chunk directly from content_json
+            if not req.content_json:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=ErrorChunkEmpty.EMPTY_CHUNK,
                 )
+            chunks_to_index = LegalChunker.chunk_document(req.model_dump())
+
+        if not chunks_to_index:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=ErrorChunkEmpty.EMPTY_CHUNK,
+            )
+
+        # Generate embeddings and upsert into Qdrant
+        kb_chunks = LegalIndexer.index_to_qdrant(chunks_to_index)
+
+        return IngestDocResponse(
+            status=OperationStatus.SUCCESS,
+            total_chunks=len(kb_chunks),
+            kb_chunks=kb_chunks,
+        )
+    except HTTPException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)
+        ) from e
 
 
 # API FLOW 3: Được gọi từ `rag-query` (.NET)
@@ -135,7 +142,7 @@ def draft_document(req: GenerateDraftRequest):
         period_start=req.period_start,
         period_end=req.period_end,
     )
-    context = "\n".join([h.payload["text_content"] for h in retrieved])
+    context = "\n".join([(h.payload or {}).get("text_content", "") for h in retrieved])
 
     result = DocumentDrafter.generate_draft(
         req.snapshot_data, req.template_schema, context

@@ -33,10 +33,10 @@ class TemporalRetriever:
         rfc_start = to_rfc3339(period_start, is_end=False)
         rfc_end = to_rfc3339(period_end, is_end=True)
 
-        # Bộ lọc Temporal RAG:
+        # Temporal RAG filter:
         # 1. status = APPROVED
-        # 2. effective_from <= kỳ thuế kết thúc
-        # 3. effective_to >= kỳ thuế bắt đầu HOẶC chưa hết hiệu lực (null/empty)
+        # 2. effective_from <= tax period end
+        # 3. effective_to >= tax period start OR still in effect (null/empty)
         temporal_filter = Filter(
             must=[
                 FieldCondition(
@@ -51,11 +51,20 @@ class TemporalRetriever:
             ],
         )
 
-        hits = qdrant_client.search(
+        if hasattr(qdrant_client, "search"):
+            return qdrant_client.search(
+                collection_name=settings.QDRANT_COLLECTION,
+                query_vector=query_vector,
+                query_filter=temporal_filter,
+                limit=limit,
+                score_threshold=0.50,
+            )
+
+        response = qdrant_client.query_points(
             collection_name=settings.QDRANT_COLLECTION,
-            query_vector=query_vector,
+            query=query_vector,
             query_filter=temporal_filter,
             limit=limit,
             score_threshold=0.50,
         )
-        return hits
+        return response.points

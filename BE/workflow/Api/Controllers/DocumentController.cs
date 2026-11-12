@@ -13,9 +13,13 @@ using static Caps.Workflow.Application.Features.Documents.GetDocumentVersionDeta
 using static Caps.Workflow.Application.Features.Documents.GetDocumentVersions;
 
 namespace Caps.Workflow.Api.Controllers;
+
+/// <summary>
+/// Endpoints for managing user document workspaces, input snapshots, AI draft generation, and version exports.
+/// </summary>
 [Route("api/v1/documents")]
 [ApiController]
-[RequirePermission(Common.Application.Permission.UserManage)]
+[RequirePermission(Permission.BusinessRead)]
 public sealed class DocumentController(ICurrentUser currentUser) : ControllerBase
 {
     private Guid UserId => currentUser.RequireUserId();
@@ -26,6 +30,7 @@ public sealed class DocumentController(ICurrentUser currentUser) : ControllerBas
     /// <param name="request">Document creation metadata, period range, and template reference.</param>
     /// <param name="handler">Command handler for document creation.</param>
     /// <param name="ct">Cancellation token.</param>
+    /// <response code="200">The newly created document summary.</response>
     [HttpPost]
     [ProducesResponseType(typeof(ApiResponse<DocumentSummaryDto>), StatusCodes.Status200OK)]
     public async Task<IActionResult> CreateDocument(
@@ -43,6 +48,7 @@ public sealed class DocumentController(ICurrentUser currentUser) : ControllerBas
             request.Metadata
         );
         var result = await handler.HandleAsync(command, ct);
+
         return Ok(ApiResponse<DocumentSummaryDto>.Ok(result));
     }
 
@@ -54,6 +60,7 @@ public sealed class DocumentController(ICurrentUser currentUser) : ControllerBas
     /// <param name="pageSize">Items per page (default 20).</param>
     /// <param name="handler">Query handler for document retrieval.</param>
     /// <param name="ct">Cancellation token.</param>
+    /// <response code="200">Paginated list of user documents.</response>
     [HttpGet]
     [ProducesResponseType(typeof(ApiResponse<PagedResultDto<DocumentSummaryDto>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetDocuments(
@@ -65,6 +72,7 @@ public sealed class DocumentController(ICurrentUser currentUser) : ControllerBas
     {
         var query = new GetDocumentsQuery(UserId, status, page, pageSize);
         var result = await handler.HandleAsync(query, ct);
+
         return Ok(ApiResponse<PagedResultDto<DocumentSummaryDto>>.Ok(result));
     }
 
@@ -75,6 +83,7 @@ public sealed class DocumentController(ICurrentUser currentUser) : ControllerBas
     /// <param name="request">Payload containing input form JSON data.</param>
     /// <param name="handler">Command handler for creating snapshot.</param>
     /// <param name="ct">Cancellation token.</param>
+    /// <response code="200">The persisted input snapshot.</response>
     [HttpPost("{id:guid}/snapshots")]
     [ProducesResponseType(typeof(ApiResponse<InputSnapshotDto>), StatusCodes.Status200OK)]
     public async Task<IActionResult> CreateSnapshot(
@@ -85,6 +94,7 @@ public sealed class DocumentController(ICurrentUser currentUser) : ControllerBas
     {
         var command = new CreateInputSnapshotCommand(id, UserId, request.Data);
         var result = await handler.HandleAsync(command, ct);
+
         return Ok(ApiResponse<InputSnapshotDto>.Ok(result));
     }
 
@@ -95,6 +105,7 @@ public sealed class DocumentController(ICurrentUser currentUser) : ControllerBas
     /// <param name="request">Draft configuration including optional SnapshotId, TemplateVersionId, and Citations.</param>
     /// <param name="handler">Command handler for draft generation.</param>
     /// <param name="ct">Cancellation token.</param>
+    /// <response code="200">The generated document version details.</response>
     [HttpPost("{id:guid}/generate-draft")]
     [ProducesResponseType(typeof(ApiResponse<DocumentVersionDetailDto>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GenerateDraft(
@@ -111,6 +122,7 @@ public sealed class DocumentController(ICurrentUser currentUser) : ControllerBas
             request.Citations
         );
         var result = await handler.HandleAsync(command, ct);
+
         return Ok(ApiResponse<DocumentVersionDetailDto>.Ok(result));
     }
 
@@ -120,6 +132,7 @@ public sealed class DocumentController(ICurrentUser currentUser) : ControllerBas
     /// <param name="id">Document identifier.</param>
     /// <param name="handler">Query handler for document versions.</param>
     /// <param name="ct">Cancellation token.</param>
+    /// <response code="200">The version history of the document.</response>
     [HttpGet("{id:guid}/versions")]
     [ProducesResponseType(typeof(ApiResponse<IReadOnlyList<DocumentVersionSummaryDto>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetVersions(
@@ -129,6 +142,7 @@ public sealed class DocumentController(ICurrentUser currentUser) : ControllerBas
     {
         var query = new GetDocumentVersionsQuery(id, UserId);
         var result = await handler.HandleAsync(query, ct);
+
         return Ok(ApiResponse<IReadOnlyList<DocumentVersionSummaryDto>>.Ok(result));
     }
 
@@ -139,6 +153,7 @@ public sealed class DocumentController(ICurrentUser currentUser) : ControllerBas
     /// <param name="versionId">Document version identifier.</param>
     /// <param name="handler">Query handler for version detail.</param>
     /// <param name="ct">Cancellation token.</param>
+    /// <response code="200">Detailed content and metadata of the version.</response>
     [HttpGet("{id:guid}/versions/{versionId:guid}")]
     [ProducesResponseType(typeof(ApiResponse<DocumentVersionDetailDto>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetVersionDetail(
@@ -149,6 +164,7 @@ public sealed class DocumentController(ICurrentUser currentUser) : ControllerBas
     {
         var query = new GetDocumentVersionDetailQuery(id, versionId, UserId);
         var result = await handler.HandleAsync(query, ct);
+
         return Ok(ApiResponse<DocumentVersionDetailDto>.Ok(result));
     }
 
@@ -160,6 +176,7 @@ public sealed class DocumentController(ICurrentUser currentUser) : ControllerBas
     /// <param name="request">Export format preferences (pdf or docx).</param>
     /// <param name="handler">Command handler for document export.</param>
     /// <param name="ct">Cancellation token.</param>
+    /// <response code="200">Presigned download URL and file metadata.</response>
     [HttpPost("{id:guid}/versions/{versionId:guid}/download")]
     [ProducesResponseType(typeof(ApiResponse<DownloadDocumentResultDto>), StatusCodes.Status200OK)]
     public async Task<IActionResult> DownloadVersion(
@@ -171,7 +188,7 @@ public sealed class DocumentController(ICurrentUser currentUser) : ControllerBas
     {
         var command = new DownloadDocumentVersionCommand(id, versionId, UserId, request?.Format);
         var result = await handler.HandleAsync(command, ct);
+
         return Ok(ApiResponse<DownloadDocumentResultDto>.Ok(result));
     }
-
 }

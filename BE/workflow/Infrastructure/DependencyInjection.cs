@@ -1,7 +1,10 @@
 using Caps.Common.Persistence;
 using Caps.Workflow.Application.Abstractions;
+using Caps.Workflow.Application.Abstractions.Documents;
+using Caps.Workflow.Infrastructure.Ai;
 using Caps.Workflow.Infrastructure.Clients;
 using Caps.Workflow.Infrastructure.Persistence;
+using Caps.Workflow.Infrastructure.Persistence.Repositories;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -24,19 +27,32 @@ public static class DependencyInjection
             "review"
         );
 
-        //repositories
+        // Repositories
         services.AddScoped<IReviewCaseRepository, ReviewCaseRepository>();
         services.AddScoped<ICaseMessageRepository, CaseMessageRepository>();
         services.AddScoped<ICaseReadMarkerRepository, CaseReadMarkerRepository>();
+        services.AddScoped<IConversationRepository, ConversationRepository>();
+        services.AddScoped<IChatMessageRepository, ChatMessageRepository>();
+        services.AddScoped<IAiQuotaRepository, AiQuotaRepository>();
+        services.AddScoped<IAiUsageRepository, AiUsageRepository>();
+        services.AddScoped<IDocumentRepository, DocumentRepository>();
+        services.AddScoped<IDocumentVersionRepository, DocumentVersionRepository>();
+        services.AddScoped<IInputSnapshotRepository, InputSnapshotRepository>();
 
-        // RAG query http client
+        // RAG query HTTP client
         var ragServiceBaseUrl = configuration["Services:BaseUrl"] ?? "http://rag-query:5200";
         services.AddHttpClient<IRagQueryClient, RagQueryClient>(client =>
         {
             client.BaseAddress = new Uri(ragServiceBaseUrl);
             client.Timeout = TimeSpan.FromSeconds(60);
-            client.BaseAddress = new Uri(configuration["Ai:OllamaUrl"] ?? "http://localhost:11434");
-            client.Timeout = TimeSpan.FromMinutes(3); // qwen2.5:7b drafting may take up to a few minutes on local CPU/GPU
+        });
+
+        // Ollama draft generation HTTP client
+        var ollamaBaseUrl = configuration["Ai:OllamaUrl"] ?? "http://localhost:11434";
+        services.AddHttpClient<IOllamaDraftService, OllamaDraftService>(client =>
+        {
+            client.BaseAddress = new Uri(ollamaBaseUrl);
+            client.Timeout = TimeSpan.FromMinutes(3);
         });
 
         return services;

@@ -2,7 +2,7 @@ using System.Text.Json.Nodes;
 
 namespace Caps.Ingestion.Dtos;
 
-public class AiServiceDtos
+public static class AiServiceDtos
 {
     public record AiIngestRequestDto
     {
@@ -22,7 +22,7 @@ public class AiServiceDtos
     {
         public string Status { get; set; } = string.Empty;
         public int TotalChunks { get; set; }
-        public List<AiChunkItemDto> KbChunks { get; set; } = new();
+        public List<AiChunkItemDto> KbChunks { get; set; } = [];
     }
 
     public class AiChunkItemDto
