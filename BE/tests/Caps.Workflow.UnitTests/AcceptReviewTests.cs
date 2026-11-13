@@ -129,7 +129,7 @@ public sealed class AcceptReviewTests
         return reviewCase;
     }
 
-    private static AccpetReviewHandler Handler(
+    private static AcceptReviewHandler Handler(
         FakeSlots slots,
         FakeUnitOfWork unitOfWork,
         FakeEscrows escrows,

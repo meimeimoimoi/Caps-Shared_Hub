@@ -11,7 +11,7 @@ namespace Caps.Workflow.Application.Features.ReviewCases;
 public sealed record AcceptReviewCommand(Guid UserId, Guid ReviewCaseId);
 
 /// <summary>Starts the review; the delivery deadline counts from now with the frozen turnaround.</summary>
-public sealed class AccpetReviewHandler(
+public sealed class AcceptReviewHandler(
     IReviewCaseRepository cases,
     IExpertSlots slots,
     WaitingRequestRefunds refunds,
