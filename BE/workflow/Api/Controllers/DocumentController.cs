@@ -99,7 +99,7 @@ public sealed class DocumentController(ICurrentUser currentUser) : ControllerBas
     }
 
     /// <summary>
-    /// 4. Generate a new document draft version using local Ollama model (qwen2.5:7b).
+    /// 4. Generate a new document draft version using the AI drafting service.
     /// </summary>
     /// <param name="id">Document identifier.</param>
     /// <param name="request">Draft configuration including optional SnapshotId, TemplateVersionId, and Citations.</param>
@@ -107,6 +107,7 @@ public sealed class DocumentController(ICurrentUser currentUser) : ControllerBas
     /// <param name="ct">Cancellation token.</param>
     /// <response code="200">The generated document version details.</response>
     [HttpPost("{id:guid}/generate-draft")]
+    [RequireSessionCheck]
     [ProducesResponseType(typeof(ApiResponse<DocumentVersionDetailDto>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GenerateDraft(
         [FromRoute] Guid id,

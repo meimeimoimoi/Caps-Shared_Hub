@@ -32,7 +32,9 @@ class DocumentDrafter:
 
         # Hash the canonical content for integrity checks.
         content_hash = hashlib.sha256(
-            json.dumps(draft_content, sort_keys=True).encode("utf-8")
+            json.dumps(
+                draft_content, sort_keys=True, separators=(",", ":"), ensure_ascii=False
+            ).encode("utf-8")
         ).hexdigest()
 
         return {

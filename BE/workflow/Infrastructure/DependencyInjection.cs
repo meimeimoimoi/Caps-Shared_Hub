@@ -1,7 +1,6 @@
 using Caps.Common.Persistence;
 using Caps.Workflow.Application.Abstractions;
 using Caps.Workflow.Application.Abstractions.Documents;
-using Caps.Workflow.Infrastructure.Ai;
 using Caps.Workflow.Infrastructure.Clients;
 using Caps.Workflow.Infrastructure.Integrations;
 using Caps.Workflow.Infrastructure.Jobs;
@@ -16,6 +15,7 @@ namespace Caps.Workflow.Infrastructure;
 /// <summary>Registers the workflow adapters, starting with its database.</summary>
 public static class DependencyInjection
 {
+    private const string InternalKeyHeader = "X-Internal-Key";
     /// <summary>The workflow database (shared unit of work, readiness check) behind the application ports.</summary>
     public static IServiceCollection AddWorkflowInfrastructure(
         this IServiceCollection services,
@@ -55,19 +55,24 @@ public static class DependencyInjection
         services.AddScoped<ITemplateRepository, TemplateRepository>();
 
         // RAG query HTTP client
-        var ragServiceBaseUrl = configuration["Services:BaseUrl"] ?? "http://rag-query:5200";
+        var ragServiceBaseUrl = configuration["Services:RagQuery"] ?? "http://rag-query:5200";
+        var ragInternalKey = configuration["Services:RagQueryInternalKey"];
         services.AddHttpClient<IRagQueryClient, RagQueryClient>(client =>
         {
             client.BaseAddress = new Uri(ragServiceBaseUrl);
-            client.Timeout = TimeSpan.FromSeconds(60);
+            client.Timeout = TimeSpan.FromSeconds(90);
+            if (!string.IsNullOrWhiteSpace(ragInternalKey))
+            {
+                client.DefaultRequestHeaders.Add(InternalKeyHeader, ragInternalKey);
+            }
         });
 
-        // Ollama draft generation HTTP client
-        var ollamaBaseUrl = configuration["Ai:OllamaUrl"] ?? "http://localhost:11434";
-        services.AddHttpClient<IOllamaDraftService, OllamaDraftService>(client =>
+        // Python AI drafting HTTP client
+        var aiServiceBaseUrl = configuration["Services:AiService"] ?? "http://ai-service:8000";
+        services.AddHttpClient<IAiDraftingClient, AiDraftingClient>(client =>
         {
-            client.BaseAddress = new Uri(ollamaBaseUrl);
-            client.Timeout = TimeSpan.FromMinutes(3);
+            client.BaseAddress = new Uri(aiServiceBaseUrl);
+            client.Timeout = TimeSpan.FromSeconds(85);
         });
 
         return services;

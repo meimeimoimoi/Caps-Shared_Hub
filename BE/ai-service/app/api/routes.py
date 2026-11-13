@@ -1,4 +1,5 @@
 import json
+import logging
 
 from fastapi import APIRouter, HTTPException, status
 
@@ -19,6 +20,7 @@ from app.schemas.ingestion_dto import IngestDocRequest, IngestDocResponse
 from app.schemas.statuses import AnswerStatus, OperationStatus, ScopeResult
 
 router = APIRouter(prefix="/api/v1")
+logger = logging.getLogger(__name__)
 
 
 # API FLOW 2: Called by ingestion (.NET).
@@ -78,8 +80,10 @@ def chunk_and_embed(req: IngestDocRequest):
     except HTTPException:
         raise
     except Exception as e:
+        logger.exception("Unhandled error in chunk_and_embed")
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="AI ingestion service is temporarily unavailable.",
         ) from e
 
 
@@ -134,33 +138,50 @@ def chat_query(req: ChatQueryRequest):
     )
 
 
-# API FLOW 4: Được gọi từ `workflow` (.NET)
+# API FLOW 4: Called by workflow (.NET)
 @router.post("/drafting/generate", response_model=GenerateDraftResponse)
 def draft_document(req: GenerateDraftRequest):
-    retrieved = TemporalRetriever.retrieve(
-        query=json.dumps(req.snapshot_data, ensure_ascii=False),
-        period_start=req.period_start,
-        period_end=req.period_end,
-    )
-    context = "\n".join([(h.payload or {}).get("text_content", "") for h in retrieved])
+    try:
+        retrieved = TemporalRetriever.retrieve(
+            query=json.dumps(req.snapshot_data, ensure_ascii=False),
+            period_start=req.period_start,
+            period_end=req.period_end,
+        )
+        context = "\n".join(
+            [(h.payload or {}).get("text_content", "") for h in retrieved]
+        )
 
-    result = DocumentDrafter.generate_draft(
-        req.snapshot_data, req.template_schema, context
-    )
+        result = DocumentDrafter.generate_draft(
+            req.snapshot_data, req.template_schema, context
+        )
 
-    citations = [
-        {
-            "legal_source_id": h.payload.get("legal_source_id"),
-            "article": h.payload.get("article"),
-        }
-        for h in retrieved
-    ]
+        citations = [
+            {
+                "legal_source_id": (h.payload or {}).get("legal_source_id"),
+                "document_number": (h.payload or {}).get("document_number"),
+                "doc_title": (h.payload or {}).get("document_title"),
+                "article": (h.payload or {}).get("article"),
+                "clause": (h.payload or {}).get("clause"),
+                "point": (h.payload or {}).get("point"),
+                "effective_from": (h.payload or {}).get("effective_from"),
+                "effective_to": (h.payload or {}).get("effective_to"),
+            }
+            for h in retrieved
+        ]
 
-    return GenerateDraftResponse(
-        status=OperationStatus.SUCCESS,
-        content=result["content"],
-        content_hash=result["content_hash"],
-        has_unauthorized_numbers=result["has_unauthorized_numbers"],
-        unauthorized_numbers=result["unauthorized_numbers"],
-        citations=citations,
-    )
+        return GenerateDraftResponse(
+            status=OperationStatus.SUCCESS,
+            content=result["content"],
+            content_hash=result["content_hash"],
+            has_unauthorized_numbers=result["has_unauthorized_numbers"],
+            unauthorized_numbers=result["unauthorized_numbers"],
+            citations=citations,
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.exception("Unhandled error in draft_document")
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="AI drafting service is temporarily unavailable.",
+        ) from e

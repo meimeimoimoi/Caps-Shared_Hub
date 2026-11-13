@@ -52,9 +52,12 @@ public class ChatAiClient : IChatAiClient
         }
 
         var pythonResponse = await response.Content.ReadFromJsonAsync<PythonQueryResponse>(cancellationToken);
-        if (pythonResponse is null)
+        if (pythonResponse is null
+            || string.IsNullOrWhiteSpace(pythonResponse.ScopeResult)
+            || string.IsNullOrWhiteSpace(pythonResponse.AnswerStatus)
+            || string.IsNullOrWhiteSpace(pythonResponse.Answer))
         {
-            throw new InvalidOperationException("Received null response payload from Python AI service.");
+            throw new InvalidOperationException("Received incomplete response payload from Python AI service.");
         }
 
         // Map snake_case Python response to C# PascalCase response

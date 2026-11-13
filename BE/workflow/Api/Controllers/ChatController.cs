@@ -82,6 +82,7 @@ public sealed class ChatController(ICurrentUser currentUser) : ControllerBase
     /// <response code="403">The conversation belongs to another user.</response>
     /// <response code="404">Conversation not found.</response>
     [HttpPost("conversations/{id:guid}/messages")]
+    [RequireSessionCheck]
     [ProducesResponseType(typeof(ApiResponse<SendChatMessageResultDto>), StatusCodes.Status200OK)]
     public async Task<IActionResult> SendChatMessage(
         [FromRoute] Guid id,
@@ -108,6 +109,7 @@ public sealed class ChatController(ICurrentUser currentUser) : ControllerBase
     /// <response code="400">The target message is not an AI message awaiting clarification.</response>
     /// <response code="404">Target message or conversation not found.</response>
     [HttpPost("messages/{id:guid}/clarify")]
+    [RequireSessionCheck]
     [ProducesResponseType(typeof(ApiResponse<SendChatMessageResultDto>), StatusCodes.Status200OK)]
     public async Task<IActionResult> ClarifyMessage(
         [FromRoute] Guid id,
