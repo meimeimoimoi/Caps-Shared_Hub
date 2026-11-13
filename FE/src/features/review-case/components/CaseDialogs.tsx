@@ -10,7 +10,6 @@ import { fieldClass, useCaseFormat } from '../ui'
 
 const ISSUES: IssueCode[] = [
   'DELIVERABLE_INCOMPLETE',
-  'SLA_BREACH',
   'OBLIGATION_NOT_MET',
   'PROFESSIONAL_JUDGMENT',
 ]

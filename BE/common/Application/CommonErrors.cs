@@ -19,6 +19,7 @@ public static class CommonErrors
         public const string TooManyRequests = "RATE_LIMITED";
         public const string SessionCheckUnavailable = "SESSION_CHECK_UNAVAILABLE";
         public const string Internal = "INTERNAL_ERROR";
+        public const string InternalKeyInvalid = "INTERNAL_KEY_INVALID";
     }
 
     /// <summary>Token is malformed, expired or revoked.</summary>
@@ -54,6 +55,11 @@ public static class CommonErrors
     public static AppException SessionCheckUnavailable(
         string message = "Session check is temporarily unavailable. Try again shortly."
     ) => new(ErrorType.Unavailable, Codes.SessionCheckUnavailable, message);
+
+    /// <summary>A service-to-service call without the right X-Internal-Key.</summary>
+    public static AppException InternalKeyInvalid(
+        string message = "Missing or wrong internal key."
+    ) => new(ErrorType.Unauthorized, Codes.InternalKeyInvalid, message);
 }
 
 /// <summary>Invalid input; <see cref="Errors"/> groups messages per field.</summary>

@@ -74,7 +74,8 @@ export interface ReviewCase {
   tasks: TaskCode[] // các nhiệm vụ Expert đã hoàn thành
   infoRequest?: {
     message: string
-    items: string[]
+    /** Fixture-only checklist; the API sends the question as one message */
+    items?: string[]
     sentAt: string
     response?: string
   }
@@ -91,9 +92,63 @@ export interface ReviewCase {
       decidedAt: string
     }
   }
-  settlement?: { rule: SettlementRule; settledAt: string; ref: string }
+  settlement?: {
+    rule: SettlementRule
+    settledAt: string
+    ref: string
+    /** Amounts settled by the backend; when present they replace the policy estimate */
+    amounts?: SettlementAmounts
+  }
   rating?: { stars: number; comment: string; at: string }
   timeline: { at: string; actor: Actor; event: TimelineEvent }[]
+  updatedAt?: string
+}
+
+/** How the fee was split once the case ended, in VND (GET /review-cases/{id} → settlement). */
+export interface SettlementAmounts {
+  clientRefund: number
+  platformFee: number
+  expertAmount: number
+}
+
+/** A question the expert asked and the client's answer (GET /review-cases/{id} → infoRequests). */
+export interface InfoRequestDto {
+  id: string
+  message: string
+  dueAt: string
+  status: 'OPEN' | 'ANSWERED' | 'EXPIRED'
+  response: string | null
+  respondedAt: string | null
+  createdAt: string
+}
+
+/** A review case as the workflow API returns it (ReviewCaseResponse). */
+export interface ReviewCaseDto {
+  id: string
+  status: string
+  result: 'VERIFIED' | 'CANNOT_VERIFY' | null
+  reviewSummary: string | null
+  cannotVerifyReason: string | null
+  declineReason: string | null
+  documentId: string
+  sourceVersionId: string
+  expertProfileId: string
+  fee: number
+  turnaroundHours: number
+  problemDescription: string
+  expectedOutcome: string | null
+  paymentDeadline: string | null
+  responseDeadline: string | null
+  deliveryDeadline: string | null
+  acceptanceDeadline: string | null
+  rating: number | null
+  ratingComment: string | null
+  /** Null while the case runs or when nothing was paid */
+  settlement: SettlementAmounts | null
+  /** Only GET /review-cases/{id} loads them; null in lists and action responses */
+  infoRequests: InfoRequestDto[] | null
+  updatedAt: string
+  createdAt: string
 }
 
 export type TimelineEvent =
@@ -119,6 +174,7 @@ export type TimelineEvent =
   | 'terminated'
   | 'settled'
 
+// SLA_BREACH is no longer offered (the late rule refunds a late delivery); kept to label older disputes
 export type IssueCode =
   | 'DELIVERABLE_INCOMPLETE'
   | 'SLA_BREACH'

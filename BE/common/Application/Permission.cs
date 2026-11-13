@@ -31,4 +31,7 @@ public enum Permission
 
     /// <summary>Setting the platform fee of each service.</summary>
     PricingManage,
+
+    /// <summary>Deciding or extending a client's dispute about a review delivery.</summary>
+    DisputeResolve,
 }
