@@ -6,13 +6,13 @@ using Microsoft.AspNetCore.RateLimiting;
 
 namespace Caps.Gateway.RateLimiting;
 
-/// <summary>Per-IP request limits, bound from the "RateLimits" section.</summary>
+/// <summary>Request limits, bound from the "RateLimits" section.</summary>
 public sealed class GatewayRateLimitOptions
 {
     /// <summary>Requests per minute per IP on /api/v1/auth (login, register, password reset...).</summary>
     public int AuthPerMinute { get; set; } = 30;
 
-    /// <summary>Requests per minute per IP on every other API route.</summary>
+    /// <summary>Requests per minute on every other API route: per signed-in user, otherwise per IP.</summary>
     public int ApiPerMinute { get; set; } = 300;
 }
 
@@ -39,20 +39,33 @@ public static class GatewayRateLimitSetup
             o.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
             o.OnRejected = WriteRejectionAsync;
             o.AddPolicy(AuthPolicy, context => PerIp(context, options.AuthPerMinute));
-            o.AddPolicy(ApiPolicy, context => PerIp(context, options.ApiPerMinute));
+            o.AddPolicy(ApiPolicy, context => PerClient(context, options.ApiPerMinute));
         });
         return services;
     }
 
     private static RateLimitPartition<string> PerIp(HttpContext context, int perMinute) =>
+        Partition(context.Connection.RemoteIpAddress?.ToString() ?? "unknown", perMinute);
+
+    private static RateLimitPartition<string> Partition(string key, int perMinute) =>
         RateLimitPartition.GetFixedWindowLimiter(
-            context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+            key,
             _ => new FixedWindowRateLimiterOptions
             {
                 PermitLimit = perMinute,
                 Window = TimeSpan.FromMinutes(1),
                 QueueLimit = 0,
             }
+        );
+
+    // Signed-in users get their own bucket, so people behind one office IP do not share a limit.
+    // User comes only from a verified token, so a forged token falls back to the IP bucket.
+    private static RateLimitPartition<string> PerClient(HttpContext context, int perMinute) =>
+        Partition(
+            context.User.FindFirst("sub")?.Value is { } sub
+                ? $"user:{sub}"
+                : $"ip:{context.Connection.RemoteIpAddress}",
+            perMinute
         );
 
     // Same error shape as the services, so the frontend handles a gateway 429 like any other
