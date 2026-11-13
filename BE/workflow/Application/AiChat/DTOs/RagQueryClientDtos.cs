@@ -1,18 +1,17 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Text.Json.Serialization;
-using System.Threading.Tasks;
 
 namespace Caps.Workflow.Application.AiChat.DTOs;
-public class RagQueryClientDtos
+
+/// <summary>DTOs for internal RAG query client communication.</summary>
+public static class RagQueryClientDtos
 {
+    /// <summary>Internal RAG query request payload.</summary>
     public sealed record InternalRagQueryRequest(
         [property: JsonPropertyName("question")] string Question,
         [property: JsonPropertyName("user_tax_period")] string? UserTaxPeriod = null
     );
 
+    /// <summary>Legal citation item returned by the internal RAG service.</summary>
     public sealed record InternalCitationDto(
         [property: JsonPropertyName("article")] string? Article,
         [property: JsonPropertyName("clause")] string? Clause,
@@ -23,6 +22,7 @@ public class RagQueryClientDtos
         [property: JsonPropertyName("effective_to")] string? EffectiveTo
     );
 
+    /// <summary>Internal RAG query response payload.</summary>
     public sealed record InternalRagQueryResponse(
         [property: JsonPropertyName("scope_result")] string ScopeResult,
         [property: JsonPropertyName("answer_status")] string AnswerStatus,

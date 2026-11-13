@@ -16,6 +16,7 @@ namespace Caps.Workflow.Infrastructure;
 public static class DependencyInjection
 {
     private const string InternalKeyHeader = "X-Internal-Key";
+
     /// <summary>The workflow database (shared unit of work, readiness check) behind the application ports.</summary>
     public static IServiceCollection AddWorkflowInfrastructure(
         this IServiceCollection services,

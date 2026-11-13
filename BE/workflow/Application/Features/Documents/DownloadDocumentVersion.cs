@@ -23,39 +23,44 @@ public static class DownloadDocumentVersion
         TimeProvider timeProvider
     ) : ICommandHandler<DownloadDocumentVersionCommand, DownloadDocumentResultDto>
     {
-        public async Task<DownloadDocumentResultDto> HandleAsync(DownloadDocumentVersionCommand command, CancellationToken ct)
+        public async Task<DownloadDocumentResultDto> HandleAsync(
+            DownloadDocumentVersionCommand command,
+            CancellationToken ct
+        )
         {
             var document = await documentRepository.GetByIdAsync(command.DocumentId, ct);
             if (document is null)
             {
-                throw WorkflowErrors.Document_NotFound(command.DocumentId);
+                throw WorkflowErrors.DocumentNotFound(command.DocumentId);
             }
 
             if (document.OwnerUserId != command.UserId)
             {
-                throw WorkflowErrors.Document_AccessDenied();
+                throw WorkflowErrors.DocumentAccessDenied();
             }
 
             var version = await versionRepository.GetByIdAsync(command.VersionId, ct);
             if (version is null || version.DocumentId != document.Id)
             {
-                throw WorkflowErrors.DocumentVersion_NotFound(command.VersionId);
+                throw WorkflowErrors.DocumentVersionNotFound(command.VersionId);
             }
 
             var requestedFormat = (command.Format?.ToLowerInvariant()) switch
             {
                 "docx" => "docx",
-                _ => "pdf"
+                _ => "pdf",
             };
 
             var now = timeProvider.GetUtcNow();
             var expiresAt = now.AddHours(2);
             var token = Guid.NewGuid().ToString("N");
-            var safeTitle = string.Concat(document.Title.Split(Path.GetInvalidFileNameChars())).Replace(" ", "_");
+            var safeTitle = string.Concat(document.Title.Split(Path.GetInvalidFileNameChars()))
+                .Replace(" ", "_");
             var fileName = $"{safeTitle}_v{version.VersionNo}.{requestedFormat}";
 
             // Presigned download link pointing to export worker / storage
-            var downloadUrl = $"/api/v1/storage/documents/{document.Id}/versions/{version.Id}/export.{requestedFormat}?token={token}&expires={expiresAt.ToUnixTimeSeconds()}";
+            var downloadUrl =
+                $"/api/v1/storage/documents/{document.Id}/versions/{version.Id}/export.{requestedFormat}?token={token}&expires={expiresAt.ToUnixTimeSeconds()}";
 
             return new DownloadDocumentResultDto(
                 DownloadUrl: downloadUrl,

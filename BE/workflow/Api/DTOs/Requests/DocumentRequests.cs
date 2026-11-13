@@ -13,9 +13,7 @@ public static class DocumentRequests
         string? Metadata
     );
 
-    public sealed record CreateSnapshotRequest(
-        [Required] string Data
-    );
+    public sealed record CreateSnapshotRequest([Required] string Data);
 
     public sealed record GenerateDraftRequest(
         Guid? SnapshotId,
@@ -23,7 +21,5 @@ public static class DocumentRequests
         string? Citations
     );
 
-    public sealed record DownloadDocumentRequest(
-        string? Format
-    );
+    public sealed record DownloadDocumentRequest(string? Format);
 }

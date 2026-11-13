@@ -9,17 +9,25 @@ using Microsoft.Extensions.Logging;
 namespace Caps.Workflow.Infrastructure.Clients;
 
 /// <summary>HTTP client adapter for generating document drafts via the Python AI service.</summary>
-public sealed class AiDraftingClient(HttpClient httpClient, ILogger<AiDraftingClient> logger) : IAiDraftingClient
+public sealed class AiDraftingClient(HttpClient httpClient, ILogger<AiDraftingClient> logger)
+    : IAiDraftingClient
 {
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
-        PropertyNameCaseInsensitive = true
+        PropertyNameCaseInsensitive = true,
     };
 
-    private static readonly JsonElement EmptyObjectElement = JsonSerializer.SerializeToElement(new { });
-    private static readonly JsonElement EmptyArrayElement = JsonSerializer.SerializeToElement(Array.Empty<object>());
+    private static readonly JsonElement EmptyObjectElement = JsonSerializer.SerializeToElement(
+        new { }
+    );
+    private static readonly JsonElement EmptyArrayElement = JsonSerializer.SerializeToElement(
+        Array.Empty<object>()
+    );
 
-    public async Task<AiDraftResponse> GenerateDraftAsync(AiDraftRequest request, CancellationToken ct = default)
+    public async Task<AiDraftResponse> GenerateDraftAsync(
+        AiDraftRequest request,
+        CancellationToken ct = default
+    )
     {
         JsonElement snapshotElement;
         try
@@ -29,7 +37,11 @@ public sealed class AiDraftingClient(HttpClient httpClient, ILogger<AiDraftingCl
         }
         catch (JsonException ex)
         {
-            logger.LogError(ex, "Invalid snapshot JSON for document {DocumentId}", request.DocumentId);
+            logger.LogError(
+                ex,
+                "Invalid snapshot JSON for document {DocumentId}",
+                request.DocumentId
+            );
             throw WorkflowErrors.DraftGenerationFailed();
         }
 
@@ -43,7 +55,11 @@ public sealed class AiDraftingClient(HttpClient httpClient, ILogger<AiDraftingCl
             }
             catch (JsonException ex)
             {
-                logger.LogWarning(ex, "Invalid template schema JSON for document {DocumentId}; falling back to empty schema", request.DocumentId);
+                logger.LogWarning(
+                    ex,
+                    "Invalid template schema JSON for document {DocumentId}; falling back to empty schema",
+                    request.DocumentId
+                );
             }
         }
 
@@ -53,17 +69,27 @@ public sealed class AiDraftingClient(HttpClient httpClient, ILogger<AiDraftingCl
             snapshot_data = snapshotElement,
             template_schema = templateElement,
             period_start = request.PeriodStart.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
-            period_end = request.PeriodEnd.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)
+            period_end = request.PeriodEnd.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
         };
 
         HttpResponseMessage response;
         try
         {
-            response = await httpClient.PostAsJsonAsync("/api/v1/drafting/generate", payload, JsonOptions, ct);
+            response = await httpClient.PostAsJsonAsync(
+                "/api/v1/drafting/generate",
+                payload,
+                JsonOptions,
+                ct
+            );
         }
-        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or OperationCanceledException)
+        catch (Exception ex)
+            when (ex is HttpRequestException or TaskCanceledException or OperationCanceledException)
         {
-            logger.LogError(ex, "Failed to contact AI drafting service for document {DocumentId}", request.DocumentId);
+            logger.LogError(
+                ex,
+                "Failed to contact AI drafting service for document {DocumentId}",
+                request.DocumentId
+            );
             throw WorkflowErrors.DraftGenerationFailed();
         }
 
@@ -74,7 +100,8 @@ public sealed class AiDraftingClient(HttpClient httpClient, ILogger<AiDraftingCl
                 "AI drafting service returned HTTP {StatusCode} for document {DocumentId}: {ErrorBody}",
                 (int)response.StatusCode,
                 request.DocumentId,
-                errorBody);
+                errorBody
+            );
             throw WorkflowErrors.DraftGenerationFailed();
         }
 
@@ -85,19 +112,30 @@ public sealed class AiDraftingClient(HttpClient httpClient, ILogger<AiDraftingCl
         }
         catch (JsonException ex)
         {
-            logger.LogError(ex, "AI drafting service returned invalid JSON for document {DocumentId}", request.DocumentId);
+            logger.LogError(
+                ex,
+                "AI drafting service returned invalid JSON for document {DocumentId}",
+                request.DocumentId
+            );
             throw WorkflowErrors.DraftGenerationFailed();
         }
 
-        if (result is null || result.Content.ValueKind is JsonValueKind.Undefined or JsonValueKind.Null)
+        if (
+            result is null
+            || result.Content.ValueKind is JsonValueKind.Undefined or JsonValueKind.Null
+        )
         {
-            logger.LogError("AI drafting service returned empty or null draft content for document {DocumentId}", request.DocumentId);
+            logger.LogError(
+                "AI drafting service returned empty or null draft content for document {DocumentId}",
+                request.DocumentId
+            );
             throw WorkflowErrors.DraftGenerationFailed();
         }
 
-        var citations = result.Citations.ValueKind is JsonValueKind.Array
-            ? result.Citations
-            : EmptyArrayElement;
+        var citations =
+            result.Citations.ValueKind is JsonValueKind.Array
+                ? result.Citations
+                : EmptyArrayElement;
 
         return new AiDraftResponse(
             result.Content,
@@ -117,4 +155,3 @@ public sealed class AiDraftingClient(HttpClient httpClient, ILogger<AiDraftingCl
         [property: JsonPropertyName("citations")] JsonElement Citations
     );
 }
-

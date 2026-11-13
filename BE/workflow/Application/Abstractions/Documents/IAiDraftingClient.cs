@@ -2,6 +2,7 @@ using System.Text.Json;
 
 namespace Caps.Workflow.Application.Abstractions.Documents;
 
+/// <summary>Request payload for generating a document draft through the Python AI service.</summary>
 public sealed record AiDraftRequest(
     Guid DocumentId,
     string SnapshotDataJson,
@@ -10,6 +11,7 @@ public sealed record AiDraftRequest(
     DateOnly PeriodEnd
 );
 
+/// <summary>Response returned by the Python AI drafting service.</summary>
 public sealed record AiDraftResponse(
     JsonElement Content,
     string ContentHash,
@@ -21,6 +23,8 @@ public sealed record AiDraftResponse(
 /// <summary>Client interface for generating document drafts through the Python AI service.</summary>
 public interface IAiDraftingClient
 {
-    Task<AiDraftResponse> GenerateDraftAsync(AiDraftRequest request, CancellationToken ct = default);
+    Task<AiDraftResponse> GenerateDraftAsync(
+        AiDraftRequest request,
+        CancellationToken ct = default
+    );
 }
-

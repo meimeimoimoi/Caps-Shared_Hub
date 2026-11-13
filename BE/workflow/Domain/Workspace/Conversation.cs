@@ -24,7 +24,7 @@ public sealed class Conversation
             UserId = userId,
             Title = cleanTitle,
             CreatedAt = now,
-            UpdatedAt = now
+            UpdatedAt = now,
         };
     }
 
@@ -41,5 +41,4 @@ public sealed class Conversation
     {
         UpdatedAt = now;
     }
-
 }

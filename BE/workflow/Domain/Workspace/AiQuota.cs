@@ -15,7 +15,7 @@ public sealed class AiQuota
         {
             UserId = userId,
             Balance = Math.Max(0, initialBalance),
-            UpdatedAt = now
+            UpdatedAt = now,
         };
     }
 
@@ -23,14 +23,16 @@ public sealed class AiQuota
 
     public void Deduct(int amount, DateTimeOffset now)
     {
-        if (amount <= 0) return;
+        if (amount <= 0)
+            return;
         Balance = Math.Max(0, Balance - amount);
         UpdatedAt = now;
     }
 
     public void Refund(int amount, DateTimeOffset now)
     {
-        if (amount <= 0) return;
+        if (amount <= 0)
+            return;
         Balance += amount;
         UpdatedAt = now;
     }

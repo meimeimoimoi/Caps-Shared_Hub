@@ -11,7 +11,11 @@ public interface IDocumentRepository
         string? status,
         int page,
         int pageSize,
-        CancellationToken ct = default);
-    Task<string?> GetTemplateFieldSchemaAsync(Guid templateVersionId, CancellationToken ct = default);
+        CancellationToken ct = default
+    );
+    Task<string?> GetTemplateFieldSchemaAsync(
+        Guid templateVersionId,
+        CancellationToken ct = default
+    );
     Task AddAsync(Document document, CancellationToken ct = default);
 }

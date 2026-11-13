@@ -1,11 +1,8 @@
 using Caps.Workflow.Domain.Workspace;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Caps.Workflow.Application.Abstractions;
+
+/// <summary>Repository for managing user AI query quotas.</summary>
 public interface IAiQuotaRepository
 {
     Task<AiQuota?> GetByUserIdAsync(Guid userId, CancellationToken ct = default);

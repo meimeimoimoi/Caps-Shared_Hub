@@ -23,17 +23,23 @@ public static class TransferConversationDraft
         IChatMessageRepository chatMessageRepository
     ) : ICommandHandler<TransferConversationDraftCommand, TransferDraftResponseDto>
     {
-        public async Task<TransferDraftResponseDto> HandleAsync(TransferConversationDraftCommand command, CancellationToken ct)
+        public async Task<TransferDraftResponseDto> HandleAsync(
+            TransferConversationDraftCommand command,
+            CancellationToken ct
+        )
         {
-            var conversation = await conversationRepository.GetByIdAsync(command.ConversationId, ct);
+            var conversation = await conversationRepository.GetByIdAsync(
+                command.ConversationId,
+                ct
+            );
             if (conversation is null)
             {
-                throw WorkflowErrors.Conversation_NotFound(command.ConversationId);
+                throw WorkflowErrors.ConversationNotFound(command.ConversationId);
             }
 
             if (conversation.UserId != command.UserId)
             {
-                throw WorkflowErrors.Conversation_AccessDenied();
+                throw WorkflowErrors.ConversationAccessDenied();
             }
 
             ChatMessage? aiMessage;
@@ -42,12 +48,15 @@ public static class TransferConversationDraft
                 aiMessage = await chatMessageRepository.GetByIdAsync(command.MessageId.Value, ct);
                 if (aiMessage is null || aiMessage.ConversationId != conversation.Id)
                 {
-                    throw WorkflowErrors.Messasge_NotFound(command.MessageId.Value);
+                    throw WorkflowErrors.MessageNotFound(command.MessageId.Value);
                 }
             }
             else
             {
-                aiMessage = await chatMessageRepository.GetLatestAnsweredMessageAsync(conversation.Id, ct);
+                aiMessage = await chatMessageRepository.GetLatestAnsweredMessageAsync(
+                    conversation.Id,
+                    ct
+                );
                 if (aiMessage is null)
                 {
                     throw WorkflowErrors.NoAnswerableMessageForDraftTransfer();
@@ -57,7 +66,8 @@ public static class TransferConversationDraft
             List<CitationDto> citations = [];
             if (!string.IsNullOrWhiteSpace(aiMessage.Citations))
             {
-                citations = JsonSerializer.Deserialize<List<CitationDto>>(aiMessage.Citations) ?? [];
+                citations =
+                    JsonSerializer.Deserialize<List<CitationDto>>(aiMessage.Citations) ?? [];
             }
 
             var initialFormPayload = new
@@ -79,8 +89,10 @@ public static class TransferConversationDraft
                 extracted_facts = new
                 {
                     topic = conversation.Title,
-                    summary = aiMessage.Content.Length > 200 ? aiMessage.Content[..200] + "..." : aiMessage.Content
-                }
+                    summary = aiMessage.Content.Length > 200
+                        ? aiMessage.Content[..200] + "..."
+                        : aiMessage.Content,
+                },
             };
 
             var initialDataJson = JsonSerializer.Serialize(initialFormPayload);
@@ -88,7 +100,7 @@ public static class TransferConversationDraft
             return new TransferDraftResponseDto(
                 conversation.Id,
                 aiMessage.Id,
-                conversation.Title,
+                conversation.Title ?? string.Empty,
                 aiMessage.PeriodStart,
                 aiMessage.PeriodEnd,
                 citations,

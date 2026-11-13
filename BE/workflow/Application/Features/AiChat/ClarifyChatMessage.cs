@@ -30,46 +30,58 @@ public static class ClarifyChatMessage
         TimeProvider timeProvider
     ) : ICommandHandler<ClarifyChatMessageCommand, SendChatMessageResultDto>
     {
-        public async Task<SendChatMessageResultDto> HandleAsync(ClarifyChatMessageCommand command, CancellationToken ct)
+        public async Task<SendChatMessageResultDto> HandleAsync(
+            ClarifyChatMessageCommand command,
+            CancellationToken ct
+        )
         {
             var targetMessage = await chatMessageRepository.GetByIdAsync(command.MessageId, ct);
             if (targetMessage is null)
             {
-                throw WorkflowErrors.Messasge_NotFound(command.MessageId);
+                throw WorkflowErrors.MessageNotFound(command.MessageId);
             }
 
-            if (targetMessage.Sender != ChatMessageSender.AI ||
-                targetMessage.AnswerStatus != ChatMessageAnswerStatus.NeedClarification)
+            if (
+                targetMessage.Sender != ChatMessageSender.AI
+                || targetMessage.AnswerStatus != ChatMessageAnswerStatus.NeedClarification
+            )
             {
                 throw WorkflowErrors.InvalidClarificationTarget();
             }
 
-            var conversation = await conversationRepository.GetByIdAsync(targetMessage.ConversationId, ct);
+            var conversation = await conversationRepository.GetByIdAsync(
+                targetMessage.ConversationId,
+                ct
+            );
             if (conversation is null)
             {
-                throw WorkflowErrors.Conversation_NotFound(targetMessage.ConversationId);
+                throw WorkflowErrors.ConversationNotFound(targetMessage.ConversationId);
             }
 
             if (conversation.UserId != command.UserId)
             {
-                throw WorkflowErrors.Conversation_AccessDenied();
+                throw WorkflowErrors.ConversationAccessDenied();
             }
 
             var now = timeProvider.GetUtcNow();
 
             var quota = await aiQuotaRepository.GetByUserIdAsync(command.UserId, ct);
-            if (quota is null || !quota.HashAvailableQuota())
+            if (quota?.HashAvailableQuota() != true)
             {
                 throw WorkflowErrors.QuotaExhausted();
             }
 
             // Retrieve the original user question preceding the AI clarification prompt
             var history = await chatMessageRepository.GetByConversationIdAsync(conversation.Id, ct);
-            var originalUserQuery = history
-                .Where(m => m.Sender == ChatMessageSender.User && m.CreatedAt <= targetMessage.CreatedAt)
-                .OrderByDescending(m => m.CreatedAt)
-                .Select(m => m.Content)
-                .FirstOrDefault() ?? targetMessage.Content;
+            var originalUserQuery =
+                history
+                    .Where(m =>
+                        m.Sender == ChatMessageSender.User && m.CreatedAt <= targetMessage.CreatedAt
+                    )
+                    .OrderByDescending(m => m.CreatedAt)
+                    .Select(m => m.Content)
+                    .FirstOrDefault()
+                ?? targetMessage.Content;
 
             var effectivePeriodStart = command.PeriodStart ?? targetMessage.PeriodStart;
             var effectivePeriodEnd = command.PeriodEnd ?? targetMessage.PeriodEnd;
@@ -94,9 +106,10 @@ public static class ClarifyChatMessage
 
             var ragResponse = await ragQueryClient.QueryAsync(ragRequest, ct);
 
-            var citationJson = ragResponse.Citations.Count > 0
-                ? JsonSerializer.Serialize(ragResponse.Citations)
-                : null;
+            var citationJson =
+                ragResponse.Citations.Count > 0
+                    ? JsonSerializer.Serialize(ragResponse.Citations)
+                    : null;
 
             if (ragResponse.AnswerStatus == ChatMessageAnswerStatus.Answered)
             {

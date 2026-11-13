@@ -11,11 +11,7 @@ namespace Caps.Workflow.Application.Features.Documents;
 public static class CreateInputSnapshot
 {
     /// <summary>Command to save a new form input snapshot for a document.</summary>
-    public sealed record CreateInputSnapshotCommand(
-        Guid DocumentId,
-        Guid UserId,
-        string Data
-    );
+    public sealed record CreateInputSnapshotCommand(Guid DocumentId, Guid UserId, string Data);
 
     /// <summary>Handles versioning and persisting an immutable input snapshot.</summary>
     public sealed class CreateInputSnapshotHandler(
@@ -25,20 +21,26 @@ public static class CreateInputSnapshot
         TimeProvider timeProvider
     ) : ICommandHandler<CreateInputSnapshotCommand, InputSnapshotDto>
     {
-        public async Task<InputSnapshotDto> HandleAsync(CreateInputSnapshotCommand command, CancellationToken ct)
+        public async Task<InputSnapshotDto> HandleAsync(
+            CreateInputSnapshotCommand command,
+            CancellationToken ct
+        )
         {
             var document = await documentRepository.GetByIdAsync(command.DocumentId, ct);
             if (document is null)
             {
-                throw WorkflowErrors.Document_NotFound(command.DocumentId);
+                throw WorkflowErrors.DocumentNotFound(command.DocumentId);
             }
 
             if (document.OwnerUserId != command.UserId)
             {
-                throw WorkflowErrors.Document_AccessDenied();
+                throw WorkflowErrors.DocumentAccessDenied();
             }
 
-            var nextVersionNo = await inputSnapshotRepository.GetNextVersionNoAsync(command.DocumentId, ct);
+            var nextVersionNo = await inputSnapshotRepository.GetNextVersionNoAsync(
+                command.DocumentId,
+                ct
+            );
             var now = timeProvider.GetUtcNow();
 
             var snapshot = new InputSnapshot
@@ -48,7 +50,7 @@ public static class CreateInputSnapshot
                 VersionNo = nextVersionNo,
                 Data = string.IsNullOrWhiteSpace(command.Data) ? "{}" : command.Data,
                 CreatedBy = command.UserId,
-                CreatedAt = now
+                CreatedAt = now,
             };
 
             document.UpdatedAt = now;

@@ -92,7 +92,10 @@ public class KnowledgeDocumentService : IKnowledgeDocumentService
         int maxRetry = 3;
         try
         {
-            var config = await _db.SystemConfigs.FirstOrDefaultAsync(c => c.Key == "KB_INDEX_MAX_RETRY", cancellationToken);
+            var config = await _db.SystemConfigs.FirstOrDefaultAsync(
+                c => c.Key == "KB_INDEX_MAX_RETRY",
+                cancellationToken
+            );
             if (config != null && int.TryParse(config.Value.Trim('"'), out int cfgValue))
             {
                 maxRetry = cfgValue;
@@ -105,7 +108,9 @@ public class KnowledgeDocumentService : IKnowledgeDocumentService
 
         if (doc.RetryCount >= maxRetry)
         {
-            throw new InvalidOperationException($"Đã vượt quá số lần thử lại tối đa ({maxRetry} lần). Vui lòng thông báo System Admin xử lý.");
+            throw new InvalidOperationException(
+                $"Đã vượt quá số lần thử lại tối đa ({maxRetry} lần). Vui lòng thông báo System Admin xử lý."
+            );
         }
 
         // Increment retry counter and re-run pipeline

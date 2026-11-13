@@ -2,25 +2,29 @@ using Caps.Common.Domain;
 
 namespace Caps.Workflow.Domain.Workspace;
 
+/// <summary>Sender role constants for chat messages.</summary>
 public static class ChatMessageSender
 {
     public const string User = "USER";
     public const string AI = "AI";
 }
 
-public static class  ChatMessageAnswerStatus
+/// <summary>Answer status constants for AI chat responses.</summary>
+public static class ChatMessageAnswerStatus
 {
     public const string Answered = "ANSWERED";
     public const string NeedClarification = "NEED_CLARIFICATION";
     public const string Rejected = "REJECTED";
 }
 
-public static class  ChatMessageScopeResult
+/// <summary>Scope classification constants for AI chat queries.</summary>
+public static class ChatMessageScopeResult
 {
     public const string InScope = "IN_SCOPE";
     public const string OutOfScope = "OUT_OF_SCOPE";
     public const string Ambiguous = "AMBIGUOUS";
 }
+
 /// <summary>A question or AI answer in a conversation, with the legal period it covers and its citations.</summary>
 public sealed class ChatMessage
 {
@@ -44,7 +48,8 @@ public sealed class ChatMessage
         string content,
         DateOnly? periodStart,
         DateOnly? periodEnd,
-        DateTimeOffset now)
+        DateTimeOffset now
+    )
     {
         return new ChatMessage
         {
@@ -56,7 +61,7 @@ public sealed class ChatMessage
             PeriodEnd = periodEnd,
             ScopeResult = null,
             Citations = null,
-            CreatedAt = now
+            CreatedAt = now,
         };
     }
 
@@ -68,7 +73,8 @@ public sealed class ChatMessage
         DateOnly? periodStart,
         DateOnly? periodEnd,
         string? citations,
-        DateTimeOffset now)
+        DateTimeOffset now
+    )
     {
         return new ChatMessage
         {
@@ -81,7 +87,7 @@ public sealed class ChatMessage
             PeriodStart = periodStart,
             PeriodEnd = periodEnd,
             Citations = citations,
-            CreatedAt = now
+            CreatedAt = now,
         };
     }
 }

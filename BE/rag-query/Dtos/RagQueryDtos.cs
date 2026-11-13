@@ -1,16 +1,14 @@
 using System.ComponentModel.DataAnnotations;
-using System.Text.Json.Serialization;
 
 namespace Caps.RagQuery.Dtos;
 
-public class RagQueryDtos
+public static class RagQueryDtos
 {
     /// <summary>
     /// Request received from the Workflow service.
     /// </summary>
     public sealed record RagQueryRequest(
-        [Required(ErrorMessage = "Question is required.")]
-    string Question,
+        [Required(ErrorMessage = "Question is required.")] string Question,
         string? UserTaxPeriod = null
     );
 

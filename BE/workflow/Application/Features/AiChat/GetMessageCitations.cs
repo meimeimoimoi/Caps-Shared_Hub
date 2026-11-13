@@ -10,10 +10,7 @@ namespace Caps.Workflow.Application.Features.AiChat;
 public static class GetMessageCitations
 {
     /// <summary>Query to get the citations of a specific chat message.</summary>
-    public sealed record GetMessageCitationsQuery(
-        Guid MessageId,
-        Guid UserId
-    );
+    public sealed record GetMessageCitationsQuery(Guid MessageId, Guid UserId);
 
     /// <summary>Handles verifying conversation ownership and deserializing message citations.</summary>
     public sealed class GetMessageCitationsHandler(
@@ -21,24 +18,30 @@ public static class GetMessageCitations
         IConversationRepository conversationRepository
     ) : IQueryHandler<GetMessageCitationsQuery, IReadOnlyList<CitationDto>>
     {
-        public async Task<IReadOnlyList<CitationDto>> HandleAsync(GetMessageCitationsQuery query, CancellationToken ct)
+        public async Task<IReadOnlyList<CitationDto>> HandleAsync(
+            GetMessageCitationsQuery query,
+            CancellationToken ct
+        )
         {
             var message = await chatMessageRepository.GetByIdAsync(query.MessageId, ct);
 
             if (message is null)
             {
-                throw WorkflowErrors.Messasge_NotFound(query.MessageId);
+                throw WorkflowErrors.MessageNotFound(query.MessageId);
             }
 
-            var conversation = await conversationRepository.GetByIdAsync(message.ConversationId, ct);
+            var conversation = await conversationRepository.GetByIdAsync(
+                message.ConversationId,
+                ct
+            );
             if (conversation is null)
             {
-                throw WorkflowErrors.Conversation_NotFound(message.ConversationId);
+                throw WorkflowErrors.ConversationNotFound(message.ConversationId);
             }
 
             if (conversation.UserId != query.UserId)
             {
-                throw WorkflowErrors.Conversation_AccessDenied();
+                throw WorkflowErrors.ConversationAccessDenied();
             }
 
             if (string.IsNullOrWhiteSpace(message.Citations))

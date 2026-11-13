@@ -14,7 +14,10 @@ public sealed class InputSnapshotRepository(WorkflowDbContext dbContext) : IInpu
         return await _snapshots.AsNoTracking().FirstOrDefaultAsync(s => s.Id == id, ct);
     }
 
-    public async Task<InputSnapshot?> GetLatestByDocumentIdAsync(Guid documentId, CancellationToken ct = default)
+    public async Task<InputSnapshot?> GetLatestByDocumentIdAsync(
+        Guid documentId,
+        CancellationToken ct = default
+    )
     {
         return await _snapshots
             .AsNoTracking()
@@ -37,4 +40,3 @@ public sealed class InputSnapshotRepository(WorkflowDbContext dbContext) : IInpu
         await _snapshots.AddAsync(inputSnapshot, ct);
     }
 }
-

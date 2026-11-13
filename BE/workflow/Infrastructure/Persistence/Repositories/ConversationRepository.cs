@@ -29,7 +29,10 @@ public sealed class ConversationRepository(WorkflowDbContext dbContext) : IConve
         return await _conversations.FirstOrDefaultAsync(c => c.Id == id, ct);
     }
 
-    public async Task<IReadOnlyList<Conversation>> GetByUserIdAsync(Guid userId, CancellationToken ct = default)
+    public async Task<IReadOnlyList<Conversation>> GetByUserIdAsync(
+        Guid userId,
+        CancellationToken ct = default
+    )
     {
         return await _conversations
             .AsNoTracking()
@@ -38,7 +41,10 @@ public sealed class ConversationRepository(WorkflowDbContext dbContext) : IConve
             .ToListAsync(ct);
     }
 
-    public Task<IReadOnlyList<Conversation>> ListByUserIdAsync(Guid userId, CancellationToken ct = default)
+    public Task<IReadOnlyList<Conversation>> ListByUserIdAsync(
+        Guid userId,
+        CancellationToken ct = default
+    )
     {
         return GetByUserIdAsync(userId, ct);
     }

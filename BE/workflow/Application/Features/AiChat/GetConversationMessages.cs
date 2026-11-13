@@ -10,10 +10,7 @@ namespace Caps.Workflow.Application.Features.AiChat;
 public static class GetConversationMessages
 {
     /// <summary>Query to retrieve all messages of a conversation owned by the user.</summary>
-    public sealed record GetConversationMessagesQuery(
-        Guid ConversationId,
-        Guid UserId
-    );
+    public sealed record GetConversationMessagesQuery(Guid ConversationId, Guid UserId);
 
     /// <summary>Handles loading and deserializing messages and their citations for a conversation.</summary>
     public sealed class GetConversationMessageHandler(
@@ -21,43 +18,51 @@ public static class GetConversationMessages
         IChatMessageRepository chatMessageRepository
     ) : IQueryHandler<GetConversationMessagesQuery, IReadOnlyList<ChatMessageDto>>
     {
-        public async Task<IReadOnlyList<ChatMessageDto>> HandleAsync(GetConversationMessagesQuery query, CancellationToken ct)
+        public async Task<IReadOnlyList<ChatMessageDto>> HandleAsync(
+            GetConversationMessagesQuery query,
+            CancellationToken ct
+        )
         {
             var conversation = await conversationRepository.GetByIdAsync(query.ConversationId, ct);
 
             if (conversation is null)
             {
-                throw WorkflowErrors.Conversation_NotFound(query.ConversationId);
+                throw WorkflowErrors.ConversationNotFound(query.ConversationId);
             }
 
             if (conversation.UserId != query.UserId)
             {
-                throw WorkflowErrors.Conversation_AccessDenied();
+                throw WorkflowErrors.ConversationAccessDenied();
             }
 
-            var messages = await chatMessageRepository.GetByConversationIdAsync(query.ConversationId, ct);
+            var messages = await chatMessageRepository.GetByConversationIdAsync(
+                query.ConversationId,
+                ct
+            );
 
-            return messages.Select(m =>
-            {
-                List<CitationDto>? citations = null;
-                if (!string.IsNullOrWhiteSpace(m.Citations))
+            return messages
+                .Select(m =>
                 {
-                    citations = JsonSerializer.Deserialize<List<CitationDto>>(m.Citations);
-                }
+                    List<CitationDto>? citations = null;
+                    if (!string.IsNullOrWhiteSpace(m.Citations))
+                    {
+                        citations = JsonSerializer.Deserialize<List<CitationDto>>(m.Citations);
+                    }
 
-                return new ChatMessageDto(
-                    m.Id,
-                    m.ConversationId,
-                    m.Sender,
-                    m.Content,
-                    m.PeriodStart,
-                    m.PeriodEnd,
-                    m.ScopeResult,
-                    m.AnswerStatus,
-                    citations,
-                    m.CreatedAt
-                );
-            }).ToList();
+                    return new ChatMessageDto(
+                        m.Id,
+                        m.ConversationId,
+                        m.Sender,
+                        m.Content,
+                        m.PeriodStart,
+                        m.PeriodEnd,
+                        m.ScopeResult,
+                        m.AnswerStatus,
+                        citations,
+                        m.CreatedAt
+                    );
+                })
+                .ToList();
         }
     }
 }

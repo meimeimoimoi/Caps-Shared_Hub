@@ -45,9 +45,13 @@ public sealed class ChatController(ICurrentUser currentUser) : ControllerBase
     /// <remarks>Returns conversation summaries for the sidebar history.</remarks>
     /// <response code="200">The user's conversation list.</response>
     [HttpGet("conversations")]
-    [ProducesResponseType(typeof(ApiResponse<IReadOnlyList<ConversationsSummaryDto>>), StatusCodes.Status200OK)]
+    [ProducesResponseType(
+        typeof(ApiResponse<IReadOnlyList<ConversationsSummaryDto>>),
+        StatusCodes.Status200OK
+    )]
     public async Task<IActionResult> ListConversations(
-        [FromServices] IQueryHandler<ListConversationsQuery, IReadOnlyList<ConversationsSummaryDto>> handler,
+        [FromServices]
+            IQueryHandler<ListConversationsQuery, IReadOnlyList<ConversationsSummaryDto>> handler,
         CancellationToken ct
     )
     {
@@ -63,10 +67,14 @@ public sealed class ChatController(ICurrentUser currentUser) : ControllerBase
     /// <response code="403">The conversation belongs to another user.</response>
     /// <response code="404">Conversation not found.</response>
     [HttpGet("conversations/{id:guid}/messages")]
-    [ProducesResponseType(typeof(ApiResponse<IReadOnlyList<ChatMessageDto>>), StatusCodes.Status200OK)]
+    [ProducesResponseType(
+        typeof(ApiResponse<IReadOnlyList<ChatMessageDto>>),
+        StatusCodes.Status200OK
+    )]
     public async Task<IActionResult> GetConversationMessages(
         [FromRoute] Guid id,
-        [FromServices] IQueryHandler<GetConversationMessagesQuery, IReadOnlyList<ChatMessageDto>> handler,
+        [FromServices]
+            IQueryHandler<GetConversationMessagesQuery, IReadOnlyList<ChatMessageDto>> handler,
         CancellationToken ct
     )
     {
@@ -157,7 +165,8 @@ public sealed class ChatController(ICurrentUser currentUser) : ControllerBase
     public async Task<IActionResult> TransferDraft(
         [FromRoute] Guid id,
         [FromBody] TransferDraftRequest? request,
-        [FromServices] ICommandHandler<TransferConversationDraftCommand, TransferDraftResponseDto> handler,
+        [FromServices]
+            ICommandHandler<TransferConversationDraftCommand, TransferDraftResponseDto> handler,
         CancellationToken ct
     )
     {

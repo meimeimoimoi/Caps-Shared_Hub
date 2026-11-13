@@ -28,11 +28,14 @@ public static class CreateDocument
         TimeProvider timeProvider
     ) : ICommandHandler<CreateDocumentCommand, DocumentSummaryDto>
     {
-        public async Task<DocumentSummaryDto> HandleAsync(CreateDocumentCommand command, CancellationToken ct)
+        public async Task<DocumentSummaryDto> HandleAsync(
+            CreateDocumentCommand command,
+            CancellationToken ct
+        )
         {
             if (command.PeriodEnd < command.PeriodStart)
             {
-                throw WorkflowErrors.Document_InvalidPeriod();
+                throw WorkflowErrors.DocumentInvalidPeriod();
             }
 
             var now = timeProvider.GetUtcNow();
@@ -40,7 +43,9 @@ public static class CreateDocument
             {
                 Id = UuidV7.NewGuid(),
                 OwnerUserId = command.UserId,
-                Source = string.IsNullOrWhiteSpace(command.Source) ? "TEMPLATE" : command.Source.Trim().ToUpperInvariant(),
+                Source = string.IsNullOrWhiteSpace(command.Source)
+                    ? "TEMPLATE"
+                    : command.Source.Trim().ToUpperInvariant(),
                 TemplateId = command.TemplateId,
                 Title = command.Title.Trim(),
                 PeriodStart = command.PeriodStart,

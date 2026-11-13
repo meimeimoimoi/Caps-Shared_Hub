@@ -9,10 +9,7 @@ namespace Caps.Workflow.Application.Features.AiChat;
 public static class CreateConversation
 {
     /// <summary>Command to create a new conversation for a user.</summary>
-    public sealed record CreateConversationCommand(
-        Guid UserId,
-        string? Title
-    );
+    public sealed record CreateConversationCommand(Guid UserId, string? Title);
 
     /// <summary>Handles creating and persisting a new AI chat conversation.</summary>
     public sealed class CreateConversationHandler(
@@ -21,7 +18,10 @@ public static class CreateConversation
         TimeProvider timeProvider
     ) : ICommandHandler<CreateConversationCommand, ConversationDetailDto>
     {
-        public async Task<ConversationDetailDto> HandleAsync(CreateConversationCommand command, CancellationToken ct)
+        public async Task<ConversationDetailDto> HandleAsync(
+            CreateConversationCommand command,
+            CancellationToken ct
+        )
         {
             var now = timeProvider.GetUtcNow();
             var conversation = Conversation.Create(command.UserId, command.Title, now);
@@ -31,7 +31,7 @@ public static class CreateConversation
 
             return new ConversationDetailDto(
                 conversation.Id,
-                conversation.Title,
+                conversation.Title ?? string.Empty,
                 conversation.CreatedAt,
                 conversation.UpdatedAt
             );

@@ -21,7 +21,7 @@ public static class GenerateDraft
     private static readonly JsonWriterOptions CanonicalWriterOptions = new()
     {
         Indented = false,
-        Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+        Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
     };
 
     /// <summary>Command to generate a new AI draft version for a document.</summary>
@@ -45,17 +45,20 @@ public static class GenerateDraft
         TimeProvider timeProvider
     ) : ICommandHandler<GenerateDraftCommand, DocumentVersionDetailDto>
     {
-        public async Task<DocumentVersionDetailDto> HandleAsync(GenerateDraftCommand command, CancellationToken ct)
+        public async Task<DocumentVersionDetailDto> HandleAsync(
+            GenerateDraftCommand command,
+            CancellationToken ct
+        )
         {
             var document = await documentRepository.GetByIdAsync(command.DocumentId, ct);
             if (document is null)
             {
-                throw WorkflowErrors.Document_NotFound(command.DocumentId);
+                throw WorkflowErrors.DocumentNotFound(command.DocumentId);
             }
 
             if (document.OwnerUserId != command.UserId)
             {
-                throw WorkflowErrors.Document_AccessDenied();
+                throw WorkflowErrors.DocumentAccessDenied();
             }
 
             var now = timeProvider.GetUtcNow();
@@ -80,24 +83,32 @@ public static class GenerateDraft
                 snapshot = await inputSnapshotRepository.GetByIdAsync(command.SnapshotId.Value, ct);
                 if (snapshot is null || snapshot.DocumentId != document.Id)
                 {
-                    throw WorkflowErrors.Snapshot_NotFound(command.SnapshotId.Value);
+                    throw WorkflowErrors.SnapshotNotFound(command.SnapshotId.Value);
                 }
             }
             else
             {
-                snapshot = await inputSnapshotRepository.GetLatestByDocumentIdAsync(document.Id, ct);
+                snapshot = await inputSnapshotRepository.GetLatestByDocumentIdAsync(
+                    document.Id,
+                    ct
+                );
                 if (snapshot is null)
                 {
-                    throw WorkflowErrors.Snapshot_Required();
+                    throw WorkflowErrors.SnapshotRequired();
                 }
             }
 
             // 3. Guard against rapid duplicate draft calls on the same document
-            var existingVersions = await documentVersionRepository.GetByDocumentIdAsync(document.Id, ct);
+            var existingVersions = await documentVersionRepository.GetByDocumentIdAsync(
+                document.Id,
+                ct
+            );
             var latestAiDraft = existingVersions.FirstOrDefault(v => v.VersionType == "AI_DRAFT");
-            if (latestAiDraft is not null
+            if (
+                latestAiDraft is not null
                 && latestAiDraft.InputSnapshotId == snapshot.Id
-                && now - latestAiDraft.CreatedAt < DuplicateCooldown)
+                && now - latestAiDraft.CreatedAt < DuplicateCooldown
+            )
             {
                 throw WorkflowErrors.DraftCooldownActive();
             }
@@ -111,7 +122,10 @@ public static class GenerateDraft
             {
                 // 4. Load template schema (if a TemplateVersionId is provided)
                 var templateSchema = command.TemplateVersionId.HasValue
-                    ? await documentRepository.GetTemplateFieldSchemaAsync(command.TemplateVersionId.Value, ct)
+                    ? await documentRepository.GetTemplateFieldSchemaAsync(
+                        command.TemplateVersionId.Value,
+                        ct
+                    )
                     : null;
 
                 // 5. Generate JSON draft content via Python AI service (RAG + unauthorized_numbers check)
@@ -132,9 +146,11 @@ public static class GenerateDraft
                 var contentHash = Convert.ToHexStringLower(hashBytes);
 
                 var normalizedCitations = NormalizeJsonb(command.Citations);
-                if (normalizedCitations is null
+                if (
+                    normalizedCitations is null
                     && draftResponse.Citations.ValueKind == JsonValueKind.Array
-                    && draftResponse.Citations.GetArrayLength() > 0)
+                    && draftResponse.Citations.GetArrayLength() > 0
+                )
                 {
                     normalizedCitations = draftResponse.Citations.GetRawText();
                 }
@@ -155,7 +171,10 @@ public static class GenerateDraft
                 await aiUsageRepository.AddAsync(usage, ct);
 
                 // 8. Resolve next version number & persist
-                var nextVersionNo = await documentVersionRepository.GetNextVersionNoAsync(document.Id, ct);
+                var nextVersionNo = await documentVersionRepository.GetNextVersionNoAsync(
+                    document.Id,
+                    ct
+                );
                 var assessment = draftResponse.HasUnauthorizedNumbers
                     ? "AI_GENERATED_UNAUTHORIZED_NUMBERS"
                     : "AI_GENERATED_PENDING_REVIEW";
@@ -176,7 +195,7 @@ public static class GenerateDraft
                     ContentHash = contentHash,
                     IsImmutable = false,
                     CreatedBy = command.UserId,
-                    CreatedAt = settledAt
+                    CreatedAt = settledAt,
                 };
 
                 document.UpdatedAt = settledAt;
@@ -223,7 +242,11 @@ public static class GenerateDraft
             {
                 case JsonValueKind.Object:
                     writer.WriteStartObject();
-                    foreach (var prop in element.EnumerateObject().OrderBy(p => p.Name, StringComparer.Ordinal))
+                    foreach (
+                        var prop in element
+                            .EnumerateObject()
+                            .OrderBy(p => p.Name, StringComparer.Ordinal)
+                    )
                     {
                         writer.WritePropertyName(prop.Name);
                         WriteCanonicalElement(writer, prop.Value);

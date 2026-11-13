@@ -1,13 +1,9 @@
 using Caps.Workflow.Domain.Workspace;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Caps.Workflow.Infrastructure.Persistence.Configurations;
+
 public class AiQuotaConfiguration : IEntityTypeConfiguration<AiQuota>
 {
     public void Configure(EntityTypeBuilder<AiQuota> builder)

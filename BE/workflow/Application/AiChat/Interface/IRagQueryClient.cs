@@ -1,18 +1,13 @@
 using Caps.Workflow.Application.Abstractions;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using static Caps.Workflow.Application.AiChat.DTOs.RagQueryClientDtos;
 
-namespace Caps.Workflow.Application.AiChat.Interface;
+namespace Caps.Workflow.Application.AiChat.Interfaces;
+
+/// <summary>Client interface for calling the internal RAG query service.</summary>
 public interface IRagQueryClient
 {
-    /// <summary>
-    /// Calls internal rag-query service to retrieve AI answer and legal citations.
-    /// </summary>
+    /// <summary>Calls internal rag-query service to retrieve AI answer and legal citations.</summary>
     Task<RagQueryResponse> QueryAsync(
         RagQueryRequest request,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
 }

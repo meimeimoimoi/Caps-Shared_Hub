@@ -36,7 +36,8 @@ public sealed class DocumentController(ICurrentUser currentUser) : ControllerBas
     public async Task<IActionResult> CreateDocument(
         [FromBody] CreateDocumentRequest request,
         [FromServices] ICommandHandler<CreateDocumentCommand, DocumentSummaryDto> handler,
-        CancellationToken ct)
+        CancellationToken ct
+    )
     {
         var command = new CreateDocumentCommand(
             UserId,
@@ -62,13 +63,18 @@ public sealed class DocumentController(ICurrentUser currentUser) : ControllerBas
     /// <param name="ct">Cancellation token.</param>
     /// <response code="200">Paginated list of user documents.</response>
     [HttpGet]
-    [ProducesResponseType(typeof(ApiResponse<PagedResultDto<DocumentSummaryDto>>), StatusCodes.Status200OK)]
+    [ProducesResponseType(
+        typeof(ApiResponse<PagedResultDto<DocumentSummaryDto>>),
+        StatusCodes.Status200OK
+    )]
     public async Task<IActionResult> GetDocuments(
         [FromQuery] string? status,
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 20,
-        [FromServices] IQueryHandler<GetDocumentsQuery, PagedResultDto<DocumentSummaryDto>> handler = default!,
-        CancellationToken ct = default)
+        [FromServices]
+            IQueryHandler<GetDocumentsQuery, PagedResultDto<DocumentSummaryDto>> handler = default!,
+        CancellationToken ct = default
+    )
     {
         var query = new GetDocumentsQuery(UserId, status, page, pageSize);
         var result = await handler.HandleAsync(query, ct);
@@ -90,7 +96,8 @@ public sealed class DocumentController(ICurrentUser currentUser) : ControllerBas
         [FromRoute] Guid id,
         [FromBody] CreateSnapshotRequest request,
         [FromServices] ICommandHandler<CreateInputSnapshotCommand, InputSnapshotDto> handler,
-        CancellationToken ct)
+        CancellationToken ct
+    )
     {
         var command = new CreateInputSnapshotCommand(id, UserId, request.Data);
         var result = await handler.HandleAsync(command, ct);
@@ -113,7 +120,8 @@ public sealed class DocumentController(ICurrentUser currentUser) : ControllerBas
         [FromRoute] Guid id,
         [FromBody] GenerateDraftRequest request,
         [FromServices] ICommandHandler<GenerateDraftCommand, DocumentVersionDetailDto> handler,
-        CancellationToken ct)
+        CancellationToken ct
+    )
     {
         var command = new GenerateDraftCommand(
             id,
@@ -135,11 +143,19 @@ public sealed class DocumentController(ICurrentUser currentUser) : ControllerBas
     /// <param name="ct">Cancellation token.</param>
     /// <response code="200">The version history of the document.</response>
     [HttpGet("{id:guid}/versions")]
-    [ProducesResponseType(typeof(ApiResponse<IReadOnlyList<DocumentVersionSummaryDto>>), StatusCodes.Status200OK)]
+    [ProducesResponseType(
+        typeof(ApiResponse<IReadOnlyList<DocumentVersionSummaryDto>>),
+        StatusCodes.Status200OK
+    )]
     public async Task<IActionResult> GetVersions(
         [FromRoute] Guid id,
-        [FromServices] IQueryHandler<GetDocumentVersionsQuery, IReadOnlyList<DocumentVersionSummaryDto>> handler,
-        CancellationToken ct)
+        [FromServices]
+            IQueryHandler<
+            GetDocumentVersionsQuery,
+            IReadOnlyList<DocumentVersionSummaryDto>
+        > handler,
+        CancellationToken ct
+    )
     {
         var query = new GetDocumentVersionsQuery(id, UserId);
         var result = await handler.HandleAsync(query, ct);
@@ -160,8 +176,10 @@ public sealed class DocumentController(ICurrentUser currentUser) : ControllerBas
     public async Task<IActionResult> GetVersionDetail(
         [FromRoute] Guid id,
         [FromRoute] Guid versionId,
-        [FromServices] IQueryHandler<GetDocumentVersionDetailQuery, DocumentVersionDetailDto> handler,
-        CancellationToken ct)
+        [FromServices]
+            IQueryHandler<GetDocumentVersionDetailQuery, DocumentVersionDetailDto> handler,
+        CancellationToken ct
+    )
     {
         var query = new GetDocumentVersionDetailQuery(id, versionId, UserId);
         var result = await handler.HandleAsync(query, ct);
@@ -184,8 +202,10 @@ public sealed class DocumentController(ICurrentUser currentUser) : ControllerBas
         [FromRoute] Guid id,
         [FromRoute] Guid versionId,
         [FromBody] DownloadDocumentRequest? request,
-        [FromServices] ICommandHandler<DownloadDocumentVersionCommand, DownloadDocumentResultDto> handler,
-        CancellationToken ct)
+        [FromServices]
+            ICommandHandler<DownloadDocumentVersionCommand, DownloadDocumentResultDto> handler,
+        CancellationToken ct
+    )
     {
         var command = new DownloadDocumentVersionCommand(id, versionId, UserId, request?.Format);
         var result = await handler.HandleAsync(command, ct);

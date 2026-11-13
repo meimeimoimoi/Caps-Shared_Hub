@@ -23,7 +23,10 @@ public sealed class KnowledgeDocumentController(
     /// Approves a pending legal document and indexes its chunks into Qdrant (PENDING -> APPROVED -> INDEXED).
     /// </summary>
     [HttpPost("{id:guid}/approve")]
-    public async Task<ActionResult<DocumentActionResponseDto>> ApproveDocument(Guid id, CancellationToken cancellationToken)
+    public async Task<ActionResult<DocumentActionResponseDto>> ApproveDocument(
+        Guid id,
+        CancellationToken cancellationToken
+    )
     {
         try
         {
@@ -44,7 +47,10 @@ public sealed class KnowledgeDocumentController(
     /// Retries indexing a legal document into Qdrant when its status is INDEX_FAILED.
     /// </summary>
     [HttpPost("{id:guid}/retry-index")]
-    public async Task<ActionResult<DocumentActionResponseDto>> RetryIndex(Guid id, CancellationToken cancellationToken)
+    public async Task<ActionResult<DocumentActionResponseDto>> RetryIndex(
+        Guid id,
+        CancellationToken cancellationToken
+    )
     {
         try
         {

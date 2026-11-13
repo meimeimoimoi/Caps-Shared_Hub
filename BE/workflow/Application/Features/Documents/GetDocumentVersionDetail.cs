@@ -21,23 +21,26 @@ public static class GetDocumentVersionDetail
         IDocumentVersionRepository versionRepository
     ) : IQueryHandler<GetDocumentVersionDetailQuery, DocumentVersionDetailDto>
     {
-        public async Task<DocumentVersionDetailDto> HandleAsync(GetDocumentVersionDetailQuery query, CancellationToken ct)
+        public async Task<DocumentVersionDetailDto> HandleAsync(
+            GetDocumentVersionDetailQuery query,
+            CancellationToken ct
+        )
         {
             var document = await documentRepository.GetByIdAsync(query.DocumentId, ct);
             if (document is null)
             {
-                throw WorkflowErrors.Document_NotFound(query.DocumentId);
+                throw WorkflowErrors.DocumentNotFound(query.DocumentId);
             }
 
             if (document.OwnerUserId != query.UserId)
             {
-                throw WorkflowErrors.Document_AccessDenied();
+                throw WorkflowErrors.DocumentAccessDenied();
             }
 
             var version = await versionRepository.GetByIdAsync(query.VersionId, ct);
             if (version is null || version.DocumentId != document.Id)
             {
-                throw WorkflowErrors.DocumentVersion_NotFound(query.VersionId);
+                throw WorkflowErrors.DocumentVersionNotFound(query.VersionId);
             }
 
             return new DocumentVersionDetailDto(
