@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Info } from 'lucide-react'
+import { AlertTriangle, Info } from 'lucide-react'
+import { Modal } from '@/components/ui/feedback/modal'
+import { HelpTip } from '@/components/ui/feedback/help-tip'
 import { cn } from '@/lib/utils'
 import { StatusBadge } from '@/components/ui/display/status-badge'
 import {
@@ -15,11 +17,13 @@ interface DisputeDecisionProps {
   slaHours: number
   decided: boolean
   escalated: boolean
-  onDecide: (outcome: DisputeOutcome, reason: string) => void
-  onEscalate: () => void
+  /** Rejects when the server refuses; the error stays on the card */
+  onDecide: (outcome: DisputeOutcome, reason: string) => Promise<unknown>
+  onEscalate: () => Promise<unknown>
 }
 
-/* Thẻ "Quyết định trọng tài": chọn kết quả + lý do, gửi cho cả Client và chuyên gia */
+/* Arbitration card: pick an outcome and a reason, then confirm; the decision moves escrow money
+ * and cannot be taken back, so it is restated in a dialog before it is sent */
 export function DisputeDecision({
   hoursLeft,
   slaHours,
@@ -28,9 +32,33 @@ export function DisputeDecision({
   onDecide,
   onEscalate,
 }: DisputeDecisionProps) {
-  const { t } = useTranslation('admin')
+  const { t } = useTranslation(['admin', 'common'])
   const [outcome, setOutcome] = useState<DisputeOutcome>()
   const [reason, setReason] = useState('')
+  const [confirming, setConfirming] = useState<'decide' | 'escalate' | null>(
+    null
+  )
+  const [pending, setPending] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const run = async () => {
+    if (!confirming || pending) return
+    setPending(true)
+    setError(null)
+    try {
+      if (confirming === 'decide' && outcome) await onDecide(outcome, reason)
+      else if (confirming === 'escalate') await onEscalate()
+    } catch {
+      setError(
+        confirming === 'decide'
+          ? t('disputes.decision.failed')
+          : t('disputes.escalation.failed')
+      )
+    } finally {
+      setPending(false)
+      setConfirming(null)
+    }
+  }
 
   return (
     <form
@@ -38,7 +66,12 @@ export function DisputeDecision({
       // `required` trên radio + textarea đã chặn submit khi thiếu
       onSubmit={(e) => {
         e.preventDefault()
-        if (outcome) onDecide(outcome, reason)
+        if (!reason.trim()) {
+          setError(t('disputes.decision.reasonMissing'))
+          return
+        }
+        setError(null)
+        if (outcome) setConfirming('decide')
       }}
     >
       <div className="flex items-start justify-between gap-3">
@@ -49,7 +82,8 @@ export function DisputeDecision({
               left: hoursLeft,
               total: slaHours,
             }),
-            tone: 'warning',
+            tone:
+              hoursLeft <= 12 ? 'danger' : hoursLeft <= 24 ? 'warning' : 'neutral',
           }}
         />
       </div>
@@ -63,30 +97,6 @@ export function DisputeDecision({
           <p className="text-fg-muted">{t('disputes.decision.lockedBody')}</p>
         </div>
       </div>
-
-      {/* Professional-judgment disputes go to an Authorized Reviewer; allowed once */}
-      {!decided && (
-        <div className="mt-4 text-sm">
-          {escalated ? (
-            <p className="text-fg-muted">{t('disputes.escalation.done')}</p>
-          ) : (
-            <>
-              <p className="text-fg-muted">
-                {t('disputes.escalation.hint', {
-                  hours: DISPUTE_ESCALATION_HOURS,
-                })}
-              </p>
-              <button
-                type="button"
-                onClick={onEscalate}
-                className="btn btn-press btn-secondary mt-2 w-full"
-              >
-                {t('disputes.escalation.action')}
-              </button>
-            </>
-          )}
-        </div>
-      )}
 
       <fieldset disabled={decided} className="mt-5">
         <legend className="text-sm font-semibold">
@@ -131,17 +141,112 @@ export function DisputeDecision({
             rows={3}
             value={reason}
             onChange={(e) => setReason(e.target.value)}
-            placeholder={t('disputes.decision.reasonHint')}
             className="border-border-control rounded-control shadow-control bg-paper placeholder:text-fg-muted resize-y border px-3 py-2 text-base font-normal"
           />
         </label>
 
+        {error && (
+          <p
+            role="alert"
+            className="text-danger mt-4 flex items-start gap-2 text-sm font-semibold"
+          >
+            <AlertTriangle
+              size={16}
+              aria-hidden="true"
+              className="mt-0.5 shrink-0"
+            />
+            {error}
+          </p>
+        )}
         <button type="submit" className="btn btn-press btn-primary mt-4 w-full">
           {decided
             ? t('disputes.decision.done')
             : t('disputes.decision.submit')}
         </button>
       </fieldset>
+
+      {/* Professional-judgment disputes go to an Authorized Reviewer; allowed once.
+          Kept below the decision so the card has one primary path */}
+      {!decided && (
+        <div className="border-border-subtle mt-5 border-t pt-4 text-sm">
+          {escalated ? (
+            <p>{t('disputes.escalation.done')}</p>
+          ) : (
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setConfirming('escalate')}
+                className="btn btn-press btn-secondary flex-1"
+              >
+                {t('disputes.escalation.action')}
+              </button>
+              <HelpTip label={t('disputes.escalation.action')}>
+                {t('disputes.escalation.hint', {
+                  hours: DISPUTE_ESCALATION_HOURS,
+                })}
+              </HelpTip>
+            </div>
+          )}
+        </div>
+      )}
+
+      {confirming && (
+        <Modal
+          title={
+            confirming === 'decide'
+              ? t('disputes.decision.confirmTitle')
+              : t('disputes.escalation.confirmTitle')
+          }
+          description={
+            confirming === 'decide'
+              ? t('disputes.decision.confirmBody')
+              : t('disputes.escalation.confirmBody', {
+                  hours: DISPUTE_ESCALATION_HOURS,
+                })
+          }
+          onClose={() => setConfirming(null)}
+          preventClose={pending}
+          footer={
+            <>
+              <button
+                type="button"
+                autoFocus
+                disabled={pending}
+                onClick={() => setConfirming(null)}
+                className="btn btn-press btn-secondary"
+              >
+                {t('common:actions.cancel')}
+              </button>
+              <button
+                type="button"
+                disabled={pending}
+                onClick={() => void run()}
+                className={`btn btn-press ${confirming === 'decide' ? 'btn-danger' : 'btn-primary'}`}
+              >
+                {confirming === 'decide'
+                  ? t('disputes.decision.submit')
+                  : t('disputes.escalation.action')}
+              </button>
+            </>
+          }
+        >
+          {confirming === 'decide' && outcome && (
+            <dl className="bg-sunken rounded-surface mt-4 space-y-2 p-3 text-sm">
+              <div>
+                <dt className="text-fg-muted">{t('disputes.decision.outcome')}</dt>
+                <dd className="text-fg-strong font-semibold">
+                  {t(DISPUTE_OUTCOME[outcome].label)}
+                </dd>
+                <dd className="num">{t(DISPUTE_OUTCOME[outcome].split)}</dd>
+              </div>
+              <div>
+                <dt className="text-fg-muted">{t('disputes.decision.reason')}</dt>
+                <dd className="break-words whitespace-pre-wrap">{reason}</dd>
+              </div>
+            </dl>
+          )}
+        </Modal>
+      )}
     </form>
   )
 }

@@ -9,7 +9,7 @@ import type { Escrow } from '../types'
 export const ALL = 'ALL'
 
 /** Danh sách Escrow: lọc trạng thái, tìm theo mã hồ sơ / Client / chuyên gia / mã PayOS, phân trang */
-export function useEscrows() {
+export function useEscrows(enabled = true) {
   const qc = useQueryClient()
   const { name } = useAccount('admin')
   const [status, setStatusState] = useState<Escrow['status'] | typeof ALL>(ALL)
@@ -19,6 +19,7 @@ export function useEscrows() {
   const query$ = useQuery({
     queryKey: disputesKeys.escrows(),
     queryFn: ({ signal }) => getEscrows(signal),
+    enabled,
   })
   const all = query$.data ?? []
 

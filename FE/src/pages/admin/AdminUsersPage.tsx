@@ -18,6 +18,8 @@ import type {
   ManagedUser,
   UserRole,
 } from '../../features/user-management/types'
+import { PageHeader } from '@/components/ui/layout/page-header'
+import { LoadError } from '@/components/ui/feedback/load-error'
 
 const selectCls =
   'border-border-control rounded-control shadow-control bg-paper h-control min-w-48 border px-3 text-sm'
@@ -43,10 +45,7 @@ export default function AdminUsersPage() {
       search={users.query}
       onSearchChange={users.setQuery}
     >
-      <h1 className="text-h1">{t('users.title')}</h1>
-      <p className="text-fg-muted mt-3 max-w-[65ch]">
-        {t('users.description')}
-      </p>
+      <PageHeader title={t('users.title')} help={t('users.description')} />
 
       <section className="paper mt-8 overflow-x-auto">
         <div className="flex flex-wrap items-end gap-4 px-4 py-3">
@@ -94,14 +93,16 @@ export default function AdminUsersPage() {
         </div>
 
         <table className="w-full min-w-200 text-sm">
+
+          <caption className="sr-only">{t('users.title')}</caption>
           <thead className="bg-sunken text-fg-muted">
             <tr className="[&>th]:px-4 [&>th]:py-3 [&>th]:font-semibold">
-              <th className="text-left">{t('users.col.user')}</th>
-              <th className="text-left">{t('users.col.role')}</th>
-              <th className="text-left">{t('users.col.status')}</th>
-              <th className="text-right">{t('users.col.created')}</th>
-              <th className="text-right">{t('users.col.lastLogin')}</th>
-              <th>
+              <th scope="col" className="text-left">{t('users.col.user')}</th>
+              <th scope="col" className="text-left">{t('users.col.role')}</th>
+              <th scope="col" className="text-left">{t('users.col.status')}</th>
+              <th scope="col" className="text-right">{t('users.col.created')}</th>
+              <th scope="col" className="text-right">{t('users.col.lastLogin')}</th>
+              <th scope="col">
                 <span className="sr-only">{t('users.col.actions')}</span>
               </th>
             </tr>
@@ -148,7 +149,7 @@ export default function AdminUsersPage() {
                   colSpan={6}
                   className="text-fg-muted px-4 py-10 text-center"
                 >
-                  {users.error?.message ?? t('users.empty')}
+                  {users.error ? <LoadError /> : t('users.empty')}
                 </td>
               </tr>
             )}

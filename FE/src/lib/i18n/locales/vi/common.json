@@ -134,6 +134,7 @@
     }
   },
   "states": {
-    "loadFailed": "Không tải được dữ liệu. Kiểm tra kết nối rồi thử lại."
+    "loadFailed": "Không tải được dữ liệu. Kiểm tra kết nối rồi thử lại.",
+    "actionFailed": "Không thực hiện được thao tác. Hãy thử lại."
   }
 }

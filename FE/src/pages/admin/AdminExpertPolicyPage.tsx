@@ -1,4 +1,5 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
+import { useBlocker } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { ApiError } from '@/lib/api-client'
@@ -27,6 +28,7 @@ import {
 import { formatDateTime } from '../../features/expert-vetting/utils/applications'
 import { PageHeader } from '@/components/ui/layout/page-header'
 import { LoadError } from '@/components/ui/feedback/load-error'
+import { SkeletonRows } from '@/components/ui/display/skeleton-rows'
 
 const SAVE_ERRORS = [
   'POLICY_SETTING_OUT_OF_RANGE',
@@ -189,6 +191,20 @@ export default function AdminExpertPolicyPage() {
     (s) => !outOfRange(s) && Number(valueOf(s)) !== s.value
   )
   const pending = settings.filter(isDirty)
+  // Leaving with edits in the pending bar would drop them silently: ask first
+  const blocker = useBlocker(
+    ({ currentLocation, nextLocation }) =>
+      pending.length > 0 &&
+      !save.isPending &&
+      currentLocation.pathname !== nextLocation.pathname
+  )
+  const hasPending = pending.length > 0
+  useEffect(() => {
+    if (!hasPending) return
+    const warn = (e: BeforeUnloadEvent) => e.preventDefault()
+    window.addEventListener('beforeunload', warn)
+    return () => window.removeEventListener('beforeunload', warn)
+  }, [hasPending])
   const hasInvalid = settings.some(outOfRange) || rows.some(inverted)
   const canReview = changed.length > 0 && !hasInvalid
   const canSave = canReview && !!reason.trim() && !save.isPending
@@ -485,7 +501,14 @@ export default function AdminExpertPolicyPage() {
         helpLabel={t('admin:expertPolicy.helpLabel')}
       />
       {policy.isLoading && (
-        <p className="text-fg-muted mt-8">{t('common:loading')}</p>
+        <section className="paper mt-8 overflow-x-auto">
+          <table className="w-full text-sm">
+            <caption className="sr-only">{t('admin:expertPolicy.title')}</caption>
+            <tbody>
+              <SkeletonRows cols={6} />
+            </tbody>
+          </table>
+        </section>
       )}
       {policy.error && <LoadError className="paper mt-8 px-4 py-10" />}
 
@@ -495,15 +518,15 @@ export default function AdminExpertPolicyPage() {
           <section className="paper overflow-x-auto">
             <table className="w-full min-w-240 text-sm">
               <thead className="bg-sunken text-fg-muted text-left">
-                <tr className="border-border border-b [&>th]:px-5 [&>th]:py-3 [&>th]:text-xs [&>th]:font-semibold [&>th]:tracking-wide [&>th]:whitespace-nowrap [&>th]:uppercase">
-                  <th className="w-[32%]">
+                <tr className="border-border border-b [&>th]:px-5 [&>th]:py-3 [&>th]:font-semibold [&>th]:whitespace-nowrap">
+                  <th scope="col" className="w-[32%]">
                     {t('admin:expertPolicy.history.setting')}
                   </th>
-                  <th>{t('admin:expertPolicy.columns.value')}</th>
-                  <th>{t('admin:expertPolicy.columns.current')}</th>
-                  <th>{t('admin:expertPolicy.columns.default')}</th>
-                  <th>{t('admin:expertPolicy.columns.allowed')}</th>
-                  <th>{t('admin:expertPolicy.columns.updated')}</th>
+                  <th scope="col">{t('admin:expertPolicy.columns.value')}</th>
+                  <th scope="col">{t('admin:expertPolicy.columns.current')}</th>
+                  <th scope="col">{t('admin:expertPolicy.columns.default')}</th>
+                  <th scope="col">{t('admin:expertPolicy.columns.allowed')}</th>
+                  <th scope="col">{t('admin:expertPolicy.columns.updated')}</th>
                 </tr>
               </thead>
               {GROUPS.map((g) => {
@@ -590,14 +613,14 @@ export default function AdminExpertPolicyPage() {
               {history.data?.length ? (
                 <table className="w-full min-w-200 text-sm">
                   <thead className="bg-sunken text-fg-muted text-left">
-                    <tr className="border-border border-b [&>th]:px-5 [&>th]:py-3 [&>th]:text-xs [&>th]:font-semibold [&>th]:tracking-wide [&>th]:whitespace-nowrap [&>th]:uppercase">
-                      <th>{t('admin:expertPolicy.history.time')}</th>
-                      <th>{t('admin:expertPolicy.history.setting')}</th>
-                      <th className="text-right">
+                    <tr className="border-border border-b [&>th]:px-5 [&>th]:py-3 [&>th]:font-semibold [&>th]:whitespace-nowrap">
+                      <th scope="col">{t('admin:expertPolicy.history.time')}</th>
+                      <th scope="col">{t('admin:expertPolicy.history.setting')}</th>
+                      <th scope="col" className="text-right">
                         {t('admin:expertPolicy.history.change')}
                       </th>
-                      <th>{t('admin:expertPolicy.history.reason')}</th>
-                      <th>{t('admin:expertPolicy.history.actor')}</th>
+                      <th scope="col">{t('admin:expertPolicy.history.reason')}</th>
+                      <th scope="col">{t('admin:expertPolicy.history.actor')}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-border-subtle divide-y">
@@ -656,8 +679,9 @@ export default function AdminExpertPolicyPage() {
                 <p className="text-fg-muted px-5 py-8 text-center text-sm">
                   {history.isLoading
                     ? t('common:loading')
-                    : (history.error?.message ??
-                      t('admin:expertPolicy.history.empty'))}
+                    : history.error
+                      ? t('common:states.loadFailed')
+                      : t('admin:expertPolicy.history.empty')}
                 </p>
               )}
             </div>
@@ -699,11 +723,11 @@ export default function AdminExpertPolicyPage() {
             <table className="w-full text-sm">
               <thead className="bg-sunken text-fg-muted text-left">
                 <tr className="[&>th]:px-4 [&>th]:py-2.5 [&>th]:font-medium">
-                  <th>{t('admin:expertPolicy.history.setting')}</th>
-                  <th className="text-right">
+                  <th scope="col">{t('admin:expertPolicy.history.setting')}</th>
+                  <th scope="col" className="text-right">
                     {t('admin:expertPolicy.confirmBefore')}
                   </th>
-                  <th className="text-right">
+                  <th scope="col" className="text-right">
                     {t('admin:expertPolicy.confirmAfter')}
                   </th>
                 </tr>
@@ -758,6 +782,34 @@ export default function AdminExpertPolicyPage() {
       )}
 
       {toast && <Toast message={toast} onDone={clearToast} />}
+      {blocker.state === 'blocked' && (
+        <Modal
+          title={t('admin:expertPolicy.leaveTitle')}
+          description={t('admin:expertPolicy.leaveBody', {
+            count: pending.length,
+          })}
+          onClose={() => blocker.reset()}
+          footer={
+            <>
+              <button
+                type="button"
+                autoFocus
+                onClick={() => blocker.reset()}
+                className="btn btn-press btn-secondary"
+              >
+                {t('admin:expertPolicy.stay')}
+              </button>
+              <button
+                type="button"
+                onClick={() => blocker.proceed()}
+                className="btn btn-press btn-danger"
+              >
+                {t('admin:expertPolicy.leave')}
+              </button>
+            </>
+          }
+        />
+      )}
     </AdminLayout>
   )
 }

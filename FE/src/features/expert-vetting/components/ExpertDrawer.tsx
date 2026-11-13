@@ -8,12 +8,17 @@ import { cn } from '@/lib/utils'
 import type { Expert } from '../types'
 import { formatVnd } from '@/lib/format-money'
 import { formatDate, formatDateTime } from '../utils/applications'
+import { ServiceAccessDialog } from './ServiceAccessDialog'
+import type { ServiceAccessAction } from '../types'
 
 interface ExpertDrawerProps {
   expert: Expert
   onClose: () => void
   /** A suspension carries the admin's note (required by the API) */
-  onSetServiceStatus: (status: Expert['serviceStatus'], note?: string) => void
+  onSetServiceStatus: (
+    status: Expert['serviceStatus'],
+    note?: string
+  ) => Promise<unknown> | void
 }
 
 function Section({
@@ -55,8 +60,8 @@ export function ExpertDrawer({
   onSetServiceStatus,
 }: ExpertDrawerProps) {
   const { t } = useTranslation('admin')
-  const [suspending, setSuspending] = useState(false)
-  const [note, setNote] = useState('')
+  // Suspend and reinstate go through the same confirmation as the approval panel
+  const [access, setAccess] = useState<ServiceAccessAction | null>(null)
   // "Đang hoạt động · hiện trên Marketplace" → chip for the first part, plain text for the rest
   const [statusLabel, statusNote] =
     SERVICE_STATUS[e.serviceStatus].label.split(' · ')
@@ -87,11 +92,11 @@ export function ExpertDrawer({
           >
             {t('experts.drawer.viewApplication')}
           </Link>
-          {e.serviceStatus !== 'SUSPENDED' && !suspending && (
+          {e.serviceStatus !== 'SUSPENDED' && (
             <button
               type="button"
-              onClick={() => setSuspending(true)}
-              className="btn btn-press bg-danger text-paper"
+              onClick={() => setAccess('SUSPEND')}
+              className="btn btn-press btn-danger"
             >
               {t('experts.drawer.suspend')}
             </button>
@@ -99,7 +104,7 @@ export function ExpertDrawer({
           {e.serviceStatus === 'SUSPENDED' && (
             <button
               type="button"
-              onClick={() => onSetServiceStatus('ACTIVE')}
+              onClick={() => setAccess('REINSTATE')}
               className="btn btn-press btn-primary"
             >
               {t('experts.drawer.resume')}
@@ -108,40 +113,19 @@ export function ExpertDrawer({
         </>
       }
     >
-      {suspending && (
-        <section className="border-danger bg-danger-soft rounded-control mt-5 border p-4">
-          <label className="flex flex-col gap-1.5 text-sm font-semibold">
-            {t('experts.drawer.suspendNote')}
-            <textarea
-              rows={3}
-              maxLength={2000}
-              autoFocus
-              value={note}
-              onChange={(ev) => setNote(ev.target.value)}
-              className="border-border-control rounded-control bg-paper resize-y border px-3 py-2 text-base font-normal"
-            />
-          </label>
-          <div className="mt-3 flex justify-end gap-2">
-            <button
-              type="button"
-              onClick={() => {
-                setSuspending(false)
-                setNote('')
-              }}
-              className="btn btn-press btn-ghost"
-            >
-              {t('experts.drawer.cancel')}
-            </button>
-            <button
-              type="button"
-              disabled={!note.trim()}
-              onClick={() => onSetServiceStatus('SUSPENDED', note)}
-              className="btn btn-press bg-danger text-paper disabled:opacity-50"
-            >
-              {t('experts.drawer.confirmSuspend')}
-            </button>
-          </div>
-        </section>
+      {access && (
+        <ServiceAccessDialog
+          action={access}
+          expertName={e.name}
+          serviceName={e.serviceName}
+          onConfirm={(note) =>
+            onSetServiceStatus(
+              access === 'SUSPEND' ? 'SUSPENDED' : 'ACTIVE',
+              note || undefined
+            )
+          }
+          onClose={() => setAccess(null)}
+        />
       )}
 
       <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-3">

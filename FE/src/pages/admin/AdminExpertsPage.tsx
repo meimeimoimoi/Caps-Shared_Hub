@@ -16,6 +16,7 @@ import type { Expert } from '../../features/expert-vetting/types'
 import { useTranslation } from 'react-i18next'
 import { PageHeader } from '@/components/ui/layout/page-header'
 import { LoadError } from '@/components/ui/feedback/load-error'
+import { SkeletonRows } from '@/components/ui/display/skeleton-rows'
 
 // Compact toolbar filters, same look as the review assignments page.
 const filterCls =
@@ -99,18 +100,19 @@ export default function AdminExpertsPage() {
 
       <section className="paper overflow-x-auto">
         <table className="w-full min-w-200 text-sm">
+          <caption className="sr-only">{t('admin:experts.title')}</caption>
           <thead className="bg-sunken text-fg-muted text-left">
             <tr className="[&>th]:px-4 [&>th]:py-3 [&>th]:font-semibold [&>th]:whitespace-nowrap">
-              <th>{t('admin:experts.table.expert')}</th>
-              <th>{t('admin:experts.table.field')}</th>
-              <th>{t('admin:experts.table.serviceStatus')}</th>
-              <th className="text-right">
+              <th scope="col">{t('admin:experts.table.expert')}</th>
+              <th scope="col">{t('admin:experts.table.field')}</th>
+              <th scope="col">{t('admin:experts.table.serviceStatus')}</th>
+              <th scope="col" className="text-right">
                 {t('admin:experts.table.reviewFee')}
               </th>
-              <th className="text-right">
+              <th scope="col" className="text-right">
                 {t('admin:experts.table.activeCases')}
               </th>
-              <th className="text-right">
+              <th scope="col" className="text-right">
                 {t('admin:experts.table.approvedAt')}
               </th>
             </tr>
@@ -194,15 +196,14 @@ export default function AdminExpertsPage() {
                 </tr>
               )
             })}
-            {paged.rows.length === 0 && (
+            {experts.isLoading && <SkeletonRows cols={6} />}
+            {!experts.isLoading && paged.rows.length === 0 && (
               <tr>
                 <td
                   colSpan={6}
                   className="text-fg-muted px-4 py-10 text-center"
                 >
-                  {experts.isLoading ? (
-                    t('common:loading')
-                  ) : experts.error ? (
+                  {experts.error ? (
                     <LoadError />
                   ) : (
                     t('admin:experts.noResults')
@@ -230,7 +231,7 @@ export default function AdminExpertsPage() {
                     : t('admin:experts.toast.reinstated')
                 )
               )
-              .catch((e: Error) => setToast(e.message))
+              .catch(() => setToast(t('common:states.actionFailed')))
           }
         />
       )}

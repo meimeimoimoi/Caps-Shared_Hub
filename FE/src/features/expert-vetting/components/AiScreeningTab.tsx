@@ -106,10 +106,10 @@ export function AiScreeningTab({
         <table className="w-full min-w-[560px] text-sm">
           <thead className="bg-sunken text-fg-muted">
             <tr className="[&>th]:px-3 [&>th]:py-2.5 [&>th]:text-left [&>th]:font-semibold">
-              <th>{t('detail.aiScreening.colItem')}</th>
-              <th>{t('detail.aiScreening.colResult')}</th>
-              <th>{t('detail.aiScreening.colNote')}</th>
-              <th>{t('detail.aiScreening.colDocument')}</th>
+              <th scope="col">{t('detail.aiScreening.colItem')}</th>
+              <th scope="col">{t('detail.aiScreening.colResult')}</th>
+              <th scope="col">{t('detail.aiScreening.colNote')}</th>
+              <th scope="col">{t('detail.aiScreening.colDocument')}</th>
             </tr>
           </thead>
           <tbody>

@@ -5,6 +5,8 @@ import { QUEUE_TABS } from '../../features/expert-vetting/constants'
 import { useAdminNav } from '@/app/layouts/admin/useAdminNav'
 import { usePendingApplications } from '../../features/expert-vetting/hooks/usePendingApplications'
 import { useTranslation } from 'react-i18next'
+import { PageHeader } from '@/components/ui/layout/page-header'
+import { LoadError } from '@/components/ui/feedback/load-error'
 
 export default function AdminPendingExpertsPage() {
   const nav = useAdminNav()
@@ -21,10 +23,10 @@ export default function AdminPendingExpertsPage() {
       search={query}
       onSearchChange={setQuery}
     >
-      <h1 className="text-h1">{t('pendingExperts.title')}</h1>
-      <p className="text-fg-muted mt-3">
-        {t('pendingExperts.description')}
-      </p>
+      <PageHeader
+        title={t('pendingExperts.title')}
+        help={t('pendingExperts.description')}
+      />
 
       <div
         role="group"
@@ -54,7 +56,8 @@ export default function AdminPendingExpertsPage() {
         paged={paged}
         onPrev={prev}
         onNext={next}
-        empty={isLoading ? t('common:loading') : error?.message}
+        loading={isLoading}
+        empty={error ? <LoadError /> : undefined}
       />
     </AdminLayout>
   )

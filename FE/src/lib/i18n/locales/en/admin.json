@@ -48,7 +48,10 @@
       "finalApprovalOverdue": "{{count}} records past the final approval limit",
       "outsideRange": "{{count}} experts priced outside the range",
       "title": "Needs attention now",
-      "empty": "Nothing urgent."
+      "empty": "Nothing urgent.",
+      "emptyPartial": "Nothing urgent in the queues being tracked. Disputes and payouts have no data to check yet.",
+      "unavailable": "Disputes and payouts have no data to check yet.",
+      "unknown": "Couldn't determine what needs attention because a data source failed to load."
     },
     "kpi": {
       "pending": "Pending applications",
@@ -148,9 +151,6 @@
       "approvedAt": "Approved on",
       "application": "Application",
       "history": "Activity log",
-      "suspendNote": "Reason for suspension",
-      "cancel": "Cancel",
-      "confirmSuspend": "Confirm suspension",
       "serviceName": "Service"
     },
     "accepting": {
@@ -380,17 +380,24 @@
       "lockedTitle": "Funds are locked",
       "lockedBody": "Nothing is paid out automatically until a decision is made.",
       "outcome": "Outcome (required)",
-      "reason": "Reason (required)",
+      "reason": "Reason for the decision (required, sent to both the client and the expert)",
       "reasonHint": "Sent to both the Client and the expert",
       "submit": "Record decision",
-      "done": "Decision recorded"
+      "done": "Decision recorded",
+      "confirmTitle": "Send the arbitration decision?",
+      "confirmBody": "The decision goes to both the client and the expert, and the escrow is split by the outcome below.",
+      "failed": "The decision wasn't sent and nothing was recorded. Try again.",
+      "reasonMissing": "Enter a reason for the decision."
     },
     "escalation": {
       "hint": "Disputes about professional judgment or a CIT conclusion go to an Authorized Reviewer. The decision deadline is extended by {{hours}} hours, once.",
       "action": "Escalate to professional review",
       "done": "Escalated to professional review; the decision deadline was extended.",
       "logged": "Escalated to an Authorized Reviewer; decision deadline extended by 48 hours",
-      "toast": "Escalated to professional review"
+      "toast": "Escalated to professional review",
+      "confirmTitle": "Escalate for professional review?",
+      "confirmBody": "The dispute goes to an Authorized Reviewer and the decision deadline gains {{hours}} hours. This can be done only once.",
+      "failed": "Couldn't escalate. Try again."
     },
     "outcome": {
       "RESOLVE_REFUND_USER": {
@@ -412,7 +419,7 @@
   },
   "escrow": {
     "title": "Refunds and payouts",
-    "intro": "Paid out 80/20 after acceptance; refunds follow the termination matrix and dispute decisions.",
+    "intro": "Experts are paid after acceptance, minus the service's platform fee; refunds follow the termination matrix and dispute decisions.",
     "col": {
       "caseId": "Case ID",
       "client": "Client",
@@ -540,7 +547,11 @@
       "holdingTotal": "Total {{amount}}",
       "done": "Completed"
     },
-    "searchLabel": "Search case ID, client, expert or PayOS ref"
+    "searchLabel": "Search case ID, client, expert or PayOS ref",
+    "retryConfirm": {
+      "title": "Pay {{amount}} to the expert again?",
+      "body": "The payout for case {{id}} is sent to the expert again."
+    }
   },
   "pricing": {
     "title": "Service pricing",
@@ -563,7 +574,9 @@
     "share": {
       "platform": "Platform fee",
       "expert": "Expert receives",
-      "note": "Set by platform policy, not editable here. Clients never see the split; they only see the fee the expert sets."
+      "note": "Set by platform policy, not editable here. Clients never see the split; they only see the fee the expert sets.",
+      "owner": "The platform fee is set per service on the Platform fees page. Clients don't see it; they only see the review fee the expert sets.",
+      "manage": "Open platform fees"
     },
     "tiers": {
       "title": "Ranges by template group",
@@ -1010,10 +1023,10 @@
     "suspend": "Suspend service",
     "reinstate": "Reinstate service",
     "confirmApproveTitle": "Approve {{service}}?",
-    "confirmApproveBody": "{{name}} will be able to set pricing for {{service}}. The decision is recorded in the qualification history.",
-    "confirmSuspendTitle": "Suspend {{service}}?",
-    "confirmSuspendBody": "{{name}}'s {{service}} is hidden from the Marketplace and takes no new requests; cases in progress continue.",
-    "confirmNote": "Note"
+    "confirmApproveBody": "{{name}} can set pricing for {{service}}; the service goes live on the Marketplace once the price is approved and in effect. The decision is recorded in the qualification history.",
+    "confirmNote": "Note",
+    "confirmReturnTitle": "Return {{service}} to competency review?",
+    "confirmReturnBody": "The competency result goes back to the reviewer to recheck against the note below. The note is not sent to the expert."
   },
   "platformFees": {
     "title": "Platform fees",
@@ -1068,7 +1081,27 @@
     },
     "confirmCancelTitle": "Cancel the fee change for {{name}}?",
     "confirmCancelBody": "The {{percent}}% fee scheduled from {{date}} will be cancelled; the current {{current}}% fee stays.",
-    "keepPending": "Keep change"
+    "keepPending": "Keep change",
+    "rules": {
+      "wholeNumbers": "Enter a whole number of zero or more in every field.",
+      "maxHours": "Hours cannot exceed {{max}}.",
+      "cancelBeforePenalty": "Cancel hours must be at least the penalty hours.",
+      "penaltyOverFee": "Late refund % plus the platform fee cannot exceed 100% (now {{sum}}%).",
+      "hoursRange": "Hours must be between 1 and {{max}}.",
+      "splitOver": "Client refund % plus expert % cannot exceed 100% (now {{sum}}%).",
+      "platformKeeps": "The platform keeps {{percent}}%.",
+      "dateTooSoon": "Pick {{date}} or later."
+    },
+    "review": "Review",
+    "confirmSave": "Confirm and save",
+    "backToEdit": "Back to edit",
+    "reviewTitle": "Check before saving",
+    "reviewItem": "Item",
+    "reviewBefore": "Current",
+    "reviewAfter": "After saving",
+    "reviewNow": "As soon as it is saved",
+    "reviewChanged_one": "{{count}} item changed",
+    "reviewChanged_other": "{{count}} items changed"
   },
   "expertPolicy": {
     "title": "Expert policy",
@@ -1203,7 +1236,11 @@
     "pending_other": "{{count}} unsaved changes",
     "discard": "Discard changes",
     "rangeInverted": "The minimum cannot be greater than the maximum.",
-    "noPending": "No pending changes"
+    "noPending": "No pending changes",
+    "leaveTitle": "Leave without saving?",
+    "leaveBody": "{{count}} unsaved changes will be discarded.",
+    "stay": "Stay",
+    "leave": "Discard and leave"
   },
   "claim": {
     "free": "Nobody has claimed this review",
@@ -1286,5 +1323,21 @@
     "label": "Information round {{used}}/{{max}}",
     "last": "This is the last information round",
     "lastHelp": "All {{max}} information rounds allowed by the policy were used. Pass or fail on the evidence at hand."
+  },
+  "serviceAccess": {
+    "thisService": "this service",
+    "suspendTitle": "Suspend {{service}}?",
+    "suspendBody": "{{name}}'s {{service}} is hidden from the Marketplace and takes no new requests. Cases in progress continue; the expert's other services are not affected.",
+    "reinstateTitle": "Reinstate {{service}}?",
+    "reinstateBody": "{{name}} can provide {{service}} again. The decision is recorded in the history.",
+    "noteRequired": "Reason for suspension (required)",
+    "noteOptional": "Note (optional)",
+    "noteMissing": "Enter a reason for the suspension.",
+    "confirmSuspend": "Suspend service",
+    "confirmReinstate": "Reinstate service"
+  },
+  "operationsUnavailable": {
+    "title": "Not connected yet",
+    "body": "This page isn't connected to the live system yet, so it has no figures. They will appear once the feature is switched on."
   }
 }

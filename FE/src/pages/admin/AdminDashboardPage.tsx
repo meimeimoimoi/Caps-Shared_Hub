@@ -146,7 +146,19 @@ export default function AdminDashboardPage() {
           </ul>
         ) : (
           <p className="text-fg-muted mt-3 text-sm">
-            {loading ? t('dashboard.loading') : t('dashboard.attention.empty')}
+            {loading
+              ? t('dashboard.loading')
+              : failed
+                ? t('dashboard.attention.unknown')
+                : nav.operationsUnavailable
+                ? t('dashboard.attention.emptyPartial')
+                : t('dashboard.attention.empty')}
+          </p>
+        )}
+        {/* Never imply all-clear for queues the dashboard cannot see */}
+        {nav.operationsUnavailable && nav.notifications.length > 0 && (
+          <p className="text-fg-muted mt-3 text-sm">
+            {t('dashboard.attention.unavailable')}
           </p>
         )}
       </section>

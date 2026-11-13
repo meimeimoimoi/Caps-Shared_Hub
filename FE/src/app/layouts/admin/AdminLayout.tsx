@@ -80,6 +80,8 @@ interface AdminLayoutProps extends ShellPageProps {
   approvalOverdueCount?: number
   /** Payouts and refunds that failed and need a retry */
   payoutFailedCount?: number
+  /** Disputes and payouts cannot be checked (no backend yet); only the dashboard reads it */
+  operationsUnavailable?: boolean
 }
 
 export function AdminLayout({
@@ -88,6 +90,7 @@ export function AdminLayout({
   disputeCount,
   approvalOverdueCount,
   payoutFailedCount,
+  operationsUnavailable: _operationsUnavailable,
   ...page
 }: AdminLayoutProps) {
   const { t } = useTranslation('admin')

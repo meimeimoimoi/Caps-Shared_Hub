@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { TriangleAlert } from 'lucide-react'
 import type { Paged } from '@/lib/utils'
@@ -9,13 +10,16 @@ import { isOverdue, useReviewSlaDays } from '../hooks/useReviewSlaDays'
 import { useTranslation } from 'react-i18next'
 import { useMotion } from '@/components/ui/motion'
 import { useFieldLabel } from '../hooks/useLabels'
+import { SkeletonRows } from '@/components/ui/display/skeleton-rows'
 
 interface ApplicationsTableProps {
   paged: Paged<ExpertApplication>
   onPrev: () => void
   onNext: () => void
   /** Chữ khi không có dòng nào, vd. đang tải hoặc lỗi */
-  empty?: string
+  empty?: ReactNode
+  /** Shows skeleton rows while the queue loads */
+  loading?: boolean
 }
 
 export function ApplicationsTable({
@@ -23,6 +27,7 @@ export function ApplicationsTable({
   onPrev,
   onNext,
   empty,
+  loading = false,
 }: ApplicationsTableProps) {
   const slaDays = useReviewSlaDays()
   const { t } = useTranslation('admin')
@@ -44,22 +49,22 @@ export function ApplicationsTable({
       <table className="w-full min-w-[760px] text-sm">
         <thead className="bg-sunken text-fg-muted">
           <tr className="[&>th]:px-4 [&>th]:py-3 [&>th]:font-semibold">
-            <th className="text-left">
+            <th scope="col" className="text-left">
               {t('applicationsTable.table.applicant')}
             </th>
-            <th className="text-right">
+            <th scope="col" className="text-right">
               {t('applicationsTable.table.experienceYears')}
             </th>
-            <th className="text-left">
+            <th scope="col" className="text-left">
               {t('applicationsTable.table.aiScreening')}
             </th>
-            <th className="text-right">
+            <th scope="col" className="text-right">
               {t('applicationsTable.table.submittedAt')}
             </th>
-            <th className="text-right">
+            <th scope="col" className="text-right">
               {t('applicationsTable.table.waited')}
             </th>
-            <th>
+            <th scope="col">
               <span className="sr-only">{t('applicationsTable.actions')}</span>
             </th>
           </tr>
@@ -138,7 +143,8 @@ export function ApplicationsTable({
               </tr>
             )
           })}
-          {rows.length === 0 && (
+          {loading && <SkeletonRows cols={6} />}
+          {!loading && rows.length === 0 && (
             <tr className="border-border-subtle border-t">
               <td colSpan={6} className="text-fg-muted px-4 py-10 text-center">
                 {empty ?? t('applicationsTable.noApplications')}

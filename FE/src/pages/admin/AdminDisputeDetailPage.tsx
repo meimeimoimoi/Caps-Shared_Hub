@@ -15,11 +15,16 @@ import {
 } from '../../features/disputes-escrow/utils/disputes'
 import { useAdminNav } from '@/app/layouts/admin/useAdminNav'
 import { useDispute } from '../../features/disputes-escrow/hooks/useDispute'
+import { OperationsUnavailable } from '@/features/disputes-escrow/components/OperationsUnavailable'
+import { LoadError } from '@/components/ui/feedback/load-error'
 
 export default function AdminDisputeDetailPage() {
   const id = useParams().id!
-  const { dispute, isLoading, decide, escalate } = useDispute(id)
   const nav = useAdminNav()
+  const { dispute, isLoading, error, decide, escalate } = useDispute(
+    id,
+    !nav.operationsUnavailable
+  )
   const { t } = useTranslation(['admin', 'common'])
   const [now] = useState(() => Date.now())
   const [toast, setToast] = useState<string | null>(null)
@@ -32,12 +37,27 @@ export default function AdminDisputeDetailPage() {
   )
   const layout = { ...nav, section: 'disputes' as const }
 
+  // Deep links from bookmarks or the bell land here too: same honest state as the list
+  if (nav.operationsUnavailable) {
+    return (
+      <AdminLayout {...layout} breadcrumb={listLink}>
+        <h1 className="text-h1">{t('disputes.title')}</h1>
+        <OperationsUnavailable />
+      </AdminLayout>
+    )
+  }
+
   if (!dispute) {
     return (
       <AdminLayout {...layout} breadcrumb={listLink}>
-        <h1 className="text-h1-tool">
-          {isLoading ? t('common:loading') : t('disputes.notFound', { id })}
+        <h1 className="text-h1" aria-live="polite">
+          {isLoading
+            ? t('common:loading')
+            : error
+              ? t('disputes.title')
+              : t('disputes.notFound', { id })}
         </h1>
+        {error && <LoadError className="paper mt-6 px-4 py-8" />}
         <Link
           to="/admin/disputes"
           className="text-accent-text mt-3 inline-block underline"
@@ -152,14 +172,12 @@ export default function AdminDisputeDetailPage() {
             decided={!!dispute.resolvedAt}
             escalated={!!dispute.escalatedAt}
             onEscalate={() =>
-              escalate()
-                .then(() => setToast(t('disputes.escalation.toast')))
-                .catch((e: Error) => setToast(e.message))
+              escalate().then(() => setToast(t('disputes.escalation.toast')))
             }
             onDecide={(outcome, reason) =>
-              decide({ outcome, reason })
-                .then(() => setToast(t('disputes.decided')))
-                .catch((e: Error) => setToast(e.message))
+              decide({ outcome, reason }).then(() =>
+                setToast(t('disputes.decided'))
+              )
             }
           />
         </div>

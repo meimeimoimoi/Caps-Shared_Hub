@@ -1472,6 +1472,12 @@
   &:active { background: var(--color-accent-active); }
   &:disabled { background: var(--color-desk-2); color: var(--color-fg-disabled); box-shadow: none; }
 }
+/* Destructive actions (suspend, cancel a change); never the default-focused button */
+@utility btn-danger {
+  background: var(--color-danger); color: var(--color-paper);
+  &:hover { background: color-mix(in srgb, var(--color-danger) 88%, var(--color-ink)); }
+  &:disabled { background: var(--color-desk-2); color: var(--color-fg-disabled); }
+}
 @utility btn-secondary {
   background: transparent; border-color: var(--color-border-control);
   color: var(--color-fg-strong);

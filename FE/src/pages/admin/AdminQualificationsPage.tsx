@@ -66,9 +66,8 @@ export default function AdminQualificationsPage({
         paged={paged}
         onPrev={prev}
         onNext={next}
-        empty={
-          isLoading ? t('common:loading') : error ? <LoadError /> : undefined
-        }
+        loading={isLoading}
+        empty={error ? <LoadError /> : undefined}
         linkBase={
           review ? '/admin/experts/qualifications' : '/admin/experts/approvals'
         }

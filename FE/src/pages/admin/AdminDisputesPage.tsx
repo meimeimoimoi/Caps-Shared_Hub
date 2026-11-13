@@ -17,6 +17,7 @@ import {
 } from '../../features/disputes-escrow/utils/disputes'
 import { PageHeader } from '@/components/ui/layout/page-header'
 import { LoadError } from '@/components/ui/feedback/load-error'
+import { OperationsUnavailable } from '@/features/disputes-escrow/components/OperationsUnavailable'
 
 const rowCls = 'border-border-subtle border-t [&>td]:px-4 [&>td]:py-3'
 const headCls =
@@ -26,7 +27,7 @@ const headCls =
 export default function AdminDisputesPage() {
   const nav = useAdminNav()
   const { t } = useTranslation('admin')
-  const { data = [], isLoading, error } = useDisputes()
+  const { data = [], isLoading, error } = useDisputes(!nav.operationsUnavailable)
   const [now] = useState(() => Date.now())
 
   const rows = data
@@ -54,18 +55,24 @@ export default function AdminDisputesPage() {
           hours: DISPUTE_SLA_HOURS,
         })}
       />
+      {/* No backend for this queue outside the demo: one honest state, no fake zeros */}
+      {nav.operationsUnavailable ? (
+        <OperationsUnavailable />
+      ) : (
+        <>
 
       <section className="paper mt-8 overflow-x-auto">
         <table className="w-full min-w-220 text-sm">
+          <caption className="sr-only">{t('disputes.title')}</caption>
           <thead>
             <tr className={headCls}>
-              <th className="text-left">{t('disputes.col.caseId')}</th>
-              <th className="text-left">{t('disputes.col.case')}</th>
-              <th className="text-left">{t('disputes.col.ground')}</th>
-              <th className="text-left">{t('disputes.col.opened')}</th>
-              <th className="text-left">{t('disputes.col.status')}</th>
-              <th className="text-right">{t('disputes.col.left')}</th>
-              <th>
+              <th scope="col" className="text-left">{t('disputes.col.caseId')}</th>
+              <th scope="col" className="text-left">{t('disputes.col.case')}</th>
+              <th scope="col" className="text-left">{t('disputes.col.ground')}</th>
+              <th scope="col" className="text-left">{t('disputes.col.opened')}</th>
+              <th scope="col" className="text-left">{t('disputes.col.status')}</th>
+              <th scope="col" className="text-right">{t('disputes.col.left')}</th>
+              <th scope="col">
                 <span className="sr-only">{t('disputes.col.actions')}</span>
               </th>
             </tr>
@@ -133,6 +140,8 @@ export default function AdminDisputesPage() {
           </tbody>
         </table>
       </section>
+        </>
+      )}
     </AdminLayout>
   )
 }

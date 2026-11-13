@@ -26,6 +26,8 @@ export function useAdminNav(enabled = true) {
   const canReview = enabled && hasAnyPermission(user, [Permission.ExpertReview])
   const canApprove = enabled && hasAnyPermission(user, [Permission.ExpertApprove])
   const canViewDemoOperations = enabled && isExpertDemo && hasAnyPermission(user, [Permission.UserManage])
+  // Disputes and payouts have no backend yet outside the demo; say so instead of implying all-clear
+  const operationsUnavailable = enabled && !isExpertDemo && hasAnyPermission(user, [Permission.UserManage])
   // Waiting limit comes from the expert policy (System Admin setting), never a constant here
   const slaDays = useReviewSlaDays(canReview)
   const applications = useQuery({
@@ -126,6 +128,7 @@ export function useAdminNav(enabled = true) {
     disputeCount: open.length,
     approvalOverdueCount: approvalOverdue,
     payoutFailedCount: payoutFailed + refundFailed,
+    operationsUnavailable,
     notifications,
   }
 }

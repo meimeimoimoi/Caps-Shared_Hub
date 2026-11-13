@@ -11,6 +11,8 @@ import type {
   PriceTier,
   TierChangeInput,
 } from '../../features/service-pricing/types'
+import { OperationsUnavailable } from '@/features/disputes-escrow/components/OperationsUnavailable'
+import { LoadError } from '@/components/ui/feedback/load-error'
 
 const vnd = (n: number) => n.toLocaleString('vi-VN')
 /** yyyy-mm-dd theo giờ máy (định dạng sv-SE đúng là ISO ngày) cho <input type="date"> */
@@ -47,7 +49,7 @@ export default function AdminPricingTierPage() {
   const { id = '' } = useParams()
   const nav = useAdminNav()
   const { t } = useTranslation(['admin', 'common'])
-  const pricing = usePricing()
+  const pricing = usePricing(!nav.operationsUnavailable)
   // /admin/pricing/new = thêm nhóm mẫu biểu, dùng chung form với màn sửa khung
   const isNew = id === 'new'
   const tier = pricing.data?.tiers.find((x) => x.id === id)
@@ -78,7 +80,12 @@ export default function AdminPricingTierPage() {
         </>
       }
     >
-      {pricing.data && (isNew || tier) ? (
+      {nav.operationsUnavailable ? (
+        <>
+          <h1 className="text-h1">{t('pricing.title')}</h1>
+          <OperationsUnavailable />
+        </>
+      ) : pricing.data && (isNew || tier) ? (
         <TierForm
           tier={tier}
           expertShare={pricing.data.expertShare}
@@ -89,11 +96,16 @@ export default function AdminPricingTierPage() {
           }
         />
       ) : (
-        <h1 className="text-h1-tool">
-          {pricing.isLoading
-            ? t('common:loading')
-            : (pricing.error?.message ?? t('pricing.tier.notFound', { id }))}
-        </h1>
+        <>
+          <h1 className="text-h1" aria-live="polite">
+            {pricing.isLoading
+              ? t('common:loading')
+              : pricing.error
+                ? t('pricing.title')
+                : t('pricing.tier.notFound', { id })}
+          </h1>
+          {pricing.error && <LoadError className="paper mt-8 px-4 py-10" />}
+        </>
       )}
     </AdminLayout>
   )
@@ -109,7 +121,7 @@ function TierForm({
   expertShare: number
   onSubmit: (input: TierChangeInput & { group: string }) => Promise<unknown>
 }) {
-  const { t } = useTranslation('admin')
+  const { t } = useTranslation(['admin', 'common'])
   const navigate = useNavigate()
   const base = tier?.scheduled ?? tier
   const [tomorrow] = useState(() => isoDay(new Date(Date.now() + 86_400_000)))
@@ -394,9 +406,9 @@ function TierForm({
                   },
                 })
               )
-              .catch((e: Error) => {
+              .catch(() => {
                 setBusy(false)
-                setError(e.message)
+                setError(t('common:states.actionFailed'))
               })
           },
         }}

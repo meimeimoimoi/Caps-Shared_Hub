@@ -30,6 +30,7 @@ import type {
   QualificationScope,
   ServiceAccessAction,
 } from '../../features/expert-vetting/types'
+import { LoadError } from '@/components/ui/feedback/load-error'
 
 const DECISION_ERRORS = [
   'INVALID_COMPETENCY_CRITERIA',
@@ -104,11 +105,14 @@ export default function AdminQualificationDetailPage({
   if (!detail) {
     return (
       <ReviewPageLayout embedded={embedded} {...nav} section={section} breadcrumb={listLink}>
-        <h1 className="text-h1-tool">
+        <h1 className="text-h1" aria-live="polite">
           {review.isLoading
             ? t('common:loading')
-            : (review.error?.message ?? t('admin:detail.notFound', { id }))}
+            : review.error
+              ? t('common:states.loadFailed')
+              : t('admin:detail.notFound', { id })}
         </h1>
+        {review.error && <LoadError className="paper mt-6 px-4 py-8" />}
         <Link
           to={listPath}
           className="text-accent-text mt-3 inline-block underline"
@@ -233,7 +237,7 @@ export default function AdminQualificationDetailPage({
       {embedded ? (
         <header className="min-w-0">
           <div className="flex flex-wrap items-center gap-3">
-            <h1 className="text-text-strong !font-sans text-xl font-semibold tracking-tight break-words">{expertName}</h1>
+            <h1 className="text-h2 text-fg-strong break-words">{expertName}</h1>
             <StatusBadge status={QUALIFICATION_STATUS[detail.status]} />
           </div>
           <dl className="text-text-muted mt-1.5 flex flex-wrap items-center gap-x-1.5 gap-y-1 text-sm [&>div+div]:before:mr-1.5 [&>div+div]:before:content-['·']">
@@ -347,8 +351,8 @@ export default function AdminQualificationDetailPage({
                 !!userId && userId === detail.competencyReviewerUserId
               }
               submitting={review.approving}
-              onDecide={(decision, note) => void finalDecide(decision, note)}
-              onAccess={(action, note) => void accessChange(action, note)}
+              onDecide={(decision, note) => finalDecide(decision, note)}
+              onAccess={(action, note) => accessChange(action, note)}
             />
           </div>
         ) : decided ? (

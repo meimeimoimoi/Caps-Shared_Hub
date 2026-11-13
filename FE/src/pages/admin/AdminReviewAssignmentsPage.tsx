@@ -17,6 +17,7 @@ import { ReassignDialog } from '../../features/expert-vetting/components/Reassig
 import { formatDate, formatDateTime } from '../../features/expert-vetting/utils/applications'
 import { PageHeader } from '@/components/ui/layout/page-header'
 import { LoadError } from '@/components/ui/feedback/load-error'
+import { SkeletonRows } from '@/components/ui/display/skeleton-rows'
 
 // Open reviews of both gates: waiting for a reviewer or for the expert's supplement
 const GATES = {
@@ -123,14 +124,15 @@ export default function AdminReviewAssignmentsPage() {
 
       <div className="paper overflow-x-auto">
         <table className="w-full min-w-180 text-sm">
+          <caption className="sr-only">{t('admin:assignments.title')}</caption>
           <thead className="bg-sunken text-fg-muted text-left">
             <tr className="[&>th]:whitespace-nowrap">
-              <th className="px-4 py-3 font-medium">{t('admin:assignments.columns.expert')}</th>
-              <th className="px-4 py-3 font-medium">{t('admin:assignments.columns.gate')}</th>
-              <th className="px-4 py-3 font-medium">{t('admin:assignments.columns.submitted')}</th>
-              <th className="px-4 py-3 font-medium">{t('admin:assignments.columns.status')}</th>
-              <th className="px-4 py-3 font-medium">{t('admin:assignments.columns.holder')}</th>
-              <th className="px-4 py-3">
+              <th scope="col" className="px-4 py-3 font-semibold">{t('admin:assignments.columns.expert')}</th>
+              <th scope="col" className="px-4 py-3 font-semibold">{t('admin:assignments.columns.gate')}</th>
+              <th scope="col" className="px-4 py-3 font-semibold">{t('admin:assignments.columns.submitted')}</th>
+              <th scope="col" className="px-4 py-3 font-semibold">{t('admin:assignments.columns.status')}</th>
+              <th scope="col" className="px-4 py-3 font-semibold">{t('admin:assignments.columns.holder')}</th>
+              <th scope="col" className="px-4 py-3">
                 <span className="sr-only">{t('admin:assignments.columns.actions')}</span>
               </th>
             </tr>
@@ -173,10 +175,11 @@ export default function AdminReviewAssignmentsPage() {
                 </td>
               </tr>
             ))}
-            {!rows.length && (
+            {list.isLoading && <SkeletonRows cols={6} />}
+            {!list.isLoading && !rows.length && (
               <tr>
                 <td colSpan={6} className="text-fg-muted px-4 py-10 text-center">
-                  {list.isLoading ? t('common:loading') : list.error ? <LoadError /> : t('admin:assignments.empty')}
+                  {list.error ? <LoadError /> : t('admin:assignments.empty')}
                 </td>
               </tr>
             )}

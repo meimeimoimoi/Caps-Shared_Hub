@@ -35,6 +35,7 @@ import { useApplicationReview } from '../../features/expert-vetting/hooks/useApp
 import { useReviewClaim } from '../../features/expert-vetting/hooks/useReviewClaim'
 import { useTranslation } from 'react-i18next'
 import { StatusBadge } from '@/components/ui/display/status-badge'
+import { LoadError } from '@/components/ui/feedback/load-error'
 
 const DECISION_ERRORS = [
   'INVALID_ELIGIBILITY_CRITERIA',
@@ -94,11 +95,14 @@ export default function AdminApplicationDetailPage({ embedded = false }: { embed
         breadcrumb={listLink}
         pendingCount={nav.pendingCount}
       >
-        <h1 className="text-h1-tool">
+        <h1 className="text-h1" aria-live="polite">
           {review.isLoading
             ? t('common:loading')
-            : (review.error?.message ?? t('admin:detail.notFound', { id }))}
+            : review.error
+              ? t('common:states.loadFailed')
+              : t('admin:detail.notFound', { id })}
         </h1>
+        {review.error && <LoadError className="paper mt-6 px-4 py-8" />}
         <Link
           to={listPath}
           className="text-accent-text mt-3 inline-block underline"
@@ -241,7 +245,7 @@ export default function AdminApplicationDetailPage({ embedded = false }: { embed
       {embedded && (
         <header className="min-w-0">
           <div className="flex flex-wrap items-center gap-3">
-            <h1 className="text-text-strong !font-sans text-xl font-semibold tracking-tight break-words">{detail.name}</h1>
+            <h1 className="text-h2 text-fg-strong break-words">{detail.name}</h1>
             <StatusBadge status={APPLICATION_STATUS[status]} />
           </div>
           <dl className="text-text-muted mt-1.5 flex flex-wrap items-center gap-x-1.5 gap-y-1 text-sm [&>div+div]:before:mr-1.5 [&>div+div]:before:content-['·']">
