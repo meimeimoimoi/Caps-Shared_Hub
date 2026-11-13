@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { HelpTip } from '@/components/ui/feedback/help-tip'
+import { Modal } from '@/components/ui/feedback/modal'
 import { formatDate } from '../utils/applications'
 import type {
   FinalApprovalDecision,
@@ -25,9 +26,13 @@ export function FinalApprovalPanel({
   onDecide,
   onAccess,
 }: FinalApprovalPanelProps) {
-  const { t } = useTranslation('admin')
+  const { t } = useTranslation(['admin', 'common'])
   const [note, setNote] = useState('')
   const [tried, setTried] = useState(false)
+  // Approve and suspend change what clients can book, so they are confirmed first
+  const [confirming, setConfirming] = useState<'APPROVE' | 'SUSPEND' | null>(
+    null
+  )
   const [now] = useState(() => Date.now())
   const noteMissing = tried && !note.trim()
   const approval = detail.canFinalApprove
@@ -127,7 +132,7 @@ export function FinalApprovalPanel({
             <button
               type="button"
               disabled={locked}
-              onClick={() => onDecide('APPROVE', note)}
+              onClick={() => setConfirming('APPROVE')}
               className="btn btn-press btn-primary"
             >
               {t('finalApproval.approve')}
@@ -138,7 +143,7 @@ export function FinalApprovalPanel({
           <button
             type="button"
             disabled={locked}
-            onClick={() => withNote(() => onAccess('SUSPEND', note))}
+            onClick={() => withNote(() => setConfirming('SUSPEND'))}
             className="btn btn-press bg-danger text-paper"
           >
             {t('finalApproval.suspend')}
@@ -155,6 +160,72 @@ export function FinalApprovalPanel({
           </button>
         )}
       </div>
+      {confirming && (
+        <Modal
+          title={
+            confirming === 'APPROVE'
+              ? t('finalApproval.confirmApproveTitle', {
+                  service: detail.serviceName,
+                })
+              : t('finalApproval.confirmSuspendTitle', {
+                  service: detail.serviceName,
+                })
+          }
+          description={
+            confirming === 'APPROVE'
+              ? t('finalApproval.confirmApproveBody', {
+                  name: detail.profile.name,
+                  service: detail.serviceName,
+                })
+              : t('finalApproval.confirmSuspendBody', {
+                  name: detail.profile.name,
+                  service: detail.serviceName,
+                })
+          }
+          onClose={() => setConfirming(null)}
+          preventClose={submitting}
+          footer={
+            <>
+              <button
+                type="button"
+                onClick={() => setConfirming(null)}
+                disabled={submitting}
+                className="btn btn-press btn-secondary"
+              >
+                {t('common:actions.cancel')}
+              </button>
+              <button
+                type="button"
+                autoFocus
+                disabled={submitting}
+                onClick={() => {
+                  if (confirming === 'APPROVE') onDecide('APPROVE', note)
+                  else onAccess('SUSPEND', note)
+                  setConfirming(null)
+                }}
+                className={
+                  confirming === 'APPROVE'
+                    ? 'btn btn-press btn-primary'
+                    : 'btn btn-press bg-danger text-paper'
+                }
+              >
+                {confirming === 'APPROVE'
+                  ? t('finalApproval.approve')
+                  : t('finalApproval.suspend')}
+              </button>
+            </>
+          }
+        >
+          {note.trim() && (
+            <div className="bg-sunken rounded-surface mt-4 p-3 text-sm">
+              <div className="text-fg-strong font-semibold">
+                {t('finalApproval.confirmNote')}
+              </div>
+              <p className="mt-1 break-words whitespace-pre-wrap">{note}</p>
+            </div>
+          )}
+        </Modal>
+      )}
     </section>
   )
 }

@@ -976,7 +976,12 @@
     "suspendNoteLabel": "Lý do tạm ngưng (bắt buộc)",
     "reinstateNoteLabel": "Ghi chú (không bắt buộc)",
     "suspend": "Tạm ngưng dịch vụ",
-    "reinstate": "Mở lại dịch vụ"
+    "reinstate": "Mở lại dịch vụ",
+    "confirmApproveTitle": "Phê duyệt {{service}}?",
+    "confirmApproveBody": "{{name}} sẽ được thiết lập giá cho dịch vụ {{service}}. Quyết định được ghi vào lịch sử hồ sơ.",
+    "confirmSuspendTitle": "Tạm ngưng {{service}}?",
+    "confirmSuspendBody": "Dịch vụ {{service}} của {{name}} bị ẩn khỏi Marketplace và không nhận yêu cầu mới; hồ sơ đang thực hiện vẫn tiếp tục.",
+    "confirmNote": "Ghi chú"
   },
   "platformFees": {
     "title": "Phí nền tảng",
@@ -1028,7 +1033,10 @@
       "hours": "Số giờ chờ",
       "refundPercent": "% hoàn cho khách",
       "expertPercent": "% cho chuyên gia"
-    }
+    },
+    "confirmCancelTitle": "Hủy thay đổi phí của {{name}}?",
+    "confirmCancelBody": "Phí {{percent}}% dự kiến áp dụng từ ngày {{date}} sẽ bị hủy; phí hiện tại {{current}}% giữ nguyên.",
+    "keepPending": "Giữ thay đổi"
   },
   "expertPolicy": {
     "title": "Chính sách chuyên gia",

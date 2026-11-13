@@ -977,7 +977,12 @@
     "suspendNoteLabel": "Reason for suspension (required)",
     "reinstateNoteLabel": "Note (optional)",
     "suspend": "Suspend service",
-    "reinstate": "Reinstate service"
+    "reinstate": "Reinstate service",
+    "confirmApproveTitle": "Approve {{service}}?",
+    "confirmApproveBody": "{{name}} will be able to set pricing for {{service}}. The decision is recorded in the qualification history.",
+    "confirmSuspendTitle": "Suspend {{service}}?",
+    "confirmSuspendBody": "{{name}}'s {{service}} is hidden from the Marketplace and takes no new requests; cases in progress continue.",
+    "confirmNote": "Note"
   },
   "platformFees": {
     "title": "Platform fees",
@@ -1029,7 +1034,10 @@
       "hours": "Hours to wait",
       "refundPercent": "Client refund %",
       "expertPercent": "Expert %"
-    }
+    },
+    "confirmCancelTitle": "Cancel the fee change for {{name}}?",
+    "confirmCancelBody": "The {{percent}}% fee scheduled from {{date}} will be cancelled; the current {{current}}% fee stays.",
+    "keepPending": "Keep change"
   },
   "expertPolicy": {
     "title": "Expert policy",
