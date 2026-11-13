@@ -1,6 +1,5 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Caps.Common.Domain;
 
 namespace Caps.Ingestion.Entities;
 

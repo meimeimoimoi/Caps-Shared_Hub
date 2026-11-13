@@ -1,19 +1,17 @@
 using Caps.Workflow.Application.Abstractions;
 using Caps.Workflow.Domain.Workspace;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Caps.Workflow.Infrastructure.Persistence.Repositories;
-public sealed class ConversationRepository(DbContext dbContext) : IConversationRepository
+
+/// <summary>EF Core store for AI chat conversations.</summary>
+public sealed class ConversationRepository(WorkflowDbContext dbContext) : IConversationRepository
 {
     private readonly DbSet<Conversation> _conversations = dbContext.Set<Conversation>();
+
     public void Add(Conversation conversation)
     {
-        throw new NotImplementedException();
+        _conversations.Add(conversation);
     }
 
     public async Task AddAsync(Conversation conversation, CancellationToken ct = default)
@@ -23,7 +21,7 @@ public sealed class ConversationRepository(DbContext dbContext) : IConversationR
 
     public Task<Conversation?> FindAsync(Guid id, CancellationToken ct = default)
     {
-        throw new NotImplementedException();
+        return GetByIdAsync(id, ct);
     }
 
     public async Task<Conversation?> GetByIdAsync(Guid id, CancellationToken ct = default)
@@ -42,6 +40,6 @@ public sealed class ConversationRepository(DbContext dbContext) : IConversationR
 
     public Task<IReadOnlyList<Conversation>> ListByUserIdAsync(Guid userId, CancellationToken ct = default)
     {
-        throw new NotImplementedException();
+        return GetByUserIdAsync(userId, ct);
     }
 }

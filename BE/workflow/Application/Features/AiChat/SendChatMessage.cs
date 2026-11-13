@@ -1,26 +1,26 @@
+using System.Text.Json;
 using Caps.Common.Application;
 using Caps.Workflow.Application.Abstractions;
 using Caps.Workflow.Domain.Exceptions;
 using Caps.Workflow.Domain.Workspace;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.Json;
-using System.Threading.Tasks;
 using static Caps.Workflow.Application.AiChat.DTOs.ChatDtos;
 
 namespace Caps.Workflow.Application.Features.AiChat;
-public class SendChatMessage
+
+/// <summary>Use case for sending a user question to the AI legal chatbot.</summary>
+public static class SendChatMessage
 {
+    /// <summary>Command to send a question in a conversation with an optional tax period.</summary>
     public sealed record SendChatMessageCommand(
         Guid ConversationId,
         Guid UserId,
-        string content,
+        string Content,
         DateOnly? PeriodStart,
-        DateOnly? PeriodEnd);
+        DateOnly? PeriodEnd
+    );
 
-    public sealed class SendChatMessagehandler(
+    /// <summary>Handles quota verification, RAG query execution, usage tracking, and message persistence.</summary>
+    public sealed class SendChatMessageHandler(
         IConversationRepository conversationRepository,
         IChatMessageRepository chatMessageRepository,
         IAiQuotaRepository aiQuotaRepository,
@@ -28,17 +28,17 @@ public class SendChatMessage
         IRagQueryClient ragQueryClient,
         IUnitOfWork unitOfWork,
         TimeProvider timeProvider
-        ) : ICommandHandler<SendChatMessageCommand, SendChatMessageResultDto>
+    ) : ICommandHandler<SendChatMessageCommand, SendChatMessageResultDto>
     {
         public async Task<SendChatMessageResultDto> HandleAsync(SendChatMessageCommand command, CancellationToken ct)
         {
             var conversation = await conversationRepository.GetByIdAsync(command.ConversationId, ct);
-            if(conversation is null)
+            if (conversation is null)
             {
                 throw WorkflowErrors.Conversation_NotFound(command.ConversationId);
             }
-            
-            if(conversation.UserId != command.UserId)
+
+            if (conversation.UserId != command.UserId)
             {
                 throw WorkflowErrors.Conversation_AccessDenied();
             }
@@ -47,7 +47,7 @@ public class SendChatMessage
 
             // 1. Check or initialize AI Quota
             var quota = await aiQuotaRepository.GetByUserIdAsync(command.UserId, ct);
-            if(quota is null)
+            if (quota is null)
             {
                 quota = AiQuota.Create(command.UserId, 10, now);
                 await aiQuotaRepository.AddAsync(quota, ct);
@@ -61,7 +61,7 @@ public class SendChatMessage
             // 2. Persist USER chat message
             var userMessage = ChatMessage.CreateUserMessage(
                 command.ConversationId,
-                command.content,
+                command.Content,
                 command.PeriodStart,
                 command.PeriodEnd,
                 now
@@ -71,7 +71,7 @@ public class SendChatMessage
             // 3. Query RAG microservice
             var ragRequest = new RagQueryRequest(
                 command.ConversationId,
-                command.content,
+                command.Content,
                 Clarification: null,
                 command.PeriodStart,
                 command.PeriodEnd
@@ -116,9 +116,9 @@ public class SendChatMessage
             // 6. Update conversation title if needed and touch updated_at
             if (conversation.Title == "New Conversation")
             {
-                var autoTitle = command.content.Length > 60
-                    ? command.content[..57] + "..."
-                    : command.content;
+                var autoTitle = command.Content.Length > 60
+                    ? command.Content[..57] + "..."
+                    : command.Content;
                 conversation.UpdateTitle(autoTitle, now);
             }
             else

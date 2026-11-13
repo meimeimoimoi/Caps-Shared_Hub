@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Caps.Workflow.Api.DTOs.Requests;
 
-public class DocumentRequests
+public static class DocumentRequests
 {
     public sealed record CreateDocumentRequest(
         [Required] string Title,

@@ -93,16 +93,28 @@ public class KnowledgeDocumentService : IKnowledgeDocumentService
 
         // Read the retry limit from system_config, falling back to the default
         var maxRetry = DefaultMaxRetry;
-        var config = await _db.SystemConfigs.FirstOrDefaultAsync(
-            c => c.Key == MaxRetryConfigKey,
-            cancellationToken
-        );
-        if (
-            config != null
-            && int.TryParse(config.Value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var cfgValue)
-        )
+        try
         {
-            maxRetry = cfgValue;
+            var config = await _db.SystemConfigs.FirstOrDefaultAsync(
+                c => c.Key == MaxRetryConfigKey,
+                cancellationToken
+            );
+            if (
+                config != null
+                && int.TryParse(
+                    config.Value.Trim('"'),
+                    NumberStyles.Integer,
+                    CultureInfo.InvariantCulture,
+                    out var cfgValue
+                )
+            )
+            {
+                maxRetry = cfgValue;
+            }
+        }
+        catch
+        {
+            // Fall back to the default when system_config is unavailable
         }
 
         if (doc.RetryCount >= maxRetry)
@@ -219,6 +231,10 @@ public class KnowledgeDocumentService : IKnowledgeDocumentService
                 RetryCount = doc.RetryCount,
                 LastError = null,
             };
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
         }
         catch (Exception ex)
         {

@@ -1,37 +1,37 @@
+using System.Text.Json;
 using Caps.Common.Application;
 using Caps.Workflow.Application.Abstractions;
 using Caps.Workflow.Domain.Exceptions;
 using Caps.Workflow.Domain.Workspace;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.Json;
-using System.Threading.Tasks;
 using static Caps.Workflow.Application.AiChat.DTOs.ChatDtos;
 
 namespace Caps.Workflow.Application.Features.AiChat;
-public class TransferConversationDraft
+
+/// <summary>Use case for transferring an AI chat answer and its citations into a document draft form payload.</summary>
+public static class TransferConversationDraft
 {
+    /// <summary>Command to extract draft initialization data from a conversation and optional message.</summary>
     public sealed record TransferConversationDraftCommand(
         Guid ConversationId,
         Guid UserId,
         Guid? MessageId
-        );
-    public sealed class TranferConversationDraftHandler(
+    );
+
+    /// <summary>Handles extracting legal analysis, periods, and citations from a conversation for Flow 4 drafting.</summary>
+    public sealed class TransferConversationDraftHandler(
         IConversationRepository conversationRepository,
         IChatMessageRepository chatMessageRepository
-        ) : ICommandHandler<TransferConversationDraftCommand, TransferDraftResponseDto>
+    ) : ICommandHandler<TransferConversationDraftCommand, TransferDraftResponseDto>
     {
         public async Task<TransferDraftResponseDto> HandleAsync(TransferConversationDraftCommand command, CancellationToken ct)
         {
             var conversation = await conversationRepository.GetByIdAsync(command.ConversationId, ct);
-            if(conversation is null)
+            if (conversation is null)
             {
                 throw WorkflowErrors.Conversation_NotFound(command.ConversationId);
             }
 
-            if(conversation.UserId != command.UserId)
+            if (conversation.UserId != command.UserId)
             {
                 throw WorkflowErrors.Conversation_AccessDenied();
             }
@@ -40,14 +40,15 @@ public class TransferConversationDraft
             if (command.MessageId.HasValue)
             {
                 aiMessage = await chatMessageRepository.GetByIdAsync(command.MessageId.Value, ct);
-                if(aiMessage is null || aiMessage.ConversationId != conversation.Id){
+                if (aiMessage is null || aiMessage.ConversationId != conversation.Id)
+                {
                     throw WorkflowErrors.Messasge_NotFound(command.MessageId.Value);
                 }
             }
             else
             {
                 aiMessage = await chatMessageRepository.GetLatestAnsweredMessageAsync(conversation.Id, ct);
-                if(aiMessage is null)
+                if (aiMessage is null)
                 {
                     throw WorkflowErrors.NoAnswerableMessageForDraftTransfer();
                 }
@@ -92,7 +93,7 @@ public class TransferConversationDraft
                 aiMessage.PeriodEnd,
                 citations,
                 initialDataJson
-                );
+            );
         }
     }
 }

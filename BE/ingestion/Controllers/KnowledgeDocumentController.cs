@@ -1,76 +1,63 @@
-using System.Security.Claims;
 using Caps.Common.Application;
 using Caps.Common.Security;
 using Caps.Ingestion.Dtos;
 using Caps.Ingestion.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Caps.Ingestion.Controllers
+namespace Caps.Ingestion.Controllers;
+
+/// <summary>
+/// Endpoints for Knowledge Admins to approve legal documents and retry Qdrant vector indexing.
+/// </summary>
+[Route("api/v1/knowledge/documents")]
+[ApiController]
+[RequirePermission(Permission.KnowledgeManage)]
+public sealed class KnowledgeDocumentController(
+    IKnowledgeDocumentService docService,
+    ICurrentUser currentUser
+) : ControllerBase
 {
-    [Route("api/v1/knowledge/documents")]
-    [ApiController]
-    [RequirePermission(Permission.KnowledgeManage)]
-    public class KnowledgeDocumentController : ControllerBase
+    private Guid UserId => currentUser.RequireUserId();
+
+    /// <summary>
+    /// Approves a pending legal document and indexes its chunks into Qdrant (PENDING -> APPROVED -> INDEXED).
+    /// </summary>
+    [HttpPost("{id:guid}/approve")]
+    public async Task<ActionResult<DocumentActionResponseDto>> ApproveDocument(Guid id, CancellationToken cancellationToken)
     {
-        private readonly IKnowledgeDocumentService _docService;
-
-        public KnowledgeDocumentController(IKnowledgeDocumentService docService)
+        try
         {
-            _docService = docService;
+            var result = await docService.ApproveAsync(id, UserId, cancellationToken);
+            return Ok(result);
         }
-
-        /// <summary>
-        /// Phê duyệt văn bản (PENDING -> APPROVED -> INDEXED vào Qdrant)
-        /// </summary>
-        [HttpPost("{id}/approve")]
-        public async Task<ActionResult<DocumentActionResponseDto>> ApproveDocument(Guid id, CancellationToken cancellationToken)
+        catch (KeyNotFoundException ex)
         {
-            var userId = GetCurrentUserId();
-            try
-            {
-               var result = await _docService.ApproveAsync(id, userId, cancellationToken);
-               return Ok(result);
-            }
-            catch (KeyNotFoundException ex)
-            {
-                return NotFound(new {error = ex.Message});
-            }
-            catch (InvalidOperationException ex)
-            {
-                return BadRequest(new {error = ex.Message});
-            }
+            return NotFound(new { error = ex.Message });
         }
-
-        /// <summary>
-        /// Thử lại việc Index vào Qdrant khi trạng thái là INDEX_FAILED
-        /// </summary>
-        [HttpPost("{id:guid}/retry-index")]
-        public async Task<ActionResult<DocumentActionResponseDto>> RetryIndex(Guid id, CancellationToken cancellationToken)
+        catch (InvalidOperationException ex)
         {
-            var userId = GetCurrentUserId();
-            try
-            {
-               var result = await _docService.RetryIndexAsync(id, userId, cancellationToken);
-               return Ok(result);
-            }
-            catch (KeyNotFoundException ex)
-            {
-                return NotFound(new {error = ex.Message});
-            }
-            catch (InvalidOperationException ex)
-            {
-                return BadRequest(new {error = ex.Message});
-            }
+            return BadRequest(new { error = ex.Message });
         }
+    }
 
-        /// <summary>
-        /// Lấy thông tin ID người dùng hiện tại từ JWT token
-        /// </summary>
-        private Guid GetCurrentUserId()
+    /// <summary>
+    /// Retries indexing a legal document into Qdrant when its status is INDEX_FAILED.
+    /// </summary>
+    [HttpPost("{id:guid}/retry-index")]
+    public async Task<ActionResult<DocumentActionResponseDto>> RetryIndex(Guid id, CancellationToken cancellationToken)
+    {
+        try
         {
-            var sub = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("sub");
-            return Guid.TryParse(sub, out var guid) ? guid : Guid.Empty;
+            var result = await docService.RetryIndexAsync(id, UserId, cancellationToken);
+            return Ok(result);
         }
-        
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { error = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
     }
 }

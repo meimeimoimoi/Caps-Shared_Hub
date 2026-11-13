@@ -21,7 +21,8 @@ public class RagQueryDtos
         string? Article,
         string? Clause,
         string? Point,
-        string? DocNumber,
+        string DocNumber,
+        string DocTitle,
         string? Text,
         string? EffectiveFrom,
         string? EffectiveTo

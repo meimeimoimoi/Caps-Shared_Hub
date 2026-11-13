@@ -1,14 +1,11 @@
 using Caps.Workflow.Application.Abstractions;
 using Caps.Workflow.Domain.Workspace;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Caps.Workflow.Infrastructure.Persistence.Repositories;
-public sealed class AiQuotaRepository(DbContext dbContext) : IAiQuotaRepository
+
+/// <summary>EF Core store for user AI chat quota balances.</summary>
+public sealed class AiQuotaRepository(WorkflowDbContext dbContext) : IAiQuotaRepository
 {
     private readonly DbSet<AiQuota> _quotas = dbContext.Set<AiQuota>();
 

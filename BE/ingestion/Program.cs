@@ -22,9 +22,9 @@ builder.Services.AddHandlersFromAssembly(typeof(Program).Assembly);
 
 builder.Services.AddHttpClient<IAiServiceClient, AiServiceClient>(client =>
 {
-   var aiBaseUrl = builder.Configuration["AiService:BaseUrl"] ?? "http://localhost:5174";
-   client.BaseAddress = new Uri(aiBaseUrl);
-   client.Timeout = TimeSpan.FromMinutes(10); // Tăng timeout cho tác vụ embedding
+    var aiBaseUrl = builder.Configuration["AiService:BaseUrl"] ?? "http://localhost:8000";
+    client.BaseAddress = new Uri(aiBaseUrl);
+    client.Timeout = TimeSpan.FromMinutes(10); // Extended timeout for chunking and embedding tasks
 });
 
 builder.Services.AddScoped<IKnowledgeDocumentService, KnowledgeDocumentService>();

@@ -19,7 +19,8 @@ public class PythonAiDtos
         [property: JsonPropertyName("article")] string? Article,
         [property: JsonPropertyName("clause")] string? Clause,
         [property: JsonPropertyName("point")] string? Point,
-        [property: JsonPropertyName("doc_number")] string? DocNumber,
+        [property: JsonPropertyName("document_number")] string? DocumentNumber,
+        [property: JsonPropertyName("doc_title")] string? DocTitle,
         [property: JsonPropertyName("text")] string? Text,
         [property: JsonPropertyName("effective_from")] string? EffectiveFrom,
         [property: JsonPropertyName("effective_to")] string? EffectiveTo

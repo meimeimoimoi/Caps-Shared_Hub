@@ -3,52 +3,53 @@ using Caps.Common.Domain;
 using Caps.Workflow.Application.Abstractions.Documents;
 using Caps.Workflow.Domain.Exceptions;
 using Caps.Workflow.Domain.Workspace;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using static Caps.Workflow.Application.Features.Documents.DTOs.DocumentDtos;
 
 namespace Caps.Workflow.Application.Features.Documents;
-public class CreateInputSnapshot
+
+/// <summary>Use case for capturing an immutable input form snapshot for a document.</summary>
+public static class CreateInputSnapshot
 {
+    /// <summary>Command to save a new form input snapshot for a document.</summary>
     public sealed record CreateInputSnapshotCommand(
         Guid DocumentId,
         Guid UserId,
         string Data
-        );
+    );
 
-    public sealed class CreatInputSnapshotHandler(
+    /// <summary>Handles versioning and persisting an immutable input snapshot.</summary>
+    public sealed class CreateInputSnapshotHandler(
         IDocumentRepository documentRepository,
         IInputSnapshotRepository inputSnapshotRepository,
         IUnitOfWork unitOfWork,
-         TimeProvider timeProvider
-        ) : ICommandHandler<CreateInputSnapshotCommand, InputSnapshotDto>
+        TimeProvider timeProvider
+    ) : ICommandHandler<CreateInputSnapshotCommand, InputSnapshotDto>
     {
         public async Task<InputSnapshotDto> HandleAsync(CreateInputSnapshotCommand command, CancellationToken ct)
         {
             var document = await documentRepository.GetByIdAsync(command.DocumentId, ct);
-            if (document == null)
+            if (document is null)
             {
                 throw WorkflowErrors.Document_NotFound(command.DocumentId);
             }
 
             if (document.OwnerUserId != command.UserId)
             {
-                throw WorkflowErrors.Conversation_AccessDenied();
+                throw WorkflowErrors.Document_AccessDenied();
             }
 
             var nextVersionNo = await inputSnapshotRepository.GetNextVersionNoAsync(command.DocumentId, ct);
-            var now = DateTime.UtcNow;
+            var now = timeProvider.GetUtcNow();
 
-            var snapshot = new InputSnapshot();
-            snapshot.Id = UuidV7.NewGuid();
-            snapshot.DocumentId = command.DocumentId;
-            snapshot.VersionNo = nextVersionNo;
-            snapshot.Data = string.IsNullOrWhiteSpace(command.Data) ? "{}" : command.Data;
-            snapshot.CreatedBy = command.UserId;
-            snapshot.CreatedAt = now;
+            var snapshot = new InputSnapshot
+            {
+                Id = UuidV7.NewGuid(),
+                DocumentId = command.DocumentId,
+                VersionNo = nextVersionNo,
+                Data = string.IsNullOrWhiteSpace(command.Data) ? "{}" : command.Data,
+                CreatedBy = command.UserId,
+                CreatedAt = now
+            };
 
             document.UpdatedAt = now;
 
@@ -62,8 +63,7 @@ public class CreateInputSnapshot
                 snapshot.Data,
                 snapshot.CreatedBy,
                 snapshot.CreatedAt
-                );
+            );
         }
     }
-
 }

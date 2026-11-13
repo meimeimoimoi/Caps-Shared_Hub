@@ -1,19 +1,12 @@
-using Caps.Workflow.Application.Abstractions;
-using Caps.Workflow.Application.AiChat.DTOs;
-using Caps.Workflow.Application.AiChat.Interface;
-using Caps.Workflow.Domain.Exceptions;
-using Microsoft.AspNetCore.Http;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http.Json;
-using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
+using Caps.Workflow.Application.Abstractions;
+using Caps.Workflow.Domain.Exceptions;
 using static Caps.Workflow.Application.AiChat.DTOs.ChatDtos;
-using IRagQueryClient = Caps.Workflow.Application.Abstractions.IRagQueryClient;
 
 namespace Caps.Workflow.Infrastructure.Clients;
+
+/// <summary>HTTP client adapter for querying the internal RAG service.</summary>
 public sealed class RagQueryClient(HttpClient httpClient) : IRagQueryClient
 {
     private static readonly JsonSerializerOptions JsonOptions = new()
@@ -23,8 +16,18 @@ public sealed class RagQueryClient(HttpClient httpClient) : IRagQueryClient
 
     public async Task<RagQueryResponse> QueryAsync(RagQueryRequest request, CancellationToken ct = default)
     {
+        var question = string.IsNullOrWhiteSpace(request.Clarification)
+            ? request.Query
+            : $"{request.Query}\nClarification: {request.Clarification}";
+
+        var userTaxPeriod = request.PeriodStart.HasValue || request.PeriodEnd.HasValue
+            ? $"{request.PeriodStart:yyyy-MM-dd}..{request.PeriodEnd:yyyy-MM-dd}"
+            : null;
+
         var payload = new
         {
+            question,
+            userTaxPeriod,
             conversation_id = request.ConversationId,
             query = request.Query,
             clarification = request.Clarification,
@@ -49,28 +52,28 @@ public sealed class RagQueryClient(HttpClient httpClient) : IRagQueryClient
         }
 
         var result = await response.Content.ReadFromJsonAsync<RagQueryRawResponse>(JsonOptions, ct);
-        if(result is null)
+        if (result is null)
         {
             throw WorkflowErrors.RagQueryFailed("Received empty response payload from RAG service.");
         }
 
         return new RagQueryResponse(
-            result.Content ?? string.Empty,
+            result.Content ?? result.Answer ?? string.Empty,
             result.ScopeResult ?? "IN_SCOPE",
             result.AnswerStatus ?? "ANSWERED",
             result.PeriodStart,
             result.PeriodEnd,
             result.Citations ?? []
-            );
-
+        );
     }
 
     private sealed record RagQueryRawResponse(
         string? Content,
+        string? Answer,
         string? ScopeResult,
         string? AnswerStatus,
         DateOnly? PeriodStart,
         DateOnly? PeriodEnd,
         List<CitationDto>? Citations
-        );
+    );
 }

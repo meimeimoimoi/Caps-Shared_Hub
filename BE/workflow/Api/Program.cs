@@ -12,7 +12,7 @@ var postgres = config.GetRequiredConnectionString("Postgres");
 
 builder.Services.AddCommonApi(config, "workflow");
 builder.Services.AddWorkflowApplication();
-builder.Services.AddWorkflowInfrastructure(postgres);
+builder.Services.AddWorkflowInfrastructure(postgres, config);
 builder.Services.AddWorkflowRealtime();
 
 var app = builder.Build();

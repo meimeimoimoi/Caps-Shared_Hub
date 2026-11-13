@@ -3,12 +3,14 @@ using Caps.Common.Domain;
 using Caps.Workflow.Application.Abstractions.Documents;
 using Caps.Workflow.Domain.Exceptions;
 using Caps.Workflow.Domain.Workspace;
-
 using static Caps.Workflow.Application.Features.Documents.DTOs.DocumentDtos;
 
 namespace Caps.Workflow.Application.Features.Documents;
-public sealed class CreateDocument
+
+/// <summary>Use case for creating a new document workspace.</summary>
+public static class CreateDocument
 {
+    /// <summary>Command to create a new document workspace for a user.</summary>
     public sealed record CreateDocumentCommand(
         Guid UserId,
         string Title,
@@ -17,22 +19,23 @@ public sealed class CreateDocument
         DateOnly PeriodEnd,
         string? Source,
         string? Metadata
-        );
+    );
 
+    /// <summary>Handles validating period bounds and persisting a new document workspace.</summary>
     public sealed class CreateDocumentHandler(
         IDocumentRepository documentRepository,
         IUnitOfWork unitOfWork,
         TimeProvider timeProvider
-        ) : ICommandHandler<CreateDocumentCommand, DocumentSummaryDto>
+    ) : ICommandHandler<CreateDocumentCommand, DocumentSummaryDto>
     {
         public async Task<DocumentSummaryDto> HandleAsync(CreateDocumentCommand command, CancellationToken ct)
         {
-            if(command.PeriodEnd < command.PeriodStart)
+            if (command.PeriodEnd < command.PeriodStart)
             {
                 throw WorkflowErrors.Document_InvalidPeriod();
             }
 
-            var now = DateTime.UtcNow;
+            var now = timeProvider.GetUtcNow();
             var document = new Document
             {
                 Id = UuidV7.NewGuid(),
@@ -50,7 +53,7 @@ public sealed class CreateDocument
             };
 
             await documentRepository.AddAsync(document, ct);
-            await unitOfWork.SaveChangesAsync( ct);
+            await unitOfWork.SaveChangesAsync(ct);
 
             return new DocumentSummaryDto(
                 document.Id,
@@ -64,7 +67,7 @@ public sealed class CreateDocument
                 document.VerifiedVersionId,
                 document.CreatedAt,
                 document.UpdatedAt
-                );
+            );
         }
     }
 }

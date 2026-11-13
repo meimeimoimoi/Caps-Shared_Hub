@@ -1,40 +1,41 @@
+using System.Text.Json;
 using Caps.Common.Application;
 using Caps.Workflow.Application.Abstractions;
 using Caps.Workflow.Domain.Exceptions;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.Json;
-using System.Threading.Tasks;
 using static Caps.Workflow.Application.AiChat.DTOs.ChatDtos;
 
 namespace Caps.Workflow.Application.Features.AiChat;
-public class GetConversationMessages
+
+/// <summary>Use case for loading chronological messages in an AI chat conversation.</summary>
+public static class GetConversationMessages
 {
+    /// <summary>Query to retrieve all messages of a conversation owned by the user.</summary>
     public sealed record GetConversationMessagesQuery(
         Guid ConversationId,
-        Guid UserId);
+        Guid UserId
+    );
 
+    /// <summary>Handles loading and deserializing messages and their citations for a conversation.</summary>
     public sealed class GetConversationMessageHandler(
         IConversationRepository conversationRepository,
-        IChatMessageRepository chatMessageRepository) : IQueryHandler<GetConversationMessagesQuery, IReadOnlyList<ChatMessageDto>>
+        IChatMessageRepository chatMessageRepository
+    ) : IQueryHandler<GetConversationMessagesQuery, IReadOnlyList<ChatMessageDto>>
     {
         public async Task<IReadOnlyList<ChatMessageDto>> HandleAsync(GetConversationMessagesQuery query, CancellationToken ct)
         {
             var conversation = await conversationRepository.GetByIdAsync(query.ConversationId, ct);
 
-            if(conversation is null)
+            if (conversation is null)
             {
                 throw WorkflowErrors.Conversation_NotFound(query.ConversationId);
             }
 
-            if(conversation.UserId != query.UserId)
+            if (conversation.UserId != query.UserId)
             {
                 throw WorkflowErrors.Conversation_AccessDenied();
             }
 
-            var messages = await chatMessageRepository.GetByCoversationIdAsync(query.ConversationId, ct);
+            var messages = await chatMessageRepository.GetByConversationIdAsync(query.ConversationId, ct);
 
             return messages.Select(m =>
             {
@@ -55,10 +56,8 @@ public class GetConversationMessages
                     m.AnswerStatus,
                     citations,
                     m.CreatedAt
-                    );
+                );
             }).ToList();
-
         }
-
     }
 }
