@@ -1,0 +1,1368 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Câu hỏi Flow 2–4</title>
+<style>
+  :root {
+    --bg: #f7f6f3; --surface: #ffffff; --text: #1f2328; --muted: #5d636b; --line: #e3e1dc;
+    --accent: #2f5bd3; --accent-soft: #e8eefc;
+    --s-open: #9a6700; --s-open-bg: #fff4d6;
+    --s-doing: #2f5bd3; --s-doing-bg: #e8eefc;
+    --s-done: #1a7f37; --s-done-bg: #dcf5e3;
+    --s-out: #6e7781; --s-out-bg: #eef0f2;
+    --hot: #c4321c; --hot-bg: #fde8e4;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #15171a; --surface: #1d2024; --text: #e6e8eb; --muted: #9aa1a9; --line: #2e3238;
+      --accent: #7ea2ff; --accent-soft: #23304d;
+      --s-open: #e3b341; --s-open-bg: #3a2f12; --s-doing: #7ea2ff; --s-doing-bg: #23304d;
+      --s-done: #56d364; --s-done-bg: #173822; --s-out: #9aa1a9; --s-out-bg: #2a2e33; --hot: #ff7b62; --hot-bg: #3d1d17;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #15171a; --surface: #1d2024; --text: #e6e8eb; --muted: #9aa1a9; --line: #2e3238;
+    --accent: #7ea2ff; --accent-soft: #23304d;
+    --s-open: #e3b341; --s-open-bg: #3a2f12; --s-doing: #7ea2ff; --s-doing-bg: #23304d;
+    --s-done: #56d364; --s-done-bg: #173822; --s-out: #9aa1a9; --s-out-bg: #2a2e33; --hot: #ff7b62; --hot-bg: #3d1d17;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font: 15px/1.55 "Segoe UI", system-ui, -apple-system, sans-serif;
+  }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 32px 16px 64px; }
+  header h1 { margin: 0 0 6px; font-size: 26px; letter-spacing: -0.01em; }
+  .meta { color: var(--muted); font-size: 14px; }
+  .toolbar {
+    position: sticky; top: 0; z-index: 5; background: var(--bg);
+    display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+    padding: 12px 0; margin: 16px 0 8px; border-bottom: 1px solid var(--line);
+  }
+  .toolbar a.tab {
+    text-decoration: none; color: var(--text); padding: 6px 12px; border-radius: 999px;
+    border: 1px solid var(--line); background: var(--surface); font-size: 14px;
+  }
+  .toolbar a.tab:hover { border-color: var(--accent); }
+  .progress { margin-left: auto; font-size: 14px; color: var(--muted); }
+  .progress b { color: var(--text); }
+  button {
+    font: inherit; font-size: 14px; padding: 6px 12px; border-radius: 8px; cursor: pointer;
+    border: 1px solid var(--line); background: var(--surface); color: var(--text);
+  }
+  button:hover { border-color: var(--accent); }
+  .note {
+    background: var(--surface); border: 1px solid var(--line); border-left: 4px solid var(--accent);
+    border-radius: 10px; padding: 12px 16px; margin: 16px 0; font-size: 14px;
+  }
+  .note ul { margin: 6px 0 0; padding-left: 20px; }
+  section.flow { margin-top: 36px; scroll-margin-top: 70px; }
+  section.flow > h2 { font-size: 21px; margin: 0 0 4px; }
+  .flow-sub { color: var(--muted); font-size: 14px; margin: 0 0 12px; }
+  .group {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 12px;
+    margin: 14px 0; overflow: hidden;
+  }
+  .group h3 {
+    margin: 0; padding: 10px 16px; font-size: 15px; background: var(--accent-soft);
+    border-bottom: 1px solid var(--line);
+  }
+  .q {
+    display: grid; grid-template-columns: 44px 1fr 150px 140px; gap: 10px 12px;
+    padding: 12px 16px; border-top: 1px solid var(--line); align-items: start;
+  }
+  .group h3 + .q { border-top: 0; }
+  .num { font-weight: 600; color: var(--muted); font-variant-numeric: tabular-nums; padding-top: 6px; }
+  .text { padding-top: 6px; }
+  .hot { color: var(--hot); font-size: 12px; font-weight: 600; margin-left: 6px; white-space: nowrap; }
+  .q input, .q select, .q textarea {
+    width: 100%; font: inherit; font-size: 14px; color: var(--text); background: var(--bg);
+    border: 1px solid var(--line); border-radius: 8px; padding: 6px 8px;
+  }
+  .q textarea { grid-column: 2 / -1; min-height: 34px; resize: vertical; }
+  .q select[data-v="open"]  { color: var(--s-open);  background: var(--s-open-bg); }
+  .q select[data-v="doing"] { color: var(--s-doing); background: var(--s-doing-bg); }
+  .q select[data-v="done"]  { color: var(--s-done);  background: var(--s-done-bg); }
+  .q select[data-v="out"]   { color: var(--s-out);   background: var(--s-out-bg); }
+  .quick {
+    margin-top: 8px; padding: 8px 12px; border-radius: 8px; background: var(--bg);
+    border-left: 4px solid var(--line); font-size: 14.5px;
+  }
+  .quick ul { margin: 4px 0 0; padding-left: 18px; }
+  .quick li { margin: 2px 0; }
+  .quick .missing { margin-top: 4px; color: var(--hot); font-size: 13.5px; }
+  #content .flow-sub { display: none; }
+  .note .lv { margin-right: 4px; }
+  .quick[data-lv="g"] { border-left-color: var(--s-done); }
+  .quick[data-lv="y"] { border-left-color: var(--s-open); }
+  .quick[data-lv="r"] { border-left-color: var(--hot); }
+  .lv {
+    display: inline-block; font-size: 12px; font-weight: 600; padding: 1px 8px; border-radius: 999px;
+    margin-right: 6px; white-space: nowrap;
+  }
+  .lv[data-lv="g"] { color: var(--s-done); background: var(--s-done-bg); }
+  .lv[data-lv="y"] { color: var(--s-open); background: var(--s-open-bg); }
+  .lv[data-lv="r"] { color: var(--hot); background: var(--hot-bg); }
+  details.more { grid-column: 2 / -1; }
+  details.more summary { cursor: pointer; color: var(--accent); font-size: 13.5px; padding: 2px 0; }
+  details.more textarea { margin-top: 6px; }
+  .filters { display: flex; flex-wrap: wrap; gap: 6px; }
+  .filters button[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); }
+  .q.hide, .group.hide { display: none; }
+  .q.card { grid-template-columns: 44px 1fr; }
+  .sub { padding: 10px 0; border-top: 1px dashed var(--line); }
+  .sub:first-child { border-top: 0; }
+  .sub-head { font-size: 14px; margin-bottom: 6px; }
+  .sub-ctrl { display: grid; grid-template-columns: 1fr 160px; gap: 8px; margin-bottom: 6px; }
+  .sub input, .sub select, .sub textarea {
+    width: 100%; font: inherit; font-size: 14px; color: var(--text); background: var(--bg);
+    border: 1px solid var(--line); border-radius: 8px; padding: 6px 8px;
+  }
+  .sub textarea { min-height: 34px; resize: vertical; }
+  .sub select[data-v="open"]  { color: var(--s-open);  background: var(--s-open-bg); }
+  .sub select[data-v="doing"] { color: var(--s-doing); background: var(--s-doing-bg); }
+  .sub select[data-v="done"]  { color: var(--s-done);  background: var(--s-done-bg); }
+  .sub select[data-v="out"]   { color: var(--s-out);   background: var(--s-out-bg); }
+  .q { scroll-margin-top: 120px; }
+  .todo-owner { padding: 4px 16px 10px; }
+  .todo-owner h3 { margin: 0 -16px 6px; }
+  .todo-item { display: flex; gap: 10px; align-items: flex-start; padding: 6px 0; border-top: 1px solid var(--line); }
+  .todo-item:first-of-type { border-top: 0; }
+  .todo-item input { margin-top: 4px; width: 16px; height: 16px; flex: none; }
+  .todo-item.done span { color: var(--muted); text-decoration: line-through; }
+  .todo-item a { color: var(--accent); font-size: 13px; margin-left: 4px; white-space: nowrap; }
+  footer { margin-top: 40px; color: var(--muted); font-size: 13px; }
+  @media (max-width: 720px) {
+    .q { grid-template-columns: 36px 1fr; }
+    .q input, .q select, .q textarea { grid-column: 2 / -1; }
+  }
+  @media print {
+    body { background: #fff; color: #000; }
+    .toolbar button, .toolbar .tab { display: none; }
+    .toolbar { position: static; }
+    .group { break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Câu hỏi cần trả lời: Flow 2, 3, 4</h1>
+    <div class="meta">Nhóm GFA26SE81 · Đề tài FA26SE301 · Tổng hợp từ buổi Review 2 ngày 04/11/2026: phiếu chấm hội đồng, ghi chép weekly và ghi âm</div>
+  </header>
+
+  <div class="toolbar">
+    <a class="tab" href="#todo">Việc cần làm</a>
+    <a class="tab" href="#flow2">Flow 2</a>
+    <a class="tab" href="#flow3">Flow 3</a>
+    <a class="tab" href="#flow4">Flow 4</a>
+    <a class="tab" href="#common">Chung</a>
+    <span class="filters" id="filters">
+      <button type="button" data-f="all" aria-pressed="true">Tất cả</button>
+      <button type="button" data-f="r">Cần chốt</button>
+      <button type="button" data-f="y">Nói kèm "đang làm"</button>
+      <button type="button" data-f="g">Trả lời được</button>
+    </span>
+    <span class="progress" id="progress"></span>
+    <button type="button" id="print">In / PDF</button>
+    <button type="button" id="reset">Xóa dữ liệu đã nhập</button>
+  </div>
+
+  <div class="note">
+    <span class="lv" data-lv="g">Trả lời được</span> <span class="lv" data-lv="y">Nói kèm "đang làm"</span> <span class="lv" data-lv="r">Cần chốt</span> · <span class="hot">● trọng tâm</span> = hội đồng nhấn mạnh
+    <details class="more"><summary>Cách đọc file</summary>
+    <b>Đã gộp 39 câu thành 20 câu</b> theo ý trùng nhau. Câu gốc và ghi chú cũ nằm trong phần <i>Xem chi tiết</i> của câu mới, ghi kèm số câu cũ; các chỗ "xem 2.6" trong ghi chú là số câu cũ.<br>
+    <b>Cách đọc nhanh:</b> mỗi câu có ô <b>Trả lời nhanh</b> (1–2 câu để nói khi bị hỏi) và nhãn màu. Phân tích đầy đủ nằm trong <i>Xem chi tiết và ghi chú</i>. Dùng nút lọc trên thanh công cụ để chỉ xem một loại.
+    <ul>
+      <li><span class="lv" data-lv="g">Trả lời được</span> nói ngay được, có căn cứ trong tài liệu hoặc code.</li>
+      <li><span class="lv" data-lv="y">Nói kèm "đang làm"</span> trả lời được nhưng phải nói rõ phần nào chưa xong.</li>
+      <li><span class="lv" data-lv="r">Cần chốt</span> nhóm phải quyết định hoặc làm xong trước buổi bảo vệ.</li>
+    </ul>
+    <b>Cách dùng:</b> mỗi câu có ô <i>Người trả lời</i>, <i>Trạng thái</i> và ghi chú. Dữ liệu nhập (kể cả ô tick ở Việc cần làm) được lưu trong trình duyệt của máy đang mở file, không gửi đi đâu. Muốn chia sẻ kết quả thì bấm <i>In / PDF</i>.
+    <ul>
+      <li>Câu có nhãn <span class="hot">● trọng tâm</span> là điểm có trong nhận xét chung của phiếu chấm hoặc thầy nhấn mạnh trong ghi âm.</li>
+      <li>Mốc thời gian như <i>2.m4a 06:59</i> là chỗ trong file ghi âm để nghe lại. Các ý có dấu (?) là nghe chưa rõ, cần xác nhận.</li>
+      <li>Ghi chú tổng hợp từ buổi họp nhóm 08/11 (bản chép lời tự động): <i>V1</i> là video 2026-11-08 20-04-04, <i>V2</i> là video 2026-11-08 20-44-09. Dấu ⚠ là nhóm chưa chốt hoặc trả lời chưa đúng ý câu hỏi.</li>
+      <li>Phân biệt nguồn câu trả lời: đoạn bắt đầu bằng <i>Họp 08/11</i> là nhóm trả lời; đoạn bắt đầu bằng <i>[Claude đề xuất …]</i> là AI soạn từ code, nhóm cần đọc lại và xác nhận rồi mới chuyển sang <i>Đã trả lời</i>.</li>
+    </ul>
+    </details>
+  </div>
+
+  <section class="flow" id="todo">
+    <h2>Việc cần làm</h2>
+    <p class="flow-sub"></p>
+    <div id="todo-list"></div>
+  </section>
+
+  <div id="content"></div>
+
+  <footer>Nguồn: Phiếu review FA26-Review2, Project Weekly Report_GFA26SE81 (tab Wx), ghi âm buổi review 04/11 (1.m4a, 2.m4a), README các service <code>ingestion</code>, <code>workflow</code>, <code>rag-query</code>.</footer>
+</div>
+
+<script>
+const DATA = [
+  {
+    id: "flow2", title: "Flow 2: Kho văn bản pháp luật (nguồn dữ liệu)",
+    sub: "Code: service ingestion (crawl vbpl/mof, upload, admin duyệt). Còn thiếu: duyệt → chunk → index.",
+    groups: [
+      { name: "Nguồn và tính hợp pháp", qs: [
+        ["Lấy dữ liệu từ những nguồn nào? Lúc trình bày có nhắc \"Thư viện pháp luật\" (?), còn code đang dùng vbpl và mof: thống nhất lại là nguồn nào. Vì sao các nguồn này được coi là chính thống? (2.m4a 02:20)", 1, { status: "doing", seed: 2, note:
+`[Claude đề xuất 08/11, nhóm chưa xác nhận]
+
+2 nguồn, đều là CSDL của cơ quan nhà nước:
+- vbpl.vn (nguồn chính, mặc định của crawler): CSDL quốc gia về pháp luật, đơn vị chủ quản Bộ Tư pháp. Lấy luật, nghị định, thông tư, quyết định về thuế TNDN, kèm quan hệ sửa đổi / thay thế / hướng dẫn / hợp nhất.
+- vbpq.mof.gov.vn (nguồn bổ sung): CSDL văn bản QPPL ngành tài chính, đơn vị quản lý Bộ Tài chính. Đây là nơi ban hành phần lớn thông tư hướng dẫn thuế.
+
+Không dùng \"Thư viện pháp luật\" (thuvienphapluat.vn): trang của doanh nghiệp tư nhân, không phải nguồn nhà nước, nhiều nội dung phải trả phí và hạn chế sao chép. Khi trình bày cần nói rõ đã chốt 2 nguồn trên.
+
+Vì sao chính thống:
+- Do bộ, ngành có thẩm quyền vận hành (Bộ Tư pháp quản lý CSDL pháp luật quốc gia, Bộ Tài chính ban hành và hướng dẫn chính sách thuế).
+- Văn bản có số hiệu, cơ quan ban hành, ngày ban hành, ngày hiệu lực, tình trạng hiệu lực; hệ thống lưu lại để trích dẫn.
+- vbpl có quan hệ giữa các văn bản, dùng để không trích dẫn văn bản đã hết hiệu lực.
+- Mỗi văn bản lưu link về trang gốc để người dùng và chuyên gia đối chiếu.
+
+Còn cần chuẩn bị: tra số hiệu nghị định quy định về CSDL quốc gia về pháp luật để dẫn căn cứ khi bị hỏi.` }],
+        ["Các nguồn này có cho phép thu thập tự động không? Bằng chứng là gì (điều khoản sử dụng, robots.txt, giấy phép dữ liệu mở)? Nếu không được phép thì chuyển sang cách nào (upload thủ công, API chính thức)?", 1, { status: "doing", seed: 2, note:
+`[Claude đề xuất 08/11, nhóm chưa xác nhận]
+
+Kiểm tra ngày 08/11/2026:
+- vbpl.vn: robots.txt có \"Allow: /\", chỉ cấm /api/ và /Pages/. Crawler chỉ vào /van-ban/trung-uong (tìm kiếm) và /van-ban/chi-tiet/... (chi tiết), đều được phép, không gọi /api/. Chân trang không có điều khoản sử dụng hay dòng bản quyền. Crawler nghỉ 2–5 giây giữa các request.
+- vbpq.mof.gov.vn: không có robots.txt (trả về 404), tức là không có quy định cho bot. Crawler gọi /api/legaldoc/Search/..., đây là API nội bộ của giao diện trang, không phải API công bố cho bên ngoài → rủi ro, chỉ dùng làm nguồn bổ sung.
+
+Phương án nếu không được phép: admin tải văn bản thủ công rồi upload PDF/DOCX qua chức năng có sẵn trong ingestion; văn bản upload vẫn đi qua bước admin duyệt như văn bản cào về.
+
+Lưu ý khi trả lời: robots.txt chỉ là quy ước kỹ thuật, không phải giấy phép. Nói \"phù hợp với robots.txt\", không nói \"được cấp phép\".
+
+Còn phải làm:
+- Chụp màn hình vbpl.vn/robots.txt và trang 404 của vbpq.mof.gov.vn/robots.txt, ghi ngày chụp.
+- Đổi User-Agent của crawler từ giả danh Chrome sang tên riêng của dự án (crawler/config.py).
+- Nếu kịp: email hỏi Bộ Tư pháp / Bộ Tài chính về việc dùng lại dữ liệu cho đồ án.` }],
+        ["Thông tin công khai và không công khai được phân biệt thế nào? Hệ thống có lấy nhầm dữ liệu không công khai không?", 0, { status: "doing", seed: 4, note:
+`[Claude đề xuất 10/11, nhóm chưa xác nhận] Nhóm chưa bàn câu này ở buổi họp 08/11. Phần dưới do Claude soạn từ code crawler và ingestion.
+
+Phạm vi: câu này chỉ nói về văn bản pháp luật trong kho. Dữ liệu doanh nghiệp của người dùng thuộc Flow 4, nếu bị hỏi thì tách ra trả lời riêng.
+
+Crawler chỉ lấy được dữ liệu công khai:
+- Không đăng nhập, không gửi tài khoản hay token. Cookie duy nhất là cookie cân bằng tải ẩn danh của vbpq.mof.gov.vn (crawler/src/mof_client.py). Crawler chỉ thấy đúng những gì khách vãng lai xem được trên trang.
+- Chỉ lấy văn bản quy phạm pháp luật: Luật, Nghị định, Thông tư, Quyết định (DOCUMENT_TYPES trong crawler/config.py). Các văn bản này bắt buộc phải công bố công khai (đăng Công báo, đưa lên CSDL quốc gia về pháp luật). Văn bản mật không được đăng trên các trang này.
+- Không lấy công văn hay văn bản cá biệt gửi riêng cho một doanh nghiệp.
+
+Upload thủ công là chỗ có thể lọt dữ liệu không công khai: form upload chỉ yêu cầu số hiệu, loại văn bản và tiêu đề, không có link nguồn. Cách chặn:
+- Tiêu chí duyệt (khớp câu 2.7): admin chỉ duyệt khi tìm thấy chính văn bản đó trên trang nhà nước (vbpl.vn, *.gov.vn). Không xác minh được nguồn công khai thì từ chối. Không nhận file lấy từ trang thu phí (ví dụ thuvienphapluat.vn) hoặc tài liệu nội bộ.
+- Mọi văn bản, kể cả văn bản cào về, đều ở trạng thái PENDING cho tới khi admin duyệt, nên chưa duyệt thì chưa vào kho cho AI dùng.
+
+Hướng cải tiến (chưa làm): bắt buộc nhập link nguồn khi upload, chỉ chấp nhận domain nhà nước, để admin bấm mở đối chiếu khi duyệt.
+
+Đã chốt 10/11: GIỮ upload thủ công cho Knowledge Admin, làm phương án dự phòng khi văn bản không cào được. Đã sửa tài liệu cho khớp code:
+- Nghiệp vụ (Drive: Bussiness): 01-business-flows.md Flow 2 Bước 1 (bỏ câu "không duy trì upload thủ công", thêm Manual Upload); 02-business-rules.md thêm BR-K15; 03-policies-decision-tables.md thêm knowledge.manual_upload_enabled; 04-state-models.md thêm Manual Upload vào sự kiện bắt đầu của Knowledge Version.
+- SRS (Report03_Software_Requirements_Specification): actor Knowledge Administrator, use case 48 Govern Knowledge Base, màn hình 51 Legal Documents, NFR-013 (PDF/DOCX tối đa 20 MB, trùng hash chỉ nhận một lần), bảng business rules thêm BR-K15.
+BR-K15: upload chỉ dành cho Knowledge Admin, PDF/DOCX tối đa 20 MB, phải là văn bản đã công bố trên nguồn được phép (BR-K01), không nhận file từ trang thu phí hay tài liệu nội bộ, trùng hash chỉ nhận một lần, đi chung quy trình bóc tách và duyệt; không xác minh được nguồn công khai thì REJECTED.
+⚠ Use case diagram và screen flow trong SRS chưa vẽ thêm Upload; nếu cần thì sửa hình.
+
+Còn cần chuẩn bị: tra đúng điều trong Luật Ban hành văn bản QPPL quy định văn bản phải đăng Công báo và công khai, để dẫn căn cứ khi bị hỏi.` }],
+        ["Dữ liệu lấy về có đủ cho phạm vi thuế TNDN của DN vừa và nhỏ không? Danh sách văn bản cốt lõi gồm những văn bản nào (luật, nghị định, thông tư)?", 1, { status: "done", forceStatus: true, seed: 7, note:
+`Họp 08/11 (V1 00:00–07:12):
+- Phạm vi xác định theo khoảng thời gian hiệu lực của văn bản.
+- DN xuất nhập khẩu (thầy Đức hỏi): vẫn cùng luật thuế TNDN, chỉ khác phụ lục phải điền.
+- Kế hoạch: làm bộ câu hỏi để thầy Thức test trên hệ thống, rồi xin thầy Thức xác nhận đã đủ phạm vi.
+- Cốt lõi: tờ khai + phụ lục, tổng khoảng 24 mẫu (?). Thầy Thức nói thực tế chỉ dùng vài phụ lục phổ biến → lấy danh sách thầy xác nhận làm phần cốt lõi. Thịnh phụ trách.
+- Mẫu thay đổi: crawler lấy luôn mẫu đính kèm dưới văn bản, chuyển thành template, admin kiểm tra trước khi dùng.
+⚠ Câu hỏi cần danh sách luật / nghị định / thông tư, nhóm mới trả lời bằng mẫu và phụ lục.
+
+Thầy Thức nhắn (tin nhắn nhóm Đồ Án, 08:52): "thực tế dùng 1 vài phụ lục thường xuyên thôi". Danh sách phụ lục quyết toán thuế TNDN thầy gửi:
+- 03-1A/TNDN: kết quả kinh doanh (sản xuất, thương mại, dịch vụ)
+- 03-1C/TNDN: kết quả kinh doanh chứng khoán
+- 03-2/TNDN: chuyển lỗ các năm trước
+- 03-5/TNDN: thuế TNDN đối với chuyển nhượng bất động sản
+- 03-8/TNDN: phân bổ thuế TNDN đối với cơ sở sản xuất
+→ Phạm vi tờ khai: 03/TNDN + các phụ lục trên, không làm cả khoảng 24 phụ lục.
+Cập nhật 11/11/2026 (Claude đọc mẫu kèm Thông tư 89/2026 trên vbpl.vn): danh sách trên đúng với mẫu cũ (Thông tư 80/2021, dùng cho kỳ 2025). Từ kỳ 2026, mẫu theo Thông tư 89/2026 KHÔNG còn 03-1A và 03-1C: kết quả kinh doanh lấy từ báo cáo tài chính nộp kèm (chỉ tiêu A1 "Tổng lợi nhuận kế toán trước thuế" trên tờ khai). Phạm vi đề xuất cho kỳ 2026: 03/TNDN + phụ lục 03-2 (chuyển lỗ), 03-5 (chuyển nhượng BĐS), 03-8 (phân bổ cho đơn vị phụ thuộc, địa điểm kinh doanh), kèm báo cáo tài chính năm. Cần báo lại thầy Thức để xác nhận.
+
+Nhóm xác nhận 10/11: dự án làm 2 loại văn bản thuế TNDN:
+1. Tờ khai quyết toán thuế TNDN năm (03/TNDN + phụ lục thầy Thức chọn): DN nộp hằng năm. Code: FE mới có dữ liệu mẫu, bộ trường nhập liệu đang chờ chốt.
+2. Công văn giải trình chi phí không được trừ: gửi cơ quan thuế khi bị kiểm tra, loại chi phí. Code: đã có template CV_GIAI_TRINH_CP_KDT (BE/workflow/Api/workflow.http) và prompt soạn nháp (BE/ai-service/app/modules/drafting/prompts.py).
+Hai loại nối nhau: công văn có trường "Phương án xử lý (điều chỉnh trên tờ khai 03/TNDN)".
+
+[Claude đề xuất 10/11, nhóm chưa xác nhận]
+
+1. Hiện CHƯA đủ. Bằng chứng: 2 lượt crawl trong máy (crawler/data/2026-10-14, 2026-10-21) có 14 văn bản, gần như không liên quan thuế TNDN (47/2024/TT-BGTVT kiểm định xe, 177/QĐ-NHPT séc, 70/2024/NĐ-CP Luật Căn cước, các thông tư phí, lệ phí). Không có văn bản thuế TNDN nào. Chưa xem DB ingestion, nếu đã crawl thêm vào DB thì có thể khác.
+Nguyên nhân:
+- Tìm kiếm của vbpl khớp lỏng theo từng từ, chế độ top N kéo về văn bản chỉ chứa chữ "thuế" hoặc "doanh nghiệp".
+- crawler/keywords/thue_tndn.toml: [seeds] so_hieu = [] đang để trống (danh sách văn bản phải lấy chắc chắn).
+
+2. Danh sách văn bản cốt lõi — ĐÃ TRA TRÊN VBPL.VN NGÀY 11/11/2026 (thay danh sách nháp trước đó):
+Thuế TNDN (cách tính):
+- Luật Thuế TNDN 67/2025/QH15: ban hành 14/06/2025, hiệu lực 01/10/2025, "áp dụng từ kỳ tính thuế thu nhập doanh nghiệp năm 2025" (Điều 19). Trạng thái: hết hiệu lực một phần (đã được sửa đổi). Điều 10: thuế suất 20%; 15% cho DN tổng doanh thu năm không quá 3 tỷ; 17% cho DN trên 3 tỷ đến 50 tỷ (doanh thu kỳ trước liền kề). Văn bản hợp nhất: 113/VBHN-VPQH (20/05/2026).
+- Luật 09/2026/QH16 sửa đổi Luật Thuế TNCN, GTGT, TNDN, TTĐB: hiệu lực 24/04/2026, còn hiệu lực.
+- Nghị định 320/2025/NĐ-CP quy định chi tiết Luật Thuế TNDN: ban hành và hiệu lực 15/12/2025, hết hiệu lực một phần; được sửa bởi Nghị định 141/2026/NĐ-CP (hiệu lực 01/01/2026).
+- Thông tư 20/2026/TT-BTC quy định chi tiết Luật Thuế TNDN và Nghị định 320/2025: ban hành 12/03/2026, còn hiệu lực. (Đây là "thông tư hướng dẫn Luật 67" trước đây ghi là chưa rõ số hiệu.)
+- Nghị quyết 43/2026/QH16: giảm 30% số thuế TNDN phải nộp kỳ 2026 và 2027 cho DN có doanh thu năm không quá 10 tỷ; hiệu lực 24/08/2026. Chi tiết tại Nghị định 398/2026/NĐ-CP. Liên quan trực tiếp tới DN vừa và nhỏ.
+- Nghị quyết 198/2025/QH15 (phát triển kinh tế tư nhân): còn hiệu lực từ 17/05/2025; hướng dẫn tại Nghị định 20/2026/NĐ-CP. Nội dung miễn, giảm thuế cho DN nhỏ và vừa: chưa đọc.
+Quản lý thuế (thủ tục, mẫu tờ khai):
+- Luật Quản lý thuế 108/2025/QH15: ban hành 10/12/2025, hiệu lực 01/07/2026, còn hiệu lực. (Luật 38/2019/QH14 trên vbpl ghi "hết hiệu lực một phần".)
+- Nghị định 252/2026/NĐ-CP hướng dẫn Luật Quản lý thuế: hiệu lực 01/07/2026. Nghị định 126/2020/NĐ-CP hết hiệu lực từ 01/07/2026.
+- Thông tư 89/2026/TT-BTC quy định chi tiết Luật Quản lý thuế và Nghị định 252/2026: ban hành 30/06/2026, hiệu lực 01/07/2026, còn hiệu lực; đính chính bởi Quyết định 2551/QĐ-BTC (15/09/2026). Điều 21 khai thuế TNDN: hồ sơ khai quyết toán theo điểm 6 Phụ lục I (đã mở 11/11: vẫn là tờ khai 03/TNDN "Áp dụng đối với phương pháp doanh thu - chi phí"; hồ sơ quyết toán gồm 03/TNDN + phụ lục 03-2, 03-3A, 03-3C, 03-3D, 03-4, 03-5, 03-6, 03-8, 03-8A, 03-8B, 03-8C, 03-9; không còn 03-1A, 03-1C).
+- Thông tư 80/2021/TT-BTC: HẾT HIỆU LỰC TOÀN BỘ từ 01/07/2026, bị Thông tư 89/2026 bãi bỏ. Chỉ dùng cho kỳ quyết toán 2025 (hạn 31/03/2026, lúc đó còn hiệu lực, đã sửa bởi Thông tư 94/2025 và 21/2026).
+- Giao dịch liên kết: Nghị định 255/2026/NĐ-CP (hiệu lực 01/07/2026) thay Nghị định 132/2020 và 20/2025 (cùng hết hiệu lực 01/07/2026).
+Giữ để tra cứu kỳ cũ (đã hết hiệu lực): Luật 14/2008/QH12 (hết hiệu lực khi Luật 67 có hiệu lực, vbpl còn ghi "một phần"), Nghị định 218/2013/NĐ-CP (hết hiệu lực 15/12/2025), Thông tư 78/2014/TT-BTC (hết hiệu lực toàn bộ), Thông tư 96/2015/TT-BTC (hết hiệu lực 10/03/2026).
+Định nghĩa DN vừa và nhỏ: Luật Hỗ trợ DNNVV 04/2017/QH14 (hết hiệu lực một phần), Nghị định 80/2021/NĐ-CP (còn hiệu lực).
+
+3. Cách trả lời: phần mẫu và phụ lục nhóm nêu ở buổi họp là lớp mẫu biểu; danh sách trên là lớp căn cứ pháp lý mà câu hỏi muốn nghe. Văn bản nào phục vụ loại nào:
+- Tờ khai 03/TNDN + phụ lục: Thông tư 89/2026 (mẫu, từ 01/07/2026; kỳ 2025 dùng Thông tư 80/2021), Luật 67/2025 + Nghị định 320/2025 + Thông tư 20/2026 (cách tính), Luật Quản lý thuế 108/2025 + Nghị định 252/2026 (hạn nộp, quyết toán), Nghị quyết 43/2026 (giảm 30% kỳ 2026–2027).
+- Công văn giải trình chi phí: Luật 67/2025 và văn bản hướng dẫn phần chi phí được trừ, không được trừ (đây là căn cứ để giải trình từng khoản), Luật Quản lý thuế (thủ tục kiểm tra, giải trình với cơ quan thuế).
+⚠ Thầy hướng dẫn yêu cầu "tập trung một mục tiêu": nên nói rõ loại nào là chính và loại nào là phụ.
+⚠ Báo lại thầy Thức: theo Thông tư 89/2026, 03-1A và 03-1C không còn (kết quả kinh doanh lấy từ báo cáo tài chính). Phạm vi kỳ 2026 đề xuất: 03/TNDN + phụ lục 03-2 (chuyển lỗ), 03-5 (chuyển nhượng BĐS), 03-8 (phân bổ cho đơn vị phụ thuộc, địa điểm kinh doanh), kèm báo cáo tài chính năm. Nhóm chốt 11/11: không làm phụ lục ưu đãi 03-3A.
+✔ ĐÃ CHỐT (Họp 11/11 với thầy Thức (chat + ghi âm)): làm quyết toán KỲ TÍNH THUẾ 2026 (hạn nộp tháng 3/2027), mẫu tờ khai và phụ lục theo Thông tư 89/2026. Thầy: mẫu và phụ lục theo thông tư quản lý thuế, kiến thức tính thuế theo thông tư thuế TNDN. Kỳ 2025 (Thông tư 80/2021) ngoài phạm vi. Phụ lục: 03-2, 03-5, 03-8; không làm 03-3A (nhóm chốt): các ưu đãi DN vừa và nhỏ hay gặp (thuế suất 15%, 17%; miễn thuế doanh thu ≤ 1 tỷ; giảm 30% Nghị quyết 43) khai trực tiếp trên tờ khai; DN có ưu đãi dự án đầu tư thì AI báo ngoài phạm vi, gợi ý gửi chuyên gia.
+
+Còn phải làm:
+- Đã tra số hiệu trên vbpl.vn ngày 11/11/2026 (danh sách ở mục 2). Còn mở Phụ lục I Thông tư 89/2026 để xác nhận mã mẫu, đọc nội dung Nghị quyết 198/2025.
+- Điền danh sách vào [seeds] so_hieu, thêm "Nghị quyết" vào doc_types.
+- Crawl lại, đếm số văn bản thu được làm bằng chứng "đủ".
+- Nhờ thầy Thức xác nhận danh sách văn bản cùng lúc với danh sách phụ lục.
+
+Họp 11/11 với thầy Thức (chat + ghi âm): chốt kỳ 2026 theo Thông tư 89. Danh sách văn bản đã tải vào Drive (thư mục "Van ban phap luat TNDN", thêm 05 công văn giải trình, 06 hóa đơn chứng từ); gửi file danh mục cho thầy xem.` }]
+      ]},
+      { name: "Xác thực và độ chính xác", qs: [
+        ["Sau khi crawl, làm sao chắc văn bản đúng với bản gốc? Kiểm tra số hiệu, ngày ban hành và cơ quan ban hành bằng cách nào?", 1, { status: "doing", seed: 5, forceStatus: true, note:
+`Họp 08/11 (V1 07:26): đã có màn hình để admin so văn bản cào về với bản gốc trên trang nguồn.
+
+[Claude đề xuất 10/11, nhóm chưa xác nhận]
+Câu trả lời ở buổi họp mới đúng một phần, nên chuyển câu này về Đang làm.
+
+Hệ thống có 4 lớp kiểm tra (theo code):
+1. Metadata lấy từ dữ liệu có cấu trúc của trang nguồn, không đoán từ nội dung văn bản: số hiệu, cơ quan ban hành, ngày ban hành, ngày hiệu lực lấy từ các trường docNum, agencyName, issueDate, effFrom của CSDL vbpl (crawler/src/detail_scraper.py).
+2. Tự sửa lỗi mã hóa: số hiệu bị mất chữ "Đ" thì sửa lại hoặc lấy từ tiêu đề trên trang; số hiệu sai định dạng thì đánh dấu "không số" (crawler/src/normalize.py).
+3. Lưu link trang gốc và mã băm toàn văn: mỗi văn bản giữ sourceUrl để bấm mở đối chiếu; SHA-256 toàn văn để phát hiện trùng; nội dung thay đổi thì tạo phiên bản mới, không ghi đè.
+4. Người duyệt đối chiếu theo checklist 5 mục, đủ mới được duyệt (FE knowledgeAdmin-review-approval/constants.ts): cấu trúc điều, khoản, điểm; nội dung không mất chữ; số liệu quan trọng (thuế suất, thời hạn); metadata (số hiệu, ngày ban hành, hiệu lực); quan hệ sửa đổi.
+
+Lỗ hổng (hội đồng có thể hỏi tiếp):
+- Lỗi mã hóa vẫn còn trong dữ liệu thật. Bước tự sửa mới xử lý số hiệu; tiêu đề, cơ quan ban hành, tình trạng hiệu lực vẫn hỏng. Ví dụ trong kết quả crawl (crawler/data/.../metadata.json, file dữ liệu chứ không phải code):
+  + 11/2017/QĐ-KTNN (vbpl.vn/van-ban/chi-tiet/126996): số hiệu đúng (đã tự sửa chữ Đ), tiêu đề vẫn "Quyết định số 11/2017/Q�-KTNN…" (data/2026-10-14/run-182700/metadata.json dòng 102–103).
+  + 59/2019/NĐ-CP (…/136305): cơ quan ban hành "Ch�nh phủ", tình trạng "Hết hiệu lực to�n bộ" (data/2026-10-21/run-233812/metadata.json dòng 877–884). Không ảnh hưởng việc AI loại văn bản hết hiệu lực: bộ lọc dùng ngày hết hiệu lực (21/10/2024, vẫn đúng), không so chuỗi tình trạng (xem 2.6). Chuỗi hỏng chỉ làm màn duyệt hiển thị sai.
+  + 64/2025/TT-BTC (…/179085): loại "Không xác định", cơ quan "Bộ T�i ch�nh", tiêu đề "Th�ng tư…" (cùng file, dòng 1386–1389). Riêng lỗi loại văn bản có thể đã hết: code ngày 22/10 suy loại từ số hiệu, file này crawl đêm 21/10.
+  Vì sao chỉ số hiệu được sửa: ký tự "�" là byte đã mất, không giải mã ngược được, phải lấy lại từ nguồn khác. Số hiệu có nguồn thứ hai (tiêu đề đọc từ trang web) và có định dạng số/năm/LOẠI-CƠQUAN để kiểm tra; là khóa nên hỏng là lộ lỗi ngay. Cơ quan, tình trạng lấy thẳng từ payload (detail_scraper.py dòng 298–315), không qua bước sửa, hỏng cũng không báo lỗi.
+  Cách sửa đề xuất: cơ quan ban hành đọc từ tab "Thuộc tính" hoặc suy từ số hiệu (-CP → Chính phủ, -BTC → Bộ Tài chính); tình trạng hiệu lực so khớp với danh sách giá trị cố định, coi "�" là ký tự bất kỳ; trường nào còn "�" thì đánh dấu "Cần kiểm tra" trên màn duyệt. Người phụ trách crawler: Thịnh (theo lịch sử git).
+  Cách nói khi bị hỏi: "Lỗi bảng mã từ trang nguồn làm mất ký tự. Số hiệu là khóa nên chúng em khôi phục bằng nguồn thứ hai và kiểm tra theo định dạng; các trường khác hiện do người duyệt đối chiếu với link gốc, và đang bổ sung bước tự khôi phục."
+- Văn bản của mof từ năm 2021 là bản PDF scan, phải chạy OCR, dễ đọc sai số (20% thành 2O%). Vì vậy mục "Số liệu quan trọng" trong checklist là quan trọng nhất.
+- Không lưu bản gốc của văn bản crawl (README: "crawled originals are not stored"). Trang nguồn sửa hoặc xóa văn bản thì không còn gì để đối chiếu lại. Nên lưu thêm bản chụp HTML hoặc PDF lúc crawl.
+- Chưa đối chiếu chéo giữa 2 nguồn, và thực tế mof chưa chạy lượt nào: cả 14 văn bản trong 2 lượt crawl đều từ vbpl (DEFAULT_SOURCES = ["vbpl"]). Các địa chỉ khác thấy trong thư mục data (customs.gov.vn, mienkd.vr.org.vn) là link nằm trong nội dung văn bản; phapluat.gov.vn, biznext, google nằm trong file debug raw_html lưu trang vbpl. Đã có hàm khớp số hiệu vbpl và mof (doc_number_key) nhưng chưa dùng để so metadata. Có thể làm: cả 2 nguồn cùng có một văn bản thì so ngày ban hành và cơ quan ban hành, lệch thì cảnh báo người duyệt.
+
+Màn duyệt "đã có" thật đến đâu:
+- FE đã có màn duyệt kèm checklist nhưng đang chạy trên dữ liệu mẫu. FE gọi /api/knowledge/..., BE dùng /api/v1/knowledge/..., trong code còn TODO đối chiếu endpoint.
+- BE trên prod có xem trước, mở file và từ chối. Endpoint duyệt (approve) và index lại (retry-index) đã có trên nhánh feat/ai-service (Vương, sheet API tab 03_Knowledge_RAG dòng 6 và 8) nhưng chưa merge vào prod. Endpoint duyệt đó chỉ chặn văn bản PARSE_FAILED, không nhận và không kiểm tra checklist; checklist chỉ được kiểm tra ở FE.
+
+Cách trả lời khi bị hỏi: nêu 4 lớp kiểm tra, nhận lỗi mã hóa và lỗi OCR là rủi ro có thật, người duyệt là chốt chặn cuối cùng.` }],
+        ["Văn bản hết hiệu lực, bị sửa đổi hoặc bị thay thế được xử lý thế nào (code đã có legal_amendment: AMENDS/REPLACES)? AI có tránh trích dẫn văn bản đã hết hiệu lực không?", 0, { status: "doing", seed: 3, note:
+`Họp 08/11 (V1 08:15): nhóm cho là đã giải quyết khi làm lại flow, "không cần trả lời nữa" (?).
+⚠ Nên nêu cụ thể cơ chế quan hệ sửa đổi / thay thế (legal_amendment) và cách AI bỏ văn bản hết hiệu lực.
+
+[Claude đề xuất 10/11, nhóm chưa xác nhận]
+Câu trả lời ở buổi họp chưa đủ; code đã có cơ chế khá tốt mà nhóm chưa nói ra.
+
+Cơ chế đang có (theo code):
+1. Lọc theo thời gian (Temporal RAG), BE/ai-service/app/modules/rag/retriever.py:
+- Khi người dùng hỏi, AI xác định kỳ tính thuế trước; không rõ kỳ nào thì hỏi lại (BE/ai-service/app/api/routes.py).
+- Chỉ lấy đoạn văn bản thỏa cả 3 điều kiện: đã duyệt (APPROVED); ngày bắt đầu hiệu lực ≤ cuối kỳ; ngày hết hiệu lực ≥ đầu kỳ hoặc chưa hết hiệu lực.
+- Ví dụ: hỏi kỳ 2026 thì Nghị định 59/2019 (hết hiệu lực 21/10/2024) bị loại. Hỏi kỳ 2023 thì vẫn lấy được, và đó là đúng vì quyết toán năm cũ dùng luật của năm đó.
+2. Lưu quan hệ sửa đổi, thay thế: crawler đọc tab "Lược đồ" của vbpl, "sửa đổi một phần" → AMENDS, "thay thế toàn bộ" → REPLACES, lưu bảng legal_amendment. Admin xem cây quan hệ qua /sources/{id}/tree.
+3. Văn bản hợp nhất (VBHN): crawler có lấy loại này, là bản Bộ Tài chính gộp sẵn văn bản gốc với các lần sửa đổi.
+
+Lỗ hổng (hội đồng có thể hỏi tiếp):
+- Văn bản hết hiệu lực một phần vẫn bị trích cả: ngày hiệu lực của từng đoạn chép nguyên từ cả văn bản (crawler/src/exporter.py build_chunks). Ví dụ 71/2025/TT-BTC, 73/2024/TT-BTC "Hết hiệu lực một phần" nhưng không có ngày hết hiệu lực → mọi điều, kể cả điều đã bị sửa, đều qua bộ lọc. Cột affected_articles có trong DB nhưng không code nào ghi vào.
+- Quan hệ sửa đổi chỉ được lưu, AI không dùng: bộ lọc không xem legal_amendment, có thể lấy cùng lúc điều cũ và điều mới mà không biết điều nào thay điều nào.
+- Văn bản hợp nhất có thể bị loại hết: vbpl không cho ngày hiệu lực của VBHN (25/VBHN-BTC có ngày hiệu lực trống), mà bộ lọc bắt buộc có effective_from. Crawler đã tính vbhn_effective_from nhưng chỉ ghi vào metadata, không đưa vào từng đoạn.
+- Ngày hết hiệu lực không tự cập nhật: văn bản đã vào kho, sau bị thay thế, thì effective_to chỉ đổi khi crawl lại, và Qdrant không được cập nhật vì chưa có bước index lại.
+- Cả chuỗi chưa chạy trên prod: duyệt → chia đoạn → đưa vào Qdrant đã có trên nhánh feat/ai-service (Vương: approve gọi luôn pipeline index, lỗi thì INDEX_FAILED và retry-index tối đa 3 lần) nhưng chưa merge vào prod. Muốn demo bộ lọc với dữ liệu thật thì phải merge nhánh này trước buổi bảo vệ.
+
+Cách trả lời đề xuất: "Mỗi đoạn luật trong kho mang ngày hiệu lực. Khi người dùng hỏi, hệ thống xác định kỳ tính thuế rồi chỉ lấy những đoạn có hiệu lực trong kỳ đó, nên quyết toán năm 2026 sẽ không trích văn bản đã hết hiệu lực năm 2024. Quan hệ sửa đổi và thay thế lấy từ CSDL quốc gia và được lưu lại. Với văn bản hết hiệu lực một phần, chúng em ưu tiên dùng văn bản hợp nhất do Bộ Tài chính công bố."
+⚠ Câu cuối chỉ nói được khi đã sửa lỗ hổng VBHN: đưa vbhn_effective_from vào từng đoạn trong build_chunks (phần crawler, Thịnh phụ trách).` }],
+        ["Ai duyệt văn bản (KNOWLEDGE_ADMIN)? Admin dựa vào đâu để duyệt hay từ chối? Tiêu chí duyệt là gì?", 0, { status: "doing", seed: 4, forceStatus: true, note:
+`Họp 08/11 (V1 08:40):
+- Duyệt khi đúng nguồn, đúng phiên bản sửa đổi.
+- Từ chối khi sai định dạng (yêu cầu chạy lại bước chuẩn hóa) hoặc không kiểm tra được nguồn.
+
+[Claude đề xuất 10/11, nhóm chưa xác nhận]
+Câu trả lời ở buổi họp đúng hướng nhưng thiếu tiêu chí quan trọng nhất là "đúng phạm vi"; chuyển về Đang làm.
+
+Ai duyệt (theo code):
+- Chỉ vai trò KNOWLEDGE_ADMIN (quyền KnowledgeManage, BE/auth/Application/Common/PermissionMatrix.cs).
+- API từ chối có [RequireSessionCheck]: phiên đã bị thu hồi thì không thao tác được. Hai admin bấm cùng lúc thì chỉ một người thắng (chỉ cập nhật khi còn PENDING).
+- Lưu ai quyết định, lúc nào, lý do gì (ApprovedBy, ApprovedAt, RejectionReason), kể cả khi từ chối.
+
+Hệ thống gợi ý sẵn cho người duyệt (BE/ingestion/API.md): mỗi văn bản crawl có ingest.suggested_status (APPROVED/PENDING) và ingest.pending_reasons:
+- NO_TEXT: không có toàn văn, cần upload file.
+- PARSE_FAILED: không tách được điều, khoản.
+- OLD_FORMAT: văn bản kiểu cũ chia theo mục I, II…
+- OCR_TEXT: chữ đọc từ ảnh, dễ sai số → kiểm kỹ mục "Số liệu quan trọng".
+
+Bộ tiêu chí đề xuất:
+- Duyệt: thuộc phạm vi, nguồn nhà nước kiểm chứng được, tick đủ 5 mục đối chiếu (cấu trúc, nội dung, số liệu, metadata, quan hệ). Ví dụ Thông tư 20/2026/TT-BTC.
+- Từ chối, ngoài phạm vi: không liên quan quyết toán thuế TNDN hay giải trình chi phí. Ví dụ thật crawler lấy về: 47/2024/TT-BGTVT (kiểm định xe), 177/QĐ-NHPT (séc).
+- Từ chối, không kiểm chứng được nguồn: file upload không có trên trang nhà nước hoặc lấy từ trang thu phí (xem 2.3).
+- Từ chối, trùng: đã có văn bản cùng nội dung (hệ thống tự báo theo mã băm).
+- Chạy lại bóc tách: đúng văn bản nhưng tách sai, lỗi ký tự, OCR sai số (cờ PARSE_FAILED, OCR_TEXT). Ví dụ tiêu đề "Th�ng tư 64/2025…".
+- Gỡ khỏi kho: đã duyệt nhưng sau đó bị thay thế hoặc phát hiện sai.
+Tiêu chí "đúng phạm vi" phải đứng đầu: phần lớn văn bản crawl về nằm ngoài phạm vi (xem 2.4); chỉ kiểm "đúng nguồn, đúng phiên bản" thì văn bản kiểm định xe vẫn được duyệt vì nó đúng nguồn vbpl.
+
+Hiện trạng code:
+- Prod có từ chối. Duyệt (approve) và index lại (retry-index) có trên nhánh feat/ai-service (Vương, sheet API tab 03_Knowledge_RAG dòng 6 và 8, ghi "Đã xong") nhưng chưa merge vào prod. Endpoint duyệt đó chặn văn bản PENDING khác và văn bản PARSE_FAILED, rồi chạy luôn chia đoạn, tạo vector, đưa vào Qdrant.
+- Chạy lại bóc tách và gỡ văn bản mới có ở FE (reprocessDocument, retireDocument), FE đang chạy dữ liệu mẫu.
+- Checklist chỉ kiểm tra ở FE: FE gửi danh sách mục đã tick nhưng endpoint duyệt không nhận, admin có thể duyệt mà không tick mục nào.
+- Endpoint duyệt trên nhánh thiếu [RequireSessionCheck], khác API từ chối.
+- Lý do từ chối là chữ tự do (tối đa 1000 ký tự), không chọn theo nhóm → không thống kê được. Nên có danh sách lý do cố định + ô ghi chú.
+- Người upload có thể tự duyệt file mình upload (không tách người upload và người duyệt).
+- docs/02-backend/api-checklist.md nhóm 04, 05 vẫn để [ ] dù code đã có; sheet API mới là nơi cập nhật.
+
+Căn cứ trong tài liệu nghiệp vụ (Drive: Bussiness), nên dẫn mã BR-K khi trả lời:
+- BR-K06: duyệt phải đối chiếu với bản gốc, tối thiểu cấu trúc, nội dung, metadata, thời gian hiệu lực, quan hệ văn bản → khớp checklist 5 mục.
+- BR-K07: chỉ Knowledge Admin được ra quyết định duyệt.
+- BR-K14: mọi quyết định lưu người, thời điểm, lý do; bắt buộc có lý do với REPROCESS_REQUIRED và REJECTED.
+- BR-K08: REPROCESS_REQUIRED (= "chạy lại bóc tách") phải lưu lý do, xử lý lại xong thì quay về PENDING_REVIEW để duyệt lại.
+- BR-K09: REJECTED không vào RAG nhưng giữ bản ghi và lý do.
+- BR-K04: PARSE_FAILED không được chuyển sang chờ duyệt → khớp việc endpoint duyệt trên nhánh của Vương chặn PARSE_FAILED.
+- BR-K11: chỉ dữ liệu INDEXED mới được RAG truy xuất (bộ lọc ai-service đang lọc status = APPROVED; vẫn đúng vì chỉ văn bản đã index mới có trong Qdrant, nhưng tên trạng thái lệch tài liệu).
+- 03-policies-decision-tables.md: index lỗi thì retry tối đa 3 lần, cách 5, 15, 45 phút. Code trên nhánh của Vương có giới hạn 3 lần nhưng không có khoảng chờ tăng dần.
+- 01-business-flows.md Bước 6 có 3 kết quả APPROVED, REPROCESS_REQUIRED, REJECTED. "Gỡ khỏi kho" tương ứng RETIRED (04-state-models.md, đang để "đề xuất").
+⚠ Tài liệu chưa có tiêu chí "đúng phạm vi thuế TNDN"; nên bổ sung vào Knowledge Acceptance Rules.
+
+Cách trả lời đề xuất: "Chỉ Knowledge Admin được duyệt, mọi quyết định lưu người, thời điểm, lý do. Hệ thống tự gắn cờ lý do cần xem lại (lỗi bóc tách, chữ OCR, thiếu toàn văn). Admin kiểm tra theo thứ tự: văn bản có thuộc phạm vi thuế TNDN không, nguồn có kiểm chứng được trên trang nhà nước không, rồi đối chiếu 5 mục với bản gốc. Kết quả là duyệt, từ chối kèm lý do, yêu cầu bóc tách lại, hoặc gỡ văn bản đã bị thay thế."` }],
+        ["Kho dữ liệu được cập nhật định kỳ thế nào khi có văn bản mới?", 0, { status: "doing", seed: 2, note:
+`Họp 08/11 (V1 09:21): chỉ nói "đã có trên slide" (?).
+⚠ Chưa trả lời cụ thể tần suất và cách cập nhật.
+
+Tài liệu nghiệp vụ (Drive: Capstone Project - FA26 - FPT/Bussiness) đã chốt:
+- 01-business-flows.md, Flow 2 Bước 1: crawl theo lịch (Scheduled Crawl) 01 tháng/lần từ vbpl.vn; ngoài lịch, Knowledge Admin bấm Crawl Now khi cần cập nhật sớm.
+- 03-policies-decision-tables.md: knowledge.crawl_interval = 1 tháng ("Đã chốt"), knowledge.manual_crawl_enabled = Có.
+- 02-business-rules.md BR-K02: crawl theo lịch và Crawl Now đi chung một quy trình duyệt. BR-K03: trùng hoàn toàn thì không tạo bản mới, nội dung đổi thì tạo phiên bản mới và giữ lịch sử.
+- 04-state-models.md: trạng thái RETIRED (đề xuất), Knowledge Admin ngừng sử dụng văn bản, RAG không truy xuất nữa.
+
+[Claude đề xuất 10/11, nhóm chưa xác nhận]
+So tài liệu với code:
+- Crawl theo lịch 1 tháng/lần: CHƯA CÓ. Đã tìm mọi nhánh trên remote, không có SCHEDULED, timer hay cron; sheet API tab 08_Background_Jobs cũng không có; BE/ingestion/API.md mục "Chưa có" ghi "crawl theo lịch (SCHEDULED)". FE có thẻ "Lịch thu thập định kỳ" (knowledgeAdmin-sources/ScheduleCard.tsx) gọi PUT .../schedule nhưng BE không có endpoint, chỉ chạy dữ liệu mẫu.
+- Crawl Now: CÓ (POST /crawl-jobs, trigger MANUAL).
+- Văn bản mới → PENDING; nội dung đổi → phiên bản mới, không ghi đè: CÓ, đúng BR-K03.
+- Văn bản mới sửa đổi, thay thế văn bản cũ: crawler đi theo quan hệ thêm một bước và nối legal_amendment. Văn bản cũ chưa có trong kho thì quan hệ bị mất.
+- RETIRED: chỉ có ở FE (retireDocument), BE chưa có.
+
+Lỗ hổng nghiêm trọng (tài liệu cũng không nhắc): văn bản cũ hết hiệu lực mà kho không biết. Khi bị thay thế, chữ trong văn bản không đổi, chỉ trạng thái trên vbpl đổi. Crawl lại thì mã băm trùng nên hệ thống bỏ qua, chỉ lưu thêm quan hệ (BE/ingestion/Features/Documents/ImportCrawledDocument.cs) → EffectiveTo trong DB không được cập nhật → bộ lọc thời gian của AI (2.6) vẫn lấy văn bản đó. Crawl lại bao nhiêu lần cũng không sửa được.
+
+Cần làm:
+- Thêm trigger SCHEDULED và một BackgroundService trong ingestion đọc lịch từ appsettings (không phải đổi DB), đến giờ thì gọi lại logic TriggerCrawl, đang có lượt chạy thì bỏ qua. Chạy ban đêm để ít tạo tải cho trang nhà nước.
+- Mã băm trùng nhưng hiệu lực khác thì cập nhật EffectiveTo, và cập nhật payload trong Qdrant.
+- Sau mỗi lượt, báo Knowledge Admin: số văn bản mới chờ duyệt, số văn bản hết hiệu lực.
+
+Cách trả lời đề xuất: "Theo chính sách, hệ thống crawl tự động 1 tháng/lần từ vbpl.vn, admin có thể bấm Crawl Now khi biết có văn bản mới quan trọng. Hệ thống nhận biết văn bản mới và phiên bản mới qua số hiệu và mã băm nội dung, đưa vào hàng chờ duyệt, không ghi đè bản cũ."
+⚠ Phải nói rõ: hiện mới có Crawl Now, lịch tự động là phần đang làm. Nếu hội đồng bảo mở cho xem thì không chạy được.` }]
+      ]},
+      { name: "Input → xử lý → output", qs: [
+        ["Input là danh sách nguồn và số lượng văn bản. Xử lý gồm crawl, chuẩn hóa, duyệt, chunk, embedding. Output là kho vector có metadata trích dẫn. Phần duyệt → chunk → index chưa làm: kế hoạch thế nào?", 0, { status: "doing", seed: 3, note:
+`Họp 08/11 (V1 09:31–11:29): người làm nói đã hiểu, đang làm. Bước chunk đang bị mất nội dung, chưa kiểm tra lại.
+⚠ Chưa có kế hoạch cụ thể.
+
+[Claude đề xuất 10/11, nhóm chưa xác nhận]
+Pipeline thật và tình trạng từng bước:
+1. Input: từ khóa + danh sách văn bản cố định (seeds), nguồn vbpl/mof → ⚠ seeds trống, mof chưa chạy (xem 2.4, 2.1).
+2. Crawl → ✅ vbpl chạy được.
+3. Chuẩn hóa, tách Chương/Điều/Khoản/Điểm, chia đoạn (chunk) → ✅ crawler làm xong, mỗi đoạn có tiêu đề ngữ cảnh "Thông tư … — Chương … — Điều … — Khoản …" (ví dụ 71/2025/TT-BTC ra 10 đoạn).
+4. Gửi sang BE → ❌ BE bỏ phần chunk.
+5. Duyệt → ⚠ từ chối có trên prod, duyệt nằm trên nhánh feat/ai-service (Vương), chưa merge.
+6. Chunk lại ở ai-service → ❌ ra 0 đoạn.
+7. Tạo vector, đưa vào Qdrant → ❌ không bao giờ chạy tới.
+8. Output: kho vector kèm metadata để trích dẫn → chưa có dữ liệu.
+
+Nguyên nhân "mất nội dung" (3 lỗi, từng phần chạy riêng vẫn ổn, chạy nối cả chuỗi mới hỏng):
+- BE bỏ chunk của crawler: InternalIngestController.cs ghi "chunks are ignored", chỉ lưu content_json. Bước duyệt trên nhánh của Vương lại tìm content_json["chunks"] nên không thấy. (Thịnh)
+- Hai bên khác định dạng: ai-service chunker.py đọc articles → clauses → points (title, content); crawler xuất chapters → articles → units (label, text). Không có articles ở cấp ngoài cùng nên ra 0 đoạn. (Thịnh ↔ Vương)
+- Route /kb/chunk-and-embed (BE/ai-service/app/api/routes.py, khoảng dòng 57–74) thụt lề sai: else gắn vào vòng for; chia đoạn, đưa vào Qdrant và return nằm ngay sau raise nên không chạy. Văn bản nào cũng thành INDEX_FAILED. Lỗi có cả trên prod (commit 060834d, 22/10). (Vương)
+
+Kế hoạch (sửa ít nhất):
+1. Dùng một bộ chia đoạn duy nhất là của crawler: BE giữ chunks khi nhận, đặt vào content_json.chunks (jsonb, không đổi DB). Văn bản upload thì worker cũng gọi build_chunks. (Thịnh)
+2. Sửa thụt lề trong routes.py. (Vương)
+3. Merge nhánh feat/ai-service, chỉnh theo quy ước repo. (Vương)
+4. Chạy thử trọn một văn bản: crawl 20/2026/TT-BTC → duyệt → Qdrant có đủ số đoạn như file export, effective_from đúng.
+Đã soạn tin nhắn nhờ Thịnh và Vương kiểm tra (10/11).
+
+Cách trả lời đề xuất: "Input là danh sách từ khóa và văn bản cốt lõi. Crawler lấy văn bản từ vbpl, tách theo Chương, Điều, Khoản, Điểm và chia thành các đoạn, mỗi đoạn mang số hiệu, vị trí điều khoản và ngày hiệu lực. Admin duyệt xong thì đoạn được chuyển thành vector và đưa vào Qdrant. Output là kho vector mà mỗi kết quả tìm được đều trích dẫn được 'Điều X Khoản Y Thông tư Z'."
+⚠ Nói thêm: phần index đang sửa lỗi ghép nối giữa crawler và ai-service.` }],
+        ["Mỗi chunk lưu metadata gì (số hiệu, điều, khoản, hiệu lực) để AI trích dẫn được chính xác?", 0, { status: "doing", seed: 3, note:
+`Họp 08/11 (V1 09:31–11:29): đang làm cùng phần chunk, chưa nêu danh sách metadata. ⚠
+
+[Claude đề xuất 10/11, nhóm chưa xác nhận]
+Mỗi chunk đang lưu (BE/ai-service/app/modules/ingestion/indexer.py, BE/ingestion/Entities/KbChunk.cs), ở 2 nơi: Qdrant (để AI tìm) và bảng kb_chunk (để truy vết):
+- Số hiệu văn bản (document_number): trích "Thông tư 20/2026/TT-BTC".
+- Điều, Khoản, Điểm (article, clause, point): trích "Điều 9 Khoản 2".
+- Ngày bắt đầu, hết hiệu lực (effective_from, effective_to): lọc theo kỳ tính thuế (2.6).
+- Mã nguồn, mã phiên bản (legal_source_id, knowledge_document_id): tra ngược về văn bản gốc.
+- Nội dung kèm tiêu đề ngữ cảnh, ví dụ "Thông tư 71/2025/TT-BTC — Chương II — Điều 5 — Khoản 1" (nếu dùng chunk của crawler, xem 2.9).
+- Trạng thái (status): chỉ lấy văn bản đã duyệt.
+
+Còn thiếu:
+- Tên văn bản: prompt bắt AI ghi "Tên văn bản, Số hiệu, Điều, Khoản" (rag/prompts.py) nhưng chunk không có tên, AI chỉ đoán từ tiêu đề ngữ cảnh.
+- Link nguồn gốc (vbpl.vn): người dùng, chuyên gia không bấm đối chiếu được.
+- Ngày hiệu lực không gửi cho AI: AI chỉ nhận nội dung, không nói được "áp dụng từ 01/10/2025".
+- Trích dẫn thừa: code liệt kê mọi đoạn tìm được (4 đoạn) làm trích dẫn, kể cả đoạn AI không dùng (rag/generator.py); có thể khác phần "Căn cứ pháp lý" AI tự viết.
+- Văn bản hết hiệu lực một phần: ngày hiệu lực từng đoạn chép từ cả văn bản (xem 2.6).
+
+Đề xuất (sửa nhỏ, không đổi DB):
+- Thêm vào payload Qdrant: tên văn bản, loại văn bản, link nguồn (BE đã có trong legal_source).
+- Khi gửi ngữ cảnh cho AI, ghi kèm số hiệu, Điều/Khoản và ngày hiệu lực của từng đoạn.
+- Chỉ trả trích dẫn cho đoạn AI thật sự dùng, hoặc kèm điểm tương đồng để FE sắp xếp.
+
+Cách trả lời đề xuất: "Mỗi đoạn lưu số hiệu văn bản, vị trí Điều, Khoản, Điểm, ngày bắt đầu và hết hiệu lực, cùng mã văn bản gốc để truy vết; nội dung đoạn có sẵn tiêu đề ngữ cảnh. Vì vậy câu trả lời luôn trích được dạng 'Khoản 2 Điều 9 Thông tư 20/2026/TT-BTC', và hệ thống chỉ dùng đoạn còn hiệu lực trong kỳ tính thuế người dùng hỏi."
+⚠ Danh sách metadata đã đủ để trả lời, nhưng cả chuỗi chưa chạy được (2.9).` }]
+      ]}
+    ]
+  },
+  {
+    id: "flow3", title: "Flow 3: Ghép input của user với template (RAG)",
+    sub: "Nhóm trình bày: input của user → vector → tìm template phù hợp nhất trong kho RAG, dùng model local (Ollama?). Thầy: còn chung chung, Review 1 đã hỏi, tập trung một mục tiêu. (2.m4a 06:59–10:27)",
+    groups: [
+      { name: "Mục tiêu và phạm vi", qs: [
+        ["Template tìm được giúp DN giải quyết việc gì cụ thể? Phát biểu được trong một câu không? (Review 1 đã hỏi, lần này hỏi lại)", 1, { status: "doing", seed: 2, note:
+`Họp 08/11 (V1 11:29–13:08): DN cần mẫu nào thì chọn mẫu đó, ví dụ phụ lục kết quả kinh doanh, chuyển lỗ, chuyển nhượng BĐS. Hệ thống không tự suy ra template từ lịch sử chat.
+⚠ Vẫn chưa gói được thành một câu.
+
+[Claude đề xuất 10/11, nhóm chưa xác nhận]
+Câu trả lời (một câu): "Template giúp kế toán DN vừa và nhỏ lập đúng hồ sơ thuế TNDN phải nộp cho cơ quan thuế: tờ khai quyết toán năm 03/TNDN kèm phụ lục, và công văn giải trình khi bị loại chi phí. Số liệu được điền sẵn từ dữ liệu của DN và có căn cứ pháp lý, chuyên gia rà soát xong là nộp được."
+
+Nếu bị hỏi kỹ, tách theo từng template:
+- Tờ khai 03/TNDN + phụ lục: tính đúng số thuế TNDN cả năm, nộp đúng hạn (31/03 năm sau). Ví dụ: DN lỗ năm trước thì phụ lục 03-2 trừ lỗ vào thu nhập năm nay, giảm thuế phải nộp; DN bán nhà đất thì phụ lục 03-5 tính riêng phần thu nhập đó.
+- Công văn giải trình chi phí không được trừ (template CV_GIAI_TRINH_CP_KDT đã có): giải thích với cơ quan thuế các khoản chi bị loại khi kiểm tra, tránh bị truy thu và phạt. Ví dụ: khoản chi trên 20 triệu thanh toán tiền mặt bị loại → công văn nêu lý do, chứng từ, căn cứ pháp lý và cách điều chỉnh lại tờ khai.
+
+Nên nói rõ khi trả lời: câu hỏi dùng chữ "template tìm được", nhưng người dùng tự chọn template trong danh sách (tài liệu nghiệp vụ Flow 4 Bước 1, buổi họp 08/11, code chỉ có GET /templates, không có tìm template bằng vector). Chỉ có 2 loại văn bản và vài phụ lục nên không cần AI tìm. Nếu thầy hỏi tiếp "vậy RAG dùng vào đâu?": "RAG dùng để lấy căn cứ pháp lý khi AI điền nội dung vào template, không dùng để chọn template."` }],
+        ["Nhóm chọn đúng một loại vấn đề thuế TNDN nào để làm trước? Loại nào để ngoài phạm vi?", 1, { status: "doing", seed: 4, note:
+`Họp 08/11 (V1 13:17–14:32): chỉ làm thuế TNDN, các loại thuế khác ngoài phạm vi.
+⚠ Câu hỏi muốn biết làm loại vấn đề nào trong TNDN trước, nhóm chưa trả lời ý này.
+
+[Claude đề xuất 10/11, nhóm chưa xác nhận]
+Câu trả lời: chọn một vấn đề là QUYẾT TOÁN THUẾ TNDN NĂM.
+Tài liệu nghiệp vụ đã chốt (Bussiness/00-overview.md): "MVP hỗ trợ hai loại tài liệu: Tờ khai quyết toán Thuế TNDN năm – Mẫu 03/TNDN và Công văn giải trình chi phí không được trừ". Hai tài liệu thuộc cùng một vấn đề, chỉ khác thời điểm dùng:
+Cuối năm lập tờ khai 03/TNDN + phụ lục → nộp → cơ quan thuế kiểm tra, loại chi phí → công văn giải trình + điều chỉnh tờ khai.
+
+Ngoài phạm vi:
+- Thuế khác (GTGT, TNCN, nhà thầu nước ngoài): AI tự trả OUT_OF_SCOPE và hoàn Credit (BE/ai-service/app/modules/rag/prompts.py).
+- Tạm nộp thuế TNDN theo quý (chỉ nộp tiền, không có tờ khai).
+- Tờ khai 01/TNDN (bán BĐS từng lần), 02/TNDN (chuyển nhượng vốn): ít gặp ở DN vừa và nhỏ.
+- Phụ lục ngoài 3 phụ lục đã chọn theo Thông tư 89/2026 (03-2, 03-5, 03-8); 03-1A và 03-1C không còn từ kỳ 2026.
+- Kỳ tính thuế trước 2025 (luật cũ 14/2008), chỉ lưu văn bản để tra cứu.
+- Tư vấn chuyên môn rộng hơn: tài liệu ghi "có thể làm sau; không tạo flow riêng trong MVP".
+
+⚠ Chưa chốt: tài liệu nào làm và demo trước. Hỏi nhóm hoặc thầy Thức.
+- Công văn giải trình trước: template CV_GIAI_TRINH_CP_KDT đã có đủ trường, prompt soạn nháp viết cho loại này, demo được ngay khi pipeline chạy. Tờ khai 03/TNDN làm sau, kèm 3 phụ lục 03-2, 03-5, 03-8.
+- Tờ khai 03/TNDN trước: việc DN nào cũng làm hằng năm, thầy Thức đã chọn phụ lục; nhưng FE ghi "bộ trường nhập liệu đang chờ nhóm xác nhận", phải làm template từ đầu.
+Claude nghiêng về công văn giải trình trước vì đã có code.
+
+Họp 11/11 với thầy Thức (chat + ghi âm): phạm vi là quyết toán kỳ 2026; kỳ 2025 trở về trước nằm ngoài phạm vi.` }],
+        ["Người dùng cụ thể là ai (kế toán DN vừa và nhỏ, chủ DN) và họ đang gặp khó gì khi không có Flow 3?", 0, { status: "doing", seed: 3, note:
+`Họp 08/11 (V1 14:37): DN vừa và nhỏ, cụ thể là kế toán viên (và kiểm toán viên (?)).
+⚠ Chưa nói họ đang gặp khó gì.
+
+[Claude đề xuất 10/11, nhóm chưa xác nhận]
+Người dùng:
+- Chính: kế toán viên hoặc kế toán trưởng của DN vừa và nhỏ (có thể lấy mốc doanh thu năm ≤ 50 tỷ, nhóm được thuế suất ưu đãi 15% và 17% theo Luật 67/2025). DN loại này thường chỉ có 1–2 kế toán kiêm nhiều việc.
+- Bỏ "kiểm toán viên": kiểm toán viên, chuyên gia thuế là phía Expert (người rà soát), không phải người dùng.
+
+Khó khăn khi chưa có hệ thống → hiện xử lý thế nào → hệ thống giúp gì:
+- Luật thay đổi (Luật 67/2025 áp dụng từ kỳ 2025, văn bản sửa đổi chồng lên nhau), không chắc điều nào áp dụng cho kỳ mình quyết toán → tra trang thu phí, hỏi nhóm kế toán trên mạng → trả lời có trích dẫn điều khoản còn hiệu lực theo đúng kỳ tính thuế (2.6).
+- Không biết phải nộp phụ lục nào (khoảng 24 phụ lục, nộp thiếu hoặc sai bị phạt khai sai) → tự đọc hướng dẫn, làm theo năm trước → template 03/TNDN chỉ gồm 3 phụ lục phổ biến (03-2, 03-5, 03-8), kèm hướng dẫn khi nào cần dùng.
+- Bị loại chi phí khi kiểm tra, phải tự viết công văn giải trình và tự tìm căn cứ → tự viết hoặc thuê tư vấn → template công văn giải trình, AI điền căn cứ pháp lý.
+- Thuê dịch vụ thuế đắt, hạn 31/03 dồn việc → thuê trọn gói hoặc làm gấp → AI làm bản nháp trước, chỉ trả phí chuyên gia rà soát.
+
+Câu trả lời ngắn: "Người dùng là kế toán của DN vừa và nhỏ, thường một người làm nhiều việc. Khó khăn của họ là luật thuế TNDN vừa thay đổi từ kỳ 2025, không biết phải nộp những phụ lục nào, khi bị loại chi phí thì phải tự viết công văn giải trình, còn thuê dịch vụ thì tốn kém."
+
+⚠ Cần bằng chứng: các khó khăn trên là giả định hợp lý, chưa có số liệu. Nếu hội đồng hỏi "lấy đâu ra?" thì cần một trong hai:
+- Thầy Thức xác nhận (thầy làm thực tế, đã nói "thực tế dùng vài phụ lục thường xuyên thôi").
+- Phỏng vấn hoặc khảo sát nhanh 5–10 kế toán, ghi lại kết quả.` }]
+      ]},
+      { name: "Input → xử lý → output", qs: [
+        ["Input: user nhập gì để tìm template (mô tả tự do, chọn danh mục, form)? Trường nào bắt buộc?", 1, { status: "doing", seed: 2, note:
+`Họp 08/11 (V1 15:00–16:00): người dùng chọn từ danh sách thả xuống, không gõ mô tả tự do.
+⚠ Chưa nói trường nào bắt buộc.
+
+[Claude đề xuất 10/11, nhóm chưa xác nhận]
+Bước 1, chọn template (không nhập gì):
+- Màn "Chọn mẫu tài liệu" (FE/src/pages/drafts/DraftTemplatePage.tsx) hiện các thẻ template (không phải dropdown): loại tài liệu, phiên bản, số trường, nút "Bắt đầu soạn". Không có ô mô tả, không có tìm kiếm; API chỉ có GET /templates trả các template đã xuất bản.
+- Khớp tài liệu nghiệp vụ Flow 4 Bước 1: người dùng chọn trong Kho mẫu biểu, chỉ Template Version ACTIVE được dùng.
+- Đường thứ hai: từ chat chuyển sang soạn nháp (nhánh của Vương) mang theo kỳ thuế và trích dẫn để điền sẵn. Gợi ý template từ chat trên FE mới là demo. Nói thống nhất: chat chỉ điền sẵn dữ liệu, người dùng vẫn tự chọn template.
+
+Bước 2, trường bắt buộc (nằm trong template, fieldSchema có cờ required). Ví dụ công văn giải trình CV_GIAI_TRINH_CP_KDT (BE/workflow/Api/workflow.http):
+- Bắt buộc: số công văn, ngày, nơi lập, kính gửi (cơ quan thuế); tên DN, mã số thuế (kiểm tra 10 số hoặc 10 số + 3 số chi nhánh), địa chỉ, người đại diện, chức vụ; kỳ tính thuế (năm); bảng các khoản chi bị loại (nội dung, số tiền, lý do chọn từ 5 lý do, nội dung giải trình); tổng số tiền; phương án điều chỉnh tờ khai 03/TNDN. Tổng 13 trường (bảng tính 1).
+- Không bắt buộc: căn cứ (thông báo/biên bản của cơ quan thuế), tài liệu kèm theo; trong bảng: số chứng từ, ngày chứng từ, căn cứ pháp lý.
+- Tờ khai 03/TNDN chưa có bộ trường (FE ghi "đang chờ nhóm xác nhận").
+- Kỳ tính thuế luôn bắt buộc vì AI dựa vào đó để chỉ lấy luật còn hiệu lực (2.6).
+
+Cách trả lời đề xuất: "Người dùng không cần mô tả. Họ chọn trực tiếp trong thư viện mẫu, vì MVP chỉ có 2 loại tài liệu. Sau khi chọn, hệ thống hiện form theo cấu hình của template. Ví dụ công văn giải trình có 13 trường bắt buộc, quan trọng nhất là mã số thuế, kỳ tính thuế và bảng các khoản chi bị loại kèm lý do. Hệ thống kiểm tra đủ và đúng định dạng rồi mới cho xác nhận."` }],
+        ["Xử lý: input được chuyển thành vector bằng model embedding nào? So khớp với gì trong kho (tên, mô tả hay nội dung template)?", 1, { status: "doing", seed: 2, forceStatus: true, note:
+`Họp 08/11 (V1 16:10–18:18): model embedding chạy local qua Ollama (cổng 11434), 2 model (tên trên màn hình, chưa nghe rõ). So khớp với metadata trong kho.
+
+[Claude đề xuất 10/11, nhóm chưa xác nhận]
+Câu trả lời ở buổi họp thiếu tên model và ý "so khớp với metadata" chưa đúng; chuyển về Đang làm.
+
+Model (BE/ai-service/app/core/models.py, qdrant.py, rag/retriever.py), chạy local qua Ollama nên dữ liệu không ra ngoài:
+- Embedding: bge-m3, vector 1024 chiều, đa ngôn ngữ, có tiếng Việt.
+- LLM: qwen2.5:7b, temperature 0.1.
+- Kho vector: Qdrant, collection tax_knowledge_base, cosine, lấy tối đa 4 đoạn, điểm tối thiểu 0.50.
+
+So khớp với nội dung đoạn luật, không phải template. Code có 2 chỗ dùng vector, không chỗ nào để tìm template:
+1. Chat hỏi đáp: câu hỏi → vector → so với nội dung các đoạn luật trong Qdrant. Metadata (đã duyệt, ngày hiệu lực) chỉ để lọc, không để so khớp.
+2. Soạn nháp (/drafting/generate): dữ liệu DN đã nhập → vector → so với đoạn luật để lấy căn cứ pháp lý cho AI điền vào template.
+
+Điểm yếu: ở chỗ soạn nháp, code đem nguyên khối JSON dữ liệu DN (số tiền, mã số thuế, tên trường) đi tìm (json.dumps(snapshot_data)), dễ ra đoạn luật không liên quan. Nên tìm bằng nội dung có nghĩa, ví dụ tên template + lý do bị loại chi phí: "chi phí không được trừ, thanh toán từ 20 triệu không qua ngân hàng". (Vương)
+
+Cách trả lời đề xuất: "Chúng em dùng bge-m3 để chuyển chữ thành vector vì hỗ trợ tiếng Việt, và qwen2.5:7b để viết câu trả lời; cả hai chạy local qua Ollama nên dữ liệu doanh nghiệp không ra ngoài. Vector dùng để tìm đoạn luật liên quan: câu hỏi hoặc nội dung cần soạn được so với nội dung các Điều, Khoản trong Qdrant, sau khi lọc theo trạng thái duyệt và kỳ tính thuế. Template thì người dùng tự chọn, không cần so khớp."` }],
+        ["Output: user nhận được 1 template hay danh sách gợi ý? Có kèm lý do vì sao template đó phù hợp không?", 1, { status: "doing", seed: 2, note:
+`Họp 08/11 (V1 18:18): đã nghĩ ra cách trả kèm lý do nhưng chưa chắc làm được; không làm được thì bỏ phần lý do.
+
+[Claude đề xuất 10/11, nhóm chưa xác nhận]
+Output thực tế (theo code):
+- Không có danh sách gợi ý. Người dùng tự chọn 1 template trong thư viện mẫu (xem 3.4); output là form nhập liệu của template đó.
+- "Lý do phù hợp" đã có dạng mô tả tĩnh trên thẻ, không do AI sinh (FE/src/lib/i18n/locales/vi/drafting.json):
+  + Công văn giải trình: "Soạn công văn giải trình một khoản chi phí với cơ quan thuế, từ sự kiện và số liệu bạn cung cấp."
+  + Tờ khai quyết toán: "Lập tờ khai quyết toán thuế TNDN năm từ số liệu bạn đã xác nhận."
+
+Đề xuất: bỏ ý dùng AI sinh lý do. Chỉ 2 loại văn bản nên thêm một dòng "Dùng khi…" viết sẵn trên thẻ là đủ, rõ hơn và không sai:
+- Tờ khai 03/TNDN: cuối năm quyết toán thuế TNDN, hạn nộp 31/03 năm sau.
+- Công văn giải trình: cơ quan thuế có thông báo hoặc biên bản loại chi phí khi kiểm tra.
+Nếu đi từ chat, câu trả lời có trích dẫn luật đóng vai trò lý do khi chuyển sang soạn nháp, ví dụ "khoản chi trên 20 triệu không qua ngân hàng bị loại theo Điều…, bạn có thể dùng mẫu công văn giải trình".
+⚠ Thẻ trên FE chưa có dòng "Dùng khi…", mới có câu mô tả.
+
+Cách trả lời đề xuất: "Người dùng nhận đúng một template do họ chọn, không phải danh sách gợi ý, vì MVP chỉ có 2 loại tài liệu. Mỗi template ghi rõ dùng khi nào: tờ khai khi quyết toán cuối năm, công văn khi bị cơ quan thuế loại chi phí. Nếu đi từ chatbot, câu trả lời có trích dẫn luật chính là lý do để chọn mẫu."` }],
+        ["Kho có bao nhiêu template? Ít template thì có cần dùng RAG không, hay chỉ cần danh mục và bộ lọc là đủ?", 0, { status: "doing", seed: 3, note:
+`Họp 08/11 (V1 19:00–20:30): số mẫu theo file Thịnh gửi. Nhóm kết luận template không liên quan đến kho RAG.
+⚠ Mâu thuẫn với tên Flow 3 ("ghép bằng RAG"). Nếu đúng là không liên quan thì danh mục + bộ lọc là đủ và phải sửa cách trình bày.
+
+[Claude đề xuất 10/11, nhóm chưa xác nhận]
+Số template:
+- Công văn giải trình chi phí không được trừ (CV_GIAI_TRINH_CP_KDT): đã có bộ trường; Knowledge Admin tạo qua API (mẫu trong BE/workflow/Api/workflow.http).
+- Tờ khai 03/TNDN + 3 phụ lục 03-2, 03-5, 03-8 theo Thông tư 89/2026 (03-1A, 03-1C không còn từ kỳ 2026): chưa có bộ trường.
+→ 2 loại tài liệu, tính cả phụ lục khoảng 5 mẫu.
+⚠ Code không seed sẵn template; kho chỉ có khi admin tạo và xuất bản → trước khi demo phải tạo sẵn.
+
+Có cần RAG để chọn template không? KHÔNG.
+- Khoảng 5 mẫu thì thư viện mẫu chia 2 nhóm (Quyết toán, Giải trình) là đủ; dùng vector chỉ phức tạp hơn và dễ chọn sai.
+- Tài liệu nghiệp vụ (Flow 4 Bước 1) và code đều làm theo cách người dùng tự chọn.
+- RAG vẫn cần nhưng ở chỗ khác: lấy căn cứ pháp lý khi AI điền nội dung vào template, và trả lời câu hỏi trong chatbot.
+
+Sửa mâu thuẫn tên Flow 3 (gốc của nhận xét "chung chung"):
+- Bỏ "input → vector → tìm template".
+- Trình bày theo tài liệu nghiệp vụ: Flow 3 = AI Chatbot (hỏi đáp có trích dẫn); Flow 4 = chọn template, AI soạn nháp có căn cứ, rồi chuyên gia rà soát.
+- Nếu giữ thứ tự đã trình bày: gọi Flow 3 là "Chọn template và chuẩn bị dữ liệu", nói rõ RAG chỉ dùng để lấy căn cứ luật.
+
+Cách trả lời đề xuất: "MVP có 2 loại tài liệu: công văn giải trình và tờ khai 03/TNDN kèm 3 phụ lục thường dùng, tổng khoảng 5 mẫu. Với số lượng này, người dùng chọn trực tiếp trong thư viện mẫu là đủ, không cần RAG để tìm template. RAG dùng ở chỗ khác: lấy căn cứ pháp lý còn hiệu lực theo kỳ tính thuế khi AI điền nội dung, và trả lời câu hỏi trong chatbot."` }]
+      ]},
+      { name: "Model và độ tin cậy", qs: [
+        ["Vì sao chọn model local (Ollama?)? Model đó có đủ chất lượng cho tiếng Việt và văn bản pháp luật không? Chạy trên máy nào khi demo?", 0, { status: "doing", seed: 2, forceStatus: true, note:
+`Họp 08/11 (V1 20:30): miễn phí; model khoảng 4–7 GB (?), chạy được trên máy 16 GB RAM, hỗ trợ tiếng Việt tốt. Máy của người phụ trách làm server.
+
+[Claude đề xuất 10/11, nhóm chưa xác nhận]
+Chuyển về Đang làm cho tới khi có cấu hình máy demo, thời gian trả lời đo thật và kết quả đánh giá chất lượng.
+
+Vì sao chọn model local:
+- Dữ liệu doanh nghiệp không ra ngoài: số liệu tài chính, mã số thuế không gửi tới OpenAI hay Google. SRS mục 4.1 đã ghi "No user data is sent to external AI services". Nên nói lý do này đầu tiên, mạnh hơn "miễn phí".
+- Miễn phí, không phụ thuộc API bên ngoài, không giới hạn lượt gọi.
+- Model nhỏ, máy cá nhân chạy được: qwen2.5:7b khoảng 4.7 GB, bge-m3 khoảng 1.2 GB.
+
+Đủ tốt cho tiếng Việt và văn bản luật không:
+- Tiếng Việt: cả hai model hỗ trợ đa ngôn ngữ có tiếng Việt (theo nhà phát triển công bố, nhóm chưa tự đo).
+- Văn bản luật: model không huấn luyện riêng cho luật. Bù bằng: chỉ trả lời dựa trên đoạn luật lấy từ kho (prompt "TUYỆT ĐỐI KHÔNG SUY DIỄN NGOÀI CĂN CỨ"); temperature 0.1; không đủ căn cứ thì trả lời "chưa đủ để kết luận".
+⚠ Chưa có số đo chất lượng. Nối với 3.10: làm bộ câu hỏi mẫu để thầy Thức chấm.
+
+Demo chạy trên máy nào:
+- Theo buổi họp: các service chạy container trên máy cá nhân, kết nối qua công cụ tunnel (giống "Tailscale" (?)).
+⚠ Rủi ro RAM: buổi họp (C.4) nói "chưa chạy hết service + model đã tốn khoảng 13 GB RAM"; máy 16 GB rất sát, model có thể chậm hoặc bị tắt.
+⚠ Không có GPU thì qwen2.5:7b chạy CPU, một câu trả lời có thể mất vài chục giây.
+
+Cần làm trước buổi bảo vệ:
+- Đo thời gian trả lời thật trên máy demo (khoảng 5 câu hỏi), ghi lại.
+- Phương án dự phòng: máy có GPU hoặc nhiều RAM hơn, hoặc quay sẵn video demo.
+- Ghi rõ cấu hình máy demo (CPU, RAM, GPU).
+
+Cách trả lời đề xuất: "Chúng em chạy model local qua Ollama, chủ yếu để dữ liệu tài chính của doanh nghiệp không gửi ra ngoài, đồng thời không tốn chi phí API. Embedding dùng bge-m3, sinh câu trả lời dùng qwen2.5:7b, cả hai hỗ trợ tiếng Việt. Model không chuyên về luật nên chúng em buộc nó chỉ trả lời dựa trên đoạn luật lấy từ kho, và trả lời 'chưa đủ căn cứ' khi không tìm thấy. Khi demo, model chạy trên máy [cấu hình], thời gian trả lời khoảng [x] giây."` }],
+        ["Tìm ra template sai thì xử lý thế nào? Có ngưỡng độ tương đồng tối thiểu, và dưới ngưỡng thì báo \"không tìm thấy\" không?", 0, { status: "doing", seed: 2, note:
+`Họp 08/11 (V1 21:10–22:31): template sai hoặc lỗi thời thì knowledge admin duyệt và gỡ.
+⚠ Nhóm chưa hiểu "ngưỡng độ tương đồng", mới đề xuất dùng bộ lọc.
+
+[Claude đề xuất 10/11, nhóm chưa xác nhận]
+Ngưỡng độ tương đồng là gì: khi tìm bằng vector, mỗi kết quả có điểm giống nhau từ 0 đến 1. Ngưỡng là mức tối thiểu; thấp hơn thì coi là không liên quan và bỏ. Không còn kết quả nào thì báo "không tìm thấy", không lấy đại.
+
+1. Template sai:
+- Không tìm template bằng vector, người dùng tự chọn (3.4, 3.7), nên không có "tìm ra template sai". Chọn nhầm thì quay lại chọn mẫu khác.
+- Nội dung template sai hoặc lỗi thời: Knowledge Admin sửa và xuất bản phiên bản mới, phiên bản cũ tự ngừng hiển thị (BE/workflow/Application/Features/Templates/PublishTemplate.cs). Bản nháp đã tạo giữ đúng phiên bản template lúc tạo (tài liệu nghiệp vụ).
+
+2. Ngưỡng: có, nhưng áp cho đoạn luật, không áp cho template (BE/ai-service/app/modules/rag/retriever.py: score_threshold 0.50, tối đa 4 đoạn).
+- Chatbot: không đoạn nào đạt ngưỡng → trả "Kho tri thức hiện chưa có căn cứ pháp lý đã được phê duyệt áp dụng cho kỳ thuế này. Hệ thống đề xuất bạn chuyển tiếp câu hỏi cho Chuyên gia". Đúng như câu hỏi muốn.
+- Soạn nháp: ❌ không đoạn nào đạt ngưỡng thì AI vẫn soạn bản nháp không có căn cứ và không cảnh báo (api/routes.py /drafting/generate). Tài liệu nghiệp vụ Flow 4 Bước 4 yêu cầu tạo Grounding Issue (cảnh báo thiếu căn cứ). (Vương)
+⚠ 0.50 là số đặt tay, chưa thử với câu hỏi thật; cần chỉnh theo bộ câu hỏi mẫu (3.10).
+
+Điểm cộng nên nói: bản nháp có bước tự kiểm tra số liệu bịa; con số nào không có trong dữ liệu DN đã nhập bị gắn cờ (unauthorized_numbers, modules/drafting/drafter.py).
+
+Cách trả lời đề xuất: "Người dùng tự chọn template nên không có bước tìm template sai. Template có lỗi thì Knowledge Admin xuất bản phiên bản mới, bản nháp cũ vẫn giữ phiên bản đã dùng. Ngưỡng tương đồng áp dụng khi tìm đoạn luật: dưới 0.5 thì bỏ, không còn đoạn nào thì AI báo 'chưa có căn cứ' và gợi ý chuyển cho chuyên gia, không tự trả lời. Bản nháp còn được kiểm tra để phát hiện con số không có trong dữ liệu người dùng nhập."` }],
+        ["Đo độ chính xác việc ghép template bằng cách nào? Có bộ câu hỏi mẫu kèm template đúng do nhóm hoặc chuyên gia xác nhận không?", 0, { status: "doing", seed: 2, note:
+`Họp 08/11 (V1 22:31): sẽ làm file test để thầy Thức kiểm tra; chưa làm.
+
+[Claude đề xuất 10/11, nhóm chưa xác nhận]
+Hiện trạng:
+- Chưa có bộ câu hỏi mẫu, chưa có số đo. BE/ai-service/tests chỉ có 4 test kiểm tra phần đọc JSON của AI.
+- Hệ thống không ghép template (người dùng tự chọn, 3.7) → đổi đối tượng đo: độ chính xác của AI khi tìm luật và trả lời, là chỗ AI có thể sai.
+
+Bộ test đề xuất (khoảng 30 câu, thầy Thức xác nhận):
+- 20 câu trong phạm vi, đủ dữ kiện (chi phí được trừ, chuyển lỗ, thuế suất 15/17/20%, bán BĐS, ưu đãi…): mong đợi trả lời đúng, trích đúng điều khoản.
+- 5 câu ngoài phạm vi (TNCN, GTGT…): mong đợi OUT_OF_SCOPE, hoàn Credit.
+- 5 câu thiếu kỳ tính thuế: mong đợi AI hỏi lại kỳ thuế, không tự trả lời.
+Mỗi câu ghi: câu hỏi, kỳ tính thuế, điều khoản đúng, đáp án ngắn; thầy Thức điền hoặc xác nhận điều khoản và đáp án.
+
+4 chỉ số:
+1. Phân loại phạm vi đúng (trong phạm vi / ngoài phạm vi / cần hỏi lại).
+2. Tìm đúng luật: % câu có ít nhất 1 đoạn đúng trong 4 đoạn lấy về.
+3. Trả lời đúng: thầy Thức chấm Đúng / Đúng một phần / Sai.
+4. Trích dẫn đúng: điều khoản AI trích khớp đáp án.
+Bản nháp đo thêm: số bản có con số bịa (cờ unauthorized_numbers) và số bản điền đủ trường bắt buộc.
+Dùng bộ test để chỉnh ngưỡng 0.50 (3.9): thử vài mức, giữ mức tốt nhất.
+
+⚠ Điều kiện: pipeline chunk → index phải chạy (2.9) và kho phải có văn bản TNDN thật (2.4); nếu không mọi câu đều ra "chưa có căn cứ".
+
+Cách trả lời đề xuất: "Hệ thống không ghép template bằng AI nên chúng em đo độ chính xác của phần AI tìm luật và trả lời. Bộ test gồm khoảng 30 câu hỏi, có cả câu trong phạm vi, ngoài phạm vi và câu thiếu kỳ thuế, đáp án do chuyên gia thuế xác nhận. Chúng em đo 4 chỉ số: phân loại phạm vi đúng, tìm đúng điều luật, trả lời đúng, trích dẫn đúng. Kết quả đo cũng dùng để chỉnh ngưỡng tương đồng."` }]
+      ]}
+    ]
+  },
+  {
+    id: "flow4", title: "Flow 4: AI soạn nháp từ template → chuyên gia review",
+    sub: "Code: workflow (templates đã xong; documents, AI chat chưa làm), nhánh feature/review-case (review case, escrow).",
+    groups: [
+      { name: "Template", qs: [
+        ["Có những template nào (tờ khai, công văn, hồ sơ thuế TNDN…)? Ai tạo template? Căn cứ pháp lý của từng template là gì?", 0, { status: "doing", seed: 4, note:
+`Họp 08/11 (V1 23:02, 26:02): template có sẵn, người dùng không cần tự tạo.
+⚠ Chưa nêu căn cứ pháp lý của từng mẫu.
+
+[Claude đề xuất 10/11, nhóm chưa xác nhận]
+Template và căn cứ pháp lý:
+- Tờ khai 03/TNDN + phụ lục 03-2, 03-5, 03-8: mẫu theo Thông tư 89/2026/TT-BTC (hiệu lực 01/07/2026, thay Thông tư 80/2021; đã đọc mẫu: không còn 03-1A, 03-1C, kết quả kinh doanh lấy từ báo cáo tài chính, chỉ tiêu A1); cách tính theo Luật Thuế TNDN 67/2025, Nghị định 320/2025, Thông tư 20/2026; hạn nộp theo Luật Quản lý thuế 108/2025. Chưa có bộ trường.
+- Công văn giải trình chi phí không được trừ: không có mẫu nhà nước, DN tự soạn; nội dung dựa trên quy định chi phí được trừ của Luật 67/2025; quyền giải trình khi bị kiểm tra theo Luật Quản lý thuế (?). Đã có (CV_GIAI_TRINH_CP_KDT).
+
+Ai tạo: Knowledge Admin tạo bản nháp rồi xuất bản (POST /admin/templates, quyền KnowledgeManage). Mỗi template có phiên bản DRAFT → PUBLISHED → DEPRECATED; người dùng chỉ thấy bản đã xuất bản. Checklist API còn mục "Quyền quản lý template giữa SYSTEM_ADMIN và KNOWLEDGE_ADMIN" chưa tick; code đã giao cho Knowledge Admin → tick.
+
+⚠ Template chưa có chỗ lưu căn cứ pháp lý: Template chỉ có mã, tên, mô tả; TemplateVersion chỉ có bộ trường và trạng thái (BE/workflow/Domain/Workspace). Thêm "căn cứ pháp lý" vào mô tả (không đổi DB) hoặc vào fieldSchema để màn hình hiện cho người dùng.
+
+Cách trả lời đề xuất: "MVP có 2 template: tờ khai quyết toán thuế TNDN theo mẫu Thông tư 89/2026/TT-BTC kèm 3 phụ lục thường dùng (chuyển lỗ, chuyển nhượng BĐS, phân bổ), và công văn giải trình chi phí không được trừ, nội dung dựa trên quy định chi phí được trừ của Luật Thuế TNDN. Knowledge Admin tạo và xuất bản template theo phiên bản; người dùng chỉ dùng bản đã xuất bản, bản nháp cũ giữ nguyên phiên bản đã dùng."` }],
+        ["Template đã có sẵn cấu trúc thì AI còn cần tạo nháp nữa không? Vai trò thật của AI ở đây là gì (gợi ý nội dung, điền trường, kiểm tra lỗi)?", 0, { status: "doing", seed: 2, note:
+`Họp 08/11 (V1 26:43–30:19): AI điền các cột từ dữ liệu DN; không biết bản điền đúng chưa nên phải gửi chuyên gia. Định hỏi thêm thầy Thức. ⚠
+
+[Claude đề xuất 10/11, nhóm chưa xác nhận]
+Câu trả lời ở buổi họp làm vai trò AI có vẻ thừa. Đề xuất: AI không làm số liệu, AI làm phần chữ và phần căn cứ.
+- Số liệu (doanh thu, chi phí, số tiền bị loại): người dùng nhập. AI không được tạo số (tài liệu nghiệp vụ Flow 4 Bước 4); code đã bắt số bịa (unauthorized_numbers).
+- Phép tính (cộng tổng, thu nhập × thuế suất, trừ lỗ): code tính theo công thức, không để AI làm.
+- Phần lời văn (nội dung giải trình từng khoản, phương án điều chỉnh): AI viết, phần tốn công nhất với kế toán.
+- Căn cứ pháp lý từng khoản: AI tìm bằng RAG và gắn trích dẫn còn hiệu lực theo kỳ thuế.
+- Kiểm tra trước khi gửi (thiếu trường, số không khớp, thiếu căn cứ): hệ thống đánh giá READY / READY_WITH_WARNINGS / NOT_READY.
+Công văn giải trình: AI có việc rõ (viết giải trình, gắn căn cứ cho từng khoản chi). Tờ khai 03/TNDN: phần lớn là số, AI chỉ gợi ý phụ lục cần nộp kèm căn cứ và cảnh báo số liệu bất thường → thêm lý do làm công văn giải trình trước (3.2).
+
+Cách trả lời đề xuất: "Template quyết định cấu trúc. Số liệu do người dùng nhập, phép tính do hệ thống tính theo công thức, AI không được tạo số. AI làm 3 việc: viết phần lời văn như nội dung giải trình, tìm và gắn căn cứ pháp lý còn hiệu lực cho từng khoản, và cùng hệ thống cảnh báo chỗ thiếu hoặc không khớp trước khi gửi chuyên gia."` }]
+      ]},
+      { name: "AI gợi ý, con người là chốt chặn", qs: [
+        ["AI gợi ý được bao nhiêu lần? Giới hạn số lần tạo lại là bao nhiêu? Mỗi lần tạo lại có tốn quota không?", 0, { status: "doing", seed: 2, note:
+`Họp 08/11 (V1 30:19–32:27): chưa có. Ý tưởng: miễn phí 8–10 lần rồi mua credit, tính theo token (mỗi lượt hỏi + đáp khoảng 1.000 token). ⚠
+
+[Claude đề xuất 10/11, nhóm chưa xác nhận]
+Tài liệu nghiệp vụ đã chốt (Bussiness/03-policies-decision-tables.md, POL-CRD) → bỏ ý "miễn phí 8–10 lần, tính theo token":
+- Tạo bản nháp và tạo lại: MIỄN PHÍ trong MVP, "để User xem trước chất lượng bản nháp trước khi xuất".
+- Xuất bản nháp: 1 Credit cho mỗi phiên bản bản nháp (draft.export_charge = 1, Đã chốt); tải lại cùng phiên bản không tính thêm.
+- Chatbot: 1 Credit mỗi câu hỏi (chat.credit_per_query = 1); làm rõ trong cùng yêu cầu không tính thêm; lỗi trước khi tìm luật thì hoàn.
+→ Tính theo lượt (Credit), không tính theo token.
+
+Code:
+- FE có nút "Tạo lại từ snapshot này": mỗi lần tạo lại ra phiên bản bản nháp mới, bản cũ giữ. Đổi dữ liệu thì phải xác nhận lại → snapshot mới.
+- Xuất bản nháp và tính phí chưa nối (FE: "Export is not connected yet").
+- ⚠ BE/workflow/Domain/Workspace/AiQuota.cs có Balance mặc định 10: đây là nguồn của ý "10 lần miễn phí", không khớp tài liệu (Credit). Nhóm cần chọn một: bỏ AiQuota hoặc sửa tài liệu.
+
+⚠ Chưa có giới hạn số lần tạo lại; model chạy local nên tạo lại liên tục làm máy quá tải (3.8). Đề xuất tham số draft.regenerate_limit (ví dụ 5 lần mỗi snapshot), hết lượt thì phải sửa dữ liệu hoặc gửi chuyên gia. Nhóm chốt con số.
+
+Cách trả lời đề xuất: "Tạo bản nháp và tạo lại đều miễn phí để người dùng xem chất lượng trước; mỗi lần tạo lại ra phiên bản mới, không ghi đè. Chỉ khi xuất bản nháp mới tính 1 Credit cho mỗi phiên bản, tải lại không tính thêm. Để tránh lạm dụng, mỗi bộ dữ liệu tạo lại tối đa [N] lần."` }],
+        ["Người dùng chỉnh sửa gợi ý của AI thế nào? Hệ thống có lưu lịch sử các phiên bản (DocumentVersion) không?", 0, { status: "doing", seed: 2, note:
+`Họp 08/11: chưa bàn tới.
+
+[Claude đề xuất 10/11, nhóm chưa xác nhận]
+Theo tài liệu nghiệp vụ (Flow 4 Bước 6) và code:
+- Người dùng KHÔNG sửa trực tiếp chữ AI viết. Muốn thay đổi thì sửa dữ liệu đầu vào (Revise Input) → tạo Snapshot mới → AI tạo bản nháp mới. Không ghi đè bản cũ.
+- Có lưu lịch sử: bảng DocumentVersion (BE/workflow/Domain/Workspace/DocumentVersion.cs) lưu số phiên bản, loại phiên bản, snapshot và phiên bản template đã dùng, trích dẫn, nội dung, mã băm nội dung, cờ không được sửa (IsImmutable), người tạo, thời điểm.
+- Mỗi bản nháp gắn đúng một Snapshot (tài liệu Flow 4 Bước 3); Snapshot không sửa được.
+- Khi gửi chuyên gia, phiên bản đang gửi bị khóa cho Case (BR-M05); người dùng tạo bản mới sau đó không thay bản đang rà soát.
+- Chuyên gia sửa thì tạo Expert Revision là phiên bản mới, giữ nguyên bản AI gốc (00-overview mục 7.1).
+
+⚠ Nếu nhóm muốn cho người dùng sửa chữ trực tiếp (ví dụ sửa câu giải trình) thì phải thêm loại phiên bản "người dùng sửa" và ghi vào tài liệu; hiện tài liệu chưa có.
+
+Cách trả lời đề xuất: "Người dùng không sửa chữ AI viết mà sửa dữ liệu đầu vào; mỗi lần xác nhận lại tạo snapshot mới và bản nháp mới, không ghi đè. Mọi phiên bản đều lưu lại kèm snapshot, phiên bản template, trích dẫn và mã băm nội dung. Bản gửi chuyên gia bị khóa, chuyên gia sửa thì tạo phiên bản riêng."` }],
+        ["Phần nào trong văn bản do AI viết, phần nào do người viết? Điều này có được đánh dấu để chuyên gia biết không?", 0, { status: "doing", seed: 2, note:
+`Họp 08/11 (V1 32:27): nhóm nói "có" nhưng chưa nói đánh dấu bằng cách nào. ⚠
+
+[Claude đề xuất 10/11, nhóm chưa xác nhận]
+Phân biệt AI viết và người viết đã có ở mức phiên bản:
+- Số liệu: luôn do người dùng nhập (nằm trong Snapshot); AI không được tạo số, có cờ unauthorized_numbers bắt số bịa (3.9).
+- Phần lời văn, căn cứ: do AI viết, nằm trong phiên bản loại AI Draft.
+- Phần chuyên gia sửa: phiên bản riêng (Expert Revision), giữ nguyên bản AI gốc.
+→ Chuyên gia thấy được nhờ so Snapshot (người nhập) với AI Draft (AI viết).
+
+⚠ Chưa đánh dấu theo từng trường trên màn hình. Đề xuất nhỏ: mỗi trường trong bản nháp ghi nguồn "Người dùng nhập" hoặc "AI soạn" (Snapshot đã có đủ thông tin để làm), và màn hình chuyên gia tô màu khác cho phần AI soạn.
+
+Cách trả lời đề xuất: "Số liệu luôn do người dùng nhập và được lưu trong snapshot riêng; phần lời văn và căn cứ pháp lý do AI viết, nằm trong phiên bản AI Draft; chuyên gia sửa thì tạo phiên bản riêng. Trên màn hình rà soát, từng trường được ghi rõ nguồn là người dùng nhập hay AI soạn."` }]
+      ]},
+      { name: "Chuyên gia review", qs: [
+        ["Bản nháp có bắt buộc gửi chuyên gia không, hay người dùng được tự chọn?", 0, { status: "doing", seed: 2, forceStatus: true, note:
+`Họp 08/11 (V1 32:48–34:51): thầy Trí muốn để người dùng tự chọn, thầy Thức muốn bắt buộc.
+Nhóm chốt: bắt buộc gửi chuyên gia, vì theo thầy Thức DN nào cũng phải qua chuyên gia sửa trước khi nộp.
+
+[Claude đề xuất 10/11, nhóm chưa xác nhận]
+⚠ Mâu thuẫn: buổi họp chốt "bắt buộc gửi chuyên gia", nhưng tài liệu nghiệp vụ cho người dùng tự chọn:
+- 00-overview mục 3: "Nếu chọn hoặc cần Xác minh bởi chuyên gia → Marketplace".
+- Flow 4 Bước 6: người dùng chọn Xuất bản nháp, Yêu cầu chuyên gia thẩm định, hoặc Sửa dữ liệu.
+
+Đề xuất giữ theo tài liệu, thêm điều kiện bắt buộc theo mức sẵn sàng:
+- READY: người dùng tự chọn xuất hoặc gửi chuyên gia.
+- READY_WITH_WARNINGS: được xuất nhưng hiện cảnh báo rõ, khuyến nghị gửi chuyên gia.
+- NOT_READY: không cho xuất, phải sửa dữ liệu hoặc gửi chuyên gia.
+Cách này giữ được ý thầy Thức ("DN nào cũng nên qua chuyên gia") mà không ép người dùng trả phí khi bản nháp đã đạt.
+
+Nếu nhóm vẫn chốt bắt buộc thì phải sửa tài liệu nghiệp vụ, SRS, và bỏ chức năng xuất bản nháp (POL-CRD-02).
+
+Cách trả lời đề xuất: "Người dùng tự chọn: bản nháp đạt thì có thể xuất dùng, nhưng bản bị đánh giá chưa sẵn sàng thì không xuất được và phải sửa hoặc gửi chuyên gia. Hệ thống luôn khuyến nghị chuyên gia rà soát trước khi nộp cơ quan thuế."` }],
+        ["Chuyên gia kiểm tra cái gì (đúng luật, đúng số liệu, đúng mẫu)? Dựa vào đâu để kết luận bản đó đúng? Có checklist kiểm tra không?", 0, { status: "doing", seed: 2, note:
+`Họp 08/11 (V1 34:51–36:13): chuyên gia xác nhận bằng dấu và chữ ký. Không làm checklist vì chuyên gia đã có chuyên môn và mỗi mẫu một khác.
+⚠ Câu trả lời yếu, dễ bị hỏi lại.
+
+[Claude đề xuất 10/11, nhóm chưa xác nhận]
+Có checklist: chuyên gia làm 6 nhiệm vụ T1–T6 (Bussiness/00-overview mục 5), code có bảng ReviewTask (TaskCode, Status, Note) để đánh dấu từng nhiệm vụ.
+- T1 Rà soát thông tin và bằng chứng: đủ, rõ, nhất quán; không tự sửa dữ liệu người dùng.
+- T2 Rà soát tài liệu do AI tạo: so nội dung với dữ liệu đã xác nhận.
+- T3 Kiểm tra căn cứ và quy định áp dụng: đúng luật, đúng kỳ hiệu lực.
+- T4 Yêu cầu bổ sung (khi cần): tạo Information Request.
+- T5 Hiệu chỉnh (khi cần): tạo Expert Revision, không ghi đè bản AI.
+- T6 Xác nhận kết quả: VERIFIED hoặc CANNOT_VERIFY bằng xét đoán nghề nghiệp.
+→ Trả lời "đúng luật, đúng số liệu, đúng mẫu": T3 là đúng luật, T1–T2 là đúng số liệu và khớp dữ liệu, T2 là đúng mẫu.
+
+Câu trả lời ở buổi họp ("xác nhận bằng dấu và chữ ký, không làm checklist") yếu và sai với tài liệu: tài liệu đã có checklist T1–T6. Dựa vào đâu để kết luận đúng: dữ liệu người dùng đã xác nhận, bằng chứng đính kèm, căn cứ pháp lý AI trích, cùng kiến thức nghề nghiệp của chuyên gia (đã qua Gate 1, Gate 2).
+
+Cách trả lời đề xuất: "Chuyên gia làm theo 6 nhiệm vụ T1–T6: kiểm tra dữ liệu và bằng chứng, kiểm tra nội dung AI soạn, kiểm tra căn cứ pháp lý áp dụng, yêu cầu bổ sung hoặc hiệu chỉnh khi cần, rồi kết luận VERIFIED hoặc CANNOT_VERIFY. Hệ thống ghi trạng thái từng nhiệm vụ."` }],
+        ["Chuyên gia có được phân theo chuyên môn không? Hệ thống ghép case với chuyên gia theo tiêu chí nào?", 0, { status: "doing", seed: 2, note:
+`Họp 08/11 (V1 36:22–38:38): mọi yêu cầu qua admin điều phối rồi chia cho chuyên gia, ghép theo chuyên môn trong profile. Không có chuyên gia nhận thì admin làm (?).
+⚠ Khác code hiện tại: trên Marketplace người dùng tự chọn chuyên gia.
+
+[Claude đề xuất 10/11, nhóm chưa xác nhận]
+⚠ Câu trả lời ở buổi họp ("mọi yêu cầu qua admin điều phối rồi chia cho chuyên gia") sai với tài liệu và code:
+- Tài liệu (00-overview mục 3, 7, 8): NGƯỜI DÙNG tự chọn chuyên gia trên Marketplace; MVP 1 yêu cầu = 1 chuyên gia, không tự ghép.
+- Code nhánh feature/review-case: người dùng chọn chuyên gia trên Marketplace.
+
+Có phân theo chuyên môn:
+- Chuyên gia được duyệt THEO TỪNG DỊCH VỤ (Expert-Service Qualification qua Gate 2), MVP chỉ có dịch vụ Thuế TNDN (HUMAN_VERIFICATION).
+- Marketplace chỉ hiện chuyên gia đủ 6 điều kiện BR-M01: tài khoản hoạt động, APPROVED_FOR_SERVICE và không bị tạm ngưng, dịch vụ đang mở, đã đặt giá, đã đặt sức chứa (1–20), đang bật nhận yêu cầu.
+- Người dùng chọn theo: hồ sơ đã xác minh, lĩnh vực chuyên môn, số năm kinh nghiệm, giá, đánh giá, số case hoàn tất, chỗ trống.
+- Chuyên gia không nhận (từ chối hoặc 24 giờ không phản hồi) thì hoàn 100%, người dùng chọn chuyên gia khác bằng yêu cầu mới. Không có "admin làm thay".
+
+Cách trả lời đề xuất: "Chuyên gia được duyệt theo từng dịch vụ, MVP là Thuế TNDN. Người dùng tự chọn chuyên gia trên Marketplace dựa vào chuyên môn, kinh nghiệm, giá, đánh giá và chỗ trống; chỉ chuyên gia đủ điều kiện mới hiện. Chuyên gia không nhận trong 24 giờ thì hoàn 100% và người dùng chọn người khác."` }],
+        ["Đầu ra sau review là gì: duyệt, yêu cầu bổ sung hay từ chối? Mỗi trường hợp dẫn tới bước nào? Sơ đồ đã đủ nhánh \"hồ sơ thiếu → yêu cầu bổ sung hoặc từ chối\" chưa?", 1, { status: "doing", seed: 2, note:
+`Họp 08/11 (V1 38:38–39:57, V2 00:00–01:57): đầu ra là tờ khai DN dùng được để nộp cơ quan thuế. Thiếu tài liệu → yêu cầu bổ sung; có nhánh từ chối. Sơ đồ mới sửa đã đủ nhánh.
+⚠ Nhóm chưa hiểu vì sao thầy chưa chịu.
+
+[Claude đề xuất 10/11, nhóm chưa xác nhận]
+Đầu ra theo tài liệu (00-overview mục 7):
+- Trong khi rà soát, thiếu thông tin → Information Request (T4) → Case AWAITING_USER_INFORMATION → người dùng bổ sung → tiếp tục IN_REVIEW. Người dùng không phản hồi đúng hạn → TERMINATED (USER_NON_RESPONSE): hoàn 50%, chuyên gia 30%, nền tảng 20%.
+- Kết luận cuối (T6): VERIFIED (đủ cơ sở, gắn phiên bản đã xác minh) hoặc CANNOT_VERIFY (không đủ cơ sở, bắt buộc lý do + tóm tắt rà soát; không tự hoàn tiền).
+- Sau bàn giao: AWAITING_ACCEPTANCE → người dùng ACCEPT (COMPLETED) / 72 giờ không phản hồi (AUTO_CONFIRMED) / REPORT_ISSUE (DISPUTED → System Admin quyết tỷ lệ hoàn → RESOLVED).
+- Chuyên gia từ chối nhận: EXPERT_DECLINED, hoàn 100%.
+→ "Duyệt / yêu cầu bổ sung / từ chối" tương ứng VERIFIED / Information Request / CANNOT_VERIFY hoặc EXPERT_DECLINED.
+
+Vì sao thầy chưa chịu: sơ đồ nhóm vẽ gộp trạng thái Case (COMPLETED, TERMINATED…) với kết luận chuyên môn (VERIFIED, CANNOT_VERIFY). Tài liệu ghi rõ đây là 2 lớp khác nhau. Sơ đồ cần đủ: nhánh Information Request có quay lại và nhánh hết hạn; 2 kết luận T6; nhánh nghiệm thu và tranh chấp.
+⚠ VERIFIED gắn phiên bản đã xác minh: tài liệu ghi "Chưa triển khai, chờ nhóm quyết định".
+
+Cách trả lời đề xuất: "Trong lúc rà soát, thiếu thông tin thì chuyên gia gửi yêu cầu bổ sung, người dùng không trả lời đúng hạn thì case dừng. Kết luận cuối là VERIFIED hoặc CANNOT_VERIFY kèm lý do. Sau đó người dùng nghiệm thu trong 72 giờ hoặc khiếu nại để System Admin giải quyết."` }],
+        ["Chuyên gia chịu trách nhiệm đến đâu với văn bản đã duyệt?", 0, { status: "doing", seed: 2, note:
+`Họp 08/11 (V2 01:57–03:44): chịu trách nhiệm đến khi DN nộp và nhận kết quả từ cơ quan thuế (?), hoặc bảo hành khoảng 7 ngày để sửa lại (?). Chưa chốt. ⚠
+
+[Claude đề xuất 10/11, nhóm chưa xác nhận]
+Tài liệu nghiệp vụ đã có câu trả lời, nên bỏ hai ý "đến khi DN nhận kết quả từ cơ quan thuế" và "bảo hành 7 ngày":
+- Chuyên gia chịu trách nhiệm về KẾT LUẬN RÀ SOÁT của mình trong phạm vi dịch vụ, trên đúng phiên bản đã khóa cho Case (BR-M05) và dữ liệu người dùng đã xác nhận.
+- Người dùng mua dịch vụ xác minh, không mua cam kết "chắc chắn VERIFIED"; CANNOT_VERIFY không tự hoàn tiền (00-overview 7.1).
+- Thời hạn chịu trách nhiệm trên nền tảng: 72 giờ nghiệm thu; trong thời gian này người dùng được REPORT_ISSUE một lần, System Admin quyết tỷ lệ hoàn 0–100% (DISPUTED → RESOLVED). Hết hạn thì case đóng.
+- Kết quả nộp cơ quan thuế và trách nhiệm pháp lý của người nộp thuế vẫn thuộc doanh nghiệp. Trách nhiệm nghề nghiệp ngoài nền tảng của chuyên gia theo quy định về dịch vụ thuế (Gate 1 dựa trên Luật Quản lý thuế 108/2025, Nghị định 252/2026, Thông tư 109/2026); tài liệu ghi cần cố vấn pháp lý xác nhận khi triển khai thật.
+- Chất lượng chuyên gia được theo dõi qua đánh giá, số case hoàn tất, khiếu nại; không dùng tỷ lệ VERIFIED làm chỉ số.
+
+Cách trả lời đề xuất: "Chuyên gia chịu trách nhiệm về kết luận rà soát của mình trên đúng phiên bản được gửi. Người dùng có 72 giờ để nghiệm thu hoặc khiếu nại, System Admin giải quyết khiếu nại. Việc nộp hồ sơ và nghĩa vụ thuế vẫn là của doanh nghiệp."` }]
+      ]},
+      { name: "Tiền", qs: [
+        ["Phí nền tảng và phí chuyên gia chốt bao nhiêu %? Lúc trình bày có nhắc 7% / 8% (?). Thầy yêu cầu trình bày chính xác luồng tiền: user trả trước → nền tảng giữ → xong việc mới chia cho chuyên gia → khi nào hoàn tiền? (1.m4a 11:38)", 1, { status: "done", forceStatus: true, seed: 3, note:
+`Họp 08/11 (V2 03:44–04:29): chưa chốt %, đang để chia 80/20 (?). Hoàn tiền khi có tranh chấp / khiếu nại. Phải hỏi thầy Thức.
+⚠ DB local đang đặt phí nền tảng 20%.
+
+[Claude đề xuất 10/11, nhóm chưa xác nhận]
+Tài liệu nghiệp vụ đã chốt (00-overview mục 8), khớp DB local (phí nền tảng 20%):
+- Phí nền tảng P% do System Admin đặt cho từng dịch vụ, khung 0–50%, mặc định 20%. Đổi P phải báo trước ít nhất 7 ngày, không hồi tố.
+- Chuyên gia nhận (100 − P)% = 80% giá dịch vụ, làm tròn xuống, phần lẻ thuộc nền tảng.
+- Giá do chuyên gia đặt trong khung 500.000–30.000.000 VND.
+- Bỏ con số "7% / 8%" lúc trình bày.
+
+Luồng tiền: USER → SHARED HUB → EXPERT.
+1. Người dùng nạp ví Credit qua payOS.
+2. Gửi yêu cầu rà soát → trả 100% giá từ ví trong 15 phút → tiền chuyển vào Held Funds (nền tảng giữ). Giá và P% được chốt vào Case.
+3. Chuyên gia ACCEPT trong 24 giờ → rà soát → bàn giao.
+4. Người dùng nghiệm thu (hoặc 72 giờ tự xác nhận) → quyết toán: nền tảng giữ P%, chuyên gia nhận phần còn lại, chi trả sau 7 ngày (SRS).
+
+Khi nào hoàn tiền:
+- Hoàn 100%: chuyên gia từ chối hoặc 24 giờ không nhận; người dùng rút trước khi chuyên gia nhận; quá hạn bàn giao tối đa; chuyên gia bỏ dở.
+- Hoàn 30% (L%): trễ không quá 24 giờ, khoản trừ do chuyên gia chịu.
+- Hoàn 50%: người dùng không trả lời yêu cầu bổ sung.
+- Tranh chấp: System Admin quyết 0–100%.
+- Không hoàn: COMPLETED, kể cả CANNOT_VERIFY.
+Ví dụ: giá 2.000.000, P = 20%, đúng hạn → nền tảng 400.000, chuyên gia 1.600.000.
+
+Họp 11/11 với thầy Thức (chat + ghi âm) (thay đề xuất 10/11 ở trên):
+- Nền tảng giữ 40%, chuyên gia nhận 60% sau khi khấu trừ thuế TNCN.
+- Có sự cố (trễ hạn…) thì hoàn một mức 50%, 50% còn lại là chi phí vận hành nền tảng. Bỏ các bậc 24 giờ / 30% / 72 giờ.
+- Khách hàng không bổ sung thông tin thì không hoàn (nền tảng 40%, chuyên gia 60%).
+- Thời hạn theo ngày làm việc: chuyên gia phản hồi trong 1 ngày làm việc; rà soát tờ khai 1 ngày làm việc; xác minh câu trả lời AI 8 giờ; nghiệm thu 1 ngày làm việc, email nhắc khi chưa phản hồi.
+⚠ Còn hỏi lại: chuyên gia từ chối hoặc không nhận có còn hoàn 100% không; tỷ lệ khấu trừ thuế TNCN. Tài liệu nghiệp vụ đã sửa theo các con số trên (00 mục 3a).` }],
+        ["Làm sao để user không bị thu 2 lần (phí nền tảng cộng phí chuyên gia, quota AI cộng phí review)? Gói nào đủ hợp lý để user chịu trả tiền? (1.m4a 19:01)", 0, { status: "doing", seed: 3, note:
+`Họp 08/11 (V2 04:29–05:19): chưa làm gói. Ví dụ gói vài triệu kèm 2–3 lượt chuyên gia miễn phí, nhưng nhóm thấy như vậy sẽ lỗ. Chưa chốt. ⚠
+
+[Claude đề xuất 10/11, nhóm chưa xác nhận]
+Không bị thu 2 lần vì mỗi khoản trả cho một việc khác nhau, và phí nền tảng nằm sẵn trong giá dịch vụ:
+- Phí nền tảng KHÔNG cộng thêm: người dùng trả đúng giá chuyên gia niêm yết, nền tảng trích 20% từ đó.
+- Chatbot: 1 Credit mỗi câu hỏi (trả cho AI tìm luật và trả lời).
+- Soạn nháp, tạo lại: miễn phí. Xuất bản nháp: 1 Credit mỗi phiên bản.
+- Rà soát chuyên gia: giá dịch vụ. Gửi bản nháp cho chuyên gia KHÔNG bắt buộc xuất trước → không trả phí xuất.
+⚠ AiQuota (10 lượt) trong code và Credit trong tài liệu là 2 cơ chế song song, dễ bị hiểu là thu 2 lần → chọn một (xem 4.3).
+
+Gói: tài liệu chưa có gói, mới có ví Credit trả theo lượt. Ý "gói vài triệu kèm 2–3 lượt chuyên gia" lỗ vì phí chuyên gia do chuyên gia tự đặt. Đề xuất cho MVP: không làm gói, chỉ trả theo lượt; nếu cần ưu đãi thì tặng một số Credit khi đăng ký hoặc nạp nhiều được cộng thêm Credit (chỉ áp dụng chatbot và xuất bản nháp, không áp dụng phí chuyên gia). Giá 1 Credit = bao nhiêu VND chưa có trong tài liệu → nhóm cần chốt.
+
+Cách trả lời đề xuất: "Người dùng trả đúng một lần cho mỗi việc: Credit cho câu hỏi AI và xuất bản nháp, giá dịch vụ cho chuyên gia. Phí nền tảng đã nằm trong giá chuyên gia, không cộng thêm. Soạn nháp và gửi nháp cho chuyên gia không tốn Credit."
+
+Họp 11/11 với thầy Thức (chat + ghi âm): không làm gói premium, gói tháng hay ưu đãi nạp; nền tảng chỉ bán dịch vụ xác minh. Thầy hỏi Credit dùng trả chi phí gì, ai trả, và muốn thấy AI làm được gì trước khi bỏ tiền mua Credit → cần demo và giải thích lại lý do thu Credit.` }]
+      ]}
+    ]
+  },
+  {
+    id: "common", title: "Chung cho cả 3 flow",
+    sub: "Nhận xét chung của phiếu Review 2 và các điểm chỉ có trong ghi âm.",
+    groups: [
+      { name: "Sơ đồ và mức dùng AI", qs: [
+        ["Mỗi flow đã có sơ đồ chuẩn (bắt đầu → xử lý → kết thúc, đủ nhánh lỗi và từ chối) chưa?", 1, { status: "doing", seed: 2, note:
+`Họp 08/11 (V2 05:19–06:48): nhóm hiểu "sơ đồ chuẩn" là activity diagram dạng swimlane.
+⚠ Hiện chưa flow nào có swimlane.
+
+[Claude đề xuất 10/11, nhóm chưa xác nhận]
+Activity diagram dạng swimlane là đúng hướng. Mỗi flow nên có làn (lane) theo vai trò và đủ nhánh lỗi lấy từ tài liệu nghiệp vụ:
+- Flow 2: lanes Hệ thống (crawl, bóc tách) / Knowledge Admin / ai-service. Nhánh: trùng hash → bỏ qua; PARSE_FAILED; REPROCESS_REQUIRED; REJECTED; INDEX_FAILED + retry 3 lần.
+- Flow 3 (Chatbot): lanes Người dùng / Hệ thống / Billing. Nhánh: không đủ Credit; OUT_OF_SCOPE → hoàn; cần làm rõ (tối đa 2 vòng, 24 giờ); không đủ căn cứ.
+- Flow 4 (Soạn nháp): lanes Người dùng / Hệ thống / AI. Nhánh: VALIDATION_FAILED → quay lại; NOT_READY; thiếu căn cứ (Grounding Issue).
+- Flow 5 (Chuyên gia): lanes Người dùng / Hệ thống / Chuyên gia / System Admin. Nhánh: quá 15 phút chưa thanh toán; chuyên gia từ chối hoặc 24 giờ; Information Request và hết hạn; VERIFIED / CANNOT_VERIFY; tranh chấp.
+Mỗi sơ đồ có đúng 1 điểm bắt đầu, các điểm kết thúc ghi rõ trạng thái cuối (COMPLETED, TERMINATED…), quyết định ghi điều kiện trên mũi tên.
+⚠ Số flow trong tài liệu nghiệp vụ là 5 (Flow 3 = Chatbot, Flow 4 = Soạn nháp, Flow 5 = Marketplace + chuyên gia), khác cách đánh số lúc trình bày (xem 3.7). Thống nhất trước khi vẽ.` }],
+        ["Mỗi flow có dùng AI quá mức không? Bước nào bỏ AI vẫn chạy được?", 0, { status: "doing", seed: 2, note:
+`Họp 08/11: chưa trả lời.
+
+[Claude đề xuất 10/11, nhóm chưa xác nhận]
+AI chỉ nằm ở 4 chỗ, chỗ nào cũng có người hoặc quy tắc chốt:
+- Flow 1 (chuyên gia): AI chỉ trích xuất CV, bằng chứng và gắn cờ; người duyệt quyết định. Bỏ AI vẫn chạy, người duyệt đọc tay.
+- Flow 2 (kho luật): KHÔNG dùng AI để quyết định. Crawl, bóc tách bằng quy tắc; Knowledge Admin duyệt. Chỉ dùng model để tạo vector.
+- Flow 3 (chatbot): AI phân loại phạm vi và trả lời dựa trên đoạn luật đã duyệt. Đây là chỗ AI là chức năng chính.
+- Flow 4 (soạn nháp): AI viết lời văn và gắn căn cứ; số liệu do người nhập, phép tính do code (4.2). Bỏ AI vẫn chạy: người dùng tự điền form theo template.
+- Flow 5 (chuyên gia, tiền): KHÔNG dùng AI. Kết luận VERIFIED/CANNOT_VERIFY, tranh chấp, quyết toán đều do người hoặc quy tắc.
+Bước bỏ AI vẫn chạy: chọn template, nhập liệu, kiểm tra hợp lệ, duyệt kho luật, toàn bộ Marketplace, thanh toán, quyết toán, duyệt chuyên gia.
+
+Cách trả lời đề xuất: "AI chỉ hỗ trợ ở 3 việc: trích xuất hồ sơ chuyên gia, trả lời câu hỏi có trích dẫn, và viết lời văn kèm căn cứ trong bản nháp. Mọi quyết định (duyệt văn bản luật, duyệt chuyên gia, kết luận rà soát, tiền) đều do người hoặc quy tắc. Bỏ AI thì hệ thống vẫn chạy như một công cụ soạn hồ sơ theo mẫu và kết nối chuyên gia."` }],
+        ["Câu mở đầu \"AI làm khoảng 80%, chuyên gia chốt cuối\" có đi ngược góp ý \"đừng lạm dụng AI\" không? Nhóm đổi cách nói thế nào? (2.m4a 00:00–02:03)", 0, { status: "doing", seed: 2, note:
+`Họp 08/11 (V2 06:48–07:51): nhóm cho rằng góp ý "đừng lạm dụng AI" là thầy nói chung, không nhắm vào hệ thống của nhóm. Chưa đổi cách nói. ⚠
+
+[Claude đề xuất 10/11, nhóm chưa xác nhận]
+Góp ý "đừng lạm dụng AI" có nhắm vào cách nhóm nói: câu "AI làm khoảng 80%" đặt AI làm trung tâm, trong khi tài liệu cho thấy AI chỉ ở vài bước (C.2). Nên đổi cách nói, bỏ con số 80%.
+
+Câu mở đầu đề xuất: "Shared Hub giúp kế toán DN vừa và nhỏ lập hồ sơ quyết toán thuế TNDN: hệ thống cung cấp mẫu và kho luật đã được kiểm duyệt, AI hỗ trợ soạn phần lời văn và tìm căn cứ pháp lý, còn số liệu do doanh nghiệp nhập và kết luận cuối do chuyên gia thuế xác nhận."
+
+Nếu bị hỏi lại về 80%: "Đó là cách nói cũ, chưa chính xác. Thực tế AI không tạo số liệu và không ra quyết định; AI chỉ soạn lời văn và tìm căn cứ."` }]
+      ]},
+      { name: "Kiến trúc microservices (Review 2 chấm No)", qs: [
+        ["Thầy nói mỗi service phải có DB riêng, dùng chung DB là sai nguyên tắc (1.m4a 09:24). Code đang dùng 1 Postgres, mỗi service 1 schema và 1 role riêng. Nhóm bảo vệ mô hình này hay tách thành DB riêng thật sự?", 1, { status: "done", seed: 2, note:
+`Họp 08/11 (V2 07:51–10:33, 15:43–17:02): nhóm bảo vệ mô hình hiện tại.
+- Máy không đủ tài nguyên: chưa chạy hết service + model đã tốn khoảng 13 GB RAM.
+- Mỗi service có schema, role và migration riêng, không truy vấn chéo, gọi nhau qua HTTP nội bộ.
+- Connection string tách theo service, đủ hạ tầng thì tách DB dễ.
+Hôm review thầy không cho nhóm giải thích phần này.
+
+[Claude đề xuất 10/11, nhóm chưa xác nhận]
+Bổ sung để bảo vệ (khớp AGENTS.md và code):
+- Mỗi service có schema riêng, role DB riêng (caps_<service>) chỉ có quyền trên schema của mình; không có khóa ngoại chéo service, id của service khác chỉ là cột thường; mỗi service migrate độc lập.
+- Các service gọi nhau qua HTTP nội bộ hoặc sự kiện RabbitMQ, không đọc bảng của nhau.
+→ Về logic đây là "database per service" ở mức schema: muốn tách DB vật lý chỉ cần đổi connection string, không sửa code.
+Cách nói: "Mỗi service sở hữu dữ liệu riêng và không service nào đọc trực tiếp dữ liệu của service khác; do giới hạn tài nguyên khi chạy local, chúng em đặt các schema trên cùng một Postgres, và có thể tách ra DB riêng chỉ bằng cấu hình."` }],
+        ["Sơ đồ System Architecture mới đã có deployment view và process view, đủ gateway, các service, Redis, RabbitMQ, storage và cách các service gọi nhau chưa?", 1, { status: "doing", seed: 2, note:
+`Họp 08/11 (V2 10:33): Phúc phụ trách; cơ bản đã đúng, sẽ sửa lại một phần.
+Liên quan (V1 23:19–26:02): mỗi service là một container chạy trên máy cá nhân; không mở được port forwarding nên kết nối qua công cụ tunnel (nghe giống "Tailscale" (?)).
+
+[Claude đề xuất 10/11, nhóm chưa xác nhận]
+Sơ đồ kiến trúc cần đủ (theo code và AGENTS.md):
+- Client (React, Vite) → Gateway YARP :5190 (mọi request đi qua đây).
+- Service .NET: auth :5194, expert :5198, workflow, billing, ingestion :5004, notification…; ai-service (FastAPI, Python).
+- Crawler worker (Python) nhận việc qua RabbitMQ, gọi lại ingestion qua /internal (X-Internal-Key).
+- Hạ tầng: Postgres + pgvector (schema riêng mỗi service), Redis (thu hồi phiên), RabbitMQ (MassTransit), SeaweedFS (lưu file), Mailpit/Gmail SMTP, Qdrant (vector), Ollama (bge-m3, qwen2.5:7b), payOS.
+- Process view: vẽ 2 luồng chính có số thứ tự, ví dụ crawl → duyệt → index, và hỏi chatbot → tìm luật → trả lời → trừ Credit.
+- Deployment view: các container trên máy demo, công cụ tunnel, cổng mở ra ngoài.
+⚠ Hai tên service khác nhau: README Flow 3 có nói "rag-query", nhưng code hiện là ai-service + workflow. Thống nhất tên trên sơ đồ.` }]
+      ]},
+      { name: "Xét duyệt chuyên gia", qs: [
+        ["Thầy cho rằng cổng 2 (chấm năng lực theo 5 tiêu chí) không thực tế, chỉ cần chứng chỉ hành nghề theo quy định (1.m4a 18:05–25:11). Nhóm bỏ, giữ hay đơn giản hóa cổng 2?", 1, { status: "done", forceStatus: true, seed: 3, note:
+`Họp 08/11 (V2 13:19–15:13): thầy Thức nói chỉ cần upload CV. Nhóm tự hỏi có đang "cố chấp" làm phức tạp không.
+Phúc sẽ gặp trực tiếp thầy Thức để hỏi. Chưa chốt. ⚠
+
+[Claude đề xuất 10/11, nhóm chưa xác nhận]
+Tài liệu nghiệp vụ (00-overview mục 4, 6) đã tách rõ:
+- Gate 1 = điều kiện pháp lý (EV-01 đến EV-05, theo Luật Quản lý thuế 108/2025, Nghị định 252/2026, Thông tư 109/2026), trong đó EV-02 là chứng chỉ chuyên môn về thuế. Đây chính là "chứng chỉ hành nghề theo quy định" thầy nói.
+- Gate 2 = năng lực C1–C5, là chính sách của Shared Hub, không phải luật. Người duyệt chấm dựa trên CV và bằng chứng; MVP không có thi.
+
+Đề xuất: ĐƠN GIẢN HÓA Gate 2, không bỏ.
+- Giữ chứng chỉ ở Gate 1 làm điều kiện bắt buộc (đúng ý thầy).
+- Gate 2 rút thành một bước người duyệt xác nhận kinh nghiệm Thuế TNDN từ CV, chỉ yêu cầu thêm bằng chứng khi CV không rõ. Không bắt chuyên gia nộp bằng chứng cho đủ 5 tiêu chí.
+- Lý do giữ: chứng chỉ chứng minh được phép hành nghề, chưa chứng minh có làm quyết toán TNDN và rà soát AI; người dùng trả tiền nên nền tảng cần lọc chất lượng.
+⚠ Phúc sẽ gặp thầy Thức để hỏi; thầy Thức nói "chỉ cần upload CV" → cách đơn giản hóa trên khớp ý này.
+
+✔ Họp 11/11 với thầy Thức (chat + ghi âm): GIỮ Gate 2, chấm theo C1–C5 dựa trên CV. Thầy: "thầy sẽ phê duyệt theo năng lực chuyên môn và kinh nghiệm của người đó mới được duyệt là chuyên gia, ok, nội dung chấm điểm này nhé". Không rút gọn, không bỏ.` }],
+        ["Lúc trình bày nói cổng 2 do AI chấm, nhưng code (CompetencyCriteria C1–C5) để người duyệt chấm. Thống nhất lại: phiên bản nào là đúng?", 0, { status: "doing", seed: 2, note:
+`Họp 08/11: chưa bàn tới.
+
+[Claude đề xuất 10/11, nhóm chưa xác nhận]
+Phiên bản đúng là NGƯỜI DUYỆT CHẤM, AI chỉ hỗ trợ. Cả tài liệu và code đều như vậy:
+- Tài liệu (00-overview mục 6): "AI chỉ trích xuất, gợi ý đối chiếu và đánh dấu khoảng trống; Authorized Reviewer quyết định kết quả Gate 2, sau đó System Admin phê duyệt cuối."
+- Code: CompetencyCriteria C1–C5 do người duyệt chấm.
+- SRS actor Authorized Reviewer: "AI may only assist with extraction and cross-checking; the decision belongs to the reviewer."
+→ Lúc trình bày nói "AI chấm" là sai; sửa slide và cách nói.
+Cách nói: "AI đọc CV và bằng chứng, trích ra thông tin và đánh dấu chỗ thiếu; người duyệt được ủy quyền chấm từng tiêu chí và quyết định, System Admin phê duyệt cuối."` }]
+      ]}
+    ]
+  }
+];
+
+// Answers from the team meeting on 08/11, keyed by question id; applied like the inline answers above.
+const MEETING = {};
+
+// Quick answer per question: [level, answer]. g = can answer now, y = answer and say what is in progress, r = team must decide first.
+const QUICK = {
+  "flow2-1": ["y", "Lấy từ 2 CSDL nhà nước: vbpl.vn (Bộ Tư pháp, nguồn chính) và vbpq.mof.gov.vn (Bộ Tài chính, nguồn bổ sung). Không dùng thuvienphapluat vì là trang tư nhân, thu phí. (Nguồn mof đã có code, chưa chạy thật.)"],
+  "flow2-2": ["y", "vbpl.vn cho phép bot (robots.txt Allow: /), crawler chỉ vào trang được phép và nghỉ 2–5 giây mỗi lần. Văn bản không cào được thì Knowledge Admin tải file chính thức lên, vẫn qua bước duyệt."],
+  "flow2-3": ["g", "Crawler không đăng nhập nên chỉ lấy được văn bản công khai, và chỉ lấy văn bản quy phạm pháp luật. File tải lên tay phải là văn bản đã công bố trên nguồn nhà nước, không xác minh được thì từ chối (BR-K15)."],
+  "flow2-4": ["g", "Phạm vi là quyết toán thuế TNDN năm kỳ 2026 (chốt với thầy Thức 11/11): tờ khai 03/TNDN với 3 phụ lục 03-2, 03-5, 03-8 (theo mẫu Thông tư 89/2026; 03-1A, 03-1C đã bỏ), và công văn giải trình chi phí. Văn bản gốc (đã tra vbpl.vn 11/11/2026): Luật Thuế TNDN 67/2025, Nghị định 320/2025, Thông tư 20/2026 (cách tính); Luật Quản lý thuế 108/2025, Thông tư 89/2026 (mẫu tờ khai, thay Thông tư 80/2021 từ 01/07/2026); Nghị quyết 43/2026 (giảm 30% thuế kỳ 2026–2027 cho DN doanh thu ≤ 10 tỷ). (Kho chưa có các văn bản này.)"],
+  "flow2-5": ["y", "Số hiệu, ngày, cơ quan ban hành lấy từ dữ liệu có cấu trúc của CSDL nhà nước; hệ thống tự sửa lỗi mã hóa số hiệu, lưu link gốc và mã băm. Admin đối chiếu bản gốc theo checklist 5 mục trước khi duyệt."],
+  "flow2-6": ["y", "Mỗi đoạn luật mang ngày hiệu lực; AI xác định kỳ tính thuế rồi chỉ lấy đoạn còn hiệu lực trong kỳ đó. Quan hệ sửa đổi, thay thế lấy từ CSDL quốc gia và được lưu lại."],
+  "flow2-7": ["g", "Chỉ Knowledge Admin duyệt, mọi quyết định lưu người, thời điểm, lý do (BR-K07, BR-K14). Kiểm theo thứ tự: đúng phạm vi thuế TNDN, nguồn kiểm chứng được, đối chiếu 5 mục với bản gốc. Kết quả: duyệt, từ chối, bóc tách lại hoặc gỡ."],
+  "flow2-8": ["y", "Theo chính sách, crawl tự động 1 tháng/lần, admin bấm Crawl Now khi cần. Văn bản mới hoặc đổi nội dung tạo phiên bản mới chờ duyệt, không ghi đè. (Hiện mới có Crawl Now, lịch tự động đang làm.)"],
+  "flow2-9": ["r", "Crawler lấy văn bản, tách Chương/Điều/Khoản/Điểm và chia đoạn kèm số hiệu, ngày hiệu lực; admin duyệt xong thì đoạn được chuyển thành vector đưa vào Qdrant. (Phần nối crawler → index đang lỗi, phải sửa trước demo.)"],
+  "flow2-10": ["g", "Mỗi đoạn lưu số hiệu, Điều/Khoản/Điểm, ngày hiệu lực và mã văn bản gốc, nên câu trả lời trích được dạng \"Khoản 2 Điều 9 Thông tư 20/2026/TT-BTC\"."],
+  "flow3-1": ["g", "Template giúp kế toán DN vừa và nhỏ lập đúng hồ sơ thuế TNDN phải nộp (tờ khai 03/TNDN, công văn giải trình), số liệu điền từ dữ liệu DN và có căn cứ pháp lý, chuyên gia rà soát xong là nộp được."],
+  "flow3-2": ["y", "Một vấn đề: quyết toán thuế TNDN năm, gồm tờ khai 03/TNDN và công văn giải trình khi bị loại chi phí. Ngoài phạm vi: thuế khác, tạm nộp quý, chuyển nhượng vốn, kỳ trước 2026. (Chưa chốt làm tài liệu nào trước.)"],
+  "flow3-3": ["y", "Kế toán DN vừa và nhỏ, thường một người làm nhiều việc. Khó vì luật mới từ kỳ 2025, không biết phải nộp phụ lục nào, bị loại chi phí phải tự viết giải trình, thuê dịch vụ thì đắt. (Cần thầy Thức xác nhận hoặc khảo sát.)"],
+  "flow3-4": ["g", "Người dùng không mô tả mà chọn trực tiếp trong thư viện mẫu (chỉ 2 loại), rồi điền form theo template. Công văn giải trình có 13 trường bắt buộc, quan trọng nhất là mã số thuế, kỳ tính thuế và bảng khoản chi bị loại."],
+  "flow3-5": ["g", "bge-m3 tạo vector (hỗ trợ tiếng Việt), qwen2.5:7b viết câu trả lời, cả hai chạy local qua Ollama. Vector dùng để tìm đoạn luật liên quan, không dùng để tìm template."],
+  "flow3-6": ["g", "Người dùng nhận đúng template họ chọn, mỗi template ghi rõ dùng khi nào. Đi từ chatbot thì câu trả lời có trích dẫn chính là lý do chọn mẫu."],
+  "flow3-7": ["g", "Khoảng 5 mẫu thuộc 2 loại tài liệu, chọn trong thư viện là đủ, không cần RAG để tìm template. RAG dùng để lấy căn cứ pháp lý khi soạn và để trả lời chatbot."],
+  "flow3-8": ["y", "Chạy local để dữ liệu tài chính DN không ra ngoài và không tốn phí API. Model không chuyên luật nên bị buộc chỉ trả lời theo đoạn luật trong kho, không đủ căn cứ thì nói chưa đủ. (Chưa đo tốc độ trên máy demo.)"],
+  "flow3-9": ["g", "Template do người dùng chọn nên không có tìm sai. Khi tìm đoạn luật, kết quả dưới ngưỡng 0.5 bị bỏ; không còn đoạn nào thì AI báo chưa có căn cứ và gợi ý chuyển chuyên gia."],
+  "flow3-10": ["r", "Bộ khoảng 30 câu hỏi do chuyên gia xác nhận đáp án (trong phạm vi, ngoài phạm vi, thiếu kỳ thuế); đo 4 chỉ số: phân loại phạm vi, tìm đúng luật, trả lời đúng, trích dẫn đúng. (Chưa làm.)"],
+  "flow4-1": ["g", "2 template: tờ khai quyết toán thuế TNDN theo mẫu Thông tư 89/2026 kèm 3 phụ lục, và công văn giải trình chi phí dựa trên quy định chi phí được trừ của Luật Thuế TNDN. Knowledge Admin tạo và xuất bản theo phiên bản."],
+  "flow4-2": ["g", "Số liệu do người dùng nhập, phép tính do hệ thống, AI không tạo số. AI viết phần lời văn, gắn căn cứ pháp lý cho từng khoản và cảnh báo chỗ thiếu trước khi gửi chuyên gia."],
+  "flow4-3": ["g", "Soạn, tạo lại và xuất bản nháp đều miễn phí, không giới hạn số lần (nhóm chốt 11/11). (Code còn AiQuota 10 lượt, cần bỏ.)"],
+  "flow4-4": ["g", "Người dùng sửa dữ liệu đầu vào chứ không sửa chữ AI viết; mỗi lần xác nhận tạo snapshot và bản nháp mới, mọi phiên bản đều lưu. Bản gửi chuyên gia bị khóa, chuyên gia sửa thì tạo phiên bản riêng."],
+  "flow4-5": ["y", "Số liệu luôn do người dùng nhập (snapshot), lời văn và căn cứ do AI viết (AI Draft), chuyên gia sửa thì tạo phiên bản riêng. (Chưa đánh dấu nguồn từng trường trên màn hình.)"],
+  "flow4-6": ["r", "Người dùng tự chọn; bản nháp chưa sẵn sàng (NOT_READY) thì không xuất được, phải sửa hoặc gửi chuyên gia. Hệ thống luôn khuyến nghị chuyên gia rà soát trước khi nộp. (Buổi họp chốt bắt buộc, ngược tài liệu → nhóm phải chọn.)"],
+  "flow4-7": ["g", "Chuyên gia làm theo 6 nhiệm vụ T1–T6: kiểm dữ liệu và bằng chứng, kiểm nội dung AI soạn, kiểm căn cứ pháp lý, yêu cầu bổ sung hoặc hiệu chỉnh khi cần, rồi kết luận VERIFIED hoặc CANNOT_VERIFY."],
+  "flow4-8": ["g", "Chuyên gia được duyệt theo từng dịch vụ (Thuế TNDN). Người dùng tự chọn chuyên gia trên Marketplace theo chuyên môn, kinh nghiệm, giá, đánh giá; chuyên gia không nhận trong 24 giờ thì hoàn 100%."],
+  "flow4-9": ["y", "Thiếu thông tin thì chuyên gia gửi yêu cầu bổ sung, không trả lời đúng hạn thì case dừng. Kết luận cuối là VERIFIED hoặc CANNOT_VERIFY có lý do; sau đó người dùng nghiệm thu trong 72 giờ hoặc khiếu nại. (Sơ đồ cần vẽ lại.)"],
+  "flow4-10": ["g", "Chuyên gia chịu trách nhiệm về kết luận rà soát trên đúng phiên bản được gửi; người dùng có 72 giờ nghiệm thu hoặc khiếu nại. Nộp hồ sơ và nghĩa vụ thuế vẫn là của doanh nghiệp."],
+  "flow4-11": ["g", "Nền tảng 40%, chuyên gia 60% sau thuế TNCN (chốt với thầy Thức 11/11). Người dùng trả 100% cho nền tảng giữ, nghiệm thu xong mới chia; có sự cố hoàn 50%; khách không bổ sung thông tin thì không hoàn."],
+  "flow4-12": ["g", "Dùng AI miễn phí (nhóm chốt 11/11); người dùng chỉ trả một khoản là giá thuê chuyên gia, phí nền tảng nằm sẵn trong giá đó nên không thu 2 lần."],
+  "common-1": ["r", "Mỗi flow vẽ activity diagram swimlane theo vai trò, có 1 điểm bắt đầu, các điểm kết thúc ghi trạng thái cuối và đủ nhánh lỗi, từ chối. (Chưa vẽ.)"],
+  "common-2": ["g", "AI chỉ hỗ trợ 3 việc: trích xuất hồ sơ chuyên gia, trả lời câu hỏi có trích dẫn, viết lời văn kèm căn cứ trong bản nháp. Mọi quyết định do người hoặc quy tắc; bỏ AI hệ thống vẫn chạy."],
+  "common-3": ["y", "Bỏ câu \"AI làm 80%\". Nói: hệ thống cung cấp mẫu và kho luật đã kiểm duyệt, AI soạn lời văn và tìm căn cứ, số liệu do doanh nghiệp nhập, kết luận cuối do chuyên gia xác nhận."],
+  "common-4": ["g", "Mỗi service sở hữu schema và role DB riêng, không đọc dữ liệu của nhau, gọi nhau qua HTTP hoặc RabbitMQ. Đặt chung một Postgres vì giới hạn tài nguyên khi chạy local; tách DB riêng chỉ cần đổi cấu hình."],
+  "common-5": ["y", "Sơ đồ gồm client → gateway → các service .NET và ai-service, crawler worker, cùng Postgres, Redis, RabbitMQ, SeaweedFS, Qdrant, Ollama, payOS; có process view cho 2 luồng chính và deployment view trên máy demo. (Phúc đang sửa.)"],
+  "common-6": ["g", "Giữ cả hai bước: Gate 1 điều kiện pháp lý (có chứng chỉ), Gate 2 người duyệt chấm C1–C5 dựa trên CV. Thầy Thức đã đồng ý ngày 11/11."],
+  "common-7": ["g", "Người duyệt chấm C1–C5 và quyết định, AI chỉ trích xuất thông tin và đánh dấu chỗ thiếu; System Admin phê duyệt cuối. Lúc trình bày nói \"AI chấm\" là sai."]
+};
+
+// Action items gathered from the answers, grouped by owner: [task, question ids].
+const TODO = [
+  ["Thịnh: crawler và ingestion", [
+    ["Điền [seeds], thêm \"Nghị quyết\", crawl lại, đếm văn bản", ["flow2-4"]],
+    ["Giữ chunks khi import; worker chia đoạn cho file upload", ["flow2-9"]],
+    ["Sửa lỗi chữ ở cơ quan ban hành, tình trạng hiệu lực", ["flow2-5"]],
+    ["Văn bản đổi hiệu lực thì cập nhật EffectiveTo", ["flow2-8"]],
+    ["Lịch crawl tự động 1 tháng/lần", ["flow2-8"]],
+    ["Đưa ngày hiệu lực vào từng đoạn", ["flow2-6"]],
+    ["Đổi User-Agent của crawler", ["flow2-2"]],
+    ["Chạy thử nguồn mof", ["flow2-1"]]
+  ]],
+  ["Vương: ai-service", [
+    ["Sửa thụt lề route /kb/chunk-and-embed", ["flow2-9"]],
+    ["Merge nhánh feat/ai-service vào prod", ["flow2-7", "flow2-9"]],
+    ["Soạn nháp: tìm luật bằng nội dung, không dùng nguyên JSON", ["flow3-5"]],
+    ["Soạn nháp thiếu căn cứ thì cảnh báo", ["flow3-9"]],
+    ["Thêm tên văn bản, link nguồn vào Qdrant", ["flow2-10"]],
+    ["Đo thời gian trả lời trên máy demo", ["flow3-8"]]
+  ]],
+  ["Trí: Knowledge Admin và System Admin", [
+    ["BE kiểm checklist 5 mục khi duyệt", ["flow2-7"]],
+    ["Lý do từ chối chọn từ danh sách", ["flow2-7"]],
+    ["Thêm \"Dùng khi…\" và căn cứ cho mỗi template", ["flow3-6", "flow4-1"]],
+    ["Tạo sẵn template trước demo", ["flow3-7"]],
+    ["Cập nhật api-checklist nhóm 04, 05", ["flow2-7"]]
+  ]],
+  ["Phúc", [
+    ["Sửa sơ đồ kiến trúc", ["common-5"]],
+    ["✔ Đã hỏi thầy Thức 11/11: giữ Gate 2, chấm C1–C5 theo CV", ["common-6"]],
+    ["Nhắn thầy xác nhận: chuyên gia từ chối có hoàn 100%; khiếu nại hoàn 50%; tỷ lệ khấu trừ TNCN", ["flow4-11", "flow2-4"]]
+  ]],
+  ["Cả nhóm phải chốt", [
+    ["Làm tài liệu nào trước: công văn hay tờ khai", ["flow3-2"]],
+    ["✔ Kỳ 2026 theo Thông tư 89 (thầy Thức chốt 11/11)", ["flow2-4"]],
+    ["Đánh số flow theo tài liệu nghiệp vụ hay theo slide", ["flow3-7"]],
+    ["Bắt buộc gửi chuyên gia hay tự chọn", ["flow4-6"]],
+    ["✔ AI miễn phí, chỉ thu tiền thuê chuyên gia (nhóm chốt 11/11), không giới hạn số lần", ["flow4-3", "flow4-12"]],
+    ["Bỏ \"AI làm 80%\" trên slide", ["common-3"]],
+    ["Vẽ swimlane cho từng flow", ["common-1", "flow4-9"]],
+    ["Làm bộ 30 câu hỏi test", ["flow3-10"]],
+    ["Đọc lại phần Claude đề xuất trong chi tiết", []]
+  ]],
+  ["Hỏi thầy Thức", [
+    ["Mẫu mới bỏ 03-1A, 03-1C: chỉ còn 03-2, 03-5, 03-8 có đúng không? Không làm 03-3A (nhóm chốt 11/11)", ["flow2-4"]],
+    ["✔ Kỳ 2026 (thầy chốt 11/11); kỳ 2025 ngoài phạm vi", ["flow2-4", "flow3-2"]],
+    ["Xác nhận danh sách văn bản cốt lõi", ["flow2-4"]],
+    ["Xác nhận khó khăn của kế toán DN", ["flow3-3"]],
+    ["Chấm bộ câu hỏi test", ["flow3-10"]]
+  ]],
+  ["Tra cứu, chuẩn bị bằng chứng", [
+    ["Đọc Nghị quyết 198/2025, 43/2026", ["flow2-4"]],
+    ["Tìm điều luật bắt buộc công khai văn bản QPPL", ["flow2-3"]],
+    ["Chụp robots.txt của vbpl và mof", ["flow2-2"]]
+  ]],
+  ["Sau họp 11/11 (sửa code theo tài liệu nghiệp vụ mới)", [
+    ["Workflow: thời hạn theo ngày làm việc; chuyên gia phản hồi 1 ngày làm việc; nghiệm thu 1 ngày làm việc + email nhắc", ["flow4-11"]],
+    ["Billing: P mặc định 40%; khấu trừ thuế TNCN khi chi trả; hoàn 50% một mức; khách không bổ sung thông tin thì không hoàn", ["flow4-11"]],
+    ["Deploy demo cho thầy dùng thử, kèm bộ câu hỏi test", ["flow3-10"]],
+    ["Hoàn thiện bản xác nhận doanh nghiệp, gửi thầy ký", []],
+    ["Đổi \"từ kỳ 2025\" thành \"kỳ 2026\" trên slide và video", ["flow2-4"]],
+    ["Bỏ trừ Credit cho câu hỏi AI và xuất bản nháp, bỏ AiQuota 10 lượt (AI miễn phí, không giới hạn)", ["flow4-12", "flow4-3"]]
+  ]]
+];
+
+const STATUS = [["open", "Chưa trả lời"], ["doing", "Đang làm"], ["done", "Đã trả lời"], ["out", "Ngoài phạm vi"]];
+const KEY = "gfa26se81-flow-questions-v2";
+const SEED = 1;
+let store = {};
+try { store = JSON.parse(localStorage.getItem(KEY) || "{}"); } catch (e) { store = {}; }
+function save() { try { localStorage.setItem(KEY, JSON.stringify(store)); } catch (e) {} }
+
+const LEVELS = { g: "Trả lời được", y: "Nói kèm \"đang làm\"", r: "Cần chốt" };
+const RANK = { g: 0, y: 1, r: 2 };
+
+// Questions with the same intent are merged into one card; the original questions and notes stay inside it.
+// Each entry: [question, hot, original ids, short answer bullets, what is still missing (null = nothing)].
+const MERGED = {
+  flow2: [
+    ["Nguồn dữ liệu lấy từ đâu, có hợp lệ không?", 1, ["flow2-1", "flow2-2", "flow2-3"], ["2 CSDL nhà nước: vbpl.vn (Bộ Tư pháp) và vbpq.mof.gov.vn (Bộ Tài chính).", "vbpl cho phép bot; crawler không đăng nhập, chỉ lấy văn bản công khai.", "Cào không được thì Knowledge Admin tải file chính thức lên, vẫn phải duyệt."], "nguồn mof chưa chạy thật"],
+    ["Dữ liệu đã đủ cho thuế TNDN chưa? Văn bản cốt lõi là gì?", 1, ["flow2-4"], ["Phạm vi: quyết toán TNDN năm kỳ 2026 (thầy Thức chốt 11/11), tờ khai 03/TNDN + phụ lục 03-2, 03-5, 03-8, và công văn giải trình chi phí.", "Cách tính thuế: Luật 67/2025, Nghị định 320/2025, Thông tư 20/2026.", "Mẫu tờ khai: Luật Quản lý thuế 108/2025, Thông tư 89/2026 (thay Thông tư 80/2021)."], "kho chưa có các văn bản này (đã tải về Drive)"],
+    ["Sao chắc văn bản đúng bản gốc? Ai duyệt, theo tiêu chí gì?", 1, ["flow2-5", "flow2-7"], ["Số hiệu, ngày, cơ quan lấy từ CSDL nhà nước, lưu link gốc và mã băm.", "Chỉ Knowledge Admin duyệt, đối chiếu 5 mục với bản gốc.", "Mọi quyết định lưu người, thời điểm, lý do."], null],
+    ["Văn bản hết hiệu lực, bị sửa đổi, cập nhật thế nào?", 0, ["flow2-6", "flow2-8"], ["Mỗi đoạn luật có ngày hiệu lực; AI chỉ lấy đoạn còn hiệu lực trong kỳ được hỏi.", "Crawl tự động 1 tháng/lần, thêm nút Crawl Now.", "Văn bản mới tạo phiên bản chờ duyệt, không ghi đè."], "lịch crawl tự động đang làm"],
+    ["Từ văn bản đến kho vector đi qua những bước nào?", 0, ["flow2-9", "flow2-10"], ["Tách theo Chương/Điều/Khoản/Điểm rồi chia đoạn.", "Mỗi đoạn lưu số hiệu, vị trí, ngày hiệu lực, nên trích được \"Khoản 2 Điều 9 Thông tư 20/2026\".", "Admin duyệt xong mới đưa vào Qdrant."], "phần nối crawler → index đang lỗi, phải sửa trước demo"]
+  ],
+  flow3: [
+    ["Template giúp ai, giải quyết việc gì?", 1, ["flow3-1", "flow3-3"], ["Người dùng: kế toán DN vừa và nhỏ.", "Khó khăn: luật mới, không biết nộp phụ lục nào, bị loại chi phí phải tự giải trình.", "Template giúp lập đúng tờ khai 03/TNDN và công văn giải trình, có căn cứ, có chuyên gia rà soát."], null],
+    ["Làm loại vấn đề nào? Gì nằm ngoài phạm vi?", 1, ["flow3-2"], ["Làm: quyết toán thuế TNDN năm (tờ khai 03/TNDN, công văn giải trình).", "Không làm: thuế khác, tạm nộp quý, chuyển nhượng vốn, kỳ 2025 trở về trước."], "chưa chốt làm tài liệu nào trước"],
+    ["Người dùng chọn template thế nào? Có cần RAG không?", 1, ["flow3-4", "flow3-6", "flow3-7"], ["Chỉ khoảng 5 mẫu, người dùng chọn thẳng trong thư viện.", "Điền form theo mẫu (công văn giải trình có 13 trường bắt buộc).", "RAG chỉ dùng để tìm căn cứ pháp lý, không dùng để tìm mẫu."], null],
+    ["Dùng model nào, vì sao chạy local?", 1, ["flow3-5", "flow3-8"], ["bge-m3 tạo vector, qwen2.5:7b viết câu trả lời, chạy qua Ollama.", "Chạy local để dữ liệu DN không ra ngoài, không tốn phí API.", "Chỉ trả lời theo đoạn luật trong kho; thiếu căn cứ thì nói thiếu."], "chưa đo tốc độ trên máy demo"],
+    ["AI tìm sai thì sao? Đo độ chính xác thế nào?", 0, ["flow3-9", "flow3-10"], ["Đoạn luật dưới ngưỡng 0.5 bị bỏ; không còn đoạn nào thì báo chưa có căn cứ, gợi ý gửi chuyên gia.", "Đo bằng khoảng 30 câu hỏi do chuyên gia chấm, theo 4 chỉ số: phạm vi, tìm luật, trả lời, trích dẫn."], "bộ câu hỏi test chưa làm"]
+  ],
+  flow4: [
+    ["Có những template nào? AI làm gì khi đã có template?", 0, ["flow4-1", "flow4-2"], ["2 mẫu: tờ khai 03/TNDN (Thông tư 89/2026) và công văn giải trình chi phí.", "Số liệu do người dùng nhập, phép tính do hệ thống.", "AI chỉ viết lời văn, gắn căn cứ, cảnh báo chỗ thiếu."], null],
+    ["Sửa bản nháp thế nào, có lưu phiên bản không?", 0, ["flow4-4", "flow4-5"], ["Người dùng sửa dữ liệu đầu vào, không sửa chữ AI viết.", "Mỗi lần xác nhận tạo bản nháp mới, mọi phiên bản đều lưu.", "Chuyên gia sửa thì tạo phiên bản riêng."], "chưa đánh dấu nguồn từng trường trên màn hình"],
+    ["Có bắt buộc gửi chuyên gia không? Ghép chuyên gia thế nào?", 0, ["flow4-6", "flow4-8"], ["Theo tài liệu: người dùng tự chọn; bản nháp NOT_READY thì không xuất được.", "Người dùng tự chọn chuyên gia trên Marketplace; chuyên gia phải phản hồi trong 1 ngày làm việc."], "buổi họp chốt \"bắt buộc\", ngược tài liệu, nhóm phải chọn"],
+    ["Chuyên gia kiểm tra gì, chịu trách nhiệm đến đâu?", 1, ["flow4-7", "flow4-9", "flow4-10"], ["Làm 6 nhiệm vụ T1–T6, kết luận VERIFIED hoặc CANNOT_VERIFY.", "Người dùng có 1 ngày làm việc để nghiệm thu hoặc khiếu nại (thầy Thức chốt 11/11).", "Chuyên gia chịu trách nhiệm về kết luận; nghĩa vụ thuế vẫn của DN."], "sơ đồ cần vẽ lại"],
+    ["Phí nền tảng, phí chuyên gia và luồng tiền?", 1, ["flow4-11"], ["Nền tảng 40%, chuyên gia 60% sau thuế TNCN (thầy Thức chốt 11/11).", "Người dùng trả trước 100%, nền tảng giữ, nghiệm thu xong mới chia.", "Có sự cố: hoàn một mức 50%; khách không bổ sung thông tin: không hoàn."], null],
+    ["Tính phí phần AI thế nào, có thu 2 lần không?", 0, ["flow4-3", "flow4-12"], ["Dùng AI (hỏi đáp, soạn, xuất bản nháp) miễn phí, không giới hạn số lần (nhóm chốt 11/11).", "Người dùng chỉ trả giá thuê chuyên gia; phí nền tảng nằm sẵn trong giá đó nên không thu 2 lần.", "Không làm gói premium (thầy Thức 11/11)."], "code còn tính Credit và AiQuota 10 lượt, cần bỏ"]
+  ],
+  common: [
+    ["Sơ đồ flow và sơ đồ kiến trúc đã đủ chưa?", 1, ["common-1", "common-5"], ["Mỗi flow: activity diagram swimlane, đủ nhánh lỗi và từ chối.", "Kiến trúc: có process view và deployment view, đủ service và hạ tầng."], "chưa vẽ xong"],
+    ["Có lạm dụng AI không? Đổi câu \"AI làm 80%\" thế nào?", 0, ["common-2", "common-3"], ["AI chỉ làm 3 việc: trích xuất hồ sơ chuyên gia, trả lời có trích dẫn, viết lời văn.", "Quyết định do người hoặc quy tắc; bỏ AI thì hệ thống vẫn chạy.", "Bỏ câu \"AI làm 80%\"."], null],
+    ["Mỗi service đã có DB riêng chưa?", 1, ["common-4"], ["1 Postgres, mỗi service 1 schema và 1 role riêng, không đọc dữ liệu của nhau.", "Các service gọi nhau qua HTTP hoặc RabbitMQ.", "Muốn tách DB thật chỉ cần đổi cấu hình."], null],
+    ["Gate 2 xử lý thế nào? Ai chấm năng lực?", 1, ["common-6", "common-7"], ["Người duyệt chấm; AI chỉ trích xuất thông tin và đánh dấu chỗ thiếu.", "Thầy Thức (11/11): giữ Gate 2, chấm C1–C5 dựa trên CV, theo năng lực chuyên môn và kinh nghiệm."], null]
+  ]
+};
+
+const LABELS = {};   // original id -> new card label
+const CARD_OF = {};  // original id -> card element id
+const root = document.getElementById("content");
+let total = 0;
+for (const flow of DATA) {
+  // Original questions of this flow with their old numbers; prefilled notes are applied as before.
+  const orig = {};
+  let n = 0;
+  for (const g of flow.groups) {
+    for (const [text, hot, answer] of g.qs) {
+      n++;
+      const id = `${flow.id}-${n}`;
+      orig[id] = { text, oldLabel: `${flow.id === "common" ? "C" : flow.id.slice(-1)}.${n}` };
+      const s = store[id] || {};
+      // A newer per-answer seed replaces the earlier prefilled note and status; later edits by the viewer are kept.
+      const seed = answer ? answer.seed || SEED : 0;
+      if (answer && s.seed !== seed) {
+        if (!s.status || s.status === "open" || s.seed || answer.forceStatus) s.status = answer.status;
+        s.note = answer.note;
+        s.seed = seed;
+        store[id] = s; save();
+      }
+      const meeting = MEETING[id];
+      if (meeting && !s.meeting) {
+        s.note = s.note && s.note.trim() ? `${s.note.trim()}\n\n${meeting.note}` : meeting.note;
+        if (!s.status || s.status === "open") s.status = meeting.status;
+        s.meeting = 1;
+        store[id] = s; save();
+      }
+    }
+  }
+
+  const sec = document.createElement("section");
+  sec.className = "flow"; sec.id = flow.id;
+  sec.innerHTML = `<h2></h2><p class="flow-sub"></p>`;
+  sec.querySelector("h2").textContent = flow.title;
+  sec.querySelector(".flow-sub").textContent = flow.sub;
+  const box = document.createElement("div");
+  box.className = "group";
+  let m = 0;
+  for (const [question, hot, ids, bullets, missing] of MERGED[flow.id]) {
+    m++; total++;
+    const label = `${flow.id === "common" ? "C" : flow.id.slice(-1)}.${m}`;
+    const cardId = `${flow.id}-m${m}`;
+    // The card's level is the most urgent level among its original questions.
+    const lv = ids.map(i => QUICK[i][0]).reduce((a, b) => RANK[b] > RANK[a] ? b : a, "g");
+
+    const card = document.createElement("div");
+    card.className = "q card"; card.id = cardId; card.dataset.lv = lv;
+    card.innerHTML = `
+      <div class="num">${label}</div>
+      <div class="text"><div class="qtext"></div></div>
+      <details class="more"><summary></summary><div class="subs"></div></details>`;
+    const t = card.querySelector(".qtext");
+    t.textContent = question;
+    if (hot) { const b = document.createElement("span"); b.className = "hot"; b.textContent = "● trọng tâm"; t.appendChild(b); }
+    const qb = document.createElement("div");
+    qb.className = "quick"; qb.dataset.lv = lv;
+    const tag = document.createElement("span");
+    tag.className = "lv"; tag.dataset.lv = lv; tag.textContent = LEVELS[lv];
+    const ul = document.createElement("ul");
+    for (const b of bullets) { const li = document.createElement("li"); li.textContent = b; ul.appendChild(li); }
+    qb.append(tag, ul);
+    if (missing) { const m = document.createElement("div"); m.className = "missing"; m.textContent = `Còn thiếu: ${missing}`; qb.appendChild(m); }
+    card.querySelector(".text").appendChild(qb);
+    card.querySelector("summary").textContent =
+      `Chi tiết, ghi chú (câu cũ ${ids.map(i => orig[i].oldLabel).join(", ")})`;
+
+    const fits = [];
+    for (const id of ids) {
+      LABELS[id] = label; CARD_OF[id] = cardId;
+      const s = store[id] || {};
+      const sub = document.createElement("div");
+      sub.className = "sub";
+      sub.innerHTML = `
+        <div class="sub-head"><b></b> <span></span></div>
+        <div class="sub-ctrl">
+          <input type="text" placeholder="Người trả lời" aria-label="Người trả lời">
+          <select aria-label="Trạng thái">${STATUS.map(([v, l]) => `<option value="${v}">${l}</option>`).join("")}</select>
+        </div>
+        <textarea placeholder="Ghi chú / câu trả lời" aria-label="Ghi chú"></textarea>`;
+      sub.querySelector(".sub-head b").textContent = `Câu cũ ${orig[id].oldLabel}:`;
+      sub.querySelector(".sub-head span").textContent = orig[id].text;
+      const inp = sub.querySelector("input"), sel = sub.querySelector("select"), ta = sub.querySelector("textarea");
+      inp.value = s.who || ""; sel.value = s.status || "open"; ta.value = s.note || "";
+      sel.dataset.v = sel.value;
+      const fit = () => { ta.style.height = "auto"; ta.style.height = ta.scrollHeight + 2 + "px"; };
+      fits.push(fit);
+      const update = () => {
+        store[id] = { ...store[id], who: inp.value, status: sel.value, note: ta.value };
+        sel.dataset.v = sel.value; save(); refresh(); fit();
+      };
+      inp.addEventListener("input", update); sel.addEventListener("change", update); ta.addEventListener("input", update);
+      card.querySelector(".subs").appendChild(sub);
+    }
+    // A closed details element has no layout, so size the textareas when it opens.
+    card.querySelector("details").addEventListener("toggle", () => fits.forEach(f => f()));
+    box.appendChild(card);
+  }
+  sec.appendChild(box);
+  root.appendChild(sec);
+}
+
+// A merged question counts as handled when every original question inside it is done or out of scope.
+function refresh() {
+  let done = 0;
+  document.querySelectorAll(".q.card").forEach(c => {
+    const sels = [...c.querySelectorAll("select")];
+    if (sels.length && sels.every(s => s.value === "done" || s.value === "out")) done++;
+  });
+  document.getElementById("progress").innerHTML = `Đã xử lý <b>${done}</b> / ${total} câu`;
+}
+refresh();
+
+// Show only the questions of one level; groups left empty are hidden too.
+document.getElementById("filters").addEventListener("click", (e) => {
+  const btn = e.target.closest("button");
+  if (!btn) return;
+  const f = btn.dataset.f;
+  document.querySelectorAll("#filters button").forEach(b => b.setAttribute("aria-pressed", String(b === btn)));
+  document.querySelectorAll(".q").forEach(r => r.classList.toggle("hide", f !== "all" && r.dataset.lv !== f));
+  document.querySelectorAll("#content .group").forEach(g => g.classList.toggle("hide", !g.querySelector(".q:not(.hide)")));
+});
+
+// Action items with checkboxes kept in this browser.
+const TODO_KEY = "gfa26se81-flow-todo-v1";
+let todoDone = {};
+try { todoDone = JSON.parse(localStorage.getItem(TODO_KEY) || "{}"); } catch (e) { todoDone = {}; }
+const todoRoot = document.getElementById("todo-list");
+let todoTotal = 0;
+TODO.forEach(([owner, items], gi) => {
+  const box = document.createElement("div");
+  box.className = "group todo-owner";
+  const h = document.createElement("h3"); h.textContent = `${owner} (${items.length})`; box.appendChild(h);
+  items.forEach(([task, refs], ii) => {
+    todoTotal++;
+    const key = `${gi}-${ii}`;
+    const item = document.createElement("label");
+    item.className = "todo-item";
+    const cb = document.createElement("input"); cb.type = "checkbox"; cb.checked = !!todoDone[key];
+    const span = document.createElement("span"); span.textContent = task;
+    for (const ref of refs) {
+      const a = document.createElement("a"); a.href = `#${CARD_OF[ref] || ref}`; a.textContent = `(${LABELS[ref] || ref})`;
+      span.appendChild(a);
+    }
+    item.classList.toggle("done", cb.checked);
+    cb.addEventListener("change", () => {
+      todoDone[key] = cb.checked; item.classList.toggle("done", cb.checked);
+      try { localStorage.setItem(TODO_KEY, JSON.stringify(todoDone)); } catch (e) {}
+      todoCount();
+    });
+    item.append(cb, span);
+    box.appendChild(item);
+  });
+  todoRoot.appendChild(box);
+});
+function todoCount() {
+  const n = Object.values(todoDone).filter(Boolean).length;
+  document.querySelector("#todo .flow-sub").textContent =
+    `Đã xong ${n} / ${todoTotal} việc.`;
+}
+todoCount();
+
+document.getElementById("print").addEventListener("click", () => window.print());
+document.getElementById("reset").addEventListener("click", () => {
+  if (!confirm("Xóa toàn bộ người trả lời, trạng thái và ghi chú đã nhập?")) return;
+  store = {}; save();
+  try { localStorage.removeItem(TODO_KEY); } catch (e) {}
+  location.reload();
+});
+</script>
+</body>
+</html>

@@ -2,9 +2,17 @@ import { api } from '@/lib/api-client'
 import { isKnowledgeDemo } from '@/lib/knowledge-data-source'
 import type { KnowledgeStats } from '../types'
 
-/* Thống kê kho tri thức theo tháng.
- * TODO(api): đối chiếu endpoint với BE khi có Swagger; BE gắn partial: true cho tháng đang chạy. */
+interface Envelope<T> {
+  success: boolean
+  data: T
+}
+
+/* Knowledge base statistics; months follow Vietnam time and the current month comes back partial. */
 export async function getKnowledgeStats(signal?: AbortSignal): Promise<KnowledgeStats> {
   if (isKnowledgeDemo) return (await import('./fixtures')).mockKnowledgeStats()
-  return api.get<KnowledgeStats>('/api/knowledge/stats', { signal })
+  const res = await api.get<Envelope<KnowledgeStats>>('/api/v1/knowledge/stats', {
+    params: { months: 12 },
+    signal,
+  })
+  return res.data
 }

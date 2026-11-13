@@ -44,8 +44,26 @@ terms = [
 # 3. Biểu mẫu (03/TNDN, 01A/TNDN, 01B/TNDN...) không nằm trong tên văn bản ->
 # liệt kê SỐ HIỆU văn bản gốc ban hành mẫu tờ khai / văn bản then chốt cần lấy chắc chắn.
 # Nhóm tự xác nhận danh sách trước khi điền, ví dụ: "80/2021/TT-BTC".
+# Đã tra hiệu lực trên vbpl.vn ngày 11/11/2026 (chi tiết: review-flow-questions.html, câu 2.2 mới).
+# Chưa đưa vào: Nghị quyết 43/2026/QH16 và 198/2025/QH15 (infer_doc_type đoán số có "QH" là Luật,
+# nên seed nghị quyết sẽ tìm sai loại), Quyết định đính chính 2551/QĐ-BTC (vbpl xếp vào văn bản hành chính).
 [seeds]
-so_hieu = []
+so_hieu = [
+    # Thuế TNDN: luật, luật sửa đổi, bản hợp nhất, nghị định và thông tư hướng dẫn
+    "67/2025/QH15",
+    "09/2026/QH16",
+    "113/VBHN-VPQH",
+    "320/2025/NĐ-CP",
+    "141/2026/NĐ-CP",
+    "20/2026/TT-BTC",
+    "398/2026/NĐ-CP",
+    # Quản lý thuế: luật, nghị định, thông tư ban hành mẫu tờ khai (từ 01/07/2026)
+    "108/2025/QH15",
+    "252/2026/NĐ-CP",
+    "89/2026/TT-BTC",
+    # Giao dịch liên kết (từ 01/07/2026)
+    "255/2026/NĐ-CP",
+]
 
 # Thuế nhà thầu nước ngoài - để sau, đang tắt.
 [contractor]
