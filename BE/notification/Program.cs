@@ -22,13 +22,11 @@ builder.Services.AddCapsMessaging(
         x.AddConsumer<ExpertCompetencyDecidedConsumer>();
         x.AddConsumer<ExpertServiceAccessChangedConsumer>();
         x.AddConsumer<RealtimeChangedConsumer>();
-        x.AddConsumer<ExpertServiceAccessChangedConsumer>();
         x.AddConsumer<ReviewCaseRequestedConsumer>();
         x.AddConsumer<ReviewCaseInfoRequestedConsumer>();
         x.AddConsumer<ReviewCaseStatusChangedConsumer>();
         x.AddConsumer<ReviewCaseResponseDueConsumer>();
         x.AddConsumer<ReviewCaseDisputeOverdueConsumer>();
-        x.AddConsumer<RealtimeChangedConsumer>();
     }
 );
 var app = builder.Build();
