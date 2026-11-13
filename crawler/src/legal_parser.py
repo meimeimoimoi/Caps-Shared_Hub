@@ -31,6 +31,12 @@ _ARTICLE_RE = re.compile(r"^Điều\s+(\d+[a-zđ]?)\s*[.:]?\s*(.*)$")
 # văn bản cũ (trước ~2000) ghi Khoản dạng "1- ..." hoặc "2 - ..."
 _CLAUSE_RE = re.compile(r"^(\d+)(?:\.(?!\d)|\s*-\s)\s*(.*)$")
 _POINT_RE = re.compile(r"^([a-zđ])\)\s*(.*)$")
+# Pre-2008 documents without "Điều": "I - ĐỐI TƯỢNG ÁP DỤNG", "III. TỔ CHỨC THỰC HIỆN", points "a- ..."
+_OLD_SECTION_RE = re.compile(r"^([IVXLC]+)(?:\s*[-.–:]\s*|\s+)(.+)$")
+# Parts above the roman sections: "A- LỆ PHÍ ...", "C- TỔ CHỨC THỰC HIỆN" (A-H; I is a roman section)
+_OLD_PART_RE = re.compile(r"^([A-H])\s*[-.–:]\s*(.+)$")
+_OLD_POINT_RE = re.compile(r"^([a-zđ])\s*-\s*(.*)$")
+OLD_FORMAT_WARNING = "Văn bản kiểu cũ (không có Điều): tách theo phần A, B… và mục I, II…, cần kiểm tra lại"
 _APPENDIX_RE = re.compile(r"^(?:PHỤ LỤC|Phụ lục)(?:\s+(?:số\s+)?([IVXLC]+|\d+))?\b(.*)$")
 # Hết phần thân: nơi nhận, khối chữ ký, câu thông qua của Quốc hội
 _CLOSING_RE = re.compile(r"^(?:Nơi nhận\s*:|TM\.\s|KT\.\s|Luật này (?:đã )?được Quốc hội)")
@@ -96,6 +102,7 @@ class Article:
     section: Optional[str] = None
     units: List[Unit] = field(default_factory=list)
     notes: List[int] = field(default_factory=list)  # VBHN markers on the article heading
+    kind: str = "Điều"  # "Mục" for a roman-numbered section of an old-format document
 
     @property
     def text(self) -> str:
@@ -131,6 +138,8 @@ class ParsedDocument:
     consolidated: bool = False
     doc_notes: List[int] = field(default_factory=list)
     footnotes: Dict[int, str] = field(default_factory=dict)
+    # Split by roman-numbered sections because the text has no "Điều"
+    old_format: bool = False
 
     @property
     def articles(self) -> List[Article]:
@@ -160,6 +169,7 @@ class ParsedDocument:
                             "number": a.number,
                             "title": a.title,
                             "section": a.section,
+                            **({"kind": a.kind} if a.kind != "Điều" else {}),
                             "units": [
                                 {
                                     "id": f"d{a.number}-{i}",
@@ -194,8 +204,8 @@ class ParsedDocument:
 #  Parser
 # ------------------------------------------------------------
 class _Parser:
-    def __init__(self, consolidated: bool = False) -> None:
-        self.doc = ParsedDocument(consolidated=consolidated)
+    def __init__(self, consolidated: bool = False, old_format: bool = False) -> None:
+        self.doc = ParsedDocument(consolidated=consolidated, old_format=old_format)
         self.phase = "preamble"  # preamble -> body -> closing
         self.part: Optional[str] = None
         self.section: Optional[str] = None
@@ -204,6 +214,7 @@ class _Parser:
         self.unit: Optional[Unit] = None
         self.appendix: Optional[Appendix] = None
         self.in_quote = False
+        self.old_part: Optional[str] = None  # current "A", "B"... of an old-format document
         # Tiêu đề Chương/Phần/Mục thường nằm ở dòng IN HOA kế tiếp
         self.awaiting_title: Optional[str] = None
 
@@ -376,12 +387,29 @@ class _Parser:
             self._start_article(m.group(1), m.group(2))
             return
 
+        if self.doc.old_format:
+            m = _OLD_PART_RE.match(line)
+            if m and _is_upper_title(m.group(2)):
+                self.phase = "body"
+                self.old_part = m.group(1)
+                self._start_article(m.group(1), m.group(2))
+                self.article.kind = "Phần"
+                return
+            m = _OLD_SECTION_RE.match(line)
+            if m and _is_upper_title(m.group(2)):
+                self.phase = "body"
+                # Sections restart at I in every part: "A.I", "B.I" keep the numbers unique
+                number = f"{self.old_part}.{m.group(1)}" if self.old_part else m.group(1)
+                self._start_article(number, m.group(2))
+                self.article.kind = "Mục"
+                return
+
         if self.article is not None:
             m = _CLAUSE_RE.match(line)
             if m:
                 self._start_clause(m.group(1), m.group(2).strip())
                 return
-            m = _POINT_RE.match(line)
+            m = _POINT_RE.match(line) or (self.doc.old_format and _OLD_POINT_RE.match(line))
             if m:
                 self._start_point(m.group(1), m.group(2).strip())
                 return
@@ -396,6 +424,11 @@ class _Parser:
                 self.doc.warnings.append(f"Điều {article.number} không có nội dung")
         if not self.doc.articles:
             self.doc.warnings.append("Không tìm thấy Điều nào trong văn bản")
+        elif self.doc.old_format:
+            self.doc.warnings.append(OLD_FORMAT_WARNING)
+            for article in self.doc.articles:
+                for unit in article.units:
+                    unit.warning = unit.warning or OLD_FORMAT_WARNING
         if self.doc.consolidated:
             self.doc.closing, self.doc.footnotes = split_footnotes(self.doc.closing)
         return self.doc
@@ -403,7 +436,17 @@ class _Parser:
 
 def parse_legal_text(text: Optional[str], consolidated: bool = False) -> ParsedDocument:
     """Tách cấu trúc một văn bản pháp luật từ toàn văn dạng text (`consolidated`: VBHN có chú thích [n])."""
-    parser = _Parser(consolidated)
+    doc = _parse(text, consolidated)
+    if not doc.articles and not consolidated:
+        # Old documents number their sections I, II... instead of "Điều"; kept only if that finds something
+        old = _parse(text, old_format=True)
+        if old.articles:
+            return old
+    return doc
+
+
+def _parse(text: Optional[str], consolidated: bool = False, old_format: bool = False) -> ParsedDocument:
+    parser = _Parser(consolidated, old_format)
     for line in (text or "").splitlines():
         # Bỏ header "# key: value" mà save_text_file ghi vào đầu file .txt
         if parser.phase == "preamble" and line.startswith("# "):

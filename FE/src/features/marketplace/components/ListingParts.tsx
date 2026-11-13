@@ -13,25 +13,19 @@ export function AvailabilityTag({
 }) {
   const { t } = useTranslation('marketplace')
   const format = useFormatters()
-  const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone
   const detail =
     availability.state === 'open'
-      ? availability.nextSlotAt
-        ? t('availability.nextSlot', {
-            date: format.timestamp(availability.nextSlotAt, timeZone, {
-              day: 'numeric',
-              month: 'numeric',
-              hour: '2-digit',
-              minute: '2-digit',
-            }),
-          })
+      ? availability.freeSlots != null
+        ? t('availability.freeSlots', { count: availability.freeSlots })
         : availability.responseHours != null
           ? t('availability.openDetail', { hours: availability.responseHours })
           : t('availability.openAny')
       : availability.state === 'full'
-        ? t('availability.fullDetail', {
-            date: format.dateOnly(availability.reopensAt),
-          })
+        ? availability.reopensAt
+          ? t('availability.fullDetail', {
+              date: format.dateOnly(availability.reopensAt),
+            })
+          : t('availability.fullNow')
         : t('availability.pausedDetail')
   return (
     <span className="mk-avail" data-state={availability.state}>

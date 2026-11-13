@@ -21,7 +21,29 @@ public sealed class PlatformFee
 
     public Guid Id { get; } = UuidV7.NewGuid();
     public string ServiceCode { get; private set; } = default!;
+
+    /// <summary>Longest late window an admin may set, the same cap as a turnaround.</summary>
+    public const int MaxLateHours = 720;
+
+    /// <summary>Most hours a client gets to answer one question; two questions keep the pause within 144 hours.</summary>
+    public const int MaxNoResponseHours = 72;
     public int Percent { get; private set; }
+
+    /// <summary>Up to this many hours late, the client gets LatePenaltyPercent of the fee back from the expert's share.</summary>
+    public int LatePenaltyHours { get; private set; }
+    public int LatePenaltyPercent { get; private set; }
+
+    /// <summary>Later than LatePenaltyHours the client gets the whole fee back; past this the case is cancelled.</summary>
+    public int LateCancelHours { get; private set; }
+
+    /// <summary>
+    /// The client did not answer the expert's question within this many hours: the case ends and the fee splits
+    /// into NoResponseRefundPercent for the client, NoResponseExpertPercent for the expert and the rest for the platform.
+    /// </summary>
+    public int NoResponseHours { get; private set; }
+    public int NoResponseRefundPercent { get; private set; }
+    public int NoResponseExpertPercent { get; private set; }
+
     public DateTimeOffset EffectiveFrom { get; private set; }
 
     /// <summary>System Admin account that set this rate.</summary>
@@ -45,6 +67,12 @@ public sealed class PlatformFee
     public static PlatformFee Set(
         ServiceCatalogItem service,
         int percent,
+        int latePenaltyHours,
+        int latePenaltyPercent,
+        int lateCancelHours,
+        int noResponseHours,
+        int noResponseRefundPercent,
+        int noResponseExpertPercent,
         DateOnly? effectiveOn,
         bool hasCurrentRate,
         int noticeDays,
@@ -54,6 +82,27 @@ public sealed class PlatformFee
     {
         if (percent is < 0 or > MaxPercent)
             throw ExpertErrors.PlatformFeeInvalid(MaxPercent);
+        // The penalty comes out of the expert's share, so it can never exceed what is left after the platform fee
+        if (
+            latePenaltyHours < 0
+            || latePenaltyPercent < 0
+            || percent + latePenaltyPercent > 100
+            || lateCancelHours < latePenaltyHours
+            || lateCancelHours > MaxLateHours
+        )
+        {
+            throw ExpertErrors.LateRuleInvalid(MaxLateHours);
+        }
+        // Admins set the client's and the expert's shares; the platform keeps the rest, so the parts always add up
+        if (
+            noResponseHours is < 1 or > MaxNoResponseHours
+            || noResponseRefundPercent < 0
+            || noResponseExpertPercent < 0
+            || noResponseRefundPercent + noResponseExpertPercent > 100
+        )
+        {
+            throw ExpertErrors.NoResponseRuleInvalid(MaxNoResponseHours);
+        }
         DateTimeOffset effectiveFrom;
         if (!hasCurrentRate && effectiveOn == null)
         {
@@ -73,6 +122,12 @@ public sealed class PlatformFee
         {
             ServiceCode = service.Code,
             Percent = percent,
+            LatePenaltyHours = latePenaltyHours,
+            LatePenaltyPercent = latePenaltyPercent,
+            LateCancelHours = lateCancelHours,
+            NoResponseHours = noResponseHours,
+            NoResponseRefundPercent = noResponseRefundPercent,
+            NoResponseExpertPercent = noResponseExpertPercent,
             EffectiveFrom = effectiveFrom,
             SetBy = adminId,
         };

@@ -1,5 +1,6 @@
 using Caps.Workflow.Domain.Review;
 using Caps.Workflow.Domain.Workspace;
+using Caps.Workflow.Infrastructure.Messaging;
 using Microsoft.EntityFrameworkCore;
 
 namespace Caps.Workflow.Infrastructure.Persistence;
@@ -23,10 +24,12 @@ public sealed class WorkflowDbContext(DbContextOptions<WorkflowDbContext> option
     public DbSet<ReviewCase> ReviewCases => Set<ReviewCase>();
     public DbSet<ReviewTask> ReviewTasks => Set<ReviewTask>();
     public DbSet<InfoRequest> InfoRequests => Set<InfoRequest>();
+    public DbSet<ReviewDispute> ReviewDisputes => Set<ReviewDispute>();
     public DbSet<ReviewAttachment> ReviewAttachments => Set<ReviewAttachment>();
     public DbSet<ReviewStatusHistory> ReviewStatusHistories => Set<ReviewStatusHistory>();
     public DbSet<CaseMessage> CaseMessages => Set<CaseMessage>();
     public DbSet<CaseReadMarker> CaseReadMarkers => Set<CaseReadMarker>();
+    public DbSet<EventOutboxEntry> EventOutbox => Set<EventOutboxEntry>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -304,18 +307,49 @@ public sealed class WorkflowDbContext(DbContextOptions<WorkflowDbContext> option
         // ReviewCase
         modelBuilder.Entity<ReviewCase>(e =>
         {
-            e.ToTable("review_case", "review");
+            // Backs ReviewCase.Request: the frozen offer must stay valid
+            e.ToTable(
+                "review_case",
+                "review",
+                t =>
+                    t.HasCheckConstraint(
+                        "ck_case_offer",
+                        "fee > 0 AND platform_fee_pct BETWEEN 0 AND 99 AND turnaround_hours BETWEEN 1 AND 720"
+                            + " AND late_penalty_hours >= 0 AND late_penalty_pct >= 0"
+                            + " AND platform_fee_pct + late_penalty_pct <= 100"
+                            + " AND late_cancel_hours BETWEEN late_penalty_hours AND 720"
+                            + " AND no_response_hours BETWEEN 1 AND 720"
+                            + " AND no_response_refund_pct >= 0 AND no_response_expert_pct >= 0"
+                            + " AND no_response_refund_pct + no_response_expert_pct <= 100"
+                    )
+            );
             e.HasKey(x => x.Id);
             e.Property(x => x.Id).HasColumnName("id");
             e.Property(x => x.DocumentId).HasColumnName("document_id");
             e.Property(x => x.SourceVersionId).HasColumnName("source_version_id");
             e.Property(x => x.RequesterUserId).HasColumnName("requester_user_id");
+            e.Property(x => x.RequesterEmail).HasColumnName("requester_email");
             e.Property(x => x.ExpertProfileId).HasColumnName("expert_profile_id");
             e.Property(x => x.ExpertUserId).HasColumnName("expert_user_id");
             e.Property(x => x.SlotId).HasColumnName("slot_id");
             e.Property(x => x.ServiceOfferingId).HasColumnName("service_offering_id");
+            e.Property(x => x.ServiceCode).HasColumnName("service_code").HasMaxLength(64);
             e.Property(x => x.Fee).HasColumnName("fee");
             e.Property(x => x.PlatformFeePct).HasColumnName("platform_fee_pct");
+            e.Property(x => x.TurnaroundHours).HasColumnName("turnaround_hours");
+            e.Property(x => x.LatePenaltyHours).HasColumnName("late_penalty_hours");
+            e.Property(x => x.LatePenaltyPct).HasColumnName("late_penalty_pct");
+            e.Property(x => x.LateCancelHours).HasColumnName("late_cancel_hours");
+            e.Property(x => x.NoResponseHours).HasColumnName("no_response_hours");
+            e.Property(x => x.NoResponseRefundPct).HasColumnName("no_response_refund_pct");
+            e.Property(x => x.NoResponseExpertPct).HasColumnName("no_response_expert_pct");
+            e.Property(x => x.LateRefundPct).HasColumnName("late_refund_pct");
+            e.Property(x => x.DisputeRefundPct).HasColumnName("dispute_refund_pct");
+            e.Property(x => x.Rating).HasColumnName("rating");
+            e.Property(x => x.RatingComment).HasColumnName("rating_comment");
+            e.Property(x => x.RatedAt).HasColumnName("rated_at");
+            e.Property(x => x.ReminderSentAt).HasColumnName("reminder_sent_at");
+            e.Property(x => x.InfoRequestCount).HasColumnName("info_request_count");
             e.Property(x => x.ProblemDescription).HasColumnName("problem_description").IsRequired();
             e.Property(x => x.ExpectedOutcome).HasColumnName("expected_outcome");
             e.Property(x => x.Status)
@@ -352,6 +386,11 @@ public sealed class WorkflowDbContext(DbContextOptions<WorkflowDbContext> option
             e.HasIndex(x => new { x.RequesterUserId, x.Status })
                 .HasDatabaseName("ix_review_case_6");
             e.HasIndex(x => new { x.ExpertUserId, x.Status }).HasDatabaseName("ix_review_case_7");
+            // One running case per document version and expert; a closed case frees the pair
+            e.HasIndex(x => new { x.SourceVersionId, x.ExpertProfileId })
+                .IsUnique()
+                .HasFilter($"status IN ('{string.Join("', '", ReviewCase.OpenStatuses)}')")
+                .HasDatabaseName("ux_review_case_open");
 
             e.HasOne<Document>()
                 .WithMany()
@@ -431,6 +470,43 @@ public sealed class WorkflowDbContext(DbContextOptions<WorkflowDbContext> option
                 .HasConstraintName("fk_info_request_49");
         });
 
+        // ReviewDispute
+        modelBuilder.Entity<ReviewDispute>(e =>
+        {
+            e.ToTable(
+                "review_dispute",
+                "review",
+                t =>
+                    t.HasCheckConstraint("ck_review_dispute_refund", "refund_pct BETWEEN 0 AND 100")
+            );
+            e.HasKey(x => x.Id);
+            e.Property(x => x.Id).HasColumnName("id");
+            e.Property(x => x.ReviewCaseId).HasColumnName("review_case_id");
+            e.Property(x => x.Reason).HasColumnName("reason").HasMaxLength(64).IsRequired();
+            e.Property(x => x.Description).HasColumnName("description").IsRequired();
+            e.Property(x => x.Status).HasColumnName("status").HasMaxLength(16).IsRequired();
+            e.Property(x => x.OpenedAt).HasColumnName("opened_at");
+            e.Property(x => x.DecideBy).HasColumnName("decide_by");
+            e.Property(x => x.Extended).HasColumnName("extended");
+            e.Property(x => x.OverdueAlertedAt).HasColumnName("overdue_alerted_at");
+            e.Property(x => x.ExpertStatement).HasColumnName("expert_statement");
+            e.Property(x => x.ExpertStatementAt).HasColumnName("expert_statement_at");
+            e.Property(x => x.ResolvedBy).HasColumnName("resolved_by");
+            e.Property(x => x.RefundPct).HasColumnName("refund_pct");
+            e.Property(x => x.ResolutionNote).HasColumnName("resolution_note");
+            e.Property(x => x.ClosedAt).HasColumnName("closed_at");
+
+            // One dispute per case; the admin queue reads open disputes by deadline
+            e.HasIndex(x => x.ReviewCaseId).IsUnique().HasDatabaseName("ux_review_dispute_case");
+            e.HasIndex(x => new { x.Status, x.DecideBy })
+                .HasDatabaseName("ix_review_dispute_queue");
+
+            e.HasOne<ReviewCase>()
+                .WithMany()
+                .HasForeignKey(x => x.ReviewCaseId)
+                .HasConstraintName("fk_review_dispute_case");
+        });
+
         // ReviewAttachment
         modelBuilder.Entity<ReviewAttachment>(e =>
         {
@@ -441,6 +517,11 @@ public sealed class WorkflowDbContext(DbContextOptions<WorkflowDbContext> option
             e.Property(x => x.InfoRequestId).HasColumnName("info_request_id");
             e.Property(x => x.FileUrl).HasColumnName("file_url").IsRequired();
             e.Property(x => x.FileName).HasColumnName("file_name").IsRequired();
+            e.Property(x => x.ContentType)
+                .HasColumnName("content_type")
+                .HasMaxLength(128)
+                .IsRequired();
+            e.Property(x => x.SizeBytes).HasColumnName("size_bytes");
             e.Property(x => x.UploadedBy).HasColumnName("uploaded_by");
             e.Property(x => x.UploadedAt)
                 .HasColumnName("uploaded_at")
@@ -531,6 +612,24 @@ public sealed class WorkflowDbContext(DbContextOptions<WorkflowDbContext> option
                 .HasForeignKey(x => x.ReviewCaseId)
                 .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("fk_case_read_marker_56");
+        });
+
+        modelBuilder.Entity<EventOutboxEntry>(e =>
+        {
+            e.ToTable("event_outbox", "review");
+            e.HasKey(x => x.Id);
+            e.Property(x => x.Id).HasColumnName("id");
+            e.Property(x => x.MessageType)
+                .HasColumnName("message_type")
+                .HasMaxLength(200)
+                .IsRequired();
+            e.Property(x => x.Payload).HasColumnName("payload").IsRequired();
+            e.Property(x => x.CreatedAt).HasColumnName("created_at");
+            e.Property(x => x.SentAt).HasColumnName("sent_at");
+            // The publisher reads only unsent rows, oldest first
+            e.HasIndex(x => x.CreatedAt)
+                .HasFilter("sent_at IS NULL")
+                .HasDatabaseName("ix_event_outbox_unsent");
         });
     }
 }

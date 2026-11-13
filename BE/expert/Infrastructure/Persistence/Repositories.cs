@@ -494,48 +494,6 @@ public sealed class ServiceOfferingRepository(ExpertDbContext db) : IServiceOffe
     public void AddChange(ServiceOfferingChange change) => db.ServiceOfferingChanges.Add(change);
 }
 
-/// <summary>EF Core store for availability slots.</summary>
-public sealed class AvailabilityRepository(ExpertDbContext db) : IAvailabilityRepository
-{
-    public async Task<IReadOnlyList<AvailabilitySlot>> ListOpenAsync(
-        Guid profileId,
-        DateTimeOffset now,
-        CancellationToken ct
-    ) =>
-        await db
-            .AvailabilitySlots.AsNoTracking()
-            .Where(x =>
-                x.ExpertProfileId == profileId && x.Status == AvailabilitySlot.Open && x.EndAt > now
-            )
-            .OrderBy(x => x.StartAt)
-            .ToListAsync(ct);
-
-    public async Task<IReadOnlyList<AvailabilitySlot>> ListOpenAsync(
-        IReadOnlyCollection<Guid> profileIds,
-        DateTimeOffset now,
-        CancellationToken ct
-    ) =>
-        await db
-            .AvailabilitySlots.AsNoTracking()
-            .Where(x =>
-                profileIds.Contains(x.ExpertProfileId)
-                && x.Status == AvailabilitySlot.Open
-                && x.StartAt > now
-            )
-            .OrderBy(x => x.StartAt)
-            .ToListAsync(ct);
-
-    public Task<AvailabilitySlot?> FindAsync(Guid slotId, Guid profileId, CancellationToken ct) =>
-        db.AvailabilitySlots.SingleOrDefaultAsync(
-            x => x.Id == slotId && x.ExpertProfileId == profileId,
-            ct
-        );
-
-    public void Add(AvailabilitySlot slot) => db.AvailabilitySlots.Add(slot);
-
-    public void Remove(AvailabilitySlot slot) => db.AvailabilitySlots.Remove(slot);
-}
-
 /// <summary>EF Core store for policy values changed by a System Admin and their history.</summary>
 public sealed class PolicySettingRepository(ExpertDbContext db) : IPolicySettingRepository
 {

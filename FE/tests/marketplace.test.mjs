@@ -3,6 +3,7 @@ import assert from 'node:assert/strict'
 import {
   bioFromDto,
   businessDate,
+  canRequest,
   featuredExperts,
   hasDeliverySla,
   initialsOf,
@@ -33,8 +34,7 @@ const dto = (overrides = {}) => ({
       approvedAt: '2026-10-17T03:00:00Z',
     },
   ],
-  nextOpenSlotAt: '2026-10-20T02:00:00Z',
-  openSlotCount: 3,
+  freeSlots: 3,
   ...overrides,
 })
 
@@ -47,14 +47,16 @@ test('maps API experts to the shared marketplace model', () => {
   assert.equal(expert.headline, 'Kế toán trưởng · Công ty ABC')
   assert.equal(expert.initials, 'NA')
   assert.deepEqual(expert.highlights, ['First', 'Second'])
-  assert.deepEqual(expert.availability, {
-    state: 'open',
-    nextSlotAt: '2026-10-20T02:00:00Z',
-    slotCount: 3,
-  })
+  assert.deepEqual(expert.availability, { state: 'open', freeSlots: 3 })
   assert.equal(expert.offers.HUMAN_VERIFICATION.slaHours, 72)
   assert.equal(expert.offers.HUMAN_VERIFICATION.approvedAt, '2026-10-17')
   assert.equal(hasDeliverySla(data.experts), true)
+})
+
+test('a full expert stays listed but cannot be requested', () => {
+  const [expert] = marketplaceFromDtos([dto({ freeSlots: 0 })]).experts
+  assert.deepEqual(expert.availability, { state: 'full' })
+  assert.equal(canRequest(expert), false)
 })
 
 test('service facts report the lowest fee and fastest SLA', () => {

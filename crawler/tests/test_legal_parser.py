@@ -227,6 +227,27 @@ def test_document_without_text_still_has_hash_and_is_pending():
     assert kd["ingest"]["pending_reasons"] == ["NO_TEXT", "OCR_TEXT"]
 
 
+def test_old_format_is_split_by_roman_sections_and_pending():
+    rec = {"so_hieu": "87/2003/TT-BTC", "loai_van_ban": "Thông tư", "doc_id": "old",
+           "tieu_de": "Thông tư 87/2003/TT-BTC", "noi_dung_text": _read("thong_tu/87-2003-tt-btc.txt")}
+    payload = build_payload(rec)
+    content = payload["knowledge_document"]["content_json"]
+    articles = [a for c in content["chapters"] for a in c["articles"]]
+    assert content["parse_status"] == "PARSED"
+    assert [a["number"] for a in articles][:1] == ["I"] and articles[-1]["number"] == "III"
+    assert all(a["kind"] == "Mục" for a in articles)
+    assert content["preamble"].startswith("BỘ TÀI CHÍNH") or "Căn cứ" in content["preamble"]
+    assert all(u["status"] == "WARNING" for a in articles for u in a["units"])
+    assert payload["knowledge_document"]["ingest"]["pending_reasons"] == ["OLD_FORMAT"]
+    assert payload["chunks"] and payload["chunks"][0]["path"].startswith("Mục I")
+
+
+def test_modern_document_is_not_old_format():
+    doc = parse_legal_text("I. QUY ĐỊNH CHUNG\nĐiều 1. Phạm vi\n1. Nội dung.")
+    assert not doc.old_format
+    assert [a.number for a in doc.articles] == ["1"]
+
+
 def test_unparsable_text_is_pending():
     rec = {"so_hieu": "3/2025/QĐ-BTC", "loai_van_ban": "Quyết định", "doc_id": "noparse",
            "tieu_de": "Quyết định", "noi_dung_text": "Văn bản không có cấu trúc Điều."}

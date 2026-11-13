@@ -94,7 +94,9 @@
     "fullDetail": "Nhận lại từ {{date}}",
     "paused": "Tạm ngưng",
     "pausedDetail": "Chuyên gia đang tạm ngưng nhận yêu cầu",
-    "nextSlot": "Lịch trống gần nhất {{date}}",
+    "freeSlots_one": "Còn {{count}} chỗ",
+    "freeSlots_other": "Còn {{count}} chỗ",
+    "fullNow": "Đã nhận đủ việc, sẽ mở lại khi xong hồ sơ đang làm",
     "openAny": "Đang mở lịch nhận yêu cầu"
   },
   "trail": {

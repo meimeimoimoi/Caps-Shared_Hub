@@ -26,7 +26,6 @@ public sealed class GetMyContextHandler(
     IExpertApplicationRepository applications,
     IQualificationRepository qualifications,
     IServiceOfferingRepository offerings,
-    IAvailabilityRepository availability,
     IServiceCatalogRepository catalog,
     TimeProvider clock
 ) : IQueryHandler<GetMyContextQuery, ExpertContextResponse>
@@ -47,10 +46,9 @@ public sealed class GetMyContextHandler(
         var prices = profile == null ? [] : await offerings.ListAsync([profile.Id], ct);
         var services = await catalog.ListActiveAsync(ct);
         var now = clock.GetUtcNow();
-        var slots = profile == null ? [] : await availability.ListOpenAsync(profile.Id, now, ct);
         // The expert's own token is the freshest account status
         var accountActive = query.AccountStatus == ActiveAccount;
-        var hasOpenSlot = slots.Any(x => x.StartAt > now);
+        var capacitySet = profile?.Capacity > 0;
 
         var readiness = services
             .Select(service =>
@@ -62,7 +60,7 @@ public sealed class GetMyContextHandler(
                     qualification,
                     prices.FirstOrDefault(x => x.ServiceCode == service.Code),
                     accountActive,
-                    hasOpenSlot
+                    capacitySet
                 );
             })
             .ToArray();
@@ -96,7 +94,7 @@ public sealed class GetMyContextHandler(
         ExpertServiceQualification? qualification,
         ServiceOffering? offering,
         bool accountActive,
-        bool hasOpenSlot
+        bool capacitySet
     )
     {
         var accepting = qualification?.AcceptingRequests == true;
@@ -109,7 +107,7 @@ public sealed class GetMyContextHandler(
                     service.IsActive,
                     offering != null,
                     accepting,
-                    hasOpenSlot
+                    capacitySet
                 );
         string[] reasons = facts switch
         {
@@ -123,7 +121,7 @@ public sealed class GetMyContextHandler(
             service.Name,
             qualification?.Status,
             service.Status,
-            accepting && hasOpenSlot,
+            accepting && capacitySet,
             facts != null && MarketplaceRules.IsListed(facts),
             reasons,
             offering == null

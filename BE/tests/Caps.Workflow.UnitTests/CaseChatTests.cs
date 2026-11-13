@@ -7,14 +7,69 @@ public sealed class CaseChatTests
     private static readonly DateTimeOffset Now = new(2026, 10, 20, 1, 0, 0, TimeSpan.Zero);
     private static readonly Guid Client = Guid.NewGuid();
     private static readonly Guid Expert = Guid.NewGuid();
+    private static readonly Guid ExpertProfile = Guid.NewGuid();
 
-    private static ReviewCase Case(string status = "IN_REVIEW") =>
-        new()
+    private static ReviewCase Requested() =>
+        ReviewCase
+            .Request(
+                Client,
+                "client@caps.test",
+                Guid.NewGuid(),
+                Guid.NewGuid(),
+                Offers.Sample(ExpertProfile, Expert),
+                "Check my CIT return",
+                null,
+                Now
+            )
+            .Case;
+
+    // Paid and accepted: both parties can chat
+    private static ReviewCase Case()
+    {
+        var reviewCase = Requested();
+        reviewCase.ConfirmPayment(Now);
+        reviewCase.Accept(ExpertProfile, Expert, Now);
+        return reviewCase;
+    }
+
+    // Drives a case through the real steps to one of the statuses that close the chat
+    private static ReviewCase Ended(string status)
+    {
+        var reviewCase = Requested();
+        if (status == ReviewCaseStatus.CancelledUnpaid)
         {
-            RequesterUserId = Client,
-            ExpertUserId = Expert,
-            Status = status,
-        };
+            reviewCase.ExpireIfOverdue(Now.AddHours(1));
+            return reviewCase;
+        }
+        reviewCase.ConfirmPayment(Now);
+        if (status == ReviewCaseStatus.ExpertDeclined)
+        {
+            reviewCase.Decline(ExpertProfile, Expert, "Out of my field", Now);
+            return reviewCase;
+        }
+        if (status == ReviewCaseStatus.ExpertTimeout)
+        {
+            reviewCase.ExpireIfOverdue(Now.AddDays(2));
+            return reviewCase;
+        }
+        reviewCase.Accept(ExpertProfile, Expert, Now);
+        if (status == ReviewCaseStatus.Terminated)
+        {
+            var (request, _) = reviewCase.RequestInformation(ExpertProfile, Expert, "More?", Now);
+            reviewCase.TerminateForNoResponse(request, Now.AddDays(4));
+            return reviewCase;
+        }
+        reviewCase.Deliver(ExpertProfile, Expert, ReviewCase.Verified, "Done", null, Now);
+        if (status == ReviewCaseStatus.Completed)
+        {
+            reviewCase.Confirm(Client, Now);
+        }
+        else
+        {
+            reviewCase.ExpireIfOverdue(Now.AddDays(4));
+        }
+        return reviewCase;
+    }
 
     [Fact]
     public void Each_party_posts_with_its_own_role()
@@ -38,15 +93,42 @@ public sealed class CaseChatTests
         );
 
     [Theory]
-    [InlineData("COMPLETED")]
-    [InlineData("TERMINATED")]
-    [InlineData("EXPERT_DECLINED")]
-    [InlineData("REQUEST_EXPIRED")]
-    public void An_ended_case_takes_no_messages(string status) =>
+    [InlineData(ReviewCaseStatus.CancelledUnpaid)]
+    [InlineData(ReviewCaseStatus.ExpertDeclined)]
+    [InlineData(ReviewCaseStatus.ExpertTimeout)]
+    [InlineData(ReviewCaseStatus.Terminated)]
+    [InlineData(ReviewCaseStatus.Completed)]
+    [InlineData(ReviewCaseStatus.AutoConfirmed)]
+    public void An_ended_case_takes_no_messages(string status)
+    {
+        var reviewCase = Ended(status);
+
+        Assert.Equal(status, reviewCase.Status);
         Assert.Equal(
             "CHAT_CLOSED",
-            Errors.CodeOf(() => CaseMessage.Post(Case(status), Client, "Hi", Now))
+            Errors.CodeOf(() => CaseMessage.Post(reviewCase, Client, "Hi", Now))
         );
+    }
+
+    // Unpaid or not yet accepted: no free questions before the expert takes the case
+    [Fact]
+    public void Chat_opens_only_when_the_expert_accepts()
+    {
+        var reviewCase = Requested();
+        Assert.Equal(
+            "CHAT_CLOSED",
+            Errors.CodeOf(() => CaseMessage.Post(reviewCase, Client, "Hi", Now))
+        );
+
+        reviewCase.ConfirmPayment(Now);
+        Assert.Equal(
+            "CHAT_CLOSED",
+            Errors.CodeOf(() => CaseMessage.Post(reviewCase, Client, "Hi", Now))
+        );
+
+        reviewCase.Accept(ExpertProfile, Expert, Now);
+        Assert.Equal("Hi", CaseMessage.Post(reviewCase, Client, "Hi", Now).Content);
+    }
 
     [Theory]
     [InlineData(null)]

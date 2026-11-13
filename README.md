@@ -44,7 +44,7 @@ flowchart LR
 | `expert` | `5198` | Hồ sơ đăng ký chuyên gia, minh chứng S3 (schema `expert`) | ✅ Hoạt động |
 | `billing` | `5220` | Thanh toán, ví, escrow, payout (schema `billing`) | 🚧 Ví, tài khoản ngân hàng, nạp tiền PayOS, admin xem payout |
 | `workflow` | `5030` | Tài liệu, hội thoại AI, review case (schema `workspace`, `review`) | 🚧 Chưa có API |
-| `ingestion` | `5004` | Pipeline nạp tài liệu (schema `knowledge`) | 🚧 Chưa có API |
+| `ingestion` | `5004` | Pipeline nạp tài liệu (schema `knowledge`) | 🚧 Crawl job, upload, hàng chờ duyệt, từ chối, tra cứu nguồn; chưa có duyệt/index |
 | `rag-query` | `5104` | RAG / Vector Search với pgvector | 🧱 Skeleton |
 | `notification` | `5100` | Thông báo bất đồng bộ | 🧱 Skeleton |
 | `read` | `5106` | CQRS Read Model | 🧱 Skeleton |
@@ -189,6 +189,7 @@ npm run dev     # http://localhost:5173
 | `/api/v1/billing/bank-accounts/**` | `billing` | Token hợp lệ (`AuthSession`) |
 | `/api/v1/billing/payos/**` | `billing` | Qua `billing-v1`: `webhook` công khai (xác thực bằng chữ ký PayOS), `create-topup` do billing kiểm tra token |
 | `/api/v1/admin/billing/**` | `billing` | Token hợp lệ (`AuthSession`); billing kiểm tra quyền `PayoutManage` |
+| `/api/v1/knowledge/**` | `ingestion` | Token hợp lệ (`AuthSession`); ingestion kiểm tra quyền `KnowledgeManage` (riêng `/sources` chỉ cần tài khoản ACTIVE) |
 
 ### 3.4. Crawler văn bản pháp luật (Python 3.13)
 
@@ -206,7 +207,8 @@ python -m pytest tests -q
 ```
 
 - OCR (PDF scan của vbpq.mof.gov.vn) cần cài Tesseract + gói tiếng Việt — xem [crawler/README.md](crawler/README.md).
-- `BE/ingestion` chưa có API nhận file export; ràng buộc `ck_kd_source` trong `BE/SHFT_PostgreSQL.sql` cần thêm `CRAWL_MOF`.
+- `python worker.py` nối crawler với `BE/ingestion` qua RabbitMQ: chạy crawl job do Knowledge Admin kích hoạt và tách
+  Điều/Khoản cho file upload. Cấu hình `INTERNAL_API_KEY` xem [BE/ingestion/README.md](BE/ingestion/README.md).
 
 ---
 

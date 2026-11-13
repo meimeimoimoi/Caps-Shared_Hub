@@ -1,4 +1,3 @@
-using Caps.Expert.Domain.Catalog;
 using Caps.Expert.Domain.Portal;
 using Caps.Expert.Domain.Profiles;
 using Caps.Expert.Domain.Qualifications;
@@ -7,63 +6,73 @@ namespace Caps.Expert.UnitTests;
 
 public sealed class AvailabilityTests
 {
-    private static readonly DateTimeOffset Now = new(2026, 10, 18, 1, 0, 0, TimeSpan.Zero);
-    private static readonly Guid Profile = Guid.NewGuid();
+    private static readonly DateTimeOffset Now = new(2026, 10, 27, 1, 0, 0, TimeSpan.Zero);
 
-    private static AvailabilitySlot Slot(
-        int startHours,
-        int lengthHours,
-        params AvailabilitySlot[] open
-    ) =>
-        AvailabilitySlot.Add(
-            Profile,
-            Now.AddHours(startHours),
-            Now.AddHours(startHours + lengthHours),
-            open,
-            Now
-        );
+    private static ExpertProfile Profile() => ExpertProfile.Create(Guid.NewGuid(), "A", Now);
+
+    // ActiveCases is written by the case flow through the database only; tests set it the same way EF does
+    private static ExpertProfile WithActiveCases(ExpertProfile profile, int count)
+    {
+        typeof(ExpertProfile)
+            .GetField(
+                "<ActiveCases>k__BackingField",
+                System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic
+            )!
+            .SetValue(profile, count);
+        return profile;
+    }
 
     private static ListingFacts Listed() =>
         new(QualificationStatus.ApprovedForService, true, true, true, true, true);
 
     [Fact]
-    public void A_future_slot_of_one_to_twelve_hours_opens()
+    public void A_new_profile_has_no_capacity_and_no_free_slot()
     {
-        var slot = Slot(2, 3);
+        var profile = Profile();
 
-        Assert.True(slot.IsOpen);
-        Assert.Equal(Now.AddHours(2), slot.StartAt);
-        Assert.Equal(Now.AddHours(5), slot.EndAt);
+        Assert.Equal((0, 0, 0), (profile.Capacity, profile.ActiveCases, profile.FreeSlots));
+    }
+
+    [Theory]
+    [InlineData(1)]
+    [InlineData(5)]
+    [InlineData(20)]
+    public void Capacity_from_one_to_twenty_is_kept(int capacity)
+    {
+        var profile = Profile();
+
+        profile.SetCapacity(capacity, Now.AddHours(1));
+
+        Assert.Equal((capacity, capacity), (profile.Capacity, profile.FreeSlots));
+        Assert.Equal(Now.AddHours(1), profile.UpdatedAt);
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(-1)]
+    [InlineData(21)]
+    public void Capacity_outside_one_to_twenty_is_refused_and_nothing_changes(int capacity)
+    {
+        var profile = Profile();
+        profile.SetCapacity(3, Now);
+
+        Assert.Equal(
+            "CAPACITY_INVALID",
+            Errors.CodeOf(() => profile.SetCapacity(capacity, Now.AddHours(1)))
+        );
+        Assert.Equal((3, Now), (profile.Capacity, profile.UpdatedAt));
     }
 
     [Fact]
-    public void Slots_in_the_past_too_far_ahead_or_of_a_wrong_length_are_refused()
+    public void Free_slots_count_down_with_accepted_cases_and_never_go_negative()
     {
-        Assert.Equal("SLOT_IN_PAST", Errors.CodeOf(() => Slot(-1, 2)));
-        Assert.Equal("SLOT_TOO_FAR_AHEAD", Errors.CodeOf(() => Slot(24 * 91, 2)));
-        Assert.Equal("SLOT_LENGTH_INVALID", Errors.CodeOf(() => Slot(2, 0)));
-        Assert.Equal("SLOT_LENGTH_INVALID", Errors.CodeOf(() => Slot(2, 13)));
-    }
+        var profile = WithActiveCases(Profile(), 2);
+        profile.SetCapacity(5, Now);
+        Assert.Equal(3, profile.FreeSlots);
 
-    [Fact]
-    public void Overlapping_slots_are_refused_but_adjacent_ones_are_not()
-    {
-        var first = Slot(2, 3);
-
-        Assert.Equal("SLOT_OVERLAP", Errors.CodeOf(() => Slot(4, 2, first)));
-        var adjacent = Slot(5, 2, first);
-        Assert.Equal(first.EndAt, adjacent.StartAt);
-    }
-
-    [Fact]
-    public void At_most_fifty_slots_can_be_open()
-    {
-        var open = Enumerable
-            .Range(0, AvailabilityRules.MaxOpenSlots)
-            .Select(i => Slot(2 + (i * 2), 1))
-            .ToArray();
-
-        Assert.Equal("SLOT_LIMIT", Errors.CodeOf(() => Slot(500, 1, open)));
+        // Lowering below the running cases is allowed: they keep running, nothing new fits
+        profile.SetCapacity(1, Now);
+        Assert.Equal((1, 2, 0), (profile.Capacity, profile.ActiveCases, profile.FreeSlots));
     }
 
     [Fact]
@@ -74,7 +83,7 @@ public sealed class AvailabilityTests
         Assert.False(MarketplaceRules.IsListed(Listed() with { ServiceActive = false }));
         Assert.False(MarketplaceRules.IsListed(Listed() with { PriceInEffect = false }));
         Assert.False(MarketplaceRules.IsListed(Listed() with { AcceptingRequests = false }));
-        Assert.False(MarketplaceRules.IsListed(Listed() with { HasOpenSlot = false }));
+        Assert.False(MarketplaceRules.IsListed(Listed() with { CapacitySet = false }));
         Assert.False(
             MarketplaceRules.IsListed(
                 Listed() with
@@ -95,16 +104,23 @@ public sealed class AvailabilityTests
                 {
                     PriceInEffect = false,
                     AcceptingRequests = false,
+                    CapacitySet = false,
                 }
             )
         );
         Assert.Equal(
             ["REQUESTS_TURNED_OFF"],
-            MarketplaceRules.Missing(Listed() with { AcceptingRequests = false })
+            MarketplaceRules.Missing(
+                Listed() with
+                {
+                    AcceptingRequests = false,
+                    CapacitySet = false,
+                }
+            )
         );
         Assert.Equal(
-            ["NO_OPEN_SLOTS"],
-            MarketplaceRules.Missing(Listed() with { HasOpenSlot = false })
+            ["CAPACITY_NOT_SET"],
+            MarketplaceRules.Missing(Listed() with { CapacitySet = false })
         );
         Assert.Empty(MarketplaceRules.Missing(Listed()));
     }
@@ -112,24 +128,12 @@ public sealed class AvailabilityTests
     [Fact]
     public void Only_active_accounts_count_as_active()
     {
-        var profile = ExpertProfile.Create(Guid.NewGuid(), "A", Now);
+        var profile = Profile();
         Assert.False(profile.IsAccountActive);
 
         profile.RecordAccountStatus("ACTIVE");
         Assert.True(profile.IsAccountActive);
         profile.RecordAccountStatus(" ");
         Assert.True(profile.IsAccountActive);
-    }
-
-    [Fact]
-    public void Slots_sent_with_a_local_offset_are_stored_in_utc()
-    {
-        var vietnam = TimeSpan.FromHours(7);
-        var start = new DateTimeOffset(2026, 10, 19, 9, 0, 0, vietnam);
-
-        var slot = AvailabilitySlot.Add(Profile, start, start.AddHours(3), [], Now);
-
-        Assert.Equal(TimeSpan.Zero, slot.StartAt.Offset);
-        Assert.Equal(start, slot.StartAt);
     }
 }

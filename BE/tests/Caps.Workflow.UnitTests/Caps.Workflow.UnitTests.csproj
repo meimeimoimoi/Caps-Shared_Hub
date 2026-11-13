@@ -11,6 +11,7 @@
     <PackageReference Include="xunit.runner.visualstudio" />
     <Using Include="Xunit" />
     <ProjectReference Include="..\..\workflow\Domain\Domain.csproj" />
+    <ProjectReference Include="..\..\workflow\Application\Application.csproj" />
   </ItemGroup>
 
 </Project>

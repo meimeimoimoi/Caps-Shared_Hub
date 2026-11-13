@@ -157,9 +157,6 @@ public static class ExpertErrors
             $"EV-06 cannot pass: the declared experience is below {minYears} years."
         );
 
-    public static AppException ServiceNotFound() =>
-        new(ErrorType.NotFound, "SERVICE_NOT_FOUND", "Service not found or not offered.");
-
     public static AppException EligibilityRequired() =>
         new(
             ErrorType.Conflict,
@@ -254,11 +251,28 @@ public static class ExpertErrors
             $"Only experts approved for this service can price it; the service is {qualificationStatus}."
         );
 
+    public static AppException ServiceNotFound() =>
+        new(ErrorType.NotFound, "SERVICE_NOT_FOUND", "Service not found or not offered.");
+
     public static AppException PlatformFeeInvalid(int max) =>
         new(
             ErrorType.Validation,
             "PLATFORM_FEE_INVALID",
             $"Platform fee must be between 0 and {max} percent."
+        );
+
+    public static AppException LateRuleInvalid(int maxHours) =>
+        new(
+            ErrorType.Validation,
+            "LATE_RULE_INVALID",
+            $"Late hours must be 0 to {maxHours} with the cancel hours not below the penalty hours, and the penalty plus the platform fee at most 100 percent."
+        );
+
+    public static AppException NoResponseRuleInvalid(int maxHours) =>
+        new(
+            ErrorType.Validation,
+            "NO_RESPONSE_RULE_INVALID",
+            $"The no-response hours must be 1 to {maxHours}, and the client's plus the expert's share at most 100 percent."
         );
 
     public static AppException PlatformFeeNotSet() =>
@@ -303,37 +317,28 @@ public static class ExpertErrors
             "This service was changed at the same time. Reload and try again."
         );
 
-    public static AppException SlotInPast() =>
-        new(ErrorType.Validation, "SLOT_IN_PAST", "A slot must start in the future.");
-
-    public static AppException SlotTooFarAhead(int days) =>
-        new(
-            ErrorType.Validation,
-            "SLOT_TOO_FAR_AHEAD",
-            $"Slots can be opened at most {days} days ahead."
-        );
-
-    public static AppException SlotLengthInvalid(int minHours, int maxHours) =>
-        new(
-            ErrorType.Validation,
-            "SLOT_LENGTH_INVALID",
-            $"A slot must last between {minHours} and {maxHours} hours."
-        );
-
-    public static AppException SlotLimit(int max) =>
-        new(ErrorType.Conflict, "SLOT_LIMIT", $"At most {max} slots can be open at a time.");
-
-    public static AppException SlotOverlap() =>
-        new(ErrorType.Conflict, "SLOT_OVERLAP", "The slot overlaps another open slot.");
-
-    public static AppException SlotNotFound() =>
-        new(ErrorType.NotFound, "SLOT_NOT_FOUND", "Slot not found.");
-
-    public static AppException SlotLocked() =>
-        new(ErrorType.Conflict, "SLOT_LOCKED", "A booked slot cannot be removed.");
+    public static AppException CapacityInvalid(int max) =>
+        new(ErrorType.Validation, "CAPACITY_INVALID", $"Capacity must be between 1 and {max}.");
 
     public static AppException ExpertNotFound() =>
         new(ErrorType.NotFound, "EXPERT_NOT_FOUND", "Expert not found.");
+
+    public static AppException ExpertNotBookable() =>
+        new(
+            ErrorType.NotFound,
+            "EXPERT_NOT_BOOKABLE",
+            "The expert does not offer this service right now."
+        );
+
+    public static AppException ExpertFull() =>
+        new(ErrorType.Conflict, "EXPERT_FULL", "The expert has no free slot.");
+
+    public static AppException CaseSlotConflict() =>
+        new(
+            ErrorType.Conflict,
+            "CASE_SLOT_CONFLICT",
+            "This review case already holds a slot of another expert."
+        );
 
     public static AppException NewEvidenceRequired() =>
         new(

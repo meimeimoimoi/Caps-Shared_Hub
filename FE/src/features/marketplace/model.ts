@@ -57,12 +57,11 @@ export function expertFromDto(dto: MarketplaceExpertDto): Expert {
     reviews: dto.ratingCount,
     completedCases: null,
     eligibleSince: null,
-    // BR-M01 only lists experts with an open slot, so every listed expert can take a request
-    availability: {
-      state: 'open',
-      nextSlotAt: dto.nextOpenSlotAt,
-      slotCount: dto.openSlotCount,
-    },
+    // A full expert stays listed but cannot be requested until an accepted case ends
+    availability:
+      dto.freeSlots > 0
+        ? { state: 'open', freeSlots: dto.freeSlots }
+        : { state: 'full' },
     offers: Object.fromEntries(
       dto.services.map((s) => [
         s.serviceCode,

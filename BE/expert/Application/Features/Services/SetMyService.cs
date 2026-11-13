@@ -94,7 +94,14 @@ public sealed class SetMyServiceHandler(
             offering.TurnaroundHours,
             rate.Percent,
             rate.NetOf(offering.Fee),
-            pending == null ? null : new(pending.Percent, pending.EffectiveFrom),
+            pending == null
+                ? null
+                : new(
+                    pending.Percent,
+                    PlatformFeeRows.LateOf(pending),
+                    PlatformFeeRows.NoResponseOf(pending),
+                    pending.EffectiveFrom
+                ),
             PlatformFeeRows.Limits(policy)
         );
     }

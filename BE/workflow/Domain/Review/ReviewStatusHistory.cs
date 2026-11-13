@@ -5,13 +5,35 @@ namespace Caps.Workflow.Domain.Review;
 /// <summary>Audit trail of a review case's status changes.</summary>
 public sealed class ReviewStatusHistory
 {
-    public Guid Id { get; set; } = UuidV7.NewGuid();
-    public Guid ReviewCaseId { get; set; }
-    public ReviewCase ReviewCase { get; set; } = default!;
+    private ReviewStatusHistory() { }
 
-    public string? FromStatus { get; set; }
-    public string ToStatus { get; set; } = default!;
-    public Guid? ActorUserId { get; set; }
-    public string? Note { get; set; }
-    public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
+    public Guid Id { get; } = UuidV7.NewGuid();
+    public Guid ReviewCaseId { get; private set; }
+    public ReviewCase ReviewCase { get; } = default!;
+
+    public string? FromStatus { get; private set; }
+    public string ToStatus { get; private set; } = default!;
+
+    /// <summary>Null when the system (a cron or a payment callback) made the change.</summary>
+    public Guid? ActorUserId { get; private set; }
+    public string? Note { get; private set; }
+    public DateTimeOffset CreatedAt { get; private set; }
+
+    public static ReviewStatusHistory Record(
+        Guid reviewCaseId,
+        string? fromStatus,
+        string toStatus,
+        Guid? actorUserId,
+        string? note,
+        DateTimeOffset now
+    ) =>
+        new()
+        {
+            ReviewCaseId = reviewCaseId,
+            FromStatus = fromStatus,
+            ToStatus = toStatus,
+            ActorUserId = actorUserId,
+            Note = note,
+            CreatedAt = now,
+        };
 }

@@ -29,11 +29,12 @@ public sealed class ExpertDbContext(DbContextOptions<ExpertDbContext> options) :
     public DbSet<QualificationEvent> QualificationEvents => Set<QualificationEvent>();
     public DbSet<CompetencyAssessment> CompetencyAssessments => Set<CompetencyAssessment>();
     public DbSet<PlatformFee> PlatformFees => Set<PlatformFee>();
+    public DbSet<ExpertCaseSlot> ExpertCaseSlots => Set<ExpertCaseSlot>();
+    public DbSet<ExpertCaseRating> ExpertCaseRatings => Set<ExpertCaseRating>();
     public DbSet<ServiceOffering> ServiceOfferings => Set<ServiceOffering>();
     public DbSet<ServiceOfferingChange> ServiceOfferingChanges => Set<ServiceOfferingChange>();
     public DbSet<ServiceCatalogItem> ServiceCatalog => Set<ServiceCatalogItem>();
     public DbSet<NotificationOutboxEntry> NotificationOutbox => Set<NotificationOutboxEntry>();
-    public DbSet<AvailabilitySlot> AvailabilitySlots => Set<AvailabilitySlot>();
     public DbSet<PolicySetting> PolicySettings => Set<PolicySetting>();
     public DbSet<PolicySettingChange> PolicySettingChanges => Set<PolicySettingChange>();
     public DbSet<ReviewClaimEvent> ReviewClaimEvents => Set<ReviewClaimEvent>();
@@ -49,7 +50,14 @@ public sealed class ExpertDbContext(DbContextOptions<ExpertDbContext> options) :
 
         modelBuilder.Entity<ExpertProfile>(e =>
         {
-            e.ToTable("expert_profile");
+            e.ToTable(
+                "expert_profile",
+                t =>
+                    t.HasCheckConstraint(
+                        "ck_expert_capacity",
+                        "capacity BETWEEN 0 AND 20 AND active_cases >= 0"
+                    )
+            );
             e.HasKey(x => x.Id);
             e.Property(x => x.Id).HasColumnName("id");
             e.Property(x => x.UserId).HasColumnName("user_id");
@@ -82,12 +90,45 @@ public sealed class ExpertDbContext(DbContextOptions<ExpertDbContext> options) :
                 .HasColumnType("numeric(3,2)")
                 .HasDefaultValue(0m);
             e.Property(x => x.RatingCount).HasColumnName("rating_count").HasDefaultValue(0);
+            e.Property(x => x.Capacity).HasColumnName("capacity").HasDefaultValue(0);
+            e.Property(x => x.ActiveCases).HasColumnName("active_cases").HasDefaultValue(0);
             e.Property(x => x.ApprovedBy).HasColumnName("approved_by");
             e.Property(x => x.ApprovedAt).HasColumnName("approved_at");
             e.Property(x => x.CreatedAt).HasColumnName("created_at").IsRequired();
             e.Property(x => x.UpdatedAt).HasColumnName("updated_at").IsRequired();
             e.HasIndex(x => new { x.Status, x.ServiceStatus })
                 .HasDatabaseName("ix_expert_marketplace_feed");
+        });
+
+        modelBuilder.Entity<ExpertCaseSlot>(e =>
+        {
+            e.ToTable("expert_case_slot");
+            e.HasKey(x => x.ReviewCaseId);
+            e.Property(x => x.ReviewCaseId).HasColumnName("review_case_id");
+            e.Property(x => x.ExpertProfileId).HasColumnName("expert_profile_id");
+            e.Property(x => x.TakenAt).HasColumnName("taken_at");
+            e.HasIndex(x => x.ExpertProfileId).HasDatabaseName("ix_expert_case_slot_profile");
+            e.HasOne<ExpertProfile>()
+                .WithMany()
+                .HasForeignKey(x => x.ExpertProfileId)
+                .OnDelete(DeleteBehavior.Restrict)
+                .HasConstraintName("fk_expert_case_slot_profile");
+        });
+
+        modelBuilder.Entity<ExpertCaseRating>(e =>
+        {
+            e.ToTable("expert_case_rating");
+            e.HasKey(x => x.ReviewCaseId);
+            e.Property(x => x.ReviewCaseId).HasColumnName("review_case_id");
+            e.Property(x => x.ExpertProfileId).HasColumnName("expert_profile_id");
+            e.Property(x => x.Stars).HasColumnName("stars");
+            e.Property(x => x.RatedAt).HasColumnName("rated_at");
+            e.HasIndex(x => x.ExpertProfileId).HasDatabaseName("ix_expert_case_rating_profile");
+            e.HasOne<ExpertProfile>()
+                .WithMany()
+                .HasForeignKey(x => x.ExpertProfileId)
+                .OnDelete(DeleteBehavior.Restrict)
+                .HasConstraintName("fk_expert_case_rating_profile");
         });
 
         modelBuilder.Entity<ExpertApplication>(e =>
@@ -408,7 +449,20 @@ public sealed class ExpertDbContext(DbContextOptions<ExpertDbContext> options) :
         {
             e.ToTable(
                 "platform_fee",
-                t => t.HasCheckConstraint("ck_platform_fee_percent", "percent BETWEEN 0 AND 50")
+                t =>
+                {
+                    t.HasCheckConstraint("ck_platform_fee_percent", "percent BETWEEN 0 AND 50");
+                    // The penalty comes out of the expert's share: never more than what the platform fee leaves
+                    t.HasCheckConstraint(
+                        "ck_platform_fee_late_rule",
+                        "late_penalty_hours >= 0 AND late_penalty_percent >= 0 AND percent + late_penalty_percent <= 100 AND late_cancel_hours BETWEEN late_penalty_hours AND 720"
+                    );
+                    // The client's and the expert's shares of a no-response case; the platform keeps the rest
+                    t.HasCheckConstraint(
+                        "ck_platform_fee_no_response_rule",
+                        "no_response_hours BETWEEN 1 AND 720 AND no_response_refund_percent >= 0 AND no_response_expert_percent >= 0 AND no_response_refund_percent + no_response_expert_percent <= 100"
+                    );
+                }
             );
             e.HasKey(x => x.Id);
             e.Property(x => x.Id).HasColumnName("id");
@@ -417,6 +471,12 @@ public sealed class ExpertDbContext(DbContextOptions<ExpertDbContext> options) :
                 .HasMaxLength(64)
                 .IsRequired();
             e.Property(x => x.Percent).HasColumnName("percent");
+            e.Property(x => x.LatePenaltyHours).HasColumnName("late_penalty_hours");
+            e.Property(x => x.LatePenaltyPercent).HasColumnName("late_penalty_percent");
+            e.Property(x => x.LateCancelHours).HasColumnName("late_cancel_hours");
+            e.Property(x => x.NoResponseHours).HasColumnName("no_response_hours");
+            e.Property(x => x.NoResponseRefundPercent).HasColumnName("no_response_refund_percent");
+            e.Property(x => x.NoResponseExpertPercent).HasColumnName("no_response_expert_percent");
             e.Property(x => x.EffectiveFrom).HasColumnName("effective_from");
             e.Property(x => x.SetBy).HasColumnName("set_by");
             e.Property(x => x.CancelledAt).HasColumnName("cancelled_at");
@@ -436,6 +496,12 @@ public sealed class ExpertDbContext(DbContextOptions<ExpertDbContext> options) :
                     Id = Guid.Parse("01929e3a-0000-7000-8000-000000000020"),
                     ServiceCode = "HUMAN_VERIFICATION",
                     Percent = 20,
+                    LatePenaltyHours = 24,
+                    LatePenaltyPercent = 30,
+                    LateCancelHours = 72,
+                    NoResponseHours = 72,
+                    NoResponseRefundPercent = 50,
+                    NoResponseExpertPercent = 30,
                     EffectiveFrom = new DateTimeOffset(2026, 10, 17, 0, 0, 0, TimeSpan.Zero),
                     SetBy = SystemActor.UserId,
                 }
@@ -509,30 +575,6 @@ public sealed class ExpertDbContext(DbContextOptions<ExpertDbContext> options) :
                 .HasForeignKey(x => x.OfferingId)
                 .OnDelete(DeleteBehavior.Restrict)
                 .HasConstraintName("fk_offering_change_offering");
-        });
-
-        modelBuilder.Entity<AvailabilitySlot>(e =>
-        {
-            e.ToTable("availability_slot");
-            e.HasKey(x => x.Id);
-            e.Property(x => x.Id).HasColumnName("id");
-            e.Property(x => x.ExpertProfileId).HasColumnName("expert_profile_id");
-            e.Property(x => x.StartAt).HasColumnName("start_at").IsRequired();
-            e.Property(x => x.EndAt).HasColumnName("end_at").IsRequired();
-            e.Property(x => x.Status).HasColumnName("status").HasDefaultValue("OPEN").IsRequired();
-            e.Property(x => x.CreatedAt).HasColumnName("created_at").IsRequired();
-            e.HasIndex(x => new
-                {
-                    x.ExpertProfileId,
-                    x.Status,
-                    x.StartAt,
-                })
-                .HasDatabaseName("ix_availability_slot_open");
-            e.HasOne(x => x.ExpertProfile)
-                .WithMany(p => p.AvailabilitySlots)
-                .HasForeignKey(x => x.ExpertProfileId)
-                .OnDelete(DeleteBehavior.Restrict)
-                .HasConstraintName("fk_availability_slot_profile");
         });
 
         modelBuilder.Entity<PolicySetting>(e =>

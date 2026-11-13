@@ -772,7 +772,8 @@ def _goto(page: Page, url: str) -> Optional[str]:
 
 
 def fetch_documents_by_ids(
-    doc_ids: List[str], headless: bool = True, skip_download: bool = False
+    doc_ids: List[str], headless: bool = True, skip_download: bool = False,
+    on_progress: Optional[Callable] = None,
 ) -> List[SearchResultItem]:
     """Visit detail pages by id (no search step), same as a search hit would be visited."""
     results: List[SearchResultItem] = []
@@ -784,6 +785,8 @@ def fetch_documents_by_ids(
             for i, doc_id in enumerate(doc_ids, 1):
                 url = build_detail_url(doc_id, config.BASE_URL)
                 logger.info(f"[LIEN QUAN {i}/{len(doc_ids)}] id={doc_id}")
+                if on_progress:
+                    on_progress("RELATIONS", i - 1, len(doc_ids), f"Cao van ban lien quan id={doc_id}")
                 item = SearchResultItem(
                     title=f"Van ban {doc_id}",
                     detail_url=url,
@@ -801,7 +804,9 @@ def fetch_documents_by_ids(
     return results
 
 
-def fetch_relations_by_ids(doc_ids: List[str], headless: bool = True) -> Dict[str, dict]:
+def fetch_relations_by_ids(
+    doc_ids: List[str], headless: bool = True, on_progress: Optional[Callable] = None
+) -> Dict[str, dict]:
     """Read only the "Lược đồ" tab of each document: {doc_id: {"relations", "vbhn"}}, no full text, no downloads."""
     found: Dict[str, dict] = {}
     if not doc_ids:
@@ -811,6 +816,8 @@ def fetch_relations_by_ids(doc_ids: List[str], headless: bool = True) -> Dict[st
         try:
             for i, doc_id in enumerate(doc_ids, 1):
                 logger.info(f"[LUOC DO {i}/{len(doc_ids)}] id={doc_id}")
+                if on_progress:
+                    on_progress("RELATIONS", i - 1, len(doc_ids), f"Doc Luoc do id={doc_id}")
                 luoc_do = _read_luoc_do(page, doc_id)
                 if luoc_do["relations"] is not None:  # failures are retried on the next run
                     found[doc_id] = {"relations": luoc_do["relations"], "vbhn": luoc_do["vbhn"]}
@@ -824,10 +831,14 @@ def fetch_relations_by_ids(doc_ids: List[str], headless: bool = True) -> Dict[st
 
 
 
-def find_document_ids(numbers: List[str], headless: bool = True) -> Dict[str, str]:
+def find_document_ids(
+    numbers: List[str], headless: bool = True, on_progress: Optional[Callable] = None
+) -> Dict[str, str]:
     """Search vbpl for each document number: {number: doc_id} for the ones found."""
     found: Dict[str, str] = {}
-    for number in numbers:
+    for i, number in enumerate(numbers):
+        if on_progress:
+            on_progress("RELATIONS", i, len(numbers), f"Tim so hieu duoc dan chieu {number}")
         doc_type = doc_type_for_number(number)
         if not doc_type:
             logger.warning(f"[TIM SO HIEU] Khong suy ra duoc loai van ban: {number}")
@@ -1201,16 +1212,20 @@ def search_and_download_all_types(
     item_filter: Optional[Callable[[Optional[str], Optional[str]], Optional[bool]]] = None,
     skip_ids: Optional[Set[str]] = None,
     stats: Optional[dict] = None,
+    on_progress: Optional[Callable] = None,
 ) -> List[SearchResultItem]:
     """
     Chạy search_and_download_by_type() tuần tự cho từng loại văn bản.
     Mỗi loại mở 1 browser session riêng (để tránh context bị nhiễm).
     `item_filter` / `skip_ids` / `stats`: xem search_and_download_by_type().
+    `on_progress(stage, done, total, message)`: called before each document type.
     """
     all_results: List[SearchResultItem] = []
     seen_ids: set = set()
 
-    for doc_type in doc_types:
+    for i, doc_type in enumerate(doc_types):
+        if on_progress:
+            on_progress("SEARCHING", i, len(doc_types), f"vbpl.vn: {doc_type}")
         logger.info("\n" + "=" * 68)
         logger.info(f"=== BAT DAU: loai van ban '{doc_type}' ===")
         logger.info("=" * 68)

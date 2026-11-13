@@ -7,14 +7,14 @@ namespace Caps.Expert.Domain.Portal;
 /// <param name="ServiceActive">The catalog service is ACTIVE.</param>
 /// <param name="PriceInEffect">An approved Pricing Version applies today.</param>
 /// <param name="AcceptingRequests">The expert turned on new requests for this service.</param>
-/// <param name="HasOpenSlot">The expert has at least one open slot in the future.</param>
+/// <param name="CapacitySet">The expert set how many cases they run at once (a full expert stays listed).</param>
 public sealed record ListingFacts(
     string QualificationStatus,
     bool AccountActive,
     bool ServiceActive,
     bool PriceInEffect,
     bool AcceptingRequests,
-    bool HasOpenSlot
+    bool CapacitySet
 );
 
 /// <summary>Marketplace eligibility (BR-M01, POL-MKT-01).</summary>
@@ -26,11 +26,11 @@ public static class MarketplaceRules
         && f.ServiceActive
         && f.PriceInEffect
         && f.AcceptingRequests
-        && f.HasOpenSlot;
+        && f.CapacitySet;
 
     /// <summary>
     /// Why an approved service is not listed yet, in the order the expert fixes them: PRICING_PENDING,
-    /// REQUESTS_TURNED_OFF, NO_OPEN_SLOTS or ACCOUNT_INACTIVE; empty when listed.
+    /// REQUESTS_TURNED_OFF, CAPACITY_NOT_SET or ACCOUNT_INACTIVE; empty when listed.
     /// </summary>
     public static string[] Missing(ListingFacts f)
     {
@@ -38,8 +38,8 @@ public static class MarketplaceRules
             return ["PRICING_PENDING"];
         if (!f.AcceptingRequests)
             return ["REQUESTS_TURNED_OFF"];
-        if (!f.HasOpenSlot)
-            return ["NO_OPEN_SLOTS"];
+        if (!f.CapacitySet)
+            return ["CAPACITY_NOT_SET"];
         if (!f.AccountActive)
             return ["ACCOUNT_INACTIVE"];
         return [];

@@ -120,7 +120,7 @@ Cây **chapters → articles → units**. Mỗi **unit** là một mẩu nhỏ n
 
 ```jsonc
 "content_json": {
-  "parse_status": "PARSED",                 // PARSE_FAILED = chapters rỗng (văn bản cũ không chia theo Điều)
+  "parse_status": "PARSED",                 // PARSE_FAILED = chapters rỗng (không tìm được Điều hay mục I, II…)
   "preamble": "CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM ... Căn cứ ...",   // phần đầu, trước Điều 1
   "chapters": [{
     "number": "I", "title": "QUY ĐỊNH CHUNG",   // number null = văn bản không chia Chương
@@ -225,7 +225,7 @@ Luật hay viết: *"theo quy định tại **khoản 2 Điều 24 của Luật 
 3. Payload Qdrant: `article`, `clause`, `point`, `unit id`, `effective_from/to`, cộng `amendments` (nếu có) và `references` (nếu có).
 4. Ingest lại cùng văn bản phải **xoá point cũ** theo `knowledge_document_id` (hiện dùng `uuid4` ngẫu nhiên nên sẽ bị trùng).
 5. `preamble` và `closing` không cần embed. `appendices` (biểu mẫu, bảng) nên embed riêng.
-6. Văn bản `PARSE_FAILED` (`chapters` rỗng) thì không có gì để chunk. Đó thường là văn bản cũ trước năm 2000, đánh số kiểu "I., 1-" thay vì "Điều".
+6. Văn bản `PARSE_FAILED` (`chapters` rỗng) thì không có gì để chunk. Văn bản cũ đánh số kiểu "A-, I., 1-, a-" thay vì "Điều" được tách lại theo phần/mục: article có `kind` = `"Phần"` / `"Mục"`, số là chữ hoặc La Mã (`I`, `A.II`), mọi unit là `WARNING` và `pending_reasons` có `OLD_FORMAT`.
 
 ---
 

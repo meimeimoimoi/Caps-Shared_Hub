@@ -8,9 +8,7 @@ namespace Caps.Expert.Application.Common;
 public sealed class MarketplaceListing(
     IQualificationRepository qualifications,
     IServiceOfferingRepository offerings,
-    IAvailabilityRepository availability,
-    IServiceCatalogRepository catalog,
-    TimeProvider clock
+    IServiceCatalogRepository catalog
 ) : IMarketplaceListing
 {
     public async Task<IReadOnlyList<MarketplaceExpertResponse>> ListAsync(
@@ -19,7 +17,6 @@ public sealed class MarketplaceListing(
         CancellationToken ct
     )
     {
-        var now = clock.GetUtcNow();
         var candidates = await qualifications.ListMarketplaceCandidatesAsync(
             serviceCode,
             profileId,
@@ -29,7 +26,6 @@ public sealed class MarketplaceListing(
             return [];
         var profileIds = candidates.Select(x => x.ExpertProfileId).Distinct().ToArray();
         var prices = await offerings.ListAsync(profileIds, ct);
-        var slots = await availability.ListOpenAsync(profileIds, now, ct);
         var services = (await catalog.ListActiveAsync(ct)).ToDictionary(x => x.Code);
 
         return candidates
@@ -37,10 +33,6 @@ public sealed class MarketplaceListing(
             .Select(group =>
             {
                 var profile = group.Key;
-                var open = slots
-                    .Where(x => x.ExpertProfileId == profile.Id && x.StartAt > now)
-                    .OrderBy(x => x.StartAt)
-                    .ToArray();
                 var offers = group
                     .Select(q =>
                     {
@@ -54,7 +46,7 @@ public sealed class MarketplaceListing(
                                 services.ContainsKey(q.ServiceCode),
                                 price != null,
                                 q.AcceptingRequests,
-                                open.Length > 0
+                                profile.Capacity > 0
                             )
                         );
                         return listed
@@ -84,13 +76,12 @@ public sealed class MarketplaceListing(
                         profile.RatingAvg,
                         profile.RatingCount,
                         offers,
-                        open.FirstOrDefault()?.StartAt,
-                        open.Length
+                        profile.FreeSlots
                     );
             })
             .OfType<MarketplaceExpertResponse>()
-            .OrderByDescending(x => x.RatingAvg)
-            .ThenBy(x => x.NextOpenSlotAt)
+            .OrderByDescending(x => x.FreeSlots > 0)
+            .ThenByDescending(x => x.RatingAvg)
             .ToArray();
     }
 }

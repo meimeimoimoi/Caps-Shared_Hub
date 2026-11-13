@@ -78,13 +78,15 @@ Each decision publishes an `ExpertCompetencyDecidedEvent` through the same outbo
   service (Gate 2) set their own fee (10,000–1,000,000,000 VND, steps of 1,000) and delivery time (1–720 hours) to
   compete; no approval. One `service_offering` per expert and service; responses show the net amount after
   the platform fee.
-- Availability (`/api/v1/experts/me/availability`): open slots in `availability_slot`, shared by all services (1–12 hours,
-  no overlaps, at most 50 open, up to 90 days ahead), and a per-service `accepting_requests` switch.
+- Availability (`/api/v1/experts/me/availability`): `expert_profile.capacity`, how many cases the expert runs at once
+  (1–20, shared by all services, 0 until set; `PUT` with `{ "capacity": n }`), and a per-service `accepting_requests`
+  switch. `active_cases` counts accepted cases holding a slot; only the case flow changes it (taken on accept, freed
+  when the case ends). Lowering the capacity never touches running cases.
 - Delivery time: the expert's `service_offering.turnaround_hours`; the Marketplace returns it as `slaHours` and the
   Review Case snapshots it at request time.
 - Marketplace (`GET /api/v1/marketplace/experts`, public): an Expert–Service is listed when the account is ACTIVE, the
   service is APPROVED_FOR_SERVICE and ACTIVE in the catalog, the expert has set a price, requests are on and the expert
-  has a future open slot (BR-M01, `MarketplaceRules`). The portal context reports the missing step as a reason code.
+  has set a capacity (BR-M01, `MarketplaceRules`). A full expert stays listed with `freeSlots: 0` and cannot be booked. The portal context reports the missing step as a reason code.
 - `expert_profile.account_status` is kept in sync by `AccountStatusChangedConsumer` (event published by auth) and by
   the token whenever the expert saves something.
 

@@ -26,8 +26,19 @@ public sealed record PricingLimitsResponse(
     int ChangeWarningPercent
 );
 
+/// <summary>What a late delivery costs: the penalty band, then a full refund until the case is cancelled.</summary>
+public sealed record LateRuleResponse(int PenaltyHours, int PenaltyPercent, int CancelHours);
+
+/// <summary>What a client's silence costs: after Hours the case ends and the fee splits; the platform keeps the rest.</summary>
+public sealed record NoResponseRuleResponse(int Hours, int RefundPercent, int ExpertPercent);
+
 /// <summary>A platform fee change waiting for its effective date.</summary>
-public sealed record PendingPlatformFeeResponse(int Percent, DateTimeOffset EffectiveFrom);
+public sealed record PendingPlatformFeeResponse(
+    int Percent,
+    LateRuleResponse Late,
+    NoResponseRuleResponse NoResponse,
+    DateTimeOffset EffectiveFrom
+);
 
 /// <summary>
 /// One catalog service with its platform fee in force (null until the first one) and any pending change.
@@ -37,6 +48,8 @@ public sealed record PlatformFeeResponse(
     string ServiceCode,
     string ServiceName,
     int? Percent,
+    LateRuleResponse? Late,
+    NoResponseRuleResponse? NoResponse,
     DateTimeOffset? EffectiveFrom,
     PendingPlatformFeeResponse? Pending,
     DateOnly EarliestEffectiveOn,

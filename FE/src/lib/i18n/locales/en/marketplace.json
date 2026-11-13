@@ -101,7 +101,9 @@
     "fullDetail": "Reopens on {{date}}",
     "paused": "Paused",
     "pausedDetail": "This expert has paused new requests",
-    "nextSlot": "Next open slot {{date}}",
+    "freeSlots_one": "{{count}} spot left",
+    "freeSlots_other": "{{count}} spots left",
+    "fullNow": "Fully booked; reopens when a current case ends",
     "openAny": "Open for requests"
   },
   "trail": {

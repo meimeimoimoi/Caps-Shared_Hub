@@ -112,6 +112,8 @@ def _ingest_hint(rec: dict, text: str, parsed: ParsedDocument, chunks: List[dict
         reasons.append("NO_TEXT")
     elif parsed.parse_status != "PARSED":
         reasons.append(parsed.parse_status)
+    elif parsed.old_format:
+        reasons.append("OLD_FORMAT")
     if rec.get("ocr_required") or rec.get("text_source") == "pdf_ocr":
         reasons.append("OCR_TEXT")
     if text.strip() and parsed.parse_status == "PARSED" and not chunks:
@@ -180,7 +182,7 @@ def build_chunks(rec: dict, parsed: ParsedDocument) -> List[dict]:
 
     for chapter in parsed.chapters:
         for article in chapter.articles:
-            heading = f"Điều {article.number}" + (f". {article.title}" if article.title else "")
+            heading = f"{article.kind} {article.number}" + (f". {article.title}" if article.title else "")
             groups = _chunk_groups(article) or [[]]
             for group in groups:
                 clause = next((u.clause for u in group if u.clause), None)
@@ -189,7 +191,7 @@ def build_chunks(rec: dict, parsed: ParsedDocument) -> List[dict]:
                 point = points[0] if len(points) == 1 and all(u.point for u in group) else None
                 path = " · ".join(
                     p for p in (
-                        f"Điều {article.number}",
+                        f"{article.kind} {article.number}",
                         f"Khoản {clause}" if clause else None,
                         f"Điểm {point}" if point else None,
                     ) if p
@@ -340,7 +342,7 @@ def render_markdown(rec: dict, payload: dict) -> str:
             if article["section"] and article["section"] != current_section:
                 current_section = article["section"]
                 lines += [f"#### Mục {current_section}", ""]
-            lines += [f"### {_md_title('Điều ' + article['number'], article['title'])}", ""]
+            lines += [f"### {_md_title(article.get('kind', 'Điều') + ' ' + article['number'], article['title'])}", ""]
             for unit in article["units"]:
                 if unit["text"]:
                     lines += [_md_unit(unit), ""]

@@ -18,7 +18,6 @@ public sealed class SetServiceAcceptingHandler(
     IApplicantLock locks,
     IExpertProfileRepository profiles,
     IQualificationRepository qualifications,
-    IAvailabilityRepository availability,
     IServiceCatalogRepository catalog,
     IUnitOfWork unitOfWork,
     TimeProvider clock
@@ -42,13 +41,11 @@ public sealed class SetServiceAcceptingHandler(
                 command.ServiceCode.Trim().ToUpperInvariant(),
                 ct
             ) ?? throw ExpertErrors.QualificationNotFound();
-        var now = clock.GetUtcNow();
-        qualification.SetAcceptingRequests(command.Accepting, now);
+        qualification.SetAcceptingRequests(command.Accepting, clock.GetUtcNow());
         await unitOfWork.SaveChangesAsync(ct);
         await tx.CommitAsync(ct);
-        var open = await availability.ListOpenAsync(profile.Id, now, ct);
         var latest = await qualifications.ListLatestByProfileAsync(profile.Id, ct);
         var names = (await catalog.ListActiveAsync(ct)).ToDictionary(x => x.Code, x => x.Name);
-        return GetMyAvailabilityHandler.Describe(open, latest, names);
+        return GetMyAvailabilityHandler.Describe(profile, latest, names);
     }
 }

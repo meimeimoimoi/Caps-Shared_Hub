@@ -22,7 +22,7 @@ XEM THÊM: PLAN.md để hiểu chi tiết pipeline và cách xử lý khi selec
 import argparse
 import json
 import sys
-from typing import Dict, List, Optional, Set, Tuple
+from typing import Callable, Dict, List, Optional, Set, Tuple
 
 from tqdm import tqdm
 
@@ -349,6 +349,7 @@ def reference_targets(
     known_numbers: Set[str],
     known_ids: Set[str],
     headless: bool,
+    on_progress: Optional[Callable] = None,
 ) -> List[Tuple[str, dict]]:
     """
     (doc_id, so_hieu, text, loai_van_ban, relations) of keyword-matched documents -> the other
@@ -377,7 +378,8 @@ def reference_targets(
     if to_search:
         logger.info(f"\n### TIM THEO SO HIEU {len(to_search)} VAN BAN DUOC DAN CHIEU ###\n")
         # Only hits are cached: an empty search can also be a network failure
-        cache.update({doc_number_key(n): i for n, i in find_document_ids(to_search, headless).items()})
+        found = find_document_ids(to_search, headless, on_progress=on_progress)
+        cache.update({doc_number_key(n): i for n, i in found.items()})
         save_cache("reference_ids", cache)
 
     targets, seen_ids, not_found = [], set(known_ids), []
@@ -401,11 +403,13 @@ def follow_relations(
     previous: Optional[Dict[str, dict]] = None,
     refresh: bool = False,
     known_numbers: Optional[Set[str]] = None,
+    on_progress: Optional[Callable] = None,
 ) -> List[LegalDocument]:
     """
     Fetch documents related to `docs` (keyword matches crawled this run) and to `previous`
     (doc_id -> record from an earlier run, skipped this run); with `known_numbers`, also the
     documents their text refers to. One hop: fetched documents are stored but not followed.
+    `on_progress` gets a RELATIONS milestone per page visited or number searched.
     """
     sources = [(d.doc_id, d.so_hieu, d.relations, d.vbhn) for d in docs if d.source == "vbpl" and d.doc_id]
 
@@ -422,7 +426,7 @@ def follow_relations(
             sources.append((doc_id, rec.get("so_hieu"), luoc_do["relations"], luoc_do["vbhn"]))
     if missing:
         logger.info(f"\n### DOC LUOC DO {len(missing)} VAN BAN DA CAO TRUOC DO ###\n")
-        fetched = fetch_relations_by_ids(missing, headless)
+        fetched = fetch_relations_by_ids(missing, headless, on_progress=on_progress)
         cache.update(fetched)
         save_cache("relations_cache", cache)
         sources += [
@@ -437,14 +441,15 @@ def follow_relations(
                        for d in docs]
         ref_sources += [(doc_id, rec.get("so_hieu"), rec.get("noi_dung_text"), rec.get("loai_van_ban"),
                          relations_by_id.get(doc_id)) for doc_id, rec in previous.items()]
-        targets += reference_targets(ref_sources, known_numbers, known_ids | {t for t, _ in targets}, headless)
+        targets += reference_targets(ref_sources, known_numbers, known_ids | {t for t, _ in targets}, headless,
+                                     on_progress)
     logger.info(f"\n### CAO {len(targets)} VAN BAN LIEN QUAN (1 buoc) ###\n")
     if not targets:
         return []
 
     origin = dict(targets)
     related = []
-    for item in fetch_documents_by_ids(list(origin), headless, skip_download):
+    for item in fetch_documents_by_ids(list(origin), headless, skip_download, on_progress=on_progress):
         if not item.api_detail:
             logger.warning(f"  [LIEN QUAN] Bo id={item.doc_id}: khong lay duoc metadata ({item.download_error}).")
             continue
@@ -605,8 +610,13 @@ def _log_keyword_report(report: List[dict], count_only: bool) -> None:
         logger.info(line)
 
 
+def _no_progress(stage: str, done: int, total: Optional[int] = None, message: Optional[str] = None) -> None:
+    pass
+
+
 def collect_vbpl_documents(
-    keyword: str, doc_types: List[str], top_n: Optional[int], headless: bool, skip_download: bool
+    keyword: str, doc_types: List[str], top_n: Optional[int], headless: bool, skip_download: bool,
+    on_progress: Callable = _no_progress,
 ) -> List[LegalDocument]:
     # --- TIM KIEM + VAO TRANG CHI TIET + TAI FILE (1 browser session) ---
     # Với mỗi kết quả: bắt payload server action -> lấy doc_id -> dựng URL
@@ -618,6 +628,7 @@ def collect_vbpl_documents(
         top_n      = top_n,
         headless   = headless,
         skip_download = skip_download,
+        on_progress = on_progress,
     )
 
     if not search_results:
@@ -632,7 +643,8 @@ def collect_vbpl_documents(
     # danh sách file đã tải. Ở đây chỉ map + bổ sung text từ PDF nếu cần.
     logger.info(f"\n### [vbpl.vn] DUNG METADATA CHI TIET {len(search_results)} VAN BAN ###\n")
     documents = []
-    for item in tqdm(search_results, desc="Dung metadata chi tiet"):
+    for i, item in enumerate(tqdm(search_results, desc="Dung metadata chi tiet")):
+        on_progress("DETAILS", i, len(search_results), "vbpl.vn")
         doc = scrape_document_detail(item)
 
         # Bảo đảm có text: ưu tiên text từ trang web, nếu không có thì trích từ PDF
@@ -655,15 +667,18 @@ def vbpl_document_numbers(vbpl_docs: List[LegalDocument]) -> Set[str]:
 def collect_mof(
     keyword: str, doc_types: List[str], top_n: Optional[int], skip_download: bool,
     known_numbers: Set[str] = None,
+    on_progress: Callable = _no_progress,
 ) -> List[LegalDocument]:
     # API JSON của vbpq.mof.gov.vn; toàn văn chỉ có trong PDF (thường là bản scan -> OCR)
     logger.info("\n### [vbpq.mof.gov.vn] TIM KIEM + TAI FILE ###\n")
+    on_progress("SEARCHING", 0, None, "vbpq.mof.gov.vn")
     if known_numbers:
         logger.info(f"Bo qua van ban mof trung so hieu voi {len(known_numbers)} van ban vbpl.vn")
     documents = collect_mof_documents(
         keyword, doc_types, top_n, skip_download=skip_download, known_numbers=known_numbers
     )
-    for doc in tqdm(documents, desc="Trich text / OCR"):
+    for i, doc in enumerate(tqdm(documents, desc="Trich text / OCR")):
+        on_progress("DETAILS", i, len(documents), "vbpq.mof.gov.vn")
         ensure_document_text(doc)
     return documents
 
@@ -678,7 +693,9 @@ def run_pipeline(
     sources: List[str] = None,
     export_formats: tuple = ("json",),
     relations: bool = True,
+    on_progress: Callable = _no_progress,
 ):
+    """`on_progress(stage, done, total, message)` is called at each milestone (used by worker.py)."""
     sources = sources or list(config.DEFAULT_SOURCES)
     logger.info("=" * 70)
     logger.info("BAT DAU VBPL SCRAPER AGENT")
@@ -693,19 +710,22 @@ def run_pipeline(
     # Thứ tự cố định: vbpl.vn trước -> mof bỏ các văn bản trùng số hiệu với vbpl -> mới ghi metadata
     documents: List[LegalDocument] = []
     if "vbpl" in sources:
-        documents += collect_vbpl_documents(keyword, doc_types, top_n, headless, skip_download)
+        documents += collect_vbpl_documents(keyword, doc_types, top_n, headless, skip_download, on_progress)
     if "mof" in sources:
         known = vbpl_document_numbers(documents)
-        documents += collect_mof(keyword, doc_types, top_n, skip_download, known_numbers=known)
+        documents += collect_mof(keyword, doc_types, top_n, skip_download, known_numbers=known,
+                                 on_progress=on_progress)
 
     if not documents:
         logger.error("KHONG co van ban nao tu cac nguon da chon. Dung pipeline.")
         return
 
     if relations:
+        on_progress("RELATIONS", 0, None, f"{len(documents)} van ban khop tu khoa")
         documents += follow_relations(
             documents, {d.doc_id for d in documents if d.doc_id}, headless, skip_download,
             known_numbers={doc_number_key(d.so_hieu) for d in documents} - {None},
+            on_progress=on_progress,
         )
 
     # --- LUU METADATA ---
@@ -717,6 +737,7 @@ def run_pipeline(
 
     # --- TACH DIEU/KHOAN + XUAT PAYLOAD CHO CAPS-SHARED_HUB ---
     if export:
+        on_progress("EXPORTING", 0, len(documents))
         # Đọc lại từ metadata.json để dùng bản đã chuẩn hoá (số hiệu, file đính kèm)
         saved = load_existing_metadata()
         keys = {doc.unique_key for doc in documents}

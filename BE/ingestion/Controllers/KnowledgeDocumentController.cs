@@ -1,7 +1,7 @@
 using Caps.Common.Application;
 using Caps.Common.Security;
 using Caps.Ingestion.Dtos;
-using Caps.Ingestion.Services.Interface;
+using ingestion.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Caps.Ingestion.Controllers;
