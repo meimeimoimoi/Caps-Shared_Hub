@@ -4,6 +4,7 @@ using static Caps.Workflow.Application.DTOs.Responses.ReviewCaseResponse;
 namespace Caps.Workflow.Application.DTOs.Responses;
 
 /// <summary>A review case as its client or expert sees it.</summary>
+/// <param name="RequesterUserId">The client, so a user who is both client and expert can tell their roles apart.</param>
 /// <param name="Fee">Price frozen at booking, in VND.</param>
 public sealed record ReviewCaseResponse(
     string Id,
@@ -15,6 +16,8 @@ public sealed record ReviewCaseResponse(
     string DocumentId,
     string SourceVersionId,
     string ExpertProfileId,
+    string RequesterUserId,
+    string? ServiceCode,
     long Fee,
     int TurnaroundHours,
     string ProblemDescription,
@@ -45,6 +48,8 @@ public sealed record ReviewCaseResponse(
             c.DocumentId.ToString(),
             c.SourceVersionId.ToString(),
             c.ExpertProfileId.ToString(),
+            c.RequesterUserId.ToString(),
+            c.ServiceCode,
             c.Fee,
             c.TurnaroundHours,
             c.ProblemDescription,
