@@ -29,6 +29,7 @@ public static class DependencyInjection
         services.AddScoped<IExpertApplicationRepository, ExpertApplicationRepository>();
         services.AddScoped<IReviewQueueReader, ReviewQueueReader>();
         services.AddScoped<IExpertStatsReader, ExpertStatsReader>();
+        services.AddScoped<IManagedExpertReader, ManagedExpertReader>();
         services.AddScoped<IExpertEvidenceRepository, ExpertEvidenceRepository>();
         services.AddScoped<IEligibilityCheckRepository, EligibilityCheckRepository>();
         services.AddScoped<IServiceCatalogRepository, ServiceCatalogRepository>();

@@ -16,8 +16,8 @@ interface ModalProps {
   onSubmit?: () => void
   preventClose?: boolean
   closeLabel?: string
-  /** md: hộp thoại xác nhận/biểu mẫu ngắn; lg: nội dung dạng danh sách cần bề ngang */
-  size?: 'md' | 'lg'
+  /** md: confirm dialogs/short forms; lg: list-like content needing width; xl: multi-column detail views */
+  size?: 'md' | 'lg' | 'xl'
 }
 
 /* Native <dialog>: trình duyệt lo focus trap, phím Esc và backdrop.
@@ -92,7 +92,7 @@ export function Modal({
       }}
       aria-labelledby={titleId}
       tabIndex={-1}
-      className={`bg-paper border-hairline rounded-overlay shadow-overlay text-fg backdrop:bg-ink/40 m-auto max-h-[calc(100dvh-32px)] w-[calc(100%-32px)] ${size === 'lg' ? 'max-w-3xl' : 'max-w-lg'} overflow-hidden border p-0 focus:outline-none [&[open]]:flex [&[open]]:flex-col`}
+      className={`bg-paper border-hairline rounded-overlay shadow-overlay text-fg backdrop:bg-ink/40 m-auto max-h-[calc(100dvh-32px)] w-[calc(100%-32px)] ${size === 'xl' ? 'max-w-4xl' : size === 'lg' ? 'max-w-3xl' : 'max-w-lg'} overflow-hidden border p-0 focus:outline-none [&[open]]:flex [&[open]]:flex-col`}
     >
       {onSubmit ? (
         <form

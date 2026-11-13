@@ -114,8 +114,9 @@
   "experts": {
     "title": "Quản lý Expert",
     "description": "Expert đã được duyệt. Chỉ Expert có dịch vụ đang hoạt động mới hiển thị trên Marketplace.",
+    "helpLabel": "Về trang Quản lý Expert",
     "serviceStatus": "Trạng thái dịch vụ",
-    "allStatuses": "Tất cả",
+    "allStatuses": "Tất cả trạng thái",
     "field": "Lĩnh vực",
     "allFields": "Tất cả lĩnh vực",
     "expertCount": "Expert",
@@ -138,7 +139,7 @@
       "fields": "Lĩnh vực",
       "service": "Dịch vụ",
       "fee": "Phí rà soát",
-      "schedule": "Lịch nhận việc",
+      "schedule": "Nhận yêu cầu",
       "active": "Đang nhận",
       "activeValue": "{{active}}/{{capacity}} hồ sơ",
       "review": "Xét duyệt",
@@ -146,7 +147,34 @@
       "reviewer": "Người duyệt",
       "approvedAt": "Ngày duyệt",
       "application": "Đơn đăng ký",
-      "history": "Lịch sử thao tác"
+      "history": "Lịch sử thao tác",
+      "suspendNote": "Lý do tạm ngưng",
+      "cancel": "Hủy",
+      "confirmSuspend": "Xác nhận tạm ngưng",
+      "serviceName": "Tên dịch vụ"
+    },
+    "accepting": {
+      "on": "Đang bật",
+      "off": "Đang tắt"
+    },
+    "historyText": {
+      "approved": "phê duyệt cung cấp dịch vụ.",
+      "suspended": "tạm ngưng dịch vụ.",
+      "reinstated": "mở lại dịch vụ.",
+      "changed": "chuyển trạng thái sang {{status}}.",
+      "note": "Ghi chú: {{note}}",
+      "registered": "đăng ký dịch vụ.",
+      "submitted": "nộp hồ sơ năng lực.",
+      "moreInfo": "yêu cầu bổ sung hồ sơ năng lực.",
+      "passed": "chấm Đạt đánh giá năng lực."
+    },
+    "toast": {
+      "suspended": "Đã tạm ngưng dịch vụ",
+      "reinstated": "Đã mở lại dịch vụ"
+    },
+    "actor": {
+      "system": "Hệ thống",
+      "admin": "Quản trị viên"
     }
   },
   "applicationsTable": {

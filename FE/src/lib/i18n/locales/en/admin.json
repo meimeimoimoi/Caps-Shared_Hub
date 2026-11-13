@@ -114,8 +114,9 @@
   "experts": {
     "title": "Manage Experts",
     "description": "Approved Experts. Only Experts with active services will appear on the Marketplace.",
+    "helpLabel": "About Manage Experts",
     "serviceStatus": "Service Status",
-    "allStatuses": "All",
+    "allStatuses": "All statuses",
     "field": "Field",
     "allFields": "All fields",
     "expertCount": "Expert(s)",
@@ -138,7 +139,7 @@
       "fields": "Fields",
       "service": "Service",
       "fee": "Review fee",
-      "schedule": "Working schedule",
+      "schedule": "Accepting requests",
       "active": "Active cases",
       "activeValue": "{{active}}/{{capacity}} cases",
       "review": "Vetting",
@@ -146,7 +147,34 @@
       "reviewer": "Reviewed by",
       "approvedAt": "Approved on",
       "application": "Application",
-      "history": "Activity log"
+      "history": "Activity log",
+      "suspendNote": "Reason for suspension",
+      "cancel": "Cancel",
+      "confirmSuspend": "Confirm suspension",
+      "serviceName": "Service"
+    },
+    "accepting": {
+      "on": "On",
+      "off": "Off"
+    },
+    "historyText": {
+      "approved": "approved the service.",
+      "suspended": "suspended the service.",
+      "reinstated": "reinstated the service.",
+      "changed": "moved the service to {{status}}.",
+      "note": "Note: {{note}}",
+      "registered": "registered for the service.",
+      "submitted": "submitted the competency file.",
+      "moreInfo": "asked for more competency evidence.",
+      "passed": "passed the competency review."
+    },
+    "toast": {
+      "suspended": "Service suspended",
+      "reinstated": "Service reinstated"
+    },
+    "actor": {
+      "system": "System",
+      "admin": "Admin"
     }
   },
   "applicationsTable": {
