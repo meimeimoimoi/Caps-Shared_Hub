@@ -15,6 +15,8 @@ import {
   disputeBadgeKey,
   disputeHoursLeft,
 } from '../../features/disputes-escrow/utils/disputes'
+import { PageHeader } from '@/components/ui/layout/page-header'
+import { LoadError } from '@/components/ui/feedback/load-error'
 
 const rowCls = 'border-border-subtle border-t [&>td]:px-4 [&>td]:py-3'
 const headCls =
@@ -45,10 +47,13 @@ export default function AdminDisputesPage() {
 
   return (
     <AdminLayout {...nav} section="disputes" breadcrumb={t('disputes.title')}>
-      <h1 className="text-h1">{t('disputes.title')}</h1>
-      <p className="text-fg-muted mt-3">
-        {t('disputes.intro', { count: openCount, hours: DISPUTE_SLA_HOURS })}
-      </p>
+      <PageHeader
+        title={t('disputes.title')}
+        help={t('disputes.intro', {
+          count: openCount,
+          hours: DISPUTE_SLA_HOURS,
+        })}
+      />
 
       <section className="paper mt-8 overflow-x-auto">
         <table className="w-full min-w-220 text-sm">
@@ -121,7 +126,7 @@ export default function AdminDisputesPage() {
                   colSpan={7}
                   className="text-fg-muted px-4 py-10 text-center"
                 >
-                  {error?.message ?? t('disputes.empty')}
+                  {error ? <LoadError /> : t('disputes.empty')}
                 </td>
               </tr>
             )}

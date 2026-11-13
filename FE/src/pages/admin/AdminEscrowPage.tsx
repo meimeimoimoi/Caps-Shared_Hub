@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Download } from 'lucide-react'
+import { Download, AlertTriangle } from 'lucide-react'
 import { ESCROW_STATUS } from '@/lib/constants'
 import { cn, formatDayMonth } from '@/lib/utils'
 import { formatVnd } from '@/lib/format-money'
@@ -22,6 +22,8 @@ import { EscrowDrawer } from '../../features/disputes-escrow/components/EscrowDr
 import { escrowSplit } from '../../features/disputes-escrow/utils/escrow'
 import { usePricing } from '../../features/service-pricing/hooks/usePricing'
 import type { Escrow } from '../../features/disputes-escrow/types'
+import { PageHeader } from '@/components/ui/layout/page-header'
+import { LoadError } from '@/components/ui/feedback/load-error'
 
 const rowCls = 'border-border-subtle border-t [&>td]:px-4 [&>td]:py-3'
 const headCls =
@@ -120,21 +122,21 @@ export default function AdminEscrowPage() {
       searchLabel={t('escrow.searchLabel')}
       onSearchChange={escrows.setQuery}
     >
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <h1 className="text-h1">{t('escrow.title')}</h1>
-          <p className="text-fg-muted mt-3 max-w-[65ch]">{t('escrow.intro')}</p>
-        </div>
-        <button
-          type="button"
-          onClick={exportCsv}
-          disabled={!escrows.rows.length}
-          className="btn btn-press btn-secondary"
-        >
-          <Download size={16} aria-hidden="true" />
-          {t('escrow.export')}
-        </button>
-      </div>
+      <PageHeader
+        title={t('escrow.title')}
+        help={t('escrow.intro')}
+        actions={
+          <button
+            type="button"
+            onClick={exportCsv}
+            disabled={!escrows.rows.length}
+            className="btn btn-press btn-secondary"
+          >
+            <Download size={16} aria-hidden="true" />
+            {t('escrow.export')}
+          </button>
+        }
+      />
 
       {/* Ô tổng kiêm bộ lọc: bấm để xem khoản ở trạng thái đó, bấm lại để bỏ lọc */}
       <div
@@ -202,11 +204,19 @@ export default function AdminEscrowPage() {
                       onClick={() => escrows.setStatus(active ? ALL : s)}
                       className={cn(
                         'paper motion-lift p-4 text-left',
-                        active && 'outline-accent outline-2',
-                        failed && 'border-l-danger border-l-4'
+                        active && 'outline-accent outline-2'
                       )}
                     >
-                      <span className="text-fg-muted block text-sm">
+                      <span
+                        className={cn(
+                          'flex items-center gap-1.5 text-sm',
+                          failed ? 'text-danger font-semibold' : 'text-fg-muted'
+                        )}
+                      >
+                        {/* Icon as well as colour, so a failure is not signalled by colour alone */}
+                        {failed && (
+                          <AlertTriangle size={14} aria-hidden="true" />
+                        )}
                         {t(`escrow.status.${s}`)}
                       </span>
                       <span
@@ -296,7 +306,7 @@ export default function AdminEscrowPage() {
                   colSpan={7}
                   className="text-fg-muted px-4 py-10 text-center"
                 >
-                  {escrows.error?.message ?? t('escrow.noMatch')}
+                  {escrows.error ? <LoadError /> : t('escrow.noMatch')}
                 </td>
               </tr>
             )}

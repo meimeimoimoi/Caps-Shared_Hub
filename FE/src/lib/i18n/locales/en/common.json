@@ -95,7 +95,8 @@
     "signIn": "Sign in",
     "dashboard": "Go to dashboard",
     "registerExpert": "Expert registration",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "retry": "Retry"
   },
   "forbidden": {
     "title": "You don’t have access to this page.",
@@ -131,5 +132,8 @@
       "SUSPENDED": "{{service}} is suspended",
       "REINSTATED": "{{service}} has been reinstated"
     }
+  },
+  "states": {
+    "loadFailed": "Couldn't load the data. Check your connection and try again."
   }
 }

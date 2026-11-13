@@ -19,6 +19,8 @@ import {
   type PlatformFee,
 } from '../../features/expert-vetting/api/platformFeeApi'
 import { formatDate } from '../../features/expert-vetting/utils/applications'
+import { PageHeader } from '@/components/ui/layout/page-header'
+import { LoadError } from '@/components/ui/feedback/load-error'
 
 const LATE_FIELDS = ['penaltyHours', 'penaltyPercent', 'cancelHours'] as const
 type LateDraft = Record<(typeof LATE_FIELDS)[number], string>
@@ -63,6 +65,19 @@ const isSaveError = (code?: string): code is SaveError =>
   (SAVE_ERRORS as readonly (string | undefined)[]).includes(code)
 // Sample prices that show the admin what experts receive before and after the change
 const SAMPLE_PRICES = [500_000, 1_000_000, 2_000_000]
+
+/** One clause per line, so a rule cell never breaks mid-clause */
+function Clauses({ text }: { text: string }) {
+  return (
+    <ul className="space-y-0.5">
+      {text.split(' · ').map((clause) => (
+        <li key={clause} className="whitespace-nowrap">
+          {clause}
+        </li>
+      ))}
+    </ul>
+  )
+}
 
 /** The numeric inputs of one case rule (late delivery, client silence) under its legend and help */
 function RuleFields<K extends string>({
@@ -125,6 +140,7 @@ export default function AdminPlatformFeesPage() {
   )
   const [effectiveOn, setEffectiveOn] = useState('')
   const [toast, setToast] = useState<string | null>(null)
+  const [withdrawing, setWithdrawing] = useState<PlatformFee | null>(null)
   const clearToast = useCallback(() => setToast(null), [])
 
   const key = [...adminKeys.all, 'platform-fees'] as const
@@ -229,6 +245,7 @@ export default function AdminPlatformFeesPage() {
         setToast(t('admin:platformFees.cancelled', { name: row.serviceName }))
       )
       .catch(failed)
+      .finally(() => setWithdrawing(null))
 
   return (
     <AdminLayout
@@ -236,17 +253,16 @@ export default function AdminPlatformFeesPage() {
       section="platformFees"
       breadcrumb={t('admin:navigation.platformFees')}
     >
-      <div className="flex items-center gap-2">
-        <h1 className="text-h1">{t('admin:platformFees.title')}</h1>
-        <HelpTip label={t('admin:platformFees.helpLabel')}>
-          {t('admin:platformFees.description')}
-        </HelpTip>
-      </div>
+      <PageHeader
+        title={t('admin:platformFees.title')}
+        help={t('admin:platformFees.description')}
+        helpLabel={t('admin:platformFees.helpLabel')}
+      />
 
-      <section className="paper mt-12 overflow-x-auto">
+      <section className="paper mt-8 overflow-x-auto">
         <table className="w-full min-w-260 text-sm">
           <thead className="bg-sunken text-fg-muted">
-            <tr className="[&>th]:px-4 [&>th]:py-3 [&>th]:text-left [&>th]:font-semibold">
+            <tr className="[&>th]:px-4 [&>th]:py-3 [&>th]:text-left [&>th]:font-semibold [&>th]:whitespace-nowrap">
               <th>{t('admin:platformFees.service')}</th>
               <th>{t('admin:platformFees.percent')}</th>
               <th>{t('admin:platformFees.late')}</th>
@@ -270,9 +286,11 @@ export default function AdminPlatformFeesPage() {
                   <div className="text-fg-strong font-semibold">
                     {row.serviceName}
                   </div>
-                  <div className="text-fg-muted">{row.serviceCode}</div>
+                  <div className="text-fg-muted mt-0.5 font-mono text-xs">
+                    {row.serviceCode}
+                  </div>
                 </td>
-                <td className="num">
+                <td className="num text-fg-strong text-base font-semibold">
                   {row.percent == null ? (
                     <span className="text-warning">
                       {t('admin:platformFees.notSet')}
@@ -282,22 +300,30 @@ export default function AdminPlatformFeesPage() {
                   )}
                 </td>
                 <td className="num">
-                  {row.late
-                    ? t('admin:platformFees.lateValue', { ...row.late })
-                    : '—'}
+                  {row.late ? (
+                    <Clauses
+                      text={t('admin:platformFees.lateValue', { ...row.late })}
+                    />
+                  ) : (
+                    '—'
+                  )}
                 </td>
                 <td className="num">
-                  {row.noResponse
-                    ? t('admin:platformFees.noResponseValue', {
+                  {row.noResponse ? (
+                    <Clauses
+                      text={t('admin:platformFees.noResponseValue', {
                         ...row.noResponse,
                         platformPercent:
                           100 -
                           row.noResponse.refundPercent -
                           row.noResponse.expertPercent,
-                      })
-                    : '—'}
+                      })}
+                    />
+                  ) : (
+                    '—'
+                  )}
                 </td>
-                <td className="num">
+                <td className="num whitespace-nowrap">
                   {row.effectiveFrom ? formatDate(row.effectiveFrom) : '—'}
                 </td>
                 <td className="num">
@@ -312,16 +338,16 @@ export default function AdminPlatformFeesPage() {
                   {row.pending && (
                     <button
                       type="button"
-                      className="btn btn-press btn-secondary mr-2"
+                      className="btn btn-press btn-secondary mr-2 h-9 px-3 text-sm"
                       disabled={cancel.isPending}
-                      onClick={() => void withdraw(row)}
+                      onClick={() => setWithdrawing(row)}
                     >
                       {t('admin:platformFees.cancelPending')}
                     </button>
                   )}
                   <button
                     type="button"
-                    className="btn btn-press btn-secondary"
+                    className="btn btn-press btn-secondary h-9 px-3 text-sm"
                     onClick={() => open(row)}
                   >
                     {row.percent == null
@@ -337,9 +363,13 @@ export default function AdminPlatformFeesPage() {
                   colSpan={7}
                   className="text-fg-muted px-4 py-10 text-center"
                 >
-                  {query.isLoading
-                    ? t('common:loading')
-                    : (query.error?.message ?? t('admin:platformFees.empty'))}
+                  {query.isLoading ? (
+                    t('common:loading')
+                  ) : query.error ? (
+                    <LoadError />
+                  ) : (
+                    t('admin:platformFees.empty')
+                  )}
                 </td>
               </tr>
             )}
@@ -458,6 +488,41 @@ export default function AdminPlatformFeesPage() {
               : t('admin:platformFees.firstFeeHelp')}
           </p>
         </Modal>
+      )}
+      {withdrawing?.pending && (
+        <Modal
+          title={t('admin:platformFees.confirmCancelTitle', {
+            name: withdrawing.serviceName,
+          })}
+          description={t('admin:platformFees.confirmCancelBody', {
+            percent: withdrawing.pending.percent,
+            date: formatDate(withdrawing.pending.effectiveFrom),
+            current: withdrawing.percent,
+          })}
+          onClose={() => setWithdrawing(null)}
+          preventClose={cancel.isPending}
+          footer={
+            <>
+              <button
+                type="button"
+                autoFocus
+                onClick={() => setWithdrawing(null)}
+                disabled={cancel.isPending}
+                className="btn btn-press btn-secondary"
+              >
+                {t('admin:platformFees.keepPending')}
+              </button>
+              <button
+                type="button"
+                disabled={cancel.isPending}
+                onClick={() => void withdraw(withdrawing)}
+                className="btn btn-press bg-danger text-paper"
+              >
+                {t('admin:platformFees.cancelPending')}
+              </button>
+            </>
+          }
+        />
       )}
       {toast && <Toast message={toast} onDone={clearToast} />}
     </AdminLayout>

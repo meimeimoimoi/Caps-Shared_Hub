@@ -15,6 +15,8 @@ import type {
   PackageInput,
   PricingOverview,
 } from '../../features/service-pricing/types'
+import { PageHeader } from '@/components/ui/layout/page-header'
+import { LoadError } from '@/components/ui/feedback/load-error'
 
 // Nhãn/giới thiệu tab lấy từ i18n theo key: pricing.tabs.<key>.label / .intro
 const tabs = [
@@ -40,7 +42,7 @@ export default function AdminPricingPage() {
   const nav = useAdminNav()
   const { t } = useTranslation(['admin', 'common'])
   const pricing = usePricing()
-  const { data, isLoading, error } = pricing
+  const { data, isLoading } = pricing
   // Tab nằm trên URL (?tab=) để breadcrumb và link dẫn đúng tab
   const [params, setParams] = useSearchParams()
   const current = tabs.find((x) => x.key === params.get('tab')) ?? tabs[0]
@@ -89,8 +91,10 @@ export default function AdminPricingPage() {
         )
       }
     >
-      <h1 className="text-h1">{t('pricing.title')}</h1>
-      <p className="text-fg-muted mt-3">{t(`pricing.tabs.${tab}.intro`)}</p>
+      <PageHeader
+        title={t('pricing.title')}
+        help={t(`pricing.tabs.${tab}.intro`)}
+      />
 
       <div
         role="tablist"
@@ -133,9 +137,7 @@ export default function AdminPricingPage() {
               <span className="sr-only">{t('common:loading')}</span>
             </div>
           ) : (
-            <p className="paper text-fg-muted px-4 py-10 text-center text-sm">
-              {error?.message}
-            </p>
+            <LoadError className="paper px-4 py-10" />
           )
         ) : tab === 'review-fee' ? (
           <ReviewFeeTab data={data} />

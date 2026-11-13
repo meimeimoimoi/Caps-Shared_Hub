@@ -95,7 +95,8 @@
     "signIn": "Đăng nhập",
     "dashboard": "Về bảng điều khiển",
     "registerExpert": "Đăng ký chuyên gia",
-    "cancel": "Hủy"
+    "cancel": "Hủy",
+    "retry": "Thử lại"
   },
   "forbidden": {
     "title": "Bạn không có quyền vào trang này.",
@@ -131,5 +132,8 @@
       "SUSPENDED": "Dịch vụ {{service}} đang tạm ngưng",
       "REINSTATED": "Dịch vụ {{service}} đã được mở lại"
     }
+  },
+  "states": {
+    "loadFailed": "Không tải được dữ liệu. Kiểm tra kết nối rồi thử lại."
   }
 }

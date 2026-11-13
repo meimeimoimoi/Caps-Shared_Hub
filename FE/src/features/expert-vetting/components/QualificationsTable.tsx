@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import type { Paged } from '@/lib/utils'
@@ -11,7 +12,7 @@ interface QualificationsTableProps {
   onPrev: () => void
   onNext: () => void
   /** Text when there are no rows, e.g. loading or an error */
-  empty?: string
+  empty?: ReactNode
   /** Detail page path prefix, e.g. /admin/experts/qualifications */
   linkBase: string
 }

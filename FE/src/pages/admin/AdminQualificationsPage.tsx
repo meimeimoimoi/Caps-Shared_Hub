@@ -9,6 +9,8 @@ import {
   useQualificationQueue,
 } from '../../features/expert-vetting/hooks/useQualificationQueue'
 import type { QualificationScope } from '../../features/expert-vetting/types'
+import { PageHeader } from '@/components/ui/layout/page-header'
+import { LoadError } from '@/components/ui/feedback/load-error'
 
 /** Gate 2 queue for reviewers, or the final approval queue for System Admins */
 export default function AdminQualificationsPage({
@@ -32,17 +34,18 @@ export default function AdminQualificationsPage({
       search={query}
       onSearchChange={setQuery}
     >
-      <h1 className="text-h1">
-        {review ? t('qualifications.title') : t('finalApproval.title')}
-      </h1>
-      <p className="text-fg-muted mt-3">
-        {review
-          ? t('qualifications.description')
-          : t('finalApproval.description')}
-      </p>
+      <PageHeader
+        title={review ? t('qualifications.title') : t('finalApproval.title')}
+        help={
+          review
+            ? t('qualifications.description')
+            : t('finalApproval.description')
+        }
+        helpLabel={review ? undefined : t('finalApproval.helpLabel')}
+      />
 
       {/* Status filter as one compact dropdown; the count of each status sits in its option */}
-      <div className="mt-10 mb-4">
+      <div className="mt-8 mb-4">
         <CustomSelect
           label={t('pendingExperts.filterAria')}
           value={tab}
@@ -63,7 +66,9 @@ export default function AdminQualificationsPage({
         paged={paged}
         onPrev={prev}
         onNext={next}
-        empty={isLoading ? t('common:loading') : error?.message}
+        empty={
+          isLoading ? t('common:loading') : error ? <LoadError /> : undefined
+        }
         linkBase={
           review ? '/admin/experts/qualifications' : '/admin/experts/approvals'
         }

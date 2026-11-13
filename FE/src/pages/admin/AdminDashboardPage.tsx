@@ -24,6 +24,8 @@ import { KpiCard } from '../../features/admin-analytics/components/KpiCard'
 import type { StatusTotal } from '../../features/admin-analytics/types'
 import { hasAnyPermission, Permission, useAuthStore } from '@/features/auth'
 import { isOverdue, useReviewSlaDays } from '@/features/expert-vetting/hooks/useReviewSlaDays'
+import { PageHeader } from '@/components/ui/layout/page-header'
+import { LoadError } from '@/components/ui/feedback/load-error'
 
 /* Same months as the monthly growth chart, so the billing request is shared with it */
 const BILLING_MONTHS = 12
@@ -65,6 +67,8 @@ export default function AdminDashboardPage() {
     enabled: canSetFees,
   })
   const loading = [applications, experts, billing, fees].some((q) => q.isLoading)
+  // A failed query would otherwise show as zero counts
+  const failed = [applications, experts, billing, fees].some((q) => q.isError)
 
   const apps = applications.data ?? []
   const pending = apps.filter((a) => a.status === PENDING_STATUS)
@@ -100,10 +104,10 @@ export default function AdminDashboardPage() {
       section="overview"
       breadcrumb={t('navigation.overview')}
     >
-      <h1 className="text-h1">{t('dashboard.title')}</h1>
-      <p className="text-fg-muted mt-3">{t('dashboard.description')}</p>
+      <PageHeader title={t('dashboard.title')} />
+      {failed && <LoadError className="paper mt-8 px-4 py-6" />}
 
-      <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+      <div className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         {canReview && <KpiCard
           label={t('dashboard.kpi.pending')}
           value={applications.data && pending.length}

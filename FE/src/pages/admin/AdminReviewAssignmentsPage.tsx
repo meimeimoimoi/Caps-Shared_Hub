@@ -7,7 +7,6 @@ import { APPLICATION_STATUS, QUALIFICATION_STATUS } from '@/lib/constants'
 import { AdminLayout } from '@/app/layouts/admin/AdminLayout'
 import { useAdminNav } from '@/app/layouts/admin/useAdminNav'
 import { CustomSelect } from '@/components/ui/forms/custom-select'
-import { HelpTip } from '@/components/ui/feedback/help-tip'
 import { Toast } from '@/components/ui/feedback/toast'
 import { StatusBadge } from '@/components/ui/display/status-badge'
 import { Pagination } from '@/components/ui/navigation/pagination'
@@ -16,6 +15,8 @@ import { adminKeys } from '../../features/expert-vetting/api/queryKeys'
 import type { ClaimFilter, ReviewQueueRow } from '../../features/expert-vetting/api/reviewQueueApi'
 import { ReassignDialog } from '../../features/expert-vetting/components/ReassignDialog'
 import { formatDate, formatDateTime } from '../../features/expert-vetting/utils/applications'
+import { PageHeader } from '@/components/ui/layout/page-header'
+import { LoadError } from '@/components/ui/feedback/load-error'
 
 // Open reviews of both gates: waiting for a reviewer or for the expert's supplement
 const GATES = {
@@ -90,12 +91,13 @@ export default function AdminReviewAssignmentsPage() {
 
   return (
     <AdminLayout {...nav} section="assignments" breadcrumb={t('admin:navigation.assignments')}>
-      <div className="flex items-center gap-2">
-        <h1 className="text-h1">{t('admin:assignments.title')}</h1>
-        <HelpTip label={t('admin:assignments.helpLabel')}>{t('admin:assignments.help')}</HelpTip>
-      </div>
+      <PageHeader
+        title={t('admin:assignments.title')}
+        help={t('admin:assignments.help')}
+        helpLabel={t('admin:assignments.helpLabel')}
+      />
 
-      <div className="mt-10 mb-4 flex flex-wrap gap-2">
+      <div className="mt-8 mb-4 flex flex-wrap gap-2">
         <CustomSelect
           label={t('admin:assignments.gateFilter')}
           value={gate}
@@ -120,9 +122,9 @@ export default function AdminReviewAssignmentsPage() {
       </div>
 
       <div className="paper overflow-x-auto">
-        <table className="w-full min-w-[720px] text-sm">
-          <thead className="text-fg-muted text-left">
-            <tr className="border-border border-b">
+        <table className="w-full min-w-180 text-sm">
+          <thead className="bg-sunken text-fg-muted text-left">
+            <tr className="[&>th]:whitespace-nowrap">
               <th className="px-4 py-3 font-medium">{t('admin:assignments.columns.expert')}</th>
               <th className="px-4 py-3 font-medium">{t('admin:assignments.columns.gate')}</th>
               <th className="px-4 py-3 font-medium">{t('admin:assignments.columns.submitted')}</th>
@@ -173,8 +175,8 @@ export default function AdminReviewAssignmentsPage() {
             ))}
             {!rows.length && (
               <tr>
-                <td colSpan={6} className="text-fg-muted px-4 py-8 text-center">
-                  {list.isLoading ? t('common:loading') : (list.error?.message ?? t('admin:assignments.empty'))}
+                <td colSpan={6} className="text-fg-muted px-4 py-10 text-center">
+                  {list.isLoading ? t('common:loading') : list.error ? <LoadError /> : t('admin:assignments.empty')}
                 </td>
               </tr>
             )}
