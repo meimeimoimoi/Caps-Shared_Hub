@@ -1,8 +1,8 @@
 using System.Text.Json;
 using Caps.Ingestion.Dtos;
-using ingestion.Services.Interfaces;
+using Caps.Ingestion.Services.Interfaces;
 
-namespace ingestion.Services;
+namespace Caps.Ingestion.Services;
 
 public class AiServiceClient : IAiServiceClient
 {

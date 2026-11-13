@@ -1,17 +1,18 @@
 using System.Globalization;
 using System.Text.Json.Nodes;
 using Caps.Ingestion.Data;
+using Caps.Ingestion.Dtos;
 using Caps.Ingestion.Entities;
-using ingestion.Dtos;
-using ingestion.Services.Interfaces;
+using Caps.Ingestion.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using static Caps.Ingestion.Dtos.AiServiceDtos;
 
-namespace ingestion.Services;
+namespace Caps.Ingestion.Services;
 
 public class KnowledgeDocumentService : IKnowledgeDocumentService
 {
     private const int DefaultMaxRetry = 3;
+    private const string MaxRetryConfigKey = "KB_INDEX_MAX_RETRY";
 
     private readonly IngestionDbContext _db;
     private readonly IAiServiceClient _aiClient;
@@ -90,10 +91,24 @@ public class KnowledgeDocumentService : IKnowledgeDocumentService
             );
         }
 
-        if (doc.RetryCount >= DefaultMaxRetry)
+        // Read the retry limit from system_config, falling back to the default
+        var maxRetry = DefaultMaxRetry;
+        var config = await _db.SystemConfigs.FirstOrDefaultAsync(
+            c => c.Key == MaxRetryConfigKey,
+            cancellationToken
+        );
+        if (
+            config != null
+            && int.TryParse(config.Value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var cfgValue)
+        )
+        {
+            maxRetry = cfgValue;
+        }
+
+        if (doc.RetryCount >= maxRetry)
         {
             throw new InvalidOperationException(
-                $"Đã vượt quá số lần thử lại tối đa ({DefaultMaxRetry} lần). Vui lòng thông báo System Admin xử lý."
+                $"Đã vượt quá số lần thử lại tối đa ({maxRetry} lần). Vui lòng thông báo System Admin xử lý."
             );
         }
 
@@ -161,7 +176,7 @@ public class KnowledgeDocumentService : IKnowledgeDocumentService
             {
                 var kbChunk = new KbChunk
                 {
-                    Id = Guid.NewGuid(),
+                    Id = Guid.CreateVersion7(),
                     KnowledgeDocumentId = doc.Id,
                     ChunkIndex = item.ChunkIndex,
                     QdrantPointId = item.QdrantPointId,

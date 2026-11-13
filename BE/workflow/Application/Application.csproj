@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <RootNamespace>Caps.Workflow.Application</RootNamespace>
@@ -6,8 +6,16 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="AWSSDK.Core" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Domain\Domain.csproj" />
     <ProjectReference Include="..\..\common\Application\Application.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="AiChat\Commands\" />
   </ItemGroup>
 
 </Project>

@@ -118,3 +118,15 @@ public sealed class TemplateRepository(WorkflowDbContext db) : ITemplateReposito
             .Include(x => x.Template)
             .Where(x => x.Status == TemplateVersionStatus.Published && x.Template.IsActive);
 }
+
+public sealed class ConversationRepository(WorkflowDbContext db) : IConversationRepository
+{
+    public async Task<Conversation?> FindAsync(Guid id, CancellationToken ct = default)
+        => await db.Conversations.FirstOrDefaultAsync(c => c.Id == id, ct);
+    public async Task<IReadOnlyList<Conversation>> ListByUserIdAsync(Guid userId, CancellationToken ct = default)
+        => await db.Conversations
+            .Where(c => c.UserId == userId)
+            .OrderByDescending(c => c.UpdatedAt)
+            .ToListAsync(ct);
+    public void Add(Conversation conversation) => db.Conversations.Add(conversation);
+}
