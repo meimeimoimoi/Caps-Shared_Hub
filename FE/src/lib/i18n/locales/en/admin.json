@@ -35,7 +35,8 @@
     "settings": "Settings",
     "users": "Users",
     "expertPolicy": "Expert policy",
-    "assignments": "Review assignments"
+    "assignments": "Review assignments",
+    "feesAndPolicy": "Fees & policy"
   },
   "dashboard": {
     "title": "Overview",
@@ -45,7 +46,9 @@
       "payoutFailed": "{{count}} failed payouts need a retry",
       "slaOverdue": "{{count}} expert applications waiting over {{days}} days",
       "finalApprovalOverdue": "{{count}} records past the final approval limit",
-      "outsideRange": "{{count}} experts priced outside the range"
+      "outsideRange": "{{count}} experts priced outside the range",
+      "title": "Needs attention now",
+      "empty": "Nothing urgent."
     },
     "kpi": {
       "pending": "Pending applications",

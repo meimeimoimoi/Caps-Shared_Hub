@@ -125,6 +125,7 @@ export function useAdminNav(enabled = true) {
     pendingCount: pending.length,
     disputeCount: open.length,
     approvalOverdueCount: approvalOverdue,
+    payoutFailedCount: payoutFailed + refundFailed,
     notifications,
   }
 }

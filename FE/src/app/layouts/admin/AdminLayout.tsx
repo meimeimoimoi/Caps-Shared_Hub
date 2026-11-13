@@ -78,6 +78,8 @@ interface AdminLayoutProps extends ShellPageProps {
   disputeCount?: number
   /** Final approvals past their due time */
   approvalOverdueCount?: number
+  /** Payouts and refunds that failed and need a retry */
+  payoutFailedCount?: number
 }
 
 export function AdminLayout({
@@ -85,6 +87,7 @@ export function AdminLayout({
   pendingCount,
   disputeCount,
   approvalOverdueCount,
+  payoutFailedCount,
   ...page
 }: AdminLayoutProps) {
   const { t } = useTranslation('admin')
@@ -137,18 +140,6 @@ export function AdminLayout({
           active: section === 'assignments',
         },
         {
-          label: t('navigation.platformFees'),
-          icon: Banknote,
-          to: '/admin/platform-fees',
-          active: section === 'platformFees',
-        },
-        {
-          label: t('navigation.expertPolicy'),
-          icon: SlidersHorizontal,
-          to: '/admin/experts/policy',
-          active: section === 'expertPolicy',
-        },
-        {
           label: t('navigation.manageExperts'),
           icon: Users,
           to: '/admin/experts',
@@ -171,12 +162,31 @@ export function AdminLayout({
           icon: CreditCard,
           to: '/admin/escrow',
           active: section === 'escrow',
+          badge: payoutFailedCount,
+        },
+      ],
+    },
+    {
+      // Everything that sets money or rules: platform cut, review-fee ranges, vetting parameters
+      group: t('navigation.feesAndPolicy'),
+      items: [
+        {
+          label: t('navigation.platformFees'),
+          icon: Banknote,
+          to: '/admin/platform-fees',
+          active: section === 'platformFees',
         },
         {
           label: t('navigation.pricing'),
           icon: Tag,
           to: '/admin/pricing',
           active: section === 'pricing',
+        },
+        {
+          label: t('navigation.expertPolicy'),
+          icon: SlidersHorizontal,
+          to: '/admin/experts/policy',
+          active: section === 'expertPolicy',
         },
       ],
     },

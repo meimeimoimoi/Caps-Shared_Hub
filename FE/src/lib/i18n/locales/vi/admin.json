@@ -35,7 +35,8 @@
     "settings": "Cấu hình",
     "users": "Người dùng",
     "expertPolicy": "Chính sách chuyên gia",
-    "assignments": "Phân công người chấm"
+    "assignments": "Phân công người chấm",
+    "feesAndPolicy": "Cấu hình & phí"
   },
   "dashboard": {
     "title": "Tổng quan",
@@ -45,7 +46,9 @@
       "payoutFailed": "{{count}} khoản chi trả lỗi, cần thử lại",
       "slaOverdue": "{{count}} hồ sơ Expert chờ quá {{days}} ngày",
       "finalApprovalOverdue": "{{count}} hồ sơ quá hạn phê duyệt cuối",
-      "outsideRange": "{{count}} Expert đặt giá ngoài khung"
+      "outsideRange": "{{count}} Expert đặt giá ngoài khung",
+      "title": "Cần xử lý ngay",
+      "empty": "Không có việc gấp."
     },
     "kpi": {
       "pending": "Hồ sơ chờ duyệt",

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import { AlertTriangle, ChevronRight, CircleDot } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useQuery } from '@tanstack/react-query'
 import { useFormatters } from '@/hooks/useFormatters'
@@ -30,8 +31,9 @@ import { LoadError } from '@/components/ui/feedback/load-error'
 /* Same months as the monthly growth chart, so the billing request is shared with it */
 const BILLING_MONTHS = 12
 
-/* System Admin overview: key figures, growth and where work is stuck. Urgent items live in the
- * notification bell (useAdminNav). Each block only calls the API the account has permission for. */
+/* System Admin overview: what needs action now (same items as the notification bell, from
+ * useAdminNav), then key figures, growth and where work is stuck. Each block only calls the API
+ * the account has permission for. */
 export default function AdminDashboardPage() {
   const nav = useAdminNav()
   const { t } = useTranslation('admin')
@@ -106,6 +108,48 @@ export default function AdminDashboardPage() {
     >
       <PageHeader title={t('dashboard.title')} />
       {failed && <LoadError className="paper mt-8 px-4 py-6" />}
+
+      <section className="paper mt-8 p-5" aria-labelledby="dash-attention">
+        <h2 id="dash-attention" className="text-h2">
+          {t('dashboard.attention.title')}
+        </h2>
+        {nav.notifications.length ? (
+          <ul className="divide-border-subtle mt-3 divide-y text-sm">
+            {nav.notifications.map((n) => (
+              <li key={n.id}>
+                <Link
+                  to={n.to}
+                  className="hover:bg-desk-2 -mx-2 flex items-center gap-3 rounded px-2 py-2.5 no-underline"
+                >
+                  {n.tone === 'warning' ? (
+                    <AlertTriangle
+                      size={16}
+                      aria-hidden="true"
+                      className="text-warning shrink-0"
+                    />
+                  ) : (
+                    <CircleDot
+                      size={16}
+                      aria-hidden="true"
+                      className="text-fg-muted shrink-0"
+                    />
+                  )}
+                  <span className="text-fg-strong min-w-0 flex-1">{n.text}</span>
+                  <ChevronRight
+                    size={16}
+                    aria-hidden="true"
+                    className="text-fg-muted shrink-0"
+                  />
+                </Link>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-fg-muted mt-3 text-sm">
+            {loading ? t('dashboard.loading') : t('dashboard.attention.empty')}
+          </p>
+        )}
+      </section>
 
       <div className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         {canReview && <KpiCard
