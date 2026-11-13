@@ -1142,7 +1142,6 @@
     },
     "outOfRange": "Nhập số nguyên từ {{min}} đến {{max}}.",
     "updated": "Sửa lần cuối {{time}} · {{actor}}",
-    "usingDefault": "Đang dùng giá trị mặc định.",
     "you": "Bạn",
     "reason": "Lý do thay đổi (bắt buộc)",
     "reasonPlaceholder": "Ví dụ: cập nhật theo quyết định chính sách ngày …",
@@ -1150,13 +1149,25 @@
     "saved": "Đã lưu chính sách chuyên gia",
     "historyTitle": "Lịch sử thay đổi",
     "history": {
+      "empty": "Chưa có thay đổi nào.",
       "time": "Thời điểm",
       "setting": "Tham số",
-      "change": "Giá trị cũ → mới",
-      "actor": "Người sửa",
+      "change": "Thay đổi",
       "reason": "Lý do",
-      "empty": "Chưa có thay đổi nào."
+      "actor": "Người sửa"
     },
+    "columns": {
+      "value": "Giá trị",
+      "current": "Đang áp dụng",
+      "default": "Mặc định",
+      "allowed": "Cho phép",
+      "updated": "Sửa lần cuối"
+    },
+    "review": "Xem lại và lưu",
+    "confirmTitle": "Xác nhận thay đổi chính sách",
+    "confirmBefore": "Đang áp dụng",
+    "confirmAfter": "Giá trị mới",
+    "confirm": "Xác nhận lưu",
     "errors": {
       "POLICY_CHANGED": "Giá trị vừa được người khác thay đổi. Đã tải lại, kiểm tra rồi lưu lại.",
       "POLICY_RANGE_INVERTED": "Giá trị tối thiểu không được lớn hơn giá trị tối đa (Giá, Thời gian trả kết quả).",
@@ -1166,7 +1177,31 @@
       "POLICY_REASON_TOO_LONG": "Lý do tối đa 1000 ký tự.",
       "UNKNOWN_POLICY_SETTING": "Tham số không hợp lệ. Tải lại trang rồi thử lại.",
       "failed": "Chưa lưu được thay đổi. Vui lòng thử lại."
-    }
+    },
+    "groups": {
+      "review": {
+        "title": "Xét duyệt hồ sơ",
+        "help": "Ngưỡng và thời hạn người đánh giá và quản trị viên phải tuân theo khi xét điều kiện, năng lực và phê duyệt cuối."
+      },
+      "reapply": {
+        "title": "Thời gian chờ nộp lại",
+        "help": "Số ngày chuyên gia phải chờ trước khi nộp lại sau kết luận không đạt."
+      },
+      "pricing": {
+        "title": "Giá và thời gian trả kết quả",
+        "help": "Giới hạn chuyên gia được đặt khi cấu hình giá dịch vụ, và quy tắc khi giá hoặc phí nền tảng thay đổi."
+      }
+    },
+    "ranges": {
+      "fee": "Giá mỗi yêu cầu",
+      "turnaround": "Thời gian trả kết quả"
+    },
+    "current": "Đang áp dụng: {{value}}",
+    "resetDefault": "Về mặc định ({{value}})",
+    "pending": "{{count}} thay đổi chưa lưu",
+    "discard": "Hủy thay đổi",
+    "rangeInverted": "Giá trị tối thiểu không được lớn hơn tối đa.",
+    "noPending": "Chưa có thay đổi"
   },
   "claim": {
     "free": "Chưa ai nhận hồ sơ này",

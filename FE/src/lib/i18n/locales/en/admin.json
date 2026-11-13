@@ -1143,7 +1143,6 @@
     },
     "outOfRange": "Enter a whole number from {{min}} to {{max}}.",
     "updated": "Last changed {{time}} · {{actor}}",
-    "usingDefault": "Using the default value.",
     "you": "You",
     "reason": "Reason for the change (required)",
     "reasonPlaceholder": "For example: per the policy decision of …",
@@ -1151,13 +1150,25 @@
     "saved": "Expert policy saved",
     "historyTitle": "Change history",
     "history": {
+      "empty": "No changes yet.",
       "time": "Time",
       "setting": "Setting",
-      "change": "Old → new value",
-      "actor": "Changed by",
+      "change": "Change",
       "reason": "Reason",
-      "empty": "No changes yet."
+      "actor": "Changed by"
     },
+    "columns": {
+      "value": "Value",
+      "current": "In force",
+      "default": "Default",
+      "allowed": "Allowed",
+      "updated": "Last changed"
+    },
+    "review": "Review and save",
+    "confirmTitle": "Confirm policy changes",
+    "confirmBefore": "Current",
+    "confirmAfter": "New value",
+    "confirm": "Confirm and save",
     "errors": {
       "POLICY_CHANGED": "Someone else just changed these values. They have been reloaded; check them and save again.",
       "POLICY_RANGE_INVERTED": "A minimum may not be greater than its maximum (price, delivery time).",
@@ -1167,7 +1178,32 @@
       "POLICY_REASON_TOO_LONG": "The reason can be at most 1000 characters.",
       "UNKNOWN_POLICY_SETTING": "Unknown setting. Reload the page and try again.",
       "failed": "The change was not saved. Please try again."
-    }
+    },
+    "groups": {
+      "review": {
+        "title": "Application review",
+        "help": "Thresholds and deadlines reviewers and admins follow for eligibility, competency and final approval."
+      },
+      "reapply": {
+        "title": "Reapply waiting time",
+        "help": "Days an expert must wait before applying again after a failed result."
+      },
+      "pricing": {
+        "title": "Pricing and turnaround",
+        "help": "Limits experts must respect when setting service prices, and rules for price or platform fee changes."
+      }
+    },
+    "ranges": {
+      "fee": "Fee per request",
+      "turnaround": "Turnaround time"
+    },
+    "current": "In force: {{value}}",
+    "resetDefault": "Reset to default ({{value}})",
+    "pending_one": "{{count}} unsaved change",
+    "pending_other": "{{count}} unsaved changes",
+    "discard": "Discard changes",
+    "rangeInverted": "The minimum cannot be greater than the maximum.",
+    "noPending": "No pending changes"
   },
   "claim": {
     "free": "Nobody has claimed this review",
