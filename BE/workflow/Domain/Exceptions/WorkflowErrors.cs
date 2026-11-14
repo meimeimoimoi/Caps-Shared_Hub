@@ -77,6 +77,20 @@ public static class WorkflowErrors
             "Document period end date must be greater than or equal to period start date."
         );
 
+    public static AppException DocumentInvalidJson(string field) =>
+        new(
+            ErrorType.Validation,
+            "WORKFLOW_DOCUMENT_INVALID_JSON",
+            $"'{field}' must be valid JSON."
+        );
+
+    public static AppException SnapshotConflict() =>
+        new(
+            ErrorType.Conflict,
+            "WORKFLOW_SNAPSHOT_CONFLICT",
+            "Another snapshot of this document was saved at the same time; try again."
+        );
+
     public static AppException SnapshotNotFound(Guid id) =>
         new(
             ErrorType.NotFound,

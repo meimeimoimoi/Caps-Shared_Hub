@@ -1,5 +1,6 @@
 using Caps.Common.Application;
 using Caps.Common.Domain;
+using Caps.Workflow.Application.Abstractions;
 using Caps.Workflow.Application.Abstractions.Documents;
 using Caps.Workflow.Domain.Exceptions;
 using Caps.Workflow.Domain.Workspace;
@@ -24,6 +25,7 @@ public static class CreateDocument
     /// <summary>Handles validating period bounds and persisting a new document workspace.</summary>
     public sealed class CreateDocumentHandler(
         IDocumentRepository documentRepository,
+        ITemplateRepository templates,
         IUnitOfWork unitOfWork,
         TimeProvider timeProvider
     ) : ICommandHandler<CreateDocumentCommand, DocumentSummaryDto>
@@ -36,6 +38,16 @@ public static class CreateDocument
             if (command.PeriodEnd < command.PeriodStart)
             {
                 throw WorkflowErrors.DocumentInvalidPeriod();
+            }
+
+            var metadata = JsonInput.OrEmptyObject(command.Metadata, "metadata");
+            // An unknown or unpublished template would otherwise fail on the foreign key (500)
+            if (
+                command.TemplateId is { } templateId
+                && await templates.FindPublishedAsync(templateId, ct) is null
+            )
+            {
+                throw Domain.WorkflowErrors.TemplateNotFound();
             }
 
             var now = timeProvider.GetUtcNow();
@@ -52,7 +64,7 @@ public static class CreateDocument
                 PeriodEnd = command.PeriodEnd,
                 Status = "DRAFT",
                 VerifiedVersionId = null,
-                Metadata = string.IsNullOrWhiteSpace(command.Metadata) ? "{}" : command.Metadata,
+                Metadata = metadata,
                 CreatedAt = now,
                 UpdatedAt = now,
             };

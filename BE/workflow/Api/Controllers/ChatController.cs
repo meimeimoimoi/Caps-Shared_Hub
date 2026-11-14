@@ -28,6 +28,7 @@ public sealed class ChatController(ICurrentUser currentUser) : ControllerBase
     /// <remarks>Initializes a conversation workspace with an optional custom title.</remarks>
     /// <response code="200">The newly created conversation.</response>
     [HttpPost("conversations")]
+    [RequirePermission(Permission.BusinessWrite)]
     [ProducesResponseType(typeof(ApiResponse<ConversationDetailDto>), StatusCodes.Status200OK)]
     public async Task<IActionResult> CreateConversation(
         [FromBody] CreateConversationRequest request,
@@ -90,6 +91,7 @@ public sealed class ChatController(ICurrentUser currentUser) : ControllerBase
     /// <response code="403">The conversation belongs to another user.</response>
     /// <response code="404">Conversation not found.</response>
     [HttpPost("conversations/{id:guid}/messages")]
+    [RequirePermission(Permission.BusinessWrite)]
     [RequireSessionCheck]
     [ProducesResponseType(typeof(ApiResponse<SendChatMessageResultDto>), StatusCodes.Status200OK)]
     public async Task<IActionResult> SendChatMessage(
@@ -117,6 +119,7 @@ public sealed class ChatController(ICurrentUser currentUser) : ControllerBase
     /// <response code="400">The target message is not an AI message awaiting clarification.</response>
     /// <response code="404">Target message or conversation not found.</response>
     [HttpPost("messages/{id:guid}/clarify")]
+    [RequirePermission(Permission.BusinessWrite)]
     [RequireSessionCheck]
     [ProducesResponseType(typeof(ApiResponse<SendChatMessageResultDto>), StatusCodes.Status200OK)]
     public async Task<IActionResult> ClarifyMessage(

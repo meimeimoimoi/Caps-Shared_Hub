@@ -32,6 +32,7 @@ public sealed class DocumentController(ICurrentUser currentUser) : ControllerBas
     /// <param name="ct">Cancellation token.</param>
     /// <response code="200">The newly created document summary.</response>
     [HttpPost]
+    [RequirePermission(Permission.BusinessWrite)]
     [ProducesResponseType(typeof(ApiResponse<DocumentSummaryDto>), StatusCodes.Status200OK)]
     public async Task<IActionResult> CreateDocument(
         [FromBody] CreateDocumentRequest request,
@@ -91,6 +92,7 @@ public sealed class DocumentController(ICurrentUser currentUser) : ControllerBas
     /// <param name="ct">Cancellation token.</param>
     /// <response code="200">The persisted input snapshot.</response>
     [HttpPost("{id:guid}/snapshots")]
+    [RequirePermission(Permission.BusinessWrite)]
     [ProducesResponseType(typeof(ApiResponse<InputSnapshotDto>), StatusCodes.Status200OK)]
     public async Task<IActionResult> CreateSnapshot(
         [FromRoute] Guid id,
@@ -114,6 +116,7 @@ public sealed class DocumentController(ICurrentUser currentUser) : ControllerBas
     /// <param name="ct">Cancellation token.</param>
     /// <response code="200">The generated document version details.</response>
     [HttpPost("{id:guid}/generate-draft")]
+    [RequirePermission(Permission.BusinessWrite)]
     [RequireSessionCheck]
     [ProducesResponseType(typeof(ApiResponse<DocumentVersionDetailDto>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GenerateDraft(

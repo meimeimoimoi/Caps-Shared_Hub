@@ -5,15 +5,15 @@ namespace Caps.Workflow.Api.DTOs.Requests;
 public static class DocumentRequests
 {
     public sealed record CreateDocumentRequest(
-        [Required] string Title,
+        [Required, MaxLength(200)] string Title,
         Guid? TemplateId,
         [Required] DateOnly PeriodStart,
         [Required] DateOnly PeriodEnd,
-        string? Source,
-        string? Metadata
+        [MaxLength(50)] string? Source,
+        [MaxLength(100_000)] string? Metadata
     );
 
-    public sealed record CreateSnapshotRequest([Required] string Data);
+    public sealed record CreateSnapshotRequest([Required, MaxLength(100_000)] string Data);
 
     public sealed record GenerateDraftRequest(
         Guid? SnapshotId,
@@ -21,5 +21,5 @@ public static class DocumentRequests
         string? Citations
     );
 
-    public sealed record DownloadDocumentRequest(string? Format);
+    public sealed record DownloadDocumentRequest([MaxLength(10)] string? Format);
 }
