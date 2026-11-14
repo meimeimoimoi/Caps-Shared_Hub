@@ -26,7 +26,8 @@
     "collapse": "Thu gọn thanh bên",
     "progress": "Tiến trình",
     "skipOverview": "Đến phần tổng quan",
-    "skipWorkspace": "Đến không gian làm việc"
+    "skipWorkspace": "Đến không gian làm việc",
+    "soon": "Sắp có"
   },
   "theme": {
     "appearance": "Giao diện",
@@ -155,6 +156,8 @@
   },
   "states": {
     "loadFailed": "Không tải được dữ liệu. Kiểm tra kết nối rồi thử lại.",
-    "actionFailed": "Không thực hiện được thao tác. Hãy thử lại."
-  }
+    "actionFailed": "Không thực hiện được thao tác. Hãy thử lại.",
+    "notAvailable": "Chức năng này chưa mở. Dữ liệu sẽ hiện ở đây khi chức năng hoạt động."
+  },
+  "helpFor": "Giải thích: {{topic}}"
 }

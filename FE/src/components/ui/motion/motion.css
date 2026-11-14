@@ -97,9 +97,46 @@
 .motion-details[open]::details-content {
   block-size: auto;
 }
+/* Horizontal share bar grows from its label side */
+@keyframes motion-bar-x {
+  from {
+    transform: scaleX(0);
+  }
+}
+.motion-bar-x {
+  transform-origin: left;
+  animation: motion-bar-x var(--motion-chart) var(--motion-ease-enter) both;
+}
+/* A list arriving as a list: each item rises in turn; set --i per item, total delay capped */
+@keyframes motion-rise {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+.motion-stagger {
+  animation: motion-rise var(--motion-enter) var(--motion-ease-enter) both;
+  animation-delay: min(calc(var(--i, 0) * var(--motion-stagger-interval)), 360ms);
+}
+/* An icon's stroke drawn once, e.g. the all-clear check */
+@keyframes motion-draw {
+  from {
+    stroke-dashoffset: 24;
+  }
+}
+.motion-draw :where(path, polyline) {
+  stroke-dasharray: 24;
+  animation: motion-draw var(--motion-panel) var(--motion-ease-enter) 200ms both;
+}
 @media (prefers-reduced-motion: reduce) {
-  .motion-bar {
+  .motion-bar,
+  .motion-bar-x,
+  .motion-draw :where(path, polyline) {
     animation: none;
+  }
+  .motion-stagger {
+    animation: motion-rise var(--motion-reduced) linear both;
+    animation-delay: 0ms;
   }
   .motion-lift,
   .motion-details::details-content {

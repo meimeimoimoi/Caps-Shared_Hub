@@ -1392,6 +1392,27 @@
   border-radius: var(--radius-surface);
   box-shadow: var(--shadow-paper);
 }
+/* Wide data table that becomes one stacked card per row on phones: the column name comes from
+ * each cell's data-label, so the action column stays on screen instead of behind a sideways scroll */
+@utility stack-table {
+  @media (width < 48rem) {
+    & thead {
+      position: absolute; width: 1px; height: 1px; overflow: hidden;
+      clip-path: inset(50%); white-space: nowrap;
+    }
+    & tbody, & tr, & td { display: block; }
+    & tr { padding: 12px 16px; }
+    & tr > td { padding: 4px 0 !important; }
+    & td[data-label]::before {
+      content: attr(data-label);
+      display: block;
+      font-family: var(--font-sans);
+      font-size: var(--text-caption);
+      font-weight: 600;
+      color: var(--color-fg-muted);
+    }
+  }
+}
 @utility paper-link {
   transition: transform var(--duration-fast) var(--motion-ease-enter);
   &:hover { transform: translateY(-2px); }

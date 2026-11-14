@@ -46,10 +46,19 @@ export function Modal({
         ? document.activeElement
         : null
     ref.current?.showModal()
-    // Không có ô autofocus thì focus vào chính hộp thoại, tránh viền focus đậm trên nút Đóng ngay khi mở
+    // Without an autofocus field, focus the dialog itself so the Close button gets no ring on open
     if (!ref.current?.querySelector('[autofocus]')) ref.current?.focus()
     return () => {
-      trigger?.focus()
+      // Hand focus back to what opened the dialog (WCAG 2.4.3). The browser may still move focus
+      // to <body> while the open dialog leaves the top layer, so try again on the next frame.
+      const restore = () => {
+        if (trigger?.isConnected) trigger.focus()
+      }
+      restore()
+      requestAnimationFrame(() => {
+        if (!document.activeElement || document.activeElement === document.body)
+          restore()
+      })
     }
   }, [])
 

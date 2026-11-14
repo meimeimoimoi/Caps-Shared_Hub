@@ -14,6 +14,10 @@ export class ApiError extends Error {
   }
 }
 
+/** The server has no such endpoint yet (404/501): a feature that is not open, not a network failure */
+export const isMissingEndpoint = (error: unknown) =>
+  error instanceof ApiError && (error.status === 404 || error.status === 501)
+
 export function getApiBaseUrl() {
   const fromEnv = import.meta.env.VITE_API_URL as string | undefined
   if (fromEnv && fromEnv.trim().length > 0) return fromEnv.replace(/\/$/, '')

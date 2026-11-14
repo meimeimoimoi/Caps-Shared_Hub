@@ -26,7 +26,8 @@
     "collapse": "Collapse sidebar",
     "progress": "Progress",
     "skipOverview": "Skip to overview",
-    "skipWorkspace": "Skip to workspace"
+    "skipWorkspace": "Skip to workspace",
+    "soon": "Soon"
   },
   "theme": {
     "appearance": "Appearance",
@@ -155,6 +156,8 @@
   },
   "states": {
     "loadFailed": "Couldn't load the data. Check your connection and try again.",
-    "actionFailed": "That didn't go through. Try again."
-  }
+    "actionFailed": "That didn't go through. Try again.",
+    "notAvailable": "This feature is not open yet. Data will appear here once it is."
+  },
+  "helpFor": "About: {{topic}}"
 }

@@ -14,6 +14,8 @@ export interface SidebarItem {
   badge?: ReactNode
   /** Locked item (no `to`): shows a lock and explains when it opens */
   lockedHint?: string
+  /** 'soon': the area exists but is not connected yet (neutral mark, not a permission lock) */
+  lockedKind?: 'lock' | 'soon'
 }
 export interface SidebarGroup {
   id: string
@@ -45,7 +47,7 @@ export function AppSidebar({
   return (
     <div className="on-ink flex min-h-0 flex-1 flex-col text-[var(--ui-sidebar-text)]">
       <div className="mb-9 flex shrink-0 items-center gap-2 px-1">
-        {/* Logo về landing page. Hai logo chồng nhau và mờ chéo theo chiều rộng sidebar (sidebar-rail) */}
+        {/* Logo links to the landing page. Two stacked logos crossfade with the sidebar width (sidebar-rail) */}
         <Link
           to="/"
           onClick={onNavigate}
@@ -108,8 +110,8 @@ export function AppSidebar({
                     {item.icon}
                   </span>
                   <span
-                    // Rộng cố định để chữ không xô khi thu/mở; có badge thì chừa chỗ bên phải cho nó.
-                    className={`sidebar-fade line-clamp-2 w-[148px] shrink-0 leading-snug whitespace-normal ${item.badge != null ? 'pr-10' : ''} ${collapsed ? 'opacity-0' : 'opacity-100'}`}
+                    // Fixed width so text does not shift while collapsing; leave room on the right for a badge.
+                    className={`sidebar-fade line-clamp-2 w-[148px] shrink-0 leading-snug whitespace-normal ${item.badge != null ? 'pr-10' : item.lockedKind === 'soon' && item.lockedHint ? 'pr-14' : ''} ${collapsed ? 'opacity-0' : 'opacity-100'}`}
                   >
                     {item.label}
                     {item.badge != null && collapsed && `, ${item.badge}`}
@@ -117,7 +119,15 @@ export function AppSidebar({
                       <span className="sr-only">. {item.lockedHint}</span>
                     )}
                   </span>
-                  {item.lockedHint && !collapsed && (
+                  {item.lockedHint && !collapsed && item.lockedKind === 'soon' && (
+                    <span
+                      aria-hidden="true"
+                      className="absolute top-1/2 right-3 -translate-y-1/2 rounded-md border border-white/20 px-1.5 py-0.5 font-sans text-[11px] leading-none font-medium whitespace-nowrap"
+                    >
+                      {t('navigation.soon')}
+                    </span>
+                  )}
+                  {item.lockedHint && !collapsed && item.lockedKind !== 'soon' && (
                     <Lock
                       size={14}
                       aria-hidden="true"
@@ -143,7 +153,7 @@ export function AppSidebar({
                   key={item.id}
                   to={item.to}
                   onClick={onNavigate}
-                  title={item.label}
+                  title={item.lockedHint ? `${item.label} · ${item.lockedHint}` : item.label}
                   aria-current={item.active ? 'page' : undefined}
                   className={className}
                 >
