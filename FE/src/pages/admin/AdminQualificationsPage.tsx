@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next'
+import { Link } from 'react-router-dom'
 import { ListFilter } from 'lucide-react'
 import { CustomSelect } from '@/components/ui/forms/custom-select'
 import { AdminLayout } from '@/app/layouts/admin/AdminLayout'
@@ -67,7 +68,28 @@ export default function AdminQualificationsPage({
         onPrev={prev}
         onNext={next}
         loading={isLoading}
-        empty={error ? <LoadError /> : undefined}
+        empty={
+          error ? (
+            <LoadError error={error} />
+          ) : review ? undefined : (
+            // Say which filter is empty and where earlier files are, instead of a bare "no files"
+            <div className="flex flex-col items-center gap-3">
+              <p>
+                {query.trim()
+                  ? t('finalApproval.emptySearch', { query: query.trim() })
+                  : t('finalApproval.emptyQueue', {
+                      status: t(`qualifications.tabs.${tab}`),
+                    })}
+              </p>
+              <Link
+                to="/admin/experts/assignments"
+                className="btn btn-press btn-secondary h-9 px-3 text-sm no-underline"
+              >
+                {t('finalApproval.seeEarlier')}
+              </Link>
+            </div>
+          )
+        }
         linkBase={
           review ? '/admin/experts/qualifications' : '/admin/experts/approvals'
         }

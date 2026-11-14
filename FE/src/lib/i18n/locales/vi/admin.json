@@ -143,7 +143,7 @@
       "expert": "Chuyên gia",
       "field": "Lĩnh vực",
       "serviceStatus": "Trạng thái dịch vụ",
-      "reviewFee": "Phí rà soát",
+      "reviewFee": "Giá mỗi yêu cầu",
       "activeCases": "Đang nhận",
       "approvedAt": "Ngày duyệt",
       "service": "Dịch vụ"
@@ -1050,7 +1050,10 @@
     "confirmReturnBody": "Kết quả đánh giá năng lực được trả lại cho người đánh giá xem lại theo ghi chú dưới đây. Ghi chú không gửi cho chuyên gia.",
     "gate1": "Xét điều kiện (Gate 1)",
     "gate2": "Đánh giá năng lực (Gate 2)",
-    "gateResult": "Đạt {{passed}}/{{total}} tiêu chí"
+    "gateResult": "Đạt {{passed}}/{{total}} tiêu chí",
+    "emptyQueue": "Không có hồ sơ nào ở mục \"{{status}}\".",
+    "emptySearch": "Không có hồ sơ nào khớp \"{{query}}\".",
+    "seeEarlier": "Xem hồ sơ đang ở các bước trước"
   },
   "platformFees": {
     "title": "Phí nền tảng",
@@ -1138,13 +1141,43 @@
       "full": "{{from}}–{{to}} giờ: hoàn 100%",
       "cancel": "Quá {{hours}} giờ chưa giao: hủy yêu cầu"
     },
-    "edit": "Sửa",
-    "editPart": "Sửa {{part}} · {{name}}",
     "dialogPart": "{{part}} · {{name}}",
     "isDefault": "Mức mặc định",
     "defaultIs": "Mặc định {{percent}}%",
-    "defaultRule": "Mặc định: {{rule}}",
-    "useDefault": "Dùng mức mặc định {{percent}}%"
+    "useDefault": "Dùng mức mặc định {{percent}}%",
+    "splitColumn": "Chia tiền theo tình huống",
+    "expertShareShort": "Chuyên gia nhận {{percent}}%, trước thuế TNCN",
+    "editButtons": {
+      "percent": "Sửa phí",
+      "late": "Sửa giao trễ",
+      "noResponse": "Sửa khách không trả lời"
+    },
+    "cases": {
+      "onTime": "Đúng hạn",
+      "late": "Trễ đến {{hours}} giờ",
+      "lateMore": "Trễ {{from}}–{{to}} giờ",
+      "cancel": "Quá {{hours}} giờ chưa giao",
+      "silence": "Khách không trả lời {{hours}} giờ",
+      "preview": "Chia tiền sau khi lưu",
+      "silenceIndependent": "Đặt riêng, không đổi theo phí nền tảng",
+      "previewStale": "Chia tiền hiện tại (giá trị mới chưa hợp lệ)"
+    },
+    "parts": {
+      "client": "Khách {{percent}}%",
+      "expert": "Chuyên gia {{percent}}%",
+      "platform": "Nền tảng {{percent}}%",
+      "cancelled": "Hủy yêu cầu"
+    },
+    "agreed": {
+      "late": "Lệch mức đã chốt: hoàn {{percent}}% khi giao trễ",
+      "silence": "Lệch mức đã chốt: hoàn {{refund}}% · chuyên gia {{expert}}%",
+      "useLate": "Dùng mức đã chốt (hoàn {{percent}}%)",
+      "useSilence": "Dùng mức đã chốt (hoàn {{refund}}% · chuyên gia {{expert}}%)"
+    },
+    "discardTitle": "Bỏ thay đổi chưa lưu?",
+    "discardBody": "Các giá trị vừa nhập sẽ mất; phí và quy định hiện tại giữ nguyên.",
+    "keepEditing": "Tiếp tục sửa",
+    "discard": "Bỏ thay đổi"
   },
   "expertPolicy": {
     "title": "Chính sách chuyên gia",

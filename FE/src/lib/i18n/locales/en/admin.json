@@ -148,7 +148,7 @@
       "expert": "Expert",
       "field": "Field",
       "serviceStatus": "Service Status",
-      "reviewFee": "Review Fee",
+      "reviewFee": "Price per request",
       "activeCases": "Active Cases",
       "approvedAt": "Approved At",
       "service": "Service"
@@ -1058,7 +1058,10 @@
     "confirmReturnBody": "The competency result goes back to the reviewer to recheck against the note below. The note is not sent to the expert.",
     "gate1": "Eligibility (Gate 1)",
     "gate2": "Competency (Gate 2)",
-    "gateResult": "{{passed}}/{{total}} criteria passed"
+    "gateResult": "{{passed}}/{{total}} criteria passed",
+    "emptyQueue": "No files under \"{{status}}\".",
+    "emptySearch": "No files match \"{{query}}\".",
+    "seeEarlier": "See files at earlier steps"
   },
   "platformFees": {
     "title": "Platform fees",
@@ -1146,13 +1149,43 @@
       "full": "{{from}}–{{to}}h: 100% back",
       "cancel": "Undelivered after {{hours}}h: request cancelled"
     },
-    "edit": "Edit",
-    "editPart": "Edit {{part}} · {{name}}",
     "dialogPart": "{{part}} · {{name}}",
     "isDefault": "Default level",
     "defaultIs": "Default {{percent}}%",
-    "defaultRule": "Default: {{rule}}",
-    "useDefault": "Use the default {{percent}}%"
+    "useDefault": "Use the default {{percent}}%",
+    "splitColumn": "Split by case",
+    "expertShareShort": "Expert receives {{percent}}%, before PIT",
+    "editButtons": {
+      "percent": "Edit fee",
+      "late": "Edit late delivery",
+      "noResponse": "Edit client silence"
+    },
+    "cases": {
+      "onTime": "On time",
+      "late": "Up to {{hours}}h late",
+      "lateMore": "{{from}}–{{to}}h late",
+      "cancel": "Undelivered after {{hours}}h",
+      "silence": "Client silent for {{hours}}h",
+      "preview": "Split after saving",
+      "silenceIndependent": "Set on its own; does not follow the platform fee",
+      "previewStale": "Current split (the new value is not valid yet)"
+    },
+    "parts": {
+      "client": "Client {{percent}}%",
+      "expert": "Expert {{percent}}%",
+      "platform": "Platform {{percent}}%",
+      "cancelled": "Request cancelled"
+    },
+    "agreed": {
+      "late": "Differs from the agreed {{percent}}% late refund",
+      "silence": "Differs from the agreed {{refund}}% refund · expert {{expert}}%",
+      "useLate": "Use the agreed rule ({{percent}}% refund)",
+      "useSilence": "Use the agreed rule ({{refund}}% refund · expert {{expert}}%)"
+    },
+    "discardTitle": "Discard unsaved changes?",
+    "discardBody": "The values you typed will be lost; the current fee and rules stay as they are.",
+    "keepEditing": "Keep editing",
+    "discard": "Discard changes"
   },
   "expertPolicy": {
     "title": "Expert policy",
