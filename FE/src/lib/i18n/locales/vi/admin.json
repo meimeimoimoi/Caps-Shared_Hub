@@ -52,7 +52,11 @@
       "empty": "Không có việc gấp.",
       "emptyPartial": "Không có việc gấp ở các mục đang theo dõi. Khiếu nại và chi trả chưa có dữ liệu để kiểm tra.",
       "unavailable": "Khiếu nại và chi trả chưa có dữ liệu để kiểm tra.",
-      "unknown": "Chưa xác định được việc cần xử lý vì một nguồn dữ liệu không tải được."
+      "unknown": "Chưa xác định được việc cần xử lý vì một nguồn dữ liệu không tải được.",
+      "count_other": "{{count}} việc",
+      "urgent_other": "{{count}} việc gấp",
+      "open": "Mở",
+      "finalApprovalPending_other": "{{count}} hồ sơ chờ bạn phê duyệt cuối"
     },
     "kpi": {
       "pending": "Hồ sơ chờ duyệt",
@@ -61,7 +65,13 @@
       "experts": "Chuyên gia đang hoạt động",
       "expertsNote": "{{suspended}} tạm ngưng · {{added}} mới trong tháng này",
       "held": "Tiền đang giữ",
-      "heldNote": "{{count}} hồ sơ đang chờ nghiệm thu"
+      "heldNote": "{{count}} hồ sơ đang chờ nghiệm thu",
+      "failed": "Không tải được số liệu",
+      "title": "Chỉ số chính",
+      "moneyUnavailable": "Chưa kết nối · gồm chi trả, hoàn tiền và khiếu nại",
+      "finalApproval": "Chờ phê duyệt cuối",
+      "finalApprovalOverdue_other": "{{count}} hồ sơ quá hạn",
+      "finalApprovalOnTime": "Đều trong hạn phê duyệt"
     },
     "vetting": "Xét duyệt chuyên gia",
     "escrow": "Dòng tiền Escrow",
@@ -74,7 +84,10 @@
     "upcoming": {
       "title": "Sắp diễn ra",
       "feeChange": "Phí nền tảng mới cho {{service}}: {{percent}}%",
-      "empty": "Chưa có thay đổi nào lên lịch."
+      "empty": "Chưa có thay đổi nào lên lịch.",
+      "today": "Hôm nay",
+      "tomorrow": "Ngày mai",
+      "inDays_other": "Còn {{count}} ngày"
     },
     "loading": "Đang tải số liệu…",
     "growth": {
@@ -98,7 +111,9 @@
       "partial": "{{period}} (đến nay)",
       "latest": "Kỳ đã chốt gần nhất: {{period}}. Kỳ đang diễn ra chỉ hiện trên biểu đồ.",
       "notEnough": "Chưa đủ 2 kỳ đã chốt để so sánh.",
-      "monthTick": "T{{month}}"
+      "monthTick": "T{{month}}",
+      "failed": "Không tải được số liệu tăng trưởng. Tải lại trang để thử lại.",
+      "firstPeriod": "Kỳ đầu có số liệu"
     },
     "noData": "Chưa có số liệu."
   },
@@ -123,14 +138,14 @@
     "allStatuses": "Tất cả trạng thái",
     "field": "Lĩnh vực",
     "allFields": "Tất cả lĩnh vực",
-    "expertCount": "Chuyên gia",
     "table": {
       "expert": "Chuyên gia",
       "field": "Lĩnh vực",
       "serviceStatus": "Trạng thái dịch vụ",
       "reviewFee": "Phí rà soát",
       "activeCases": "Đang nhận",
-      "approvedAt": "Ngày duyệt"
+      "approvedAt": "Ngày duyệt",
+      "service": "Dịch vụ"
     },
     "noResults": "Không có chuyên gia nào khớp bộ lọc.",
     "drawer": {
@@ -176,7 +191,8 @@
     "actor": {
       "system": "Hệ thống",
       "admin": "Quản trị viên"
-    }
+    },
+    "expertCount_other": "{{count}} chuyên gia"
   },
   "applicationsTable": {
     "sortBy": "Sắp xếp: nộp sớm nhất trước",
@@ -333,7 +349,6 @@
   },
   "disputes": {
     "title": "Khiếu nại",
-    "intro": "{{count}} khiếu nại đang chờ trọng tài. Mỗi khiếu nại phải có quyết định trong {{hours}} giờ kể từ khi mở, gia hạn một lần thêm 48 giờ khi chuyển cấp chuyên môn; tiền Escrow bị khóa tới lúc đó.",
     "col": {
       "caseId": "Mã hồ sơ",
       "case": "Hồ sơ",
@@ -404,19 +419,21 @@
       "RESOLVE_REFUND_USER": {
         "label": "Chấp thuận khiếu nại · hoàn tiền khách",
         "hint": "Khiếu nại có căn cứ: chuyên gia vi phạm nghĩa vụ, hoặc khách đã phản hồi đúng hạn / yêu cầu bổ sung không hợp lệ",
-        "split": "Hoàn cho khách 100% · Chuyên gia 0% · Nền tảng 0%"
+        "split": "Hoàn cho khách 100%"
       },
       "RESOLVE_PAY_EXPERT": {
         "label": "Bác khiếu nại · chi trả chuyên gia",
         "hint": "Khiếu nại không có căn cứ; chuyên gia làm đúng, đủ trách nhiệm",
-        "split": "Hoàn cho khách 0% · Chuyên gia 60% · Nền tảng 40%"
+        "split": "Không hoàn · chuyên gia nhận Giá trừ Phí nền tảng của dịch vụ"
       },
       "RESOLVE_PARTIAL": {
         "label": "Quyết toán một phần",
         "hint": "Có thiếu sót một phần từ cả hai phía",
-        "split": "Hoàn cho khách 50% · Chuyên gia 30% · Nền tảng 20%"
+        "split": "Hoàn cho khách 50% · phần còn lại chia theo Phí nền tảng của dịch vụ"
       }
-    }
+    },
+    "introCount_other": "{{count}} khiếu nại đang chờ trọng tài.",
+    "introRule": "Mỗi khiếu nại phải có quyết định trong {{hours}} giờ kể từ khi mở, gia hạn một lần thêm {{extra}} giờ khi chuyển cấp chuyên môn; tiền Escrow bị khóa tới lúc đó."
   },
   "escrow": {
     "title": "Hoàn tiền và chi trả",
@@ -1029,7 +1046,10 @@
     "confirmApproveBody": "{{name}} được thiết lập giá cho {{service}}; dịch vụ lên Marketplace khi giá được duyệt và còn hiệu lực. Quyết định được ghi vào lịch sử hồ sơ.",
     "confirmNote": "Ghi chú",
     "confirmReturnTitle": "Trả {{service}} về đánh giá năng lực?",
-    "confirmReturnBody": "Kết quả đánh giá năng lực được trả lại cho người đánh giá xem lại theo ghi chú dưới đây. Ghi chú không gửi cho chuyên gia."
+    "confirmReturnBody": "Kết quả đánh giá năng lực được trả lại cho người đánh giá xem lại theo ghi chú dưới đây. Ghi chú không gửi cho chuyên gia.",
+    "gate1": "Xét điều kiện (Gate 1)",
+    "gate2": "Đánh giá năng lực (Gate 2)",
+    "gateResult": "Đạt {{passed}}/{{total}} tiêu chí"
   },
   "platformFees": {
     "title": "Phí nền tảng",
@@ -1064,15 +1084,14 @@
     "effectiveOnHelp": "Thay đổi phải báo trước ít nhất {{days}} ngày, nên sớm nhất là ngày {{date}}. Đặt lịch mới sẽ thay thế thay đổi đang chờ (nếu có).",
     "example": "Chuyên gia thực nhận mỗi yêu cầu",
     "examplePrice": "Giá",
-    "exampleNet": "Thực nhận: hiện tại → mới",
+    "exampleNet": "Thực nhận trước thuế TNCN: hiện tại → mới",
     "firstFeeHelp": "Phí đầu tiên có hiệu lực ngay và mở dịch vụ cho chuyên gia đặt giá.",
     "late": "Giao trễ",
-    "lateValue": "Trễ ≤{{penaltyHours}} giờ: hoàn {{penaltyPercent}}% · ≤{{cancelHours}} giờ: hoàn 100%",
-    "lateHelp": "Tính từ hạn giao bài. Trễ trong số giờ phạt: khách được hoàn % phạt, trừ vào phần của chuyên gia (nền tảng vẫn giữ phí). Trễ hơn đến số giờ hủy: khách được hoàn toàn bộ. Quá số giờ hủy mà chưa giao: yêu cầu bị hủy và hoàn toàn bộ. Tối đa {{maxHours}} giờ; % phạt cộng phí nền tảng không quá 100%. Yêu cầu đã gửi giữ nguyên quy định lúc gửi.",
+    "lateHelp": "Tính từ hạn giao bài. Giao trễ trong số giờ phạt: khách được hoàn % đã đặt, trừ vào phần của chuyên gia (nền tảng vẫn giữ phí). Giao trễ hơn nữa nhưng trước số giờ hủy: khách được hoàn 100%. Quá số giờ hủy mà chưa giao: yêu cầu bị hủy. Đặt số giờ phạt bằng số giờ hủy để chỉ còn một mức hoàn. Tối đa {{maxHours}} giờ; % hoàn cộng phí nền tảng không quá 100%. Yêu cầu đã gửi giữ nguyên quy định lúc gửi.",
     "lateFields": {
-      "penaltyHours": "Số giờ phạt",
-      "penaltyPercent": "% phạt",
-      "cancelHours": "Số giờ hủy"
+      "penaltyHours": "Trễ tối đa được phạt (giờ)",
+      "penaltyPercent": "Hoàn cho khách khi trễ (%)",
+      "cancelHours": "Hủy nếu chưa giao sau (giờ)"
     },
     "noResponse": "Khách không trả lời",
     "noResponseValue": "Sau {{hours}} giờ: hoàn {{refundPercent}}% · chuyên gia {{expertPercent}}% · nền tảng {{platformPercent}}%",
@@ -1088,7 +1107,7 @@
     "rules": {
       "wholeNumbers": "Nhập số nguyên không âm cho mọi ô.",
       "maxHours": "Số giờ không quá {{max}}.",
-      "cancelBeforePenalty": "Số giờ hủy phải lớn hơn hoặc bằng số giờ bị phạt.",
+      "cancelBeforePenalty": "Số giờ hủy phải lớn hơn hoặc bằng số giờ trễ tối đa được phạt.",
       "penaltyOverFee": "% hoàn khi trễ cộng Phí nền tảng không quá 100% (đang là {{sum}}%).",
       "hoursRange": "Số giờ từ 1 đến {{max}}.",
       "splitOver": "% hoàn cho khách cộng % cho chuyên gia không quá 100% (đang là {{sum}}%).",
@@ -1105,7 +1124,19 @@
     "reviewAfter": "Sau khi lưu",
     "reviewNow": "Ngay khi lưu",
     "reviewChanged_one": "{{count}} mục thay đổi",
-    "reviewChanged_other": "{{count}} mục thay đổi"
+    "reviewChanged_other": "{{count}} mục thay đổi",
+    "expertShare": "Chuyên gia nhận {{percent}}% giá, trước thuế TNCN.",
+    "expertColumn": "Chuyên gia nhận",
+    "unchanged": "Chưa có mục nào khác với hiện tại.",
+    "changeFor": "Thay đổi phí · {{name}}",
+    "setFor": "Đặt phí · {{name}}",
+    "cancelFor": "Hủy thay đổi đang chờ · {{name}}",
+    "beforePit": "trước thuế TNCN",
+    "lateSteps": {
+      "penalty": "Trễ đến {{hours}} giờ: hoàn {{percent}}%",
+      "full": "{{from}}–{{to}} giờ: hoàn 100%",
+      "cancel": "Quá {{hours}} giờ chưa giao: hủy yêu cầu"
+    }
   },
   "expertPolicy": {
     "title": "Chính sách chuyên gia",
@@ -1246,7 +1277,12 @@
     "leave": "Bỏ thay đổi và rời trang",
     "discardTitle": "Bỏ {{count}} chỉnh sửa chưa lưu?",
     "discardBody": "Các giá trị quay về như đang áp dụng. Chưa có gì được lưu.",
-    "keepEditing": "Tiếp tục sửa"
+    "keepEditing": "Tiếp tục sửa",
+    "youNamed": "{{name}} (bạn)",
+    "currentValue": "Đang áp dụng: {{value}}",
+    "neverEdited": "Chưa sửa",
+    "notSetBefore": "Chưa đặt",
+    "reasonMin": "Tối thiểu {{count}} ký tự, nêu vì sao cần đổi."
   },
   "claim": {
     "free": "Chưa ai nhận hồ sơ này",
@@ -1345,7 +1381,13 @@
   },
   "operationsUnavailable": {
     "title": "Chưa kết nối",
-    "body": "Trang này chưa được kết nối với hệ thống thật nên chưa có số liệu. Số liệu sẽ hiện khi tính năng được mở."
+    "body": "Chức năng này chưa mở. Số liệu sẽ hiện ở đây khi chức năng hoạt động.",
+    "areas": {
+      "disputes": "Trang này sẽ hiện các khiếu nại đang chờ trọng tài, hạn quyết định của từng khiếu nại và nơi ra quyết định hoàn tiền. Chưa có dữ liệu cho tới khi chức năng khiếu nại được kết nối.",
+      "escrow": "Trang này sẽ hiện tiền đang giữ chờ nghiệm thu, các khoản chi trả cho chuyên gia và hoàn tiền cho khách. Chưa có dữ liệu cho tới khi chức năng thanh toán được kết nối.",
+      "pricing": "Trang này sẽ hiện khung giá theo từng nhóm mẫu biểu và các chuyên gia đặt giá ngoài khung. Khoảng giá chung hiện đặt ở trang Chính sách chuyên gia.",
+      "users": "Danh sách tài khoản và thao tác khóa, đặt lại mật khẩu chưa có trên máy chủ. Số người dùng mới và tổng người dùng trên trang Tổng quan lấy từ thống kê nên vẫn hiện."
+    }
   },
   "serviceStatus": {
     "INACTIVE": {

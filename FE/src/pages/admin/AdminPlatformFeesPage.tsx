@@ -97,6 +97,7 @@ function RuleFields<K extends string>({
   onChange,
   error,
   note,
+  summary,
 }: {
   legend: string
   help: string
@@ -108,13 +109,27 @@ function RuleFields<K extends string>({
   error?: string | null
   /** Live result of the values, e.g. what the platform keeps */
   note?: string
+  /** The rule in one line, shown while the section is closed */
+  summary: string
 }) {
   const errorId = useId()
+  const { t } = useTranslation('common')
   return (
-    <fieldset className="mt-4">
+    <details
+      className="motion-details border-border-subtle mt-4 border-t pt-3"
+      open={!!error || undefined}
+    >
+      <summary className="flex cursor-pointer flex-wrap items-baseline gap-x-3 gap-y-0.5 text-sm">
+        <span className="text-fg-strong font-semibold whitespace-nowrap">
+          {legend}
+        </span>
+        {/* The whole rule stays readable while closed: it wraps, never truncates */}
+        <span className="text-fg-muted min-w-0 flex-1">{summary}</span>
+      </summary>
+    <fieldset className="mt-2">
       <legend className="flex items-center gap-2 text-sm font-semibold">
-        {legend}
-        <HelpTip label={legend}>{help}</HelpTip>
+        <span className="sr-only">{legend}</span>
+        <HelpTip label={t('helpFor', { topic: legend })}>{help}</HelpTip>
       </legend>
       <div className="mt-2 grid gap-3 sm:grid-cols-3">
         {fields.map((field) => (
@@ -129,9 +144,8 @@ function RuleFields<K extends string>({
               autoComplete="off"
               value={draft[field]}
               onChange={(e) => onChange(field, e.target.value)}
-              aria-invalid={!!error}
               aria-describedby={error ? errorId : undefined}
-              className="border-border-control rounded-control shadow-control bg-paper aria-[invalid=true]:border-danger border px-3 py-2 text-base font-normal"
+              className={`border-border-control rounded-control shadow-control bg-paper border px-3 py-2 text-base font-normal ${error ? 'border-danger' : ''}`}
             />
           </label>
         ))}
@@ -144,6 +158,7 @@ function RuleFields<K extends string>({
         note && <p className="text-fg-strong mt-2 text-sm">{note}</p>
       )}
     </fieldset>
+    </details>
   )
 }
 
@@ -164,6 +179,8 @@ export default function AdminPlatformFeesPage() {
   const [withdrawing, setWithdrawing] = useState<PlatformFee | null>(null)
   // Saving a fee moves money for every new request, so the edit is reviewed before it is sent
   const [reviewing, setReviewing] = useState(false)
+  // A failed save is shown inside the dialog, next to what the admin is fixing
+  const [saveError, setSaveError] = useState<string | null>(null)
   const clearToast = useCallback(() => setToast(null), [])
 
   const key = [...adminKeys.all, 'platform-fees'] as const
@@ -263,23 +280,21 @@ export default function AdminPlatformFeesPage() {
     (!needsDate ||
       (effectiveOn !== '' && effectiveOn >= editing!.earliestEffectiveOn))
 
-  const failed = (e: unknown) =>
-    setToast(
-      errorToast(
-        e instanceof ApiError && isSaveError(e.code)
-          ? t(`admin:platformFees.errors.${e.code}`, {
-              days: editing?.noticeDays,
-              max: maxPercent,
-              maxHours:
-                e.code === 'NO_RESPONSE_RULE_INVALID'
-                  ? MAX_NO_RESPONSE_HOURS
-                  : MAX_LATE_HOURS,
-            })
-          : t('admin:platformFees.errors.failed')
-      )
-    )
+  const errorText = (e: unknown) =>
+    e instanceof ApiError && isSaveError(e.code)
+      ? t(`admin:platformFees.errors.${e.code}`, {
+          days: editing?.noticeDays,
+          max: maxPercent,
+          maxHours:
+            e.code === 'NO_RESPONSE_RULE_INVALID'
+              ? MAX_NO_RESPONSE_HOURS
+              : MAX_LATE_HOURS,
+        })
+      : t('admin:platformFees.errors.failed')
+  const failed = (e: unknown) => setToast(errorToast(errorText(e)))
   const open = (row: PlatformFee) => {
     setReviewing(false)
+    setSaveError(null)
     setEditing(row)
     setPercent(String(row.percent ?? DEFAULT_PERCENT))
     setLate(toDraft(row.late ?? DEFAULT_LATE))
@@ -302,8 +317,26 @@ export default function AdminPlatformFeesPage() {
       })
       .catch((e: unknown) => {
         setReviewing(false)
-        failed(e)
+        setSaveError(errorText(e))
       })
+  }
+  // Server rule: late within the penalty hours refunds the penalty percent, later refunds all,
+  // and past the cancel hours an undelivered request is cancelled. Equal hours drop the middle step.
+  function lateTimeline(rule: LateRule) {
+    return [
+      t('admin:platformFees.lateSteps.penalty', {
+        hours: rule.penaltyHours,
+        percent: rule.penaltyPercent,
+      }),
+      rule.cancelHours > rule.penaltyHours &&
+        t('admin:platformFees.lateSteps.full', {
+          from: rule.penaltyHours,
+          to: rule.cancelHours,
+        }),
+      t('admin:platformFees.lateSteps.cancel', { hours: rule.cancelHours }),
+    ]
+      .filter(Boolean)
+      .join(' · ')
   }
   const lateExpertShare =
     isWhole(percent) && isWhole(late.penaltyPercent)
@@ -324,8 +357,10 @@ export default function AdminPlatformFeesPage() {
       }
     : { percent: false, late: false, noResponse: false }
   const changedCount = Object.values(changed).filter(Boolean).length
+  // A service that already has a fee needs at least one changed term before review
+  const unchanged = editing?.percent != null && changedCount === 0
   function lateText(rule: LateRule | null | undefined) {
-    return rule ? t('admin:platformFees.lateValue', { ...rule }) : '—'
+    return rule ? lateTimeline(rule) : '—'
   }
   function noResponseText(rule: NoResponseRule | null | undefined) {
     return rule
@@ -357,12 +392,13 @@ export default function AdminPlatformFeesPage() {
       />
 
       <section className="paper mt-8 overflow-x-auto">
-        <table className="w-full min-w-260 text-sm">
+        <table className="stack-table w-full text-sm md:min-w-240">
           <caption className="sr-only">{t('admin:platformFees.title')}</caption>
           <thead className="bg-sunken text-fg-muted">
-            <tr className="[&>th]:px-4 [&>th]:py-3 [&>th]:text-left [&>th]:font-semibold [&>th]:whitespace-nowrap">
+            <tr className="[&>th]:px-4 [&>th]:py-3 [&>th]:text-left [&>th]:font-semibold [&>th]:align-bottom">
               <th scope="col">{t('admin:platformFees.service')}</th>
               <th scope="col">{t('admin:platformFees.percent')}</th>
+              <th scope="col">{t('admin:platformFees.expertColumn')}</th>
               <th scope="col">{t('admin:platformFees.late')}</th>
               <th scope="col">{t('admin:platformFees.noResponse')}</th>
               <th scope="col">{t('admin:platformFees.effectiveFrom')}</th>
@@ -388,7 +424,10 @@ export default function AdminPlatformFeesPage() {
                     {row.serviceCode}
                   </div>
                 </td>
-                <td className="num text-fg-strong text-base font-semibold">
+                <td
+                  data-label={t('admin:platformFees.percent')}
+                  className="num text-fg-strong text-base font-semibold"
+                >
                   {row.percent == null ? (
                     <span className="text-warning">
                       {t('admin:platformFees.notSet')}
@@ -397,16 +436,37 @@ export default function AdminPlatformFeesPage() {
                     `${row.percent}%`
                   )}
                 </td>
-                <td className="num">
+                <td
+                  data-label={t('admin:platformFees.expertColumn')}
+                  className="num text-fg-strong"
+                >
+                  {row.percent == null ? (
+                    '—'
+                  ) : (
+                    <>
+                      {`${100 - row.percent}%`}
+                      <span className="text-fg-muted block font-sans text-xs">
+                        {t('admin:platformFees.beforePit')}
+                      </span>
+                    </>
+                  )}
+                </td>
+                <td
+                  data-label={t('admin:platformFees.late')}
+                  className="num md:min-w-44"
+                >
                   {row.late ? (
                     <Clauses
-                      text={t('admin:platformFees.lateValue', { ...row.late })}
+                      text={lateTimeline(row.late)}
                     />
                   ) : (
                     '—'
                   )}
                 </td>
-                <td className="num">
+                <td
+                  data-label={t('admin:platformFees.noResponse')}
+                  className="num md:min-w-44"
+                >
                   {row.noResponse ? (
                     <Clauses
                       text={t('admin:platformFees.noResponseValue', {
@@ -421,10 +481,16 @@ export default function AdminPlatformFeesPage() {
                     '—'
                   )}
                 </td>
-                <td className="num whitespace-nowrap">
+                <td
+                  data-label={t('admin:platformFees.effectiveFrom')}
+                  className="num whitespace-nowrap"
+                >
                   {row.effectiveFrom ? formatDate(row.effectiveFrom) : '—'}
                 </td>
-                <td className="num">
+                <td
+                  data-label={t('admin:platformFees.pending')}
+                  className="num"
+                >
                   {row.pending
                     ? t('admin:platformFees.pendingValue', {
                         percent: row.pending.percent,
@@ -432,13 +498,16 @@ export default function AdminPlatformFeesPage() {
                       })
                     : '—'}
                 </td>
-                <td className="text-right whitespace-nowrap">
+                <td className="whitespace-nowrap md:text-right">
                   {row.pending && (
                     <button
                       type="button"
                       className="btn btn-press btn-secondary mr-2 h-9 px-3 text-sm"
                       disabled={cancel.isPending}
                       onClick={() => setWithdrawing(row)}
+                      aria-label={t('admin:platformFees.cancelFor', {
+                        name: row.serviceName,
+                      })}
                     >
                       {t('admin:platformFees.cancelPending')}
                     </button>
@@ -447,6 +516,12 @@ export default function AdminPlatformFeesPage() {
                     type="button"
                     className="btn btn-press btn-secondary h-9 px-3 text-sm"
                     onClick={() => open(row)}
+                    aria-label={t(
+                      row.percent == null
+                        ? 'admin:platformFees.setFor'
+                        : 'admin:platformFees.changeFor',
+                      { name: row.serviceName }
+                    )}
                   >
                     {row.percent == null
                       ? t('admin:platformFees.set')
@@ -455,11 +530,11 @@ export default function AdminPlatformFeesPage() {
                 </td>
               </tr>
             ))}
-            {query.isLoading && <SkeletonRows cols={7} />}
+            {query.isLoading && <SkeletonRows cols={8} />}
             {!query.isLoading && rows.length === 0 && (
               <tr className="border-border-subtle border-t">
                 <td
-                  colSpan={7}
+                  colSpan={8}
                   className="text-fg-muted px-4 py-10 text-center"
                 >
                   {query.error ? <LoadError /> : t('admin:platformFees.empty')}
@@ -482,7 +557,12 @@ export default function AdminPlatformFeesPage() {
           }
           onClose={() => setEditing(null)}
           preventClose={save.isPending}
-          onSubmit={() => (reviewing ? confirm() : valid && setReviewing(true))}
+          onSubmit={() => {
+            if (reviewing) return confirm()
+            if (!valid || unchanged) return
+            setSaveError(null)
+            setReviewing(true)
+          }}
           footer={
             reviewing ? (
               <>
@@ -505,6 +585,11 @@ export default function AdminPlatformFeesPage() {
               </>
             ) : (
               <>
+                {unchanged && (
+                  <span className="text-fg-muted mr-auto self-center text-sm">
+                    {t('admin:platformFees.unchanged')}
+                  </span>
+                )}
                 <button
                   type="button"
                   onClick={() => setEditing(null)}
@@ -514,7 +599,7 @@ export default function AdminPlatformFeesPage() {
                 </button>
                 <button
                   type="submit"
-                  disabled={!valid}
+                  disabled={!valid || unchanged}
                   className="btn btn-press btn-primary"
                 >
                   {t('admin:platformFees.review')}
@@ -598,6 +683,14 @@ export default function AdminPlatformFeesPage() {
             </table>
           ) : (
             <>
+              {saveError && (
+                <p
+                  role="alert"
+                  className="bg-danger-soft text-danger rounded-control mt-4 px-3 py-2 text-sm font-semibold"
+                >
+                  {saveError}
+                </p>
+              )}
               <label className="mt-4 flex flex-col gap-2 text-sm font-semibold">
                 {t('admin:platformFees.percentLabel', { max: maxPercent })}
                 <input
@@ -612,13 +705,21 @@ export default function AdminPlatformFeesPage() {
                   }
                   className="border-border-control rounded-control shadow-control bg-paper aria-[invalid=true]:border-danger border px-3 py-2 text-base font-normal"
                 />
-                {percentError && (
+                {percentError ? (
                   <span
                     id="fee-percent-error"
                     className="text-danger font-normal"
                   >
                     {percentError}
                   </span>
+                ) : (
+                  isWhole(percent) && (
+                    <span className="text-fg-strong font-normal">
+                      {t('admin:platformFees.expertShare', {
+                        percent: Math.max(0, 100 - value),
+                      })}
+                    </span>
+                  )
                 )}
               </label>
               <RuleFields
@@ -634,6 +735,7 @@ export default function AdminPlatformFeesPage() {
                 }
                 error={lateError}
                 note={lateShareText}
+                summary={lateValid ? lateTimeline(lateRule) : ''}
               />
               <RuleFields
                 legend={t('admin:platformFees.noResponse')}
@@ -649,6 +751,7 @@ export default function AdminPlatformFeesPage() {
                   setNoResponse((d) => ({ ...d, [field]: text }))
                 }
                 error={noResponseError}
+                summary={noResponseValid ? noResponseText(noResponseRule) : ''}
                 note={t('admin:platformFees.rules.platformKeeps', {
                   percent: Math.max(
                     0,
@@ -659,10 +762,16 @@ export default function AdminPlatformFeesPage() {
                 })}
               />
               {needsDate && (
-                <label className="mt-4 flex flex-col gap-2 text-sm font-semibold">
+                <div className="border-border-subtle mt-4 flex flex-col gap-2 border-t pt-3 text-sm font-semibold">
                   <span className="flex items-center gap-2">
-                    {t('admin:platformFees.effectiveOnLabel')}
-                    <HelpTip label={t('admin:platformFees.effectiveOnLabel')}>
+                    <label htmlFor="fee-effective-on">
+                      {t('admin:platformFees.effectiveOnLabel')}
+                    </label>
+                    <HelpTip
+                      label={t('common:helpFor', {
+                        topic: t('admin:platformFees.effectiveOnLabel'),
+                      })}
+                    >
                       {t('admin:platformFees.effectiveOnHelp', {
                         days: editing.noticeDays,
                         date: formatDate(editing.earliestEffectiveOn),
@@ -670,6 +779,7 @@ export default function AdminPlatformFeesPage() {
                     </HelpTip>
                   </span>
                   <input
+                    id="fee-effective-on"
                     type="date"
                     min={editing.earliestEffectiveOn}
                     value={effectiveOn}
@@ -686,7 +796,7 @@ export default function AdminPlatformFeesPage() {
                       {dateError}
                     </span>
                   )}
-                </label>
+                </div>
               )}
               {valid &&
                 editing.percent != null &&

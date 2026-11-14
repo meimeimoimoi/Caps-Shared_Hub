@@ -96,20 +96,20 @@ export default function AdminExpertsPage() {
           triggerClassName={filterTriggerCls}
           menuClassName="min-w-64"
         />
-        <span className="text-fg-muted ml-auto text-sm" aria-live="polite">
-          <span className="num text-fg-strong font-semibold">
-            {paged.total}
-          </span>{' '}
-          {t('admin:experts.expertCount')}
-        </span>
+        {!experts.isLoading && !experts.error && (
+          <span className="text-fg-muted ml-auto text-sm" aria-live="polite">
+            {t('admin:experts.expertCount', { count: paged.total })}
+          </span>
+        )}
       </div>
 
       <section className="paper overflow-x-auto">
-        <table className="w-full min-w-200 text-sm">
+        <table className="w-full min-w-230 text-sm">
           <caption className="sr-only">{t('admin:experts.title')}</caption>
           <thead className="bg-sunken text-fg-muted text-left">
             <tr className="[&>th]:px-4 [&>th]:py-3 [&>th]:font-semibold [&>th]:whitespace-nowrap">
               <th scope="col">{t('admin:experts.table.expert')}</th>
+              <th scope="col">{t('admin:experts.table.service')}</th>
               <th scope="col">{t('admin:experts.table.field')}</th>
               <th scope="col">{t('admin:experts.table.serviceStatus')}</th>
               <th scope="col" className="text-right">
@@ -153,6 +153,7 @@ export default function AdminExpertsPage() {
                     </button>
                     <div className="text-fg-muted text-xs">{e.email}</div>
                   </td>
+                  <td className="text-fg-strong">{e.serviceName ?? '—'}</td>
                   <td>
                     <ul
                       className="flex max-w-72 flex-wrap gap-1.5"
@@ -207,11 +208,11 @@ export default function AdminExpertsPage() {
                 </tr>
               )
             })}
-            {experts.isLoading && <SkeletonRows cols={6} />}
+            {experts.isLoading && <SkeletonRows cols={7} />}
             {!experts.isLoading && paged.rows.length === 0 && (
               <tr>
                 <td
-                  colSpan={6}
+                  colSpan={7}
                   className="text-fg-muted px-4 py-10 text-center"
                 >
                   {experts.error ? (

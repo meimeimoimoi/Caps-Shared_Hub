@@ -20,16 +20,19 @@ import type {
 } from '../../features/user-management/types'
 import { PageHeader } from '@/components/ui/layout/page-header'
 import { LoadError } from '@/components/ui/feedback/load-error'
+import { isMissingEndpoint } from '@/lib/api-client'
+import { OperationsUnavailable } from '@/features/disputes-escrow/components/OperationsUnavailable'
 
 const selectCls =
   'border-border-control rounded-control shadow-control bg-paper h-control min-w-48 border px-3 text-sm'
 
-/* Quản lý người dùng: mọi vai trò. Thao tác riêng của chuyên gia (bật/tắt dịch vụ) vẫn ở màn Quản lý Expert */
+/* User management for every role. Expert-only actions (turning a service on/off) stay on the experts page */
 export default function AdminUsersPage() {
   const nav = useAdminNav()
   const { t } = useTranslation('admin')
   const users = useUsers()
   const { paged, selected } = users
+  const notConnected = isMissingEndpoint(users.error)
   const [toast, setToast] = useState<string | null>(null)
   const clearToast = useCallback(() => setToast(null), [])
   const statusMeta = (s: ManagedUser['status']) => ({
@@ -42,10 +45,14 @@ export default function AdminUsersPage() {
       {...nav}
       section="users"
       breadcrumb={t('users.title')}
-      search={users.query}
-      onSearchChange={users.setQuery}
+      search={notConnected ? undefined : users.query}
+      onSearchChange={notConnected ? undefined : users.setQuery}
     >
       <PageHeader title={t('users.title')} help={t('users.description')} />
+      {notConnected ? (
+        <OperationsUnavailable area="users" />
+      ) : (
+      <>
 
       <section className="paper mt-8 overflow-x-auto">
         <div className="flex flex-wrap items-end gap-4 px-4 py-3">
@@ -87,9 +94,11 @@ export default function AdminUsersPage() {
               )}
             </select>
           </label>
-          <span className="text-fg-muted num ml-auto text-sm">
-            {t('users.count', { count: paged.total })}
-          </span>
+          {!users.error && !users.isLoading && (
+            <span className="text-fg-muted num ml-auto text-sm">
+              {t('users.count', { count: paged.total })}
+            </span>
+          )}
         </div>
 
         <table className="w-full min-w-200 text-sm">
@@ -149,14 +158,22 @@ export default function AdminUsersPage() {
                   colSpan={6}
                   className="text-fg-muted px-4 py-10 text-center"
                 >
-                  {users.error ? <LoadError /> : t('users.empty')}
+                  {users.error ? (
+                    <LoadError error={users.error} />
+                  ) : (
+                    t('users.empty')
+                  )}
                 </td>
               </tr>
             )}
           </tbody>
         </table>
-        <TablePager paged={paged} onPrev={users.prev} onNext={users.next} />
+        {!users.error && (
+          <TablePager paged={paged} onPrev={users.prev} onNext={users.next} />
+        )}
       </section>
+      </>
+      )}
 
       {selected && (
         <UserDrawer

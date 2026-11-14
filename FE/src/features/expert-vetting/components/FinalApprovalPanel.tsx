@@ -50,6 +50,12 @@ export function FinalApprovalPanel({
   const locked = submitting || (approval && isGate2Reviewer)
   const due = approval ? detail.finalApprovalDueAt : null
   const overdue = !!due && new Date(due).getTime() < now
+  // The confirm dialog restates both gate results, so the admin approves what they saw
+  const gate1 = detail.profile.eligibility
+  const gate1Pass = gate1.filter(
+    (c) => c.result === 'PASS' || c.result === 'NOT_APPLICABLE'
+  ).length
+  const gate2Pass = detail.competencies.filter((c) => c.result === 'PASS').length
 
   if (!approval && !access)
     return (
@@ -222,6 +228,26 @@ export function FinalApprovalPanel({
             </>
           }
         >
+          <dl className="mt-4 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-sm">
+            <dt className="text-fg-muted">{t('finalApproval.gate1')}</dt>
+            <dd className="num text-fg-strong">
+              {gate1.length
+                ? t('finalApproval.gateResult', {
+                    passed: gate1Pass,
+                    total: gate1.length,
+                  })
+                : '—'}
+            </dd>
+            <dt className="text-fg-muted">{t('finalApproval.gate2')}</dt>
+            <dd className="num text-fg-strong">
+              {detail.competencies.length
+                ? t('finalApproval.gateResult', {
+                    passed: gate2Pass,
+                    total: detail.competencies.length,
+                  })
+                : '—'}
+            </dd>
+          </dl>
           {note.trim() && (
             <div className="bg-sunken rounded-surface mt-4 p-3 text-sm">
               <div className="text-fg-strong font-semibold">

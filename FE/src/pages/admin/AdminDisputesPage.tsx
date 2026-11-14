@@ -8,7 +8,7 @@ import { AdminLayout } from '@/app/layouts/admin/AdminLayout'
 import { useAdminNav } from '@/app/layouts/admin/useAdminNav'
 import {
   DISPUTE_RESOLVED,
-  DISPUTE_SLA_HOURS,
+  DISPUTE_ESCALATION_HOURS, DISPUTE_SLA_HOURS,
 } from '../../features/disputes-escrow/constants'
 import { useDisputes } from '../../features/disputes-escrow/hooks/useDispute'
 import {
@@ -50,14 +50,21 @@ export default function AdminDisputesPage() {
     <AdminLayout {...nav} section="disputes" breadcrumb={t('disputes.title')}>
       <PageHeader
         title={t('disputes.title')}
-        help={t('disputes.intro', {
-          count: openCount,
-          hours: DISPUTE_SLA_HOURS,
-        })}
+        help={
+          <>
+            {!nav.operationsUnavailable && !isLoading && !error && (
+              <>{t('disputes.introCount', { count: openCount })} </>
+            )}
+            {t('disputes.introRule', {
+              hours: DISPUTE_SLA_HOURS,
+              extra: DISPUTE_ESCALATION_HOURS,
+            })}
+          </>
+        }
       />
       {/* No backend for this queue outside the demo: one honest state, no fake zeros */}
       {nav.operationsUnavailable ? (
-        <OperationsUnavailable />
+        <OperationsUnavailable area="disputes" />
       ) : (
         <>
 

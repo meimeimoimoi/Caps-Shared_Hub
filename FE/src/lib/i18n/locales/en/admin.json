@@ -52,7 +52,14 @@
       "empty": "Nothing urgent.",
       "emptyPartial": "Nothing urgent in the queues being tracked. Disputes and payouts have no data to check yet.",
       "unavailable": "Disputes and payouts have no data to check yet.",
-      "unknown": "Couldn't determine what needs attention because a data source failed to load."
+      "unknown": "Couldn't determine what needs attention because a data source failed to load.",
+      "count_one": "{{count}} item",
+      "count_other": "{{count}} items",
+      "urgent_one": "{{count}} urgent",
+      "urgent_other": "{{count}} urgent",
+      "open": "Open",
+      "finalApprovalPending_one": "{{count}} file waiting for your final approval",
+      "finalApprovalPending_other": "{{count}} files waiting for your final approval"
     },
     "kpi": {
       "pending": "Pending applications",
@@ -61,7 +68,14 @@
       "experts": "Active experts",
       "expertsNote": "{{suspended}} suspended · {{added}} new this month",
       "held": "Funds held",
-      "heldNote": "{{count}} cases awaiting acceptance"
+      "heldNote": "{{count}} cases awaiting acceptance",
+      "failed": "Couldn't load",
+      "title": "Key figures",
+      "moneyUnavailable": "Not connected · includes payouts, refunds and disputes",
+      "finalApproval": "Awaiting final approval",
+      "finalApprovalOverdue_one": "{{count}} overdue",
+      "finalApprovalOverdue_other": "{{count}} overdue",
+      "finalApprovalOnTime": "All within the approval deadline"
     },
     "vetting": "Expert review",
     "escrow": "Escrow funds",
@@ -74,7 +88,11 @@
     "upcoming": {
       "title": "Coming up",
       "feeChange": "New platform fee for {{service}}: {{percent}}%",
-      "empty": "No scheduled changes."
+      "empty": "No scheduled changes.",
+      "today": "Today",
+      "tomorrow": "Tomorrow",
+      "inDays_one": "In {{count}} day",
+      "inDays_other": "In {{count}} days"
     },
     "loading": "Loading figures…",
     "growth": {
@@ -98,7 +116,9 @@
       "partial": "{{period}} (to date)",
       "latest": "Latest closed period: {{period}}. The current period is shown on the charts only.",
       "notEnough": "Not enough closed periods to compare yet.",
-      "monthTick": "{{name}}"
+      "monthTick": "{{name}}",
+      "failed": "Couldn't load growth figures. Reload the page to try again.",
+      "firstPeriod": "First period with data"
     },
     "noData": "No data yet."
   },
@@ -123,14 +143,14 @@
     "allStatuses": "All statuses",
     "field": "Field",
     "allFields": "All fields",
-    "expertCount": "Expert(s)",
     "table": {
       "expert": "Expert",
       "field": "Field",
       "serviceStatus": "Service Status",
       "reviewFee": "Review Fee",
       "activeCases": "Active Cases",
-      "approvedAt": "Approved At"
+      "approvedAt": "Approved At",
+      "service": "Service"
     },
     "noResults": "No Expert matches the filter.",
     "drawer": {
@@ -176,7 +196,9 @@
     "actor": {
       "system": "System",
       "admin": "Admin"
-    }
+    },
+    "expertCount_one": "{{count}} expert",
+    "expertCount_other": "{{count}} experts"
   },
   "applicationsTable": {
     "sortBy": "Sort by: oldest submitted first",
@@ -334,7 +356,6 @@
   },
   "disputes": {
     "title": "Disputes",
-    "intro": "{{count}} disputes awaiting a decision. Each dispute must be decided within {{hours}} hours of opening, extended once by 48 hours when escalated to a professional reviewer; escrow funds stay locked until then.",
     "col": {
       "caseId": "Case ID",
       "case": "Case",
@@ -405,19 +426,22 @@
       "RESOLVE_REFUND_USER": {
         "label": "Uphold · refund the client",
         "hint": "The complaint is justified: the expert breached an obligation, or the client responded on time / the information request was not valid",
-        "split": "Client refund 100% · Expert 0% · Platform 0%"
+        "split": "Client refund 100%"
       },
       "RESOLVE_PAY_EXPERT": {
         "label": "Dismiss · pay the expert",
         "hint": "The complaint is not justified; the expert did the work properly",
-        "split": "Client refund 0% · Expert 60% · Platform 40%"
+        "split": "No refund · the expert gets the price minus the service's platform fee"
       },
       "RESOLVE_PARTIAL": {
         "label": "Partial settlement",
         "hint": "Both sides fell partly short",
-        "split": "Client refund 50% · Expert 30% · Platform 20%"
+        "split": "Client refund 50% · the rest splits by the service's platform fee"
       }
-    }
+    },
+    "introCount_one": "{{count}} dispute awaiting arbitration.",
+    "introCount_other": "{{count}} disputes awaiting arbitration.",
+    "introRule": "Each dispute needs a decision within {{hours}} hours of opening, extended once by {{extra}} hours when escalated to an expert; the escrowed money stays locked until then."
   },
   "escrow": {
     "title": "Refunds and payouts",
@@ -1030,7 +1054,10 @@
     "confirmApproveBody": "{{name}} can set pricing for {{service}}; the service goes live on the Marketplace once the price is approved and in effect. The decision is recorded in the qualification history.",
     "confirmNote": "Note",
     "confirmReturnTitle": "Return {{service}} to competency review?",
-    "confirmReturnBody": "The competency result goes back to the reviewer to recheck against the note below. The note is not sent to the expert."
+    "confirmReturnBody": "The competency result goes back to the reviewer to recheck against the note below. The note is not sent to the expert.",
+    "gate1": "Eligibility (Gate 1)",
+    "gate2": "Competency (Gate 2)",
+    "gateResult": "{{passed}}/{{total}} criteria passed"
   },
   "platformFees": {
     "title": "Platform fees",
@@ -1065,15 +1092,14 @@
     "effectiveOnHelp": "A change must be announced at least {{days}} days ahead, so {{date}} at the earliest. A new schedule replaces the pending change, if any.",
     "example": "What experts receive per request",
     "examplePrice": "Price",
-    "exampleNet": "Received: current → new",
+    "exampleNet": "Received before PIT: current → new",
     "firstFeeHelp": "The first fee applies at once and opens the service for experts to price.",
     "late": "Late delivery",
-    "lateValue": "Late ≤{{penaltyHours}}h: {{penaltyPercent}}% back · ≤{{cancelHours}}h: 100% back",
-    "lateHelp": "Counted from the delivery deadline. Late within the penalty hours: the client gets the penalty percent back from the expert's share (the platform keeps its fee). Later, up to the cancel hours: the client gets everything back. Not delivered past the cancel hours: the request is cancelled and fully refunded. At most {{maxHours}} hours; the penalty plus the platform fee may not exceed 100%. Requests already sent keep the rule they were sent with.",
+    "lateHelp": "Counted from the delivery deadline. Delivered within the penalty window: the client gets the set percent back from the expert's share (the platform keeps its fee). Delivered later but before the cancel hours: the client gets 100% back. Not delivered past the cancel hours: the request is cancelled. Set the penalty window equal to the cancel hours to keep a single refund level. At most {{maxHours}} hours; the refund plus the platform fee may not exceed 100%. Requests already sent keep the rule they were sent with.",
     "lateFields": {
-      "penaltyHours": "Penalty hours",
-      "penaltyPercent": "Penalty %",
-      "cancelHours": "Cancel hours"
+      "penaltyHours": "Late penalty window (hours)",
+      "penaltyPercent": "Refund to client when late (%)",
+      "cancelHours": "Cancel if undelivered after (hours)"
     },
     "noResponse": "Client silence",
     "noResponseValue": "After {{hours}}h: {{refundPercent}}% back · expert {{expertPercent}}% · platform {{platformPercent}}%",
@@ -1089,8 +1115,8 @@
     "rules": {
       "wholeNumbers": "Enter a whole number of zero or more in every field.",
       "maxHours": "Hours cannot exceed {{max}}.",
-      "cancelBeforePenalty": "Cancel hours must be at least the penalty hours.",
-      "penaltyOverFee": "Late refund % plus the platform fee cannot exceed 100% (now {{sum}}%).",
+      "cancelBeforePenalty": "Cancel hours must be at least the late penalty window.",
+      "penaltyOverFee": "Late refund plus the platform fee may not exceed 100% (now {{sum}}%).",
       "hoursRange": "Hours must be between 1 and {{max}}.",
       "splitOver": "Client refund % plus expert % cannot exceed 100% (now {{sum}}%).",
       "platformKeeps": "The platform keeps {{percent}}%.",
@@ -1106,7 +1132,19 @@
     "reviewAfter": "After saving",
     "reviewNow": "As soon as it is saved",
     "reviewChanged_one": "{{count}} item changed",
-    "reviewChanged_other": "{{count}} items changed"
+    "reviewChanged_other": "{{count}} items changed",
+    "expertShare": "The expert receives {{percent}}% of the price, before PIT.",
+    "expertColumn": "Expert receives",
+    "unchanged": "Nothing differs from the current terms yet.",
+    "changeFor": "Change fee · {{name}}",
+    "setFor": "Set fee · {{name}}",
+    "cancelFor": "Cancel pending change · {{name}}",
+    "beforePit": "before PIT",
+    "lateSteps": {
+      "penalty": "Up to {{hours}}h late: {{percent}}% back",
+      "full": "{{from}}–{{to}}h: 100% back",
+      "cancel": "Undelivered after {{hours}}h: request cancelled"
+    }
   },
   "expertPolicy": {
     "title": "Expert policy",
@@ -1248,7 +1286,12 @@
     "leave": "Discard and leave",
     "discardTitle": "Discard {{count}} unsaved edits?",
     "discardBody": "The values go back to what is in effect. Nothing has been saved.",
-    "keepEditing": "Keep editing"
+    "keepEditing": "Keep editing",
+    "youNamed": "{{name}} (you)",
+    "currentValue": "In force: {{value}}",
+    "neverEdited": "Never edited",
+    "notSetBefore": "Not set",
+    "reasonMin": "At least {{count}} characters, saying why the change is needed."
   },
   "claim": {
     "free": "Nobody has claimed this review",
@@ -1347,7 +1390,13 @@
   },
   "operationsUnavailable": {
     "title": "Not connected yet",
-    "body": "This page isn't connected to the live system yet, so it has no figures. They will appear once the feature is switched on."
+    "body": "This feature is not open yet. Figures will appear here once it is.",
+    "areas": {
+      "disputes": "This page will list disputes awaiting arbitration, each decision deadline and where refunds are decided. No data until disputes are connected.",
+      "escrow": "This page will show money held until acceptance, payouts to experts and refunds to clients. No data until payments are connected.",
+      "pricing": "This page will show price ranges per template group and experts priced outside them. The general price range is currently set on the Expert policy page.",
+      "users": "The account list and lock or password-reset actions are not on the server yet. New and total user counts on the Overview come from statistics, so they still show."
+    }
   },
   "serviceStatus": {
     "INACTIVE": {

@@ -108,6 +108,9 @@ const GROUP_TONE: Record<
 const chip =
   'num inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium whitespace-nowrap'
 
+// Shortest reason accepted for a policy change, so the audit trail explains it
+const MIN_REASON_LENGTH = 10
+
 /** Expert policy values a System Admin changes without a restart; every change keeps its reason (BR-E29).
  * Settings are edited as tiles, reviewed and confirmed in a modal, and the change log sits at the bottom. */
 export default function AdminExpertPolicyPage() {
@@ -115,6 +118,7 @@ export default function AdminExpertPolicyPage() {
   const { t, i18n } = useTranslation(['admin', 'common'])
   const qc = useQueryClient()
   const userId = useAuthStore((s) => s.user?.id)
+  const userName = useAuthStore((s) => s.user?.name)
   const [drafts, setDrafts] = useState<
     Partial<Record<PolicySettingKey, string>>
   >({})
@@ -198,7 +202,8 @@ export default function AdminExpertPolicyPage() {
   }, [hasPending])
   const hasInvalid = settings.some(outOfRange) || rows.some(inverted)
   const canReview = changed.length > 0 && !hasInvalid
-  const canSave = canReview && !!reason.trim() && !save.isPending
+  const reasonShort = reason.trim().length < MIN_REASON_LENGTH
+  const canSave = canReview && !reasonShort && !save.isPending
 
   const setDraft = (key: PolicySettingKey, raw: string) =>
     // Digits only: grouping separators shown while not editing must not reach the value
@@ -253,7 +258,11 @@ export default function AdminExpertPolicyPage() {
   }
 
   const actor = (id: string | null) =>
-    !id ? '' : id === userId ? t('admin:expertPolicy.you') : id.slice(0, 8)
+    !id
+      ? ''
+      : id === userId
+        ? t('admin:expertPolicy.youNamed', { name: userName ?? '' })
+        : id.slice(0, 8)
 
   const field = (s: PolicySetting, ariaLabel?: string) => {
     const bad = outOfRange(s)
@@ -347,7 +356,12 @@ export default function AdminExpertPolicyPage() {
     const last = items
       .filter((s) => s.updatedAt)
       .sort((a, b) => (a.updatedAt! < b.updatedAt! ? 1 : -1))[0]
-    if (!last) return <span className="text-fg-muted">—</span>
+    if (!last)
+      return (
+        <span className="text-fg-muted">
+          {t('admin:expertPolicy.neverEdited')}
+        </span>
+      )
     return (
       <span className="num inline-flex items-center gap-2">
         <span aria-hidden="true" className="bg-success size-2 rounded-full" />
@@ -359,18 +373,11 @@ export default function AdminExpertPolicyPage() {
     )
   }
 
-  const allowedChip = (text: string) => (
-    <span
-      className={cn(chip, 'border-border text-fg-muted border bg-transparent')}
-    >
-      {text}
-    </span>
-  )
-  const currentCell = (dirty: boolean, text: string) =>
-    dirty ? (
-      <span className={cn(chip, 'bg-warning-soft text-warning')}>{text}</span>
-    ) : (
-      <span className="text-fg-muted">—</span>
+  const currentNote = (dirty: boolean, text: string) =>
+    dirty && (
+      <span className={cn(chip, 'bg-warning-soft text-warning')}>
+        {t('admin:expertPolicy.currentValue', { value: text })}
+      </span>
     )
 
   const rowClass = (dirty: boolean, _g: Group) =>
@@ -397,22 +404,25 @@ export default function AdminExpertPolicyPage() {
               <HelpTip label={label(s.key)}>{helpFor(s)}</HelpTip>
             </div>
           </td>
-          <td>
+          <td data-label={t('admin:expertPolicy.columns.value')}>
             <div className="flex flex-col items-start gap-1">
               {field(s)}
               {errorFor(s)}
+              {currentNote(isDirty(s), `${show(s.key, s.value)} ${u}`)}
             </div>
           </td>
-          <td>{currentCell(isDirty(s), `${show(s.key, s.value)} ${u}`)}</td>
-          <td className="num whitespace-nowrap">
+          <td
+            data-label={t('admin:expertPolicy.columns.default')}
+            className="num whitespace-nowrap"
+          >
             {defaultCell([s], `${show(s.key, s.defaultValue)} ${u}`)}
           </td>
-          <td>
-            {allowedChip(
-              `${show(s.key, s.minValue)}–${show(s.key, s.maxValue)}`
-            )}
+          <td
+            data-label={t('admin:expertPolicy.columns.updated')}
+            className="whitespace-nowrap"
+          >
+            {updatedCell([s])}
           </td>
-          <td className="whitespace-nowrap">{updatedCell([s])}</td>
         </tr>
       )
     }
@@ -438,7 +448,7 @@ export default function AdminExpertPolicyPage() {
             </HelpTip>
           </div>
         </td>
-        <td>
+        <td data-label={t('admin:expertPolicy.columns.value')}>
           <div
             role="group"
             aria-labelledby={`policy-range-${row.range}`}
@@ -458,26 +468,27 @@ export default function AdminExpertPolicyPage() {
                 {t('admin:expertPolicy.rangeInverted')}
               </p>
             )}
+            {currentNote(
+              dirty,
+              `${show(lo.key, lo.value)}–${show(hi.key, hi.value)} ${u}`
+            )}
           </div>
         </td>
-        <td>
-          {currentCell(
-            dirty,
-            `${show(lo.key, lo.value)}–${show(hi.key, hi.value)} ${u}`
-          )}
-        </td>
-        <td className="num whitespace-nowrap">
+        <td
+          data-label={t('admin:expertPolicy.columns.default')}
+          className="num whitespace-nowrap"
+        >
           {defaultCell(
             [lo, hi],
             `${show(lo.key, lo.defaultValue)}–${show(hi.key, hi.defaultValue)} ${u}`
           )}
         </td>
-        <td>
-          {allowedChip(
-            `${show(lo.key, lo.minValue)}–${show(hi.key, hi.maxValue)}`
-          )}
+        <td
+          data-label={t('admin:expertPolicy.columns.updated')}
+          className="whitespace-nowrap"
+        >
+          {updatedCell([lo, hi])}
         </td>
-        <td className="whitespace-nowrap">{updatedCell([lo, hi])}</td>
       </tr>
     )
   }
@@ -497,7 +508,7 @@ export default function AdminExpertPolicyPage() {
         <section className="paper mt-8 overflow-x-auto">
           <table className="w-full text-sm">
             <tbody>
-              <SkeletonRows cols={6} />
+              <SkeletonRows cols={4} />
             </tbody>
           </table>
         </section>
@@ -508,17 +519,15 @@ export default function AdminExpertPolicyPage() {
         <div className="mt-8 flex flex-col gap-10">
           {/* One table for every group, so the columns line up from the first setting to the last */}
           <section className="paper overflow-x-auto">
-            <table className="w-full min-w-240 text-sm">
+            <table className="stack-table w-full text-sm">
               <caption className="sr-only">{t('admin:expertPolicy.title')}</caption>
               <thead className="bg-sunken text-fg-muted text-left">
                 <tr className="border-border border-b [&>th]:px-5 [&>th]:py-3 [&>th]:font-semibold [&>th]:whitespace-nowrap">
-                  <th scope="col" className="w-[32%]">
+                  <th scope="col" className="min-w-64">
                     {t('admin:expertPolicy.history.setting')}
                   </th>
                   <th scope="col">{t('admin:expertPolicy.columns.value')}</th>
-                  <th scope="col">{t('admin:expertPolicy.columns.current')}</th>
                   <th scope="col">{t('admin:expertPolicy.columns.default')}</th>
-                  <th scope="col">{t('admin:expertPolicy.columns.allowed')}</th>
                   <th scope="col">{t('admin:expertPolicy.columns.updated')}</th>
                 </tr>
               </thead>
@@ -538,8 +547,8 @@ export default function AdminExpertPolicyPage() {
                       )}
                     >
                       <th
-                        colSpan={6}
-                        scope="colgroup"
+                        colSpan={4}
+                        scope="rowgroup"
                         className="px-5 py-2.5 text-left"
                       >
                         <span className="flex items-center gap-2">
@@ -634,10 +643,12 @@ export default function AdminExpertPolicyPage() {
                             <span
                               className={cn(
                                 chip,
-                                'bg-danger-soft text-danger line-through'
+                                'bg-sunken text-fg-muted line-through'
                               )}
                             >
-                              {show(c.key, c.oldValue)}
+                              {Number.isFinite(c.oldValue)
+                                ? show(c.key, c.oldValue)
+                                : t('admin:expertPolicy.notSetBefore')}
                             </span>
                             <span aria-hidden="true" className="text-fg-muted">
                               →
@@ -735,7 +746,7 @@ export default function AdminExpertPolicyPage() {
                       <span
                         className={cn(
                           chip,
-                          'bg-danger-soft text-danger line-through'
+                          'bg-sunken text-fg-muted line-through'
                         )}
                       >
                         {show(s.key, s.value)} {unit(s.key)}
@@ -765,8 +776,18 @@ export default function AdminExpertPolicyPage() {
               value={reason}
               onChange={(e) => setReason(e.target.value)}
               placeholder={t('admin:expertPolicy.reasonPlaceholder')}
+              aria-describedby="policy-reason-hint"
               className="border-border-control rounded-control bg-paper focus:border-accent focus:ring-accent-soft w-full resize-y border px-3 py-2 outline-none focus:ring-2"
             />
+            <span
+              id="policy-reason-hint"
+              className={cn(
+                'text-xs',
+                reason.trim() && reasonShort ? 'text-danger' : 'text-fg-muted'
+              )}
+            >
+              {t('admin:expertPolicy.reasonMin', { count: MIN_REASON_LENGTH })}
+            </span>
           </label>
           {saveError && (
             <p role="alert" className="text-danger mt-3 text-sm">

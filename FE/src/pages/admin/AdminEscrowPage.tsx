@@ -147,10 +147,12 @@ export default function AdminEscrowPage() {
       />
       {/* No backend for this queue outside the demo: one honest state, no fake zeros */}
       {nav.operationsUnavailable ? (
-        <OperationsUnavailable />
+        <OperationsUnavailable area="escrow" />
       ) : (
         <>
-          {/* Ô tổng kiêm bộ lọc: bấm để xem khoản ở trạng thái đó, bấm lại để bỏ lọc */}
+          {/* Total tiles double as filters: click to see that status, click again to clear.
+           * Shown only once the list has loaded, so a pending or failed load never reads as 0 ₫ */}
+          {!escrows.isLoading && !escrows.error && (
           <div
             role="group"
             aria-label={t('escrow.filterLabel')}
@@ -260,6 +262,7 @@ export default function AdminEscrowPage() {
               )
             })}
           </div>
+          )}
 
           <section className="paper mt-6 overflow-x-auto">
             <table className="w-full min-w-200 text-sm">
@@ -357,6 +360,7 @@ export default function AdminEscrowPage() {
             </summary>
             <div className="overflow-x-auto">
               <table className="w-full min-w-150 text-sm">
+                <caption className="sr-only">{t('escrow.matrix.title')}</caption>
                 <thead>
                   <tr className={headCls}>
                     <th scope="col" className="text-left">

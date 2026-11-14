@@ -99,7 +99,7 @@ export default function AdminPricingPage() {
       />
       {/* No pricing backend outside the demo: one honest state instead of a Retry that cannot succeed */}
       {nav.operationsUnavailable ? (
-        <OperationsUnavailable />
+        <OperationsUnavailable area="pricing" />
       ) : (
         <>
           <div

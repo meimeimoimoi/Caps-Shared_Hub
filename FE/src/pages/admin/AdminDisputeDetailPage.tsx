@@ -42,7 +42,7 @@ export default function AdminDisputeDetailPage() {
     return (
       <AdminLayout {...layout} breadcrumb={listLink}>
         <h1 className="text-h1">{t('disputes.title')}</h1>
-        <OperationsUnavailable />
+        <OperationsUnavailable area="disputes" />
       </AdminLayout>
     )
   }

@@ -1,14 +1,21 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { cn } from '@/lib/utils'
+import { HelpTip } from '@/components/ui/feedback/help-tip'
 import { useFormatters } from '@/hooks/useFormatters'
 import { useAdminStats } from '../hooks/useAdminStats'
 import type { Granularity, StatPeriod } from '../types'
 import { DeltaTile } from './DeltaTile'
 import { StackedColumnChart } from './StackedColumnChart'
 
-/* Tăng trưởng: bộ lọc kỳ ở trên, áp dụng cho mọi thẻ so sánh và biểu đồ bên dưới */
-export function GrowthSection() {
+/* Growth: the period filter on top drives every comparison tile and chart below.
+ * moneyUnavailable: payouts and refunds have no backend yet, so money tiles and the cash-flow
+ * chart say "not connected" instead of plotting zeros */
+export function GrowthSection({
+  moneyUnavailable = false,
+}: {
+  moneyUnavailable?: boolean
+}) {
   const { t } = useTranslation('admin')
   const f = useFormatters()
   const [granularity, setGranularity] = useState<Granularity>('month')
@@ -22,7 +29,7 @@ export function GrowthSection() {
           year: p.start.slice(2, 4),
         })
       : f.dateOnly(p.start, { month: 'numeric', year: 'numeric' })
-  // Trục X hẹp (12 cột): tháng chỉ hiện "T11"; năm vẫn có trong tooltip và bảng
+  // Narrow X axis (12 columns): a month shows only "T11"; the year stays in the tooltip and table
   const tick = (p: StatPeriod) =>
     p.quarter
       ? baseLabel(p)
@@ -30,12 +37,12 @@ export function GrowthSection() {
           month: f.dateOnly(p.start, { month: 'numeric' }),
           name: f.dateOnly(p.start, { month: 'short' }),
         })
-  // Kỳ đang dở vẫn hiện trên biểu đồ nhưng ghi rõ, để không bị đọc nhầm là sụt giảm
+  // The running period stays on the chart but is labelled, so it is not read as a drop
   const periodLabel = (p: StatPeriod) =>
     p.partial
       ? t('dashboard.growth.partial', { period: baseLabel(p) })
       : baseLabel(p)
-  // Thẻ so sánh chỉ dùng 2 kỳ đã chốt gần nhất: so kỳ dở với kỳ đủ sẽ luôn báo "giảm" sai
+  // Tiles compare the two latest closed periods: a running period against a full one would always read as a false drop
   const closed = periods.filter((p) => !p.partial)
   const cur = closed.at(-1)
   const prev = closed.at(-2)
@@ -64,9 +71,16 @@ export function GrowthSection() {
   return (
     <section className="mt-10" aria-labelledby="dash-growth">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 id="dash-growth" className="text-h2">
-          {t('dashboard.growth.title')}
-        </h2>
+        <div className="flex items-center gap-2">
+          <h2 id="dash-growth" className="text-h2">
+            {t('dashboard.growth.title')}
+          </h2>
+          {cur && (
+            <HelpTip label={t('dashboard.growth.title')}>
+              {t('dashboard.growth.latest', { period: baseLabel(cur) })}
+            </HelpTip>
+          )}
+        </div>
         <div
           role="group"
           aria-label={t('dashboard.growth.filterLabel')}
@@ -93,10 +107,12 @@ export function GrowthSection() {
 
       {cur && prev ? (
         <>
-          <p className="text-fg-muted mt-1 text-sm">
-            {t('dashboard.growth.latest', { period: baseLabel(cur) })}
-          </p>
-          <div className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <div
+            className={cn(
+              'mt-4 grid gap-4 sm:grid-cols-2',
+              !moneyUnavailable && 'xl:grid-cols-4'
+            )}
+          >
             {[
               {
                 key: 'platformFee',
@@ -114,12 +130,19 @@ export function GrowthSection() {
                 value: f.number(cur.totalUsers),
                 get: (p: StatPeriod) => p.totalUsers,
               },
-            ].map((tile) => (
+            ]
+              .filter(
+                (tile) =>
+                  !moneyUnavailable ||
+                  (tile.key !== 'platformFee' && tile.key !== 'gmv')
+              )
+              .map((tile) => (
               <DeltaTile
                 key={tile.key}
-                label={t(
+                label={`${t(
                   `dashboard.growth.${tile.key as 'platformFee' | 'gmv' | 'newUsers' | 'totalUsers'}`
-                )}
+                )} · ${baseLabel(cur)}`}
+                newLabel={t('dashboard.growth.firstPeriod')}
                 value={tile.value}
                 current={tile.get(cur)}
                 previous={tile.get(prev)}
@@ -131,8 +154,14 @@ export function GrowthSection() {
             ))}
           </div>
 
-          {/* Tiền và người dùng khác đơn vị: 2 biểu đồ riêng, không dùng 2 trục Y */}
-          <div className="mt-4 grid items-start gap-4 lg:grid-cols-2">
+          {/* Money and users use different units: two charts, never a second Y axis */}
+          <div
+            className={cn(
+              'mt-4 grid items-start gap-4',
+              !moneyUnavailable && 'lg:grid-cols-2'
+            )}
+          >
+            {!moneyUnavailable && (
             <div className="paper p-5">
               <StackedColumnChart
                 title={t('dashboard.growth.moneyChart')}
@@ -159,6 +188,7 @@ export function GrowthSection() {
                 {...chartProps}
               />
             </div>
+            )}
             <div className="paper p-5">
               <StackedColumnChart
                 title={t('dashboard.growth.usersChart')}
@@ -183,7 +213,9 @@ export function GrowthSection() {
         <p className="paper text-fg-muted mt-4 px-5 py-8 text-sm">
           {stats.isLoading
             ? t('dashboard.loading')
-            : (stats.error?.message ?? t('dashboard.growth.notEnough'))}
+            : stats.error
+              ? t('dashboard.growth.failed')
+              : t('dashboard.growth.notEnough')}
         </p>
       )}
     </section>

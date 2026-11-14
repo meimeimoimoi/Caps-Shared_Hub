@@ -80,6 +80,10 @@ interface AdminLayoutProps extends ShellPageProps {
   disputeCount?: number
   /** Final approvals past their due time */
   approvalOverdueCount?: number
+  /** Everything waiting for final approval; the badge shows it, overdue or not */
+  approvalPendingCount?: number
+  /** The users endpoint is not on the server yet */
+  usersUnavailable?: boolean
   /** Payouts and refunds that failed and need a retry */
   payoutFailedCount?: number
   /** Disputes and payouts cannot be checked (no backend yet); only the dashboard reads it */
@@ -91,6 +95,8 @@ export function AdminLayout({
   pendingCount,
   disputeCount,
   approvalOverdueCount,
+  approvalPendingCount,
+  usersUnavailable,
   payoutFailedCount,
   operationsUnavailable,
   ...page
@@ -136,7 +142,7 @@ export function AdminLayout({
           icon: BadgeCheck,
           to: '/admin/experts/approvals',
           active: section === 'approvals',
-          badge: approvalOverdueCount,
+          badge: approvalPendingCount || approvalOverdueCount,
         },
         {
           label: t('navigation.assignments'),
@@ -211,6 +217,9 @@ export function AdminLayout({
           label: t('navigation.users'),
           icon: UsersRound,
           to: '/admin/users',
+          lockedHint: usersUnavailable
+            ? t('navigation.notConnected')
+            : undefined,
           active: section === 'users',
         },
         {
@@ -286,11 +295,15 @@ export function RoleShell({
         id: to ?? `admin-item-${groupIndex}-${itemIndex}`,
         label,
         icon: <Icon size={18} />,
-        // A locked item has no link; the sidebar shows a lock and the hint
-        to: lockedHint ? undefined : to,
+        // A locked item still links to its page, which explains it is not connected yet;
+        // the sidebar adds a lock and the hint, and a locked area never shows a count
+        to,
         active,
-        badge: badge != null && badge > 0 ? number(badge) : undefined,
+        badge:
+          !lockedHint && badge != null && badge > 0 ? number(badge) : undefined,
         lockedHint,
+        // Admin areas are locked only because they are not connected yet, never by permission
+        lockedKind: 'soon' as const,
       })
     ),
   }))

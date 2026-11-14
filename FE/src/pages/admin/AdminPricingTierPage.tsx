@@ -83,7 +83,7 @@ export default function AdminPricingTierPage() {
       {nav.operationsUnavailable ? (
         <>
           <h1 className="text-h1">{t('pricing.title')}</h1>
-          <OperationsUnavailable />
+          <OperationsUnavailable area="pricing" />
         </>
       ) : pricing.data && (isNew || tier) ? (
         <TierForm
