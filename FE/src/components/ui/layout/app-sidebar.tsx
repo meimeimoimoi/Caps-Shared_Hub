@@ -14,7 +14,7 @@ export interface SidebarItem {
   badge?: ReactNode
   /** Locked item (no `to`): shows a lock and explains when it opens */
   lockedHint?: string
-  /** 'soon': the area exists but is not connected yet (neutral mark, not a permission lock) */
+  /** 'soon': not connected yet; the item sits in its own "soon" group, so it shows no lock */
   lockedKind?: 'lock' | 'soon'
 }
 export interface SidebarGroup {
@@ -111,7 +111,7 @@ export function AppSidebar({
                   </span>
                   <span
                     // Fixed width so text does not shift while collapsing; leave room on the right for a badge.
-                    className={`sidebar-fade line-clamp-2 w-[148px] shrink-0 leading-snug whitespace-normal ${item.badge != null ? 'pr-10' : item.lockedKind === 'soon' && item.lockedHint ? 'pr-14' : ''} ${collapsed ? 'opacity-0' : 'opacity-100'}`}
+                    className={`sidebar-fade line-clamp-2 w-[148px] shrink-0 leading-snug whitespace-normal ${item.badge != null ? 'pr-10' : ''} ${collapsed ? 'opacity-0' : 'opacity-100'}`}
                   >
                     {item.label}
                     {item.badge != null && collapsed && `, ${item.badge}`}
@@ -119,14 +119,7 @@ export function AppSidebar({
                       <span className="sr-only">. {item.lockedHint}</span>
                     )}
                   </span>
-                  {item.lockedHint && !collapsed && item.lockedKind === 'soon' && (
-                    <span
-                      aria-hidden="true"
-                      className="absolute top-1/2 right-3 -translate-y-1/2 rounded-md border border-white/20 px-1.5 py-0.5 font-sans text-[11px] leading-none font-medium whitespace-nowrap"
-                    >
-                      {t('navigation.soon')}
-                    </span>
-                  )}
+
                   {item.lockedHint && !collapsed && item.lockedKind !== 'soon' && (
                     <Lock
                       size={14}

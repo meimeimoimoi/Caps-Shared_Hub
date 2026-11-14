@@ -117,6 +117,7 @@ export default function AdminDashboardPage() {
   ]
   const urgentCount = attention.filter((n) => n.tone === 'warning').length
   const allClear = !loading && !failed && !nav.operationsUnavailable
+  const busy = attention.length > 0
   // Key figures share one ledger panel beside the work list, so missing permissions leave no holes
   const hasLedger = canReview || canApprove || canSeeMoney
   // Calendar days until a scheduled change; both sides as UTC midnights of local dates
@@ -144,17 +145,23 @@ export default function AdminDashboardPage() {
       <div
         className={cn(
           'mt-8 grid items-start gap-6',
-          hasLedger && 'lg:grid-cols-[minmax(0,1fr)_21rem]'
+          hasLedger && busy && 'lg:grid-cols-[minmax(0,1fr)_21rem]'
         )}
       >
+      {/* Nothing waiting: the block shrinks to one status line and the key figures lead */}
       <section
-        className="paper overflow-hidden"
+        className={cn(
+          'paper overflow-hidden',
+          !busy &&
+            'flex flex-wrap items-center gap-x-4 gap-y-2 px-5 py-3 md:px-6'
+        )}
         aria-labelledby="dash-attention"
       >
         <div
           className={cn(
-            'flex flex-wrap items-baseline gap-x-4 gap-y-1 px-5 md:px-6',
-            attention.length ? 'pt-5 pb-4' : 'pt-4 pb-2'
+            busy
+              ? 'flex flex-wrap items-baseline gap-x-4 gap-y-1 px-5 pt-5 pb-4 md:px-6'
+              : 'contents'
           )}
         >
           <h2
@@ -242,7 +249,7 @@ export default function AdminDashboardPage() {
             })}
           </ul>
         ) : (
-          <div className="flex items-center gap-3 px-5 pb-4 md:px-6">
+          <div className="flex items-center gap-3">
             {allClear && (
               <span
                 aria-hidden="true"
@@ -279,7 +286,12 @@ export default function AdminDashboardPage() {
       {hasLedger && (
         <aside
           aria-label={t('dashboard.kpi.title')}
-          className="paper divide-border-subtle md:max-lg:auto-cols-fr md:max-lg:grid-flow-col overflow-hidden md:max-lg:grid md:max-lg:divide-x md:max-lg:divide-y-0 divide-y"
+          className={cn(
+            'paper divide-border-subtle overflow-hidden divide-y',
+            busy
+              ? 'md:max-lg:grid md:max-lg:auto-cols-fr md:max-lg:grid-flow-col md:max-lg:divide-x md:max-lg:divide-y-0'
+              : 'md:grid md:auto-cols-fr md:grid-flow-col md:divide-x md:divide-y-0'
+          )}
         >
         {canReview && <KpiCard
           bare

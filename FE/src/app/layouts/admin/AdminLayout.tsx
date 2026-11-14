@@ -246,7 +246,7 @@ export function AdminLayout({
     '/admin/pricing',
     '/admin/users',
   ]
-  const nav = allGroups
+  const allowed = allGroups
     .map((g) => ({
       ...g,
       items: g.items.filter((i) => {
@@ -260,6 +260,15 @@ export function AdminLayout({
       }),
     }))
     .filter((g) => g.items.length > 0)
+  // Areas that are not connected yet leave their groups and sit together at the end, so the
+  // working console reads complete and the group title says once what they have in common
+  const soon = allowed.flatMap((g) => g.items.filter((i) => i.lockedHint))
+  const nav = [
+    ...allowed
+      .map((g) => ({ ...g, items: g.items.filter((i) => !i.lockedHint) }))
+      .filter((g) => g.items.length > 0),
+    ...(soon.length ? [{ group: t('navigation.soonGroup'), items: soon }] : []),
+  ]
 
   return <RoleShell nav={nav} {...page} />
 }

@@ -37,7 +37,8 @@
     "expertPolicy": "Chính sách chuyên gia",
     "assignments": "Phân công người chấm",
     "feesAndPolicy": "Cấu hình & phí",
-    "notConnected": "Chưa kết nối"
+    "notConnected": "Chưa kết nối",
+    "soonGroup": "Sắp có"
   },
   "dashboard": {
     "title": "Tổng quan",
@@ -68,7 +69,7 @@
       "heldNote": "{{count}} hồ sơ đang chờ nghiệm thu",
       "failed": "Không tải được số liệu",
       "title": "Chỉ số chính",
-      "moneyUnavailable": "Chưa kết nối · gồm chi trả, hoàn tiền và khiếu nại",
+      "moneyUnavailable": "Gồm chi trả, hoàn tiền và khiếu nại.",
       "finalApproval": "Chờ phê duyệt cuối",
       "finalApprovalOverdue_other": "{{count}} hồ sơ quá hạn",
       "finalApprovalOnTime": "Đều trong hạn phê duyệt"
@@ -1136,7 +1137,14 @@
       "penalty": "Trễ đến {{hours}} giờ: hoàn {{percent}}%",
       "full": "{{from}}–{{to}} giờ: hoàn 100%",
       "cancel": "Quá {{hours}} giờ chưa giao: hủy yêu cầu"
-    }
+    },
+    "edit": "Sửa",
+    "editPart": "Sửa {{part}} · {{name}}",
+    "dialogPart": "{{part}} · {{name}}",
+    "isDefault": "Mức mặc định",
+    "defaultIs": "Mặc định {{percent}}%",
+    "defaultRule": "Mặc định: {{rule}}",
+    "useDefault": "Dùng mức mặc định {{percent}}%"
   },
   "expertPolicy": {
     "title": "Chính sách chuyên gia",
@@ -1282,7 +1290,8 @@
     "currentValue": "Đang áp dụng: {{value}}",
     "neverEdited": "Chưa sửa",
     "notSetBefore": "Chưa đặt",
-    "reasonMin": "Tối thiểu {{count}} ký tự, nêu vì sao cần đổi."
+    "reasonMin": "Tối thiểu {{count}} ký tự, nêu vì sao cần đổi.",
+    "otherAdmin": "Quản trị viên khác (#{{id}})"
   },
   "claim": {
     "free": "Chưa ai nhận hồ sơ này",
@@ -1387,6 +1396,10 @@
       "escrow": "Trang này sẽ hiện tiền đang giữ chờ nghiệm thu, các khoản chi trả cho chuyên gia và hoàn tiền cho khách. Chưa có dữ liệu cho tới khi chức năng thanh toán được kết nối.",
       "pricing": "Trang này sẽ hiện khung giá theo từng nhóm mẫu biểu và các chuyên gia đặt giá ngoài khung. Khoảng giá chung hiện đặt ở trang Chính sách chuyên gia.",
       "users": "Danh sách tài khoản và thao tác khóa, đặt lại mật khẩu chưa có trên máy chủ. Số người dùng mới và tổng người dùng trên trang Tổng quan lấy từ thống kê nên vẫn hiện."
+    },
+    "next": {
+      "pricing": "Mở Chính sách chuyên gia",
+      "users": "Xem số người dùng ở Tổng quan"
     }
   },
   "serviceStatus": {

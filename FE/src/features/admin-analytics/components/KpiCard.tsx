@@ -28,7 +28,7 @@ export function KpiCard(props: {
   const { t } = useTranslation('admin')
   const missing = props.unavailable || props.value === undefined
   const note = props.unavailable
-    ? (props.unavailableNote ?? t('navigation.notConnected'))
+    ? (props.unavailableNote ?? '')
     : !missing
       ? props.note
       : props.failed
@@ -37,11 +37,17 @@ export function KpiCard(props: {
   const body = (
     <>
       <p className="text-fg-muted text-sm">{props.label}</p>
+      {props.unavailable ? (
+        // Not connected is a status, not a figure: no hero numeral or dash
+        <p className="text-fg mt-2 text-base font-semibold">
+          {t('navigation.notConnected')}
+        </p>
+      ) : (
       <p className="text-fg-strong num mt-2 text-3xl leading-none font-semibold tracking-tight">
-        {props.unavailable || props.value === undefined ? (
+        {props.value === undefined ? (
           <>
             <span aria-hidden="true">
-              {props.failed || props.unavailable ? '—' : '…'}
+              {props.failed ? '—' : '…'}
             </span>
             <span className="sr-only">{note}</span>
           </>
@@ -52,6 +58,7 @@ export function KpiCard(props: {
           />
         )}
       </p>
+      )}
       <p
         className={cn(
           'text-caption mt-2',
@@ -59,7 +66,7 @@ export function KpiCard(props: {
             ? 'text-warning font-semibold'
             : 'text-fg-muted'
         )}
-        aria-hidden={missing || undefined}
+        aria-hidden={(missing && !props.unavailable) || undefined}
       >
         {note}
       </p>

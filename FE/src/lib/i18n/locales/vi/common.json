@@ -159,5 +159,6 @@
     "actionFailed": "Không thực hiện được thao tác. Hãy thử lại.",
     "notAvailable": "Chức năng này chưa mở. Dữ liệu sẽ hiện ở đây khi chức năng hoạt động."
   },
-  "helpFor": "Giải thích: {{topic}}"
+  "helpFor": "Giải thích: {{topic}}",
+  "accountId": "Tài khoản #{{id}}"
 }

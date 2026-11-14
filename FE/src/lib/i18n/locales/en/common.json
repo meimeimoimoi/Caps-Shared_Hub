@@ -159,5 +159,6 @@
     "actionFailed": "That didn't go through. Try again.",
     "notAvailable": "This feature is not open yet. Data will appear here once it is."
   },
-  "helpFor": "About: {{topic}}"
+  "helpFor": "About: {{topic}}",
+  "accountId": "Account #{{id}}"
 }

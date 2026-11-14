@@ -37,7 +37,8 @@
     "expertPolicy": "Expert policy",
     "assignments": "Review assignments",
     "feesAndPolicy": "Fees & policy",
-    "notConnected": "Not connected yet"
+    "notConnected": "Not connected yet",
+    "soonGroup": "Coming soon"
   },
   "dashboard": {
     "title": "Overview",
@@ -71,7 +72,7 @@
       "heldNote": "{{count}} cases awaiting acceptance",
       "failed": "Couldn't load",
       "title": "Key figures",
-      "moneyUnavailable": "Not connected · includes payouts, refunds and disputes",
+      "moneyUnavailable": "Includes payouts, refunds and disputes.",
       "finalApproval": "Awaiting final approval",
       "finalApprovalOverdue_one": "{{count}} overdue",
       "finalApprovalOverdue_other": "{{count}} overdue",
@@ -1144,7 +1145,14 @@
       "penalty": "Up to {{hours}}h late: {{percent}}% back",
       "full": "{{from}}–{{to}}h: 100% back",
       "cancel": "Undelivered after {{hours}}h: request cancelled"
-    }
+    },
+    "edit": "Edit",
+    "editPart": "Edit {{part}} · {{name}}",
+    "dialogPart": "{{part}} · {{name}}",
+    "isDefault": "Default level",
+    "defaultIs": "Default {{percent}}%",
+    "defaultRule": "Default: {{rule}}",
+    "useDefault": "Use the default {{percent}}%"
   },
   "expertPolicy": {
     "title": "Expert policy",
@@ -1291,7 +1299,8 @@
     "currentValue": "In force: {{value}}",
     "neverEdited": "Never edited",
     "notSetBefore": "Not set",
-    "reasonMin": "At least {{count}} characters, saying why the change is needed."
+    "reasonMin": "At least {{count}} characters, saying why the change is needed.",
+    "otherAdmin": "Another admin (#{{id}})"
   },
   "claim": {
     "free": "Nobody has claimed this review",
@@ -1396,6 +1405,10 @@
       "escrow": "This page will show money held until acceptance, payouts to experts and refunds to clients. No data until payments are connected.",
       "pricing": "This page will show price ranges per template group and experts priced outside them. The general price range is currently set on the Expert policy page.",
       "users": "The account list and lock or password-reset actions are not on the server yet. New and total user counts on the Overview come from statistics, so they still show."
+    },
+    "next": {
+      "pricing": "Open Expert policy",
+      "users": "See user counts on the Overview"
     }
   },
   "serviceStatus": {

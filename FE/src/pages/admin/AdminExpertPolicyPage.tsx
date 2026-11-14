@@ -262,7 +262,7 @@ export default function AdminExpertPolicyPage() {
       ? ''
       : id === userId
         ? t('admin:expertPolicy.youNamed', { name: userName ?? '' })
-        : id.slice(0, 8)
+        : t('admin:expertPolicy.otherAdmin', { id: id.slice(0, 8) })
 
   const field = (s: PolicySetting, ariaLabel?: string) => {
     const bad = outOfRange(s)

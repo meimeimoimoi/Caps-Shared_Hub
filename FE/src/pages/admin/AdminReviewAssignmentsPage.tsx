@@ -95,7 +95,7 @@ export default function AdminReviewAssignmentsPage() {
     row.gate === 'GATE_1'
       ? APPLICATION_STATUS[row.status as keyof typeof APPLICATION_STATUS]
       : QUALIFICATION_STATUS[row.status as keyof typeof QUALIFICATION_STATUS]
-  const name = (row: ReviewQueueRow) => row.displayName ?? row.applicantUserId.slice(0, 8)
+  const name = (row: ReviewQueueRow) => row.displayName ?? t('common:accountId', { id: row.applicantUserId.slice(0, 8) })
 
   return (
     <AdminLayout
@@ -166,7 +166,7 @@ export default function AdminReviewAssignmentsPage() {
                 <td className="px-4 py-3">
                   {row.claimedByUserId ? (
                     <>
-                      <span className="text-fg-strong block">{row.claimedByEmail ?? row.claimedByUserId.slice(0, 8)}</span>
+                      <span className="text-fg-strong block">{row.claimedByEmail ?? t('common:accountId', { id: row.claimedByUserId.slice(0, 8) })}</span>
                       <span className="text-fg-muted block text-xs tabular-nums">
                         {row.claimExpiresAt
                           ? t('admin:assignments.until', { time: formatDateTime(row.claimExpiresAt) })
