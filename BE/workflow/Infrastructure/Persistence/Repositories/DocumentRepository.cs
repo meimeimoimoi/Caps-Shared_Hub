@@ -56,4 +56,18 @@ public sealed class DocumentRepository(WorkflowDbContext dbContext) : IDocumentR
     {
         await _documents.AddAsync(document, ct);
     }
+
+    public Task<bool> OwnsVersionAsync(
+        Guid userId,
+        Guid documentId,
+        Guid versionId,
+        CancellationToken ct
+    ) =>
+        dbContext.DocumentVersions.AnyAsync(
+            v =>
+                v.Id == versionId
+                && v.DocumentId == documentId
+                && _documents.Any(d => d.Id == documentId && d.OwnerUserId == userId),
+            ct
+        );
 }

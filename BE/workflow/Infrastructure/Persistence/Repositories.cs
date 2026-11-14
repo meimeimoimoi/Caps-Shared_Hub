@@ -167,24 +167,6 @@ public sealed class CaseReadMarkerRepository(WorkflowDbContext db) : ICaseReadMa
     public void Add(CaseReadMarker marker) => db.CaseReadMarkers.Add(marker);
 }
 
-/// <summary>EF Core reads of the client's documents.</summary>
-public sealed class DocumentRepository(WorkflowDbContext db) : IDocumentRepository
-{
-    public Task<bool> OwnsVersionAsync(
-        Guid userId,
-        Guid documentId,
-        Guid versionId,
-        CancellationToken ct
-    ) =>
-        db.DocumentVersions.AnyAsync(
-            v =>
-                v.Id == versionId
-                && v.DocumentId == documentId
-                && db.Documents.Any(d => d.Id == documentId && d.OwnerUserId == userId),
-            ct
-        );
-}
-
 /// <summary>EF Core store for the files added to review cases.</summary>
 public sealed class ReviewAttachmentRepository(WorkflowDbContext db) : IReviewAttachmentRepository
 {

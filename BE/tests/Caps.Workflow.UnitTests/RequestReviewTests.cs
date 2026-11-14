@@ -1,8 +1,10 @@
 using Caps.Common.Application;
 using Caps.Common.Domain;
 using Caps.Workflow.Application.Abstractions;
+using Caps.Workflow.Application.Abstractions.Documents;
 using Caps.Workflow.Application.Features.ReviewCases;
 using Caps.Workflow.Domain.Review;
+using Caps.Workflow.Domain.Workspace;
 
 namespace Caps.Workflow.UnitTests;
 
@@ -68,6 +70,25 @@ public sealed class RequestReviewTests
             Guid versionId,
             CancellationToken ct
         ) => Task.FromResult(true);
+
+        public Task<Document?> GetByIdAsync(Guid id, CancellationToken ct = default) =>
+            throw new NotSupportedException();
+
+        public Task<(IReadOnlyList<Document> Items, int TotalCount)> GetPageByUserIdAsync(
+            Guid userId,
+            string? status,
+            int page,
+            int pageSize,
+            CancellationToken ct = default
+        ) => throw new NotSupportedException();
+
+        public Task<string?> GetTemplateFieldSchemaAsync(
+            Guid templateVersionId,
+            CancellationToken ct = default
+        ) => throw new NotSupportedException();
+
+        public Task AddAsync(Document document, CancellationToken ct = default) =>
+            throw new NotSupportedException();
     }
 
     private sealed class FakeOfferings : IExpertOfferings

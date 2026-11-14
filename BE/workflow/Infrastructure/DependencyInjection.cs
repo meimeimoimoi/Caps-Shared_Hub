@@ -39,14 +39,7 @@ public static class DependencyInjection
         services.AddScoped<IChatMessageRepository, ChatMessageRepository>();
         services.AddScoped<IAiQuotaRepository, AiQuotaRepository>();
         services.AddScoped<IAiUsageRepository, AiUsageRepository>();
-        services.AddScoped<
-            Caps.Workflow.Application.Abstractions.IDocumentRepository,
-            Caps.Workflow.Infrastructure.Persistence.DocumentRepository
-        >();
-        services.AddScoped<
-            Caps.Workflow.Application.Abstractions.Documents.IDocumentRepository,
-            Caps.Workflow.Infrastructure.Persistence.Repositories.DocumentRepository
-        >();
+        services.AddScoped<IDocumentRepository, DocumentRepository>();
         services.AddScoped<IDocumentVersionRepository, DocumentVersionRepository>();
         services.AddScoped<IInputSnapshotRepository, InputSnapshotRepository>();
         services.AddScoped<IInfoRequestRepository, InfoRequestRepository>();
