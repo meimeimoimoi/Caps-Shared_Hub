@@ -1,8 +1,9 @@
 import json
 import logging
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status
 
+from app.api.dependencies import verify_internal_key
 from app.modules.drafting.drafter import DocumentDrafter
 from app.modules.ingestion.chunker import LegalChunker
 from app.modules.ingestion.indexer import LegalIndexer
@@ -16,10 +17,16 @@ from app.schemas.answers import (
 from app.schemas.chat_dto import ChatQueryRequest, ChatQueryResponse
 from app.schemas.drafting_dto import GenerateDraftRequest, GenerateDraftResponse
 from app.schemas.errors import ErrorChunkEmpty, ErrorMessage
-from app.schemas.ingestion_dto import IngestDocRequest, IngestDocResponse
+from app.schemas.ingestion_dto import (
+    DeleteDocumentVectorsResponse,
+    IngestDocRequest,
+    IngestDocResponse,
+    UpdateDocumentMetadataRequest,
+    UpdateDocumentMetadataResponse,
+)
 from app.schemas.statuses import AnswerStatus, OperationStatus, ScopeResult
 
-router = APIRouter(prefix="/api/v1")
+router = APIRouter(prefix="/api/v1", dependencies=[Depends(verify_internal_key)])
 logger = logging.getLogger(__name__)
 
 
@@ -87,55 +94,144 @@ def chunk_and_embed(req: IngestDocRequest):
         ) from e
 
 
-# API FLOW 3: Được gọi từ `rag-query` (.NET)
+@router.delete(
+    "/kb/documents/{knowledge_document_id}",
+    response_model=DeleteDocumentVectorsResponse,
+)
+def delete_document_vectors(knowledge_document_id: str):
+    """Delete all Qdrant vector points for the specified knowledge document."""
+    doc_id = knowledge_document_id.strip()
+    if not doc_id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="knowledge_document_id is required.",
+        )
+
+    try:
+        deleted_count = LegalIndexer.delete_by_document_id(doc_id)
+        return DeleteDocumentVectorsResponse(
+            status=OperationStatus.SUCCESS,
+            knowledge_document_id=doc_id,
+            deleted_count=deleted_count,
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.exception("Unhandled error in delete_document_vectors")
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="AI vector service is temporarily unavailable.",
+        ) from e
+
+
+@router.patch(
+    "/kb/documents/{knowledge_document_id}/metadata",
+    response_model=UpdateDocumentMetadataResponse,
+)
+def update_document_metadata(
+    knowledge_document_id: str,
+    req: UpdateDocumentMetadataRequest,
+):
+    """Update validity dates or status payload across all chunks of a knowledge document."""
+    doc_id = knowledge_document_id.strip()
+    if not doc_id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="knowledge_document_id is required.",
+        )
+
+    updates = {field: getattr(req, field) for field in req.model_fields_set}
+    if not updates:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="At least one metadata field must be provided.",
+        )
+
+    try:
+        matched_count = LegalIndexer.update_document_metadata(doc_id, updates)
+        if matched_count == 0:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Document vectors not found.",
+            )
+        return UpdateDocumentMetadataResponse(
+            status=OperationStatus.SUCCESS,
+            knowledge_document_id=doc_id,
+            matched_count=matched_count,
+        )
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid metadata field or date format (expected YYYY-MM-DD).",
+        ) from e
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.exception("Unhandled error in update_document_metadata")
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="AI vector service is temporarily unavailable.",
+        ) from e
+
+
+# API FLOW 3: Called by rag-query (.NET)
 @router.post("/chat/query", response_model=ChatQueryResponse)
 def chat_query(req: ChatQueryRequest):
-    # Classify scope and resolve the requested tax period.
-    analysis = ScopeRouter.analyze(req.question, req.user_tax_period)
+    try:
+        # Classify scope and resolve the requested tax period.
+        analysis = ScopeRouter.analyze(req.question, req.user_tax_period)
 
-    if not analysis.is_cit:
-        return ChatQueryResponse(
-            scope_result=ScopeResult.OUT_OF_SCOPE,
-            answer_status=AnswerStatus.REJECTED,
-            period_start=None,
-            period_end=None,
-            answer=OUT_OF_SCOPE_ANSWER,
-            citations=[],
+        if not analysis.is_cit:
+            return ChatQueryResponse(
+                scope_result=ScopeResult.OUT_OF_SCOPE,
+                answer_status=AnswerStatus.REJECTED,
+                period_start=None,
+                period_end=None,
+                answer=OUT_OF_SCOPE_ANSWER,
+                citations=[],
+            )
+
+        if (
+            analysis.needs_clarification
+            or not analysis.period_start
+            or not analysis.period_end
+        ):
+            return ChatQueryResponse(
+                scope_result=ScopeResult.IN_SCOPE,
+                answer_status=AnswerStatus.NEED_CLARIFICATION,
+                period_start=None,
+                period_end=None,
+                answer=analysis.clarification_msg or TAX_PERIOD_CLARIFICATION_ANSWER,
+                citations=[],
+            )
+
+        p_start = analysis.period_start.isoformat()
+        p_end = analysis.period_end.isoformat()
+
+        # Retrieve temporally valid vector chunks from Qdrant.
+        retrieved = TemporalRetriever.retrieve(req.question, p_start, p_end)
+
+        # Generate grounded answer with legal citations.
+        res = GroundedGenerator.generate_answer(
+            req.question, retrieved, f"{p_start} đến {p_end}"
         )
 
-    if (
-        analysis.needs_clarification
-        or not analysis.period_start
-        or not analysis.period_end
-    ):
         return ChatQueryResponse(
             scope_result=ScopeResult.IN_SCOPE,
-            answer_status=AnswerStatus.NEED_CLARIFICATION,
-            period_start=None,
-            period_end=None,
-            answer=analysis.clarification_msg or TAX_PERIOD_CLARIFICATION_ANSWER,
-            citations=[],
+            answer_status=res["answer_status"],
+            period_start=p_start,
+            period_end=p_end,
+            answer=res["answer"],
+            citations=res["citations"],
         )
-
-    p_start = analysis.period_start.isoformat()
-    p_end = analysis.period_end.isoformat()
-
-    # 2. Truy xuất Temporal Vector từ Qdrant
-    retrieved = TemporalRetriever.retrieve(req.question, p_start, p_end)
-
-    # 3. Sinh câu trả lời có trích dẫn
-    res = GroundedGenerator.generate_answer(
-        req.question, retrieved, f"{p_start} đến {p_end}"
-    )
-
-    return ChatQueryResponse(
-        scope_result=ScopeResult.IN_SCOPE,
-        answer_status=res["answer_status"],
-        period_start=p_start,
-        period_end=p_end,
-        answer=res["answer"],
-        citations=res["citations"],
-    )
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.exception("Unhandled error in chat_query")
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="AI chat service is temporarily unavailable.",
+        ) from e
 
 
 # API FLOW 4: Called by workflow (.NET)
