@@ -1093,7 +1093,8 @@
       "hoursRange": "Số giờ từ 1 đến {{max}}.",
       "splitOver": "% hoàn cho khách cộng % cho chuyên gia không quá 100% (đang là {{sum}}%).",
       "platformKeeps": "Nền tảng giữ {{percent}}%.",
-      "dateTooSoon": "Chọn từ ngày {{date}} trở đi."
+      "dateTooSoon": "Chọn từ ngày {{date}} trở đi.",
+      "expertKeepsLate": "Giao trễ trong số giờ phạt: chuyên gia còn nhận {{percent}}% giá."
     },
     "review": "Xem lại",
     "confirmSave": "Xác nhận lưu phí",

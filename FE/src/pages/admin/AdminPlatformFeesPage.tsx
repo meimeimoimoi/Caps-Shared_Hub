@@ -305,6 +305,16 @@ export default function AdminPlatformFeesPage() {
         failed(e)
       })
   }
+  const lateExpertShare =
+    isWhole(percent) && isWhole(late.penaltyPercent)
+      ? Math.max(0, 100 - value - lateRule.penaltyPercent)
+      : null
+  const lateShareText =
+    lateExpertShare == null
+      ? undefined
+      : t('admin:platformFees.rules.expertKeepsLate', {
+          percent: lateExpertShare,
+        })
   const changed = editing
     ? {
         percent: editing.percent !== value,
@@ -555,6 +565,9 @@ export default function AdminPlatformFeesPage() {
                   </td>
                   <td className="num text-fg-strong">
                     <Clauses text={lateText(lateRule)} />
+                    {lateShareText && (
+                      <p className="text-fg-muted mt-1">{lateShareText}</p>
+                    )}
                   </td>
                 </tr>
                 <tr
@@ -620,6 +633,7 @@ export default function AdminPlatformFeesPage() {
                   setLate((d) => ({ ...d, [field]: text }))
                 }
                 error={lateError}
+                note={lateShareText}
               />
               <RuleFields
                 legend={t('admin:platformFees.noResponse')}

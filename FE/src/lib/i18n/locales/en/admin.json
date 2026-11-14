@@ -1094,7 +1094,8 @@
       "hoursRange": "Hours must be between 1 and {{max}}.",
       "splitOver": "Client refund % plus expert % cannot exceed 100% (now {{sum}}%).",
       "platformKeeps": "The platform keeps {{percent}}%.",
-      "dateTooSoon": "Pick {{date}} or later."
+      "dateTooSoon": "Pick {{date}} or later.",
+      "expertKeepsLate": "Late within the penalty window: the expert keeps {{percent}}% of the price."
     },
     "review": "Review",
     "confirmSave": "Confirm and save",
