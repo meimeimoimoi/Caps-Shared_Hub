@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, type ReactNode } from 'react'
+import { useEffect, useId, useRef, useState, type ReactNode } from 'react'
 import { X } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useDialogMotion } from '@/components/ui/motion'
@@ -39,12 +39,13 @@ export function Modal({
   const ref = useRef<HTMLDialogElement>(null)
   useDialogMotion(ref)
   const titleId = useId()
+  // What opened the dialog, read during the first render: an effect would run again under
+  // StrictMode after the dialog already holds focus and record the dialog itself
+  const [trigger] = useState(() =>
+    document.activeElement instanceof HTMLElement ? document.activeElement : null
+  )
 
   useEffect(() => {
-    const trigger =
-      document.activeElement instanceof HTMLElement
-        ? document.activeElement
-        : null
     ref.current?.showModal()
     // Without an autofocus field, focus the dialog itself so the Close button gets no ring on open
     if (!ref.current?.querySelector('[autofocus]')) ref.current?.focus()
