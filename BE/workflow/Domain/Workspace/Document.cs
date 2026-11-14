@@ -21,4 +21,23 @@ public sealed class Document
 
     public ICollection<InputSnapshot> InputSnapshots { get; set; } = [];
     public ICollection<DocumentVersion> Versions { get; set; } = [];
+
+    public const string Draft = "DRAFT";
+    public const string InReview = "IN_REVIEW";
+    public const string Verified = "VERIFIED";
+
+    /// <summary>
+    /// Follows the document's review cases: IN_REVIEW while a paid case runs, otherwise VERIFIED once an expert
+    /// verified a version (kept after later cases), otherwise DRAFT.
+    /// </summary>
+    public void SyncReview(bool paidCaseOpen, Guid? verifiedVersionId, DateTimeOffset now)
+    {
+        if (verifiedVersionId is { } id)
+            VerifiedVersionId = id;
+        Status =
+            paidCaseOpen ? InReview
+            : VerifiedVersionId is null ? Draft
+            : Verified;
+        UpdatedAt = now;
+    }
 }
