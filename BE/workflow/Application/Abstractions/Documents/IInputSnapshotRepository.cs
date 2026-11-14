@@ -6,7 +6,10 @@ namespace Caps.Workflow.Application.Abstractions.Documents;
 public interface IInputSnapshotRepository
 {
     Task<InputSnapshot?> GetByIdAsync(Guid id, CancellationToken ct = default);
-    Task<InputSnapshot?> GetLatestByDocumentIdAsync(Guid documentId, CancellationToken ct = default);
+    Task<InputSnapshot?> GetLatestByDocumentIdAsync(
+        Guid documentId,
+        CancellationToken ct = default
+    );
     Task<int> GetNextVersionNoAsync(Guid documentId, CancellationToken ct = default);
     Task AddAsync(InputSnapshot inputSnapshot, CancellationToken ct = default);
 }

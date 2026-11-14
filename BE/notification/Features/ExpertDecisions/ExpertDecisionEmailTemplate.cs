@@ -110,6 +110,130 @@ public static class ExpertDecisionEmailTemplate
         return Render(copy, m.DisplayName, m.Email, m.DecidedAt, link, issues);
     }
 
+    /// <summary>
+    /// Review cases reuse this layout: the expert asked the client something, and the case ends if they do not
+    /// answer in time.
+    /// </summary>
+    public static Content Build(ReviewCaseInfoRequestedEvent m, string email, string link)
+    {
+        var due = m
+            .DueAt.ToOffset(VietnamOffset)
+            .ToString("HH:mm dd/MM/yyyy", CultureInfo.InvariantCulture);
+        var copy = new Copy(
+            $"Chuyên gia cần bạn bổ sung thông tin – {Brand}",
+            "Chuyên gia cần bạn bổ sung thông tin",
+            $"Chuyên gia đang rà soát hồ sơ của bạn và có câu hỏi bên dưới. Vui lòng trả lời trước {due}; quá hạn, hồ sơ sẽ kết thúc và bạn chỉ được hoàn một phần phí.",
+            "Trả lời chuyên gia"
+        );
+        return Render(
+            copy,
+            "bạn",
+            email,
+            m.OccurredAt,
+            link,
+            [new Issue("Câu hỏi của chuyên gia", $"hạn {due}", m.Message)]
+        );
+    }
+
+    // Same code as the workflow service sets when an expert gives up an accepted case
+    private const string ExpertWithdrew = "EXPERT_WITHDREW";
+
+    private static Copy ForStatus(string status, string? note) =>
+        status switch
+        {
+            // The expert accepted, then gave the case up before delivering
+            "EXPERT_DECLINED" when note == ExpertWithdrew => new(
+                $"Chuyên gia dừng rà soát hồ sơ của bạn – {Brand}",
+                "Chuyên gia không thể tiếp tục hồ sơ",
+                "Chuyên gia đã dừng rà soát hồ sơ này trước khi giao kết quả. Toàn bộ phí đã được hoàn vào ví của bạn; bạn có thể chọn chuyên gia khác.",
+                "Xem hồ sơ"
+            ),
+            "EXPERT_DECLINED" => new(
+                $"Chuyên gia chưa nhận hồ sơ của bạn – {Brand}",
+                "Chuyên gia chưa nhận hồ sơ",
+                "Chuyên gia không thể nhận hồ sơ này. Toàn bộ phí đã được hoàn vào ví của bạn; bạn có thể chọn chuyên gia khác.",
+                "Xem hồ sơ"
+            ),
+            "EXPERT_TIMEOUT" => new(
+                $"Chuyên gia chưa phản hồi kịp – {Brand}",
+                "Chuyên gia chưa phản hồi kịp",
+                "Chuyên gia không phản hồi trong thời hạn. Toàn bộ phí đã được hoàn vào ví của bạn; bạn có thể chọn chuyên gia khác.",
+                "Xem hồ sơ"
+            ),
+            "AWAITING_ACCEPTANCE" => new(
+                $"Chuyên gia đã gửi kết quả rà soát – {Brand}",
+                "Kết quả rà soát đã sẵn sàng",
+                "Chuyên gia đã gửi kết quả. Hãy xem và xác nhận, hoặc gửi khiếu nại nếu kết quả chưa đạt, trước hạn ghi trong hồ sơ; quá hạn, hệ thống sẽ tự xác nhận.",
+                "Xem kết quả"
+            ),
+            "DELIVERY_OVERDUE" => new(
+                $"Hồ sơ quá hạn giao kết quả – {Brand}",
+                "Chuyên gia không giao kết quả đúng hạn",
+                "Chuyên gia không giao kết quả trong thời hạn cho phép. Toàn bộ phí đã được hoàn vào ví của bạn.",
+                "Xem hồ sơ"
+            ),
+            "RESOLVED" => new(
+                $"Khiếu nại của bạn đã có kết quả – {Brand}",
+                "Khiếu nại đã được giải quyết",
+                "Quản trị hệ thống đã xem xét khiếu nại của bạn. Số tiền hoàn (nếu có) đã vào ví; chi tiết ở trong hồ sơ.",
+                "Xem kết quả"
+            ),
+            _ => new(
+                $"Hồ sơ rà soát đã kết thúc – {Brand}",
+                "Hồ sơ đã kết thúc",
+                "Hồ sơ kết thúc vì chưa nhận được thông tin bổ sung đúng hạn. Phần phí được hoàn theo quy định đã vào ví của bạn.",
+                "Xem hồ sơ"
+            ),
+        };
+
+    /// <summary>A review case step the client must know about: a refund, a delivery to accept, or an ending.</summary>
+    public static Content Build(ReviewCaseStatusChangedEvent m, string email, string link)
+    {
+        // EXPERT_WITHDREW is a code the copy already explains, not a note to show
+        var issues =
+            string.IsNullOrWhiteSpace(m.Note) || m.Note == ExpertWithdrew
+                ? new List<Issue>()
+                : [new Issue("Ghi chú", "", m.Note)];
+        return Render(ForStatus(m.ToStatus, m.Note), "bạn", email, m.OccurredAt, link, issues);
+    }
+
+    /// <summary>Tells the operations inbox a client opened a dispute; it must be decided within 48 hours.</summary>
+    public static Content BuildDisputeAlert(
+        ReviewCaseStatusChangedEvent m,
+        string email,
+        string link
+    )
+    {
+        var copy = new Copy(
+            $"Có khiếu nại mới cần xử lý – {Brand}",
+            "Có khiếu nại mới",
+            "Một khách hàng vừa khiếu nại kết quả rà soát. Khiếu nại cần được quyết định trong 48 giờ.",
+            "Mở khiếu nại"
+        );
+        return Render(copy, "Quản trị viên", email, m.OccurredAt, link, []);
+    }
+
+    /// <summary>Tells the operations inbox a dispute passed its decision deadline without a decision.</summary>
+    public static Content BuildDisputeOverdueAlert(
+        ReviewCaseDisputeOverdueEvent m,
+        string email,
+        string link
+    )
+    {
+        var due = m
+            .DecideBy.ToOffset(VietnamOffset)
+            .ToString("HH:mm dd/MM/yyyy", CultureInfo.InvariantCulture);
+        var copy = new Copy(
+            $"Khiếu nại quá hạn chưa được quyết định – {Brand}",
+            "Khiếu nại đã quá hạn",
+            m.Extended
+                ? $"Khiếu nại đã quá hạn gia hạn lúc {due} mà chưa có quyết định. Không thể gia hạn thêm; vui lòng quyết định ngay."
+                : $"Khiếu nại đã quá hạn quyết định lúc {due}. Vui lòng quyết định, hoặc gia hạn một lần thêm 48 giờ.",
+            "Mở khiếu nại"
+        );
+        return Render(copy, "Quản trị viên", email, m.OccurredAt, link, []);
+    }
+
     private static (Copy Copy, string Label) ForAccess(string change, string service) =>
         change switch
         {

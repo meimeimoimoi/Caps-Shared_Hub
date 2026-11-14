@@ -30,17 +30,23 @@ public static class SendChatMessage
         TimeProvider timeProvider
     ) : ICommandHandler<SendChatMessageCommand, SendChatMessageResultDto>
     {
-        public async Task<SendChatMessageResultDto> HandleAsync(SendChatMessageCommand command, CancellationToken ct)
+        public async Task<SendChatMessageResultDto> HandleAsync(
+            SendChatMessageCommand command,
+            CancellationToken ct
+        )
         {
-            var conversation = await conversationRepository.GetByIdAsync(command.ConversationId, ct);
+            var conversation = await conversationRepository.GetByIdAsync(
+                command.ConversationId,
+                ct
+            );
             if (conversation is null)
             {
-                throw WorkflowErrors.Conversation_NotFound(command.ConversationId);
+                throw WorkflowErrors.ConversationNotFound(command.ConversationId);
             }
 
             if (conversation.UserId != command.UserId)
             {
-                throw WorkflowErrors.Conversation_AccessDenied();
+                throw WorkflowErrors.ConversationAccessDenied();
             }
 
             var now = timeProvider.GetUtcNow();
@@ -80,9 +86,10 @@ public static class SendChatMessage
             var ragResponse = await ragQueryClient.QueryAsync(ragRequest, ct);
 
             // 4. Quota and AiUsage resolution
-            var citationsJson = ragResponse.Citations.Count > 0
-                ? JsonSerializer.Serialize(ragResponse.Citations)
-                : null;
+            var citationsJson =
+                ragResponse.Citations.Count > 0
+                    ? JsonSerializer.Serialize(ragResponse.Citations)
+                    : null;
 
             if (ragResponse.AnswerStatus == ChatMessageAnswerStatus.Answered)
             {
@@ -116,9 +123,8 @@ public static class SendChatMessage
             // 6. Update conversation title if needed and touch updated_at
             if (conversation.Title == "New Conversation")
             {
-                var autoTitle = command.Content.Length > 60
-                    ? command.Content[..57] + "..."
-                    : command.Content;
+                var autoTitle =
+                    command.Content.Length > 60 ? command.Content[..57] + "..." : command.Content;
                 conversation.UpdateTitle(autoTitle, now);
             }
             else

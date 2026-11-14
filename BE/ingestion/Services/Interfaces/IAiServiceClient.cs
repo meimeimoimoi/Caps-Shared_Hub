@@ -1,6 +1,6 @@
 using static Caps.Ingestion.Dtos.AiServiceDtos;
 
-namespace Caps.Ingestion.Services.Interfaces;
+namespace ingestion.Services.Interfaces;
 
 public interface IAiServiceClient
 {

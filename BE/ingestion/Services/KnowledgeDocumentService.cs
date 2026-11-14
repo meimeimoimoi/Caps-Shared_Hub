@@ -3,7 +3,7 @@ using System.Text.Json.Nodes;
 using Caps.Ingestion.Data;
 using Caps.Ingestion.Dtos;
 using Caps.Ingestion.Entities;
-using Caps.Ingestion.Services.Interfaces;
+using ingestion.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using static Caps.Ingestion.Dtos.AiServiceDtos;
 
@@ -11,9 +11,6 @@ namespace Caps.Ingestion.Services;
 
 public class KnowledgeDocumentService : IKnowledgeDocumentService
 {
-    private const int DefaultMaxRetry = 3;
-    private const string MaxRetryConfigKey = "KB_INDEX_MAX_RETRY";
-
     private readonly IngestionDbContext _db;
     private readonly IAiServiceClient _aiClient;
     private readonly TimeProvider _timeProvider;
@@ -29,6 +26,7 @@ public class KnowledgeDocumentService : IKnowledgeDocumentService
         _timeProvider = timeProvider ?? TimeProvider.System;
     }
 
+    // 1. POST /api/v1/knowledge/documents/{id}/approve
     public async Task<DocumentActionResponseDto> ApproveAsync(
         Guid documentId,
         Guid adminUserId,
@@ -40,11 +38,9 @@ public class KnowledgeDocumentService : IKnowledgeDocumentService
             .FirstOrDefaultAsync(d => d.Id == documentId, cancellationToken);
 
         if (doc == null)
-        {
-            throw new KeyNotFoundException($"không tìm thấy văn bản với ID: {documentId}");
-        }
+            throw new KeyNotFoundException($"Không tìm thấy văn bản với ID: {documentId}");
 
-        // Block: Only PENDING documents can be approved
+        // Only PENDING documents can be approved
         if (doc.Status != "PENDING")
         {
             throw new InvalidOperationException(
@@ -60,14 +56,17 @@ public class KnowledgeDocumentService : IKnowledgeDocumentService
             );
         }
 
-        doc.ApprovedAt = _timeProvider.GetUtcNow();
+        // Record approval metadata
         doc.ApprovedBy = adminUserId;
+        doc.ApprovedAt = _timeProvider.GetUtcNow();
         doc.Status = "APPROVED";
         await _db.SaveChangesAsync(cancellationToken);
 
+        // Trigger RAG indexing pipeline
         return await ProcessIndexingPipelineAsync(doc, cancellationToken);
     }
 
+    // 2. POST /api/v1/knowledge/documents/{id}/retry-index
     public async Task<DocumentActionResponseDto> RetryIndexAsync(
         Guid documentId,
         Guid adminUserId,
@@ -79,11 +78,9 @@ public class KnowledgeDocumentService : IKnowledgeDocumentService
             .FirstOrDefaultAsync(d => d.Id == documentId, cancellationToken);
 
         if (doc == null)
-        {
             throw new KeyNotFoundException($"Không tìm thấy văn bản với ID: {documentId}");
-        }
 
-        // Block: Only documents in INDEX_FAILED status can be retried
+        // Only INDEX_FAILED documents can be retried
         if (doc.Status != "INDEX_FAILED")
         {
             throw new InvalidOperationException(
@@ -91,30 +88,22 @@ public class KnowledgeDocumentService : IKnowledgeDocumentService
             );
         }
 
-        // Read the retry limit from system_config, falling back to the default
-        var maxRetry = DefaultMaxRetry;
+        // Read max retry limit from system_config (default to 3 if not configured)
+        int maxRetry = 3;
         try
         {
             var config = await _db.SystemConfigs.FirstOrDefaultAsync(
-                c => c.Key == MaxRetryConfigKey,
+                c => c.Key == "KB_INDEX_MAX_RETRY",
                 cancellationToken
             );
-            if (
-                config != null
-                && int.TryParse(
-                    config.Value.Trim('"'),
-                    NumberStyles.Integer,
-                    CultureInfo.InvariantCulture,
-                    out var cfgValue
-                )
-            )
+            if (config != null && int.TryParse(config.Value.Trim('"'), out int cfgValue))
             {
                 maxRetry = cfgValue;
             }
         }
         catch
         {
-            // Fall back to the default when system_config is unavailable
+            // Fallback to default maxRetry = 3 if system_config table is unavailable
         }
 
         if (doc.RetryCount >= maxRetry)
@@ -124,7 +113,7 @@ public class KnowledgeDocumentService : IKnowledgeDocumentService
             );
         }
 
-        // Increment retry count and rerun pipeline
+        // Increment retry counter and re-run pipeline
         doc.RetryCount++;
         await _db.SaveChangesAsync(cancellationToken);
 
@@ -145,13 +134,11 @@ public class KnowledgeDocumentService : IKnowledgeDocumentService
                 : JsonNode.Parse(doc.ContentJson);
             List<JsonNode>? chunksList = null;
 
-            // If crawler provided pre-extracted chunks, forward them
             if (contentJsonNode?["chunks"] is JsonArray chunksArray)
             {
                 chunksList = chunksArray.Select(c => c!.DeepClone()).ToList();
             }
 
-            // Prepare DTO for AI service
             var aiRequest = new AiIngestRequestDto
             {
                 KnowledgeDocumentId = doc.Id.ToString(),
@@ -171,10 +158,10 @@ public class KnowledgeDocumentService : IKnowledgeDocumentService
                 Chunks = chunksList,
             };
 
-            // 1. Call AI service to chunk and embed (push vectors to Qdrant)
+            // 1. Call Python ai-service to chunk and index vectors into Qdrant
             var aiResponse = await _aiClient.ChunkAndEmbedAsync(aiRequest, cancellationToken);
 
-            // 2. Open transaction to persist kb_chunk records and update status
+            // 2. Open Postgres transaction to store kb_chunk rows and update document status
             await using var tx = await _db.Database.BeginTransactionAsync(cancellationToken);
 
             // Remove existing chunks for this document if retrying
@@ -183,7 +170,6 @@ public class KnowledgeDocumentService : IKnowledgeDocumentService
                 .ToListAsync(cancellationToken);
             _db.KbChunks.RemoveRange(oldChunks);
 
-            // Add new chunks returned by AI service
             foreach (var item in aiResponse.KbChunks)
             {
                 var kbChunk = new KbChunk
@@ -214,9 +200,8 @@ public class KnowledgeDocumentService : IKnowledgeDocumentService
                 _db.KbChunks.Add(kbChunk);
             }
 
-            // Update document status on success
             doc.Status = "INDEXED";
-            doc.IndexedAt = _timeProvider.GetUtcNow();
+            doc.IndexedAt = DateTimeOffset.UtcNow;
             doc.LastError = null;
 
             await _db.SaveChangesAsync(cancellationToken);

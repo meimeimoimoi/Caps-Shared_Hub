@@ -1,6 +1,6 @@
 using System.Text.Json;
 using Caps.Ingestion.Dtos;
-using Caps.Ingestion.Services.Interfaces;
+using ingestion.Services.Interfaces;
 
 namespace Caps.Ingestion.Services;
 

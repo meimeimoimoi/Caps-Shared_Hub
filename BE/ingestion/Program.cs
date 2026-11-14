@@ -5,7 +5,7 @@ using Caps.Ingestion.Configuration;
 using Caps.Ingestion.Data;
 using Caps.Ingestion.Realtime;
 using Caps.Ingestion.Services;
-using Caps.Ingestion.Services.Interfaces;
+using ingestion.Services.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 var config = builder.Configuration;

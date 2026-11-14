@@ -5,6 +5,9 @@ class Settings(BaseSettings):
     APP_HOST: str = "0.0.0.0"
     APP_PORT: int = 8000
     OLLAMA_BASE_URL: str = "http://localhost:11434"
+    LLM_MODEL: str = "qwen2.5:7b"
+    EMBEDDING_MODEL: str = "bge-m3:latest"
+    OLLAMA_TIMEOUT_SECONDS: int = 35
     QDRANT_URL: str = "http://localhost:6333"
 
     # Hỗ trợ cả 2 tên biến nếu có

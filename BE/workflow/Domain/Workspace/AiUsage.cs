@@ -2,12 +2,14 @@ using Caps.Common.Domain;
 
 namespace Caps.Workflow.Domain.Workspace;
 
+/// <summary>Payment source constants for AI usage records.</summary>
 public static class AiUsagePaidWith
 {
     public const string Quota = "QUOTA";
     public const string Credit = "CREDIT";
 }
 
+/// <summary>Settlement state constants for AI usage records.</summary>
 public static class AiUsageState
 {
     public const string Reserved = "RESERVED";
@@ -39,7 +41,8 @@ public sealed class AiUsage
         string paidWith,
         long creditHold,
         string state,
-        DateTimeOffset now)
+        DateTimeOffset now
+    )
     {
         return new AiUsage
         {
@@ -51,7 +54,7 @@ public sealed class AiUsage
             CreditHold = creditHold,
             State = state,
             CreatedAt = now,
-            UpdatedAt = now
+            UpdatedAt = now,
         };
     }
 

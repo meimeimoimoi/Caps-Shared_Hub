@@ -193,7 +193,5 @@ public sealed class IngestionDbContext(DbContextOptions<IngestionDbContext> opti
             e.Property(x => x.UpdatedBy).HasColumnName("updated_by");
             e.Property(x => x.UpdatedAt).HasColumnName("updated_at").HasDefaultValueSql("now()");
         });
-
     }
 }
-

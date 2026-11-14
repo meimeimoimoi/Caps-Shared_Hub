@@ -19,11 +19,10 @@ public sealed class DocumentRepository(WorkflowDbContext dbContext) : IDocumentR
         string? status,
         int page,
         int pageSize,
-        CancellationToken ct = default)
+        CancellationToken ct = default
+    )
     {
-        var query = _documents
-            .AsNoTracking()
-            .Where(d => d.OwnerUserId == userId);
+        var query = _documents.AsNoTracking().Where(d => d.OwnerUserId == userId);
 
         if (!string.IsNullOrWhiteSpace(status))
         {
@@ -41,10 +40,13 @@ public sealed class DocumentRepository(WorkflowDbContext dbContext) : IDocumentR
         return (items, totalCount);
     }
 
-    public async Task<string?> GetTemplateFieldSchemaAsync(Guid templateVersionId, CancellationToken ct = default)
+    public async Task<string?> GetTemplateFieldSchemaAsync(
+        Guid templateVersionId,
+        CancellationToken ct = default
+    )
     {
-        return await dbContext.TemplateVersions
-            .AsNoTracking()
+        return await dbContext
+            .TemplateVersions.AsNoTracking()
             .Where(tv => tv.Id == templateVersionId)
             .Select(tv => tv.FieldSchema)
             .FirstOrDefaultAsync(ct);
@@ -55,4 +57,3 @@ public sealed class DocumentRepository(WorkflowDbContext dbContext) : IDocumentR
         await _documents.AddAsync(document, ct);
     }
 }
-

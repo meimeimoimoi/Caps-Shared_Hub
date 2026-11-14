@@ -14,7 +14,10 @@ public sealed class ChatMessageRepository(WorkflowDbContext dbContext) : IChatMe
         await _messages.AddAsync(chatMessage, ct);
     }
 
-    public async Task<IReadOnlyList<ChatMessage>> GetByConversationIdAsync(Guid conversationId, CancellationToken ct = default)
+    public async Task<IReadOnlyList<ChatMessage>> GetByConversationIdAsync(
+        Guid conversationId,
+        CancellationToken ct = default
+    )
     {
         return await _messages
             .AsNoTracking()
@@ -28,13 +31,18 @@ public sealed class ChatMessageRepository(WorkflowDbContext dbContext) : IChatMe
         return await _messages.FirstOrDefaultAsync(m => m.Id == id, ct);
     }
 
-    public async Task<ChatMessage?> GetLatestAnsweredMessageAsync(Guid conversationId, CancellationToken ct = default)
+    public async Task<ChatMessage?> GetLatestAnsweredMessageAsync(
+        Guid conversationId,
+        CancellationToken ct = default
+    )
     {
         return await _messages
             .AsNoTracking()
-            .Where(m => m.ConversationId == conversationId
-                        && m.Sender == ChatMessageSender.AI
-                        && m.AnswerStatus == ChatMessageAnswerStatus.Answered)
+            .Where(m =>
+                m.ConversationId == conversationId
+                && m.Sender == ChatMessageSender.AI
+                && m.AnswerStatus == ChatMessageAnswerStatus.Answered
+            )
             .OrderByDescending(m => m.CreatedAt)
             .FirstOrDefaultAsync(ct);
     }

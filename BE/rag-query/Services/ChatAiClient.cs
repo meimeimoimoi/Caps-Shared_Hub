@@ -1,5 +1,5 @@
 using Caps.RagQuery.Dtos;
-using Caps.RagQuery.Services.Interface;
+using Caps.RagQuery.Services.Interfaces;
 using static Caps.RagQuery.Dtos.PythonAiDtos;
 using static Caps.RagQuery.Dtos.RagQueryDtos;
 
@@ -16,26 +16,40 @@ public class ChatAiClient : IChatAiClient
         _logger = logger;
     }
 
-    public async Task<RagQueryDtos.RagQueryResponse> QueryAsync(RagQueryDtos.RagQueryRequest request, CancellationToken cancellationToken = default)
+    public async Task<RagQueryDtos.RagQueryResponse> QueryAsync(
+        RagQueryDtos.RagQueryRequest request,
+        CancellationToken cancellationToken = default
+    )
     {
         var pythonRequest = new PythonAiDtos.PythonQueryRequest(
             Question: request.Question,
             UserTaxPeriod: request.UserTaxPeriod
-            );
+        );
 
-        _logger.LogInformation("Forwarding query to AI Service. TaxPeriod: {TaxPeriod}", request.UserTaxPeriod);
+        _logger.LogInformation(
+            "Forwarding query to AI Service. TaxPeriod: {TaxPeriod}",
+            request.UserTaxPeriod
+        );
 
         HttpResponseMessage response;
         try
         {
-            response = await _httpClient.PostAsJsonAsync("api/v1/chat/query", pythonRequest, cancellationToken);
+            response = await _httpClient.PostAsJsonAsync(
+                "api/v1/chat/query",
+                pythonRequest,
+                cancellationToken
+            );
         }
-        catch(TaskCanceledException ex) when (!cancellationToken.IsCancellationRequested)
+        catch (TaskCanceledException ex) when (!cancellationToken.IsCancellationRequested)
         {
             _logger.LogError(ex, "Request to Python AI service timed out.");
-            throw new HttpRequestException("AI service request timed out.", ex, System.Net.HttpStatusCode.GatewayTimeout);
+            throw new HttpRequestException(
+                "AI service request timed out.",
+                ex,
+                System.Net.HttpStatusCode.GatewayTimeout
+            );
         }
-        catch(HttpRequestException ex)
+        catch (HttpRequestException ex)
         {
             _logger.LogError(ex, "Failed to connect to Python AI service.");
             throw;
@@ -44,30 +58,48 @@ public class ChatAiClient : IChatAiClient
         if (!response.IsSuccessStatusCode)
         {
             var rawError = await response.Content.ReadAsStringAsync(cancellationToken);
-            _logger.LogError("AI Service returned HTTP {StatusCode}: {ErrorBody}", response.StatusCode, rawError);
+            _logger.LogError(
+                "AI Service returned HTTP {StatusCode}: {ErrorBody}",
+                response.StatusCode,
+                rawError
+            );
             throw new HttpRequestException(
                 $"AI service error (HTTP {response.StatusCode}): {rawError}",
                 null,
-                response.StatusCode);
+                response.StatusCode
+            );
         }
 
-        var pythonResponse = await response.Content.ReadFromJsonAsync<PythonQueryResponse>(cancellationToken);
-        if (pythonResponse is null)
+        var pythonResponse = await response.Content.ReadFromJsonAsync<PythonQueryResponse>(
+            cancellationToken
+        );
+        if (
+            pythonResponse is null
+            || string.IsNullOrWhiteSpace(pythonResponse.ScopeResult)
+            || string.IsNullOrWhiteSpace(pythonResponse.AnswerStatus)
+            || string.IsNullOrWhiteSpace(pythonResponse.Answer)
+        )
         {
-            throw new InvalidOperationException("Received null response payload from Python AI service.");
+            throw new InvalidOperationException(
+                "Received incomplete response payload from Python AI service."
+            );
         }
 
         // Map snake_case Python response to C# PascalCase response
-        var citations = pythonResponse.Citations?.Select(c => new CitationDto(
-            Article: c.Article,
-            Clause: c.Clause,
-            Point: c.Point,
-            DocNumber: c.DocumentNumber ?? string.Empty,
-            DocTitle: c.DocTitle ?? c.DocumentNumber ?? string.Empty,
-            Text: c.Text,
-            EffectiveFrom: c.EffectiveFrom,
-            EffectiveTo: c.EffectiveTo
-        )).ToList() ?? [];
+        var citations =
+            pythonResponse
+                .Citations?.Select(c => new CitationDto(
+                    Article: c.Article,
+                    Clause: c.Clause,
+                    Point: c.Point,
+                    DocNumber: c.DocumentNumber ?? string.Empty,
+                    DocTitle: c.DocTitle ?? c.DocumentNumber ?? string.Empty,
+                    Text: c.Text,
+                    EffectiveFrom: c.EffectiveFrom,
+                    EffectiveTo: c.EffectiveTo
+                ))
+                .ToList()
+            ?? [];
 
         return new RagQueryResponse(
             ScopeResult: pythonResponse.ScopeResult,

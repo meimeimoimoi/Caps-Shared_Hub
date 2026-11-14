@@ -5,7 +5,8 @@ using Microsoft.EntityFrameworkCore;
 namespace Caps.Workflow.Infrastructure.Persistence.Repositories;
 
 /// <summary>EF Core store for document versions.</summary>
-public sealed class DocumentVersionRepository(WorkflowDbContext dbContext) : IDocumentVersionRepository
+public sealed class DocumentVersionRepository(WorkflowDbContext dbContext)
+    : IDocumentVersionRepository
 {
     private readonly DbSet<DocumentVersion> _versions = dbContext.Set<DocumentVersion>();
 
@@ -14,7 +15,10 @@ public sealed class DocumentVersionRepository(WorkflowDbContext dbContext) : IDo
         return await _versions.AsNoTracking().FirstOrDefaultAsync(v => v.Id == id, ct);
     }
 
-    public async Task<IReadOnlyList<DocumentVersion>> GetByDocumentIdAsync(Guid documentId, CancellationToken ct = default)
+    public async Task<IReadOnlyList<DocumentVersion>> GetByDocumentIdAsync(
+        Guid documentId,
+        CancellationToken ct = default
+    )
     {
         return await _versions
             .AsNoTracking()
@@ -37,4 +41,3 @@ public sealed class DocumentVersionRepository(WorkflowDbContext dbContext) : IDo
         await _versions.AddAsync(version, ct);
     }
 }
-

@@ -77,6 +77,13 @@ public static class BillingErrors
     public static AppException EscrowNotHeld() =>
         new(ErrorType.Conflict, "ESCROW_NOT_HELD", "The escrow has already been settled.");
 
+    public static AppException SettlementMismatch() =>
+        new(
+            ErrorType.Validation,
+            "SETTLEMENT_MISMATCH",
+            "Refund, platform fee and payout must be non-negative and add up to the held amount."
+        );
+
     public static AppException InvalidPlatformFee() =>
         new(
             ErrorType.Validation,

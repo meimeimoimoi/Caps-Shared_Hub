@@ -18,7 +18,7 @@ namespace Caps.Workflow.Infrastructure.Persistence.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasDefaultSchema("workspace")
-                .HasAnnotation("ProductVersion", "8.0.14")
+                .HasAnnotation("ProductVersion", "9.0.9")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -149,6 +149,12 @@ namespace Caps.Workflow.Infrastructure.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
+                    b.Property<string>("ContentType")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)")
+                        .HasColumnName("content_type");
+
                     b.Property<string>("FileName")
                         .IsRequired()
                         .HasColumnType("text")
@@ -166,6 +172,10 @@ namespace Caps.Workflow.Infrastructure.Persistence.Migrations
                     b.Property<Guid>("ReviewCaseId")
                         .HasColumnType("uuid")
                         .HasColumnName("review_case_id");
+
+                    b.Property<long>("SizeBytes")
+                        .HasColumnType("bigint")
+                        .HasColumnName("size_bytes");
 
                     b.Property<DateTimeOffset>("UploadedAt")
                         .ValueGeneratedOnAdd()
@@ -228,6 +238,10 @@ namespace Caps.Workflow.Infrastructure.Persistence.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("delivery_deadline");
 
+                    b.Property<short?>("DisputeRefundPct")
+                        .HasColumnType("smallint")
+                        .HasColumnName("dispute_refund_pct");
+
                     b.Property<Guid>("DocumentId")
                         .HasColumnType("uuid")
                         .HasColumnName("document_id");
@@ -248,6 +262,38 @@ namespace Caps.Workflow.Infrastructure.Persistence.Migrations
                         .HasColumnType("bigint")
                         .HasColumnName("fee");
 
+                    b.Property<int>("InfoRequestCount")
+                        .HasColumnType("integer")
+                        .HasColumnName("info_request_count");
+
+                    b.Property<int>("LateCancelHours")
+                        .HasColumnType("integer")
+                        .HasColumnName("late_cancel_hours");
+
+                    b.Property<int>("LatePenaltyHours")
+                        .HasColumnType("integer")
+                        .HasColumnName("late_penalty_hours");
+
+                    b.Property<short>("LatePenaltyPct")
+                        .HasColumnType("smallint")
+                        .HasColumnName("late_penalty_pct");
+
+                    b.Property<short>("LateRefundPct")
+                        .HasColumnType("smallint")
+                        .HasColumnName("late_refund_pct");
+
+                    b.Property<short>("NoResponseExpertPct")
+                        .HasColumnType("smallint")
+                        .HasColumnName("no_response_expert_pct");
+
+                    b.Property<int>("NoResponseHours")
+                        .HasColumnType("integer")
+                        .HasColumnName("no_response_hours");
+
+                    b.Property<short>("NoResponseRefundPct")
+                        .HasColumnType("smallint")
+                        .HasColumnName("no_response_refund_pct");
+
                     b.Property<DateTimeOffset?>("PaidAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("paid_at");
@@ -265,6 +311,26 @@ namespace Caps.Workflow.Infrastructure.Persistence.Migrations
                         .HasColumnType("text")
                         .HasColumnName("problem_description");
 
+                    b.Property<DateTimeOffset?>("RatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("rated_at");
+
+                    b.Property<short?>("Rating")
+                        .HasColumnType("smallint")
+                        .HasColumnName("rating");
+
+                    b.Property<string>("RatingComment")
+                        .HasColumnType("text")
+                        .HasColumnName("rating_comment");
+
+                    b.Property<DateTimeOffset?>("ReminderSentAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("reminder_sent_at");
+
+                    b.Property<string>("RequesterEmail")
+                        .HasColumnType("text")
+                        .HasColumnName("requester_email");
+
                     b.Property<Guid>("RequesterUserId")
                         .HasColumnType("uuid")
                         .HasColumnName("requester_user_id");
@@ -280,6 +346,11 @@ namespace Caps.Workflow.Infrastructure.Persistence.Migrations
                     b.Property<string>("ReviewSummary")
                         .HasColumnType("text")
                         .HasColumnName("review_summary");
+
+                    b.Property<string>("ServiceCode")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("service_code");
 
                     b.Property<Guid?>("ServiceOfferingId")
                         .HasColumnType("uuid")
@@ -312,6 +383,10 @@ namespace Caps.Workflow.Infrastructure.Persistence.Migrations
                         .HasColumnType("text")
                         .HasColumnName("termination_reason");
 
+                    b.Property<int>("TurnaroundHours")
+                        .HasColumnType("integer")
+                        .HasColumnName("turnaround_hours");
+
                     b.Property<DateTimeOffset>("UpdatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
@@ -331,7 +406,98 @@ namespace Caps.Workflow.Infrastructure.Persistence.Migrations
                     b.HasIndex("RequesterUserId", "Status")
                         .HasDatabaseName("ix_review_case_6");
 
-                    b.ToTable("review_case", "review");
+                    b.HasIndex("SourceVersionId", "ExpertProfileId")
+                        .IsUnique()
+                        .HasDatabaseName("ux_review_case_open")
+                        .HasFilter("status IN ('AWAITING_PAYMENT', 'PENDING_EXPERT_RESPONSE', 'IN_REVIEW', 'AWAITING_USER_INFORMATION', 'AWAITING_ACCEPTANCE', 'DISPUTED')");
+
+                    b.ToTable("review_case", "review", t =>
+                        {
+                            t.HasCheckConstraint("ck_case_offer", "fee > 0 AND platform_fee_pct BETWEEN 0 AND 99 AND turnaround_hours BETWEEN 1 AND 720 AND late_penalty_hours >= 0 AND late_penalty_pct >= 0 AND platform_fee_pct + late_penalty_pct <= 100 AND late_cancel_hours BETWEEN late_penalty_hours AND 720 AND no_response_hours BETWEEN 1 AND 720 AND no_response_refund_pct >= 0 AND no_response_expert_pct >= 0 AND no_response_refund_pct + no_response_expert_pct <= 100");
+                        });
+                });
+
+            modelBuilder.Entity("Caps.Workflow.Domain.Review.ReviewDispute", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset?>("ClosedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("closed_at");
+
+                    b.Property<DateTimeOffset>("DecideBy")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("decide_by");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("description");
+
+                    b.Property<string>("ExpertStatement")
+                        .HasColumnType("text")
+                        .HasColumnName("expert_statement");
+
+                    b.Property<DateTimeOffset?>("ExpertStatementAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("expert_statement_at");
+
+                    b.Property<bool>("Extended")
+                        .HasColumnType("boolean")
+                        .HasColumnName("extended");
+
+                    b.Property<DateTimeOffset>("OpenedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("opened_at");
+
+                    b.Property<DateTimeOffset?>("OverdueAlertedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("overdue_alerted_at");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("reason");
+
+                    b.Property<short?>("RefundPct")
+                        .HasColumnType("smallint")
+                        .HasColumnName("refund_pct");
+
+                    b.Property<string>("ResolutionNote")
+                        .HasColumnType("text")
+                        .HasColumnName("resolution_note");
+
+                    b.Property<Guid?>("ResolvedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("resolved_by");
+
+                    b.Property<Guid>("ReviewCaseId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("review_case_id");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("status");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ReviewCaseId")
+                        .IsUnique()
+                        .HasDatabaseName("ux_review_dispute_case");
+
+                    b.HasIndex("Status", "DecideBy")
+                        .HasDatabaseName("ix_review_dispute_queue");
+
+                    b.ToTable("review_dispute", "review", t =>
+                        {
+                            t.HasCheckConstraint("ck_review_dispute_refund", "refund_pct BETWEEN 0 AND 100");
+                        });
                 });
 
             modelBuilder.Entity("Caps.Workflow.Domain.Review.ReviewStatusHistory", b =>
@@ -877,6 +1043,41 @@ namespace Caps.Workflow.Infrastructure.Persistence.Migrations
                     b.ToTable("template_version", "workspace");
                 });
 
+            modelBuilder.Entity("Caps.Workflow.Infrastructure.Messaging.EventOutboxEntry", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("MessageType")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("message_type");
+
+                    b.Property<string>("Payload")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("payload");
+
+                    b.Property<DateTimeOffset?>("SentAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("sent_at");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedAt")
+                        .HasDatabaseName("ix_event_outbox_unsent")
+                        .HasFilter("sent_at IS NULL");
+
+                    b.ToTable("event_outbox", "review");
+                });
+
             modelBuilder.Entity("Caps.Workflow.Domain.Review.CaseMessage", b =>
                 {
                     b.HasOne("Caps.Workflow.Domain.Review.ReviewCase", null)
@@ -945,6 +1146,16 @@ namespace Caps.Workflow.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_review_case_47");
+                });
+
+            modelBuilder.Entity("Caps.Workflow.Domain.Review.ReviewDispute", b =>
+                {
+                    b.HasOne("Caps.Workflow.Domain.Review.ReviewCase", null)
+                        .WithMany()
+                        .HasForeignKey("ReviewCaseId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_review_dispute_case");
                 });
 
             modelBuilder.Entity("Caps.Workflow.Domain.Review.ReviewStatusHistory", b =>

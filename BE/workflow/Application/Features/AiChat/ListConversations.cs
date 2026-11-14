@@ -11,20 +11,23 @@ public static class ListConversations
     public sealed record ListConversationsQuery(Guid UserId);
 
     /// <summary>Handles listing a user's conversations ordered by most recently updated.</summary>
-    public sealed class ListConversationsHandler(
-        IConversationRepository conversationRepository
-    ) : IQueryHandler<ListConversationsQuery, IReadOnlyList<ConversationsSummaryDto>>
+    public sealed class ListConversationsHandler(IConversationRepository conversationRepository)
+        : IQueryHandler<ListConversationsQuery, IReadOnlyList<ConversationsSummaryDto>>
     {
-        public async Task<IReadOnlyList<ConversationsSummaryDto>> HandleAsync(ListConversationsQuery query, CancellationToken ct)
+        public async Task<IReadOnlyList<ConversationsSummaryDto>> HandleAsync(
+            ListConversationsQuery query,
+            CancellationToken ct
+        )
         {
             var conversations = await conversationRepository.GetByUserIdAsync(query.UserId, ct);
 
             return conversations
                 .Select(c => new ConversationsSummaryDto(
                     c.Id,
-                    c.Title,
+                    c.Title ?? string.Empty,
                     c.CreatedAt,
-                    c.UpdatedAt))
+                    c.UpdatedAt
+                ))
                 .ToList();
         }
     }

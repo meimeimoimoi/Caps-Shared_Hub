@@ -66,6 +66,14 @@ public sealed class CreditLedger
         DateTimeOffset now
     ) => ForEscrow(wallet, escrow, LedgerEntryType.EscrowRefund, escrow.Amount, "refund", now);
 
+    /// <summary>Part of the held credits returned to the balance (a late delivery's refund).</summary>
+    public static CreditLedger EscrowRefund(
+        CreditWallet wallet,
+        Escrow escrow,
+        long amount,
+        DateTimeOffset now
+    ) => ForEscrow(wallet, escrow, LedgerEntryType.EscrowRefund, amount, "refund", now);
+
     // One entry per escrow and step: the key is derived from the review case
     private static CreditLedger ForEscrow(
         CreditWallet wallet,

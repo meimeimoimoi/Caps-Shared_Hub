@@ -8,19 +8,16 @@ namespace Caps.Workflow.Application.Features.Documents;
 public static class GetDocument
 {
     /// <summary>Query to retrieve a paginated page of user documents.</summary>
-    public sealed record GetDocumentsQuery(
-        Guid UserId,
-        string? Status,
-        int Page,
-        int PageSize
-    );
+    public sealed record GetDocumentsQuery(Guid UserId, string? Status, int Page, int PageSize);
 
     /// <summary>Handles querying paginated document workspaces for the user.</summary>
-    public sealed class GetDocumentsHandler(
-        IDocumentRepository documentRepository
-    ) : IQueryHandler<GetDocumentsQuery, PagedResultDto<DocumentSummaryDto>>
+    public sealed class GetDocumentsHandler(IDocumentRepository documentRepository)
+        : IQueryHandler<GetDocumentsQuery, PagedResultDto<DocumentSummaryDto>>
     {
-        public async Task<PagedResultDto<DocumentSummaryDto>> HandleAsync(GetDocumentsQuery query, CancellationToken ct)
+        public async Task<PagedResultDto<DocumentSummaryDto>> HandleAsync(
+            GetDocumentsQuery query,
+            CancellationToken ct
+        )
         {
             var safePage = query.Page <= 0 ? 1 : query.Page;
             var safePageSize = query.PageSize is <= 0 or > 100 ? 20 : query.PageSize;
@@ -33,19 +30,21 @@ public static class GetDocument
                 ct
             );
 
-            var dtos = items.Select(d => new DocumentSummaryDto(
-                d.Id,
-                d.OwnerUserId,
-                d.Source,
-                d.TemplateId,
-                d.Title,
-                d.PeriodStart,
-                d.PeriodEnd,
-                d.Status,
-                d.VerifiedVersionId,
-                d.CreatedAt,
-                d.UpdatedAt
-            )).ToList();
+            var dtos = items
+                .Select(d => new DocumentSummaryDto(
+                    d.Id,
+                    d.OwnerUserId,
+                    d.Source,
+                    d.TemplateId,
+                    d.Title,
+                    d.PeriodStart,
+                    d.PeriodEnd,
+                    d.Status,
+                    d.VerifiedVersionId,
+                    d.CreatedAt,
+                    d.UpdatedAt
+                ))
+                .ToList();
 
             return new PagedResultDto<DocumentSummaryDto>(dtos, totalCount, safePage, safePageSize);
         }

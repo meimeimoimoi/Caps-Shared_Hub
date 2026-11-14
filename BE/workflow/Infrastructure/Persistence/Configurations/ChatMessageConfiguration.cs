@@ -1,13 +1,9 @@
 using Caps.Workflow.Domain.Workspace;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Caps.Workflow.Infrastructure.Persistence.Configurations;
+
 public class ChatMessageConfiguration : IEntityTypeConfiguration<ChatMessage>
 {
     public void Configure(EntityTypeBuilder<ChatMessage> builder)
@@ -27,7 +23,8 @@ public class ChatMessageConfiguration : IEntityTypeConfiguration<ChatMessage>
         builder.Property(m => m.Citations).HasColumnName("citations").HasColumnType("jsonb");
         builder.Property(m => m.CreatedAt).HasColumnName("created_at").IsRequired();
 
-        builder.HasIndex(m => new { m.ConversationId, m.CreatedAt })
+        builder
+            .HasIndex(m => new { m.ConversationId, m.CreatedAt })
             .HasDatabaseName("ix_chat_message_2");
     }
 }

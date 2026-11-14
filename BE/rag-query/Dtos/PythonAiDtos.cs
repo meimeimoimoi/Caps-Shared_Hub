@@ -2,7 +2,7 @@ using System.Text.Json.Serialization;
 
 namespace Caps.RagQuery.Dtos;
 
-public class PythonAiDtos
+public static class PythonAiDtos
 {
     /// <summary>
     /// Payload sent to the Python AI service (snake_case).

@@ -1,12 +1,8 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using static Caps.Workflow.Application.AiChat.DTOs.ChatDtos;
 
 namespace Caps.Workflow.Application.Abstractions;
 
+/// <summary>Request payload for querying the internal RAG service.</summary>
 public sealed record RagQueryRequest(
     Guid ConversationId,
     string Query,
@@ -15,6 +11,7 @@ public sealed record RagQueryRequest(
     DateOnly? PeriodEnd
 );
 
+/// <summary>Response returned by the internal RAG service.</summary>
 public sealed record RagQueryResponse(
     string Content,
     string ScopeResult,
@@ -24,6 +21,7 @@ public sealed record RagQueryResponse(
     List<CitationDto> Citations
 );
 
+/// <summary>Client interface for querying the internal RAG service.</summary>
 public interface IRagQueryClient
 {
     Task<RagQueryResponse> QueryAsync(RagQueryRequest request, CancellationToken ct = default);
