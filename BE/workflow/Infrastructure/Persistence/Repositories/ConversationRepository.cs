@@ -9,19 +9,9 @@ public sealed class ConversationRepository(WorkflowDbContext dbContext) : IConve
 {
     private readonly DbSet<Conversation> _conversations = dbContext.Set<Conversation>();
 
-    public void Add(Conversation conversation)
-    {
-        _conversations.Add(conversation);
-    }
-
     public async Task AddAsync(Conversation conversation, CancellationToken ct = default)
     {
         await _conversations.AddAsync(conversation, ct);
-    }
-
-    public Task<Conversation?> FindAsync(Guid id, CancellationToken ct = default)
-    {
-        return GetByIdAsync(id, ct);
     }
 
     public async Task<Conversation?> GetByIdAsync(Guid id, CancellationToken ct = default)
@@ -39,13 +29,5 @@ public sealed class ConversationRepository(WorkflowDbContext dbContext) : IConve
             .Where(c => c.UserId == userId)
             .OrderByDescending(c => c.UpdatedAt)
             .ToListAsync(ct);
-    }
-
-    public Task<IReadOnlyList<Conversation>> ListByUserIdAsync(
-        Guid userId,
-        CancellationToken ct = default
-    )
-    {
-        return GetByUserIdAsync(userId, ct);
     }
 }
