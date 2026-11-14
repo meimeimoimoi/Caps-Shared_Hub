@@ -220,6 +220,7 @@ function ReviewFeeTab({ data }: { data: PricingOverview }) {
       </div>
       <section className="paper mt-3 overflow-x-auto">
         <table className="w-full min-w-200 text-sm">
+          <caption className="sr-only">{t('pricing.tiers.title')}</caption>
           <thead>
             <tr className={headCls}>
               <th scope="col" className="text-left">
@@ -337,47 +338,11 @@ function CreditTab({
   const [editing, setEditing] = useState<CreditPackage | null>()
   return (
     <>
-      <h2 className="text-h2">{t('pricing.credit.rates')}</h2>
-      <section className="paper mt-3 overflow-x-auto">
-        <table className="w-full min-w-150 text-sm">
-          <thead>
-            <tr className={headCls}>
-              <th scope="col" className="text-left">
-                {t('pricing.credit.col.action')}
-              </th>
-              <th scope="col" className="text-left">
-                {t('pricing.credit.col.when')}
-              </th>
-              <th scope="col" className="text-right">
-                {t('pricing.credit.col.price')}
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {data.creditRates.map((r) => (
-              <tr key={r.id} className={rowCls}>
-                <td className="text-fg-strong font-semibold">{r.action}</td>
-                <td className="text-fg-muted">{r.when}</td>
-                <td className="num text-right whitespace-nowrap">
-                  {r.credits === null ? (
-                    <span className={pending}>
-                      {t('pricing.credit.pendingRate')}
-                    </span>
-                  ) : r.note ? (
-                    <span className={pending}>
-                      {r.credits} · {r.note}
-                    </span>
-                  ) : (
-                    <span className="text-fg-strong font-semibold">
-                      {t('pricing.credit.credits', { count: r.credits })}
-                    </span>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </section>
+      {/* AI use is free and unlimited (agreed 2026-11-11): no per-question credit rates here.
+          Credits only pay experts, so this tab keeps the top-up packages alone. */}
+      <p className="bg-sunken rounded-surface text-fg-strong p-4 text-sm">
+        {t('pricing.credit.aiFree')}
+      </p>
 
       <div className="mt-10 flex items-center justify-between gap-4">
         <div className="flex items-center gap-2">
@@ -397,6 +362,7 @@ function CreditTab({
       </div>
       <section className="paper mt-3 overflow-x-auto">
         <table className="w-full min-w-150 text-sm">
+          <caption className="sr-only">{t('pricing.credit.packages')}</caption>
           <thead>
             <tr className={headCls}>
               <th scope="col" className="text-left">

@@ -5,6 +5,10 @@ import { ApiError } from '@/lib/api-client'
 import { HelpTip } from '@/components/ui/feedback/help-tip'
 import { Modal } from '@/components/ui/feedback/modal'
 import { Toast } from '@/components/ui/feedback/toast'
+import {
+  errorToast,
+  type ToastContent,
+} from '@/components/ui/feedback/toast-content'
 import { useFormatters } from '@/hooks/useFormatters'
 import { AdminLayout } from '@/app/layouts/admin/AdminLayout'
 import { useAdminNav } from '@/app/layouts/admin/useAdminNav'
@@ -25,14 +29,17 @@ import { SkeletonRows } from '@/components/ui/display/skeleton-rows'
 
 const LATE_FIELDS = ['penaltyHours', 'penaltyPercent', 'cancelHours'] as const
 type LateDraft = Record<(typeof LATE_FIELDS)[number], string>
-// Suggested rule for a service that has none yet
+// Suggested rule for a service that has none yet: an incident refunds 50% (agreed 2026-11-11)
 const DEFAULT_LATE: LateRule = {
   penaltyHours: 24,
-  penaltyPercent: 30,
+  penaltyPercent: 50,
   cancelHours: 72,
 }
-// Mirrors PlatformFee.MaxLateHours on the server
+// Agreed platform share; a service's first fee starts here
+const DEFAULT_PERCENT = 40
+// Mirror PlatformFee.MaxLateHours and PlatformFee.MaxNoResponseHours on the server
 const MAX_LATE_HOURS = 720
+const MAX_NO_RESPONSE_HOURS = 72
 const toDraft = (late: LateRule): LateDraft => ({
   penaltyHours: String(late.penaltyHours),
   penaltyPercent: String(late.penaltyPercent),
@@ -40,11 +47,11 @@ const toDraft = (late: LateRule): LateDraft => ({
 })
 const NO_RESPONSE_FIELDS = ['hours', 'refundPercent', 'expertPercent'] as const
 type NoResponseDraft = Record<(typeof NO_RESPONSE_FIELDS)[number], string>
-// Suggested split for a service that has none yet; the platform keeps the remaining 20%
+// Client did not supply the requested info: no refund, the fee splits 60/40 (agreed 2026-11-11)
 const DEFAULT_NO_RESPONSE: NoResponseRule = {
   hours: 72,
-  refundPercent: 50,
-  expertPercent: 30,
+  refundPercent: 0,
+  expertPercent: 60,
 }
 const toNoResponseDraft = (rule: NoResponseRule): NoResponseDraft => ({
   hours: String(rule.hours),
@@ -72,7 +79,7 @@ function Clauses({ text }: { text: string }) {
   return (
     <ul className="space-y-0.5">
       {text.split(' · ').map((clause) => (
-        <li key={clause} className="whitespace-nowrap">
+        <li key={clause}>
           {clause}
         </li>
       ))}
@@ -153,7 +160,7 @@ export default function AdminPlatformFeesPage() {
     toNoResponseDraft(DEFAULT_NO_RESPONSE)
   )
   const [effectiveOn, setEffectiveOn] = useState('')
-  const [toast, setToast] = useState<string | null>(null)
+  const [toast, setToast] = useState<ToastContent | null>(null)
   const [withdrawing, setWithdrawing] = useState<PlatformFee | null>(null)
   // Saving a fee moves money for every new request, so the edit is reviewed before it is sent
   const [reviewing, setReviewing] = useState(false)
@@ -210,7 +217,7 @@ export default function AdminPlatformFeesPage() {
   const noResponseValid =
     NO_RESPONSE_FIELDS.every((f) => isWhole(noResponse[f])) &&
     noResponseRule.hours >= 1 &&
-    noResponseRule.hours <= MAX_LATE_HOURS &&
+    noResponseRule.hours <= MAX_NO_RESPONSE_HOURS &&
     noResponseRule.refundPercent + noResponseRule.expertPercent <= 100
   // One message per broken rule, same rules as the checks above
   const percentError =
@@ -232,8 +239,8 @@ export default function AdminPlatformFeesPage() {
     isWhole(noResponse[f])
   )
     ? t('admin:platformFees.rules.wholeNumbers')
-    : noResponseRule.hours < 1 || noResponseRule.hours > MAX_LATE_HOURS
-      ? t('admin:platformFees.rules.hoursRange', { max: MAX_LATE_HOURS })
+    : noResponseRule.hours < 1 || noResponseRule.hours > MAX_NO_RESPONSE_HOURS
+      ? t('admin:platformFees.rules.hoursRange', { max: MAX_NO_RESPONSE_HOURS })
       : noResponseRule.refundPercent + noResponseRule.expertPercent > 100
         ? t('admin:platformFees.rules.splitOver', {
             sum: noResponseRule.refundPercent + noResponseRule.expertPercent,
@@ -258,18 +265,23 @@ export default function AdminPlatformFeesPage() {
 
   const failed = (e: unknown) =>
     setToast(
-      e instanceof ApiError && isSaveError(e.code)
-        ? t(`admin:platformFees.errors.${e.code}`, {
-            days: editing?.noticeDays,
-            max: maxPercent,
-            maxHours: MAX_LATE_HOURS,
-          })
-        : t('admin:platformFees.errors.failed')
+      errorToast(
+        e instanceof ApiError && isSaveError(e.code)
+          ? t(`admin:platformFees.errors.${e.code}`, {
+              days: editing?.noticeDays,
+              max: maxPercent,
+              maxHours:
+                e.code === 'NO_RESPONSE_RULE_INVALID'
+                  ? MAX_NO_RESPONSE_HOURS
+                  : MAX_LATE_HOURS,
+            })
+          : t('admin:platformFees.errors.failed')
+      )
     )
   const open = (row: PlatformFee) => {
     setReviewing(false)
     setEditing(row)
-    setPercent(row.percent == null ? '' : String(row.percent))
+    setPercent(String(row.percent ?? DEFAULT_PERCENT))
     setLate(toDraft(row.late ?? DEFAULT_LATE))
     setNoResponse(toNoResponseDraft(row.noResponse ?? DEFAULT_NO_RESPONSE))
     setEffectiveOn(row.percent == null ? '' : row.earliestEffectiveOn)
@@ -612,7 +624,7 @@ export default function AdminPlatformFeesPage() {
               <RuleFields
                 legend={t('admin:platformFees.noResponse')}
                 help={t('admin:platformFees.noResponseHelp', {
-                  maxHours: MAX_LATE_HOURS,
+                  maxHours: MAX_NO_RESPONSE_HOURS,
                 })}
                 fields={NO_RESPONSE_FIELDS}
                 label={(field) =>

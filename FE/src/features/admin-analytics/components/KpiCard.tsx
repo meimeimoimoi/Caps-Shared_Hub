@@ -12,14 +12,12 @@ export function KpiCard(props: {
   format?: (n: number) => string
   note: string
   warn?: boolean
-  to: string
+  /** Drill-down page; without it the card is not a link (e.g. that page is not connected yet) */
+  to?: string
 }) {
   const f = useFormatters()
-  return (
-    <Link
-      to={props.to}
-      className="paper motion-lift hover:bg-desk-2 block p-4 no-underline"
-    >
+  const body = (
+    <>
       <p className="text-fg-muted text-sm">{props.label}</p>
       <p className="text-fg-strong num mt-2 text-3xl leading-none font-semibold tracking-tight">
         {props.value === undefined ? (
@@ -39,6 +37,16 @@ export function KpiCard(props: {
       >
         {props.note}
       </p>
+    </>
+  )
+  return props.to ? (
+    <Link
+      to={props.to}
+      className="paper motion-lift hover:bg-desk-2 block p-4 no-underline"
+    >
+      {body}
     </Link>
+  ) : (
+    <div className="paper p-4">{body}</div>
   )
 }

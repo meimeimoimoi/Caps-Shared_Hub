@@ -36,7 +36,8 @@
     "users": "Người dùng",
     "expertPolicy": "Chính sách chuyên gia",
     "assignments": "Phân công người chấm",
-    "feesAndPolicy": "Cấu hình & phí"
+    "feesAndPolicy": "Cấu hình & phí",
+    "notConnected": "Chưa kết nối"
   },
   "dashboard": {
     "title": "Tổng quan",
@@ -60,7 +61,7 @@
       "experts": "Chuyên gia đang hoạt động",
       "expertsNote": "{{suspended}} tạm ngưng · {{added}} mới trong tháng này",
       "held": "Tiền đang giữ",
-      "heldNote": "{{count}} case đang chờ nghiệm thu"
+      "heldNote": "{{count}} hồ sơ đang chờ nghiệm thu"
     },
     "vetting": "Xét duyệt chuyên gia",
     "escrow": "Dòng tiền Escrow",
@@ -196,7 +197,8 @@
     "actions": "Thao tác",
     "view": "Xem chi tiết",
     "viewLabel": "Xem chi tiết hồ sơ {{name}}",
-    "reapplication": "Nộp lại"
+    "reapplication": "Nộp lại",
+    "caption": "Danh sách đơn đăng ký"
   },
   "queue": {
     "tabs": {
@@ -407,12 +409,12 @@
       "RESOLVE_PAY_EXPERT": {
         "label": "Bác khiếu nại · chi trả chuyên gia",
         "hint": "Khiếu nại không có căn cứ; chuyên gia làm đúng, đủ trách nhiệm",
-        "split": "Hoàn cho khách 0% · Chuyên gia 80% · Nền tảng 20%"
+        "split": "Hoàn cho khách 0% · Chuyên gia 60% · Nền tảng 40%"
       },
       "RESOLVE_PARTIAL": {
         "label": "Quyết toán một phần",
         "hint": "Có thiếu sót một phần từ cả hai phía",
-        "split": "Hoàn cho khách 50% · Chuyên gia 40% · Nền tảng 10%"
+        "split": "Hoàn cho khách 50% · Chuyên gia 30% · Nền tảng 20%"
       }
     }
   },
@@ -562,7 +564,7 @@
       },
       "credit": {
         "label": "Credit và gói nạp",
-        "intro": "Đơn giá credit cho trợ lý AI và soạn nháp, và các gói nạp hiện trên paywall."
+        "intro": "Gói nạp credit để khách trả phí thuê chuyên gia. Dùng trợ lý AI và soạn nháp miễn phí."
       },
       "history": {
         "label": "Lịch sử thay đổi",
@@ -617,7 +619,8 @@
       "onSale": "Đang bán",
       "offSale": "Ngừng bán",
       "recommended": " · gợi ý",
-      "note": "Đổi giá gói chỉ áp dụng cho lần nạp mới; credit đã nạp giữ nguyên."
+      "note": "Đổi giá gói chỉ áp dụng cho lần nạp mới; credit đã nạp giữ nguyên.",
+      "aiFree": "Dùng trợ lý AI, soạn và xuất bản nháp miễn phí, không giới hạn số lần. Credit chỉ dùng để trả phí thuê chuyên gia."
     },
     "package": {
       "edit": "Sửa {{name}}",
@@ -858,7 +861,8 @@
       "failed": "Chưa đạt",
       "approved": "Đã phê duyệt",
       "suspended": "Tạm ngưng"
-    }
+    },
+    "caption": "Danh sách hồ sơ năng lực"
   },
   "competency": {
     "incomplete": "Thiếu ghi chú hoặc tài liệu",
@@ -1232,13 +1236,16 @@
     "current": "Đang áp dụng: {{value}}",
     "resetDefault": "Về mặc định ({{value}})",
     "pending": "{{count}} thay đổi chưa lưu",
-    "discard": "Hủy thay đổi",
+    "discard": "Bỏ chỉnh sửa",
     "rangeInverted": "Giá trị tối thiểu không được lớn hơn tối đa.",
     "noPending": "Chưa có thay đổi",
     "leaveTitle": "Rời trang khi chưa lưu?",
     "leaveBody": "{{count}} thay đổi chưa lưu sẽ bị bỏ.",
     "stay": "Ở lại",
-    "leave": "Bỏ thay đổi và rời trang"
+    "leave": "Bỏ thay đổi và rời trang",
+    "discardTitle": "Bỏ {{count}} chỉnh sửa chưa lưu?",
+    "discardBody": "Các giá trị quay về như đang áp dụng. Chưa có gì được lưu.",
+    "keepEditing": "Tiếp tục sửa"
   },
   "claim": {
     "free": "Chưa ai nhận hồ sơ này",
@@ -1309,7 +1316,8 @@
       "APPLICATION_NOT_IN_REVIEW": "Hồ sơ không còn ở bước chờ đánh giá. Tải lại danh sách.",
       "QUALIFICATION_NOT_IN_REVIEW": "Hồ sơ không còn ở bước chờ đánh giá. Tải lại danh sách.",
       "failed": "Chưa chuyển được. Vui lòng thử lại."
-    }
+    },
+    "searchLabel": "Tìm theo tên chuyên gia"
   },
   "finalReturn": {
     "title": "Bị trả về ở bước duyệt cuối",
@@ -1337,5 +1345,17 @@
   "operationsUnavailable": {
     "title": "Chưa kết nối",
     "body": "Trang này chưa được kết nối với hệ thống thật nên chưa có số liệu. Số liệu sẽ hiện khi tính năng được mở."
+  },
+  "serviceStatus": {
+    "INACTIVE": {
+      "label": "Chưa hoạt động"
+    },
+    "ACTIVE": {
+      "label": "Đang hoạt động",
+      "note": "hiện trên Marketplace"
+    },
+    "SUSPENDED": {
+      "label": "Tạm ngưng"
+    }
   }
 }

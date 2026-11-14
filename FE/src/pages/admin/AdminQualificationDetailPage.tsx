@@ -7,6 +7,10 @@ import { QUALIFICATION_STATUS } from '@/lib/constants'
 import { ToolHeader } from '@/components/ui/layout/tool-header'
 import { StatusBadge } from '@/components/ui/display/status-badge'
 import { Toast } from '@/components/ui/feedback/toast'
+import {
+  errorToast,
+  type ToastContent,
+} from '@/components/ui/feedback/toast-content'
 import { ReviewPageLayout } from '@/features/expert-vetting/components/ReviewPageLayout'
 import { useAuthStore } from '@/features/auth'
 import { useAdminNav } from '@/app/layouts/admin/useAdminNav'
@@ -91,7 +95,7 @@ export default function AdminQualificationDetailPage({
   const [tab, setTab] = useState<TabKey>('profile')
   const [docKey, setDocKey] = useState<string>()
   const [confirming, setConfirming] = useState(false)
-  const [toast, setToast] = useState<string | null>(null)
+  const [toast, setToast] = useState<ToastContent | null>(null)
   const clearToast = useCallback(() => setToast(null), [])
 
   const listLink = (
@@ -150,7 +154,7 @@ export default function AdminQualificationDetailPage({
         setTab('history')
         setToast(t(`admin:finalApproval.toast.${decision}`))
       })
-      .catch((e: unknown) => setToast(errorText(e)))
+      .catch((e: unknown) => setToast(errorToast(errorText(e))))
 
   const accessChange = (action: ServiceAccessAction, note: string) =>
     review
@@ -159,18 +163,18 @@ export default function AdminQualificationDetailPage({
         setTab('history')
         setToast(t(`admin:finalApproval.toast.${action}`))
       })
-      .catch((e: unknown) => setToast(errorText(e)))
+      .catch((e: unknown) => setToast(errorToast(errorText(e))))
 
   const claimError = (e: unknown) =>
     e instanceof ApiError && (e.code === 'REVIEW_CLAIMED' || e.code === 'REVIEW_NOT_CLAIMED')
       ? t(`admin:claim.errors.${e.code}`)
       : t('admin:claim.errors.failed')
-  const takeClaim = () => void claim.claim().catch((e: unknown) => setToast(claimError(e)))
+  const takeClaim = () => void claim.claim().catch((e: unknown) => setToast(errorToast(claimError(e))))
   const releaseClaim = () =>
     void claim
       .release()
       .then(() => setToast(t('admin:claim.released')))
-      .catch((e: unknown) => setToast(claimError(e)))
+      .catch((e: unknown) => setToast(errorToast(claimError(e))))
 
   const finish = (note: string) => {
     const outcome = review.outcome
@@ -183,7 +187,7 @@ export default function AdminQualificationDetailPage({
       })
       .catch((e: unknown) => {
         setConfirming(false)
-        setToast(errorText(e))
+        setToast(errorToast(errorText(e)))
       })
   }
 
@@ -197,7 +201,7 @@ export default function AdminQualificationDetailPage({
       })
       .catch(() => {
         win?.close()
-        setToast(t('admin:detail.documents.openFailed'))
+        setToast(errorToast(t('admin:detail.documents.openFailed')))
       })
   }
 

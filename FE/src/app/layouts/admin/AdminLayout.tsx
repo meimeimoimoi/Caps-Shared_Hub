@@ -37,6 +37,8 @@ export interface NavItem {
   to?: string // không có = chưa có route
   active?: boolean
   badge?: number
+  /** Shown locked with this hint instead of as a link (area not connected yet) */
+  lockedHint?: string
 }
 
 export interface NavGroup {
@@ -90,7 +92,7 @@ export function AdminLayout({
   disputeCount,
   approvalOverdueCount,
   payoutFailedCount,
-  operationsUnavailable: _operationsUnavailable,
+  operationsUnavailable,
   ...page
 }: AdminLayoutProps) {
   const { t } = useTranslation('admin')
@@ -157,6 +159,9 @@ export function AdminLayout({
           label: t('navigation.complaints'),
           icon: Flag,
           to: '/admin/disputes',
+          lockedHint: operationsUnavailable
+            ? t('navigation.notConnected')
+            : undefined,
           active: section === 'disputes',
           badge: disputeCount,
         },
@@ -164,6 +169,9 @@ export function AdminLayout({
           label: t('navigation.payouts'),
           icon: CreditCard,
           to: '/admin/escrow',
+          lockedHint: operationsUnavailable
+            ? t('navigation.notConnected')
+            : undefined,
           active: section === 'escrow',
           badge: payoutFailedCount,
         },
@@ -183,6 +191,9 @@ export function AdminLayout({
           label: t('navigation.pricing'),
           icon: Tag,
           to: '/admin/pricing',
+          lockedHint: operationsUnavailable
+            ? t('navigation.notConnected')
+            : undefined,
           active: section === 'pricing',
         },
         {
@@ -212,10 +223,7 @@ export function AdminLayout({
       ],
     },
   ]
-  const reviewerRoutes = [
-    '/reviewer/gate-1',
-    '/reviewer/gate-2',
-  ]
+  const reviewerRoutes = ['/reviewer/gate-1', '/reviewer/gate-2']
   const approvalRoutes = [
     '/admin/experts/approvals',
     '/admin/experts/assignments',
@@ -273,14 +281,18 @@ export function RoleShell({
   const groups: SidebarGroup[] = nav.map(({ group, items }, groupIndex) => ({
     id: `admin-group-${groupIndex}`,
     label: group,
-    items: items.map(({ label, icon: Icon, to, active, badge }, itemIndex) => ({
-      id: to ?? `admin-item-${groupIndex}-${itemIndex}`,
-      label,
-      icon: <Icon size={18} />,
-      to,
-      active,
-      badge: badge != null && badge > 0 ? number(badge) : undefined,
-    })),
+    items: items.map(
+      ({ label, icon: Icon, to, active, badge, lockedHint }, itemIndex) => ({
+        id: to ?? `admin-item-${groupIndex}-${itemIndex}`,
+        label,
+        icon: <Icon size={18} />,
+        // A locked item has no link; the sidebar shows a lock and the hint
+        to: lockedHint ? undefined : to,
+        active,
+        badge: badge != null && badge > 0 ? number(badge) : undefined,
+        lockedHint,
+      })
+    ),
   }))
   // Đặt ở layout để mọi trang admin đều có tiêu đề tab (effect của layout chạy sau effect của trang)
   const pageTitle =

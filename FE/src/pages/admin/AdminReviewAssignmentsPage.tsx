@@ -8,6 +8,10 @@ import { AdminLayout } from '@/app/layouts/admin/AdminLayout'
 import { useAdminNav } from '@/app/layouts/admin/useAdminNav'
 import { CustomSelect } from '@/components/ui/forms/custom-select'
 import { Toast } from '@/components/ui/feedback/toast'
+import {
+  errorToast,
+  type ToastContent,
+} from '@/components/ui/feedback/toast-content'
 import { StatusBadge } from '@/components/ui/display/status-badge'
 import { Pagination } from '@/components/ui/navigation/pagination'
 import { reassignReview, searchAssignments } from '../../features/expert-vetting/api/assignmentApi'
@@ -51,13 +55,14 @@ export default function AdminReviewAssignmentsPage() {
   const [gate, setGate] = useState<GateFilter>('ALL')
   const [claim, setClaim] = useState<ClaimFilter>('ALL')
   const [paging, setPaging] = useState({ key: '', page: 1, pageSize: 10 })
-  const filterKey = `${gate}:${claim}`
+  const [search, setSearch] = useState('')
+  const filterKey = `${gate}:${claim}:${search.trim()}`
   const page = paging.key === filterKey ? paging.page : 1
   const [target, setTarget] = useState<ReviewQueueRow | null>(null)
-  const [toast, setToast] = useState<string | null>(null)
+  const [toast, setToast] = useState<ToastContent | null>(null)
   const clearToast = useCallback(() => setToast(null), [])
 
-  const params = { ...GATES[gate], search: '', page, pageSize: paging.pageSize, claim }
+  const params = { ...GATES[gate], search: search.trim(), page, pageSize: paging.pageSize, claim }
   const list = useQuery({
     queryKey: adminKeys.queue('assignment', params),
     queryFn: ({ signal }) => searchAssignments(params, signal),
@@ -76,9 +81,11 @@ export default function AdminReviewAssignmentsPage() {
     },
     onError: (e: unknown) =>
       setToast(
-        e instanceof ApiError && isReassignError(e.code)
-          ? t(`admin:assignments.errors.${e.code}`)
-          : t('admin:assignments.errors.failed')
+        errorToast(
+          e instanceof ApiError && isReassignError(e.code)
+            ? t(`admin:assignments.errors.${e.code}`)
+            : t('admin:assignments.errors.failed')
+        )
       ),
   })
 
@@ -91,7 +98,14 @@ export default function AdminReviewAssignmentsPage() {
   const name = (row: ReviewQueueRow) => row.displayName ?? row.applicantUserId.slice(0, 8)
 
   return (
-    <AdminLayout {...nav} section="assignments" breadcrumb={t('admin:navigation.assignments')}>
+    <AdminLayout
+      {...nav}
+      section="assignments"
+      breadcrumb={t('admin:navigation.assignments')}
+      search={search}
+      searchLabel={t('admin:assignments.searchLabel')}
+      onSearchChange={setSearch}
+    >
       <PageHeader
         title={t('admin:assignments.title')}
         help={t('admin:assignments.help')}

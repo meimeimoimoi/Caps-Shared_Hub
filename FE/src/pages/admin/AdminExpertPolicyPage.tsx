@@ -6,6 +6,10 @@ import { ApiError } from '@/lib/api-client'
 import { HelpTip } from '@/components/ui/feedback/help-tip'
 import { Modal } from '@/components/ui/feedback/modal'
 import { Toast } from '@/components/ui/feedback/toast'
+import {
+  errorToast,
+  type ToastContent,
+} from '@/components/ui/feedback/toast-content'
 import { AdminLayout } from '@/app/layouts/admin/AdminLayout'
 import { useAdminNav } from '@/app/layouts/admin/useAdminNav'
 import { useAuthStore } from '@/features/auth'
@@ -89,29 +93,16 @@ const GROUPS: Group[] = [
 
 const MONEY_KEYS: PolicySettingKey[] = ['PricingMinFee', 'PricingMaxFee']
 
-/** Each group gets its own tone and icon so the three blocks of the table are told apart at a glance */
+/** Each group has its own icon; the header band is neutral so colour keeps meaning state, not group */
+const GROUP_HEADER = 'bg-sunken text-fg-strong'
+const GROUP_BADGE = 'bg-ink text-paper'
 const GROUP_TONE: Record<
   Group['id'],
-  { icon: LucideIcon; header: string; badge: string; edge: string }
+  { icon: LucideIcon; header: string; badge: string }
 > = {
-  review: {
-    icon: ClipboardCheck,
-    header: 'bg-info-soft text-info',
-    badge: 'bg-info text-paper',
-    edge: '[&>td:first-child]:border-l-info',
-  },
-  reapply: {
-    icon: Hourglass,
-    header: 'bg-warning-soft text-warning',
-    badge: 'bg-warning text-paper',
-    edge: '[&>td:first-child]:border-l-warning',
-  },
-  pricing: {
-    icon: Wallet,
-    header: 'bg-success-soft text-success',
-    badge: 'bg-success text-paper',
-    edge: '[&>td:first-child]:border-l-success',
-  },
+  review: { icon: ClipboardCheck, header: GROUP_HEADER, badge: GROUP_BADGE },
+  reapply: { icon: Hourglass, header: GROUP_HEADER, badge: GROUP_BADGE },
+  pricing: { icon: Wallet, header: GROUP_HEADER, badge: GROUP_BADGE },
 }
 
 const chip =
@@ -131,7 +122,7 @@ export default function AdminExpertPolicyPage() {
   const [reason, setReason] = useState('')
   const [confirming, setConfirming] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
-  const [toast, setToast] = useState<string | null>(null)
+  const [toast, setToast] = useState<ToastContent | null>(null)
   const clearToast = useCallback(() => setToast(null), [])
 
   const policyKey = [...adminKeys.all, 'expert-policy'] as const
@@ -215,7 +206,12 @@ export default function AdminExpertPolicyPage() {
   const discard = () => {
     setDrafts({})
     setReason('')
+    setConfirmDiscard(false)
   }
+  // Dropping several edits at once is asked first; a single edit is cheap to redo
+  const [confirmDiscard, setConfirmDiscard] = useState(false)
+  const askDiscard = () =>
+    pending.length > 1 ? setConfirmDiscard(true) : discard()
   const closeConfirm = () => {
     if (save.isPending) return
     setConfirming(false)
@@ -247,7 +243,7 @@ export default function AdminExpertPolicyPage() {
           // Show the other admin's values; the reason being typed is kept for the next try
           setDrafts({})
           setConfirming(false)
-          setToast(message)
+          setToast(errorToast(message))
           void qc.invalidateQueries({ queryKey: policyKey })
           void qc.invalidateQueries({ queryKey: historyKey })
           return
@@ -377,12 +373,9 @@ export default function AdminExpertPolicyPage() {
       <span className="text-fg-muted">—</span>
     )
 
-  const rowClass = (dirty: boolean, g: Group) =>
+  const rowClass = (dirty: boolean, _g: Group) =>
     cn(
       'align-middle transition-colors hover:bg-sunken/40 [&>td]:px-5 [&>td]:py-3',
-      // The group's colour runs down the first cell, tying each row to its header
-      '[&>td:first-child]:border-l-4',
-      GROUP_TONE[g.id].edge,
       dirty && 'bg-accent-soft/40'
     )
 
@@ -503,7 +496,6 @@ export default function AdminExpertPolicyPage() {
       {policy.isLoading && (
         <section className="paper mt-8 overflow-x-auto">
           <table className="w-full text-sm">
-            <caption className="sr-only">{t('admin:expertPolicy.title')}</caption>
             <tbody>
               <SkeletonRows cols={6} />
             </tbody>
@@ -517,6 +509,7 @@ export default function AdminExpertPolicyPage() {
           {/* One table for every group, so the columns line up from the first setting to the last */}
           <section className="paper overflow-x-auto">
             <table className="w-full min-w-240 text-sm">
+              <caption className="sr-only">{t('admin:expertPolicy.title')}</caption>
               <thead className="bg-sunken text-fg-muted text-left">
                 <tr className="border-border border-b [&>th]:px-5 [&>th]:py-3 [&>th]:font-semibold [&>th]:whitespace-nowrap">
                   <th scope="col" className="w-[32%]">
@@ -588,7 +581,7 @@ export default function AdminExpertPolicyPage() {
               <div className="flex gap-2">
                 <button
                   type="button"
-                  onClick={discard}
+                  onClick={askDiscard}
                   className="btn btn-press text-paper hover:bg-paper/10"
                 >
                   {t('admin:expertPolicy.discard')}
@@ -612,6 +605,7 @@ export default function AdminExpertPolicyPage() {
             <div className="paper overflow-x-auto">
               {history.data?.length ? (
                 <table className="w-full min-w-200 text-sm">
+                  <caption className="sr-only">{t('admin:expertPolicy.historyTitle')}</caption>
                   <thead className="bg-sunken text-fg-muted text-left">
                     <tr className="border-border border-b [&>th]:px-5 [&>th]:py-3 [&>th]:font-semibold [&>th]:whitespace-nowrap">
                       <th scope="col">{t('admin:expertPolicy.history.time')}</th>
@@ -721,6 +715,7 @@ export default function AdminExpertPolicyPage() {
         >
           <div className="border-border-subtle rounded-control mt-5 overflow-hidden border">
             <table className="w-full text-sm">
+              <caption className="sr-only">{t('admin:expertPolicy.confirmTitle')}</caption>
               <thead className="bg-sunken text-fg-muted text-left">
                 <tr className="[&>th]:px-4 [&>th]:py-2.5 [&>th]:font-medium">
                   <th scope="col">{t('admin:expertPolicy.history.setting')}</th>
@@ -805,6 +800,32 @@ export default function AdminExpertPolicyPage() {
                 className="btn btn-press btn-danger"
               >
                 {t('admin:expertPolicy.leave')}
+              </button>
+            </>
+          }
+        />
+      )}
+      {confirmDiscard && (
+        <Modal
+          title={t('admin:expertPolicy.discardTitle', { count: pending.length })}
+          description={t('admin:expertPolicy.discardBody')}
+          onClose={() => setConfirmDiscard(false)}
+          footer={
+            <>
+              <button
+                type="button"
+                autoFocus
+                onClick={() => setConfirmDiscard(false)}
+                className="btn btn-press btn-secondary"
+              >
+                {t('admin:expertPolicy.keepEditing')}
+              </button>
+              <button
+                type="button"
+                onClick={discard}
+                className="btn btn-press btn-danger"
+              >
+                {t('admin:expertPolicy.discard')}
               </button>
             </>
           }

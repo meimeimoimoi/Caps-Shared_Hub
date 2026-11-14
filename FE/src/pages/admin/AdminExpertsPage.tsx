@@ -4,6 +4,10 @@ import { cn } from '@/lib/utils'
 import { SERVICE_STATUS } from '@/lib/constants'
 import { CustomSelect } from '@/components/ui/forms/custom-select'
 import { Toast } from '@/components/ui/feedback/toast'
+import {
+  errorToast,
+  type ToastContent,
+} from '@/components/ui/feedback/toast-content'
 import { StatusBadge } from '@/components/ui/display/status-badge'
 import { TablePager } from '@/components/ui/navigation/table-pager'
 import { AdminLayout } from '@/app/layouts/admin/AdminLayout'
@@ -28,17 +32,19 @@ const MAX_FIELD_TAGS = 2
 export default function AdminExpertsPage() {
   const nav = useAdminNav()
   const experts = useExperts()
-  const [toast, setToast] = useState<string | null>(null)
+  const [toast, setToast] = useState<ToastContent | null>(null)
   const clearToast = useCallback(() => setToast(null), [])
   const { paged } = experts
   const { t } = useTranslation(['admin', 'common'])
 
   const statusOptions = [
     { value: ALL, label: t('admin:experts.allStatuses') },
-    ...Object.entries(SERVICE_STATUS).map(([key, s]) => ({
-      value: key,
-      label: s.label,
-    })),
+    ...(Object.keys(SERVICE_STATUS) as Expert['serviceStatus'][]).map(
+      (key) => ({
+        value: key,
+        label: t(`admin:serviceStatus.${key}.label`),
+      })
+    ),
   ]
   const fieldOptions = [
     { value: ALL, label: t('admin:experts.allFields') },
@@ -168,7 +174,12 @@ export default function AdminExpertsPage() {
                     </ul>
                   </td>
                   <td className="whitespace-nowrap">
-                    <StatusBadge status={SERVICE_STATUS[e.serviceStatus]} />
+                    <StatusBadge
+                      status={{
+                        tone: SERVICE_STATUS[e.serviceStatus].tone,
+                        label: t(`admin:serviceStatus.${e.serviceStatus}.label`),
+                      }}
+                    />
                   </td>
                   <td className="num text-fg-strong text-right whitespace-nowrap">
                     {e.fee === null ? '—' : formatVnd(e.fee)}
@@ -231,7 +242,7 @@ export default function AdminExpertsPage() {
                     : t('admin:experts.toast.reinstated')
                 )
               )
-              .catch(() => setToast(t('common:states.actionFailed')))
+              .catch(() => setToast(errorToast(t('common:states.actionFailed'))))
           }
         />
       )}

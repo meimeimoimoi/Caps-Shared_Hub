@@ -41,7 +41,8 @@ export function QualificationsTable({
           {t('qualifications.count')}
         </span>
       </div>
-      <table className="w-full min-w-[720px] text-sm">
+      <table className="w-full min-w-180 text-sm">
+        <caption className="sr-only">{t('qualifications.caption')}</caption>
         <thead className="bg-sunken text-fg-muted">
           <tr className="[&>th]:px-4 [&>th]:py-3 [&>th]:font-semibold">
             <th scope="col" className="text-left">

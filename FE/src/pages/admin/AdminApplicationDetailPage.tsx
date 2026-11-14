@@ -11,6 +11,10 @@ import {
 import { ToolHeader } from '@/components/ui/layout/tool-header'
 import { CaseHeader } from '@/components/ui/layout/case-header'
 import { Toast } from '@/components/ui/feedback/toast'
+import {
+  errorToast,
+  type ToastContent,
+} from '@/components/ui/feedback/toast-content'
 import { ReviewPageLayout } from '@/features/expert-vetting/components/ReviewPageLayout'
 import { getEvidenceFile } from '../../features/expert-vetting/api/adminApi'
 import { AiScreeningTab } from '../../features/expert-vetting/components/AiScreeningTab'
@@ -73,7 +77,7 @@ export default function AdminApplicationDetailPage({ embedded = false }: { embed
   const tab: TabKey = chosenTab ?? (detail?.screening ? 'ai' : 'profile')
   const [docKey, setDocKey] = useState<string>()
   const [confirming, setConfirming] = useState(false)
-  const [toast, setToast] = useState<string | null>(null)
+  const [toast, setToast] = useState<ToastContent | null>(null)
   const clearToast = useCallback(() => setToast(null), [])
   const listPath = embedded ? '/reviewer/gate-1' : '/admin/experts/pending'
 
@@ -138,12 +142,12 @@ export default function AdminApplicationDetailPage({ embedded = false }: { embed
     e instanceof ApiError && (e.code === 'REVIEW_CLAIMED' || e.code === 'REVIEW_NOT_CLAIMED')
       ? t(`admin:claim.errors.${e.code}`)
       : t('admin:claim.errors.failed')
-  const takeClaim = () => void claim.claim().catch((e: unknown) => setToast(claimError(e)))
+  const takeClaim = () => void claim.claim().catch((e: unknown) => setToast(errorToast(claimError(e))))
   const releaseClaim = () =>
     void claim
       .release()
       .then(() => setToast(t('admin:claim.released')))
-      .catch((e: unknown) => setToast(claimError(e)))
+      .catch((e: unknown) => setToast(errorToast(claimError(e))))
 
   const finish = (note: string) => {
     const outcome = review.outcome
@@ -156,7 +160,7 @@ export default function AdminApplicationDetailPage({ embedded = false }: { embed
       })
       .catch((e: unknown) => {
         setConfirming(false)
-        setToast(errorText(e))
+        setToast(errorToast(errorText(e)))
       })
   }
 
@@ -177,7 +181,7 @@ export default function AdminApplicationDetailPage({ embedded = false }: { embed
       })
       .catch(() => {
         win?.close()
-        setToast(t('admin:detail.documents.openFailed'))
+        setToast(errorToast(t('admin:detail.documents.openFailed')))
       })
   }
 

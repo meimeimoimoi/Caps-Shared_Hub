@@ -103,7 +103,8 @@ export function AiScreeningTab({
         {t('detail.aiScreening.legalTitle')}
       </h3>
       <div className="mt-2 overflow-x-auto">
-        <table className="w-full min-w-[560px] text-sm">
+        <table className="w-full min-w-140 text-sm">
+          <caption className="sr-only">{t('detail.aiScreening.legalTitle')}</caption>
           <thead className="bg-sunken text-fg-muted">
             <tr className="[&>th]:px-3 [&>th]:py-2.5 [&>th]:text-left [&>th]:font-semibold">
               <th scope="col">{t('detail.aiScreening.colItem')}</th>

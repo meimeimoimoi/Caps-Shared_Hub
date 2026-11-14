@@ -189,7 +189,7 @@ export default function AdminDashboardPage() {
           value={billing.data && held.amount}
           format={(n) => f.money(n)}
           note={t('dashboard.kpi.heldNote', { count: held.count })}
-          to="/admin/escrow"
+          to={nav.operationsUnavailable ? undefined : "/admin/escrow"}
         />}
       </div>
 

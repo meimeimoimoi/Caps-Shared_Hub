@@ -7,6 +7,10 @@ import { formatVnd } from '@/lib/format-money'
 import { StatusBadge } from '@/components/ui/display/status-badge'
 import { SkeletonRows } from '@/components/ui/display/skeleton-rows'
 import { Toast } from '@/components/ui/feedback/toast'
+import {
+  errorToast,
+  type ToastContent,
+} from '@/components/ui/feedback/toast-content'
 import { TablePager } from '@/components/ui/navigation/table-pager'
 import { AdminLayout } from '@/app/layouts/admin/AdminLayout'
 import { useAdminNav } from '@/app/layouts/admin/useAdminNav'
@@ -46,11 +50,11 @@ export default function AdminEscrowPage() {
   const { t } = useTranslation(['admin', 'common'])
   const escrows = useEscrows(!nav.operationsUnavailable)
   const { paged, selected } = escrows
-  // ponytail: tỷ lệ lấy từ cấu hình giá; 20 chỉ là giá trị dự phòng khi chưa tải xong
+  // Share comes from the pricing config; 40 (agreed 2026-11-11) is only the fallback while it loads
   const platformShare =
-    usePricing(!nav.operationsUnavailable).data?.platformShare ?? 20
+    usePricing(!nav.operationsUnavailable).data?.platformShare ?? 40
   const [retrying, setRetrying] = useState<string | null>(null)
-  const [toast, setToast] = useState<string | null>(null)
+  const [toast, setToast] = useState<ToastContent | null>(null)
   const clearToast = useCallback(() => setToast(null), [])
 
   const retry = (caseId: string) => {
@@ -58,7 +62,7 @@ export default function AdminEscrowPage() {
     escrows
       .retryPayout(caseId)
       .then(() => setToast(t('escrow.retried', { id: caseId })))
-      .catch(() => setToast(t('common:states.actionFailed')))
+      .catch(() => setToast(errorToast(t('common:states.actionFailed'))))
       .finally(() => setRetrying(null))
   }
 

@@ -36,7 +36,8 @@
     "users": "Users",
     "expertPolicy": "Expert policy",
     "assignments": "Review assignments",
-    "feesAndPolicy": "Fees & policy"
+    "feesAndPolicy": "Fees & policy",
+    "notConnected": "Not connected yet"
   },
   "dashboard": {
     "title": "Overview",
@@ -196,7 +197,8 @@
     "actions": "Actions",
     "view": "View details",
     "viewLabel": "View application of {{name}}",
-    "reapplication": "Reapplication"
+    "reapplication": "Reapplication",
+    "caption": "Applications"
   },
   "queue": {
     "tabs": {
@@ -408,12 +410,12 @@
       "RESOLVE_PAY_EXPERT": {
         "label": "Dismiss · pay the expert",
         "hint": "The complaint is not justified; the expert did the work properly",
-        "split": "Client refund 0% · Expert 80% · Platform 20%"
+        "split": "Client refund 0% · Expert 60% · Platform 40%"
       },
       "RESOLVE_PARTIAL": {
         "label": "Partial settlement",
         "hint": "Both sides fell partly short",
-        "split": "Client refund 50% · Expert 40% · Platform 10%"
+        "split": "Client refund 50% · Expert 30% · Platform 20%"
       }
     }
   },
@@ -563,7 +565,7 @@
       },
       "credit": {
         "label": "Credits and packages",
-        "intro": "Credit prices for the AI assistant and drafting, and the packages shown on the paywall."
+        "intro": "Credit top-up packages clients use to pay for experts. The AI assistant and drafting are free."
       },
       "history": {
         "label": "Change history",
@@ -618,7 +620,8 @@
       "onSale": "On sale",
       "offSale": "Off sale",
       "recommended": " · recommended",
-      "note": "Price changes apply to new top-ups only; purchased credits stay as they are."
+      "note": "Price changes apply to new top-ups only; purchased credits stay as they are.",
+      "aiFree": "The AI assistant, drafting and draft export are free with no usage limit. Credits only pay for hiring experts."
     },
     "package": {
       "edit": "Edit {{name}}",
@@ -859,7 +862,8 @@
       "failed": "Not met",
       "approved": "Approved",
       "suspended": "Suspended"
-    }
+    },
+    "caption": "Competency files"
   },
   "competency": {
     "incomplete": "Note or file missing",
@@ -1234,13 +1238,16 @@
     "resetDefault": "Reset to default ({{value}})",
     "pending_one": "{{count}} unsaved change",
     "pending_other": "{{count}} unsaved changes",
-    "discard": "Discard changes",
+    "discard": "Discard edits",
     "rangeInverted": "The minimum cannot be greater than the maximum.",
     "noPending": "No pending changes",
     "leaveTitle": "Leave without saving?",
     "leaveBody": "{{count}} unsaved changes will be discarded.",
     "stay": "Stay",
-    "leave": "Discard and leave"
+    "leave": "Discard and leave",
+    "discardTitle": "Discard {{count}} unsaved edits?",
+    "discardBody": "The values go back to what is in effect. Nothing has been saved.",
+    "keepEditing": "Keep editing"
   },
   "claim": {
     "free": "Nobody has claimed this review",
@@ -1311,7 +1318,8 @@
       "APPLICATION_NOT_IN_REVIEW": "The review is no longer open. Reload the list.",
       "QUALIFICATION_NOT_IN_REVIEW": "The review is no longer open. Reload the list.",
       "failed": "Could not reassign. Please try again."
-    }
+    },
+    "searchLabel": "Search by expert name"
   },
   "finalReturn": {
     "title": "Returned at final approval",
@@ -1339,5 +1347,17 @@
   "operationsUnavailable": {
     "title": "Not connected yet",
     "body": "This page isn't connected to the live system yet, so it has no figures. They will appear once the feature is switched on."
+  },
+  "serviceStatus": {
+    "INACTIVE": {
+      "label": "Not active"
+    },
+    "ACTIVE": {
+      "label": "Active",
+      "note": "listed on the Marketplace"
+    },
+    "SUSPENDED": {
+      "label": "Suspended"
+    }
   }
 }

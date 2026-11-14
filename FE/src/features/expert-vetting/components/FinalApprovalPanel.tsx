@@ -84,9 +84,9 @@ export function FinalApprovalPanel({
         </HelpTip>
         {due && (
           <span
-            aria-label={t('finalApproval.dueLabel')}
             className={`rounded-control ml-auto px-2 py-0.5 text-sm font-semibold ${overdue ? 'bg-danger/10 text-danger' : 'bg-sunken text-fg-strong'}`}
           >
+            <span className="sr-only">{t('finalApproval.dueLabel')}: </span>
             {overdue ? `${t('finalApproval.overdue')} · ` : ''}
             {t('finalApproval.dueOn', { date: formatDate(due) })}
           </span>

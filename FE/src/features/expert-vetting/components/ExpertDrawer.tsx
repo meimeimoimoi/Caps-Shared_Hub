@@ -62,9 +62,10 @@ export function ExpertDrawer({
   const { t } = useTranslation('admin')
   // Suspend and reinstate go through the same confirmation as the approval panel
   const [access, setAccess] = useState<ServiceAccessAction | null>(null)
-  // "Đang hoạt động · hiện trên Marketplace" → chip for the first part, plain text for the rest
-  const [statusLabel, statusNote] =
-    SERVICE_STATUS[e.serviceStatus].label.split(' · ')
+  // Status chip plus, for an active service, where it shows (both from i18n, not split from one string)
+  const statusLabel = t(`serviceStatus.${e.serviceStatus}.label`)
+  const statusNote =
+    e.serviceStatus === 'ACTIVE' ? t('serviceStatus.ACTIVE.note') : null
   const load = e.capacity > 0 ? Math.min(1, e.activeCases / e.capacity) : 0
 
   return (
@@ -73,11 +74,12 @@ export function ExpertDrawer({
       title={e.name}
       titleAddon={
         <span className="flex shrink-0 items-center gap-2 text-sm">
-          {e.serviceStatus === 'ACTIVE' ? (
-            <StatusBadge status={{ label: statusLabel, tone: 'success' }} />
-          ) : (
-            <StatusBadge status={SERVICE_STATUS[e.serviceStatus]} />
-          )}
+          <StatusBadge
+            status={{
+              label: statusLabel,
+              tone: SERVICE_STATUS[e.serviceStatus].tone,
+            }}
+          />
           {statusNote && (
             <span className="text-fg-muted hidden sm:inline">{statusNote}</span>
           )}

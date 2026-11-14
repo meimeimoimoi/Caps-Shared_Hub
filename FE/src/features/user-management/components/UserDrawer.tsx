@@ -35,7 +35,7 @@ export function UserDrawer({
   onLock: (locked: boolean, reason: string) => Promise<unknown>
   onReset: () => Promise<unknown>
 }) {
-  const { t } = useTranslation('admin')
+  const { t } = useTranslation(['admin', 'common'])
   const [action, setAction] = useState<Action | null>(null)
   const [reason, setReason] = useState('')
   const [busy, setBusy] = useState(false)
@@ -54,7 +54,7 @@ export function UserDrawer({
         setAction(null)
         setReason('')
       })
-      .catch((e: Error) => setError(e.message))
+      .catch(() => setError(t('common:states.actionFailed')))
       .finally(() => setBusy(false))
   }
 
