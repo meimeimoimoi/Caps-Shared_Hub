@@ -1,20 +1,22 @@
-/* Flow 5 · Ma trận quyết toán theo Business Flow (Normal / Termination / Dispute).
- * split = % [hoàn User, chuyên gia nhận, phí nền tảng]. Mỗi case chỉ áp dụng MỘT rule.
+/* Flow 5 · Settlement matrix (Normal / Termination / Dispute).
+ * split = % [refund to client, expert, platform]; one rule per case.
+ * Split agreed 2026-11-11: platform 40 / expert 60; an incident refunds 50% and splits the rest 60/40.
+ * Expert-side failures keep a full refund until the open question on expert declines is answered.
  * ponytail: FE chỉ hiển thị; số tiền thật do BE quyết toán. Admin escrow vẫn dùng TERMINATION_MATRIX
  * (tên khóa cũ, cùng tỷ lệ) — gộp về bảng này khi BE chốt enum. */
 export const SETTLEMENT_POLICY = {
-  USER_ACCEPTED: { type: 'NORMAL', split: [0, 80, 20] },
-  AUTO_CONFIRMED: { type: 'NORMAL', split: [0, 80, 20] },
-  USER_NON_RESPONSE: { type: 'TERMINATION', split: [0, 80, 20] },
-  USER_CANCELLED: { type: 'TERMINATION', split: [50, 40, 10] },
+  USER_ACCEPTED: { type: 'NORMAL', split: [0, 60, 40] },
+  AUTO_CONFIRMED: { type: 'NORMAL', split: [0, 60, 40] },
+  USER_NON_RESPONSE: { type: 'TERMINATION', split: [0, 60, 40] },
+  USER_CANCELLED: { type: 'TERMINATION', split: [50, 30, 20] },
   EXPERT_START_TIMEOUT: { type: 'TERMINATION', split: [100, 0, 0] },
   // Client cancels after paying but before the expert starts (BR-M37)
   USER_CANCELLED_BEFORE_START: { type: 'TERMINATION', split: [100, 0, 0] },
   EXPERT_ABANDON: { type: 'TERMINATION', split: [100, 0, 0] },
   SYSTEM_ERROR: { type: 'TERMINATION', split: [100, 0, 0] },
   RESOLVE_REFUND_USER: { type: 'DISPUTE', split: [100, 0, 0] },
-  RESOLVE_PAY_EXPERT: { type: 'DISPUTE', split: [0, 80, 20] },
-  RESOLVE_PARTIAL: { type: 'DISPUTE', split: [50, 40, 10] },
+  RESOLVE_PAY_EXPERT: { type: 'DISPUTE', split: [0, 60, 40] },
+  RESOLVE_PARTIAL: { type: 'DISPUTE', split: [50, 30, 20] },
 } as const
 
 export type SettlementRule = keyof typeof SETTLEMENT_POLICY

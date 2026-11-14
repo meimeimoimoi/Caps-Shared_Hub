@@ -146,7 +146,7 @@
       "from": "Yêu cầu từ {{name}} · {{date}}",
       "items": "Cần cung cấp",
       "due": "Hạn phản hồi",
-      "warning": "Quá 72 giờ không phản hồi, hồ sơ chấm dứt và chuyên gia vẫn nhận 80% phí. Nếu bạn đã phản hồi đúng hạn, bạn có 72 giờ sau đó để khiếu nại.",
+      "warning": "Quá 72 giờ không phản hồi, hồ sơ chấm dứt và chuyên gia vẫn nhận 60% phí. Nếu bạn đã phản hồi đúng hạn, bạn có 72 giờ sau đó để khiếu nại.",
       "response": "Nội dung phản hồi",
       "responseHint": "Trả lời từng mục chuyên gia yêu cầu. Tối đa 2.000 ký tự.",
       "files": "Tài liệu đính kèm",
@@ -303,7 +303,7 @@
   "dialogs": {
     "accept": {
       "title": "Nghiệm thu kết quả?",
-      "body": "Hồ sơ chuyển sang Hoàn tất và khoản thanh toán được quyết toán: chuyên gia nhận 80%, nền tảng 20%. Sau khi nghiệm thu, bạn không thể báo cáo vấn đề.",
+      "body": "Hồ sơ chuyển sang Hoàn tất và khoản thanh toán được quyết toán: chuyên gia nhận 60%, nền tảng 40%. Sau khi nghiệm thu, bạn không thể báo cáo vấn đề.",
       "confirm": "Nghiệm thu"
     },
     "cancel": {

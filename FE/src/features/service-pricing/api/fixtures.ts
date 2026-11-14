@@ -7,8 +7,8 @@ const daysAgo = (n: number) =>
 const expert = (id: string, name: string, fee: number) => ({ id, name, fee })
 
 export const mockPricing: PricingOverview = {
-  platformShare: 20,
-  expertShare: 80,
+  platformShare: 40,
+  expertShare: 60,
   tiers: [
     {
       id: 'giai-trinh',

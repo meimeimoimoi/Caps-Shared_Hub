@@ -146,7 +146,7 @@
       "from": "Request from {{name}} · {{date}}",
       "items": "Please provide",
       "due": "Response deadline",
-      "warning": "If you don't respond within 72 hours, the case is terminated and the expert still receives 80% of the fee. If you did respond on time, you then have 72 hours to challenge the decision.",
+      "warning": "If you don't respond within 72 hours, the case is terminated and the expert still receives 60% of the fee. If you did respond on time, you then have 72 hours to challenge the decision.",
       "response": "Your response",
       "responseHint": "Answer each item the expert asked for. Up to 2,000 characters.",
       "files": "Attachments",
@@ -303,7 +303,7 @@
   "dialogs": {
     "accept": {
       "title": "Accept the result?",
-      "body": "The case moves to Completed and the payment is settled: 80% to the expert, 20% platform fee. After accepting, you can no longer report an issue.",
+      "body": "The case moves to Completed and the payment is settled: 60% to the expert, 40% platform fee. After accepting, you can no longer report an issue.",
       "confirm": "Accept"
     },
     "cancel": {

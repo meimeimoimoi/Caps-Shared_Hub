@@ -10,12 +10,22 @@ test('every settlement rule splits exactly 100%', () => {
     assert.equal(split[0] + split[1] + split[2], 100, rule)
 })
 
-test('user cancelled after start: 50 / 40 / 10', () => {
+// Incident refunds 50%, the rest splits expert 60 / platform 40 (agreed 2026-11-11)
+test('user cancelled after start: 50 / 30 / 20', () => {
   assert.deepEqual(settle(1_500_000, 'USER_CANCELLED'), {
     gross: 1_500_000,
     refund: 750_000,
+    expert: 450_000,
+    platform: 300_000,
+  })
+})
+
+test('normal acceptance: expert 60 / platform 40', () => {
+  assert.deepEqual(settle(1_000_000, 'USER_ACCEPTED'), {
+    gross: 1_000_000,
+    refund: 0,
     expert: 600_000,
-    platform: 150_000,
+    platform: 400_000,
   })
 })
 
