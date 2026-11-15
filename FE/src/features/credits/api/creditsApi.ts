@@ -1,9 +1,10 @@
 import { api } from '@/lib/api-client'
 import { isExpertDemo } from '@/lib/expert-data-source'
-import type { CreditOverview } from '../types'
+import type { CreditLedgerEntry, CreditOverview, CreditWallet } from '../types'
 
-/* Dev chạy demo thì đọc fixtures; production gọi billing service qua Gateway.
- * TODO(api): billing chưa có controller và chưa chốt nghiệp vụ ledger; đối chiếu đường dẫn khi BE có Swagger. */
+const BASE = '/api/v1/billing/wallet'
+type Envelope<T> = { data: T }
+
 const fixtures = () => import('./fixtures')
 
 export const creditsKeys = {
@@ -11,8 +12,18 @@ export const creditsKeys = {
   overview: () => [...creditsKeys.all, 'overview'] as const,
 }
 
-export async function getCreditOverview(signal?: AbortSignal) {
+export async function getCreditOverview(
+  signal?: AbortSignal
+): Promise<CreditOverview> {
   if (isExpertDemo)
     return structuredClone((await fixtures()).mockCreditOverview)
-  return api.get<CreditOverview>('/api/v1/billing/credits/me', { signal })
+  // ponytail: newest 50 movements only, and billing has no list of payments yet; add paging and that API when needed
+  const [wallet, ledger] = await Promise.all([
+    api.get<Envelope<CreditWallet>>(BASE, { signal }),
+    api.get<Envelope<{ items: CreditLedgerEntry[] }>>(`${BASE}/ledger`, {
+      params: { pageSize: 50 },
+      signal,
+    }),
+  ])
+  return { wallet: wallet.data, ledger: ledger.data.items, payments: [] }
 }
