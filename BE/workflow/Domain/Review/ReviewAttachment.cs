@@ -6,7 +6,7 @@ namespace Caps.Workflow.Domain.Review;
 /// <summary>A file a party added to a review case: material for the review, or evidence in a dispute.</summary>
 public sealed class ReviewAttachment
 {
-    public const int MaxBytes = 10 * 1024 * 1024;
+    public const int MaxBytes = 50 * 1024 * 1024;
     public const int MaxPerCase = 20;
     public const int MaxFileNameLength = 255;
     public const string Docx =
