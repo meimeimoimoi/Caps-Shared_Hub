@@ -180,17 +180,20 @@ test('Workspace · tổng quan → hồ sơ → lọc → ví → logo về tran
   await expect(page).toHaveURL(/\/$/)
 })
 
-test('Bảng giá · menu landing mở trang credit AI', async ({ page }) => {
+// AI is free (team decision of 2026-11-11): the page only charges for hiring an expert
+test('Bảng giá · menu landing mở trang giá: AI miễn phí, trả phí khi thuê chuyên gia', async ({
+  page,
+}) => {
   await page.goto('/')
   await page
     .getByRole('link', { name: 'Bảng giá', exact: true })
     .first()
     .click()
   await expect(page).toHaveURL(/\/pricing$/)
-  await expect(heading(page, /Trả theo câu trả lời/)).toBeVisible()
-  await expect(page.getByText('Câu hỏi trợ lý AI')).toBeVisible()
-  await expect(page.getByRole('link', { name: 'Nạp credit' })).toHaveCount(3)
+  await expect(heading(page, /Dùng AI miễn phí/)).toBeVisible()
+  await expect(page.getByRole('link', { name: 'Hỏi AI' })).toBeVisible()
   await expect(
-    page.getByText('Phí thẩm định chuyên gia', { exact: true })
-  ).toHaveCount(0)
+    page.getByRole('link', { name: 'Xem phí thuê chuyên gia' })
+  ).toBeVisible()
+  await expect(page.getByRole('link', { name: 'Nạp credit' })).toHaveCount(0)
 })
