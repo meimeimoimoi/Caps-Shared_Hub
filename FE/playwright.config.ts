@@ -21,5 +21,7 @@ export default defineConfig({
     command: `npm run dev -- --port ${port} --strictPort`,
     url: `http://localhost:${port}`,
     reuseExistingServer: !process.env.CI,
+    // The specs walk the demo data; the app defaults to the real API, which CI does not run
+    env: { VITE_EXPERT_DATA_SOURCE: 'mock' },
   },
 })
