@@ -476,6 +476,20 @@ namespace Caps.Expert.Infrastructure.Persistence.Migrations
                             Percent = 20,
                             ServiceCode = "HUMAN_VERIFICATION",
                             SetBy = new Guid("00000000-0000-0000-0000-000000000000")
+                        },
+                        new
+                        {
+                            Id = new Guid("01929e3a-0000-7000-8000-000000000040"),
+                            EffectiveFrom = new DateTimeOffset(new DateTime(2026, 11, 14, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 7, 0, 0, 0)),
+                            LateCancelHours = 24,
+                            LatePenaltyHours = 24,
+                            LatePenaltyPercent = 50,
+                            NoResponseExpertPercent = 60,
+                            NoResponseHours = 72,
+                            NoResponseRefundPercent = 0,
+                            Percent = 40,
+                            ServiceCode = "HUMAN_VERIFICATION",
+                            SetBy = new Guid("00000000-0000-0000-0000-000000000000")
                         });
                 });
 

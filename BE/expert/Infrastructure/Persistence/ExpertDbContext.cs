@@ -504,6 +504,30 @@ public sealed class ExpertDbContext(DbContextOptions<ExpertDbContext> options) :
                     NoResponseExpertPercent = 30,
                     EffectiveFrom = new DateTimeOffset(2026, 10, 17, 0, 0, 0, TimeSpan.Zero),
                     SetBy = SystemActor.UserId,
+                },
+                // Rates agreed with the advisor: 40% fee, a late delivery refunds 50% (one tier: cancel = penalty
+                // hours), a client who stops answering gets nothing back. A new row, since rates that took effect stay.
+                new
+                {
+                    Id = Guid.Parse("01929e3a-0000-7000-8000-000000000040"),
+                    ServiceCode = "HUMAN_VERIFICATION",
+                    Percent = 40,
+                    LatePenaltyHours = 24,
+                    LatePenaltyPercent = 50,
+                    LateCancelHours = 24,
+                    NoResponseHours = 72,
+                    NoResponseRefundPercent = 0,
+                    NoResponseExpertPercent = 60,
+                    EffectiveFrom = new DateTimeOffset(
+                        2026,
+                        11,
+                        14,
+                        0,
+                        0,
+                        0,
+                        PlatformFee.LocalOffset
+                    ),
+                    SetBy = SystemActor.UserId,
                 }
             );
         });
