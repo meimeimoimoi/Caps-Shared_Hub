@@ -98,9 +98,9 @@
     "label": "Bản nháp AI → Bản đã xác thực",
     "title": "Bản nháp nào cũng cần <em>một người đọc lại.</em>",
     "lead": "Một khoản chi tiền mặt bị bỏ sót có thể bị loại khi thanh tra. <b>Chuyên gia bắt lỗi đó trước.</b>",
-    "hold": "Giữ để xác thực",
+    "hold": "Xem bản đã thẩm định",
     "held": "Đã xác thực",
-    "hint": "Nhấn giữ nút để chuyên gia đóng dấu lên bản nháp bên cạnh.",
+    "hint": "Mở ví dụ để xem nội dung chuyên gia đã điều chỉnh.",
     "heldHint": "Đã đóng dấu. Bản nháp giờ là phiên bản 2, bản cũ vẫn được giữ lại.",
     "docLabel": "Bản nháp AI · Công văn giải trình",
     "draftVersion": "Phiên bản 1 · Nháp",
@@ -188,5 +188,12 @@
     "experts": "Chuyên gia",
     "featured": "Chuyên gia được đánh giá cao",
     "profile": "Xem hồ sơ"
+  },
+  "pricing": {
+    "title": "Bảng giá",
+    "heading": "Dùng AI miễn phí. Trả phí khi thuê chuyên gia.",
+    "detail": "Hỏi đáp, soạn và xuất bản nháp AI miễn phí, không giới hạn. Xem phí thẩm định theo từng chuyên gia và dịch vụ trên sàn.",
+    "ask": "Hỏi AI",
+    "marketplace": "Xem phí thuê chuyên gia"
   }
 }

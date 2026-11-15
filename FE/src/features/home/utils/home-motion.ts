@@ -363,76 +363,22 @@ export function initHomeMotion(root: HTMLElement, t: TFunction<'home'>) {
   )
   const hold = get<HTMLButtonElement>('holdBtn'),
     doc = get('doc')
-  let holding = false,
-    verified = false,
-    hp = 0,
-    holdFrame: number | undefined,
-    holdLast = 0
   function complete() {
-    verified = true
-    holding = false
-    hp = 1
     set(hold, '--hp', 1)
     doc.classList.add('verified')
+    doc.querySelector('.was')?.setAttribute('aria-hidden', 'true')
+    doc.querySelector('.now')?.removeAttribute('aria-hidden')
+    doc.querySelector('.note')?.removeAttribute('aria-hidden')
     hold.classList.add('done')
     hold.setAttribute('aria-pressed', 'true')
     get('holdLabel').textContent = t('verify.held')
     get('docVer').textContent = t('verify.verifiedVersion')
     get('holdHint').textContent = t('verify.heldHint')
   }
-  function holdTick(now: number) {
-    holdFrame = undefined
-    const dt = Math.min(250, now - (holdLast || now))
-    holdLast = now
-    hp = clamp(hp + dt / (holding ? 1400 : -840))
-    set(hold, '--hp', hp)
-    if (hp >= 1) {
-      complete()
-      return
-    }
-    if (!holding && hp <= 0) {
-      holdLast = 0
-      return
-    }
-    holdFrame = frame(holdTick)
-  }
-  function start(event: Event) {
-    if (
-      verified ||
-      (event instanceof KeyboardEvent &&
-        (![' ', 'Enter'].includes(event.key) || event.repeat))
-    )
-      return
-    if (event instanceof PointerEvent && event.button !== 0) return
-    event.preventDefault()
-    holding = true
-    if (event instanceof PointerEvent) hold.setPointerCapture(event.pointerId)
-    if (holdFrame === undefined) {
-      holdLast = 0
-      holdFrame = frame(holdTick)
-    }
-  }
-  function end(event?: Event) {
-    if (event instanceof KeyboardEvent && ![' ', 'Enter'].includes(event.key))
-      return
-    holding = false
-  }
-  listen(hold, 'pointerdown', start)
-  listen(hold, 'keydown', start)
-  for (const type of [
-    'pointerup',
-    'pointercancel',
-    'lostpointercapture',
-    'keyup',
-    'blur',
-  ])
-    listen(hold, type, end)
-  listen(hold, 'contextmenu', (event) => event.preventDefault())
-  listen(window, 'blur', () => end())
+  listen(hold, 'click', complete)
   listen(document, 'visibilitychange', () => {
     root.classList.toggle('paused', document.hidden)
-    if (document.hidden) end()
-    else kick()
+    if (!document.hidden) kick()
   })
   queries.forEach((query) => listen(query, 'change', mode))
   if (doc.classList.contains('verified')) complete()

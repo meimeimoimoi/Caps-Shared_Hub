@@ -98,9 +98,9 @@
     "label": "AI draft → Verified version",
     "title": "Every draft needs <em>someone to read it again.</em>",
     "lead": "An overlooked cash expense may be disallowed during an audit. <b>An expert catches it first.</b>",
-    "hold": "Hold to verify",
+    "hold": "Show reviewed example",
     "held": "Verified",
-    "hint": "Hold the button to see the expert stamp the sample draft beside it.",
+    "hint": "Open the example to see what the expert changed.",
     "heldHint": "Stamped. The draft is now version 2; the original version is preserved.",
     "docLabel": "AI draft · Explanatory letter",
     "draftVersion": "Version 1 · Draft",
@@ -188,5 +188,12 @@
     "experts": "Experts",
     "featured": "Highly rated experts",
     "profile": "View profile"
+  },
+  "pricing": {
+    "title": "Pricing",
+    "heading": "AI is free. Pay when you hire an expert.",
+    "detail": "Ask questions, draft and export with AI for free, with no usage limits. See review fees by expert and service on the marketplace.",
+    "ask": "Ask AI",
+    "marketplace": "See expert fees"
   }
 }

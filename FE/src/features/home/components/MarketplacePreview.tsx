@@ -22,7 +22,7 @@ export function MarketplacePreview() {
   const format = useFormatters()
   const sla = useSlaLabel()
   const text = useServiceText()
-  const { data } = useMarketplace()
+  const { data, isPending, isError } = useMarketplace()
 
   const services = useMemo(() => (data ? serviceFacts(data) : []), [data])
   const featured = useMemo(
@@ -62,41 +62,61 @@ export function MarketplacePreview() {
           </Link>
         </div>
 
-        <ul className="market-services" aria-label={t('market.servicesLabel')}>
-          {services.map((s, i) => (
-            <li
-              key={s.id}
-              className="r"
-              style={{ '--i': String(4 + i) } as CSSProperties}
-            >
-              <Link to={`/marketplace?service=${encodeURIComponent(s.id)}`}>
-                <span className="ms-name">{text.name(s.id, s.name)}</span>
-                {text.deliverable(s.id) && (
-                  <span className="ms-desc">{text.deliverable(s.id)}</span>
-                )}
-                <span className="ms-facts">
-                  {s.from != null && (
-                    <span>
-                      <small>{t('market.from')}</small>
-                      <b>{format.money(s.from)}</b>
-                    </span>
+        {services.length === 0 && (
+          <p role="status" className="market-demo">
+            {tm(
+              isPending
+                ? 'preview.loading'
+                : isError
+                  ? 'preview.unavailable'
+                  : 'preview.empty'
+            )}
+          </p>
+        )}
+        {services.length > 0 && (
+          <ul
+            className="market-services"
+            aria-label={t('market.servicesLabel')}
+          >
+            {services.map((s, i) => (
+              <li
+                key={s.id}
+                className="r"
+                style={{ '--i': String(4 + i) } as CSSProperties}
+              >
+                <Link to={`/marketplace?service=${encodeURIComponent(s.id)}`}>
+                  <span className="ms-name">{text.name(s.id, s.name)}</span>
+                  {text.deliverable(s.id) && (
+                    <span className="ms-desc">{text.deliverable(s.id)}</span>
                   )}
-                  {s.fastest != null && (
+                  <span className="ms-facts">
+                    {s.from != null && (
+                      <span>
+                        <small>{t('market.from')}</small>
+                        <b>{format.money(s.from)}</b>
+                      </span>
+                    )}
+                    {s.fastest != null && (
+                      <span>
+                        <small>{t('market.fastest')}</small>
+                        <b>{sla(s.fastest)}</b>
+                      </span>
+                    )}
                     <span>
-                      <small>{t('market.fastest')}</small>
-                      <b>{sla(s.fastest)}</b>
+                      <small>{t('market.experts')}</small>
+                      <b>{format.number(s.count)}</b>
                     </span>
-                  )}
-                  <span>
-                    <small>{t('market.experts')}</small>
-                    <b>{format.number(s.count)}</b>
+                    <ArrowRight
+                      size={20}
+                      aria-hidden="true"
+                      className="ms-go"
+                    />
                   </span>
-                  <ArrowRight size={20} aria-hidden="true" className="ms-go" />
-                </span>
-              </Link>
-            </li>
-          ))}
-        </ul>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )}
 
         {featured.length > 0 && (
           <>

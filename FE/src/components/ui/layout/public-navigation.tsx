@@ -2,11 +2,7 @@ import { useTranslation } from 'react-i18next'
 import { Link, NavLink } from 'react-router-dom'
 
 /** Shared primary navigation for all public pages. Protected routes handle sign-in. */
-export function PublicNavigation({
-  authenticated,
-}: {
-  authenticated: boolean
-}) {
+export function PublicNavigation() {
   const { t } = useTranslation('publicSite')
   return (
     <nav className="nav" aria-label={t('nav.label')}>
@@ -56,20 +52,10 @@ export function PublicNavigation({
           </NavLink>
         </li>
         <li>
-          <NavLink
-            to={authenticated ? '/ai-assistant' : '/login'}
-            state={authenticated ? undefined : { from: '/ai-assistant' }}
-          >
-            {t('links.aiAssistant')}
-          </NavLink>
+          <NavLink to="/ai-assistant">{t('links.aiAssistant')}</NavLink>
         </li>
         <li>
-          <NavLink
-            to={authenticated ? '/drafts' : '/login'}
-            state={authenticated ? undefined : { from: '/drafts' }}
-          >
-            {t('links.workspace')}
-          </NavLink>
+          <NavLink to="/drafts">{t('links.workspace')}</NavLink>
         </li>
         <li>
           <NavLink to="/marketplace">{t('links.marketplace')}</NavLink>

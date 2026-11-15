@@ -82,7 +82,7 @@ export function VerificationSection() {
             <span className="was">
               <HomeText i18nKey="verify.rowBefore" />
             </span>
-            <span className="now">
+            <span className="now" aria-hidden="true">
               <HomeText i18nKey="verify.rowAfter" />
             </span>
           </p>
@@ -90,7 +90,7 @@ export function VerificationSection() {
             <i style={{ width: '88%' } as CSSProperties}></i>
             <i style={{ width: '52%' } as CSSProperties}></i>
           </div>
-          <div className="note">
+          <div className="note" aria-hidden="true">
             <span className="avatar" aria-hidden="true">
               {t('verify.reviewerInitials')}
             </span>
