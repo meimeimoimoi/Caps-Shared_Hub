@@ -84,7 +84,7 @@ test('Bước 4 · phản hồi yêu cầu bổ sung đưa hồ sơ về đang t
   await expect(heading(page, 'Chuyên gia đang thẩm định hồ sơ')).toBeVisible()
 })
 
-test('Bước 4 · hủy khi đang thẩm định quyết toán 50 / 40 / 10', async ({
+test('Bước 4 · hủy khi đang thẩm định quyết toán 50 / 30 / 20', async ({
   page,
 }) => {
   await page.goto('/cases/RC-2026-0371') // phí 2.200.000
@@ -96,11 +96,11 @@ test('Bước 4 · hủy khi đang thẩm định quyết toán 50 / 40 / 10', a
 
   await expect(heading(page, 'Hồ sơ đã chấm dứt')).toBeVisible()
   const receipt = page.getByRole('region', { name: 'Quyết toán' })
-  for (const amount of ['1.100.000', '880.000', '220.000', '2.200.000'])
+  for (const amount of ['1.100.000', '660.000', '440.000', '2.200.000'])
     await expect(receipt).toContainText(amount)
 })
 
-test('Bước 6 · nghiệm thu quyết toán 80 / 20 rồi đánh giá chuyên gia', async ({
+test('Bước 6 · nghiệm thu quyết toán 60 / 40 rồi đánh giá chuyên gia', async ({
   page,
 }) => {
   await page.goto('/cases/RC-2026-0397') // VERIFIED, phí 2.500.000
@@ -112,8 +112,8 @@ test('Bước 6 · nghiệm thu quyết toán 80 / 20 rồi đánh giá chuyên 
 
   await expect(heading(page, 'Hồ sơ đã hoàn tất')).toBeVisible()
   const receipt = page.getByRole('region', { name: 'Quyết toán' })
-  await expect(receipt).toContainText('2.000.000')
-  await expect(receipt).toContainText('500.000')
+  await expect(receipt).toContainText('1.500.000')
+  await expect(receipt).toContainText('1.000.000')
 
   const rate = page.getByRole('button', { name: 'Gửi đánh giá' })
   await rate.click()
