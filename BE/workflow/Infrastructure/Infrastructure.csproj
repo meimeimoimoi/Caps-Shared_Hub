@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <RootNamespace>Caps.Workflow.Infrastructure</RootNamespace>
@@ -13,6 +13,8 @@
     <ProjectReference Include="..\..\common\Persistence\Persistence.csproj" />
     <ProjectReference Include="..\..\common\Messaging\Messaging.csproj" />
     <PackageReference Include="AWSSDK.S3" />
+    <PackageReference Include="QuestPDF" />
+    <PackageReference Include="DocumentFormat.OpenXml" />
   </ItemGroup>
 
 </Project>

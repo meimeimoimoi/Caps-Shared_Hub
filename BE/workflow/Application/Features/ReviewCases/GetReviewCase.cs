@@ -11,7 +11,8 @@ public sealed record GetReviewCaseQuery(Guid UserId, Guid ReviewCaseId);
 /// <summary>Returns the case with the expert's questions; to anyone but its client or expert it does not exist.</summary>.
 public sealed class GetReviewCaseHandler(
     IReviewCaseRepository cases,
-    IInfoRequestRepository infoRequests
+    IInfoRequestRepository infoRequests,
+    IReviewAttachmentRepository attachments
 ) : IQueryHandler<GetReviewCaseQuery, ReviewCaseResponse>
 {
     public async Task<ReviewCaseResponse> HandleAsync(
@@ -24,6 +25,12 @@ public sealed class GetReviewCaseHandler(
             ?? throw WorkflowErrors.ReviewCaseNotFound();
         reviewCase.EnsureVisibleTo(query.UserId);
         var questions = await infoRequests.ListAsync(reviewCase.Id, ct);
-        return ReviewCaseResponse.From(reviewCase, questions);
+        // An upload file's version holds file details, not draft fiels
+        var source = await attachments.FindSourceAsync(reviewCase.SourceVersionId, ct);
+        return ReviewCaseResponse.From(
+            reviewCase,
+            questions,
+            source?.FileUrl is null ? source?.Content : null
+        );
     }
 }

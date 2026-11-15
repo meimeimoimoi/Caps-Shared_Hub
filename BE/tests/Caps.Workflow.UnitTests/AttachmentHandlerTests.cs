@@ -4,6 +4,7 @@ using Caps.Workflow.Application.Abstractions;
 using Caps.Workflow.Application.DTOs.Responses;
 using Caps.Workflow.Application.Features.Attachments;
 using Caps.Workflow.Domain.Review;
+using Caps.Workflow.Domain.Workspace;
 
 namespace Caps.Workflow.UnitTests;
 
@@ -102,6 +103,81 @@ public sealed class AttachmentHandlerTests
         Assert.Equal("ATTACHMENT_NOT_FOUND", e.Code);
     }
 
+    [Fact]
+    public async Task The_expert_and_an_admin_open_the_uploaded_source_file()
+    {
+        var run = new Run();
+        var key = run.UploadedSource("""{"fileName":"tax.pdf","contentType":"application/pdf"}""");
+        var handler = new OpenSourceFileHandler(run.Cases, run.Attachments, run.Storage);
+
+        var file = await handler.HandleAsync(new(Expert, run.Case.Id), default);
+        var forAdmin = await handler.HandleAsync(new(null, run.Case.Id), default);
+
+        Assert.Equal(("application/pdf", "tax.pdf"), (file.ContentType, file.FileName));
+        await using var reader = new MemoryStream();
+        await file.Content.CopyToAsync(reader);
+        Assert.Equal(Pdf, reader.ToArray());
+        Assert.Equal("tax.pdf", forAdmin.FileName);
+        Assert.True(run.Storage.Files.ContainsKey(key));
+    }
+
+    [Fact]
+    public async Task A_source_without_recorded_details_still_downloads()
+    {
+        var run = new Run();
+        run.UploadedSource("{}");
+
+        var file = await new OpenSourceFileHandler(
+            run.Cases,
+            run.Attachments,
+            run.Storage
+        ).HandleAsync(new(Client, run.Case.Id), default);
+
+        Assert.Equal(
+            ("application/octet-stream", "document-v1"),
+            (file.ContentType, file.FileName)
+        );
+    }
+
+    [Fact]
+    public async Task A_version_built_in_the_app_has_no_file()
+    {
+        var run = new Run();
+        run.Attachments.Versions.Add(
+            new DocumentVersion
+            {
+                Id = run.Case.SourceVersionId,
+                VersionNo = 1,
+                Content = "{}",
+            }
+        );
+
+        var e = await Assert.ThrowsAsync<AppException>(() =>
+            new OpenSourceFileHandler(run.Cases, run.Attachments, run.Storage).HandleAsync(
+                new(Expert, run.Case.Id),
+                default
+            )
+        );
+
+        Assert.Equal("ATTACHMENT_NOT_FOUND", e.Code);
+    }
+
+    [Fact]
+    public async Task Nobody_else_opens_the_source_file()
+    {
+        var run = new Run();
+        run.UploadedSource("{}");
+
+        var e = await Assert.ThrowsAsync<AppException>(() =>
+            new OpenSourceFileHandler(run.Cases, run.Attachments, run.Storage).HandleAsync(
+                new(Guid.NewGuid(), run.Case.Id),
+                default
+            )
+        );
+
+        Assert.Equal("REVIEW_CASE_NOT_FOUND", e.Code);
+    }
+
     private sealed class Run
     {
         public Run(bool saveFails = false, int existing = 0)
@@ -140,6 +216,24 @@ public sealed class AttachmentHandlerTests
                 UnitOfWork,
                 TimeProvider.System
             ).HandleAsync(new(userId, Case.Id, "tax.pdf", Pdf), default);
+
+        // The client's uploaded file as the case's source version; returns its storage key
+        public string UploadedSource(string content)
+        {
+            var key = $"documents/{Case.DocumentId}/{Case.SourceVersionId}";
+            Attachments.Versions.Add(
+                new DocumentVersion
+                {
+                    Id = Case.SourceVersionId,
+                    DocumentId = Case.DocumentId,
+                    VersionNo = 1,
+                    FileUrl = key,
+                    Content = content,
+                }
+            );
+            Storage.Files[key] = Pdf;
+            return key;
+        }
     }
 
     private sealed class FakeStorage : IObjectStorage
@@ -189,6 +283,11 @@ public sealed class AttachmentHandlerTests
             );
 
         public void Add(ReviewAttachment attachment) => Stored.Add(attachment);
+
+        public List<DocumentVersion> Versions { get; } = [];
+
+        public Task<DocumentVersion?> FindSourceAsync(Guid versionId, CancellationToken ct) =>
+            Task.FromResult(Versions.SingleOrDefault(x => x.Id == versionId));
     }
 
     private sealed class FakeUnitOfWork(bool saveFails) : IUnitOfWork, ITransaction

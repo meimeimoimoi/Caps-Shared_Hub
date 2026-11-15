@@ -7,7 +7,7 @@ from app.api.dependencies import verify_internal_key
 from app.modules.drafting.drafter import DocumentDrafter
 from app.modules.ingestion.chunker import LegalChunker
 from app.modules.ingestion.indexer import LegalIndexer
-from app.modules.rag.generator import GroundedGenerator
+from app.modules.rag.generator import GroundedGenerator, build_citations
 from app.modules.rag.retriever import TemporalRetriever
 from app.modules.rag.router import ScopeRouter
 from app.schemas.answers import (
@@ -251,19 +251,7 @@ def draft_document(req: GenerateDraftRequest):
             req.snapshot_data, req.template_schema, context
         )
 
-        citations = [
-            {
-                "legal_source_id": (h.payload or {}).get("legal_source_id"),
-                "document_number": (h.payload or {}).get("document_number"),
-                "doc_title": (h.payload or {}).get("document_title"),
-                "article": (h.payload or {}).get("article"),
-                "clause": (h.payload or {}).get("clause"),
-                "point": (h.payload or {}).get("point"),
-                "effective_from": (h.payload or {}).get("effective_from"),
-                "effective_to": (h.payload or {}).get("effective_to"),
-            }
-            for h in retrieved
-        ]
+        citations = build_citations(retrieved, include_text=False)
 
         return GenerateDraftResponse(
             status=OperationStatus.SUCCESS,

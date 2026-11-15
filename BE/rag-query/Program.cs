@@ -1,4 +1,5 @@
 using Caps.Common.Api;
+using Caps.Common.Security;
 using Caps.RagQuery.Options;
 using Caps.RagQuery.Services;
 using Caps.RagQuery.Services.Interfaces;
@@ -19,8 +20,15 @@ builder.Services.AddHttpClient<IChatAiClient, ChatAiClient>(
             ?? new AiServiceOptions();
 
         httpClient.BaseAddress = new Uri(options.BaseUrl.TrimEnd('/') + "/");
-        httpClient.Timeout = TimeSpan.FromSeconds(options.TimeOutSeconds);
+        httpClient.Timeout = TimeSpan.FromSeconds(options.TimeoutSeconds);
         httpClient.DefaultRequestHeaders.Add("Accept", "application/json");
+        if (!string.IsNullOrWhiteSpace(options.InternalKey))
+        {
+            httpClient.DefaultRequestHeaders.Add(
+                RequireInternalKeyAttribute.Header,
+                options.InternalKey
+            );
+        }
     }
 );
 

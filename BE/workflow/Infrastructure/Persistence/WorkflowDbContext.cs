@@ -359,6 +359,9 @@ public sealed class WorkflowDbContext(DbContextOptions<WorkflowDbContext> option
             e.Property(x => x.Result).HasColumnName("result");
             e.Property(x => x.CannotVerifyReason).HasColumnName("cannot_verify_reason");
             e.Property(x => x.ReviewSummary).HasColumnName("review_summary");
+            e.Property(x => x.RevisedContent)
+                .HasColumnName("revised_content")
+                .HasColumnType("jsonb");
             e.Property(x => x.DeclineReason).HasColumnName("decline_reason");
             e.Property(x => x.TerminationReason).HasColumnName("termination_reason");
             e.Property(x => x.ResponseDeadline).HasColumnName("response_deadline").IsRequired();
@@ -631,5 +634,15 @@ public sealed class WorkflowDbContext(DbContextOptions<WorkflowDbContext> option
                 .HasFilter("sent_at IS NULL")
                 .HasDatabaseName("ix_event_outbox_unsent");
         });
+    }
+
+    /// <summary>Brings documents in step with the review case moves in this save, in the same transaction.</summary>
+    public override async Task<int> SaveChangesAsync(
+        bool acceptAllChangesOnSuccess,
+        CancellationToken cancellationToken = default
+    )
+    {
+        await CaseDocuments.SyncAsync(this, cancellationToken);
+        return await base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
     }
 }

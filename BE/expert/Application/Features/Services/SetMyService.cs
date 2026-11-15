@@ -42,7 +42,7 @@ public sealed class SetMyServiceHandler(
             await profiles.FindByUserAsync(command.UserId, ct)
             ?? throw ExpertErrors.PricingNotAllowed("NOT_REGISTERED");
         var qualification = await qualifications.FindLatestAsync(profile.Id, code, ct);
-        // A service is open for pricing once the System Admin has set its platform fee
+        // The expert has set a price for this service
         var rate =
             await fees.FindCurrentAsync(code, now, ct) ?? throw ExpertErrors.PlatformFeeNotSet();
         var policy = await policies.GetPricingAsync(ct);

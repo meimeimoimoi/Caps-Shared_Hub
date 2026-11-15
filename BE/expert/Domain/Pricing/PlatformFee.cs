@@ -116,7 +116,7 @@ public sealed class PlatformFee
             effectiveFrom = new DateTimeOffset(
                 effectiveOn.Value.ToDateTime(TimeOnly.MinValue),
                 LocalOffset
-            );
+            ).ToUniversalTime();
         }
         return new()
         {

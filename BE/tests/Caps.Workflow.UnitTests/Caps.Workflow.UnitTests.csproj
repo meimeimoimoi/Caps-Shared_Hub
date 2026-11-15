@@ -12,6 +12,7 @@
     <Using Include="Xunit" />
     <ProjectReference Include="..\..\workflow\Domain\Domain.csproj" />
     <ProjectReference Include="..\..\workflow\Application\Application.csproj" />
+    <ProjectReference Include="..\..\workflow\Infrastructure\Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

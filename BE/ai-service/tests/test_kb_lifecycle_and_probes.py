@@ -213,6 +213,47 @@ class KbLifecycleAndProbesTests(unittest.TestCase):
         self.assertEqual(resp.status_code, 503)
         self.assertNotIn("qdrant down", resp.text)
 
+    def test_draft_document_normalizes_citation_dates(self):
+        fake_hit = SimpleNamespace(
+            payload={
+                "legal_source_id": "src-1",
+                "document_number": "320/2025/ND-CP",
+                "document_title": "Decree 320",
+                "article": "Dieu 1",
+                "clause": None,
+                "point": None,
+                "text_content": "Corporate income tax content",
+                "effective_from": "2025-10-01T00:00:00Z",
+                "effective_to": "2026-12-31T23:59:59Z",
+            }
+        )
+        fake_draft = {
+            "content": {"summary": "Draft"},
+            "content_hash": "abc",
+            "has_unauthorized_numbers": False,
+            "unauthorized_numbers": [],
+        }
+        with (
+            patch("app.api.routes.TemporalRetriever.retrieve", return_value=[fake_hit]),
+            patch("app.api.routes.DocumentDrafter.generate_draft", return_value=fake_draft),
+        ):
+            resp = self.client.post(
+                "/api/v1/drafting/generate",
+                json={
+                    "document_id": "doc-1",
+                    "snapshot_data": {"revenue": 100},
+                    "template_schema": {},
+                    "period_start": "2026-01-01",
+                    "period_end": "2026-03-31",
+                },
+            )
+
+        self.assertEqual(resp.status_code, 200)
+        citation = resp.json()["citations"][0]
+        self.assertEqual(citation["effective_from"], "2025-10-01")
+        self.assertEqual(citation["effective_to"], "2026-12-31")
+        self.assertNotIn("text", citation)
+
 
 if __name__ == "__main__":
     unittest.main()

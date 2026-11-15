@@ -100,4 +100,22 @@ public sealed class AdminDisputesController(ICurrentUser currentUser) : Controll
         Response.Headers.CacheControl = "private, no-store";
         return File(file.Content, file.ContentType, file.FileName);
     }
+
+    /// <summary>Downloads the uploaded file the case reviews.</summary>
+    /// <remarks>Client always; expert once the case is paid. Versions built in the app have no file.</remarks>
+    /// <response code="200">The file bytes.</response>
+    /// <response code="403">Missing the DisputeResolve permission.</response>
+    /// <response code="404">REVIEW_CASE_NOT_FOUND or ATTACHMENT_NOT_FOUND.</response>
+    [HttpGet("{caseId:guid}/source-file")]
+    public async Task<IActionResult> OpenSourceFile(
+        Guid caseId,
+        [FromServices] IQueryHandler<OpenSourceFileQuery, AttachmentFile> handler,
+        CancellationToken ct
+    )
+    {
+        var file = await handler.HandleAsync(new(null, caseId), ct);
+        Response.Headers.XContentTypeOptions = "nosniff";
+        Response.Headers.CacheControl = "private, no-store";
+        return File(file.Content, file.ContentType, file.FileName);
+    }
 }

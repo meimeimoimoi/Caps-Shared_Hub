@@ -26,6 +26,9 @@ public sealed class Document
     public ICollection<DocumentVersion> Versions { get; set; } = [];
 
     public const string ExternalFile = "EXTERNAL_FILE";
+    public const string Draft = "DRAFT";
+    public const string InReview = "IN_REVIEW";
+    public const string Verified = "VERIFIED";
 
     /// <summary>
     /// A document the client brings as a file: version 1 holds it. The file is checked by its bytes (same rules as
@@ -78,5 +81,38 @@ public sealed class Document
         version.FileUrl = $"documents/{document.Id}/{version.Id}";
         document.Versions.Add(version);
         return document;
+    }
+
+    /// <summary>
+    /// Follows the document's review cases: IN_REVIEW while a paid case runs, otherwise VERIFIED when this case
+    /// verified it or the verified version is still the latest, otherwise DRAFT.
+    /// </summary>
+    public void SyncReview(
+        bool paidCaseOpen,
+        Guid? verifiedVersionId,
+        bool verifiedIsLatest,
+        DateTimeOffset now
+    )
+    {
+        if (verifiedVersionId is { } id)
+        {
+            VerifiedVersionId = id;
+        }
+        Status =
+            paidCaseOpen ? InReview
+            : verifiedVersionId is not null || verifiedIsLatest ? Verified
+            : Draft;
+        UpdatedAt = now;
+    }
+
+    /// <summary>A client version added after verification starts a new draft; the verified version stays recorded.</summary>
+    public void StartNewDraft(DateTimeOffset now)
+    {
+        if (Status != Verified)
+        {
+            return;
+        }
+        Status = Draft;
+        UpdatedAt = now;
     }
 }

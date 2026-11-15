@@ -1,17 +1,21 @@
-import { useEffect, useMemo } from 'react'
+import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useSearchParams } from 'react-router-dom'
 import { FolderSearch, Store } from 'lucide-react'
 import { StatusBadge } from '@/components/ui/display/status-badge'
 import { CASE_STATUS } from '@/lib/constants'
 import { cn } from '@/lib/utils'
-import { DEMO_CASES, demoCase } from '@/features/review-case/fixtures'
+import { useCaseUnread } from '@/features/review-case/hooks/useCaseChat'
+import { useClientCases } from '@/features/review-case/hooks/useReviewCases'
 import {
   ACTION_STATUSES,
   CLOSED_STATUSES,
   useCaseFormat,
 } from '@/features/review-case/ui'
-import type { ReviewCase } from '@/features/review-case/types'
+import type { CaseUnread, ReviewCase } from '@/features/review-case/types'
+
+const unreadOf = (list: CaseUnread[] | undefined, id: string) =>
+  list?.find((u) => u.reviewCaseId === id)?.unreadCount ?? 0
 
 const FILTERS = ['all', 'action', 'active', 'closed'] as const
 type Filter = (typeof FILTERS)[number]
@@ -33,14 +37,9 @@ export default function CasesPage() {
   const filter: Filter = FILTERS.includes(raw as Filter)
     ? (raw as Filter)
     : 'all'
-  // ponytail: toàn bộ danh sách demo, lọc phía client; cần phân trang server khi có API
-  const cases = useMemo(
-    () =>
-      DEMO_CASES.map((d) => demoCase(d.id)!).sort((a, b) =>
-        b.timeline[0].at.localeCompare(a.timeline[0].at)
-      ),
-    []
-  )
+  // ponytail: the API returns every case and the filters run here; add server paging if lists grow past a few hundred
+  const { cases, isPending, isError, refetch } = useClientCases()
+  const unread = useCaseUnread().data
   const shown = cases.filter((c) => match(filter, c))
 
   useEffect(() => {
@@ -91,7 +90,24 @@ export default function CasesPage() {
         })}
       </nav>
 
-      {shown.length === 0 ? (
+      {isPending ? (
+        <div
+          role="status"
+          aria-label={t('live.loading')}
+          className="bg-sunken mt-6 h-40 rounded motion-safe:animate-pulse"
+        />
+      ) : isError ? (
+        <div role="alert" className="paper mt-6 p-10 text-center">
+          <p className="text-fg-strong font-semibold">{t('errors.failed')}</p>
+          <button
+            type="button"
+            onClick={() => void refetch()}
+            className="btn btn-secondary mt-4"
+          >
+            {t('retry')}
+          </button>
+        </div>
+      ) : shown.length === 0 ? (
         <div className="paper mt-6 p-10 text-center">
           <FolderSearch
             size={28}
@@ -131,7 +147,12 @@ export default function CasesPage() {
                   <td className="max-w-[24rem] max-md:max-w-[14rem]">
                     <Link to={`/cases/${c.id}`} className="group block">
                       <span className="num text-fg-strong group-hover:text-accent-text block font-semibold">
-                        {c.id}
+                        {c.code ?? c.id}
+                        {unreadOf(unread, c.id) > 0 && (
+                          <span className="num bg-ink text-paper ml-2 rounded-full px-2 text-xs">
+                            {t('live.unread', { count: unreadOf(unread, c.id) })}
+                          </span>
+                        )}
                       </span>
                       <span className="text-fg block truncate">{c.title}</span>
                     </Link>

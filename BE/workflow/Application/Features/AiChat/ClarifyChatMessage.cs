@@ -66,7 +66,7 @@ public static class ClarifyChatMessage
             var now = timeProvider.GetUtcNow();
 
             var quota = await aiQuotaRepository.GetByUserIdAsync(command.UserId, ct);
-            if (quota?.HashAvailableQuota() != true)
+            if (quota?.HasAvailableQuota() != true)
             {
                 throw WorkflowErrors.QuotaExhausted();
             }

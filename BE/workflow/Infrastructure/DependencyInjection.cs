@@ -2,6 +2,7 @@ using Caps.Common.Persistence;
 using Caps.Workflow.Application.Abstractions;
 using Caps.Workflow.Application.Abstractions.Documents;
 using Caps.Workflow.Infrastructure.Clients;
+using Caps.Workflow.Infrastructure.Documents;
 using Caps.Workflow.Infrastructure.Integrations;
 using Caps.Workflow.Infrastructure.Jobs;
 using Caps.Workflow.Infrastructure.Persistence;
@@ -15,8 +16,6 @@ namespace Caps.Workflow.Infrastructure;
 /// <summary>Registers the workflow adapters, starting with its database.</summary>
 public static class DependencyInjection
 {
-    private const string InternalKeyHeader = "X-Internal-Key";
-
     /// <summary>The workflow database (shared unit of work, readiness check) behind the application ports.</summary>
     public static IServiceCollection AddWorkflowInfrastructure(
         this IServiceCollection services,
@@ -46,10 +45,11 @@ public static class DependencyInjection
         services.AddScoped<IReviewDisputeRepository, ReviewDisputeRepository>();
         services.AddScoped<IReviewAttachmentRepository, ReviewAttachmentRepository>();
         services.AddSingleton<IObjectStorage, S3ObjectStorage>();
+        services.AddSingleton<IDocumentFileExporter, DocumentFileExporter>();
         services.AddScoped<ITemplateRepository, TemplateRepository>();
 
         // RAG query HTTP client
-        var ragServiceBaseUrl = configuration["Services:RagQuery"] ?? "http://rag-query:5200";
+        var ragServiceBaseUrl = configuration["Services:RagQuery"] ?? "http://rag-query:5104";
         var ragInternalKey = configuration["Services:RagQueryInternalKey"];
         services.AddHttpClient<IRagQueryClient, RagQueryClient>(client =>
         {
@@ -57,16 +57,21 @@ public static class DependencyInjection
             client.Timeout = TimeSpan.FromSeconds(90);
             if (!string.IsNullOrWhiteSpace(ragInternalKey))
             {
-                client.DefaultRequestHeaders.Add(InternalKeyHeader, ragInternalKey);
+                client.DefaultRequestHeaders.Add(ServiceCalls.KeyHeader, ragInternalKey);
             }
         });
 
         // Python AI drafting HTTP client
         var aiServiceBaseUrl = configuration["Services:AiService"] ?? "http://ai-service:8000";
+        var aiInternalKey = configuration["Services:AiServiceInternalKey"];
         services.AddHttpClient<IAiDraftingClient, AiDraftingClient>(client =>
         {
             client.BaseAddress = new Uri(aiServiceBaseUrl);
             client.Timeout = TimeSpan.FromSeconds(85);
+            if (!string.IsNullOrWhiteSpace(aiInternalKey))
+            {
+                client.DefaultRequestHeaders.Add(ServiceCalls.KeyHeader, aiInternalKey);
+            }
         });
 
         return services;

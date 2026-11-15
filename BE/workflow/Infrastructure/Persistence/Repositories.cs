@@ -193,6 +193,9 @@ public sealed class ReviewAttachmentRepository(WorkflowDbContext db) : IReviewAt
             .SingleOrDefaultAsync(x => x.Id == attachmentId && x.ReviewCaseId == reviewCaseId, ct);
 
     public void Add(ReviewAttachment attachment) => db.ReviewAttachments.Add(attachment);
+
+    public Task<DocumentVersion?> FindSourceAsync(Guid versionId, CancellationToken ct) =>
+        db.DocumentVersions.AsNoTracking().SingleOrDefaultAsync(x => x.Id == versionId, ct);
 }
 
 /// <summary>EF Core store for document templates and their versions.</summary>

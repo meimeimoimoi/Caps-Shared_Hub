@@ -1,6 +1,7 @@
 using Caps.Common.Api;
 using Caps.Common.Application;
 using Caps.Common.Security;
+using Caps.Workflow.Application.DTOs.Responses;
 using Caps.Workflow.Domain.Review;
 using Microsoft.AspNetCore.Mvc;
 using static Caps.Workflow.Api.DTOs.Requests.DocumentRequests;
@@ -12,6 +13,7 @@ using static Caps.Workflow.Application.Features.Documents.GenerateDraft;
 using static Caps.Workflow.Application.Features.Documents.GetDocument;
 using static Caps.Workflow.Application.Features.Documents.GetDocumentVersionDetail;
 using static Caps.Workflow.Application.Features.Documents.GetDocumentVersions;
+using static Caps.Workflow.Application.Features.Documents.OpenDocumentVersionFile;
 using static Caps.Workflow.Application.Features.Documents.UploadDocument;
 
 namespace Caps.Workflow.Api.Controllers;
@@ -217,6 +219,39 @@ public sealed class DocumentController(ICurrentUser currentUser) : ControllerBas
         var result = await handler.HandleAsync(command, ct);
 
         return Ok(ApiResponse<DownloadDocumentResultDto>.Ok(result));
+    }
+
+    /// <summary>
+    /// 8. Download the rendered PDF/DOCX export or original uploaded file for a document version.
+    /// </summary>
+    /// <remarks>
+    /// Streams the stored bytes for EXTERNAL_FILE versions, or exports AI_DRAFT / EXPERT_REVIEWED versions as PDF or DOCX.
+    /// </remarks>
+    /// <param name="id">Document identifier.</param>
+    /// <param name="versionId">Document version identifier.</param>
+    /// <param name="format">Requested export format for generated versions (pdf or docx).</param>
+    /// <param name="handler">Query handler for opening or exporting the version file.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <response code="200">The exported or stored file bytes.</response>
+    /// <response code="403">Caller does not own the document.</response>
+    /// <response code="404">Document, version, or stored file was not found.</response>
+    [HttpGet("{id:guid}/versions/{versionId:guid}/file")]
+    [ProducesResponseType(typeof(FileStreamResult), StatusCodes.Status200OK)]
+    public async Task<IActionResult> OpenVersionFile(
+        [FromRoute] Guid id,
+        [FromRoute] Guid versionId,
+        [FromQuery] string? format,
+        [FromServices] IQueryHandler<OpenDocumentVersionFileQuery, AttachmentFile> handler,
+        CancellationToken ct
+    )
+    {
+        var file = await handler.HandleAsync(
+            new OpenDocumentVersionFileQuery(id, versionId, UserId, format),
+            ct
+        );
+        Response.Headers.XContentTypeOptions = "nosniff";
+        Response.Headers.CacheControl = "private, no-store";
+        return File(file.Content, file.ContentType, file.FileName);
     }
 
     /// <summary>Creates a document from an uploaded file (multipart: title, periodStart, periodEnd, file).</summary>

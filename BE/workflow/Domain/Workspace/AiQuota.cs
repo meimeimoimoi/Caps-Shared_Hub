@@ -19,7 +19,7 @@ public sealed class AiQuota
         };
     }
 
-    public bool HashAvailableQuota() => Balance > 0;
+    public bool HasAvailableQuota() => Balance > 0;
 
     public void Deduct(int amount, DateTimeOffset now)
     {

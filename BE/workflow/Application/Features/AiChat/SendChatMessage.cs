@@ -59,7 +59,7 @@ public static class SendChatMessage
                 await aiQuotaRepository.AddAsync(quota, ct);
             }
 
-            if (!quota.HashAvailableQuota())
+            if (!quota.HasAvailableQuota())
             {
                 throw WorkflowErrors.QuotaExhausted();
             }

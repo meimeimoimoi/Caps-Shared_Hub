@@ -43,7 +43,7 @@ export function ReviewResultView({
         />
       </div>
 
-      {result.outcome === 'VERIFIED' && (
+      {result.outcome === 'VERIFIED' && result.verifiedVersion && (
         <p className="bg-sunken rounded-surface mt-6 flex flex-wrap items-center gap-x-3 gap-y-1 px-4 py-3 text-sm">
           <Lock size={15} aria-hidden="true" className="text-fg-strong" />
           <span className="text-fg-strong font-semibold">
@@ -82,18 +82,22 @@ export function ReviewResultView({
             </>
           )}
         </div>
-        <div className="space-y-4">
-          <h3 className="eyebrow">
-            {t(
-              result.outcome === 'VERIFIED' ? 'result.notes' : 'result.findings'
-            )}
-          </h3>
-          {notes.map((n, i) => (
-            <MarginNote key={n.ref} kind="cite" label={`[${i + 1}] ${n.ref}`}>
-              {n.note}
-            </MarginNote>
-          ))}
-        </div>
+        {notes.length > 0 && (
+          <div className="space-y-4">
+            <h3 className="eyebrow">
+              {t(
+                result.outcome === 'VERIFIED'
+                  ? 'result.notes'
+                  : 'result.findings'
+              )}
+            </h3>
+            {notes.map((n, i) => (
+              <MarginNote key={n.ref} kind="cite" label={`[${i + 1}] ${n.ref}`}>
+                {n.note}
+              </MarginNote>
+            ))}
+          </div>
+        )}
       </div>
     </section>
   )
