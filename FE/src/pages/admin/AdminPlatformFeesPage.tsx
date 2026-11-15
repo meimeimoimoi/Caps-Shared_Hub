@@ -17,6 +17,7 @@ import { adminKeys } from '../../features/expert-vetting/api/queryKeys'
 import {
   cancelPendingPlatformFee,
   getPlatformFees,
+  MAX_REASON_LENGTH,
   setPlatformFee,
   type LateRule,
   type NoResponseRule,
@@ -26,6 +27,7 @@ import { formatDate } from '../../features/expert-vetting/utils/applications'
 import { PageHeader } from '@/components/ui/layout/page-header'
 import { LoadError } from '@/components/ui/feedback/load-error'
 import { SkeletonRows } from '@/components/ui/display/skeleton-rows'
+import { PlatformFeeHistory } from '@/features/expert-vetting/components/PlatformFeeHistory'
 
 const LATE_FIELDS = ['penaltyHours', 'penaltyPercent', 'cancelHours'] as const
 type LateDraft = Record<(typeof LATE_FIELDS)[number], string>
@@ -75,6 +77,8 @@ const SAVE_ERRORS = [
   'PLATFORM_FEE_TOO_SOON',
   'PLATFORM_FEE_NOT_PENDING',
   'SERVICE_NOT_FOUND',
+  'POLICY_REASON_REQUIRED',
+  'POLICY_REASON_TOO_LONG',
 ] as const
 type SaveError = (typeof SAVE_ERRORS)[number]
 const isSaveError = (code?: string): code is SaveError =>
@@ -233,6 +237,9 @@ export default function AdminPlatformFeesPage() {
     toNoResponseDraft(DEFAULT_NO_RESPONSE)
   )
   const [effectiveOn, setEffectiveOn] = useState('')
+  // Every fee needs the reason it was set, kept with the fee's history
+  const [reason, setReason] = useState('')
+  const [historyOf, setHistoryOf] = useState<PlatformFee | null>(null)
   const [toast, setToast] = useState<ToastContent | null>(null)
   const [withdrawing, setWithdrawing] = useState<PlatformFee | null>(null)
   // Saving a fee moves money for every new request, so the edit is reviewed before it is sent
@@ -253,13 +260,15 @@ export default function AdminPlatformFeesPage() {
       late: LateRule
       noResponse: NoResponseRule
       effectiveOn: string | null
+      reason: string
     }) =>
       setPlatformFee(
         input.serviceCode,
         input.percent,
         input.late,
         input.noResponse,
-        input.effectiveOn
+        input.effectiveOn,
+        input.reason
       ),
     onSuccess: () => qc.invalidateQueries({ queryKey: key }),
   })
@@ -335,6 +344,8 @@ export default function AdminPlatformFeesPage() {
     value <= maxPercent &&
     lateValid &&
     noResponseValid &&
+    reason.trim() !== '' &&
+    reason.trim().length <= MAX_REASON_LENGTH &&
     (!needsDate ||
       (effectiveOn !== '' && effectiveOn >= editing!.earliestEffectiveOn))
 
@@ -359,6 +370,7 @@ export default function AdminPlatformFeesPage() {
     setLate(toDraft(row.late ?? DEFAULT_LATE))
     setNoResponse(toNoResponseDraft(row.noResponse ?? DEFAULT_NO_RESPONSE))
     setEffectiveOn(row.percent == null ? '' : row.earliestEffectiveOn)
+    setReason('')
   }
   const confirm = () => {
     if (!editing || !valid) return
@@ -369,6 +381,7 @@ export default function AdminPlatformFeesPage() {
         late: lateRule,
         noResponse: noResponseRule,
         effectiveOn: needsDate ? effectiveOn : null,
+        reason: reason.trim(),
       })
       .then(() => {
         setToast(t('admin:platformFees.saved', { name: editing.serviceName }))
@@ -645,6 +658,18 @@ export default function AdminPlatformFeesPage() {
                         (part) => editButton(row, part)
                       )
                     )}
+                    {row.percent != null && (
+                      <button
+                        type="button"
+                        className="btn btn-press btn-ghost h-9 px-3 text-sm"
+                        onClick={() => setHistoryOf(row)}
+                        aria-label={t('admin:platformFees.history.openFor', {
+                          name: row.serviceName,
+                        })}
+                      >
+                        {t('admin:platformFees.history.open')}
+                      </button>
+                    )}
                     {row.pending && (
                       <button
                         type="button"
@@ -832,6 +857,13 @@ export default function AdminPlatformFeesPage() {
                       : t('admin:platformFees.reviewNow')}
                   </td>
                 </tr>
+                <tr className="bg-accent-soft">
+                  <th scope="row">{t('admin:platformFees.reasonLabel')}</th>
+                  <td>—</td>
+                  <td className="text-fg-strong whitespace-pre-wrap wrap-break-word">
+                    {reason.trim()}
+                  </td>
+                </tr>
               </tbody>
             </table>
           ) : (
@@ -1006,6 +1038,20 @@ export default function AdminPlatformFeesPage() {
                   )}
                 </div>
               )}
+              <div className="border-border-subtle mt-4 flex flex-col gap-2 border-t pt-3 text-sm font-semibold">
+                <label htmlFor="fee-reason">
+                  {t('admin:platformFees.reasonLabel')}
+                </label>
+                <textarea
+                  id="fee-reason"
+                  required
+                  rows={2}
+                  maxLength={MAX_REASON_LENGTH}
+                  value={reason}
+                  onChange={(e) => setReason(e.target.value)}
+                  className="border-border-control rounded-control shadow-control bg-paper resize-y border px-3 py-2 text-base font-normal"
+                />
+              </div>
               {/* Every case recomputed from the values being typed, so a change shows its effect on money */}
               {(valid ||
                 (editing.percent != null &&
@@ -1134,6 +1180,13 @@ export default function AdminPlatformFeesPage() {
               </button>
             </>
           }
+        />
+      )}
+      {historyOf && (
+        <PlatformFeeHistory
+          serviceCode={historyOf.serviceCode}
+          serviceName={historyOf.serviceName}
+          onClose={() => setHistoryOf(null)}
         />
       )}
       {toast && <Toast message={toast} onDone={clearToast} />}
