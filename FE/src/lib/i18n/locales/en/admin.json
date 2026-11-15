@@ -413,7 +413,8 @@
       "confirmTitle": "Send the arbitration decision?",
       "confirmBody": "The decision goes to both the client and the expert, and the escrow is split by the outcome below.",
       "failed": "The decision wasn't sent and nothing was recorded. Try again.",
-      "reasonMissing": "Enter a reason for the decision."
+      "reasonMissing": "Enter a reason for the decision.",
+      "refundPct": "Refund to the client (%)"
     },
     "escalation": {
       "hint": "Disputes about professional judgment or a CIT conclusion go to an Authorized Reviewer. The decision deadline is extended by {{hours}} hours, once.",

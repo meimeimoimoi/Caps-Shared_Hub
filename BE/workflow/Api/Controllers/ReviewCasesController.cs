@@ -184,7 +184,7 @@ public sealed class ReviewCasesController(ICurrentUser currentUser) : Controller
 
     /// <summary>The expert delivers the result; the client has 72 hours to confirm, then it auto-confirms.</summary>
     /// <response code="200">The case, AWAITING_ACCEPTANCE.</response>
-    /// <response code="400">RESULT_INVALID, TEXT_REQUIRED or TEXT_TOO_LONG.</response>
+    /// <response code="400">RESULT_INVALID, TEXT_REQUIRED, TEXT_TOO_LONG or REVISED_CONTENT_INVALID.</response>
     /// <response code="404">REVIEW_CASE_NOT_FOUND.</response>
     /// <response code="409">CASE_STATUS_INVALID or CASE_DEADLINE_PASSED (past the late cancel hours).</response>
     [HttpPost("{caseId:guid}/deliver")]
@@ -196,7 +196,14 @@ public sealed class ReviewCasesController(ICurrentUser currentUser) : Controller
     )
     {
         var reviewCase = await handler.HandleAsync(
-            new(UserId, caseId, r.Result, r.Summary, r.CannotVerifyReason),
+            new(
+                UserId,
+                caseId,
+                r.Result,
+                r.Summary,
+                r.CannotVerifyReason,
+                r.RevisedContent?.GetRawText()
+            ),
             ct
         );
         return Ok(ApiResponse<ReviewCaseResponse>.Ok(reviewCase));

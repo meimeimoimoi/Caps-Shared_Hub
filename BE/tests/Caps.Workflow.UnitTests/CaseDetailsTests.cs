@@ -1,6 +1,7 @@
 using Caps.Workflow.Application.Abstractions;
 using Caps.Workflow.Application.Features.ReviewCases;
 using Caps.Workflow.Domain.Review;
+using Caps.Workflow.Domain.Workspace;
 
 namespace Caps.Workflow.UnitTests;
 
@@ -50,7 +51,8 @@ public sealed class CaseDetailsTests
 
         var response = await new GetReviewCaseHandler(
             new FakeCases(reviewCase),
-            new FakeInfoRequests(question)
+            new FakeInfoRequests(question),
+            new FakeSources(null)
         ).HandleAsync(new(Client, reviewCase.Id), default);
 
         var shown = Assert.Single(response.InfoRequests!);
@@ -58,6 +60,62 @@ public sealed class CaseDetailsTests
         Assert.Equal(InfoRequest.Open, shown.Status);
         Assert.Equal(reviewCase.UpdatedAt, response.UpdatedAt);
         Assert.Null(response.Settlement);
+    }
+
+    [Fact]
+    public async Task The_detail_carries_the_ai_draft_but_not_an_uploaded_files_details()
+    {
+        var reviewCase = InReview();
+        var draft = new DocumentVersion
+        {
+            Id = reviewCase.SourceVersionId,
+            Content = """{"tax_rate":"22%"}""",
+        };
+        var upload = new DocumentVersion
+        {
+            Id = reviewCase.SourceVersionId,
+            Content = """{"fileName":"a.pdf"}""",
+            FileUrl = "documents/x/y",
+        };
+
+        var forDraft = await Detail(reviewCase, draft);
+        var forUpload = await Detail(reviewCase, upload);
+
+        Assert.Equal("22%", forDraft.SourceContent!.Value.GetProperty("tax_rate").GetString());
+        Assert.Null(forDraft.RevisedContent);
+        Assert.Null(forUpload.SourceContent);
+    }
+
+    private static Task<Application.DTOs.Responses.ReviewCaseResponse> Detail(
+        ReviewCase reviewCase,
+        DocumentVersion source
+    ) =>
+        new GetReviewCaseHandler(
+            new FakeCases(reviewCase),
+            new FakeInfoRequests(null),
+            new FakeSources(source)
+        ).HandleAsync(new(Client, reviewCase.Id), default);
+
+    private sealed class FakeSources(DocumentVersion? source) : IReviewAttachmentRepository
+    {
+        public Task<DocumentVersion?> FindSourceAsync(Guid versionId, CancellationToken ct) =>
+            Task.FromResult(source?.Id == versionId ? source : null);
+
+        public Task<int> CountAsync(Guid reviewCaseId, CancellationToken ct) =>
+            throw new NotSupportedException();
+
+        public Task<IReadOnlyList<ReviewAttachment>> ListAsync(
+            Guid reviewCaseId,
+            CancellationToken ct
+        ) => throw new NotSupportedException();
+
+        public Task<ReviewAttachment?> FindAsync(
+            Guid reviewCaseId,
+            Guid attachmentId,
+            CancellationToken ct
+        ) => throw new NotSupportedException();
+
+        public void Add(ReviewAttachment attachment) => throw new NotSupportedException();
     }
 
     private static ReviewCase Booked() =>
@@ -88,12 +146,12 @@ public sealed class CaseDetailsTests
         return reviewCase;
     }
 
-    private sealed class FakeInfoRequests(InfoRequest question) : IInfoRequestRepository
+    private sealed class FakeInfoRequests(InfoRequest? question) : IInfoRequestRepository
     {
         public Task<IReadOnlyList<InfoRequest>> ListAsync(
             Guid reviewCaseId,
             CancellationToken ct
-        ) => Task.FromResult<IReadOnlyList<InfoRequest>>([question]);
+        ) => Task.FromResult<IReadOnlyList<InfoRequest>>(question is null ? [] : [question]);
 
         public Task<InfoRequest?> FindOpenForUpdateAsync(Guid reviewCaseId, CancellationToken ct) =>
             throw new NotSupportedException();

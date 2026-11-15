@@ -4,6 +4,7 @@ import { AlertTriangle, Info } from 'lucide-react'
 import { Modal } from '@/components/ui/feedback/modal'
 import { HelpTip } from '@/components/ui/feedback/help-tip'
 import { cn } from '@/lib/utils'
+import { isExpertDemo } from '@/lib/expert-data-source'
 import { StatusBadge } from '@/components/ui/display/status-badge'
 import {
   DISPUTE_ESCALATION_HOURS,
@@ -18,7 +19,11 @@ interface DisputeDecisionProps {
   decided: boolean
   escalated: boolean
   /** Rejects when the server refuses; the error stays on the card */
-  onDecide: (outcome: DisputeOutcome, reason: string) => Promise<unknown>
+  onDecide: (
+    outcome: DisputeOutcome,
+    reason: string,
+    refundPct?: number
+  ) => Promise<unknown>
   onEscalate: () => Promise<unknown>
 }
 
@@ -35,6 +40,7 @@ export function DisputeDecision({
   const { t } = useTranslation(['admin', 'common'])
   const [outcome, setOutcome] = useState<DisputeOutcome>()
   const [reason, setReason] = useState('')
+  const [refundPct, setRefundPct] = useState(50)
   const [confirming, setConfirming] = useState<'decide' | 'escalate' | null>(
     null
   )
@@ -46,7 +52,8 @@ export function DisputeDecision({
     setPending(true)
     setError(null)
     try {
-      if (confirming === 'decide' && outcome) await onDecide(outcome, reason)
+      if (confirming === 'decide' && outcome)
+        await onDecide(outcome, reason, refundPct)
       else if (confirming === 'escalate') await onEscalate()
     } catch {
       setError(
@@ -83,7 +90,11 @@ export function DisputeDecision({
               total: slaHours,
             }),
             tone:
-              hoursLeft <= 12 ? 'danger' : hoursLeft <= 24 ? 'warning' : 'neutral',
+              hoursLeft <= 12
+                ? 'danger'
+                : hoursLeft <= 24
+                  ? 'warning'
+                  : 'neutral',
           }}
         />
       </div>
@@ -133,6 +144,21 @@ export function DisputeDecision({
             </label>
           ))}
         </div>
+
+        {outcome === 'RESOLVE_PARTIAL' && !isExpertDemo && (
+          <label className="mt-5 flex flex-col gap-2 text-sm font-semibold">
+            {t('disputes.decision.refundPct')}
+            <input
+              type="number"
+              required
+              min={1}
+              max={99}
+              value={refundPct}
+              onChange={(e) => setRefundPct(Number(e.target.value))}
+              className="num border-border-control rounded-control shadow-control bg-paper border px-3 py-2 text-base font-normal"
+            />
+          </label>
+        )}
 
         <label className="mt-5 flex flex-col gap-2 text-sm font-semibold">
           {t('disputes.decision.reason')}
@@ -233,14 +259,18 @@ export function DisputeDecision({
           {confirming === 'decide' && outcome && (
             <dl className="bg-sunken rounded-surface mt-4 space-y-2 p-3 text-sm">
               <div>
-                <dt className="text-fg-muted">{t('disputes.decision.outcome')}</dt>
+                <dt className="text-fg-muted">
+                  {t('disputes.decision.outcome')}
+                </dt>
                 <dd className="text-fg-strong font-semibold">
                   {t(DISPUTE_OUTCOME[outcome].label)}
                 </dd>
                 <dd className="num">{t(DISPUTE_OUTCOME[outcome].split)}</dd>
               </div>
               <div>
-                <dt className="text-fg-muted">{t('disputes.decision.reason')}</dt>
+                <dt className="text-fg-muted">
+                  {t('disputes.decision.reason')}
+                </dt>
                 <dd className="break-words whitespace-pre-wrap">{reason}</dd>
               </div>
             </dl>

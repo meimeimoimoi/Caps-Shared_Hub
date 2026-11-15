@@ -16,6 +16,17 @@ export async function listCaseMessages(
   return response.data
 }
 
+export async function listCaseMessagesForAdmin(
+  caseId: string,
+  signal?: AbortSignal
+): Promise<CaseChatMessage[]> {
+  const response = await api.get<{ data: CaseChatMessage[] }>(
+    `/api/v1/admin/review-cases/${caseId}/messages`,
+    { signal }
+  )
+  return response.data
+}
+
 export async function sendCaseMessage(
   caseId: string,
   content: string
