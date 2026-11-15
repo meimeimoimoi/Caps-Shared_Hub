@@ -55,6 +55,7 @@ from src.normalize import doc_number_key
 from src.references import doc_type_for_number
 from src.rsc import (
     build_detail_url,
+    decode_utf8_safe,
     find_document_detail,
     find_document_relations,
     find_vbhn_list,
@@ -205,7 +206,7 @@ class _PayloadListener:
             if not (is_search or is_detail):
                 return
 
-            text = fix_mojibake(response.body().decode("utf-8", errors="replace"))
+            text = fix_mojibake(decode_utf8_safe(response.body()))
 
             if is_search:
                 result = find_search_result(text)
@@ -583,12 +584,48 @@ def _make_search_result_item(
     )
 
 
+def _is_expired_status(page: Page, detail: Optional[dict] = None, api_item: Optional[dict] = None) -> bool:
+    """
+    Check if the document status is 'Hết hiệu lực toàn bộ' on the detail page or via payload.
+    Returns True if expired completely (should be skipped).
+    """
+    for src in (detail, api_item):
+        if isinstance(src, dict):
+            eff = src.get("effStatus")
+            status_name = ""
+            if isinstance(eff, dict):
+                status_name = str(eff.get("name") or "")
+            elif eff is not None:
+                status_name = str(eff)
+            if "hết hiệu lực toàn bộ" in status_name.casefold():
+                return True
+
+    # Check DOM status badge / tag
+    try:
+        status_tags = page.locator('[class*="effStatus"], [class*="detailStatusTag"], [class*="StatusTag"]')
+        for i in range(status_tags.count()):
+            tag_text = status_tags.nth(i).inner_text().strip().casefold()
+            if "hết hiệu lực toàn bộ" in tag_text:
+                return True
+    except Exception as e:
+        logger.debug(f"  [CHECK EFF] Error locating status tags: {e}")
+
+    # Fallback check for exact text in document info
+    try:
+        if page.locator("text='Hết hiệu lực toàn bộ'").count() > 0:
+            return True
+    except Exception as e:
+        logger.debug(f"  [CHECK EFF] Error locating status text: {e}")
+
+    return False
+
+
 def _visit_detail_page(
     page: Page,
     listener: _PayloadListener,
     item: SearchResultItem,
     skip_download: bool = False,
-) -> SearchResultItem:
+) -> Optional[SearchResultItem]:
     """
     Điều hướng vào trang tài liệu, đọc toàn văn và tải file đính kèm.
 
@@ -615,6 +652,12 @@ def _visit_detail_page(
     if detail:
         item.api_detail = detail
         logger.info(f"  [API CHI TIET] Nhan/tieu de lay duoc tu server.")
+
+    # --- Kiểm tra hết hiệu lực toàn bộ: nếu có thì không lấy ---
+    if _is_expired_status(page, item.api_detail, item.api_item):
+        logger.info(f"  [BO QUA] Van ban het hieu luc toan bo (id={item.doc_id}): {item.requested_url}")
+        return None
+
     html = next(filter(None, map(find_full_text_html, new_payloads)), None)
     if html:
         # Giữ HTML thô để lớp detail_scraper bóc tách text sạch
@@ -701,7 +744,7 @@ def _read_luoc_do(page: Page, doc_id: str) -> dict:
             return route.abort()
         # Read the body here: with many responses the CDP buffer evicts it before the listener
         resp = route.fetch()
-        text = fix_mojibake(resp.body().decode("utf-8", errors="replace"))
+        text = fix_mojibake(decode_utf8_safe(resp.body()))
         relations = find_document_relations(text, config.RELATION_TYPES)
         if relations is not None:
             found.append(relations)
@@ -794,7 +837,9 @@ def fetch_documents_by_ids(
                     doc_id_type=guess_id_type(doc_id),
                     requested_url=url,
                 )
-                results.append(_visit_detail_page(page, listener, item, skip_download=skip_download))
+                visited = _visit_detail_page(page, listener, item, skip_download=skip_download)
+                if visited is not None:
+                    results.append(visited)
                 _polite_delay()
         except Exception as e:
             logger.error(f"[LIEN QUAN] LOI NGHIEM TRONG: {e}", exc_info=True)
@@ -1074,12 +1119,14 @@ def search_and_download_by_type(
                 logger.warning(f"[{doc_type}] Khong co ket qua nao khop '{doc_type}'.")
                 return results
             # ── Bước 5: Vào từng trang tài liệu để tải file ───────────
-            n_fetch = len(items) if top_n is None else min(top_n, len(items))
-            for i in range(n_fetch):
-                logger.info(SEP)
-                logger.info(f"[{doc_type}] === VAN BAN #{i + 1}/{n_fetch} ===")
+            for i, raw_item in enumerate(items):
+                if top_n is not None and len(results) >= top_n:
+                    break
 
-                item = _make_search_result_item(items[i], doc_type, search_url, doc_type_id)
+                logger.info(SEP)
+                logger.info(f"[{doc_type}] === VAN BAN #{i + 1}/{len(items)} ===")
+
+                item = _make_search_result_item(raw_item, doc_type, search_url, doc_type_id)
                 if item is None:
                     continue
 
@@ -1091,22 +1138,25 @@ def search_and_download_by_type(
                 logger.info(f"  doc_id    : {item.doc_id} ({item.doc_id_type})")
                 logger.info(f"  URL       : {item.requested_url}")
 
-                item = _visit_detail_page(
+                visited_item = _visit_detail_page(
                     page, listener, item, skip_download=skip_download
                 )
-                results.append(item)
+                if visited_item is None:
+                    continue
 
-                n_dl = len(item.downloaded_paths)
+                results.append(visited_item)
+
+                n_dl = len(visited_item.downloaded_paths)
                 logger.info(
-                    f"  [XONG #{i + 1}] id={item.doc_id} | "
-                    f"URL da vao={item.visited_url} | file={n_dl}"
+                    f"  [XONG #{len(results)}] id={visited_item.doc_id} | "
+                    f"URL da vao={visited_item.visited_url} | file={n_dl}"
                 )
 
                 _polite_delay()
 
             logger.info(SEP)
             logger.info(
-                f"[{doc_type}] HOAN TAT: {len(results)}/{n_fetch} van ban, "
+                f"[{doc_type}] HOAN TAT: {len(results)} van ban, "
                 f"{sum(len(r.downloaded_paths) for r in results)} file da tai."
             )
 

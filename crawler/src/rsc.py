@@ -57,6 +57,35 @@ def _mojibake_score(text: str) -> int:
     return sum(text.count(c) for c in _MOJIBAKE_MARKERS)
 
 
+def _looks_double_encoded(text: str) -> bool:
+    """
+    True nếu `text` trông như UTF-8 bị decode nhầm bằng latin-1/cp1252 rồi encode
+    lại ("Luáº­t" thay vì "Luật").
+
+    Phép thử là round-trip: nếu mọi ký tự đều nằm trong latin-1/cp1252 và các byte
+    đó lại là UTF-8 hợp lệ giải ra chuỗi khác -> chuỗi đã bị double-encode. Tiếng
+    Việt đúng sẽ trượt phép thử vì có ký tự ngoài latin-1/cp1252 (ư, ơ, đ, ậ...)
+    hoặc các byte không phải UTF-8 hợp lệ.
+
+    Cần thiết vì một số chuỗi mojibake không chứa "dấu hiệu" nào trong
+    `_MOJIBAKE_MARKERS` (ví dụ "Luáº­t"), nên `_mojibake_score` bằng 0.
+    """
+    if not any(ord(ch) > 0x7F for ch in text):
+        return False
+    for codec in ("cp1252", "latin-1"):
+        try:
+            raw = text.encode(codec)
+        except UnicodeEncodeError:
+            continue
+        try:
+            decoded = raw.decode("utf-8")
+        except UnicodeDecodeError:
+            continue
+        if decoded != text:
+            return True
+    return False
+
+
 def is_mojibake(text: Optional[str]) -> bool:
     """
     True nếu chuỗi chắc chắn bị hỏng encoding và không thể tin dùng.
@@ -66,7 +95,7 @@ def is_mojibake(text: Optional[str]) -> bool:
     """
     if not text or "\ufffd" in text:
         return True
-    return _mojibake_score(text) > 0
+    return _mojibake_score(text) > 0 or _looks_double_encoded(text)
 
 
 def _mixed_cp1252_repair(text: str) -> Optional[str]:
@@ -88,7 +117,36 @@ def _mixed_cp1252_repair(text: str) -> Optional[str]:
             buf += ch.encode("cp1252")
         except UnicodeEncodeError:
             buf += ch.encode("utf-8")
-    return buf.decode("utf-8", errors="replace")
+    try:
+        return buf.decode("utf-8")
+    except UnicodeDecodeError:
+        # Cannot repair without losing bytes: return None so the caller keeps the
+        # original text (is_mojibake flags it) instead of inserting U+FFFD.
+        return None
+
+
+def decode_utf8_safe(data: bytes) -> str:
+    """
+    Decode raw body bytes without ever producing U+FFFD.
+
+    CDP/Playwright sometimes returns bodies that are not valid UTF-8. Decoding
+    them with errors="replace" would turn the undecodable bytes into U+FFFD and
+    lose the original information. Instead, decode every valid UTF-8 run normally
+    and map only the invalid bytes through latin-1 (a 1:1 byte -> code point map),
+    so nothing is lost. Callers should still run `fix_mojibake()` on the result.
+    """
+    out: List[str] = []
+    pos = 0
+    size = len(data)
+    while pos < size:
+        try:
+            out.append(data[pos:].decode("utf-8"))
+            break
+        except UnicodeDecodeError as exc:
+            out.append(data[pos:pos + exc.start].decode("utf-8"))
+            out.append(data[pos + exc.start:pos + exc.end].decode("latin-1"))
+            pos += exc.end
+    return "".join(out)
 
 
 def fix_mojibake(text: str) -> str:
@@ -110,7 +168,8 @@ def fix_mojibake(text: str) -> str:
         return text
 
     before = _mojibake_score(text)
-    if before == 0:
+    double_encoded = _looks_double_encoded(text)
+    if before == 0 and not double_encoded:
         return text
 
     for repair in (
@@ -122,8 +181,14 @@ def fix_mojibake(text: str) -> str:
             fixed = repair(text)
         except (UnicodeEncodeError, UnicodeDecodeError):
             continue
+        if fixed is None or fixed == text:
+            continue
         # Chỉ chấp nhận nếu số dấu hiệu lỗi giảm rõ rệt
         if _mojibake_score(fixed) < before:
+            return fixed
+        # Chuỗi mojibake không có dấu hiệu (vd "Luáº­t"): chấp nhận nếu round-trip
+        # cho ra chuỗi không còn bị double-encode nữa.
+        if before == 0 and double_encoded and not _looks_double_encoded(fixed):
             return fixed
 
     return text
@@ -178,9 +243,17 @@ def _split_row(row_id: str, raw: str) -> Iterator[Tuple[str, Any]]:
     if m:
         body = raw[m.end():].encode("utf-8")
         length = int(m.group(1), 16)
-        rest = body[length:].decode("utf-8", errors="replace")
-        if rest and _ROW_RE.match(rest):
-            yield row_id, body[:length].decode("utf-8", errors="replace")
+        try:
+            text_part = body[:length].decode("utf-8")
+            rest = body[length:].decode("utf-8")
+        except UnicodeDecodeError:
+            # The declared byte length no longer lines up (mojibake repair changed
+            # the byte count) and cuts through a multibyte char. Never decode with
+            # errors="replace" here: that would inject U+FFFD. Fall through to the
+            # trailing-row heuristic instead.
+            text_part = rest = None
+        if rest is not None and _ROW_RE.match(rest):
+            yield row_id, text_part
             yield from iter_rsc_rows(rest)
             return
         # Length is off: split at the last "><id>:{" / "><id>:[" whose tail is valid JSON
@@ -274,8 +347,11 @@ def find_document_relations(payload: str, relation_types: Optional[dict] = None)
                     if not isinstance(target, dict) or not target.get("id"):
                         continue
                     name = target.get("name")
-                    # "<<ccr:...>>" is an unresolved RSC reference, not a title
-                    if not isinstance(name, str) or name.startswith("<<"):
+                    # Repair CDP mojibake, then drop values that are still corrupt
+                    # (or an unresolved "<<ccr:...>>" RSC reference).
+                    if isinstance(name, str):
+                        name = fix_mojibake(name)
+                    if not isinstance(name, str) or name.startswith("<<") or is_mojibake(name):
                         name = None
                     relations.append({
                         "code": str(code),

@@ -30,15 +30,81 @@ from src.legal_parser import Article, ParsedDocument, Unit, parse_legal_text
 from src import vbhn
 from src.logger_setup import setup_logger
 from src.normalize import has_document_number, parse_vn_date
+from src.rsc import fix_mojibake
 
 logger = setup_logger(__name__, config.LOG_DIR)
 
 SCHEMA_VERSION = 2
 
+# Ký tự thay thế Unicode: xuất hiện khi dữ liệu đã bị decode sai encoding ở bước
+# crawl (byte gốc mất hẳn). Đếm để đánh dấu record/run lỗi sớm.
+REPLACEMENT_CHAR = "\ufffd"
+
 
 def get_export_dir():
     """Resolve lazily because DATA_DIR changes when a crawl run is activated."""
     return config.DATA_DIR / "export"
+
+
+def _count_replacement_chars(value) -> int:
+    """Đếm số ký tự U+FFFD trong payload (đệ quy dict/list/str) để phát hiện lỗi encoding."""
+    if isinstance(value, str):
+        return value.count(REPLACEMENT_CHAR)
+    if isinstance(value, dict):
+        return sum(_count_replacement_chars(k) + _count_replacement_chars(v) for k, v in value.items())
+    if isinstance(value, (list, tuple)):
+        return sum(_count_replacement_chars(v) for v in value)
+    return 0
+
+
+# Các trường văn bản tiếng Việt cần sửa mojibake trước khi xuất (dữ liệu cũ có thể
+# đã lưu sẵn chuỗi hỏng từ những lần crawl trước khi vá encoding).
+_TEXT_FIELDS = (
+    "so_hieu",
+    "tieu_de",
+    "loai_van_ban",
+    "co_quan_ban_hanh",
+    "tinh_trang_hieu_luc",
+    "noi_dung_text",
+)
+
+
+def _fix_text(value):
+    """Sửa mojibake cho 1 chuỗi (giữ nguyên nếu không phải str)."""
+    return fix_mojibake(value) if isinstance(value, str) else value
+
+
+def _sanitize_record(rec: dict) -> dict:
+    """
+    Trả về bản sao của record với các trường tiếng Việt đã sửa mojibake.
+
+    An toàn/idempotent: chuỗi đúng được giữ nguyên. Chỉ sửa các trường đã biết
+    (metadata + relations/attachments), không đụng cấu trúc khác.
+    """
+    clean = dict(rec)
+    for key in _TEXT_FIELDS:
+        if isinstance(clean.get(key), str):
+            clean[key] = _fix_text(clean[key])
+
+    for key in ("matched_keywords", "keyword_groups"):
+        value = clean.get(key)
+        if isinstance(value, list):
+            clean[key] = [_fix_text(v) for v in value]
+
+    relations = clean.get("relations")
+    if isinstance(relations, list):
+        clean["relations"] = [
+            {**r, "title": _fix_text(r.get("title"))} if isinstance(r, dict) else r for r in relations
+        ]
+
+    attachments = clean.get("attachments")
+    if isinstance(attachments, list):
+        clean["attachments"] = [
+            {**a, "file_name": _fix_text(a.get("file_name"))} if isinstance(a, dict) else a
+            for a in attachments
+        ]
+
+    return clean
 
 
 # Giá trị `knowledge_document.source` theo nguồn cào. Lưu ý: ràng buộc ck_kd_source
@@ -226,6 +292,7 @@ def build_chunks(rec: dict, parsed: ParsedDocument) -> List[dict]:
 
 def build_payload(rec: dict) -> dict:
     """Dựng payload ingestion cho 1 bản ghi metadata (đã qua normalize_record)."""
+    rec = _sanitize_record(rec)
     text = rec.get("noi_dung_text") or ""
     source = rec.get("source") or "vbpl"
     parsed = parse_legal_text(text, consolidated=rec.get("loai_van_ban") == vbhn.DOC_TYPE)
@@ -373,7 +440,8 @@ def export_records(records: List[dict], formats: tuple = ("json",)) -> List[dict
     """Ghi payload JSON và/hoặc bản Markdown cho từng bản ghi + manifest.json; trả về danh sách mục manifest."""
     export_dir = get_export_dir()
     manifest: List[dict] = []
-    for rec in records:
+    for raw_rec in records:
+        rec = _sanitize_record(raw_rec)
         payload = build_payload(rec)
         folder = config.get_folder_name(rec.get("loai_van_ban") or "")
         slug = slugify(rec.get("so_hieu") or rec.get("doc_id") or "unknown", separator="-")
@@ -396,6 +464,7 @@ def export_records(records: List[dict], formats: tuple = ("json",)) -> List[dict
         n_unit_warnings = sum(
             1 for c in content["chapters"] for a in c["articles"] for u in a["units"] if u["status"] == "WARNING"
         )
+        n_replacement_chars = _count_replacement_chars(payload)
         entry = {
             **{k: str(p.relative_to(export_dir)).replace("\\", "/") for k, p in written.items()},
             "document_number": payload["legal_source"]["document_number"],
@@ -408,6 +477,7 @@ def export_records(records: List[dict], formats: tuple = ("json",)) -> List[dict
             "suggested_status": payload["knowledge_document"]["ingest"]["suggested_status"],
             "warnings": content["warnings"],
             "unit_warnings": n_unit_warnings,
+            "encoding_warnings": n_replacement_chars,
         }
         manifest.append(entry)
         log = logger.warning if entry["parse_status"] != "PARSED" else logger.info
@@ -415,15 +485,29 @@ def export_records(records: List[dict], formats: tuple = ("json",)) -> List[dict
             f"[{entry['document_number']}] {entry['parse_status']}: "
             f"{entry['articles']} Điều, {entry['chunks']} chunk -> {dest}"
         )
+        if n_replacement_chars:
+            logger.warning(
+                f"[{entry['document_number']}] Phat hien {n_replacement_chars} ky tu U+FFFD "
+                f"(loi encoding khi crawl) -> {dest}"
+            )
 
     export_dir.mkdir(parents=True, exist_ok=True)
+    total_replacement_chars = sum(e.get("encoding_warnings", 0) for e in manifest)
+    docs_with_encoding_errors = sum(1 for e in manifest if e.get("encoding_warnings"))
     (export_dir / "manifest.json").write_text(
         json.dumps(
             {"schema_version": SCHEMA_VERSION, "generated_at": datetime.now().isoformat(timespec="seconds"),
+             "encoding_warnings": total_replacement_chars,
+             "documents_with_encoding_errors": docs_with_encoding_errors,
              "documents": manifest},
             ensure_ascii=False,
             indent=2,
         ),
         encoding="utf-8",
     )
+    if docs_with_encoding_errors:
+        logger.warning(
+            f"Manifest: {docs_with_encoding_errors} tai lieu chua {total_replacement_chars} "
+            f"ky tu U+FFFD (run co the bi loi encoding khi crawl)."
+        )
     return manifest

@@ -93,6 +93,27 @@ def _clean_agency(agency_name: Optional[str]) -> Optional[str]:
     return ", ".join(uniq)
 
 
+def _first_clean_text(*values: Optional[str]) -> Optional[str]:
+    """
+    Return the first non-empty value after mojibake repair, preferring a clean one.
+
+    Values come in priority order (DOM first). A value that is still mojibake after
+    repair is only used as a fallback, so a later clean source wins.
+    """
+    fallback = None
+    for value in values:
+        if not value:
+            continue
+        fixed = fix_mojibake(str(value)).strip()
+        if not fixed:
+            continue
+        if fallback is None:
+            fallback = fixed
+        if not is_mojibake(fixed):
+            return fixed
+    return fallback
+
+
 def _doc_type_name(item: SearchResultItem) -> Optional[str]:
     """
     Lấy tên loại văn bản.
@@ -106,7 +127,7 @@ def _doc_type_name(item: SearchResultItem) -> Optional[str]:
         if isinstance(src, dict):
             dt = src.get("docType")
             if isinstance(dt, dict) and dt.get("name"):
-                name = str(dt["name"]).strip()
+                name = fix_mojibake(str(dt["name"]).strip())
                 if name and not is_mojibake(name):
                     return name
 
@@ -265,11 +286,13 @@ def scrape_document_detail(item: SearchResultItem) -> LegalDocument:
         # byte tiếng Việt (byte cp1252 không tồn tại) nên tiêu đề từ API có thể
         # chứa ký tự hỏng. DOM luôn đúng.
         tieu_de=(
-            item.dom_title
-            or _field(detail_item, "title")
-            or item.title
+            _first_clean_text(
+                item.dom_title,
+                _field(detail_item, "title"),
+                item.title,
+            )
             or ""
-        ).strip(),
+        ),
         loai_van_ban=_doc_type_name(item) or "Không xác định",
         # --- URL: đây là URL THỰC SỰ tool đã vào ---
         detail_url=item.visited_url or item.requested_url or item.detail_url,
@@ -296,7 +319,10 @@ def scrape_document_detail(item: SearchResultItem) -> LegalDocument:
 
     # --- Thông tin ban hành ---
     doc.co_quan_ban_hanh = _clean_agency(
-        _field(detail_item, "agencyName") or _field(search_item, "agencyName")
+        _first_clean_text(
+            _field(detail_item, "agencyName"),
+            _field(search_item, "agencyName"),
+        )
     )
     doc.ngay_ban_hanh = _fmt_date(
         _field(detail_item, "issueDate") or _field(search_item, "issueDate")
