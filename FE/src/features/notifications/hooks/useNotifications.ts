@@ -156,10 +156,17 @@ export function useNotifications() {
         read: n.readAt != null,
       }
     if (n.type === 'REVIEW_CASE_STATUS_CHANGED') return caseStepItem(n)
-    if (n.type === 'REVIEW_CASE_INFO_REQUESTED')
+    if (
+      n.type === 'REVIEW_CASE_INFO_REQUESTED' ||
+      n.type === 'REVIEW_CASE_ACCEPTANCE_DUE'
+    )
       return {
         id: n.id,
-        text: t('notifications.reviewCase.infoRequested'),
+        text: t(
+          n.type === 'REVIEW_CASE_INFO_REQUESTED'
+            ? 'notifications.reviewCase.infoRequested'
+            : 'notifications.reviewCase.acceptanceDue'
+        ),
         to: typeof n.data.link === 'string' ? n.data.link : '/cases',
         tone: 'warning',
         read: n.readAt != null,

@@ -151,7 +151,8 @@
         "RESOLVED": "Khiếu nại đã có quyết định của quản trị viên.",
         "TERMINATED": "Hồ sơ đã kết thúc vì thông tin bổ sung không được gửi đúng hạn.",
         "WITHDRAWN": "Khách hàng đã rút yêu cầu review; phí đã được hoàn cho khách hàng."
-      }
+      },
+      "acceptanceDue": "Kết quả thẩm định sắp tự xác nhận. Hãy nghiệm thu hoặc báo cáo vấn đề trước hạn."
     }
   },
   "states": {

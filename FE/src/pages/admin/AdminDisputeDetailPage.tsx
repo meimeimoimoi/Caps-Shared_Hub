@@ -239,8 +239,8 @@ export default function AdminDisputeDetailPage() {
             onEscalate={() =>
               escalate().then(() => setToast(t('disputes.escalation.toast')))
             }
-            onDecide={(outcome, reason, refundPct) =>
-              decide({ outcome, reason, refundPct }).then(() =>
+            onDecide={(outcome, reason) =>
+              decide({ outcome, reason }).then(() =>
                 setToast(t('disputes.decided'))
               )
             }

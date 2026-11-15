@@ -29,7 +29,12 @@ import { LoadError } from '@/components/ui/feedback/load-error'
 import { SkeletonRows } from '@/components/ui/display/skeleton-rows'
 import { PlatformFeeHistory } from '@/features/expert-vetting/components/PlatformFeeHistory'
 
-const LATE_FIELDS = ['penaltyHours', 'penaltyPercent', 'cancelHours'] as const
+const LATE_FIELDS = [
+  'penaltyHours',
+  'penaltyPercent',
+  'cancelHours',
+  'noDeliveryRefundPercent',
+] as const
 type LateDraft = Record<(typeof LATE_FIELDS)[number], string>
 // Suggested rule for a service that has none yet, mirroring the seeded rates (PlatformFeeAgreedRates):
 // an incident refunds 50% and there is one tier, so cancel hours equal penalty hours
@@ -37,6 +42,8 @@ const DEFAULT_LATE: LateRule = {
   penaltyHours: 24,
   penaltyPercent: 50,
   cancelHours: 24,
+  // Meeting of 2026-11-11: nothing delivered refunds 50%, the platform keeps the rest
+  noDeliveryRefundPercent: 50,
 }
 // Agreed platform share; a service's first fee starts here
 const DEFAULT_PERCENT = 40
@@ -47,6 +54,7 @@ const toDraft = (late: LateRule): LateDraft => ({
   penaltyHours: String(late.penaltyHours),
   penaltyPercent: String(late.penaltyPercent),
   cancelHours: String(late.cancelHours),
+  noDeliveryRefundPercent: String(late.noDeliveryRefundPercent),
 })
 const NO_RESPONSE_FIELDS = ['hours', 'refundPercent', 'expertPercent'] as const
 type NoResponseDraft = Record<(typeof NO_RESPONSE_FIELDS)[number], string>
@@ -79,6 +87,7 @@ const SAVE_ERRORS = [
   'SERVICE_NOT_FOUND',
   'POLICY_REASON_REQUIRED',
   'POLICY_REASON_TOO_LONG',
+  'NO_DELIVERY_RULE_INVALID',
 ] as const
 type SaveError = (typeof SAVE_ERRORS)[number]
 const isSaveError = (code?: string): code is SaveError =>
@@ -285,13 +294,15 @@ export default function AdminPlatformFeesPage() {
     penaltyHours: Number(late.penaltyHours),
     penaltyPercent: Number(late.penaltyPercent),
     cancelHours: Number(late.cancelHours),
+    noDeliveryRefundPercent: Number(late.noDeliveryRefundPercent),
   }
-  // Same rule as the server: the penalty comes out of what the platform fee leaves the expert
+  // Same rules as the server
   const lateValid =
     LATE_FIELDS.every((f) => isWhole(late[f])) &&
     value + lateRule.penaltyPercent <= 100 &&
     lateRule.cancelHours >= lateRule.penaltyHours &&
-    lateRule.cancelHours <= MAX_LATE_HOURS
+    lateRule.cancelHours <= MAX_LATE_HOURS &&
+    lateRule.noDeliveryRefundPercent <= 100
   const noResponseRule: NoResponseRule = {
     hours: Number(noResponse.hours),
     refundPercent: Number(noResponse.refundPercent),
@@ -310,6 +321,8 @@ export default function AdminPlatformFeesPage() {
       : null
   const lateError = !LATE_FIELDS.every((f) => isWhole(late[f]))
     ? t('admin:platformFees.rules.wholeNumbers')
+    : lateRule.noDeliveryRefundPercent > 100
+      ? t('admin:platformFees.rules.noDeliveryOver')
     : lateRule.cancelHours > MAX_LATE_HOURS
       ? t('admin:platformFees.rules.maxHours', { max: MAX_LATE_HOURS })
       : lateRule.cancelHours < lateRule.penaltyHours
@@ -405,13 +418,16 @@ export default function AdminPlatformFeesPage() {
           from: rule.penaltyHours,
           to: rule.cancelHours,
         }),
-      t('admin:platformFees.lateSteps.cancel', { hours: rule.cancelHours }),
+      t('admin:platformFees.lateSteps.cancel', {
+        hours: rule.cancelHours,
+        percent: rule.noDeliveryRefundPercent,
+      }),
     ]
       .filter(Boolean)
       .join(' · ')
   }
-  // Server rules: on time the expert gets price minus fee; late within the penalty window the
-  // refund comes out of the expert's share; later (before cancel) the client gets everything back
+  // Server rules (meeting of 2026-11-11): on time the expert gets price minus fee; an incident (late within
+  // the penalty window, nothing delivered) refunds its share and the platform keeps the rest, the expert none
   function scenarios(
     fee: number,
     lateRule: LateRule,
@@ -434,8 +450,8 @@ export default function AdminPlatformFeesPage() {
         }),
         parts: split(
           lateRule.penaltyPercent,
-          Math.max(0, 100 - fee - lateRule.penaltyPercent),
-          fee
+          0,
+          100 - lateRule.penaltyPercent
         ),
       },
       ...(lateRule.cancelHours > lateRule.penaltyHours
@@ -453,7 +469,11 @@ export default function AdminPlatformFeesPage() {
         label: t('admin:platformFees.cases.cancel', {
           hours: lateRule.cancelHours,
         }),
-        parts: [t('admin:platformFees.parts.cancelled')],
+        parts: split(
+          lateRule.noDeliveryRefundPercent,
+          0,
+          100 - lateRule.noDeliveryRefundPercent
+        ),
       },
       {
         label: t('admin:platformFees.cases.silence', { hours: silence.hours }),
@@ -470,16 +490,12 @@ export default function AdminPlatformFeesPage() {
       },
     ]
   }
-  const lateExpertShare =
-    isWhole(percent) && isWhole(late.penaltyPercent)
-      ? Math.max(0, 100 - value - lateRule.penaltyPercent)
-      : null
-  const lateShareText =
-    lateExpertShare == null
-      ? undefined
-      : t('admin:platformFees.rules.expertKeepsLate', {
-          percent: lateExpertShare,
-        })
+  const lateShareText = isWhole(late.penaltyPercent)
+    ? t('admin:platformFees.rules.lateIncident', {
+        client: lateRule.penaltyPercent,
+        platform: 100 - lateRule.penaltyPercent,
+      })
+    : undefined
   const changed = editing
     ? {
         percent: editing.percent !== value,
