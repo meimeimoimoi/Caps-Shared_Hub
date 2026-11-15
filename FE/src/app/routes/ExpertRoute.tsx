@@ -10,7 +10,7 @@ import '../layouts/expert/expert-theme.css'
 
 export function ExpertRoute() {
   const display = useExpertPresentation()
-  const { t } = useTranslation('expert')
+  const { t } = useTranslation(['expert', 'navigation'])
 
   const authenticated = useAuthStore((s) => s.isAuthenticated)
   const pending = useAuthStore(
@@ -32,13 +32,17 @@ export function ExpertRoute() {
               ? t('activeCasesAlternative')
               : path.endsWith('/services')
                 ? t('services')
-                : path.endsWith('/bio')
-                  ? t('publicProfile')
-                  : path.endsWith('/income')
-                    ? t('income')
-                    : path.endsWith('/cases')
-                      ? t('cases')
-                      : t('caseDetails')
+                : path.endsWith('/availability')
+                  ? t('availabilityPage.title')
+                  : path.includes('/qualifications')
+                    ? t('expertQualifications', { ns: 'navigation' })
+                    : path.endsWith('/bio')
+                      ? t('publicProfile')
+                      : path.endsWith('/income')
+                        ? t('income')
+                        : path.endsWith('/cases')
+                          ? t('cases')
+                          : t('caseDetails')
   useEffect(() => {
     document.title = `${title} | Shared Hub`
   }, [title])

@@ -677,6 +677,9 @@
       "withdraw": "Rút khỏi hồ sơ",
       "withdrawHint": "Khách hàng được hoàn toàn bộ phí và bạn không nhận được khoản nào.",
       "withdrawReason": "Lý do rút khỏi hồ sơ",
+      "acceptedFeedback": "Đã nhận hồ sơ. Bạn có thể bắt đầu rà soát.",
+      "declinedFeedback": "Đã từ chối hồ sơ.",
+      "deliveredFeedback": "Đã gửi kết quả rà soát cho khách hàng.",
       "saved": "Đã lưu."
     },
     "notConnected": "Chưa có dữ liệu.",

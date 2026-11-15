@@ -1,4 +1,15 @@
 {
+  "incomeUnavailable": "Income data unavailable",
+  "incomeUnavailableMessage": "Balances and transactions will appear when income data is connected.",
+  "incomeDemoNotice": "Sample figures for demo mode.",
+  "refreshingOverview": "Refreshing…",
+  "overviewMetricUnavailable": "Data unavailable",
+  "viewCasesByStatus": "View cases: {{status}} ({{total}})",
+  "viewCasesInQueue": "View cases",
+  "nextCaseToHandle": "Next case to handle",
+  "noPendingRequests": "No requests awaiting a response",
+  "noOpenCases": "No open cases",
+  "backToOverview": "Back to overview",
   "contact": {
     "title": "Expert contact details",
     "description": "The name and phone reviewers and customers see. Changes need no new review; submitted applications keep the details they were submitted with.",
@@ -764,7 +775,7 @@
     "COMPETENCY_EVIDENCE_PENDING": "Submit competency evidence to be assessed."
   },
   "availabilityPage": {
-    "title": "Availability",
+    "title": "Accepting work",
     "description": "Set how many cases you run at once and turn on requests per service. A service shows on the Marketplace once it is approved, priced, switched on and you have set your capacity.",
     "loading": "Loading…",
     "capacityTitle": "Cases at once",

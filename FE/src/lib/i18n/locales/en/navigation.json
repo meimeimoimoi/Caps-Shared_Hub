@@ -1,4 +1,7 @@
 {
+  "expertWork": "Work",
+  "expertReadiness": "Application and qualifications",
+  "expertServiceOperations": "Service operations",
   "customerArea": "Customer area",
   "expertPortalLink": "Become an expert",
   "draftScenarios": {
@@ -60,7 +63,7 @@
   "expertQualifications": "Competency review",
   "lockedUntilApproved": "Opens once your application is approved",
   "myServices": "My Services",
-  "availability": "Availability",
+  "availability": "Accepting work",
   "income": "Income",
   "publicProfile": "Public profile",
   "workspaces": "Workspaces",

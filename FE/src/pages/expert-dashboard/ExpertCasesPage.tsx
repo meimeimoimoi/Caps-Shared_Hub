@@ -7,9 +7,9 @@ import {
   DashboardSectionState,
   DashboardSkeleton,
 } from '../../features/expert-dashboard/components/DashboardSectionState'
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useLocation, useSearchParams } from 'react-router-dom'
 import { Clock3, Pause, Filter, ArrowRight } from 'lucide-react'
-import { useState } from 'react'
+import { isExpertDemo } from '@/lib/expert-data-source'
 import { CustomSelect } from '@/components/ui/forms/custom-select'
 import { Pagination } from '@/components/ui/navigation/pagination'
 import { usePagination } from '@/hooks/usePagination'
@@ -30,7 +30,8 @@ export default function ExpertCasesPage() {
     { value: 'DISPUTED', label: t('disputed') },
   ]
 
-  const { pathname } = useLocation()
+  const { pathname, search } = useLocation()
+  const [params, setParams] = useSearchParams()
   const scope = pathname.endsWith('/queue')
     ? 'queue'
     : pathname.endsWith('/active')
@@ -44,7 +45,6 @@ export default function ExpertCasesPage() {
         : t('cases')
   const context = useExpertContext()
   const dashboard = useExpertDashboard()
-  const [filter, setFilter] = useState<WorkStatus | 'ALL'>('ALL')
   const refresh = () => {
     void context.refetch()
     void dashboard.refetch()
@@ -63,32 +63,30 @@ export default function ExpertCasesPage() {
               : item.status !== 'PENDING_EXPERT_RESPONSE')
         )
       : []
+  const filters = statusFilters.filter(
+    (option) => (isExpertDemo || option.value !== 'PAYMENT_CONFIRMED') &&
+      (scope !== 'active' || option.value !== 'PENDING_EXPERT_RESPONSE')
+  )
+  const filter = scope === 'queue'
+    ? 'ALL'
+    : filters.find((option) => option.value === params.get('status'))?.value ?? 'ALL'
   const visibleItems = scopedItems.filter(
     (item) => filter === 'ALL' || item.status === filter
   )
   const pagination = usePagination(visibleItems, `${scope}:${filter}`)
-  const filters = statusFilters.filter(
-    (option) =>
-      option.value === 'ALL' ||
-      (scope === 'queue'
-        ? option.value === 'PENDING_EXPERT_RESPONSE'
-        : scope === 'active'
-          ? option.value !== 'PENDING_EXPERT_RESPONSE'
-          : true)
-  )
+  const setFilter = (value: WorkStatus | 'ALL') => {
+    setParams((current) => {
+      if (value === 'ALL') current.delete('status')
+      else current.set('status', value)
+      return current
+    }, { replace: true })
+  }
 
   return (
     <>
       <div className="ep-page-heading">
         <div>
           <h1>{heading}</h1>
-          <p>
-            {scope === 'queue'
-              ? t('newRequestsAwaitingYourAcceptanceOrDecline')
-              : scope === 'active'
-                ? t('acceptedCasesDeliveryDeadlinesAndClientFollowups')
-                : t('allYourReviewCasesAndRequests')}
-          </p>
         </div>
       </div>
       {dashboard.isPending || context.isPending ? (
@@ -129,20 +127,22 @@ export default function ExpertCasesPage() {
             </div>
           )}
           <div className="ep-cases-toolbar">
-            <div
-              className="ep-filter-group"
-              style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
-            >
-              <Filter size={15} aria-hidden="true" />
-              <CustomSelect
-                value={filter}
-                onChange={(val) => setFilter(val)}
-                options={filters}
-                label={t('filterByStatus')}
-                className="flex items-center gap-2 [&>span]:hidden"
-                triggerClassName="!min-h-[34px] !py-1 !text-xs !w-[200px]"
-              />
-            </div>
+            {scope !== 'queue' && (
+              <div
+                className="ep-filter-group"
+                style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
+              >
+                <Filter size={15} aria-hidden="true" />
+                <CustomSelect
+                  value={filter}
+                  onChange={(val) => setFilter(val)}
+                  options={filters}
+                  label={t('filterByStatus')}
+                  className="flex items-center gap-2 [&>span]:hidden"
+                  triggerClassName="!min-h-[34px] !py-1 !text-xs !w-[200px]"
+                />
+              </div>
+            )}
             <span className="ep-count-label">
               {t('shownCount', { total: display.number(visibleItems.length) })}
               {model.queue.data.hasMore ? ' · ' + t('partialDataset') : ''}
@@ -150,8 +150,16 @@ export default function ExpertCasesPage() {
           </div>
           {visibleItems.length === 0 ? (
             <div className="ep-empty">
-              <h3>{t('noCasesMatchThisFilter')}</h3>
-              <p>{t('trySelectingADifferentStatusFilter')}</p>
+              <h3>
+                {filter !== 'ALL'
+                  ? t('noCasesMatchThisFilter')
+                  : t(scope === 'queue' ? 'noPendingRequests' : 'noOpenCases')}
+              </h3>
+              {filter !== 'ALL' && (
+                <button className="ep-inline-button" onClick={() => setFilter('ALL')}>
+                  {t('clearFilter')}
+                </button>
+              )}
             </div>
           ) : (
             <>
@@ -220,7 +228,8 @@ export default function ExpertCasesPage() {
                           </td>
                           <td>
                             <Link
-                              to={`/expert/cases/${item.id}`}
+                              to={`/expert/cases/${encodeURIComponent(item.id)}`}
+                              state={{ expertCaseReturnTo: pathname + search }}
                               aria-label={t('detailsFor', {
                                 title: item.title,
                               })}

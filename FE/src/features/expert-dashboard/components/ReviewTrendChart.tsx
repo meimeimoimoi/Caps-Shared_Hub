@@ -56,25 +56,26 @@ export function ReviewTrendChart({
       <ExpertPanelHeader>
         <div>
           <h2 id="trend-heading">{t('reviewActivity')}</h2>
-          <p>{t('incomingRequestsAndCompletedReviewsOverTime')}</p>
         </div>
-        <div
-          className="eo-segmented inline-flex gap-[3px] rounded-[7px] border border-[var(--ep-border)] bg-[var(--ep-surface-raised)] bg-none [padding:3px] [&_button]:min-h-8 [&_button]:rounded-[5px] [&_button]:border-0 [&_button]:[padding:6px_10px] [&_button]:[font-family:inherit] [&_button]:text-[12px] [&_button]:whitespace-nowrap [&_button]:text-[var(--ep-muted)] [&_button]:[background:transparent] [&_button:hover]:text-[var(--ep-accent-text)] [&_button[aria-pressed=true]]:bg-[var(--ep-surface)] [&_button[aria-pressed=true]]:bg-none [&_button[aria-pressed=true]]:font-semibold [&_button[aria-pressed=true]]:text-[var(--ep-ink)] [&_button[aria-pressed=true]]:shadow-control"
-          aria-label={t('chartPeriod')}
-        >
-          {([7, 28] as const).map((days) => (
-            <button
-              key={days}
-              aria-pressed={period === days}
-              onClick={() => {
-                setPeriod(days)
-                setSelected(days - 1)
-              }}
-            >
-              {days === 7 ? t('7Days') : t('4Weeks')}
-            </button>
-          ))}
-        </div>
+        {points.length > 0 && (
+          <div
+            className="eo-segmented inline-flex gap-[3px] rounded-[7px] border border-[var(--ep-border)] bg-[var(--ep-surface-raised)] bg-none [padding:3px] [&_button]:min-h-8 [&_button]:rounded-[5px] [&_button]:border-0 [&_button]:[padding:6px_10px] [&_button]:[font-family:inherit] [&_button]:text-[12px] [&_button]:whitespace-nowrap [&_button]:text-[var(--ep-muted)] [&_button]:[background:transparent] [&_button:hover]:text-[var(--ep-accent-text)] [&_button[aria-pressed=true]]:bg-[var(--ep-surface)] [&_button[aria-pressed=true]]:bg-none [&_button[aria-pressed=true]]:font-semibold [&_button[aria-pressed=true]]:text-[var(--ep-ink)] [&_button[aria-pressed=true]]:shadow-control"
+            aria-label={t('chartPeriod')}
+          >
+            {([7, 28] as const).map((days) => (
+              <button
+                key={days}
+                aria-pressed={period === days}
+                onClick={() => {
+                  setPeriod(days)
+                  setSelected(days - 1)
+                }}
+              >
+                {days === 7 ? t('7Days') : t('4Weeks')}
+              </button>
+            ))}
+          </div>
+        )}
       </ExpertPanelHeader>
       {!analytics || analytics.status !== 'available' ? (
         <DashboardSectionState
@@ -82,9 +83,7 @@ export function ReviewTrendChart({
           message={
             analytics
               ? analytics.message
-              : t(
-                  'dailyReviewHistoryHasNotBeenSuppliedCurrentWorkloadIsStillAvailableBelow'
-                )
+              : t('trendsWillAppearWhenDailyActivityIsAvailable')
           }
         />
       ) : points.length === 0 ? (

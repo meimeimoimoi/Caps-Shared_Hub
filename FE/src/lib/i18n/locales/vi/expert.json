@@ -1,4 +1,15 @@
 {
+  "incomeUnavailable": "Chưa có dữ liệu thu nhập",
+  "incomeUnavailableMessage": "Số dư và giao dịch sẽ xuất hiện khi dữ liệu thu nhập được kết nối.",
+  "incomeDemoNotice": "Số liệu minh họa dành cho chế độ demo.",
+  "refreshingOverview": "Đang làm mới…",
+  "overviewMetricUnavailable": "Chưa có dữ liệu",
+  "viewCasesByStatus": "Xem hồ sơ {{status}} ({{total}})",
+  "viewCasesInQueue": "Xem hồ sơ",
+  "nextCaseToHandle": "Hồ sơ cần xử lý tiếp",
+  "noPendingRequests": "Không có yêu cầu chờ phản hồi",
+  "noOpenCases": "Không có hồ sơ đang mở",
+  "backToOverview": "Quay về Tổng quan",
   "contact": {
     "title": "Thông tin liên hệ chuyên gia",
     "description": "Tên và số điện thoại người đánh giá và khách hàng nhìn thấy. Thay đổi không cần xét duyệt lại; hồ sơ đã nộp giữ nguyên thông tin lúc nộp.",
@@ -763,7 +774,7 @@
     "COMPETENCY_EVIDENCE_PENDING": "Nộp minh chứng năng lực để được đánh giá."
   },
   "availabilityPage": {
-    "title": "Lịch nhận việc",
+    "title": "Nhận việc",
     "description": "Đặt số hồ sơ bạn làm cùng lúc và bật nhận yêu cầu cho từng dịch vụ. Dịch vụ hiện trên Marketplace khi đã được duyệt, có giá, đang bật nhận yêu cầu và bạn đã đặt số hồ sơ.",
     "loading": "Đang tải…",
     "capacityTitle": "Số hồ sơ làm cùng lúc",

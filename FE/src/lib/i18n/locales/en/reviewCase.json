@@ -677,6 +677,9 @@
       "withdraw": "Withdraw from the case",
       "withdrawHint": "The client gets a full refund and you receive nothing.",
       "withdrawReason": "Reason for withdrawing",
+      "acceptedFeedback": "Case accepted. You can start the review.",
+      "declinedFeedback": "Case declined.",
+      "deliveredFeedback": "Review sent to the client.",
       "saved": "Saved."
     },
     "notConnected": "No data yet.",
