@@ -22,4 +22,11 @@ public static class DocumentRequests
     );
 
     public sealed record DownloadDocumentRequest([MaxLength(10)] string? Format);
+
+    public sealed record UploadDocumentRequest(
+        [Required, MaxLength(200)] string Title,
+        [Required] DateOnly PeriodStart,
+        [Required] DateOnly PeriodEnd,
+        IFormFile? File
+    );
 }
