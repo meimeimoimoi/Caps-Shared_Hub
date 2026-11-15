@@ -100,6 +100,33 @@ public sealed class PricingTests
     public void Net_amount_removes_the_platform_fee(int percent, long fee, long net) =>
         Assert.Equal(net, Rate(percent).NetOf(fee));
 
+    [Fact]
+    public void A_later_rate_starts_at_local_midnight_stored_in_utc()
+    {
+        // PostgreSQL timestamptz only takes UTC offsets; the day still starts at 00:00 Vietnam time
+        var later = PlatformFee.Set(
+            Service,
+            40,
+            24,
+            50,
+            24,
+            72,
+            0,
+            60,
+            new DateOnly(2026, 11, 1),
+            true,
+            Policy.FeeNoticeDays,
+            Admin,
+            Now
+        );
+
+        Assert.Equal(TimeSpan.Zero, later.EffectiveFrom.Offset);
+        Assert.Equal(
+            new DateTimeOffset(2026, 10, 31, 17, 0, 0, TimeSpan.Zero),
+            later.EffectiveFrom
+        );
+    }
+
     [Theory]
     [InlineData(-1)]
     [InlineData(51)]
