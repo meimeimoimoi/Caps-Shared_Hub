@@ -632,4 +632,14 @@ public sealed class WorkflowDbContext(DbContextOptions<WorkflowDbContext> option
                 .HasDatabaseName("ix_event_outbox_unsent");
         });
     }
+
+    /// <summary>Brings documents in step with the review case moves in this save, in the same transaction.</summary>
+    public override async Task<int> SaveChangesAsync(
+        bool acceptAllChangesOnSuccess,
+        CancellationToken cancellationToken = default
+    )
+    {
+        await CaseDocuments.SyncAsync(this, cancellationToken);
+        return await base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
+    }
 }

@@ -91,4 +91,12 @@ public sealed partial class ReviewCase
         CompletedAt = now;
         return MoveTo(ReviewCaseStatus.Terminated, null, UserNonResponse, now);
     }
+
+    /// <summary>The client kept a VERIFIED result: accepted, auto-confirmed, or a dispute that did not refund it all.</summary>
+    public bool VerifiedOutcome =>
+        Result == Verified
+        && (
+            Status is ReviewCaseStatus.Completed or ReviewCaseStatus.AutoConfirmed
+            || (Status == ReviewCaseStatus.Resolved && DisputeRefundPct < 100)
+        );
 }
