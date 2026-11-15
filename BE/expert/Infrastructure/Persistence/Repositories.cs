@@ -453,6 +453,16 @@ public sealed class PlatformFeeRepository(ExpertDbContext db) : IPlatformFeeRepo
         db.PlatformFees.Where(f => f.CancelledAt == null && f.EffectiveFrom <= now);
 
     public void Add(PlatformFee fee) => db.PlatformFees.Add(fee);
+
+    public async Task<IReadOnlyList<PlatformFee>> ListHistoryAsync(
+        string serviceCode,
+        CancellationToken ct
+    ) =>
+        await db
+            .PlatformFees.AsNoTracking()
+            .Where(f => f.ServiceCode == serviceCode)
+            .OrderByDescending(f => f.EffectiveFrom)
+            .ToListAsync(ct);
 }
 
 /// <summary>EF Core store for the services experts sell.</summary>

@@ -26,5 +26,8 @@ public interface IPlatformFeeRepository
     /// <summary>Pending rates of every service, untracked.</summary>
     Task<IReadOnlyList<PlatformFee>> ListAllPendingAsync(DateTimeOffset now, CancellationToken ct);
 
+    /// <summary>Every rate of the service, newest first, untracked: in force, pending and cancelled.</summary>
+    Task<IReadOnlyList<PlatformFee>> ListHistoryAsync(string serviceCode, CancellationToken ct);
+
     void Add(PlatformFee fee);
 }
