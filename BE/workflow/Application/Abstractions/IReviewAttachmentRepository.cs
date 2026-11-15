@@ -1,4 +1,5 @@
 using Caps.Workflow.Domain.Review;
+using Caps.Workflow.Domain.Workspace;
 
 namespace Caps.Workflow.Application.Abstractions;
 
@@ -16,4 +17,7 @@ public interface IReviewAttachmentRepository
 
     /// <summary>Tracks a new file.</summary>
     void Add(ReviewAttachment attachment);
+
+    /// <summary>The document version a case reviews, untracked.</summary>
+    Task<DocumentVersion?> FindSourceAsync(Guid versionId, CancellationToken ct);
 }

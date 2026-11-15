@@ -3,6 +3,7 @@ using Caps.Common.Application;
 using Caps.Common.Security;
 using Caps.Workflow.Api.DTOs.Requests;
 using Caps.Workflow.Application.DTOs.Responses;
+using Caps.Workflow.Application.Features.Attachments;
 using Caps.Workflow.Application.Features.ReviewCases;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -237,5 +238,22 @@ public sealed class ReviewCasesController(ICurrentUser currentUser) : Controller
             ct
         );
         return Ok(ApiResponse<ReviewCaseResponse>.Ok(reviewCase));
+    }
+
+    /// <summary>Downloads the uploaded file the case reviews.</summary>
+    /// <remarks>Client always; expert once the case is paid. Versions built in the app have no file.</remarks>
+    /// <response code="200">The file bytes.</response>
+    /// <response code="404">REVIEW_CASE_NOT_FOUND or ATTACHMENT_NOT_FOUND.</response>
+    [HttpGet("{caseId:guid}/source-file")]
+    public async Task<IActionResult> SourceFile(
+        Guid caseId,
+        [FromServices] IQueryHandler<OpenSourceFileQuery, AttachmentFile> handler,
+        CancellationToken ct
+    )
+    {
+        var file = await handler.HandleAsync(new(UserId, caseId), ct);
+        Response.Headers.XContentTypeOptions = "nosniff";
+        Response.Headers.CacheControl = "private, no-store";
+        return File(file.Content, file.ContentType, file.FileName);
     }
 }
