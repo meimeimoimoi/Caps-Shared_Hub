@@ -1092,7 +1092,9 @@
       "PLATFORM_FEE_TOO_SOON": "Thay đổi phải báo trước ít nhất {{days}} ngày. Chọn ngày muộn hơn.",
       "PLATFORM_FEE_NOT_PENDING": "Không còn thay đổi nào đang chờ. Tải lại trang.",
       "LATE_RULE_INVALID": "Quy định giao trễ không hợp lệ: số giờ từ 0 đến {{maxHours}}, số giờ hủy không nhỏ hơn số giờ phạt, % phạt cộng phí nền tảng không quá 100%.",
-      "NO_RESPONSE_RULE_INVALID": "Quy định khi khách không trả lời không hợp lệ: số giờ từ 1 đến {{maxHours}}, % hoàn cộng % chuyên gia không quá 100%."
+      "NO_RESPONSE_RULE_INVALID": "Quy định khi khách không trả lời không hợp lệ: số giờ từ 1 đến {{maxHours}}, % hoàn cộng % chuyên gia không quá 100%.",
+      "POLICY_REASON_REQUIRED": "Nhập lý do thay đổi.",
+      "POLICY_REASON_TOO_LONG": "Lý do tối đa 1000 ký tự."
     },
     "helpLabel": "Về phí nền tảng",
     "pending": "Thay đổi đang chờ",
@@ -1192,7 +1194,19 @@
     "discardTitle": "Bỏ thay đổi chưa lưu?",
     "discardBody": "Các giá trị vừa nhập sẽ mất; phí và quy định hiện tại giữ nguyên.",
     "keepEditing": "Tiếp tục sửa",
-    "discard": "Bỏ thay đổi"
+    "discard": "Bỏ thay đổi",
+    "reasonLabel": "Lý do thay đổi",
+    "history": {
+      "open": "Lịch sử",
+      "openFor": "Lịch sử phí của {{name}}",
+      "title": "Lịch sử phí: {{name}}",
+      "empty": "Chưa có lần đặt phí nào.",
+      "terms": "trễ ≤ {{lateHours}} giờ hoàn {{latePercent}}% · không phản hồi: khách {{refund}}%, chuyên gia {{expert}}%",
+      "applied": "Áp dụng từ {{date}}",
+      "pending": "Sẽ áp dụng từ {{date}}",
+      "cancelled": "Đã rút (dự kiến {{date}})",
+      "noReason": "Không ghi lý do (đặt trước khi có quy định ghi lý do)"
+    }
   },
   "expertPolicy": {
     "title": "Chính sách chuyên gia",

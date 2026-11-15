@@ -438,6 +438,11 @@ namespace Caps.Expert.Infrastructure.Persistence.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("percent");
 
+                    b.Property<string>("Reason")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("reason");
+
                     b.Property<string>("ServiceCode")
                         .IsRequired()
                         .HasMaxLength(64)

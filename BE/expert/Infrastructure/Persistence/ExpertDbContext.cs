@@ -479,6 +479,9 @@ public sealed class ExpertDbContext(DbContextOptions<ExpertDbContext> options) :
             e.Property(x => x.NoResponseExpertPercent).HasColumnName("no_response_expert_percent");
             e.Property(x => x.EffectiveFrom).HasColumnName("effective_from");
             e.Property(x => x.SetBy).HasColumnName("set_by");
+            e.Property(x => x.Reason)
+                .HasColumnName("reason")
+                .HasMaxLength(PlatformFee.MaxReasonLength);
             e.Property(x => x.CancelledAt).HasColumnName("cancelled_at");
             e.Property(x => x.CancelledBy).HasColumnName("cancelled_by");
             // "Current rate of a service" = latest effective_from per service_code

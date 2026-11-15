@@ -26,7 +26,7 @@ public sealed class PricingTests
     private static readonly PricingPolicy Policy = new(500_000, 30_000_000, 1, 7, 7, 50);
 
     // First rate of the service: takes effect at once
-    private static PlatformFee Rate(int percent = 20) =>
+    private static PlatformFee Rate(int percent = 20, string? reason = "Agreed with the advisor") =>
         PlatformFee.Set(
             Service,
             percent,
@@ -39,6 +39,7 @@ public sealed class PricingTests
             null,
             false,
             Policy.FeeNoticeDays,
+            reason,
             Admin,
             Now
         );
@@ -107,6 +108,51 @@ public sealed class PricingTests
         Assert.Equal("PLATFORM_FEE_INVALID", Errors.CodeOf(() => Rate(percent)));
 
     [Theory]
+    [InlineData(null)]
+    [InlineData("   ")]
+    public void A_rate_needs_a_reason(string? reason) =>
+        Assert.Equal("POLICY_REASON_REQUIRED", Errors.CodeOf(() => Rate(reason: reason)));
+
+    [Fact]
+    public void A_later_rate_starts_at_local_midnight_stored_in_utc()
+    {
+        // PostgreSQL timestamptz only takes UTC offsets; the day still starts at 00:00 Vietnam time
+        var later = PlatformFee.Set(
+            Service,
+            40,
+            24,
+            50,
+            24,
+            72,
+            0,
+            60,
+            new DateOnly(2026, 11, 1),
+            true,
+            Policy.FeeNoticeDays,
+            "Agreed with the advisor",
+            Admin,
+            Now
+        );
+
+        Assert.Equal(TimeSpan.Zero, later.EffectiveFrom.Offset);
+        Assert.Equal(
+            new DateTimeOffset(2026, 10, 31, 17, 0, 0, TimeSpan.Zero),
+            later.EffectiveFrom
+        );
+    }
+
+    [Fact]
+    public void A_reason_is_bounded() =>
+        Assert.Equal(
+            "POLICY_REASON_TOO_LONG",
+            Errors.CodeOf(() => Rate(reason: new string('x', PlatformFee.MaxReasonLength + 1)))
+        );
+
+    [Fact]
+    public void The_reason_is_kept_with_the_rate() =>
+        Assert.Equal("Agreed with the advisor", Rate(reason: "  Agreed with the advisor ").Reason);
+
+    [Theory]
     [InlineData(20, -1, 30, 72)] // negative hours
     [InlineData(20, 24, 81, 72)] // penalty + platform fee over 100%
     [InlineData(20, 24, 30, 23)] // cancel before the penalty band ends
@@ -131,6 +177,7 @@ public sealed class PricingTests
                 null,
                 false,
                 Policy.FeeNoticeDays,
+                "Agreed with the advisor",
                 Admin,
                 Now
             )
@@ -158,6 +205,7 @@ public sealed class PricingTests
                 null,
                 false,
                 Policy.FeeNoticeDays,
+                "Agreed with the advisor",
                 Admin,
                 Now
             )
