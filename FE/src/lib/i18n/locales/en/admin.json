@@ -413,8 +413,7 @@
       "confirmTitle": "Send the arbitration decision?",
       "confirmBody": "The decision goes to both the client and the expert, and the escrow is split by the outcome below.",
       "failed": "The decision wasn't sent and nothing was recorded. Try again.",
-      "reasonMissing": "Enter a reason for the decision.",
-      "refundPct": "Refund to the client (%)"
+      "reasonMissing": "Enter a reason for the decision."
     },
     "escalation": {
       "hint": "Disputes about professional judgment or a CIT conclusion go to an Authorized Reviewer. The decision deadline is extended by {{hours}} hours, once.",
@@ -428,19 +427,14 @@
     },
     "outcome": {
       "RESOLVE_REFUND_USER": {
-        "label": "Uphold · refund the client",
-        "hint": "The complaint is justified: the expert breached an obligation, or the client responded on time / the information request was not valid",
-        "split": "Client refund 100%"
+        "label": "Uphold the complaint · refund 50% to the client",
+        "hint": "The complaint is founded: the expert breached their obligations, or the client answered in time / the information request was invalid",
+        "split": "Client 50% · platform 50% · expert nothing"
       },
       "RESOLVE_PAY_EXPERT": {
         "label": "Dismiss · pay the expert",
         "hint": "The complaint is not justified; the expert did the work properly",
         "split": "No refund · the expert gets the price minus the service's platform fee"
-      },
-      "RESOLVE_PARTIAL": {
-        "label": "Partial settlement",
-        "hint": "Both sides fell partly short",
-        "split": "Client refund 50% · the rest splits by the service's platform fee"
       }
     },
     "introCount_one": "{{count}} dispute awaiting arbitration.",
@@ -1102,7 +1096,8 @@
       "LATE_RULE_INVALID": "Invalid late delivery rule: hours must be 0 to {{maxHours}}, the cancel hours not below the penalty hours, and the penalty plus the platform fee at most 100%.",
       "NO_RESPONSE_RULE_INVALID": "Invalid client silence rule: hours must be 1 to {{maxHours}}, and refund plus expert at most 100%.",
       "POLICY_REASON_REQUIRED": "Enter the reason for the change.",
-      "POLICY_REASON_TOO_LONG": "The reason can be at most 1000 characters."
+      "POLICY_REASON_TOO_LONG": "The reason can be at most 1000 characters.",
+      "NO_DELIVERY_RULE_INVALID": "The refund when the expert never delivers must be 0 to 100."
     },
     "helpLabel": "About platform fees",
     "pending": "Pending change",
@@ -1116,11 +1111,12 @@
     "exampleNet": "Received before PIT: current → new",
     "firstFeeHelp": "The first fee applies at once and opens the service for experts to price.",
     "late": "Late delivery",
-    "lateHelp": "Counted from the delivery deadline. Delivered within the penalty window: the client gets the set percent back from the expert's share (the platform keeps its fee). Delivered later but before the cancel hours: the client gets 100% back. Not delivered past the cancel hours: the request is cancelled. Set the penalty window equal to the cancel hours to keep a single refund level. At most {{maxHours}} hours; the refund plus the platform fee may not exceed 100%. Requests already sent keep the rule they were sent with.",
+    "lateHelp": "Counted from the delivery deadline (one working day). Late within the penalty hours: the client gets the set percent back, the platform keeps the rest and the expert gets nothing. Later but before the cancel hours: the client gets 100% back. Nothing delivered by the cancel hours: the request is cancelled, the client gets the \"nothing delivered\" percent back and the platform keeps the rest. Set the penalty hours equal to the cancel hours for a single refund level. At most {{maxHours}} hours. Requests already sent keep the rules they were booked with.",
     "lateFields": {
       "penaltyHours": "Late penalty window (hours)",
       "penaltyPercent": "Refund to client when late (%)",
-      "cancelHours": "Cancel if undelivered after (hours)"
+      "cancelHours": "Cancel if undelivered after (hours)",
+      "noDeliveryRefundPercent": "Refund when nothing is delivered (%)"
     },
     "noResponse": "Client silence",
     "noResponseValue": "After {{hours}}h: {{refundPercent}}% back · expert {{expertPercent}}% · platform {{platformPercent}}%",
@@ -1142,7 +1138,8 @@
       "splitOver": "Client refund % plus expert % cannot exceed 100% (now {{sum}}%).",
       "platformKeeps": "The platform keeps {{percent}}%.",
       "dateTooSoon": "Pick {{date}} or later.",
-      "expertKeepsLate": "Late within the penalty window: the expert keeps {{percent}}% of the price."
+      "lateIncident": "Late within the penalty hours: client {{client}}%, platform {{platform}}%, expert nothing.",
+      "noDeliveryOver": "The refund when nothing is delivered can be at most 100%."
     },
     "review": "Review",
     "confirmSave": "Confirm and save",
@@ -1164,7 +1161,7 @@
     "lateSteps": {
       "penalty": "Up to {{hours}}h late: {{percent}}% back",
       "full": "{{from}}–{{to}}h: 100% back",
-      "cancel": "Undelivered after {{hours}}h: request cancelled"
+      "cancel": "Not delivered after {{hours}} h: cancelled, {{percent}}% refunded"
     },
     "dialogPart": "{{part}} · {{name}}",
     "isDefault": "Default level",

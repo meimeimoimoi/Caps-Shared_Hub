@@ -422,6 +422,10 @@ namespace Caps.Expert.Infrastructure.Persistence.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("late_penalty_percent");
 
+                    b.Property<int>("NoDeliveryRefundPercent")
+                        .HasColumnType("integer")
+                        .HasColumnName("no_delivery_refund_percent");
+
                     b.Property<int>("NoResponseExpertPercent")
                         .HasColumnType("integer")
                         .HasColumnName("no_response_expert_percent");
@@ -462,6 +466,8 @@ namespace Caps.Expert.Infrastructure.Persistence.Migrations
                         {
                             t.HasCheckConstraint("ck_platform_fee_late_rule", "late_penalty_hours >= 0 AND late_penalty_percent >= 0 AND percent + late_penalty_percent <= 100 AND late_cancel_hours BETWEEN late_penalty_hours AND 720");
 
+                            t.HasCheckConstraint("ck_platform_fee_no_delivery_rule", "no_delivery_refund_percent BETWEEN 0 AND 100");
+
                             t.HasCheckConstraint("ck_platform_fee_no_response_rule", "no_response_hours BETWEEN 1 AND 720 AND no_response_refund_percent >= 0 AND no_response_expert_percent >= 0 AND no_response_refund_percent + no_response_expert_percent <= 100");
 
                             t.HasCheckConstraint("ck_platform_fee_percent", "percent BETWEEN 0 AND 50");
@@ -475,6 +481,7 @@ namespace Caps.Expert.Infrastructure.Persistence.Migrations
                             LateCancelHours = 72,
                             LatePenaltyHours = 24,
                             LatePenaltyPercent = 30,
+                            NoDeliveryRefundPercent = 100,
                             NoResponseExpertPercent = 30,
                             NoResponseHours = 72,
                             NoResponseRefundPercent = 50,
@@ -489,6 +496,7 @@ namespace Caps.Expert.Infrastructure.Persistence.Migrations
                             LateCancelHours = 24,
                             LatePenaltyHours = 24,
                             LatePenaltyPercent = 50,
+                            NoDeliveryRefundPercent = 50,
                             NoResponseExpertPercent = 60,
                             NoResponseHours = 72,
                             NoResponseRefundPercent = 0,

@@ -42,7 +42,10 @@ public sealed partial class ReviewCase
         dispute.AddStatement(RequiredText(statement, "Statement"), now);
     }
 
-    /// <summary>The admin's decision: the client gets refundPct of the fee back; the caller settles the escrow.</summary>
+    /// <summary>
+    /// The admin's decision: rejected (0) or upheld (DisputeUpheldRefundPct back to the client, the platform keeps
+    /// the rest); the caller settles the escrow.
+    /// </summary>
     public ReviewStatusHistory ResolveDispute(
         ReviewDispute dispute,
         Guid adminUserId,
@@ -52,7 +55,7 @@ public sealed partial class ReviewCase
     )
     {
         EnsureDispute(dispute);
-        if (refundPct is < 0 or > 100)
+        if (refundPct is not (0 or DisputeUpheldRefundPct))
         {
             throw WorkflowErrors.DisputeRefundInvalid();
         }

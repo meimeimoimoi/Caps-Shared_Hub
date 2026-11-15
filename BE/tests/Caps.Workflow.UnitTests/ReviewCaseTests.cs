@@ -70,11 +70,13 @@ public sealed class ReviewCaseTests
 
         reviewCase.ConfirmPayment(Now.AddMinutes(5));
         Assert.Equal(ReviewCaseStatus.PendingExpertResponse, reviewCase.Status);
+        // One working day: Wednesday at the same time
         Assert.Equal(Now.AddMinutes(5).AddHours(24), reviewCase.ResponseDeadline);
 
         reviewCase.Accept(Expert, ExpertUser, Now.AddHours(1));
         Assert.Equal(ReviewCaseStatus.InReview, reviewCase.Status);
-        Assert.Equal(Now.AddHours(49), reviewCase.DeliveryDeadline);
+        // One working day whatever turnaround the expert advertised (48h in the sample offer)
+        Assert.Equal(Now.AddHours(25), reviewCase.DeliveryDeadline);
 
         reviewCase.Deliver(
             Expert,
@@ -84,7 +86,7 @@ public sealed class ReviewCaseTests
             null,
             Now.AddHours(10)
         );
-        Assert.Equal(Now.AddHours(82), reviewCase.AcceptanceDeadline);
+        Assert.Equal(Now.AddHours(34), reviewCase.AcceptanceDeadline);
 
         var history = reviewCase.Confirm(Client, Now.AddHours(11));
         Assert.Equal(ReviewCaseStatus.AwaitingAcceptance, history.FromStatus);
@@ -300,12 +302,14 @@ public sealed class ReviewCaseTests
     [Fact]
     public void Case_in_review_times_out_only_past_the_late_cancel_hours()
     {
-        // Due at Now + 48h, cancelled from Now + 48h + 72h
-        Assert.Null(InReview().ExpireIfOverdue(Now.AddHours(119)));
+        // Due at Now + 24h (one working day), cancelled from Now + 24h + 72h
+        Assert.Null(InReview().ExpireIfOverdue(Now.AddHours(95)));
 
         var reviewCase = InReview();
-        reviewCase.ExpireIfOverdue(Now.AddHours(120));
+        reviewCase.ExpireIfOverdue(Now.AddHours(96));
         Assert.Equal(ReviewCaseStatus.DeliveryOverdue, reviewCase.Status);
+        // Nothing delivered: the client gets the frozen share (50 by default), the platform the rest
+        Assert.Equal(new ReviewSettlement(500_000, 500_000, 0), reviewCase.Outcome());
     }
 
     [Fact]
@@ -322,7 +326,7 @@ public sealed class ReviewCaseTests
         reviewCase.ProvideInformation(request, Client, "Attached", Now.AddHours(10));
 
         Assert.Equal(ReviewCaseStatus.InReview, reviewCase.Status);
-        Assert.Equal(Now.AddHours(58), reviewCase.DeliveryDeadline);
+        Assert.Equal(Now.AddHours(34), reviewCase.DeliveryDeadline);
         Assert.Equal(InfoRequest.Answered, request.Status);
     }
 
@@ -446,12 +450,13 @@ public sealed class ReviewCaseTests
         );
     }
 
+    // Due one working day after acceptance (Now + 24h); fee 1,000,000, 20% platform fee, late rule 24h / 30%
     [Theory]
-    [InlineData(48, 0, 0, 200_000, 800_000)] // on time
-    [InlineData(58, 30, 300_000, 200_000, 500_000)] // 10h late
-    [InlineData(72, 30, 300_000, 200_000, 500_000)] // exactly at the end of the penalty band
-    [InlineData(78, 100, 1_000_000, 0, 0)] // 30h late
-    public void Late_delivery_moves_the_experts_share_back_to_the_client(
+    [InlineData(24, 0, 0, 200_000, 800_000)] // on time
+    [InlineData(34, 30, 300_000, 700_000, 0)] // 10h late
+    [InlineData(48, 30, 300_000, 700_000, 0)] // exactly at the end of the penalty band
+    [InlineData(54, 100, 1_000_000, 0, 0)] // 30h late
+    public void Late_delivery_refunds_the_client_and_the_platform_keeps_the_rest(
         int deliveredAfterHours,
         int refundPct,
         long refund,

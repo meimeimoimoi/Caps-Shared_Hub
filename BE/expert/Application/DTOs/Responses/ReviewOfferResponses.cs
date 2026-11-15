@@ -16,7 +16,8 @@ public sealed record ReviewOfferResponse(
     int NoResponseHours,
     int NoResponseRefundPercent,
     int NoResponseExpertPercent,
-    int FreeSlots
+    int FreeSlots,
+    int NoDeliveryRefundPercent
 );
 
 /// <summary>What the expert has left after a case took its slot.</summary>

@@ -15,6 +15,8 @@ export interface LateRule {
   penaltyHours: number
   penaltyPercent: number
   cancelHours: number
+  /** Refunded when nothing is delivered by cancelHours; the platform keeps the rest, the expert gets nothing */
+  noDeliveryRefundPercent: number
 }
 
 /** Client silence: after `hours` the case ends; refundPercent to the client, expertPercent to the expert, the platform keeps the rest. */
@@ -93,6 +95,7 @@ export async function setPlatformFee(
       latePenaltyHours: late.penaltyHours,
       latePenaltyPercent: late.penaltyPercent,
       lateCancelHours: late.cancelHours,
+      noDeliveryRefundPercent: late.noDeliveryRefundPercent,
       noResponseHours: noResponse.hours,
       noResponseRefundPercent: noResponse.refundPercent,
       noResponseExpertPercent: noResponse.expertPercent,
