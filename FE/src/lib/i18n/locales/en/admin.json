@@ -51,8 +51,8 @@
       "outsideRange": "{{count}} experts priced outside the range",
       "title": "Needs attention now",
       "empty": "Nothing urgent.",
-      "emptyPartial": "Nothing urgent in the queues being tracked. Disputes and payouts have no data to check yet.",
-      "unavailable": "Disputes and payouts have no data to check yet.",
+      "emptyPartial": "Nothing urgent in the areas being tracked. Payouts have no data to check yet.",
+      "unavailable": "Payouts have no data to check yet.",
       "unknown": "Couldn't determine what needs attention because a data source failed to load.",
       "count_one": "{{count}} item",
       "count_other": "{{count}} items",
@@ -383,7 +383,9 @@
       "kind": "Type",
       "client": "Client",
       "expert": "Expert",
-      "ground": "Ground"
+      "ground": "Ground",
+      "fee": "Fee held",
+      "platformFee": "Platform fee"
     },
     "kind": {
       "DELIVERY_ISSUE": "Dispute on the delivered result",
@@ -442,7 +444,19 @@
     },
     "introCount_one": "{{count}} dispute awaiting arbitration.",
     "introCount_other": "{{count}} disputes awaiting arbitration.",
-    "introRule": "Each dispute needs a decision within {{hours}} hours of opening, extended once by {{extra}} hours when escalated to an expert; the escrowed money stays locked until then."
+    "introRule": "Each dispute needs a decision within {{hours}} hours of opening, extended once by {{extra}} hours when escalated to an expert; the escrowed money stays locked until then.",
+    "reason": {
+      "DELIVERABLE_INCOMPLETE": "Delivery is incomplete",
+      "OBLIGATION_NOT_MET": "Expert did not meet an obligation",
+      "PROFESSIONAL_JUDGMENT": "Disagrees with the professional judgment"
+    },
+    "expertSide": {
+      "title": "Expert's side",
+      "statement": "Statement",
+      "noStatement": "The expert has not replied yet.",
+      "summary": "Delivered summary",
+      "noSummary": "No delivery summary yet."
+    }
   },
   "escrow": {
     "title": "Refunds and payouts",
@@ -1434,7 +1448,7 @@
     "title": "Not connected yet",
     "body": "This feature is not open yet. Figures will appear here once it is.",
     "areas": {
-      "disputes": "This page will list disputes awaiting arbitration, each decision deadline and where refunds are decided. No data until disputes are connected.",
+      "disputes": "This account has no permission to resolve disputes, so the arbitration queue is not shown here.",
       "escrow": "This page will show money held until acceptance, payouts to experts and refunds to clients. No data until payments are connected.",
       "pricing": "This page will show price ranges per template group and experts priced outside them. The general price range is currently set on the Expert policy page.",
       "users": "The account list and lock or password-reset actions are not on the server yet. New and total user counts on the Overview come from statistics, so they still show."

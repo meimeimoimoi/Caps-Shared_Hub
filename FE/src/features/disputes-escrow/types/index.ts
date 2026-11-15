@@ -43,11 +43,23 @@ export interface EvidenceExcerpt {
 export type DisputeKind = 'DELIVERY_ISSUE' | 'USER_NON_RESPONSE_CHALLENGE'
 
 export interface Dispute {
-  id: string // mã hồ sơ rà soát đang tranh chấp
+  id: string // review case under dispute
+  /** Short form of the id for display; the server id is a UUID */
+  code?: string
   kind: DisputeKind
-  title: string
-  client: string
-  expert: string
+  /** The server sends no title or party names yet; the demo fixtures do */
+  title?: string
+  client?: string
+  expert?: string
+  /** Server deadline; when set it replaces the 48-hour rule computed here */
+  decideBy?: string
+  /** Fee held for the case (VND) and the platform fee frozen at booking */
+  fee?: number
+  platformFeePct?: number
+  /** The expert's reply to the complaint */
+  expertStatement?: string
+  /** The expert's delivered summary, to weigh against the complaint */
+  reviewSummary?: string
   /** Căn cứ khiếu nại của Client */
   ground: string
   openedAt: string
@@ -64,7 +76,7 @@ export interface Dispute {
   complaint: {
     issue: string
     description: string
-    attachment: string
+    attachment?: string
   }
   history: HistoryEntry[]
 }

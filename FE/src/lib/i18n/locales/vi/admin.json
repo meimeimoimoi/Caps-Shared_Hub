@@ -51,8 +51,8 @@
       "outsideRange": "{{count}} chuyên gia đặt giá ngoài khung",
       "title": "Cần xử lý ngay",
       "empty": "Không có việc gấp.",
-      "emptyPartial": "Không có việc gấp ở các mục đang theo dõi. Khiếu nại và chi trả chưa có dữ liệu để kiểm tra.",
-      "unavailable": "Khiếu nại và chi trả chưa có dữ liệu để kiểm tra.",
+      "emptyPartial": "Không có việc gấp ở các mục đang theo dõi. Chi trả chưa có dữ liệu để kiểm tra.",
+      "unavailable": "Chi trả chưa có dữ liệu để kiểm tra.",
       "unknown": "Chưa xác định được việc cần xử lý vì một nguồn dữ liệu không tải được.",
       "count_other": "{{count}} việc",
       "urgent_other": "{{count}} việc gấp",
@@ -376,7 +376,9 @@
       "kind": "Loại",
       "client": "Khách",
       "expert": "Chuyên gia",
-      "ground": "Căn cứ"
+      "ground": "Căn cứ",
+      "fee": "Phí đang giữ",
+      "platformFee": "Phí nền tảng"
     },
     "kind": {
       "DELIVERY_ISSUE": "Khiếu nại kết quả bàn giao",
@@ -434,7 +436,19 @@
       }
     },
     "introCount_other": "{{count}} khiếu nại đang chờ trọng tài.",
-    "introRule": "Mỗi khiếu nại phải có quyết định trong {{hours}} giờ kể từ khi mở, gia hạn một lần thêm {{extra}} giờ khi chuyển cấp chuyên môn; tiền Escrow bị khóa tới lúc đó."
+    "introRule": "Mỗi khiếu nại phải có quyết định trong {{hours}} giờ kể từ khi mở, gia hạn một lần thêm {{extra}} giờ khi chuyển cấp chuyên môn; tiền Escrow bị khóa tới lúc đó.",
+    "reason": {
+      "DELIVERABLE_INCOMPLETE": "Kết quả bàn giao chưa đủ",
+      "OBLIGATION_NOT_MET": "Chuyên gia chưa làm đúng nghĩa vụ",
+      "PROFESSIONAL_JUDGMENT": "Không đồng ý với nhận định chuyên môn"
+    },
+    "expertSide": {
+      "title": "Phía chuyên gia",
+      "statement": "Giải trình",
+      "noStatement": "Chuyên gia chưa gửi giải trình.",
+      "summary": "Tóm tắt đã giao",
+      "noSummary": "Chưa có tóm tắt kết quả."
+    }
   },
   "escrow": {
     "title": "Hoàn tiền và chi trả",
@@ -1425,7 +1439,7 @@
     "title": "Chưa kết nối",
     "body": "Chức năng này chưa mở. Số liệu sẽ hiện ở đây khi chức năng hoạt động.",
     "areas": {
-      "disputes": "Trang này sẽ hiện các khiếu nại đang chờ trọng tài, hạn quyết định của từng khiếu nại và nơi ra quyết định hoàn tiền. Chưa có dữ liệu cho tới khi chức năng khiếu nại được kết nối.",
+      "disputes": "Tài khoản này chưa được cấp quyền xử lý khiếu nại, nên hàng chờ trọng tài không hiện ở đây.",
       "escrow": "Trang này sẽ hiện tiền đang giữ chờ nghiệm thu, các khoản chi trả cho chuyên gia và hoàn tiền cho khách. Chưa có dữ liệu cho tới khi chức năng thanh toán được kết nối.",
       "pricing": "Trang này sẽ hiện khung giá theo từng nhóm mẫu biểu và các chuyên gia đặt giá ngoài khung. Khoảng giá chung hiện đặt ở trang Chính sách chuyên gia.",
       "users": "Danh sách tài khoản và thao tác khóa, đặt lại mật khẩu chưa có trên máy chủ. Số người dùng mới và tổng người dùng trên trang Tổng quan lấy từ thống kê nên vẫn hiện."

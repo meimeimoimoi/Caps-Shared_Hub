@@ -29,8 +29,12 @@ export function useAdminNav(enabled = true) {
   const canReview = enabled && hasAnyPermission(user, [Permission.ExpertReview])
   const canApprove = enabled && hasAnyPermission(user, [Permission.ExpertApprove])
   const canViewDemoOperations = enabled && isExpertDemo && hasAnyPermission(user, [Permission.UserManage])
-  // Disputes and payouts have no backend yet outside the demo; say so instead of implying all-clear
+  // Payouts have no backend list yet outside the demo; say so instead of implying all-clear
   const operationsUnavailable = enabled && !isExpertDemo && hasAnyPermission(user, [Permission.UserManage])
+  // Disputes come from the workflow service, which checks DisputeResolve; the demo keeps its fixtures
+  const canSeeDisputes =
+    enabled &&
+    hasAnyPermission(user, [isExpertDemo ? Permission.UserManage : Permission.DisputeResolve])
   // Waiting limit comes from the expert policy (System Admin setting), never a constant here
   const slaDays = useReviewSlaDays(canReview)
   const applications = useQuery({
@@ -54,7 +58,7 @@ export function useAdminNav(enabled = true) {
   const disputes = useQuery({
     queryKey: disputesKeys.disputes(),
     queryFn: ({ signal }) => getDisputes(signal),
-    enabled: canViewDemoOperations,
+    enabled: canSeeDisputes,
   })
   const escrows = useQuery({
     queryKey: disputesKeys.escrows(),
@@ -77,7 +81,7 @@ export function useAdminNav(enabled = true) {
   const overdue = pending.filter((a) =>
     isOverdue(waitedDays(a.submittedAt, now), slaDays)
   ).length
-  const open = (canViewDemoOperations ? disputes.data ?? [] : []).filter((d) => !d.resolvedAt)
+  const open = (canSeeDisputes ? disputes.data ?? [] : []).filter((d) => !d.resolvedAt)
   const nearestHours = open.length
     ? Math.min(...open.map((d) => disputeHoursLeft(d, now)))
     : 0
@@ -156,9 +160,12 @@ export function useAdminNav(enabled = true) {
     // A failed badge query must not read as an empty queue
     queuesFailed:
       (canReview && applications.isError) ||
-      (canApprove && approvalCounts.isError),
+      (canApprove && approvalCounts.isError) ||
+      (canSeeDisputes && disputes.isError),
     payoutFailedCount: payoutFailed + refundFailed,
     operationsUnavailable,
+    // An account without the permission sees the area as not open to it rather than an error
+    disputesUnavailable: enabled && !canSeeDisputes,
     usersUnavailable: isMissingEndpoint(users.error),
     notifications,
   }

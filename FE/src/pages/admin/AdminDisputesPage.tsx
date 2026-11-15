@@ -27,7 +27,7 @@ const headCls =
 export default function AdminDisputesPage() {
   const nav = useAdminNav()
   const { t } = useTranslation('admin')
-  const { data = [], isLoading, error } = useDisputes(!nav.operationsUnavailable)
+  const { data = [], isLoading, error } = useDisputes(!nav.disputesUnavailable)
   const [now] = useState(() => Date.now())
 
   const rows = data
@@ -52,7 +52,7 @@ export default function AdminDisputesPage() {
         title={t('disputes.title')}
         help={
           <>
-            {!nav.operationsUnavailable && !isLoading && !error && (
+            {!nav.disputesUnavailable && !isLoading && !error && (
               <>{t('disputes.introCount', { count: openCount })} </>
             )}
             {t('disputes.introRule', {
@@ -62,8 +62,8 @@ export default function AdminDisputesPage() {
           </>
         }
       />
-      {/* No backend for this queue outside the demo: one honest state, no fake zeros */}
-      {nav.operationsUnavailable ? (
+      {/* The queue is not open to this account: one honest state, no fake zeros */}
+      {nav.disputesUnavailable ? (
         <OperationsUnavailable area="disputes" />
       ) : (
         <>
@@ -87,12 +87,17 @@ export default function AdminDisputesPage() {
           <tbody>
             {rows.map((d) => (
               <tr key={d.id} className={rowCls}>
-                <td className="num text-fg-strong">{d.id}</td>
+                <td className="num text-fg-strong">{d.code ?? d.id}</td>
                 <td>
-                  <p className="text-fg-strong">{d.title}</p>
-                  <p className="text-fg-muted text-caption">
-                    {d.client} · {d.expert}
+                  <p className="text-fg-strong">
+                    {d.title ?? t(`disputes.kind.${d.kind}`)}
                   </p>
+                  {/* The server sends no party names yet */}
+                  {d.client && d.expert && (
+                    <p className="text-fg-muted text-caption">
+                      {d.client} · {d.expert}
+                    </p>
+                  )}
                 </td>
                 <td>{d.ground}</td>
                 <td className="num text-fg-muted">
@@ -125,7 +130,7 @@ export default function AdminDisputesPage() {
                 <td className="text-right">
                   <Link
                     to={`/admin/disputes/${d.id}`}
-                    aria-label={t('disputes.viewLabel', { id: d.id })}
+                    aria-label={t('disputes.viewLabel', { id: d.code ?? d.id })}
                     className="btn btn-press btn-secondary no-underline"
                   >
                     {t('disputes.view')}
@@ -140,7 +145,7 @@ export default function AdminDisputesPage() {
                   colSpan={7}
                   className="text-fg-muted px-4 py-10 text-center"
                 >
-                  {error ? <LoadError /> : t('disputes.empty')}
+                  {error ? <LoadError error={error} /> : t('disputes.empty')}
                 </td>
               </tr>
             )}

@@ -86,8 +86,10 @@ interface AdminLayoutProps extends ShellPageProps {
   usersUnavailable?: boolean
   /** Payouts and refunds that failed and need a retry */
   payoutFailedCount?: number
-  /** Disputes and payouts cannot be checked (no backend yet); only the dashboard reads it */
+  /** Payouts cannot be checked (no backend list yet) */
   operationsUnavailable?: boolean
+  /** The disputes queue is not open to this account */
+  disputesUnavailable?: boolean
 }
 
 export function AdminLayout({
@@ -99,6 +101,7 @@ export function AdminLayout({
   usersUnavailable,
   payoutFailedCount,
   operationsUnavailable,
+  disputesUnavailable,
   ...page
 }: AdminLayoutProps) {
   const { t } = useTranslation('admin')
@@ -165,7 +168,7 @@ export function AdminLayout({
           label: t('navigation.complaints'),
           icon: Flag,
           to: '/admin/disputes',
-          lockedHint: operationsUnavailable
+          lockedHint: disputesUnavailable
             ? t('navigation.notConnected')
             : undefined,
           active: section === 'disputes',

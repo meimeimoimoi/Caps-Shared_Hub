@@ -17,13 +17,14 @@ import { useAdminNav } from '@/app/layouts/admin/useAdminNav'
 import { useDispute } from '../../features/disputes-escrow/hooks/useDispute'
 import { OperationsUnavailable } from '@/features/disputes-escrow/components/OperationsUnavailable'
 import { LoadError } from '@/components/ui/feedback/load-error'
+import { formatVnd } from '@/lib/format-money'
 
 export default function AdminDisputeDetailPage() {
   const id = useParams().id!
   const nav = useAdminNav()
   const { dispute, isLoading, error, decide, escalate } = useDispute(
     id,
-    !nav.operationsUnavailable
+    !nav.disputesUnavailable
   )
   const { t } = useTranslation(['admin', 'common'])
   const [now] = useState(() => Date.now())
@@ -38,7 +39,7 @@ export default function AdminDisputeDetailPage() {
   const layout = { ...nav, section: 'disputes' as const }
 
   // Deep links from bookmarks or the bell land here too: same honest state as the list
-  if (nav.operationsUnavailable) {
+  if (nav.disputesUnavailable) {
     return (
       <AdminLayout {...layout} breadcrumb={listLink}>
         <h1 className="text-h1">{t('disputes.title')}</h1>
@@ -57,7 +58,7 @@ export default function AdminDisputeDetailPage() {
               ? t('disputes.title')
               : t('disputes.notFound', { id })}
         </h1>
-        {error && <LoadError className="paper mt-6 px-4 py-8" />}
+        {error && <LoadError error={error} className="paper mt-6 px-4 py-8" />}
         <Link
           to="/admin/disputes"
           className="text-accent-text mt-3 inline-block underline"
@@ -70,6 +71,26 @@ export default function AdminDisputeDetailPage() {
 
   const { evidence, complaint } = dispute
   const hoursLeft = disputeHoursLeft(dispute, now)
+  const code = dispute.code ?? dispute.id
+  // The server sends no party names or title yet, so those rows only show in the demo
+  const meta = (
+    [
+      [t('disputes.meta.kind'), t(`disputes.kind.${dispute.kind}`)],
+      [t('disputes.meta.client'), dispute.client],
+      [t('disputes.meta.expert'), dispute.expert],
+      [t('disputes.meta.ground'), dispute.ground],
+      [
+        t('disputes.meta.fee'),
+        dispute.fee == null ? undefined : formatVnd(dispute.fee),
+      ],
+      [
+        t('disputes.meta.platformFee'),
+        dispute.platformFeePct == null
+          ? undefined
+          : `${dispute.platformFeePct}%`,
+      ],
+    ] as [string, string | undefined][]
+  ).filter((row): row is [string, string] => !!row[1])
 
   return (
     <AdminLayout
@@ -78,21 +99,18 @@ export default function AdminDisputeDetailPage() {
         <>
           {listLink} <span aria-hidden="true">/</span>{' '}
           <span className="text-fg-strong num" aria-current="page">
-            {dispute.id}
+            {code}
           </span>
         </>
       }
     >
       <div className="flex items-start justify-between gap-4">
         <CaseHeader
-          code={dispute.id}
-          title={t('disputes.caseTitle', { title: dispute.title })}
-          meta={[
-            [t('disputes.meta.kind'), t(`disputes.kind.${dispute.kind}`)],
-            [t('disputes.meta.client'), dispute.client],
-            [t('disputes.meta.expert'), dispute.expert],
-            [t('disputes.meta.ground'), dispute.ground],
-          ]}
+          code={code}
+          title={t('disputes.caseTitle', {
+            title: dispute.title ?? t(`disputes.kind.${dispute.kind}`),
+          })}
+          meta={meta}
         />
         <StatusBadge
           status={
@@ -140,29 +158,67 @@ export default function AdminDisputeDetailPage() {
               {[
                 [t('disputes.complaint.issue'), complaint.issue],
                 [t('disputes.complaint.description'), complaint.description],
-                [
-                  t('disputes.complaint.attachment'),
-                  // TODO(api): link tải file bằng chứng
-                  <span key="file" className="underline underline-offset-4">
-                    {complaint.attachment}
-                  </span>,
-                ],
+                // TODO(api): download links for the case files (admin attachments endpoint)
+                ...(complaint.attachment
+                  ? [
+                      [
+                        t('disputes.complaint.attachment'),
+                        <span key="file" className="underline underline-offset-4">
+                          {complaint.attachment}
+                        </span>,
+                      ],
+                    ]
+                  : []),
               ].map(([label, value]) => (
                 <div
                   key={label as string}
                   className="grid grid-cols-[110px_1fr] gap-3 py-2"
                 >
                   <dt className="text-fg-muted">{label}</dt>
-                  <dd className="text-fg-strong">{value}</dd>
+                  <dd className="text-fg-strong break-words whitespace-pre-wrap">
+                    {value}
+                  </dd>
                 </div>
               ))}
             </dl>
           </section>
 
-          <HistoryTab
-            title={t('disputes.auditLog')}
-            history={dispute.history}
-          />
+          {/* Both sides of the complaint: the expert's reply and what was delivered */}
+          {dispute.decideBy && (
+            <section className="paper p-5 md:p-6">
+              <h2 className="text-h2">{t('disputes.expertSide.title')}</h2>
+              <dl className="divide-border-subtle mt-3 divide-y text-sm">
+                {[
+                  [
+                    t('disputes.expertSide.statement'),
+                    dispute.expertStatement ??
+                      t('disputes.expertSide.noStatement'),
+                  ],
+                  [
+                    t('disputes.expertSide.summary'),
+                    dispute.reviewSummary ?? t('disputes.expertSide.noSummary'),
+                  ],
+                ].map(([label, value]) => (
+                  <div
+                    key={label}
+                    className="grid grid-cols-[110px_1fr] gap-3 py-2"
+                  >
+                    <dt className="text-fg-muted">{label}</dt>
+                    <dd className="text-fg-strong break-words whitespace-pre-wrap">
+                      {value}
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+            </section>
+          )}
+
+          {dispute.history.length > 0 && (
+            <HistoryTab
+              title={t('disputes.auditLog')}
+              history={dispute.history}
+            />
+          )}
         </div>
 
         <div className="lg:sticky lg:top-20">

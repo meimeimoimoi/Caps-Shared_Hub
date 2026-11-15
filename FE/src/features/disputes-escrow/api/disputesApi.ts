@@ -3,18 +3,94 @@ import { isExpertDemo } from '@/lib/expert-data-source'
 import { CURRENT_ADMIN } from '@/features/expert-vetting/constants'
 import { i18n } from '@/lib/i18n'
 import { DISPUTE_OUTCOME } from '../constants'
+import { DISPUTE_ESCALATION_HOURS, DISPUTE_SLA_HOURS } from '../constants'
 import type { Dispute, DisputeDecisionInput, Escrow } from '../types'
 
-/* Dev chạy demo thì đọc fixtures (bản sao để React Query thấy dữ liệu mới);
- * mutation demo sửa thẳng fixtures để lần refetch sau thấy thay đổi.
- * TODO(api): đối chiếu lại đường dẫn endpoint với BE khi có Swagger. */
+/* The demo reads fixtures (cloned so React Query sees new data) and its mutations edit them in place.
+ * Disputes use the workflow service; escrows have no list endpoint yet, so BASE is still a guess. */
 const fixtures = () => import('./fixtures')
 const BASE = '/api/admin'
+const CASES = '/api/v1/admin/review-cases'
+
+interface Envelope<T> {
+  data: T
+}
+
+/** AdminDisputeResponse of the workflow service */
+interface AdminDisputeDto {
+  reviewCaseId: string
+  fee: number
+  platformFeePct: number
+  result: string | null
+  reviewSummary: string | null
+  overdue: boolean
+  dispute: {
+    id: string
+    reason: string
+    description: string
+    status: string
+    openedAt: string
+    decideBy: string
+    expertStatement: string | null
+  }
+}
+
+/** Client refund share sent for each outcome; the rest splits by the platform fee frozen at booking */
+const REFUND_PCT = {
+  RESOLVE_REFUND_USER: 100,
+  RESOLVE_PAY_EXPERT: 0,
+  RESOLVE_PARTIAL: 50,
+} as const
+
+const HOUR = 3_600_000
+
+/** ReviewDispute.Reasons on the server */
+const REASON_KEY = {
+  DELIVERABLE_INCOMPLETE: 'disputes.reason.DELIVERABLE_INCOMPLETE',
+  OBLIGATION_NOT_MET: 'disputes.reason.OBLIGATION_NOT_MET',
+  PROFESSIONAL_JUDGMENT: 'disputes.reason.PROFESSIONAL_JUDGMENT',
+} as const
+
+function toDispute(x: AdminDisputeDto): Dispute {
+  const d = x.dispute
+  // An unknown code from a newer server is shown as sent rather than hidden
+  const reason =
+    d.reason in REASON_KEY
+      ? i18n.t(REASON_KEY[d.reason as keyof typeof REASON_KEY], { ns: 'admin' })
+      : d.reason
+  // The server only sends the deadline; a window longer than the base one means it was extended
+  const extended =
+    new Date(d.decideBy).getTime() - new Date(d.openedAt).getTime() >
+    (DISPUTE_SLA_HOURS + DISPUTE_ESCALATION_HOURS / 2) * HOUR
+  return {
+    id: x.reviewCaseId,
+    code: x.reviewCaseId.slice(0, 8).toUpperCase(),
+    kind: 'DELIVERY_ISSUE',
+    ground: reason,
+    openedAt: d.openedAt,
+    decideBy: d.decideBy,
+    escalatedAt: extended ? d.decideBy : undefined,
+    fee: x.fee,
+    platformFeePct: x.platformFeePct,
+    expertStatement: d.expertStatement ?? undefined,
+    reviewSummary: x.reviewSummary ?? undefined,
+    complaint: { issue: reason, description: d.description },
+    history: [],
+  }
+}
+
+async function openDisputes(signal?: AbortSignal) {
+  const response = await api.get<Envelope<AdminDisputeDto[]>>(
+    `${CASES}/disputes`,
+    { signal }
+  )
+  return response.data.map(toDispute)
+}
 
 /* ── Khiếu nại ── */
 export async function getDisputes(signal?: AbortSignal) {
   if (isExpertDemo) return structuredClone((await fixtures()).mockDisputes)
-  return api.get<Dispute[]>(`${BASE}/disputes`, { signal })
+  return openDisputes(signal)
 }
 
 export async function getDispute(
@@ -25,7 +101,8 @@ export async function getDispute(
     const d = (await fixtures()).mockDisputes.find((x) => x.id === id)
     return d ? structuredClone(d) : null
   }
-  return api.get<Dispute>(`${BASE}/disputes/${id}`, { signal })
+  // The server has the open queue only, no single-dispute endpoint
+  return (await openDisputes(signal)).find((x) => x.id === id) ?? null
 }
 
 export async function decideDispute(id: string, body: DisputeDecisionInput) {
@@ -40,7 +117,10 @@ export async function decideDispute(id: string, body: DisputeDecisionInput) {
     })
     return
   }
-  await api.post(`${BASE}/disputes/${id}/decision`, body)
+  await api.post(`${CASES}/${id}/dispute/decision`, {
+    refundPct: REFUND_PCT[body.outcome],
+    note: body.reason,
+  })
 }
 
 /** Escalate a professional-judgment dispute; allowed once and adds 48 hours to the deadline */
@@ -56,7 +136,7 @@ export async function escalateDispute(id: string) {
     })
     return
   }
-  await api.post(`${BASE}/disputes/${id}/escalate`)
+  await api.post(`${CASES}/${id}/dispute/extend`)
 }
 
 /* ── Escrow ── */
