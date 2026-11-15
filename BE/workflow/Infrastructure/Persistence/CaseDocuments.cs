@@ -14,6 +14,20 @@ internal static class CaseDocuments
 
     public static async Task SyncAsync(WorkflowDbContext db, CancellationToken ct)
     {
+        // A client's new version after verification is a new draft (expert versions come from the cases below)
+        var newVersion = db
+            .ChangeTracker.Entries<DocumentVersion>()
+            .Where(e =>
+                e.State == EntityState.Added
+                && e.Entity.VersionType != DocumentVersion.ExpertReviewed
+            )
+            .Select(e => e.Entity)
+            .ToList();
+        foreach (var version in newVersion)
+        {
+            var document = await db.Documents.FindAsync([version.DocumentId], ct);
+            document?.StartNewDraft(version.CreatedAt);
+        }
         var moves = db
             .ChangeTracker.Entries<ReviewStatusHistory>()
             .Where(e => e.State == EntityState.Added)
@@ -97,6 +111,36 @@ internal static class CaseDocuments
     )
     {
         var document = await db.Documents.FindAsync([reviewCase.DocumentId], ct);
-        document?.SyncReview(paidCaseOpen, verifiedVersionId, now);
+        if (document is null)
+        {
+            return;
+        }
+        var verifiedIsLatest = await VerifiedIsLatestAsync(db, document, ct);
+        document?.SyncReview(paidCaseOpen, verifiedVersionId, verifiedIsLatest, now);
+    }
+
+    // No client version was added after the verified one
+    // ponytail: reads saved rows only; a draft added in the same save as a case ending is not seen
+    private static async Task<bool> VerifiedIsLatestAsync(
+        WorkflowDbContext db,
+        Document document,
+        CancellationToken ct
+    )
+    {
+        if (document.VerifiedVersionId is not { } verifiedId)
+        {
+            return false;
+        }
+        var verifiedNo = await db
+            .DocumentVersions.Where(v => v.Id == verifiedId)
+            .Select(v => v.VersionNo)
+            .SingleAsync(ct);
+        return !await db.DocumentVersions.AnyAsync(
+            v =>
+                v.DocumentId == document.Id
+                && v.VersionNo > verifiedNo
+                && v.VersionType != DocumentVersion.ExpertReviewed,
+            ct
+        );
     }
 }

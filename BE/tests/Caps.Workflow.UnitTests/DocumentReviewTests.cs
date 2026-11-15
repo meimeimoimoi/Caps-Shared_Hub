@@ -39,18 +39,18 @@ public sealed class DocumentReviewTests
         var doc = new Document { Title = "Q1" };
         var verified = Guid.NewGuid();
 
-        doc.SyncReview(paidCaseOpen: true, null, Now);
+        doc.SyncReview(paidCaseOpen: true, null, verifiedIsLatest: false, Now);
         Assert.Equal(("IN_REVIEW", Now), (doc.Status, doc.UpdatedAt));
 
-        doc.SyncReview(false, verified, Now);
+        doc.SyncReview(false, verified, verifiedIsLatest: false, Now);
         Assert.Equal(("VERIFIED", verified), (doc.Status, doc.VerifiedVersionId));
 
-        // A later case that ends badly leaves the verified version in place
-        doc.SyncReview(false, null, Now);
+        // A later case on the verified version that ends badly leaves it verified
+        doc.SyncReview(false, null, verifiedIsLatest: true, Now);
         Assert.Equal(("VERIFIED", verified), (doc.Status, doc.VerifiedVersionId));
 
         // A new paid case puts it back in review without losing the verified version
-        doc.SyncReview(true, null, Now);
+        doc.SyncReview(true, null, verifiedIsLatest: true, Now);
         Assert.Equal(("IN_REVIEW", verified), (doc.Status, doc.VerifiedVersionId));
     }
 
@@ -59,10 +59,46 @@ public sealed class DocumentReviewTests
     {
         var doc = new Document { Title = "Q1" };
 
-        doc.SyncReview(true, null, Now);
-        doc.SyncReview(false, null, Now);
+        doc.SyncReview(true, null, false, Now);
+        doc.SyncReview(false, null, false, Now);
 
         Assert.Equal(("DRAFT", (Guid?)null), (doc.Status, doc.VerifiedVersionId));
+    }
+
+    [Fact]
+    public void A_new_client_version_after_verification_is_a_draft_that_keeps_the_verified_one()
+    {
+        var doc = new Document { Title = "Q1" };
+        var verified = Guid.NewGuid();
+        doc.SyncReview(false, verified, false, Now);
+
+        doc.StartNewDraft(Now.AddDays(1));
+        Assert.Equal(
+            ("DRAFT", verified, Now.AddDays(1)),
+            (doc.Status, doc.VerifiedVersionId, doc.UpdatedAt)
+        );
+
+        // A case on the new draft that ends badly leaves it a draft, not the older verified state
+        doc.SyncReview(true, null, verifiedIsLatest: false, Now);
+        doc.SyncReview(false, null, verifiedIsLatest: false, Now);
+        Assert.Equal(("DRAFT", verified), (doc.Status, doc.VerifiedVersionId));
+
+        // Verifying the new draft makes the document VERIFIED on the newer expert version
+        var newer = Guid.NewGuid();
+        doc.SyncReview(false, newer, verifiedIsLatest: false, Now);
+        Assert.Equal(("VERIFIED", newer), (doc.Status, doc.VerifiedVersionId));
+    }
+
+    [Theory]
+    [InlineData("DRAFT")]
+    [InlineData("IN_REVIEW")] // a running case keeps the document in review
+    public void A_new_version_changes_only_a_verified_document(string status)
+    {
+        var doc = new Document { Title = "Q1", Status = status };
+
+        doc.StartNewDraft(Now);
+
+        Assert.Equal(status, doc.Status);
     }
 
     [Fact]
