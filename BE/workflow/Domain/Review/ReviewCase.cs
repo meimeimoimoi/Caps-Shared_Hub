@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Caps.Common.Domain;
 
 namespace Caps.Workflow.Domain.Review;
@@ -13,6 +14,7 @@ public sealed partial class ReviewCase
     public const int MaxTurnaroundHours = 720;
     public const int MaxPlatformFeePct = 99;
     public const int MaxTextLength = 4000;
+    public const int MaxContentLength = 100_000;
     public const int MaxInfoRequests = 2;
 
     /// <summary>How long before the response deadline the expert is reminded of a waiting request.</summary>
@@ -103,6 +105,10 @@ public sealed partial class ReviewCase
     public string? Result { get; private set; }
     public string? CannotVerifyReason { get; private set; }
     public string? ReviewSummary { get; private set; }
+
+    /// <summary>The expert's edited copy of an AI draft (jsonb), compared field by field with the source.</summary>
+    public string? RevisedContent { get; private set; }
+
     public string? DeclineReason { get; private set; }
     public string? TerminationReason { get; private set; }
     public DateTimeOffset ResponseDeadline { get; private set; }
@@ -315,5 +321,23 @@ public sealed partial class ReviewCase
             throw WorkflowErrors.TextTooLong(field, MaxTextLength);
         }
         return string.IsNullOrEmpty(text) ? null : text;
+    }
+
+    // The expert's copy of an AI draft: a json object, bounded like the draft itself
+    private static bool IsJsonObject(string json)
+    {
+        if (json.Length > MaxContentLength)
+        {
+            return false;
+        }
+        try
+        {
+            using var document = JsonDocument.Parse(json);
+            return document.RootElement.ValueKind == JsonValueKind.Object;
+        }
+        catch (JsonException)
+        {
+            return false;
+        }
     }
 }
