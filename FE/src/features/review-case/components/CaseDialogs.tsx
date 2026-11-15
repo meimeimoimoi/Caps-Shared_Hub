@@ -105,10 +105,13 @@ export function CancelDialog({
 /** Withdraw or cancel before the expert starts: nothing is charged, or the payment is refunded in full */
 export function EarlyCancelDialog({
   stage,
+  live,
   onConfirm,
   onClose,
 }: {
   stage: 'PENDING_EXPERT_RESPONSE' | 'AWAITING_PAYMENT' | 'PAYMENT_CONFIRMED'
+  /** A real case is already paid while it waits for the expert */
+  live?: boolean
   onConfirm: () => void
   onClose: () => void
 }) {
@@ -116,7 +119,11 @@ export function EarlyCancelDialog({
   return (
     <Modal
       title={t(`dialogs.earlyCancel.${stage}.title`)}
-      description={t(`dialogs.earlyCancel.${stage}.body`)}
+      description={
+        live && stage === 'PENDING_EXPERT_RESPONSE'
+          ? t('live.earlyCancelPaid')
+          : t(`dialogs.earlyCancel.${stage}.body`)
+      }
       onClose={onClose}
       footer={
         <>
