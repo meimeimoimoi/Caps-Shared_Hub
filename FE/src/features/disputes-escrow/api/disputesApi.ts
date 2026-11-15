@@ -3,6 +3,7 @@ import { isExpertDemo } from '@/lib/expert-data-source'
 import { CURRENT_ADMIN } from '@/features/expert-vetting/constants'
 import { i18n } from '@/lib/i18n'
 import { DISPUTE_OUTCOME } from '../constants'
+import { getPublicExpert } from '@/features/marketplace/api/marketplaceApi'
 import { caseCode } from '@/features/review-case/mapper'
 import { caseText } from '@/features/review-case/ui'
 import type { AdminDisputeDto } from '@/features/review-case/types'
@@ -17,7 +18,7 @@ const REVIEW_BASE = '/api/v1/admin/review-cases'
 
 const REFUND_PCT = { RESOLVE_REFUND_USER: 100, RESOLVE_PAY_EXPERT: 0 } as const
 
-function disputeFrom(d: AdminDisputeDto): Dispute {
+function disputeFrom(d: AdminDisputeDto, expert: string): Dispute {
   const issue =
     caseText(`dialogs.report.issues.${d.dispute.reason}`) ?? d.dispute.reason
   return {
@@ -26,8 +27,8 @@ function disputeFrom(d: AdminDisputeDto): Dispute {
     kind: 'DELIVERY_ISSUE',
     title:
       d.reviewSummary?.split('\n')[0].slice(0, 90) ?? caseCode(d.reviewCaseId),
-    client: '',
-    expert: '',
+    client: d.requesterEmail ?? '',
+    expert,
     ground: issue,
     openedAt: d.dispute.openedAt,
     // The window is 48 hours and doubles once extended
@@ -43,10 +44,30 @@ function disputeFrom(d: AdminDisputeDto): Dispute {
   }
 }
 
-const listOpenDisputes = (signal?: AbortSignal) =>
-  api
-    .get<{ data: AdminDisputeDto[] }>(`${REVIEW_BASE}/disputes`, { signal })
-    .then((r) => r.data.map(disputeFrom))
+const listOpenDisputes = async (signal?: AbortSignal) => {
+  const list = (
+    await api.get<{ data: AdminDisputeDto[] }>(`${REVIEW_BASE}/disputes`, {
+      signal,
+    })
+  ).data
+  // ponytail: one marketplace call per distinct expert; add the name to the dispute API if the queue grows large
+  const ids = [...new Set(list.map((d) => d.expertProfileId))]
+  const names = new Map(
+    await Promise.all(
+      ids.map(
+        async (id) =>
+          [
+            id,
+            // A suspended expert is no longer listed: the email side still shows
+            await getPublicExpert(id, signal)
+              .then((e) => e.displayName ?? '')
+              .catch(() => ''),
+          ] as const
+      )
+    )
+  )
+  return list.map((d) => disputeFrom(d, names.get(d.expertProfileId) ?? ''))
+}
 
 /* ── Khiếu nại ── */
 export async function getDisputes(signal?: AbortSignal) {
