@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Info } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { isExpertDemo } from '@/lib/expert-data-source'
 import { StatusBadge } from '@/components/ui/display/status-badge'
 import {
   DISPUTE_ESCALATION_HOURS,
@@ -15,7 +16,11 @@ interface DisputeDecisionProps {
   slaHours: number
   decided: boolean
   escalated: boolean
-  onDecide: (outcome: DisputeOutcome, reason: string) => void
+  onDecide: (
+    outcome: DisputeOutcome,
+    reason: string,
+    refundPct?: number
+  ) => void
   onEscalate: () => void
 }
 
@@ -31,6 +36,7 @@ export function DisputeDecision({
   const { t } = useTranslation('admin')
   const [outcome, setOutcome] = useState<DisputeOutcome>()
   const [reason, setReason] = useState('')
+  const [refundPct, setRefundPct] = useState(50)
 
   return (
     <form
@@ -38,7 +44,7 @@ export function DisputeDecision({
       // `required` trên radio + textarea đã chặn submit khi thiếu
       onSubmit={(e) => {
         e.preventDefault()
-        if (outcome) onDecide(outcome, reason)
+        if (outcome) onDecide(outcome, reason, refundPct)
       }}
     >
       <div className="flex items-start justify-between gap-3">
@@ -116,13 +122,31 @@ export function DisputeDecision({
                   {t(o.label)}
                 </span>
                 <span className="block">{t(o.hint)}</span>
-                <span className="text-fg-muted text-caption num block">
-                  {t(o.split)}
-                </span>
+                {/* A real case splits by the rates frozen on it, not these examples */}
+                {isExpertDemo && (
+                  <span className="text-fg-muted text-caption num block">
+                    {t(o.split)}
+                  </span>
+                )}
               </span>
             </label>
           ))}
         </div>
+
+        {outcome === 'RESOLVE_PARTIAL' && !isExpertDemo && (
+          <label className="mt-5 flex flex-col gap-2 text-sm font-semibold">
+            {t('disputes.decision.refundPct')}
+            <input
+              type="number"
+              required
+              min={1}
+              max={99}
+              value={refundPct}
+              onChange={(e) => setRefundPct(Number(e.target.value))}
+              className="num border-border-control rounded-control shadow-control bg-paper border px-3 py-2 text-base font-normal"
+            />
+          </label>
+        )}
 
         <label className="mt-5 flex flex-col gap-2 text-sm font-semibold">
           {t('disputes.decision.reason')}

@@ -3,6 +3,9 @@ import { isExpertDemo } from '@/lib/expert-data-source'
 import { CURRENT_ADMIN } from '@/features/expert-vetting/constants'
 import { i18n } from '@/lib/i18n'
 import { DISPUTE_OUTCOME } from '../constants'
+import { caseCode } from '@/features/review-case/mapper'
+import { caseText } from '@/features/review-case/ui'
+import type { AdminDisputeDto } from '@/features/review-case/types'
 import type { Dispute, DisputeDecisionInput, Escrow } from '../types'
 
 /* Dev chạy demo thì đọc fixtures (bản sao để React Query thấy dữ liệu mới);
@@ -10,11 +13,45 @@ import type { Dispute, DisputeDecisionInput, Escrow } from '../types'
  * TODO(api): đối chiếu lại đường dẫn endpoint với BE khi có Swagger. */
 const fixtures = () => import('./fixtures')
 const BASE = '/api/admin'
+const REVIEW_BASE = '/api/v1/admin/review-cases'
+
+const REFUND_PCT = { RESOLVE_REFUND_USER: 100, RESOLVE_PAY_EXPERT: 0 } as const
+
+function disputeFrom(d: AdminDisputeDto): Dispute {
+  const issue =
+    caseText(`dialogs.report.issues.${d.dispute.reason}`) ?? d.dispute.reason
+  return {
+    id: d.reviewCaseId,
+    code: caseCode(d.reviewCaseId),
+    kind: 'DELIVERY_ISSUE',
+    title:
+      d.reviewSummary?.split('\n')[0].slice(0, 90) ?? caseCode(d.reviewCaseId),
+    client: '',
+    expert: '',
+    ground: issue,
+    openedAt: d.dispute.openedAt,
+    // The window is 48 hours and doubles once extended
+    escalatedAt:
+      Date.parse(d.dispute.decideBy) - Date.parse(d.dispute.openedAt) >
+      48 * 3_600_000
+        ? d.dispute.openedAt
+        : undefined,
+    resolvedAt: d.dispute.closedAt ?? undefined,
+    expertStatement: d.dispute.expertStatement ?? undefined,
+    complaint: { issue, description: d.dispute.description, attachment: '' },
+    history: [],
+  }
+}
+
+const listOpenDisputes = (signal?: AbortSignal) =>
+  api
+    .get<{ data: AdminDisputeDto[] }>(`${REVIEW_BASE}/disputes`, { signal })
+    .then((r) => r.data.map(disputeFrom))
 
 /* ── Khiếu nại ── */
 export async function getDisputes(signal?: AbortSignal) {
   if (isExpertDemo) return structuredClone((await fixtures()).mockDisputes)
-  return api.get<Dispute[]>(`${BASE}/disputes`, { signal })
+  return listOpenDisputes(signal)
 }
 
 export async function getDispute(
@@ -25,7 +62,8 @@ export async function getDispute(
     const d = (await fixtures()).mockDisputes.find((x) => x.id === id)
     return d ? structuredClone(d) : null
   }
-  return api.get<Dispute>(`${BASE}/disputes/${id}`, { signal })
+  // The queue holds open disputes only: a decided one leaves it
+  return (await listOpenDisputes(signal)).find((d) => d.id === id) ?? null
 }
 
 export async function decideDispute(id: string, body: DisputeDecisionInput) {
@@ -40,7 +78,13 @@ export async function decideDispute(id: string, body: DisputeDecisionInput) {
     })
     return
   }
-  await api.post(`${BASE}/disputes/${id}/decision`, body)
+  await api.post(`${REVIEW_BASE}/${id}/dispute/decision`, {
+    refundPct:
+      body.outcome === 'RESOLVE_PARTIAL'
+        ? (body.refundPct ?? 50)
+        : REFUND_PCT[body.outcome],
+    note: body.reason,
+  })
 }
 
 /** Escalate a professional-judgment dispute; allowed once and adds 48 hours to the deadline */
@@ -56,7 +100,7 @@ export async function escalateDispute(id: string) {
     })
     return
   }
-  await api.post(`${BASE}/disputes/${id}/escalate`)
+  await api.post(`${REVIEW_BASE}/${id}/dispute/extend`)
 }
 
 /* ── Escrow ── */
@@ -75,7 +119,11 @@ export async function retryPayout(caseId: string, actor: string) {
       throw new Error(i18n.t('escrow.retryBlocked', { ns: 'admin' }))
     const at = new Date().toISOString()
     Object.assign(e, { status: 'PAID', nextAt: at, failure: undefined })
-    e.history.unshift({ at, actor, text: i18n.t('escrow.retried', { ns: 'admin', id: caseId }) })
+    e.history.unshift({
+      at,
+      actor,
+      text: i18n.t('escrow.retried', { ns: 'admin', id: caseId }),
+    })
     return
   }
   await api.post(`${BASE}/escrows/${caseId}/payout/retry`)
@@ -88,8 +136,17 @@ export async function markRefunded(caseId: string, ref: string, actor: string) {
     const e = (await fixtures()).mockEscrows.find((x) => x.caseId === caseId)
     if (!e) return
     const at = new Date().toISOString()
-    Object.assign(e, { status: 'REFUNDED', nextAt: at, refundRef: ref, failure: undefined })
-    e.history.unshift({ at, actor, text: i18n.t('escrow.refund.logged', { ns: 'admin', ref }) })
+    Object.assign(e, {
+      status: 'REFUNDED',
+      nextAt: at,
+      refundRef: ref,
+      failure: undefined,
+    })
+    e.history.unshift({
+      at,
+      actor,
+      text: i18n.t('escrow.refund.logged', { ns: 'admin', ref }),
+    })
     return
   }
   await api.post(`${BASE}/escrows/${caseId}/refund/confirm`, { ref })
