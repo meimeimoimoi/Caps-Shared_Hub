@@ -13,7 +13,7 @@ public static class DocumentRequests
         string? Metadata
     );
 
-    public sealed record CreateSnapshotRequest([Required] string Data);
+    public sealed record CreateSnapshotRequest([Required] string Data, int? ExpectedRevision);
 
     public sealed record GenerateDraftRequest(
         Guid? SnapshotId,

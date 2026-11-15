@@ -5,6 +5,7 @@ namespace Caps.Workflow.Domain.Workspace;
 /// <summary>Payment source constants for AI usage records.</summary>
 public static class AiUsagePaidWith
 {
+    public const string Free = "FREE";
     public const string Quota = "QUOTA";
     public const string Credit = "CREDIT";
 }
@@ -17,7 +18,7 @@ public static class AiUsageState
     public const string Refunded = "REFUNDED";
 }
 
-/// <summary>One AI answer and how it was paid (free quota or held credits), reserved first and settled after.</summary>
+/// <summary>One AI operation and its settlement record, including historical quota and credit usage.</summary>
 public sealed class AiUsage
 {
     public Guid Id { get; set; } = UuidV7.NewGuid();

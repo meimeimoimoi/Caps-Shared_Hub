@@ -1,6 +1,7 @@
 using Caps.Common.Api;
 using Caps.Common.Application;
 using Caps.Common.Security;
+using Caps.Workflow.Application.Features.Documents;
 using Microsoft.AspNetCore.Mvc;
 using static Caps.Workflow.Api.DTOs.Requests.DocumentRequests;
 using static Caps.Workflow.Application.Features.Documents.CreateDocument;
@@ -99,10 +100,44 @@ public sealed class DocumentController(ICurrentUser currentUser) : ControllerBas
         CancellationToken ct
     )
     {
-        var command = new CreateInputSnapshotCommand(id, UserId, request.Data);
+        var command = new CreateInputSnapshotCommand(
+            id,
+            UserId,
+            request.Data,
+            request.ExpectedRevision
+        );
         var result = await handler.HandleAsync(command, ct);
 
         return Ok(ApiResponse<InputSnapshotDto>.Ok(result));
+    }
+
+    /// <summary>Reads one owned document's metadata.</summary>
+    /// <response code="200">The document summary.</response>
+    /// <response code="404">The document does not exist.</response>
+    [HttpGet("{id:guid}")]
+    public async Task<IActionResult> GetSummary(
+        Guid id,
+        [FromServices] IQueryHandler<GetDocumentSummaryQuery, DocumentSummaryDto> handler,
+        CancellationToken ct
+    )
+    {
+        var document = await handler.HandleAsync(new(id, UserId), ct);
+        return Ok(ApiResponse<DocumentSummaryDto>.Ok(document));
+    }
+
+    /// <summary>Reads the selected or latest saved input for an owned document.</summary>
+    /// <response code="200">The snapshot, or null when no input has been saved.</response>
+    /// <response code="404">The document or selected snapshot does not exist.</response>
+    [HttpGet("{id:guid}/snapshots")]
+    public async Task<IActionResult> GetSnapshot(
+        Guid id,
+        [FromQuery] Guid? snapshotId,
+        [FromServices] IQueryHandler<GetInputSnapshotQuery, InputSnapshotDto?> handler,
+        CancellationToken ct
+    )
+    {
+        var snapshot = await handler.HandleAsync(new(id, UserId, snapshotId), ct);
+        return Ok(ApiResponse<InputSnapshotDto?>.Ok(snapshot));
     }
 
     /// <summary>

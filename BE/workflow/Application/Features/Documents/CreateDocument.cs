@@ -72,7 +72,12 @@ public static class CreateDocument
                 document.VerifiedVersionId,
                 document.CreatedAt,
                 document.UpdatedAt
-            );
+            )
+            {
+                PinnedTemplateVersionId = DocumentSummaryDto.ReadPinnedTemplateVersion(
+                    document.Metadata
+                ),
+            };
         }
     }
 }

@@ -19,11 +19,10 @@ public static class SendChatMessage
         DateOnly? PeriodEnd
     );
 
-    /// <summary>Handles quota verification, RAG query execution, usage tracking, and message persistence.</summary>
+    /// <summary>Handles RAG query execution, usage tracking, and message persistence.</summary>
     public sealed class SendChatMessageHandler(
         IConversationRepository conversationRepository,
         IChatMessageRepository chatMessageRepository,
-        IAiQuotaRepository aiQuotaRepository,
         IAiUsageRepository aiUsageRepository,
         IRagQueryClient ragQueryClient,
         IUnitOfWork unitOfWork,
@@ -51,19 +50,6 @@ public static class SendChatMessage
 
             var now = timeProvider.GetUtcNow();
 
-            // 1. Check or initialize AI Quota
-            var quota = await aiQuotaRepository.GetByUserIdAsync(command.UserId, ct);
-            if (quota is null)
-            {
-                quota = AiQuota.Create(command.UserId, 10, now);
-                await aiQuotaRepository.AddAsync(quota, ct);
-            }
-
-            if (!quota.HashAvailableQuota())
-            {
-                throw WorkflowErrors.QuotaExhausted();
-            }
-
             // 2. Persist USER chat message
             var userMessage = ChatMessage.CreateUserMessage(
                 command.ConversationId,
@@ -85,7 +71,7 @@ public static class SendChatMessage
 
             var ragResponse = await ragQueryClient.QueryAsync(ragRequest, ct);
 
-            // 4. Quota and AiUsage resolution
+            // 4. Record free AI usage
             var citationsJson =
                 ragResponse.Citations.Count > 0
                     ? JsonSerializer.Serialize(ragResponse.Citations)
@@ -93,13 +79,11 @@ public static class SendChatMessage
 
             if (ragResponse.AnswerStatus == ChatMessageAnswerStatus.Answered)
             {
-                quota.Deduct(1, now);
-
                 var usage = AiUsage.Create(
                     command.UserId,
                     command.ConversationId,
                     userMessage.Id,
-                    AiUsagePaidWith.Quota,
+                    AiUsagePaidWith.Free,
                     creditHold: 0,
                     AiUsageState.Captured,
                     now
@@ -160,7 +144,7 @@ public static class SendChatMessage
                 aiMessage.CreatedAt
             );
 
-            return new SendChatMessageResultDto(userDto, aiDto, quota.Balance);
+            return new SendChatMessageResultDto(userDto, aiDto);
         }
     }
 }

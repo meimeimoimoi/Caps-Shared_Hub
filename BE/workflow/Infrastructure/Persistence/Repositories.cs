@@ -246,6 +246,20 @@ public sealed class TemplateRepository(WorkflowDbContext db) : ITemplateReposito
             ct
         );
 
+    public Task<TemplateVersion?> FindReleasedVersionAsync(Guid versionId, CancellationToken ct) =>
+        db
+            .TemplateVersions.AsNoTracking()
+            .Include(x => x.Template)
+            .SingleOrDefaultAsync(
+                x =>
+                    x.Id == versionId
+                    && (
+                        x.Status == TemplateVersionStatus.Published
+                        || x.Status == TemplateVersionStatus.Deprecated
+                    ),
+                ct
+            );
+
     public void Add(Template newTemplate) => db.Templates.Add(newTemplate);
 
     public void Add(TemplateVersion version) => db.TemplateVersions.Add(version);
