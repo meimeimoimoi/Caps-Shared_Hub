@@ -8,6 +8,7 @@ namespace Caps.Workflow.Application.Features.Documents;
 /// <summary>Reads a saved input snapshot of an owned document.</summary>
 public sealed record GetInputSnapshotQuery(Guid DocumentId, Guid UserId, Guid? SnapshotId);
 
+/// <summary>Returns the requested snapshot, or the latest one when none is named; null when nothing was saved yet.</summary>
 public sealed class GetInputSnapshotHandler(
     IDocumentRepository documents,
     IInputSnapshotRepository snapshots

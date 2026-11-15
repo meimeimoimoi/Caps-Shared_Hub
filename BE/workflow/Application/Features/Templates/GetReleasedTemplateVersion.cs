@@ -8,11 +8,13 @@ namespace Caps.Workflow.Application.Features.Templates;
 /// <summary>Reads one immutable, released template version.</summary>
 public sealed record GetReleasedTemplateVersionQuery(Guid VersionId);
 
+/// <summary>A released template version with the schema it was published with.</summary>
 public sealed record ReleasedTemplateVersionResponse(
     TemplateSummaryResponse Template,
     TemplateSchemaResponse Schema
 );
 
+/// <summary>Returns the version if it was ever published, so documents pinned to an older version still open.</summary>
 public sealed class GetReleasedTemplateVersionHandler(ITemplateRepository templates)
     : IQueryHandler<GetReleasedTemplateVersionQuery, ReleasedTemplateVersionResponse>
 {

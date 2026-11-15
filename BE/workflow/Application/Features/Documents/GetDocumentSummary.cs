@@ -8,6 +8,7 @@ namespace Caps.Workflow.Application.Features.Documents;
 /// <summary>Reads display information for one owned document.</summary>
 public sealed record GetDocumentSummaryQuery(Guid DocumentId, Guid UserId);
 
+/// <summary>Returns the document's metadata to its owner; anyone else is denied.</summary>
 public sealed class GetDocumentSummaryHandler(IDocumentRepository documents)
     : IQueryHandler<GetDocumentSummaryQuery, DocumentSummaryDto>
 {
