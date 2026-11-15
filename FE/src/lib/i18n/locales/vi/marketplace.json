@@ -170,5 +170,10 @@
     "loading": "Đang tải danh sách chuyên gia",
     "failed": "Chưa tải được danh sách chuyên gia",
     "failedBody": "Kết nối đang gián đoạn nên chưa lấy được danh sách. Bạn thử lại sau giây lát."
+  },
+  "preview": {
+    "loading": "Đang tải dịch vụ…",
+    "unavailable": "Chưa kết nối được với sàn chuyên gia.",
+    "empty": "Chưa có dịch vụ công khai."
   }
 }
