@@ -18,4 +18,7 @@ public interface IDocumentRepository
         CancellationToken ct = default
     );
     Task AddAsync(Document document, CancellationToken ct = default);
+
+    /// <summary>True when the version belongs to the document and the document belongs to the user.</summary>
+    Task<bool> OwnsVersionAsync(Guid userId, Guid documentId, Guid versionId, CancellationToken ct);
 }

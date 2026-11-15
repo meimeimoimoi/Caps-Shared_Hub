@@ -37,6 +37,7 @@ public static class CreateInputSnapshot
                 throw WorkflowErrors.DocumentAccessDenied();
             }
 
+            var data = JsonInput.OrEmptyObject(command.Data, "data");
             var nextVersionNo = await inputSnapshotRepository.GetNextVersionNoAsync(
                 command.DocumentId,
                 ct
@@ -48,7 +49,7 @@ public static class CreateInputSnapshot
                 Id = UuidV7.NewGuid(),
                 DocumentId = command.DocumentId,
                 VersionNo = nextVersionNo,
-                Data = string.IsNullOrWhiteSpace(command.Data) ? "{}" : command.Data,
+                Data = data,
                 CreatedBy = command.UserId,
                 CreatedAt = now,
             };
@@ -56,7 +57,15 @@ public static class CreateInputSnapshot
             document.UpdatedAt = now;
 
             await inputSnapshotRepository.AddAsync(snapshot, ct);
-            await unitOfWork.SaveChangesAsync(ct);
+            try
+            {
+                await unitOfWork.SaveChangesAsync(ct);
+            }
+            catch (UniqueConstraintException)
+            {
+                // Two saves at once picked the same number; the unique index let only one through
+                throw WorkflowErrors.SnapshotConflict();
+            }
 
             return new InputSnapshotDto(
                 snapshot.Id,

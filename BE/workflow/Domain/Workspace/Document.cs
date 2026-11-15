@@ -1,4 +1,7 @@
+using System.Security.Cryptography;
+using System.Text.Json;
 using Caps.Common.Domain;
+using Caps.Workflow.Domain.Review;
 
 namespace Caps.Workflow.Domain.Workspace;
 
@@ -21,4 +24,59 @@ public sealed class Document
 
     public ICollection<InputSnapshot> InputSnapshots { get; set; } = [];
     public ICollection<DocumentVersion> Versions { get; set; } = [];
+
+    public const string ExternalFile = "EXTERNAL_FILE";
+
+    /// <summary>
+    /// A document the client brings as a file: version 1 holds it. The file is checked by its bytes (same rules as
+    /// review case attachments) and stays editable until a paid review case locks it.
+    /// </summary>
+    public static Document Upload(
+        Guid ownerUserId,
+        string title,
+        DateOnly periodStart,
+        DateOnly periodEnd,
+        string? fileName,
+        byte[] content,
+        DateTimeOffset now
+    )
+    {
+        if (periodEnd < periodStart)
+        {
+            throw Exceptions.WorkflowErrors.DocumentInvalidPeriod();
+        }
+        // ponytail: reuses the attachment checks and error codes (ATTACHMENT_*); give document their own if the FE needs to tell them apart
+        var contentType = ReviewAttachment.DetectType(content);
+        var name = ReviewAttachment.NameOf(fileName);
+        var document = new Document
+        {
+            OwnerUserId = ownerUserId,
+            Source = ExternalFile,
+            Title = title,
+            PeriodStart = periodStart,
+            PeriodEnd = periodEnd,
+            CreatedAt = now,
+            UpdatedAt = now,
+        };
+        var version = new DocumentVersion
+        {
+            DocumentId = document.Id,
+            VersionNo = 1,
+            VersionType = ExternalFile,
+            Content = JsonSerializer.Serialize(
+                new
+                {
+                    fileName = name,
+                    contentType,
+                    sizeBytes = content.Length,
+                }
+            ),
+            ContentHash = Convert.ToHexStringLower(SHA256.HashData(content)),
+            CreatedBy = ownerUserId,
+            CreatedAt = now,
+        };
+        version.FileUrl = $"documents/{document.Id}/{version.Id}";
+        document.Versions.Add(version);
+        return document;
+    }
 }

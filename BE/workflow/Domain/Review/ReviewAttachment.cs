@@ -55,7 +55,7 @@ public sealed class ReviewAttachment
     }
 
     /// <summary>PDF, JPEG, PNG, WebP or Word (.docx), told apart by the bytes; the name and the browser's type are not trusted.</summary>
-    private static string DetectType(byte[] content)
+    internal static string DetectType(byte[] content)
     {
         if (content.Length == 0)
         {
@@ -70,7 +70,7 @@ public sealed class ReviewAttachment
     }
 
     // Some browsers send a full path; keep only the name, trimmed and bounded
-    private static string NameOf(string? fileName)
+    internal static string NameOf(string? fileName)
     {
         var name = Path.GetFileName(fileName?.Trim() ?? "");
         if (string.IsNullOrEmpty(name) || name.Length > MaxFileNameLength)
