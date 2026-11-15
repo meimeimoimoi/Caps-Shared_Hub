@@ -29,11 +29,12 @@ import { SkeletonRows } from '@/components/ui/display/skeleton-rows'
 
 const LATE_FIELDS = ['penaltyHours', 'penaltyPercent', 'cancelHours'] as const
 type LateDraft = Record<(typeof LATE_FIELDS)[number], string>
-// Suggested rule for a service that has none yet: an incident refunds 50% (agreed 2026-11-11)
+// Suggested rule for a service that has none yet, mirroring the seeded rates (PlatformFeeAgreedRates):
+// an incident refunds 50% and there is one tier, so cancel hours equal penalty hours
 const DEFAULT_LATE: LateRule = {
   penaltyHours: 24,
   penaltyPercent: 50,
-  cancelHours: 72,
+  cancelHours: 24,
 }
 // Agreed platform share; a service's first fee starts here
 const DEFAULT_PERCENT = 40
