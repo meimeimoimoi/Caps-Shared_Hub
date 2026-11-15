@@ -1,8 +1,15 @@
 import { useMemo } from 'react'
 import { useFormatters } from '@/hooks/useFormatters'
+import { i18n } from '@/lib/i18n'
 import type { CaseStatus, ReviewCase } from './types'
 
 const TIMEZONE = 'Asia/Ho_Chi_Minh'
+
+/** A key that may have no translation; the app's missing-key handler ignores defaultValue, so callers need a null. */
+export const caseText = (key: string, options: object = {}) =>
+  i18n.exists(key, { ns: 'reviewCase' })
+    ? (i18n.t(key as never, { ns: 'reviewCase', ...options }) as string)
+    : null
 
 export const fieldClass =
   'bg-paper border-border-control text-fg-strong placeholder:text-fg-muted rounded-control shadow-control aria-[invalid=true]:border-danger w-full border px-3 py-2.5 text-base transition-[border-color] focus:border-ink'
@@ -52,11 +59,14 @@ const UNPAID: CaseStatus[] = [
   'CANCELLED',
 ]
 
+// In a real case the client pays before the expert answers
+const LIVE_UNPAID: CaseStatus[] = ['AWAITING_PAYMENT', 'CANCELLED_UNPAID']
+
 export const fundsOf = (c: ReviewCase) =>
   c.settlement
     ? 'settled'
     : c.dispute
       ? 'locked'
-      : UNPAID.includes(c.status)
+      : (c.live ? LIVE_UNPAID : UNPAID).includes(c.status)
         ? 'none'
         : 'held'

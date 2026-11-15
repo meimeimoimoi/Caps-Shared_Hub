@@ -347,6 +347,10 @@ namespace Caps.Workflow.Infrastructure.Persistence.Migrations
                         .HasColumnType("text")
                         .HasColumnName("review_summary");
 
+                    b.Property<string>("RevisedContent")
+                        .HasColumnType("jsonb")
+                        .HasColumnName("revised_content");
+
                     b.Property<string>("ServiceCode")
                         .HasMaxLength(64)
                         .HasColumnType("character varying(64)")

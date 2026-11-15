@@ -1,11 +1,12 @@
-import { useEffect, useMemo } from 'react'
+import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { ShieldCheck } from 'lucide-react'
 import { mockPricing } from '@/features/service-pricing/api/fixtures'
-import { DEMO_CASES, demoCase } from '@/features/review-case/fixtures'
+import { useClientCases } from '@/features/review-case/hooks/useReviewCases'
 import { fundsOf, useCaseFormat } from '@/features/review-case/ui'
-import { LEDGER, WALLET } from '@/features/wallet/fixtures'
+import { useFormatters } from '@/hooks/useFormatters'
+import { isExpertDemo } from '@/lib/expert-data-source'
 import { useCreditOverview } from '@/features/credits/hooks/useCreditOverview'
 import type { PaymentTransaction } from '@/features/credits/types'
 import { StatusBadge } from '@/components/ui/display/status-badge'
@@ -26,14 +27,13 @@ export default function WalletPage() {
   const { t } = useTranslation('reviewCase')
   const { t: tc } = useTranslation('client')
   const f = useCaseFormat()
+  const { number } = useFormatters()
   const payments = useCreditOverview()
+  const wallet = payments.data?.wallet
+  const ledger = payments.data?.ledger ?? []
   const { creditPackages, creditRates } = mockPricing
-  const held = useMemo(
-    () =>
-      DEMO_CASES.map((d) => demoCase(d.id)!).filter((c) =>
-        ['held', 'locked'].includes(fundsOf(c))
-      ),
-    []
+  const held = useClientCases().cases.filter((c) =>
+    ['held', 'locked'].includes(fundsOf(c))
   )
 
   useEffect(() => {
@@ -52,16 +52,18 @@ export default function WalletPage() {
         <div>
           <p className="eyebrow">{t('wallet.available')}</p>
           <p className="num text-fg-strong mt-1 text-[3rem] leading-none font-semibold tracking-tight">
-            {WALLET.available}
+            {wallet ? number(wallet.balance) : '—'}
           </p>
-          <p className="text-fg-muted mt-1 text-sm">
-            {t('wallet.unit', { count: WALLET.available })}
-          </p>
+          {wallet && (
+            <p className="text-fg-muted mt-1 text-sm">
+              {t('wallet.unit', { count: wallet.balance })}
+            </p>
+          )}
         </div>
         <div className="sm:border-border sm:border-l sm:pl-6">
           <p className="eyebrow">{t('wallet.held')}</p>
           <p className="num text-fg-strong text-h2 mt-1 font-semibold">
-            {t('wallet.unit', { count: WALLET.held })}
+            {wallet ? t('wallet.unit', { count: wallet.held }) : '—'}
           </p>
           <p className="text-fg-muted mt-1 text-sm">{t('wallet.heldHint')}</p>
         </div>
@@ -142,21 +144,24 @@ export default function WalletPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {LEDGER.map((e) => (
+                  {ledger.map((e) => (
                     <tr
                       key={e.id}
                       className="border-border-subtle border-t [&>td]:px-4 [&>td]:py-3"
                     >
                       <td className="num text-fg-muted whitespace-nowrap max-sm:hidden">
-                        {f.at(e.at)}
+                        {f.at(e.createdAt)}
                       </td>
                       <td>
                         <span className="text-fg-strong font-semibold">
-                          {t(`wallet.types.${e.type}`)}
+                          {t(`wallet.types.${e.entryType}`)}
                         </span>
-                        <span className="text-fg-muted block">{e.note}</span>
+                        {/* Billing's notes are technical English with case ids */}
+                        {isExpertDemo && (
+                          <span className="text-fg-muted block">{e.note}</span>
+                        )}
                         <span className="num text-fg-muted block text-xs sm:hidden">
-                          {f.at(e.at)}
+                          {f.at(e.createdAt)}
                         </span>
                       </td>
                       <td
@@ -165,13 +170,24 @@ export default function WalletPage() {
                           e.amount > 0 ? 'text-success' : 'text-fg-strong'
                         )}
                       >
-                        {e.amount > 0 ? `+${e.amount}` : e.amount}
+                        {e.amount > 0 ? `+${number(e.amount)}` : number(e.amount)}
                       </td>
                       <td className="num text-fg-muted text-right">
-                        {e.balanceAfter}
+                        {number(e.balanceAfter)}
                       </td>
                     </tr>
                   ))}
+                  {payments.isLoading && <SkeletonRows cols={4} />}
+                  {!payments.isLoading && ledger.length === 0 && (
+                    <tr className="border-border-subtle border-t">
+                      <td
+                        colSpan={4}
+                        className="text-fg-muted px-4 py-10 text-center"
+                      >
+                        {payments.error?.message ?? t('wallet.ledgerEmpty')}
+                      </td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
             </div>
@@ -285,7 +301,7 @@ export default function WalletPage() {
               <ul className="mt-3">
                 {held.map((c) => (
                   <li
-                    key={c.id}
+                    key={c.code ?? c.id}
                     className="border-border-subtle border-b py-3 text-sm"
                   >
                     <Link
@@ -294,7 +310,7 @@ export default function WalletPage() {
                     >
                       <span className="min-w-0">
                         <span className="num text-fg-strong block font-semibold">
-                          {c.id}
+                          {c.code ?? c.id}
                         </span>
                         <span className="text-fg-muted block truncate">
                           {t(`status.${c.status}`)}

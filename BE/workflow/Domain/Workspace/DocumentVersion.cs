@@ -52,6 +52,9 @@ public sealed class DocumentVersion
                 summary = reviewCase.ReviewSummary,
                 cannotVerifyReason = reviewCase.CannotVerifyReason,
                 sourceVersionId = reviewCase.SourceVersionId,
+                document = reviewCase.RevisedContent is { } json
+                    ? JsonSerializer.Deserialize<JsonElement>(json)
+                    : (JsonElement?)null,
             }
         );
         return new DocumentVersion

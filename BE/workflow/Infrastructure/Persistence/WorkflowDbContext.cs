@@ -359,6 +359,9 @@ public sealed class WorkflowDbContext(DbContextOptions<WorkflowDbContext> option
             e.Property(x => x.Result).HasColumnName("result");
             e.Property(x => x.CannotVerifyReason).HasColumnName("cannot_verify_reason");
             e.Property(x => x.ReviewSummary).HasColumnName("review_summary");
+            e.Property(x => x.RevisedContent)
+                .HasColumnName("revised_content")
+                .HasColumnType("jsonb");
             e.Property(x => x.DeclineReason).HasColumnName("decline_reason");
             e.Property(x => x.TerminationReason).HasColumnName("termination_reason");
             e.Property(x => x.ResponseDeadline).HasColumnName("response_deadline").IsRequired();

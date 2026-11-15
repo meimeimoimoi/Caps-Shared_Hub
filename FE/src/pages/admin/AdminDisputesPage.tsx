@@ -68,11 +68,11 @@ export default function AdminDisputesPage() {
           <tbody>
             {rows.map((d) => (
               <tr key={d.id} className={rowCls}>
-                <td className="num text-fg-strong">{d.id}</td>
+                <td className="num text-fg-strong">{d.code ?? d.id}</td>
                 <td>
                   <p className="text-fg-strong">{d.title}</p>
                   <p className="text-fg-muted text-caption">
-                    {d.client} · {d.expert}
+                    {[d.client, d.expert].filter(Boolean).join(' · ')}
                   </p>
                 </td>
                 <td>{d.ground}</td>
