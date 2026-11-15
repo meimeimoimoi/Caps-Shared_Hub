@@ -116,7 +116,10 @@ export default function AdminDashboardPage() {
     ...nav.notifications.filter((n) => n.tone !== 'warning'),
   ]
   const urgentCount = attention.filter((n) => n.tone === 'warning').length
-  const allClear = !loading && !failed && !nav.operationsUnavailable
+  // Money totals come from the billing stats endpoint, which exists even though the escrow list page
+  // does not; only an account that cannot read those stats is told the money side is unchecked
+  const moneyUnchecked = !!nav.operationsUnavailable && !canSeeMoney
+  const allClear = !loading && !failed && !moneyUnchecked
   const busy = attention.length > 0
   // Key figures share one ledger panel beside the work list, so missing permissions leave no holes
   const hasLedger = canReview || canApprove || canSeeMoney
@@ -269,14 +272,14 @@ export default function AdminDashboardPage() {
                 ? t('dashboard.loading')
                 : failed
                   ? t('dashboard.attention.unknown')
-                  : nav.operationsUnavailable
+                  : moneyUnchecked
                     ? t('dashboard.attention.emptyPartial')
                     : t('dashboard.attention.empty')}
             </p>
           </div>
         )}
         {/* Never imply all-clear for queues the dashboard cannot see */}
-        {nav.operationsUnavailable && attention.length > 0 && (
+        {moneyUnchecked && attention.length > 0 && (
           <p className="text-fg-muted border-border-subtle border-t px-5 py-3 text-sm md:px-6">
             {t('dashboard.attention.unavailable')}
           </p>
@@ -337,7 +340,6 @@ export default function AdminDashboardPage() {
           label={t('dashboard.kpi.held')}
           value={billing.data && held.amount}
           failed={billing.isError}
-          unavailable={nav.operationsUnavailable}
           format={(n) => f.money(n)}
           note={t('dashboard.kpi.heldNote', { count: held.count })}
           unavailableNote={t('dashboard.kpi.moneyUnavailable')}
@@ -348,7 +350,7 @@ export default function AdminDashboardPage() {
       </div>
 
       {canSeeUsers && canSeeMoney && (
-        <GrowthSection moneyUnavailable={nav.operationsUnavailable} />
+        <GrowthSection />
       )}
 
       {/* Where work is stuck: which step applications pile up at, where money waits */}
@@ -373,7 +375,7 @@ export default function AdminDashboardPage() {
             }
           })}
         />}
-        {canSeeMoney && !nav.operationsUnavailable && <BarList
+        {canSeeMoney && <BarList
           id="dash-escrow"
           title={t('dashboard.escrow')}
           empty={
