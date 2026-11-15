@@ -20,6 +20,8 @@ public sealed class ListOpenDisputesHandler(IReviewDisputeRepository disputes, T
         var open = await disputes.ListOpenAsync(ct);
         return open.Select(x => new AdminDisputeResponse(
                 x.Case.Id.ToString(),
+                x.Case.RequesterEmail,
+                x.Case.ExpertProfileId.ToString(),
                 x.Case.Fee,
                 x.Case.PlatformFeePct,
                 x.Case.Result,

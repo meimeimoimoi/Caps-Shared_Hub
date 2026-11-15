@@ -150,6 +150,9 @@ export interface DisputeDto {
 /** An open dispute in the admin queue. */
 export interface AdminDisputeDto {
   reviewCaseId: string
+  /** Only admins see it; the expert never learns the client's contact. */
+  requesterEmail: string | null
+  expertProfileId: string
   fee: number
   platformFeePct: number
   result: string | null
