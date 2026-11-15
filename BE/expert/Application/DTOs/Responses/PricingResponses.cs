@@ -27,7 +27,13 @@ public sealed record PricingLimitsResponse(
 );
 
 /// <summary>What a late delivery costs: the penalty band, then a full refund until the case is cancelled.</summary>
-public sealed record LateRuleResponse(int PenaltyHours, int PenaltyPercent, int CancelHours);
+/// <param name="NoDeliveryRefundPercent">Refunded when nothing is delivered by CancelHours; the platform keeps the rest.</param>
+public sealed record LateRuleResponse(
+    int PenaltyHours,
+    int PenaltyPercent,
+    int CancelHours,
+    int NoDeliveryRefundPercent
+);
 
 /// <summary>What a client's silence costs: after Hours the case ends and the fee splits; the platform keeps the rest.</summary>
 public sealed record NoResponseRuleResponse(int Hours, int RefundPercent, int ExpertPercent);

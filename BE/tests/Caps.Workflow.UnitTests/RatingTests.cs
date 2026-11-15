@@ -56,7 +56,7 @@ public sealed class RatingTests
             "VAT missing",
             Now
         );
-        reviewCase.ResolveDispute(dispute, Guid.NewGuid(), 40, "Partly delivered", Now);
+        reviewCase.ResolveDispute(dispute, Guid.NewGuid(), 50, "Partly delivered", Now);
 
         Assert.Equal((short)2, Rated(reviewCase, 2).Rating);
     }

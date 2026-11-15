@@ -83,6 +83,26 @@ public sealed class OutboxReviewCaseEvents(WorkflowDbContext db, TimeProvider cl
             ct
         );
 
+    public Task AcceptanceDueAsync(
+        Guid reviewCaseId,
+        Guid requesterUserId,
+        string? requesterEmail,
+        DateTimeOffset acceptanceDeadline,
+        CancellationToken ct
+    ) =>
+        PublishAsync(
+            new ReviewCaseAcceptanceDueEvent(
+                Guid.NewGuid(),
+                reviewCaseId,
+                requesterUserId,
+                requesterEmail,
+                acceptanceDeadline,
+                clock.GetUtcNow()
+            ),
+            reviewCaseId,
+            ct
+        );
+
     public Task DisputeOverdueAsync(
         Guid reviewCaseId,
         DateTimeOffset decideBy,

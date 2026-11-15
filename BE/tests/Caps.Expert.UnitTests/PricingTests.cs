@@ -26,7 +26,11 @@ public sealed class PricingTests
     private static readonly PricingPolicy Policy = new(500_000, 30_000_000, 1, 7, 7, 50);
 
     // First rate of the service: takes effect at once
-    private static PlatformFee Rate(int percent = 20, string? reason = "Agreed with the advisor") =>
+    private static PlatformFee Rate(
+        int percent = 20,
+        string? reason = "Agreed with the advisor",
+        int noDelivery = 50
+    ) =>
         PlatformFee.Set(
             Service,
             percent,
@@ -36,6 +40,7 @@ public sealed class PricingTests
             72,
             50,
             30,
+            noDelivery,
             null,
             false,
             Policy.FeeNoticeDays,
@@ -126,6 +131,7 @@ public sealed class PricingTests
             72,
             0,
             60,
+            50,
             new DateOnly(2026, 11, 1),
             true,
             Policy.FeeNoticeDays,
@@ -174,6 +180,7 @@ public sealed class PricingTests
                 72,
                 50,
                 30,
+                50,
                 null,
                 false,
                 Policy.FeeNoticeDays,
@@ -184,6 +191,16 @@ public sealed class PricingTests
         );
         Assert.Equal("LATE_RULE_INVALID", e.Code);
     }
+
+    [Theory]
+    [InlineData(-1)]
+    [InlineData(101)]
+    public void A_no_delivery_refund_out_of_range_is_rejected(int refund) =>
+        Assert.Equal("NO_DELIVERY_RULE_INVALID", Errors.CodeOf(() => Rate(noDelivery: refund)));
+
+    [Fact]
+    public void The_no_delivery_refund_is_kept_with_the_rate() =>
+        Assert.Equal(50, Rate(noDelivery: 50).NoDeliveryRefundPercent);
 
     [Theory]
     [InlineData(0, 50, 30)] // no hours
@@ -202,6 +219,7 @@ public sealed class PricingTests
                 hours,
                 refund,
                 expert,
+                50,
                 null,
                 false,
                 Policy.FeeNoticeDays,

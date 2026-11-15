@@ -44,6 +44,12 @@ public sealed class PlatformFee
     public int NoResponseRefundPercent { get; private set; }
     public int NoResponseExpertPercent { get; private set; }
 
+    /// <summary>
+    /// The expert never delivered: the client gets this share back, the platform keeps the rest and the expert
+    /// gets nothing (meeting of 2026-11-11, 50 by default).
+    /// </summary>
+    public int NoDeliveryRefundPercent { get; private set; }
+
     public DateTimeOffset EffectiveFrom { get; private set; }
 
     /// <summary>System Admin account that set this rate.</summary>
@@ -77,6 +83,7 @@ public sealed class PlatformFee
         int noResponseHours,
         int noResponseRefundPercent,
         int noResponseExpertPercent,
+        int noDeliveryRefundPercent,
         DateOnly? effectiveOn,
         bool hasCurrentRate,
         int noticeDays,
@@ -117,6 +124,10 @@ public sealed class PlatformFee
         {
             throw ExpertErrors.NoResponseRuleInvalid(MaxNoResponseHours);
         }
+        if (noDeliveryRefundPercent is < 0 or > 100)
+        {
+            throw ExpertErrors.NoDeliveryRuleInvalid();
+        }
         DateTimeOffset effectiveFrom;
         if (!hasCurrentRate && effectiveOn == null)
         {
@@ -142,6 +153,7 @@ public sealed class PlatformFee
             NoResponseHours = noResponseHours,
             NoResponseRefundPercent = noResponseRefundPercent,
             NoResponseExpertPercent = noResponseExpertPercent,
+            NoDeliveryRefundPercent = noDeliveryRefundPercent,
             EffectiveFrom = effectiveFrom,
             Reason = why,
             SetBy = adminId,

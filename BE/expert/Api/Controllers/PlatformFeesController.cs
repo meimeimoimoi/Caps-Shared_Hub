@@ -83,6 +83,9 @@ public sealed class PlatformFeesController(ICurrentUser currentUser) : Controlle
                 r.NoResponseHours,
                 r.NoResponseRefundPercent,
                 r.NoResponseExpertPercent,
+                // A page not yet sending it gets the agreed default
+                r.NoDeliveryRefundPercent
+                    ?? 50,
                 r.EffectiveOn,
                 r.Reason
             ),

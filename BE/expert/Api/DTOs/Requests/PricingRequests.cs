@@ -15,6 +15,7 @@ public sealed record SetPlatformFeeRequest(
     int NoResponseHours,
     int NoResponseRefundPercent,
     int NoResponseExpertPercent,
+    int? NoDeliveryRefundPercent,
     DateOnly? EffectiveOn,
     string? Reason
 );

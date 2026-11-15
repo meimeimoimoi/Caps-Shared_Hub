@@ -17,7 +17,8 @@ public sealed class AcceptReviewHandler(
     WaitingRequestRefunds refunds,
     IReviewCaseEvents events,
     IUnitOfWork unitOfWork,
-    TimeProvider clock
+    TimeProvider clock,
+    WorkCalendar? calendar = null
 ) : ICommandHandler<AcceptReviewCommand, ReviewCaseResponse>
 {
     public async Task<ReviewCaseResponse> HandleAsync(
@@ -39,7 +40,8 @@ public sealed class AcceptReviewHandler(
         var accepted = reviewCase.Accept(
             reviewCase.ExpertProfileId,
             command.UserId,
-            clock.GetUtcNow()
+            clock.GetUtcNow(),
+            calendar
         );
         cases.AddHistory(accepted);
         // Atomic in the expert service: a full expert fails here and the case stays pending. A failed save after

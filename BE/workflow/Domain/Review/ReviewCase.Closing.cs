@@ -4,10 +4,9 @@ namespace Caps.Workflow.Domain.Review;
 public sealed partial class ReviewCase
 {
     /// <summary>
-    /// The split of the held fee. A client who went silent gets the shares frozen at booking (the platform keeps
-    /// the rest); otherwise a late delivery's refund comes out of the expert's share, and a full refund leaves
-    /// the platform nothing either. An admin's dispute decision refunds its percentage of what the client would
-    /// pay on accepting, so the late refund is never lost.
+    /// The split of the held fee (meeting of 2026-11-11). A client who went silent gets the shares frozen at
+    /// booking. An incident (a late delivery, an upheld dispute, no delivery at all) refunds one share to the
+    /// client, the platform keeps the rest and the expert gets nothing; otherwise the platform fee splits as booked.
     /// </summary>
     public ReviewSettlement Settle()
     {
@@ -17,20 +16,22 @@ public sealed partial class ReviewCase
             var paid = Fee * NoResponseExpertPct / 100;
             return new(back, Fee - back - paid, paid);
         }
-        var refund = Fee * LateRefundPct / 100;
-        var platform = LateRefundPct == 100 ? 0 : Fee * PlatformFeePct / 100;
-        if (DisputeRefundPct is { } pct)
+        var incident =
+            Status == ReviewCaseStatus.DeliveryOverdue
+                ? NoDeliveryRefundPct
+                : Math.Max(LateRefundPct, DisputeRefundPct ?? 0);
+        if (incident > 0 || Status == ReviewCaseStatus.DeliveryOverdue)
         {
-            // The platform and the expert each give up pct of the share they would get on accepting
-            refund += (Fee - refund) * pct / 100;
-            platform = platform * (100 - pct) / 100;
+            var refund = Fee * incident / 100;
+            return new(refund, Fee - refund, 0);
         }
-        return new(refund, platform, Fee - refund - platform);
+        var platform = Fee * PlatformFeePct / 100;
+        return new(0, platform, Fee - platform);
     }
 
     /// <summary>
-    /// How the fee ended up, once the case is over: the split for a delivered or terminated case, a full refund
-    /// for one the expert never took or never delivered; null while it runs or when nothing was paid.
+    /// How the fee ended up, once the case is over: the split for a delivered, terminated or undelivered case, a
+    /// full refund for one the expert never took; null while it runs or when nothing was paid.
     /// </summary>
     public ReviewSettlement? Outcome() =>
         Status switch
@@ -38,10 +39,10 @@ public sealed partial class ReviewCase
             ReviewCaseStatus.Completed
             or ReviewCaseStatus.AutoConfirmed
             or ReviewCaseStatus.Resolved
-            or ReviewCaseStatus.Terminated => Settle(),
+            or ReviewCaseStatus.Terminated
+            or ReviewCaseStatus.DeliveryOverdue => Settle(),
             ReviewCaseStatus.ExpertDeclined
             or ReviewCaseStatus.ExpertTimeout
-            or ReviewCaseStatus.DeliveryOverdue
             or ReviewCaseStatus.Withdrawn => new(Fee, 0, 0),
             _ => null,
         };
@@ -61,7 +62,7 @@ public sealed partial class ReviewCase
                 ReviewCaseStatus.ExpertTimeout,
             ReviewCaseStatus.AwaitingAcceptance when now >= AcceptanceDeadline =>
                 ReviewCaseStatus.AutoConfirmed,
-            // Not delivered by the last late hour: the caller refund client full
+            // Not delivered by the last late hour: the caller settles the frozen no-delivery split
             ReviewCaseStatus.InReview when now >= CancelAt => ReviewCaseStatus.DeliveryOverdue,
             _ => null,
         };

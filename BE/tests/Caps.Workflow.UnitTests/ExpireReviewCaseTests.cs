@@ -61,16 +61,17 @@ public sealed class ExpireReviewCaseTests
     }
 
     [Fact]
-    public async Task An_expert_who_never_delivers_refunds_the_client_and_frees_the_slot()
+    public async Task An_expert_who_never_delivers_settles_the_frozen_share_and_frees_the_slot()
     {
         var reviewCase = Accepted();
-        // 48h turnaround + 72h cancel window
-        var run = new Run(reviewCase, T0.AddHours(120));
+        // Due one working day later (Friday, T0 + 24h), then the 72h cancel window
+        var run = new Run(reviewCase, T0.AddHours(96));
 
         await run.ExpireAsync();
 
         Assert.Equal(ReviewCaseStatus.DeliveryOverdue, reviewCase.Status);
-        Assert.Equal(["refund"], run.Escrows.Calls);
+        Assert.Equal(["settle"], run.Escrows.Calls);
+        Assert.Equal(new ReviewSettlement(500_000, 500_000, 0), run.Escrows.Settlement);
         Assert.Equal([(ExpertProfile, reviewCase.Id)], run.Slots.Released);
         Assert.True(run.UnitOfWork.Committed);
     }
@@ -79,7 +80,7 @@ public sealed class ExpireReviewCaseTests
     public async Task A_late_delivery_inside_the_cancel_window_is_left_alone()
     {
         var reviewCase = Accepted();
-        var run = new Run(reviewCase, T0.AddHours(119));
+        var run = new Run(reviewCase, T0.AddHours(95));
 
         await run.ExpireAsync();
 
@@ -93,7 +94,7 @@ public sealed class ExpireReviewCaseTests
     {
         var reviewCase = Accepted();
         reviewCase.Deliver(ExpertProfile, Expert, ReviewCase.Verified, "Looks right", null, T0);
-        var run = new Run(reviewCase, T0 + ReviewCase.AcceptanceWindow);
+        var run = new Run(reviewCase, reviewCase.AcceptanceDeadline!.Value);
 
         await run.ExpireAsync();
 
