@@ -175,6 +175,10 @@ export interface ReviewCaseDto {
   result: 'VERIFIED' | 'CANNOT_VERIFY' | null
   reviewSummary: string | null
   cannotVerifyReason: string | null
+  /** The AI draft under review (detail only; null for uploaded files). */
+  sourceContent: Record<string, unknown> | null
+  /** The expert's edited copy of that draft, once delivered. */
+  revisedContent: Record<string, unknown> | null
   declineReason: string | null
   documentId: string
   sourceVersionId: string

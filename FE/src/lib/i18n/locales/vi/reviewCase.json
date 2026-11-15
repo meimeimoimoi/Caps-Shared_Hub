@@ -615,6 +615,23 @@
       "noSource": "Hồ sơ này được soạn trong ứng dụng nên không có tệp gốc để tải.",
       "fromExpert": "Từ chuyên gia"
     },
+    "revised": {
+      "title": "Bản chuyên gia đã chỉnh sửa",
+      "count_one": "{{count}} thay đổi",
+      "count_other": "{{count}} thay đổi",
+      "changedCount_one": "{{count}} sửa",
+      "changedCount_other": "{{count}} sửa",
+      "removedCount_one": "{{count}} bỏ",
+      "removedCount_other": "{{count}} bỏ",
+      "addedCount_one": "{{count}} thêm",
+      "addedCount_other": "{{count}} thêm",
+      "none": "Chuyên gia không thay đổi nội dung bản nháp.",
+      "changed": "Đã sửa",
+      "added": "Mục mới",
+      "removed": "Đã bỏ",
+      "before": "Trước:",
+      "after": "Sau:"
+    },
     "expert": {
       "status": {
         "AWAITING_PAYMENT": "Chờ khách thanh toán",
@@ -644,6 +661,10 @@
       "summary": "Nội dung kết luận",
       "summaryHelpLabel": "Hướng dẫn nội dung kết luận",
       "summaryHelp": "Nếu bạn chỉnh sửa hồ sơ, hãy bật Track Changes trong Word khi sửa rồi đính kèm tệp đã sửa, và tóm tắt các thay đổi chính ở đây để khách hàng thấy bạn đã sửa ở đâu và vì sao.",
+      "editFields": "Chỉnh sửa nội dung bản nháp",
+      "removeField": "Bỏ mục này",
+      "fieldChanged": "Đã sửa",
+      "undo": "Hoàn tác",
       "cannotVerifyReason": "Lý do chưa thể xác minh",
       "deliver": "Bàn giao kết quả",
       "askTitle": "Yêu cầu khách bổ sung thông tin",

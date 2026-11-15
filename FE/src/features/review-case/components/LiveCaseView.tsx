@@ -12,6 +12,7 @@ import type { CaseStatus } from '../types'
 import { useCaseFormat } from '../ui'
 import { CaseAside } from './CaseAside'
 import { CaseAttachments } from './CaseAttachments'
+import { RevisedContentView } from './RevisedContentView'
 import { CaseChat } from './CaseChat'
 import { AcceptDialog, EarlyCancelDialog, ReportDialog } from './CaseDialogs'
 import { CasePanel, type PanelActions } from './CasePanel'
@@ -204,6 +205,12 @@ export function LiveCaseView({ caseId }: { caseId: string }) {
               result={c.result}
               caseId={c.code ?? c.id}
               expert={c.expert}
+            />
+          )}
+          {dto.sourceContent && dto.revisedContent && (
+            <RevisedContentView
+              source={dto.sourceContent}
+              revised={dto.revisedContent}
             />
           )}
           <section className="paper p-6 md:p-8">

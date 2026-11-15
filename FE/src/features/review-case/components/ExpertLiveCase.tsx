@@ -11,6 +11,7 @@ import { caseText, fieldClass, useCaseFormat } from '../ui'
 import { CaseAttachments } from './CaseAttachments'
 import { CaseChat } from './CaseChat'
 import { Deadline } from './CaseUi'
+import { RevisedContentView, fieldText } from './RevisedContentView'
 import { cn } from '@/lib/utils'
 
 const MAX_TEXT = 4000
@@ -76,13 +77,17 @@ function TextAction({
 
 function DeliverForm({
   busy,
+  source,
   onSubmit,
 }: {
   busy: boolean
+  /** The AI draft under review; its fields can be edited or removed. */
+  source: Record<string, unknown> | null
   onSubmit: (
     result: 'VERIFIED' | 'CANNOT_VERIFY',
     summary: string,
-    reason: string | null
+    reason: string | null,
+    revised: Record<string, unknown> | null
   ) => void
 }) {
   const { t } = useTranslation('reviewCase')
@@ -90,15 +95,41 @@ function DeliverForm({
   const [result, setResult] = useState<'VERIFIED' | 'CANNOT_VERIFY'>('VERIFIED')
   const [summary, setSummary] = useState('')
   const [reason, setReason] = useState('')
+  const [fields, setFields] = useState<Record<string, string>>(() =>
+    Object.fromEntries(
+      Object.entries(source ?? {}).map(([k, v]) => [k, fieldText(v)])
+    )
+  )
+  const [removed, setRemoved] = useState<string[]>([])
   const cannot = result === 'CANNOT_VERIFY'
   const ready = summary.trim() && (!cannot || reason.trim())
+  // Fields that were not text go back as JSON when they still parse
+  const revised = () =>
+    source &&
+    Object.fromEntries(
+      Object.entries(fields)
+        .filter(([k]) => !removed.includes(k))
+        .map(([k, v]) => {
+          if (typeof source[k] === 'string') return [k, v]
+          try {
+            return [k, JSON.parse(v)]
+          } catch {
+            return [k, v]
+          }
+        })
+    )
   return (
     <form
       className="space-y-4"
       onSubmit={(e) => {
         e.preventDefault()
         if (ready)
-          onSubmit(result, summary.trim(), cannot ? reason.trim() : null)
+          onSubmit(
+            result,
+            summary.trim(),
+            cannot ? reason.trim() : null,
+            revised()
+          )
       }}
     >
       <fieldset>
@@ -120,6 +151,71 @@ function DeliverForm({
           ))}
         </div>
       </fieldset>
+      {source && (
+        <fieldset className="space-y-3">
+          <legend className="text-fg-strong text-sm font-semibold">
+            {t('live.expert.editFields')}
+          </legend>
+          {Object.keys(fields).map((key) => {
+            const original = fieldText(source[key])
+            const edited = !removed.includes(key) && fields[key] !== original
+            return (
+              <div key={key} className="space-y-1">
+                <div className="flex flex-wrap items-center gap-x-2">
+                  <label htmlFor={`${id}-f-${key}`} className="text-fg text-sm">
+                    {key}
+                  </label>
+                  {edited && (
+                    <>
+                      <span className="text-accent-text text-caption font-semibold">
+                        {t('live.expert.fieldChanged')}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setFields({ ...fields, [key]: original })
+                        }
+                        className="text-fg-muted hover:text-fg-strong text-caption underline underline-offset-2"
+                      >
+                        {t('live.expert.undo')}
+                      </button>
+                    </>
+                  )}
+                </div>
+                <textarea
+                  id={`${id}-f-${key}`}
+                  rows={1}
+                  disabled={removed.includes(key)}
+                  value={fields[key]}
+                  onChange={(e) =>
+                    setFields({ ...fields, [key]: e.target.value })
+                  }
+                  className={cn(
+                    fieldClass,
+                    'field-sizing-content min-h-11 resize-y disabled:line-through disabled:opacity-60',
+                    edited && 'border-accent'
+                  )}
+                />
+                <label className="text-fg-muted flex items-center gap-2 text-sm">
+                  <input
+                    type="checkbox"
+                    checked={removed.includes(key)}
+                    onChange={(e) =>
+                      setRemoved(
+                        e.target.checked
+                          ? [...removed, key]
+                          : removed.filter((r) => r !== key)
+                      )
+                    }
+                    className="accent-ink size-4"
+                  />
+                  {t('live.expert.removeField')}
+                </label>
+              </div>
+            )
+          })}
+        </fieldset>
+      )}
       <div className="space-y-2">
         <div className="flex items-center gap-1">
           <label
@@ -314,9 +410,20 @@ export function ExpertLiveCase({ caseId }: { caseId: string }) {
             <Card title={t('live.expert.deliverTitle')}>
               <DeliverForm
                 busy={busy}
-                onSubmit={(result, summary, cannotVerifyReason) =>
+                source={dto.sourceContent}
+                onSubmit={(
+                  result,
+                  summary,
+                  cannotVerifyReason,
+                  revisedContent
+                ) =>
                   perform(() =>
-                    a.deliver(caseId, { result, summary, cannotVerifyReason })
+                    a.deliver(caseId, {
+                      result,
+                      summary,
+                      cannotVerifyReason,
+                      revisedContent,
+                    })
                   )
                 }
               />
@@ -380,6 +487,13 @@ export function ExpertLiveCase({ caseId }: { caseId: string }) {
                 </p>
               )}
             </Card>
+          )}
+
+          {dto.sourceContent && dto.revisedContent && (
+            <RevisedContentView
+              source={dto.sourceContent}
+              revised={dto.revisedContent}
+            />
           )}
 
           {dispute && (

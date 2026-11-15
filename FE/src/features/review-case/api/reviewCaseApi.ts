@@ -45,6 +45,7 @@ export const reviewCaseActions = {
       result: 'VERIFIED' | 'CANNOT_VERIFY'
       summary: string
       cannotVerifyReason: string | null
+      revisedContent: Record<string, unknown> | null
     }
   ) => act(id, 'deliver', body),
   rate: (id: string, stars: number, comment: string) =>

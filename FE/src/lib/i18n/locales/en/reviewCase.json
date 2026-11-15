@@ -615,6 +615,23 @@
       "noSource": "This document was written in the app, so there is no original file to download.",
       "fromExpert": "From the expert"
     },
+    "revised": {
+      "title": "Expert's edited version",
+      "count_one": "{{count}} change",
+      "count_other": "{{count}} changes",
+      "changedCount_one": "{{count}} edited",
+      "changedCount_other": "{{count}} edited",
+      "removedCount_one": "{{count}} removed",
+      "removedCount_other": "{{count}} removed",
+      "addedCount_one": "{{count}} added",
+      "addedCount_other": "{{count}} added",
+      "none": "The expert left the draft unchanged.",
+      "changed": "Edited",
+      "added": "New field",
+      "removed": "Removed",
+      "before": "Before:",
+      "after": "After:"
+    },
     "expert": {
       "status": {
         "AWAITING_PAYMENT": "Awaiting client payment",
@@ -644,6 +661,10 @@
       "summary": "Conclusion",
       "summaryHelpLabel": "What to write in the conclusion",
       "summaryHelp": "If you edit the document, turn on Track Changes in Word, attach the edited file, and summarise the main changes here so the client sees where and why you changed it.",
+      "editFields": "Edit the draft",
+      "removeField": "Remove this field",
+      "fieldChanged": "Edited",
+      "undo": "Undo",
       "cannotVerifyReason": "Why it cannot be verified",
       "deliver": "Deliver the result",
       "askTitle": "Ask the client for information",
