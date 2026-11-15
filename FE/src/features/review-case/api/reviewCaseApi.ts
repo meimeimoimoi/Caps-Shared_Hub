@@ -3,6 +3,8 @@ import type { AttachmentDto, DisputeDto, ReviewCaseDto } from '../types'
 
 const base = '/api/v1/review-cases'
 const adminBase = '/api/v1/admin/review-cases'
+// Files go up to 50 MB, which takes minutes on a slow connection
+const FILE_TIMEOUT = 5 * 60_000
 
 type Envelope<T> = { data: T }
 const unwrap = <T>(p: Promise<Envelope<T>>) => p.then((r) => r.data)
@@ -95,7 +97,7 @@ export function addCaseAttachment(id: string, file: File) {
   return unwrap(
     api.post<Envelope<AttachmentDto>>(attachmentsUrl(id, 'party'), form, {
       headers: { 'Content-Type': 'multipart/form-data' },
-      timeout: 60_000,
+      timeout: FILE_TIMEOUT,
     })
   )
 }
@@ -105,7 +107,7 @@ export const downloadSourceFile = (id: string, scope: AttachmentScope) =>
   apiClient
     .get<Blob>(`${scope === 'admin' ? adminBase : base}/${id}/source-file`, {
       responseType: 'blob',
-      timeout: 60_000,
+      timeout: FILE_TIMEOUT,
     })
     .then((r) => r.data)
 
@@ -117,6 +119,6 @@ export const downloadCaseAttachment = (
   apiClient
     .get<Blob>(`${attachmentsUrl(id, scope)}/${attachmentId}/file`, {
       responseType: 'blob',
-      timeout: 60_000,
+      timeout: FILE_TIMEOUT,
     })
     .then((r) => r.data)
