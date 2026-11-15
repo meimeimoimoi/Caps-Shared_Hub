@@ -48,6 +48,10 @@ public sealed class PlatformFee
 
     /// <summary>System Admin account that set this rate.</summary>
     public Guid SetBy { get; private set; }
+    public const int MaxReasonLength = 1000;
+
+    /// <summary>Why the System Admin set this rate; null on rows from before reasons were recorded.</summary>
+    public string? Reason { get; private set; }
 
     /// <summary>Set when a pending rate was cancelled or replaced before it took effect.</summary>
     public DateTimeOffset? CancelledAt { get; private set; }
@@ -76,10 +80,20 @@ public sealed class PlatformFee
         DateOnly? effectiveOn,
         bool hasCurrentRate,
         int noticeDays,
+        string? reason,
         Guid adminId,
         DateTimeOffset now
     )
     {
+        var why = string.IsNullOrWhiteSpace(reason) ? null : reason.Trim();
+        if (why == null)
+        {
+            throw ExpertErrors.PolicyReasonRequired();
+        }
+        if (why.Length > MaxReasonLength)
+        {
+            throw ExpertErrors.PolicyReasonTooLong(MaxReasonLength);
+        }
         if (percent is < 0 or > MaxPercent)
             throw ExpertErrors.PlatformFeeInvalid(MaxPercent);
         // The penalty comes out of the expert's share, so it can never exceed what is left after the platform fee
@@ -129,6 +143,7 @@ public sealed class PlatformFee
             NoResponseRefundPercent = noResponseRefundPercent,
             NoResponseExpertPercent = noResponseExpertPercent,
             EffectiveFrom = effectiveFrom,
+            Reason = why,
             SetBy = adminId,
         };
     }
