@@ -321,5 +321,9 @@
   "templateSummaryFinalization": "Prepare the annual corporate income tax finalization return from your confirmed figures.",
   "stepNumber": "Step {{n}}",
   "stepCounter": "Step {{current}} of {{total}}",
-  "stepDone": "done"
+  "stepDone": "done",
+  "freeDraftExport": "AI draft export is free.",
+  "draftUnverifiedNumbers": "AI found numbers that need verification.",
+  "draftVerifyAgainstInputs": "Check the numbers against your input before using them.",
+  "txtTextFile": "TXT · Text file"
 }

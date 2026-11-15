@@ -6,6 +6,7 @@ import { useQuery } from '@tanstack/react-query'
 import { Modal } from '@/components/ui/feedback/modal'
 import { ApiError } from '@/lib/api-client'
 import { draftApi } from '../api/draftApi'
+import { isDraftMock } from '../api/dataSource'
 import { draftKeys } from '../api/queryKeys'
 import { useDraftAction, useDraftContext } from '../hooks/useDrafting'
 
@@ -194,7 +195,7 @@ export function ExportDraftDialog({
       }
     >
       <p className="rounded-control bg-sunken mt-5 p-4 text-sm">
-        {t('disclaimer')}
+        {t('disclaimer')} {t('freeDraftExport')}
       </p>
       {wrongVersion ? (
         <DraftError
@@ -207,7 +208,9 @@ export function ExportDraftDialog({
       ) : currentResult ? (
         <div className="mt-5 space-y-3">
           <p role="status" className="rounded-control bg-sunken p-4 text-sm">
-            {display.demoCopy(currentResult.message)}
+            {isDraftMock
+              ? display.demoCopy(currentResult.message)
+              : t('freeDraftExport')}
           </p>
           <p className="text-caption text-fg-muted break-all">
             {t('artifactReference', { id: currentResult.id })}
@@ -241,7 +244,9 @@ export function ExportDraftDialog({
           ) : (
             <div className="mt-5 space-y-4">
               <p className="text-sm">
-                {display.demoCopy(quote.data?.description)}
+                {isDraftMock
+                  ? display.demoCopy(quote.data?.description)
+                  : t('freeDraftExport')}
               </p>
               {!quote.data?.eligibility.allowed && (
                 <p role="alert" className="text-danger text-sm">
@@ -260,7 +265,7 @@ export function ExportDraftDialog({
                   {quote.data?.formats.map((value) => (
                     <option key={value} value={value}>
                       {value === 'txt'
-                        ? t('txtDemoTextFile')
+                        ? t(isDraftMock ? 'txtDemoTextFile' : 'txtTextFile')
                         : value.toUpperCase()}
                     </option>
                   ))}

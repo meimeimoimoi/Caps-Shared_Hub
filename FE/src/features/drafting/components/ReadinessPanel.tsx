@@ -77,8 +77,16 @@ export function ReadinessPanel({
           <strong>
             {issue.severity === 'blocking' ? t('blockingIssue') : t('warning')}
           </strong>
-          <p className="mt-2">{display.demoCopy(issue.message)}</p>
-          <p className="mt-2">{display.demoCopy(issue.guidance)}</p>
+          <p className="mt-2">
+            {issue.id === 'unverified-numbers'
+              ? t('draftUnverifiedNumbers')
+              : display.demoCopy(issue.message)}
+          </p>
+          <p className="mt-2">
+            {issue.id === 'unverified-numbers'
+              ? t('draftVerifyAgainstInputs')
+              : display.demoCopy(issue.guidance)}
+          </p>
           {issue.fieldId && (
             <DraftLink
               to={`/drafts/${draft.workspaceId}/input?fromVersion=${draft.id}&field=${issue.fieldId}`}

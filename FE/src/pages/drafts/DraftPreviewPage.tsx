@@ -165,13 +165,6 @@ function Preview({
                   {display.demoCopy(draft.actions.review.reason)}
                 </p>
               )}
-              {!draftCapabilities.review && (
-                <p className="text-caption text-fg-muted">
-                  {t(
-                    'reviewSubmissionIsNotConnectedYouCanInspectTheHandoffSummary'
-                  )}
-                </p>
-              )}
               <DraftButton
                 secondary
                 className="w-full"
