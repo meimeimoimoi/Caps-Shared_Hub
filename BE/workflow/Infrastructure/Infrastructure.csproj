@@ -13,6 +13,8 @@
     <ProjectReference Include="..\..\common\Persistence\Persistence.csproj" />
     <ProjectReference Include="..\..\common\Messaging\Messaging.csproj" />
     <PackageReference Include="AWSSDK.S3" />
+    <PackageReference Include="QuestPDF" />
+    <PackageReference Include="DocumentFormat.OpenXml" />
   </ItemGroup>
 
 </Project>
