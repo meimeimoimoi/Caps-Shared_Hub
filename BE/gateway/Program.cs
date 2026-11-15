@@ -5,12 +5,14 @@ using Caps.Gateway.Security;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.HideServerHeader();
+builder.Services.AddGatewayForwardedHeaders(builder.Configuration);
 builder.Services.AddCommonApi(builder.Configuration, "gateway");
 builder.Services.AddGatewayRateLimits(builder.Configuration);
 builder.Services.AddReverseProxy().LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"));
 
 var app = builder.Build();
 
+app.UseForwardedHeaders();
 app.UseSecurityHeaders();
 app.UseCommonApi();
 

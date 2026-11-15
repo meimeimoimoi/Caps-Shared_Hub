@@ -70,10 +70,16 @@ public static class DependencyInjection
 
         // Python AI drafting HTTP client
         var aiServiceBaseUrl = configuration["Services:AiService"] ?? "http://ai-service:8000";
+        var aiInternalKey = configuration["Services:AiServiceInternalKey"];
+        var aiTimeoutSeconds = configuration.GetValue("Services:AiServiceTimeoutSeconds", 85);
         services.AddHttpClient<IAiDraftingClient, AiDraftingClient>(client =>
         {
             client.BaseAddress = new Uri(aiServiceBaseUrl);
-            client.Timeout = TimeSpan.FromSeconds(85);
+            client.Timeout = TimeSpan.FromSeconds(aiTimeoutSeconds);
+            if (!string.IsNullOrWhiteSpace(aiInternalKey))
+            {
+                client.DefaultRequestHeaders.Add(InternalKeyHeader, aiInternalKey);
+            }
         });
 
         return services;

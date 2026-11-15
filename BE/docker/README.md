@@ -1,17 +1,24 @@
 # Docker
 
-Local infrastructure and container images for the services.
+Local infrastructure and production container orchestration for Caps-Shared Hub.
 
 ## Files
 
 | File | Purpose |
 |---|---|
-| `docker-compose.yml` | Postgres, Redis, RabbitMQ, Mailpit, SeaweedFS, and the auth, expert and gateway containers |
-| `Dockerfile.service` | One multi-stage image for any service (`SERVICE_NAME`, or `PROJECT` + `APP_NAME` for layered services) |
-| `.env.example` | Every password compose needs; copy to `.env` (gitignored) and change the values |
-| `postgres/init-service-roles.sh` | Initializes service roles on a new Docker volume using `postgres/db/*.sql` |
-| `seaweedfs/s3.json` | Development S3 keys for the evidence bucket |
-| `secrets/jwt-signing-key.pem` | auth's private signing key (gitignored); create it as `.env.example` explains |
+| `docker-compose.yml` | Local development infrastructure + `auth`, `expert`, `gateway` |
+| `docker-compose.prod.yml` | Full Production stack behind Caddy HTTPS reverse proxy |
+| `docker-compose.gpu.yml` | Optional NVIDIA GPU passthrough override for `ollama` |
+| `Dockerfile.service` | Multi-stage image for any .NET 9 microservice |
+| `Dockerfile.migrator` | Builds EF Core migration bundles for the 6 database services |
+| `caddy/Caddyfile` | TLS reverse proxy routing `/*` to `frontend` and `/api/*` to `gateway` |
+| `.env.example` | Required environment variables; copy to `.env` (gitignored) and replace placeholders |
+| `postgres/init-service-roles.sh` | Initializes all 6 service roles on a fresh Postgres volume |
+| `postgres/sync-roles.sh` | Idempotently adds missing service roles to an existing Postgres volume |
+| `seaweedfs/s3.json` | Development S3 credentials |
+| `seaweedfs/s3.json.example` | Template for production S3 credentials (`secrets/seaweedfs-s3.json`) |
+| `scripts/init-vps.sh` | Generates `secrets/jwt-signing-key.pem` and `secrets/seaweedfs-s3.json` from `.env` |
+| `scripts/run-migrations.sh` | Runs the 6 EF Core migration bundles sequentially using each service role |
 
 ## Infrastructure only (usual development setup)
 
@@ -28,40 +35,33 @@ docker compose -f docker/docker-compose.yml up -d postgres redis rabbitmq mailpi
 | Mailpit | SMTP `localhost:1025`, inbox http://localhost:8025 |
 | SeaweedFS | S3 API http://localhost:8333 |
 
-## Whole stack in containers
+## Production deployment (VPS)
 
-`docker compose -f docker/docker-compose.yml up -d --build` also builds and runs auth, expert and gateway
-(environment `Production`). The gateway proxies to auth and expert by service name.
+1. Copy `.env.example` to `.env` on the VPS and fill real secrets (`APP_DOMAIN`, passwords, SMTP, PayOS, internal keys).
+2. Run `./scripts/init-vps.sh` to create `secrets/jwt-signing-key.pem` and `secrets/seaweedfs-s3.json`.
+3. Pull images, run EF migrations, and start the stack:
 
-**No migrations in Production:** the services migrate their schema only in Development
-(`MigrateInDevelopment`), so on a fresh Postgres volume the containers start but every endpoint that touches the
-database returns 500 (auth also logs `relation "identity.auth_email_outbox" does not exist`) until migrations
-are applied as a separate deployment step.
-
-auth needs durable data protection keys outside Development (`Auth__DataProtectionKeysPath`); compose keeps them
-in the `auth_keys` volume. Deleting that volume makes queued outbox emails unreadable.
-
-The image starts the service with `dotnet service.dll` (exec form, `service.dll` links to the assembly). Do not
-switch back to a shell entrypoint: `/bin/sh` drops environment variables with `-` in their names, such as
-`ReverseProxy__Clusters__auth-cluster__...`, and the gateway then proxies to `localhost` (502).
-
-The gateway has a fixed address (`172.28.0.10` on `caps_network`) and auth trusts `X-Forwarded-For` from that
-address only (`Auth__KnownProxies__0`), so auth's rate limit counts real client IPs. Change both together. An
-existing network keeps its old settings: run `docker compose down` once before `up`. Ports 5194 and 5198 are
-published for local debugging; a real deployment publishes the gateway alone.
-
-## Adding a service role to an existing volume
-
-`init-service-roles.sh` runs only on a new volume. For a role added later (for example `caps_notification`), add its
-password to docker/.env, recreate the container so it sees the variable, then run the same SQL file inside it:
-
-~~~powershell
-docker compose -f docker/docker-compose.yml up -d postgres
-docker exec caps_postgres sh -c 'psql -X -U postgres -d caps_db -v dbname=caps_db -v role=caps_notification -v schema=notification -v password="$CAPS_NOTIFICATION_DB_PASSWORD" -f /caps-db/service-role.sql'
+~~~sh
+docker compose -f docker-compose.prod.yml pull
+docker compose -f docker-compose.prod.yml up -d --wait postgres redis rabbitmq seaweedfs seaweedfs-init qdrant ollama
+docker compose -f docker-compose.prod.yml run --rm migrator
+docker compose -f docker-compose.prod.yml up -d --remove-orphans
 ~~~
 
-Then set the service connection with `scripts/set-connections.ps1 -Service notification`.
+On a GPU-enabled VPS, pass `-f docker-compose.gpu.yml` alongside `-f docker-compose.prod.yml`.
 
-## Changing a role password later
+## Important production notes
 
-Change the role password through a PostgreSQL administrator, then update docker/.env for containers and run scripts/set-connections.ps1 for local hosts. The connection script does not change server passwords.
+- **No automatic migrations in Production:** Services migrate schemas only in Development (`MigrateInDevelopment`). Always run `migrator` before starting updated application containers.
+- **Durable Data Protection keys:** Both `auth` (`auth_keys`) and `billing` (`billing_keys`) persist encryption keys in Docker volumes. Back up these volumes together with `secrets/jwt-signing-key.pem`, `postgres_data`, `qdrant_data`, and `seaweedfs_data`.
+- **Pre-created S3 buckets:** `expert`, `ingestion`, and `workflow` forbid `Storage:CreateBucket=true` outside Development. `seaweedfs-init` creates `caps-expert-evidence`, `caps-knowledge`, and `caps-review-attachments` automatically before APIs start.
+- **Real client IPs & cookies:** Caddy (`172.28.0.5`) terminates TLS on a single domain (`https://$APP_DOMAIN`), proxies `/api/*` to Gateway (`172.28.0.10`), and preserves `X-Forwarded-For` so rate limits and `SameSite=Strict; Secure` refresh cookies work properly.
+- **Exec form entrypoint:** `Dockerfile.service` symlinks `<APP_NAME>.dll` to `service.dll` and uses `ENTRYPOINT ["dotnet", "service.dll"]`. Do not switch to a shell entrypoint because `/bin/sh` strips environment variables containing `-` (such as YARP's `ReverseProxy__Clusters__auth-cluster__...`).
+
+## Adding a service role to an existing Postgres volume
+
+Run `sync-roles.sh` inside the running Postgres container after updating `.env`:
+
+~~~sh
+docker compose -f docker-compose.prod.yml exec postgres /usr/local/bin/sync-roles.sh
+~~~

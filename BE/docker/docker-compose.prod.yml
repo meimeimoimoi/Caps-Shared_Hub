@@ -1,9 +1,33 @@
 # Production compose: pulls pre-built images from ghcr.io.
-# Meant to run on the VPS after `docker compose pull && docker compose up -d`.
-# Infrastructure services (postgres, redis, rabbitmq, seaweedfs) stay identical to development.
-# Copy .env.example → .env, fill real passwords, and create secrets/jwt-signing-key.pem before first start.
+# Run on the VPS after copying .env.example -> .env and running ./scripts/init-vps.sh.
+# Only Caddy exposes ports 80/443 publicly; all databases, brokers, and microservices stay private on caps_network.
 
 services:
+  # ── Edge Reverse Proxy (HTTPS + same-site routing for SPA & Gateway) ──
+
+  caddy:
+    image: caddy:2-alpine
+    container_name: caps_caddy
+    restart: always
+    environment:
+      APP_DOMAIN: ${APP_DOMAIN:?set APP_DOMAIN in .env}
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - frontend
+      - gateway
+    networks:
+      caps_network:
+        ipv4_address: 172.28.0.5
+
+  # ── Infrastructure services ──
+
   postgres:
     image: ankane/pgvector:v0.5.1
     container_name: caps_postgres
@@ -11,23 +35,22 @@ services:
     environment:
       POSTGRES_DB: caps_db
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set it in .env}
-      CAPS_AUTH_DB_PASSWORD: ${CAPS_AUTH_DB_PASSWORD:?set it in .env}
-      CAPS_EXPERT_DB_PASSWORD: ${CAPS_EXPERT_DB_PASSWORD:?set it in .env}
-      CAPS_BILLING_DB_PASSWORD: ${CAPS_BILLING_DB_PASSWORD:?set it in .env}
-      CAPS_WORKFLOW_DB_PASSWORD: ${CAPS_WORKFLOW_DB_PASSWORD:?set it in .env}
-      CAPS_INGESTION_DB_PASSWORD: ${CAPS_INGESTION_DB_PASSWORD:?set it in .env}
-      CAPS_NOTIFICATION_DB_PASSWORD: ${CAPS_NOTIFICATION_DB_PASSWORD:?set it in .env}
-    ports:
-      - "5432:5432"
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+      CAPS_AUTH_DB_PASSWORD: ${CAPS_AUTH_DB_PASSWORD:?set CAPS_AUTH_DB_PASSWORD in .env}
+      CAPS_EXPERT_DB_PASSWORD: ${CAPS_EXPERT_DB_PASSWORD:?set CAPS_EXPERT_DB_PASSWORD in .env}
+      CAPS_BILLING_DB_PASSWORD: ${CAPS_BILLING_DB_PASSWORD:?set CAPS_BILLING_DB_PASSWORD in .env}
+      CAPS_WORKFLOW_DB_PASSWORD: ${CAPS_WORKFLOW_DB_PASSWORD:?set CAPS_WORKFLOW_DB_PASSWORD in .env}
+      CAPS_INGESTION_DB_PASSWORD: ${CAPS_INGESTION_DB_PASSWORD:?set CAPS_INGESTION_DB_PASSWORD in .env}
+      CAPS_NOTIFICATION_DB_PASSWORD: ${CAPS_NOTIFICATION_DB_PASSWORD:?set CAPS_NOTIFICATION_DB_PASSWORD in .env}
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./postgres/init-service-roles.sh:/docker-entrypoint-initdb.d/10-service-roles.sh:ro
+      - ./postgres/sync-roles.sh:/usr/local/bin/sync-roles.sh:ro
       - ./postgres/db:/caps-db:ro
     networks:
       - caps_network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ["CMD-SHELL", "pg_isready -U postgres -d caps_db"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -36,14 +59,15 @@ services:
     image: redis:7-alpine
     container_name: caps_redis
     restart: always
-    ports:
-      - "6379:6379"
+    command: ["redis-server", "--requirepass", "${REDIS_PASSWORD:?set REDIS_PASSWORD in .env}"]
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:?set REDIS_PASSWORD in .env}
     volumes:
       - redis_data:/data
     networks:
       - caps_network
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ["CMD-SHELL", "REDISCLI_AUTH=\"$REDIS_PASSWORD\" redis-cli ping | grep -q PONG"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -53,11 +77,8 @@ services:
     container_name: caps_rabbitmq
     restart: always
     environment:
-      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-guest}
-      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS:-guest}
-    ports:
-      - "5672:5672"
-      - "15672:15672"
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:?set RABBITMQ_USER in .env}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS:?set RABBITMQ_PASS in .env}
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
     networks:
@@ -73,15 +94,108 @@ services:
     container_name: caps_seaweedfs
     restart: always
     command: server -dir=/data -s3 -s3.config=/etc/seaweedfs/s3.json
-    ports:
-      - "8333:8333"
     volumes:
       - seaweedfs_data:/data
-      - ./seaweedfs/s3.json:/etc/seaweedfs/s3.json:ro
+      - ./secrets/seaweedfs-s3.json:/etc/seaweedfs/s3.json:ro
     networks:
       - caps_network
 
-  # ── Application services (pre-built images from ghcr.io) ──
+  # Production services forbid Storage:CreateBucket=true, so buckets must exist before APIs start.
+  seaweedfs-init:
+    image: amazon/aws-cli:latest
+    container_name: caps_seaweedfs_init
+    restart: "no"
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        set -eu
+        until aws --endpoint-url http://seaweedfs:8333 s3 ls >/dev/null 2>&1; do
+          echo "Waiting for SeaweedFS S3..."
+          sleep 2
+        done
+        for b in caps-expert-evidence caps-knowledge caps-review-attachments; do
+          if ! aws --endpoint-url http://seaweedfs:8333 s3api head-bucket --bucket "$$b" >/dev/null 2>&1; then
+            aws --endpoint-url http://seaweedfs:8333 s3api create-bucket --bucket "$$b"
+            echo "Created bucket: $$b"
+          fi
+        done
+    environment:
+      AWS_ACCESS_KEY_ID: ${SEAWEEDFS_ACCESS_KEY:?set SEAWEEDFS_ACCESS_KEY in .env}
+      AWS_SECRET_ACCESS_KEY: ${SEAWEEDFS_SECRET_KEY:?set SEAWEEDFS_SECRET_KEY in .env}
+      AWS_DEFAULT_REGION: us-east-1
+    depends_on:
+      - seaweedfs
+    networks:
+      - caps_network
+
+  qdrant:
+    image: qdrant/qdrant:v1.11.3
+    container_name: caps_qdrant
+    restart: always
+    volumes:
+      - qdrant_data:/qdrant/storage
+    networks:
+      - caps_network
+
+  ollama:
+    image: ollama/ollama:latest
+    container_name: caps_ollama
+    restart: always
+    volumes:
+      - ollama_data:/root/.ollama
+    networks:
+      - caps_network
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+
+  ollama-init:
+    image: ollama/ollama:latest
+    container_name: caps_ollama_init
+    restart: "no"
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        set -eu
+        ollama pull "${EMBEDDING_MODEL:-bge-m3:latest}"
+        ollama pull "${LLM_MODEL:-qwen2.5:7b}"
+    environment:
+      OLLAMA_HOST: http://ollama:11434
+      EMBEDDING_MODEL: ${EMBEDDING_MODEL:-bge-m3:latest}
+      LLM_MODEL: ${LLM_MODEL:-qwen2.5:7b}
+    depends_on:
+      ollama:
+        condition: service_healthy
+    networks:
+      - caps_network
+
+  # ── Database migrator (one-shot, invoked explicitly during deploy) ──
+
+  migrator:
+    image: ghcr.io/${GHCR_OWNER:-meimeimoimoi}/caps-migrator:latest
+    container_name: caps_migrator
+    profiles:
+      - ops
+    restart: "no"
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: caps_db
+      CAPS_AUTH_DB_PASSWORD: ${CAPS_AUTH_DB_PASSWORD}
+      CAPS_EXPERT_DB_PASSWORD: ${CAPS_EXPERT_DB_PASSWORD}
+      CAPS_BILLING_DB_PASSWORD: ${CAPS_BILLING_DB_PASSWORD}
+      CAPS_WORKFLOW_DB_PASSWORD: ${CAPS_WORKFLOW_DB_PASSWORD}
+      CAPS_INGESTION_DB_PASSWORD: ${CAPS_INGESTION_DB_PASSWORD}
+      CAPS_NOTIFICATION_DB_PASSWORD: ${CAPS_NOTIFICATION_DB_PASSWORD}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - caps_network
+
+  # ── .NET 9 Application services ──
 
   auth:
     image: ghcr.io/${GHCR_OWNER:-meimeimoimoi}/caps-auth:latest
@@ -91,19 +205,23 @@ services:
       ASPNETCORE_ENVIRONMENT: Production
       ASPNETCORE_URLS: http://+:8080
       ConnectionStrings__Postgres: Host=postgres;Port=5432;Database=caps_db;Username=caps_auth;Password=${CAPS_AUTH_DB_PASSWORD}
-      ConnectionStrings__Redis: redis:6379
-      ConnectionStrings__RabbitMq: amqp://${RABBITMQ_USER:-guest}:${RABBITMQ_PASS:-guest}@rabbitmq:5672
+      ConnectionStrings__Redis: redis:6379,password=${REDIS_PASSWORD}
+      ConnectionStrings__RabbitMq: amqp://${RABBITMQ_USER}:${RABBITMQ_PASS}@rabbitmq:5672
       Jwt__SigningKeys__0__PrivateKeyPath: /run/secrets/jwt_signing_key
       Auth__KnownProxies__0: 172.28.0.10
       Auth__DataProtectionKeysPath: /var/lib/caps-auth/keys
+      Auth__FrontendUrl: https://${APP_DOMAIN}
+      Auth__GoogleClientId: ${GOOGLE_CLIENT_ID:-}
+      Auth__SecureCookie: "true"
+      Cors__AllowedOrigins__0: https://${APP_DOMAIN}
     secrets:
       - jwt_signing_key
     volumes:
       - auth_keys:/var/lib/caps-auth/keys
-    ports:
-      - "5194:8080"
     depends_on:
       postgres:
+        condition: service_healthy
+      redis:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
@@ -118,19 +236,193 @@ services:
       ASPNETCORE_ENVIRONMENT: Production
       ASPNETCORE_URLS: http://+:8080
       ConnectionStrings__Postgres: Host=postgres;Port=5432;Database=caps_db;Username=caps_expert;Password=${CAPS_EXPERT_DB_PASSWORD}
-      ConnectionStrings__Redis: redis:6379
-      ConnectionStrings__RabbitMq: amqp://${RABBITMQ_USER:-guest}:${RABBITMQ_PASS:-guest}@rabbitmq:5672
+      ConnectionStrings__Redis: redis:6379,password=${REDIS_PASSWORD}
+      ConnectionStrings__RabbitMq: amqp://${RABBITMQ_USER}:${RABBITMQ_PASS}@rabbitmq:5672
       Jwt__JwksUrl: http://auth:8080/.well-known/jwks.json
       Jwt__RequireHttpsMetadata: "false"
+      InternalApi__Key: ${INTERNAL_KEY_EXPERT:?set INTERNAL_KEY_EXPERT in .env}
       Storage__ServiceUrl: http://seaweedfs:8333
-      Storage__AccessKey: ${SEAWEEDFS_ACCESS_KEY:-caps-dev-access}
-      Storage__SecretKey: ${SEAWEEDFS_SECRET_KEY:-caps-dev-secret-change-me}
-    ports:
-      - "5198:8080"
+      Storage__AccessKey: ${SEAWEEDFS_ACCESS_KEY}
+      Storage__SecretKey: ${SEAWEEDFS_SECRET_KEY}
+      Storage__Bucket: caps-expert-evidence
+      Storage__CreateBucket: "false"
+      Cors__AllowedOrigins__0: https://${APP_DOMAIN}
     depends_on:
       postgres:
         condition: service_healthy
       redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      seaweedfs-init:
+        condition: service_completed_successfully
+    networks:
+      - caps_network
+
+  billing:
+    image: ghcr.io/${GHCR_OWNER:-meimeimoimoi}/caps-billing:latest
+    container_name: caps_billing
+    restart: always
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__Postgres: Host=postgres;Port=5432;Database=caps_db;Username=caps_billing;Password=${CAPS_BILLING_DB_PASSWORD}
+      ConnectionStrings__Redis: redis:6379,password=${REDIS_PASSWORD}
+      ConnectionStrings__RabbitMq: amqp://${RABBITMQ_USER}:${RABBITMQ_PASS}@rabbitmq:5672
+      Jwt__JwksUrl: http://auth:8080/.well-known/jwks.json
+      Jwt__RequireHttpsMetadata: "false"
+      InternalApi__Key: ${INTERNAL_KEY_BILLING:?set INTERNAL_KEY_BILLING in .env}
+      Billing__DataProtectionKeysPath: /var/lib/caps-billing/keys
+      Billing__AccountHashKey: ${BILLING_ACCOUNT_HASH_KEY:?set BILLING_ACCOUNT_HASH_KEY in .env}
+      PayOS__ClientId: ${PAYOS_CLIENT_ID:-}
+      PayOS__ApiKey: ${PAYOS_API_KEY:-}
+      PayOS__ChecksumKey: ${PAYOS_CHECKSUM_KEY:-}
+      PayOS__BaseUrl: ${PAYOS_BASE_URL:-https://api-merchant.payos.vn}
+      PayOS__ReturnUrl: https://${APP_DOMAIN}/wallet?topup=success
+      PayOS__CancelUrl: https://${APP_DOMAIN}/wallet?topup=cancelled
+      Cors__AllowedOrigins__0: https://${APP_DOMAIN}
+    volumes:
+      - billing_keys:/var/lib/caps-billing/keys
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - caps_network
+
+  workflow:
+    image: ghcr.io/${GHCR_OWNER:-meimeimoimoi}/caps-workflow:latest
+    container_name: caps_workflow
+    restart: always
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__Postgres: Host=postgres;Port=5432;Database=caps_db;Username=caps_workflow;Password=${CAPS_WORKFLOW_DB_PASSWORD}
+      ConnectionStrings__Redis: redis:6379,password=${REDIS_PASSWORD}
+      ConnectionStrings__RabbitMq: amqp://${RABBITMQ_USER}:${RABBITMQ_PASS}@rabbitmq:5672
+      Jwt__JwksUrl: http://auth:8080/.well-known/jwks.json
+      Jwt__RequireHttpsMetadata: "false"
+      Expert__Url: http://expert:8080
+      Expert__InternalKey: ${INTERNAL_KEY_EXPERT}
+      Billing__Url: http://billing:8080
+      Billing__InternalKey: ${INTERNAL_KEY_BILLING}
+      Services__RagQuery: http://rag-query:8080
+      Services__RagQueryInternalKey: ${INTERNAL_KEY_RAG:?set INTERNAL_KEY_RAG in .env}
+      Services__AiService: http://ai-service:8000
+      Services__AiServiceInternalKey: ${INTERNAL_KEY_AI:?set INTERNAL_KEY_AI in .env}
+      Services__AiServiceTimeoutSeconds: ${AI_WORKFLOW_TIMEOUT_SECONDS:-120}
+      Storage__ServiceUrl: http://seaweedfs:8333
+      Storage__AccessKey: ${SEAWEEDFS_ACCESS_KEY}
+      Storage__SecretKey: ${SEAWEEDFS_SECRET_KEY}
+      Storage__Bucket: caps-review-attachments
+      Storage__CreateBucket: "false"
+      Cors__AllowedOrigins__0: https://${APP_DOMAIN}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      seaweedfs-init:
+        condition: service_completed_successfully
+      expert:
+        condition: service_started
+      billing:
+        condition: service_started
+      rag-query:
+        condition: service_started
+      ai-service:
+        condition: service_healthy
+    networks:
+      - caps_network
+
+  ingestion:
+    image: ghcr.io/${GHCR_OWNER:-meimeimoimoi}/caps-ingestion:latest
+    container_name: caps_ingestion
+    restart: always
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__Postgres: Host=postgres;Port=5432;Database=caps_db;Username=caps_ingestion;Password=${CAPS_INGESTION_DB_PASSWORD}
+      ConnectionStrings__Redis: redis:6379,password=${REDIS_PASSWORD}
+      ConnectionStrings__RabbitMq: amqp://${RABBITMQ_USER}:${RABBITMQ_PASS}@rabbitmq:5672
+      Jwt__JwksUrl: http://auth:8080/.well-known/jwks.json
+      Jwt__RequireHttpsMetadata: "false"
+      AiService__BaseUrl: http://ai-service:8000
+      AiService__InternalKey: ${INTERNAL_KEY_AI}
+      InternalApi__Key: ${INTERNAL_KEY_INGESTION:?set INTERNAL_KEY_INGESTION in .env}
+      Storage__ServiceUrl: http://seaweedfs:8333
+      Storage__AccessKey: ${SEAWEEDFS_ACCESS_KEY}
+      Storage__SecretKey: ${SEAWEEDFS_SECRET_KEY}
+      Storage__Bucket: caps-knowledge
+      Storage__CreateBucket: "false"
+      Cors__AllowedOrigins__0: https://${APP_DOMAIN}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      seaweedfs-init:
+        condition: service_completed_successfully
+      ai-service:
+        condition: service_healthy
+    networks:
+      - caps_network
+
+  notification:
+    image: ghcr.io/${GHCR_OWNER:-meimeimoimoi}/caps-notification:latest
+    container_name: caps_notification
+    restart: always
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__Postgres: Host=postgres;Port=5432;Database=caps_db;Username=caps_notification;Password=${CAPS_NOTIFICATION_DB_PASSWORD}
+      ConnectionStrings__RabbitMq: amqp://${RABBITMQ_USER}:${RABBITMQ_PASS}@rabbitmq:5672
+      Jwt__JwksUrl: http://auth:8080/.well-known/jwks.json
+      Jwt__RequireHttpsMetadata: "false"
+      App__WebBaseUrl: https://${APP_DOMAIN}
+      Notifications__DisputeEmail: ${DISPUTE_EMAIL:-}
+      Smtp__Host: ${SMTP_HOST:?set SMTP_HOST in .env}
+      Smtp__Port: ${SMTP_PORT:-587}
+      Smtp__EnableSsl: ${SMTP_ENABLE_SSL:-true}
+      Smtp__From: ${SMTP_FROM:?set SMTP_FROM in .env}
+      Smtp__FromName: ${SMTP_FROM_NAME:-Shared Hub}
+      Smtp__Username: ${SMTP_USERNAME:-}
+      Smtp__Password: ${SMTP_PASSWORD:-}
+      Cors__AllowedOrigins__0: https://${APP_DOMAIN}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - caps_network
+
+  rag-query:
+    image: ghcr.io/${GHCR_OWNER:-meimeimoimoi}/caps-rag-query:latest
+    container_name: caps_rag_query
+    restart: always
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__Redis: redis:6379,password=${REDIS_PASSWORD}
+      ConnectionStrings__RabbitMq: amqp://${RABBITMQ_USER}:${RABBITMQ_PASS}@rabbitmq:5672
+      Jwt__JwksUrl: http://auth:8080/.well-known/jwks.json
+      Jwt__RequireHttpsMetadata: "false"
+      InternalApi__Key: ${INTERNAL_KEY_RAG}
+      AiService__BaseUrl: http://ai-service:8000
+      AiService__TimeOutSeconds: ${AI_RAG_TIMEOUT_SECONDS:-120}
+      AiService__InternalKey: ${INTERNAL_KEY_AI}
+    depends_on:
+      redis:
+        condition: service_healthy
+      ai-service:
         condition: service_healthy
     networks:
       - caps_network
@@ -142,25 +434,34 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: Production
       ASPNETCORE_URLS: http://+:8080
+      Gateway__KnownProxies__0: 172.28.0.5
+      ConnectionStrings__Redis: redis:6379,password=${REDIS_PASSWORD}
       Jwt__JwksUrl: http://auth:8080/.well-known/jwks.json
       Jwt__RequireHttpsMetadata: "false"
+      Cors__AllowedOrigins__0: https://${APP_DOMAIN}
       ReverseProxy__Clusters__auth-cluster__Destinations__auth__Address: http://auth:8080
       ReverseProxy__Clusters__expert-cluster__Destinations__expert__Address: http://expert:8080
-    ports:
-      - "5190:8080"
+      ReverseProxy__Clusters__billing-cluster__Destinations__billing__Address: http://billing:8080
+      ReverseProxy__Clusters__workflow-cluster__Destinations__workflow__Address: http://workflow:8080
+      ReverseProxy__Clusters__ingestion-cluster__Destinations__ingestion__Address: http://ingestion:8080
+      ReverseProxy__Clusters__notification-cluster__Destinations__notification__Address: http://notification:8080
     depends_on:
       - auth
       - expert
+      - billing
+      - workflow
+      - ingestion
+      - notification
     networks:
       caps_network:
         ipv4_address: 172.28.0.10
+
+  # ── Frontend, AI Engine & Crawler ──
 
   frontend:
     image: ghcr.io/${GHCR_OWNER:-meimeimoimoi}/caps-frontend:latest
     container_name: caps_frontend
     restart: always
-    ports:
-      - "80:80"
     depends_on:
       - gateway
     networks:
@@ -171,20 +472,55 @@ services:
     container_name: caps_ai_service
     restart: always
     environment:
-      OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://host.docker.internal:11434}
-      QDRANT_URL: ${QDRANT_URL:-http://host.docker.internal:6333}
-    ports:
-      - "8000:8000"
+      OLLAMA_BASE_URL: http://ollama:11434
+      QDRANT_URL: http://qdrant:6333
+      LLM_MODEL: ${LLM_MODEL:-qwen2.5:7b}
+      EMBEDDING_MODEL: ${EMBEDDING_MODEL:-bge-m3:latest}
+      OLLAMA_TIMEOUT_SECONDS: ${OLLAMA_TIMEOUT_SECONDS:-90}
+      QDRANT_TIMEOUT_SECONDS: ${QDRANT_TIMEOUT_SECONDS:-10}
+      QDRANT_COLLECTION: ${QDRANT_COLLECTION:-tax_knowledge_base}
+      INTERNAL_API_KEY: ${INTERNAL_KEY_AI}
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/healthz')"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    depends_on:
+      qdrant:
+        condition: service_started
+      ollama-init:
+        condition: service_completed_successfully
+    networks:
+      - caps_network
+
+  crawler-worker:
+    image: ghcr.io/${GHCR_OWNER:-meimeimoimoi}/caps-crawler:latest
+    container_name: caps_crawler_worker
+    restart: always
+    entrypoint: ["python", "worker.py"]
+    environment:
+      INGESTION_URL: http://ingestion:8080
+      INTERNAL_API_KEY: ${INTERNAL_KEY_INGESTION}
+      RABBITMQ_URL: amqp://${RABBITMQ_USER}:${RABBITMQ_PASS}@rabbitmq:5672/%2F
+      TESSERACT_CMD: /usr/bin/tesseract
+    volumes:
+      - crawler_data:/app/data
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      ingestion:
+        condition: service_started
     networks:
       - caps_network
 
   crawler:
     image: ghcr.io/${GHCR_OWNER:-meimeimoimoi}/caps-crawler:latest
     container_name: caps_crawler
-    # Not a long-running service; started manually or by cron on the host.
-    # Example: docker compose run --rm crawler --all --sources vbpl,mof --export
+    # One-shot CLI usage: docker compose -f docker-compose.prod.yml run --rm crawler --all --sources vbpl,mof --export
     profiles:
       - tools
+    environment:
+      TESSERACT_CMD: /usr/bin/tesseract
     volumes:
       - crawler_data:/app/data
     networks:
@@ -202,10 +538,14 @@ secrets:
     file: ./secrets/jwt-signing-key.pem
 
 volumes:
+  caddy_data:
+  caddy_config:
   postgres_data:
   redis_data:
   rabbitmq_data:
   seaweedfs_data:
+  qdrant_data:
+  ollama_data:
   auth_keys:
+  billing_keys:
   crawler_data:
-

@@ -1,0 +1,58 @@
+# Builds self-contained-per-runtime EF Core migration bundles for all 6 services with a database.
+# Usage (from BE/): docker build -f docker/Dockerfile.migrator -t caps-migrator:latest .
+
+FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
+WORKDIR /src
+
+# Install dotnet-ef matching Microsoft.EntityFrameworkCore.Design in Directory.Packages.props
+RUN dotnet tool install --global dotnet-ef --version 9.0.9
+ENV PATH="${PATH}:/root/.dotnet/tools"
+
+COPY ["Directory.Build.props", "Directory.Packages.props", "global.json", "./"]
+COPY common/ common/
+COPY auth/ auth/
+COPY expert/ expert/
+COPY billing/ billing/
+COPY workflow/ workflow/
+COPY ingestion/ ingestion/
+COPY notification/ notification/
+
+# Build each startup project once, then emit EF bundles with --no-build.
+RUN dotnet build auth/Api/Api.csproj -c Release \
+ && dotnet build expert/Api/Api.csproj -c Release \
+ && dotnet build billing/Api/Api.csproj -c Release \
+ && dotnet build workflow/Api/Api.csproj -c Release \
+ && dotnet build ingestion/ingestion.csproj -c Release \
+ && dotnet build notification/notification.csproj -c Release
+
+# Design-time placeholders satisfy Program.cs configuration checks while generating bundles (no DB connection is made).
+ENV ASPNETCORE_ENVIRONMENT=Development \
+    Database__ApplyMigrations=false \
+    ConnectionStrings__Postgres="Host=localhost;Database=design;Username=design;Password=design" \
+    Billing__AccountHashKey="design-time-placeholder"
+
+RUN dotnet ef migrations bundle --no-build --configuration Release \
+      --project auth/Infrastructure/Infrastructure.csproj --startup-project auth/Api/Api.csproj \
+      --context AuthDbContext -o /migrations/auth/efbundle \
+ && dotnet ef migrations bundle --no-build --configuration Release \
+      --project expert/Infrastructure/Infrastructure.csproj --startup-project expert/Api/Api.csproj \
+      --context ExpertDbContext -o /migrations/expert/efbundle \
+ && dotnet ef migrations bundle --no-build --configuration Release \
+      --project billing/Infrastructure/Infrastructure.csproj --startup-project billing/Api/Api.csproj \
+      --context BillingDbContext -o /migrations/billing/efbundle \
+ && dotnet ef migrations bundle --no-build --configuration Release \
+      --project workflow/Infrastructure/Infrastructure.csproj --startup-project workflow/Api/Api.csproj \
+      --context WorkflowDbContext -o /migrations/workflow/efbundle \
+ && dotnet ef migrations bundle --no-build --configuration Release \
+      --project ingestion/ingestion.csproj --startup-project ingestion/ingestion.csproj \
+      --context IngestionDbContext -o /migrations/ingestion/efbundle \
+ && dotnet ef migrations bundle --no-build --configuration Release \
+      --project notification/notification.csproj --startup-project notification/notification.csproj \
+      --context NotificationDbContext -o /migrations/notification/efbundle
+
+FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS final
+WORKDIR /app
+COPY --from=build /migrations /migrations
+COPY docker/scripts/run-migrations.sh /app/run-migrations.sh
+RUN chmod +x /app/run-migrations.sh
+ENTRYPOINT ["/app/run-migrations.sh"]

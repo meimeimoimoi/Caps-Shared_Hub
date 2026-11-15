@@ -21,6 +21,10 @@ builder.Services.AddHttpClient<IChatAiClient, ChatAiClient>(
         httpClient.BaseAddress = new Uri(options.BaseUrl.TrimEnd('/') + "/");
         httpClient.Timeout = TimeSpan.FromSeconds(options.TimeOutSeconds);
         httpClient.DefaultRequestHeaders.Add("Accept", "application/json");
+        if (!string.IsNullOrWhiteSpace(options.InternalKey))
+        {
+            httpClient.DefaultRequestHeaders.Add("X-Internal-Key", options.InternalKey);
+        }
     }
 );
 

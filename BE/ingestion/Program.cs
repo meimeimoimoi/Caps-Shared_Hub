@@ -25,6 +25,11 @@ builder.Services.AddHttpClient<IAiServiceClient, AiServiceClient>(client =>
     var aiBaseUrl = builder.Configuration["AiService:BaseUrl"] ?? "http://localhost:8000";
     client.BaseAddress = new Uri(aiBaseUrl);
     client.Timeout = TimeSpan.FromMinutes(10); // Extended timeout for chunking and embedding tasks
+    var aiInternalKey = builder.Configuration["AiService:InternalKey"];
+    if (!string.IsNullOrWhiteSpace(aiInternalKey))
+    {
+        client.DefaultRequestHeaders.Add("X-Internal-Key", aiInternalKey);
+    }
 });
 
 builder.Services.AddScoped<IKnowledgeDocumentService, KnowledgeDocumentService>();

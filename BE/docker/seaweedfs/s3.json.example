@@ -1,0 +1,14 @@
+{
+  "identities": [
+    {
+      "name": "caps-prod",
+      "credentials": [
+        {
+          "accessKey": "REPLACE_WITH_SEAWEEDFS_ACCESS_KEY",
+          "secretKey": "REPLACE_WITH_SEAWEEDFS_SECRET_KEY"
+        }
+      ],
+      "actions": ["Admin", "Read", "Write", "List", "Tagging"]
+    }
+  ]
+}
