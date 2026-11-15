@@ -42,11 +42,11 @@ flowchart LR
 | `gateway` | `5190` | API Gateway (YARP), điểm vào duy nhất | ✅ Hoạt động |
 | `auth` | `5194` | Identity: tài khoản, phiên, JWT (schema `identity`) | ✅ Hoạt động |
 | `expert` | `5198` | Hồ sơ đăng ký chuyên gia, minh chứng S3 (schema `expert`) | ✅ Hoạt động |
-| `billing` | `5220` | Thanh toán, ví, escrow, payout (schema `billing`) | 🚧 Ví, tài khoản ngân hàng, nạp tiền PayOS, admin xem payout |
-| `workflow` | `5030` | Tài liệu, hội thoại AI, review case (schema `workspace`, `review`) | 🚧 Chưa có API |
-| `ingestion` | `5004` | Pipeline nạp tài liệu (schema `knowledge`) | 🚧 Crawl job, upload, hàng chờ duyệt, từ chối, tra cứu nguồn; chưa có duyệt/index |
-| `rag-query` | `5104` | RAG / Vector Search với pgvector | 🧱 Skeleton |
-| `notification` | `5100` | Thông báo bất đồng bộ | 🧱 Skeleton |
+| `billing` | `5220` | Thanh toán, ví, escrow, payout (schema `billing`) | 🚧 Ví, sổ cái, nạp tiền PayOS, tài khoản ngân hàng, giữ/nhả/hoàn escrow và quyết toán cho review case, admin xem payout; chưa chuyển khoản payout |
+| `workflow` | `5030` | Tài liệu, hội thoại AI, review case (schema `workspace`, `review`) | ✅ Review case đủ vòng đời, chat và tệp trong case, khiếu nại và trọng tài, hết hạn tự động, chatbot, bản nháp, mẫu biểu |
+| `ingestion` | `5004` | Pipeline nạp tài liệu (schema `knowledge`) | ✅ Crawl job, upload, hàng chờ duyệt, duyệt, từ chối, index lại, tra cứu nguồn |
+| `rag-query` | `5104` | RAG / Vector Search | 🚧 Một endpoint nội bộ; truy xuất và sinh câu trả lời nằm ở `ai-service` (FastAPI + Qdrant) |
+| `notification` | `5100` | Thông báo bất đồng bộ | ✅ Email, thông báo trong ứng dụng, sự kiện review case, realtime |
 | `read` | `5106` | CQRS Read Model | 🧱 Skeleton |
 | `cronjob` | `5102` | Tác vụ nền định kỳ | 🧱 Skeleton |
 
