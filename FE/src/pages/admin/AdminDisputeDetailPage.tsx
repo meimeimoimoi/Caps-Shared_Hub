@@ -18,6 +18,7 @@ import { useDispute } from '../../features/disputes-escrow/hooks/useDispute'
 import { OperationsUnavailable } from '@/features/disputes-escrow/components/OperationsUnavailable'
 import { LoadError } from '@/components/ui/feedback/load-error'
 import { formatVnd } from '@/lib/format-money'
+import { CaseAttachments } from '@/features/review-case/components/CaseAttachments'
 
 export default function AdminDisputeDetailPage() {
   const id = useParams().id!
@@ -72,7 +73,7 @@ export default function AdminDisputeDetailPage() {
   const { evidence, complaint } = dispute
   const hoursLeft = disputeHoursLeft(dispute, now)
   const code = dispute.code ?? dispute.id
-  // The server sends no party names or title yet, so those rows only show in the demo
+  // The server sends the client's email and the expert's name; the title is still demo-only
   const meta = (
     [
       [t('disputes.meta.kind'), t(`disputes.kind.${dispute.kind}`)],
@@ -163,7 +164,10 @@ export default function AdminDisputeDetailPage() {
                   ? [
                       [
                         t('disputes.complaint.attachment'),
-                        <span key="file" className="underline underline-offset-4">
+                        <span
+                          key="file"
+                          className="underline underline-offset-4"
+                        >
                           {complaint.attachment}
                         </span>,
                       ],
@@ -213,6 +217,11 @@ export default function AdminDisputeDetailPage() {
             </section>
           )}
 
+          {/* A real case: the files both parties added and the document under review */}
+          {dispute.decideBy && (
+            <CaseAttachments caseId={dispute.id} scope="admin" />
+          )}
+
           {dispute.history.length > 0 && (
             <HistoryTab
               title={t('disputes.auditLog')}
@@ -230,8 +239,8 @@ export default function AdminDisputeDetailPage() {
             onEscalate={() =>
               escalate().then(() => setToast(t('disputes.escalation.toast')))
             }
-            onDecide={(outcome, reason) =>
-              decide({ outcome, reason }).then(() =>
+            onDecide={(outcome, reason, refundPct) =>
+              decide({ outcome, reason, refundPct }).then(() =>
                 setToast(t('disputes.decided'))
               )
             }

@@ -17,6 +17,7 @@ import {
   LockKeyhole,
 } from 'lucide-react'
 import { isExpertDemo } from '@/lib/expert-data-source'
+import { ExpertLiveCase } from '@/features/review-case/components/ExpertLiveCase'
 
 import { useExpertDashboard } from '../../features/expert-dashboard/hooks/useExpertDashboard'
 import { useCaseWorkspace } from '../../features/expert-dashboard/hooks/useCaseWorkspace'
@@ -845,15 +846,7 @@ export function ExpertCaseDetailPage() {
 
   const { id } = useParams()
   const dashboard = useExpertDashboard()
-  if (!isExpertDemo)
-    return (
-      <DashboardSectionState
-        title={t('caseDetailUnavailable')}
-        message={t(
-          'caseDetailIsCurrentlyAUiPreviewTheLiveCaseContractIsNotConnected'
-        )}
-      />
-    )
+  if (!isExpertDemo) return <ExpertLiveCase caseId={id ?? ''} />
   if (dashboard.isPending) return <DashboardSkeleton />
   if (!dashboard.data || dashboard.data.queue.status !== 'available')
     return (

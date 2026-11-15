@@ -89,6 +89,11 @@ public sealed class AdminDisputeHandlerTests
 
         var item = Assert.Single(queue);
         Assert.Equal(run.Case.Id.ToString(), item.ReviewCaseId);
+        // Who the parties are, for the admin only
+        Assert.Equal(
+            ("client@caps.test", ExpertProfile.ToString()),
+            (item.RequesterEmail, item.ExpertProfileId)
+        );
         Assert.Equal(1_000_000, item.Fee);
         Assert.Equal(overdue, item.Overdue);
         Assert.Equal("OBLIGATION_NOT_MET", item.Dispute.Reason);

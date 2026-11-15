@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Caps.Workflow.Application.Features.ReviewCases;
 
 namespace Caps.Workflow.Api.DTOs.Requests;
@@ -35,7 +36,8 @@ public sealed record CaseTextRequest(string? Message);
 public sealed record DeliverReviewRequest(
     string? Result,
     string? Summary,
-    string? CannotVerifyReason
+    string? CannotVerifyReason,
+    JsonElement? RevisedContent
 );
 
 /// <summary>1 to 5 stars for the expert, with an optional comment.</summary>

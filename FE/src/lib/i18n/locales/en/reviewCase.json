@@ -247,7 +247,8 @@
       "SYSTEM_ERROR": "System error",
       "RESOLVE_REFUND_USER": "Refund to you",
       "RESOLVE_PAY_EXPERT": "Pay the expert",
-      "RESOLVE_PARTIAL": "Partial settlement"
+      "RESOLVE_PARTIAL": "Partial settlement",
+      "FULL_REFUND": "Full refund to you"
     }
   },
   "package": {
@@ -365,7 +366,8 @@
     "cancelledEarly": "Request cancelled.",
     "challenged": "Challenge sent. The payment stays on hold.",
     "expired": "Payment deadline passed. The request was cancelled.",
-    "rated": "Rating submitted. Thank you."
+    "rated": "Rating submitted. Thank you.",
+    "disputeWithdrawn": "Dispute withdrawn. The case is accepted and settled."
   },
   "notFound": {
     "title": "Case not found",
@@ -455,8 +457,8 @@
     "available": "Available credits",
     "held": "On hold",
     "heldHint": "Held when you ask; charged once the question goes to retrieval, released if it is out of scope.",
-    "unit_one": "{{count}} credit",
-    "unit_other": "{{count}} credits",
+    "unit_one": "{{count, number}} credit",
+    "unit_other": "{{count, number}} credits",
     "packages": "Credit packages",
     "recommended": "Recommended",
     "priceTbd": "Price not set",
@@ -482,11 +484,15 @@
       "HOLD": "Hold",
       "CAPTURE": "Charge",
       "RELEASE": "Hold released",
-      "RESTORE": "Restored after a system error"
+      "RESTORE": "Restored after a system error",
+      "ESCROW_HOLD": "Review fee held",
+      "ESCROW_RELEASE": "Review fee settled",
+      "ESCROW_REFUND": "Review fee refunded"
     },
     "escrow": "Review fees on hold",
     "escrowEmpty": "No payments are on hold.",
-    "escrowNote": "Shared Hub holds review fees until you accept the result or a dispute is decided."
+    "escrowNote": "Shared Hub holds review fees until you accept the result or a dispute is decided.",
+    "ledgerEmpty": "No movements yet."
   },
   "rating": {
     "title": "Rate the expert",
@@ -504,5 +510,176 @@
     "none": "No file chosen",
     "count_one": "{{count}} file selected",
     "count_other": "{{count}} files selected"
+  },
+  "errors": {
+    "failed": "That did not work. Please try again.",
+    "INSUFFICIENT_CREDITS": "Your wallet balance is too low. Top up, then pay again.",
+    "CASE_STATUS_INVALID": "The case has moved on. Reload to see its current step.",
+    "CASE_DEADLINE_PASSED": "The deadline for this action has passed.",
+    "REVIEW_CASE_NOT_FOUND": "Case not found.",
+    "REVIEW_CASE_ALREADY_OPEN": "This version already has an open request with that expert.",
+    "CASE_SELF_REVIEW": "You cannot review your own document.",
+    "DOCUMENT_NOT_FOUND": "That document version was not found.",
+    "EXPERT_SERVICE_UNAVAILABLE": "The expert is not taking this service right now.",
+    "EXPERT_FULL": "The expert has no free slot.",
+    "SERVICE_LINK_UNAVAILABLE": "The system is busy. Please try again shortly.",
+    "SESSION_CHECK_UNAVAILABLE": "Your session could not be checked. Please try again shortly.",
+    "TEXT_REQUIRED": "Please enter the text.",
+    "TEXT_TOO_LONG": "The text is too long.",
+    "INFO_REQUEST_LIMIT": "This case has used all its information requests.",
+    "INFO_REQUEST_CLOSED": "This information request is closed.",
+    "DISPUTE_REASON_INVALID": "That dispute reason is not valid.",
+    "DISPUTE_NOT_FOUND": "This case has no dispute.",
+    "DISPUTE_STATEMENT_EXISTS": "You have already sent your statement.",
+    "DISPUTE_ALREADY_EXTENDED": "This dispute was already extended.",
+    "DISPUTE_REFUND_INVALID": "That refund percentage is not valid.",
+    "RATING_CLOSED": "The case is not over yet, so it cannot be rated.",
+    "RATING_EXISTS": "You have already rated this case.",
+    "RATING_INVALID": "That star rating is not valid.",
+    "REVIEW_RESULT_INVALID": "That review result is not valid.",
+    "ATTACHMENT_REQUIRED": "Choose a file.",
+    "ATTACHMENT_TOO_LARGE": "A file may be at most 50 MB.",
+    "ATTACHMENT_TYPE_INVALID": "Only PDF, JPEG, PNG, WebP or Word (.docx) files.",
+    "ATTACHMENTS_CLOSED": "Files cannot be added at this step.",
+    "ATTACHMENT_LIMIT": "A case holds at most 20 files.",
+    "ATTACHMENT_NOT_FOUND": "File not found.",
+    "CHAT_CLOSED": "Messages cannot be sent at this step.",
+    "MESSAGE_EMPTY": "Please enter a message.",
+    "MESSAGE_TOO_LONG": "The message is too long.",
+    "RATE_LIMITED": "Too many requests. Please try again in a moment."
+  },
+  "live": {
+    "loading": "Loading the case",
+    "theExpert": "The expert",
+    "request": "Your request",
+    "expected": "Expected outcome",
+    "chosenVersion": "Selected document version",
+    "scopeRequired": "Please describe what should be reviewed.",
+    "answerRequired": "Please enter your answer.",
+    "declineReason": "Reason: {{reason}}",
+    "withdrawDispute": "Withdraw the dispute and accept",
+    "unread": "{{count}} new",
+    "earlyCancelPaid": "The expert has not accepted yet, so your payment is refunded in full.",
+    "panel": {
+      "PENDING_EXPERT_RESPONSE": {
+        "body": "Your fee is held. The expert has 24 hours to accept or decline; if they do not accept, you get a full refund."
+      },
+      "DECLINED_BY_EXPERT": {
+        "body": "The whole fee is back in your wallet. You can send this document to another expert."
+      },
+      "EXPERT_RESPONSE_TIMEOUT": {
+        "body": "The request closed and the whole fee is back in your wallet."
+      },
+      "WITHDRAWN": {
+        "body": "The request closed before the expert accepted and the whole fee is back in your wallet."
+      },
+      "EXPERT_WITHDREW": {
+        "title": "{{name}} stopped reviewing this case",
+        "body": "The expert stopped before delivering. The whole fee is back in your wallet."
+      },
+      "AWAITING_PAYMENT": {
+        "body": "Pay within 15 minutes to send the request to {{name}}. After that it cancels and you are not charged.",
+        "method": "Paid from your wallet balance"
+      },
+      "CANCELLED_UNPAID": {
+        "body": "The 15-minute payment window ended and you were not charged."
+      },
+      "AWAITING_USER_INFORMATION": {
+        "warning": "If you do not answer in time, the case ends and the fee splits by the rules fixed at booking."
+      },
+      "TERMINATED": {
+        "USER_NON_RESPONSE": "You did not answer the information request in time. The fee was split by the rules fixed at booking.",
+        "EXPERT_ABANDON": "The expert did not deliver in time. The whole fee is back in your wallet."
+      }
+    },
+    "chat": {
+      "title": "Conversation with the expert",
+      "label": "Message",
+      "placeholder": "Type a message…",
+      "send": "Send",
+      "empty": "No messages yet.",
+      "CLIENT": "Client",
+      "EXPERT": "Expert",
+      "titleExpert": "Conversation with the client",
+      "titleAdmin": "Conversation between the parties"
+    },
+    "files": {
+      "title": "Attachments",
+      "empty": "No files yet.",
+      "add": "Add a file",
+      "uploading": "Uploading…",
+      "hint": "PDF, JPEG, PNG, WebP or Word (.docx), up to 50 MB each.",
+      "download": "Download {{name}}",
+      "source": "Download the original file",
+      "sourceName": "original-document",
+      "noSource": "This document was written in the app, so there is no original file to download.",
+      "fromExpert": "From the expert"
+    },
+    "revised": {
+      "title": "Expert's edited version",
+      "count_one": "{{count}} change",
+      "count_other": "{{count}} changes",
+      "changedCount_one": "{{count}} edited",
+      "changedCount_other": "{{count}} edited",
+      "removedCount_one": "{{count}} removed",
+      "removedCount_other": "{{count}} removed",
+      "addedCount_one": "{{count}} added",
+      "addedCount_other": "{{count}} added",
+      "none": "The expert left the draft unchanged.",
+      "changed": "Edited",
+      "added": "New field",
+      "removed": "Removed",
+      "before": "Before:",
+      "after": "After:"
+    },
+    "expert": {
+      "status": {
+        "AWAITING_PAYMENT": "Awaiting client payment",
+        "PENDING_EXPERT_RESPONSE": "Your response needed",
+        "IN_REVIEW": "In review",
+        "AWAITING_USER_INFORMATION": "Waiting for the client",
+        "AWAITING_ACCEPTANCE": "Awaiting acceptance",
+        "DISPUTED": "Disputed",
+        "RESOLVED": "Dispute resolved",
+        "COMPLETED": "Completed",
+        "AUTO_CONFIRMED": "Auto-confirmed",
+        "EXPERT_DECLINED": "Declined or withdrawn",
+        "EXPERT_TIMEOUT": "Response overdue",
+        "WITHDRAWN": "Withdrawn by client",
+        "CANCELLED_UNPAID": "Cancelled unpaid",
+        "TERMINATED": "Terminated",
+        "DELIVERY_OVERDUE": "Delivery overdue"
+      },
+      "request": "Client request",
+      "responseDue": "Response due",
+      "decide": "Accept or decline",
+      "accept": "Accept the case",
+      "decline": "Decline the request",
+      "declineReason": "Reason for declining",
+      "deliverTitle": "Deliver the result",
+      "result": "Result",
+      "summary": "Conclusion",
+      "summaryHelpLabel": "What to write in the conclusion",
+      "summaryHelp": "If you edit the document, turn on Track Changes in Word, attach the edited file, and summarise the main changes here so the client sees where and why you changed it.",
+      "editFields": "Edit the draft",
+      "removeField": "Remove this field",
+      "fieldChanged": "Edited",
+      "undo": "Undo",
+      "cannotVerifyReason": "Why it cannot be verified",
+      "deliver": "Deliver the result",
+      "askTitle": "Ask the client for information",
+      "askLabel": "What you need",
+      "ask": "Send the request",
+      "waitingTitle": "Waiting for the client",
+      "answers": "Client answers",
+      "statement": "Your statement",
+      "sendStatement": "Send statement",
+      "withdraw": "Withdraw from the case",
+      "withdrawHint": "The client gets a full refund and you receive nothing.",
+      "withdrawReason": "Reason for withdrawing",
+      "saved": "Saved."
+    },
+    "notConnected": "No data yet.",
+    "openCases": "Your open cases."
   }
 }

@@ -4,6 +4,7 @@ import { CURRENT_ADMIN } from '@/features/expert-vetting/constants'
 import { i18n } from '@/lib/i18n'
 import { DISPUTE_OUTCOME } from '../constants'
 import { DISPUTE_ESCALATION_HOURS, DISPUTE_SLA_HOURS } from '../constants'
+import { getPublicExpert } from '@/features/marketplace/api/marketplaceApi'
 import type { Dispute, DisputeDecisionInput, Escrow } from '../types'
 
 /* The demo reads fixtures (cloned so React Query sees new data) and its mutations edit them in place.
@@ -19,6 +20,9 @@ interface Envelope<T> {
 /** AdminDisputeResponse of the workflow service */
 interface AdminDisputeDto {
   reviewCaseId: string
+  /** Only admins see it; the expert never learns the client's contact */
+  requesterEmail: string | null
+  expertProfileId: string
   fee: number
   platformFeePct: number
   result: string | null
@@ -51,7 +55,7 @@ const REASON_KEY = {
   PROFESSIONAL_JUDGMENT: 'disputes.reason.PROFESSIONAL_JUDGMENT',
 } as const
 
-function toDispute(x: AdminDisputeDto): Dispute {
+function toDispute(x: AdminDisputeDto, expert: string): Dispute {
   const d = x.dispute
   // An unknown code from a newer server is shown as sent rather than hidden
   const reason =
@@ -66,6 +70,8 @@ function toDispute(x: AdminDisputeDto): Dispute {
     id: x.reviewCaseId,
     code: x.reviewCaseId.slice(0, 8).toUpperCase(),
     kind: 'DELIVERY_ISSUE',
+    client: x.requesterEmail ?? undefined,
+    expert: expert || undefined,
     ground: reason,
     openedAt: d.openedAt,
     decideBy: d.decideBy,
@@ -84,7 +90,25 @@ async function openDisputes(signal?: AbortSignal) {
     `${CASES}/disputes`,
     { signal }
   )
-  return response.data.map(toDispute)
+  // ponytail: one marketplace call per distinct expert; add the name to the dispute API if the queue grows large
+  const ids = [...new Set(response.data.map((x) => x.expertProfileId))]
+  const names = new Map(
+    await Promise.all(
+      ids.map(
+        async (id) =>
+          [
+            id,
+            // A suspended expert is no longer listed: the email still shows
+            await getPublicExpert(id, signal)
+              .then((e) => e.displayName ?? '')
+              .catch(() => ''),
+          ] as const
+      )
+    )
+  )
+  return response.data.map((x) =>
+    toDispute(x, names.get(x.expertProfileId) ?? '')
+  )
 }
 
 /* ── Khiếu nại ── */
@@ -118,7 +142,11 @@ export async function decideDispute(id: string, body: DisputeDecisionInput) {
     return
   }
   await api.post(`${CASES}/${id}/dispute/decision`, {
-    refundPct: REFUND_PCT[body.outcome],
+    // A partial decision sends the share the admin entered (agreed rule: 1 to 99, 50 by default)
+    refundPct:
+      body.outcome === 'RESOLVE_PARTIAL'
+        ? (body.refundPct ?? REFUND_PCT.RESOLVE_PARTIAL)
+        : REFUND_PCT[body.outcome],
     note: body.reason,
   })
 }
@@ -155,7 +183,11 @@ export async function retryPayout(caseId: string, actor: string) {
       throw new Error(i18n.t('escrow.retryBlocked', { ns: 'admin' }))
     const at = new Date().toISOString()
     Object.assign(e, { status: 'PAID', nextAt: at, failure: undefined })
-    e.history.unshift({ at, actor, text: i18n.t('escrow.retried', { ns: 'admin', id: caseId }) })
+    e.history.unshift({
+      at,
+      actor,
+      text: i18n.t('escrow.retried', { ns: 'admin', id: caseId }),
+    })
     return
   }
   await api.post(`${BASE}/escrows/${caseId}/payout/retry`)
@@ -168,8 +200,17 @@ export async function markRefunded(caseId: string, ref: string, actor: string) {
     const e = (await fixtures()).mockEscrows.find((x) => x.caseId === caseId)
     if (!e) return
     const at = new Date().toISOString()
-    Object.assign(e, { status: 'REFUNDED', nextAt: at, refundRef: ref, failure: undefined })
-    e.history.unshift({ at, actor, text: i18n.t('escrow.refund.logged', { ns: 'admin', ref }) })
+    Object.assign(e, {
+      status: 'REFUNDED',
+      nextAt: at,
+      refundRef: ref,
+      failure: undefined,
+    })
+    e.history.unshift({
+      at,
+      actor,
+      text: i18n.t('escrow.refund.logged', { ns: 'admin', ref }),
+    })
     return
   }
   await api.post(`${BASE}/escrows/${caseId}/refund/confirm`, { ref })

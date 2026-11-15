@@ -12,7 +12,8 @@ public sealed record DeliverReviewCommand(
     Guid ReviewCaseId,
     string? Result,
     string? Summary,
-    string? CannotVerifyReason
+    string? CannotVerifyReason,
+    string? RevisedContent
 );
 
 /// <summary>Hands the result to the client, who then has the acceptance window to confirm.</summary>
@@ -43,7 +44,8 @@ public sealed class DeliverReviewHandler(
             command.Result,
             command.Summary,
             command.CannotVerifyReason,
-            clock.GetUtcNow()
+            clock.GetUtcNow(),
+            command.RevisedContent
         );
         cases.AddHistory(delivered);
         await events.StatusChangedAsync(reviewCase, delivered, ct);

@@ -12,7 +12,79 @@ public sealed class DocumentReviewTests
     private static readonly Guid Client = Guid.NewGuid();
 
     // Paid, accepted and delivered with the given result
-    private static ReviewCase Delivered(string result)
+    private static ReviewCase Delivered(string result, string? revisedContent = null)
+    {
+        var reviewCase = Accepted();
+        var reason = result == ReviewCase.CannotVerify ? "Missing invoices" : null;
+        reviewCase.Deliver(Expert, ExpertUser, result, "Summary", reason, Now, revisedContent);
+        return reviewCase;
+    }
+
+    [Fact]
+    public void The_expert_version_holds_the_edited_draft()
+    {
+        var reviewCase = Delivered(ReviewCase.Verified, """{"tax_rate":"20%"}""");
+
+        var version = DocumentVersion.ExpertReview(reviewCase, 3, Now);
+
+        Assert.Equal("""{"tax_rate":"20%"}""", reviewCase.RevisedContent);
+        var document = JsonDocument.Parse(version.Content).RootElement.GetProperty("document");
+        Assert.Equal("20%", document.GetProperty("tax_rate").GetString());
+    }
+
+    [Fact]
+    public void Without_an_edited_draft_the_document_is_null()
+    {
+        var version = DocumentVersion.ExpertReview(Delivered(ReviewCase.Verified), 3, Now);
+
+        Assert.Null(Delivered(ReviewCase.Verified).RevisedContent);
+        Assert.Equal(
+            JsonValueKind.Null,
+            JsonDocument.Parse(version.Content).RootElement.GetProperty("document").ValueKind
+        );
+    }
+
+    [Theory]
+    [InlineData("[1,2]")] // not an object
+    [InlineData("\"text\"")]
+    [InlineData("{broken")]
+    public void An_edited_draft_must_be_a_json_object(string revisedContent)
+    {
+        var reviewCase = Accepted();
+
+        Assert.Equal(
+            "REVISED_CONTENT_INVALID",
+            Errors.CodeOf(() =>
+                reviewCase.Deliver(
+                    Expert,
+                    ExpertUser,
+                    ReviewCase.Verified,
+                    "Summary",
+                    null,
+                    Now,
+                    revisedContent
+                )
+            )
+        );
+        // Nothing was delivered
+        Assert.Equal(ReviewCaseStatus.InReview, reviewCase.Status);
+    }
+
+    [Fact]
+    public void An_edited_draft_is_bounded()
+    {
+        var tooLong = $$"""{"a":"{{new string('x', ReviewCase.MaxContentLength)}}"}""";
+
+        Assert.Equal(
+            "REVISED_CONTENT_INVALID",
+            Errors.CodeOf(() =>
+                Accepted()
+                    .Deliver(Expert, ExpertUser, ReviewCase.Verified, "Summary", null, Now, tooLong)
+            )
+        );
+    }
+
+    private static ReviewCase Accepted()
     {
         var reviewCase = ReviewCase
             .Request(
@@ -28,8 +100,6 @@ public sealed class DocumentReviewTests
             .Case;
         reviewCase.ConfirmPayment(Now);
         reviewCase.Accept(Expert, ExpertUser, Now);
-        var reason = result == ReviewCase.CannotVerify ? "Missing invoices" : null;
-        reviewCase.Deliver(Expert, ExpertUser, result, "Summary", reason, Now);
         return reviewCase;
     }
 

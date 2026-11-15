@@ -137,7 +137,8 @@ public sealed partial class ReviewCase
         string? result,
         string? summary,
         string? cannotVerifyReason,
-        DateTimeOffset now
+        DateTimeOffset now,
+        string? revisedContent = null
     )
     {
         EnsureExpert(expertProfileId);
@@ -152,6 +153,10 @@ public sealed partial class ReviewCase
             result == CannotVerify
                 ? RequiredText(cannotVerifyReason, "Cannot-verify reason")
                 : null;
+        if (revisedContent is not null && !IsJsonObject(revisedContent))
+        {
+            throw WorkflowErrors.RevisedContentInvalid();
+        }
         var late = now - DeliveryDeadline!.Value;
         LateRefundPct =
             late <= TimeSpan.Zero ? (short)0
@@ -160,6 +165,7 @@ public sealed partial class ReviewCase
         Result = result;
         ReviewSummary = text;
         CannotVerifyReason = reason;
+        RevisedContent = revisedContent;
         DeliveredAt = now;
         AcceptanceDeadline = now + AcceptanceWindow;
         return MoveTo(ReviewCaseStatus.AwaitingAcceptance, actorUserId, null, now);

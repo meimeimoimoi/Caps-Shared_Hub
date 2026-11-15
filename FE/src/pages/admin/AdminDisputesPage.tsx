@@ -92,7 +92,7 @@ export default function AdminDisputesPage() {
                   <p className="text-fg-strong">
                     {d.title ?? t(`disputes.kind.${d.kind}`)}
                   </p>
-                  {/* The server sends no party names yet */}
+                  {/* The client's email and the expert's name */}
                   {d.client && d.expert && (
                     <p className="text-fg-muted text-caption">
                       {d.client} · {d.expert}

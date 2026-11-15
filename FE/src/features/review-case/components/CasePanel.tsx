@@ -15,20 +15,26 @@ import { DISPUTE_SLA_HOURS } from '@/features/disputes-escrow/constants'
 import { cn } from '@/lib/utils'
 import type { ReviewCase, TaskCode } from '../types'
 import { Countdown, Deadline, FilePicker } from './CaseUi'
-import { fieldClass, useCaseFormat } from '../ui'
+import { caseText, fieldClass, useCaseFormat } from '../ui'
 
 const TASKS: TaskCode[] = ['T1', 'T2', 'T3', 'T4', 'T5', 'T6']
 // Payment window of the case; a single payOS link lasts 15 minutes and can be recreated
 const PAYMENT_WINDOW_MS = 24 * 3_600_000
+const LIVE_PAYMENT_WINDOW_MS = 15 * 60_000
 
 export interface PanelActions {
+  /** An action is running: its buttons wait */
+  busy?: boolean
   pay: () => void
   answer: (text: string) => void
   expire: () => void
-  requestCancel: () => void
+  /** Absent in a real case: the API has no client cancel once the expert accepted */
+  requestCancel?: () => void
   requestEarlyCancel: () => void
-  requestChallenge: () => void
+  /** Absent in a real case: the API has no challenge of a termination */
+  requestChallenge?: () => void
   rate: (stars: number, comment: string) => void
+  withdrawDispute?: () => void
 }
 
 function Frame({
@@ -83,7 +89,12 @@ export function CasePanel({
     admin: t('next.admin'),
     closed: t('next.closed'),
   }
-  const cancelButton = (
+  // A real case pays before the expert answers, so some of the demo's sentences would be wrong there
+  const tr = t as unknown as (key: string, options?: object) => string
+  const copy = (key: string, options: object = {}) =>
+    (c.live && caseText(`live.panel.${key}`, options)) ||
+    tr(`panel.${key}`, options)
+  const cancelButton = actions.requestCancel && (
     <button
       type="button"
       onClick={actions.requestCancel}
@@ -111,7 +122,7 @@ export function CasePanel({
           title={t('panel.PENDING_EXPERT_RESPONSE.title', { name })}
           icon={<Hourglass size={13} aria-hidden="true" />}
         >
-          <Body>{t('panel.PENDING_EXPERT_RESPONSE.body')}</Body>
+          <Body>{copy('PENDING_EXPERT_RESPONSE.body')}</Body>
           {c.due?.response && (
             <Deadline
               label={t('panel.PENDING_EXPERT_RESPONSE.due')}
@@ -129,8 +140,23 @@ export function CasePanel({
     case 'CANCELLED_UNPAID': {
       const k = c.status
       return (
-        <Frame who={who.closed} title={t(`panel.${k}.title`, { name })}>
-          <Body className="verdict">{t(`panel.${k}.body`)}</Body>
+        <Frame
+          who={who.closed}
+          title={copy(
+            c.expertWithdrew ? 'EXPERT_WITHDREW.title' : `${k}.title`,
+            {
+              name,
+            }
+          )}
+        >
+          <Body className="verdict">
+            {copy(c.expertWithdrew ? 'EXPERT_WITHDREW.body' : `${k}.body`)}
+          </Body>
+          {c.declineReason && (
+            <Body className="text-fg-muted text-sm">
+              {t('live.declineReason', { reason: c.declineReason })}
+            </Body>
+          )}
           <Link to="/marketplace" className="btn btn-press btn-primary">
             {t(`panel.${k}.cta`)}
           </Link>
@@ -141,7 +167,7 @@ export function CasePanel({
     case 'AWAITING_PAYMENT':
       return (
         <Frame who={who.you} title={t('panel.AWAITING_PAYMENT.title')}>
-          <Body>{t('panel.AWAITING_PAYMENT.body', { name })}</Body>
+          <Body>{copy('AWAITING_PAYMENT.body', { name })}</Body>
           <div className="bg-sunken rounded-surface grid gap-6 p-5 sm:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)] md:p-6">
             <div>
               <p className="eyebrow">{t('panel.AWAITING_PAYMENT.timer')}</p>
@@ -149,8 +175,10 @@ export function CasePanel({
                 {c.due?.payment && (
                   <Countdown
                     dueAt={c.due.payment}
-                    totalMs={PAYMENT_WINDOW_MS}
-                    urgentMs={2 * 3_600_000}
+                    totalMs={
+                      c.live ? LIVE_PAYMENT_WINDOW_MS : PAYMENT_WINDOW_MS
+                    }
+                    urgentMs={c.live ? 3 * 60_000 : 2 * 3_600_000}
                     onExpire={actions.expire}
                   />
                 )}
@@ -162,7 +190,7 @@ export function CasePanel({
                 {f.money(c.amount)}
               </p>
               <p className="text-fg-muted text-sm">
-                {t('panel.AWAITING_PAYMENT.method')}
+                {copy('AWAITING_PAYMENT.method')}
               </p>
             </div>
           </div>
@@ -170,7 +198,8 @@ export function CasePanel({
             <button
               type="button"
               onClick={actions.pay}
-              className="btn btn-press btn-primary"
+              disabled={actions.busy}
+              className="btn btn-press btn-primary disabled:opacity-60"
             >
               {t('panel.AWAITING_PAYMENT.cta', { amount: f.money(c.amount) })}
             </button>
@@ -183,9 +212,11 @@ export function CasePanel({
               {t('panel.AWAITING_PAYMENT.escrow')}
             </p>
           </div>
-          <p className="text-fg-muted text-sm">
-            {t('panel.AWAITING_PAYMENT.link')}
-          </p>
+          {!c.live && (
+            <p className="text-fg-muted text-sm">
+              {t('panel.AWAITING_PAYMENT.link')}
+            </p>
+          )}
           {earlyCancelButton(t('panel.AWAITING_PAYMENT.cancel'))}
         </Frame>
       )
@@ -235,61 +266,63 @@ export function CasePanel({
               onExpire={actions.expire}
             />
           )}
-          <div>
-            <h3 className="eyebrow">{t('panel.IN_REVIEW.progress')}</h3>
-            <ol className="mt-3 grid gap-x-8 sm:grid-cols-2">
-              {TASKS.map((k) => {
-                const state = c.tasks.includes(k)
-                  ? 'done'
-                  : k === current
-                    ? 'current'
-                    : 'todo'
-                return (
-                  <li
-                    key={k}
-                    className="border-border-subtle flex items-center gap-3 border-b py-2.5"
-                  >
-                    <span
-                      aria-hidden="true"
-                      className={cn(
-                        'grid size-6 shrink-0 place-items-center rounded-full border text-[11px] font-bold',
-                        state === 'done' &&
-                          'bg-success border-success text-paper',
-                        state === 'current' &&
-                          'border-indicator text-accent-text border-2',
-                        state === 'todo' &&
-                          'border-border-control text-fg-muted'
-                      )}
+          {!c.live && (
+            <div>
+              <h3 className="eyebrow">{t('panel.IN_REVIEW.progress')}</h3>
+              <ol className="mt-3 grid gap-x-8 sm:grid-cols-2">
+                {TASKS.map((k) => {
+                  const state = c.tasks.includes(k)
+                    ? 'done'
+                    : k === current
+                      ? 'current'
+                      : 'todo'
+                  return (
+                    <li
+                      key={k}
+                      className="border-border-subtle flex items-center gap-3 border-b py-2.5"
                     >
-                      {state === 'done' ? (
-                        <Check size={13} strokeWidth={3} />
-                      ) : (
-                        k.slice(1)
-                      )}
-                    </span>
-                    <span
-                      className={cn(
-                        'min-w-0 flex-1 text-sm',
-                        state === 'todo' ? 'text-fg-muted' : 'text-fg-strong'
-                      )}
-                    >
-                      {t(`tasks.${k}`)}
-                    </span>
-                    <span
-                      className={cn(
-                        'text-caption shrink-0',
-                        state === 'current'
-                          ? 'text-accent-text font-semibold'
-                          : 'text-fg-muted'
-                      )}
-                    >
-                      {t(`tasks.${state}`)}
-                    </span>
-                  </li>
-                )
-              })}
-            </ol>
-          </div>
+                      <span
+                        aria-hidden="true"
+                        className={cn(
+                          'grid size-6 shrink-0 place-items-center rounded-full border text-[11px] font-bold',
+                          state === 'done' &&
+                            'bg-success border-success text-paper',
+                          state === 'current' &&
+                            'border-indicator text-accent-text border-2',
+                          state === 'todo' &&
+                            'border-border-control text-fg-muted'
+                        )}
+                      >
+                        {state === 'done' ? (
+                          <Check size={13} strokeWidth={3} />
+                        ) : (
+                          k.slice(1)
+                        )}
+                      </span>
+                      <span
+                        className={cn(
+                          'min-w-0 flex-1 text-sm',
+                          state === 'todo' ? 'text-fg-muted' : 'text-fg-strong'
+                        )}
+                      >
+                        {t(`tasks.${k}`)}
+                      </span>
+                      <span
+                        className={cn(
+                          'text-caption shrink-0',
+                          state === 'current'
+                            ? 'text-accent-text font-semibold'
+                            : 'text-fg-muted'
+                        )}
+                      >
+                        {t(`tasks.${state}`)}
+                      </span>
+                    </li>
+                  )
+                })}
+              </ol>
+            </div>
+          )}
           {c.infoRequest?.response && (
             <details className="text-sm">
               <summary className="text-fg-strong cursor-pointer font-semibold">
@@ -344,9 +377,13 @@ export function CasePanel({
               aria-hidden="true"
               className="mt-0.5 shrink-0"
             />
-            {t('panel.AWAITING_USER_INFORMATION.warning')}
+            {copy('AWAITING_USER_INFORMATION.warning')}
           </p>
-          <InfoResponseForm onSubmit={actions.answer} />
+          <InfoResponseForm
+            live={c.live}
+            busy={actions.busy}
+            onSubmit={actions.answer}
+          />
           {cancelButton}
         </Frame>
       )
@@ -415,6 +452,16 @@ export function CasePanel({
             {t('panel.DISPUTED.sla', { hours: DISPUTE_SLA_HOURS })}{' '}
             {t('panel.DISPUTED.escalation')}
           </p>
+          {actions.withdrawDispute && (
+            <button
+              type="button"
+              disabled={actions.busy}
+              onClick={actions.withdrawDispute}
+              className="btn btn-press btn-secondary disabled:opacity-60"
+            >
+              {t('live.withdrawDispute')}
+            </button>
+          )}
         </Frame>
       )
 
@@ -430,8 +477,14 @@ export function CasePanel({
               </dd>
               <dt className="text-fg-muted">{t('panel.RESOLVED.reason')}</dt>
               <dd className="text-fg-strong max-w-[65ch]">{d.reason}</dd>
-              <dt className="text-fg-muted">{t('panel.RESOLVED.decidedBy')}</dt>
-              <dd className="text-fg-strong">{d.decidedBy}</dd>
+              {d.decidedBy && (
+                <>
+                  <dt className="text-fg-muted">
+                    {t('panel.RESOLVED.decidedBy')}
+                  </dt>
+                  <dd className="text-fg-strong">{d.decidedBy}</dd>
+                </>
+              )}
               <dt className="text-fg-muted">{t('panel.RESOLVED.decidedAt')}</dt>
               <dd className="num text-fg-strong">{f.at(d.decidedAt)}</dd>
             </dl>
@@ -471,7 +524,7 @@ export function CasePanel({
                 : 'verdict-negative'
             )}
           >
-            {t(`panel.TERMINATED.${rule}`)}
+            {copy(`TERMINATED.${rule}`)}
           </Body>
           {rule === 'USER_NON_RESPONSE' && !c.settlement && !challenge && (
             <>
@@ -520,7 +573,15 @@ export function CasePanel({
   }
 }
 
-function InfoResponseForm({ onSubmit }: { onSubmit: (text: string) => void }) {
+function InfoResponseForm({
+  onSubmit,
+  live,
+  busy,
+}: {
+  onSubmit: (text: string) => void
+  live?: boolean
+  busy?: boolean
+}) {
   const { t } = useTranslation('reviewCase')
   const id = useId()
   const [text, setText] = useState('')
@@ -529,7 +590,7 @@ function InfoResponseForm({ onSubmit }: { onSubmit: (text: string) => void }) {
 
   const submit = (e: FormEvent) => {
     e.preventDefault()
-    if (!text.trim() && files === 0) return setError(true)
+    if (!text.trim() && (live || files === 0)) return setError(true)
     onSubmit(text.trim())
   }
 
@@ -541,7 +602,11 @@ function InfoResponseForm({ onSubmit }: { onSubmit: (text: string) => void }) {
         hint={t('panel.AWAITING_USER_INFORMATION.responseHint')}
         hintId={`${id}-hint`}
         error={
-          error ? t('panel.AWAITING_USER_INFORMATION.required') : undefined
+          error
+            ? live
+              ? t('live.answerRequired')
+              : t('panel.AWAITING_USER_INFORMATION.required')
+            : undefined
         }
         errorId={`${id}-error`}
       >
@@ -559,22 +624,28 @@ function InfoResponseForm({ onSubmit }: { onSubmit: (text: string) => void }) {
           className={cn(fieldClass, 'resize-y')}
         />
       </FormField>
-      <FormField
-        label={t('panel.AWAITING_USER_INFORMATION.files')}
-        htmlFor={`${id}-files`}
-        hint={t('panel.AWAITING_USER_INFORMATION.filesHint')}
-        hintId={`${id}-files-hint`}
-      >
-        <FilePicker
-          id={`${id}-files`}
+      {!live && (
+        <FormField
+          label={t('panel.AWAITING_USER_INFORMATION.files')}
+          htmlFor={`${id}-files`}
+          hint={t('panel.AWAITING_USER_INFORMATION.filesHint')}
           hintId={`${id}-files-hint`}
-          onCount={(n) => {
-            setFiles(n)
-            setError(false)
-          }}
-        />
-      </FormField>
-      <button type="submit" className="btn btn-press btn-primary">
+        >
+          <FilePicker
+            id={`${id}-files`}
+            hintId={`${id}-files-hint`}
+            onCount={(n) => {
+              setFiles(n)
+              setError(false)
+            }}
+          />
+        </FormField>
+      )}
+      <button
+        type="submit"
+        disabled={busy}
+        className="btn btn-press btn-primary disabled:opacity-60"
+      >
         {t('panel.AWAITING_USER_INFORMATION.submit')}
       </button>
     </form>

@@ -1,4 +1,3 @@
-import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   BriefcaseBusiness,
@@ -15,7 +14,7 @@ import type {
   SidebarGroup,
   SidebarItem,
 } from '@/components/ui/layout/app-sidebar'
-import { DEMO_CASES, demoCase } from '@/features/review-case/fixtures'
+import { useClientCases } from '@/features/review-case/hooks/useReviewCases'
 import { ACTION_STATUSES } from '@/features/review-case/ui'
 
 export type UserNavId =
@@ -40,13 +39,9 @@ export function useUserNavigation(
   { draftHref = (path) => path }: UserNavigationOptions = {}
 ): SidebarGroup[] {
   const { t } = useTranslation('navigation')
-  // ponytail: đếm từ dữ liệu demo; thay bằng số từ API khi BE có review-case
-  const waiting = useMemo(
-    () =>
-      DEMO_CASES.filter((d) => ACTION_STATUSES.includes(demoCase(d.id)!.status))
-        .length,
-    []
-  )
+  const waiting = useClientCases().cases.filter((c) =>
+    ACTION_STATUSES.includes(c.status)
+  ).length
   const mark = (items: SidebarItem[]) =>
     items.map((item) => ({ ...item, active: item.id === active }))
   return [

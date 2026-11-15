@@ -30,7 +30,8 @@ export interface Citation {
 export type ReviewResult =
   | {
       outcome: 'VERIFIED'
-      verifiedVersion: string
+      /** Absent until the documents API can store the expert's revision */
+      verifiedVersion?: string
       conclusion: string
       notes: Citation[]
       deliveredAt: string
@@ -48,6 +49,15 @@ export type DisputeKind = 'DELIVERY_ISSUE' | 'USER_NON_RESPONSE_CHALLENGE'
 
 export interface ReviewCase {
   id: string
+  /** Short code shown for a real case, whose id is a UUID */
+  code?: string
+  /** Comes from the API; the demo's steps that the API does not have are hidden */
+  live?: boolean
+  problemDescription?: string
+  expectedOutcome?: string | null
+  declineReason?: string
+  /** The expert gave up the case after accepting it */
+  expertWithdrew?: boolean
   title: string
   status: CaseStatus
   expert: { name: string; initials: string; color: string; role: string }
@@ -122,6 +132,45 @@ export interface InfoRequestDto {
   createdAt: string
 }
 
+/** A complaint about a delivery (GET /review-cases/{id}/dispute). */
+export interface DisputeDto {
+  id: string
+  reason: string
+  description: string
+  status: 'OPEN' | 'RESOLVED' | 'WITHDRAWN'
+  openedAt: string
+  decideBy: string
+  expertStatement: string | null
+  expertStatementAt: string | null
+  refundPct: number | null
+  resolutionNote: string | null
+  closedAt: string | null
+}
+
+/** An open dispute in the admin queue. */
+export interface AdminDisputeDto {
+  reviewCaseId: string
+  /** Only admins see it; the expert never learns the client's contact. */
+  requesterEmail: string | null
+  expertProfileId: string
+  fee: number
+  platformFeePct: number
+  result: string | null
+  reviewSummary: string | null
+  overdue: boolean
+  dispute: DisputeDto
+}
+
+/** A file added to a case. */
+export interface AttachmentDto {
+  id: string
+  fileName: string
+  contentType: string
+  sizeBytes: number
+  uploadedBy: string
+  uploadedAt: string
+}
+
 /** A review case as the workflow API returns it (ReviewCaseResponse). */
 export interface ReviewCaseDto {
   id: string
@@ -129,10 +178,16 @@ export interface ReviewCaseDto {
   result: 'VERIFIED' | 'CANNOT_VERIFY' | null
   reviewSummary: string | null
   cannotVerifyReason: string | null
+  /** The AI draft under review (detail only; null for uploaded files). */
+  sourceContent: Record<string, unknown> | null
+  /** The expert's edited copy of that draft, once delivered. */
+  revisedContent: Record<string, unknown> | null
   declineReason: string | null
   documentId: string
   sourceVersionId: string
   expertProfileId: string
+  requesterUserId: string
+  serviceCode: string | null
   fee: number
   turnaroundHours: number
   problemDescription: string

@@ -14,6 +14,8 @@ export const SETTLEMENT_POLICY = {
   USER_CANCELLED_BEFORE_START: { type: 'TERMINATION', split: [100, 0, 0] },
   EXPERT_ABANDON: { type: 'TERMINATION', split: [100, 0, 0] },
   SYSTEM_ERROR: { type: 'TERMINATION', split: [100, 0, 0] },
+  // The expert declined, withdrew or never answered, or the client withdrew: the whole fee goes back
+  FULL_REFUND: { type: 'TERMINATION', split: [100, 0, 0] },
   RESOLVE_REFUND_USER: { type: 'DISPUTE', split: [100, 0, 0] },
   RESOLVE_PAY_EXPERT: { type: 'DISPUTE', split: [0, 60, 40] },
   RESOLVE_PARTIAL: { type: 'DISPUTE', split: [50, 30, 20] },

@@ -15,6 +15,13 @@ public static class WorkflowErrors
             $"This action is not allowed while the case is {status}."
         );
 
+    public static AppException RevisedContentInvalid() =>
+        new(
+            ErrorType.Validation,
+            "REVISED_CONTENT_INVALID",
+            "The edited draft must be a JSON object."
+        );
+
     public static AppException DeadlinePassed() =>
         new(ErrorType.Conflict, "CASE_DEADLINE_PASSED", "The deadline for this step has passed.");
 

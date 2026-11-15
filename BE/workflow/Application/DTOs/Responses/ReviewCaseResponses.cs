@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Caps.Workflow.Domain.Review;
 using static Caps.Workflow.Application.DTOs.Responses.ReviewCaseResponse;
 
@@ -12,6 +13,8 @@ public sealed record ReviewCaseResponse(
     string? Result,
     string? ReviewSummary,
     String? CannotVerifyReason,
+    JsonElement? SourceContent,
+    JsonElement? RevisedContent,
     string? DeclineReason,
     string DocumentId,
     string SourceVersionId,
@@ -36,7 +39,8 @@ public sealed record ReviewCaseResponse(
 {
     public static ReviewCaseResponse From(
         ReviewCase c,
-        IReadOnlyList<InfoRequest>? questions = null
+        IReadOnlyList<InfoRequest>? questions = null,
+        string? sourceContent = null
     ) =>
         new(
             c.Id.ToString(),
@@ -44,6 +48,8 @@ public sealed record ReviewCaseResponse(
             c.Result,
             c.ReviewSummary,
             c.CannotVerifyReason,
+            Json(sourceContent),
+            Json(c.RevisedContent),
             c.DeclineReason,
             c.DocumentId.ToString(),
             c.SourceVersionId.ToString(),
@@ -91,4 +97,7 @@ public sealed record ReviewCaseResponse(
                 r.CreatedAt
             );
     }
+
+    private static JsonElement? Json(string? json) =>
+        json is null ? null : JsonSerializer.Deserialize<JsonElement>(json);
 }
