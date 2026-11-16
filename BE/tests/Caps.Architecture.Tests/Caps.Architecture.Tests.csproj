@@ -17,6 +17,7 @@
     <ProjectReference Include="..\..\workflow\Api\Api.csproj" />
     <ProjectReference Include="..\..\ingestion\ingestion.csproj" />
     <ProjectReference Include="..\..\notification\notification.csproj" />
+    <ProjectReference Include="..\..\rag-query\rag-query.csproj" />
     <ProjectReference Include="..\..\gateway\gateway.csproj" />
   </ItemGroup>
 

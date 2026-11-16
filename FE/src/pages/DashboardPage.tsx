@@ -1,13 +1,14 @@
-import { useEffect, useMemo } from 'react'
+import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { ArrowRight, Bot, CircleCheck, FilePlus2, Store } from 'lucide-react'
 import { StatusBadge } from '@/components/ui/display/status-badge'
 import { useAccount } from '@/features/auth/hooks/useAccount'
 import { Countdown } from '@/features/review-case/components/CaseUi'
-import { DEMO_CASES, demoCase } from '@/features/review-case/fixtures'
+import { useClientCases } from '@/features/review-case/hooks/useReviewCases'
 import { ACTION_STATUSES, useCaseFormat } from '@/features/review-case/ui'
-import { WALLET } from '@/features/wallet/fixtures'
+import { useCreditOverview } from '@/features/credits/hooks/useCreditOverview'
+import { useFormatters } from '@/hooks/useFormatters'
 import { CASE_STATUS } from '@/lib/constants'
 
 /** Customer overview; expert portal access does not change the selected workspace. */
@@ -15,13 +16,9 @@ export default function DashboardPage() {
   const { t } = useTranslation('reviewCase')
   const f = useCaseFormat()
   const account = useAccount('client')
-  const cases = useMemo(
-    () =>
-      DEMO_CASES.map((d) => demoCase(d.id)!).sort((a, b) =>
-        b.timeline[0].at.localeCompare(a.timeline[0].at)
-      ),
-    []
-  )
+  const { cases } = useClientCases()
+  const { number } = useFormatters()
+  const wallet = useCreditOverview().data?.wallet
   const todo = cases.filter((c) => ACTION_STATUSES.includes(c.status))
 
   useEffect(() => {
@@ -77,7 +74,7 @@ export default function DashboardPage() {
                           {c.title}
                         </p>
                         <p className="text-fg-muted num text-sm">
-                          {c.id}
+                          {c.code ?? c.id}
                           {due && (
                             <>
                               {' · '}
@@ -128,7 +125,7 @@ export default function DashboardPage() {
                         {c.title}
                       </span>
                       <span className="text-fg-muted num block text-sm">
-                        {c.id} · {f.at(c.timeline[0].at)}
+                        {c.code ?? c.id} · {f.at(c.timeline[0].at)}
                       </span>
                     </span>
                     <span className="shrink-0">
@@ -152,10 +149,11 @@ export default function DashboardPage() {
               {t('dashboard.credits')}
             </h2>
             <p className="num text-fg-strong mt-2 text-[2.25rem] leading-none font-semibold">
-              {WALLET.available}
+              {wallet ? number(wallet.balance) : '—'}
             </p>
             <p className="text-fg-muted mt-1 text-sm">
-              {t('wallet.held')}: {t('wallet.unit', { count: WALLET.held })}
+              {t('wallet.held')}:{' '}
+              {wallet ? t('wallet.unit', { count: wallet.held }) : '—'}
             </p>
             <Link to="/wallet" className="btn btn-secondary mt-4 w-full">
               {t('dashboard.topUp')}

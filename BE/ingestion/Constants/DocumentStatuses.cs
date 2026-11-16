@@ -7,4 +7,11 @@ public static class DocumentStatuses
     public const string Approved = "APPROVED";
     public const string Rejected = "REJECTED";
     public const string Indexed = "INDEXED";
+    public const string IndexFailed = "INDEX_FAILED";
+    public const string Expired = "EXPIRED";
+    public const string Revoked = "REVOKED";
+    public const string Archived = "ARCHIVED";
+
+    public static bool HasVectorLifecycle(string status) =>
+        status is Indexed or Expired or Revoked or Archived;
 }

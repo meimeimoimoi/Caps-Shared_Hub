@@ -12,7 +12,7 @@ export function useExpertDashboard() {
   const scenario = isExpertDemo ? demoScenario() : 'normal'
   return useQuery({
     queryKey: ['private', `${userId ?? 'demo'}:${sessionScope}`, 'expert-dashboard', expertDataSource, scenario, context.data?.version],
-    queryFn: ({ signal }) => getExpertDashboard(signal, scenario),
+    queryFn: ({ signal }) => getExpertDashboard(signal, scenario, context.data),
     enabled: context.data?.portalAccess.allowed === true && !context.isError,
     staleTime: 30_000, refetchOnWindowFocus: true,
     retry: (count, error) => !(error instanceof ApiError && [401, 403].includes(error.status ?? 0)) && count < 1,
