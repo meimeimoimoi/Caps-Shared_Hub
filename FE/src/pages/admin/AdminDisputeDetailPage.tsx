@@ -15,6 +15,9 @@ import {
 } from '../../features/disputes-escrow/utils/disputes'
 import { useAdminNav } from '@/app/layouts/admin/useAdminNav'
 import { useDispute } from '../../features/disputes-escrow/hooks/useDispute'
+import { AdminCaseChat } from '@/features/review-case/components/CaseChat'
+import { CaseAttachments } from '@/features/review-case/components/CaseAttachments'
+import { isExpertDemo } from '@/lib/expert-data-source'
 
 export default function AdminDisputeDetailPage() {
   const id = useParams().id!
@@ -58,19 +61,23 @@ export default function AdminDisputeDetailPage() {
         <>
           {listLink} <span aria-hidden="true">/</span>{' '}
           <span className="text-fg-strong num" aria-current="page">
-            {dispute.id}
+            {dispute.code ?? dispute.id}
           </span>
         </>
       }
     >
       <div className="flex items-start justify-between gap-4">
         <CaseHeader
-          code={dispute.id}
+          code={dispute.code ?? dispute.id}
           title={t('disputes.caseTitle', { title: dispute.title })}
           meta={[
             [t('disputes.meta.kind'), t(`disputes.kind.${dispute.kind}`)],
-            [t('disputes.meta.client'), dispute.client],
-            [t('disputes.meta.expert'), dispute.expert],
+            ...(dispute.client
+              ? ([
+                  [t('disputes.meta.client'), dispute.client],
+                  [t('disputes.meta.expert'), dispute.expert],
+                ] as [string, string][])
+              : []),
             [t('disputes.meta.ground'), dispute.ground],
           ]}
         />
@@ -120,13 +127,27 @@ export default function AdminDisputeDetailPage() {
               {[
                 [t('disputes.complaint.issue'), complaint.issue],
                 [t('disputes.complaint.description'), complaint.description],
-                [
-                  t('disputes.complaint.attachment'),
-                  // TODO(api): link tải file bằng chứng
-                  <span key="file" className="underline underline-offset-4">
-                    {complaint.attachment}
-                  </span>,
-                ],
+                ...(dispute.expertStatement
+                  ? [
+                      [
+                        t('disputes.complaint.statement'),
+                        dispute.expertStatement,
+                      ],
+                    ]
+                  : []),
+                ...(complaint.attachment
+                  ? [
+                      [
+                        t('disputes.complaint.attachment'),
+                        <span
+                          key="file"
+                          className="underline underline-offset-4"
+                        >
+                          {complaint.attachment}
+                        </span>,
+                      ],
+                    ]
+                  : []),
               ].map(([label, value]) => (
                 <div
                   key={label as string}
@@ -139,10 +160,17 @@ export default function AdminDisputeDetailPage() {
             </dl>
           </section>
 
-          <HistoryTab
-            title={t('disputes.auditLog')}
-            history={dispute.history}
-          />
+          {isExpertDemo ? (
+            <HistoryTab
+              title={t('disputes.auditLog')}
+              history={dispute.history}
+            />
+          ) : (
+            <>
+              <CaseAttachments caseId={dispute.id} scope="admin" />
+              <AdminCaseChat caseId={dispute.id} />
+            </>
+          )}
         </div>
 
         <div className="lg:sticky lg:top-20">
@@ -156,8 +184,8 @@ export default function AdminDisputeDetailPage() {
                 .then(() => setToast(t('disputes.escalation.toast')))
                 .catch((e: Error) => setToast(e.message))
             }
-            onDecide={(outcome, reason) =>
-              decide({ outcome, reason })
+            onDecide={(outcome, reason, refundPct) =>
+              decide({ outcome, reason, refundPct })
                 .then(() => setToast(t('disputes.decided')))
                 .catch((e: Error) => setToast(e.message))
             }

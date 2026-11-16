@@ -89,4 +89,49 @@ public static class IngestionErrors
 
     public static AppException InternalKeyInvalid() =>
         new(ErrorType.Unauthorized, "INTERNAL_KEY_INVALID", "Missing or wrong internal key.");
+
+    public static AppException DocumentParseFailed() =>
+        new(
+            ErrorType.Conflict,
+            "DOCUMENT_PARSE_FAILED",
+            "The document failed content parsing and cannot be indexed."
+        );
+
+    public static AppException DocumentNotIndexFailed() =>
+        new(
+            ErrorType.Conflict,
+            "DOCUMENT_NOT_INDEX_FAILED",
+            "Only INDEX_FAILED documents can be retried."
+        );
+
+    public static AppException IndexRetryExceeded(int maxRetry) =>
+        new(
+            ErrorType.Conflict,
+            "INDEX_RETRY_EXCEEDED",
+            $"Maximum index retry limit ({maxRetry}) reached."
+        );
+
+    public static AppException MetadataUpdateEmpty() =>
+        new(
+            ErrorType.Validation,
+            "METADATA_UPDATE_EMPTY",
+            "Provide at least one metadata field to update."
+        );
+
+    public static AppException InvalidLifecycleStatus(string status) =>
+        new(
+            ErrorType.Validation,
+            "INVALID_DOCUMENT_STATUS",
+            $"Unsupported lifecycle status '{status}'. Use INDEXED, EXPIRED, REVOKED, or ARCHIVED."
+        );
+
+    public static AppException DocumentNotIndexed() =>
+        new(
+            ErrorType.Conflict,
+            "DOCUMENT_NOT_INDEXED",
+            "Document status lifecycle updates apply only to indexed documents."
+        );
+
+    public static AppException AiServiceUnavailable(string detail) =>
+        new(ErrorType.Unavailable, "AI_SERVICE_UNAVAILABLE", detail);
 }

@@ -1,32 +1,27 @@
 using System.Globalization;
+using System.Net;
 using System.Text.Json.Nodes;
-using Caps.Ingestion.Data;
+using Caps.Ingestion.Constants;
+using Caps.Ingestion.Dtos;
+using Caps.Ingestion.DTOs.Requests;
 using Caps.Ingestion.Entities;
-using ingestion.Dtos;
+using Caps.Ingestion.Services.Interfaces;
+using Caps.Ingestion.Storage;
 using ingestion.Services.Interfaces;
-using Microsoft.EntityFrameworkCore;
 using static Caps.Ingestion.Dtos.AiServiceDtos;
 
-namespace ingestion.Services;
+namespace Caps.Ingestion.Services;
 
-public class KnowledgeDocumentService : IKnowledgeDocumentService
+/// <summary>Coordinates knowledge document approval, RAG indexing retries, Qdrant metadata updates, and deletions.</summary>
+public sealed class KnowledgeDocumentService(
+    IKnowledgeDocumentStore store,
+    IAiServiceClient aiClient,
+    IObjectStorage objectStorage,
+    TimeProvider? timeProvider = null
+) : IKnowledgeDocumentService
 {
-    private const int DefaultMaxRetry = 3;
-
-    private readonly IngestionDbContext _db;
-    private readonly IAiServiceClient _aiClient;
-    private readonly TimeProvider _timeProvider;
-
-    public KnowledgeDocumentService(
-        IngestionDbContext db,
-        IAiServiceClient aiClient,
-        TimeProvider? timeProvider = null
-    )
-    {
-        _db = db;
-        _aiClient = aiClient;
-        _timeProvider = timeProvider ?? TimeProvider.System;
-    }
+    private const int DefaultMaxIndexRetry = 3;
+    private readonly TimeProvider _timeProvider = timeProvider ?? TimeProvider.System;
 
     public async Task<DocumentActionResponseDto> ApproveAsync(
         Guid documentId,
@@ -34,35 +29,24 @@ public class KnowledgeDocumentService : IKnowledgeDocumentService
         CancellationToken cancellationToken = default
     )
     {
-        var doc = await _db
-            .KnowledgeDocuments.Include(d => d.LegalSource)
-            .FirstOrDefaultAsync(d => d.Id == documentId, cancellationToken);
+        var doc =
+            await store.GetDocumentWithSourceAsync(documentId, cancellationToken)
+            ?? throw IngestionErrors.DocumentNotFound();
 
-        if (doc == null)
+        if (doc.Status != DocumentStatuses.Pending)
         {
-            throw new KeyNotFoundException($"không tìm thấy văn bản với ID: {documentId}");
+            throw IngestionErrors.DocumentNotPending();
         }
 
-        // Block: Only PENDING documents can be approved
-        if (doc.Status != "PENDING")
-        {
-            throw new InvalidOperationException(
-                $"Không thể phê duyệt văn bản đang ở trạng thái '{doc.Status}'. Chỉ áp dụng cho trạng thái 'PENDING'."
-            );
-        }
-
-        // Verify that document content parsing did not fail
         if (doc.ContentJson?.Contains("PARSE_FAILED", StringComparison.Ordinal) == true)
         {
-            throw new InvalidOperationException(
-                "Văn bản này đang bị lỗi bóc tách (PARSE_FAILED), không đủ điều kiện đưa vào RAG."
-            );
+            throw IngestionErrors.DocumentParseFailed();
         }
 
-        doc.ApprovedAt = _timeProvider.GetUtcNow();
         doc.ApprovedBy = adminUserId;
-        doc.Status = "APPROVED";
-        await _db.SaveChangesAsync(cancellationToken);
+        doc.ApprovedAt = _timeProvider.GetUtcNow();
+        doc.Status = DocumentStatuses.Approved;
+        await store.SaveChangesAsync(cancellationToken);
 
         return await ProcessIndexingPipelineAsync(doc, cancellationToken);
     }
@@ -73,38 +57,142 @@ public class KnowledgeDocumentService : IKnowledgeDocumentService
         CancellationToken cancellationToken = default
     )
     {
-        var doc = await _db
-            .KnowledgeDocuments.Include(d => d.LegalSource)
-            .FirstOrDefaultAsync(d => d.Id == documentId, cancellationToken);
+        var doc =
+            await store.GetDocumentWithSourceAsync(documentId, cancellationToken)
+            ?? throw IngestionErrors.DocumentNotFound();
 
-        if (doc == null)
+        if (doc.Status != DocumentStatuses.IndexFailed)
         {
-            throw new KeyNotFoundException($"Không tìm thấy văn bản với ID: {documentId}");
+            throw IngestionErrors.DocumentNotIndexFailed();
         }
 
-        // Block: Only documents in INDEX_FAILED status can be retried
-        if (doc.Status != "INDEX_FAILED")
+        var maxRetry = await store.GetMaxIndexRetryAsync(DefaultMaxIndexRetry, cancellationToken);
+        if (doc.RetryCount >= maxRetry)
         {
-            throw new InvalidOperationException(
-                $"Chỉ có văn bản ở trạng thái 'INDEX_FAILED' mới được phép thử lại. Trạng thái hiện tại: '{doc.Status}'."
-            );
+            throw IngestionErrors.IndexRetryExceeded(maxRetry);
         }
 
-        if (doc.RetryCount >= DefaultMaxRetry)
-        {
-            throw new InvalidOperationException(
-                $"Đã vượt quá số lần thử lại tối đa ({DefaultMaxRetry} lần). Vui lòng thông báo System Admin xử lý."
-            );
-        }
-
-        // Increment retry count and rerun pipeline
         doc.RetryCount++;
-        await _db.SaveChangesAsync(cancellationToken);
+        await store.SaveChangesAsync(cancellationToken);
 
         return await ProcessIndexingPipelineAsync(doc, cancellationToken);
     }
 
-    // Common pipeline to chunk, embed via AI Service, and persist chunks to database
+    public async Task<DocumentActionResponseDto> UpdateMetadataAsync(
+        Guid documentId,
+        UpdateDocumentMetadataRequest request,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var updateFrom = request.EffectiveFrom.HasValue;
+        var updateTo = request.EffectiveTo.HasValue || request.ClearEffectiveTo;
+        var normalizedStatus = NormalizeLifecycleStatus(request.Status);
+
+        if (!updateFrom && !updateTo && normalizedStatus is null)
+        {
+            throw IngestionErrors.MetadataUpdateEmpty();
+        }
+
+        var doc =
+            await store.GetDocumentWithSourceAsync(documentId, cancellationToken)
+            ?? throw IngestionErrors.DocumentNotFound();
+
+        if (normalizedStatus is not null && !DocumentStatuses.HasVectorLifecycle(doc.Status))
+        {
+            throw IngestionErrors.DocumentNotIndexed();
+        }
+
+        var nextFrom = request.EffectiveFrom ?? doc.EffectiveFrom;
+        var nextTo = request.ClearEffectiveTo ? null : (request.EffectiveTo ?? doc.EffectiveTo);
+        if (nextFrom.HasValue && nextTo.HasValue && nextFrom > nextTo)
+        {
+            throw IngestionErrors.InvalidEffectivePeriod();
+        }
+
+        int? matchedCount = null;
+        var hasVectors =
+            DocumentStatuses.HasVectorLifecycle(doc.Status)
+            || await store.HasIndexedChunksAsync(doc.Id, cancellationToken);
+        if (hasVectors)
+        {
+            var qdrantStatus = normalizedStatus switch
+            {
+                null => null,
+                DocumentStatuses.Indexed => DocumentStatuses.Approved,
+                _ => normalizedStatus,
+            };
+            var aiReq = new AiUpdateMetadataRequestDto(
+                EffectiveFrom: request.EffectiveFrom?.ToString(
+                    "yyyy-MM-dd",
+                    CultureInfo.InvariantCulture
+                ),
+                EffectiveTo: request.ClearEffectiveTo
+                    ? null
+                    : request.EffectiveTo?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+                ClearEffectiveTo: request.ClearEffectiveTo,
+                Status: qdrantStatus
+            );
+            matchedCount = await SyncQdrantMetadataAsync(doc.Id, aiReq, cancellationToken);
+        }
+
+        await store.ApplyMetadataUpdateAsync(
+            doc,
+            nextFrom,
+            updateFrom,
+            nextTo,
+            updateTo,
+            normalizedStatus,
+            cancellationToken
+        );
+
+        return new DocumentActionResponseDto
+        {
+            DocumentId = doc.Id,
+            Status = doc.Status,
+            Message = "Metadata tài liệu đã được cập nhật.",
+            TotalChunksIndexed = matchedCount,
+            RetryCount = doc.RetryCount,
+            LastError = doc.LastError,
+        };
+    }
+
+    public async Task<DeleteDocumentResponseDto> DeleteAsync(
+        Guid documentId,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var doc =
+            await store.GetDocumentWithSourceAsync(documentId, cancellationToken)
+            ?? throw IngestionErrors.DocumentNotFound();
+
+        var deletedVectorsCount = 0;
+        var mayHaveVectors =
+            DocumentStatuses.HasVectorLifecycle(doc.Status)
+            || doc.Status == DocumentStatuses.IndexFailed
+            || await store.HasIndexedChunksAsync(doc.Id, cancellationToken);
+        if (mayHaveVectors)
+        {
+            var response = await CallAiServiceAsync(
+                () => aiClient.DeleteDocumentVectorsAsync(doc.Id, cancellationToken),
+                cancellationToken
+            );
+            deletedVectorsCount = response.DeletedCount;
+        }
+
+        if (doc.Source == DocumentSources.ManualUpload && !string.IsNullOrWhiteSpace(doc.FileUrl))
+        {
+            await objectStorage.DeleteQuietlyAsync(doc.FileUrl);
+        }
+
+        await store.DeleteDocumentAsync(doc, cancellationToken);
+
+        return new DeleteDocumentResponseDto(
+            DocumentId: doc.Id,
+            DeletedVectorsCount: deletedVectorsCount,
+            Message: "Tài liệu và vector liên quan đã được xóa."
+        );
+    }
+
     private async Task<DocumentActionResponseDto> ProcessIndexingPipelineAsync(
         KnowledgeDocument doc,
         CancellationToken cancellationToken
@@ -112,124 +200,160 @@ public class KnowledgeDocumentService : IKnowledgeDocumentService
     {
         try
         {
-            // Extract JSON from database
-            JsonNode? contentJsonNode = string.IsNullOrEmpty(doc.ContentJson)
-                ? null
-                : JsonNode.Parse(doc.ContentJson);
-            List<JsonNode>? chunksList = null;
+            var aiRequest = BuildIngestRequest(doc);
+            var aiResponse = await aiClient.ChunkAndEmbedAsync(aiRequest, cancellationToken);
 
-            // If crawler provided pre-extracted chunks, forward them
-            if (contentJsonNode?["chunks"] is JsonArray chunksArray)
+            var kbChunks = aiResponse.KbChunks.ConvertAll(item => new KbChunk
             {
-                chunksList = chunksArray.Select(c => c!.DeepClone()).ToList();
-            }
+                KnowledgeDocumentId = doc.Id,
+                ChunkIndex = item.ChunkIndex,
+                QdrantPointId = item.QdrantPointId,
+                Article = item.Article,
+                Clause = item.Clause,
+                Point = item.Point,
+                EffectiveFrom = DateOnly.TryParse(
+                    item.EffectiveFrom,
+                    CultureInfo.InvariantCulture,
+                    out var ef
+                )
+                    ? ef
+                    : doc.EffectiveFrom,
+                EffectiveTo = DateOnly.TryParse(
+                    item.EffectiveTo,
+                    CultureInfo.InvariantCulture,
+                    out var et
+                )
+                    ? et
+                    : doc.EffectiveTo,
+                Metadata = item.Metadata?.ToJsonString() ?? "{}",
+            });
 
-            // Prepare DTO for AI service
-            var aiRequest = new AiIngestRequestDto
-            {
-                KnowledgeDocumentId = doc.Id.ToString(),
-                LegalSourceId = doc.LegalSourceId.ToString(),
-                DocumentNumber = doc.LegalSource.DocumentNumber,
-                Title = doc.LegalSource.Title,
-                DocType = doc.LegalSource.DocType,
-                EffectiveFrom = doc.EffectiveFrom?.ToString(
-                    "yyyy-MM-dd",
-                    CultureInfo.InvariantCulture
-                ),
-                EffectiveTo = doc.EffectiveTo?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
-                VbhnEffectiveFrom = contentJsonNode?["metadata"]?[
-                    "vbhn_effective_from"
-                ]?.ToString(),
-                ContentJson = contentJsonNode,
-                Chunks = chunksList,
-            };
-
-            // 1. Call AI service to chunk and embed (push vectors to Qdrant)
-            var aiResponse = await _aiClient.ChunkAndEmbedAsync(aiRequest, cancellationToken);
-
-            // 2. Open transaction to persist kb_chunk records and update status
-            await using var tx = await _db.Database.BeginTransactionAsync(cancellationToken);
-
-            // Remove existing chunks for this document if retrying
-            var oldChunks = await _db
-                .KbChunks.Where(c => c.KnowledgeDocumentId == doc.Id)
-                .ToListAsync(cancellationToken);
-            _db.KbChunks.RemoveRange(oldChunks);
-
-            // Add new chunks returned by AI service
-            foreach (var item in aiResponse.KbChunks)
-            {
-                var kbChunk = new KbChunk
-                {
-                    Id = Guid.NewGuid(),
-                    KnowledgeDocumentId = doc.Id,
-                    ChunkIndex = item.ChunkIndex,
-                    QdrantPointId = item.QdrantPointId,
-                    Article = item.Article,
-                    Clause = item.Clause,
-                    Point = item.Point,
-                    EffectiveFrom = DateOnly.TryParse(
-                        item.EffectiveFrom,
-                        CultureInfo.InvariantCulture,
-                        out var ef
-                    )
-                        ? ef
-                        : doc.EffectiveFrom,
-                    EffectiveTo = DateOnly.TryParse(
-                        item.EffectiveTo,
-                        CultureInfo.InvariantCulture,
-                        out var et
-                    )
-                        ? et
-                        : doc.EffectiveTo,
-                    Metadata = item.Metadata?.ToJsonString() ?? "{}",
-                };
-                _db.KbChunks.Add(kbChunk);
-            }
-
-            // Update document status on success
-            doc.Status = "INDEXED";
-            doc.IndexedAt = _timeProvider.GetUtcNow();
-            doc.LastError = null;
-
-            await _db.SaveChangesAsync(cancellationToken);
-            await tx.CommitAsync(cancellationToken);
+            await store.ReplaceChunksAndMarkIndexedAsync(
+                doc,
+                kbChunks,
+                _timeProvider.GetUtcNow(),
+                cancellationToken
+            );
 
             return new DocumentActionResponseDto
             {
                 DocumentId = doc.Id,
-                Status = "INDEXED",
+                Status = DocumentStatuses.Indexed,
                 Message = "Tài liệu đã được phê duyệt và lập chỉ mục vào Qdrant thành công.",
                 TotalChunksIndexed = aiResponse.TotalChunks,
                 RetryCount = doc.RetryCount,
                 LastError = null,
             };
         }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
-            // Reset pending tracked changes on failure before updating document error state
-            _db.ChangeTracker.Clear();
-
-            var failedDoc = await _db.KnowledgeDocuments.FirstOrDefaultAsync(
-                d => d.Id == doc.Id,
-                cancellationToken
-            );
-            if (failedDoc != null)
-            {
-                failedDoc.Status = "INDEX_FAILED";
-                failedDoc.LastError = ex.Message;
-                await _db.SaveChangesAsync(cancellationToken);
-            }
+            await store.MarkIndexFailedAsync(doc.Id, ex.Message, cancellationToken);
 
             return new DocumentActionResponseDto
             {
                 DocumentId = doc.Id,
-                Status = "INDEX_FAILED",
+                Status = DocumentStatuses.IndexFailed,
                 Message = "Quá trình lập chỉ mục vào Qdrant thất bại.",
                 TotalChunksIndexed = 0,
                 RetryCount = doc.RetryCount,
                 LastError = ex.Message,
             };
+        }
+    }
+
+    private static AiIngestRequestDto BuildIngestRequest(KnowledgeDocument doc)
+    {
+        var contentJsonNode = string.IsNullOrEmpty(doc.ContentJson)
+            ? null
+            : JsonNode.Parse(doc.ContentJson);
+        List<JsonNode>? chunksList = null;
+
+        if (contentJsonNode?["chunks"] is JsonArray chunksArray)
+        {
+            chunksList = chunksArray.Select(c => c!.DeepClone()).ToList();
+        }
+
+        return new AiIngestRequestDto
+        {
+            KnowledgeDocumentId = doc.Id.ToString(),
+            LegalSourceId = doc.LegalSourceId.ToString(),
+            DocumentNumber = doc.LegalSource.DocumentNumber,
+            Title = doc.LegalSource.Title,
+            DocType = doc.LegalSource.DocType,
+            EffectiveFrom = doc.EffectiveFrom?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+            EffectiveTo = doc.EffectiveTo?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+            VbhnEffectiveFrom = contentJsonNode?["metadata"]?["vbhn_effective_from"]?.ToString(),
+            ContentJson = contentJsonNode,
+            Chunks = chunksList,
+        };
+    }
+
+    private static string? NormalizeLifecycleStatus(string? status)
+    {
+        if (string.IsNullOrWhiteSpace(status))
+        {
+            return null;
+        }
+
+        var normalized = status.Trim().ToUpperInvariant();
+        if (DocumentStatuses.HasVectorLifecycle(normalized))
+        {
+            return normalized;
+        }
+
+        throw IngestionErrors.InvalidLifecycleStatus(status);
+    }
+
+    private async Task<int> SyncQdrantMetadataAsync(
+        Guid documentId,
+        AiUpdateMetadataRequestDto aiReq,
+        CancellationToken cancellationToken
+    )
+    {
+        try
+        {
+            var result = await aiClient.UpdateDocumentMetadataAsync(
+                documentId,
+                aiReq,
+                cancellationToken
+            );
+            return result.MatchedCount;
+        }
+        catch (HttpRequestException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
+        {
+            // No vectors currently stored in Qdrant for this document; allow Postgres metadata sync to proceed.
+            return 0;
+        }
+        catch (HttpRequestException)
+        {
+            throw IngestionErrors.AiServiceUnavailable("AI vector service is unavailable.");
+        }
+        catch (TaskCanceledException) when (!cancellationToken.IsCancellationRequested)
+        {
+            throw IngestionErrors.AiServiceUnavailable("AI vector service timed out.");
+        }
+    }
+
+    private static async Task<T> CallAiServiceAsync<T>(
+        Func<Task<T>> action,
+        CancellationToken cancellationToken
+    )
+    {
+        try
+        {
+            return await action();
+        }
+        catch (HttpRequestException)
+        {
+            throw IngestionErrors.AiServiceUnavailable("AI vector service is unavailable.");
+        }
+        catch (TaskCanceledException) when (!cancellationToken.IsCancellationRequested)
+        {
+            throw IngestionErrors.AiServiceUnavailable("AI vector service timed out.");
         }
     }
 }

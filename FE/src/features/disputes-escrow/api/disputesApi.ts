@@ -3,6 +3,10 @@ import { isExpertDemo } from '@/lib/expert-data-source'
 import { CURRENT_ADMIN } from '@/features/expert-vetting/constants'
 import { i18n } from '@/lib/i18n'
 import { DISPUTE_OUTCOME } from '../constants'
+import { getPublicExpert } from '@/features/marketplace/api/marketplaceApi'
+import { caseCode } from '@/features/review-case/mapper'
+import { caseText } from '@/features/review-case/ui'
+import type { AdminDisputeDto } from '@/features/review-case/types'
 import type { Dispute, DisputeDecisionInput, Escrow } from '../types'
 import { toEscrow, type EscrowDto } from './escrowMappers'
 
@@ -11,45 +15,65 @@ import { toEscrow, type EscrowDto } from './escrowMappers'
  * TODO(api): đối chiếu lại đường dẫn endpoint với BE khi có Swagger. */
 const fixtures = () => import('./fixtures')
 const BASE = '/api/admin'
-const ESCROWS = '/api/v1/admin/billing/escrows'
+const REVIEW_BASE = '/api/v1/admin/review-cases'
 
-interface Envelope<T> {
-  success: boolean
-  data: T
-  message?: string
-}
+const REFUND_PCT = { RESOLVE_REFUND_USER: 100, RESOLVE_PAY_EXPERT: 0 } as const
 
-type SettleKey =
-  | 'escrow.settle.notHeld'
-  | 'escrow.settle.notFound'
-  | 'escrow.settle.invalidFee'
-  | 'escrow.settle.unavailable'
-
-// Billing errors release and refund can hit; other errors keep the server message
-const SETTLE_ERRORS: Record<string, SettleKey> = {
-  ESCROW_NOT_HELD: 'escrow.settle.notHeld',
-  ESCROW_NOT_FOUND: 'escrow.settle.notFound',
-  INVALID_PLATFORM_FEE: 'escrow.settle.invalidFee',
-  SESSION_CHECK_UNAVAILABLE: 'escrow.settle.unavailable',
-}
-
-async function settle(call: Promise<unknown>) {
-  try {
-    await call
-  } catch (e) {
-    const key = e instanceof ApiError && e.code ? SETTLE_ERRORS[e.code] : undefined
-    if (!key || !(e instanceof ApiError)) throw e
-    throw new ApiError(String(i18n.t(key, { ns: 'admin' })), e.status, e.code)
+function disputeFrom(d: AdminDisputeDto, expert: string): Dispute {
+  const issue =
+    caseText(`dialogs.report.issues.${d.dispute.reason}`) ?? d.dispute.reason
+  return {
+    id: d.reviewCaseId,
+    code: caseCode(d.reviewCaseId),
+    kind: 'DELIVERY_ISSUE',
+    title:
+      d.reviewSummary?.split('\n')[0].slice(0, 90) ?? caseCode(d.reviewCaseId),
+    client: d.requesterEmail ?? '',
+    expert,
+    ground: issue,
+    openedAt: d.dispute.openedAt,
+    // The window is 48 hours and doubles once extended
+    escalatedAt:
+      Date.parse(d.dispute.decideBy) - Date.parse(d.dispute.openedAt) >
+        48 * 3_600_000
+        ? d.dispute.openedAt
+        : undefined,
+    resolvedAt: d.dispute.closedAt ?? undefined,
+    expertStatement: d.dispute.expertStatement ?? undefined,
+    complaint: { issue, description: d.dispute.description, attachment: '' },
+    history: [],
   }
 }
 
-const notConnected = () =>
-  new Error(String(i18n.t('escrow.notConnected', { ns: 'admin' })))
+const listOpenDisputes = async (signal?: AbortSignal) => {
+  const list = (
+    await api.get<{ data: AdminDisputeDto[] }>(`${REVIEW_BASE}/disputes`, {
+      signal,
+    })
+  ).data
+  // ponytail: one marketplace call per distinct expert; add the name to the dispute API if the queue grows large
+  const ids = [...new Set(list.map((d) => d.expertProfileId))]
+  const names = new Map(
+    await Promise.all(
+      ids.map(
+        async (id) =>
+          [
+            id,
+            // A suspended expert is no longer listed: the email side still shows
+            await getPublicExpert(id, signal)
+              .then((e) => e.displayName ?? '')
+              .catch(() => ''),
+          ] as const
+      )
+    )
+  )
+  return list.map((d) => disputeFrom(d, names.get(d.expertProfileId) ?? ''))
+}
 
 /* ── Khiếu nại ── */
 export async function getDisputes(signal?: AbortSignal) {
   if (isExpertDemo) return structuredClone((await fixtures()).mockDisputes)
-  return api.get<Dispute[]>(`${BASE}/disputes`, { signal })
+  return listOpenDisputes(signal)
 }
 
 export async function getDispute(
@@ -60,7 +84,8 @@ export async function getDispute(
     const d = (await fixtures()).mockDisputes.find((x) => x.id === id)
     return d ? structuredClone(d) : null
   }
-  return api.get<Dispute>(`${BASE}/disputes/${id}`, { signal })
+  // The queue holds open disputes only: a decided one leaves it
+  return (await listOpenDisputes(signal)).find((d) => d.id === id) ?? null
 }
 
 export async function decideDispute(id: string, body: DisputeDecisionInput) {
@@ -75,7 +100,13 @@ export async function decideDispute(id: string, body: DisputeDecisionInput) {
     })
     return
   }
-  await api.post(`${BASE}/disputes/${id}/decision`, body)
+  await api.post(`${REVIEW_BASE}/${id}/dispute/decision`, {
+    refundPct:
+      body.outcome === 'RESOLVE_PARTIAL'
+        ? (body.refundPct ?? 50)
+        : REFUND_PCT[body.outcome],
+    note: body.reason,
+  })
 }
 
 /** Escalate a professional-judgment dispute; allowed once and adds 48 hours to the deadline */
@@ -91,7 +122,7 @@ export async function escalateDispute(id: string) {
     })
     return
   }
-  await api.post(`${BASE}/disputes/${id}/escalate`)
+  await api.post(`${REVIEW_BASE}/${id}/dispute/extend`)
 }
 
 /* ── Escrow ── */
@@ -134,7 +165,11 @@ export async function retryPayout(caseId: string, actor: string) {
       throw new Error(i18n.t('escrow.retryBlocked', { ns: 'admin' }))
     const at = new Date().toISOString()
     Object.assign(e, { status: 'PAID', nextAt: at, failure: undefined })
-    e.history.unshift({ at, actor, text: i18n.t('escrow.retried', { ns: 'admin', id: caseId }) })
+    e.history.unshift({
+      at,
+      actor,
+      text: i18n.t('escrow.retried', { ns: 'admin', id: caseId }),
+    })
     return
   }
   // Billing does not make the transfers yet, so there is nothing to retry
@@ -148,8 +183,17 @@ export async function markRefunded(caseId: string, ref: string, actor: string) {
     const e = (await fixtures()).mockEscrows.find((x) => x.caseId === caseId)
     if (!e) return
     const at = new Date().toISOString()
-    Object.assign(e, { status: 'REFUNDED', nextAt: at, refundRef: ref, failure: undefined })
-    e.history.unshift({ at, actor, text: i18n.t('escrow.refund.logged', { ns: 'admin', ref }) })
+    Object.assign(e, {
+      status: 'REFUNDED',
+      nextAt: at,
+      refundRef: ref,
+      failure: undefined,
+    })
+    e.history.unshift({
+      at,
+      actor,
+      text: i18n.t('escrow.refund.logged', { ns: 'admin', ref }),
+    })
     return
   }
   // A billing refund goes back to the payer's credits (refundEscrow); bank refunds are not built yet

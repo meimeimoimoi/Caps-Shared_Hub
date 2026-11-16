@@ -5,9 +5,16 @@ export interface CreditWallet {
   held: number
 }
 
-/* MOCK: BE chưa chốt enum credit_ledger_entry_type (xem SHFT_PostgreSQL.sql mục 8).
- * Các loại dưới đây chỉ để dựng giao diện; đổi theo BE khi có đặc tả. */
-export type LedgerEntryType = 'TOP_UP' | 'AI_QUESTION' | 'EXPORT' | 'REFUND'
+/** Billing's movements (LedgerEntryType), then the demo's AI credit steps that billing does not record yet. */
+export type LedgerEntryType =
+  | 'TOPUP'
+  | 'ESCROW_HOLD'
+  | 'ESCROW_RELEASE'
+  | 'ESCROW_REFUND'
+  | 'HOLD'
+  | 'CAPTURE'
+  | 'RELEASE'
+  | 'RESTORE'
 
 export interface CreditLedgerEntry {
   id: string

@@ -340,7 +340,8 @@
       "title": "Client complaint",
       "issue": "Issue",
       "description": "Description",
-      "attachment": "Evidence"
+      "attachment": "Evidence",
+      "statement": "Expert statement"
     },
     "auditLog": "Case audit log",
     "decided": "Arbitration decision recorded",
@@ -353,7 +354,8 @@
       "reason": "Reason (required)",
       "reasonHint": "Sent to both the Client and the expert",
       "submit": "Record decision",
-      "done": "Decision recorded"
+      "done": "Decision recorded",
+      "refundPct": "Refund to the client (%)"
     },
     "escalation": {
       "hint": "Disputes about professional judgment or a CIT conclusion go to an Authorized Reviewer. The decision deadline is extended by {{hours}} hours, once.",
