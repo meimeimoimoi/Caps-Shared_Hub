@@ -32,7 +32,7 @@ export function useUsers() {
   const rows = users
     .filter(
       (u) =>
-        (role === ALL || u.role === role) &&
+        (role === ALL || (u.roles ?? [u.role]).includes(role)) &&
         (status === ALL || u.status === status) &&
         (!q ||
           foldVietnamese(u.name).includes(q) ||

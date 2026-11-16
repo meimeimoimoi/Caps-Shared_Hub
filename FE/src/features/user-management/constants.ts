@@ -9,6 +9,7 @@ export const USER_ROLES = [
 
 export const USER_STATUS = {
   ACTIVE: { label: 'users.status.ACTIVE', tone: 'success' },
+  PENDING_VERIFICATION: { label: 'users.status.PENDING_VERIFICATION', tone: 'warning' },
   LOCKED: { label: 'users.status.LOCKED', tone: 'danger' },
 } as const
 

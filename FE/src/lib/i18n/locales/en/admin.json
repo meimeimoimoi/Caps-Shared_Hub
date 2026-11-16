@@ -753,6 +753,7 @@
       "label": "Status",
       "all": "All statuses",
       "ACTIVE": "Active",
+      "PENDING_VERIFICATION": "Pending email verification",
       "LOCKED": "Locked"
     },
     "count": "{{count}} accounts",
@@ -787,7 +788,7 @@
       "lockTitle": "Lock {{name}}?",
       "lockBody": "They cannot sign in until unlocked. Work in progress is not deleted.",
       "lockReason": "Reason (required)",
-      "lockReasonHint": "Saved to the account log.",
+      "lockReasonHint": "Shown in account details while the account is locked.",
       "lockConfirm": "Lock account",
       "unlockTitle": "Unlock {{name}}?",
       "unlockBody": "They can sign in again right away.",

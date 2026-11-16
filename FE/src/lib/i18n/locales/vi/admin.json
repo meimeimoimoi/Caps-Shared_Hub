@@ -745,6 +745,7 @@
       "label": "Trạng thái",
       "all": "Tất cả trạng thái",
       "ACTIVE": "Đang hoạt động",
+      "PENDING_VERIFICATION": "Chờ xác minh email",
       "LOCKED": "Đã khóa"
     },
     "count": "{{count}} tài khoản",
@@ -779,7 +780,7 @@
       "lockTitle": "Khóa {{name}}?",
       "lockBody": "Người này không đăng nhập được cho tới khi mở khóa. Việc đang làm dở không bị xóa.",
       "lockReason": "Lý do khóa (bắt buộc)",
-      "lockReasonHint": "Lưu vào nhật ký tài khoản.",
+      "lockReasonHint": "Hiển thị trong chi tiết tài khoản khi đang khóa.",
       "lockConfirm": "Khóa tài khoản",
       "unlockTitle": "Mở khóa {{name}}?",
       "unlockBody": "Người này đăng nhập lại được ngay.",

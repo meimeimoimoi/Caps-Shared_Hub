@@ -28,6 +28,11 @@ public sealed class User
     public int TokenVersion { get; private set; }
     public string Status { get; private set; } = UserStatus.PendingVerification;
     public DateTimeOffset? EmailVerifiedAt { get; private set; }
+
+    /// <summary>Why a System Admin locked the account; null unless it is suspended.</summary>
+    public string? SuspendedReason { get; private set; }
+    public DateTimeOffset? SuspendedAt { get; private set; }
+    public Guid? SuspendedBy { get; private set; }
     public DateTimeOffset CreatedAt { get; private set; }
     public DateTimeOffset UpdatedAt { get; private set; }
 
@@ -39,6 +44,7 @@ public sealed class User
     public bool IsActive => Status == UserStatus.Active;
     public bool HasPassword => PasswordHash != null;
     public bool IsPendingVerification => Status == UserStatus.PendingVerification;
+    public bool IsSuspended => Status == UserStatus.Suspended;
 
     /// <summary>Active or still waiting for email verification.</summary>
     public bool CanSignIn => IsActive || IsPendingVerification;
@@ -159,6 +165,34 @@ public sealed class User
         ChangePassword(passwordHash, now);
         FailedLoginAttempts = 0;
         LockoutEnd = null;
+    }
+
+    /// <summary>A System Admin locks the account, with the reason kept for the next admin who looks.</summary>
+    public void Suspend(Guid adminUserId, string? reason, DateTimeOffset now)
+    {
+        if (adminUserId == Id)
+            throw AuthErrors.CannotSuspendSelf();
+        if (IsSuspended)
+            throw AuthErrors.UserAlreadySuspended();
+        if (string.IsNullOrWhiteSpace(reason))
+            throw AuthErrors.SuspendReasonRequired();
+        Status = UserStatus.Suspended;
+        SuspendedReason = reason.Trim();
+        SuspendedAt = now;
+        SuspendedBy = adminUserId;
+        UpdatedAt = now;
+    }
+
+    /// <summary>Unlocks the account back to where it was: active, or still waiting for email verification.</summary>
+    public void Reinstate(DateTimeOffset now)
+    {
+        if (!IsSuspended)
+            throw AuthErrors.UserNotSuspended();
+        Status = EmailVerifiedAt is null ? UserStatus.PendingVerification : UserStatus.Active;
+        SuspendedReason = null;
+        SuspendedAt = null;
+        SuspendedBy = null;
+        UpdatedAt = now;
     }
 
     /// <summary>Invalidates every access token already issued (they carry the old version).</summary>
