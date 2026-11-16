@@ -2,7 +2,7 @@ from typing import Any, Dict, List, Optional  # noqa: UP035
 
 from pydantic import BaseModel
 
-from app.schemas.statuses import OperationStatus
+from app.schemas.statuses import DocumentStatus, OperationStatus
 
 
 class CrawlerChunkItem(BaseModel):
@@ -44,3 +44,27 @@ class IngestDocResponse(BaseModel):
     status: OperationStatus
     total_chunks: int
     kb_chunks: List[KbChunkItem]
+
+
+class DeleteDocumentVectorsResponse(BaseModel):
+    """Response returned after deleting all vectors of a document."""
+
+    status: OperationStatus
+    knowledge_document_id: str
+    deleted_count: int
+
+
+class UpdateDocumentMetadataRequest(BaseModel):
+    """Partial payload update for all indexed chunks of a document."""
+
+    effective_from: Optional[str] = None
+    effective_to: Optional[str] = None
+    status: Optional[DocumentStatus] = None
+
+
+class UpdateDocumentMetadataResponse(BaseModel):
+    """Response returned after updating document metadata in Qdrant."""
+
+    status: OperationStatus
+    knowledge_document_id: str
+    matched_count: int

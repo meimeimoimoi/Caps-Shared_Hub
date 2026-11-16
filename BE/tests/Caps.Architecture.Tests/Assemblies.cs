@@ -13,6 +13,7 @@ internal static class Assemblies
     [
         "ingestion",
         "notification",
+        "rag-query",
         "gateway",
     ];
 

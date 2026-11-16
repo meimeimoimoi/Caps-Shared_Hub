@@ -2,6 +2,7 @@ using Caps.Common.Api;
 using Caps.Common.Application;
 using Caps.Common.Security;
 using Caps.Workflow.Application.Features.Documents;
+using Caps.Workflow.Domain.Review;
 using Microsoft.AspNetCore.Mvc;
 using static Caps.Workflow.Api.DTOs.Requests.DocumentRequests;
 using static Caps.Workflow.Application.Features.Documents.CreateDocument;
@@ -12,6 +13,9 @@ using static Caps.Workflow.Application.Features.Documents.GenerateDraft;
 using static Caps.Workflow.Application.Features.Documents.GetDocument;
 using static Caps.Workflow.Application.Features.Documents.GetDocumentVersionDetail;
 using static Caps.Workflow.Application.Features.Documents.GetDocumentVersions;
+using static Caps.Workflow.Application.Features.Documents.OpenDocumentVersionFile;
+using static Caps.Workflow.Application.Features.Documents.UploadDocument;
+using AttachmentFile = Caps.Workflow.Application.DTOs.Responses.AttachmentFile;
 
 namespace Caps.Workflow.Api.Controllers;
 
@@ -24,6 +28,7 @@ namespace Caps.Workflow.Api.Controllers;
 public sealed class DocumentController(ICurrentUser currentUser) : ControllerBase
 {
     private Guid UserId => currentUser.RequireUserId();
+    private const long UploadLimit = ReviewAttachment.MaxBytes + (64 * 1024);
 
     /// <summary>
     /// 1. Create a new document draft workspace.
@@ -33,6 +38,7 @@ public sealed class DocumentController(ICurrentUser currentUser) : ControllerBas
     /// <param name="ct">Cancellation token.</param>
     /// <response code="200">The newly created document summary.</response>
     [HttpPost]
+    [RequirePermission(Permission.BusinessWrite)]
     [ProducesResponseType(typeof(ApiResponse<DocumentSummaryDto>), StatusCodes.Status200OK)]
     public async Task<IActionResult> CreateDocument(
         [FromBody] CreateDocumentRequest request,
@@ -92,6 +98,7 @@ public sealed class DocumentController(ICurrentUser currentUser) : ControllerBas
     /// <param name="ct">Cancellation token.</param>
     /// <response code="200">The persisted input snapshot.</response>
     [HttpPost("{id:guid}/snapshots")]
+    [RequirePermission(Permission.BusinessWrite)]
     [ProducesResponseType(typeof(ApiResponse<InputSnapshotDto>), StatusCodes.Status200OK)]
     public async Task<IActionResult> CreateSnapshot(
         [FromRoute] Guid id,
@@ -149,6 +156,7 @@ public sealed class DocumentController(ICurrentUser currentUser) : ControllerBas
     /// <param name="ct">Cancellation token.</param>
     /// <response code="200">The generated document version details.</response>
     [HttpPost("{id:guid}/generate-draft")]
+    [RequirePermission(Permission.BusinessWrite)]
     [RequireSessionCheck]
     [ProducesResponseType(typeof(ApiResponse<DocumentVersionDetailDto>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GenerateDraft(
@@ -246,5 +254,70 @@ public sealed class DocumentController(ICurrentUser currentUser) : ControllerBas
         var result = await handler.HandleAsync(command, ct);
 
         return Ok(ApiResponse<DownloadDocumentResultDto>.Ok(result));
+    }
+
+    /// <summary>
+    /// 8. Download the rendered PDF/DOCX export or original uploaded file for a document version.
+    /// </summary>
+    /// <remarks>
+    /// Streams the stored bytes for EXTERNAL_FILE versions, or exports AI_DRAFT / EXPERT_REVIEWED versions as PDF or DOCX.
+    /// </remarks>
+    /// <param name="id">Document identifier.</param>
+    /// <param name="versionId">Document version identifier.</param>
+    /// <param name="format">Requested export format for generated versions (pdf or docx).</param>
+    /// <param name="handler">Query handler for opening or exporting the version file.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <response code="200">The exported or stored file bytes.</response>
+    /// <response code="403">Caller does not own the document.</response>
+    /// <response code="404">Document, version, or stored file was not found.</response>
+    [HttpGet("{id:guid}/versions/{versionId:guid}/file")]
+    [ProducesResponseType(typeof(FileStreamResult), StatusCodes.Status200OK)]
+    public async Task<IActionResult> OpenVersionFile(
+        [FromRoute] Guid id,
+        [FromRoute] Guid versionId,
+        [FromQuery] string? format,
+        [FromServices] IQueryHandler<OpenDocumentVersionFileQuery, AttachmentFile> handler,
+        CancellationToken ct
+    )
+    {
+        var file = await handler.HandleAsync(
+            new OpenDocumentVersionFileQuery(id, versionId, UserId, format),
+            ct
+        );
+        Response.Headers.XContentTypeOptions = "nosniff";
+        Response.Headers.CacheControl = "private, no-store";
+        return File(file.Content, file.ContentType, file.FileName);
+    }
+
+    /// <summary>Creates a document from an uploaded file (multipart: title, periodStart, periodEnd, file).</summary>
+    /// <remarks>Version 1 is the file (EXTERNAL_FILE); use its id as sourceVersionId when booking a review.</remarks>
+    /// <response code="200">The first version (id = sourceVersionId, documentId).</response>
+    /// <response code="400">ATTACHMENT_REQUIRED, ATTACHMENT_TOO_LARGE, ATTACHMENT_TYPE_INVALID, TEXT_REQUIRED or an invalid period.</response>
+    [HttpPost("upload")]
+    [RequirePermission(Permission.BusinessWrite)]
+    [RequestSizeLimit(UploadLimit), RequestFormLimits(MultipartBodyLengthLimit = UploadLimit)]
+    [ProducesResponseType(typeof(ApiResponse<DocumentVersionSummaryDto>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> Upload(
+        [FromForm] UploadDocumentRequest request,
+        [FromServices] ICommandHandler<UploadDocumentCommand, DocumentVersionSummaryDto> handler,
+        CancellationToken ct
+    )
+    {
+        // Size and format are checked by the domain from the bytes themselves
+        await using var buffer = new MemoryStream();
+        if (request.File != null)
+        {
+            await request.File.CopyToAsync(buffer, ct);
+        }
+        var command = new UploadDocumentCommand(
+            UserId,
+            request.Title,
+            request.PeriodStart,
+            request.PeriodEnd,
+            request.File?.FileName,
+            buffer.ToArray()
+        );
+        var version = await handler.HandleAsync(command, ct);
+        return Ok(ApiResponse<DocumentVersionSummaryDto>.Ok(version));
     }
 }

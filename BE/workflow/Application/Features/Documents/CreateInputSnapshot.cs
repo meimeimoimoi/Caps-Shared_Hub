@@ -42,6 +42,7 @@ public static class CreateInputSnapshot
                 throw WorkflowErrors.DocumentAccessDenied();
             }
 
+            var data = JsonInput.OrEmptyObject(command.Data, "data");
             var nextVersionNo = await inputSnapshotRepository.GetNextVersionNoAsync(
                 command.DocumentId,
                 ct
@@ -56,7 +57,7 @@ public static class CreateInputSnapshot
                 Id = UuidV7.NewGuid(),
                 DocumentId = command.DocumentId,
                 VersionNo = nextVersionNo,
-                Data = string.IsNullOrWhiteSpace(command.Data) ? "{}" : command.Data,
+                Data = data,
                 CreatedBy = command.UserId,
                 CreatedAt = now,
             };
@@ -70,7 +71,9 @@ public static class CreateInputSnapshot
             }
             catch (UniqueConstraintException)
             {
-                throw WorkflowErrors.InputRevisionChanged();
+                throw command.ExpectedRevision.HasValue
+                    ? WorkflowErrors.InputRevisionChanged()
+                    : WorkflowErrors.SnapshotConflict();
             }
 
             return new InputSnapshotDto(

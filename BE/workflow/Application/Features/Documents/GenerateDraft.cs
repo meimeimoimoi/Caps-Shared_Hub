@@ -38,6 +38,7 @@ public static class GenerateDraft
         IDocumentRepository documentRepository,
         IInputSnapshotRepository inputSnapshotRepository,
         IDocumentVersionRepository documentVersionRepository,
+        Abstractions.ITemplateRepository templateRepository,
         Abstractions.IAiUsageRepository aiUsageRepository,
         IAiDraftingClient aiDraftingClient,
         IUnitOfWork unitOfWork,
@@ -106,13 +107,29 @@ public static class GenerateDraft
 
             try
             {
-                // 4. Load template schema (if a TemplateVersionId is provided)
-                var templateSchema = command.TemplateVersionId.HasValue
-                    ? await documentRepository.GetTemplateFieldSchemaAsync(
-                        command.TemplateVersionId.Value,
+                // 4. Load template schema from explicit version or the document's published template
+                Guid? resolvedTemplateVersionId = command.TemplateVersionId;
+                string? templateSchema;
+                if (resolvedTemplateVersionId.HasValue)
+                {
+                    templateSchema = await documentRepository.GetTemplateFieldSchemaAsync(
+                        resolvedTemplateVersionId.Value,
                         ct
-                    )
-                    : null;
+                    );
+                }
+                else if (document.TemplateId.HasValue)
+                {
+                    var publishedTemplate = await templateRepository.FindPublishedAsync(
+                        document.TemplateId.Value,
+                        ct
+                    );
+                    resolvedTemplateVersionId = publishedTemplate?.Id;
+                    templateSchema = publishedTemplate?.FieldSchema;
+                }
+                else
+                {
+                    templateSchema = null;
+                }
 
                 // 5. Generate JSON draft content via Python AI service (RAG + unauthorized_numbers check)
                 var draftResponse = await aiDraftingClient.GenerateDraftAsync(
@@ -170,7 +187,7 @@ public static class GenerateDraft
                     VersionNo = nextVersionNo,
                     VersionType = "AI_DRAFT",
                     InputSnapshotId = snapshot.Id,
-                    TemplateVersionId = command.TemplateVersionId,
+                    TemplateVersionId = resolvedTemplateVersionId,
                     Citations = normalizedCitations,
                     DraftAssessment = assessment,
                     ReviewCaseId = null,

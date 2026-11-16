@@ -36,4 +36,25 @@ public static class AiServiceDtos
         public string? EffectiveTo { get; set; }
         public JsonNode? Metadata { get; set; }
     }
+
+    public sealed record AiDeleteVectorsResponseDto
+    {
+        public string Status { get; set; } = string.Empty;
+        public string KnowledgeDocumentId { get; set; } = string.Empty;
+        public int DeletedCount { get; set; }
+    }
+
+    public sealed record AiUpdateMetadataRequestDto(
+        string? EffectiveFrom = null,
+        string? EffectiveTo = null,
+        bool ClearEffectiveTo = false,
+        string? Status = null
+    );
+
+    public sealed record AiUpdateMetadataResponseDto
+    {
+        public string Status { get; set; } = string.Empty;
+        public string KnowledgeDocumentId { get; set; } = string.Empty;
+        public int MatchedCount { get; set; }
+    }
 }

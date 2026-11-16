@@ -7,6 +7,9 @@ class OperationStatus(StrEnum):
 
 class DocumentStatus(StrEnum):
     APPROVED = "APPROVED"
+    EXPIRED = "EXPIRED"
+    REVOKED = "REVOKED"
+    ARCHIVED = "ARCHIVED"
 
 
 class ScopeResult(StrEnum):

@@ -50,6 +50,15 @@ public static class TransferConversationDraft
                 {
                     throw WorkflowErrors.MessageNotFound(command.MessageId.Value);
                 }
+
+                // Only a finished AI answer can seed a draft, not the user's question or a clarification prompt
+                if (
+                    aiMessage.Sender != ChatMessageSender.AI
+                    || aiMessage.AnswerStatus != ChatMessageAnswerStatus.Answered
+                )
+                {
+                    throw WorkflowErrors.NoAnswerableMessageForDraftTransfer();
+                }
             }
             else
             {

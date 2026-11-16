@@ -6,7 +6,6 @@
   </PropertyGroup>
   <ItemGroup>
     <!-- Web / API -->
-    <PackageVersion Include="AWSSDK.Core" Version="4.0.102.6" />
     <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="9.0.9" />
     <PackageVersion Include="Swashbuckle.AspNetCore" Version="6.6.2" />
     <PackageVersion Include="OpenApiUi" Version="1.1.0" />
@@ -29,6 +28,9 @@
     <PackageVersion Include="FluentValidation.AspNetCore" Version="11.3.1" />
     <PackageVersion Include="Serilog.AspNetCore" Version="9.0.0" />
     <PackageVersion Include="Serilog.Sinks.Console" Version="6.0.0" />
+    <!-- Document export -->
+    <PackageVersion Include="QuestPDF" Version="2026.9.2" />
+    <PackageVersion Include="DocumentFormat.OpenXml" Version="3.5.1" />
     <!-- Gateway -->
     <PackageVersion Include="Yarp.ReverseProxy" Version="2.3.0" />
     <!-- Code analysis: Roslynator rules, enforced at build (see /.editorconfig) -->
