@@ -30,8 +30,7 @@ public sealed class SuspendUserHandler(
     )
     {
         await using var tx = await unitOfWork.BeginTransactionAsync(ct);
-        var user =
-            await users.LockAsync(command.UserId, ct) ?? throw AuthErrors.UserNotFound();
+        var user = await users.LockAsync(command.UserId, ct) ?? throw AuthErrors.UserNotFound();
         user.Suspend(command.AdminUserId, command.Reason, clock.GetUtcNow());
         await sessions.RevokeAllAsync(user, ct);
         accountEvents.StatusChanged(user);

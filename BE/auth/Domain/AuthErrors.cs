@@ -101,7 +101,11 @@ public static class AuthErrors
         new(ErrorType.RuleViolation, "CANNOT_SUSPEND_SELF", "You cannot lock your own account.");
 
     public static AppException SuspendReasonRequired() =>
-        new(ErrorType.Validation, "SUSPEND_REASON_REQUIRED", "A reason is required to lock an account.");
+        new(
+            ErrorType.Validation,
+            "SUSPEND_REASON_REQUIRED",
+            "A reason is required to lock an account."
+        );
 
     /// <summary>A password reset email only goes to an account that can sign in.</summary>
     public static AppException UserCannotSignIn() =>

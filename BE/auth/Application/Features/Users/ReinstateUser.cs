@@ -24,8 +24,7 @@ public sealed class ReinstateUserHandler(
     )
     {
         await using var tx = await unitOfWork.BeginTransactionAsync(ct);
-        var user =
-            await users.LockAsync(command.UserId, ct) ?? throw AuthErrors.UserNotFound();
+        var user = await users.LockAsync(command.UserId, ct) ?? throw AuthErrors.UserNotFound();
         user.Reinstate(clock.GetUtcNow());
         accountEvents.StatusChanged(user);
         await unitOfWork.SaveChangesAsync(ct);

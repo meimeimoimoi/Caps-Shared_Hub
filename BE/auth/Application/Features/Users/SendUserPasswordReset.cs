@@ -22,8 +22,7 @@ public sealed class SendUserPasswordResetHandler(
     public async Task HandleAsync(SendUserPasswordResetCommand command, CancellationToken ct)
     {
         await using var tx = await unitOfWork.BeginTransactionAsync(ct);
-        var user =
-            await users.LockAsync(command.UserId, ct) ?? throw AuthErrors.UserNotFound();
+        var user = await users.LockAsync(command.UserId, ct) ?? throw AuthErrors.UserNotFound();
         if (!user.CanSignIn)
         {
             throw AuthErrors.UserCannotSignIn();
