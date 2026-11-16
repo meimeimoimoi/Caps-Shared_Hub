@@ -4,6 +4,7 @@ import {
   createTemplate,
   getTemplate,
   getTemplates,
+  publishTemplate,
   setTemplateStatus,
 } from '../api/templatesApi'
 import { templatesKeys } from '../api/queryKeys'
@@ -30,6 +31,11 @@ export function useManagedTemplate(id: string) {
     setStatus: async (status: ManagedTemplate['status']) => {
       await setTemplateStatus(id, status, name)
       // Danh sách và chi tiết cùng đổi
+      await qc.invalidateQueries({ queryKey: templatesKeys.all })
+    },
+    /** Publishes the draft waiting behind the published version (draftPending) */
+    publish: async () => {
+      await publishTemplate(id)
       await qc.invalidateQueries({ queryKey: templatesKeys.all })
     },
   }

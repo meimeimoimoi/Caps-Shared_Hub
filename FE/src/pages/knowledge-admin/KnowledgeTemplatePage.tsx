@@ -19,7 +19,8 @@ import { TemplatePreview } from '../../features/knowledgeAdmin-templates/compone
 export default function KnowledgeTemplatePage() {
   const id = useParams().id!
   const nav = useKnowledgeNav()
-  const { template, isLoading, error, setStatus } = useManagedTemplate(id)
+  const { template, isLoading, error, setStatus, publish } =
+    useManagedTemplate(id)
   const [params, setParams] = useSearchParams()
   const [confirming, setConfirming] = useState(false)
   const [previewing, setPreviewing] = useState(false)
@@ -199,6 +200,19 @@ export default function KnowledgeTemplatePage() {
             >
               {active ? 'Tạm ngưng template' : 'Kích hoạt lại'}
             </button>
+            {template.draftPending && (
+              <button
+                type="button"
+                onClick={() =>
+                  publish()
+                    .then(() => setToast(`Đã phát hành v${current.version}`))
+                    .catch((e: Error) => setToast(e.message))
+                }
+                className="btn btn-press btn-primary mt-2 w-full"
+              >
+                Phát hành v{current.version}
+              </button>
+            )}
           </section>
 
           <section className="paper p-5" aria-labelledby="tpl-versions">
@@ -224,7 +238,7 @@ export default function KnowledgeTemplatePage() {
                     <span className="flex items-baseline justify-between gap-2">
                       <span className="num text-fg-strong font-semibold">
                         v{v.version}
-                        {v === current && (
+                        {(v.status ? v.status === 'PUBLISHED' : v === current) && (
                           <span className="text-fg-muted ml-2 font-normal">
                             đang phát hành
                           </span>
