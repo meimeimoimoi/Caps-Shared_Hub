@@ -11,5 +11,6 @@ public static class DependencyInjection
     public static IServiceCollection AddWorkflowApplication(this IServiceCollection services) =>
         services
             .AddHandlersFromAssembly(WorkflowApplication.Assembly)
+            .AddScoped<AiCreditChargeService>()
             .AddScoped<WaitingRequestRefunds>();
 }

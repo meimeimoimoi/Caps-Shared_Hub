@@ -204,6 +204,11 @@ public sealed class SettleCaseEscrowHandlerTests
         public Task<int> CountAsync(Guid userId, CancellationToken ct) =>
             Task.FromResult(Added.Count);
 
+        public Task<CreditLedger?> FindByIdempotencyKeyAsync(
+            string idempotencyKey,
+            CancellationToken ct
+        ) => Task.FromResult(Added.FirstOrDefault(x => x.IdempotencyKey == idempotencyKey));
+
         public void Add(CreditLedger entry) => Added.Add(entry);
     }
 

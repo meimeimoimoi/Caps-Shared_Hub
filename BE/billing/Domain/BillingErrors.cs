@@ -97,4 +97,25 @@ public static class BillingErrors
             "PAYMENT_AMOUNT_MISMATCH",
             "The paid amount does not match the payment."
         );
+
+    public static AppException AiCreditHoldNotFound() =>
+        new(
+            ErrorType.NotFound,
+            "AI_CREDIT_HOLD_NOT_FOUND",
+            "No held credit exists for this AI usage."
+        );
+
+    public static AppException AiCreditHoldConflict() =>
+        new(
+            ErrorType.Conflict,
+            "AI_CREDIT_HOLD_CONFLICT",
+            "Credits are already held for this AI usage with different parameters."
+        );
+
+    public static AppException AiCreditHoldClosed() =>
+        new(
+            ErrorType.Conflict,
+            "AI_CREDIT_HOLD_CLOSED",
+            "The held credits for this AI usage have already been captured or released."
+        );
 }
