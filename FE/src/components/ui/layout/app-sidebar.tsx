@@ -1,4 +1,4 @@
-import { useId, type ReactNode } from 'react'
+import { useId, type ReactNode, type Ref, type UIEventHandler } from 'react'
 import { Link } from 'react-router-dom'
 import { Lock, PanelLeftClose, PanelLeftOpen, X } from 'lucide-react'
 import { BrandLogo } from '@/components/ui/display/brand-logo'
@@ -30,6 +30,8 @@ interface AppSidebarProps {
   onToggleCollapse?: () => void
   onNavigate?: () => void
   onClose?: () => void
+  navigationRef?: Ref<HTMLElement>
+  onNavigationScroll?: UIEventHandler<HTMLElement>
 }
 
 /** Shared chrome only. Each layout owns routes, permissions and collapse state. */
@@ -41,6 +43,8 @@ export function AppSidebar({
   onToggleCollapse,
   onNavigate,
   onClose,
+  navigationRef,
+  onNavigationScroll,
 }: AppSidebarProps) {
   const { t } = useTranslation('common')
   const navigationId = useId()
@@ -81,6 +85,8 @@ export function AppSidebar({
         )}
       </div>
       <nav
+        ref={navigationRef}
+        onScroll={onNavigationScroll}
         id={navigationId}
         aria-label={navigationLabel}
         className="min-h-0 flex-1 overflow-y-auto overscroll-contain"

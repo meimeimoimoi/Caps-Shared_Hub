@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react'
 import {
   BadgeCheck,
   Banknote,
@@ -276,6 +276,9 @@ export function AdminLayout({
   return <RoleShell nav={nav} {...page} />
 }
 
+// Admin routes mount separate shells. Keep each navigation pane's offset across those mounts.
+const sidebarScroll = { desktop: 0, drawer: 0 }
+
 interface RoleShellProps extends ShellPageProps {
   nav: NavGroup[]
   searchPlaceholder?: string
@@ -293,6 +296,12 @@ export function RoleShell({
 }: RoleShellProps) {
   const [collapsed, setCollapsed] = useState(false)
   const drawer = useRef<HTMLDialogElement>(null)
+  const desktopNavigation = useRef<HTMLElement>(null)
+  const drawerNavigation = useRef<HTMLElement>(null)
+  useLayoutEffect(() => {
+    if (desktopNavigation.current)
+      desktopNavigation.current.scrollTop = sidebarScroll.desktop
+  }, [])
   useDialogMotion(drawer, 'drawer-left')
   const drawerTrigger = useRef<HTMLButtonElement>(null)
   const { t } = useTranslation(['common', 'admin'])
@@ -327,6 +336,11 @@ export function RoleShell({
   useEffect(() => {
     document.title = `${pageTitle} | Shared Hub`
   }, [pageTitle])
+  const openDrawer = () => {
+    drawer.current?.showModal()
+    if (drawerNavigation.current)
+      drawerNavigation.current.scrollTop = sidebarScroll.drawer
+  }
   const closeDrawer = () => drawer.current?.close()
   return (
     <div data-density="compact" className="bg-desk-2 text-fg min-h-svh">
@@ -342,6 +356,10 @@ export function RoleShell({
         <AppSidebar
           groups={groups}
           navigationLabel="Admin"
+          navigationRef={desktopNavigation}
+          onNavigationScroll={({ currentTarget }) => {
+            if (currentTarget.clientHeight) sidebarScroll.desktop = currentTarget.scrollTop
+          }}
           collapsed={collapsed}
           onToggleCollapse={() => setCollapsed((value) => !value)}
         />
@@ -355,6 +373,10 @@ export function RoleShell({
         <AppSidebar
           groups={groups}
           navigationLabel="Admin"
+          navigationRef={drawerNavigation}
+          onNavigationScroll={({ currentTarget }) => {
+            if (currentTarget.clientHeight) sidebarScroll.drawer = currentTarget.scrollTop
+          }}
           onNavigate={closeDrawer}
           onClose={closeDrawer}
         />
@@ -362,7 +384,7 @@ export function RoleShell({
       <div className={`sidebar-offset ${collapsed ? 'md:ml-20' : 'md:ml-60'}`}>
         <AppHeader
           navigationButtonRef={drawerTrigger}
-          onOpenNavigation={() => drawer.current?.showModal()}
+          onOpenNavigation={openDrawer}
           context={<nav aria-label="Breadcrumb">{breadcrumb}</nav>}
           search={
             onSearchChange
