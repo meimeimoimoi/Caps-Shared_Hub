@@ -14,8 +14,41 @@ import { toEscrow, type EscrowDto } from './escrowMappers'
  * mutation demo sửa thẳng fixtures để lần refetch sau thấy thay đổi.
  * TODO(api): đối chiếu lại đường dẫn endpoint với BE khi có Swagger. */
 const fixtures = () => import('./fixtures')
-const BASE = '/api/admin'
 const REVIEW_BASE = '/api/v1/admin/review-cases'
+const ESCROWS = '/api/v1/admin/billing/escrows'
+
+interface Envelope<T> {
+  success: boolean
+  data: T
+  message?: string
+}
+
+type SettleKey =
+  | 'escrow.settle.notHeld'
+  | 'escrow.settle.notFound'
+  | 'escrow.settle.invalidFee'
+  | 'escrow.settle.unavailable'
+
+// Billing errors release and refund can hit; other errors keep the server message
+const SETTLE_ERRORS: Record<string, SettleKey> = {
+  ESCROW_NOT_HELD: 'escrow.settle.notHeld',
+  ESCROW_NOT_FOUND: 'escrow.settle.notFound',
+  INVALID_PLATFORM_FEE: 'escrow.settle.invalidFee',
+  SESSION_CHECK_UNAVAILABLE: 'escrow.settle.unavailable',
+}
+
+async function settle(call: Promise<unknown>) {
+  try {
+    await call
+  } catch (e) {
+    const key = e instanceof ApiError && e.code ? SETTLE_ERRORS[e.code] : undefined
+    if (!key || !(e instanceof ApiError)) throw e
+    throw new ApiError(String(i18n.t(key, { ns: 'admin' })), e.status, e.code)
+  }
+}
+
+const notConnected = () =>
+  new Error(String(i18n.t('escrow.notConnected', { ns: 'admin' })))
 
 const REFUND_PCT = { RESOLVE_REFUND_USER: 100, RESOLVE_PAY_EXPERT: 0 } as const
 

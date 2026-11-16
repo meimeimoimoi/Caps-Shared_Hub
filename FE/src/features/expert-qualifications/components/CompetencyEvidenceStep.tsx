@@ -4,9 +4,9 @@ import { Check, CircleAlert, FileText, Link2, ShieldAlert, Trash2 } from 'lucide
 import { Button } from '@/components/ui/actions/button'
 import { HelpTip } from '@/components/ui/feedback/help-tip'
 import { FileUploader } from '@/features/expert-registration/components/FileUploader'
+import { COMPETENCY_CODES } from '@/features/expert-vetting/constants'
 import type { Qualification, QualificationFile } from '../types'
 
-export const COMPETENCY_CODES = ['C1', 'C2', 'C3', 'C4', 'C5'] as const
 type CompetencyCode = (typeof COMPETENCY_CODES)[number]
 
 interface Mutation<T> {

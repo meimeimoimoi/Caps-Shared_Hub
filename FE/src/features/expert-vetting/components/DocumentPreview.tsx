@@ -26,7 +26,9 @@ export function DocumentPreview({ document: doc, index, total, onPrevious, onNex
   const { t } = useTranslation('admin')
   const link = isLink(doc)
   const evidenceId = link ? undefined : doc.evidenceId
-  const [preview, setPreview] = useState<Preview>({ state: 'loading' })
+  // Results are tagged with their file, so switching files shows loading without resetting state in the effect
+  const [loaded, setLoaded] = useState<{ id: string; preview: Preview }>()
+  const preview: Preview = loaded && loaded.id === evidenceId ? loaded.preview : { state: 'loading' }
   // Callers pass a new function each render; only a new file should reload the preview
   const load = useRef(loadFile)
   useEffect(() => {
@@ -37,16 +39,15 @@ export function DocumentPreview({ document: doc, index, total, onPrevious, onNex
     if (!evidenceId) return
     let url: string | undefined
     let cancelled = false
-    setPreview({ state: 'loading' })
     load.current(evidenceId)
       .then((blob) => {
         if (cancelled) return
         if (!blob) throw new Error('no file')
         url = URL.createObjectURL(blob)
         const kind = blob.type.startsWith('image/') ? 'image' : blob.type === 'application/pdf' ? 'pdf' : 'other'
-        setPreview({ state: 'ready', url, kind })
+        setLoaded({ id: evidenceId, preview: { state: 'ready', url, kind } })
       })
-      .catch(() => !cancelled && setPreview({ state: 'failed' }))
+      .catch(() => !cancelled && setLoaded({ id: evidenceId, preview: { state: 'failed' } }))
     return () => {
       cancelled = true
       if (url) URL.revokeObjectURL(url)

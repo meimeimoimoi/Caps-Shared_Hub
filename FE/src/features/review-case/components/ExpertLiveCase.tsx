@@ -11,7 +11,8 @@ import { caseText, fieldClass, useCaseFormat } from '../ui'
 import { CaseAttachments } from './CaseAttachments'
 import { CaseChat } from './CaseChat'
 import { Deadline } from './CaseUi'
-import { RevisedContentView, fieldText } from './RevisedContentView'
+import { RevisedContentView } from './RevisedContentView'
+import { fieldText } from './fieldText'
 import { cn } from '@/lib/utils'
 
 const MAX_TEXT = 4000
