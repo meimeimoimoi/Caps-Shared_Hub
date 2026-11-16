@@ -16,6 +16,8 @@ import {
   ReportDialog,
 } from '@/features/review-case/components/CaseDialogs'
 import { CasePanel } from '@/features/review-case/components/CasePanel'
+import { LiveCaseView } from '@/features/review-case/components/LiveCaseView'
+import { isExpertDemo } from '@/lib/expert-data-source'
 import { useCaseFormat } from '@/features/review-case/ui'
 import { ReviewResultView } from '@/features/review-case/components/ReviewResultView'
 import { SettlementReceipt } from '@/features/review-case/components/SettlementReceipt'
@@ -52,6 +54,11 @@ const ON_EXPIRE: Partial<
 }
 
 export default function ReviewCasePage() {
+  const { caseId } = useParams()
+  return isExpertDemo ? <DemoCasePage /> : <LiveCaseView caseId={caseId ?? ''} />
+}
+
+function DemoCasePage() {
   const { t } = useTranslation(['reviewCase', 'common'])
   const { caseId } = useParams()
   const [params, setParams] = useSearchParams()

@@ -1,11 +1,11 @@
-import { useEffect, useMemo } from 'react'
+import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { ArrowRight, Bot, CircleCheck, FilePlus2, Store } from 'lucide-react'
 import { StatusBadge } from '@/components/ui/display/status-badge'
 import { useAccount } from '@/features/auth/hooks/useAccount'
 import { Countdown } from '@/features/review-case/components/CaseUi'
-import { DEMO_CASES, demoCase } from '@/features/review-case/fixtures'
+import { useClientCases } from '@/features/review-case/hooks/useReviewCases'
 import { ACTION_STATUSES, useCaseFormat } from '@/features/review-case/ui'
 import { useWallet } from '@/features/wallet/hooks/useWallet'
 import { CASE_STATUS } from '@/lib/constants'
@@ -78,7 +78,7 @@ export default function DashboardPage() {
                           {c.title}
                         </p>
                         <p className="text-fg-muted num text-sm">
-                          {c.id}
+                          {c.code ?? c.id}
                           {due && (
                             <>
                               {' · '}
@@ -129,7 +129,7 @@ export default function DashboardPage() {
                         {c.title}
                       </span>
                       <span className="text-fg-muted num block text-sm">
-                        {c.id} · {f.at(c.timeline[0].at)}
+                        {c.code ?? c.id} · {f.at(c.timeline[0].at)}
                       </span>
                     </span>
                     <span className="shrink-0">

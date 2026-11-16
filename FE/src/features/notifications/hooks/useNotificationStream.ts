@@ -13,6 +13,8 @@ const notificationParts = [
   'expert-application',
   'qualifications',
   'expert-context',
+  'review-cases',
+  'expert-dashboard',
 ]
 
 // Query key parts each topic of RealtimeChangedEvent refetches (BE: <Service>RealtimeTopics)

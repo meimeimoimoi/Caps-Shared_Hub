@@ -476,6 +476,20 @@ namespace Caps.Expert.Infrastructure.Persistence.Migrations
                             Percent = 20,
                             ServiceCode = "HUMAN_VERIFICATION",
                             SetBy = new Guid("00000000-0000-0000-0000-000000000000")
+                        },
+                        new
+                        {
+                            Id = new Guid("01929e3a-0000-7000-8000-000000000040"),
+                            EffectiveFrom = new DateTimeOffset(new DateTime(2026, 11, 14, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 7, 0, 0, 0)),
+                            LateCancelHours = 24,
+                            LatePenaltyHours = 24,
+                            LatePenaltyPercent = 50,
+                            NoResponseExpertPercent = 60,
+                            NoResponseHours = 72,
+                            NoResponseRefundPercent = 0,
+                            Percent = 40,
+                            ServiceCode = "HUMAN_VERIFICATION",
+                            SetBy = new Guid("00000000-0000-0000-0000-000000000000")
                         });
                 });
 
@@ -579,6 +593,56 @@ namespace Caps.Expert.Infrastructure.Persistence.Migrations
                         .HasDatabaseName("ix_offering_change_history");
 
                     b.ToTable("service_offering_change", "expert");
+                });
+
+            modelBuilder.Entity("Caps.Expert.Domain.Profiles.ExpertCaseRating", b =>
+                {
+                    b.Property<Guid>("ReviewCaseId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("review_case_id");
+
+                    b.Property<Guid>("ExpertProfileId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("expert_profile_id");
+
+                    b.Property<DateTimeOffset>("RatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("rated_at");
+
+                    b.Property<short>("Stars")
+                        .HasColumnType("smallint")
+                        .HasColumnName("stars");
+
+                    b.HasKey("ReviewCaseId");
+
+                    b.HasIndex("ExpertProfileId")
+                        .HasDatabaseName("ix_expert_case_rating_profile");
+
+                    b.ToTable("expert_case_rating", "expert");
+                });
+
+            modelBuilder.Entity("Caps.Expert.Domain.Profiles.ExpertCaseSlot", b =>
+                {
+                    b.Property<Guid>("ReviewCaseId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("review_case_id");
+
+                    b.Property<Guid>("ExpertProfileId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("expert_profile_id");
+
+                    b.Property<DateTimeOffset>("TakenAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("taken_at");
+
+                    b.HasKey("ReviewCaseId");
+
+                    b.HasIndex("ExpertProfileId")
+                        .HasDatabaseName("ix_expert_case_slot_profile");
+
+                    b.ToTable("expert_case_slot", "expert");
                 });
 
             modelBuilder.Entity("Caps.Expert.Domain.Profiles.ExpertProfile", b =>
@@ -1196,6 +1260,26 @@ namespace Caps.Expert.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_offering_change_offering");
+                });
+
+            modelBuilder.Entity("Caps.Expert.Domain.Profiles.ExpertCaseRating", b =>
+                {
+                    b.HasOne("Caps.Expert.Domain.Profiles.ExpertProfile", null)
+                        .WithMany()
+                        .HasForeignKey("ExpertProfileId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_expert_case_rating_profile");
+                });
+
+            modelBuilder.Entity("Caps.Expert.Domain.Profiles.ExpertCaseSlot", b =>
+                {
+                    b.HasOne("Caps.Expert.Domain.Profiles.ExpertProfile", null)
+                        .WithMany()
+                        .HasForeignKey("ExpertProfileId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_expert_case_slot_profile");
                 });
 
             modelBuilder.Entity("Caps.Expert.Domain.Qualifications.CompetencyAssessment", b =>

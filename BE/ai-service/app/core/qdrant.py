@@ -18,11 +18,12 @@ def init_qdrant():
             vectors_config=VectorParams(size=1024, distance=Distance.COSINE)
         )
     
-    # Create or update payload indexes for temporal retrieval.
+    # Create or update payload indexes for temporal retrieval and document lifecycle.
     try:
         qdrant_client.create_payload_index(col_name, "status", PayloadSchemaType.KEYWORD)
         qdrant_client.create_payload_index(col_name, "effective_from", PayloadSchemaType.DATETIME)
         qdrant_client.create_payload_index(col_name, "effective_to", PayloadSchemaType.DATETIME)
         qdrant_client.create_payload_index(col_name, "legal_source_id", PayloadSchemaType.KEYWORD)
+        qdrant_client.create_payload_index(col_name, "knowledge_document_id", PayloadSchemaType.KEYWORD)
     except Exception:
         logger.exception("Failed to create payload indexes for collection %s", col_name)

@@ -247,7 +247,8 @@
       "SYSTEM_ERROR": "Lỗi hệ thống",
       "RESOLVE_REFUND_USER": "Hoàn tiền cho bạn",
       "RESOLVE_PAY_EXPERT": "Chi trả chuyên gia",
-      "RESOLVE_PARTIAL": "Quyết toán một phần"
+      "RESOLVE_PARTIAL": "Quyết toán một phần",
+      "FULL_REFUND": "Hoàn toàn bộ phí cho bạn"
     }
   },
   "package": {
@@ -365,7 +366,8 @@
     "cancelledEarly": "Đã hủy yêu cầu.",
     "challenged": "Đã gửi khiếu nại. Khoản thanh toán được giữ nguyên.",
     "expired": "Hết hạn thanh toán. Yêu cầu đã tự hủy.",
-    "rated": "Đã gửi đánh giá. Cảm ơn bạn."
+    "rated": "Đã gửi đánh giá. Cảm ơn bạn.",
+    "disputeWithdrawn": "Đã rút khiếu nại. Hồ sơ được nghiệm thu và quyết toán."
   },
   "notFound": {
     "title": "Không tìm thấy hồ sơ",
@@ -455,8 +457,8 @@
     "available": "Credit khả dụng",
     "held": "Đang giữ tạm",
     "heldHint": "Giữ khi gửi câu hỏi; trừ khi câu hỏi được đưa vào tra cứu, hoàn lại nếu câu hỏi ngoài phạm vi.",
-    "unit_one": "{{count}} credit",
-    "unit_other": "{{count}} credit",
+    "unit_one": "{{count, number}} credit",
+    "unit_other": "{{count, number}} credit",
     "packages": "Gói nạp credit",
     "recommended": "Gợi ý",
     "priceTbd": "Chưa chốt giá",
@@ -538,5 +540,176 @@
     "none": "Chưa chọn tệp",
     "count_one": "{{count}} tệp đã chọn",
     "count_other": "{{count}} tệp đã chọn"
+  },
+  "errors": {
+    "failed": "Không thực hiện được. Vui lòng thử lại.",
+    "INSUFFICIENT_CREDITS": "Số dư ví không đủ. Hãy nạp thêm credit rồi thanh toán lại.",
+    "CASE_STATUS_INVALID": "Hồ sơ đã chuyển sang bước khác. Tải lại trang để xem trạng thái mới.",
+    "CASE_DEADLINE_PASSED": "Đã quá hạn cho thao tác này.",
+    "REVIEW_CASE_NOT_FOUND": "Không tìm thấy hồ sơ.",
+    "REVIEW_CASE_ALREADY_OPEN": "Phiên bản này đang có yêu cầu mở với chuyên gia đó.",
+    "CASE_SELF_REVIEW": "Bạn không thể tự thẩm định hồ sơ của mình.",
+    "DOCUMENT_NOT_FOUND": "Không tìm thấy phiên bản hồ sơ của bạn.",
+    "EXPERT_SERVICE_UNAVAILABLE": "Chuyên gia hiện không nhận dịch vụ này.",
+    "EXPERT_FULL": "Chuyên gia đã đủ số hồ sơ đang nhận.",
+    "SERVICE_LINK_UNAVAILABLE": "Hệ thống đang bận. Vui lòng thử lại sau ít phút.",
+    "SESSION_CHECK_UNAVAILABLE": "Chưa kiểm tra được phiên đăng nhập. Vui lòng thử lại sau ít phút.",
+    "TEXT_REQUIRED": "Vui lòng nhập nội dung.",
+    "TEXT_TOO_LONG": "Nội dung quá dài.",
+    "INFO_REQUEST_LIMIT": "Đã dùng hết số lần yêu cầu bổ sung thông tin của hồ sơ.",
+    "INFO_REQUEST_CLOSED": "Yêu cầu bổ sung này đã đóng.",
+    "DISPUTE_REASON_INVALID": "Lý do khiếu nại không hợp lệ.",
+    "DISPUTE_NOT_FOUND": "Hồ sơ chưa có khiếu nại.",
+    "DISPUTE_STATEMENT_EXISTS": "Bạn đã gửi phần giải trình.",
+    "DISPUTE_ALREADY_EXTENDED": "Khiếu nại này đã được gia hạn.",
+    "DISPUTE_REFUND_INVALID": "Tỷ lệ hoàn tiền không hợp lệ.",
+    "RATING_CLOSED": "Hồ sơ chưa kết thúc nên chưa thể đánh giá.",
+    "RATING_EXISTS": "Bạn đã đánh giá hồ sơ này.",
+    "RATING_INVALID": "Số sao không hợp lệ.",
+    "REVIEW_RESULT_INVALID": "Kết quả thẩm định không hợp lệ.",
+    "ATTACHMENT_REQUIRED": "Hãy chọn một tệp.",
+    "ATTACHMENT_TOO_LARGE": "Mỗi tệp tối đa 50 MB.",
+    "ATTACHMENT_TYPE_INVALID": "Chỉ nhận PDF, JPEG, PNG, WebP hoặc Word (.docx).",
+    "ATTACHMENTS_CLOSED": "Hồ sơ ở trạng thái này không thêm được tệp.",
+    "ATTACHMENT_LIMIT": "Mỗi hồ sơ có tối đa 20 tệp.",
+    "ATTACHMENT_NOT_FOUND": "Không tìm thấy tệp.",
+    "CHAT_CLOSED": "Hồ sơ ở trạng thái này không nhắn tin được.",
+    "MESSAGE_EMPTY": "Vui lòng nhập tin nhắn.",
+    "MESSAGE_TOO_LONG": "Tin nhắn quá dài.",
+    "RATE_LIMITED": "Bạn thao tác quá nhanh. Vui lòng thử lại sau ít phút."
+  },
+  "live": {
+    "loading": "Đang tải hồ sơ",
+    "theExpert": "Chuyên gia",
+    "request": "Yêu cầu của bạn",
+    "expected": "Kết quả mong muốn",
+    "chosenVersion": "Phiên bản hồ sơ đã chọn",
+    "scopeRequired": "Vui lòng mô tả nội dung cần thẩm định.",
+    "answerRequired": "Vui lòng nhập nội dung phản hồi.",
+    "declineReason": "Lý do: {{reason}}",
+    "withdrawDispute": "Rút khiếu nại và nghiệm thu",
+    "unread": "{{count}} tin mới",
+    "earlyCancelPaid": "Chuyên gia chưa nhận hồ sơ nên bạn được hoàn 100% khoản đã thanh toán.",
+    "panel": {
+      "PENDING_EXPERT_RESPONSE": {
+        "body": "Khoản phí đã được giữ hộ. Chuyên gia có 24 giờ để nhận hoặc từ chối; nếu không nhận, bạn được hoàn 100%."
+      },
+      "DECLINED_BY_EXPERT": {
+        "body": "Toàn bộ phí đã được hoàn vào ví của bạn. Bạn có thể gửi hồ sơ này cho chuyên gia khác trên Sàn."
+      },
+      "EXPERT_RESPONSE_TIMEOUT": {
+        "body": "Yêu cầu đã tự đóng và toàn bộ phí đã được hoàn vào ví của bạn."
+      },
+      "WITHDRAWN": {
+        "body": "Yêu cầu đã đóng trước khi chuyên gia nhận và toàn bộ phí đã được hoàn vào ví của bạn."
+      },
+      "EXPERT_WITHDREW": {
+        "title": "{{name}} đã dừng thẩm định hồ sơ",
+        "body": "Chuyên gia dừng trước khi giao kết quả. Toàn bộ phí đã được hoàn vào ví của bạn."
+      },
+      "AWAITING_PAYMENT": {
+        "body": "Thanh toán trong 15 phút để gửi yêu cầu tới {{name}}. Quá hạn, yêu cầu tự hủy và bạn không bị trừ tiền.",
+        "method": "Trừ từ số dư ví"
+      },
+      "CANCELLED_UNPAID": {
+        "body": "Hạn thanh toán 15 phút đã hết và bạn không bị trừ tiền."
+      },
+      "AWAITING_USER_INFORMATION": {
+        "warning": "Quá hạn phản hồi, hồ sơ sẽ chấm dứt và phí được chia theo chính sách đã chốt lúc đặt."
+      },
+      "TERMINATED": {
+        "USER_NON_RESPONSE": "Bạn không phản hồi yêu cầu bổ sung đúng hạn. Phí đã được chia theo chính sách đã chốt lúc đặt.",
+        "EXPERT_ABANDON": "Chuyên gia không bàn giao đúng hạn. Toàn bộ phí đã được hoàn vào ví của bạn."
+      }
+    },
+    "chat": {
+      "title": "Trao đổi với chuyên gia",
+      "label": "Nội dung tin nhắn",
+      "placeholder": "Nhập tin nhắn…",
+      "send": "Gửi",
+      "empty": "Chưa có tin nhắn.",
+      "CLIENT": "Khách hàng",
+      "EXPERT": "Chuyên gia",
+      "titleExpert": "Trao đổi với khách hàng",
+      "titleAdmin": "Trao đổi giữa hai bên"
+    },
+    "files": {
+      "title": "Tệp đính kèm",
+      "empty": "Chưa có tệp nào.",
+      "add": "Thêm tệp",
+      "uploading": "Đang tải lên…",
+      "hint": "PDF, JPEG, PNG, WebP hoặc Word (.docx), tối đa 50 MB mỗi tệp.",
+      "download": "Tải về {{name}}",
+      "source": "Tải hồ sơ gốc",
+      "sourceName": "ho-so-goc",
+      "noSource": "Hồ sơ này được soạn trong ứng dụng nên không có tệp gốc để tải.",
+      "fromExpert": "Từ chuyên gia"
+    },
+    "revised": {
+      "title": "Bản chuyên gia đã chỉnh sửa",
+      "count_one": "{{count}} thay đổi",
+      "count_other": "{{count}} thay đổi",
+      "changedCount_one": "{{count}} sửa",
+      "changedCount_other": "{{count}} sửa",
+      "removedCount_one": "{{count}} bỏ",
+      "removedCount_other": "{{count}} bỏ",
+      "addedCount_one": "{{count}} thêm",
+      "addedCount_other": "{{count}} thêm",
+      "none": "Chuyên gia không thay đổi nội dung bản nháp.",
+      "changed": "Đã sửa",
+      "added": "Mục mới",
+      "removed": "Đã bỏ",
+      "before": "Trước:",
+      "after": "Sau:"
+    },
+    "expert": {
+      "status": {
+        "AWAITING_PAYMENT": "Chờ khách thanh toán",
+        "PENDING_EXPERT_RESPONSE": "Chờ bạn phản hồi",
+        "IN_REVIEW": "Đang thẩm định",
+        "AWAITING_USER_INFORMATION": "Chờ khách bổ sung",
+        "AWAITING_ACCEPTANCE": "Chờ nghiệm thu",
+        "DISPUTED": "Đang tranh chấp",
+        "RESOLVED": "Đã giải quyết tranh chấp",
+        "COMPLETED": "Hoàn tất",
+        "AUTO_CONFIRMED": "Tự xác nhận hoàn tất",
+        "EXPERT_DECLINED": "Đã từ chối hoặc rút",
+        "EXPERT_TIMEOUT": "Quá hạn phản hồi",
+        "WITHDRAWN": "Khách đã rút",
+        "CANCELLED_UNPAID": "Hủy do chưa thanh toán",
+        "TERMINATED": "Đã chấm dứt",
+        "DELIVERY_OVERDUE": "Quá hạn bàn giao"
+      },
+      "request": "Yêu cầu của khách hàng",
+      "responseDue": "Hạn phản hồi",
+      "decide": "Nhận hay từ chối yêu cầu",
+      "accept": "Nhận hồ sơ",
+      "decline": "Từ chối yêu cầu",
+      "declineReason": "Lý do từ chối",
+      "deliverTitle": "Bàn giao kết quả",
+      "result": "Kết quả",
+      "summary": "Nội dung kết luận",
+      "summaryHelpLabel": "Hướng dẫn nội dung kết luận",
+      "summaryHelp": "Nếu bạn chỉnh sửa hồ sơ, hãy bật Track Changes trong Word khi sửa rồi đính kèm tệp đã sửa, và tóm tắt các thay đổi chính ở đây để khách hàng thấy bạn đã sửa ở đâu và vì sao.",
+      "editFields": "Chỉnh sửa nội dung bản nháp",
+      "removeField": "Bỏ mục này",
+      "fieldChanged": "Đã sửa",
+      "undo": "Hoàn tác",
+      "cannotVerifyReason": "Lý do chưa thể xác minh",
+      "deliver": "Bàn giao kết quả",
+      "askTitle": "Yêu cầu khách bổ sung thông tin",
+      "askLabel": "Nội dung cần bổ sung",
+      "ask": "Gửi yêu cầu",
+      "waitingTitle": "Đang chờ khách bổ sung",
+      "answers": "Phản hồi của khách hàng",
+      "statement": "Giải trình của bạn",
+      "sendStatement": "Gửi giải trình",
+      "withdraw": "Rút khỏi hồ sơ",
+      "withdrawHint": "Khách hàng được hoàn toàn bộ phí và bạn không nhận được khoản nào.",
+      "withdrawReason": "Lý do rút khỏi hồ sơ",
+      "saved": "Đã lưu."
+    },
+    "notConnected": "Chưa có dữ liệu.",
+    "openCases": "Các hồ sơ đang mở của bạn."
   }
 }

@@ -13,9 +13,13 @@ class ChatQueryRequest(BaseModel):
 class CitationItem(BaseModel):
     legal_source_id: Optional[str] = None
     document_number: Optional[str] = None
+    doc_title: Optional[str] = None
     article: Optional[str] = None
     clause: Optional[str] = None
     point: Optional[str] = None
+    text: Optional[str] = None
+    effective_from: Optional[str] = None
+    effective_to: Optional[str] = None
 
 
 class ChatQueryResponse(BaseModel):

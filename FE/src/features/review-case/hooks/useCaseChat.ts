@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { isExpertDemo } from '@/lib/expert-data-source'
 import {
   getUnreadCaseMessages,
   listCaseMessages,
@@ -46,5 +47,6 @@ export function useCaseUnread() {
   return useQuery({
     queryKey: caseUnreadKey,
     queryFn: ({ signal }) => getUnreadCaseMessages(signal),
+    enabled: !isExpertDemo,
   })
 }

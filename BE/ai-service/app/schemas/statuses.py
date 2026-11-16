@@ -7,6 +7,9 @@ class OperationStatus(StrEnum):
 
 class DocumentStatus(StrEnum):
     APPROVED = "APPROVED"
+    EXPIRED = "EXPIRED"
+    REVOKED = "REVOKED"
+    ARCHIVED = "ARCHIVED"
 
 
 class ScopeResult(StrEnum):
@@ -15,7 +18,8 @@ class ScopeResult(StrEnum):
 
 
 class AnswerStatus(StrEnum):
-    REJECTED = "REJECTED"
+    ANSWERED = "ANSWERED"
+    SUCCESS = "ANSWERED"
     NEED_CLARIFICATION = "NEED_CLARIFICATION"
-    INSUFFICIENT_KNOWLEDGE = "INSUFFICIENT_KNOWLEDGE"
-    SUCCESS = "SUCCESS"
+    REJECTED = "REJECTED"
+    INSUFFICIENT_KNOWLEDGE = "REJECTED"

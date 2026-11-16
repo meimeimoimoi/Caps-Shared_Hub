@@ -44,6 +44,38 @@ public sealed class Settlement
             UserRefundAmount = escrow.Amount,
             SettledAt = now,
         };
+
+    /// <summary>
+    /// A split chosen by the workflow (a late delivery moves part of the expert's share back to the payer). The
+    /// three parts must add up to the escrow, so no credit appears or disappears.
+    /// </summary>
+    public static Settlement ForSplit(
+        Escrow escrow,
+        long userRefund,
+        long platformFee,
+        long expertPayout,
+        DateTimeOffset now
+    )
+    {
+        if (
+            userRefund < 0
+            || platformFee < 0
+            || expertPayout < 0
+            || checked(userRefund + platformFee + expertPayout != escrow.Amount)
+        )
+        {
+            throw BillingErrors.SettlementMismatch();
+        }
+        return new()
+        {
+            ReviewCaseId = escrow.ReviewCaseId,
+            Reason = SettlementReason.Released,
+            UserRefundAmount = userRefund,
+            ExpertPayoutAmount = expertPayout,
+            PlatformFeeAmount = platformFee,
+            SettledAt = now,
+        };
+    }
 }
 
 /// <summary>Why an escrow was settled.</summary>

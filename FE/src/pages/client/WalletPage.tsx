@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { ShieldCheck } from 'lucide-react'
 import { mockPricing } from '@/features/service-pricing/api/fixtures'
-import { DEMO_CASES, demoCase } from '@/features/review-case/fixtures'
+import { useClientCases } from '@/features/review-case/hooks/useReviewCases'
 import { fundsOf, useCaseFormat } from '@/features/review-case/ui'
 import type { CreditPackage } from '@/features/service-pricing/types'
 import {
@@ -174,17 +174,17 @@ export default function WalletPage() {
                       className="border-border-subtle border-t [&>td]:px-4 [&>td]:py-3"
                     >
                       <td className="num text-fg-muted whitespace-nowrap max-sm:hidden">
-                        {f.at(e.at)}
+                        {f.at(e.createdAt)}
                       </td>
                       <td>
                         <span className="text-fg-strong font-semibold">
-                          {t(`wallet.types.${e.type}`)}
+                          {t(`wallet.types.${e.entryType}`)}
                         </span>
                         {e.note && (
                           <span className="text-fg-muted block">{e.note}</span>
                         )}
                         <span className="num text-fg-muted block text-xs sm:hidden">
-                          {f.at(e.at)}
+                          {f.at(e.createdAt)}
                         </span>
                       </td>
                       <td
@@ -341,7 +341,7 @@ export default function WalletPage() {
               <ul className="mt-3">
                 {held.map((c) => (
                   <li
-                    key={c.id}
+                    key={c.code ?? c.id}
                     className="border-border-subtle border-b py-3 text-sm"
                   >
                     <Link
@@ -350,7 +350,7 @@ export default function WalletPage() {
                     >
                       <span className="min-w-0">
                         <span className="num text-fg-strong block font-semibold">
-                          {c.id}
+                          {c.code ?? c.id}
                         </span>
                         <span className="text-fg-muted block truncate">
                           {t(`status.${c.status}`)}

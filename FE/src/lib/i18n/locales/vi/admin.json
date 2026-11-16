@@ -339,7 +339,8 @@
       "title": "Khiếu nại của Client",
       "issue": "Vấn đề",
       "description": "Mô tả",
-      "attachment": "Bằng chứng"
+      "attachment": "Bằng chứng",
+      "statement": "Giải trình của chuyên gia"
     },
     "auditLog": "Nhật ký hồ sơ (audit log)",
     "decided": "Đã ra quyết định trọng tài",
@@ -352,7 +353,8 @@
       "reason": "Lý do quyết định (bắt buộc)",
       "reasonHint": "Gửi cho cả Client và chuyên gia",
       "submit": "Ra quyết định",
-      "done": "Đã ra quyết định"
+      "done": "Đã ra quyết định",
+      "refundPct": "Tỷ lệ hoàn cho khách (%)"
     },
     "escalation": {
       "hint": "Tranh chấp cần xét đoán chuyên môn hoặc kết luận Thuế TNDN phải chuyển cho Authorized Reviewer. Hạn quyết định được cộng thêm {{hours}} giờ, chỉ một lần.",

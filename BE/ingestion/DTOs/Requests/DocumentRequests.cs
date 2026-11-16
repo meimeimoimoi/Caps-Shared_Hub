@@ -48,3 +48,15 @@ public sealed class UploadDocumentRequest
             EffectiveTo
         );
 }
+
+/// <summary>Updates validity dates or lifecycle status of a knowledge document and its indexed vectors.</summary>
+public sealed record UpdateDocumentMetadataRequest
+{
+    public DateOnly? EffectiveFrom { get; init; }
+    public DateOnly? EffectiveTo { get; init; }
+    public bool ClearEffectiveTo { get; init; }
+
+    /// <summary>Allowed lifecycle statuses: INDEXED, EXPIRED, REVOKED, ARCHIVED.</summary>
+    [MaxLength(32)]
+    public string? Status { get; init; }
+}
