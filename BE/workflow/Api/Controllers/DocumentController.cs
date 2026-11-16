@@ -120,6 +120,7 @@ public sealed class DocumentController(ICurrentUser currentUser) : ControllerBas
     /// <param name="handler">Command handler for draft generation.</param>
     /// <param name="ct">Cancellation token.</param>
     /// <response code="200">The generated document version details.</response>
+    /// <response code="409">INSUFFICIENT_CREDITS when AI billing is enabled and wallet balance is too low.</response>
     [HttpPost("{id:guid}/generate-draft")]
     [RequirePermission(Permission.BusinessWrite)]
     [RequireSessionCheck]

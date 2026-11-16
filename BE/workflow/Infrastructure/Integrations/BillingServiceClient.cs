@@ -10,7 +10,8 @@ namespace Caps.Workflow.Infrastructure.Integrations;
 /// timed out after billing committed succeeds when the client retries.
 /// </summary>
 public sealed class BillingServiceClient(HttpClient http, ILogger<BillingServiceClient> logger)
-    : IEscrows
+    : IEscrows,
+        IAiCredits
 {
     private const string Service = "billing";
 
@@ -43,6 +44,48 @@ public sealed class BillingServiceClient(HttpClient http, ILogger<BillingService
                     expertPayout = settlement.ExpertAmount,
                 }
             ),
+            ct
+        );
+
+    Task IAiCredits.HoldAsync(
+        Guid userId,
+        Guid aiUsageId,
+        long amount,
+        string? note,
+        CancellationToken ct
+    ) =>
+        SendAsync(
+            HttpMethod.Put,
+            $"internal/ai-credits/{aiUsageId}",
+            JsonContent.Create(
+                new
+                {
+                    userId,
+                    amount,
+                    note,
+                }
+            ),
+            ct
+        );
+
+    Task IAiCredits.CaptureAsync(
+        Guid aiUsageId,
+        Guid? documentVersionId,
+        string? note,
+        CancellationToken ct
+    ) =>
+        SendAsync(
+            HttpMethod.Post,
+            $"internal/ai-credits/{aiUsageId}/capture",
+            JsonContent.Create(new { documentVersionId, note }),
+            ct
+        );
+
+    Task IAiCredits.ReleaseAsync(Guid aiUsageId, string? note, CancellationToken ct) =>
+        SendAsync(
+            HttpMethod.Post,
+            $"internal/ai-credits/{aiUsageId}/release",
+            JsonContent.Create(new { note }),
             ct
         );
 

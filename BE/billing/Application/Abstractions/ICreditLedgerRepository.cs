@@ -14,5 +14,7 @@ public interface ICreditLedgerRepository
 
     Task<int> CountAsync(Guid userId, CancellationToken ct);
 
+    Task<CreditLedger?> FindByIdempotencyKeyAsync(string idempotencyKey, CancellationToken ct);
+
     void Add(CreditLedger entry);
 }

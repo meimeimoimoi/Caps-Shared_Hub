@@ -1,6 +1,6 @@
-using System.Text.Json;
 using Caps.Common.Application;
 using Caps.Workflow.Application.Abstractions;
+using Caps.Workflow.Application.Common;
 using Caps.Workflow.Domain.Exceptions;
 using Caps.Workflow.Domain.Workspace;
 using static Caps.Workflow.Application.AiChat.DTOs.ChatDtos;
@@ -23,9 +23,9 @@ public static class ClarifyChatMessage
     public sealed class ClarifyChatMessageHandler(
         IChatMessageRepository chatMessageRepository,
         IConversationRepository conversationRepository,
-        IAiQuotaRepository aiQuotaRepository,
-        IAiUsageRepository aiUsageRepository,
         IRagQueryClient ragQueryClient,
+        AiCreditChargeService aiCreditChargeService,
+        AiBillingSettings aiBillingSettings,
         IUnitOfWork unitOfWork,
         TimeProvider timeProvider
     ) : ICommandHandler<ClarifyChatMessageCommand, SendChatMessageResultDto>
@@ -65,12 +65,6 @@ public static class ClarifyChatMessage
 
             var now = timeProvider.GetUtcNow();
 
-            var quota = await aiQuotaRepository.GetByUserIdAsync(command.UserId, ct);
-            if (quota?.HasAvailableQuota() != true)
-            {
-                throw WorkflowErrors.QuotaExhausted();
-            }
-
             // Retrieve the original user question preceding the AI clarification prompt
             var history = await chatMessageRepository.GetByConversationIdAsync(conversation.Id, ct);
             var originalUserQuery =
@@ -94,8 +88,6 @@ public static class ClarifyChatMessage
                 now
             );
 
-            await chatMessageRepository.AddAsync(userClarificationMessage, ct);
-
             var ragRequest = new RagQueryRequest(
                 conversation.Id,
                 Query: originalUserQuery,
@@ -104,71 +96,20 @@ public static class ClarifyChatMessage
                 PeriodEnd: effectivePeriodEnd
             );
 
-            var ragResponse = await ragQueryClient.QueryAsync(ragRequest, ct);
-
-            var citationJson =
-                ragResponse.Citations.Count > 0
-                    ? JsonSerializer.Serialize(ragResponse.Citations)
-                    : null;
-
-            if (ragResponse.AnswerStatus == ChatMessageAnswerStatus.Answered)
-            {
-                quota.Deduct(1, now);
-
-                var usage = AiUsage.Create(
-                    command.UserId,
-                    conversation.Id,
-                    userClarificationMessage.Id,
-                    AiUsagePaidWith.Quota,
-                    creditHold: 0,
-                    AiUsageState.Captured,
-                    now
-                );
-                await aiUsageRepository.AddAsync(usage, ct);
-            }
-
-            var aiMessage = ChatMessage.CreateAiMessage(
-                conversation.Id,
-                ragResponse.Content,
-                ragResponse.ScopeResult,
-                ragResponse.AnswerStatus,
-                ragResponse.PeriodStart ?? effectivePeriodStart,
-                ragResponse.PeriodEnd ?? effectivePeriodEnd,
-                citationJson,
-                now
+            return await ChatTurnRunner.RunAsync(
+                conversation,
+                command.UserId,
+                userClarificationMessage,
+                ragRequest,
+                updateTitleWhenNew: false,
+                chatMessageRepository,
+                ragQueryClient,
+                aiCreditChargeService,
+                aiBillingSettings,
+                unitOfWork,
+                timeProvider,
+                ct
             );
-            await chatMessageRepository.AddAsync(aiMessage, ct);
-
-            conversation.Touch(now);
-            await unitOfWork.SaveChangesAsync(ct);
-
-            var userDto = new ChatMessageDto(
-                userClarificationMessage.Id,
-                userClarificationMessage.ConversationId,
-                userClarificationMessage.Sender,
-                userClarificationMessage.Content,
-                userClarificationMessage.PeriodStart,
-                userClarificationMessage.PeriodEnd,
-                null,
-                null,
-                null,
-                userClarificationMessage.CreatedAt
-            );
-
-            var aiDto = new ChatMessageDto(
-                aiMessage.Id,
-                aiMessage.ConversationId,
-                aiMessage.Sender,
-                aiMessage.Content,
-                aiMessage.PeriodStart,
-                aiMessage.PeriodEnd,
-                aiMessage.ScopeResult,
-                aiMessage.AnswerStatus,
-                ragResponse.Citations,
-                aiMessage.CreatedAt
-            );
-
-            return new SendChatMessageResultDto(userDto, aiDto, quota.Balance);
         }
     }
 }
