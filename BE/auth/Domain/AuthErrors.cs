@@ -87,4 +87,23 @@ public static class AuthErrors
             "AVATAR_INVALID_TYPE",
             "Only JPEG, PNG or WebP images are allowed."
         );
+
+    public static AppException UserNotFound() =>
+        new(ErrorType.NotFound, "USER_NOT_FOUND", "Account not found.");
+
+    public static AppException UserAlreadySuspended() =>
+        new(ErrorType.Conflict, "USER_ALREADY_SUSPENDED", "The account is already locked.");
+
+    public static AppException UserNotSuspended() =>
+        new(ErrorType.Conflict, "USER_NOT_SUSPENDED", "The account is not locked.");
+
+    public static AppException CannotSuspendSelf() =>
+        new(ErrorType.RuleViolation, "CANNOT_SUSPEND_SELF", "You cannot lock your own account.");
+
+    public static AppException SuspendReasonRequired() =>
+        new(ErrorType.Validation, "SUSPEND_REASON_REQUIRED", "A reason is required to lock an account.");
+
+    /// <summary>A password reset email only goes to an account that can sign in.</summary>
+    public static AppException UserCannotSignIn() =>
+        new(ErrorType.Conflict, "USER_CANNOT_SIGN_IN", "The account is locked.");
 }
