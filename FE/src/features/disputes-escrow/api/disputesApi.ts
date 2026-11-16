@@ -9,9 +9,9 @@ import type { Dispute, DisputeDecisionInput, Escrow } from '../types'
 import { toEscrow, type EscrowDto } from './escrowMappers'
 
 /* The demo reads fixtures (cloned so React Query sees new data) and its mutations edit them in place.
- * Disputes use the workflow service; escrows have no list endpoint yet, so BASE is still a guess. */
+ * Disputes use the workflow service, escrows the billing service. */
 const fixtures = () => import('./fixtures')
-const REVIEW_BASE = '/api/v1/admin/review-cases'
+const CASES = '/api/v1/admin/review-cases'
 const ESCROWS = '/api/v1/admin/billing/escrows'
 
 interface Envelope<T> {
@@ -46,10 +46,6 @@ async function settle(call: Promise<unknown>) {
 
 const notConnected = () =>
   new Error(String(i18n.t('escrow.notConnected', { ns: 'admin' })))
-
-interface Envelope<T> {
-  data: T
-}
 
 /** AdminDisputeResponse of the workflow service */
 interface AdminDisputeDto {
@@ -103,21 +99,17 @@ function toDispute(x: AdminDisputeDto, expert: string): Dispute {
     id: x.reviewCaseId,
     code: x.reviewCaseId.slice(0, 8).toUpperCase(),
     kind: 'DELIVERY_ISSUE',
-    title:
-      d.reviewSummary?.split('\n')[0].slice(0, 90) ?? caseCode(d.reviewCaseId),
-    client: d.requesterEmail ?? '',
-    expert,
-    ground: issue,
-    openedAt: d.dispute.openedAt,
-    // The window is 48 hours and doubles once extended
-    escalatedAt:
-      Date.parse(d.dispute.decideBy) - Date.parse(d.dispute.openedAt) >
-        48 * 3_600_000
-        ? d.dispute.openedAt
-        : undefined,
-    resolvedAt: d.dispute.closedAt ?? undefined,
-    expertStatement: d.dispute.expertStatement ?? undefined,
-    complaint: { issue, description: d.dispute.description, attachment: '' },
+    client: x.requesterEmail ?? undefined,
+    expert: expert || undefined,
+    ground: reason,
+    openedAt: d.openedAt,
+    decideBy: d.decideBy,
+    escalatedAt: extended ? d.decideBy : undefined,
+    fee: x.fee,
+    platformFeePct: x.platformFeePct,
+    expertStatement: d.expertStatement ?? undefined,
+    reviewSummary: x.reviewSummary ?? undefined,
+    complaint: { issue: reason, description: d.description },
     history: [],
   }
 }

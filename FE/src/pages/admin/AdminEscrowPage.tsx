@@ -437,6 +437,8 @@ export default function AdminEscrowPage() {
             />
           )}
           {toast && <Toast message={toast} onDone={clearToast} />}
-        </AdminLayout>
-      )
+        </>
+      )}
+    </AdminLayout>
+  )
 }
