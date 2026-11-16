@@ -1195,6 +1195,14 @@
     "discard": "Bỏ thay đổi",
     "reasonLabel": "Lý do thay đổi",
     "history": {
+      "filterLabel": "Trạng thái",
+      "emptyFilter": "Không có thay đổi ở trạng thái này.",
+      "filters": {
+        "all": "Tất cả trạng thái",
+        "applied": "Đã áp dụng",
+        "pending": "Đang chờ",
+        "cancelled": "Đã hủy"
+      },
       "open": "Lịch sử",
       "openFor": "Lịch sử phí của {{name}}",
       "title": "Lịch sử phí: {{name}}",

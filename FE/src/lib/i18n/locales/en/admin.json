@@ -1203,6 +1203,14 @@
     "discard": "Discard changes",
     "reasonLabel": "Reason for the change",
     "history": {
+      "filterLabel": "Status",
+      "emptyFilter": "No changes match this status.",
+      "filters": {
+        "all": "All statuses",
+        "applied": "Applied",
+        "pending": "Scheduled",
+        "cancelled": "Cancelled"
+      },
       "open": "History",
       "openFor": "Fee history of {{name}}",
       "title": "Fee history: {{name}}",

@@ -2,6 +2,8 @@ import { useCallback, useId, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { ApiError } from '@/lib/api-client'
+import { CalendarDays, History, Pencil } from 'lucide-react'
+import { DatePicker } from '@/components/ui/forms/date-picker'
 import { HelpTip } from '@/components/ui/feedback/help-tip'
 import { Modal } from '@/components/ui/feedback/modal'
 import { Toast } from '@/components/ui/feedback/toast'
@@ -26,7 +28,6 @@ import {
 import { formatDate } from '../../features/expert-vetting/utils/applications'
 import { PageHeader } from '@/components/ui/layout/page-header'
 import { LoadError } from '@/components/ui/feedback/load-error'
-import { SkeletonRows } from '@/components/ui/display/skeleton-rows'
 import { PlatformFeeHistory } from '@/features/expert-vetting/components/PlatformFeeHistory'
 
 const LATE_FIELDS = [
@@ -103,14 +104,22 @@ interface ScenarioItem {
 }
 
 /** Each case on its own line: when it applies, then who gets what share of the price */
-function Scenarios({ items }: { items: ScenarioItem[] }) {
+function Scenarios({
+  items,
+  separated = false,
+}: {
+  items: ScenarioItem[]
+  separated?: boolean
+}) {
   return (
-    <dl className="grid gap-x-4 gap-y-1.5 text-sm sm:grid-cols-[auto_1fr]">
+    <dl className={separated ? 'divide-border-subtle divide-y text-sm' : 'grid gap-2 text-sm'}>
       {items.map((item) => (
-        <div key={item.label} className="contents">
-          <dt className="text-fg-muted">{item.label}</dt>
+        <div key={item.label} className={`grid gap-x-4 gap-y-1 sm:grid-cols-[minmax(9rem,2fr)_3fr] ${separated ? 'py-3' : ''}`}>
+          <dt className="text-fg-muted font-medium">{item.label}</dt>
           <dd className="num text-fg-strong">
-            {item.parts.join(' · ')}
+            <ul className="flex flex-wrap gap-x-4 gap-y-1">
+              {item.parts.map((part) => <li key={part}>{part}</li>)}
+            </ul>
             {item.note && (
               <span className="text-fg-muted block font-sans text-xs">
                 {item.note}
@@ -175,7 +184,7 @@ function RuleFields<K extends string>({
         <span className={open ? undefined : 'sr-only'}>{legend}</span>
         <HelpTip label={t('helpFor', { topic: legend })}>{help}</HelpTip>
       </legend>
-      <div className="mt-2 grid gap-3 sm:grid-cols-3">
+      <div className="mt-2 grid gap-3 sm:grid-cols-2">
         {fields.map((field) => (
           <label
             key={field}
@@ -538,8 +547,9 @@ export default function AdminPlatformFeesPage() {
       type="button"
       onClick={() => open(row, part)}
       aria-label={`${t(`admin:platformFees.editButtons.${part}`)} · ${row.serviceName}`}
-      className="btn btn-press btn-secondary h-9 justify-start px-3 text-sm"
+      className="btn btn-press btn-secondary min-h-9 px-3 text-sm"
     >
+      <Pencil size={14} aria-hidden="true" />
       {t(`admin:platformFees.editButtons.${part}`)}
     </button>
   )
@@ -564,166 +574,151 @@ export default function AdminPlatformFeesPage() {
         helpLabel={t('admin:platformFees.helpLabel')}
       />
 
-      <section className="paper mt-8 overflow-x-auto">
-        <table className="stack-table w-full text-sm md:min-w-200">
-          <caption className="sr-only">{t('admin:platformFees.title')}</caption>
-          <thead className="bg-sunken text-fg-muted">
-            <tr className="[&>th]:px-4 [&>th]:py-3 [&>th]:text-left [&>th]:align-bottom [&>th]:font-semibold">
-              <th scope="col">{t('admin:platformFees.service')}</th>
-              <th scope="col">{t('admin:platformFees.percent')}</th>
-              <th scope="col">{t('admin:platformFees.splitColumn')}</th>
-              <th scope="col">{t('admin:platformFees.effectiveFrom')}</th>
-              <th scope="col">
-                <span className="sr-only">
-                  {t('admin:applicationsTable.actions')}
-                </span>
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((row) => (
-              <tr
-                key={row.serviceCode}
-                className="border-border-subtle border-t align-top [&>td]:px-4 [&>td]:py-4"
-              >
-                <td>
-                  <div
-                    className="text-fg-strong font-semibold"
-                    title={row.serviceCode}
-                  >
-                    {row.serviceName}
-                  </div>
-                </td>
-                <td data-label={t('admin:platformFees.percent')}>
-                  {row.percent == null ? (
-                    <span className="text-warning font-semibold">
+      <div className="mt-7 grid gap-5">
+        {rows.map((row) => (
+          <article key={row.serviceCode} className="paper min-w-0">
+            <header className="border-border-subtle flex flex-wrap items-center justify-between gap-3 border-b px-5 py-4 sm:px-6">
+              <h2 className="text-h2 text-fg-strong" title={row.serviceCode}>
+                {row.serviceName}
+              </h2>
+              {row.percent != null && (
+                <button
+                  type="button"
+                  className="btn btn-press btn-ghost min-h-9 px-3 text-sm"
+                  onClick={() => setHistoryOf(row)}
+                  aria-label={t('admin:platformFees.history.openFor', {
+                    name: row.serviceName,
+                  })}
+                >
+                  <History size={16} aria-hidden="true" />
+                  {t('admin:platformFees.history.open')}
+                </button>
+              )}
+            </header>
+            <div className="grid lg:grid-cols-[minmax(13rem,1fr)_minmax(0,2.4fr)]">
+              <section className="bg-sunken border-border-subtle border-b px-5 py-5 sm:px-6 lg:border-r lg:border-b-0">
+                <h3 className="text-fg-strong text-sm font-semibold">
+                  {t('admin:platformFees.percent')}
+                </h3>
+                {row.percent == null ? (
+                  <div className="mt-3 flex flex-wrap items-center gap-3">
+                    <span className="text-warning text-sm font-semibold">
                       {t('admin:platformFees.notSet')}
                     </span>
-                  ) : (
-                    <>
-                      <span className="num text-fg-strong text-h2 font-semibold">
-                        {`${row.percent}%`}
+                    <button
+                      type="button"
+                      className="btn btn-press btn-primary min-h-9 px-3 text-sm"
+                      onClick={() => open(row)}
+                      aria-label={t('admin:platformFees.setFor', {
+                        name: row.serviceName,
+                      })}
+                    >
+                      {t('admin:platformFees.set')}
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    <div className="mt-2 flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                      <span className="num text-fg-strong text-3xl font-semibold">
+                        {row.percent}%
                       </span>
-                      <span className="text-fg-muted block text-xs">
+                      <span className="text-fg-muted text-xs">
                         {row.percent === DEFAULT_PERCENT
                           ? t('admin:platformFees.isDefault')
-                          : t('admin:platformFees.defaultIs', {
-                              percent: DEFAULT_PERCENT,
-                            })}
+                          : t('admin:platformFees.defaultIs', { percent: DEFAULT_PERCENT })}
                       </span>
-                      <span className="text-fg-muted mt-1 block text-xs">
-                        {t('admin:platformFees.expertShareShort', {
-                          percent: 100 - row.percent,
-                        })}
-                      </span>
-                    </>
-                  )}
-                </td>
-                <td data-label={t('admin:platformFees.splitColumn')}>
-                  {row.percent == null || !row.late || !row.noResponse ? (
-                    '—'
-                  ) : (
-                    <Scenarios
-                      items={scenarios(row.percent, row.late, row.noResponse)}
-                    />
-                  )}
-                  {row.late && lateDrifts(row.late) && (
-                    <span className="text-warning mt-2 block text-xs font-semibold">
-                      {t('admin:platformFees.agreed.late', {
-                        percent: DEFAULT_LATE.penaltyPercent,
+                    </div>
+                    <p className="text-fg-muted mt-2 text-sm">
+                      {t('admin:platformFees.expertShareShort', {
+                        percent: 100 - row.percent,
                       })}
-                    </span>
-                  )}
-                  {row.noResponse && silenceDrifts(row.noResponse) && (
-                    <span className="text-warning mt-2 block text-xs font-semibold">
-                      {t('admin:platformFees.agreed.silence', {
-                        refund: DEFAULT_NO_RESPONSE.refundPercent,
-                        expert: DEFAULT_NO_RESPONSE.expertPercent,
-                      })}
-                    </span>
-                  )}
-                </td>
-                <td data-label={t('admin:platformFees.effectiveFrom')}>
-                  <span className="num whitespace-nowrap">
-                    {row.effectiveFrom ? formatDate(row.effectiveFrom) : '—'}
-                  </span>
-                  {row.pending && (
-                    <span className="bg-accent-soft text-accent-text rounded-control mt-2 block px-2 py-1 text-xs font-semibold">
-                      {t('admin:platformFees.pendingValue', {
-                        percent: row.pending.percent,
-                        date: formatDate(row.pending.effectiveFrom),
-                      })}
-                    </span>
-                  )}
-                </td>
-                <td className="md:w-56">
-                  <div className="flex flex-wrap gap-2 md:flex-col md:items-stretch">
-                    {row.percent == null ? (
-                      <button
-                        type="button"
-                        className="btn btn-press btn-primary h-9 px-3 text-sm"
-                        onClick={() => open(row)}
-                        aria-label={t('admin:platformFees.setFor', {
-                          name: row.serviceName,
-                        })}
-                      >
-                        {t('admin:platformFees.set')}
-                      </button>
-                    ) : (
-                      (['percent', 'late', 'noResponse'] as const).map(
-                        (part) => editButton(row, part)
-                      )
-                    )}
-                    {row.percent != null && (
-                      <button
-                        type="button"
-                        className="btn btn-press btn-ghost h-9 px-3 text-sm"
-                        onClick={() => setHistoryOf(row)}
-                        aria-label={t('admin:platformFees.history.openFor', {
-                          name: row.serviceName,
-                        })}
-                      >
-                        {t('admin:platformFees.history.open')}
-                      </button>
-                    )}
-                    {row.pending && (
-                      <button
-                        type="button"
-                        className="btn btn-press btn-ghost h-9 px-3 text-sm"
-                        disabled={cancel.isPending}
-                        onClick={() => setWithdrawing(row)}
-                        aria-label={t('admin:platformFees.cancelFor', {
-                          name: row.serviceName,
-                        })}
-                      >
-                        {t('admin:platformFees.cancelPending')}
-                      </button>
-                    )}
+                    </p>
+                    <div className="mt-4">{editButton(row, 'percent')}</div>
+                  </>
+                )}
+                {row.effectiveFrom && (
+                  <dl className="border-border-subtle mt-5 border-t pt-4 text-sm">
+                    <dt className="text-fg-muted flex items-center gap-2">
+                      <CalendarDays size={15} aria-hidden="true" />
+                      {t('admin:platformFees.effectiveFrom')}
+                    </dt>
+                    <dd className="num text-fg-strong mt-1 font-medium">
+                      {formatDate(row.effectiveFrom)}
+                    </dd>
+                  </dl>
+                )}
+              </section>
+              <section className="min-w-0 px-5 py-5 sm:px-6">
+                <h3 className="text-fg-strong text-sm font-semibold">
+                  {t('admin:platformFees.splitColumn')}
+                </h3>
+                {row.percent == null || !row.late || !row.noResponse ? (
+                  <p className="text-fg-muted mt-3">—</p>
+                ) : (
+                  <Scenarios items={scenarios(row.percent, row.late, row.noResponse)} separated />
+                )}
+                {row.late && lateDrifts(row.late) && (
+                  <p className="text-warning mt-2 text-xs font-semibold">
+                    {t('admin:platformFees.agreed.late', {
+                      percent: DEFAULT_LATE.penaltyPercent,
+                    })}
+                  </p>
+                )}
+                {row.noResponse && silenceDrifts(row.noResponse) && (
+                  <p className="text-warning mt-2 text-xs font-semibold">
+                    {t('admin:platformFees.agreed.silence', {
+                      refund: DEFAULT_NO_RESPONSE.refundPercent,
+                      expert: DEFAULT_NO_RESPONSE.expertPercent,
+                    })}
+                  </p>
+                )}
+                {row.percent != null && (
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    {editButton(row, 'late')}
+                    {editButton(row, 'noResponse')}
                   </div>
-                </td>
-              </tr>
-            ))}
-            {query.isLoading && <SkeletonRows cols={5} />}
-            {!query.isLoading && rows.length === 0 && (
-              <tr className="border-border-subtle border-t">
-                <td
-                  colSpan={5}
-                  className="text-fg-muted px-4 py-10 text-center"
+                )}
+              </section>
+            </div>
+            {row.pending && (
+              <div className="border-border-subtle flex flex-wrap items-center justify-between gap-3 border-t px-5 py-3 sm:px-6">
+                <div className="text-sm">
+                  <p className="text-accent-text font-semibold">{t('admin:platformFees.pending')}</p>
+                  <p className="text-fg-muted">
+                    {t('admin:platformFees.pendingValue', {
+                      percent: row.pending.percent,
+                      date: formatDate(row.pending.effectiveFrom),
+                    })}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  className="btn btn-press btn-ghost min-h-9 px-3 text-sm"
+                  disabled={cancel.isPending}
+                  onClick={() => setWithdrawing(row)}
+                  aria-label={t('admin:platformFees.cancelFor', { name: row.serviceName })}
                 >
-                  {query.error ? (
-                    <LoadError error={query.error} />
-                  ) : (
-                    t('admin:platformFees.empty')
-                  )}
-                </td>
-              </tr>
+                  {t('admin:platformFees.cancelPending')}
+                </button>
+              </div>
             )}
-          </tbody>
-        </table>
-      </section>
+          </article>
+        ))}
+        {query.isLoading && (
+          <div role="status" className="paper h-64 motion-safe:animate-pulse">
+            <span className="sr-only">{t('common:loading')}</span>
+          </div>
+        )}
+        {!query.isLoading && rows.length === 0 && (
+          <div className="paper text-fg-muted px-5 py-10 text-center">
+            {query.error ? <LoadError error={query.error} /> : t('admin:platformFees.empty')}
+          </div>
+        )}
+      </div>
 
       {editing && (
         <Modal
+          size="xl"
           title={
             scope === 'late' || scope === 'noResponse'
               ? t('admin:platformFees.dialogPart', {
@@ -1034,15 +1029,16 @@ export default function AdminPlatformFeesPage() {
                       })}
                     </HelpTip>
                   </span>
-                  <input
+                  <DatePicker
                     id="fee-effective-on"
-                    type="date"
+                    name="effectiveOn"
                     min={editing.earliestEffectiveOn}
+                    max={null}
                     value={effectiveOn}
-                    onChange={(e) => setEffectiveOn(e.target.value)}
-                    aria-invalid={!!dateError}
-                    aria-describedby={dateError ? 'fee-date-error' : undefined}
-                    className="border-border-control rounded-control shadow-control bg-paper aria-[invalid=true]:border-danger border px-3 py-2 text-base font-normal"
+                    onChange={setEffectiveOn}
+                    error={dateError ?? undefined}
+                    errorId="fee-date-error"
+                    inline
                   />
                   {dateError && (
                     <span
