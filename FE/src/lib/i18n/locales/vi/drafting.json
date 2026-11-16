@@ -321,5 +321,9 @@
   "templateSummaryFinalization": "Lập tờ khai quyết toán thuế TNDN năm từ số liệu bạn đã xác nhận.",
   "stepNumber": "Bước {{n}}",
   "stepCounter": "Bước {{current}}/{{total}}",
-  "stepDone": "đã xong"
+  "stepDone": "đã xong",
+  "freeDraftExport": "Xuất bản nháp AI miễn phí.",
+  "draftUnverifiedNumbers": "AI tìm thấy số liệu cần xác minh.",
+  "draftVerifyAgainstInputs": "Đối chiếu số liệu với dữ liệu đầu vào trước khi sử dụng.",
+  "txtTextFile": "TXT · Tệp văn bản"
 }

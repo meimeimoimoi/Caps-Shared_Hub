@@ -15,6 +15,10 @@ import type {
   PackageInput,
   PricingOverview,
 } from '../../features/service-pricing/types'
+import { PageHeader } from '@/components/ui/layout/page-header'
+import { LoadError } from '@/components/ui/feedback/load-error'
+import { OperationsUnavailable } from '@/features/disputes-escrow/components/OperationsUnavailable'
+import { HelpTip } from '@/components/ui/feedback/help-tip'
 
 // Nhãn/giới thiệu tab lấy từ i18n theo key: pricing.tabs.<key>.label / .intro
 const tabs = [
@@ -39,8 +43,8 @@ const rowCls = 'border-border-subtle border-t [&>td]:px-4 [&>td]:py-3'
 export default function AdminPricingPage() {
   const nav = useAdminNav()
   const { t } = useTranslation(['admin', 'common'])
-  const pricing = usePricing()
-  const { data, isLoading, error } = pricing
+  const pricing = usePricing(!nav.operationsUnavailable)
+  const { data, isLoading } = pricing
   // Tab nằm trên URL (?tab=) để breadcrumb và link dẫn đúng tab
   const [params, setParams] = useSearchParams()
   const current = tabs.find((x) => x.key === params.get('tab')) ?? tabs[0]
@@ -89,85 +93,98 @@ export default function AdminPricingPage() {
         )
       }
     >
-      <h1 className="text-h1">{t('pricing.title')}</h1>
-      <p className="text-fg-muted mt-3">{t(`pricing.tabs.${tab}.intro`)}</p>
-
-      <div
-        role="tablist"
-        aria-label={t('pricing.tabsLabel')}
-        onKeyDown={onTabKey}
-        className="mt-8 flex gap-7 overflow-x-auto"
-      >
-        {tabs.map(({ key }) => (
-          <button
-            key={key}
-            type="button"
-            role="tab"
-            id={`tab-${key}`}
-            aria-controls={`panel-${key}`}
-            aria-selected={tab === key}
-            tabIndex={tab === key ? 0 : -1}
-            onClick={() => setTab(key)}
-            className={cn(
-              'border-b-2 pb-2 whitespace-nowrap',
-              tab === key
-                ? 'border-indicator text-fg-strong font-semibold'
-                : 'text-fg-muted border-transparent'
-            )}
+      <PageHeader
+        title={t('pricing.title')}
+        help={t(`pricing.tabs.${tab}.intro`)}
+      />
+      {/* No pricing backend outside the demo: one honest state instead of a Retry that cannot succeed */}
+      {nav.operationsUnavailable ? (
+        <OperationsUnavailable area="pricing" />
+      ) : (
+        <>
+          <div
+            role="tablist"
+            aria-label={t('pricing.tabsLabel')}
+            onKeyDown={onTabKey}
+            className="mt-8 flex gap-7 overflow-x-auto"
           >
-            {t(`pricing.tabs.${key}.label`)}
-          </button>
-        ))}
-      </div>
+            {tabs.map(({ key }) => (
+              <button
+                key={key}
+                type="button"
+                role="tab"
+                id={`tab-${key}`}
+                aria-controls={`panel-${key}`}
+                aria-selected={tab === key}
+                tabIndex={tab === key ? 0 : -1}
+                onClick={() => setTab(key)}
+                className={cn(
+                  'border-b-2 pb-2 whitespace-nowrap',
+                  tab === key
+                    ? 'border-indicator text-fg-strong font-semibold'
+                    : 'text-fg-muted border-transparent'
+                )}
+              >
+                {t(`pricing.tabs.${key}.label`)}
+              </button>
+            ))}
+          </div>
 
-      <div
-        role="tabpanel"
-        id={`panel-${tab}`}
-        aria-labelledby={`tab-${tab}`}
-        className="mt-6"
-      >
-        {!data ? (
-          isLoading ? (
-            // Khung xương cỡ bảng khung giá để trang không giật khi dữ liệu về
-            <div role="status" className="paper h-72 motion-safe:animate-pulse">
-              <span className="sr-only">{t('common:loading')}</span>
-            </div>
-          ) : (
-            <p className="paper text-fg-muted px-4 py-10 text-center text-sm">
-              {error?.message}
-            </p>
-          )
-        ) : tab === 'review-fee' ? (
-          <ReviewFeeTab data={data} />
-        ) : tab === 'credit' ? (
-          <CreditTab
-            data={data}
-            onSave={(input) =>
-              pricing
-                .savePackage(input)
-                .then(() => setToast(t('pricing.saved', { name: input.name })))
-            }
-          />
-        ) : (
-          <section className="paper">
-            <ol className="divide-border-subtle divide-y">
-              {data.history.map((h) => (
-                <li
-                  key={h.at}
-                  className="grid gap-x-6 gap-y-1 px-4 py-3 text-sm sm:grid-cols-[150px_120px_1fr]"
+          <div
+            role="tabpanel"
+            id={`panel-${tab}`}
+            aria-labelledby={`tab-${tab}`}
+            className="mt-6"
+          >
+            {!data ? (
+              isLoading ? (
+                // Khung xương cỡ bảng khung giá để trang không giật khi dữ liệu về
+                <div
+                  role="status"
+                  className="paper h-72 motion-safe:animate-pulse"
                 >
-                  <span className="text-fg-muted num">
-                    {formatDateTime(h.at)}
-                  </span>
-                  <span className="text-fg-strong font-semibold">{h.by}</span>
-                  <span>{h.text}</span>
-                </li>
-              ))}
-            </ol>
-          </section>
-        )}
-      </div>
-      {toast && <Toast message={toast} onDone={clearToast} />}
+                  <span className="sr-only">{t('common:loading')}</span>
+                </div>
+              ) : (
+                <LoadError className="paper px-4 py-10" />
+              )
+            ) : tab === 'review-fee' ? (
+              <ReviewFeeTab data={data} />
+            ) : tab === 'credit' ? (
+              <CreditTab
+                data={data}
+                onSave={(input) =>
+                  pricing
+                    .savePackage(input)
+                    .then(() =>
+                      setToast(t('pricing.saved', { name: input.name }))
+                    )
+                }
+              />
+            ) : (
+              <section className="paper">
+                <ol className="divide-border-subtle divide-y">
+                  {data.history.map((h) => (
+                    <li
+                      key={h.at}
+                      className="grid gap-x-6 gap-y-1 px-4 py-3 text-sm sm:grid-cols-[150px_120px_1fr]"
+                    >
+                      <span className="text-fg-muted num">
+                        {formatDateTime(h.at)}
+                      </span>
+                      <span className="text-fg-strong font-semibold">
+                        {h.by}
+                      </span>
+                      <span>{h.text}</span>
+                    </li>
+                  ))}
+                </ol>
+              </section>
+            )}
+          </div>
+          {toast && <Toast message={toast} onDone={clearToast} />}
+        </>
+      )}
     </AdminLayout>
   )
 }
@@ -178,28 +195,17 @@ function ReviewFeeTab({ data }: { data: PricingOverview }) {
 
   return (
     <>
-      <section className="bg-sunken rounded-surface flex flex-wrap items-center gap-x-10 gap-y-3 p-4">
-        <dl className="flex gap-10">
-          <div>
-            <dt className="text-fg-muted text-sm">
-              {t('pricing.share.platform')}
-            </dt>
-            <dd className="text-fg-strong num text-2xl font-semibold">
-              {data.platformShare}%
-            </dd>
-          </div>
-          <div>
-            <dt className="text-fg-muted text-sm">
-              {t('pricing.share.expert')}
-            </dt>
-            <dd className="text-fg-strong num text-2xl font-semibold">
-              {data.expertShare}%
-            </dd>
-          </div>
-        </dl>
-        <p className="text-fg-muted max-w-[52ch] text-sm md:ml-auto">
-          {t('pricing.share.note')}
+      {/* The platform cut is owned by the Platform fees page (one % per service); link there, never show a second number */}
+      <section className="bg-sunken rounded-surface flex flex-wrap items-center justify-between gap-3 p-4">
+        <p className="text-fg-strong max-w-[65ch] text-sm">
+          {t('pricing.share.owner')}
         </p>
+        <Link
+          to="/admin/platform-fees"
+          className="btn btn-press btn-secondary h-9 px-3 text-sm no-underline"
+        >
+          {t('pricing.share.manage')}
+        </Link>
       </section>
 
       <div className="mt-8 flex items-center justify-between gap-4">
@@ -214,15 +220,28 @@ function ReviewFeeTab({ data }: { data: PricingOverview }) {
       </div>
       <section className="paper mt-3 overflow-x-auto">
         <table className="w-full min-w-200 text-sm">
+          <caption className="sr-only">{t('pricing.tiers.title')}</caption>
           <thead>
             <tr className={headCls}>
-              <th className="text-left">{t('pricing.tiers.col.group')}</th>
-              <th className="text-left">{t('pricing.tiers.col.range')}</th>
-              <th className="text-right">{t('pricing.tiers.col.step')}</th>
-              <th className="text-right">{t('pricing.tiers.col.accepting')}</th>
-              <th className="text-right">{t('pricing.tiers.col.outside')}</th>
-              <th className="text-right">{t('pricing.tiers.col.from')}</th>
-              <th>
+              <th scope="col" className="text-left">
+                {t('pricing.tiers.col.group')}
+              </th>
+              <th scope="col" className="text-left">
+                {t('pricing.tiers.col.range')}
+              </th>
+              <th scope="col" className="text-right">
+                {t('pricing.tiers.col.step')}
+              </th>
+              <th scope="col" className="text-right">
+                {t('pricing.tiers.col.accepting')}
+              </th>
+              <th scope="col" className="text-right">
+                {t('pricing.tiers.col.outside')}
+              </th>
+              <th scope="col" className="text-right">
+                {t('pricing.tiers.col.from')}
+              </th>
+              <th scope="col">
                 <span className="sr-only">
                   {t('pricing.tiers.col.scheduled')}
                 </span>
@@ -319,44 +338,19 @@ function CreditTab({
   const [editing, setEditing] = useState<CreditPackage | null>()
   return (
     <>
-      <h2 className="text-h2">{t('pricing.credit.rates')}</h2>
-      <section className="paper mt-3 overflow-x-auto">
-        <table className="w-full min-w-150 text-sm">
-          <thead>
-            <tr className={headCls}>
-              <th className="text-left">{t('pricing.credit.col.action')}</th>
-              <th className="text-left">{t('pricing.credit.col.when')}</th>
-              <th className="text-right">{t('pricing.credit.col.price')}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {data.creditRates.map((r) => (
-              <tr key={r.id} className={rowCls}>
-                <td className="text-fg-strong font-semibold">{r.action}</td>
-                <td className="text-fg-muted">{r.when}</td>
-                <td className="num text-right whitespace-nowrap">
-                  {r.credits === null ? (
-                    <span className={pending}>
-                      {t('pricing.credit.pendingRate')}
-                    </span>
-                  ) : r.note ? (
-                    <span className={pending}>
-                      {r.credits} · {r.note}
-                    </span>
-                  ) : (
-                    <span className="text-fg-strong font-semibold">
-                      {t('pricing.credit.credits', { count: r.credits })}
-                    </span>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </section>
+      {/* AI use is free and unlimited (agreed 2026-11-11): no per-question credit rates here.
+          Credits only pay experts, so this tab keeps the top-up packages alone. */}
+      <p className="bg-sunken rounded-surface text-fg-strong p-4 text-sm">
+        {t('pricing.credit.aiFree')}
+      </p>
 
       <div className="mt-10 flex items-center justify-between gap-4">
-        <h2 className="text-h2">{t('pricing.credit.packages')}</h2>
+        <div className="flex items-center gap-2">
+          <h2 className="text-h2">{t('pricing.credit.packages')}</h2>
+          <HelpTip label={t('pricing.credit.packages')}>
+            {t('pricing.credit.note')}
+          </HelpTip>
+        </div>
         <button
           type="button"
           onClick={() => setEditing(null)}
@@ -368,13 +362,24 @@ function CreditTab({
       </div>
       <section className="paper mt-3 overflow-x-auto">
         <table className="w-full min-w-150 text-sm">
+          <caption className="sr-only">{t('pricing.credit.packages')}</caption>
           <thead>
             <tr className={headCls}>
-              <th className="text-left">{t('pricing.credit.pcol.name')}</th>
-              <th className="text-right">{t('pricing.credit.pcol.credits')}</th>
-              <th className="text-right">{t('pricing.credit.pcol.price')}</th>
-              <th className="text-left">{t('pricing.credit.pcol.status')}</th>
-              <th className="text-right">{t('pricing.credit.pcol.order')}</th>
+              <th scope="col" className="text-left">
+                {t('pricing.credit.pcol.name')}
+              </th>
+              <th scope="col" className="text-right">
+                {t('pricing.credit.pcol.credits')}
+              </th>
+              <th scope="col" className="text-right">
+                {t('pricing.credit.pcol.price')}
+              </th>
+              <th scope="col" className="text-left">
+                {t('pricing.credit.pcol.status')}
+              </th>
+              <th scope="col" className="text-right">
+                {t('pricing.credit.pcol.order')}
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -416,7 +421,6 @@ function CreditTab({
           </tbody>
         </table>
       </section>
-      <p className="text-fg-muted mt-3 text-sm">{t('pricing.credit.note')}</p>
 
       {editing !== undefined && (
         <PackageDialog

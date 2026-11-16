@@ -1,4 +1,5 @@
 import { api } from '@/lib/api-client'
+import { i18n } from '@/lib/i18n'
 import { APPLICATION_STATUS } from '@/lib/constants'
 import { isExpertDemo } from '@/lib/expert-data-source'
 import { CURRENT_ADMIN, QUEUE_STATUSES, SYSTEM_ACTOR } from '../constants'
@@ -19,7 +20,6 @@ import type {
 /* Demo mode reads fixtures (a copy, so React Query sees new data);
  * demo mutations edit the fixtures so the next refetch sees the change. */
 const fixtures = () => import('./fixtures')
-const BASE = '/api/admin'
 // Gate 1 review of expert applications (expert service, permission ExpertReview)
 const REVIEW_BASE = '/api/v1/admin/experts/applications'
 
@@ -217,16 +217,90 @@ export async function releaseApplication(id: string): Promise<ApplicationDetail>
   return toDetail(res.data)
 }
 
-/* ── Expert management ──
- * TODO(api): the BE has no expert management endpoints yet; these paths are placeholders. */
-export async function getExperts(signal?: AbortSignal) {
-  if (isExpertDemo) return structuredClone((await fixtures()).mockExperts)
-  return api.get<Expert[]>(`${BASE}/experts`, { signal })
+/* ── Expert management: one row per Expert–Service past final approval ── */
+const MANAGED = '/api/v1/admin/experts/managed'
+const SERVICE_ACCESS = (id: string) => `/api/v1/admin/experts/approvals/${id}/service-access`
+
+interface ManagedExpert {
+  id: string
+  applicationId: string
+  displayName: string | null
+  email: string | null
+  yearsExperience: number | null
+  fields: string[]
+  serviceName: string
+  status: 'APPROVED_FOR_SERVICE' | 'SUSPENDED'
+  acceptingRequests: boolean
+  fee: number | null
+  capacity: number
+  activeCases: number
+  approvedAt: string | null
+  competencyReviewer: string | null
+  history: { actor: string; fromStatus: string | null; toStatus: string; note: string | null; at: string }[]
 }
 
+/** Approved services count as active only when the Marketplace can list them (priced, accepting, capacity) */
+const serviceStatusOf = (m: ManagedExpert): Expert['serviceStatus'] =>
+  m.status === 'SUSPENDED'
+    ? 'SUSPENDED'
+    : m.fee !== null && m.acceptingRequests && m.capacity > 0
+      ? 'ACTIVE'
+      : 'INACTIVE'
+
+/* Status a qualification moved to → wording of that step in the drawer history */
+const HISTORY_KEYS = {
+  PREPARING: 'registered',
+  COMPETENCY_REVIEW: 'submitted',
+  NEED_MORE_INFORMATION: 'moreInfo',
+  PENDING_FINAL_APPROVAL: 'passed',
+  APPROVED_FOR_SERVICE: 'approved',
+  SUSPENDED: 'suspended',
+} as const
+
+const historyText = (h: ManagedExpert['history'][number]) => {
+  const key =
+    h.fromStatus === 'SUSPENDED' && h.toStatus === 'APPROVED_FOR_SERVICE'
+      ? 'reinstated'
+      : (HISTORY_KEYS[h.toStatus as keyof typeof HISTORY_KEYS] ?? 'changed')
+  const text = i18n.t(`experts.historyText.${key}`, { ns: 'admin', status: h.toStatus })
+  return h.note ? `${text} ${i18n.t('experts.historyText.note', { ns: 'admin', note: h.note })}` : text
+}
+
+/** SYSTEM and ADMIN are placeholders from the API for actors without a name */
+const historyActor = (actor: string) =>
+  actor === 'SYSTEM' || actor === 'ADMIN'
+    ? i18n.t(`experts.actor.${actor === 'SYSTEM' ? 'system' : 'admin'}`, { ns: 'admin' })
+    : actor
+
+const toExpert = (m: ManagedExpert): Expert => ({
+  id: m.id,
+  applicationId: m.applicationId,
+  name: m.displayName ?? m.email ?? m.id,
+  email: m.email ?? '',
+  fields: m.fields,
+  serviceName: m.serviceName,
+  serviceStatus: serviceStatusOf(m),
+  fee: m.fee,
+  activeCases: m.activeCases,
+  capacity: m.capacity,
+  approvedAt: m.approvedAt ?? '',
+  experienceYears: m.yearsExperience ?? 0,
+  schedule: i18n.t(m.acceptingRequests ? 'experts.accepting.on' : 'experts.accepting.off', { ns: 'admin' }),
+  reviewer: m.competencyReviewer ?? '—',
+  history: m.history.map((h) => ({ at: h.at, actor: historyActor(h.actor), text: historyText(h) })),
+})
+
+export async function getExperts(signal?: AbortSignal) {
+  if (isExpertDemo) return structuredClone((await fixtures()).mockExperts)
+  const res = await api.get<Envelope<ManagedExpert[]>>(MANAGED, { signal })
+  return res.data.map(toExpert)
+}
+
+/** Suspends (note required) or reinstates one Expert–Service; other services of the expert are untouched */
 export async function setExpertServiceStatus(
   id: string,
-  status: Expert['serviceStatus']
+  status: Expert['serviceStatus'],
+  note?: string
 ) {
   if (isExpertDemo) {
     const e = (await fixtures()).mockExperts.find((x) => x.id === id)
@@ -239,5 +313,8 @@ export async function setExpertServiceStatus(
     })
     return
   }
-  await api.put(`${BASE}/experts/${id}/service-status`, { status })
+  await api.post(SERVICE_ACCESS(id), {
+    action: status === 'SUSPENDED' ? 'SUSPEND' : 'REINSTATE',
+    note: note?.trim() || null,
+  })
 }

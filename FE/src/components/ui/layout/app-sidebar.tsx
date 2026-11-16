@@ -1,4 +1,4 @@
-import { useId, type ReactNode } from 'react'
+import { useId, type ReactNode, type Ref, type UIEventHandler } from 'react'
 import { Link } from 'react-router-dom'
 import { Lock, PanelLeftClose, PanelLeftOpen, X } from 'lucide-react'
 import { BrandLogo } from '@/components/ui/display/brand-logo'
@@ -14,6 +14,8 @@ export interface SidebarItem {
   badge?: ReactNode
   /** Locked item (no `to`): shows a lock and explains when it opens */
   lockedHint?: string
+  /** 'soon': not connected yet; the item sits in its own "soon" group, so it shows no lock */
+  lockedKind?: 'lock' | 'soon'
 }
 export interface SidebarGroup {
   id: string
@@ -28,6 +30,8 @@ interface AppSidebarProps {
   onToggleCollapse?: () => void
   onNavigate?: () => void
   onClose?: () => void
+  navigationRef?: Ref<HTMLElement>
+  onNavigationScroll?: UIEventHandler<HTMLElement>
 }
 
 /** Shared chrome only. Each layout owns routes, permissions and collapse state. */
@@ -39,13 +43,15 @@ export function AppSidebar({
   onToggleCollapse,
   onNavigate,
   onClose,
+  navigationRef,
+  onNavigationScroll,
 }: AppSidebarProps) {
   const { t } = useTranslation('common')
   const navigationId = useId()
   return (
     <div className="on-ink flex min-h-0 flex-1 flex-col text-[var(--ui-sidebar-text)]">
       <div className="mb-9 flex shrink-0 items-center gap-2 px-1">
-        {/* Logo về landing page. Hai logo chồng nhau và mờ chéo theo chiều rộng sidebar (sidebar-rail) */}
+        {/* Logo links to the landing page. Two stacked logos crossfade with the sidebar width (sidebar-rail) */}
         <Link
           to="/"
           onClick={onNavigate}
@@ -79,6 +85,8 @@ export function AppSidebar({
         )}
       </div>
       <nav
+        ref={navigationRef}
+        onScroll={onNavigationScroll}
         id={navigationId}
         aria-label={navigationLabel}
         className="min-h-0 flex-1 overflow-y-auto overscroll-contain"
@@ -108,7 +116,7 @@ export function AppSidebar({
                     {item.icon}
                   </span>
                   <span
-                    // Rộng cố định để chữ không xô khi thu/mở; có badge thì chừa chỗ bên phải cho nó.
+                    // Fixed width so text does not shift while collapsing; leave room on the right for a badge.
                     className={`sidebar-fade line-clamp-2 w-[148px] shrink-0 leading-snug whitespace-normal ${item.badge != null ? 'pr-10' : ''} ${collapsed ? 'opacity-0' : 'opacity-100'}`}
                   >
                     {item.label}
@@ -117,7 +125,8 @@ export function AppSidebar({
                       <span className="sr-only">. {item.lockedHint}</span>
                     )}
                   </span>
-                  {item.lockedHint && !collapsed && (
+
+                  {item.lockedHint && !collapsed && item.lockedKind !== 'soon' && (
                     <Lock
                       size={14}
                       aria-hidden="true"
@@ -143,7 +152,7 @@ export function AppSidebar({
                   key={item.id}
                   to={item.to}
                   onClick={onNavigate}
-                  title={item.label}
+                  title={item.lockedHint ? `${item.label} · ${item.lockedHint}` : item.label}
                   aria-current={item.active ? 'page' : undefined}
                   className={className}
                 >

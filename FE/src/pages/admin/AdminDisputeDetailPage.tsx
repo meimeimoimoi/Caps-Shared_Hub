@@ -15,14 +15,18 @@ import {
 } from '../../features/disputes-escrow/utils/disputes'
 import { useAdminNav } from '@/app/layouts/admin/useAdminNav'
 import { useDispute } from '../../features/disputes-escrow/hooks/useDispute'
-import { AdminCaseChat } from '@/features/review-case/components/CaseChat'
+import { OperationsUnavailable } from '@/features/disputes-escrow/components/OperationsUnavailable'
+import { LoadError } from '@/components/ui/feedback/load-error'
+import { formatVnd } from '@/lib/format-money'
 import { CaseAttachments } from '@/features/review-case/components/CaseAttachments'
-import { isExpertDemo } from '@/lib/expert-data-source'
 
 export default function AdminDisputeDetailPage() {
   const id = useParams().id!
-  const { dispute, isLoading, decide, escalate } = useDispute(id)
   const nav = useAdminNav()
+  const { dispute, isLoading, error, decide, escalate } = useDispute(
+    id,
+    !nav.disputesUnavailable
+  )
   const { t } = useTranslation(['admin', 'common'])
   const [now] = useState(() => Date.now())
   const [toast, setToast] = useState<string | null>(null)
@@ -35,12 +39,27 @@ export default function AdminDisputeDetailPage() {
   )
   const layout = { ...nav, section: 'disputes' as const }
 
+  // Deep links from bookmarks or the bell land here too: same honest state as the list
+  if (nav.disputesUnavailable) {
+    return (
+      <AdminLayout {...layout} breadcrumb={listLink}>
+        <h1 className="text-h1">{t('disputes.title')}</h1>
+        <OperationsUnavailable area="disputes" />
+      </AdminLayout>
+    )
+  }
+
   if (!dispute) {
     return (
       <AdminLayout {...layout} breadcrumb={listLink}>
-        <h1 className="text-h1-tool">
-          {isLoading ? t('common:loading') : t('disputes.notFound', { id })}
+        <h1 className="text-h1" aria-live="polite">
+          {isLoading
+            ? t('common:loading')
+            : error
+              ? t('disputes.title')
+              : t('disputes.notFound', { id })}
         </h1>
+        {error && <LoadError error={error} className="paper mt-6 px-4 py-8" />}
         <Link
           to="/admin/disputes"
           className="text-accent-text mt-3 inline-block underline"
@@ -53,6 +72,26 @@ export default function AdminDisputeDetailPage() {
 
   const { evidence, complaint } = dispute
   const hoursLeft = disputeHoursLeft(dispute, now)
+  const code = dispute.code ?? dispute.id
+  // The server sends the client's email and the expert's name; the title is still demo-only
+  const meta = (
+    [
+      [t('disputes.meta.kind'), t(`disputes.kind.${dispute.kind}`)],
+      [t('disputes.meta.client'), dispute.client],
+      [t('disputes.meta.expert'), dispute.expert],
+      [t('disputes.meta.ground'), dispute.ground],
+      [
+        t('disputes.meta.fee'),
+        dispute.fee == null ? undefined : formatVnd(dispute.fee),
+      ],
+      [
+        t('disputes.meta.platformFee'),
+        dispute.platformFeePct == null
+          ? undefined
+          : `${dispute.platformFeePct}%`,
+      ],
+    ] as [string, string | undefined][]
+  ).filter((row): row is [string, string] => !!row[1])
 
   return (
     <AdminLayout
@@ -61,25 +100,18 @@ export default function AdminDisputeDetailPage() {
         <>
           {listLink} <span aria-hidden="true">/</span>{' '}
           <span className="text-fg-strong num" aria-current="page">
-            {dispute.code ?? dispute.id}
+            {code}
           </span>
         </>
       }
     >
       <div className="flex items-start justify-between gap-4">
         <CaseHeader
-          code={dispute.code ?? dispute.id}
-          title={t('disputes.caseTitle', { title: dispute.title })}
-          meta={[
-            [t('disputes.meta.kind'), t(`disputes.kind.${dispute.kind}`)],
-            ...(dispute.client
-              ? ([
-                  [t('disputes.meta.client'), dispute.client],
-                  [t('disputes.meta.expert'), dispute.expert],
-                ] as [string, string][])
-              : []),
-            [t('disputes.meta.ground'), dispute.ground],
-          ]}
+          code={code}
+          title={t('disputes.caseTitle', {
+            title: dispute.title ?? t(`disputes.kind.${dispute.kind}`),
+          })}
+          meta={meta}
         />
         <StatusBadge
           status={
@@ -127,14 +159,7 @@ export default function AdminDisputeDetailPage() {
               {[
                 [t('disputes.complaint.issue'), complaint.issue],
                 [t('disputes.complaint.description'), complaint.description],
-                ...(dispute.expertStatement
-                  ? [
-                      [
-                        t('disputes.complaint.statement'),
-                        dispute.expertStatement,
-                      ],
-                    ]
-                  : []),
+                // TODO(api): download links for the case files (admin attachments endpoint)
                 ...(complaint.attachment
                   ? [
                       [
@@ -154,22 +179,54 @@ export default function AdminDisputeDetailPage() {
                   className="grid grid-cols-[110px_1fr] gap-3 py-2"
                 >
                   <dt className="text-fg-muted">{label}</dt>
-                  <dd className="text-fg-strong">{value}</dd>
+                  <dd className="text-fg-strong break-words whitespace-pre-wrap">
+                    {value}
+                  </dd>
                 </div>
               ))}
             </dl>
           </section>
 
-          {isExpertDemo ? (
+          {/* Both sides of the complaint: the expert's reply and what was delivered */}
+          {dispute.decideBy && (
+            <section className="paper p-5 md:p-6">
+              <h2 className="text-h2">{t('disputes.expertSide.title')}</h2>
+              <dl className="divide-border-subtle mt-3 divide-y text-sm">
+                {[
+                  [
+                    t('disputes.expertSide.statement'),
+                    dispute.expertStatement ??
+                      t('disputes.expertSide.noStatement'),
+                  ],
+                  [
+                    t('disputes.expertSide.summary'),
+                    dispute.reviewSummary ?? t('disputes.expertSide.noSummary'),
+                  ],
+                ].map(([label, value]) => (
+                  <div
+                    key={label}
+                    className="grid grid-cols-[110px_1fr] gap-3 py-2"
+                  >
+                    <dt className="text-fg-muted">{label}</dt>
+                    <dd className="text-fg-strong break-words whitespace-pre-wrap">
+                      {value}
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+            </section>
+          )}
+
+          {/* A real case: the files both parties added and the document under review */}
+          {dispute.decideBy && (
+            <CaseAttachments caseId={dispute.id} scope="admin" />
+          )}
+
+          {dispute.history.length > 0 && (
             <HistoryTab
               title={t('disputes.auditLog')}
               history={dispute.history}
             />
-          ) : (
-            <>
-              <CaseAttachments caseId={dispute.id} scope="admin" />
-              <AdminCaseChat caseId={dispute.id} />
-            </>
           )}
         </div>
 
@@ -180,14 +237,12 @@ export default function AdminDisputeDetailPage() {
             decided={!!dispute.resolvedAt}
             escalated={!!dispute.escalatedAt}
             onEscalate={() =>
-              escalate()
-                .then(() => setToast(t('disputes.escalation.toast')))
-                .catch((e: Error) => setToast(e.message))
+              escalate().then(() => setToast(t('disputes.escalation.toast')))
             }
-            onDecide={(outcome, reason, refundPct) =>
-              decide({ outcome, reason, refundPct })
-                .then(() => setToast(t('disputes.decided')))
-                .catch((e: Error) => setToast(e.message))
+            onDecide={(outcome, reason) =>
+              decide({ outcome, reason }).then(() =>
+                setToast(t('disputes.decided'))
+              )
             }
           />
         </div>

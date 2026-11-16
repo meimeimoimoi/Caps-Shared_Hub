@@ -38,4 +38,19 @@ public sealed class TemplatesController : ControllerBase
         var schema = await handler.HandleAsync(new(id), ct);
         return Ok(ApiResponse<TemplateSchemaResponse>.Ok(schema));
     }
+
+    /// <summary>Reads the immutable schema of a published or previously published version.</summary>
+    /// <response code="200">The template version and its schema.</response>
+    /// <response code="404">The version has not been released or does not exist.</response>
+    [HttpGet("versions/{versionId:guid}")]
+    public async Task<IActionResult> Version(
+        Guid versionId,
+        [FromServices]
+            IQueryHandler<GetReleasedTemplateVersionQuery, ReleasedTemplateVersionResponse> handler,
+        CancellationToken ct
+    )
+    {
+        var version = await handler.HandleAsync(new(versionId), ct);
+        return Ok(ApiResponse<ReleasedTemplateVersionResponse>.Ok(version));
+    }
 }

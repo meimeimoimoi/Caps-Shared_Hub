@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, type ReactNode } from 'react'
+import { useEffect, useId, useRef, useState, type ReactNode } from 'react'
 import { X } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useDialogMotion } from '@/components/ui/motion'
@@ -16,8 +16,8 @@ interface ModalProps {
   onSubmit?: () => void
   preventClose?: boolean
   closeLabel?: string
-  /** md: hộp thoại xác nhận/biểu mẫu ngắn; lg: nội dung dạng danh sách cần bề ngang */
-  size?: 'md' | 'lg'
+  /** md: confirm dialogs/short forms; lg: list-like content needing width; xl: multi-column detail views */
+  size?: 'md' | 'lg' | 'xl'
 }
 
 /* Native <dialog>: trình duyệt lo focus trap, phím Esc và backdrop.
@@ -39,17 +39,27 @@ export function Modal({
   const ref = useRef<HTMLDialogElement>(null)
   useDialogMotion(ref)
   const titleId = useId()
+  // What opened the dialog, read during the first render: an effect would run again under
+  // StrictMode after the dialog already holds focus and record the dialog itself
+  const [trigger] = useState(() =>
+    document.activeElement instanceof HTMLElement ? document.activeElement : null
+  )
 
   useEffect(() => {
-    const trigger =
-      document.activeElement instanceof HTMLElement
-        ? document.activeElement
-        : null
     ref.current?.showModal()
-    // Không có ô autofocus thì focus vào chính hộp thoại, tránh viền focus đậm trên nút Đóng ngay khi mở
+    // Without an autofocus field, focus the dialog itself so the Close button gets no ring on open
     if (!ref.current?.querySelector('[autofocus]')) ref.current?.focus()
     return () => {
-      trigger?.focus()
+      // Hand focus back to what opened the dialog (WCAG 2.4.3). The browser may still move focus
+      // to <body> while the open dialog leaves the top layer, so try again on the next frame.
+      const restore = () => {
+        if (trigger?.isConnected) trigger.focus()
+      }
+      restore()
+      requestAnimationFrame(() => {
+        if (!document.activeElement || document.activeElement === document.body)
+          restore()
+      })
     }
   }, [])
 
@@ -92,7 +102,7 @@ export function Modal({
       }}
       aria-labelledby={titleId}
       tabIndex={-1}
-      className={`bg-paper border-hairline rounded-overlay shadow-overlay text-fg backdrop:bg-ink/40 m-auto max-h-[calc(100dvh-32px)] w-[calc(100%-32px)] ${size === 'lg' ? 'max-w-3xl' : 'max-w-lg'} overflow-hidden border p-0 focus:outline-none [&[open]]:flex [&[open]]:flex-col`}
+      className={`bg-paper border-hairline rounded-overlay shadow-overlay text-fg backdrop:bg-ink/40 m-auto max-h-[calc(100dvh-32px)] w-[calc(100%-32px)] ${size === 'xl' ? 'max-w-4xl' : size === 'lg' ? 'max-w-3xl' : 'max-w-lg'} overflow-hidden border p-0 focus:outline-none [&[open]]:flex [&[open]]:flex-col`}
     >
       {onSubmit ? (
         <form

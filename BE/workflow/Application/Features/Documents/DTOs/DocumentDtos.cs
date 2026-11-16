@@ -1,3 +1,5 @@
+using System.Text.Json;
+
 namespace Caps.Workflow.Application.Features.Documents.DTOs;
 
 /// <summary>Data transfer objects for document workspaces, input snapshots, versions, and exports.</summary>
@@ -16,7 +18,31 @@ public static class DocumentDtos
         Guid? VerifiedVersionId,
         DateTimeOffset CreatedAt,
         DateTimeOffset UpdatedAt
-    );
+    )
+    {
+        public Guid? PinnedTemplateVersionId { get; init; }
+
+        public static Guid? ReadPinnedTemplateVersion(string? metadata)
+        {
+            if (string.IsNullOrWhiteSpace(metadata))
+                return null;
+            try
+            {
+                using var json = JsonDocument.Parse(metadata);
+                return
+                    json.RootElement.ValueKind == JsonValueKind.Object
+                    && json.RootElement.TryGetProperty("templateVersionId", out var version)
+                    && version.ValueKind == JsonValueKind.String
+                    && version.TryGetGuid(out var id)
+                    ? id
+                    : null;
+            }
+            catch (JsonException)
+            {
+                return null;
+            }
+        }
+    }
 
     /// <summary>Generic paginated result container.</summary>
     public sealed record PagedResultDto<T>(

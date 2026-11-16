@@ -7,13 +7,15 @@ export const disputeSlaHours = (d: Pick<Dispute, 'escalatedAt'>) =>
 
 /** Số giờ còn lại trước hạn trọng tài (không âm) */
 export const disputeHoursLeft = (
-  d: Pick<Dispute, 'openedAt' | 'escalatedAt'>,
+  d: Pick<Dispute, 'openedAt' | 'escalatedAt' | 'decideBy'>,
   now: number
 ) =>
   Math.max(
     0,
-    disputeSlaHours(d) -
-      Math.floor((now - new Date(d.openedAt).getTime()) / 3_600_000)
+    d.decideBy
+      ? Math.ceil((new Date(d.decideBy).getTime() - now) / 3_600_000)
+      : disputeSlaHours(d) -
+          Math.floor((now - new Date(d.openedAt).getTime()) / 3_600_000)
   )
 
 /** Badge of a dispute row: a USER_NON_RESPONSE challenge leaves the case TERMINATED, so it is not shown as DISPUTED */

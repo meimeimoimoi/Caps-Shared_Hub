@@ -197,15 +197,20 @@ export function StackedColumnChart({
         </summary>
         <div className="mt-2 overflow-x-auto">
           <table className="text-caption w-full">
+            <caption className="sr-only">{title}</caption>
             <thead className="text-fg-muted">
               <tr className="[&>th]:px-2 [&>th]:py-1.5 [&>th]:font-semibold">
-                <th className="text-left">{periodLabel}</th>
+                <th scope="col" className="text-left">
+                  {periodLabel}
+                </th>
                 {series.map((s) => (
-                  <th key={s.name} className="text-right">
+                  <th key={s.name} scope="col" className="text-right">
                     {s.name}
                   </th>
                 ))}
-                <th className="text-right">{totalLabel}</th>
+                <th scope="col" className="text-right">
+                  {totalLabel}
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -214,7 +219,9 @@ export function StackedColumnChart({
                   key={col.label}
                   className="border-border-subtle border-t [&>td]:px-2 [&>td]:py-1.5"
                 >
-                  <td>{col.label}</td>
+                  <th scope="row" className="text-left font-normal">
+                    {col.label}
+                  </th>
                   {col.values.map((v, k) => (
                     <td
                       key={series[k].name}

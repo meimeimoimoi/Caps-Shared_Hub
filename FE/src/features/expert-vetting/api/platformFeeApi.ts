@@ -15,6 +15,8 @@ export interface LateRule {
   penaltyHours: number
   penaltyPercent: number
   cancelHours: number
+  /** Refunded when nothing is delivered by cancelHours; the platform keeps the rest, the expert gets nothing */
+  noDeliveryRefundPercent: number
 }
 
 /** Client silence: after `hours` the case ends; refundPercent to the client, expertPercent to the expert, the platform keeps the rest. */
@@ -46,6 +48,25 @@ export interface PlatformFee {
   maxPercent: number
 }
 
+/** One fee a System Admin set for a service; rows are never edited, a withdrawn change keeps cancelledAt. */
+export interface PlatformFeeChange {
+  percent: number
+  latePenaltyHours: number
+  latePenaltyPercent: number
+  lateCancelHours: number
+  noResponseHours: number
+  noResponseRefundPercent: number
+  noResponseExpertPercent: number
+  effectiveFrom: string
+  setBy: string
+  /** Null on fees set before reasons were recorded */
+  reason: string | null
+  cancelledAt: string | null
+}
+
+/** A reason is required with every fee, up to this many characters (same as the server) */
+export const MAX_REASON_LENGTH = 1000
+
 const BASE = '/api/v1/experts/admin/platform-fees'
 
 /** Every active catalog service with its fee; empty in demo mode */
@@ -64,7 +85,8 @@ export async function setPlatformFee(
   percent: number,
   late: LateRule,
   noResponse: NoResponseRule,
-  effectiveOn: string | null
+  effectiveOn: string | null,
+  reason: string
 ) {
   const res = await api.put<Envelope<PlatformFee>>(
     `${BASE}/${encodeURIComponent(serviceCode)}`,
@@ -73,11 +95,25 @@ export async function setPlatformFee(
       latePenaltyHours: late.penaltyHours,
       latePenaltyPercent: late.penaltyPercent,
       lateCancelHours: late.cancelHours,
+      noDeliveryRefundPercent: late.noDeliveryRefundPercent,
       noResponseHours: noResponse.hours,
       noResponseRefundPercent: noResponse.refundPercent,
       noResponseExpertPercent: noResponse.expertPercent,
       effectiveOn,
+      reason,
     }
+  )
+  return res.data
+}
+
+/** Every fee set for the service, newest first */
+export async function getPlatformFeeHistory(
+  serviceCode: string,
+  signal?: AbortSignal
+) {
+  const res = await api.get<Envelope<PlatformFeeChange[]>>(
+    `${BASE}/${encodeURIComponent(serviceCode)}/history`,
+    { signal }
   )
   return res.data
 }

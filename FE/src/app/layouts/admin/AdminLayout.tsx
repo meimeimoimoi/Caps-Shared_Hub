@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react'
 import {
   BadgeCheck,
   Banknote,
@@ -37,6 +37,8 @@ export interface NavItem {
   to?: string // không có = chưa có route
   active?: boolean
   badge?: number
+  /** Shown locked with this hint instead of as a link (area not connected yet) */
+  lockedHint?: string
 }
 
 export interface NavGroup {
@@ -78,6 +80,16 @@ interface AdminLayoutProps extends ShellPageProps {
   disputeCount?: number
   /** Final approvals past their due time */
   approvalOverdueCount?: number
+  /** Everything waiting for final approval; the badge shows it, overdue or not */
+  approvalPendingCount?: number
+  /** The users endpoint is not on the server yet */
+  usersUnavailable?: boolean
+  /** Payouts and refunds that failed and need a retry */
+  payoutFailedCount?: number
+  /** Payouts cannot be checked (no backend list yet) */
+  operationsUnavailable?: boolean
+  /** The disputes queue is not open to this account */
+  disputesUnavailable?: boolean
 }
 
 export function AdminLayout({
@@ -85,6 +97,11 @@ export function AdminLayout({
   pendingCount,
   disputeCount,
   approvalOverdueCount,
+  approvalPendingCount,
+  usersUnavailable,
+  payoutFailedCount,
+  operationsUnavailable,
+  disputesUnavailable,
   ...page
 }: AdminLayoutProps) {
   const { t } = useTranslation('admin')
@@ -128,25 +145,13 @@ export function AdminLayout({
           icon: BadgeCheck,
           to: '/admin/experts/approvals',
           active: section === 'approvals',
-          badge: approvalOverdueCount,
+          badge: approvalPendingCount || approvalOverdueCount,
         },
         {
           label: t('navigation.assignments'),
           icon: UserCog,
           to: '/admin/experts/assignments',
           active: section === 'assignments',
-        },
-        {
-          label: t('navigation.platformFees'),
-          icon: Banknote,
-          to: '/admin/platform-fees',
-          active: section === 'platformFees',
-        },
-        {
-          label: t('navigation.expertPolicy'),
-          icon: SlidersHorizontal,
-          to: '/admin/experts/policy',
-          active: section === 'expertPolicy',
         },
         {
           label: t('navigation.manageExperts'),
@@ -163,6 +168,9 @@ export function AdminLayout({
           label: t('navigation.complaints'),
           icon: Flag,
           to: '/admin/disputes',
+          lockedHint: disputesUnavailable
+            ? t('navigation.notConnected')
+            : undefined,
           active: section === 'disputes',
           badge: disputeCount,
         },
@@ -170,13 +178,38 @@ export function AdminLayout({
           label: t('navigation.payouts'),
           icon: CreditCard,
           to: '/admin/escrow',
+          lockedHint: operationsUnavailable
+            ? t('navigation.notConnected')
+            : undefined,
           active: section === 'escrow',
+          badge: payoutFailedCount,
+        },
+      ],
+    },
+    {
+      // Everything that sets money or rules: platform cut, review-fee ranges, vetting parameters
+      group: t('navigation.feesAndPolicy'),
+      items: [
+        {
+          label: t('navigation.platformFees'),
+          icon: Banknote,
+          to: '/admin/platform-fees',
+          active: section === 'platformFees',
         },
         {
           label: t('navigation.pricing'),
           icon: Tag,
           to: '/admin/pricing',
+          lockedHint: operationsUnavailable
+            ? t('navigation.notConnected')
+            : undefined,
           active: section === 'pricing',
+        },
+        {
+          label: t('navigation.expertPolicy'),
+          icon: SlidersHorizontal,
+          to: '/admin/experts/policy',
+          active: section === 'expertPolicy',
         },
       ],
     },
@@ -187,6 +220,9 @@ export function AdminLayout({
           label: t('navigation.users'),
           icon: UsersRound,
           to: '/admin/users',
+          lockedHint: usersUnavailable
+            ? t('navigation.notConnected')
+            : undefined,
           active: section === 'users',
         },
         {
@@ -199,10 +235,7 @@ export function AdminLayout({
       ],
     },
   ]
-  const reviewerRoutes = [
-    '/reviewer/gate-1',
-    '/reviewer/gate-2',
-  ]
+  const reviewerRoutes = ['/reviewer/gate-1', '/reviewer/gate-2']
   const approvalRoutes = [
     '/admin/experts/approvals',
     '/admin/experts/assignments',
@@ -216,7 +249,7 @@ export function AdminLayout({
     '/admin/pricing',
     '/admin/users',
   ]
-  const nav = allGroups
+  const allowed = allGroups
     .map((g) => ({
       ...g,
       items: g.items.filter((i) => {
@@ -230,9 +263,21 @@ export function AdminLayout({
       }),
     }))
     .filter((g) => g.items.length > 0)
+  // Areas that are not connected yet leave their groups and sit together at the end, so the
+  // working console reads complete and the group title says once what they have in common
+  const soon = allowed.flatMap((g) => g.items.filter((i) => i.lockedHint))
+  const nav = [
+    ...allowed
+      .map((g) => ({ ...g, items: g.items.filter((i) => !i.lockedHint) }))
+      .filter((g) => g.items.length > 0),
+    ...(soon.length ? [{ group: t('navigation.soonGroup'), items: soon }] : []),
+  ]
 
   return <RoleShell nav={nav} {...page} />
 }
+
+// Admin routes mount separate shells. Keep each navigation pane's offset across those mounts.
+const sidebarScroll = { desktop: 0, drawer: 0 }
 
 interface RoleShellProps extends ShellPageProps {
   nav: NavGroup[]
@@ -251,6 +296,12 @@ export function RoleShell({
 }: RoleShellProps) {
   const [collapsed, setCollapsed] = useState(false)
   const drawer = useRef<HTMLDialogElement>(null)
+  const desktopNavigation = useRef<HTMLElement>(null)
+  const drawerNavigation = useRef<HTMLElement>(null)
+  useLayoutEffect(() => {
+    if (desktopNavigation.current)
+      desktopNavigation.current.scrollTop = sidebarScroll.desktop
+  }, [])
   useDialogMotion(drawer, 'drawer-left')
   const drawerTrigger = useRef<HTMLButtonElement>(null)
   const { t } = useTranslation(['common', 'admin'])
@@ -260,14 +311,22 @@ export function RoleShell({
   const groups: SidebarGroup[] = nav.map(({ group, items }, groupIndex) => ({
     id: `admin-group-${groupIndex}`,
     label: group,
-    items: items.map(({ label, icon: Icon, to, active, badge }, itemIndex) => ({
-      id: to ?? `admin-item-${groupIndex}-${itemIndex}`,
-      label,
-      icon: <Icon size={18} />,
-      to,
-      active,
-      badge: badge != null && badge > 0 ? number(badge) : undefined,
-    })),
+    items: items.map(
+      ({ label, icon: Icon, to, active, badge, lockedHint }, itemIndex) => ({
+        id: to ?? `admin-item-${groupIndex}-${itemIndex}`,
+        label,
+        icon: <Icon size={18} />,
+        // A locked item still links to its page, which explains it is not connected yet;
+        // the sidebar adds a lock and the hint, and a locked area never shows a count
+        to,
+        active,
+        badge:
+          !lockedHint && badge != null && badge > 0 ? number(badge) : undefined,
+        lockedHint,
+        // Admin areas are locked only because they are not connected yet, never by permission
+        lockedKind: 'soon' as const,
+      })
+    ),
   }))
   // Đặt ở layout để mọi trang admin đều có tiêu đề tab (effect của layout chạy sau effect của trang)
   const pageTitle =
@@ -277,6 +336,11 @@ export function RoleShell({
   useEffect(() => {
     document.title = `${pageTitle} | Shared Hub`
   }, [pageTitle])
+  const openDrawer = () => {
+    drawer.current?.showModal()
+    if (drawerNavigation.current)
+      drawerNavigation.current.scrollTop = sidebarScroll.drawer
+  }
   const closeDrawer = () => drawer.current?.close()
   return (
     <div data-density="compact" className="bg-desk-2 text-fg min-h-svh">
@@ -292,6 +356,10 @@ export function RoleShell({
         <AppSidebar
           groups={groups}
           navigationLabel="Admin"
+          navigationRef={desktopNavigation}
+          onNavigationScroll={({ currentTarget }) => {
+            if (currentTarget.clientHeight) sidebarScroll.desktop = currentTarget.scrollTop
+          }}
           collapsed={collapsed}
           onToggleCollapse={() => setCollapsed((value) => !value)}
         />
@@ -305,6 +373,10 @@ export function RoleShell({
         <AppSidebar
           groups={groups}
           navigationLabel="Admin"
+          navigationRef={drawerNavigation}
+          onNavigationScroll={({ currentTarget }) => {
+            if (currentTarget.clientHeight) sidebarScroll.drawer = currentTarget.scrollTop
+          }}
           onNavigate={closeDrawer}
           onClose={closeDrawer}
         />
@@ -312,7 +384,7 @@ export function RoleShell({
       <div className={`sidebar-offset ${collapsed ? 'md:ml-20' : 'md:ml-60'}`}>
         <AppHeader
           navigationButtonRef={drawerTrigger}
-          onOpenNavigation={() => drawer.current?.showModal()}
+          onOpenNavigation={openDrawer}
           context={<nav aria-label="Breadcrumb">{breadcrumb}</nav>}
           search={
             onSearchChange

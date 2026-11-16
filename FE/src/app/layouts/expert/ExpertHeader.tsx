@@ -9,11 +9,13 @@ import { useTranslation } from 'react-i18next'
 
 const pageKeys = {
   application: 'expertApplication',
+  qualifications: 'expertQualifications',
   overview: 'overview',
   queue: 'workQueue',
   active: 'activeCases',
   cases: 'pages.cases',
   services: 'myServices',
+  availability: 'availability',
   income: 'income',
   bio: 'publicProfile',
   profile: 'pages.profile',
@@ -32,6 +34,8 @@ export function ExpertHeader({
   const { avatarUrl } = useAccount('expert')
   const bell = useNotifications()
   const location = useLocation()
+  const scenario = new URLSearchParams(location.search).get('scenario')
+  const scenarioSearch = scenario ? `?scenario=${encodeURIComponent(scenario)}` : ''
   const pageKey = location.pathname.startsWith('/expert/cases/')
     ? 'pages.caseDetail'
     : (pageKeys[location.pathname.split('/')[2] as keyof typeof pageKeys] ??
@@ -50,7 +54,7 @@ export function ExpertHeader({
       navigationButtonClassName="min-[960px]:hidden"
       searchLinks={Object.entries(pageKeys).map(([path, key]) => ({
         label: t(`navigation:${key}`),
-        to: `/expert/${path}${location.search}`,
+        to: `/expert/${path}${scenarioSearch}`,
       }))}
       account={{
         name: data?.displayName ?? t('account.fallback'),
@@ -59,7 +63,7 @@ export function ExpertHeader({
         links: [
           {
             label: t('navigation:settings'),
-            to: `/expert/settings/account${location.search}`,
+            to: `/expert/settings/account${scenarioSearch}`,
             icon: <Settings size={17} />,
             active: location.pathname.startsWith('/expert/settings'),
           },

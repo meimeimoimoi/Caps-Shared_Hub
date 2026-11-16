@@ -8,11 +8,12 @@ export interface ManagedUser {
   name: string
   email: string
   role: UserRole
+  roles?: UserRole[]
   status: keyof typeof USER_STATUS
   createdAt: string
   /** null = chưa đăng nhập lần nào */
   lastLoginAt: string | null
   /** Chỉ có khi đang bị khóa */
   lockReason?: string
-  history: { at: string; actor: string; text: string }[]
+  history?: { at: string; actor: string; text: string }[]
 }

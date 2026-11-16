@@ -26,7 +26,11 @@ public sealed class PricingTests
     private static readonly PricingPolicy Policy = new(500_000, 30_000_000, 1, 7, 7, 50);
 
     // First rate of the service: takes effect at once
-    private static PlatformFee Rate(int percent = 20) =>
+    private static PlatformFee Rate(
+        int percent = 20,
+        string? reason = "Agreed with the advisor",
+        int noDelivery = 50
+    ) =>
         PlatformFee.Set(
             Service,
             percent,
@@ -36,9 +40,11 @@ public sealed class PricingTests
             72,
             50,
             30,
+            noDelivery,
             null,
             false,
             Policy.FeeNoticeDays,
+            reason,
             Admin,
             Now
         );
@@ -100,6 +106,18 @@ public sealed class PricingTests
     public void Net_amount_removes_the_platform_fee(int percent, long fee, long net) =>
         Assert.Equal(net, Rate(percent).NetOf(fee));
 
+    [Theory]
+    [InlineData(-1)]
+    [InlineData(51)]
+    public void Platform_fee_must_be_0_to_50(int percent) =>
+        Assert.Equal("PLATFORM_FEE_INVALID", Errors.CodeOf(() => Rate(percent)));
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("   ")]
+    public void A_rate_needs_a_reason(string? reason) =>
+        Assert.Equal("POLICY_REASON_REQUIRED", Errors.CodeOf(() => Rate(reason: reason)));
+
     [Fact]
     public void A_later_rate_starts_at_local_midnight_stored_in_utc()
     {
@@ -113,9 +131,11 @@ public sealed class PricingTests
             72,
             0,
             60,
+            50,
             new DateOnly(2026, 11, 1),
             true,
             Policy.FeeNoticeDays,
+            "Agreed with the advisor",
             Admin,
             Now
         );
@@ -127,11 +147,16 @@ public sealed class PricingTests
         );
     }
 
-    [Theory]
-    [InlineData(-1)]
-    [InlineData(51)]
-    public void Platform_fee_must_be_0_to_50(int percent) =>
-        Assert.Equal("PLATFORM_FEE_INVALID", Errors.CodeOf(() => Rate(percent)));
+    [Fact]
+    public void A_reason_is_bounded() =>
+        Assert.Equal(
+            "POLICY_REASON_TOO_LONG",
+            Errors.CodeOf(() => Rate(reason: new string('x', PlatformFee.MaxReasonLength + 1)))
+        );
+
+    [Fact]
+    public void The_reason_is_kept_with_the_rate() =>
+        Assert.Equal("Agreed with the advisor", Rate(reason: "  Agreed with the advisor ").Reason);
 
     [Theory]
     [InlineData(20, -1, 30, 72)] // negative hours
@@ -155,15 +180,27 @@ public sealed class PricingTests
                 72,
                 50,
                 30,
+                50,
                 null,
                 false,
                 Policy.FeeNoticeDays,
+                "Agreed with the advisor",
                 Admin,
                 Now
             )
         );
         Assert.Equal("LATE_RULE_INVALID", e.Code);
     }
+
+    [Theory]
+    [InlineData(-1)]
+    [InlineData(101)]
+    public void A_no_delivery_refund_out_of_range_is_rejected(int refund) =>
+        Assert.Equal("NO_DELIVERY_RULE_INVALID", Errors.CodeOf(() => Rate(noDelivery: refund)));
+
+    [Fact]
+    public void The_no_delivery_refund_is_kept_with_the_rate() =>
+        Assert.Equal(50, Rate(noDelivery: 50).NoDeliveryRefundPercent);
 
     [Theory]
     [InlineData(0, 50, 30)] // no hours
@@ -182,9 +219,11 @@ public sealed class PricingTests
                 hours,
                 refund,
                 expert,
+                50,
                 null,
                 false,
                 Policy.FeeNoticeDays,
+                "Agreed with the advisor",
                 Admin,
                 Now
             )

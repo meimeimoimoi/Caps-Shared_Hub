@@ -26,7 +26,8 @@
     "collapse": "Collapse sidebar",
     "progress": "Progress",
     "skipOverview": "Skip to overview",
-    "skipWorkspace": "Skip to workspace"
+    "skipWorkspace": "Skip to workspace",
+    "soon": "Soon"
   },
   "theme": {
     "appearance": "Appearance",
@@ -95,7 +96,8 @@
     "signIn": "Sign in",
     "dashboard": "Go to dashboard",
     "registerExpert": "Expert registration",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "retry": "Retry"
   },
   "forbidden": {
     "title": "You don’t have access to this page.",
@@ -149,7 +151,15 @@
         "RESOLVED": "An admin decided the dispute.",
         "TERMINATED": "The case ended because the requested information did not arrive in time.",
         "WITHDRAWN": "The client withdrew the review request; the fee was refunded to the client."
-      }
+      },
+      "acceptanceDue": "Your review result confirms itself soon. Accept it or report a problem before the deadline."
     }
-  }
+  },
+  "states": {
+    "loadFailed": "Couldn't load the data. Check your connection and try again.",
+    "actionFailed": "That didn't go through. Try again.",
+    "notAvailable": "This feature is not open yet. Data will appear here once it is."
+  },
+  "helpFor": "About: {{topic}}",
+  "accountId": "Account #{{id}}"
 }

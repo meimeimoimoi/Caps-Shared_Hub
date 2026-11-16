@@ -43,7 +43,12 @@ public static class GetDocument
                     d.VerifiedVersionId,
                     d.CreatedAt,
                     d.UpdatedAt
-                ))
+                )
+                {
+                    PinnedTemplateVersionId = DocumentSummaryDto.ReadPinnedTemplateVersion(
+                        d.Metadata
+                    ),
+                })
                 .ToList();
 
             return new PagedResultDto<DocumentSummaryDto>(dtos, totalCount, safePage, safePageSize);

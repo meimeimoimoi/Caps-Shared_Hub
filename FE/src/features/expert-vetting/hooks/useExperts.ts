@@ -5,6 +5,7 @@ import { getExperts, setExpertServiceStatus } from '../api/adminApi'
 import { adminKeys } from '../api/queryKeys'
 import type { Expert } from '../types'
 import { foldVietnamese } from '../utils/applications'
+import { useFieldLabel } from './useLabels'
 
 export const ALL = 'ALL'
 
@@ -17,21 +18,25 @@ export function useExperts() {
   const [page, setPage] = useState(0)
 
   const qc = useQueryClient()
+  const fieldLabel = useFieldLabel()
   const {
-    data: experts = [],
+    data = [],
     isLoading,
     error,
   } = useQuery({
     queryKey: adminKeys.experts(),
     queryFn: ({ signal }) => getExperts(signal),
   })
+  // The API sends field codes; filters and the table work on the labels
+  const experts = data.map((e) => ({ ...e, fields: e.fields.map(fieldLabel) }))
   const [selectedId, setSelectedId] = useState<string | null>(null)
 
   const setServiceStatus = async (
     id: string,
-    status: Expert['serviceStatus']
+    status: Expert['serviceStatus'],
+    note?: string
   ) => {
-    await setExpertServiceStatus(id, status)
+    await setExpertServiceStatus(id, status, note)
     await qc.invalidateQueries({ queryKey: adminKeys.experts() })
   }
   const fields = [...new Set(experts.flatMap((e) => e.fields))].sort((a, b) =>

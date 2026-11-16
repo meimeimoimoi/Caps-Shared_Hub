@@ -7,8 +7,11 @@ import { APPLICATION_STATUS, QUALIFICATION_STATUS } from '@/lib/constants'
 import { AdminLayout } from '@/app/layouts/admin/AdminLayout'
 import { useAdminNav } from '@/app/layouts/admin/useAdminNav'
 import { CustomSelect } from '@/components/ui/forms/custom-select'
-import { HelpTip } from '@/components/ui/feedback/help-tip'
 import { Toast } from '@/components/ui/feedback/toast'
+import {
+  errorToast,
+  type ToastContent,
+} from '@/components/ui/feedback/toast-content'
 import { StatusBadge } from '@/components/ui/display/status-badge'
 import { Pagination } from '@/components/ui/navigation/pagination'
 import { reassignReview, searchAssignments } from '../../features/expert-vetting/api/assignmentApi'
@@ -16,6 +19,9 @@ import { adminKeys } from '../../features/expert-vetting/api/queryKeys'
 import type { ClaimFilter, ReviewQueueRow } from '../../features/expert-vetting/api/reviewQueueApi'
 import { ReassignDialog } from '../../features/expert-vetting/components/ReassignDialog'
 import { formatDate, formatDateTime } from '../../features/expert-vetting/utils/applications'
+import { PageHeader } from '@/components/ui/layout/page-header'
+import { LoadError } from '@/components/ui/feedback/load-error'
+import { SkeletonRows } from '@/components/ui/display/skeleton-rows'
 
 // Open reviews of both gates: waiting for a reviewer or for the expert's supplement
 const GATES = {
@@ -49,13 +55,14 @@ export default function AdminReviewAssignmentsPage() {
   const [gate, setGate] = useState<GateFilter>('ALL')
   const [claim, setClaim] = useState<ClaimFilter>('ALL')
   const [paging, setPaging] = useState({ key: '', page: 1, pageSize: 10 })
-  const filterKey = `${gate}:${claim}`
+  const [search, setSearch] = useState('')
+  const filterKey = `${gate}:${claim}:${search.trim()}`
   const page = paging.key === filterKey ? paging.page : 1
   const [target, setTarget] = useState<ReviewQueueRow | null>(null)
-  const [toast, setToast] = useState<string | null>(null)
+  const [toast, setToast] = useState<ToastContent | null>(null)
   const clearToast = useCallback(() => setToast(null), [])
 
-  const params = { ...GATES[gate], search: '', page, pageSize: paging.pageSize, claim }
+  const params = { ...GATES[gate], search: search.trim(), page, pageSize: paging.pageSize, claim }
   const list = useQuery({
     queryKey: adminKeys.queue('assignment', params),
     queryFn: ({ signal }) => searchAssignments(params, signal),
@@ -74,9 +81,11 @@ export default function AdminReviewAssignmentsPage() {
     },
     onError: (e: unknown) =>
       setToast(
-        e instanceof ApiError && isReassignError(e.code)
-          ? t(`admin:assignments.errors.${e.code}`)
-          : t('admin:assignments.errors.failed')
+        errorToast(
+          e instanceof ApiError && isReassignError(e.code)
+            ? t(`admin:assignments.errors.${e.code}`)
+            : t('admin:assignments.errors.failed')
+        )
       ),
   })
 
@@ -86,16 +95,24 @@ export default function AdminReviewAssignmentsPage() {
     row.gate === 'GATE_1'
       ? APPLICATION_STATUS[row.status as keyof typeof APPLICATION_STATUS]
       : QUALIFICATION_STATUS[row.status as keyof typeof QUALIFICATION_STATUS]
-  const name = (row: ReviewQueueRow) => row.displayName ?? row.applicantUserId.slice(0, 8)
+  const name = (row: ReviewQueueRow) => row.displayName ?? t('common:accountId', { id: row.applicantUserId.slice(0, 8) })
 
   return (
-    <AdminLayout {...nav} section="assignments" breadcrumb={t('admin:navigation.assignments')}>
-      <div className="flex items-center gap-2">
-        <h1 className="text-h1">{t('admin:assignments.title')}</h1>
-        <HelpTip label={t('admin:assignments.helpLabel')}>{t('admin:assignments.help')}</HelpTip>
-      </div>
+    <AdminLayout
+      {...nav}
+      section="assignments"
+      breadcrumb={t('admin:navigation.assignments')}
+      search={search}
+      searchLabel={t('admin:assignments.searchLabel')}
+      onSearchChange={setSearch}
+    >
+      <PageHeader
+        title={t('admin:assignments.title')}
+        help={t('admin:assignments.help')}
+        helpLabel={t('admin:assignments.helpLabel')}
+      />
 
-      <div className="mt-10 mb-4 flex flex-wrap gap-2">
+      <div className="mt-8 mb-4 flex flex-wrap gap-2">
         <CustomSelect
           label={t('admin:assignments.gateFilter')}
           value={gate}
@@ -120,15 +137,16 @@ export default function AdminReviewAssignmentsPage() {
       </div>
 
       <div className="paper overflow-x-auto">
-        <table className="w-full min-w-[720px] text-sm">
-          <thead className="text-fg-muted text-left">
-            <tr className="border-border border-b">
-              <th className="px-4 py-3 font-medium">{t('admin:assignments.columns.expert')}</th>
-              <th className="px-4 py-3 font-medium">{t('admin:assignments.columns.gate')}</th>
-              <th className="px-4 py-3 font-medium">{t('admin:assignments.columns.submitted')}</th>
-              <th className="px-4 py-3 font-medium">{t('admin:assignments.columns.status')}</th>
-              <th className="px-4 py-3 font-medium">{t('admin:assignments.columns.holder')}</th>
-              <th className="px-4 py-3">
+        <table className="w-full min-w-180 text-sm">
+          <caption className="sr-only">{t('admin:assignments.title')}</caption>
+          <thead className="bg-sunken text-fg-muted text-left">
+            <tr className="[&>th]:whitespace-nowrap">
+              <th scope="col" className="px-4 py-3 font-semibold">{t('admin:assignments.columns.expert')}</th>
+              <th scope="col" className="px-4 py-3 font-semibold">{t('admin:assignments.columns.gate')}</th>
+              <th scope="col" className="px-4 py-3 font-semibold">{t('admin:assignments.columns.submitted')}</th>
+              <th scope="col" className="px-4 py-3 font-semibold">{t('admin:assignments.columns.status')}</th>
+              <th scope="col" className="px-4 py-3 font-semibold">{t('admin:assignments.columns.holder')}</th>
+              <th scope="col" className="px-4 py-3">
                 <span className="sr-only">{t('admin:assignments.columns.actions')}</span>
               </th>
             </tr>
@@ -148,7 +166,7 @@ export default function AdminReviewAssignmentsPage() {
                 <td className="px-4 py-3">
                   {row.claimedByUserId ? (
                     <>
-                      <span className="text-fg-strong block">{row.claimedByEmail ?? row.claimedByUserId.slice(0, 8)}</span>
+                      <span className="text-fg-strong block">{row.claimedByEmail ?? t('common:accountId', { id: row.claimedByUserId.slice(0, 8) })}</span>
                       <span className="text-fg-muted block text-xs tabular-nums">
                         {row.claimExpiresAt
                           ? t('admin:assignments.until', { time: formatDateTime(row.claimExpiresAt) })
@@ -171,10 +189,11 @@ export default function AdminReviewAssignmentsPage() {
                 </td>
               </tr>
             ))}
-            {!rows.length && (
+            {list.isLoading && <SkeletonRows cols={6} />}
+            {!list.isLoading && !rows.length && (
               <tr>
-                <td colSpan={6} className="text-fg-muted px-4 py-8 text-center">
-                  {list.isLoading ? t('common:loading') : (list.error?.message ?? t('admin:assignments.empty'))}
+                <td colSpan={6} className="text-fg-muted px-4 py-10 text-center">
+                  {list.error ? <LoadError /> : t('admin:assignments.empty')}
                 </td>
               </tr>
             )}

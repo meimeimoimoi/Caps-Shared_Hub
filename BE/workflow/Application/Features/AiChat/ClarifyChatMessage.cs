@@ -23,7 +23,6 @@ public static class ClarifyChatMessage
     public sealed class ClarifyChatMessageHandler(
         IChatMessageRepository chatMessageRepository,
         IConversationRepository conversationRepository,
-        IAiQuotaRepository aiQuotaRepository,
         IAiUsageRepository aiUsageRepository,
         IRagQueryClient ragQueryClient,
         IUnitOfWork unitOfWork,
@@ -64,12 +63,6 @@ public static class ClarifyChatMessage
             }
 
             var now = timeProvider.GetUtcNow();
-
-            var quota = await aiQuotaRepository.GetByUserIdAsync(command.UserId, ct);
-            if (quota?.HasAvailableQuota() != true)
-            {
-                throw WorkflowErrors.QuotaExhausted();
-            }
 
             // Retrieve the original user question preceding the AI clarification prompt
             var history = await chatMessageRepository.GetByConversationIdAsync(conversation.Id, ct);
@@ -113,13 +106,11 @@ public static class ClarifyChatMessage
 
             if (ragResponse.AnswerStatus == ChatMessageAnswerStatus.Answered)
             {
-                quota.Deduct(1, now);
-
                 var usage = AiUsage.Create(
                     command.UserId,
                     conversation.Id,
                     userClarificationMessage.Id,
-                    AiUsagePaidWith.Quota,
+                    AiUsagePaidWith.Free,
                     creditHold: 0,
                     AiUsageState.Captured,
                     now
@@ -168,7 +159,7 @@ public static class ClarifyChatMessage
                 aiMessage.CreatedAt
             );
 
-            return new SendChatMessageResultDto(userDto, aiDto, quota.Balance);
+            return new SendChatMessageResultDto(userDto, aiDto);
         }
     }
 }

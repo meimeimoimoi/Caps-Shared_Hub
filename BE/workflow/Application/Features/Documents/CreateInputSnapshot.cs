@@ -11,7 +11,12 @@ namespace Caps.Workflow.Application.Features.Documents;
 public static class CreateInputSnapshot
 {
     /// <summary>Command to save a new form input snapshot for a document.</summary>
-    public sealed record CreateInputSnapshotCommand(Guid DocumentId, Guid UserId, string Data);
+    public sealed record CreateInputSnapshotCommand(
+        Guid DocumentId,
+        Guid UserId,
+        string Data,
+        int? ExpectedRevision = null
+    );
 
     /// <summary>Handles versioning and persisting an immutable input snapshot.</summary>
     public sealed class CreateInputSnapshotHandler(
@@ -42,6 +47,9 @@ public static class CreateInputSnapshot
                 command.DocumentId,
                 ct
             );
+            if (command.ExpectedRevision is { } revision && revision != nextVersionNo - 1)
+                throw WorkflowErrors.InputRevisionChanged();
+
             var now = timeProvider.GetUtcNow();
 
             var snapshot = new InputSnapshot
@@ -63,8 +71,9 @@ public static class CreateInputSnapshot
             }
             catch (UniqueConstraintException)
             {
-                // Two saves at once picked the same number; the unique index let only one through
-                throw WorkflowErrors.SnapshotConflict();
+                throw command.ExpectedRevision.HasValue
+                    ? WorkflowErrors.InputRevisionChanged()
+                    : WorkflowErrors.SnapshotConflict();
             }
 
             return new InputSnapshotDto(

@@ -21,11 +21,6 @@ export const DISPUTE_OUTCOME = {
     hint: 'disputes.outcome.RESOLVE_PAY_EXPERT.hint',
     split: 'disputes.outcome.RESOLVE_PAY_EXPERT.split',
   },
-  RESOLVE_PARTIAL: {
-    label: 'disputes.outcome.RESOLVE_PARTIAL.label',
-    hint: 'disputes.outcome.RESOLVE_PARTIAL.hint',
-    split: 'disputes.outcome.RESOLVE_PARTIAL.split',
-  },
 } as const
 export type DisputeOutcome = keyof typeof DISPUTE_OUTCOME
 

@@ -1,4 +1,4 @@
-/** Proposed UI contract. Align with the gateway before enabling production endpoints. */
+/** Drafting UI models mapped from Workflow and the development fixtures. */
 export type InputValues = Record<string, string>
 export interface SchemaField {
   id: string
@@ -127,6 +127,8 @@ export interface ReviewReceipt {
 }
 export interface RequestContext {
   scope: string
+  workspaceId?: string
+  snapshotId?: string
   scenario: string
   signal?: AbortSignal
 }

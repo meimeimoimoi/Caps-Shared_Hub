@@ -318,7 +318,12 @@ export interface HistoryEntry {
 }
 
 export interface Expert {
+  /** Qualification id from the API (one row per Expert–Service); demo fixtures use their own id */
   id: string
+  /** Gate 1 application behind the row; absent in demo fixtures */
+  applicationId?: string
+  /** Service name; absent in demo fixtures */
+  serviceName?: string
   name: string
   email: string
   fields: string[]

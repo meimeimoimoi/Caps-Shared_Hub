@@ -3,16 +3,13 @@ import { isExpertDemo } from '@/lib/expert-data-source'
 import { CURRENT_ADMIN } from '@/features/expert-vetting/constants'
 import { i18n } from '@/lib/i18n'
 import { DISPUTE_OUTCOME } from '../constants'
+import { DISPUTE_ESCALATION_HOURS, DISPUTE_SLA_HOURS } from '../constants'
 import { getPublicExpert } from '@/features/marketplace/api/marketplaceApi'
-import { caseCode } from '@/features/review-case/mapper'
-import { caseText } from '@/features/review-case/ui'
-import type { AdminDisputeDto } from '@/features/review-case/types'
 import type { Dispute, DisputeDecisionInput, Escrow } from '../types'
 import { toEscrow, type EscrowDto } from './escrowMappers'
 
-/* Dev chạy demo thì đọc fixtures (bản sao để React Query thấy dữ liệu mới);
- * mutation demo sửa thẳng fixtures để lần refetch sau thấy thay đổi.
- * TODO(api): đối chiếu lại đường dẫn endpoint với BE khi có Swagger. */
+/* The demo reads fixtures (cloned so React Query sees new data) and its mutations edit them in place.
+ * Disputes use the workflow service; escrows have no list endpoint yet, so BASE is still a guess. */
 const fixtures = () => import('./fixtures')
 const REVIEW_BASE = '/api/v1/admin/review-cases'
 const ESCROWS = '/api/v1/admin/billing/escrows'
@@ -50,14 +47,61 @@ async function settle(call: Promise<unknown>) {
 const notConnected = () =>
   new Error(String(i18n.t('escrow.notConnected', { ns: 'admin' })))
 
-const REFUND_PCT = { RESOLVE_REFUND_USER: 100, RESOLVE_PAY_EXPERT: 0 } as const
+interface Envelope<T> {
+  data: T
+}
 
-function disputeFrom(d: AdminDisputeDto, expert: string): Dispute {
-  const issue =
-    caseText(`dialogs.report.issues.${d.dispute.reason}`) ?? d.dispute.reason
+/** AdminDisputeResponse of the workflow service */
+interface AdminDisputeDto {
+  reviewCaseId: string
+  /** Only admins see it; the expert never learns the client's contact */
+  requesterEmail: string | null
+  expertProfileId: string
+  fee: number
+  platformFeePct: number
+  result: string | null
+  reviewSummary: string | null
+  overdue: boolean
+  dispute: {
+    id: string
+    reason: string
+    description: string
+    status: string
+    openedAt: string
+    decideBy: string
+    expertStatement: string | null
+  }
+}
+
+/** Meeting of 2026-11-11: an upheld dispute refunds 50% and the platform keeps the rest; a rejected one splits as booked */
+const REFUND_PCT = {
+  RESOLVE_REFUND_USER: 50,
+  RESOLVE_PAY_EXPERT: 0,
+} as const
+
+const HOUR = 3_600_000
+
+/** ReviewDispute.Reasons on the server */
+const REASON_KEY = {
+  DELIVERABLE_INCOMPLETE: 'disputes.reason.DELIVERABLE_INCOMPLETE',
+  OBLIGATION_NOT_MET: 'disputes.reason.OBLIGATION_NOT_MET',
+  PROFESSIONAL_JUDGMENT: 'disputes.reason.PROFESSIONAL_JUDGMENT',
+} as const
+
+function toDispute(x: AdminDisputeDto, expert: string): Dispute {
+  const d = x.dispute
+  // An unknown code from a newer server is shown as sent rather than hidden
+  const reason =
+    d.reason in REASON_KEY
+      ? i18n.t(REASON_KEY[d.reason as keyof typeof REASON_KEY], { ns: 'admin' })
+      : d.reason
+  // The server only sends the deadline; a window longer than the base one means it was extended
+  const extended =
+    new Date(d.decideBy).getTime() - new Date(d.openedAt).getTime() >
+    (DISPUTE_SLA_HOURS + DISPUTE_ESCALATION_HOURS / 2) * HOUR
   return {
-    id: d.reviewCaseId,
-    code: caseCode(d.reviewCaseId),
+    id: x.reviewCaseId,
+    code: x.reviewCaseId.slice(0, 8).toUpperCase(),
     kind: 'DELIVERY_ISSUE',
     title:
       d.reviewSummary?.split('\n')[0].slice(0, 90) ?? caseCode(d.reviewCaseId),
@@ -78,21 +122,20 @@ function disputeFrom(d: AdminDisputeDto, expert: string): Dispute {
   }
 }
 
-const listOpenDisputes = async (signal?: AbortSignal) => {
-  const list = (
-    await api.get<{ data: AdminDisputeDto[] }>(`${REVIEW_BASE}/disputes`, {
-      signal,
-    })
-  ).data
+async function openDisputes(signal?: AbortSignal) {
+  const response = await api.get<Envelope<AdminDisputeDto[]>>(
+    `${CASES}/disputes`,
+    { signal }
+  )
   // ponytail: one marketplace call per distinct expert; add the name to the dispute API if the queue grows large
-  const ids = [...new Set(list.map((d) => d.expertProfileId))]
+  const ids = [...new Set(response.data.map((x) => x.expertProfileId))]
   const names = new Map(
     await Promise.all(
       ids.map(
         async (id) =>
           [
             id,
-            // A suspended expert is no longer listed: the email side still shows
+            // A suspended expert is no longer listed: the email still shows
             await getPublicExpert(id, signal)
               .then((e) => e.displayName ?? '')
               .catch(() => ''),
@@ -100,13 +143,15 @@ const listOpenDisputes = async (signal?: AbortSignal) => {
       )
     )
   )
-  return list.map((d) => disputeFrom(d, names.get(d.expertProfileId) ?? ''))
+  return response.data.map((x) =>
+    toDispute(x, names.get(x.expertProfileId) ?? '')
+  )
 }
 
 /* ── Khiếu nại ── */
 export async function getDisputes(signal?: AbortSignal) {
   if (isExpertDemo) return structuredClone((await fixtures()).mockDisputes)
-  return listOpenDisputes(signal)
+  return openDisputes(signal)
 }
 
 export async function getDispute(
@@ -117,8 +162,8 @@ export async function getDispute(
     const d = (await fixtures()).mockDisputes.find((x) => x.id === id)
     return d ? structuredClone(d) : null
   }
-  // The queue holds open disputes only: a decided one leaves it
-  return (await listOpenDisputes(signal)).find((d) => d.id === id) ?? null
+  // The server has the open queue only, no single-dispute endpoint
+  return (await openDisputes(signal)).find((x) => x.id === id) ?? null
 }
 
 export async function decideDispute(id: string, body: DisputeDecisionInput) {
@@ -133,11 +178,8 @@ export async function decideDispute(id: string, body: DisputeDecisionInput) {
     })
     return
   }
-  await api.post(`${REVIEW_BASE}/${id}/dispute/decision`, {
-    refundPct:
-      body.outcome === 'RESOLVE_PARTIAL'
-        ? (body.refundPct ?? 50)
-        : REFUND_PCT[body.outcome],
+  await api.post(`${CASES}/${id}/dispute/decision`, {
+    refundPct: REFUND_PCT[body.outcome],
     note: body.reason,
   })
 }
@@ -155,7 +197,7 @@ export async function escalateDispute(id: string) {
     })
     return
   }
-  await api.post(`${REVIEW_BASE}/${id}/dispute/extend`)
+  await api.post(`${CASES}/${id}/dispute/extend`)
 }
 
 /* ── Escrow ── */

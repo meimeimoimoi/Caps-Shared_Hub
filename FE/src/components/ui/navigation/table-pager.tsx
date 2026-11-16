@@ -9,6 +9,8 @@ interface TablePagerProps {
 
 /** Compatibility adapter for existing Admin tables. */
 export function TablePager({ paged, onPrev, onNext }: TablePagerProps) {
+  // An empty table needs no "showing 0–0 of 0" footer
+  if (paged.total === 0) return null
   const page = paged.pageIndex + 1
   return (
     <Pagination

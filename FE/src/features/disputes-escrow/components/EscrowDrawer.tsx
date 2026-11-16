@@ -5,6 +5,8 @@ import { CircleCheck, RotateCw, TriangleAlert } from 'lucide-react'
 import { formatDateTime } from '@/lib/utils'
 import { formatVnd } from '@/lib/format-money'
 import { Drawer } from '@/components/ui/feedback/drawer'
+import { Modal } from '@/components/ui/feedback/modal'
+import { HelpTip } from '@/components/ui/feedback/help-tip'
 import { TERMINATION_MATRIX } from '../constants'
 import { escrowSplit } from '../utils/escrow'
 import { SettleActions } from './SettleActions'
@@ -42,8 +44,9 @@ export function EscrowDrawer({
   onRefund?: () => Promise<unknown>
   onClose: () => void
 }) {
-  const { t } = useTranslation('admin')
+  const { t } = useTranslation(['admin', 'common'])
   const split = escrowSplit(e, platformShare)
+  const [retryConfirm, setRetryConfirm] = useState(false)
   const refundOpen =
     e.status === 'REFUND_PENDING' || e.status === 'REFUND_FAILED'
   // Bước 2 của "Đánh dấu đã hoàn": nhập mã giao dịch rồi xác nhận
@@ -57,7 +60,7 @@ export function EscrowDrawer({
     setError(null)
     onMarkRefunded(ref.trim())
       .then(() => setConfirming(false))
-      .catch((err: Error) => setError(err.message))
+      .catch(() => setError(t('common:states.actionFailed')))
       .finally(() => setBusy(false))
   }
   // Chưa nghiệm thu thì số chia chỉ là dự kiến
@@ -71,7 +74,7 @@ export function EscrowDrawer({
         e.status === 'PAYOUT_FAILED' ? (
           <button
             type="button"
-            onClick={onRetry}
+            onClick={() => setRetryConfirm(true)}
             disabled={retrying || !e.failure?.retryable}
             className="btn btn-press btn-primary"
           >
@@ -249,6 +252,94 @@ export function EscrowDrawer({
           </li>
         ))}
       </ol>
+      {retryConfirm && (
+        <Modal
+          title={t('escrow.retryConfirm.title', {
+            amount: formatVnd(split.expert),
+          })}
+          description={t('escrow.retryConfirm.body', { id: e.caseId })}
+          onClose={() => setRetryConfirm(false)}
+          footer={
+            <>
+              <button
+                type="button"
+                autoFocus
+                onClick={() => setRetryConfirm(false)}
+                className="btn btn-press btn-secondary"
+              >
+                {t('common:actions.cancel')}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setRetryConfirm(false)
+                  onRetry()
+                }}
+                className="btn btn-press btn-primary"
+              >
+                {t('escrow.retry')}
+              </button>
+            </>
+          }
+        />
+      )}
+      {/* Marking a refund records money already sent: same confirm pattern as every other money action */}
+      {confirming && (
+        <Modal
+          title={t('escrow.refund.title', { amount: formatVnd(split.client) })}
+          description={t('escrow.refund.body', {
+            account: e.refundAccount ?? '',
+          })}
+          onClose={() => setConfirming(false)}
+          preventClose={busy}
+          onSubmit={confirmRefund}
+          footer={
+            <>
+              <button
+                type="button"
+                onClick={() => setConfirming(false)}
+                disabled={busy}
+                className="btn btn-press btn-secondary"
+              >
+                {t('escrow.refund.cancel')}
+              </button>
+              <button
+                type="submit"
+                disabled={busy}
+                className="btn btn-press btn-primary"
+              >
+                {t('escrow.refund.confirm')}
+              </button>
+            </>
+          }
+        >
+          <label className="mt-4 flex flex-col gap-2 text-sm font-semibold">
+            <span className="flex items-center gap-2">
+              {t('escrow.refund.ref')}
+              <HelpTip label={t('escrow.refund.ref')}>
+                {t('escrow.refund.refHint')}
+              </HelpTip>
+            </span>
+            <input
+              autoFocus
+              value={ref}
+              onChange={(ev) => setRef(ev.target.value)}
+              aria-invalid={!!error}
+              aria-describedby={error ? 'refund-ref-error' : undefined}
+              className="border-border-control rounded-control shadow-control bg-paper h-control num aria-[invalid=true]:border-danger border px-3 text-base font-normal"
+            />
+          </label>
+          {error && (
+            <p
+              id="refund-ref-error"
+              role="alert"
+              className="text-danger mt-2 text-sm"
+            >
+              {error}
+            </p>
+          )}
+        </Modal>
+      )}
     </Drawer>
   )
 }

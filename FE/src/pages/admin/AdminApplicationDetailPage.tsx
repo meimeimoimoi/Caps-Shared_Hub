@@ -11,6 +11,10 @@ import {
 import { ToolHeader } from '@/components/ui/layout/tool-header'
 import { CaseHeader } from '@/components/ui/layout/case-header'
 import { Toast } from '@/components/ui/feedback/toast'
+import {
+  errorToast,
+  type ToastContent,
+} from '@/components/ui/feedback/toast-content'
 import { ReviewPageLayout } from '@/features/expert-vetting/components/ReviewPageLayout'
 import { getEvidenceFile } from '../../features/expert-vetting/api/adminApi'
 import { AiScreeningTab } from '../../features/expert-vetting/components/AiScreeningTab'
@@ -35,6 +39,7 @@ import { useApplicationReview } from '../../features/expert-vetting/hooks/useApp
 import { useReviewClaim } from '../../features/expert-vetting/hooks/useReviewClaim'
 import { useTranslation } from 'react-i18next'
 import { StatusBadge } from '@/components/ui/display/status-badge'
+import { LoadError } from '@/components/ui/feedback/load-error'
 
 const DECISION_ERRORS = [
   'INVALID_ELIGIBILITY_CRITERIA',
@@ -72,7 +77,7 @@ export default function AdminApplicationDetailPage({ embedded = false }: { embed
   const tab: TabKey = chosenTab ?? (detail?.screening ? 'ai' : 'profile')
   const [docKey, setDocKey] = useState<string>()
   const [confirming, setConfirming] = useState(false)
-  const [toast, setToast] = useState<string | null>(null)
+  const [toast, setToast] = useState<ToastContent | null>(null)
   const clearToast = useCallback(() => setToast(null), [])
   const listPath = embedded ? '/reviewer/gate-1' : '/admin/experts/pending'
 
@@ -94,11 +99,14 @@ export default function AdminApplicationDetailPage({ embedded = false }: { embed
         breadcrumb={listLink}
         pendingCount={nav.pendingCount}
       >
-        <h1 className="text-h1-tool">
+        <h1 className="text-h1" aria-live="polite">
           {review.isLoading
             ? t('common:loading')
-            : (review.error?.message ?? t('admin:detail.notFound', { id }))}
+            : review.error
+              ? t('common:states.loadFailed')
+              : t('admin:detail.notFound', { id })}
         </h1>
+        {review.error && <LoadError className="paper mt-6 px-4 py-8" />}
         <Link
           to={listPath}
           className="text-accent-text mt-3 inline-block underline"
@@ -134,12 +142,12 @@ export default function AdminApplicationDetailPage({ embedded = false }: { embed
     e instanceof ApiError && (e.code === 'REVIEW_CLAIMED' || e.code === 'REVIEW_NOT_CLAIMED')
       ? t(`admin:claim.errors.${e.code}`)
       : t('admin:claim.errors.failed')
-  const takeClaim = () => void claim.claim().catch((e: unknown) => setToast(claimError(e)))
+  const takeClaim = () => void claim.claim().catch((e: unknown) => setToast(errorToast(claimError(e))))
   const releaseClaim = () =>
     void claim
       .release()
       .then(() => setToast(t('admin:claim.released')))
-      .catch((e: unknown) => setToast(claimError(e)))
+      .catch((e: unknown) => setToast(errorToast(claimError(e))))
 
   const finish = (note: string) => {
     const outcome = review.outcome
@@ -152,7 +160,7 @@ export default function AdminApplicationDetailPage({ embedded = false }: { embed
       })
       .catch((e: unknown) => {
         setConfirming(false)
-        setToast(errorText(e))
+        setToast(errorToast(errorText(e)))
       })
   }
 
@@ -173,7 +181,7 @@ export default function AdminApplicationDetailPage({ embedded = false }: { embed
       })
       .catch(() => {
         win?.close()
-        setToast(t('admin:detail.documents.openFailed'))
+        setToast(errorToast(t('admin:detail.documents.openFailed')))
       })
   }
 
@@ -241,7 +249,7 @@ export default function AdminApplicationDetailPage({ embedded = false }: { embed
       {embedded && (
         <header className="min-w-0">
           <div className="flex flex-wrap items-center gap-3">
-            <h1 className="text-text-strong !font-sans text-xl font-semibold tracking-tight break-words">{detail.name}</h1>
+            <h1 className="text-h2 text-fg-strong break-words">{detail.name}</h1>
             <StatusBadge status={APPLICATION_STATUS[status]} />
           </div>
           <dl className="text-text-muted mt-1.5 flex flex-wrap items-center gap-x-1.5 gap-y-1 text-sm [&>div+div]:before:mr-1.5 [&>div+div]:before:content-['·']">

@@ -1,4 +1,3 @@
-import { useAuthStore } from '@/features/auth/store/authStore'
 import { HomeBackToTop } from './HomeBackToTop'
 import { PublicFooter } from '@/components/ui/layout/public-footer'
 import { HomeHero } from './HomeHero'
@@ -15,7 +14,6 @@ import { useNavigate } from 'react-router-dom'
 import { useHomeMotion } from '../hooks/useHomeMotion'
 import '@/styles/public-site.css'
 export function HomeLanding() {
-  const authenticated = useAuthStore((state) => state.isAuthenticated)
   const { t } = useTranslation('home')
   const root = useRef<HTMLDivElement>(null)
   const navigate = useNavigate()
@@ -40,7 +38,7 @@ export function HomeLanding() {
         {t('skip')}
       </a>
       <div className="env" aria-hidden="true"></div>
-      <PublicNavigation authenticated={authenticated} />
+      <PublicNavigation />
       <HomeHero onAskAi={askAi} />
 
       <main id="main" tabIndex={-1}>

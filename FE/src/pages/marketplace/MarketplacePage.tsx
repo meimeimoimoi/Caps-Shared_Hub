@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
+import { useEffect, useMemo, useRef, type CSSProperties } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import { Link, useSearchParams } from 'react-router-dom'
 import { Award, Info, RotateCw, Search, SearchX, Star } from 'lucide-react'
@@ -36,10 +36,12 @@ const EMPTY: MarketplaceData = { services: [], experts: [] }
 function ExpertRow({
   listing: { expert: e, offer },
   service,
+  listingSearch,
   showSla,
 }: {
   listing: Listing
   service: string
+  listingSearch: string
   showSla: boolean
 }) {
   const { t } = useTranslation('marketplace')
@@ -47,7 +49,13 @@ function ExpertRow({
   const sla = useSlaLabel()
   const fieldLabel = useFieldLabel()
   const open = canRequest(e)
-  const profile = `/experts/${encodeURIComponent(e.id)}?service=${encodeURIComponent(service)}`
+  const context = new URLSearchParams(listingSearch)
+  const profileParams = new URLSearchParams({ service, listing: listingSearch })
+  for (const key of ['document', 'draftVersion', 'scenario']) {
+    const value = context.get(key)
+    if (value) profileParams.set(key, value)
+  }
+  const profile = `/experts/${encodeURIComponent(e.id)}?${profileParams}`
   return (
     <li
       className="mk-row"
@@ -162,10 +170,27 @@ export default function MarketplacePage() {
   // Delivery SLA is hidden until the service catalog carries it (none in API mode yet)
   const showSla = useMemo(() => hasDeliverySla(data.experts), [data])
 
-  const [search, setSearch] = useState('')
-  const [openOnly, setOpenOnly] = useState(false)
-  const [slaMax, setSlaMax] = useState(0)
-  const [sortChoice, setSort] = useState<SortKey>('recommended')
+  const search = params.get('q') ?? ''
+  const openOnly = params.get('open') === '1'
+  const slaMax =
+    SLA_LIMITS.find((limit) => limit === Number(params.get('sla'))) ?? 0
+  const rawSort = params.get('sort')
+  const sortChoice =
+    rawSort === 'rating' || rawSort === 'price' || rawSort === 'sla'
+      ? rawSort
+      : 'recommended'
+  const setFilters = (values: Record<string, string>) =>
+    setParams(
+      (previous) => {
+        const next = new URLSearchParams(previous)
+        for (const [key, value] of Object.entries(values)) {
+          if (value) next.set(key, value)
+          else next.delete(key)
+        }
+        return next
+      },
+      { replace: true, preventScrollReset: true }
+    )
   const sort = showSla || sortChoice !== 'sla' ? sortChoice : 'recommended'
   const picker = useRef<HTMLDivElement>(null)
   const list = useRef<HTMLOListElement>(null)
@@ -238,9 +263,7 @@ export default function MarketplacePage() {
   const filtered = search.trim() !== '' || openOnly || slaMax !== 0
   const reset = () =>
     withViewTransition(() => {
-      setSearch('')
-      setOpenOnly(false)
-      setSlaMax(0)
+      setFilters({ q: '', open: '', sla: '' })
     })
 
   return (
@@ -358,7 +381,7 @@ export default function MarketplacePage() {
                 placeholder={t('filters.searchPlaceholder')}
                 onChange={(event) => {
                   const value = event.target.value
-                  withViewTransition(() => setSearch(value))
+                  withViewTransition(() => setFilters({ q: value }))
                 }}
               />
             </label>
@@ -370,7 +393,9 @@ export default function MarketplacePage() {
                 label={t('filters.sla')}
                 value={String(slaMax)}
                 onChange={(value) =>
-                  withViewTransition(() => setSlaMax(Number(value)))
+                  withViewTransition(() =>
+                    setFilters({ sla: value === '0' ? '' : value })
+                  )
                 }
                 options={slaOptions}
               />
@@ -381,7 +406,9 @@ export default function MarketplacePage() {
               menuClassName="mk-select-menu"
               label={t('filters.sort')}
               value={sort}
-              onChange={(value) => withViewTransition(() => setSort(value))}
+              onChange={(value) =>
+                withViewTransition(() => setFilters({ sort: value }))
+              }
               options={sortOptions}
             />
             <label className="mk-switch">
@@ -391,7 +418,9 @@ export default function MarketplacePage() {
                 checked={openOnly}
                 onChange={(event) => {
                   const checked = event.target.checked
-                  withViewTransition(() => setOpenOnly(checked))
+                  withViewTransition(() =>
+                    setFilters({ open: checked ? '1' : '' })
+                  )
                 }}
               />
               <span className="mk-switch-track" aria-hidden="true" />
@@ -459,6 +488,7 @@ export default function MarketplacePage() {
                     key={listing.expert.id}
                     listing={listing}
                     service={service}
+                    listingSearch={params.toString()}
                     showSla={showSla}
                   />
                 ))}

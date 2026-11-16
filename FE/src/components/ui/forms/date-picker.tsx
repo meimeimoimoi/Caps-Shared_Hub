@@ -14,17 +14,27 @@ import { useMotion } from '@/components/ui/motion'
 const iso = (date: Date) =>
   `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
 
-/** Birthday calendar with direct month/year navigation; values remain YYYY-MM-DD. */
+/** Calendar with direct month/year navigation; values remain YYYY-MM-DD. */
 export function DatePicker({
   value,
   onChange,
   id,
   error,
+  min,
+  max,
+  name = 'birth',
+  errorId = 'error-birth',
+  inline = false,
 }: {
   value: string
   onChange: (value: string) => void
   id: string
   error?: string
+  min?: string
+  max?: string | null
+  name?: string
+  errorId?: string
+  inline?: boolean
 }) {
   const { t, i18n } = useTranslation('common')
   const locale = locales[isLanguage(i18n.language) ? i18n.language : 'vi']
@@ -42,7 +52,16 @@ export function DatePicker({
   const root = useRef<HTMLDivElement>(null)
   const trigger = useRef<HTMLButtonElement>(null)
   const today = new Date()
-  const minYear = today.getFullYear() - 120
+  const minDate = min ? new Date(`${min}T00:00:00`) : new Date(today.getFullYear() - 120, 0, 1)
+  const maxDate = max === undefined ? today : max ? new Date(`${max}T00:00:00`) : null
+  const minYear = minDate.getFullYear()
+  const maxYear = maxDate?.getFullYear() ?? 9999
+  const firstMonth = new Date(minYear, minDate.getMonth(), 1)
+  const lastMonth = maxDate ? new Date(maxYear, maxDate.getMonth(), 1) : new Date(maxYear, 11, 1)
+  const clampMonth = (date: Date) =>
+    new Date(Math.max(+firstMonth, Math.min(+lastMonth, +date)))
+  const isOutOfRange = (date: Date) =>
+    iso(date) < iso(minDate) || (maxDate !== null && iso(date) > iso(maxDate))
   const [open, setOpen] = useState(false)
   const popupMotion = useMotion({ preset: 'popover', disabled: !open, replayKey: open ? 1 : 0 })
   const [view, setView] = useState<'days' | 'months' | 'years'>('days')
@@ -85,7 +104,7 @@ export function DatePicker({
         ? new Date(
             Math.max(
               minYear,
-              Math.min(today.getFullYear(), year + direction * 12)
+              Math.min(maxYear, year + direction * 12)
             ),
             month,
             1
@@ -101,7 +120,7 @@ export function DatePicker({
         if (!event.currentTarget.contains(event.relatedTarget)) setOpen(false)
       }}
       onKeyDown={(event) => {
-        if (event.key === 'Escape') {
+        if (open && event.key === 'Escape') {
           event.preventDefault()
           event.stopPropagation()
           close()
@@ -127,7 +146,7 @@ export function DatePicker({
         cells[Math.max(0, Math.min(cells.length - 1, index + offset))]?.focus()
       }}
     >
-      <input type="hidden" name="birth" value={value} />
+      <input type="hidden" name={name} value={value} />
       <button
         ref={trigger}
         id={id}
@@ -136,7 +155,7 @@ export function DatePicker({
         aria-expanded={open}
         aria-controls={open ? popupId : undefined}
         aria-invalid={!!error}
-        aria-describedby={error ? 'error-birth' : undefined}
+        aria-describedby={error ? errorId : undefined}
         className={`${formControlClassName} flex items-center justify-between gap-3 text-left ${error ? '!border-ex-error-text' : ''}`}
         onClick={() => {
           if (open) {
@@ -144,9 +163,13 @@ export function DatePicker({
             return
           }
           setCursor(
-            value
-              ? new Date(`${value}T00:00:00`)
-              : new Date(today.getFullYear() - 25, today.getMonth(), 1)
+            clampMonth(
+              value
+                ? new Date(`${value}T00:00:00`)
+                : min
+                  ? minDate
+                  : new Date(today.getFullYear() - 25, today.getMonth(), 1)
+            )
           )
           setView('days')
           setOpen(true)
@@ -174,7 +197,7 @@ export function DatePicker({
           data-date-picker-panel
           role="dialog"
           aria-label={t('calendar.chooseDate')}
-          className="text-ex-ink [&_button:focus-visible]:outline-ex-accent absolute top-[calc(100%+8px)] left-0 z-50 w-[308px] max-w-[min(100%,calc(100vw-40px))] rounded-[14px] bg-surface p-3.5 text-[13px] tabular-nums shadow-overlay [&_button]:inline-flex [&_button]:cursor-pointer [&_button]:items-center [&_button]:justify-center [&_button]:rounded-[7px] [&_button]:border-0 [&_button]:font-[inherit] [&_button]:leading-none [&_button]:transition-colors [&_button]:duration-[var(--motion-feedback)] [&_button]:ease-[var(--motion-ease-enter)] motion-reduce:[&_button]:transition-none [&_button:disabled]:cursor-default [&_button:disabled]:opacity-35 [&_button:enabled:hover]:bg-surface-muted [&_button:focus-visible]:outline-2 [&_button:focus-visible]:outline-offset-2"
+          className={`${inline ? 'border-border-subtle mt-2 border' : 'absolute top-[calc(100%+8px)] left-0 z-50 shadow-overlay'} text-ex-ink [&_button:focus-visible]:outline-ex-accent w-[308px] max-w-[min(100%,calc(100vw-40px))] rounded-[14px] bg-surface p-3.5 text-[13px] tabular-nums [&_button]:inline-flex [&_button]:cursor-pointer [&_button]:items-center [&_button]:justify-center [&_button]:rounded-[7px] [&_button]:border-0 [&_button]:font-[inherit] [&_button]:leading-none [&_button]:transition-colors [&_button]:duration-[var(--motion-feedback)] [&_button]:ease-[var(--motion-ease-enter)] motion-reduce:[&_button]:transition-none [&_button:disabled]:cursor-default [&_button:disabled]:opacity-35 [&_button:enabled:hover]:bg-surface-muted [&_button:focus-visible]:outline-2 [&_button:focus-visible]:outline-offset-2`}
         >
           <div className="mb-3 flex items-center justify-between gap-1">
             <button
@@ -189,7 +212,7 @@ export function DatePicker({
                 view === 'months' ||
                 (view === 'years'
                   ? yearStart <= minYear
-                  : year === minYear && month === 0)
+                  : year === minYear && month === firstMonth.getMonth())
               }
               onClick={() => move(-1)}
             >
@@ -229,8 +252,8 @@ export function DatePicker({
               disabled={
                 view === 'months' ||
                 (view === 'years'
-                  ? yearStart + 11 >= today.getFullYear()
-                  : year === today.getFullYear() && month === today.getMonth())
+                  ? yearStart + 11 >= maxYear
+                  : year === maxYear && month === lastMonth.getMonth())
               }
               onClick={() => move(1)}
             >
@@ -271,7 +294,7 @@ export function DatePicker({
                         aria-current={
                           iso(date) === iso(today) ? 'date' : undefined
                         }
-                        disabled={iso(date) > iso(today)}
+                        disabled={isOutOfRange(date)}
                         className={cellClass}
                         onClick={() => choose(date)}
                       >
@@ -288,8 +311,8 @@ export function DatePicker({
                 const number = view === 'years' ? yearStart + i : i
                 const disabled =
                   view === 'years'
-                    ? number < minYear || number > today.getFullYear()
-                    : year === today.getFullYear() && i > today.getMonth()
+                    ? number < minYear || number > maxYear
+                    : new Date(year, i, 1) < firstMonth || new Date(year, i, 1) > lastMonth
                 return (
                   <button
                     key={i}
@@ -303,18 +326,11 @@ export function DatePicker({
                     className={cellClass}
                     onClick={() => {
                       setCursor(
-                        new Date(
+                        clampMonth(new Date(
                           view === 'years' ? number : year,
-                          view === 'years'
-                            ? Math.min(
-                                month,
-                                number === today.getFullYear()
-                                  ? today.getMonth()
-                                  : 11
-                              )
-                            : number,
+                          view === 'years' ? month : number,
                           1
-                        )
+                        ))
                       )
                       setView(view === 'years' ? 'months' : 'days')
                     }}

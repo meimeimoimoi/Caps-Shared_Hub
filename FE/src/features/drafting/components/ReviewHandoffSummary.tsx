@@ -3,7 +3,7 @@ import { DraftUiError } from '@/features/drafting/utils/DraftUiError'
 import { useDraftPresentation } from '@/features/drafting/hooks/useDraftPresentation'
 import { useTranslation } from 'react-i18next'
 import { useRef, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { Modal } from '@/components/ui/feedback/modal'
 import { draftApi, draftCapabilities } from '../api/draftApi'
 import { useDraftAction } from '../hooks/useDrafting'
@@ -20,6 +20,7 @@ export function ReviewHandoffSummary({
   onClose: () => void
 }) {
   const display = useDraftPresentation()
+  const [params] = useSearchParams()
 
   const { t } = useTranslation('drafting')
 
@@ -52,7 +53,7 @@ export function ReviewHandoffSummary({
           >
             {t('close')}
           </DraftButton>
-          {!receipt && (
+          {isDraftMock && !receipt && (
             <DraftButton
               disabled={
                 mutation.isPending ||
@@ -107,12 +108,14 @@ export function ReviewHandoffSummary({
           </dd>
         </div>
       </dl>
-      <p className="rounded-control bg-sunken mt-5 p-4 text-sm">
-        {t(
-          'thisBoundaryDoesNotBookAnExpertSendNotificationsOrTakePaymentNoSupportingDocumentsAreRequiredByTheCurrentDemoSchema'
-        )}
-      </p>
-      {!draftCapabilities.review && (
+      {isDraftMock && (
+        <p className="rounded-control bg-sunken mt-5 p-4 text-sm">
+          {t(
+            'thisBoundaryDoesNotBookAnExpertSendNotificationsOrTakePaymentNoSupportingDocumentsAreRequiredByTheCurrentDemoSchema'
+          )}
+        </p>
+      )}
+      {isDraftMock && !draftCapabilities.review && (
         <p className="text-fg-muted mt-4 text-sm">
           {t(
             'expertReviewIntegrationHasNotBeenConnectedThisPackageCannotBeSubmittedYet'
@@ -144,11 +147,21 @@ export function ReviewHandoffSummary({
             : receipt.message}
         </p>
       )}
-      {receipt && (
-        <Link to="/marketplace" className="btn btn-press btn-primary mt-4">
-          {t('chooseExpertOnMarketplace')}
-        </Link>
-      )}
+      {draft.actions.review.allowed &&
+        draft.assessment.status === 'COMPLETED' && (
+          <Link
+            to={`/marketplace?${new URLSearchParams({
+              document: draft.workspaceId,
+              draftVersion: draft.id,
+              ...(isDraftMock
+                ? { scenario: params.get('scenario') ?? 'ready' }
+                : {}),
+            })}`}
+            className="btn btn-press btn-primary mt-4"
+          >
+            {t('chooseExpertOnMarketplace')}
+          </Link>
+        )}
     </Modal>
   )
 }

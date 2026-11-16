@@ -34,6 +34,25 @@ public sealed class PlatformFeesController(ICurrentUser currentUser) : Controlle
         return Ok(ApiResponse<IReadOnlyList<PlatformFeeResponse>>.Ok(rates));
     }
 
+    /// <summary>Lists every platform fee set for one catalog service, newest first.</summary>
+    /// <remarks>Rows are never changed: rates in force, pending and cancelled, each with who set it and why.</remarks>
+    /// <response code="200">The history (empty for an unknown service or one never priced).</response>
+    /// <response code="403">Missing the PricingManage permission.</response>
+    [HttpGet("{serviceCode}/history")]
+    public async Task<IActionResult> History(
+        string serviceCode,
+        [FromServices]
+            IQueryHandler<
+            ListPlatformFeeHistoryQuery,
+            IReadOnlyList<PlatformFeeChangeResponse>
+        > handler,
+        CancellationToken ct
+    )
+    {
+        var history = await handler.HandleAsync(new(serviceCode), ct);
+        return Ok(ApiResponse<IReadOnlyList<PlatformFeeChangeResponse>>.Ok(history));
+    }
+
     /// <summary>Announces a new platform fee for a catalog service from effectiveOn.</summary>
     /// <remarks>
     /// A change, raise or cut, must start at least the PlatformFeeNoticeDays policy ahead and replaces a change
@@ -64,7 +83,11 @@ public sealed class PlatformFeesController(ICurrentUser currentUser) : Controlle
                 r.NoResponseHours,
                 r.NoResponseRefundPercent,
                 r.NoResponseExpertPercent,
-                r.EffectiveOn
+                // A page not yet sending it gets the agreed default
+                r.NoDeliveryRefundPercent
+                    ?? 50,
+                r.EffectiveOn,
+                r.Reason
             ),
             ct
         );

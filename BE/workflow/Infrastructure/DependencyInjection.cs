@@ -1,6 +1,7 @@
 using Caps.Common.Persistence;
 using Caps.Workflow.Application.Abstractions;
 using Caps.Workflow.Application.Abstractions.Documents;
+using Caps.Workflow.Domain.Review;
 using Caps.Workflow.Infrastructure.Clients;
 using Caps.Workflow.Infrastructure.Documents;
 using Caps.Workflow.Infrastructure.Integrations;
@@ -31,6 +32,12 @@ public static class DependencyInjection
         );
 
         // Repositories
+        // Public holidays as yyyy-MM-dd under WorkCalendar:Holidays; Saturdays and Sundays never count
+        services.AddSingleton(
+            new WorkCalendar(
+                configuration.GetSection("WorkCalendar:Holidays").Get<DateOnly[]>() ?? []
+            )
+        );
         services.AddScoped<IReviewCaseRepository, ReviewCaseRepository>();
         services.AddScoped<ICaseMessageRepository, CaseMessageRepository>();
         services.AddScoped<ICaseReadMarkerRepository, CaseReadMarkerRepository>();

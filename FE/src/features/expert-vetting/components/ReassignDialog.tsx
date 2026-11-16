@@ -66,7 +66,7 @@ export function ReassignDialog({
             <option value="">{reviewers.isLoading ? t('common:loading') : t('admin:assignments.dialog.choose')}</option>
             {options.map((r) => (
               <option key={r.userId} value={r.userId}>
-                {r.email ?? r.userId.slice(0, 8)}
+                {r.email ?? t('common:accountId', { id: r.userId.slice(0, 8) })}
               </option>
             ))}
           </select>

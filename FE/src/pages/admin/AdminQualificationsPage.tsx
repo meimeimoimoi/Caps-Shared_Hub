@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next'
+import { Link } from 'react-router-dom'
 import { ListFilter } from 'lucide-react'
 import { CustomSelect } from '@/components/ui/forms/custom-select'
 import { AdminLayout } from '@/app/layouts/admin/AdminLayout'
@@ -9,6 +10,8 @@ import {
   useQualificationQueue,
 } from '../../features/expert-vetting/hooks/useQualificationQueue'
 import type { QualificationScope } from '../../features/expert-vetting/types'
+import { PageHeader } from '@/components/ui/layout/page-header'
+import { LoadError } from '@/components/ui/feedback/load-error'
 
 /** Gate 2 queue for reviewers, or the final approval queue for System Admins */
 export default function AdminQualificationsPage({
@@ -32,17 +35,18 @@ export default function AdminQualificationsPage({
       search={query}
       onSearchChange={setQuery}
     >
-      <h1 className="text-h1">
-        {review ? t('qualifications.title') : t('finalApproval.title')}
-      </h1>
-      <p className="text-fg-muted mt-3">
-        {review
-          ? t('qualifications.description')
-          : t('finalApproval.description')}
-      </p>
+      <PageHeader
+        title={review ? t('qualifications.title') : t('finalApproval.title')}
+        help={
+          review
+            ? t('qualifications.description')
+            : t('finalApproval.description')
+        }
+        helpLabel={review ? undefined : t('finalApproval.helpLabel')}
+      />
 
       {/* Status filter as one compact dropdown; the count of each status sits in its option */}
-      <div className="mt-10 mb-4">
+      <div className="mt-8 mb-4">
         <CustomSelect
           label={t('pendingExperts.filterAria')}
           value={tab}
@@ -63,7 +67,29 @@ export default function AdminQualificationsPage({
         paged={paged}
         onPrev={prev}
         onNext={next}
-        empty={isLoading ? t('common:loading') : error?.message}
+        loading={isLoading}
+        empty={
+          error ? (
+            <LoadError error={error} />
+          ) : review ? undefined : (
+            // Say which filter is empty and where earlier files are, instead of a bare "no files"
+            <div className="flex flex-col items-center gap-3">
+              <p>
+                {query.trim()
+                  ? t('finalApproval.emptySearch', { query: query.trim() })
+                  : t('finalApproval.emptyQueue', {
+                      status: t(`qualifications.tabs.${tab}`),
+                    })}
+              </p>
+              <Link
+                to="/admin/experts/assignments"
+                className="btn btn-press btn-secondary h-9 px-3 text-sm no-underline"
+              >
+                {t('finalApproval.seeEarlier')}
+              </Link>
+            </div>
+          )
+        }
         linkBase={
           review ? '/admin/experts/qualifications' : '/admin/experts/approvals'
         }

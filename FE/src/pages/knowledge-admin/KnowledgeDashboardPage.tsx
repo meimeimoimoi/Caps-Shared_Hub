@@ -1,16 +1,9 @@
-import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { useQuery } from '@tanstack/react-query'
 import { formatDayMonth } from '@/lib/utils'
 import { useFormatters } from '@/hooks/useFormatters'
+import { HelpTip } from '@/components/ui/feedback/help-tip'
 import { KnowledgeLayout } from '@/app/layouts/knowledge/KnowledgeLayout'
 import { useKnowledgeNav } from '@/app/layouts/knowledge/useKnowledgeNav'
-import {
-  getDocuments,
-  getPipelineSummary,
-} from '../../features/knowledgeAdmin-review-approval/api/knowledgeApi'
-import { knowledgeKeys } from '../../features/knowledgeAdmin-review-approval/api/queryKeys'
-import { useCollection } from '../../features/knowledgeAdmin-sources/hooks/useCollection'
 import { RUN_TRIGGER } from '../../features/knowledgeAdmin-sources/constants'
 import { REVIEW_SLA_DAYS } from '../../features/knowledgeAdmin-review-approval/constants'
 import { KnowledgeGrowth } from '../../features/knowledgeAdmin-analytics/components/KnowledgeGrowth'
@@ -18,47 +11,40 @@ import { useKnowledgeStats } from '../../features/knowledgeAdmin-analytics/hooks
 import { BarList } from '../../features/admin-analytics/components/BarList'
 import { KpiCard } from '../../features/admin-analytics/components/KpiCard'
 
-/* Tổng quan Knowledge Admin: chỉ số, tăng trưởng kho, chỗ đang tắc. Việc gấp nằm ở chuông thông báo (useKnowledgeNav).
- * Dùng chung cache với các màn chi tiết */
+/* Knowledge Admin overview: key figures, growth of the base, where work is stuck. Urgent items live in the
+ * notification bell (useKnowledgeNav), which reads the same cached statistics. */
 export default function KnowledgeDashboardPage() {
   const nav = useKnowledgeNav()
   const f = useFormatters()
-  const [now] = useState(() => Date.now())
-  const summary = useQuery({
-    queryKey: knowledgeKeys.summary(),
-    queryFn: ({ signal }) => getPipelineSummary(signal),
-  })
-  const review = useQuery({
-    queryKey: knowledgeKeys.documents('review'),
-    queryFn: ({ signal }) => getDocuments('review', signal),
-  })
-  const collection = useCollection()
   const stats = useKnowledgeStats()
 
-  const s = summary.data
+  const data = stats.data
+  const s = data?.pipeline
   const failed = s ? s.indexFailed + s.parseFailed : 0
-  const waited = (iso: string) =>
-    Math.floor((now - new Date(iso).getTime()) / 86_400_000)
-  const pendingDocs = review.data ?? []
-  const oldestDays = pendingDocs.length
-    ? Math.max(...pendingDocs.map((d) => waited(d.queuedAt)))
-    : null
-  const schedule = collection.data?.schedule
-  const runs = collection.data?.runs.slice(0, 3) ?? []
+  const ages = data?.pendingAges ?? []
+  const oldestDays = ages.length ? Math.max(...ages.map((a) => a.days)) : null
+  const thisMonth = data?.months.at(-1)
+  const lastClosed = data?.months.filter((p) => !p.partial).at(-1)
+  const runs = data?.recentRuns ?? []
+  const lastRun = runs[0]
+  const waiting = (min: number, max: number) =>
+    ages.filter((a) => a.days >= min && a.days <= max).reduce((sum, a) => sum + a.count, 0)
 
   return (
     <KnowledgeLayout {...nav} section="overview" breadcrumb="Tổng quan">
-      <h1 className="text-h1">Tổng quan</h1>
-      <p className="text-fg-muted mt-3">
-        Tình trạng kho tri thức. Việc cần xử lý nằm ở chuông thông báo.
-      </p>
+      <div className="flex items-center gap-2">
+        <h1 className="text-h1">Tổng quan</h1>
+        <HelpTip label="Về trang Tổng quan">
+          Tình trạng kho tri thức. Việc cần xử lý nằm ở chuông thông báo.
+        </HelpTip>
+      </div>
 
       <div className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <KpiCard
           label="Chờ rà soát"
-          value={s?.pending}
+          value={s?.awaitingReview}
           note={
-            !review.data
+            !data
               ? ''
               : oldestDays !== null
                 ? `Lâu nhất ${oldestDays} ngày`
@@ -81,30 +67,40 @@ export default function KnowledgeDashboardPage() {
           label="Đã index"
           value={s?.indexed}
           note={
-            s ? `${s.indexing} đang index · ${s.parsing} đang bóc tách` : ''
+            s ? `${s.approved} chờ index · ${s.awaitingContent} đang bóc tách` : ''
           }
           to="/knowledge/documents"
         />
         <KpiCard
           label="Thu thập tháng này"
-          value={s?.collectedThisMonth}
+          value={thisMonth && thisMonth.crawled + thisMonth.uploaded}
           note={
-            schedule
-              ? `Lần chạy tới: ${formatDayMonth(schedule.nextRunAt)}`
-              : ''
+            !data
+              ? ''
+              : lastRun
+                ? `Lần chạy gần nhất: ${formatDayMonth(lastRun.startedAt)}`
+                : 'Chưa chạy lần nào'
           }
           to="/knowledge/sources"
         />
       </div>
 
       <section className="mt-10" aria-labelledby="kn-growth">
-        <h2 id="kn-growth" className="text-h2">
-          Tăng trưởng kho
-        </h2>
-        {stats.data ? (
-          <KnowledgeGrowth months={stats.data.months} />
+        <div className="flex items-center gap-2">
+          <h2 id="kn-growth" className="text-h2">
+            Tăng trưởng kho
+          </h2>
+          <HelpTip label="Về Tăng trưởng kho">
+            {lastClosed
+              ? `Tháng đã chốt gần nhất: ${f.dateOnly(lastClosed.start, { month: 'numeric', year: 'numeric' })}. `
+              : ''}
+            Tháng đang diễn ra chỉ hiện trên biểu đồ.
+          </HelpTip>
+        </div>
+        {data ? (
+          <KnowledgeGrowth months={data.months} />
         ) : stats.isLoading ? (
-          // Khung xương đúng bố cục: 3 ô so sánh + 2 biểu đồ, để trang không giật khi dữ liệu về
+          // Skeleton in the final layout: 3 comparison tiles + 2 charts, so the page does not jump
           <div role="status" className="mt-4">
             <span className="sr-only">Đang tải số liệu…</span>
             <div aria-hidden="true" className="grid gap-4 sm:grid-cols-3">
@@ -125,16 +121,14 @@ export default function KnowledgeDashboardPage() {
         )}
       </section>
 
-      {/* Chỗ đang tắc và cơ cấu kho */}
+      {/* Where work is stuck, and what the base is made of */}
       <div className="mt-6 grid gap-4 lg:grid-cols-2">
-        {/* Chờ lâu mới là vấn đề, không phải số lượng chờ: chia theo số ngày đã chờ, nhóm quá hạn tô đỏ */}
+        {/* Waiting long is the problem, not how many wait: grouped by days waited, overdue group in red */}
         <BarList
           id="kn-waiting"
           title="Văn bản chờ rà soát theo thời gian chờ"
-          empty={
-            review.isLoading ? 'Đang tải…' : 'Không có văn bản chờ rà soát.'
-          }
-          rows={(pendingDocs.length
+          empty={stats.isLoading ? 'Đang tải…' : 'Không có văn bản chờ rà soát.'}
+          rows={(ages.length
             ? [
                 { key: 'fresh', label: 'Dưới 3 ngày', min: 0, max: 2 },
                 {
@@ -153,9 +147,7 @@ export default function KnowledgeDashboardPage() {
               ]
             : []
           ).map(({ min, max, ...row }) => {
-            const value = pendingDocs.filter(
-              (d) => waited(d.queuedAt) >= min && waited(d.queuedAt) <= max
-            ).length
+            const value = waiting(min, max)
             return { ...row, value, display: f.number(value) }
           })}
         />
@@ -163,7 +155,7 @@ export default function KnowledgeDashboardPage() {
           id="kn-doctype"
           title="Kho theo loại văn bản"
           empty={stats.isLoading ? 'Đang tải…' : 'Chưa có số liệu.'}
-          rows={(stats.data?.byDocType ?? []).map((d) => ({
+          rows={(data?.byDocType ?? []).map((d) => ({
             key: d.docType,
             label: d.docType,
             value: d.count,
@@ -187,21 +179,23 @@ export default function KnowledgeDashboardPage() {
         {runs.length ? (
           <ul className="divide-border-subtle mt-3 divide-y text-sm">
             {runs.map((r) => (
-              <li key={r.at} className="flex flex-wrap gap-x-4 gap-y-1 py-2.5">
+              <li key={r.id} className="flex flex-wrap gap-x-4 gap-y-1 py-2.5">
                 <span className="text-fg-muted num w-14 shrink-0">
-                  {formatDayMonth(r.at)}
+                  {formatDayMonth(r.startedAt)}
                 </span>
                 <span className="text-fg-muted w-20 shrink-0">
-                  {RUN_TRIGGER[r.trigger]}
+                  {RUN_TRIGGER[r.triggerType as keyof typeof RUN_TRIGGER] ?? r.triggerType}
                 </span>
-                <span className="text-fg-strong">
-                  {r.newDocs} văn bản mới · {r.newVersions} phiên bản mới ·{' '}
-                  {r.unchanged} không đổi
-                </span>
-                {r.errors > 0 && (
-                  <span className="text-danger font-semibold">
-                    {r.errors} lỗi
+                {r.status === 'RUNNING' ? (
+                  <span className="text-fg-strong">Đang chạy</span>
+                ) : (
+                  <span className="text-fg-strong">
+                    {r.documentsFound} văn bản tìm thấy · {r.newDocuments} văn bản mới ·{' '}
+                    {r.newVersions} phiên bản mới
                   </span>
+                )}
+                {r.status === 'FAILED' && (
+                  <span className="text-danger font-semibold">Lỗi</span>
                 )}
               </li>
             ))}

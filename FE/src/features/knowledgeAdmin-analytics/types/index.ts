@@ -1,20 +1,48 @@
-/** Số liệu một tháng của kho tri thức */
+/** Figures of one month of the knowledge base */
 export interface KnowledgeStatPeriod {
-  /** Ngày đầu tháng, dạng YYYY-MM-DD */
+  /** First day of the month, YYYY-MM-DD */
   start: string
-  /** Tháng đang diễn ra (chưa chốt): không dùng để so sánh tăng/giảm */
+  /** Month still running: never used for up/down comparisons */
   partial?: boolean
-  /** Văn bản thu thập theo nguồn */
+  /** Versions brought in by crawls / uploaded by hand, by arrival */
   crawled: number
   uploaded: number
-  /** Văn bản được duyệt và index vào kho */
-  newDocs: number
+  /** Versions indexed into the base: first versions / later versions */
+  newDocuments: number
   newVersions: number
 }
 
+/** Where the document versions are right now */
+export interface KnowledgePipeline {
+  awaitingContent: number
+  awaitingReview: number
+  approved: number
+  indexed: number
+  rejected: number
+  parseFailed: number
+  indexFailed: number
+}
+
+export interface CrawlRunSummary {
+  id: string
+  triggerType: string
+  status: string
+  startedAt: string
+  finishedAt: string | null
+  documentsFound: number
+  newDocuments: number
+  newVersions: number
+}
+
+/** GET /api/v1/knowledge/stats */
 export interface KnowledgeStats {
-  /** 12 tháng gần nhất, cũ nhất trước */
+  pipeline: KnowledgePipeline
+  /** Last 12 months, oldest first */
   months: KnowledgeStatPeriod[]
-  /** Cơ cấu kho theo loại văn bản */
+  /** Documents with an indexed version, per document type */
   byDocType: { docType: string; count: number }[]
+  /** Documents waiting for review, by whole days waited */
+  pendingAges: { days: number; count: number }[]
+  /** Latest crawls, newest first */
+  recentRuns: CrawlRunSummary[]
 }

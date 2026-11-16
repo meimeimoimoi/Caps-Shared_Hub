@@ -45,11 +45,10 @@ public static class ChatDtos
         DateTimeOffset CreatedAt
     );
 
-    /// <summary>Result of sending or clarifying a chat message, including the user prompt, AI reply, and remaining quota.</summary>
+    /// <summary>Result of sending or clarifying a chat message, including the user prompt and AI reply.</summary>
     public sealed record SendChatMessageResultDto(
         ChatMessageDto UserMessageDto,
-        ChatMessageDto AiMessageDto,
-        int RemainingQuota
+        ChatMessageDto AiMessageDto
     );
 
     /// <summary>Context payload extracted from an AI chat conversation to initialize a document draft.</summary>

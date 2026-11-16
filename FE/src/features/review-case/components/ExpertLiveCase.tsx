@@ -283,11 +283,19 @@ const Card = ({
 )
 
 /** The expert's page of a real case. The client's name and contact details are never shown. */
-export function ExpertLiveCase({ caseId }: { caseId: string }) {
+export function ExpertLiveCase({
+  caseId,
+  returnTo,
+  returnLabel,
+}: {
+  caseId: string
+  returnTo: string
+  returnLabel: string
+}) {
   const { t } = useTranslation(['reviewCase', 'common'])
   const tr = t as unknown as (key: string, options?: object) => string
   const f = useCaseFormat()
-  const { dto, dispute, view, isPending, notFound, refetch } =
+  const { dto, dispute, view, isPending, isFetching, notFound, refetch } =
     useLiveCase(caseId)
   const { run, busy } = useCaseRun()
   const toMessage = useCaseError()
@@ -306,15 +314,20 @@ export function ExpertLiveCase({ caseId }: { caseId: string }) {
     return (
       <div className="ep-empty">
         <h1>{t(notFound ? 'notFound.title' : 'errors.failed')}</h1>
-        <Link className="ep-link" to="/expert/cases">
-          {t('nav.cases')}
+        {!notFound && (
+          <button type="button" className="ep-button mb-3" onClick={expire} disabled={isFetching}>
+            {t('retry')}
+          </button>
+        )}
+        <Link className="ep-link block" to={returnTo}>
+          {returnLabel}
         </Link>
       </div>
     )
 
-  const perform = (action: () => Promise<unknown>) =>
+  const perform = (action: () => Promise<unknown>, success = t('live.expert.saved')) =>
     run(action, {
-      onSuccess: () => setToast(t('live.expert.saved')),
+      onSuccess: () => setToast(success),
       onError: (e) => setToast(toMessage(e)),
     })
   const a = reviewCaseActions
@@ -325,11 +338,11 @@ export function ExpertLiveCase({ caseId }: { caseId: string }) {
   return (
     <div className="mx-auto max-w-340">
       <Link
-        to="/expert/cases"
+        to={returnTo}
         className="text-fg-muted mb-5 inline-flex items-center gap-2 text-sm"
       >
         <ArrowLeft size={16} aria-hidden="true" />
-        {t('nav.cases')}
+        {returnLabel}
       </Link>
       <header className="mb-6 flex items-start justify-between gap-4 max-md:flex-col">
         <div className="min-w-0">
@@ -385,7 +398,7 @@ export function ExpertLiveCase({ caseId }: { caseId: string }) {
               <button
                 type="button"
                 disabled={busy}
-                onClick={() => perform(() => a.accept(caseId))}
+                onClick={() => perform(() => a.accept(caseId), t('live.expert.acceptedFeedback'))}
                 className="btn btn-press btn-primary disabled:opacity-60"
               >
                 {t('live.expert.accept')}
@@ -400,7 +413,7 @@ export function ExpertLiveCase({ caseId }: { caseId: string }) {
                     submit={t('live.expert.decline')}
                     busy={busy}
                     danger
-                    onSubmit={(r) => perform(() => a.decline(caseId, r))}
+                    onSubmit={(r) => perform(() => a.decline(caseId, r), t('live.expert.declinedFeedback'))}
                   />
                 </div>
               </details>
@@ -418,13 +431,15 @@ export function ExpertLiveCase({ caseId }: { caseId: string }) {
                   cannotVerifyReason,
                   revisedContent
                 ) =>
-                  perform(() =>
-                    a.deliver(caseId, {
-                      result,
-                      summary,
-                      cannotVerifyReason,
-                      revisedContent,
-                    })
+                  perform(
+                    () =>
+                      a.deliver(caseId, {
+                        result,
+                        summary,
+                        cannotVerifyReason,
+                        revisedContent,
+                      }),
+                    t('live.expert.deliveredFeedback')
                   )
                 }
               />

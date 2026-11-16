@@ -117,6 +117,7 @@ export function useLiveCase(id: string) {
     view,
     dispute: dispute.data,
     isPending: detail.isPending,
+    isFetching: detail.isFetching,
     notFound: detail.error instanceof ApiError && detail.error.status === 404,
     isError: detail.isError,
     refetch: detail.refetch,

@@ -47,7 +47,7 @@ export function PackageDialog({
   onClose,
   onSave,
 }: PackageDialogProps) {
-  const { t } = useTranslation('admin')
+  const { t } = useTranslation(['admin', 'common'])
   const [name, setName] = useState(pkg?.name ?? '')
   const [credits, setCredits] = useState(pkg ? String(pkg.credits) : '')
   const [price, setPrice] = useState(
@@ -87,9 +87,9 @@ export function PackageDialog({
           recommended,
         })
           .then(onClose)
-          .catch((e: Error) => {
+          .catch(() => {
             setBusy(false)
-            setError(e.message)
+            setError(t('common:states.actionFailed'))
           })
       }}
       footer={
