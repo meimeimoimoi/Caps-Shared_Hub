@@ -12,63 +12,65 @@ export function CaseAside({ c }: { c: ReviewCase }) {
 
   return (
     <aside className="min-w-0 space-y-6">
-      <section className="paper p-5" aria-labelledby="pkg-title">
-        <div className="flex items-start justify-between gap-3">
-          <h2 id="pkg-title" className="eyebrow font-sans">
-            {t('package.title')}
-          </h2>
-          {pkg && (
-            <Lock size={15} aria-hidden="true" className="text-fg-strong" />
+      {!c.live && (
+        <section className="paper p-5" aria-labelledby="pkg-title">
+          <div className="flex items-start justify-between gap-3">
+            <h2 id="pkg-title" className="eyebrow font-sans">
+              {t('package.title')}
+            </h2>
+            {pkg && (
+              <Lock size={15} aria-hidden="true" className="text-fg-strong" />
+            )}
+          </div>
+          {pkg ? (
+            <>
+              <p className="num text-fg-strong text-h2 mt-2 font-semibold">
+                {pkg.version}
+              </p>
+              <p className="text-fg-muted num text-sm">
+                {t('package.locked', { date: f.at(pkg.lockedAt) })}
+              </p>
+              <dl className="mt-4 space-y-2.5 text-sm">
+                {(
+                  [
+                    ['aiDraft', pkg.aiDraft],
+                    ['snapshot', pkg.snapshot],
+                    ['template', pkg.template],
+                    ['citations', String(pkg.citations)],
+                  ] as const
+                ).map(([k, v]) => (
+                  <div key={k} className="flex justify-between gap-4">
+                    <dt className="text-fg-muted shrink-0">
+                      {t(`package.${k}`)}
+                    </dt>
+                    <dd className="text-fg-strong text-right">{v}</dd>
+                  </div>
+                ))}
+              </dl>
+              <p className="text-fg-muted mt-4 text-sm">
+                {t('package.documents')}
+              </p>
+              <ul className="mt-1.5 space-y-1.5 text-sm">
+                {pkg.documents.map((d) => (
+                  <li key={d} className="text-fg-strong flex items-start gap-2">
+                    <FileText
+                      size={14}
+                      aria-hidden="true"
+                      className="text-fg-muted mt-1 shrink-0"
+                    />
+                    <span className="min-w-0 break-words">{d}</span>
+                  </li>
+                ))}
+              </ul>
+              <p className="mnote mnote-ai text-fg-muted mt-5">
+                {t('package.note')}
+              </p>
+            </>
+          ) : (
+            <p className="text-fg-muted mt-2 text-sm">{t('package.pending')}</p>
           )}
-        </div>
-        {pkg ? (
-          <>
-            <p className="num text-fg-strong text-h2 mt-2 font-semibold">
-              {pkg.version}
-            </p>
-            <p className="text-fg-muted num text-sm">
-              {t('package.locked', { date: f.at(pkg.lockedAt) })}
-            </p>
-            <dl className="mt-4 space-y-2.5 text-sm">
-              {(
-                [
-                  ['aiDraft', pkg.aiDraft],
-                  ['snapshot', pkg.snapshot],
-                  ['template', pkg.template],
-                  ['citations', String(pkg.citations)],
-                ] as const
-              ).map(([k, v]) => (
-                <div key={k} className="flex justify-between gap-4">
-                  <dt className="text-fg-muted shrink-0">
-                    {t(`package.${k}`)}
-                  </dt>
-                  <dd className="text-fg-strong text-right">{v}</dd>
-                </div>
-              ))}
-            </dl>
-            <p className="text-fg-muted mt-4 text-sm">
-              {t('package.documents')}
-            </p>
-            <ul className="mt-1.5 space-y-1.5 text-sm">
-              {pkg.documents.map((d) => (
-                <li key={d} className="text-fg-strong flex items-start gap-2">
-                  <FileText
-                    size={14}
-                    aria-hidden="true"
-                    className="text-fg-muted mt-1 shrink-0"
-                  />
-                  <span className="min-w-0 break-words">{d}</span>
-                </li>
-              ))}
-            </ul>
-            <p className="mnote mnote-ai text-fg-muted mt-5">
-              {t('package.note')}
-            </p>
-          </>
-        ) : (
-          <p className="text-fg-muted mt-2 text-sm">{t('package.pending')}</p>
-        )}
-      </section>
+        </section>
+      )}
 
       <section className="paper p-5" aria-labelledby="funds-title">
         <h2 id="funds-title" className="eyebrow font-sans">

@@ -7,6 +7,9 @@ import { usePublicExpert } from '@/features/marketplace/hooks/useMarketplace'
 import { FilePicker, Initials } from '@/features/review-case/components/CaseUi'
 import { fieldClass, useCaseFormat } from '@/features/review-case/ui'
 import { DEMO_CASES, REVIEWABLE_DRAFTS } from '@/features/review-case/fixtures'
+import { createReviewCase } from '@/features/review-case/api/reviewCaseApi'
+import { useCaseError } from '@/features/review-case/hooks/useReviewCases'
+import { isExpertDemo } from '@/lib/expert-data-source'
 import { cn } from '@/lib/utils'
 
 /* Flow 5 · Bước 1: gửi Review Request cho chuyên gia đã chọn trên Sàn.
@@ -34,12 +37,24 @@ export default function ReviewRequestPage() {
     (s) => s.serviceId === params.get('service')
   )
 
-  const [draftId, setDraftId] = useState<string>(REVIEWABLE_DRAFTS[0]?.id ?? '')
+  // ponytail: no documents API yet, so a real booking names its version in the URL; add a picker when that API exists
+  const documentId = params.get('document')
+  const versionId = params.get('version')
+  const drafts = isExpertDemo
+    ? REVIEWABLE_DRAFTS
+    : documentId && versionId
+      ? [{ id: versionId, name: t('live.chosenVersion') }]
+      : []
+  const toMessage = useCaseError()
+  const [sending, setSending] = useState(false)
+  const [sendError, setSendError] = useState<string | null>(null)
+  const [draftId, setDraftId] = useState<string>(drafts[0]?.id ?? '')
   const [scope, setScope] = useState('')
   const [consent, setConsent] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const draftError = submitted && !draftId
   const consentError = submitted && !consent
+  const scopeError = !isExpertDemo && submitted && !scope.trim()
 
   useEffect(() => {
     document.title = `${t('request.title')} | Shared Hub`
@@ -49,7 +64,23 @@ export default function ReviewRequestPage() {
     e.preventDefault()
     setSubmitted(true)
     if (!draftId || !consent) return
-    navigate(`/cases/${DEMO_CASES[0].id}`)
+    if (isExpertDemo) return navigate(`/cases/${DEMO_CASES[0].id}`)
+    if (!scope.trim() || sending || !documentId || !expertId || !service) return
+    setSending(true)
+    setSendError(null)
+    createReviewCase({
+      documentId,
+      sourceVersionId: draftId,
+      expertProfileId: expertId,
+      serviceCode: service.serviceId,
+      problemDescription: scope.trim(),
+      expectedOutcome: null,
+    })
+      .then((c) => navigate(`/cases/${c.id}`))
+      .catch((err: unknown) => {
+        setSendError(toMessage(err))
+        setSending(false)
+      })
   }
 
   const profileHref = `/experts/${expertId ?? ''}`
@@ -141,7 +172,7 @@ export default function ReviewRequestPage() {
                 <legend className="text-fg-strong mb-3 text-sm font-semibold">
                   {t('request.drafts')}
                 </legend>
-                {REVIEWABLE_DRAFTS.length === 0 ? (
+                {drafts.length === 0 ? (
                   <div className="border-border-control rounded-surface border border-dashed p-6 text-center">
                     <p className="text-fg-muted">{t('request.noDrafts')}</p>
                     <Link to="/drafts" className="btn btn-secondary mt-4">
@@ -151,7 +182,7 @@ export default function ReviewRequestPage() {
                   </div>
                 ) : (
                   <div className="space-y-3">
-                    {REVIEWABLE_DRAFTS.map((d) => (
+                    {drafts.map((d) => (
                       <label
                         key={d.id}
                         className={cn(
@@ -173,19 +204,23 @@ export default function ReviewRequestPage() {
                           <span className="text-fg-strong block font-semibold">
                             {d.name}
                           </span>
-                          <span className="text-fg-muted num mt-0.5 block text-sm">
-                            {t('request.draftMeta', {
-                              aiDraft: d.aiDraft,
-                              snapshot: d.snapshot,
-                              template: d.template,
-                            })}
-                          </span>
-                          <span className="text-fg-muted mt-0.5 block text-sm">
-                            {t('request.draftCounts', {
-                              citations: d.citations,
-                              documents: d.documents,
-                            })}
-                          </span>
+                          {'aiDraft' in d && (
+                            <>
+                              <span className="text-fg-muted num mt-0.5 block text-sm">
+                                {t('request.draftMeta', {
+                                  aiDraft: d.aiDraft,
+                                  snapshot: d.snapshot,
+                                  template: d.template,
+                                })}
+                              </span>
+                              <span className="text-fg-muted mt-0.5 block text-sm">
+                                {t('request.draftCounts', {
+                                  citations: d.citations,
+                                  documents: d.documents,
+                                })}
+                              </span>
+                            </>
+                          )}
                         </span>
                       </label>
                     ))}
@@ -208,25 +243,35 @@ export default function ReviewRequestPage() {
                   htmlFor={`${id}-scope`}
                   hint={`${t('request.scopeHint')} ${scope.length}/1000`}
                   hintId={`${id}-scope-hint`}
+                  error={scopeError ? t('live.scopeRequired') : undefined}
+                  errorId={`${id}-scope-error`}
                 >
                   <textarea
                     id={`${id}-scope`}
                     rows={4}
                     maxLength={1000}
                     value={scope}
-                    aria-describedby={`${id}-scope-hint`}
+                    aria-invalid={scopeError}
+                    aria-describedby={
+                      scopeError ? `${id}-scope-error` : `${id}-scope-hint`
+                    }
                     onChange={(e) => setScope(e.target.value)}
                     className={cn(fieldClass, 'resize-y')}
                   />
                 </FormField>
-                <FormField
-                  label={t('request.files')}
-                  htmlFor={`${id}-files`}
-                  hint={t('request.filesHint')}
-                  hintId={`${id}-files-hint`}
-                >
-                  <FilePicker id={`${id}-files`} hintId={`${id}-files-hint`} />
-                </FormField>
+                {isExpertDemo && (
+                  <FormField
+                    label={t('request.files')}
+                    htmlFor={`${id}-files`}
+                    hint={t('request.filesHint')}
+                    hintId={`${id}-files-hint`}
+                  >
+                    <FilePicker
+                      id={`${id}-files`}
+                      hintId={`${id}-files-hint`}
+                    />
+                  </FormField>
+                )}
               </div>
 
               <label className="flex cursor-pointer items-start gap-3 text-sm">
@@ -252,9 +297,15 @@ export default function ReviewRequestPage() {
                 </p>
               )}
 
+              {sendError && (
+                <p role="alert" className="text-danger mt-4 text-sm">
+                  {sendError}
+                </p>
+              )}
               <button
                 type="submit"
-                className="btn btn-press btn-primary mt-8 max-sm:w-full"
+                disabled={sending}
+                className="btn btn-press btn-primary mt-8 disabled:opacity-60 max-sm:w-full"
               >
                 {t('request.submit')}
               </button>

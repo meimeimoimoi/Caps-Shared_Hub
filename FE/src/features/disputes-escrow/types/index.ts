@@ -30,6 +30,8 @@ export interface Escrow {
 export interface DisputeDecisionInput {
   outcome: DisputeOutcome
   reason: string
+  /** Share of the fee returned to the client, for a partial decision */
+  refundPct?: number
 }
 
 /** Một đoạn văn bản bằng chứng; `change` là phần bị xóa (bản nháp) hoặc được thêm (bản sửa) */
@@ -44,10 +46,14 @@ export type DisputeKind = 'DELIVERY_ISSUE' | 'USER_NON_RESPONSE_CHALLENGE'
 
 export interface Dispute {
   id: string // mã hồ sơ rà soát đang tranh chấp
+  /** Short code shown instead of a real case's UUID */
+  code?: string
   kind: DisputeKind
   title: string
   client: string
   expert: string
+  /** What the expert answered, when they did */
+  expertStatement?: string
   /** Căn cứ khiếu nại của Client */
   ground: string
   openedAt: string
