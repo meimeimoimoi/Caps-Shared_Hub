@@ -423,20 +423,7 @@
   border-radius: 8px; padding: 20px;
   border: 1px solid color-mix(in srgb, var(--ui-shadow) 8.0%, transparent);
   box-shadow: 0 1px 3px color-mix(in srgb, var(--ui-shadow) 4.0%, transparent);
-  transition: all var(--motion-feedback) var(--motion-ease-enter);
-  position: relative; overflow: hidden;
 }
-.ep-perf-card::after {
-  content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 3px;
-  background: linear-gradient(90deg, var(--ep-accent), var(--ep-accent-soft));
-  opacity: 0; transition: opacity var(--motion-feedback) var(--motion-ease-enter);
-}
-.ep-perf-card:hover {
-  box-shadow: 0 6px 16px -4px color-mix(in srgb, var(--ui-shadow) 8.0%, transparent);
-  transform: translateY(-2px);
-  border-color: color-mix(in srgb, var(--ui-shadow) 15.0%, transparent);
-}
-.ep-perf-card:hover::after { opacity: 1; }
 .ep-perf-card-top { display: flex; align-items: center; gap: 8px; color: var(--ep-muted); font-size: 12px; margin-bottom: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; }
 .ep-perf-card-top svg { flex-shrink: 0; }
 .ep-perf-value { font-size: 28px; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: -.02em; }
@@ -538,7 +525,11 @@
   flex-shrink: 0; width: 26px; height: 26px; display: flex; align-items: center; justify-content: center;
   border-radius: 6px; opacity: 0; transition: all var(--motion-feedback) var(--motion-ease-enter); background: transparent; border: none; color: var(--ep-muted);
 }
-.ep-notification-item:hover .ep-notif-dismiss { opacity: 1; }
+.ep-notification-item:hover .ep-notif-dismiss,
+.ep-notif-dismiss:focus-visible { opacity: 1; }
+@media (hover: none), (pointer: coarse) {
+  .ep-notif-dismiss { opacity: 1; }
+}
 .ep-notif-dismiss:hover { background: var(--ep-surface-raised); color: var(--ep-ink); }
 .ep-notif-urgent { border-left: 3px solid var(--ep-danger); }
 .ep-notif-warning { border-left: 3px solid var(--ui-warning); }

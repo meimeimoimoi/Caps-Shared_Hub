@@ -17,6 +17,9 @@ import { disputeHoursLeft } from '@/features/disputes-escrow/utils/disputes'
 import { usePricing } from '@/features/service-pricing/hooks/usePricing'
 import { hasAnyPermission, Permission, useAuthStore } from '@/features/auth'
 import { isExpertDemo } from '@/lib/expert-data-source'
+import { isMissingEndpoint } from '@/lib/api-client'
+import { getUsers } from '@/features/user-management/api/usersApi'
+import { usersKeys } from '@/features/user-management/api/queryKeys'
 
 /** Shared staff badges only request APIs the current account can access. */
 export function useAdminNav(enabled = true) {
@@ -26,6 +29,12 @@ export function useAdminNav(enabled = true) {
   const canReview = enabled && hasAnyPermission(user, [Permission.ExpertReview])
   const canApprove = enabled && hasAnyPermission(user, [Permission.ExpertApprove])
   const canViewDemoOperations = enabled && isExpertDemo && hasAnyPermission(user, [Permission.UserManage])
+  // Payouts have no backend list yet outside the demo; say so instead of implying all-clear
+  const operationsUnavailable = enabled && !isExpertDemo && hasAnyPermission(user, [Permission.UserManage])
+  // Disputes come from the workflow service, which checks DisputeResolve; the demo keeps its fixtures
+  const canSeeDisputes =
+    enabled &&
+    hasAnyPermission(user, [isExpertDemo ? Permission.UserManage : Permission.DisputeResolve])
   // Waiting limit comes from the expert policy (System Admin setting), never a constant here
   const slaDays = useReviewSlaDays(canReview)
   const applications = useQuery({
@@ -40,15 +49,28 @@ export function useAdminNav(enabled = true) {
     enabled: canApprove,
   })
   const approvalOverdue = canApprove ? approvalCounts.data?.finalApprovalOverdue ?? 0 : 0
+  // The System Admin's own queue: everything waiting for final approval, not only what is overdue
+  // The server omits statuses with no files, so a loaded response without the key means zero
+  const approvalPending =
+    canApprove && approvalCounts.data
+      ? (approvalCounts.data.qualifications?.PENDING_FINAL_APPROVAL ?? 0)
+      : undefined
   const disputes = useQuery({
     queryKey: disputesKeys.disputes(),
     queryFn: ({ signal }) => getDisputes(signal),
-    enabled: canViewDemoOperations,
+    enabled: canSeeDisputes,
   })
   const escrows = useQuery({
     queryKey: disputesKeys.escrows(),
     queryFn: ({ signal }) => getEscrows(signal),
     enabled: canViewDemoOperations,
+  })
+  // Same cache as the users page; only asks whether the endpoint exists yet
+  const users = useQuery({
+    queryKey: usersKeys.all,
+    queryFn: ({ signal }) => getUsers(signal),
+    enabled: enabled && hasAnyPermission(user, [Permission.UserManage]),
+    retry: (count, error) => !isMissingEndpoint(error) && count < 2,
   })
   const pricing = usePricing(canViewDemoOperations)
   const tiers = canViewDemoOperations ? pricing.data?.tiers ?? [] : []
@@ -59,7 +81,7 @@ export function useAdminNav(enabled = true) {
   const overdue = pending.filter((a) =>
     isOverdue(waitedDays(a.submittedAt, now), slaDays)
   ).length
-  const open = (canViewDemoOperations ? disputes.data ?? [] : []).filter((d) => !d.resolvedAt)
+  const open = (canSeeDisputes ? disputes.data ?? [] : []).filter((d) => !d.resolvedAt)
   const nearestHours = open.length
     ? Math.min(...open.map((d) => disputeHoursLeft(d, now)))
     : 0
@@ -100,6 +122,14 @@ export function useAdminNav(enabled = true) {
       to: '/admin/experts/approvals',
       tone: 'warning' as const,
     },
+    approvalOverdue === 0 &&
+      !!approvalPending && {
+        id: 'final-approval-pending',
+        text: t('dashboard.attention.finalApprovalPending', {
+          count: approvalPending,
+        }),
+        to: '/admin/experts/approvals',
+      },
     overdue > 0 && {
       id: 'sla-overdue',
       text: t('dashboard.attention.slaOverdue', {
@@ -125,6 +155,18 @@ export function useAdminNav(enabled = true) {
     pendingCount: pending.length,
     disputeCount: open.length,
     approvalOverdueCount: approvalOverdue,
+    /** undefined while loading or without permission */
+    approvalPendingCount: approvalPending,
+    // A failed badge query must not read as an empty queue
+    queuesFailed:
+      (canReview && applications.isError) ||
+      (canApprove && approvalCounts.isError) ||
+      (canSeeDisputes && disputes.isError),
+    payoutFailedCount: payoutFailed + refundFailed,
+    operationsUnavailable,
+    // An account without the permission sees the area as not open to it rather than an error
+    disputesUnavailable: enabled && !canSeeDisputes,
+    usersUnavailable: isMissingEndpoint(users.error),
     notifications,
   }
 }

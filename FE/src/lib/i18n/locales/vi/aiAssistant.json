@@ -46,7 +46,7 @@
     },
     "recentLabel": "Tra cứu gần đây",
     "viewAll": "Xem tất cả ({{count}})",
-    "creditNote": "1 Credit mỗi câu hỏi · trừ khi câu hỏi được đưa vào tra cứu"
+    "creditNote": "Hỏi AI miễn phí, không giới hạn"
   },
   "transcript": {
     "label": "Nội dung cuộc tra cứu",
@@ -78,5 +78,6 @@
   },
   "errors": {
     "sendFailed": "Không nhận được câu trả lời. Câu hỏi của bạn vẫn còn trong ô nhập, hãy thử gửi lại."
-  }
+  },
+  "demoNotice": "Chế độ minh họa · Chưa kết nối kho tri thức. Hội thoại và trích dẫn là dữ liệu mẫu."
 }

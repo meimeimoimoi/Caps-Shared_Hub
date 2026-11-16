@@ -1,7 +1,13 @@
 import { useCallback, useState } from 'react'
+import { ListFilter, Tags } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { SERVICE_STATUS } from '@/lib/constants'
+import { CustomSelect } from '@/components/ui/forms/custom-select'
 import { Toast } from '@/components/ui/feedback/toast'
+import {
+  errorToast,
+  type ToastContent,
+} from '@/components/ui/feedback/toast-content'
 import { StatusBadge } from '@/components/ui/display/status-badge'
 import { TablePager } from '@/components/ui/navigation/table-pager'
 import { AdminLayout } from '@/app/layouts/admin/AdminLayout'
@@ -12,17 +18,38 @@ import { useExperts, ALL } from '../../features/expert-vetting/hooks/useExperts'
 import { ExpertDrawer } from '../../features/expert-vetting/components/ExpertDrawer'
 import type { Expert } from '../../features/expert-vetting/types'
 import { useTranslation } from 'react-i18next'
+import { PageHeader } from '@/components/ui/layout/page-header'
+import { LoadError } from '@/components/ui/feedback/load-error'
+import { SkeletonRows } from '@/components/ui/display/skeleton-rows'
 
-const selectCls =
-  'border-border-control rounded-control shadow-control bg-paper h-control min-w-48 border px-3 text-sm'
+// Compact toolbar filters, same look as the review assignments page.
+const filterCls =
+  'inline-flex min-w-0 flex-col items-start text-xs [&>span]:sr-only'
+const filterTriggerCls =
+  '!h-9 !min-h-9 !w-auto !gap-2 !rounded-md !px-3 !py-0 text-sm !shadow-none'
+const MAX_FIELD_TAGS = 2
 
 export default function AdminExpertsPage() {
   const nav = useAdminNav()
   const experts = useExperts()
-  const [toast, setToast] = useState<string | null>(null)
+  const [toast, setToast] = useState<ToastContent | null>(null)
   const clearToast = useCallback(() => setToast(null), [])
   const { paged } = experts
   const { t } = useTranslation(['admin', 'common'])
+
+  const statusOptions = [
+    { value: ALL, label: t('admin:experts.allStatuses') },
+    ...(Object.keys(SERVICE_STATUS) as Expert['serviceStatus'][]).map(
+      (key) => ({
+        value: key,
+        label: t(`admin:serviceStatus.${key}.label`),
+      })
+    ),
+  ]
+  const fieldOptions = [
+    { value: ALL, label: t('admin:experts.allFields') },
+    ...experts.fields.map((f) => ({ value: f, label: f })),
+  ]
 
   return (
     <AdminLayout
@@ -33,100 +60,166 @@ export default function AdminExpertsPage() {
       search={experts.query}
       onSearchChange={experts.setQuery}
     >
-      <h1 className="text-h1">{t('admin:experts.title')}</h1>
-      <p className="text-fg-muted mt-3">
-        {t('admin:experts.description')}
-      </p>
+      <PageHeader
+        title={t('admin:experts.title')}
+        help={t('admin:experts.description')}
+        helpLabel={t('admin:experts.helpLabel')}
+      />
 
-      <section className="paper mt-12 overflow-x-auto">
-        <div className="flex flex-wrap items-end gap-4 px-4 py-3">
-          <label className="flex flex-col gap-2 text-sm font-semibold">
-            {t('admin:experts.serviceStatus')}
-            <select
-              value={experts.status}
-              onChange={(e) =>
-                experts.setStatus(e.target.value as Expert['serviceStatus'])
-              }
-              className={selectCls}
-            >
-              <option value={ALL}>{t('admin:experts.allStatuses')}</option>
-              {Object.entries(SERVICE_STATUS).map(([key, s]) => (
-                <option key={key} value={key}>
-                  {s.label}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label className="flex flex-col gap-2 text-sm font-semibold">
-            {t('admin:experts.field')}
-            <select
-              value={experts.field}
-              onChange={(e) => experts.setField(e.target.value)}
-              className={selectCls}
-            >
-              <option value={ALL}>{t('admin:experts.allFields')}</option>
-              {experts.fields.map((f) => (
-                <option key={f}>{f}</option>
-              ))}
-            </select>
-          </label>
-          <span className="text-fg-muted ml-auto text-sm">
-            <span className="num">{paged.total}</span> {t('admin:experts.expertCount')}
+      <div className="mt-8 mb-4 flex flex-wrap items-center gap-2">
+        <CustomSelect
+          label={t('admin:experts.serviceStatus')}
+          value={experts.status}
+          options={statusOptions}
+          onChange={(value) =>
+            experts.setStatus(value as Expert['serviceStatus'] | typeof ALL)
+          }
+          triggerLeading={
+            <ListFilter
+              size={14}
+              aria-hidden="true"
+              className="text-text-muted"
+            />
+          }
+          className={filterCls}
+          triggerClassName={filterTriggerCls}
+        />
+        <CustomSelect
+          label={t('admin:experts.field')}
+          value={experts.field}
+          options={fieldOptions}
+          onChange={experts.setField}
+          triggerLeading={
+            <Tags size={14} aria-hidden="true" className="text-text-muted" />
+          }
+          className={filterCls}
+          triggerClassName={filterTriggerCls}
+          menuClassName="min-w-64"
+        />
+        {!experts.isLoading && !experts.error && (
+          <span className="text-fg-muted ml-auto text-sm" aria-live="polite">
+            {t('admin:experts.expertCount', { count: paged.total })}
           </span>
-        </div>
+        )}
+      </div>
 
-        <table className="w-full min-w-200 text-sm">
-          <thead className="bg-sunken text-fg-muted">
-            <tr className="[&>th]:px-4 [&>th]:py-3 [&>th]:font-semibold">
-              <th className="text-left">{t('admin:experts.table.expert')}</th>
-              <th className="text-left">{t('admin:experts.table.field')}</th>
-              <th className="text-left">{t('admin:experts.table.serviceStatus')}</th>
-              <th className="text-right">{t('admin:experts.table.reviewFee')}</th>
-              <th className="text-right">{t('admin:experts.table.activeCases')}</th>
-              <th className="text-right">{t('admin:experts.table.approvedAt')}</th>
+      <section className="paper overflow-x-auto">
+        <table className="w-full min-w-230 text-sm">
+          <caption className="sr-only">{t('admin:experts.title')}</caption>
+          <thead className="bg-sunken text-fg-muted text-left">
+            <tr className="[&>th]:px-4 [&>th]:py-3 [&>th]:font-semibold [&>th]:whitespace-nowrap">
+              <th scope="col">{t('admin:experts.table.expert')}</th>
+              <th scope="col">{t('admin:experts.table.service')}</th>
+              <th scope="col">{t('admin:experts.table.field')}</th>
+              <th scope="col">{t('admin:experts.table.serviceStatus')}</th>
+              <th scope="col" className="text-right">
+                {t('admin:experts.table.reviewFee')}
+              </th>
+              <th scope="col" className="text-right">
+                {t('admin:experts.table.activeCases')}
+              </th>
+              <th scope="col" className="text-right">
+                {t('admin:experts.table.approvedAt')}
+              </th>
             </tr>
           </thead>
           <tbody>
-            {paged.rows.map((e) => (
-              <tr
-                key={e.id}
-                className={cn(
-                  'border-border-subtle border-t [&>td]:px-4 [&>td]:py-2',
-                  experts.selected?.id === e.id && 'bg-accent-soft'
-                )}
-              >
-                <td>
-                  <button
-                    type="button"
-                    onClick={() => experts.select(e.id)}
-                    className="text-accent-text text-base font-semibold underline underline-offset-4"
-                  >
-                    {e.name}
-                  </button>
-                  <div className="text-fg-muted">{e.email}</div>
-                </td>
-                <td>{e.fields.join(', ')}</td>
-                <td>
-                  <StatusBadge status={SERVICE_STATUS[e.serviceStatus]} />
-                </td>
-                <td className="num text-right">
-                  {e.fee === null ? '—' : formatVnd(e.fee)}
-                </td>
-                <td className="num text-right">
-                  {e.activeCases}/{e.capacity}
-                </td>
-                <td className="num text-right">{formatDate(e.approvedAt)}</td>
-              </tr>
-            ))}
-            {paged.rows.length === 0 && (
-              <tr className="border-border-subtle border-t">
+            {paged.rows.map((e) => {
+              const extraFields = e.fields.length - MAX_FIELD_TAGS
+              const load =
+                e.capacity > 0 ? Math.min(1, e.activeCases / e.capacity) : 0
+              return (
+                <tr
+                  key={e.id}
+                  // The whole row opens the drawer; the name button keeps keyboard access.
+                  onClick={() => experts.select(e.id)}
+                  className={cn(
+                    'border-border motion-interactive cursor-pointer border-b last:border-b-0 [&>td]:px-4 [&>td]:py-3',
+                    experts.selected?.id === e.id
+                      ? 'bg-accent-soft'
+                      : 'hover:bg-sunken'
+                  )}
+                >
+                  <td>
+                    <button
+                      type="button"
+                      onClick={(event) => {
+                        event.stopPropagation()
+                        experts.select(e.id)
+                      }}
+                      className="text-fg-strong hover:text-accent-text focus-visible:outline-accent-text text-left font-semibold underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2"
+                    >
+                      {e.name}
+                    </button>
+                    <div className="text-fg-muted text-xs">{e.email}</div>
+                  </td>
+                  <td className="text-fg-strong">{e.serviceName ?? '—'}</td>
+                  <td>
+                    <ul
+                      className="flex max-w-72 flex-wrap gap-1.5"
+                      title={e.fields.join(', ')}
+                    >
+                      {e.fields.slice(0, MAX_FIELD_TAGS).map((f) => (
+                        <li
+                          key={f}
+                          className="bg-sunken border-border text-fg rounded-md border px-2 py-0.5 text-xs whitespace-nowrap"
+                        >
+                          {f}
+                        </li>
+                      ))}
+                      {extraFields > 0 && (
+                        <li className="text-fg-muted px-1 py-0.5 text-xs">
+                          +{extraFields}
+                        </li>
+                      )}
+                    </ul>
+                  </td>
+                  <td className="whitespace-nowrap">
+                    <StatusBadge
+                      status={{
+                        tone: SERVICE_STATUS[e.serviceStatus].tone,
+                        label: t(`admin:serviceStatus.${e.serviceStatus}.label`),
+                      }}
+                    />
+                  </td>
+                  <td className="num text-fg-strong text-right whitespace-nowrap">
+                    {e.fee === null ? '—' : formatVnd(e.fee)}
+                  </td>
+                  <td className="text-right">
+                    <span className="num">
+                      {e.activeCases}/{e.capacity}
+                    </span>
+                    <span
+                      aria-hidden="true"
+                      className="bg-sunken mt-1 ml-auto block h-1 w-12 overflow-hidden rounded-full"
+                    >
+                      <span
+                        className={cn(
+                          'block h-full rounded-full',
+                          load >= 1 ? 'bg-warning' : 'bg-accent'
+                        )}
+                        style={{ width: `${load * 100}%` }}
+                      />
+                    </span>
+                  </td>
+                  <td className="num text-fg-muted text-right whitespace-nowrap">
+                    {formatDate(e.approvedAt)}
+                  </td>
+                </tr>
+              )
+            })}
+            {experts.isLoading && <SkeletonRows cols={7} />}
+            {!experts.isLoading && paged.rows.length === 0 && (
+              <tr>
                 <td
-                  colSpan={6}
+                  colSpan={7}
                   className="text-fg-muted px-4 py-10 text-center"
                 >
-                  {experts.isLoading
-                    ? t('common:loading')
-                    : (experts.error?.message ?? t('admin:experts.noResults'))}
+                  {experts.error ? (
+                    <LoadError />
+                  ) : (
+                    t('admin:experts.noResults')
+                  )}
                 </td>
               </tr>
             )}
@@ -137,20 +230,20 @@ export default function AdminExpertsPage() {
 
       {experts.selected && (
         <ExpertDrawer
-          key={experts.selected.id}
+          key={`${experts.selected.id}-${experts.selected.serviceStatus}`}
           expert={experts.selected}
           onClose={() => experts.select(null)}
-          onSetServiceStatus={(status) =>
+          onSetServiceStatus={(status, note) =>
             experts
-              .setServiceStatus(experts.selected!.id, status)
+              .setServiceStatus(experts.selected!.id, status, note)
               .then(() =>
                 setToast(
                   status === 'SUSPENDED'
-                    ? 'Đã tạm ngưng dịch vụ'
-                    : 'Đã mở lại dịch vụ'
+                    ? t('admin:experts.toast.suspended')
+                    : t('admin:experts.toast.reinstated')
                 )
               )
-              .catch((e: Error) => setToast(e.message))
+              .catch(() => setToast(errorToast(t('common:states.actionFailed'))))
           }
         />
       )}

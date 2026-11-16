@@ -29,6 +29,8 @@ public static class DependencyInjection
         services.AddScoped<UserRepository>();
         services.AddScoped<IUserRepository>(sp => sp.GetRequiredService<UserRepository>());
         services.AddScoped<IUserAccessReader>(sp => sp.GetRequiredService<UserRepository>());
+        services.AddScoped<IUserStatsReader, UserStatsReader>();
+        services.AddScoped<IUserDirectoryReader, UserDirectoryReader>();
         services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
         services.AddScoped<IVerificationTokenRepository, VerificationTokenRepository>();
         services.AddScoped<IUserAvatarRepository, UserAvatarRepository>();

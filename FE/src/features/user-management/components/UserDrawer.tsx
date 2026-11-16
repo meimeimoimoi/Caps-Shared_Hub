@@ -19,8 +19,7 @@ function Row({ label, children }: { label: string; children: ReactNode }) {
   )
 }
 
-/* Chi tiết một tài khoản. Mỗi thao tác hỏi lại ngay trong ngăn kéo (bước 2) trước khi gửi:
- * khóa bắt buộc lý do, mở khóa ghi chú tùy chọn, đặt lại mật khẩu chỉ gửi email (admin không đặt hộ). */
+// Confirm account actions in the drawer before submitting.
 export function UserDrawer({
   user,
   isSelf,
@@ -35,7 +34,7 @@ export function UserDrawer({
   onLock: (locked: boolean, reason: string) => Promise<unknown>
   onReset: () => Promise<unknown>
 }) {
-  const { t } = useTranslation('admin')
+  const { t } = useTranslation(['admin', 'common'])
   const [action, setAction] = useState<Action | null>(null)
   const [reason, setReason] = useState('')
   const [busy, setBusy] = useState(false)
@@ -54,7 +53,7 @@ export function UserDrawer({
         setAction(null)
         setReason('')
       })
-      .catch((e: Error) => setError(e.message))
+      .catch(() => setError(t('common:states.actionFailed')))
       .finally(() => setBusy(false))
   }
 
@@ -87,22 +86,19 @@ export function UserDrawer({
                     : t('users.action.resetBody', { email: user.email })}
               </p>
             </div>
-            {action !== 'reset' && (
+            {action === 'lock' && (
               <label className="flex flex-col gap-1.5 text-sm font-semibold">
-                {action === 'lock'
-                  ? t('users.action.lockReason')
-                  : t('users.action.unlockNote')}
+                {t('users.action.lockReason')}
                 <textarea
                   rows={2}
+                  maxLength={500}
                   value={reason}
                   onChange={(e) => setReason(e.target.value)}
                   className="border-border-control rounded-control shadow-control bg-paper resize-y border px-3 py-2 text-base font-normal"
                 />
-                {action === 'lock' && (
-                  <span className="text-fg-muted text-caption font-normal">
-                    {t('users.action.lockReasonHint')}
-                  </span>
-                )}
+                <span className="text-fg-muted text-caption font-normal">
+                  {t('users.action.lockReasonHint')}
+                </span>
               </label>
             )}
             {error && (
@@ -159,6 +155,7 @@ export function UserDrawer({
             <button
               type="button"
               onClick={() => start('reset')}
+              disabled={locked}
               className="btn btn-press btn-secondary"
             >
               <KeyRound size={16} aria-hidden="true" />
@@ -207,11 +204,13 @@ export function UserDrawer({
         </Link>
       )}
 
+      {!!user.history?.length && (
+      <>
       <h3 className="text-fg-strong mt-6 text-sm font-semibold">
         {t('users.drawer.history')}
       </h3>
       <ol className="mt-2 space-y-2 text-sm">
-        {user.history.map((h) => (
+        {user.history?.map((h) => (
           <li
             key={h.at + h.text}
             className="grid grid-cols-[7.5rem_minmax(0,1fr)] gap-3"
@@ -223,6 +222,8 @@ export function UserDrawer({
           </li>
         ))}
       </ol>
+      </>
+      )}
     </Drawer>
   )
 }

@@ -462,6 +462,10 @@ public sealed class ExpertDbContext(DbContextOptions<ExpertDbContext> options) :
                         "ck_platform_fee_no_response_rule",
                         "no_response_hours BETWEEN 1 AND 720 AND no_response_refund_percent >= 0 AND no_response_expert_percent >= 0 AND no_response_refund_percent + no_response_expert_percent <= 100"
                     );
+                    t.HasCheckConstraint(
+                        "ck_platform_fee_no_delivery_rule",
+                        "no_delivery_refund_percent BETWEEN 0 AND 100"
+                    );
                 }
             );
             e.HasKey(x => x.Id);
@@ -477,8 +481,12 @@ public sealed class ExpertDbContext(DbContextOptions<ExpertDbContext> options) :
             e.Property(x => x.NoResponseHours).HasColumnName("no_response_hours");
             e.Property(x => x.NoResponseRefundPercent).HasColumnName("no_response_refund_percent");
             e.Property(x => x.NoResponseExpertPercent).HasColumnName("no_response_expert_percent");
+            e.Property(x => x.NoDeliveryRefundPercent).HasColumnName("no_delivery_refund_percent");
             e.Property(x => x.EffectiveFrom).HasColumnName("effective_from");
             e.Property(x => x.SetBy).HasColumnName("set_by");
+            e.Property(x => x.Reason)
+                .HasColumnName("reason")
+                .HasMaxLength(PlatformFee.MaxReasonLength);
             e.Property(x => x.CancelledAt).HasColumnName("cancelled_at");
             e.Property(x => x.CancelledBy).HasColumnName("cancelled_by");
             // "Current rate of a service" = latest effective_from per service_code
@@ -502,6 +510,8 @@ public sealed class ExpertDbContext(DbContextOptions<ExpertDbContext> options) :
                     NoResponseHours = 72,
                     NoResponseRefundPercent = 50,
                     NoResponseExpertPercent = 30,
+                    // Before the 2026-11-11 meeting a case nobody delivered was refunded in full
+                    NoDeliveryRefundPercent = 100,
                     EffectiveFrom = new DateTimeOffset(2026, 10, 17, 0, 0, 0, TimeSpan.Zero),
                     SetBy = SystemActor.UserId,
                 },
@@ -518,6 +528,7 @@ public sealed class ExpertDbContext(DbContextOptions<ExpertDbContext> options) :
                     NoResponseHours = 72,
                     NoResponseRefundPercent = 0,
                     NoResponseExpertPercent = 60,
+                    NoDeliveryRefundPercent = 50,
                     EffectiveFrom = new DateTimeOffset(
                         2026,
                         11,

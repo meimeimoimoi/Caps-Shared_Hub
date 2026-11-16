@@ -35,7 +35,7 @@ public sealed class AiChatHandlerTests
     }
 
     [Fact]
-    public async Task Send_deducts_quota_only_when_answered_and_stores_citations()
+    public async Task Send_records_free_usage_when_answered_and_stores_citations()
     {
         var store = new Store();
         var conversation = store.AddConversation(Owner, "New Conversation");
@@ -65,16 +65,14 @@ public sealed class AiChatHandlerTests
                 default
             );
 
-        Assert.Equal(9, result.RemainingQuota);
-        Assert.Equal(9, Assert.Single(store.Quotas).Balance);
-        Assert.Single(store.Usages);
+        Assert.Equal(AiUsagePaidWith.Free, Assert.Single(store.Usages).PaidWith);
         Assert.Equal(2, store.Messages.Count);
         Assert.Equal("What is the CIT rate in 2026?", conversation.Title);
         Assert.Single(result.AiMessageDto.Citations!);
     }
 
     [Fact]
-    public async Task Send_does_not_deduct_quota_when_clarification_is_needed()
+    public async Task Send_does_not_record_usage_when_clarification_is_needed()
     {
         var store = new Store();
         var conversation = store.AddConversation(Owner, "Tax question");
@@ -87,29 +85,10 @@ public sealed class AiChatHandlerTests
             []
         );
 
-        var result = await SendHandler(store)
+        await SendHandler(store)
             .HandleAsync(new(conversation.Id, Owner, "What is the CIT rate?", null, null), default);
 
-        Assert.Equal(10, result.RemainingQuota);
-        Assert.Equal(10, Assert.Single(store.Quotas).Balance);
         Assert.Empty(store.Usages);
-    }
-
-    [Fact]
-    public async Task Send_rejects_when_quota_is_exhausted()
-    {
-        var store = new Store();
-        var conversation = store.AddConversation(Owner, "Tax question");
-        store.Quotas.Add(AiQuota.Create(Owner, 0, Now));
-
-        var ex = await Assert.ThrowsAsync<AppException>(() =>
-            SendHandler(store)
-                .HandleAsync(new(conversation.Id, Owner, "Question", Jan1, Dec31), default)
-        );
-
-        Assert.Equal("WORKFLOW_AI_QUOTA_EXHAUSTED", ex.Code);
-        Assert.Null(store.LastRagRequest);
-        Assert.False(store.Saved);
     }
 
     [Fact]
@@ -128,7 +107,6 @@ public sealed class AiChatHandlerTests
             Now
         );
         store.Messages.Add(aiMessage);
-        store.Quotas.Add(AiQuota.Create(Owner, 5, Now));
 
         var ex = await Assert.ThrowsAsync<AppException>(() =>
             ClarifyHandler(store)
@@ -140,7 +118,7 @@ public sealed class AiChatHandlerTests
     }
 
     [Fact]
-    public async Task Clarify_forwards_original_question_and_deducts_quota_when_answered()
+    public async Task Clarify_forwards_original_question_and_records_free_usage_when_answered()
     {
         var store = new Store();
         var conversation = store.AddConversation(Owner, "Tax question");
@@ -162,7 +140,6 @@ public sealed class AiChatHandlerTests
             Now.AddMinutes(-1)
         );
         store.Messages.AddRange([userQuestion, aiPrompt]);
-        store.Quotas.Add(AiQuota.Create(Owner, 3, Now));
         store.NextRagResponse = new(
             "20% for 2026.",
             ChatMessageScopeResult.InScope,
@@ -172,13 +149,12 @@ public sealed class AiChatHandlerTests
             []
         );
 
-        var result = await ClarifyHandler(store)
+        await ClarifyHandler(store)
             .HandleAsync(new(aiPrompt.Id, Owner, "For fiscal year 2026", Jan1, Dec31), default);
 
         Assert.Equal("What is the CIT rate?", store.LastRagRequest?.Query);
         Assert.Equal("For fiscal year 2026", store.LastRagRequest?.Clarification);
-        Assert.Equal(2, result.RemainingQuota);
-        Assert.Single(store.Usages);
+        Assert.Equal(AiUsagePaidWith.Free, Assert.Single(store.Usages).PaidWith);
     }
 
     [Fact]
@@ -224,10 +200,10 @@ public sealed class AiChatHandlerTests
     }
 
     private static SendChatMessage.SendChatMessageHandler SendHandler(Store store) =>
-        new(store, store, store, store, store, store, new FixedClock());
+        new(store, store, store, store, store, new FixedClock());
 
     private static ClarifyChatMessage.ClarifyChatMessageHandler ClarifyHandler(Store store) =>
-        new(store, store, store, store, store, store, new FixedClock());
+        new(store, store, store, store, store, new FixedClock());
 
     private sealed class FixedClock : TimeProvider
     {
@@ -237,7 +213,6 @@ public sealed class AiChatHandlerTests
     private sealed class Store
         : IConversationRepository,
             IChatMessageRepository,
-            IAiQuotaRepository,
             IAiUsageRepository,
             IRagQueryClient,
             IUnitOfWork,
@@ -245,7 +220,6 @@ public sealed class AiChatHandlerTests
     {
         public List<Conversation> Conversations { get; } = [];
         public List<ChatMessage> Messages { get; } = [];
-        public List<AiQuota> Quotas { get; } = [];
         public List<AiUsage> Usages { get; } = [];
         public RagQueryRequest? LastRagRequest { get; private set; }
         public RagQueryResponse NextRagResponse { get; set; } =
@@ -315,15 +289,6 @@ public sealed class AiChatHandlerTests
         public Task AddAsync(ChatMessage chatMessage, CancellationToken ct = default)
         {
             Messages.Add(chatMessage);
-            return Task.CompletedTask;
-        }
-
-        Task<AiQuota?> IAiQuotaRepository.GetByUserIdAsync(Guid userId, CancellationToken ct) =>
-            Task.FromResult(Quotas.SingleOrDefault(q => q.UserId == userId));
-
-        public Task AddAsync(AiQuota aiQuota, CancellationToken ct = default)
-        {
-            Quotas.Add(aiQuota);
             return Task.CompletedTask;
         }
 

@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import type { Paged } from '@/lib/utils'
@@ -5,13 +6,16 @@ import { TablePager } from '@/components/ui/navigation/table-pager'
 import type { QualificationRow } from '../types'
 import { formatDate, waitedDays } from '../utils/applications'
 import { useFieldLabel } from '../hooks/useLabels'
+import { SkeletonRows } from '@/components/ui/display/skeleton-rows'
 
 interface QualificationsTableProps {
   paged: Paged<QualificationRow>
   onPrev: () => void
   onNext: () => void
   /** Text when there are no rows, e.g. loading or an error */
-  empty?: string
+  empty?: ReactNode
+  /** Shows skeleton rows while the queue loads */
+  loading?: boolean
   /** Detail page path prefix, e.g. /admin/experts/qualifications */
   linkBase: string
 }
@@ -22,6 +26,7 @@ export function QualificationsTable({
   onPrev,
   onNext,
   empty,
+  loading = false,
   linkBase,
 }: QualificationsTableProps) {
   const { t } = useTranslation('admin')
@@ -36,23 +41,24 @@ export function QualificationsTable({
           {t('qualifications.count')}
         </span>
       </div>
-      <table className="w-full min-w-[720px] text-sm">
+      <table className="w-full min-w-180 text-sm">
+        <caption className="sr-only">{t('qualifications.caption')}</caption>
         <thead className="bg-sunken text-fg-muted">
           <tr className="[&>th]:px-4 [&>th]:py-3 [&>th]:font-semibold">
-            <th className="text-left">
+            <th scope="col" className="text-left">
               {t('applicationsTable.table.applicant')}
             </th>
-            <th className="text-left">{t('qualifications.service')}</th>
-            <th className="text-right">
+            <th scope="col" className="text-left">{t('qualifications.service')}</th>
+            <th scope="col" className="text-right">
               {t('applicationsTable.table.experienceYears')}
             </th>
-            <th className="text-right">
+            <th scope="col" className="text-right">
               {t('applicationsTable.table.submittedAt')}
             </th>
-            <th className="text-right">
+            <th scope="col" className="text-right">
               {t('applicationsTable.table.waited')}
             </th>
-            <th>
+            <th scope="col">
               <span className="sr-only">{t('applicationsTable.actions')}</span>
             </th>
           </tr>
@@ -115,7 +121,8 @@ export function QualificationsTable({
               </tr>
             )
           })}
-          {rows.length === 0 && (
+          {loading && <SkeletonRows cols={6} />}
+          {!loading && rows.length === 0 && (
             <tr className="border-border-subtle border-t">
               <td colSpan={6} className="text-fg-muted px-4 py-10 text-center">
                 {empty ?? t('qualifications.empty')}

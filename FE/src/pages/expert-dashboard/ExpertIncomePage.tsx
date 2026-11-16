@@ -1,3 +1,5 @@
+import { isExpertDemo } from '@/lib/expert-data-source'
+import { DashboardSectionState } from '@/features/expert-dashboard/components/DashboardSectionState'
 import { useExpertPresentation } from '@/features/expert-dashboard/hooks/useExpertPresentation'
 import { useTranslation } from 'react-i18next'
 
@@ -7,13 +9,25 @@ import {
   CheckCircle2,
   Clock,
   DollarSign,
-  DownloadCloud,
 } from 'lucide-react'
 
 export default function ExpertIncomePage() {
   const display = useExpertPresentation()
 
   const { t } = useTranslation('expert')
+
+  if (!isExpertDemo) {
+    return (
+      <>
+        <div className="ep-page-heading"><h1>{t('income')}</h1></div>
+        <DashboardSectionState
+          title={t('incomeUnavailable')}
+          message={t('incomeUnavailableMessage')}
+        />
+      </>
+    )
+  }
+
 
   const stats = [
     {
@@ -89,20 +103,12 @@ export default function ExpertIncomePage() {
       <div className="ep-page-heading">
         <div>
           <h1>{t('income')}</h1>
-          <p>{t('manageYourEarningsViewTransactionHistoryAndWithdrawFunds')}</p>
-        </div>
-        <div className="ep-heading-actions">
-          <button className="ep-button ep-button-primary">
-            {t('withdrawFunds')}
-          </button>
+          <p>{t('incomeDemoNotice')}</p>
         </div>
       </div>
 
       <div className="ep-services-overview">
-        <div
-          className="ep-perf-grid"
-          style={{ gridTemplateColumns: 'repeat(3, minmax(0, 1fr))' }}
-        >
+        <div className="ep-perf-grid grid-cols-1! sm:grid-cols-3!">
           {stats.map((stat, i) => (
             <div
               key={i}
@@ -124,12 +130,6 @@ export default function ExpertIncomePage() {
 
       <div className="ep-cases-toolbar mt-8">
         <h3>{t('transactionHistory')}</h3>
-        <div className="ep-heading-actions">
-          <button className="ep-button">
-            <DownloadCloud size={16} />
-            {t('exportCsv')}
-          </button>
-        </div>
       </div>
 
       <div className="ep-cases-table-wrapper">

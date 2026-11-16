@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { LogIn, PanelLeftOpen, SquarePen } from 'lucide-react'
 import { Drawer } from '@/components/ui/feedback/drawer'
 import { Toast } from '@/components/ui/feedback/toast'
+import { DemoBanner } from '@/components/ui/feedback/demo-banner'
 import { AppHeader } from '@/components/ui/layout/app-header'
 import { AppSidebar } from '@/components/ui/layout/app-sidebar'
 import { cn } from '@/lib/utils'
@@ -232,6 +233,9 @@ export default function AiAssistantPage() {
               />
             </div>
           </aside>
+          <DemoBanner>
+            <p>{t('aiAssistant:demoNotice')}</p>
+          </DemoBanner>
           <main
             id="assistant-main"
             tabIndex={-1}

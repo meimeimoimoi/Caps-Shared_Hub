@@ -135,6 +135,20 @@ public static class ExpertDecisionEmailTemplate
         );
     }
 
+    public static Content Build(ReviewCaseAcceptanceDueEvent m, string email, string link)
+    {
+        var due = m
+            .AcceptanceDeadline.ToOffset(VietnamOffset)
+            .ToString("HH:mm dd/MM/yyyy", CultureInfo.InvariantCulture);
+        var copy = new Copy(
+            $"Kết quả thẩm định sắp tự xác nhận – {Brand}",
+            "Bạn chưa nghiệm thu kết quả thẩm định",
+            $"Chuyên gia đã bàn giao kết quả. Vui lòng nghiệm thu hoặc báo cáo vấn đề trước {due}; quá hạn, hệ thống tự xác nhận hoàn tất và không nhận khiếu nại nữa.",
+            "Xem kết quả"
+        );
+        return Render(copy, "bạn", email, m.OccurredAt, link, []);
+    }
+
     // Same code as the workflow service sets when an expert gives up an accepted case
     private const string ExpertWithdrew = "EXPERT_WITHDREW";
 

@@ -1,6 +1,6 @@
 import { useExpertPresentation } from '@/features/expert-dashboard/hooks/useExpertPresentation'
 import { useTranslation } from 'react-i18next'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useLocation, useParams } from 'react-router-dom'
 import './case-detail.css'
 import {
   ArrowLeft,
@@ -43,7 +43,11 @@ const clients: Record<string, string> = {
 function CaseWorkspace({
   item,
   timezone,
+  returnTo,
+  returnLabel,
 }: {
+  returnTo: string
+  returnLabel: string
   item: WorkItem
   timezone: string
 }) {
@@ -86,16 +90,10 @@ function CaseWorkspace({
     <div className="ep-case-detail mx-auto my-0 max-w-340 [&_button:disabled]:cursor-not-allowed [&_input[type='checkbox']]:h-4 [&_input[type='checkbox']]:w-4 [&_input[type='checkbox']]:shrink-0">
       <Link
         className="ep-case-back mb-5 inline-flex items-center gap-2 text-[var(--ep-muted)]!"
-        to={
-          item.status === 'PENDING_EXPERT_RESPONSE'
-            ? '/expert/queue'
-            : '/expert/active'
-        }
+        to={returnTo}
       >
         <ArrowLeft size={16} aria-hidden="true" />
-        {item.status === 'PENDING_EXPERT_RESPONSE'
-          ? t('backQueue')
-          : t('backActive')}
+        {returnLabel}
       </Link>
       <div className="ep-case-preview mb-6 flex flex-wrap gap-[6px_18px] rounded-xl bg-[var(--ep-warning-bg)] bg-none [padding:14px_18px] text-[13px] text-[var(--ep-warning)] [border:1px_solid_var(--ep-warning)]">
         <strong>{t('interactiveUiPreview')}</strong>
@@ -845,8 +843,23 @@ export function ExpertCaseDetailPage() {
   const { t } = useTranslation('expert')
 
   const { id } = useParams()
+  const { state } = useLocation()
+  const requestedReturn: unknown = state?.expertCaseReturnTo
+  const returnPath = typeof requestedReturn === 'string' ? requestedReturn.split('?')[0] : ''
+  const returnTo = typeof requestedReturn === 'string' &&
+    ['/expert/overview', '/expert/queue', '/expert/active', '/expert/cases'].includes(returnPath)
+    ? requestedReturn
+    : '/expert/cases'
+  const returnLabel = t(
+    returnPath === '/expert/overview' ? 'backToOverview'
+      : returnPath === '/expert/queue' ? 'backQueue'
+        : returnPath === '/expert/active' ? 'backActive'
+          : 'backToCases'
+  )
   const dashboard = useExpertDashboard()
-  if (!isExpertDemo) return <ExpertLiveCase caseId={id ?? ''} />
+  if (!isExpertDemo) {
+    return <ExpertLiveCase key={id} caseId={id ?? ''} returnTo={returnTo} returnLabel={returnLabel} />
+  }
   if (dashboard.isPending) return <DashboardSkeleton />
   if (!dashboard.data || dashboard.data.queue.status !== 'available')
     return (
@@ -862,8 +875,8 @@ export function ExpertCaseDetailPage() {
       <div className="ep-empty">
         <h1>{t('caseNotFound')}</h1>
         <p>{t('thisCaseIsNotIncludedInTheCurrentPreviewDataset')}</p>
-        <Link className="ep-link" to="/expert/cases">
-          {t('backToCases')}
+        <Link className="ep-link" to={returnTo}>
+          {returnLabel}
         </Link>
       </div>
     )
@@ -872,6 +885,8 @@ export function ExpertCaseDetailPage() {
       key={item.id}
       item={item}
       timezone={dashboard.data.timezone}
+      returnTo={returnTo}
+      returnLabel={returnLabel}
     />
   )
 }

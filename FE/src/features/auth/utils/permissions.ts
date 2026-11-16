@@ -10,6 +10,8 @@ export const Permission = {
   UserManage: 'UserManage',
   ExpertApprove: 'ExpertApprove',
   PricingManage: 'PricingManage',
+  PayoutManage: 'PayoutManage',
+  DisputeResolve: 'DisputeResolve',
 } as const
 
 export type PermissionName = (typeof Permission)[keyof typeof Permission]

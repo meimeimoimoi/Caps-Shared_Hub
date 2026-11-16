@@ -26,6 +26,15 @@ public interface IReviewCaseEvents
         CancellationToken ct
     );
 
+    /// <summary>A delivered result is close to its acceptance deadline; called once per delivery.</summary>
+    Task AcceptanceDueAsync(
+        Guid reviewCaseId,
+        Guid requesterUserId,
+        string? requesterEmail,
+        DateTimeOffset acceptanceDeadline,
+        CancellationToken ct
+    ) => Task.CompletedTask;
+
     /// <summary>An open dispute passed its decision deadline; called once per deadline.</summary>
     Task DisputeOverdueAsync(
         Guid reviewCaseId,

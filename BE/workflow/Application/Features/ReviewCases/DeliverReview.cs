@@ -2,6 +2,7 @@ using Caps.Common.Application;
 using Caps.Workflow.Application.Abstractions;
 using Caps.Workflow.Application.DTOs.Responses;
 using Caps.Workflow.Domain;
+using Caps.Workflow.Domain.Review;
 
 namespace Caps.Workflow.Application.Features.ReviewCases;
 
@@ -21,7 +22,8 @@ public sealed class DeliverReviewHandler(
     IReviewCaseRepository cases,
     IReviewCaseEvents events,
     IUnitOfWork unitOfWork,
-    TimeProvider clock
+    TimeProvider clock,
+    WorkCalendar? calendar = null
 ) : ICommandHandler<DeliverReviewCommand, ReviewCaseResponse>
 {
     public async Task<ReviewCaseResponse> HandleAsync(
@@ -45,7 +47,8 @@ public sealed class DeliverReviewHandler(
             command.Summary,
             command.CannotVerifyReason,
             clock.GetUtcNow(),
-            command.RevisedContent
+            command.RevisedContent,
+            calendar
         );
         cases.AddHistory(delivered);
         await events.StatusChangedAsync(reviewCase, delivered, ct);

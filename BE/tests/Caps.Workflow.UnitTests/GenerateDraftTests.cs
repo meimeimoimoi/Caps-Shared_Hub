@@ -42,9 +42,8 @@ public sealed class GenerateDraftTests
         Assert.Equal(publishedVersion.FieldSchema, store.LastRequest?.TemplateSchemaJson);
         Assert.Equal("AI_DRAFT", result.VersionType);
         Assert.Equal("AI_GENERATED_PENDING_REVIEW", result.DraftAssessment);
-        Assert.Equal(9, Assert.Single(store.Quotas).Balance);
         var usage = Assert.Single(store.Usages);
-        Assert.Equal((AiUsagePaidWith.Quota, AiUsageState.Captured), (usage.PaidWith, usage.State));
+        Assert.Equal((AiUsagePaidWith.Free, AiUsageState.Captured), (usage.PaidWith, usage.State));
         Assert.True(store.Saved);
     }
 
@@ -65,23 +64,6 @@ public sealed class GenerateDraftTests
             store.ExplicitSchemas[explicitVersionId],
             store.LastRequest?.TemplateSchemaJson
         );
-    }
-
-    [Fact]
-    public async Task Rejects_when_quota_is_exhausted()
-    {
-        var store = new Store(publishedTemplate: null);
-        store.Quotas.Add(AiQuota.Create(Owner, 0, Now));
-        var doc = store.AddDocument(Owner, templateId: null);
-        store.AddSnapshot(doc, "{}");
-
-        var ex = await Assert.ThrowsAsync<AppException>(() =>
-            CreateHandler(store).HandleAsync(new(doc.Id, Owner, null, null, null), default)
-        );
-
-        Assert.Equal("WORKFLOW_AI_QUOTA_EXHAUSTED", ex.Code);
-        Assert.Null(store.LastRequest);
-        Assert.False(store.Saved);
     }
 
     [Fact]
@@ -129,7 +111,7 @@ public sealed class GenerateDraftTests
     }
 
     private static GenerateDraft.GenerateDraftHandler CreateHandler(Store store) =>
-        new(store, store, store, store, store, store, store, store, new FixedClock());
+        new(store, store, store, store, store, store, store, new FixedClock());
 
     private sealed class FixedClock : TimeProvider
     {
@@ -141,7 +123,6 @@ public sealed class GenerateDraftTests
             IInputSnapshotRepository,
             IDocumentVersionRepository,
             ITemplateRepository,
-            IAiQuotaRepository,
             IAiUsageRepository,
             IAiDraftingClient,
             IUnitOfWork,
@@ -150,7 +131,6 @@ public sealed class GenerateDraftTests
         public List<Document> Documents { get; } = [];
         public List<InputSnapshot> Snapshots { get; } = [];
         public List<DocumentVersion> Versions { get; } = [];
-        public List<AiQuota> Quotas { get; } = [];
         public List<AiUsage> Usages { get; } = [];
         public Dictionary<Guid, string> ExplicitSchemas { get; } = [];
         public AiDraftRequest? LastRequest { get; private set; }
@@ -287,6 +267,11 @@ public sealed class GenerateDraftTests
             CancellationToken ct
         ) => throw new NotSupportedException();
 
+        public Task<TemplateVersion?> FindReleasedVersionAsync(
+            Guid versionId,
+            CancellationToken ct
+        ) => throw new NotSupportedException();
+
         public Task<TemplateVersion?> FindPublishedVersionAsync(
             Guid templateId,
             CancellationToken ct
@@ -295,15 +280,6 @@ public sealed class GenerateDraftTests
         public void Add(Template newTemplate) => throw new NotSupportedException();
 
         public void Add(TemplateVersion version) => throw new NotSupportedException();
-
-        Task<AiQuota?> IAiQuotaRepository.GetByUserIdAsync(Guid userId, CancellationToken ct) =>
-            Task.FromResult(Quotas.SingleOrDefault(q => q.UserId == userId));
-
-        public Task AddAsync(AiQuota aiQuota, CancellationToken ct = default)
-        {
-            Quotas.Add(aiQuota);
-            return Task.CompletedTask;
-        }
 
         public Task AddAsync(AiUsage usage, CancellationToken ct = default)
         {

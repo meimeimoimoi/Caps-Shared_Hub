@@ -8,7 +8,7 @@ import {
   CreditCard,
   IdCard,
   BadgeCheck,
-  CalendarClock,
+  CalendarCheck,
 } from 'lucide-react'
 import {
   AppSidebar,
@@ -49,19 +49,8 @@ export function ExpertSidebar({
   const groups: SidebarGroup[] = [
     {
       id: 'workspace',
+      label: t('expertWork'),
       items: [
-        item(
-          '/expert/application',
-          t('expertApplication'),
-          <ClipboardCheck size={18} />,
-          'application.view'
-        ),
-        item(
-          '/expert/qualifications',
-          t('expertQualifications'),
-          <BadgeCheck size={18} />,
-          'application.view'
-        ),
         item(
           '/expert/overview',
           t('overview'),
@@ -83,8 +72,26 @@ export function ExpertSidebar({
       ],
     },
     {
+      id: 'qualifications',
+      label: t('expertReadiness'),
+      items: [
+        item(
+          '/expert/application',
+          t('expertApplication'),
+          <ClipboardCheck size={18} />,
+          'application.view'
+        ),
+        item(
+          '/expert/qualifications',
+          t('expertQualifications'),
+          <BadgeCheck size={18} />,
+          'application.view'
+        ),
+      ],
+    },
+    {
       id: 'business',
-      label: t('business'),
+      label: t('expertServiceOperations'),
       items: [
         item(
           '/expert/services',
@@ -95,7 +102,7 @@ export function ExpertSidebar({
         item(
           '/expert/availability',
           t('availability'),
-          <CalendarClock size={18} />,
+          <CalendarCheck size={18} />,
           'services.manage'
         ),
         item(

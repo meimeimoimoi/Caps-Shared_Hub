@@ -13,7 +13,10 @@ public static class DocumentRequests
         [MaxLength(100_000)] string? Metadata
     );
 
-    public sealed record CreateSnapshotRequest([Required, MaxLength(100_000)] string Data);
+    public sealed record CreateSnapshotRequest(
+        [Required, MaxLength(100_000)] string Data,
+        int? ExpectedRevision
+    );
 
     public sealed record GenerateDraftRequest(
         Guid? SnapshotId,

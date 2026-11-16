@@ -2,7 +2,7 @@ import type { DraftApi } from '../types'
 import { isDraftMock } from './dataSource'
 import { httpDraftApi } from './httpDraftApi'
 
-export const draftCapabilities = { export: isDraftMock, review: isDraftMock }
+export const draftCapabilities = { export: true, review: isDraftMock }
 
 // Lazy fixture boundary; production uses HTTP exclusively and never falls back.
 const adapter = (): Promise<DraftApi> =>

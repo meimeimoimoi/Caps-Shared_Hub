@@ -202,10 +202,6 @@
     margin: 0;
   }
 
-  .desk-content {
-    background-image: repeating-linear-gradient(0deg, color-mix(in srgb, var(--ui-shadow) 3.0%, transparent) 0 1px, transparent 1px 28px);
-  }
-
   /* sr-only is position:absolute; anchor it to its header cell so it stays inside
      the table's scroll wrapper instead of widening the page on mobile. */
   th:has(> .sr-only) {
@@ -1396,6 +1392,27 @@
   border-radius: var(--radius-surface);
   box-shadow: var(--shadow-paper);
 }
+/* Wide data table that becomes one stacked card per row on phones: the column name comes from
+ * each cell's data-label, so the action column stays on screen instead of behind a sideways scroll */
+@utility stack-table {
+  @media (width < 48rem) {
+    & thead {
+      position: absolute; width: 1px; height: 1px; overflow: hidden;
+      clip-path: inset(50%); white-space: nowrap;
+    }
+    & tbody, & tr, & td { display: block; }
+    & tr { padding: 12px 16px; }
+    & tr > td { padding: 4px 0 !important; }
+    & td[data-label]::before {
+      content: attr(data-label);
+      display: block;
+      font-family: var(--font-sans);
+      font-size: var(--text-caption);
+      font-weight: 600;
+      color: var(--color-fg-muted);
+    }
+  }
+}
 @utility paper-link {
   transition: transform var(--duration-fast) var(--motion-ease-enter);
   &:hover { transform: translateY(-2px); }
@@ -1475,6 +1492,12 @@
   &:hover { background: var(--color-accent-hover); }
   &:active { background: var(--color-accent-active); }
   &:disabled { background: var(--color-desk-2); color: var(--color-fg-disabled); box-shadow: none; }
+}
+/* Destructive actions (suspend, cancel a change); never the default-focused button */
+@utility btn-danger {
+  background: var(--color-danger); color: var(--color-paper);
+  &:hover { background: color-mix(in srgb, var(--color-danger) 88%, var(--color-ink)); }
+  &:disabled { background: var(--color-desk-2); color: var(--color-fg-disabled); }
 }
 @utility btn-secondary {
   background: transparent; border-color: var(--color-border-control);

@@ -77,6 +77,13 @@ public static class WorkflowErrors
             "Document period end date must be greater than or equal to period start date."
         );
 
+    public static AppException InputRevisionChanged() =>
+        new(
+            ErrorType.Conflict,
+            "WORKFLOW_INPUT_REVISION_CHANGED",
+            "The saved input has changed. Reload before saving."
+        );
+
     public static AppException DocumentInvalidJson(string field) =>
         new(
             ErrorType.Validation,

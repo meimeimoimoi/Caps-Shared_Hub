@@ -18,15 +18,14 @@
     "completeCurrent": "Hoàn tất tiêu chí hiện tại",
     "continueReview": "Tiếp tục đánh giá"
   },
-  "dashboardApiPending": "Thống kê tổng quan chưa được kết nối dữ liệu. Bạn vẫn có thể phê duyệt cuối và duyệt giá dịch vụ từ menu. Các mục quản trị khác đang chờ tích hợp API.",
   "navigation": {
     "overview": "Tổng quan",
-    "expertReview": "Xét duyệt Expert",
+    "expertReview": "Xét duyệt chuyên gia",
     "pendingExperts": "Hồ sơ chờ duyệt",
     "competencyReview": "Đánh giá năng lực",
     "finalApproval": "Phê duyệt cuối",
     "platformFees": "Phí nền tảng",
-    "manageExperts": "Quản lý Expert",
+    "manageExperts": "Quản lý chuyên gia",
     "operations": "Vận hành",
     "complaints": "Khiếu nại",
     "payouts": "Hoàn tiền và chi trả",
@@ -36,7 +35,10 @@
     "settings": "Cấu hình",
     "users": "Người dùng",
     "expertPolicy": "Chính sách chuyên gia",
-    "assignments": "Phân công người chấm"
+    "assignments": "Phân công người chấm",
+    "feesAndPolicy": "Cấu hình & phí",
+    "notConnected": "Chưa kết nối",
+    "soonGroup": "Sắp có"
   },
   "dashboard": {
     "title": "Tổng quan",
@@ -44,28 +46,49 @@
     "attention": {
       "dispute": "{{count}} khiếu nại đang mở, gần nhất còn {{hours}} giờ trước hạn trọng tài",
       "payoutFailed": "{{count}} khoản chi trả lỗi, cần thử lại",
-      "slaOverdue": "{{count}} hồ sơ Expert chờ quá {{days}} ngày",
+      "slaOverdue": "{{count}} hồ sơ chuyên gia chờ quá {{days}} ngày",
       "finalApprovalOverdue": "{{count}} hồ sơ quá hạn phê duyệt cuối",
-      "outsideRange": "{{count}} Expert đặt giá ngoài khung"
+      "outsideRange": "{{count}} chuyên gia đặt giá ngoài khung",
+      "title": "Cần xử lý ngay",
+      "empty": "Không có việc gấp.",
+      "emptyPartial": "Không có việc gấp ở các mục đang theo dõi. Chi trả chưa có dữ liệu để kiểm tra.",
+      "unavailable": "Chi trả chưa có dữ liệu để kiểm tra.",
+      "unknown": "Chưa xác định được việc cần xử lý vì một nguồn dữ liệu không tải được.",
+      "count_other": "{{count}} việc",
+      "urgent_other": "{{count}} việc gấp",
+      "open": "Mở",
+      "finalApprovalPending_other": "{{count}} hồ sơ chờ bạn phê duyệt cuối"
     },
     "kpi": {
       "pending": "Hồ sơ chờ duyệt",
       "pendingOverdue": "{{count}} quá hạn xử lý",
       "pendingOnTime": "Đều trong hạn xử lý",
-      "experts": "Expert đang hoạt động",
-      "expertsNote": "{{suspended}} tạm ngưng · tổng {{total}}",
+      "experts": "Chuyên gia đang hoạt động",
+      "expertsNote": "{{suspended}} tạm ngưng · {{added}} mới trong tháng này",
       "held": "Tiền đang giữ",
-      "heldNote": "{{amount}} bị khóa do tranh chấp",
-      "disputes": "Khiếu nại đang mở",
-      "disputesNote": "Gần nhất còn {{hours}} giờ",
-      "disputesNone": "Không có khiếu nại"
+      "heldNote": "{{count}} hồ sơ đang chờ nghiệm thu",
+      "failed": "Không tải được số liệu",
+      "title": "Chỉ số chính",
+      "moneyUnavailable": "Gồm chi trả, hoàn tiền và khiếu nại.",
+      "finalApproval": "Chờ phê duyệt cuối",
+      "finalApprovalOverdue_other": "{{count}} hồ sơ quá hạn",
+      "finalApprovalOnTime": "Đều trong hạn phê duyệt"
     },
-    "vetting": "Xét duyệt Expert",
+    "vetting": "Xét duyệt chuyên gia",
     "escrow": "Dòng tiền Escrow",
+    "money": {
+      "held": "Đang giữ chờ nghiệm thu",
+      "payoutPending": "Chờ chi trả cho chuyên gia",
+      "payoutOther": "Chi trả {{status}}",
+      "refunded": "Đã hoàn tiền"
+    },
     "upcoming": {
       "title": "Sắp diễn ra",
-      "priceChange": "Khung giá mới: {{group}}",
-      "empty": "Chưa có thay đổi nào lên lịch."
+      "feeChange": "Phí nền tảng mới cho {{service}}: {{percent}}%",
+      "empty": "Chưa có thay đổi nào lên lịch.",
+      "today": "Hôm nay",
+      "tomorrow": "Ngày mai",
+      "inDays_other": "Còn {{count}} ngày"
     },
     "loading": "Đang tải số liệu…",
     "growth": {
@@ -82,17 +105,16 @@
       "usersChart": "Người dùng mới theo kỳ",
       "expertPayout": "Chi trả chuyên gia",
       "refunds": "Hoàn tiền",
-      "clients": "Client",
-      "experts": "Expert",
       "table": "Xem dạng bảng",
       "period": "Kỳ",
       "total": "Tổng",
       "quarterLabel": "Q{{quarter}}/{{year}}",
-      "mock": "Số liệu minh họa, chờ API thống kê của BE.",
       "partial": "{{period}} (đến nay)",
       "latest": "Kỳ đã chốt gần nhất: {{period}}. Kỳ đang diễn ra chỉ hiện trên biểu đồ.",
       "notEnough": "Chưa đủ 2 kỳ đã chốt để so sánh.",
-      "monthTick": "T{{month}}"
+      "monthTick": "T{{month}}",
+      "failed": "Không tải được số liệu tăng trưởng. Tải lại trang để thử lại.",
+      "firstPeriod": "Kỳ đầu có số liệu"
     },
     "noData": "Chưa có số liệu."
   },
@@ -101,8 +123,8 @@
   },
   "notifications": {
     "label": "Thông báo",
-    "pending": "{{count}} hồ sơ Expert chờ đánh giá năng lực",
-    "refundFailed": "{{count}} khoản hoàn tiền cho Client bị lỗi"
+    "pending": "{{count}} hồ sơ chuyên gia chờ đánh giá năng lực",
+    "refundFailed": "{{count}} khoản hoàn tiền cho khách bị lỗi"
   },
   "pendingExperts": {
     "title": "Hồ sơ chờ duyệt",
@@ -110,22 +132,23 @@
     "filterAria": "Lọc theo trạng thái"
   },
   "experts": {
-    "title": "Quản lý Expert",
-    "description": "Expert đã được duyệt. Chỉ Expert có dịch vụ đang hoạt động mới hiển thị trên Marketplace.",
+    "title": "Quản lý chuyên gia",
+    "description": "Chuyên gia đã được duyệt. Chỉ chuyên gia có dịch vụ đang hoạt động mới hiển thị trên Marketplace.",
+    "helpLabel": "Về trang Quản lý chuyên gia",
     "serviceStatus": "Trạng thái dịch vụ",
-    "allStatuses": "Tất cả",
+    "allStatuses": "Tất cả trạng thái",
     "field": "Lĩnh vực",
     "allFields": "Tất cả lĩnh vực",
-    "expertCount": "Expert",
     "table": {
-      "expert": "Expert",
+      "expert": "Chuyên gia",
       "field": "Lĩnh vực",
       "serviceStatus": "Trạng thái dịch vụ",
-      "reviewFee": "Phí rà soát",
+      "reviewFee": "Giá mỗi yêu cầu",
       "activeCases": "Đang nhận",
-      "approvedAt": "Ngày duyệt"
+      "approvedAt": "Ngày duyệt",
+      "service": "Dịch vụ"
     },
-    "noResults": "Không có Expert nào khớp bộ lọc.",
+    "noResults": "Không có chuyên gia nào khớp bộ lọc.",
     "drawer": {
       "viewApplication": "Xem đơn đăng ký",
       "suspend": "Tạm ngưng dịch vụ",
@@ -136,7 +159,7 @@
       "fields": "Lĩnh vực",
       "service": "Dịch vụ",
       "fee": "Phí rà soát",
-      "schedule": "Lịch nhận việc",
+      "schedule": "Nhận yêu cầu",
       "active": "Đang nhận",
       "activeValue": "{{active}}/{{capacity}} hồ sơ",
       "review": "Xét duyệt",
@@ -144,8 +167,33 @@
       "reviewer": "Người duyệt",
       "approvedAt": "Ngày duyệt",
       "application": "Đơn đăng ký",
-      "history": "Lịch sử thao tác"
-    }
+      "history": "Lịch sử thao tác",
+      "serviceName": "Tên dịch vụ"
+    },
+    "accepting": {
+      "on": "Đang bật",
+      "off": "Đang tắt"
+    },
+    "historyText": {
+      "approved": "phê duyệt cung cấp dịch vụ.",
+      "suspended": "tạm ngưng dịch vụ.",
+      "reinstated": "mở lại dịch vụ.",
+      "changed": "chuyển trạng thái sang {{status}}.",
+      "note": "Ghi chú: {{note}}",
+      "registered": "đăng ký dịch vụ.",
+      "submitted": "nộp hồ sơ năng lực.",
+      "moreInfo": "yêu cầu bổ sung hồ sơ năng lực.",
+      "passed": "chấm Đạt đánh giá năng lực."
+    },
+    "toast": {
+      "suspended": "Đã tạm ngưng dịch vụ",
+      "reinstated": "Đã mở lại dịch vụ"
+    },
+    "actor": {
+      "system": "Hệ thống",
+      "admin": "Quản trị viên"
+    },
+    "expertCount_other": "{{count}} chuyên gia"
   },
   "applicationsTable": {
     "sortBy": "Sắp xếp: nộp sớm nhất trước",
@@ -166,7 +214,8 @@
     "actions": "Thao tác",
     "view": "Xem chi tiết",
     "viewLabel": "Xem chi tiết hồ sơ {{name}}",
-    "reapplication": "Nộp lại"
+    "reapplication": "Nộp lại",
+    "caption": "Danh sách đơn đăng ký"
   },
   "queue": {
     "tabs": {
@@ -301,7 +350,6 @@
   },
   "disputes": {
     "title": "Khiếu nại",
-    "intro": "{{count}} khiếu nại đang chờ trọng tài. Mỗi khiếu nại phải có quyết định trong {{hours}} giờ kể từ khi mở, gia hạn một lần thêm 48 giờ khi chuyển cấp chuyên môn; tiền Escrow bị khóa tới lúc đó.",
     "col": {
       "caseId": "Mã hồ sơ",
       "case": "Hồ sơ",
@@ -326,9 +374,11 @@
     "caseTitle": "Tranh chấp · {{title}}",
     "meta": {
       "kind": "Loại",
-      "client": "Client",
+      "client": "Khách",
       "expert": "Chuyên gia",
-      "ground": "Căn cứ"
+      "ground": "Căn cứ",
+      "fee": "Phí đang giữ",
+      "platformFee": "Phí nền tảng"
     },
     "kind": {
       "DELIVERY_ISSUE": "Khiếu nại kết quả bàn giao",
@@ -336,11 +386,10 @@
     },
     "evidence": "Bằng chứng: bản nháp AI so với bản chuyên gia sửa",
     "complaint": {
-      "title": "Khiếu nại của Client",
+      "title": "Khiếu nại của khách",
       "issue": "Vấn đề",
       "description": "Mô tả",
-      "attachment": "Bằng chứng",
-      "statement": "Giải trình của chuyên gia"
+      "attachment": "Bằng chứng"
     },
     "auditLog": "Nhật ký hồ sơ (audit log)",
     "decided": "Đã ra quyết định trọng tài",
@@ -350,43 +399,58 @@
       "lockedTitle": "Tiền đang bị khóa",
       "lockedBody": "Không giải ngân tự động cho tới khi có quyết định.",
       "outcome": "Kết quả (bắt buộc)",
-      "reason": "Lý do quyết định (bắt buộc)",
-      "reasonHint": "Gửi cho cả Client và chuyên gia",
+      "reason": "Lý do quyết định (bắt buộc, gửi cho cả khách và chuyên gia)",
+      "reasonHint": "Gửi cho cả khách và chuyên gia",
       "submit": "Ra quyết định",
       "done": "Đã ra quyết định",
-      "refundPct": "Tỷ lệ hoàn cho khách (%)"
+      "confirmTitle": "Gửi quyết định trọng tài?",
+      "confirmBody": "Quyết định được gửi cho cả khách và chuyên gia, và tiền Escrow được chia theo kết quả dưới đây.",
+      "failed": "Chưa gửi được quyết định; quyết định chưa được ghi. Hãy thử lại.",
+      "reasonMissing": "Nhập lý do quyết định."
     },
     "escalation": {
       "hint": "Tranh chấp cần xét đoán chuyên môn hoặc kết luận Thuế TNDN phải chuyển cho Authorized Reviewer. Hạn quyết định được cộng thêm {{hours}} giờ, chỉ một lần.",
       "action": "Chuyển cấp chuyên môn",
       "done": "Đã chuyển cấp chuyên môn; hạn quyết định đã được gia hạn.",
       "logged": "Chuyển cấp chuyên môn cho Authorized Reviewer; gia hạn quyết định thêm 48 giờ",
-      "toast": "Đã chuyển cấp chuyên môn"
+      "toast": "Đã chuyển cấp chuyên môn",
+      "confirmTitle": "Chuyển cấp chuyên môn?",
+      "confirmBody": "Khiếu nại được chuyển cho Authorized Reviewer và hạn quyết định được cộng thêm {{hours}} giờ. Chỉ chuyển được một lần.",
+      "failed": "Chưa chuyển cấp được. Hãy thử lại."
     },
     "outcome": {
       "RESOLVE_REFUND_USER": {
-        "label": "Chấp thuận khiếu nại · hoàn tiền Client",
-        "hint": "Khiếu nại có căn cứ: chuyên gia vi phạm nghĩa vụ, hoặc Client đã phản hồi đúng hạn / yêu cầu bổ sung không hợp lệ",
-        "split": "Hoàn Client 100% · Chuyên gia 0% · Nền tảng 0%"
+        "label": "Chấp thuận khiếu nại · hoàn 50% cho khách",
+        "hint": "Khiếu nại có căn cứ: chuyên gia vi phạm nghĩa vụ, hoặc khách đã phản hồi đúng hạn / yêu cầu bổ sung không hợp lệ",
+        "split": "Khách 50% · nền tảng 50% · chuyên gia không nhận"
       },
       "RESOLVE_PAY_EXPERT": {
         "label": "Bác khiếu nại · chi trả chuyên gia",
         "hint": "Khiếu nại không có căn cứ; chuyên gia làm đúng, đủ trách nhiệm",
-        "split": "Hoàn Client 0% · Chuyên gia 80% · Nền tảng 20%"
-      },
-      "RESOLVE_PARTIAL": {
-        "label": "Quyết toán một phần",
-        "hint": "Có thiếu sót một phần từ cả hai phía",
-        "split": "Hoàn Client 50% · Chuyên gia 40% · Nền tảng 10%"
+        "split": "Không hoàn · chuyên gia nhận Giá trừ Phí nền tảng của dịch vụ"
       }
+    },
+    "introCount_other": "{{count}} khiếu nại đang chờ trọng tài.",
+    "introRule": "Mỗi khiếu nại phải có quyết định trong {{hours}} giờ kể từ khi mở, gia hạn một lần thêm {{extra}} giờ khi chuyển cấp chuyên môn; tiền Escrow bị khóa tới lúc đó.",
+    "reason": {
+      "DELIVERABLE_INCOMPLETE": "Kết quả bàn giao chưa đủ",
+      "OBLIGATION_NOT_MET": "Chuyên gia chưa làm đúng nghĩa vụ",
+      "PROFESSIONAL_JUDGMENT": "Không đồng ý với nhận định chuyên môn"
+    },
+    "expertSide": {
+      "title": "Phía chuyên gia",
+      "statement": "Giải trình",
+      "noStatement": "Chuyên gia chưa gửi giải trình.",
+      "summary": "Tóm tắt đã giao",
+      "noSummary": "Chưa có tóm tắt kết quả."
     }
   },
   "escrow": {
     "title": "Hoàn tiền và chi trả",
-    "intro": "Chi trả 80/20 sau nghiệm thu; hoàn tiền theo ma trận chấm dứt và quyết định tranh chấp.",
+    "intro": "Chi trả cho chuyên gia sau nghiệm thu, đã trừ Phí nền tảng của dịch vụ; hoàn tiền theo ma trận chấm dứt và quyết định tranh chấp.",
     "col": {
       "caseId": "Mã hồ sơ",
-      "client": "Client",
+      "client": "Khách",
       "expert": "Chuyên gia",
       "amount": "Số tiền (₫)",
       "status": "Trạng thái Escrow",
@@ -401,7 +465,7 @@
     "matrix": {
       "title": "Ma trận chấm dứt hồ sơ",
       "case": "Tình huống chấm dứt",
-      "client": "Hoàn Client",
+      "client": "Hoàn cho khách",
       "expert": "Chuyên gia",
       "platform": "Nền tảng"
     },
@@ -417,15 +481,15 @@
     },
     "termination": {
       "USER_NON_RESPONSE": {
-        "label": "Client không phản hồi yêu cầu bổ sung trong 72 giờ",
-        "short": "Client không phản hồi"
+        "label": "Khách không phản hồi yêu cầu bổ sung trong 72 giờ",
+        "short": "Khách không phản hồi"
       },
       "USER_CANCELLED": {
-        "label": "Client hủy khi chuyên gia đang rà soát",
-        "short": "Client hủy khi đang rà soát"
+        "label": "Khách hủy khi chuyên gia đang rà soát",
+        "short": "Khách hủy khi đang rà soát"
       },
       "USER_CANCELLED_BEFORE_START": {
-        "label": "Client hủy sau khi thanh toán, trước khi chuyên gia bắt đầu",
+        "label": "Khách hủy sau khi thanh toán, trước khi chuyên gia bắt đầu",
         "short": "Hủy trước khi bắt đầu"
       },
       "EXPERT_ABANDON": {
@@ -464,8 +528,8 @@
       "parties": "{{client}} → {{expert}}",
       "split": "Chia tiền",
       "expected": "Dự kiến khi nghiệm thu",
-      "total": "Client đã thanh toán",
-      "toClient": "Hoàn Client",
+      "total": "Khách đã thanh toán",
+      "toClient": "Hoàn cho khách",
       "toExpert": "Chuyên gia nhận",
       "toPlatform": "Phí nền tảng",
       "paidAt": "Thanh toán lúc",
@@ -478,15 +542,15 @@
       "history": "Nhật ký",
       "refundAccount": "Tài khoản nhận hoàn",
       "refundRef": "Mã giao dịch hoàn",
-      "fixRefund": "Cần liên hệ Client lấy tài khoản nhận hoàn mới, chuyển khoản rồi đánh dấu đã hoàn."
+      "fixRefund": "Cần liên hệ khách lấy tài khoản nhận hoàn mới, chuyển khoản rồi đánh dấu đã hoàn."
     },
     "csv": {
       "caseId": "Mã hồ sơ",
-      "client": "Client",
+      "client": "Khách",
       "expert": "Chuyên gia",
       "amount": "Số tiền",
       "status": "Trạng thái",
-      "toClient": "Hoàn Client",
+      "toClient": "Hoàn cho khách",
       "toExpert": "Chuyên gia nhận",
       "toPlatform": "Phí nền tảng",
       "paidAt": "Thanh toán lúc",
@@ -495,7 +559,7 @@
     },
     "refund": {
       "mark": "Đánh dấu đã hoàn",
-      "title": "Xác nhận đã hoàn {{amount}} cho Client?",
+      "title": "Xác nhận đã hoàn {{amount}} cho khách?",
       "body": "Chỉ đánh dấu sau khi tiền đã chuyển tới {{account}}.",
       "ref": "Mã giao dịch ngân hàng (bắt buộc)",
       "refHint": "Dùng để đối soát với sao kê.",
@@ -511,7 +575,11 @@
       "holdingTotal": "Tổng {{amount}}",
       "done": "Đã hoàn tất"
     },
-    "searchLabel": "Tìm mã hồ sơ, Client, chuyên gia hoặc mã PayOS"
+    "searchLabel": "Tìm mã hồ sơ, khách, chuyên gia hoặc mã PayOS",
+    "retryConfirm": {
+      "title": "Chi trả lại {{amount}} cho chuyên gia?",
+      "body": "Khoản chi trả của hồ sơ {{id}} được gửi lại cho chuyên gia."
+    }
   },
   "pricing": {
     "title": "Khung giá dịch vụ",
@@ -519,11 +587,11 @@
     "tabs": {
       "review-fee": {
         "label": "Phí rà soát chuyên gia",
-        "intro": "Expert đặt phí rà soát trong khung của từng nhóm mẫu biểu. Thay đổi chỉ áp dụng cho yêu cầu mới, từ ngày hiệu lực."
+        "intro": "Chuyên gia đặt phí rà soát trong khung của từng nhóm mẫu biểu. Thay đổi chỉ áp dụng cho yêu cầu mới, từ ngày hiệu lực."
       },
       "credit": {
         "label": "Credit và gói nạp",
-        "intro": "Đơn giá credit cho trợ lý AI và soạn nháp, và các gói nạp hiện trên paywall."
+        "intro": "Gói nạp credit để khách trả phí thuê chuyên gia. Dùng trợ lý AI và soạn nháp miễn phí."
       },
       "history": {
         "label": "Lịch sử thay đổi",
@@ -534,7 +602,9 @@
     "share": {
       "platform": "Phí nền tảng",
       "expert": "Chuyên gia nhận",
-      "note": "Tỷ lệ theo chính sách nền tảng, không chỉnh ở màn này. Client không thấy tỷ lệ chia; chỉ thấy phí rà soát chuyên gia đặt."
+      "note": "Tỷ lệ theo chính sách nền tảng, không chỉnh ở màn này. Khách không thấy tỷ lệ chia; chỉ thấy phí rà soát chuyên gia đặt.",
+      "owner": "Phí nền tảng đặt riêng cho từng dịch vụ ở trang Phí nền tảng. Khách không thấy tỷ lệ này; chỉ thấy phí rà soát chuyên gia đặt.",
+      "manage": "Mở Phí nền tảng"
     },
     "tiers": {
       "title": "Khung theo nhóm mẫu biểu",
@@ -543,7 +613,7 @@
         "group": "Nhóm mẫu biểu",
         "range": "Khung hiện hành",
         "step": "Bước giá",
-        "accepting": "Expert đang nhận",
+        "accepting": "Chuyên gia đang nhận",
         "outside": "Ngoài khung",
         "from": "Hiệu lực từ",
         "scheduled": "Thay đổi đã lên lịch"
@@ -576,7 +646,8 @@
       "onSale": "Đang bán",
       "offSale": "Ngừng bán",
       "recommended": " · gợi ý",
-      "note": "Đổi giá gói chỉ áp dụng cho lần nạp mới; credit đã nạp giữ nguyên."
+      "note": "Đổi giá gói chỉ áp dụng cho lần nạp mới; credit đã nạp giữ nguyên.",
+      "aiFree": "Dùng trợ lý AI, soạn và xuất bản nháp miễn phí, không giới hạn số lần. Credit chỉ dùng để trả phí thuê chuyên gia."
     },
     "package": {
       "edit": "Sửa {{name}}",
@@ -587,7 +658,7 @@
       "save": "Lưu gói",
       "create": "Thêm gói",
       "name": "Tên gói (bắt buộc)",
-      "nameHint": "Tên Client thấy trên paywall.",
+      "nameHint": "Tên khách thấy trên paywall.",
       "namePlaceholder": "vd. Gói 30",
       "credits": "Số credit (bắt buộc)",
       "price": "Giá bán",
@@ -606,37 +677,37 @@
       "new": "Thêm nhóm mẫu biểu",
       "notFound": "Không tìm thấy nhóm mẫu biểu {{id}}",
       "current": "Đang áp dụng: {{range}}, bước {{step}}, từ {{from}}",
-      "newIntro": "Expert nhận nhóm này sẽ đặt phí rà soát trong khung bạn tạo, từ ngày hiệu lực.",
+      "newIntro": "Chuyên gia nhận nhóm này sẽ đặt phí rà soát trong khung bạn tạo, từ ngày hiệu lực.",
       "newRange": "Khung mới",
       "range": "Khung giá",
       "group": "Tên nhóm mẫu biểu (bắt buộc)",
-      "groupHint": "Tên Client thấy khi chọn loại hồ sơ cần rà soát.",
+      "groupHint": "Tên khách thấy khi chọn loại hồ sơ cần rà soát.",
       "groupPlaceholder": "vd. Chuyển giá liên kết",
       "min": "Phí tối thiểu (bắt buộc)",
       "max": "Phí tối đa (bắt buộc)",
       "step": "Bước giá (bắt buộc)",
-      "stepHint": "Expert chỉ đặt được bội số của bước giá.",
+      "stepHint": "Chuyên gia chỉ đặt được bội số của bước giá.",
       "from": "Hiệu lực từ (bắt buộc)",
       "fromHint": "Sớm nhất là ngày mai.",
       "reasonChange": "Lý do thay đổi (bắt buộc)",
       "reasonCreate": "Lý do tạo nhóm (bắt buộc)",
       "reasonChangePlaceholder": "vd. Hồ sơ hoàn thuế thường cần đối chiếu nhiều kỳ",
       "reasonCreatePlaceholder": "vd. Thêm mẫu biểu chuyển giá theo Nghị định 132/2020",
-      "reasonHint": "Lưu vào lịch sử thay đổi và gửi kèm thông báo cho Expert.",
-      "previewTitle": "Expert sẽ thấy khi đặt giá",
+      "reasonHint": "Lưu vào lịch sử thay đổi và gửi kèm thông báo cho chuyên gia.",
+      "previewTitle": "Chuyên gia sẽ thấy khi đặt giá",
       "preview": "Khung hiện hành: {{range}} · bạn nhận {{share}}%",
       "afterTitle": "Sau khi tạo",
-      "afterNoExpertTitle": "Nhóm mới chưa có Expert nào nhận",
-      "afterNoExpert": "Từ ngày hiệu lực, Expert thấy nhóm này trong mục Dịch vụ và tự bật nhận nếu muốn, với giá trong khung.",
-      "afterMarketTitle": "Client chỉ thấy khi có Expert nhận",
-      "afterMarket": "Nhóm hiện trên Marketplace khi có ít nhất một Expert đang hoạt động nhận nhóm này.",
+      "afterNoExpertTitle": "Nhóm mới chưa có chuyên gia nào nhận",
+      "afterNoExpert": "Từ ngày hiệu lực, chuyên gia thấy nhóm này trong mục Dịch vụ và tự bật nhận nếu muốn, với giá trong khung.",
+      "afterMarketTitle": "Khách chỉ thấy khi có chuyên gia nhận",
+      "afterMarket": "Nhóm hiện trên Marketplace khi có ít nhất một chuyên gia đang hoạt động nhận nhóm này.",
       "impact": "Ảnh hưởng",
-      "inGroup": "Expert trong nhóm",
+      "inGroup": "Chuyên gia trong nhóm",
       "outside": "Ngoài khung mới",
       "activeCases": "Case đang chạy",
       "below": "dưới mức tối thiểu mới",
       "above": "trên mức tối đa mới",
-      "outsideNoteTitle": "Expert ngoài khung giữ giá cũ cho tới khi tự sửa",
+      "outsideNoteTitle": "Chuyên gia ngoài khung giữ giá cũ cho tới khi tự sửa",
       "outsideNote": "Hệ thống gửi thông báo đề nghị cập nhật. Họ vẫn hiện trên Marketplace với giá hiện tại.",
       "casesNoteTitle": "{{count}} case đang chạy không đổi giá",
       "casesNote": "Case đã thanh toán giữ đúng số tiền đã trả.",
@@ -648,8 +719,8 @@
         "date": "Hiệu lực phải từ ngày mai trở đi",
         "reason": "Thiếu lý do thay đổi"
       },
-      "readyChange": "Áp dụng cho yêu cầu mới từ {{date}} · gửi thông báo cho {{count}} Expert",
-      "readyCreate": "Mở cho Expert đặt giá từ {{date}}",
+      "readyChange": "Áp dụng cho yêu cầu mới từ {{date}} · gửi thông báo cho {{count}} chuyên gia",
+      "readyCreate": "Mở cho chuyên gia đặt giá từ {{date}}",
       "cancel": "Hủy",
       "saving": "Đang lưu…",
       "schedule": "Lên lịch áp dụng",
@@ -664,7 +735,7 @@
     "role": {
       "label": "Vai trò",
       "all": "Tất cả vai trò",
-      "CLIENT": "Client",
+      "CLIENT": "Khách hàng",
       "EXPERT": "Chuyên gia",
       "REVIEWER": "Reviewer",
       "KNOWLEDGE_ADMIN": "Knowledge Admin",
@@ -674,6 +745,7 @@
       "label": "Trạng thái",
       "all": "Tất cả trạng thái",
       "ACTIVE": "Đang hoạt động",
+      "PENDING_VERIFICATION": "Chờ xác minh email",
       "LOCKED": "Đã khóa"
     },
     "count": "{{count}} tài khoản",
@@ -708,7 +780,7 @@
       "lockTitle": "Khóa {{name}}?",
       "lockBody": "Người này không đăng nhập được cho tới khi mở khóa. Việc đang làm dở không bị xóa.",
       "lockReason": "Lý do khóa (bắt buộc)",
-      "lockReasonHint": "Lưu vào nhật ký tài khoản.",
+      "lockReasonHint": "Hiển thị trong chi tiết tài khoản khi đang khóa.",
       "lockConfirm": "Khóa tài khoản",
       "unlockTitle": "Mở khóa {{name}}?",
       "unlockBody": "Người này đăng nhập lại được ngay.",
@@ -817,7 +889,8 @@
       "failed": "Chưa đạt",
       "approved": "Đã phê duyệt",
       "suspended": "Tạm ngưng"
-    }
+    },
+    "caption": "Danh sách hồ sơ năng lực"
   },
   "competency": {
     "incomplete": "Thiếu ghi chú hoặc tài liệu",
@@ -979,7 +1052,18 @@
     "suspendNoteLabel": "Lý do tạm ngưng (bắt buộc)",
     "reinstateNoteLabel": "Ghi chú (không bắt buộc)",
     "suspend": "Tạm ngưng dịch vụ",
-    "reinstate": "Mở lại dịch vụ"
+    "reinstate": "Mở lại dịch vụ",
+    "confirmApproveTitle": "Phê duyệt {{service}}?",
+    "confirmApproveBody": "{{name}} được thiết lập giá cho {{service}}; dịch vụ lên Marketplace khi giá được duyệt và còn hiệu lực. Quyết định được ghi vào lịch sử hồ sơ.",
+    "confirmNote": "Ghi chú",
+    "confirmReturnTitle": "Trả {{service}} về đánh giá năng lực?",
+    "confirmReturnBody": "Kết quả đánh giá năng lực được trả lại cho người đánh giá xem lại theo ghi chú dưới đây. Ghi chú không gửi cho chuyên gia.",
+    "gate1": "Xét điều kiện (Gate 1)",
+    "gate2": "Đánh giá năng lực (Gate 2)",
+    "gateResult": "Đạt {{passed}}/{{total}} tiêu chí",
+    "emptyQueue": "Không có hồ sơ nào ở mục \"{{status}}\".",
+    "emptySearch": "Không có hồ sơ nào khớp \"{{query}}\".",
+    "seeEarlier": "Xem hồ sơ đang ở các bước trước"
   },
   "platformFees": {
     "title": "Phí nền tảng",
@@ -1003,7 +1087,10 @@
       "PLATFORM_FEE_TOO_SOON": "Thay đổi phải báo trước ít nhất {{days}} ngày. Chọn ngày muộn hơn.",
       "PLATFORM_FEE_NOT_PENDING": "Không còn thay đổi nào đang chờ. Tải lại trang.",
       "LATE_RULE_INVALID": "Quy định giao trễ không hợp lệ: số giờ từ 0 đến {{maxHours}}, số giờ hủy không nhỏ hơn số giờ phạt, % phạt cộng phí nền tảng không quá 100%.",
-      "NO_RESPONSE_RULE_INVALID": "Quy định khi khách không trả lời không hợp lệ: số giờ từ 1 đến {{maxHours}}, % hoàn cộng % chuyên gia không quá 100%."
+      "NO_RESPONSE_RULE_INVALID": "Quy định khi khách không trả lời không hợp lệ: số giờ từ 1 đến {{maxHours}}, % hoàn cộng % chuyên gia không quá 100%.",
+      "POLICY_REASON_REQUIRED": "Nhập lý do thay đổi.",
+      "POLICY_REASON_TOO_LONG": "Lý do tối đa 1000 ký tự.",
+      "NO_DELIVERY_RULE_INVALID": "% hoàn khi chuyên gia không giao phải từ 0 đến 100."
     },
     "helpLabel": "Về phí nền tảng",
     "pending": "Thay đổi đang chờ",
@@ -1014,23 +1101,117 @@
     "effectiveOnHelp": "Thay đổi phải báo trước ít nhất {{days}} ngày, nên sớm nhất là ngày {{date}}. Đặt lịch mới sẽ thay thế thay đổi đang chờ (nếu có).",
     "example": "Chuyên gia thực nhận mỗi yêu cầu",
     "examplePrice": "Giá",
-    "exampleNet": "Thực nhận: hiện tại → mới",
+    "exampleNet": "Thực nhận trước thuế TNCN: hiện tại → mới",
     "firstFeeHelp": "Phí đầu tiên có hiệu lực ngay và mở dịch vụ cho chuyên gia đặt giá.",
     "late": "Giao trễ",
-    "lateValue": "Trễ ≤{{penaltyHours}}h: hoàn {{penaltyPercent}}% · ≤{{cancelHours}}h: hoàn 100%",
-    "lateHelp": "Tính từ hạn giao bài. Trễ trong số giờ phạt: khách được hoàn % phạt, trừ vào phần của chuyên gia (nền tảng vẫn giữ phí). Trễ hơn đến số giờ hủy: khách được hoàn toàn bộ. Quá số giờ hủy mà chưa giao: yêu cầu bị hủy và hoàn toàn bộ. Tối đa {{maxHours}} giờ; % phạt cộng phí nền tảng không quá 100%. Yêu cầu đã gửi giữ nguyên quy định lúc gửi.",
+    "lateHelp": "Tính từ hạn giao bài (1 ngày làm việc). Giao trễ trong số giờ phạt: khách được hoàn % đã đặt, nền tảng giữ phần còn lại, chuyên gia không nhận. Giao trễ hơn nữa nhưng trước số giờ hủy: khách được hoàn 100%. Quá số giờ hủy mà chưa giao: yêu cầu bị hủy, khách được hoàn % \"khi không giao\", nền tảng giữ phần còn lại. Đặt số giờ phạt bằng số giờ hủy để chỉ còn một mức hoàn. Tối đa {{maxHours}} giờ. Yêu cầu đã gửi giữ nguyên quy định lúc gửi.",
     "lateFields": {
-      "penaltyHours": "Số giờ phạt",
-      "penaltyPercent": "% phạt",
-      "cancelHours": "Số giờ hủy"
+      "penaltyHours": "Trễ tối đa được phạt (giờ)",
+      "penaltyPercent": "Hoàn cho khách khi trễ (%)",
+      "cancelHours": "Hủy nếu chưa giao sau (giờ)",
+      "noDeliveryRefundPercent": "Hoàn cho khách khi không giao (%)"
     },
-    "noResponse": "Client không trả lời",
-    "noResponseValue": "Sau {{hours}}h: hoàn {{refundPercent}}% · chuyên gia {{expertPercent}}% · nền tảng {{platformPercent}}%",
+    "noResponse": "Khách không trả lời",
+    "noResponseValue": "Sau {{hours}} giờ: hoàn {{refundPercent}}% · chuyên gia {{expertPercent}}% · nền tảng {{platformPercent}}%",
     "noResponseHelp": "Khi chuyên gia hỏi thêm thông tin mà khách không trả lời trong số giờ này, yêu cầu được đóng và phí chia theo tỉ lệ: % hoàn cho khách, % trả cho chuyên gia, nền tảng giữ phần còn lại. Số giờ từ 1 đến {{maxHours}}; % hoàn cộng % chuyên gia không quá 100%. Yêu cầu đã gửi giữ nguyên quy định lúc gửi.",
     "noResponseFields": {
       "hours": "Số giờ chờ",
       "refundPercent": "% hoàn cho khách",
       "expertPercent": "% cho chuyên gia"
+    },
+    "confirmCancelTitle": "Hủy thay đổi phí của {{name}}?",
+    "confirmCancelBody": "Phí {{percent}}% dự kiến áp dụng từ ngày {{date}} sẽ bị hủy; phí hiện tại {{current}}% giữ nguyên.",
+    "keepPending": "Giữ thay đổi",
+    "rules": {
+      "wholeNumbers": "Nhập số nguyên không âm cho mọi ô.",
+      "maxHours": "Số giờ không quá {{max}}.",
+      "cancelBeforePenalty": "Số giờ hủy phải lớn hơn hoặc bằng số giờ trễ tối đa được phạt.",
+      "penaltyOverFee": "% hoàn khi trễ cộng Phí nền tảng không quá 100% (đang là {{sum}}%).",
+      "hoursRange": "Số giờ từ 1 đến {{max}}.",
+      "splitOver": "% hoàn cho khách cộng % cho chuyên gia không quá 100% (đang là {{sum}}%).",
+      "platformKeeps": "Nền tảng giữ {{percent}}%.",
+      "dateTooSoon": "Chọn từ ngày {{date}} trở đi.",
+      "lateIncident": "Giao trễ trong số giờ phạt: khách {{client}}%, nền tảng {{platform}}%, chuyên gia không nhận.",
+      "noDeliveryOver": "% hoàn khi không giao không quá 100%."
+    },
+    "review": "Xem lại",
+    "confirmSave": "Xác nhận lưu phí",
+    "backToEdit": "Quay lại sửa",
+    "reviewTitle": "Kiểm tra trước khi lưu",
+    "reviewItem": "Mục",
+    "reviewBefore": "Hiện tại",
+    "reviewAfter": "Sau khi lưu",
+    "reviewNow": "Ngay khi lưu",
+    "reviewChanged_one": "{{count}} mục thay đổi",
+    "reviewChanged_other": "{{count}} mục thay đổi",
+    "expertShare": "Chuyên gia nhận {{percent}}% giá, trước thuế TNCN.",
+    "expertColumn": "Chuyên gia nhận",
+    "unchanged": "Chưa có mục nào khác với hiện tại.",
+    "changeFor": "Thay đổi phí · {{name}}",
+    "setFor": "Đặt phí · {{name}}",
+    "cancelFor": "Hủy thay đổi đang chờ · {{name}}",
+    "beforePit": "trước thuế TNCN",
+    "lateSteps": {
+      "penalty": "Trễ đến {{hours}} giờ: hoàn {{percent}}%",
+      "full": "{{from}}–{{to}} giờ: hoàn 100%",
+      "cancel": "Quá {{hours}} giờ chưa giao: hủy, hoàn {{percent}}%"
+    },
+    "dialogPart": "{{part}} · {{name}}",
+    "isDefault": "Mức mặc định",
+    "defaultIs": "Mặc định {{percent}}%",
+    "useDefault": "Dùng mức mặc định {{percent}}%",
+    "splitColumn": "Chia tiền theo tình huống",
+    "expertShareShort": "Chuyên gia nhận {{percent}}%, trước thuế TNCN",
+    "editButtons": {
+      "percent": "Sửa phí",
+      "late": "Sửa giao trễ",
+      "noResponse": "Sửa khách không trả lời"
+    },
+    "cases": {
+      "onTime": "Đúng hạn",
+      "late": "Trễ đến {{hours}} giờ",
+      "lateMore": "Trễ {{from}}–{{to}} giờ",
+      "cancel": "Quá {{hours}} giờ chưa giao",
+      "silence": "Khách không trả lời {{hours}} giờ",
+      "preview": "Chia tiền sau khi lưu",
+      "silenceIndependent": "Đặt riêng, không đổi theo phí nền tảng",
+      "previewStale": "Chia tiền hiện tại (giá trị mới chưa hợp lệ)"
+    },
+    "parts": {
+      "client": "Khách {{percent}}%",
+      "expert": "Chuyên gia {{percent}}%",
+      "platform": "Nền tảng {{percent}}%",
+      "cancelled": "Hủy yêu cầu"
+    },
+    "agreed": {
+      "late": "Lệch mức đã chốt: hoàn {{percent}}% khi giao trễ",
+      "silence": "Lệch mức đã chốt: hoàn {{refund}}% · chuyên gia {{expert}}%",
+      "useLate": "Dùng mức đã chốt (hoàn {{percent}}%)",
+      "useSilence": "Dùng mức đã chốt (hoàn {{refund}}% · chuyên gia {{expert}}%)"
+    },
+    "discardTitle": "Bỏ thay đổi chưa lưu?",
+    "discardBody": "Các giá trị vừa nhập sẽ mất; phí và quy định hiện tại giữ nguyên.",
+    "keepEditing": "Tiếp tục sửa",
+    "discard": "Bỏ thay đổi",
+    "reasonLabel": "Lý do thay đổi",
+    "history": {
+      "filterLabel": "Trạng thái",
+      "emptyFilter": "Không có thay đổi ở trạng thái này.",
+      "filters": {
+        "all": "Tất cả trạng thái",
+        "applied": "Đã áp dụng",
+        "pending": "Đang chờ",
+        "cancelled": "Đã hủy"
+      },
+      "open": "Lịch sử",
+      "openFor": "Lịch sử phí của {{name}}",
+      "title": "Lịch sử phí: {{name}}",
+      "empty": "Chưa có lần đặt phí nào.",
+      "terms": "trễ ≤ {{lateHours}} giờ hoàn {{latePercent}}% · không phản hồi: khách {{refund}}%, chuyên gia {{expert}}%",
+      "applied": "Áp dụng từ {{date}}",
+      "pending": "Sẽ áp dụng từ {{date}}",
+      "cancelled": "Đã rút (dự kiến {{date}})",
+      "noReason": "Không ghi lý do (đặt trước khi có quy định ghi lý do)"
     }
   },
   "expertPolicy": {
@@ -1106,7 +1287,6 @@
     },
     "outOfRange": "Nhập số nguyên từ {{min}} đến {{max}}.",
     "updated": "Sửa lần cuối {{time}} · {{actor}}",
-    "usingDefault": "Đang dùng giá trị mặc định.",
     "you": "Bạn",
     "reason": "Lý do thay đổi (bắt buộc)",
     "reasonPlaceholder": "Ví dụ: cập nhật theo quyết định chính sách ngày …",
@@ -1114,13 +1294,25 @@
     "saved": "Đã lưu chính sách chuyên gia",
     "historyTitle": "Lịch sử thay đổi",
     "history": {
+      "empty": "Chưa có thay đổi nào.",
       "time": "Thời điểm",
       "setting": "Tham số",
-      "change": "Giá trị cũ → mới",
-      "actor": "Người sửa",
+      "change": "Thay đổi",
       "reason": "Lý do",
-      "empty": "Chưa có thay đổi nào."
+      "actor": "Người sửa"
     },
+    "columns": {
+      "value": "Giá trị",
+      "current": "Đang áp dụng",
+      "default": "Mặc định",
+      "allowed": "Cho phép",
+      "updated": "Sửa lần cuối"
+    },
+    "review": "Xem lại và lưu",
+    "confirmTitle": "Xác nhận thay đổi chính sách",
+    "confirmBefore": "Đang áp dụng",
+    "confirmAfter": "Giá trị mới",
+    "confirm": "Xác nhận lưu",
     "errors": {
       "POLICY_CHANGED": "Giá trị vừa được người khác thay đổi. Đã tải lại, kiểm tra rồi lưu lại.",
       "POLICY_RANGE_INVERTED": "Giá trị tối thiểu không được lớn hơn giá trị tối đa (Giá, Thời gian trả kết quả).",
@@ -1130,7 +1322,44 @@
       "POLICY_REASON_TOO_LONG": "Lý do tối đa 1000 ký tự.",
       "UNKNOWN_POLICY_SETTING": "Tham số không hợp lệ. Tải lại trang rồi thử lại.",
       "failed": "Chưa lưu được thay đổi. Vui lòng thử lại."
-    }
+    },
+    "groups": {
+      "review": {
+        "title": "Xét duyệt hồ sơ",
+        "help": "Ngưỡng và thời hạn người đánh giá và quản trị viên phải tuân theo khi xét điều kiện, năng lực và phê duyệt cuối."
+      },
+      "reapply": {
+        "title": "Thời gian chờ nộp lại",
+        "help": "Số ngày chuyên gia phải chờ trước khi nộp lại sau kết luận không đạt."
+      },
+      "pricing": {
+        "title": "Giá và thời gian trả kết quả",
+        "help": "Giới hạn chuyên gia được đặt khi cấu hình giá dịch vụ, và quy tắc khi giá hoặc phí nền tảng thay đổi."
+      }
+    },
+    "ranges": {
+      "fee": "Giá mỗi yêu cầu",
+      "turnaround": "Thời gian trả kết quả"
+    },
+    "current": "Đang áp dụng: {{value}}",
+    "resetDefault": "Về mặc định ({{value}})",
+    "pending": "{{count}} thay đổi chưa lưu",
+    "discard": "Bỏ chỉnh sửa",
+    "rangeInverted": "Giá trị tối thiểu không được lớn hơn tối đa.",
+    "noPending": "Chưa có thay đổi",
+    "leaveTitle": "Rời trang khi chưa lưu?",
+    "leaveBody": "{{count}} thay đổi chưa lưu sẽ bị bỏ.",
+    "stay": "Ở lại",
+    "leave": "Bỏ thay đổi và rời trang",
+    "discardTitle": "Bỏ {{count}} chỉnh sửa chưa lưu?",
+    "discardBody": "Các giá trị quay về như đang áp dụng. Chưa có gì được lưu.",
+    "keepEditing": "Tiếp tục sửa",
+    "youNamed": "{{name}} (bạn)",
+    "currentValue": "Đang áp dụng: {{value}}",
+    "neverEdited": "Chưa sửa",
+    "notSetBefore": "Chưa đặt",
+    "reasonMin": "Tối thiểu {{count}} ký tự, nêu vì sao cần đổi.",
+    "otherAdmin": "Quản trị viên khác (#{{id}})"
   },
   "claim": {
     "free": "Chưa ai nhận hồ sơ này",
@@ -1201,7 +1430,8 @@
       "APPLICATION_NOT_IN_REVIEW": "Hồ sơ không còn ở bước chờ đánh giá. Tải lại danh sách.",
       "QUALIFICATION_NOT_IN_REVIEW": "Hồ sơ không còn ở bước chờ đánh giá. Tải lại danh sách.",
       "failed": "Chưa chuyển được. Vui lòng thử lại."
-    }
+    },
+    "searchLabel": "Tìm theo tên chuyên gia"
   },
   "finalReturn": {
     "title": "Bị trả về ở bước duyệt cuối",
@@ -1213,5 +1443,43 @@
     "label": "Vòng bổ sung {{used}}/{{max}}",
     "last": "Đây là vòng bổ sung cuối",
     "lastHelp": "Đã dùng hết {{max}} vòng yêu cầu bổ sung theo chính sách. Chọn Đạt hoặc Không đạt dựa trên minh chứng hiện có."
+  },
+  "serviceAccess": {
+    "thisService": "dịch vụ này",
+    "suspendTitle": "Tạm ngưng {{service}}?",
+    "suspendBody": "{{service}} của {{name}} bị ẩn khỏi Marketplace và không nhận yêu cầu mới. Hồ sơ đang thực hiện vẫn tiếp tục; dịch vụ khác của chuyên gia không bị ảnh hưởng.",
+    "reinstateTitle": "Mở lại {{service}}?",
+    "reinstateBody": "{{name}} được tiếp tục cung cấp {{service}}. Quyết định được ghi vào lịch sử.",
+    "noteRequired": "Lý do tạm ngưng (bắt buộc)",
+    "noteOptional": "Ghi chú (không bắt buộc)",
+    "noteMissing": "Nhập lý do tạm ngưng.",
+    "confirmSuspend": "Tạm ngưng dịch vụ",
+    "confirmReinstate": "Mở lại dịch vụ"
+  },
+  "operationsUnavailable": {
+    "title": "Chưa kết nối",
+    "body": "Chức năng này chưa mở. Số liệu sẽ hiện ở đây khi chức năng hoạt động.",
+    "areas": {
+      "disputes": "Tài khoản này chưa được cấp quyền xử lý khiếu nại, nên hàng chờ trọng tài không hiện ở đây.",
+      "escrow": "Trang này sẽ hiện tiền đang giữ chờ nghiệm thu, các khoản chi trả cho chuyên gia và hoàn tiền cho khách. Chưa có dữ liệu cho tới khi chức năng thanh toán được kết nối.",
+      "pricing": "Trang này sẽ hiện khung giá theo từng nhóm mẫu biểu và các chuyên gia đặt giá ngoài khung. Khoảng giá chung hiện đặt ở trang Chính sách chuyên gia.",
+      "users": "Danh sách tài khoản và thao tác khóa, đặt lại mật khẩu chưa có trên máy chủ. Số người dùng mới và tổng người dùng trên trang Tổng quan lấy từ thống kê nên vẫn hiện."
+    },
+    "next": {
+      "pricing": "Mở Chính sách chuyên gia",
+      "users": "Xem số người dùng ở Tổng quan"
+    }
+  },
+  "serviceStatus": {
+    "INACTIVE": {
+      "label": "Chưa hoạt động"
+    },
+    "ACTIVE": {
+      "label": "Đang hoạt động",
+      "note": "hiện trên Marketplace"
+    },
+    "SUSPENDED": {
+      "label": "Tạm ngưng"
+    }
   }
 }

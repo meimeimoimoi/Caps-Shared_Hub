@@ -5,6 +5,9 @@ public static class UserStatus
 {
     public const string PendingVerification = "PENDING_VERIFICATION";
     public const string Active = "ACTIVE";
+
+    /// <summary>Locked by a System Admin: the account cannot sign in until it is reinstated.</summary>
+    public const string Suspended = "SUSPENDED";
 }
 
 /// <summary>Role codes the code depends on.</summary>

@@ -203,6 +203,11 @@ public sealed class DocumentHandlerTests
             CancellationToken ct
         ) => throw new NotSupportedException();
 
+        public Task<TemplateVersion?> FindReleasedVersionAsync(
+            Guid versionId,
+            CancellationToken ct
+        ) => throw new NotSupportedException();
+
         public Task<TemplateVersion?> FindPublishedVersionAsync(
             Guid templateId,
             CancellationToken ct

@@ -8,13 +8,16 @@ import { AdminLayout } from '@/app/layouts/admin/AdminLayout'
 import { useAdminNav } from '@/app/layouts/admin/useAdminNav'
 import {
   DISPUTE_RESOLVED,
-  DISPUTE_SLA_HOURS,
+  DISPUTE_ESCALATION_HOURS, DISPUTE_SLA_HOURS,
 } from '../../features/disputes-escrow/constants'
 import { useDisputes } from '../../features/disputes-escrow/hooks/useDispute'
 import {
   disputeBadgeKey,
   disputeHoursLeft,
 } from '../../features/disputes-escrow/utils/disputes'
+import { PageHeader } from '@/components/ui/layout/page-header'
+import { LoadError } from '@/components/ui/feedback/load-error'
+import { OperationsUnavailable } from '@/features/disputes-escrow/components/OperationsUnavailable'
 
 const rowCls = 'border-border-subtle border-t [&>td]:px-4 [&>td]:py-3'
 const headCls =
@@ -24,7 +27,7 @@ const headCls =
 export default function AdminDisputesPage() {
   const nav = useAdminNav()
   const { t } = useTranslation('admin')
-  const { data = [], isLoading, error } = useDisputes()
+  const { data = [], isLoading, error } = useDisputes(!nav.disputesUnavailable)
   const [now] = useState(() => Date.now())
 
   const rows = data
@@ -45,22 +48,38 @@ export default function AdminDisputesPage() {
 
   return (
     <AdminLayout {...nav} section="disputes" breadcrumb={t('disputes.title')}>
-      <h1 className="text-h1">{t('disputes.title')}</h1>
-      <p className="text-fg-muted mt-3">
-        {t('disputes.intro', { count: openCount, hours: DISPUTE_SLA_HOURS })}
-      </p>
+      <PageHeader
+        title={t('disputes.title')}
+        help={
+          <>
+            {!nav.disputesUnavailable && !isLoading && !error && (
+              <>{t('disputes.introCount', { count: openCount })} </>
+            )}
+            {t('disputes.introRule', {
+              hours: DISPUTE_SLA_HOURS,
+              extra: DISPUTE_ESCALATION_HOURS,
+            })}
+          </>
+        }
+      />
+      {/* The queue is not open to this account: one honest state, no fake zeros */}
+      {nav.disputesUnavailable ? (
+        <OperationsUnavailable area="disputes" />
+      ) : (
+        <>
 
       <section className="paper mt-8 overflow-x-auto">
         <table className="w-full min-w-220 text-sm">
+          <caption className="sr-only">{t('disputes.title')}</caption>
           <thead>
             <tr className={headCls}>
-              <th className="text-left">{t('disputes.col.caseId')}</th>
-              <th className="text-left">{t('disputes.col.case')}</th>
-              <th className="text-left">{t('disputes.col.ground')}</th>
-              <th className="text-left">{t('disputes.col.opened')}</th>
-              <th className="text-left">{t('disputes.col.status')}</th>
-              <th className="text-right">{t('disputes.col.left')}</th>
-              <th>
+              <th scope="col" className="text-left">{t('disputes.col.caseId')}</th>
+              <th scope="col" className="text-left">{t('disputes.col.case')}</th>
+              <th scope="col" className="text-left">{t('disputes.col.ground')}</th>
+              <th scope="col" className="text-left">{t('disputes.col.opened')}</th>
+              <th scope="col" className="text-left">{t('disputes.col.status')}</th>
+              <th scope="col" className="text-right">{t('disputes.col.left')}</th>
+              <th scope="col">
                 <span className="sr-only">{t('disputes.col.actions')}</span>
               </th>
             </tr>
@@ -70,10 +89,15 @@ export default function AdminDisputesPage() {
               <tr key={d.id} className={rowCls}>
                 <td className="num text-fg-strong">{d.code ?? d.id}</td>
                 <td>
-                  <p className="text-fg-strong">{d.title}</p>
-                  <p className="text-fg-muted text-caption">
-                    {[d.client, d.expert].filter(Boolean).join(' · ')}
+                  <p className="text-fg-strong">
+                    {d.title ?? t(`disputes.kind.${d.kind}`)}
                   </p>
+                  {/* The client's email and the expert's name */}
+                  {d.client && d.expert && (
+                    <p className="text-fg-muted text-caption">
+                      {d.client} · {d.expert}
+                    </p>
+                  )}
                 </td>
                 <td>{d.ground}</td>
                 <td className="num text-fg-muted">
@@ -106,7 +130,7 @@ export default function AdminDisputesPage() {
                 <td className="text-right">
                   <Link
                     to={`/admin/disputes/${d.id}`}
-                    aria-label={t('disputes.viewLabel', { id: d.id })}
+                    aria-label={t('disputes.viewLabel', { id: d.code ?? d.id })}
                     className="btn btn-press btn-secondary no-underline"
                   >
                     {t('disputes.view')}
@@ -121,13 +145,15 @@ export default function AdminDisputesPage() {
                   colSpan={7}
                   className="text-fg-muted px-4 py-10 text-center"
                 >
-                  {error?.message ?? t('disputes.empty')}
+                  {error ? <LoadError error={error} /> : t('disputes.empty')}
                 </td>
               </tr>
             )}
           </tbody>
         </table>
       </section>
+        </>
+      )}
     </AdminLayout>
   )
 }

@@ -95,7 +95,7 @@ public static class WorkflowErrors
         new(
             ErrorType.Validation,
             "DISPUTE_REFUND_INVALID",
-            "The refund must be between 0 and 100 percent."
+            "The refund must be 0 (rejected) or 50 percent (upheld)."
         );
 
     public static AppException DisputeNotFound() =>

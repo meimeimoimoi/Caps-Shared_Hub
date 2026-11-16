@@ -1,4 +1,3 @@
-import { useAuthStore } from '@/features/auth/store/authStore'
 import type { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { PublicFooter } from '@/components/ui/layout/public-footer'
@@ -15,7 +14,6 @@ export function MarketplaceFrame({
   skipTarget: string
   children: ReactNode
 }) {
-  const authenticated = useAuthStore((state) => state.isAuthenticated)
   const { t } = useTranslation('marketplace')
   return (
     <div id="shub-home" className="mk">
@@ -23,7 +21,7 @@ export function MarketplaceFrame({
         {t('skip')}
       </a>
       <div className="env" aria-hidden="true" />
-      <PublicNavigation authenticated={authenticated} />
+      <PublicNavigation />
       {children}
       <PublicFooter anchorBase="/" />
     </div>

@@ -120,6 +120,30 @@ public sealed class ReviewCaseExpiryJob(
             {
                 await events.ResponseDueAsync(r.Id, r.ExpertUserId, r.ResponseDeadline, ct);
             }
+            // The same column marks the client's reminder: one sent before the delivery belongs to the expert
+            var accepting = await db
+                .Database.SqlQuery<DueAcceptance>(
+                    $"""
+                    UPDATE review.review_case SET reminder_sent_at = {now}
+                    WHERE status = {ReviewCaseStatus.AwaitingAcceptance}
+                        AND (reminder_sent_at IS NULL OR reminder_sent_at < delivered_at)
+                        AND acceptance_deadline > {now}
+                        AND acceptance_deadline - make_interval(hours => {ReviewCase.ReminderHours}) <= {now}
+                    RETURNING id AS "Id", requester_user_id AS "RequesterUserId",
+                        requester_email AS "RequesterEmail", acceptance_deadline AS "AcceptanceDeadline"
+                    """
+                )
+                .ToListAsync(ct);
+            foreach (var a in accepting)
+            {
+                await events.AcceptanceDueAsync(
+                    a.Id,
+                    a.RequesterUserId,
+                    a.RequesterEmail,
+                    a.AcceptanceDeadline,
+                    ct
+                );
+            }
             await db.SaveChangesAsync(ct);
             await tx.CommitAsync(ct);
         }
@@ -168,6 +192,14 @@ public sealed class ReviewCaseExpiryJob(
         public Guid Id { get; init; }
         public Guid ExpertUserId { get; init; }
         public DateTimeOffset ResponseDeadline { get; init; }
+    }
+
+    private sealed class DueAcceptance
+    {
+        public Guid Id { get; init; }
+        public Guid RequesterUserId { get; init; }
+        public string? RequesterEmail { get; init; }
+        public DateTimeOffset AcceptanceDeadline { get; init; }
     }
 
     private sealed class OverdueDispute

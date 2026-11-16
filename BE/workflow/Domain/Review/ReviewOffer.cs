@@ -17,7 +17,8 @@ public sealed record ReviewOffer(
     int LateCancelHours,
     int NoResponseHours,
     short NoResponseRefundPct,
-    short NoResponseExpertPct
+    short NoResponseExpertPct,
+    short NoDeliveryRefundPct = 50
 );
 
 /// <summary>How the held fee splits when a case completes, in VND.</summary>

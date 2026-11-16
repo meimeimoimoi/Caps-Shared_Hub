@@ -3,14 +3,25 @@ namespace Caps.Workflow.Domain.Review;
 // The review itself: payment, the expert answering, questions to the client, delivery, confirmation
 public sealed partial class ReviewCase
 {
-    /// <summary>The expert takes the paid request and the review starts; the handler adds one to their active cases.</summary>
-    public ReviewStatusHistory Accept(Guid expertProfileId, Guid actorUserId, DateTimeOffset now)
+    /// <summary>
+    /// The expert takes the paid request and the review starts, due one working day later whatever turnaround the
+    /// expert advertised; the handler adds one to their active cases.
+    /// </summary>
+    public ReviewStatusHistory Accept(
+        Guid expertProfileId,
+        Guid actorUserId,
+        DateTimeOffset now,
+        WorkCalendar? calendar = null
+    )
     {
         EnsureExpert(expertProfileId);
         EnsureStep(ReviewCaseStatus.PendingExpertResponse, ResponseDeadline, now);
         AcceptedAt = now;
         StartedAt = now;
-        DeliveryDeadline = now + TimeSpan.FromHours(TurnaroundHours);
+        DeliveryDeadline = (calendar ?? WorkCalendar.WeekendsOnly).AddWorkingDays(
+            now,
+            WorkingDaysToReview
+        );
         return MoveTo(ReviewCaseStatus.InReview, actorUserId, null, now);
     }
 
@@ -79,11 +90,14 @@ public sealed partial class ReviewCase
     /// Billing confirmed the money; the expert now has the response window to accept. A late payment
     /// throws, so the caller refunds it.
     /// </summary>
-    public ReviewStatusHistory ConfirmPayment(DateTimeOffset now)
+    public ReviewStatusHistory ConfirmPayment(DateTimeOffset now, WorkCalendar? calendar = null)
     {
         EnsureStep(ReviewCaseStatus.AwaitingPayment, PaymentDeadline, now);
         PaidAt = now;
-        ResponseDeadline = now + ResponseWindow;
+        ResponseDeadline = (calendar ?? WorkCalendar.WeekendsOnly).AddWorkingDays(
+            now,
+            WorkingDaysToRespond
+        );
         return MoveTo(ReviewCaseStatus.PendingExpertResponse, null, null, now);
     }
 
@@ -138,7 +152,8 @@ public sealed partial class ReviewCase
         string? summary,
         string? cannotVerifyReason,
         DateTimeOffset now,
-        string? revisedContent = null
+        string? revisedContent = null,
+        WorkCalendar? calendar = null
     )
     {
         EnsureExpert(expertProfileId);
@@ -167,7 +182,10 @@ public sealed partial class ReviewCase
         CannotVerifyReason = reason;
         RevisedContent = revisedContent;
         DeliveredAt = now;
-        AcceptanceDeadline = now + AcceptanceWindow;
+        AcceptanceDeadline = (calendar ?? WorkCalendar.WeekendsOnly).AddWorkingDays(
+            now,
+            WorkingDaysToAccept
+        );
         return MoveTo(ReviewCaseStatus.AwaitingAcceptance, actorUserId, null, now);
     }
 

@@ -129,6 +129,9 @@ public sealed class AuthDbContext(DbContextOptions<AuthDbContext> options) : DbC
                 .HasDefaultValue("PENDING_VERIFICATION")
                 .IsRequired();
             e.Property(x => x.EmailVerifiedAt).HasColumnName("email_verified_at");
+            e.Property(x => x.SuspendedReason).HasColumnName("suspended_reason").HasMaxLength(500);
+            e.Property(x => x.SuspendedAt).HasColumnName("suspended_at");
+            e.Property(x => x.SuspendedBy).HasColumnName("suspended_by");
             e.Property(x => x.CreatedAt)
                 .HasColumnName("created_at")
                 .HasDefaultValueSql("now()")

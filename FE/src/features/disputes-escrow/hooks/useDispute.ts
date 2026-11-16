@@ -8,23 +8,26 @@ import {
 import { disputesKeys } from '../api/queryKeys'
 import type { DisputeDecisionInput } from '../types'
 
-export function useDisputes() {
+export function useDisputes(enabled = true) {
   return useQuery({
     queryKey: disputesKeys.disputes(),
     queryFn: ({ signal }) => getDisputes(signal),
+    enabled,
   })
 }
 
-export function useDispute(id: string) {
+export function useDispute(id: string, enabled = true) {
   const qc = useQueryClient()
   const detail = useQuery({
     queryKey: disputesKeys.dispute(id),
     queryFn: ({ signal }) => getDispute(id, signal),
+    enabled,
   })
 
   return {
     dispute: detail.data ?? null,
     isLoading: detail.isLoading,
+    error: detail.error,
     decide: async (input: DisputeDecisionInput) => {
       await decideDispute(id, input)
       // Đổi badge, nhật ký, danh sách và Escrow cùng lúc

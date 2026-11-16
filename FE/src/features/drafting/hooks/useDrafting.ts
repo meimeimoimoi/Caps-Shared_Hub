@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useCallback } from 'react'
 import { useAuthStore } from '@/features/auth/store/authStore'
-import { useSearchParams } from 'react-router-dom'
+import { useParams, useSearchParams } from 'react-router-dom'
 import { draftApi } from '../api/draftApi'
 import { isDraftMock } from '../api/dataSource'
 import { draftKeys } from '../api/queryKeys'
@@ -12,6 +12,8 @@ export function useDraftContext(): RequestContext {
   const session = useAuthStore((state) => state.sessionScope)
   const userId = useAuthStore((state) => state.user?.id)
   const [params] = useSearchParams()
+  const { workspaceId } = useParams()
+  const snapshotId = params.get('fromSnapshot') ?? undefined
   const requested =
     params.get('scenario') ??
     import.meta.env.VITE_DRAFT_MOCK_SCENARIO ??
@@ -20,7 +22,12 @@ export function useDraftContext(): RequestContext {
     isDraftMock && draftScenarios.some((value) => value === requested)
       ? requested
       : 'ready'
-  return { scope: `${userId ?? 'isolated-preview'}:${session}`, scenario }
+  return {
+    scope: `${userId ?? 'isolated-preview'}:${session}`,
+    scenario,
+    workspaceId,
+    snapshotId,
+  }
 }
 export function useDraftHref() {
   const ctx = useDraftContext()
@@ -60,7 +67,13 @@ export function useWorkspaces() {
 export function useWorkspace(id?: string) {
   const ctx = useDraftContext()
   return useQuery({
-    queryKey: draftKeys.item(ctx.scope, ctx.scenario, 'workspace', id),
+    queryKey: draftKeys.item(
+      ctx.scope,
+      ctx.scenario,
+      'workspace',
+      id,
+      ctx.snapshotId
+    ),
     queryFn: ({ signal }) => draftApi.workspace(id!, { ...ctx, signal }),
     enabled: Boolean(id),
   })
@@ -76,7 +89,13 @@ export function useHistory(id?: string) {
 export function useGeneration(id?: string) {
   const ctx = useDraftContext()
   return useQuery({
-    queryKey: draftKeys.item(ctx.scope, ctx.scenario, 'job', id),
+    queryKey: draftKeys.item(
+      ctx.scope,
+      ctx.scenario,
+      'job',
+      id,
+      ctx.workspaceId
+    ),
     queryFn: ({ signal }) => draftApi.job(id!, { ...ctx, signal }),
     enabled: Boolean(id),
     retry: false,
@@ -91,7 +110,13 @@ export function useGeneration(id?: string) {
 export function useDraftVersion(id?: string) {
   const ctx = useDraftContext()
   return useQuery({
-    queryKey: draftKeys.item(ctx.scope, ctx.scenario, 'draft', id),
+    queryKey: draftKeys.item(
+      ctx.scope,
+      ctx.scenario,
+      'draft',
+      id,
+      ctx.workspaceId
+    ),
     queryFn: ({ signal }) => draftApi.draft(id!, { ...ctx, signal }),
     enabled: Boolean(id),
     retry: false,

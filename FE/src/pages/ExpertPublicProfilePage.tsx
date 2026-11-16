@@ -49,7 +49,13 @@ const REQUEST_ID = 'gui-yeu-cau'
 
 type Service = ExpertBio['services'][number]
 
-function ProfileHead({ bio }: { bio: ExpertBio }) {
+function ProfileHead({
+  bio,
+  marketplaceHref,
+}: {
+  bio: ExpertBio
+  marketplaceHref: string
+}) {
   const { t } = useTranslation('marketplace')
   const format = useFormatters()
   const listing = bio.listing
@@ -66,7 +72,7 @@ function ProfileHead({ bio }: { bio: ExpertBio }) {
       </figure>
       <div className="wrap">
         <nav className="mk-crumbs" aria-label={t('profile.breadcrumb')}>
-          <Link className="mk-back" to="/marketplace">
+          <Link className="mk-back" to={marketplaceHref}>
             <span className="mk-back-icon" aria-hidden="true">
               <ArrowLeft size={15} />
             </span>
@@ -229,10 +235,9 @@ function RequestPanel({
   const format = useFormatters()
   const sla = useSlaLabel()
   const text = useServiceText()
-  // Xem hồ sơ công khai; gửi yêu cầu (tạo Review Case, chốt giá — F5) mới cần đăng nhập.
-  // Dev mở thẳng như ClientLayout để demo luồng không cần BE đăng nhập.
-  const signedIn = useAuthStore((s) => s.isAuthenticated) || import.meta.env.DEV
+  const signedIn = useAuthStore((s) => s.isAuthenticated)
   const navigate = useNavigate()
+  const [params] = useSearchParams()
   const selected = bio.services.find((s) => s.serviceId === picked)
   const availability = bio.listing?.availability
   const open = !availability || availability.state === 'open'
@@ -288,17 +293,12 @@ function RequestPanel({
             type="button"
             className="mk-btn mk-btn-accent mk-wide mk-btn-lg"
             disabled={!open}
-            onClick={() =>
-              signedIn
-                ? navigate(
-                    `/cases/new?expert=${encodeURIComponent(bio.expertId)}&service=${encodeURIComponent(selected.serviceId)}`
-                  )
-                : navigate('/login', {
-                    state: {
-                      from: `/experts/${encodeURIComponent(bio.expertId)}?service=${encodeURIComponent(selected.serviceId)}#${REQUEST_ID}`,
-                    },
-                  })
-            }
+            onClick={() => {
+              const request = new URLSearchParams(params)
+              request.set('expert', bio.expertId)
+              request.set('service', selected.serviceId)
+              navigate(`/cases/new?${request}`)
+            }}
           >
             {!open
               ? t('profile.book.ctaUnavailable')
@@ -328,6 +328,9 @@ function RequestPanel({
 
 function Profile({ bio, initial }: { bio: ExpertBio; initial: string | null }) {
   const { t } = useTranslation('marketplace')
+  const [params] = useSearchParams()
+  const listing = params.get('listing')
+  const marketplaceHref = listing ? `/marketplace?${listing}` : '/marketplace'
   const fieldLabel = useFieldLabel()
   const [picked, setPicked] = useState(
     () =>
@@ -337,7 +340,7 @@ function Profile({ bio, initial }: { bio: ExpertBio; initial: string | null }) {
 
   return (
     <>
-      <ProfileHead bio={bio} />
+      <ProfileHead bio={bio} marketplaceHref={marketplaceHref} />
       <main className="mk-work" id="mk-profile" tabIndex={-1}>
         <div className="wrap mk-profile">
           <div className="mk-profile-body">
@@ -396,6 +399,9 @@ function ProfileMissing({
   onRetry: () => void
 }) {
   const { t } = useTranslation('marketplace')
+  const [params] = useSearchParams()
+  const listing = params.get('listing')
+  const marketplaceHref = listing ? `/marketplace?${listing}` : '/marketplace'
   const market = useMarketplace()
   const suggestions = featuredExperts(market.data?.experts ?? [], 3, expertId)
   return (
@@ -412,7 +418,7 @@ function ProfileMissing({
         </figure>
         <div className="wrap">
           <nav className="mk-crumbs" aria-label={t('profile.breadcrumb')}>
-            <Link className="mk-back" to="/marketplace">
+            <Link className="mk-back" to={marketplaceHref}>
               <span className="mk-back-icon" aria-hidden="true">
                 <ArrowLeft size={15} />
               </span>
@@ -438,7 +444,7 @@ function ProfileMissing({
             <div className="mk-missing-actions">
               {notFound ? (
                 <>
-                  <Link className="btn btn-primary" to="/marketplace">
+                  <Link className="btn btn-primary" to={marketplaceHref}>
                     {t('profile.browse')}
                     <span className="arrow" aria-hidden="true">
                       →
@@ -458,7 +464,7 @@ function ProfileMissing({
                     <RotateCw size={18} aria-hidden="true" />
                     {t('profile.retry')}
                   </button>
-                  <Link className="btn btn-ghost" to="/marketplace">
+                  <Link className="btn btn-ghost" to={marketplaceHref}>
                     {t('profile.browse')}
                   </Link>
                 </>

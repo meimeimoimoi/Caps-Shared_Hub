@@ -1,11 +1,11 @@
 import { cn } from '@/lib/utils'
 
-/* Danh sách thanh ngang có tiêu đề: nhãn, thanh tỷ lệ so với dòng lớn nhất, số */
+/* Titled horizontal bar list: label, bar scaled to the largest row, figure */
 export function BarList(props: {
   id: string
   title: string
   rows: { key: string; label: string; value: number; display: string; warn?: boolean }[]
-  /** Hiện khi không có dòng nào (đang tải hoặc trống) */
+  /** Shown when there are no rows (loading or empty) */
   empty: string
 }) {
   const max = Math.max(1, ...props.rows.map((r) => r.value))
@@ -16,13 +16,16 @@ export function BarList(props: {
       </h2>
       {props.rows.length === 0 && <p className="text-fg-muted mt-3 text-sm">{props.empty}</p>}
       <ul className="mt-3">
-        {props.rows.map((r) => (
+        {props.rows.map((r, i) => (
           <li key={r.key} className="grid grid-cols-[minmax(0,10rem)_1fr_auto] items-center gap-3 py-2 text-sm">
-            <span className="truncate">{r.label}</span>
+            <span className={cn('truncate', r.warn && 'text-danger font-semibold')}>{r.label}</span>
             <span className="bg-sunken h-2 overflow-hidden rounded-full">
               <span
-                className={cn('block h-full rounded-full', r.warn ? 'bg-danger' : 'bg-accent')}
-                style={{ width: `${Math.round((r.value / max) * 100)}%` }}
+                className={cn('motion-bar-x block h-full rounded-full', r.warn ? 'bg-danger' : 'bg-accent')}
+                style={{
+                  width: `${Math.round((r.value / max) * 100)}%`,
+                  animationDelay: `${Math.min(i * 90, 360)}ms`,
+                }}
               />
             </span>
             <span className={cn('num text-right', r.warn && 'text-danger font-semibold')}>{r.display}</span>

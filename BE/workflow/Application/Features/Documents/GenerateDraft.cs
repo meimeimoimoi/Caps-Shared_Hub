@@ -33,13 +33,12 @@ public static class GenerateDraft
         string? Citations
     );
 
-    /// <summary>Handles quota enforcement, duplicate protection, AI draft generation, canonical hashing, and persisting the new version.</summary>
+    /// <summary>Handles duplicate protection, AI draft generation, canonical hashing, and persisting the new version.</summary>
     public sealed class GenerateDraftHandler(
         IDocumentRepository documentRepository,
         IInputSnapshotRepository inputSnapshotRepository,
         IDocumentVersionRepository documentVersionRepository,
         Abstractions.ITemplateRepository templateRepository,
-        Abstractions.IAiQuotaRepository aiQuotaRepository,
         Abstractions.IAiUsageRepository aiUsageRepository,
         IAiDraftingClient aiDraftingClient,
         IUnitOfWork unitOfWork,
@@ -63,19 +62,6 @@ public static class GenerateDraft
             }
 
             var now = timeProvider.GetUtcNow();
-
-            // 1. Check or initialize AI Quota
-            var quota = await aiQuotaRepository.GetByUserIdAsync(command.UserId, ct);
-            if (quota is null)
-            {
-                quota = AiQuota.Create(command.UserId, 10, now);
-                await aiQuotaRepository.AddAsync(quota, ct);
-            }
-
-            if (!quota.HasAvailableQuota())
-            {
-                throw WorkflowErrors.QuotaExhausted();
-            }
 
             // 2. Resolve snapshot
             InputSnapshot? snapshot;
@@ -172,15 +158,13 @@ public static class GenerateDraft
                     normalizedCitations = draftResponse.Citations.GetRawText();
                 }
 
-                // 7. Deduct quota and record AI usage
+                // 7. Record free AI usage
                 var settledAt = timeProvider.GetUtcNow();
-                quota.Deduct(1, settledAt);
-
                 var usage = AiUsage.Create(
                     command.UserId,
                     conversationId: null,
                     questionId: null,
-                    AiUsagePaidWith.Quota,
+                    AiUsagePaidWith.Free,
                     creditHold: 0,
                     AiUsageState.Captured,
                     settledAt

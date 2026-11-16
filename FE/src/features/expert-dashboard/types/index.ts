@@ -60,7 +60,7 @@ export interface DashboardDto {
   timezone: string
   freshness: { stale: boolean; message: string | null }
   queue: Section<{ items: WorkItem[]; total: number; hasMore: boolean }>
-  counts: Section<{ pendingResponse: number; readyToStart: number; inReview: number; overdue: number; definition: string }>
+  counts: Section<{ pendingResponse: number; readyToStart: number | null; inReview: number; overdue: number; definition: string }>
   activity: Section<{ events: ActivityEvent[] }>
   notifications: Section<{ items: DashboardNotification[]; unreadCount: number }>
   performance: Section<PerformanceMetrics>

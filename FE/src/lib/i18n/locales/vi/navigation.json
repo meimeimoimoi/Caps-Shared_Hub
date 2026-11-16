@@ -1,4 +1,7 @@
 {
+  "expertWork": "Công việc",
+  "expertReadiness": "Hồ sơ và năng lực",
+  "expertServiceOperations": "Vận hành dịch vụ",
   "customerArea": "Khu vực khách hàng",
   "expertPortalLink": "Trở thành chuyên gia",
   "draftScenarios": {
@@ -60,7 +63,7 @@
   "expertQualifications": "Đánh giá năng lực",
   "lockedUntilApproved": "Mở sau khi hồ sơ được duyệt",
   "myServices": "Dịch vụ của tôi",
-  "availability": "Lịch nhận việc",
+  "availability": "Nhận việc",
   "income": "Thu nhập",
   "publicProfile": "Hồ sơ công khai",
   "workspaces": "Không gian làm việc",

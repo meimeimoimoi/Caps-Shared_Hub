@@ -6,10 +6,17 @@ namespace Caps.Workflow.Domain.Review;
 /// <summary>An expert review of one document version, from request through payment and delivery to acceptance.</summary>
 public sealed partial class ReviewCase
 {
-    // response window not given by the spec, 24h until the team decides
+    // Placeholder response deadline of an unpaid case; payment sets the working-day one
     public static readonly TimeSpan ResponseWindow = TimeSpan.FromHours(24);
     public static readonly TimeSpan PaymentWindow = TimeSpan.FromMinutes(15);
-    public static readonly TimeSpan AcceptanceWindow = TimeSpan.FromHours(72);
+
+    // Meeting of 2026-11-11: one working day each to answer the request, to review, and to accept the result
+    public const int WorkingDaysToRespond = 1;
+    public const int WorkingDaysToReview = 1;
+    public const int WorkingDaysToAccept = 1;
+
+    /// <summary>An upheld dispute returns this share to the client; the platform keeps the rest (meeting of 2026-11-11).</summary>
+    public const short DisputeUpheldRefundPct = 50;
 
     public const int MaxTurnaroundHours = 720;
     public const int MaxPlatformFeePct = 99;
@@ -96,6 +103,9 @@ public sealed partial class ReviewCase
     public short NoResponseRefundPct { get; private set; }
     public short NoResponseExpertPct { get; private set; }
 
+    /// <summary>Share returned to the client when the expert never delivers, frozen at booking; the platform keeps the rest.</summary>
+    public short NoDeliveryRefundPct { get; private set; }
+
     // After this the expert can no longer deliver and the expiry job refunds the client
     private DateTimeOffset? CancelAt => DeliveryDeadline + TimeSpan.FromHours(LateCancelHours);
 
@@ -162,6 +172,7 @@ public sealed partial class ReviewCase
             || offer.NoResponseRefundPct < 0
             || offer.NoResponseExpertPct < 0
             || offer.NoResponseRefundPct + offer.NoResponseExpertPct > 100
+            || offer.NoDeliveryRefundPct is < 0 or > 100
         )
         {
             throw WorkflowErrors.OfferInvalid();
@@ -191,6 +202,7 @@ public sealed partial class ReviewCase
             NoResponseHours = offer.NoResponseHours,
             NoResponseRefundPct = offer.NoResponseRefundPct,
             NoResponseExpertPct = offer.NoResponseExpertPct,
+            NoDeliveryRefundPct = offer.NoDeliveryRefundPct,
             ProblemDescription = RequiredText(problemDescription, "Problem description"),
             ExpectedOutcome = OptionalText(expectedOutcome, "Expected outcome"),
             PaymentDeadline = now + PaymentWindow,

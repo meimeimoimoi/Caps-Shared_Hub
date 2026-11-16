@@ -6,8 +6,7 @@ import {
   ExpertPanelFooter,
 } from './ExpertPanel'
 import { Search, ArrowUpRight, Clock3, Pause, Inbox } from 'lucide-react'
-import { Link } from 'react-router-dom'
-import { useState } from 'react'
+import { Link, useLocation, useSearchParams } from 'react-router-dom'
 import type { DashboardDto, WorkStatus } from '../types'
 import { useMotion } from '@/components/ui/motion'
 
@@ -31,7 +30,17 @@ export function OverviewQueue({
 
   const { t } = useTranslation('expert')
 
-  const [search, setSearch] = useState('')
+  const { pathname, search: query } = useLocation()
+  const returnState = { expertCaseReturnTo: pathname + query }
+  const [params, setParams] = useSearchParams()
+  const search = params.get('q') ?? ''
+  const setSearch = (value: string) => {
+    setParams((current) => {
+      if (value) current.set('q', value)
+      else current.delete('q')
+      return current
+    }, { replace: true, preventScrollReset: true })
+  }
   const items =
     queue.status === 'available'
       ? queue.data.items.filter(
@@ -54,8 +63,7 @@ export function OverviewQueue({
     <ExpertPanel className="eo-queue" aria-labelledby="work-heading">
       <ExpertPanelHeader>
         <div>
-          <h2 id="work-heading">{t('priorityWorkQueue')}</h2>
-          <p>{t('deadlinefirstVisibilityAcrossYourCurrentCases')}</p>
+          <h2 id="work-heading" tabIndex={-1}>{t('priorityWorkQueue')}</h2>
         </div>
         <Link
           className="eo-text-link inline-flex items-center gap-[5px] border-0 [padding:5px_0] [font-family:inherit] text-[12px] whitespace-nowrap text-[var(--ep-accent-text)]! [background:none] [&:hover]:underline [&:hover]:underline-offset-1"
@@ -72,7 +80,7 @@ export function OverviewQueue({
         >
           {(
             [
-              { id: 'ALL', label: t('allLoaded') },
+              { id: 'ALL', label: t('allCases') },
               { id: 'EXPERT', label: t('yourActions') },
               { id: 'OVERDUE', label: t('overdue') },
             ] as const
@@ -157,6 +165,7 @@ export function OverviewQueue({
                       <Link
                         className="eo-case-name text-[13px] font-semibold [&:hover]:text-[var(--ep-accent-text)] [&:hover]:underline [&:hover]:underline-offset-[3px]"
                         to={`/expert/cases/${encodeURIComponent(item.id)}`}
+                        state={returnState}
                       >
                         {item.title}
                       </Link>
@@ -205,6 +214,7 @@ export function OverviewQueue({
                           id: item.id,
                         })}
                         to={`/expert/cases/${encodeURIComponent(item.id)}`}
+                        state={returnState}
                       >
                         <ArrowUpRight size={18} aria-hidden="true" />
                       </Link>

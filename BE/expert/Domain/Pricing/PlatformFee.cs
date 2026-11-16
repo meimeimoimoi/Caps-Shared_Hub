@@ -44,10 +44,20 @@ public sealed class PlatformFee
     public int NoResponseRefundPercent { get; private set; }
     public int NoResponseExpertPercent { get; private set; }
 
+    /// <summary>
+    /// The expert never delivered: the client gets this share back, the platform keeps the rest and the expert
+    /// gets nothing (meeting of 2026-11-11, 50 by default).
+    /// </summary>
+    public int NoDeliveryRefundPercent { get; private set; }
+
     public DateTimeOffset EffectiveFrom { get; private set; }
 
     /// <summary>System Admin account that set this rate.</summary>
     public Guid SetBy { get; private set; }
+    public const int MaxReasonLength = 1000;
+
+    /// <summary>Why the System Admin set this rate; null on rows from before reasons were recorded.</summary>
+    public string? Reason { get; private set; }
 
     /// <summary>Set when a pending rate was cancelled or replaced before it took effect.</summary>
     public DateTimeOffset? CancelledAt { get; private set; }
@@ -73,13 +83,24 @@ public sealed class PlatformFee
         int noResponseHours,
         int noResponseRefundPercent,
         int noResponseExpertPercent,
+        int noDeliveryRefundPercent,
         DateOnly? effectiveOn,
         bool hasCurrentRate,
         int noticeDays,
+        string? reason,
         Guid adminId,
         DateTimeOffset now
     )
     {
+        var why = string.IsNullOrWhiteSpace(reason) ? null : reason.Trim();
+        if (why == null)
+        {
+            throw ExpertErrors.PolicyReasonRequired();
+        }
+        if (why.Length > MaxReasonLength)
+        {
+            throw ExpertErrors.PolicyReasonTooLong(MaxReasonLength);
+        }
         if (percent is < 0 or > MaxPercent)
             throw ExpertErrors.PlatformFeeInvalid(MaxPercent);
         // The penalty comes out of the expert's share, so it can never exceed what is left after the platform fee
@@ -102,6 +123,10 @@ public sealed class PlatformFee
         )
         {
             throw ExpertErrors.NoResponseRuleInvalid(MaxNoResponseHours);
+        }
+        if (noDeliveryRefundPercent is < 0 or > 100)
+        {
+            throw ExpertErrors.NoDeliveryRuleInvalid();
         }
         DateTimeOffset effectiveFrom;
         if (!hasCurrentRate && effectiveOn == null)
@@ -128,7 +153,9 @@ public sealed class PlatformFee
             NoResponseHours = noResponseHours,
             NoResponseRefundPercent = noResponseRefundPercent,
             NoResponseExpertPercent = noResponseExpertPercent,
+            NoDeliveryRefundPercent = noDeliveryRefundPercent,
             EffectiveFrom = effectiveFrom,
+            Reason = why,
             SetBy = adminId,
         };
     }

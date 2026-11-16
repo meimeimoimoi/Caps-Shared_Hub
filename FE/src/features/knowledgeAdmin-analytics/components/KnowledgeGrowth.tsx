@@ -25,14 +25,10 @@ export function KnowledgeGrowth({ months }: { months: KnowledgeStatPeriod[] }) {
 
   return (
     <>
-      <p className="text-fg-muted mt-1 text-sm">
-        Tháng đã chốt gần nhất: {f.dateOnly(cur.start, { month: 'numeric', year: 'numeric' })}. Tháng đang diễn ra chỉ
-        hiện trên biểu đồ.
-      </p>
       <div className="mt-4 grid gap-4 sm:grid-cols-3">
         {[
           { label: 'Văn bản thu thập', get: collected },
-          { label: 'Văn bản mới vào kho', get: (p: KnowledgeStatPeriod) => p.newDocs },
+          { label: 'Văn bản mới vào kho', get: (p: KnowledgeStatPeriod) => p.newDocuments },
           { label: 'Phiên bản cập nhật', get: (p: KnowledgeStatPeriod) => p.newVersions },
         ].map((tile) => (
           <DeltaTile
@@ -67,13 +63,12 @@ export function KnowledgeGrowth({ months }: { months: KnowledgeStatPeriod[] }) {
               { name: 'Văn bản mới', color: 'var(--ui-series-1)' },
               { name: 'Phiên bản mới', color: 'var(--ui-series-2)' },
             ]}
-            columns={months.map((p) => ({ label: label(p), tick: tick(p), values: [p.newDocs, p.newVersions] }))}
+            columns={months.map((p) => ({ label: label(p), tick: tick(p), values: [p.newDocuments, p.newVersions] }))}
             format={(v) => f.number(v)}
             {...TABLE}
           />
         </div>
       </div>
-      <p className="text-fg-muted text-caption mt-2">Số liệu minh họa, chờ API thống kê của BE.</p>
     </>
   )
 }

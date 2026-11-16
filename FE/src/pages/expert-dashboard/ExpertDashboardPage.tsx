@@ -4,11 +4,11 @@ import {
   ExpertPanel,
   ExpertPanelHeader,
 } from '../../features/expert-dashboard/components/ExpertPanel'
-import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useLocation, useSearchParams } from 'react-router-dom'
 import {
   RefreshCw,
   ArrowUpRight,
+  ArrowDown,
   AlertTriangle,
   CalendarDays,
   CheckCircle2,
@@ -18,7 +18,7 @@ import {
 import { useExpertContext } from '@/features/expert-context'
 import { isExpertDemo } from '@/lib/expert-data-source'
 import { useExpertDashboard } from '../../features/expert-dashboard/hooks/useExpertDashboard'
-import { toDashboardViewModel } from '../../features/expert-dashboard/utils/toDashboardViewModel'
+import { statusLabels, toDashboardViewModel } from '../../features/expert-dashboard/utils/toDashboardViewModel'
 import {
   DashboardSectionState,
   DashboardSkeleton,
@@ -42,25 +42,42 @@ export default function ExpertDashboardPage() {
 
   const context = useExpertContext()
   const dashboard = useExpertDashboard()
-  const [filter, setFilter] = useState<QueueFilter>('ALL')
+  const [params, setParams] = useSearchParams()
+  const location = useLocation()
+  const returnState = { expertCaseReturnTo: location.pathname + location.search }
+  const status = params.get('status')
+  const hasFilter = status && (
+    status === 'ALL' || status === 'EXPERT' || status === 'OVERDUE' ||
+    (Object.hasOwn(statusLabels, status) && (isExpertDemo || status !== 'PAYMENT_CONFIRMED'))
+  )
+  const filter = hasFilter ? (status as QueueFilter) : 'EXPERT'
+  const setFilter = (value: QueueFilter) => {
+    setParams((current) => {
+      current.set('status', value)
+      return current
+    }, { replace: true, preventScrollReset: true })
+  }
   const refresh = () => {
     void context.refetch()
     void dashboard.refetch()
+  }
+  const filterQueue = (value: QueueFilter) => {
+    setFilter(value)
+    document.getElementById('work-heading')?.focus()
   }
   const refreshing = dashboard.isFetching || context.isFetching
   const model =
     dashboard.data && context.data
       ? toDashboardViewModel(dashboard.data, context.data.version)
       : null
-  const attention =
-    model?.queue.status === 'available'
-      ? model.queue.data.items.find(
-          (item) =>
-            item.deadline.overdue &&
-            !item.deadline.paused &&
-            item.deadline.actor === 'EXPERT'
-        )
-      : null
+  const actionable = model?.queue.status === 'available'
+    ? model.queue.data.items.filter((item) => item.deadline.actor === 'EXPERT' && !item.deadline.paused)
+    : []
+  const attention = actionable.find((item) => item.deadline.overdue) ??
+    actionable.find((item) => item.status === 'PENDING_EXPERT_RESPONSE') ??
+    actionable[0]
+  const hasTrend = model?.analytics?.status === 'available' && model.analytics.data.daily.length > 0
+  const hasDistribution = model?.queue.status === 'available' && model.queue.data.items.length > 0
   const performance =
     model?.performance.status === 'available' ? model.performance.data : null
   const workloadAvailable = model?.consistent && model.counts.status === 'available'
@@ -70,7 +87,6 @@ export default function ExpertDashboardPage() {
       <header className="eo-page-heading flex items-center justify-between gap-5 max-[720px]:flex-col max-[720px]:items-start max-[720px]:gap-4 [&_h1]:text-[30px] [&_h1]:[letter-spacing:-0.03em] max-[720px]:[&_h1]:text-[27px] [&_p]:mt-[7px] [&_p]:text-[var(--ep-muted)]">
         <div>
           <h1>{t('overview')}</h1>
-          <p>{t('yourReviewWorkspaceAtAGlance')}</p>
         </div>
         <div className="eo-page-actions flex items-center gap-3 max-[720px]:w-full max-[720px]:justify-end max-[720px]:gap-2">
           {model && <NotificationsPanel notifications={model.notifications} />}
@@ -84,7 +100,7 @@ export default function ExpertDashboardPage() {
               aria-hidden="true"
               className={refreshing ? 'ep-spin' : ''}
             />
-            {refreshing ? 'Refreshing…' : t('refresh')}
+            {refreshing ? t('refreshingOverview') : t('refresh')}
           </button>
           <Link
             className="eo-primary-link inline-flex min-h-[42px] items-center justify-center gap-2 rounded-lg [border-color:var(--ep-accent)] bg-[var(--ep-surface)] bg-none [padding:10px_16px] [font-family:inherit] text-[13px] font-semibold text-[white]! [background:var(--ep-accent)] [border:1px_solid_var(--ep-border)] [&:hover]:bg-[var(--ep-accent-hover)] [&:hover]:bg-none"
@@ -101,7 +117,6 @@ export default function ExpertDashboardPage() {
           <time dateTime={model.generatedAt}>
             {display.deadline(model.generatedAt, model.timezone)}
           </time>
-          <span>{model.timezone}</span>
           {isExpertDemo && (
             <span className="eo-demo-label rounded bg-[var(--ep-warning-bg)] bg-none [padding:3px_8px] text-[var(--ep-warning)]">
               {t('demoData')}
@@ -155,6 +170,40 @@ export default function ExpertDashboardPage() {
               </button>
             </div>
           )}
+          {attention && (
+            <div
+              className={`eo-attention mb-4 grid grid-cols-[auto_minmax(0,1fr)] items-center gap-x-3.5 rounded-[10px] border border-[var(--ep-border)] px-4 py-3.5 sm:grid-cols-[auto_minmax(0,1fr)_auto] sm:px-5 ${attention.deadline.overdue ? 'bg-[var(--ep-danger-bg)]' : 'bg-[var(--ep-surface)]'}`}
+            >
+              {attention.deadline.overdue ? (
+                <AlertTriangle size={19} aria-hidden="true" className="text-danger" />
+              ) : (
+                <Clock3 size={19} aria-hidden="true" className="text-[var(--ep-accent-text)]" />
+              )}
+              <div className="min-w-0">
+                <strong className="text-[13px]">
+                  {t(attention.deadline.overdue
+                    ? 'anOverdueCaseNeedsYourAttention'
+                    : 'nextCaseToHandle')}
+                </strong>
+                <p className="mt-1! break-words text-xs text-fg-muted">
+                  {attention.title}
+                  {attention.deadline.at && (
+                    <> · <time dateTime={attention.deadline.at}>
+                      {display.deadline(attention.deadline.at, model.timezone)}
+                    </time></>
+                  )}
+                </p>
+              </div>
+              <Link
+                className="col-start-2 inline-flex min-h-11 w-fit items-center gap-2 text-xs font-semibold underline underline-offset-4 sm:col-start-3"
+                to={`/expert/cases/${encodeURIComponent(attention.id)}`}
+                state={returnState}
+              >
+                {t('viewCase')}
+                <ArrowUpRight size={16} aria-hidden="true" />
+              </Link>
+            </div>
+          )}
           {model.counts.status !== 'available' ? (
             <DashboardSectionState
               title={t('workloadTotalsUnavailable')}
@@ -170,11 +219,10 @@ export default function ExpertDashboardPage() {
               <div className="eo-workload-caption flex justify-between gap-3 [padding:16px_24px_0] max-[720px]:flex-col max-[720px]:gap-[5px] max-[720px]:[padding:16px_18px_0] [&_>_span]:text-[12px] [&_>_span]:text-[var(--ep-muted)] [&_strong]:text-[13px]">
                 <strong>{t('acrossYourWorkload')}</strong>
                 <span>
-                  {isExpertDemo ? t('sampleTotals') : t('serverTotals')} {'·'}{' '}
-                  {t('allActiveCases')}
+                  {isExpertDemo ? t('sampleTotals') : t('allActiveCases')}
                 </span>
               </div>
-              <div className="eo-workload-numbers grid grid-cols-[repeat(4,_minmax(0,_1fr))] [padding:20px_8px] max-[720px]:grid-cols-[1fr_1fr] max-[720px]:gap-y-6 [&_.eo-danger-stat_>_strong]:text-[var(--ep-danger)] [&_>_button]:flex [&_>_button]:flex-col [&_>_button]:items-start [&_>_button]:gap-2 [&_>_button]:border-0 [&_>_button]:[padding:0_24px] [&_>_button]:text-left [&_>_button]:text-[var(--ep-ink)] [&_>_button]:[background:none] [&_>_button]:[border-right:1px_solid_var(--ep-border)] max-[1251px]:[&_>_button]:[padding:0_18px] [&_>_button_>_span]:text-[13px] [&_>_button_>_span]:text-[var(--ep-muted)] [&_>_button_>_strong]:text-[32px] [&_>_button_>_strong]:[line-height:1.1] [&_>_button_>_strong]:font-[650] [&_>_button_>_strong]:[letter-spacing:-0.02em] max-[720px]:[&_>_button_>_strong]:text-[28px] [&_>_button:hover_small]:text-[var(--ep-accent-text)] [&_>_button:hover_small]:underline [&_>_button:hover_small]:underline-offset-[3px] [&_>_button:last-child]:[border-right:0] max-[720px]:[&_>_button:nth-child(2)]:[border-right:0] [&_>_button[aria-pressed=true]_small]:text-[var(--ep-accent-text)] [&_>_button[aria-pressed=true]_small]:underline [&_>_button[aria-pressed=true]_small]:underline-offset-[3px] [&_small]:inline-flex [&_small]:items-center [&_small]:gap-[5px] [&_small]:text-[11px] [&_small]:text-[var(--ep-muted)]">
+              <div className="eo-workload-numbers grid grid-cols-[repeat(4,_minmax(0,_1fr))] [padding:20px_8px] max-[720px]:grid-cols-[1fr_1fr] max-[720px]:gap-y-6 [&_.eo-danger-stat_>_strong]:text-[var(--ep-danger)] [&_>_button]:flex [&_>_button]:flex-col [&_>_button]:items-start [&_>_button]:gap-2 [&_>_button]:border-0 [&_>_button]:[padding:0_24px] [&_>_button]:text-left [&_>_button]:text-[var(--ep-ink)] [&_>_button:disabled]:cursor-default [&_>_button]:[background:none] [&_>_button]:[border-right:1px_solid_var(--ep-border)] max-[1251px]:[&_>_button]:[padding:0_18px] [&_>_button_>_span]:text-[13px] [&_>_button_>_span]:text-[var(--ep-muted)] [&_>_button_>_strong]:text-[32px] [&_>_button_>_strong]:[line-height:1.1] [&_>_button_>_strong]:font-[650] [&_>_button_>_strong]:[letter-spacing:-0.02em] max-[720px]:[&_>_button_>_strong]:text-[28px] [&_>_button:hover_small]:text-[var(--ep-accent-text)] [&_>_button:hover_small]:underline [&_>_button:hover_small]:underline-offset-[3px] [&_>_button:last-child]:[border-right:0] max-[720px]:[&_>_button:nth-child(2)]:[border-right:0] [&_>_button[aria-pressed=true]_small]:text-[var(--ep-accent-text)] [&_>_button[aria-pressed=true]_small]:underline [&_>_button[aria-pressed=true]_small]:underline-offset-[3px] [&_small]:inline-flex [&_small]:items-center [&_small]:gap-[5px] [&_small]:text-[11px] [&_small]:text-[var(--ep-muted)]">
                 {(
                   [
                     {
@@ -202,54 +250,42 @@ export default function ExpertDashboardPage() {
                   <button
                     key={stat.filter}
                     aria-pressed={filter === stat.filter}
+                    disabled={stat.value === null}
+                    aria-label={
+                      stat.value === null
+                        ? undefined
+                        : t('viewCasesByStatus', {
+                            status: stat.label,
+                            total: display.number(stat.value),
+                          })
+                    }
                     onClick={() =>
-                      setFilter(filter === stat.filter ? 'ALL' : stat.filter)
+                      filterQueue(filter === stat.filter ? 'ALL' : stat.filter)
                     }
                     className={
-                      stat.filter === 'OVERDUE' && stat.value > 0
+                      stat.filter === 'OVERDUE' && (stat.value ?? 0) > 0
                         ? 'eo-danger-stat'
                         : ''
                     }
                   >
                     <span>{stat.label}</span>
-                    <strong>{display.number(stat.value)}</strong>
-                    <small>
-                      {t('filterLoadedCases')}
-                      <ArrowUpRight size={12} aria-hidden="true" />
-                    </small>
+                    {stat.value === null ? (
+                      <small>{t('overviewMetricUnavailable')}</small>
+                    ) : (
+                      <>
+                        <strong>{display.number(stat.value)}</strong>
+                        <small>
+                          {t('viewCasesInQueue')}
+                          <ArrowDown size={12} aria-hidden="true" />
+                        </small>
+                      </>
+                    )}
                   </button>
                 ))}
               </div>
               <p>{display.demoCopy(model.counts.data.definition)}</p>
             </section>
           )}
-          {/* Cùng màu với cảnh báo "văn bản lỗi cần xử lý" bên Knowledge: 16% màu danger trên nền giấy */}
-          {attention && (
-            <div className="eo-attention mb-6 flex items-center gap-[14px] rounded-[10px] bg-[color-mix(in_oklab,var(--color-danger)_16%,var(--color-paper))] bg-none [padding:14px_20px] text-fg-strong max-[720px]:flex-wrap max-[720px]:[padding:14px_16px] [&_>_div]:min-w-0 [&_>_div]:flex-1 max-[720px]:[&_>_div]:[flex-basis:calc(100%_-_45px)] [&_>_svg]:shrink-0 [&_>_svg]:text-danger [&_a]:inline-flex [&_a]:items-center [&_a]:gap-2 [&_a]:[padding:7px_0] [&_a]:text-[12px] [&_a]:font-semibold [&_a]:whitespace-nowrap max-[720px]:[&_a]:ml-[33px] [&_a]:text-fg-strong [&_a]:underline [&_a]:underline-offset-4 [&_p]:mt-[3px] [&_p]:text-[12px] [&_p]:text-fg-muted [&_strong]:text-[13px]">
-              <AlertTriangle size={19} aria-hidden="true" />
-              <div>
-                <strong>{t('anOverdueCaseNeedsYourAttention')}</strong>
-                <p>
-                  {attention.id} · {attention.title}
-                </p>
-              </div>
-              <Link to={`/expert/cases/${encodeURIComponent(attention.id)}`}>
-                {t('openOverdueCase')}
-                <ArrowUpRight size={16} aria-hidden="true" />
-              </Link>
-            </div>
-          )}
-          <MotionStagger className="eo-analytics-grid mt-6 grid grid-cols-[minmax(0,_2.15fr)_minmax(300px,_1fr)] items-start items-stretch gap-6 max-[1251px]:grid-cols-[minmax(0,_1fr)_300px] max-[1251px]:gap-5 max-[1101px]:grid-cols-[minmax(0,_1fr)]">
-            <ReviewTrendChart
-              analytics={model.analytics}
-              timezone={model.timezone}
-            />
-            <WorkloadDistribution
-              queue={model.queue}
-              filter={filter}
-              setFilter={setFilter}
-            />
-          </MotionStagger>
           <MotionStagger className="eo-work-grid mt-6 grid grid-cols-[minmax(0,_2.15fr)_minmax(300px,_1fr)] items-start gap-6 max-[1251px]:grid-cols-[minmax(0,_1fr)_300px] max-[1251px]:gap-5 max-[1101px]:grid-cols-[minmax(0,_1fr)]">
             <OverviewQueue
               queue={model.queue}
@@ -260,6 +296,23 @@ export default function ExpertDashboardPage() {
             />
             <OverviewReadiness services={context.data?.services ?? []} />
           </MotionStagger>
+          {(hasTrend || hasDistribution) && (
+            <MotionStagger className="eo-analytics-grid mt-6 grid items-stretch gap-6 lg:grid-cols-[repeat(auto-fit,minmax(300px,1fr))] max-[1251px]:gap-5">
+              {hasTrend && (
+                <ReviewTrendChart
+                  analytics={model.analytics}
+                  timezone={model.timezone}
+                />
+              )}
+              {hasDistribution && (
+                <WorkloadDistribution
+                  queue={model.queue}
+                  filter={filter}
+                  setFilter={filterQueue}
+                />
+              )}
+            </MotionStagger>
+          )}
           <MotionStagger className="eo-bottom-grid mt-6 grid grid-cols-[minmax(0,_2.15fr)_minmax(300px,_1fr)] items-start gap-6 max-[1251px]:grid-cols-[minmax(0,_1fr)_300px] max-[1251px]:gap-5 max-[1101px]:grid-cols-[minmax(0,_1fr)]">
             <OverviewActivity
               activity={model.activity}
