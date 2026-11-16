@@ -4,6 +4,7 @@ import { cn, formatDate, formatDateTime } from '@/lib/utils'
 import { StatusBadge } from '@/components/ui/display/status-badge'
 import { SkeletonRows } from '@/components/ui/display/skeleton-rows'
 import { Toast } from '@/components/ui/feedback/toast'
+import { CustomSelect } from '@/components/ui/forms/custom-select'
 import { TablePager } from '@/components/ui/navigation/table-pager'
 import { AdminLayout } from '@/app/layouts/admin/AdminLayout'
 import { useAdminNav } from '@/app/layouts/admin/useAdminNav'
@@ -14,17 +15,13 @@ import {
 } from '../../features/user-management/constants'
 import { useUsers } from '../../features/user-management/hooks/useUsers'
 import { UserDrawer } from '../../features/user-management/components/UserDrawer'
-import type {
-  ManagedUser,
-  UserRole,
-} from '../../features/user-management/types'
+import type { ManagedUser } from '../../features/user-management/types'
 import { PageHeader } from '@/components/ui/layout/page-header'
 import { LoadError } from '@/components/ui/feedback/load-error'
 import { isMissingEndpoint } from '@/lib/api-client'
 import { OperationsUnavailable } from '@/features/disputes-escrow/components/OperationsUnavailable'
 
-const selectCls =
-  'border-border-control rounded-control shadow-control bg-paper h-control min-w-48 border px-3 text-sm'
+const filterClassName = 'grid w-full gap-2 text-sm font-semibold sm:w-48'
 
 /* User management for every role. Expert-only actions (turning a service on/off) stay on the experts page */
 export default function AdminUsersPage() {
@@ -54,46 +51,30 @@ export default function AdminUsersPage() {
       ) : (
       <>
 
-      <section className="paper mt-8 overflow-x-auto">
+      <section className="paper mt-8">
         <div className="flex flex-wrap items-end gap-4 px-4 py-3">
-          <label className="flex flex-col gap-2 text-sm font-semibold">
-            {t('users.role.label')}
-            <select
-              value={users.role}
-              onChange={(e) =>
-                users.setRole(e.target.value as UserRole | typeof ALL)
-              }
-              className={selectCls}
-            >
-              <option value={ALL}>{t('users.role.all')}</option>
-              {USER_ROLES.map((r) => (
-                <option key={r} value={r}>
-                  {t(`users.role.${r}`)}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label className="flex flex-col gap-2 text-sm font-semibold">
-            {t('users.status.label')}
-            <select
-              value={users.status}
-              onChange={(e) =>
-                users.setStatus(
-                  e.target.value as ManagedUser['status'] | typeof ALL
-                )
-              }
-              className={selectCls}
-            >
-              <option value={ALL}>{t('users.status.all')}</option>
-              {(Object.keys(USER_STATUS) as ManagedUser['status'][]).map(
-                (s) => (
-                  <option key={s} value={s}>
-                    {t(USER_STATUS[s].label)}
-                  </option>
-                )
-              )}
-            </select>
-          </label>
+          <CustomSelect
+            label={t('users.role.label')}
+            value={users.role}
+            onChange={users.setRole}
+            className={filterClassName}
+            options={[
+              { value: ALL, label: t('users.role.all') },
+              ...USER_ROLES.map((value) => ({ value, label: t(`users.role.${value}`) })),
+            ]}
+          />
+          <CustomSelect
+            label={t('users.status.label')}
+            value={users.status}
+            onChange={users.setStatus}
+            className={filterClassName}
+            options={[
+              { value: ALL, label: t('users.status.all') },
+              ...(Object.keys(USER_STATUS) as ManagedUser['status'][]).map(
+                (value) => ({ value, label: t(USER_STATUS[value].label) })
+              ),
+            ]}
+          />
           {!users.error && !users.isLoading && (
             <span className="text-fg-muted num ml-auto text-sm">
               {t('users.count', { count: paged.total })}
@@ -101,73 +82,75 @@ export default function AdminUsersPage() {
           )}
         </div>
 
-        <table className="w-full min-w-200 text-sm">
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-200 text-sm">
 
-          <caption className="sr-only">{t('users.title')}</caption>
-          <thead className="bg-sunken text-fg-muted">
-            <tr className="[&>th]:px-4 [&>th]:py-3 [&>th]:font-semibold">
-              <th scope="col" className="text-left">{t('users.col.user')}</th>
-              <th scope="col" className="text-left">{t('users.col.role')}</th>
-              <th scope="col" className="text-left">{t('users.col.status')}</th>
-              <th scope="col" className="text-right">{t('users.col.created')}</th>
-              <th scope="col" className="text-right">{t('users.col.lastLogin')}</th>
-              <th scope="col">
-                <span className="sr-only">{t('users.col.actions')}</span>
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {users.isLoading && <SkeletonRows cols={6} wide={0} />}
-            {paged.rows.map((u) => (
-              <tr
-                key={u.id}
-                className={cn(
-                  'border-border-subtle border-t [&>td]:px-4 [&>td]:py-3',
-                  selected?.id === u.id && 'bg-accent-soft'
-                )}
-              >
-                <td>
-                  <p className="text-fg-strong font-semibold">{u.name}</p>
-                  <p className="text-fg-muted break-all">{u.email}</p>
-                </td>
-                <td>{t(`users.role.${u.role}`)}</td>
-                <td>
-                  <StatusBadge status={statusMeta(u.status)} />
-                </td>
-                <td className="num text-right">{formatDate(u.createdAt)}</td>
-                <td className="num text-fg-muted text-right">
-                  {u.lastLoginAt
-                    ? formatDateTime(u.lastLoginAt)
-                    : t('users.never')}
-                </td>
-                <td className="text-right">
-                  <button
-                    type="button"
-                    onClick={() => users.select(u.id)}
-                    aria-label={t('users.viewLabel', { name: u.name })}
-                    className="btn btn-press btn-secondary"
-                  >
-                    {t('users.view')}
-                  </button>
-                </td>
+            <caption className="sr-only">{t('users.title')}</caption>
+            <thead className="bg-sunken text-fg-muted">
+              <tr className="[&>th]:px-4 [&>th]:py-3 [&>th]:font-semibold">
+                <th scope="col" className="text-left">{t('users.col.user')}</th>
+                <th scope="col" className="text-left">{t('users.col.role')}</th>
+                <th scope="col" className="text-left">{t('users.col.status')}</th>
+                <th scope="col" className="text-right">{t('users.col.created')}</th>
+                <th scope="col" className="text-right">{t('users.col.lastLogin')}</th>
+                <th scope="col">
+                  <span className="sr-only">{t('users.col.actions')}</span>
+                </th>
               </tr>
-            ))}
-            {!users.isLoading && paged.rows.length === 0 && (
-              <tr className="border-border-subtle border-t">
-                <td
-                  colSpan={6}
-                  className="text-fg-muted px-4 py-10 text-center"
-                >
-                  {users.error ? (
-                    <LoadError error={users.error} />
-                  ) : (
-                    t('users.empty')
+            </thead>
+            <tbody>
+              {users.isLoading && <SkeletonRows cols={6} wide={0} />}
+              {paged.rows.map((u) => (
+                <tr
+                  key={u.id}
+                  className={cn(
+                    'border-border-subtle border-t [&>td]:px-4 [&>td]:py-3',
+                    selected?.id === u.id && 'bg-accent-soft'
                   )}
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+                >
+                  <td>
+                    <p className="text-fg-strong font-semibold">{u.name}</p>
+                    <p className="text-fg-muted break-all">{u.email}</p>
+                  </td>
+                  <td>{t(`users.role.${u.role}`)}</td>
+                  <td>
+                    <StatusBadge status={statusMeta(u.status)} />
+                  </td>
+                  <td className="num text-right">{formatDate(u.createdAt)}</td>
+                  <td className="num text-fg-muted text-right">
+                    {u.lastLoginAt
+                      ? formatDateTime(u.lastLoginAt)
+                      : t('users.never')}
+                  </td>
+                  <td className="text-right">
+                    <button
+                      type="button"
+                      onClick={() => users.select(u.id)}
+                      aria-label={t('users.viewLabel', { name: u.name })}
+                      className="btn btn-press btn-secondary"
+                    >
+                      {t('users.view')}
+                    </button>
+                  </td>
+                </tr>
+              ))}
+              {!users.isLoading && paged.rows.length === 0 && (
+                <tr className="border-border-subtle border-t">
+                  <td
+                    colSpan={6}
+                    className="text-fg-muted px-4 py-10 text-center"
+                  >
+                    {users.error ? (
+                      <LoadError error={users.error} />
+                    ) : (
+                      t('users.empty')
+                    )}
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
         {!users.error && (
           <TablePager paged={paged} onPrev={users.prev} onNext={users.next} />
         )}
