@@ -39,11 +39,10 @@ interface AdminDisputeDto {
   }
 }
 
-/** Client refund share sent for each outcome; the rest splits by the platform fee frozen at booking */
+/** Meeting of 2026-11-11: an upheld dispute refunds 50% and the platform keeps the rest; a rejected one splits as booked */
 const REFUND_PCT = {
-  RESOLVE_REFUND_USER: 100,
+  RESOLVE_REFUND_USER: 50,
   RESOLVE_PAY_EXPERT: 0,
-  RESOLVE_PARTIAL: 50,
 } as const
 
 const HOUR = 3_600_000
@@ -142,11 +141,7 @@ export async function decideDispute(id: string, body: DisputeDecisionInput) {
     return
   }
   await api.post(`${CASES}/${id}/dispute/decision`, {
-    // A partial decision sends the share the admin entered (agreed rule: 1 to 99, 50 by default)
-    refundPct:
-      body.outcome === 'RESOLVE_PARTIAL'
-        ? (body.refundPct ?? REFUND_PCT.RESOLVE_PARTIAL)
-        : REFUND_PCT[body.outcome],
+    refundPct: REFUND_PCT[body.outcome],
     note: body.reason,
   })
 }

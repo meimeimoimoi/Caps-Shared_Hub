@@ -9,8 +9,8 @@ namespace Caps.Workflow.Application.Features.ReviewCases;
 public sealed record ExpireReviewCaseCommand(Guid ReviewCaseId);
 
 /// <summary>
-/// Moves an overdue case to its timeout status and settles the money: an expert who never answered or never
-/// delivered refunds the client; an unconfirmed delivery or a silent client splits the fee by the frozen rules.
+/// Moves an overdue case to its timeout status and settles the money: an expert who never answered refunds the
+/// client; no delivery, an unconfirmed delivery or a silent client splits the fee by the frozen rules.
 /// A case that is no longer overdue (already handled, or moved by a user meanwhile) is left alone.
 /// </summary>
 public sealed class ExpireReviewCaseHandler(
@@ -60,11 +60,9 @@ public sealed class ExpireReviewCaseHandler(
             case ReviewCaseStatus.ExpertTimeout:
                 await escrows.RefundAsync(reviewCase.Id, ct);
                 break;
-            case ReviewCaseStatus.DeliveryOverdue:
-                await escrows.RefundAsync(reviewCase.Id, ct);
-                await slots.ReleaseAsync(reviewCase.ExpertProfileId, reviewCase.Id, ct);
-                break;
-            case ReviewCaseStatus.AutoConfirmed or ReviewCaseStatus.Terminated:
+            case ReviewCaseStatus.DeliveryOverdue
+            or ReviewCaseStatus.AutoConfirmed
+            or ReviewCaseStatus.Terminated:
                 await escrows.ReleaseAsync(
                     reviewCase.Id,
                     reviewCase.ExpertUserId,

@@ -70,8 +70,10 @@ public sealed class DisputeTests
         Assert.Equal(
             "CASE_DEADLINE_PASSED",
             Errors.CodeOf(() =>
-                Delivered().OpenDispute(Client, Reason, "Late", Now + ReviewCase.AcceptanceWindow)
-            )
+            {
+                var delivered = Delivered();
+                delivered.OpenDispute(Client, Reason, "Late", delivered.AcceptanceDeadline!.Value);
+            })
         );
 
     [Fact]
@@ -150,11 +152,11 @@ public sealed class DisputeTests
         Assert.Equal("DISPUTE_ALREADY_EXTENDED", Errors.CodeOf(dispute.Extend));
     }
 
+    // Upheld: the client gets 50%, the platform keeps the rest; rejected: the fee splits as booked
     [Theory]
-    [InlineData(40, 400_000, 120_000, 480_000)]
-    [InlineData(100, 1_000_000, 0, 0)]
+    [InlineData(50, 500_000, 500_000, 0)]
     [InlineData(0, 0, 200_000, 800_000)]
-    public void The_admin_sets_the_refund_and_the_rest_splits_by_the_frozen_fee(
+    public void An_upheld_dispute_refunds_half_and_the_platform_keeps_the_rest(
         short pct,
         long refund,
         long platform,
@@ -180,8 +182,9 @@ public sealed class DisputeTests
 
     [Theory]
     [InlineData(-1)]
-    [InlineData(101)]
-    public void A_refund_outside_0_to_100_is_rejected(short pct)
+    [InlineData(40)]
+    [InlineData(100)]
+    public void A_refund_other_than_0_or_50_is_rejected(short pct)
     {
         var (reviewCase, dispute) = Disputed();
 
@@ -216,10 +219,9 @@ public sealed class DisputeTests
 
     // Fee 1,000,000, 20% platform fee, late rule 24h / 30%: delivered 10h late, so accepting refunds 300,000
     [Theory]
-    [InlineData(0, 300_000, 200_000, 500_000)]
-    [InlineData(50, 650_000, 100_000, 250_000)]
-    [InlineData(100, 1_000_000, 0, 0)]
-    public void A_decision_on_a_late_delivery_keeps_the_late_refund(
+    [InlineData(0, 300_000, 700_000, 0)]
+    [InlineData(50, 500_000, 500_000, 0)]
+    public void A_decision_on_a_late_delivery_keeps_the_larger_refund(
         short pct,
         long refund,
         long platform,
@@ -263,11 +265,11 @@ public sealed class DisputeTests
 
         reviewCase.WithdrawDispute(dispute, Client, LateDelivery(10).AddHours(2));
 
-        Assert.Equal(new ReviewSettlement(300_000, 200_000, 500_000), reviewCase.Settle());
+        Assert.Equal(new ReviewSettlement(300_000, 700_000, 0), reviewCase.Settle());
     }
 
-    // Accepted at Now - 1h with a 48h turnaround, so the delivery deadline is Now + 47h
-    private static DateTimeOffset LateDelivery(int lateHours) => Now.AddHours(47 + lateHours);
+    // Accepted at Now - 1h (a Tuesday): due one working day later, Now + 23h
+    private static DateTimeOffset LateDelivery(int lateHours) => Now.AddHours(23 + lateHours);
 
     private static (ReviewCase Case, ReviewDispute Dispute) DisputedLate(int lateHours)
     {

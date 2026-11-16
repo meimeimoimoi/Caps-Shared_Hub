@@ -21,6 +21,7 @@ public sealed record SetPlatformFeeCommand(
     int NoResponseHours,
     int NoResponseRefundPercent,
     int NoResponseExpertPercent,
+    int NoDeliveryRefundPercent,
     DateOnly? EffectiveOn,
     string? Reason
 );
@@ -58,6 +59,7 @@ public sealed class SetPlatformFeeHandler(
             command.NoResponseHours,
             command.NoResponseRefundPercent,
             command.NoResponseExpertPercent,
+            command.NoDeliveryRefundPercent,
             command.EffectiveOn,
             current != null,
             policy.FeeNoticeDays,

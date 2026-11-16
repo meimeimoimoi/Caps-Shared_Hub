@@ -406,8 +406,7 @@
       "confirmTitle": "Gửi quyết định trọng tài?",
       "confirmBody": "Quyết định được gửi cho cả khách và chuyên gia, và tiền Escrow được chia theo kết quả dưới đây.",
       "failed": "Chưa gửi được quyết định; quyết định chưa được ghi. Hãy thử lại.",
-      "reasonMissing": "Nhập lý do quyết định.",
-      "refundPct": "Tỷ lệ hoàn cho khách (%)"
+      "reasonMissing": "Nhập lý do quyết định."
     },
     "escalation": {
       "hint": "Tranh chấp cần xét đoán chuyên môn hoặc kết luận Thuế TNDN phải chuyển cho Authorized Reviewer. Hạn quyết định được cộng thêm {{hours}} giờ, chỉ một lần.",
@@ -421,19 +420,14 @@
     },
     "outcome": {
       "RESOLVE_REFUND_USER": {
-        "label": "Chấp thuận khiếu nại · hoàn tiền khách",
+        "label": "Chấp thuận khiếu nại · hoàn 50% cho khách",
         "hint": "Khiếu nại có căn cứ: chuyên gia vi phạm nghĩa vụ, hoặc khách đã phản hồi đúng hạn / yêu cầu bổ sung không hợp lệ",
-        "split": "Hoàn cho khách 100%"
+        "split": "Khách 50% · nền tảng 50% · chuyên gia không nhận"
       },
       "RESOLVE_PAY_EXPERT": {
         "label": "Bác khiếu nại · chi trả chuyên gia",
         "hint": "Khiếu nại không có căn cứ; chuyên gia làm đúng, đủ trách nhiệm",
         "split": "Không hoàn · chuyên gia nhận Giá trừ Phí nền tảng của dịch vụ"
-      },
-      "RESOLVE_PARTIAL": {
-        "label": "Quyết toán một phần",
-        "hint": "Có thiếu sót một phần từ cả hai phía",
-        "split": "Hoàn cho khách 50% · phần còn lại chia theo Phí nền tảng của dịch vụ"
       }
     },
     "introCount_other": "{{count}} khiếu nại đang chờ trọng tài.",
@@ -1094,7 +1088,8 @@
       "LATE_RULE_INVALID": "Quy định giao trễ không hợp lệ: số giờ từ 0 đến {{maxHours}}, số giờ hủy không nhỏ hơn số giờ phạt, % phạt cộng phí nền tảng không quá 100%.",
       "NO_RESPONSE_RULE_INVALID": "Quy định khi khách không trả lời không hợp lệ: số giờ từ 1 đến {{maxHours}}, % hoàn cộng % chuyên gia không quá 100%.",
       "POLICY_REASON_REQUIRED": "Nhập lý do thay đổi.",
-      "POLICY_REASON_TOO_LONG": "Lý do tối đa 1000 ký tự."
+      "POLICY_REASON_TOO_LONG": "Lý do tối đa 1000 ký tự.",
+      "NO_DELIVERY_RULE_INVALID": "% hoàn khi chuyên gia không giao phải từ 0 đến 100."
     },
     "helpLabel": "Về phí nền tảng",
     "pending": "Thay đổi đang chờ",
@@ -1108,11 +1103,12 @@
     "exampleNet": "Thực nhận trước thuế TNCN: hiện tại → mới",
     "firstFeeHelp": "Phí đầu tiên có hiệu lực ngay và mở dịch vụ cho chuyên gia đặt giá.",
     "late": "Giao trễ",
-    "lateHelp": "Tính từ hạn giao bài. Giao trễ trong số giờ phạt: khách được hoàn % đã đặt, trừ vào phần của chuyên gia (nền tảng vẫn giữ phí). Giao trễ hơn nữa nhưng trước số giờ hủy: khách được hoàn 100%. Quá số giờ hủy mà chưa giao: yêu cầu bị hủy. Đặt số giờ phạt bằng số giờ hủy để chỉ còn một mức hoàn. Tối đa {{maxHours}} giờ; % hoàn cộng phí nền tảng không quá 100%. Yêu cầu đã gửi giữ nguyên quy định lúc gửi.",
+    "lateHelp": "Tính từ hạn giao bài (1 ngày làm việc). Giao trễ trong số giờ phạt: khách được hoàn % đã đặt, nền tảng giữ phần còn lại, chuyên gia không nhận. Giao trễ hơn nữa nhưng trước số giờ hủy: khách được hoàn 100%. Quá số giờ hủy mà chưa giao: yêu cầu bị hủy, khách được hoàn % \"khi không giao\", nền tảng giữ phần còn lại. Đặt số giờ phạt bằng số giờ hủy để chỉ còn một mức hoàn. Tối đa {{maxHours}} giờ. Yêu cầu đã gửi giữ nguyên quy định lúc gửi.",
     "lateFields": {
       "penaltyHours": "Trễ tối đa được phạt (giờ)",
       "penaltyPercent": "Hoàn cho khách khi trễ (%)",
-      "cancelHours": "Hủy nếu chưa giao sau (giờ)"
+      "cancelHours": "Hủy nếu chưa giao sau (giờ)",
+      "noDeliveryRefundPercent": "Hoàn cho khách khi không giao (%)"
     },
     "noResponse": "Khách không trả lời",
     "noResponseValue": "Sau {{hours}} giờ: hoàn {{refundPercent}}% · chuyên gia {{expertPercent}}% · nền tảng {{platformPercent}}%",
@@ -1134,7 +1130,8 @@
       "splitOver": "% hoàn cho khách cộng % cho chuyên gia không quá 100% (đang là {{sum}}%).",
       "platformKeeps": "Nền tảng giữ {{percent}}%.",
       "dateTooSoon": "Chọn từ ngày {{date}} trở đi.",
-      "expertKeepsLate": "Giao trễ trong số giờ phạt: chuyên gia còn nhận {{percent}}% giá."
+      "lateIncident": "Giao trễ trong số giờ phạt: khách {{client}}%, nền tảng {{platform}}%, chuyên gia không nhận.",
+      "noDeliveryOver": "% hoàn khi không giao không quá 100%."
     },
     "review": "Xem lại",
     "confirmSave": "Xác nhận lưu phí",
@@ -1156,7 +1153,7 @@
     "lateSteps": {
       "penalty": "Trễ đến {{hours}} giờ: hoàn {{percent}}%",
       "full": "{{from}}–{{to}} giờ: hoàn 100%",
-      "cancel": "Quá {{hours}} giờ chưa giao: hủy yêu cầu"
+      "cancel": "Quá {{hours}} giờ chưa giao: hủy, hoàn {{percent}}%"
     },
     "dialogPart": "{{part}} · {{name}}",
     "isDefault": "Mức mặc định",

@@ -2,6 +2,7 @@ using Caps.Common.Application;
 using Caps.Workflow.Application.Abstractions;
 using Caps.Workflow.Application.DTOs.Responses;
 using Caps.Workflow.Domain;
+using Caps.Workflow.Domain.Review;
 
 namespace Caps.Workflow.Application.Features.ReviewCases;
 
@@ -18,7 +19,8 @@ public sealed class PayReviewHandler(
     IEscrows escrows,
     IReviewCaseEvents events,
     IUnitOfWork unitOfWork,
-    TimeProvider clock
+    TimeProvider clock,
+    WorkCalendar? calendar = null
 ) : ICommandHandler<PayReviewCommand, ReviewCaseResponse>
 {
     public async Task<ReviewCaseResponse> HandleAsync(
@@ -31,7 +33,7 @@ public sealed class PayReviewHandler(
             await cases.FindForUpdateAsync(command.ReviewCaseId, ct)
             ?? throw WorkflowErrors.ReviewCaseNotFound();
         reviewCase.EnsureRequester(command.UserId);
-        var paid = reviewCase.ConfirmPayment(clock.GetUtcNow());
+        var paid = reviewCase.ConfirmPayment(clock.GetUtcNow(), calendar);
         //Suspended, unpriced or full since booking: paying would only end in a refund at the response deadline
         if (
             reviewCase.ServiceCode is { } serviceCode

@@ -30,8 +30,6 @@ export interface Escrow {
 export interface DisputeDecisionInput {
   outcome: DisputeOutcome
   reason: string
-  /** Share of the fee returned to the client, for a partial decision */
-  refundPct?: number
 }
 
 /** Một đoạn văn bản bằng chứng; `change` là phần bị xóa (bản nháp) hoặc được thêm (bản sửa) */

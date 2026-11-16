@@ -45,7 +45,12 @@ public static class PlatformFeeRows
         );
 
     public static LateRuleResponse LateOf(PlatformFee fee) =>
-        new(fee.LatePenaltyHours, fee.LatePenaltyPercent, fee.LateCancelHours);
+        new(
+            fee.LatePenaltyHours,
+            fee.LatePenaltyPercent,
+            fee.LateCancelHours,
+            fee.NoDeliveryRefundPercent
+        );
 
     public static NoResponseRuleResponse NoResponseOf(PlatformFee fee) =>
         new(fee.NoResponseHours, fee.NoResponseRefundPercent, fee.NoResponseExpertPercent);

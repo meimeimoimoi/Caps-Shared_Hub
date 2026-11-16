@@ -21,13 +21,13 @@ public sealed class AdminDisputeHandlerTests
     {
         var run = new Run();
 
-        var response = await run.Resolve(40);
+        var response = await run.Resolve(50);
 
         Assert.Equal(ReviewDispute.Resolved, response.Status);
         Assert.Equal(ReviewCaseStatus.Resolved, run.Case.Status);
         Assert.Equal(Admin, run.Dispute.ResolvedBy);
-        // 400k back; the other 600k splits 20% platform, 80% expert
-        Assert.Equal(new ReviewSettlement(400_000, 120_000, 480_000), run.Escrows.Settlement);
+        // Upheld: half back, the platform keeps the other half
+        Assert.Equal(new ReviewSettlement(500_000, 500_000, 0), run.Escrows.Settlement);
         Assert.True(run.Escrows.SettledBeforeSave);
         Assert.Equal([(ExpertProfile, run.Case.Id)], run.Slots.Released);
         Assert.True(run.UnitOfWork.Committed);
@@ -38,7 +38,7 @@ public sealed class AdminDisputeHandlerTests
     {
         var run = new Run(billingDown: true);
 
-        var e = await Assert.ThrowsAsync<AppException>(() => run.Resolve(40));
+        var e = await Assert.ThrowsAsync<AppException>(() => run.Resolve(50));
 
         Assert.Equal("SERVICE_LINK_UNAVAILABLE", e.Code);
         Assert.False(run.UnitOfWork.Saved);

@@ -65,6 +65,20 @@ public sealed record ReviewCaseResponseDueEvent(
 );
 
 /// <summary>
+/// A delivered result still waits for the client a few hours before it confirms itself. Published once per
+/// delivery by the workflow service; the notification service reminds the client in the app and by email.
+/// </summary>
+/// <param name="RequesterEmail">Only to email the client themselves; null for older cases.</param>
+public sealed record ReviewCaseAcceptanceDueEvent(
+    Guid Id,
+    Guid ReviewCaseId,
+    Guid RequesterUserId,
+    string? RequesterEmail,
+    DateTimeOffset AcceptanceDeadline,
+    DateTimeOffset OccurredAt
+);
+
+/// <summary>
 /// An open dispute passed its decision deadline without a decision. Published once per deadline by the workflow
 /// service (again after an extension runs out); the notification service emails the operations inbox.
 /// </summary>
