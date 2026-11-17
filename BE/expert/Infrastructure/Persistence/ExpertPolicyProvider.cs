@@ -68,6 +68,16 @@ public sealed class ExpertPolicyProvider(ExpertDbContext db, ExpertPolicyOptions
         );
     }
 
+    public async Task<ScreeningPolicy> GetScreeningAsync(CancellationToken ct)
+    {
+        var current = await LoadAsync(ct);
+        return new(
+            current[PolicySettingKeys.NearThresholdExtraYears],
+            TimeSpan.FromMinutes(current[PolicySettingKeys.ScreeningAiTimeoutMinutes]),
+            options.ScreeningVisionEnabled
+        );
+    }
+
     private async Task<IReadOnlyDictionary<string, int>> LoadAsync(CancellationToken ct)
     {
         if (values != null)

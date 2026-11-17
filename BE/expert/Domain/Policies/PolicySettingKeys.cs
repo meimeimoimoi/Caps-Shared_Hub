@@ -50,6 +50,12 @@ public static class PolicySettingKeys
     /// <summary>Price change, in percent of the old price, above which the expert sees a red warning.</summary>
     public const string PriceChangeWarningPercent = "PriceChangeWarningPercent";
 
+    /// <summary>Years above MinYearsExperience where EV-06 still flags near-threshold review (Flow 1 Step 3).</summary>
+    public const string NearThresholdExtraYears = "NearThresholdExtraYears";
+
+    /// <summary>Minutes before an active AI screening run times out and falls back to manual check.</summary>
+    public const string ScreeningAiTimeoutMinutes = "ScreeningAiTimeoutMinutes";
+
     /// <summary>
     /// Every adjustable value with its allowed range, in display order. The reapply intervals start at the
     /// minimums of BR-E21/BR-E22, so an admin can only lengthen them: lowering them would waive the wait,
@@ -74,6 +80,8 @@ public static class PolicySettingKeys
         [TurnaroundMaxDays] = new(1, ServiceOffering.TechnicalMaxTurnaroundDays),
         [PlatformFeeNoticeDays] = new(1, 30),
         [PriceChangeWarningPercent] = new(10, 200),
+        [NearThresholdExtraYears] = new(0, 10),
+        [ScreeningAiTimeoutMinutes] = new(1, 60),
     };
 
     /// <summary>Minimum and maximum keys of the same range; the minimum may not exceed the maximum.</summary>
@@ -98,6 +106,8 @@ public static class PolicySettingKeys
         TurnaroundMaxDays,
         PlatformFeeNoticeDays,
         PriceChangeWarningPercent,
+        NearThresholdExtraYears,
+        ScreeningAiTimeoutMinutes,
     ];
 
     /// <summary>
