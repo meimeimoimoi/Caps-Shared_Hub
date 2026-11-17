@@ -1,9 +1,10 @@
 import json
 import logging
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
 
 from app.api.dependencies import verify_internal_key
+from app.modules.cv_screening.extractor import CvExtractor
 from app.modules.drafting.drafter import DocumentDrafter
 from app.modules.ingestion.chunker import LegalChunker
 from app.modules.ingestion.indexer import LegalIndexer
@@ -15,6 +16,7 @@ from app.schemas.answers import (
     TAX_PERIOD_CLARIFICATION_ANSWER,
 )
 from app.schemas.chat_dto import ChatQueryRequest, ChatQueryResponse
+from app.schemas.cv_dto import CvExtractResponse
 from app.schemas.drafting_dto import GenerateDraftRequest, GenerateDraftResponse
 from app.schemas.errors import ErrorChunkEmpty, ErrorMessage
 from app.schemas.ingestion_dto import (
@@ -268,4 +270,40 @@ def draft_document(req: GenerateDraftRequest):
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="AI drafting service is temporarily unavailable.",
+        ) from e
+
+
+# API FLOW 1 (Step 3): Called by expert (.NET) to extract CV/certificate metadata.
+@router.post("/cv/extract", response_model=CvExtractResponse)
+async def extract_cv_metadata(
+    file: UploadFile = File(...),
+    evidence_type: str = Form(...),
+    vision_enabled: bool = Form(default=True),
+):
+    if evidence_type.strip().upper() == "EV-01":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="EV-01 identity documents must not be processed by AI.",
+        )
+
+    try:
+        content = await file.read()
+        return CvExtractor.extract(
+            content=content,
+            evidence_type=evidence_type,
+            vision_enabled=vision_enabled,
+        )
+    except HTTPException:
+        raise
+    except httpx.TimeoutException as e:
+        logger.warning("Timed out extracting document for group %s", evidence_type)
+        raise HTTPException(
+            status_code=status.HTTP_504_GATEWAY_TIMEOUT,
+            detail="AI extraction timed out.",
+        ) from e
+    except Exception as e:
+        logger.warning("Extraction error for group %s: %s", evidence_type, type(e).__name__)
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="AI CV screening service is temporarily unavailable.",
         ) from e
