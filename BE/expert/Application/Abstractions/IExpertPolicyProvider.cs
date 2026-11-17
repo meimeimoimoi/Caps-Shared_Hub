@@ -28,4 +28,7 @@ public interface IExpertPolicyProvider
 
     /// <summary>Price and turnaround ranges, platform fee notice and the price change warning.</summary>
     Task<PricingPolicy> GetPricingAsync(CancellationToken ct);
+
+    /// <summary>Automated Gate 1 pre-screening policy (near-threshold window, AI timeout, vision switch).</summary>
+    Task<ScreeningPolicy> GetScreeningAsync(CancellationToken ct);
 }

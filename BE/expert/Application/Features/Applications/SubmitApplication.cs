@@ -24,6 +24,8 @@ public sealed class SubmitApplicationHandler(
     IExpertEvidenceRepository evidences,
     IReapplicationChecker reapplication,
     IApplicationDescriber describer,
+    IScreeningCoordinator screening,
+    IScreeningWakeup wakeup,
     ExpertPolicyOptions policy,
     IUnitOfWork unitOfWork,
     TimeProvider clock,
@@ -42,7 +44,7 @@ public sealed class SubmitApplicationHandler(
         application.EnsureEditable();
         applicant.EnsureVerified();
         var submission = policy.Submission;
-        var files = await evidences.ListAsync(application.Id, ct);
+        var files = await evidences.ListTrackedAsync(application.Id, ct);
         var evidenceCodes = files.Select(x => x.EvidenceType).Distinct().ToArray();
         var missing = profile.MissingRequirements(evidenceCodes, submission);
         if (missing.Length > 0)
@@ -59,13 +61,28 @@ public sealed class SubmitApplicationHandler(
         var declarations = submission.Resolve(command.DeclarationCodes, command.Language);
 
         var now = clock.GetUtcNow();
+        var existingEvents = await applications.ListEventsAsync(application.Id, ct);
+        var submissionNumber = existingEvents.Count(x => x.ProfileSnapshot != null) + 1;
         var snapshot = ProfileSnapshot.Of(profile, applicant.Email, declarations);
-        applications.AddEvent(application.Submit(applicant.UserId, now, snapshot));
+        var submitted = application.Submit(applicant.UserId, now, snapshot);
+        applications.AddEvent(submitted);
+        var run = await screening.StartForSubmissionAsync(
+            application,
+            submitted,
+            submissionNumber,
+            files,
+            snapshot,
+            applicant.UserId,
+            now,
+            ct
+        );
         profile.RecordContactEmail(applicant.Email);
         profile.RecordAccountStatus(applicant.AccountStatus);
         profile.MirrorStatus(application.Status, now);
         await unitOfWork.SaveChangesAsync(ct);
         await tx.CommitAsync(ct);
+        if (run.Status == ScreeningRunStatuses.Running)
+            wakeup.Notify();
         await realtime.ChangedAsync(
             ExpertRealtimeTopics.Applications,
             [applicant.UserId],

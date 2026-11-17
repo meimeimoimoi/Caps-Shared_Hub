@@ -8,7 +8,8 @@ using Microsoft.EntityFrameworkCore;
 namespace Caps.Expert.Infrastructure.Persistence;
 
 /// <summary>EF Core queries for the review queues: filter, count and order in PostgreSQL.</summary>
-public sealed class ReviewQueueReader(ExpertDbContext db) : IReviewQueueReader
+public sealed class ReviewQueueReader(ExpertDbContext db, IScreeningRepository screeningRepo)
+    : IReviewQueueReader
 {
     // Both gates wait for the expert in this status; the claim does not expire meanwhile
     private const string WaitingForExpert = ExpertApplicationStatus.NeedMoreInformation;
@@ -52,7 +53,9 @@ public sealed class ReviewQueueReader(ExpertDbContext db) : IReviewQueueReader
                     false,
                     null,
                     null,
-                    false
+                    false,
+                    0,
+                    null
                 ),
                 x.ClaimedByUserId != null
                 && (x.Status == WaitingForExpert || x.ClaimedAt > expiredBefore)
@@ -67,7 +70,21 @@ public sealed class ReviewQueueReader(ExpertDbContext db) : IReviewQueueReader
                 ).FirstOrDefault()
             ))
             .ToListAsync(ct);
-        return rows.ConvertAll(x => x.ToResponse(scope));
+        var summaries = await screeningRepo.GetLatestSummaryByApplicationAsync(
+            rows.Select(x => Guid.Parse(x.Row.Id)).ToArray(),
+            ct
+        );
+        return rows.ConvertAll(x =>
+        {
+            var response = x.ToResponse(scope);
+            return summaries.TryGetValue(Guid.Parse(response.Id), out var summary)
+                ? response with
+                {
+                    OpenScreeningPoints = summary.OpenPointCount,
+                    ScreeningStatus = summary.Status,
+                }
+                : response;
+        });
     }
 
     public Task<int> CountQualificationsAsync(
@@ -116,7 +133,9 @@ public sealed class ReviewQueueReader(ExpertDbContext db) : IReviewQueueReader
                     false,
                     x.Status == QualificationStatus.PendingFinalApproval ? x.DecidedAt : null,
                     null,
-                    false
+                    false,
+                    0,
+                    null
                 ),
                 x.ClaimedByUserId != null
                 && (x.Status == WaitingForExpert || x.ClaimedAt > expiredBefore)
@@ -131,7 +150,21 @@ public sealed class ReviewQueueReader(ExpertDbContext db) : IReviewQueueReader
                 ).FirstOrDefault()
             ))
             .ToListAsync(ct);
-        return rows.ConvertAll(x => x.ToResponse(scope));
+        var summaries = await screeningRepo.GetLatestSummaryByApplicationAsync(
+            rows.Select(x => Guid.Parse(x.Row.Id)).ToArray(),
+            ct
+        );
+        return rows.ConvertAll(x =>
+        {
+            var response = x.ToResponse(scope);
+            return summaries.TryGetValue(Guid.Parse(response.Id), out var summary)
+                ? response with
+                {
+                    OpenScreeningPoints = summary.OpenPointCount,
+                    ScreeningStatus = summary.Status,
+                }
+                : response;
+        });
     }
 
     public Task<int> CountFinalApprovalsPassedBeforeAsync(

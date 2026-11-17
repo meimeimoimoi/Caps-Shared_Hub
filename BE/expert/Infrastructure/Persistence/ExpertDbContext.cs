@@ -41,6 +41,9 @@ public sealed class ExpertDbContext(DbContextOptions<ExpertDbContext> options) :
     public DbSet<KnownReviewer> KnownReviewers => Set<KnownReviewer>();
     public DbSet<CompetencyEvidenceLink> CompetencyEvidenceLinks => Set<CompetencyEvidenceLink>();
     public DbSet<CompetencyDescription> CompetencyDescriptions => Set<CompetencyDescription>();
+    public DbSet<ScreeningRun> ScreeningRuns => Set<ScreeningRun>();
+    public DbSet<ScreeningPoint> ScreeningPoints => Set<ScreeningPoint>();
+    public DbSet<ScreeningEvent> ScreeningEvents => Set<ScreeningEvent>();
 
     private static readonly JsonSerializerOptions SnapshotJson = new(JsonSerializerDefaults.Web);
 
@@ -214,6 +217,7 @@ public sealed class ExpertDbContext(DbContextOptions<ExpertDbContext> options) :
             e.Property(x => x.SizeBytes).HasColumnName("size_bytes");
             e.Property(x => x.ParsedMeta).HasColumnName("parsed_meta").HasColumnType("jsonb");
             e.Property(x => x.ScreeningFlag).HasColumnName("screening_flag");
+            e.Property(x => x.AssignedGroup).HasColumnName("assigned_group").HasMaxLength(16);
             e.Property(x => x.CreatedAt).HasColumnName("created_at").IsRequired();
             e.Property(x => x.SourceUrl).HasColumnName("source_url");
             e.Property(x => x.ExtractionStatus).HasColumnName("extraction_status");
@@ -700,6 +704,102 @@ public sealed class ExpertDbContext(DbContextOptions<ExpertDbContext> options) :
             e.Property(x => x.UserId).HasColumnName("user_id").ValueGeneratedNever();
             e.Property(x => x.Email).HasColumnName("email").HasMaxLength(320);
             e.Property(x => x.LastSeenAt).HasColumnName("last_seen_at").IsRequired();
+        });
+
+        modelBuilder.Entity<ScreeningRun>(e =>
+        {
+            e.ToTable("screening_run");
+            e.HasKey(x => x.Id);
+            e.Property(x => x.Id).HasColumnName("id");
+            e.Property(x => x.ApplicationId).HasColumnName("application_id");
+            e.Property(x => x.SubmissionEventId).HasColumnName("submission_event_id");
+            e.Property(x => x.SubmissionNumber).HasColumnName("submission_number");
+            e.Property(x => x.RunNumber).HasColumnName("run_number");
+            e.Property(x => x.Status).HasColumnName("status").HasMaxLength(32).IsRequired();
+            e.Property(x => x.TriggeredByUserId).HasColumnName("triggered_by_user_id");
+            e.Property(x => x.StartedAt).HasColumnName("started_at").IsRequired();
+            e.Property(x => x.TimeoutAt).HasColumnName("timeout_at").IsRequired();
+            e.Property(x => x.CompletedAt).HasColumnName("completed_at");
+            e.Property(x => x.FailureReason).HasColumnName("failure_reason").HasMaxLength(64);
+            e.Property(x => x.CheckedFileCount).HasColumnName("checked_file_count");
+            e.HasIndex(x => new { x.ApplicationId, x.StartedAt })
+                .HasDatabaseName("ix_screening_run_application");
+            e.HasIndex(x => x.Status)
+                .HasFilter("status = 'RUNNING'")
+                .HasDatabaseName("ix_screening_run_running");
+            e.HasOne<ExpertApplication>()
+                .WithMany()
+                .HasForeignKey(x => x.ApplicationId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("fk_screening_run_application");
+        });
+
+        modelBuilder.Entity<ScreeningPoint>(e =>
+        {
+            e.ToTable("screening_point");
+            e.HasKey(x => x.Id);
+            e.Property(x => x.Id).HasColumnName("id");
+            e.Property(x => x.ScreeningRunId).HasColumnName("screening_run_id");
+            e.Property(x => x.ApplicationId).HasColumnName("application_id");
+            e.Property(x => x.EvidenceId).HasColumnName("evidence_id");
+            e.Property(x => x.Source).HasColumnName("source").HasMaxLength(16).IsRequired();
+            e.Property(x => x.Code).HasColumnName("code").HasMaxLength(64).IsRequired();
+            e.Property(x => x.TargetCriterion).HasColumnName("target_criterion").HasMaxLength(16);
+            e.Property(x => x.Title).HasColumnName("title").HasMaxLength(256).IsRequired();
+            e.Property(x => x.Detail).HasColumnName("detail").IsRequired();
+            e.Property(x => x.SuggestedRequest).HasColumnName("suggested_request");
+            e.Property(x => x.MetadataJson).HasColumnName("metadata_json").HasColumnType("jsonb");
+            e.Property(x => x.Status).HasColumnName("status").HasMaxLength(32).IsRequired();
+            e.Property(x => x.ResolutionReason)
+                .HasColumnName("resolution_reason")
+                .HasMaxLength(ScreeningPoint.MaxReasonLength);
+            e.Property(x => x.ResolvedByUserId).HasColumnName("resolved_by_user_id");
+            e.Property(x => x.ResolvedAt).HasColumnName("resolved_at");
+            e.Property(x => x.CreatedAt).HasColumnName("created_at").IsRequired();
+            e.HasIndex(x => new { x.ScreeningRunId, x.CreatedAt })
+                .HasDatabaseName("ix_screening_point_run");
+            e.HasIndex(x => x.ApplicationId).HasDatabaseName("ix_screening_point_application");
+            e.HasOne<ScreeningRun>()
+                .WithMany(r => r.Points)
+                .HasForeignKey(x => x.ScreeningRunId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("fk_screening_point_run");
+            e.HasOne<ExpertApplication>()
+                .WithMany()
+                .HasForeignKey(x => x.ApplicationId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("fk_screening_point_application");
+            e.HasOne<ExpertEvidence>()
+                .WithMany()
+                .HasForeignKey(x => x.EvidenceId)
+                .OnDelete(DeleteBehavior.SetNull)
+                .HasConstraintName("fk_screening_point_evidence");
+        });
+
+        modelBuilder.Entity<ScreeningEvent>(e =>
+        {
+            e.ToTable("screening_event");
+            e.HasKey(x => x.Id);
+            e.Property(x => x.Id).HasColumnName("id");
+            e.Property(x => x.ApplicationId).HasColumnName("application_id");
+            e.Property(x => x.ScreeningRunId).HasColumnName("screening_run_id");
+            e.Property(x => x.ActorUserId).HasColumnName("actor_user_id");
+            e.Property(x => x.BySystem).HasColumnName("by_system");
+            e.Property(x => x.EventType).HasColumnName("event_type").HasMaxLength(48).IsRequired();
+            e.Property(x => x.Message).HasColumnName("message").HasMaxLength(1000).IsRequired();
+            e.Property(x => x.CreatedAt).HasColumnName("created_at").IsRequired();
+            e.HasIndex(x => new { x.ApplicationId, x.CreatedAt })
+                .HasDatabaseName("ix_screening_event_application");
+            e.HasOne<ExpertApplication>()
+                .WithMany()
+                .HasForeignKey(x => x.ApplicationId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("fk_screening_event_application");
+            e.HasOne<ScreeningRun>()
+                .WithMany()
+                .HasForeignKey(x => x.ScreeningRunId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("fk_screening_event_run");
         });
     }
 }

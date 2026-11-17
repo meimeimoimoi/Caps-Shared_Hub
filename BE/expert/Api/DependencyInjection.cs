@@ -21,6 +21,7 @@ public static class DependencyInjection
         services.AddScoped<IPolicyDescriber, PolicyDescriber>();
         services.AddScoped<IReviewClaimDescriber, ReviewClaimDescriber>();
         services.AddScoped<IKnownReviewerRecorder, KnownReviewerRecorder>();
+        services.AddScoped<IScreeningCoordinator, ScreeningCoordinator>();
         services.AddHandlersFromAssembly(typeof(SaveDraftHandler).Assembly);
         return services;
     }

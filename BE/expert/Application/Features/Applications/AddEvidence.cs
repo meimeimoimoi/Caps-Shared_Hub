@@ -24,6 +24,7 @@ public sealed class AddEvidenceHandler(
     IExpertEvidenceRepository evidences,
     IObjectStorage storage,
     IApplicationDescriber describer,
+    IScreeningWakeup wakeup,
     IUnitOfWork unitOfWork,
     TimeProvider clock,
     IRealtimeNotifier realtime
@@ -88,6 +89,9 @@ public sealed class AddEvidenceHandler(
             await storage.DeleteQuietlyAsync(evidence.FileUrl);
             throw;
         }
+        // Start one-time extraction immediately after commit, even while DRAFT (Section 4 #1).
+        if (evidence.RequiresAiExtraction)
+            wakeup.Notify();
         // Reviewers see new or removed evidence without reloading
         await realtime.ChangedAsync(
             ExpertRealtimeTopics.Applications,

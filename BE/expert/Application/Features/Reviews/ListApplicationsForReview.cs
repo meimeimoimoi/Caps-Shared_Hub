@@ -9,8 +9,10 @@ namespace Caps.Expert.Application.Features.Reviews;
 public sealed record ListApplicationsForReviewQuery(string? Status);
 
 /// <summary>Lists applications in one status, oldest submission first.</summary>
-public sealed class ListApplicationsForReviewHandler(IExpertApplicationRepository applications)
-    : IQueryHandler<ListApplicationsForReviewQuery, IReadOnlyList<ReviewQueueItemResponse>>
+public sealed class ListApplicationsForReviewHandler(
+    IExpertApplicationRepository applications,
+    IScreeningRepository screeningRepo
+) : IQueryHandler<ListApplicationsForReviewQuery, IReadOnlyList<ReviewQueueItemResponse>>
 {
     public async Task<IReadOnlyList<ReviewQueueItemResponse>> HandleAsync(
         ListApplicationsForReviewQuery query,
@@ -21,17 +23,27 @@ public sealed class ListApplicationsForReviewHandler(IExpertApplicationRepositor
             ? ExpertApplicationStatus.Submitted
             : query.Status.Trim().ToUpperInvariant();
         var found = await applications.ListByStatusAsync(status, ct);
+        var summaries = await screeningRepo.GetLatestSummaryByApplicationAsync(
+            found.Select(x => x.Id).ToArray(),
+            ct
+        );
         return found
-            .Select(x => new ReviewQueueItemResponse(
-                x.Id.ToString(),
-                x.ExpertProfile.UserId.ToString(),
-                x.ExpertProfile.DisplayName,
-                x.ExpertProfile.YearsExperience,
-                x.ExpertProfile.Fields,
-                x.Status,
-                x.SubmittedAt,
-                x.PreviousApplicationId != null
-            ))
+            .Select(x =>
+            {
+                summaries.TryGetValue(x.Id, out var summary);
+                return new ReviewQueueItemResponse(
+                    x.Id.ToString(),
+                    x.ExpertProfile.UserId.ToString(),
+                    x.ExpertProfile.DisplayName,
+                    x.ExpertProfile.YearsExperience,
+                    x.ExpertProfile.Fields,
+                    x.Status,
+                    x.SubmittedAt,
+                    x.PreviousApplicationId != null,
+                    summary.OpenPointCount,
+                    summary.Status
+                );
+            })
             .ToArray();
     }
 }
