@@ -13,6 +13,9 @@ import type {
   CriterionDeclaration,
   InformationRounds,
   ReviewClaimState,
+  ScreeningPointAction,
+  ScreeningRun,
+  ScreeningRunStatus,
   Submission,
 } from '../types'
 
@@ -38,6 +41,8 @@ interface ReviewQueueItem {
   status: ApplicationStatus
   submittedAt: string | null
   isReapplication: boolean
+  openScreeningPoints?: number
+  screeningStatus?: ScreeningRunStatus | null
 }
 
 interface ReviewApplication {
@@ -92,13 +97,15 @@ interface ReviewApplication {
   declarationPassedCriteria?: string[]
   claim?: ReviewClaimState
   rounds?: InformationRounds
+  screening?: ScreeningRun | null
 }
 
 const toQueueRow = (a: ReviewQueueItem): ExpertApplication => ({
   id: a.id,
   name: a.displayName ?? a.applicantUserId,
   years: a.yearsExperience ?? 0,
-  aiFlags: 0,
+  aiFlags: a.openScreeningPoints ?? 0,
+  screeningStatus: a.screeningStatus ?? null,
   submittedAt: a.submittedAt ?? '',
   status: a.status,
   fields: a.fields,
@@ -112,7 +119,8 @@ function toDetail(a: ReviewApplication): ApplicationDetail {
     id: a.id,
     name,
     years: p.yearsExperience ?? 0,
-    aiFlags: 0,
+    aiFlags: a.screening?.openPointCount ?? 0,
+    screeningStatus: a.screening?.status ?? null,
     submittedAt: a.submittedAt ?? a.createdAt,
     status: a.status,
     birthDate: p.birthDate ?? '',
@@ -122,6 +130,7 @@ function toDetail(a: ReviewApplication): ApplicationDetail {
     bio: p.bio ?? '',
     fields: p.fields,
     highlights: p.highlights ?? '',
+    screening: a.screening ?? null,
     documents: a.evidence.map((e) => ({
       code: e.code,
       name: e.sourceUrl || e.fileName,
@@ -214,6 +223,40 @@ export async function claimApplication(id: string): Promise<ApplicationDetail> {
 /** Gives the application back to the shared queue */
 export async function releaseApplication(id: string): Promise<ApplicationDetail> {
   const res = await api.post<Envelope<ReviewApplication>>(`${REVIEW_BASE}/${id}/release`)
+  return toDetail(res.data)
+}
+
+/** Resolves or reopens one Gate 1 screening point */
+export async function resolveScreeningPoint(
+  id: string,
+  pointId: string,
+  body: { action: ScreeningPointAction; reason?: string | null }
+): Promise<ApplicationDetail> {
+  const res = await api.post<Envelope<ReviewApplication>>(
+    `${REVIEW_BASE}/${id}/screening/points/${pointId}/resolve`,
+    body
+  )
+  return toDetail(res.data)
+}
+
+/** Retries a failed or timed-out AI screening run */
+export async function retryScreening(id: string): Promise<ApplicationDetail> {
+  const res = await api.post<Envelope<ReviewApplication>>(
+    `${REVIEW_BASE}/${id}/screening/retry`
+  )
+  return toDetail(res.data)
+}
+
+/** Assigns a SUPPLEMENT evidence file to a target Gate 1 criterion group */
+export async function assignSupplementGroup(
+  id: string,
+  evidenceId: string,
+  groupCode: string | null
+): Promise<ApplicationDetail> {
+  const res = await api.put<Envelope<ReviewApplication>>(
+    `${REVIEW_BASE}/${id}/evidence/${evidenceId}/group`,
+    { groupCode }
+  )
   return toDetail(res.data)
 }
 

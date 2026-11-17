@@ -275,17 +275,80 @@
       "missing": "Thiếu",
       "inconsistent": "Không nhất quán",
       "results": "Kết quả AI sàng lọc",
+      "helpLabel": "Về AI sàng lọc",
+      "help": "AI chạy nội bộ để trích xuất thông tin từ CV và chứng chỉ (không đọc EV-01, không tự kết luận Đạt hay Không đạt). Các điểm kiểm tra phải được xử lý trước khi kết luận Gate 1.",
       "overview": "Tổng quan",
-      "checked": "{{count}} mục đã kiểm tra",
-      "flags": "{{count}} mục cần xem lại",
-      "allReviewed": "đã được System Admin xem xét",
-      "noFlags": "không có mục cần xem lại.",
-      "reviewed": "Đã xem xét",
+      "checked": "{{count}} tệp đã kiểm tra",
+      "flags": "{{count}} điểm đang mở",
+      "allReviewed": "đã xử lý toàn bộ",
+      "noFlags": "không có điểm cần kiểm tra.",
+      "reviewed": "Đã xử lý",
       "viewDetail": "Xem chi tiết AI sàng lọc",
       "ranAt": "Chạy lúc {{time}}",
-      "rerunAt": ", chạy lại sau bổ sung lúc {{time}}",
-      "review": "Cần xem lại",
-      "reviewedCount": "Đã xem xét {{done}}/{{total}}",
+      "rerunAt": ", chạy lại lúc {{time}}",
+      "runMeta": "Lần nộp #{{submission}} · Lượt #{{run}} · Bắt đầu {{time}}",
+      "finishedAt": "Xong lúc {{time}}",
+      "review": "Cần kiểm tra",
+      "reviewedCount": "Đã xử lý {{done}}/{{total}}",
+      "retry": "Chạy lại",
+      "runningNotice": "AI đang trích xuất hồ sơ ở nền. Reviewer không bị chặn và có thể kết luận Gate 1 ngay nếu các điểm hệ thống đã xử lý xong.",
+      "failedNotice": "Lượt sàng lọc AI thất bại hoặc quá thời gian chờ. Reviewer kiểm tra trực tiếp hồ sơ hoặc bấm Chạy lại.",
+      "skippedNotice": "Lượt sàng lọc AI đã bỏ qua vì Reviewer kết luận Gate 1 trước khi AI chạy xong.",
+      "runStatus": {
+        "RUNNING": "Đang chạy",
+        "COMPLETED": "Hoàn tất",
+        "FAILED": "Lỗi / Quá hạn",
+        "SKIPPED": "Đã bỏ qua"
+      },
+      "pointsTitle": "Điểm cần kiểm tra",
+      "pointsHelp": "Gồm điểm đối chiếu từ dữ liệu AI trích xuất và điểm quy tắc hệ thống tạo ngay lúc nộp. Chọn Đã kiểm tra (bắt buộc nêu lý do) hoặc Dùng làm yêu cầu bổ sung.",
+      "noPoints": "Không có điểm cần kiểm tra nào.",
+      "forCriterion": "Điểm kiểm tra liên quan",
+      "source": {
+        "AI": "AI",
+        "SYSTEM": "Hệ thống"
+      },
+      "pointStatus": {
+        "OPEN": "Đang mở",
+        "CHECKED": "Đã kiểm tra",
+        "USED_FOR_SUPPLEMENT": "Dùng để yêu cầu bổ sung"
+      },
+      "markChecked": "Đã kiểm tra",
+      "useForSupplement": "Dùng làm yêu cầu bổ sung",
+      "reopenPoint": "Mở lại điểm này",
+      "reasonLabel": "Lý do xác nhận đã kiểm tra (bắt buộc)",
+      "reasonPlaceholder": "Ví dụ: Đã đối chiếu hợp đồng lao động, khớp số năm thực tế.",
+      "reasonRequired": "Vui lòng nhập lý do trước khi xác nhận.",
+      "confirmChecked": "Xác nhận đã kiểm tra",
+      "cancelAction": "Hủy",
+      "resolutionReason": "Ghi chú xử lý",
+      "assignGroupLabel": "Xếp vào nhóm tiêu chí",
+      "chooseGroup": "Chọn nhóm…",
+      "extractedTitle": "Dữ liệu trích xuất theo tài liệu",
+      "extractedHelp": "Chỉ hiển thị các trường AI trích xuất được từ CV và chứng chỉ (không gồm EV-01 và liên kết ngoài).",
+      "noExtractions": "Chưa có tài liệu nào được trích xuất.",
+      "unreadableDetail": "Không đọc được nội dung ({{reason}}). Reviewer vui lòng mở xem tài liệu trực tiếp.",
+      "fieldFullName": "Họ tên trên tài liệu",
+      "fieldDocType": "Loại tài liệu",
+      "fieldDerivedYears": "Số năm thuế – kế toán suy ra",
+      "fieldDomains": "Lĩnh vực nhận diện",
+      "fieldMilestones": "Các mốc công việc",
+      "fieldCertificates": "Thông tin chứng chỉ",
+      "presentPeriod": "nay",
+      "taxRelated": "Thuế – Kế toán",
+      "docTypes": {
+        "CV": "CV / Sơ yếu lý lịch",
+        "TAX_CERTIFICATE": "Chứng chỉ thuế",
+        "TRAINING_CERTIFICATE": "Chứng nhận đào tạo",
+        "OTHER": "Tài liệu khác"
+      },
+      "extractionStatus": {
+        "PENDING": "Đang chờ đọc",
+        "PROCESSING": "Đang đọc",
+        "EXTRACTED": "Đã trích xuất",
+        "UNREADABLE": "Không đọc được",
+        "FAILED": "Lỗi đọc AI"
+      },
       "legalTitle": "Kiểm tra giấy tờ pháp lý",
       "colItem": "Mục kiểm tra",
       "colResult": "Kết quả AI",
@@ -780,6 +843,7 @@
       "APPLICATION_NOT_IN_REVIEW": "Hồ sơ không còn chờ kết luận; tải lại để xem trạng thái mới.",
       "failed": "Chưa ghi nhận được kết luận. Vui lòng thử lại.",
       "REVIEW_NOT_CLAIMED": "Bạn không còn giữ hồ sơ này (đã quá hạn hoặc đã chuyển cho người khác). Đã tải lại hồ sơ.",
+      "SCREENING_POINTS_UNRESOLVED": "Còn điểm kiểm tra sàng lọc đang mở; hãy xử lý toàn bộ trước khi kết luận Gate 1.",
       "INFORMATION_REQUEST_LIMIT": "Đã hết số vòng yêu cầu bổ sung. Chọn Đạt hoặc Không đạt dựa trên minh chứng hiện có."
     },
     "declarations": {
@@ -896,6 +960,7 @@
       "SUSPENSION_NOTE_REQUIRED": "Ghi rõ lý do tạm ngưng.",
       "INVALID_SERVICE_ACCESS_ACTION": "Thao tác không hợp lệ. Tải lại trang rồi thử lại.",
       "REVIEW_NOT_CLAIMED": "Bạn không còn giữ hồ sơ này (đã quá hạn hoặc đã chuyển cho người khác). Đã tải lại hồ sơ.",
+      "SCREENING_POINTS_UNRESOLVED": "Còn điểm kiểm tra sàng lọc đang mở; hãy xử lý toàn bộ trước khi kết luận Gate 1.",
       "INFORMATION_REQUEST_LIMIT": "Đã hết số vòng yêu cầu bổ sung. Chọn Đạt hoặc Không đạt dựa trên minh chứng hiện có."
     },
     "definitions": {
@@ -1102,6 +1167,16 @@
         "label": "Ngưỡng cảnh báo đổi giá",
         "help": "Chuyên gia đổi Giá chênh hơn ngưỡng này so với Giá cũ thì hộp xác nhận hiện cảnh báo đỏ. Chỉ cảnh báo, không chặn. Mặc định {{defaultValue}}%; cho phép {{min}}–{{max}}.",
         "unit": "%"
+      },
+      "NearThresholdExtraYears": {
+        "label": "Biên năm kinh nghiệm sát ngưỡng",
+        "help": "Số năm cộng thêm vào Số năm kinh nghiệm tối thiểu để tự động gắn điểm kiểm tra khi chuyên gia khai sát ngưỡng (mặc định {{defaultValue}} năm, cho phép {{min}}–{{max}}).",
+        "unit": "năm"
+      },
+      "ScreeningAiTimeoutMinutes": {
+        "label": "Thời gian chờ AI sàng lọc",
+        "help": "Số phút tối đa cho mỗi lượt sàng lọc AI trước khi chuyển trạng thái lỗi để Reviewer tự kiểm tra hoặc chạy lại. Mặc định {{defaultValue}} phút; cho phép {{min}}–{{max}}.",
+        "unit": "phút"
       }
     },
     "outOfRange": "Nhập số nguyên từ {{min}} đến {{max}}.",

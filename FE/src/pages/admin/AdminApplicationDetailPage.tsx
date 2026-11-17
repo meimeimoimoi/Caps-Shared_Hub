@@ -26,7 +26,6 @@ import { DocumentsTab } from '../../features/expert-vetting/components/Documents
 import { HistoryTab } from '../../features/expert-vetting/components/HistoryTab'
 import { ProfileTab } from '../../features/expert-vetting/components/ProfileTab'
 import {
-  CURRENT_ADMIN,
   ELIGIBILITY_OUTCOME,
 } from '../../features/expert-vetting/constants'
 import { formatDate } from '../../features/expert-vetting/utils/applications'
@@ -44,6 +43,7 @@ const DECISION_ERRORS = [
   'SELF_REVIEW_NOT_ALLOWED',
   'APPLICATION_NOT_IN_REVIEW',
   'REVIEW_NOT_CLAIMED',
+  'SCREENING_POINTS_UNRESOLVED',
   'INFORMATION_REQUEST_LIMIT',
 ] as const
 type DecisionError = (typeof DECISION_ERRORS)[number]
@@ -59,7 +59,6 @@ export default function AdminApplicationDetailPage({ embedded = false }: { embed
   const review = useApplicationReview(id)
   const { detail, status } = review
   const claim = useReviewClaim('GATE_1', id, detail?.claim)
-  // AI screening is postponed: the tab only exists for demo fixtures
   const tabs = [
     { key: 'profile', label: t('admin:detail.tabs.profile') },
     { key: 'documents', label: t('admin:detail.tabs.documents') },
@@ -298,6 +297,11 @@ export default function AdminApplicationDetailPage({ embedded = false }: { embed
               >
                 {label}
                 {key === 'documents' && <span className="text-text-muted ml-1.5 text-xs tabular-nums">{detail.documents.length}</span>}
+                {key === 'ai' && (detail.screening?.openPointCount ?? 0) > 0 && (
+                  <span className="bg-warning/15 text-warning ml-1.5 rounded-full px-1.5 py-0.5 text-xs tabular-nums">
+                    {detail.screening!.openPointCount}
+                  </span>
+                )}
               </button>
             ))}
           </div>
@@ -312,9 +316,35 @@ export default function AdminApplicationDetailPage({ embedded = false }: { embed
             {tab === 'ai' && detail.screening && (
               <AiScreeningTab
                 screening={detail.screening}
-                reviewedFlags={review.reviewedFlags}
-                onToggleReviewed={review.toggleFlagReviewed}
-                onRequestSupplement={review.requestFromFlags}
+                documents={detail.documents}
+                canResolve={!readOnly && detail.canDecide}
+                busy={review.screeningBusy}
+                onResolveChecked={(pointId, reason) =>
+                  review
+                    .resolvePoint(pointId, 'CHECKED', reason)
+                    .catch((e: unknown) => setToast(claimError(e)))
+                }
+                onUseForSupplement={(point) =>
+                  review
+                    .usePointForSupplement(point)
+                    .catch((e: unknown) => setToast(claimError(e)))
+                }
+                onReopenPoint={(pointId) =>
+                  review
+                    .resolvePoint(pointId, 'REOPEN')
+                    .catch((e: unknown) => setToast(claimError(e)))
+                }
+                onRetry={() =>
+                  review
+                    .retryScreening()
+                    .catch((e: unknown) => setToast(claimError(e)))
+                }
+                onAssignSupplementGroup={(evidenceId, groupCode) =>
+                  review
+                    .assignSupplementGroup(evidenceId, groupCode)
+                    .catch((e: unknown) => setToast(claimError(e)))
+                }
+                onOpenDocument={showDocument}
               />
             )}
             {tab === 'profile' && (
@@ -332,8 +362,6 @@ export default function AdminApplicationDetailPage({ embedded = false }: { embed
                 documents={detail.documents}
                 submissions={detail.submissions ?? []}
                 initialCode={docKey}
-                reviewedFlags={review.reviewedFlags}
-                onToggleReviewed={review.toggleFlagReviewed}
                 onOpenFile={openFile}
                 loadFile={(evidenceId) => getEvidenceFile(detail.id, evidenceId)}
               />
@@ -350,8 +378,6 @@ export default function AdminApplicationDetailPage({ embedded = false }: { embed
             {detail.screening && (
               <AiSummaryCard
                 screening={detail.screening}
-                flagReviews={review.flagReviews}
-                reviewer={CURRENT_ADMIN}
                 onOpenDetail={() => setTab('ai')}
               />
             )}
@@ -368,6 +394,7 @@ export default function AdminApplicationDetailPage({ embedded = false }: { embed
               setAsideNote={review.setAsideNote}
               onRestoreNote={review.restoreNote}
               onShowDocument={showDocument}
+              onOpenAiTab={() => setTab('ai')}
             />
         <EligibilityDecisionPanel
           outcome={review.outcome}

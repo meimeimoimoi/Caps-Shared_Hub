@@ -1,6 +1,12 @@
 import { useTranslation } from 'react-i18next'
-import { FileCheck2 } from 'lucide-react'
-import type { ApplicationDocument, CriterionDeclaration, EligibilityCheck } from '../types'
+import { Check, FileCheck2, TriangleAlert } from 'lucide-react'
+import { cn } from '@/lib/utils'
+import type {
+  ApplicationDocument,
+  CriterionDeclaration,
+  EligibilityCheck,
+  ScreeningPoint,
+} from '../types'
 import { documentKey, formatDateTime } from '../utils/applications'
 import { EvidenceList } from './EvidenceList'
 
@@ -52,5 +58,71 @@ export function CriterionPrevious({ before }: { before?: EligibilityCheck }) {
       {t('eligibility.previous', { result: t(`eligibility.results.${before.result}`) })}
       {before.note && ` · ${before.note}`}
     </p>
+  )
+}
+
+/** Screening points tied to this criterion so reviewers see discrepancies in context */
+export function CriterionScreeningPoints({
+  points,
+  onOpenAiTab,
+}: {
+  points: ScreeningPoint[]
+  onOpenAiTab?: () => void
+}) {
+  const { t } = useTranslation('admin')
+  if (!points.length) return null
+  return (
+    <section aria-labelledby="criterion-screening" className="mb-5">
+      <div className="mb-2 flex items-center justify-between gap-2">
+        <h4 id="criterion-screening" className="text-text-strong text-sm font-medium">
+          {t('detail.aiScreening.forCriterion')}
+        </h4>
+        {onOpenAiTab && (
+          <button
+            type="button"
+            onClick={onOpenAiTab}
+            className="text-text-strong text-xs underline underline-offset-4"
+          >
+            {t('detail.aiScreening.viewDetail')}
+          </button>
+        )}
+      </div>
+      <ul className="space-y-2">
+        {points.map((p) => {
+          const open = p.status === 'OPEN'
+          return (
+            <li
+              key={p.id}
+              className={cn(
+                'rounded-lg border px-3 py-2.5 text-sm',
+                open
+                  ? 'border-warning/40 bg-warning/5'
+                  : 'border-border bg-surface-muted/40'
+              )}
+            >
+              <div className="flex items-start justify-between gap-2">
+                <span className="text-text-strong flex items-center gap-1.5 font-medium">
+                  {open ? (
+                    <TriangleAlert size={14} aria-hidden="true" className="text-warning shrink-0" />
+                  ) : (
+                    <Check size={14} aria-hidden="true" className="text-success shrink-0" />
+                  )}
+                  {p.title}
+                </span>
+                <span
+                  className={cn(
+                    'shrink-0 rounded-full px-2 py-0.5 text-xs font-medium',
+                    open ? 'bg-warning/15 text-warning' : 'bg-success/10 text-success'
+                  )}
+                >
+                  {t(`detail.aiScreening.pointStatus.${p.status}`)}
+                </span>
+              </div>
+              <p className="text-text mt-1 text-xs leading-5">{p.detail}</p>
+            </li>
+          )
+        })}
+      </ul>
+    </section>
   )
 }
