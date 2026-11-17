@@ -102,6 +102,10 @@ export function ApplicationsTable({
                         .replace(String(a.aiFlags), '')
                         .trim()}
                     </span>
+                  ) : a.screeningStatus === 'RUNNING' ? (
+                    <span className="text-fg-muted">
+                      {t('detail.aiScreening.runStatus.RUNNING')}
+                    </span>
                   ) : (
                     <span className="text-fg-muted">
                       {t('applicationsTable.noNotes')}

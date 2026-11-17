@@ -331,17 +331,80 @@
       "missing": "Missing",
       "inconsistent": "Inconsistent",
       "results": "AI Screening Results",
+      "helpLabel": "About AI screening",
+      "help": "Runs internal Ollama models to extract structured fields from CVs and certificates (never reads EV-01, never recommends pass/fail). All open screening points must be resolved before concluding Gate 1.",
       "overview": "Overview",
-      "checked": "{{count}} items checked",
-      "flags": "{{count}} items need review",
-      "allReviewed": "reviewed by System Admin",
-      "noFlags": "no items need review.",
-      "reviewed": "Reviewed",
+      "checked": "{{count}} file(s) checked",
+      "flags": "{{count}} open point(s)",
+      "allReviewed": "all resolved",
+      "noFlags": "no open screening points.",
+      "reviewed": "Resolved",
       "viewDetail": "View AI screening details",
       "ranAt": "Ran at {{time}}",
-      "rerunAt": ", re-run after supplement at {{time}}",
+      "rerunAt": ", re-run at {{time}}",
+      "runMeta": "Submission #{{submission}} · Run #{{run}} · Started {{time}}",
+      "finishedAt": "Finished at {{time}}",
       "review": "Needs review",
-      "reviewedCount": "Reviewed {{done}}/{{total}}",
+      "reviewedCount": "Resolved {{done}}/{{total}}",
+      "retry": "Retry",
+      "runningNotice": "AI extraction is running in the background. You can still conclude Gate 1 once open system points are resolved.",
+      "failedNotice": "AI screening failed or timed out. Review the documents manually or click Retry.",
+      "skippedNotice": "This AI run was skipped because a Gate 1 decision was recorded before AI finished.",
+      "runStatus": {
+        "RUNNING": "Running",
+        "COMPLETED": "Completed",
+        "FAILED": "Failed / Timed out",
+        "SKIPPED": "Skipped"
+      },
+      "pointsTitle": "Screening points",
+      "pointsHelp": "Includes rule comparisons on AI-extracted fields and instant submission checks. Mark as Checked (reason required) or Use for supplement.",
+      "noPoints": "No screening points raised.",
+      "forCriterion": "Related screening points",
+      "source": {
+        "AI": "AI",
+        "SYSTEM": "System"
+      },
+      "pointStatus": {
+        "OPEN": "Open",
+        "CHECKED": "Checked",
+        "USED_FOR_SUPPLEMENT": "Used for supplement"
+      },
+      "markChecked": "Mark as checked",
+      "useForSupplement": "Use for supplement request",
+      "reopenPoint": "Reopen point",
+      "reasonLabel": "Reason for marking checked (required)",
+      "reasonPlaceholder": "For example: verified employment contracts matching declared years.",
+      "reasonRequired": "Enter a reason before confirming.",
+      "confirmChecked": "Confirm checked",
+      "cancelAction": "Cancel",
+      "resolutionReason": "Resolution note",
+      "assignGroupLabel": "Assign to criterion group",
+      "chooseGroup": "Select group…",
+      "extractedTitle": "Extracted document fields",
+      "extractedHelp": "Displays only fields extracted by AI from CVs and certificates (excluding EV-01 and external links).",
+      "noExtractions": "No extracted document fields yet.",
+      "unreadableDetail": "Unreadable document ({{reason}}). Open the file to inspect directly.",
+      "fieldFullName": "Name on document",
+      "fieldDocType": "Document type",
+      "fieldDerivedYears": "Derived tax & accounting years",
+      "fieldDomains": "Detected fields",
+      "fieldMilestones": "Work milestones",
+      "fieldCertificates": "Certificates",
+      "presentPeriod": "present",
+      "taxRelated": "Tax / Accounting",
+      "docTypes": {
+        "CV": "CV / Resume",
+        "TAX_CERTIFICATE": "Tax certificate",
+        "TRAINING_CERTIFICATE": "Training certificate",
+        "OTHER": "Other document"
+      },
+      "extractionStatus": {
+        "PENDING": "Pending",
+        "PROCESSING": "Processing",
+        "EXTRACTED": "Extracted",
+        "UNREADABLE": "Unreadable",
+        "FAILED": "Extraction failed"
+      },
       "legalTitle": "Legal document checks",
       "colItem": "Check",
       "colResult": "AI result",
@@ -880,6 +943,7 @@
       "APPLICATION_NOT_IN_REVIEW": "This application no longer waits for a decision; reload to see its status.",
       "failed": "The decision was not recorded. Please try again.",
       "REVIEW_NOT_CLAIMED": "You no longer hold this review (the hold expired or it was handed on). Reloaded the review.",
+      "SCREENING_POINTS_UNRESOLVED": "Resolve all open screening points before concluding Gate 1.",
       "INFORMATION_REQUEST_LIMIT": "No information rounds are left. Pass or fail on the evidence at hand."
     },
     "declarations": {
@@ -997,6 +1061,7 @@
       "SUSPENSION_NOTE_REQUIRED": "Give the reason for the suspension.",
       "INVALID_SERVICE_ACCESS_ACTION": "The action is invalid. Reload the page and try again.",
       "REVIEW_NOT_CLAIMED": "You no longer hold this review (the hold expired or it was handed on). Reloaded the review.",
+      "SCREENING_POINTS_UNRESOLVED": "Resolve all open screening points before concluding Gate 1.",
       "INFORMATION_REQUEST_LIMIT": "No information rounds are left. Pass or fail on the evidence at hand."
     },
     "definitions": {
@@ -1311,6 +1376,16 @@
         "label": "Price change warning",
         "help": "When an expert changes the price by more than this against the old price, the confirmation shows a red warning. Warning only, never blocks. Default {{defaultValue}}%; allowed {{min}}–{{max}}.",
         "unit": "%"
+      },
+      "NearThresholdExtraYears": {
+        "label": "Near-threshold experience margin",
+        "help": "Extra years above Minimum years of experience that still raise a screening check for manual verification. Default {{defaultValue}} year(s); allowed {{min}}–{{max}}.",
+        "unit": "years"
+      },
+      "ScreeningAiTimeoutMinutes": {
+        "label": "AI screening timeout",
+        "help": "Maximum minutes an AI screening run may wait before marking as failed for manual review or retry. Default {{defaultValue}} minutes; allowed {{min}}–{{max}}.",
+        "unit": "min"
       }
     },
     "outOfRange": "Enter a whole number from {{min}} to {{max}}.",
