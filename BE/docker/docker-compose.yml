@@ -159,6 +159,9 @@ services:
       Storage__ServiceUrl: http://seaweedfs:8333
       Storage__AccessKey: caps-dev-access
       Storage__SecretKey: caps-dev-secret-change-me
+      # Internal Python AI service for Gate 1 CV/certificate screening
+      AiService__BaseUrl: http://ai-service:8000
+      AiService__InternalKey: ${AI_SERVICE_INTERNAL_KEY:-}
     # Published for local debugging only; in production expose the gateway alone
     ports:
       - "5198:8080"
@@ -197,6 +200,35 @@ services:
         # Fixed so auth can trust forwarded client IPs from this address only (Auth__KnownProxies__0)
         ipv4_address: 172.28.0.10
 
+  # Vector store for legal RAG and knowledge ingestion
+  qdrant:
+    image: qdrant/qdrant:v1.12.1
+    container_name: caps_qdrant
+    restart: always
+    ports:
+      - "6333:6333"
+    volumes:
+      - qdrant_data:/qdrant/storage
+    networks:
+      - caps_network
+
+  # Python AI & RAG engine (CV extraction, RAG query, draft generation, chunk/embed)
+  ai-service:
+    build:
+      context: ../ai-service
+    container_name: caps_ai_service
+    restart: always
+    environment:
+      OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://host.docker.internal:11434}
+      QDRANT_URL: http://qdrant:6333
+      INTERNAL_API_KEY: ${AI_SERVICE_INTERNAL_KEY:-}
+    ports:
+      - "8000:8000"
+    depends_on:
+      - qdrant
+    networks:
+      - caps_network
+
 networks:
   caps_network:
     driver: bridge
@@ -214,3 +246,4 @@ volumes:
   rabbitmq_data:
   seaweedfs_data:
   auth_keys:
+  qdrant_data:

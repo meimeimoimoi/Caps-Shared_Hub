@@ -35,3 +35,11 @@ Restart services after updating connections. User-secrets are for Development; u
 Layered hosts use `<service>/Api/Api.csproj`; other hosts use `<service>/<service>.csproj`. Namespaces and assemblies retain `Caps.*`.
 
 For optional Docker infrastructure, use Docker Compose directly as described in `docker/README.md`. SQL used exclusively by Docker initialization is stored in `docker/postgres/db/`.
+
+## AI service & internal keys (Development)
+
+When running Flow 1 CV screening or Flow 3/4 AI assistant locally outside Docker:
+
+1. Start Qdrant (`docker compose -f docker/docker-compose.yml up -d qdrant`) and ensure Ollama has `qwen2.5:7b`, `qwen2.5vl:7b`, and `bge-m3:latest`.
+2. Start the Python AI service on `:8000` (`BE/ai-service`: `.\.venv\Scripts\uvicorn.exe app.main:app --host 0.0.0.0 --port 8000`).
+3. If `INTERNAL_API_KEY` is set in `BE/ai-service/.env` (or `InternalApi:Key` on `billing`/`rag-query`/`ingestion`), set the matching keys via `dotnet user-secrets` in each calling host (`expert/Api`, `workflow/Api`, `rag-query`, `ingestion`, `billing/Api`).
