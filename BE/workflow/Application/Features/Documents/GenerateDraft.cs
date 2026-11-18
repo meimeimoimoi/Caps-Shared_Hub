@@ -6,6 +6,7 @@ using System.Text.Json;
 using Caps.Common.Application;
 using Caps.Common.Domain;
 using Caps.Workflow.Application.Abstractions.Documents;
+using Caps.Workflow.Application.Common;
 using Caps.Workflow.Domain.Exceptions;
 using Caps.Workflow.Domain.Workspace;
 using static Caps.Workflow.Application.Features.Documents.DTOs.DocumentDtos;
@@ -33,14 +34,15 @@ public static class GenerateDraft
         string? Citations
     );
 
-    /// <summary>Handles duplicate protection, AI draft generation, canonical hashing, and persisting the new version.</summary>
+    /// <summary>Handles duplicate protection, optional billing credit hold, AI draft generation, and persistence.</summary>
     public sealed class GenerateDraftHandler(
         IDocumentRepository documentRepository,
         IInputSnapshotRepository inputSnapshotRepository,
         IDocumentVersionRepository documentVersionRepository,
         Abstractions.ITemplateRepository templateRepository,
-        Abstractions.IAiUsageRepository aiUsageRepository,
         IAiDraftingClient aiDraftingClient,
+        AiCreditChargeService aiCreditChargeService,
+        AiBillingSettings aiBillingSettings,
         IUnitOfWork unitOfWork,
         TimeProvider timeProvider
     ) : ICommandHandler<GenerateDraftCommand, DocumentVersionDetailDto>
@@ -63,7 +65,7 @@ public static class GenerateDraft
 
             var now = timeProvider.GetUtcNow();
 
-            // 2. Resolve snapshot
+            // 1. Resolve snapshot
             InputSnapshot? snapshot;
             if (command.SnapshotId.HasValue)
             {
@@ -85,7 +87,7 @@ public static class GenerateDraft
                 }
             }
 
-            // 3. Guard against rapid duplicate draft calls on the same document
+            // 2. Guard against rapid duplicate draft calls on the same document
             var existingVersions = await documentVersionRepository.GetByDocumentIdAsync(
                 document.Id,
                 ct
@@ -107,7 +109,7 @@ public static class GenerateDraft
 
             try
             {
-                // 4. Load template schema from explicit version or the document's published template
+                // 3. Load template schema from explicit version or the document's published template
                 Guid? resolvedTemplateVersionId = command.TemplateVersionId;
                 string? templateSchema;
                 if (resolvedTemplateVersionId.HasValue)
@@ -131,94 +133,120 @@ public static class GenerateDraft
                     templateSchema = null;
                 }
 
-                // 5. Generate JSON draft content via Python AI service (RAG + unauthorized_numbers check)
-                var draftResponse = await aiDraftingClient.GenerateDraftAsync(
-                    new AiDraftRequest(
-                        document.Id,
-                        snapshot.Data,
-                        templateSchema,
-                        document.PeriodStart,
-                        document.PeriodEnd
-                    ),
-                    ct
-                );
-
-                // 6. Canonicalize JSON before jsonb storage & compute deterministic SHA-256 hash
-                var canonicalContent = CanonicalizeJson(draftResponse.Content);
-                var hashBytes = SHA256.HashData(Encoding.UTF8.GetBytes(canonicalContent));
-                var contentHash = Convert.ToHexStringLower(hashBytes);
-
-                var normalizedCitations = NormalizeJsonb(command.Citations);
-                if (
-                    normalizedCitations is null
-                    && draftResponse.Citations.ValueKind == JsonValueKind.Array
-                    && draftResponse.Citations.GetArrayLength() > 0
-                )
-                {
-                    normalizedCitations = draftResponse.Citations.GetRawText();
-                }
-
-                // 7. Record free AI usage
-                var settledAt = timeProvider.GetUtcNow();
-                var usage = AiUsage.Create(
+                // 4. Reserve quota / billing credits before invoking AI service
+                var billingNote = $"AI draft for document {document.Id}";
+                var reservation = await aiCreditChargeService.ReserveAsync(
                     command.UserId,
-                    conversationId: null,
-                    questionId: null,
-                    AiUsagePaidWith.Free,
-                    creditHold: 0,
-                    AiUsageState.Captured,
-                    settledAt
-                );
-                await aiUsageRepository.AddAsync(usage, ct);
-
-                // 8. Resolve next version number & persist
-                var nextVersionNo = await documentVersionRepository.GetNextVersionNoAsync(
-                    document.Id,
+                    aiBillingSettings.DraftCreditCost,
+                    billingNote,
+                    now,
                     ct
                 );
-                var assessment = draftResponse.HasUnauthorizedNumbers
-                    ? "AI_GENERATED_UNAUTHORIZED_NUMBERS"
-                    : "AI_GENERATED_PENDING_REVIEW";
 
-                var documentVersion = new DocumentVersion
+                try
                 {
-                    Id = UuidV7.NewGuid(),
-                    DocumentId = document.Id,
-                    VersionNo = nextVersionNo,
-                    VersionType = "AI_DRAFT",
-                    InputSnapshotId = snapshot.Id,
-                    TemplateVersionId = resolvedTemplateVersionId,
-                    Citations = normalizedCitations,
-                    DraftAssessment = assessment,
-                    ReviewCaseId = null,
-                    FileUrl = null,
-                    Content = canonicalContent,
-                    ContentHash = contentHash,
-                    IsImmutable = false,
-                    CreatedBy = command.UserId,
-                    CreatedAt = settledAt,
-                };
+                    // 5. Generate JSON draft content via Python AI service (RAG + unauthorized_numbers check)
+                    var draftResponse = await aiDraftingClient.GenerateDraftAsync(
+                        new AiDraftRequest(
+                            document.Id,
+                            snapshot.Data,
+                            templateSchema,
+                            document.PeriodStart,
+                            document.PeriodEnd
+                        ),
+                        ct
+                    );
 
-                document.UpdatedAt = settledAt;
+                    // 6. Canonicalize JSON before jsonb storage & compute deterministic SHA-256 hash
+                    var canonicalContent = CanonicalizeJson(draftResponse.Content);
+                    var hashBytes = SHA256.HashData(Encoding.UTF8.GetBytes(canonicalContent));
+                    var contentHash = Convert.ToHexStringLower(hashBytes);
 
-                await documentVersionRepository.AddAsync(documentVersion, ct);
-                await unitOfWork.SaveChangesAsync(ct);
+                    var normalizedCitations = NormalizeJsonb(command.Citations);
+                    if (
+                        normalizedCitations is null
+                        && draftResponse.Citations.ValueKind == JsonValueKind.Array
+                        && draftResponse.Citations.GetArrayLength() > 0
+                    )
+                    {
+                        normalizedCitations = draftResponse.Citations.GetRawText();
+                    }
 
-                return new DocumentVersionDetailDto(
-                    documentVersion.Id,
-                    documentVersion.DocumentId,
-                    documentVersion.VersionNo,
-                    documentVersion.VersionType,
-                    documentVersion.InputSnapshotId,
-                    documentVersion.TemplateVersionId,
-                    documentVersion.Citations,
-                    documentVersion.DraftAssessment,
-                    documentVersion.Content,
-                    documentVersion.ContentHash,
-                    documentVersion.IsImmutable,
-                    documentVersion.CreatedBy,
-                    documentVersion.CreatedAt
-                );
+                    // 7. Resolve next version number & persist atomically with usage/credit settlement
+                    var settledAt = timeProvider.GetUtcNow();
+                    var nextVersionNo = await documentVersionRepository.GetNextVersionNoAsync(
+                        document.Id,
+                        ct
+                    );
+                    var assessment = draftResponse.HasUnauthorizedNumbers
+                        ? "AI_GENERATED_UNAUTHORIZED_NUMBERS"
+                        : "AI_GENERATED_PENDING_REVIEW";
+
+                    var documentVersion = new DocumentVersion
+                    {
+                        Id = UuidV7.NewGuid(),
+                        DocumentId = document.Id,
+                        VersionNo = nextVersionNo,
+                        VersionType = "AI_DRAFT",
+                        InputSnapshotId = snapshot.Id,
+                        TemplateVersionId = resolvedTemplateVersionId,
+                        Citations = normalizedCitations,
+                        DraftAssessment = assessment,
+                        ReviewCaseId = null,
+                        FileUrl = null,
+                        Content = canonicalContent,
+                        ContentHash = contentHash,
+                        IsImmutable = false,
+                        CreatedBy = command.UserId,
+                        CreatedAt = settledAt,
+                    };
+
+                    document.UpdatedAt = settledAt;
+
+                    await using var tx = await unitOfWork.BeginTransactionAsync(ct);
+                    await aiCreditChargeService.RecordCapturedUsageAsync(
+                        reservation,
+                        command.UserId,
+                        conversationId: null,
+                        questionId: null,
+                        settledAt,
+                        ct
+                    );
+                    await documentVersionRepository.AddAsync(documentVersion, ct);
+                    await unitOfWork.SaveChangesAsync(ct);
+
+                    await aiCreditChargeService.CaptureHeldCreditAsync(
+                        reservation,
+                        documentVersion.Id,
+                        billingNote,
+                        ct
+                    );
+                    await tx.CommitAsync(ct);
+
+                    return new DocumentVersionDetailDto(
+                        documentVersion.Id,
+                        documentVersion.DocumentId,
+                        documentVersion.VersionNo,
+                        documentVersion.VersionType,
+                        documentVersion.InputSnapshotId,
+                        documentVersion.TemplateVersionId,
+                        documentVersion.Citations,
+                        documentVersion.DraftAssessment,
+                        documentVersion.Content,
+                        documentVersion.ContentHash,
+                        documentVersion.IsImmutable,
+                        documentVersion.CreatedBy,
+                        documentVersion.CreatedAt
+                    );
+                }
+                catch
+                {
+                    await aiCreditChargeService.ReleaseOnErrorAsync(
+                        reservation,
+                        "AI draft generation failed"
+                    );
+                    throw;
+                }
             }
             finally
             {

@@ -217,22 +217,18 @@ export function DecisionCard({
 
 interface AiSummaryCardProps {
   screening: NonNullable<ApplicationDetail['screening']>
-  flagReviews: Record<string, string>
-  reviewer: string
   onOpenDetail: () => void
 }
 
-/* AI screening summary once the decision is made (demo only) */
+/** Summary of the latest Gate 1 screening run shown after a decision */
 export function AiSummaryCard({
   screening,
-  flagReviews,
-  reviewer,
   onOpenDetail,
 }: AiSummaryCardProps) {
   const { t } = useTranslation('admin')
-  const { checkedCount, flags } = screening
-  const allReviewed = flags.every((f) => flagReviews[f.id])
-  const reviewed = flags.filter((f) => flagReviews[f.id])
+  const { checkedFileCount, points } = screening
+  const resolved = points.filter((p) => p.status !== 'OPEN')
+  const allResolved = points.length > 0 && resolved.length === points.length
 
   return (
     <section className="paper p-5 md:p-6">
@@ -241,37 +237,31 @@ export function AiSummaryCard({
         <span className="badge-ai">AI</span>
       </div>
       <p className="text-fg-muted mt-1 text-sm">
-        {t('detail.aiScreening.checked', { count: checkedCount })} ·{' '}
-        {flags.length ? (
+        {t(`detail.aiScreening.runStatus.${screening.status}`)} ·{' '}
+        {t('detail.aiScreening.checked', { count: checkedFileCount })} ·{' '}
+        {points.length ? (
           <>
-            {t('detail.aiScreening.flags', { count: flags.length })}
-            {allReviewed && `, ${t('detail.aiScreening.allReviewed')}`}.
+            {t('detail.aiScreening.flags', { count: points.length })}
+            {allResolved && `, ${t('detail.aiScreening.allReviewed')}`}.
           </>
         ) : (
           t('detail.aiScreening.noFlags')
         )}
       </p>
-      {reviewed.length > 0 && (
+      {resolved.length > 0 && (
         <ul className="border-border-subtle mt-3 space-y-2 border-t pt-3 text-sm">
-          {reviewed.map((f) => (
-            <li key={f.id} className="flex gap-2">
+          {resolved.map((p) => (
+            <li key={p.id} className="flex gap-2">
               <Check
                 size={14}
                 aria-hidden="true"
                 className="text-fg-strong mt-1 shrink-0"
               />
               <div>
-                <p className="text-fg-strong font-semibold">
-                  {t('detail.aiScreening.documentReviewed', {
-                    document: f.document,
-                  })}
-                </p>
-                <p className="text-fg-muted">
-                  {reviewer} ·{' '}
-                  <span className="num">
-                    {formatDateTime(flagReviews[f.id])}
-                  </span>
-                </p>
+                <p className="text-fg-strong font-semibold">{p.title}</p>
+                {p.resolutionReason && (
+                  <p className="text-fg-muted text-xs">{p.resolutionReason}</p>
+                )}
               </div>
             </li>
           ))}

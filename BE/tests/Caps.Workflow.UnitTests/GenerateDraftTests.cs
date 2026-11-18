@@ -3,7 +3,9 @@ using Caps.Common.Application;
 using Caps.Common.Domain;
 using Caps.Workflow.Application.Abstractions;
 using Caps.Workflow.Application.Abstractions.Documents;
+using Caps.Workflow.Application.Common;
 using Caps.Workflow.Application.Features.Documents;
+using Caps.Workflow.Domain.Exceptions;
 using Caps.Workflow.Domain.Workspace;
 
 namespace Caps.Workflow.UnitTests;
@@ -42,8 +44,9 @@ public sealed class GenerateDraftTests
         Assert.Equal(publishedVersion.FieldSchema, store.LastRequest?.TemplateSchemaJson);
         Assert.Equal("AI_DRAFT", result.VersionType);
         Assert.Equal("AI_GENERATED_PENDING_REVIEW", result.DraftAssessment);
+        Assert.Equal(9, Assert.Single(store.Quotas).Balance);
         var usage = Assert.Single(store.Usages);
-        Assert.Equal((AiUsagePaidWith.Free, AiUsageState.Captured), (usage.PaidWith, usage.State));
+        Assert.Equal((AiUsagePaidWith.Quota, AiUsageState.Captured), (usage.PaidWith, usage.State));
         Assert.True(store.Saved);
     }
 
@@ -64,6 +67,85 @@ public sealed class GenerateDraftTests
             store.ExplicitSchemas[explicitVersionId],
             store.LastRequest?.TemplateSchemaJson
         );
+    }
+
+    [Fact]
+    public async Task Stays_free_when_ai_billing_is_disabled()
+    {
+        var store = new Store(publishedTemplate: null);
+        store.Quotas.Add(AiQuota.Create(Owner, 0, Now));
+        var doc = store.AddDocument(Owner, templateId: null);
+        store.AddSnapshot(doc, "{}");
+
+        var result = await CreateHandler(store, new AiBillingSettings { Enabled = false })
+            .HandleAsync(new(doc.Id, Owner, null, null, null), default);
+
+        Assert.Equal("AI_DRAFT", result.VersionType);
+        Assert.Empty(store.HoldCalls);
+        var usage = Assert.Single(store.Usages);
+        Assert.Equal(
+            (AiUsagePaidWith.Free, 0L, AiUsageState.Captured),
+            (usage.PaidWith, usage.CreditHold, usage.State)
+        );
+    }
+
+    [Fact]
+    public async Task Rejects_when_quota_and_wallet_credits_are_exhausted()
+    {
+        var store = new Store(publishedTemplate: null) { WalletBalance = 1_000 };
+        store.Quotas.Add(AiQuota.Create(Owner, 0, Now));
+        var doc = store.AddDocument(Owner, templateId: null);
+        store.AddSnapshot(doc, "{}");
+
+        var ex = await Assert.ThrowsAsync<AppException>(() =>
+            CreateHandler(store).HandleAsync(new(doc.Id, Owner, null, null, null), default)
+        );
+
+        Assert.Equal("INSUFFICIENT_CREDITS", ex.Code);
+        Assert.Null(store.LastRequest);
+        Assert.False(store.Saved);
+    }
+
+    [Fact]
+    public async Task Holds_and_captures_credits_with_document_version_when_quota_exhausted()
+    {
+        var store = new Store(publishedTemplate: null) { WalletBalance = 5_000 };
+        store.Quotas.Add(AiQuota.Create(Owner, 0, Now));
+        var doc = store.AddDocument(Owner, templateId: null);
+        store.AddSnapshot(doc, "{}");
+
+        var result = await CreateHandler(store)
+            .HandleAsync(new(doc.Id, Owner, null, null, null), default);
+
+        Assert.Equal(3_000, store.WalletBalance);
+        Assert.Single(store.HoldCalls);
+        var captured = Assert.Single(store.CaptureCalls);
+        Assert.Equal(result.Id, captured.DocumentVersionId);
+        Assert.Empty(store.ReleaseCalls);
+        var usage = Assert.Single(store.Usages);
+        Assert.Equal(
+            (AiUsagePaidWith.Credit, 2_000L, AiUsageState.Captured),
+            (usage.PaidWith, usage.CreditHold, usage.State)
+        );
+    }
+
+    [Fact]
+    public async Task Releases_held_credits_when_ai_drafting_fails()
+    {
+        var store = new Store(publishedTemplate: null) { WalletBalance = 5_000, FailDraft = true };
+        store.Quotas.Add(AiQuota.Create(Owner, 0, Now));
+        var doc = store.AddDocument(Owner, templateId: null);
+        store.AddSnapshot(doc, "{}");
+
+        await Assert.ThrowsAsync<AppException>(() =>
+            CreateHandler(store).HandleAsync(new(doc.Id, Owner, null, null, null), default)
+        );
+
+        Assert.Equal(5_000, store.WalletBalance);
+        Assert.Single(store.HoldCalls);
+        Assert.Empty(store.CaptureCalls);
+        Assert.Single(store.ReleaseCalls);
+        Assert.False(store.Saved);
     }
 
     [Fact]
@@ -110,8 +192,33 @@ public sealed class GenerateDraftTests
         Assert.Null(store.LastRequest);
     }
 
-    private static GenerateDraft.GenerateDraftHandler CreateHandler(Store store) =>
-        new(store, store, store, store, store, store, store, new FixedClock());
+    private static readonly AiBillingSettings EnabledBillingSettings = new()
+    {
+        Enabled = true,
+        InitialFreeQuota = 10,
+        ChatCreditCost = 1_000,
+        DraftCreditCost = 2_000,
+    };
+
+    private static GenerateDraft.GenerateDraftHandler CreateHandler(
+        Store store,
+        AiBillingSettings? settings = null
+    )
+    {
+        var billing = settings ?? EnabledBillingSettings;
+        var chargeService = new AiCreditChargeService(store, store, store, billing);
+        return new(
+            store,
+            store,
+            store,
+            store,
+            store,
+            chargeService,
+            billing,
+            store,
+            new FixedClock()
+        );
+    }
 
     private sealed class FixedClock : TimeProvider
     {
@@ -123,7 +230,9 @@ public sealed class GenerateDraftTests
             IInputSnapshotRepository,
             IDocumentVersionRepository,
             ITemplateRepository,
+            IAiQuotaRepository,
             IAiUsageRepository,
+            IAiCredits,
             IAiDraftingClient,
             IUnitOfWork,
             ITransaction
@@ -131,7 +240,14 @@ public sealed class GenerateDraftTests
         public List<Document> Documents { get; } = [];
         public List<InputSnapshot> Snapshots { get; } = [];
         public List<DocumentVersion> Versions { get; } = [];
+        public List<AiQuota> Quotas { get; } = [];
         public List<AiUsage> Usages { get; } = [];
+        public List<Guid> HoldCalls { get; } = [];
+        public List<(Guid UsageId, Guid? DocumentVersionId)> CaptureCalls { get; } = [];
+        public List<Guid> ReleaseCalls { get; } = [];
+        public long WalletBalance { get; set; }
+        public long WalletHeld { get; set; }
+        public bool FailDraft { get; set; }
         public Dictionary<Guid, string> ExplicitSchemas { get; } = [];
         public AiDraftRequest? LastRequest { get; private set; }
         public bool Saved { get; private set; }
@@ -267,6 +383,11 @@ public sealed class GenerateDraftTests
             CancellationToken ct
         ) => throw new NotSupportedException();
 
+        public Task<TemplateVersion?> FindPublishedVersionAsync(
+            Guid templateId,
+            CancellationToken ct
+        ) => throw new NotSupportedException();
+
         public Task<TemplateVersion?> FindReleasedVersionAsync(
             Guid versionId,
             CancellationToken ct
@@ -278,14 +399,18 @@ public sealed class GenerateDraftTests
         public Task<Template?> FindWithVersionsAsync(Guid templateId, CancellationToken ct) =>
             throw new NotSupportedException();
 
-        public Task<TemplateVersion?> FindPublishedVersionAsync(
-            Guid templateId,
-            CancellationToken ct
-        ) => throw new NotSupportedException();
-
         public void Add(Template newTemplate) => throw new NotSupportedException();
 
         public void Add(TemplateVersion version) => throw new NotSupportedException();
+
+        Task<AiQuota?> IAiQuotaRepository.GetByUserIdAsync(Guid userId, CancellationToken ct) =>
+            Task.FromResult(Quotas.SingleOrDefault(q => q.UserId == userId));
+
+        public Task AddAsync(AiQuota aiQuota, CancellationToken ct = default)
+        {
+            Quotas.Add(aiQuota);
+            return Task.CompletedTask;
+        }
 
         public Task AddAsync(AiUsage usage, CancellationToken ct = default)
         {
@@ -299,6 +424,11 @@ public sealed class GenerateDraftTests
         )
         {
             LastRequest = request;
+            if (FailDraft)
+            {
+                throw WorkflowErrors.DraftGenerationFailed();
+            }
+
             return Task.FromResult(
                 new AiDraftResponse(
                     JsonSerializer.SerializeToElement(new { summary = "Generated" }),
@@ -308,6 +438,49 @@ public sealed class GenerateDraftTests
                     JsonSerializer.SerializeToElement(Array.Empty<object>())
                 )
             );
+        }
+
+        public Task HoldAsync(
+            Guid userId,
+            Guid aiUsageId,
+            long amount,
+            string? note,
+            CancellationToken ct
+        )
+        {
+            if (WalletBalance < amount)
+            {
+                throw new AppException(
+                    ErrorType.Conflict,
+                    "INSUFFICIENT_CREDITS",
+                    "The wallet balance is not enough."
+                );
+            }
+
+            WalletBalance -= amount;
+            WalletHeld += amount;
+            HoldCalls.Add(aiUsageId);
+            return Task.CompletedTask;
+        }
+
+        public Task CaptureAsync(
+            Guid aiUsageId,
+            Guid? documentVersionId,
+            string? note,
+            CancellationToken ct
+        )
+        {
+            WalletHeld = 0;
+            CaptureCalls.Add((aiUsageId, documentVersionId));
+            return Task.CompletedTask;
+        }
+
+        public Task ReleaseAsync(Guid aiUsageId, string? note, CancellationToken ct)
+        {
+            WalletBalance += WalletHeld;
+            WalletHeld = 0;
+            ReleaseCalls.Add(aiUsageId);
+            return Task.CompletedTask;
         }
 
         public Task<ITransaction> BeginTransactionAsync(CancellationToken ct) =>

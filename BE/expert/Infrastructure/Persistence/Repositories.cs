@@ -117,6 +117,17 @@ public sealed class ExpertEvidenceRepository(ExpertDbContext db) : IExpertEviden
             .OrderBy(x => x.CreatedAt)
             .ToListAsync(ct);
 
+    public async Task<IReadOnlyList<ExpertEvidence>> ListTrackedAsync(
+        Guid applicationId,
+        CancellationToken ct
+    ) =>
+        await db
+            .ExpertEvidences.Where(x =>
+                x.ApplicationId == applicationId && x.QualificationId == null
+            )
+            .OrderBy(x => x.CreatedAt)
+            .ToListAsync(ct);
+
     public Task<int> CountAsync(Guid applicationId, CancellationToken ct) =>
         db.ExpertEvidences.CountAsync(
             x => x.ApplicationId == applicationId && x.QualificationId == null,

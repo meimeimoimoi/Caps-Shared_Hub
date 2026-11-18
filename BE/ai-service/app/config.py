@@ -8,8 +8,14 @@ class Settings(BaseSettings):
     APP_PORT: int = 8000
     OLLAMA_BASE_URL: str = "http://localhost:11434"
     LLM_MODEL: str = "qwen2.5:7b"
+    VISION_MODEL: str = "qwen2.5vl:7b"
+    VISION_ENABLED: bool = True
     EMBEDDING_MODEL: str = "bge-m3:latest"
     OLLAMA_TIMEOUT_SECONDS: int = 35
+    CV_EXTRACTION_TIMEOUT_SECONDS: int = 120
+    CV_MIN_TEXT_CHARS: int = 40
+    CV_MAX_PAGES: int = 10
+    CV_VISION_MAX_PAGES: int = 5
     QDRANT_URL: str = "http://localhost:6333"
     QDRANT_TIMEOUT_SECONDS: int = 5
     INTERNAL_API_KEY: str = ""

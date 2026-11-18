@@ -513,4 +513,52 @@ public static class ExpertErrors
             "REVIEWER_NOT_FOUND",
             "Reviewer not found; they must open the review queue at least once."
         );
+
+    public static AppException ScreeningNotFound() =>
+        new(ErrorType.NotFound, "SCREENING_NOT_FOUND", "Screening run not found.");
+
+    public static AppException ScreeningRunNotRetryable() =>
+        new(
+            ErrorType.Conflict,
+            "SCREENING_RUN_NOT_RETRYABLE",
+            "Only a failed or timed-out screening run can be retried."
+        );
+
+    public static AppException ScreeningPointNotFound() =>
+        new(ErrorType.NotFound, "SCREENING_POINT_NOT_FOUND", "Screening point not found.");
+
+    public static AppException ScreeningPointReasonRequired() =>
+        new(
+            ErrorType.Validation,
+            "SCREENING_REASON_REQUIRED",
+            "Provide a reason when marking a screening point as checked."
+        );
+
+    public static AppException ScreeningPointReasonTooLong(int max) =>
+        new(
+            ErrorType.Validation,
+            "SCREENING_REASON_TOO_LONG",
+            $"The reason can be at most {max} characters."
+        );
+
+    public static AppException InvalidScreeningPointAction() =>
+        new(
+            ErrorType.Validation,
+            "INVALID_SCREENING_ACTION",
+            "Action must be CHECKED, USED_FOR_SUPPLEMENT or REOPEN."
+        );
+
+    public static AppException ScreeningPointsUnresolved(int openCount) =>
+        new(
+            ErrorType.Conflict,
+            "SCREENING_POINTS_UNRESOLVED",
+            $"Resolve all {openCount} open screening points before deciding Gate 1."
+        );
+
+    public static AppException EvidenceGroupAssignNotAllowed() =>
+        new(
+            ErrorType.Validation,
+            "EVIDENCE_GROUP_ASSIGN_NOT_ALLOWED",
+            "Only supplementary evidence can be assigned to a criterion group."
+        );
 }

@@ -49,6 +49,15 @@ public sealed class ExpertPolicyOptions
     /// <summary>pricing.change_warning_percent: price change that shows the expert a red warning.</summary>
     public int PriceChangeWarningPercent { get; set; } = 50;
 
+    /// <summary>expert.near_threshold_extra_years: extra years above MinYearsExperience still flagged for check.</summary>
+    public int NearThresholdExtraYears { get; set; } = 1;
+
+    /// <summary>screening.ai_timeout: minutes before a running AI screening run times out.</summary>
+    public int ScreeningAiTimeoutMinutes { get; set; } = 10;
+
+    /// <summary>Whether images and scanned PDFs are sent to the internal vision model (Section 4 #5).</summary>
+    public bool ScreeningVisionEnabled { get; set; } = true;
+
     /// <summary>
     /// Evidence groups that must hold a file or link before submitting (BR-E02). Null uses the default:
     /// CV, legal eligibility (EV-01) and tax professional qualification (EV-02).
@@ -139,5 +148,7 @@ public sealed class ExpertPolicyOptions
             [PolicySettingKeys.TurnaroundMaxDays] = TurnaroundMaxDays,
             [PolicySettingKeys.PlatformFeeNoticeDays] = PlatformFeeNoticeDays,
             [PolicySettingKeys.PriceChangeWarningPercent] = PriceChangeWarningPercent,
+            [PolicySettingKeys.NearThresholdExtraYears] = NearThresholdExtraYears,
+            [PolicySettingKeys.ScreeningAiTimeoutMinutes] = ScreeningAiTimeoutMinutes,
         };
 }
