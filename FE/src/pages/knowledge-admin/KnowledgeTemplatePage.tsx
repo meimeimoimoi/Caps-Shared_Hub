@@ -121,13 +121,15 @@ export default function KnowledgeTemplatePage() {
               {selected.fields.length} trường
             </span>
           </div>
-          <p className="text-fg-muted mt-1 flex items-center gap-1.5 text-sm">
-            <FileText size={14} aria-hidden="true" />
-            File mẫu:{' '}
-            <span className="text-fg-strong break-all">
-              {selected.fileName}
-            </span>
-          </p>
+          {selected.fileName && (
+            <p className="text-fg-muted mt-1 flex items-center gap-1.5 text-sm">
+              <FileText size={14} aria-hidden="true" />
+              File mẫu:{' '}
+              <span className="text-fg-strong break-all">
+                {selected.fileName}
+              </span>
+            </p>
+          )}
           {selected !== current && (
             <p className="bg-sunken rounded-surface text-fg-muted mt-3 px-3 py-2 text-sm">
               Đang xem phiên bản cũ. Bản nháp mới dùng v{current.version}.

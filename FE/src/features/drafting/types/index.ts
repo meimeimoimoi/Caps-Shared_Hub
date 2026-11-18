@@ -9,6 +9,8 @@ export interface SchemaField {
   hint?: string
   pattern?: string
   maxLength?: number
+  /** Where the blank sits in the template's .docx: body block, table cell [row, column], its paragraph, the text it follows */
+  anchor?: { block: number; cell?: [number, number]; p?: number; find?: string }
 }
 export interface TemplateVersion {
   id: string

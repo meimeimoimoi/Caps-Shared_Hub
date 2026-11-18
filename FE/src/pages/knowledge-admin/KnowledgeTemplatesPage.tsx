@@ -31,7 +31,7 @@ export default function KnowledgeTemplatesPage() {
           className="btn btn-press btn-primary no-underline"
         >
           <Upload size={16} aria-hidden="true" />
-          Tải lên template
+          Tạo template
         </Link>
       </div>
       <p className="text-fg-muted mt-3 max-w-[65ch]">
