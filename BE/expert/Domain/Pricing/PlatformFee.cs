@@ -103,11 +103,11 @@ public sealed class PlatformFee
         }
         if (percent is < 0 or > MaxPercent)
             throw ExpertErrors.PlatformFeeInvalid(MaxPercent);
-        // The penalty comes out of the expert's share, so it can never exceed what is left after the platform fee
+        // A late case pays the expert nothing (meeting of 2026-11-11): the client gets the penalty, the platform the rest
         if (
             latePenaltyHours < 0
             || latePenaltyPercent < 0
-            || percent + latePenaltyPercent > 100
+            || latePenaltyPercent > 100
             || lateCancelHours < latePenaltyHours
             || lateCancelHours > MaxLateHours
         )

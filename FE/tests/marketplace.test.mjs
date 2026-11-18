@@ -48,9 +48,10 @@ test('maps API experts to the shared marketplace model', () => {
   assert.equal(expert.initials, 'NA')
   assert.deepEqual(expert.highlights, ['First', 'Second'])
   assert.deepEqual(expert.availability, { state: 'open', freeSlots: 3 })
-  assert.equal(expert.offers.HUMAN_VERIFICATION.slaHours, 72)
+  // Not shown: every case is due one working day after acceptance
+  assert.equal(expert.offers.HUMAN_VERIFICATION.slaHours, undefined)
   assert.equal(expert.offers.HUMAN_VERIFICATION.approvedAt, '2026-10-17')
-  assert.equal(hasDeliverySla(data.experts), true)
+  assert.equal(hasDeliverySla(data.experts), false)
 })
 
 test('a full expert stays listed but cannot be requested', () => {
@@ -59,7 +60,7 @@ test('a full expert stays listed but cannot be requested', () => {
   assert.equal(canRequest(expert), false)
 })
 
-test('service facts report the lowest fee and fastest SLA', () => {
+test('service facts report the lowest fee and no SLA', () => {
   const data = marketplaceFromDtos([
     dto(),
     dto({
@@ -73,7 +74,7 @@ test('service facts report the lowest fee and fastest SLA', () => {
       name: 'Xác minh bởi chuyên gia',
       count: 2,
       from: 900000,
-      fastest: 48,
+      fastest: null,
     },
   ])
   assert.equal(listingsFor(data.experts, 'OTHER').length, 0)
@@ -88,7 +89,7 @@ test('falls back to the id when the expert has no display name', () => {
 test('public profile keeps the price as text and has no SLA', () => {
   const bio = bioFromDto(dto())
   assert.equal(bio.services[0].price, '1500000')
-  assert.equal(bio.services[0].slaHours, 72)
+  assert.equal(bio.services[0].slaHours, undefined)
   assert.equal(bio.listing.catalog, undefined)
   assert.equal(bio.yearsOfExperience, 8)
 })

@@ -518,7 +518,7 @@ public sealed class ReviewCaseTests
 
     [Theory]
     [InlineData(20, -1, 30, 72)] // negative hours
-    [InlineData(20, 24, 81, 72)] // penalty + platform fee over 100%
+    [InlineData(20, 24, 101, 72)] // penalty over 100%
     [InlineData(20, 24, 30, 23)] // cancel before the penalty band ends
     [InlineData(20, 24, 30, 721)] // past the cap
     public void Invalid_late_rule_is_rejected(

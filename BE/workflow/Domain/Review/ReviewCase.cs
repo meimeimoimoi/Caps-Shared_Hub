@@ -164,7 +164,7 @@ public sealed partial class ReviewCase
             || offer.TurnaroundHours > MaxTurnaroundHours
             || offer.LatePenaltyHours < 0
             || offer.LatePenaltyPct < 0
-            || offer.PlatformFeePct + offer.LatePenaltyPct > 100
+            || offer.LatePenaltyPct > 100
             || offer.LateCancelHours < offer.LatePenaltyHours
             || offer.LateCancelHours > MaxTurnaroundHours
             || offer.NoResponseHours < 1

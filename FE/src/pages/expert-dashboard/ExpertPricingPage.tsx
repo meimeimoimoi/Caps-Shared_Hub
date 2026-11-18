@@ -20,7 +20,6 @@ import { ApiError } from '@/lib/api-client'
 import { isExpertDemo } from '@/lib/expert-data-source'
 import { useExpertPricing } from '@/features/expert-pricing/useExpertPricing'
 import {
-  HOURS_PER_DAY,
   isBigChange,
   netOf,
   validatePricing,
@@ -33,7 +32,6 @@ import '@/features/expert-pricing/pricing.css'
 
 const LOCAL_TIME_ZONE = 'Asia/Ho_Chi_Minh'
 // Whole days, rounding up an older price saved in hours
-const toDays = (hours: number) => Math.ceil(hours / HOURS_PER_DAY)
 
 // Server error codes with their own message (anything else falls back to saveFailed)
 const SAVE_ERRORS = [
@@ -184,16 +182,8 @@ function PricingEditor({
   const formRef = useRef<HTMLFormElement>(null)
   const initial: PricingInput = {
     fee: service.fee == null ? '' : String(service.fee),
-    turnaroundDays:
-      service.turnaroundHours == null
-        ? ''
-        : String(toDays(service.turnaroundHours)),
   }
   const { limits } = service
-  const dayOptions = Array.from(
-    { length: limits.maxTurnaroundDays - limits.minTurnaroundDays + 1 },
-    (_, i) => limits.minTurnaroundDays + i
-  )
   const [input, setInput] = useState(initial)
   const [errors, setErrors] = useState<PricingErrors>({})
   const [saved, setSaved] = useState(false)
@@ -222,10 +212,7 @@ function PricingEditor({
   const save = () =>
     mutation.mutate(input, {
       onSuccess: (next) => {
-        setInput({
-          fee: String(next.fee),
-          turnaroundDays: String(toDays(next.turnaroundHours ?? 0)),
-        })
+        setInput({ fee: String(next.fee) })
         setSaved(true)
       },
       onSettled: () => setConfirming(false),
@@ -324,45 +311,6 @@ function PricingEditor({
                   </p>
                 )}
               </div>
-              <div className="epr-field">
-                <label htmlFor="epr-days">
-                  {t('pricing.turnaround')} <span>{t('pricing.days')}</span>
-                </label>
-                <select
-                  id="epr-days"
-                  name="turnaroundDays"
-                  value={input.turnaroundDays}
-                  onChange={(event) =>
-                    update('turnaroundDays', event.target.value)
-                  }
-                  aria-invalid={Boolean(errors.turnaroundDays)}
-                  aria-describedby={
-                    'epr-days-help' +
-                    (errors.turnaroundDays ? ' epr-days-error' : '')
-                  }
-                >
-                  <option value="">{t('pricing.chooseDays')}</option>
-                  {dayOptions.map((days) => (
-                    <option key={days} value={String(days)}>
-                      {t('pricing.dayCount', { count: days })}
-                    </option>
-                  ))}
-                </select>
-                <p id="epr-days-help">
-                  {t('pricing.turnaroundHelp', {
-                    min: limits.minTurnaroundDays,
-                    max: limits.maxTurnaroundDays,
-                  })}
-                </p>
-                {errors.turnaroundDays && (
-                  <p id="epr-days-error" className="epr-field-error">
-                    {t(`pricing.errors.${errors.turnaroundDays}`, {
-                      min: limits.minTurnaroundDays,
-                      max: limits.maxTurnaroundDays,
-                    })}
-                  </p>
-                )}
-              </div>
             </fieldset>
             <div className="epr-form-actions">
               <button
@@ -441,7 +389,6 @@ function PricingEditor({
               <tr className="[&>th]:py-2 [&>th]:text-left [&>th]:font-semibold">
                 <th>{t('pricing.historyTime')}</th>
                 <th>{t('pricing.amount')}</th>
-                <th>{t('pricing.turnaround')}</th>
               </tr>
             </thead>
             <tbody>
@@ -457,13 +404,6 @@ function PricingEditor({
                     {change.oldFee == null
                       ? format.money(change.newFee)
                       : `${format.money(change.oldFee)} → ${format.money(change.newFee)}`}
-                  </td>
-                  <td className="num">
-                    {change.oldTurnaroundHours == null
-                      ? t('pricing.dayCount', {
-                          count: toDays(change.newTurnaroundHours),
-                        })
-                      : `${t('pricing.dayCount', { count: toDays(change.oldTurnaroundHours) })} → ${t('pricing.dayCount', { count: toDays(change.newTurnaroundHours) })}`}
                   </td>
                 </tr>
               ))}
@@ -525,14 +465,6 @@ function PricingEditor({
                 {format.money(netOf(proposedFee, service.platformFeePercent))} (
                 {t('pricing.afterFee', { percent: service.platformFeePercent })}
                 )
-              </dd>
-            </div>
-            <div>
-              <dt>{t('pricing.turnaround')}</dt>
-              <dd>
-                {t('pricing.deliveryIn', {
-                  days: Number(input.turnaroundDays),
-                })}
               </dd>
             </div>
           </dl>

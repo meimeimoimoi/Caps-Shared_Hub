@@ -66,8 +66,8 @@ export function expertFromDto(dto: MarketplaceExpertDto): Expert {
       dto.services.map((s) => [
         s.serviceCode,
         {
+          // The SLA is not shown: every case is due one working day after acceptance
           price: s.price,
-          slaHours: s.slaHours,
           approvedAt: businessDate(s.approvedAt),
         },
       ])
@@ -105,8 +105,8 @@ export function bioFromDto(dto: MarketplaceExpertDto): ExpertBio {
     services: dto.services.map((s) => ({
       serviceId: s.serviceCode,
       serviceName: s.serviceName,
+      // No delivery time on the profile either: every case is due one working day after acceptance
       price: String(s.price),
-      slaHours: s.slaHours,
       approvedAt: businessDate(s.approvedAt),
     })),
     listing: {

@@ -30,14 +30,19 @@ public sealed class WorkCalendarTests
         Assert.Equal(new DateTimeOffset(2026, 10, 26, 10, 0, 0, Vietnam), due);
     }
 
-    [Fact]
-    public void A_listed_holiday_is_skipped()
+    [Theory]
+    [InlineData(2026, 4, 29, 2026, 5, 4)] // 30/4 and 1/5 off, then the weekend: Wednesday -> Monday
+    [InlineData(2027, 4, 29, 2027, 5, 3)] // same dates every year: Thursday 29/4 -> Monday 3/5
+    public void A_fixed_holiday_is_skipped_every_year(int y, int m, int d, int dy, int dm, int dd)
     {
-        // 2026-04-30 and 2026-05-01 are holidays: Wednesday 29/4 -> Monday 4/5
-        var calendar = new WorkCalendar([new(2026, 4, 30), new(2026, 5, 1)]);
+        var calendar = new WorkCalendar(["01-01", "04-30", "05-01", "09-02"]);
 
-        var due = calendar.AddWorkingDays(new(2026, 4, 29, 9, 0, 0, Vietnam), 1);
+        var due = calendar.AddWorkingDays(new(y, m, d, 9, 0, 0, Vietnam), 1);
 
-        Assert.Equal(new DateTimeOffset(2026, 5, 4, 9, 0, 0, Vietnam), due);
+        Assert.Equal(new DateTimeOffset(dy, dm, dd, 9, 0, 0, Vietnam), due);
     }
+
+    [Fact]
+    public void A_bad_holiday_fails_at_startup() =>
+        Assert.Throws<FormatException>(() => new WorkCalendar(["2026-09-02"]));
 }
