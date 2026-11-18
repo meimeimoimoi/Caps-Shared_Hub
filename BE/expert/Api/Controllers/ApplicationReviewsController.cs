@@ -143,12 +143,17 @@ public sealed class ApplicationReviewsController(ICurrentUser currentUser) : Con
     }
 
     /// <summary>Resolves or reopens one Gate 1 screening point (CHECKED with reason, USED_FOR_SUPPLEMENT, or REOPEN).</summary>
+    /// <remarks>
+    /// CHECKED requires a non-empty reason; USED_FOR_SUPPLEMENT records an open discrepancy so it can feed Gate 1
+    /// supplemental feedback; REOPEN returns a resolved point to OPEN. Every OPEN point must be resolved before Decide succeeds.
+    /// </remarks>
     /// <response code="200">The application with updated screening points.</response>
     /// <response code="400">INVALID_SCREENING_ACTION, SCREENING_REASON_REQUIRED or SCREENING_REASON_TOO_LONG.</response>
     /// <response code="403">Missing the ExpertReview permission.</response>
     /// <response code="404">APPLICATION_NOT_FOUND, SCREENING_NOT_FOUND or SCREENING_POINT_NOT_FOUND.</response>
     /// <response code="409">APPLICATION_NOT_IN_REVIEW or REVIEW_NOT_CLAIMED.</response>
-    [HttpPost("{id:guid}/screening/points/{pointId:guid}/resolve")]
+    /// <response code="503">SESSION_CHECK_UNAVAILABLE: the session could not be checked.</response>
+    [HttpPost("{id:guid}/screening/points/{pointId:guid}/resolve"), RequireSessionCheck]
     public async Task<IActionResult> ResolveScreeningPoint(
         Guid id,
         Guid pointId,
@@ -163,11 +168,16 @@ public sealed class ApplicationReviewsController(ICurrentUser currentUser) : Con
     }
 
     /// <summary>Retries AI screening when the latest run failed or timed out.</summary>
+    /// <remarks>
+    /// Starts a new FAILED/TIMEOUT follow-up run in RUNNING state and wakes the background extraction worker
+    /// without re-extracting evidence files that already completed extraction.
+    /// </remarks>
     /// <response code="200">The application with the new screening run.</response>
     /// <response code="403">Missing the ExpertReview permission.</response>
     /// <response code="404">APPLICATION_NOT_FOUND or SCREENING_NOT_FOUND.</response>
     /// <response code="409">APPLICATION_NOT_IN_REVIEW, REVIEW_NOT_CLAIMED or SCREENING_RUN_NOT_RETRYABLE.</response>
-    [HttpPost("{id:guid}/screening/retry")]
+    /// <response code="503">SESSION_CHECK_UNAVAILABLE: the session could not be checked.</response>
+    [HttpPost("{id:guid}/screening/retry"), RequireSessionCheck]
     public async Task<IActionResult> RetryScreening(
         Guid id,
         [FromServices] ICommandHandler<RetryScreeningCommand, ReviewApplicationResponse> handler,
@@ -179,12 +189,17 @@ public sealed class ApplicationReviewsController(ICurrentUser currentUser) : Con
     }
 
     /// <summary>Assigns a SUPPLEMENT evidence file to a target criterion group (CV or EV-01…EV-05).</summary>
+    /// <remarks>
+    /// Only allowed on SUPPLEMENT evidence files while the application is claimed in review; auto-resolves open
+    /// SYS_UNCLASSIFIED_SUPPLEMENT points for that file once grouped.
+    /// </remarks>
     /// <response code="200">The application with updated evidence metadata and screening points.</response>
     /// <response code="400">INVALID_EVIDENCE_CODE or EVIDENCE_GROUP_ASSIGN_NOT_ALLOWED.</response>
     /// <response code="403">Missing the ExpertReview permission.</response>
     /// <response code="404">APPLICATION_NOT_FOUND or EVIDENCE_NOT_FOUND.</response>
     /// <response code="409">APPLICATION_NOT_IN_REVIEW or REVIEW_NOT_CLAIMED.</response>
-    [HttpPut("{id:guid}/evidence/{evidenceId:guid}/group")]
+    /// <response code="503">SESSION_CHECK_UNAVAILABLE: the session could not be checked.</response>
+    [HttpPut("{id:guid}/evidence/{evidenceId:guid}/group"), RequireSessionCheck]
     public async Task<IActionResult> AssignSupplementGroup(
         Guid id,
         Guid evidenceId,
