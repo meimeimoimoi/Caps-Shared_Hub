@@ -29,6 +29,7 @@ public sealed class DecideCompetencyHandler(
     ICompetencyAssessmentRepository assessments,
     IServiceCatalogRepository catalog,
     IExpertNotificationOutbox outbox,
+    IAuditTrail audit,
     IQualificationReviewDescriber describer,
     IExpertPolicyProvider policies,
     IUnitOfWork unitOfWork,
@@ -85,6 +86,19 @@ public sealed class DecideCompetencyHandler(
         );
         qualifications.AddEvent(decision.Event);
         assessments.AddRange(decision.Assessments);
+        audit.Record(
+            AuditActions.Qualification,
+            qualification.Id,
+            AuditActions.CompetencyDecided,
+            command.ReviewerUserId,
+            now,
+            new
+            {
+                serviceCode = qualification.ServiceCode,
+                status = qualification.Status,
+                note = decision.Event.Note,
+            }
+        );
         // Tell the expert (email + in-app); older profiles without an email are skipped
         if (profile.ContactEmail != null)
         {

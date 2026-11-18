@@ -1,3 +1,4 @@
+using Caps.Auth.Application.Abstractions.Messaging;
 using Caps.Auth.Application.Abstractions.Persistence;
 using Caps.Auth.Application.Common;
 using Caps.Auth.Domain;
@@ -7,7 +8,7 @@ using Caps.Common.Application;
 namespace Caps.Auth.Application.Features.Users;
 
 /// <summary>A System Admin sends an account the password reset email.</summary>
-public sealed record SendUserPasswordResetCommand(Guid UserId);
+public sealed record SendUserPasswordResetCommand(Guid AdminUserId, Guid UserId);
 
 /// <summary>
 /// Queues the same email as "forgot password"; the admin never sees or sets the password. Fails with
@@ -16,6 +17,7 @@ public sealed record SendUserPasswordResetCommand(Guid UserId);
 public sealed class SendUserPasswordResetHandler(
     IUserRepository users,
     IAccountEmailQueue emails,
+    IAuditTrail audit,
     IUnitOfWork unitOfWork
 ) : ICommandHandler<SendUserPasswordResetCommand>
 {
@@ -28,6 +30,12 @@ public sealed class SendUserPasswordResetHandler(
             throw AuthErrors.UserCannotSignIn();
         }
         await emails.QueueAsync(user, VerificationPurpose.ResetPassword, ct);
+        audit.Record(
+            AuditActions.User,
+            user.Id,
+            AuditActions.PasswordResetSent,
+            command.AdminUserId
+        );
         await unitOfWork.SaveChangesAsync(ct);
         await tx.CommitAsync(ct);
     }
