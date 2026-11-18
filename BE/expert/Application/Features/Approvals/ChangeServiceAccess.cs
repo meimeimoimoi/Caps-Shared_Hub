@@ -20,6 +20,7 @@ public sealed class ChangeServiceAccessHandler(
     IApplicantLock locks,
     IQualificationRepository qualifications,
     IServiceAccessNotifier notifier,
+    IAuditTrail audit,
     IQualificationReviewDescriber describer,
     IUnitOfWork unitOfWork,
     TimeProvider clock,
@@ -47,8 +48,17 @@ public sealed class ChangeServiceAccessHandler(
             clock.GetUtcNow()
         );
         qualifications.AddEvent(changed);
-        var change = action == ServiceAccessAction.Suspend ? "SUSPENDED" : "REINSTATED";
+        var suspended = action == ServiceAccessAction.Suspend;
+        var change = suspended ? "SUSPENDED" : "REINSTATED";
         await notifier.EnqueueAsync(qualification, changed, change, ct);
+        audit.Record(
+            AuditActions.Qualification,
+            qualification.Id,
+            suspended ? AuditActions.ServiceSuspended : AuditActions.ServiceReinstated,
+            command.AdminUserId,
+            changed.CreatedAt,
+            new { serviceCode = qualification.ServiceCode, note = changed.Note }
+        );
         await unitOfWork.SaveChangesAsync(ct);
         await tx.CommitAsync(ct);
         await realtime.ChangedAsync(

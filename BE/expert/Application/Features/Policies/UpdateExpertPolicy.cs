@@ -27,6 +27,7 @@ public sealed record UpdateExpertPolicyCommand(
 public sealed class UpdateExpertPolicyHandler(
     IPolicySettingRepository settings,
     IPolicyDescriber describer,
+    IAuditTrail audit,
     ExpertPolicyOptions options,
     IUnitOfWork unitOfWork,
     TimeProvider clock
@@ -74,6 +75,7 @@ public sealed class UpdateExpertPolicyHandler(
                 {
                     var change = setting.Change(value, command.ActorUserId, command.Reason, now);
                     settings.AddChange(change);
+                    RecordAudit(change, command.ActorUserId);
                 }
                 continue;
             }
@@ -89,6 +91,7 @@ public sealed class UpdateExpertPolicyHandler(
             );
             settings.Add(created);
             settings.AddChange(first);
+            RecordAudit(first, command.ActorUserId);
         }
         try
         {
@@ -101,4 +104,20 @@ public sealed class UpdateExpertPolicyHandler(
         }
         return await describer.DescribeAsync(ct);
     }
+
+    private void RecordAudit(PolicySettingChange change, Guid actorUserId) =>
+        audit.Record(
+            AuditActions.Policy,
+            change.Id,
+            AuditActions.PolicyUpdated,
+            actorUserId,
+            change.ChangedAt,
+            new
+            {
+                key = change.Key,
+                oldValue = change.OldValue,
+                newValue = change.NewValue,
+                reason = change.Reason,
+            }
+        );
 }

@@ -477,6 +477,14 @@ namespace auth.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
 
+                    b.Property<string>("MessageType")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasDefaultValue("AccountStatusChangedEvent")
+                        .HasColumnName("message_type");
+
                     b.Property<string>("Payload")
                         .IsRequired()
                         .HasColumnType("text")

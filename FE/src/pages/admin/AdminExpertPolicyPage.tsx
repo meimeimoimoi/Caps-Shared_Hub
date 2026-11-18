@@ -380,19 +380,19 @@ export default function AdminExpertPolicyPage() {
       </span>
     )
 
-  const rowClass = (dirty: boolean, _g: Group) =>
+  const rowClass = (dirty: boolean) =>
     cn(
       'align-middle transition-colors hover:bg-sunken/40 [&>td]:px-5 [&>td]:py-3',
       dirty && 'bg-accent-soft/40'
     )
 
-  const renderRow = (row: Row, g: Group) => {
+  const renderRow = (row: Row) => {
     if ('single' in row) {
       const s = byKey.get(row.single)
       if (!s) return null
       const u = unit(s.key)
       return (
-        <tr key={s.key} className={rowClass(isDirty(s), g)}>
+        <tr key={s.key} className={rowClass(isDirty(s))}>
           <td>
             <div className="flex items-center gap-1.5">
               <label
@@ -433,7 +433,7 @@ export default function AdminExpertPolicyPage() {
     const dirty = isDirty(lo) || isDirty(hi)
     const u = unit(hi.key)
     return (
-      <tr key={row.range} className={rowClass(dirty, g)}>
+      <tr key={row.range} className={rowClass(dirty)}>
         <td>
           <div className="flex items-center gap-1.5">
             <span
@@ -574,7 +574,7 @@ export default function AdminExpertPolicyPage() {
                         </span>
                       </th>
                     </tr>
-                    {g.rows.map((r) => renderRow(r, g))}
+                    {g.rows.map(renderRow)}
                   </tbody>
                 )
               })}

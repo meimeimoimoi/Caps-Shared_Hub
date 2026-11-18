@@ -1,5 +1,6 @@
 using Caps.Auth.Application.Abstractions.Messaging;
 using Caps.Auth.Application.Abstractions.Persistence;
+using Caps.Auth.Application.Common;
 using Caps.Auth.Application.DTOs.Responses;
 using Caps.Auth.Domain;
 using Caps.Common.Application;
@@ -7,13 +8,14 @@ using Caps.Common.Application;
 namespace Caps.Auth.Application.Features.Users;
 
 /// <summary>A System Admin unlocks a suspended account.</summary>
-public sealed record ReinstateUserCommand(Guid UserId);
+public sealed record ReinstateUserCommand(Guid AdminUserId, Guid UserId);
 
 /// <summary>Returns the account to its status before the lock and tells the other services; the user signs in again.</summary>
 public sealed class ReinstateUserHandler(
     IUserRepository users,
     IUserDirectoryReader directory,
     IAccountEventOutbox accountEvents,
+    IAuditTrail audit,
     IUnitOfWork unitOfWork,
     TimeProvider clock
 ) : ICommandHandler<ReinstateUserCommand, ManagedUserResponse>
@@ -27,6 +29,13 @@ public sealed class ReinstateUserHandler(
         var user = await users.LockAsync(command.UserId, ct) ?? throw AuthErrors.UserNotFound();
         user.Reinstate(clock.GetUtcNow());
         accountEvents.StatusChanged(user);
+        audit.Record(
+            AuditActions.User,
+            user.Id,
+            AuditActions.UserUnlocked,
+            command.AdminUserId,
+            new { status = user.Status }
+        );
         await unitOfWork.SaveChangesAsync(ct);
         await tx.CommitAsync(ct);
         return await directory.FindAsync(user.Id, ct) ?? throw AuthErrors.UserNotFound();

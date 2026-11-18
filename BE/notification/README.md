@@ -10,6 +10,7 @@ database is schema `notification` (role `caps_notification`); every message carr
 | `AuthEmailRequestedEvent` (`VERIFY_EMAIL`, `RESET_PASSWORD`) | auth, through its encrypted outbox | verification link + 6-digit code, or password reset link |
 
 | `ExpertEligibilityDecidedEvent` | expert, through its outbox | Gate 1 result with the reviewer's notes, plus an in-app notification |
+| `AuditRecordedEvent` | auth and expert, through their outboxes | none: stored in `audit_log` for the System Admin |
 
 Messages whose link has already expired are dropped instead of sent. Unknown purposes throw, so MassTransit
 moves the message to the error queue (no retry policy is configured yet).
@@ -30,6 +31,12 @@ moves the message to the error queue (no retry policy is configured yet).
   `AddCapsMessaging`) and call `ChangedAsync(topic, userIds, permissions)` after committing; the hub puts each
   connection in `permission:<name>` groups, and `RealtimeChangedConsumer` sends `changed` `{ topic }`. Add the
   topic to `topicParts` in the FE `useNotificationStream` (an unknown topic refetches every private query). Single instance only: several instances would need a backplane (e.g. Redis).
+- `Features/AuditLogs/`: stores each `AuditRecordedEvent` once (the event id is the row id) and serves
+  `GET /api/v1/admin/audit-logs` (permission `UserManage`; filters `entityType`, `entityId`, `actorUserId`,
+  `action`, `service`, `from`, `to`, paging). Recorded today: auth `USER_LOCKED`, `USER_UNLOCKED`,
+  `USER_PASSWORD_RESET_SENT`; expert `ELIGIBILITY_DECIDED`, `COMPETENCY_DECIDED`, `FINAL_APPROVED`,
+  `RETURNED_FOR_REVIEW`, `SERVICE_SUSPENDED`, `SERVICE_REINSTATED`, `POLICY_UPDATED`. Another service adds an
+  entry by writing the event to its own outbox in the same transaction as the action.
 - `Data/`, `Entities/`, `Migrations/`: the notification schema
   (`dotnet ef migrations add <Name> --project notification --output-dir Migrations`).
 - `Email/`: `IEmailSender` and the SMTP implementation. A new channel (another provider, SMS) is a new sender,

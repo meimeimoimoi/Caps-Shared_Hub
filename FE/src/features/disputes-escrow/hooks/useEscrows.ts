@@ -2,7 +2,13 @@ import { useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { foldVietnamese, paginate } from '@/lib/utils'
 import { useAccount } from '@/features/auth'
-import { getEscrows, markRefunded, retryPayout } from '../api/disputesApi'
+import {
+  getEscrows,
+  markRefunded,
+  refundEscrow,
+  releaseEscrow,
+  retryPayout,
+} from '../api/disputesApi'
 import { disputesKeys } from '../api/queryKeys'
 import type { Escrow } from '../types'
 
@@ -64,5 +70,15 @@ export function useEscrows(enabled = true) {
       ),
     markRefunded: (caseId: string, ref: string) =>
       markRefunded(caseId, ref, name).then(() => qc.invalidateQueries({ queryKey: disputesKeys.all })),
+    /** Billing release: the expert gets the escrow minus the platform fee */
+    release: (caseId: string, expertUserId: string, platformFeePct: number) =>
+      releaseEscrow(caseId, expertUserId, platformFeePct).then(() =>
+        qc.invalidateQueries({ queryKey: disputesKeys.all })
+      ),
+    /** Billing refund: the held credits go back to the payer */
+    refund: (caseId: string) =>
+      refundEscrow(caseId).then(() =>
+        qc.invalidateQueries({ queryKey: disputesKeys.all })
+      ),
   }
 }
