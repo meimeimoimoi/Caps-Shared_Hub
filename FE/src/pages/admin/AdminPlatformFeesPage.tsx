@@ -308,7 +308,7 @@ export default function AdminPlatformFeesPage() {
   // Same rules as the server
   const lateValid =
     LATE_FIELDS.every((f) => isWhole(late[f])) &&
-    value + lateRule.penaltyPercent <= 100 &&
+    lateRule.penaltyPercent <= 100 &&
     lateRule.cancelHours >= lateRule.penaltyHours &&
     lateRule.cancelHours <= MAX_LATE_HOURS &&
     lateRule.noDeliveryRefundPercent <= 100
@@ -336,10 +336,8 @@ export default function AdminPlatformFeesPage() {
       ? t('admin:platformFees.rules.maxHours', { max: MAX_LATE_HOURS })
       : lateRule.cancelHours < lateRule.penaltyHours
         ? t('admin:platformFees.rules.cancelBeforePenalty')
-        : value + lateRule.penaltyPercent > 100
-          ? t('admin:platformFees.rules.penaltyOverFee', {
-              sum: value + lateRule.penaltyPercent,
-            })
+        : lateRule.penaltyPercent > 100
+          ? t('admin:platformFees.rules.penaltyOver')
           : null
   const noResponseError = !NO_RESPONSE_FIELDS.every((f) =>
     isWhole(noResponse[f])

@@ -265,7 +265,7 @@ public static class ExpertErrors
         new(
             ErrorType.Validation,
             "LATE_RULE_INVALID",
-            $"Late hours must be 0 to {maxHours} with the cancel hours not below the penalty hours, and the penalty plus the platform fee at most 100 percent."
+            $"Late hours must be 0 to {maxHours} with the cancel hours not below the penalty hours, and the penalty at most 100 percent."
         );
 
     public static AppException NoDeliveryRuleInvalid() =>

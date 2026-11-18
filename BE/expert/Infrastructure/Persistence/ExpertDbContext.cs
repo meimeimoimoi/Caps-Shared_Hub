@@ -452,10 +452,10 @@ public sealed class ExpertDbContext(DbContextOptions<ExpertDbContext> options) :
                 t =>
                 {
                     t.HasCheckConstraint("ck_platform_fee_percent", "percent BETWEEN 0 AND 50");
-                    // The penalty comes out of the expert's share: never more than what the platform fee leaves
+                    // The late refund goes to the client, the platform keeps the rest
                     t.HasCheckConstraint(
                         "ck_platform_fee_late_rule",
-                        "late_penalty_hours >= 0 AND late_penalty_percent >= 0 AND percent + late_penalty_percent <= 100 AND late_cancel_hours BETWEEN late_penalty_hours AND 720"
+                        "late_penalty_hours >= 0 AND late_penalty_percent BETWEEN 0 AND 100 AND late_cancel_hours BETWEEN late_penalty_hours AND 720"
                     );
                     // The client's and the expert's shares of a no-response case; the platform keeps the rest
                     t.HasCheckConstraint(

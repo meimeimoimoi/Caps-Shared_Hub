@@ -315,8 +315,7 @@ public sealed class WorkflowDbContext(DbContextOptions<WorkflowDbContext> option
                     t.HasCheckConstraint(
                         "ck_case_offer",
                         "fee > 0 AND platform_fee_pct BETWEEN 0 AND 99 AND turnaround_hours BETWEEN 1 AND 720"
-                            + " AND late_penalty_hours >= 0 AND late_penalty_pct >= 0"
-                            + " AND platform_fee_pct + late_penalty_pct <= 100"
+                            + " AND late_penalty_hours >= 0 AND late_penalty_pct BETWEEN 0 AND 100"
                             + " AND late_cancel_hours BETWEEN late_penalty_hours AND 720"
                             + " AND no_response_hours BETWEEN 1 AND 720"
                             + " AND no_response_refund_pct >= 0 AND no_response_expert_pct >= 0"

@@ -1134,7 +1134,7 @@
       "wholeNumbers": "Enter a whole number of zero or more in every field.",
       "maxHours": "Hours cannot exceed {{max}}.",
       "cancelBeforePenalty": "Cancel hours must be at least the late penalty window.",
-      "penaltyOverFee": "Late refund plus the platform fee may not exceed 100% (now {{sum}}%).",
+      "penaltyOver": "The late refund can be at most 100%.",
       "hoursRange": "Hours must be between 1 and {{max}}.",
       "splitOver": "Client refund % plus expert % cannot exceed 100% (now {{sum}}%).",
       "platformKeeps": "The platform keeps {{percent}}%.",

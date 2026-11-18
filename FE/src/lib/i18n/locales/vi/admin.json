@@ -1126,7 +1126,7 @@
       "wholeNumbers": "Nhập số nguyên không âm cho mọi ô.",
       "maxHours": "Số giờ không quá {{max}}.",
       "cancelBeforePenalty": "Số giờ hủy phải lớn hơn hoặc bằng số giờ trễ tối đa được phạt.",
-      "penaltyOverFee": "% hoàn khi trễ cộng Phí nền tảng không quá 100% (đang là {{sum}}%).",
+      "penaltyOver": "% hoàn khi trễ không quá 100%.",
       "hoursRange": "Số giờ từ 1 đến {{max}}.",
       "splitOver": "% hoàn cho khách cộng % cho chuyên gia không quá 100% (đang là {{sum}}%).",
       "platformKeeps": "Nền tảng giữ {{percent}}%.",
