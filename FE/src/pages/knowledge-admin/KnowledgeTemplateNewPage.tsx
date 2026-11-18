@@ -34,7 +34,10 @@ import {
   docxBlocks,
   renderDocx,
 } from '../../features/knowledgeAdmin-templates/utils/renderDocx'
-import { useCreateTemplate } from '../../features/knowledgeAdmin-templates/hooks/useTemplates'
+import {
+  useCreateTemplate,
+  useTemplates,
+} from '../../features/knowledgeAdmin-templates/hooks/useTemplates'
 import {
   templateIssues,
   toFieldId,
@@ -93,6 +96,11 @@ export default function KnowledgeTemplateNewPage() {
   const [fileError, setFileError] = useState<string | null>(null)
   const [dragging, setDragging] = useState(false)
   const [code, setCode] = useState('')
+  // The server matches templates by code, so saving an existing code updates that template instead of adding one
+  const { data: templates } = useTemplates()
+  const existing = templates?.find(
+    (t) => code.trim() && t.code?.toLowerCase() === code.trim().toLowerCase()
+  )
   const [title, setTitle] = useState('')
   const [category, setCategory] = useState('')
   const [description, setDescription] = useState('')
@@ -321,6 +329,22 @@ export default function KnowledgeTemplateNewPage() {
               className={`${inputCls} num max-w-56`}
             />
           </Field>
+          {existing && (
+            <p
+              role="status"
+              className="bg-warning-soft text-warning rounded-surface px-3 py-2 text-sm"
+            >
+              Đã có template mã {existing.code}: “{existing.title}”. Lưu với mã
+              này sẽ cập nhật template đó (thay bản nháp chưa phát hành nếu có),
+              không tạo template mới.{' '}
+              <Link
+                to={`/knowledge/templates/${existing.id}`}
+                className="font-semibold underline"
+              >
+                Mở template này
+              </Link>
+            </p>
+          )}
           <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_14rem]">
             <Field label="Tên template (bắt buộc)">
               <input
