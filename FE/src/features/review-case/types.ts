@@ -196,6 +196,10 @@ export interface ReviewCaseDto {
   responseDeadline: string | null
   deliveryDeadline: string | null
   acceptanceDeadline: string | null
+  /** When each step really happened; null until it does */
+  paidAt: string | null
+  acceptedAt: string | null
+  deliveredAt: string | null
   rating: number | null
   ratingComment: string | null
   /** Null while the case runs or when nothing was paid */

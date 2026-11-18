@@ -87,7 +87,7 @@
       "cta": "Chọn chuyên gia khác"
     },
     "EXPERT_RESPONSE_TIMEOUT": {
-      "title": "{{name}} không phản hồi trong 24 giờ",
+      "title": "{{name}} không phản hồi đúng hạn",
       "body": "Yêu cầu đã tự đóng và bạn không bị trừ tiền. Bạn có thể gửi hồ sơ này cho chuyên gia khác trên Sàn.",
       "cta": "Chọn chuyên gia khác"
     },
@@ -135,7 +135,7 @@
     "IN_REVIEW": {
       "title": "Chuyên gia đang thẩm định hồ sơ",
       "body": "Bạn sẽ được thông báo khi chuyên gia cần bổ sung thông tin và khi kết quả được bàn giao.",
-      "overdue": "Chuyên gia đã quá hạn bàn giao. Hồ sơ được gia hạn 24 giờ; hết gia hạn mà chưa bàn giao, hồ sơ chấm dứt và bạn được hoàn 100%.",
+      "overdue": "Chuyên gia đã quá hạn bàn giao. Kết quả giao trong thời gian gia hạn vẫn được nhận và bạn được hoàn một phần phí; hết gia hạn mà chưa bàn giao, hồ sơ chấm dứt và phí được chia theo chính sách đã chốt lúc đặt.",
       "due": "Hạn bàn giao",
       "grace": "Hết gia hạn bàn giao",
       "progress": "Tiến độ thẩm định",
@@ -238,7 +238,7 @@
     },
     "rules": {
       "USER_ACCEPTED": "Bạn nghiệm thu",
-      "AUTO_CONFIRMED": "Tự xác nhận sau 72 giờ",
+      "AUTO_CONFIRMED": "Tự xác nhận khi hết hạn nghiệm thu",
       "USER_NON_RESPONSE": "Không phản hồi yêu cầu bổ sung",
       "USER_CANCELLED": "Bạn hủy sau khi bắt đầu",
       "EXPERT_START_TIMEOUT": "Chuyên gia không bắt đầu đúng hạn",
@@ -281,7 +281,7 @@
       "requested": "Gửi yêu cầu thẩm định · khóa gói hồ sơ",
       "withdrawn": "Rút yêu cầu",
       "declined": "Từ chối yêu cầu",
-      "responseTimeout": "Chuyên gia không phản hồi trong 24 giờ",
+      "responseTimeout": "Chuyên gia không phản hồi đúng hạn",
       "accepted": "Nhận yêu cầu · khóa lịch",
       "paymentExpired": "Hết hạn thanh toán · giải phóng lịch",
       "paid": "Thanh toán thành công · giữ hộ",
@@ -304,7 +304,7 @@
   "dialogs": {
     "accept": {
       "title": "Nghiệm thu kết quả?",
-      "body": "Hồ sơ chuyển sang Hoàn tất và khoản thanh toán được quyết toán: chuyên gia nhận 60%, nền tảng 40%. Sau khi nghiệm thu, bạn không thể báo cáo vấn đề.",
+      "body": "Hồ sơ chuyển sang Hoàn tất và khoản thanh toán được quyết toán theo tỷ lệ đã chốt lúc đặt. Sau khi nghiệm thu, bạn không thể báo cáo vấn đề.",
       "confirm": "Nghiệm thu"
     },
     "cancel": {
@@ -375,7 +375,7 @@
   },
   "request": {
     "title": "Gửi yêu cầu thẩm định",
-    "lead": "Chọn hồ sơ AI cần chuyên gia xác minh. Bạn chưa phải thanh toán cho tới khi chuyên gia nhận yêu cầu.",
+    "lead": "Chọn hồ sơ AI cần chuyên gia xác minh. Bạn thanh toán ngay sau khi gửi, khoản phí được giữ hộ tới khi nghiệm thu.",
     "drafts": "Hồ sơ cần thẩm định",
     "draftMeta": "{{aiDraft}} · {{snapshot}} · {{template}}",
     "draftCounts": "{{citations}} căn cứ · {{documents}} tài liệu",
@@ -386,16 +386,16 @@
     "scopeHint": "Không bắt buộc. Nêu điểm bạn muốn chuyên gia tập trung, tối đa 1.000 ký tự.",
     "files": "Tài liệu bổ sung",
     "filesHint": "Không bắt buộc. PDF, Excel hoặc ảnh chụp, tối đa 20 MB mỗi tệp.",
-    "consent": "Tôi hiểu: sau khi chuyên gia nhận, tôi có 24 giờ để thanh toán; khoản thanh toán được giữ hộ tới khi nghiệm thu; phí trả cho hoạt động thẩm định, không phụ thuộc kết quả VERIFIED.",
+    "consent": "Tôi hiểu: tôi thanh toán ngay khi gửi yêu cầu; khoản thanh toán được giữ hộ tới khi nghiệm thu và được hoàn 100% nếu chuyên gia không nhận; phí trả cho hoạt động thẩm định, không phụ thuộc kết quả VERIFIED.",
     "consentRequired": "Xác nhận điều khoản để gửi yêu cầu.",
     "submit": "Gửi yêu cầu thẩm định",
     "summary": "Tóm tắt yêu cầu",
     "priceOnRequest": "Báo giá sau",
     "nextTitle": "Điều gì xảy ra tiếp theo",
     "steps": {
-      "s1": "Chuyên gia xem gói hồ sơ rồi nhận hoặc từ chối.",
-      "s2": "Bạn có 24 giờ để thanh toán giữ lịch; mỗi link PayOS có hiệu lực 15 phút.",
-      "s3": "Chuyên gia thẩm định, bàn giao kết quả; bạn có 72 giờ để nghiệm thu."
+      "s1": "Bạn thanh toán trong 15 phút; khoản phí được Shared Hub giữ hộ.",
+      "s2": "Chuyên gia nhận hoặc từ chối trong 1 ngày làm việc; không nhận thì bạn được hoàn 100%.",
+      "s3": "Chuyên gia bàn giao trong 1 ngày làm việc; bạn có 1 ngày làm việc để nghiệm thu."
     },
     "serviceMissing": "Gói dịch vụ này không còn mở nhận. Chọn lại trên hồ sơ chuyên gia.",
     "expertMissing": "Không tải được hồ sơ chuyên gia.",
@@ -562,7 +562,7 @@
     "earlyCancelPaid": "Chuyên gia chưa nhận hồ sơ nên bạn được hoàn 100% khoản đã thanh toán.",
     "panel": {
       "PENDING_EXPERT_RESPONSE": {
-        "body": "Khoản phí đã được giữ hộ. Chuyên gia có 24 giờ để nhận hoặc từ chối; nếu không nhận, bạn được hoàn 100%."
+        "body": "Khoản phí đã được giữ hộ. Chuyên gia có 1 ngày làm việc để nhận hoặc từ chối; nếu không nhận, bạn được hoàn 100%."
       },
       "DECLINED_BY_EXPERT": {
         "body": "Toàn bộ phí đã được hoàn vào ví của bạn. Bạn có thể gửi hồ sơ này cho chuyên gia khác trên Sàn."
@@ -589,7 +589,7 @@
       },
       "TERMINATED": {
         "USER_NON_RESPONSE": "Bạn không phản hồi yêu cầu bổ sung đúng hạn. Phí đã được chia theo chính sách đã chốt lúc đặt.",
-        "EXPERT_ABANDON": "Chuyên gia không bàn giao đúng hạn. Toàn bộ phí đã được hoàn vào ví của bạn."
+        "EXPERT_ABANDON": "Chuyên gia không bàn giao đúng hạn. Phí đã được chia theo chính sách đã chốt lúc đặt."
       }
     },
     "chat": {
