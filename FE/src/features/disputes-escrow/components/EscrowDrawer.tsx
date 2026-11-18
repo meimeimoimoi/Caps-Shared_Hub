@@ -9,6 +9,7 @@ import { Modal } from '@/components/ui/feedback/modal'
 import { HelpTip } from '@/components/ui/feedback/help-tip'
 import { TERMINATION_MATRIX } from '../constants'
 import { escrowSplit } from '../utils/escrow'
+import { SettleActions } from './SettleActions'
 import type { Escrow } from '../types'
 
 function Row({ label, children }: { label: string; children: ReactNode }) {
@@ -27,6 +28,8 @@ export function EscrowDrawer({
   retrying,
   onRetry,
   onMarkRefunded,
+  onRelease,
+  onRefund,
   onClose,
 }: {
   escrow: Escrow
@@ -35,6 +38,10 @@ export function EscrowDrawer({
   onRetry: () => void
   /** Reject → giữ form, hiện lỗi */
   onMarkRefunded: (ref: string) => Promise<unknown>
+  /** Billing release of a HELD escrow; only given in API mode */
+  onRelease?: (expertUserId: string, platformFeePct: number) => Promise<unknown>
+  /** Billing refund of a HELD escrow; only given in API mode */
+  onRefund?: () => Promise<unknown>
   onClose: () => void
 }) {
   const { t } = useTranslation(['admin', 'common'])
@@ -75,18 +82,74 @@ export function EscrowDrawer({
             {retrying ? t('escrow.retrying') : t('escrow.retry')}
           </button>
         ) : refundOpen ? (
-          <button
-            type="button"
-            onClick={() => {
-              setConfirming(true)
-              setRef('')
-              setError(null)
-            }}
-            className="btn btn-press btn-primary"
-          >
-            <CircleCheck size={16} aria-hidden="true" />
-            {t('escrow.refund.mark')}
-          </button>
+          confirming ? (
+            <div className="w-full space-y-3">
+              <div>
+                <p className="text-fg-strong font-semibold">
+                  {t('escrow.refund.title', {
+                    amount: formatVnd(split.client),
+                  })}
+                </p>
+                <p className="text-fg-muted mt-1 text-sm">
+                  {t('escrow.refund.body', { account: e.refundAccount ?? '' })}
+                </p>
+              </div>
+              <label className="flex flex-col gap-1.5 text-sm font-semibold">
+                {t('escrow.refund.ref')}
+                <input
+                  value={ref}
+                  onChange={(ev) => setRef(ev.target.value)}
+                  className="border-border-control rounded-control shadow-control bg-paper h-control num border px-3 text-base font-normal"
+                />
+                <span className="text-fg-muted text-caption font-normal">
+                  {t('escrow.refund.refHint')}
+                </span>
+              </label>
+              {error && (
+                <p role="alert" className="text-danger text-sm">
+                  {error}
+                </p>
+              )}
+              <div className="flex flex-wrap justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setConfirming(false)}
+                  disabled={busy}
+                  className="btn btn-press btn-secondary"
+                >
+                  {t('escrow.refund.cancel')}
+                </button>
+                <button
+                  type="button"
+                  onClick={confirmRefund}
+                  disabled={busy}
+                  className="btn btn-press btn-primary"
+                >
+                  {t('escrow.refund.confirm')}
+                </button>
+              </div>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => {
+                setConfirming(true)
+                setRef('')
+                setError(null)
+              }}
+              className="btn btn-press btn-primary"
+            >
+              <CircleCheck size={16} aria-hidden="true" />
+              {t('escrow.refund.mark')}
+            </button>
+          )
+        ) : e.status === 'HELD' && onRelease && onRefund ? (
+          <SettleActions
+            amount={e.amount}
+            platformShare={platformShare}
+            onRelease={onRelease}
+            onRefund={onRefund}
+          />
         ) : undefined
       }
     >
