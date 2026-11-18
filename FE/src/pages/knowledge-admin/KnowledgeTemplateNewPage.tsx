@@ -1,6 +1,13 @@
-import { useState, type ReactNode } from 'react'
+import { useRef, useState, type ReactNode } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { FileText, Plus, Trash2, Upload, X } from 'lucide-react'
+import {
+  ClipboardPaste,
+  FileText,
+  Plus,
+  Trash2,
+  Upload,
+  X,
+} from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { SchemaField } from '@/features/drafting/types'
 import { KnowledgeLayout } from '@/app/layouts/knowledge/KnowledgeLayout'
@@ -9,6 +16,24 @@ import {
   FIELD_TYPE,
   TEMPLATE_CATEGORY,
 } from '../../features/knowledgeAdmin-templates/constants'
+import { HelpTip } from '@/components/ui/feedback/help-tip'
+import {
+  TemplateFormPreview,
+  TemplatePaperPreview,
+} from '../../features/knowledgeAdmin-templates/components/TemplatePreview'
+import { DocxPreview } from '../../features/knowledgeAdmin-templates/components/DocxPreview'
+import {
+  parseQuickFields,
+  toQuickText,
+} from '../../features/knowledgeAdmin-templates/utils/quickFields'
+import {
+  fieldsFromDocx,
+  type Anchor,
+} from '../../features/knowledgeAdmin-templates/utils/docxFields'
+import {
+  docxBlocks,
+  renderDocx,
+} from '../../features/knowledgeAdmin-templates/utils/renderDocx'
 import { useCreateTemplate } from '../../features/knowledgeAdmin-templates/hooks/useTemplates'
 import {
   templateIssues,
@@ -38,6 +63,16 @@ function Field({
   )
 }
 
+// What the file preview writes into each blank, so the admin sees which field lands where
+const sampleValue = (f: Pick<SchemaField, 'label' | 'type'>) =>
+  f.type === 'money'
+    ? '1.000.000'
+    : f.type === 'year'
+      ? '2025'
+      : f.type === 'date'
+        ? ['01', '01', '2026']
+        : f.label.replace(/^\[\w+\]\s*/, '')
+
 type Draft = Omit<SchemaField, 'id'> & { key: number }
 const emptyField = (key: number, group = ''): Draft => ({
   key,
@@ -48,8 +83,8 @@ const emptyField = (key: number, group = ''): Draft => ({
   hint: '',
 })
 
-/* Tải lên template: file mẫu (.docx), thông tin chung, các chỗ trống người dùng phải điền, ghi chú phát hành.
- * Tải xong là v1 ở trạng thái Tạm ngưng; admin kiểm tra rồi mới kích hoạt cho người dùng thấy. */
+/* Create a template: optional sample file (.docx), general info, the blanks users must fill, release notes.
+ * The new v1 starts inactive; the admin checks it, then activates it for users. */
 export default function KnowledgeTemplateNewPage() {
   const nav = useKnowledgeNav()
   const navigate = useNavigate()
@@ -66,6 +101,8 @@ export default function KnowledgeTemplateNewPage() {
   const [tried, setTried] = useState(false)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  // Where each blank found in the file sits, by field name: fields keep their place while the admin edits them
+  const [anchors, setAnchors] = useState(new Map<string, Anchor>())
   const input = {
     fileName: file?.name ?? '',
     code: code.trim(),
@@ -73,16 +110,49 @@ export default function KnowledgeTemplateNewPage() {
     description: description.trim(),
     category,
     changelog: changelog.trim() || 'Phiên bản đầu tiên.',
-    fields: fields.map(({ key: _key, hint, ...f }) => ({
-      ...f,
-      id: toFieldId(f.label),
-      label: f.label.trim(),
-      group: f.group.trim(),
-      ...(hint?.trim() ? { hint: hint.trim() } : {}),
-    })),
+    fields: fields.map(({ key: _key, hint, ...f }) => {
+      // An anchor only means something next to its file, so a removed file takes the anchors with it
+      const anchor = file ? anchors.get(f.label.trim().toLowerCase()) : undefined
+      return {
+        ...f,
+        id: toFieldId(f.label),
+        label: f.label.trim(),
+        group: f.group.trim(),
+        ...(hint?.trim() ? { hint: hint.trim() } : {}),
+        ...(anchor ? { anchor } : {}),
+      }
+    }),
   }
   const issues = templateIssues(input)
   const groups = [...new Set(fields.map((f) => f.group.trim()).filter(Boolean))]
+  // Unfinished fields still show, under stand-in names, so the layout is visible while typing
+  const previewFields = input.fields.map((f, i) => ({
+    ...f,
+    id: String(fields[i].key),
+    label: f.label || `Trường ${i + 1}`,
+    group: f.group || 'Chưa đặt nhóm',
+  }))
+  const [quick, setQuick] = useState<string | null>(null)
+  const [scan, setScan] = useState<string | null>(null)
+  const scanRun = useRef(0)
+  const [view, setView] = useState<'form' | 'paper' | 'file'>('form')
+  // The file view falls back to the form once the file is removed
+  const shown = view === 'file' && !file ? 'form' : view
+  const fills = input.fields.flatMap((f) =>
+    f.anchor ? [{ anchor: f.anchor, label: f.label, text: sampleValue(f) }] : []
+  )
+  const quickFields = parseQuickFields(quick ?? '', fields.at(-1)?.group)
+  // Pasted fields go after the ones already typed; untouched blank rows are dropped
+  const addQuick = () => {
+    setFields((list) => {
+      let key = Math.max(...list.map((x) => x.key))
+      return [
+        ...list.filter((x) => x.label.trim() || x.hint?.trim()),
+        ...quickFields.map((f) => ({ ...f, hint: '', key: ++key })),
+      ]
+    })
+    setQuick(null)
+  }
   // Kéo thả bỏ qua `accept` của input nên kiểm tra đuôi file tại đây; tên template mặc định lấy theo tên file
   const pick = (f?: File) => {
     if (!f) return
@@ -90,6 +160,27 @@ export default function KnowledgeTemplateNewPage() {
       return setFileError('Chỉ nhận file Word (.docx).')
     setFileError(null)
     setFile(f)
+    setAnchors(new Map())
+    setView('file')
+    // The blanks found in the file land in the quick box, so the admin reviews them before adding
+    const run = ++scanRun.current
+    setScan('Đang tìm chỗ trống trong file…')
+    renderDocx(f)
+      .then((root) => fieldsFromDocx(docxBlocks(root)))
+      .then((found) => {
+        if (run !== scanRun.current) return
+        setAnchors(new Map(found.map((f) => [f.label.toLowerCase(), f.anchor])))
+        if (found.length) setQuick(toQuickText(found))
+        setScan(
+          found.length
+            ? `Tìm thấy ${found.length} chỗ trống, đã đưa vào Nhập nhanh để bạn kiểm tra.`
+            : 'Không tìm thấy chỗ trống nào trong file; khai báo trường bên dưới.'
+        )
+      })
+      .catch(() => {
+        if (run === scanRun.current)
+          setScan('Không đọc được file để tìm chỗ trống; khai báo trường bên dưới.')
+      })
     if (!title.trim())
       setTitle(f.name.replace(/\.docx$/i, '').replace(/[-_]+/g, ' '))
   }
@@ -102,7 +193,7 @@ export default function KnowledgeTemplateNewPage() {
     <KnowledgeLayout
       {...nav}
       section="templates"
-      title="Tải lên template"
+      title="Tạo template"
       breadcrumb={
         <>
           <Link to="/knowledge/templates" className="hover:text-fg-strong">
@@ -110,27 +201,28 @@ export default function KnowledgeTemplateNewPage() {
           </Link>{' '}
           <span aria-hidden="true">/</span>{' '}
           <span className="text-fg-strong" aria-current="page">
-            Tải lên template
+            Tạo template
           </span>
         </>
       }
     >
-      <h1 className="text-h1">Tải lên template</h1>
+      <h1 className="text-h1">Tạo template</h1>
       <p className="text-fg-muted mt-3 max-w-[65ch]">
-        Tải file mẫu văn bản và khai báo các chỗ trống người dùng phải điền.
+        Khai báo các chỗ trống người dùng phải điền; file mẫu (.docx) là tùy chọn.
         Template mới ở trạng thái Tạm ngưng; kiểm tra lại rồi bấm Kích hoạt để
         người dùng chọn được khi soạn nháp.
       </p>
 
+      <div className="mt-8 grid max-w-6xl gap-8 lg:grid-cols-[minmax(0,3fr)_minmax(20rem,2fr)] lg:items-start">
       <form
         noValidate
-        className="mt-8 max-w-3xl space-y-6"
+        className="min-w-0 space-y-6"
         onSubmit={(e) => {
           e.preventDefault()
           if (issues.length) return setTried(true)
           setBusy(true)
           setError(null)
-          create(file!, input)
+          create(file, input)
             .then((id) => navigate(`/knowledge/templates/${id}`))
             .catch((err: Error) => setError(err.message))
             .finally(() => setBusy(false))
@@ -138,7 +230,7 @@ export default function KnowledgeTemplateNewPage() {
       >
         <section className="paper p-5 md:p-6" aria-labelledby="new-file">
           <h2 id="new-file" className="text-h2">
-            File mẫu
+            File mẫu (tùy chọn)
           </h2>
           <p className="text-fg-muted mt-1 text-sm">
             Văn bản Word có sẵn bố cục; AI điền nội dung vào các chỗ trống khai
@@ -205,6 +297,11 @@ export default function KnowledgeTemplateNewPage() {
           {fileError && (
             <p role="alert" className="text-danger mt-2 text-sm">
               {fileError}
+            </p>
+          )}
+          {file && scan && (
+            <p role="status" className="mt-2 text-sm">
+              {scan}
             </p>
           )}
         </section>
@@ -366,6 +463,59 @@ export default function KnowledgeTemplateNewPage() {
             <Plus size={16} aria-hidden="true" />
             Thêm trường
           </button>
+          <button
+            type="button"
+            aria-expanded={quick !== null}
+            onClick={() => setQuick((q) => (q === null ? '' : null))}
+            className="btn btn-press btn-secondary mt-4 ml-3"
+          >
+            <ClipboardPaste size={16} aria-hidden="true" />
+            Nhập nhanh
+          </button>
+          {quick !== null && (
+            <div className="border-border-subtle rounded-surface mt-4 border p-4">
+              <label className="flex flex-col gap-1.5 text-sm font-semibold">
+                <span className="flex items-center gap-1.5">
+                  Danh sách trường, mỗi dòng một trường
+                  <HelpTip label="Cách nhập nhanh">
+                    Mỗi dòng: Nhóm | Tên trường | Kiểu | *. Có thể dán thẳng từ
+                    Excel (cột cách nhau bằng tab). Dòng chỉ có tên trường dùng
+                    nhóm của dòng trước. Kiểu: chữ, đoạn văn, số tiền, ngày, năm
+                    (bỏ trống là chữ). Dấu * là bắt buộc nhập.
+                  </HelpTip>
+                </span>
+                <textarea
+                  rows={6}
+                  autoFocus
+                  value={quick}
+                  onChange={(e) => setQuick(e.target.value)}
+                  placeholder={
+                    'Thông tin chung | Tên doanh nghiệp | chữ | *\nThông tin chung | Mã số thuế | chữ | *\nKỳ tính thuế | Doanh thu | số tiền'
+                  }
+                  className={`${inputCls} num h-auto py-2`}
+                />
+              </label>
+              <div className="mt-3 flex flex-wrap items-center gap-3">
+                <button
+                  type="button"
+                  disabled={!quickFields.length}
+                  onClick={addQuick}
+                  className="btn btn-press btn-primary"
+                >
+                  {quickFields.length
+                    ? `Thêm ${quickFields.length} trường`
+                    : 'Thêm trường'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setQuick(null)}
+                  className="btn btn-ghost"
+                >
+                  Hủy
+                </button>
+              </div>
+            </div>
+          )}
         </section>
 
         <section className="paper p-5 md:p-6" aria-labelledby="new-changelog">
@@ -390,7 +540,7 @@ export default function KnowledgeTemplateNewPage() {
         {tried && issues.length > 0 && (
           <div role="alert" className="text-danger text-sm">
             <p className="font-semibold">
-              Chưa tải lên được template, còn thiếu:
+              Chưa tạo được template, còn thiếu:
             </p>
             <ul className="mt-1 list-disc pl-5">
               {issues.map((m) => (
@@ -410,7 +560,7 @@ export default function KnowledgeTemplateNewPage() {
             disabled={busy}
             className="btn btn-press btn-primary"
           >
-            {busy ? 'Đang tải lên…' : 'Tải lên template'}
+            {busy ? 'Đang tạo…' : 'Tạo template'}
           </button>
           <Link
             to="/knowledge/templates"
@@ -420,6 +570,57 @@ export default function KnowledgeTemplateNewPage() {
           </Link>
         </div>
       </form>
+
+      <aside
+        aria-labelledby="new-preview"
+        className="paper p-5 md:p-6 lg:sticky lg:top-6 lg:max-h-[calc(100vh-3rem)] lg:overflow-y-auto"
+      >
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2 id="new-preview" className="text-h2">
+            Xem trước
+          </h2>
+          <div className="flex gap-1" role="group" aria-label="Kiểu xem trước">
+            {(
+              [
+                ['form', 'Form'],
+                ['paper', 'Trang giấy'],
+                ...(file ? [['file', 'File mẫu'] as const] : []),
+              ] as const
+            ).map(([value, label]) => (
+              <button
+                key={value}
+                type="button"
+                aria-pressed={shown === value}
+                onClick={() => setView(value)}
+                className={cn(
+                  'btn px-3',
+                  shown === value ? 'btn-secondary' : 'btn-ghost'
+                )}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className="mt-4">
+          {shown === 'file' && file ? (
+            <DocxPreview file={file} fills={fills} />
+          ) : shown === 'form' ? (
+            <TemplateFormPreview
+              title={input.title || 'Tên template'}
+              description={input.description}
+              fields={previewFields}
+            />
+          ) : (
+            <TemplatePaperPreview
+              code={input.code}
+              title={input.title || 'Tên template'}
+              fields={previewFields}
+            />
+          )}
+        </div>
+      </aside>
+      </div>
     </KnowledgeLayout>
   )
 }

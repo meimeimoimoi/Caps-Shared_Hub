@@ -72,7 +72,7 @@ export async function setTemplateStatus(
 
 /** Tải lên template mới (file mẫu + khai báo trường): phát hành v1 ở trạng thái Tạm ngưng để admin kiểm tra trước khi người dùng thấy */
 export async function createTemplate(
-  _file: File,
+  _file: File | null,
   input: NewTemplateInput,
   actor: string
 ): Promise<string> {
@@ -103,7 +103,9 @@ export async function createTemplate(
         {
           at,
           actor,
-          text: `Tải lên ${input.fileName}, phát hành v1 (đang tạm ngưng)`,
+          text: input.fileName
+            ? `Tải lên ${input.fileName}, phát hành v1 (đang tạm ngưng)`
+            : 'Tạo template, phát hành v1 (đang tạm ngưng)',
         },
       ],
     })

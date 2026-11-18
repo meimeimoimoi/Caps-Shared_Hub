@@ -32,6 +32,18 @@ test('stored fields become form fields; odd entries are made safe', () => {
   assert.deepEqual(toSchemaFields(null), [])
 })
 
+test('a stored anchor comes back with its field; a malformed one is dropped', () => {
+  const anchor = { block: 5, cell: [3, 1], find: '[04]' }
+  const [kept, bad, negative] = toSchemaFields([
+    { id: 'a', label: 'A', type: 'money', anchor },
+    { id: 'b', label: 'B', type: 'text', anchor: { block: '2' } },
+    { id: 'c', label: 'C', type: 'text', anchor: { block: 1, cell: [-1, 0] } },
+  ])
+  assert.deepEqual(kept.anchor, anchor)
+  assert.equal('anchor' in bad, false)
+  assert.equal('anchor' in negative, false)
+})
+
 const summary = (over) => ({
   id: 't-1',
   code: '03/TNDN',

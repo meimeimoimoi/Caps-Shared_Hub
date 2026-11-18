@@ -44,7 +44,7 @@ export function useManagedTemplate(id: string) {
 export function useCreateTemplate() {
   const qc = useQueryClient()
   const { name } = useAccount('knowledge')
-  return async (file: File, input: NewTemplateInput) => {
+  return async (file: File | null, input: NewTemplateInput) => {
     const id = await createTemplate(file, input, name)
     await qc.invalidateQueries({ queryKey: templatesKeys.all })
     return id
