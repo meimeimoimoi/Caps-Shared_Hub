@@ -36,7 +36,8 @@ export function PlatformFeeHistory({
     queryKey: [...adminKeys.all, 'platform-fees', serviceCode, 'history'],
     queryFn: ({ signal }) => getPlatformFeeHistory(serviceCode, signal),
   })
-  const now = Date.now()
+  // Read the clock once on mount so renders stay pure
+  const [now] = useState(() => Date.now())
   const [filter, setFilter] = useState<HistoryFilter>('all')
   const entries = history.data?.filter(
     (row) => filter === 'all' || status(row, now) === filter

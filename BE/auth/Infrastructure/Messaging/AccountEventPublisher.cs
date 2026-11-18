@@ -34,10 +34,18 @@ public sealed class AccountEventPublisher(
                     .ToListAsync(stoppingToken);
                 foreach (var row in entries)
                 {
-                    var message = JsonSerializer.Deserialize<AccountStatusChangedEvent>(
-                        row.Payload
-                    )!;
-                    await bus.Publish(message, ctx => ctx.MessageId = row.Id, stoppingToken);
+                    if (row.MessageType == nameof(AuditRecordedEvent))
+                    {
+                        var audit = JsonSerializer.Deserialize<AuditRecordedEvent>(row.Payload)!;
+                        await bus.Publish(audit, ctx => ctx.MessageId = row.Id, stoppingToken);
+                    }
+                    else
+                    {
+                        var message = JsonSerializer.Deserialize<AccountStatusChangedEvent>(
+                            row.Payload
+                        )!;
+                        await bus.Publish(message, ctx => ctx.MessageId = row.Id, stoppingToken);
+                    }
                     row.SentAt = clock.GetUtcNow();
                     row.Payload = "";
                 }

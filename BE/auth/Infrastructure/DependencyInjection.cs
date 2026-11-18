@@ -37,6 +37,7 @@ public static class DependencyInjection
         services.AddScoped<IBusinessProfileRepository, BusinessProfileRepository>();
         services.AddScoped<IAuthEmailOutbox, AuthEmailOutboxWriter>();
         services.AddScoped<IAccountEventOutbox, AccountEventOutboxWriter>();
+        services.AddScoped<IAuditTrail, AuditTrailWriter>();
         services.AddSingleton<IPasswordHasher, AspNetPasswordHasher>();
         services.AddSingleton<IAccessTokenIssuer, JwtAccessTokenIssuer>();
         services.AddSingleton<IGoogleIdTokenValidator, GoogleIdTokenValidator>();

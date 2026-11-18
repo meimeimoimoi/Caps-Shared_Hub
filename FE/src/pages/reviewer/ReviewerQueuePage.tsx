@@ -54,7 +54,9 @@ export default function ReviewerQueuePage({ history = false, gate: routeGate = '
     claim: claimFilter,
   })
   const rows = records
-  const waitedDays = (iso: string) => Math.max(0, Math.floor((Date.now() - new Date(iso).getTime()) / 86_400_000))
+  // Read the clock once on mount so renders stay pure
+  const [now] = useState(() => Date.now())
+  const waitedDays = (iso: string) => Math.max(0, Math.floor((now - new Date(iso).getTime()) / 86_400_000))
   const waited = (iso: string) => format.relativeTime(-waitedDays(iso), 'day')
   const initials = (name: string) =>
     name.split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]).join('').toUpperCase()
