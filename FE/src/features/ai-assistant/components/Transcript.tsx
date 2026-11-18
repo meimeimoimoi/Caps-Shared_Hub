@@ -3,8 +3,10 @@ import { useTranslation } from 'react-i18next'
 import {
   BadgeCheck,
   Copy,
+  FilePenLine,
   FileText,
   Info,
+  MessageCircleQuestion,
   Send,
   TriangleAlert,
 } from 'lucide-react'
@@ -15,7 +17,9 @@ import type { ChatMessage } from '../types'
 type TranscriptProps = {
   messages: ChatMessage[]
   isSending: boolean
+  isTransferring?: boolean
   onCopy: (text: string) => void
+  onTransferDraft?: (messageId: string) => void
 }
 
 const citationAnchor = (messageId: string, index: string | number) =>
@@ -57,20 +61,28 @@ function Question({ message }: { message: ChatMessage }) {
   )
 }
 
-/* Câu trả lời trình bày như một văn bản tra cứu: đầu khung (người trả lời + mức đối chiếu)
-   → nội dung → nguồn tham chiếu dạng danh sách liền khối → chân khung (lưu ý + thao tác). */
+/** Answer card: header (assistant + grounding status), body, cited sources, and footer actions. */
 function Answer({
   message,
+  isTransferring,
   onCopy,
+  onTransferDraft,
 }: {
   message: ChatMessage
+  isTransferring?: boolean
   onCopy: (text: string) => void
+  onTransferDraft?: (messageId: string) => void
 }) {
   const { t } = useTranslation('aiAssistant')
   const expertNoteId = useId()
   const sourcesTitleId = useId()
   const citations = message.citations ?? []
   const grounded = citations.length > 0
+  const needsClarification = message.answerStatus === 'NEED_CLARIFICATION'
+  const canTransfer =
+    Boolean(onTransferDraft) &&
+    message.answerStatus === 'ANSWERED' &&
+    !isTransferring
 
   return (
     <article aria-label={t('transcript.answer')} className="flex">
@@ -84,17 +96,23 @@ function Answer({
               'inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium',
               grounded
                 ? 'bg-success-soft text-success'
-                : 'bg-warning-soft text-warning'
+                : needsClarification
+                  ? 'bg-accent-soft text-accent-text'
+                  : 'bg-warning-soft text-warning'
             )}
           >
             {grounded ? (
               <BadgeCheck size={13} aria-hidden="true" />
+            ) : needsClarification ? (
+              <MessageCircleQuestion size={13} aria-hidden="true" />
             ) : (
               <TriangleAlert size={13} aria-hidden="true" />
             )}
             {grounded
               ? t('transcript.verified', { count: citations.length })
-              : t('transcript.unverified')}
+              : needsClarification
+                ? t('transcript.clarificationNeeded')
+                : t('transcript.unverified')}
           </span>
         </header>
 
@@ -140,7 +158,7 @@ function Answer({
                 ))}
               </MotionStagger>
             </section>
-          ) : (
+          ) : !needsClarification ? (
             <p
               role="note"
               className="bg-warning-soft text-warning flex items-start gap-2 rounded-xl px-3 py-2.5 text-sm"
@@ -152,7 +170,7 @@ function Answer({
               />
               {t('transcript.noCitations')}
             </p>
-          )}
+          ) : null}
         </div>
 
         <footer className="border-border-subtle bg-sunken/50 flex flex-col gap-2 border-t px-5 py-2.5 sm:flex-row sm:items-center sm:justify-between">
@@ -169,6 +187,17 @@ function Answer({
               <Copy size={14} aria-hidden="true" />
               {t('transcript.copy')}
             </button>
+            {onTransferDraft && message.answerStatus === 'ANSWERED' && (
+              <button
+                type="button"
+                disabled={!canTransfer}
+                onClick={() => onTransferDraft(message.id)}
+                className="motion-interactive text-accent-text hover:bg-surface focus-visible:ring-accent inline-flex h-8 items-center gap-1.5 rounded-lg px-2 text-xs font-medium focus-visible:ring-2 focus-visible:outline-none disabled:opacity-50"
+              >
+                <FilePenLine size={14} aria-hidden="true" />
+                {t('transcript.createDraft')}
+              </button>
+            )}
             <button
               type="button"
               disabled
@@ -211,8 +240,14 @@ function Thinking() {
   )
 }
 
-/* Bản ghi tra cứu: câu hỏi (bong bóng phải) → câu trả lời có thẻ căn cứ đánh số bên dưới. */
-export function Transcript({ messages, isSending, onCopy }: TranscriptProps) {
+/** Conversation transcript: user questions (right bubble) and cited assistant answers below. */
+export function Transcript({
+  messages,
+  isSending,
+  isTransferring,
+  onCopy,
+  onTransferDraft,
+}: TranscriptProps) {
   const { t } = useTranslation('aiAssistant')
   return (
     <div
@@ -227,7 +262,12 @@ export function Transcript({ messages, isSending, onCopy }: TranscriptProps) {
           {message.role === 'user' ? (
             <Question message={message} />
           ) : (
-            <Answer message={message} onCopy={onCopy} />
+            <Answer
+              message={message}
+              isTransferring={isTransferring}
+              onCopy={onCopy}
+              onTransferDraft={onTransferDraft}
+            />
           )}
         </MotionReveal>
       ))}

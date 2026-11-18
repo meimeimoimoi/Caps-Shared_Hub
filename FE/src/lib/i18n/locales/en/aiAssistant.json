@@ -61,6 +61,8 @@
     "copy": "Copy answer",
     "copied": "Answer copied",
     "copyFailed": "Could not copy. Select and copy the text manually.",
+    "createDraft": "Create draft",
+    "clarificationNeeded": "Clarification needed",
     "sendToExpert": "Send to an Expert",
     "sendToExpertSoon": "Coming soon: send this answer to a verified Expert.",
     "assistantName": "Shared Hub Assistant",
@@ -77,7 +79,13 @@
     "sending": "Sending…"
   },
   "errors": {
-    "sendFailed": "No answer was received. Your question is still in the box — try sending again."
+    "sendFailed": "No answer was received. Your question is still in the box — try sending again.",
+    "insufficientCredits": "Insufficient wallet credits for this AI lookup. Please top up your wallet to continue.",
+    "transferFailed": "Could not transfer this research context to drafting right now."
+  },
+  "draftSuggestion": {
+    "title": "Transferred from AI Assistant",
+    "detail": "Choose a matching template below to continue drafting for “{{title}}”."
   },
   "demoNotice": "Demo mode · The knowledge base is disconnected. Conversations and citations are examples."
 }

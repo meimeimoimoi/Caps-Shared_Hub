@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { LogIn, PanelLeftOpen, SquarePen } from 'lucide-react'
 import { Drawer } from '@/components/ui/feedback/drawer'
@@ -19,10 +20,12 @@ import { AssistantWelcome } from '@/features/ai-assistant/components/AssistantWe
 import { ChatComposer } from '@/features/ai-assistant/components/ChatComposer'
 import { ConversationHistory } from '@/features/ai-assistant/components/ConversationHistory'
 import { Transcript } from '@/features/ai-assistant/components/Transcript'
+import { isAiAssistantDemo } from '@/features/ai-assistant/api/dataSource'
 import { useAiAssistant } from '@/features/ai-assistant/hooks/useAiAssistant'
 
 export default function AiAssistantPage() {
   const { t } = useTranslation(['aiAssistant', 'common', 'navigation'])
+  const navigate = useNavigate()
   const {
     question,
     setQuestion,
@@ -31,6 +34,8 @@ export default function AiAssistantPage() {
     handleSend,
     handleNewConversation,
     isSending,
+    isTransferring,
+    handleTransferDraft,
     error,
     conversations,
     handleSelectConversation,
@@ -102,6 +107,17 @@ export default function AiAssistantPage() {
       setToast(t('aiAssistant:transcript.copied'))
     } catch {
       setToast(t('aiAssistant:transcript.copyFailed'))
+    }
+  }
+
+  async function onTransferDraft(messageId: string) {
+    try {
+      const transferred = await handleTransferDraft(messageId)
+      if (transferred) {
+        navigate('/drafts/templates', { state: { chatTransfer: transferred } })
+      }
+    } catch {
+      setToast(t('aiAssistant:errors.transferFailed'))
     }
   }
 
@@ -233,9 +249,11 @@ export default function AiAssistantPage() {
               />
             </div>
           </aside>
-          <DemoBanner>
-            <p>{t('aiAssistant:demoNotice')}</p>
-          </DemoBanner>
+          {isAiAssistantDemo && (
+            <DemoBanner>
+              <p>{t('aiAssistant:demoNotice')}</p>
+            </DemoBanner>
+          )}
           <main
             id="assistant-main"
             tabIndex={-1}
@@ -312,7 +330,9 @@ export default function AiAssistantPage() {
                 <Transcript
                   messages={messages}
                   isSending={isSending}
+                  isTransferring={isTransferring}
                   onCopy={copyAnswer}
+                  onTransferDraft={isAiAssistantDemo ? undefined : onTransferDraft}
                 />
               )}
             </div>
