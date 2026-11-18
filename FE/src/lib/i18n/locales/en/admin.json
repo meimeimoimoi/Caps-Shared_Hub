@@ -1323,7 +1323,7 @@
     "confirm": "Confirm and save",
     "errors": {
       "POLICY_CHANGED": "Someone else just changed these values. They have been reloaded; check them and save again.",
-      "POLICY_RANGE_INVERTED": "A minimum may not be greater than its maximum (price, delivery time).",
+      "POLICY_RANGE_INVERTED": "A minimum may not be greater than its maximum (price).",
       "POLICY_EXPECTED_VALUE_REQUIRED": "The current value is missing. Reload the page and try again.",
       "POLICY_SETTING_OUT_OF_RANGE": "A value is outside its allowed range.",
       "POLICY_REASON_REQUIRED": "Give the reason for the change.",
@@ -1341,7 +1341,7 @@
         "help": "Days an expert must wait before applying again after a failed result."
       },
       "pricing": {
-        "title": "Pricing and turnaround",
+        "title": "Service pricing",
         "help": "Limits experts must respect when setting service prices, and rules for price or platform fee changes."
       }
     },

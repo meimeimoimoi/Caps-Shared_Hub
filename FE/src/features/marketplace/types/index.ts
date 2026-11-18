@@ -1,8 +1,8 @@
 /** Approved offer of one Expert–Service pair. */
 export type ServiceOffer = {
   price: number
-  /** Delivery SLA in calendar hours from START; null when the source has none. */
-  slaHours: number | null
+  /** Delivery SLA in calendar hours from START; not sent now that every case is due one working day after acceptance. */
+  slaHours?: number | null
   /** When Gate 2 + Final Approval made this service bookable. */
   approvedAt: string | null
 }

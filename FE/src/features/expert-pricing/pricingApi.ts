@@ -1,6 +1,5 @@
 import { api } from '@/lib/api-client'
 import {
-  HOURS_PER_DAY,
   type MyService,
   type PriceChange,
   type PricingInput,
@@ -20,14 +19,11 @@ export async function getMyServices(signal?: AbortSignal) {
   return res.data
 }
 
-/** Sets the price and delivery time; applies at once, no approval */
+/** Sets the price; applies at once, no approval. The server keeps the turnaround (deadline is one working day) */
 export async function saveMyService(serviceCode: string, input: PricingInput) {
   const res = await api.put<Envelope<MyService>>(
     `${BASE}/${encodeURIComponent(serviceCode)}`,
-    {
-      fee: Number(input.fee),
-      turnaroundHours: Number(input.turnaroundDays) * HOURS_PER_DAY,
-    }
+    { fee: Number(input.fee) }
   )
   return res.data
 }

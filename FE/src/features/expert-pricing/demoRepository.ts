@@ -59,7 +59,9 @@ export function updateDemoService(
   const previous = list.find((s) => s.serviceCode === serviceCode)
   const percent = previous?.platformFeePercent ?? DEMO_PLATFORM_FEE
   const fee = Number(input.fee)
-  const turnaroundHours = Number(input.turnaroundDays) * HOURS_PER_DAY
+  // Like the server: keep the saved turnaround, or the shortest allowed for a first price
+  const turnaroundHours =
+    previous?.turnaroundHours ?? DEMO_LIMITS.minTurnaroundDays * HOURS_PER_DAY
   const saved: MyService = {
     serviceCode,
     fee,

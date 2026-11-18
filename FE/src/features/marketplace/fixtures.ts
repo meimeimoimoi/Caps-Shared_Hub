@@ -49,12 +49,10 @@ export const EXPERTS: FixtureExpert[] = [
     offers: {
       'cit-review': {
         price: 2400000,
-        slaHours: 48,
         approvedAt: '2026-03-19',
       },
       'cit-compliance': {
         price: 6800000,
-        slaHours: 120,
         approvedAt: '2026-04-02',
       },
     },
@@ -84,12 +82,10 @@ export const EXPERTS: FixtureExpert[] = [
     offers: {
       'cit-review': {
         price: 1900000,
-        slaHours: 72,
         approvedAt: '2026-02-27',
       },
       'cit-consultation': {
         price: 1500000,
-        slaHours: 24,
         approvedAt: '2026-03-10',
       },
     },
@@ -119,12 +115,10 @@ export const EXPERTS: FixtureExpert[] = [
     offers: {
       'cit-consultation': {
         price: 2600000,
-        slaHours: 48,
         approvedAt: '2026-02-05',
       },
       'cit-compliance': {
         price: 8500000,
-        slaHours: 168,
         approvedAt: '2026-02-05',
       },
     },
@@ -154,7 +148,6 @@ export const EXPERTS: FixtureExpert[] = [
     offers: {
       'cit-review': {
         price: 1500000,
-        slaHours: 48,
         approvedAt: '2026-04-21',
       },
     },
@@ -181,12 +174,10 @@ export const EXPERTS: FixtureExpert[] = [
     offers: {
       'cit-review': {
         price: 2100000,
-        slaHours: 72,
         approvedAt: '2026-03-12',
       },
       'cit-compliance': {
         price: 7200000,
-        slaHours: 144,
         approvedAt: '2026-03-30',
       },
     },
@@ -213,17 +204,14 @@ export const EXPERTS: FixtureExpert[] = [
     offers: {
       'cit-review': {
         price: 3200000,
-        slaHours: 72,
         approvedAt: '2026-01-29',
       },
       'cit-consultation': {
         price: 2800000,
-        slaHours: 24,
         approvedAt: '2026-01-29',
       },
       'cit-compliance': {
         price: 9800000,
-        slaHours: 168,
         approvedAt: '2026-02-16',
       },
     },
@@ -253,12 +241,10 @@ export const EXPERTS: FixtureExpert[] = [
     offers: {
       'cit-review': {
         price: 1400000,
-        slaHours: 48,
         approvedAt: '2026-05-20',
       },
       'cit-consultation': {
         price: 1100000,
-        slaHours: 24,
         approvedAt: '2026-05-20',
       },
     },
@@ -285,12 +271,10 @@ export const EXPERTS: FixtureExpert[] = [
     offers: {
       'cit-consultation': {
         price: 2200000,
-        slaHours: 48,
         approvedAt: '2026-04-01',
       },
       'cit-compliance': {
         price: 7800000,
-        slaHours: 144,
         approvedAt: '2026-04-14',
       },
     },

@@ -37,11 +37,10 @@ export interface PriceChange {
 
 export interface PricingInput {
   fee: string
-  turnaroundDays: string
 }
 
 export type PricingErrors = Partial<
-  Record<keyof PricingInput, 'feeInvalid' | 'turnaroundInvalid'>
+  Record<keyof PricingInput, 'feeInvalid'>
 >
 
 export const HOURS_PER_DAY = 24
@@ -64,9 +63,6 @@ export function validatePricing(
     )
   )
     errors.fee = 'feeInvalid'
-  const days = whole(input.turnaroundDays)
-  if (!(days >= limits.minTurnaroundDays && days <= limits.maxTurnaroundDays))
-    errors.turnaroundDays = 'turnaroundInvalid'
   return errors
 }
 

@@ -1315,7 +1315,7 @@
     "confirm": "Xác nhận lưu",
     "errors": {
       "POLICY_CHANGED": "Giá trị vừa được người khác thay đổi. Đã tải lại, kiểm tra rồi lưu lại.",
-      "POLICY_RANGE_INVERTED": "Giá trị tối thiểu không được lớn hơn giá trị tối đa (Giá, Thời gian trả kết quả).",
+      "POLICY_RANGE_INVERTED": "Giá trị tối thiểu không được lớn hơn giá trị tối đa (Giá).",
       "POLICY_EXPECTED_VALUE_REQUIRED": "Thiếu giá trị đang áp dụng. Tải lại trang rồi thử lại.",
       "POLICY_SETTING_OUT_OF_RANGE": "Có giá trị nằm ngoài khoảng cho phép.",
       "POLICY_REASON_REQUIRED": "Ghi lý do thay đổi.",
@@ -1333,7 +1333,7 @@
         "help": "Số ngày chuyên gia phải chờ trước khi nộp lại sau kết luận không đạt."
       },
       "pricing": {
-        "title": "Giá và thời gian trả kết quả",
+        "title": "Giá dịch vụ",
         "help": "Giới hạn chuyên gia được đặt khi cấu hình giá dịch vụ, và quy tắc khi giá hoặc phí nền tảng thay đổi."
       }
     },
