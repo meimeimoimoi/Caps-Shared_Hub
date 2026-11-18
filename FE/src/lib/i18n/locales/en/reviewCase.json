@@ -464,6 +464,7 @@
     "priceTbd": "Price not set",
     "buy": "Top up via PayOS",
     "buyUnavailable": "This package has no price yet, so it isn't on sale.",
+    "noPackages": "No credit packages are on sale yet.",
     "rates": "Credit pricing",
     "free": "Free",
     "tbd": "Not set",
@@ -473,6 +474,7 @@
       "credits": "Credits"
     },
     "ledger": "Credit history",
+    "ledgerEmpty": "No movements yet.",
     "ledgerCols": {
       "date": "Time",
       "entry": "Transaction",
@@ -492,7 +494,35 @@
     "escrow": "Review fees on hold",
     "escrowEmpty": "No payments are on hold.",
     "escrowNote": "Shared Hub holds review fees until you accept the result or a dispute is decided.",
-    "ledgerEmpty": "No movements yet."
+    "topup": {
+      "open": "Top up credits",
+      "title": "Top up credits with PayOS",
+      "package": "Package",
+      "credits": "You get",
+      "amount": "Amount",
+      "invalid": "The package price is not valid.",
+      "notForSale": "This package is off sale or has no price yet. Reload the page to see the current packages.",
+      "conflict": "The payment code could not be created, please try again.",
+      "unavailable": "Payments are unavailable right now, please try again later.",
+      "demo": "Demo mode is not connected to PayOS.",
+      "cancel": "Cancel",
+      "create": "Create QR code",
+      "creating": "Creating…",
+      "payTitle": "Pay {{amount}}",
+      "qr": "VietQR code for the transfer",
+      "accountName": "Account holder",
+      "accountNumber": "Account number",
+      "note": "Transfer note",
+      "expiresIn": "Code expires in",
+      "openPayos": "Open the PayOS payment page",
+      "waiting": "Scan the code with your banking app. Credits are added as soon as PayOS confirms.",
+      "paid": "Payment received, the credits are in your wallet.",
+      "failed": "The payment could not be started. Create a new code.",
+      "expired": "The code has expired. If you already transferred, the credits still arrive when PayOS confirms.",
+      "again": "Create a new code",
+      "close": "Close",
+      "done": "Done"
+    }
   },
   "rating": {
     "title": "Rate the expert",

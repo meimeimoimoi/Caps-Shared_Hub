@@ -464,6 +464,7 @@
     "priceTbd": "Chưa chốt giá",
     "buy": "Nạp qua PayOS",
     "buyUnavailable": "Gói chưa có giá nên chưa mở bán.",
+    "noPackages": "Chưa có gói nạp nào đang bán.",
     "rates": "Bảng giá credit",
     "free": "Miễn phí",
     "tbd": "Chưa chốt",
@@ -473,6 +474,7 @@
       "credits": "Credit"
     },
     "ledger": "Lịch sử credit",
+    "ledgerEmpty": "Chưa có giao dịch nào.",
     "ledgerCols": {
       "date": "Thời gian",
       "entry": "Giao dịch",
@@ -492,7 +494,35 @@
     "escrow": "Phí thẩm định đang giữ hộ",
     "escrowEmpty": "Không có khoản nào đang được giữ hộ.",
     "escrowNote": "Shared Hub giữ hộ phí thẩm định tới khi bạn nghiệm thu hoặc có quyết định tranh chấp.",
-    "ledgerEmpty": "Chưa có giao dịch nào."
+    "topup": {
+      "open": "Nạp credit",
+      "title": "Nạp credit qua PayOS",
+      "package": "Gói",
+      "credits": "Nhận được",
+      "amount": "Số tiền",
+      "invalid": "Giá gói không hợp lệ.",
+      "notForSale": "Gói này đã ngừng bán hoặc chưa có giá. Tải lại trang để xem các gói hiện có.",
+      "conflict": "Chưa tạo được mã thanh toán, vui lòng thử lại.",
+      "unavailable": "Cổng thanh toán đang tạm ngưng, vui lòng thử lại sau.",
+      "demo": "Chế độ demo không kết nối PayOS.",
+      "cancel": "Hủy",
+      "create": "Tạo mã QR",
+      "creating": "Đang tạo…",
+      "payTitle": "Thanh toán {{amount}}",
+      "qr": "Mã VietQR để chuyển khoản",
+      "accountName": "Chủ tài khoản",
+      "accountNumber": "Số tài khoản",
+      "note": "Nội dung chuyển khoản",
+      "expiresIn": "Mã hết hạn sau",
+      "openPayos": "Mở trang thanh toán PayOS",
+      "waiting": "Quét mã bằng ứng dụng ngân hàng. Credit được cộng ngay khi PayOS xác nhận.",
+      "paid": "Đã nhận thanh toán, credit đã được cộng vào ví.",
+      "failed": "Không tạo được giao dịch. Vui lòng tạo mã mới.",
+      "expired": "Mã đã hết hạn. Nếu bạn đã chuyển khoản, credit vẫn được cộng khi PayOS xác nhận.",
+      "again": "Tạo mã mới",
+      "close": "Đóng",
+      "done": "Xong"
+    }
   },
   "rating": {
     "title": "Đánh giá chuyên gia",

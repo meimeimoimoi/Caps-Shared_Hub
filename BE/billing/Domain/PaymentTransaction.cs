@@ -14,6 +14,9 @@ public sealed class PaymentTransaction
     public Guid? ReviewCaseId { get; }
     public string Purpose { get; private set; } = default!;
     public long Amount { get; private set; }
+
+    /// <summary>Credits added to the wallet when a top-up succeeds (the bought package's credits).</summary>
+    public long Credits { get; private set; }
     public string Provider { get; } = PaymentProvider.PayOs;
 
     /// <summary>The provider's numeric order code, stored as text (unique).</summary>
@@ -24,19 +27,24 @@ public sealed class PaymentTransaction
 
     public bool IsSucceeded => Status == PaymentStatus.Succeeded;
 
+    /// <summary>Buys a credit package at its current price; later price changes do not affect this payment.</summary>
     public static PaymentTransaction StartTopup(
         Guid userId,
-        long amount,
+        CreditPackage package,
         long orderCode,
         DateTimeOffset now
     )
     {
+        if (!package.IsForSale)
+            throw BillingErrors.CreditPackageNotForSale();
+        var amount = package.Price!.Value;
         PaymentRules.EnsureTopupAmount(amount);
         return new()
         {
             UserId = userId,
             Purpose = PaymentPurpose.CreditTopup,
             Amount = amount,
+            Credits = package.Credits,
             OrderCode = orderCode.ToString(System.Globalization.CultureInfo.InvariantCulture),
             CreatedAt = now,
         };

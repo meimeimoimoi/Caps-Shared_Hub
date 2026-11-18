@@ -176,6 +176,16 @@ public sealed class SettleCaseEscrowHandlerTests
         public Task<Escrow?> LockByReviewCaseAsync(Guid reviewCaseId, CancellationToken ct) =>
             Task.FromResult(escrow.ReviewCaseId == reviewCaseId ? escrow : null);
 
+        public Task<IReadOnlyList<Escrow>> ListAsync(
+            string? status,
+            int skip,
+            int take,
+            CancellationToken ct
+        ) => throw new NotSupportedException();
+
+        public Task<int> CountAsync(string? status, CancellationToken ct) =>
+            throw new NotSupportedException();
+
         public void Add(Escrow added) => throw new NotSupportedException();
     }
 

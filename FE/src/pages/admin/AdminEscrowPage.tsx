@@ -24,6 +24,7 @@ import {
   useEscrows,
 } from '../../features/disputes-escrow/hooks/useEscrows'
 import { EscrowDrawer } from '../../features/disputes-escrow/components/EscrowDrawer'
+import { PayoutsTable } from '../../features/disputes-escrow/components/PayoutsTable'
 import { escrowSplit } from '../../features/disputes-escrow/utils/escrow'
 import { usePricing } from '../../features/service-pricing/hooks/usePricing'
 import type { Escrow } from '../../features/disputes-escrow/types'
@@ -354,7 +355,9 @@ export default function AdminEscrowPage() {
             />
           </section>
 
-          {/* Bảng tham chiếu cố định: gập lại để không chiếm chỗ của danh sách tiền */}
+          <PayoutsTable />
+
+          {/* Fixed reference table: collapsed so it does not crowd the money list */}
           <details className="motion-details paper mt-6">
             <summary className="text-fg-strong cursor-pointer px-4 py-3 font-semibold">
               {t('escrow.matrix.title')}

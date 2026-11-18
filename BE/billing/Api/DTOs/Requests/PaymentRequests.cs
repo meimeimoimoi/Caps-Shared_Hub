@@ -1,14 +1,11 @@
 using System.ComponentModel.DataAnnotations;
 using Caps.Billing.Application.Features.Payments;
-using Caps.Billing.Domain;
 
 namespace Caps.Billing.Api.DTOs.Requests;
 
-/// <summary>Buys credits; one VND buys one credit.</summary>
-/// <param name="Amount">VND, from 10,000 to 50,000,000.</param>
-public sealed record CreateTopupRequest(
-    [Range(PaymentRules.MinTopupAmount, PaymentRules.MaxTopupAmount)] long Amount
-)
+/// <summary>Buys a credit package; its price and credits are read on the server.</summary>
+/// <param name="PackageId">A package that is on sale and has a price.</param>
+public sealed record CreateTopupRequest([Required] Guid? PackageId)
 {
-    public CreateTopupCommand ToCommand(Guid userId) => new(userId, Amount);
+    public CreateTopupCommand ToCommand(Guid userId) => new(userId, PackageId!.Value);
 }

@@ -663,6 +663,7 @@
       },
       "editLabel": "Sửa {{name}}",
       "pendingPrice": "[giá gói]",
+      "empty": "Chưa có gói nạp nào.",
       "onSale": "Đang bán",
       "offSale": "Ngừng bán",
       "recommended": " · gợi ý",
@@ -1500,6 +1501,23 @@
     },
     "SUSPENDED": {
       "label": "Tạm ngưng"
+    }
+  },
+  "payouts": {
+    "title": "Lệnh chi trả cho chuyên gia",
+    "filter": "Trạng thái",
+    "all": "Tất cả",
+    "empty": "Chưa có lệnh chi nào.",
+    "noAccount": "Chuyên gia chưa có tài khoản mặc định",
+    "col": {
+      "createdAt": "Tạo lúc",
+      "recipient": "Người nhận",
+      "account": "Tài khoản nhận",
+      "amount": "Số tiền",
+      "status": "Trạng thái"
+    },
+    "status": {
+      "PENDING": "Chờ chuyển khoản"
     }
   }
 }

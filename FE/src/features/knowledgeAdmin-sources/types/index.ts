@@ -18,12 +18,19 @@ export interface CollectionSource {
 }
 
 export interface CollectionRun {
+  /** Crawl job id; only set by the API */
+  id?: string
   at: string
   trigger: keyof typeof RUN_TRIGGER
   /** Người bấm chạy (chỉ có khi chạy thủ công) */
   actor?: string
+  /** Only set by the API: RUNNING and FAILED runs have no counts yet */
+  status?: 'RUNNING' | 'SUCCEEDED' | 'FAILED'
+  /** Current crawler step while RUNNING, the error when FAILED */
+  note?: string
   newDocs: number
-  newVersions: number
+  /** The crawler does not split new versions from new documents, so the API leaves it out */
+  newVersions?: number
   unchanged: number
   /** Số văn bản trích xuất lỗi */
   errors: number
@@ -34,7 +41,8 @@ export type SourceInput = Omit<CollectionSource, 'id'>
 
 /** Toàn bộ dữ liệu màn Nguồn thu thập, lấy trong 1 lần gọi */
 export interface CollectionOverview {
-  schedule: CollectionSchedule
+  /** null = the server has no periodic schedule yet */
+  schedule: CollectionSchedule | null
   sources: CollectionSource[]
   runs: CollectionRun[]
 }

@@ -1,5 +1,4 @@
-/* Ví credit demo của client, theo bảng BE billing.CreditWallet / CreditLedger.
- * ponytail: dữ liệu tĩnh; thay bằng API ví khi BE mở endpoint. */
+/* Demo credit wallet of a client, shaped like billing CreditWallet / CreditLedger; API mode reads billing. */
 
 // RESTORE returns a captured credit after a platform failure (BR-C25)
 export type LedgerType = 'TOPUP' | 'HOLD' | 'CAPTURE' | 'RELEASE' | 'RESTORE'

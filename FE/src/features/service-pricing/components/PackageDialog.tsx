@@ -1,6 +1,7 @@
 import { useState, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Modal } from '@/components/ui/feedback/modal'
+import { TOPUP_MAX, TOPUP_MIN } from '@/features/wallet/api/walletApi'
 import type { CreditPackage, PackageInput } from '../types'
 
 interface PackageDialogProps {
@@ -154,7 +155,8 @@ export function PackageDialog({
             <input
               type="number"
               inputMode="numeric"
-              min={1000}
+              min={TOPUP_MIN}
+              max={TOPUP_MAX}
               step={1000}
               value={price}
               onChange={(e) => setPrice(e.target.value)}

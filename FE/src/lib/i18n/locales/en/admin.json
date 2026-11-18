@@ -671,6 +671,7 @@
       },
       "editLabel": "Edit {{name}}",
       "pendingPrice": "[package price]",
+      "empty": "No credit packages yet.",
       "onSale": "On sale",
       "offSale": "Off sale",
       "recommended": " · recommended",
@@ -1509,6 +1510,23 @@
     },
     "SUSPENDED": {
       "label": "Suspended"
+    }
+  },
+  "payouts": {
+    "title": "Payouts to experts",
+    "filter": "Status",
+    "all": "All",
+    "empty": "No payouts yet.",
+    "noAccount": "The expert has no default account",
+    "col": {
+      "createdAt": "Created",
+      "recipient": "Recipient",
+      "account": "Receiving account",
+      "amount": "Amount",
+      "status": "Status"
+    },
+    "status": {
+      "PENDING": "Awaiting transfer"
     }
   }
 }

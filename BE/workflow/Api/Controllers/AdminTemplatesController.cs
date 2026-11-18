@@ -15,6 +15,40 @@ public sealed class AdminTemplatesController(ICurrentUser currentUser) : Control
 {
     private Guid UserId => currentUser.RequireUserId();
 
+    /// <summary>Lists every template with its newest and published versions.</summary>
+    /// <remarks>
+    /// Unlike <c>GET /api/v1/templates</c> it includes templates that only have a draft. latestStatus is DRAFT
+    /// while a draft waits to be published; publishedVersionNo is the version users draft from (null if none).
+    /// </remarks>
+    /// <response code="200">The templates by name (may be empty).</response>
+    /// <response code="403">Missing the KnowledgeManage permission.</response>
+    [HttpGet]
+    public async Task<IActionResult> List(
+        [FromServices]
+            IQueryHandler<ListAdminTemplatesQuery, AdminTemplateSummaryResponse[]> handler,
+        CancellationToken ct
+    )
+    {
+        var templates = await handler.HandleAsync(new(), ct);
+        return Ok(ApiResponse<AdminTemplateSummaryResponse[]>.Ok(templates));
+    }
+
+    /// <summary>Returns a template with every version, newest first.</summary>
+    /// <remarks>Each version carries its status (DRAFT, PUBLISHED or DEPRECATED) and its fieldSchema.</remarks>
+    /// <response code="200">The template.</response>
+    /// <response code="403">Missing the KnowledgeManage permission.</response>
+    /// <response code="404">TEMPLATE_NOT_FOUND.</response>
+    [HttpGet("{id:guid}")]
+    public async Task<IActionResult> Get(
+        Guid id,
+        [FromServices] IQueryHandler<GetAdminTemplateQuery, AdminTemplateResponse> handler,
+        CancellationToken ct
+    )
+    {
+        var template = await handler.HandleAsync(new(id), ct);
+        return Ok(ApiResponse<AdminTemplateResponse>.Ok(template));
+    }
+
     /// <summary>Creates a template or updates it, saving the field schema as a draft version.</summary>
     /// <remarks>
     /// The template is matched by <c>code</c> and created on first use. While its latest version is a draft,

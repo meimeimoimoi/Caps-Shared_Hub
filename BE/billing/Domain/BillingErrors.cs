@@ -38,6 +38,23 @@ public static class BillingErrors
             $"Top-up amount must be between {min} and {max} VND."
         );
 
+    public static AppException InvalidCreditPackage(string field) =>
+        new(
+            ErrorType.Validation,
+            "INVALID_CREDIT_PACKAGE",
+            $"Invalid credit package field: {field}."
+        );
+
+    public static AppException CreditPackageNotFound() =>
+        new(ErrorType.NotFound, "CREDIT_PACKAGE_NOT_FOUND", "Credit package not found.");
+
+    public static AppException CreditPackageNotForSale() =>
+        new(
+            ErrorType.Conflict,
+            "CREDIT_PACKAGE_NOT_FOR_SALE",
+            "This credit package is not on sale or has no price yet."
+        );
+
     public static AppException PaymentUnavailable() =>
         new(
             ErrorType.Unavailable,

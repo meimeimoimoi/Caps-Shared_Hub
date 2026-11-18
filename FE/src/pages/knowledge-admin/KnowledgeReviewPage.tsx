@@ -19,6 +19,7 @@ import {
 import { useDocumentReview } from '../../features/knowledgeAdmin-review-approval/hooks/useDocumentReview'
 import type { DocumentReview } from '../../features/knowledgeAdmin-review-approval/types'
 import { articleStatus } from '../../features/knowledgeAdmin-review-approval/utils/review'
+import { openOriginal } from '../../features/knowledgeAdmin-review-approval/utils/openOriginal'
 
 const queueLink = (
   <Link to="/knowledge/queue" className="text-fg-muted hover:text-fg-strong">
@@ -114,7 +115,7 @@ function ReviewWorkspace({
   }
 
   const total = articles.length
-  const metaMissing = Object.values(meta).some((v) => !v.trim())
+  const metaMissing = Object.values(meta).some((v) => !v?.trim())
   const blockers = [
     warnings > 0 && {
       text: `${warnings} mục cần kiểm tra chưa xử lý`,
@@ -167,15 +168,15 @@ function ReviewWorkspace({
             >
               Mục chưa rà soát tiếp theo
             </button>
-            <a
-              href={review.sourceUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="btn btn-ghost no-underline"
+            <button
+              type="button"
+              disabled={!review.sourceUrl}
+              onClick={() => openOriginal(review.sourceUrl).catch(fail)}
+              className="btn btn-ghost"
             >
               <Eye size={16} aria-hidden="true" />
               Bản gốc
-            </a>
+            </button>
             {editing ? (
               <>
                 <button
