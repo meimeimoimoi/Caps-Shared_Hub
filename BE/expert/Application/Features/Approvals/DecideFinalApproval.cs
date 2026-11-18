@@ -25,6 +25,7 @@ public sealed class DecideFinalApprovalHandler(
     IQualificationRepository qualifications,
     IReviewClaimEventRepository claimEvents,
     IServiceAccessNotifier notifier,
+    IAuditTrail audit,
     IQualificationReviewDescriber describer,
     IUnitOfWork unitOfWork,
     TimeProvider clock,
@@ -80,6 +81,14 @@ public sealed class DecideFinalApprovalHandler(
         }
         // A return stays between the admin and the reviewer: the expert is told only of the approval (D3)
         var approved = decision == FinalApprovalDecision.Approve;
+        audit.Record(
+            AuditActions.Qualification,
+            qualification.Id,
+            approved ? AuditActions.FinalApproved : AuditActions.ReturnedForReview,
+            command.ApproverUserId,
+            now,
+            new { serviceCode = qualification.ServiceCode, note = decided.Note }
+        );
         if (approved)
             await notifier.EnqueueAsync(qualification, decided, "APPROVED", ct);
         await unitOfWork.SaveChangesAsync(ct);

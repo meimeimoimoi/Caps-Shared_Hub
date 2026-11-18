@@ -4,6 +4,10 @@ namespace Caps.Auth.Infrastructure.Persistence;
 public sealed class AccountEventOutbox
 {
     public Guid Id { get; set; }
+
+    /// <summary>Contract name of the payload (AccountStatusChangedEvent or AuditRecordedEvent).</summary>
+    public string MessageType { get; set; } = default!;
+
     public string Payload { get; set; } = default!;
     public DateTimeOffset CreatedAt { get; set; }
     public DateTimeOffset? SentAt { get; set; }

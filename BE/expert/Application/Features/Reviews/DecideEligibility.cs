@@ -30,6 +30,7 @@ public sealed class DecideEligibilityHandler(
     IQualificationRepository qualifications,
     IServiceCatalogRepository catalog,
     IExpertNotificationOutbox outbox,
+    IAuditTrail audit,
     IReviewDescriber describer,
     IExpertPolicyProvider policies,
     ExpertPolicyOptions options,
@@ -89,6 +90,14 @@ public sealed class DecideEligibilityHandler(
         );
         applications.AddEvent(decision.Event);
         eligibility.AddRange(decision.Checks);
+        audit.Record(
+            AuditActions.Application,
+            application.Id,
+            AuditActions.EligibilityDecided,
+            command.ReviewerUserId,
+            now,
+            new { status = application.Status, note = decision.Event.Note }
+        );
         profile.MirrorStatus(application.Status, now);
         var registered = await RegisterOnlyServiceAsync(application, now, ct);
         // Tell the applicant (email + in-app); older profiles without an email are skipped.

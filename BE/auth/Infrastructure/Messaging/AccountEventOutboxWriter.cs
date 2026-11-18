@@ -19,6 +19,7 @@ public sealed class AccountEventOutboxWriter(AuthDbContext db, TimeProvider cloc
             new AccountEventOutbox
             {
                 Id = message.Id,
+                MessageType = nameof(AccountStatusChangedEvent),
                 Payload = JsonSerializer.Serialize(message),
                 CreatedAt = now,
             }
