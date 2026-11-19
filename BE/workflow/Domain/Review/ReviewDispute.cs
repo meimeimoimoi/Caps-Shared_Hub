@@ -11,7 +11,9 @@ public sealed class ReviewDispute
     public const string Open = "OPEN";
     public const string Resolved = "RESOLVED";
     public const string Withdrawn = "WITHDRAWN";
-    public static readonly TimeSpan DecisionWindow = TimeSpan.FromHours(48);
+
+    /// <summary>Working days the admin has to decide; the one extension adds the same again.</summary>
+    public const int WorkingDaysToDecide = 2;
 
     /// <summary>
     /// Why the client complains: the same codes as the FE dispute form. No code for a late delivery: the late
@@ -53,7 +55,8 @@ public sealed class ReviewDispute
         Guid reviewCaseId,
         string reason,
         string description,
-        DateTimeOffset now
+        DateTimeOffset now,
+        WorkCalendar calendar
     ) =>
         new()
         {
@@ -61,11 +64,11 @@ public sealed class ReviewDispute
             Reason = reason,
             Description = description,
             OpenedAt = now,
-            DecideBy = now + DecisionWindow,
+            DecideBy = calendar.AddWorkingDays(now, WorkingDaysToDecide),
         };
 
     /// <summary>The admin needs more time: one more decision window, once.</summary>
-    public void Extend()
+    public void Extend(WorkCalendar? calendar = null)
     {
         EnsureOpen();
         if (Extended)
@@ -73,7 +76,10 @@ public sealed class ReviewDispute
             throw WorkflowErrors.DisputeAlreadyExtended();
         }
         Extended = true;
-        DecideBy += DecisionWindow;
+        DecideBy = (calendar ?? WorkCalendar.WeekendsOnly).AddWorkingDays(
+            DecideBy,
+            WorkingDaysToDecide
+        );
         OverdueAlertedAt = null;
     }
 

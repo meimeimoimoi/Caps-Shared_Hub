@@ -249,71 +249,71 @@ export default function AiAssistantPage() {
               />
             </div>
           </aside>
-          {isAiAssistantDemo && (
-            <DemoBanner>
-              <p>{t('aiAssistant:demoNotice')}</p>
-            </DemoBanner>
-          )}
           <main
             id="assistant-main"
             tabIndex={-1}
             className="relative flex min-w-0 flex-1 flex-col focus:outline-none"
           >
-            {/* Cụm thao tác khi cột lịch sử đóng: mở lịch sử + câu hỏi mới, gom ở góc trái
-                đúng chỗ cột thu vào. Desktop: nổi đè lên nội dung, không chiếm hàng riêng.
-                Desktop khi cột mở thì ẩn vì cột đã có cả hai nút. */}
-            {(!isEmpty || !historyPanel) && (
-              <div
-                className={cn(
-                  'px-4 pt-3 md:px-5',
-                  historyPanel && 'lg:hidden',
-                  'lg:pointer-events-none lg:absolute lg:top-0 lg:left-0 lg:z-10'
-                )}
-              >
-                <MotionReveal
-                  preset="reveal"
-                  replayKey={String(historyPanel)}
-                  className="bg-surface/90 border-border pointer-events-auto inline-flex items-center gap-0.5 rounded-xl border p-1 shadow-xs backdrop-blur"
-                >
-                  <button
-                    ref={historyTrigger}
-                    type="button"
-                    onClick={openHistory}
-                    aria-controls="assistant-history"
-                    aria-expanded={historyPanel}
-                    aria-label={t('aiAssistant:history.open')}
-                    title={t('aiAssistant:history.open')}
-                    className="group motion-interactive text-text-muted hover:bg-sunken hover:text-text-strong focus-visible:ring-accent flex size-8 items-center justify-center rounded-lg focus-visible:ring-2 focus-visible:outline-none"
-                  >
-                    <PanelLeftOpen
-                      size={17}
-                      aria-hidden="true"
-                      className="transition-transform duration-200 group-hover:translate-x-0.5"
-                    />
-                  </button>
-                  {messages.length > 0 && (
-                    <button
-                      type="button"
-                      onClick={startNewQuestion}
-                      disabled={isSending}
-                      aria-label={t('aiAssistant:history.newQuestion')}
-                      title={t('aiAssistant:history.newQuestion')}
-                      className="group motion-interactive text-text-muted hover:bg-sunken hover:text-text-strong focus-visible:ring-accent flex size-8 items-center justify-center rounded-lg focus-visible:ring-2 focus-visible:outline-none disabled:opacity-50"
-                    >
-                      <SquarePen
-                        size={16}
-                        aria-hidden="true"
-                        className="transition-transform duration-200 group-hover:-rotate-6"
-                      />
-                    </button>
-                  )}
-                </MotionReveal>
+            {isAiAssistantDemo && (
+              <div className="shrink-0">
+                <DemoBanner>
+                  <p>{t('aiAssistant:demoNotice')}</p>
+                </DemoBanner>
               </div>
             )}
+            {/* Keep history controls available on mobile and when the desktop panel is collapsed. */}
+            <div
+              className={cn(
+                'shrink-0 px-4 py-2 md:px-5',
+                historyPanel && 'lg:hidden'
+              )}
+            >
+              <MotionReveal
+                preset="reveal"
+                replayKey={String(historyPanel)}
+                className="bg-surface border-border inline-flex items-center gap-1 rounded-lg border p-1"
+              >
+                <button
+                  ref={historyTrigger}
+                  type="button"
+                  onClick={openHistory}
+                  aria-controls="assistant-history"
+                  aria-expanded={historyOpen}
+                  aria-label={t('aiAssistant:history.open')}
+                  title={t('aiAssistant:history.open')}
+                  className="group motion-interactive text-text-muted hover:bg-sunken hover:text-text-strong focus-visible:ring-accent flex size-11 items-center justify-center rounded-lg focus-visible:ring-2 focus-visible:outline-none"
+                >
+                  <PanelLeftOpen
+                    size={17}
+                    aria-hidden="true"
+                    className="transition-transform duration-200 group-hover:translate-x-0.5"
+                  />
+                </button>
+                {messages.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={startNewQuestion}
+                    disabled={isSending}
+                    aria-label={t('aiAssistant:history.newQuestion')}
+                    title={t('aiAssistant:history.newQuestion')}
+                    className="group motion-interactive text-text-muted hover:bg-sunken hover:text-text-strong focus-visible:ring-accent flex size-11 items-center justify-center rounded-lg focus-visible:ring-2 focus-visible:outline-none disabled:opacity-50"
+                  >
+                    <SquarePen
+                      size={16}
+                      aria-hidden="true"
+                      className="transition-transform duration-200 group-hover:-rotate-6"
+                    />
+                  </button>
+                )}
+              </MotionReveal>
+            </div>
 
             <div
               ref={scrollArea}
-              className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 md:px-10"
+              className={cn(
+                'min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 md:px-10',
+                isEmpty && 'flex flex-col'
+              )}
             >
               {isEmpty ? (
                 <AssistantWelcome

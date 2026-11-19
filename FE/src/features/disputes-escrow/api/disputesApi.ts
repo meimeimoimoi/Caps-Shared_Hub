@@ -3,7 +3,6 @@ import { isExpertDemo } from '@/lib/expert-data-source'
 import { CURRENT_ADMIN } from '@/features/expert-vetting/constants'
 import { i18n } from '@/lib/i18n'
 import { DISPUTE_OUTCOME } from '../constants'
-import { DISPUTE_ESCALATION_HOURS, DISPUTE_SLA_HOURS } from '../constants'
 import { getPublicExpert } from '@/features/marketplace/api/marketplaceApi'
 import type { Dispute, DisputeDecisionInput, Escrow } from '../types'
 import { toEscrow, type EscrowDto } from './escrowMappers'
@@ -65,6 +64,8 @@ interface AdminDisputeDto {
     status: string
     openedAt: string
     decideBy: string
+    /** The admin already used the one extension */
+    extended: boolean
     expertStatement: string | null
   }
 }
@@ -74,8 +75,6 @@ const REFUND_PCT = {
   RESOLVE_REFUND_USER: 50,
   RESOLVE_PAY_EXPERT: 0,
 } as const
-
-const HOUR = 3_600_000
 
 /** ReviewDispute.Reasons on the server */
 const REASON_KEY = {
@@ -91,10 +90,6 @@ function toDispute(x: AdminDisputeDto, expert: string): Dispute {
     d.reason in REASON_KEY
       ? i18n.t(REASON_KEY[d.reason as keyof typeof REASON_KEY], { ns: 'admin' })
       : d.reason
-  // The server only sends the deadline; a window longer than the base one means it was extended
-  const extended =
-    new Date(d.decideBy).getTime() - new Date(d.openedAt).getTime() >
-    (DISPUTE_SLA_HOURS + DISPUTE_ESCALATION_HOURS / 2) * HOUR
   return {
     id: x.reviewCaseId,
     code: x.reviewCaseId.slice(0, 8).toUpperCase(),
@@ -104,7 +99,7 @@ function toDispute(x: AdminDisputeDto, expert: string): Dispute {
     ground: reason,
     openedAt: d.openedAt,
     decideBy: d.decideBy,
-    escalatedAt: extended ? d.decideBy : undefined,
+    escalatedAt: d.extended ? d.decideBy : undefined,
     fee: x.fee,
     platformFeePct: x.platformFeePct,
     expertStatement: d.expertStatement ?? undefined,
@@ -176,7 +171,7 @@ export async function decideDispute(id: string, body: DisputeDecisionInput) {
   })
 }
 
-/** Escalate a professional-judgment dispute; allowed once and adds 48 hours to the deadline */
+/** Escalate a professional-judgment dispute; allowed once and adds 2 working days to the deadline */
 export async function escalateDispute(id: string) {
   if (isExpertDemo) {
     const d = (await fixtures()).mockDisputes.find((x) => x.id === id)
@@ -195,12 +190,21 @@ export async function escalateDispute(id: string) {
 /* ── Escrow ── */
 export async function getEscrows(signal?: AbortSignal): Promise<Escrow[]> {
   if (isExpertDemo) return structuredClone((await fixtures()).mockEscrows)
-  // shortcut: the newest 100 escrows (the API maximum); filter and page on the server when there are more
-  const res = await api.get<Envelope<{ items: EscrowDto[] }>>(ESCROWS, {
-    params: { page: 1, pageSize: 100 },
-    signal,
-  })
-  return res.data.items.map(toEscrow)
+  // Collect every server page before client filtering and sorting.
+  const rows = new Map<string, EscrowDto>()
+  let page = 1
+  let total = 0
+  do {
+    const res = await api.get<Envelope<{ items: EscrowDto[]; total: number }>>(ESCROWS, {
+      params: { page, pageSize: 100 },
+      signal,
+    })
+    for (const row of res.data.items) rows.set(row.id, row)
+    total = res.data.total
+    if (res.data.items.length < 100) break
+    page++
+  } while ((page - 1) * 100 < total)
+  return [...rows.values()].map(toEscrow)
 }
 
 /** Pays a HELD escrow to the expert minus the platform fee; billing creates a PENDING payout (API mode only) */

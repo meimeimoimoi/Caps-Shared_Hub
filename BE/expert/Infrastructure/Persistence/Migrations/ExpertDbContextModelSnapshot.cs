@@ -637,13 +637,13 @@ namespace Caps.Expert.Infrastructure.Persistence.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("no_delivery_refund_percent");
 
+                    b.Property<int>("NoResponseDays")
+                        .HasColumnType("integer")
+                        .HasColumnName("no_response_days");
+
                     b.Property<int>("NoResponseExpertPercent")
                         .HasColumnType("integer")
                         .HasColumnName("no_response_expert_percent");
-
-                    b.Property<int>("NoResponseHours")
-                        .HasColumnType("integer")
-                        .HasColumnName("no_response_hours");
 
                     b.Property<int>("NoResponseRefundPercent")
                         .HasColumnType("integer")
@@ -675,11 +675,11 @@ namespace Caps.Expert.Infrastructure.Persistence.Migrations
 
                     b.ToTable("platform_fee", "expert", t =>
                         {
-                            t.HasCheckConstraint("ck_platform_fee_late_rule", "late_penalty_hours >= 0 AND late_penalty_percent >= 0 AND percent + late_penalty_percent <= 100 AND late_cancel_hours BETWEEN late_penalty_hours AND 720");
+                            t.HasCheckConstraint("ck_platform_fee_late_rule", "late_penalty_hours >= 0 AND late_penalty_percent BETWEEN 0 AND 100 AND late_cancel_hours BETWEEN late_penalty_hours AND 720");
 
                             t.HasCheckConstraint("ck_platform_fee_no_delivery_rule", "no_delivery_refund_percent BETWEEN 0 AND 100");
 
-                            t.HasCheckConstraint("ck_platform_fee_no_response_rule", "no_response_hours BETWEEN 1 AND 720 AND no_response_refund_percent >= 0 AND no_response_expert_percent >= 0 AND no_response_refund_percent + no_response_expert_percent <= 100");
+                            t.HasCheckConstraint("ck_platform_fee_no_response_rule", "no_response_days BETWEEN 1 AND 30 AND no_response_refund_percent >= 0 AND no_response_expert_percent >= 0 AND no_response_refund_percent + no_response_expert_percent <= 100");
 
                             t.HasCheckConstraint("ck_platform_fee_percent", "percent BETWEEN 0 AND 50");
                         });
@@ -693,8 +693,8 @@ namespace Caps.Expert.Infrastructure.Persistence.Migrations
                             LatePenaltyHours = 24,
                             LatePenaltyPercent = 30,
                             NoDeliveryRefundPercent = 100,
+                            NoResponseDays = 3,
                             NoResponseExpertPercent = 30,
-                            NoResponseHours = 72,
                             NoResponseRefundPercent = 50,
                             Percent = 20,
                             ServiceCode = "HUMAN_VERIFICATION",
@@ -708,8 +708,8 @@ namespace Caps.Expert.Infrastructure.Persistence.Migrations
                             LatePenaltyHours = 24,
                             LatePenaltyPercent = 50,
                             NoDeliveryRefundPercent = 50,
+                            NoResponseDays = 3,
                             NoResponseExpertPercent = 60,
-                            NoResponseHours = 72,
                             NoResponseRefundPercent = 0,
                             Percent = 40,
                             ServiceCode = "HUMAN_VERIFICATION",

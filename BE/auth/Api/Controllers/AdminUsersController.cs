@@ -76,7 +76,7 @@ public sealed class AdminUsersController(ICurrentUser currentUser) : ControllerB
         CancellationToken ct
     )
     {
-        var user = await handler.HandleAsync(new(id), ct);
+        var user = await handler.HandleAsync(new(UserId, id), ct);
         return Ok(ApiResponse<ManagedUserResponse>.Ok(user));
     }
 
@@ -96,7 +96,7 @@ public sealed class AdminUsersController(ICurrentUser currentUser) : ControllerB
         CancellationToken ct
     )
     {
-        await handler.HandleAsync(new(id), ct);
+        await handler.HandleAsync(new(UserId, id), ct);
         return NoContent();
     }
 }

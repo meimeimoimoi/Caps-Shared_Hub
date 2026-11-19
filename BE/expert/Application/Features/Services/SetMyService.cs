@@ -12,7 +12,7 @@ public sealed record SetMyServiceCommand(
     Guid UserId,
     string ServiceCode,
     long Fee,
-    int TurnaroundHours
+    int? TurnaroundHours
 );
 
 /// <summary>
@@ -47,6 +47,11 @@ public sealed class SetMyServiceHandler(
             await fees.FindCurrentAsync(code, now, ct) ?? throw ExpertErrors.PlatformFeeNotSet();
         var policy = await policies.GetPricingAsync(ct);
         var offering = await offerings.FindAsync(profile.Id, code, ct);
+        // Left out: keep the saved one, or the shortest the policy allows for a first price
+        var turnaroundHours =
+            command.TurnaroundHours
+            ?? offering?.TurnaroundHours
+            ?? policy.MinTurnaroundDays * PricingPolicy.HoursPerDay;
         ServiceOfferingChange? change;
         if (offering == null)
         {
@@ -54,7 +59,7 @@ public sealed class SetMyServiceHandler(
                 qualification,
                 rate,
                 command.Fee,
-                command.TurnaroundHours,
+                turnaroundHours,
                 policy,
                 command.UserId,
                 now
@@ -66,7 +71,7 @@ public sealed class SetMyServiceHandler(
             change = offering.Reprice(
                 qualification,
                 command.Fee,
-                command.TurnaroundHours,
+                turnaroundHours,
                 policy,
                 command.UserId,
                 now

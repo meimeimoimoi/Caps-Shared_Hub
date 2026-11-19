@@ -19,9 +19,9 @@ export interface LateRule {
   noDeliveryRefundPercent: number
 }
 
-/** Client silence: after `hours` the case ends; refundPercent to the client, expertPercent to the expert, the platform keeps the rest. */
+/** Client silence: after `days` working days the case ends; refundPercent to the client, expertPercent to the expert, the platform keeps the rest. */
 export interface NoResponseRule {
-  hours: number
+  days: number
   refundPercent: number
   expertPercent: number
 }
@@ -54,7 +54,7 @@ export interface PlatformFeeChange {
   latePenaltyHours: number
   latePenaltyPercent: number
   lateCancelHours: number
-  noResponseHours: number
+  noResponseDays: number
   noResponseRefundPercent: number
   noResponseExpertPercent: number
   effectiveFrom: string
@@ -96,7 +96,7 @@ export async function setPlatformFee(
       latePenaltyPercent: late.penaltyPercent,
       lateCancelHours: late.cancelHours,
       noDeliveryRefundPercent: late.noDeliveryRefundPercent,
-      noResponseHours: noResponse.hours,
+      noResponseDays: noResponse.days,
       noResponseRefundPercent: noResponse.refundPercent,
       noResponseExpertPercent: noResponse.expertPercent,
       effectiveOn,

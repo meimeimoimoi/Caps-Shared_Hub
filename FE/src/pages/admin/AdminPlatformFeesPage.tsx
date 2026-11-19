@@ -1,3 +1,5 @@
+import { Pagination } from '@/components/ui/navigation/pagination'
+import { usePagination } from '@/hooks/usePagination'
 import { useCallback, useId, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
@@ -48,25 +50,25 @@ const DEFAULT_LATE: LateRule = {
 }
 // Agreed platform share; a service's first fee starts here
 const DEFAULT_PERCENT = 40
-// Mirror PlatformFee.MaxLateHours and PlatformFee.MaxNoResponseHours on the server
+// Mirror PlatformFee.MaxLateHours and PlatformFee.MaxNoResponseDays on the server
 const MAX_LATE_HOURS = 720
-const MAX_NO_RESPONSE_HOURS = 72
+const MAX_NO_RESPONSE_DAYS = 3
 const toDraft = (late: LateRule): LateDraft => ({
   penaltyHours: String(late.penaltyHours),
   penaltyPercent: String(late.penaltyPercent),
   cancelHours: String(late.cancelHours),
   noDeliveryRefundPercent: String(late.noDeliveryRefundPercent),
 })
-const NO_RESPONSE_FIELDS = ['hours', 'refundPercent', 'expertPercent'] as const
+const NO_RESPONSE_FIELDS = ['days', 'refundPercent', 'expertPercent'] as const
 type NoResponseDraft = Record<(typeof NO_RESPONSE_FIELDS)[number], string>
 // Client did not supply the requested info: no refund, the fee splits 60/40 (agreed 2026-11-11)
 const DEFAULT_NO_RESPONSE: NoResponseRule = {
-  hours: 72,
+  days: 3,
   refundPercent: 0,
   expertPercent: 60,
 }
 const toNoResponseDraft = (rule: NoResponseRule): NoResponseDraft => ({
-  hours: String(rule.hours),
+  days: String(rule.days),
   refundPercent: String(rule.refundPercent),
   expertPercent: String(rule.expertPercent),
 })
@@ -295,6 +297,7 @@ export default function AdminPlatformFeesPage() {
     onSuccess: () => qc.invalidateQueries({ queryKey: key }),
   })
   const rows = query.data ?? []
+  const paged = usePagination(rows)
   const value = Number(percent)
   const maxPercent = editing?.maxPercent ?? 0
   // The very first fee applies at once; any later change needs its effective day
@@ -308,20 +311,20 @@ export default function AdminPlatformFeesPage() {
   // Same rules as the server
   const lateValid =
     LATE_FIELDS.every((f) => isWhole(late[f])) &&
-    value + lateRule.penaltyPercent <= 100 &&
+    lateRule.penaltyPercent <= 100 &&
     lateRule.cancelHours >= lateRule.penaltyHours &&
     lateRule.cancelHours <= MAX_LATE_HOURS &&
     lateRule.noDeliveryRefundPercent <= 100
   const noResponseRule: NoResponseRule = {
-    hours: Number(noResponse.hours),
+    days: Number(noResponse.days),
     refundPercent: Number(noResponse.refundPercent),
     expertPercent: Number(noResponse.expertPercent),
   }
   // Same rule as the server: the platform keeps what the client and the expert do not get
   const noResponseValid =
     NO_RESPONSE_FIELDS.every((f) => isWhole(noResponse[f])) &&
-    noResponseRule.hours >= 1 &&
-    noResponseRule.hours <= MAX_NO_RESPONSE_HOURS &&
+    noResponseRule.days >= 1 &&
+    noResponseRule.days <= MAX_NO_RESPONSE_DAYS &&
     noResponseRule.refundPercent + noResponseRule.expertPercent <= 100
   // One message per broken rule, same rules as the checks above
   const percentError =
@@ -336,17 +339,15 @@ export default function AdminPlatformFeesPage() {
       ? t('admin:platformFees.rules.maxHours', { max: MAX_LATE_HOURS })
       : lateRule.cancelHours < lateRule.penaltyHours
         ? t('admin:platformFees.rules.cancelBeforePenalty')
-        : value + lateRule.penaltyPercent > 100
-          ? t('admin:platformFees.rules.penaltyOverFee', {
-              sum: value + lateRule.penaltyPercent,
-            })
+        : lateRule.penaltyPercent > 100
+          ? t('admin:platformFees.rules.penaltyOver')
           : null
   const noResponseError = !NO_RESPONSE_FIELDS.every((f) =>
     isWhole(noResponse[f])
   )
     ? t('admin:platformFees.rules.wholeNumbers')
-    : noResponseRule.hours < 1 || noResponseRule.hours > MAX_NO_RESPONSE_HOURS
-      ? t('admin:platformFees.rules.hoursRange', { max: MAX_NO_RESPONSE_HOURS })
+    : noResponseRule.days < 1 || noResponseRule.days > MAX_NO_RESPONSE_DAYS
+      ? t('admin:platformFees.rules.daysRange', { max: MAX_NO_RESPONSE_DAYS })
       : noResponseRule.refundPercent + noResponseRule.expertPercent > 100
         ? t('admin:platformFees.rules.splitOver', {
             sum: noResponseRule.refundPercent + noResponseRule.expertPercent,
@@ -376,10 +377,8 @@ export default function AdminPlatformFeesPage() {
       ? t(`admin:platformFees.errors.${e.code}`, {
           days: editing?.noticeDays,
           max: maxPercent,
-          maxHours:
-            e.code === 'NO_RESPONSE_RULE_INVALID'
-              ? MAX_NO_RESPONSE_HOURS
-              : MAX_LATE_HOURS,
+          maxHours: MAX_LATE_HOURS,
+          maxDays: MAX_NO_RESPONSE_DAYS,
         })
       : t('admin:platformFees.errors.failed')
   const failed = (e: unknown) => setToast(errorToast(errorText(e)))
@@ -485,7 +484,7 @@ export default function AdminPlatformFeesPage() {
         ),
       },
       {
-        label: t('admin:platformFees.cases.silence', { hours: silence.hours }),
+        label: t('admin:platformFees.cases.silence', { days: silence.days }),
         parts: split(
           silence.refundPercent,
           silence.expertPercent,
@@ -575,7 +574,7 @@ export default function AdminPlatformFeesPage() {
       />
 
       <div className="mt-7 grid gap-5">
-        {rows.map((row) => (
+        {paged.rows.map((row) => (
           <article key={row.serviceCode} className="paper min-w-0">
             <header className="border-border-subtle flex flex-wrap items-center justify-between gap-3 border-b px-5 py-4 sm:px-6">
               <h2 className="text-h2 text-fg-strong" title={row.serviceCode}>
@@ -715,6 +714,15 @@ export default function AdminPlatformFeesPage() {
           </div>
         )}
       </div>
+      {!query.isLoading && !query.error && paged.total > 0 && (
+        <Pagination
+          page={paged.page}
+          pageSize={paged.pageSize}
+          total={paged.total}
+          onPageChange={paged.setPage}
+          onPageSizeChange={paged.setPageSize}
+        />
+      )}
 
       {editing && (
         <Modal
@@ -974,7 +982,7 @@ export default function AdminPlatformFeesPage() {
                 open={scope === 'noResponse'}
                 legend={t('admin:platformFees.noResponse')}
                 help={t('admin:platformFees.noResponseHelp', {
-                  maxHours: MAX_NO_RESPONSE_HOURS,
+                  maxDays: MAX_NO_RESPONSE_DAYS,
                 })}
                 fields={NO_RESPONSE_FIELDS}
                 label={(field) =>

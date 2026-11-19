@@ -15,7 +15,7 @@ public sealed record ReviewOffer(
     int LatePenaltyHours,
     short LatePenaltyPct,
     int LateCancelHours,
-    int NoResponseHours,
+    int NoResponseDays,
     short NoResponseRefundPct,
     short NoResponseExpertPct,
     short NoDeliveryRefundPct = 50

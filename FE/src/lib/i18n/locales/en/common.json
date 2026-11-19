@@ -19,6 +19,8 @@
     "preview": "Demo preview"
   },
   "navigation": {
+    "admin": "Admin navigation",
+    "breadcrumb": "Breadcrumb",
     "home": "Shared Hub home",
     "open": "Open navigation",
     "close": "Close navigation",
@@ -43,7 +45,15 @@
   "form": {
     "help": "Help for {{label}}"
   },
+  "table": {
+    "ascending": "Ascending",
+    "descending": "Descending",
+  "sort": "Sort by",
+  "sortAscending": "Sort {{column}} ascending",
+  "sortDescending": "Sort {{column}} descending"
+},
   "pagination": {
+    "pageOf": "Page {{page}} / {{totalPages}}",
     "label": "Pagination",
     "previous": "Previous",
     "next": "Next",

@@ -1,3 +1,5 @@
+import { Pagination } from '@/components/ui/navigation/pagination'
+import { usePagination } from '@/hooks/usePagination'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useQuery } from '@tanstack/react-query'
@@ -43,6 +45,8 @@ export function PlatformFeeHistory({
     (row) => filter === 'all' || status(row, now) === filter
   ) ?? []
 
+  const paged = usePagination(entries, `${serviceCode}:${filter}`)
+
   return (
     <Modal
       size="lg"
@@ -85,7 +89,7 @@ export function PlatformFeeHistory({
             </p>
           ) : (
             <ol className="divide-border-subtle divide-y text-sm">
-              {entries.map((row) => {
+              {paged.rows.map((row) => {
                 const state = status(row, now)
                 return (
                   <li
@@ -127,6 +131,15 @@ export function PlatformFeeHistory({
                 )
               })}
             </ol>
+          )}
+          {paged.total > 0 && (
+            <Pagination
+              page={paged.page}
+              pageSize={paged.pageSize}
+              total={paged.total}
+              onPageChange={paged.setPage}
+              onPageSizeChange={paged.setPageSize}
+            />
           )}
         </>
       )}

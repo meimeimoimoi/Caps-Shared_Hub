@@ -55,7 +55,8 @@ public sealed class AdminDisputeHandlerTests
             handler.HandleAsync(new(run.Case.Id), default)
         );
 
-        Assert.Equal(T0.AddHours(1) + (2 * ReviewDispute.DecisionWindow), response.DecideBy);
+        // Opened Friday: due Tuesday, extended to Thursday
+        Assert.Equal(T0.AddHours(1).AddDays(6), response.DecideBy);
         Assert.Equal("DISPUTE_ALREADY_EXTENDED", e.Code);
         Assert.True(run.UnitOfWork.Saved);
     }
@@ -76,8 +77,9 @@ public sealed class AdminDisputeHandlerTests
     }
 
     [Theory]
-    [InlineData(47, false)]
-    [InlineData(49, true)]
+    // Opened Friday: 2 working days end on Tuesday, 96 hours later
+    [InlineData(95, false)]
+    [InlineData(97, true)]
     public async Task The_queue_flags_disputes_past_their_decision_window(int hours, bool overdue)
     {
         var run = new Run();

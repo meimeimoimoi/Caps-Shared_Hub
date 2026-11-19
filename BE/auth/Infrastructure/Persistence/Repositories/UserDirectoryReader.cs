@@ -60,7 +60,8 @@ public sealed class UserDirectoryReader(AuthDbContext db) : IUserDirectoryReader
             x.CreatedAt,
             x.RefreshTokens.Max(t => (DateTimeOffset?)t.IssuedAt),
             x.SuspendedReason,
-            x.SuspendedAt
+            x.SuspendedAt,
+            x.Phone
         ));
 
     private static ManagedUserResponse ToResponse(Row x) =>
@@ -73,7 +74,8 @@ public sealed class UserDirectoryReader(AuthDbContext db) : IUserDirectoryReader
             x.CreatedAt,
             x.LastSignInAt,
             x.SuspendedReason,
-            x.SuspendedAt
+            x.SuspendedAt,
+            x.Phone
         );
 
     private sealed record Row(
@@ -85,6 +87,7 @@ public sealed class UserDirectoryReader(AuthDbContext db) : IUserDirectoryReader
         DateTimeOffset CreatedAt,
         DateTimeOffset? LastSignInAt,
         string? SuspendedReason,
-        DateTimeOffset? SuspendedAt
+        DateTimeOffset? SuspendedAt,
+        string? Phone
     );
 }

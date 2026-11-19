@@ -53,5 +53,5 @@ public static class PlatformFeeRows
         );
 
     public static NoResponseRuleResponse NoResponseOf(PlatformFee fee) =>
-        new(fee.NoResponseHours, fee.NoResponseRefundPercent, fee.NoResponseExpertPercent);
+        new(fee.NoResponseDays, fee.NoResponseRefundPercent, fee.NoResponseExpertPercent);
 }

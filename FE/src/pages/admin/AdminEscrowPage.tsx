@@ -1,8 +1,8 @@
+import { SortableTh } from '@/components/ui/navigation/sortable-th'
 import { useCallback, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Download, AlertTriangle } from 'lucide-react'
 import { ESCROW_STATUS } from '@/lib/constants'
-import { isExpertDemo } from '@/lib/expert-data-source'
 import { cn, formatDayMonth } from '@/lib/utils'
 import { formatVnd } from '@/lib/format-money'
 import { StatusBadge } from '@/components/ui/display/status-badge'
@@ -29,7 +29,6 @@ import { usePricing } from '../../features/service-pricing/hooks/usePricing'
 import type { Escrow } from '../../features/disputes-escrow/types'
 import { PageHeader } from '@/components/ui/layout/page-header'
 import { LoadError } from '@/components/ui/feedback/load-error'
-import { OperationsUnavailable } from '@/features/disputes-escrow/components/OperationsUnavailable'
 
 const rowCls = 'border-border-subtle border-t [&>td]:px-4 [&>td]:py-3'
 const headCls =
@@ -49,11 +48,12 @@ const GROUPS = [
 export default function AdminEscrowPage() {
   const nav = useAdminNav()
   const { t } = useTranslation(['admin', 'common'])
-  const escrows = useEscrows(!nav.operationsUnavailable)
+  const escrows = useEscrows()
   const { paged, selected } = escrows
-  // Share comes from the pricing config; 40 (agreed 2026-11-11) is only the fallback while it loads
+  // Share comes from the pricing config; 40 (agreed 2026-11-11) is the fallback while it loads and
+  // while that config has no backend
   const platformShare =
-    usePricing(!nav.operationsUnavailable).data?.platformShare ?? 40
+    usePricing(!nav.pricingUnavailable).data?.platformShare ?? 40
   const [retrying, setRetrying] = useState<string | null>(null)
   const [toast, setToast] = useState<ToastContent | null>(null)
   const clearToast = useCallback(() => setToast(null), [])
@@ -125,31 +125,26 @@ export default function AdminEscrowPage() {
       {...nav}
       section="escrow"
       breadcrumb={t('escrow.title')}
-      search={nav.operationsUnavailable ? undefined : escrows.query}
+      search={escrows.query}
       searchLabel={t('escrow.searchLabel')}
-      onSearchChange={nav.operationsUnavailable ? undefined : escrows.setQuery}
+      onSearchChange={escrows.setQuery}
     >
       <PageHeader
         title={t('escrow.title')}
         help={t('escrow.intro')}
         actions={
-          !nav.operationsUnavailable && (
-            <button
-              type="button"
-              onClick={exportCsv}
-              disabled={!escrows.rows.length}
-              className="btn btn-press btn-secondary"
-            >
-              <Download size={16} aria-hidden="true" />
-              {t('escrow.export')}
-            </button>
-          )
+          <button
+            type="button"
+            onClick={exportCsv}
+            disabled={!escrows.rows.length}
+            className="btn btn-press btn-secondary"
+          >
+            <Download size={16} aria-hidden="true" />
+            {t('escrow.export')}
+          </button>
         }
       />
-      {/* No backend for this queue outside the demo: one honest state, no fake zeros */}
-      {nav.operationsUnavailable ? (
-        <OperationsUnavailable area="escrow" />
-      ) : (
+      {
         <>
           {/* Total tiles double as filters: click to see that status, click again to clear.
            * Shown only once the list has loaded, so a pending or failed load never reads as 0 ₫ */}
@@ -270,24 +265,49 @@ export default function AdminEscrowPage() {
               <caption className="sr-only">{t('escrow.title')}</caption>
               <thead>
                 <tr className={headCls}>
-                  <th scope="col" className="text-left">
+                  <SortableTh
+                    className="text-left"
+                    column="caseId"
+                    sort={escrows.sort}
+                    onSort={escrows.onSort}
+                  >
                     {t('escrow.col.caseId')}
-                  </th>
-                  <th scope="col" className="text-left">
+                  </SortableTh>
+                  <SortableTh
+                    className="text-left"
+                    column="client"
+                    sort={escrows.sort}
+                    onSort={escrows.onSort}
+                  >
                     {t('escrow.col.client')}
-                  </th>
-                  <th scope="col" className="text-left">
+                  </SortableTh>
+                  <SortableTh
+                    className="text-left"
+                    column="expert"
+                    sort={escrows.sort}
+                    onSort={escrows.onSort}
+                  >
                     {t('escrow.col.expert')}
-                  </th>
-                  <th scope="col" className="text-right">
+                  </SortableTh>
+                  <SortableTh
+                    className="text-right"
+                    column="amount"
+                    sort={escrows.sort}
+                    onSort={escrows.onSort}
+                  >
                     {t('escrow.col.amount')}
-                  </th>
+                  </SortableTh>
                   <th scope="col" className="text-left">
                     {t('escrow.col.status')}
                   </th>
-                  <th scope="col" className="text-right">
+                  <SortableTh
+                    className="text-right"
+                    column="nextAt"
+                    sort={escrows.sort}
+                    onSort={escrows.onSort}
+                  >
                     {t('escrow.col.next')}
-                  </th>
+                  </SortableTh>
                   <th scope="col">
                     <span className="sr-only">{t('escrow.col.actions')}</span>
                   </th>
@@ -351,6 +371,8 @@ export default function AdminEscrowPage() {
               paged={paged}
               onPrev={escrows.prev}
               onNext={escrows.next}
+              onPageChange={escrows.setPage}
+              onPageSizeChange={escrows.setPageSize}
             />
           </section>
 
@@ -408,37 +430,12 @@ export default function AdminEscrowPage() {
                     setToast(t('escrow.refund.done', { id: selected.caseId }))
                   )
               }
-              // Demo escrows keep their own flow; billing release and refund are API only
-              onRelease={
-                isExpertDemo
-                  ? undefined
-                  : (expertUserId, pct) =>
-                    escrows
-                      .release(selected.caseId, expertUserId, pct)
-                      .then(() =>
-                        setToast(
-                          t('escrow.settle.released', { id: selected.caseId })
-                        )
-                      )
-              }
-              onRefund={
-                isExpertDemo
-                  ? undefined
-                  : () =>
-                    escrows
-                      .refund(selected.caseId)
-                      .then(() =>
-                        setToast(
-                          t('escrow.settle.refunded', { id: selected.caseId })
-                        )
-                      )
-              }
               onClose={() => escrows.select(null)}
             />
           )}
           {toast && <Toast message={toast} onDone={clearToast} />}
         </>
-      )}
+      }
     </AdminLayout>
   )
 }

@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { useFormatters } from '@/hooks/useFormatters'
 
 const pagerButton =
-  'inline-flex min-h-11 min-w-11 cursor-pointer items-center justify-center gap-1.5 rounded-lg border border-transparent bg-transparent px-2.5 py-2 text-[13px] text-[var(--pager-muted)] hover:enabled:bg-[var(--pager-hover)] hover:enabled:text-[var(--pager-ink)] disabled:cursor-not-allowed disabled:opacity-45 focus-visible:outline-2 focus-visible:outline-offset-[3px] focus-visible:outline-[var(--pager-ink)]'
+  'inline-flex min-h-11 min-w-11 shrink-0 cursor-pointer items-center justify-center gap-1.5 rounded-lg border border-transparent bg-transparent px-2.5 py-2 text-[13px] font-medium text-[var(--pager-muted)] transition-[background-color,color,border-color,box-shadow] duration-150 hover:enabled:border-[var(--pager-line)] hover:enabled:bg-[var(--pager-hover)] hover:enabled:text-[var(--pager-ink)] disabled:cursor-not-allowed disabled:opacity-35 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent motion-reduce:transition-none'
 
 interface PaginationProps {
   page: number
@@ -44,21 +44,21 @@ export function Pagination({
 
   return (
     <nav
-      className="shared-pagination flex flex-wrap items-center justify-between gap-x-5 gap-y-3 rounded-b-[14px] border-t border-[var(--pager-line)] bg-[var(--pager-surface)] px-[18px] py-3 text-[13px] text-[var(--pager-ink)] tabular-nums [--pager-hover:var(--ui-surface-muted)] [--pager-ink:var(--ui-text-strong)] [--pager-line:var(--ui-border)] [--pager-muted:var(--ui-text-muted)] [--pager-surface:var(--ui-surface)] [.ep-cases-table-wrapper+&]:border [.ep-cases-table-wrapper+&]:border-t-0"
+      className="shared-pagination rounded-b-overlay @container flex flex-wrap items-center justify-between gap-x-6 gap-y-4 border-t border-[var(--pager-line)] bg-[var(--pager-surface)] px-4 py-4 text-[13px] text-[var(--pager-ink)] tabular-nums [--pager-hover:var(--ui-surface-muted)] [--pager-ink:var(--ui-text-strong)] [--pager-line:var(--ui-border)] [--pager-muted:var(--ui-text-muted)] [--pager-surface:var(--ui-surface)] sm:px-5 [.ep-cases-table-wrapper+&]:border [.ep-cases-table-wrapper+&]:border-t-0"
       aria-label={label ?? t('pagination.label')}
     >
-      <p
-        className="m-0 text-[var(--pager-muted)] [&_strong]:font-medium [&_strong]:text-[var(--pager-ink)]"
-        aria-live="polite"
-        aria-atomic="true"
-      >
-        {t('pagination.range', {
-          from: format.number(from),
-          to: format.number(to),
-          total: format.number(total),
-        })}
-      </p>
-      <div className="flex flex-wrap items-center gap-6 max-[600px]:w-full max-[600px]:justify-between">
+      <div className="flex min-w-0 flex-wrap items-center gap-x-5 gap-y-3 @max-[40rem]:w-full @max-[40rem]:justify-between">
+        <p
+          className="m-0 text-[var(--pager-muted)] [&_strong]:font-medium [&_strong]:text-[var(--pager-ink)]"
+          aria-live="polite"
+          aria-atomic="true"
+        >
+          {t('pagination.range', {
+            from: format.number(from),
+            to: format.number(to),
+            total: format.number(total),
+          })}
+        </p>
         {onPageSizeChange && (
           <CustomSelect
             value={String(size)}
@@ -68,61 +68,75 @@ export function Pagination({
               label: format.number(value),
             }))}
             label={t('pagination.rows')}
-            className="flex items-center gap-2 !text-[var(--pager-ink)] [&>span]:whitespace-nowrap [&>span]:text-[var(--pager-muted)]"
-            triggerClassName="!w-20 !bg-[var(--pager-surface)] !text-[var(--pager-ink)] !border-[var(--pager-line)] !shadow-none"
+            className="flex items-center gap-2 !text-[var(--pager-ink)] @min-[40rem]:border-l @min-[40rem]:border-[var(--pager-line)] @min-[40rem]:pl-5 [&>span]:whitespace-nowrap [&>span]:text-[var(--pager-muted)]"
+            triggerClassName="!w-20 !bg-[var(--pager-surface)] !text-[var(--pager-ink)] !border-[var(--pager-line)] !shadow-none hover:!border-[var(--ui-accent)]"
             menuClassName="!left-auto !bottom-full !top-auto !mt-0 !mb-2 !w-20 !bg-[var(--pager-surface)] !text-[var(--pager-ink)] !border-[var(--pager-line)] [&_[role=option]]:min-h-10 [&_[role=option][data-active=true]]:!bg-[var(--pager-hover)] [&_[role=option][aria-selected=true]]:font-semibold"
           />
         )}
-        {count > 1 && (
-          <div className="flex items-center gap-1 max-[600px]:flex-wrap">
-            <button
-              className={pagerButton}
-              type="button"
-              disabled={current <= 1}
-              onClick={() => onPageChange(current - 1)}
-              aria-label={previous}
-            >
-              <ChevronLeft size={16} aria-hidden="true" />
-              <span className="max-[600px]:hidden">{previous}</span>
-            </button>
-            {showPages &&
-              paginationPages(current, count).map((value, index) =>
-                value === 'gap' ? (
-                  <span
-                    key={`gap-${index}`}
-                    className="px-[3px] text-[var(--pager-muted)]"
-                    aria-hidden="true"
-                  >
-                    …
-                  </span>
-                ) : (
-                  <button
-                    className={`${pagerButton} ${current === value ? '!border-[var(--pager-line)] !bg-[var(--pager-hover)] font-semibold !text-[var(--pager-ink)] hover:!border-[var(--pager-muted)]' : ''}`}
-                    type="button"
-                    key={value}
-                    aria-current={current === value ? 'page' : undefined}
-                    aria-label={t('pagination.page', {
-                      page: format.number(value),
-                    })}
-                    onClick={() => onPageChange(value)}
-                  >
-                    {format.number(value)}
-                  </button>
-                )
-              )}
-            <button
-              className={pagerButton}
-              type="button"
-              disabled={current >= count}
-              onClick={() => onPageChange(current + 1)}
-              aria-label={next}
-            >
-              <span className="max-[600px]:hidden">{next}</span>
-              <ChevronRight size={16} aria-hidden="true" />
-            </button>
-          </div>
-        )}
       </div>
+      {count > 1 && (
+        <div className="flex items-center gap-1 @max-[40rem]:w-full @max-[40rem]:justify-between">
+          <button
+            className={pagerButton}
+            type="button"
+            disabled={current <= 1}
+            onClick={() => onPageChange(current - 1)}
+            aria-label={previous}
+          >
+            <ChevronLeft size={16} aria-hidden="true" />
+            <span className="@max-[40rem]:hidden">{previous}</span>
+          </button>
+          {showPages &&
+            paginationPages(current, count).map((value, index) =>
+              value === 'gap' ? (
+                <span
+                  key={`gap-${index}`}
+                  className="hidden min-w-6 justify-center text-[var(--pager-muted)] @min-[40rem]:inline-flex"
+                  aria-hidden="true"
+                >
+                  …
+                </span>
+              ) : (
+                <button
+                  className={`${pagerButton} hidden @min-[40rem]:inline-flex ${current === value ? 'shadow-control !border-[var(--ui-accent)] !bg-[var(--ui-accent)] font-semibold !text-[var(--ui-on-accent)]' : ''}`}
+                  type="button"
+                  key={value}
+                  aria-current={current === value ? 'page' : undefined}
+                  aria-label={t('pagination.page', {
+                    page: format.number(value),
+                  })}
+                  onClick={() => {
+                    if (value !== current) onPageChange(value)
+                  }}
+                >
+                  {format.number(value)}
+                </button>
+              )
+            )}
+          <span
+            className={
+              showPages
+                ? 'px-3 text-[var(--pager-muted)] @min-[40rem]:hidden'
+                : 'px-3 text-[var(--pager-muted)]'
+            }
+          >
+            {t('pagination.pageOf', {
+              page: format.number(current),
+              totalPages: format.number(count),
+            })}
+          </span>
+          <button
+            className={pagerButton}
+            type="button"
+            disabled={current >= count}
+            onClick={() => onPageChange(current + 1)}
+            aria-label={next}
+          >
+            <span className="@max-[40rem]:hidden">{next}</span>
+            <ChevronRight size={16} aria-hidden="true" />
+          </button>
+        </div>
+      )}
     </nav>
   )
 }

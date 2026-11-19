@@ -1,17 +1,17 @@
 import type { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
-import { ShieldCheck } from 'lucide-react'
+import { HelpTip } from '@/components/ui/feedback/help-tip'
 import { MotionReveal, MotionStagger } from '@/components/ui/motion'
 
 const topics = ['deductible', 'invoice', 'rate', 'welfare'] as const
 
 type AssistantWelcomeProps = {
-  /** Ô hỏi đặt giữa trang: hành động chính của màn hình trống */
+  /** The question composer is the primary action in the empty state. */
   composer: ReactNode
   onSelectQuestion: (question: string) => void
 }
 
-/* Trạng thái trống kiểu "bàn tra cứu": ô hỏi là trung tâm, gợi ý xếp ngay dưới; lịch sử nằm ở cột riêng. */
+/* Center the composer and suggested questions within the available conversation pane. */
 export function AssistantWelcome({
   composer,
   onSelectQuestion,
@@ -21,36 +21,33 @@ export function AssistantWelcome({
   return (
     <section
       aria-labelledby="assistant-welcome-title"
-      className="mx-auto flex w-full max-w-2xl flex-col gap-8 pt-7 pb-10 md:gap-9 md:pt-7 md:pb-14"
+      className="mx-auto my-auto flex w-full max-w-3xl shrink-0 flex-col gap-6 py-8 md:gap-8 md:py-12"
     >
       <MotionReveal
         preset="reveal"
-        className="flex flex-col gap-3 md:items-center md:text-center"
+        className="flex items-start justify-center gap-3 text-center"
       >
         <h1
           id="assistant-welcome-title"
-          className="text-text-strong text-h1 font-serif tracking-tight text-balance md:text-[2.5rem] md:leading-tight"
+          className="text-text-strong font-serif text-3xl leading-tight tracking-tight text-balance md:text-4xl"
         >
           {t('welcome.title')}
         </h1>
-        <p className="text-text-muted flex items-start gap-2 text-pretty md:items-center">
-          <ShieldCheck
-            size={17}
-            aria-hidden="true"
-            className="text-accent-text mt-0.5 shrink-0 md:mt-0"
-          />
-          {t('welcome.lead')}
-        </p>
+        <div className="mt-2 shrink-0">
+          <HelpTip label={t('welcome.title')} className="[&>div]:right-0 [&>div]:left-auto">
+            {t('welcome.lead')}
+          </HelpTip>
+        </div>
       </MotionReveal>
 
       <MotionReveal preset="reveal">{composer}</MotionReveal>
 
       <div className="flex flex-col gap-3">
-        <h2 className="text-text-muted text-caption font-sans font-semibold tracking-[0.08em] uppercase md:text-center">
+        <h2 className="text-text-muted text-sm font-sans font-medium text-center">
           {t('welcome.topicsLabel')}
         </h2>
-        {/* Gợi ý: chip gọn, bấm là điền sẵn câu hỏi mẫu vào ô hỏi để người dùng sửa trước khi gửi */}
-        <MotionStagger className="flex flex-wrap gap-2 md:justify-center">
+        {/* Suggestions fill the composer so the question can be edited before sending. */}
+        <MotionStagger className="flex flex-wrap justify-center gap-2">
           {topics.map((topic) => (
             <MotionReveal key={topic} preset="reveal">
               <button

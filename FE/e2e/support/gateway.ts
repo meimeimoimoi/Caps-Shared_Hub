@@ -65,7 +65,7 @@ function listedExpert() {
     location: 'TP. Hồ Chí Minh', yearsExperience: 16, fields: [], bio: null, highlights: null,
     ratingAvg: 4.95, ratingCount: 58,
     services: [{ serviceCode: 'cit-review', serviceName: 'CIT draft verification',
-      price: 2_400_000, slaHours: 48, approvedAt: '2026-03-19T00:00:00Z' }],
+      price: 2_400_000, approvedAt: '2026-03-19T00:00:00Z' }],
     freeSlots: 3,
   }
 }

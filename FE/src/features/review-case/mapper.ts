@@ -10,8 +10,6 @@ import type {
   TimelineEvent,
 } from './types'
 
-const ACCEPTANCE_WINDOW_MS = 72 * 3_600_000
-
 // Server statuses the case page names differently; the rest are shared
 const STATUS: Record<string, CaseStatus> = {
   EXPERT_DECLINED: 'DECLINED_BY_EXPERT',
@@ -55,9 +53,10 @@ export const outcomeOf = (refundPct: number | null) =>
 function ruleOf(d: ReviewCaseDto, dispute?: DisputeDto | null): SettlementRule {
   switch (d.status) {
     case 'COMPLETED':
-      return 'USER_ACCEPTED'
     case 'AUTO_CONFIRMED':
-      return 'AUTO_CONFIRMED'
+      // Only a late delivery refunds part of an accepted case
+      if (d.settlement && d.settlement.clientRefund > 0) return 'LATE_DELIVERY'
+      return d.status === 'COMPLETED' ? 'USER_ACCEPTED' : 'AUTO_CONFIRMED'
     case 'RESOLVED':
       return outcomeOf(dispute?.refundPct ?? null)
     case 'TERMINATED':
@@ -74,23 +73,26 @@ function timelineOf(d: ReviewCaseDto): ReviewCase['timeline'] {
   const entries: ReviewCase['timeline'] = [
     { at: d.createdAt, actor: 'USER', event: 'requested' },
   ]
+  if (d.paidAt) entries.push({ at: d.paidAt, actor: 'USER', event: 'paid' })
+  if (d.acceptedAt)
+    entries.push({ at: d.acceptedAt, actor: 'EXPERT', event: 'accepted' })
   for (const q of asked) {
     entries.push({ at: q.createdAt, actor: 'EXPERT', event: 'infoRequested' })
     if (q.respondedAt)
       entries.push({ at: q.respondedAt, actor: 'USER', event: 'infoAnswered' })
   }
+  if (d.deliveredAt)
+    entries.push({ at: d.deliveredAt, actor: 'EXPERT', event: 'delivered' })
+  // The step that ended the case has no time of its own: the last update is it
   const last = LAST_EVENT[d.status]
-  // Back in review after an answer: the answer above is the latest step, not the acceptance
-  if (last && !(d.status === 'IN_REVIEW' && asked.length))
+  if (last && !entries.some((e) => e.event === last[1]))
     entries.push({ at: d.updatedAt, actor: last[0], event: last[1] })
   return entries.sort((a, b) => b.at.localeCompare(a.at))
 }
 
 function resultOf(d: ReviewCaseDto): ReviewCase['result'] {
-  if (!d.result || !d.acceptanceDeadline) return undefined
-  const deliveredAt = new Date(
-    Date.parse(d.acceptanceDeadline) - ACCEPTANCE_WINDOW_MS
-  ).toISOString()
+  if (!d.result) return undefined
+  const deliveredAt = d.deliveredAt ?? d.updatedAt
   return d.result === 'VERIFIED'
     ? {
         outcome: 'VERIFIED',
