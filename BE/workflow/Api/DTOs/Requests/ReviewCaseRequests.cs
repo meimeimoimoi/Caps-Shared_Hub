@@ -37,6 +37,8 @@ public sealed record DeliverReviewRequest(
     string? Result,
     string? Summary,
     string? CannotVerifyReason,
+    string[]? Citations,
+    bool Attested,
     JsonElement? RevisedContent
 );
 

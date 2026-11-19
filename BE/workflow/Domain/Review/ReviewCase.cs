@@ -29,6 +29,12 @@ public sealed partial class ReviewCase
     public const int ReminderHours = 3;
     public const string Verified = "VERIFIED";
     public const string CannotVerify = "CANNOT_VERIFY";
+    public const string AttestationNote =
+        "Expert attested: information and evidence (T1), AI output (T2), legal basis (T3) checked.";
+
+    public const int MaxCitations = 20;
+    public const int MaxCitationLength = 500;
+
     public const string UserNonResponse = "USER_NON_RESPONSE";
     public const string ExpertFull = "EXPERT_FULL";
     public const string ServiceSuspended = "SERVICE_SUSPENDED";
@@ -119,6 +125,9 @@ public sealed partial class ReviewCase
 
     /// <summary>The expert's edited copy of an AI draft (jsonb), compared field by field with the source.</summary>
     public string? RevisedContent { get; private set; }
+
+    /// <summary>Legal basis the expert relied on (BR-M10), one reference per entry.</summary>
+    public string[] Citations { get; private set; } = [];
 
     public string? DeclineReason { get; private set; }
     public string? TerminationReason { get; private set; }

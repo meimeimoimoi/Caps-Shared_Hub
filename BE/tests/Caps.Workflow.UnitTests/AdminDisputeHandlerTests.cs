@@ -120,7 +120,16 @@ public sealed class AdminDisputeHandlerTests
                 .Case;
             Case.ConfirmPayment(T0.AddHours(-2));
             Case.Accept(ExpertProfile, Expert, T0.AddHours(-1));
-            Case.Deliver(ExpertProfile, Expert, ReviewCase.Verified, "All good", null, T0);
+            Case.Deliver(
+                ExpertProfile,
+                Expert,
+                ReviewCase.Verified,
+                "All good",
+                null,
+                ["Article 9, CIT Law"],
+                true,
+                T0
+            );
             (Dispute, _) = Case.OpenDispute(
                 Client,
                 "OBLIGATION_NOT_MET",

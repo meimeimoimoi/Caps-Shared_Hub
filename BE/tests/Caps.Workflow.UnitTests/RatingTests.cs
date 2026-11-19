@@ -49,7 +49,16 @@ public sealed class RatingTests
     public void A_decided_dispute_can_be_rated()
     {
         var reviewCase = InReview();
-        reviewCase.Deliver(ExpertProfile, Expert, ReviewCase.Verified, "Done", null, Now);
+        reviewCase.Deliver(
+            ExpertProfile,
+            Expert,
+            ReviewCase.Verified,
+            "Done",
+            null,
+            ["Article 9, CIT Law"],
+            true,
+            Now
+        );
         var (dispute, _) = reviewCase.OpenDispute(
             Client,
             "DELIVERABLE_INCOMPLETE",
@@ -95,6 +104,8 @@ public sealed class RatingTests
             ReviewCase.Verified,
             "Done",
             null,
+            ["Article 9, CIT Law"],
+            true,
             Now.AddHours(-1)
         );
         reviewCase.Confirm(Client, Now.AddHours(-1));

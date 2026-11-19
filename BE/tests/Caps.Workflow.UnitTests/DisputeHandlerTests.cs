@@ -141,7 +141,16 @@ public sealed class DisputeHandlerTests
             .Case;
         reviewCase.ConfirmPayment(now);
         reviewCase.Accept(ExpertProfile, Expert, now);
-        reviewCase.Deliver(ExpertProfile, Expert, ReviewCase.Verified, "All good", null, now);
+        reviewCase.Deliver(
+            ExpertProfile,
+            Expert,
+            ReviewCase.Verified,
+            "All good",
+            null,
+            ["Article 9, CIT Law"],
+            true,
+            now
+        );
         return reviewCase;
     }
 
