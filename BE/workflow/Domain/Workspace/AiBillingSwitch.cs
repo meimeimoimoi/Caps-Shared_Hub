@@ -10,7 +10,7 @@ public sealed class AiBillingSwitch
 
     private AiBillingSwitch() { }
 
-    public int Id { get; private set; } = SingletonId;
+    public int Id { get; } = SingletonId;
     public bool Enabled { get; private set; }
 
     /// <summary>The admin who last flipped it.</summary>
