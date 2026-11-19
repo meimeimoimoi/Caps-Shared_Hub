@@ -8,5 +8,7 @@ public sealed record ReviewQueueScope(
     TimeSpan Hold
 )
 {
+    public string SortBy { get; init; } = "queue";
+    public bool SortDescending { get; init; }
     public DateTimeOffset ExpiredBefore => Now - Hold;
 }

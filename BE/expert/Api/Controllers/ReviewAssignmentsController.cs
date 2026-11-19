@@ -25,6 +25,7 @@ public sealed class ReviewAssignmentsController(ICurrentUser currentUser) : Cont
     /// <remarks>
     /// Same filters as the reviewer queue (repeat applicationStatus and qualificationStatus); claim defaults to
     /// ALL here. Each row carries claimedByUserId, claimedByEmail and claimExpiresAt.
+    /// sortBy accepts name, years, submittedAt or waiting; sortDescending reverses that order before paging.
     /// </remarks>
     /// <response code="200">The page with the total number of matching reviews.</response>
     /// <response code="400">INVALID_PAGING.</response>
@@ -38,7 +39,9 @@ public sealed class ReviewAssignmentsController(ICurrentUser currentUser) : Cont
         [FromQuery, MaxLength(SearchReviewQueueHandler.MaxSearchLength)] string? q = null,
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 10,
-        [FromQuery, MaxLength(32)] string? claim = null
+        [FromQuery, MaxLength(32)] string? claim = null,
+        [FromQuery, MaxLength(32)] string? sortBy = null,
+        [FromQuery] bool sortDescending = false
     )
     {
         var query = new SearchReviewQueueQuery(
@@ -48,7 +51,9 @@ public sealed class ReviewAssignmentsController(ICurrentUser currentUser) : Cont
             page,
             pageSize,
             UserId,
-            claim ?? ReviewClaimFilter.All
+            claim ?? ReviewClaimFilter.All,
+            sortBy,
+            sortDescending
         );
         var queue = await handler.HandleAsync(query, ct);
         return Ok(ApiResponse<ReviewQueuePageResponse>.Ok(queue));
