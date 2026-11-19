@@ -93,18 +93,19 @@ function timelineOf(d: ReviewCaseDto): ReviewCase['timeline'] {
 function resultOf(d: ReviewCaseDto): ReviewCase['result'] {
   if (!d.result) return undefined
   const deliveredAt = d.deliveredAt ?? d.updatedAt
+  const cites = (d.citations ?? []).map((ref) => ({ ref, note: '' }))
   return d.result === 'VERIFIED'
     ? {
         outcome: 'VERIFIED',
         conclusion: d.reviewSummary ?? '',
-        notes: [],
+        notes: cites,
         deliveredAt,
       }
     : {
         outcome: 'CANNOT_VERIFY',
         summary: d.reviewSummary ?? '',
         rationale: d.cannotVerifyReason ?? '',
-        findings: [],
+        findings: cites,
         deliveredAt,
       }
 }

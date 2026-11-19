@@ -92,7 +92,7 @@ export function ReviewResultView({
               )}
             </h3>
             {notes.map((n, i) => (
-              <MarginNote key={n.ref} kind="cite" label={`[${i + 1}] ${n.ref}`}>
+              <MarginNote key={`${i}-${n.ref}`} kind="cite" label={`[${i + 1}] ${n.ref}`}>
                 {n.note}
               </MarginNote>
             ))}
