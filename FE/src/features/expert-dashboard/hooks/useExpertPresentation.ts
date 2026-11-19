@@ -59,6 +59,7 @@ const serviceKeys = {
   PENDING: 'pending',
 } as const
 const deadlineKeys = {
+  'Admin decision due': 'adminDecisionDue',
   'Delivery due': 'deliveryDue',
   'Expert response due': 'expertResponseDue',
   'Review start due': 'reviewStartDue',
