@@ -11,6 +11,7 @@ interface DirectoryUser {
   id: string
   fullName: string
   email: string
+  phone?: string | null
   roles: string[]
   status: 'ACTIVE' | 'PENDING_VERIFICATION' | 'SUSPENDED'
   createdAt: string
@@ -39,6 +40,7 @@ function toManagedUser(user: DirectoryUser): ManagedUser {
     id: user.id,
     name: user.fullName,
     email: user.email,
+    phone: user.phone ?? null,
     role: roles.at(-1) ?? 'CLIENT',
     roles,
     status: user.status === 'SUSPENDED' ? 'LOCKED' : user.status,

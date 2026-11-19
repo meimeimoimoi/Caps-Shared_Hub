@@ -1,3 +1,5 @@
+import { SortableTh } from '@/components/ui/navigation/sortable-th'
+import { useSortState } from '@/hooks/useTableSort'
 import { useCallback, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
@@ -52,17 +54,18 @@ export default function AdminReviewAssignmentsPage() {
   const nav = useAdminNav()
   const { t } = useTranslation(['admin', 'common'])
   const qc = useQueryClient()
+  const sorting = useSortState({ key: "queue", direction: "asc" })
   const [gate, setGate] = useState<GateFilter>('ALL')
   const [claim, setClaim] = useState<ClaimFilter>('ALL')
   const [paging, setPaging] = useState({ key: '', page: 1, pageSize: 10 })
   const [search, setSearch] = useState('')
-  const filterKey = `${gate}:${claim}:${search.trim()}`
+  const filterKey = JSON.stringify([gate, claim, search.trim(), sorting.sort])
   const page = paging.key === filterKey ? paging.page : 1
   const [target, setTarget] = useState<ReviewQueueRow | null>(null)
   const [toast, setToast] = useState<ToastContent | null>(null)
   const clearToast = useCallback(() => setToast(null), [])
 
-  const params = { ...GATES[gate], search: search.trim(), page, pageSize: paging.pageSize, claim }
+  const params = { ...GATES[gate], search: search.trim(), page, pageSize: paging.pageSize, claim, sortBy: sorting.sort.key, sortDescending: sorting.sort.direction === "desc" }
   const list = useQuery({
     queryKey: adminKeys.queue('assignment', params),
     queryFn: ({ signal }) => searchAssignments(params, signal),
@@ -141,9 +144,23 @@ export default function AdminReviewAssignmentsPage() {
           <caption className="sr-only">{t('admin:assignments.title')}</caption>
           <thead className="bg-sunken text-fg-muted text-left">
             <tr className="[&>th]:whitespace-nowrap">
-              <th scope="col" className="px-4 py-3 font-semibold">{t('admin:assignments.columns.expert')}</th>
+              <SortableTh
+                className="px-4 py-3 font-semibold"
+                column="name"
+                sort={sorting.sort}
+                onSort={sorting.onSort}
+              >
+                {t('admin:assignments.columns.expert')}
+              </SortableTh>
               <th scope="col" className="px-4 py-3 font-semibold">{t('admin:assignments.columns.gate')}</th>
-              <th scope="col" className="px-4 py-3 font-semibold">{t('admin:assignments.columns.submitted')}</th>
+              <SortableTh
+                className="px-4 py-3 font-semibold"
+                column="submittedAt"
+                sort={sorting.sort}
+                onSort={sorting.onSort}
+              >
+                {t('admin:assignments.columns.submitted')}
+              </SortableTh>
               <th scope="col" className="px-4 py-3 font-semibold">{t('admin:assignments.columns.status')}</th>
               <th scope="col" className="px-4 py-3 font-semibold">{t('admin:assignments.columns.holder')}</th>
               <th scope="col" className="px-4 py-3">

@@ -21,7 +21,7 @@ export default function AdminQualificationsPage({
 }) {
   const nav = useAdminNav()
   const { t } = useTranslation(['admin', 'common'])
-  const { tab, setTab, query, setQuery, countOf, paged, prev, next, isLoading, error } =
+  const { tab, setTab, query, setQuery, countOf, paged, prev, next, setPage, setPageSize, sort, onSort, isLoading, error } =
     useQualificationQueue(scope)
   const review = scope === 'review'
 
@@ -64,9 +64,13 @@ export default function AdminQualificationsPage({
       </div>
 
       <QualificationsTable
+        sort={sort}
+        onSort={onSort}
         paged={paged}
         onPrev={prev}
         onNext={next}
+        onPageChange={setPage}
+        onPageSizeChange={setPageSize}
         loading={isLoading}
         empty={
           error ? (
