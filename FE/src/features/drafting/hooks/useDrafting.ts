@@ -4,9 +4,10 @@ import { useAuthStore } from '@/features/auth/store/authStore'
 import { useParams, useSearchParams } from 'react-router-dom'
 import { draftApi } from '../api/draftApi'
 import { isDraftMock } from '../api/dataSource'
+import { templateFile } from '../api/httpDraftApi'
 import { draftKeys } from '../api/queryKeys'
 import { draftScenarios } from '../constants'
-import type { RequestContext } from '../types'
+import type { RequestContext, TemplateVersion } from '../types'
 
 export function useDraftContext(): RequestContext {
   const session = useAuthStore((state) => state.sessionScope)
@@ -55,6 +56,16 @@ export function useTemplate(id?: string) {
     queryKey: draftKeys.item(ctx.scope, ctx.scenario, 'template', id),
     queryFn: ({ signal }) => draftApi.template(id!, { ...ctx, signal }),
     enabled: Boolean(id),
+  })
+}
+/** The template's sample .docx, when the version has one; a released version's file never changes */
+export function useTemplateFile(template?: TemplateVersion) {
+  const ctx = useDraftContext()
+  return useQuery({
+    queryKey: draftKeys.item(ctx.scope, ctx.scenario, 'template-file', template?.id),
+    queryFn: ({ signal }) => templateFile(template!.id, signal),
+    enabled: Boolean(template?.hasFile) && !isDraftMock,
+    staleTime: Infinity,
   })
 }
 export function useWorkspaces() {

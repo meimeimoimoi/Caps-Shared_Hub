@@ -75,6 +75,7 @@ public sealed class WorkflowDbContext(DbContextOptions<WorkflowDbContext> option
                 .HasColumnName("created_at")
                 .HasDefaultValueSql("now()")
                 .IsRequired();
+            e.Property(x => x.FileKey).HasColumnName("file_key");
 
             e.HasIndex(x => new { x.TemplateId, x.VersionNo }).IsUnique();
 

@@ -1,5 +1,9 @@
+import { useState } from 'react'
 import type { SchemaField } from '@/features/drafting/types'
 import { Modal } from '@/components/ui/feedback/modal'
+import { useTemplateFile } from '../hooks/useTemplates'
+import { sampleFills } from '../utils/sampleFills'
+import { DocxPreview } from './DocxPreview'
 import type { ManagedTemplate, ManagedTemplateVersion } from '../types'
 
 const inputCls =
@@ -147,6 +151,11 @@ export function TemplatePreview({
   version: ManagedTemplateVersion
   onClose: () => void
 }) {
+  const file = useTemplateFile(template.id, version)
+  // A version with a sample file opens on it: that is the page users fill in
+  const [view, setView] = useState<'file' | 'form'>(
+    version.hasFile ? 'file' : 'form'
+  )
   const notice =
     template.status !== 'ACTIVE'
       ? 'Template đang tạm ngưng: người dùng chưa chọn được mẫu này.'
@@ -157,7 +166,7 @@ export function TemplatePreview({
   return (
     <Modal
       title={`Xem trước · v${version.version}`}
-      description="Form người dùng điền khi soạn nháp bằng template này."
+      size={version.hasFile ? 'xl' : 'md'}
       onClose={onClose}
       footer={
         <button
@@ -175,11 +184,49 @@ export function TemplatePreview({
             {notice}
           </p>
         )}
-        <TemplateFormPreview
-          title={template.title}
-          description={template.description}
-          fields={version.fields}
-        />
+        {version.hasFile && (
+          <div
+            role="group"
+            aria-label="Kiểu xem trước"
+            className="mb-4 flex gap-2"
+          >
+            {(
+              [
+                ['file', 'File mẫu'],
+                ['form', 'Form'],
+              ] as const
+            ).map(([value, label]) => (
+              <button
+                key={value}
+                type="button"
+                aria-pressed={view === value}
+                onClick={() => setView(value)}
+                className={`btn px-3 ${view === value ? 'btn-secondary' : 'btn-ghost'}`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        )}
+        {view === 'file' && version.hasFile ? (
+          file.data ? (
+            <DocxPreview file={file.data} fills={sampleFills(version.fields)} />
+          ) : file.isError ? (
+            <p role="alert" className="text-danger text-sm">
+              Không tải được file mẫu của phiên bản này.
+            </p>
+          ) : (
+            <p role="status" className="text-fg-muted text-sm">
+              Đang tải file mẫu…
+            </p>
+          )
+        ) : (
+          <TemplateFormPreview
+            title={template.title}
+            description={template.description}
+            fields={version.fields}
+          />
+        )}
       </div>
     </Modal>
   )

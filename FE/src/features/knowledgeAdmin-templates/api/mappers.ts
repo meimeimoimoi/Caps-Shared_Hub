@@ -29,6 +29,7 @@ export interface AdminTemplateDto {
     createdBy: string
     createdAt: string
     fieldSchema: unknown
+    hasFile?: boolean
   }[]
 }
 
@@ -81,7 +82,9 @@ export function fromAdminTemplate(t: AdminTemplateDto): ManagedTemplate {
       publishedAt: v.createdAt,
       publishedBy: '—',
       changelog: STATUS_NOTE[v.status],
-      fileName: '',
+      // The server keeps the file, not its original name
+      fileName: v.hasFile ? 'Đã tải lên (.docx)' : '',
+      hasFile: v.hasFile === true,
       fields: toSchemaFields(v.fieldSchema),
       workspaces: 0,
     }))

@@ -1,6 +1,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { toSchemaFields } from '../src/features/drafting/utils/schemaFields.ts'
+import { docxValues } from '../src/features/drafting/utils/docxValues.ts'
 import {
   fromAdminSummary,
   fromAdminTemplate,
@@ -42,6 +43,27 @@ test('a stored anchor comes back with its field; a malformed one is dropped', ()
   assert.deepEqual(kept.anchor, anchor)
   assert.equal('anchor' in bad, false)
   assert.equal('anchor' in negative, false)
+})
+
+test('typed values go to their blanks: dates split, amounts grouped, empty ones skipped', () => {
+  const at = { block: 2, find: '[01]' }
+  const fields = [
+    { id: 'year', label: '[01] Kỳ tính thuế', type: 'year', anchor: at },
+    { id: 'signed', label: 'Ngày ký', type: 'date', anchor: { block: 6 } },
+    { id: 'loss', label: 'Số lỗ', type: 'money', anchor: { block: 5, cell: [3, 2] } },
+    { id: 'name', label: 'Họ và tên', type: 'text', anchor: { block: 7 } },
+    { id: 'note', label: 'Ghi chú', type: 'text' },
+  ]
+  const input = { year: '2024', signed: '2026-03-31', loss: '5000000', name: ' ', note: 'x' }
+  const money = (n) => n.toLocaleString('vi-VN')
+  assert.deepEqual(
+    docxValues(fields, input, money).map((f) => [f.label, f.text]),
+    [
+      ['[01] Kỳ tính thuế', '2024'],
+      ['Ngày ký', ['31', '03', '2026']],
+      ['Số lỗ', '5.000.000'],
+    ]
+  )
 })
 
 const summary = (over) => ({

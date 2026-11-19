@@ -23,6 +23,7 @@ import {
 import { SnapshotDetails } from '@/features/drafting/components/SnapshotDetails'
 import { CitationDetails } from '@/features/drafting/components/CitationDetails'
 import { DocumentPreview } from '@/features/drafting/components/DocumentPreview'
+import { TemplateLayout } from '@/features/drafting/components/TemplateLayout'
 import { ReadinessPanel } from '@/features/drafting/components/ReadinessPanel'
 import { ExportDraftDialog } from '@/features/drafting/components/ExportDraftDialog'
 import { ReviewHandoffSummary } from '@/features/drafting/components/ReviewHandoffSummary'
@@ -55,6 +56,10 @@ function Preview({
   const [params] = useSearchParams()
   const [showExport, setShowExport] = useState(Boolean(params.get('exportId')))
   const [showReview, setShowReview] = useState(false)
+  // A template with a sample file opens on it, the way the published form looks
+  const [view, setView] = useState<'layout' | 'content'>(
+    template.hasFile ? 'layout' : 'content'
+  )
   const regenerateKey = useRef(crypto.randomUUID())
   const href = useDraftHref()
   const navigate = useNavigate()
@@ -97,7 +102,41 @@ function Preview({
         </p>
       )}
       <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
-        <DocumentPreview draft={draft} onCitation={openCitation} />
+        <div className="min-w-0 space-y-4">
+          {template.hasFile && (
+            <div
+              role="group"
+              aria-label={t('draftView')}
+              className="flex flex-wrap gap-2"
+            >
+              {(
+                [
+                  ['layout', t('templateLayout')],
+                  ['content', t('draftContent')],
+                ] as const
+              ).map(([value, label]) => (
+                <DraftButton
+                  key={value}
+                  secondary={view !== value}
+                  aria-pressed={view === value}
+                  onClick={() => setView(value)}
+                >
+                  {label}
+                </DraftButton>
+              ))}
+            </div>
+          )}
+          {template.hasFile && view === 'layout' ? (
+            // The confirmed input this draft was made from, in the form's own layout
+            <TemplateLayout
+              template={template}
+              input={snapshot.input}
+              scroll={false}
+            />
+          ) : (
+            <DocumentPreview draft={draft} onCitation={openCitation} />
+          )}
+        </div>
         <aside className="min-w-0 space-y-5">
           <Paper className="!p-5">
             <ReadinessPanel draft={draft} onCitation={openCitation} />

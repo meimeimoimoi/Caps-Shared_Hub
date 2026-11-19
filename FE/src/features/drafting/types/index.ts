@@ -25,6 +25,8 @@ export interface TemplateVersion {
   fields: SchemaField[]
   schemaNote?: string
   changelog?: string[]
+  /** The version has a sample .docx to show the values in its own layout */
+  hasFile?: boolean
 }
 export interface Snapshot {
   id: string

@@ -28,11 +28,13 @@ public sealed record TemplateSummaryResponse(
 
 /// <summary>The fields of a template's published version, to build the input form.</summary>
 /// <param name="FieldSchema">The stored JSON array, returned as JSON (not as a string).</param>
+/// <param name="HasFile">Whether the version has a sample .docx to show the values in.</param>
 public sealed record TemplateSchemaResponse(
     string TemplateId,
     string TemplateVersionId,
     int VersionNo,
-    JsonElement FieldSchema
+    JsonElement FieldSchema,
+    bool HasFile
 )
 {
     public static TemplateSchemaResponse From(TemplateVersion v) =>
@@ -40,7 +42,8 @@ public sealed record TemplateSchemaResponse(
             v.TemplateId.ToString(),
             v.Id.ToString(),
             v.VersionNo,
-            JsonSerializer.Deserialize<JsonElement>(v.FieldSchema)
+            JsonSerializer.Deserialize<JsonElement>(v.FieldSchema),
+            v.FileKey != null
         );
 }
 
@@ -93,13 +96,15 @@ public sealed record AdminTemplateSummaryResponse(
 
 /// <summary>One version of a template as admins see it, drafts included.</summary>
 /// <param name="FieldSchema">The stored JSON array, returned as JSON (not as a string).</param>
+/// <param name="HasFile">Whether a sample .docx was uploaded for this version.</param>
 public sealed record AdminTemplateVersionResponse(
     string Id,
     int VersionNo,
     string Status,
     string CreatedBy,
     DateTimeOffset CreatedAt,
-    JsonElement FieldSchema
+    JsonElement FieldSchema,
+    bool HasFile
 )
 {
     public static AdminTemplateVersionResponse From(TemplateVersion v) =>
@@ -109,7 +114,8 @@ public sealed record AdminTemplateVersionResponse(
             v.Status,
             v.CreatedBy.ToString(),
             v.CreatedAt,
-            JsonSerializer.Deserialize<JsonElement>(v.FieldSchema)
+            JsonSerializer.Deserialize<JsonElement>(v.FieldSchema),
+            v.FileKey != null
         );
 }
 

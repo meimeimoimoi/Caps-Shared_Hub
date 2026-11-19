@@ -11,7 +11,9 @@ const TYPES: readonly SchemaField['type'][] = [
 const isIndex = (n: unknown) => Number.isInteger(n) && (n as number) >= 0
 
 // An anchor from the server is only trusted when its shape is right; a bad one drops, the field stays
-const isAnchor = (a: unknown): a is NonNullable<SchemaField['anchor']> => {
+export const isAnchor = (
+  a: unknown
+): a is NonNullable<SchemaField['anchor']> => {
   if (typeof a !== 'object' || a === null) return false
   const { block, cell, p, find } = a as Record<string, unknown>
   return (

@@ -3169,4 +3169,8 @@ html:has(dialog:modal) { overflow: hidden; }
   body:has(.print-sheet) .print-sheet,
   body:has(.print-sheet) .print-sheet * { visibility: visible; }
   body:has(.print-sheet) .print-sheet { position: absolute; inset: 0 auto auto 0; max-width: none; box-shadow: none; }
+  /* A Word layout is shrunk and scrolled to fit its panel on screen; on paper it prints whole, at full size */
+  body:has(.print-sheet) .print-sheet,
+  body:has(.print-sheet) .print-sheet * { max-height: none !important; overflow: visible !important; }
+  body:has(.print-sheet) .print-sheet [style*='zoom'] { zoom: 1 !important; }
 }

@@ -3,12 +3,17 @@ import { useAccount } from '@/features/auth'
 import {
   createTemplate,
   getTemplate,
+  getTemplateFile,
   getTemplates,
   publishTemplate,
   setTemplateStatus,
 } from '../api/templatesApi'
 import { templatesKeys } from '../api/queryKeys'
-import type { ManagedTemplate, NewTemplateInput } from '../types'
+import type {
+  ManagedTemplate,
+  ManagedTemplateVersion,
+  NewTemplateInput,
+} from '../types'
 
 export function useTemplates() {
   return useQuery({
@@ -39,6 +44,15 @@ export function useManagedTemplate(id: string) {
       await qc.invalidateQueries({ queryKey: templatesKeys.all })
     },
   }
+}
+
+/** The sample .docx of a version, when the server holds one; uploads and publishes refresh it with the template */
+export function useTemplateFile(id: string, version: ManagedTemplateVersion) {
+  return useQuery({
+    queryKey: [...templatesKeys.detail(id), 'file', version.id],
+    queryFn: ({ signal }) => getTemplateFile(id, version.id, signal),
+    enabled: Boolean(version.hasFile),
+  })
 }
 
 export function useCreateTemplate() {

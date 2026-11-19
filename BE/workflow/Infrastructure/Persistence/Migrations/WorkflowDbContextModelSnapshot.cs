@@ -1028,6 +1028,10 @@ namespace Caps.Workflow.Infrastructure.Persistence.Migrations
                         .HasColumnType("jsonb")
                         .HasColumnName("field_schema");
 
+                    b.Property<string>("FileKey")
+                        .HasColumnType("text")
+                        .HasColumnName("file_key");
+
                     b.Property<string>("Status")
                         .IsRequired()
                         .ValueGeneratedOnAdd()

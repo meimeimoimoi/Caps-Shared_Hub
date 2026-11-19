@@ -38,6 +38,7 @@ import {
   useCreateTemplate,
   useTemplates,
 } from '../../features/knowledgeAdmin-templates/hooks/useTemplates'
+import { sampleFills } from '../../features/knowledgeAdmin-templates/utils/sampleFills'
 import {
   templateIssues,
   toFieldId,
@@ -65,16 +66,6 @@ function Field({
     </label>
   )
 }
-
-// What the file preview writes into each blank, so the admin sees which field lands where
-const sampleValue = (f: Pick<SchemaField, 'label' | 'type'>) =>
-  f.type === 'money'
-    ? '1.000.000'
-    : f.type === 'year'
-      ? '2025'
-      : f.type === 'date'
-        ? ['01', '01', '2026']
-        : f.label.replace(/^\[\w+\]\s*/, '')
 
 type Draft = Omit<SchemaField, 'id'> & { key: number }
 const emptyField = (key: number, group = ''): Draft => ({
@@ -146,9 +137,7 @@ export default function KnowledgeTemplateNewPage() {
   const [view, setView] = useState<'form' | 'paper' | 'file'>('form')
   // The file view falls back to the form once the file is removed
   const shown = view === 'file' && !file ? 'form' : view
-  const fills = input.fields.flatMap((f) =>
-    f.anchor ? [{ anchor: f.anchor, label: f.label, text: sampleValue(f) }] : []
-  )
+  const fills = sampleFills(input.fields)
   const quickFields = parseQuickFields(quick ?? '', fields.at(-1)?.group)
   // Pasted fields go after the ones already typed; untouched blank rows are dropped
   const addQuick = () => {
