@@ -86,8 +86,8 @@ interface AdminLayoutProps extends ShellPageProps {
   usersUnavailable?: boolean
   /** Payouts and refunds that failed and need a retry */
   payoutFailedCount?: number
-  /** Payouts cannot be checked (no backend list yet) */
-  operationsUnavailable?: boolean
+  /** Review-fee ranges have no backend yet */
+  pricingUnavailable?: boolean
   /** The disputes queue is not open to this account */
   disputesUnavailable?: boolean
 }
@@ -100,7 +100,7 @@ export function AdminLayout({
   approvalPendingCount,
   usersUnavailable,
   payoutFailedCount,
-  operationsUnavailable,
+  pricingUnavailable,
   disputesUnavailable,
   ...page
 }: AdminLayoutProps) {
@@ -178,9 +178,6 @@ export function AdminLayout({
           label: t('navigation.payouts'),
           icon: CreditCard,
           to: '/admin/escrow',
-          lockedHint: operationsUnavailable
-            ? t('navigation.notConnected')
-            : undefined,
           active: section === 'escrow',
           badge: payoutFailedCount,
         },
@@ -200,7 +197,7 @@ export function AdminLayout({
           label: t('navigation.pricing'),
           icon: Tag,
           to: '/admin/pricing',
-          lockedHint: operationsUnavailable
+          lockedHint: pricingUnavailable
             ? t('navigation.notConnected')
             : undefined,
           active: section === 'pricing',
@@ -355,7 +352,7 @@ export function RoleShell({
       >
         <AppSidebar
           groups={groups}
-          navigationLabel="Admin"
+          navigationLabel={t('common:navigation.admin')}
           navigationRef={desktopNavigation}
           onNavigationScroll={({ currentTarget }) => {
             if (currentTarget.clientHeight) sidebarScroll.desktop = currentTarget.scrollTop
@@ -366,13 +363,13 @@ export function RoleShell({
       </aside>
       <dialog
         ref={drawer}
-        aria-label="Admin"
+        aria-label={t('common:navigation.admin')}
         onClose={() => drawerTrigger.current?.focus()}
         className="bg-sidebar fixed inset-y-0 left-0 m-0 h-dvh max-h-none w-72 max-w-[calc(100vw-32px)] border-0 px-4 py-6 text-white backdrop:bg-black/50 [&[open]]:flex [&[open]]:flex-col"
       >
         <AppSidebar
           groups={groups}
-          navigationLabel="Admin"
+          navigationLabel={t('common:navigation.admin')}
           navigationRef={drawerNavigation}
           onNavigationScroll={({ currentTarget }) => {
             if (currentTarget.clientHeight) sidebarScroll.drawer = currentTarget.scrollTop
@@ -385,7 +382,7 @@ export function RoleShell({
         <AppHeader
           navigationButtonRef={drawerTrigger}
           onOpenNavigation={openDrawer}
-          context={<nav aria-label="Breadcrumb">{breadcrumb}</nav>}
+          context={breadcrumb ? <nav aria-label={t('common:navigation.breadcrumb')}>{breadcrumb}</nav> : null}
           search={
             onSearchChange
               ? {
@@ -421,7 +418,7 @@ export function RoleShell({
           id="admin-main"
           tabIndex={-1}
           // Skip-link target only: clicking empty space focuses it, which must not draw a focus ring
-          className="animate-enter min-w-0 px-4 py-12 outline-none md:px-6 lg:px-8"
+          className="animate-enter min-w-0 px-4 pt-6 pb-12 outline-none md:px-6 md:pt-8 lg:px-8"
         >
           {children}
         </main>

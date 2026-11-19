@@ -1,4 +1,8 @@
+import { useTableSort } from '@/hooks/useTableSort'
+import { SortableTh } from '@/components/ui/navigation/sortable-th'
 import { useState, type KeyboardEvent } from 'react'
+import { Pagination } from '@/components/ui/navigation/pagination'
+import { usePagination } from '@/hooks/usePagination'
 import { Link, useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Info, Plus } from 'lucide-react'
@@ -19,6 +23,7 @@ import { PageHeader } from '@/components/ui/layout/page-header'
 import { LoadError } from '@/components/ui/feedback/load-error'
 import { OperationsUnavailable } from '@/features/disputes-escrow/components/OperationsUnavailable'
 import { HelpTip } from '@/components/ui/feedback/help-tip'
+import { formatVnd } from '@/lib/format-money'
 
 // Nhãn/giới thiệu tab lấy từ i18n theo key: pricing.tabs.<key>.label / .intro
 const tabs = [
@@ -28,8 +33,7 @@ const tabs = [
 ] as const
 type Tab = (typeof tabs)[number]['key']
 
-const vnd = (n: number) => n.toLocaleString('vi-VN')
-const range = (min: number, max: number) => `${vnd(min)} – ${vnd(max)} đ`
+const range = (min: number, max: number) => `${formatVnd(min)} – ${formatVnd(max)}`
 const dayMonth = (iso: string) =>
   new Date(iso).toLocaleDateString('vi-VN', {
     day: '2-digit',
@@ -43,8 +47,9 @@ const rowCls = 'border-border-subtle border-t [&>td]:px-4 [&>td]:py-3'
 export default function AdminPricingPage() {
   const nav = useAdminNav()
   const { t } = useTranslation(['admin', 'common'])
-  const pricing = usePricing(!nav.operationsUnavailable)
+  const pricing = usePricing(!nav.pricingUnavailable)
   const { data, isLoading } = pricing
+  const historyPaged = usePagination(data?.history ?? [])
   // Tab nằm trên URL (?tab=) để breadcrumb và link dẫn đúng tab
   const [params, setParams] = useSearchParams()
   const current = tabs.find((x) => x.key === params.get('tab')) ?? tabs[0]
@@ -98,7 +103,7 @@ export default function AdminPricingPage() {
         help={t(`pricing.tabs.${tab}.intro`)}
       />
       {/* No pricing backend outside the demo: one honest state instead of a Retry that cannot succeed */}
-      {nav.operationsUnavailable ? (
+      {nav.pricingUnavailable ? (
         <OperationsUnavailable area="pricing" />
       ) : (
         <>
@@ -164,7 +169,7 @@ export default function AdminPricingPage() {
             ) : (
               <section className="paper">
                 <ol className="divide-border-subtle divide-y">
-                  {data.history.map((h) => (
+                  {historyPaged.rows.map((h) => (
                     <li
                       key={h.at}
                       className="grid gap-x-6 gap-y-1 px-4 py-3 text-sm sm:grid-cols-[150px_120px_1fr]"
@@ -179,6 +184,15 @@ export default function AdminPricingPage() {
                     </li>
                   ))}
                 </ol>
+                {historyPaged.total > 0 && (
+                  <Pagination
+                    page={historyPaged.page}
+                    pageSize={historyPaged.pageSize}
+                    total={historyPaged.total}
+                    onPageChange={historyPaged.setPage}
+                    onPageSizeChange={historyPaged.setPageSize}
+                  />
+                )}
               </section>
             )}
           </div>
@@ -191,6 +205,8 @@ export default function AdminPricingPage() {
 
 function ReviewFeeTab({ data }: { data: PricingOverview }) {
   const { t } = useTranslation('admin')
+  const tableSort = useTableSort(data.tiers, { group: (r) => r.group, range: (r) => r.min, step: (r) => r.step, accepting: (r) => r.expertsAccepting, outside: (r) => r.outsideRange, from: (r) => Date.parse(r.effectiveFrom) }, { key: 'group', direction: 'asc' })
+  const paged = usePagination(tableSort.rows, JSON.stringify(tableSort.sort))
   const scheduled = data.tiers.filter((x) => x.scheduled)
 
   return (
@@ -223,24 +239,54 @@ function ReviewFeeTab({ data }: { data: PricingOverview }) {
           <caption className="sr-only">{t('pricing.tiers.title')}</caption>
           <thead>
             <tr className={headCls}>
-              <th scope="col" className="text-left">
+              <SortableTh
+                className="text-left"
+                column="group"
+                sort={tableSort.sort}
+                onSort={tableSort.onSort}
+              >
                 {t('pricing.tiers.col.group')}
-              </th>
-              <th scope="col" className="text-left">
+              </SortableTh>
+              <SortableTh
+                className="text-left"
+                column="range"
+                sort={tableSort.sort}
+                onSort={tableSort.onSort}
+              >
                 {t('pricing.tiers.col.range')}
-              </th>
-              <th scope="col" className="text-right">
+              </SortableTh>
+              <SortableTh
+                className="text-right"
+                column="step"
+                sort={tableSort.sort}
+                onSort={tableSort.onSort}
+              >
                 {t('pricing.tiers.col.step')}
-              </th>
-              <th scope="col" className="text-right">
+              </SortableTh>
+              <SortableTh
+                className="text-right"
+                column="accepting"
+                sort={tableSort.sort}
+                onSort={tableSort.onSort}
+              >
                 {t('pricing.tiers.col.accepting')}
-              </th>
-              <th scope="col" className="text-right">
+              </SortableTh>
+              <SortableTh
+                className="text-right"
+                column="outside"
+                sort={tableSort.sort}
+                onSort={tableSort.onSort}
+              >
                 {t('pricing.tiers.col.outside')}
-              </th>
-              <th scope="col" className="text-right">
+              </SortableTh>
+              <SortableTh
+                className="text-right"
+                column="from"
+                sort={tableSort.sort}
+                onSort={tableSort.onSort}
+              >
                 {t('pricing.tiers.col.from')}
-              </th>
+              </SortableTh>
               <th scope="col">
                 <span className="sr-only">
                   {t('pricing.tiers.col.scheduled')}
@@ -249,7 +295,7 @@ function ReviewFeeTab({ data }: { data: PricingOverview }) {
             </tr>
           </thead>
           <tbody>
-            {data.tiers.map((tier) => (
+            {paged.rows.map((tier) => (
               <tr key={tier.id} className={rowCls}>
                 <td>
                   <Link
@@ -267,7 +313,7 @@ function ReviewFeeTab({ data }: { data: PricingOverview }) {
                 <td className="text-fg-strong num font-semibold whitespace-nowrap">
                   {range(tier.min, tier.max)}
                 </td>
-                <td className="num text-right">{vnd(tier.step)}</td>
+                <td className="num text-right">{formatVnd(tier.step)}</td>
                 <td className="num text-right">{tier.expertsAccepting}</td>
                 <td
                   className={cn(
@@ -297,6 +343,16 @@ function ReviewFeeTab({ data }: { data: PricingOverview }) {
           </tbody>
         </table>
       </section>
+
+      {paged.total > 0 && (
+        <Pagination
+          page={paged.page}
+          pageSize={paged.pageSize}
+          total={paged.total}
+          onPageChange={paged.setPage}
+          onPageSizeChange={paged.setPageSize}
+        />
+      )}
 
       {scheduled.length > 0 && (
         <div className="bg-sunken rounded-surface mt-6 flex gap-2 p-3 text-sm">
@@ -332,8 +388,10 @@ function CreditTab({
   onSave: (input: PackageInput) => Promise<unknown>
 }) {
   const { t } = useTranslation('admin')
-  // Giá chưa chốt hoặc kèm điều kiện tô cam để Admin thấy còn phải xử lý
+  // Highlight prices that still require an administrative decision.
   const pending = 'text-accent-text font-semibold'
+  const tableSort = useTableSort(data.creditPackages, { name: (r) => r.name, credits: (r) => r.credits, price: (r) => r.price, order: (r) => r.order }, { key: 'order', direction: 'asc' })
+  const paged = usePagination(tableSort.rows, JSON.stringify(tableSort.sort))
   // undefined = dialog đóng, null = thêm gói, CreditPackage = sửa gói đó
   const [editing, setEditing] = useState<CreditPackage | null>()
   return (
@@ -365,27 +423,45 @@ function CreditTab({
           <caption className="sr-only">{t('pricing.credit.packages')}</caption>
           <thead>
             <tr className={headCls}>
-              <th scope="col" className="text-left">
+              <SortableTh
+                className="text-left"
+                column="name"
+                sort={tableSort.sort}
+                onSort={tableSort.onSort}
+              >
                 {t('pricing.credit.pcol.name')}
-              </th>
-              <th scope="col" className="text-right">
+              </SortableTh>
+              <SortableTh
+                className="text-right"
+                column="credits"
+                sort={tableSort.sort}
+                onSort={tableSort.onSort}
+              >
                 {t('pricing.credit.pcol.credits')}
-              </th>
-              <th scope="col" className="text-right">
+              </SortableTh>
+              <SortableTh
+                className="text-right"
+                column="price"
+                sort={tableSort.sort}
+                onSort={tableSort.onSort}
+              >
                 {t('pricing.credit.pcol.price')}
-              </th>
+              </SortableTh>
               <th scope="col" className="text-left">
                 {t('pricing.credit.pcol.status')}
               </th>
-              <th scope="col" className="text-right">
+              <SortableTh
+                className="text-right"
+                column="order"
+                sort={tableSort.sort}
+                onSort={tableSort.onSort}
+              >
                 {t('pricing.credit.pcol.order')}
-              </th>
+              </SortableTh>
             </tr>
           </thead>
           <tbody>
-            {[...data.creditPackages]
-              .sort((a, b) => a.order - b.order)
-              .map((p) => (
+            {paged.rows.map((p) => (
                 <tr key={p.id} className={rowCls}>
                   <td>
                     <button
@@ -406,7 +482,7 @@ function CreditTab({
                         {t('pricing.credit.pendingPrice')}
                       </span>
                     ) : (
-                      `${vnd(p.price)} đ`
+                      formatVnd(p.price)
                     )}
                   </td>
                   <td className="text-fg-muted">
@@ -421,6 +497,16 @@ function CreditTab({
           </tbody>
         </table>
       </section>
+
+      {paged.total > 0 && (
+        <Pagination
+          page={paged.page}
+          pageSize={paged.pageSize}
+          total={paged.total}
+          onPageChange={paged.setPage}
+          onPageSizeChange={paged.setPageSize}
+        />
+      )}
 
       {editing !== undefined && (
         <PackageDialog

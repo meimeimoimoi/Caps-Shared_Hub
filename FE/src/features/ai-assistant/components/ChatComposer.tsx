@@ -112,7 +112,7 @@ export const ChatComposer = forwardRef<HTMLTextAreaElement, ChatComposerProps>(
             className={cn(
               'text-text placeholder:text-text-muted/70 min-h-11 resize-none bg-transparent px-3 py-2.5 text-base leading-relaxed [overflow-wrap:anywhere] outline-none',
               // Khung xếp dọc: flex-1 sẽ ép chiều cao về 0 và bỏ qua chiều cao tự giãn
-              prominent ? 'min-h-16 w-full flex-none' : 'flex-1',
+              prominent ? 'min-h-24 w-full flex-none' : 'flex-1',
               overflowing
                 ? 'overflow-y-auto [mask-image:linear-gradient(to_bottom,transparent,black_12px,black_calc(100%-12px),transparent)]'
                 : 'overflow-y-hidden'

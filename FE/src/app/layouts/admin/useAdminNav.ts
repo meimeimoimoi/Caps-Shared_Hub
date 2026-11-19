@@ -29,8 +29,9 @@ export function useAdminNav(enabled = true) {
   const canReview = enabled && hasAnyPermission(user, [Permission.ExpertReview])
   const canApprove = enabled && hasAnyPermission(user, [Permission.ExpertApprove])
   const canViewDemoOperations = enabled && isExpertDemo && hasAnyPermission(user, [Permission.UserManage])
-  // Payouts have no backend list yet outside the demo; say so instead of implying all-clear
-  const operationsUnavailable = enabled && !isExpertDemo && hasAnyPermission(user, [Permission.UserManage])
+  // Review-fee ranges have no backend yet outside the demo; say so instead of showing fixtures.
+  // Escrows and payouts are served by billing, so that page stays open.
+  const pricingUnavailable = enabled && !isExpertDemo && hasAnyPermission(user, [Permission.UserManage])
   // Disputes come from the workflow service, which checks DisputeResolve; the demo keeps its fixtures
   const canSeeDisputes =
     enabled &&
@@ -163,7 +164,9 @@ export function useAdminNav(enabled = true) {
       (canApprove && approvalCounts.isError) ||
       (canSeeDisputes && disputes.isError),
     payoutFailedCount: payoutFailed + refundFailed,
-    operationsUnavailable,
+    pricingUnavailable,
+    // Failed payout and refund alerts are only counted in the demo; the dashboard must not read as all-clear
+    payoutAlertsUnchecked: pricingUnavailable,
     // An account without the permission sees the area as not open to it rather than an error
     disputesUnavailable: enabled && !canSeeDisputes,
     usersUnavailable: isMissingEndpoint(users.error),

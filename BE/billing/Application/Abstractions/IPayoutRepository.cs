@@ -9,7 +9,9 @@ public interface IPayoutRepository
         string? status,
         int skip,
         int take,
-        CancellationToken ct
+        CancellationToken ct,
+        string sortBy = "createdAt",
+        bool descending = true
     );
 
     Task<int> CountAsync(string? status, CancellationToken ct);

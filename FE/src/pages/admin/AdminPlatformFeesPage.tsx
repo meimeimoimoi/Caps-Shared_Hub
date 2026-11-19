@@ -1,3 +1,5 @@
+import { Pagination } from '@/components/ui/navigation/pagination'
+import { usePagination } from '@/hooks/usePagination'
 import { useCallback, useId, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
@@ -295,6 +297,7 @@ export default function AdminPlatformFeesPage() {
     onSuccess: () => qc.invalidateQueries({ queryKey: key }),
   })
   const rows = query.data ?? []
+  const paged = usePagination(rows)
   const value = Number(percent)
   const maxPercent = editing?.maxPercent ?? 0
   // The very first fee applies at once; any later change needs its effective day
@@ -573,7 +576,7 @@ export default function AdminPlatformFeesPage() {
       />
 
       <div className="mt-7 grid gap-5">
-        {rows.map((row) => (
+        {paged.rows.map((row) => (
           <article key={row.serviceCode} className="paper min-w-0">
             <header className="border-border-subtle flex flex-wrap items-center justify-between gap-3 border-b px-5 py-4 sm:px-6">
               <h2 className="text-h2 text-fg-strong" title={row.serviceCode}>
@@ -713,6 +716,15 @@ export default function AdminPlatformFeesPage() {
           </div>
         )}
       </div>
+      {!query.isLoading && !query.error && paged.total > 0 && (
+        <Pagination
+          page={paged.page}
+          pageSize={paged.pageSize}
+          total={paged.total}
+          onPageChange={paged.setPage}
+          onPageSizeChange={paged.setPageSize}
+        />
+      )}
 
       {editing && (
         <Modal

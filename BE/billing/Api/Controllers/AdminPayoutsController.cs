@@ -17,6 +17,7 @@ public sealed class AdminPayoutsController : ControllerBase
     /// <remarks>
     /// status is matched case-insensitively (e.g. PENDING); page starts at 1, pageSize defaults to 20 and is at
     /// most 100. Bank details are the snapshot taken when the payout was created (last 4 digits only).
+    /// sortBy accepts createdAt (default) or amount; sortDescending defaults to true. Sorting precedes paging.
     /// </remarks>
     /// <response code="200">The page with the total number of matching payouts.</response>
     /// <response code="400">Invalid input or INVALID_PAGING.</response>
@@ -29,10 +30,15 @@ public sealed class AdminPayoutsController : ControllerBase
         CancellationToken ct,
         [FromQuery, MaxLength(32)] string? status = null,
         [FromQuery] int page = 1,
-        [FromQuery] int pageSize = 20
+        [FromQuery] int pageSize = 20,
+        [FromQuery, MaxLength(32)] string? sortBy = null,
+        [FromQuery] bool sortDescending = true
     )
     {
-        var payouts = await handler.HandleAsync(new(status, page, pageSize), ct);
+        var payouts = await handler.HandleAsync(
+            new(status, page, pageSize, sortBy, sortDescending),
+            ct
+        );
         return Ok(ApiResponse<PayoutPageResponse>.Ok(payouts));
     }
 }

@@ -1,3 +1,5 @@
+import { SortableTh } from '@/components/ui/navigation/sortable-th'
+import type { TableSort } from '@/lib/table-sort'
 import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
@@ -10,8 +12,12 @@ import { SkeletonRows } from '@/components/ui/display/skeleton-rows'
 
 interface QualificationsTableProps {
   paged: Paged<QualificationRow>
+  sort?: TableSort
+  onSort?: (key: string) => void
   onPrev: () => void
   onNext: () => void
+  onPageChange?: (page: number) => void
+  onPageSizeChange?: (size: number) => void
   /** Text when there are no rows, e.g. loading or an error */
   empty?: ReactNode
   /** Shows skeleton rows while the queue loads */
@@ -23,8 +29,12 @@ interface QualificationsTableProps {
 /* Gate 2 queue: one row per Expert-Service qualification */
 export function QualificationsTable({
   paged,
+  sort,
+  onSort,
   onPrev,
   onNext,
+  onPageChange,
+  onPageSizeChange,
   empty,
   loading = false,
   linkBase,
@@ -33,31 +43,52 @@ export function QualificationsTable({
   const fieldLabel = useFieldLabel()
   const { rows, total } = paged
   return (
-    <section className="paper mt-4 overflow-x-auto">
+    <section className="paper mt-4">
       <div className="text-fg-muted flex justify-between px-4 py-3 text-sm">
-        <span>{t('applicationsTable.sortBy')}</span>
+        <span>{sort && sort.key !== 'queue' ? t('qualifications.caption') : t('applicationsTable.sortBy')}</span>
         <span>
           <span className="num">{total}</span>{' '}
           {t('qualifications.count')}
         </span>
       </div>
+      <div className="overflow-x-auto">
       <table className="w-full min-w-180 text-sm">
         <caption className="sr-only">{t('qualifications.caption')}</caption>
         <thead className="bg-sunken text-fg-muted">
           <tr className="[&>th]:px-4 [&>th]:py-3 [&>th]:font-semibold">
-            <th scope="col" className="text-left">
+            <SortableTh
+              className="text-left"
+              column="name"
+              sort={sort}
+              onSort={onSort}
+            >
               {t('applicationsTable.table.applicant')}
-            </th>
+            </SortableTh>
             <th scope="col" className="text-left">{t('qualifications.service')}</th>
-            <th scope="col" className="text-right">
+            <SortableTh
+              className="text-right"
+              column="years"
+              sort={sort}
+              onSort={onSort}
+            >
               {t('applicationsTable.table.experienceYears')}
-            </th>
-            <th scope="col" className="text-right">
+            </SortableTh>
+            <SortableTh
+              className="text-right"
+              column="submittedAt"
+              sort={sort}
+              onSort={onSort}
+            >
               {t('applicationsTable.table.submittedAt')}
-            </th>
-            <th scope="col" className="text-right">
+            </SortableTh>
+            <SortableTh
+              className="text-right"
+              column="waiting"
+              sort={sort}
+              onSort={onSort}
+            >
               {t('applicationsTable.table.waited')}
-            </th>
+            </SortableTh>
             <th scope="col">
               <span className="sr-only">{t('applicationsTable.actions')}</span>
             </th>
@@ -131,7 +162,14 @@ export function QualificationsTable({
           )}
         </tbody>
       </table>
-      <TablePager paged={paged} onPrev={onPrev} onNext={onNext} />
+      </div>
+      <TablePager
+        paged={paged}
+        onPrev={onPrev}
+        onNext={onNext}
+        onPageChange={onPageChange}
+        onPageSizeChange={onPageSizeChange}
+      />
     </section>
   )
 }

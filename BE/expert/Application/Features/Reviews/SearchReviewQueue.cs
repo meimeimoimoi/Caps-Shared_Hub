@@ -19,7 +19,9 @@ public sealed record SearchReviewQueueQuery(
     int Page,
     int PageSize,
     Guid ViewerUserId,
-    string? ClaimFilter
+    string? ClaimFilter,
+    string? SortBy = null,
+    bool SortDescending = false
 );
 
 /// <summary>Counts and pages in the database; when both gates are asked for, merges the two by submission time.</summary>
@@ -62,12 +64,25 @@ public sealed class SearchReviewQueueHandler(
                     .ToArray();
 
         // Claims expire when read, so the filter and each row use the same server time
+        var sortBy = query.SortBy?.ToLowerInvariant() switch
+        {
+            "name" => "name",
+            "years" => "years",
+            "submittedat" or "waiting" => "submittedAt",
+            _ => "queue",
+        };
         var scope = new ReviewQueueScope(
             ReviewClaimFilter.Normalize(query.ClaimFilter),
             query.ViewerUserId,
             clock.GetUtcNow(),
             (await policies.GetReviewClaimAsync(ct)).Hold
-        );
+        )
+        {
+            SortBy = sortBy,
+            SortDescending =
+                query.SortDescending
+                ^ string.Equals(query.SortBy, "waiting", StringComparison.OrdinalIgnoreCase),
+        };
 
         // Each source returns its first skip + pageSize rows; merging them gives the exact page
         var skip = (query.Page - 1) * query.PageSize;
@@ -102,8 +117,22 @@ public sealed class SearchReviewQueueHandler(
             );
         }
         var finalApproval = await policies.GetFinalApprovalAsync(ct);
-        // Same order as the sources: final approvals by Gate 2 PASS time, the rest by submission
-        var items = rows.OrderBy(x => x.PassedAt ?? x.SubmittedAt ?? DateTimeOffset.MinValue)
+        // Match the database ordering before selecting the merged page.
+        IOrderedEnumerable<ReviewQueueRowResponse> Order<T>(
+            Func<ReviewQueueRowResponse, T> key,
+            IComparer<T>? comparer = null
+        ) =>
+            scope.SortDescending
+                ? rows.OrderByDescending(key, comparer)
+                : rows.OrderBy(key, comparer);
+        var ordered = scope.SortBy switch
+        {
+            "name" => Order(x => x.DisplayName ?? "", StringComparer.Ordinal),
+            "years" => Order(x => x.YearsExperience ?? 0),
+            "submittedAt" => Order(x => x.SubmittedAt ?? DateTimeOffset.MinValue),
+            _ => Order(x => x.PassedAt ?? x.SubmittedAt ?? DateTimeOffset.MinValue),
+        };
+        var items = ordered
             .ThenBy(x => x.Id, StringComparer.Ordinal)
             .Skip(skip)
             .Take(query.PageSize)
