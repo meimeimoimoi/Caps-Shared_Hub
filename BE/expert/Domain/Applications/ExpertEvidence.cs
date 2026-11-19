@@ -34,7 +34,7 @@ public sealed class ExpertEvidence
     /// <summary>External URL (LinkedIn, website) supplied by the applicant; null for file-only evidence.</summary>
     public string? SourceUrl { get; private set; }
 
-    /// <summary>Content extraction status: PENDING, PROCESSING, EXTRACTED, UNREADABLE or FAILED; null for links, Gate 2 files and EV-01.</summary>
+    /// <summary>Content extraction status: PENDING, PROCESSING, EXTRACTED, UNREADABLE or FAILED; null for links, Gate 2 files, and non-CV Gate 1 evidence.</summary>
     public string? ExtractionStatus { get; private set; }
 
     /// <summary>When the file or link content was extracted or checked.</summary>
@@ -44,10 +44,10 @@ public sealed class ExpertEvidence
     public bool IsLink => SourceUrl != null;
 
     /// <summary>
-    /// True for Gate 1 uploaded files outside EV-01 (identity documents are never read by AI).
+    /// True for Gate 1 uploaded CV files (EV-01..EV-05, SUPPLEMENT, links, and Gate 2 files are never read by AI).
     /// </summary>
     public bool RequiresAiExtraction =>
-        !IsLink && QualificationId == null && EvidenceType != EligibilityCriteria.LegalEligibility;
+        !IsLink && QualificationId == null && EvidenceType == ApplicationRules.CvCode;
 
     /// <summary>Records a file uploaded to the application; its storage path is derived from the ids.</summary>
     /// <param name="contentType">Detected from the file bytes (see ApplicationRules.ValidateFile).</param>

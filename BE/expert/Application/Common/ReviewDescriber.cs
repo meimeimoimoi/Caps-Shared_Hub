@@ -150,7 +150,7 @@ public sealed class ReviewDescriber(
             })
             .ToArray();
 
-        // EV-01 identity documents and external links are never extracted by AI (Section 5).
+        // Only Gate 1 CV files are extracted by AI; identity, certificate, supplement, and link entries are excluded.
         var extractionResponses = files
             .Where(x => x.RequiresAiExtraction)
             .Select(ev =>

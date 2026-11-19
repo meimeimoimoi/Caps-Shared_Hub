@@ -8,20 +8,23 @@ namespace Caps.Workflow.Application.Common;
 public enum AiChargeMode
 {
     Free,
+    Quota,
     Credit,
 }
 
-/// <summary>Tracks any held billing credit reserved for a single AI operation.</summary>
+/// <summary>Tracks any held billing credit or free quota reserved for a single AI operation.</summary>
 public sealed class AiCreditReservation
 {
-    internal AiCreditReservation(AiChargeMode mode, Guid aiUsageId, long creditCost)
+    internal AiCreditReservation(AiChargeMode mode, Guid userId, Guid aiUsageId, long creditCost)
     {
         Mode = mode;
+        UserId = userId;
         AiUsageId = aiUsageId;
         CreditCost = creditCost;
     }
 
     public AiChargeMode Mode { get; }
+    public Guid UserId { get; }
     public Guid AiUsageId { get; }
     public long CreditCost { get; }
     public bool Settled { get; private set; }
@@ -30,13 +33,15 @@ public sealed class AiCreditReservation
 }
 
 /// <summary>
-/// Coordinates free mode and optional billing wallet credit charging across AI chat and draft
-/// generation handlers.
+/// Coordinates free mode, optional initial chat quota, and billing wallet credit charging
+/// across AI chat and draft generation handlers.
 /// </summary>
 public sealed class AiCreditChargeService(
     IAiUsageRepository aiUsageRepository,
+    IAiQuotaRepository aiQuotaRepository,
     IAiCredits aiCredits,
-    AiBillingSettings settings
+    AiBillingSettings settings,
+    TimeProvider clock
 )
 {
     public async Task<AiCreditReservation> ReserveAsync(
@@ -44,17 +49,38 @@ public sealed class AiCreditChargeService(
         long creditCost,
         string holdNote,
         DateTimeOffset now,
-        CancellationToken ct
+        CancellationToken ct,
+        bool allowFreeQuota = false
     )
     {
-        if (!settings.Enabled || creditCost <= 0)
+        if (!settings.Enabled)
         {
-            return new AiCreditReservation(AiChargeMode.Free, Guid.Empty, 0);
+            return new AiCreditReservation(AiChargeMode.Free, userId, Guid.Empty, 0);
+        }
+
+        if (
+            allowFreeQuota
+            && settings.FreeQuotaEnabled
+            && settings.InitialFreeQuota > 0
+            && await aiQuotaRepository.TryReserveOneAsync(
+                userId,
+                settings.InitialFreeQuota,
+                now,
+                ct
+            )
+        )
+        {
+            return new AiCreditReservation(AiChargeMode.Quota, userId, Guid.Empty, 0);
+        }
+
+        if (creditCost <= 0)
+        {
+            return new AiCreditReservation(AiChargeMode.Free, userId, Guid.Empty, 0);
         }
 
         var aiUsageId = UuidV7.NewGuid();
         await aiCredits.HoldAsync(userId, aiUsageId, creditCost, holdNote, ct);
-        return new AiCreditReservation(AiChargeMode.Credit, aiUsageId, creditCost);
+        return new AiCreditReservation(AiChargeMode.Credit, userId, aiUsageId, creditCost);
     }
 
     public async Task RecordCapturedUsageAsync(
@@ -66,8 +92,12 @@ public sealed class AiCreditChargeService(
         CancellationToken ct
     )
     {
-        var paidWith =
-            reservation.Mode == AiChargeMode.Credit ? AiUsagePaidWith.Credit : AiUsagePaidWith.Free;
+        var paidWith = reservation.Mode switch
+        {
+            AiChargeMode.Credit => AiUsagePaidWith.Credit,
+            AiChargeMode.Quota => AiUsagePaidWith.Quota,
+            _ => AiUsagePaidWith.Free,
+        };
 
         var usage = AiUsage.Create(
             userId,
@@ -131,7 +161,19 @@ public sealed class AiCreditChargeService(
         CancellationToken ct
     )
     {
-        if (reservation.Mode != AiChargeMode.Credit || reservation.Settled)
+        if (reservation.Settled)
+        {
+            return;
+        }
+
+        if (reservation.Mode == AiChargeMode.Quota)
+        {
+            await aiQuotaRepository.RefundOneAsync(reservation.UserId, clock.GetUtcNow(), ct);
+            reservation.MarkSettled();
+            return;
+        }
+
+        if (reservation.Mode != AiChargeMode.Credit)
         {
             return;
         }
@@ -142,15 +184,29 @@ public sealed class AiCreditChargeService(
 
     public async Task ReleaseOnErrorAsync(AiCreditReservation reservation, string? note)
     {
-        if (reservation.Mode != AiChargeMode.Credit || reservation.Settled)
+        if (reservation.Settled)
         {
             return;
         }
 
         try
         {
-            await aiCredits.ReleaseAsync(reservation.AiUsageId, note, CancellationToken.None);
-            reservation.MarkSettled();
+            if (reservation.Mode == AiChargeMode.Quota)
+            {
+                await aiQuotaRepository.RefundOneAsync(
+                    reservation.UserId,
+                    clock.GetUtcNow(),
+                    CancellationToken.None
+                );
+                reservation.MarkSettled();
+                return;
+            }
+
+            if (reservation.Mode == AiChargeMode.Credit)
+            {
+                await aiCredits.ReleaseAsync(reservation.AiUsageId, note, CancellationToken.None);
+                reservation.MarkSettled();
+            }
         }
         catch
         {

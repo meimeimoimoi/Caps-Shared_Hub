@@ -53,14 +53,19 @@ class CvExtractorTests(unittest.TestCase):
         settings.VISION_ENABLED = self._orig_vision
         self._qdrant_patch.stop()
 
-    def test_ev01_identity_document_is_rejected(self):
-        pdf = _make_text_pdf("National ID document text that must never be sent to AI.")
-        resp = self.client.post(
-            "/api/v1/cv/extract",
-            files={"file": ("id.pdf", pdf, "application/pdf")},
-            data={"evidence_type": "EV-01"},
-        )
-        self.assertEqual(resp.status_code, 400)
+    def test_non_cv_documents_are_rejected_without_calling_ollama(self):
+        pdf = _make_text_pdf("Personal or non-CV document text that must never be sent to AI.")
+        for evidence_type in ("EV-01", "EV-02", "EV-03", "EV-04", "EV-05", "SUPPLEMENT"):
+            with self.subTest(evidence_type=evidence_type), patch(
+                "app.modules.cv_screening.extractor.httpx.post"
+            ) as post:
+                resp = self.client.post(
+                    "/api/v1/cv/extract",
+                    files={"file": ("doc.pdf", pdf, "application/pdf")},
+                    data={"evidence_type": evidence_type},
+                )
+                self.assertEqual(resp.status_code, 400)
+                post.assert_not_called()
 
     def test_text_pdf_calls_llm_model_and_filters_allowed_fields(self):
         pdf = _make_text_pdf(
@@ -130,7 +135,7 @@ class CvExtractorTests(unittest.TestCase):
             resp = self.client.post(
                 "/api/v1/cv/extract",
                 files={"file": ("scan.pdf", scanned, "application/pdf")},
-                data={"evidence_type": "EV-02", "vision_enabled": "false"},
+                data={"evidence_type": "CV", "vision_enabled": "false"},
             )
 
         self.assertEqual(resp.status_code, 200)
@@ -146,8 +151,8 @@ class CvExtractorTests(unittest.TestCase):
         with patch("app.modules.cv_screening.extractor.httpx.post") as post:
             resp = self.client.post(
                 "/api/v1/cv/extract",
-                files={"file": ("cert.png", _TINY_PNG, "image/png")},
-                data={"evidence_type": "EV-02", "vision_enabled": "true"},
+                files={"file": ("cv.png", _TINY_PNG, "image/png")},
+                data={"evidence_type": "CV", "vision_enabled": "true"},
             )
 
         self.assertEqual(resp.status_code, 200)
@@ -165,7 +170,7 @@ class CvExtractorTests(unittest.TestCase):
                 "content": json.dumps(
                     {
                         "full_name": "Tran Van B",
-                        "document_type": "TAX_CERTIFICATE",
+                        "document_type": "CV",
                         "field_codes": [],
                         "work_milestones": [],
                         "certificates": [
@@ -184,15 +189,15 @@ class CvExtractorTests(unittest.TestCase):
         with patch("app.modules.cv_screening.extractor.httpx.post", return_value=fake_resp) as post:
             resp = self.client.post(
                 "/api/v1/cv/extract",
-                files={"file": ("cert.png", _TINY_PNG, "image/png")},
-                data={"evidence_type": "EV-02", "vision_enabled": "true"},
+                files={"file": ("cv.png", _TINY_PNG, "image/png")},
+                data={"evidence_type": "CV", "vision_enabled": "true"},
             )
 
         self.assertEqual(resp.status_code, 200)
         body = resp.json()
         self.assertEqual(body["status"], "EXTRACTED")
         self.assertTrue(body["is_image"])
-        self.assertEqual(body["extracted"]["document_type"], "TAX_CERTIFICATE")
+        self.assertEqual(body["extracted"]["document_type"], "CV")
         self.assertEqual(body["extracted"]["certificates"][0]["expiry_date"], "2024-06-15")
         sent_json = post.call_args.kwargs["json"]
         self.assertEqual(sent_json["model"], settings.VISION_MODEL)

@@ -323,6 +323,128 @@ public sealed class AiChatHandlerTests
         Assert.Equal("123/2026/TT-BTC", Assert.Single(citations).DocNumber);
     }
 
+    [Fact]
+    public async Task Send_ignores_free_quota_when_ai_billing_is_disabled()
+    {
+        var store = new Store();
+        var conversation = store.AddConversation(Owner, "Tax question");
+        var settings = new AiBillingSettings
+        {
+            Enabled = false,
+            FreeQuotaEnabled = true,
+            InitialFreeQuota = 10,
+        };
+
+        await SendHandler(store, settings)
+            .HandleAsync(new(conversation.Id, Owner, "Question", Jan1, Dec31), default);
+
+        Assert.Empty(store.Quotas);
+        Assert.Empty(store.HoldCalls);
+        Assert.Equal(AiUsagePaidWith.Free, Assert.Single(store.Usages).PaidWith);
+    }
+
+    [Fact]
+    public async Task Send_charges_credits_immediately_when_free_quota_is_disabled()
+    {
+        var store = new Store { WalletBalance = 2_000 };
+        var conversation = store.AddConversation(Owner, "Tax question");
+        var settings = new AiBillingSettings
+        {
+            Enabled = true,
+            FreeQuotaEnabled = false,
+            InitialFreeQuota = 10,
+            ChatCreditCost = 1_000,
+        };
+
+        await SendHandler(store, settings)
+            .HandleAsync(new(conversation.Id, Owner, "Question", Jan1, Dec31), default);
+
+        Assert.Empty(store.Quotas);
+        Assert.Equal(1_000, store.WalletBalance);
+        Assert.Single(store.HoldCalls);
+        Assert.Equal(AiUsagePaidWith.Credit, Assert.Single(store.Usages).PaidWith);
+    }
+
+    [Fact]
+    public async Task Send_uses_initial_free_quota_then_falls_back_to_credits_when_enabled()
+    {
+        var store = new Store { WalletBalance = 1_500 };
+        var conversation = store.AddConversation(Owner, "Tax question");
+        var settings = new AiBillingSettings
+        {
+            Enabled = true,
+            FreeQuotaEnabled = true,
+            InitialFreeQuota = 2,
+            ChatCreditCost = 1_000,
+        };
+
+        await SendHandler(store, settings)
+            .HandleAsync(new(conversation.Id, Owner, "Question 1", Jan1, Dec31), default);
+        await SendHandler(store, settings)
+            .HandleAsync(new(conversation.Id, Owner, "Question 2", Jan1, Dec31), default);
+
+        Assert.Equal(0, store.Quotas[Owner].Balance);
+        Assert.Empty(store.HoldCalls);
+        Assert.Equal(1_500, store.WalletBalance);
+
+        await SendHandler(store, settings)
+            .HandleAsync(new(conversation.Id, Owner, "Question 3", Jan1, Dec31), default);
+
+        Assert.Equal(500, store.WalletBalance);
+        Assert.Single(store.HoldCalls);
+        Assert.Equal(
+            [AiUsagePaidWith.Quota, AiUsagePaidWith.Quota, AiUsagePaidWith.Credit],
+            store.Usages.Select(u => u.PaidWith).ToArray()
+        );
+
+        var ex = await Assert.ThrowsAsync<AppException>(() =>
+            SendHandler(store, settings)
+                .HandleAsync(new(conversation.Id, Owner, "Question 4", Jan1, Dec31), default)
+        );
+        Assert.Equal("INSUFFICIENT_CREDITS", ex.Code);
+    }
+
+    [Fact]
+    public async Task Send_refunds_free_quota_when_clarification_is_needed_or_rag_fails()
+    {
+        var clarifyStore = new Store();
+        var conv1 = clarifyStore.AddConversation(Owner, "Tax question");
+        clarifyStore.NextRagResponse = new(
+            "Which period?",
+            ChatMessageScopeResult.InScope,
+            ChatMessageAnswerStatus.NeedClarification,
+            null,
+            null,
+            []
+        );
+        var settings = new AiBillingSettings
+        {
+            Enabled = true,
+            FreeQuotaEnabled = true,
+            InitialFreeQuota = 2,
+            ChatCreditCost = 1_000,
+        };
+
+        await SendHandler(clarifyStore, settings)
+            .HandleAsync(new(conv1.Id, Owner, "Question", null, null), default);
+
+        Assert.Equal(2, clarifyStore.Quotas[Owner].Balance);
+        Assert.Empty(clarifyStore.Usages);
+        Assert.Empty(clarifyStore.HoldCalls);
+
+        var failStore = new Store { FailRag = true };
+        var conv2 = failStore.AddConversation(Owner, "Tax question");
+
+        await Assert.ThrowsAsync<AppException>(() =>
+            SendHandler(failStore, settings)
+                .HandleAsync(new(conv2.Id, Owner, "Question", Jan1, Dec31), default)
+        );
+
+        Assert.Equal(2, failStore.Quotas[Owner].Balance);
+        Assert.Empty(failStore.Usages);
+        Assert.False(failStore.Saved);
+    }
+
     private static readonly AiBillingSettings FreeBillingSettings = new() { Enabled = false };
 
     private static readonly AiBillingSettings EnabledBillingSettings = new()
@@ -338,8 +460,9 @@ public sealed class AiChatHandlerTests
     )
     {
         var billing = settings ?? FreeBillingSettings;
-        var chargeService = new AiCreditChargeService(store, store, billing);
-        return new(store, store, store, chargeService, billing, store, new FixedClock());
+        var clock = new FixedClock();
+        var chargeService = new AiCreditChargeService(store, store, store, billing, clock);
+        return new(store, store, store, chargeService, billing, store, clock);
     }
 
     private static ClarifyChatMessage.ClarifyChatMessageHandler ClarifyHandler(
@@ -348,8 +471,9 @@ public sealed class AiChatHandlerTests
     )
     {
         var billing = settings ?? FreeBillingSettings;
-        var chargeService = new AiCreditChargeService(store, store, billing);
-        return new(store, store, store, chargeService, billing, store, new FixedClock());
+        var clock = new FixedClock();
+        var chargeService = new AiCreditChargeService(store, store, store, billing, clock);
+        return new(store, store, store, chargeService, billing, store, clock);
     }
 
     private sealed class FixedClock : TimeProvider
@@ -360,6 +484,7 @@ public sealed class AiChatHandlerTests
     private sealed class Store
         : IConversationRepository,
             IChatMessageRepository,
+            IAiQuotaRepository,
             IAiUsageRepository,
             IAiCredits,
             IRagQueryClient,
@@ -368,6 +493,7 @@ public sealed class AiChatHandlerTests
     {
         public List<Conversation> Conversations { get; } = [];
         public List<ChatMessage> Messages { get; } = [];
+        public Dictionary<Guid, AiQuota> Quotas { get; } = [];
         public List<AiUsage> Usages { get; } = [];
         public List<Guid> HoldCalls { get; } = [];
         public List<Guid> CaptureCalls { get; } = [];
@@ -449,6 +575,40 @@ public sealed class AiChatHandlerTests
         public Task AddAsync(AiUsage usage, CancellationToken ct = default)
         {
             Usages.Add(usage);
+            return Task.CompletedTask;
+        }
+
+        Task<AiQuota?> IAiQuotaRepository.GetByUserIdAsync(Guid userId, CancellationToken ct) =>
+            Task.FromResult(Quotas.GetValueOrDefault(userId));
+
+        Task IAiQuotaRepository.AddAsync(AiQuota aiQuota, CancellationToken ct)
+        {
+            Quotas[aiQuota.UserId] = aiQuota;
+            return Task.CompletedTask;
+        }
+
+        public Task<bool> TryReserveOneAsync(
+            Guid userId,
+            int initialBalance,
+            DateTimeOffset now,
+            CancellationToken ct = default
+        )
+        {
+            if (!Quotas.TryGetValue(userId, out var quota))
+            {
+                quota = AiQuota.Create(userId, initialBalance, now);
+                Quotas[userId] = quota;
+            }
+            if (!quota.HasAvailableQuota())
+                return Task.FromResult(false);
+            quota.Deduct(1, now);
+            return Task.FromResult(true);
+        }
+
+        public Task RefundOneAsync(Guid userId, DateTimeOffset now, CancellationToken ct = default)
+        {
+            if (Quotas.TryGetValue(userId, out var quota))
+                quota.Refund(1, now);
             return Task.CompletedTask;
         }
 

@@ -189,6 +189,29 @@ public sealed class GenerateDraftTests
         Assert.Null(store.LastRequest);
     }
 
+    [Fact]
+    public async Task Charges_credits_without_consuming_chat_free_quota_when_free_quota_is_enabled()
+    {
+        var store = new Store(publishedTemplate: null) { WalletBalance = 5_000 };
+        var doc = store.AddDocument(Owner, templateId: null);
+        store.AddSnapshot(doc, "{}");
+        var settings = new AiBillingSettings
+        {
+            Enabled = true,
+            FreeQuotaEnabled = true,
+            InitialFreeQuota = 10,
+            DraftCreditCost = 2_000,
+        };
+
+        await CreateHandler(store, settings)
+            .HandleAsync(new(doc.Id, Owner, null, null, null), default);
+
+        Assert.Empty(store.Quotas);
+        Assert.Equal(3_000, store.WalletBalance);
+        Assert.Single(store.HoldCalls);
+        Assert.Equal(AiUsagePaidWith.Credit, Assert.Single(store.Usages).PaidWith);
+    }
+
     private static readonly AiBillingSettings FreeBillingSettings = new() { Enabled = false };
 
     private static readonly AiBillingSettings EnabledBillingSettings = new()
@@ -204,18 +227,9 @@ public sealed class GenerateDraftTests
     )
     {
         var billing = settings ?? FreeBillingSettings;
-        var chargeService = new AiCreditChargeService(store, store, billing);
-        return new(
-            store,
-            store,
-            store,
-            store,
-            store,
-            chargeService,
-            billing,
-            store,
-            new FixedClock()
-        );
+        var clock = new FixedClock();
+        var chargeService = new AiCreditChargeService(store, store, store, billing, clock);
+        return new(store, store, store, store, store, chargeService, billing, store, clock);
     }
 
     private sealed class FixedClock : TimeProvider
@@ -228,6 +242,7 @@ public sealed class GenerateDraftTests
             IInputSnapshotRepository,
             IDocumentVersionRepository,
             ITemplateRepository,
+            IAiQuotaRepository,
             IAiUsageRepository,
             IAiCredits,
             IAiDraftingClient,
@@ -237,6 +252,7 @@ public sealed class GenerateDraftTests
         public List<Document> Documents { get; } = [];
         public List<InputSnapshot> Snapshots { get; } = [];
         public List<DocumentVersion> Versions { get; } = [];
+        public Dictionary<Guid, AiQuota> Quotas { get; } = [];
         public List<AiUsage> Usages { get; } = [];
         public List<Guid> HoldCalls { get; } = [];
         public List<(Guid UsageId, Guid? DocumentVersionId)> CaptureCalls { get; } = [];
@@ -396,6 +412,40 @@ public sealed class GenerateDraftTests
         public Task AddAsync(AiUsage usage, CancellationToken ct = default)
         {
             Usages.Add(usage);
+            return Task.CompletedTask;
+        }
+
+        public Task<AiQuota?> GetByUserIdAsync(Guid userId, CancellationToken ct = default) =>
+            Task.FromResult(Quotas.GetValueOrDefault(userId));
+
+        public Task AddAsync(AiQuota aiQuota, CancellationToken ct = default)
+        {
+            Quotas[aiQuota.UserId] = aiQuota;
+            return Task.CompletedTask;
+        }
+
+        public Task<bool> TryReserveOneAsync(
+            Guid userId,
+            int initialBalance,
+            DateTimeOffset now,
+            CancellationToken ct = default
+        )
+        {
+            if (!Quotas.TryGetValue(userId, out var quota))
+            {
+                quota = AiQuota.Create(userId, initialBalance, now);
+                Quotas[userId] = quota;
+            }
+            if (!quota.HasAvailableQuota())
+                return Task.FromResult(false);
+            quota.Deduct(1, now);
+            return Task.FromResult(true);
+        }
+
+        public Task RefundOneAsync(Guid userId, DateTimeOffset now, CancellationToken ct = default)
+        {
+            if (Quotas.TryGetValue(userId, out var quota))
+                quota.Refund(1, now);
             return Task.CompletedTask;
         }
 

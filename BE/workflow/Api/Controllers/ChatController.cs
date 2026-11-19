@@ -86,8 +86,8 @@ public sealed class ChatController(ICurrentUser currentUser) : ControllerBase
     }
 
     /// <summary>Sends a question in a conversation and returns the AI response with legal citations.</summary>
-    /// <remarks>Verifies AI quota, queries the RAG service for scope and tax period checks, and records usage.</remarks>
-    /// <response code="200">The persisted user message, AI answer, and remaining quota.</response>
+    /// <remarks>Applies configured AI billing (free mode, optional initial free chat quota, or wallet credits), queries RAG, and records usage.</remarks>
+    /// <response code="200">The persisted user message and AI answer.</response>
     /// <response code="403">The conversation belongs to another user.</response>
     /// <response code="404">Conversation not found.</response>
     /// <response code="409">INSUFFICIENT_CREDITS when AI billing is enabled and wallet balance is too low.</response>
@@ -116,7 +116,7 @@ public sealed class ChatController(ICurrentUser currentUser) : ControllerBase
 
     /// <summary>Submits a clarification response for an AI message that requested more context.</summary>
     /// <remarks>Provides additional tax period or transaction date details to complete the RAG query.</remarks>
-    /// <response code="200">The clarification message, new AI answer, and remaining quota.</response>
+    /// <response code="200">The clarification message and new AI answer.</response>
     /// <response code="400">The target message is not an AI message awaiting clarification.</response>
     /// <response code="404">Target message or conversation not found.</response>
     /// <response code="409">INSUFFICIENT_CREDITS when AI billing is enabled and wallet balance is too low.</response>
