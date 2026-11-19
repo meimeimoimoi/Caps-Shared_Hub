@@ -23,7 +23,8 @@ public static class MessagingServiceCollectionExtensions
             ?? "amqp://guest:guest@localhost:5672";
 
         var uri = new Uri(cs);
-        var host = $"{uri.Scheme}://{uri.Host}:{uri.Port}";
+        // The path is the virtual host (amqp://user:pass@host:5672/caps_test); none means the default "/"
+        var host = $"{uri.Scheme}://{uri.Host}:{uri.Port}{VirtualHostPath(uri)}";
         var user = GetUserInfo(uri, 0, "guest");
         var pass = GetUserInfo(uri, 1, "guest");
 
@@ -48,6 +49,13 @@ public static class MessagingServiceCollectionExtensions
         });
         services.AddScoped<IRealtimeNotifier, RealtimeNotifier>();
         return services;
+    }
+
+    /// <summary>"/name" for a named virtual host, empty for the default one ("/" or no path).</summary>
+    private static string VirtualHostPath(Uri uri)
+    {
+        var path = uri.AbsolutePath.TrimEnd('/');
+        return path.Length == 0 ? "" : path;
     }
 
     private static string GetUserInfo(Uri uri, int index, string fallback)

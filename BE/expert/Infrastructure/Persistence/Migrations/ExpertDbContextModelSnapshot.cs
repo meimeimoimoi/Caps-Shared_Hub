@@ -675,7 +675,7 @@ namespace Caps.Expert.Infrastructure.Persistence.Migrations
 
                     b.ToTable("platform_fee", "expert", t =>
                         {
-                            t.HasCheckConstraint("ck_platform_fee_late_rule", "late_penalty_hours >= 0 AND late_penalty_percent >= 0 AND percent + late_penalty_percent <= 100 AND late_cancel_hours BETWEEN late_penalty_hours AND 720");
+                            t.HasCheckConstraint("ck_platform_fee_late_rule", "late_penalty_hours >= 0 AND late_penalty_percent BETWEEN 0 AND 100 AND late_cancel_hours BETWEEN late_penalty_hours AND 720");
 
                             t.HasCheckConstraint("ck_platform_fee_no_delivery_rule", "no_delivery_refund_percent BETWEEN 0 AND 100");
 

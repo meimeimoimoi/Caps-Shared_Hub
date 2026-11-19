@@ -1195,7 +1195,7 @@
     "effectiveOnHelp": "A change must be announced at least {{days}} days ahead, so {{date}} at the earliest. A new schedule replaces the pending change, if any.",
     "example": "What experts receive per request",
     "examplePrice": "Price",
-    "exampleNet": "Received before PIT: current → new",
+    "exampleNet": "Expert receives: now → new",
     "firstFeeHelp": "The first fee applies at once and opens the service for experts to price.",
     "late": "Late delivery",
     "lateHelp": "Counted from the delivery deadline (one working day). Late within the penalty hours: the client gets the set percent back, the platform keeps the rest and the expert gets nothing. Later but before the cancel hours: the client gets 100% back. Nothing delivered by the cancel hours: the request is cancelled, the client gets the \"nothing delivered\" percent back and the platform keeps the rest. Set the penalty hours equal to the cancel hours for a single refund level. At most {{maxHours}} hours. Requests already sent keep the rules they were booked with.",
@@ -1220,7 +1220,7 @@
       "wholeNumbers": "Enter a whole number of zero or more in every field.",
       "maxHours": "Hours cannot exceed {{max}}.",
       "cancelBeforePenalty": "Cancel hours must be at least the late penalty window.",
-      "penaltyOverFee": "Late refund plus the platform fee may not exceed 100% (now {{sum}}%).",
+      "penaltyOver": "The late refund can be at most 100%.",
       "hoursRange": "Hours must be between 1 and {{max}}.",
       "splitOver": "Client refund % plus expert % cannot exceed 100% (now {{sum}}%).",
       "platformKeeps": "The platform keeps {{percent}}%.",
@@ -1238,7 +1238,7 @@
     "reviewNow": "As soon as it is saved",
     "reviewChanged_one": "{{count}} item changed",
     "reviewChanged_other": "{{count}} items changed",
-    "expertShare": "The expert receives {{percent}}% of the price, before PIT.",
+    "expertShare": "The expert receives {{percent}}% of the price.",
     "expertColumn": "Expert receives",
     "unchanged": "Nothing differs from the current terms yet.",
     "changeFor": "Change fee · {{name}}",
@@ -1255,7 +1255,7 @@
     "defaultIs": "Default {{percent}}%",
     "useDefault": "Use the default {{percent}}%",
     "splitColumn": "Split by case",
-    "expertShareShort": "Expert receives {{percent}}%, before PIT",
+    "expertShareShort": "Expert receives {{percent}}%",
     "editButtons": {
       "percent": "Edit fee",
       "late": "Edit late delivery",
@@ -1419,7 +1419,7 @@
     "confirm": "Confirm and save",
     "errors": {
       "POLICY_CHANGED": "Someone else just changed these values. They have been reloaded; check them and save again.",
-      "POLICY_RANGE_INVERTED": "A minimum may not be greater than its maximum (price, delivery time).",
+      "POLICY_RANGE_INVERTED": "A minimum may not be greater than its maximum (price).",
       "POLICY_EXPECTED_VALUE_REQUIRED": "The current value is missing. Reload the page and try again.",
       "POLICY_SETTING_OUT_OF_RANGE": "A value is outside its allowed range.",
       "POLICY_REASON_REQUIRED": "Give the reason for the change.",
@@ -1437,7 +1437,7 @@
         "help": "Days an expert must wait before applying again after a failed result."
       },
       "pricing": {
-        "title": "Pricing and turnaround",
+        "title": "Service pricing",
         "help": "Limits experts must respect when setting service prices, and rules for price or platform fee changes."
       }
     },

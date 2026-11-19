@@ -51,7 +51,7 @@ const isSaveError = (code?: string): code is SaveError =>
 type Row =
   | { single: PolicySettingKey }
   | {
-      range: 'fee' | 'turnaround'
+      range: 'fee'
       min: PolicySettingKey
       max: PolicySettingKey
     }
@@ -80,11 +80,7 @@ const GROUPS: Group[] = [
     id: 'pricing',
     rows: [
       { range: 'fee', min: 'PricingMinFee', max: 'PricingMaxFee' },
-      {
-        range: 'turnaround',
-        min: 'TurnaroundMinDays',
-        max: 'TurnaroundMaxDays',
-      },
+      // No turnaround range: every case is due one working day after acceptance (meeting of 2026-11-11)
       { single: 'PriceChangeWarningPercent' },
       { single: 'PlatformFeeNoticeDays' },
     ],

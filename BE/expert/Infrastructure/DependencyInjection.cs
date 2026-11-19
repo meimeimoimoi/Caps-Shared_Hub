@@ -42,6 +42,7 @@ public static class DependencyInjection
         services.AddScoped<IPlatformFeeRepository, PlatformFeeRepository>();
         services.AddScoped<IServiceOfferingRepository, ServiceOfferingRepository>();
         services.AddScoped<IExpertNotificationOutbox, ExpertNotificationOutbox>();
+        services.AddScoped<IAuditTrail, AuditTrailWriter>();
         services.AddScoped<IPolicySettingRepository, PolicySettingRepository>();
         services.AddScoped<IExpertPolicyProvider, ExpertPolicyProvider>();
         services.AddScoped<IReviewClaimEventRepository, ReviewClaimEventRepository>();

@@ -1187,7 +1187,7 @@
     "effectiveOnHelp": "Thay đổi phải báo trước ít nhất {{days}} ngày, nên sớm nhất là ngày {{date}}. Đặt lịch mới sẽ thay thế thay đổi đang chờ (nếu có).",
     "example": "Chuyên gia thực nhận mỗi yêu cầu",
     "examplePrice": "Giá",
-    "exampleNet": "Thực nhận trước thuế TNCN: hiện tại → mới",
+    "exampleNet": "Thực nhận: hiện tại → mới",
     "firstFeeHelp": "Phí đầu tiên có hiệu lực ngay và mở dịch vụ cho chuyên gia đặt giá.",
     "late": "Giao trễ",
     "lateHelp": "Tính từ hạn giao bài (1 ngày làm việc). Giao trễ trong số giờ phạt: khách được hoàn % đã đặt, nền tảng giữ phần còn lại, chuyên gia không nhận. Giao trễ hơn nữa nhưng trước số giờ hủy: khách được hoàn 100%. Quá số giờ hủy mà chưa giao: yêu cầu bị hủy, khách được hoàn % \"khi không giao\", nền tảng giữ phần còn lại. Đặt số giờ phạt bằng số giờ hủy để chỉ còn một mức hoàn. Tối đa {{maxHours}} giờ. Yêu cầu đã gửi giữ nguyên quy định lúc gửi.",
@@ -1212,7 +1212,7 @@
       "wholeNumbers": "Nhập số nguyên không âm cho mọi ô.",
       "maxHours": "Số giờ không quá {{max}}.",
       "cancelBeforePenalty": "Số giờ hủy phải lớn hơn hoặc bằng số giờ trễ tối đa được phạt.",
-      "penaltyOverFee": "% hoàn khi trễ cộng Phí nền tảng không quá 100% (đang là {{sum}}%).",
+      "penaltyOver": "% hoàn khi trễ không quá 100%.",
       "hoursRange": "Số giờ từ 1 đến {{max}}.",
       "splitOver": "% hoàn cho khách cộng % cho chuyên gia không quá 100% (đang là {{sum}}%).",
       "platformKeeps": "Nền tảng giữ {{percent}}%.",
@@ -1230,7 +1230,7 @@
     "reviewNow": "Ngay khi lưu",
     "reviewChanged_one": "{{count}} mục thay đổi",
     "reviewChanged_other": "{{count}} mục thay đổi",
-    "expertShare": "Chuyên gia nhận {{percent}}% giá, trước thuế TNCN.",
+    "expertShare": "Chuyên gia nhận {{percent}}% giá.",
     "expertColumn": "Chuyên gia nhận",
     "unchanged": "Chưa có mục nào khác với hiện tại.",
     "changeFor": "Thay đổi phí · {{name}}",
@@ -1247,7 +1247,7 @@
     "defaultIs": "Mặc định {{percent}}%",
     "useDefault": "Dùng mức mặc định {{percent}}%",
     "splitColumn": "Chia tiền theo tình huống",
-    "expertShareShort": "Chuyên gia nhận {{percent}}%, trước thuế TNCN",
+    "expertShareShort": "Chuyên gia nhận {{percent}}%",
     "editButtons": {
       "percent": "Sửa phí",
       "late": "Sửa giao trễ",
@@ -1411,7 +1411,7 @@
     "confirm": "Xác nhận lưu",
     "errors": {
       "POLICY_CHANGED": "Giá trị vừa được người khác thay đổi. Đã tải lại, kiểm tra rồi lưu lại.",
-      "POLICY_RANGE_INVERTED": "Giá trị tối thiểu không được lớn hơn giá trị tối đa (Giá, Thời gian trả kết quả).",
+      "POLICY_RANGE_INVERTED": "Giá trị tối thiểu không được lớn hơn giá trị tối đa (Giá).",
       "POLICY_EXPECTED_VALUE_REQUIRED": "Thiếu giá trị đang áp dụng. Tải lại trang rồi thử lại.",
       "POLICY_SETTING_OUT_OF_RANGE": "Có giá trị nằm ngoài khoảng cho phép.",
       "POLICY_REASON_REQUIRED": "Ghi lý do thay đổi.",
@@ -1429,7 +1429,7 @@
         "help": "Số ngày chuyên gia phải chờ trước khi nộp lại sau kết luận không đạt."
       },
       "pricing": {
-        "title": "Giá và thời gian trả kết quả",
+        "title": "Giá dịch vụ",
         "help": "Giới hạn chuyên gia được đặt khi cấu hình giá dịch vụ, và quy tắc khi giá hoặc phí nền tảng thay đổi."
       }
     },

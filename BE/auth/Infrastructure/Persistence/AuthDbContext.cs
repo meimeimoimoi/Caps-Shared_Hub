@@ -38,6 +38,12 @@ public sealed class AuthDbContext(DbContextOptions<AuthDbContext> options) : DbC
             e.ToTable("account_event_outbox");
             e.HasKey(x => x.Id);
             e.Property(x => x.Id).HasColumnName("id");
+            // Rows written before audit events existed are all account status events
+            e.Property(x => x.MessageType)
+                .HasColumnName("message_type")
+                .HasMaxLength(64)
+                .HasDefaultValue("AccountStatusChangedEvent")
+                .IsRequired();
             e.Property(x => x.Payload).HasColumnName("payload").IsRequired();
             e.Property(x => x.CreatedAt).HasColumnName("created_at").IsRequired();
             e.Property(x => x.SentAt).HasColumnName("sent_at");
