@@ -534,6 +534,7 @@
   "workItemsCount": "Hiển thị {{shown}} trên {{total}} công việc đang xử lý.",
   "loadedNavigationOnly": "Chỉ có thể mở hồ sơ thuộc tập dữ liệu đã tải.",
   "deliverySlaPaused": "Tạm dừng SLA bàn giao",
+  "adminDecisionDue": "Chờ admin quyết định tranh chấp",
   "deliveryDue": "Hạn bàn giao",
   "expertResponseDue": "Hạn chuyên gia phản hồi",
   "reviewStartDue": "Hạn bắt đầu rà soát",

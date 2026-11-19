@@ -1,4 +1,4 @@
-import { DISPUTE_ESCALATION_HOURS, DISPUTE_SLA_HOURS } from '../constants'
+import { DISPUTE_ESCALATION_DAYS, DISPUTE_SLA_DAYS } from '../constants'
 import type { Dispute } from '../types'
 import { foldVietnamese } from '@/lib/utils'
 
@@ -51,9 +51,13 @@ export function filterDisputes<
   })
 }
 
-/** Decision time of a dispute: 48 hours, plus 48 hours once it is escalated */
-export const disputeSlaHours = (d: Pick<Dispute, 'escalatedAt'>) =>
-  DISPUTE_SLA_HOURS + (d.escalatedAt ? DISPUTE_ESCALATION_HOURS : 0)
+/** Decision time of a dispute in hours: the server's deadline when known (working days skip weekends), else the base window */
+export const disputeSlaHours = (
+  d: Pick<Dispute, 'openedAt' | 'escalatedAt' | 'decideBy'>
+) =>
+  d.decideBy
+    ? Math.round((Date.parse(d.decideBy) - Date.parse(d.openedAt)) / 3_600_000)
+    : (DISPUTE_SLA_DAYS + (d.escalatedAt ? DISPUTE_ESCALATION_DAYS : 0)) * 24
 
 /** Số giờ còn lại trước hạn trọng tài (không âm) */
 export const disputeHoursLeft = (

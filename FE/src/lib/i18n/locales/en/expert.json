@@ -535,6 +535,7 @@
   "workItemsCount": "Showing {{shown}} of {{total}} active items.",
   "loadedNavigationOnly": "Case navigation is limited to the loaded dataset.",
   "deliverySlaPaused": "Delivery SLA paused",
+  "adminDecisionDue": "Awaiting admin dispute decision",
   "deliveryDue": "Delivery due",
   "expertResponseDue": "Expert response due",
   "reviewStartDue": "Review start due",

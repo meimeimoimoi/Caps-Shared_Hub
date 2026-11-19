@@ -329,7 +329,7 @@ public sealed class WorkflowDbContext(DbContextOptions<WorkflowDbContext> option
                         "fee > 0 AND platform_fee_pct BETWEEN 0 AND 99 AND turnaround_hours BETWEEN 1 AND 720"
                             + " AND late_penalty_hours >= 0 AND late_penalty_pct BETWEEN 0 AND 100"
                             + " AND late_cancel_hours BETWEEN late_penalty_hours AND 720"
-                            + " AND no_response_hours BETWEEN 1 AND 720"
+                            + " AND no_response_days BETWEEN 1 AND 30"
                             + " AND no_response_refund_pct >= 0 AND no_response_expert_pct >= 0"
                             + " AND no_response_refund_pct + no_response_expert_pct <= 100"
                             + " AND no_delivery_refund_pct BETWEEN 0 AND 100"
@@ -352,7 +352,7 @@ public sealed class WorkflowDbContext(DbContextOptions<WorkflowDbContext> option
             e.Property(x => x.LatePenaltyHours).HasColumnName("late_penalty_hours");
             e.Property(x => x.LatePenaltyPct).HasColumnName("late_penalty_pct");
             e.Property(x => x.LateCancelHours).HasColumnName("late_cancel_hours");
-            e.Property(x => x.NoResponseHours).HasColumnName("no_response_hours");
+            e.Property(x => x.NoResponseDays).HasColumnName("no_response_days");
             e.Property(x => x.NoResponseRefundPct).HasColumnName("no_response_refund_pct");
             e.Property(x => x.NoResponseExpertPct).HasColumnName("no_response_expert_pct");
             e.Property(x => x.NoDeliveryRefundPct).HasColumnName("no_delivery_refund_pct");
@@ -375,6 +375,7 @@ public sealed class WorkflowDbContext(DbContextOptions<WorkflowDbContext> option
             e.Property(x => x.RevisedContent)
                 .HasColumnName("revised_content")
                 .HasColumnType("jsonb");
+            e.Property(x => x.Citations).HasColumnName("citations").IsRequired();
             e.Property(x => x.DeclineReason).HasColumnName("decline_reason");
             e.Property(x => x.TerminationReason).HasColumnName("termination_reason");
             e.Property(x => x.ResponseDeadline).HasColumnName("response_deadline").IsRequired();

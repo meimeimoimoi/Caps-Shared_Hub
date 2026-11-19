@@ -178,6 +178,8 @@ export interface ReviewCaseDto {
   result: 'VERIFIED' | 'CANNOT_VERIFY' | null
   reviewSummary: string | null
   cannotVerifyReason: string | null
+  /** Legal basis the expert relied on, one reference per entry. */
+  citations: string[]
   /** The AI draft under review (detail only; null for uploaded files). */
   sourceContent: Record<string, unknown> | null
   /** The expert's edited copy of that draft, once delivered. */

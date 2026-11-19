@@ -464,7 +464,7 @@ public sealed class ExpertDbContext(DbContextOptions<ExpertDbContext> options) :
                     // The client's and the expert's shares of a no-response case; the platform keeps the rest
                     t.HasCheckConstraint(
                         "ck_platform_fee_no_response_rule",
-                        "no_response_hours BETWEEN 1 AND 720 AND no_response_refund_percent >= 0 AND no_response_expert_percent >= 0 AND no_response_refund_percent + no_response_expert_percent <= 100"
+                        "no_response_days BETWEEN 1 AND 30 AND no_response_refund_percent >= 0 AND no_response_expert_percent >= 0 AND no_response_refund_percent + no_response_expert_percent <= 100"
                     );
                     t.HasCheckConstraint(
                         "ck_platform_fee_no_delivery_rule",
@@ -482,7 +482,7 @@ public sealed class ExpertDbContext(DbContextOptions<ExpertDbContext> options) :
             e.Property(x => x.LatePenaltyHours).HasColumnName("late_penalty_hours");
             e.Property(x => x.LatePenaltyPercent).HasColumnName("late_penalty_percent");
             e.Property(x => x.LateCancelHours).HasColumnName("late_cancel_hours");
-            e.Property(x => x.NoResponseHours).HasColumnName("no_response_hours");
+            e.Property(x => x.NoResponseDays).HasColumnName("no_response_days");
             e.Property(x => x.NoResponseRefundPercent).HasColumnName("no_response_refund_percent");
             e.Property(x => x.NoResponseExpertPercent).HasColumnName("no_response_expert_percent");
             e.Property(x => x.NoDeliveryRefundPercent).HasColumnName("no_delivery_refund_percent");
@@ -511,7 +511,7 @@ public sealed class ExpertDbContext(DbContextOptions<ExpertDbContext> options) :
                     LatePenaltyHours = 24,
                     LatePenaltyPercent = 30,
                     LateCancelHours = 72,
-                    NoResponseHours = 72,
+                    NoResponseDays = 3,
                     NoResponseRefundPercent = 50,
                     NoResponseExpertPercent = 30,
                     // Before the 2026-11-11 meeting a case nobody delivered was refunded in full
@@ -529,7 +529,7 @@ public sealed class ExpertDbContext(DbContextOptions<ExpertDbContext> options) :
                     LatePenaltyHours = 24,
                     LatePenaltyPercent = 50,
                     LateCancelHours = 24,
-                    NoResponseHours = 72,
+                    NoResponseDays = 3,
                     NoResponseRefundPercent = 0,
                     NoResponseExpertPercent = 60,
                     NoDeliveryRefundPercent = 50,

@@ -66,7 +66,16 @@ public sealed class SendCaseMessageTests
     private static ReviewCase Completed()
     {
         var reviewCase = InReview();
-        reviewCase.Deliver(ExpertProfile, Expert, ReviewCase.Verified, "Looks right", null, Now);
+        reviewCase.Deliver(
+            ExpertProfile,
+            Expert,
+            ReviewCase.Verified,
+            "Looks right",
+            null,
+            ["Article 9, CIT Law"],
+            true,
+            Now
+        );
         reviewCase.Confirm(Client, Now);
         return reviewCase;
     }

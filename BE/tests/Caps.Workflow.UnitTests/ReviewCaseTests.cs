@@ -16,7 +16,7 @@ public sealed class ReviewCaseTests
         int penaltyHours = 24,
         int penaltyPct = 30,
         int cancelHours = 72,
-        int silenceHours = 72,
+        int silenceDays = 3,
         int silenceRefund = 50,
         int silenceExpert = 30
     ) =>
@@ -35,7 +35,7 @@ public sealed class ReviewCaseTests
                     penaltyHours,
                     (short)penaltyPct,
                     cancelHours,
-                    silenceHours,
+                    silenceDays,
                     (short)silenceRefund,
                     (short)silenceExpert
                 ),
@@ -84,6 +84,8 @@ public sealed class ReviewCaseTests
             ReviewCase.Verified,
             "All good",
             null,
+            ["Article 9, CIT Law"],
+            true,
             Now.AddHours(10)
         );
         Assert.Equal(Now.AddHours(34), reviewCase.AcceptanceDeadline);
@@ -167,7 +169,16 @@ public sealed class ReviewCaseTests
     public void Another_user_cannot_confirm()
     {
         var reviewCase = InReview();
-        reviewCase.Deliver(Expert, ExpertUser, ReviewCase.Verified, "All good", null, Now);
+        reviewCase.Deliver(
+            Expert,
+            ExpertUser,
+            ReviewCase.Verified,
+            "All good",
+            null,
+            ["Article 9, CIT Law"],
+            true,
+            Now
+        );
 
         Assert.Equal(
             "REVIEW_CASE_NOT_FOUND",
@@ -236,7 +247,65 @@ public sealed class ReviewCaseTests
             "TEXT_REQUIRED",
             Errors.CodeOf(() =>
                 InReview()
-                    .Deliver(Expert, ExpertUser, ReviewCase.CannotVerify, "Summary", null, Now)
+                    .Deliver(
+                        Expert,
+                        ExpertUser,
+                        ReviewCase.CannotVerify,
+                        "Summary",
+                        null,
+                        ["Article 9, CIT Law"],
+                        true,
+                        Now
+                    )
+            )
+        );
+
+    [Fact]
+    public void Delivery_records_the_citations_and_the_attestation()
+    {
+        var reviewCase = InReview();
+
+        var history = reviewCase.Deliver(
+            Expert,
+            ExpertUser,
+            ReviewCase.Verified,
+            "All good",
+            null,
+            [" Article 9, CIT Law ", ""],
+            true,
+            Now
+        );
+
+        Assert.Equal(["Article 9, CIT Law"], reviewCase.Citations);
+        Assert.Equal(ReviewCase.AttestationNote, history.Note);
+    }
+
+    [Fact]
+    public void A_verified_result_needs_a_citation() =>
+        Assert.Equal(
+            "CITATIONS_INVALID",
+            Errors.CodeOf(() =>
+                InReview()
+                    .Deliver(Expert, ExpertUser, ReviewCase.Verified, "Ok", null, [" "], true, Now)
+            )
+        );
+
+    [Fact]
+    public void Delivery_without_the_attestation_is_rejected() =>
+        Assert.Equal(
+            "ATTESTATION_REQUIRED",
+            Errors.CodeOf(() =>
+                InReview()
+                    .Deliver(
+                        Expert,
+                        ExpertUser,
+                        ReviewCase.CannotVerify,
+                        "Ok",
+                        "No data",
+                        null,
+                        false,
+                        Now
+                    )
             )
         );
 
@@ -245,7 +314,17 @@ public sealed class ReviewCaseTests
         Assert.Equal(
             "REVIEW_RESULT_INVALID",
             Errors.CodeOf(() =>
-                InReview().Deliver(Expert, ExpertUser, "MAYBE", "Summary", null, Now)
+                InReview()
+                    .Deliver(
+                        Expert,
+                        ExpertUser,
+                        "MAYBE",
+                        "Summary",
+                        null,
+                        ["Article 9, CIT Law"],
+                        true,
+                        Now
+                    )
             )
         );
 
@@ -255,7 +334,16 @@ public sealed class ReviewCaseTests
         var reviewCase = InReview();
 
         Errors.CodeOf(() =>
-            reviewCase.Deliver(Expert, ExpertUser, ReviewCase.CannotVerify, "Summary", null, Now)
+            reviewCase.Deliver(
+                Expert,
+                ExpertUser,
+                ReviewCase.CannotVerify,
+                "Summary",
+                null,
+                ["Article 9, CIT Law"],
+                true,
+                Now
+            )
         );
 
         Assert.Equal(ReviewCaseStatus.InReview, reviewCase.Status);
@@ -291,7 +379,16 @@ public sealed class ReviewCaseTests
     public void Delivery_is_auto_confirmed_after_72_hours()
     {
         var reviewCase = InReview();
-        reviewCase.Deliver(Expert, ExpertUser, ReviewCase.Verified, "All good", null, Now);
+        reviewCase.Deliver(
+            Expert,
+            ExpertUser,
+            ReviewCase.Verified,
+            "All good",
+            null,
+            ["Article 9, CIT Law"],
+            true,
+            Now
+        );
 
         reviewCase.ExpireIfOverdue(Now.AddHours(72));
 
@@ -385,9 +482,10 @@ public sealed class ReviewCaseTests
     }
 
     [Fact]
-    public void The_answer_deadline_uses_the_hours_frozen_at_booking()
+    public void The_answer_deadline_uses_the_days_frozen_at_booking()
     {
-        var reviewCase = NewCase(silenceHours: 24);
+        // Tuesday plus 1 working day is Wednesday, the same hour
+        var reviewCase = NewCase(silenceDays: 1);
         reviewCase.ConfirmPayment(Now);
         reviewCase.Accept(Expert, ExpertUser, Now);
         var (request, _) = reviewCase.RequestInformation(
@@ -402,15 +500,15 @@ public sealed class ReviewCaseTests
     }
 
     [Theory]
-    [InlineData(0, 50, 30)] // no hours
-    [InlineData(721, 50, 30)] // past the cap
-    [InlineData(72, -1, 30)] // negative share
-    [InlineData(72, 80, 30)] // client + expert over 100%
-    public void Invalid_no_response_rule_is_rejected(int hours, int refund, int expert) =>
+    [InlineData(0, 50, 30)] // no days
+    [InlineData(31, 50, 30)] // past the cap
+    [InlineData(3, -1, 30)] // negative share
+    [InlineData(3, 80, 30)] // client + expert over 100%
+    public void Invalid_no_response_rule_is_rejected(int days, int refund, int expert) =>
         Assert.Equal(
             "CASE_OFFER_INVALID",
             Errors.CodeOf(() =>
-                NewCase(silenceHours: hours, silenceRefund: refund, silenceExpert: expert)
+                NewCase(silenceDays: days, silenceRefund: refund, silenceExpert: expert)
             )
         );
 
@@ -471,6 +569,8 @@ public sealed class ReviewCaseTests
             ReviewCase.Verified,
             "Done",
             null,
+            ["Article 9, CIT Law"],
+            true,
             Now.AddHours(deliveredAfterHours)
         );
 
@@ -490,9 +590,37 @@ public sealed class ReviewCaseTests
                         ReviewCase.Verified,
                         "Done",
                         null,
+                        ["Article 9, CIT Law"],
+                        true,
                         Now.AddHours(120)
                     )
             )
+        );
+
+    [Fact]
+    public void A_saved_draft_is_delivered_when_no_revision_is_sent()
+    {
+        var reviewCase = InReview();
+        reviewCase.SaveRevision(Expert, """{"a":1}""", Now);
+        reviewCase.Deliver(
+            Expert,
+            ExpertUser,
+            ReviewCase.Verified,
+            "Done",
+            null,
+            ["Article 9, CIT Law"],
+            true,
+            Now
+        );
+
+        Assert.Equal("""{"a":1}""", reviewCase.RevisedContent);
+    }
+
+    [Fact]
+    public void A_draft_must_be_a_json_object() =>
+        Assert.Equal(
+            "REVISED_CONTENT_INVALID",
+            Errors.CodeOf(() => InReview().SaveRevision(Expert, "[]", Now))
         );
 
     [Fact]

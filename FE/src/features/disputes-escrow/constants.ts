@@ -1,9 +1,10 @@
 import { SETTLEMENT_POLICY } from '@/features/review-case/settlement'
 
 /* Quyết định trọng tài khiếu nại: kết quả → tỷ lệ phân chia tiền Escrow */
-export const DISPUTE_SLA_HOURS = 48
-/** Extra decision time, granted once, when a dispute is escalated to a professional reviewer */
-export const DISPUTE_ESCALATION_HOURS = 48
+/** Working days to decide a dispute (ReviewDispute.WorkingDaysToDecide on the server) */
+export const DISPUTE_SLA_DAYS = 2
+/** Extra working days, granted once, when a dispute is escalated to a professional reviewer */
+export const DISPUTE_ESCALATION_DAYS = 2
 /** Trạng thái hiển thị khi khiếu nại đã có quyết định trọng tài */
 export const DISPUTE_RESOLVED = {
   label: 'disputes.resolved',

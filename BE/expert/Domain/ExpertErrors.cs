@@ -275,11 +275,11 @@ public static class ExpertErrors
             "The refund when the expert never delivers must be 0 to 100 percent."
         );
 
-    public static AppException NoResponseRuleInvalid(int maxHours) =>
+    public static AppException NoResponseRuleInvalid(int maxDays) =>
         new(
             ErrorType.Validation,
             "NO_RESPONSE_RULE_INVALID",
-            $"The no-response hours must be 1 to {maxHours}, and the client's plus the expert's share at most 100 percent."
+            $"The no-response days must be 1 to {maxDays} working days, and the client's plus the expert's share at most 100 percent."
         );
 
     public static AppException PlatformFeeNotSet() =>

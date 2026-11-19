@@ -174,7 +174,7 @@
       "issue": "Vấn đề",
       "description": "Nội dung",
       "opened": "Gửi lúc",
-      "sla": "Dispute Admin phản hồi trong {{hours}} giờ.",
+      "sla": "Dispute Admin phản hồi trong {{days}} ngày làm việc.",
       "escalation": "Nếu tranh chấp cần đánh giá chuyên môn, hồ sơ được chuyển tới chuyên gia thẩm định độc lập; quản trị viên không thay thế kết luận chuyên môn."
     },
     "RESOLVED": {
@@ -234,7 +234,8 @@
     "types": {
       "NORMAL": "Hoàn tất bình thường",
       "TERMINATION": "Chấm dứt hồ sơ",
-      "DISPUTE": "Sau tranh chấp"
+      "DISPUTE": "Sau tranh chấp",
+      "LATE": "Giao trễ"
     },
     "rules": {
       "USER_ACCEPTED": "Bạn nghiệm thu",
@@ -248,7 +249,8 @@
       "RESOLVE_REFUND_USER": "Hoàn tiền cho bạn",
       "RESOLVE_PAY_EXPERT": "Chi trả chuyên gia",
       "RESOLVE_PARTIAL": "Quyết toán một phần",
-      "FULL_REFUND": "Hoàn toàn bộ phí cho bạn"
+      "FULL_REFUND": "Hoàn toàn bộ phí cho bạn",
+      "LATE_DELIVERY": "Chuyên gia giao trễ, bạn được hoàn theo luật giao trễ đã chốt lúc đặt"
     }
   },
   "package": {
@@ -696,6 +698,10 @@
       "fieldChanged": "Đã sửa",
       "undo": "Hoàn tác",
       "cannotVerifyReason": "Lý do chưa thể xác minh",
+      "citations": "Căn cứ pháp lý",
+      "citationsHelpLabel": "Hướng dẫn nhập căn cứ pháp lý",
+      "citationsHelp": "Mỗi dòng một căn cứ, ví dụ: Điều 9 Luật Thuế TNDN 2008. Bắt buộc khi kết quả là Đã xác minh; tối đa 20 dòng, mỗi dòng tối đa 500 ký tự.",
+      "attest": "Tôi xác nhận đã hoàn thành",
       "deliver": "Bàn giao kết quả",
       "askTitle": "Yêu cầu khách bổ sung thông tin",
       "askLabel": "Nội dung cần bổ sung",

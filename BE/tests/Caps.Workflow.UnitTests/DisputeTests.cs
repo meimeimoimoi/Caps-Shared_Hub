@@ -28,7 +28,16 @@ public sealed class DisputeTests
             .Case;
         reviewCase.ConfirmPayment(Now.AddHours(-2));
         reviewCase.Accept(Expert, ExpertUser, Now.AddHours(-1));
-        reviewCase.Deliver(Expert, ExpertUser, ReviewCase.Verified, "All good", null, Now);
+        reviewCase.Deliver(
+            Expert,
+            ExpertUser,
+            ReviewCase.Verified,
+            "All good",
+            null,
+            ["Article 9, CIT Law"],
+            true,
+            Now
+        );
         return reviewCase;
     }
 
@@ -60,7 +69,8 @@ public sealed class DisputeTests
         Assert.Equal(ReviewCaseStatus.AwaitingAcceptance, history.FromStatus);
         Assert.Equal(ReviewDispute.Open, dispute.Status);
         Assert.Equal("The VAT part is missing", dispute.Description);
-        Assert.Equal(Now.AddHours(1) + ReviewDispute.DecisionWindow, dispute.DecideBy);
+        // Tuesday plus 2 working days is Thursday
+        Assert.Equal(Now.AddHours(1).AddDays(2), dispute.DecideBy);
         // The expiry job only auto-confirms cases still awaiting acceptance
         Assert.Null(reviewCase.ExpireIfOverdue(Now.AddDays(30)));
     }
@@ -148,8 +158,9 @@ public sealed class DisputeTests
 
         dispute.Extend();
 
-        Assert.Equal(due + ReviewDispute.DecisionWindow, dispute.DecideBy);
-        Assert.Equal("DISPUTE_ALREADY_EXTENDED", Errors.CodeOf(dispute.Extend));
+        // Thursday plus 2 working days skips the weekend: Monday
+        Assert.Equal(due.AddDays(4), dispute.DecideBy);
+        Assert.Equal("DISPUTE_ALREADY_EXTENDED", Errors.CodeOf(() => dispute.Extend()));
     }
 
     // Upheld: the client gets 50%, the platform keeps the rest; rejected: the fee splits as booked
@@ -288,7 +299,16 @@ public sealed class DisputeTests
         reviewCase.ConfirmPayment(Now.AddHours(-2));
         reviewCase.Accept(Expert, ExpertUser, Now.AddHours(-1));
         var delivered = LateDelivery(lateHours);
-        reviewCase.Deliver(Expert, ExpertUser, ReviewCase.Verified, "All good", null, delivered);
+        reviewCase.Deliver(
+            Expert,
+            ExpertUser,
+            ReviewCase.Verified,
+            "All good",
+            null,
+            ["Article 9, CIT Law"],
+            true,
+            delivered
+        );
         var (dispute, _) = reviewCase.OpenDispute(
             Client,
             Reason,
@@ -308,7 +328,7 @@ public sealed class DisputeTests
             "CASE_STATUS_INVALID",
             Errors.CodeOf(() => reviewCase.ResolveDispute(dispute, Admin, 50, "Late", Now))
         );
-        Assert.Equal("CASE_STATUS_INVALID", Errors.CodeOf(dispute.Extend));
+        Assert.Equal("CASE_STATUS_INVALID", Errors.CodeOf(() => dispute.Extend()));
     }
 
     [Fact]

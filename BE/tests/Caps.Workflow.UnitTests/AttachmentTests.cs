@@ -106,7 +106,16 @@ public sealed class AttachmentTests
     public void A_dispute_takes_files_as_evidence()
     {
         var reviewCase = InReview();
-        reviewCase.Deliver(ExpertProfile, Expert, ReviewCase.Verified, "Done", null, Now);
+        reviewCase.Deliver(
+            ExpertProfile,
+            Expert,
+            ReviewCase.Verified,
+            "Done",
+            null,
+            ["Article 9, CIT Law"],
+            true,
+            Now
+        );
         reviewCase.OpenDispute(Client, "DELIVERABLE_INCOMPLETE", "VAT missing", Now);
 
         var attachment = reviewCase.AddAttachment(Client, "vat.pdf", Pdf, 0, Now);

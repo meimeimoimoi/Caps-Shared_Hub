@@ -50,25 +50,25 @@ const DEFAULT_LATE: LateRule = {
 }
 // Agreed platform share; a service's first fee starts here
 const DEFAULT_PERCENT = 40
-// Mirror PlatformFee.MaxLateHours and PlatformFee.MaxNoResponseHours on the server
+// Mirror PlatformFee.MaxLateHours and PlatformFee.MaxNoResponseDays on the server
 const MAX_LATE_HOURS = 720
-const MAX_NO_RESPONSE_HOURS = 72
+const MAX_NO_RESPONSE_DAYS = 3
 const toDraft = (late: LateRule): LateDraft => ({
   penaltyHours: String(late.penaltyHours),
   penaltyPercent: String(late.penaltyPercent),
   cancelHours: String(late.cancelHours),
   noDeliveryRefundPercent: String(late.noDeliveryRefundPercent),
 })
-const NO_RESPONSE_FIELDS = ['hours', 'refundPercent', 'expertPercent'] as const
+const NO_RESPONSE_FIELDS = ['days', 'refundPercent', 'expertPercent'] as const
 type NoResponseDraft = Record<(typeof NO_RESPONSE_FIELDS)[number], string>
 // Client did not supply the requested info: no refund, the fee splits 60/40 (agreed 2026-11-11)
 const DEFAULT_NO_RESPONSE: NoResponseRule = {
-  hours: 72,
+  days: 3,
   refundPercent: 0,
   expertPercent: 60,
 }
 const toNoResponseDraft = (rule: NoResponseRule): NoResponseDraft => ({
-  hours: String(rule.hours),
+  days: String(rule.days),
   refundPercent: String(rule.refundPercent),
   expertPercent: String(rule.expertPercent),
 })
@@ -316,15 +316,15 @@ export default function AdminPlatformFeesPage() {
     lateRule.cancelHours <= MAX_LATE_HOURS &&
     lateRule.noDeliveryRefundPercent <= 100
   const noResponseRule: NoResponseRule = {
-    hours: Number(noResponse.hours),
+    days: Number(noResponse.days),
     refundPercent: Number(noResponse.refundPercent),
     expertPercent: Number(noResponse.expertPercent),
   }
   // Same rule as the server: the platform keeps what the client and the expert do not get
   const noResponseValid =
     NO_RESPONSE_FIELDS.every((f) => isWhole(noResponse[f])) &&
-    noResponseRule.hours >= 1 &&
-    noResponseRule.hours <= MAX_NO_RESPONSE_HOURS &&
+    noResponseRule.days >= 1 &&
+    noResponseRule.days <= MAX_NO_RESPONSE_DAYS &&
     noResponseRule.refundPercent + noResponseRule.expertPercent <= 100
   // One message per broken rule, same rules as the checks above
   const percentError =
@@ -346,8 +346,8 @@ export default function AdminPlatformFeesPage() {
     isWhole(noResponse[f])
   )
     ? t('admin:platformFees.rules.wholeNumbers')
-    : noResponseRule.hours < 1 || noResponseRule.hours > MAX_NO_RESPONSE_HOURS
-      ? t('admin:platformFees.rules.hoursRange', { max: MAX_NO_RESPONSE_HOURS })
+    : noResponseRule.days < 1 || noResponseRule.days > MAX_NO_RESPONSE_DAYS
+      ? t('admin:platformFees.rules.daysRange', { max: MAX_NO_RESPONSE_DAYS })
       : noResponseRule.refundPercent + noResponseRule.expertPercent > 100
         ? t('admin:platformFees.rules.splitOver', {
             sum: noResponseRule.refundPercent + noResponseRule.expertPercent,
@@ -377,10 +377,8 @@ export default function AdminPlatformFeesPage() {
       ? t(`admin:platformFees.errors.${e.code}`, {
           days: editing?.noticeDays,
           max: maxPercent,
-          maxHours:
-            e.code === 'NO_RESPONSE_RULE_INVALID'
-              ? MAX_NO_RESPONSE_HOURS
-              : MAX_LATE_HOURS,
+          maxHours: MAX_LATE_HOURS,
+          maxDays: MAX_NO_RESPONSE_DAYS,
         })
       : t('admin:platformFees.errors.failed')
   const failed = (e: unknown) => setToast(errorToast(errorText(e)))
@@ -486,7 +484,7 @@ export default function AdminPlatformFeesPage() {
         ),
       },
       {
-        label: t('admin:platformFees.cases.silence', { hours: silence.hours }),
+        label: t('admin:platformFees.cases.silence', { days: silence.days }),
         parts: split(
           silence.refundPercent,
           silence.expertPercent,
@@ -984,7 +982,7 @@ export default function AdminPlatformFeesPage() {
                 open={scope === 'noResponse'}
                 legend={t('admin:platformFees.noResponse')}
                 help={t('admin:platformFees.noResponseHelp', {
-                  maxHours: MAX_NO_RESPONSE_HOURS,
+                  maxDays: MAX_NO_RESPONSE_DAYS,
                 })}
                 fields={NO_RESPONSE_FIELDS}
                 label={(field) =>

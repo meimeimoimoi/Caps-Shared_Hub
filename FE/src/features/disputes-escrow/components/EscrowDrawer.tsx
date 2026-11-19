@@ -10,7 +10,6 @@ import { HelpTip } from '@/components/ui/feedback/help-tip'
 import { FormField } from '@/components/ui/forms/form-field'
 import { TERMINATION_MATRIX } from '../constants'
 import { escrowSplit } from '../utils/escrow'
-import { SettleActions } from './SettleActions'
 import type { Escrow } from '../types'
 
 function Row({ label, children }: { label: string; children: ReactNode }) {
@@ -29,8 +28,6 @@ export function EscrowDrawer({
   retrying,
   onRetry,
   onMarkRefunded,
-  onRelease,
-  onRefund,
   onClose,
 }: {
   escrow: Escrow
@@ -39,10 +36,6 @@ export function EscrowDrawer({
   onRetry: () => void
   /** Reject → giữ form, hiện lỗi */
   onMarkRefunded: (ref: string) => Promise<unknown>
-  /** Billing release of a HELD escrow; only given in API mode */
-  onRelease?: (expertUserId: string, platformFeePct: number) => Promise<unknown>
-  /** Billing refund of a HELD escrow; only given in API mode */
-  onRefund?: () => Promise<unknown>
   onClose: () => void
 }) {
   const { t } = useTranslation(['admin', 'common'])
@@ -140,13 +133,6 @@ export function EscrowDrawer({
               {t('escrow.refund.mark')}
             </button>
           )
-        ) : e.status === 'HELD' && onRelease && onRefund ? (
-          <SettleActions
-            amount={e.amount}
-            platformShare={platformShare}
-            onRelease={onRelease}
-            onRefund={onRefund}
-          />
         ) : undefined
       }
     >

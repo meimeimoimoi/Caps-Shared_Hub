@@ -2,6 +2,7 @@ using Caps.Common.Application;
 using Caps.Workflow.Application.Abstractions;
 using Caps.Workflow.Application.DTOs.Responses;
 using Caps.Workflow.Domain;
+using Caps.Workflow.Domain.Review;
 
 namespace Caps.Workflow.Application.Features.Disputes;
 
@@ -9,8 +10,11 @@ namespace Caps.Workflow.Application.Features.Disputes;
 public sealed record ExtendDisputeCommand(Guid ReviewCaseId);
 
 /// <summary>Adds one more decision window, once per dispute.</summary>
-public sealed class ExtendDisputeHandler(IReviewDisputeRepository disputes, IUnitOfWork unitOfWork)
-    : ICommandHandler<ExtendDisputeCommand, DisputeResponse>
+public sealed class ExtendDisputeHandler(
+    IReviewDisputeRepository disputes,
+    IUnitOfWork unitOfWork,
+    WorkCalendar? calendar = null
+) : ICommandHandler<ExtendDisputeCommand, DisputeResponse>
 {
     public async Task<DisputeResponse> HandleAsync(
         ExtendDisputeCommand command,
@@ -20,7 +24,7 @@ public sealed class ExtendDisputeHandler(IReviewDisputeRepository disputes, IUni
         var dispute =
             await disputes.FindByCaseAsync(command.ReviewCaseId, ct)
             ?? throw WorkflowErrors.DisputeNotFound();
-        dispute.Extend();
+        dispute.Extend(calendar);
         await unitOfWork.SaveChangesAsync(ct);
         return DisputeResponse.From(dispute);
     }

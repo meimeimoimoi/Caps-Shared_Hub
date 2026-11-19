@@ -16,7 +16,17 @@ public sealed class DocumentReviewTests
     {
         var reviewCase = Accepted();
         var reason = result == ReviewCase.CannotVerify ? "Missing invoices" : null;
-        reviewCase.Deliver(Expert, ExpertUser, result, "Summary", reason, Now, revisedContent);
+        reviewCase.Deliver(
+            Expert,
+            ExpertUser,
+            result,
+            "Summary",
+            reason,
+            ["Article 9, CIT Law"],
+            true,
+            Now,
+            revisedContent
+        );
         return reviewCase;
     }
 
@@ -61,6 +71,8 @@ public sealed class DocumentReviewTests
                     ReviewCase.Verified,
                     "Summary",
                     null,
+                    ["Article 9, CIT Law"],
+                    true,
                     Now,
                     revisedContent
                 )
@@ -79,7 +91,17 @@ public sealed class DocumentReviewTests
             "REVISED_CONTENT_INVALID",
             Errors.CodeOf(() =>
                 Accepted()
-                    .Deliver(Expert, ExpertUser, ReviewCase.Verified, "Summary", null, Now, tooLong)
+                    .Deliver(
+                        Expert,
+                        ExpertUser,
+                        ReviewCase.Verified,
+                        "Summary",
+                        null,
+                        ["Article 9, CIT Law"],
+                        true,
+                        Now,
+                        tooLong
+                    )
             )
         );
     }

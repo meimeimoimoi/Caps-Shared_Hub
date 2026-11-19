@@ -61,7 +61,16 @@ public sealed class ExpertWithdrawReviewTests
     public void A_delivered_case_cannot_be_withdrawn()
     {
         var reviewCase = Accepted();
-        reviewCase.Deliver(ExpertProfile, Expert, ReviewCase.Verified, "All good", null, Now);
+        reviewCase.Deliver(
+            ExpertProfile,
+            Expert,
+            ReviewCase.Verified,
+            "All good",
+            null,
+            ["Article 9, CIT Law"],
+            true,
+            Now
+        );
 
         Assert.Equal(
             "CASE_STATUS_INVALID",
