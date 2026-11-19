@@ -40,5 +40,8 @@ public sealed record DeliverReviewRequest(
     JsonElement? RevisedContent
 );
 
+/// <summary>The expert's draft of the revised document, a JSON object.</summary>
+public sealed record SaveRevisionRequest(JsonElement? RevisedContent);
+
 /// <summary>1 to 5 stars for the expert, with an optional comment.</summary>
 public sealed record RateReviewRequest(int Stars, string? Comment);
