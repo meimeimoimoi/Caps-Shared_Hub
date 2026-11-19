@@ -168,6 +168,8 @@ public sealed partial class ReviewCase
         string? result,
         string? summary,
         string? cannotVerifyReason,
+        string[]? citations,
+        bool attested,
         DateTimeOffset now,
         string? revisedContent = null,
         WorkCalendar? calendar = null
@@ -179,12 +181,25 @@ public sealed partial class ReviewCase
         {
             throw WorkflowErrors.ResultInvalid();
         }
+        if (!attested)
+        {
+            throw WorkflowErrors.AttestationRequired();
+        }
         // Validate everything before changing state
         var text = RequiredText(summary, "Review summary");
         var reason =
             result == CannotVerify
                 ? RequiredText(cannotVerifyReason, "Cannot-verify reason")
                 : null;
+        var sources = (citations ?? []).Select(x => x.Trim()).Where(x => x.Length > 0).ToArray();
+        if (
+            (result == Verified && sources.Length == 0)
+            || sources.Length > MaxCitations
+            || sources.Any(x => x.Length > MaxCitationLength)
+        )
+        {
+            throw WorkflowErrors.CitationsInvalid();
+        }
         if (revisedContent is not null && !IsJsonObject(revisedContent))
         {
             throw WorkflowErrors.RevisedContentInvalid();
@@ -197,13 +212,14 @@ public sealed partial class ReviewCase
         Result = result;
         ReviewSummary = text;
         CannotVerifyReason = reason;
+        Citations = sources;
         RevisedContent = revisedContent ?? RevisedContent;
         DeliveredAt = now;
         AcceptanceDeadline = (calendar ?? WorkCalendar.WeekendsOnly).AddWorkingDays(
             now,
             WorkingDaysToAccept
         );
-        return MoveTo(ReviewCaseStatus.AwaitingAcceptance, actorUserId, null, now);
+        return MoveTo(ReviewCaseStatus.AwaitingAcceptance, actorUserId, AttestationNote, now);
     }
 
     public ReviewStatusHistory Confirm(Guid requesterUserId, DateTimeOffset now)

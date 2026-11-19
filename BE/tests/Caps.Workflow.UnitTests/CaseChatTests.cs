@@ -59,7 +59,16 @@ public sealed class CaseChatTests
             reviewCase.TerminateForNoResponse(request, Now.AddDays(4));
             return reviewCase;
         }
-        reviewCase.Deliver(ExpertProfile, Expert, ReviewCase.Verified, "Done", null, Now);
+        reviewCase.Deliver(
+            ExpertProfile,
+            Expert,
+            ReviewCase.Verified,
+            "Done",
+            null,
+            ["Article 9, CIT Law"],
+            true,
+            Now
+        );
         if (status == ReviewCaseStatus.Completed)
         {
             reviewCase.Confirm(Client, Now);

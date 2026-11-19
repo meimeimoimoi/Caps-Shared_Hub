@@ -13,6 +13,7 @@ public sealed record ReviewCaseResponse(
     string? Result,
     string? ReviewSummary,
     String? CannotVerifyReason,
+    string[] Citations,
     JsonElement? SourceContent,
     JsonElement? RevisedContent,
     string? DeclineReason,
@@ -52,6 +53,7 @@ public sealed record ReviewCaseResponse(
             c.Result,
             c.ReviewSummary,
             c.CannotVerifyReason,
+            c.Citations,
             Json(sourceContent),
             // The client sees the revision only once it is delivered; the expert also sees the draft
             c.DeliveredAt

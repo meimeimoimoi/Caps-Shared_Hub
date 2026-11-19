@@ -68,7 +68,16 @@ public sealed class RateReviewHandlerTests
             .Case;
         reviewCase.ConfirmPayment(now);
         reviewCase.Accept(ExpertProfile, Expert, now);
-        reviewCase.Deliver(ExpertProfile, Expert, ReviewCase.Verified, "Done", null, now);
+        reviewCase.Deliver(
+            ExpertProfile,
+            Expert,
+            ReviewCase.Verified,
+            "Done",
+            null,
+            ["Article 9, CIT Law"],
+            true,
+            now
+        );
         reviewCase.Confirm(Client, now);
         return reviewCase;
     }

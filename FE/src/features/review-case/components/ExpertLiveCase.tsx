@@ -16,6 +16,10 @@ import { fieldText } from './fieldText'
 import { cn } from '@/lib/utils'
 
 const MAX_TEXT = 4000
+// Mirrors ReviewCase.MaxCitations / MaxCitationLength on the server
+const MAX_CITATIONS = 20
+const MAX_CITATION_LENGTH = 500
+const ATTESTED_TASKS = ['T1', 'T2', 'T3'] as const
 const CHAT_STATUSES = [
   'IN_REVIEW',
   'AWAITING_USER_INFORMATION',
@@ -88,6 +92,7 @@ function DeliverForm({
     result: 'VERIFIED' | 'CANNOT_VERIFY',
     summary: string,
     reason: string | null,
+    citations: string[],
     revised: Record<string, unknown> | null
   ) => void
 }) {
@@ -96,6 +101,13 @@ function DeliverForm({
   const [result, setResult] = useState<'VERIFIED' | 'CANNOT_VERIFY'>('VERIFIED')
   const [summary, setSummary] = useState('')
   const [reason, setReason] = useState('')
+  const [citeText, setCiteText] = useState('')
+  // T1-T3 must be confirmed before delivery (attestation)
+  const [checked, setChecked] = useState<string[]>([])
+  const citations = citeText
+    .split('\n')
+    .map((c) => c.trim())
+    .filter(Boolean)
   const [fields, setFields] = useState<Record<string, string>>(() =>
     Object.fromEntries(
       Object.entries(source ?? {}).map(([k, v]) => [k, fieldText(v)])
@@ -103,7 +115,13 @@ function DeliverForm({
   )
   const [removed, setRemoved] = useState<string[]>([])
   const cannot = result === 'CANNOT_VERIFY'
-  const ready = summary.trim() && (!cannot || reason.trim())
+  const ready =
+    summary.trim() &&
+    (!cannot || reason.trim()) &&
+    (cannot || citations.length > 0) &&
+    citations.length <= MAX_CITATIONS &&
+    citations.every((c) => c.length <= MAX_CITATION_LENGTH) &&
+    checked.length === ATTESTED_TASKS.length
   // Fields that were not text go back as JSON when they still parse
   const revised = () =>
     source &&
@@ -129,6 +147,7 @@ function DeliverForm({
             result,
             summary.trim(),
             cannot ? reason.trim() : null,
+            citations,
             revised()
           )
       }}
@@ -258,6 +277,49 @@ function DeliverForm({
           />
         </div>
       )}
+      <div className="space-y-2">
+        <div className="flex items-center gap-1">
+          <label
+            htmlFor={`${id}-citations`}
+            className="text-fg-strong block text-sm font-semibold"
+          >
+            {t('live.expert.citations')}
+          </label>
+          <HelpTip label={t('live.expert.citationsHelpLabel')}>
+            {t('live.expert.citationsHelp')}
+          </HelpTip>
+        </div>
+        <textarea
+          id={`${id}-citations`}
+          required={!cannot}
+          rows={3}
+          value={citeText}
+          onChange={(e) => setCiteText(e.target.value)}
+          className={cn(fieldClass, 'resize-y')}
+        />
+      </div>
+      <fieldset className="space-y-2">
+        <legend className="text-fg-strong text-sm font-semibold">
+          {t('live.expert.attest')}
+        </legend>
+        {ATTESTED_TASKS.map((k) => (
+          <label key={k} className="text-fg flex items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={checked.includes(k)}
+              onChange={(e) =>
+                setChecked(
+                  e.target.checked
+                    ? [...checked, k]
+                    : checked.filter((c) => c !== k)
+                )
+              }
+              className="accent-ink size-4"
+            />
+            {t(`tasks.${k}`)}
+          </label>
+        ))}
+      </fieldset>
       <button
         type="submit"
         disabled={busy || !ready}
@@ -429,6 +491,7 @@ export function ExpertLiveCase({
                   result,
                   summary,
                   cannotVerifyReason,
+                  citations,
                   revisedContent
                 ) =>
                   perform(
@@ -437,6 +500,9 @@ export function ExpertLiveCase({
                         result,
                         summary,
                         cannotVerifyReason,
+                        citations,
+                        // The form only submits once T1-T3 are all ticked
+                        attested: true,
                         revisedContent,
                       }),
                     t('live.expert.deliveredFeedback')
@@ -501,6 +567,15 @@ export function ExpertLiveCase({
                 <p className="text-fg break-words whitespace-pre-wrap">
                   {dto.cannotVerifyReason}
                 </p>
+              )}
+              {dto.citations?.length > 0 && (
+                <ol className="text-fg list-decimal space-y-1 pl-5 text-sm">
+                  {dto.citations.map((c, i) => (
+                    <li key={i} className="break-words">
+                      {c}
+                    </li>
+                  ))}
+                </ol>
               )}
             </Card>
           )}

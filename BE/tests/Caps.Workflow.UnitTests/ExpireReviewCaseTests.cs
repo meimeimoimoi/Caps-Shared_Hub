@@ -93,7 +93,16 @@ public sealed class ExpireReviewCaseTests
     public async Task An_unconfirmed_delivery_settles_with_the_frozen_platform_fee()
     {
         var reviewCase = Accepted();
-        reviewCase.Deliver(ExpertProfile, Expert, ReviewCase.Verified, "Looks right", null, T0);
+        reviewCase.Deliver(
+            ExpertProfile,
+            Expert,
+            ReviewCase.Verified,
+            "Looks right",
+            null,
+            ["Article 9, CIT Law"],
+            true,
+            T0
+        );
         var run = new Run(reviewCase, reviewCase.AcceptanceDeadline!.Value);
 
         await run.ExpireAsync();

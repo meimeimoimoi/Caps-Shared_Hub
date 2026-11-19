@@ -363,6 +363,7 @@ public sealed class WorkflowDbContext(DbContextOptions<WorkflowDbContext> option
             e.Property(x => x.RevisedContent)
                 .HasColumnName("revised_content")
                 .HasColumnType("jsonb");
+            e.Property(x => x.Citations).HasColumnName("citations").IsRequired();
             e.Property(x => x.DeclineReason).HasColumnName("decline_reason");
             e.Property(x => x.TerminationReason).HasColumnName("termination_reason");
             e.Property(x => x.ResponseDeadline).HasColumnName("response_deadline").IsRequired();

@@ -32,7 +32,16 @@ public sealed class CaseDetailsTests
     public void A_completed_case_shows_the_fee_split()
     {
         var reviewCase = InReview();
-        reviewCase.Deliver(ExpertProfile, Expert, ReviewCase.Verified, "Done", null, Now);
+        reviewCase.Deliver(
+            ExpertProfile,
+            Expert,
+            ReviewCase.Verified,
+            "Done",
+            null,
+            ["Article 9, CIT Law"],
+            true,
+            Now
+        );
         reviewCase.Confirm(Client, Now);
 
         Assert.Equal(new ReviewSettlement(0, 200_000, 800_000), reviewCase.Outcome());

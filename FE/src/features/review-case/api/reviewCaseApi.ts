@@ -47,6 +47,8 @@ export const reviewCaseActions = {
       result: 'VERIFIED' | 'CANNOT_VERIFY'
       summary: string
       cannotVerifyReason: string | null
+      citations: string[]
+      attested: boolean
       revisedContent: Record<string, unknown> | null
     }
   ) => act(id, 'deliver', body),
