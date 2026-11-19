@@ -1,4 +1,10 @@
+import {
+  errorToast,
+  type ToastContent,
+} from '@/components/ui/feedback/toast-content'
 import { useCallback, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { EmptyState } from '@/components/ui/feedback/empty-state'
 import { Link, useParams, useSearchParams } from 'react-router-dom'
 import { Eye, FileText } from 'lucide-react'
 import { cn, formatDayMonth } from '@/lib/utils'
@@ -17,6 +23,7 @@ import { TemplatePreview } from '../../features/knowledgeAdmin-templates/compone
 
 /* Chi tiết template: cấu trúc trường theo phiên bản (bên trái), trạng thái + lịch sử phiên bản (bên phải) */
 export default function KnowledgeTemplatePage() {
+  const { t } = useTranslation('knowledge')
   const id = useParams().id!
   const nav = useKnowledgeNav()
   const { template, isLoading, error, setStatus, publish } =
@@ -24,7 +31,7 @@ export default function KnowledgeTemplatePage() {
   const [params, setParams] = useSearchParams()
   const [confirming, setConfirming] = useState(false)
   const [previewing, setPreviewing] = useState(false)
-  const [toast, setToast] = useState<string | null>(null)
+  const [toast, setToast] = useState<ToastContent | null>(null)
   const clearToast = useCallback(() => setToast(null), [])
   const listLink = (
     <Link to="/knowledge/templates" className="hover:text-fg-strong">
@@ -56,7 +63,27 @@ export default function KnowledgeTemplatePage() {
   }
 
   const current = template.versions[0]
-  // ?v=2 để xem phiên bản cũ; mặc định là phiên bản đang phát hành
+  if (!current) {
+    return (
+      <KnowledgeLayout {...layout} breadcrumb={listLink}>
+        <h1 className="text-h1">{template.title}</h1>
+        <EmptyState
+          title={t('empty.versions')}
+          actions={
+            <Link
+              to="/knowledge/templates"
+              className="btn btn-secondary no-underline"
+            >
+              {t('actions.backTemplates')}
+            </Link>
+          }
+        >
+          {t('empty.versionHint')}
+        </EmptyState>
+      </KnowledgeLayout>
+    )
+  }
+  // Select an older version with ?v=2; otherwise use the current version.
   const selected =
     template.versions.find((v) => String(v.version) === params.get('v')) ??
     current
@@ -208,7 +235,7 @@ export default function KnowledgeTemplatePage() {
                 onClick={() =>
                   publish()
                     .then(() => setToast(`Đã phát hành v${current.version}`))
-                    .catch((e: Error) => setToast(e.message))
+                    .catch((e: Error) => setToast(errorToast(e.message)))
                 }
                 className="btn btn-press btn-primary mt-2 w-full"
               >
@@ -240,7 +267,9 @@ export default function KnowledgeTemplatePage() {
                     <span className="flex items-baseline justify-between gap-2">
                       <span className="num text-fg-strong font-semibold">
                         v{v.version}
-                        {(v.status ? v.status === 'PUBLISHED' : v === current) && (
+                        {(v.status
+                          ? v.status === 'PUBLISHED'
+                          : v === current) && (
                           <span className="text-fg-muted ml-2 font-normal">
                             đang phát hành
                           </span>
@@ -321,7 +350,7 @@ export default function KnowledgeTemplatePage() {
                           : 'Đã kích hoạt lại template'
                       )
                     )
-                    .catch((e: Error) => setToast(e.message))
+                    .catch((e: Error) => setToast(errorToast(e.message)))
                 }}
                 className="btn btn-press btn-primary"
               >

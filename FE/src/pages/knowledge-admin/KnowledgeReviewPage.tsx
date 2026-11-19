@@ -1,4 +1,10 @@
+import {
+  errorToast,
+  type ToastContent,
+} from '@/components/ui/feedback/toast-content'
 import { useCallback, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { EmptyState } from '@/components/ui/feedback/empty-state'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { Eye, Info } from 'lucide-react'
 import { RAIL_DOCUMENT } from '@/lib/constants'
@@ -29,6 +35,7 @@ const queueLink = (
 const CHECK_TOTAL = Object.keys(CROSSCHECK).length
 
 export default function KnowledgeReviewPage() {
+  const { t } = useTranslation(['knowledge', 'common'])
   const { id = '' } = useParams()
   const nav = useKnowledgeNav()
   const state = useDocumentReview(id)
@@ -56,12 +63,24 @@ export default function KnowledgeReviewPage() {
     >
       {review ? (
         <ReviewWorkspace review={review} state={state} />
+      ) : state.isLoading ? (
+        <p role="status">{t('common:loading')}</p>
       ) : (
-        <h1 className="text-h1-tool">
-          {state.isLoading
-            ? 'Đang tải…'
-            : (state.error?.message ?? 'Văn bản chưa có nội dung bóc tách')}
-        </h1>
+        <EmptyState
+          title={t('errors.review')}
+          actions={
+            <Link
+              to="/knowledge/queue"
+              className="btn btn-secondary no-underline"
+            >
+              {t('actions.backQueue')}
+            </Link>
+          }
+        >
+          <p role={state.error ? 'alert' : undefined}>
+            {state.error?.message ?? t('errors.reviewMissing')}
+          </p>
+        </EmptyState>
       )}
     </KnowledgeLayout>
   )
@@ -89,14 +108,14 @@ function ReviewWorkspace({
   const [rejecting, setRejecting] = useState(false)
   const [reprocessing, setReprocessing] = useState(false)
   const [busy, setBusy] = useState(false)
-  const [toast, setToast] = useState<string | null>(null)
+  const [toast, setToast] = useState<ToastContent | null>(null)
   const clearToast = useCallback(() => setToast(null), [])
 
   const article = articles.find((a) => a.id === selectedId)
   const chapter = review.chapters.find((c) =>
     c.articles.some((a) => a.id === selectedId)
   )
-  const fail = (e: Error) => setToast(e.message)
+  const fail = (e: Error) => setToast(errorToast(e.message))
 
   // Điều chưa rà soát tiếp theo, tính vòng từ Điều đang mở
   const goNext = () => {

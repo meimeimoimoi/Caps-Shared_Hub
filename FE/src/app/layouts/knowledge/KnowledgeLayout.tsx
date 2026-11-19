@@ -216,7 +216,7 @@ export function KnowledgeLayout({
         />
         <main
           id="knowledge-main"
-          className="px-4 py-12 md:px-6 lg:px-8"
+          className="px-4 pt-6 pb-12 md:px-6 md:pt-8 lg:px-8"
         >
           {children}
         </main>

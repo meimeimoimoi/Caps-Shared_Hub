@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Upload } from 'lucide-react'
+import { Plus } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
+import { EmptyState } from '@/components/ui/feedback/empty-state'
 import { cn, formatDayMonth } from '@/lib/utils'
 import { StatusBadge } from '@/components/ui/display/status-badge'
 import { KnowledgeLayout } from '@/app/layouts/knowledge/KnowledgeLayout'
@@ -17,6 +19,7 @@ const headCls =
 
 /* Danh sách template soạn nháp: mỗi dòng là một template với phiên bản đang phát hành */
 export default function KnowledgeTemplatesPage() {
+  const { t } = useTranslation('knowledge')
   const nav = useKnowledgeNav()
   const { data = [], isLoading, error } = useTemplates()
   const [category, setCategory] = useState<string | null>(null)
@@ -30,7 +33,7 @@ export default function KnowledgeTemplatesPage() {
           to="/knowledge/templates/new"
           className="btn btn-press btn-primary no-underline"
         >
-          <Upload size={16} aria-hidden="true" />
+          <Plus size={16} aria-hidden="true" />
           Tạo template
         </Link>
       </div>
@@ -64,8 +67,8 @@ export default function KnowledgeTemplatesPage() {
       </div>
 
       <section className="paper mt-4 overflow-x-auto">
-        <table className="w-full min-w-200 text-sm">
-          <thead>
+        <table className={`w-full text-sm ${rows.length ? 'min-w-200' : ''}`}>
+          <thead className={rows.length ? undefined : 'hidden'}>
             <tr className={headCls}>
               <th className="text-left">Template</th>
               <th className="text-left">Phiên bản</th>
@@ -89,16 +92,20 @@ export default function KnowledgeTemplatesPage() {
                       {TEMPLATE_CATEGORY[tpl.category] ?? tpl.category}
                     </p>
                   </td>
-                  <td className="num">v{cur.version}</td>
+                  <td className="num">
+                    {cur ? `v${cur.version}` : t('noVersion')}
+                  </td>
                   <td>
                     <StatusBadge status={TEMPLATE_STATUS[tpl.status]} />
                   </td>
-                  <td className="num text-right">{cur.fields.length || '—'}</td>
+                  <td className="num text-right">
+                    {cur?.fields.length || '—'}
+                  </td>
                   <td className="num text-right">
                     {tpl.versions.reduce((s, v) => s + v.workspaces, 0)}
                   </td>
                   <td className="num text-fg-muted text-right">
-                    {formatDayMonth(cur.publishedAt)}
+                    {cur ? formatDayMonth(cur.publishedAt) : '—'}
                   </td>
                   <td className="text-right">
                     <Link
@@ -118,10 +125,34 @@ export default function KnowledgeTemplatesPage() {
                   colSpan={7}
                   className="text-fg-muted px-4 py-10 text-center"
                 >
-                  {isLoading
-                    ? 'Đang tải…'
-                    : (error?.message ??
-                      'Không có template nào trong nhóm này.')}
+                  {isLoading ? (
+                    'Đang tải…'
+                  ) : error ? (
+                    error.message
+                  ) : (
+                    <EmptyState
+                      title={t(category ? 'empty.category' : 'empty.templates')}
+                      actions={
+                        <>
+                          <Link
+                            to="/knowledge/templates/new"
+                            className="btn btn-primary no-underline"
+                          >
+                            {t('actions.createTemplate')}
+                          </Link>
+                          {category && (
+                            <button
+                              type="button"
+                              onClick={() => setCategory(null)}
+                              className="btn btn-secondary"
+                            >
+                              {t('actions.allTemplates')}
+                            </button>
+                          )}
+                        </>
+                      }
+                    />
+                  )}
                 </td>
               </tr>
             )}
