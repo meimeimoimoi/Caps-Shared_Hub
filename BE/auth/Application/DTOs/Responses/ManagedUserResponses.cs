@@ -13,7 +13,8 @@ public sealed record ManagedUserResponse(
     DateTimeOffset CreatedAt,
     DateTimeOffset? LastSignInAt,
     string? SuspendedReason,
-    DateTimeOffset? SuspendedAt
+    DateTimeOffset? SuspendedAt,
+    string? Phone = null
 );
 
 /// <summary>A page of accounts, newest first.</summary>
