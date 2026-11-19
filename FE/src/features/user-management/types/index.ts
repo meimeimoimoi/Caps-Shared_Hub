@@ -7,6 +7,7 @@ export interface ManagedUser {
   id: string
   name: string
   email: string
+  phone?: string | null
   role: UserRole
   roles?: UserRole[]
   status: keyof typeof USER_STATUS

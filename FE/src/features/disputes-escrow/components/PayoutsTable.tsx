@@ -1,3 +1,4 @@
+import { SortableTh } from '@/components/ui/navigation/sortable-th'
 import { useTranslation } from 'react-i18next'
 import { formatDateTime } from '@/lib/utils'
 import { formatVnd } from '@/lib/format-money'
@@ -51,10 +52,24 @@ export function PayoutsTable() {
         <table className="w-full min-w-200 text-sm">
           <thead>
             <tr className={headCls}>
-              <th className="text-left">{t('payouts.col.createdAt')}</th>
+              <SortableTh
+                className="text-left"
+                column="createdAt"
+                sort={payouts.sort}
+                onSort={payouts.onSort}
+              >
+                {t('payouts.col.createdAt')}
+              </SortableTh>
               <th className="text-left">{t('payouts.col.recipient')}</th>
               <th className="text-left">{t('payouts.col.account')}</th>
-              <th className="text-right">{t('payouts.col.amount')}</th>
+              <SortableTh
+                className="text-right"
+                column="amount"
+                sort={payouts.sort}
+                onSort={payouts.onSort}
+              >
+                {t('payouts.col.amount')}
+              </SortableTh>
               <th className="text-left">{t('payouts.col.status')}</th>
             </tr>
           </thead>

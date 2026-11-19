@@ -1,3 +1,4 @@
+import type { TableSort } from '@/lib/table-sort'
 import { api } from '@/lib/api-client'
 import { isExpertDemo } from '@/lib/expert-data-source'
 
@@ -39,13 +40,14 @@ export interface PayoutPage {
 export async function getPayouts(
   status: string | null,
   page: number,
-  signal?: AbortSignal
+  signal?: AbortSignal,
+  sort?: TableSort
 ): Promise<PayoutPage> {
   // Demo escrows carry their own payout state, so the demo has no separate payout list
   if (isExpertDemo)
     return { items: [], page, pageSize: PAYOUT_PAGE_SIZE, total: 0 }
   const res = await api.get<Envelope<PayoutPage>>(BASE, {
-    params: { status: status ?? undefined, page, pageSize: PAYOUT_PAGE_SIZE },
+    params: { status: status ?? undefined, page, pageSize: PAYOUT_PAGE_SIZE, sortBy: sort?.key, sortDescending: sort?.direction === "asc" ? false : true },
     signal,
   })
   return res.data

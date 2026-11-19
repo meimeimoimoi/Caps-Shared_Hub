@@ -1,3 +1,4 @@
+import { useSortState } from '@/hooks/useTableSort'
 import { useState } from 'react'
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { getPayouts } from '../api/payoutsApi'
@@ -9,14 +10,20 @@ const key = (status: string | null, page: number) =>
 export function usePayouts() {
   const [status, setStatusState] = useState<string | null>(null)
   const [page, setPage] = useState(1)
+  const sorting = useSortState({ key: 'createdAt', direction: 'desc' })
   const query = useQuery({
-    queryKey: key(status, page),
-    queryFn: ({ signal }) => getPayouts(status, page, signal),
+    queryKey: [...key(status, page), sorting.sort],
+    queryFn: ({ signal }) => getPayouts(status, page, signal, sorting.sort),
     // Keep the current page on screen while the next one loads
     placeholderData: keepPreviousData,
   })
   return {
     ...query,
+    sort: sorting.sort,
+    onSort: (key: string) => {
+      sorting.onSort(key)
+      setPage(1)
+    },
     status,
     setStatus: (s: string | null) => {
       setStatusState(s)

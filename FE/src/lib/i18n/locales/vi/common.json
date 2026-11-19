@@ -19,6 +19,8 @@
     "preview": "Xem thử demo"
   },
   "navigation": {
+    "admin": "Điều hướng quản trị",
+    "breadcrumb": "Đường dẫn điều hướng",
     "home": "Về trang chủ Shared Hub",
     "open": "Mở điều hướng",
     "close": "Đóng điều hướng",
@@ -43,7 +45,15 @@
   "form": {
     "help": "Hướng dẫn cho {{label}}"
   },
+  "table": {
+    "ascending": "Tăng dần",
+    "descending": "Giảm dần",
+  "sort": "Sắp xếp",
+  "sortAscending": "Sắp xếp {{column}} tăng dần",
+  "sortDescending": "Sắp xếp {{column}} giảm dần"
+},
   "pagination": {
+    "pageOf": "Trang {{page}} / {{totalPages}}",
     "label": "Phân trang",
     "previous": "Trang trước",
     "next": "Trang sau",

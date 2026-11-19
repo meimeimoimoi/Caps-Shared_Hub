@@ -89,7 +89,9 @@ export function AppSidebar({
         onScroll={onNavigationScroll}
         id={navigationId}
         aria-label={navigationLabel}
-        className="min-h-0 flex-1 overflow-y-auto overscroll-contain"
+        // Scrolls without a visible bar. hide-scrollbar wins over the expert theme, which forces scrollbars
+        // in an earlier layer; the utilities cover the other portals, where that class is not loaded
+        className="hide-scrollbar min-h-0 flex-1 overflow-y-auto overscroll-contain ![scrollbar-width:none] [&::-webkit-scrollbar]:!hidden"
       >
         {groups.map((group) => (
           <div key={group.id} className="space-y-0.5">

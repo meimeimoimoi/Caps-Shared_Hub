@@ -10,7 +10,7 @@ import { LoadError } from '@/components/ui/feedback/load-error'
 
 export default function AdminPendingExpertsPage() {
   const nav = useAdminNav()
-  const { tab, setTab, query, setQuery, countOf, paged, prev, next, isLoading, error } =
+  const { tab, setTab, query, setQuery, countOf, paged, prev, next, setPage, setPageSize, sort, onSort, isLoading, error } =
     usePendingApplications()
   const { t } = useTranslation(['admin', 'common'])
 
@@ -53,9 +53,13 @@ export default function AdminPendingExpertsPage() {
       </div>
 
       <ApplicationsTable
+        sort={sort}
+        onSort={onSort}
         paged={paged}
         onPrev={prev}
         onNext={next}
+        onPageChange={setPage}
+        onPageSizeChange={setPageSize}
         loading={isLoading}
         empty={error ? <LoadError /> : undefined}
       />

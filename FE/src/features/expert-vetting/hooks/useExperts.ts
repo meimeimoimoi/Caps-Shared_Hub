@@ -1,3 +1,4 @@
+import { useTableSort } from '@/hooks/useTableSort'
 import { useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { paginate } from '@/lib/utils'
@@ -16,6 +17,7 @@ export function useExperts() {
   const [field, setFieldState] = useState<string>(ALL)
   const [query, setQueryState] = useState('')
   const [page, setPage] = useState(0)
+  const [pageSize, setPageSize] = useState(10)
 
   const qc = useQueryClient()
   const fieldLabel = useFieldLabel()
@@ -44,18 +46,16 @@ export function useExperts() {
   )
 
   const q = foldVietnamese(query.trim())
-  const rows = experts
-    .filter(
-      (e) =>
-        (status === ALL || e.serviceStatus === status) &&
-        (field === ALL || e.fields.includes(field)) &&
-        (!q ||
-          foldVietnamese(e.name).includes(q) ||
-          foldVietnamese(e.email).includes(q))
-    )
-    .sort((a, b) => b.approvedAt.localeCompare(a.approvedAt)) // duyệt gần nhất trước
+  const rows = experts.filter(
+    (e) =>
+      (status === ALL || e.serviceStatus === status) &&
+      (field === ALL || e.fields.includes(field)) &&
+      (!q ||
+        foldVietnamese(e.name).includes(q) ||
+        foldVietnamese(e.email).includes(q))
+  )
 
-  // Đổi bộ lọc thì quay về trang đầu
+  // Reset to the first page when filters change.
   const resetting =
     <T>(set: (v: T) => void) =>
     (v: T) => {
@@ -63,7 +63,24 @@ export function useExperts() {
       setPage(0)
     }
 
+  const tableSort = useTableSort(
+    rows,
+    {
+      name: (e) => e.name,
+      service: (e) => e.serviceName,
+      fee: (e) => e.fee,
+      activeCases: (e) => e.activeCases,
+      approvedAt: (e) => Date.parse(e.approvedAt),
+    },
+    { key: 'approvedAt', direction: 'desc' }
+  )
+
   return {
+    sort: tableSort.sort,
+    onSort: (key: string) => {
+      tableSort.onSort(key)
+      setPage(0)
+    },
     isLoading,
     error,
     selected: experts.find((e) => e.id === selectedId) ?? null,
@@ -76,9 +93,13 @@ export function useExperts() {
     fields,
     query,
     setQuery: resetting(setQueryState),
-    paged: paginate(rows, page),
+    paged: paginate(tableSort.rows, page, pageSize),
+    setPage: (value: number) => setPage(value - 1),
+    setPageSize: (size: number) => {
+      setPageSize(size)
+      setPage(0)
+    },
     prev: () => setPage((p) => p - 1),
     next: () => setPage((p) => p + 1),
   }
 }
-

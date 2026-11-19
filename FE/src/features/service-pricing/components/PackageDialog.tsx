@@ -1,6 +1,8 @@
 import { useState, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Modal } from '@/components/ui/feedback/modal'
+import { FormField } from '@/components/ui/forms/form-field'
+import { formatVnd } from '@/lib/format-money'
 import { TOPUP_MAX, TOPUP_MIN } from '@/features/wallet/api/walletApi'
 import type { CreditPackage, PackageInput } from '../types'
 
@@ -24,20 +26,14 @@ function Field(props: {
   children: ReactNode
 }) {
   return (
-    <label className="flex flex-col gap-1.5 text-sm font-semibold">
-      {props.label}
+    <FormField label={props.label} help={props.hint} className="!mb-0">
       <span className="flex items-center gap-2">
         {props.children}
         {props.suffix && (
           <span className="text-fg-muted font-normal">{props.suffix}</span>
         )}
       </span>
-      {props.hint && (
-        <span className="text-fg-muted text-caption font-normal">
-          {props.hint}
-        </span>
-      )}
-    </label>
+    </FormField>
   )
 }
 
@@ -143,11 +139,11 @@ export function PackageDialog({
           </Field>
           <Field
             label={t('pricing.package.price')}
-            suffix="đ"
+            suffix="₫"
             hint={
               perCredit
                 ? t('pricing.package.perCredit', {
-                    amount: perCredit.toLocaleString('vi-VN'),
+                    amount: formatVnd(perCredit),
                   })
                 : t('pricing.package.priceEmpty')
             }
