@@ -497,6 +497,23 @@ public sealed class ReviewCaseTests
         );
 
     [Fact]
+    public void A_saved_draft_is_delivered_when_no_revision_is_sent()
+    {
+        var reviewCase = InReview();
+        reviewCase.SaveRevision(Expert, """{"a":1}""", Now);
+        reviewCase.Deliver(Expert, ExpertUser, ReviewCase.Verified, "Done", null, Now);
+
+        Assert.Equal("""{"a":1}""", reviewCase.RevisedContent);
+    }
+
+    [Fact]
+    public void A_draft_must_be_a_json_object() =>
+        Assert.Equal(
+            "REVISED_CONTENT_INVALID",
+            Errors.CodeOf(() => InReview().SaveRevision(Expert, "[]", Now))
+        );
+
+    [Fact]
     public void The_expert_may_ask_for_information_twice()
     {
         var reviewCase = InReview();

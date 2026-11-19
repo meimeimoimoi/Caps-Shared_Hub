@@ -146,6 +146,22 @@ public sealed partial class ReviewCase
         return MoveTo(ReviewCaseStatus.InReview, requesterUserId, null, now);
     }
 
+    /// <summary>Saves the expert's draft revision; it goes out with the delivery unless replaced.</summary>
+    public void SaveRevision(Guid expertProfileId, string? revisedContent, DateTimeOffset now)
+    {
+        EnsureExpert(expertProfileId);
+        if (Status is not (ReviewCaseStatus.InReview or ReviewCaseStatus.AwaitingUserInformation))
+        {
+            throw WorkflowErrors.CaseStatusInvalid(Status);
+        }
+        if (revisedContent is null || !IsJsonObject(revisedContent))
+        {
+            throw WorkflowErrors.RevisedContentInvalid();
+        }
+        RevisedContent = revisedContent;
+        UpdatedAt = now;
+    }
+
     public ReviewStatusHistory Deliver(
         Guid expertProfileId,
         Guid actorUserId,
@@ -181,7 +197,7 @@ public sealed partial class ReviewCase
         Result = result;
         ReviewSummary = text;
         CannotVerifyReason = reason;
-        RevisedContent = revisedContent;
+        RevisedContent = revisedContent ?? RevisedContent;
         DeliveredAt = now;
         AcceptanceDeadline = (calendar ?? WorkCalendar.WeekendsOnly).AddWorkingDays(
             now,

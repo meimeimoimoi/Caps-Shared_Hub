@@ -43,7 +43,8 @@ public sealed record ReviewCaseResponse(
     public static ReviewCaseResponse From(
         ReviewCase c,
         IReadOnlyList<InfoRequest>? questions = null,
-        string? sourceContent = null
+        string? sourceContent = null,
+        bool showDraft = false
     ) =>
         new(
             c.Id.ToString(),
@@ -52,7 +53,12 @@ public sealed record ReviewCaseResponse(
             c.ReviewSummary,
             c.CannotVerifyReason,
             Json(sourceContent),
-            Json(c.RevisedContent),
+            // The client sees the revision only once it is delivered; the expert also sees the draft
+            c.DeliveredAt
+                is not null
+            || showDraft
+                ? Json(c.RevisedContent)
+                : null,
             c.DeclineReason,
             c.DocumentId.ToString(),
             c.SourceVersionId.ToString(),
