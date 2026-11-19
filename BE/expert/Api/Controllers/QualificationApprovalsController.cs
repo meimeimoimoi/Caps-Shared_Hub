@@ -41,7 +41,11 @@ public sealed class QualificationApprovalsController(ICurrentUser currentUser) :
     }
 
     /// <summary>Lists one page of qualifications in the given statuses, oldest submission first.</summary>
-    /// <remarks>Repeat status for several statuses. q matches the expert's name or email, or the service name.</remarks>
+    /// <remarks>
+    /// Repeat status for several statuses. q matches the expert's name or email, or the service name.
+    /// sortBy accepts name, years, submittedAt or waiting; sortDescending reverses that order before paging.
+    /// The default queue order follows Gate 2 PASS time for pending final approvals.
+    /// </remarks>
     /// <response code="200">The page with the total number of matching qualifications.</response>
     /// <response code="400">INVALID_PAGING.</response>
     /// <response code="403">Missing the ExpertApprove permission.</response>
@@ -52,7 +56,9 @@ public sealed class QualificationApprovalsController(ICurrentUser currentUser) :
         [FromQuery] string[]? status = null,
         [FromQuery, MaxLength(SearchReviewQueueHandler.MaxSearchLength)] string? q = null,
         [FromQuery] int page = 1,
-        [FromQuery] int pageSize = 10
+        [FromQuery] int pageSize = 10,
+        [FromQuery, MaxLength(32)] string? sortBy = null,
+        [FromQuery] bool sortDescending = false
     )
     {
         var query = new SearchReviewQueueQuery(
@@ -62,7 +68,9 @@ public sealed class QualificationApprovalsController(ICurrentUser currentUser) :
             page,
             pageSize,
             UserId,
-            ReviewClaimFilter.All
+            ReviewClaimFilter.All,
+            sortBy,
+            sortDescending
         );
         var queue = await handler.HandleAsync(query, ct);
         return Ok(ApiResponse<ReviewQueuePageResponse>.Ok(queue));

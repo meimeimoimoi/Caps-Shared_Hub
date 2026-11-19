@@ -30,8 +30,22 @@ public sealed class ReviewQueueReader(ExpertDbContext db, IScreeningRepository s
     )
     {
         var expiredBefore = scope.ExpiredBefore;
-        var rows = await Applications(statuses, search, scope)
-            .OrderBy(x => x.SubmittedAt)
+        var source = Applications(statuses, search, scope);
+        var ordered = scope.SortBy switch
+        {
+            "name" => scope.SortDescending
+                ? source.OrderByDescending(x =>
+                    EF.Functions.Collate(x.ExpertProfile.DisplayName ?? "", "C")
+                )
+                : source.OrderBy(x => EF.Functions.Collate(x.ExpertProfile.DisplayName ?? "", "C")),
+            "years" => scope.SortDescending
+                ? source.OrderByDescending(x => x.ExpertProfile.YearsExperience ?? 0)
+                : source.OrderBy(x => x.ExpertProfile.YearsExperience ?? 0),
+            _ => scope.SortDescending
+                ? source.OrderByDescending(x => x.SubmittedAt ?? DateTimeOffset.MinValue)
+                : source.OrderBy(x => x.SubmittedAt ?? DateTimeOffset.MinValue),
+        };
+        var rows = await ordered
             .ThenBy(x => x.Id)
             .Take(take)
             .Select(x => new QueueRow(
@@ -106,12 +120,34 @@ public sealed class ReviewQueueReader(ExpertDbContext db, IScreeningRepository s
     {
         var expiredBefore = scope.ExpiredBefore;
         // Final approval waits from the Gate 2 PASS, so the oldest pass (the overdue ones) comes first
-        var rows = await Qualifications(statuses, search, matchingServiceCodes, scope)
-            .OrderBy(x =>
-                x.Status == QualificationStatus.PendingFinalApproval
-                    ? x.DecidedAt
-                    : (DateTimeOffset?)x.SubmittedAt
-            )
+        var source = Qualifications(statuses, search, matchingServiceCodes, scope);
+        var ordered = scope.SortBy switch
+        {
+            "name" => scope.SortDescending
+                ? source.OrderByDescending(x =>
+                    EF.Functions.Collate(x.ExpertProfile.DisplayName ?? "", "C")
+                )
+                : source.OrderBy(x => EF.Functions.Collate(x.ExpertProfile.DisplayName ?? "", "C")),
+            "years" => scope.SortDescending
+                ? source.OrderByDescending(x => x.ExpertProfile.YearsExperience ?? 0)
+                : source.OrderBy(x => x.ExpertProfile.YearsExperience ?? 0),
+            _ => scope.SortDescending
+                ? source.OrderByDescending(x =>
+                    (
+                        scope.SortBy == "submittedAt" ? (DateTimeOffset?)x.SubmittedAt
+                        : x.Status == QualificationStatus.PendingFinalApproval ? x.DecidedAt
+                        : (DateTimeOffset?)x.SubmittedAt
+                    ) ?? DateTimeOffset.MinValue
+                )
+                : source.OrderBy(x =>
+                    (
+                        scope.SortBy == "submittedAt" ? (DateTimeOffset?)x.SubmittedAt
+                        : x.Status == QualificationStatus.PendingFinalApproval ? x.DecidedAt
+                        : (DateTimeOffset?)x.SubmittedAt
+                    ) ?? DateTimeOffset.MinValue
+                ),
+        };
+        var rows = await ordered
             .ThenBy(x => x.Id)
             .Take(take)
             .Select(x => new QueueRow(
