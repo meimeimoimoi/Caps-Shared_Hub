@@ -41,6 +41,7 @@ public sealed class AiCreditChargeService(
     IAiQuotaRepository aiQuotaRepository,
     IAiUsageRepository aiUsageRepository,
     IAiCredits aiCredits,
+    IAiBillingSwitchRepository billingSwitch,
     AiBillingSettings settings
 )
 {
@@ -59,7 +60,9 @@ public sealed class AiCreditChargeService(
             await aiQuotaRepository.AddAsync(quota, ct);
         }
 
-        if (!settings.Enabled)
+        // The admin switch wins; the setting only applies until an admin first sets it
+        var enabled = (await billingSwitch.FindAsync(ct))?.Enabled ?? settings.Enabled;
+        if (!enabled)
         {
             return new AiCreditReservation(AiChargeMode.Free, quota, Guid.Empty, 0);
         }

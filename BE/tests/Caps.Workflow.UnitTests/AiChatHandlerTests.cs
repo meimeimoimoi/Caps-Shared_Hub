@@ -145,6 +145,23 @@ public sealed class AiChatHandlerTests
     }
 
     [Fact]
+    public async Task The_admin_switch_turned_off_makes_ai_free_even_when_the_setting_charges()
+    {
+        var store = new Store
+        {
+            BillingSwitch = AiBillingSwitch.Create(false, Guid.NewGuid(), Now),
+        };
+        var conversation = store.AddConversation(Owner, "Tax question");
+        store.Quotas.Add(AiQuota.Create(Owner, 0, Now));
+
+        await SendHandler(store)
+            .HandleAsync(new(conversation.Id, Owner, "Question", Jan1, Dec31), default);
+
+        Assert.Empty(store.HoldCalls);
+        Assert.Equal(AiUsagePaidWith.Free, Assert.Single(store.Usages).PaidWith);
+    }
+
+    [Fact]
     public async Task Send_rejects_when_quota_and_wallet_credits_are_exhausted()
     {
         var store = new Store { WalletBalance = 500 };
@@ -347,7 +364,7 @@ public sealed class AiChatHandlerTests
     )
     {
         var billing = settings ?? EnabledBillingSettings;
-        var chargeService = new AiCreditChargeService(store, store, store, billing);
+        var chargeService = new AiCreditChargeService(store, store, store, store, billing);
         return new(store, store, store, chargeService, billing, store, new FixedClock());
     }
 
@@ -357,7 +374,7 @@ public sealed class AiChatHandlerTests
     )
     {
         var billing = settings ?? EnabledBillingSettings;
-        var chargeService = new AiCreditChargeService(store, store, store, billing);
+        var chargeService = new AiCreditChargeService(store, store, store, store, billing);
         return new(store, store, store, chargeService, billing, store, new FixedClock());
     }
 
@@ -372,6 +389,7 @@ public sealed class AiChatHandlerTests
             IAiQuotaRepository,
             IAiUsageRepository,
             IAiCredits,
+            IAiBillingSwitchRepository,
             IRagQueryClient,
             IUnitOfWork,
             ITransaction
@@ -380,6 +398,13 @@ public sealed class AiChatHandlerTests
         public List<ChatMessage> Messages { get; } = [];
         public List<AiQuota> Quotas { get; } = [];
         public List<AiUsage> Usages { get; } = [];
+        public AiBillingSwitch? BillingSwitch { get; set; }
+
+        public Task<AiBillingSwitch?> FindAsync(CancellationToken ct) =>
+            Task.FromResult(BillingSwitch);
+
+        public void Add(AiBillingSwitch aiBillingSwitch) => BillingSwitch = aiBillingSwitch;
+
         public List<Guid> HoldCalls { get; } = [];
         public List<Guid> CaptureCalls { get; } = [];
         public List<Guid> ReleaseCalls { get; } = [];

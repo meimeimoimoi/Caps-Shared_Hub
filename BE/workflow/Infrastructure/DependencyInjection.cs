@@ -44,6 +44,7 @@ public static class DependencyInjection
         services.AddScoped<IConversationRepository, ConversationRepository>();
         services.AddScoped<IChatMessageRepository, ChatMessageRepository>();
         services.AddScoped<IAiQuotaRepository, AiQuotaRepository>();
+        services.AddScoped<IAiBillingSwitchRepository, AiBillingSwitchRepository>();
         services.AddScoped<IAiUsageRepository, AiUsageRepository>();
         services.AddScoped<IDocumentRepository, DocumentRepository>();
         services.AddScoped<IDocumentVersionRepository, DocumentVersionRepository>();
