@@ -2,7 +2,6 @@ import { useCallback, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Download, AlertTriangle } from 'lucide-react'
 import { ESCROW_STATUS } from '@/lib/constants'
-import { isExpertDemo } from '@/lib/expert-data-source'
 import { cn, formatDayMonth } from '@/lib/utils'
 import { formatVnd } from '@/lib/format-money'
 import { StatusBadge } from '@/components/ui/display/status-badge'
@@ -407,31 +406,6 @@ export default function AdminEscrowPage() {
                   .then(() =>
                     setToast(t('escrow.refund.done', { id: selected.caseId }))
                   )
-              }
-              // Demo escrows keep their own flow; billing release and refund are API only
-              onRelease={
-                isExpertDemo
-                  ? undefined
-                  : (expertUserId, pct) =>
-                    escrows
-                      .release(selected.caseId, expertUserId, pct)
-                      .then(() =>
-                        setToast(
-                          t('escrow.settle.released', { id: selected.caseId })
-                        )
-                      )
-              }
-              onRefund={
-                isExpertDemo
-                  ? undefined
-                  : () =>
-                    escrows
-                      .refund(selected.caseId)
-                      .then(() =>
-                        setToast(
-                          t('escrow.settle.refunded', { id: selected.caseId })
-                        )
-                      )
               }
               onClose={() => escrows.select(null)}
             />
