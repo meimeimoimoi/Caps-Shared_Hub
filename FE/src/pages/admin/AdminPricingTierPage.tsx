@@ -1,3 +1,5 @@
+import { Pagination } from '@/components/ui/navigation/pagination'
+import { usePagination } from '@/hooks/usePagination'
 import { useState, type ReactNode } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
@@ -13,8 +15,9 @@ import type {
 } from '../../features/service-pricing/types'
 import { OperationsUnavailable } from '@/features/disputes-escrow/components/OperationsUnavailable'
 import { LoadError } from '@/components/ui/feedback/load-error'
+import { formatVnd } from '@/lib/format-money'
+import { FormField } from '@/components/ui/forms/form-field'
 
-const vnd = (n: number) => n.toLocaleString('vi-VN')
 /** yyyy-mm-dd theo giờ máy (định dạng sv-SE đúng là ISO ngày) cho <input type="date"> */
 const isoDay = (d: Date) => d.toLocaleDateString('sv-SE')
 
@@ -28,20 +31,14 @@ function Field(props: {
   children: ReactNode
 }) {
   return (
-    <label className="flex flex-col gap-1.5 text-sm font-semibold">
-      {props.label}
+    <FormField label={props.label} help={props.hint} className="!mb-0">
       <span className="flex items-center gap-2">
         {props.children}
         {props.suffix && (
           <span className="text-fg-muted font-normal">{props.suffix}</span>
         )}
       </span>
-      {props.hint && (
-        <span className="text-fg-muted text-caption font-normal">
-          {props.hint}
-        </span>
-      )}
-    </label>
+    </FormField>
   )
 }
 
@@ -49,7 +46,7 @@ export default function AdminPricingTierPage() {
   const { id = '' } = useParams()
   const nav = useAdminNav()
   const { t } = useTranslation(['admin', 'common'])
-  const pricing = usePricing(!nav.operationsUnavailable)
+  const pricing = usePricing(!nav.pricingUnavailable)
   // /admin/pricing/new = thêm nhóm mẫu biểu, dùng chung form với màn sửa khung
   const isNew = id === 'new'
   const tier = pricing.data?.tiers.find((x) => x.id === id)
@@ -80,7 +77,7 @@ export default function AdminPricingTierPage() {
         </>
       }
     >
-      {nav.operationsUnavailable ? (
+      {nav.pricingUnavailable ? (
         <>
           <h1 className="text-h1">{t('pricing.title')}</h1>
           <OperationsUnavailable area="pricing" />
@@ -141,6 +138,7 @@ function TierForm({
   const st = Number(step)
   // Ai rơi ra ngoài khung mới, tính lại mỗi lần gõ
   const outside = tier?.experts.filter((e) => e.fee < lo || e.fee > hi) ?? []
+  const outsidePaged = usePagination(outside, `${tier?.id ?? ""}:${lo}:${hi}`)
 
   const blockers = [
     !tier && !group.trim() && { text: t('pricing.tier.blocker.group') },
@@ -162,8 +160,8 @@ function TierForm({
         {tier ? (
           <span className="num">
             {t('pricing.tier.current', {
-              range: `${vnd(tier.min)} – ${vnd(tier.max)} đ`,
-              step: vnd(tier.step),
+              range: `${formatVnd(tier.min)} – ${formatVnd(tier.max)}`,
+              step: formatVnd(tier.step),
               from: formatDate(tier.effectiveFrom),
             })}
           </span>
@@ -193,7 +191,7 @@ function TierForm({
             </div>
           )}
           <div className="mt-4 grid gap-4 sm:grid-cols-2">
-            <Field label={t('pricing.tier.min')} suffix="đ">
+            <Field label={t('pricing.tier.min')} suffix="₫">
               <input
                 type="number"
                 inputMode="numeric"
@@ -204,7 +202,7 @@ function TierForm({
                 className={`${inputCls} num text-right`}
               />
             </Field>
-            <Field label={t('pricing.tier.max')} suffix="đ">
+            <Field label={t('pricing.tier.max')} suffix="₫">
               <input
                 type="number"
                 inputMode="numeric"
@@ -217,7 +215,7 @@ function TierForm({
             </Field>
             <Field
               label={t('pricing.tier.step')}
-              suffix="đ"
+              suffix="₫"
               hint={t('pricing.tier.stepHint')}
             >
               <input
@@ -243,10 +241,9 @@ function TierForm({
             </Field>
           </div>
 
-          <label className="mt-4 flex flex-col gap-1.5 text-sm font-semibold">
-            {tier
+          <FormField className="mt-4 !mb-0" label={tier
               ? t('pricing.tier.reasonChange')
-              : t('pricing.tier.reasonCreate')}
+              : t('pricing.tier.reasonCreate')} help={t('pricing.tier.reasonHint')}>
             <textarea
               rows={3}
               value={reason}
@@ -258,10 +255,7 @@ function TierForm({
               }
               className="border-border-control rounded-control shadow-control bg-paper placeholder:text-fg-muted resize-y border px-3 py-2 text-base font-normal"
             />
-            <span className="text-fg-muted text-caption font-normal">
-              {t('pricing.tier.reasonHint')}
-            </span>
-          </label>
+          </FormField>
 
           <div className="bg-sunken rounded-surface mt-5 p-3 text-sm">
             <p className="text-fg-strong font-semibold">
@@ -269,7 +263,7 @@ function TierForm({
             </p>
             <p className="num mt-1">
               {t('pricing.tier.preview', {
-                range: `${lo ? vnd(lo) : '…'} – ${hi ? vnd(hi) : '…'} đ`,
+                range: `${lo ? formatVnd(lo) : '…'} – ${hi ? formatVnd(hi) : '…'}`,
                 share: expertShare,
               })}
             </p>
@@ -314,7 +308,7 @@ function TierForm({
               <>
                 <p className="eyebrow mt-4">{t('pricing.tier.outside')}</p>
                 <ul className="divide-border-subtle mt-1 divide-y text-sm">
-                  {outside.map((e) => (
+                  {outsidePaged.rows.map((e) => (
                     <li key={e.id} className="flex justify-between gap-3 py-2">
                       <span>
                         <span className="text-fg-strong block font-semibold">
@@ -326,10 +320,17 @@ function TierForm({
                             : t('pricing.tier.above')}
                         </span>
                       </span>
-                      <span className="num">{vnd(e.fee)} đ</span>
+                      <span className="num">{formatVnd(e.fee)}</span>
                     </li>
                   ))}
                 </ul>
+                <Pagination
+                  page={outsidePaged.page}
+                  pageSize={outsidePaged.pageSize}
+                  total={outsidePaged.total}
+                  onPageChange={outsidePaged.setPage}
+                  onPageSizeChange={outsidePaged.setPageSize}
+                />
                 <Note title={t('pricing.tier.outsideNoteTitle')}>
                   {t('pricing.tier.outsideNote')}
                 </Note>

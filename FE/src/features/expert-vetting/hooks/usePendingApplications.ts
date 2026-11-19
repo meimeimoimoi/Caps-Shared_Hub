@@ -1,3 +1,4 @@
+import { useSortState } from '@/hooks/useTableSort'
 import { useState } from 'react'
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { useDebouncedValue } from '@/hooks/useDebouncedValue'
@@ -20,6 +21,8 @@ export function usePendingApplications() {
   const [tab, setTabState] = useState<QueueTab>('review')
   const [query, setQueryState] = useState('')
   const [page, setPage] = useState(1)
+  const sorting = useSortState({ key: 'queue', direction: 'asc' })
+  const [pageSize, setPageSize] = useState(PAGE_SIZE)
   const search = useDebouncedValue(query)
 
   const params = {
@@ -27,7 +30,9 @@ export function usePendingApplications() {
     qualificationStatuses: [],
     search,
     page,
-    pageSize: PAGE_SIZE,
+    pageSize,
+    sortBy: sorting.sort.key,
+    sortDescending: sorting.sort.direction === 'desc',
   }
   const list = useQuery({
     queryKey: adminKeys.queue('review', params),
@@ -41,6 +46,11 @@ export function usePendingApplications() {
   })
   const data = list.data
   return {
+    sort: sorting.sort,
+    onSort: (key: string) => {
+      sorting.onSort(key)
+      setPage(1)
+    },
     isLoading: list.isLoading,
     error: list.error,
     tab,
@@ -53,13 +63,19 @@ export function usePendingApplications() {
       setQueryState(v)
       setPage(1)
     },
-    countOf: (t: QueueTab) => sumCounts(counts.data?.applications, statusesOf(t)) ?? 0,
+    countOf: (t: QueueTab) =>
+      sumCounts(counts.data?.applications, statusesOf(t)) ?? 0,
     paged: toPaged(
       (data?.items ?? []).map(toApplicationRow),
       data?.page ?? page,
-      data?.pageSize ?? PAGE_SIZE,
+      data?.pageSize ?? pageSize,
       data?.total ?? 0
     ),
+    setPage,
+    setPageSize: (size: number) => {
+      setPageSize(size)
+      setPage(1)
+    },
     prev: () => setPage((p) => Math.max(1, p - 1)),
     next: () => setPage((p) => p + 1),
   }

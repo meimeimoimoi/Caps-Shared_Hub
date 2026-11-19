@@ -6,7 +6,13 @@ using Caps.Common.Application;
 namespace Caps.Billing.Application.Features.Payouts;
 
 /// <summary>Lists payouts for staff, optionally only those in one status.</summary>
-public sealed record ListPayoutsQuery(string? Status, int Page, int PageSize);
+public sealed record ListPayoutsQuery(
+    string? Status,
+    int Page,
+    int PageSize,
+    string? SortBy = null,
+    bool SortDescending = true
+);
 
 /// <summary>Newest first; released escrows create the expert payouts.</summary>
 public sealed class ListPayoutsHandler(IPayoutRepository payouts)
@@ -26,7 +32,9 @@ public sealed class ListPayoutsHandler(IPayoutRepository payouts)
             status,
             (query.Page - 1) * query.PageSize,
             query.PageSize,
-            ct
+            ct,
+            query.SortBy == "amount" ? "amount" : "createdAt",
+            query.SortDescending
         );
         var items = page.Select(PayoutResponse.From).ToArray();
         return new PayoutPageResponse(items, query.Page, query.PageSize, total);

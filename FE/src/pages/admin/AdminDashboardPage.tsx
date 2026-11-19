@@ -118,7 +118,7 @@ export default function AdminDashboardPage() {
   const urgentCount = attention.filter((n) => n.tone === 'warning').length
   // Money totals come from the billing stats endpoint, which exists even though the escrow list page
   // does not; only an account that cannot read those stats is told the money side is unchecked
-  const moneyUnchecked = !!nav.operationsUnavailable && !canSeeMoney
+  const moneyUnchecked = !!nav.payoutAlertsUnchecked && !canSeeMoney
   const allClear = !loading && !failed && !moneyUnchecked
   const busy = attention.length > 0
   // Key figures share one ledger panel beside the work list, so missing permissions leave no holes
@@ -343,7 +343,7 @@ export default function AdminDashboardPage() {
           format={(n) => f.money(n)}
           note={t('dashboard.kpi.heldNote', { count: held.count })}
           unavailableNote={t('dashboard.kpi.moneyUnavailable')}
-          to={nav.operationsUnavailable ? undefined : "/admin/escrow"}
+          to="/admin/escrow"
         />}
         </aside>
       )}

@@ -11,14 +11,23 @@ public sealed class PayoutRepository(BillingDbContext db) : IPayoutRepository
         string? status,
         int skip,
         int take,
-        CancellationToken ct
-    ) =>
-        await Filter(status)
-            .OrderByDescending(x => x.CreatedAt)
-            .ThenByDescending(x => x.Id)
-            .Skip(skip)
-            .Take(take)
-            .ToListAsync(ct);
+        CancellationToken ct,
+        string sortBy = "createdAt",
+        bool descending = true
+    )
+    {
+        var source = Filter(status);
+        var ordered =
+            sortBy == "amount"
+                ? descending
+                    ? source.OrderByDescending(x => x.Amount)
+                    : source.OrderBy(x => x.Amount)
+                : descending
+                    ? source.OrderByDescending(x => x.CreatedAt)
+                    : source.OrderBy(x => x.CreatedAt);
+        var stable = descending ? ordered.ThenByDescending(x => x.Id) : ordered.ThenBy(x => x.Id);
+        return await stable.Skip(skip).Take(take).ToListAsync(ct);
+    }
 
     public Task<int> CountAsync(string? status, CancellationToken ct) =>
         Filter(status).CountAsync(ct);

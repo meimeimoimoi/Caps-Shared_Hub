@@ -190,12 +190,21 @@ export async function escalateDispute(id: string) {
 /* ── Escrow ── */
 export async function getEscrows(signal?: AbortSignal): Promise<Escrow[]> {
   if (isExpertDemo) return structuredClone((await fixtures()).mockEscrows)
-  // shortcut: the newest 100 escrows (the API maximum); filter and page on the server when there are more
-  const res = await api.get<Envelope<{ items: EscrowDto[] }>>(ESCROWS, {
-    params: { page: 1, pageSize: 100 },
-    signal,
-  })
-  return res.data.items.map(toEscrow)
+  // Collect every server page before client filtering and sorting.
+  const rows = new Map<string, EscrowDto>()
+  let page = 1
+  let total = 0
+  do {
+    const res = await api.get<Envelope<{ items: EscrowDto[]; total: number }>>(ESCROWS, {
+      params: { page, pageSize: 100 },
+      signal,
+    })
+    for (const row of res.data.items) rows.set(row.id, row)
+    total = res.data.total
+    if (res.data.items.length < 100) break
+    page++
+  } while ((page - 1) * 100 < total)
+  return [...rows.values()].map(toEscrow)
 }
 
 /** Pays a HELD escrow to the expert minus the platform fee; billing creates a PENDING payout (API mode only) */

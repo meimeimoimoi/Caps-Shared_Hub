@@ -38,6 +38,8 @@ export async function searchAssignments(
       page: params.page,
       pageSize: params.pageSize,
       claim: params.claim,
+      sortBy: params.sortBy,
+      sortDescending: params.sortDescending,
     },
     paramsSerializer: repeatKeys,
     signal,

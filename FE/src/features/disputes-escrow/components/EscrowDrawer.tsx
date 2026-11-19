@@ -7,6 +7,7 @@ import { formatVnd } from '@/lib/format-money'
 import { Drawer } from '@/components/ui/feedback/drawer'
 import { Modal } from '@/components/ui/feedback/modal'
 import { HelpTip } from '@/components/ui/feedback/help-tip'
+import { FormField } from '@/components/ui/forms/form-field'
 import { TERMINATION_MATRIX } from '../constants'
 import { escrowSplit } from '../utils/escrow'
 import type { Escrow } from '../types'
@@ -87,17 +88,13 @@ export function EscrowDrawer({
                   {t('escrow.refund.body', { account: e.refundAccount ?? '' })}
                 </p>
               </div>
-              <label className="flex flex-col gap-1.5 text-sm font-semibold">
-                {t('escrow.refund.ref')}
+              <FormField label={t('escrow.refund.ref')} help={t('escrow.refund.refHint')} className="!mb-0">
                 <input
                   value={ref}
                   onChange={(ev) => setRef(ev.target.value)}
                   className="border-border-control rounded-control shadow-control bg-paper h-control num border px-3 text-base font-normal"
                 />
-                <span className="text-fg-muted text-caption font-normal">
-                  {t('escrow.refund.refHint')}
-                </span>
-              </label>
+              </FormField>
               {error && (
                 <p role="alert" className="text-danger text-sm">
                   {error}

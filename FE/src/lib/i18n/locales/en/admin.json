@@ -356,6 +356,26 @@
     "decisionTitle": "System Admin decision"
   },
   "disputes": {
+    "filters": {
+      "search": "Search case ID, client, expert or grounds",
+      "deadline": "Decision deadline",
+      "clear": "Clear filters",
+      "empty": "No disputes match your search or filters.",
+      "results_one": "{{count}} result",
+      "results_other": "{{count}} results",
+      "status": {
+        "all": "All statuses",
+        "open": "Awaiting decision",
+        "escalated": "Escalated for professional review",
+        "resolved": "Resolved"
+      },
+      "sla": {
+        "all": "All deadlines",
+        "overdue": "Overdue",
+        "dueSoon": "Due within 12 hours",
+        "onTime": "More than 12 hours remaining"
+      }
+    },
     "title": "Disputes",
     "col": {
       "caseId": "Case ID",
@@ -690,7 +710,7 @@
       "namePlaceholder": "e.g. Pack 30",
       "credits": "Credits (required)",
       "price": "Price",
-      "perCredit": "{{amount}} ₫ per credit",
+      "perCredit": "{{amount}} per credit",
       "priceEmpty": "Leave empty if the price is not set yet.",
       "order": "Paywall order (required)",
       "orderHint": "1 = shown first.",
@@ -778,6 +798,8 @@
     },
     "count": "{{count}} accounts",
     "col": {
+      "name": "Full name",
+      "email": "Email",
       "user": "User",
       "role": "Role",
       "status": "Status",
@@ -790,6 +812,8 @@
     "viewLabel": "View {{name}}",
     "empty": "No accounts match these filters.",
     "drawer": {
+      "phone": "Phone number",
+      "notUpdated": "Not provided",
       "email": "Email",
       "role": "Role",
       "status": "Status",
@@ -1129,7 +1153,7 @@
     "effectiveOnHelp": "A change must be announced at least {{days}} days ahead, so {{date}} at the earliest. A new schedule replaces the pending change, if any.",
     "example": "What experts receive per request",
     "examplePrice": "Price",
-    "exampleNet": "Expert receives: now → new",
+    "exampleNet": "Received: current → new",
     "firstFeeHelp": "The first fee applies at once and opens the service for experts to price.",
     "late": "Late delivery",
     "lateHelp": "Counted from the delivery deadline (one working day). Late within the penalty hours: the client gets the set percent back, the platform keeps the rest and the expert gets nothing. Later but before the cancel hours: the client gets 100% back. Nothing delivered by the cancel hours: the request is cancelled, the client gets the \"nothing delivered\" percent back and the platform keeps the rest. Set the penalty hours equal to the cancel hours for a single refund level. At most {{maxHours}} hours. Requests already sent keep the rules they were booked with.",
@@ -1178,7 +1202,6 @@
     "changeFor": "Change fee · {{name}}",
     "setFor": "Set fee · {{name}}",
     "cancelFor": "Cancel pending change · {{name}}",
-    "beforePit": "before PIT",
     "lateSteps": {
       "penalty": "Up to {{hours}}h late: {{percent}}% back",
       "full": "{{from}}–{{to}}h: 100% back",

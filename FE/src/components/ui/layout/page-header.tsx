@@ -6,6 +6,8 @@ interface PageHeaderProps {
   /** Explanation of the page; shown in a HelpTip next to the title, never as a grey subtitle */
   help?: ReactNode
   helpLabel?: string
+  /** Visible page-level status or count, next to the title. */
+  badge?: ReactNode
   /** Page-level actions aligned to the right of the title */
   actions?: ReactNode
   className?: string
@@ -16,6 +18,7 @@ export function PageHeader({
   title,
   help,
   helpLabel,
+  badge,
   actions,
   className = '',
 }: PageHeaderProps) {
@@ -23,7 +26,7 @@ export function PageHeader({
     <header
       className={`flex flex-wrap items-center justify-between gap-x-6 gap-y-3 ${className}`}
     >
-      <div className="flex min-w-0 items-center gap-2">
+      <div className="flex min-w-0 flex-wrap items-center gap-2">
         <h1 className="text-h1">{title}</h1>
         {help && (
           <HelpTip
@@ -32,6 +35,7 @@ export function PageHeader({
             {help}
           </HelpTip>
         )}
+        {badge}
       </div>
       {actions && (
         <div className="flex flex-wrap items-center gap-2">{actions}</div>

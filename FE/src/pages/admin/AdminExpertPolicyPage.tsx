@@ -1,9 +1,14 @@
+import { useTableSort } from '@/hooks/useTableSort'
+import { SortableTh } from '@/components/ui/navigation/sortable-th'
+import { Pagination } from '@/components/ui/navigation/pagination'
+import { usePagination } from '@/hooks/usePagination'
 import { useCallback, useEffect, useState } from 'react'
 import { useBlocker } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { ApiError } from '@/lib/api-client'
 import { HelpTip } from '@/components/ui/feedback/help-tip'
+import { FormField } from '@/components/ui/forms/form-field'
 import { Modal } from '@/components/ui/feedback/modal'
 import { Toast } from '@/components/ui/feedback/toast'
 import {
@@ -147,6 +152,7 @@ export default function AdminExpertPolicyPage() {
     },
   })
 
+
   const settings = policy.data ?? []
   const byKey = new Map(settings.map((s) => [s.key, s]))
   const numberFormat = new Intl.NumberFormat(i18n.language)
@@ -260,6 +266,8 @@ export default function AdminExpertPolicyPage() {
         ? t('admin:expertPolicy.youNamed', { name: userName ?? '' })
         : t('admin:expertPolicy.otherAdmin', { id: id.slice(0, 8) })
 
+  const historySort = useTableSort(history.data ?? [], { time: (r) => Date.parse(r.changedAt), setting: (r) => label(r.key), reason: (r) => r.reason, actor: (r) => actor(r.changedByUserId) }, { key: 'time', direction: 'desc' })
+  const historyPaged = usePagination(historySort.rows, JSON.stringify(historySort.sort))
   const field = (s: PolicySetting, ariaLabel?: string) => {
     const bad = outOfRange(s)
     const raw = valueOf(s)
@@ -613,17 +621,41 @@ export default function AdminExpertPolicyPage() {
                   <caption className="sr-only">{t('admin:expertPolicy.historyTitle')}</caption>
                   <thead className="bg-sunken text-fg-muted text-left">
                     <tr className="border-border border-b [&>th]:px-5 [&>th]:py-3 [&>th]:font-semibold [&>th]:whitespace-nowrap">
-                      <th scope="col">{t('admin:expertPolicy.history.time')}</th>
-                      <th scope="col">{t('admin:expertPolicy.history.setting')}</th>
+                      <SortableTh
+                        column="time"
+                        sort={historySort.sort}
+                        onSort={historySort.onSort}
+                      >
+                        {t('admin:expertPolicy.history.time')}
+                      </SortableTh>
+                      <SortableTh
+                        column="setting"
+                        sort={historySort.sort}
+                        onSort={historySort.onSort}
+                      >
+                        {t('admin:expertPolicy.history.setting')}
+                      </SortableTh>
                       <th scope="col" className="text-right">
                         {t('admin:expertPolicy.history.change')}
                       </th>
-                      <th scope="col">{t('admin:expertPolicy.history.reason')}</th>
-                      <th scope="col">{t('admin:expertPolicy.history.actor')}</th>
+                      <SortableTh
+                        column="reason"
+                        sort={historySort.sort}
+                        onSort={historySort.onSort}
+                      >
+                        {t('admin:expertPolicy.history.reason')}
+                      </SortableTh>
+                      <SortableTh
+                        column="actor"
+                        sort={historySort.sort}
+                        onSort={historySort.onSort}
+                      >
+                        {t('admin:expertPolicy.history.actor')}
+                      </SortableTh>
                     </tr>
                   </thead>
                   <tbody className="divide-border-subtle divide-y">
-                    {history.data.map((c) => (
+                    {historyPaged.rows.map((c) => (
                       <tr
                         key={c.id}
                         className="align-top [&>td]:px-5 [&>td]:py-3"
@@ -686,6 +718,15 @@ export default function AdminExpertPolicyPage() {
                 </p>
               )}
             </div>
+            {!history.isLoading && !history.error && historyPaged.total > 0 && (
+              <Pagination
+                page={historyPaged.page}
+                pageSize={historyPaged.pageSize}
+                total={historyPaged.total}
+                onPageChange={historyPaged.setPage}
+                onPageSizeChange={historyPaged.setPageSize}
+              />
+            )}
           </section>
         </div>
       )}
@@ -761,30 +802,27 @@ export default function AdminExpertPolicyPage() {
             </table>
           </div>
 
-          <label className="mt-5 flex flex-col gap-1.5">
-            <span className="text-sm font-semibold">
-              {t('admin:expertPolicy.reason')}
-            </span>
+          <FormField
+            className="mt-5 !mb-0"
+            htmlFor="policy-change-reason"
+            label={t('admin:expertPolicy.reason')}
+            help={t('admin:expertPolicy.reasonMin', { count: MIN_REASON_LENGTH })}
+            error={reason.trim() && reasonShort ? t('admin:expertPolicy.reasonMin', { count: MIN_REASON_LENGTH }) : undefined}
+            errorId="policy-reason-error"
+          >
             <textarea
+              id="policy-change-reason"
               rows={3}
               maxLength={1000}
               autoFocus
               value={reason}
               onChange={(e) => setReason(e.target.value)}
               placeholder={t('admin:expertPolicy.reasonPlaceholder')}
-              aria-describedby="policy-reason-hint"
+              aria-invalid={!!reason.trim() && reasonShort}
+              aria-describedby={reason.trim() && reasonShort ? 'policy-reason-error' : undefined}
               className="border-border-control rounded-control bg-paper focus:border-accent focus:ring-accent-soft w-full resize-y border px-3 py-2 outline-none focus:ring-2"
             />
-            <span
-              id="policy-reason-hint"
-              className={cn(
-                'text-xs',
-                reason.trim() && reasonShort ? 'text-danger' : 'text-fg-muted'
-              )}
-            >
-              {t('admin:expertPolicy.reasonMin', { count: MIN_REASON_LENGTH })}
-            </span>
-          </label>
+          </FormField>
           {saveError && (
             <p role="alert" className="text-danger mt-3 text-sm">
               {saveError}

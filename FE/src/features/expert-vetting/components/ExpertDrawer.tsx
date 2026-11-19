@@ -3,6 +3,8 @@ import { useState, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { APPLICATION_STATUS, SERVICE_STATUS } from '@/lib/constants'
 import { Modal } from '@/components/ui/feedback/modal'
+import { Pagination } from '@/components/ui/navigation/pagination'
+import { usePagination } from '@/hooks/usePagination'
 import { StatusBadge } from '@/components/ui/display/status-badge'
 import { cn } from '@/lib/utils'
 import type { Expert } from '../types'
@@ -30,12 +32,12 @@ function Section({
 }) {
   return (
     <section>
-      <h3 className="text-fg-strong text-sm font-semibold">{title}</h3>
+      <h3 className="text-fg-strong border-border-subtle border-b pb-3 text-base font-semibold">{title}</h3>
       <dl className="divide-border-subtle mt-1 divide-y text-sm">
         {rows.map(({ label, value }) => (
-          <div key={label} className="grid grid-cols-[112px_1fr] gap-3 py-2.5">
+          <div key={label} className="grid gap-1 py-3 sm:grid-cols-[112px_minmax(0,1fr)] sm:gap-4">
             <dt className="text-fg-muted">{label}</dt>
-            <dd className="text-fg-strong min-w-0 break-words">{value}</dd>
+            <dd className="text-fg-strong min-w-0 [overflow-wrap:anywhere]">{value}</dd>
           </div>
         ))}
       </dl>
@@ -45,15 +47,14 @@ function Section({
 
 function Stat({ label, children }: { label: string; children: ReactNode }) {
   return (
-    <div className="bg-sunken rounded-control min-w-0 px-4 py-3">
-      <p className="text-fg-muted text-xs">{label}</p>
-      <div className="text-fg-strong mt-1 text-lg font-semibold">{children}</div>
+    <div className="min-w-0 px-5 py-4">
+      <p className="text-fg-muted text-sm">{label}</p>
+      <div className="text-fg-strong mt-2 text-2xl font-semibold">{children}</div>
     </div>
   )
 }
 
-/* Expert detail shown as a centered modal: key numbers on top, profile/service on
- * the left, review record and history on the right. */
+/* Keep summary metrics above profile and review details, with a full-width audit history. */
 export function ExpertDrawer({
   expert: e,
   onClose,
@@ -62,29 +63,17 @@ export function ExpertDrawer({
   const { t } = useTranslation('admin')
   // Suspend and reinstate go through the same confirmation as the approval panel
   const [access, setAccess] = useState<ServiceAccessAction | null>(null)
-  // Status chip plus, for an active service, where it shows (both from i18n, not split from one string)
+  // Keep the service state separate from the expert name.
   const statusLabel = t(`serviceStatus.${e.serviceStatus}.label`)
   const statusNote =
     e.serviceStatus === 'ACTIVE' ? t('serviceStatus.ACTIVE.note') : null
+  const history = usePagination(e.history, e.id, 5)
   const load = e.capacity > 0 ? Math.min(1, e.activeCases / e.capacity) : 0
 
   return (
     <Modal
       size="xl"
       title={e.name}
-      titleAddon={
-        <span className="flex shrink-0 items-center gap-2 text-sm">
-          <StatusBadge
-            status={{
-              label: statusLabel,
-              tone: SERVICE_STATUS[e.serviceStatus].tone,
-            }}
-          />
-          {statusNote && (
-            <span className="text-fg-muted hidden sm:inline">{statusNote}</span>
-          )}
-        </span>
-      }
       onClose={onClose}
       footer={
         <>
@@ -130,7 +119,17 @@ export function ExpertDrawer({
         />
       )}
 
-      <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-3">
+      <div className="border-border-subtle mt-4 flex flex-wrap items-center gap-x-3 gap-y-2 border-b pb-5">
+        <StatusBadge
+          status={{
+            label: statusLabel,
+            tone: e.serviceStatus === 'ACTIVE' ? 'success' : SERVICE_STATUS[e.serviceStatus].tone,
+          }}
+        />
+        {statusNote && <span className="text-fg text-sm">{statusNote}</span>}
+      </div>
+
+      <div className="bg-sunken divide-border-subtle mt-5 grid grid-cols-1 divide-y rounded-xl sm:grid-cols-3 sm:divide-x sm:divide-y-0">
         <Stat label={t('experts.drawer.fee')}>
           <span className="num">{e.fee === null ? '—' : formatVnd(e.fee)}</span>
         </Stat>
@@ -143,7 +142,7 @@ export function ExpertDrawer({
           </span>
           <span
             aria-hidden="true"
-            className="bg-paper mt-2 block h-1.5 overflow-hidden rounded-full"
+            className="bg-border mt-3 block h-1.5 overflow-hidden rounded-full"
           >
             <span
               className={cn(
@@ -161,7 +160,7 @@ export function ExpertDrawer({
         </Stat>
       </div>
 
-      <div className="mt-6 grid grid-cols-1 gap-x-8 gap-y-6 md:grid-cols-2">
+      <div className="mt-7 grid grid-cols-1 gap-x-8 gap-y-7 md:grid-cols-2">
         <div className="flex min-w-0 flex-col gap-6">
           <Section
             title={t('experts.drawer.info')}
@@ -210,36 +209,49 @@ export function ExpertDrawer({
               },
               {
                 label: t('experts.drawer.application'),
-                value: <span className="num">{e.applicationId ?? e.id}</span>,
+                value: (
+                  <Link
+                    to={`/admin/experts/${e.applicationId ?? e.id}`}
+                    className="text-accent-text num text-xs underline underline-offset-4 hover:no-underline"
+                  >
+                    {e.applicationId ?? e.id}
+                  </Link>
+                ),
               },
             ]}
           />
 
-          {e.history.length > 0 && (
-            <section>
-              <h3 className="text-fg-strong text-sm font-semibold">
-                {t('experts.drawer.history')}
-              </h3>
-              <ol className="border-border mt-3 ml-1 border-l text-sm">
-                {e.history.map((h, i) => (
-                  <li key={i} className="relative pb-4 pl-4 last:pb-0">
-                    <span
-                      aria-hidden="true"
-                      className="bg-accent ring-paper absolute top-1.5 -left-[4.5px] size-2 rounded-full ring-2"
-                    />
-                    <p className="text-fg-muted num text-xs">
-                      {formatDateTime(h.at)}
-                    </p>
-                    <p className="text-fg-strong mt-0.5">
-                      {h.actor} {h.text}
-                    </p>
-                  </li>
-                ))}
-              </ol>
-            </section>
-          )}
         </div>
       </div>
+
+      {history.total > 0 && (
+        <section className="border-border-subtle mt-7 border-t pt-6">
+          <h3 className="text-fg-strong text-base font-semibold">
+            {t('experts.drawer.history')}
+          </h3>
+          <ol className="divide-border-subtle mt-3 divide-y text-sm">
+            {history.rows.map((h, i) => (
+              <li key={`${h.at}-${i}`} className="grid gap-2 py-4 sm:grid-cols-[140px_minmax(0,1fr)] sm:gap-5">
+                <time dateTime={h.at} className="text-fg-muted num text-xs leading-6">
+                  {formatDateTime(h.at)}
+                </time>
+                <div className="min-w-0 [overflow-wrap:anywhere]">
+                  <p className="text-fg-strong font-semibold">{h.actor}</p>
+                  <p className="text-fg mt-1 leading-relaxed">{h.text}</p>
+                </div>
+              </li>
+            ))}
+          </ol>
+          {history.pageCount > 1 && (
+            <Pagination
+              page={history.page}
+              pageSize={history.pageSize}
+              total={history.total}
+              onPageChange={history.setPage}
+            />
+          )}
+        </section>
+      )}
     </Modal>
   )
 }

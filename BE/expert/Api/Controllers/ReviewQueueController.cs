@@ -25,6 +25,8 @@ public sealed class ReviewQueueController(ICurrentUser currentUser) : Controller
     /// email, and the service name of a qualification. claim keeps MINE (held by the caller), UNCLAIMED (held by
     /// nobody, expired claims included), ALL, or by default MINE_OR_UNCLAIMED. Each row carries its holder.
     /// Opening the queue also records the caller as a reviewer a System Admin can hand reviews to.
+    /// sortBy accepts name, years, submittedAt or waiting; omitted values keep the queue's default order.
+    /// sortDescending reverses the chosen column before pagination.
     /// </remarks>
     /// <response code="200">The page with the total number of matching records.</response>
     /// <response code="400">INVALID_PAGING.</response>
@@ -39,7 +41,9 @@ public sealed class ReviewQueueController(ICurrentUser currentUser) : Controller
         [FromQuery, MaxLength(SearchReviewQueueHandler.MaxSearchLength)] string? q = null,
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 10,
-        [FromQuery, MaxLength(32)] string? claim = null
+        [FromQuery, MaxLength(32)] string? claim = null,
+        [FromQuery, MaxLength(32)] string? sortBy = null,
+        [FromQuery] bool sortDescending = false
     )
     {
         await recorder.HandleAsync(new(UserId, currentUser.Email), ct);
@@ -50,7 +54,9 @@ public sealed class ReviewQueueController(ICurrentUser currentUser) : Controller
             page,
             pageSize,
             UserId,
-            claim
+            claim,
+            sortBy,
+            sortDescending
         );
         var queue = await handler.HandleAsync(query, ct);
         return Ok(ApiResponse<ReviewQueuePageResponse>.Ok(queue));
