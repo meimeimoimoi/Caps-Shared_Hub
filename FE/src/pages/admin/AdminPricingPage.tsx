@@ -14,6 +14,9 @@ import { AdminLayout } from '@/app/layouts/admin/AdminLayout'
 import { useAdminNav } from '@/app/layouts/admin/useAdminNav'
 import { usePricing } from '../../features/service-pricing/hooks/usePricing'
 import { PackageDialog } from '../../features/service-pricing/components/PackageDialog'
+import { AiBillingCard } from '../../features/service-pricing/components/AiBillingCard'
+import { hasAnyPermission, Permission, useAuthStore } from '@/features/auth'
+import { isExpertDemo } from '@/lib/expert-data-source'
 import type {
   CreditPackage,
   PackageInput,
@@ -48,6 +51,9 @@ export default function AdminPricingPage() {
   const nav = useAdminNav()
   const { t } = useTranslation(['admin', 'common'])
   const pricing = usePricing(!nav.pricingUnavailable)
+  const user = useAuthStore((s) => s.user)
+  const canSetAiBilling =
+    !isExpertDemo && hasAnyPermission(user, [Permission.PricingManage])
   const { data, isLoading } = pricing
   const historyPaged = usePagination(data?.history ?? [])
   // Tab nằm trên URL (?tab=) để breadcrumb và link dẫn đúng tab
@@ -102,6 +108,8 @@ export default function AdminPricingPage() {
         title={t('pricing.title')}
         help={t(`pricing.tabs.${tab}.intro`)}
       />
+      {/* Workflow serves the paid-AI switch, so it works even while review-fee ranges have no backend */}
+      {canSetAiBilling && <AiBillingCard />}
       {/* No pricing backend outside the demo: one honest state instead of a Retry that cannot succeed */}
       {nav.pricingUnavailable ? (
         <OperationsUnavailable area="pricing" />

@@ -694,6 +694,17 @@
   },
   "pricing": {
     "title": "Service pricing",
+    "aiBilling": {
+      "title": "Charge credits for AI",
+      "help": "On: AI chat and AI drafting use each person's free uses, then credits from their wallet. Off: everyone uses AI free, without limit. Applies from the next use.",
+      "on": "On",
+      "off": "Off",
+      "default": "Following the server setting",
+      "updated": "Updated {{at}}",
+      "saved": "AI charging is on.",
+      "savedOff": "AI charging is off; everyone uses AI free.",
+      "failed": "The switch could not be saved. Please try again."
+    },
     "tabsLabel": "Pricing settings",
     "tabs": {
       "review-fee": {
