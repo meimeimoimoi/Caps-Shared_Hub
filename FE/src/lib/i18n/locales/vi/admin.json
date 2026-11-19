@@ -742,6 +742,17 @@
   },
   "pricing": {
     "title": "Khung giá dịch vụ",
+    "aiBilling": {
+      "title": "Tính phí AI bằng credit",
+      "help": "Bật: chat với AI và soạn nháp AI dùng lượt miễn phí của mỗi người, hết lượt thì trừ credit trong ví. Tắt: mọi người dùng AI miễn phí, không giới hạn. Áp dụng ngay cho lượt dùng tiếp theo.",
+      "on": "Đang bật",
+      "off": "Đang tắt",
+      "default": "Đang theo cấu hình máy chủ",
+      "updated": "Cập nhật {{at}}",
+      "saved": "Đã bật tính phí AI.",
+      "savedOff": "Đã tắt tính phí AI, mọi người dùng AI miễn phí.",
+      "failed": "Không lưu được công tắc, vui lòng thử lại."
+    },
     "tabsLabel": "Cấu hình giá",
     "tabs": {
       "review-fee": {

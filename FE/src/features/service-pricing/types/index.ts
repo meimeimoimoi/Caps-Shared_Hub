@@ -83,3 +83,11 @@ export interface PricingOverview {
   creditPackages: CreditPackage[]
   history: PriceChange[]
 }
+
+/** GET/PUT /api/v1/admin/ai-billing: whether AI chat and drafting charge the free quota, then credits */
+export interface AiBillingSwitch {
+  enabled: boolean
+  /** null while the server setting applies (no admin has set it yet) */
+  updatedAt: string | null
+  updatedBy: string | null
+}
