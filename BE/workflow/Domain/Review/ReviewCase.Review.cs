@@ -105,7 +105,8 @@ public sealed partial class ReviewCase
         Guid expertProfileId,
         Guid actorUserId,
         string? message,
-        DateTimeOffset now
+        DateTimeOffset now,
+        WorkCalendar? calendar = null
     )
     {
         EnsureExpert(expertProfileId);
@@ -119,7 +120,7 @@ public sealed partial class ReviewCase
             Id,
             actorUserId,
             RequiredText(message, "Message"),
-            now + TimeSpan.FromHours(NoResponseHours),
+            (calendar ?? WorkCalendar.WeekendsOnly).AddWorkingDays(now, NoResponseDays),
             now
         );
         InfoRequestCount++;

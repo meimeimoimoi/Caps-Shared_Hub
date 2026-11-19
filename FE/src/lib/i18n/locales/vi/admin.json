@@ -428,13 +428,13 @@
       "reasonMissing": "Nhập lý do quyết định."
     },
     "escalation": {
-      "hint": "Tranh chấp cần xét đoán chuyên môn hoặc kết luận Thuế TNDN phải chuyển cho người đánh giá được ủy quyền. Hạn quyết định được cộng thêm {{hours}} giờ, chỉ một lần.",
+      "hint": "Tranh chấp cần xét đoán chuyên môn hoặc kết luận Thuế TNDN phải chuyển cho người đánh giá được ủy quyền. Hạn quyết định được cộng thêm {{days}} ngày làm việc, chỉ một lần.",
       "action": "Chuyển cấp chuyên môn",
       "done": "Đã chuyển cấp chuyên môn; hạn quyết định đã được gia hạn.",
-      "logged": "Chuyển cấp chuyên môn cho người đánh giá được ủy quyền; gia hạn quyết định thêm 48 giờ",
+      "logged": "Chuyển cấp chuyên môn cho người đánh giá được ủy quyền; gia hạn quyết định thêm 2 ngày làm việc",
       "toast": "Đã chuyển cấp chuyên môn",
       "confirmTitle": "Chuyển cấp chuyên môn?",
-      "confirmBody": "Khiếu nại được chuyển cho người đánh giá được ủy quyền và hạn quyết định được cộng thêm {{hours}} giờ. Chỉ chuyển được một lần.",
+      "confirmBody": "Khiếu nại được chuyển cho người đánh giá được ủy quyền và hạn quyết định được cộng thêm {{days}} ngày làm việc. Chỉ chuyển được một lần.",
       "failed": "Chưa chuyển cấp được. Hãy thử lại."
     },
     "outcome": {
@@ -450,7 +450,7 @@
       }
     },
     "introCount_other": "{{count}} khiếu nại đang chờ trọng tài.",
-    "introRule": "Mỗi khiếu nại phải có quyết định trong {{hours}} giờ kể từ khi mở, gia hạn một lần thêm {{extra}} giờ khi chuyển cấp chuyên môn; tiền ký quỹ bị khóa tới lúc đó.",
+    "introRule": "Mỗi khiếu nại phải có quyết định trong {{days}} ngày làm việc kể từ khi mở, gia hạn một lần thêm {{extra}} ngày làm việc khi chuyển cấp chuyên môn; tiền ký quỹ bị khóa tới lúc đó.",
     "reason": {
       "DELIVERABLE_INCOMPLETE": "Kết quả bàn giao chưa đủ",
       "OBLIGATION_NOT_MET": "Chuyên gia chưa làm đúng nghĩa vụ",
@@ -1130,7 +1130,7 @@
       "PLATFORM_FEE_TOO_SOON": "Thay đổi phải báo trước ít nhất {{days}} ngày. Chọn ngày muộn hơn.",
       "PLATFORM_FEE_NOT_PENDING": "Không còn thay đổi nào đang chờ. Tải lại trang.",
       "LATE_RULE_INVALID": "Quy định giao trễ không hợp lệ: số giờ từ 0 đến {{maxHours}}, số giờ hủy không nhỏ hơn số giờ phạt, % phạt cộng phí nền tảng không quá 100%.",
-      "NO_RESPONSE_RULE_INVALID": "Quy định khi khách không trả lời không hợp lệ: số giờ từ 1 đến {{maxHours}}, % hoàn cộng % chuyên gia không quá 100%.",
+      "NO_RESPONSE_RULE_INVALID": "Quy định khi khách không trả lời không hợp lệ: số ngày làm việc từ 1 đến {{maxDays}}, % hoàn cộng % chuyên gia không quá 100%.",
       "POLICY_REASON_REQUIRED": "Nhập lý do thay đổi.",
       "POLICY_REASON_TOO_LONG": "Lý do tối đa 1000 ký tự.",
       "NO_DELIVERY_RULE_INVALID": "% hoàn khi chuyên gia không giao phải từ 0 đến 100."
@@ -1155,10 +1155,10 @@
       "noDeliveryRefundPercent": "Hoàn cho khách khi không giao (%)"
     },
     "noResponse": "Khách không trả lời",
-    "noResponseValue": "Sau {{hours}} giờ: hoàn {{refundPercent}}% · chuyên gia {{expertPercent}}% · nền tảng {{platformPercent}}%",
-    "noResponseHelp": "Khi chuyên gia hỏi thêm thông tin mà khách không trả lời trong số giờ này, yêu cầu được đóng và phí chia theo tỉ lệ: % hoàn cho khách, % trả cho chuyên gia, nền tảng giữ phần còn lại. Số giờ từ 1 đến {{maxHours}}; % hoàn cộng % chuyên gia không quá 100%. Yêu cầu đã gửi giữ nguyên quy định lúc gửi.",
+    "noResponseValue": "Sau {{days}} ngày làm việc: hoàn {{refundPercent}}% · chuyên gia {{expertPercent}}% · nền tảng {{platformPercent}}%",
+    "noResponseHelp": "Khi chuyên gia hỏi thêm thông tin mà khách không trả lời trong số ngày làm việc này, yêu cầu được đóng và phí chia theo tỉ lệ: % hoàn cho khách, % trả cho chuyên gia, nền tảng giữ phần còn lại. Số ngày từ 1 đến {{maxDays}}, không tính thứ Bảy, Chủ nhật và ngày lễ; % hoàn cộng % chuyên gia không quá 100%. Yêu cầu đã gửi giữ nguyên quy định lúc gửi.",
     "noResponseFields": {
-      "hours": "Số giờ chờ",
+      "days": "Số ngày làm việc chờ",
       "refundPercent": "% hoàn cho khách",
       "expertPercent": "% cho chuyên gia"
     },
@@ -1170,12 +1170,12 @@
       "maxHours": "Số giờ không quá {{max}}.",
       "cancelBeforePenalty": "Số giờ hủy phải lớn hơn hoặc bằng số giờ trễ tối đa được phạt.",
       "penaltyOver": "% hoàn khi trễ không quá 100%.",
-      "hoursRange": "Số giờ từ 1 đến {{max}}.",
       "splitOver": "% hoàn cho khách cộng % cho chuyên gia không quá 100% (đang là {{sum}}%).",
       "platformKeeps": "Nền tảng giữ {{percent}}%.",
       "dateTooSoon": "Chọn từ ngày {{date}} trở đi.",
       "lateIncident": "Giao trễ trong số giờ phạt: khách {{client}}%, nền tảng {{platform}}%, chuyên gia không nhận.",
-      "noDeliveryOver": "% hoàn khi không giao không quá 100%."
+      "noDeliveryOver": "% hoàn khi không giao không quá 100%.",
+      "daysRange": "Số ngày làm việc từ 1 đến {{max}}."
     },
     "review": "Xem lại",
     "confirmSave": "Xác nhận lưu phí",
@@ -1214,7 +1214,7 @@
       "late": "Trễ đến {{hours}} giờ",
       "lateMore": "Trễ {{from}}–{{to}} giờ",
       "cancel": "Quá {{hours}} giờ chưa giao",
-      "silence": "Khách không trả lời {{hours}} giờ",
+      "silence": "Khách không trả lời {{days}} ngày làm việc",
       "preview": "Chia tiền sau khi lưu",
       "silenceIndependent": "Đặt riêng, không đổi theo phí nền tảng",
       "previewStale": "Chia tiền hiện tại (giá trị mới chưa hợp lệ)"

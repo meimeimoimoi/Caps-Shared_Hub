@@ -14,11 +14,16 @@ import { CustomSelect } from '@/components/ui/forms/custom-select'
 import { Pagination } from '@/components/ui/navigation/pagination'
 import { usePagination } from '@/hooks/usePagination'
 import type { WorkStatus } from '../../features/expert-dashboard/types'
+import { Countdown } from '@/features/review-case/components/CaseUi'
+
+// Matches ReviewCase.ReminderHours on the server: the expert is reminded 3 hours before
+const URGENT_MS = 3 * 3_600_000
 
 export default function ExpertCasesPage() {
   const display = useExpertPresentation()
 
   const { t } = useTranslation('expert')
+  const { t: tc } = useTranslation('reviewCase')
 
   const statusFilters: { value: WorkStatus | 'ALL'; label: string }[] = [
     { value: 'ALL', label: t('allStatuses') },
@@ -223,6 +228,19 @@ export default function ExpertCasesPage() {
                                     model.timezone
                                   )}
                                 </time>
+                                {/* Time left on the expert's own step; red in the last reminder hours */}
+                                {item.deadline.at &&
+                                  item.deadline.actor === 'EXPERT' &&
+                                  !item.deadline.paused &&
+                                  !overdue && (
+                                    <span className="block font-semibold">
+                                      <Countdown
+                                        dueAt={item.deadline.at}
+                                        urgentMs={URGENT_MS}
+                                      />{' '}
+                                      {tc('countdown.left')}
+                                    </span>
+                                  )}
                               </div>
                             </div>
                           </td>

@@ -16,7 +16,7 @@ public sealed class ReviewCaseTests
         int penaltyHours = 24,
         int penaltyPct = 30,
         int cancelHours = 72,
-        int silenceHours = 72,
+        int silenceDays = 3,
         int silenceRefund = 50,
         int silenceExpert = 30
     ) =>
@@ -35,7 +35,7 @@ public sealed class ReviewCaseTests
                     penaltyHours,
                     (short)penaltyPct,
                     cancelHours,
-                    silenceHours,
+                    silenceDays,
                     (short)silenceRefund,
                     (short)silenceExpert
                 ),
@@ -385,9 +385,10 @@ public sealed class ReviewCaseTests
     }
 
     [Fact]
-    public void The_answer_deadline_uses_the_hours_frozen_at_booking()
+    public void The_answer_deadline_uses_the_days_frozen_at_booking()
     {
-        var reviewCase = NewCase(silenceHours: 24);
+        // Tuesday plus 1 working day is Wednesday, the same hour
+        var reviewCase = NewCase(silenceDays: 1);
         reviewCase.ConfirmPayment(Now);
         reviewCase.Accept(Expert, ExpertUser, Now);
         var (request, _) = reviewCase.RequestInformation(
@@ -402,15 +403,15 @@ public sealed class ReviewCaseTests
     }
 
     [Theory]
-    [InlineData(0, 50, 30)] // no hours
-    [InlineData(721, 50, 30)] // past the cap
-    [InlineData(72, -1, 30)] // negative share
-    [InlineData(72, 80, 30)] // client + expert over 100%
-    public void Invalid_no_response_rule_is_rejected(int hours, int refund, int expert) =>
+    [InlineData(0, 50, 30)] // no days
+    [InlineData(31, 50, 30)] // past the cap
+    [InlineData(3, -1, 30)] // negative share
+    [InlineData(3, 80, 30)] // client + expert over 100%
+    public void Invalid_no_response_rule_is_rejected(int days, int refund, int expert) =>
         Assert.Equal(
             "CASE_OFFER_INVALID",
             Errors.CodeOf(() =>
-                NewCase(silenceHours: hours, silenceRefund: refund, silenceExpert: expert)
+                NewCase(silenceDays: days, silenceRefund: refund, silenceExpert: expert)
             )
         );
 

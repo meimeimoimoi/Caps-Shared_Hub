@@ -15,7 +15,7 @@ public sealed record SetPlatformFeeRequest(
     int LatePenaltyHours,
     int LatePenaltyPercent,
     int LateCancelHours,
-    int NoResponseHours,
+    int NoResponseDays,
     int NoResponseRefundPercent,
     int NoResponseExpertPercent,
     int? NoDeliveryRefundPercent,

@@ -2,6 +2,7 @@ using Caps.Common.Application;
 using Caps.Workflow.Application.Abstractions;
 using Caps.Workflow.Application.DTOs.Responses;
 using Caps.Workflow.Domain;
+using Caps.Workflow.Domain.Review;
 
 namespace Caps.Workflow.Application.Features.Disputes;
 
@@ -19,7 +20,8 @@ public sealed class OpenDisputeHandler(
     IReviewDisputeRepository disputes,
     IReviewCaseEvents events,
     IUnitOfWork unitOfWork,
-    TimeProvider clock
+    TimeProvider clock,
+    WorkCalendar? calendar = null
 ) : ICommandHandler<OpenDisputeCommand, DisputeResponse>
 {
     public async Task<DisputeResponse> HandleAsync(OpenDisputeCommand command, CancellationToken ct)
@@ -33,7 +35,8 @@ public sealed class OpenDisputeHandler(
             command.UserId,
             command.Reason,
             command.Description,
-            clock.GetUtcNow()
+            clock.GetUtcNow(),
+            calendar
         );
         disputes.Add(dispute);
         cases.AddHistory(opened);

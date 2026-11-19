@@ -11,7 +11,8 @@ public sealed partial class ReviewCase
         Guid requesterUserId,
         string? reason,
         string? description,
-        DateTimeOffset now
+        DateTimeOffset now,
+        WorkCalendar? calendar = null
     )
     {
         EnsureRequester(requesterUserId);
@@ -24,7 +25,8 @@ public sealed partial class ReviewCase
             Id,
             reason,
             RequiredText(description, "Description"),
-            now
+            now,
+            calendar ?? WorkCalendar.WeekendsOnly
         );
         return (dispute, MoveTo(ReviewCaseStatus.Disputed, requesterUserId, reason, now));
     }

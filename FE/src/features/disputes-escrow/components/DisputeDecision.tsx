@@ -6,7 +6,7 @@ import { HelpTip } from '@/components/ui/feedback/help-tip'
 import { cn } from '@/lib/utils'
 import { StatusBadge } from '@/components/ui/display/status-badge'
 import {
-  DISPUTE_ESCALATION_HOURS,
+  DISPUTE_ESCALATION_DAYS,
   DISPUTE_OUTCOME,
   type DisputeOutcome,
 } from '../constants'
@@ -186,7 +186,7 @@ export function DisputeDecision({
               </button>
               <HelpTip label={t('disputes.escalation.action')}>
                 {t('disputes.escalation.hint', {
-                  hours: DISPUTE_ESCALATION_HOURS,
+                  days: DISPUTE_ESCALATION_DAYS,
                 })}
               </HelpTip>
             </div>
@@ -205,7 +205,7 @@ export function DisputeDecision({
             confirming === 'decide'
               ? t('disputes.decision.confirmBody')
               : t('disputes.escalation.confirmBody', {
-                  hours: DISPUTE_ESCALATION_HOURS,
+                  days: DISPUTE_ESCALATION_DAYS,
                 })
           }
           onClose={() => setConfirming(null)}

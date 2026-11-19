@@ -12,6 +12,7 @@ public sealed record DisputeResponse(
     string Status,
     DateTimeOffset OpenedAt,
     DateTimeOffset DecideBy,
+    bool Extended,
     string? ExpertStatement,
     DateTimeOffset? ExpertStatementAt,
     short? RefundPct,
@@ -27,6 +28,7 @@ public sealed record DisputeResponse(
             d.Status,
             d.OpenedAt,
             d.DecideBy,
+            d.Extended,
             d.ExpertStatement,
             d.ExpertStatementAt,
             d.RefundPct,
@@ -36,7 +38,7 @@ public sealed record DisputeResponse(
 }
 
 /// <summary>An open dispute in the admin queue, with what the admin needs to decide it and who the parties are.</summary>
-/// <param name="Overdue">Past the decision window (48 hours, or 96 once extended); nothing is decided automatically.</param>
+/// <param name="Overdue">Past the decision window (2 working days, or 4 once extended); nothing is decided automatically.</param>
 public sealed record AdminDisputeResponse(
     string ReviewCaseId,
     string? RequesterEmail,

@@ -15,17 +15,19 @@ function deadlineOf(c: ReviewCaseDto, now: number): WorkItem['deadline'] {
     c.status === 'PENDING_EXPERT_RESPONSE' ? ['Expert response due', c.responseDeadline, 'EXPERT']
     : c.status === 'IN_REVIEW' ? ['Delivery due', c.deliveryDeadline, 'EXPERT']
     : c.status === 'AWAITING_ACCEPTANCE' ? ['User acceptance due', c.acceptanceDeadline, 'USER']
-    : ['User information due', null, 'USER']
+    : c.status === 'DISPUTED' ? ['Admin decision due', null, 'USER']
+    : ['User information due', c.infoRequests?.find((r) => r.status === 'OPEN')?.dueAt ?? null, 'USER']
   return { kind, at, actor, paused, overdue: actor === 'EXPERT' && !!at && Date.parse(at) < now }
 }
 
-/** The expert's active cases, soonest deadline first; the sections with no API yet say so. */
+/** The expert's active cases, their own deadlines first; the sections with no API yet say so. */
 function dashboardFrom(cases: ReviewCaseDto[], context: ExpertContext): DashboardDto {
   const now = Date.now()
   const items = cases
     .filter((c): c is ReviewCaseDto & { status: WorkStatus } => c.expertProfileId === context.expertId && WORK_STATUSES.includes(c.status as WorkStatus))
     .map((c) => ({ c, deadline: deadlineOf(c, now) }))
-    .sort((a, b) => (a.deadline.at ?? '9').localeCompare(b.deadline.at ?? '9'))
+    // The expert's own steps first, then the client's; soonest deadline first within each
+    .sort((a, b) => Number(a.deadline.actor !== 'EXPERT') - Number(b.deadline.actor !== 'EXPERT') || (a.deadline.at ?? '9').localeCompare(b.deadline.at ?? '9'))
     .map(({ c, deadline }, priority): WorkItem => ({
       id: c.id,
       title: caseTitle(c.problemDescription),
