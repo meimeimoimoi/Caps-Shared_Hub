@@ -641,6 +641,29 @@ namespace Caps.Workflow.Infrastructure.Persistence.Migrations
                     b.ToTable("review_task", "review");
                 });
 
+            modelBuilder.Entity("Caps.Workflow.Domain.Workspace.AiBillingSwitch", b =>
+                {
+                    b.Property<int>("Id")
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    b.Property<bool>("Enabled")
+                        .HasColumnType("boolean")
+                        .HasColumnName("enabled");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<Guid>("UpdatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("updated_by");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ai_billing_switch", "workspace");
+                });
+
             modelBuilder.Entity("Caps.Workflow.Domain.Workspace.AiQuota", b =>
                 {
                     b.Property<Guid>("UserId")

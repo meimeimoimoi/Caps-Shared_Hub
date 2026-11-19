@@ -40,10 +40,15 @@ public sealed class AiCreditChargeService(
     IAiUsageRepository aiUsageRepository,
     IAiQuotaRepository aiQuotaRepository,
     IAiCredits aiCredits,
+    IAiBillingSwitchRepository billingSwitch,
     AiBillingSettings settings,
     TimeProvider clock
 )
 {
+    // The admin switch wins; the setting only applies until an admin first sets it
+    private async Task<bool> IsBillingEnabledAsync(CancellationToken ct) =>
+        (await billingSwitch.FindAsync(ct))?.Enabled ?? settings.Enabled;
+
     public async Task<AiCreditReservation> ReserveAsync(
         Guid userId,
         long creditCost,
@@ -53,7 +58,7 @@ public sealed class AiCreditChargeService(
         bool allowFreeQuota = false
     )
     {
-        if (!settings.Enabled)
+        if (!await IsBillingEnabledAsync(ct))
         {
             return new AiCreditReservation(AiChargeMode.Free, userId, Guid.Empty, 0);
         }
@@ -207,7 +212,7 @@ public sealed class AiCreditChargeService(
                 continue;
             }
 
-            if (settings.Enabled)
+            if (await IsBillingEnabledAsync(ct))
             {
                 if (usage.PaidWith == AiUsagePaidWith.Credit)
                 {
