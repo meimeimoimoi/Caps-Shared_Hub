@@ -110,7 +110,8 @@ public sealed class ExpireReviewCaseTests
     {
         var reviewCase = Accepted();
         var (request, _) = reviewCase.RequestInformation(ExpertProfile, Expert, "Which year?", T0);
-        var run = new Run(reviewCase, T0.AddHours(72), request);
+        // Thursday plus 3 working days skips the weekend: Tuesday, 5 days later
+        var run = new Run(reviewCase, T0.AddDays(5), request);
 
         await run.ExpireAsync();
 
@@ -127,7 +128,7 @@ public sealed class ExpireReviewCaseTests
     {
         var reviewCase = Accepted();
         var (request, _) = reviewCase.RequestInformation(ExpertProfile, Expert, "Which year?", T0);
-        var run = new Run(reviewCase, T0.AddHours(71), request);
+        var run = new Run(reviewCase, T0.AddDays(5).AddHours(-1), request);
 
         await run.ExpireAsync();
 

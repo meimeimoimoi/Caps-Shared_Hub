@@ -49,7 +49,7 @@ public sealed class GetReviewOfferHandler(
             fee.LatePenaltyHours,
             fee.LatePenaltyPercent,
             fee.LateCancelHours,
-            fee.NoResponseHours,
+            fee.NoResponseDays,
             fee.NoResponseRefundPercent,
             fee.NoResponseExpertPercent,
             profile.FreeSlots,

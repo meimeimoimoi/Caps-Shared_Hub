@@ -36,7 +36,7 @@ public sealed record LateRuleResponse(
 );
 
 /// <summary>What a client's silence costs: after Hours the case ends and the fee splits; the platform keeps the rest.</summary>
-public sealed record NoResponseRuleResponse(int Hours, int RefundPercent, int ExpertPercent);
+public sealed record NoResponseRuleResponse(int Days, int RefundPercent, int ExpertPercent);
 
 /// <summary>A platform fee change waiting for its effective date.</summary>
 public sealed record PendingPlatformFeeResponse(

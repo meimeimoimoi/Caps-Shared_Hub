@@ -19,6 +19,7 @@ public sealed partial class ReviewCase
     public const short DisputeUpheldRefundPct = 50;
 
     public const int MaxTurnaroundHours = 720;
+    public const int MaxNoResponseDays = 30;
     public const int MaxPlatformFeePct = 99;
     public const int MaxTextLength = 4000;
     public const int MaxContentLength = 100_000;
@@ -81,8 +82,8 @@ public sealed partial class ReviewCase
     public int TurnaroundHours { get; private set; }
 
     /// <summary>
-    /// Late rule frozen at booking: up to LatePenaltyHours late the client gets LatePenaltyPct back from the
-    /// expert's share, later the whole fee; past LateCancelHours the case is cancelled.
+    /// Late rule frozen at booking: up to LatePenaltyHours late the client gets LatePenaltyPct back and the
+    /// expert nothing; later, the whole fee; past LateCancelHours the case is cancelled.
     /// </summary>
     public int LatePenaltyHours { get; private set; }
     public short LatePenaltyPct { get; private set; }
@@ -96,10 +97,10 @@ public sealed partial class ReviewCase
     public int InfoRequestCount { get; private set; }
 
     /// <summary>
-    /// Client-silence rule frozen at booking: no answer within NoResponseHours ends the case, the client gets
+    /// Client-silence rule frozen at booking: no answer within NoResponseDays ends the case, the client gets
     /// NoResponseRefundPct back, the expert NoResponseExpertPct, and the platform keeps the rest.
     /// </summary>
-    public int NoResponseHours { get; private set; }
+    public int NoResponseDays { get; private set; }
     public short NoResponseRefundPct { get; private set; }
     public short NoResponseExpertPct { get; private set; }
 
@@ -167,8 +168,8 @@ public sealed partial class ReviewCase
             || offer.LatePenaltyPct > 100
             || offer.LateCancelHours < offer.LatePenaltyHours
             || offer.LateCancelHours > MaxTurnaroundHours
-            || offer.NoResponseHours < 1
-            || offer.NoResponseHours > MaxTurnaroundHours
+            || offer.NoResponseDays < 1
+            || offer.NoResponseDays > MaxNoResponseDays
             || offer.NoResponseRefundPct < 0
             || offer.NoResponseExpertPct < 0
             || offer.NoResponseRefundPct + offer.NoResponseExpertPct > 100
@@ -199,7 +200,7 @@ public sealed partial class ReviewCase
             LatePenaltyHours = offer.LatePenaltyHours,
             LatePenaltyPct = offer.LatePenaltyPct,
             LateCancelHours = offer.LateCancelHours,
-            NoResponseHours = offer.NoResponseHours,
+            NoResponseDays = offer.NoResponseDays,
             NoResponseRefundPct = offer.NoResponseRefundPct,
             NoResponseExpertPct = offer.NoResponseExpertPct,
             NoDeliveryRefundPct = offer.NoDeliveryRefundPct,
