@@ -416,13 +416,13 @@
       "reasonMissing": "Enter a reason for the decision."
     },
     "escalation": {
-      "hint": "Disputes about professional judgment or a CIT conclusion go to an Authorized Reviewer. The decision deadline is extended by {{hours}} hours, once.",
+      "hint": "Disputes about professional judgment or a CIT conclusion go to an Authorized Reviewer. The decision deadline is extended by {{days}} working days, once.",
       "action": "Escalate to professional review",
       "done": "Escalated to professional review; the decision deadline was extended.",
-      "logged": "Escalated to an Authorized Reviewer; decision deadline extended by 48 hours",
+      "logged": "Escalated to an Authorized Reviewer; decision deadline extended by 2 working days",
       "toast": "Escalated to professional review",
       "confirmTitle": "Escalate for professional review?",
-      "confirmBody": "The dispute goes to an Authorized Reviewer and the decision deadline gains {{hours}} hours. This can be done only once.",
+      "confirmBody": "The dispute goes to an Authorized Reviewer and the decision deadline gains {{days}} working days. This can be done only once.",
       "failed": "Couldn't escalate. Try again."
     },
     "outcome": {
@@ -439,7 +439,7 @@
     },
     "introCount_one": "{{count}} dispute awaiting arbitration.",
     "introCount_other": "{{count}} disputes awaiting arbitration.",
-    "introRule": "Each dispute needs a decision within {{hours}} hours of opening, extended once by {{extra}} hours when escalated to an expert; the escrowed money stays locked until then.",
+    "introRule": "Each dispute needs a decision within {{days}} working days of opening, extended once by {{extra}} working days when escalated to an expert; the escrowed money stays locked until then.",
     "reason": {
       "DELIVERABLE_INCOMPLETE": "Delivery is incomplete",
       "OBLIGATION_NOT_MET": "Expert did not meet an obligation",
@@ -1115,7 +1115,7 @@
       "PLATFORM_FEE_TOO_SOON": "A change must be announced at least {{days}} days ahead. Pick a later date.",
       "PLATFORM_FEE_NOT_PENDING": "There is no pending change any more. Reload the page.",
       "LATE_RULE_INVALID": "Invalid late delivery rule: hours must be 0 to {{maxHours}}, the cancel hours not below the penalty hours, and the penalty plus the platform fee at most 100%.",
-      "NO_RESPONSE_RULE_INVALID": "Invalid client silence rule: hours must be 1 to {{maxHours}}, and refund plus expert at most 100%.",
+      "NO_RESPONSE_RULE_INVALID": "Invalid client silence rule: working days must be 1 to {{maxDays}}, and refund plus expert at most 100%.",
       "POLICY_REASON_REQUIRED": "Enter the reason for the change.",
       "POLICY_REASON_TOO_LONG": "The reason can be at most 1000 characters.",
       "NO_DELIVERY_RULE_INVALID": "The refund when the expert never delivers must be 0 to 100."
@@ -1140,10 +1140,10 @@
       "noDeliveryRefundPercent": "Refund when nothing is delivered (%)"
     },
     "noResponse": "Client silence",
-    "noResponseValue": "After {{hours}}h: {{refundPercent}}% back · expert {{expertPercent}}% · platform {{platformPercent}}%",
-    "noResponseHelp": "When the expert asks for more information and the client does not answer within these hours, the request closes and the fee splits: the refund percent goes back to the client, the expert percent to the expert, and the platform keeps the rest. Hours from 1 to {{maxHours}}; refund plus expert at most 100%. Requests already sent keep the rule they were sent with.",
+    "noResponseValue": "After {{days}} working days: {{refundPercent}}% back · expert {{expertPercent}}% · platform {{platformPercent}}%",
+    "noResponseHelp": "When the expert asks for more information and the client does not answer within these working days, the request closes and the fee splits: the refund percent goes back to the client, the expert percent to the expert, and the platform keeps the rest. Days from 1 to {{maxDays}}, not counting weekends and public holidays; refund plus expert at most 100%. Requests already sent keep the rule they were sent with.",
     "noResponseFields": {
-      "hours": "Hours to wait",
+      "days": "Working days to wait",
       "refundPercent": "Client refund %",
       "expertPercent": "Expert %"
     },
@@ -1155,12 +1155,12 @@
       "maxHours": "Hours cannot exceed {{max}}.",
       "cancelBeforePenalty": "Cancel hours must be at least the late penalty window.",
       "penaltyOver": "The late refund can be at most 100%.",
-      "hoursRange": "Hours must be between 1 and {{max}}.",
       "splitOver": "Client refund % plus expert % cannot exceed 100% (now {{sum}}%).",
       "platformKeeps": "The platform keeps {{percent}}%.",
       "dateTooSoon": "Pick {{date}} or later.",
       "lateIncident": "Late within the penalty hours: client {{client}}%, platform {{platform}}%, expert nothing.",
-      "noDeliveryOver": "The refund when nothing is delivered can be at most 100%."
+      "noDeliveryOver": "The refund when nothing is delivered can be at most 100%.",
+      "daysRange": "Working days must be between 1 and {{max}}."
     },
     "review": "Review",
     "confirmSave": "Confirm and save",
@@ -1200,7 +1200,7 @@
       "late": "Up to {{hours}}h late",
       "lateMore": "{{from}}–{{to}}h late",
       "cancel": "Undelivered after {{hours}}h",
-      "silence": "Client silent for {{hours}}h",
+      "silence": "Client silent for {{days}} working days",
       "preview": "Split after saving",
       "silenceIndependent": "Set on its own; does not follow the platform fee",
       "previewStale": "Current split (the new value is not valid yet)"

@@ -8,7 +8,7 @@ import { AdminLayout } from '@/app/layouts/admin/AdminLayout'
 import { useAdminNav } from '@/app/layouts/admin/useAdminNav'
 import {
   DISPUTE_RESOLVED,
-  DISPUTE_ESCALATION_HOURS, DISPUTE_SLA_HOURS,
+  DISPUTE_ESCALATION_DAYS, DISPUTE_SLA_DAYS,
 } from '../../features/disputes-escrow/constants'
 import { useDisputes } from '../../features/disputes-escrow/hooks/useDispute'
 import {
@@ -56,8 +56,8 @@ export default function AdminDisputesPage() {
               <>{t('disputes.introCount', { count: openCount })} </>
             )}
             {t('disputes.introRule', {
-              hours: DISPUTE_SLA_HOURS,
-              extra: DISPUTE_ESCALATION_HOURS,
+              days: DISPUTE_SLA_DAYS,
+              extra: DISPUTE_ESCALATION_DAYS,
             })}
           </>
         }

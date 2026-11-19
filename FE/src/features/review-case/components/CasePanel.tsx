@@ -11,7 +11,7 @@ import {
   TriangleAlert,
 } from 'lucide-react'
 import { FormField } from '@/components/ui/forms/form-field'
-import { DISPUTE_SLA_HOURS } from '@/features/disputes-escrow/constants'
+import { DISPUTE_SLA_DAYS } from '@/features/disputes-escrow/constants'
 import { cn } from '@/lib/utils'
 import type { ReviewCase, TaskCode } from '../types'
 import { Countdown, Deadline, FilePicker } from './CaseUi'
@@ -449,7 +449,7 @@ export function CasePanel({
             </dl>
           )}
           <p className="text-fg-muted max-w-[65ch] text-sm">
-            {t('panel.DISPUTED.sla', { hours: DISPUTE_SLA_HOURS })}{' '}
+            {t('panel.DISPUTED.sla', { days: DISPUTE_SLA_DAYS })}{' '}
             {t('panel.DISPUTED.escalation')}
           </p>
           {actions.withdrawDispute && (
@@ -563,7 +563,7 @@ export function CasePanel({
                 </dd>
               </dl>
               <p className="text-fg-muted max-w-[65ch] text-sm">
-                {t('panel.DISPUTED.sla', { hours: DISPUTE_SLA_HOURS })}
+                {t('panel.DISPUTED.sla', { days: DISPUTE_SLA_DAYS })}
               </p>
             </>
           )}

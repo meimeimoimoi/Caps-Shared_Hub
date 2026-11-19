@@ -53,9 +53,10 @@ export const outcomeOf = (refundPct: number | null) =>
 function ruleOf(d: ReviewCaseDto, dispute?: DisputeDto | null): SettlementRule {
   switch (d.status) {
     case 'COMPLETED':
-      return 'USER_ACCEPTED'
     case 'AUTO_CONFIRMED':
-      return 'AUTO_CONFIRMED'
+      // Only a late delivery refunds part of an accepted case
+      if (d.settlement && d.settlement.clientRefund > 0) return 'LATE_DELIVERY'
+      return d.status === 'COMPLETED' ? 'USER_ACCEPTED' : 'AUTO_CONFIRMED'
     case 'RESOLVED':
       return outcomeOf(dispute?.refundPct ?? null)
     case 'TERMINATED':
