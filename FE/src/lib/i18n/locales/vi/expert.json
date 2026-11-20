@@ -767,7 +767,7 @@
     "FINAL_APPROVAL_PENDING": "Đang thẩm định năng lực cho dịch vụ này.",
     "COMPETENCY_FAILED": "Chưa đạt đánh giá năng lực cho dịch vụ này.",
     "SERVICE_SUSPENDED": "Dịch vụ đang tạm ngưng.",
-    "PRICING_PENDING": "Chưa có giá dịch vụ được duyệt.",
+    "PRICING_PENDING": "Chưa có giá hợp lệ: hãy đặt giá trong khung hiện hành.",
     "PRICING_IN_REVIEW": "Giá mới đang chờ quản trị viên duyệt.",
     "REQUESTS_TURNED_OFF": "Bạn đang tắt nhận yêu cầu cho dịch vụ này.",
     "CAPACITY_NOT_SET": "Chưa đặt số hồ sơ làm cùng lúc.",

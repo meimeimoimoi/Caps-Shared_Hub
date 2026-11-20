@@ -768,7 +768,7 @@
     "FINAL_APPROVAL_PENDING": "Your competency for this service is being assessed.",
     "COMPETENCY_FAILED": "Competency review not passed for this service.",
     "SERVICE_SUSPENDED": "This service is suspended.",
-    "PRICING_PENDING": "No approved price yet.",
+    "PRICING_PENDING": "No valid price: set one within the current range.",
     "PRICING_IN_REVIEW": "A new price is waiting for an administrator.",
     "REQUESTS_TURNED_OFF": "You turned off new requests for this service.",
     "CAPACITY_NOT_SET": "Capacity not set yet.",

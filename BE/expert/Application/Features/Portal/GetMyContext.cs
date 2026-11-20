@@ -27,6 +27,7 @@ public sealed class GetMyContextHandler(
     IQualificationRepository qualifications,
     IServiceOfferingRepository offerings,
     IServiceCatalogRepository catalog,
+    IExpertPolicyProvider policies,
     TimeProvider clock
 ) : IQueryHandler<GetMyContextQuery, ExpertContextResponse>
 {
@@ -45,6 +46,7 @@ public sealed class GetMyContextHandler(
             profile == null ? [] : await qualifications.ListLatestByProfileAsync(profile.Id, ct);
         var prices = profile == null ? [] : await offerings.ListAsync([profile.Id], ct);
         var services = await catalog.ListActiveAsync(ct);
+        var policy = await policies.GetPricingAsync(ct);
         var now = clock.GetUtcNow();
         // The expert's own token is the freshest account status
         var accountActive = query.AccountStatus == ActiveAccount;
@@ -60,7 +62,8 @@ public sealed class GetMyContextHandler(
                     qualification,
                     prices.FirstOrDefault(x => x.ServiceCode == service.Code),
                     accountActive,
-                    capacitySet
+                    capacitySet,
+                    policy
                 );
             })
             .ToArray();
@@ -94,7 +97,8 @@ public sealed class GetMyContextHandler(
         ExpertServiceQualification? qualification,
         ServiceOffering? offering,
         bool accountActive,
-        bool capacitySet
+        bool capacitySet,
+        PricingPolicy policy
     )
     {
         var accepting = qualification?.AcceptingRequests == true;
@@ -105,7 +109,7 @@ public sealed class GetMyContextHandler(
                     qualification.Status,
                     accountActive,
                     service.IsActive,
-                    offering != null,
+                    offering != null && policy.Allows(offering.Fee),
                     accepting,
                     capacitySet
                 );
