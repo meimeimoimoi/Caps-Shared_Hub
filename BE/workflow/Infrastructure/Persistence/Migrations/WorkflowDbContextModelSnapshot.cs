@@ -602,9 +602,21 @@ namespace Caps.Workflow.Infrastructure.Persistence.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("id");
 
+                    b.Property<long>("ChatCreditCost")
+                        .HasColumnType("bigint")
+                        .HasColumnName("chat_credit_cost");
+
+                    b.Property<long>("DraftCreditCost")
+                        .HasColumnType("bigint")
+                        .HasColumnName("draft_credit_cost");
+
                     b.Property<bool>("Enabled")
                         .HasColumnType("boolean")
                         .HasColumnName("enabled");
+
+                    b.Property<int>("InitialFreeQuota")
+                        .HasColumnType("integer")
+                        .HasColumnName("initial_free_quota");
 
                     b.Property<DateTimeOffset>("UpdatedAt")
                         .HasColumnType("timestamp with time zone")

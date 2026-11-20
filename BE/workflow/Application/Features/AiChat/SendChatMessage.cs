@@ -25,7 +25,6 @@ public static class SendChatMessage
         IChatMessageRepository chatMessageRepository,
         IRagQueryClient ragQueryClient,
         AiCreditChargeService aiCreditChargeService,
-        AiBillingSettings aiBillingSettings,
         IUnitOfWork unitOfWork,
         TimeProvider timeProvider
     ) : ICommandHandler<SendChatMessageCommand, SendChatMessageResultDto>
@@ -74,7 +73,6 @@ public static class SendChatMessage
                 chatMessageRepository,
                 ragQueryClient,
                 aiCreditChargeService,
-                aiBillingSettings,
                 unitOfWork,
                 timeProvider,
                 ct

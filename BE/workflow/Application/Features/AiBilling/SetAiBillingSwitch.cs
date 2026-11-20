@@ -1,5 +1,6 @@
 using Caps.Common.Application;
 using Caps.Workflow.Application.Abstractions;
+using Caps.Workflow.Application.Common;
 using Caps.Workflow.Application.DTOs.Responses;
 using Caps.Workflow.Domain.Workspace;
 
@@ -14,6 +15,7 @@ public sealed record SetAiBillingSwitchCommand(Guid AdminUserId, bool Enabled);
 /// </summary>
 public sealed class SetAiBillingSwitchHandler(
     IAiBillingSwitchRepository switches,
+    AiBillingSettings settings,
     IUnitOfWork unitOfWork,
     TimeProvider clock
 ) : ICommandHandler<SetAiBillingSwitchCommand, AiBillingSwitchResponse>
@@ -27,7 +29,14 @@ public sealed class SetAiBillingSwitchHandler(
         var stored = await switches.FindAsync(ct);
         if (stored is null)
         {
-            stored = AiBillingSwitch.Create(command.Enabled, command.AdminUserId, now);
+            stored = AiBillingSwitch.Create(
+                command.Enabled,
+                settings.ChatCreditCost,
+                settings.DraftCreditCost,
+                settings.InitialFreeQuota,
+                command.AdminUserId,
+                now
+            );
             switches.Add(stored);
         }
         else
@@ -36,6 +45,6 @@ public sealed class SetAiBillingSwitchHandler(
         }
         // shortcut: two admins setting it for the very first time at once fail one save; a retry updates the row
         await unitOfWork.SaveChangesAsync(ct);
-        return AiBillingSwitchResponse.From(stored, command.Enabled);
+        return AiBillingSwitchResponse.From(stored, settings);
     }
 }

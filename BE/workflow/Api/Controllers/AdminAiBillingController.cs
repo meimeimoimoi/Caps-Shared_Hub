@@ -15,8 +15,8 @@ public sealed class AdminAiBillingController(ICurrentUser currentUser) : Control
 {
     private Guid UserId => currentUser.RequireUserId();
 
-    /// <summary>Returns whether paid AI is on.</summary>
-    /// <remarks>updatedAt and updatedBy are null while the server setting (AiBilling:Enabled) still applies.</remarks>
+    /// <summary>Returns whether paid AI is on and the AI prices.</summary>
+    /// <remarks>updatedAt and updatedBy are null while the server settings (AiBilling) still apply.</remarks>
     /// <response code="200">The switch.</response>
     /// <response code="401">Missing, invalid or revoked access token.</response>
     /// <response code="403">The account lacks the PricingManage permission.</response>
@@ -44,6 +44,28 @@ public sealed class AdminAiBillingController(ICurrentUser currentUser) : Control
     public async Task<IActionResult> Set(
         SetAiBillingSwitchRequest r,
         [FromServices] ICommandHandler<SetAiBillingSwitchCommand, AiBillingSwitchResponse> handler,
+        CancellationToken ct
+    )
+    {
+        var billing = await handler.HandleAsync(r.ToCommand(UserId), ct);
+        return Ok(ApiResponse<AiBillingSwitchResponse>.Ok(billing));
+    }
+
+    /// <summary>Sets what AI chat and drafting cost, and how many free uses a new account gets.</summary>
+    /// <remarks>
+    /// chatCreditCost / draftCreditCost: credits held per answered chat question / per AI draft once the free
+    /// uses run out; 0 makes it free. initialFreeQuota: free AI uses an account gets on its first AI request;
+    /// accounts that already used AI keep their balance. Applies from the next AI request, without a restart.
+    /// </remarks>
+    /// <response code="200">The saved switch and prices.</response>
+    /// <response code="400">A value is missing or negative.</response>
+    /// <response code="401">Missing, invalid or revoked access token.</response>
+    /// <response code="403">The account lacks the PricingManage permission.</response>
+    /// <response code="503">SESSION_CHECK_UNAVAILABLE: the session could not be checked.</response>
+    [HttpPut("prices"), RequireSessionCheck]
+    public async Task<IActionResult> SetPrices(
+        SetAiPricesRequest r,
+        [FromServices] ICommandHandler<SetAiPricesCommand, AiBillingSwitchResponse> handler,
         CancellationToken ct
     )
     {

@@ -5,10 +5,10 @@ using Caps.Workflow.Application.DTOs.Responses;
 
 namespace Caps.Workflow.Application.Features.AiBilling;
 
-/// <summary>Reads the paid-AI switch.</summary>
+/// <summary>Reads the paid-AI switch and the AI prices.</summary>
 public sealed record GetAiBillingSwitchQuery;
 
-/// <summary>The stored switch, or the AiBilling:Enabled setting before an admin first sets it.</summary>
+/// <summary>The stored switch and prices, or the AiBilling settings before an admin first sets them.</summary>
 public sealed class GetAiBillingSwitchHandler(
     IAiBillingSwitchRepository switches,
     AiBillingSettings settings
@@ -20,6 +20,6 @@ public sealed class GetAiBillingSwitchHandler(
     )
     {
         var stored = await switches.FindAsync(ct);
-        return AiBillingSwitchResponse.From(stored, settings.Enabled);
+        return AiBillingSwitchResponse.From(stored, settings);
     }
 }

@@ -130,6 +130,23 @@ public sealed class GenerateDraftTests
     }
 
     [Fact]
+    public async Task Charges_the_draft_price_an_admin_set()
+    {
+        var store = new Store(publishedTemplate: null)
+        {
+            WalletBalance = 5_000,
+            BillingSwitch = AiBillingSwitch.Create(true, 1_000, 700, 10, Guid.NewGuid(), Now),
+        };
+        store.Quotas.Add(AiQuota.Create(Owner, 0, Now));
+        var doc = store.AddDocument(Owner, templateId: null);
+        store.AddSnapshot(doc, "{}");
+
+        await CreateHandler(store).HandleAsync(new(doc.Id, Owner, null, null, null), default);
+
+        Assert.Equal(4_300, store.WalletBalance);
+    }
+
+    [Fact]
     public async Task Releases_held_credits_when_ai_drafting_fails()
     {
         var store = new Store(publishedTemplate: null) { WalletBalance = 5_000, FailDraft = true };
@@ -207,17 +224,7 @@ public sealed class GenerateDraftTests
     {
         var billing = settings ?? EnabledBillingSettings;
         var chargeService = new AiCreditChargeService(store, store, store, store, billing);
-        return new(
-            store,
-            store,
-            store,
-            store,
-            store,
-            chargeService,
-            billing,
-            store,
-            new FixedClock()
-        );
+        return new(store, store, store, store, store, chargeService, store, new FixedClock());
     }
 
     private sealed class FixedClock : TimeProvider

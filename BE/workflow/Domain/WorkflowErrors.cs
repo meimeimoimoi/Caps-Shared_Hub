@@ -142,6 +142,13 @@ public static class WorkflowErrors
             $"Messages cannot be sent while the case is {status}."
         );
 
+    public static AppException AiPriceInvalid() =>
+        new(
+            ErrorType.Validation,
+            "AI_PRICE_INVALID",
+            "AI prices and the free quota must not be negative."
+        );
+
     public static AppException MessageEmpty() =>
         new(ErrorType.Validation, "MESSAGE_EMPTY", "Message must not be empty.");
 

@@ -19,7 +19,6 @@ internal static class ChatTurnRunner
         IChatMessageRepository chatMessageRepository,
         IRagQueryClient ragQueryClient,
         AiCreditChargeService aiCreditChargeService,
-        AiBillingSettings aiBillingSettings,
         IUnitOfWork unitOfWork,
         TimeProvider timeProvider,
         CancellationToken ct
@@ -29,7 +28,7 @@ internal static class ChatTurnRunner
         var note = $"AI chat question in conversation {conversation.Id}";
         var reservation = await aiCreditChargeService.ReserveAsync(
             userId,
-            aiBillingSettings.ChatCreditCost,
+            AiChargeKind.Chat,
             note,
             now,
             ct

@@ -12,6 +12,13 @@ public enum AiChargeMode
     Credit,
 }
 
+/// <summary>The AI operation being charged; each has its own price.</summary>
+public enum AiChargeKind
+{
+    Chat,
+    Draft,
+}
+
 /// <summary>Tracks the quota row and any held billing credit reserved for a single AI operation.</summary>
 public sealed class AiCreditReservation
 {
@@ -47,21 +54,23 @@ public sealed class AiCreditChargeService(
 {
     public async Task<AiCreditReservation> ReserveAsync(
         Guid userId,
-        long creditCost,
+        AiChargeKind kind,
         string holdNote,
         DateTimeOffset now,
         CancellationToken ct
     )
     {
+        // The admin's stored switch and prices win; the settings only apply until an admin first sets them
+        var stored = await billingSwitch.FindAsync(ct);
         var quota = await aiQuotaRepository.GetByUserIdAsync(userId, ct);
         if (quota is null)
         {
-            quota = AiQuota.Create(userId, settings.InitialFreeQuota, now);
+            var freeQuota = stored?.InitialFreeQuota ?? settings.InitialFreeQuota;
+            quota = AiQuota.Create(userId, freeQuota, now);
             await aiQuotaRepository.AddAsync(quota, ct);
         }
 
-        // The admin switch wins; the setting only applies until an admin first sets it
-        var enabled = (await billingSwitch.FindAsync(ct))?.Enabled ?? settings.Enabled;
+        var enabled = stored?.Enabled ?? settings.Enabled;
         if (!enabled)
         {
             return new AiCreditReservation(AiChargeMode.Free, quota, Guid.Empty, 0);
@@ -72,6 +81,10 @@ public sealed class AiCreditChargeService(
             return new AiCreditReservation(AiChargeMode.Quota, quota, Guid.Empty, 0);
         }
 
+        var creditCost =
+            kind == AiChargeKind.Draft
+                ? stored?.DraftCreditCost ?? settings.DraftCreditCost
+                : stored?.ChatCreditCost ?? settings.ChatCreditCost;
         if (creditCost <= 0)
         {
             return new AiCreditReservation(AiChargeMode.Free, quota, Guid.Empty, 0);

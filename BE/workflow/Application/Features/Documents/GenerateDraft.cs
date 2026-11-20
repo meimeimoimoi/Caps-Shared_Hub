@@ -42,7 +42,6 @@ public static class GenerateDraft
         Abstractions.ITemplateRepository templateRepository,
         IAiDraftingClient aiDraftingClient,
         AiCreditChargeService aiCreditChargeService,
-        AiBillingSettings aiBillingSettings,
         IUnitOfWork unitOfWork,
         TimeProvider timeProvider
     ) : ICommandHandler<GenerateDraftCommand, DocumentVersionDetailDto>
@@ -137,7 +136,7 @@ public static class GenerateDraft
                 var billingNote = $"AI draft for document {document.Id}";
                 var reservation = await aiCreditChargeService.ReserveAsync(
                     command.UserId,
-                    aiBillingSettings.DraftCreditCost,
+                    AiChargeKind.Draft,
                     billingNote,
                     now,
                     ct

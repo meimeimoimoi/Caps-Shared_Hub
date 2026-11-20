@@ -154,6 +154,9 @@ public sealed class WorkflowDbContext(DbContextOptions<WorkflowDbContext> option
             e.HasKey(x => x.Id);
             e.Property(x => x.Id).HasColumnName("id").ValueGeneratedNever();
             e.Property(x => x.Enabled).HasColumnName("enabled").IsRequired();
+            e.Property(x => x.ChatCreditCost).HasColumnName("chat_credit_cost").IsRequired();
+            e.Property(x => x.DraftCreditCost).HasColumnName("draft_credit_cost").IsRequired();
+            e.Property(x => x.InitialFreeQuota).HasColumnName("initial_free_quota").IsRequired();
             e.Property(x => x.UpdatedBy).HasColumnName("updated_by").IsRequired();
             e.Property(x => x.UpdatedAt).HasColumnName("updated_at").IsRequired();
         });

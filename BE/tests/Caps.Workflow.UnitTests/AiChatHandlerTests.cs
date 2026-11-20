@@ -149,7 +149,7 @@ public sealed class AiChatHandlerTests
     {
         var store = new Store
         {
-            BillingSwitch = AiBillingSwitch.Create(false, Guid.NewGuid(), Now),
+            BillingSwitch = AiBillingSwitch.Create(false, 1_000, 2_000, 10, Guid.NewGuid(), Now),
         };
         var conversation = store.AddConversation(Owner, "Tax question");
         store.Quotas.Add(AiQuota.Create(Owner, 0, Now));
@@ -159,6 +159,40 @@ public sealed class AiChatHandlerTests
 
         Assert.Empty(store.HoldCalls);
         Assert.Equal(AiUsagePaidWith.Free, Assert.Single(store.Usages).PaidWith);
+    }
+
+    [Fact]
+    public async Task The_admin_prices_replace_the_settings_for_credits_and_new_free_quotas()
+    {
+        var store = new Store
+        {
+            WalletBalance = 5_000,
+            BillingSwitch = AiBillingSwitch.Create(true, 300, 2_000, 3, Guid.NewGuid(), Now),
+        };
+        var newcomer = store.AddConversation(Owner, "First question");
+        await SendHandler(store)
+            .HandleAsync(new(newcomer.Id, Owner, "Question", Jan1, Dec31), default);
+
+        Assert.Equal(2, Assert.Single(store.Quotas).Balance);
+
+        store.Quotas[0].Deduct(2, Now);
+        await SendHandler(store)
+            .HandleAsync(new(newcomer.Id, Owner, "Question", Jan1, Dec31), default);
+
+        Assert.Equal(4_700, store.WalletBalance);
+    }
+
+    [Fact]
+    public void Ai_prices_must_not_be_negative()
+    {
+        var policy = AiBillingSwitch.Create(true, 1_000, 2_000, 10, Guid.NewGuid(), Now);
+
+        var ex = Assert.Throws<AppException>(() =>
+            policy.SetPrices(-1, 2_000, 10, Guid.NewGuid(), Now)
+        );
+
+        Assert.Equal("AI_PRICE_INVALID", ex.Code);
+        Assert.Equal(1_000, policy.ChatCreditCost);
     }
 
     [Fact]
@@ -365,7 +399,7 @@ public sealed class AiChatHandlerTests
     {
         var billing = settings ?? EnabledBillingSettings;
         var chargeService = new AiCreditChargeService(store, store, store, store, billing);
-        return new(store, store, store, chargeService, billing, store, new FixedClock());
+        return new(store, store, store, chargeService, store, new FixedClock());
     }
 
     private static ClarifyChatMessage.ClarifyChatMessageHandler ClarifyHandler(
@@ -375,7 +409,7 @@ public sealed class AiChatHandlerTests
     {
         var billing = settings ?? EnabledBillingSettings;
         var chargeService = new AiCreditChargeService(store, store, store, store, billing);
-        return new(store, store, store, chargeService, billing, store, new FixedClock());
+        return new(store, store, store, chargeService, store, new FixedClock());
     }
 
     private sealed class FixedClock : TimeProvider

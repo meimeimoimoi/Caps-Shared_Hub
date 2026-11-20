@@ -25,7 +25,6 @@ public static class ClarifyChatMessage
         IConversationRepository conversationRepository,
         IRagQueryClient ragQueryClient,
         AiCreditChargeService aiCreditChargeService,
-        AiBillingSettings aiBillingSettings,
         IUnitOfWork unitOfWork,
         TimeProvider timeProvider
     ) : ICommandHandler<ClarifyChatMessageCommand, SendChatMessageResultDto>
@@ -105,7 +104,6 @@ public static class ClarifyChatMessage
                 chatMessageRepository,
                 ragQueryClient,
                 aiCreditChargeService,
-                aiBillingSettings,
                 unitOfWork,
                 timeProvider,
                 ct
