@@ -183,7 +183,7 @@ public static class ExpertDecisionEmailTemplate
             "DELIVERY_OVERDUE" => new(
                 $"Hồ sơ quá hạn giao kết quả – {Brand}",
                 "Chuyên gia không giao kết quả đúng hạn",
-                "Chuyên gia không giao kết quả trong thời hạn cho phép. Toàn bộ phí đã được hoàn vào ví của bạn.",
+                "Chuyên gia không giao kết quả trong thời hạn cho phép. Phần phí được hoàn theo quy định đã chốt lúc đặt đã vào ví của bạn.",
                 "Xem hồ sơ"
             ),
             "RESOLVED" => new(
@@ -192,10 +192,16 @@ public static class ExpertDecisionEmailTemplate
                 "Quản trị hệ thống đã xem xét khiếu nại của bạn. Số tiền hoàn (nếu có) đã vào ví; chi tiết ở trong hồ sơ.",
                 "Xem kết quả"
             ),
+            "AUTO_CONFIRMED" => new(
+                $"Hồ sơ rà soát đã tự xác nhận hoàn tất – {Brand}",
+                "Hồ sơ đã hoàn tất",
+                "Hết hạn nghiệm thu nên hệ thống đã tự xác nhận kết quả. Phí được quyết toán theo tỉ lệ đã chốt lúc đặt; khoản hoàn (nếu có) đã vào ví của bạn.",
+                "Xem kết quả"
+            ),
             _ => new(
                 $"Hồ sơ rà soát đã kết thúc – {Brand}",
                 "Hồ sơ đã kết thúc",
-                "Hồ sơ kết thúc vì chưa nhận được thông tin bổ sung đúng hạn. Phần phí được hoàn theo quy định đã vào ví của bạn.",
+                "Hồ sơ kết thúc vì chưa nhận được thông tin bổ sung đúng hạn. Phí được quyết toán theo quy định đã chốt lúc đặt; chi tiết ở trong hồ sơ.",
                 "Xem hồ sơ"
             ),
         };
