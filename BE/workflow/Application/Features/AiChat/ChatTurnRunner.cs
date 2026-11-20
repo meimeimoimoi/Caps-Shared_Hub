@@ -32,7 +32,8 @@ internal static class ChatTurnRunner
             aiBillingSettings.ChatCreditCost,
             note,
             now,
-            ct
+            ct,
+            allowFreeQuota: true
         );
 
         try

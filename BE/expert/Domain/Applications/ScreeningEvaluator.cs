@@ -40,7 +40,7 @@ public static class ScreeningEvaluator
                 continue;
             }
 
-            if (ev.EvidenceType != EligibilityCriteria.LegalEligibility)
+            if (ev.RequiresAiExtraction)
             {
                 extractions.TryGetValue(ev.Id, out var ext);
                 if (IsUnreadableOrScan(ev, ext))
@@ -103,11 +103,7 @@ public static class ScreeningEvaluator
         DateTimeOffset now
     )
     {
-        if (
-            evidence.IsLink
-            || evidence.EvidenceType == EligibilityCriteria.LegalEligibility
-            || existingUnreadableEvidenceIds.Contains(evidence.Id)
-        )
+        if (!evidence.RequiresAiExtraction || existingUnreadableEvidenceIds.Contains(evidence.Id))
         {
             return null;
         }
@@ -118,8 +114,8 @@ public static class ScreeningEvaluator
     }
 
     /// <summary>
-    /// Evaluates the five AI comparison rules (2a–2e) deterministically from extracted document metadata.
-    /// EV-01 identity documents are never passed in or evaluated here.
+    /// Evaluates the five AI comparison rules (2a–2e) deterministically from extracted CV metadata.
+    /// Non-CV evidence files (EV-01..EV-05 and SUPPLEMENT) are never passed in or evaluated here.
     /// </summary>
     public static IReadOnlyList<ScreeningPoint> EvaluateAiChecks(
         ScreeningRun run,
@@ -132,13 +128,12 @@ public static class ScreeningEvaluator
         var today = DateOnly.FromDateTime(now.ToOffset(VietnamOffset).DateTime);
         var validFiles = extractedFiles
             .Where(x =>
-                !x.Evidence.IsLink
-                && x.Evidence.EvidenceType != EligibilityCriteria.LegalEligibility
+                x.Evidence.RequiresAiExtraction
                 && x.Extraction.Status == ExtractionOutcomes.Extracted
             )
             .ToArray();
 
-        // 2a: Name on CV or certificate differs from declared DisplayName (accent- and case-insensitive).
+        // 2a: Name on CV differs from declared DisplayName (accent- and case-insensitive).
         if (!string.IsNullOrWhiteSpace(snapshot.DisplayName))
         {
             var normalizedDeclared = NormalizeName(snapshot.DisplayName);

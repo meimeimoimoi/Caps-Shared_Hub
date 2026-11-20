@@ -161,7 +161,7 @@ public sealed record ReviewScreeningPointResponse(
     DateTimeOffset CreatedAt
 );
 
-/// <summary>One non-EV-01 evidence file's extracted Section 1 fields (never raw file content).</summary>
+/// <summary>One Gate 1 CV file's extracted Section 1 fields (never raw file content).</summary>
 public sealed record ReviewScreeningExtractionResponse(
     string EvidenceId,
     string EvidenceCode,

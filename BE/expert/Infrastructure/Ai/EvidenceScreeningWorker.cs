@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using Caps.Common.Application;
 using Caps.Expert.Application.Abstractions;
 using Caps.Expert.Application.Common;
@@ -11,7 +12,7 @@ using Microsoft.Extensions.Logging;
 namespace Caps.Expert.Infrastructure.Ai;
 
 /// <summary>
-/// Background worker that extracts uploaded non-EV-01 evidence files once via the internal ai-service
+/// Background worker that extracts uploaded Gate 1 CV files once via the internal ai-service
 /// and finalizes or times out active Gate 1 screening runs.
 /// </summary>
 public sealed class EvidenceScreeningWorker(
@@ -23,6 +24,27 @@ public sealed class EvidenceScreeningWorker(
 {
     private static readonly TimeSpan PollInterval = TimeSpan.FromSeconds(5);
     private static readonly TimeSpan StaleProcessingWindow = TimeSpan.FromMinutes(3);
+
+    /// <summary>Selects Gate 1 uploaded CV files awaiting extraction or recovery after a stale lock.</summary>
+    public static Expression<Func<ExpertEvidence, bool>> PendingExtractionFilter(
+        DateTimeOffset staleBefore
+    ) =>
+        x =>
+            x.QualificationId == null
+            && x.SourceUrl == null
+            && x.EvidenceType == ApplicationRules.CvCode
+            && (
+                x.ExtractionStatus == ExtractionStatuses.Pending
+                || (
+                    x.ExtractionStatus == ExtractionStatuses.Processing
+                    && x.ExtractedAt != null
+                    && x.ExtractedAt < staleBefore
+                )
+            );
+
+    /// <summary>Allows AI extraction strictly for Gate 1 CV evidence files.</summary>
+    public static bool IsExtractableEvidenceType(string? evidenceType) =>
+        evidenceType == ApplicationRules.CvCode;
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -55,19 +77,7 @@ public sealed class EvidenceScreeningWorker(
             var db = queryScope.ServiceProvider.GetRequiredService<ExpertDbContext>();
             pendingIds = await db
                 .ExpertEvidences.AsNoTracking()
-                .Where(x =>
-                    x.QualificationId == null
-                    && x.SourceUrl == null
-                    && x.EvidenceType != EligibilityCriteria.LegalEligibility
-                    && (
-                        x.ExtractionStatus == ExtractionStatuses.Pending
-                        || (
-                            x.ExtractionStatus == ExtractionStatuses.Processing
-                            && x.ExtractedAt != null
-                            && x.ExtractedAt < staleBefore
-                        )
-                    )
-                )
+                .Where(PendingExtractionFilter(staleBefore))
                 .OrderBy(x => x.CreatedAt)
                 .Select(x => x.Id)
                 .Take(10)
@@ -128,7 +138,7 @@ public sealed class EvidenceScreeningWorker(
                 x.EvidenceType,
             })
             .SingleOrDefaultAsync(ct);
-        if (info == null || info.EvidenceType == EligibilityCriteria.LegalEligibility)
+        if (info == null || !IsExtractableEvidenceType(info.EvidenceType))
             return;
 
         try

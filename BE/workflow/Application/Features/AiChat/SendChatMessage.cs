@@ -19,7 +19,7 @@ public static class SendChatMessage
         DateOnly? PeriodEnd
     );
 
-    /// <summary>Handles quota verification, optional credit hold fallback, RAG query execution, and persistence.</summary>
+    /// <summary>Handles optional credit hold fallback, RAG query execution, usage tracking, and persistence.</summary>
     public sealed class SendChatMessageHandler(
         IConversationRepository conversationRepository,
         IChatMessageRepository chatMessageRepository,

@@ -12,6 +12,7 @@
     <Using Include="Xunit" />
     <ProjectReference Include="..\..\expert\Domain\Domain.csproj" />
     <ProjectReference Include="..\..\expert\Application\Application.csproj" />
+    <ProjectReference Include="..\..\expert\Infrastructure\Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

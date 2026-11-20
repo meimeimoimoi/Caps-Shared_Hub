@@ -61,6 +61,8 @@
     "copy": "Sao chép câu trả lời",
     "copied": "Đã sao chép câu trả lời",
     "copyFailed": "Không sao chép được. Hãy chọn và sao chép thủ công.",
+    "createDraft": "Tạo bản nháp",
+    "clarificationNeeded": "Cần làm rõ thêm",
     "sendToExpert": "Gửi Chuyên gia thẩm định",
     "sendToExpertSoon": "Sắp có: gửi câu trả lời này cho Chuyên gia đã xác minh.",
     "assistantName": "Trợ lý Shared Hub",
@@ -77,7 +79,13 @@
     "sending": "Đang gửi…"
   },
   "errors": {
-    "sendFailed": "Không nhận được câu trả lời. Câu hỏi của bạn vẫn còn trong ô nhập, hãy thử gửi lại."
+    "sendFailed": "Không nhận được câu trả lời. Câu hỏi của bạn vẫn còn trong ô nhập, hãy thử gửi lại.",
+    "insufficientCredits": "Số dư Credit trong ví không đủ cho lượt hỏi AI này. Vui lòng nạp thêm Credit để tiếp tục.",
+    "transferFailed": "Không thể chuyển nội dung tra cứu sang soạn thảo lúc này."
+  },
+  "draftSuggestion": {
+    "title": "Ngữ cảnh đã chuyển từ Trợ lý AI",
+    "detail": "Chọn mẫu văn bản phù hợp bên dưới để tiếp tục soạn thảo cho chủ đề “{{title}}”."
   },
   "demoNotice": "Chế độ minh họa · Chưa kết nối kho tri thức. Hội thoại và trích dẫn là dữ liệu mẫu."
 }

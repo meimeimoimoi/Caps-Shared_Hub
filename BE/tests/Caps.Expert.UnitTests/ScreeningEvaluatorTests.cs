@@ -1,4 +1,5 @@
 using Caps.Expert.Domain.Applications;
+using Caps.Expert.Infrastructure.Ai;
 
 namespace Caps.Expert.UnitTests;
 
@@ -32,18 +33,9 @@ public sealed class ScreeningEvaluatorTests
         );
 
     [Fact]
-    public void Ev01_links_and_competency_files_never_require_ai_extraction()
+    public void Only_gate1_cv_files_require_ai_extraction()
     {
         var app = MakeApplication();
-        var ev01 = ExpertEvidence.Create(
-            app,
-            ApplicantId,
-            "EV-01",
-            "id.jpg",
-            "image/jpeg",
-            128,
-            Now
-        );
         var cv = ExpertEvidence.Create(
             app,
             ApplicantId,
@@ -53,6 +45,34 @@ public sealed class ScreeningEvaluatorTests
             256,
             Now
         );
+        var ev01 = ExpertEvidence.Create(
+            app,
+            ApplicantId,
+            "EV-01",
+            "id.jpg",
+            "image/jpeg",
+            128,
+            Now
+        );
+        var ev02 = ExpertEvidence.Create(
+            app,
+            ApplicantId,
+            "EV-02",
+            "cert.pdf",
+            "application/pdf",
+            256,
+            Now
+        );
+        var supplement = ExpertEvidence.Create(
+            app,
+            ApplicantId,
+            "SUPPLEMENT",
+            "extra_id.jpg",
+            "image/jpeg",
+            128,
+            Now
+        );
+        supplement.AssignGroup("CV");
         var link = ExpertEvidence.CreateFromUrl(
             app,
             ApplicantId,
@@ -61,16 +81,124 @@ public sealed class ScreeningEvaluatorTests
             Now
         );
 
-        Assert.False(ev01.RequiresAiExtraction);
-        Assert.Null(ev01.ExtractionStatus);
         Assert.True(cv.RequiresAiExtraction);
         Assert.Equal(ExtractionStatuses.Pending, cv.ExtractionStatus);
-        Assert.False(link.RequiresAiExtraction);
-        Assert.Null(link.ExtractionStatus);
+        foreach (var nonCv in new[] { ev01, ev02, supplement, link })
+        {
+            Assert.False(nonCv.RequiresAiExtraction);
+            Assert.Null(nonCv.ExtractionStatus);
+        }
     }
 
     [Fact]
-    public void System_checks_flag_images_links_near_threshold_and_unclassified_supplements()
+    public void Worker_extraction_filter_allows_only_gate1_cv_files_and_excludes_supplements()
+    {
+        var app = MakeApplication();
+        var staleBefore = Now.AddMinutes(-3);
+
+        var cvPending = ExpertEvidence.Create(
+            app,
+            ApplicantId,
+            ApplicationRules.CvCode,
+            "cv.pdf",
+            "application/pdf",
+            256,
+            Now
+        );
+        var cvStaleProcessing = ExpertEvidence.Create(
+            app,
+            ApplicantId,
+            ApplicationRules.CvCode,
+            "cv-stale.pdf",
+            "application/pdf",
+            256,
+            Now
+        );
+        cvStaleProcessing.MarkExtractionProcessing(staleBefore.AddMinutes(-1));
+
+        var cvActiveProcessing = ExpertEvidence.Create(
+            app,
+            ApplicantId,
+            ApplicationRules.CvCode,
+            "cv-active.pdf",
+            "application/pdf",
+            256,
+            Now
+        );
+        cvActiveProcessing.MarkExtractionProcessing(Now.AddSeconds(-30));
+
+        var ev01 = ExpertEvidence.Create(
+            app,
+            ApplicantId,
+            EligibilityCriteria.LegalEligibility,
+            "cccd.jpg",
+            "image/jpeg",
+            128,
+            Now
+        );
+        var ev02 = ExpertEvidence.Create(
+            app,
+            ApplicantId,
+            EligibilityCriteria.ProfessionalQualification,
+            "cert.pdf",
+            "application/pdf",
+            128,
+            Now
+        );
+        var supplement = ExpertEvidence.Create(
+            app,
+            ApplicantId,
+            ApplicationRules.SupplementCode,
+            "supplement_cccd.jpg",
+            "image/jpeg",
+            128,
+            Now
+        );
+        var supplementAssignedCv = ExpertEvidence.Create(
+            app,
+            ApplicantId,
+            ApplicationRules.SupplementCode,
+            "supplement_cv.pdf",
+            "application/pdf",
+            128,
+            Now
+        );
+        supplementAssignedCv.AssignGroup(ApplicationRules.CvCode);
+        var cvLink = ExpertEvidence.CreateFromUrl(
+            app,
+            ApplicantId,
+            ApplicationRules.CvCode,
+            "https://example.com/cv",
+            Now
+        );
+
+        var predicate = EvidenceScreeningWorker.PendingExtractionFilter(staleBefore).Compile();
+
+        Assert.True(predicate(cvPending));
+        Assert.True(predicate(cvStaleProcessing));
+        Assert.False(predicate(cvActiveProcessing));
+        Assert.False(predicate(ev01));
+        Assert.False(predicate(ev02));
+        Assert.False(predicate(supplement));
+        Assert.False(predicate(supplementAssignedCv));
+        Assert.False(predicate(cvLink));
+
+        Assert.True(EvidenceScreeningWorker.IsExtractableEvidenceType(ApplicationRules.CvCode));
+        Assert.False(
+            EvidenceScreeningWorker.IsExtractableEvidenceType(EligibilityCriteria.LegalEligibility)
+        );
+        Assert.False(
+            EvidenceScreeningWorker.IsExtractableEvidenceType(
+                EligibilityCriteria.ProfessionalQualification
+            )
+        );
+        Assert.False(
+            EvidenceScreeningWorker.IsExtractableEvidenceType(ApplicationRules.SupplementCode)
+        );
+    }
+
+    [Fact]
+    public void System_checks_flag_cv_images_links_near_threshold_and_unclassified_supplements()
     {
         var app = MakeApplication();
         var run = ScreeningRun.Start(
@@ -81,6 +209,15 @@ public sealed class ScreeningEvaluatorTests
             ApplicantId,
             Now,
             TimeSpan.FromMinutes(10)
+        );
+        var imageCv = ExpertEvidence.Create(
+            app,
+            ApplicantId,
+            "CV",
+            "cv.png",
+            "image/png",
+            200,
+            Now
         );
         var imageCert = ExpertEvidence.Create(
             app,
@@ -111,8 +248,8 @@ public sealed class ScreeningEvaluatorTests
             app,
             ApplicantId,
             "SUPPLEMENT",
-            "extra.pdf",
-            "application/pdf",
+            "extra_id.jpg",
+            "image/jpeg",
             200,
             Now
         );
@@ -120,7 +257,7 @@ public sealed class ScreeningEvaluatorTests
         var points = ScreeningEvaluator.EvaluateSystemChecks(
             run,
             MakeSnapshot(years: 6),
-            [imageCert, ev01Photo, externalLink, supplement],
+            [imageCv, imageCert, ev01Photo, externalLink, supplement],
             new Dictionary<Guid, EvidenceExtraction>(),
             new HashSet<Guid>(),
             minYearsExperience: 5,
@@ -130,9 +267,14 @@ public sealed class ScreeningEvaluatorTests
 
         Assert.Contains(
             points,
-            p => p.Code == ScreeningPointCodes.SysUnreadableOrScan && p.EvidenceId == imageCert.Id
+            p => p.Code == ScreeningPointCodes.SysUnreadableOrScan && p.EvidenceId == imageCv.Id
         );
+        Assert.DoesNotContain(points, p => p.EvidenceId == imageCert.Id);
         Assert.DoesNotContain(points, p => p.EvidenceId == ev01Photo.Id);
+        Assert.DoesNotContain(
+            points,
+            p => p.Code == ScreeningPointCodes.SysUnreadableOrScan && p.EvidenceId == supplement.Id
+        );
         Assert.Contains(
             points,
             p => p.Code == ScreeningPointCodes.SysExternalLink && p.EvidenceId == externalLink.Id
@@ -185,11 +327,29 @@ public sealed class ScreeningEvaluatorTests
             100,
             Now
         );
+        var wrongCv = ExpertEvidence.Create(
+            app,
+            ApplicantId,
+            "CV",
+            "not_a_cv.pdf",
+            "application/pdf",
+            100,
+            Now
+        );
         var ev02 = ExpertEvidence.Create(
             app,
             ApplicantId,
             "EV-02",
-            "wrong_cv.pdf",
+            "ignored_cert.pdf",
+            "application/pdf",
+            100,
+            Now
+        );
+        var supplement = ExpertEvidence.Create(
+            app,
+            ApplicantId,
+            "SUPPLEMENT",
+            "ignored_supplement.pdf",
             "application/pdf",
             100,
             Now
@@ -207,14 +367,14 @@ public sealed class ScreeningEvaluatorTests
             [new("Firm A", "Tax", 2022, 1, 2024, 12, false, true)],
             []
         );
-        var ev02Extraction = new EvidenceExtraction(
+        var wrongCvExtraction = new EvidenceExtraction(
             ExtractionOutcomes.Extracted,
             false,
             false,
             false,
             null,
             "Trần Thị Khác",
-            ExtractedDocumentTypes.Cv,
+            ExtractedDocumentTypes.TaxCertificate,
             [],
             [],
             [
@@ -226,6 +386,18 @@ public sealed class ScreeningEvaluatorTests
                 ),
             ]
         );
+        var ignoredNonCvExtraction = new EvidenceExtraction(
+            ExtractionOutcomes.Extracted,
+            false,
+            false,
+            false,
+            null,
+            "Tên khác hẳn",
+            ExtractedDocumentTypes.Other,
+            [],
+            [],
+            []
+        );
 
         var points = ScreeningEvaluator.EvaluateAiChecks(
             run,
@@ -234,29 +406,36 @@ public sealed class ScreeningEvaluatorTests
                 years: 8,
                 fields: ["CORPORATE_INCOME_TAX", "AUDIT"]
             ),
-            [(cv, cvExtraction), (ev02, ev02Extraction)],
+            [
+                (cv, cvExtraction),
+                (wrongCv, wrongCvExtraction),
+                (ev02, ignoredNonCvExtraction),
+                (supplement, ignoredNonCvExtraction),
+            ],
             Now
         );
 
-        // CV name matches accent-insensitively, while ev02 name mismatches.
+        // CV name matches accent-insensitively, while mismatched CV triggers AI checks and non-CV files are ignored.
         Assert.DoesNotContain(
             points,
             p => p.Code == ScreeningPointCodes.AiNameMismatch && p.EvidenceId == cv.Id
         );
         Assert.Contains(
             points,
-            p => p.Code == ScreeningPointCodes.AiNameMismatch && p.EvidenceId == ev02.Id
+            p => p.Code == ScreeningPointCodes.AiNameMismatch && p.EvidenceId == wrongCv.Id
         );
         Assert.Contains(points, p => p.Code == ScreeningPointCodes.AiExperienceMismatch);
         Assert.Contains(
             points,
-            p => p.Code == ScreeningPointCodes.AiDocTypeMismatch && p.EvidenceId == ev02.Id
+            p => p.Code == ScreeningPointCodes.AiDocTypeMismatch && p.EvidenceId == wrongCv.Id
         );
         Assert.Contains(
             points,
-            p => p.Code == ScreeningPointCodes.AiCertificateExpired && p.EvidenceId == ev02.Id
+            p => p.Code == ScreeningPointCodes.AiCertificateExpired && p.EvidenceId == wrongCv.Id
         );
         Assert.Contains(points, p => p.Code == ScreeningPointCodes.AiMissingFields);
+        Assert.DoesNotContain(points, p => p.EvidenceId == ev02.Id);
+        Assert.DoesNotContain(points, p => p.EvidenceId == supplement.Id);
     }
 
     [Fact]

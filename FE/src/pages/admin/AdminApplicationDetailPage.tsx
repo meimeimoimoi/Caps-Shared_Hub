@@ -330,27 +330,27 @@ export default function AdminApplicationDetailPage({ embedded = false }: { embed
                 onResolveChecked={(pointId, reason) =>
                   review
                     .resolvePoint(pointId, 'CHECKED', reason)
-                    .catch((e: unknown) => setToast(claimError(e)))
+                    .catch((e: unknown) => setToast(errorToast(claimError(e))))
                 }
                 onUseForSupplement={(point) =>
                   review
                     .usePointForSupplement(point)
-                    .catch((e: unknown) => setToast(claimError(e)))
+                    .catch((e: unknown) => setToast(errorToast(claimError(e))))
                 }
                 onReopenPoint={(pointId) =>
                   review
                     .resolvePoint(pointId, 'REOPEN')
-                    .catch((e: unknown) => setToast(claimError(e)))
+                    .catch((e: unknown) => setToast(errorToast(claimError(e))))
                 }
                 onRetry={() =>
                   review
                     .retryScreening()
-                    .catch((e: unknown) => setToast(claimError(e)))
+                    .catch((e: unknown) => setToast(errorToast(claimError(e))))
                 }
                 onAssignSupplementGroup={(evidenceId, groupCode) =>
                   review
                     .assignSupplementGroup(evidenceId, groupCode)
-                    .catch((e: unknown) => setToast(claimError(e)))
+                    .catch((e: unknown) => setToast(errorToast(claimError(e))))
                 }
                 onOpenDocument={showDocument}
               />

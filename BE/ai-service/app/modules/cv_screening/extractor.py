@@ -24,7 +24,7 @@ _MAX_TEXT_CHARS = 24_000
 
 
 class CvExtractor:
-    """Extracts structured CV and certificate metadata using local Ollama models only."""
+    """Extracts structured CV metadata using local Ollama models only (non-CV documents are rejected)."""
 
     @staticmethod
     def _detect_kind(data: bytes) -> str | None:
@@ -82,10 +82,10 @@ class CvExtractor:
         vision_enabled: bool = True,
     ) -> CvExtractResponse:
         normalized_group = evidence_type.strip().upper()
-        if normalized_group == "EV-01":
+        if normalized_group != "CV":
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="EV-01 identity documents must not be processed by AI.",
+                detail="Only CV documents may be processed by AI.",
             )
 
         kind = cls._detect_kind(content)

@@ -133,7 +133,7 @@ public static class GenerateDraft
                     templateSchema = null;
                 }
 
-                // 4. Reserve quota / billing credits before invoking AI service
+                // 4. Reserve billing credits (no-op when AiBilling:Enabled is false) before invoking AI service
                 var billingNote = $"AI draft for document {document.Id}";
                 var reservation = await aiCreditChargeService.ReserveAsync(
                     command.UserId,

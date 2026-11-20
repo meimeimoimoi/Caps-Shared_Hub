@@ -273,17 +273,17 @@ def draft_document(req: GenerateDraftRequest):
         ) from e
 
 
-# API FLOW 1 (Step 3): Called by expert (.NET) to extract CV/certificate metadata.
+# API FLOW 1 (Step 3): Called by expert (.NET) to extract CV metadata only.
 @router.post("/cv/extract", response_model=CvExtractResponse)
 async def extract_cv_metadata(
     file: UploadFile = File(...),
     evidence_type: str = Form(...),
     vision_enabled: bool = Form(default=True),
 ):
-    if evidence_type.strip().upper() == "EV-01":
+    if evidence_type.strip().upper() != "CV":
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="EV-01 identity documents must not be processed by AI.",
+            detail="Only CV documents may be processed by AI.",
         )
 
     try:

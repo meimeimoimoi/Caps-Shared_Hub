@@ -1,5 +1,6 @@
 import { useDraftPresentation } from '@/features/drafting/hooks/useDraftPresentation'
 import { useState } from 'react'
+import { useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import {
   ArrowRight,
@@ -286,7 +287,11 @@ function TemplateCard({ group }: { group: TemplateGroup }) {
 }
 
 export default function DraftTemplatePage() {
-  const { t } = useTranslation('drafting')
+  const { t } = useTranslation(['drafting', 'aiAssistant'])
+  const location = useLocation()
+  const chatTransfer = (
+    location.state as { chatTransfer?: { suggestedTitle?: string } } | null
+  )?.chatTransfer
   const query = useTemplates()
   const ctx = useDraftContext()
   const groups = query.data ? groupTemplates(query.data) : []
@@ -300,6 +305,19 @@ export default function DraftTemplatePage() {
         )}
         step={0}
       />
+      {chatTransfer && (
+        <div className="border-border bg-surface mb-6 flex items-start gap-3 rounded-2xl border p-5">
+          <MessageSquare className="text-accent mt-1 shrink-0" size={20} />
+          <div>
+            <h2 className="text-h2">{t('aiAssistant:draftSuggestion.title')}</h2>
+            <p className="text-fg-muted mt-2">
+              {t('aiAssistant:draftSuggestion.detail', {
+                title: chatTransfer.suggestedTitle ?? '',
+              })}
+            </p>
+          </div>
+        </div>
+      )}
       {isDraftMock && ctx.scenario === 'chat-suggestion' && (
         <div className="border-border bg-surface mb-6 flex items-start gap-3 rounded-2xl border p-5">
           <MessageSquare className="text-accent mt-1 shrink-0" size={20} />
