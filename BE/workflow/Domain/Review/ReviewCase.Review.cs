@@ -110,7 +110,7 @@ public sealed partial class ReviewCase
     )
     {
         EnsureExpert(expertProfileId);
-        EnsureStatus(ReviewCaseStatus.InReview);
+        EnsureStep(ReviewCaseStatus.InReview, DeliveryDeadline, now);
         // The clock pauses while the client answer, so unlimited question would stretch the deadline forever
         if (InfoRequestCount >= MaxInfoRequests)
         {

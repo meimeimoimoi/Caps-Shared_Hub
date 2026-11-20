@@ -447,6 +447,21 @@ public sealed class ReviewCaseTests
     }
 
     [Fact]
+    public void Questions_after_the_delivery_deadline_are_rejected()
+    {
+        var reviewCase = InReview();
+        var late = reviewCase.DeliveryDeadline!.Value;
+
+        Assert.Equal(
+            "CASE_DEADLINE_PASSED",
+            Errors.CodeOf(() =>
+                reviewCase.RequestInformation(Expert, ExpertUser, "Late question", late)
+            )
+        );
+        Assert.Equal(ReviewCaseStatus.InReview, reviewCase.Status);
+    }
+
+    [Fact]
     public void Silence_terminates_the_case_for_user_non_response()
     {
         var reviewCase = InReview();
