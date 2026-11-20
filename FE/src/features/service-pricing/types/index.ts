@@ -85,7 +85,15 @@ export interface PricingOverview {
 }
 
 /** GET/PUT /api/v1/admin/ai-billing: whether AI chat and drafting charge the free quota, then credits */
-export interface AiBillingSwitch {
+/** AI prices in credits; 0 = free once the free uses run out */
+export interface AiPricesInput {
+  chatCreditCost: number
+  draftCreditCost: number
+  /** Free AI uses an account gets on its first AI request */
+  initialFreeQuota: number
+}
+
+export interface AiBillingSwitch extends AiPricesInput {
   enabled: boolean
   /** null while the server setting applies (no admin has set it yet) */
   updatedAt: string | null

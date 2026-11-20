@@ -7,6 +7,7 @@ import {
   savePackage,
   scheduleTierChange,
   setAiBilling,
+  setAiPrices,
 } from '../api/pricingApi'
 import type { NewTierInput, PackageInput, TierChangeInput } from '../types'
 
@@ -51,5 +52,14 @@ export function useAiBilling(enabled = true) {
     mutationFn: setAiBilling,
     onSuccess: (saved) => qc.setQueryData(AI_BILLING_KEY, saved),
   })
-  return { ...query, set: mutation.mutateAsync, saving: mutation.isPending }
+  const prices = useMutation({
+    mutationFn: setAiPrices,
+    onSuccess: (saved) => qc.setQueryData(AI_BILLING_KEY, saved),
+  })
+  return {
+    ...query,
+    set: mutation.mutateAsync,
+    saving: mutation.isPending,
+    setPrices: prices.mutateAsync,
+  }
 }

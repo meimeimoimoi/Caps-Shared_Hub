@@ -694,7 +694,22 @@
       "updated": "Cập nhật {{at}}",
       "saved": "Đã bật tính phí AI.",
       "savedOff": "Đã tắt tính phí AI, mọi người dùng AI miễn phí.",
-      "failed": "Không lưu được công tắc, vui lòng thử lại."
+      "failed": "Không lưu được công tắc, vui lòng thử lại.",
+      "prices": {
+        "title": "Giá dùng AI",
+        "edit": "Sửa giá",
+        "chatCreditCost": "Credit mỗi câu hỏi AI",
+        "chatCreditCostHelp": "Trừ khi câu hỏi được trả lời, sau khi người dùng hết lượt miễn phí. Đặt 0 để miễn phí.",
+        "draftCreditCost": "Credit mỗi lần soạn nháp AI",
+        "draftCreditCostHelp": "Trừ mỗi lần tạo bản nháp bằng AI, sau khi người dùng hết lượt miễn phí. Đặt 0 để miễn phí.",
+        "initialFreeQuota": "Lượt miễn phí cho tài khoản mới",
+        "initialFreeQuotaHelp": "Số lượt dùng AI miễn phí mỗi tài khoản nhận ở lần dùng AI đầu tiên. Tài khoản đã dùng AI giữ nguyên số lượt hiện có.",
+        "credits_other": "{{count, number}} credit",
+        "uses_other": "{{count, number}} lượt",
+        "save": "Lưu giá",
+        "saving": "Đang lưu…",
+        "saved": "Đã lưu giá AI, áp dụng từ lượt dùng tiếp theo."
+      }
     },
     "tabsLabel": "Cấu hình giá",
     "tabs": {

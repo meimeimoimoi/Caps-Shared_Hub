@@ -703,7 +703,24 @@
       "updated": "Updated {{at}}",
       "saved": "AI charging is on.",
       "savedOff": "AI charging is off; everyone uses AI free.",
-      "failed": "The switch could not be saved. Please try again."
+      "failed": "The switch could not be saved. Please try again.",
+      "prices": {
+        "title": "AI prices",
+        "edit": "Edit prices",
+        "chatCreditCost": "Credits per AI question",
+        "chatCreditCostHelp": "Charged when the question is answered, once the user's free uses run out. Set 0 to make it free.",
+        "draftCreditCost": "Credits per AI draft",
+        "draftCreditCostHelp": "Charged for each AI-generated draft, once the user's free uses run out. Set 0 to make it free.",
+        "initialFreeQuota": "Free uses for new accounts",
+        "initialFreeQuotaHelp": "Free AI uses each account gets on its first AI request. Accounts that already used AI keep their current uses.",
+        "credits_one": "{{count, number}} credit",
+        "credits_other": "{{count, number}} credits",
+        "uses_one": "{{count, number}} use",
+        "uses_other": "{{count, number}} uses",
+        "save": "Save prices",
+        "saving": "Saving…",
+        "saved": "AI prices saved; they apply from the next use."
+      }
     },
     "tabsLabel": "Pricing settings",
     "tabs": {

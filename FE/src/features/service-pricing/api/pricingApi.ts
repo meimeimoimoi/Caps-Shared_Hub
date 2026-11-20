@@ -2,6 +2,7 @@ import { api } from '@/lib/api-client'
 import { isExpertDemo } from '@/lib/expert-data-source'
 import type {
   AiBillingSwitch,
+  AiPricesInput,
   CreditPackage,
   NewTierInput,
   PackageInput,
@@ -114,5 +115,13 @@ export async function getAiBilling(signal?: AbortSignal) {
 
 export async function setAiBilling(enabled: boolean) {
   const res = await api.put<{ data: AiBillingSwitch }>(AI_BILLING, { enabled })
+  return res.data
+}
+
+export async function setAiPrices(body: AiPricesInput) {
+  const res = await api.put<{ data: AiBillingSwitch }>(
+    `${AI_BILLING}/prices`,
+    body
+  )
   return res.data
 }
