@@ -10,7 +10,8 @@ public sealed record RequestReviewRequest(
     Guid ExpertProfileId,
     string ServiceCode,
     string? ProblemDescription,
-    string? ExpectedOutcome
+    string? ExpectedOutcome,
+    long? ExpectedFee = null
 )
 {
     public RequestReviewCommand ToCommand(Guid userId, string? email) =>
@@ -22,7 +23,8 @@ public sealed record RequestReviewRequest(
             ExpertProfileId,
             ServiceCode,
             ProblemDescription,
-            ExpectedOutcome
+            ExpectedOutcome,
+            ExpectedFee
         );
 }
 

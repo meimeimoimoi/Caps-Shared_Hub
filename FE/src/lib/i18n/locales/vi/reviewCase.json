@@ -523,6 +523,7 @@
     "CASE_SELF_REVIEW": "Bạn không thể tự thẩm định hồ sơ của mình.",
     "DOCUMENT_NOT_FOUND": "Không tìm thấy phiên bản hồ sơ của bạn.",
     "EXPERT_SERVICE_UNAVAILABLE": "Chuyên gia hiện không nhận dịch vụ này.",
+    "PRICE_CHANGED": "Chuyên gia vừa đổi giá. Giá mới đã hiện bên cạnh; bấm Gửi lại nếu bạn đồng ý.",
     "EXPERT_FULL": "Chuyên gia đã đủ số hồ sơ đang nhận.",
     "SERVICE_LINK_UNAVAILABLE": "Hệ thống đang bận. Vui lòng thử lại sau ít phút.",
     "SESSION_CHECK_UNAVAILABLE": "Chưa kiểm tra được phiên đăng nhập. Vui lòng thử lại sau ít phút.",
