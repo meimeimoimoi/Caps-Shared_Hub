@@ -38,6 +38,20 @@ public sealed class RequestReviewTests
     }
 
     [Fact]
+    public async Task A_price_changed_since_the_client_saw_it_is_not_booked()
+    {
+        var cases = new FakeCases();
+
+        var e = await Assert.ThrowsAsync<AppException>(() =>
+            Handler(cases, new FakeUnitOfWork())
+                .HandleAsync(Command() with { ExpectedFee = 1 }, default)
+        );
+
+        Assert.Equal("PRICE_CHANGED", e.Code);
+        Assert.Empty(cases.Added);
+    }
+
+    [Fact]
     public void Only_running_cases_block_a_new_booking()
     {
         Assert.Contains(ReviewCaseStatus.AwaitingPayment, ReviewCase.OpenStatuses);

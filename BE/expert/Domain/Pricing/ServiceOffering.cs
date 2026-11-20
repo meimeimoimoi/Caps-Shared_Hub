@@ -88,7 +88,7 @@ public sealed class ServiceOffering
 
     private static void Validate(long fee, int turnaroundHours, PricingPolicy policy)
     {
-        if (fee < policy.MinFee || fee > policy.MaxFee || fee % PricingPolicy.FeeStep != 0)
+        if (!policy.Allows(fee))
             throw ExpertErrors.FeeInvalid(policy.MinFee, policy.MaxFee, PricingPolicy.FeeStep);
         var days = turnaroundHours / PricingPolicy.HoursPerDay;
         if (

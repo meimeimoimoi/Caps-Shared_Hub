@@ -8,7 +8,8 @@ namespace Caps.Expert.Application.Common;
 public sealed class MarketplaceListing(
     IQualificationRepository qualifications,
     IServiceOfferingRepository offerings,
-    IServiceCatalogRepository catalog
+    IServiceCatalogRepository catalog,
+    IExpertPolicyProvider policies
 ) : IMarketplaceListing
 {
     public async Task<IReadOnlyList<MarketplaceExpertResponse>> ListAsync(
@@ -26,6 +27,7 @@ public sealed class MarketplaceListing(
             return [];
         var profileIds = candidates.Select(x => x.ExpertProfileId).Distinct().ToArray();
         var prices = await offerings.ListAsync(profileIds, ct);
+        var policy = await policies.GetPricingAsync(ct);
         var services = (await catalog.ListActiveAsync(ct)).ToDictionary(x => x.Code);
 
         return candidates
@@ -44,7 +46,7 @@ public sealed class MarketplaceListing(
                                 q.Status,
                                 profile.IsAccountActive,
                                 services.ContainsKey(q.ServiceCode),
-                                price != null,
+                                price != null && policy.Allows(price.Fee),
                                 q.AcceptingRequests,
                                 profile.Capacity > 0
                             )

@@ -523,6 +523,7 @@
     "CASE_SELF_REVIEW": "You cannot review your own document.",
     "DOCUMENT_NOT_FOUND": "That document version was not found.",
     "EXPERT_SERVICE_UNAVAILABLE": "The expert is not taking this service right now.",
+    "PRICE_CHANGED": "The expert just changed the price. The new price is shown alongside; send again if you agree.",
     "EXPERT_FULL": "The expert has no free slot.",
     "SERVICE_LINK_UNAVAILABLE": "The system is busy. Please try again shortly.",
     "SESSION_CHECK_UNAVAILABLE": "Your session could not be checked. Please try again shortly.",

@@ -25,6 +25,16 @@ public sealed class PricingTests
     // Default admin policy: 500,000 to 30,000,000 VND, 1 to 7 days, 7 days notice, warning above 50%
     private static readonly PricingPolicy Policy = new(500_000, 30_000_000, 1, 7, 7, 50);
 
+    // BR-E18: a price outside the current range is hidden from the marketplace until the expert fixes it
+    [Fact]
+    public void A_price_outside_the_range_or_off_step_is_not_allowed()
+    {
+        Assert.True(Policy.Allows(1_000_000));
+        Assert.False(Policy.Allows(490_000));
+        Assert.False(Policy.Allows(30_010_000));
+        Assert.False(Policy.Allows(1_005_000));
+    }
+
     // First rate of the service: takes effect at once
     private static PlatformFee Rate(
         int percent = 20,

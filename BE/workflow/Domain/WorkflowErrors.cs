@@ -84,6 +84,13 @@ public static class WorkflowErrors
             "A verified result needs at least one legal citation; at most 20, each up to 500 characters."
         );
 
+    public static AppException PriceChanged(long seen, long current) =>
+        new(
+            ErrorType.Conflict,
+            "PRICE_CHANGED",
+            $"The expert changed the price from {seen} to {current}."
+        );
+
     public static AppException DisputeReasonInvalid() =>
         new(
             ErrorType.Validation,

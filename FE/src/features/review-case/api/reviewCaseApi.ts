@@ -18,6 +18,8 @@ export interface NewReviewCase {
   serviceCode: string
   problemDescription: string
   expectedOutcome: string | null
+  /** The price the client saw; the backend refuses with PRICE_CHANGED when it no longer matches */
+  expectedFee?: number | null
 }
 
 export const listReviewCases = (signal?: AbortSignal) =>
