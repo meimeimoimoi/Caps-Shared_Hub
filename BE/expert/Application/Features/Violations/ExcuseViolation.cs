@@ -23,7 +23,7 @@ public sealed class ExcuseViolationHandler(
     IAuditTrail audit,
     IUnitOfWork unitOfWork,
     TimeProvider clock
-)
+) : ICommandHandler<ExcuseViolationCommand>
 {
     public async Task HandleAsync(ExcuseViolationCommand command, CancellationToken ct)
     {
