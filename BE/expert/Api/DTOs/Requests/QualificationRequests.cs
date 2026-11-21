@@ -3,6 +3,7 @@ using Caps.Expert.Application.Common;
 using Caps.Expert.Application.Features.Approvals;
 using Caps.Expert.Application.Features.Qualifications;
 using Caps.Expert.Application.Features.Reviews;
+using Caps.Expert.Application.Features.Violations;
 using Caps.Expert.Domain.Qualifications;
 
 namespace Caps.Expert.Api.DTOs.Requests;
@@ -78,4 +79,11 @@ public sealed record ServiceAccessRequest(
 {
     public ChangeServiceAccessCommand ToCommand(Guid adminUserId, Guid qualificationId) =>
         new(adminUserId, qualificationId, Action, Note);
+}
+
+/// <summary>Why the violation is excused (force majeure).</summary>
+public sealed record ExcuseViolationRequest([Required, MaxLength(1000)] string Reason)
+{
+    public ExcuseViolationCommand ToCommand(Guid adminUserId, Guid profileId, Guid reviewCaseId) =>
+        new(adminUserId, profileId, reviewCaseId, Reason);
 }

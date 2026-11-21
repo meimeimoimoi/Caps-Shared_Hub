@@ -144,11 +144,19 @@ public sealed partial class ReviewCase
     public DateTimeOffset? StartedAt { get; private set; }
     public DateTimeOffset? DeliveryDeadline { get; private set; }
     public DateTimeOffset? DeliveredAt { get; private set; }
+
+    /// <summary>Working days the expert asked to add to the delivery deadline; null when never asked.</summary>
+    public short? ExtensionDays { get; private set; }
+    public string? ExtensionReason { get; private set; }
+    public DateTimeOffset? ExtensionRequestedAt { get; private set; }
+
+    /// <summary>EXTENSION_ACCEPTED or EXTENSION_DECLINED; null while the client has not answered.</summary>
+    public string? ExtensionDecision { get; private set; }
+    public DateTimeOffset? ExtensionDecidedAt { get; private set; }
     public DateTimeOffset? AcceptanceDeadline { get; private set; }
     public DateTimeOffset? CompletedAt { get; private set; }
     public DateTimeOffset CreatedAt { get; private set; }
     public DateTimeOffset UpdatedAt { get; private set; }
-
     public ICollection<ReviewTask> ReviewTasks { get; } = [];
     public ICollection<InfoRequest> InfoRequests { get; } = [];
     public ICollection<ReviewAttachment> Attachments { get; } = [];

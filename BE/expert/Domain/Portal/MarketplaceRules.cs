@@ -8,13 +8,15 @@ namespace Caps.Expert.Domain.Portal;
 /// <param name="PriceInEffect">An approved Pricing Version applies today.</param>
 /// <param name="AcceptingRequests">The expert turned on new requests for this service.</param>
 /// <param name="CapacitySet">The expert set how many cases they run at once (a full expert stays listed).</param>
+/// <param name="GoodStanding">Fewer than 6 violation points in 90 days.</param>
 public sealed record ListingFacts(
     string QualificationStatus,
     bool AccountActive,
     bool ServiceActive,
     bool PriceInEffect,
     bool AcceptingRequests,
-    bool CapacitySet
+    bool CapacitySet,
+    bool GoodStanding
 );
 
 /// <summary>Marketplace eligibility (BR-M01, POL-MKT-01).</summary>
@@ -26,7 +28,8 @@ public static class MarketplaceRules
         && f.ServiceActive
         && f.PriceInEffect
         && f.AcceptingRequests
-        && f.CapacitySet;
+        && f.CapacitySet
+        && f.GoodStanding;
 
     /// <summary>
     /// Why an approved service is not listed yet, in the order the expert fixes them: PRICING_PENDING,
@@ -34,6 +37,8 @@ public static class MarketplaceRules
     /// </summary>
     public static string[] Missing(ListingFacts f)
     {
+        if (!f.GoodStanding)
+            return ["VIOLATION_POINTS"];
         if (!f.PriceInEffect)
             return ["PRICING_PENDING"];
         if (!f.AcceptingRequests)

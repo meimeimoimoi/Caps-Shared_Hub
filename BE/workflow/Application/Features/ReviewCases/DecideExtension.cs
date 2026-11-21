@@ -1,0 +1,34 @@
+using Caps.Common.Application;
+using Caps.Workflow.Application.Abstractions;
+using Caps.Workflow.Application.DTOs.Responses;
+using Caps.Workflow.Domain;
+using Caps.Workflow.Domain.Review;
+
+namespace Caps.Workflow.Application.Features.ReviewCases;
+
+/// <summary>The client accepts or declines the expert's extension request.</summary>
+public sealed record DecideExtensionCommand(Guid UserId, Guid ReviewCaseId, bool Accept);
+
+/// <summary>Accepting moves the delivery deadline by the working days asked; declining keeps it.</summary>
+public sealed class DecideExtensionHandler(
+    IReviewCaseRepository cases,
+    IUnitOfWork unitOfWork,
+    TimeProvider clock,
+    WorkCalendar? calendar = null
+) : ICommandHandler<DecideExtensionCommand, ReviewCaseResponse>
+{
+    public async Task<ReviewCaseResponse> HandleAsync(
+        DecideExtensionCommand command,
+        CancellationToken ct
+    )
+    {
+        await using var tx = await unitOfWork.BeginTransactionAsync(ct);
+        var reviewCase =
+            await cases.FindForUpdateAsync(command.ReviewCaseId, ct)
+            ?? throw WorkflowErrors.ReviewCaseNotFound();
+        reviewCase.DecideExtension(command.UserId, command.Accept, clock.GetUtcNow(), calendar);
+        await unitOfWork.SaveChangesAsync(ct);
+        await tx.CommitAsync(ct);
+        return ReviewCaseResponse.From(reviewCase);
+    }
+}

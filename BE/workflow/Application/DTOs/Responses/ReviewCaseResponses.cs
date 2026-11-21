@@ -37,6 +37,7 @@ public sealed record ReviewCaseResponse(
     string? RatingComment,
     SettlementResponse? Settlement,
     InfoRequestResponse[]? InfoRequests,
+    ExtensionResponse? Extension,
     DateTimeOffset UpdatedAt,
     DateTimeOffset CreatedAt
 )
@@ -82,12 +83,30 @@ public sealed record ReviewCaseResponse(
             c.RatingComment,
             c.Outcome() is { } s ? new(s.ClientRefund, s.PlatformFee, s.ExpertAmount) : null,
             questions?.Select(InfoRequestResponse.From).ToArray(),
+            c.ExtensionRequestedAt is { } asked
+                ? new(
+                    c.ExtensionDays!.Value,
+                    c.ExtensionReason!,
+                    asked,
+                    c.ExtensionDecision,
+                    c.ExtensionDecidedAt
+                )
+                : null,
             c.UpdatedAt,
             c.CreatedAt
         );
 
     /// <summary>How the fee was split once the case ended, in VND.</summary>
     public sealed record SettlementResponse(long ClientRefund, long PlatformFee, long ExpertAmount);
+
+    /// <summary>The expert's extension request; Decision is null while the client has not answered.</summary>
+    public sealed record ExtensionResponse(
+        int Days,
+        string Reason,
+        DateTimeOffset RequestedAt,
+        string? Decision,
+        DateTimeOffset? DecidedAt
+    );
 
     /// <summary>A question the expert asked, and the client's answer once given.</summary>
     public sealed record InfoRequestResponse(

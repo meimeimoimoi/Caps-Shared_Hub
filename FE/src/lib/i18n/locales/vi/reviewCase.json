@@ -369,7 +369,9 @@
     "challenged": "Đã gửi khiếu nại. Khoản thanh toán được giữ nguyên.",
     "expired": "Hết hạn thanh toán. Yêu cầu đã tự hủy.",
     "rated": "Đã gửi đánh giá. Cảm ơn bạn.",
-    "disputeWithdrawn": "Đã rút khiếu nại. Hồ sơ được nghiệm thu và quyết toán."
+    "disputeWithdrawn": "Đã rút khiếu nại. Hồ sơ được nghiệm thu và quyết toán.",
+    "extensionAccepted": "Đã đồng ý gia hạn. Hạn bàn giao đã được dời.",
+    "extensionDeclined": "Đã từ chối gia hạn."
   },
   "notFound": {
     "title": "Không tìm thấy hồ sơ",
@@ -549,7 +551,10 @@
     "CHAT_CLOSED": "Hồ sơ ở trạng thái này không nhắn tin được.",
     "MESSAGE_EMPTY": "Vui lòng nhập tin nhắn.",
     "MESSAGE_TOO_LONG": "Tin nhắn quá dài.",
-    "RATE_LIMITED": "Bạn thao tác quá nhanh. Vui lòng thử lại sau ít phút."
+    "RATE_LIMITED": "Bạn thao tác quá nhanh. Vui lòng thử lại sau ít phút.",
+    "EXTENSION_ALREADY_REQUESTED": "Mỗi hồ sơ chỉ được xin gia hạn một lần.",
+    "EXTENSION_NOT_PENDING": "Không còn yêu cầu gia hạn nào chờ trả lời.",
+    "EXTENSION_DAYS_INVALID": "Chỉ xin gia hạn 1 hoặc 2 ngày làm việc."
   },
   "live": {
     "loading": "Đang tải hồ sơ",
@@ -691,5 +696,22 @@
     },
     "notConnected": "Chưa có dữ liệu.",
     "openCases": "Các hồ sơ đang mở của bạn."
+  },
+  "extension": {
+    "title": "Gia hạn bàn giao",
+    "days": "Xin thêm",
+    "dayOption_one": "{{count}} ngày làm việc",
+    "dayOption_other": "{{count}} ngày làm việc",
+    "reason": "Lý do gửi khách (bắt buộc)",
+    "ask": "Gửi yêu cầu gia hạn",
+    "asked_one": "Chuyên gia xin gia hạn thêm {{count}} ngày làm việc",
+    "asked_other": "Chuyên gia xin gia hạn thêm {{count}} ngày làm việc",
+    "pendingClient": "Bạn đồng ý thì hạn bàn giao dời thêm số ngày trên và chuyên gia không bị tính trễ. Không trả lời hoặc từ chối thì giữ hạn cũ.",
+    "pendingExpert": "Đang chờ khách trả lời. Khách chưa đồng ý thì hạn bàn giao giữ nguyên.",
+    "accepted": "Khách đã đồng ý, hạn bàn giao đã được dời.",
+    "declined": "Khách không đồng ý, hạn bàn giao giữ nguyên.",
+    "accept": "Đồng ý gia hạn",
+    "decline": "Không đồng ý",
+    "requestedFeedback": "Đã gửi yêu cầu gia hạn cho khách."
   }
 }

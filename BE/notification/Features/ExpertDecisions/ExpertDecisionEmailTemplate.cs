@@ -254,6 +254,27 @@ public static class ExpertDecisionEmailTemplate
         return Render(copy, "Quản trị viên", email, m.OccurredAt, link, []);
     }
 
+    public static Content BuildExcuseRequestAlert(
+        ExpertExcuseRequestedEvent m,
+        string email,
+        string link
+    )
+    {
+        var kind = m.Kind switch
+        {
+            "LATE" => "giao trễ",
+            "WITHDREW" => "nhận rồi tự hủy",
+            _ => "không bàn giao",
+        };
+        var copy = new Copy(
+            $"Chuyên gia xin miễn vi phạm – {Brand}",
+            "Có đơn xin miễn vi phạm mới",
+            $"{m.ExpertName ?? "Một chuyên gia"} xin miễn vi phạm {kind} do bất khả kháng, kèm {m.FileCount} tệp bằng chứng. Lý do: {m.Reason}",
+            "Mở danh sách đơn"
+        );
+        return Render(copy, "Quản trị viên", email, m.OccurredAt, link, []);
+    }
+
     private static (Copy Copy, string Label) ForAccess(string change, string service) =>
         change switch
         {

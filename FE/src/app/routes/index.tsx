@@ -106,6 +106,9 @@ const AdminPlatformFeesPage = lazy(
 const AdminExpertPolicyPage = lazy(
   () => import('@/pages/admin/AdminExpertPolicyPage')
 )
+const AdminExcuseRequestsPage = lazy(
+  () => import('@/pages/admin/AdminExcuseRequestsPage')
+)
 const AdminExpertsPage = lazy(() => import('@/pages/admin/AdminExpertsPage'))
 const AdminDisputesPage = lazy(() => import('@/pages/admin/AdminDisputesPage'))
 const AdminDisputeDetailPage = lazy(
@@ -323,6 +326,11 @@ const router = createBrowserRouter(
         <Route
           path="/admin/experts/assignments"
           element={<AdminReviewAssignmentsPage />}
+        />
+        {/* Force-majeure excuse requests from experts (rules of 2026-11-20) */}
+        <Route
+          path="/admin/experts/excuse-requests"
+          element={<AdminExcuseRequestsPage />}
         />
         {/* Expert policy values a System Admin changes without a restart (BR-E29) */}
         <Route

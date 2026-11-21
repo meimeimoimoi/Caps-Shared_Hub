@@ -11,6 +11,7 @@ import type { Expert } from '../types'
 import { formatVnd } from '@/lib/format-money'
 import { formatDate, formatDateTime } from '../utils/applications'
 import { ServiceAccessDialog } from './ServiceAccessDialog'
+import { ExpertViolationsSection } from './ExpertViolationsSection'
 import type { ServiceAccessAction } from '../types'
 
 interface ExpertDrawerProps {
@@ -223,6 +224,8 @@ export function ExpertDrawer({
 
         </div>
       </div>
+
+      {e.expertId && <ExpertViolationsSection expertId={e.expertId} />}
 
       {history.total > 0 && (
         <section className="border-border-subtle mt-7 border-t pt-6">

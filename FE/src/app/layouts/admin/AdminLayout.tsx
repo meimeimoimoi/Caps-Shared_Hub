@@ -7,6 +7,7 @@ import {
   FileText,
   LayoutDashboard,
   Flag,
+  ShieldQuestion,
   SlidersHorizontal,
   Tag,
   UserCog,
@@ -71,6 +72,7 @@ interface AdminLayoutProps extends ShellPageProps {
     | 'expertPolicy'
     | 'assignments'
     | 'experts'
+    | 'excuseRequests'
     | 'disputes'
     | 'escrow'
     | 'pricing'
@@ -82,6 +84,8 @@ interface AdminLayoutProps extends ShellPageProps {
   approvalOverdueCount?: number
   /** Everything waiting for final approval; the badge shows it, overdue or not */
   approvalPendingCount?: number
+  /** Expert excuse requests waiting for a decision */
+  excuseRequestCount?: number
   /** The users endpoint is not on the server yet */
   usersUnavailable?: boolean
   /** Payouts and refunds that failed and need a retry */
@@ -98,6 +102,7 @@ export function AdminLayout({
   disputeCount,
   approvalOverdueCount,
   approvalPendingCount,
+  excuseRequestCount,
   usersUnavailable,
   payoutFailedCount,
   pricingUnavailable,
@@ -158,6 +163,13 @@ export function AdminLayout({
           icon: Users,
           to: '/admin/experts',
           active: section === 'experts',
+        },
+        {
+          label: t('navigation.excuseRequests'),
+          icon: ShieldQuestion,
+          to: '/admin/experts/excuse-requests',
+          active: section === 'excuseRequests',
+          badge: excuseRequestCount,
         },
       ],
     },
@@ -237,6 +249,7 @@ export function AdminLayout({
     '/admin/experts/approvals',
     '/admin/experts/assignments',
     '/admin/experts/policy',
+    '/admin/experts/excuse-requests',
   ]
   const adminRoutes = [
     '/admin',

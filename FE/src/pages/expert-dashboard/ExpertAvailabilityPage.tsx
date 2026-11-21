@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/actions/button'
 import { HelpTip } from '@/components/ui/feedback/help-tip'
 import { useExpertPresentation } from '@/features/expert-dashboard/hooks/useExpertPresentation'
 import { useAvailability } from '@/features/expert-availability/hooks/useAvailability'
+import { MyViolationsSection } from '@/features/expert-availability/components/MyViolationsSection'
 
 const ERRORS = ['CAPACITY_INVALID', 'SERVICE_NOT_APPROVED', 'EXPERT_NOT_FOUND'] as const
 type AvailabilityError = (typeof ERRORS)[number]
@@ -187,6 +188,7 @@ export default function ExpertAvailabilityPage() {
           </section>
         </>
       )}
+      <MyViolationsSection />
     </>
   )
 }

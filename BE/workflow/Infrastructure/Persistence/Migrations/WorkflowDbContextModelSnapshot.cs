@@ -263,6 +263,27 @@ namespace Caps.Workflow.Infrastructure.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("expert_user_id");
 
+                    b.Property<short?>("ExtensionDays")
+                        .HasColumnType("smallint")
+                        .HasColumnName("extension_days");
+
+                    b.Property<DateTimeOffset?>("ExtensionDecidedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("extension_decided_at");
+
+                    b.Property<string>("ExtensionDecision")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("extension_decision");
+
+                    b.Property<string>("ExtensionReason")
+                        .HasColumnType("text")
+                        .HasColumnName("extension_reason");
+
+                    b.Property<DateTimeOffset?>("ExtensionRequestedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("extension_requested_at");
+
                     b.Property<long>("Fee")
                         .HasColumnType("bigint")
                         .HasColumnName("fee");
