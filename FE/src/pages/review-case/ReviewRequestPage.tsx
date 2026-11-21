@@ -9,6 +9,7 @@ import { fieldClass, useCaseFormat } from '@/features/review-case/ui'
 import { DEMO_CASES, REVIEWABLE_DRAFTS } from '@/features/review-case/fixtures'
 import { createReviewCase } from '@/features/review-case/api/reviewCaseApi'
 import { useCaseError } from '@/features/review-case/hooks/useReviewCases'
+import { ApiError } from '@/lib/api-client'
 import { isExpertDemo } from '@/lib/expert-data-source'
 import { cn } from '@/lib/utils'
 
@@ -75,9 +76,13 @@ export default function ReviewRequestPage() {
       serviceCode: service.serviceId,
       problemDescription: scope.trim(),
       expectedOutcome: null,
+      expectedFee: service.price == null ? null : Number(service.price),
     })
       .then((c) => navigate(`/cases/${c.id}`))
       .catch((err: unknown) => {
+        // The expert changed the price meanwhile: show the new one so the client can send again
+        if (err instanceof ApiError && err.code === 'PRICE_CHANGED')
+          void query.refetch()
         setSendError(toMessage(err))
         setSending(false)
       })

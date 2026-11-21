@@ -216,6 +216,11 @@ namespace Caps.Workflow.Infrastructure.Persistence.Migrations
                         .HasColumnType("text")
                         .HasColumnName("cannot_verify_reason");
 
+                    b.PrimitiveCollection<string[]>("Citations")
+                        .IsRequired()
+                        .HasColumnType("text[]")
+                        .HasColumnName("citations");
+
                     b.Property<DateTimeOffset?>("CompletedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("completed_at");

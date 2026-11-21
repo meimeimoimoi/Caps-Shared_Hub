@@ -30,7 +30,8 @@ public sealed class GetReviewCaseHandler(
         return ReviewCaseResponse.From(
             reviewCase,
             questions,
-            source?.FileUrl is null ? source?.Content : null
+            source?.FileUrl is null ? source?.Content : null,
+            showDraft: query.UserId == reviewCase.ExpertUserId
         );
     }
 }

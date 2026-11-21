@@ -34,7 +34,7 @@ public sealed class ReviewCaseStatusChangedConsumer(
             "IN_REVIEW" => (true, false, false),
             "EXPERT_DECLINED" or "EXPERT_TIMEOUT" or "AWAITING_ACCEPTANCE" => (true, true, false),
             "COMPLETED" or "DISPUTED" => (false, false, true),
-            "AUTO_CONFIRMED" => (true, false, true),
+            "AUTO_CONFIRMED" => (true, true, true),
             "DELIVERY_OVERDUE" or "RESOLVED" or "TERMINATED" => (true, true, true),
             "WITHDRAWN" => (false, false, true),
             _ => (false, false, false),

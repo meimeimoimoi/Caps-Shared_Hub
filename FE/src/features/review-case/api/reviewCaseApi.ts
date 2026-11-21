@@ -18,6 +18,8 @@ export interface NewReviewCase {
   serviceCode: string
   problemDescription: string
   expectedOutcome: string | null
+  /** The price the client saw; the backend refuses with PRICE_CHANGED when it no longer matches */
+  expectedFee?: number | null
 }
 
 export const listReviewCases = (signal?: AbortSignal) =>
@@ -47,6 +49,8 @@ export const reviewCaseActions = {
       result: 'VERIFIED' | 'CANNOT_VERIFY'
       summary: string
       cannotVerifyReason: string | null
+      citations: string[]
+      attested: boolean
       revisedContent: Record<string, unknown> | null
     }
   ) => act(id, 'deliver', body),
