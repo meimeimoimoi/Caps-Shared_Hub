@@ -5,10 +5,11 @@ import { Modal } from '@/components/ui/feedback/modal'
 import { HelpTip } from '@/components/ui/feedback/help-tip'
 import { ApiError } from '@/lib/api-client'
 import { i18n } from '@/lib/i18n'
-import { excuseViolation, getExpertViolations } from '../api/adminApi'
+import { declineExcuse, excuseViolation, getExpertViolations } from '../api/adminApi'
 import { adminKeys } from '../api/queryKeys'
 import type { ExpertViolation } from '../types'
 import { formatDateTime } from '../utils/applications'
+import { ExcuseFiles } from './ExcuseFiles'
 
 /* Rules of 2026-11-20: points count 90 days; 6 hide the expert, 9 suspend every approved service */
 export function ExpertViolationsSection({ expertId }: { expertId: string }) {
@@ -64,20 +65,46 @@ export function ExpertViolationsSection({ expertId }: { expertId: string }) {
                   {' · '}
                   {v.excusedAt
                     ? t('experts.violations.excused', { reason: v.excusedReason })
-                    : v.counted
-                      ? t('experts.violations.counted')
-                      : t('experts.violations.expired')}
+                    : v.excuseDeclinedAt
+                      ? t('experts.violations.requestDeclined')
+                      : v.counted
+                        ? t('experts.violations.counted')
+                        : t('experts.violations.expired')}
                 </p>
+                {v.excuseRequest && (
+                  <>
+                    <p className="text-fg mt-1 break-words whitespace-pre-wrap">
+                      {t('experts.violations.request', { text: v.excuseRequest })}
+                    </p>
+                    <ExcuseFiles expertId={expertId} reviewCaseId={v.reviewCaseId} files={v.excuseFiles} />
+                  </>
+                )}
               </div>
-              {v.counted && data.excusesLeft > 0 && (
-                <button
-                  type="button"
-                  onClick={() => setExcusing(v)}
-                  className="btn btn-press btn-secondary justify-self-start"
-                >
-                  {t('experts.violations.excuse')}
-                </button>
-              )}
+              <div className="flex flex-wrap gap-2 justify-self-start">
+                {v.counted && data.excusesLeft > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setExcusing(v)}
+                    className="btn btn-press btn-secondary"
+                  >
+                    {t('experts.violations.excuse')}
+                  </button>
+                )}
+                {v.excuseRequestedAt && !v.excuseDeclinedAt && !v.excusedAt && (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      void declineExcuse(expertId, v.reviewCaseId).then((next) => {
+                        qc.setQueryData(adminKeys.violations(expertId), next)
+                        void qc.invalidateQueries({ queryKey: adminKeys.excuseRequests() })
+                      })
+                    }
+                    className="btn btn-press btn-secondary"
+                  >
+                    {t('experts.violations.decline')}
+                  </button>
+                )}
+              </div>
             </li>
           ))}
         </ol>
@@ -88,6 +115,7 @@ export function ExpertViolationsSection({ expertId }: { expertId: string }) {
           onConfirm={async (reason) => {
             const next = await excuseViolation(expertId, excusing.reviewCaseId, reason)
             qc.setQueryData(adminKeys.violations(expertId), next)
+            void qc.invalidateQueries({ queryKey: adminKeys.excuseRequests() })
           }}
           onClose={() => setExcusing(null)}
         />
@@ -96,7 +124,8 @@ export function ExpertViolationsSection({ expertId }: { expertId: string }) {
   )
 }
 
-function ExcuseDialog({
+/** Excuse with a reason; shared by the expert drawer and the excuse request queue */
+export function ExcuseDialog({
   violation,
   onConfirm,
   onClose,

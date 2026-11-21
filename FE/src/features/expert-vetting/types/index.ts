@@ -353,6 +353,28 @@ export interface ExpertViolation {
   counted: boolean
   excusedAt: string | null
   excusedReason: string | null
+  /** The expert's own words when asking for an excuse; null when never asked */
+  excuseRequest: string | null
+  excuseRequestedAt: string | null
+  excuseDeclinedAt: string | null
+  /** Evidence uploaded with the excuse request */
+  excuseFiles: ExcuseFile[]
+}
+
+/** One evidence file of an excuse request; the admin downloads it by id */
+export interface ExcuseFile {
+  id: string
+  fileName: string
+  contentType: string
+  sizeBytes: number
+}
+
+/** An excuse request waiting for the System Admin, with who asked */
+export interface ExcuseRequest {
+  expertProfileId: string
+  expertName: string | null
+  expertEmail: string | null
+  violation: ExpertViolation
 }
 
 export interface ExpertViolations {

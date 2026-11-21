@@ -798,6 +798,43 @@
       "EXPERT_NOT_FOUND": "You do not have an expert profile yet.",
       "loadFailed": "Availability could not be loaded.",
       "failed": "That did not work. Please try again."
+    },
+    "violations": {
+      "title": "Violations",
+      "help": "Late +1, withdrew after accepting +2, never delivered +3. Points count for the last {{days}} days: 6 hide you from the marketplace, 9 suspend every service. For force majeure (illness, bereavement, disaster, a platform outage) ask for an excuse within 2 days and email the evidence to the administrator.",
+      "points_one": "{{count}} point / {{days}} days",
+      "points_other": "{{count}} points / {{days}} days",
+      "none": "You have no violations.",
+      "kind": {
+        "LATE": "Late delivery",
+        "WITHDREW": "Withdrew after accepting",
+        "NO_DELIVERY": "Never delivered"
+      },
+      "plus_one": "+{{count}} point",
+      "plus_other": "+{{count}} points",
+      "case": "Case {{id}}",
+      "counted": "Counting",
+      "expired": "No longer counted",
+      "excused": "Excused: {{reason}}",
+      "pending": "Waiting for the administrator",
+      "declined": "Excuse declined; still counted",
+      "yourRequest": "You asked: {{text}}",
+      "ask": "Ask for a force-majeure excuse",
+      "reason": "Reason (required)",
+      "evidence": "Attach the hospital note, outage notice… The administrator reviews them to decide.",
+      "send": "Send request",
+      "failed": "Couldn't send. Try again.",
+      "errors": {
+        "VIOLATION_EXCUSE_ALREADY_REQUESTED": "You already asked about this violation.",
+        "VIOLATION_EXCUSE_REQUEST_CLOSED": "More than 2 days have passed since the violation.",
+        "VIOLATION_ALREADY_EXCUSED": "This violation is already excused.",
+        "VIOLATION_EXCUSE_REASON_REQUIRED": "Enter a reason.",
+        "VIOLATION_EXCUSE_FILE_LIMIT": "Attach at most 5 files.",
+        "EVIDENCE_TOO_LARGE": "Each file is at most 10 MB.",
+        "EVIDENCE_INVALID_TYPE": "Only PDF, JPG or PNG files."
+      },
+      "files": "Evidence files (PDF, JPG, PNG; up to 5 files, 10 MB each)",
+      "yourFiles": "Files sent: {{names}}"
     }
   },
   "preparingEvidence": "Preparing competency evidence"

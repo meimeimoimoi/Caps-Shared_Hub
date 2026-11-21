@@ -5,6 +5,7 @@ export const adminKeys = {
   experts: () => [...adminKeys.all, 'experts'] as const,
   violations: (expertId: string) =>
     [...adminKeys.all, 'violations', expertId] as const,
+  excuseRequests: () => [...adminKeys.all, 'excuse-requests'] as const,
   qualifications: (scope: string) =>
     [...adminKeys.all, 'qualifications', scope] as const,
   qualification: (scope: string, id: string) =>

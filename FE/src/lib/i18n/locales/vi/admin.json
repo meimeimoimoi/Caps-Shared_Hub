@@ -38,7 +38,8 @@
     "assignments": "Phân công người chấm",
     "feesAndPolicy": "Cấu hình & phí",
     "notConnected": "Chưa kết nối",
-    "soonGroup": "Sắp có"
+    "soonGroup": "Sắp có",
+    "excuseRequests": "Đơn xin miễn vi phạm"
   },
   "dashboard": {
     "title": "Tổng quan",
@@ -124,7 +125,9 @@
   "notifications": {
     "label": "Thông báo",
     "pending": "{{count}} hồ sơ chuyên gia chờ đánh giá năng lực",
-    "refundFailed": "{{count}} khoản hoàn tiền cho khách bị lỗi"
+    "refundFailed": "{{count}} khoản hoàn tiền cho khách bị lỗi",
+    "excuseRequests_one": "{{count}} đơn xin miễn vi phạm đang chờ xét",
+    "excuseRequests_other": "{{count}} đơn xin miễn vi phạm đang chờ xét"
   },
   "pendingExperts": {
     "title": "Hồ sơ chờ duyệt",
@@ -225,7 +228,12 @@
         "VIOLATION_ALREADY_EXCUSED": "Vi phạm này đã được miễn.",
         "VIOLATION_NOT_FOUND": "Không tìm thấy vi phạm.",
         "VIOLATION_EXCUSE_REASON_REQUIRED": "Nhập lý do miễn vi phạm."
-      }
+      },
+      "request": "Chuyên gia xin miễn: {{text}}",
+      "requestDeclined": "Đã từ chối yêu cầu miễn, vẫn tính điểm",
+      "decline": "Từ chối yêu cầu",
+      "noFiles": "Không kèm tệp bằng chứng.",
+      "fileFailed": "Không mở được tệp. Hãy thử lại."
     }
   },
   "applicationsTable": {
@@ -1556,5 +1564,18 @@
     "SUSPENDED": {
       "label": "Tạm ngưng"
     }
+  },
+  "excuseRequests": {
+    "title": "Đơn xin miễn vi phạm",
+    "help": "Chuyên gia xin miễn điểm vi phạm do bất khả kháng (ốm đau, tang, thiên tai, sự cố hệ thống), kèm lý do và tệp bằng chứng. Miễn thì vi phạm không còn tính điểm; cách chia tiền của hồ sơ không đổi. Mỗi chuyên gia được miễn tối đa 2 lần trong 90 ngày.",
+    "count_one": "{{count}} đơn đang chờ",
+    "count_other": "{{count}} đơn đang chờ",
+    "expert": "Chuyên gia",
+    "violation": "Vi phạm",
+    "request": "Lý do và bằng chứng",
+    "requestedAt": "Gửi lúc",
+    "empty": "Không có đơn nào đang chờ.",
+    "search": "Tìm theo chuyên gia, email hoặc mã hồ sơ",
+    "noResults": "Không có đơn khớp với từ khóa."
   }
 }

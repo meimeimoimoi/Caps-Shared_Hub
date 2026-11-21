@@ -12,6 +12,7 @@ import type {
   Expert,
   ExpertApplication,
   ExpertViolations,
+  ExcuseRequest,
   CriterionDeclaration,
   InformationRounds,
   ReviewClaimState,
@@ -340,4 +341,29 @@ export async function excuseViolation(expertId: string, reviewCaseId: string, re
     { reason }
   )
   return res.data
+}
+
+/** Turns down the expert's excuse request; the violation keeps counting */
+export async function declineExcuse(expertId: string, reviewCaseId: string) {
+  const res = await api.post<Envelope<ExpertViolations>>(
+    `${VIOLATIONS(expertId)}/${reviewCaseId}/decline-excuse`
+  )
+  return res.data
+}
+
+/** Excuse requests from every expert waiting for a decision, oldest first */
+export async function getExcuseRequests(signal?: AbortSignal) {
+  if (isExpertDemo) return [] satisfies ExcuseRequest[]
+  const res = await api.get<Envelope<ExcuseRequest[]>>('/api/v1/admin/experts/excuse-requests', {
+    signal,
+  })
+  return res.data
+}
+
+/** One evidence file of an excuse request, as a blob the page saves or opens */
+export async function getExcuseFile(expertId: string, reviewCaseId: string, fileId: string) {
+  return api.get<Blob>(`${VIOLATIONS(expertId)}/${reviewCaseId}/files/${fileId}`, {
+    responseType: 'blob',
+    timeout: 60_000,
+  })
 }

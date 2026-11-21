@@ -38,7 +38,8 @@
     "assignments": "Review assignments",
     "feesAndPolicy": "Fees & policy",
     "notConnected": "Not connected yet",
-    "soonGroup": "Coming soon"
+    "soonGroup": "Coming soon",
+    "excuseRequests": "Violation excuse requests"
   },
   "dashboard": {
     "title": "Overview",
@@ -129,7 +130,9 @@
   "notifications": {
     "label": "Notifications",
     "pending": "{{count}} Expert applications awaiting capability review",
-    "refundFailed": "{{count}} client refunds failed"
+    "refundFailed": "{{count}} client refunds failed",
+    "excuseRequests_one": "{{count}} violation excuse request waiting",
+    "excuseRequests_other": "{{count}} violation excuse requests waiting"
   },
   "pendingExperts": {
     "title": "Pending Applications",
@@ -231,7 +234,12 @@
         "VIOLATION_ALREADY_EXCUSED": "This violation is already excused.",
         "VIOLATION_NOT_FOUND": "Violation not found.",
         "VIOLATION_EXCUSE_REASON_REQUIRED": "Enter the reason for the excuse."
-      }
+      },
+      "request": "The expert asks: {{text}}",
+      "requestDeclined": "Request declined; still counted",
+      "decline": "Decline request",
+      "noFiles": "No evidence files attached.",
+      "fileFailed": "Couldn't open the file. Try again."
     }
   },
   "applicationsTable": {
@@ -1566,5 +1574,18 @@
     "SUSPENDED": {
       "label": "Suspended"
     }
+  },
+  "excuseRequests": {
+    "title": "Violation excuse requests",
+    "help": "Experts ask to have a violation excused for force majeure (illness, bereavement, disaster, a platform outage), with a reason and evidence files. An excused violation stops counting; the case's money split does not change. At most 2 excuses per expert in 90 days.",
+    "count_one": "{{count}} request waiting",
+    "count_other": "{{count}} requests waiting",
+    "expert": "Expert",
+    "violation": "Violation",
+    "request": "Reason and evidence",
+    "requestedAt": "Sent",
+    "empty": "No requests waiting.",
+    "search": "Search by expert, email or case code",
+    "noResults": "No requests match your search."
   }
 }
