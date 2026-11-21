@@ -36,7 +36,8 @@ public sealed class ReviewCaseStatusChangedConsumer(
             "COMPLETED" or "DISPUTED" => (false, false, true),
             "AUTO_CONFIRMED" => (true, true, true),
             "DELIVERY_OVERDUE" or "RESOLVED" or "TERMINATED" => (true, true, true),
-            "WITHDRAWN" => (false, false, true),
+            // A paid request the client withdrew: the refund is confirmed to them by email (01 Flow 5 Step 8)
+            "WITHDRAWN" => (true, true, true),
             _ => (false, false, false),
         };
 

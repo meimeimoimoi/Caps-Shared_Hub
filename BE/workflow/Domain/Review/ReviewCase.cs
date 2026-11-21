@@ -88,8 +88,9 @@ public sealed partial class ReviewCase
     public int TurnaroundHours { get; private set; }
 
     /// <summary>
-    /// Late rule frozen at booking: up to LatePenaltyHours late the client gets LatePenaltyPct back and the
-    /// expert nothing; later, the whole fee; past LateCancelHours the case is cancelled.
+    /// Late rule frozen at booking: up to LatePenaltyHours late the client gets LatePenaltyPct back out of the
+    /// platform's share and the expert keeps theirs (2026-11-20, see Settle); later, the whole fee; past
+    /// LateCancelHours the case is cancelled.
     /// </summary>
     public int LatePenaltyHours { get; private set; }
     public short LatePenaltyPct { get; private set; }

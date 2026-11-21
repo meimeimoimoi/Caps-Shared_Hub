@@ -138,6 +138,37 @@ public sealed class OutboxReviewCaseEvents(WorkflowDbContext db, TimeProvider cl
             ct
         );
 
+    public Task ExtensionRequestedAsync(ReviewCase reviewCase, CancellationToken ct) =>
+        PublishAsync(
+            new ReviewCaseExtensionRequestedEvent(
+                Guid.NewGuid(),
+                reviewCase.Id,
+                reviewCase.RequesterUserId,
+                reviewCase.RequesterEmail,
+                reviewCase.ExtensionDays!.Value,
+                reviewCase.ExtensionReason!,
+                reviewCase.DeliveryDeadline!.Value,
+                clock.GetUtcNow()
+            ),
+            reviewCase.Id,
+            ct
+        );
+
+    public Task ExtensionDecidedAsync(ReviewCase reviewCase, CancellationToken ct) =>
+        PublishAsync(
+            new ReviewCaseExtensionDecidedEvent(
+                Guid.NewGuid(),
+                reviewCase.Id,
+                reviewCase.ExpertUserId,
+                reviewCase.ExtensionDecision == ReviewCase.ExtensionAccepted,
+                reviewCase.ExtensionDays!.Value,
+                reviewCase.DeliveryDeadline!.Value,
+                clock.GetUtcNow()
+            ),
+            reviewCase.Id,
+            ct
+        );
+
     // Saved with the step by the caller's SaveChanges; the event id doubles as the row id
     private Task PublishAsync<T>(T message, Guid caseId, CancellationToken ct)
         where T : class

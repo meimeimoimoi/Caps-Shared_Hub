@@ -160,9 +160,13 @@
         "DISPUTED": "The client disputed the result. You can send an explanation.",
         "RESOLVED": "An admin decided the dispute.",
         "TERMINATED": "The case ended because the requested information did not arrive in time.",
-        "WITHDRAWN": "The client withdrew the review request; the fee was refunded to the client."
+        "WITHDRAWN": "The client withdrew the review request; the fee was refunded to the client.",
+        "withdrawnClient": "You withdrew your review request. The full fee was refunded to your wallet."
       },
-      "acceptanceDue": "Your review result confirms itself soon. Accept it or report a problem before the deadline."
+      "acceptanceDue": "Your review result confirms itself soon. Accept it or report a problem before the deadline.",
+      "extensionRequested": "The expert asks for {{days}} more working days to deliver. Accept or decline before the deadline; if you do not answer, the deadline stays.",
+      "extensionAccepted": "The client accepted {{days}} more working days; the delivery deadline moved.",
+      "extensionDeclined": "The client declined the extension; the delivery deadline stays."
     }
   },
   "states": {
