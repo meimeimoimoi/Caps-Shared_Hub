@@ -513,4 +513,24 @@ public static class ExpertErrors
             "REVIEWER_NOT_FOUND",
             "Reviewer not found; they must open the review queue at least once."
         );
+
+    public static AppException ViolationNotFound() =>
+        new(ErrorType.NotFound, "VIOLATION_NOT_FOUND", "The violation was not found.");
+
+    public static AppException ViolationAlreadyExcused() =>
+        new(ErrorType.Conflict, "VIOLATION_ALREADY_EXCUSED", "The violation is already excused.");
+
+    public static AppException ViolationExcuseReasonRequired() =>
+        new(
+            ErrorType.Validation,
+            "VIOLATION_EXCUSE_REASON_REQUIRED",
+            "Give the reason for the excuse."
+        );
+
+    public static AppException ViolationExcuseLimit(int max, int days) =>
+        new(
+            ErrorType.Conflict,
+            "VIOLATION_EXCUSE_LIMIT",
+            $"At most {max} violations can be excused within {days} days."
+        );
 }

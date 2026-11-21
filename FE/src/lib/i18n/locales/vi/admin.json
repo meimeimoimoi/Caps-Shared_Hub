@@ -193,7 +193,40 @@
       "system": "Hệ thống",
       "admin": "Quản trị viên"
     },
-    "expertCount_other": "{{count}} chuyên gia"
+    "expertCount_other": "{{count}} chuyên gia",
+    "violations": {
+      "title": "Vi phạm",
+      "help": "Giao trễ +1, nhận rồi tự hủy +2, không bàn giao +3. Điểm tính trong {{days}} ngày gần nhất: đủ 6 điểm thì chuyên gia bị ẩn khỏi Sàn, đủ 9 điểm thì mọi dịch vụ tự tạm ngưng (chỉ admin mở lại). Miễn vi phạm chỉ cho bất khả kháng có bằng chứng; tiền của Case không đổi.",
+      "points_one": "{{count}} điểm / {{days}} ngày",
+      "points_other": "{{count}} điểm / {{days}} ngày",
+      "excusesLeft_one": "còn miễn được {{count}} lần",
+      "excusesLeft_other": "còn miễn được {{count}} lần",
+      "none": "Chưa có vi phạm.",
+      "kind": {
+        "LATE": "Giao trễ",
+        "WITHDREW": "Nhận rồi tự hủy",
+        "NO_DELIVERY": "Không bàn giao"
+      },
+      "plus_one": "+{{count}} điểm",
+      "plus_other": "+{{count}} điểm",
+      "case": "Case {{id}}",
+      "counted": "Đang tính",
+      "expired": "Đã quá hạn tính",
+      "excused": "Đã miễn: {{reason}}",
+      "excuse": "Miễn vi phạm",
+      "excuseTitle": "Miễn vi phạm do bất khả kháng?",
+      "excuseBody": "{{kind}} ở Case {{id}} sẽ không còn tính điểm. Cách chia tiền của Case không đổi; dịch vụ đã bị tạm ngưng vẫn phải mở lại thủ công.",
+      "reason": "Lý do và bằng chứng đã kiểm tra (bắt buộc)",
+      "reasonMissing": "Nhập lý do miễn vi phạm.",
+      "confirm": "Miễn vi phạm",
+      "failed": "Chưa miễn được. Hãy thử lại.",
+      "errors": {
+        "VIOLATION_EXCUSE_LIMIT": "Chuyên gia đã được miễn đủ 2 lần trong 90 ngày.",
+        "VIOLATION_ALREADY_EXCUSED": "Vi phạm này đã được miễn.",
+        "VIOLATION_NOT_FOUND": "Không tìm thấy vi phạm.",
+        "VIOLATION_EXCUSE_REASON_REQUIRED": "Nhập lý do miễn vi phạm."
+      }
+    }
   },
   "applicationsTable": {
     "sortBy": "Sắp xếp: nộp sớm nhất trước",

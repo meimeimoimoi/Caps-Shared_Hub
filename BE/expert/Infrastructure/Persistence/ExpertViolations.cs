@@ -31,4 +31,34 @@ public sealed class ExpertViolations(ExpertDbContext db) : IExpertViolations
             .GroupBy(x => x.ExpertProfileId)
             .Select(g => new { g.Key, Points = g.Sum(x => (int)x.Points) })
             .ToDictionaryAsync(x => x.Key, x => x.Points, ct);
+
+    public async Task<IReadOnlyList<ExpertViolation>> ListAsync(
+        Guid profileId,
+        CancellationToken ct
+    ) =>
+        await db
+            .ExpertViolations.AsNoTracking()
+            .Where(x => x.ExpertProfileId == profileId)
+            .OrderByDescending(x => x.OccurredAt)
+            .ToListAsync(ct);
+
+    public Task<ExpertViolation?> FindAsync(
+        Guid profileId,
+        Guid reviewCaseId,
+        CancellationToken ct
+    ) =>
+        db.ExpertViolations.SingleOrDefaultAsync(
+            x => x.ReviewCaseId == reviewCaseId && x.ExpertProfileId == profileId,
+            ct
+        );
+
+    public Task<int> CountExcusedAsync(
+        Guid profileId,
+        DateTimeOffset since,
+        CancellationToken ct
+    ) =>
+        db.ExpertViolations.CountAsync(
+            x => x.ExpertProfileId == profileId && x.ExcusedAt > since,
+            ct
+        );
 }

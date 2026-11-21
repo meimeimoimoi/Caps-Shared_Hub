@@ -31,4 +31,32 @@ public sealed class ExpertViolation
             Points = ViolationRules.PointsOf(kind),
             OccurredAt = occurredAt,
         };
+
+    /// <summary>
+    /// A System Admin excuses the violation for force majeure (2026-11-20): it stops counting, the money split
+    /// does not change. Reason required; at most ViolationRules.MaxExcuses per expert in the window.
+    /// </summary>
+    /// <param name="excusedInWindow">Violations of this expert already excused within the window.</param>
+    public void Excuse(Guid adminUserId, string? reason, int excusedInWindow, DateTimeOffset now)
+    {
+        if (ExcusedAt != null)
+        {
+            throw ExpertErrors.ViolationAlreadyExcused();
+        }
+        var why = string.IsNullOrWhiteSpace(reason) ? null : reason.Trim();
+        if (why == null)
+        {
+            throw ExpertErrors.ViolationExcuseReasonRequired();
+        }
+        if (excusedInWindow >= ViolationRules.MaxExcuses)
+        {
+            throw ExpertErrors.ViolationExcuseLimit(
+                ViolationRules.MaxExcuses,
+                ViolationRules.WindowDays
+            );
+        }
+        ExcusedAt = now;
+        ExcusedBy = adminUserId;
+        ExcusedReason = why;
+    }
 }

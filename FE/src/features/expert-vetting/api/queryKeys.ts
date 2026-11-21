@@ -3,6 +3,8 @@ export const adminKeys = {
   applications: () => [...adminKeys.all, 'applications'] as const,
   application: (id: string) => [...adminKeys.all, 'application', id] as const,
   experts: () => [...adminKeys.all, 'experts'] as const,
+  violations: (expertId: string) =>
+    [...adminKeys.all, 'violations', expertId] as const,
   qualifications: (scope: string) =>
     [...adminKeys.all, 'qualifications', scope] as const,
   qualification: (scope: string, id: string) =>

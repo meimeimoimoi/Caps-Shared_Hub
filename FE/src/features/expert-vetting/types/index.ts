@@ -322,6 +322,8 @@ export interface Expert {
   id: string
   /** Gate 1 application behind the row; absent in demo fixtures */
   applicationId?: string
+  /** Expert profile id (violation points); absent in demo fixtures */
+  expertId?: string
   /** Service name; absent in demo fixtures */
   serviceName?: string
   name: string
@@ -339,4 +341,24 @@ export interface Expert {
   reviewer: string
   /** text viết tiếp sau tên actor, vd. actor "Trần An" + text "duyệt đơn đăng ký." */
   history: HistoryEntry[]
+}
+
+/** One review case that counted against the expert */
+export interface ExpertViolation {
+  reviewCaseId: string
+  kind: 'LATE' | 'WITHDREW' | 'NO_DELIVERY'
+  points: number
+  occurredAt: string
+  /** Still counts: within the window and not excused */
+  counted: boolean
+  excusedAt: string | null
+  excusedReason: string | null
+}
+
+export interface ExpertViolations {
+  /** Points counted now; 6 hide the expert, 9 suspend every approved service */
+  points: number
+  excusesLeft: number
+  windowDays: number
+  items: ExpertViolation[]
 }

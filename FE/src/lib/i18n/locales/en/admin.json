@@ -199,7 +199,40 @@
       "admin": "Admin"
     },
     "expertCount_one": "{{count}} expert",
-    "expertCount_other": "{{count}} experts"
+    "expertCount_other": "{{count}} experts",
+    "violations": {
+      "title": "Violations",
+      "help": "Late +1, withdrew after accepting +2, never delivered +3. Points count for the last {{days}} days: 6 hide the expert from the marketplace, 9 suspend every service (only an admin reinstates). Excuse only for proven force majeure; the case's money does not change.",
+      "points_one": "{{count}} point / {{days}} days",
+      "points_other": "{{count}} points / {{days}} days",
+      "excusesLeft_one": "{{count}} excuse left",
+      "excusesLeft_other": "{{count}} excuses left",
+      "none": "No violations.",
+      "kind": {
+        "LATE": "Late delivery",
+        "WITHDREW": "Withdrew after accepting",
+        "NO_DELIVERY": "Never delivered"
+      },
+      "plus_one": "+{{count}} point",
+      "plus_other": "+{{count}} points",
+      "case": "Case {{id}}",
+      "counted": "Counting",
+      "expired": "No longer counted",
+      "excused": "Excused: {{reason}}",
+      "excuse": "Excuse",
+      "excuseTitle": "Excuse this violation for force majeure?",
+      "excuseBody": "{{kind}} on case {{id}} will stop counting. The case's money split does not change; a suspended service still has to be reinstated by hand.",
+      "reason": "Reason and evidence checked (required)",
+      "reasonMissing": "Enter the reason for the excuse.",
+      "confirm": "Excuse",
+      "failed": "Couldn't excuse. Try again.",
+      "errors": {
+        "VIOLATION_EXCUSE_LIMIT": "This expert already had 2 excuses in 90 days.",
+        "VIOLATION_ALREADY_EXCUSED": "This violation is already excused.",
+        "VIOLATION_NOT_FOUND": "Violation not found.",
+        "VIOLATION_EXCUSE_REASON_REQUIRED": "Enter the reason for the excuse."
+      }
+    }
   },
   "applicationsTable": {
     "sortBy": "Sort by: oldest submitted first",

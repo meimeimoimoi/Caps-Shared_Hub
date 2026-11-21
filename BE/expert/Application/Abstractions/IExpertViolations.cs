@@ -14,4 +14,13 @@ public interface IExpertViolations
         DateTimeOffset since,
         CancellationToken ct
     );
+
+    /// <summary>Every violation of the expert, newest first.</summary>
+    Task<IReadOnlyList<ExpertViolation>> ListAsync(Guid profileId, CancellationToken ct);
+
+    /// <summary>The violation, tracked for changes; null when it is not this expert's.</summary>
+    Task<ExpertViolation?> FindAsync(Guid profileId, Guid reviewCaseId, CancellationToken ct);
+
+    /// <summary>How many of the expert's violations were excused after <paramref name="since"/>.</summary>
+    Task<int> CountExcusedAsync(Guid profileId, DateTimeOffset since, CancellationToken ct);
 }
