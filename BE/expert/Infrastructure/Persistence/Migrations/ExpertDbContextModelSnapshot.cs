@@ -799,6 +799,55 @@ namespace Caps.Expert.Infrastructure.Persistence.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Caps.Expert.Domain.Profiles.ExpertViolation", b =>
+                {
+                    b.Property<Guid>("ReviewCaseId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("review_case_id");
+
+                    b.Property<DateTimeOffset?>("ExcusedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("excused_at");
+
+                    b.Property<Guid?>("ExcusedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("excused_by");
+
+                    b.Property<string>("ExcusedReason")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("excused_reason");
+
+                    b.Property<Guid>("ExpertProfileId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("expert_profile_id");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("kind");
+
+                    b.Property<DateTimeOffset>("OccurredAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("occurred_at");
+
+                    b.Property<short>("Points")
+                        .HasColumnType("smallint")
+                        .HasColumnName("points");
+
+                    b.HasKey("ReviewCaseId");
+
+                    b.HasIndex("ExpertProfileId", "OccurredAt")
+                        .HasDatabaseName("ix_expert_violation_profile_time");
+
+                    b.ToTable("expert_violation", "expert", t =>
+                        {
+                            t.HasCheckConstraint("ck_expert_violation_points", "points BETWEEN 1 AND 3");
+                        });
+                });
+
             modelBuilder.Entity("Caps.Expert.Domain.Qualifications.CompetencyAssessment", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1293,6 +1342,16 @@ namespace Caps.Expert.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_expert_case_slot_profile");
+                });
+
+            modelBuilder.Entity("Caps.Expert.Domain.Profiles.ExpertViolation", b =>
+                {
+                    b.HasOne("Caps.Expert.Domain.Profiles.ExpertProfile", null)
+                        .WithMany()
+                        .HasForeignKey("ExpertProfileId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_expert_violation_profile");
                 });
 
             modelBuilder.Entity("Caps.Expert.Domain.Qualifications.CompetencyAssessment", b =>

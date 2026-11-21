@@ -773,6 +773,7 @@
     "REQUESTS_TURNED_OFF": "You turned off new requests for this service.",
     "CAPACITY_NOT_SET": "Capacity not set yet.",
     "ACCOUNT_INACTIVE": "Your account is not active.",
+    "VIOLATION_POINTS": "Hidden from the marketplace: 6 or more violation points in 90 days (late, withdrawn or undelivered cases). You reappear once older points expire.",
     "COMPETENCY_EVIDENCE_PENDING": "Submit competency evidence to be assessed."
   },
   "availabilityPage": {

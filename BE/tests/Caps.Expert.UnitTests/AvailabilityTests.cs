@@ -23,7 +23,27 @@ public sealed class AvailabilityTests
     }
 
     private static ListingFacts Listed() =>
-        new(QualificationStatus.ApprovedForService, true, true, true, true, true);
+        new(QualificationStatus.ApprovedForService, true, true, true, true, true, true);
+
+    // 2026-11-20: 6 violation points in 90 days hide the expert until older points expire
+    [Fact]
+    public void Too_many_violation_points_hide_the_expert()
+    {
+        var facts = Listed() with { GoodStanding = false };
+
+        Assert.False(MarketplaceRules.IsListed(facts));
+        Assert.Equal(["VIOLATION_POINTS"], MarketplaceRules.Missing(facts));
+    }
+
+    [Theory]
+    [InlineData("LATE", 1)]
+    [InlineData("WITHDREW", 2)]
+    [InlineData("NO_DELIVERY", 3)]
+    public void Each_violation_kind_has_its_points(string kind, short points) =>
+        Assert.Equal(
+            points,
+            ExpertViolation.Record(Guid.NewGuid(), Guid.NewGuid(), kind, Now).Points
+        );
 
     [Fact]
     public void A_new_profile_has_no_capacity_and_no_free_slot()

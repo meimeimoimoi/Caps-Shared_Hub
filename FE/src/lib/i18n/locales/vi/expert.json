@@ -772,6 +772,7 @@
     "REQUESTS_TURNED_OFF": "Bạn đang tắt nhận yêu cầu cho dịch vụ này.",
     "CAPACITY_NOT_SET": "Chưa đặt số hồ sơ làm cùng lúc.",
     "ACCOUNT_INACTIVE": "Tài khoản chưa hoạt động.",
+    "VIOLATION_POINTS": "Tạm ẩn khỏi Sàn: có từ 6 điểm vi phạm trong 90 ngày (giao trễ, tự hủy hoặc không bàn giao). Bạn tự hiện lại khi điểm cũ hết hạn.",
     "COMPETENCY_EVIDENCE_PENDING": "Nộp minh chứng năng lực để được đánh giá."
   },
   "availabilityPage": {
