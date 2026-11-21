@@ -247,7 +247,7 @@ public static class ExpertDecisionEmailTemplate
         return Render(ForStatus(m.ToStatus, m.Note), "bạn", email, m.OccurredAt, link, issues);
     }
 
-    /// <summary>Tells the operations inbox a client opened a dispute; it must be decided within 48 hours.</summary>
+    /// <summary>Tells the operations inbox a client opened a dispute; it must be decided within 2 working days.</summary>
     public static Content BuildDisputeAlert(
         ReviewCaseStatusChangedEvent m,
         string email,
@@ -257,7 +257,7 @@ public static class ExpertDecisionEmailTemplate
         var copy = new Copy(
             $"Có khiếu nại mới cần xử lý – {Brand}",
             "Có khiếu nại mới",
-            "Một khách hàng vừa khiếu nại kết quả rà soát. Khiếu nại cần được quyết định trong 48 giờ.",
+            "Một khách hàng vừa khiếu nại kết quả rà soát. Khiếu nại cần được quyết định trong 2 ngày làm việc.",
             "Mở khiếu nại"
         );
         return Render(copy, "Quản trị viên", email, m.OccurredAt, link, []);
@@ -278,7 +278,7 @@ public static class ExpertDecisionEmailTemplate
             "Khiếu nại đã quá hạn",
             m.Extended
                 ? $"Khiếu nại đã quá hạn gia hạn lúc {due} mà chưa có quyết định. Không thể gia hạn thêm; vui lòng quyết định ngay."
-                : $"Khiếu nại đã quá hạn quyết định lúc {due}. Vui lòng quyết định, hoặc gia hạn một lần thêm 48 giờ.",
+                : $"Khiếu nại đã quá hạn quyết định lúc {due}. Vui lòng quyết định, hoặc gia hạn một lần thêm 2 ngày làm việc.",
             "Mở khiếu nại"
         );
         return Render(copy, "Quản trị viên", email, m.OccurredAt, link, []);
