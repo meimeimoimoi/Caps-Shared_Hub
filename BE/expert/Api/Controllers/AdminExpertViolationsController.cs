@@ -59,4 +59,42 @@ public sealed class AdminExpertViolationsController(ICurrentUser currentUser) : 
         var violations = await list.HandleAsync(new(profileId), ct);
         return Ok(ApiResponse<ExpertViolationsResponse>.Ok(violations));
     }
+
+    /// <summary>Turns down the expert's excuse request; the violation keeps counting.</summary>
+    /// <response code="200">The expert's violations after the change.</response>
+    /// <response code="404">VIOLATION_NOT_FOUND.</response>
+    /// <response code="409">VIOLATION_EXCUSE_NOT_REQUESTED.</response>
+    /// <response code="503">SESSION_CHECK_UNAVAILABLE: the session could not be checked.</response>
+    [HttpPost("{reviewCaseId:guid}/decline-excuse"), RequireSessionCheck]
+    public async Task<IActionResult> DeclineExcuse(
+        Guid profileId,
+        Guid reviewCaseId,
+        [FromServices] ICommandHandler<DeclineExcuseCommand> decline,
+        [FromServices] IQueryHandler<ListViolationsQuery, ExpertViolationsResponse> list,
+        CancellationToken ct
+    )
+    {
+        await decline.HandleAsync(new(UserId, profileId, reviewCaseId), ct);
+        var violations = await list.HandleAsync(new(profileId), ct);
+        return Ok(ApiResponse<ExpertViolationsResponse>.Ok(violations));
+    }
+
+    /// <summary>Downloads one evidence file of the expert's excuse request.</summary>
+    /// <response code="200">The file.</response>
+    /// <response code="403">Missing the ExpertApprove permission.</response>
+    /// <response code="404">VIOLATION_NOT_FOUND or VIOLATION_FILE_NOT_FOUND.</response>
+    [HttpGet("{reviewCaseId:guid}/files/{fileId:guid}")]
+    public async Task<IActionResult> OpenFile(
+        Guid profileId,
+        Guid reviewCaseId,
+        Guid fileId,
+        [FromServices] IQueryHandler<OpenExcuseFileQuery, ExpertEvidenceFile> handler,
+        CancellationToken ct
+    )
+    {
+        var file = await handler.HandleAsync(new(profileId, reviewCaseId, fileId), ct);
+        Response.Headers.XContentTypeOptions = "nosniff";
+        Response.Headers.CacheControl = "private, no-store";
+        return File(file.Content, file.ContentType, file.FileName);
+    }
 }

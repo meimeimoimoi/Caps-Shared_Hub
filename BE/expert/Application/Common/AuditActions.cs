@@ -20,4 +20,5 @@ public static class AuditActions
     /// <summary>One expert violation; the entity id is the review case id.</summary>
     public const string Violation = "EXPERT_VIOLATION";
     public const string ViolationExcused = "VIOLATION_EXCUSED";
+    public const string ViolationExcuseDeclined = "VIOLATION_EXCUSE_DECLINED";
 }

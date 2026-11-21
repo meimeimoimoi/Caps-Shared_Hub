@@ -806,6 +806,19 @@ namespace Caps.Expert.Infrastructure.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("review_case_id");
 
+                    b.Property<DateTimeOffset?>("ExcuseDeclinedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("excuse_declined_at");
+
+                    b.Property<string>("ExcuseRequest")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("excuse_request");
+
+                    b.Property<DateTimeOffset?>("ExcuseRequestedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("excuse_requested_at");
+
                     b.Property<DateTimeOffset?>("ExcusedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("excused_at");
@@ -1352,6 +1365,45 @@ namespace Caps.Expert.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_expert_violation_profile");
+
+                    b.OwnsMany("Caps.Expert.Domain.Profiles.ExcuseFile", "ExcuseFiles", b1 =>
+                        {
+                            b1.Property<Guid>("ExpertViolationReviewCaseId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<int>("__synthesizedOrdinal")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("integer");
+
+                            b1.Property<string>("ContentType")
+                                .IsRequired()
+                                .HasColumnType("text");
+
+                            b1.Property<string>("FileName")
+                                .IsRequired()
+                                .HasColumnType("text");
+
+                            b1.Property<Guid>("Id")
+                                .HasColumnType("uuid");
+
+                            b1.Property<long>("SizeBytes")
+                                .HasColumnType("bigint");
+
+                            b1.Property<string>("StorageKey")
+                                .IsRequired()
+                                .HasColumnType("text");
+
+                            b1.HasKey("ExpertViolationReviewCaseId", "__synthesizedOrdinal");
+
+                            b1.ToTable("expert_violation", "expert");
+
+                            b1.ToJson("excuse_files");
+
+                            b1.WithOwner()
+                                .HasForeignKey("ExpertViolationReviewCaseId");
+                        });
+
+                    b.Navigation("ExcuseFiles");
                 });
 
             modelBuilder.Entity("Caps.Expert.Domain.Qualifications.CompetencyAssessment", b =>

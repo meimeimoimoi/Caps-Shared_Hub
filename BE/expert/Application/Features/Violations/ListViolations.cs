@@ -19,16 +19,7 @@ public sealed class ListViolationsHandler(IExpertViolations violations, TimeProv
     {
         var since = clock.GetUtcNow().AddDays(-ViolationRules.WindowDays);
         var all = await violations.ListAsync(query.ExpertProfileId, ct);
-        var items = all.Select(v => new ExpertViolationResponse(
-                v.ReviewCaseId.ToString(),
-                v.Kind,
-                v.Points,
-                v.OccurredAt,
-                v.ExcusedAt == null && v.OccurredAt > since,
-                v.ExcusedAt,
-                v.ExcusedReason
-            ))
-            .ToArray();
+        var items = all.Select(v => Describe(v, since)).ToArray();
         var excused = all.Count(v => v.ExcusedAt > since);
         return new(
             items.Where(x => x.Counted).Sum(x => x.Points),
@@ -37,4 +28,26 @@ public sealed class ListViolationsHandler(IExpertViolations violations, TimeProv
             items
         );
     }
+
+    /// <summary>One violation as the admin and the expert see it; shared with the excuse request queue.</summary>
+    public static ExpertViolationResponse Describe(ExpertViolation v, DateTimeOffset since) =>
+        new(
+            v.ReviewCaseId.ToString(),
+            v.Kind,
+            v.Points,
+            v.OccurredAt,
+            v.ExcusedAt == null && v.OccurredAt > since,
+            v.ExcusedAt,
+            v.ExcusedReason,
+            v.ExcuseRequest,
+            v.ExcuseRequestedAt,
+            v.ExcuseDeclinedAt,
+            v.ExcuseFiles.Select(f => new ExcuseFileResponse(
+                    f.Id.ToString(),
+                    f.FileName,
+                    f.ContentType,
+                    f.SizeBytes
+                ))
+                .ToArray()
+        );
 }

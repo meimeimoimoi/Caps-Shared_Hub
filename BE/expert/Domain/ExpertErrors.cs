@@ -533,4 +533,31 @@ public static class ExpertErrors
             "VIOLATION_EXCUSE_LIMIT",
             $"At most {max} violations can be excused within {days} days."
         );
+
+    public static AppException ViolationExcuseAlreadyRequested() =>
+        new(
+            ErrorType.Conflict,
+            "VIOLATION_EXCUSE_ALREADY_REQUESTED",
+            "An excuse was already asked for this violation."
+        );
+
+    public static AppException ViolationExcuseRequestClosed(int days) =>
+        new(
+            ErrorType.Conflict,
+            "VIOLATION_EXCUSE_REQUEST_CLOSED",
+            $"An excuse can be asked within {days} days of the violation."
+        );
+
+    public static AppException ViolationExcuseNotRequested() =>
+        new(
+            ErrorType.Conflict,
+            "VIOLATION_EXCUSE_NOT_REQUESTED",
+            "There is no excuse request waiting."
+        );
+
+    public static AppException ViolationExcuseFileLimit(int max) =>
+        new(ErrorType.Validation, "VIOLATION_EXCUSE_FILE_LIMIT", $"Attach at most {max} files.");
+
+    public static AppException ViolationFileNotFound() =>
+        new(ErrorType.NotFound, "VIOLATION_FILE_NOT_FOUND", "The file was not found.");
 }

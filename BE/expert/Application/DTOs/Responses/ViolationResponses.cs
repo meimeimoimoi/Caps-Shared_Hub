@@ -19,5 +19,25 @@ public sealed record ExpertViolationResponse(
     DateTimeOffset OccurredAt,
     bool Counted,
     DateTimeOffset? ExcusedAt,
-    string? ExcusedReason
+    string? ExcusedReason,
+    string? ExcuseRequest,
+    DateTimeOffset? ExcuseRequestedAt,
+    DateTimeOffset? ExcuseDeclinedAt,
+    ExcuseFileResponse[] ExcuseFiles
+);
+
+/// <summary>An evidence file; downloaded through the admin API by its id.</summary>
+public sealed record ExcuseFileResponse(
+    string Id,
+    string FileName,
+    string ContentType,
+    long SizeBytes
+);
+
+/// <summary>An excuse request waiting for the admin, with who asked.</summary>
+public sealed record ExcuseRequestResponse(
+    string ExpertProfileId,
+    string? ExpertName,
+    string? ExpertEmail,
+    ExpertViolationResponse Violation
 );

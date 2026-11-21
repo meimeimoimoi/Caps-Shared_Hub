@@ -147,6 +147,12 @@ public sealed class ExpertDbContext(DbContextOptions<ExpertDbContext> options) :
             e.Property(x => x.ExcusedAt).HasColumnName("excused_at");
             e.Property(x => x.ExcusedBy).HasColumnName("excused_by");
             e.Property(x => x.ExcusedReason).HasColumnName("excused_reason").HasMaxLength(1000);
+            e.Property(x => x.ExcuseRequest).HasColumnName("excuse_request").HasMaxLength(1000);
+            e.Property(x => x.ExcuseRequestedAt).HasColumnName("excuse_requested_at");
+            e.Property(x => x.ExcuseDeclinedAt).HasColumnName("excuse_declined_at");
+            e.Ignore(x => x.ExcusePending);
+            // At most 5 files per request, never queried on their own: one jsonb column
+            e.OwnsMany(x => x.ExcuseFiles, f => f.ToJson("excuse_files"));
             e.HasIndex(x => new { x.ExpertProfileId, x.OccurredAt })
                 .HasDatabaseName("ix_expert_violation_profile_time");
             e.HasOne<ExpertProfile>()

@@ -17,6 +17,18 @@ public sealed class ExpertViolation
     public Guid? ExcusedBy { get; private set; }
     public string? ExcusedReason { get; private set; }
 
+    /// <summary>The expert's own words when asking for an excuse; null when never asked.</summary>
+    public string? ExcuseRequest { get; private set; }
+    public DateTimeOffset? ExcuseRequestedAt { get; private set; }
+    public DateTimeOffset? ExcuseDeclinedAt { get; private set; }
+
+    /// <summary>Evidence uploaded with the excuse request.</summary>
+    public List<ExcuseFile> ExcuseFiles { get; private set; } = [];
+
+    /// <summary>Asked and the admin has neither excused nor declined yet.</summary>
+    public bool ExcusePending =>
+        ExcuseRequestedAt != null && ExcuseDeclinedAt == null && ExcusedAt == null;
+
     public static ExpertViolation Record(
         Guid reviewCaseId,
         Guid expertProfileId,
@@ -58,5 +70,43 @@ public sealed class ExpertViolation
         ExcusedAt = now;
         ExcusedBy = adminUserId;
         ExcusedReason = why;
+    }
+
+    /// <summary>
+    /// The expert asks for a force-majeure excuse, once, within ViolationRules.RequestWithinDays of the violation,
+    /// with up to ViolationRules.MaxExcuseFiles evidence files; the admin then excuses or declines.
+    /// </summary>
+    public void RequestExcuse(string? reason, IReadOnlyList<ExcuseFile> files, DateTimeOffset now)
+    {
+        if (ExcusedAt != null)
+        {
+            throw ExpertErrors.ViolationAlreadyExcused();
+        }
+        if (ExcuseRequestedAt != null)
+        {
+            throw ExpertErrors.ViolationExcuseAlreadyRequested();
+        }
+        if (now > OccurredAt.AddDays(ViolationRules.RequestWithinDays))
+        {
+            throw ExpertErrors.ViolationExcuseRequestClosed(ViolationRules.RequestWithinDays);
+        }
+        if (files.Count > ViolationRules.MaxExcuseFiles)
+        {
+            throw ExpertErrors.ViolationExcuseFileLimit(ViolationRules.MaxExcuseFiles);
+        }
+        var why = string.IsNullOrWhiteSpace(reason) ? null : reason.Trim();
+        ExcuseRequest = why ?? throw ExpertErrors.ViolationExcuseReasonRequired();
+        ExcuseFiles = [.. files];
+        ExcuseRequestedAt = now;
+    }
+
+    /// <summary>The admin turns the request down; the violation keeps counting.</summary>
+    public void DeclineExcuse(DateTimeOffset now)
+    {
+        if (!ExcusePending)
+        {
+            throw ExpertErrors.ViolationExcuseNotRequested();
+        }
+        ExcuseDeclinedAt = now;
     }
 }

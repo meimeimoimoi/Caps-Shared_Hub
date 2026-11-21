@@ -10,8 +10,8 @@ public sealed class ExpertViolations(ExpertDbContext db) : IExpertViolations
     public async Task<bool> AddAsync(ExpertViolation violation, CancellationToken ct) =>
         await db.Database.ExecuteSqlInterpolatedAsync(
             $"""
-            INSERT INTO expert.expert_violation (review_case_id, expert_profile_id, kind, points, occurred_at)
-            VALUES ({violation.ReviewCaseId}, {violation.ExpertProfileId}, {violation.Kind}, {violation.Points}, {violation.OccurredAt})
+            INSERT INTO expert.expert_violation (review_case_id, expert_profile_id, kind, points, occurred_at, excuse_files)
+            VALUES ({violation.ReviewCaseId}, {violation.ExpertProfileId}, {violation.Kind}, {violation.Points}, {violation.OccurredAt}, '[]')
             ON CONFLICT (review_case_id) DO NOTHING
             """,
             ct
@@ -61,4 +61,19 @@ public sealed class ExpertViolations(ExpertDbContext db) : IExpertViolations
             x => x.ExpertProfileId == profileId && x.ExcusedAt > since,
             ct
         );
+
+    public async Task<
+        IReadOnlyList<(ExpertViolation Violation, ExpertProfile Expert)>
+    > ListPendingRequestsAsync(CancellationToken ct)
+    {
+        var rows = await db
+            .ExpertViolations.AsNoTracking()
+            .Where(v =>
+                v.ExcuseRequestedAt != null && v.ExcuseDeclinedAt == null && v.ExcusedAt == null
+            )
+            .Join(db.ExpertProfiles, v => v.ExpertProfileId, p => p.Id, (v, p) => new { v, p })
+            .OrderBy(x => x.v.ExcuseRequestedAt)
+            .ToListAsync(ct);
+        return rows.ConvertAll(x => (x.v, x.p));
+    }
 }

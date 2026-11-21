@@ -23,4 +23,9 @@ public interface IExpertViolations
 
     /// <summary>How many of the expert's violations were excused after <paramref name="since"/>.</summary>
     Task<int> CountExcusedAsync(Guid profileId, DateTimeOffset since, CancellationToken ct);
+
+    /// <summary>Excuse requests waiting for an admin, oldest first, with who asked.</summary>
+    Task<IReadOnlyList<(ExpertViolation Violation, ExpertProfile Expert)>> ListPendingRequestsAsync(
+        CancellationToken ct
+    );
 }
