@@ -4,9 +4,10 @@ namespace Caps.Workflow.Domain.Review;
 public sealed partial class ReviewCase
 {
     /// <summary>
-    /// The split of the held fee (meeting of 2026-11-11). A client who went silent gets the shares frozen at
-    /// booking. An incident (a late delivery, an upheld dispute, no delivery at all) refunds one share to the
-    /// client, the platform keeps the rest and the expert gets nothing; otherwise the platform fee splits as booked.
+    /// The split of the held fee. A client who went silent gets the shares frozen at booking. An upheld dispute
+    /// or no delivery at all refunds one share to the client, the platform keeps the rest and the expert gets
+    /// nothing. A late delivery (2026-11-20) refunds the client out of the platform's share and the expert keeps
+    /// theirs; otherwise the platform fee splits as booked.
     /// </summary>
     public ReviewSettlement Settle()
     {
@@ -16,17 +17,21 @@ public sealed partial class ReviewCase
             var paid = Fee * NoResponseExpertPct / 100;
             return new(back, Fee - back - paid, paid);
         }
-        var incident =
-            Status == ReviewCaseStatus.DeliveryOverdue
-                ? NoDeliveryRefundPct
-                : Math.Max(LateRefundPct, DisputeRefundPct ?? 0);
-        if (incident > 0 || Status == ReviewCaseStatus.DeliveryOverdue)
+        // Upheld dispute or no delivery: the client gets one share, the platform the rest, the expert nothing
+        if (Status == ReviewCaseStatus.DeliveryOverdue || DisputeRefundPct > 0)
         {
+            var incident =
+                Status == ReviewCaseStatus.DeliveryOverdue
+                    ? NoDeliveryRefundPct
+                    : Math.Max(LateRefundPct, DisputeRefundPct!.Value);
             var refund = Fee * incident / 100;
             return new(refund, Fee - refund, 0);
         }
+        // Late but delivered (2026-11-20): the refund comes out of the platform's share, the expert keeps theirs
         var platform = Fee * PlatformFeePct / 100;
-        return new(0, platform, Fee - platform);
+        var late = Fee * LateRefundPct / 100;
+        var kept = Math.Max(platform - late, 0);
+        return new(late, kept, Fee - late - kept);
     }
 
     /// <summary>

@@ -230,7 +230,7 @@ public sealed class DisputeTests
 
     // Fee 1,000,000, 20% platform fee, late rule 24h / 30%: delivered 10h late, so accepting refunds 300,000
     [Theory]
-    [InlineData(0, 300_000, 700_000, 0)]
+    [InlineData(0, 300_000, 0, 700_000)]
     [InlineData(50, 500_000, 500_000, 0)]
     public void A_decision_on_a_late_delivery_keeps_the_larger_refund(
         short pct,
@@ -276,7 +276,7 @@ public sealed class DisputeTests
 
         reviewCase.WithdrawDispute(dispute, Client, LateDelivery(10).AddHours(2));
 
-        Assert.Equal(new ReviewSettlement(300_000, 700_000, 0), reviewCase.Settle());
+        Assert.Equal(new ReviewSettlement(300_000, 0, 700_000), reviewCase.Settle());
     }
 
     // Accepted at Now - 1h (a Tuesday): due one working day later, Now + 23h

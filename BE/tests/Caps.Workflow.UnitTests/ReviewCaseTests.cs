@@ -566,10 +566,10 @@ public sealed class ReviewCaseTests
     // Due one working day after acceptance (Now + 24h); fee 1,000,000, 20% platform fee, late rule 24h / 30%
     [Theory]
     [InlineData(24, 0, 0, 200_000, 800_000)] // on time
-    [InlineData(34, 30, 300_000, 700_000, 0)] // 10h late
-    [InlineData(48, 30, 300_000, 700_000, 0)] // exactly at the end of the penalty band
+    [InlineData(34, 30, 300_000, 0, 700_000)] // 10h late: the refund exceeds the platform share, the expert covers the rest
+    [InlineData(48, 30, 300_000, 0, 700_000)] // exactly at the end of the penalty band
     [InlineData(54, 100, 1_000_000, 0, 0)] // 30h late
-    public void Late_delivery_refunds_the_client_and_the_platform_keeps_the_rest(
+    public void Late_delivery_refunds_the_client_from_the_platform_share(
         int deliveredAfterHours,
         int refundPct,
         long refund,
@@ -591,6 +591,27 @@ public sealed class ReviewCaseTests
 
         Assert.Equal(refundPct, reviewCase.LateRefundPct);
         Assert.Equal(new ReviewSettlement(refund, platform, expert), reviewCase.Settle());
+    }
+
+    // Rule of 2026-11-20: 40% platform fee, 20% late refund → client 20%, platform 20%, expert 60%
+    [Fact]
+    public void Late_delivery_keeps_the_expert_share()
+    {
+        var reviewCase = NewCase(pct: 40, penaltyPct: 20);
+        reviewCase.ConfirmPayment(Now);
+        reviewCase.Accept(Expert, ExpertUser, Now);
+        reviewCase.Deliver(
+            Expert,
+            ExpertUser,
+            ReviewCase.Verified,
+            "Done",
+            null,
+            ["Article 9, CIT Law"],
+            true,
+            Now.AddHours(34)
+        );
+
+        Assert.Equal(new ReviewSettlement(200_000, 200_000, 600_000), reviewCase.Settle());
     }
 
     [Fact]
