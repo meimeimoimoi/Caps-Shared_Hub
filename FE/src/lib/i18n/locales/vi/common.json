@@ -160,7 +160,8 @@
         "DISPUTED": "Khách hàng đã khiếu nại kết quả. Bạn có thể gửi giải trình.",
         "RESOLVED": "Khiếu nại đã có quyết định của quản trị viên.",
         "TERMINATED": "Hồ sơ đã kết thúc vì thông tin bổ sung không được gửi đúng hạn.",
-        "WITHDRAWN": "Khách hàng đã rút yêu cầu review; phí đã được hoàn cho khách hàng."
+        "WITHDRAWN": "Khách hàng đã rút yêu cầu review; phí đã được hoàn cho khách hàng.",
+        "withdrawnClient": "Bạn đã rút yêu cầu rà soát. Toàn bộ phí đã được hoàn vào ví."
       },
       "acceptanceDue": "Kết quả thẩm định sắp tự xác nhận. Hãy nghiệm thu hoặc báo cáo vấn đề trước hạn.",
       "extensionRequested": "Chuyên gia xin thêm {{days}} ngày làm việc để giao kết quả. Hãy đồng ý hoặc từ chối trước hạn; không trả lời thì hạn giữ nguyên.",

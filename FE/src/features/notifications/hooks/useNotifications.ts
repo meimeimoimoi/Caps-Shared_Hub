@@ -46,6 +46,7 @@ const caseSteps = {
   RESOLVED: 'notifications.reviewCase.status.RESOLVED',
   TERMINATED: 'notifications.reviewCase.status.TERMINATED',
   WITHDRAWN: 'notifications.reviewCase.status.WITHDRAWN',
+  withdrawnClient: 'notifications.reviewCase.status.withdrawnClient',
 } as const
 
 const warningSteps = new Set([
@@ -128,7 +129,12 @@ export function useNotifications() {
           : 'accepted'
         : n.data.note === 'EXPERT_WITHDREW'
           ? 'expertWithdrew'
-          : (n.data.toStatus as keyof typeof caseSteps)
+          : // The client gets their own copy of a withdrawal (their link is /cases/…, the expert's /expert/cases/…)
+            n.data.toStatus === 'WITHDRAWN' &&
+              typeof n.data.link === 'string' &&
+              n.data.link.startsWith('/cases/')
+            ? 'withdrawnClient'
+            : (n.data.toStatus as keyof typeof caseSteps)
     if (!(step in caseSteps)) return null
     return {
       id: n.id,

@@ -216,6 +216,12 @@ public static class ExpertDecisionEmailTemplate
                 "Quản trị hệ thống đã xem xét khiếu nại của bạn. Số tiền hoàn (nếu có) đã vào ví; chi tiết ở trong hồ sơ.",
                 "Xem kết quả"
             ),
+            "WITHDRAWN" => new(
+                $"Bạn đã rút yêu cầu rà soát – {Brand}",
+                "Yêu cầu đã được rút",
+                "Bạn đã rút yêu cầu trước khi chuyên gia nhận. Toàn bộ phí đã được hoàn vào ví của bạn.",
+                "Xem hồ sơ"
+            ),
             "AUTO_CONFIRMED" => new(
                 $"Hồ sơ rà soát đã tự xác nhận hoàn tất – {Brand}",
                 "Hồ sơ đã hoàn tất",
