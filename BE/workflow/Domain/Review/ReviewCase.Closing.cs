@@ -3,6 +3,24 @@ namespace Caps.Workflow.Domain.Review;
 // How a case ends without a user action, and how its fee splits
 public sealed partial class ReviewCase
 {
+    public const string LateViolation = "LATE";
+    public const string WithdrewViolation = "WITHDREW";
+    public const string NoDeliveryViolation = "NO_DELIVERY";
+
+    /// <summary>
+    /// The violation a step records against the expert (2026-11-20), or null. Lateness is measured against the
+    /// delivery deadline, so an extension the client agreed to moves it and the case is no longer late.
+    /// </summary>
+    public string? ViolationOf(ReviewStatusHistory change) =>
+        change.ToStatus switch
+        {
+            ReviewCaseStatus.DeliveryOverdue => NoDeliveryViolation,
+            ReviewCaseStatus.ExpertDeclined when change.Note == ExpertWithdrew => WithdrewViolation,
+            ReviewCaseStatus.AwaitingAcceptance when DeliveredAt > DeliveryDeadline =>
+                LateViolation,
+            _ => null,
+        };
+
     /// <summary>
     /// The split of the held fee (meeting of 2026-11-11). A client who went silent gets the shares frozen at
     /// booking. An incident (a late delivery, an upheld dispute, no delivery at all) refunds one share to the

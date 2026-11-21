@@ -44,12 +44,13 @@ public sealed class OutboxReviewCaseEvents(WorkflowDbContext db, TimeProvider cl
             ct
         );
 
-    public Task StatusChangedAsync(
+    public async Task StatusChangedAsync(
         ReviewCase reviewCase,
         ReviewStatusHistory history,
         CancellationToken ct
-    ) =>
-        PublishAsync(
+    )
+    {
+        await PublishAsync(
             new ReviewCaseStatusChangedEvent(
                 Guid.NewGuid(),
                 reviewCase.Id,
@@ -64,6 +65,22 @@ public sealed class OutboxReviewCaseEvents(WorkflowDbContext db, TimeProvider cl
             reviewCase.Id,
             ct
         );
+        // Delivered late, withdrew or never delivered: the expert service conunts the points
+        if (reviewCase.ViolationOf(history) is { } kind)
+        {
+            await PublishAsync(
+                new ExpertViolationRecordedEvent(
+                    Guid.NewGuid(),
+                    reviewCase.Id,
+                    reviewCase.ExpertUserId,
+                    kind,
+                    history.CreatedAt
+                ),
+                reviewCase.Id,
+                ct
+            );
+        }
+    }
 
     public Task ResponseDueAsync(
         Guid reviewCaseId,

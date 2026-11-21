@@ -593,6 +593,60 @@ public sealed class ReviewCaseTests
         Assert.Equal(new ReviewSettlement(refund, platform, expert), reviewCase.Settle());
     }
 
+    // Violations the expert service counts (2026-11-20): late +1, withdrew +2, never delivered +3
+    [Theory]
+    [InlineData(24, null)] // on time
+    [InlineData(34, ReviewCase.LateViolation)]
+    public void Only_a_late_delivery_counts_as_a_violation(int deliveredAfterHours, string? kind)
+    {
+        var reviewCase = InReview();
+        var delivered = reviewCase.Deliver(
+            Expert,
+            ExpertUser,
+            ReviewCase.Verified,
+            "Done",
+            null,
+            ["Article 9, CIT Law"],
+            true,
+            Now.AddHours(deliveredAfterHours)
+        );
+
+        Assert.Equal(kind, reviewCase.ViolationOf(delivered));
+    }
+
+    [Fact]
+    public void Withdrawing_an_accepted_case_counts_as_a_violation()
+    {
+        var reviewCase = InReview();
+        var withdrawn = reviewCase.WithdrawAccepted(
+            Expert,
+            ExpertUser,
+            "Too busy",
+            Now.AddHours(1)
+        );
+
+        Assert.Equal(ReviewCase.WithdrewViolation, reviewCase.ViolationOf(withdrawn));
+    }
+
+    [Fact]
+    public void Never_delivering_counts_as_a_violation()
+    {
+        var reviewCase = InReview();
+        var overdue = reviewCase.ExpireIfOverdue(Now.AddHours(24 + 72))!;
+
+        Assert.Equal(ReviewCaseStatus.DeliveryOverdue, overdue.ToStatus);
+        Assert.Equal(ReviewCase.NoDeliveryViolation, reviewCase.ViolationOf(overdue));
+    }
+
+    [Fact]
+    public void Other_steps_are_not_violations()
+    {
+        var reviewCase = Paid();
+        var accepted = reviewCase.Accept(Expert, ExpertUser, Now);
+
+        Assert.Null(reviewCase.ViolationOf(accepted));
+    }
+
     [Fact]
     public void Delivery_past_the_late_cancel_hours_is_rejected() =>
         Assert.Equal(

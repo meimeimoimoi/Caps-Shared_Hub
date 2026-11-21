@@ -90,3 +90,18 @@ public sealed record ReviewCaseDisputeOverdueEvent(
     bool Extended,
     DateTimeOffset OccurredAt
 );
+
+/// <summary>
+/// A step of a review case counts against the expert: delivered late, withdrew after accepting, or never
+/// delivered. Published by the workflow service after committing; the expert service keeps the points.
+/// </summary>
+/// <param name="Id">Event id, also used to ignore a redelivered message.</param>
+/// <param name="ExpertUserId">The expert's account id (identity service).</param>
+/// <param name="Kind">LATE, WITHDREW or NO_DELIVERY.</param>
+public sealed record ExpertViolationRecordedEvent(
+    Guid Id,
+    Guid ReviewCaseId,
+    Guid ExpertUserId,
+    string Kind,
+    DateTimeOffset OccurredAt
+);
