@@ -39,14 +39,18 @@ const LATE_FIELDS = [
   'noDeliveryRefundPercent',
 ] as const
 type LateDraft = Record<(typeof LATE_FIELDS)[number], string>
-// Suggested rule for a service that has none yet, mirroring the seeded rates (PlatformFeeAgreedRates):
-// an incident refunds 50% and there is one tier, so cancel hours equal penalty hours
+// Suggested rule (2026-11-20): late within 24h refunds 20% from the platform's share, one tier so cancel
+// hours equal penalty hours, nothing delivered refunds 100%
 const DEFAULT_LATE: LateRule = {
   penaltyHours: 24,
-  penaltyPercent: 50,
+  penaltyPercent: 20,
   cancelHours: 24,
-  // Meeting of 2026-11-11: nothing delivered refunds 50%, the platform keeps the rest
-  noDeliveryRefundPercent: 50,
+  noDeliveryRefundPercent: 100,
+}
+// Mirrors ReviewCase.Settle: the late refund comes out of the platform's share, never below zero
+const lateSplit = (fee: number, refund: number) => {
+  const platform = Math.max(fee - refund, 0)
+  return { client: refund, platform, expert: 100 - refund - platform }
 }
 // Agreed platform share; a service's first fee starts here
 const DEFAULT_PERCENT = 40
@@ -434,8 +438,8 @@ export default function AdminPlatformFeesPage() {
       .filter(Boolean)
       .join(' · ')
   }
-  // Server rules (meeting of 2026-11-11): on time the expert gets price minus fee; an incident (late within
-  // the penalty window, nothing delivered) refunds its share and the platform keeps the rest, the expert none
+  // Server rules: on time the expert gets price minus fee; late within the penalty window refunds from the
+  // platform's share; nothing delivered refunds its share and the platform keeps the rest, the expert none
   function scenarios(
     fee: number,
     lateRule: LateRule,
@@ -447,6 +451,7 @@ export default function AdminPlatformFeesPage() {
         t('admin:platformFees.parts.expert', { percent: expert }),
         t('admin:platformFees.parts.platform', { percent: platform }),
       ].filter(Boolean) as string[]
+    const lateShare = lateSplit(fee, lateRule.penaltyPercent)
     return [
       {
         label: t('admin:platformFees.cases.onTime'),
@@ -456,11 +461,7 @@ export default function AdminPlatformFeesPage() {
         label: t('admin:platformFees.cases.late', {
           hours: lateRule.penaltyHours,
         }),
-        parts: split(
-          lateRule.penaltyPercent,
-          0,
-          100 - lateRule.penaltyPercent
-        ),
+        parts: split(lateShare.client, lateShare.expert, lateShare.platform),
       },
       ...(lateRule.cancelHours > lateRule.penaltyHours
         ? [
@@ -498,12 +499,13 @@ export default function AdminPlatformFeesPage() {
       },
     ]
   }
-  const lateShareText = isWhole(late.penaltyPercent)
-    ? t('admin:platformFees.rules.lateIncident', {
-        client: lateRule.penaltyPercent,
-        platform: 100 - lateRule.penaltyPercent,
-      })
-    : undefined
+  const lateShareText =
+    isWhole(late.penaltyPercent) && isWhole(percent)
+      ? t(
+          'admin:platformFees.rules.lateIncident',
+          lateSplit(value, lateRule.penaltyPercent)
+        )
+      : undefined
   const changed = editing
     ? {
         percent: editing.percent !== value,

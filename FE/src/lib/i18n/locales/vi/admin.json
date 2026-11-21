@@ -1147,7 +1147,7 @@
     "exampleNet": "Thực nhận: hiện tại → mới",
     "firstFeeHelp": "Phí đầu tiên có hiệu lực ngay và mở dịch vụ cho chuyên gia đặt giá.",
     "late": "Giao trễ",
-    "lateHelp": "Tính từ hạn giao bài (1 ngày làm việc). Giao trễ trong số giờ phạt: khách được hoàn % đã đặt, nền tảng giữ phần còn lại, chuyên gia không nhận. Giao trễ hơn nữa nhưng trước số giờ hủy: khách được hoàn 100%. Quá số giờ hủy mà chưa giao: yêu cầu bị hủy, khách được hoàn % \"khi không giao\", nền tảng giữ phần còn lại. Đặt số giờ phạt bằng số giờ hủy để chỉ còn một mức hoàn. Tối đa {{maxHours}} giờ. Yêu cầu đã gửi giữ nguyên quy định lúc gửi.",
+    "lateHelp": "Tính từ hạn giao bài (1 ngày làm việc). Giao trễ trong số giờ phạt: khách được hoàn % đã đặt, trừ vào phần của nền tảng, chuyên gia vẫn nhận đủ phần của mình. Giao trễ hơn nữa nhưng trước số giờ hủy: khách được hoàn 100%. Quá số giờ hủy mà chưa giao: yêu cầu bị hủy, khách được hoàn % \"khi không giao\", nền tảng giữ phần còn lại. Đặt số giờ phạt bằng số giờ hủy để chỉ còn một mức hoàn. Tối đa {{maxHours}} giờ. Yêu cầu đã gửi giữ nguyên quy định lúc gửi.",
     "lateFields": {
       "penaltyHours": "Trễ tối đa được phạt (giờ)",
       "penaltyPercent": "Hoàn cho khách khi trễ (%)",
@@ -1173,7 +1173,7 @@
       "splitOver": "% hoàn cho khách cộng % cho chuyên gia không quá 100% (đang là {{sum}}%).",
       "platformKeeps": "Nền tảng giữ {{percent}}%.",
       "dateTooSoon": "Chọn từ ngày {{date}} trở đi.",
-      "lateIncident": "Giao trễ trong số giờ phạt: khách {{client}}%, nền tảng {{platform}}%, chuyên gia không nhận.",
+      "lateIncident": "Giao trễ trong số giờ phạt: khách {{client}}%, nền tảng {{platform}}%, chuyên gia {{expert}}%.",
       "noDeliveryOver": "% hoàn khi không giao không quá 100%.",
       "daysRange": "Số ngày làm việc từ 1 đến {{max}}."
     },
