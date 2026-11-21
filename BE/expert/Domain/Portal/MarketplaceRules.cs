@@ -32,21 +32,23 @@ public static class MarketplaceRules
         && f.GoodStanding;
 
     /// <summary>
-    /// Why an approved service is not listed yet, in the order the expert fixes them: PRICING_PENDING,
-    /// REQUESTS_TURNED_OFF, CAPACITY_NOT_SET or ACCOUNT_INACTIVE; empty when listed.
+    /// Every reason an approved service is not listed yet (the expert sees the full list, 03 section 8.1), in the
+    /// order the expert fixes them: VIOLATION_POINTS, PRICING_PENDING, REQUESTS_TURNED_OFF, CAPACITY_NOT_SET,
+    /// ACCOUNT_INACTIVE; empty when listed.
     /// </summary>
     public static string[] Missing(ListingFacts f)
     {
+        var reasons = new List<string>();
         if (!f.GoodStanding)
-            return ["VIOLATION_POINTS"];
+            reasons.Add("VIOLATION_POINTS");
         if (!f.PriceInEffect)
-            return ["PRICING_PENDING"];
+            reasons.Add("PRICING_PENDING");
         if (!f.AcceptingRequests)
-            return ["REQUESTS_TURNED_OFF"];
+            reasons.Add("REQUESTS_TURNED_OFF");
         if (!f.CapacitySet)
-            return ["CAPACITY_NOT_SET"];
+            reasons.Add("CAPACITY_NOT_SET");
         if (!f.AccountActive)
-            return ["ACCOUNT_INACTIVE"];
-        return [];
+            reasons.Add("ACCOUNT_INACTIVE");
+        return [.. reasons];
     }
 }

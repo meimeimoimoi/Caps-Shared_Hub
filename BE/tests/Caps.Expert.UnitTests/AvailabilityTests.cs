@@ -115,10 +115,10 @@ public sealed class AvailabilityTests
     }
 
     [Fact]
-    public void The_missing_step_is_reported_in_the_order_the_expert_fixes_it()
+    public void Every_missing_step_is_reported_in_the_order_the_expert_fixes_it()
     {
         Assert.Equal(
-            ["PRICING_PENDING"],
+            ["PRICING_PENDING", "REQUESTS_TURNED_OFF", "CAPACITY_NOT_SET"],
             MarketplaceRules.Missing(
                 Listed() with
                 {
@@ -129,7 +129,18 @@ public sealed class AvailabilityTests
             )
         );
         Assert.Equal(
-            ["REQUESTS_TURNED_OFF"],
+            ["VIOLATION_POINTS", "PRICING_PENDING", "ACCOUNT_INACTIVE"],
+            MarketplaceRules.Missing(
+                Listed() with
+                {
+                    GoodStanding = false,
+                    PriceInEffect = false,
+                    AccountActive = false,
+                }
+            )
+        );
+        Assert.Equal(
+            ["REQUESTS_TURNED_OFF", "CAPACITY_NOT_SET"],
             MarketplaceRules.Missing(
                 Listed() with
                 {
