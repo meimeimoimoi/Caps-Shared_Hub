@@ -570,6 +570,32 @@ public sealed class ExpertDbContext(DbContextOptions<ExpertDbContext> options) :
                         PlatformFee.LocalOffset
                     ),
                     SetBy = SystemActor.UserId,
+                },
+                // Advisor's rule of 2026-11-20: late within 24h refunds 20% out of the platform's share (client 20,
+                // platform 20, expert 60); nothing delivered by then refunds 100%. Takes effect on deploy.
+                new
+                {
+                    Id = Guid.Parse("01929e3a-0000-7000-8000-000000000060"),
+                    ServiceCode = "HUMAN_VERIFICATION",
+                    Percent = 40,
+                    LatePenaltyHours = 24,
+                    LatePenaltyPercent = 20,
+                    LateCancelHours = 24,
+                    NoResponseDays = 3,
+                    NoResponseRefundPercent = 0,
+                    NoResponseExpertPercent = 60,
+                    NoDeliveryRefundPercent = 100,
+                    EffectiveFrom = new DateTimeOffset(
+                        2026,
+                        11,
+                        21,
+                        0,
+                        0,
+                        0,
+                        PlatformFee.LocalOffset
+                    ),
+                    SetBy = SystemActor.UserId,
+                    Reason = "Theo đề xuất của thầy Thức ngày 20/11/2026: giao trễ trong 24 giờ hoàn khách 20% từ phần của nền tảng (khách 20%, nền tảng 20%, chuyên gia 60%); quá 24 giờ chưa bàn giao hoàn khách 100%.",
                 }
             );
         });
