@@ -43,6 +43,10 @@ export const reviewCaseActions = {
     act(id, 'request-information', { message }),
   provideInformation: (id: string, message: string) =>
     act(id, 'provide-information', { message }),
+  requestExtension: (id: string, days: number, reason: string) =>
+    act(id, 'extension', { days, reason }),
+  decideExtension: (id: string, accept: boolean) =>
+    act(id, accept ? 'extension/accept' : 'extension/decline'),
   deliver: (
     id: string,
     body: {

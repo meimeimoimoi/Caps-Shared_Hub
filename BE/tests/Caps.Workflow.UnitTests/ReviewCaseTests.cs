@@ -647,6 +647,101 @@ public sealed class ReviewCaseTests
         Assert.Null(reviewCase.ViolationOf(accepted));
     }
 
+    // Extension (2026-11-20): the expert asks once before the deadline, up to 2 working days; only the client's yes moves it.
+    // InReview(): accepted Tuesday at Now, due Wednesday (Now + 24h); 2 more working days end on Friday (Now + 72h)
+    [Fact]
+    public void An_accepted_extension_moves_the_deadline_and_on_time_delivery_is_no_violation()
+    {
+        var reviewCase = InReview();
+        reviewCase.RequestExtension(Expert, 2, "Client sent 300 more invoices", Now.AddHours(2));
+        Assert.True(reviewCase.ExtensionPending);
+
+        reviewCase.DecideExtension(Client, true, Now.AddHours(3));
+
+        Assert.Equal(Now.AddHours(72), reviewCase.DeliveryDeadline);
+        Assert.Equal(ReviewCase.ExtensionAccepted, reviewCase.ExtensionDecision);
+        Assert.False(reviewCase.ExtensionPending);
+        var delivered = reviewCase.Deliver(
+            Expert,
+            ExpertUser,
+            ReviewCase.Verified,
+            "Done",
+            null,
+            ["Article 9, CIT Law"],
+            true,
+            Now.AddHours(60)
+        );
+        Assert.Null(reviewCase.ViolationOf(delivered));
+        Assert.Equal(0, reviewCase.LateRefundPct);
+    }
+
+    [Fact]
+    public void A_declined_extension_keeps_the_deadline()
+    {
+        var reviewCase = InReview();
+        reviewCase.RequestExtension(Expert, 1, "Need one more day", Now.AddHours(2));
+
+        reviewCase.DecideExtension(Client, false, Now.AddHours(3));
+
+        Assert.Equal(Now.AddHours(24), reviewCase.DeliveryDeadline);
+        Assert.Equal(ReviewCase.ExtensionDeclined, reviewCase.ExtensionDecision);
+    }
+
+    [Fact]
+    public void An_extension_is_asked_once_per_case()
+    {
+        var reviewCase = InReview();
+        reviewCase.RequestExtension(Expert, 1, "Need one more day", Now.AddHours(2));
+        reviewCase.DecideExtension(Client, false, Now.AddHours(3));
+
+        Assert.Equal(
+            "EXTENSION_ALREADY_REQUESTED",
+            Errors.CodeOf(() => reviewCase.RequestExtension(Expert, 1, "Again", Now.AddHours(4)))
+        );
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(3)]
+    public void An_extension_is_one_or_two_working_days(int days) =>
+        Assert.Equal(
+            "EXTENSION_DAYS_INVALID",
+            Errors.CodeOf(() => InReview().RequestExtension(Expert, days, "Busy", Now.AddHours(2)))
+        );
+
+    [Fact]
+    public void An_extension_cannot_be_asked_or_accepted_after_the_deadline()
+    {
+        Assert.Equal(
+            "CASE_DEADLINE_PASSED",
+            Errors.CodeOf(() => InReview().RequestExtension(Expert, 1, "Late", Now.AddHours(24)))
+        );
+        var reviewCase = InReview();
+        reviewCase.RequestExtension(Expert, 1, "Need one more day", Now.AddHours(2));
+
+        Assert.Equal(
+            "CASE_DEADLINE_PASSED",
+            Errors.CodeOf(() => reviewCase.DecideExtension(Client, true, Now.AddHours(24)))
+        );
+        Assert.Equal(Now.AddHours(24), reviewCase.DeliveryDeadline);
+    }
+
+    [Fact]
+    public void Only_the_client_decides_a_pending_extension()
+    {
+        var reviewCase = InReview();
+        Assert.Equal(
+            "EXTENSION_NOT_PENDING",
+            Errors.CodeOf(() => reviewCase.DecideExtension(Client, true, Now.AddHours(1)))
+        );
+        reviewCase.RequestExtension(Expert, 1, "Need one more day", Now.AddHours(2));
+
+        Assert.Equal(
+            "REVIEW_CASE_NOT_FOUND",
+            Errors.CodeOf(() => reviewCase.DecideExtension(Guid.NewGuid(), true, Now.AddHours(3)))
+        );
+    }
+
     [Fact]
     public void Delivery_past_the_late_cancel_hours_is_rejected() =>
         Assert.Equal(

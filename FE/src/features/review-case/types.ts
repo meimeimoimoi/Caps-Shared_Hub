@@ -208,6 +208,8 @@ export interface ReviewCaseDto {
   settlement: SettlementAmounts | null
   /** Only GET /review-cases/{id} loads them; null in lists and action responses */
   infoRequests: InfoRequestDto[] | null
+  /** The expert's extension request; null when never asked */
+  extension?: ExtensionDto | null
   updatedAt: string
   createdAt: string
 }
@@ -255,4 +257,13 @@ export interface CaseChatMessage {
 export interface CaseUnread {
   reviewCaseId: string
   unreadCount: number
+}
+
+/** The expert asked for 1–2 more working days; decision is null while the client has not answered */
+export interface ExtensionDto {
+  days: number
+  reason: string
+  requestedAt: string
+  decision: 'EXTENSION_ACCEPTED' | 'EXTENSION_DECLINED' | null
+  decidedAt: string | null
 }

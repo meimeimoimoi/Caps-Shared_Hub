@@ -1,5 +1,6 @@
 import { useCallback, useId, useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
+import { ExtensionForm, ExtensionStatus } from './CaseExtension'
 import { Link } from 'react-router-dom'
 import { ArrowLeft } from 'lucide-react'
 import { HelpTip } from '@/components/ui/feedback/help-tip'
@@ -509,6 +510,26 @@ export function ExpertLiveCase({
                   )
                 }
               />
+            </Card>
+          )}
+
+          {dto.status === 'IN_REVIEW' && !dto.extension && (
+            <Card title={t('extension.title')}>
+              <ExtensionForm
+                busy={busy}
+                onSubmit={(days, reason) =>
+                  perform(
+                    () => a.requestExtension(caseId, days, reason),
+                    t('extension.requestedFeedback')
+                  )
+                }
+              />
+            </Card>
+          )}
+
+          {dto.extension && (
+            <Card title={t('extension.title')}>
+              <ExtensionStatus extension={dto.extension} />
             </Card>
           )}
 

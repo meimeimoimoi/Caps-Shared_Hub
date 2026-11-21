@@ -374,6 +374,13 @@ public sealed class WorkflowDbContext(DbContextOptions<WorkflowDbContext> option
             e.Property(x => x.StartedAt).HasColumnName("started_at");
             e.Property(x => x.DeliveryDeadline).HasColumnName("delivery_deadline");
             e.Property(x => x.DeliveredAt).HasColumnName("delivered_at");
+            e.Property(x => x.ExtensionDays).HasColumnName("extension_days");
+            e.Property(x => x.ExtensionReason).HasColumnName("extension_reason");
+            e.Property(x => x.ExtensionRequestedAt).HasColumnName("extension_requested_at");
+            e.Property(x => x.ExtensionDecision)
+                .HasColumnName("extension_decision")
+                .HasMaxLength(32);
+            e.Property(x => x.ExtensionDecidedAt).HasColumnName("extension_decided_at");
             e.Property(x => x.AcceptanceDeadline).HasColumnName("acceptance_deadline");
             e.Property(x => x.CompletedAt).HasColumnName("completed_at");
             e.Property(x => x.CreatedAt)

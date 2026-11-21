@@ -49,3 +49,6 @@ public sealed record SaveRevisionRequest(JsonElement? RevisedContent);
 
 /// <summary>1 to 5 stars for the expert, with an optional comment.</summary>
 public sealed record RateReviewRequest(int Stars, string? Comment);
+
+/// <summary>How many working days the expert asks for (1–2) and why.</summary>
+public sealed record ExtensionRequest(int Days, string? Reason);
