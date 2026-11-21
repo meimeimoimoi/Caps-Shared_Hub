@@ -92,6 +92,39 @@ public sealed record ReviewCaseDisputeOverdueEvent(
 );
 
 /// <summary>
+/// The expert asked the client for more working days before the delivery deadline (2026-11-20). Published by the
+/// workflow service after committing; the notification service tells and emails the client, who must answer
+/// before the deadline or it stays.
+/// </summary>
+/// <param name="RequesterEmail">Only to email the client themselves; null for older cases.</param>
+/// <param name="DeliveryDeadline">The deadline as it stands now, before any extension.</param>
+public sealed record ReviewCaseExtensionRequestedEvent(
+    Guid Id,
+    Guid ReviewCaseId,
+    Guid RequesterUserId,
+    string? RequesterEmail,
+    int Days,
+    string Reason,
+    DateTimeOffset DeliveryDeadline,
+    DateTimeOffset OccurredAt
+);
+
+/// <summary>
+/// The client accepted or declined the expert's extension request. Published by the workflow service after
+/// committing; the notification service tells the expert in the app.
+/// </summary>
+/// <param name="DeliveryDeadline">The deadline after the decision (moved only when accepted).</param>
+public sealed record ReviewCaseExtensionDecidedEvent(
+    Guid Id,
+    Guid ReviewCaseId,
+    Guid ExpertUserId,
+    bool Accepted,
+    int Days,
+    DateTimeOffset DeliveryDeadline,
+    DateTimeOffset OccurredAt
+);
+
+/// <summary>
 /// A step of a review case counts against the expert: delivered late, withdrew after accepting, or never
 /// delivered. Published by the workflow service after committing; the expert service keeps the points.
 /// </summary>

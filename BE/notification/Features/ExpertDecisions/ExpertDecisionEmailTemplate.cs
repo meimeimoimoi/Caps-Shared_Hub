@@ -135,6 +135,30 @@ public static class ExpertDecisionEmailTemplate
         );
     }
 
+    /// <summary>
+    /// The expert asked for more working days; only the client's yes moves the deadline, silence keeps it.
+    /// </summary>
+    public static Content Build(ReviewCaseExtensionRequestedEvent m, string email, string link)
+    {
+        var due = m
+            .DeliveryDeadline.ToOffset(VietnamOffset)
+            .ToString("HH:mm dd/MM/yyyy", CultureInfo.InvariantCulture);
+        var copy = new Copy(
+            $"Chuyên gia xin gia hạn giao kết quả – {Brand}",
+            "Chuyên gia xin thêm thời gian",
+            $"Chuyên gia đang rà soát hồ sơ của bạn và xin thêm {m.Days} ngày làm việc để giao kết quả. Vui lòng đồng ý hoặc từ chối trước {due}; nếu bạn không trả lời, hạn giao kết quả giữ nguyên.",
+            "Trả lời chuyên gia"
+        );
+        return Render(
+            copy,
+            "bạn",
+            email,
+            m.OccurredAt,
+            link,
+            [new Issue("Lý do của chuyên gia", $"thêm {m.Days} ngày làm việc", m.Reason)]
+        );
+    }
+
     public static Content Build(ReviewCaseAcceptanceDueEvent m, string email, string link)
     {
         var due = m

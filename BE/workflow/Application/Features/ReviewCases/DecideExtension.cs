@@ -12,6 +12,7 @@ public sealed record DecideExtensionCommand(Guid UserId, Guid ReviewCaseId, bool
 /// <summary>Accepting moves the delivery deadline by the working days asked; declining keeps it.</summary>
 public sealed class DecideExtensionHandler(
     IReviewCaseRepository cases,
+    IReviewCaseEvents events,
     IUnitOfWork unitOfWork,
     TimeProvider clock,
     WorkCalendar? calendar = null
@@ -27,6 +28,8 @@ public sealed class DecideExtensionHandler(
             await cases.FindForUpdateAsync(command.ReviewCaseId, ct)
             ?? throw WorkflowErrors.ReviewCaseNotFound();
         reviewCase.DecideExtension(command.UserId, command.Accept, clock.GetUtcNow(), calendar);
+        // Saved with the step: the outbox sends it only once this transaction commits
+        await events.ExtensionDecidedAsync(reviewCase, ct);
         await unitOfWork.SaveChangesAsync(ct);
         await tx.CommitAsync(ct);
         return ReviewCaseResponse.From(reviewCase);

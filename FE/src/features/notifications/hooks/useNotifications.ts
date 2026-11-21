@@ -156,6 +156,33 @@ export function useNotifications() {
         read: n.readAt != null,
       }
     if (n.type === 'REVIEW_CASE_STATUS_CHANGED') return caseStepItem(n)
+    // The expert asked for more working days (client), or the client answered (expert)
+    if (
+      n.type === 'REVIEW_CASE_EXTENSION_REQUESTED' ||
+      n.type === 'REVIEW_CASE_EXTENSION_DECIDED'
+    ) {
+      const days = typeof n.data.days === 'number' ? n.data.days : 0
+      const requested = n.type === 'REVIEW_CASE_EXTENSION_REQUESTED'
+      return {
+        id: n.id,
+        text: t(
+          requested
+            ? 'notifications.reviewCase.extensionRequested'
+            : n.data.accepted === true
+              ? 'notifications.reviewCase.extensionAccepted'
+              : 'notifications.reviewCase.extensionDeclined',
+          { days }
+        ),
+        to:
+          typeof n.data.link === 'string'
+            ? n.data.link
+            : requested
+              ? '/cases'
+              : '/expert/cases',
+        tone: requested || n.data.accepted !== true ? 'warning' : undefined,
+        read: n.readAt != null,
+      }
+    }
     if (
       n.type === 'REVIEW_CASE_INFO_REQUESTED' ||
       n.type === 'REVIEW_CASE_ACCEPTANCE_DUE'

@@ -35,6 +35,12 @@ public interface IReviewCaseEvents
         CancellationToken ct
     ) => Task.CompletedTask;
 
+    /// <summary>The expert asked the client for more working days; the client is told and emailed.</summary>
+    Task ExtensionRequestedAsync(ReviewCase reviewCase, CancellationToken ct) => Task.CompletedTask;
+
+    /// <summary>The client answered the expert's extension request; the expert is told.</summary>
+    Task ExtensionDecidedAsync(ReviewCase reviewCase, CancellationToken ct) => Task.CompletedTask;
+
     /// <summary>An open dispute passed its decision deadline; called once per deadline.</summary>
     Task DisputeOverdueAsync(
         Guid reviewCaseId,

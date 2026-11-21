@@ -16,6 +16,7 @@ public sealed record RequestExtensionCommand(
 /// <summary>Records the request; the deadline only moves when the client accepts.</summary>
 public sealed class RequestExtensionHandler(
     IReviewCaseRepository cases,
+    IReviewCaseEvents events,
     IUnitOfWork unitOfWork,
     TimeProvider clock
 ) : ICommandHandler<RequestExtensionCommand, ReviewCaseResponse>
@@ -39,6 +40,8 @@ public sealed class RequestExtensionHandler(
             command.Reason,
             clock.GetUtcNow()
         );
+        // Saved with the step: the outbox sends it only once this transaction commits
+        await events.ExtensionRequestedAsync(reviewCase, ct);
         await unitOfWork.SaveChangesAsync(ct);
         await tx.CommitAsync(ct);
         return ReviewCaseResponse.From(reviewCase);
