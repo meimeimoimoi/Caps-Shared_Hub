@@ -390,15 +390,30 @@ public sealed class ScreeningCoordinator(
             }
 
             if (
-                visionEnabled
-                && ev.ExtractionStatus == ExtractionStatuses.Unreadable
-                && ParseExtraction(ev.ParsedMeta)?.Status == ExtractionOutcomes.VisionDisabled
+                ev.ExtractionStatus == ExtractionStatuses.Unreadable
+                && ShouldRequeueUnreadable(
+                    ParseExtraction(ev.ParsedMeta),
+                    visionEnabled,
+                    retryAllFailed
+                )
             )
             {
                 ev.QueueExtractionRetry();
             }
         }
     }
+
+    /// <summary>Returns true when an UNREADABLE extraction failed only due to disabled/unavailable OCR or vision.</summary>
+    public static bool ShouldRequeueUnreadable(
+        EvidenceExtraction? parsed,
+        bool visionEnabled,
+        bool retryAllFailed
+    ) =>
+        parsed != null
+        && (
+            (visionEnabled && parsed.Status == ExtractionOutcomes.VisionDisabled)
+            || (retryAllFailed && parsed.UnreadableReason is "OCR_UNAVAILABLE" or "OCR_DISABLED")
+        );
 
     private static int CountInspectableFiles(IReadOnlyList<ExpertEvidence> files) =>
         files.Count(x => x.QualificationId == null);

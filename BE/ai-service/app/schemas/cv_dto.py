@@ -23,7 +23,6 @@ DocumentType = Literal[
 ExtractionStatus = Literal[
     "EXTRACTED",
     "UNREADABLE",
-    "VISION_DISABLED",
 ]
 
 

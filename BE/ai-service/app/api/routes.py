@@ -278,7 +278,6 @@ def draft_document(req: GenerateDraftRequest):
 async def extract_cv_metadata(
     file: UploadFile = File(...),
     evidence_type: str = Form(...),
-    vision_enabled: bool = Form(default=True),
 ):
     if evidence_type.strip().upper() != "CV":
         raise HTTPException(
@@ -291,7 +290,6 @@ async def extract_cv_metadata(
         return CvExtractor.extract(
             content=content,
             evidence_type=evidence_type,
-            vision_enabled=vision_enabled,
         )
     except HTTPException:
         raise

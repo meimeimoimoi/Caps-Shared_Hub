@@ -47,18 +47,17 @@ Return ONLY a JSON object with this exact schema:
 }"""
 
 
-def build_text_extraction_prompt(evidence_type: str, document_text: str) -> str:
+def build_text_extraction_prompt(
+    evidence_type: str, document_text: str, is_ocr: bool = False
+) -> str:
+    ocr_note = (
+        " The text below was parsed via OCR, so ignore minor OCR character noise while still never inventing missing fields."
+        if is_ocr
+        else ""
+    )
     return (
         f"Uploaded under application group hint: {evidence_type} "
-        "(note: verify the actual content independently for document_type).\n\n"
+        f"(note: verify the actual content independently for document_type).{ocr_note}\n\n"
         "Document text:\n"
         f"{document_text}"
-    )
-
-
-def build_vision_extraction_prompt(evidence_type: str) -> str:
-    return (
-        f"Uploaded under application group hint: {evidence_type} "
-        "(note: verify the actual content independently for document_type).\n\n"
-        "Read the attached document image(s) carefully and extract the factual fields as JSON."
     )

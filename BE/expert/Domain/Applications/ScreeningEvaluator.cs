@@ -554,7 +554,8 @@ public static class ScreeningEvaluator
         var visionOff = ext?.Status == ExtractionOutcomes.VisionDisabled;
         var isImage =
             ev.ContentType is FileSignature.Jpeg or FileSignature.Png || (ext?.IsImage ?? false);
-        var isCorrupt = ext?.UnreadableReason is "CORRUPT_PDF" or "UNSUPPORTED_FILE_FORMAT";
+        var isCorrupt =
+            ext?.UnreadableReason is "CORRUPT_PDF" or "CORRUPT_IMAGE" or "UNSUPPORTED_FILE_FORMAT";
 
         var detail =
             isCorrupt ? $"File \"{ev.FileName}\" ({ev.EvidenceType}) không đọc được nội dung."

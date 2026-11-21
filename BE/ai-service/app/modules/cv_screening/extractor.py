@@ -1,5 +1,7 @@
-import base64
 import logging
+import os
+from pathlib import Path
+import sys
 
 from fastapi import HTTPException, status
 import httpx
@@ -10,7 +12,6 @@ from app.core.ai_response import parse_ai_response
 from app.modules.cv_screening.prompts import (
     SYSTEM_PROMPT,
     build_text_extraction_prompt,
-    build_vision_extraction_prompt,
 )
 from app.schemas.cv_dto import CvExtractResponse, ExtractedDocumentData
 from app.schemas.errors import ErrorMessage
@@ -24,7 +25,7 @@ _MAX_TEXT_CHARS = 24_000
 
 
 class CvExtractor:
-    """Extracts structured CV metadata using local Ollama models only (non-CV documents are rejected)."""
+    """Parses uploaded Gate 1 CV files (PDF or image) into text, then extracts fields via LLM_MODEL."""
 
     @staticmethod
     def _detect_kind(data: bytes) -> str | None:
@@ -37,15 +38,101 @@ class CvExtractor:
         return None
 
     @staticmethod
-    def _call_ollama(
-        model: str,
-        user_prompt: str,
-        images_b64: list[str] | None = None,
-    ) -> ExtractedDocumentData:
-        message: dict[str, object] = {"role": "user", "content": user_prompt}
-        if images_b64:
-            message["images"] = images_b64
+    def _resolve_tessdata() -> str | None:
+        """Locate the Tesseract tessdata directory for OCR."""
+        configured = settings.OCR_TESSDATA_DIR.strip()
+        if configured and Path(configured).is_dir():
+            return configured
 
+        env_prefix = os.getenv("TESSDATA_PREFIX", "").strip()
+        if env_prefix and Path(env_prefix).is_dir():
+            return env_prefix
+
+        try:
+            detected = pymupdf.get_tessdata()
+            if detected and Path(detected).is_dir():
+                return detected
+        except Exception:
+            pass
+
+        if sys.platform == "win32":
+            for fallback in (
+                r"C:\Program Files\Tesseract-OCR\tessdata",
+                r"C:\Program Files (x86)\Tesseract-OCR\tessdata",
+            ):
+                if Path(fallback).is_dir():
+                    return fallback
+
+        return None
+
+    @staticmethod
+    def _select_ocr_language(tessdata: str, requested: str) -> str | None:
+        """Return available traineddata languages matching the requested '+' list."""
+        tess_dir = Path(tessdata)
+        requested_langs = [part.strip() for part in requested.split("+") if part.strip()]
+        available = [
+            lang for lang in requested_langs if (tess_dir / f"{lang}.traineddata").is_file()
+        ]
+        missing = [lang for lang in requested_langs if lang not in available]
+        if missing:
+            logger.warning(
+                "Missing Tesseract traineddata for %s in %s",
+                ", ".join(missing),
+                tessdata,
+            )
+        if available:
+            return "+".join(available)
+        if (tess_dir / "eng.traineddata").is_file():
+            return "eng"
+        return None
+
+    @staticmethod
+    def _ocr_pixmap(pix: pymupdf.Pixmap, language: str, tessdata: str) -> str:
+        """Run PyMuPDF Tesseract OCR on a single pixmap and return its text."""
+        normalized = pymupdf.Pixmap(pix, 0) if pix.alpha else pix
+        if normalized.colorspace is None or normalized.colorspace.n != 3:
+            normalized = pymupdf.Pixmap(pymupdf.csRGB, normalized)
+
+        ocr_pdf_bytes = normalized.pdfocr_tobytes(
+            compress=False,
+            language=language,
+            tessdata=tessdata,
+        )
+        ocr_doc = pymupdf.open(stream=ocr_pdf_bytes, filetype="pdf")
+        with ocr_doc:
+            if ocr_doc.page_count == 0:
+                return ""
+            return ocr_doc[0].get_text("text") or ""
+
+    @classmethod
+    def _ocr_pixmaps(cls, pixmaps: list[pymupdf.Pixmap]) -> tuple[str | None, str | None]:
+        """OCR rendered pages or images into text; returns (text, unreadable_reason)."""
+        if not settings.OCR_ENABLED:
+            return None, "OCR_DISABLED"
+
+        tessdata = cls._resolve_tessdata()
+        if not tessdata:
+            logger.warning("Tesseract OCR is unavailable: tessdata directory not found.")
+            return None, "OCR_UNAVAILABLE"
+
+        language = cls._select_ocr_language(tessdata, settings.OCR_LANGUAGE)
+        if not language:
+            logger.warning("Tesseract OCR has no usable traineddata in %s.", tessdata)
+            return None, "OCR_UNAVAILABLE"
+
+        try:
+            ocr_parts = [cls._ocr_pixmap(pix, language, tessdata) for pix in pixmaps]
+        except Exception:
+            logger.warning("Tesseract OCR failed while parsing document.", exc_info=True)
+            return None, "OCR_UNAVAILABLE"
+
+        combined = "\n".join(ocr_parts).strip()
+        if len(combined) < settings.CV_MIN_TEXT_CHARS:
+            return None, "OCR_NO_TEXT"
+        return combined, None
+
+    @staticmethod
+    def _call_ollama(model: str, user_prompt: str) -> ExtractedDocumentData:
         payload = {
             "model": model,
             "stream": False,
@@ -53,7 +140,7 @@ class CvExtractor:
             "options": {"temperature": 0},
             "messages": [
                 {"role": "system", "content": SYSTEM_PROMPT},
-                message,
+                {"role": "user", "content": user_prompt},
             ],
         }
 
@@ -75,12 +162,33 @@ class CvExtractor:
         return parse_ai_response(raw_content, ExtractedDocumentData)
 
     @classmethod
-    def extract(
+    def _extract_from_text(
         cls,
-        content: bytes,
         evidence_type: str,
-        vision_enabled: bool = True,
+        text: str,
+        *,
+        is_image: bool = False,
+        is_scanned: bool = False,
+        is_ocr: bool = False,
     ) -> CvExtractResponse:
+        extracted = cls._call_ollama(
+            settings.LLM_MODEL,
+            build_text_extraction_prompt(
+                evidence_type,
+                text[:_MAX_TEXT_CHARS],
+                is_ocr=is_ocr,
+            ),
+        )
+        return CvExtractResponse(
+            status="EXTRACTED",
+            is_image=is_image,
+            is_scanned=is_scanned,
+            extracted=extracted,
+        )
+
+    @classmethod
+    def extract(cls, content: bytes, evidence_type: str) -> CvExtractResponse:
+        """Parse a Gate 1 CV file to text (directly or via OCR) and extract fields via LLM."""
         normalized_group = evidence_type.strip().upper()
         if normalized_group != "CV":
             raise HTTPException(
@@ -96,30 +204,34 @@ class CvExtractor:
                 unreadable_reason="UNSUPPORTED_FILE_FORMAT",
             )
 
-        effective_vision = bool(settings.VISION_ENABLED and vision_enabled)
-
         if kind == "image":
-            if not effective_vision:
+            try:
+                pix = pymupdf.Pixmap(content)
+            except Exception:
+                logger.info("Failed to open image CV for group %s", normalized_group)
                 return CvExtractResponse(
-                    status="VISION_DISABLED",
+                    status="UNREADABLE",
                     is_image=True,
                     is_unreadable=True,
-                    unreadable_reason="IMAGE_VISION_DISABLED",
+                    unreadable_reason="CORRUPT_IMAGE",
                 )
 
-            encoded = base64.b64encode(content).decode("ascii")
-            extracted = cls._call_ollama(
-                settings.VISION_MODEL,
-                build_vision_extraction_prompt(normalized_group),
-                images_b64=[encoded],
-            )
-            return CvExtractResponse(
-                status="EXTRACTED",
+            ocr_text, reason = cls._ocr_pixmaps([pix])
+            if reason or ocr_text is None:
+                return CvExtractResponse(
+                    status="UNREADABLE",
+                    is_image=True,
+                    is_unreadable=True,
+                    unreadable_reason=reason,
+                )
+
+            return cls._extract_from_text(
+                normalized_group,
+                ocr_text,
                 is_image=True,
-                extracted=extracted,
+                is_ocr=True,
             )
 
-        # PDF handling: inspect selectable text first, fall back to rendered page vision only if scanned.
         try:
             doc = pymupdf.open(stream=content, filetype="pdf")
         except Exception:
@@ -143,39 +255,30 @@ class CvExtractor:
             combined_text = "\n".join(text_parts).strip()
 
             if len(combined_text) >= settings.CV_MIN_TEXT_CHARS:
-                extracted = cls._call_ollama(
-                    settings.LLM_MODEL,
-                    build_text_extraction_prompt(
-                        normalized_group, combined_text[:_MAX_TEXT_CHARS]
-                    ),
-                )
-                return CvExtractResponse(
-                    status="EXTRACTED",
+                return cls._extract_from_text(
+                    normalized_group,
+                    combined_text,
                     is_scanned=False,
-                    extracted=extracted,
+                    is_ocr=False,
                 )
 
-            if not effective_vision:
+            ocr_limit = min(doc.page_count, settings.CV_OCR_MAX_PAGES)
+            rendered_pages = [
+                doc[idx].get_pixmap(dpi=settings.OCR_DPI, alpha=False)
+                for idx in range(ocr_limit)
+            ]
+            ocr_text, reason = cls._ocr_pixmaps(rendered_pages)
+            if reason or ocr_text is None:
                 return CvExtractResponse(
-                    status="VISION_DISABLED",
+                    status="UNREADABLE",
                     is_scanned=True,
                     is_unreadable=True,
-                    unreadable_reason="SCANNED_PDF_VISION_DISABLED",
+                    unreadable_reason=reason,
                 )
 
-            vision_limit = min(doc.page_count, settings.CV_VISION_MAX_PAGES)
-            rendered_images: list[str] = []
-            for idx in range(vision_limit):
-                pix = doc[idx].get_pixmap(dpi=150)
-                rendered_images.append(base64.b64encode(pix.tobytes("png")).decode("ascii"))
-
-            extracted = cls._call_ollama(
-                settings.VISION_MODEL,
-                build_vision_extraction_prompt(normalized_group),
-                images_b64=rendered_images,
-            )
-            return CvExtractResponse(
-                status="EXTRACTED",
+            return cls._extract_from_text(
+                normalized_group,
+                ocr_text,
                 is_scanned=True,
-                extracted=extracted,
+                is_ocr=True,
             )

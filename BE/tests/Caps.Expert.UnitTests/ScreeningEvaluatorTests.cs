@@ -1,3 +1,4 @@
+using Caps.Expert.Application.Common;
 using Caps.Expert.Domain.Applications;
 using Caps.Expert.Infrastructure.Ai;
 
@@ -285,6 +286,90 @@ public sealed class ScreeningEvaluatorTests
             p =>
                 p.Code == ScreeningPointCodes.SysUnclassifiedSupplement
                 && p.EvidenceId == supplement.Id
+        );
+    }
+
+    [Fact]
+    public void Corrupt_image_extraction_creates_corrupt_unreadable_point()
+    {
+        var app = MakeApplication();
+        var run = ScreeningRun.Start(
+            app.Id,
+            null,
+            1,
+            1,
+            ApplicantId,
+            Now,
+            TimeSpan.FromMinutes(10)
+        );
+        var imageCv = ExpertEvidence.Create(
+            app,
+            ApplicantId,
+            "CV",
+            "broken_cv.png",
+            "image/png",
+            128,
+            Now
+        );
+        var extraction = new EvidenceExtraction(
+            ExtractionOutcomes.Unreadable,
+            true,
+            false,
+            true,
+            "CORRUPT_IMAGE",
+            null,
+            null,
+            [],
+            [],
+            []
+        );
+
+        var point = ScreeningEvaluator.EvaluatePostInspectionSystemPoint(
+            run,
+            imageCv,
+            extraction,
+            new HashSet<Guid>(),
+            Now
+        );
+
+        Assert.NotNull(point);
+        Assert.Equal(ScreeningPointCodes.SysUnreadableOrScan, point.Code);
+        Assert.Contains("không đọc được", point.Detail, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Unreadable_ocr_unavailable_and_disabled_requeue_on_retry_while_corrupt_does_not()
+    {
+        static EvidenceExtraction MakeUnreadable(string reason) =>
+            new(ExtractionOutcomes.Unreadable, true, false, true, reason, null, null, [], [], []);
+
+        Assert.True(
+            ScreeningCoordinator.ShouldRequeueUnreadable(
+                MakeUnreadable("OCR_UNAVAILABLE"),
+                visionEnabled: true,
+                retryAllFailed: true
+            )
+        );
+        Assert.True(
+            ScreeningCoordinator.ShouldRequeueUnreadable(
+                MakeUnreadable("OCR_DISABLED"),
+                visionEnabled: true,
+                retryAllFailed: true
+            )
+        );
+        Assert.False(
+            ScreeningCoordinator.ShouldRequeueUnreadable(
+                MakeUnreadable("CORRUPT_IMAGE"),
+                visionEnabled: true,
+                retryAllFailed: true
+            )
+        );
+        Assert.False(
+            ScreeningCoordinator.ShouldRequeueUnreadable(
+                MakeUnreadable("OCR_NO_TEXT"),
+                visionEnabled: true,
+                retryAllFailed: true
+            )
         );
     }
 

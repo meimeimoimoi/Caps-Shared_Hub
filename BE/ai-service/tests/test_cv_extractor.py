@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
 import sys
-from types import SimpleNamespace
+import tempfile
 import unittest
 from unittest.mock import MagicMock, patch
 
@@ -14,6 +14,7 @@ if str(AI_SERVICE_ROOT) not in sys.path:
 
 from app.config import settings  # noqa: E402
 from app.main import app  # noqa: E402
+from app.modules.cv_screening.extractor import CvExtractor  # noqa: E402
 
 
 def _make_text_pdf(text: str) -> bytes:
@@ -29,28 +30,28 @@ def _make_blank_pdf() -> bytes:
     return doc.tobytes()
 
 
-_TINY_PNG = (
-    b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01"
-    b"\x08\x06\x00\x00\x00\x1f\x15c4\x00\x00\x00\rIDATx\x9cc`\x00\x00\x00"
-    b"\x02\x00\x01H\xaf\xa4q\x00\x00\x00\x00IEND\xaeB`\x82"
-)
+def _make_valid_png(text: str = "CV") -> bytes:
+    doc = pymupdf.open()
+    page = doc.new_page()
+    page.insert_text((72, 72), text)
+    return page.get_pixmap(alpha=False).tobytes("png")
 
 
 class CvExtractorTests(unittest.TestCase):
-    """Unit tests for CV and certificate extraction endpoint and guardrails."""
+    """Unit tests for CV text/OCR extraction endpoint and guardrails."""
 
     def setUp(self):
         self._orig_key = settings.INTERNAL_API_KEY
-        self._orig_vision = settings.VISION_ENABLED
+        self._orig_ocr = settings.OCR_ENABLED
         settings.INTERNAL_API_KEY = ""
-        settings.VISION_ENABLED = True
+        settings.OCR_ENABLED = True
         self._qdrant_patch = patch("app.main.init_qdrant")
         self._qdrant_patch.start()
         self.client = TestClient(app)
 
     def tearDown(self):
         settings.INTERNAL_API_KEY = self._orig_key
-        settings.VISION_ENABLED = self._orig_vision
+        settings.OCR_ENABLED = self._orig_ocr
         self._qdrant_patch.stop()
 
     def test_non_cv_documents_are_rejected_without_calling_ollama(self):
@@ -129,40 +130,58 @@ class CvExtractorTests(unittest.TestCase):
         self.assertEqual(body["extracted"]["certificates"][0]["issued_date"], "2020-05-01")
         self.assertEqual(post.call_args.kwargs["json"]["model"], settings.LLM_MODEL)
 
-    def test_scanned_pdf_with_vision_disabled_returns_vision_disabled_without_calling_ollama(self):
+    def test_scanned_pdf_parses_ocr_text_then_calls_llm_model(self):
         scanned = _make_blank_pdf()
-        with patch("app.modules.cv_screening.extractor.httpx.post") as post:
+        fake_resp = MagicMock()
+        fake_resp.status_code = 200
+        fake_resp.json.return_value = {
+            "message": {
+                "content": json.dumps(
+                    {
+                        "full_name": "Le Thi C",
+                        "document_type": "CV",
+                        "field_codes": ["TAX_ADVISORY"],
+                        "work_milestones": [],
+                        "certificates": [],
+                    }
+                )
+            }
+        }
+        ocr_text = "Le Thi C - Chuyen vien tu van thue doanh nghiep tu 2018 den 2024."
+
+        with (
+            patch(
+                "app.modules.cv_screening.extractor.CvExtractor._resolve_tessdata",
+                return_value="/tmp/tessdata",
+            ),
+            patch(
+                "app.modules.cv_screening.extractor.CvExtractor._select_ocr_language",
+                return_value="vie+eng",
+            ),
+            patch(
+                "app.modules.cv_screening.extractor.CvExtractor._ocr_pixmap",
+                return_value=ocr_text,
+            ),
+            patch("app.modules.cv_screening.extractor.httpx.post", return_value=fake_resp) as post,
+        ):
             resp = self.client.post(
                 "/api/v1/cv/extract",
                 files={"file": ("scan.pdf", scanned, "application/pdf")},
-                data={"evidence_type": "CV", "vision_enabled": "false"},
+                data={"evidence_type": "CV"},
             )
 
         self.assertEqual(resp.status_code, 200)
         body = resp.json()
-        self.assertEqual(body["status"], "VISION_DISABLED")
+        self.assertEqual(body["status"], "EXTRACTED")
         self.assertTrue(body["is_scanned"])
-        self.assertTrue(body["is_unreadable"])
-        self.assertIsNone(body["extracted"])
-        post.assert_not_called()
+        self.assertFalse(body["is_image"])
+        self.assertEqual(body["extracted"]["full_name"], "Le Thi C")
+        sent_json = post.call_args.kwargs["json"]
+        self.assertEqual(sent_json["model"], settings.LLM_MODEL)
+        self.assertNotIn("images", sent_json["messages"][1])
+        self.assertIn(ocr_text, sent_json["messages"][1]["content"])
 
-    def test_image_with_global_vision_disabled_skips_ollama(self):
-        settings.VISION_ENABLED = False
-        with patch("app.modules.cv_screening.extractor.httpx.post") as post:
-            resp = self.client.post(
-                "/api/v1/cv/extract",
-                files={"file": ("cv.png", _TINY_PNG, "image/png")},
-                data={"evidence_type": "CV", "vision_enabled": "true"},
-            )
-
-        self.assertEqual(resp.status_code, 200)
-        body = resp.json()
-        self.assertEqual(body["status"], "VISION_DISABLED")
-        self.assertTrue(body["is_image"])
-        self.assertTrue(body["is_unreadable"])
-        post.assert_not_called()
-
-    def test_image_with_vision_enabled_calls_vision_model(self):
+    def test_image_parses_ocr_text_then_calls_llm_model(self):
         fake_resp = MagicMock()
         fake_resp.status_code = 200
         fake_resp.json.return_value = {
@@ -185,12 +204,27 @@ class CvExtractorTests(unittest.TestCase):
                 )
             }
         }
+        ocr_text = "Tran Van B - Dai ly thue va ke toan doanh nghiep 2019-2025."
 
-        with patch("app.modules.cv_screening.extractor.httpx.post", return_value=fake_resp) as post:
+        with (
+            patch(
+                "app.modules.cv_screening.extractor.CvExtractor._resolve_tessdata",
+                return_value="/tmp/tessdata",
+            ),
+            patch(
+                "app.modules.cv_screening.extractor.CvExtractor._select_ocr_language",
+                return_value="vie+eng",
+            ),
+            patch(
+                "app.modules.cv_screening.extractor.CvExtractor._ocr_pixmap",
+                return_value=ocr_text,
+            ),
+            patch("app.modules.cv_screening.extractor.httpx.post", return_value=fake_resp) as post,
+        ):
             resp = self.client.post(
                 "/api/v1/cv/extract",
-                files={"file": ("cv.png", _TINY_PNG, "image/png")},
-                data={"evidence_type": "CV", "vision_enabled": "true"},
+                files={"file": ("cv.png", _make_valid_png(), "image/png")},
+                data={"evidence_type": "CV"},
             )
 
         self.assertEqual(resp.status_code, 200)
@@ -200,8 +234,79 @@ class CvExtractorTests(unittest.TestCase):
         self.assertEqual(body["extracted"]["document_type"], "CV")
         self.assertEqual(body["extracted"]["certificates"][0]["expiry_date"], "2024-06-15")
         sent_json = post.call_args.kwargs["json"]
-        self.assertEqual(sent_json["model"], settings.VISION_MODEL)
-        self.assertEqual(len(sent_json["messages"][1]["images"]), 1)
+        self.assertEqual(sent_json["model"], settings.LLM_MODEL)
+        self.assertNotIn("images", sent_json["messages"][1])
+        self.assertIn(ocr_text, sent_json["messages"][1]["content"])
+
+    def test_scanned_pdf_when_ocr_unavailable_returns_unreadable_without_calling_ollama(self):
+        scanned = _make_blank_pdf()
+        with (
+            patch(
+                "app.modules.cv_screening.extractor.CvExtractor._resolve_tessdata",
+                return_value=None,
+            ),
+            patch("app.modules.cv_screening.extractor.httpx.post") as post,
+        ):
+            resp = self.client.post(
+                "/api/v1/cv/extract",
+                files={"file": ("scan.pdf", scanned, "application/pdf")},
+                data={"evidence_type": "CV"},
+            )
+
+        self.assertEqual(resp.status_code, 200)
+        body = resp.json()
+        self.assertEqual(body["status"], "UNREADABLE")
+        self.assertTrue(body["is_scanned"])
+        self.assertTrue(body["is_unreadable"])
+        self.assertEqual(body["unreadable_reason"], "OCR_UNAVAILABLE")
+        self.assertIsNone(body["extracted"])
+        post.assert_not_called()
+
+    def test_image_with_insufficient_ocr_text_returns_unreadable(self):
+        with (
+            patch(
+                "app.modules.cv_screening.extractor.CvExtractor._resolve_tessdata",
+                return_value="/tmp/tessdata",
+            ),
+            patch(
+                "app.modules.cv_screening.extractor.CvExtractor._select_ocr_language",
+                return_value="vie+eng",
+            ),
+            patch(
+                "app.modules.cv_screening.extractor.CvExtractor._ocr_pixmap",
+                return_value="tiny",
+            ),
+            patch("app.modules.cv_screening.extractor.httpx.post") as post,
+        ):
+            resp = self.client.post(
+                "/api/v1/cv/extract",
+                files={"file": ("blank.png", _make_valid_png(), "image/png")},
+                data={"evidence_type": "CV"},
+            )
+
+        self.assertEqual(resp.status_code, 200)
+        body = resp.json()
+        self.assertEqual(body["status"], "UNREADABLE")
+        self.assertTrue(body["is_image"])
+        self.assertTrue(body["is_unreadable"])
+        self.assertEqual(body["unreadable_reason"], "OCR_NO_TEXT")
+        post.assert_not_called()
+
+    def test_corrupt_image_returns_unreadable(self):
+        with patch("app.modules.cv_screening.extractor.httpx.post") as post:
+            resp = self.client.post(
+                "/api/v1/cv/extract",
+                files={"file": ("broken.png", b"\x89PNG\r\n\x1a\nbroken", "image/png")},
+                data={"evidence_type": "CV"},
+            )
+
+        self.assertEqual(resp.status_code, 200)
+        body = resp.json()
+        self.assertEqual(body["status"], "UNREADABLE")
+        self.assertTrue(body["is_image"])
+        self.assertTrue(body["is_unreadable"])
+        self.assertEqual(body["unreadable_reason"], "CORRUPT_IMAGE")
+        post.assert_not_called()
 
     def test_corrupt_pdf_returns_unreadable(self):
         with patch("app.modules.cv_screening.extractor.httpx.post") as post:
@@ -232,6 +337,30 @@ class CvExtractorTests(unittest.TestCase):
             )
 
         self.assertEqual(resp.status_code, 502)
+
+    def test_image_with_ocr_disabled_returns_unreadable(self):
+        settings.OCR_ENABLED = False
+        with patch("app.modules.cv_screening.extractor.httpx.post") as post:
+            resp = self.client.post(
+                "/api/v1/cv/extract",
+                files={"file": ("cv.png", _make_valid_png(), "image/png")},
+                data={"evidence_type": "CV"},
+            )
+
+        self.assertEqual(resp.status_code, 200)
+        body = resp.json()
+        self.assertEqual(body["status"], "UNREADABLE")
+        self.assertTrue(body["is_image"])
+        self.assertEqual(body["unreadable_reason"], "OCR_DISABLED")
+        post.assert_not_called()
+
+    def test_select_ocr_language_filters_to_installed_traineddata(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            tess_dir = Path(tmp)
+            (tess_dir / "eng.traineddata").write_bytes(b"")
+            self.assertEqual(CvExtractor._select_ocr_language(tmp, "vie+eng"), "eng")
+            (tess_dir / "vie.traineddata").write_bytes(b"")
+            self.assertEqual(CvExtractor._select_ocr_language(tmp, "vie+eng"), "vie+eng")
 
 
 if __name__ == "__main__":
