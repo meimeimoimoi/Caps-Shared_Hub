@@ -144,6 +144,33 @@ public sealed class ReviewCaseExpiryJob(
                     ct
                 );
             }
+
+            // The expert's statement window: one reminder per dispute, a few hours before it ends
+            var explaining = await db
+                .Database.SqlQuery<DueStatement>(
+                    $"""
+                    UPDATE review.review_dispute d SET statement_reminder_sent_at = {now}
+                    FROM review.review_case c
+                    Where c.id = d.review_case_id
+                        AND d.status = {ReviewDispute.Open}
+                        AND d.expert_statement IS NULL
+                        AND d.statement_reminder_sent_at IS NULL
+                        AND d.statement_due_by > {now}
+                        AND d.statement_due_by - make_interval(hours => {ReviewCase.ReminderHours}) <= {now}
+                    RETURNING d.review_case_id AS "ReviewCaseId", c.expert_user_id AS "ExpertUserId",
+                        d.statement_due_by AS "StatementDueBy"
+                    """
+                )
+                .ToListAsync(ct);
+            foreach (var s in explaining)
+            {
+                await events.StatementDueAsync(
+                    s.ReviewCaseId,
+                    s.ExpertUserId,
+                    s.StatementDueBy,
+                    ct
+                );
+            }
             await db.SaveChangesAsync(ct);
             await tx.CommitAsync(ct);
         }
@@ -207,5 +234,12 @@ public sealed class ReviewCaseExpiryJob(
         public Guid ReviewCaseId { get; init; }
         public DateTimeOffset DecideBy { get; init; }
         public bool Extended { get; init; }
+    }
+
+    private sealed class DueStatement
+    {
+        public Guid ReviewCaseId { get; init; }
+        public Guid ExpertUserId { get; init; }
+        public DateTimeOffset StatementDueBy { get; init; }
     }
 }

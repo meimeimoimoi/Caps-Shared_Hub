@@ -15,6 +15,7 @@ import { DISPUTE_SLA_DAYS } from '@/features/disputes-escrow/constants'
 import { cn } from '@/lib/utils'
 import type { ReviewCase, TaskCode } from '../types'
 import { Countdown, Deadline, FilePicker } from './CaseUi'
+import { EvidenceUpload } from './CaseAttachments'
 import { caseText, fieldClass, useCaseFormat } from '../ui'
 
 const TASKS: TaskCode[] = ['T1', 'T2', 'T3', 'T4', 'T5', 'T6']
@@ -452,6 +453,9 @@ export function CasePanel({
             {t('panel.DISPUTED.sla', { days: DISPUTE_SLA_DAYS })}{' '}
             {t('panel.DISPUTED.escalation')}
           </p>
+          {c.live && (
+            <EvidenceUpload caseId={c.id} label={t('live.files.evidence.add')} />
+          )}
           {actions.withdrawDispute && (
             <button
               type="button"

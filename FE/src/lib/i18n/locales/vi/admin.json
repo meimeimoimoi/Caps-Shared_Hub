@@ -466,7 +466,8 @@
       "confirmTitle": "Gửi quyết định trọng tài?",
       "confirmBody": "Quyết định được gửi cho cả khách và chuyên gia, và tiền ký quỹ được chia theo kết quả dưới đây.",
       "failed": "Chưa gửi được quyết định; quyết định chưa được ghi. Hãy thử lại.",
-      "reasonMissing": "Nhập lý do quyết định."
+      "reasonMissing": "Nhập lý do quyết định.",
+      "awaitingStatement": "Chuyên gia còn hạn giải trình tới {{time}}. Bạn ra quyết định được sau thời điểm đó, hoặc ngay khi chuyên gia đã giải trình."
     },
     "escalation": {
       "hint": "Tranh chấp cần xét đoán chuyên môn hoặc kết luận Thuế TNDN phải chuyển cho người đánh giá được ủy quyền. Hạn quyết định được cộng thêm {{days}} ngày làm việc, chỉ một lần.",
@@ -502,7 +503,8 @@
       "statement": "Giải trình",
       "noStatement": "Chuyên gia chưa gửi giải trình.",
       "summary": "Tóm tắt đã giao",
-      "noSummary": "Chưa có tóm tắt kết quả."
+      "noSummary": "Chưa có tóm tắt kết quả.",
+      "statementMissed": "Chuyên gia không giải trình trong hạn."
     }
   },
   "escrow": {

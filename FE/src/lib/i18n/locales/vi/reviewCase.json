@@ -554,7 +554,9 @@
     "RATE_LIMITED": "Bạn thao tác quá nhanh. Vui lòng thử lại sau ít phút.",
     "EXTENSION_ALREADY_REQUESTED": "Mỗi hồ sơ chỉ được xin gia hạn một lần.",
     "EXTENSION_NOT_PENDING": "Không còn yêu cầu gia hạn nào chờ trả lời.",
-    "EXTENSION_DAYS_INVALID": "Chỉ xin gia hạn 1 hoặc 2 ngày làm việc."
+    "EXTENSION_DAYS_INVALID": "Chỉ xin gia hạn 1 hoặc 2 ngày làm việc.",
+    "DISPUTE_AWAITING_STATEMENT": "Chuyên gia còn trong hạn giải trình, chưa ra quyết định được.",
+    "DISPUTE_STATEMENT_CLOSED": "Đã hết hạn giải trình cho khiếu nại này."
   },
   "live": {
     "loading": "Đang tải hồ sơ",
@@ -621,7 +623,14 @@
       "source": "Tải hồ sơ gốc",
       "sourceName": "ho-so-goc",
       "noSource": "Hồ sơ này được soạn trong ứng dụng nên không có tệp gốc để tải.",
-      "fromExpert": "Từ chuyên gia"
+      "fromExpert": "Từ chuyên gia",
+      "evidence": {
+        "add": "Nộp thêm bằng chứng",
+        "client": "Bằng chứng của khách",
+        "expert": "Bằng chứng của chuyên gia",
+        "none": "Chưa có tệp.",
+        "duringDispute": "Nộp khi tranh chấp"
+      }
     },
     "revised": {
       "title": "Bản chuyên gia đã chỉnh sửa",
@@ -692,7 +701,9 @@
       "acceptedFeedback": "Đã nhận hồ sơ. Bạn có thể bắt đầu rà soát.",
       "declinedFeedback": "Đã từ chối hồ sơ.",
       "deliveredFeedback": "Đã gửi kết quả rà soát cho khách hàng.",
-      "saved": "Đã lưu."
+      "saved": "Đã lưu.",
+      "statementDue": "Hạn giải trình",
+      "statementClosed": "Đã hết hạn giải trình. Quản trị viên sẽ quyết định dựa trên bằng chứng hiện có."
     },
     "notConnected": "Chưa có dữ liệu.",
     "openCases": "Các hồ sơ đang mở của bạn."

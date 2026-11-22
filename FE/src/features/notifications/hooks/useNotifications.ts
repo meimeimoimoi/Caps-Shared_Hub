@@ -146,6 +146,15 @@ export function useNotifications() {
   }
 
   const toShell = (n: AppNotification): ShellNotification | null => {
+    // The expert's dispute statement window ends in a few hours
+    if (n.type === 'REVIEW_CASE_STATEMENT_DUE')
+      return {
+        id: n.id,
+        text: t('notifications.reviewCase.statementDue'),
+        to: typeof n.data.link === 'string' ? n.data.link : '/expert/cases',
+        tone: 'warning',
+        read: n.readAt != null,
+      }
     if (
       n.type === 'REVIEW_CASE_REQUESTED' ||
       n.type === 'REVIEW_CASE_RESPONSE_DUE'

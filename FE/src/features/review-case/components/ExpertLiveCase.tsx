@@ -9,7 +9,7 @@ import { addDisputeStatement, reviewCaseActions } from '../api/reviewCaseApi'
 import { useCaseError, useCaseRun, useLiveCase } from '../hooks/useReviewCases'
 import { caseCode } from '../mapper'
 import { caseText, fieldClass, useCaseFormat } from '../ui'
-import { CaseAttachments } from './CaseAttachments'
+import { CaseAttachments, EvidenceUpload } from './CaseAttachments'
 import { CaseChat } from './CaseChat'
 import { Deadline } from './CaseUi'
 import { RevisedContentView } from './RevisedContentView'
@@ -627,16 +627,32 @@ export function ExpertLiveCase({
                   </p>
                 </div>
               ) : (
-                dto.status === 'DISPUTED' && (
-                  <TextAction
-                    label={t('live.expert.statement')}
-                    submit={t('live.expert.sendStatement')}
-                    busy={busy}
-                    onSubmit={(m) =>
-                      perform(() => addDisputeStatement(caseId, m))
-                    }
-                  />
-                )
+                dto.status === 'DISPUTED' &&
+                (new Date(dispute.statementDueBy).getTime() > Date.now() ? (
+                  <>
+                    <Deadline
+                      label={t('live.expert.statementDue')}
+                      dueAt={dispute.statementDueBy}
+                      onExpire={expire}
+                    />
+                    <TextAction
+                      label={t('live.expert.statement')}
+                      submit={t('live.expert.sendStatement')}
+                      busy={busy}
+                      onSubmit={(m) =>
+                        perform(() => addDisputeStatement(caseId, m))
+                      }
+                    />
+                  </>
+                ) : (
+                  <p className="text-fg-muted mt-3 text-sm">
+                    {t('live.expert.statementClosed')}
+                  </p>
+                ))
+              )}
+              {dto.status === 'DISPUTED' && (
+                // Evidence sits next to the statement so the arbiter can weigh it against the client's
+                <EvidenceUpload caseId={caseId} label={t('live.files.evidence.add')} />
               )}
               {dispute.resolutionNote && (
                 <p className="text-fg break-words whitespace-pre-wrap">

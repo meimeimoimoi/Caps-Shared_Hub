@@ -136,6 +136,8 @@ public sealed class AdminDisputeHandlerTests
                 "Delivered late",
                 T0.AddHours(1)
             );
+            // The admin decides at T0 + 5h, inside the statement window: the expert has explained by then
+            Case.AddExpertStatement(Dispute, ExpertProfile, "All parts delivered", T0.AddHours(2));
             Disputes = new FakeDisputes(Case, Dispute);
             Escrows = new FakeEscrows(UnitOfWork, billingDown);
         }

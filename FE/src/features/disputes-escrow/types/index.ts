@@ -50,6 +50,8 @@ export interface Dispute {
   /** The server sends no title or party names yet; the demo fixtures do */
   title?: string
   client?: string
+  /** The client's account id: tells the arbiter which files are the client's */
+  clientUserId?: string
   expert?: string
   /** Server deadline; when set it replaces the 48-hour rule computed here */
   decideBy?: string
@@ -58,6 +60,8 @@ export interface Dispute {
   platformFeePct?: number
   /** The expert's reply to the complaint */
   expertStatement?: string
+  /** End of the expert's statement window; the admin cannot decide before it without a statement */
+  statementDueBy?: string
   /** The expert's delivered summary, to weigh against the complaint */
   reviewSummary?: string
   /** Căn cứ khiếu nại của Client */

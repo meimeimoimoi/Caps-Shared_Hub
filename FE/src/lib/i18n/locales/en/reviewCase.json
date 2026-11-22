@@ -554,7 +554,9 @@
     "RATE_LIMITED": "Too many requests. Please try again in a moment.",
     "EXTENSION_ALREADY_REQUESTED": "An extension can be asked once per case.",
     "EXTENSION_NOT_PENDING": "There is no extension waiting for an answer.",
-    "EXTENSION_DAYS_INVALID": "An extension is 1 or 2 working days."
+    "EXTENSION_DAYS_INVALID": "An extension is 1 or 2 working days.",
+    "DISPUTE_AWAITING_STATEMENT": "The expert can still explain; the dispute cannot be decided yet.",
+    "DISPUTE_STATEMENT_CLOSED": "The statement window for this dispute has ended."
   },
   "live": {
     "loading": "Loading the case",
@@ -621,7 +623,14 @@
       "source": "Download the original file",
       "sourceName": "original-document",
       "noSource": "This document was written in the app, so there is no original file to download.",
-      "fromExpert": "From the expert"
+      "fromExpert": "From the expert",
+      "evidence": {
+        "add": "Add evidence",
+        "client": "Client's evidence",
+        "expert": "Expert's evidence",
+        "none": "No files.",
+        "duringDispute": "Added during the dispute"
+      }
     },
     "revised": {
       "title": "Expert's edited version",
@@ -692,7 +701,9 @@
       "acceptedFeedback": "Case accepted. You can start the review.",
       "declinedFeedback": "Case declined.",
       "deliveredFeedback": "Review sent to the client.",
-      "saved": "Saved."
+      "saved": "Saved.",
+      "statementDue": "Statement due",
+      "statementClosed": "The statement window has ended. The administrator will decide on the evidence at hand."
     },
     "notConnected": "No data yet.",
     "openCases": "Your open cases."

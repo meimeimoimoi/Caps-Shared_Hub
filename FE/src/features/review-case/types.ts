@@ -142,6 +142,8 @@ export interface DisputeDto {
   decideBy: string
   expertStatement: string | null
   expertStatementAt: string | null
+  /** The expert explains before then; the admin waits for it unless the statement came earlier */
+  statementDueBy: string
   refundPct: number | null
   resolutionNote: string | null
   closedAt: string | null

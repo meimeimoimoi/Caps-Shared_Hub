@@ -474,7 +474,8 @@
       "confirmTitle": "Send the arbitration decision?",
       "confirmBody": "The decision goes to both the client and the expert, and the escrow is split by the outcome below.",
       "failed": "The decision wasn't sent and nothing was recorded. Try again.",
-      "reasonMissing": "Enter a reason for the decision."
+      "reasonMissing": "Enter a reason for the decision.",
+      "awaitingStatement": "The expert can still explain until {{time}}. You can decide after that, or as soon as they have explained."
     },
     "escalation": {
       "hint": "Disputes about professional judgment or a CIT conclusion go to an Authorized Reviewer. The decision deadline is extended by {{days}} working days, once.",
@@ -511,7 +512,8 @@
       "statement": "Statement",
       "noStatement": "The expert has not replied yet.",
       "summary": "Delivered summary",
-      "noSummary": "No delivery summary yet."
+      "noSummary": "No delivery summary yet.",
+      "statementMissed": "The expert did not explain in time."
     }
   },
   "escrow": {

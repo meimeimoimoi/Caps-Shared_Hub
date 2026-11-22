@@ -21,6 +21,7 @@ public sealed class ListOpenDisputesHandler(IReviewDisputeRepository disputes, T
         return open.Select(x => new AdminDisputeResponse(
                 x.Case.Id.ToString(),
                 x.Case.RequesterEmail,
+                x.Case.RequesterUserId.ToString(),
                 x.Case.ExpertProfileId.ToString(),
                 x.Case.Fee,
                 x.Case.PlatformFeePct,

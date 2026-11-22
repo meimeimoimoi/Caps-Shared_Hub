@@ -41,32 +41,26 @@ export function CaseAttachments({
   scope = 'party',
   canUpload = false,
   requesterUserId,
+  dispute,
 }: {
   caseId: string
   scope?: AttachmentScope
   canUpload?: boolean
   /** A case has two parties, so a file the client did not add is the expert's. */
   requesterUserId?: string
+  /** For the arbiter: files split by party, and those added once the dispute opened are marked */
+  dispute?: { clientUserId: string; openedAt: string }
 }) {
   const { t } = useTranslation('reviewCase')
   const f = useCaseFormat()
   const id = useId()
   const toMessage = useCaseError()
-  const { run, busy } = useCaseRun()
   const [error, setError] = useState<string | null>(null)
   const files = useQuery({
     queryKey: [...reviewCaseKeys.attachments(caseId), scope],
     queryFn: ({ signal }) => listCaseAttachments(caseId, scope, signal),
   })
 
-  const upload = (file: File | undefined) => {
-    if (!file) return
-    setError(null)
-    if (file.size > MAX_BYTES) return setError(t('errors.ATTACHMENT_TOO_LARGE'))
-    run(() => addCaseAttachment(caseId, file), {
-      onError: (e) => setError(toMessage(e)),
-    })
-  }
   const download = (a: AttachmentDto) => {
     setError(null)
     downloadCaseAttachment(caseId, a.id, scope)
@@ -99,9 +93,42 @@ export function CaseAttachments({
         <Download size={16} aria-hidden="true" />
         {t('live.files.source')}
       </button>
-      {files.data?.length ? (
+      {dispute && files.data?.length ? (
+        (['client', 'expert'] as const).map((party) => {
+          const mine = files.data.filter(
+            (a) => (a.uploadedBy === dispute.clientUserId) === (party === 'client')
+          )
+          return (
+            <div key={party} className="mt-4">
+              <h3 className="text-fg-strong text-sm font-semibold">
+                {t(`live.files.evidence.${party}`)}
+              </h3>
+              {mine.length ? (
+                list(mine)
+              ) : (
+                <p className="text-fg-muted mt-1 text-sm">{t('live.files.evidence.none')}</p>
+              )}
+            </div>
+          )
+        })
+      ) : files.data?.length ? (
+        list(files.data)
+      ) : (
+        <p className="text-fg-muted mt-2 text-sm">{t('live.files.empty')}</p>
+      )}
+      {canUpload && <EvidenceUpload caseId={caseId} />}
+      {error && (
+        <p role="alert" className="text-danger mt-2 text-sm">
+          {error}
+        </p>
+      )}
+    </section>
+  )
+
+  function list(items: AttachmentDto[]) {
+    return (
         <ul className="mt-3 space-y-2 text-sm">
-          {files.data.map((a) => (
+          {items.map((a) => (
             <li key={a.id} className="flex items-start gap-2">
               <FileText
                 size={14}
@@ -115,6 +142,11 @@ export function CaseAttachments({
                 {requesterUserId && a.uploadedBy !== requesterUserId && (
                   <span className="text-caption text-accent block font-semibold">
                     {t('live.files.fromExpert')}
+                  </span>
+                )}
+                {dispute && a.uploadedAt >= dispute.openedAt && (
+                  <span className="text-caption text-warning block font-semibold">
+                    {t('live.files.evidence.duringDispute')}
                   </span>
                 )}
                 <span className="text-fg-muted text-caption num">
@@ -132,36 +164,52 @@ export function CaseAttachments({
             </li>
           ))}
         </ul>
-      ) : (
-        <p className="text-fg-muted mt-2 text-sm">{t('live.files.empty')}</p>
-      )}
-      {canUpload && (
-        <label className="btn btn-secondary has-[:focus-visible]:outline-ink mt-4 w-full cursor-pointer has-[:focus-visible]:outline-2">
-          <Paperclip size={16} aria-hidden="true" />
-          {busy ? t('live.files.uploading') : t('live.files.add')}
-          <input
-            type="file"
-            accept={ACCEPT}
-            disabled={busy}
-            aria-describedby={`${id}-hint`}
-            onChange={(e) => {
-              upload(e.target.files?.[0])
-              e.target.value = ''
-            }}
-            className="sr-only"
-          />
-        </label>
-      )}
-      {canUpload && (
-        <p id={`${id}-hint`} className="text-fg-muted text-caption mt-2">
-          {t('live.files.hint')}
-        </p>
-      )}
+    )
+  }
+}
+
+/** Adds one file to the case; any open list of the case's files refreshes. Also used inside the dispute cards. */
+export function EvidenceUpload({ caseId, label }: { caseId: string; label?: string }) {
+  const { t } = useTranslation('reviewCase')
+  const id = useId()
+  const toMessage = useCaseError()
+  const { run, busy } = useCaseRun()
+  const [error, setError] = useState<string | null>(null)
+
+  const upload = (file: File | undefined) => {
+    if (!file) return
+    setError(null)
+    if (file.size > MAX_BYTES) return setError(t('errors.ATTACHMENT_TOO_LARGE'))
+    run(() => addCaseAttachment(caseId, file), {
+      onError: (e) => setError(toMessage(e)),
+    })
+  }
+
+  return (
+    <div>
+      <label className="btn btn-secondary has-[:focus-visible]:outline-ink mt-4 w-full cursor-pointer has-[:focus-visible]:outline-2">
+        <Paperclip size={16} aria-hidden="true" />
+        {busy ? t('live.files.uploading') : (label ?? t('live.files.add'))}
+        <input
+          type="file"
+          accept={ACCEPT}
+          disabled={busy}
+          aria-describedby={`${id}-hint`}
+          onChange={(e) => {
+            upload(e.target.files?.[0])
+            e.target.value = ''
+          }}
+          className="sr-only"
+        />
+      </label>
+      <p id={`${id}-hint`} className="text-fg-muted text-caption mt-2">
+        {t('live.files.hint')}
+      </p>
       {error && (
         <p role="alert" className="text-danger mt-2 text-sm">
           {error}
         </p>
       )}
-    </section>
+    </div>
   )
 }
