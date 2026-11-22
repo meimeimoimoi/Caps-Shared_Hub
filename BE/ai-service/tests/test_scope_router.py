@@ -14,17 +14,20 @@ if str(AI_SERVICE_ROOT) not in sys.path:
 from app.config import settings  # noqa: E402
 from app.main import app  # noqa: E402
 from app.modules.rag.router import ScopeRouter, parse_tax_period  # noqa: E402
+from app.schemas.answers import TAX_PERIOD_CLARIFICATION_ANSWER  # noqa: E402
 
 
 class ScopeRouterTests(unittest.TestCase):
-    """Unit tests for deterministic tax-period parsing and ScopeRouter fallback behavior."""
+    """Unit tests for deterministic tax-period parsing, non-CIT guardrails, and ScopeRouter behavior."""
 
     def test_parse_tax_period_valid_formats(self):
         cases = [
             ("2025", (date(2025, 1, 1), date(2025, 12, 31))),
             ("năm 2025", (date(2025, 1, 1), date(2025, 12, 31))),
             ("2025-01-01..2025-12-31", (date(2025, 1, 1), date(2025, 12, 31))),
+            ("từ 01/03/2025 đến 30/06/2025", (date(2025, 3, 1), date(2025, 6, 30))),
             ("2025-05-15", (date(2025, 5, 15), date(2025, 5, 15))),
+            ("15/05/2025", (date(2025, 5, 15), date(2025, 5, 15))),
             ("Q2/2025", (date(2025, 4, 1), date(2025, 6, 30))),
             ("2025-Q4", (date(2025, 10, 1), date(2025, 12, 31))),
             ("quý 3 năm 2025", (date(2025, 7, 1), date(2025, 9, 30))),
@@ -66,20 +69,35 @@ class ScopeRouterTests(unittest.TestCase):
         self.assertEqual(result.period_end, date(2025, 12, 31))
         self.assertIsNone(result.clarification_msg)
 
-    def test_question_year_fallback_resolves_when_user_period_absent(self):
+    def test_question_year_and_vietnamese_ranges_resolve_when_user_period_absent(self):
         llm_reply = SimpleNamespace(
             content='{"is_cit":true,"period_start":null,"period_end":null,"needs_clarification":true,"clarification_msg":null}'
         )
-        with patch("app.modules.rag.router.llm_model") as mock_llm:
-            mock_llm.invoke.return_value = llm_reply
-            result = ScopeRouter.analyze(
+        cases = [
+            (
                 "Thuế suất thuế thu nhập doanh nghiệp phổ thông năm 2025 là bao nhiêu?",
-                None,
-            )
-
-        self.assertFalse(result.needs_clarification)
-        self.assertEqual(result.period_start, date(2025, 1, 1))
-        self.assertEqual(result.period_end, date(2025, 12, 31))
+                (date(2025, 1, 1), date(2025, 12, 31)),
+            ),
+            (
+                "Chi phí TNDN từ ngày 01/03/2025 đến 30/06/2025 tính thế nào?",
+                (date(2025, 3, 1), date(2025, 6, 30)),
+            ),
+            (
+                "Ưu đãi TNDN từ tháng 3 đến tháng 6 năm 2025 áp dụng ra sao?",
+                (date(2025, 3, 1), date(2025, 6, 30)),
+            ),
+            (
+                "Chi phí tiếp khách có được trừ thuế TNDN?\nClarification: 2025",
+                (date(2025, 1, 1), date(2025, 12, 31)),
+            ),
+        ]
+        for question, (expected_start, expected_end) in cases:
+            with self.subTest(question=question), patch("app.modules.rag.router.llm_model") as mock_llm:
+                mock_llm.invoke.return_value = llm_reply
+                result = ScopeRouter.analyze(question, None)
+                self.assertFalse(result.needs_clarification)
+                self.assertEqual(result.period_start, expected_start)
+                self.assertEqual(result.period_end, expected_end)
 
     def test_multiple_years_in_question_keeps_clarification(self):
         llm_reply = SimpleNamespace(
@@ -96,6 +114,24 @@ class ScopeRouterTests(unittest.TestCase):
         self.assertIsNone(result.period_start)
         self.assertIsNone(result.period_end)
 
+    def test_conflicting_question_and_user_tax_period_triggers_clarification(self):
+        llm_reply = SimpleNamespace(
+            content='{"is_cit":true,"period_start":"2025-01-01","period_end":"2025-12-31","needs_clarification":false,"clarification_msg":null}'
+        )
+        with patch("app.modules.rag.router.llm_model") as mock_llm:
+            mock_llm.invoke.return_value = llm_reply
+            result = ScopeRouter.analyze(
+                "Chi phí lãi vay TNDN năm 2019 có bị khống chế không?",
+                "2025",
+            )
+
+        self.assertTrue(result.is_cit)
+        self.assertTrue(result.needs_clarification)
+        self.assertIsNone(result.period_start)
+        self.assertIsNone(result.period_end)
+        self.assertIn("năm 2019", result.clarification_msg)
+        self.assertIn("năm 2025", result.clarification_msg)
+
     def test_legal_citation_number_is_not_treated_as_tax_period(self):
         llm_reply = SimpleNamespace(
             content='{"is_cit":true,"period_start":null,"period_end":null,"needs_clarification":true,"clarification_msg":null}'
@@ -110,15 +146,57 @@ class ScopeRouterTests(unittest.TestCase):
         self.assertTrue(result.needs_clarification)
         self.assertIsNone(result.period_start)
 
-    def test_out_of_scope_is_preserved_even_with_user_tax_period(self):
+    def test_non_cit_guardrail_rejects_pit_and_household_business_queries(self):
+        questions = [
+            "Mức giảm trừ gia cảnh cho bản thân là bao nhiêu?",
+            "Năm 2019 giảm trừ người phụ thuộc bao nhiêu?",
+            "Tháng 3/2026 hộ kinh doanh nộp thuế khoán thế nào?",
+            "Thuế TNCN năm 2025 tính sao?",
+        ]
+        for question in questions:
+            with self.subTest(question=question), patch("app.modules.rag.router.llm_model") as mock_llm:
+                result = ScopeRouter.analyze(question, "2025")
+                self.assertFalse(result.is_cit)
+                mock_llm.invoke.assert_not_called()
+
+    def test_non_cit_guardrail_allows_cit_enterprise_questions(self):
         llm_reply = SimpleNamespace(
-            content='{"is_cit":false,"period_start":null,"period_end":null,"needs_clarification":false,"clarification_msg":null}'
+            content='{"is_cit":true,"period_start":"2025-01-01","period_end":"2025-12-31","needs_clarification":false,"clarification_msg":null}'
         )
         with patch("app.modules.rag.router.llm_model") as mock_llm:
             mock_llm.invoke.return_value = llm_reply
-            result = ScopeRouter.analyze("Thuế TNCN năm 2025 tính sao?", "2025")
+            result = ScopeRouter.analyze(
+                "Doanh nghiệp chi tiền hỗ trợ người phụ thuộc cho nhân viên có được trừ khi tính thuế TNDN năm 2025 không?",
+                "2025",
+            )
 
-        self.assertFalse(result.is_cit)
+        self.assertTrue(result.is_cit)
+        mock_llm.invoke.assert_called_once()
+
+    def test_sanitizes_prompt_label_leak_in_clarification_message(self):
+        orig_key = settings.INTERNAL_API_KEY
+        settings.INTERNAL_API_KEY = ""
+        llm_reply = SimpleNamespace(
+            content='{"is_cit":true,"period_start":null,"period_end":null,"needs_clarification":true,"clarification_msg":"Kỳ thuế do người dùng cung cấp"}'
+        )
+        try:
+            with (
+                patch("app.main.init_qdrant"),
+                patch("app.modules.rag.router.llm_model") as mock_llm,
+            ):
+                mock_llm.invoke.return_value = llm_reply
+                client = TestClient(app)
+                resp = client.post(
+                    "/api/v1/chat/query",
+                    json={"question": "Chi phí tiếp khách có được trừ thuế TNDN không?"},
+                )
+        finally:
+            settings.INTERNAL_API_KEY = orig_key
+
+        self.assertEqual(resp.status_code, 200)
+        body = resp.json()
+        self.assertEqual(body["answer_status"], "NEED_CLARIFICATION")
+        self.assertEqual(body["answer"], TAX_PERIOD_CLARIFICATION_ANSWER)
 
     def test_chat_endpoint_proceeds_when_year_given(self):
         orig_key = settings.INTERNAL_API_KEY
@@ -150,6 +228,14 @@ class ScopeRouterTests(unittest.TestCase):
         self.assertEqual(body["period_start"], "2025-01-01")
         self.assertEqual(body["period_end"], "2025-12-31")
         self.assertEqual(body["answer_status"], "REJECTED")
+
+    def test_openapi_answer_status_enum_has_no_duplicates(self):
+        with patch("app.main.init_qdrant"):
+            client = TestClient(app)
+            schema = client.get("/openapi.json").json()
+
+        enum_values = schema["components"]["schemas"]["AnswerStatus"]["enum"]
+        self.assertEqual(enum_values, ["ANSWERED", "NEED_CLARIFICATION", "REJECTED"])
 
 
 if __name__ == "__main__":

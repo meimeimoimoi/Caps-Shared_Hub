@@ -1,6 +1,6 @@
 def build_scope_prompt(question: str, user_tax_period: str | None = None) -> str:
     period_line = (
-        f'\nKỳ thuế do người dùng cung cấp: "{user_tax_period.strip()}"'
+        f'\nKỳ thuế đi kèm trong yêu cầu: "{user_tax_period.strip()}"'
         if user_tax_period and user_tax_period.strip()
         else ""
     )
@@ -15,10 +15,24 @@ YÊU CẦU TRẢ VỀ DUY NHẤT ĐỊNH DẠNG JSON (không giải thích thêm
   "needs_clarification": true/false,
   "clarification_msg": "..." hoặc null
 }}
-Lưu ý quy tắc:
-1. is_cit: false nếu hỏi về thuế TNCN, VAT thuần túy, kế toán nội bộ, hoặc việc không liên quan đến thuế TNDN; ngược lại là true.
-2. period_start và period_end: lấy từ câu hỏi hoặc "Kỳ thuế do người dùng cung cấp" và quy đổi sang "YYYY-MM-DD" (ví dụ: năm 2025 -> "2025-01-01" đến "2025-12-31"; quý 1/2025 -> "2025-01-01" đến "2025-03-31"; "2025-01-01..2025-12-31" -> giữ nguyên).
-3. needs_clarification: chỉ đặt true khi is_cit là true nhưng CẢ câu hỏi LẪN kỳ thuế cung cấp đều không xác định được năm hoặc thời gian phát sinh giao dịch. Nếu đã xác định được period_start và period_end thì needs_clarification phải là false và clarification_msg là null."""
+Quy tắc:
+1. is_cit:
+   - Đặt true CHỈ KHI câu hỏi liên quan trực tiếp đến Thuế Thu nhập doanh nghiệp (TNDN / CIT) của doanh nghiệp/tổ chức (doanh thu tính thuế TNDN, chi phí được trừ/không được trừ, thuế suất TNDN, ưu đãi/miễn giảm TNDN, chuyển lỗ, tạm nộp/quyết toán TNDN).
+   - Đặt false với mọi chủ đề ngoài TNDN, đặc biệt:
+     * Thuế Thu nhập cá nhân (TNCN / PIT), kể cả khi không viết chữ "TNCN" như: giảm trừ gia cảnh, người phụ thuộc, quyết toán lương/thù lao cá nhân.
+     * Hộ kinh doanh, cá nhân kinh doanh, thuế khoán.
+     * Thuế GTGT (VAT) thuần túy, thuế xuất nhập khẩu, kế toán nội bộ, câu hỏi đời sống.
+2. period_start và period_end: lấy từ câu hỏi hoặc kỳ thuế đi kèm và quy đổi sang "YYYY-MM-DD" (năm 2025 -> "2025-01-01" đến "2025-12-31"; quý 1/2025 -> "2025-01-01" đến "2025-03-31").
+3. needs_clarification và clarification_msg:
+   - Chỉ đặt needs_clarification = true khi is_cit = true nhưng chưa xác định được năm hoặc kỳ tính thuế áp dụng.
+   - Khi needs_clarification = true, clarification_msg PHẢI là một câu hỏi tiếng Việt lịch sự gửi người dùng cuối để hỏi dữ kiện thiếu (ví dụ: "Vui lòng cho biết bạn muốn tra cứu cho năm hoặc kỳ tính thuế nào?"). KHÔNG viết các nhãn kỹ thuật như "Kỳ thuế đi kèm", "Kỳ thuế do người dùng cung cấp" hay "user_tax_period".
+   - Khi đã xác định được period_start và period_end (hoặc is_cit = false), đặt needs_clarification = false và clarification_msg = null.
+
+Ví dụ mẫu:
+- Câu hỏi: "Mức giảm trừ gia cảnh cho bản thân là bao nhiêu?" -> {{"is_cit": false, "period_start": null, "period_end": null, "needs_clarification": false, "clarification_msg": null}}
+- Câu hỏi: "Tháng 3/2026 hộ kinh doanh nộp thuế khoán thế nào?" -> {{"is_cit": false, "period_start": null, "period_end": null, "needs_clarification": false, "clarification_msg": null}}
+- Câu hỏi: "Năm 2024 chi phí nào được trừ khi tính thuế TNDN?" -> {{"is_cit": true, "period_start": "2024-01-01", "period_end": "2024-12-31", "needs_clarification": false, "clarification_msg": null}}
+- Câu hỏi: "Thuế suất TNDN phổ thông là bao nhiêu?" -> {{"is_cit": true, "period_start": null, "period_end": null, "needs_clarification": true, "clarification_msg": "Vui lòng cho biết bạn muốn tra cứu thuế suất TNDN cho năm hoặc kỳ tính thuế nào?"}}"""
 
 
 def build_grounded_answer_prompt(question: str,
