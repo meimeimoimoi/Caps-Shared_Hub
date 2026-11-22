@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { CaseHeader } from '@/components/ui/layout/case-header'
 import { StatusBadge } from '@/components/ui/display/status-badge'
@@ -30,6 +30,7 @@ export default function AdminDisputeDetailPage() {
   const { t } = useTranslation(['admin', 'common'])
   const [now] = useState(() => Date.now())
   const [toast, setToast] = useState<string | null>(null)
+  const navigate = useNavigate()
   const clearToast = useCallback(() => setToast(null), [])
 
   const listLink = (
@@ -240,8 +241,11 @@ export default function AdminDisputeDetailPage() {
               escalate().then(() => setToast(t('disputes.escalation.toast')))
             }
             onDecide={(outcome, reason) =>
+              // A decided dispute leaves the open queue this page reads, so go back to the list and say so there
               decide({ outcome, reason }).then(() =>
-                setToast(t('disputes.decided'))
+                navigate('/admin/disputes', {
+                  state: { toast: t('disputes.decided') },
+                })
               )
             }
           />
