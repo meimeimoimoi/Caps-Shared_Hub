@@ -100,6 +100,24 @@ public sealed class OutboxReviewCaseEvents(WorkflowDbContext db, TimeProvider cl
             ct
         );
 
+    public Task StatementDueAsync(
+        Guid reviewCaseId,
+        Guid expertUserId,
+        DateTimeOffset statementDueBy,
+        CancellationToken ct
+    ) =>
+        PublishAsync(
+            new ReviewCaseStatementDueEvent(
+                Guid.NewGuid(),
+                reviewCaseId,
+                expertUserId,
+                statementDueBy,
+                clock.GetUtcNow()
+            ),
+            reviewCaseId,
+            ct
+        );
+
     public Task AcceptanceDueAsync(
         Guid reviewCaseId,
         Guid requesterUserId,

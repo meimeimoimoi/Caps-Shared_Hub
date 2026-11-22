@@ -166,7 +166,8 @@
       "acceptanceDue": "Kết quả thẩm định sắp tự xác nhận. Hãy nghiệm thu hoặc báo cáo vấn đề trước hạn.",
       "extensionRequested": "Chuyên gia xin thêm {{days}} ngày làm việc để giao kết quả. Hãy đồng ý hoặc từ chối trước hạn; không trả lời thì hạn giữ nguyên.",
       "extensionAccepted": "Khách hàng đã đồng ý gia hạn {{days}} ngày làm việc; hạn giao kết quả đã dời.",
-      "extensionDeclined": "Khách hàng không đồng ý gia hạn; hạn giao kết quả giữ nguyên."
+      "extensionDeclined": "Khách hàng không đồng ý gia hạn; hạn giao kết quả giữ nguyên.",
+      "statementDue": "Một khiếu nại sắp hết hạn giải trình. Hãy gửi giải trình và bằng chứng trước khi quản trị viên quyết định."
     }
   },
   "states": {

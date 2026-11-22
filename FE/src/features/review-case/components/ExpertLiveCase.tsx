@@ -627,16 +627,28 @@ export function ExpertLiveCase({
                   </p>
                 </div>
               ) : (
-                dto.status === 'DISPUTED' && (
-                  <TextAction
-                    label={t('live.expert.statement')}
-                    submit={t('live.expert.sendStatement')}
-                    busy={busy}
-                    onSubmit={(m) =>
-                      perform(() => addDisputeStatement(caseId, m))
-                    }
-                  />
-                )
+                dto.status === 'DISPUTED' &&
+                (new Date(dispute.statementDueBy).getTime() > Date.now() ? (
+                  <>
+                    <Deadline
+                      label={t('live.expert.statementDue')}
+                      dueAt={dispute.statementDueBy}
+                      onExpire={expire}
+                    />
+                    <TextAction
+                      label={t('live.expert.statement')}
+                      submit={t('live.expert.sendStatement')}
+                      busy={busy}
+                      onSubmit={(m) =>
+                        perform(() => addDisputeStatement(caseId, m))
+                      }
+                    />
+                  </>
+                ) : (
+                  <p className="text-fg-muted mt-3 text-sm">
+                    {t('live.expert.statementClosed')}
+                  </p>
+                ))
               )}
               {dto.status === 'DISPUTED' && (
                 // Evidence sits next to the statement so the arbiter can weigh it against the client's

@@ -15,6 +15,9 @@ public sealed class ReviewDispute
     /// <summary>Working days the admin has to decide; the one extension adds the same again.</summary>
     public const int WorkingDaysToDecide = 2;
 
+    /// <summary>Working days the expert has, from the opening, to explain; the admin waits for it (2026-11-22).</summary>
+    public const int WorkingDaysToRespond = 1;
+
     /// <summary>
     /// Why the client complains: the same codes as the FE dispute form. No code for a late delivery: the late
     /// rule frozen on the case already refunds it, so a complaint about it would pay the client twice.
@@ -43,6 +46,12 @@ public sealed class ReviewDispute
     public DateTimeOffset? OverdueAlertedAt { get; private set; }
     public string? ExpertStatement { get; private set; }
     public DateTimeOffset? ExpertStatementAt { get; private set; }
+
+    /// <summary>The expert explains before then; until then the admin cannot decide without the statement.</summary>
+    public DateTimeOffset StatementDueBy { get; private set; }
+
+    /// <summary>Set by the expiry job when it reminds the expert to explain.</summary>
+    public DateTimeOffset? StatementReminderSentAt { get; private set; }
     public Guid? ResolvedBy { get; private set; }
 
     /// <summary>Share of the fee returned to the client, set by the admin.</summary>
@@ -65,6 +74,7 @@ public sealed class ReviewDispute
             Description = description,
             OpenedAt = now,
             DecideBy = calendar.AddWorkingDays(now, WorkingDaysToDecide),
+            StatementDueBy = calendar.AddWorkingDays(now, WorkingDaysToRespond),
         };
 
     /// <summary>The admin needs more time: one more decision window, once.</summary>
@@ -90,8 +100,21 @@ public sealed class ReviewDispute
         {
             throw WorkflowErrors.DisputeStatementExists();
         }
+        if (now >= StatementDueBy)
+        {
+            throw WorkflowErrors.DisputeStatementClosed();
+        }
         ExpertStatement = statement;
         ExpertStatementAt = now;
+    }
+
+    /// <summary>The admin may decide once the expert explained or the statement window ended.</summary>
+    internal void EnsureDecidable(DateTimeOffset now)
+    {
+        if (ExpertStatement is null && now < StatementDueBy)
+        {
+            throw WorkflowErrors.DisputeAwaitingStatement(StatementDueBy);
+        }
     }
 
     internal void Resolve(Guid adminUserId, short refundPct, string note, DateTimeOffset now)

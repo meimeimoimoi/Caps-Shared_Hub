@@ -60,6 +60,8 @@ export interface Dispute {
   platformFeePct?: number
   /** The expert's reply to the complaint */
   expertStatement?: string
+  /** End of the expert's statement window; the admin cannot decide before it without a statement */
+  statementDueBy?: string
   /** The expert's delivered summary, to weigh against the complaint */
   reviewSummary?: string
   /** Căn cứ khiếu nại của Client */

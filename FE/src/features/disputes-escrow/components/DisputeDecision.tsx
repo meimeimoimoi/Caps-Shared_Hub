@@ -17,6 +17,8 @@ interface DisputeDecisionProps {
   slaHours: number
   decided: boolean
   escalated: boolean
+  /** Set while the expert can still explain and has not: the decision waits until then */
+  awaitingStatementUntil?: string
   /** Rejects when the server refuses; the error stays on the card */
   onDecide: (outcome: DisputeOutcome, reason: string) => Promise<unknown>
   onEscalate: () => Promise<unknown>
@@ -29,6 +31,7 @@ export function DisputeDecision({
   slaHours,
   decided,
   escalated,
+  awaitingStatementUntil,
   onDecide,
   onEscalate,
 }: DisputeDecisionProps) {
@@ -102,7 +105,20 @@ export function DisputeDecision({
         </div>
       </div>
 
-      <fieldset disabled={decided} className="mt-5">
+      {awaitingStatementUntil && !decided && (
+        <p className="bg-sunken rounded-control mt-4 flex items-start gap-2 p-3 text-sm">
+          <Info size={16} aria-hidden="true" className="mt-0.5 shrink-0" />
+          {t('disputes.decision.awaitingStatement', {
+            time: new Date(awaitingStatementUntil).toLocaleString('vi-VN', {
+              hour: '2-digit',
+              minute: '2-digit',
+              day: '2-digit',
+              month: '2-digit',
+            }),
+          })}
+        </p>
+      )}
+      <fieldset disabled={decided || !!awaitingStatementUntil} className="mt-5">
         <legend className="text-sm font-semibold">
           {t('disputes.decision.outcome')}
         </legend>

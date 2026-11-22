@@ -197,7 +197,10 @@ export default function AdminDisputeDetailPage() {
                   [
                     t('disputes.expertSide.statement'),
                     dispute.expertStatement ??
-                      t('disputes.expertSide.noStatement'),
+                      (dispute.statementDueBy &&
+                      new Date(dispute.statementDueBy).getTime() <= now
+                        ? t('disputes.expertSide.statementMissed')
+                        : t('disputes.expertSide.noStatement')),
                   ],
                   [
                     t('disputes.expertSide.summary'),
@@ -245,6 +248,13 @@ export default function AdminDisputeDetailPage() {
             slaHours={disputeSlaHours(dispute)}
             decided={!!dispute.resolvedAt}
             escalated={!!dispute.escalatedAt}
+            awaitingStatementUntil={
+              !dispute.expertStatement &&
+              dispute.statementDueBy &&
+              new Date(dispute.statementDueBy).getTime() > now
+                ? dispute.statementDueBy
+                : undefined
+            }
             onEscalate={() =>
               escalate().then(() => setToast(t('disputes.escalation.toast')))
             }

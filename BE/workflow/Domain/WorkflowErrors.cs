@@ -105,6 +105,20 @@ public static class WorkflowErrors
             "The expert has already explained this dispute."
         );
 
+    public static AppException DisputeStatementClosed() =>
+        new(
+            ErrorType.Conflict,
+            "DISPUTE_STATEMENT_CLOSED",
+            "The time to explain this dispute has ended."
+        );
+
+    public static AppException DisputeAwaitingStatement(DateTimeOffset dueBy) =>
+        new(
+            ErrorType.Conflict,
+            "DISPUTE_AWAITING_STATEMENT",
+            $"The expert can still explain until {dueBy:O}; decide after that or once they have."
+        );
+
     public static AppException DisputeAlreadyExtended() =>
         new(
             ErrorType.Conflict,

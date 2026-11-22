@@ -513,6 +513,14 @@ namespace Caps.Workflow.Infrastructure.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("review_case_id");
 
+                    b.Property<DateTimeOffset>("StatementDueBy")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("statement_due_by");
+
+                    b.Property<DateTimeOffset?>("StatementReminderSentAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("statement_reminder_sent_at");
+
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasMaxLength(16)

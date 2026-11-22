@@ -68,6 +68,7 @@ interface AdminDisputeDto {
     /** The admin already used the one extension */
     extended: boolean
     expertStatement: string | null
+    statementDueBy: string
   }
 }
 
@@ -105,6 +106,7 @@ function toDispute(x: AdminDisputeDto, expert: string): Dispute {
     fee: x.fee,
     platformFeePct: x.platformFeePct,
     expertStatement: d.expertStatement ?? undefined,
+    statementDueBy: d.statementDueBy,
     reviewSummary: x.reviewSummary ?? undefined,
     complaint: { issue: reason, description: d.description },
     history: [],

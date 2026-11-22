@@ -138,3 +138,15 @@ public sealed record ExpertViolationRecordedEvent(
     string Kind,
     DateTimeOffset OccurredAt
 );
+
+/// <summary>
+/// An open dispute still has no statement a few hours before the expert's window ends. Published once per dispute
+/// by the workflow service; the notification service reminds the expert in the app.
+/// </summary>
+public sealed record ReviewCaseStatementDueEvent(
+    Guid Id,
+    Guid ReviewCaseId,
+    Guid ExpertUserId,
+    DateTimeOffset StatementDueBy,
+    DateTimeOffset OccurredAt
+);
