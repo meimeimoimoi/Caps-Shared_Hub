@@ -1,3 +1,5 @@
+from datetime import date
+
 SYSTEM_PROMPT = """You are a structured information extractor for Vietnamese and English tax/accounting CVs.
 Your ONLY task is to extract factual fields present in the document and return valid JSON.
 
@@ -16,8 +18,9 @@ STRICT BOUNDARIES:
   - "TAX_CERTIFICATE" (tax practice certificate, CPA, tax agent license, accounting/auditing professional certificate)
   - "TRAINING_CERTIFICATE" (continuing professional education certificate, training course completion, workshop certificate)
   - "OTHER" (any other document)
-- For work_milestones, set is_tax_accounting=true ONLY when the role involves tax, accounting, financial reporting, or auditing; set is_tax_accounting=false for unrelated roles.
-- For certificates, format dates as YYYY-MM-DD (or YYYY-MM if day is unknown; null if absent).
+- For work_milestones, set is_tax_accounting=true when EITHER the job title OR the job description involves tax, accounting, financial reporting, or auditing (including roles such as kế toán, trợ lý kiểm toán, kiểm toán viên, tư vấn thuế, đại lý thuế, rà soát nghĩa vụ thuế, quyết toán thuế, lập báo cáo tài chính); set is_tax_accounting=false only for unrelated roles.
+- For work_milestones, set is_current=true when the end period is "Hiện tại", "Present", "Now", "Nay", ongoing, or matches the current month and year provided in the prompt.
+- For certificates, format issued_date and expiry_date as YYYY-MM-DD (or YYYY-MM ONLY when both month and year are explicitly written in the document). If ONLY a year is stated (e.g. "năm 2019") or no date is stated, set the date field to null — NEVER invent "-01-01" or "-01" from a year alone.
 
 Return ONLY a JSON object with this exact schema:
 {
@@ -48,8 +51,12 @@ Return ONLY a JSON object with this exact schema:
 
 
 def build_text_extraction_prompt(
-    evidence_type: str, document_text: str, is_ocr: bool = False
+    evidence_type: str,
+    document_text: str,
+    is_ocr: bool = False,
+    reference_date: date | None = None,
 ) -> str:
+    ref_date = reference_date or date.today()
     ocr_note = (
         " The text below was parsed via OCR, so ignore minor OCR character noise while still never inventing missing fields."
         if is_ocr
@@ -57,7 +64,8 @@ def build_text_extraction_prompt(
     )
     return (
         f"Uploaded under application group hint: {evidence_type} "
-        f"(note: verify the actual content independently for document_type).{ocr_note}\n\n"
+        f"(note: verify the actual content independently for document_type). "
+        f"Current date: {ref_date.isoformat()} ({ref_date.month:02d}/{ref_date.year}).{ocr_note}\n\n"
         "Document text:\n"
         f"{document_text}"
     )

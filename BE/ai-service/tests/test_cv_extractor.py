@@ -1,3 +1,4 @@
+from datetime import date
 import json
 from pathlib import Path
 import sys
@@ -361,6 +362,70 @@ class CvExtractorTests(unittest.TestCase):
             self.assertEqual(CvExtractor._select_ocr_language(tmp, "vie+eng"), "eng")
             (tess_dir / "vie.traineddata").write_bytes(b"")
             self.assertEqual(CvExtractor._select_ocr_language(tmp, "vie+eng"), "vie+eng")
+
+    def test_current_month_end_milestone_is_marked_as_current(self):
+        pdf = _make_text_pdf(
+            "Nguyen Minh Anh - Senior AI Engineer 01/2025 - 11/2026 and Software Engineer 2022 - 2024."
+        )
+        fake_resp = MagicMock()
+        fake_resp.status_code = 200
+        fake_resp.json.return_value = {
+            "message": {
+                "content": json.dumps(
+                    {
+                        "full_name": "Nguyen Minh Anh",
+                        "document_type": "CV",
+                        "field_codes": [],
+                        "work_milestones": [
+                            {
+                                "company": "Tech Corp",
+                                "role": "AI Engineer",
+                                "start_year": 2025,
+                                "start_month": 1,
+                                "end_year": 2026,
+                                "end_month": 11,
+                                "is_current": False,
+                                "is_tax_accounting": False,
+                            },
+                            {
+                                "company": "Old Corp",
+                                "role": "Software Engineer",
+                                "start_year": 2022,
+                                "start_month": 1,
+                                "end_year": 2024,
+                                "end_month": 12,
+                                "is_current": False,
+                                "is_tax_accounting": False,
+                            },
+                        ],
+                        "certificates": [],
+                    }
+                )
+            }
+        }
+
+        with (
+            patch("app.modules.cv_screening.extractor.CvExtractor._current_date", return_value=date(2026, 11, 22)),
+            patch("app.modules.cv_screening.extractor.httpx.post", return_value=fake_resp) as post,
+        ):
+            resp = self.client.post(
+                "/api/v1/cv/extract",
+                files={"file": ("cv.pdf", pdf, "application/pdf")},
+                data={"evidence_type": "CV"},
+            )
+
+        self.assertEqual(resp.status_code, 200)
+        milestones = resp.json()["extracted"]["work_milestones"]
+        self.assertTrue(milestones[0]["is_current"])
+        self.assertFalse(milestones[1]["is_current"])
+        sent_prompt = post.call_args.kwargs["json"]["messages"][1]["content"]
+        self.assertIn("Current date: 2026-11-22 (11/2026).", sent_prompt)
+
+    def test_system_prompt_includes_audit_roles_and_strict_certificate_dates(self):
+        from app.modules.cv_screening.prompts import SYSTEM_PROMPT
+
+        self.assertIn("trợ lý kiểm toán", SYSTEM_PROMPT)
+        self.assertIn('NEVER invent "-01-01" or "-01"', SYSTEM_PROMPT)
 
 
 if __name__ == "__main__":

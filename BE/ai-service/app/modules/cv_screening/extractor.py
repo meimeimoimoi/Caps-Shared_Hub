@@ -1,3 +1,4 @@
+from datetime import date
 import logging
 import os
 from pathlib import Path
@@ -59,6 +60,14 @@ class CvExtractor:
             for fallback in (
                 r"C:\Program Files\Tesseract-OCR\tessdata",
                 r"C:\Program Files (x86)\Tesseract-OCR\tessdata",
+            ):
+                if Path(fallback).is_dir():
+                    return fallback
+        else:
+            for fallback in (
+                "/usr/share/tesseract-ocr/5/tessdata",
+                "/usr/share/tesseract-ocr/4.00/tessdata",
+                "/usr/share/tesseract-ocr/tessdata",
             ):
                 if Path(fallback).is_dir():
                     return fallback
@@ -161,6 +170,32 @@ class CvExtractor:
         raw_content = (body.get("message") or {}).get("content", "")
         return parse_ai_response(raw_content, ExtractedDocumentData)
 
+    @staticmethod
+    def _current_date() -> date:
+        return date.today()
+
+    @staticmethod
+    def _normalize_extracted_data(
+        data: ExtractedDocumentData, reference_date: date
+    ) -> ExtractedDocumentData:
+        """Mark milestones ending in the reference month/year as current when the model left is_current false."""
+        updated_milestones = []
+        changed = False
+        for milestone in data.work_milestones:
+            if (
+                not milestone.is_current
+                and milestone.end_year == reference_date.year
+                and milestone.end_month == reference_date.month
+            ):
+                updated_milestones.append(milestone.model_copy(update={"is_current": True}))
+                changed = True
+            else:
+                updated_milestones.append(milestone)
+
+        if not changed:
+            return data
+        return data.model_copy(update={"work_milestones": updated_milestones})
+
     @classmethod
     def _extract_from_text(
         cls,
@@ -171,19 +206,22 @@ class CvExtractor:
         is_scanned: bool = False,
         is_ocr: bool = False,
     ) -> CvExtractResponse:
+        today = cls._current_date()
         extracted = cls._call_ollama(
             settings.LLM_MODEL,
             build_text_extraction_prompt(
                 evidence_type,
                 text[:_MAX_TEXT_CHARS],
                 is_ocr=is_ocr,
+                reference_date=today,
             ),
         )
+        normalized = cls._normalize_extracted_data(extracted, today)
         return CvExtractResponse(
             status="EXTRACTED",
             is_image=is_image,
             is_scanned=is_scanned,
-            extracted=extracted,
+            extracted=normalized,
         )
 
     @classmethod
