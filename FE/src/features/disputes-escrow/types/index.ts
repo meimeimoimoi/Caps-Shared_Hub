@@ -50,6 +50,8 @@ export interface Dispute {
   /** The server sends no title or party names yet; the demo fixtures do */
   title?: string
   client?: string
+  /** The client's account id: tells the arbiter which files are the client's */
+  clientUserId?: string
   expert?: string
   /** Server deadline; when set it replaces the 48-hour rule computed here */
   decideBy?: string

@@ -9,7 +9,7 @@ import { addDisputeStatement, reviewCaseActions } from '../api/reviewCaseApi'
 import { useCaseError, useCaseRun, useLiveCase } from '../hooks/useReviewCases'
 import { caseCode } from '../mapper'
 import { caseText, fieldClass, useCaseFormat } from '../ui'
-import { CaseAttachments } from './CaseAttachments'
+import { CaseAttachments, EvidenceUpload } from './CaseAttachments'
 import { CaseChat } from './CaseChat'
 import { Deadline } from './CaseUi'
 import { RevisedContentView } from './RevisedContentView'
@@ -637,6 +637,10 @@ export function ExpertLiveCase({
                     }
                   />
                 )
+              )}
+              {dto.status === 'DISPUTED' && (
+                // Evidence sits next to the statement so the arbiter can weigh it against the client's
+                <EvidenceUpload caseId={caseId} label={t('live.files.evidence.add')} />
               )}
               {dispute.resolutionNote && (
                 <p className="text-fg break-words whitespace-pre-wrap">

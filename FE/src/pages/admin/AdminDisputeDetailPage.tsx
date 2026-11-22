@@ -220,7 +220,15 @@ export default function AdminDisputeDetailPage() {
 
           {/* A real case: the files both parties added and the document under review */}
           {dispute.decideBy && (
-            <CaseAttachments caseId={dispute.id} scope="admin" />
+            <CaseAttachments
+              caseId={dispute.id}
+              scope="admin"
+              dispute={
+                dispute.clientUserId
+                  ? { clientUserId: dispute.clientUserId, openedAt: dispute.openedAt }
+                  : undefined
+              }
+            />
           )}
 
           {dispute.history.length > 0 && (

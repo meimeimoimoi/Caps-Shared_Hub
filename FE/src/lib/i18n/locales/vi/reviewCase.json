@@ -621,7 +621,14 @@
       "source": "Tải hồ sơ gốc",
       "sourceName": "ho-so-goc",
       "noSource": "Hồ sơ này được soạn trong ứng dụng nên không có tệp gốc để tải.",
-      "fromExpert": "Từ chuyên gia"
+      "fromExpert": "Từ chuyên gia",
+      "evidence": {
+        "add": "Nộp thêm bằng chứng",
+        "client": "Bằng chứng của khách",
+        "expert": "Bằng chứng của chuyên gia",
+        "none": "Chưa có tệp.",
+        "duringDispute": "Nộp khi tranh chấp"
+      }
     },
     "revised": {
       "title": "Bản chuyên gia đã chỉnh sửa",

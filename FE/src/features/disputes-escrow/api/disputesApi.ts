@@ -51,6 +51,7 @@ interface AdminDisputeDto {
   reviewCaseId: string
   /** Only admins see it; the expert never learns the client's contact */
   requesterEmail: string | null
+  requesterUserId: string
   expertProfileId: string
   fee: number
   platformFeePct: number
@@ -95,6 +96,7 @@ function toDispute(x: AdminDisputeDto, expert: string): Dispute {
     code: x.reviewCaseId.slice(0, 8).toUpperCase(),
     kind: 'DELIVERY_ISSUE',
     client: x.requesterEmail ?? undefined,
+    clientUserId: x.requesterUserId,
     expert: expert || undefined,
     ground: reason,
     openedAt: d.openedAt,

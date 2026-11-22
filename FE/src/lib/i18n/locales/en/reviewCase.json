@@ -621,7 +621,14 @@
       "source": "Download the original file",
       "sourceName": "original-document",
       "noSource": "This document was written in the app, so there is no original file to download.",
-      "fromExpert": "From the expert"
+      "fromExpert": "From the expert",
+      "evidence": {
+        "add": "Add evidence",
+        "client": "Client's evidence",
+        "expert": "Expert's evidence",
+        "none": "No files.",
+        "duringDispute": "Added during the dispute"
+      }
     },
     "revised": {
       "title": "Expert's edited version",

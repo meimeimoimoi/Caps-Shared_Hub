@@ -42,6 +42,7 @@ public sealed record DisputeResponse(
 public sealed record AdminDisputeResponse(
     string ReviewCaseId,
     string? RequesterEmail,
+    string RequesterUserId,
     string ExpertProfileId,
     long Fee,
     short PlatformFeePct,
