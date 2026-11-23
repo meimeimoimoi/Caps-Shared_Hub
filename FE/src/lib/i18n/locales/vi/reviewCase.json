@@ -629,7 +629,8 @@
         "client": "Bằng chứng của khách",
         "expert": "Bằng chứng của chuyên gia",
         "none": "Chưa có tệp.",
-        "duringDispute": "Nộp khi tranh chấp"
+        "duringDispute": "Nộp khi tranh chấp",
+        "attachAnswer": "Đính kèm chứng từ"
       }
     },
     "revised": {

@@ -381,6 +381,7 @@ export function CasePanel({
             {copy('AWAITING_USER_INFORMATION.warning')}
           </p>
           <InfoResponseForm
+            caseId={c.id}
             live={c.live}
             busy={actions.busy}
             onSubmit={actions.answer}
@@ -578,10 +579,12 @@ export function CasePanel({
 }
 
 function InfoResponseForm({
+  caseId,
   onSubmit,
   live,
   busy,
 }: {
+  caseId: string
   onSubmit: (text: string) => void
   live?: boolean
   busy?: boolean
@@ -644,6 +647,15 @@ function InfoResponseForm({
             }}
           />
         </FormField>
+      )}
+      {live && (
+        // Supporting documents go on the case file with who added them and when, so a later dispute can weigh them
+        <div className="mb-6">
+          <EvidenceUpload
+            caseId={caseId}
+            label={t('live.files.evidence.attachAnswer')}
+          />
+        </div>
       )}
       <button
         type="submit"
