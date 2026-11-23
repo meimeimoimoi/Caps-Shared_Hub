@@ -420,6 +420,13 @@
       "noResponseNoRefund": "Bạn không trả lời yêu cầu bổ sung trong {{days}} ngày làm việc: hồ sơ chấm dứt và bạn không được hoàn tiền.",
       "noResponseRefund": "Bạn không trả lời yêu cầu bổ sung trong {{days}} ngày làm việc: hồ sơ chấm dứt và bạn chỉ được hoàn {{amount}}.",
       "dispute": "Khiếu nại được quản trị viên chấp thuận: bạn được hoàn {{amount}}."
+    },
+    "upload": {
+      "title": "Hoặc tải lên tài liệu bạn có sẵn",
+      "periodStart": "Kỳ tính thuế từ ngày",
+      "periodEnd": "Đến ngày",
+      "pick": "Chọn tệp để tải lên",
+      "hint": "PDF, JPEG, PNG, WebP hoặc Word (.docx), tối đa 50 MB. Tệp tải lên được chọn làm hồ sơ cần thẩm định."
     }
   },
   "nav": {

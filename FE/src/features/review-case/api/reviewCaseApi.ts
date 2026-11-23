@@ -103,6 +103,32 @@ export const addDisputeStatement = (id: string, message: string) =>
     })
   )
 
+/** A document made from a file the client already has; id is the version to book as sourceVersionId. */
+export interface UploadedDocument {
+  id: string
+  documentId: string
+}
+
+/** Uploads the client's own file as a new document so it can be sent for expert review. */
+export function uploadDocument(
+  file: File,
+  title: string,
+  periodStart: string,
+  periodEnd: string
+) {
+  const form = new FormData()
+  form.append('title', title)
+  form.append('periodStart', periodStart)
+  form.append('periodEnd', periodEnd)
+  form.append('file', file)
+  return unwrap(
+    api.post<Envelope<UploadedDocument>>('/api/v1/documents/upload', form, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+      timeout: FILE_TIMEOUT,
+    })
+  )
+}
+
 /** A system admin reads the same files through its own route. */
 export type AttachmentScope = 'party' | 'admin'
 const attachmentsUrl = (id: string, scope: AttachmentScope) =>
