@@ -7,6 +7,7 @@ import { AppSidebar } from '@/components/ui/layout/app-sidebar'
 import { useDialogMotion } from '@/components/ui/motion'
 import { useAuthStore } from '@/features/auth'
 import { useAccount } from '@/features/auth/hooks/useAccount'
+import { useNotifications } from '@/features/notifications'
 import { PendingVerificationRedirect } from '@/app/routes/ProtectedRoute'
 import {
   useUserNavigation,
@@ -28,6 +29,8 @@ export function ClientLayout() {
     (s) => s.user?.status === 'PENDING_VERIFICATION'
   )
   const account = useAccount('client')
+  // Case updates (questions, delivery, decisions) reach the client here too, not only by email
+  const bell = useNotifications()
   const location = useLocation()
   const path = location.pathname
   const [expanded, setExpanded] = useState(true)
@@ -80,6 +83,9 @@ export function ClientLayout() {
       <div className={`sidebar-offset ${expanded ? 'md:ml-60' : 'md:ml-20'}`}>
         <AppHeader
           navigationButtonRef={drawerTrigger}
+          notifications={bell.notifications}
+          onMarkNotificationsRead={bell.onMarkRead}
+          onMarkAllNotificationsRead={bell.onMarkAllRead}
           onOpenNavigation={() => drawer.current?.showModal()}
           context={
             <span aria-current="page" className="text-fg-strong font-semibold">
