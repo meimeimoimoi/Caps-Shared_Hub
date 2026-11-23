@@ -1,4 +1,10 @@
-import { useEffect, useRef, useState, type FormEvent } from 'react'
+import {
+  useEffect,
+  useRef,
+  useState,
+  type FocusEvent,
+  type FormEvent,
+} from 'react'
 import {
   blankTexts,
   fillDocx,
@@ -9,6 +15,19 @@ import {
 const inputsOf = (box: Element, fill: number) => [
   ...box.querySelectorAll<HTMLInputElement>(`input[data-fill="${fill}"]`),
 ]
+
+// Shows a fill's value in its inputs, except `keep` (the one being typed in, so the caret does not jump)
+const writeFill = (
+  box: Element,
+  fill: Fill,
+  i: number,
+  keep?: Element | null
+) => {
+  const inputs = inputsOf(box, i)
+  const texts = blankTexts(fill, inputs.length)
+  for (const [j, input] of inputs.entries())
+    if (input !== keep) input.value = texts[j] ?? ''
+}
 
 /**
  * Renders a .docx as Word lays it out (pages, tables, boxes), scaled down to fit the panel, with `fills`
@@ -70,13 +89,9 @@ export function DocxPreview({
   useEffect(() => {
     const box = ref.current
     if (!box || !editable) return
-    ;(JSON.parse(fillKey) as Fill[]).forEach((fill, i) => {
-      const inputs = inputsOf(box, i)
-      const texts = blankTexts(fill, inputs.length)
-      // The input being typed in keeps its own text, so the caret does not jump
-      for (const [j, input] of inputs.entries())
-        if (input !== document.activeElement) input.value = texts[j] ?? ''
-    })
+    ;(JSON.parse(fillKey) as Fill[]).forEach((fill, i) =>
+      writeFill(box, fill, i, document.activeElement)
+    )
   }, [doc, layoutKey, fillKey, editable])
 
   const edit = (event: FormEvent<HTMLDivElement>) => {
@@ -87,6 +102,14 @@ export function DocxPreview({
         fill,
         inputsOf(event.currentTarget, Number(i)).map((input) => input.value)
       )
+  }
+
+  // Leaving a field shows what the form kept: an amount grouped, a date left half-typed back to the last full one
+  const leave = (event: FocusEvent<HTMLDivElement>) => {
+    const i = (event.target as HTMLElement).dataset.fill
+    const next = (event.relatedTarget as HTMLElement | null)?.dataset?.fill
+    if (i !== undefined && i !== next && fills[Number(i)])
+      writeFill(event.currentTarget, fills[Number(i)], Number(i))
   }
 
   if (failed === file)
@@ -100,6 +123,7 @@ export function DocxPreview({
     <div
       aria-label={`Nội dung ${file.name}`}
       onInput={editable ? edit : undefined}
+      onBlur={editable ? leave : undefined}
       className="bg-sunken rounded-surface min-h-40 overflow-auto [&_section]:mx-auto [&_section]:mb-3 [&_section]:shadow-md"
     >
       {!ready && <p className="text-fg-muted p-4 text-sm">Đang mở file…</p>}
