@@ -125,13 +125,6 @@ public sealed class ExtensionEventsTests
             DateTimeOffset responseDeadline,
             CancellationToken ct
         ) => throw new NotSupportedException();
-
-        public Task DisputeOverdueAsync(
-            Guid reviewCaseId,
-            DateTimeOffset decideBy,
-            bool extended,
-            CancellationToken ct
-        ) => throw new NotSupportedException();
     }
 
     private sealed class FakeUnitOfWork : IUnitOfWork, ITransaction

@@ -119,6 +119,8 @@ export interface ReviewCase {
     issue?: IssueCode
     description: string
     openedAt: string
+    /** Past the admin's decision deadline with no decision yet */
+    decisionLate?: boolean
     decision?: {
       outcome: Extract<SettlementRule, `RESOLVE_${string}`>
       reason: string

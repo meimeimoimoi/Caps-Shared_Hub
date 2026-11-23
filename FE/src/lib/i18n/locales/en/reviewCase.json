@@ -180,7 +180,8 @@
       "description": "Details",
       "opened": "Submitted",
       "sla": "A Dispute Admin responds within {{days}} working days.",
-      "escalation": "If the dispute needs professional judgment, it is escalated to an independent expert reviewer; admins do not replace the expert's professional conclusion."
+      "escalation": "If the dispute needs professional judgment, it is escalated to an independent expert reviewer; admins do not replace the expert's professional conclusion.",
+      "late": "The decision is taking longer than expected; the fee stays safely on hold and you will be told as soon as it is decided."
     },
     "RESOLVED": {
       "title": "The dispute has been decided",

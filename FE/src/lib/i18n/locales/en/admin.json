@@ -132,7 +132,9 @@
     "pending": "{{count}} Expert applications awaiting capability review",
     "refundFailed": "{{count}} client refunds failed",
     "excuseRequests_one": "{{count}} violation excuse request waiting",
-    "excuseRequests_other": "{{count}} violation excuse requests waiting"
+    "excuseRequests_other": "{{count}} violation excuse requests waiting",
+    "disputesOverdue_one": "{{count}} dispute is past its decision deadline",
+    "disputesOverdue_other": "{{count}} disputes are past their decision deadline"
   },
   "pendingExperts": {
     "title": "Pending Applications",

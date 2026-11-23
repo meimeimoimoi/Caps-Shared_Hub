@@ -180,7 +180,8 @@
       "description": "Nội dung",
       "opened": "Gửi lúc",
       "sla": "Dispute Admin phản hồi trong {{days}} ngày làm việc.",
-      "escalation": "Nếu tranh chấp cần đánh giá chuyên môn, hồ sơ được chuyển tới chuyên gia thẩm định độc lập; quản trị viên không thay thế kết luận chuyên môn."
+      "escalation": "Nếu tranh chấp cần đánh giá chuyên môn, hồ sơ được chuyển tới chuyên gia thẩm định độc lập; quản trị viên không thay thế kết luận chuyên môn.",
+      "late": "Quyết định đang chậm hơn dự kiến; khoản tiền vẫn được giữ an toàn và bạn sẽ được báo ngay khi có quyết định."
     },
     "RESOLVED": {
       "title": "Tranh chấp đã có quyết định",

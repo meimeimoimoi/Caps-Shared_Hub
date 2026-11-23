@@ -116,7 +116,7 @@ public sealed class ReviewCaseStatusChangedConsumer(
         return notification;
     }
 
-    private static Guid SourceId(Guid eventId, Guid userId)
+    internal static Guid SourceId(Guid eventId, Guid userId)
     {
         var bytes = eventId.ToByteArray();
         var user = userId.ToByteArray();

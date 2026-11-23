@@ -117,6 +117,8 @@ function disputeOf(dispute?: DisputeDto | null): ReviewCase['dispute'] {
     issue: dispute.reason as IssueCode,
     description: dispute.description,
     openedAt: dispute.openedAt,
+    decisionLate:
+      dispute.status === 'OPEN' && new Date(dispute.decideBy).getTime() < Date.now(),
     decision:
       dispute.status === 'RESOLVED' && dispute.closedAt
         ? {

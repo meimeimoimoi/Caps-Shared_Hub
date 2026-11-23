@@ -127,7 +127,9 @@
     "pending": "{{count}} hồ sơ chuyên gia chờ đánh giá năng lực",
     "refundFailed": "{{count}} khoản hoàn tiền cho khách bị lỗi",
     "excuseRequests_one": "{{count}} đơn xin miễn vi phạm đang chờ xét",
-    "excuseRequests_other": "{{count}} đơn xin miễn vi phạm đang chờ xét"
+    "excuseRequests_other": "{{count}} đơn xin miễn vi phạm đang chờ xét",
+    "disputesOverdue_one": "{{count}} khiếu nại đã quá hạn quyết định",
+    "disputesOverdue_other": "{{count}} khiếu nại đã quá hạn quyết định"
   },
   "pendingExperts": {
     "title": "Hồ sơ chờ duyệt",

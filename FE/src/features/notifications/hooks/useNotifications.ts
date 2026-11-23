@@ -146,6 +146,15 @@ export function useNotifications() {
   }
 
   const toShell = (n: AppNotification): ShellNotification | null => {
+    // The admin has not decided a dispute by its deadline; the fee stays held
+    if (n.type === 'REVIEW_CASE_DISPUTE_OVERDUE')
+      return {
+        id: n.id,
+        text: t('notifications.reviewCase.disputeOverdue'),
+        to: typeof n.data.link === 'string' ? n.data.link : '/cases',
+        tone: 'warning',
+        read: n.readAt != null,
+      }
     // The expert's dispute statement window ends in a few hours
     if (n.type === 'REVIEW_CASE_STATEMENT_DUE')
       return {
