@@ -27,6 +27,7 @@ public sealed class DecideEligibilityHandler(
     IApplicantLock locks,
     IExpertApplicationRepository applications,
     IEligibilityCheckRepository eligibility,
+    IScreeningRepository screeningRepo,
     IQualificationRepository qualifications,
     IServiceCatalogRepository catalog,
     IExpertNotificationOutbox outbox,
@@ -58,6 +59,14 @@ public sealed class DecideEligibilityHandler(
         // Only the reviewer holding the application decides it, checked before any business rule
         var hold = (await policies.GetReviewClaimAsync(ct)).Hold;
         application.EnsureClaimedBy(command.ReviewerUserId, now, hold);
+        // Section 4 #6: every open screening point must be resolved before concluding Gate 1
+        var latestRun = await screeningRepo.FindLatestRunAsync(application.Id, ct);
+        if (latestRun != null)
+        {
+            var openPoints = await screeningRepo.CountOpenPointsAsync(latestRun.Id, ct);
+            if (openPoints > 0)
+                throw ExpertErrors.ScreeningPointsUnresolved(openPoints);
+        }
         // EV-06 is judged on the years in the submitted snapshot, not on later edits
         var history = await applications.ListEventsAsync(application.Id, ct);
         var snapshot = ExpertApplicationEvent.LatestSnapshot(history);
@@ -90,6 +99,22 @@ public sealed class DecideEligibilityHandler(
         );
         applications.AddEvent(decision.Event);
         eligibility.AddRange(decision.Checks);
+        if (latestRun?.Status == ScreeningRunStatuses.Running)
+        {
+            // Section 4 #4: conclude Gate 1 without waiting; discard late AI output and log skip
+            latestRun.MarkSkipped(now);
+            screeningRepo.AddEvent(
+                ScreeningEvent.Record(
+                    application.Id,
+                    latestRun.Id,
+                    command.ReviewerUserId,
+                    false,
+                    ScreeningEventTypes.RunSkipped,
+                    "Quyết định khi AI chưa sàng lọc xong",
+                    now
+                )
+            );
+        }
         audit.Record(
             AuditActions.Application,
             application.Id,

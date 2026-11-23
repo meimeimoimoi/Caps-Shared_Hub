@@ -7,6 +7,9 @@ public interface IExpertEvidenceRepository
 {
     /// <summary>Files of the application, oldest first.</summary>
     Task<IReadOnlyList<ExpertEvidence>> ListAsync(Guid applicationId, CancellationToken ct);
+
+    /// <summary>Tracked files of the application, oldest first, for updates inside a transaction.</summary>
+    Task<IReadOnlyList<ExpertEvidence>> ListTrackedAsync(Guid applicationId, CancellationToken ct);
     Task<int> CountAsync(Guid applicationId, CancellationToken ct);
     Task<bool> HasCodeAsync(Guid applicationId, string code, CancellationToken ct);
     Task<bool> AnyAddedAfterAsync(Guid applicationId, DateTimeOffset? since, CancellationToken ct);

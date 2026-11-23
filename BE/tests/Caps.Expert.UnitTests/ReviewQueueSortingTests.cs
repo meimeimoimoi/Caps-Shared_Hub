@@ -193,5 +193,8 @@ public sealed class ReviewQueueSortingTests
 
         public Task<PricingPolicy> GetPricingAsync(CancellationToken ct) =>
             throw new NotSupportedException();
+
+        public Task<ScreeningPolicy> GetScreeningAsync(CancellationToken ct) =>
+            throw new NotSupportedException();
     }
 }

@@ -11,8 +11,8 @@ interface DocumentsTabProps {
   documents: ApplicationDocument[]
   /** Document to show first, e.g. after the CV link on the profile tab */
   initialCode?: string
-  reviewedFlags: string[]
-  onToggleReviewed: (flagId: string) => void
+  reviewedFlags?: string[]
+  onToggleReviewed?: (flagId: string) => void
   onOpenFile: (evidenceId: string) => void
   /** Fetches an uploaded file for the in-page preview */
   loadFile: (evidenceId: string) => Promise<Blob | null | undefined>
@@ -23,7 +23,7 @@ interface DocumentsTabProps {
 export function DocumentsTab({
   documents,
   initialCode,
-  reviewedFlags,
+  reviewedFlags = [],
   onToggleReviewed,
   onOpenFile,
   loadFile,
@@ -122,7 +122,7 @@ export function DocumentsTab({
                           reviewed ? t('detail.documents.aiReviewed') : n.label
                         }
                         action={
-                          flagId
+                          flagId && onToggleReviewed
                             ? {
                                 label: reviewed
                                   ? t('detail.documents.unmark')

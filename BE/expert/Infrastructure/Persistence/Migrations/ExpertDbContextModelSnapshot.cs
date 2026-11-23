@@ -204,6 +204,11 @@ namespace Caps.Expert.Infrastructure.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("application_id");
 
+                    b.Property<string>("AssignedGroup")
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("assigned_group");
+
                     b.Property<string>("ContentType")
                         .IsRequired()
                         .HasColumnType("text")
@@ -273,6 +278,212 @@ namespace Caps.Expert.Infrastructure.Persistence.Migrations
                         .HasDatabaseName("ix_expert_evidence_qualification");
 
                     b.ToTable("expert_evidence", "expert");
+                });
+
+            modelBuilder.Entity("Caps.Expert.Domain.Applications.ScreeningEvent", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("ActorUserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("actor_user_id");
+
+                    b.Property<Guid>("ApplicationId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("application_id");
+
+                    b.Property<bool>("BySystem")
+                        .HasColumnType("boolean")
+                        .HasColumnName("by_system");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("EventType")
+                        .IsRequired()
+                        .HasMaxLength(48)
+                        .HasColumnType("character varying(48)")
+                        .HasColumnName("event_type");
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("message");
+
+                    b.Property<Guid>("ScreeningRunId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("screening_run_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ScreeningRunId");
+
+                    b.HasIndex("ApplicationId", "CreatedAt")
+                        .HasDatabaseName("ix_screening_event_application");
+
+                    b.ToTable("screening_event", "expert");
+                });
+
+            modelBuilder.Entity("Caps.Expert.Domain.Applications.ScreeningPoint", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("ApplicationId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("application_id");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("code");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("Detail")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("detail");
+
+                    b.Property<Guid?>("EvidenceId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("evidence_id");
+
+                    b.Property<string>("MetadataJson")
+                        .HasColumnType("jsonb")
+                        .HasColumnName("metadata_json");
+
+                    b.Property<string>("ResolutionReason")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("resolution_reason");
+
+                    b.Property<DateTimeOffset?>("ResolvedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("resolved_at");
+
+                    b.Property<Guid?>("ResolvedByUserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("resolved_by_user_id");
+
+                    b.Property<Guid>("ScreeningRunId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("screening_run_id");
+
+                    b.Property<string>("Source")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("source");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("status");
+
+                    b.Property<string>("SuggestedRequest")
+                        .HasColumnType("text")
+                        .HasColumnName("suggested_request");
+
+                    b.Property<string>("TargetCriterion")
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("target_criterion");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)")
+                        .HasColumnName("title");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ApplicationId")
+                        .HasDatabaseName("ix_screening_point_application");
+
+                    b.HasIndex("EvidenceId");
+
+                    b.HasIndex("ScreeningRunId", "CreatedAt")
+                        .HasDatabaseName("ix_screening_point_run");
+
+                    b.ToTable("screening_point", "expert");
+                });
+
+            modelBuilder.Entity("Caps.Expert.Domain.Applications.ScreeningRun", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("ApplicationId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("application_id");
+
+                    b.Property<int>("CheckedFileCount")
+                        .HasColumnType("integer")
+                        .HasColumnName("checked_file_count");
+
+                    b.Property<DateTimeOffset?>("CompletedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("completed_at");
+
+                    b.Property<string>("FailureReason")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("failure_reason");
+
+                    b.Property<int>("RunNumber")
+                        .HasColumnType("integer")
+                        .HasColumnName("run_number");
+
+                    b.Property<DateTimeOffset>("StartedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("started_at");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("status");
+
+                    b.Property<Guid?>("SubmissionEventId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("submission_event_id");
+
+                    b.Property<int>("SubmissionNumber")
+                        .HasColumnType("integer")
+                        .HasColumnName("submission_number");
+
+                    b.Property<DateTimeOffset>("TimeoutAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("timeout_at");
+
+                    b.Property<Guid>("TriggeredByUserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("triggered_by_user_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Status")
+                        .HasDatabaseName("ix_screening_run_running")
+                        .HasFilter("status = 'RUNNING'");
+
+                    b.HasIndex("ApplicationId", "StartedAt")
+                        .HasDatabaseName("ix_screening_run_application");
+
+                    b.ToTable("screening_run", "expert");
                 });
 
             modelBuilder.Entity("Caps.Expert.Domain.Catalog.ServiceCatalogItem", b =>
@@ -1316,6 +1527,56 @@ namespace Caps.Expert.Infrastructure.Persistence.Migrations
                     b.Navigation("Application");
                 });
 
+            modelBuilder.Entity("Caps.Expert.Domain.Applications.ScreeningEvent", b =>
+                {
+                    b.HasOne("Caps.Expert.Domain.Applications.ExpertApplication", null)
+                        .WithMany()
+                        .HasForeignKey("ApplicationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_screening_event_application");
+
+                    b.HasOne("Caps.Expert.Domain.Applications.ScreeningRun", null)
+                        .WithMany()
+                        .HasForeignKey("ScreeningRunId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_screening_event_run");
+                });
+
+            modelBuilder.Entity("Caps.Expert.Domain.Applications.ScreeningPoint", b =>
+                {
+                    b.HasOne("Caps.Expert.Domain.Applications.ExpertApplication", null)
+                        .WithMany()
+                        .HasForeignKey("ApplicationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_screening_point_application");
+
+                    b.HasOne("Caps.Expert.Domain.Applications.ExpertEvidence", null)
+                        .WithMany()
+                        .HasForeignKey("EvidenceId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_screening_point_evidence");
+
+                    b.HasOne("Caps.Expert.Domain.Applications.ScreeningRun", null)
+                        .WithMany("Points")
+                        .HasForeignKey("ScreeningRunId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_screening_point_run");
+                });
+
+            modelBuilder.Entity("Caps.Expert.Domain.Applications.ScreeningRun", b =>
+                {
+                    b.HasOne("Caps.Expert.Domain.Applications.ExpertApplication", null)
+                        .WithMany()
+                        .HasForeignKey("ApplicationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_screening_run_application");
+                });
+
             modelBuilder.Entity("Caps.Expert.Domain.Pricing.PlatformFee", b =>
                 {
                     b.HasOne("Caps.Expert.Domain.Catalog.ServiceCatalogItem", null)
@@ -1530,6 +1791,11 @@ namespace Caps.Expert.Infrastructure.Persistence.Migrations
                     b.Navigation("Events");
 
                     b.Navigation("Evidences");
+                });
+
+            modelBuilder.Entity("Caps.Expert.Domain.Applications.ScreeningRun", b =>
+                {
+                    b.Navigation("Points");
                 });
 
             modelBuilder.Entity("Caps.Expert.Domain.Profiles.ExpertProfile", b =>

@@ -7,7 +7,7 @@ import { ELIGIBILITY_RESULTS, EXPERIENCE_CODE, isEligibilityMet } from '../const
 import { needsNote } from '../hooks/useApplicationReview'
 import type { ApplicationDetail, EligibilityAssessment, EligibilityResult } from '../types'
 import { useEligibilityLabel } from '../hooks/useLabels'
-import { CriterionDeclarations, CriterionEvidence, CriterionPrevious } from './CriterionContext'
+import { CriterionDeclarations, CriterionEvidence, CriterionPrevious, CriterionScreeningPoints } from './CriterionContext'
 
 interface EligibilityReviewProps {
   detail: ApplicationDetail
@@ -16,6 +16,7 @@ interface EligibilityReviewProps {
   onResult: (code: string, result: EligibilityResult) => void
   onNote: (code: string, note: string) => void
   onShowDocument: (key: string) => void
+  onOpenAiTab?: () => void
   /** Note set aside when the criterion was switched to PASS, and a way to bring it back */
   setAsideNote?: (code: string) => string | undefined
   onRestoreNote?: (code: string) => void
@@ -78,7 +79,7 @@ function CriterionRow({ item, label, active, byDeclaration, onSelect }: Criterio
 }
 
 /** A visible checklist keeps navigation separate from the focused assessment editor. */
-export function EligibilityReview({ detail, assessments, disabled, onResult, onNote, onShowDocument, setAsideNote, onRestoreNote }: EligibilityReviewProps) {
+export function EligibilityReview({ detail, assessments, disabled, onResult, onNote, onShowDocument, onOpenAiTab, setAsideNote, onRestoreNote }: EligibilityReviewProps) {
   const { t } = useTranslation('admin')
   const label = useEligibilityLabel()
   // EV-04/EV-05 pass on the agreed statement; the reviewer only reads them, so they are listed apart
@@ -208,6 +209,10 @@ export function EligibilityReview({ detail, assessments, disabled, onResult, onN
           </div>
         )}
         <CriterionDeclarations declarations={declarations} />
+        <CriterionScreeningPoints
+          points={(detail.screening?.points ?? []).filter((p) => p.targetCriterion === assessment.code)}
+          onOpenAiTab={onOpenAiTab}
+        />
         {(evidence.length > 0 || declarations.length === 0) && <CriterionEvidence documents={evidence} onShowDocument={onShowDocument} />}
         {experience && <p className="bg-surface-muted text-text mb-5 rounded-lg p-4 text-sm leading-6">{t('eligibility.experienceHint', { years: detail.years, min: detail.minYearsExperience })}{belowMinimum && ` ${t('eligibility.experienceBelow')}`}</p>}
         <CriterionPrevious before={before} />

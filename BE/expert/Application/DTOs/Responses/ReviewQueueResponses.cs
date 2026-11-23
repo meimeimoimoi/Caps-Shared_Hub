@@ -30,7 +30,9 @@ public sealed record ReviewQueueRowResponse(
     bool HeldByMe = false,
     DateTimeOffset? PassedAt = null,
     DateTimeOffset? FinalApprovalDueAt = null,
-    bool FinalApprovalOverdue = false
+    bool FinalApprovalOverdue = false,
+    int OpenScreeningPoints = 0,
+    string? ScreeningStatus = null
 );
 
 /// <summary>One page of the review queue, oldest submission first, with the number of matching rows.</summary>

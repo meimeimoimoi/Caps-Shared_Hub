@@ -34,6 +34,8 @@ export interface ReviewQueueRow {
   /** Waiting for final approval: when it is due and whether that has passed */
   finalApprovalDueAt?: string | null
   finalApprovalOverdue?: boolean
+  openScreeningPoints?: number
+  screeningStatus?: 'RUNNING' | 'COMPLETED' | 'FAILED' | 'SKIPPED' | null
 }
 
 interface ReviewQueuePage {
@@ -145,7 +147,8 @@ export const toApplicationRow = (r: ReviewQueueRow): ExpertApplication => ({
   id: r.id,
   name: r.displayName ?? r.applicantUserId,
   years: r.yearsExperience ?? 0,
-  aiFlags: 0,
+  aiFlags: r.openScreeningPoints ?? 0,
+  screeningStatus: r.screeningStatus ?? null,
   submittedAt: r.submittedAt ?? '',
   status: r.status as ApplicationStatus,
   fields: r.fields,

@@ -8,6 +8,7 @@ Các lệnh dưới đây chạy bằng PowerShell tại `BE/ai-service`.
 - Python 3.11 và môi trường `.venv` có các dependency trong `requirements.txt`.
 - Docker Desktop đang chạy với Linux containers để chạy Qdrant.
 - Ollama đang chạy tại `http://localhost:11434`, có model `bge-m3:latest` và `qwen2.5:7b`.
+- Nếu xử lý CV dạng ảnh (`PNG`/`JPEG`) hoặc PDF scan: cài **Tesseract OCR** kèm gói ngôn ngữ `vie` (tiếng Việt) và `eng`; có thể trỏ thư mục `tessdata` qua `OCR_TESSDATA_DIR` trong `.env`.
 - Nếu chưa có `.env`, sao chép `.env.example` thành `.env`. Giữ nguyên `.env` hiện có.
 
 Compose chung tại `BE/docker/docker-compose.yml` hiện chưa cung cấp Qdrant.

@@ -125,6 +125,8 @@ services:
       Storage__ServiceUrl: http://seaweedfs:8333
       Storage__AccessKey: ${SEAWEEDFS_ACCESS_KEY:-caps-dev-access}
       Storage__SecretKey: ${SEAWEEDFS_SECRET_KEY:-caps-dev-secret-change-me}
+      AiService__BaseUrl: http://ai-service:8000
+      AiService__InternalKey: ${AI_SERVICE_INTERNAL_KEY:-}
     ports:
       - "5198:8080"
     depends_on:
@@ -173,6 +175,7 @@ services:
     environment:
       OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://host.docker.internal:11434}
       QDRANT_URL: ${QDRANT_URL:-http://host.docker.internal:6333}
+      INTERNAL_API_KEY: ${AI_SERVICE_INTERNAL_KEY:-}
     ports:
       - "8000:8000"
     networks:

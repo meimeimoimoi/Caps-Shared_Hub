@@ -25,6 +25,8 @@ public sealed class SupplementApplicationHandler(
     IExpertApplicationRepository applications,
     IExpertEvidenceRepository evidences,
     IApplicationDescriber describer,
+    IScreeningCoordinator screening,
+    IScreeningWakeup wakeup,
     ExpertPolicyOptions policy,
     IUnitOfWork unitOfWork,
     TimeProvider clock,
@@ -58,7 +60,7 @@ public sealed class SupplementApplicationHandler(
             throw ExpertErrors.SupplementEmpty();
 
         var submission = policy.Submission;
-        var files = await evidences.ListAsync(application.Id, ct);
+        var files = await evidences.ListTrackedAsync(application.Id, ct);
         var missing = profile.MissingRequirements(
             files.Select(x => x.EvidenceType).Distinct().ToArray(),
             submission
@@ -68,13 +70,27 @@ public sealed class SupplementApplicationHandler(
         var declarations = submission.Resolve(command.DeclarationCodes, command.Language);
 
         var now = clock.GetUtcNow();
+        var submissionNumber = history.Count(x => x.ProfileSnapshot != null) + 1;
         var snapshot = ProfileSnapshot.Of(profile, applicant.Email, declarations);
-        applications.AddEvent(application.Resubmit(applicant.UserId, note, now, snapshot));
+        var resubmitted = application.Resubmit(applicant.UserId, note, now, snapshot);
+        applications.AddEvent(resubmitted);
+        var run = await screening.StartForSubmissionAsync(
+            application,
+            resubmitted,
+            submissionNumber,
+            files,
+            snapshot,
+            applicant.UserId,
+            now,
+            ct
+        );
         profile.RecordContactEmail(applicant.Email);
         profile.RecordAccountStatus(applicant.AccountStatus);
         profile.MirrorStatus(application.Status, now);
         await unitOfWork.SaveChangesAsync(ct);
         await tx.CommitAsync(ct);
+        if (run.Status == ScreeningRunStatuses.Running)
+            wakeup.Notify();
         await realtime.ChangedAsync(
             ExpertRealtimeTopics.Applications,
             [applicant.UserId],

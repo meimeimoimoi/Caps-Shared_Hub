@@ -6,6 +6,11 @@ import type {
 
 export type ApplicationStatus = keyof typeof APPLICATION_STATUS
 
+export type ScreeningRunStatus = 'RUNNING' | 'COMPLETED' | 'FAILED' | 'SKIPPED'
+export type ScreeningPointSource = 'AI' | 'SYSTEM'
+export type ScreeningPointStatus = 'OPEN' | 'CHECKED' | 'USED_FOR_SUPPLEMENT'
+export type ScreeningPointAction = 'CHECKED' | 'USED_FOR_SUPPLEMENT' | 'REOPEN'
+
 export interface ExpertApplication {
   id: string
   name: string
@@ -13,6 +18,7 @@ export interface ExpertApplication {
   email?: string
   years: number
   aiFlags: number
+  screeningStatus?: ScreeningRunStatus | null
   submittedAt: string
   status: ApplicationStatus
   /** Field codes, e.g. CORPORATE_INCOME_TAX */
@@ -21,21 +27,96 @@ export interface ExpertApplication {
   isReapplication?: boolean
 }
 
+export interface ScreeningPoint {
+  id: string
+  source: ScreeningPointSource
+  code: string
+  evidenceId: string | null
+  evidenceCode: string | null
+  fileName: string | null
+  targetCriterion: string | null
+  title: string
+  detail: string
+  suggestedRequest: string | null
+  status: ScreeningPointStatus
+  resolutionReason: string | null
+  resolvedByUserId: string | null
+  resolvedAt: string | null
+  createdAt: string
+}
+
+export interface ScreeningMilestone {
+  company: string | null
+  role: string | null
+  startYear: number | null
+  startMonth: number | null
+  endYear: number | null
+  endMonth: number | null
+  isCurrent: boolean
+  isTaxAccounting: boolean
+}
+
+export interface ScreeningCertificate {
+  name: string | null
+  issuer: string | null
+  issuedDate: string | null
+  expiryDate: string | null
+}
+
+export interface ScreeningExtraction {
+  evidenceId: string
+  evidenceCode: string
+  fileName: string
+  assignedGroup: string | null
+  extractionStatus: string
+  isImage: boolean
+  isScanned: boolean
+  isUnreadable: boolean
+  unreadableReason: string | null
+  fullName: string | null
+  documentType: string | null
+  fieldCodes: string[]
+  derivedTaxYears: number | null
+  workMilestones: ScreeningMilestone[]
+  certificates: ScreeningCertificate[]
+  extractedAt: string | null
+}
+
+export interface ScreeningHistoryEntry {
+  id: string
+  eventType: string
+  message: string
+  actorUserId: string
+  bySystem: boolean
+  at: string
+}
+
+export interface ScreeningRun {
+  runId: string
+  submissionNumber: number
+  runNumber: number
+  status: ScreeningRunStatus
+  startedAt: string
+  timeoutAt: string
+  completedAt: string | null
+  failureReason: string | null
+  checkedFileCount: number
+  openPointCount: number
+  canRetry: boolean
+  visionEnabled: boolean
+  points: ScreeningPoint[]
+  extractions: ScreeningExtraction[]
+  history: ScreeningHistoryEntry[]
+}
+
+/** Used by SupplementDialog in Gate 2 competency review. */
 export interface AiFlag {
   id: string
-  document: string // mã tài liệu liên quan, vd. EV-03
+  document: string
   documentName: string
-  /** Gợi ý nội dung yêu cầu bổ sung cho mục này */
   request: string
   title: string
   detail: string
-}
-
-export interface LegalCheck {
-  item: string
-  result: 'declared' | 'present' | 'review'
-  note: string
-  document?: string
 }
 
 export interface Criterion {
@@ -77,14 +158,8 @@ export interface ApplicationDetail extends ExpertApplication {
   bio: string
   fields: string[]
   highlights: string
-  /** Demo only: AI screening is postponed, the review API does not return it */
-  screening?: {
-    ranAt: string
-    rerunAt?: string
-    checkedCount: number
-    flags: AiFlag[]
-    legalChecks: LegalCheck[]
-  }
+  /** Latest Gate 1 AI and rule screening run, visible to reviewers and admins only */
+  screening?: ScreeningRun | null
   documents: ApplicationDocument[]
   history: HistoryEntry[]
   /** Per-requirement results of the latest Gate 1 decision (empty before the first one) */

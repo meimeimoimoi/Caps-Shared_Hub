@@ -11,6 +11,7 @@ var config = builder.Configuration;
 var postgres = config.GetRequiredConnectionString("Postgres");
 
 builder.Services.AddCommonApi(config, "workflow");
+builder.Services.AddWorkflowAiBilling(config);
 builder.Services.AddWorkflowApplication();
 builder.Services.AddWorkflowInfrastructure(postgres, config);
 builder.Services.AddWorkflowServiceLinks(config);

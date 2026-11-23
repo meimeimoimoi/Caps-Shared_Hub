@@ -40,6 +40,7 @@ export async function gateway(page: Page, applicant = false, verified = true) {
       data = application
     } else if (path === '/api/v1/marketplace/experts') data = [listedExpert()]
     else if (path === '/api/v1/marketplace/experts/1') data = listedExpert()
+    else if (path === '/api/v1/chat/conversations') data = []
     await route.fulfill({ json: { success: true, data } })
   })
   return { calls, user, failContext: () => { contextFailure = true } }
