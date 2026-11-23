@@ -429,7 +429,8 @@
       "hint": "PDF, JPEG, PNG, WebP hoặc Word (.docx), tối đa 50 MB. Tệp tải lên được chọn làm hồ sơ cần thẩm định."
     },
     "workingDaysLabel": "Về ngày làm việc",
-    "workingDays": "Ngày làm việc không tính thứ Bảy, Chủ nhật và các ngày lễ dương lịch. Hạn rơi vào ngày nghỉ được dời sang ngày làm việc kế tiếp, cùng giờ."
+    "workingDays": "Ngày làm việc không tính thứ Bảy, Chủ nhật và các ngày lễ dương lịch. Hạn rơi vào ngày nghỉ được dời sang ngày làm việc kế tiếp, cùng giờ.",
+    "noVersion": "Tài liệu này chưa có phiên bản nào để gửi thẩm định. Hãy chọn tài liệu khác hoặc tải tệp lên."
   },
   "nav": {
     "label": "Không gian khách hàng",

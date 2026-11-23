@@ -429,7 +429,8 @@
       "hint": "PDF, JPEG, PNG, WebP or Word (.docx), up to 50 MB. The uploaded file is chosen as the document to review."
     },
     "workingDaysLabel": "About working days",
-    "workingDays": "Working days leave out Saturdays, Sundays and solar-calendar public holidays. A deadline that falls on a day off moves to the next working day, same time."
+    "workingDays": "Working days leave out Saturdays, Sundays and solar-calendar public holidays. A deadline that falls on a day off moves to the next working day, same time.",
+    "noVersion": "This document has no version to send for review yet. Choose another document or upload a file."
   },
   "nav": {
     "label": "Client workspace",
