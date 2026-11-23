@@ -23,6 +23,18 @@ public sealed class RatingTests
     }
 
     [Fact]
+    public void A_later_rating_keeps_the_time_the_case_closed()
+    {
+        var reviewCase = Completed();
+        var closedAt = reviewCase.UpdatedAt;
+
+        reviewCase.Rate(Client, 5, null, Now.AddHours(3));
+
+        Assert.Equal(closedAt, reviewCase.UpdatedAt);
+        Assert.Equal(Now.AddHours(3), reviewCase.RatedAt);
+    }
+
+    [Fact]
     public void A_comment_is_optional() => Assert.Null(Rated(Completed(), 5).RatingComment);
 
     [Theory]

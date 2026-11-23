@@ -206,6 +206,7 @@ export interface ReviewCaseDto {
   deliveredAt: string | null
   rating: number | null
   ratingComment: string | null
+  ratedAt: string | null
   /** Null while the case runs or when nothing was paid */
   settlement: SettlementAmounts | null
   /** Only GET /review-cases/{id} loads them; null in lists and action responses */
