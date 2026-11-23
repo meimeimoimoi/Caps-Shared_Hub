@@ -427,7 +427,9 @@
       "periodEnd": "To",
       "pick": "Choose a file to upload",
       "hint": "PDF, JPEG, PNG, WebP or Word (.docx), up to 50 MB. The uploaded file is chosen as the document to review."
-    }
+    },
+    "workingDaysLabel": "About working days",
+    "workingDays": "Working days leave out Saturdays, Sundays and solar-calendar public holidays. A deadline that falls on a day off moves to the next working day, same time."
   },
   "nav": {
     "label": "Client workspace",
@@ -736,7 +738,8 @@
       "netPayout": "You receive {{amount}} when it completes.",
       "lateRule": "Delivered up to {{hours}} h late: you receive {{payout}} and get 1 violation point. Not delivered within {{cancel}} h: the case is cancelled, you receive nothing and get 3 points.",
       "saveDraft": "Save draft",
-      "draftSaved": "Draft saved. The client sees your revision only after delivery."
+      "draftSaved": "Draft saved. The client sees your revision only after delivery.",
+      "decisionLate": "The decision is taking longer than planned. Your share is still held, and you will be told as soon as it is decided."
     },
     "notConnected": "No data yet.",
     "openCases": "Your open cases."
