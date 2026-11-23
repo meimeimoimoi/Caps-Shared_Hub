@@ -137,6 +137,36 @@ services:
     networks:
       - caps_network
 
+  ingestion:
+    image: ghcr.io/${GHCR_OWNER:-meimeimoimoi}/caps-ingestion:latest
+    container_name: caps_ingestion
+    restart: always
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__Postgres: Host=postgres;Port=5432;Database=caps_db;Username=caps_ingestion;Password=${CAPS_INGESTION_DB_PASSWORD}
+      ConnectionStrings__Redis: redis:6379
+      ConnectionStrings__RabbitMq: amqp://${RABBITMQ_USER:-guest}:${RABBITMQ_PASS:-guest}@rabbitmq:5672
+      Jwt__JwksUrl: http://auth:8080/.well-known/jwks.json
+      Jwt__RequireHttpsMetadata: "false"
+      Storage__ServiceUrl: http://seaweedfs:8333
+      Storage__AccessKey: ${SEAWEEDFS_ACCESS_KEY:-caps-dev-access}
+      Storage__SecretKey: ${SEAWEEDFS_SECRET_KEY:-caps-dev-secret-change-me}
+      AiService__BaseUrl: http://ai-service:8000
+      AiService__InternalKey: ${AI_SERVICE_INTERNAL_KEY:-}
+      # Shared with crawler-worker, which calls the /internal endpoints
+      InternalApi__Key: ${INGESTION_INTERNAL_API_KEY:?set it in .env}
+    # No published port: /internal is only for crawler-worker on caps_network, users go through the gateway
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - caps_network
+
   gateway:
     image: ghcr.io/${GHCR_OWNER:-meimeimoimoi}/caps-gateway:latest
     container_name: caps_gateway
@@ -148,11 +178,13 @@ services:
       Jwt__RequireHttpsMetadata: "false"
       ReverseProxy__Clusters__auth-cluster__Destinations__auth__Address: http://auth:8080
       ReverseProxy__Clusters__expert-cluster__Destinations__expert__Address: http://expert:8080
+      ReverseProxy__Clusters__ingestion-cluster__Destinations__ingestion__Address: http://ingestion:8080
     ports:
       - "5190:8080"
     depends_on:
       - auth
       - expert
+      - ingestion
     networks:
       caps_network:
         ipv4_address: 172.28.0.10
@@ -190,6 +222,26 @@ services:
       - tools
     volumes:
       - crawler_data:/app/data
+    networks:
+      - caps_network
+
+  # Same image as crawler, long-running: runs crawl jobs and parses uploads that ingestion publishes on RabbitMQ
+  crawler-worker:
+    image: ghcr.io/${GHCR_OWNER:-meimeimoimoi}/caps-crawler:latest
+    container_name: caps_crawler_worker
+    restart: always
+    entrypoint: ["python", "worker.py"]
+    environment:
+      INGESTION_URL: http://ingestion:8080
+      INTERNAL_API_KEY: ${INGESTION_INTERNAL_API_KEY:?set it in .env}
+      RABBITMQ_URL: amqp://${RABBITMQ_USER:-guest}:${RABBITMQ_PASS:-guest}@rabbitmq:5672/%2F
+    volumes:
+      - crawler_data:/app/data
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      ingestion:
+        condition: service_started
     networks:
       - caps_network
 

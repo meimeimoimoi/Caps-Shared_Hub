@@ -29,6 +29,7 @@ jobs:
       auth: ${{ steps.filter.outputs.auth }}
       expert: ${{ steps.filter.outputs.expert }}
       gateway: ${{ steps.filter.outputs.gateway }}
+      ingestion: ${{ steps.filter.outputs.ingestion }}
       frontend: ${{ steps.filter.outputs.frontend }}
       ai-service: ${{ steps.filter.outputs.ai-service }}
       crawler: ${{ steps.filter.outputs.crawler }}
@@ -56,6 +57,12 @@ jobs:
               - 'BE/Directory.Build.props'
               - 'BE/Directory.Packages.props'
               - 'BE/docker/Dockerfile.service'
+            ingestion:
+              - 'BE/ingestion/**'
+              - 'BE/common/**'
+              - 'BE/Directory.Build.props'
+              - 'BE/Directory.Packages.props'
+              - 'BE/docker/Dockerfile.service'
             frontend:
               - 'FE/**'
             ai-service:
@@ -70,7 +77,8 @@ jobs:
     if: >-
       needs.changes.outputs.auth == 'true' ||
       needs.changes.outputs.expert == 'true' ||
-      needs.changes.outputs.gateway == 'true'
+      needs.changes.outputs.gateway == 'true' ||
+      needs.changes.outputs.ingestion == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -94,6 +102,10 @@ jobs:
             changed: gateway
             build-args: |
               SERVICE_NAME=gateway
+          - service: ingestion
+            changed: ingestion
+            build-args: |
+              SERVICE_NAME=ingestion
     steps:
       - name: Skip if unchanged
         if: needs.changes.outputs[matrix.changed] != 'true'
