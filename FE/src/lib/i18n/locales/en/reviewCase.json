@@ -412,7 +412,15 @@
     },
     "serviceMissing": "This service is no longer open for booking. Choose again on the expert's profile.",
     "expertMissing": "Couldn't load the expert's profile.",
-    "backToProfile": "Back to expert profile"
+    "backToProfile": "Back to expert profile",
+    "terms": {
+      "title": "What you get back in each case",
+      "late": "The expert delivers up to {{hours}} h late: you get {{amount}} back.",
+      "noDelivery": "The expert does not deliver: you get {{amount}} back.",
+      "noResponseNoRefund": "You do not answer a question within {{days}} working days: the case ends and nothing is refunded.",
+      "noResponseRefund": "You do not answer a question within {{days}} working days: the case ends and you get only {{amount}} back.",
+      "dispute": "The administrator upholds your dispute: you get {{amount}} back."
+    }
   },
   "nav": {
     "label": "Client workspace",

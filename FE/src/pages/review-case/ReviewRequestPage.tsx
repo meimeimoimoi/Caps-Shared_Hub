@@ -1,5 +1,6 @@
 import { useEffect, useId, useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useQuery } from '@tanstack/react-query'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { ArrowLeft, CircleAlert, FilePlus2 } from 'lucide-react'
 import { FormField } from '@/components/ui/forms/form-field'
@@ -7,7 +8,10 @@ import { usePublicExpert } from '@/features/marketplace/hooks/useMarketplace'
 import { FilePicker, Initials } from '@/features/review-case/components/CaseUi'
 import { fieldClass, useCaseFormat } from '@/features/review-case/ui'
 import { DEMO_CASES, REVIEWABLE_DRAFTS } from '@/features/review-case/fixtures'
-import { createReviewCase } from '@/features/review-case/api/reviewCaseApi'
+import {
+  createReviewCase,
+  getBookingTerms,
+} from '@/features/review-case/api/reviewCaseApi'
 import { useCaseError } from '@/features/review-case/hooks/useReviewCases'
 import { ApiError } from '@/lib/api-client'
 import { isExpertDemo } from '@/lib/expert-data-source'
@@ -37,6 +41,13 @@ export default function ReviewRequestPage() {
   const service = bio?.services.find(
     (s) => s.serviceId === params.get('service')
   )
+  // The money rules this booking would freeze, shown before the client agrees and pays
+  const terms = useQuery({
+    queryKey: ['private', 'client', 'booking-terms', expertId, service?.serviceId],
+    queryFn: ({ signal }) =>
+      getBookingTerms(expertId!, service!.serviceId, signal),
+    enabled: !isExpertDemo && Boolean(expertId && service),
+  }).data
 
   // ponytail: no documents API yet, so a real booking names its version in the URL; add a picker when that API exists
   const documentId = params.get('document')
@@ -280,6 +291,44 @@ export default function ReviewRequestPage() {
                 )}
               </div>
 
+              {terms && (
+                <section
+                  aria-labelledby={`${id}-terms`}
+                  className="bg-sunken rounded-control mb-4 p-4 text-sm"
+                >
+                  <h3 id={`${id}-terms`} className="text-fg-strong font-semibold">
+                    {t('request.terms.title')}
+                  </h3>
+                  <ul className="text-fg mt-2 list-disc space-y-1 pl-5">
+                    <li>
+                      {t('request.terms.late', {
+                        hours: terms.latePenaltyHours,
+                        amount: f.money(terms.lateRefund),
+                      })}
+                    </li>
+                    <li>
+                      {t('request.terms.noDelivery', {
+                        amount: f.money(terms.noDeliveryRefund),
+                      })}
+                    </li>
+                    <li className="text-warning font-semibold">
+                      {terms.noResponseRefund > 0
+                        ? t('request.terms.noResponseRefund', {
+                            days: terms.noResponseDays,
+                            amount: f.money(terms.noResponseRefund),
+                          })
+                        : t('request.terms.noResponseNoRefund', {
+                            days: terms.noResponseDays,
+                          })}
+                    </li>
+                    <li>
+                      {t('request.terms.dispute', {
+                        amount: f.money(terms.disputeRefund),
+                      })}
+                    </li>
+                  </ul>
+                </section>
+              )}
               <label className="flex cursor-pointer items-start gap-3 text-sm">
                 <input
                   type="checkbox"
