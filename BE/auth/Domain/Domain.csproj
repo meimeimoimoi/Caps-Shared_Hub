@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>Caps.Auth.Domain</RootNamespace>
+    <AssemblyName>Caps.Auth.Domain</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\common\Domain\Domain.csproj" />
+  </ItemGroup>
+
+</Project>

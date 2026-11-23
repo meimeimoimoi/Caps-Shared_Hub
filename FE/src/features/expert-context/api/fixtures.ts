@@ -1,0 +1,75 @@
+import { useAuthStore } from '@/features/auth/store/authStore'
+import { getDemoServices } from '@/features/expert-pricing/demoRepository'
+import type { ExpertContext } from '../types'
+
+export function createExpertContextFixture(): ExpertContext {
+  const scope = 'demo-expert:' + useAuthStore.getState().sessionScope
+  // Readiness shows the price saved on the demo pricing page
+  const pricing = (serviceId: string) => {
+    const service = getDemoServices(scope).find(
+      (s) => s.serviceCode === serviceId
+    )
+    return service?.fee != null && service.turnaroundHours != null
+      ? {
+          fee: service.fee,
+          turnaroundHours: service.turnaroundHours,
+          updatedAt: '2026-09-01T00:00:00Z',
+        }
+      : null
+  }
+  return {
+    expertId: 'demo-expert',
+    displayName: 'Minh Anh Nguyen',
+    email: 'minhanh@example.test',
+    accountStatus: 'ACTIVE',
+    stage: 'ACTIVE',
+    applicationStatus: 'ELIGIBLE',
+    portalAccess: {
+      allowed: true,
+      reason: null,
+      capabilities: [
+        'application.view',
+        'services.manage',
+        'profile.public',
+        'cases.work',
+        'income.view',
+      ],
+    },
+    generatedAt: new Date().toISOString(),
+    version: 'demo-v1',
+    services: [
+      {
+        serviceId: 'cit-review',
+        serviceName: 'CIT draft verification',
+        qualificationStatus: 'APPROVED_FOR_SERVICE',
+        serviceStatus: 'ACTIVE',
+        availability: true,
+        bookingAllowed: true,
+        reasons: [],
+        pricing: pricing('cit-review'),
+      },
+      {
+        serviceId: 'cit-consultation',
+        serviceName: 'CIT consultation',
+        qualificationStatus: 'APPROVED_FOR_SERVICE',
+        serviceStatus: 'ACTIVE',
+        availability: false,
+        bookingAllowed: false,
+        reasons: [
+          'Availability is off for this service. Existing cases remain accessible.',
+        ],
+        pricing: pricing('cit-consultation'),
+      },
+      {
+        serviceId: 'cit-compliance',
+        serviceName: 'CIT compliance assessment',
+        qualificationStatus: 'PENDING_FINAL_APPROVAL',
+        serviceStatus: 'ACTIVE',
+        availability: true,
+        bookingAllowed: false,
+        reasons: ['Service qualification is awaiting final approval.'],
+        pricing: null,
+      },
+    ],
+  }
+}

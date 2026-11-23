@@ -1,0 +1,22 @@
+{
+  "credits": {
+    "paymentsTitle": "Giao dịch thanh toán",
+    "emptyPayments": "Chưa có giao dịch thanh toán.",
+    "col": {
+      "time": "Thời gian",
+      "purpose": "Mục đích",
+      "amount": "Số tiền",
+      "status": "Trạng thái"
+    },
+    "purpose": {
+      "CREDIT_TOP_UP": "Nạp Credit",
+      "REVIEW_FEE": "Phí thẩm định"
+    },
+    "paymentStatus": {
+      "PENDING": "Đang chờ",
+      "SUCCEEDED": "Thành công",
+      "FAILED": "Thất bại",
+      "CANCELLED": "Đã hủy"
+    }
+  }
+}

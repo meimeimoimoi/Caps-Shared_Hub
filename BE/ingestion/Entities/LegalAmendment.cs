@@ -1,5 +1,6 @@
-namespace ingestion.Entities;
+namespace Caps.Ingestion.Entities;
 
+/// <summary>Records that one legal source amends (or replaces) another.</summary>
 public sealed class LegalAmendment
 {
     public Guid AmendingSourceId { get; set; }

@@ -1,0 +1,27 @@
+{
+  "home": "Back to home",
+  "draftTitle": "Draft — not in effect",
+  "draftNotice": "For review and interface testing. The operating team must verify the facts, obtain legal review and approve this content before using it as official terms or a notice. Checking a box on the test form does not make this draft an official agreement.",
+  "terms": {
+    "title": "Terms of Service",
+    "intro": "Draft principles for customers and experts using Shared Hub.",
+    "sections": [
+      { "title": "Service scope", "body": "Shared Hub supports tax information research, AI assistance, document drafting and expert verification. Available features depend on account status and enabled services." },
+      { "title": "Accounts and responsible use", "body": "Users should provide accurate information, protect sign-in credentials and upload only data they are entitled to use. Impersonation, unauthorized access, unlawful content and disruption of the platform are prohibited under these proposed terms." },
+      { "title": "AI content and expert verification", "body": "AI content may be incomplete or incorrect. Users should check sources, applicability dates and suitability before relying on it. An AI draft is not automatically an expert-reviewed professional conclusion; each service must define its verification scope separately." },
+      { "title": "Paid services and disputes", "body": "Before launch, the team must publish pricing, work scope, delivery timelines, cancellation and refund conditions, and complaint procedures. This draft establishes no fees, refund guarantees or liability limits." },
+      { "title": "Details required before publication", "body": "Add the operator's legal name and address, contact details, effective date, account restriction and termination conditions, content rights, change notification process and an appropriate dispute resolution mechanism." }
+    ]
+  },
+  "privacy": {
+    "title": "Privacy Policy",
+    "intro": "Draft data processing notice for Shared Hub. The final scope must reflect actual system operation.",
+    "sections": [
+      { "title": "Data categories to describe", "body": "Potential categories include account and contact information; expert profiles and evidence; AI questions, input data, uploads and drafts; service requests, transactions and technical logs. The team must verify which specific data is actually collected." },
+      { "title": "Proposed purposes", "body": "Proposed purposes include authentication, drafting and AI features, expert application assessment, service delivery, notifications and system security. Specific purposes, processing grounds and consent mechanisms must be established before publication." },
+      { "title": "Recipients and external services", "body": "Disclose potential recipients, including assigned experts or reviewers and infrastructure, email, payment and AI providers where used. This draft does not confirm storage locations, international transfers or whether data is used for AI training." },
+      { "title": "Retention, security and user requests", "body": "Define retention periods by data category, deletion and backup handling, safeguards and a contact for access, correction, deletion and other requests under applicable rules. This draft establishes no specific response deadlines or deletion guarantees." },
+      { "title": "Details required before publication", "body": "Add the responsible operator, privacy contact, provider list, actual cookies and browser storage, retention periods, incident procedures, effective date and change notification process. Publish only after product verification and legal review." }
+    ]
+  }
+}

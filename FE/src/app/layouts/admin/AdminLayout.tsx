@@ -1,0 +1,441 @@
+import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react'
+import {
+  BadgeCheck,
+  Banknote,
+  ClipboardCheck,
+  CreditCard,
+  FileText,
+  LayoutDashboard,
+  Flag,
+  ShieldQuestion,
+  SlidersHorizontal,
+  Tag,
+  UserCog,
+  UserRound,
+  Users,
+  UsersRound,
+  type LucideIcon,
+} from 'lucide-react'
+import { useTranslation } from 'react-i18next'
+import {
+  AppSidebar,
+  type SidebarGroup,
+} from '@/components/ui/layout/app-sidebar'
+import { AppHeader } from '@/components/ui/layout/app-header'
+import { useFormatters } from '@/hooks/useFormatters'
+import {
+  Permission,
+  hasAnyPermission,
+  useAccount,
+  useAuthStore,
+} from '@/features/auth'
+import { useDialogMotion } from '@/components/ui/motion'
+import { type ShellNotification } from '../NotificationBell'
+
+export interface NavItem {
+  label: string
+  icon: LucideIcon
+  to?: string // không có = chưa có route
+  active?: boolean
+  badge?: number
+  /** Shown locked with this hint instead of as a link (area not connected yet) */
+  lockedHint?: string
+}
+
+export interface NavGroup {
+  group: string
+  items: NavItem[]
+}
+
+interface ShellPageProps {
+  breadcrumb: ReactNode
+  /** Tiêu đề tab trình duyệt; bỏ trống thì lấy tên mục sidebar đang chọn */
+  title?: string
+  /** Bỏ trống thì ẩn ô tìm kiếm */
+  search?: string
+  /** Gợi ý trong ô tìm kiếm; mặc định "Tìm theo tên hoặc email" */
+  searchLabel?: string
+  onSearchChange?: (value: string) => void
+  /** Danh sách trong popover chuông; có mục thì hiện chấm đỏ */
+  notifications?: ShellNotification[]
+  children: ReactNode
+}
+
+interface AdminLayoutProps extends ShellPageProps {
+  /** Mục sidebar đang mở */
+  section:
+    | 'overview'
+    | 'pending'
+    | 'competency'
+    | 'approvals'
+    | 'platformFees'
+    | 'expertPolicy'
+    | 'assignments'
+    | 'experts'
+    | 'excuseRequests'
+    | 'disputes'
+    | 'escrow'
+    | 'pricing'
+    | 'users'
+    | 'account'
+  pendingCount: number
+  disputeCount?: number
+  /** Final approvals past their due time */
+  approvalOverdueCount?: number
+  /** Everything waiting for final approval; the badge shows it, overdue or not */
+  approvalPendingCount?: number
+  /** Expert excuse requests waiting for a decision */
+  excuseRequestCount?: number
+  /** The users endpoint is not on the server yet */
+  usersUnavailable?: boolean
+  /** Payouts and refunds that failed and need a retry */
+  payoutFailedCount?: number
+  /** Review-fee ranges have no backend yet */
+  pricingUnavailable?: boolean
+  /** The disputes queue is not open to this account */
+  disputesUnavailable?: boolean
+}
+
+export function AdminLayout({
+  section,
+  pendingCount,
+  disputeCount,
+  approvalOverdueCount,
+  approvalPendingCount,
+  excuseRequestCount,
+  usersUnavailable,
+  payoutFailedCount,
+  pricingUnavailable,
+  disputesUnavailable,
+  ...page
+}: AdminLayoutProps) {
+  const { t } = useTranslation('admin')
+  // Match navigation to the permissions enforced by each API.
+  const user = useAuthStore((s) => s.user)
+  const canReview = hasAnyPermission(user, [Permission.ExpertReview])
+  const canApprove = hasAnyPermission(user, [Permission.ExpertApprove])
+  const canManagePricing = hasAnyPermission(user, [Permission.PricingManage])
+  const isSystemAdmin = hasAnyPermission(user, [Permission.UserManage])
+  const allGroups: NavGroup[] = [
+    {
+      // Không tiêu đề nhóm: AppSidebar chỉ hiện tiêu đề khi có chữ
+      group: '',
+      items: [
+        {
+          label: t('navigation.overview'),
+          icon: LayoutDashboard,
+          to: '/admin',
+          active: section === 'overview',
+        },
+      ],
+    },
+    {
+      group: t('navigation.expertReview'),
+      items: [
+        {
+          label: t('navigation.pendingExperts'),
+          icon: FileText,
+          to: '/reviewer/gate-1',
+          active: section === 'pending',
+          badge: pendingCount,
+        },
+        {
+          label: t('navigation.competencyReview'),
+          icon: ClipboardCheck,
+          to: '/reviewer/gate-2',
+          active: section === 'competency',
+        },
+        {
+          label: t('navigation.finalApproval'),
+          icon: BadgeCheck,
+          to: '/admin/experts/approvals',
+          active: section === 'approvals',
+          badge: approvalPendingCount || approvalOverdueCount,
+        },
+        {
+          label: t('navigation.assignments'),
+          icon: UserCog,
+          to: '/admin/experts/assignments',
+          active: section === 'assignments',
+        },
+        {
+          label: t('navigation.manageExperts'),
+          icon: Users,
+          to: '/admin/experts',
+          active: section === 'experts',
+        },
+        {
+          label: t('navigation.excuseRequests'),
+          icon: ShieldQuestion,
+          to: '/admin/experts/excuse-requests',
+          active: section === 'excuseRequests',
+          badge: excuseRequestCount,
+        },
+      ],
+    },
+    {
+      group: t('navigation.operations'),
+      items: [
+        {
+          label: t('navigation.complaints'),
+          icon: Flag,
+          to: '/admin/disputes',
+          lockedHint: disputesUnavailable
+            ? t('navigation.notConnected')
+            : undefined,
+          active: section === 'disputes',
+          badge: disputeCount,
+        },
+        {
+          label: t('navigation.payouts'),
+          icon: CreditCard,
+          to: '/admin/escrow',
+          active: section === 'escrow',
+          badge: payoutFailedCount,
+        },
+      ],
+    },
+    {
+      // Everything that sets money or rules: platform cut, review-fee ranges, vetting parameters
+      group: t('navigation.feesAndPolicy'),
+      items: [
+        {
+          label: t('navigation.platformFees'),
+          icon: Banknote,
+          to: '/admin/platform-fees',
+          active: section === 'platformFees',
+        },
+        {
+          label: t('navigation.pricing'),
+          icon: Tag,
+          to: '/admin/pricing',
+          lockedHint: pricingUnavailable
+            ? t('navigation.notConnected')
+            : undefined,
+          active: section === 'pricing',
+        },
+        {
+          label: t('navigation.expertPolicy'),
+          icon: SlidersHorizontal,
+          to: '/admin/experts/policy',
+          active: section === 'expertPolicy',
+        },
+      ],
+    },
+    {
+      group: t('navigation.system'),
+      items: [
+        {
+          label: t('navigation.users'),
+          icon: UsersRound,
+          to: '/admin/users',
+          lockedHint: usersUnavailable
+            ? t('navigation.notConnected')
+            : undefined,
+          active: section === 'users',
+        },
+        {
+          label: t('navigation.accounts'),
+          icon: UserRound,
+          to: '/admin/account',
+          active: section === 'account',
+        },
+        // ponytail: bỏ mục Cài đặt (chưa có trang, hiện mờ dễ tưởng lỗi); thêm lại khi có màn cấu hình hệ thống
+      ],
+    },
+  ]
+  const reviewerRoutes = ['/reviewer/gate-1', '/reviewer/gate-2']
+  const approvalRoutes = [
+    '/admin/experts/approvals',
+    '/admin/experts/assignments',
+    '/admin/experts/policy',
+    '/admin/experts/excuse-requests',
+  ]
+  const adminRoutes = [
+    '/admin',
+    '/admin/experts',
+    '/admin/disputes',
+    '/admin/escrow',
+    '/admin/pricing',
+    '/admin/users',
+  ]
+  const allowed = allGroups
+    .map((g) => ({
+      ...g,
+      items: g.items.filter((i) => {
+        if (!i.to) return false
+        if (reviewerRoutes.includes(i.to)) return canReview
+        if (approvalRoutes.includes(i.to)) return canApprove
+        if (i.to === '/admin/platform-fees') return canManagePricing
+        if (i.to === '/admin/account') return isSystemAdmin || canReview
+        if (adminRoutes.includes(i.to)) return isSystemAdmin
+        return false
+      }),
+    }))
+    .filter((g) => g.items.length > 0)
+  // Areas that are not connected yet leave their groups and sit together at the end, so the
+  // working console reads complete and the group title says once what they have in common
+  const soon = allowed.flatMap((g) => g.items.filter((i) => i.lockedHint))
+  const nav = [
+    ...allowed
+      .map((g) => ({ ...g, items: g.items.filter((i) => !i.lockedHint) }))
+      .filter((g) => g.items.length > 0),
+    ...(soon.length ? [{ group: t('navigation.soonGroup'), items: soon }] : []),
+  ]
+
+  return <RoleShell nav={nav} {...page} />
+}
+
+// Admin routes mount separate shells. Keep each navigation pane's offset across those mounts.
+const sidebarScroll = { desktop: 0, drawer: 0 }
+
+interface RoleShellProps extends ShellPageProps {
+  nav: NavGroup[]
+  searchPlaceholder?: string
+}
+
+export function RoleShell({
+  nav,
+  breadcrumb,
+  title,
+  search,
+  searchLabel,
+  onSearchChange,
+  notifications = [],
+  children,
+}: RoleShellProps) {
+  const [collapsed, setCollapsed] = useState(false)
+  const drawer = useRef<HTMLDialogElement>(null)
+  const desktopNavigation = useRef<HTMLElement>(null)
+  const drawerNavigation = useRef<HTMLElement>(null)
+  useLayoutEffect(() => {
+    if (desktopNavigation.current)
+      desktopNavigation.current.scrollTop = sidebarScroll.desktop
+  }, [])
+  useDialogMotion(drawer, 'drawer-left')
+  const drawerTrigger = useRef<HTMLButtonElement>(null)
+  const { t } = useTranslation(['common', 'admin'])
+  const { number } = useFormatters()
+  // Tài khoản thật hoặc minh họa; dùng chung với trang Tài khoản nên đổi ảnh là header đổi theo
+  const account = useAccount('admin')
+  const groups: SidebarGroup[] = nav.map(({ group, items }, groupIndex) => ({
+    id: `admin-group-${groupIndex}`,
+    label: group,
+    items: items.map(
+      ({ label, icon: Icon, to, active, badge, lockedHint }, itemIndex) => ({
+        id: to ?? `admin-item-${groupIndex}-${itemIndex}`,
+        label,
+        icon: <Icon size={18} />,
+        // A locked item still links to its page, which explains it is not connected yet;
+        // the sidebar adds a lock and the hint, and a locked area never shows a count
+        to,
+        active,
+        badge:
+          !lockedHint && badge != null && badge > 0 ? number(badge) : undefined,
+        lockedHint,
+        // Admin areas are locked only because they are not connected yet, never by permission
+        lockedKind: 'soon' as const,
+      })
+    ),
+  }))
+  // Đặt ở layout để mọi trang admin đều có tiêu đề tab (effect của layout chạy sau effect của trang)
+  const pageTitle =
+    title ??
+    nav.flatMap((g) => g.items).find((i) => i.active)?.label ??
+    'Shared Hub'
+  useEffect(() => {
+    document.title = `${pageTitle} | Shared Hub`
+  }, [pageTitle])
+  const openDrawer = () => {
+    drawer.current?.showModal()
+    if (drawerNavigation.current)
+      drawerNavigation.current.scrollTop = sidebarScroll.drawer
+  }
+  const closeDrawer = () => drawer.current?.close()
+  return (
+    <div data-density="compact" className="bg-desk-2 text-fg min-h-svh">
+      <a
+        href="#admin-main"
+        className="focus:bg-paper sr-only z-50 focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:p-3"
+      >
+        {t('navigation.skipWorkspace')}
+      </a>
+      <aside
+        className={`sidebar-rail bg-sidebar fixed inset-y-0 left-0 z-30 hidden flex-col border-r border-black py-6 md:flex ${collapsed ? 'w-20 px-3' : 'w-60 px-4'}`}
+      >
+        <AppSidebar
+          groups={groups}
+          navigationLabel={t('common:navigation.admin')}
+          navigationRef={desktopNavigation}
+          onNavigationScroll={({ currentTarget }) => {
+            if (currentTarget.clientHeight) sidebarScroll.desktop = currentTarget.scrollTop
+          }}
+          collapsed={collapsed}
+          onToggleCollapse={() => setCollapsed((value) => !value)}
+        />
+      </aside>
+      <dialog
+        ref={drawer}
+        aria-label={t('common:navigation.admin')}
+        onClose={() => drawerTrigger.current?.focus()}
+        className="bg-sidebar fixed inset-y-0 left-0 m-0 h-dvh max-h-none w-72 max-w-[calc(100vw-32px)] border-0 px-4 py-6 text-white backdrop:bg-black/50 [&[open]]:flex [&[open]]:flex-col"
+      >
+        <AppSidebar
+          groups={groups}
+          navigationLabel={t('common:navigation.admin')}
+          navigationRef={drawerNavigation}
+          onNavigationScroll={({ currentTarget }) => {
+            if (currentTarget.clientHeight) sidebarScroll.drawer = currentTarget.scrollTop
+          }}
+          onNavigate={closeDrawer}
+          onClose={closeDrawer}
+        />
+      </dialog>
+      <div className={`sidebar-offset ${collapsed ? 'md:ml-20' : 'md:ml-60'}`}>
+        <AppHeader
+          navigationButtonRef={drawerTrigger}
+          onOpenNavigation={openDrawer}
+          context={breadcrumb ? <nav aria-label={t('common:navigation.breadcrumb')}>{breadcrumb}</nav> : null}
+          search={
+            onSearchChange
+              ? {
+                  value: search ?? '',
+                  onChange: onSearchChange,
+                  label: searchLabel ?? t('admin:search.placeholder'),
+                }
+              : undefined
+          }
+          searchLinks={groups.flatMap((group) =>
+            group.items.flatMap((item) =>
+              item.to ? [{ label: item.label, to: item.to }] : []
+            )
+          )}
+          account={{
+            name: account.name,
+            avatarUrl: account.avatarUrl,
+            onSignOut: account.logout,
+            // Giống Expert: menu tài khoản có lối vào trang tài khoản, lấy từ mục sidebar cho khớp nhãn và trạng thái
+            links: nav
+              .flatMap((g) => g.items)
+              .filter((item) => item.to === '/admin/account')
+              .map(({ label, icon: Icon, active }) => ({
+                label,
+                to: '/admin/account',
+                icon: <Icon size={17} />,
+                active,
+              })),
+          }}
+          notifications={notifications}
+        />
+        <main
+          id="admin-main"
+          tabIndex={-1}
+          // Skip-link target only: clicking empty space focuses it, which must not draw a focus ring
+          className="animate-enter min-w-0 px-4 pt-6 pb-12 outline-none md:px-6 md:pt-8 lg:px-8"
+        >
+          {children}
+        </main>
+      </div>
+    </div>
+  )
+}

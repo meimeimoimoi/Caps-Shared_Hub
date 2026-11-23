@@ -1,0 +1,1210 @@
+{
+  "schema_version": 2,
+  "exported_at": "2026-10-21T23:41:33",
+  "legal_source": {
+    "document_number": "43/2024/TT-BTC",
+    "doc_type": "Thông tư",
+    "issuing_authority": "Bộ Tài chính",
+    "title": "Thông tư số 43/2024/TT-BTC Quy định mức thu một số khoản phí, lệ phí nhằm tiếp tục tháo gỡ khó khăn, hỗ trợ cho hoạt động sản xuất kinh doanh",
+    "metadata": {
+      "source": "vbpl",
+      "source_doc_id": "168490",
+      "detail_url": "https://vbpl.vn/van-ban/chi-tiet/168490",
+      "has_document_number": true,
+      "matched_keywords": [],
+      "keyword_groups": [],
+      "related_from": {
+        "doc_id": "170888",
+        "so_hieu": "73/2024/TT-BTC",
+        "relation": "sua_doi_mot_phan",
+        "direction": "out"
+      },
+      "vbhn": [],
+      "vbhn_latest": null,
+      "vbhn_outdated": true,
+      "vbhn_missing": [
+        {
+          "doc_id": "170888",
+          "title": "Thông tư số 73/2024/TT-BTC Quy định mức thu, miễn, chế độ thu, nộp lệ phí cấp đổi, cấp lại thẻ căn cước"
+        }
+      ]
+    }
+  },
+  "knowledge_document": {
+    "source": "CRAWL_VBPL",
+    "file_hash": "efc267e4d06edd361cb27ac92c5bd572f2f095928de06676894c0dd2f03c600c",
+    "file_hash_basis": "text",
+    "issued_date": "2024-06-28",
+    "effective_from": "2024-07-01",
+    "effective_to": "2024-12-31",
+    "content_json": {
+      "parse_status": "PARSED",
+      "preamble": "BỘ TÀI CHÍNH\nSố: 43/2024/TT-BTC\nCỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM\nĐộc lập - Tự do - Hạnh phúc\nHà Nội, ngày 28 tháng 6 năm 2024\nTHÔNG TƯ\nQuy định mức thu một số khoản phí, lệ phí nhằm tiếp tục tháo gỡ khó khăn, hỗ trwoj cho hoạt động sản xuất kinh doanh\nCăn cứ Luật Phí và lệ phí ngày 25 tháng 11 năm 2015;\nCăn cứ Nghị định số 14/2023/NĐ-CP ngày 20 tháng 4 năm 2023 của Chính phủ quy định chức năng, nhiệm vụ, quyền hạn và cơ cấu tổ chức của Bộ Tài chính;\nThực hiện Nghị quyết số 44/NQ-CP ngày 05 tháng 4 năm 2024 của Chính phủ tại Phiên họp Chính phủ thường kỳ tháng 3 năm 2024 và Hội nghị trực tuyến Chính phủ với địa phương;\nTheo đề nghị của Cục trưởng Cục Quản lý, giám sát chính sách thuế, phí và lệ phí;\nBộ trưởng Bộ Tài chính ban hành Thông tư quy định mức thu một số khoản phí, lệ phí nhằm tiếp tục tháo gỡ khó khăn, hỗ trợ cho hoạt động sản xuất kinh doanh.",
+      "chapters": [
+        {
+          "number": null,
+          "title": "",
+          "part": null,
+          "articles": [
+            {
+              "number": "1",
+              "title": "Mức thu một số khoản phí, lệ phí nhằm tiếp tục tháo gỡ khó khăn, hỗ trợ cho hoạt động sản xuất kinh doanh",
+              "section": null,
+              "units": [
+                {
+                  "id": "d1-0",
+                  "label": "Mở đầu",
+                  "clause": null,
+                  "point": null,
+                  "text": "Điều khoản được sửa đổi, bổ sung",
+                  "status": "AUTO"
+                },
+                {
+                  "id": "d1-1",
+                  "label": "Khoản 1",
+                  "clause": "1",
+                  "point": null,
+                  "text": "Kể từ ngày 01 tháng 7 năm 2024 đến hết ngày 31 tháng 12 năm 2024, mức thu một số khoản phí, lệ phí được quy định như sau:\nSố tt\nTên phí, lệ phí\nMức thu\n1",
+                  "status": "AUTO"
+                },
+                {
+                  "id": "d1-2",
+                  "label": "Khoản 1 · Điểm a",
+                  "clause": "1",
+                  "point": "a",
+                  "text": "Lệ phí cấp giấy phép thành lập và hoạt động của ngân hàng\nBằng 50% mức thu lệ phí quy định tại điểm a Mục 1 Biểu mức thu lệ phí tại khoản 1 Điều 4 Thông tư số 150/2016/TT-BTC ngày 14 tháng 10 năm 2016 của Bộ trưởng Bộ Tài chính quy định mức thu, chế độ thu, nộp lệ phí cấp giấy phép thành lập và hoạt động của tổ chức tín dụng; giấy phép thành lập chi nhánh ngân hàng nước ngoài, văn phòng đại diện của tổ chức tín dụng nước ngoài, tổ chức nước ngoài khác có hoạt động ngân hàng; giấy phép hoạt động cung ứng dịch vụ trung gian thanh toán cho các tổ chức không phải là ngân hàng.",
+                  "status": "AUTO",
+                  "references": [
+                    {
+                      "doc": "150/2016/TT-BTC",
+                      "article": "4",
+                      "clause": "1",
+                      "point": null
+                    }
+                  ]
+                },
+                {
+                  "id": "d1-3",
+                  "label": "Khoản 1 · Điểm b",
+                  "clause": "1",
+                  "point": "b",
+                  "text": "Lệ phí cấp giấy phép thành lập và hoạt động của tổ chức tín dụng phi ngân hàng\nBằng 50% mức thu lệ phí quy định tại điểm b Mục 1 Biểu mức thu lệ phí tại khoản 1 Điều 4 Thông tư số 150/2016/TT-BTC.\n2",
+                  "status": "AUTO",
+                  "references": [
+                    {
+                      "doc": "150/2016/TT-BTC",
+                      "article": "4",
+                      "clause": "1",
+                      "point": null
+                    }
+                  ]
+                },
+                {
+                  "id": "d1-4",
+                  "label": "Khoản 1 · Điểm a",
+                  "clause": "1",
+                  "point": "a",
+                  "text": "Phí thẩm định kinh doanh hàng hóa, dịch vụ hạn chế kinh doanh thuộc lĩnh vực thương mại; phí thẩm định kinh doanh hàng hóa, dịch vụ kinh doanh có điều kiện thuộc lĩnh vực thương mại đối với chủ thể kinh doanh là tổ chức, doanh nghiệp; phí thẩm định kinh doanh hàng hóa, dịch vụ kinh doanh có điều kiện thuộc lĩnh vực thương mại đối với chủ thể kinh doanh là hộ kinh doanh, cá nhân\na.1) Tại khu vực thành phố trực thuộc trung ương và khu vực thành phố, thị xã trực thuộc tỉnh\nBằng 50% mức thu phí quy định tại điểm a, điểm b, điểm c khoản 1 Điều 4 Thông tư số 168/2016/TT-BTC ngày 26 tháng 10 năm 2016 của Bộ trưởng Bộ Tài chính quy định mức thu, chế độ thu, nộp, quản lý và sử dụng phí thẩm định kinh doanh hàng hóa, dịch vụ hạn chế kinh doanh; hàng hóa, dịch vụ kinh doanh có điều kiện thuộc lĩnh vực thương mại và lệ phí cấp Giấy phép thành lập Sở Giao dịch hàng hóa.\na.2) Tại các khu vực khác\nBằng 50% mức thu phí tương ứng quy định tại điểm a.1 của Số thứ tự 2 Biểu mức thu phí, lệ phí này.",
+                  "status": "WARNING",
+                  "warning": "Điểm a) đứng sau điểm b)",
+                  "references": [
+                    {
+                      "doc": "168/2016/TT-BTC",
+                      "article": "4",
+                      "clause": "1",
+                      "point": "a"
+                    },
+                    {
+                      "doc": "168/2016/TT-BTC",
+                      "article": "4",
+                      "clause": "1",
+                      "point": "b"
+                    },
+                    {
+                      "doc": "168/2016/TT-BTC",
+                      "article": "4",
+                      "clause": "1",
+                      "point": "c"
+                    }
+                  ]
+                },
+                {
+                  "id": "d1-5",
+                  "label": "Khoản 1 · Điểm b",
+                  "clause": "1",
+                  "point": "b",
+                  "text": "Lệ phí cấp Giấy phép thành lập Sở Giao dịch hàng hóa\nb.1) Tại khu vực thành phố trực thuộc trung ương và khu vực thành phố, thị xã trực thuộc tỉnh\nBằng 50% mức thu lệ phí quy định tại điểm d khoản 1 Điều 4 Thông tư số 168/2016/TT-BTC.\nb.2) Tại các khu vực khác\nBằng 50% mức thu lệ phí tương ứng quy định tại điểm b.1 của Số thứ tự 2 Biểu mức thu phí, lệ phí này.\n3",
+                  "status": "AUTO",
+                  "references": [
+                    {
+                      "doc": "168/2016/TT-BTC",
+                      "article": "4",
+                      "clause": "1",
+                      "point": "d"
+                    }
+                  ]
+                },
+                {
+                  "id": "d1-6",
+                  "label": "Khoản 1 · Điểm a",
+                  "clause": "1",
+                  "point": "a",
+                  "text": "Phí thẩm định cấp chứng chỉ, giấy phép, giấy chứng nhận trong hoạt động hàng không dân dụng; cấp giấy phép ra vào khu vực hạn chế tại cảng hàng không, sân bay (trừ nội dung thu tại các số thứ tự: 4.1, 4.2, 4.3, 4.4, 4.5.1, 5, 6 Mục VI Phần A Biểu mức thu phí, lệ phí áp dụng mức thu phí tương ứng quy định tại Mục VI Phần A Biểu mức thu phí, lệ phí trong lĩnh vực hàng không ban hành kèm theo Thông tư số 193/2016/TT-BTC)\nBằng 80% mức thu phí quy định tại Mục VI Phần A Biểu mức thu phí, lệ phí trong lĩnh vực hàng không ban hành kèm theo Thông tư số 193/2016/TT-BTC ngày 08 tháng 11 năm 2016 của Bộ trưởng Bộ Tài chính quy định mức thu, chế độ thu, nộp, quản lý và sử dụng phí, lệ phí trong lĩnh vực hàng không.",
+                  "status": "WARNING",
+                  "warning": "Điểm a) đứng sau điểm b)"
+                },
+                {
+                  "id": "d1-7",
+                  "label": "Khoản 1 · Điểm b",
+                  "clause": "1",
+                  "point": "b",
+                  "text": "Phí đăng ký giao dịch bảo đảm đối với tàu bay (trừ nội dung thu tại số thứ tự 4 Mục VIII Phần A Biểu mức thu phí, lệ phí áp dụng mức thu phí tương ứng quy định tại Mục VIII Phần A Biểu mức thu phí, lệ phí trong lĩnh vực hàng không ban hành kèm theo Thông tư số 193/2016/TT-BTC)\nBằng 80% mức thu phí quy định tại Mục VIII Phần A Biểu mức thu phí, lệ phí trong lĩnh vực hàng không ban hành kèm theo Thông tư số 193/2016/TT-BTC.\n4",
+                  "status": "AUTO"
+                },
+                {
+                  "id": "d1-8",
+                  "label": "Khoản 1 · Điểm a",
+                  "clause": "1",
+                  "point": "a",
+                  "text": "Lệ phí ra, vào cảng hàng không, sân bay đối với chuyến bay của nước ngoài đến các Cảng hàng không Việt Nam\nBằng 90% mức thu lệ phí quy định tại khoản 1 Điều 4 Thông tư số 194/2016/TT-BTC ngày 08 tháng 11 năm 2016 của Bộ trưởng Bộ Tài chính quy định mức thu, chế độ thu, nộp phí hải quan và lệ phí ra, vào cảng hàng không, sân bay đối với chuyến bay của nước ngoài đến các Cảng hàng không Việt Nam.",
+                  "status": "WARNING",
+                  "warning": "Điểm a) đứng sau điểm b)",
+                  "references": [
+                    {
+                      "doc": "194/2016/TT-BTC",
+                      "article": "4",
+                      "clause": "1",
+                      "point": null
+                    }
+                  ]
+                },
+                {
+                  "id": "d1-9",
+                  "label": "Khoản 1 · Điểm b",
+                  "clause": "1",
+                  "point": "b",
+                  "text": "Phí hải quan đối với chuyến bay của nước ngoài đến các Cảng hàng không Việt Nam\nBằng 90% mức thu phí quy định tại khoản 2 Điều 4 Thông tư số 194/2016/TT-BTC.\n5\nPhí khai thác, sử dụng thông tin, dữ liệu khí tượng thủy văn\nBằng 70% mức thu phí quy định tại Biểu mức thu phí khai thác, sử dụng thông tin, dữ liệu khí tượng thủy văn ban hành kèm theo Thông tư số 197/2016/TT-BTC ngày 08 tháng 11 năm 2016 của Bộ trưởng Bộ Tài chính quy định mức thu, chế độ thu, nộp, quản lý và sử dụng phí khai thác, sử dụng thông tin, dữ liệu khí tượng thủy văn.\n6",
+                  "status": "AUTO",
+                  "references": [
+                    {
+                      "doc": "194/2016/TT-BTC",
+                      "article": "4",
+                      "clause": "2",
+                      "point": null
+                    }
+                  ]
+                },
+                {
+                  "id": "d1-10",
+                  "label": "Khoản 1 · Điểm a",
+                  "clause": "1",
+                  "point": "a",
+                  "text": "Lệ phí cấp văn bằng bảo hộ, cấp chứng nhận đăng ký hợp đồng chuyển giao quyền sở hữu công nghiệp\nBằng 50% mức thu lệ phí quy định tại điểm 1 Mục I Biểu phí, lệ phí trong lĩnh vực trồng trọt và giống cây lâm nghiệp ban hành kèm theo Thông tư số 207/2016/TT-BTC ngày 09 tháng 11 năm 2016 của Bộ trưởng Bộ Tài chính quy định mức thu, chế độ thu, nộp, quản lý và sử dụng phí, lệ phí trong lĩnh vực trồng trọt và giống cây lâm nghiệp.",
+                  "status": "WARNING",
+                  "warning": "Điểm a) đứng sau điểm b)"
+                },
+                {
+                  "id": "d1-11",
+                  "label": "Khoản 1 · Điểm b",
+                  "clause": "1",
+                  "point": "b",
+                  "text": "Lệ phí nộp đơn đăng ký bảo hộ quyền sở hữu trí tuệ\nBằng 50% mức thu lệ phí quy định tại điểm 2 Mục I Biểu phí, lệ phí trong lĩnh vực trồng trọt và giống cây lâm nghiệp ban hành kèm theo Thông tư số 207/2016/TT-BTC.",
+                  "status": "AUTO"
+                },
+                {
+                  "id": "d1-12",
+                  "label": "Khoản 1 · Điểm c",
+                  "clause": "1",
+                  "point": "c",
+                  "text": "Lệ phí cấp chứng chỉ hành nghề đại diện sở hữu công nghiệp, công bố, đăng bạ đại diện sở hữu công nghiệp\nBằng 50% mức thu lệ phí quy định tại điểm 3 Mục I Biểu phí, lệ phí trong lĩnh vực trồng trọt và giống cây lâm nghiệp ban hành kèm theo Thông tư số 207/2016/TT-BTC.",
+                  "status": "AUTO"
+                },
+                {
+                  "id": "d1-13",
+                  "label": "Khoản 1 · Điểm d",
+                  "clause": "1",
+                  "point": "d",
+                  "text": "Phí bảo hộ giống cây trồng:\nd.1) Duy trì hiệu lực Bằng bảo hộ giống cây trồng: Từ năm thứ 1 đến năm thứ 3; từ năm thứ 4 đến năm thứ 6; từ năm thứ 7 đến năm thứ 9\nBằng 80% mức thu phí tương ứng quy định tại điểm 3 Mục III Biểu phí, lệ phí trong lĩnh vực trồng trọt và giống cây lâm nghiệp ban hành kèm theo Thông tư số 207/2016/TT-BTC.\nd.2) Duy trì hiệu lực Bằng bảo hộ giống cây trồng: Từ năm thứ 10 đến năm thứ 15; từ năm thứ 16 đến hết thời gian hiệu lực của Bằng bảo hộ\nBằng 70% mức thu phí tương ứng quy định tại điểm 3 Mục III Biểu phí, lệ phí trong lĩnh vực trồng trọt và giống cây lâm nghiệp ban hành kèm theo Thông tư số 207/2016/TT-BTC.\n7",
+                  "status": "AUTO"
+                },
+                {
+                  "id": "d1-14",
+                  "label": "Khoản 1 · Điểm a",
+                  "clause": "1",
+                  "point": "a",
+                  "text": "Phí thẩm định nội dung tài liệu không kinh doanh để cấp giấy phép xuất bản\nBằng 50% mức thu phí quy định tại khoản 1 Điều 4 Thông tư số 214/2016/TT-BTC ngày 10 tháng 11 năm 2016 của Bộ trưởng Bộ Tài chính quy định mức thu, chế độ thu, nộp, quản lý và sử dụng phí thẩm định nội dung tài liệu không kinh doanh để cấp giấy phép xuất bản, lệ phí cấp giấy phép nhập khẩu xuất bản phẩm không kinh doanh và lệ phí đăng ký nhập khẩu xuất bản phẩm để kinh doanh.",
+                  "status": "WARNING",
+                  "warning": "Điểm a) đứng sau điểm d)",
+                  "references": [
+                    {
+                      "doc": "214/2016/TT-BTC",
+                      "article": "4",
+                      "clause": "1",
+                      "point": null
+                    }
+                  ]
+                },
+                {
+                  "id": "d1-15",
+                  "label": "Khoản 1 · Điểm b",
+                  "clause": "1",
+                  "point": "b",
+                  "text": "Lệ phí cấp phép nhập khẩu xuất bản phẩm không kinh doanh\nBằng 50% mức thu lệ phí quy định tại khoản 2 Điều 4 Thông tư số 214/2016/TT-BTC.",
+                  "status": "AUTO",
+                  "references": [
+                    {
+                      "doc": "214/2016/TT-BTC",
+                      "article": "4",
+                      "clause": "2",
+                      "point": null
+                    }
+                  ]
+                },
+                {
+                  "id": "d1-16",
+                  "label": "Khoản 1 · Điểm c",
+                  "clause": "1",
+                  "point": "c",
+                  "text": "Lệ phí đăng ký nhập khẩu xuất bản phẩm để kinh doanh\nBằng 50% mức thu lệ phí quy định tại khoản 3 Điều 4 Thông tư số 214/2016/TT-BTC.\n8\nPhí đăng ký (xác nhận) sử dụng mã số mã vạch nước ngoài\nBằng 50% mức thu phí quy định tại khoản 2 Điều 4 Thông tư số 232/2016/TT-BTC ngày 11 tháng 11 năm 2016 của Bộ trưởng Bộ Tài chính quy định mức thu, chế độ thu, nộp, quản lý và sử dụng phí cấp mã số mã vạch.\n9\nPhí nhượng quyền khai thác cảng hàng không, sân bay\nBằng 90% mức thu phí quy định tại Điều 4 Thông tư số 247/2016/TT-BTC ngày 11 tháng 11 năm 2016 của Bộ trưởng Bộ Tài chính quy định mức thu, chế độ thu, nộp, quản lý sử dụng phí nhượng quyền khai thác cảng hàng không, sân bay.\n10\nPhí trình báo đường thủy nội địa\nBằng 50% mức thu phí quy định tại điểm 3 Biểu mức thu phí, lệ phí tại khoản 1 Điều 4 Thông tư số 248/2016/TT-BTC ngày 11 tháng 11 năm 2016 của Bộ trưởng Bộ Tài chính quy định mức thu, chế độ thu, nộp, quản lý và sử dụng phí, lệ phí áp dụng tại cảng, bến thủy nội địa.\n11\nPhí thẩm định cấp giấy phép kinh doanh sản phẩm, dịch vụ mật mã dân sự; giấy chứng nhận hợp chuẩn sản phẩm mật mã dân sự; giấy chứng nhận hợp quy sản phẩm mật mã dân sự\nBằng 80% mức thu phí quy định tại Mục I và Mục II Biểu mức thu phí, lệ phí ban hành kèm theo Thông tư số 249/2016/TT-BTC ngày 11 tháng 11 năm 2016 của Bộ trưởng Bộ Tài chính quy định mức thu, chế độ thu, nộp, quản lý và sử dụng phí thẩm định cấp giấy phép kinh doanh sản phẩm, dịch vụ mật mã dân sự; giấy chứng nhận hợp chuẩn sản phẩm mật mã dân sự; giấy chứng nhận hợp quy sản phẩm mật mã dân sự và lệ phí cấp giấy phép nhập khẩu sản phẩm mật mã dân sự.\n12\nPhí thẩm định phê duyệt thiết kế phòng cháy và chữa cháy\nBằng 50% mức thu phí tính theo quy định tại Điều 5 Thông tư số 258/2016/TT-BTC ngày 11 tháng 11 năm 2016 của Bộ trưởng Bộ Tài chính quy định mức thu, chế độ thu, nộp, quản lý và sử dụng phí thẩm định phê duyệt thiết kế phòng cháy và chữa cháy.\n13",
+                  "status": "AUTO",
+                  "references": [
+                    {
+                      "doc": "214/2016/TT-BTC",
+                      "article": "4",
+                      "clause": "3",
+                      "point": null
+                    },
+                    {
+                      "doc": "232/2016/TT-BTC",
+                      "article": "4",
+                      "clause": "2",
+                      "point": null
+                    },
+                    {
+                      "doc": "247/2016/TT-BTC",
+                      "article": "4",
+                      "clause": null,
+                      "point": null
+                    },
+                    {
+                      "doc": "248/2016/TT-BTC",
+                      "article": "4",
+                      "clause": "1",
+                      "point": null
+                    },
+                    {
+                      "doc": "258/2016/TT-BTC",
+                      "article": "5",
+                      "clause": null,
+                      "point": null
+                    }
+                  ]
+                },
+                {
+                  "id": "d1-17",
+                  "label": "Khoản 1 · Điểm a",
+                  "clause": "1",
+                  "point": "a",
+                  "text": "Lệ phí cấp Giấy phép hoạt động đưa người lao động đi làm việc có thời hạn ở nước ngoài\nBằng 50% mức thu lệ phí quy định tại Mục 1 Biểu mức thu tại Điều 4 Thông tư số 259/2016/TT-BTC ngày 11 tháng 11 năm 2016 của Bộ trưởng Bộ Tài chính quy định mức thu, chế độ thu, nộp, quản lý và sử dụng phí xác minh giấy tờ tài liệu, lệ phí cấp Giấy phép hoạt động đưa người lao động đi làm việc có thời hạn ở nước ngoài.",
+                  "status": "WARNING",
+                  "warning": "Điểm a) đứng sau điểm c)",
+                  "references": [
+                    {
+                      "doc": "259/2016/TT-BTC",
+                      "article": "4",
+                      "clause": null,
+                      "point": null
+                    }
+                  ]
+                },
+                {
+                  "id": "d1-18",
+                  "label": "Khoản 1 · Điểm b",
+                  "clause": "1",
+                  "point": "b",
+                  "text": "Phí xác minh giấy tờ, tài liệu theo yêu cầu của tổ chức, cá nhân trong nước\nBằng 50% mức thu phí quy định tại Mục 3 Biểu mức thu tại Điều 4 Thông tư số 259/2016/TT-BTC.\n14\nLệ phí sở hữu công nghiệp\nBằng 50% mức thu lệ phí quy định tại Mục A Biểu mức thu phí, lệ phí sở hữu công nghiệp ban hành kèm theo Thông tư số 263/2016/TT-BTC ngày 14 tháng 11 năm 2016 của Bộ trưởng Bộ Tài chính quy định mức thu, chế độ thu, nộp, quản lý và sử dụng phí, lệ phí sở hữu công nghiệp.\n15\nPhí sử dụng kết cấu hạ tầng đường sắt\nBằng 50% mức thu phí quy định tại Điều 3 Thông tư số 295/2016/TT-BTC ngày 15 tháng 11 năm 2016 của Bộ trưởng Bộ Tài chính quy định mức thu, chế độ thu, nộp phí sử dụng kết cấu hạ tầng đường sắt.\n16\nPhí thẩm định điều kiện kinh doanh trong hoạt động kiểm định kỹ thuật an toàn lao động; huấn luyện an toàn, vệ sinh lao động\nBằng 70% mức thu phí quy định tại Điều 1 Thông tư số 110/2017/TT-BTC ngày 20 tháng 10 năm 2017 của Bộ trưởng Bộ Tài chính sửa đổi, bổ sung Biểu mức thu phí thẩm định điều kiện kinh doanh trong hoạt động kiểm định kỹ thuật an toàn lao động; huấn luyện an toàn, vệ sinh lao động ban hành kèm theo Thông tư số 245/2016/TT-BTC ngày 11 tháng 11 năm 2016 của Bộ trưởng Bộ Tài chính quy định mức thu, chế độ thu, nộp, quản lý và sử dụng phí thẩm định điều kiện kinh doanh trong hoạt động kiểm định kỹ thuật an toàn lao động; huấn luyện an toàn, vệ sinh lao động.\n17",
+                  "status": "AUTO",
+                  "references": [
+                    {
+                      "doc": "259/2016/TT-BTC",
+                      "article": "4",
+                      "clause": null,
+                      "point": null
+                    },
+                    {
+                      "doc": "295/2016/TT-BTC",
+                      "article": "3",
+                      "clause": null,
+                      "point": null
+                    },
+                    {
+                      "doc": "110/2017/TT-BTC",
+                      "article": "1",
+                      "clause": null,
+                      "point": null
+                    }
+                  ]
+                },
+                {
+                  "id": "d1-19",
+                  "label": "Khoản 1 · Điểm a",
+                  "clause": "1",
+                  "point": "a",
+                  "text": "Phí thẩm định cấp Giấy phép kinh doanh dịch vụ lữ hành quốc tế, Giấy phép kinh doanh dịch vụ lữ hành nội địa\nBằng 50% mức thu phí quy định tại khoản 1 Điều 4 Thông tư số 33/2018/TT-BTC ngày 30 tháng 3 năm 2018 của Bộ trưởng Bộ Tài chính quy định mức thu, chế độ thu, nộp và quản lý phí thẩm định cấp Giấy phép kinh doanh dịch vụ lữ hành quốc tế, Giấy phép kinh doanh dịch vụ lữ hành nội địa; phí thẩm định cấp thẻ hướng dẫn viên du lịch; lệ phí cấp Giấy phép thành lập văn phòng đại diện tại Việt Nam của doanh nghiệp kinh doanh dịch vụ lữ hành nước ngoài.",
+                  "status": "WARNING",
+                  "warning": "Điểm a) đứng sau điểm b)",
+                  "references": [
+                    {
+                      "doc": "33/2018/TT-BTC",
+                      "article": "4",
+                      "clause": "1",
+                      "point": null
+                    }
+                  ]
+                },
+                {
+                  "id": "d1-20",
+                  "label": "Khoản 1 · Điểm b",
+                  "clause": "1",
+                  "point": "b",
+                  "text": "Phí thẩm định cấp thẻ hướng dẫn viên du lịch\nBằng 50% mức thu phí quy định tại khoản 2 Điều 4 Thông tư số 33/2018/TT-BTC.\n18",
+                  "status": "AUTO",
+                  "references": [
+                    {
+                      "doc": "33/2018/TT-BTC",
+                      "article": "4",
+                      "clause": "2",
+                      "point": null
+                    }
+                  ]
+                },
+                {
+                  "id": "d1-21",
+                  "label": "Khoản 1 · Điểm a",
+                  "clause": "1",
+                  "point": "a",
+                  "text": "Lệ phí cấp giấy phép quản lý pháo\nBằng 80% mức thu lệ phí quy định tại Mục III Biểu mức thu tại Điều 1 Thông tư số 23/2019/TT-BTC ngày 19 tháng 4 năm 2019 của Bộ trưởng Bộ Tài chính sửa đổi, bổ sung một số điều của Thông tư số 218/2016/TT-BTC ngày 10 tháng 11 năm 2016 của Bộ trưởng Bộ Tài chính quy định mức thu, chế độ thu, nộp, quản lý và sử dụng phí thẩm định điều kiện thuộc lĩnh vực an ninh; phí sát hạch cấp chứng chỉ nghiệp vụ bảo vệ; lệ phí cấp giấy phép quản lý pháo; lệ phí cấp giấy phép quản lý vũ khí, vật liệu nổ, công cụ hỗ trợ.",
+                  "status": "WARNING",
+                  "warning": "Điểm a) đứng sau điểm b)",
+                  "references": [
+                    {
+                      "doc": "23/2019/TT-BTC",
+                      "article": "1",
+                      "clause": null,
+                      "point": null
+                    }
+                  ]
+                },
+                {
+                  "id": "d1-22",
+                  "label": "Khoản 1 · Điểm b",
+                  "clause": "1",
+                  "point": "b",
+                  "text": "Lệ phí cấp giấy phép quản lý vũ khí, vật liệu nổ, công cụ hỗ trợ\nBằng 80% mức thu lệ phí quy định tại Mục IV Biểu mức thu tại Điều 1 Thông tư số 23/2019/TT-BTC.\n19\nLệ phí cấp Căn cước công dân\nBằng 50% mức thu lệ phí quy định tại Điều 4 Thông tư số 59/2019/TT-BTC ngày 30 tháng 8 năm 2019 của Bộ trưởng Bộ Tài chính quy định mức thu, chế độ thu, nộp và quản lý lệ phí cấp Căn cước công dân.\n20",
+                  "status": "AUTO",
+                  "references": [
+                    {
+                      "doc": "23/2019/TT-BTC",
+                      "article": "1",
+                      "clause": null,
+                      "point": null
+                    },
+                    {
+                      "doc": "59/2019/TT-BTC",
+                      "article": "4",
+                      "clause": null,
+                      "point": null
+                    }
+                  ]
+                },
+                {
+                  "id": "d1-23",
+                  "label": "Khoản 1 · Điểm a",
+                  "clause": "1",
+                  "point": "a",
+                  "text": "Phí giải quyết yêu cầu độc lập của người có quyền lợi, nghĩa vụ liên quan\nBằng 50% mức thu phí quy định tại điểm a khoản 2 Điều 4 Thông tư số 58/2020/TT-BTC ngày 12 tháng 6 năm 2020 của Bộ trưởng Bộ Tài chính quy định mức thu, chế độ thu, nộp, quản lý và sử dụng phí xử lý vụ việc cạnh tranh.",
+                  "status": "WARNING",
+                  "warning": "Điểm a) đứng sau điểm b)",
+                  "references": [
+                    {
+                      "doc": "58/2020/TT-BTC",
+                      "article": "4",
+                      "clause": "2",
+                      "point": "a"
+                    }
+                  ]
+                },
+                {
+                  "id": "d1-24",
+                  "label": "Khoản 1 · Điểm b",
+                  "clause": "1",
+                  "point": "b",
+                  "text": "Phí thẩm định hồ sơ hưởng miễn trừ trong giải quyết vụ việc cạnh tranh\nBằng 50% mức thu phí quy định tại điểm b khoản 2 Điều 4 Thông tư số 58/2020/TT-BTC.\n21",
+                  "status": "AUTO",
+                  "references": [
+                    {
+                      "doc": "58/2020/TT-BTC",
+                      "article": "4",
+                      "clause": "2",
+                      "point": "b"
+                    }
+                  ]
+                },
+                {
+                  "id": "d1-25",
+                  "label": "Khoản 1 · Điểm a",
+                  "clause": "1",
+                  "point": "a",
+                  "text": "Lệ phí cấp giấy chứng nhận kiểm dịch động vật, sản phẩm động vật trên cạn; thủy sản nhập khẩu, quá cảnh, tạm nhập tái xuất (gồm kho ngoại quan), chuyển cửa khẩu\nBằng 50% mức thu lệ phí quy định tại điểm 1 Mục I Biểu phí, lệ phí trong công tác thú y ban hành kèm theo Thông tư số 101/2020/TT-BTC ngày 23 tháng 11 năm 2020 của Bộ trưởng Bộ Tài chính quy định mức thu, chế độ thu, nộp, quản lý phí, lệ phí trong công tác thú y.",
+                  "status": "WARNING",
+                  "warning": "Điểm a) đứng sau điểm b)"
+                },
+                {
+                  "id": "d1-26",
+                  "label": "Khoản 1 · Điểm b",
+                  "clause": "1",
+                  "point": "b",
+                  "text": "Lệ phí cấp chứng chỉ hành nghề dịch vụ thú y\nBằng 50% mức thu lệ phí quy định tại điểm 2 Mục I Biểu phí, lệ phí trong công tác thú y ban hành kèm theo Thông tư số 101/2020/TT-BTC.",
+                  "status": "AUTO"
+                },
+                {
+                  "id": "d1-27",
+                  "label": "Khoản 1 · Điểm c",
+                  "clause": "1",
+                  "point": "c",
+                  "text": "Phí kiểm dịch động vật (kiểm tra lâm sàng gia cầm)\nBằng 50% mức thu phí quy định tại điểm 1.4 Mục III Biểu phí, lệ phí trong công tác thú y ban hành kèm theo Thông tư số 101/2020/TT-BTC.\n22\nPhí kiểm định phương tiện phòng cháy và chữa cháy\nBằng 50% mức thu phí quy định tại Biểu phí kiểm định phương tiện phòng cháy và chữa cháy ban hành kèm theo Thông tư số 02/2021/TT-BTC ngày 08 tháng 01 năm 2021 của Bộ trưởng Bộ Tài chính quy định mức thu, chế độ thu, nộp, quản lý và sử dụng phí kiểm định phương tiện phòng cháy và chữa cháy.\n23\nPhí trong chăn nuôi\nBằng 50% mức thu phí quy định tại Biểu mức thu phí trong chăn nuôi ban hành kèm theo Thông tư số 24/2021/TT-BTC ngày 31 tháng 3 năm 2021 của Bộ trưởng Bộ Tài chính quy định mức thu, chế độ thu, nộp, quản lý và sử dụng phí trong chăn nuôi.\n24\nLệ phí cấp hộ chiếu, giấy thông hành, giấy phép xuất cảnh, tem AB\nBằng 80% mức thu lệ phí quy định tại Mục I Biểu mức thu phí, lệ phí ban hành kèm theo Thông tư số 25/2021/TT-BTC ngày 07 tháng 4 năm 2021 của Bộ trưởng Bộ Tài chính quy định mức thu, chế độ thu, nộp, quản lý và sử dụng phí, lệ phí trong lĩnh vực xuất cảnh, nhập cảnh, quá cảnh, cư trú tại Việt Nam.\n25\nPhí trong công tác an toàn thực phẩm\nBằng 90% mức thu phí quy định tại Biểu phí trong công tác an toàn thực phẩm ban hành kèm theo Thông tư số 67/2021/TT-BTC ngày 05 tháng 8 năm 2021 của Bộ trưởng Bộ Tài chính quy định mức thu, chế độ thu, nộp, quản lý và sử dụng phí trong công tác an toàn thực phẩm.\n26\nPhí thẩm định kinh doanh có điều kiện thuộc lĩnh vực thủy sản\nBằng 90% mức thu phí quy định tại điểm 2 Biểu phí trong lĩnh vực quản lý nuôi trồng thủy sản ban hành kèm theo Thông tư số 112/2021/TT-BTC ngày 15 tháng 12 năm 2021 của Bộ trưởng Bộ Tài chính quy định mức thu, chế độ thu, nộp, quản lý và sử dụng phí, lệ phí trong lĩnh vực quản lý chất lượng vật tư nuôi trồng thủy sản.\n27\nPhí khai thác, sử dụng nguồn nước do cơ quan trung ương thực hiện\nBằng 80% mức thu phí quy định tại Biểu mức thu phí khai thác, sử dụng nguồn nước do cơ quan trung ương thực hiện ban hành kèm theo Thông tư số 01/2022/TT-BTC ngày 11 tháng 01 năm 2022 của Bộ trưởng Bộ Tài chính quy định mức thu, chế độ thu, nộp, quản lý và sử dụng phí khai thác, sử dụng nguồn nước do cơ quan trung ương thực hiện.\n28\nPhí sử dụng tần số vô tuyến điện đối với nghiệp vụ di động mặt đất",
+                  "status": "AUTO"
+                },
+                {
+                  "id": "d1-28",
+                  "label": "Khoản 1 · Điểm a",
+                  "clause": "1",
+                  "point": "a",
+                  "text": "Mạng viễn thông di động mặt đất nhắn tin dùng riêng\nBằng 80% mức thu phí quy định tại điểm 3.1 khoản 3 Mục II Phần B Biểu mức thu lệ phí cấp giấy phép sử dụng tần số vô tuyến điện và phí sử dụng tần số vô tuyến điện ban hành kèm theo Thông tư số 265/2016/TT-BTC ngày 14 tháng 11 năm 2016 của Bộ trưởng Bộ Tài chính quy định mức thu, chế độ thu, nộp, quản lý và sử dụng lệ phí cấp giấy phép sử dụng tần số vô tuyến điện và phí sử dụng tần số vô tuyến điện.",
+                  "status": "WARNING",
+                  "warning": "Điểm a) đứng sau điểm c)"
+                },
+                {
+                  "id": "d1-29",
+                  "label": "Khoản 1 · Điểm b",
+                  "clause": "1",
+                  "point": "b",
+                  "text": "Mạng viễn thông dùng riêng sử dụng tần số thuộc nghiệp vụ di động (bao gồm cả mạng thông tin vô tuyến điện nội bộ), mạng viễn thông di động mặt đất trung kế\nBằng 80% mức thu phí quy định tại điểm 3.2 khoản 3 Mục II Phần B Biểu mức thu lệ phí cấp giấy phép sử dụng tần số vô tuyến điện và phí sử dụng tần số vô tuyến điện ban hành kèm theo Thông tư số 11/2022/TT-BTC ngày 21 tháng 02 năm 2022 của Bộ trưởng Bộ Tài chính sửa đổi, bổ sung một số điều của Thông tư số 265/2016/TT-BTC.\n29",
+                  "status": "AUTO"
+                },
+                {
+                  "id": "d1-30",
+                  "label": "Khoản 1 · Điểm a",
+                  "clause": "1",
+                  "point": "a",
+                  "text": "Phí, lệ phí trong lĩnh vực chứng khoán (trừ 02 khoản phí, lệ phí quy định tại điểm b, điểm c dưới đây)\nBằng 50% mức thu phí, lệ phí quy định tại Biểu mức thu phí, lệ phí trong lĩnh vực chứng khoán ban hành kèm theo Thông tư số 25/2022/TT-BTC ngày 28 tháng 4 năm 2022 của Bộ trưởng Bộ Tài chính quy định mức thu, chế độ thu, nộp, quản lý và sử dụng phí, lệ phí trong lĩnh vực chứng khoán.",
+                  "status": "WARNING",
+                  "warning": "Điểm a) đứng sau điểm b)"
+                },
+                {
+                  "id": "d1-31",
+                  "label": "Khoản 1 · Điểm b",
+                  "clause": "1",
+                  "point": "b",
+                  "text": "Lệ phí cấp mới, cấp đổi, cấp lại giấy chứng nhận (chứng chỉ) hành nghề chứng khoán cho cá nhân hành nghề chứng khoán tại công ty chứng khoán, công ty quản lý quỹ đầu tư chứng khoán và công ty đầu tư chứng khoán\nÁp dụng mức thu lệ phí quy định tại điểm 15 Mục I Biểu mức thu phí, lệ phí trong lĩnh vực chứng khoán ban hành kèm theo Thông tư số 25/2022/TT-BTC.",
+                  "status": "AUTO"
+                },
+                {
+                  "id": "d1-32",
+                  "label": "Khoản 1 · Điểm c",
+                  "clause": "1",
+                  "point": "c",
+                  "text": "Phí giám sát hoạt động chứng khoán\nÁp dụng mức thu phí quy định tại điểm 2 Mục II Biểu mức thu phí, lệ phí trong lĩnh vực chứng khoán ban hành kèm theo Thông tư số 25/2022/TT-BTC.\n30\nLệ phí cấp giấy chứng nhận kiểm định an toàn kỹ thuật và bảo vệ môi trường đối với xe cơ giới, xe máy chuyên dùng\nBằng 50% mức thu lệ phí quy định tại khoản 3 Điều 1 Thông tư số 36/2022/TT-BTC ngày 16 tháng 6 năm 2022 của Bộ trưởng Bộ Tài chính sửa đổi, bổ sung một số điều của Thông tư số 199/2016/TT-BTC ngày 08 tháng 11 năm 2016 của Bộ trưởng Bộ Tài chính quy định mức thu, chế độ thu, nộp, quản lý lệ phí cấp giấy chứng nhận bảo đảm chất lượng, an toàn kỹ thuật đối với máy, thiết bị, phương tiện giao thông vận tải có yêu cầu nghiêm ngặt về an toàn.\n31\nLệ phí cấp chứng nhận (chứng chỉ) năng lực hoạt động xây dựng cho tổ chức, chứng chỉ hành nghề hoạt động xây dựng cho cá nhân\nBằng 50% mức thu lệ phí quy định tại khoản 1 Điều 4 Thông tư số 38/2022/TT-BTC ngày 24 tháng 6 năm 2022 của Bộ trưởng Bộ Tài chính quy định mức thu, chế độ thu, nộp lệ phí cấp giấy phép hoạt động xây dựng, lệ phí cấp chứng chỉ hành nghề kiến trúc sư.\n32\nPhí thẩm định thiết kế kỹ thuật (phí thẩm định thiết kế xây dựng triển khai sau thiết kế cơ sở), phí thẩm định dự toán xây dựng\nBằng 50% mức thu phí quy định tại Biểu mức thu phí thẩm định thiết kế xây dựng triển khai sau thiết kế cơ sở, phí thẩm định dự toán xây dựng ban hành kèm theo Thông tư số 27/2023/TT-BTC ngày 12 tháng 5 năm 2023 của Bộ trưởng Bộ Tài chính quy định mức thu, chế độ thu, nộp, quản lý và sử dụng phí thẩm định thiết kế kỹ thuật, phí thẩm định dự toán xây dựng.\n33\nPhí thẩm định dự án đầu tư xây dựng\nBằng 50% mức thu phí quy định tại Biểu mức thu phí thẩm định dự án đầu tư xây dựng (phí thẩm định Báo cáo nghiên cứu khả thi đầu tư xây dựng hoặc phí thẩm định Báo cáo kinh tế - kỹ thuật) ban hành kèm theo Thông tư số 28/2023/TT-BTC ngày 12 tháng 5 năm 2023 của Bộ trưởng Bộ Tài chính quy định mức thu, chế độ thu, nộp, quản lý và sử dụng phí thẩm định dự án đầu tư xây dựng.\n34\nPhí trong lĩnh vực y tế\nBằng 70% mức thu phí quy định tại Biểu phí trong lĩnh vực y tế ban hành kèm theo Thông tư số 59/2023/TT-BTC ngày 30 tháng 8 năm 2023 của Bộ trưởng Bộ Tài chính quy định mức thu, chế độ thu, nộp, quản lý và sử dụng phí trong lĩnh vực y tế.\n35",
+                  "status": "AUTO",
+                  "references": [
+                    {
+                      "doc": "36/2022/TT-BTC",
+                      "article": "1",
+                      "clause": "3",
+                      "point": null
+                    },
+                    {
+                      "doc": "38/2022/TT-BTC",
+                      "article": "4",
+                      "clause": "1",
+                      "point": null
+                    }
+                  ]
+                },
+                {
+                  "id": "d1-33",
+                  "label": "Khoản 1 · Điểm a",
+                  "clause": "1",
+                  "point": "a",
+                  "text": "Phí đăng ký giao dịch bảo đảm\nBằng 80% mức thu phí quy định tại điểm 1 Biểu mức thu phí trong lĩnh vực đăng ký giao dịch bảo đảm ban hành kèm theo Thông tư số 61/2023/TT-BTC ngày 28 tháng 9 năm 2023 của Bộ trưởng Bộ Tài chính quy định mức thu, chế độ thu, nộp, quản lý và sử dụng phí trong lĩnh vực đăng ký giao dịch bảo đảm.",
+                  "status": "WARNING",
+                  "warning": "Điểm a) đứng sau điểm c)"
+                },
+                {
+                  "id": "d1-34",
+                  "label": "Khoản 1 · Điểm b",
+                  "clause": "1",
+                  "point": "b",
+                  "text": "Phí cung cấp thông tin về giao dịch bảo đảm bằng động sản (trừ chứng khoán đã đăng ký tập trung tại Tổng công ty Lưu ký và Bù trừ chứng khoán Việt Nam, tàu bay), tàu biển\nBằng 80% mức thu phí quy định tại điểm 2 Biểu mức thu phí trong lĩnh vực đăng ký giao dịch bảo đảm ban hành kèm theo Thông tư số 61/2023/TT-BTC.\n36\nPhí khai thác và sử dụng dữ liệu về môi trường\nBằng 70% mức thu phí quy định tại Biểu mức thu phí khai thác và sử dụng dữ liệu về môi trường ban hành kèm theo Thông tư số 65/2023/TT-BTC ngày 31 tháng 10 năm 2023 của Bộ trưởng Bộ Tài chính quy định mức thu, chế độ thu, nộp, quản lý và sử dụng phí khai thác và sử dụng dữ liệu về môi trường.",
+                  "status": "AUTO"
+                },
+                {
+                  "id": "d1-35",
+                  "label": "Khoản 1 · Điểm a",
+                  "clause": "1",
+                  "point": "a",
+                  "text": "Đối với phí sử dụng tần số vô tuyến điện quy định tại Số thứ tự 28 trong Biểu nêu trên: Trường hợp tổ chức, cá nhân đã nộp phí theo mức phí quy định tại Thông tư số 265/2016/TT-BTC và Thông tư số 11/2022/TT-BTC cho khoảng thời gian có hiệu lực của Thông tư này, tổ chức, cá nhân sẽ được bù trừ số tiền phí chênh lệch giữa mức phí theo quy định tại Thông tư số 265/2016/TT-BTC và Thông tư số 11/2022/TT-BTC với mức phí theo quy định tại Thông tư này vào số phí phải nộp của kỳ nộp phí tiếp theo. Tổ chức thu phí chịu trách nhiệm tính bù trừ tiền phí cho tổ chức, cá nhân vào kỳ nộp phí tiếp theo.",
+                  "status": "WARNING",
+                  "warning": "Điểm a) đứng sau điểm b)"
+                },
+                {
+                  "id": "d1-36",
+                  "label": "Khoản 1 · Điểm b",
+                  "clause": "1",
+                  "point": "b",
+                  "text": "Các Thông tư được viện dẫn trong Biểu nêu trên gọi chung là các Thông tư gốc. Trường hợp các Thông tư gốc được sửa đổi, bổ sung hoặc thay thế thì mức thu các khoản phí, lệ phí quy định trong Biểu nêu trên tính bằng tỷ lệ mức thu tương ứng tại Biểu nêu trên nhân với mức thu phí, lệ phí tại văn bản mới sửa đổi, bổ sung hoặc thay thế.",
+                  "status": "AUTO"
+                },
+                {
+                  "id": "d1-37",
+                  "label": "Khoản 1 · Điểm c",
+                  "clause": "1",
+                  "point": "c",
+                  "text": "Đối với các dịch vụ quy định thu phí, lệ phí tại các Số thứ tự 14, 16, 24, 31 trong Biểu nêu trên: Trường hợp sử dụng dịch vụ công trực tuyến thì áp dụng mức thu phí, lệ phí theo quy định tại Thông tư này, không áp dụng mức thu phí, lệ phí tại Thông tư số 63/2023/TT-BTC ngày 16 tháng 10 năm 2023 của Bộ trưởng Bộ Tài chính sửa đổi, bổ sung một số điều của một số Thông tư quy định về phí, lệ phí của Bộ trưởng Bộ Tài chính nhằm khuyến khích sử dụng dịch vụ công trực tuyến.",
+                  "status": "AUTO"
+                },
+                {
+                  "id": "d1-38",
+                  "label": "Khoản 2",
+                  "clause": "2",
+                  "point": null,
+                  "text": "Kể từ ngày 01 tháng 01 năm 2025 trở đi, mức thu các khoản phí, lệ phí quy định tại Biểu nêu trên thực hiện theo quy định tại các Thông tư gốc, Thông tư số 63/2023/TT-BTC và các Thông tư sửa đổi, bổ sung hoặc thay thế (nếu có).",
+                  "status": "AUTO"
+                },
+                {
+                  "id": "d1-39",
+                  "label": "Khoản 3",
+                  "clause": "3",
+                  "point": null,
+                  "text": "Ngoài mức thu các khoản phí, lệ phí quy định trong Biểu nêu trên, các nội dung khác liên quan đến: Phạm vi điều chỉnh, đối tượng áp dụng; tổ chức thu phí, lệ phí; người nộp phí, lệ phí; các trường hợp miễn, không phải nộp phí, lệ phí; kê khai, nộp phí, lệ phí; mức thu các khoản phí, lệ phí; quản lý, sử dụng phí; chứng từ thu, công khai chế độ thu phí, lệ phí không quy định tại Thông tư này thực hiện theo quy định tại các Thông tư gốc; các Thông tư sửa đổi, bổ sung hoặc thay thế (nếu có) và các văn bản quy phạm pháp luật khác có liên quan.",
+                  "status": "AUTO"
+                }
+              ]
+            },
+            {
+              "number": "2",
+              "title": "Hiệu lực thi hành",
+              "section": null,
+              "units": [
+                {
+                  "id": "d2-0",
+                  "label": "Khoản 1",
+                  "clause": "1",
+                  "point": null,
+                  "text": "Thông tư này có hiệu lực thi hành từ ngày 01 tháng 7 năm 2024 đến hết ngày 31 tháng 12 năm 2024.",
+                  "status": "AUTO"
+                },
+                {
+                  "id": "d2-1",
+                  "label": "Khoản 2",
+                  "clause": "2",
+                  "point": null,
+                  "text": "Trong quá trình thực hiện, nếu có vướng mắc đề nghị các tổ chức, cá nhân phản ánh kịp thời về Bộ Tài chính để nghiên cứu, hướng dẫn bổ sung./.",
+                  "status": "AUTO"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "closing": "Nơi nhận:\n- Ban Bí thư Trung ương Đảng;\n- Thủ tướng, các Phó Thủ tướng Chính phủ;\n- Văn phòng Trung ương Đảng và các Ban của Đảng;\n- Văn phòng Tổng Bí thư;\n- Văn phòng Quốc hội;\n- Hội đồng dân tộc;\n- Ủy ban Tài chính, Ngân sách;\n- Văn phòng Chủ tịch nước;\n- Viện Kiểm sát nhân dân tối cao;\n- Toà án nhân dân tối cao;\n- Kiểm toán Nhà nước;\n- Cơ quan trung ương của các Hội, Đoàn thể;\n- Các Bộ, cơ quan ngang Bộ, cơ quan thuộc Chính phủ;\n- HĐND, UBND các tỉnh, thành phố trực thuộc trung ương;\n- Sở Tài chính, Cục Thuế, KBNN các tỉnh, thành phố trực thuộc trung ương;\n- Cục Kiểm tra văn bản quy phạm pháp luật, Bộ Tư pháp;\n- Công báo;\n- Cổng thông tin điện tử Chính phủ;\n- Cổng thông tin điện tử Bộ Tài chính;\n- Các đơn vị thuộc Bộ Tài chính;\n- Lưu: VT, Cục CST (300b).\nKT. BỘ TRƯỞNG\nTHỨ TRƯỞNG\n(Đã ký)\nCao Anh Tuấn",
+      "appendices": [],
+      "warnings": []
+    },
+    "ingest": {
+      "suggested_status": "APPROVED",
+      "pending_reasons": []
+    },
+    "metadata": {
+      "tinh_trang_hieu_luc": "Hết hiệu lực toàn bộ",
+      "text_source": "detail_page_dom",
+      "ocr_required": false,
+      "scraped_at": "2026-10-21T23:41:33.090899",
+      "attachments": []
+    }
+  },
+  "chunks": [
+    {
+      "chunk_index": 0,
+      "article": "1",
+      "clause": null,
+      "point": null,
+      "path": "Điều 1",
+      "part": 1,
+      "total_parts": 1,
+      "char_count": 172,
+      "text": "Thông tư 43/2024/TT-BTC — Điều 1. Mức thu một số khoản phí, lệ phí nhằm tiếp tục tháo gỡ khó khăn, hỗ trợ cho hoạt động sản xuất kinh doanh\nĐiều khoản được sửa đổi, bổ sung",
+      "effective_from": "2024-07-01",
+      "effective_to": "2024-12-31"
+    },
+    {
+      "chunk_index": 1,
+      "article": "1",
+      "clause": "1",
+      "point": null,
+      "path": "Điều 1 · Khoản 1",
+      "part": 1,
+      "total_parts": 1,
+      "char_count": 889,
+      "text": "Thông tư 43/2024/TT-BTC — Điều 1. Mức thu một số khoản phí, lệ phí nhằm tiếp tục tháo gỡ khó khăn, hỗ trợ cho hoạt động sản xuất kinh doanh — Khoản 1\n1. Kể từ ngày 01 tháng 7 năm 2024 đến hết ngày 31 tháng 12 năm 2024, mức thu một số khoản phí, lệ phí được quy định như sau:\nSố tt\nTên phí, lệ phí\nMức thu\n1\na) Lệ phí cấp giấy phép thành lập và hoạt động của ngân hàng\nBằng 50% mức thu lệ phí quy định tại điểm a Mục 1 Biểu mức thu lệ phí tại khoản 1 Điều 4 Thông tư số 150/2016/TT-BTC ngày 14 tháng 10 năm 2016 của Bộ trưởng Bộ Tài chính quy định mức thu, chế độ thu, nộp lệ phí cấp giấy phép thành lập và hoạt động của tổ chức tín dụng; giấy phép thành lập chi nhánh ngân hàng nước ngoài, văn phòng đại diện của tổ chức tín dụng nước ngoài, tổ chức nước ngoài khác có hoạt động ngân hàng; giấy phép hoạt động cung ứng dịch vụ trung gian thanh toán cho các tổ chức không phải là ngân hàng.",
+      "effective_from": "2024-07-01",
+      "effective_to": "2024-12-31"
+    },
+    {
+      "chunk_index": 2,
+      "article": "1",
+      "clause": "1",
+      "point": "b",
+      "path": "Điều 1 · Khoản 1 · Điểm b",
+      "part": 1,
+      "total_parts": 1,
+      "char_count": 351,
+      "text": "Thông tư 43/2024/TT-BTC — Điều 1. Mức thu một số khoản phí, lệ phí nhằm tiếp tục tháo gỡ khó khăn, hỗ trợ cho hoạt động sản xuất kinh doanh — Khoản 1\nb) Lệ phí cấp giấy phép thành lập và hoạt động của tổ chức tín dụng phi ngân hàng\nBằng 50% mức thu lệ phí quy định tại điểm b Mục 1 Biểu mức thu lệ phí tại khoản 1 Điều 4 Thông tư số 150/2016/TT-BTC.\n2",
+      "effective_from": "2024-07-01",
+      "effective_to": "2024-12-31"
+    },
+    {
+      "chunk_index": 3,
+      "article": "1",
+      "clause": "1",
+      "point": "a",
+      "path": "Điều 1 · Khoản 1 · Điểm a",
+      "part": 1,
+      "total_parts": 1,
+      "char_count": 1147,
+      "text": "Thông tư 43/2024/TT-BTC — Điều 1. Mức thu một số khoản phí, lệ phí nhằm tiếp tục tháo gỡ khó khăn, hỗ trợ cho hoạt động sản xuất kinh doanh — Khoản 1\na) Phí thẩm định kinh doanh hàng hóa, dịch vụ hạn chế kinh doanh thuộc lĩnh vực thương mại; phí thẩm định kinh doanh hàng hóa, dịch vụ kinh doanh có điều kiện thuộc lĩnh vực thương mại đối với chủ thể kinh doanh là tổ chức, doanh nghiệp; phí thẩm định kinh doanh hàng hóa, dịch vụ kinh doanh có điều kiện thuộc lĩnh vực thương mại đối với chủ thể kinh doanh là hộ kinh doanh, cá nhân\na.1) Tại khu vực thành phố trực thuộc trung ương và khu vực thành phố, thị xã trực thuộc tỉnh\nBằng 50% mức thu phí quy định tại điểm a, điểm b, điểm c khoản 1 Điều 4 Thông tư số 168/2016/TT-BTC ngày 26 tháng 10 năm 2016 của Bộ trưởng Bộ Tài chính quy định mức thu, chế độ thu, nộp, quản lý và sử dụng phí thẩm định kinh doanh hàng hóa, dịch vụ hạn chế kinh doanh; hàng hóa, dịch vụ kinh doanh có điều kiện thuộc lĩnh vực thương mại và lệ phí cấp Giấy phép thành lập Sở Giao dịch hàng hóa.\na.2) Tại các khu vực khác\nBằng 50% mức thu phí tương ứng quy định tại điểm a.1 của Số thứ tự 2 Biểu mức thu phí, lệ phí này.",
+      "effective_from": "2024-07-01",
+      "effective_to": "2024-12-31"
+    },
+    {
+      "chunk_index": 4,
+      "article": "1",
+      "clause": "1",
+      "point": "b",
+      "path": "Điều 1 · Khoản 1 · Điểm b",
+      "part": 1,
+      "total_parts": 1,
+      "char_count": 517,
+      "text": "Thông tư 43/2024/TT-BTC — Điều 1. Mức thu một số khoản phí, lệ phí nhằm tiếp tục tháo gỡ khó khăn, hỗ trợ cho hoạt động sản xuất kinh doanh — Khoản 1\nb) Lệ phí cấp Giấy phép thành lập Sở Giao dịch hàng hóa\nb.1) Tại khu vực thành phố trực thuộc trung ương và khu vực thành phố, thị xã trực thuộc tỉnh\nBằng 50% mức thu lệ phí quy định tại điểm d khoản 1 Điều 4 Thông tư số 168/2016/TT-BTC.\nb.2) Tại các khu vực khác\nBằng 50% mức thu lệ phí tương ứng quy định tại điểm b.1 của Số thứ tự 2 Biểu mức thu phí, lệ phí này.\n3",
+      "effective_from": "2024-07-01",
+      "effective_to": "2024-12-31"
+    },
+    {
+      "chunk_index": 5,
+      "article": "1",
+      "clause": "1",
+      "point": "a",
+      "path": "Điều 1 · Khoản 1 · Điểm a",
+      "part": 1,
+      "total_parts": 1,
+      "char_count": 865,
+      "text": "Thông tư 43/2024/TT-BTC — Điều 1. Mức thu một số khoản phí, lệ phí nhằm tiếp tục tháo gỡ khó khăn, hỗ trợ cho hoạt động sản xuất kinh doanh — Khoản 1\na) Phí thẩm định cấp chứng chỉ, giấy phép, giấy chứng nhận trong hoạt động hàng không dân dụng; cấp giấy phép ra vào khu vực hạn chế tại cảng hàng không, sân bay (trừ nội dung thu tại các số thứ tự: 4.1, 4.2, 4.3, 4.4, 4.5.1, 5, 6 Mục VI Phần A Biểu mức thu phí, lệ phí áp dụng mức thu phí tương ứng quy định tại Mục VI Phần A Biểu mức thu phí, lệ phí trong lĩnh vực hàng không ban hành kèm theo Thông tư số 193/2016/TT-BTC)\nBằng 80% mức thu phí quy định tại Mục VI Phần A Biểu mức thu phí, lệ phí trong lĩnh vực hàng không ban hành kèm theo Thông tư số 193/2016/TT-BTC ngày 08 tháng 11 năm 2016 của Bộ trưởng Bộ Tài chính quy định mức thu, chế độ thu, nộp, quản lý và sử dụng phí, lệ phí trong lĩnh vực hàng không.",
+      "effective_from": "2024-07-01",
+      "effective_to": "2024-12-31"
+    },
+    {
+      "chunk_index": 6,
+      "article": "1",
+      "clause": "1",
+      "point": "b",
+      "path": "Điều 1 · Khoản 1 · Điểm b",
+      "part": 1,
+      "total_parts": 1,
+      "char_count": 580,
+      "text": "Thông tư 43/2024/TT-BTC — Điều 1. Mức thu một số khoản phí, lệ phí nhằm tiếp tục tháo gỡ khó khăn, hỗ trợ cho hoạt động sản xuất kinh doanh — Khoản 1\nb) Phí đăng ký giao dịch bảo đảm đối với tàu bay (trừ nội dung thu tại số thứ tự 4 Mục VIII Phần A Biểu mức thu phí, lệ phí áp dụng mức thu phí tương ứng quy định tại Mục VIII Phần A Biểu mức thu phí, lệ phí trong lĩnh vực hàng không ban hành kèm theo Thông tư số 193/2016/TT-BTC)\nBằng 80% mức thu phí quy định tại Mục VIII Phần A Biểu mức thu phí, lệ phí trong lĩnh vực hàng không ban hành kèm theo Thông tư số 193/2016/TT-BTC.\n4",
+      "effective_from": "2024-07-01",
+      "effective_to": "2024-12-31"
+    },
+    {
+      "chunk_index": 7,
+      "article": "1",
+      "clause": "1",
+      "point": "a",
+      "path": "Điều 1 · Khoản 1 · Điểm a",
+      "part": 1,
+      "total_parts": 1,
+      "char_count": 550,
+      "text": "Thông tư 43/2024/TT-BTC — Điều 1. Mức thu một số khoản phí, lệ phí nhằm tiếp tục tháo gỡ khó khăn, hỗ trợ cho hoạt động sản xuất kinh doanh — Khoản 1\na) Lệ phí ra, vào cảng hàng không, sân bay đối với chuyến bay của nước ngoài đến các Cảng hàng không Việt Nam\nBằng 90% mức thu lệ phí quy định tại khoản 1 Điều 4 Thông tư số 194/2016/TT-BTC ngày 08 tháng 11 năm 2016 của Bộ trưởng Bộ Tài chính quy định mức thu, chế độ thu, nộp phí hải quan và lệ phí ra, vào cảng hàng không, sân bay đối với chuyến bay của nước ngoài đến các Cảng hàng không Việt Nam.",
+      "effective_from": "2024-07-01",
+      "effective_to": "2024-12-31"
+    },
+    {
+      "chunk_index": 8,
+      "article": "1",
+      "clause": "1",
+      "point": "b",
+      "path": "Điều 1 · Khoản 1 · Điểm b",
+      "part": 1,
+      "total_parts": 1,
+      "char_count": 698,
+      "text": "Thông tư 43/2024/TT-BTC — Điều 1. Mức thu một số khoản phí, lệ phí nhằm tiếp tục tháo gỡ khó khăn, hỗ trợ cho hoạt động sản xuất kinh doanh — Khoản 1\nb) Phí hải quan đối với chuyến bay của nước ngoài đến các Cảng hàng không Việt Nam\nBằng 90% mức thu phí quy định tại khoản 2 Điều 4 Thông tư số 194/2016/TT-BTC.\n5\nPhí khai thác, sử dụng thông tin, dữ liệu khí tượng thủy văn\nBằng 70% mức thu phí quy định tại Biểu mức thu phí khai thác, sử dụng thông tin, dữ liệu khí tượng thủy văn ban hành kèm theo Thông tư số 197/2016/TT-BTC ngày 08 tháng 11 năm 2016 của Bộ trưởng Bộ Tài chính quy định mức thu, chế độ thu, nộp, quản lý và sử dụng phí khai thác, sử dụng thông tin, dữ liệu khí tượng thủy văn.\n6",
+      "effective_from": "2024-07-01",
+      "effective_to": "2024-12-31"
+    },
+    {
+      "chunk_index": 9,
+      "article": "1",
+      "clause": "1",
+      "point": "a",
+      "path": "Điều 1 · Khoản 1 · Điểm a",
+      "part": 1,
+      "total_parts": 1,
+      "char_count": 582,
+      "text": "Thông tư 43/2024/TT-BTC — Điều 1. Mức thu một số khoản phí, lệ phí nhằm tiếp tục tháo gỡ khó khăn, hỗ trợ cho hoạt động sản xuất kinh doanh — Khoản 1\na) Lệ phí cấp văn bằng bảo hộ, cấp chứng nhận đăng ký hợp đồng chuyển giao quyền sở hữu công nghiệp\nBằng 50% mức thu lệ phí quy định tại điểm 1 Mục I Biểu phí, lệ phí trong lĩnh vực trồng trọt và giống cây lâm nghiệp ban hành kèm theo Thông tư số 207/2016/TT-BTC ngày 09 tháng 11 năm 2016 của Bộ trưởng Bộ Tài chính quy định mức thu, chế độ thu, nộp, quản lý và sử dụng phí, lệ phí trong lĩnh vực trồng trọt và giống cây lâm nghiệp.",
+      "effective_from": "2024-07-01",
+      "effective_to": "2024-12-31"
+    },
+    {
+      "chunk_index": 10,
+      "article": "1",
+      "clause": "1",
+      "point": "b",
+      "path": "Điều 1 · Khoản 1 · Điểm b",
+      "part": 1,
+      "total_parts": 1,
+      "char_count": 367,
+      "text": "Thông tư 43/2024/TT-BTC — Điều 1. Mức thu một số khoản phí, lệ phí nhằm tiếp tục tháo gỡ khó khăn, hỗ trợ cho hoạt động sản xuất kinh doanh — Khoản 1\nb) Lệ phí nộp đơn đăng ký bảo hộ quyền sở hữu trí tuệ\nBằng 50% mức thu lệ phí quy định tại điểm 2 Mục I Biểu phí, lệ phí trong lĩnh vực trồng trọt và giống cây lâm nghiệp ban hành kèm theo Thông tư số 207/2016/TT-BTC.",
+      "effective_from": "2024-07-01",
+      "effective_to": "2024-12-31"
+    },
+    {
+      "chunk_index": 11,
+      "article": "1",
+      "clause": "1",
+      "point": "c",
+      "path": "Điều 1 · Khoản 1 · Điểm c",
+      "part": 1,
+      "total_parts": 1,
+      "char_count": 421,
+      "text": "Thông tư 43/2024/TT-BTC — Điều 1. Mức thu một số khoản phí, lệ phí nhằm tiếp tục tháo gỡ khó khăn, hỗ trợ cho hoạt động sản xuất kinh doanh — Khoản 1\nc) Lệ phí cấp chứng chỉ hành nghề đại diện sở hữu công nghiệp, công bố, đăng bạ đại diện sở hữu công nghiệp\nBằng 50% mức thu lệ phí quy định tại điểm 3 Mục I Biểu phí, lệ phí trong lĩnh vực trồng trọt và giống cây lâm nghiệp ban hành kèm theo Thông tư số 207/2016/TT-BTC.",
+      "effective_from": "2024-07-01",
+      "effective_to": "2024-12-31"
+    },
+    {
+      "chunk_index": 12,
+      "article": "1",
+      "clause": "1",
+      "point": "d",
+      "path": "Điều 1 · Khoản 1 · Điểm d",
+      "part": 1,
+      "total_parts": 1,
+      "char_count": 800,
+      "text": "Thông tư 43/2024/TT-BTC — Điều 1. Mức thu một số khoản phí, lệ phí nhằm tiếp tục tháo gỡ khó khăn, hỗ trợ cho hoạt động sản xuất kinh doanh — Khoản 1\nd) Phí bảo hộ giống cây trồng:\nd.1) Duy trì hiệu lực Bằng bảo hộ giống cây trồng: Từ năm thứ 1 đến năm thứ 3; từ năm thứ 4 đến năm thứ 6; từ năm thứ 7 đến năm thứ 9\nBằng 80% mức thu phí tương ứng quy định tại điểm 3 Mục III Biểu phí, lệ phí trong lĩnh vực trồng trọt và giống cây lâm nghiệp ban hành kèm theo Thông tư số 207/2016/TT-BTC.\nd.2) Duy trì hiệu lực Bằng bảo hộ giống cây trồng: Từ năm thứ 10 đến năm thứ 15; từ năm thứ 16 đến hết thời gian hiệu lực của Bằng bảo hộ\nBằng 70% mức thu phí tương ứng quy định tại điểm 3 Mục III Biểu phí, lệ phí trong lĩnh vực trồng trọt và giống cây lâm nghiệp ban hành kèm theo Thông tư số 207/2016/TT-BTC.\n7",
+      "effective_from": "2024-07-01",
+      "effective_to": "2024-12-31"
+    },
+    {
+      "chunk_index": 13,
+      "article": "1",
+      "clause": "1",
+      "point": "a",
+      "path": "Điều 1 · Khoản 1 · Điểm a",
+      "part": 1,
+      "total_parts": 1,
+      "char_count": 606,
+      "text": "Thông tư 43/2024/TT-BTC — Điều 1. Mức thu một số khoản phí, lệ phí nhằm tiếp tục tháo gỡ khó khăn, hỗ trợ cho hoạt động sản xuất kinh doanh — Khoản 1\na) Phí thẩm định nội dung tài liệu không kinh doanh để cấp giấy phép xuất bản\nBằng 50% mức thu phí quy định tại khoản 1 Điều 4 Thông tư số 214/2016/TT-BTC ngày 10 tháng 11 năm 2016 của Bộ trưởng Bộ Tài chính quy định mức thu, chế độ thu, nộp, quản lý và sử dụng phí thẩm định nội dung tài liệu không kinh doanh để cấp giấy phép xuất bản, lệ phí cấp giấy phép nhập khẩu xuất bản phẩm không kinh doanh và lệ phí đăng ký nhập khẩu xuất bản phẩm để kinh doanh.",
+      "effective_from": "2024-07-01",
+      "effective_to": "2024-12-31"
+    },
+    {
+      "chunk_index": 14,
+      "article": "1",
+      "clause": "1",
+      "point": "b",
+      "path": "Điều 1 · Khoản 1 · Điểm b",
+      "part": 1,
+      "total_parts": 1,
+      "char_count": 290,
+      "text": "Thông tư 43/2024/TT-BTC — Điều 1. Mức thu một số khoản phí, lệ phí nhằm tiếp tục tháo gỡ khó khăn, hỗ trợ cho hoạt động sản xuất kinh doanh — Khoản 1\nb) Lệ phí cấp phép nhập khẩu xuất bản phẩm không kinh doanh\nBằng 50% mức thu lệ phí quy định tại khoản 2 Điều 4 Thông tư số 214/2016/TT-BTC.",
+      "effective_from": "2024-07-01",
+      "effective_to": "2024-12-31"
+    },
+    {
+      "chunk_index": 15,
+      "article": "1",
+      "clause": "1",
+      "point": "c",
+      "path": "Điều 1 · Khoản 1 · Điểm c",
+      "part": 1,
+      "total_parts": 2,
+      "char_count": 1822,
+      "text": "Thông tư 43/2024/TT-BTC — Điều 1. Mức thu một số khoản phí, lệ phí nhằm tiếp tục tháo gỡ khó khăn, hỗ trợ cho hoạt động sản xuất kinh doanh — Khoản 1\nc) Lệ phí đăng ký nhập khẩu xuất bản phẩm để kinh doanh\nBằng 50% mức thu lệ phí quy định tại khoản 3 Điều 4 Thông tư số 214/2016/TT-BTC.\n8\nPhí đăng ký (xác nhận) sử dụng mã số mã vạch nước ngoài\nBằng 50% mức thu phí quy định tại khoản 2 Điều 4 Thông tư số 232/2016/TT-BTC ngày 11 tháng 11 năm 2016 của Bộ trưởng Bộ Tài chính quy định mức thu, chế độ thu, nộp, quản lý và sử dụng phí cấp mã số mã vạch.\n9\nPhí nhượng quyền khai thác cảng hàng không, sân bay\nBằng 90% mức thu phí quy định tại Điều 4 Thông tư số 247/2016/TT-BTC ngày 11 tháng 11 năm 2016 của Bộ trưởng Bộ Tài chính quy định mức thu, chế độ thu, nộp, quản lý sử dụng phí nhượng quyền khai thác cảng hàng không, sân bay.\n10\nPhí trình báo đường thủy nội địa\nBằng 50% mức thu phí quy định tại điểm 3 Biểu mức thu phí, lệ phí tại khoản 1 Điều 4 Thông tư số 248/2016/TT-BTC ngày 11 tháng 11 năm 2016 của Bộ trưởng Bộ Tài chính quy định mức thu, chế độ thu, nộp, quản lý và sử dụng phí, lệ phí áp dụng tại cảng, bến thủy nội địa.\n11\nPhí thẩm định cấp giấy phép kinh doanh sản phẩm, dịch vụ mật mã dân sự; giấy chứng nhận hợp chuẩn sản phẩm mật mã dân sự; giấy chứng nhận hợp quy sản phẩm mật mã dân sự\nBằng 80% mức thu phí quy định tại Mục I và Mục II Biểu mức thu phí, lệ phí ban hành kèm theo Thông tư số 249/2016/TT-BTC ngày 11 tháng 11 năm 2016 của Bộ trưởng Bộ Tài chính quy định mức thu, chế độ thu, nộp, quản lý và sử dụng phí thẩm định cấp giấy phép kinh doanh sản phẩm, dịch vụ mật mã dân sự; giấy chứng nhận hợp chuẩn sản phẩm mật mã dân sự; giấy chứng nhận hợp quy sản phẩm mật mã dân sự và lệ phí cấp giấy phép nhập khẩu sản phẩm mật mã dân sự.\n12\nPhí thẩm định phê duyệt thiết kế phòng cháy và chữa cháy",
+      "effective_from": "2024-07-01",
+      "effective_to": "2024-12-31"
+    },
+    {
+      "chunk_index": 16,
+      "article": "1",
+      "clause": "1",
+      "point": "c",
+      "path": "Điều 1 · Khoản 1 · Điểm c",
+      "part": 2,
+      "total_parts": 2,
+      "char_count": 396,
+      "text": "Thông tư 43/2024/TT-BTC — Điều 1. Mức thu một số khoản phí, lệ phí nhằm tiếp tục tháo gỡ khó khăn, hỗ trợ cho hoạt động sản xuất kinh doanh — Khoản 1\nBằng 50% mức thu phí tính theo quy định tại Điều 5 Thông tư số 258/2016/TT-BTC ngày 11 tháng 11 năm 2016 của Bộ trưởng Bộ Tài chính quy định mức thu, chế độ thu, nộp, quản lý và sử dụng phí thẩm định phê duyệt thiết kế phòng cháy và chữa cháy.\n13",
+      "effective_from": "2024-07-01",
+      "effective_to": "2024-12-31"
+    },
+    {
+      "chunk_index": 17,
+      "article": "1",
+      "clause": "1",
+      "point": "a",
+      "path": "Điều 1 · Khoản 1 · Điểm a",
+      "part": 1,
+      "total_parts": 1,
+      "char_count": 560,
+      "text": "Thông tư 43/2024/TT-BTC — Điều 1. Mức thu một số khoản phí, lệ phí nhằm tiếp tục tháo gỡ khó khăn, hỗ trợ cho hoạt động sản xuất kinh doanh — Khoản 1\na) Lệ phí cấp Giấy phép hoạt động đưa người lao động đi làm việc có thời hạn ở nước ngoài\nBằng 50% mức thu lệ phí quy định tại Mục 1 Biểu mức thu tại Điều 4 Thông tư số 259/2016/TT-BTC ngày 11 tháng 11 năm 2016 của Bộ trưởng Bộ Tài chính quy định mức thu, chế độ thu, nộp, quản lý và sử dụng phí xác minh giấy tờ tài liệu, lệ phí cấp Giấy phép hoạt động đưa người lao động đi làm việc có thời hạn ở nước ngoài.",
+      "effective_from": "2024-07-01",
+      "effective_to": "2024-12-31"
+    },
+    {
+      "chunk_index": 18,
+      "article": "1",
+      "clause": "1",
+      "point": "b",
+      "path": "Điều 1 · Khoản 1 · Điểm b",
+      "part": 1,
+      "total_parts": 1,
+      "char_count": 1545,
+      "text": "Thông tư 43/2024/TT-BTC — Điều 1. Mức thu một số khoản phí, lệ phí nhằm tiếp tục tháo gỡ khó khăn, hỗ trợ cho hoạt động sản xuất kinh doanh — Khoản 1\nb) Phí xác minh giấy tờ, tài liệu theo yêu cầu của tổ chức, cá nhân trong nước\nBằng 50% mức thu phí quy định tại Mục 3 Biểu mức thu tại Điều 4 Thông tư số 259/2016/TT-BTC.\n14\nLệ phí sở hữu công nghiệp\nBằng 50% mức thu lệ phí quy định tại Mục A Biểu mức thu phí, lệ phí sở hữu công nghiệp ban hành kèm theo Thông tư số 263/2016/TT-BTC ngày 14 tháng 11 năm 2016 của Bộ trưởng Bộ Tài chính quy định mức thu, chế độ thu, nộp, quản lý và sử dụng phí, lệ phí sở hữu công nghiệp.\n15\nPhí sử dụng kết cấu hạ tầng đường sắt\nBằng 50% mức thu phí quy định tại Điều 3 Thông tư số 295/2016/TT-BTC ngày 15 tháng 11 năm 2016 của Bộ trưởng Bộ Tài chính quy định mức thu, chế độ thu, nộp phí sử dụng kết cấu hạ tầng đường sắt.\n16\nPhí thẩm định điều kiện kinh doanh trong hoạt động kiểm định kỹ thuật an toàn lao động; huấn luyện an toàn, vệ sinh lao động\nBằng 70% mức thu phí quy định tại Điều 1 Thông tư số 110/2017/TT-BTC ngày 20 tháng 10 năm 2017 của Bộ trưởng Bộ Tài chính sửa đổi, bổ sung Biểu mức thu phí thẩm định điều kiện kinh doanh trong hoạt động kiểm định kỹ thuật an toàn lao động; huấn luyện an toàn, vệ sinh lao động ban hành kèm theo Thông tư số 245/2016/TT-BTC ngày 11 tháng 11 năm 2016 của Bộ trưởng Bộ Tài chính quy định mức thu, chế độ thu, nộp, quản lý và sử dụng phí thẩm định điều kiện kinh doanh trong hoạt động kiểm định kỹ thuật an toàn lao động; huấn luyện an toàn, vệ sinh lao động.\n17",
+      "effective_from": "2024-07-01",
+      "effective_to": "2024-12-31"
+    },
+    {
+      "chunk_index": 19,
+      "article": "1",
+      "clause": "1",
+      "point": "a",
+      "path": "Điều 1 · Khoản 1 · Điểm a",
+      "part": 1,
+      "total_parts": 1,
+      "char_count": 709,
+      "text": "Thông tư 43/2024/TT-BTC — Điều 1. Mức thu một số khoản phí, lệ phí nhằm tiếp tục tháo gỡ khó khăn, hỗ trợ cho hoạt động sản xuất kinh doanh — Khoản 1\na) Phí thẩm định cấp Giấy phép kinh doanh dịch vụ lữ hành quốc tế, Giấy phép kinh doanh dịch vụ lữ hành nội địa\nBằng 50% mức thu phí quy định tại khoản 1 Điều 4 Thông tư số 33/2018/TT-BTC ngày 30 tháng 3 năm 2018 của Bộ trưởng Bộ Tài chính quy định mức thu, chế độ thu, nộp và quản lý phí thẩm định cấp Giấy phép kinh doanh dịch vụ lữ hành quốc tế, Giấy phép kinh doanh dịch vụ lữ hành nội địa; phí thẩm định cấp thẻ hướng dẫn viên du lịch; lệ phí cấp Giấy phép thành lập văn phòng đại diện tại Việt Nam của doanh nghiệp kinh doanh dịch vụ lữ hành nước ngoài.",
+      "effective_from": "2024-07-01",
+      "effective_to": "2024-12-31"
+    },
+    {
+      "chunk_index": 20,
+      "article": "1",
+      "clause": "1",
+      "point": "b",
+      "path": "Điều 1 · Khoản 1 · Điểm b",
+      "part": 1,
+      "total_parts": 1,
+      "char_count": 277,
+      "text": "Thông tư 43/2024/TT-BTC — Điều 1. Mức thu một số khoản phí, lệ phí nhằm tiếp tục tháo gỡ khó khăn, hỗ trợ cho hoạt động sản xuất kinh doanh — Khoản 1\nb) Phí thẩm định cấp thẻ hướng dẫn viên du lịch\nBằng 50% mức thu phí quy định tại khoản 2 Điều 4 Thông tư số 33/2018/TT-BTC.\n18",
+      "effective_from": "2024-07-01",
+      "effective_to": "2024-12-31"
+    },
+    {
+      "chunk_index": 21,
+      "article": "1",
+      "clause": "1",
+      "point": "a",
+      "path": "Điều 1 · Khoản 1 · Điểm a",
+      "part": 1,
+      "total_parts": 1,
+      "char_count": 696,
+      "text": "Thông tư 43/2024/TT-BTC — Điều 1. Mức thu một số khoản phí, lệ phí nhằm tiếp tục tháo gỡ khó khăn, hỗ trợ cho hoạt động sản xuất kinh doanh — Khoản 1\na) Lệ phí cấp giấy phép quản lý pháo\nBằng 80% mức thu lệ phí quy định tại Mục III Biểu mức thu tại Điều 1 Thông tư số 23/2019/TT-BTC ngày 19 tháng 4 năm 2019 của Bộ trưởng Bộ Tài chính sửa đổi, bổ sung một số điều của Thông tư số 218/2016/TT-BTC ngày 10 tháng 11 năm 2016 của Bộ trưởng Bộ Tài chính quy định mức thu, chế độ thu, nộp, quản lý và sử dụng phí thẩm định điều kiện thuộc lĩnh vực an ninh; phí sát hạch cấp chứng chỉ nghiệp vụ bảo vệ; lệ phí cấp giấy phép quản lý pháo; lệ phí cấp giấy phép quản lý vũ khí, vật liệu nổ, công cụ hỗ trợ.",
+      "effective_from": "2024-07-01",
+      "effective_to": "2024-12-31"
+    },
+    {
+      "chunk_index": 22,
+      "article": "1",
+      "clause": "1",
+      "point": "b",
+      "path": "Điều 1 · Khoản 1 · Điểm b",
+      "part": 1,
+      "total_parts": 1,
+      "char_count": 546,
+      "text": "Thông tư 43/2024/TT-BTC — Điều 1. Mức thu một số khoản phí, lệ phí nhằm tiếp tục tháo gỡ khó khăn, hỗ trợ cho hoạt động sản xuất kinh doanh — Khoản 1\nb) Lệ phí cấp giấy phép quản lý vũ khí, vật liệu nổ, công cụ hỗ trợ\nBằng 80% mức thu lệ phí quy định tại Mục IV Biểu mức thu tại Điều 1 Thông tư số 23/2019/TT-BTC.\n19\nLệ phí cấp Căn cước công dân\nBằng 50% mức thu lệ phí quy định tại Điều 4 Thông tư số 59/2019/TT-BTC ngày 30 tháng 8 năm 2019 của Bộ trưởng Bộ Tài chính quy định mức thu, chế độ thu, nộp và quản lý lệ phí cấp Căn cước công dân.\n20",
+      "effective_from": "2024-07-01",
+      "effective_to": "2024-12-31"
+    },
+    {
+      "chunk_index": 23,
+      "article": "1",
+      "clause": "1",
+      "point": "a",
+      "path": "Điều 1 · Khoản 1 · Điểm a",
+      "part": 1,
+      "total_parts": 1,
+      "char_count": 445,
+      "text": "Thông tư 43/2024/TT-BTC — Điều 1. Mức thu một số khoản phí, lệ phí nhằm tiếp tục tháo gỡ khó khăn, hỗ trợ cho hoạt động sản xuất kinh doanh — Khoản 1\na) Phí giải quyết yêu cầu độc lập của người có quyền lợi, nghĩa vụ liên quan\nBằng 50% mức thu phí quy định tại điểm a khoản 2 Điều 4 Thông tư số 58/2020/TT-BTC ngày 12 tháng 6 năm 2020 của Bộ trưởng Bộ Tài chính quy định mức thu, chế độ thu, nộp, quản lý và sử dụng phí xử lý vụ việc cạnh tranh.",
+      "effective_from": "2024-07-01",
+      "effective_to": "2024-12-31"
+    },
+    {
+      "chunk_index": 24,
+      "article": "1",
+      "clause": "1",
+      "point": "b",
+      "path": "Điều 1 · Khoản 1 · Điểm b",
+      "part": 1,
+      "total_parts": 1,
+      "char_count": 310,
+      "text": "Thông tư 43/2024/TT-BTC — Điều 1. Mức thu một số khoản phí, lệ phí nhằm tiếp tục tháo gỡ khó khăn, hỗ trợ cho hoạt động sản xuất kinh doanh — Khoản 1\nb) Phí thẩm định hồ sơ hưởng miễn trừ trong giải quyết vụ việc cạnh tranh\nBằng 50% mức thu phí quy định tại điểm b khoản 2 Điều 4 Thông tư số 58/2020/TT-BTC.\n21",
+      "effective_from": "2024-07-01",
+      "effective_to": "2024-12-31"
+    },
+    {
+      "chunk_index": 25,
+      "article": "1",
+      "clause": "1",
+      "point": "a",
+      "path": "Điều 1 · Khoản 1 · Điểm a",
+      "part": 1,
+      "total_parts": 1,
+      "char_count": 577,
+      "text": "Thông tư 43/2024/TT-BTC — Điều 1. Mức thu một số khoản phí, lệ phí nhằm tiếp tục tháo gỡ khó khăn, hỗ trợ cho hoạt động sản xuất kinh doanh — Khoản 1\na) Lệ phí cấp giấy chứng nhận kiểm dịch động vật, sản phẩm động vật trên cạn; thủy sản nhập khẩu, quá cảnh, tạm nhập tái xuất (gồm kho ngoại quan), chuyển cửa khẩu\nBằng 50% mức thu lệ phí quy định tại điểm 1 Mục I Biểu phí, lệ phí trong công tác thú y ban hành kèm theo Thông tư số 101/2020/TT-BTC ngày 23 tháng 11 năm 2020 của Bộ trưởng Bộ Tài chính quy định mức thu, chế độ thu, nộp, quản lý phí, lệ phí trong công tác thú y.",
+      "effective_from": "2024-07-01",
+      "effective_to": "2024-12-31"
+    },
+    {
+      "chunk_index": 26,
+      "article": "1",
+      "clause": "1",
+      "point": "b",
+      "path": "Điều 1 · Khoản 1 · Điểm b",
+      "part": 1,
+      "total_parts": 1,
+      "char_count": 332,
+      "text": "Thông tư 43/2024/TT-BTC — Điều 1. Mức thu một số khoản phí, lệ phí nhằm tiếp tục tháo gỡ khó khăn, hỗ trợ cho hoạt động sản xuất kinh doanh — Khoản 1\nb) Lệ phí cấp chứng chỉ hành nghề dịch vụ thú y\nBằng 50% mức thu lệ phí quy định tại điểm 2 Mục I Biểu phí, lệ phí trong công tác thú y ban hành kèm theo Thông tư số 101/2020/TT-BTC.",
+      "effective_from": "2024-07-01",
+      "effective_to": "2024-12-31"
+    },
+    {
+      "chunk_index": 27,
+      "article": "1",
+      "clause": "1",
+      "point": "c",
+      "path": "Điều 1 · Khoản 1 · Điểm c",
+      "part": 1,
+      "total_parts": 2,
+      "char_count": 1684,
+      "text": "Thông tư 43/2024/TT-BTC — Điều 1. Mức thu một số khoản phí, lệ phí nhằm tiếp tục tháo gỡ khó khăn, hỗ trợ cho hoạt động sản xuất kinh doanh — Khoản 1\nc) Phí kiểm dịch động vật (kiểm tra lâm sàng gia cầm)\nBằng 50% mức thu phí quy định tại điểm 1.4 Mục III Biểu phí, lệ phí trong công tác thú y ban hành kèm theo Thông tư số 101/2020/TT-BTC.\n22\nPhí kiểm định phương tiện phòng cháy và chữa cháy\nBằng 50% mức thu phí quy định tại Biểu phí kiểm định phương tiện phòng cháy và chữa cháy ban hành kèm theo Thông tư số 02/2021/TT-BTC ngày 08 tháng 01 năm 2021 của Bộ trưởng Bộ Tài chính quy định mức thu, chế độ thu, nộp, quản lý và sử dụng phí kiểm định phương tiện phòng cháy và chữa cháy.\n23\nPhí trong chăn nuôi\nBằng 50% mức thu phí quy định tại Biểu mức thu phí trong chăn nuôi ban hành kèm theo Thông tư số 24/2021/TT-BTC ngày 31 tháng 3 năm 2021 của Bộ trưởng Bộ Tài chính quy định mức thu, chế độ thu, nộp, quản lý và sử dụng phí trong chăn nuôi.\n24\nLệ phí cấp hộ chiếu, giấy thông hành, giấy phép xuất cảnh, tem AB\nBằng 80% mức thu lệ phí quy định tại Mục I Biểu mức thu phí, lệ phí ban hành kèm theo Thông tư số 25/2021/TT-BTC ngày 07 tháng 4 năm 2021 của Bộ trưởng Bộ Tài chính quy định mức thu, chế độ thu, nộp, quản lý và sử dụng phí, lệ phí trong lĩnh vực xuất cảnh, nhập cảnh, quá cảnh, cư trú tại Việt Nam.\n25\nPhí trong công tác an toàn thực phẩm\nBằng 90% mức thu phí quy định tại Biểu phí trong công tác an toàn thực phẩm ban hành kèm theo Thông tư số 67/2021/TT-BTC ngày 05 tháng 8 năm 2021 của Bộ trưởng Bộ Tài chính quy định mức thu, chế độ thu, nộp, quản lý và sử dụng phí trong công tác an toàn thực phẩm.\n26\nPhí thẩm định kinh doanh có điều kiện thuộc lĩnh vực thủy sản",
+      "effective_from": "2024-07-01",
+      "effective_to": "2024-12-31"
+    },
+    {
+      "chunk_index": 28,
+      "article": "1",
+      "clause": "1",
+      "point": "c",
+      "path": "Điều 1 · Khoản 1 · Điểm c",
+      "part": 2,
+      "total_parts": 2,
+      "char_count": 940,
+      "text": "Thông tư 43/2024/TT-BTC — Điều 1. Mức thu một số khoản phí, lệ phí nhằm tiếp tục tháo gỡ khó khăn, hỗ trợ cho hoạt động sản xuất kinh doanh — Khoản 1\nBằng 90% mức thu phí quy định tại điểm 2 Biểu phí trong lĩnh vực quản lý nuôi trồng thủy sản ban hành kèm theo Thông tư số 112/2021/TT-BTC ngày 15 tháng 12 năm 2021 của Bộ trưởng Bộ Tài chính quy định mức thu, chế độ thu, nộp, quản lý và sử dụng phí, lệ phí trong lĩnh vực quản lý chất lượng vật tư nuôi trồng thủy sản.\n27\nPhí khai thác, sử dụng nguồn nước do cơ quan trung ương thực hiện\nBằng 80% mức thu phí quy định tại Biểu mức thu phí khai thác, sử dụng nguồn nước do cơ quan trung ương thực hiện ban hành kèm theo Thông tư số 01/2022/TT-BTC ngày 11 tháng 01 năm 2022 của Bộ trưởng Bộ Tài chính quy định mức thu, chế độ thu, nộp, quản lý và sử dụng phí khai thác, sử dụng nguồn nước do cơ quan trung ương thực hiện.\n28\nPhí sử dụng tần số vô tuyến điện đối với nghiệp vụ di động mặt đất",
+      "effective_from": "2024-07-01",
+      "effective_to": "2024-12-31"
+    },
+    {
+      "chunk_index": 29,
+      "article": "1",
+      "clause": "1",
+      "point": "a",
+      "path": "Điều 1 · Khoản 1 · Điểm a",
+      "part": 1,
+      "total_parts": 1,
+      "char_count": 608,
+      "text": "Thông tư 43/2024/TT-BTC — Điều 1. Mức thu một số khoản phí, lệ phí nhằm tiếp tục tháo gỡ khó khăn, hỗ trợ cho hoạt động sản xuất kinh doanh — Khoản 1\na) Mạng viễn thông di động mặt đất nhắn tin dùng riêng\nBằng 80% mức thu phí quy định tại điểm 3.1 khoản 3 Mục II Phần B Biểu mức thu lệ phí cấp giấy phép sử dụng tần số vô tuyến điện và phí sử dụng tần số vô tuyến điện ban hành kèm theo Thông tư số 265/2016/TT-BTC ngày 14 tháng 11 năm 2016 của Bộ trưởng Bộ Tài chính quy định mức thu, chế độ thu, nộp, quản lý và sử dụng lệ phí cấp giấy phép sử dụng tần số vô tuyến điện và phí sử dụng tần số vô tuyến điện.",
+      "effective_from": "2024-07-01",
+      "effective_to": "2024-12-31"
+    },
+    {
+      "chunk_index": 30,
+      "article": "1",
+      "clause": "1",
+      "point": "b",
+      "path": "Điều 1 · Khoản 1 · Điểm b",
+      "part": 1,
+      "total_parts": 1,
+      "char_count": 636,
+      "text": "Thông tư 43/2024/TT-BTC — Điều 1. Mức thu một số khoản phí, lệ phí nhằm tiếp tục tháo gỡ khó khăn, hỗ trợ cho hoạt động sản xuất kinh doanh — Khoản 1\nb) Mạng viễn thông dùng riêng sử dụng tần số thuộc nghiệp vụ di động (bao gồm cả mạng thông tin vô tuyến điện nội bộ), mạng viễn thông di động mặt đất trung kế\nBằng 80% mức thu phí quy định tại điểm 3.2 khoản 3 Mục II Phần B Biểu mức thu lệ phí cấp giấy phép sử dụng tần số vô tuyến điện và phí sử dụng tần số vô tuyến điện ban hành kèm theo Thông tư số 11/2022/TT-BTC ngày 21 tháng 02 năm 2022 của Bộ trưởng Bộ Tài chính sửa đổi, bổ sung một số điều của Thông tư số 265/2016/TT-BTC.\n29",
+      "effective_from": "2024-07-01",
+      "effective_to": "2024-12-31"
+    },
+    {
+      "chunk_index": 31,
+      "article": "1",
+      "clause": "1",
+      "point": "a",
+      "path": "Điều 1 · Khoản 1 · Điểm a",
+      "part": 1,
+      "total_parts": 1,
+      "char_count": 540,
+      "text": "Thông tư 43/2024/TT-BTC — Điều 1. Mức thu một số khoản phí, lệ phí nhằm tiếp tục tháo gỡ khó khăn, hỗ trợ cho hoạt động sản xuất kinh doanh — Khoản 1\na) Phí, lệ phí trong lĩnh vực chứng khoán (trừ 02 khoản phí, lệ phí quy định tại điểm b, điểm c dưới đây)\nBằng 50% mức thu phí, lệ phí quy định tại Biểu mức thu phí, lệ phí trong lĩnh vực chứng khoán ban hành kèm theo Thông tư số 25/2022/TT-BTC ngày 28 tháng 4 năm 2022 của Bộ trưởng Bộ Tài chính quy định mức thu, chế độ thu, nộp, quản lý và sử dụng phí, lệ phí trong lĩnh vực chứng khoán.",
+      "effective_from": "2024-07-01",
+      "effective_to": "2024-12-31"
+    },
+    {
+      "chunk_index": 32,
+      "article": "1",
+      "clause": "1",
+      "point": "b",
+      "path": "Điều 1 · Khoản 1 · Điểm b",
+      "part": 1,
+      "total_parts": 1,
+      "char_count": 511,
+      "text": "Thông tư 43/2024/TT-BTC — Điều 1. Mức thu một số khoản phí, lệ phí nhằm tiếp tục tháo gỡ khó khăn, hỗ trợ cho hoạt động sản xuất kinh doanh — Khoản 1\nb) Lệ phí cấp mới, cấp đổi, cấp lại giấy chứng nhận (chứng chỉ) hành nghề chứng khoán cho cá nhân hành nghề chứng khoán tại công ty chứng khoán, công ty quản lý quỹ đầu tư chứng khoán và công ty đầu tư chứng khoán\nÁp dụng mức thu lệ phí quy định tại điểm 15 Mục I Biểu mức thu phí, lệ phí trong lĩnh vực chứng khoán ban hành kèm theo Thông tư số 25/2022/TT-BTC.",
+      "effective_from": "2024-07-01",
+      "effective_to": "2024-12-31"
+    },
+    {
+      "chunk_index": 33,
+      "article": "1",
+      "clause": "1",
+      "point": "c",
+      "path": "Điều 1 · Khoản 1 · Điểm c",
+      "part": 1,
+      "total_parts": 2,
+      "char_count": 1797,
+      "text": "Thông tư 43/2024/TT-BTC — Điều 1. Mức thu một số khoản phí, lệ phí nhằm tiếp tục tháo gỡ khó khăn, hỗ trợ cho hoạt động sản xuất kinh doanh — Khoản 1\nc) Phí giám sát hoạt động chứng khoán\nÁp dụng mức thu phí quy định tại điểm 2 Mục II Biểu mức thu phí, lệ phí trong lĩnh vực chứng khoán ban hành kèm theo Thông tư số 25/2022/TT-BTC.\n30\nLệ phí cấp giấy chứng nhận kiểm định an toàn kỹ thuật và bảo vệ môi trường đối với xe cơ giới, xe máy chuyên dùng\nBằng 50% mức thu lệ phí quy định tại khoản 3 Điều 1 Thông tư số 36/2022/TT-BTC ngày 16 tháng 6 năm 2022 của Bộ trưởng Bộ Tài chính sửa đổi, bổ sung một số điều của Thông tư số 199/2016/TT-BTC ngày 08 tháng 11 năm 2016 của Bộ trưởng Bộ Tài chính quy định mức thu, chế độ thu, nộp, quản lý lệ phí cấp giấy chứng nhận bảo đảm chất lượng, an toàn kỹ thuật đối với máy, thiết bị, phương tiện giao thông vận tải có yêu cầu nghiêm ngặt về an toàn.\n31\nLệ phí cấp chứng nhận (chứng chỉ) năng lực hoạt động xây dựng cho tổ chức, chứng chỉ hành nghề hoạt động xây dựng cho cá nhân\nBằng 50% mức thu lệ phí quy định tại khoản 1 Điều 4 Thông tư số 38/2022/TT-BTC ngày 24 tháng 6 năm 2022 của Bộ trưởng Bộ Tài chính quy định mức thu, chế độ thu, nộp lệ phí cấp giấy phép hoạt động xây dựng, lệ phí cấp chứng chỉ hành nghề kiến trúc sư.\n32\nPhí thẩm định thiết kế kỹ thuật (phí thẩm định thiết kế xây dựng triển khai sau thiết kế cơ sở), phí thẩm định dự toán xây dựng\nBằng 50% mức thu phí quy định tại Biểu mức thu phí thẩm định thiết kế xây dựng triển khai sau thiết kế cơ sở, phí thẩm định dự toán xây dựng ban hành kèm theo Thông tư số 27/2023/TT-BTC ngày 12 tháng 5 năm 2023 của Bộ trưởng Bộ Tài chính quy định mức thu, chế độ thu, nộp, quản lý và sử dụng phí thẩm định thiết kế kỹ thuật, phí thẩm định dự toán xây dựng.\n33\nPhí thẩm định dự án đầu tư xây dựng",
+      "effective_from": "2024-07-01",
+      "effective_to": "2024-12-31"
+    },
+    {
+      "chunk_index": 34,
+      "article": "1",
+      "clause": "1",
+      "point": "c",
+      "path": "Điều 1 · Khoản 1 · Điểm c",
+      "part": 2,
+      "total_parts": 2,
+      "char_count": 794,
+      "text": "Thông tư 43/2024/TT-BTC — Điều 1. Mức thu một số khoản phí, lệ phí nhằm tiếp tục tháo gỡ khó khăn, hỗ trợ cho hoạt động sản xuất kinh doanh — Khoản 1\nBằng 50% mức thu phí quy định tại Biểu mức thu phí thẩm định dự án đầu tư xây dựng (phí thẩm định Báo cáo nghiên cứu khả thi đầu tư xây dựng hoặc phí thẩm định Báo cáo kinh tế - kỹ thuật) ban hành kèm theo Thông tư số 28/2023/TT-BTC ngày 12 tháng 5 năm 2023 của Bộ trưởng Bộ Tài chính quy định mức thu, chế độ thu, nộp, quản lý và sử dụng phí thẩm định dự án đầu tư xây dựng.\n34\nPhí trong lĩnh vực y tế\nBằng 70% mức thu phí quy định tại Biểu phí trong lĩnh vực y tế ban hành kèm theo Thông tư số 59/2023/TT-BTC ngày 30 tháng 8 năm 2023 của Bộ trưởng Bộ Tài chính quy định mức thu, chế độ thu, nộp, quản lý và sử dụng phí trong lĩnh vực y tế.\n35",
+      "effective_from": "2024-07-01",
+      "effective_to": "2024-12-31"
+    },
+    {
+      "chunk_index": 35,
+      "article": "1",
+      "clause": "1",
+      "point": "a",
+      "path": "Điều 1 · Khoản 1 · Điểm a",
+      "part": 1,
+      "total_parts": 1,
+      "char_count": 478,
+      "text": "Thông tư 43/2024/TT-BTC — Điều 1. Mức thu một số khoản phí, lệ phí nhằm tiếp tục tháo gỡ khó khăn, hỗ trợ cho hoạt động sản xuất kinh doanh — Khoản 1\na) Phí đăng ký giao dịch bảo đảm\nBằng 80% mức thu phí quy định tại điểm 1 Biểu mức thu phí trong lĩnh vực đăng ký giao dịch bảo đảm ban hành kèm theo Thông tư số 61/2023/TT-BTC ngày 28 tháng 9 năm 2023 của Bộ trưởng Bộ Tài chính quy định mức thu, chế độ thu, nộp, quản lý và sử dụng phí trong lĩnh vực đăng ký giao dịch bảo đảm.",
+      "effective_from": "2024-07-01",
+      "effective_to": "2024-12-31"
+    },
+    {
+      "chunk_index": 36,
+      "article": "1",
+      "clause": "1",
+      "point": "b",
+      "path": "Điều 1 · Khoản 1 · Điểm b",
+      "part": 1,
+      "total_parts": 1,
+      "char_count": 812,
+      "text": "Thông tư 43/2024/TT-BTC — Điều 1. Mức thu một số khoản phí, lệ phí nhằm tiếp tục tháo gỡ khó khăn, hỗ trợ cho hoạt động sản xuất kinh doanh — Khoản 1\nb) Phí cung cấp thông tin về giao dịch bảo đảm bằng động sản (trừ chứng khoán đã đăng ký tập trung tại Tổng công ty Lưu ký và Bù trừ chứng khoán Việt Nam, tàu bay), tàu biển\nBằng 80% mức thu phí quy định tại điểm 2 Biểu mức thu phí trong lĩnh vực đăng ký giao dịch bảo đảm ban hành kèm theo Thông tư số 61/2023/TT-BTC.\n36\nPhí khai thác và sử dụng dữ liệu về môi trường\nBằng 70% mức thu phí quy định tại Biểu mức thu phí khai thác và sử dụng dữ liệu về môi trường ban hành kèm theo Thông tư số 65/2023/TT-BTC ngày 31 tháng 10 năm 2023 của Bộ trưởng Bộ Tài chính quy định mức thu, chế độ thu, nộp, quản lý và sử dụng phí khai thác và sử dụng dữ liệu về môi trường.",
+      "effective_from": "2024-07-01",
+      "effective_to": "2024-12-31"
+    },
+    {
+      "chunk_index": 37,
+      "article": "1",
+      "clause": "1",
+      "point": "a",
+      "path": "Điều 1 · Khoản 1 · Điểm a",
+      "part": 1,
+      "total_parts": 1,
+      "char_count": 748,
+      "text": "Thông tư 43/2024/TT-BTC — Điều 1. Mức thu một số khoản phí, lệ phí nhằm tiếp tục tháo gỡ khó khăn, hỗ trợ cho hoạt động sản xuất kinh doanh — Khoản 1\na) Đối với phí sử dụng tần số vô tuyến điện quy định tại Số thứ tự 28 trong Biểu nêu trên: Trường hợp tổ chức, cá nhân đã nộp phí theo mức phí quy định tại Thông tư số 265/2016/TT-BTC và Thông tư số 11/2022/TT-BTC cho khoảng thời gian có hiệu lực của Thông tư này, tổ chức, cá nhân sẽ được bù trừ số tiền phí chênh lệch giữa mức phí theo quy định tại Thông tư số 265/2016/TT-BTC và Thông tư số 11/2022/TT-BTC với mức phí theo quy định tại Thông tư này vào số phí phải nộp của kỳ nộp phí tiếp theo. Tổ chức thu phí chịu trách nhiệm tính bù trừ tiền phí cho tổ chức, cá nhân vào kỳ nộp phí tiếp theo.",
+      "effective_from": "2024-07-01",
+      "effective_to": "2024-12-31"
+    },
+    {
+      "chunk_index": 38,
+      "article": "1",
+      "clause": "1",
+      "point": "b",
+      "path": "Điều 1 · Khoản 1 · Điểm b",
+      "part": 1,
+      "total_parts": 1,
+      "char_count": 486,
+      "text": "Thông tư 43/2024/TT-BTC — Điều 1. Mức thu một số khoản phí, lệ phí nhằm tiếp tục tháo gỡ khó khăn, hỗ trợ cho hoạt động sản xuất kinh doanh — Khoản 1\nb) Các Thông tư được viện dẫn trong Biểu nêu trên gọi chung là các Thông tư gốc. Trường hợp các Thông tư gốc được sửa đổi, bổ sung hoặc thay thế thì mức thu các khoản phí, lệ phí quy định trong Biểu nêu trên tính bằng tỷ lệ mức thu tương ứng tại Biểu nêu trên nhân với mức thu phí, lệ phí tại văn bản mới sửa đổi, bổ sung hoặc thay thế.",
+      "effective_from": "2024-07-01",
+      "effective_to": "2024-12-31"
+    },
+    {
+      "chunk_index": 39,
+      "article": "1",
+      "clause": "1",
+      "point": "c",
+      "path": "Điều 1 · Khoản 1 · Điểm c",
+      "part": 1,
+      "total_parts": 1,
+      "char_count": 627,
+      "text": "Thông tư 43/2024/TT-BTC — Điều 1. Mức thu một số khoản phí, lệ phí nhằm tiếp tục tháo gỡ khó khăn, hỗ trợ cho hoạt động sản xuất kinh doanh — Khoản 1\nc) Đối với các dịch vụ quy định thu phí, lệ phí tại các Số thứ tự 14, 16, 24, 31 trong Biểu nêu trên: Trường hợp sử dụng dịch vụ công trực tuyến thì áp dụng mức thu phí, lệ phí theo quy định tại Thông tư này, không áp dụng mức thu phí, lệ phí tại Thông tư số 63/2023/TT-BTC ngày 16 tháng 10 năm 2023 của Bộ trưởng Bộ Tài chính sửa đổi, bổ sung một số điều của một số Thông tư quy định về phí, lệ phí của Bộ trưởng Bộ Tài chính nhằm khuyến khích sử dụng dịch vụ công trực tuyến.",
+      "effective_from": "2024-07-01",
+      "effective_to": "2024-12-31"
+    },
+    {
+      "chunk_index": 40,
+      "article": "1",
+      "clause": "2",
+      "point": null,
+      "path": "Điều 1 · Khoản 2",
+      "part": 1,
+      "total_parts": 1,
+      "char_count": 379,
+      "text": "Thông tư 43/2024/TT-BTC — Điều 1. Mức thu một số khoản phí, lệ phí nhằm tiếp tục tháo gỡ khó khăn, hỗ trợ cho hoạt động sản xuất kinh doanh — Khoản 2\n2. Kể từ ngày 01 tháng 01 năm 2025 trở đi, mức thu các khoản phí, lệ phí quy định tại Biểu nêu trên thực hiện theo quy định tại các Thông tư gốc, Thông tư số 63/2023/TT-BTC và các Thông tư sửa đổi, bổ sung hoặc thay thế (nếu có).",
+      "effective_from": "2024-07-01",
+      "effective_to": "2024-12-31"
+    },
+    {
+      "chunk_index": 41,
+      "article": "1",
+      "clause": "3",
+      "point": null,
+      "path": "Điều 1 · Khoản 3",
+      "part": 1,
+      "total_parts": 1,
+      "char_count": 697,
+      "text": "Thông tư 43/2024/TT-BTC — Điều 1. Mức thu một số khoản phí, lệ phí nhằm tiếp tục tháo gỡ khó khăn, hỗ trợ cho hoạt động sản xuất kinh doanh — Khoản 3\n3. Ngoài mức thu các khoản phí, lệ phí quy định trong Biểu nêu trên, các nội dung khác liên quan đến: Phạm vi điều chỉnh, đối tượng áp dụng; tổ chức thu phí, lệ phí; người nộp phí, lệ phí; các trường hợp miễn, không phải nộp phí, lệ phí; kê khai, nộp phí, lệ phí; mức thu các khoản phí, lệ phí; quản lý, sử dụng phí; chứng từ thu, công khai chế độ thu phí, lệ phí không quy định tại Thông tư này thực hiện theo quy định tại các Thông tư gốc; các Thông tư sửa đổi, bổ sung hoặc thay thế (nếu có) và các văn bản quy phạm pháp luật khác có liên quan.",
+      "effective_from": "2024-07-01",
+      "effective_to": "2024-12-31"
+    },
+    {
+      "chunk_index": 42,
+      "article": "2",
+      "clause": "1",
+      "point": null,
+      "path": "Điều 2 · Khoản 1",
+      "part": 1,
+      "total_parts": 1,
+      "char_count": 161,
+      "text": "Thông tư 43/2024/TT-BTC — Điều 2. Hiệu lực thi hành — Khoản 1\n1. Thông tư này có hiệu lực thi hành từ ngày 01 tháng 7 năm 2024 đến hết ngày 31 tháng 12 năm 2024.",
+      "effective_from": "2024-07-01",
+      "effective_to": "2024-12-31"
+    },
+    {
+      "chunk_index": 43,
+      "article": "2",
+      "clause": "2",
+      "point": null,
+      "path": "Điều 2 · Khoản 2",
+      "part": 1,
+      "total_parts": 1,
+      "char_count": 207,
+      "text": "Thông tư 43/2024/TT-BTC — Điều 2. Hiệu lực thi hành — Khoản 2\n2. Trong quá trình thực hiện, nếu có vướng mắc đề nghị các tổ chức, cá nhân phản ánh kịp thời về Bộ Tài chính để nghiên cứu, hướng dẫn bổ sung./.",
+      "effective_from": "2024-07-01",
+      "effective_to": "2024-12-31"
+    }
+  ]
+}

@@ -1,0 +1,4 @@
+# Host build output must not leak into image builds
+**/bin/
+**/obj/
+**/.vs/

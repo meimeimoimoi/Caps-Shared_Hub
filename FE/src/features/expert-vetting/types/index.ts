@@ -1,0 +1,461 @@
+import type {
+  APPLICATION_STATUS,
+  QUALIFICATION_STATUS,
+  SERVICE_STATUS,
+} from '@/lib/constants'
+
+export type ApplicationStatus = keyof typeof APPLICATION_STATUS
+
+export type ScreeningRunStatus = 'RUNNING' | 'COMPLETED' | 'FAILED' | 'SKIPPED'
+export type ScreeningPointSource = 'AI' | 'SYSTEM'
+export type ScreeningPointStatus = 'OPEN' | 'CHECKED' | 'USED_FOR_SUPPLEMENT'
+export type ScreeningPointAction = 'CHECKED' | 'USED_FOR_SUPPLEMENT' | 'REOPEN'
+
+export interface ExpertApplication {
+  id: string
+  name: string
+  /** Not returned by the review API; the table shows the fields instead */
+  email?: string
+  years: number
+  aiFlags: number
+  screeningStatus?: ScreeningRunStatus | null
+  submittedAt: string
+  status: ApplicationStatus
+  /** Field codes, e.g. CORPORATE_INCOME_TAX */
+  fields?: string[]
+  /** Follows an earlier closed application (BR-E23) */
+  isReapplication?: boolean
+}
+
+export interface ScreeningPoint {
+  id: string
+  source: ScreeningPointSource
+  code: string
+  evidenceId: string | null
+  evidenceCode: string | null
+  fileName: string | null
+  targetCriterion: string | null
+  title: string
+  detail: string
+  suggestedRequest: string | null
+  status: ScreeningPointStatus
+  resolutionReason: string | null
+  resolvedByUserId: string | null
+  resolvedAt: string | null
+  createdAt: string
+}
+
+export interface ScreeningMilestone {
+  company: string | null
+  role: string | null
+  startYear: number | null
+  startMonth: number | null
+  endYear: number | null
+  endMonth: number | null
+  isCurrent: boolean
+  isTaxAccounting: boolean
+}
+
+export interface ScreeningCertificate {
+  name: string | null
+  issuer: string | null
+  issuedDate: string | null
+  expiryDate: string | null
+}
+
+export interface ScreeningExtraction {
+  evidenceId: string
+  evidenceCode: string
+  fileName: string
+  assignedGroup: string | null
+  extractionStatus: string
+  isImage: boolean
+  isScanned: boolean
+  isUnreadable: boolean
+  unreadableReason: string | null
+  fullName: string | null
+  documentType: string | null
+  fieldCodes: string[]
+  derivedTaxYears: number | null
+  workMilestones: ScreeningMilestone[]
+  certificates: ScreeningCertificate[]
+  extractedAt: string | null
+}
+
+export interface ScreeningHistoryEntry {
+  id: string
+  eventType: string
+  message: string
+  actorUserId: string
+  bySystem: boolean
+  at: string
+}
+
+export interface ScreeningRun {
+  runId: string
+  submissionNumber: number
+  runNumber: number
+  status: ScreeningRunStatus
+  startedAt: string
+  timeoutAt: string
+  completedAt: string | null
+  failureReason: string | null
+  checkedFileCount: number
+  openPointCount: number
+  canRetry: boolean
+  visionEnabled: boolean
+  points: ScreeningPoint[]
+  extractions: ScreeningExtraction[]
+  history: ScreeningHistoryEntry[]
+}
+
+/** Used by SupplementDialog in Gate 2 competency review. */
+export interface AiFlag {
+  id: string
+  document: string
+  documentName: string
+  request: string
+  title: string
+  detail: string
+}
+
+export interface Criterion {
+  id: string
+  name: string
+  description: string
+}
+
+export interface PageNote {
+  kind: 'cite' | 'ai' | 'edit'
+  label: string
+  text: string
+  /** Gắn với cờ AI → nút "Đánh dấu đã xem xét" dùng chung state với tab AI sàng lọc */
+  flagId?: string
+}
+
+export interface DocumentPage {
+  title?: string
+  paragraphs: string[]
+  notes: PageNote[]
+}
+
+export interface ApplicationDocument {
+  code: string // CV, EV-01, ...
+  name: string
+  pages: DocumentPage[]
+  /** Uploaded file on the server; opened through the review API */
+  evidenceId?: string
+  sourceUrl?: string | null
+  /** When the file or link was added; places it in the submission that sent it (S19 Step 2) */
+  uploadedAt?: string
+}
+
+export interface ApplicationDetail extends ExpertApplication {
+  birthDate: string
+  jobTitle: string
+  company: string
+  location: string
+  bio: string
+  fields: string[]
+  highlights: string
+  /** Latest Gate 1 AI and rule screening run, visible to reviewers and admins only */
+  screening?: ScreeningRun | null
+  documents: ApplicationDocument[]
+  history: HistoryEntry[]
+  /** Per-requirement results of the latest Gate 1 decision (empty before the first one) */
+  eligibility: EligibilityCheck[]
+  minYearsExperience: number
+  /** EV-06 result the declared years point to; the reviewer confirms it */
+  suggestedExperienceResult: EligibilityResult
+  /** True while the application waits for a Gate 1 decision */
+  canDecide: boolean
+  /** Every submission, first one first, with the statements agreed to; empty in demo data */
+  submissions?: Submission[]
+  /** Criteria the reviewer may mark NOT_APPLICABLE (with a reason); empty in demo data */
+  notApplicableCriteria?: string[]
+  /** Statements of the latest submission under each criterion they support (EV-04, EV-05) */
+  criterionDeclarations?: CriterionDeclaration[]
+  /** Criteria passed by an agreed statement (EV-04, EV-05); the server records PASS, the reviewer does not judge them */
+  declarationPassedCriteria?: string[]
+  decidedAt: string | null
+  decisionNote: string | null
+  earliestReapplyAt: string | null
+  /** Who works on the review now; decisions need an active claim (absent in older responses) */
+  claim?: ReviewClaimState
+  /** Rounds of more information asked for so far and the policy limit */
+  rounds?: InformationRounds
+}
+
+/** Rounds of "more information needed" used and the policy limit; on the last round it cannot be chosen */
+export interface InformationRounds {
+  used: number
+  max: number
+  canRequestMore: boolean
+}
+
+/** What the expert sent for one competency: a short description and the files tied to it */
+export interface CompetencySubmission {
+  code: string
+  description: string | null
+  evidenceIds: string[]
+}
+
+/** The reviewer working on a review now; expiresAt comes from the server clock, never the browser's */
+export interface ReviewClaim {
+  holderUserId: string
+  holderEmail: string | null
+  claimedAt: string
+  /** Null while the review waits for the expert (the hold does not run) */
+  expiresAt: string | null
+  heldByMe: boolean
+}
+
+/** One change of a review's claim: CLAIM with a previous holder means that holder's claim had expired */
+export interface ReviewClaimEvent {
+  action: 'CLAIM' | 'RELEASE' | 'REASSIGN'
+  actorUserId: string
+  actorEmail: string | null
+  holderUserId: string | null
+  holderEmail: string | null
+  previousHolderUserId: string | null
+  previousHolderEmail: string | null
+  reason: string | null
+  at: string
+}
+
+export interface ReviewClaimState {
+  /** Null when nobody holds the review (never claimed, released, decided or expired) */
+  current: ReviewClaim | null
+  /** True while the review waits for a decision and the caller may take it */
+  canClaim: boolean
+  history: ReviewClaimEvent[]
+}
+
+/** One submission (first submit or supplement) and the statements the applicant agreed to */
+export interface Submission {
+  number: number
+  submittedAt: string
+  declarations: { code: string; language: string; text: string }[]
+}
+
+/** A statement the applicant agreed to, shown under the criterion it supports */
+export interface CriterionDeclaration {
+  criterion: string
+  code: string
+  language: string
+  text: string
+  agreedAt: string
+  agreedByUserId: string
+}
+
+/* Gate 1 (eligibility) is decided per expert from EV-01…EV-06; the outcome is derived from the results.
+ * NOT_APPLICABLE is allowed only on the criteria the policy lists and counts as PASS */
+export type EligibilityResult =
+  | 'PASS'
+  | 'FAIL'
+  | 'NEED_MORE_INFORMATION'
+  | 'NOT_APPLICABLE'
+export type EligibilityOutcome =
+  'ELIGIBLE' | 'NOT_ELIGIBLE' | 'NEED_MORE_INFORMATION'
+
+export interface EligibilityCheck {
+  code: string
+  result: EligibilityResult
+  note: string | null
+  decidedAt: string
+  /** EV-06 minimum years in force when decided; null for older decisions */
+  appliedMinYearsExperience?: number | null
+}
+
+/** One requirement in the reviewer's form; result is empty until chosen */
+export interface EligibilityAssessment {
+  code: string
+  result: EligibilityResult | ''
+  note: string
+}
+
+export interface EligibilityDecisionInput {
+  criteria: { code: string; result: EligibilityResult; note: string | null }[]
+  note: string | null
+}
+
+/* Gate 2 (competency) is decided per Expert-Service from C1…C5; the outcome is derived from the results */
+export type QualificationStatus = keyof typeof QUALIFICATION_STATUS
+/** Gate 2 reviewers and System Admins (final approval) read qualifications through separate APIs */
+export type QualificationScope = 'review' | 'approval'
+export type FinalApprovalDecision = 'APPROVE' | 'RETURN_FOR_REVIEW'
+export type ServiceAccessAction = 'SUSPEND' | 'REINSTATE'
+export type CompetencyResult = 'PASS' | 'FAIL' | 'NEED_MORE_INFORMATION'
+export type CompetencyOutcome =
+  | 'PENDING_FINAL_APPROVAL'
+  | 'NEED_MORE_INFORMATION'
+  | 'FAIL'
+
+/** One qualification in the Gate 2 queue */
+export interface QualificationRow {
+  id: string
+  name: string
+  years: number
+  fields: string[]
+  serviceCode: string
+  /** Catalog name; the queue falls back to the code when the service is no longer active */
+  serviceName?: string
+  status: QualificationStatus
+  submittedAt: string
+  /** Follows an earlier FAIL for the same service (BR-E23) */
+  isReapplication: boolean
+  /** Waiting for final approval: when it is due (policy) */
+  finalApprovalDueAt?: string | null
+  /** Past that time: flagged and listed first */
+  finalApprovalOverdue?: boolean
+}
+
+/** One competency in the latest Gate 2 decision */
+export interface CompetencyCheck {
+  code: string
+  result: CompetencyResult
+  note: string
+  evidenceIds: string[]
+  decidedAt: string
+}
+
+export interface QualificationDetail {
+  id: string
+  serviceCode: string
+  serviceName: string
+  status: QualificationStatus
+  submittedAt: string
+  decidedAt: string | null
+  decisionNote: string | null
+  earliestReapplyAt: string | null
+  previousQualificationId: string | null
+  /** The expert as Gate 1 saw them, with the Gate 1 results; reuses the application tabs */
+  profile: ApplicationDetail
+  history: HistoryEntry[]
+  competencies: CompetencyCheck[]
+  /** True while the qualification waits for a Gate 2 decision */
+  canDecide: boolean
+  /** Who passed Gate 2; they cannot give the final approval (BR-E33) */
+  competencyReviewerUserId: string | null
+  /** True while the qualification waits for the System Admin final approval */
+  canFinalApprove: boolean
+  /** Approved: a System Admin can suspend the service */
+  canSuspend: boolean
+  /** Suspended: a System Admin can reinstate the service */
+  canReinstate: boolean
+  /** Who works on the Gate 2 review now; decisions need an active claim */
+  claim?: ReviewClaimState
+  /** Per competency: the expert's description and the files tied to it */
+  submitted: CompetencySubmission[]
+  rounds?: InformationRounds
+  /** Waiting for final approval: when it is due (policy) */
+  finalApprovalDueAt?: string | null
+  /** The return from final approval the Gate 2 reviewer still has to act on */
+  lastReturn?: FinalApprovalReturn | null
+}
+
+/** A System Admin's return of a Gate 2 PASS to the reviewer; never shown to the expert */
+export interface FinalApprovalReturn {
+  note: string | null
+  actorUserId: string
+  actorEmail: string | null
+  at: string
+}
+
+export interface FinalApprovalInput {
+  decision: FinalApprovalDecision
+  note: string | null
+}
+
+/** One competency in the reviewer's form; result is empty until chosen */
+export interface CompetencyAssessment {
+  code: string
+  result: CompetencyResult | ''
+  note: string
+  evidenceIds: string[]
+}
+
+export interface CompetencyDecisionInput {
+  competencies: {
+    code: string
+    result: CompetencyResult
+    note: string
+    evidenceIds: string[]
+  }[]
+  note: string | null
+}
+
+/** actor = 'AI' cho thao tác của hệ thống AI, còn lại là tên người */
+export interface HistoryEntry {
+  at: string
+  actor: string
+  text: string
+}
+
+export interface Expert {
+  /** Qualification id from the API (one row per Expert–Service); demo fixtures use their own id */
+  id: string
+  /** Gate 1 application behind the row; absent in demo fixtures */
+  applicationId?: string
+  /** Expert profile id (violation points); absent in demo fixtures */
+  expertId?: string
+  /** Service name; absent in demo fixtures */
+  serviceName?: string
+  name: string
+  email: string
+  fields: string[]
+  serviceStatus: keyof typeof SERVICE_STATUS
+  /** Phí rà soát (VND); null = chưa thiết lập dịch vụ */
+  fee: number | null
+  activeCases: number
+  capacity: number
+  approvedAt: string
+  experienceYears: number
+  /** Lịch nhận việc, vd. "Thứ 2 – Thứ 6" */
+  schedule: string
+  reviewer: string
+  /** text viết tiếp sau tên actor, vd. actor "Trần An" + text "duyệt đơn đăng ký." */
+  history: HistoryEntry[]
+}
+
+/** One review case that counted against the expert */
+export interface ExpertViolation {
+  reviewCaseId: string
+  kind: 'LATE' | 'WITHDREW' | 'NO_DELIVERY'
+  points: number
+  occurredAt: string
+  /** Still counts: within the window and not excused */
+  counted: boolean
+  excusedAt: string | null
+  excusedReason: string | null
+  /** The expert's own words when asking for an excuse; null when never asked */
+  excuseRequest: string | null
+  excuseRequestedAt: string | null
+  excuseDeclinedAt: string | null
+  /** Evidence uploaded with the excuse request */
+  excuseFiles: ExcuseFile[]
+}
+
+/** One evidence file of an excuse request; the admin downloads it by id */
+export interface ExcuseFile {
+  id: string
+  fileName: string
+  contentType: string
+  sizeBytes: number
+}
+
+/** An excuse request waiting for the System Admin, with who asked */
+export interface ExcuseRequest {
+  expertProfileId: string
+  expertName: string | null
+  expertEmail: string | null
+  violation: ExpertViolation
+}
+
+export interface ExpertViolations {
+  /** Points counted now; 6 hide the expert, 9 suspend every approved service */
+  points: number
+  excusesLeft: number
+  windowDays: number
+  items: ExpertViolation[]
+}

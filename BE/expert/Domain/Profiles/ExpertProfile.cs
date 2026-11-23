@@ -1,0 +1,178 @@
+using Caps.Common.Domain;
+using Caps.Expert.Domain.Applications;
+
+namespace Caps.Expert.Domain.Profiles;
+
+/// <summary>Applicant details as entered in the application form.</summary>
+public sealed record ProfileDetails(
+    string? DisplayName,
+    string? Phone,
+    DateOnly? BirthDate,
+    string? Title,
+    string? Company,
+    string? Location,
+    string? Bio,
+    int? YearsExperience,
+    string[] Fields,
+    string? Highlights
+);
+
+/// <summary>
+/// An expert (or applicant) owned by the expert service. Name and phone are the details given in the
+/// application, kept here so this service never reads or writes the identity database.
+/// </summary>
+public sealed class ExpertProfile
+{
+    private ExpertProfile() { }
+
+    public Guid Id { get; } = UuidV7.NewGuid();
+
+    /// <summary>Account id from the identity service (no foreign key across services).</summary>
+    public Guid UserId { get; private set; }
+    public string? DisplayName { get; private set; }
+    public string? Phone { get; private set; }
+
+    /// <summary>Email from the applicant's session, kept so decisions can be notified (no identity lookup).</summary>
+    public string? ContactEmail { get; private set; }
+
+    /// <summary>
+    /// Account status copied from auth (AccountStatusChangedEvent, or the token on the expert's own requests);
+    /// the Marketplace only lists ACTIVE accounts (BR-M01).
+    /// </summary>
+    public string? AccountStatus { get; private set; }
+
+    public bool IsAccountActive => AccountStatus == ActiveAccountStatus;
+
+    private const string ActiveAccountStatus = "ACTIVE";
+    public int? YearsExperience { get; private set; }
+    public string? Bio { get; private set; }
+    public string? Title { get; private set; }
+    public string? Company { get; private set; }
+    public string? Location { get; private set; }
+    public DateOnly? BirthDate { get; private set; }
+
+    /// <summary>Expertise fields chosen by the applicant (fixed codes, see ApplicationRules).</summary>
+    public string[] Fields { get; private set; } = [];
+    public string? Highlights { get; private set; }
+
+    /// <summary>Mirrors the latest application status for expert-level filtering/display.</summary>
+    public string Status { get; private set; } = ExpertApplicationStatus.Draft;
+    public string ServiceStatus { get; } = "INACTIVE";
+    public string? EligibilityNote { get; }
+    public int? TurnaroundHours { get; private set; }
+    public decimal RatingAvg { get; }
+    public int RatingCount { get; }
+
+    /// <summary>Most cases one expert may run at once.</summary>
+    public const int MaxCapacity = 20;
+
+    /// <summary>How many cases the expert runs at once; 0 until the expert sets it.</summary>
+    public int Capacity { get; private set; }
+
+    /// <summary>Accepted cases holding a slot; changed by the case flow, never by the expert.</summary>
+    public int ActiveCases { get; }
+
+    /// <summary>Slots still free for a new case (0 when full or not set).</summary>
+    public int FreeSlots => Math.Max(0, Capacity - ActiveCases);
+
+    public Guid? ApprovedBy { get; private set; }
+    public DateTimeOffset? ApprovedAt { get; private set; }
+    public DateTimeOffset CreatedAt { get; private set; }
+    public DateTimeOffset UpdatedAt { get; private set; }
+
+    public ICollection<ExpertApplication> Applications { get; } = [];
+
+    /// <summary>A new profile for the account, created on its first application.</summary>
+    /// <param name="defaultName">Shown until the applicant saves a name (e.g. the email's local part).</param>
+    public static ExpertProfile Create(Guid userId, string defaultName, DateTimeOffset now) =>
+        new()
+        {
+            UserId = userId,
+            DisplayName = defaultName,
+            CreatedAt = now,
+            UpdatedAt = now,
+        };
+
+    /// <summary>Draft save: a blank name keeps the current one, a blank phone clears it.</summary>
+    public void UpdateDetails(ProfileDetails details, DateTimeOffset now)
+    {
+        if (!string.IsNullOrWhiteSpace(details.DisplayName))
+            DisplayName = details.DisplayName.Trim();
+        Phone = Clean(details.Phone);
+        BirthDate = details.BirthDate;
+        Title = Clean(details.Title);
+        Company = Clean(details.Company);
+        Location = Clean(details.Location);
+        Bio = Clean(details.Bio);
+        YearsExperience = details.YearsExperience;
+        Fields = details.Fields;
+        Highlights = Clean(details.Highlights);
+        UpdatedAt = now;
+    }
+
+    /// <summary>Sets how many cases run at once; running cases are untouched even when it goes lower.</summary>
+    public void SetCapacity(int capacity, DateTimeOffset now)
+    {
+        if (capacity < 1 || capacity > MaxCapacity)
+            throw ExpertErrors.CapacityInvalid(MaxCapacity);
+        Capacity = capacity;
+        UpdatedAt = now;
+    }
+
+    /// <summary>
+    /// Changes the professional name and contact phone after the draft stage (settings page). Unlike a draft
+    /// save, neither may be cleared: reviewers and customers rely on them. Submitted snapshots are not touched.
+    /// </summary>
+    public void UpdateContact(string? displayName, string? phone, DateTimeOffset now)
+    {
+        var name = Clean(displayName) ?? throw ExpertErrors.ContactRequired("displayName");
+        var contactPhone = Clean(phone) ?? throw ExpertErrors.ContactRequired("phone");
+        DisplayName = name;
+        Phone = contactPhone;
+        UpdatedAt = now;
+    }
+
+    /// <summary>Keeps the account status reported by auth; blank values are ignored.</summary>
+    public void RecordAccountStatus(string? status)
+    {
+        if (!string.IsNullOrWhiteSpace(status))
+            AccountStatus = status.Trim();
+    }
+
+    /// <summary>Keeps the latest email the applicant signed in with; blank values are ignored.</summary>
+    public void RecordContactEmail(string? email)
+    {
+        if (!string.IsNullOrWhiteSpace(email))
+            ContactEmail = email.Trim();
+    }
+
+    public void MirrorStatus(string status, DateTimeOffset now)
+    {
+        Status = status;
+        UpdatedAt = now;
+    }
+
+    /// <summary>
+    /// What is still needed before the application can be submitted: required details, then every required
+    /// evidence group without a file or link (codes as stored, e.g. CV, EV-01).
+    /// </summary>
+    /// <param name="evidenceCodes">Groups that already hold at least one file or link.</param>
+    public string[] MissingRequirements(
+        IReadOnlyCollection<string> evidenceCodes,
+        SubmissionPolicy policy
+    )
+    {
+        var missing = new List<string>();
+        if (string.IsNullOrWhiteSpace(Phone))
+            missing.Add("phone");
+        if (YearsExperience == null)
+            missing.Add("yearsExperience");
+        if (Fields.Length == 0)
+            missing.Add("fields");
+        missing.AddRange(policy.RequiredEvidenceCodes.Where(x => !evidenceCodes.Contains(x)));
+        return missing.ToArray();
+    }
+
+    private static string? Clean(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+}

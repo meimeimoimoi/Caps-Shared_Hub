@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>Caps.Common.Domain</RootNamespace>
+    <AssemblyName>Caps.Common.Domain</AssemblyName>
+  </PropertyGroup>
+
+  <!-- Domain layer building blocks: no dependencies -->
+
+</Project>

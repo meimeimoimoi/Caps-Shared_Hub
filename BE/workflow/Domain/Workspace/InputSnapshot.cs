@@ -1,0 +1,16 @@
+using Caps.Common.Domain;
+
+namespace Caps.Workflow.Domain.Workspace;
+
+/// <summary>The form data a document version was generated from.</summary>
+public sealed class InputSnapshot
+{
+    public Guid Id { get; set; } = UuidV7.NewGuid();
+    public Guid DocumentId { get; set; }
+    public Document Document { get; set; } = default!;
+
+    public int VersionNo { get; set; }
+    public string Data { get; set; } = default!; // jsonb
+    public Guid CreatedBy { get; set; }
+    public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
+}

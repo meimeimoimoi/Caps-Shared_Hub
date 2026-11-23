@@ -1,0 +1,167 @@
+/* Thẻ chuyên gia gọn (FeaturedExperts): trang chủ (mục xem trước Sàn) và hồ sơ không tìm thấy.
+   Dựa vào biến --sheet, --rule, --ok do khối chứa khai báo (.market-block trên trang chủ, .mk trên Sàn). */
+#shub-home .me-fee small {
+  font-size: 13px;
+  white-space: nowrap;
+  color: var(--ink-2);
+}
+#shub-home .me-fee b {
+  font-family: var(--f-mono);
+  font-size: 17px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+#shub-home .market-experts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin: 18px 0 0;
+  padding: 0;
+  list-style: none;
+}
+#shub-home .me-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  height: 100%;
+  padding: 24px;
+  border-radius: 18px;
+  background: var(--sheet);
+  color: var(--ink);
+  text-decoration: none;
+  box-shadow:
+    inset 0 0 0 1px rgba(18, 32, 48, 0.06),
+    0 1px 2px rgba(18, 32, 48, 0.05);
+  transition:
+    box-shadow 0.3s var(--ease-out),
+    transform 0.3s var(--ease-out);
+}
+#shub-home .me-card:hover {
+  transform: translateY(-3px);
+  box-shadow:
+    inset 0 0 0 1px rgba(18, 32, 48, 0.1),
+    0 22px 44px -28px rgba(18, 32, 48, 0.5);
+}
+#shub-home .me-top {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+#shub-home .me-avatar {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: var(--canvas);
+  color: var(--accent);
+  font-family: var(--f-display);
+  font-size: 18px;
+  font-weight: 700;
+  object-fit: cover;
+}
+#shub-home .me-id {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+#shub-home .me-name {
+  font-family: var(--f-display);
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+#shub-home .me-verified {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  justify-self: start;
+  padding: 2px 9px 2px 7px;
+  border-radius: 999px;
+  background: rgba(31, 122, 85, 0.1);
+  color: var(--ok);
+  font-size: 12.5px;
+  font-weight: 600;
+}
+#shub-home .me-headline {
+  margin-top: 4px;
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--ink-2);
+}
+#shub-home .me-credential {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 14px;
+  font-weight: 500;
+}
+#shub-home .me-credential svg {
+  flex: none;
+  color: var(--ui-home-accent-ink);
+}
+#shub-home .me-foot {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: auto;
+  padding-top: 16px;
+  border-top: 1px solid var(--rule);
+}
+#shub-home .me-rating {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  color: var(--ink-2);
+}
+#shub-home .me-rating svg {
+  color: var(--accent);
+  fill: var(--accent);
+}
+#shub-home .me-rating b {
+  font-family: var(--f-mono);
+  font-weight: 600;
+  color: var(--ink);
+}
+#shub-home .me-fee {
+  display: grid;
+  justify-items: end;
+  gap: 2px;
+}
+#shub-home .me-more {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 600;
+}
+#shub-home .me-more span {
+  transition: transform 0.3s var(--ease-out);
+}
+#shub-home .me-card:hover .me-more span {
+  transform: translateX(4px);
+}
+#shub-home .me-card:focus-visible {
+  outline: 2px solid var(--ui-home-accent-ink);
+  outline-offset: 3px;
+}
+@media (max-width: 1024px) {
+  #shub-home .market-experts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 720px) {
+  #shub-home .market-experts {
+    grid-template-columns: 1fr;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  #shub-home .me-card,
+  #shub-home .me-more span {
+    transition: none;
+  }
+}

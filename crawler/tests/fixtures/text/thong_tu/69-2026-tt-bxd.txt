@@ -1,0 +1,7515 @@
+# Thông tư Quy định về Hệ thống thông tin, Cơ sở dữ liệu cấp nước sạch và thoát nước đô thị
+# Số hiệu: 69/2026/TT-BXD
+# Loại văn bản: Thông tư
+# Cơ quan ban hành: Bộ Xây dựng
+# Ngày ban hành: 01/11/2026
+# Ngày hiệu lực: 01/11/2026
+# Tình trạng hiệu lực: Chưa có hiệu lực
+# doc_id: 03dee8b0-b8ce-11f1-b362-1b2583ed3ba0 (uuid)
+# Nguồn: https://vbpl.vn/van-ban/chi-tiet/03dee8b0-b8ce-11f1-b362-1b2583ed3ba0
+# ---
+
+BỘ XÂY DỰNG
+
+
+
+Số: 69/2026/TT-BXD
+
+	
+
+CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM
+Độc lập - Tự do - Hạnh phúc
+
+
+Hà Nội, ngày 15 tháng 9 năm 2026
+
+ 
+
+THÔNG TƯ
+
+Quy định về Hệ thống thông tin, Cơ sở dữ liệu
+
+cấp nước sạch và thoát nước đô thị
+
+ 
+
+Căn cứ Luật Dữ liệu số 60/2024/QH15;
+
+Căn cứ Luật Giao dịch điện tử số 20/2023/QH15;
+
+Căn cứ Luật Bảo vệ dữ liệu cá nhân số 91/2025/QH15;
+
+Căn cứ Luật An ninh mạng số 116/2025/QH15;
+
+Căn cứ Luật Bảo vệ bí mật nhà nước số 117/2025/QH15;
+
+Căn cứ Nghị định số 165/2025/NĐ-CP của Chính phủ quy định chi tiết một số điều và biện pháp thi hành Luật Dữ liệu;
+
+Căn cứ Nghị định số 194/2025/NĐ-CP của Chính phủ quy định chi tiết một số điều của Luật Giao dịch điện tử về cơ sở dữ liệu quốc gia, kết nối và chia sẻ dữ liệu, dữ liệu mở phục vụ giao dịch điện tử của cơ quan nhà nước;
+
+Căn cứ Nghị định số 278/2025/NĐ-CP của Chính phủ quy định về kết nối, chia sẻ dữ liệu bắt buộc giữa các cơ quan thuộc hệ thống chính trị;
+
+Căn cứ Nghị định số 326/2026/NĐ-CP của Chính phủ quy định về định danh địa điểm;
+
+Căn cứ Nghị định số 331/2026/NĐ-CP của Chính phủ về bảo vệ an ninh mạng đối với hệ thống thông tin;
+
+Căn cứ Nghị định số 333/2026/NĐ-CP của Chính phủ quy định chi tiết một số điều và biện pháp thi hành Luật An ninh mạng;
+
+Căn cứ Nghị định số 33/2025/NĐ-CP của Chính phủ quy định chức năng, nhiệm vụ, quyền hạn và cơ cấu tổ chức của Bộ Xây dựng, được sửa đổi, bổ sung bởi Nghị định số 354/2026/NĐ-CP;
+
+Căn cứ Nghị định số 117/2007/NĐ-CP của Chính phủ về sản xuất, cung cấp và tiêu thụ nước sạch, được sửa đổi, bổ sung bởi Nghị định số 124/2011/NĐ-CP;
+
+Căn cứ Nghị định số 80/2014/NĐ-CP của Chính phủ về thoát nước và xử lý nước thải;
+
+Theo đề nghị của Cục trưởng Cục Kết cấu hạ tầng xây dựng;
+
+Bộ trưởng Bộ Xây dựng ban hành Thông tư quy định về Hệ thống thông tin, Cơ sở dữ liệu cấp nước sạch và thoát nước đô thị.
+
+ 
+
+Chương I
+
+QUY ĐỊNH CHUNG
+
+Điều 1. Phạm vi điều chỉnh
+
+Thông tư này quy định về xây dựng, quản lý, vận hành Hệ thống thông tin cấp nước sạch và thoát nước đô thị; cấu trúc, nội dung, yêu cầu kỹ thuật và việc tạo lập, thu thập, cập nhật, rà soát, ghi nhận trạng thái chất lượng, chuẩn hóa, quản trị chất lượng, duy trì, lưu trữ, kết nối, chia sẻ, khai thác, sử dụng, bảo vệ Cơ sở dữ liệu cấp nước sạch và thoát nước đô thị thuộc phạm vi quản lý nhà nước của Bộ Xây dựng.
+
+Điều 2. Đối tượng áp dụng
+
+Thông tư này áp dụng đối với cơ quan, tổ chức, cá nhân tham gia hoặc có liên quan đến việc xây dựng, quản lý, vận hành Hệ thống thông tin cấp nước sạch và thoát nước đô thị; tạo lập, thu thập, cập nhật, rà soát, ghi nhận trạng thái chất lượng, chuẩn hóa, quản trị chất lượng, duy trì, lưu trữ, kết nối, chia sẻ, khai thác, sử dụng và bảo vệ Cơ sở dữ liệu cấp nước sạch và thoát nước đô thị.
+
+Điều 3. Giải thích từ ngữ
+
+Trong Thông tư này, các từ ngữ dưới đây được hiểu như sau:
+
+1. Hệ thống thông tin cấp nước sạch và thoát nước đô thị (sau đây gọi là Hệ thống thông tin) là hệ thống do Bộ Xây dựng xây dựng, quản lý thống nhất trên phạm vi toàn quốc, gồm phần cứng, phần mềm, hệ quản trị cơ sở dữ liệu và các thành phần kỹ thuật để tạo lập, thu thập, cập nhật, lưu trữ, xử lý, quản lý, duy trì, kết nối, chia sẻ, khai thác, sử dụng và bảo vệ Cơ sở dữ liệu cấp nước sạch và thoát nước đô thị.
+
+2. Cơ sở dữ liệu cấp nước sạch và thoát nước đô thị (sau đây gọi là Cơ sở dữ liệu) là cơ sở dữ liệu chuyên ngành thuộc phạm vi quản lý nhà nước của Bộ Xây dựng, gồm dữ liệu số được tổ chức, lưu trữ và quản lý có hệ thống về cấp nước sạch; thoát nước đô thị; xử lý nước thải, bùn thải thuộc hệ thống thoát nước đô thị; tài liệu làm căn cứ, chỉ số quản lý và dữ liệu có liên quan quy định tại Thông tư này.
+
+3. Dữ liệu không gian là dữ liệu được gắn với vị trí địa lý bằng tọa độ hoặc hình học không gian, mô tả vị trí, hình dạng, phạm vi và quan hệ không gian của đối tượng cấp nước sạch, thoát nước và xử lý nước thải.
+
+4. Dữ liệu thuộc tính là dữ liệu mô tả đặc điểm, trạng thái, thông số kỹ thuật, vận hành, giá dịch vụ, chất lượng dịch vụ và các chỉ tiêu định lượng, định tính khác gắn với đối tượng dữ liệu, không bao gồm thành phần hình học không gian của đối tượng.
+
+5. Dữ liệu có cấu trúc là dữ liệu được tổ chức theo mô hình dữ liệu, lược đồ hoặc các trường dữ liệu được xác định trước, cho phép lưu trữ, tìm kiếm, truy vấn, trao đổi và xử lý tự động.
+
+6. Dữ liệu phi cấu trúc là dữ liệu không được tổ chức theo mô hình dữ liệu, lược đồ hoặc các trường dữ liệu được xác định trước, bao gồm tệp văn bản, bản vẽ, sơ đồ, hình ảnh, âm thanh, video và tài liệu điện tử khác.
+
+7. Siêu dữ liệu là dữ liệu mô tả đặc tính của dữ liệu, bao gồm thông tin về nội dung, nguồn gốc, cấu trúc, định dạng, thời điểm tạo lập, cập nhật, chất lượng, quyền truy cập và các đặc tính khác nhằm phục vụ quản lý, tìm kiếm, khai thác và sử dụng dữ liệu.
+
+8. Dữ liệu chủ chuyên ngành là dữ liệu được quản lý thống nhất, có mã định danh duy nhất và được sử dụng làm nguồn tham chiếu chính thức để liên kết, đồng bộ, chia sẻ giữa các hệ thống thông tin, cơ sở dữ liệu và tập dữ liệu về cấp nước sạch, thoát nước đô thị.
+
+9. Dữ liệu danh mục dùng chung là dữ liệu về danh mục, bảng mã, mã phân loại được cơ quan có thẩm quyền ban hành hoặc công bố để sử dụng thống nhất trong quá trình tạo lập, cập nhật, chuẩn hóa, kết nối, chia sẻ và khai thác dữ liệu.
+
+10. Mã định danh chuyên ngành là dãy ký tự được gắn duy nhất cho mỗi đối tượng dữ liệu được quản lý trong Cơ sở dữ liệu, dùng để định danh, tham chiếu, liên kết, đồng bộ, cập nhật và quản lý lịch sử dữ liệu của đối tượng đó.
+
+11. Dữ liệu được ghi nhận đáp ứng yêu cầu chất lượng là dữ liệu đã được cơ quan, tổ chức rà soát theo phạm vi được phân quyền và ghi nhận trên Hệ thống thông tin là đáp ứng yêu cầu về tính đầy đủ, hợp lệ, logic, nhất quán và khả năng truy xuất nguồn gốc. Việc ghi nhận trạng thái chất lượng không thay thế trách nhiệm của chủ thể tạo lập, cập nhật đối với tính chính xác của số liệu vận hành hoặc nội dung chuyên môn.
+
+12. Chủ sở hữu hoặc đại diện chủ sở hữu công trình, hệ thống thoát nước là chủ sở hữu công trình, hệ thống thoát nước hoặc cơ quan, tổ chức được chủ sở hữu ủy quyền thực hiện quyền và trách nhiệm của đại diện chủ sở hữu.
+
+13. Hệ thống nguồn là cơ sở dữ liệu, hệ thống thông tin do cơ quan, tổ chức quản lý theo quy định của pháp luật, trong đó dữ liệu được cơ quan, tổ chức đó tạo lập, thu thập, cập nhật, quản lý, cung cấp hoặc công bố theo chức năng, nhiệm vụ, quyền hạn được giao hoặc theo quyền, nghĩa vụ do pháp luật quy định.
+
+14. Dữ liệu thời gian thực là dữ liệu được Hệ thống nguồn truyền, tiếp nhận và xử lý ngay khi phát sinh hoặc với độ trễ tối thiểu theo yêu cầu nghiệp vụ và tài liệu kỹ thuật vận hành Hệ thống thông tin áp dụng cho từng nhóm dữ liệu.
+
+15. Dữ liệu gần thời gian thực là dữ liệu được truyền, tiếp nhận theo chu kỳ hoặc với độ trễ được kiểm soát, phù hợp với nhu cầu quản lý, tần suất của Hệ thống nguồn và năng lực hạ tầng.
+
+Điều 4. Nguyên tắc xây dựng, quản lý, vận hành Hệ thống thông tin và quản lý Cơ sở dữ liệu
+
+1. Hệ thống thông tin được xây dựng, quản lý và vận hành để phục vụ quản lý nhà nước về cấp nước sạch và thoát nước đô thị; quản lý, khai thác Cơ sở dữ liệu; tổng hợp, phân tích, báo cáo, theo dõi và giám sát theo phạm vi chức năng, nhiệm vụ của Bộ Xây dựng.
+
+2. Hệ thống thông tin có các chức năng chính gồm quản trị người sử dụng và phân quyền; tiếp nhận, tạo lập, cập nhật, rà soát, ghi nhận trạng thái chất lượng và quản trị chất lượng dữ liệu; kết nối, chia sẻ dữ liệu; khai thác, tổng hợp, phân tích, báo cáo; theo dõi, giám sát và quản trị vận hành.
+
+3. Việc xây dựng, quản lý, vận hành Hệ thống thông tin phải bảo đảm khả năng kết nối, chia sẻ dữ liệu; quản lý truy cập và lưu vết; an ninh mạng, an ninh dữ liệu; sao lưu, phục hồi; tính sẵn sàng, liên tục và khả năng mở rộng theo quy định của pháp luật.
+
+4. Cơ sở dữ liệu là thành phần dữ liệu của Hệ thống thông tin, được xây dựng, quản lý, cập nhật, kết nối, chia sẻ, khai thác, sử dụng và bảo vệ theo quy định tại Thông tư này và pháp luật có liên quan.
+
+5. Lấy dữ liệu làm trung tâm; dữ liệu được tạo lập, thu thập một lần từ nguồn do cơ quan, tổ chức có trách nhiệm quản lý, được kế thừa và sử dụng nhiều lần; ưu tiên khai thác từ cơ sở dữ liệu quốc gia, cơ sở dữ liệu chuyên ngành và Hệ thống nguồn quy định tại khoản 13 Điều 3 Thông tư này.
+
+6. Bảo đảm dữ liệu đầy đủ, chính xác, hợp lệ, nhất quán, kịp thời, được duy trì thường xuyên, có khả năng truy xuất nguồn gốc, kết nối, chia sẻ và tái sử dụng; có nguồn gốc, thời điểm cập nhật, chủ thể chịu trách nhiệm, trạng thái chất lượng và lịch sử thay đổi.
+
+7. Bảo đảm thống nhất với Khung kiến trúc dữ liệu quốc gia, Khung quản trị, quản lý dữ liệu quốc gia, Khung kiến trúc số Bộ Xây dựng, Khung kiến trúc dữ liệu và Khung quản trị, quản lý dữ liệu Bộ Xây dựng, Từ điển dữ liệu dùng chung ngành Xây dựng và các tiêu chuẩn, quy chuẩn kỹ thuật có liên quan.
+
+8. Ưu tiên cập nhật tự động từ hoạt động nghiệp vụ, hệ thống giám sát, thiết bị đo, cảm biến và các cơ sở dữ liệu có liên quan; ưu tiên kết nối, kế thừa dữ liệu về dân cư, đăng ký doanh nghiệp, đơn vị hành chính, tài nguyên nước, giấy phép, quan trắc và dữ liệu chuyên ngành khác từ Hệ thống nguồn. Dữ liệu đã có tại cơ sở dữ liệu hoặc Hệ thống nguồn phải được tiếp nhận thông qua kết nối, chia sẻ; chỉ nhập hoặc cập nhật trực tiếp trên Hệ thống thông tin khi chưa thiết lập được kết nối, chia sẻ hoặc dữ liệu nguồn chưa đáp ứng yêu cầu kỹ thuật để tiếp nhận tự động.
+
+9. Dữ liệu được ghi nhận đáp ứng yêu cầu chất lượng hoặc được kế thừa trạng thái từ Hệ thống nguồn và còn giá trị sử dụng được tái sử dụng trong quản lý nhà nước, cung cấp dịch vụ công và thực hiện chế độ báo cáo theo quy định tại Điều 21 Thông tư này; không yêu cầu cung cấp lại dữ liệu, trừ trường hợp pháp luật có quy định khác hoặc cần đối soát khi có dấu hiệu sai lệch.
+
+10. Việc thu thập dữ liệu cá nhân phải bảo đảm tối thiểu, đúng mục đích và cần thiết. Cơ sở dữ liệu không thu thập dữ liệu định danh của khách hàng sử dụng nước là cá nhân, hộ gia đình, trừ trường hợp pháp luật có quy định và được thực hiện theo đúng phạm vi, thẩm quyền.
+
+ 
+
+Chương II
+
+CẤU TRÚC, NỘI DUNG VÀ YÊU CẦU KỸ THUẬT CỦA CƠ SỞ DỮ LIỆU
+
+Điều 5. Cấu trúc Cơ sở dữ liệu
+
+1. Cơ sở dữ liệu được tổ chức theo các nhóm dữ liệu sau đây:
+
+a) Dữ liệu quản lý hành chính, địa bàn, tổ chức, đơn vị cấp nước, đơn vị thoát nước, phạm vi phục vụ, dân số và đấu nối;
+
+b) Dữ liệu tham chiếu về quy hoạch cấp, thoát nước đã được cơ quan có thẩm quyền phê duyệt; dữ liệu này không thay thế hồ sơ quy hoạch được phê duyệt;
+
+c) Dữ liệu cấp nước sạch gồm: nguồn nước, chất lượng nguồn nước khai thác, nước thô, công trình thu nước, tuyến hoặc công trình truyền dẫn nước thô, nhà máy nước, công suất, sản lượng, tuyến ống truyền tải, mạng lưới phân phối và công trình trên hệ thống;
+
+d) Dữ liệu chất lượng nước sạch sử dụng cho mục đích sinh hoạt, kết quả nội kiểm, trạng thái đáp ứng quy chuẩn kỹ thuật quốc gia hoặc quy chuẩn kỹ thuật địa phương; dữ liệu chất lượng dịch vụ cấp nước, sự cố, phản ánh, kiến nghị, giá nước sạch được ban hành và dữ liệu giám sát trực tuyến một số thông số cơ bản của nước sạch;
+
+đ) Dữ liệu về chủ sở hữu hoặc đại diện chủ sở hữu công trình, hệ thống thoát nước, đơn vị thoát nước, hợp đồng quản lý, vận hành, phạm vi cung ứng và giá dịch vụ thoát nước;
+
+e) Dữ liệu thoát nước và xử lý nước thải tập trung và phi tập trung, giám sát nước thải đầu vào, dữ liệu nước thải sau xử lý và tái sử dụng nước thải;
+
+g) Dữ liệu thoát nước mưa, công trình trữ, điều hòa nước mưa, điểm ngập, giám sát ngập và công tác nạo vét, duy trì;
+
+h) Dữ liệu thu gom, vận chuyển, xử lý và tái sử dụng bùn thải;
+
+i) Dữ liệu, tài liệu điện tử làm căn cứ cho dữ liệu cấp nước sạch, thoát nước, xử lý nước thải và bùn thải;
+
+k) Dữ liệu tổng hợp, chỉ số quản lý, giám sát, báo cáo và dữ liệu phân tích;
+
+l) Dữ liệu danh mục dùng chung, dữ liệu chủ chuyên ngành và siêu dữ liệu.
+
+2. Mô hình dữ liệu phải bảo đảm liên kết giữa tổ chức, địa bàn, phạm vi phục vụ, nguồn nước, nhà máy, công trình, dữ liệu vận hành, giấy phép, hợp đồng, tài liệu làm căn cứ và chỉ số quản lý thông qua mã định danh, mã tham chiếu hoặc quan hệ dữ liệu theo quy định tại Thông tư này.
+
+Điều 6. Thành phần và nội dung dữ liệu
+
+1. Dữ liệu của Cơ sở dữ liệu gồm dữ liệu có cấu trúc và dữ liệu phi cấu trúc. Dữ liệu có cấu trúc bao gồm dữ liệu không gian, dữ liệu thuộc tính và dữ liệu liên kết giữa các đối tượng. Dữ liệu trong Cơ sở dữ liệu phải được mô tả bằng siêu dữ liệu.
+
+2. Danh mục trường dữ liệu tối thiểu về cấp nước sạch được quy định tại Phụ lục I ban hành kèm theo Thông tư này.
+
+3. Danh mục trường dữ liệu tối thiểu về thoát nước đô thị, xử lý nước thải và bùn thải thuộc hệ thống thoát nước đô thị được quy định tại Phụ lục II ban hành kèm theo Thông tư này.
+
+4. Quy tắc mã định danh, danh mục dùng chung, siêu dữ liệu và yêu cầu kỹ thuật trao đổi dữ liệu được quy định tại Phụ lục III ban hành kèm theo Thông tư này.
+
+5. Danh mục chỉ số quản lý, giám sát và báo cáo tổng hợp được quy định tại Phụ lục IV ban hành kèm theo Thông tư này.
+
+6. Các trường dữ liệu tại Phụ lục I và Phụ lục II ban hành kèm theo Thông tư này là các trường dữ liệu tối thiểu phải được cập nhật khi đối tượng hoặc nghiệp vụ tương ứng phát sinh và có nguồn dữ liệu hợp pháp. Các trường CN-D-57, CN-D-58, CN-D-59, CN-D-60, TN-C-46, TN-C-47, TN-C-48, TN-C-49 và các trường dữ liệu khác có mô tả phụ thuộc thiết bị, Hệ thống nguồn hoặc điều kiện kỹ thuật chỉ phải cập nhật khi thiết bị, hệ thống đã được đầu tư, đang vận hành hoặc pháp luật chuyên ngành, dự án, phương án được cấp có thẩm quyền phê duyệt yêu cầu phải trang bị.
+
+7. Tài liệu kỹ thuật vận hành Hệ thống thông tin được sử dụng để cụ thể hóa định dạng trao đổi, mã hệ thống, cấu trúc gói dữ liệu, quy tắc kiểm tra kỹ thuật và thao tác trên Hệ thống thông tin trên cơ sở quy định tại Thông tư này.
+
+Điều 7. Dữ liệu chủ chuyên ngành và dữ liệu danh mục dùng chung
+
+1. Dữ liệu chủ chuyên ngành phải được quản lý thống nhất, có mã định danh duy nhất, được kiểm soát trùng lặp và được sử dụng làm dữ liệu tham chiếu khi tạo lập, cập nhật, kết nối và chia sẻ dữ liệu.
+
+2. Danh mục dùng chung tối thiểu, bắt buộc áp dụng trong Cơ sở dữ liệu được quy định tại Mục II Phụ lục III ban hành kèm theo Thông tư này.
+
+3. Dữ liệu danh mục dùng chung được kế thừa từ danh mục dùng chung quốc gia và danh mục của cơ sở dữ liệu chuyên ngành có liên quan khi đáp ứng yêu cầu về nguồn, tính hợp lệ và khả năng kết nối; được quản lý phiên bản, công bố trên Hệ thống thông tin và đồng bộ với Từ điển dữ liệu dùng chung ngành Xây dựng. Khi dữ liệu chủ chuyên ngành thay đổi hợp lệ, dữ liệu tham chiếu, quan hệ liên kết và danh mục liên quan phải được cập nhật, đồng bộ tương ứng; đồng thời lưu lịch sử và phiên bản trước khi thay đổi.
+
+4. Khi thay đổi địa giới hành chính, tên gọi, cơ cấu tổ chức hoặc trạng thái hoạt động, mã định danh đã cấp không bị thay đổi; Hệ thống thông tin phải lưu lịch sử và quan hệ đối chiếu, liên kết, chuyển đổi tương ứng giữa dữ liệu trước và sau thay đổi.
+
+Điều 8. Mã định danh chuyên ngành
+
+1. Mỗi đối tượng quản lý cốt lõi quy định tại khoản 2 Điều này phải có mã định danh chuyên ngành duy nhất khi được tạo lập lần đầu trên Hệ thống thông tin.
+
+2. Đối tượng bắt buộc có mã định danh chuyên ngành gồm: đơn vị cấp nước; đơn vị thoát nước; nhà máy nước; công trình thu nước; trạm bơm nước thô; trạm bơm tăng áp; bể chứa nước sạch, đài nước; nhà máy, trạm xử lý nước thải; công trình xử lý nước thải phi tập trung thuộc hệ thống thoát nước đô thị; trạm bơm nước thải; trạm bơm thoát nước mưa; công trình trữ, điều hòa nước mưa; điểm xả sau xử lý; cơ sở xử lý bùn thải; điểm hoặc trạm giám sát trực tuyến là công trình độc lập và đối tượng được chỉ rõ tại Phụ lục I và Phụ lục II ban hành kèm theo Thông tư này. Việc gắn mã thực hiện theo quy tắc tại Mục I Phụ lục III ban hành kèm theo Thông tư này. Đối tượng đang vận hành nhưng chưa hoàn tất quyết toán, bàn giao được cấp mã định danh chuyên ngành khi có thông tin tối thiểu về loại đối tượng, tên gọi, vị trí, chủ thể quản lý hoặc vận hành, trạng thái hoạt động và nguồn dữ liệu; khi hoàn tất thủ tục chỉ cập nhật trạng thái, chủ sở hữu và tài liệu có liên quan, không thay đổi mã đã gắn.
+
+3. Đối với tổ chức, Hệ thống thông tin ghi nhận mã số doanh nghiệp, mã số thuế hoặc mã định danh khác do cơ quan có thẩm quyền cấp và liên kết mã đó với mã định danh chuyên ngành của đối tượng. Đối với đối tượng thuộc phạm vi định danh địa điểm, việc kết nối, tiếp nhận, sử dụng và lưu trữ mã định danh địa điểm thực hiện theo quy định của pháp luật về định danh địa điểm. Mã định danh chuyên ngành chỉ phục vụ quản lý nghiệp vụ và không thay thế mã định danh địa điểm do Cơ sở dữ liệu định danh địa điểm xác lập.
+
+4. Mã định danh chuyên ngành phải ổn định, không tái sử dụng cho đối tượng khác. Trường hợp đối tượng chấm dứt hoạt động, hợp nhất, chia tách hoặc bị thay thế, mã định danh chuyên ngành được lưu trạng thái lịch sử và liên kết với đối tượng kế thừa.
+
+Điều 9. Yêu cầu về chất lượng dữ liệu
+
+1. Dữ liệu trong Cơ sở dữ liệu về cấp nước, thoát nước phải bảo đảm tính chính xác, hợp lệ, toàn vẹn, đầy đủ, cập nhật kịp thời và nhất quán; đồng thời bảo đảm khả năng truy vết, kết nối, chia sẻ và tái sử dụng theo quy định của Thông tư này và pháp luật về dữ liệu.
+
+2. Dữ liệu cập nhật phải có nguồn gốc rõ ràng; phù hợp với hồ sơ, văn bản, kết quả quan trắc, đo đếm, báo cáo nghiệp vụ hoặc tài liệu chứng minh; đúng kiểu dữ liệu, định dạng, đơn vị đo, mã danh mục và quy tắc kiểm tra hợp lệ.
+
+3. Hệ thống thông tin phải có chức năng kiểm tra tự động trường bắt buộc, miền giá trị, logic nghiệp vụ, trùng lặp, quan hệ không gian, sai lệch bất thường và cảnh báo dữ liệu hết hạn hoặc chậm cập nhật.
+
+4. Chỉ số quản lý, giám sát được xác định là chỉ số chính thức khi được Hệ thống thông tin tự động tính toán từ dữ liệu nguồn đầy đủ, hợp lệ, cùng phạm vi, cùng kỳ và đáp ứng yêu cầu tính toán; không nhập thủ công chỉ số có thể tính từ dữ liệu nguồn. Trường hợp dữ liệu nguồn chưa đáp ứng đầy đủ các yêu cầu nêu trên, Hệ thống thông tin chỉ được hiển thị kết quả tạm tính, kèm nhãn cảnh báo và ghi rõ nguồn số liệu, phương pháp tính, mức độ đầy đủ của dữ liệu; việc tính toán, hiển thị phải được lưu vết trên Hệ thống thông tin.
+
+5. Cơ quan, tổ chức tạo lập, cập nhật, cung cấp, số hóa hoặc ghi nhận trạng thái chất lượng dữ liệu chịu trách nhiệm tương ứng với hành vi và phạm vi dữ liệu do mình thực hiện trong toàn bộ vòng đời dữ liệu. Sở Xây dựng chịu trách nhiệm rà soát, ghi nhận trạng thái chất lượng dữ liệu theo phân quyền.
+
+6. Đối với dữ liệu tài sản, hồ sơ lịch sử: chủ sở hữu hoặc đại diện chủ sở hữu công trình, hệ thống thoát nước chịu trách nhiệm về hồ sơ, nguồn và nội dung dữ liệu cung cấp; đơn vị quản lý, vận hành chịu trách nhiệm số hóa trung thực hồ sơ được bàn giao và dữ liệu vận hành phát sinh trong thời gian thực hiện nhiệm vụ hoặc hợp đồng. Siêu dữ liệu phải ghi nguồn, thời điểm, mức độ đầy đủ, chất lượng và trạng thái hồ sơ.
+
+Điều 10. Phân loại và chế độ khai thác dữ liệu
+
+1. Dữ liệu mà pháp luật cấm thu thập hoặc không cho phép quản lý trên Hệ thống thông tin không được cập nhật vào Hệ thống thông tin, Cơ sở dữ liệu. Dữ liệu thuộc bí mật nhà nước chỉ được cập nhật, quản lý, khai thác trên Hệ thống thông tin khi Hệ thống thông tin đáp ứng yêu cầu bảo vệ bí mật nhà nước và việc cập nhật, quản lý, khai thác dữ liệu đó được cơ quan, người có thẩm quyền quyết định theo quy định của pháp luật về bảo vệ bí mật nhà nước. Dữ liệu không thuộc bí mật nhà nước nhưng bị hạn chế khai thác, sử dụng chỉ được khai thác, sử dụng theo đúng thẩm quyền, mục đích và phạm vi được phân quyền; việc truy cập phải được kiểm soát, ghi nhật ký và bảo vệ theo quy định của pháp luật.
+
+2. Căn cứ tính chất dữ liệu và quy định của pháp luật, dữ liệu được xác định chế độ khai thác gồm: dữ liệu mở; dữ liệu dùng chung trong cơ quan nhà nước; dữ liệu cung cấp theo yêu cầu hoặc theo phạm vi được phân quyền; dữ liệu hạn chế khai thác, sử dụng.
+
+3. Dữ liệu mở gồm dữ liệu tổng hợp, dữ liệu đã được phép công bố và không làm lộ bí mật nhà nước, bí mật kinh doanh, dữ liệu cá nhân hoặc thông tin có thể gây mất an toàn công trình, hệ thống. Việc lựa chọn dữ liệu mở phải được đánh giá về mức độ tổng hợp, an toàn công trình, bí mật kinh doanh và điều kiện công khai theo quy định của pháp luật.
+
+4. Dữ liệu chi tiết về mạng lưới cấp nước, thoát nước chính, tọa độ công trình quan trọng, trạm bơm đầu mối, phương án bảo vệ, cấu hình điều khiển, tài khoản hệ thống, dữ liệu tài chính chi tiết, dữ liệu cá nhân, bí mật kinh doanh và dữ liệu khác mà pháp luật hạn chế tiếp cận chỉ được khai thác theo thẩm quyền, mục đích và phạm vi phân quyền; tài khoản được truy cập phải chịu trách nhiệm bảo mật và được ghi nhật ký đầy đủ.
+
+5. Việc xác định dữ liệu quan trọng, dữ liệu cốt lõi, dữ liệu cá nhân, bí mật nhà nước, dữ liệu thống kê, bí mật kinh doanh, thông tin tiếp cận có điều kiện và dữ liệu hạn chế khai thác, sử dụng thực hiện theo pháp luật có liên quan.
+
+6. Chế độ khai thác từng trường dữ liệu được cấu hình trên Hệ thống thông tin theo khoản 2, khoản 3, khoản 4 và khoản 5 Điều này, quy định của pháp luật có liên quan và quyết định phân loại dữ liệu của cơ quan có thẩm quyền.
+
+Chương III
+TẠO LẬP, CẬP NHẬT, QUẢN LÝ CHẤT LƯỢNG, DUY TRÌ VÀ
+
+LƯU TRỮ DỮ LIỆU
+
+Điều 11. Nguồn dữ liệu
+
+Dữ liệu được tạo lập, thu thập, cập nhật từ các nguồn sau đây:
+
+1. Hồ sơ, văn bản, thông tin quy hoạch cấp, thoát nước đã được cơ quan có thẩm quyền phê duyệt; kết quả giải quyết thủ tục hành chính, thủ tục nội bộ và hoạt động quản lý nhà nước về cấp nước, thoát nước và xử lý nước thải.
+
+2. Hoạt động quản lý, vận hành, bảo trì, quan trắc, đo đếm, kiểm định, kiểm tra, thanh tra, báo cáo, điều tra, khảo sát và xử lý sự cố của cơ quan, tổ chức, đơn vị có liên quan.
+
+3. Hệ thống giám sát, điều khiển, thiết bị đo, cảm biến, hệ thống thông tin địa lý, mô hình thông tin công trình và nền tảng số của đơn vị quản lý, vận hành.
+
+4. Kết nối, chia sẻ từ cơ sở dữ liệu quốc gia, cơ sở dữ liệu chuyên ngành, cơ sở dữ liệu của bộ, ngành, địa phương và Hệ thống thông tin, Cơ sở dữ liệu quốc gia về hoạt động xây dựng.
+
+5. Số hóa, chuẩn hóa dữ liệu, hồ sơ hiện có và các nguồn hợp pháp khác.
+
+Điều 12. Phương thức tạo lập, thu thập và cập nhật dữ liệu
+
+1. Nhập trực tuyến trên Hệ thống thông tin theo biểu mẫu điện tử.
+
+2. Kết nối, đồng bộ tự động thông qua giao diện lập trình ứng dụng, nền tảng chia sẻ, điều phối dữ liệu hoặc dịch vụ dữ liệu.
+
+3. Cập nhật theo lô bằng gói dữ liệu có cấu trúc và tệp đính kèm theo tài liệu kỹ thuật vận hành Hệ thống thông tin.
+
+4. Tiếp nhận dữ liệu từ thiết bị đo, cảm biến, hệ thống giám sát, điều khiển sau khi đơn vị quản lý, vận hành thiết bị kiểm tra trạng thái kỹ thuật, thực hiện hiệu chuẩn, kiểm định khi thuộc trường hợp phải thực hiện theo pháp luật chuyên ngành và xác thực nguồn dữ liệu. Việc Hệ thống thông tin tiếp nhận dữ liệu không thay thế trách nhiệm của đơn vị quản lý, vận hành đối với thiết bị và dữ liệu nguồn.
+
+5. Dữ liệu cập nhật bằng phương thức quy định tại khoản 2, khoản 3 và khoản 4 Điều này phải có cơ chế xác thực nguồn, kiểm tra toàn vẹn, ghi nhật ký truyền nhận và thông báo kết quả tiếp nhận.
+
+6. Trường hợp kết nối tự động bị gián đoạn, Hệ thống thông tin phải hỗ trợ lưu đệm, truyền bù và ghi nhật ký gián đoạn; cho phép cập nhật thủ công hoặc theo gói dữ liệu chuyển tiếp có gắn trạng thái cảnh báo, nguồn và thời điểm. Khi kết nối được khôi phục, dữ liệu phải được đối soát, xử lý trùng lặp và đồng bộ theo tài liệu kỹ thuật vận hành Hệ thống thông tin.
+
+7. Tài liệu kỹ thuật vận hành Hệ thống thông tin phải thể hiện đầy đủ đối với từng nhóm hoặc trường dữ liệu các nội dung sau đây: nguồn dữ liệu; cơ quan, tổ chức quản lý Hệ thống nguồn; chủ thể tạo lập hoặc cung cấp; phương thức cung cấp; kỳ cập nhật; căn cứ kết nối, chia sẻ; điều kiện khai thác; trách nhiệm bảo đảm chất lượng dữ liệu. Các nội dung này phải phù hợp với quy định của Thông tư này, Phụ lục I và Phụ lục II ban hành kèm theo Thông tư này.
+
+Điều 13. Tài khoản, xác thực và phân quyền
+
+1. Cơ quan, tổ chức và người sử dụng thuộc đối tượng được cấp tài khoản định danh điện tử sử dụng tài khoản định danh điện tử để xác thực khi tham gia Hệ thống thông tin theo pháp luật về định danh và xác thực điện tử. Trường hợp chưa đủ điều kiện tích hợp hoặc chưa thuộc đối tượng sử dụng tài khoản định danh điện tử, đơn vị vận hành Hệ thống thông tin cấp tài khoản chuyển tiếp trên cơ sở danh sách người sử dụng, vai trò và phạm vi dữ liệu do cơ quan, tổ chức có thẩm quyền xác nhận; tài khoản phải xác định được tổ chức chịu trách nhiệm, người trực tiếp sử dụng, thời hạn hiệu lực và được chuyển đổi hoặc thu hồi khi đủ điều kiện sử dụng tài khoản định danh điện tử.
+
+2. Tài khoản được phân quyền theo vai trò, phạm vi dữ liệu và nguyên tắc quyền tối thiểu cần thiết, gồm các nhóm quyền: quản trị hệ thống; quản trị dữ liệu cấp Bộ; quản trị dữ liệu địa phương; nhập, cập nhật dữ liệu; rà soát, ghi nhận trạng thái chất lượng dữ liệu; khai thác báo cáo; khai thác dữ liệu theo chế độ khai thác và phạm vi được phân quyền.
+
+3. Dữ liệu, gói dữ liệu khi tạo lập, kết nối, chia sẻ phải được xác thực nguồn và bảo đảm toàn vẹn. Việc ký số thực hiện đối với thông điệp dữ liệu, giao dịch mà pháp luật hoặc phương án kết nối được cơ quan có thẩm quyền thống nhất yêu cầu; luồng dữ liệu thiết bị phải có mã thiết bị, dấu thời gian, cơ chế xác thực, kiểm tra toàn vẹn và nhật ký truyền nhận.
+
+4. Người sử dụng tài khoản có trách nhiệm bảo mật thông tin xác thực, không cho mượn, chuyển giao, sử dụng chung tài khoản; chịu trách nhiệm đối với thao tác thực hiện qua tài khoản. Cơ quan, tổ chức chịu trách nhiệm về nội dung dữ liệu trong phạm vi chức năng, nhiệm vụ và quản lý việc sử dụng tài khoản của người thuộc quyền.
+
+5. Tài khoản được quản lý trong toàn bộ vòng đời, gồm cấp mới, thay đổi quyền, tạm khóa, thu hồi và lưu lịch sử phân quyền; phải được rà soát định kỳ và xử lý kịp thời khi người sử dụng thay đổi nhiệm vụ, chấm dứt công tác, đơn vị vận hành hết hạn hợp đồng, vi phạm quy định hoặc có nguy cơ xâm phạm an ninh mạng.
+
+6. Khi có thay đổi về người sử dụng, nhiệm vụ, vai trò, phạm vi dữ liệu, chủ sở hữu hoặc đơn vị quản lý, vận hành, cơ quan, tổ chức có thẩm quyền xác nhận danh sách quy định tại khoản 1 Điều này phải thông báo ngay cho đơn vị vận hành Hệ thống thông tin để điều chỉnh, tạm khóa hoặc thu hồi tài khoản, quyền truy cập và lưu lịch sử xử lý. Dữ liệu, mã định danh, lịch sử thao tác và trách nhiệm của cơ quan, tổ chức có liên quan được duy trì.
+
+Điều 14. Tạo lập, cập nhật dữ liệu hệ thống cấp nước sạch
+
+1. Đơn vị cấp nước tạo lập, cập nhật và chịu trách nhiệm về dữ liệu nhà máy nước, công suất, sản lượng, mạng lưới, thiết bị, vận hành, chất lượng nước sạch, chất lượng dịch vụ và phạm vi phục vụ. Dữ liệu dân số, đơn vị hành chính được kết nối, đồng bộ từ Hệ thống nguồn. Ủy ban nhân dân cấp xã tạo lập, cập nhật dữ liệu phản ánh, kiến nghị do mình tiếp nhận và phối hợp đối chiếu phạm vi phục vụ với địa bàn quản lý theo phân công, phân cấp của Ủy ban nhân dân cấp tỉnh. Sở Xây dựng tạo lập dữ liệu quản lý nhà nước thuộc nguồn của Sở và rà soát, ghi nhận trạng thái chất lượng dữ liệu theo phân quyền.
+
+2. Dữ liệu được tổ chức theo từng đơn vị cấp nước, thông tin quy hoạch cấp nước có liên quan, nhà máy nước, nguồn nước, công trình thu nước, công trình truyền dẫn nước thô, công trình trên hệ thống, phạm vi phục vụ và kỳ dữ liệu. Dữ liệu khu vực nông thôn chỉ được ghi nhận khi đơn vị cấp nước thuộc phạm vi Hệ thống thông tin trực tiếp cung cấp nước đồng thời cho khu vực đó; được phân tổ riêng để phản ánh đầy đủ phạm vi phục vụ thực tế, không hình thành dữ liệu quản lý hệ thống nước sạch nông thôn và không làm thay đổi thẩm quyền quản lý nhà nước về nước sạch nông thôn.
+
+3. Dữ liệu nước thô, chất lượng nguồn nước khai thác, kết quả nội kiểm chất lượng nước sạch, trạng thái đáp ứng quy chuẩn kỹ thuật quốc gia hoặc quy chuẩn kỹ thuật địa phương, sản lượng nước sạch, công suất, đấu nối, mạng lưới, áp lực, thời gian cấp nước, thất thoát nước, sự cố, phản ánh và dữ liệu giám sát trực tuyến pH, độ đục, clo dư được cập nhật từ hồ sơ, dữ liệu vận hành, đo đếm, thiết bị giám sát và Hệ thống nguồn. Dữ liệu giám sát trực tuyến chỉ áp dụng theo quy định tại khoản 6 Điều 6 và khoản 4 Điều 16; ưu tiên tần suất của Hệ thống nguồn, không yêu cầu lắp thêm thiết bị truyền hoặc truyền song song khi dữ liệu đã được chia sẻ hợp pháp.
+
+4. Sở Xây dựng phối hợp với cơ quan quản lý tài nguyên nước, y tế, thống kê và cơ quan có liên quan để kết nối, đối soát, xử lý sai lệch đối với thông tin quy hoạch, dữ liệu nguồn nước, giấy phép khai thác tài nguyên nước, dữ liệu chất lượng nước, giá nước sạch, dân số và địa bàn phục vụ. Dữ liệu đã có tại Hệ thống nguồn được ưu tiên kế thừa, không nhập lại; Sở Xây dựng không ghi nhận trạng thái chất lượng thay cơ quan, tổ chức quản lý Hệ thống nguồn.
+
+5. Đối với nước thô mua hoặc tiếp nhận từ tổ chức khác, đơn vị cấp nước chịu trách nhiệm về số liệu tiếp nhận, tổ chức cung cấp nước thô chịu trách nhiệm về số liệu giao và hồ sơ đo đếm. Khi có sai lệch, hai bên đối chiếu hồ sơ, thiết bị đo, thời điểm và phương pháp đo; chủ thể tạo lập dữ liệu chỉnh sửa hoặc giải trình theo quy định tại Điều 18 Thông tư này. Trong thời gian xử lý, Hệ thống thông tin lưu số liệu do từng bên cung cấp, gắn trạng thái sai lệch; việc lựa chọn số liệu sử dụng thực hiện theo quy định của pháp luật chuyên ngành; Sở Xây dựng theo dõi trạng thái xử lý; việc ghi nhận trạng thái chất lượng không thay thế trách nhiệm của các bên đối với tính chính xác của số liệu.
+
+Điều 15. Tạo lập, cập nhật dữ liệu thoát nước, xử lý nước thải và bùn thải
+
+1. Chủ sở hữu hoặc đại diện chủ sở hữu cung cấp, xác minh dữ liệu tài sản, hồ sơ pháp lý, hồ sơ lịch sử, hợp đồng quản lý, vận hành và hồ sơ bàn giao. Đơn vị thoát nước tạo lập, cập nhật dữ liệu vận hành thuộc phạm vi, thời gian thực hiện nhiệm vụ hoặc hợp đồng. Dữ liệu dân số, đơn vị hành chính được kết nối, đồng bộ từ Hệ thống nguồn. Ủy ban nhân dân cấp xã tạo lập, cập nhật dữ liệu phản ánh, kiến nghị do mình tiếp nhận và phối hợp đối chiếu phạm vi dịch vụ, điểm ngập với thực tế địa phương theo phân công, phân cấp của Ủy ban nhân dân cấp tỉnh. Sở Xây dựng tạo lập dữ liệu quản lý nhà nước thuộc nguồn của Sở và rà soát, ghi nhận trạng thái chất lượng dữ liệu theo phân quyền.
+
+2. Dữ liệu được tổ chức theo chủ sở hữu hoặc đại diện chủ sở hữu công trình, hệ thống thoát nước, đơn vị thoát nước, thông tin quy hoạch thoát nước và xử lý nước thải có liên quan, phạm vi cung ứng dịch vụ, công trình xử lý nước thải tập trung và phi tập trung thuộc hệ thống thoát nước đô thị, công trình thu gom, trạm bơm, điểm xả, công trình thoát nước mưa, điểm ngập, cơ sở xử lý bùn thải và kỳ dữ liệu; có thuộc tính phân loại hệ thống thoát nước chung, riêng, nửa riêng hoặc loại khác theo hiện trạng.
+
+3. Dữ liệu nước thải đầu vào, lưu lượng, công suất vận hành, thu gom, xử lý, tái sử dụng, bùn thải thuộc hệ thống thoát nước đô thị, giá dịch vụ, sự cố và phản ánh được cập nhật từ hoạt động quản lý, vận hành. Dữ liệu bùn thải phải ghi nguồn phát sinh, trạng thái, phương pháp xử lý, khối lượng, mục đích tái sử dụng và căn cứ pháp lý, môi trường khi có. Dữ liệu nước thải sau xử lý được kế thừa từ hệ thống dữ liệu quan trắc môi trường của cơ quan có thẩm quyền sau khi hoàn thành việc kết nối, chia sẻ dữ liệu theo quy định; không nhập lại, không chỉnh sửa dữ liệu nguồn và không ghi nhận trạng thái chất lượng thay cơ quan, tổ chức quản lý Hệ thống nguồn.
+
+4. Sở Xây dựng phối hợp với cơ quan nông nghiệp và môi trường, cơ quan phòng, chống thiên tai, chủ sở hữu hoặc đại diện chủ sở hữu và cơ quan có liên quan để kết nối, đối soát, xử lý sai lệch đối với dữ liệu tài sản, điểm xả, giấy phép môi trường, quan trắc, ngập úng, bùn thải và thông tin cần thiết khác. Đơn vị quản lý công trình chịu trách nhiệm về tính chính xác của thông số kỹ thuật, thông số vận hành do đơn vị cập nhật vào Cơ sở dữ liệu.
+
+5. Khi thay đổi đơn vị quản lý, vận hành, chủ sở hữu hoặc đại diện chủ sở hữu tiếp nhận dữ liệu, tài liệu và bàn giao cho đơn vị vận hành kế tiếp. Đơn vị kết thúc nhiệm vụ hoặc hợp đồng phải bàn giao dữ liệu, tài liệu điện tử; phối hợp điều chỉnh, thu hồi quyền truy cập theo quy định tại Điều 13 Thông tư này và cập nhật trạng thái bàn giao trên Hệ thống thông tin. Dữ liệu tài sản, mã định danh và lịch sử vận hành được giữ nguyên; chỉ cập nhật quan hệ đơn vị vận hành, thời hạn hợp đồng, trạng thái bàn giao và quyền truy cập.
+
+Điều 16. Tần suất và thời hạn cập nhật dữ liệu
+
+1. Kỳ cập nhật chính của từng trường dữ liệu được quy định trực tiếp tại Phụ lục I và Phụ lục II ban hành kèm theo Thông tư này, phù hợp với nguồn hình thành dữ liệu, loại đối tượng và chế độ báo cáo chuyên ngành có liên quan. Dữ liệu theo quý, năm được Hệ thống thông tin tổng hợp từ dữ liệu có kỳ ngắn hơn khi bảo đảm cùng phạm vi, cùng kỳ và đủ điều kiện tính; không yêu cầu chủ thể cập nhật nhập lại dữ liệu đã có.
+
+2. Trường dữ liệu có kỳ cập nhật “khi tạo lập”, “khi thay đổi” được cập nhật khi hình thành đối tượng hoặc phát sinh thay đổi về pháp lý, kỹ thuật, vận hành, trạng thái. Dữ liệu định kỳ được cập nhật theo kỳ chính áp dụng cho từng loại đối tượng và nguồn dữ liệu.
+
+3. Thông tin về sự cố được cập nhật khi phát sinh và được Hệ thống thông tin tổng hợp theo kỳ quy định tại Phụ lục I và Phụ lục II ban hành kèm theo Thông tư này. Việc cập nhật trên Hệ thống thông tin không thay thế nghĩa vụ thông báo, báo cáo, ứng phó và xử lý sự cố theo quy định của pháp luật chuyên ngành.
+
+4. Dữ liệu từ hệ thống giám sát, thiết bị đo, cảm biến được tiếp nhận theo thời gian thực hoặc gần thời gian thực theo quy định tại khoản 14 và khoản 15 Điều 3 và tần suất của Hệ thống nguồn. Dữ liệu theo giờ, tháng hoặc kỳ dài hơn được Hệ thống thông tin tổng hợp từ dữ liệu nguồn theo nhu cầu quản lý và năng lực hạ tầng.
+
+5. Trường hợp một trường dữ liệu gồm các nội dung có kỳ cập nhật khác nhau, cột “Kỳ cập nhật” tại Phụ lục I và Phụ lục II ban hành kèm theo Thông tư này phân tách từng nội dung và kỳ áp dụng tương ứng bằng dấu chấm phẩy. Kỳ cập nhật chính, kỳ đối soát, rà soát và kỳ tổng hợp phải được ghi trong siêu dữ liệu. Kỳ tổng hợp không làm phát sinh nghĩa vụ nhập lại dữ liệu nguồn.
+
+6. Dữ liệu định kỳ phải được cập nhật thành công trên Hệ thống thông tin chậm nhất trong thời hạn 10 ngày làm việc kể từ ngày kết thúc kỳ tháng, 15 ngày làm việc kể từ ngày kết thúc kỳ quý và 30 ngày làm việc kể từ ngày kết thúc năm, trừ trường hợp văn bản quy phạm pháp luật chuyên ngành hoặc Hệ thống nguồn quy định thời hạn khác. Dữ liệu cập nhật khi tạo lập, khi thay đổi hoặc khi phát sinh phải được cập nhật trong 05 ngày làm việc kể từ khi có đầy đủ hồ sơ, dữ liệu nguồn hợp pháp. Hệ thống thông tin ghi nhận thời điểm gửi, trạng thái xử lý và cảnh báo quá hạn.
+
+Điều 17. Rà soát, ghi nhận trạng thái chất lượng và chuẩn hóa dữ liệu
+
+1. Cơ quan, đơn vị tạo lập, cập nhật dữ liệu tự kiểm tra nguồn, tính đầy đủ, chính xác, hợp lệ và kịp thời trước khi gửi dữ liệu trên Hệ thống thông tin; chịu trách nhiệm đối với dữ liệu do mình tạo lập, cập nhật.
+
+2. Hệ thống thông tin tự động kiểm tra định dạng, trường bắt buộc, quan hệ logic, trùng lặp và các quy tắc chất lượng dữ liệu; ghi nhận kết quả kiểm tra, cảnh báo nội dung cần rà soát và trạng thái chất lượng của bản ghi.
+
+3. Trong phạm vi được phân quyền, Sở Xây dựng rà soát nguồn dữ liệu, mức độ đầy đủ, tính hợp lệ, tính logic, nhất quán và trạng thái của dữ liệu; ghi nhận trạng thái chất lượng hoặc thông báo trên Hệ thống thông tin về nội dung cần rà soát, chỉnh sửa. Thông báo phải xác định bản ghi, nội dung sai lệch hoặc chưa đầy đủ và căn cứ đối chiếu.
+
+4. Cơ quan, đơn vị tạo lập, cập nhật dữ liệu thực hiện rà soát, chỉnh sửa hoặc bổ sung thông tin giải trình trên Hệ thống thông tin. Sau khi dữ liệu được cập nhật, Hệ thống thông tin thực hiện kiểm tra lại; Sở Xây dựng rà soát và ghi nhận trạng thái chất lượng theo phạm vi được phân quyền.
+
+5. Đối với dữ liệu được kết nối từ Hệ thống nguồn, Hệ thống thông tin kế thừa thông tin về nguồn, trạng thái và phiên bản; trường hợp phát hiện sai lệch, Sở Xây dựng hoặc đơn vị vận hành Hệ thống thông tin thông báo cho cơ quan, tổ chức quản lý Hệ thống nguồn để rà soát theo thẩm quyền.
+
+6. Hệ thống thông tin lưu tài khoản, thời điểm gửi, kết quả kiểm tra, nội dung thông báo, việc chỉnh sửa, trạng thái chất lượng và lịch sử xử lý để phục vụ truy vết, kiểm tra và quản trị chất lượng dữ liệu.
+
+7. Việc kiểm tra, thông báo, chỉnh sửa và ghi nhận trạng thái chất lượng dữ liệu quy định tại Điều này là hoạt động quản trị dữ liệu được thực hiện giữa các tài khoản đã được phân quyền trên Hệ thống thông tin.
+
+Điều 18. Chỉnh sửa, hủy, thay thế và quản lý phiên bản dữ liệu
+
+1. Cơ quan, tổ chức có tài khoản được phân quyền khi phát hiện dữ liệu thiếu, sai, trùng lặp hoặc không thống nhất với nguồn dữ liệu có trách nhiệm thông báo sai lệch trên Hệ thống thông tin, trong đó xác định bản ghi, nội dung cần rà soát, nguồn phát hiện và tài liệu đối chiếu, nếu có.
+
+2. Cơ quan, đơn vị đã tạo lập, cập nhật dữ liệu hoặc cơ quan, đơn vị kế thừa trách nhiệm quản lý dữ liệu rà soát, chỉnh sửa dữ liệu hoặc cập nhật thông tin giải trình trên Hệ thống thông tin; trường hợp cần xác minh thì cập nhật trạng thái và lý do để cơ quan, đơn vị có liên quan theo dõi.
+
+3. Đối với dữ liệu được kết nối từ Hệ thống nguồn, thông báo sai lệch được gửi đến cơ quan, tổ chức quản lý Hệ thống nguồn qua phương thức kết nối đã thiết lập hoặc bằng văn bản điện tử. Hệ thống thông tin không chỉnh sửa dữ liệu nguồn, chỉ tiếp nhận phiên bản mới, duy trì quan hệ với phiên bản trước và cập nhật trạng thái chất lượng theo quy định tại Điều 17 Thông tư này.
+
+4. Dữ liệu được chuyển sang trạng thái hủy khi bị trùng lặp, được tạo lập không đúng thẩm quyền hoặc theo quyết định, kết luận của cơ quan có thẩm quyền; được thay thế khi có phiên bản mới có hiệu lực; hết hiệu lực khi hết thời hạn sử dụng hoặc Hệ thống nguồn xác định hết hiệu lực. Dữ liệu không bị xóa trước khi hết thời hạn lưu trữ. Nội dung trước và sau khi chỉnh sửa, lý do, thời điểm, tài khoản thực hiện và tài liệu đối chiếu phải được lưu vết; mã định danh và quan hệ với dữ liệu kế thừa được duy trì.
+
+5. Khi dữ liệu đã được chia sẻ đến hệ thống khác, đơn vị vận hành Hệ thống thông tin đồng bộ trạng thái chỉnh sửa, hủy, thay thế và thông báo cho bên nhận dữ liệu theo cơ chế kết nối đã thiết lập.
+
+6. Bộ dữ liệu, danh mục dùng chung, tài liệu kỹ thuật vận hành và giao diện lập trình ứng dụng phải được quản lý phiên bản, công bố thời điểm áp dụng và lộ trình chuyển đổi kỹ thuật. Việc thay đổi phiên bản không được làm mất dữ liệu, lịch sử xử lý hoặc đặt thêm nghĩa vụ ngoài quy định tại Thông tư này và pháp luật có liên quan.
+
+Điều 19. Duy trì, lưu trữ và sao lưu dữ liệu
+
+1. Cơ sở dữ liệu được duy trì hoạt động ổn định, liên tục; dữ liệu được lưu trữ theo danh mục thời hạn bảo quản của hồ sơ, tài liệu hình thành dữ liệu và quy định của pháp luật về lưu trữ.
+
+2. Dữ liệu, siêu dữ liệu, nhật ký hệ thống, lịch sử phiên bản và tài liệu chứng minh phải bảo đảm khả năng tìm kiếm, truy xuất, phục hồi và kiểm tra tính toàn vẹn.
+
+3. Đơn vị vận hành Hệ thống thông tin xây dựng và thực hiện quy trình sao lưu, phục hồi; lưu bản sao dự phòng tại môi trường độc lập; kiểm tra khả năng phục hồi định kỳ và bảo đảm không mất dữ liệu khi xảy ra sự cố.
+
+4. Dữ liệu chỉ được xóa khỏi Hệ thống thông tin khi hết thời hạn lưu trữ, không còn giá trị sử dụng và có quyết định của cơ quan hoặc người có thẩm quyền theo pháp luật về lưu trữ. Việc xóa phải lưu nhật ký về mã định danh dữ liệu, thời điểm, người thực hiện và căn cứ xóa; bảo đảm toàn vẹn dữ liệu liên kết. Không xóa dữ liệu đang phục vụ kiểm tra, thanh tra, kiểm toán hoặc giải quyết khiếu nại, tố cáo, tranh chấp.
+
+ 
+
+Chương IV
+
+KẾT NỐI, CHIA SẺ, KHAI THÁC, SỬ DỤNG VÀ BẢO VỆ CƠ SỞ DỮ LIỆU
+
+Điều 20. Kết nối và chia sẻ dữ liệu
+
+1. Cơ sở dữ liệu được kết nối, chia sẻ với Cơ sở dữ liệu tổng hợp quốc gia, Cơ sở dữ liệu quốc gia về dân cư, Cơ sở dữ liệu định danh địa điểm, cơ sở dữ liệu dùng chung của Bộ Xây dựng, cơ sở dữ liệu của địa phương, các cơ sở dữ liệu về đăng ký doanh nghiệp, đơn vị hành chính, tài nguyên nước, môi trường, chất lượng nước sinh hoạt, nước sạch nông thôn và các hệ thống thông tin, cơ sở dữ liệu khác có dữ liệu cần thiết cho các trường quy định tại Phụ lục I và Phụ lục II ban hành kèm theo Thông tư này, phù hợp với thẩm quyền và theo quy định của pháp luật có liên quan.
+
+2. Việc kết nối, chia sẻ dữ liệu bắt buộc giữa Cơ sở dữ liệu với cơ sở dữ liệu của bộ, cơ quan trung ương và địa phương được thực hiện thống nhất thông qua Nền tảng chia sẻ, điều phối dữ liệu theo quy định của pháp luật về kết nối, chia sẻ dữ liệu bắt buộc. Việc kết nối nội bộ trong Bộ Xây dựng và các kết nối khác được thực hiện qua nền tảng tích hợp, chia sẻ dữ liệu của cơ quan có thẩm quyền, giao diện lập trình ứng dụng hoặc phương thức kỹ thuật phù hợp; các phương thức này không thay thế Nền tảng chia sẻ, điều phối dữ liệu trong trường hợp pháp luật quy định phải kết nối qua Nền tảng. Phương án kết nối phải xác định mục đích, phạm vi, trường dữ liệu, mã tham chiếu, Hệ thống nguồn, cơ quan, tổ chức quản lý Hệ thống nguồn, căn cứ pháp lý, phương thức, tần suất, điều kiện khai thác và quy tắc đối soát, xử lý sai lệch. Hệ thống thông tin phải hỗ trợ chuẩn dữ liệu và giao diện kết nối mở để tích hợp dữ liệu từ các Hệ thống nguồn.
+
+3. Dữ liệu chia sẻ phải có mã định danh, siêu dữ liệu, trạng thái chất lượng, phiên bản, thời điểm hiệu lực; được xác thực nguồn, bảo đảm toàn vẹn và an ninh mạng trong quá trình truyền nhận.
+
+4. Cơ quan, tổ chức quản lý Hệ thống nguồn chịu trách nhiệm duy trì dịch vụ chia sẻ, thông báo thay đổi, sự cố và bảo đảm chất lượng dữ liệu; bên khai thác chịu trách nhiệm sử dụng đúng mục đích, không thay đổi nội dung dữ liệu nguồn.
+
+5. Cơ quan, tổ chức quản lý Hệ thống nguồn, Sở Xây dựng và cơ quan, đơn vị liên quan phối hợp xử lý sai lệch, cập nhật thay đổi và duy trì, bảo đảm chất lượng dữ liệu sau kết nối. Không yêu cầu đơn vị lắp thêm thiết bị truyền dữ liệu hoặc truyền dữ liệu song song lên Hệ thống thông tin khi dữ liệu đã được Hệ thống nguồn chia sẻ hợp pháp và đáp ứng yêu cầu kỹ thuật.
+
+6. Dữ liệu về chất lượng nước sạch sử dụng cho mục đích sinh hoạt, kết quả nội kiểm, ngoại kiểm, kiểm tra, giám sát và trạng thái đáp ứng quy chuẩn kỹ thuật được kết nối, chia sẻ theo thẩm quyền, phân quyền với Sở Y tế, Trung tâm Kiểm soát bệnh tật cấp tỉnh, Ủy ban nhân dân các cấp và cơ quan có liên quan.
+
+Điều 21. Tái sử dụng dữ liệu và thực hiện chế độ báo cáo
+
+1. Cơ quan nhà nước sử dụng dữ liệu được ghi nhận đáp ứng yêu cầu chất lượng hoặc dữ liệu được kế thừa từ Hệ thống nguồn để giải quyết công việc, xây dựng chính sách, kiểm tra, thanh tra, thống kê, báo cáo và chỉ đạo, điều hành. Dữ liệu chưa được ghi nhận đáp ứng yêu cầu chất lượng chỉ được sử dụng để tham khảo, rà soát và phải hiển thị rõ nguồn, trạng thái chất lượng.
+
+2. Hệ thống thông tin cung cấp chức năng tổng hợp, trích xuất báo cáo định kỳ, đột xuất và tổng hợp phục vụ quản lý, chỉ đạo, điều hành. Báo cáo định kỳ về cấp nước sạch và thoát nước đô thị được tổng hợp từ dữ liệu đáp ứng yêu cầu chất lượng dữ liệu quy định tại Điều 9 Thông tư này. Việc sử dụng dữ liệu trên Hệ thống thông tin thay cho việc gửi báo cáo chỉ được thực hiện khi chế độ báo cáo tương ứng cho phép hoặc được cơ quan có thẩm quyền sửa đổi, thay thế, bãi bỏ.
+
+3. Trường hợp dữ liệu trong Cơ sở dữ liệu khác với hồ sơ nguồn hoặc thực tế quản lý, cơ quan khai thác dữ liệu thông báo nội dung sai lệch để rà soát theo quy định tại Điều 18 Thông tư này. Trong thời gian xử lý, sử dụng dữ liệu của Hệ thống nguồn.
+
+4. Khi Hệ thống thông tin xảy ra sự cố, cơ quan, tổ chức thực hiện báo cáo theo phương thức quy định tại chế độ báo cáo hiện hành; đơn vị vận hành Hệ thống thông tin triển khai phương án vận hành dự phòng và đồng bộ dữ liệu sau khi hệ thống được khôi phục theo điểm a khoản 3 Điều 26 Thông tư này.
+
+Điều 22. Khai thác, sử dụng và cung cấp dữ liệu
+
+1. Cơ quan nhà nước được khai thác dữ liệu theo chức năng, nhiệm vụ, thẩm quyền và phạm vi được phân quyền.
+
+2. Đơn vị cấp nước, đơn vị thoát nước được khai thác dữ liệu do mình tạo lập, cập nhật và dữ liệu dùng chung cần thiết để quản lý, vận hành, báo cáo, bảo đảm an toàn và nâng cao chất lượng dịch vụ.
+
+3. Tổ chức, cá nhân được khai thác dữ liệu mở đã công bố. Việc cung cấp dữ liệu không phải dữ liệu mở thực hiện theo pháp luật về dữ liệu, tiếp cận thông tin, giá, phí, lệ phí và pháp luật có liên quan.
+
+4. Cơ quan, tổ chức, cá nhân khai thác dữ liệu phải ghi rõ nguồn, thời điểm khai thác, không xuyên tạc, làm sai lệch dữ liệu; chịu trách nhiệm về sản phẩm, kết quả được tạo ra từ việc sử dụng dữ liệu.
+
+Điều 23. Dữ liệu mở
+
+1. Danh mục dữ liệu mở thuộc Cơ sở dữ liệu được xác định theo quy định của pháp luật. Dữ liệu mở chủ yếu là dữ liệu tổng hợp, đã được đánh giá rủi ro và đáp ứng yêu cầu công khai; được công khai trên Cổng dữ liệu quốc gia, cổng dữ liệu của Bộ Xây dựng hoặc hệ thống, nền tảng phù hợp.
+
+2. Dữ liệu mở phải được cung cấp dưới hình thức tập dữ liệu mở, có định dạng mở, bảo đảm có thể gửi, nhận, lưu trữ và xử lý bằng thiết bị số. Siêu dữ liệu kèm theo phải ghi rõ tần suất cập nhật, đầu mối tiếp nhận phản hồi và Công bố mở áp dụng đối với tập dữ liệu. Ưu tiên cung cấp dữ liệu mở qua giao diện lập trình ứng dụng.
+
+3. Cục Kết cấu hạ tầng xây dựng định kỳ đánh giá chất lượng, tính khả dụng, nhu cầu sử dụng và phản hồi để đề xuất cập nhật danh mục, nội dung dữ liệu mở theo quy định của pháp luật.
+
+Điều 24. Chỉ số quản lý và phân tích dữ liệu
+
+1. Chỉ số quản lý, giám sát chính thức được tính từ dữ liệu được ghi nhận đáp ứng yêu cầu chất lượng, gồm nhóm chỉ số về dân số, đấu nối; công suất, sản lượng; chiều dài mạng lưới, xây dựng mới, cải tạo, thay thế; thất thoát nước, chất lượng dịch vụ và giám sát trực tuyến; sự cố, phản ánh; thu gom, xử lý, tái sử dụng nước thải; điểm ngập; bùn thải; giá dịch vụ và chất lượng dữ liệu.
+
+2. Danh mục chỉ số tối thiểu, công thức khái quát, đơn vị và kỳ tính được quy định tại Phụ lục IV ban hành kèm theo Thông tư này. Kỳ tính phải phù hợp với kỳ cập nhật của các trường dữ liệu nguồn tại Phụ lục I và Phụ lục II ban hành kèm theo Thông tư này; chỉ số theo quý, năm được Hệ thống thông tin tổng hợp từ dữ liệu có kỳ ngắn hơn. Tài liệu kỹ thuật vận hành Hệ thống thông tin cụ thể hóa nguồn trường dữ liệu, yêu cầu kỹ thuật để tính, quy tắc làm tròn, nhãn cảnh báo khi dữ liệu thiếu hoặc ước tính và phương thức hiển thị trên cơ sở quy định tại Thông tư này. Chỉ số được tính từ dữ liệu nguồn chưa đáp ứng đầy đủ các yêu cầu quy định tại khoản 4 Điều 9 Thông tư này phải được gắn nhãn tạm tính và không được công bố là chỉ số chính thức.
+
+3. Dữ liệu cấp nước được ghi nhận đáp ứng yêu cầu chất lượng được liên kết làm nguồn tham chiếu để phân tích, dự báo lượng nước thải phát sinh khi cùng phạm vi, cùng kỳ và việc khai thác, sử dụng phù hợp với thẩm quyền, mục đích và yêu cầu kỹ thuật. Kết quả phân tích, dự báo chỉ phục vụ quản lý, báo cáo; không thay thế số liệu đo đếm, hồ sơ, giấy phép, quyết định của cơ quan có thẩm quyền hoặc làm căn cứ xác định nghĩa vụ tài chính. Không sử dụng việc liên kết để đối soát doanh thu, hóa đơn hoặc khai thác dữ liệu tài chính, bí mật kinh doanh, trừ trường hợp pháp luật có quy định khác.
+
+Điều 25. Bảo đảm an ninh mạng, an ninh dữ liệu và bảo vệ dữ liệu
+
+1. Bộ Xây dựng là chủ quản Hệ thống thông tin, có trách nhiệm tổ chức phân loại, xác định, phê duyệt hoặc trình cơ quan có thẩm quyền phê duyệt cấp độ an ninh mạng; tổ chức triển khai nhiệm vụ, biện pháp bảo vệ an ninh mạng tương ứng với cấp độ; bảo vệ dữ liệu cá nhân và bảo vệ bí mật nhà nước theo quy định của pháp luật.
+
+2. Chủ quản Hệ thống thông tin và đơn vị vận hành Hệ thống thông tin thực hiện quản lý vòng đời tài khoản; xác thực đa yếu tố đối với tài khoản quản trị và tài khoản truy cập dữ liệu hạn chế; phân quyền theo vai trò và nguyên tắc quyền tối thiểu; rà soát định kỳ quyền truy cập; áp dụng biện pháp mã hóa phù hợp; ghi, lưu, giám sát nhật ký truy cập, chia sẻ, tải xuống, chỉnh sửa và xóa dữ liệu; phát hiện hành vi bất thường và cảnh báo sớm.
+
+3. Chủ quản Hệ thống thông tin chủ trì, đơn vị vận hành Hệ thống thông tin phối hợp xây dựng, duy trì phương án giám sát, cảnh báo, ứng phó, khắc phục sự cố an ninh mạng, khôi phục hoạt động và bảo đảm tính liên tục; tổ chức kiểm tra, đánh giá an ninh mạng, rà soát lỗ hổng và khắc phục rủi ro theo quy định của pháp luật.
+
+4. Cơ quan, tổ chức, cá nhân được cấp tài khoản hoặc khai thác dữ liệu không được truy cập trái phép, cản trở hoạt động, làm sai lệch, xóa, hủy, chiếm đoạt, phát tán, sao chép, tiết lộ dữ liệu trái pháp luật hoặc sử dụng dữ liệu sai mục đích.
+
+5. Sai lệch dữ liệu thông thường được xử lý theo quy định tại Điều 18 Thông tư này và không phải cô lập dữ liệu nếu không có dấu hiệu xâm phạm an ninh mạng hoặc nguy cơ làm mất tính bí mật, toàn vẹn, sẵn sàng của Hệ thống thông tin. Khi xảy ra sự cố an ninh mạng, rò rỉ dữ liệu hoặc sai lệch có dấu hiệu do tấn công, can thiệp trái phép, đơn vị vận hành Hệ thống thông tin thực hiện cô lập, xử lý, phục hồi, bảo toàn chứng cứ điện tử; thông báo, phối hợp với cơ quan có thẩm quyền và thông báo cho tổ chức, cá nhân bị ảnh hưởng trong trường hợp pháp luật về an ninh mạng, bảo vệ dữ liệu cá nhân hoặc pháp luật có liên quan yêu cầu.
+
+6. Việc kết nối, chia sẻ dữ liệu với cơ sở dữ liệu, hệ thống thông tin khác phải đáp ứng yêu cầu về an ninh mạng, an toàn thông tin, bảo vệ dữ liệu và yêu cầu kết nối theo quy định của pháp luật áp dụng đối với hệ thống được kết nối.
+
+ 
+
+Chương V
+
+TỔ CHỨC THỰC HIỆN
+
+Điều 26. Trách nhiệm tổ chức thực hiện
+
+1. Bộ Xây dựng là cơ quan chủ quản Hệ thống thông tin, tổ chức xây dựng, quản lý Hệ thống thông tin và Cơ sở dữ liệu cấp nước sạch và thoát nước đô thị theo chức năng, nhiệm vụ, quyền hạn được giao.
+
+2. Cục Kết cấu hạ tầng xây dựng là đơn vị đầu mối giúp Bộ Xây dựng quản lý nghiệp vụ và nội dung dữ liệu, có trách nhiệm:
+
+a) Chủ trì rà soát mô hình dữ liệu, danh mục trường dữ liệu, dữ liệu chủ chuyên ngành, danh mục dùng chung, siêu dữ liệu, chỉ số quản lý, quy tắc nghiệp vụ và yêu cầu chất lượng dữ liệu;
+
+b) Chủ trì, phối hợp với Trung tâm Công nghệ thông tin xây dựng tài liệu yêu cầu nghiệp vụ và tài liệu kỹ thuật vận hành Hệ thống thông tin phục vụ quản lý, giám sát và khai thác Cơ sở dữ liệu trên cơ sở quy định tại Thông tư này;
+
+c) Hướng dẫn, kiểm tra, đôn đốc việc tổ chức thực hiện; theo dõi, đánh giá chất lượng dữ liệu toàn quốc; khi phát hiện dữ liệu thiếu, sai lệch, trùng lặp hoặc chậm cập nhật, thông báo cho Sở Xây dựng và cơ quan, đơn vị tạo lập dữ liệu rà soát, xử lý theo thẩm quyền;
+
+d) Tổ chức quản lý, khai thác công cụ giám sát Cơ sở dữ liệu cấp nước sạch và thoát nước đô thị; theo dõi, giám sát, tổng hợp, phân tích dữ liệu phục vụ quản lý nhà nước, xây dựng chính sách, kiểm tra, đánh giá chất lượng dịch vụ, phân tích công suất, nhu cầu, rủi ro, chỉ đạo, điều hành và báo cáo cấp có thẩm quyền;
+
+đ) Chủ trì đề xuất danh mục dữ liệu mở, danh mục dữ liệu dùng chung, dữ liệu quan trọng, dữ liệu cốt lõi và chế độ khai thác dữ liệu thuộc phạm vi quản lý của Bộ Xây dựng; phối hợp xử lý yêu cầu cung cấp, kết nối, chia sẻ và khai thác dữ liệu;
+
+e) Phối hợp với các cơ quan thuộc bộ, cơ quan ngang bộ, Ủy ban nhân dân cấp tỉnh, Sở Xây dựng, đơn vị cấp nước, đơn vị thoát nước và cơ quan, tổ chức có liên quan trong quản lý dữ liệu phục vụ công tác quản lý nhà nước về cấp nước sạch và thoát nước đô thị;
+
+g) Hằng năm, căn cứ nhiệm vụ được giao tại Thông tư này, lập kế hoạch, đề xuất nhu cầu kinh phí thực hiện nhiệm vụ quản lý nghiệp vụ, quản trị nội dung, kiểm tra, giám sát, chuẩn hóa và khai thác Cơ sở dữ liệu; gửi cơ quan, đơn vị có thẩm quyền tổng hợp, trình cấp có thẩm quyền xem xét, quyết định theo quy định của pháp luật.
+
+3. Trung tâm Công nghệ thông tin thuộc Bộ Xây dựng có trách nhiệm:
+
+a) Chủ trì quản lý, vận hành kỹ thuật các thành phần hạ tầng, phần mềm và dịch vụ kỹ thuật của Hệ thống thông tin thuộc phạm vi Bộ Xây dựng được giao quản lý; bảo đảm tính sẵn sàng, hiệu năng, an ninh mạng, sao lưu, phục hồi, phương án vận hành dự phòng và hoạt động liên tục trong phạm vi trách nhiệm được giao;
+
+b) Chủ trì, phối hợp với Cục Kết cấu hạ tầng xây dựng triển khai kết nối, tích hợp, chia sẻ và đồng bộ dữ liệu với cơ sở dữ liệu dùng chung của Bộ Xây dựng, cơ sở dữ liệu quốc gia, cơ sở dữ liệu chuyên ngành và hệ thống thông tin có liên quan theo phạm vi trách nhiệm được giao;
+
+c) Quản lý kỹ thuật tài khoản, xác thực, phân quyền, nhật ký hệ thống; theo dõi hoạt động kỹ thuật, phối hợp kiểm tra, ứng cứu và xử lý sự cố đối với các thành phần của Hệ thống thông tin thuộc phạm vi trách nhiệm được giao;
+
+d) Phối hợp với Cục Kết cấu hạ tầng xây dựng xây dựng, cập nhật tài liệu kỹ thuật vận hành; hỗ trợ kỹ thuật và tổ chức tập huấn về sử dụng tài khoản, cập nhật, rà soát, kết nối, chia sẻ, khai thác dữ liệu và xử lý sự cố trên Hệ thống thông tin;
+
+đ) Hằng năm, căn cứ nhiệm vụ được giao tại Thông tư này, lập kế hoạch, đề xuất nhu cầu kinh phí quản lý, vận hành kỹ thuật, duy trì, nâng cấp, bảo đảm an ninh mạng, sao lưu, phục hồi và kết nối Hệ thống thông tin; gửi cơ quan, đơn vị có thẩm quyền tổng hợp, trình cấp có thẩm quyền xem xét, quyết định theo quy định của pháp luật.
+
+4. Ủy ban nhân dân cấp tỉnh có trách nhiệm:
+
+a) Chỉ đạo tổ chức thu thập, số hóa, tạo lập, cập nhật, rà soát, ghi nhận trạng thái chất lượng, chuẩn hóa, quản lý, khai thác và sử dụng dữ liệu trên địa bàn theo lộ trình tại Điều 27 Thông tư này, phù hợp với điều kiện và mức độ sẵn sàng dữ liệu của địa phương;
+
+b) Chỉ đạo Sở Xây dựng làm đầu mối quản lý dữ liệu tại địa phương; phân công nhiệm vụ, bố trí người thực hiện trong tổ chức, biên chế được giao, tài khoản và quy trình nội bộ;
+
+c) Chỉ đạo Ủy ban nhân dân cấp xã tạo lập dữ liệu thuộc nguồn do cấp xã quản lý hoặc phối hợp đối chiếu, xác minh dữ liệu về dân số, địa bàn phục vụ, điểm ngập, phản ánh, kiến nghị của người dân và hiện trạng theo phân công, phân cấp của Ủy ban nhân dân cấp tỉnh;
+
+d) Tổ chức hướng dẫn, đôn đốc chủ sở hữu hoặc đại diện chủ sở hữu cung cấp, đối chiếu, xác minh dữ liệu tài sản, hồ sơ pháp lý, hồ sơ lịch sử, hợp đồng quản lý, vận hành và tài liệu làm căn cứ;
+
+đ) Tổ chức hướng dẫn, đôn đốc đơn vị cấp nước và đơn vị thoát nước tạo lập, cập nhật, tự kiểm tra, giải trình, chuẩn hóa, kết nối, chia sẻ, bảo vệ dữ liệu và bố trí đầu mối, nhân sự, quy trình nội bộ phù hợp với phạm vi quản lý, vận hành;
+
+e) Chỉ đạo kết nối, kế thừa dữ liệu từ hệ thống, thiết bị đo, cảm biến và hệ thống giám sát đã được đầu tư, đang vận hành hoặc thuộc trường hợp phải trang bị theo pháp luật chuyên ngành; bảo đảm không làm gián đoạn sản xuất, cung cấp dịch vụ và an toàn công trình;
+
+g) Bảo đảm các điều kiện cần thiết để thực hiện việc số hóa, chuẩn hóa, cập nhật, kết nối dữ liệu và tổ chức thực hiện theo quy định của pháp luật;
+
+h) Tổ chức đào tạo, bồi dưỡng, hướng dẫn cán bộ, công chức, viên chức và cơ quan, đơn vị có liên quan trong khai thác, vận hành Hệ thống thông tin, Cơ sở dữ liệu; hỗ trợ chuyển đổi, chuẩn hóa dữ liệu của các hệ thống hiện có theo yêu cầu kỹ thuật thống nhất.
+
+5. Sở Xây dựng có trách nhiệm:
+
+a) Là đầu mối quản lý dữ liệu tại địa phương; tạo lập, cập nhật dữ liệu quản lý nhà nước thuộc nguồn của Sở; đề nghị cấp mới, thay đổi, thu hồi vai trò và phạm vi tài khoản của người sử dụng tại địa phương; khai thác dữ liệu phục vụ quản lý nhà nước;
+
+b) Rà soát và ghi nhận trạng thái chất lượng dữ liệu theo phân quyền; sử dụng quy tắc tự động, phân loại rủi ro, chọn mẫu và thông báo nội dung cần chỉnh sửa. Việc ghi nhận trạng thái chất lượng không thay thế trách nhiệm của cơ quan, đơn vị tạo lập đối với tính chính xác của số liệu kỹ thuật, vận hành;
+
+c) Phối hợp với cơ quan quản lý tài nguyên nước, môi trường, y tế, thống kê, Ban Quản lý khu kinh tế, khu công nghiệp và cơ quan có liên quan để kết nối, đối soát và xử lý sai lệch dữ liệu;
+
+d) Rà soát khối lượng công việc, phân công đầu mối và người thực hiện trong tổ chức, vị trí việc làm, biên chế được giao; đề xuất cấp có thẩm quyền bố trí nguồn lực phù hợp; tổ chức chuyển đổi từ tổng hợp báo cáo giấy sang khai thác, tổng hợp dữ liệu điện tử theo lộ trình;
+
+đ) Hướng dẫn, hỗ trợ Ủy ban nhân dân cấp xã, chủ sở hữu hoặc đại diện chủ sở hữu, đơn vị cấp nước, đơn vị thoát nước và cơ quan, tổ chức có liên quan trên địa bàn trong việc tạo lập, cung cấp, cập nhật, rà soát, chỉnh sửa, chuẩn hóa, kết nối, chia sẻ và khai thác dữ liệu trên Hệ thống thông tin theo quy định của Thông tư này.
+
+6. Ủy ban nhân dân cấp xã có trách nhiệm:
+
+a) Tạo lập, cập nhật dữ liệu phản ánh, kiến nghị do mình trực tiếp tiếp nhận; phối hợp đối chiếu địa bàn, phạm vi phục vụ và điểm ngập với thực tế quản lý tại địa phương theo phân công, phân cấp của Ủy ban nhân dân cấp tỉnh và Phụ lục I và Phụ lục II ban hành kèm theo Thông tư này;
+
+b) Khai thác dữ liệu dân số, đơn vị hành chính, thống kê từ Hệ thống nguồn; không thu thập, tạo lập lại dữ liệu đã được kết nối, chia sẻ.
+
+7. Chủ sở hữu hoặc đại diện chủ sở hữu công trình, hệ thống thoát nước có trách nhiệm cung cấp, xác minh dữ liệu tài sản, hồ sơ pháp lý, hồ sơ lịch sử, hợp đồng và hồ sơ bàn giao; phối hợp cập nhật trạng thái thanh lý, điều chuyển, thay đổi đơn vị vận hành; chịu trách nhiệm về nguồn và nội dung dữ liệu cung cấp.
+
+8. Đơn vị cấp nước, đơn vị thoát nước có trách nhiệm bố trí đầu mối và người thực hiện; tạo lập, cập nhật, tự kiểm tra, giải trình, bảo vệ dữ liệu kỹ thuật, vận hành do mình quản lý; duy trì thiết bị, Hệ thống nguồn trong phạm vi trách nhiệm; bàn giao dữ liệu khi thay đổi đơn vị vận hành; phối hợp đối soát và khắc phục dữ liệu thiếu, sai lệch hoặc chậm cập nhật.
+
+9. Kinh phí thực hiện Thông tư này được bảo đảm từ ngân sách nhà nước theo phân cấp ngân sách hiện hành và các nguồn kinh phí hợp pháp khác. Việc lập, tổng hợp, thẩm định, phê duyệt, phân bổ, quản lý và sử dụng kinh phí thực hiện theo quy định của pháp luật về ngân sách nhà nước, đầu tư công và pháp luật có liên quan.
+
+Điều 27. Điều khoản chuyển tiếp và lộ trình thực hiện
+
+1. Việc triển khai thực hiện Thông tư này được phân kỳ theo các giai đoạn: rà soát, chuẩn hóa dữ liệu nền tảng và đối tượng quản lý cốt lõi; cập nhật dữ liệu vận hành; tăng cường kết nối tự động và tái sử dụng dữ liệu. Lộ trình thực hiện không làm thay đổi thời hạn kết nối, chia sẻ dữ liệu bắt buộc theo quy định của pháp luật.
+
+2. Trong thời hạn 06 tháng kể từ ngày Thông tư này có hiệu lực, Ủy ban nhân dân cấp tỉnh chỉ đạo Sở Xây dựng hoàn thành việc rà soát, lập danh sách và kế hoạch chuẩn hóa đơn vị cấp nước, đơn vị thoát nước, nhà máy nước, công trình thu nước, nhà máy, trạm xử lý nước thải và các đối tượng quản lý cốt lõi thuộc diện bắt buộc phải có mã định danh chuyên ngành.
+
+3. Trong thời hạn 12 tháng kể từ ngày Thông tư này có hiệu lực, địa phương hoàn thành cập nhật dữ liệu nền tảng ưu tiên về định danh, vị trí, quy mô, công suất, tình trạng hoạt động, phạm vi phục vụ và hồ sơ pháp lý tối thiểu. Trong thời hạn 24 tháng kể từ ngày Thông tư này có hiệu lực, địa phương hoàn thành cập nhật các trường dữ liệu đã có nguồn hợp pháp và đủ điều kiện kỹ thuật; trường dữ liệu phụ thuộc thiết bị, Hệ thống nguồn thực hiện theo khoản 6 Điều 6 Thông tư này. Đối tượng thuộc danh mục định danh địa điểm đã có đủ thông tin tối thiểu theo khoản 2 Điều 6 Nghị định số 326/2026/NĐ-CP phải được đồng bộ để cấp mã theo quy định; lộ trình tại Điều này không làm kéo dài thời điểm đồng bộ. Đối tượng chưa đủ thông tin thực hiện theo kế hoạch thu thập, chuẩn hóa.
+
+4. Dữ liệu được tạo lập, cập nhật trước ngày Thông tư này có hiệu lực được tiếp tục sử dụng kèm nguồn, trạng thái và mức độ chất lượng. Trong thời hạn 24 tháng kể từ ngày Thông tư này có hiệu lực, cơ quan, đơn vị đang quản lý hoặc kế thừa trách nhiệm quản lý dữ liệu thực hiện rà soát, đối chiếu, liên kết, chuyển đổi, chuẩn hóa dữ liệu; Sở Xây dựng theo dõi tiến độ hoàn thiện. Không yêu cầu tạo lập lại dữ liệu đáp ứng yêu cầu; lịch sử xử lý, phiên bản và trạng thái chất lượng phải được lưu giữ.
+
+Điều 28. Hiệu lực thi hành
+
+1. Thông tư này có hiệu lực thi hành kể từ ngày 01 tháng 11 năm 2026.
+
+2. Trường hợp văn bản quy phạm pháp luật được viện dẫn tại Thông tư này được sửa đổi, bổ sung hoặc thay thế thì áp dụng theo văn bản sửa đổi, bổ sung hoặc thay thế./.
+
+ 
+
+Nơi nhận:
+
+- Văn phòng Trung ương Đảng và các Ban của Đảng;
+- Văn phòng Chính phủ;
+
+- Văn phòng Quốc hội;
+
+- Văn phòng Chủ tịch nước;
+
+- Các Bộ, cơ quan ngang Bộ, cơ quan thuộc Chính phủ;
+- UBND các tỉnh, thành phố trực thuộc Trung ương;
+- Bộ Xây dựng: Bộ trưởng, các Thứ trưởng;
+- Sở Xây dựng các tỉnh, thành phố trực thuộc Trung ương;
+- Các cơ quan, đơn vị thuộc Bộ Xây dựng;
+- Công báo; Cổng thông tin điện tử Chính phủ; Cổng thông tin điện tử Bộ Xây dựng;
+
+- Cơ sở dữ liệu quốc gia về pháp luật;
+- Cục Kiểm tra văn bản và Tổ chức thi hành pháp luật, Bộ Tư pháp;
+- Lưu: VT, KCHT, CTN.
+
+	
+
+KT. BỘ TRƯỞNG
+
+THỨ TRƯỞNG
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+Nguyễn Tường Văn
+
+Phụ lục I
+
+DANH MỤC TRƯỜNG DỮ LIỆU TỐI THIỂU VỀ CẤP NƯỚC SẠCH
+
+(Ban hành kèm theo Thông tư số /2026/TT-BXD ngày tháng năm 2026 của Bộ trưởng Bộ Xây dựng)
+
+TT
+
+	
+
+Mã trường
+
+	
+
+Tên trường/nhóm dữ liệu
+
+	
+
+Mô tả dữ liệu
+
+	
+
+Kiểu dữ liệu/định dạng
+
+	
+
+Đơn vị hoặc danh mục
+
+	
+
+Chủ thể tạo lập, cập nhật
+
+	
+
+Phối hợp đối chiếu; rà soát, ghi nhận trạng thái chất lượng
+
+	
+
+Kỳ cập nhật
+
+
+
+
+A. Đơn vị cấp nước, phạm vi phục vụ, khách hàng và giá nước
+
+
+
+
+1
+
+	
+
+CN-A-01
+
+	
+
+Mã định danh tổ chức của đơn vị cấp nước
+
+	
+
+Mã số doanh nghiệp, mã số thuế hoặc mã định danh tổ chức do cơ quan có thẩm quyền cấp. Trường hợp dữ liệu đã có tại cơ sở dữ liệu quốc gia hoặc cơ sở dữ liệu chuyên ngành thì kế thừa mã nguồn và thực hiện đối soát; không tự tạo mã thay thế.
+
+	
+
+Chuỗi ký tự định danh
+
+	
+
+Duy nhất
+
+	
+
+Đơn vị cấp nước
+
+	
+
+Phối hợp đối chiếu: cơ quan có liên quan
+Rà soát, ghi nhận trạng thái chất lượng: Sở Xây dựng rà soát, ghi nhận trạng thái chất lượng theo phân quyền
+
+	
+
+Khi tạo lập; khi thay đổi
+
+
+
+
+2
+
+	
+
+CN-A-02
+
+	
+
+Tên đơn vị cấp nước
+
+	
+
+Tên đầy đủ theo đăng ký doanh nghiệp, quyết định thành lập hoặc văn bản có giá trị pháp lý tương đương.
+
+	
+
+Chuỗi ký tự
+
+	
+
+Không áp dụng
+
+	
+
+Đơn vị cấp nước
+
+	
+
+Phối hợp đối chiếu: Theo nhu cầu đối chiếu
+Rà soát, ghi nhận trạng thái chất lượng: Sở Xây dựng rà soát, ghi nhận trạng thái chất lượng theo phân quyền
+
+	
+
+Khi thay đổi
+
+
+
+
+3
+
+	
+
+CN-A-03
+
+	
+
+Loại hình đơn vị cấp nước
+
+	
+
+Loại hình tổ chức của đơn vị cấp nước theo danh mục dùng chung.
+
+	
+
+Mã danh mục dùng chung
+
+	
+
+Theo danh mục dùng chung
+
+	
+
+Đơn vị cấp nước
+
+	
+
+Phối hợp đối chiếu: Theo nhu cầu đối chiếu
+Rà soát, ghi nhận trạng thái chất lượng: Sở Xây dựng rà soát, ghi nhận trạng thái chất lượng theo phân quyền
+
+	
+
+Khi thay đổi
+
+
+
+
+4
+
+	
+
+CN-A-04
+
+	
+
+Tỷ lệ vốn nhà nước trong vốn điều lệ
+
+	
+
+Tỷ lệ phần vốn nhà nước trong vốn điều lệ của đơn vị cấp nước tại thời điểm báo cáo; trường hợp không có vốn nhà nước ghi bằng 0. Ghi thời điểm xác định và tài liệu làm căn cứ về cơ cấu vốn.
+
+	
+
+Số thập phân
+
+	
+
+%
+
+	
+
+Đơn vị cấp nước
+
+	
+
+Phối hợp đối chiếu: cơ quan có liên quan
+Rà soát, ghi nhận trạng thái chất lượng: Sở Xây dựng rà soát, ghi nhận trạng thái chất lượng theo phân quyền
+
+	
+
+Khi thay đổi; rà soát, tổng hợp hằng năm
+
+
+
+
+5
+
+	
+
+CN-A-05
+
+	
+
+Địa chỉ trụ sở và thông tin liên hệ
+
+	
+
+Địa chỉ trụ sở chính, số điện thoại, thư điện tử công vụ và trang thông tin điện tử (nếu có). Mã địa chỉ hoặc mã định danh địa điểm chỉ ghi khi được Hệ thống nguồn cung cấp.
+
+	
+
+Đối tượng địa chỉ/chuỗi ký tự
+
+	
+
+Mã đơn vị hành chính; mã tham chiếu (nếu có)
+
+	
+
+Đơn vị cấp nước
+
+	
+
+Phối hợp đối chiếu: Theo nhu cầu đối chiếu
+Rà soát, ghi nhận trạng thái chất lượng: Sở Xây dựng rà soát, ghi nhận trạng thái chất lượng theo phân quyền
+
+	
+
+Khi thay đổi
+
+
+
+
+6
+
+	
+
+CN-A-06
+
+	
+
+Đầu mối dữ liệu của đơn vị cấp nước
+
+	
+
+Họ tên, chức vụ, số điện thoại và thư điện tử công vụ của người được giao làm đầu mối tạo lập, cập nhật dữ liệu. Chỉ thu thập thông tin liên hệ công vụ cần thiết; dữ liệu được khai thác theo phạm vi phân quyền và cập nhật khi thay đổi đầu mối.
+
+	
+
+Chuỗi ký tự
+
+	
+
+Không áp dụng
+
+	
+
+Đơn vị cấp nước
+
+	
+
+Phối hợp đối chiếu: Theo nhu cầu đối chiếu
+Rà soát, ghi nhận trạng thái chất lượng: Sở Xây dựng rà soát, ghi nhận trạng thái chất lượng theo phân quyền
+
+	
+
+Khi thay đổi
+
+
+
+
+7
+
+	
+
+CN-A-07
+
+	
+
+Tình trạng hoạt động của đơn vị
+
+	
+
+Đang hoạt động, tạm dừng, chuyển giao, chấm dứt hoạt động hoặc trạng thái khác theo danh mục dùng chung.
+
+	
+
+Mã danh mục dùng chung
+
+	
+
+Theo danh mục dùng chung
+
+	
+
+Đơn vị cấp nước
+
+	
+
+Phối hợp đối chiếu: Theo nhu cầu đối chiếu
+Rà soát, ghi nhận trạng thái chất lượng: Sở Xây dựng rà soát, ghi nhận trạng thái chất lượng theo phân quyền
+
+	
+
+Khi thay đổi
+
+
+
+
+8
+
+	
+
+CN-A-08
+
+	
+
+Vùng phục vụ cấp nước
+
+	
+
+Danh sách tỉnh, thành phố, xã, phường và khu vực thực tế được đơn vị cấp nước cung cấp nước; phân loại phần địa bàn đô thị và phần địa bàn nông thôn trong cùng phạm vi phục vụ. Khu vực nông thôn chỉ ghi nhận khi do đơn vị cấp nước thuộc phạm vi Hệ thống thông tin trực tiếp cung cấp; không tạo mã định danh địa điểm riêng cho vùng phục vụ. Trường hình học (polygon) ranh giới vùng phục vụ; mô tả cụ thể trong trường hợp chưa được xác định.
+
+	
+
+Danh sách mã đơn vị hành chính/chuỗi ký tự/mã danh mục
+
+	
+
+Mã đơn vị hành chính; phân loại khu vực
+
+	
+
+Đơn vị cấp nước
+
+	
+
+Phối hợp đối chiếu: UBND cấp xã
+Rà soát, ghi nhận trạng thái chất lượng: Sở Xây dựng rà soát, ghi nhận trạng thái chất lượng theo phân quyền
+
+	
+
+Khi thay đổi
+
+
+
+
+9
+
+	
+
+CN-A-09
+
+	
+
+Dân số trong phạm vi phục vụ
+
+	
+
+Tổng dân số trong phạm vi phục vụ tại thời điểm chốt số liệu; phân tổ theo địa bàn đô thị và khu vực nông thôn do đơn vị cấp nước trực tiếp phục vụ. Dữ liệu được ưu tiên tiếp nhận, đối chiếu, đồng bộ từ Cơ sở dữ liệu quốc gia về dân cư hoặc cơ sở dữ liệu do cơ quan, tổ chức có thẩm quyền quản lý; ghi rõ nguồn, thời điểm chốt và phương pháp xác định trong siêu dữ liệu. UBND cấp xã chỉ bổ sung, đối chiếu yếu tố chuyên ngành chưa có tại nguồn, gồm ranh giới phạm vi phục vụ; dân số tạm trú quy đổi chỉ áp dụng khi có tiêu chí của cơ quan có thẩm quyền.
+
+Hệ thống thông tin chỉ tiếp nhận kết quả tổng hợp theo phạm vi phục vụ; không tiếp nhận, lưu trữ bản ghi dân cư ở mức cá nhân.
+
+	
+
+Số nguyên không âm
+
+	
+
+Người
+
+	
+
+Hệ thống thông tin tự động kết nối từ Cơ sở dữ liệu quốc gia về dân cư hoặc cơ sở dữ liệu do cơ quan, tổ chức có thẩm quyền quản lý;
+
+	
+
+Phối hợp đối chiếu: UBND cấp xã; đơn vị cấp nước
+Rà soát, ghi nhận trạng thái chất lượng: Sở Xây dựng rà soát, ghi nhận trạng thái chất lượng theo phân quyền
+
+	
+
+Theo tần suất của Hệ thống nguồn; chốt số liệu hằng năm
+
+
+
+
+10
+
+	
+
+CN-A-10
+
+	
+
+Số người bình quân trên một đấu nối nước sinh hoạt
+
+	
+
+Số người bình quân trên một đấu nối nước sinh hoạt được xác định từ dữ liệu dân cư, thống kê, dữ liệu hành chính do cơ quan có thẩm quyền quản lý và số đấu nối đã được ghi nhận đáp ứng yêu cầu chất lượng; ưu tiên tính tự động sau khi đối chiếu, đồng bộ dữ liệu nguồn, ghi rõ năm, nguồn và phương pháp. UBND cấp xã chỉ bổ sung, đối chiếu yếu tố chuyên ngành chưa có tại nguồn. Không áp dụng cơ học cho chung cư dùng đồng hồ tổng, nhà trọ, khu lưu trú hoặc địa bàn biến động lớn.
+
+	
+
+Số thập phân
+
+	
+
+Người/đấu nối
+
+	
+
+Hệ thống thông tin tự động tính từ dữ liệu đã kết nối; UBND cấp xã bổ sung theo phân công
+
+	
+
+Phối hợp đối chiếu: UBND cấp xã; đơn vị cấp nước
+Rà soát, ghi nhận trạng thái chất lượng: Sở Xây dựng rà soát dữ liệu nguồn và ghi nhận trạng thái chất lượng
+
+	
+
+Theo tần suất của Hệ thống nguồn; chốt số liệu hằng năm
+
+
+
+
+11
+
+	
+
+CN-A-11
+
+	
+
+Số đấu nối nước sinh hoạt đang hoạt động
+
+	
+
+Tổng số đấu nối hoặc đồng hồ nước đang hoạt động của hộ gia đình sử dụng nước sinh hoạt tại thời điểm chốt số liệu; có thể phân tổ theo địa bàn đô thị và nông thôn trong phạm vi phục vụ.
+
+	
+
+Số nguyên không âm
+
+	
+
+Đấu nối
+
+	
+
+Đơn vị cấp nước
+
+	
+
+Phối hợp đối chiếu: UBND cấp xã
+Rà soát, ghi nhận trạng thái chất lượng: Sở Xây dựng rà soát, ghi nhận trạng thái chất lượng theo phân quyền
+
+	
+
+Cập nhật hằng tháng; tổng hợp theo quý, năm
+
+
+
+
+12
+
+	
+
+CN-A-12
+
+	
+
+Số đấu nối ngoài sinh hoạt đang hoạt động
+
+	
+
+Tổng số đấu nối đang hoạt động của cơ quan, tổ chức, cơ sở sản xuất, kinh doanh, dịch vụ và khách hàng ngoài hộ gia đình.
+
+	
+
+Số nguyên không âm
+
+	
+
+Đấu nối
+
+	
+
+Đơn vị cấp nước
+
+	
+
+Phối hợp đối chiếu: Theo nhu cầu đối chiếu
+Rà soát, ghi nhận trạng thái chất lượng: Sở Xây dựng rà soát, ghi nhận trạng thái chất lượng theo phân quyền
+
+	
+
+Cập nhật hằng tháng; tổng hợp theo quý, năm
+
+
+
+
+13
+
+	
+
+CN-A-13
+
+	
+
+Số đấu nối nước sinh hoạt mới
+
+	
+
+Số đấu nối nước sinh hoạt được đưa vào sử dụng mới trong kỳ báo cáo.
+
+	
+
+Số nguyên không âm
+
+	
+
+Đấu nối/kỳ
+
+	
+
+Đơn vị cấp nước
+
+	
+
+Phối hợp đối chiếu: UBND cấp xã
+Rà soát, ghi nhận trạng thái chất lượng: Sở Xây dựng rà soát, ghi nhận trạng thái chất lượng theo phân quyền
+
+	
+
+Cập nhật hằng tháng; tổng hợp theo quý, năm
+
+
+
+
+14
+
+	
+
+CN-A-14
+
+	
+
+Tổng số đấu nối đang hoạt động
+
+	
+
+Tổng số đấu nối nước sinh hoạt và đấu nối ngoài sinh hoạt đang hoạt động. Hệ thống thông tin tự động tính từ CN-A-11 và CN-A-12 đã được ghi nhận đáp ứng yêu cầu chất lượng; không nhập thủ công kết quả.
+
+	
+
+Số nguyên không âm (tự động tính)
+
+	
+
+Đấu nối
+
+	
+
+Hệ thống thông tin tự động tính từ dữ liệu nguồn
+
+	
+
+Phối hợp đối chiếu: Đơn vị cấp nước
+Rà soát, ghi nhận trạng thái chất lượng: Sở Xây dựng rà soát dữ liệu nguồn và ghi nhận trạng thái chất lượng
+
+	
+
+Cập nhật hằng tháng; tổng hợp theo quý, năm
+
+
+
+
+15
+
+	
+
+CN-A-15
+
+	
+
+Dân số được cấp nước sạch
+
+	
+
+Dân số được cấp nước sạch qua hệ thống cấp nước tập trung trong phạm vi phục vụ; ưu tiên số liệu dân cư, thống kê hoặc dữ liệu do cơ quan có thẩm quyền cung cấp. Trường hợp chưa có nguồn tin cậy hơn, Hệ thống thông tin ước tính từ số đấu nối và số người bình quân trên một đấu nối; phải phân tổ đô thị, nông thôn, ghi rõ nguồn, thời điểm, phương pháp và xử lý riêng chung cư, nhà trọ, khu lưu trú.
+
+	
+
+Số nguyên không âm (tự động tính hoặc tiếp nhận từ Hệ thống nguồn)
+
+	
+
+Người
+
+	
+
+Hệ thống thông tin tự động tính từ dữ liệu nguồn
+
+	
+
+Phối hợp đối chiếu: Đơn vị cấp nước; UBND cấp xã
+Rà soát, ghi nhận trạng thái chất lượng: Sở Xây dựng rà soát dữ liệu nguồn và ghi nhận trạng thái chất lượng
+
+	
+
+Cập nhật hằng quý; tổng hợp hằng năm
+
+
+
+
+16
+
+	
+
+CN-A-16
+
+	
+
+Tỷ lệ dân số được cấp nước sạch trong phạm vi phục vụ
+
+	
+
+Tỷ lệ dân số được cấp nước sạch qua hệ thống cấp nước tập trung so với dân số trong phạm vi phục vụ; Hệ thống thông tin tự động tính và phân tổ theo địa bàn đô thị, địa bàn nông thôn do đơn vị cấp nước trực tiếp phục vụ và toàn bộ phạm vi phục vụ.
+
+	
+
+Số thập phân (tự động tính)
+
+	
+
+%
+
+	
+
+Hệ thống thông tin tự động tính từ dữ liệu nguồn
+
+	
+
+Phối hợp đối chiếu: Đơn vị cấp nước; UBND cấp xã
+Rà soát, ghi nhận trạng thái chất lượng: Sở Xây dựng rà soát dữ liệu nguồn và ghi nhận trạng thái chất lượng
+
+	
+
+Hệ thống thông tin tự động tính hằng quý; tổng hợp hằng năm
+
+
+
+
+17
+
+	
+
+CN-A-17
+
+	
+
+Giá nước sạch bình quân do cơ quan có thẩm quyền ban hành
+
+	
+
+Mức giá tiêu thụ nước sạch bình quân hoặc giá bán buôn nước sạch do cơ quan có thẩm quyền ban hành; ghi số, ngày văn bản, cơ quan ban hành, đối tượng áp dụng và thời điểm hiệu lực.
+
+	
+
+Số thập phân/đối tượng dữ liệu
+
+	
+
+Đồng/m³
+
+	
+
+Sở Xây dựng
+
+	
+
+Phối hợp đối chiếu: đơn vị cấp nước; cơ quan có liên quan
+Rà soát, ghi nhận trạng thái chất lượng: Tự kiểm tra tại nguồn; Hệ thống thông tin ghi nhận trạng thái
+
+	
+
+Khi thay đổi
+
+
+
+
+18
+
+	
+
+CN-A-18
+
+	
+
+Biểu giá nước sạch sinh hoạt được ban hành
+
+	
+
+Danh sách mức sử dụng và mức giá nước sạch sinh hoạt tương ứng theo văn bản được cơ quan có thẩm quyền ban hành; tối thiểu ghi nhận mức giá áp dụng cho 10 m³ đầu tiên của một hộ trong một tháng khi biểu giá có bậc này. Ghi số, ngày văn bản, cơ quan ban hành và thời điểm áp dụng.
+
+	
+
+Đối tượng dữ liệu lặp/số thập phân
+
+	
+
+Đồng/m³; mức sử dụng
+
+	
+
+Sở Xây dựng
+
+	
+
+Phối hợp đối chiếu: đơn vị cấp nước; cơ quan có liên quan
+Rà soát, ghi nhận trạng thái chất lượng: Tự kiểm tra tại nguồn; Hệ thống thông tin ghi nhận trạng thái
+
+	
+
+Khi thay đổi
+
+
+
+
+19
+
+	
+
+CN-QH-01
+
+	
+
+Thông tin quy hoạch cấp nước có liên quan
+
+	
+
+Thông tin trích xuất từ quy hoạch tỉnh, quy hoạch đô thị và nông thôn, quy hoạch chuyên ngành hạ tầng kỹ thuật hoặc hồ sơ quy hoạch khác đã được cơ quan có thẩm quyền phê duyệt có nội dung về cấp nước, gồm: tên quy hoạch; số, ngày, cơ quan ban hành; thời kỳ quy hoạch; phạm vi và vùng cấp nước; nhu cầu dùng nước; tên và loại nguồn nước; quy mô, công suất nhà máy nước, công trình thu nước, trạm bơm nước thô; tuyến hoặc công trình truyền dẫn nước thô, tuyến ống truyền tải chính và chỉ tiêu có liên quan. Dữ liệu được lưu dưới dạng thông tin tham chiếu, tài liệu và bản đồ kèm theo; không thay thế hồ sơ quy hoạch được phê duyệt.
+
+	
+
+Đối tượng dữ liệu/tệp điện tử/dữ liệu không gian
+
+	
+
+Mã văn bản; năm; m³/ngày đêm; km; tệp điện tử
+
+	
+
+Sở Xây dựng
+
+	
+
+Phối hợp đối chiếu: cơ quan quản lý quy hoạch; đơn vị cấp nước
+Rà soát, ghi nhận trạng thái chất lượng: Tự kiểm tra tại nguồn; Hệ thống ghi thông tin nhận trạng thái
+
+	
+
+Khi quy hoạch được ban hành, điều chỉnh hoặc thay thế
+
+
+
+
+B. Nhà máy nước, nguồn nước, nước thô, công trình thu nước và sản lượng
+
+
+
+
+20
+
+	
+
+CN-B-19
+
+	
+
+Thông tin định danh nhà máy nước
+
+	
+
+Mã định danh chuyên ngành ổn định; tên, địa chỉ và tọa độ theo hệ quy chiếu quốc gia của nhà máy nước. Mã định danh địa điểm và mã loại đối tượng chỉ ghi khi nhà máy thuộc danh mục định danh theo văn bản quy phạm pháp luật có hiệu lực và được Cơ sở dữ liệu định danh địa điểm xác lập; không sử dụng mã chuyên ngành thay mã định danh địa điểm.
+
+	
+
+Đối tượng dữ liệu/chuỗi định danh/dữ liệu không gian
+
+	
+
+Mã chuyên ngành; mã tham chiếu (nếu có)
+
+	
+
+Đơn vị cấp nước
+
+	
+
+Phối hợp đối chiếu: UBND cấp xã
+Rà soát, ghi nhận trạng thái chất lượng: Sở Xây dựng rà soát, ghi nhận trạng thái chất lượng theo phân quyền
+
+	
+
+Khi tạo lập; khi thay đổi
+
+
+
+
+21
+
+	
+
+CN-B-20
+
+	
+
+Đơn vị quản lý, vận hành nhà máy nước
+
+	
+
+Tên và mã định danh tổ chức của đơn vị trực tiếp quản lý, vận hành nhà máy nước.
+
+	
+
+Quan hệ tham chiếu/chuỗi ký tự
+
+	
+
+Không áp dụng
+
+	
+
+Đơn vị cấp nước
+
+	
+
+Phối hợp đối chiếu: Theo nhu cầu đối chiếu
+Rà soát, ghi nhận trạng thái chất lượng: Sở Xây dựng rà soát, ghi nhận trạng thái chất lượng theo phân quyền
+
+	
+
+Khi tạo lập; khi thay đổi
+
+
+
+
+22
+
+	
+
+CN-B-21
+
+	
+
+Tình trạng hoạt động của nhà máy nước
+
+	
+
+Đang vận hành, tạm dừng, dự phòng, đang đầu tư, nâng cấp hoặc ngừng hoạt động.
+
+	
+
+Mã danh mục dùng chung
+
+	
+
+Theo danh mục dùng chung
+
+	
+
+Đơn vị cấp nước
+
+	
+
+Phối hợp đối chiếu: Theo nhu cầu đối chiếu
+Rà soát, ghi nhận trạng thái chất lượng: Sở Xây dựng rà soát, ghi nhận trạng thái chất lượng theo phân quyền
+
+	
+
+Khi thay đổi; đối soát hằng tháng
+
+
+
+
+23
+
+	
+
+CN-B-22
+
+	
+
+Năm bắt đầu vận hành
+
+	
+
+Năm nhà máy nước chính thức đưa vào vận hành, khai thác.
+
+	
+
+Số nguyên
+
+	
+
+Năm
+
+	
+
+Đơn vị cấp nước
+
+	
+
+Phối hợp đối chiếu: Theo nhu cầu đối chiếu
+Rà soát, ghi nhận trạng thái chất lượng: Sở Xây dựng rà soát, ghi nhận trạng thái chất lượng theo phân quyền
+
+	
+
+Khi tạo lập; khi thay đổi
+
+
+
+
+24
+
+	
+
+CN-B-23
+
+	
+
+Công suất thiết kế của nhà máy nước
+
+	
+
+Công suất thiết kế theo hồ sơ được phê duyệt hoặc hồ sơ nghiệm thu đưa công trình vào sử dụng.
+
+	
+
+Số thập phân
+
+	
+
+m³/ngày đêm
+
+	
+
+Đơn vị cấp nước
+
+	
+
+Phối hợp đối chiếu: Theo nhu cầu đối chiếu
+Rà soát, ghi nhận trạng thái chất lượng: Sở Xây dựng rà soát, ghi nhận trạng thái chất lượng theo phân quyền
+
+	
+
+Khi tạo lập; khi thay đổi
+
+
+
+
+25
+
+	
+
+CN-B-24
+
+	
+
+Công suất khai thác, vận hành bình quân
+
+	
+
+Công suất khai thác, vận hành bình quân ngày của nhà máy trong kỳ báo cáo.
+
+Ưu tiên tiếp nhận tự động từ thiết bị đo lưu lượng.
+
+	
+
+Số thập phân
+
+	
+
+m³/ngày đêm
+
+	
+
+Đơn vị cấp nước
+
+	
+
+Phối hợp đối chiếu: Theo nhu cầu đối chiếu
+Rà soát, ghi nhận trạng thái chất lượng: Sở Xây dựng rà soát, ghi nhận trạng thái chất lượng theo phân quyền
+
+	
+
+Theo tần suất của Hệ thống nguồn; tổng hợp hằng tháng
+
+
+
+
+26
+
+	
+
+CN-B-25
+
+	
+
+Tỷ lệ huy động công suất cấp nước
+
+	
+
+Tỷ lệ giữa công suất khai thác, vận hành bình quân và công suất thiết kế. Hệ thống thông tin tự động tính từ CN-B-24 và CN-B-23 đã được ghi nhận đáp ứng yêu cầu chất lượng; không nhập thủ công kết quả.
+
+	
+
+Số thập phân (tự động tính)
+
+	
+
+%
+
+	
+
+Hệ thống thông tin tự động tính từ dữ liệu nguồn
+
+	
+
+Phối hợp đối chiếu: Đơn vị cấp nước
+Rà soát, ghi nhận trạng thái chất lượng: Sở Xây dựng rà soát dữ liệu nguồn và ghi nhận trạng thái chất lượng
+
+	
+
+Hệ thống thông tin tự động tính hằng tháng; tổng hợp theo quý, năm
+
+
+
+
+27
+
+	
+
+CN-B-26
+
+	
+
+Công nghệ xử lý nước
+
+	
+
+Dây chuyền, công nghệ xử lý chính đang áp dụng tại nhà máy nước.
+
+	
+
+Mã danh mục dùng chung/chuỗi ký tự
+
+	
+
+Theo danh mục dùng chung
+
+	
+
+Đơn vị cấp nước
+
+	
+
+Phối hợp đối chiếu: Theo nhu cầu đối chiếu
+Rà soát, ghi nhận trạng thái chất lượng: Sở Xây dựng rà soát, ghi nhận trạng thái chất lượng theo phân quyền
+
+	
+
+Khi tạo lập; khi thay đổi
+
+
+
+
+28
+
+	
+
+CN-B-27
+
+	
+
+Tên, loại nguồn nước và thông tin chất lượng nguồn nước khai thác
+
+	
+
+Tên cụ thể, loại nguồn nước và thông tin chất lượng nguồn nước được sử dụng để sản xuất nước sạch, quản lý trong cùng một đối tượng dữ liệu. Loại nguồn nước gồm nước mặt, nước dưới đất, nước thô mua hoặc tiếp nhận từ đơn vị khác, nước biển hoặc nguồn hợp pháp khác; tên nguồn gồm tên sông, hồ, kênh, công trình thủy lợi, tầng chứa nước hoặc tên đơn vị, công trình cung cấp nước thô. Thông tin chất lượng nguồn nước gồm vị trí lấy mẫu, thời điểm, thông số, đơn vị đo, kết quả, phương pháp thử, đơn vị thực hiện, trạng thái bất thường và liên kết tài liệu kết quả; ưu tiên kết nối từ hệ thống dữ liệu tài nguyên nước, môi trường do cơ quan có thẩm quyền quản lý. Trường hợp một nhà máy sử dụng nhiều nguồn, lập bản ghi lặp cho từng nguồn.
+
+	
+
+Đối tượng dữ liệu lặp/mã danh mục dùng chung/chuỗi ký tự/quan hệ tham chiếu
+
+	
+
+Theo DM06; tên nguồn cụ thể; thông số và đơn vị đo theo quy định
+
+	
+
+Đơn vị cấp nước
+
+	
+
+Phối hợp đối chiếu: cơ quan quản lý tài nguyên nước, môi trường và cơ quan có liên quan. Rà soát, ghi nhận trạng thái chất lượng: Sở Xây dựng kiểm tra nguồn, hồ sơ và trạng thái dữ liệu theo phân quyền; không thay thế kết luận chuyên môn của cơ quan có thẩm quyền
+
+	
+
+Khi tạo lập; khi thay đổi; theo tần suất của Hệ thống nguồn
+
+
+
+
+29
+
+	
+
+CN-B-28
+
+	
+
+Tuyến hoặc công trình truyền dẫn nước thô
+
+	
+
+Thông tin tuyến ống, kênh, mương hoặc công trình truyền dẫn nước thô từ công trình thu hoặc điểm giao nhận đến nhà máy nước, gồm điểm đầu, điểm cuối, chiều dài, đường kính hoặc kích thước, vật liệu, công suất thiết kế, lưu lượng vận hành, tình trạng, sơ đồ và vị trí. Trường hợp mua hoặc tiếp nhận nước thô, phải ghi điểm giao nhận, đồng hồ tổng, mã thiết bị, ranh giới quản lý tài sản và đơn vị cung cấp.
+
+	
+
+Đối tượng dữ liệu lặp/dữ liệu không gian/số thập phân
+
+	
+
+km; mm hoặc m; m³/ngày đêm hoặc m³/giờ
+
+	
+
+Đơn vị cấp nước
+
+	
+
+Phối hợp đối chiếu: cơ quan có liên quan
+Rà soát, ghi nhận trạng thái chất lượng: Sở Xây dựng rà soát, ghi nhận trạng thái chất lượng theo phân quyền
+
+	
+
+Thông tin tuyến, công trình: khi tạo lập, khi thay đổi; lưu lượng vận hành: cập nhật hằng tháng, tổng hợp theo quý, năm
+
+
+
+
+30
+
+	
+
+CN-B-29
+
+	
+
+Thông tin định danh công trình thu nước
+
+	
+
+Mã định danh chuyên ngành, tên công trình, địa chỉ, tọa độ và nhà máy nước liên kết. Chỉ tạo bản ghi riêng đối với công trình thu nước có vị trí, hồ sơ và phạm vi quản lý xác định rõ. Mã định danh địa điểm chỉ ghi khi được Cơ sở dữ liệu định danh địa điểm xác lập theo văn bản quy phạm pháp luật có hiệu lực.
+
+	
+
+Đối tượng dữ liệu/chuỗi định danh/dữ liệu không gian
+
+	
+
+Mã chuyên ngành; mã tham chiếu (nếu có)
+
+	
+
+Đơn vị cấp nước
+
+	
+
+Phối hợp đối chiếu: cơ quan có liên quan
+Rà soát, ghi nhận trạng thái chất lượng: Sở Xây dựng rà soát, ghi nhận trạng thái chất lượng theo phân quyền
+
+	
+
+Khi tạo lập; khi thay đổi
+
+
+
+
+31
+
+	
+
+CN-B-30
+
+	
+
+Công suất khai thác nước thô theo giấy phép
+
+	
+
+Lưu lượng khai thác tối đa được phép theo giấy phép khai thác tài nguyên nước còn hiệu lực.
+
+	
+
+Số thập phân
+
+	
+
+m³/ngày đêm
+
+	
+
+Cơ quan quản lý hệ thống dữ liệu tài nguyên nước có thẩm quyền
+
+	
+
+Phối hợp đối chiếu: Đơn vị cấp nước đối chiếu; Sở Xây dựng phối hợp
+Rà soát, ghi nhận trạng thái chất lượng: Kế thừa trạng thái chất lượng của Hệ thống nguồn
+
+	
+
+Khi tạo lập; khi thay đổi
+
+
+
+
+32
+
+	
+
+CN-B-31
+
+	
+
+Thông tin giấy phép khai thác tài nguyên nước
+
+	
+
+Số, ngày cấp, cơ quan cấp, thời hạn, lưu lượng được phép và trạng thái hiệu lực của giấy phép khai thác tài nguyên nước; ưu tiên kế thừa, kết nối từ hệ thống dữ liệu của cơ quan có thẩm quyền.
+
+	
+
+Đối tượng dữ liệu/tệp điện tử
+
+	
+
+Ngày ISO 8601; mã văn bản
+
+	
+
+Cơ quan quản lý hệ thống dữ liệu tài nguyên nước có thẩm quyền
+
+	
+
+Phối hợp đối chiếu: Đơn vị cấp nước đối chiếu; Sở Xây dựng phối hợp
+Rà soát, ghi nhận trạng thái chất lượng: Kế thừa trạng thái chất lượng của Hệ thống nguồn
+
+	
+
+Khi tạo lập; khi thay đổi
+
+
+
+
+33
+
+	
+
+CN-B-32
+
+	
+
+Lưu lượng nước thô khai thác, mua hoặc tiếp nhận thực tế
+
+	
+
+Lưu lượng nước thô bình quân ngày hoặc tổng lượng trong kỳ do đơn vị tự khai thác, mua hoặc tiếp nhận; phân tổ theo nguồn, phương thức và điểm đo/giao nhận. Ưu tiên dữ liệu tự động từ thiết bị đo đáp ứng yêu cầu kỹ thuật, kiểm định hoặc hiệu chuẩn theo pháp luật; lưu nguồn, thời điểm, mã thiết bị, phương pháp đo và hồ sơ đối soát. Khi sai lệch, lưu cả số liệu giao, nhận và trạng thái xử lý.
+
+	
+
+Đối tượng dữ liệu lặp/số thập phân
+
+	
+
+m³/ngày đêm hoặc m³/kỳ
+
+	
+
+Đơn vị cấp nước
+
+	
+
+Phối hợp đối chiếu: đơn vị cung cấp nước thô
+Rà soát, ghi nhận trạng thái chất lượng: Sở Xây dựng rà soát, ghi nhận trạng thái chất lượng theo phân quyền
+
+	
+
+Cập nhật hằng tháng; tổng hợp theo quý, năm
+
+
+
+
+34
+
+	
+
+CN-B-33
+
+	
+
+Nguồn nước và phương án cấp nước thô dự phòng
+
+	
+
+Tên và loại nguồn nước dự phòng; điểm thu hoặc giao nhận; tuyến, công trình truyền dẫn nước thô; công suất hoặc lưu lượng có thể huy động; thời gian dự kiến đưa vào sử dụng; trạng thái sẵn sàng và văn bản, hồ sơ làm căn cứ.
+
+	
+
+Đối tượng dữ liệu lặp
+
+	
+
+m³/ngày đêm; thời gian; trạng thái
+
+	
+
+Đơn vị cấp nước
+
+	
+
+Phối hợp đối chiếu: Theo nhu cầu đối chiếu
+Rà soát, ghi nhận trạng thái chất lượng: Sở Xây dựng rà soát, ghi nhận trạng thái chất lượng theo phân quyền
+
+	
+
+Khi thay đổi; rà soát hằng năm
+
+
+
+
+35
+
+	
+
+CN-B-34
+
+	
+
+Sản lượng nước sạch sản xuất
+
+	
+
+Tổng sản lượng nước sạch được sản xuất trong kỳ báo cáo; quy đổi bình quân ngày khi tổng hợp.
+
+	
+
+Số thập phân
+
+	
+
+m³/kỳ hoặc m³/ngày
+
+	
+
+Đơn vị cấp nước
+
+	
+
+Phối hợp đối chiếu: Theo nhu cầu đối chiếu
+Rà soát, ghi nhận trạng thái chất lượng: Sở Xây dựng rà soát, ghi nhận trạng thái chất lượng theo phân quyền
+
+	
+
+Hằng tháng
+
+
+
+
+36
+
+	
+
+CN-B-35
+
+	
+
+Lượng nước sạch mua buôn
+
+	
+
+Tổng lượng nước sạch bình quân ngày mua buôn từ đơn vị cấp nước khác để cấp vào phạm vi phục vụ.
+
+	
+
+Số thập phân
+
+	
+
+m³/ngày
+
+	
+
+Đơn vị cấp nước
+
+	
+
+Phối hợp đối chiếu: Theo nhu cầu đối chiếu
+Rà soát, ghi nhận trạng thái chất lượng: Sở Xây dựng rà soát, ghi nhận trạng thái chất lượng theo phân quyền
+
+	
+
+Hằng tháng
+
+
+
+
+37
+
+	
+
+CN-B-36
+
+	
+
+Lượng nước sạch bán buôn
+
+	
+
+Tổng lượng nước sạch bình quân ngày do đơn vị sản xuất, bán buôn cho đơn vị cấp nước khác.
+
+	
+
+Số thập phân
+
+	
+
+m³/ngày
+
+	
+
+Đơn vị cấp nước
+
+	
+
+Phối hợp đối chiếu: Theo nhu cầu đối chiếu
+Rà soát, ghi nhận trạng thái chất lượng: Sở Xây dựng rà soát, ghi nhận trạng thái chất lượng theo phân quyền
+
+	
+
+Hằng tháng
+
+
+
+
+38
+
+	
+
+CN-B-37
+
+	
+
+Lượng nước sạch tiêu thụ của khách hàng sinh hoạt đã lập hóa đơn
+
+	
+
+Tổng lượng nước sạch tiêu thụ của khách hàng sinh hoạt được lập hóa đơn trong kỳ, quy đổi bình quân ngày.
+
+	
+
+Số thập phân
+
+	
+
+m³/ngày
+
+	
+
+Đơn vị cấp nước
+
+	
+
+Phối hợp đối chiếu: Theo nhu cầu đối chiếu
+Rà soát, ghi nhận trạng thái chất lượng: Sở Xây dựng rà soát, ghi nhận trạng thái chất lượng theo phân quyền
+
+	
+
+Hằng tháng
+
+
+
+
+39
+
+	
+
+CN-B-38
+
+	
+
+Lượng nước sạch tiêu thụ của khách hàng ngoài sinh hoạt đã lập hóa đơn
+
+	
+
+Tổng lượng nước sạch tiêu thụ của cơ quan, tổ chức, cơ sở sản xuất, kinh doanh, dịch vụ và khách hàng ngoài sinh hoạt được lập hóa đơn trong kỳ, quy đổi bình quân ngày.
+
+	
+
+Số thập phân
+
+	
+
+m³/ngày
+
+	
+
+Đơn vị cấp nước
+
+	
+
+Phối hợp đối chiếu: Theo nhu cầu đối chiếu
+Rà soát, ghi nhận trạng thái chất lượng: Sở Xây dựng rà soát, ghi nhận trạng thái chất lượng theo phân quyền
+
+	
+
+Hằng tháng
+
+
+
+
+40
+
+	
+
+CN-B-39
+
+	
+
+Lượng nước sạch thương phẩm bình quân ngày
+
+	
+
+Lượng nước sạch thương phẩm bình quân ngày trong kỳ. Hệ thống thông tin tự động tính từ các trường dữ liệu nguồn đã được ghi nhận đáp ứng yêu cầu chất lượng.
+
+	
+
+Số thập phân (tự động tính)
+
+	
+
+m³/ngày
+
+	
+
+Hệ thống thông tin tự động tính từ dữ liệu nguồn
+
+	
+
+Phối hợp đối chiếu: Đơn vị cấp nước
+Rà soát, ghi nhận trạng thái chất lượng: Sở Xây dựng rà soát dữ liệu nguồn và ghi nhận trạng thái chất lượng
+
+	
+
+Hằng tháng
+
+
+
+
+C. Mạng lưới, công trình và chất lượng dịch vụ cấp nước
+
+
+
+
+41
+
+	
+
+CN-C-40
+
+	
+
+Chiều dài tuyến ống truyền tải chính
+
+	
+
+Tổng chiều dài tuyến ống truyền tải nước sạch từ nhà máy nước, công trình đầu mối hoặc điểm tiếp nhận nước đến mạng phân phối; sơ đồ, vị trí; có thể phân tổ theo đường kính, vật liệu, tình trạng sử dụng và địa bàn khi cần.
+
+	
+
+Số thập phân/đối tượng dữ liệu
+
+	
+
+km
+
+	
+
+Đơn vị cấp nước
+
+	
+
+Phối hợp đối chiếu: Theo nhu cầu đối chiếu
+Rà soát, ghi nhận trạng thái chất lượng: Sở Xây dựng rà soát, ghi nhận trạng thái chất lượng theo phân quyền
+
+	
+
+Khi thay đổi; rà soát, tổng hợp hằng năm
+
+
+
+
+42
+
+	
+
+CN-C-41
+
+	
+
+Chiều dài mạng lưới phân phối
+
+	
+
+Tổng chiều dài mạng lưới phân phối nước sạch đang quản lý, vận hành trong phạm vi phục vụ; có thể phân tổ theo đường kính, vật liệu, tình trạng sử dụng và địa bàn khi cần.
+
+	
+
+Số thập phân/đối tượng dữ liệu
+
+	
+
+km
+
+	
+
+Đơn vị cấp nước
+
+	
+
+Phối hợp đối chiếu: Theo nhu cầu đối chiếu
+Rà soát, ghi nhận trạng thái chất lượng: Sở Xây dựng rà soát, ghi nhận trạng thái chất lượng theo phân quyền
+
+	
+
+Khi thay đổi; rà soát, tổng hợp hằng năm
+
+
+
+
+43
+
+	
+
+CN-C-42
+
+	
+
+Chiều dài tuyến ống truyền tải xây dựng mới
+
+	
+
+Tổng chiều dài tuyến ống truyền tải chính đã hoàn thành, nghiệm thu và đưa vào sử dụng mới trong kỳ báo cáo; sơ đồ, vị trí; có thể phân tổ theo đường kính, vật liệu và địa bàn khi cần.
+
+	
+
+Số thập phân/đối tượng dữ liệu
+
+	
+
+km/kỳ báo cáo
+
+	
+
+Đơn vị cấp nước
+
+	
+
+Phối hợp đối chiếu: Theo nhu cầu đối chiếu
+Rà soát, ghi nhận trạng thái chất lượng: Sở Xây dựng rà soát, ghi nhận trạng thái chất lượng theo phân quyền
+
+	
+
+Cập nhật hằng quý; tổng hợp hằng năm
+
+
+
+
+44
+
+	
+
+CN-C-43
+
+	
+
+Chiều dài mạng phân phối xây dựng mới
+
+	
+
+Tổng chiều dài mạng phân phối đã hoàn thành, nghiệm thu và đưa vào sử dụng mới trong kỳ báo cáo; có thể phân tổ theo đường kính, vật liệu và địa bàn khi cần.
+
+	
+
+Số thập phân/đối tượng dữ liệu
+
+	
+
+km/kỳ báo cáo
+
+	
+
+Đơn vị cấp nước
+
+	
+
+Phối hợp đối chiếu: Theo nhu cầu đối chiếu
+Rà soát, ghi nhận trạng thái chất lượng: Sở Xây dựng rà soát, ghi nhận trạng thái chất lượng theo phân quyền
+
+	
+
+Cập nhật hằng quý; tổng hợp hằng năm
+
+
+
+
+45
+
+	
+
+CN-C-44
+
+	
+
+Chiều dài tuyến ống truyền tải được cải tạo, thay thế
+
+	
+
+Tổng chiều dài tuyến ống truyền tải chính được cải tạo, thay thế hoặc nâng cấp trong kỳ báo cáo; ghi nguyên nhân, loại vật liệu thay thế và thời điểm hoàn thành.
+
+	
+
+Số thập phân/đối tượng dữ liệu
+
+	
+
+km/kỳ báo cáo
+
+	
+
+Đơn vị cấp nước
+
+	
+
+Phối hợp đối chiếu: Theo nhu cầu đối chiếu
+Rà soát, ghi nhận trạng thái chất lượng: Sở Xây dựng rà soát, ghi nhận trạng thái chất lượng theo phân quyền
+
+	
+
+Cập nhật hằng quý; tổng hợp hằng năm
+
+
+
+
+46
+
+	
+
+CN-C-45
+
+	
+
+Chiều dài mạng phân phối được cải tạo, thay thế
+
+	
+
+Tổng chiều dài mạng phân phối được cải tạo, thay thế hoặc nâng cấp trong kỳ báo cáo; ghi nguyên nhân, loại vật liệu thay thế và thời điểm hoàn thành.
+
+	
+
+Số thập phân/đối tượng dữ liệu
+
+	
+
+km/kỳ báo cáo
+
+	
+
+Đơn vị cấp nước
+
+	
+
+Phối hợp đối chiếu: Theo nhu cầu đối chiếu
+Rà soát, ghi nhận trạng thái chất lượng: Sở Xây dựng rà soát, ghi nhận trạng thái chất lượng theo phân quyền
+
+	
+
+Cập nhật hằng quý; tổng hợp hằng năm
+
+
+
+
+47
+
+	
+
+CN-C-46
+
+	
+
+Danh sách trạm bơm nước thô, trạm bơm tăng áp và công suất
+
+	
+
+Danh sách các trạm bơm nước thô và trạm bơm tăng áp thuộc phạm vi quản lý, gồm tên trạm, loại trạm, vị trí, công suất thiết kế, công suất vận hành và công trình liên kết. Mã định danh địa điểm chỉ ghi khi được Cơ sở dữ liệu định danh địa điểm xác lập.
+
+	
+
+Đối tượng dữ liệu lặp/số thập phân
+
+	
+
+m³/ngày đêm hoặc m³/giờ; mã tham chiếu (nếu có)
+
+	
+
+Đơn vị cấp nước
+
+	
+
+Phối hợp đối chiếu: Theo nhu cầu đối chiếu
+Rà soát, ghi nhận trạng thái chất lượng: Sở Xây dựng rà soát, ghi nhận trạng thái chất lượng theo phân quyền
+
+	
+
+Khi tạo lập; khi thay đổi; rà soát hằng năm
+
+
+
+
+48
+
+	
+
+CN-C-47
+
+	
+
+Danh sách bể chứa nước sạch, đài nước và dung tích
+
+	
+
+Danh sách bể chứa nước sạch, đài nước thuộc phạm vi quản lý, gồm tên, vị trí, dung tích thiết kế, dung tích hữu ích và công trình liên kết. Mã định danh địa điểm chỉ ghi khi được Cơ sở dữ liệu định danh địa điểm xác lập.
+
+	
+
+Đối tượng dữ liệu lặp/số thập phân
+
+	
+
+m³; mã tham chiếu (nếu có)
+
+	
+
+Đơn vị cấp nước
+
+	
+
+Phối hợp đối chiếu: Theo nhu cầu đối chiếu
+Rà soát, ghi nhận trạng thái chất lượng: Sở Xây dựng rà soát, ghi nhận trạng thái chất lượng theo phân quyền
+
+	
+
+Khi tạo lập; khi thay đổi; rà soát hằng năm
+
+
+
+
+49
+
+	
+
+CN-C-48
+
+	
+
+Tình trạng hoạt động của công trình trên hệ thống cấp nước
+
+	
+
+Đang hoạt động, dự phòng, tạm dừng, sửa chữa, nâng cấp hoặc ngừng hoạt động.
+
+	
+
+Mã danh mục dùng chung
+
+	
+
+Theo danh mục dùng chung
+
+	
+
+Đơn vị cấp nước
+
+	
+
+Phối hợp đối chiếu: Theo nhu cầu đối chiếu
+Rà soát, ghi nhận trạng thái chất lượng: Sở Xây dựng rà soát, ghi nhận trạng thái chất lượng theo phân quyền
+
+	
+
+Khi thay đổi; đối soát hằng tháng
+
+
+
+
+50
+
+	
+
+CN-C-49
+
+	
+
+Áp lực nước tại điểm kiểm soát
+
+	
+
+Áp lực bình quân và áp lực tối thiểu tại đồng hồ tổng, điểm bất lợi nhất và các điểm kiểm soát đại diện trên mạng lưới.
+
+Ưu tiên tiếp nhận tự động từ thiết bị đo áp lực.
+
+	
+
+Đối tượng dữ liệu/số thập phân
+
+	
+
+m hoặc bar
+
+	
+
+Đơn vị cấp nước
+
+	
+
+Phối hợp đối chiếu: UBND cấp xã
+Rà soát, ghi nhận trạng thái chất lượng: Sở Xây dựng rà soát, ghi nhận trạng thái chất lượng theo phân quyền
+
+	
+
+Theo tần suất của Hệ thống nguồn; tổng hợp hằng tháng
+
+
+
+
+51
+
+	
+
+CN-C-50
+
+	
+
+Thời gian cấp nước liên tục
+
+	
+
+Số giờ cấp nước bình quân trong ngày hoặc tỷ lệ thời gian duy trì cấp nước liên tục trong kỳ báo cáo.
+
+	
+
+Số thập phân
+
+	
+
+Giờ/ngày hoặc %
+
+	
+
+Đơn vị cấp nước
+
+	
+
+Phối hợp đối chiếu: UBND cấp xã
+Rà soát, ghi nhận trạng thái chất lượng: Sở Xây dựng rà soát, ghi nhận trạng thái chất lượng theo phân quyền
+
+	
+
+Cập nhật hằng tháng; tổng hợp theo quý, năm
+
+
+
+
+52
+
+	
+
+CN-C-51
+
+	
+
+Tỷ lệ thất thoát, thất thu nước sạch
+
+	
+
+Tỷ lệ chênh lệch giữa tổng lượng nước đưa vào hệ thống và tổng lượng nước thương phẩm trong cùng phạm vi, cùng kỳ số liệu. Hệ thống thông tin tự động tính theo phương pháp thống nhất; ghi rõ phạm vi và nguồn trường dữ liệu.
+
+	
+
+Số thập phân
+
+	
+
+%
+
+	
+
+Hệ thống thông tin tự động tính từ dữ liệu nguồn
+
+	
+
+Phối hợp đối chiếu: Đơn vị cấp nước
+Rà soát, ghi nhận trạng thái chất lượng: Sở Xây dựng rà soát dữ liệu nguồn và ghi nhận trạng thái chất lượng
+
+	
+
+Cập nhật hằng tháng; tổng hợp theo quý, năm
+
+
+
+
+53
+
+	
+
+CN-C-52
+
+	
+
+Mức tiêu thụ nước sinh hoạt bình quân đầu người
+
+	
+
+Lượng nước sinh hoạt ghi hóa đơn bình quân trên một người được cấp nước trong một ngày; Hệ thống thông tin tự động tính.
+
+	
+
+Số thập phân (tự động tính)
+
+	
+
+Lít/người/ngày
+
+	
+
+Hệ thống thông tin tự động tính từ dữ liệu nguồn
+
+	
+
+Phối hợp đối chiếu: Đơn vị cấp nước; UBND cấp xã
+Rà soát, ghi nhận trạng thái chất lượng: Sở Xây dựng rà soát dữ liệu nguồn và ghi nhận trạng thái chất lượng
+
+	
+
+Cập nhật hằng tháng; tổng hợp theo quý, năm
+
+
+
+
+54
+
+	
+
+CN-C-53
+
+	
+
+Số sự cố mạng lưới cấp nước
+
+	
+
+Số sự cố ảnh hưởng đến hoạt động của nguồn nước, nhà máy, tuyến ống truyền tải, mạng lưới phân phối hoặc việc cung cấp nước trong kỳ; phân loại theo nguyên nhân, phạm vi và mức độ ảnh hưởng.
+
+	
+
+Số nguyên không âm
+
+	
+
+Vụ/kỳ
+
+	
+
+Đơn vị cấp nước
+
+	
+
+Phối hợp đối chiếu: UBND cấp xã
+Rà soát, ghi nhận trạng thái chất lượng: Sở Xây dựng rà soát, ghi nhận trạng thái chất lượng theo phân quyền
+
+	
+
+Khi phát sinh; tổng hợp hằng tháng
+
+
+
+
+55
+
+	
+
+CN-C-54
+
+	
+
+Thời gian khắc phục sự cố bình quân
+
+	
+
+Tổng thời gian xử lý các sự cố cấp nước chia cho số sự cố đã xử lý trong kỳ.
+
+	
+
+Số thập phân
+
+	
+
+Giờ/sự cố
+
+	
+
+Đơn vị cấp nước
+
+	
+
+Phối hợp đối chiếu: Theo nhu cầu đối chiếu
+Rà soát, ghi nhận trạng thái chất lượng: Sở Xây dựng rà soát, ghi nhận trạng thái chất lượng theo phân quyền
+
+	
+
+Cập nhật hằng tháng; tổng hợp theo quý, năm
+
+
+
+
+56
+
+	
+
+CN-C-55
+
+	
+
+Số phản ánh, kiến nghị về chất lượng dịch vụ cấp nước
+
+	
+
+Tổng số phản ánh, kiến nghị về áp lực, thời gian cấp nước, gián đoạn, chất lượng phục vụ, hóa đơn và nội dung dịch vụ khác được tiếp nhận qua đơn vị cấp nước, UBND cấp xã, cổng thông tin, đường dây nóng hoặc kênh hợp pháp khác. Ghi nguồn, thời điểm, trạng thái, đơn vị xử lý và kết quả; không bao gồm khiếu nại, tố cáo xử lý theo thủ tục riêng.
+
+	
+
+Số nguyên không âm
+
+	
+
+Vụ/kỳ
+
+	
+
+Đơn vị cấp nước; UBND cấp xã là chủ thể tạo lập đối với phản ánh, kiến nghị do mình trực tiếp tiếp nhận
+
+	
+
+Phối hợp đối chiếu: UBND cấp xã
+Rà soát, ghi nhận trạng thái chất lượng: Sở Xây dựng rà soát, ghi nhận trạng thái chất lượng theo phân quyền
+
+	
+
+Khi phát sinh; tổng hợp hằng tháng
+
+
+
+
+57
+
+	
+
+CN-C-56
+
+	
+
+Tỷ lệ phản ánh, kiến nghị được xử lý đúng hạn
+
+	
+
+Tỷ lệ phản ánh, kiến nghị về chất lượng dịch vụ cấp nước được trả lời hoặc xử lý trong thời hạn theo quy trình cung cấp dịch vụ hoặc cam kết công bố của đơn vị. Hệ thống thông tin tự động tính từ dữ liệu tiếp nhận và xử lý.
+
+	
+
+Số thập phân
+
+	
+
+%
+
+	
+
+Hệ thống thông tin tự động tính từ dữ liệu nguồn
+
+	
+
+Phối hợp đối chiếu: Đơn vị cấp nước
+Rà soát, ghi nhận trạng thái chất lượng: Sở Xây dựng rà soát dữ liệu nguồn và ghi nhận trạng thái chất lượng
+
+	
+
+Cập nhật hằng tháng; tổng hợp theo quý, năm
+
+
+
+
+D. Giám sát trực tuyến một số thông số cơ bản của nước sạch
+
+
+
+
+58
+
+	
+
+CN-D-57
+
+	
+
+Thông tin điểm hoặc trạm giám sát trực tuyến nước sạch
+
+	
+
+Mã chuyên ngành, vị trí giám sát, nhà máy hoặc khu vực liên kết, mã thiết bị, thông số giám sát và đơn vị quản lý thiết bị. Mã định danh địa điểm chỉ ghi khi điểm hoặc trạm là công trình độc lập thuộc danh mục định danh và được Cơ sở dữ liệu định danh địa điểm xác lập; điểm đo nằm trong nhà máy không tạo mã địa điểm riêng.
+
+	
+
+Đối tượng dữ liệu/chuỗi định danh/dữ liệu không gian
+
+	
+
+Mã chuyên ngành; mã thiết bị; mã tham chiếu (nếu có)
+
+	
+
+Đơn vị cấp nước
+
+	
+
+Phối hợp đối chiếu: cơ quan có liên quan
+Rà soát, ghi nhận trạng thái chất lượng: Sở Xây dựng rà soát, ghi nhận trạng thái chất lượng theo phân quyền
+
+	
+
+Khi tạo lập; khi thay đổi
+
+
+
+
+59
+
+	
+
+CN-D-58
+
+	
+
+Giá trị pH giám sát trực tuyến
+
+	
+
+Giá trị pH của nước sạch được hệ thống giám sát trực tuyến hiện có ghi nhận; kèm đơn vị đo, thời điểm nguồn, mã thiết bị và trạng thái chất lượng trong siêu dữ liệu. Không thay thế kết quả kiểm nghiệm theo quy định chuyên ngành.
+
+	
+
+Chuỗi thời gian/số thập phân
+
+	
+
+Không đơn vị
+
+	
+
+Đơn vị cấp nước
+
+	
+
+Phối hợp đối chiếu: cơ quan có liên quan
+Rà soát, ghi nhận trạng thái chất lượng: Sở Xây dựng rà soát, ghi nhận trạng thái chất lượng theo phân quyền
+
+	
+
+Theo tần suất của Hệ thống nguồn; tổng hợp theo giờ
+
+
+
+
+60
+
+	
+
+CN-D-59
+
+	
+
+Độ đục giám sát trực tuyến
+
+	
+
+Giá trị độ đục của nước sạch được hệ thống giám sát trực tuyến hiện có ghi nhận; kèm đơn vị đo, thời điểm nguồn, mã thiết bị và trạng thái chất lượng trong siêu dữ liệu. Không thay thế kết quả kiểm nghiệm theo quy định chuyên ngành.
+
+	
+
+Chuỗi thời gian/số thập phân
+
+	
+
+NTU
+
+	
+
+Đơn vị cấp nước
+
+	
+
+Phối hợp đối chiếu: cơ quan có liên quan
+Rà soát, ghi nhận trạng thái chất lượng: Sở Xây dựng rà soát, ghi nhận trạng thái chất lượng theo phân quyền
+
+	
+
+Theo tần suất của Hệ thống nguồn; tổng hợp theo giờ
+
+
+
+
+61
+
+	
+
+CN-D-60
+
+	
+
+Hàm lượng clo dư giám sát trực tuyến
+
+	
+
+Giá trị hàm lượng clo dư của nước sạch được hệ thống giám sát trực tuyến hiện có ghi nhận; kèm đơn vị đo, thời điểm nguồn, mã thiết bị và trạng thái chất lượng trong siêu dữ liệu. Không thay thế kết quả kiểm nghiệm theo quy định chuyên ngành.
+
+	
+
+Chuỗi thời gian/số thập phân
+
+	
+
+mg/L
+
+	
+
+Đơn vị cấp nước
+
+	
+
+Phối hợp đối chiếu: cơ quan có liên quan
+Rà soát, ghi nhận trạng thái chất lượng: Sở Xây dựng rà soát, ghi nhận trạng thái chất lượng theo phân quyền
+
+	
+
+Theo tần suất của Hệ thống nguồn; tổng hợp theo giờ
+
+
+
+
+E. Dữ liệu, tài liệu đính kèm về cấp nước sạch
+
+
+
+
+62
+
+	
+
+CN-E-61
+
+	
+
+Dữ liệu, tài liệu đính kèm về cấp nước sạch, chất lượng nguồn nước và chất lượng nước sạch
+
+	
+
+Tệp hoặc liên kết đến tài liệu làm căn cứ cho dữ liệu cấp nước sạch, gồm: hồ sơ pháp lý của đơn vị, phạm vi phục vụ, hợp đồng dịch vụ, quyết định ban hành giá và phương án giá; giấy phép khai thác tài nguyên nước; hồ sơ nhà máy, công trình thu nước; phương án cấp nước an toàn; bản đồ mạng lưới; báo cáo vận hành, sự cố; biên bản hiệu chuẩn; kết quả quan trắc, thử nghiệm chất lượng nguồn nước; kết quả nội kiểm, ngoại kiểm, kiểm tra, giám sát chất lượng nước sạch, trạng thái đạt/không đạt quy chuẩn kỹ thuật quốc gia hoặc quy chuẩn kỹ thuật địa phương và biện pháp khắc phục. Mỗi tài liệu ghi số, ngày, cơ quan hoặc đơn vị ban hành, thời điểm hiệu lực, vị trí lấy mẫu, thông số, đơn vị đo, kết quả, phương pháp thử, phiên bản và bản ghi liên kết; giữ nguyên kết quả nguồn, không cập nhật trùng dữ liệu đã kết nối và không thay thế hồ sơ theo pháp luật về y tế.
+
+	
+
+Tệp điện tử/quan hệ tham chiếu
+
+	
+
+Tệp điện tử/định dạng theo tài liệu kỹ thuật vận hành Hệ thống thông tin
+
+	
+
+Đơn vị cấp nước đối với dữ liệu, tài liệu do đơn vị tạo lập, trong đó có kết quả nội kiểm; dữ liệu ngoại kiểm, kiểm tra, giám sát và kết luận chuyên môn được cập nhật từ Hệ thống nguồn hoặc do cơ quan, tổ chức có thẩm quyền cung cấp
+
+	
+
+Phối hợp đối chiếu: Sở Y tế, Trung tâm Kiểm soát bệnh tật cấp tỉnh, cơ quan quản lý tài nguyên nước, môi trường và cơ quan có liên quan | Rà soát, ghi nhận trạng thái chất lượng: Sở Xây dựng kiểm tra nguồn, hồ sơ và trạng thái dữ liệu theo phân quyền; không thay thế kết luận chuyên môn của cơ quan có thẩm quyền
+
+	
+
+Khi phát sinh; khi thay đổi; theo tần suất của Hệ thống nguồn
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+Phụ lục II
+
+DANH MỤC TRƯỜNG DỮ LIỆU TỐI THIỂU VỀ THOÁT NƯỚC, XỬ LÝ NƯỚC THẢI VÀ BÙN THẢI
+
+(Ban hành kèm theo Thông tư số /2026/TT-BXD ngày tháng năm 2026 của Bộ trưởng Bộ Xây dựng)
+
+TT
+
+	
+
+Mã trường
+
+	
+
+Tên trường/nhóm dữ liệu
+
+	
+
+Mô tả dữ liệu
+
+	
+
+Kiểu dữ liệu/định dạng
+
+	
+
+Đơn vị hoặc danh mục
+
+	
+
+Chủ thể tạo lập, cập nhật
+
+	
+
+Phối hợp đối chiếu; rà soát, ghi nhận trạng thái chất lượng
+
+	
+
+Kỳ cập nhật
+
+
+
+
+A. Chủ sở hữu hoặc đại diện chủ sở hữu, đơn vị thoát nước, phạm vi dịch vụ và giá dịch vụ
+
+
+
+
+1
+
+	
+
+TN-A-01
+
+	
+
+Loại chủ sở hữu/đại diện chủ sở hữu công trình, hệ thống thoát nước
+
+	
+
+Chủ sở hữu công trình, hệ thống thoát nước hoặc cơ quan, tổ chức được chủ sở hữu ủy quyền thực hiện quyền và trách nhiệm của đại diện chủ sở hữu; phân loại theo danh mục dùng chung.
+
+	
+
+Mã danh mục dùng chung
+
+	
+
+Theo danh mục dùng chung
+
+	
+
+Chủ sở hữu/đại diện chủ sở hữu
+
+	
+
+Phối hợp đối chiếu: Sở Xây dựng và cơ quan có liên quan đối chiếu
+Rà soát, ghi nhận trạng thái chất lượng: Sở Xây dựng rà soát, ghi nhận trạng thái chất lượng theo phân quyền
+
+	
+
+Khi thay đổi
+
+
+
+
+2
+
+	
+
+TN-A-02
+
+	
+
+Mã định danh tổ chức của chủ sở hữu/đại diện chủ sở hữu
+
+	
+
+Mã số doanh nghiệp, mã số thuế hoặc mã định danh tổ chức do cơ quan có thẩm quyền cấp cho chủ sở hữu/đại diện chủ sở hữu. Trường hợp dữ liệu đã có tại cơ sở dữ liệu quốc gia hoặc chuyên ngành thì kế thừa mã nguồn; không tự tạo mã thay thế.
+
+	
+
+Chuỗi ký tự định danh
+
+	
+
+Duy nhất
+
+	
+
+Chủ sở hữu/đại diện chủ sở hữu
+
+	
+
+Phối hợp đối chiếu: Sở Xây dựng và cơ quan có liên quan đối chiếu
+Rà soát, ghi nhận trạng thái chất lượng: Sở Xây dựng rà soát, ghi nhận trạng thái chất lượng theo phân quyền
+
+	
+
+Khi thay đổi
+
+
+
+
+3
+
+	
+
+TN-A-03
+
+	
+
+Tên chủ sở hữu/đại diện chủ sở hữu
+
+	
+
+Tên đầy đủ của chủ sở hữu công trình, hệ thống thoát nước hoặc cơ quan, tổ chức được chủ sở hữu ủy quyền thực hiện quyền và trách nhiệm của đại diện chủ sở hữu.
+
+	
+
+Chuỗi ký tự
+
+	
+
+Không áp dụng
+
+	
+
+Chủ sở hữu/đại diện chủ sở hữu
+
+	
+
+Phối hợp đối chiếu: Sở Xây dựng và cơ quan có liên quan đối chiếu
+Rà soát, ghi nhận trạng thái chất lượng: Sở Xây dựng rà soát, ghi nhận trạng thái chất lượng theo phân quyền
+
+	
+
+Khi thay đổi
+
+
+
+
+4
+
+	
+
+TN-A-04
+
+	
+
+Mã định danh tổ chức của đơn vị thoát nước
+
+	
+
+Mã số doanh nghiệp, mã số thuế hoặc mã định danh tổ chức do cơ quan có thẩm quyền cấp cho đơn vị thoát nước thực hiện quản lý, vận hành. Kế thừa mã nguồn khi đã có; không tự tạo mã thay thế.
+
+	
+
+Chuỗi ký tự định danh
+
+	
+
+Duy nhất
+
+	
+
+Đơn vị thoát nước
+
+	
+
+Phối hợp đối chiếu: Theo nhu cầu đối chiếu
+Rà soát, ghi nhận trạng thái chất lượng: Sở Xây dựng rà soát, ghi nhận trạng thái chất lượng theo phân quyền
+
+	
+
+Khi tạo lập; khi thay đổi
+
+
+
+
+5
+
+	
+
+TN-A-05
+
+	
+
+Tên đơn vị thoát nước
+
+	
+
+Tên đầy đủ của đơn vị thoát nước thực hiện quản lý, vận hành hệ thống thoát nước, công trình xử lý nước thải hoặc công trình có liên quan.
+
+	
+
+Chuỗi ký tự
+
+	
+
+Không áp dụng
+
+	
+
+Đơn vị thoát nước
+
+	
+
+Phối hợp đối chiếu: Theo nhu cầu đối chiếu
+Rà soát, ghi nhận trạng thái chất lượng: Sở Xây dựng rà soát, ghi nhận trạng thái chất lượng theo phân quyền
+
+	
+
+Khi thay đổi
+
+
+
+
+6
+
+	
+
+TN-A-06
+
+	
+
+Địa chỉ và đầu mối dữ liệu
+
+	
+
+Địa chỉ trụ sở; họ tên, chức vụ, số điện thoại và thư điện tử công vụ của đầu mối được giao tạo lập, cập nhật dữ liệu. Chỉ thu thập thông tin liên hệ công vụ cần thiết và cập nhật khi thay đổi.
+
+	
+
+Đối tượng địa chỉ/chuỗi ký tự
+
+	
+
+Theo mã đơn vị hành chính
+
+	
+
+Đơn vị thoát nước
+
+	
+
+Phối hợp đối chiếu: Theo nhu cầu đối chiếu
+Rà soát, ghi nhận trạng thái chất lượng: Sở Xây dựng rà soát, ghi nhận trạng thái chất lượng theo phân quyền
+
+	
+
+Khi thay đổi
+
+
+
+
+7
+
+	
+
+TN-A-07
+
+	
+
+Tình trạng hoạt động của đơn vị
+
+	
+
+Đang hoạt động, tạm dừng, chuyển giao, chấm dứt hoạt động hoặc trạng thái khác.
+
+	
+
+Mã danh mục dùng chung
+
+	
+
+Theo danh mục dùng chung
+
+	
+
+Đơn vị thoát nước
+
+	
+
+Phối hợp đối chiếu: Theo nhu cầu đối chiếu
+Rà soát, ghi nhận trạng thái chất lượng: Sở Xây dựng rà soát, ghi nhận trạng thái chất lượng theo phân quyền
+
+	
+
+Khi thay đổi
+
+
+
+
+8
+
+	
+
+TN-A-08
+
+	
+
+Hợp đồng quản lý, vận hành với đơn vị thoát nước
+
+	
+
+Thông tin hợp đồng quản lý, vận hành hệ thống thoát nước giữa chủ sở hữu/đại diện chủ sở hữu và đơn vị thoát nước, gồm số, ngày ký, các bên, phạm vi công việc, thời hạn, nguồn và giá trị tài chính theo hợp đồng, tình trạng thực hiện, điều chỉnh, gia hạn hoặc thanh lý. Chỉ cập nhật nội dung cần thiết cho quản lý nhà nước và đánh giá chất lượng dịch vụ.
+
+	
+
+Đối tượng dữ liệu/tệp điện tử
+
+	
+
+Ngày ISO 8601; triệu đồng; PDF/A
+
+	
+
+Chủ sở hữu/đại diện chủ sở hữu; đơn vị thoát nước trong phạm vi được giao
+
+	
+
+Phối hợp đối chiếu: Cơ quan có liên quan đối chiếu
+Rà soát, ghi nhận trạng thái chất lượng: Sở Xây dựng rà soát, ghi nhận trạng thái chất lượng theo phân quyền
+
+	
+
+Khi ký, điều chỉnh, gia hạn, thanh lý hoặc thay đổi
+
+
+
+
+9
+
+	
+
+TN-A-09
+
+	
+
+Phạm vi cung ứng dịch vụ thoát nước đô thị
+
+	
+
+Danh sách đơn vị hành chính và khu vực thực tế được cung ứng dịch vụ thoát nước đô thị, gồm thoát nước mưa, thu gom và thoát nước thải theo phạm vi hợp đồng hoặc phân công quản lý. Không bao gồm thoát nước phục vụ sản xuất nông nghiệp, sản xuất muối. Trường hình học (polygon) ranh giới phạm vi cung ứng dịch vụ.
+
+	
+
+Danh sách mã đơn vị hành chính/chuỗi ký tự
+
+	
+
+Theo mã đơn vị hành chính
+
+	
+
+Đơn vị thoát nước
+
+	
+
+Phối hợp đối chiếu: UBND cấp xã
+Rà soát, ghi nhận trạng thái chất lượng: Sở Xây dựng rà soát, ghi nhận trạng thái chất lượng theo phân quyền
+
+	
+
+Khi thay đổi
+
+
+
+
+10
+
+	
+
+TN-A-10
+
+	
+
+Dân số đô thị trong phạm vi dịch vụ
+
+	
+
+Tổng dân số thường trú và tạm trú quy đổi tại khu vực đô thị thuộc phạm vi cung ứng dịch vụ thoát nước tại thời điểm chốt số liệu. Dữ liệu được ưu tiên tiếp nhận, đối chiếu, đồng bộ từ Cơ sở dữ liệu quốc gia về dân cư hoặc cơ sở dữ liệu do cơ quan, tổ chức có thẩm quyền quản lý; ghi rõ nguồn, thời điểm và phương pháp. UBND cấp xã chỉ bổ sung, đối chiếu ranh giới phạm vi dịch vụ và yếu tố chuyên ngành chưa có tại nguồn. Hệ thống thông tin chỉ tiếp nhận kết quả tổng hợp theo phạm vi phục vụ; không tiếp nhận, lưu trữ bản ghi dân cư ở mức cá nhân.
+
+	
+
+Số nguyên không âm
+
+	
+
+Người
+
+	
+
+Hệ thống thông tin tự động kết nối từ Cơ sở dữ liệu quốc gia về dân cư hoặc cơ sở dữ liệu do cơ quan, tổ chức có thẩm quyền quản lý; UBND cấp xã bổ sung theo phân công
+
+	
+
+Phối hợp đối chiếu: UBND cấp xã; đơn vị thoát nước
+Rà soát, ghi nhận trạng thái chất lượng: Sở Xây dựng rà soát, ghi nhận trạng thái chất lượng theo phân quyền
+
+	
+
+Theo tần suất của Hệ thống nguồn; chốt số liệu hằng năm
+
+
+
+
+11
+
+	
+
+TN-A-11
+
+	
+
+Số người bình quân trên một hộ được cung cấp dịch vụ
+
+	
+
+Số người bình quân trên một hộ gia đình hoặc một đấu nối sinh hoạt trong phạm vi dịch vụ được xác định từ dữ liệu dân cư, thống kê, dữ liệu hành chính do cơ quan có thẩm quyền quản lý và dữ liệu hộ hoặc đấu nối đã được ghi nhận đáp ứng yêu cầu chất lượng; ưu tiên tính tự động sau khi đối chiếu, đồng bộ dữ liệu nguồn. UBND cấp xã chỉ bổ sung, đối chiếu yếu tố chuyên ngành chưa có tại nguồn; ghi rõ phương pháp trong siêu dữ liệu.
+
+	
+
+Số thập phân
+
+	
+
+Người/hộ hoặc người/đấu nối
+
+	
+
+Hệ thống thông tin tự động tính từ dữ liệu đã kết nối; UBND cấp xã bổ sung theo phân công
+
+	
+
+Phối hợp đối chiếu: UBND cấp xã; đơn vị thoát nước
+Rà soát, ghi nhận trạng thái chất lượng: Sở Xây dựng rà soát dữ liệu nguồn và ghi nhận trạng thái chất lượng
+
+	
+
+Theo tần suất của Hệ thống nguồn; chốt số liệu hằng năm
+
+
+
+
+12
+
+	
+
+TN-A-12
+
+	
+
+Số hộ sinh hoạt được cung cấp dịch vụ thu gom, thoát nước thải
+
+	
+
+Tổng số hộ gia đình trong khu vực được cung cấp dịch vụ thu gom, thoát nước thải; trường hợp đơn vị quản lý theo đấu nối thì ghi số đấu nối sinh hoạt đang hoạt động và nêu rõ phương pháp.
+
+	
+
+Số nguyên không âm
+
+	
+
+Hộ hoặc đấu nối
+
+	
+
+Chủ sở hữu/đại diện chủ sở hữu
+
+	
+
+Phối hợp đối chiếu: UBND cấp xã
+Rà soát, ghi nhận trạng thái chất lượng: Sở Xây dựng rà soát, ghi nhận trạng thái chất lượng theo phân quyền
+
+	
+
+Cập nhật hằng quý; tổng hợp hằng năm
+
+
+
+
+13
+
+	
+
+TN-A-13
+
+	
+
+Số cơ sở ngoài sinh hoạt được cung cấp dịch vụ thu gom, thoát nước thải
+
+	
+
+Tổng số cơ quan, tổ chức, cơ sở sản xuất, kinh doanh, dịch vụ và đối tượng ngoài hộ gia đình được cung cấp dịch vụ thu gom, thoát nước thải; trường hợp quản lý theo đấu nối thì ghi số đấu nối ngoài sinh hoạt.
+
+	
+
+Số nguyên không âm
+
+	
+
+Cơ sở hoặc đấu nối
+
+	
+
+Chủ sở hữu/đại diện chủ sở hữu
+
+	
+
+Phối hợp đối chiếu: Theo nhu cầu đối chiếu
+Rà soát, ghi nhận trạng thái chất lượng: Sở Xây dựng rà soát, ghi nhận trạng thái chất lượng theo phân quyền
+
+	
+
+Cập nhật hằng quý; tổng hợp hằng năm
+
+
+
+
+14
+
+	
+
+TN-A-14
+
+	
+
+Dân số đô thị được cung cấp dịch vụ thu gom, thoát nước thải
+
+	
+
+Dân số đô thị được cung cấp dịch vụ thu gom, thoát nước thải. Hệ thống thông tin tự động tính từ số hộ sinh hoạt được cung cấp dịch vụ và số người bình quân trên một hộ đã được ghi nhận đáp ứng yêu cầu chất lượng; trường hợp có số liệu điều tra tin cậy hơn phải ghi rõ nguồn và phương pháp.
+
+	
+
+Số nguyên không âm (tự động tính hoặc tiếp nhận từ Hệ thống nguồn)
+
+	
+
+Người
+
+	
+
+Hệ thống thông tin tự động tính từ dữ liệu nguồn
+
+	
+
+Phối hợp đối chiếu: Đơn vị thoát nước; UBND cấp xã
+Rà soát, ghi nhận trạng thái chất lượng: Sở Xây dựng rà soát dữ liệu nguồn và ghi nhận trạng thái chất lượng
+
+	
+
+Hệ thống thông tin tự động tính hằng quý; tổng hợp hằng năm
+
+
+
+
+15
+
+	
+
+TN-A-15
+
+	
+
+Tỷ lệ dân số đô thị được cung cấp dịch vụ thu gom, thoát nước thải
+
+	
+
+Tỷ lệ dân số đô thị được cung cấp dịch vụ thu gom, thoát nước thải so với dân số đô thị trong phạm vi dịch vụ. Hệ thống thông tin tự động tính từ các trường dữ liệu đã được ghi nhận đáp ứng yêu cầu chất lượng; không bao gồm dân số chỉ được phục vụ thoát nước mưa.
+
+	
+
+Số thập phân (tự động tính)
+
+	
+
+%
+
+	
+
+Hệ thống thông tin tự động tính từ dữ liệu nguồn
+
+	
+
+Phối hợp đối chiếu: Đơn vị thoát nước; UBND cấp xã
+Rà soát, ghi nhận trạng thái chất lượng: Sở Xây dựng rà soát dữ liệu nguồn và ghi nhận trạng thái chất lượng
+
+	
+
+Hệ thống thông tin tự động tính hằng quý; tổng hợp hằng năm
+
+
+
+
+16
+
+	
+
+TN-A-16
+
+	
+
+Giá dịch vụ thoát nước đối với hộ gia đình được ban hành
+
+	
+
+Mức giá dịch vụ thoát nước áp dụng đối với hộ gia đình theo văn bản của cơ quan có thẩm quyền; ghi số, ngày văn bản, địa bàn, đối tượng áp dụng và thời điểm hiệu lực.
+
+	
+
+Số thập phân/đối tượng dữ liệu
+
+	
+
+Đồng/m³
+
+	
+
+Sở Xây dựng
+
+	
+
+Phối hợp đối chiếu: đơn vị thoát nước; cơ quan có liên quan
+Rà soát, ghi nhận trạng thái chất lượng: Tự kiểm tra tại nguồn; Hệ thống thông tin ghi nhận trạng thái
+
+	
+
+Khi thay đổi
+
+
+
+
+17
+
+	
+
+TN-QH-01
+
+	
+
+Thông tin quy hoạch thoát nước và xử lý nước thải có liên quan
+
+	
+
+Thông tin trích xuất từ quy hoạch tỉnh, quy hoạch đô thị và nông thôn, quy hoạch chuyên ngành hạ tầng kỹ thuật hoặc hồ sơ quy hoạch khác đã được cơ quan có thẩm quyền phê duyệt có nội dung về thoát nước đô thị và xử lý nước thải, gồm: tên quy hoạch; số, ngày, cơ quan ban hành; thời kỳ và phạm vi quy hoạch; lưu vực thoát nước mưa; lưu vực thu gom nước thải; quy mô, công suất nhà máy, trạm xử lý nước thải, trạm bơm nước thải, trạm bơm thoát nước mưa; phạm vi thu gom; tuyến cống thu gom cấp 1; sông, kênh, mương và cống thoát nước mưa chính; công trình trữ, điều hòa nước mưa; điểm xả và chỉ tiêu có liên quan. Không bao gồm thoát nước phục vụ sản xuất nông nghiệp, sản xuất muối và xử lý nước thải tại chỗ. Dữ liệu được lưu dưới dạng thông tin tham chiếu, tài liệu và bản đồ kèm theo; không thay thế hồ sơ quy hoạch được phê duyệt.
+
+	
+
+Đối tượng dữ liệu/tệp điện tử/dữ liệu không gian
+
+	
+
+Mã văn bản; năm; m³/ngày đêm; km; ha; tệp điện tử
+
+	
+
+Sở Xây dựng
+
+	
+
+Phối hợp đối chiếu: cơ quan quản lý quy hoạch; đơn vị thoát nước
+Rà soát, ghi nhận trạng thái chất lượng: Tự kiểm tra tại nguồn; Hệ thống thông tin ghi nhận trạng thái
+
+	
+
+Khi quy hoạch được ban hành, điều chỉnh hoặc thay thế
+
+
+
+
+B. Thu gom, thoát nước thải và công trình xử lý nước thải thuộc hệ thống thoát nước đô thị
+
+
+
+
+18
+
+	
+
+TN-B-17
+
+	
+
+Thông tin định danh nhà máy, trạm xử lý nước thải đô thị
+
+	
+
+Mã định danh chuyên ngành ổn định; tên, địa chỉ, tọa độ theo hệ quy chiếu quốc gia và phạm vi phục vụ của nhà máy, trạm xử lý nước thải tập trung thuộc hệ thống thoát nước đô thị. Mã định danh địa điểm chỉ ghi khi công trình thuộc danh mục định danh theo văn bản quy phạm pháp luật có hiệu lực và được Cơ sở dữ liệu định danh địa điểm xác lập. Không bao gồm công trình xử lý nước thải tại chỗ, công trình phục vụ sản xuất nông nghiệp hoặc sản xuất muối.
+
+	
+
+Đối tượng dữ liệu/chuỗi định danh/dữ liệu không gian
+
+	
+
+Mã chuyên ngành; mã tham chiếu (nếu có)
+
+	
+
+Đơn vị thoát nước
+
+	
+
+Phối hợp đối chiếu: UBND cấp xã
+Rà soát, ghi nhận trạng thái chất lượng: Sở Xây dựng rà soát, ghi nhận trạng thái chất lượng theo phân quyền
+
+	
+
+Khi tạo lập; khi thay đổi
+
+
+
+
+19
+
+	
+
+TN-B-18
+
+	
+
+Chủ sở hữu/đại diện chủ sở hữu nhà máy, trạm xử lý nước thải
+
+	
+
+Tên và mã định danh tổ chức của chủ sở hữu nhà máy, trạm xử lý nước thải hoặc cơ quan, tổ chức được chủ sở hữu ủy quyền thực hiện quyền và trách nhiệm của đại diện chủ sở hữu.
+
+	
+
+Quan hệ tham chiếu/chuỗi ký tự
+
+	
+
+Không áp dụng
+
+	
+
+Chủ sở hữu/đại diện chủ sở hữu; đơn vị thoát nước trong phạm vi được giao
+
+	
+
+Phối hợp đối chiếu: Cơ quan có liên quan đối chiếu
+Rà soát, ghi nhận trạng thái chất lượng: Sở Xây dựng rà soát, ghi nhận trạng thái chất lượng theo phân quyền
+
+	
+
+Khi tạo lập; khi thay đổi
+
+
+
+
+20
+
+	
+
+TN-B-19
+
+	
+
+Đơn vị thoát nước quản lý, vận hành nhà máy
+
+	
+
+Tên và mã định danh tổ chức của đơn vị thoát nước trực tiếp quản lý, vận hành nhà máy, trạm xử lý nước thải.
+
+	
+
+Quan hệ tham chiếu/chuỗi ký tự
+
+	
+
+Không áp dụng
+
+	
+
+Đơn vị thoát nước
+
+	
+
+Phối hợp đối chiếu: Theo nhu cầu đối chiếu
+Rà soát, ghi nhận trạng thái chất lượng: Sở Xây dựng rà soát, ghi nhận trạng thái chất lượng theo phân quyền
+
+	
+
+Khi tạo lập; khi thay đổi
+
+
+
+
+21
+
+	
+
+TN-B-20
+
+	
+
+Tình trạng hoạt động của công trình xử lý nước thải
+
+	
+
+Đang vận hành, tạm dừng, dự phòng, đang đầu tư, nâng cấp hoặc ngừng hoạt động.
+
+	
+
+Mã danh mục dùng chung
+
+	
+
+Theo danh mục dùng chung
+
+	
+
+Đơn vị thoát nước
+
+	
+
+Phối hợp đối chiếu: Theo nhu cầu đối chiếu
+Rà soát, ghi nhận trạng thái chất lượng: Sở Xây dựng rà soát, ghi nhận trạng thái chất lượng theo phân quyền
+
+	
+
+Khi thay đổi; đối soát hằng tháng
+
+
+
+
+22
+
+	
+
+TN-B-21
+
+	
+
+Năm bắt đầu vận hành
+
+	
+
+Năm nhà máy, trạm xử lý nước thải chính thức đưa vào vận hành.
+
+	
+
+Số nguyên
+
+	
+
+Năm
+
+	
+
+Đơn vị thoát nước
+
+	
+
+Phối hợp đối chiếu: Theo nhu cầu đối chiếu
+Rà soát, ghi nhận trạng thái chất lượng: Sở Xây dựng rà soát, ghi nhận trạng thái chất lượng theo phân quyền
+
+	
+
+Khi tạo lập
+
+
+
+
+23
+
+	
+
+TN-B-22
+
+	
+
+Công suất thiết kế xử lý nước thải
+
+	
+
+Công suất thiết kế theo hồ sơ được ban hành hoặc hồ sơ nghiệm thu đi vào sử dụng.
+
+	
+
+Số thập phân
+
+	
+
+m³/ngày đêm
+
+	
+
+Đơn vị thoát nước
+
+	
+
+Phối hợp đối chiếu: Theo nhu cầu đối chiếu
+Rà soát, ghi nhận trạng thái chất lượng: Sở Xây dựng rà soát, ghi nhận trạng thái chất lượng theo phân quyền
+
+	
+
+Khi tạo lập; khi thay đổi
+
+
+
+
+24
+
+	
+
+TN-B-23
+
+	
+
+Công suất vận hành bình quân
+
+	
+
+Lưu lượng xử lý bình quân ngày của nhà máy, trạm xử lý nước thải trong kỳ báo cáo.
+
+	
+
+Số thập phân
+
+	
+
+m³/ngày đêm
+
+	
+
+Đơn vị thoát nước
+
+	
+
+Phối hợp đối chiếu: Theo nhu cầu đối chiếu
+Rà soát, ghi nhận trạng thái chất lượng: Sở Xây dựng rà soát, ghi nhận trạng thái chất lượng theo phân quyền
+
+	
+
+Cập nhật hằng tháng; tổng hợp theo quý, năm
+
+
+
+
+25
+
+	
+
+TN-B-24
+
+	
+
+Tỷ lệ huy động công suất xử lý nước thải
+
+	
+
+Tỷ lệ giữa công suất vận hành bình quân và công suất thiết kế; Hệ thống thông tin tự động tính.
+
+	
+
+Số thập phân (tự động tính)
+
+	
+
+%
+
+	
+
+Hệ thống thông tin tự động tính từ dữ liệu nguồn
+
+	
+
+Phối hợp đối chiếu: Đơn vị thoát nước
+Rà soát, ghi nhận trạng thái chất lượng: Sở Xây dựng rà soát dữ liệu nguồn và ghi nhận trạng thái chất lượng
+
+	
+
+Hệ thống thông tin tự động tính hằng tháng; tổng hợp theo quý, năm
+
+
+
+
+26
+
+	
+
+TN-B-25
+
+	
+
+Công nghệ xử lý nước thải
+
+	
+
+Dây chuyền, công nghệ xử lý chính đang áp dụng.
+
+	
+
+Mã danh mục dùng chung/chuỗi ký tự
+
+	
+
+Theo danh mục dùng chung
+
+	
+
+Đơn vị thoát nước
+
+	
+
+Phối hợp đối chiếu: Theo nhu cầu đối chiếu
+Rà soát, ghi nhận trạng thái chất lượng: Sở Xây dựng rà soát, ghi nhận trạng thái chất lượng theo phân quyền
+
+	
+
+Khi tạo lập; khi thay đổi
+
+
+
+
+27
+
+	
+
+TN-B-26
+
+	
+
+Công trình xử lý nước thải phi tập trung thuộc hệ thống thoát nước đô thị
+
+	
+
+Bản ghi đối với công trình xử lý nước thải theo cụm hoặc khu vực thuộc phạm vi quản lý, vận hành của hệ thống thoát nước đô thị, gồm mã chuyên ngành, tên, vị trí, chủ sở hữu/đại diện chủ sở hữu, đơn vị vận hành, phạm vi phục vụ, công suất thiết kế và vận hành, công nghệ, tình trạng hoạt động và hồ sơ môi trường có liên quan. Không bao gồm công trình xử lý nước thải tại chỗ của hộ gia đình, cơ sở riêng lẻ, công trình phục vụ sản xuất nông nghiệp hoặc sản xuất muối.
+
+	
+
+Đối tượng dữ liệu lặp/dữ liệu không gian
+
+	
+
+m³/ngày đêm; hộ/công trình
+
+	
+
+Đơn vị thoát nước
+
+	
+
+Phối hợp đối chiếu: UBND cấp xã và cơ quan có liên quan
+Rà soát, ghi nhận trạng thái chất lượng: Sở Xây dựng rà soát, ghi nhận trạng thái chất lượng theo phân quyền
+
+	
+
+Khi tạo lập; khi thay đổi
+
+
+
+
+28
+
+	
+
+TN-B-27
+
+	
+
+Khu vực thu gom, xử lý nước thải đô thị
+
+	
+
+Danh sách đơn vị hành chính và khu vực thực tế có nước thải được thu gom, chuyển về công trình xử lý; liên kết với nhà máy, trạm xử lý và đơn vị thoát nước. Không tạo mã định danh địa điểm riêng cho khu vực thu gom. Trường hình học (polygon) ranh giới thu gom, xử lý nước thải đô thị.
+
+	
+
+Danh sách mã đơn vị hành chính/chuỗi ký tự
+
+	
+
+Theo mã đơn vị hành chính
+
+	
+
+Đơn vị thoát nước
+
+	
+
+Phối hợp đối chiếu: UBND cấp xã
+Rà soát, ghi nhận trạng thái chất lượng: Sở Xây dựng rà soát, ghi nhận trạng thái chất lượng theo phân quyền
+
+	
+
+Khi tạo lập; khi thay đổi
+
+
+
+
+29
+
+	
+
+TN-B-28
+
+	
+
+Chiều dài tuyến cống thu gom cấp 1
+
+	
+
+Tổng chiều dài tuyến cống chính thu gom, dẫn nước thải đến nhà máy, trạm xử lý nước thải; phân tổ theo hệ thống chung, riêng, nửa riêng hoặc loại khác theo hiện trạng. Ghi sơ đồ, vị trí, nguồn và mức độ đầy đủ của dữ liệu.
+
+	
+
+Số thập phân
+
+	
+
+km
+
+	
+
+Đơn vị thoát nước
+
+	
+
+Phối hợp đối chiếu: Theo nhu cầu đối chiếu
+Rà soát, ghi nhận trạng thái chất lượng: Sở Xây dựng rà soát, ghi nhận trạng thái chất lượng theo phân quyền
+
+	
+
+Khi thay đổi; rà soát, tổng hợp hằng năm
+
+
+
+
+30
+
+	
+
+TN-B-29
+
+	
+
+Chiều dài tuyến cống thu gom cấp 2
+
+	
+
+Tổng chiều dài tuyến cống thu gom nước thải của khu vực, tiểu khu vực dẫn đến tuyến cống cấp 1; phân tổ theo hệ thống chung, riêng, nửa riêng hoặc loại khác theo hiện trạng.
+
+	
+
+Số thập phân
+
+	
+
+km
+
+	
+
+Đơn vị thoát nước
+
+	
+
+Phối hợp đối chiếu: Theo nhu cầu đối chiếu
+Rà soát, ghi nhận trạng thái chất lượng: Sở Xây dựng rà soát, ghi nhận trạng thái chất lượng theo phân quyền
+
+	
+
+Khi thay đổi; rà soát, tổng hợp hằng năm
+
+
+
+
+31
+
+	
+
+TN-B-30
+
+	
+
+Thông tin trạm bơm nước thải
+
+	
+
+Bản ghi cho từng trạm bơm nước thải có vị trí, hồ sơ và phạm vi quản lý xác định rõ, gồm mã chuyên ngành, tên, vị trí, tọa độ, hệ thống và công trình liên kết. Mã định danh địa điểm chỉ ghi khi được Cơ sở dữ liệu định danh địa điểm xác lập; không tự gán mã định danh địa điểm hoặc mã loại đối tượng.
+
+	
+
+Đối tượng dữ liệu lặp/chuỗi định danh/dữ liệu không gian
+
+	
+
+Mã chuyên ngành; mã tham chiếu (nếu có)
+
+	
+
+Đơn vị thoát nước
+
+	
+
+Phối hợp đối chiếu: UBND cấp xã
+Rà soát, ghi nhận trạng thái chất lượng: Sở Xây dựng rà soát, ghi nhận trạng thái chất lượng theo phân quyền
+
+	
+
+Khi tạo lập; khi thay đổi
+
+
+
+
+32
+
+	
+
+TN-B-31
+
+	
+
+Công suất và tình trạng trạm bơm nước thải
+
+	
+
+Công suất thiết kế, công suất vận hành và trạng thái hoạt động của trạm bơm nước thải.
+
+	
+
+Đối tượng dữ liệu/số thập phân
+
+	
+
+m³/ngày đêm hoặc m³/giờ
+
+	
+
+Đơn vị thoát nước
+
+	
+
+Phối hợp đối chiếu: Theo nhu cầu đối chiếu
+Rà soát, ghi nhận trạng thái chất lượng: Sở Xây dựng rà soát, ghi nhận trạng thái chất lượng theo phân quyền
+
+	
+
+Khi tạo lập; khi thay đổi; đối soát hằng tháng
+
+
+
+
+33
+
+	
+
+TN-B-32
+
+	
+
+Lượng nước thải phát sinh ước tính
+
+	
+
+Tổng lượng nước thải sinh hoạt và nước thải khác thuộc phạm vi dịch vụ phát sinh trong kỳ. Trường hợp chưa có số liệu đo trực tiếp, có thể xác định từ lượng nước sạch cung cấp theo tỷ lệ phù hợp; phải ghi rõ nguồn số liệu, phạm vi và phương pháp tính trong siêu dữ liệu.
+
+	
+
+Số thập phân
+
+	
+
+m³/ngày
+
+	
+
+Đơn vị thoát nước
+
+	
+
+Phối hợp đối chiếu: Đơn vị cấp nước; UBND cấp xã; Sở Xây dựng rà soát, ghi nhận trạng thái chất lượng theo phân quyền
+
+	
+
+Cập nhật hằng quý; tổng hợp hằng năm
+
+
+
+
+34
+
+	
+
+TN-B-33
+
+	
+
+Lượng nước thải được thu gom
+
+	
+
+Tổng lưu lượng nước thải được hệ thống thu gom trong kỳ, quy đổi bình quân ngày.
+
+	
+
+Số thập phân
+
+	
+
+m³/ngày
+
+	
+
+Đơn vị thoát nước
+
+	
+
+Phối hợp đối chiếu: Theo nhu cầu đối chiếu
+Rà soát, ghi nhận trạng thái chất lượng: Sở Xây dựng rà soát, ghi nhận trạng thái chất lượng theo phân quyền
+
+	
+
+Cập nhật hằng tháng; tổng hợp theo quý, năm
+
+
+
+
+35
+
+	
+
+TN-B-34
+
+	
+
+Lưu lượng nước thải đầu vào công trình xử lý
+
+	
+
+Lưu lượng nước thải đầu vào nhà máy, trạm xử lý bình quân ngày trong kỳ; ưu tiên tiếp nhận tự động từ thiết bị đo lưu lượng.
+
+	
+
+Số thập phân/chuỗi thời gian
+
+	
+
+m³/ngày hoặc m³/giờ
+
+	
+
+Đơn vị thoát nước
+
+	
+
+Phối hợp đối chiếu: Theo nhu cầu đối chiếu
+Rà soát, ghi nhận trạng thái chất lượng: Sở Xây dựng rà soát, ghi nhận trạng thái chất lượng theo phân quyền
+
+	
+
+Theo tần suất của Hệ thống nguồn; tổng hợp hằng tháng
+
+
+
+
+36
+
+	
+
+TN-B-35
+
+	
+
+Lưu lượng nước thải sau xử lý
+
+	
+
+Lưu lượng nước thải sau xử lý bình quân ngày trong kỳ, được kế thừa hoặc kết nối từ hệ thống dữ liệu quan trắc môi trường của cơ quan có thẩm quyền. Đơn vị thoát nước và Sở Xây dựng chỉ đối chiếu liên kết với công trình, phản hồi sai lệch; không nhập lại, không sửa đổi và không ghi nhận trạng thái chất lượng thay cơ quan, tổ chức quản lý Hệ thống nguồn.
+
+	
+
+Số thập phân/chuỗi thời gian
+
+	
+
+m³/ngày hoặc m³/giờ
+
+	
+
+Cơ quan quản lý hệ thống dữ liệu môi trường có thẩm quyền
+
+	
+
+Phối hợp đối chiếu: Đơn vị thoát nước đối chiếu; Sở Xây dựng phối hợp
+Rà soát, ghi nhận trạng thái chất lượng: Kế thừa trạng thái chất lượng của Hệ thống nguồn
+
+	
+
+Theo tần suất của Hệ thống nguồn; tổng hợp hằng tháng
+
+
+
+
+37
+
+	
+
+TN-B-36
+
+	
+
+Tỷ lệ nước thải được thu gom
+
+	
+
+Tỷ lệ lượng nước thải được thu gom trên lượng nước thải phát sinh ước tính. Hệ thống thông tin tự động tính từ TN-B-33 và TN-B-32 đã được ghi nhận đáp ứng yêu cầu chất lượng; không nhập thủ công kết quả.
+
+	
+
+Số thập phân (tự động tính)
+
+	
+
+%
+
+	
+
+Hệ thống thông tin tự động tính từ dữ liệu nguồn
+
+	
+
+Phối hợp đối chiếu: Đơn vị cấp nước; đơn vị thoát nước
+Rà soát, ghi nhận trạng thái chất lượng: Sở Xây dựng rà soát dữ liệu nguồn và ghi nhận trạng thái chất lượng
+
+	
+
+Hệ thống thông tin tự động tính hằng quý; tổng hợp hằng năm
+
+
+
+
+38
+
+	
+
+TN-B-37
+
+	
+
+Tỷ lệ nước thải được xử lý
+
+	
+
+Tỷ lệ lượng nước thải được xử lý trên lượng nước thải phát sinh ước tính. Hệ thống thông tin tự động tính từ TN-B-35 và TN-B-32 sau khi dữ liệu đã được ghi nhận đáp ứng yêu cầu chất lượng hoặc kế thừa trạng thái từ Hệ thống nguồn; không nhập thủ công kết quả.
+
+	
+
+Số thập phân (tự động tính)
+
+	
+
+%
+
+	
+
+Hệ thống thông tin tự động tính từ dữ liệu nguồn
+
+	
+
+Phối hợp đối chiếu: Đơn vị thoát nước; cơ quan có liên quan (Hệ thống thông tin tự động tính)
+Rà soát, ghi nhận trạng thái chất lượng: Sở Xây dựng rà soát dữ liệu nguồn và ghi nhận trạng thái chất lượng
+
+	
+
+Hệ thống thông tin tự động tính hằng quý; tổng hợp hằng năm
+
+
+
+
+39
+
+	
+
+TN-B-38
+
+	
+
+Thông tin giấy phép môi trường
+
+	
+
+Số, ngày cấp, cơ quan cấp, thời hạn, lưu lượng, điểm xả và yêu cầu chính của giấy phép môi trường.
+
+	
+
+Đối tượng dữ liệu/tệp điện tử
+
+	
+
+Ngày ISO 8601; mã văn bản
+
+	
+
+Đơn vị thoát nước
+
+	
+
+Phối hợp đối chiếu: cơ quan có liên quan
+Rà soát, ghi nhận trạng thái chất lượng: Sở Xây dựng rà soát, ghi nhận trạng thái chất lượng theo phân quyền
+
+	
+
+Khi tạo lập; khi thay đổi
+
+
+
+
+40
+
+	
+
+TN-B-39
+
+	
+
+Thông tin điểm xả sau xử lý và nguồn tiếp nhận
+
+	
+
+Mã chuyên ngành, vị trí, tọa độ, tên nguồn tiếp nhận, trạng thái hoạt động và mối liên kết với giấy phép môi trường. Mã định danh địa điểm chỉ ghi khi điểm xả thuộc danh mục định danh và được Cơ sở dữ liệu định danh địa điểm xác lập; không tự tạo mã định danh địa điểm.
+
+	
+
+Đối tượng dữ liệu/chuỗi định danh/dữ liệu không gian
+
+	
+
+Mã chuyên ngành; mã tham chiếu (nếu có)
+
+	
+
+Đơn vị thoát nước
+
+	
+
+Phối hợp đối chiếu: UBND cấp xã; cơ quan có liên quan
+Rà soát, ghi nhận trạng thái chất lượng: Sở Xây dựng rà soát, ghi nhận trạng thái chất lượng theo phân quyền
+
+	
+
+Khi tạo lập; khi thay đổi
+
+
+
+
+41
+
+	
+
+TN-B-40
+
+	
+
+Khối lượng nước thải sau xử lý được tái sử dụng
+
+	
+
+Khối lượng nước thải sau xử lý được tái sử dụng bình quân ngày trong kỳ; ghi bằng 0 nếu không tái sử dụng.
+
+	
+
+Số thập phân
+
+	
+
+m³/ngày
+
+	
+
+Đơn vị thoát nước
+
+	
+
+Phối hợp đối chiếu: Theo nhu cầu đối chiếu
+Rà soát, ghi nhận trạng thái chất lượng: Sở Xây dựng rà soát, ghi nhận trạng thái chất lượng theo phân quyền
+
+	
+
+Cập nhật hằng quý; tổng hợp hằng năm
+
+
+
+
+42
+
+	
+
+TN-B-41
+
+	
+
+Mục đích tái sử dụng nước thải
+
+	
+
+Mục đích, khu vực và đối tượng sử dụng nước thải sau xử lý.
+
+	
+
+Chuỗi ký tự
+
+	
+
+Không áp dụng
+
+	
+
+Đơn vị thoát nước
+
+	
+
+Phối hợp đối chiếu: Theo nhu cầu đối chiếu
+Rà soát, ghi nhận trạng thái chất lượng: Sở Xây dựng rà soát, ghi nhận trạng thái chất lượng theo phân quyền
+
+	
+
+Khi thay đổi
+
+
+
+
+43
+
+	
+
+TN-B-42
+
+	
+
+Số sự cố công trình thu gom, xử lý nước thải
+
+	
+
+Số sự cố ảnh hưởng đến mạng lưới thu gom, trạm bơm, công trình xử lý nước thải hoặc việc cung cấp dịch vụ trong kỳ; phân loại theo nguyên nhân, phạm vi và mức độ ảnh hưởng.
+
+	
+
+Số nguyên không âm
+
+	
+
+Vụ/kỳ
+
+	
+
+Đơn vị thoát nước
+
+	
+
+Phối hợp đối chiếu: UBND cấp xã
+Rà soát, ghi nhận trạng thái chất lượng: Sở Xây dựng rà soát, ghi nhận trạng thái chất lượng theo phân quyền
+
+	
+
+Khi phát sinh; tổng hợp hằng tháng
+
+
+
+
+44
+
+	
+
+TN-B-43
+
+	
+
+Thời gian khắc phục sự cố bình quân
+
+	
+
+Tổng thời gian xử lý sự cố chia cho số sự cố đã xử lý trong kỳ.
+
+	
+
+Số thập phân
+
+	
+
+Giờ/sự cố
+
+	
+
+Đơn vị thoát nước
+
+	
+
+Phối hợp đối chiếu: Theo nhu cầu đối chiếu
+Rà soát, ghi nhận trạng thái chất lượng: Sở Xây dựng rà soát, ghi nhận trạng thái chất lượng theo phân quyền
+
+	
+
+Cập nhật hằng tháng; tổng hợp theo quý, năm
+
+
+
+
+45
+
+	
+
+TN-B-44
+
+	
+
+Số phản ánh, kiến nghị về chất lượng dịch vụ thoát nước
+
+	
+
+Tổng số phản ánh, kiến nghị về thoát nước, thu gom nước thải, mùi, tắc nghẽn, ngập, chất lượng phục vụ và nội dung liên quan được tiếp nhận qua đơn vị thoát nước, UBND cấp xã, cổng thông tin, đường dây nóng hoặc kênh hợp pháp khác. Ghi nguồn, thời điểm, trạng thái, đơn vị xử lý và kết quả; không bao gồm khiếu nại, tố cáo xử lý theo thủ tục riêng.
+
+	
+
+Số nguyên không âm
+
+	
+
+Vụ/kỳ
+
+	
+
+Đơn vị thoát nước; Ủy ban nhân dân cấp xã tạo lập, cập nhật dữ liệu phản ánh, kiến nghị do mình tiếp nhận
+
+	
+
+Phối hợp đối chiếu: UBND cấp xã
+Rà soát, ghi nhận trạng thái chất lượng: Sở Xây dựng rà soát, ghi nhận trạng thái chất lượng theo phân quyền
+
+	
+
+Khi phát sinh; tổng hợp hằng tháng
+
+
+
+
+46
+
+	
+
+TN-B-45
+
+	
+
+Tỷ lệ phản ánh, kiến nghị được xử lý đúng hạn
+
+	
+
+Tỷ lệ phản ánh, kiến nghị về chất lượng dịch vụ thoát nước được trả lời hoặc xử lý trong thời hạn theo quy trình cung cấp dịch vụ hoặc cam kết công bố của đơn vị. Hệ thống thông tin tự động tính từ dữ liệu tiếp nhận và xử lý.
+
+	
+
+Số thập phân
+
+	
+
+%
+
+	
+
+Hệ thống thông tin tự động tính từ dữ liệu nguồn
+
+	
+
+Phối hợp đối chiếu: Đơn vị thoát nước
+Rà soát, ghi nhận trạng thái chất lượng: Sở Xây dựng rà soát dữ liệu nguồn và ghi nhận trạng thái chất lượng
+
+	
+
+Cập nhật hằng tháng; tổng hợp theo quý, năm
+
+
+
+
+C. Giám sát trực tuyến nước thải đầu vào và dữ liệu nước thải sau xử lý được kết nối
+
+
+
+
+47
+
+	
+
+TN-C-46
+
+	
+
+Thông tin điểm hoặc trạm giám sát nước thải đầu vào
+
+	
+
+Mã chuyên ngành, vị trí, mã thiết bị, công trình xử lý liên kết, đơn vị quản lý thiết bị và nguồn dữ liệu. Mã định danh địa điểm chỉ ghi khi trạm là công trình độc lập thuộc danh mục định danh và được Cơ sở dữ liệu định danh địa điểm xác lập; điểm đo trong nhà máy không tạo mã địa điểm riêng.
+
+	
+
+Đối tượng dữ liệu/chuỗi định danh/dữ liệu không gian
+
+	
+
+Mã chuyên ngành; mã thiết bị; mã tham chiếu (nếu có)
+
+	
+
+Đơn vị thoát nước
+
+	
+
+Phối hợp đối chiếu: cơ quan có liên quan
+Rà soát, ghi nhận trạng thái chất lượng: Sở Xây dựng rà soát, ghi nhận trạng thái chất lượng theo phân quyền
+
+	
+
+Khi tạo lập; khi thay đổi
+
+
+
+
+48
+
+	
+
+TN-C-47
+
+	
+
+Thông số giám sát trực tuyến nước thải đầu vào
+
+	
+
+Các thông số cơ bản của nước thải đầu vào được hệ thống giám sát trực tuyến hiện có ghi nhận, như lưu lượng, pH, nhiệt độ và thông số cần thiết cho quản lý vận hành. Mỗi giá trị kèm đơn vị đo, thời điểm nguồn, mã thiết bị và chất lượng trong siêu dữ liệu.
+
+	
+
+Chuỗi thời gian/đối tượng dữ liệu
+
+	
+
+Theo thông số và đơn vị đo
+
+	
+
+Đơn vị thoát nước
+
+	
+
+Phối hợp đối chiếu: cơ quan có liên quan
+Rà soát, ghi nhận trạng thái chất lượng: Sở Xây dựng rà soát, ghi nhận trạng thái chất lượng theo phân quyền
+
+	
+
+Theo tần suất của hệ thống nguồn; tổng hợp theo giờ
+
+
+
+
+49
+
+	
+
+TN-C-48
+
+	
+
+Mã bản ghi và nguồn dữ liệu nước thải sau xử lý được kết nối
+
+	
+
+Mã bản ghi nguồn, mã trạm hoặc điểm quan trắc, mã công trình liên kết, cơ quan, tổ chức quản lý Hệ thống nguồn và phiên bản dữ liệu. Dữ liệu được kết nối từ hệ thống dữ liệu quan trắc môi trường của cơ quan có thẩm quyền; đơn vị thoát nước và Sở Xây dựng chỉ đối chiếu liên kết công trình, phản hồi sai lệch, không nhập lại, không sửa đổi và không ghi nhận trạng thái chất lượng thay cơ quan, tổ chức quản lý Hệ thống nguồn.
+
+	
+
+Chuỗi định danh/quan hệ tham chiếu
+
+	
+
+Theo Hệ thống nguồn
+
+	
+
+Cơ quan quản lý hệ thống dữ liệu môi trường có thẩm quyền
+
+	
+
+Phối hợp đối chiếu: Đơn vị thoát nước đối chiếu; Sở Xây dựng phối hợp
+Rà soát, ghi nhận trạng thái chất lượng: Kế thừa trạng thái chất lượng của Hệ thống nguồn
+
+	
+
+Theo tần suất của Hệ thống nguồn
+
+
+
+
+50
+
+	
+
+TN-C-49
+
+	
+
+Thông số nước thải sau xử lý được kết nối
+
+	
+
+Các thông số do hệ thống dữ liệu quan trắc môi trường có thẩm quyền chia sẻ, gồm lưu lượng, pH, nhiệt độ, COD, TSS, amoni và thông số khác theo giấy phép môi trường hoặc dữ liệu nguồn. Hệ thống thông tin kế thừa nguyên trạng giá trị, đơn vị đo, thời điểm nguồn, trạng thái thiết bị và trạng thái chất lượng; không sử dụng để thay thế kết luận của cơ quan môi trường.
+
+	
+
+Chuỗi thời gian/đối tượng dữ liệu
+
+	
+
+Theo thông số và đơn vị đo
+
+	
+
+Cơ quan quản lý hệ thống dữ liệu môi trường có thẩm quyền
+
+	
+
+Phối hợp đối chiếu: Đơn vị thoát nước đối chiếu; Sở Xây dựng phối hợp
+Rà soát, ghi nhận trạng thái chất lượng: Kế thừa trạng thái chất lượng của Hệ thống nguồn
+
+	
+
+Theo tần suất của Hệ thống nguồn
+
+
+
+
+D. Thoát nước mưa đô thị và kiểm soát ngập
+
+
+
+
+51
+
+	
+
+TN-D-50
+
+	
+
+Chiều dài sông, kênh, mương thoát nước đô thị chính
+
+	
+
+Tổng chiều dài sông, kênh, mương chính có chức năng thoát nước đô thị thuộc phạm vi quản lý, vận hành; không bao gồm công trình phục vụ sản xuất nông nghiệp hoặc sản xuất muối. Sơ đồ, vị trí.
+
+	
+
+Số thập phân
+
+	
+
+km
+
+	
+
+Đơn vị thoát nước
+
+	
+
+Phối hợp đối chiếu: UBND cấp xã
+Rà soát, ghi nhận trạng thái chất lượng: Sở Xây dựng rà soát, ghi nhận trạng thái chất lượng theo phân quyền
+
+	
+
+Khi thay đổi; rà soát, tổng hợp hằng năm
+
+
+
+
+52
+
+	
+
+TN-D-51
+
+	
+
+Chiều dài cống thoát nước mưa chính
+
+	
+
+Tổng chiều dài tuyến cống thoát nước mưa chính đang được quản lý, vận hành. Sơ đồ, vị trí.
+
+	
+
+Số thập phân
+
+	
+
+km
+
+	
+
+Đơn vị thoát nước
+
+	
+
+Phối hợp đối chiếu: UBND cấp xã
+Rà soát, ghi nhận trạng thái chất lượng: Sở Xây dựng rà soát, ghi nhận trạng thái chất lượng theo phân quyền
+
+	
+
+Khi thay đổi; rà soát, tổng hợp hằng năm
+
+
+
+
+53
+
+	
+
+TN-D-52
+
+	
+
+Thông tin định danh địa điểm trạm bơm thoát nước mưa
+
+	
+
+Bản ghi lặp cho từng trạm bơm có vị trí, hồ sơ và phạm vi quản lý xác định rõ. Gồm mã định danh chuyên ngành, tên, địa chỉ, tọa độ; Mã định danh địa điểm và mã loại đối tượng chỉ ghi khi trạm bơm thuộc danh mục định danh theo văn bản có hiệu lực và được Cơ sở dữ liệu định danh địa điểm trả về; không tự gán mã loại đối tượng.
+
+	
+
+Đối tượng dữ liệu lặp/chuỗi định danh/dữ liệu không gian
+
+	
+
+Theo quy định về định danh địa điểm
+
+	
+
+Đơn vị thoát nước
+
+	
+
+Phối hợp đối chiếu: UBND cấp xã
+Rà soát, ghi nhận trạng thái chất lượng: Sở Xây dựng rà soát, ghi nhận trạng thái chất lượng theo phân quyền
+
+	
+
+Khi tạo lập; khi thay đổi
+
+
+
+
+54
+
+	
+
+TN-D-53
+
+	
+
+Công suất và tình trạng trạm bơm thoát nước mưa
+
+	
+
+Công suất thiết kế, công suất vận hành và trạng thái hoạt động của trạm bơm thoát nước mưa.
+
+	
+
+Đối tượng dữ liệu/số thập phân
+
+	
+
+m³/giây hoặc m³/giờ
+
+	
+
+Đơn vị thoát nước
+
+	
+
+Phối hợp đối chiếu: UBND cấp xã
+Rà soát, ghi nhận trạng thái chất lượng: Sở Xây dựng rà soát, ghi nhận trạng thái chất lượng theo phân quyền
+
+	
+
+Khi tạo lập; khi thay đổi; đối soát hằng tháng
+
+
+
+
+55
+
+	
+
+TN-D-54
+
+	
+
+Thông tin định danh công trình trữ, điều hòa nước mưa
+
+	
+
+Mã định danh chuyên ngành; mã định danh địa điểm do Cơ sở dữ liệu định danh địa điểm cấp (nếu có); tên, địa chỉ, tọa độ, diện tích, dung tích hữu ích và trạng thái hoạt động của hồ điều hòa hoặc công trình trữ nước. Chỉ tạo mã riêng khi công trình có vị trí, hồ sơ và phạm vi quản lý xác định rõ.
+
+	
+
+Đối tượng dữ liệu/chuỗi định danh/dữ liệu không gian
+
+	
+
+ha; m³; theo quy định về định danh địa điểm
+
+	
+
+Đơn vị thoát nước
+
+	
+
+Phối hợp đối chiếu: UBND cấp xã
+Rà soát, ghi nhận trạng thái chất lượng: Sở Xây dựng rà soát, ghi nhận trạng thái chất lượng theo phân quyền
+
+	
+
+Khi tạo lập; khi thay đổi
+
+
+
+
+56
+
+	
+
+TN-D-55
+
+	
+
+Khối lượng nạo vét, duy trì hệ thống thoát nước
+
+	
+
+Tổng chiều dài hoặc khối lượng cống, kênh, mương được nạo vét, duy trì trong kỳ.
+
+	
+
+Đối tượng dữ liệu
+
+	
+
+km; m³ hoặc tấn/kỳ
+
+	
+
+Đơn vị thoát nước
+
+	
+
+Phối hợp đối chiếu: UBND cấp xã
+Rà soát, ghi nhận trạng thái chất lượng: Sở Xây dựng rà soát, ghi nhận trạng thái chất lượng theo phân quyền
+
+	
+
+Cập nhật hằng quý; tổng hợp hằng năm
+
+
+
+
+57
+
+	
+
+TN-D-56
+
+	
+
+Số điểm ngập
+
+	
+
+Tổng số điểm ngập được ghi nhận trong kỳ. Mỗi điểm phải có tối thiểu thông tin về lượng mưa hoặc điều kiện xảy ra, thời gian, chiều sâu, diện tích và đối tượng ảnh hưởng, số lần xuất hiện, vị trí/phương pháp xác định tọa độ và nguồn ghi nhận. Ngưỡng quản lý chi tiết của địa phương được ghi trong siêu dữ liệu để phục vụ quản lý nội bộ và truy vết; khi tổng hợp, so sánh toàn quốc chỉ sử dụng tiêu chí dữ liệu tối thiểu dùng chung, không sử dụng trực tiếp ngưỡng riêng của địa phương để xếp hạng hoặc so sánh.
+
+	
+
+Số nguyên không âm
+
+	
+
+Điểm
+
+	
+
+Đơn vị thoát nước
+
+	
+
+Phối hợp đối chiếu: UBND cấp xã
+Rà soát, ghi nhận trạng thái chất lượng: Sở Xây dựng rà soát, ghi nhận trạng thái chất lượng theo phân quyền
+
+	
+
+Khi phát sinh; khi thay đổi; tổng hợp theo quý, năm
+
+
+
+
+58
+
+	
+
+TN-D-57
+
+	
+
+Thông tin vị trí điểm ngập
+
+	
+
+Địa chỉ, vị trí hoặc tọa độ theo hệ quy chiếu quốc gia, thời gian bắt đầu/kết thúc, chiều sâu lớn nhất, diện tích và đối tượng ảnh hưởng, nguyên nhân, tần suất, phương thức giám sát và nguồn dữ liệu. UBND cấp xã ghi nhận, phản ánh và phối hợp xác minh; thông số đo đạc chuyên môn do đơn vị quản lý hệ thống hoặc cơ quan chuyên môn tạo lập.
+
+	
+
+Đối tượng dữ liệu/dữ liệu không gian
+
+	
+
+phút; cm; ha
+
+	
+
+Đơn vị thoát nước
+
+	
+
+Phối hợp đối chiếu: UBND cấp xã
+Rà soát, ghi nhận trạng thái chất lượng: Sở Xây dựng rà soát, ghi nhận trạng thái chất lượng theo phân quyền
+
+	
+
+Khi phát sinh; khi thay đổi
+
+
+
+
+59
+
+	
+
+TN-D-58
+
+	
+
+Số lần xảy ra ngập
+
+	
+
+Tổng số lần xảy ra ngập tại các điểm ngập trong kỳ báo cáo.
+
+	
+
+Số nguyên không âm
+
+	
+
+Lần/kỳ
+
+	
+
+Đơn vị thoát nước
+
+	
+
+Phối hợp đối chiếu: UBND cấp xã
+Rà soát, ghi nhận trạng thái chất lượng: Sở Xây dựng rà soát, ghi nhận trạng thái chất lượng theo phân quyền
+
+	
+
+Khi phát sinh; tổng hợp theo quý, năm
+
+
+
+
+60
+
+	
+
+TN-D-59
+
+	
+
+Số điểm ngập đã được xử lý
+
+	
+
+Số điểm ngập đã hoàn thành biện pháp xử lý và đáp ứng tiêu chí do cơ quan có thẩm quyền xác định về lượng mưa hoặc điều kiện xảy ra, thời gian, chiều sâu, diện tích, đối tượng ảnh hưởng và tần suất sau xử lý. Ghi căn cứ, thời điểm đánh giá và tiêu chí áp dụng trong siêu dữ liệu; kết quả theo ngưỡng riêng của địa phương phải phân tổ riêng khi tổng hợp toàn quốc.
+
+	
+
+Số nguyên không âm
+
+	
+
+Điểm
+
+	
+
+Đơn vị thoát nước
+
+	
+
+Phối hợp đối chiếu: UBND cấp xã
+Rà soát, ghi nhận trạng thái chất lượng: Sở Xây dựng rà soát, ghi nhận trạng thái chất lượng theo phân quyền
+
+	
+
+Khi thay đổi; tổng hợp theo quý, năm
+
+
+
+
+61
+
+	
+
+TN-D-60
+
+	
+
+Phương thức giám sát ngập
+
+	
+
+Phương thức giám sát đang áp dụng như kiểm tra hiện trường, camera, cảm biến, phản ánh của người dân hoặc nguồn dữ liệu khác.
+
+	
+
+Mã danh mục dùng chung/chuỗi ký tự
+
+	
+
+Không áp dụng
+
+	
+
+Đơn vị thoát nước
+
+	
+
+Phối hợp đối chiếu: UBND cấp xã
+Rà soát, ghi nhận trạng thái chất lượng: Sở Xây dựng rà soát, ghi nhận trạng thái chất lượng theo phân quyền
+
+	
+
+Khi thay đổi
+
+
+
+
+E. Bùn thải từ hệ thống thoát nước đô thị và công trình xử lý nước thải
+
+
+
+
+62
+
+	
+
+TN-E-61
+
+	
+
+Khối lượng bùn thải từ công trình xử lý nước thải đô thị
+
+	
+
+Tổng khối lượng bùn phát sinh từ công trình xử lý nước thải thuộc phạm vi quản lý của Bộ Xây dựng trong kỳ. Ghi đơn vị đo, độ ẩm hoặc trạng thái bùn và hệ số quy đổi; khi tổng hợp quy đổi về đơn vị chuẩn theo tài liệu kỹ thuật vận hành Hệ thống thông tin.
+
+	
+
+Số thập phân
+
+	
+
+m³ hoặc tấn/kỳ; quy đổi về tấn khi tổng hợp
+
+	
+
+Đơn vị thoát nước
+
+	
+
+Phối hợp đối chiếu: cơ quan có liên quan
+Rà soát, ghi nhận trạng thái chất lượng: Sở Xây dựng rà soát, ghi nhận trạng thái chất lượng theo phân quyền
+
+	
+
+Cập nhật hằng tháng; tổng hợp theo quý, năm
+
+
+
+
+63
+
+	
+
+TN-E-62
+
+	
+
+Khối lượng bùn thải từ hệ thống thoát nước đô thị
+
+	
+
+Tổng khối lượng bùn thu gom từ hoạt động nạo vét, duy trì mạng lưới thoát nước đô thị trong kỳ. Ghi đơn vị đo, độ ẩm hoặc trạng thái bùn và hệ số quy đổi; không bao gồm bùn, chất thải thuộc phạm vi quản lý chất thải rắn hoặc chất thải nguy hại của cơ quan môi trường.
+
+	
+
+Số thập phân
+
+	
+
+m³ hoặc tấn/kỳ; quy đổi về tấn khi tổng hợp
+
+	
+
+Đơn vị thoát nước
+
+	
+
+Phối hợp đối chiếu: cơ quan có liên quan
+Rà soát, ghi nhận trạng thái chất lượng: Sở Xây dựng rà soát, ghi nhận trạng thái chất lượng theo phân quyền
+
+	
+
+Cập nhật hằng tháng; tổng hợp theo quý, năm
+
+
+
+
+64
+
+	
+
+TN-E-63
+
+	
+
+Khối lượng bùn thải được xử lý
+
+	
+
+Tổng khối lượng bùn thải phát sinh từ hệ thống thoát nước đô thị và công trình xử lý nước thải thuộc phạm vi quản lý đã được tiếp nhận, xử lý theo quy định trong kỳ. Ghi đơn vị đo, trạng thái bùn và hệ số quy đổi.
+
+	
+
+Số thập phân
+
+	
+
+m³ hoặc tấn/kỳ; quy đổi về tấn khi tổng hợp
+
+	
+
+Đơn vị thoát nước
+
+	
+
+Phối hợp đối chiếu: cơ quan có liên quan
+Rà soát, ghi nhận trạng thái chất lượng: Sở Xây dựng rà soát, ghi nhận trạng thái chất lượng theo phân quyền
+
+	
+
+Cập nhật hằng tháng; tổng hợp theo quý, năm
+
+
+
+
+65
+
+	
+
+TN-E-64
+
+	
+
+Phương pháp xử lý bùn thải
+
+	
+
+Phương pháp được áp dụng để nén, tách nước, làm khô, ổn định, xử lý, tiêu hủy hoặc tái sử dụng bùn; ghi nguồn phát sinh, trạng thái bùn, căn cứ pháp lý/điều kiện môi trường và cơ sở tiếp nhận. Cơ sở dữ liệu chỉ ghi nhận trạng thái theo nguồn có thẩm quyền, không tự phân loại bùn là nguyên liệu hoặc vật liệu.
+
+	
+
+Mã danh mục dùng chung/chuỗi ký tự
+
+	
+
+Theo danh mục dùng chung
+
+	
+
+Đơn vị thoát nước
+
+	
+
+Phối hợp đối chiếu: cơ quan có liên quan
+Rà soát, ghi nhận trạng thái chất lượng: Sở Xây dựng rà soát, ghi nhận trạng thái chất lượng theo phân quyền
+
+	
+
+Khi tạo lập; khi thay đổi
+
+
+
+
+66
+
+	
+
+TN-E-65
+
+	
+
+Thông tin cơ sở xử lý bùn thải thuộc hệ thống thoát nước đô thị
+
+	
+
+Mã chuyên ngành, tên, địa chỉ, tọa độ và trạng thái hoạt động của cơ sở xử lý bùn phát sinh từ hệ thống thoát nước đô thị hoặc công trình xử lý nước thải thuộc phạm vi quản lý. Không bao gồm cơ sở xử lý chất thải rắn, chất thải nguy hại hoặc bùn thuộc phạm vi quản lý chuyên ngành khác. Mã định danh địa điểm chỉ ghi khi được Cơ sở dữ liệu định danh địa điểm xác lập.
+
+	
+
+Đối tượng dữ liệu/chuỗi định danh/dữ liệu không gian
+
+	
+
+Mã chuyên ngành; mã tham chiếu (nếu có)
+
+	
+
+Đơn vị thoát nước
+
+	
+
+Phối hợp đối chiếu: cơ quan có liên quan
+Rà soát, ghi nhận trạng thái chất lượng: Sở Xây dựng rà soát, ghi nhận trạng thái chất lượng theo phân quyền
+
+	
+
+Khi tạo lập; khi thay đổi
+
+
+
+
+67
+
+	
+
+TN-E-66
+
+	
+
+Công suất xử lý bùn thải
+
+	
+
+Công suất thiết kế và công suất vận hành của cơ sở xử lý bùn thải. Ghi rõ đơn vị đo, trạng thái bùn và hệ số quy đổi; khi tổng hợp, quy đổi về tấn/ngày theo tài liệu kỹ thuật vận hành Hệ thống thông tin.
+
+	
+
+Đối tượng dữ liệu/số thập phân
+
+	
+
+m³/ngày hoặc tấn/ngày; quy đổi về tấn/ngày khi tổng hợp
+
+	
+
+Đơn vị thoát nước
+
+	
+
+Phối hợp đối chiếu: cơ quan có liên quan
+Rà soát, ghi nhận trạng thái chất lượng: Sở Xây dựng rà soát, ghi nhận trạng thái chất lượng theo phân quyền
+
+	
+
+Khi tạo lập; khi thay đổi
+
+
+
+
+68
+
+	
+
+TN-E-67
+
+	
+
+Khối lượng bùn thải được tái sử dụng
+
+	
+
+Khối lượng bùn sau xử lý được tái sử dụng cho mục đích phù hợp trong kỳ; ghi đơn vị đo, trạng thái bùn, hệ số quy đổi, mục đích tái sử dụng và tài liệu chứng minh đáp ứng quy chuẩn, điều kiện môi trường khi có. Khi tổng hợp, quy đổi về đơn vị chuẩn theo tài liệu kỹ thuật vận hành Hệ thống thông tin.
+
+	
+
+Số thập phân
+
+	
+
+m³ hoặc tấn/kỳ; quy đổi về tấn khi tổng hợp
+
+	
+
+Đơn vị thoát nước
+
+	
+
+Phối hợp đối chiếu: cơ quan có liên quan
+Rà soát, ghi nhận trạng thái chất lượng: Sở Xây dựng rà soát, ghi nhận trạng thái chất lượng theo phân quyền
+
+	
+
+Cập nhật hằng tháng; tổng hợp theo quý, năm
+
+
+
+
+69
+
+	
+
+TN-E-68
+
+	
+
+Tỷ lệ bùn thải được xử lý, tái sử dụng
+
+	
+
+Tỷ lệ khối lượng bùn thải được xử lý hoặc tái sử dụng trên tổng khối lượng bùn phát sinh từ công trình xử lý nước thải và mạng lưới thoát nước đô thị, sau khi quy đổi về cùng đơn vị. Hệ thống thông tin tự động tính và ghi rõ phạm vi số liệu.
+
+	
+
+Số thập phân (tự động tính)
+
+	
+
+%
+
+	
+
+Hệ thống thông tin tự động tính từ dữ liệu nguồn
+
+	
+
+Phối hợp đối chiếu: Đơn vị thoát nước
+Rà soát, ghi nhận trạng thái chất lượng: Sở Xây dựng rà soát dữ liệu nguồn và ghi nhận trạng thái chất lượng
+
+	
+
+Hệ thống thông tin tự động tính hằng tháng; tổng hợp theo quý, năm
+
+
+
+
+F. Dữ liệu, tài liệu đính kèm về thoát nước đô thị, xử lý nước thải và bùn thải
+
+
+
+
+70
+
+	
+
+TN-F-69
+
+	
+
+Dữ liệu, tài liệu đính kèm về thoát nước đô thị, xử lý nước thải và bùn thải
+
+	
+
+Tệp hoặc liên kết đến tài liệu làm căn cứ, gồm: quyết định ban hành giá dịch vụ thoát nước; hợp đồng quản lý, vận hành, quyết định đặt hàng, giao nhiệm vụ hoặc văn bản tương đương; hồ sơ pháp lý của chủ sở hữu/đại diện chủ sở hữu và đơn vị thoát nước; giấy phép môi trường; hồ sơ pháp lý, thiết kế, hoàn công, nghiệm thu công trình; bản đồ hệ thống hiện có (nếu có); báo cáo vận hành, nạo vét, sự cố; hồ sơ quan trắc, hiệu chuẩn thiết bị; chứng từ chuyển giao bùn thải. Văn bản quy định phí bảo vệ môi trường đối với nước thải sinh hoạt được lưu làm tài liệu tham chiếu, không hình thành trường dữ liệu quản lý phí độc lập. Mỗi tài liệu ghi số, ngày, cơ quan ban hành, hiệu lực, phiên bản và bản ghi liên kết; không cập nhật trùng dữ liệu đã kết nối từ Hệ thống nguồn.
+
+	
+
+Tệp điện tử/quan hệ tham chiếu
+
+	
+
+Tệp điện tử/định dạng theo tài liệu kỹ thuật vận hành Hệ thống thông tin
+
+	
+
+Đơn vị thoát nước
+
+	
+
+Phối hợp đối chiếu: cơ quan có liên quan
+Rà soát, ghi nhận trạng thái chất lượng: Sở Xây dựng rà soát, ghi nhận trạng thái chất lượng theo phân quyền
+
+	
+
+Khi phát sinh; khi thay đổi
+
+Phụ lục III
+
+QUY TẮC MÃ ĐỊNH DANH, DANH MỤC DÙNG CHUNG, SIÊU DỮ LIỆU VÀ YÊU CẦU KỸ THUẬT TRAO ĐỔI DỮ LIỆU
+
+(Ban hành kèm theo Thông tư số /2026/TT-BXD ngày tháng năm 2026 của Bộ trưởng Bộ Xây dựng)
+
+I. Quy tắc mã định danh và mã tham chiếu
+
+1. Hệ thống thông tin quản lý riêng các loại mã sau: mã định danh tổ chức; mã định danh chuyên ngành của đối tượng; mã định danh địa điểm; mã loại đối tượng địa điểm; mã đơn vị hành chính và mã định danh của Hệ thống nguồn. Các loại mã phải được lưu ở trường riêng, có quan hệ đối chiếu, liên kết tương ứng và không được sử dụng thay thế lẫn nhau.
+
+2. Mã định danh địa điểm do Cơ sở dữ liệu định danh địa điểm cấp theo pháp luật về định danh địa điểm. Hệ thống thông tin chỉ gửi yêu cầu, tiếp nhận, lưu trữ mã, thông tin trả về và liên kết tương ứng với mã định danh chuyên ngành; không phát sinh mã định danh địa điểm, không quy định trước cấu trúc mã hoặc tự gán mã loại đối tượng khi chưa được Cơ sở dữ liệu định danh địa điểm cung cấp.
+
+3. Mã định danh chuyên ngành do Hệ thống thông tin tạo hoặc kế thừa từ Hệ thống nguồn theo quy định tại Thông tư này và tài liệu kỹ thuật vận hành Hệ thống thông tin; phải ổn định trong suốt vòng đời đối tượng, không tái sử dụng và không chứa thông tin cá nhân. Mã này dùng cho quản lý nghiệp vụ, không phải mã định danh địa điểm.
+
+4. Trường hợp đối tượng đã có mã định danh địa điểm, mã định danh tổ chức, mã công trình, mã tài sản hoặc mã chuyên ngành hợp lệ thì phải liên kết, kế thừa và lưu mã tham chiếu; không tạo bản ghi trùng lặp. Khi thay đổi tên, chủ sở hữu, địa giới hành chính hoặc trạng thái hoạt động, mã đã cấp được giữ nguyên và lưu lịch sử biến động theo quy định.
+
+II. Danh mục dùng chung tối thiểu
+
+Mã danh mục
+
+	
+
+Tên danh mục
+
+	
+
+Nội dung tối thiểu
+
+
+
+
+DM01
+
+	
+
+Đơn vị hành chính
+
+	
+
+Mã, tên, cấp đơn vị hành chính; trạng thái hiệu lực; quan hệ trước và sau sắp xếp. Sử dụng danh mục dùng chung do cơ quan có thẩm quyền công bố.
+
+
+
+
+DM02
+
+	
+
+Loại hình tổ chức
+
+	
+
+Cơ quan nhà nước; đơn vị sự nghiệp; doanh nghiệp nhà nước; công ty cổ phần; công ty trách nhiệm hữu hạn; hợp tác xã và loại hình hợp pháp khác.
+
+
+
+
+DM03
+
+	
+
+Trạng thái hoạt động
+
+	
+
+Đang hoạt động/vận hành; dự phòng; tạm dừng; sửa chữa, nâng cấp; đang đầu tư; ngừng hoạt động; chuyển giao.
+
+
+
+
+DM04
+
+	
+
+Phân loại khu vực phục vụ cấp nước
+
+	
+
+Địa bàn đô thị; địa bàn nông thôn thuộc phạm vi phục vụ thực tế của đơn vị cấp nước thuộc Hệ thống; phạm vi liên xã, liên tỉnh; trạng thái hiệu lực. Việc phân loại không làm thay đổi phạm vi quản lý nước sạch nông thôn của cơ quan có thẩm quyền.
+
+
+
+
+DM05
+
+	
+
+Loại khách hàng, hộ và đấu nối
+
+	
+
+Hộ gia đình sử dụng nước sinh hoạt; cơ quan, tổ chức; sản xuất; kinh doanh, dịch vụ; bán buôn; đối tượng khác; hộ/cơ sở được cung cấp dịch vụ thoát nước.
+
+
+
+
+DM06
+
+	
+
+Loại nguồn nước
+
+	
+
+Nước mặt; nước dưới đất; nước thô mua hoặc tiếp nhận từ đơn vị khác; nước biển; nguồn nước dự phòng hoặc nguồn hợp pháp khác. Tên cụ thể của nguồn được ghi cùng bản ghi tại trường CN-B-27, không hình thành danh mục riêng cho từng tên nguồn.
+
+
+
+
+DM07
+
+	
+
+Công nghệ xử lý nước
+
+	
+
+Nhóm công nghệ, dây chuyền xử lý chính theo đặc tính nguồn nước và hồ sơ kỹ thuật của nhà máy nước.
+
+
+
+
+DM08
+
+	
+
+Công nghệ xử lý nước thải
+
+	
+
+Cơ học; hóa lý; sinh học; màng; hồ sinh học; đất ngập nước; công nghệ kết hợp và công nghệ hợp pháp khác.
+
+
+
+
+DM09
+
+	
+
+Loại công trình cấp nước
+
+	
+
+Nhà máy nước; công trình thu nước; trạm bơm nước thô; trạm bơm tăng áp; bể chứa nước sạch; đài nước; điểm hoặc trạm giám sát trực tuyến.
+
+
+
+
+DM10
+
+	
+
+Loại công trình thoát nước đô thị
+
+	
+
+Nhà máy, trạm xử lý nước thải tập trung; công trình xử lý nước thải phi tập trung thuộc hệ thống thoát nước đô thị; trạm bơm nước thải; trạm bơm thoát nước mưa; công trình trữ, điều hòa nước mưa; điểm xả; cơ sở xử lý bùn thải thuộc phạm vi quản lý. Không bao gồm xử lý nước thải tại chỗ, thoát nước phục vụ sản xuất nông nghiệp, sản xuất muối.
+
+
+
+
+DM11
+
+	
+
+Loại sự cố, phản ánh và kiến nghị
+
+	
+
+Vỡ, rò rỉ đường ống; ô nhiễm nguồn nước; tràn bùn bể lắng; rò rỉ hóa chất, khí clo; mất áp; gián đoạn cấp nước; sự cố công trình, điện, thiết bị; tắc nghẽn, ngập; nước thải; bùn thải; thiết bị giám sát; kết nối dữ liệu; sự cố an ninh mạng; phản ánh, kiến nghị về chất lượng dịch vụ. Mỗi bản ghi có mã loại, nguyên nhân, mức độ ảnh hưởng và trạng thái xử lý.
+
+
+
+
+DM12
+
+	
+
+Đơn vị đo
+
+	
+
+Đơn vị đo lường hợp pháp dùng cho lưu lượng, công suất, áp lực, chiều dài, diện tích, khối lượng, thông số giám sát, thời gian và giá dịch vụ.
+
+
+
+
+DM13
+
+	
+
+Mã loại đối tượng định danh địa điểm
+
+	
+
+Tham chiếu danh mục mã loại đối tượng định danh địa điểm theo văn bản quy phạm pháp luật có hiệu lực và dữ liệu do Cơ sở dữ liệu định danh địa điểm trả về. Không sử dụng cấu trúc mã dự kiến hoặc tự gán mã.
+
+
+
+
+DM14
+
+	
+
+Trạng thái chất lượng dữ liệu
+
+	
+
+Khởi tạo; đang cập nhật; chờ rà soát; cần rà soát, chỉnh sửa; đáp ứng yêu cầu chất lượng; hết hiệu lực; lưu lịch sử.
+
+
+
+
+DM15
+
+	
+
+Trạng thái chất lượng dữ liệu thiết bị
+
+	
+
+Hợp lệ; nghi ngờ; thiết bị bảo trì; hết hiệu lực hiệu chuẩn; mất kết nối; dữ liệu thiếu; dữ liệu thay thế; dữ liệu bị loại; trạng thái khác do Hệ thống nguồn cung cấp.
+
+
+
+
+DM16
+
+	
+
+Mục đích tái sử dụng nước thải và bùn thải
+
+	
+
+Tưới cây, rửa đường; sử dụng cho sản xuất, công nghiệp; tái sử dụng trong công trình; cải tạo đất hoặc mục đích hợp pháp khác theo quy định.
+
+
+
+
+DM17
+
+	
+
+Phương thức giám sát ngập
+
+	
+
+Quan sát, kiểm tra hiện trường; phản ánh của người dân; camera, cảm biến; trạm đo; ảnh viễn thám; mô hình hoặc nguồn dữ liệu hợp pháp khác.
+
+
+
+
+DM18
+
+	
+
+Phương pháp xử lý bùn thải
+
+	
+
+Nén; tách nước; làm khô; ổn định; xử lý sinh học, hóa lý; đồng xử lý; tiêu hủy; tái sử dụng và phương pháp hợp pháp khác.
+
+
+
+
+DM19
+
+	
+
+Loại hệ thống và loại cống thu gom, thoát nước
+
+	
+
+Hệ thống chung; riêng; nửa riêng; loại khác theo hiện trạng. Dùng để phân tổ chiều dài mạng lưới, không tạo trùng trường tổng hợp.
+
+
+
+
+DM20
+
+	
+
+Tiêu chí dữ liệu điểm ngập
+
+	
+
+Lượng mưa hoặc điều kiện xảy ra; thời gian ngập; chiều sâu; diện tích và đối tượng ảnh hưởng; số lần xuất hiện; vị trí, phương pháp xác định tọa độ; nguồn ghi nhận; trạng thái, căn cứ và tiêu chí xác định đã xử lý. Ngưỡng chi tiết của địa phương được lưu trong siêu dữ liệu, chỉ phục vụ quản lý nội bộ và truy vết; chỉ tiêu tổng hợp, so sánh toàn quốc phải dựa trên tiêu chí dữ liệu tối thiểu dùng chung và phân tổ riêng dữ liệu theo ngưỡng địa phương.
+
+ 
+
+III. Trường siêu dữ liệu tối thiểu
+
+STT
+
+	
+
+Trường siêu dữ liệu
+
+	
+
+Yêu cầu
+
+
+
+
+1
+
+	
+
+Mã định danh bản ghi dữ liệu
+
+	
+
+Bắt buộc; duy nhất trong Hệ thống thông tin; không thay đổi khi cập nhật phiên bản.
+
+
+
+
+2
+
+	
+
+Mã định danh chuyên ngành của đối tượng
+
+	
+
+Bắt buộc đối với đối tượng quản lý cốt lõi; do Hệ thống thông tin tạo hoặc kế thừa mã nguồn ổn định; không dùng thay mã định danh địa điểm.
+
+
+
+
+3
+
+	
+
+Mã định danh địa điểm
+
+	
+
+Chỉ ghi khi đối tượng thuộc danh mục định danh theo văn bản quy phạm pháp luật có hiệu lực và mã được Cơ sở dữ liệu định danh địa điểm hoặc Hệ thống nguồn cung cấp; không tự tạo, không quy định trước cấu trúc mã.
+
+
+
+
+4
+
+	
+
+Mã tham chiếu của Hệ thống nguồn và mã loại đối tượng
+
+	
+
+Ghi mã bản ghi, mã tổ chức, mã công trình, mã đơn vị hành chính, mã loại đối tượng hoặc mã tham chiếu khác do Hệ thống nguồn cung cấp; quản lý tại trường riêng, không sử dụng thay thế lẫn nhau.
+
+
+
+
+5
+
+	
+
+Tên và mô tả dữ liệu
+
+	
+
+Bắt buộc; nêu rõ đối tượng, nội dung, phạm vi, đơn vị đo và ý nghĩa của dữ liệu.
+
+
+
+
+6
+
+	
+
+Cơ quan, đơn vị quản lý dữ liệu nguồn
+
+	
+
+Ghi mã định danh tổ chức và tên cơ quan, đơn vị quản lý hồ sơ, hệ thống hoặc hoạt động nghiệp vụ hình thành dữ liệu.
+
+
+
+
+7
+
+	
+
+Đơn vị, tài khoản và phương thức tạo lập, cập nhật
+
+	
+
+Ghi mã đơn vị, mã tài khoản, thời điểm, phương thức nhập trực tuyến, cập nhật theo lô, kết nối hoặc tiếp nhận từ thiết bị.
+
+
+
+
+8
+
+	
+
+Trạng thái, đơn vị và căn cứ rà soát, ghi nhận trạng thái chất lượng
+
+	
+
+Ghi trạng thái xử lý; đơn vị, tài khoản thực hiện; thời điểm; căn cứ đối chiếu; nội dung cần rà soát, chỉnh sửa và phương thức xác thực điện tử.
+
+
+
+
+9
+
+	
+
+Nguồn và căn cứ tạo lập
+
+	
+
+Hồ sơ pháp lý, văn bản, Hệ thống nguồn, thiết bị đo, báo cáo nghiệp vụ hoặc phương pháp tính; ghi mã tài liệu, mã bản ghi nguồn và thời điểm hiệu lực.
+
+
+
+
+10
+
+	
+
+Phạm vi không gian, phân loại khu vực và thời gian
+
+	
+
+Ghi mã đơn vị hành chính, tọa độ hoặc hình học khi có yêu cầu; phân loại đô thị/nông thôn đối với vùng phục vụ cấp nước; thời điểm hiệu lực, kỳ cập nhật chính, kỳ số liệu, kỳ đối soát, rà soát hoặc tổng hợp (nếu có) và múi giờ.
+
+
+
+
+11
+
+	
+
+Hệ quy chiếu và độ chính xác vị trí
+
+	
+
+Áp dụng đối với dữ liệu không gian; ghi hệ quy chiếu chính thức, phương pháp chuyển đổi, sai số và nguồn dữ liệu. Dữ liệu lưu trữ chính thức sử dụng hệ quy chiếu, hệ tọa độ quốc gia; hệ thống có thể tạo dữ liệu dẫn xuất phục vụ hiển thị, kết nối.
+
+
+
+
+12
+
+	
+
+Định dạng, phiên bản và lịch sử biến động
+
+	
+
+Ghi định dạng dữ liệu, phiên bản, quan hệ với bản ghi trước và sau; dữ liệu cũ được lưu vết, không bị ghi đè hoặc xóa trái quy định.
+
+
+
+
+13
+
+	
+
+Thời điểm đo, thời điểm truyền và trạng thái chất lượng
+
+	
+
+Bắt buộc đối với dữ liệu từ thiết bị, hệ thống giám sát; ghi thời điểm nguồn, độ trễ, trạng thái thiết bị, hiệu lực hiệu chuẩn và trạng thái chất lượng do nguồn cung cấp.
+
+
+
+
+14
+
+	
+
+Chế độ khai thác, thời hạn lưu trữ và đầu mối chịu trách nhiệm
+
+	
+
+Ghi mức độ tiếp cận, điều kiện sử dụng, thời hạn lưu trữ và thông tin liên hệ công vụ của đầu mối chịu trách nhiệm.
+
+ 
+
+IV. Yêu cầu kỹ thuật trao đổi dữ liệu
+
+Loại dữ liệu/dịch vụ
+
+	
+
+Yêu cầu tối thiểu
+
+
+
+
+Dữ liệu thuộc tính
+
+	
+
+Dữ liệu phải ở định dạng có cấu trúc, máy có thể đọc, sử dụng tiêu chuẩn mở hoặc tiêu chuẩn được cơ quan có thẩm quyền công bố; mã hóa ký tự thống nhất; có lược đồ dữ liệu, phiên bản và cơ chế kiểm tra tính toàn vẹn. Định dạng cụ thể thực hiện theo tài liệu kỹ thuật vận hành Hệ thống thông tin, phù hợp với quy định tại Thông tư này.
+
+
+
+
+Dữ liệu không gian
+
+	
+
+Tuân thủ pháp luật, tiêu chuẩn, quy chuẩn về dữ liệu địa lý và hệ quy chiếu, hệ tọa độ quốc gia; hình học hợp lệ, có thông tin nguồn và độ chính xác. Hệ thống thông tin thực hiện chuyển đổi định dạng hoặc hệ tọa độ phục vụ hiển thị, kết nối khi cần thiết.
+
+
+
+
+Dữ liệu giám sát trực tuyến
+
+	
+
+Trao đổi dưới dạng thông điệp có cấu trúc qua kết nối an toàn; mỗi bản ghi có mã thiết bị hoặc điểm đo, mã công trình liên kết, thông số, giá trị, đơn vị đo, thời điểm nguồn, trạng thái thiết bị, trạng thái chất lượng và thông tin xác thực nguồn. Chỉ áp dụng đối với thiết bị, hệ thống đã được đầu tư, đang vận hành hoặc phải trang bị theo pháp luật chuyên ngành.
+
+
+
+
+Dữ liệu nước thải sau xử lý được kết nối
+
+	
+
+Tiếp nhận từ hệ thống dữ liệu quan trắc môi trường của cơ quan có thẩm quyền thông qua nền tảng chia sẻ dữ liệu hoặc dịch vụ dữ liệu phù hợp; lưu mã bản ghi nguồn, phiên bản, trạng thái và thời điểm đồng bộ; không nhập lại, không sửa đổi và không ghi nhận trạng thái chất lượng thay Hệ thống nguồn.
+
+
+
+
+Dữ liệu định danh địa điểm
+
+	
+
+Chỉ thực hiện kết nối, gửi yêu cầu, tiếp nhận và lưu mã khi có văn bản quy phạm pháp luật có hiệu lực, đối tượng thuộc danh mục định danh và Cơ sở dữ liệu định danh địa điểm sẵn sàng chia sẻ. Lưu quan hệ đối chiếu, liên kết tương ứng với mã chuyên ngành và mã nguồn; không tự tạo mã định danh địa điểm.
+
+
+
+
+Dữ liệu ảnh, bản đồ và tài liệu không gian
+
+	
+
+Bảo đảm định dạng phù hợp, có thông tin hệ quy chiếu, độ phân giải, nguồn, thời điểm tạo lập và phạm vi sử dụng; bản đồ mạng lưới hiện có được quản lý dưới dạng tài liệu đính kèm, không làm phát sinh yêu cầu số hóa chi tiết toàn bộ mạng lưới.
+
+
+
+
+Tài liệu điện tử
+
+	
+
+Sử dụng định dạng bảo đảm khả năng đọc, tra cứu và lưu trữ lâu dài; tài liệu chính thức được ký số hoặc xác thực điện tử theo quy định; có mã tài liệu, phiên bản, thời điểm hiệu lực và quan hệ với bản ghi dữ liệu.
+
+
+
+
+Dịch vụ kết nối, chia sẻ dữ liệu
+
+	
+
+Có phiên bản, xác thực, phân quyền, giới hạn truy cập, nhật ký truyền nhận, mã trạng thái và thông báo kết quả tiếp nhận; bảo đảm an toàn, toàn vẹn, khả năng truy vết và tương thích với nền tảng chia sẻ dữ liệu của Bộ Xây dựng, Trung tâm dữ liệu quốc gia. Giao thức cụ thể thực hiện theo tài liệu kỹ thuật vận hành Hệ thống thông tin.
+
+
+
+
+Gói dữ liệu cập nhật theo lô
+
+	
+
+Gồm tệp dữ liệu, siêu dữ liệu, bảng kiểm toàn vẹn, thông tin phiên bản, thời điểm hiệu lực và thông tin xác thực nguồn; cấu trúc, dung lượng và quy tắc tiếp nhận thực hiện theo tài liệu kỹ thuật vận hành Hệ thống thông tin.
+
+Phụ lục IV
+
+DANH MỤC CHỈ SỐ QUẢN LÝ, GIÁM SÁT VÀ BÁO CÁO TỔNG HỢP
+
+(Ban hành kèm theo Thông tư số /2026/TT-BXD ngày tháng năm 2026 của Bộ trưởng Bộ Xây dựng)
+
+TT
+
+	
+
+Mã chỉ số
+
+	
+
+Chỉ số/KPI
+
+	
+
+Nội dung, công thức khái quát
+
+	
+
+Đơn vị tính
+
+	
+
+Kỳ tính
+
+
+
+
+1
+
+	
+
+KPI-01
+
+	
+
+Dân số được cấp nước sạch trong phạm vi phục vụ
+
+	
+
+Giá trị CN-A-15 từ dữ liệu dân cư, dữ liệu thống kê hoặc Hệ thống nguồn; trường hợp chưa có nguồn tin cậy hơn, ước tính CN-A-11 × CN-A-10 và gắn nhãn ước tính. Phân tổ theo địa bàn đô thị, nông thôn do đơn vị thuộc phạm vi Hệ thống thông tin trực tiếp phục vụ và toàn bộ phạm vi; ghi rõ nguồn, thời điểm, phương pháp.
+
+	
+
+Người
+
+	
+
+Hằng quý; tổng hợp hằng năm
+
+
+
+
+2
+
+	
+
+KPI-02
+
+	
+
+Tỷ lệ dân số được cấp nước sạch trong phạm vi phục vụ
+
+	
+
+CN-A-15 / CN-A-09 × 100; tính riêng theo địa bàn đô thị, địa bàn nông thôn do đơn vị cấp nước trực tiếp phục vụ và toàn bộ phạm vi.
+
+	
+
+%
+
+	
+
+Hằng quý; tổng hợp hằng năm
+
+
+
+
+3
+
+	
+
+KPI-03
+
+	
+
+Tỷ lệ dân số đô thị được cấp nước sạch qua hệ thống cấp nước tập trung
+
+	
+
+CN-A-15 (phần đô thị) / CN-A-09 (phần đô thị) × 100.
+
+	
+
+%
+
+	
+
+Hằng quý; tổng hợp hằng năm
+
+
+
+
+4
+
+	
+
+KPI-04
+
+	
+
+Số đấu nối nước sinh hoạt đang hoạt động
+
+	
+
+Tổng CN-A-11; có thể phân tổ theo địa bàn đô thị và nông thôn trong phạm vi phục vụ.
+
+	
+
+Đấu nối
+
+	
+
+Hằng tháng; tổng hợp theo quý, năm
+
+
+
+
+5
+
+	
+
+KPI-05
+
+	
+
+Số đấu nối nước sinh hoạt mới
+
+	
+
+Tổng CN-A-13 phát sinh trong kỳ.
+
+	
+
+Đấu nối/kỳ
+
+	
+
+Hằng tháng; tổng hợp theo quý, năm
+
+
+
+
+6
+
+	
+
+KPI-06
+
+	
+
+Tổng công suất thiết kế cấp nước
+
+	
+
+Tổng CN-B-23 của các nhà máy đang hoạt động hoặc dự phòng sẵn sàng huy động trong phạm vi báo cáo.
+
+	
+
+m³/ngày đêm
+
+	
+
+Khi dữ liệu nguồn thay đổi; tổng hợp hằng năm
+
+
+
+
+7
+
+	
+
+KPI-07
+
+	
+
+Tổng công suất khai thác, vận hành cấp nước
+
+	
+
+Tổng CN-B-24 trong cùng kỳ và phạm vi báo cáo.
+
+	
+
+m³/ngày đêm
+
+	
+
+Hằng tháng; tổng hợp theo quý, năm
+
+
+
+
+8
+
+	
+
+KPI-08
+
+	
+
+Tỷ lệ huy động công suất cấp nước
+
+	
+
+Tổng CN-B-24 / Tổng CN-B-23 × 100; chỉ tính các nhà máy cùng trạng thái và phạm vi báo cáo.
+
+	
+
+%
+
+	
+
+Hằng tháng; tổng hợp theo quý, năm
+
+
+
+
+9
+
+	
+
+KPI-09
+
+	
+
+Lượng nước sạch thương phẩm bình quân ngày
+
+	
+
+Tổng CN-B-39.
+
+	
+
+m³/ngày
+
+	
+
+Hằng tháng; tổng hợp theo quý, năm
+
+
+
+
+10
+
+	
+
+KPI-10
+
+	
+
+Tỷ lệ thất thoát, thất thu nước sạch
+
+	
+
+Tổng hợp có trọng số từ CN-C-51; ghi rõ phạm vi, kỳ số liệu và phương pháp.
+
+	
+
+%
+
+	
+
+Hằng tháng; tổng hợp theo quý, năm
+
+
+
+
+11
+
+	
+
+KPI-11
+
+	
+
+Mức tiêu thụ nước sinh hoạt bình quân đầu người
+
+	
+
+Giá trị từ CN-C-52 hoặc CN-B-37 × 1.000 / CN-A-15 khi các trường nguồn cùng phạm vi, cùng kỳ.
+
+	
+
+Lít/người/ngày
+
+	
+
+Hằng tháng; tổng hợp theo quý, năm
+
+
+
+
+12
+
+	
+
+KPI-12
+
+	
+
+Tổng chiều dài tuyến ống truyền tải chính
+
+	
+
+Tổng CN-C-40 của các đơn vị cấp nước trong phạm vi báo cáo.
+
+	
+
+km
+
+	
+
+Khi dữ liệu nguồn thay đổi; tổng hợp hằng năm
+
+
+
+
+13
+
+	
+
+KPI-13
+
+	
+
+Tổng chiều dài mạng lưới phân phối
+
+	
+
+Tổng CN-C-41 của các đơn vị cấp nước trong phạm vi báo cáo.
+
+	
+
+km
+
+	
+
+Khi dữ liệu nguồn thay đổi; tổng hợp hằng năm
+
+
+
+
+14
+
+	
+
+KPI-14
+
+	
+
+Chiều dài tuyến ống truyền tải xây dựng mới
+
+	
+
+Tổng CN-C-42 hoàn thành, nghiệm thu và đưa vào sử dụng trong kỳ.
+
+	
+
+km
+
+	
+
+Hằng quý; tổng hợp hằng năm
+
+
+
+
+15
+
+	
+
+KPI-15
+
+	
+
+Chiều dài mạng phân phối xây dựng mới
+
+	
+
+Tổng CN-C-43 hoàn thành, nghiệm thu và đưa vào sử dụng trong kỳ.
+
+	
+
+km
+
+	
+
+Hằng quý; tổng hợp hằng năm
+
+
+
+
+16
+
+	
+
+KPI-16
+
+	
+
+Chiều dài tuyến ống truyền tải được cải tạo, thay thế
+
+	
+
+Tổng CN-C-44 hoàn thành trong kỳ.
+
+	
+
+km
+
+	
+
+Hằng quý; tổng hợp hằng năm
+
+
+
+
+17
+
+	
+
+KPI-17
+
+	
+
+Chiều dài mạng phân phối được cải tạo, thay thế
+
+	
+
+Tổng CN-C-45 hoàn thành trong kỳ.
+
+	
+
+km
+
+	
+
+Hằng quý; tổng hợp hằng năm
+
+
+
+
+18
+
+	
+
+KPI-18
+
+	
+
+Thời gian cấp nước liên tục
+
+	
+
+Giá trị bình quân từ CN-C-50; ghi rõ phạm vi và số ngày có dữ liệu.
+
+	
+
+Giờ/ngày hoặc %
+
+	
+
+Hằng tháng; tổng hợp theo quý, năm
+
+
+
+
+19
+
+	
+
+KPI-19
+
+	
+
+Áp lực nước tại điểm kiểm soát
+
+	
+
+Giá trị bình quân và tối thiểu từ CN-C-49 theo nhóm điểm kiểm soát đại diện.
+
+	
+
+m hoặc bar
+
+	
+
+Hằng tháng; tổng hợp theo quý, năm
+
+
+
+
+20
+
+	
+
+KPI-20
+
+	
+
+Số sự cố cấp nước trên 1.000 đấu nối
+
+	
+
+CN-C-53 / CN-A-14 × 1.000.
+
+	
+
+Vụ/1.000 đấu nối
+
+	
+
+Hằng tháng; tổng hợp theo quý, năm
+
+
+
+
+21
+
+	
+
+KPI-21
+
+	
+
+Thời gian khắc phục sự cố cấp nước bình quân
+
+	
+
+Giá trị từ CN-C-54.
+
+	
+
+Giờ/sự cố
+
+	
+
+Hằng tháng; tổng hợp theo quý, năm
+
+
+
+
+22
+
+	
+
+KPI-22
+
+	
+
+Tỷ lệ phản ánh, kiến nghị về dịch vụ cấp nước được xử lý đúng hạn
+
+	
+
+Giá trị từ CN-C-56.
+
+	
+
+%
+
+	
+
+Hằng tháng; tổng hợp theo quý, năm
+
+
+
+
+23
+
+	
+
+KPI-23
+
+	
+
+Giá nước sạch bình quân do cơ quan có thẩm quyền ban hành
+
+	
+
+Mức giá tại CN-A-17; phân tổ theo địa bàn, đơn vị và đối tượng áp dụng.
+
+	
+
+Đồng/m³
+
+	
+
+Khi dữ liệu nguồn thay đổi; tổng hợp hằng năm
+
+
+
+
+24
+
+	
+
+KPI-24
+
+	
+
+Giá nước sạch sinh hoạt áp dụng cho 10 m³ đầu tiên
+
+	
+
+Mức giá tương ứng trong biểu giá tại CN-A-18; trường hợp biểu giá không có bậc 10 m³ thì ghi mức sử dụng đầu tiên và chú thích.
+
+	
+
+Đồng/m³
+
+	
+
+Khi dữ liệu nguồn thay đổi; tổng hợp hằng năm
+
+
+
+
+25
+
+	
+
+KPI-25
+
+	
+
+Dân số đô thị được cung cấp dịch vụ thu gom, thoát nước thải
+
+	
+
+Giá trị TN-A-14 hoặc TN-A-12 × TN-A-11; không bao gồm dân số chỉ được phục vụ thoát nước mưa.
+
+	
+
+Người
+
+	
+
+Hằng quý; tổng hợp hằng năm
+
+
+
+
+26
+
+	
+
+KPI-26
+
+	
+
+Tỷ lệ dân số đô thị được cung cấp dịch vụ thu gom, thoát nước thải
+
+	
+
+TN-A-14 / TN-A-10 × 100.
+
+	
+
+%
+
+	
+
+Hằng quý; tổng hợp hằng năm
+
+
+
+
+27
+
+	
+
+KPI-27
+
+	
+
+Tổng công suất thiết kế xử lý nước thải đô thị
+
+	
+
+Tổng TN-B-22 của các công trình đang hoạt động trong phạm vi báo cáo.
+
+	
+
+m³/ngày đêm
+
+	
+
+Khi dữ liệu nguồn thay đổi; tổng hợp hằng năm
+
+
+
+
+28
+
+	
+
+KPI-28
+
+	
+
+Tổng công suất vận hành xử lý nước thải đô thị
+
+	
+
+Tổng TN-B-23.
+
+	
+
+m³/ngày đêm
+
+	
+
+Hằng tháng; tổng hợp theo quý, năm
+
+
+
+
+29
+
+	
+
+KPI-29
+
+	
+
+Tỷ lệ huy động công suất xử lý nước thải
+
+	
+
+Tổng TN-B-23 / Tổng TN-B-22 × 100.
+
+	
+
+%
+
+	
+
+Hằng tháng; tổng hợp theo quý, năm
+
+
+
+
+30
+
+	
+
+KPI-30
+
+	
+
+Số công trình xử lý nước thải phi tập trung thuộc hệ thống thoát nước đô thị đang hoạt động
+
+	
+
+Đếm số bản ghi TN-B-26 có trạng thái đang hoạt động; không bao gồm công trình xử lý nước thải tại chỗ.
+
+	
+
+Công trình
+
+	
+
+Khi dữ liệu nguồn thay đổi; tổng hợp theo quý, năm
+
+
+
+
+31
+
+	
+
+KPI-31
+
+	
+
+Tổng công suất thiết kế công trình xử lý nước thải phi tập trung thuộc hệ thống thoát nước đô thị
+
+	
+
+Tổng công suất thiết kế của các bản ghi TN-B-26 đang hoạt động; không bao gồm công trình xử lý nước thải tại chỗ.
+
+	
+
+m³/ngày đêm
+
+	
+
+Khi dữ liệu nguồn thay đổi; tổng hợp theo quý, năm
+
+
+
+
+32
+
+	
+
+KPI-32
+
+	
+
+Tỷ lệ nước thải được thu gom
+
+	
+
+Giá trị từ TN-B-36 hoặc TN-B-33 / TN-B-32 × 100 khi dữ liệu cùng phạm vi, cùng kỳ.
+
+	
+
+%
+
+	
+
+Hằng quý; tổng hợp hằng năm
+
+
+
+
+33
+
+	
+
+KPI-33
+
+	
+
+Tỷ lệ nước thải phát sinh được xử lý
+
+	
+
+Giá trị từ TN-B-37 hoặc TN-B-35 / TN-B-32 × 100; không sử dụng số liệu ước tính không có nguồn, phương pháp xác định.
+
+	
+
+%
+
+	
+
+Hằng quý; tổng hợp hằng năm
+
+
+
+
+34
+
+	
+
+KPI-34
+
+	
+
+Tổng chiều dài tuyến cống thu gom cấp 1
+
+	
+
+Tổng TN-B-28 trong phạm vi báo cáo.
+
+	
+
+km
+
+	
+
+Khi dữ liệu nguồn thay đổi; tổng hợp hằng năm
+
+
+
+
+35
+
+	
+
+KPI-35
+
+	
+
+Tổng chiều dài tuyến cống thu gom cấp 2
+
+	
+
+Tổng TN-B-29 trong phạm vi báo cáo.
+
+	
+
+km
+
+	
+
+Khi dữ liệu nguồn thay đổi; tổng hợp hằng năm
+
+
+
+
+36
+
+	
+
+KPI-36
+
+	
+
+Tổng chiều dài sông, kênh, mương thoát nước đô thị chính
+
+	
+
+Tổng TN-D-50; không bao gồm công trình phục vụ sản xuất nông nghiệp hoặc sản xuất muối.
+
+	
+
+km
+
+	
+
+Khi dữ liệu nguồn thay đổi; tổng hợp hằng năm
+
+
+
+
+37
+
+	
+
+KPI-37
+
+	
+
+Tổng chiều dài cống thoát nước mưa chính
+
+	
+
+Tổng TN-D-51.
+
+	
+
+km
+
+	
+
+Khi dữ liệu nguồn thay đổi; tổng hợp hằng năm
+
+
+
+
+38
+
+	
+
+KPI-38
+
+	
+
+Tỷ lệ công trình xử lý nước thải có dữ liệu sau xử lý được kết nối từ hệ thống môi trường
+
+	
+
+Số công trình TN-B-17 có mã bản ghi nguồn tại TN-C-48 / tổng số công trình thuộc đối tượng có dữ liệu nguồn sẵn sàng chia sẻ × 100. Chỉ phản ánh mức độ kết nối dữ liệu, không thay thế đánh giá tuân thủ môi trường.
+
+	
+
+%
+
+	
+
+Hằng tháng; tổng hợp hằng quý
+
+
+
+
+39
+
+	
+
+KPI-39
+
+	
+
+Số sự cố thu gom, xử lý nước thải
+
+	
+
+Tổng TN-B-42.
+
+	
+
+Vụ
+
+	
+
+Khi phát sinh; tổng hợp theo tháng, quý
+
+
+
+
+40
+
+	
+
+KPI-40
+
+	
+
+Tỷ lệ phản ánh, kiến nghị về dịch vụ thoát nước được xử lý đúng hạn
+
+	
+
+Giá trị từ TN-B-45.
+
+	
+
+%
+
+	
+
+Hằng tháng; tổng hợp hằng quý
+
+
+
+
+41
+
+	
+
+KPI-41
+
+	
+
+Giá dịch vụ thoát nước đối với hộ gia đình được ban hành
+
+	
+
+Mức giá tại TN-A-16; phân tổ theo địa bàn và thời điểm áp dụng.
+
+	
+
+Đồng/m³
+
+	
+
+Khi dữ liệu nguồn thay đổi; tổng hợp hằng năm
+
+
+
+
+42
+
+	
+
+KPI-42
+
+	
+
+Số điểm ngập được ghi nhận
+
+	
+
+Tổng TN-D-56 trong phạm vi báo cáo; khi tổng hợp, so sánh toàn quốc chỉ sử dụng bản ghi đáp ứng tiêu chí dữ liệu tối thiểu dùng chung, dữ liệu theo ngưỡng riêng của địa phương được phân tổ riêng.
+
+	
+
+Điểm
+
+	
+
+Hằng quý; tổng hợp hằng năm
+
+
+
+
+43
+
+	
+
+KPI-43
+
+	
+
+Tỷ lệ điểm ngập đã được xử lý
+
+	
+
+TN-D-59 / TN-D-56 × 100; ghi rõ tiêu chí xác định điểm đã xử lý. Chỉ so sánh giữa các phạm vi khi cùng áp dụng tiêu chí dữ liệu tối thiểu dùng chung; dữ liệu theo ngưỡng riêng của địa phương được phân tổ riêng.
+
+	
+
+%
+
+	
+
+Hằng quý; tổng hợp hằng năm
+
+
+
+
+44
+
+	
+
+KPI-44
+
+	
+
+Tỷ lệ bùn thải từ hệ thống thoát nước đô thị và công trình xử lý nước thải được xử lý
+
+	
+
+TN-E-63 / (TN-E-61 + TN-E-62) × 100 sau khi các trường nguồn được quy đổi về cùng đơn vị.
+
+	
+
+%
+
+	
+
+Hằng tháng; tổng hợp theo quý, năm
+
+
+
+
+45
+
+	
+
+KPI-45
+
+	
+
+Tỷ lệ bùn thải sau xử lý được tái sử dụng
+
+	
+
+TN-E-67 / TN-E-63 × 100 sau khi các trường nguồn được quy đổi về cùng đơn vị.
+
+	
+
+%
+
+	
+
+Hằng tháng; tổng hợp theo quý, năm
+
+
+
+
+46
+
+	
+
+KPI-46
+
+	
+
+Tỷ lệ trường dữ liệu bắt buộc được cập nhật đầy đủ
+
+	
+
+Số trường bắt buộc có phát sinh và có dữ liệu hợp lệ / tổng số trường bắt buộc có phát sinh × 100.
+
+	
+
+%
+
+	
+
+Hằng tháng; tổng hợp hằng quý
+
+
+
+
+47
+
+	
+
+KPI-47
+
+	
+
+Tỷ lệ dữ liệu được ghi nhận đáp ứng yêu cầu chất lượng
+
+	
+
+Số bản ghi được ghi nhận đáp ứng yêu cầu chất lượng / tổng số bản ghi thuộc phạm vi rà soát × 100.
+
+	
+
+%
+
+	
+
+Hằng tháng; tổng hợp hằng quý

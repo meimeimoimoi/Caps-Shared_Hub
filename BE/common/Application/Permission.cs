@@ -1,0 +1,37 @@
+namespace Caps.Common.Application;
+
+/// <summary>
+/// Permissions carried in access tokens, shared by every service. The claim value is the member name,
+/// so never rename a member; add new ones as features ship. Auth's PermissionMatrix decides who holds each.
+/// </summary>
+public enum Permission
+{
+    //USER
+    ProfileRead,
+    ProfileWrite,
+    BusinessRead,
+    BusinessWrite,
+
+    //EXPERT
+    ServiceManage,
+    CaseWork,
+
+    //AUTHOR_REVIEWER
+    ExpertReview,
+
+    //KNOWLEDGE_ADMIN
+    KnowledgeManage,
+
+    //SYSTEM_ADMIN
+    UserManage,
+    PayoutManage,
+
+    /// <summary>Final approval of Gate 2 results and suspending or reinstating an approved service.</summary>
+    ExpertApprove,
+
+    /// <summary>Setting the platform fee of each service.</summary>
+    PricingManage,
+
+    /// <summary>Deciding or extending a client's dispute about a review delivery.</summary>
+    DisputeResolve,
+}

@@ -1,0 +1,22 @@
+namespace Caps.Auth.Domain.Users;
+
+/// <summary>Account statuses, also sent in the token's account_status claim.</summary>
+public static class UserStatus
+{
+    public const string PendingVerification = "PENDING_VERIFICATION";
+    public const string Active = "ACTIVE";
+
+    /// <summary>Locked by a System Admin: the account cannot sign in until it is reinstated.</summary>
+    public const string Suspended = "SUSPENDED";
+}
+
+/// <summary>Role codes the code depends on.</summary>
+public static class RoleCodes
+{
+    /// <summary>Role every account gets at sign-up.</summary>
+    public const string User = "USER";
+    public const string Expert = "EXPERT";
+    public const string AuthorReviewer = "AUTHOR_REVIEWER";
+    public const string KnowledgeAdmin = "KNOWLEDGE_ADMIN";
+    public const string SystemAdmin = "SYSTEM_ADMIN";
+}

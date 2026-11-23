@@ -1,7 +1,8 @@
-using Caps.Common.Database;
+using Caps.Common.Domain;
 
-namespace ingestion.Entities;
+namespace Caps.Ingestion.Entities;
 
+/// <summary>A searchable piece of a legal document (article, clause, point), indexed in the vector store.</summary>
 public sealed class KbChunk
 {
     public Guid Id { get; set; } = UuidV7.NewGuid();

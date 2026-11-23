@@ -1,0 +1,33 @@
+import type { Paged } from '@/lib/pagination'
+import { Pagination } from './pagination'
+
+interface TablePagerProps {
+  paged: Paged<unknown>
+  onPrev: () => void
+  onNext: () => void
+  onPageChange?: (page: number) => void
+  onPageSizeChange?: (size: number) => void
+}
+
+/** Compatibility adapter for existing Admin tables. */
+export function TablePager({
+  paged,
+  onPrev,
+  onNext,
+  onPageChange,
+  onPageSizeChange,
+}: TablePagerProps) {
+  // An empty table needs no "showing 0–0 of 0" footer
+  if (paged.total === 0) return null
+  const page = paged.pageIndex + 1
+  return (
+    <Pagination
+      page={page}
+      pageSize={paged.pageSize}
+      total={paged.total}
+      showPages={!!onPageChange}
+      onPageChange={onPageChange ?? ((next) => (next < page ? onPrev() : onNext()))}
+      onPageSizeChange={onPageSizeChange}
+    />
+  )
+}

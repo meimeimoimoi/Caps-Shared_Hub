@@ -1,0 +1,136 @@
+using Caps.Common.Application;
+using Caps.Contracts;
+using Caps.Expert.Application.Abstractions;
+using Caps.Expert.Application.Common;
+using Caps.Expert.Application.DTOs.Responses;
+using Caps.Expert.Domain;
+using Caps.Expert.Domain.Qualifications;
+using Caps.Expert.Domain.Reviews;
+
+namespace Caps.Expert.Application.Features.Reviews;
+
+/// <summary>A reviewer's Gate 2 results for C1…C5 with an optional overall note.</summary>
+public sealed record DecideCompetencyCommand(
+    Guid ReviewerUserId,
+    Guid QualificationId,
+    IReadOnlyList<CompetencyResult> Competencies,
+    string? Note
+);
+
+/// <summary>
+/// Records the Gate 2 decision. Runs under the expert's lock, so it cannot interleave with the expert's own
+/// changes or with another reviewer deciding the same qualification. Only the reviewer holding the
+/// qualification decides; a final result frees it, NEED_MORE_INFORMATION keeps it for the resubmission.
+/// </summary>
+public sealed class DecideCompetencyHandler(
+    IApplicantLock locks,
+    IQualificationRepository qualifications,
+    IQualificationEvidenceRepository evidences,
+    ICompetencyAssessmentRepository assessments,
+    IServiceCatalogRepository catalog,
+    IExpertNotificationOutbox outbox,
+    IAuditTrail audit,
+    IQualificationReviewDescriber describer,
+    IExpertPolicyProvider policies,
+    IUnitOfWork unitOfWork,
+    TimeProvider clock,
+    IRealtimeNotifier realtime
+) : ICommandHandler<DecideCompetencyCommand, ReviewQualificationResponse>
+{
+    public async Task<ReviewQualificationResponse> HandleAsync(
+        DecideCompetencyCommand command,
+        CancellationToken ct
+    )
+    {
+        await using var tx = await unitOfWork.BeginTransactionAsync(ct);
+        var applicantUserId =
+            await qualifications.FindApplicantUserIdAsync(command.QualificationId, ct)
+            ?? throw ExpertErrors.QualificationNotFound();
+        await locks.AcquireAsync(applicantUserId, ct);
+        // Loaded after the lock so the status check sees the latest committed state
+        var qualification =
+            await qualifications.FindWithProfileAsync(command.QualificationId, ct)
+            ?? throw ExpertErrors.QualificationNotFound();
+        var profile = qualification.ExpertProfile;
+        var now = clock.GetUtcNow();
+        // Only the reviewer holding the qualification decides it, checked before any business rule
+        var hold = (await policies.GetReviewClaimAsync(ct)).Hold;
+        qualification.EnsureClaimedBy(command.ReviewerUserId, now, hold);
+        var files = await evidences.ListAsync(qualification, ct);
+
+        var policy = await policies.GetCompetencyAsync(ct);
+        // M4: after the last allowed round the reviewer passes or fails with the evidence at hand
+        // D9: every return from final approval adds one round
+        var work = await policies.GetReviewWorkAsync(ct);
+        var history = (await qualifications.ListEventsAsync(qualification.Id, ct))
+            .Select(x => (x.FromStatus, x.ToStatus))
+            .ToArray();
+        var rounds = InformationRequestRules.Count(
+            history,
+            QualificationStatus.NeedMoreInformation
+        );
+        InformationRequestRules.EnsureAllowed(
+            CompetencyRules.Outcome(command.Competencies),
+            rounds,
+            FinalApprovalRules.MaxInformationRequests(work.MaxInformationRequests, history),
+            QualificationStatus.NeedMoreInformation
+        );
+        var decision = qualification.DecideCompetency(
+            command.ReviewerUserId,
+            profile.UserId,
+            command.Competencies,
+            files.Select(x => x.Id).ToHashSet(),
+            command.Note,
+            policy,
+            now
+        );
+        qualifications.AddEvent(decision.Event);
+        assessments.AddRange(decision.Assessments);
+        audit.Record(
+            AuditActions.Qualification,
+            qualification.Id,
+            AuditActions.CompetencyDecided,
+            command.ReviewerUserId,
+            now,
+            new
+            {
+                serviceCode = qualification.ServiceCode,
+                status = qualification.Status,
+                note = decision.Event.Note,
+            }
+        );
+        // Tell the expert (email + in-app); older profiles without an email are skipped
+        if (profile.ContactEmail != null)
+        {
+            var service = await catalog.FindAsync(qualification.ServiceCode, ct);
+            outbox.Enqueue(
+                new ExpertCompetencyDecidedEvent(
+                    decision.Event.Id,
+                    profile.UserId,
+                    profile.ContactEmail,
+                    profile.DisplayName ?? profile.ContactEmail,
+                    qualification.Id,
+                    qualification.ServiceCode,
+                    service?.Name ?? qualification.ServiceCode,
+                    qualification.Status,
+                    now,
+                    qualification.EarliestReapplyAt,
+                    decision
+                        .Assessments.Where(x => x.Result != CompetencyCriteria.Pass)
+                        .Select(x => new CompetencyIssue(x.Competency, x.Result, x.Note))
+                        .ToArray()
+                ),
+                now
+            );
+        }
+        await unitOfWork.SaveChangesAsync(ct);
+        await tx.CommitAsync(ct);
+        await realtime.ChangedAsync(
+            ExpertRealtimeTopics.Qualifications,
+            [applicantUserId],
+            [Permission.ExpertReview, Permission.ExpertApprove],
+            ct
+        );
+        return await describer.DescribeAsync(qualification, ct);
+    }
+}

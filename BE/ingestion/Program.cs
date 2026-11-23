@@ -1,32 +1,44 @@
-using Caps.Common.Database;
-using Caps.Common.Extensions;
-using ingestion.Data;
-using Microsoft.EntityFrameworkCore;
+using Caps.Common.Api;
+using Caps.Common.Messaging;
+using Caps.Common.Persistence;
+using Caps.Ingestion.Configuration;
+using Caps.Ingestion.Data;
+using Caps.Ingestion.Realtime;
+using Caps.Ingestion.Security;
+using Caps.Ingestion.Services;
+using Caps.Ingestion.Services.Interfaces;
+using ingestion.Services.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
+var config = builder.Configuration;
+var postgres = config.GetRequiredConnectionString("Postgres");
 
-builder.Services.AddCommonApi(builder.Configuration, "ingestion");
+builder.Services.AddCommonApi(config, "ingestion");
+builder.Services.AddServiceDatabase<IngestionDbContext>(postgres, "Ingestion", "knowledge");
+builder.Services.AddIngestionStorage(config, builder.Environment);
+builder.Services.AddIngestionRealtime();
 
-var pg = builder.Configuration.GetConnectionString("Postgres")
-    ?? builder.Configuration["ConnectionStrings:Postgres"]
-    ?? "Host=localhost;Port=5432;Database=shft_db;Username=postgres;Password=postgres";
+// Publishes requests for the Python crawler worker (crawler/worker.py); nothing is consumed here
+builder.Services.AddCapsMessaging(config);
+builder.Services.AddHandlersFromAssembly(typeof(Program).Assembly);
 
-builder.Services.AddDbContext<IngestionDbContext>(o =>
-    o.UseNpgsql(pg, npgsqlOptions =>
-        npgsqlOptions.MigrationsHistoryTable("__EFMigrationsHistory_Ingestion", "knowledge")));
+builder.Services.AddHttpClient<IAiServiceClient, AiServiceClient>(client =>
+{
+    var aiBaseUrl = builder.Configuration["AiService:BaseUrl"] ?? "http://localhost:8000";
+    var aiInternalKey = builder.Configuration["AiService:InternalKey"];
+    client.BaseAddress = new Uri(aiBaseUrl);
+    client.Timeout = TimeSpan.FromMinutes(10); // Extended timeout for chunking and embedding tasks
+    if (!string.IsNullOrWhiteSpace(aiInternalKey))
+    {
+        client.DefaultRequestHeaders.Add(RequireInternalKeyAttribute.Header, aiInternalKey);
+    }
+});
 
-builder.Services.AddHealthChecks().AddDbContextCheck<IngestionDbContext>("postgres");
+builder.Services.AddScoped<IKnowledgeDocumentStore, EfKnowledgeDocumentStore>();
+builder.Services.AddScoped<IKnowledgeDocumentService, KnowledgeDocumentService>();
 
 var app = builder.Build();
-
-if (app.Environment.IsDevelopment())
-{
-    DbInitializer.EnsureDatabaseCreated(pg, "knowledge");
-
-    using var scope = app.Services.CreateScope();
-    var db = scope.ServiceProvider.GetRequiredService<IngestionDbContext>();
-    db.Database.Migrate();
-}
-
+app.MigrateInDevelopment<IngestionDbContext>();
 app.UseCommonApi();
+app.MapHub<CrawlJobsHub>(IngestionRealtimeSetup.CrawlJobsHubPath);
 app.Run();

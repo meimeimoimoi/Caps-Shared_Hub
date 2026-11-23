@@ -1,0 +1,605 @@
+{
+  "schema_version": 2,
+  "exported_at": "2026-10-21T23:41:33",
+  "legal_source": {
+    "document_number": "73/2024/TT-BTC",
+    "doc_type": "Thông tư",
+    "issuing_authority": "Bộ Tài chính",
+    "title": "Thông tư số 73/2024/TT-BTC Quy định mức thu, miễn, chế độ thu, nộp lệ phí cấp đổi, cấp lại thẻ căn cước",
+    "metadata": {
+      "source": "vbpl",
+      "source_doc_id": "170888",
+      "detail_url": "https://vbpl.vn/van-ban/chi-tiet/170888",
+      "has_document_number": true,
+      "matched_keywords": [],
+      "keyword_groups": [],
+      "related_from": null,
+      "vbhn": [
+        {
+          "id": "68d5a1f0-9ae7-11f1-b289-c5c479a17803",
+          "doc_num": "25/VBHN-BTC",
+          "issue_date": "2025-08-05",
+          "merged": [
+            {
+              "id": "170888",
+              "doc_num": "73/2024/TT-BTC",
+              "issue_date": "2024-10-21"
+            },
+            {
+              "id": "179100",
+              "doc_num": "71/2025/TT-BTC",
+              "issue_date": "2025-07-01"
+            }
+          ]
+        }
+      ],
+      "vbhn_latest": {
+        "id": "68d5a1f0-9ae7-11f1-b289-c5c479a17803",
+        "doc_num": "25/VBHN-BTC",
+        "issue_date": "2025-08-05",
+        "merged": [
+          {
+            "id": "170888",
+            "doc_num": "73/2024/TT-BTC",
+            "issue_date": "2024-10-21"
+          },
+          {
+            "id": "179100",
+            "doc_num": "71/2025/TT-BTC",
+            "issue_date": "2025-07-01"
+          }
+        ],
+        "page_id": "6c5d1830-a762-11f1-85b5-19e21b44fefe"
+      },
+      "vbhn_outdated": false,
+      "vbhn_missing": []
+    }
+  },
+  "knowledge_document": {
+    "source": "CRAWL_VBPL",
+    "file_hash": "e8e46668ff86afb56870b9634f3fec2744698da8dea5e53b31f2516ff2d192cb",
+    "file_hash_basis": "text",
+    "issued_date": "2024-10-21",
+    "effective_from": "2024-10-21",
+    "effective_to": null,
+    "content_json": {
+      "parse_status": "PARSED",
+      "preamble": "BỘ TÀI CHÍNH\nCỘNG HOÀ XÃ HỘI CHỦ NGHĨA VIỆT NAM\nĐộc lập - Tự do - Hạnh phúc\nSố: 73/2024/TT-BTC\nHà Nội, ngày 21 tháng 10 năm 2024\nTHÔNG TƯ\nQuy định mức thu, miễn, chế độ thu, nộp lệ phí cấp đổi, cấp lại thẻ căn cước\nCăn cứ Luật Phí và lệ phí ngày 25 tháng 11 năm 2015;\nCăn cứ Luật Ngân sách nhà nước ngày 25 tháng 6 năm 2015;\nCăn cứ Luật Căn cước ngày 27 tháng 11 năm 2023;\nCăn cứ Luật Quản lý thuế ngày 13 tháng 6 năm 2019;\nCăn cứ Nghị định số 120/2016/NĐ-CP ngày 23 tháng 8 năm 2016 của Chính phủ quy định chi tiết và hướng dẫn thi hành một số điều của Luật Phí và lệ phí; Nghị định số 82/2023/NĐ-CP ngày 28 tháng 11 năm 2023 của Chính phủ sửa đổi, bổ sung một số điều của Nghị định số 120/2016/NĐ-CP ngày 23 tháng 8 năm 2016 của Chính phủ quy định chi tiết và hướng dẫn thi hành một số điều của Luật Phí và lệ phí;\nCăn cứ Nghị định số 70/2024/NĐ-CP ngày 25 tháng 6 năm 2024 của Chính phủ quy định chi tiết một số điều và biện pháp thi hành Luật Căn cước;\nCăn cứ Nghị định số 126/2020/NĐ-CP ngày 19 tháng 10 năm 2020 của Chính phủ quy định chi tiết một số điều của Luật Quản lý thuế; Nghị định số 91/2022/NĐ-CP ngày 30 tháng 10 năm 2022 của Chính phủ sửa đổi, bổ sung một số điều của Nghị định số 126/2020/NĐ-CP ngày 19 tháng 10 năm 2020 của Chính phủ quy định chi tiết một số điều của Luật Quản lý thuế;\nCăn cứ Nghị định số 11/2020/NĐ-CP ngày 20 tháng 01 năm 2020 của Chính phủ quy định về thủ tục hành chính thuộc lĩnh vực Kho bạc Nhà nước; Nghị định số 123/2020/NĐ-CP ngày 19 tháng 10 năm 2020 của Chính phủ quy định về hóa đơn, chứng từ;\nCăn cứ Nghị định số 14/2023/NĐ-CP ngày 20 tháng 4 năm 2023 của Chính phủ quy định chức năng, nhiệm vụ, quyền hạn và cơ cấu tổ chức của Bộ Tài chính;\nThực hiện Nghị quyết số 44/NQ-CP ngày 05 tháng 4 năm 2024 của Chính phủ tại Phiên họp Chính phủ thường kỳ tháng 3 năm 2024 và Hội nghị trực tuyến Chính phủ với địa phương;\nTheo đề nghị của Cục trưởng Cục Quản lý, giám sát chính sách thuế, phí và lệ phí;\nBộ trưởng Bộ Tài chính ban hành Thông tư quy định mức thu, miễn, chế độ thu, nộp lệ phí cấp đổi, cấp lại thẻ căn cước.",
+      "chapters": [
+        {
+          "number": null,
+          "title": "",
+          "part": null,
+          "articles": [
+            {
+              "number": "1",
+              "title": "Phạm vi điều chỉnh, đối tượng áp dụng",
+              "section": null,
+              "units": [
+                {
+                  "id": "d1-0",
+                  "label": "Khoản 1",
+                  "clause": "1",
+                  "point": null,
+                  "text": "Thông tư này quy định mức thu, miễn, chế độ thu, nộp lệ phí cấp đổi, cấp lại thẻ căn cước.",
+                  "status": "AUTO"
+                },
+                {
+                  "id": "d1-1",
+                  "label": "Khoản 2",
+                  "clause": "2",
+                  "point": null,
+                  "text": "Thông tư này áp dụng đối với người nộp lệ phí; tổ chức thu lệ phí; tổ chức, cá nhân khác có liên quan đến việc thu, nộp lệ phí cấp đổi, cấp lại thẻ căn cước.",
+                  "status": "AUTO"
+                }
+              ]
+            },
+            {
+              "number": "2",
+              "title": "Người nộp lệ phí",
+              "section": null,
+              "units": [
+                {
+                  "id": "d2-0",
+                  "label": "Mở đầu",
+                  "clause": null,
+                  "point": null,
+                  "text": "Người nộp lệ phí theo quy định tại Thông tư này là công dân Việt Nam khi làm thủ tục cấp đổi, cấp lại thẻ căn cước theo quy định của pháp luật về căn cước, trừ các trường hợp không phải nộp lệ phí quy định tại khoản 2 và khoản 3 Điều 38 Luật Căn cước.",
+                  "status": "AUTO"
+                }
+              ]
+            },
+            {
+              "number": "3",
+              "title": "Tổ chức thu lệ phí",
+              "section": null,
+              "units": [
+                {
+                  "id": "d3-0",
+                  "label": "Mở đầu",
+                  "clause": null,
+                  "point": null,
+                  "text": "Tổ chức thu lệ phí theo quy định tại Thông tư này là cơ quan quản lý căn cước theo quy định của pháp luật về căn cước.",
+                  "status": "AUTO"
+                }
+              ]
+            },
+            {
+              "number": "4",
+              "title": "Mức thu lệ phí",
+              "section": null,
+              "units": [
+                {
+                  "id": "d4-0",
+                  "label": "Khoản 1",
+                  "clause": "1",
+                  "point": null,
+                  "text": "Mức thu lệ phí cấp đổi, cấp lại thẻ căn cước như sau:",
+                  "status": "AUTO"
+                },
+                {
+                  "id": "d4-1",
+                  "label": "Khoản 1 · Điểm a",
+                  "clause": "1",
+                  "point": "a",
+                  "text": "Cấp đổi thẻ căn cước công dân sang thẻ căn cước theo quy định tại khoản 3 Điều 21 Nghị định số 70/2024/NĐ-CP ngày 25 tháng 6 năm 2024 của Chính phủ quy định chi tiết một số điều và biện pháp thi hành Luật Căn cước: 30.000 đồng/thẻ căn cước;",
+                  "status": "AUTO",
+                  "references": [
+                    {
+                      "doc": "70/2024/NĐ-CP",
+                      "article": "21",
+                      "clause": "3",
+                      "point": null
+                    }
+                  ]
+                },
+                {
+                  "id": "d4-2",
+                  "label": "Khoản 1 · Điểm b",
+                  "clause": "1",
+                  "point": "b",
+                  "text": "Cấp đổi thẻ căn cước đối với các trường hợp quy định tại khoản 1 Điều 24 Luật Căn cước: 50.000 đồng/thẻ căn cước;",
+                  "status": "AUTO"
+                },
+                {
+                  "id": "d4-3",
+                  "label": "Khoản 1 · Điểm c",
+                  "clause": "1",
+                  "point": "c",
+                  "text": "Cấp lại thẻ căn cước đối với các trường hợp quy định tại khoản 2 Điều 24 Luật Căn cước: 70.000 đồng/thẻ căn cước.",
+                  "status": "AUTO"
+                },
+                {
+                  "id": "d4-4",
+                  "label": "Khoản 2",
+                  "clause": "2",
+                  "point": null,
+                  "text": "Kể từ ngày Thông tư này có hiệu lực thi hành đến hết ngày 31 tháng 12 năm 2024, mức thu lệ phí cấp đổi, cấp lại thẻ căn cước bằng 50% mức thu lệ phí quy định tại khoản 1 Điều này. Kể từ ngày 01 tháng 01 năm 2025 trở đi, áp dụng mức thu lệ phí theo quy định tại khoản 1 Điều này, trừ trường hợp quy định tại khoản 3 Điều này.",
+                  "status": "AUTO",
+                  "references": [
+                    {
+                      "doc": "self",
+                      "article": "4",
+                      "clause": "1",
+                      "point": null
+                    },
+                    {
+                      "doc": "self",
+                      "article": "4",
+                      "clause": "3",
+                      "point": null
+                    }
+                  ]
+                },
+                {
+                  "id": "d4-5",
+                  "label": "Khoản 3",
+                  "clause": "3",
+                  "point": null,
+                  "text": "Kể từ ngày 01 tháng 01 năm 2025 đến hết ngày 31 tháng 12 năm 2025, mức thu lệ phí khi công dân nộp hồ sơ cấp đổi, cấp lại thẻ căn cước theo hình thức trực tuyến bằng 50% mức thu lệ phí quy định tại khoản 1 Điều này. Kể từ ngày 01 tháng 01 năm 2026 trở đi, áp dụng mức thu lệ phí theo quy định tại khoản 1 Điều này.",
+                  "status": "AUTO",
+                  "references": [
+                    {
+                      "doc": "self",
+                      "article": "4",
+                      "clause": "1",
+                      "point": null
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "number": "5",
+              "title": "Các trường hợp miễn lệ phí",
+              "section": null,
+              "units": [
+                {
+                  "id": "d5-0",
+                  "label": "Mở đầu",
+                  "clause": null,
+                  "point": null,
+                  "text": "Miễn lệ phí cấp đổi, cấp lại thẻ căn cước đối với các trường hợp sau:",
+                  "status": "AUTO"
+                },
+                {
+                  "id": "d5-1",
+                  "label": "Khoản 1",
+                  "clause": "1",
+                  "point": null,
+                  "text": "Trẻ em theo quy định tại Luật Trẻ em; người cao tuổi theo quy định tại Luật Người cao tuổi; người khuyết tật theo quy định tại Luật Người khuyết tật.",
+                  "status": "AUTO"
+                },
+                {
+                  "id": "d5-2",
+                  "label": "Khoản 2",
+                  "clause": "2",
+                  "point": null,
+                  "text": "Người có công với cách mạng và thân nhân của người có công với cách mạng theo quy định tại Pháp lệnh Ưu đãi người có công với cách mạng.\nĐiều khoản được sửa đổi, bổ sung",
+                  "status": "AUTO"
+                },
+                {
+                  "id": "d5-3",
+                  "label": "Khoản 3",
+                  "clause": "3",
+                  "point": null,
+                  "text": "Đồng bào dân tộc thiểu số ở các xã có điều kiện kinh tế - xã hội đặc biệt khó khăn; công dân thường trú tại các xã biên giới; công dân thường trú tại các huyện đảo; công dân thuộc hộ nghèo theo quy định của pháp luật.",
+                  "status": "AUTO"
+                }
+              ]
+            },
+            {
+              "number": "6",
+              "title": "Kê khai, nộp lệ phí",
+              "section": null,
+              "units": [
+                {
+                  "id": "d6-0",
+                  "label": "Khoản 1",
+                  "clause": "1",
+                  "point": null,
+                  "text": "Người nộp lệ phí thực hiện nộp lệ phí khi làm thủ tục cấp đổi, cấp lại thẻ căn cước cho tổ chức thu lệ phí theo hình thức quy định tại Thông tư số 74/2022/TT-BTC ngày 22 tháng 12 năm 2022 của Bộ trưởng Bộ Tài chính quy định về hình thức, thời hạn thu, nộp, kê khai các khoản phí, lệ phí thuộc thẩm quyền quy định của Bộ Tài chính.",
+                  "status": "AUTO"
+                },
+                {
+                  "id": "d6-1",
+                  "label": "Khoản 2",
+                  "clause": "2",
+                  "point": null,
+                  "text": "Tổ chức thu lệ phí nộp 100% số tiền lệ phí thu được vào ngân sách nhà nước (ngân sách trung ương) theo chương, tiểu mục của Mục lục ngân sách nhà nước hiện hành. Nguồn chi phí trang trải cho việc thu lệ phí được ngân sách nhà nước (ngân sách trung ương) bố trí trong dự toán của tổ chức thu lệ phí theo chế độ, định mức chi ngân sách nhà nước theo quy định của pháp luật. Tổ chức thu lệ phí thực hiện kê khai, thu, nộp lệ phí theo quy định tại Thông tư số 74/2022/TT-BTC.",
+                  "status": "AUTO"
+                }
+              ]
+            },
+            {
+              "number": "7",
+              "title": "Điều khoản thi hành",
+              "section": null,
+              "units": [
+                {
+                  "id": "d7-0",
+                  "label": "Khoản 1",
+                  "clause": "1",
+                  "point": null,
+                  "text": "Thông tư này có hiệu lực thi hành kể từ ngày 21 tháng 10 năm 2024.",
+                  "status": "AUTO"
+                },
+                {
+                  "id": "d7-1",
+                  "label": "Khoản 2",
+                  "clause": "2",
+                  "point": null,
+                  "text": "Thông tư này thay thế Thông tư số 59/2019/TT-BTC ngày 30 tháng 8 năm 2019 của Bộ trưởng Bộ Tài chính quy định mức thu, chế độ thu, nộp và quản lý lệ phí cấp Căn cước công dân.",
+                  "status": "AUTO"
+                },
+                {
+                  "id": "d7-2",
+                  "label": "Khoản 3",
+                  "clause": "3",
+                  "point": null,
+                  "text": "Bãi bỏ số thứ tự 19 tại Biểu phí, lệ phí quy định tại khoản 1 Điều 1 Thông tư số 43/2024/TT-BTC ngày 28 tháng 6 năm 2024 của Bộ trưởng Bộ Tài chính quy định mức thu một số khoản phí, lệ phí nhằm tiếp tục tháo gỡ khó khăn, hỗ trợ cho hoạt động sản xuất kinh doanh.",
+                  "status": "AUTO",
+                  "references": [
+                    {
+                      "doc": "43/2024/TT-BTC",
+                      "article": "1",
+                      "clause": "1",
+                      "point": null
+                    }
+                  ]
+                },
+                {
+                  "id": "d7-3",
+                  "label": "Khoản 4",
+                  "clause": "4",
+                  "point": null,
+                  "text": "Các nội dung khác liên quan đến việc thu, nộp, chứng từ thu, công khai chế độ thu lệ phí không đề cập tại Thông tư này được thực hiện theo quy định tại các văn bản: Luật Phí và lệ phí; Nghị định số 120/2016/NĐ-CP ngày 23 tháng 8 năm 2016 của Chính phủ quy định chi tiết và hướng dẫn thi hành một số điều của Luật Phí và lệ phí; Nghị định số 82/2023/NĐ-CP ngày 28 tháng 11 năm 2023 của Chính phủ sửa đổi, bổ sung một số điều của Nghị định số 120/2016/NĐ-CP ngày 23 tháng 8 năm 2016 của Chính phủ quy định chi tiết và hướng dẫn thi hành một số điều của Luật Phí và lệ phí; Luật Quản lý thuế; Nghị định số 126/2020/NĐ-CP ngày 19 tháng 10 năm 2020 của Chính phủ quy định chi tiết một số điều của Luật Quản lý thuế; Nghị định số 91/2022/NĐ-CP ngày 30 tháng 10 năm 2022 của Chính phủ sửa đổi, bổ sung một số điều của Nghị định số 126/2020/NĐ-CP ngày 19 tháng 10 năm 2020 của Chính phủ quy định chi tiết một số điều của Luật Quản lý thuế; Nghị định số 11/2020/NĐ-CP ngày 20 tháng 01 năm 2020 của Chính phủ quy định về thủ tục hành chính thuộc lĩnh vực Kho bạc Nhà nước; Nghị định số 123/2020/NĐ-CP ngày 19 tháng 10 năm 2020 của Chính phủ quy định về hóa đơn, chứng từ và Thông tư số 78/2021/TT-BTC ngày 17 tháng 9 năm 2021 của Bộ trưởng Bộ Tài chính hướng dẫn thực hiện một số điều của Luật Quản lý thuế ngày 13 tháng 6 năm 2019, Nghị định số 123/2020/NĐ-CP ngày 19 tháng 10 năm 2020 của Chính phủ quy định về hóa đơn, chứng từ.",
+                  "status": "AUTO"
+                },
+                {
+                  "id": "d7-4",
+                  "label": "Khoản 5",
+                  "clause": "5",
+                  "point": null,
+                  "text": "Trong quá trình thực hiện, nếu các văn bản liên quan nêu tại Thông tư này được sửa đổi, bổ sung hoặc thay thế thì thực hiện theo văn bản mới được sửa đổi, bổ sung hoặc thay thế.",
+                  "status": "AUTO"
+                },
+                {
+                  "id": "d7-5",
+                  "label": "Khoản 6",
+                  "clause": "6",
+                  "point": null,
+                  "text": "Trong quá trình thực hiện, nếu có vướng mắc đề nghị các tổ chức, cá nhân phản ánh kịp thời về Bộ Tài chính để nghiên cứu, hướng dẫn bổ sung./.",
+                  "status": "AUTO"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "closing": "Nơi nhận:\n- Ban Bí thư Trung ương Đảng;\n- Thủ tướng, các Phó Thủ tướng Chính phủ;\n- Văn phòng Trung ương Đảng và các Ban của Đảng;\n- Văn phòng Tổng Bí thư;\n- Văn phòng Quốc hội;\n- Hội đồng dân tộc;\n- Ủy ban Tài chính, Ngân sách;\n- Văn phòng Chủ tịch nước;\n- Viện Kiểm sát nhân dân tối cao;\n- Tòa án nhân dân tối cao;\n- Kiểm toán Nhà nước;\n- Cơ quan trung ương của các Hội, Đoàn thể;\n- Các Bộ, cơ quan ngang Bộ, cơ quan thuộc Chính phủ;\n- HĐND, UBND các tỉnh, thành phố trực thuộc trung ương;\n- Sở Tài chính, Cục Thuế, KBNN các tỉnh,\nthành phố trực thuộc trung ương;\n- Cục Kiểm tra văn bản quy phạm pháp luật, Bộ Tư pháp;\n- Công báo;\n- Cổng thông tin điện tử Chính phủ;\n- Cổng thông tin điện tử Bộ Tài chính;\n- Các đơn vị thuộc Bộ Tài chính;\n- Lưu: VT, Cục CST (   b).\nKT. BỘ TRƯỞNG\nTHỨ TRƯỞNG\n(Đã ký)\nCao Anh Tuấn",
+      "appendices": [],
+      "warnings": []
+    },
+    "ingest": {
+      "suggested_status": "APPROVED",
+      "pending_reasons": []
+    },
+    "metadata": {
+      "tinh_trang_hieu_luc": "Hết hiệu lực một phần",
+      "text_source": "detail_page_dom",
+      "ocr_required": false,
+      "scraped_at": "2026-10-21T23:39:06.752287",
+      "attachments": []
+    }
+  },
+  "chunks": [
+    {
+      "chunk_index": 0,
+      "article": "1",
+      "clause": "1",
+      "point": null,
+      "path": "Điều 1 · Khoản 1",
+      "part": 1,
+      "total_parts": 1,
+      "char_count": 175,
+      "text": "Thông tư 73/2024/TT-BTC — Điều 1. Phạm vi điều chỉnh, đối tượng áp dụng — Khoản 1\n1. Thông tư này quy định mức thu, miễn, chế độ thu, nộp lệ phí cấp đổi, cấp lại thẻ căn cước.",
+      "effective_from": "2024-10-21",
+      "effective_to": null
+    },
+    {
+      "chunk_index": 1,
+      "article": "1",
+      "clause": "2",
+      "point": null,
+      "path": "Điều 1 · Khoản 2",
+      "part": 1,
+      "total_parts": 1,
+      "char_count": 242,
+      "text": "Thông tư 73/2024/TT-BTC — Điều 1. Phạm vi điều chỉnh, đối tượng áp dụng — Khoản 2\n2. Thông tư này áp dụng đối với người nộp lệ phí; tổ chức thu lệ phí; tổ chức, cá nhân khác có liên quan đến việc thu, nộp lệ phí cấp đổi, cấp lại thẻ căn cước.",
+      "effective_from": "2024-10-21",
+      "effective_to": null
+    },
+    {
+      "chunk_index": 2,
+      "article": "2",
+      "clause": null,
+      "point": null,
+      "path": "Điều 2",
+      "part": 1,
+      "total_parts": 1,
+      "char_count": 302,
+      "text": "Thông tư 73/2024/TT-BTC — Điều 2. Người nộp lệ phí\nNgười nộp lệ phí theo quy định tại Thông tư này là công dân Việt Nam khi làm thủ tục cấp đổi, cấp lại thẻ căn cước theo quy định của pháp luật về căn cước, trừ các trường hợp không phải nộp lệ phí quy định tại khoản 2 và khoản 3 Điều 38 Luật Căn cước.",
+      "effective_from": "2024-10-21",
+      "effective_to": null
+    },
+    {
+      "chunk_index": 3,
+      "article": "3",
+      "clause": null,
+      "point": null,
+      "path": "Điều 3",
+      "part": 1,
+      "total_parts": 1,
+      "char_count": 171,
+      "text": "Thông tư 73/2024/TT-BTC — Điều 3. Tổ chức thu lệ phí\nTổ chức thu lệ phí theo quy định tại Thông tư này là cơ quan quản lý căn cước theo quy định của pháp luật về căn cước.",
+      "effective_from": "2024-10-21",
+      "effective_to": null
+    },
+    {
+      "chunk_index": 4,
+      "article": "4",
+      "clause": "1",
+      "point": null,
+      "path": "Điều 4 · Khoản 1",
+      "part": 1,
+      "total_parts": 1,
+      "char_count": 593,
+      "text": "Thông tư 73/2024/TT-BTC — Điều 4. Mức thu lệ phí — Khoản 1\n1. Mức thu lệ phí cấp đổi, cấp lại thẻ căn cước như sau:\na) Cấp đổi thẻ căn cước công dân sang thẻ căn cước theo quy định tại khoản 3 Điều 21 Nghị định số 70/2024/NĐ-CP ngày 25 tháng 6 năm 2024 của Chính phủ quy định chi tiết một số điều và biện pháp thi hành Luật Căn cước: 30.000 đồng/thẻ căn cước;\nb) Cấp đổi thẻ căn cước đối với các trường hợp quy định tại khoản 1 Điều 24 Luật Căn cước: 50.000 đồng/thẻ căn cước;\nc) Cấp lại thẻ căn cước đối với các trường hợp quy định tại khoản 2 Điều 24 Luật Căn cước: 70.000 đồng/thẻ căn cước.",
+      "effective_from": "2024-10-21",
+      "effective_to": null
+    },
+    {
+      "chunk_index": 5,
+      "article": "4",
+      "clause": "2",
+      "point": null,
+      "path": "Điều 4 · Khoản 2",
+      "part": 1,
+      "total_parts": 1,
+      "char_count": 386,
+      "text": "Thông tư 73/2024/TT-BTC — Điều 4. Mức thu lệ phí — Khoản 2\n2. Kể từ ngày Thông tư này có hiệu lực thi hành đến hết ngày 31 tháng 12 năm 2024, mức thu lệ phí cấp đổi, cấp lại thẻ căn cước bằng 50% mức thu lệ phí quy định tại khoản 1 Điều này. Kể từ ngày 01 tháng 01 năm 2025 trở đi, áp dụng mức thu lệ phí theo quy định tại khoản 1 Điều này, trừ trường hợp quy định tại khoản 3 Điều này.",
+      "effective_from": "2024-10-21",
+      "effective_to": null
+    },
+    {
+      "chunk_index": 6,
+      "article": "4",
+      "clause": "3",
+      "point": null,
+      "path": "Điều 4 · Khoản 3",
+      "part": 1,
+      "total_parts": 1,
+      "char_count": 376,
+      "text": "Thông tư 73/2024/TT-BTC — Điều 4. Mức thu lệ phí — Khoản 3\n3. Kể từ ngày 01 tháng 01 năm 2025 đến hết ngày 31 tháng 12 năm 2025, mức thu lệ phí khi công dân nộp hồ sơ cấp đổi, cấp lại thẻ căn cước theo hình thức trực tuyến bằng 50% mức thu lệ phí quy định tại khoản 1 Điều này. Kể từ ngày 01 tháng 01 năm 2026 trở đi, áp dụng mức thu lệ phí theo quy định tại khoản 1 Điều này.",
+      "effective_from": "2024-10-21",
+      "effective_to": null
+    },
+    {
+      "chunk_index": 7,
+      "article": "5",
+      "clause": null,
+      "point": null,
+      "path": "Điều 5",
+      "part": 1,
+      "total_parts": 1,
+      "char_count": 130,
+      "text": "Thông tư 73/2024/TT-BTC — Điều 5. Các trường hợp miễn lệ phí\nMiễn lệ phí cấp đổi, cấp lại thẻ căn cước đối với các trường hợp sau:",
+      "effective_from": "2024-10-21",
+      "effective_to": null
+    },
+    {
+      "chunk_index": 8,
+      "article": "5",
+      "clause": "1",
+      "point": null,
+      "path": "Điều 5 · Khoản 1",
+      "part": 1,
+      "total_parts": 1,
+      "char_count": 223,
+      "text": "Thông tư 73/2024/TT-BTC — Điều 5. Các trường hợp miễn lệ phí — Khoản 1\n1. Trẻ em theo quy định tại Luật Trẻ em; người cao tuổi theo quy định tại Luật Người cao tuổi; người khuyết tật theo quy định tại Luật Người khuyết tật.",
+      "effective_from": "2024-10-21",
+      "effective_to": null
+    },
+    {
+      "chunk_index": 9,
+      "article": "5",
+      "clause": "2",
+      "point": null,
+      "path": "Điều 5 · Khoản 2",
+      "part": 1,
+      "total_parts": 1,
+      "char_count": 243,
+      "text": "Thông tư 73/2024/TT-BTC — Điều 5. Các trường hợp miễn lệ phí — Khoản 2\n2. Người có công với cách mạng và thân nhân của người có công với cách mạng theo quy định tại Pháp lệnh Ưu đãi người có công với cách mạng.\nĐiều khoản được sửa đổi, bổ sung",
+      "effective_from": "2024-10-21",
+      "effective_to": null
+    },
+    {
+      "chunk_index": 10,
+      "article": "5",
+      "clause": "3",
+      "point": null,
+      "path": "Điều 5 · Khoản 3",
+      "part": 1,
+      "total_parts": 1,
+      "char_count": 291,
+      "text": "Thông tư 73/2024/TT-BTC — Điều 5. Các trường hợp miễn lệ phí — Khoản 3\n3. Đồng bào dân tộc thiểu số ở các xã có điều kiện kinh tế - xã hội đặc biệt khó khăn; công dân thường trú tại các xã biên giới; công dân thường trú tại các huyện đảo; công dân thuộc hộ nghèo theo quy định của pháp luật.",
+      "effective_from": "2024-10-21",
+      "effective_to": null
+    },
+    {
+      "chunk_index": 11,
+      "article": "6",
+      "clause": "1",
+      "point": null,
+      "path": "Điều 6 · Khoản 1",
+      "part": 1,
+      "total_parts": 1,
+      "char_count": 397,
+      "text": "Thông tư 73/2024/TT-BTC — Điều 6. Kê khai, nộp lệ phí — Khoản 1\n1. Người nộp lệ phí thực hiện nộp lệ phí khi làm thủ tục cấp đổi, cấp lại thẻ căn cước cho tổ chức thu lệ phí theo hình thức quy định tại Thông tư số 74/2022/TT-BTC ngày 22 tháng 12 năm 2022 của Bộ trưởng Bộ Tài chính quy định về hình thức, thời hạn thu, nộp, kê khai các khoản phí, lệ phí thuộc thẩm quyền quy định của Bộ Tài chính.",
+      "effective_from": "2024-10-21",
+      "effective_to": null
+    },
+    {
+      "chunk_index": 12,
+      "article": "6",
+      "clause": "2",
+      "point": null,
+      "path": "Điều 6 · Khoản 2",
+      "part": 1,
+      "total_parts": 1,
+      "char_count": 538,
+      "text": "Thông tư 73/2024/TT-BTC — Điều 6. Kê khai, nộp lệ phí — Khoản 2\n2. Tổ chức thu lệ phí nộp 100% số tiền lệ phí thu được vào ngân sách nhà nước (ngân sách trung ương) theo chương, tiểu mục của Mục lục ngân sách nhà nước hiện hành. Nguồn chi phí trang trải cho việc thu lệ phí được ngân sách nhà nước (ngân sách trung ương) bố trí trong dự toán của tổ chức thu lệ phí theo chế độ, định mức chi ngân sách nhà nước theo quy định của pháp luật. Tổ chức thu lệ phí thực hiện kê khai, thu, nộp lệ phí theo quy định tại Thông tư số 74/2022/TT-BTC.",
+      "effective_from": "2024-10-21",
+      "effective_to": null
+    },
+    {
+      "chunk_index": 13,
+      "article": "7",
+      "clause": "1",
+      "point": null,
+      "path": "Điều 7 · Khoản 1",
+      "part": 1,
+      "total_parts": 1,
+      "char_count": 133,
+      "text": "Thông tư 73/2024/TT-BTC — Điều 7. Điều khoản thi hành — Khoản 1\n1. Thông tư này có hiệu lực thi hành kể từ ngày 21 tháng 10 năm 2024.",
+      "effective_from": "2024-10-21",
+      "effective_to": null
+    },
+    {
+      "chunk_index": 14,
+      "article": "7",
+      "clause": "2",
+      "point": null,
+      "path": "Điều 7 · Khoản 2",
+      "part": 1,
+      "total_parts": 1,
+      "char_count": 242,
+      "text": "Thông tư 73/2024/TT-BTC — Điều 7. Điều khoản thi hành — Khoản 2\n2. Thông tư này thay thế Thông tư số 59/2019/TT-BTC ngày 30 tháng 8 năm 2019 của Bộ trưởng Bộ Tài chính quy định mức thu, chế độ thu, nộp và quản lý lệ phí cấp Căn cước công dân.",
+      "effective_from": "2024-10-21",
+      "effective_to": null
+    },
+    {
+      "chunk_index": 15,
+      "article": "7",
+      "clause": "3",
+      "point": null,
+      "path": "Điều 7 · Khoản 3",
+      "part": 1,
+      "total_parts": 1,
+      "char_count": 330,
+      "text": "Thông tư 73/2024/TT-BTC — Điều 7. Điều khoản thi hành — Khoản 3\n3. Bãi bỏ số thứ tự 19 tại Biểu phí, lệ phí quy định tại khoản 1 Điều 1 Thông tư số 43/2024/TT-BTC ngày 28 tháng 6 năm 2024 của Bộ trưởng Bộ Tài chính quy định mức thu một số khoản phí, lệ phí nhằm tiếp tục tháo gỡ khó khăn, hỗ trợ cho hoạt động sản xuất kinh doanh.",
+      "effective_from": "2024-10-21",
+      "effective_to": null
+    },
+    {
+      "chunk_index": 16,
+      "article": "7",
+      "clause": "4",
+      "point": null,
+      "path": "Điều 7 · Khoản 4",
+      "part": 1,
+      "total_parts": 1,
+      "char_count": 1488,
+      "text": "Thông tư 73/2024/TT-BTC — Điều 7. Điều khoản thi hành — Khoản 4\n4. Các nội dung khác liên quan đến việc thu, nộp, chứng từ thu, công khai chế độ thu lệ phí không đề cập tại Thông tư này được thực hiện theo quy định tại các văn bản: Luật Phí và lệ phí; Nghị định số 120/2016/NĐ-CP ngày 23 tháng 8 năm 2016 của Chính phủ quy định chi tiết và hướng dẫn thi hành một số điều của Luật Phí và lệ phí; Nghị định số 82/2023/NĐ-CP ngày 28 tháng 11 năm 2023 của Chính phủ sửa đổi, bổ sung một số điều của Nghị định số 120/2016/NĐ-CP ngày 23 tháng 8 năm 2016 của Chính phủ quy định chi tiết và hướng dẫn thi hành một số điều của Luật Phí và lệ phí; Luật Quản lý thuế; Nghị định số 126/2020/NĐ-CP ngày 19 tháng 10 năm 2020 của Chính phủ quy định chi tiết một số điều của Luật Quản lý thuế; Nghị định số 91/2022/NĐ-CP ngày 30 tháng 10 năm 2022 của Chính phủ sửa đổi, bổ sung một số điều của Nghị định số 126/2020/NĐ-CP ngày 19 tháng 10 năm 2020 của Chính phủ quy định chi tiết một số điều của Luật Quản lý thuế; Nghị định số 11/2020/NĐ-CP ngày 20 tháng 01 năm 2020 của Chính phủ quy định về thủ tục hành chính thuộc lĩnh vực Kho bạc Nhà nước; Nghị định số 123/2020/NĐ-CP ngày 19 tháng 10 năm 2020 của Chính phủ quy định về hóa đơn, chứng từ và Thông tư số 78/2021/TT-BTC ngày 17 tháng 9 năm 2021 của Bộ trưởng Bộ Tài chính hướng dẫn thực hiện một số điều của Luật Quản lý thuế ngày 13 tháng 6 năm 2019, Nghị định số 123/2020/NĐ-CP ngày 19 tháng 10 năm 2020 của Chính phủ quy định về hóa đơn, chứng từ.",
+      "effective_from": "2024-10-21",
+      "effective_to": null
+    },
+    {
+      "chunk_index": 17,
+      "article": "7",
+      "clause": "5",
+      "point": null,
+      "path": "Điều 7 · Khoản 5",
+      "part": 1,
+      "total_parts": 1,
+      "char_count": 244,
+      "text": "Thông tư 73/2024/TT-BTC — Điều 7. Điều khoản thi hành — Khoản 5\n5. Trong quá trình thực hiện, nếu các văn bản liên quan nêu tại Thông tư này được sửa đổi, bổ sung hoặc thay thế thì thực hiện theo văn bản mới được sửa đổi, bổ sung hoặc thay thế.",
+      "effective_from": "2024-10-21",
+      "effective_to": null
+    },
+    {
+      "chunk_index": 18,
+      "article": "7",
+      "clause": "6",
+      "point": null,
+      "path": "Điều 7 · Khoản 6",
+      "part": 1,
+      "total_parts": 1,
+      "char_count": 209,
+      "text": "Thông tư 73/2024/TT-BTC — Điều 7. Điều khoản thi hành — Khoản 6\n6. Trong quá trình thực hiện, nếu có vướng mắc đề nghị các tổ chức, cá nhân phản ánh kịp thời về Bộ Tài chính để nghiên cứu, hướng dẫn bổ sung./.",
+      "effective_from": "2024-10-21",
+      "effective_to": null
+    }
+  ]
+}

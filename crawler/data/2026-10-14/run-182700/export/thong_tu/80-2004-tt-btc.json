@@ -1,0 +1,59 @@
+{
+  "schema_version": 2,
+  "exported_at": "2026-10-14T18:35:26",
+  "legal_source": {
+    "document_number": "80/2004/TT-BTC",
+    "doc_type": "Thông tư",
+    "issuing_authority": "Bộ Tài chính",
+    "title": "Thông tư số 80/2004/TT-BTC Circular guiding the implementation of the Prime Minister's Decision No. 75/1998/QD-TTg dated 4 April 1998 prescribing tax payers' indentification number (&lt;font color=\"red\"&gt;Content Attached&lt;/font&gt;)",
+    "metadata": {
+      "source": "vbpl",
+      "source_doc_id": "86346",
+      "detail_url": "https://vbpl.vn/van-ban/chi-tiet/86346",
+      "has_document_number": true,
+      "matched_keywords": [],
+      "keyword_groups": []
+    }
+  },
+  "knowledge_document": {
+    "source": "CRAWL_VBPL",
+    "file_hash": "fd0fdd378a0798b48162d0bd80daa74112c2a26c6ac1074733520bffe8639083",
+    "file_hash_basis": "source_id",
+    "issued_date": "2004-08-13",
+    "effective_from": "2004-10-01",
+    "effective_to": "2006-03-15",
+    "content_json": {
+      "parse_status": "PARSE_FAILED",
+      "preamble": "",
+      "chapters": [],
+      "closing": "",
+      "appendices": [],
+      "warnings": [
+        "Không tìm thấy Điều nào trong văn bản"
+      ]
+    },
+    "ingest": {
+      "suggested_status": "PENDING",
+      "pending_reasons": [
+        "NO_TEXT"
+      ]
+    },
+    "metadata": {
+      "tinh_trang_hieu_luc": "Hết hiệu lực toàn bộ",
+      "text_source": "unavailable",
+      "ocr_required": false,
+      "scraped_at": "2026-10-14T18:32:53.247682",
+      "attachments": [
+        {
+          "file_name": "80.2004.TT.BTC.doc",
+          "source_url": "https://vbpl.vn/van-ban/chi-tiet/86346",
+          "local_path": null,
+          "file_type": "doc",
+          "downloaded": false,
+          "download_error": null
+        }
+      ]
+    }
+  },
+  "chunks": []
+}

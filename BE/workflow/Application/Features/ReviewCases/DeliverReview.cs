@@ -1,0 +1,63 @@
+using Caps.Common.Application;
+using Caps.Workflow.Application.Abstractions;
+using Caps.Workflow.Application.DTOs.Responses;
+using Caps.Workflow.Domain;
+using Caps.Workflow.Domain.Review;
+
+namespace Caps.Workflow.Application.Features.ReviewCases;
+
+/// <summary>The expert delivers the review result.</summary>
+/// <param name="Result">VERIFIED or CANNOT_VERIFY.</param>
+public sealed record DeliverReviewCommand(
+    Guid UserId,
+    Guid ReviewCaseId,
+    string? Result,
+    string? Summary,
+    string? CannotVerifyReason,
+    string[]? Citations,
+    bool Attested,
+    string? RevisedContent
+);
+
+/// <summary>Hands the result to the client, who then has the acceptance window to confirm.</summary>
+public sealed class DeliverReviewHandler(
+    IReviewCaseRepository cases,
+    IReviewCaseEvents events,
+    IUnitOfWork unitOfWork,
+    TimeProvider clock,
+    WorkCalendar? calendar = null
+) : ICommandHandler<DeliverReviewCommand, ReviewCaseResponse>
+{
+    public async Task<ReviewCaseResponse> HandleAsync(
+        DeliverReviewCommand command,
+        CancellationToken ct
+    )
+    {
+        await using var tx = await unitOfWork.BeginTransactionAsync(ct);
+        var reviewCase =
+            await cases.FindForUpdateAsync(command.ReviewCaseId, ct)
+            ?? throw WorkflowErrors.ReviewCaseNotFound();
+        if (reviewCase.ExpertUserId != command.UserId)
+        {
+            throw WorkflowErrors.ReviewCaseNotFound();
+        }
+
+        var delivered = reviewCase.Deliver(
+            reviewCase.ExpertProfileId,
+            command.UserId,
+            command.Result,
+            command.Summary,
+            command.CannotVerifyReason,
+            command.Citations,
+            command.Attested,
+            clock.GetUtcNow(),
+            command.RevisedContent,
+            calendar
+        );
+        cases.AddHistory(delivered);
+        await events.StatusChangedAsync(reviewCase, delivered, ct);
+        await unitOfWork.SaveChangesAsync(ct);
+        await tx.CommitAsync(ct);
+        return ReviewCaseResponse.From(reviewCase);
+    }
+}

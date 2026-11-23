@@ -1,0 +1,96 @@
+import type { ReactNode } from 'react'
+import { useTranslation } from 'react-i18next'
+import {
+  ArrowLeft,
+  ArrowRight,
+  Save,
+  Loader2,
+  CheckCircle2,
+  ListChecks,
+} from 'lucide-react'
+import { REVIEW_STEP } from '../constants'
+
+export interface WizardFooterProps {
+  step: number
+  /** Editing a section from the review step: the primary action saves and goes back to review */
+  returnToReview?: boolean
+  submitting: boolean
+  /** More information was requested: the last step resubmits instead of submitting */
+  supplementing?: boolean
+  draftSaved: boolean
+  /** Auto-save state shown beside the save button */
+  status?: ReactNode
+  onSaveDraft: () => void
+  onBack: () => void
+}
+
+export function WizardFooter({
+  step,
+  returnToReview = false,
+  submitting,
+  supplementing = false,
+  draftSaved,
+  status,
+  onSaveDraft,
+  onBack,
+}: WizardFooterProps) {
+  const { t } = useTranslation('expertRegistration')
+
+  return (
+    <footer className="expert-wizard-actions expert-wizard-footer">
+      <div className="expert-footer-left">
+        <button
+          type="button"
+          className="expert-footer-btn expert-footer-draft"
+          onClick={onSaveDraft}
+          disabled={submitting}
+        >
+          {draftSaved ? <CheckCircle2 size={15} /> : <Save size={15} />}
+          {draftSaved ? t('actions.saved') : t('actions.save')}
+        </button>
+        <span role="status" className="text-ex-muted text-[13px] leading-snug">
+          {draftSaved ? t('messages.draftSaved') : status}
+        </span>
+      </div>
+      <div className="expert-footer-right">
+        {step > 0 && (
+          <button
+            type="button"
+            className="expert-footer-btn expert-footer-back"
+            onClick={onBack}
+            disabled={submitting}
+          >
+            <ArrowLeft size={16} />
+            {t('actions.back')}
+          </button>
+        )}
+        <button
+          className={`expert-footer-btn expert-footer-continue ${step === REVIEW_STEP && submitting ? 'expert-footer-continue--loading' : ''}`}
+          disabled={submitting}
+          aria-busy={step === REVIEW_STEP && submitting}
+        >
+          {step === REVIEW_STEP && submitting && (
+            <Loader2
+              size={16}
+              className="animate-spin motion-reduce:animate-none"
+              aria-hidden="true"
+            />
+          )}
+          {returnToReview && step < REVIEW_STEP && (
+            <ListChecks size={16} aria-hidden="true" />
+          )}
+          {step === REVIEW_STEP && submitting
+            ? t('actions.submitting')
+            : step === REVIEW_STEP
+              ? t(supplementing ? 'actions.resubmit' : 'actions.submit')
+              : returnToReview
+                ? t('actions.saveAndReview')
+                : t('actions.continue')}
+          {!(step === REVIEW_STEP && submitting) && !(returnToReview && step < REVIEW_STEP) && (
+            <ArrowRight size={16} />
+          )}
+        </button>
+      </div>
+    </footer>
+  )
+}

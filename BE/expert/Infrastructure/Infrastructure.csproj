@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>Caps.Expert.Infrastructure</RootNamespace>
+    <AssemblyName>Caps.Expert.Infrastructure</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
+    <PackageReference Include="AWSSDK.S3" />
+    <ProjectReference Include="..\Application\Application.csproj" />
+    <ProjectReference Include="..\..\common\Persistence\Persistence.csproj" />
+    <ProjectReference Include="..\..\common\Messaging\Messaging.csproj" />
+  </ItemGroup>
+
+</Project>
