@@ -338,7 +338,7 @@
     "help": {
       "headline": "Một dòng ngắn, ví dụ: Chuyên gia thuế TNDN, nguyên trưởng nhóm Big Four.",
       "location": "Thành phố hoặc tỉnh.",
-      "years": "Số nguyên từ 0 đến 99.",
+      "years": "Theo hồ sơ đã được duyệt; liên hệ quản trị viên nếu cần sửa.",
       "bio": "Bạn rà soát loại hồ sơ nào và khách hàng nhận được gì.",
       "expertise": "Ngăn cách bằng dấu phẩy.",
       "highlights": "Mỗi dòng một thành tích."
@@ -348,7 +348,7 @@
       "headlineLong": "Chức danh không được vượt quá 120 ký tự.",
       "years": "Nhập số năm từ 0 đến 99.",
       "bioRequired": "Nhập phần giới thiệu.",
-      "bioLong": "Phần giới thiệu không được vượt quá 2.000 ký tự."
+      "bioLong": "Phần giới thiệu không được vượt quá 1.000 ký tự."
     },
     "save": "Lưu hồ sơ",
     "saving": "Đang lưu…",

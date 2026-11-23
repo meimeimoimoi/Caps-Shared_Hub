@@ -13,3 +13,16 @@ public sealed record UpdateExpertProfileRequest(
     public UpdateMyProfileCommand ToCommand(Applicant applicant) =>
         new(applicant, DisplayName, Phone);
 }
+
+/// <summary>The expert's public profile; blank values clear a field.</summary>
+public sealed record UpdateMyBioRequest(
+    [MaxLength(128)] string? Title,
+    [MaxLength(128)] string? Location,
+    [MaxLength(1000)] string? Bio,
+    [MaxLength(10)] string[]? Fields,
+    [MaxLength(2000)] string? Highlights
+)
+{
+    public UpdateMyBioCommand ToCommand(Applicant applicant) =>
+        new(applicant, Title, Location, Bio, Fields ?? [], Highlights);
+}
