@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { ArrowLeft, CircleAlert, FilePlus2, Upload } from 'lucide-react'
 import { FormField } from '@/components/ui/forms/form-field'
+import { HelpTip } from '@/components/ui/feedback/help-tip'
 import { usePublicExpert } from '@/features/marketplace/hooks/useMarketplace'
 import { FilePicker, Initials } from '@/features/review-case/components/CaseUi'
 import { ACCEPT, MAX_BYTES } from '@/features/review-case/components/CaseAttachments'
@@ -492,9 +493,14 @@ export default function ReviewRequestPage() {
                 aria-labelledby="req-next"
                 className="border-border border-t pt-5"
               >
-                <h2 id="req-next" className="eyebrow font-sans">
-                  {t('request.nextTitle')}
-                </h2>
+                <div className="flex items-center gap-2">
+                  <h2 id="req-next" className="eyebrow font-sans">
+                    {t('request.nextTitle')}
+                  </h2>
+                  <HelpTip label={t('request.workingDaysLabel')}>
+                    {t('request.workingDays')}
+                  </HelpTip>
+                </div>
                 <ol className="mt-4 space-y-4">
                   {(['s1', 's2', 's3'] as const).map((k, i) => (
                     <li key={k} className="flex gap-3 text-sm">

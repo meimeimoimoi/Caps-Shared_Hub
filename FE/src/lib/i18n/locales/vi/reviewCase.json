@@ -427,7 +427,9 @@
       "periodEnd": "Đến ngày",
       "pick": "Chọn tệp để tải lên",
       "hint": "PDF, JPEG, PNG, WebP hoặc Word (.docx), tối đa 50 MB. Tệp tải lên được chọn làm hồ sơ cần thẩm định."
-    }
+    },
+    "workingDaysLabel": "Về ngày làm việc",
+    "workingDays": "Ngày làm việc không tính thứ Bảy, Chủ nhật và các ngày lễ dương lịch. Hạn rơi vào ngày nghỉ được dời sang ngày làm việc kế tiếp, cùng giờ."
   },
   "nav": {
     "label": "Không gian khách hàng",
@@ -736,7 +738,8 @@
       "netPayout": "Bạn thực nhận {{amount}} khi hoàn tất.",
       "lateRule": "Bàn giao trễ trong {{hours}} giờ: bạn nhận {{payout}} và bị cộng 1 điểm vi phạm. Quá {{cancel}} giờ chưa bàn giao: hồ sơ bị hủy, bạn không nhận khoản nào và bị cộng 3 điểm.",
       "saveDraft": "Lưu nháp",
-      "draftSaved": "Đã lưu nháp. Khách chỉ thấy bản chỉnh sửa sau khi bạn bàn giao."
+      "draftSaved": "Đã lưu nháp. Khách chỉ thấy bản chỉnh sửa sau khi bạn bàn giao.",
+      "decisionLate": "Quyết định đang chậm hơn dự kiến. Phần tiền của bạn vẫn được giữ, bạn sẽ được báo ngay khi có quyết định."
     },
     "notConnected": "Chưa có dữ liệu.",
     "openCases": "Các hồ sơ đang mở của bạn."

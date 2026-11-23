@@ -4,6 +4,7 @@ import { ExtensionForm, ExtensionStatus } from './CaseExtension'
 import { Link } from 'react-router-dom'
 import { ArrowLeft } from 'lucide-react'
 import { HelpTip } from '@/components/ui/feedback/help-tip'
+import { DISPUTE_SLA_DAYS } from '@/features/disputes-escrow/constants'
 import { Toast } from '@/components/ui/feedback/toast'
 import { addDisputeStatement, reviewCaseActions } from '../api/reviewCaseApi'
 import { useCaseError, useCaseRun, useLiveCase } from '../hooks/useReviewCases'
@@ -730,6 +731,13 @@ export function ExpertLiveCase({
                     {t('live.expert.statementClosed')}
                   </p>
                 ))
+              )}
+              {dto.status === 'DISPUTED' && (
+                <p className="text-fg-muted text-sm">
+                  {new Date(dispute.decideBy).getTime() < Date.now()
+                    ? t('live.expert.decisionLate')
+                    : t('panel.DISPUTED.sla', { days: DISPUTE_SLA_DAYS })}
+                </p>
               )}
               {dto.status === 'DISPUTED' && (
                 // Evidence sits next to the statement so the arbiter can weigh it against the client's
