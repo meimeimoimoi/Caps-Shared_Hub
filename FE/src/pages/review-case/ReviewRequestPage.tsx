@@ -2,15 +2,18 @@ import { useEffect, useId, useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useQuery } from '@tanstack/react-query'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
-import { ArrowLeft, CircleAlert, FilePlus2 } from 'lucide-react'
+import { ArrowLeft, CircleAlert, FilePlus2, Upload } from 'lucide-react'
 import { FormField } from '@/components/ui/forms/form-field'
 import { usePublicExpert } from '@/features/marketplace/hooks/useMarketplace'
 import { FilePicker, Initials } from '@/features/review-case/components/CaseUi'
+import { ACCEPT, MAX_BYTES } from '@/features/review-case/components/CaseAttachments'
 import { fieldClass, useCaseFormat } from '@/features/review-case/ui'
 import { DEMO_CASES, REVIEWABLE_DRAFTS } from '@/features/review-case/fixtures'
 import {
   createReviewCase,
   getBookingTerms,
+  uploadDocument,
+  type UploadedDocument,
 } from '@/features/review-case/api/reviewCaseApi'
 import { useCaseError } from '@/features/review-case/hooks/useReviewCases'
 import { ApiError } from '@/lib/api-client'
@@ -28,6 +31,9 @@ const initialsOf = (name: string) =>
     .map((w) => w[0])
     .join('')
     .toUpperCase()
+
+// The current tax year (00 section 3a); the client can pick another period before uploading
+const TAX_YEAR = new Date().getFullYear()
 
 export default function ReviewRequestPage() {
   const { t } = useTranslation(['reviewCase', 'common'])
@@ -49,15 +55,23 @@ export default function ReviewRequestPage() {
     enabled: !isExpertDemo && Boolean(expertId && service),
   }).data
 
-  // ponytail: no documents API yet, so a real booking names its version in the URL; add a picker when that API exists
+  // ponytail: no list of the client's documents here yet; the version comes from the draft handoff URL or an upload below
   const documentId = params.get('document')
   // The draft handoff and Marketplace pass the version as draftVersion; version is kept for older links
   const versionId = params.get('draftVersion') ?? params.get('version')
+  const [uploaded, setUploaded] = useState<(UploadedDocument & { name: string }) | null>(null)
   const drafts = isExpertDemo
     ? REVIEWABLE_DRAFTS
-    : documentId && versionId
-      ? [{ id: versionId, name: t('live.chosenVersion') }]
-      : []
+    : [
+        ...(documentId && versionId
+          ? [{ id: versionId, documentId, name: t('live.chosenVersion') }]
+          : []),
+        ...(uploaded ? [uploaded] : []),
+      ]
+  const [periodStart, setPeriodStart] = useState(`${TAX_YEAR}-01-01`)
+  const [periodEnd, setPeriodEnd] = useState(`${TAX_YEAR}-12-31`)
+  const [uploading, setUploading] = useState(false)
+  const [uploadError, setUploadError] = useState<string | null>(null)
   const toMessage = useCaseError()
   const [sending, setSending] = useState(false)
   const [sendError, setSendError] = useState<string | null>(null)
@@ -73,16 +87,36 @@ export default function ReviewRequestPage() {
     document.title = `${t('request.title')} | Shared Hub`
   }, [t])
 
+  // The uploaded file becomes version 1 of a new document and is chosen for this request
+  const upload = (file: File | undefined) => {
+    if (!file) return
+    setUploadError(null)
+    if (file.size > MAX_BYTES)
+      return setUploadError(t('errors.ATTACHMENT_TOO_LARGE'))
+    setUploading(true)
+    uploadDocument(file, file.name.slice(0, 200), periodStart, periodEnd)
+      .then((v) => {
+        setUploaded({ id: v.id, documentId: v.documentId, name: file.name })
+        setDraftId(v.id)
+      })
+      .catch((err: unknown) => setUploadError(toMessage(err)))
+      .finally(() => setUploading(false))
+  }
+
   const submit = (e: FormEvent) => {
     e.preventDefault()
     setSubmitted(true)
     if (!draftId || !consent) return
     if (isExpertDemo) return navigate(`/cases/${DEMO_CASES[0].id}`)
-    if (!scope.trim() || sending || !documentId || !expertId || !service) return
+    const chosen = drafts.find((d) => d.id === draftId)
+    const chosenDocument =
+      chosen && 'documentId' in chosen ? chosen.documentId : null
+    if (!scope.trim() || sending || !chosenDocument || !expertId || !service)
+      return
     setSending(true)
     setSendError(null)
     createReviewCase({
-      documentId,
+      documentId: chosenDocument,
       sourceVersionId: draftId,
       expertProfileId: expertId,
       serviceCode: service.serviceId,
@@ -241,6 +275,57 @@ export default function ReviewRequestPage() {
                         </span>
                       </label>
                     ))}
+                  </div>
+                )}
+                {!isExpertDemo && (
+                  <div className="mt-4 space-y-3">
+                    <p className="text-fg-strong text-sm font-semibold">
+                      {t('request.upload.title')}
+                    </p>
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <label className="text-fg text-sm">
+                        {t('request.upload.periodStart')}
+                        <input
+                          type="date"
+                          value={periodStart}
+                          onChange={(e) => setPeriodStart(e.target.value)}
+                          className={cn(fieldClass, 'mt-1')}
+                        />
+                      </label>
+                      <label className="text-fg text-sm">
+                        {t('request.upload.periodEnd')}
+                        <input
+                          type="date"
+                          value={periodEnd}
+                          min={periodStart}
+                          onChange={(e) => setPeriodEnd(e.target.value)}
+                          className={cn(fieldClass, 'mt-1')}
+                        />
+                      </label>
+                    </div>
+                    <label className="btn btn-secondary has-[:focus-visible]:outline-ink w-full cursor-pointer has-[:focus-visible]:outline-2">
+                      <Upload size={16} aria-hidden="true" />
+                      {uploading ? t('live.files.uploading') : t('request.upload.pick')}
+                      <input
+                        type="file"
+                        accept={ACCEPT}
+                        disabled={uploading || !periodStart || !periodEnd}
+                        aria-describedby={`${id}-upload-hint`}
+                        onChange={(e) => {
+                          upload(e.target.files?.[0])
+                          e.target.value = ''
+                        }}
+                        className="sr-only"
+                      />
+                    </label>
+                    <p id={`${id}-upload-hint`} className="text-fg-muted text-sm">
+                      {t('request.upload.hint')}
+                    </p>
+                    {uploadError && (
+                      <p role="alert" className="text-danger text-sm">
+                        {uploadError}
+                      </p>
+                    )}
                   </div>
                 )}
                 {draftError && (

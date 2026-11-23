@@ -79,6 +79,9 @@ export const reviewCaseActions = {
   rate: (id: string, stars: number, comment: string) =>
     act(id, 'rating', { stars, comment: comment || null }),
   withdrawDispute: (id: string) => act(id, 'dispute/withdraw'),
+  /** Saves the expert's revised draft; the client sees it only after delivery */
+  saveRevision: (id: string, revisedContent: Record<string, unknown> | null) =>
+    act(id, 'revisions', { revisedContent }),
 }
 
 export const getCaseDispute = (id: string, signal?: AbortSignal) =>
@@ -102,6 +105,32 @@ export const addDisputeStatement = (id: string, message: string) =>
       message,
     })
   )
+
+/** A document made from a file the client already has; id is the version to book as sourceVersionId. */
+export interface UploadedDocument {
+  id: string
+  documentId: string
+}
+
+/** Uploads the client's own file as a new document so it can be sent for expert review. */
+export function uploadDocument(
+  file: File,
+  title: string,
+  periodStart: string,
+  periodEnd: string
+) {
+  const form = new FormData()
+  form.append('title', title)
+  form.append('periodStart', periodStart)
+  form.append('periodEnd', periodEnd)
+  form.append('file', file)
+  return unwrap(
+    api.post<Envelope<UploadedDocument>>('/api/v1/documents/upload', form, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+      timeout: FILE_TIMEOUT,
+    })
+  )
+}
 
 /** A system admin reads the same files through its own route. */
 export type AttachmentScope = 'party' | 'admin'

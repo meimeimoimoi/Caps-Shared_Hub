@@ -420,6 +420,13 @@
       "noResponseNoRefund": "You do not answer a question within {{days}} working days: the case ends and nothing is refunded.",
       "noResponseRefund": "You do not answer a question within {{days}} working days: the case ends and you get only {{amount}} back.",
       "dispute": "The administrator upholds your dispute: you get {{amount}} back."
+    },
+    "upload": {
+      "title": "Or upload a document you already have",
+      "periodStart": "Tax period from",
+      "periodEnd": "To",
+      "pick": "Choose a file to upload",
+      "hint": "PDF, JPEG, PNG, WebP or Word (.docx), up to 50 MB. The uploaded file is chosen as the document to review."
     }
   },
   "nav": {
@@ -727,7 +734,9 @@
       "deliveredOnTime": "Delivered {{time}} · on time",
       "deliveredLate": "Delivered {{time}} · {{hours}} h late",
       "netPayout": "You receive {{amount}} when it completes.",
-      "lateRule": "Delivered up to {{hours}} h late: you receive {{payout}} and get 1 violation point. Not delivered within {{cancel}} h: the case is cancelled, you receive nothing and get 3 points."
+      "lateRule": "Delivered up to {{hours}} h late: you receive {{payout}} and get 1 violation point. Not delivered within {{cancel}} h: the case is cancelled, you receive nothing and get 3 points.",
+      "saveDraft": "Save draft",
+      "draftSaved": "Draft saved. The client sees your revision only after delivery."
     },
     "notConnected": "No data yet.",
     "openCases": "Your open cases."

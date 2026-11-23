@@ -84,11 +84,16 @@ function TextAction({
 function DeliverForm({
   busy,
   source,
+  draft,
+  onSaveDraft,
   onSubmit,
 }: {
   busy: boolean
   /** The AI draft under review; its fields can be edited or removed. */
   source: Record<string, unknown> | null
+  /** The revision the expert saved earlier, so edits survive leaving the page */
+  draft: Record<string, unknown> | null
+  onSaveDraft: (revised: Record<string, unknown> | null) => void
   onSubmit: (
     result: 'VERIFIED' | 'CANNOT_VERIFY',
     summary: string,
@@ -111,10 +116,16 @@ function DeliverForm({
     .filter(Boolean)
   const [fields, setFields] = useState<Record<string, string>>(() =>
     Object.fromEntries(
-      Object.entries(source ?? {}).map(([k, v]) => [k, fieldText(v)])
+      Object.entries(source ?? {}).map(([k, v]) => [
+        k,
+        fieldText(draft && k in draft ? draft[k] : v),
+      ])
     )
   )
-  const [removed, setRemoved] = useState<string[]>([])
+  // A field missing from the saved draft was removed by the expert
+  const [removed, setRemoved] = useState<string[]>(() =>
+    draft ? Object.keys(source ?? {}).filter((k) => !(k in draft)) : []
+  )
   const cannot = result === 'CANNOT_VERIFY'
   const ready =
     summary.trim() &&
@@ -321,13 +332,25 @@ function DeliverForm({
           </label>
         ))}
       </fieldset>
-      <button
-        type="submit"
-        disabled={busy || !ready}
-        className="btn btn-press btn-primary disabled:opacity-60"
-      >
-        {t('live.expert.deliver')}
-      </button>
+      <div className="flex flex-wrap gap-3">
+        <button
+          type="submit"
+          disabled={busy || !ready}
+          className="btn btn-press btn-primary disabled:opacity-60"
+        >
+          {t('live.expert.deliver')}
+        </button>
+        {source && (
+          <button
+            type="button"
+            disabled={busy}
+            onClick={() => onSaveDraft(revised())}
+            className="btn btn-press btn-secondary disabled:opacity-60"
+          >
+            {t('live.expert.saveDraft')}
+          </button>
+        )}
+      </div>
     </form>
   )
 }
@@ -520,6 +543,13 @@ export function ExpertLiveCase({
               <DeliverForm
                 busy={busy}
                 source={dto.sourceContent}
+                draft={dto.revisedContent}
+                onSaveDraft={(revisedContent) =>
+                  perform(
+                    () => a.saveRevision(caseId, revisedContent),
+                    t('live.expert.draftSaved')
+                  )
+                }
                 onSubmit={(
                   result,
                   summary,

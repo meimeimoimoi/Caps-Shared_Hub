@@ -420,6 +420,13 @@
       "noResponseNoRefund": "Bạn không trả lời yêu cầu bổ sung trong {{days}} ngày làm việc: hồ sơ chấm dứt và bạn không được hoàn tiền.",
       "noResponseRefund": "Bạn không trả lời yêu cầu bổ sung trong {{days}} ngày làm việc: hồ sơ chấm dứt và bạn chỉ được hoàn {{amount}}.",
       "dispute": "Khiếu nại được quản trị viên chấp thuận: bạn được hoàn {{amount}}."
+    },
+    "upload": {
+      "title": "Hoặc tải lên tài liệu bạn có sẵn",
+      "periodStart": "Kỳ tính thuế từ ngày",
+      "periodEnd": "Đến ngày",
+      "pick": "Chọn tệp để tải lên",
+      "hint": "PDF, JPEG, PNG, WebP hoặc Word (.docx), tối đa 50 MB. Tệp tải lên được chọn làm hồ sơ cần thẩm định."
     }
   },
   "nav": {
@@ -727,7 +734,9 @@
       "deliveredOnTime": "Bàn giao lúc {{time}} · đúng hạn",
       "deliveredLate": "Bàn giao lúc {{time}} · trễ {{hours}} giờ",
       "netPayout": "Bạn thực nhận {{amount}} khi hoàn tất.",
-      "lateRule": "Bàn giao trễ trong {{hours}} giờ: bạn nhận {{payout}} và bị cộng 1 điểm vi phạm. Quá {{cancel}} giờ chưa bàn giao: hồ sơ bị hủy, bạn không nhận khoản nào và bị cộng 3 điểm."
+      "lateRule": "Bàn giao trễ trong {{hours}} giờ: bạn nhận {{payout}} và bị cộng 1 điểm vi phạm. Quá {{cancel}} giờ chưa bàn giao: hồ sơ bị hủy, bạn không nhận khoản nào và bị cộng 3 điểm.",
+      "saveDraft": "Lưu nháp",
+      "draftSaved": "Đã lưu nháp. Khách chỉ thấy bản chỉnh sửa sau khi bạn bàn giao."
     },
     "notConnected": "Chưa có dữ liệu.",
     "openCases": "Các hồ sơ đang mở của bạn."

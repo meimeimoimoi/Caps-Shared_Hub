@@ -18,8 +18,8 @@ import {
 import type { AttachmentDto } from '../types'
 import { useCaseFormat } from '../ui'
 
-const MAX_BYTES = 50 * 1024 * 1024
-const ACCEPT = '.pdf,.jpg,.jpeg,.png,.webp,.docx'
+export const MAX_BYTES = 50 * 1024 * 1024
+export const ACCEPT = '.pdf,.jpg,.jpeg,.png,.webp,.docx'
 
 const sizeLabel = (bytes: number) =>
   bytes < 1024 * 1024
