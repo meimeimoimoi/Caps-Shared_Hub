@@ -11,6 +11,8 @@ import type {
   EligibilityResult,
   Expert,
   ExpertApplication,
+  ExpertViolations,
+  ExcuseRequest,
   CriterionDeclaration,
   InformationRounds,
   ReviewClaimState,
@@ -267,6 +269,7 @@ const SERVICE_ACCESS = (id: string) => `/api/v1/admin/experts/approvals/${id}/se
 interface ManagedExpert {
   id: string
   applicationId: string
+  expertId: string
   displayName: string | null
   email: string | null
   yearsExperience: number | null
@@ -318,6 +321,7 @@ const historyActor = (actor: string) =>
 const toExpert = (m: ManagedExpert): Expert => ({
   id: m.id,
   applicationId: m.applicationId,
+  expertId: m.expertId,
   name: m.displayName ?? m.email ?? m.id,
   email: m.email ?? '',
   fields: m.fields,
@@ -359,5 +363,50 @@ export async function setExpertServiceStatus(
   await api.post(SERVICE_ACCESS(id), {
     action: status === 'SUSPENDED' ? 'SUSPEND' : 'REINSTATE',
     note: note?.trim() || null,
+  })
+}
+
+const VIOLATIONS = (expertId: string) => `/api/v1/admin/experts/${expertId}/violations`
+
+/** Violation points of one expert (late +1, withdrew +2, never delivered +3, counted 90 days) */
+export async function getExpertViolations(expertId: string, signal?: AbortSignal) {
+  if (isExpertDemo) {
+    return { points: 0, excusesLeft: 2, windowDays: 90, items: [] } satisfies ExpertViolations
+  }
+  const res = await api.get<Envelope<ExpertViolations>>(VIOLATIONS(expertId), { signal })
+  return res.data
+}
+
+/** Force majeure: the violation stops counting; the money split of the case does not change */
+export async function excuseViolation(expertId: string, reviewCaseId: string, reason: string) {
+  const res = await api.post<Envelope<ExpertViolations>>(
+    `${VIOLATIONS(expertId)}/${reviewCaseId}/excuse`,
+    { reason }
+  )
+  return res.data
+}
+
+/** Turns down the expert's excuse request; the violation keeps counting */
+export async function declineExcuse(expertId: string, reviewCaseId: string) {
+  const res = await api.post<Envelope<ExpertViolations>>(
+    `${VIOLATIONS(expertId)}/${reviewCaseId}/decline-excuse`
+  )
+  return res.data
+}
+
+/** Excuse requests from every expert waiting for a decision, oldest first */
+export async function getExcuseRequests(signal?: AbortSignal) {
+  if (isExpertDemo) return [] satisfies ExcuseRequest[]
+  const res = await api.get<Envelope<ExcuseRequest[]>>('/api/v1/admin/experts/excuse-requests', {
+    signal,
+  })
+  return res.data
+}
+
+/** One evidence file of an excuse request, as a blob the page saves or opens */
+export async function getExcuseFile(expertId: string, reviewCaseId: string, fileId: string) {
+  return api.get<Blob>(`${VIOLATIONS(expertId)}/${reviewCaseId}/files/${fileId}`, {
+    responseType: 'blob',
+    timeout: 60_000,
   })
 }

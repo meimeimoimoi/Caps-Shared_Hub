@@ -1,8 +1,8 @@
 import { SortableTh } from '@/components/ui/navigation/sortable-th'
 import { useTableSort } from '@/hooks/useTableSort'
 import { formatVnd } from '@/lib/format-money'
-import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { useCallback, useEffect, useState } from 'react'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Pagination } from '@/components/ui/navigation/pagination'
 import { usePagination } from '@/hooks/usePagination'
@@ -11,6 +11,7 @@ import { cn } from '@/lib/utils'
 import { StatusBadge } from '@/components/ui/display/status-badge'
 import { CustomSelect } from '@/components/ui/forms/custom-select'
 import { EmptyState } from '@/components/ui/feedback/empty-state'
+import { Toast } from '@/components/ui/feedback/toast'
 import { AdminLayout } from '@/app/layouts/admin/AdminLayout'
 import { useAdminNav } from '@/app/layouts/admin/useAdminNav'
 import {
@@ -41,6 +42,16 @@ export default function AdminDisputesPage() {
   const nav = useAdminNav()
   const { t } = useTranslation(['admin', 'common'])
   const format = useFormatters()
+  // A decision made on the detail page arrives with its confirmation; clear the state so a reload does not repeat it
+  const location = useLocation()
+  const navigate = useNavigate()
+  const [toast, setToast] = useState<string | null>(
+    (location.state as { toast?: string } | null)?.toast ?? null
+  )
+  const clearToast = useCallback(() => {
+    setToast(null)
+    navigate('.', { replace: true, state: null })
+  }, [navigate])
   const { data = [], isLoading, error } = useDisputes(!nav.disputesUnavailable)
   const [query, setQuery] = useState('')
   const [status, setStatus] = useState<DisputeStatusFilter>('all')
@@ -344,6 +355,7 @@ export default function AdminDisputesPage() {
           )}
         </>
       )}
+      {toast && <Toast message={toast} onDone={clearToast} />}
     </AdminLayout>
   )
 }

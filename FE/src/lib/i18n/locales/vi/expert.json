@@ -772,6 +772,7 @@
     "REQUESTS_TURNED_OFF": "Bạn đang tắt nhận yêu cầu cho dịch vụ này.",
     "CAPACITY_NOT_SET": "Chưa đặt số hồ sơ làm cùng lúc.",
     "ACCOUNT_INACTIVE": "Tài khoản chưa hoạt động.",
+    "VIOLATION_POINTS": "Tạm ẩn khỏi Sàn: có từ 6 điểm vi phạm trong 90 ngày (giao trễ, tự hủy hoặc không bàn giao). Bạn tự hiện lại khi điểm cũ hết hạn.",
     "COMPETENCY_EVIDENCE_PENDING": "Nộp minh chứng năng lực để được đánh giá."
   },
   "availabilityPage": {
@@ -796,6 +797,43 @@
       "EXPERT_NOT_FOUND": "Bạn chưa có hồ sơ chuyên gia.",
       "loadFailed": "Không tải được lịch nhận việc.",
       "failed": "Chưa thực hiện được. Vui lòng thử lại."
+    },
+    "violations": {
+      "title": "Vi phạm",
+      "help": "Giao trễ +1, nhận rồi tự hủy +2, không bàn giao +3. Điểm tính trong {{days}} ngày gần nhất: đủ 6 điểm bạn bị ẩn khỏi Sàn, đủ 9 điểm mọi dịch vụ tự tạm ngưng. Bất khả kháng (ốm đau, tang, thiên tai, sự cố hệ thống) thì xin miễn trong 2 ngày và gửi bằng chứng qua email cho quản trị viên.",
+      "points_one": "{{count}} điểm / {{days}} ngày",
+      "points_other": "{{count}} điểm / {{days}} ngày",
+      "none": "Bạn chưa có vi phạm.",
+      "kind": {
+        "LATE": "Giao trễ",
+        "WITHDREW": "Nhận rồi tự hủy",
+        "NO_DELIVERY": "Không bàn giao"
+      },
+      "plus_one": "+{{count}} điểm",
+      "plus_other": "+{{count}} điểm",
+      "case": "Hồ sơ {{id}}",
+      "counted": "Đang tính",
+      "expired": "Đã quá hạn tính",
+      "excused": "Đã được miễn: {{reason}}",
+      "pending": "Đang chờ quản trị viên xét",
+      "declined": "Yêu cầu miễn bị từ chối, vẫn tính điểm",
+      "yourRequest": "Bạn đã xin miễn: {{text}}",
+      "ask": "Xin miễn do bất khả kháng",
+      "reason": "Lý do (bắt buộc)",
+      "evidence": "Đính kèm giấy nhập viện, thông báo mất điện… Quản trị viên xem tệp để duyệt đơn.",
+      "send": "Gửi yêu cầu",
+      "failed": "Chưa gửi được. Hãy thử lại.",
+      "errors": {
+        "VIOLATION_EXCUSE_ALREADY_REQUESTED": "Bạn đã xin miễn vi phạm này rồi.",
+        "VIOLATION_EXCUSE_REQUEST_CLOSED": "Đã quá 2 ngày kể từ khi vi phạm được ghi.",
+        "VIOLATION_ALREADY_EXCUSED": "Vi phạm này đã được miễn.",
+        "VIOLATION_EXCUSE_REASON_REQUIRED": "Nhập lý do xin miễn.",
+        "VIOLATION_EXCUSE_FILE_LIMIT": "Chỉ đính kèm tối đa 5 tệp.",
+        "EVIDENCE_TOO_LARGE": "Mỗi tệp tối đa 10 MB.",
+        "EVIDENCE_INVALID_TYPE": "Chỉ nhận tệp PDF, JPG hoặc PNG."
+      },
+      "files": "Tệp bằng chứng (PDF, JPG, PNG; tối đa 5 tệp, mỗi tệp 10 MB)",
+      "yourFiles": "Tệp đã gửi: {{names}}"
     }
   },
   "preparingEvidence": "Chuẩn bị minh chứng năng lực"

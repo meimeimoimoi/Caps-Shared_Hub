@@ -38,7 +38,8 @@
     "assignments": "Phân công người chấm",
     "feesAndPolicy": "Cấu hình & phí",
     "notConnected": "Chưa kết nối",
-    "soonGroup": "Sắp có"
+    "soonGroup": "Sắp có",
+    "excuseRequests": "Đơn xin miễn vi phạm"
   },
   "dashboard": {
     "title": "Tổng quan",
@@ -124,7 +125,9 @@
   "notifications": {
     "label": "Thông báo",
     "pending": "{{count}} hồ sơ chuyên gia chờ đánh giá năng lực",
-    "refundFailed": "{{count}} khoản hoàn tiền cho khách bị lỗi"
+    "refundFailed": "{{count}} khoản hoàn tiền cho khách bị lỗi",
+    "excuseRequests_one": "{{count}} đơn xin miễn vi phạm đang chờ xét",
+    "excuseRequests_other": "{{count}} đơn xin miễn vi phạm đang chờ xét"
   },
   "pendingExperts": {
     "title": "Hồ sơ chờ duyệt",
@@ -193,7 +196,45 @@
       "system": "Hệ thống",
       "admin": "Quản trị viên"
     },
-    "expertCount_other": "{{count}} chuyên gia"
+    "expertCount_other": "{{count}} chuyên gia",
+    "violations": {
+      "title": "Vi phạm",
+      "help": "Giao trễ +1, nhận rồi tự hủy +2, không bàn giao +3. Điểm tính trong {{days}} ngày gần nhất: đủ 6 điểm thì chuyên gia bị ẩn khỏi Sàn, đủ 9 điểm thì mọi dịch vụ tự tạm ngưng (chỉ admin mở lại). Miễn vi phạm chỉ cho bất khả kháng có bằng chứng; tiền của Case không đổi.",
+      "points_one": "{{count}} điểm / {{days}} ngày",
+      "points_other": "{{count}} điểm / {{days}} ngày",
+      "excusesLeft_one": "còn miễn được {{count}} lần",
+      "excusesLeft_other": "còn miễn được {{count}} lần",
+      "none": "Chưa có vi phạm.",
+      "kind": {
+        "LATE": "Giao trễ",
+        "WITHDREW": "Nhận rồi tự hủy",
+        "NO_DELIVERY": "Không bàn giao"
+      },
+      "plus_one": "+{{count}} điểm",
+      "plus_other": "+{{count}} điểm",
+      "case": "Case {{id}}",
+      "counted": "Đang tính",
+      "expired": "Đã quá hạn tính",
+      "excused": "Đã miễn: {{reason}}",
+      "excuse": "Miễn vi phạm",
+      "excuseTitle": "Miễn vi phạm do bất khả kháng?",
+      "excuseBody": "{{kind}} ở Case {{id}} sẽ không còn tính điểm. Cách chia tiền của Case không đổi; dịch vụ đã bị tạm ngưng vẫn phải mở lại thủ công.",
+      "reason": "Lý do và bằng chứng đã kiểm tra (bắt buộc)",
+      "reasonMissing": "Nhập lý do miễn vi phạm.",
+      "confirm": "Miễn vi phạm",
+      "failed": "Chưa miễn được. Hãy thử lại.",
+      "errors": {
+        "VIOLATION_EXCUSE_LIMIT": "Chuyên gia đã được miễn đủ 2 lần trong 90 ngày.",
+        "VIOLATION_ALREADY_EXCUSED": "Vi phạm này đã được miễn.",
+        "VIOLATION_NOT_FOUND": "Không tìm thấy vi phạm.",
+        "VIOLATION_EXCUSE_REASON_REQUIRED": "Nhập lý do miễn vi phạm."
+      },
+      "request": "Chuyên gia xin miễn: {{text}}",
+      "requestDeclined": "Đã từ chối yêu cầu miễn, vẫn tính điểm",
+      "decline": "Từ chối yêu cầu",
+      "noFiles": "Không kèm tệp bằng chứng.",
+      "fileFailed": "Không mở được tệp. Hãy thử lại."
+    }
   },
   "applicationsTable": {
     "sortBy": "Sắp xếp: nộp sớm nhất trước",
@@ -488,7 +529,8 @@
       "confirmTitle": "Gửi quyết định trọng tài?",
       "confirmBody": "Quyết định được gửi cho cả khách và chuyên gia, và tiền ký quỹ được chia theo kết quả dưới đây.",
       "failed": "Chưa gửi được quyết định; quyết định chưa được ghi. Hãy thử lại.",
-      "reasonMissing": "Nhập lý do quyết định."
+      "reasonMissing": "Nhập lý do quyết định.",
+      "awaitingStatement": "Chuyên gia còn hạn giải trình tới {{time}}. Bạn ra quyết định được sau thời điểm đó, hoặc ngay khi chuyên gia đã giải trình."
     },
     "escalation": {
       "hint": "Tranh chấp cần xét đoán chuyên môn hoặc kết luận Thuế TNDN phải chuyển cho người đánh giá được ủy quyền. Hạn quyết định được cộng thêm {{days}} ngày làm việc, chỉ một lần.",
@@ -524,7 +566,8 @@
       "statement": "Giải trình",
       "noStatement": "Chuyên gia chưa gửi giải trình.",
       "summary": "Tóm tắt đã giao",
-      "noSummary": "Chưa có tóm tắt kết quả."
+      "noSummary": "Chưa có tóm tắt kết quả.",
+      "statementMissed": "Chuyên gia không giải trình trong hạn."
     }
   },
   "escrow": {
@@ -1212,7 +1255,7 @@
     "exampleNet": "Thực nhận: hiện tại → mới",
     "firstFeeHelp": "Phí đầu tiên có hiệu lực ngay và mở dịch vụ cho chuyên gia đặt giá.",
     "late": "Giao trễ",
-    "lateHelp": "Tính từ hạn giao bài (1 ngày làm việc). Giao trễ trong số giờ phạt: khách được hoàn % đã đặt, nền tảng giữ phần còn lại, chuyên gia không nhận. Giao trễ hơn nữa nhưng trước số giờ hủy: khách được hoàn 100%. Quá số giờ hủy mà chưa giao: yêu cầu bị hủy, khách được hoàn % \"khi không giao\", nền tảng giữ phần còn lại. Đặt số giờ phạt bằng số giờ hủy để chỉ còn một mức hoàn. Tối đa {{maxHours}} giờ. Yêu cầu đã gửi giữ nguyên quy định lúc gửi.",
+    "lateHelp": "Tính từ hạn giao bài (1 ngày làm việc). Giao trễ trong số giờ phạt: khách được hoàn % đã đặt, trừ vào phần của nền tảng, chuyên gia vẫn nhận đủ phần của mình. Giao trễ hơn nữa nhưng trước số giờ hủy: khách được hoàn 100%. Quá số giờ hủy mà chưa giao: yêu cầu bị hủy, khách được hoàn % \"khi không giao\", nền tảng giữ phần còn lại. Đặt số giờ phạt bằng số giờ hủy để chỉ còn một mức hoàn. Tối đa {{maxHours}} giờ. Yêu cầu đã gửi giữ nguyên quy định lúc gửi.",
     "lateFields": {
       "penaltyHours": "Trễ tối đa được phạt (giờ)",
       "penaltyPercent": "Hoàn cho khách khi trễ (%)",
@@ -1238,7 +1281,7 @@
       "splitOver": "% hoàn cho khách cộng % cho chuyên gia không quá 100% (đang là {{sum}}%).",
       "platformKeeps": "Nền tảng giữ {{percent}}%.",
       "dateTooSoon": "Chọn từ ngày {{date}} trở đi.",
-      "lateIncident": "Giao trễ trong số giờ phạt: khách {{client}}%, nền tảng {{platform}}%, chuyên gia không nhận.",
+      "lateIncident": "Giao trễ trong số giờ phạt: khách {{client}}%, nền tảng {{platform}}%, chuyên gia {{expert}}%.",
       "noDeliveryOver": "% hoàn khi không giao không quá 100%.",
       "daysRange": "Số ngày làm việc từ 1 đến {{max}}."
     },
@@ -1598,5 +1641,18 @@
     "SUSPENDED": {
       "label": "Tạm ngưng"
     }
+  },
+  "excuseRequests": {
+    "title": "Đơn xin miễn vi phạm",
+    "help": "Chuyên gia xin miễn điểm vi phạm do bất khả kháng (ốm đau, tang, thiên tai, sự cố hệ thống), kèm lý do và tệp bằng chứng. Miễn thì vi phạm không còn tính điểm; cách chia tiền của hồ sơ không đổi. Mỗi chuyên gia được miễn tối đa 2 lần trong 90 ngày.",
+    "count_one": "{{count}} đơn đang chờ",
+    "count_other": "{{count}} đơn đang chờ",
+    "expert": "Chuyên gia",
+    "violation": "Vi phạm",
+    "request": "Lý do và bằng chứng",
+    "requestedAt": "Gửi lúc",
+    "empty": "Không có đơn nào đang chờ.",
+    "search": "Tìm theo chuyên gia, email hoặc mã hồ sơ",
+    "noResults": "Không có đơn khớp với từ khóa."
   }
 }

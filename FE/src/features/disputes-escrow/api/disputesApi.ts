@@ -51,6 +51,7 @@ interface AdminDisputeDto {
   reviewCaseId: string
   /** Only admins see it; the expert never learns the client's contact */
   requesterEmail: string | null
+  requesterUserId: string
   expertProfileId: string
   fee: number
   platformFeePct: number
@@ -67,6 +68,7 @@ interface AdminDisputeDto {
     /** The admin already used the one extension */
     extended: boolean
     expertStatement: string | null
+    statementDueBy: string
   }
 }
 
@@ -95,6 +97,7 @@ function toDispute(x: AdminDisputeDto, expert: string): Dispute {
     code: x.reviewCaseId.slice(0, 8).toUpperCase(),
     kind: 'DELIVERY_ISSUE',
     client: x.requesterEmail ?? undefined,
+    clientUserId: x.requesterUserId,
     expert: expert || undefined,
     ground: reason,
     openedAt: d.openedAt,
@@ -103,6 +106,7 @@ function toDispute(x: AdminDisputeDto, expert: string): Dispute {
     fee: x.fee,
     platformFeePct: x.platformFeePct,
     expertStatement: d.expertStatement ?? undefined,
+    statementDueBy: d.statementDueBy,
     reviewSummary: x.reviewSummary ?? undefined,
     complaint: { issue: reason, description: d.description },
     history: [],

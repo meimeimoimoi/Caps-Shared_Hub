@@ -38,7 +38,8 @@
     "assignments": "Review assignments",
     "feesAndPolicy": "Fees & policy",
     "notConnected": "Not connected yet",
-    "soonGroup": "Coming soon"
+    "soonGroup": "Coming soon",
+    "excuseRequests": "Violation excuse requests"
   },
   "dashboard": {
     "title": "Overview",
@@ -129,7 +130,9 @@
   "notifications": {
     "label": "Notifications",
     "pending": "{{count}} Expert applications awaiting capability review",
-    "refundFailed": "{{count}} client refunds failed"
+    "refundFailed": "{{count}} client refunds failed",
+    "excuseRequests_one": "{{count}} violation excuse request waiting",
+    "excuseRequests_other": "{{count}} violation excuse requests waiting"
   },
   "pendingExperts": {
     "title": "Pending Applications",
@@ -199,7 +202,45 @@
       "admin": "Admin"
     },
     "expertCount_one": "{{count}} expert",
-    "expertCount_other": "{{count}} experts"
+    "expertCount_other": "{{count}} experts",
+    "violations": {
+      "title": "Violations",
+      "help": "Late +1, withdrew after accepting +2, never delivered +3. Points count for the last {{days}} days: 6 hide the expert from the marketplace, 9 suspend every service (only an admin reinstates). Excuse only for proven force majeure; the case's money does not change.",
+      "points_one": "{{count}} point / {{days}} days",
+      "points_other": "{{count}} points / {{days}} days",
+      "excusesLeft_one": "{{count}} excuse left",
+      "excusesLeft_other": "{{count}} excuses left",
+      "none": "No violations.",
+      "kind": {
+        "LATE": "Late delivery",
+        "WITHDREW": "Withdrew after accepting",
+        "NO_DELIVERY": "Never delivered"
+      },
+      "plus_one": "+{{count}} point",
+      "plus_other": "+{{count}} points",
+      "case": "Case {{id}}",
+      "counted": "Counting",
+      "expired": "No longer counted",
+      "excused": "Excused: {{reason}}",
+      "excuse": "Excuse",
+      "excuseTitle": "Excuse this violation for force majeure?",
+      "excuseBody": "{{kind}} on case {{id}} will stop counting. The case's money split does not change; a suspended service still has to be reinstated by hand.",
+      "reason": "Reason and evidence checked (required)",
+      "reasonMissing": "Enter the reason for the excuse.",
+      "confirm": "Excuse",
+      "failed": "Couldn't excuse. Try again.",
+      "errors": {
+        "VIOLATION_EXCUSE_LIMIT": "This expert already had 2 excuses in 90 days.",
+        "VIOLATION_ALREADY_EXCUSED": "This violation is already excused.",
+        "VIOLATION_NOT_FOUND": "Violation not found.",
+        "VIOLATION_EXCUSE_REASON_REQUIRED": "Enter the reason for the excuse."
+      },
+      "request": "The expert asks: {{text}}",
+      "requestDeclined": "Request declined; still counted",
+      "decline": "Decline request",
+      "noFiles": "No evidence files attached.",
+      "fileFailed": "Couldn't open the file. Try again."
+    }
   },
   "applicationsTable": {
     "sortBy": "Sort by: oldest submitted first",
@@ -496,7 +537,8 @@
       "confirmTitle": "Send the arbitration decision?",
       "confirmBody": "The decision goes to both the client and the expert, and the escrow is split by the outcome below.",
       "failed": "The decision wasn't sent and nothing was recorded. Try again.",
-      "reasonMissing": "Enter a reason for the decision."
+      "reasonMissing": "Enter a reason for the decision.",
+      "awaitingStatement": "The expert can still explain until {{time}}. You can decide after that, or as soon as they have explained."
     },
     "escalation": {
       "hint": "Disputes about professional judgment or a CIT conclusion go to an Authorized Reviewer. The decision deadline is extended by {{days}} working days, once.",
@@ -533,7 +575,8 @@
       "statement": "Statement",
       "noStatement": "The expert has not replied yet.",
       "summary": "Delivered summary",
-      "noSummary": "No delivery summary yet."
+      "noSummary": "No delivery summary yet.",
+      "statementMissed": "The expert did not explain in time."
     }
   },
   "escrow": {
@@ -1221,7 +1264,7 @@
     "exampleNet": "Received: current → new",
     "firstFeeHelp": "The first fee applies at once and opens the service for experts to price.",
     "late": "Late delivery",
-    "lateHelp": "Counted from the delivery deadline (one working day). Late within the penalty hours: the client gets the set percent back, the platform keeps the rest and the expert gets nothing. Later but before the cancel hours: the client gets 100% back. Nothing delivered by the cancel hours: the request is cancelled, the client gets the \"nothing delivered\" percent back and the platform keeps the rest. Set the penalty hours equal to the cancel hours for a single refund level. At most {{maxHours}} hours. Requests already sent keep the rules they were booked with.",
+    "lateHelp": "Counted from the delivery deadline (one working day). Late within the penalty hours: the client gets the set percent back out of the platform's share and the expert keeps theirs. Later but before the cancel hours: the client gets 100% back. Nothing delivered by the cancel hours: the request is cancelled, the client gets the \"nothing delivered\" percent back and the platform keeps the rest. Set the penalty hours equal to the cancel hours for a single refund level. At most {{maxHours}} hours. Requests already sent keep the rules they were booked with.",
     "lateFields": {
       "penaltyHours": "Late penalty window (hours)",
       "penaltyPercent": "Refund to client when late (%)",
@@ -1247,7 +1290,7 @@
       "splitOver": "Client refund % plus expert % cannot exceed 100% (now {{sum}}%).",
       "platformKeeps": "The platform keeps {{percent}}%.",
       "dateTooSoon": "Pick {{date}} or later.",
-      "lateIncident": "Late within the penalty hours: client {{client}}%, platform {{platform}}%, expert nothing.",
+      "lateIncident": "Late within the penalty hours: client {{client}}%, platform {{platform}}%, expert {{expert}}%.",
       "noDeliveryOver": "The refund when nothing is delivered can be at most 100%.",
       "daysRange": "Working days must be between 1 and {{max}}."
     },
@@ -1608,5 +1651,18 @@
     "SUSPENDED": {
       "label": "Suspended"
     }
+  },
+  "excuseRequests": {
+    "title": "Violation excuse requests",
+    "help": "Experts ask to have a violation excused for force majeure (illness, bereavement, disaster, a platform outage), with a reason and evidence files. An excused violation stops counting; the case's money split does not change. At most 2 excuses per expert in 90 days.",
+    "count_one": "{{count}} request waiting",
+    "count_other": "{{count}} requests waiting",
+    "expert": "Expert",
+    "violation": "Violation",
+    "request": "Reason and evidence",
+    "requestedAt": "Sent",
+    "empty": "No requests waiting.",
+    "search": "Search by expert, email or case code",
+    "noResults": "No requests match your search."
   }
 }

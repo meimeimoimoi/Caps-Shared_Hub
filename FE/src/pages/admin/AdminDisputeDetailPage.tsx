@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { CaseHeader } from '@/components/ui/layout/case-header'
 import { StatusBadge } from '@/components/ui/display/status-badge'
@@ -30,6 +30,7 @@ export default function AdminDisputeDetailPage() {
   const { t } = useTranslation(['admin', 'common'])
   const [now] = useState(() => Date.now())
   const [toast, setToast] = useState<string | null>(null)
+  const navigate = useNavigate()
   const clearToast = useCallback(() => setToast(null), [])
 
   const listLink = (
@@ -196,7 +197,10 @@ export default function AdminDisputeDetailPage() {
                   [
                     t('disputes.expertSide.statement'),
                     dispute.expertStatement ??
-                      t('disputes.expertSide.noStatement'),
+                      (dispute.statementDueBy &&
+                      new Date(dispute.statementDueBy).getTime() <= now
+                        ? t('disputes.expertSide.statementMissed')
+                        : t('disputes.expertSide.noStatement')),
                   ],
                   [
                     t('disputes.expertSide.summary'),
@@ -219,7 +223,15 @@ export default function AdminDisputeDetailPage() {
 
           {/* A real case: the files both parties added and the document under review */}
           {dispute.decideBy && (
-            <CaseAttachments caseId={dispute.id} scope="admin" />
+            <CaseAttachments
+              caseId={dispute.id}
+              scope="admin"
+              dispute={
+                dispute.clientUserId
+                  ? { clientUserId: dispute.clientUserId, openedAt: dispute.openedAt }
+                  : undefined
+              }
+            />
           )}
 
           {dispute.history.length > 0 && (
@@ -236,12 +248,22 @@ export default function AdminDisputeDetailPage() {
             slaHours={disputeSlaHours(dispute)}
             decided={!!dispute.resolvedAt}
             escalated={!!dispute.escalatedAt}
+            awaitingStatementUntil={
+              !dispute.expertStatement &&
+              dispute.statementDueBy &&
+              new Date(dispute.statementDueBy).getTime() > now
+                ? dispute.statementDueBy
+                : undefined
+            }
             onEscalate={() =>
               escalate().then(() => setToast(t('disputes.escalation.toast')))
             }
             onDecide={(outcome, reason) =>
+              // A decided dispute leaves the open queue this page reads, so go back to the list and say so there
               decide({ outcome, reason }).then(() =>
-                setToast(t('disputes.decided'))
+                navigate('/admin/disputes', {
+                  state: { toast: t('disputes.decided') },
+                })
               )
             }
           />

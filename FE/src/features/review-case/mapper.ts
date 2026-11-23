@@ -213,7 +213,7 @@ export function toReviewCase(
       : undefined,
     rating:
       d.rating != null
-        ? { stars: d.rating, comment: d.ratingComment ?? '', at: d.updatedAt }
+        ? { stars: d.rating, comment: d.ratingComment ?? '', at: d.ratedAt ?? d.updatedAt }
         : undefined,
     timeline: timelineOf(d),
     updatedAt: d.updatedAt,

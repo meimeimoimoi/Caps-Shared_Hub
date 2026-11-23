@@ -31,6 +31,7 @@ public sealed class ExpertDbContext(DbContextOptions<ExpertDbContext> options) :
     public DbSet<PlatformFee> PlatformFees => Set<PlatformFee>();
     public DbSet<ExpertCaseSlot> ExpertCaseSlots => Set<ExpertCaseSlot>();
     public DbSet<ExpertCaseRating> ExpertCaseRatings => Set<ExpertCaseRating>();
+    public DbSet<ExpertViolation> ExpertViolations => Set<ExpertViolation>();
     public DbSet<ServiceOffering> ServiceOfferings => Set<ServiceOffering>();
     public DbSet<ServiceOfferingChange> ServiceOfferingChanges => Set<ServiceOfferingChange>();
     public DbSet<ServiceCatalogItem> ServiceCatalog => Set<ServiceCatalogItem>();
@@ -132,6 +133,36 @@ public sealed class ExpertDbContext(DbContextOptions<ExpertDbContext> options) :
                 .HasForeignKey(x => x.ExpertProfileId)
                 .OnDelete(DeleteBehavior.Restrict)
                 .HasConstraintName("fk_expert_case_rating_profile");
+        });
+
+        modelBuilder.Entity<ExpertViolation>(e =>
+        {
+            e.ToTable(
+                "expert_violation",
+                t => t.HasCheckConstraint("ck_expert_violation_points", "points BETWEEN 1 AND 3")
+            );
+            e.HasKey(x => x.ReviewCaseId);
+            e.Property(x => x.ReviewCaseId).HasColumnName("review_case_id");
+            e.Property(x => x.ExpertProfileId).HasColumnName("expert_profile_id");
+            e.Property(x => x.Kind).HasColumnName("kind").HasMaxLength(20).IsRequired();
+            e.Property(x => x.Points).HasColumnName("points");
+            e.Property(x => x.OccurredAt).HasColumnName("occurred_at");
+            e.Property(x => x.ExcusedAt).HasColumnName("excused_at");
+            e.Property(x => x.ExcusedBy).HasColumnName("excused_by");
+            e.Property(x => x.ExcusedReason).HasColumnName("excused_reason").HasMaxLength(1000);
+            e.Property(x => x.ExcuseRequest).HasColumnName("excuse_request").HasMaxLength(1000);
+            e.Property(x => x.ExcuseRequestedAt).HasColumnName("excuse_requested_at");
+            e.Property(x => x.ExcuseDeclinedAt).HasColumnName("excuse_declined_at");
+            e.Ignore(x => x.ExcusePending);
+            // At most 5 files per request, never queried on their own: one jsonb column
+            e.OwnsMany(x => x.ExcuseFiles, f => f.ToJson("excuse_files"));
+            e.HasIndex(x => new { x.ExpertProfileId, x.OccurredAt })
+                .HasDatabaseName("ix_expert_violation_profile_time");
+            e.HasOne<ExpertProfile>()
+                .WithMany()
+                .HasForeignKey(x => x.ExpertProfileId)
+                .OnDelete(DeleteBehavior.Restrict)
+                .HasConstraintName("fk_expert_violation_profile");
         });
 
         modelBuilder.Entity<ExpertApplication>(e =>
@@ -543,6 +574,32 @@ public sealed class ExpertDbContext(DbContextOptions<ExpertDbContext> options) :
                         PlatformFee.LocalOffset
                     ),
                     SetBy = SystemActor.UserId,
+                },
+                // Advisor's rule of 2026-11-20: late within 24h refunds 20% out of the platform's share (client 20,
+                // platform 20, expert 60); nothing delivered by then refunds 100%. Takes effect on deploy.
+                new
+                {
+                    Id = Guid.Parse("01929e3a-0000-7000-8000-000000000060"),
+                    ServiceCode = "HUMAN_VERIFICATION",
+                    Percent = 40,
+                    LatePenaltyHours = 24,
+                    LatePenaltyPercent = 20,
+                    LateCancelHours = 24,
+                    NoResponseDays = 3,
+                    NoResponseRefundPercent = 0,
+                    NoResponseExpertPercent = 60,
+                    NoDeliveryRefundPercent = 100,
+                    EffectiveFrom = new DateTimeOffset(
+                        2026,
+                        11,
+                        21,
+                        0,
+                        0,
+                        0,
+                        PlatformFee.LocalOffset
+                    ),
+                    SetBy = SystemActor.UserId,
+                    Reason = "Theo đề xuất của thầy Thức ngày 20/11/2026: giao trễ trong 24 giờ hoàn khách 20% từ phần của nền tảng (khách 20%, nền tảng 20%, chuyên gia 60%); quá 24 giờ chưa bàn giao hoàn khách 100%.",
                 }
             );
         });

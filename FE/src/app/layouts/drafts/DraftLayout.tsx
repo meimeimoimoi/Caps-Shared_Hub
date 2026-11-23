@@ -5,6 +5,7 @@ import { Outlet, useLocation } from 'react-router-dom'
 import { LogIn } from 'lucide-react'
 import { useAuthStore } from '@/features/auth/store/authStore'
 import { useAuth } from '@/features/auth/hooks/useAuth'
+import { useNotifications } from '@/features/notifications'
 import { useDraftHref } from '@/features/drafting/hooks/useDrafting'
 import { AppHeader } from '@/components/ui/layout/app-header'
 import { AppSidebar } from '@/components/ui/layout/app-sidebar'
@@ -19,6 +20,8 @@ export function DraftLayout() {
   const user = useAuthStore((state) => state.user)
   // logout gọi API thu hồi refresh cookie rồi mới xoá phiên cục bộ
   const { logout } = useAuth()
+  // Case updates reach the client here too, not only by email
+  const bell = useNotifications()
   const location = useLocation()
   const href = useDraftHref()
   const groups = useUserNavigation(
@@ -78,6 +81,9 @@ export function DraftLayout() {
       <div className={`sidebar-offset ${expanded ? 'md:ml-60' : 'md:ml-20'}`}>
         <AppHeader
           navigationButtonRef={drawerTrigger}
+          notifications={bell.notifications}
+          onMarkNotificationsRead={bell.onMarkRead}
+          onMarkAllNotificationsRead={bell.onMarkAllRead}
           onOpenNavigation={() => drawer.current?.showModal()}
           context={
             <span

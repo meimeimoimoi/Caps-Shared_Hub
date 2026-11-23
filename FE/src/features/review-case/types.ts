@@ -142,6 +142,8 @@ export interface DisputeDto {
   decideBy: string
   expertStatement: string | null
   expertStatementAt: string | null
+  /** The expert explains before then; the admin waits for it unless the statement came earlier */
+  statementDueBy: string
   refundPct: number | null
   resolutionNote: string | null
   closedAt: string | null
@@ -204,10 +206,13 @@ export interface ReviewCaseDto {
   deliveredAt: string | null
   rating: number | null
   ratingComment: string | null
+  ratedAt: string | null
   /** Null while the case runs or when nothing was paid */
   settlement: SettlementAmounts | null
   /** Only GET /review-cases/{id} loads them; null in lists and action responses */
   infoRequests: InfoRequestDto[] | null
+  /** The expert's extension request; null when never asked */
+  extension?: ExtensionDto | null
   updatedAt: string
   createdAt: string
 }
@@ -255,4 +260,13 @@ export interface CaseChatMessage {
 export interface CaseUnread {
   reviewCaseId: string
   unreadCount: number
+}
+
+/** The expert asked for 1–2 more working days; decision is null while the client has not answered */
+export interface ExtensionDto {
+  days: number
+  reason: string
+  requestedAt: string
+  decision: 'EXTENSION_ACCEPTED' | 'EXTENSION_DECLINED' | null
+  decidedAt: string | null
 }

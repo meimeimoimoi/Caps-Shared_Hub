@@ -1,5 +1,6 @@
 import { useCallback, useId, useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
+import { ExtensionForm, ExtensionStatus } from './CaseExtension'
 import { Link } from 'react-router-dom'
 import { ArrowLeft } from 'lucide-react'
 import { HelpTip } from '@/components/ui/feedback/help-tip'
@@ -8,7 +9,7 @@ import { addDisputeStatement, reviewCaseActions } from '../api/reviewCaseApi'
 import { useCaseError, useCaseRun, useLiveCase } from '../hooks/useReviewCases'
 import { caseCode } from '../mapper'
 import { caseText, fieldClass, useCaseFormat } from '../ui'
-import { CaseAttachments } from './CaseAttachments'
+import { CaseAttachments, EvidenceUpload } from './CaseAttachments'
 import { CaseChat } from './CaseChat'
 import { Deadline } from './CaseUi'
 import { RevisedContentView } from './RevisedContentView'
@@ -512,6 +513,26 @@ export function ExpertLiveCase({
             </Card>
           )}
 
+          {dto.status === 'IN_REVIEW' && !dto.extension && (
+            <Card title={t('extension.title')}>
+              <ExtensionForm
+                busy={busy}
+                onSubmit={(days, reason) =>
+                  perform(
+                    () => a.requestExtension(caseId, days, reason),
+                    t('extension.requestedFeedback')
+                  )
+                }
+              />
+            </Card>
+          )}
+
+          {dto.extension && (
+            <Card title={t('extension.title')}>
+              <ExtensionStatus extension={dto.extension} />
+            </Card>
+          )}
+
           {dto.status === 'IN_REVIEW' && (
             <Card title={t('live.expert.askTitle')}>
               <TextAction
@@ -606,16 +627,32 @@ export function ExpertLiveCase({
                   </p>
                 </div>
               ) : (
-                dto.status === 'DISPUTED' && (
-                  <TextAction
-                    label={t('live.expert.statement')}
-                    submit={t('live.expert.sendStatement')}
-                    busy={busy}
-                    onSubmit={(m) =>
-                      perform(() => addDisputeStatement(caseId, m))
-                    }
-                  />
-                )
+                dto.status === 'DISPUTED' &&
+                (new Date(dispute.statementDueBy).getTime() > Date.now() ? (
+                  <>
+                    <Deadline
+                      label={t('live.expert.statementDue')}
+                      dueAt={dispute.statementDueBy}
+                      onExpire={expire}
+                    />
+                    <TextAction
+                      label={t('live.expert.statement')}
+                      submit={t('live.expert.sendStatement')}
+                      busy={busy}
+                      onSubmit={(m) =>
+                        perform(() => addDisputeStatement(caseId, m))
+                      }
+                    />
+                  </>
+                ) : (
+                  <p className="text-fg-muted mt-3 text-sm">
+                    {t('live.expert.statementClosed')}
+                  </p>
+                ))
+              )}
+              {dto.status === 'DISPUTED' && (
+                // Evidence sits next to the statement so the arbiter can weigh it against the client's
+                <EvidenceUpload caseId={caseId} label={t('live.files.evidence.add')} />
               )}
               {dispute.resolutionNote && (
                 <p className="text-fg break-words whitespace-pre-wrap">

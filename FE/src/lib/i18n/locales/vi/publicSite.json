@@ -12,7 +12,8 @@
     "login": "Đăng nhập",
     "register": "Đăng ký",
     "askAi": "Hỏi Trợ lý AI",
-    "askAiShort": "Hỏi AI"
+    "askAiShort": "Hỏi AI",
+    "openApp": "Vào ứng dụng"
   },
   "footer": {
     "tagline": "Hồ sơ Thuế TNDN: <b>AI soạn</b>, <b>chuyên gia xác thực</b>.",

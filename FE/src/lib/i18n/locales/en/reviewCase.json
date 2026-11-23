@@ -369,7 +369,9 @@
     "challenged": "Challenge sent. The payment stays on hold.",
     "expired": "Payment deadline passed. The request was cancelled.",
     "rated": "Rating submitted. Thank you.",
-    "disputeWithdrawn": "Dispute withdrawn. The case is accepted and settled."
+    "disputeWithdrawn": "Dispute withdrawn. The case is accepted and settled.",
+    "extensionAccepted": "Extension accepted. The delivery deadline moved.",
+    "extensionDeclined": "Extension declined."
   },
   "notFound": {
     "title": "Case not found",
@@ -549,7 +551,12 @@
     "CHAT_CLOSED": "Messages cannot be sent at this step.",
     "MESSAGE_EMPTY": "Please enter a message.",
     "MESSAGE_TOO_LONG": "The message is too long.",
-    "RATE_LIMITED": "Too many requests. Please try again in a moment."
+    "RATE_LIMITED": "Too many requests. Please try again in a moment.",
+    "EXTENSION_ALREADY_REQUESTED": "An extension can be asked once per case.",
+    "EXTENSION_NOT_PENDING": "There is no extension waiting for an answer.",
+    "EXTENSION_DAYS_INVALID": "An extension is 1 or 2 working days.",
+    "DISPUTE_AWAITING_STATEMENT": "The expert can still explain; the dispute cannot be decided yet.",
+    "DISPUTE_STATEMENT_CLOSED": "The statement window for this dispute has ended."
   },
   "live": {
     "loading": "Loading the case",
@@ -616,7 +623,15 @@
       "source": "Download the original file",
       "sourceName": "original-document",
       "noSource": "This document was written in the app, so there is no original file to download.",
-      "fromExpert": "From the expert"
+      "fromExpert": "From the expert",
+      "evidence": {
+        "add": "Add evidence",
+        "client": "Client's evidence",
+        "expert": "Expert's evidence",
+        "none": "No files.",
+        "duringDispute": "Added during the dispute",
+        "attachAnswer": "Attach supporting documents"
+      }
     },
     "revised": {
       "title": "Expert's edited version",
@@ -687,9 +702,28 @@
       "acceptedFeedback": "Case accepted. You can start the review.",
       "declinedFeedback": "Case declined.",
       "deliveredFeedback": "Review sent to the client.",
-      "saved": "Saved."
+      "saved": "Saved.",
+      "statementDue": "Statement due",
+      "statementClosed": "The statement window has ended. The administrator will decide on the evidence at hand."
     },
     "notConnected": "No data yet.",
     "openCases": "Your open cases."
+  },
+  "extension": {
+    "title": "Delivery extension",
+    "days": "Ask for",
+    "dayOption_one": "{{count}} working day",
+    "dayOption_other": "{{count}} working days",
+    "reason": "Reason for the client (required)",
+    "ask": "Ask for an extension",
+    "asked_one": "The expert asks for {{count}} more working day",
+    "asked_other": "The expert asks for {{count}} more working days",
+    "pendingClient": "If you agree, the delivery deadline moves by these days and the expert is not counted late. Without an answer or if you decline, the deadline stays.",
+    "pendingExpert": "Waiting for the client. The deadline stays until they agree.",
+    "accepted": "The client agreed; the delivery deadline moved.",
+    "declined": "The client declined; the delivery deadline stays.",
+    "accept": "Agree to extend",
+    "decline": "Decline",
+    "requestedFeedback": "Extension request sent to the client."
   }
 }

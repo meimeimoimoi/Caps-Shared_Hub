@@ -5,6 +5,7 @@ namespace Caps.Workflow.Application.DTOs.Responses;
 /// <summary>A client's complaint about a delivery, as both parties see it.</summary>
 /// <param name="DecideBy">When the admin should have decided.</param>
 /// <param name="RefundPct">Share of the fee returned to the client, once decided.</param>
+/// <param name="StatementDueBy">The expert explains before then; the admin waits for it unless the statement came earlier.</param>
 public sealed record DisputeResponse(
     string Id,
     string Reason,
@@ -15,6 +16,7 @@ public sealed record DisputeResponse(
     bool Extended,
     string? ExpertStatement,
     DateTimeOffset? ExpertStatementAt,
+    DateTimeOffset StatementDueBy,
     short? RefundPct,
     string? ResolutionNote,
     DateTimeOffset? ClosedAt
@@ -31,6 +33,7 @@ public sealed record DisputeResponse(
             d.Extended,
             d.ExpertStatement,
             d.ExpertStatementAt,
+            d.StatementDueBy,
             d.RefundPct,
             d.ResolutionNote,
             d.ClosedAt
@@ -42,6 +45,7 @@ public sealed record DisputeResponse(
 public sealed record AdminDisputeResponse(
     string ReviewCaseId,
     string? RequesterEmail,
+    string RequesterUserId,
     string ExpertProfileId,
     long Fee,
     short PlatformFeePct,

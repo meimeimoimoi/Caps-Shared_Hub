@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import type { ShellNotification } from '../NotificationBell'
-import { getApplications } from '@/features/expert-vetting/api/adminApi'
+import { getApplications, getExcuseRequests } from '@/features/expert-vetting/api/adminApi'
 import { getReviewQueueCounts } from '@/features/expert-vetting/api/reviewQueueApi'
 import { adminKeys } from '@/features/expert-vetting/api/queryKeys'
 import { PENDING_STATUS } from '@/features/expert-vetting/constants'
@@ -56,6 +56,13 @@ export function useAdminNav(enabled = true) {
     canApprove && approvalCounts.data
       ? (approvalCounts.data.qualifications?.PENDING_FINAL_APPROVAL ?? 0)
       : undefined
+  // Same cache as the excuse request page; a decision there refreshes the badge
+  const excuseRequests = useQuery({
+    queryKey: adminKeys.excuseRequests(),
+    queryFn: ({ signal }) => getExcuseRequests(signal),
+    enabled: canApprove,
+  })
+  const excuseRequestCount = canApprove ? excuseRequests.data?.length ?? 0 : 0
   const disputes = useQuery({
     queryKey: disputesKeys.disputes(),
     queryFn: ({ signal }) => getDisputes(signal),
@@ -103,6 +110,12 @@ export function useAdminNav(enabled = true) {
         hours: nearestHours,
       }),
       to: '/admin/disputes',
+      tone: 'warning' as const,
+    },
+    excuseRequestCount > 0 && {
+      id: 'excuse-requests',
+      text: t('notifications.excuseRequests', { count: excuseRequestCount }),
+      to: '/admin/experts/excuse-requests',
       tone: 'warning' as const,
     },
     payoutFailed > 0 && {
@@ -158,10 +171,12 @@ export function useAdminNav(enabled = true) {
     approvalOverdueCount: approvalOverdue,
     /** undefined while loading or without permission */
     approvalPendingCount: approvalPending,
+    excuseRequestCount,
     // A failed badge query must not read as an empty queue
     queuesFailed:
       (canReview && applications.isError) ||
       (canApprove && approvalCounts.isError) ||
+      (canApprove && excuseRequests.isError) ||
       (canSeeDisputes && disputes.isError),
     payoutFailedCount: payoutFailed + refundFailed,
     pricingUnavailable,

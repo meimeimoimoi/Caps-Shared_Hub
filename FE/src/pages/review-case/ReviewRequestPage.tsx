@@ -40,7 +40,8 @@ export default function ReviewRequestPage() {
 
   // ponytail: no documents API yet, so a real booking names its version in the URL; add a picker when that API exists
   const documentId = params.get('document')
-  const versionId = params.get('version')
+  // The draft handoff and Marketplace pass the version as draftVersion; version is kept for older links
+  const versionId = params.get('draftVersion') ?? params.get('version')
   const drafts = isExpertDemo
     ? REVIEWABLE_DRAFTS
     : documentId && versionId

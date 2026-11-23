@@ -29,6 +29,7 @@ public static class DependencyInjection
         services.AddScoped<IExpertProfileRepository, ExpertProfileRepository>();
         services.AddScoped<IExpertCaseSlots, ExpertCaseSlots>();
         services.AddScoped<IExpertCaseRatings, ExpertCaseRatings>();
+        services.AddScoped<IExpertViolations, ExpertViolations>();
         services.AddScoped<IExpertApplicationRepository, ExpertApplicationRepository>();
         services.AddScoped<IReviewQueueReader, ReviewQueueReader>();
         services.AddScoped<IExpertStatsReader, ExpertStatsReader>();

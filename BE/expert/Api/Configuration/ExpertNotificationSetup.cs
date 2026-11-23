@@ -17,7 +17,14 @@ public static class ExpertNotificationSetup
         if (config.GetValue("Expert:NotificationPublisherEnabled", true))
         {
             // Also consumes account status changes from auth for the Marketplace filter
-            services.AddCapsMessaging(config, x => x.AddConsumer<AccountStatusChangedConsumer>());
+            services.AddCapsMessaging(
+                config,
+                x =>
+                {
+                    x.AddConsumer<AccountStatusChangedConsumer>();
+                    x.AddConsumer<ExpertViolationConsumer>();
+                }
+            );
             services.AddHostedService<ExpertNotificationPublisher>();
         }
         else if (!env.IsDevelopment())

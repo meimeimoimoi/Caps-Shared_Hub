@@ -2,6 +2,8 @@ import { HomeBackToTop } from './HomeBackToTop'
 import { PublicFooter } from '@/components/ui/layout/public-footer'
 import { HomeHero } from './HomeHero'
 import { PublicNavigation } from '@/components/ui/layout/public-navigation'
+import { useAuthStore } from '@/features/auth/store/authStore'
+import { DEFAULT_HOME } from '@/features/auth/utils/returnPath'
 import { FinalSection } from './FinalSection'
 import { FaqSection } from './FaqSection'
 import { EscrowSection } from './EscrowSection'
@@ -38,7 +40,9 @@ export function HomeLanding() {
         {t('skip')}
       </a>
       <div className="env" aria-hidden="true"></div>
-      <PublicNavigation />
+      <PublicNavigation
+        appHref={useAuthStore((s) => s.token) ? DEFAULT_HOME : undefined}
+      />
       <HomeHero onAskAi={askAi} />
 
       <main id="main" tabIndex={-1}>
