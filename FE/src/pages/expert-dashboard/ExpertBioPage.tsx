@@ -15,7 +15,8 @@ import {
 } from '@/features/expert-dashboard/components/DashboardSectionState'
 import '@/features/expert-pricing/pricing.css'
 
-const LIMITS = { headline: 120, bio: 2000 }
+// Bio matches the expert service's limit
+const LIMITS = { headline: 120, bio: 1000 }
 
 export default function ExpertBioPage() {
   const { t } = useTranslation('expert')
@@ -137,7 +138,7 @@ function BioEditor({ saved }: { saved: ExpertBio }) {
           >
             {field('headline', { maxLength: LIMITS.headline })}
             {field('location', { autoComplete: 'address-level2' })}
-            {field('years', { inputMode: 'numeric', maxLength: 2 })}
+            {field('years', { readOnly: true })}
             <div className="epr-field">
               <label htmlFor="bio-bio">{t('bio.fields.bio')}</label>
               <textarea

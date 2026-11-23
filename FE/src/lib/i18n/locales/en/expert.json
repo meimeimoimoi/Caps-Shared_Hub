@@ -339,7 +339,7 @@
     "help": {
       "headline": "One short line, e.g. CIT reviewer, former Big Four tax senior.",
       "location": "City or province.",
-      "years": "A whole number from 0 to 99.",
+      "years": "As approved in your application; contact an administrator to change it.",
       "bio": "What you review and what clients get from you.",
       "expertise": "Separate with commas.",
       "highlights": "One highlight per line."
@@ -349,7 +349,7 @@
       "headlineLong": "Keep the headline within 120 characters.",
       "years": "Enter a number from 0 to 99.",
       "bioRequired": "Write a short introduction.",
-      "bioLong": "Keep the introduction within 2,000 characters."
+      "bioLong": "Keep the introduction within 1,000 characters."
     },
     "save": "Save profile",
     "saving": "Saving…",

@@ -132,6 +132,27 @@ public sealed class ExpertProfile
         UpdatedAt = now;
     }
 
+    /// <summary>
+    /// The public profile clients read on the marketplace, edited by the expert at any stage once a profile
+    /// exists. Years of experience stay as reviewed at Gate 1; submitted applications keep their snapshot.
+    /// </summary>
+    public void UpdatePublicProfile(
+        string? title,
+        string? location,
+        string? bio,
+        string[] fields,
+        string? highlights,
+        DateTimeOffset now
+    )
+    {
+        Title = Clean(title);
+        Location = Clean(location);
+        Bio = Clean(bio);
+        Fields = [.. fields.Select(f => f.Trim()).Where(f => f.Length > 0).Distinct()];
+        Highlights = Clean(highlights);
+        UpdatedAt = now;
+    }
+
     /// <summary>Keeps the account status reported by auth; blank values are ignored.</summary>
     public void RecordAccountStatus(string? status)
     {
