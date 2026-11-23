@@ -12,7 +12,8 @@
     "login": "Sign in",
     "register": "Sign up",
     "askAi": "Ask the AI assistant",
-    "askAiShort": "Ask AI"
+    "askAiShort": "Ask AI",
+    "openApp": "Open the app"
   },
   "footer": {
     "tagline": "Corporate income tax documents: <b>AI drafts</b>, <b>experts verify</b>.",
