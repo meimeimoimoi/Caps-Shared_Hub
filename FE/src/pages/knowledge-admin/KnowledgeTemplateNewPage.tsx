@@ -27,8 +27,10 @@ import {
   toQuickText,
 } from '../../features/knowledgeAdmin-templates/utils/quickFields'
 import {
+  fieldAnchor,
   fieldsFromDocx,
   type Anchor,
+  type FoundField,
 } from '../../features/knowledgeAdmin-templates/utils/docxFields'
 import {
   docxBlocks,
@@ -67,7 +69,11 @@ function Field({
   )
 }
 
-type Draft = Omit<SchemaField, 'id'> & { key: number }
+// anchor: the blank chosen in the file; null = none, unset = the blank found under the field's name
+type Draft = Omit<SchemaField, 'id' | 'anchor'> & {
+  key: number
+  anchor?: Anchor | null
+}
 const emptyField = (key: number, group = ''): Draft => ({
   key,
   label: '',
@@ -100,8 +106,8 @@ export default function KnowledgeTemplateNewPage() {
   const [tried, setTried] = useState(false)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  // Where each blank found in the file sits, by field name: fields keep their place while the admin edits them
-  const [anchors, setAnchors] = useState(new Map<string, Anchor>())
+  // The blanks found in the file; a field takes one by name or by the admin's choice
+  const [blanks, setBlanks] = useState<FoundField[]>([])
   const input = {
     fileName: file?.name ?? '',
     code: code.trim(),
@@ -109,9 +115,9 @@ export default function KnowledgeTemplateNewPage() {
     description: description.trim(),
     category,
     changelog: changelog.trim() || 'Phiên bản đầu tiên.',
-    fields: fields.map(({ key: _key, hint, ...f }) => {
+    fields: fields.map(({ key: _key, hint, anchor: chosen, ...f }) => {
       // An anchor only means something next to its file, so a removed file takes the anchors with it
-      const anchor = file ? anchors.get(f.label.trim().toLowerCase()) : undefined
+      const anchor = file ? fieldAnchor(blanks, f.label, chosen) : undefined
       return {
         ...f,
         id: toFieldId(f.label),
@@ -145,7 +151,13 @@ export default function KnowledgeTemplateNewPage() {
       let key = Math.max(...list.map((x) => x.key))
       return [
         ...list.filter((x) => x.label.trim() || x.hint?.trim()),
-        ...quickFields.map((f) => ({ ...f, hint: '', key: ++key })),
+        // Placed now, so renaming a found field later keeps its blank
+        ...quickFields.map((f) => ({
+          ...f,
+          hint: '',
+          key: ++key,
+          anchor: fieldAnchor(blanks, f.label),
+        })),
       ]
     })
     setQuick(null)
@@ -157,7 +169,9 @@ export default function KnowledgeTemplateNewPage() {
       return setFileError('Chỉ nhận file Word (.docx).')
     setFileError(null)
     setFile(f)
-    setAnchors(new Map())
+    // Places chosen in the previous file mean nothing in this one; fields find theirs by name again
+    setBlanks([])
+    setFields((list) => list.map(({ anchor: _anchor, ...x }) => x))
     setView('file')
     // The blanks found in the file land in the quick box, so the admin reviews them before adding
     const run = ++scanRun.current
@@ -166,7 +180,7 @@ export default function KnowledgeTemplateNewPage() {
       .then((root) => fieldsFromDocx(docxBlocks(root)))
       .then((found) => {
         if (run !== scanRun.current) return
-        setAnchors(new Map(found.map((f) => [f.label.toLowerCase(), f.anchor])))
+        setBlanks(found)
         if (found.length) setQuick(toQuickText(found))
         setScan(
           found.length
@@ -445,6 +459,41 @@ export default function KnowledgeTemplateNewPage() {
                     />
                   </Field>
                 </div>
+                {file && blanks.length > 0 && (
+                  <div className="mt-3">
+                    <Field label="Vị trí trên file mẫu">
+                      <select
+                        value={String(
+                          blanks.findIndex(
+                            (b) => b.anchor === input.fields[i].anchor
+                          )
+                        )}
+                        onChange={(e) =>
+                          update(f.key, {
+                            anchor:
+                              e.target.value === '-1'
+                                ? null
+                                : blanks[Number(e.target.value)].anchor,
+                          })
+                        }
+                        className={inputCls}
+                      >
+                        <option value="-1">Không có trên file</option>
+                        {blanks.map((b, bi) => (
+                          <option key={bi} value={bi}>
+                            {b.group} · {b.label}
+                            {/* Two fields on one blank would overwrite each other */}
+                            {input.fields.some(
+                              (x, j) => j !== i && x.anchor === b.anchor
+                            )
+                              ? ' (đã gán)'
+                              : ''}
+                          </option>
+                        ))}
+                      </select>
+                    </Field>
+                  </div>
+                )}
                 <label className="mt-3 flex cursor-pointer items-center gap-2 text-sm">
                   <input
                     type="checkbox"

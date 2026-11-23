@@ -328,6 +328,7 @@
   "txtTextFile": "TXT · Tệp văn bản",
   "templateLayout": "Xem theo mẫu",
   "templateLayoutHelp": "Giá trị bạn nhập hiện ngay vào đúng ô của mẫu gốc. Chỗ chưa nhập vẫn để dấu chấm.",
+  "templateLayoutEditHelp": "Gõ thẳng vào các ô tô màu trên mẫu hoặc nhập ở form, hai bên luôn khớp nhau. Trường không có chỗ trên mẫu thì nhập ở form.",
   "printTemplateLayout": "In / Lưu PDF",
   "templateLayoutUnavailable": "Không tải được file mẫu. Bạn vẫn nhập dữ liệu bình thường.",
   "draftContent": "Nội dung bản nháp",

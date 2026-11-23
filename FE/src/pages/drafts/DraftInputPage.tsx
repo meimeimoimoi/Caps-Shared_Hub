@@ -211,7 +211,12 @@ function InputEditor({
         </Paper>
         <aside className="space-y-5 lg:sticky lg:top-6">
           {template.hasFile && (
-            <TemplateLayout template={template} input={editor.input} />
+            <TemplateLayout
+              template={template}
+              input={editor.input}
+              setValue={editor.setValue}
+              disabled={editor.busy}
+            />
           )}
           <Paper>
             <h2 className="text-h2">{t('inputVersions')}</h2>

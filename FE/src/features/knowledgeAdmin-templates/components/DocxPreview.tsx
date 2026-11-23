@@ -1,17 +1,45 @@
-import { useEffect, useRef, useState } from 'react'
-import { fillDocx, renderDocx, type Fill } from '../utils/renderDocx'
+import { useEffect, useRef, useState, type FormEvent } from 'react'
+import {
+  blankTexts,
+  fillDocx,
+  renderDocx,
+  type Fill,
+} from '../utils/renderDocx'
+
+const inputsOf = (box: Element, fill: number) => [
+  ...box.querySelectorAll<HTMLInputElement>(`input[data-fill="${fill}"]`),
+]
 
 /**
  * Renders a .docx as Word lays it out (pages, tables, boxes), scaled down to fit the panel, with `fills`
  * written into their blanks. The file renders once; each change of the values refills a fresh copy.
+ * With `onEdit`, each blank is an input instead: typing there reports the fill and the text of all its blanks.
  */
-export function DocxPreview({ file, fills = [] }: { file: File; fills?: Fill[] }) {
+export function DocxPreview({
+  file,
+  fills = [],
+  onEdit,
+}: {
+  file: File
+  fills?: Fill[]
+  onEdit?: (fill: Fill, parts: string[]) => void
+}) {
   const ref = useRef<HTMLDivElement>(null)
   const [doc, setDoc] = useState<{ file: File; root: HTMLElement } | null>(null)
   const [failed, setFailed] = useState<File | null>(null)
   const ready = doc?.file === file
+  const editable = Boolean(onEdit)
   // The page passes a new array on every keystroke; refill only when the values really change
   const fillKey = JSON.stringify(fills)
+  // Inputs stay in place while the user types; only a change of the blanks themselves lays them out again
+  const layoutKey = editable
+    ? JSON.stringify(
+        fills.map((f) => ({
+          ...f,
+          text: Array.isArray(f.text) ? f.text.map(() => '') : '',
+        }))
+      )
+    : fillKey
 
   useEffect(() => {
     let cancelled = false
@@ -30,13 +58,36 @@ export function DocxPreview({ file, fills = [] }: { file: File; fills?: Fill[] }
     const box = ref.current
     if (!box || !doc || doc.file !== file) return
     const copy = doc.root.cloneNode(true) as HTMLElement
-    fillDocx(copy, JSON.parse(fillKey) as Fill[])
+    // On the page before filling: an input measures the dots it replaces
     box.replaceChildren(copy)
+    fillDocx(copy, JSON.parse(layoutKey) as Fill[], editable)
     // Word pages keep their real width; shrink the whole document so a page fits the panel
     const page = copy.querySelector<HTMLElement>('section')
     if (page?.offsetWidth)
       copy.style.zoom = String(Math.min(1, box.clientWidth / page.offsetWidth))
-  }, [doc, file, fillKey])
+  }, [doc, file, layoutKey, editable])
+
+  useEffect(() => {
+    const box = ref.current
+    if (!box || !editable) return
+    ;(JSON.parse(fillKey) as Fill[]).forEach((fill, i) => {
+      const inputs = inputsOf(box, i)
+      const texts = blankTexts(fill, inputs.length)
+      // The input being typed in keeps its own text, so the caret does not jump
+      for (const [j, input] of inputs.entries())
+        if (input !== document.activeElement) input.value = texts[j] ?? ''
+    })
+  }, [doc, layoutKey, fillKey, editable])
+
+  const edit = (event: FormEvent<HTMLDivElement>) => {
+    const i = (event.target as HTMLElement).dataset.fill
+    const fill = i === undefined ? undefined : fills[Number(i)]
+    if (onEdit && fill)
+      onEdit(
+        fill,
+        inputsOf(event.currentTarget, Number(i)).map((input) => input.value)
+      )
+  }
 
   if (failed === file)
     return (
@@ -48,6 +99,7 @@ export function DocxPreview({ file, fills = [] }: { file: File; fills?: Fill[] }
   return (
     <div
       aria-label={`Nội dung ${file.name}`}
+      onInput={editable ? edit : undefined}
       className="bg-sunken rounded-surface min-h-40 overflow-auto [&_section]:mx-auto [&_section]:mb-3 [&_section]:shadow-md"
     >
       {!ready && <p className="text-fg-muted p-4 text-sm">Đang mở file…</p>}

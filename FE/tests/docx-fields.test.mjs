@@ -1,6 +1,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import {
+  fieldAnchor,
   fieldsFromDocx,
   fillRanges,
 } from '../src/features/knowledgeAdmin-templates/utils/docxFields.ts'
@@ -77,4 +78,18 @@ test('a value replaces the dots after its label, a placeholder, or goes at the e
   assert.deepEqual(fillRanges('[04]', '[04]'), [[4, 4]])
   assert.deepEqual(fillRanges(''), [[0, 0]])
   assert.deepEqual(fillRanges('abc', 'zzz'), [[3, 3]])
+})
+
+test('a field keeps the blank it was given; an unchosen one finds its blank by name', () => {
+  const name = { block: 1, find: 'Họ và tên' }
+  const date = { block: 3, find: 'ngày' }
+  const blanks = [
+    { group: 'A', label: 'Họ và tên', type: 'text', required: false, anchor: name },
+    { group: 'A', label: 'Ngày ký', type: 'date', required: false, anchor: date },
+  ]
+  assert.equal(fieldAnchor(blanks, ' họ và TÊN '), name)
+  assert.equal(fieldAnchor(blanks, 'Người nộp thuế'), undefined)
+  assert.equal(fieldAnchor(blanks, 'Người nộp thuế', name), name, 'renamed, still placed')
+  assert.equal(fieldAnchor(blanks, 'Họ và tên', date), date, 'the choice wins over the name')
+  assert.equal(fieldAnchor(blanks, 'Họ và tên', null), undefined, 'chosen: not on the file')
 })

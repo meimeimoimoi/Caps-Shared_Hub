@@ -328,6 +328,7 @@
   "txtTextFile": "TXT · Text file",
   "templateLayout": "Form layout",
   "templateLayoutHelp": "What you type appears in the matching blanks of the original form. Blanks you have not filled keep their dots.",
+  "templateLayoutEditHelp": "Type straight into the highlighted blanks of the form, or use the fields; both stay in step. Fields with no place on the form are entered in the fields.",
   "printTemplateLayout": "Print / Save PDF",
   "templateLayoutUnavailable": "The form file could not be loaded. You can still enter your data.",
   "draftContent": "Draft content",

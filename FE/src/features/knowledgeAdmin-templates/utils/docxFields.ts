@@ -115,6 +115,20 @@ export function fieldsFromDocx(blocks: DocxBlock[]): FoundField[] {
   return out
 }
 
+/**
+ * Where a field sits in the file: the blank the admin chose (`null`: chose none), or while unchosen the blank
+ * found under the same name. The anchor is the blank's own object, so a chosen place survives a rename.
+ */
+export const fieldAnchor = (
+  blanks: FoundField[],
+  label: string,
+  chosen?: Anchor | null
+) =>
+  chosen === undefined
+    ? blanks.find((b) => b.label.toLowerCase() === label.trim().toLowerCase())
+        ?.anchor
+    : (chosen ?? undefined)
+
 const RUN = /[.…]{2,}|…/g
 
 /**

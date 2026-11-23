@@ -1,7 +1,10 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { toSchemaFields } from '../src/features/drafting/utils/schemaFields.ts'
-import { docxValues } from '../src/features/drafting/utils/docxValues.ts'
+import {
+  docxValues,
+  fieldValue,
+} from '../src/features/drafting/utils/docxValues.ts'
 import {
   fromAdminSummary,
   fromAdminTemplate,
@@ -64,6 +67,32 @@ test('typed values go to their blanks: dates split, amounts grouped, empty ones 
       ['Số lỗ', '5.000.000'],
     ]
   )
+})
+
+test('typing on the file: every anchored field gets blanks, even empty ones', () => {
+  const fields = [
+    { id: 'signed', label: 'Ngày ký', type: 'date', anchor: { block: 6 } },
+    { id: 'name', label: 'Họ và tên', type: 'text', anchor: { block: 7 } },
+    { id: 'note', label: 'Ghi chú', type: 'text' },
+  ]
+  assert.deepEqual(
+    docxValues(fields, {}, String, true).map((f) => [f.id, f.text]),
+    [
+      ['signed', ['', '', '']],
+      ['name', ''],
+    ]
+  )
+})
+
+test('what is typed on the file becomes the form value; a partial date waits', () => {
+  const date = { type: 'date' }
+  assert.equal(fieldValue(date, ['5', '3', '2026'], 'vi'), '2026-03-05')
+  assert.equal(fieldValue(date, ['05/03/2026'], 'vi'), '2026-03-05')
+  assert.equal(fieldValue(date, ['', '', ''], 'vi'), '')
+  assert.equal(fieldValue(date, ['5', '', '2026'], 'vi'), null)
+  assert.equal(fieldValue(date, ['5', '3', '26'], 'vi'), null)
+  assert.equal(fieldValue({ type: 'money' }, ['5.000.000'], 'vi'), '5000000')
+  assert.equal(fieldValue({ type: 'text' }, ['Nguyễn An'], 'vi'), 'Nguyễn An')
 })
 
 const summary = (over) => ({
