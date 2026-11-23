@@ -45,6 +45,28 @@ public sealed class ReviewCasesController(ICurrentUser currentUser) : Controller
         return Ok(ApiResponse<ReviewCaseResponse>.Ok(reviewCase));
     }
 
+    /// <summary>What booking an expert's service would cost the client in each case, in VND.</summary>
+    /// <remarks>
+    /// Read from the offer a booking would freeze now: a late or missed delivery, an unanswered question and
+    /// an upheld dispute. The platform fee and the expert's share are not returned.
+    /// </remarks>
+    /// <response code="200">The client's terms.</response>
+    /// <response code="400">serviceCode is missing.</response>
+    /// <response code="404">EXPERT_SERVICE_UNAVAILABLE: the expert does not sell this service now.</response>
+    /// <response code="503">SERVICE_LINK_UNAVAILABLE: the expert service cannot be reached.</response>
+    [HttpGet("terms")]
+    public async Task<IActionResult> Terms(
+        [FromQuery] Guid expertProfileId,
+        [FromQuery] string serviceCode,
+        [FromServices]
+            IQueryHandler<GetBookingTermsQuery, ReviewCaseResponse.ClientTermsResponse> handler,
+        CancellationToken ct
+    )
+    {
+        var terms = await handler.HandleAsync(new(expertProfileId, serviceCode), ct);
+        return Ok(ApiResponse<ReviewCaseResponse.ClientTermsResponse>.Ok(terms));
+    }
+
     /// <summary>Requests a review of one document version; the case waits 15 minutes for payment.</summary>
     /// <remarks>Price, platform fee and turnaround are read from the expert service and frozen on the case.</remarks>
     /// <response code="200">The case, AWAITING_PAYMENT.</response>

@@ -1,5 +1,10 @@
 import { api, apiClient } from '@/lib/api-client'
-import type { AttachmentDto, DisputeDto, ReviewCaseDto } from '../types'
+import type {
+  AttachmentDto,
+  ClientTerms,
+  DisputeDto,
+  ReviewCaseDto,
+} from '../types'
 
 const base = '/api/v1/review-cases'
 const adminBase = '/api/v1/admin/review-cases'
@@ -27,6 +32,19 @@ export const listReviewCases = (signal?: AbortSignal) =>
 
 export const getReviewCase = (id: string, signal?: AbortSignal) =>
   unwrap(api.get<Envelope<ReviewCaseDto>>(`${base}/${id}`, { signal }))
+
+/** What booking this expert's service would give the client back in each case, in VND, before booking. */
+export const getBookingTerms = (
+  expertProfileId: string,
+  serviceCode: string,
+  signal?: AbortSignal
+) =>
+  unwrap(
+    api.get<Envelope<ClientTerms>>(`${base}/terms`, {
+      params: { expertProfileId, serviceCode },
+      signal,
+    })
+  )
 
 export const createReviewCase = (body: NewReviewCase) =>
   unwrap(api.post<Envelope<ReviewCaseDto>>(base, body))

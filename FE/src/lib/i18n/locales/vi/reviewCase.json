@@ -412,7 +412,15 @@
     },
     "serviceMissing": "Gói dịch vụ này không còn mở nhận. Chọn lại trên hồ sơ chuyên gia.",
     "expertMissing": "Không tải được hồ sơ chuyên gia.",
-    "backToProfile": "Về hồ sơ chuyên gia"
+    "backToProfile": "Về hồ sơ chuyên gia",
+    "terms": {
+      "title": "Số tiền bạn được hoàn trong từng trường hợp",
+      "late": "Chuyên gia bàn giao trễ trong {{hours}} giờ: bạn được hoàn {{amount}}.",
+      "noDelivery": "Chuyên gia không bàn giao: bạn được hoàn {{amount}}.",
+      "noResponseNoRefund": "Bạn không trả lời yêu cầu bổ sung trong {{days}} ngày làm việc: hồ sơ chấm dứt và bạn không được hoàn tiền.",
+      "noResponseRefund": "Bạn không trả lời yêu cầu bổ sung trong {{days}} ngày làm việc: hồ sơ chấm dứt và bạn chỉ được hoàn {{amount}}.",
+      "dispute": "Khiếu nại được quản trị viên chấp thuận: bạn được hoàn {{amount}}."
+    }
   },
   "nav": {
     "label": "Không gian khách hàng",
