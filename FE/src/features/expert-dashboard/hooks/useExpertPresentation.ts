@@ -49,6 +49,7 @@ const reasonCodes = [
   'REQUESTS_TURNED_OFF',
   'CAPACITY_NOT_SET',
   'ACCOUNT_INACTIVE',
+  'VIOLATION_POINTS',
 ] as const
 const isReasonCode = (value: string): value is (typeof reasonCodes)[number] =>
   (reasonCodes as readonly string[]).includes(value)
@@ -59,6 +60,7 @@ const serviceKeys = {
   PENDING: 'pending',
 } as const
 const deadlineKeys = {
+  'Admin decision due': 'adminDecisionDue',
   'Delivery due': 'deliveryDue',
   'Expert response due': 'expertResponseDue',
   'Review start due': 'reviewStartDue',

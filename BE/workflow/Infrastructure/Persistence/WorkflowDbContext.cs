@@ -316,10 +316,9 @@ public sealed class WorkflowDbContext(DbContextOptions<WorkflowDbContext> option
                     t.HasCheckConstraint(
                         "ck_case_offer",
                         "fee > 0 AND platform_fee_pct BETWEEN 0 AND 99 AND turnaround_hours BETWEEN 1 AND 720"
-                            + " AND late_penalty_hours >= 0 AND late_penalty_pct >= 0"
-                            + " AND platform_fee_pct + late_penalty_pct <= 100"
+                            + " AND late_penalty_hours >= 0 AND late_penalty_pct BETWEEN 0 AND 100"
                             + " AND late_cancel_hours BETWEEN late_penalty_hours AND 720"
-                            + " AND no_response_hours BETWEEN 1 AND 720"
+                            + " AND no_response_days BETWEEN 1 AND 30"
                             + " AND no_response_refund_pct >= 0 AND no_response_expert_pct >= 0"
                             + " AND no_response_refund_pct + no_response_expert_pct <= 100"
                             + " AND no_delivery_refund_pct BETWEEN 0 AND 100"
@@ -342,7 +341,7 @@ public sealed class WorkflowDbContext(DbContextOptions<WorkflowDbContext> option
             e.Property(x => x.LatePenaltyHours).HasColumnName("late_penalty_hours");
             e.Property(x => x.LatePenaltyPct).HasColumnName("late_penalty_pct");
             e.Property(x => x.LateCancelHours).HasColumnName("late_cancel_hours");
-            e.Property(x => x.NoResponseHours).HasColumnName("no_response_hours");
+            e.Property(x => x.NoResponseDays).HasColumnName("no_response_days");
             e.Property(x => x.NoResponseRefundPct).HasColumnName("no_response_refund_pct");
             e.Property(x => x.NoResponseExpertPct).HasColumnName("no_response_expert_pct");
             e.Property(x => x.NoDeliveryRefundPct).HasColumnName("no_delivery_refund_pct");
@@ -365,6 +364,7 @@ public sealed class WorkflowDbContext(DbContextOptions<WorkflowDbContext> option
             e.Property(x => x.RevisedContent)
                 .HasColumnName("revised_content")
                 .HasColumnType("jsonb");
+            e.Property(x => x.Citations).HasColumnName("citations").IsRequired();
             e.Property(x => x.DeclineReason).HasColumnName("decline_reason");
             e.Property(x => x.TerminationReason).HasColumnName("termination_reason");
             e.Property(x => x.ResponseDeadline).HasColumnName("response_deadline").IsRequired();
@@ -375,6 +375,13 @@ public sealed class WorkflowDbContext(DbContextOptions<WorkflowDbContext> option
             e.Property(x => x.StartedAt).HasColumnName("started_at");
             e.Property(x => x.DeliveryDeadline).HasColumnName("delivery_deadline");
             e.Property(x => x.DeliveredAt).HasColumnName("delivered_at");
+            e.Property(x => x.ExtensionDays).HasColumnName("extension_days");
+            e.Property(x => x.ExtensionReason).HasColumnName("extension_reason");
+            e.Property(x => x.ExtensionRequestedAt).HasColumnName("extension_requested_at");
+            e.Property(x => x.ExtensionDecision)
+                .HasColumnName("extension_decision")
+                .HasMaxLength(32);
+            e.Property(x => x.ExtensionDecidedAt).HasColumnName("extension_decided_at");
             e.Property(x => x.AcceptanceDeadline).HasColumnName("acceptance_deadline");
             e.Property(x => x.CompletedAt).HasColumnName("completed_at");
             e.Property(x => x.CreatedAt)
@@ -497,6 +504,8 @@ public sealed class WorkflowDbContext(DbContextOptions<WorkflowDbContext> option
             e.Property(x => x.OverdueAlertedAt).HasColumnName("overdue_alerted_at");
             e.Property(x => x.ExpertStatement).HasColumnName("expert_statement");
             e.Property(x => x.ExpertStatementAt).HasColumnName("expert_statement_at");
+            e.Property(x => x.StatementDueBy).HasColumnName("statement_due_by");
+            e.Property(x => x.StatementReminderSentAt).HasColumnName("statement_reminder_sent_at");
             e.Property(x => x.ResolvedBy).HasColumnName("resolved_by");
             e.Property(x => x.RefundPct).HasColumnName("refund_pct");
             e.Property(x => x.ResolutionNote).HasColumnName("resolution_note");

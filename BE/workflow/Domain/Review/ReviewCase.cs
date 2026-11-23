@@ -19,6 +19,7 @@ public sealed partial class ReviewCase
     public const short DisputeUpheldRefundPct = 50;
 
     public const int MaxTurnaroundHours = 720;
+    public const int MaxNoResponseDays = 30;
     public const int MaxPlatformFeePct = 99;
     public const int MaxTextLength = 4000;
     public const int MaxContentLength = 100_000;
@@ -28,6 +29,12 @@ public sealed partial class ReviewCase
     public const int ReminderHours = 3;
     public const string Verified = "VERIFIED";
     public const string CannotVerify = "CANNOT_VERIFY";
+    public const string AttestationNote =
+        "Expert attested: information and evidence (T1), AI output (T2), legal basis (T3) checked.";
+
+    public const int MaxCitations = 20;
+    public const int MaxCitationLength = 500;
+
     public const string UserNonResponse = "USER_NON_RESPONSE";
     public const string ExpertFull = "EXPERT_FULL";
     public const string ServiceSuspended = "SERVICE_SUSPENDED";
@@ -81,8 +88,9 @@ public sealed partial class ReviewCase
     public int TurnaroundHours { get; private set; }
 
     /// <summary>
-    /// Late rule frozen at booking: up to LatePenaltyHours late the client gets LatePenaltyPct back from the
-    /// expert's share, later the whole fee; past LateCancelHours the case is cancelled.
+    /// Late rule frozen at booking: up to LatePenaltyHours late the client gets LatePenaltyPct back out of the
+    /// platform's share and the expert keeps theirs (2026-11-20, see Settle); later, the whole fee; past
+    /// LateCancelHours the case is cancelled.
     /// </summary>
     public int LatePenaltyHours { get; private set; }
     public short LatePenaltyPct { get; private set; }
@@ -96,10 +104,10 @@ public sealed partial class ReviewCase
     public int InfoRequestCount { get; private set; }
 
     /// <summary>
-    /// Client-silence rule frozen at booking: no answer within NoResponseHours ends the case, the client gets
+    /// Client-silence rule frozen at booking: no answer within NoResponseDays ends the case, the client gets
     /// NoResponseRefundPct back, the expert NoResponseExpertPct, and the platform keeps the rest.
     /// </summary>
-    public int NoResponseHours { get; private set; }
+    public int NoResponseDays { get; private set; }
     public short NoResponseRefundPct { get; private set; }
     public short NoResponseExpertPct { get; private set; }
 
@@ -119,6 +127,9 @@ public sealed partial class ReviewCase
     /// <summary>The expert's edited copy of an AI draft (jsonb), compared field by field with the source.</summary>
     public string? RevisedContent { get; private set; }
 
+    /// <summary>Legal basis the expert relied on (BR-M10), one reference per entry.</summary>
+    public string[] Citations { get; private set; } = [];
+
     public string? DeclineReason { get; private set; }
     public string? TerminationReason { get; private set; }
     public DateTimeOffset ResponseDeadline { get; private set; }
@@ -134,11 +145,19 @@ public sealed partial class ReviewCase
     public DateTimeOffset? StartedAt { get; private set; }
     public DateTimeOffset? DeliveryDeadline { get; private set; }
     public DateTimeOffset? DeliveredAt { get; private set; }
+
+    /// <summary>Working days the expert asked to add to the delivery deadline; null when never asked.</summary>
+    public short? ExtensionDays { get; private set; }
+    public string? ExtensionReason { get; private set; }
+    public DateTimeOffset? ExtensionRequestedAt { get; private set; }
+
+    /// <summary>EXTENSION_ACCEPTED or EXTENSION_DECLINED; null while the client has not answered.</summary>
+    public string? ExtensionDecision { get; private set; }
+    public DateTimeOffset? ExtensionDecidedAt { get; private set; }
     public DateTimeOffset? AcceptanceDeadline { get; private set; }
     public DateTimeOffset? CompletedAt { get; private set; }
     public DateTimeOffset CreatedAt { get; private set; }
     public DateTimeOffset UpdatedAt { get; private set; }
-
     public ICollection<ReviewTask> ReviewTasks { get; } = [];
     public ICollection<InfoRequest> InfoRequests { get; } = [];
     public ICollection<ReviewAttachment> Attachments { get; } = [];
@@ -164,11 +183,11 @@ public sealed partial class ReviewCase
             || offer.TurnaroundHours > MaxTurnaroundHours
             || offer.LatePenaltyHours < 0
             || offer.LatePenaltyPct < 0
-            || offer.PlatformFeePct + offer.LatePenaltyPct > 100
+            || offer.LatePenaltyPct > 100
             || offer.LateCancelHours < offer.LatePenaltyHours
             || offer.LateCancelHours > MaxTurnaroundHours
-            || offer.NoResponseHours < 1
-            || offer.NoResponseHours > MaxTurnaroundHours
+            || offer.NoResponseDays < 1
+            || offer.NoResponseDays > MaxNoResponseDays
             || offer.NoResponseRefundPct < 0
             || offer.NoResponseExpertPct < 0
             || offer.NoResponseRefundPct + offer.NoResponseExpertPct > 100
@@ -199,7 +218,7 @@ public sealed partial class ReviewCase
             LatePenaltyHours = offer.LatePenaltyHours,
             LatePenaltyPct = offer.LatePenaltyPct,
             LateCancelHours = offer.LateCancelHours,
-            NoResponseHours = offer.NoResponseHours,
+            NoResponseDays = offer.NoResponseDays,
             NoResponseRefundPct = offer.NoResponseRefundPct,
             NoResponseExpertPct = offer.NoResponseExpertPct,
             NoDeliveryRefundPct = offer.NoDeliveryRefundPct,

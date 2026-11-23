@@ -3,10 +3,29 @@ namespace Caps.Workflow.Domain.Review;
 // How a case ends without a user action, and how its fee splits
 public sealed partial class ReviewCase
 {
+    public const string LateViolation = "LATE";
+    public const string WithdrewViolation = "WITHDREW";
+    public const string NoDeliveryViolation = "NO_DELIVERY";
+
     /// <summary>
-    /// The split of the held fee (meeting of 2026-11-11). A client who went silent gets the shares frozen at
-    /// booking. An incident (a late delivery, an upheld dispute, no delivery at all) refunds one share to the
-    /// client, the platform keeps the rest and the expert gets nothing; otherwise the platform fee splits as booked.
+    /// The violation a step records against the expert (2026-11-20), or null. Lateness is measured against the
+    /// delivery deadline, so an extension the client agreed to moves it and the case is no longer late.
+    /// </summary>
+    public string? ViolationOf(ReviewStatusHistory change) =>
+        change.ToStatus switch
+        {
+            ReviewCaseStatus.DeliveryOverdue => NoDeliveryViolation,
+            ReviewCaseStatus.ExpertDeclined when change.Note == ExpertWithdrew => WithdrewViolation,
+            ReviewCaseStatus.AwaitingAcceptance when DeliveredAt > DeliveryDeadline =>
+                LateViolation,
+            _ => null,
+        };
+
+    /// <summary>
+    /// The split of the held fee. A client who went silent gets the shares frozen at booking. An upheld dispute
+    /// or no delivery at all refunds one share to the client, the platform keeps the rest and the expert gets
+    /// nothing. A late delivery (2026-11-20) refunds the client out of the platform's share and the expert keeps
+    /// theirs; otherwise the platform fee splits as booked.
     /// </summary>
     public ReviewSettlement Settle()
     {
@@ -16,18 +35,26 @@ public sealed partial class ReviewCase
             var paid = Fee * NoResponseExpertPct / 100;
             return new(back, Fee - back - paid, paid);
         }
-        var incident =
-            Status == ReviewCaseStatus.DeliveryOverdue
-                ? NoDeliveryRefundPct
-                : Math.Max(LateRefundPct, DisputeRefundPct ?? 0);
-        if (incident > 0 || Status == ReviewCaseStatus.DeliveryOverdue)
+        // Upheld dispute or no delivery: the client gets one share, the platform the rest, the expert nothing
+        if (Status == ReviewCaseStatus.DeliveryOverdue || DisputeRefundPct > 0)
         {
+            var incident =
+                Status == ReviewCaseStatus.DeliveryOverdue
+                    ? NoDeliveryRefundPct
+                    : Math.Max(LateRefundPct, DisputeRefundPct!.Value);
             var refund = Fee * incident / 100;
             return new(refund, Fee - refund, 0);
         }
-        var platform = Fee * PlatformFeePct / 100;
-        return new(0, platform, Fee - platform);
+        // Late but delivered (2026-11-20): the refund comes out of the platform's share, the expert keeps theirs
+        return DeliveredSplit(LateRefundPct);
     }
+
+    /// <summary>The split of this case if delivered with latePct back to the client (0 when on time).</summary>
+    public ReviewSettlement DeliveredSplit(short latePct) =>
+        ReviewSettlement.Delivered(Fee, PlatformFeePct, latePct);
+
+    /// <summary>A percentage of the fee in VND, rounded down like every split.</summary>
+    public long ShareOf(short pct) => Fee * pct / 100;
 
     /// <summary>
     /// How the fee ended up, once the case is over: the split for a delivered, terminated or undelivered case, a

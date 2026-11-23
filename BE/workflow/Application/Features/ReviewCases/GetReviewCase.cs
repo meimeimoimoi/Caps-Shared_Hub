@@ -29,6 +29,7 @@ public sealed class GetReviewCaseHandler(
         var source = await attachments.FindSourceAsync(reviewCase.SourceVersionId, ct);
         return ReviewCaseResponse.From(
             reviewCase,
+            query.UserId,
             questions,
             source?.FileUrl is null ? source?.Content : null
         );

@@ -70,6 +70,27 @@ public static class WorkflowErrors
             $"The expert may ask for more information at most {max} times per case."
         );
 
+    public static AppException AttestationRequired() =>
+        new(
+            ErrorType.Validation,
+            "ATTESTATION_REQUIRED",
+            "Confirm the information, AI output and legal basis were checked before delivering."
+        );
+
+    public static AppException CitationsInvalid() =>
+        new(
+            ErrorType.Validation,
+            "CITATIONS_INVALID",
+            "A verified result needs at least one legal citation; at most 20, each up to 500 characters."
+        );
+
+    public static AppException PriceChanged(long seen, long current) =>
+        new(
+            ErrorType.Conflict,
+            "PRICE_CHANGED",
+            $"The expert changed the price from {seen} to {current}."
+        );
+
     public static AppException DisputeReasonInvalid() =>
         new(
             ErrorType.Validation,
@@ -82,6 +103,20 @@ public static class WorkflowErrors
             ErrorType.Conflict,
             "DISPUTE_STATEMENT_EXISTS",
             "The expert has already explained this dispute."
+        );
+
+    public static AppException DisputeStatementClosed() =>
+        new(
+            ErrorType.Conflict,
+            "DISPUTE_STATEMENT_CLOSED",
+            "The time to explain this dispute has ended."
+        );
+
+    public static AppException DisputeAwaitingStatement(DateTimeOffset dueBy) =>
+        new(
+            ErrorType.Conflict,
+            "DISPUTE_AWAITING_STATEMENT",
+            $"The expert can still explain until {dueBy:O}; decide after that or once they have."
         );
 
     public static AppException DisputeAlreadyExtended() =>
@@ -212,5 +247,26 @@ public static class WorkflowErrors
             ErrorType.Validation,
             "FIELD_SCHEMA_INVALID",
             "Field schema must be a non-empty JSON array of field objects."
+        );
+
+    public static AppException ExtensionAlreadyRequested() =>
+        new(
+            ErrorType.Conflict,
+            "EXTENSION_ALREADY_REQUESTED",
+            "An extension can be asked once per case."
+        );
+
+    public static AppException ExtensionNotPending() =>
+        new(
+            ErrorType.Conflict,
+            "EXTENSION_NOT_PENDING",
+            "There is no extension waiting for an answer."
+        );
+
+    public static AppException ExtensionDaysInvalid(int max) =>
+        new(
+            ErrorType.Validation,
+            "EXTENSION_DAYS_INVALID",
+            $"An extension is 1 to {max} working days."
         );
 }

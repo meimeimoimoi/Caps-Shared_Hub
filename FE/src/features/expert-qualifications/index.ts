@@ -1,5 +1,6 @@
 export { openOwnFile } from './api/qualificationsApi'
-export { CompetencyEvidenceStep, COMPETENCY_CODES } from './components/CompetencyEvidenceStep'
+export { CompetencyEvidenceStep } from './components/CompetencyEvidenceStep'
+export { COMPETENCY_CODES } from '@/features/expert-vetting/constants'
 export { ServiceNextSteps } from './components/ServiceNextSteps'
 export {
   useQualification,

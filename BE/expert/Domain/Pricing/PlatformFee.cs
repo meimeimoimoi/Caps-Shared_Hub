@@ -26,7 +26,7 @@ public sealed class PlatformFee
     public const int MaxLateHours = 720;
 
     /// <summary>Most hours a client gets to answer one question; two questions keep the pause within 144 hours.</summary>
-    public const int MaxNoResponseHours = 72;
+    public const int MaxNoResponseDays = 3;
     public int Percent { get; private set; }
 
     /// <summary>Up to this many hours late, the client gets LatePenaltyPercent of the fee back from the expert's share.</summary>
@@ -40,7 +40,7 @@ public sealed class PlatformFee
     /// The client did not answer the expert's question within this many hours: the case ends and the fee splits
     /// into NoResponseRefundPercent for the client, NoResponseExpertPercent for the expert and the rest for the platform.
     /// </summary>
-    public int NoResponseHours { get; private set; }
+    public int NoResponseDays { get; private set; }
     public int NoResponseRefundPercent { get; private set; }
     public int NoResponseExpertPercent { get; private set; }
 
@@ -80,7 +80,7 @@ public sealed class PlatformFee
         int latePenaltyHours,
         int latePenaltyPercent,
         int lateCancelHours,
-        int noResponseHours,
+        int noResponseDays,
         int noResponseRefundPercent,
         int noResponseExpertPercent,
         int noDeliveryRefundPercent,
@@ -103,11 +103,11 @@ public sealed class PlatformFee
         }
         if (percent is < 0 or > MaxPercent)
             throw ExpertErrors.PlatformFeeInvalid(MaxPercent);
-        // The penalty comes out of the expert's share, so it can never exceed what is left after the platform fee
+        // A late case refunds the client from the platform's share; the expert keeps theirs
         if (
             latePenaltyHours < 0
             || latePenaltyPercent < 0
-            || percent + latePenaltyPercent > 100
+            || latePenaltyPercent > 100
             || lateCancelHours < latePenaltyHours
             || lateCancelHours > MaxLateHours
         )
@@ -116,13 +116,13 @@ public sealed class PlatformFee
         }
         // Admins set the client's and the expert's shares; the platform keeps the rest, so the parts always add up
         if (
-            noResponseHours is < 1 or > MaxNoResponseHours
+            noResponseDays is < 1 or > MaxNoResponseDays
             || noResponseRefundPercent < 0
             || noResponseExpertPercent < 0
             || noResponseRefundPercent + noResponseExpertPercent > 100
         )
         {
-            throw ExpertErrors.NoResponseRuleInvalid(MaxNoResponseHours);
+            throw ExpertErrors.NoResponseRuleInvalid(MaxNoResponseDays);
         }
         if (noDeliveryRefundPercent is < 0 or > 100)
         {
@@ -150,7 +150,7 @@ public sealed class PlatformFee
             LatePenaltyHours = latePenaltyHours,
             LatePenaltyPercent = latePenaltyPercent,
             LateCancelHours = lateCancelHours,
-            NoResponseHours = noResponseHours,
+            NoResponseDays = noResponseDays,
             NoResponseRefundPercent = noResponseRefundPercent,
             NoResponseExpertPercent = noResponseExpertPercent,
             NoDeliveryRefundPercent = noDeliveryRefundPercent,

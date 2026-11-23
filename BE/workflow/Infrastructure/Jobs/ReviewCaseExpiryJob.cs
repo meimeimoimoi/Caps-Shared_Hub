@@ -144,6 +144,33 @@ public sealed class ReviewCaseExpiryJob(
                     ct
                 );
             }
+
+            // The expert's statement window: one reminder per dispute, a few hours before it ends
+            var explaining = await db
+                .Database.SqlQuery<DueStatement>(
+                    $"""
+                    UPDATE review.review_dispute d SET statement_reminder_sent_at = {now}
+                    FROM review.review_case c
+                    Where c.id = d.review_case_id
+                        AND d.status = {ReviewDispute.Open}
+                        AND d.expert_statement IS NULL
+                        AND d.statement_reminder_sent_at IS NULL
+                        AND d.statement_due_by > {now}
+                        AND d.statement_due_by - make_interval(hours => {ReviewCase.ReminderHours}) <= {now}
+                    RETURNING d.review_case_id AS "ReviewCaseId", c.expert_user_id AS "ExpertUserId",
+                        d.statement_due_by AS "StatementDueBy"
+                    """
+                )
+                .ToListAsync(ct);
+            foreach (var s in explaining)
+            {
+                await events.StatementDueAsync(
+                    s.ReviewCaseId,
+                    s.ExpertUserId,
+                    s.StatementDueBy,
+                    ct
+                );
+            }
             await db.SaveChangesAsync(ct);
             await tx.CommitAsync(ct);
         }
@@ -163,20 +190,38 @@ public sealed class ReviewCaseExpiryJob(
             var events = scope.ServiceProvider.GetRequiredService<IReviewCaseEvents>();
             var now = clock.GetUtcNow();
             await using var tx = await db.Database.BeginTransactionAsync(ct);
+            // Repeats every 24 hours until decided; an extension clears the mark, so its deadline alerts as first
             var overdue = await db
                 .Database.SqlQuery<OverdueDispute>(
                     $"""
-                    UPDATE review.review_dispute SET overdue_alerted_at = {now}
-                    WHERE status = {ReviewDispute.Open}
-                        AND overdue_alerted_at IS NULL
-                        AND decide_by <= {now}
-                    RETURNING review_case_id AS "ReviewCaseId", decide_by AS "DecideBy", extended AS "Extended"
+                    WITH due AS (
+                        SELECT review_case_id, overdue_alerted_at IS NULL AS first
+                        FROM review.review_dispute
+                        WHERE status = {ReviewDispute.Open}
+                            AND decide_by <= {now}
+                            AND (overdue_alerted_at IS NULL OR overdue_alerted_at <= {now} - interval '1 day')
+                        FOR UPDATE
+                    )
+                    UPDATE review.review_dispute d SET overdue_alerted_at = {now}
+                    FROM due, review.review_case c
+                    WHERE d.review_case_id = due.review_case_id AND c.id = d.review_case_id
+                    RETURNING d.review_case_id AS "ReviewCaseId", c.requester_user_id AS "RequesterUserId",
+                        c.expert_user_id AS "ExpertUserId", d.decide_by AS "DecideBy",
+                        d.extended AS "Extended", due.first AS "First"
                     """
                 )
                 .ToListAsync(ct);
             foreach (var d in overdue)
             {
-                await events.DisputeOverdueAsync(d.ReviewCaseId, d.DecideBy, d.Extended, ct);
+                await events.DisputeOverdueAsync(
+                    d.ReviewCaseId,
+                    d.RequesterUserId,
+                    d.ExpertUserId,
+                    d.DecideBy,
+                    d.Extended,
+                    d.First,
+                    ct
+                );
             }
             await db.SaveChangesAsync(ct);
             await tx.CommitAsync(ct);
@@ -205,7 +250,17 @@ public sealed class ReviewCaseExpiryJob(
     private sealed class OverdueDispute
     {
         public Guid ReviewCaseId { get; init; }
+        public Guid RequesterUserId { get; init; }
+        public Guid ExpertUserId { get; init; }
         public DateTimeOffset DecideBy { get; init; }
         public bool Extended { get; init; }
+        public bool First { get; init; }
+    }
+
+    private sealed class DueStatement
+    {
+        public Guid ReviewCaseId { get; init; }
+        public Guid ExpertUserId { get; init; }
+        public DateTimeOffset StatementDueBy { get; init; }
     }
 }

@@ -11,6 +11,8 @@ public sealed class ReviewDescriber(
     IExpertApplicationRepository applications,
     IExpertEvidenceRepository evidences,
     IEligibilityCheckRepository eligibility,
+    IScreeningRepository screeningRepo,
+    IScreeningCoordinator screeningCoordinator,
     IExpertPolicyProvider policies,
     ExpertPolicyOptions options,
     IReviewClaimDescriber claims,
@@ -32,16 +34,18 @@ public sealed class ReviewDescriber(
         var policy = await policies.GetEligibilityAsync(ct);
         var hold = (await policies.GetReviewClaimAsync(ct)).Hold;
         var work = await policies.GetReviewWorkAsync(ct);
+        var now = clock.GetUtcNow();
         var claim = await claims.DescribeAsync(
             ReviewGate.Eligibility,
             application.Id,
-            application.ClaimHolder(clock.GetUtcNow(), hold),
+            application.ClaimHolder(now, hold),
             application.ClaimedAt,
             application.ClaimExpiresAt(hold),
             application.IsClaimable,
             profile.UserId,
             ct
         );
+        var screening = await DescribeScreeningAsync(application.Id, files, now, ct);
         return new(
             application.Id.ToString(),
             profile.UserId.ToString(),
@@ -96,7 +100,140 @@ public sealed class ReviewDescriber(
                 history.Select(x => (x.FromStatus, x.ToStatus)),
                 work.MaxInformationRequests,
                 ExpertApplicationStatus.NeedMoreInformation
-            )
+            ),
+            screening
+        );
+    }
+
+    private async Task<ReviewScreeningResponse?> DescribeScreeningAsync(
+        Guid applicationId,
+        IReadOnlyList<ExpertEvidence> files,
+        DateTimeOffset now,
+        CancellationToken ct
+    )
+    {
+        var run = await screeningRepo.FindLatestRunAsync(applicationId, ct);
+        if (run == null)
+            return null;
+
+        var points = await screeningRepo.ListPointsAsync(run.Id, ct);
+        var events = await screeningRepo.ListEventsAsync(applicationId, ct);
+        var screeningPolicy = await policies.GetScreeningAsync(ct);
+        var byEvidenceId = files.ToDictionary(x => x.Id);
+        var today = DateOnly.FromDateTime(now.ToOffset(TimeSpan.FromHours(7)).DateTime);
+
+        var pointResponses = points
+            .Select(p =>
+            {
+                ExpertEvidence? ev =
+                    p.EvidenceId.HasValue
+                    && byEvidenceId.TryGetValue(p.EvidenceId.Value, out var found)
+                        ? found
+                        : null;
+                return new ReviewScreeningPointResponse(
+                    p.Id.ToString(),
+                    p.Source,
+                    p.Code,
+                    p.EvidenceId?.ToString(),
+                    ev?.EvidenceType,
+                    ev?.FileName,
+                    p.TargetCriterion,
+                    p.Title,
+                    p.Detail,
+                    p.SuggestedRequest,
+                    p.Status,
+                    p.ResolutionReason,
+                    p.ResolvedByUserId?.ToString(),
+                    p.ResolvedAt,
+                    p.CreatedAt
+                );
+            })
+            .ToArray();
+
+        // Only Gate 1 CV files are extracted by AI; identity, certificate, supplement, and link entries are excluded.
+        var extractionResponses = files
+            .Where(x => x.RequiresAiExtraction)
+            .Select(ev =>
+            {
+                var parsed = screeningCoordinator.ParseExtraction(ev.ParsedMeta);
+                var derivedYears =
+                    ev.EvidenceType == ApplicationRules.CvCode
+                    && parsed?.WorkMilestones is { Length: > 0 } milestones
+                    && milestones.Any(m => m.StartYear.HasValue)
+                        ? ScreeningEvaluator.ComputeTaxAccountingYears(milestones, today)
+                        : (double?)null;
+
+                return new ReviewScreeningExtractionResponse(
+                    ev.Id.ToString(),
+                    ev.EvidenceType,
+                    ev.FileName,
+                    ev.AssignedGroup,
+                    ev.ExtractionStatus ?? ExtractionStatuses.Pending,
+                    parsed?.IsImage
+                        ?? ev.ContentType
+                            is Caps.Common.Domain.FileSignature.Jpeg
+                                or Caps.Common.Domain.FileSignature.Png,
+                    parsed?.IsScanned ?? false,
+                    parsed?.IsUnreadable ?? false,
+                    parsed?.UnreadableReason,
+                    parsed?.FullName,
+                    parsed?.DocumentType,
+                    parsed?.FieldCodes ?? [],
+                    derivedYears,
+                    parsed
+                        ?.WorkMilestones.Select(m => new ReviewScreeningMilestoneResponse(
+                            m.Company,
+                            m.Role,
+                            m.StartYear,
+                            m.StartMonth,
+                            m.EndYear,
+                            m.EndMonth,
+                            m.IsCurrent,
+                            m.IsTaxAccounting
+                        ))
+                        .ToArray()
+                        ?? [],
+                    parsed
+                        ?.Certificates.Select(c => new ReviewScreeningCertificateResponse(
+                            c.Name,
+                            c.Issuer,
+                            c.IssuedDate,
+                            c.ExpiryDate
+                        ))
+                        .ToArray()
+                        ?? [],
+                    ev.ExtractedAt
+                );
+            })
+            .ToArray();
+
+        var historyResponses = events
+            .Select(e => new ReviewScreeningHistoryResponse(
+                e.Id.ToString(),
+                e.EventType,
+                e.Message,
+                e.ActorUserId.ToString(),
+                e.BySystem,
+                e.CreatedAt
+            ))
+            .ToArray();
+
+        return new ReviewScreeningResponse(
+            run.Id.ToString(),
+            run.SubmissionNumber,
+            run.RunNumber,
+            run.Status,
+            run.StartedAt,
+            run.TimeoutAt,
+            run.CompletedAt,
+            run.FailureReason,
+            run.CheckedFileCount,
+            points.Count(p => p.IsOpen),
+            run.CanRetry,
+            screeningPolicy.VisionEnabled,
+            pointResponses,
+            extractionResponses,
+            historyResponses
         );
     }
 

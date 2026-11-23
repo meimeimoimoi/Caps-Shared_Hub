@@ -76,3 +76,20 @@ public sealed record ExpertServiceAccessChangedEvent(
     string? Note,
     DateTimeOffset ChangedAt
 );
+
+/// <summary>
+/// An expert asked for a force-majeure excuse of a violation. Published by the expert service; the notification
+/// service emails the operations inbox so a System Admin reviews the request and its evidence.
+/// </summary>
+/// <param name="Kind">LATE, WITHDREW or NO_DELIVERY.</param>
+/// <param name="FileCount">Evidence files attached (they stay in the expert service).</param>
+public sealed record ExpertExcuseRequestedEvent(
+    Guid Id,
+    Guid ReviewCaseId,
+    Guid ExpertProfileId,
+    string? ExpertName,
+    string Kind,
+    string Reason,
+    int FileCount,
+    DateTimeOffset OccurredAt
+);

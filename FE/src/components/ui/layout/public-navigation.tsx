@@ -1,8 +1,11 @@
 import { useTranslation } from 'react-i18next'
 import { Link, NavLink } from 'react-router-dom'
 
-/** Shared primary navigation for all public pages. Protected routes handle sign-in. */
-export function PublicNavigation() {
+/**
+ * Shared primary navigation for all public pages. Protected routes handle sign-in.
+ * A signed-in visitor gets one link back into the app (appHref) instead of sign-in and sign-up.
+ */
+export function PublicNavigation({ appHref }: { appHref?: string }) {
   const { t } = useTranslation('publicSite')
   return (
     <nav className="nav" aria-label={t('nav.label')}>
@@ -65,6 +68,12 @@ export function PublicNavigation() {
         </li>
       </ul>
       <div className="nav-actions">
+        {appHref ? (
+          <Link className="btn btn-primary" to={appHref}>
+            {t('nav.openApp')}
+          </Link>
+        ) : (
+          <>
         <Link className="nav-login" to="/login">
           {t('footer.login')}
         </Link>
@@ -81,6 +90,8 @@ export function PublicNavigation() {
             →
           </span>
         </Link>
+          </>
+        )}
       </div>
     </nav>
   )

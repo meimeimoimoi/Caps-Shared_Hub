@@ -135,6 +135,30 @@ public static class ExpertDecisionEmailTemplate
         );
     }
 
+    /// <summary>
+    /// The expert asked for more working days; only the client's yes moves the deadline, silence keeps it.
+    /// </summary>
+    public static Content Build(ReviewCaseExtensionRequestedEvent m, string email, string link)
+    {
+        var due = m
+            .DeliveryDeadline.ToOffset(VietnamOffset)
+            .ToString("HH:mm dd/MM/yyyy", CultureInfo.InvariantCulture);
+        var copy = new Copy(
+            $"Chuyên gia xin gia hạn giao kết quả – {Brand}",
+            "Chuyên gia xin thêm thời gian",
+            $"Chuyên gia đang rà soát hồ sơ của bạn và xin thêm {m.Days} ngày làm việc để giao kết quả. Vui lòng đồng ý hoặc từ chối trước {due}; nếu bạn không trả lời, hạn giao kết quả giữ nguyên.",
+            "Trả lời chuyên gia"
+        );
+        return Render(
+            copy,
+            "bạn",
+            email,
+            m.OccurredAt,
+            link,
+            [new Issue("Lý do của chuyên gia", $"thêm {m.Days} ngày làm việc", m.Reason)]
+        );
+    }
+
     public static Content Build(ReviewCaseAcceptanceDueEvent m, string email, string link)
     {
         var due = m
@@ -183,7 +207,7 @@ public static class ExpertDecisionEmailTemplate
             "DELIVERY_OVERDUE" => new(
                 $"Hồ sơ quá hạn giao kết quả – {Brand}",
                 "Chuyên gia không giao kết quả đúng hạn",
-                "Chuyên gia không giao kết quả trong thời hạn cho phép. Toàn bộ phí đã được hoàn vào ví của bạn.",
+                "Chuyên gia không giao kết quả trong thời hạn cho phép. Phần phí được hoàn theo quy định đã chốt lúc đặt đã vào ví của bạn.",
                 "Xem hồ sơ"
             ),
             "RESOLVED" => new(
@@ -192,10 +216,22 @@ public static class ExpertDecisionEmailTemplate
                 "Quản trị hệ thống đã xem xét khiếu nại của bạn. Số tiền hoàn (nếu có) đã vào ví; chi tiết ở trong hồ sơ.",
                 "Xem kết quả"
             ),
+            "WITHDRAWN" => new(
+                $"Bạn đã rút yêu cầu rà soát – {Brand}",
+                "Yêu cầu đã được rút",
+                "Bạn đã rút yêu cầu trước khi chuyên gia nhận. Toàn bộ phí đã được hoàn vào ví của bạn.",
+                "Xem hồ sơ"
+            ),
+            "AUTO_CONFIRMED" => new(
+                $"Hồ sơ rà soát đã tự xác nhận hoàn tất – {Brand}",
+                "Hồ sơ đã hoàn tất",
+                "Hết hạn nghiệm thu nên hệ thống đã tự xác nhận kết quả. Phí được quyết toán theo tỉ lệ đã chốt lúc đặt; khoản hoàn (nếu có) đã vào ví của bạn.",
+                "Xem kết quả"
+            ),
             _ => new(
                 $"Hồ sơ rà soát đã kết thúc – {Brand}",
                 "Hồ sơ đã kết thúc",
-                "Hồ sơ kết thúc vì chưa nhận được thông tin bổ sung đúng hạn. Phần phí được hoàn theo quy định đã vào ví của bạn.",
+                "Hồ sơ kết thúc vì chưa nhận được thông tin bổ sung đúng hạn. Phí được quyết toán theo quy định đã chốt lúc đặt; chi tiết ở trong hồ sơ.",
                 "Xem hồ sơ"
             ),
         };
@@ -211,7 +247,7 @@ public static class ExpertDecisionEmailTemplate
         return Render(ForStatus(m.ToStatus, m.Note), "bạn", email, m.OccurredAt, link, issues);
     }
 
-    /// <summary>Tells the operations inbox a client opened a dispute; it must be decided within 48 hours.</summary>
+    /// <summary>Tells the operations inbox a client opened a dispute; it must be decided within 2 working days.</summary>
     public static Content BuildDisputeAlert(
         ReviewCaseStatusChangedEvent m,
         string email,
@@ -221,7 +257,7 @@ public static class ExpertDecisionEmailTemplate
         var copy = new Copy(
             $"Có khiếu nại mới cần xử lý – {Brand}",
             "Có khiếu nại mới",
-            "Một khách hàng vừa khiếu nại kết quả rà soát. Khiếu nại cần được quyết định trong 48 giờ.",
+            "Một khách hàng vừa khiếu nại kết quả rà soát. Khiếu nại cần được quyết định trong 2 ngày làm việc.",
             "Mở khiếu nại"
         );
         return Render(copy, "Quản trị viên", email, m.OccurredAt, link, []);
@@ -242,8 +278,29 @@ public static class ExpertDecisionEmailTemplate
             "Khiếu nại đã quá hạn",
             m.Extended
                 ? $"Khiếu nại đã quá hạn gia hạn lúc {due} mà chưa có quyết định. Không thể gia hạn thêm; vui lòng quyết định ngay."
-                : $"Khiếu nại đã quá hạn quyết định lúc {due}. Vui lòng quyết định, hoặc gia hạn một lần thêm 48 giờ.",
+                : $"Khiếu nại đã quá hạn quyết định lúc {due}. Vui lòng quyết định, hoặc gia hạn một lần thêm 2 ngày làm việc.",
             "Mở khiếu nại"
+        );
+        return Render(copy, "Quản trị viên", email, m.OccurredAt, link, []);
+    }
+
+    public static Content BuildExcuseRequestAlert(
+        ExpertExcuseRequestedEvent m,
+        string email,
+        string link
+    )
+    {
+        var kind = m.Kind switch
+        {
+            "LATE" => "giao trễ",
+            "WITHDREW" => "nhận rồi tự hủy",
+            _ => "không bàn giao",
+        };
+        var copy = new Copy(
+            $"Chuyên gia xin miễn vi phạm – {Brand}",
+            "Có đơn xin miễn vi phạm mới",
+            $"{m.ExpertName ?? "Một chuyên gia"} xin miễn vi phạm {kind} do bất khả kháng, kèm {m.FileCount} tệp bằng chứng. Lý do: {m.Reason}",
+            "Mở danh sách đơn"
         );
         return Render(copy, "Quản trị viên", email, m.OccurredAt, link, []);
     }

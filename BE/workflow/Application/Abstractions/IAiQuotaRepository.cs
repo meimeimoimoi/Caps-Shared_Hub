@@ -7,4 +7,11 @@ public interface IAiQuotaRepository
 {
     Task<AiQuota?> GetByUserIdAsync(Guid userId, CancellationToken ct = default);
     Task AddAsync(AiQuota aiQuota, CancellationToken ct = default);
+    Task<bool> TryReserveOneAsync(
+        Guid userId,
+        int initialBalance,
+        DateTimeOffset now,
+        CancellationToken ct = default
+    );
+    Task RefundOneAsync(Guid userId, DateTimeOffset now, CancellationToken ct = default);
 }

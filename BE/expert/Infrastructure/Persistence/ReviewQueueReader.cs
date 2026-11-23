@@ -8,7 +8,8 @@ using Microsoft.EntityFrameworkCore;
 namespace Caps.Expert.Infrastructure.Persistence;
 
 /// <summary>EF Core queries for the review queues: filter, count and order in PostgreSQL.</summary>
-public sealed class ReviewQueueReader(ExpertDbContext db) : IReviewQueueReader
+public sealed class ReviewQueueReader(ExpertDbContext db, IScreeningRepository screeningRepo)
+    : IReviewQueueReader
 {
     // Both gates wait for the expert in this status; the claim does not expire meanwhile
     private const string WaitingForExpert = ExpertApplicationStatus.NeedMoreInformation;
@@ -29,8 +30,22 @@ public sealed class ReviewQueueReader(ExpertDbContext db) : IReviewQueueReader
     )
     {
         var expiredBefore = scope.ExpiredBefore;
-        var rows = await Applications(statuses, search, scope)
-            .OrderBy(x => x.SubmittedAt)
+        var source = Applications(statuses, search, scope);
+        var ordered = scope.SortBy switch
+        {
+            "name" => scope.SortDescending
+                ? source.OrderByDescending(x =>
+                    EF.Functions.Collate(x.ExpertProfile.DisplayName ?? "", "C")
+                )
+                : source.OrderBy(x => EF.Functions.Collate(x.ExpertProfile.DisplayName ?? "", "C")),
+            "years" => scope.SortDescending
+                ? source.OrderByDescending(x => x.ExpertProfile.YearsExperience ?? 0)
+                : source.OrderBy(x => x.ExpertProfile.YearsExperience ?? 0),
+            _ => scope.SortDescending
+                ? source.OrderByDescending(x => x.SubmittedAt ?? DateTimeOffset.MinValue)
+                : source.OrderBy(x => x.SubmittedAt ?? DateTimeOffset.MinValue),
+        };
+        var rows = await ordered
             .ThenBy(x => x.Id)
             .Take(take)
             .Select(x => new QueueRow(
@@ -52,7 +67,9 @@ public sealed class ReviewQueueReader(ExpertDbContext db) : IReviewQueueReader
                     false,
                     null,
                     null,
-                    false
+                    false,
+                    0,
+                    null
                 ),
                 x.ClaimedByUserId != null
                 && (x.Status == WaitingForExpert || x.ClaimedAt > expiredBefore)
@@ -67,7 +84,21 @@ public sealed class ReviewQueueReader(ExpertDbContext db) : IReviewQueueReader
                 ).FirstOrDefault()
             ))
             .ToListAsync(ct);
-        return rows.ConvertAll(x => x.ToResponse(scope));
+        var summaries = await screeningRepo.GetLatestSummaryByApplicationAsync(
+            rows.Select(x => Guid.Parse(x.Row.Id)).ToArray(),
+            ct
+        );
+        return rows.ConvertAll(x =>
+        {
+            var response = x.ToResponse(scope);
+            return summaries.TryGetValue(Guid.Parse(response.Id), out var summary)
+                ? response with
+                {
+                    OpenScreeningPoints = summary.OpenPointCount,
+                    ScreeningStatus = summary.Status,
+                }
+                : response;
+        });
     }
 
     public Task<int> CountQualificationsAsync(
@@ -89,12 +120,34 @@ public sealed class ReviewQueueReader(ExpertDbContext db) : IReviewQueueReader
     {
         var expiredBefore = scope.ExpiredBefore;
         // Final approval waits from the Gate 2 PASS, so the oldest pass (the overdue ones) comes first
-        var rows = await Qualifications(statuses, search, matchingServiceCodes, scope)
-            .OrderBy(x =>
-                x.Status == QualificationStatus.PendingFinalApproval
-                    ? x.DecidedAt
-                    : (DateTimeOffset?)x.SubmittedAt
-            )
+        var source = Qualifications(statuses, search, matchingServiceCodes, scope);
+        var ordered = scope.SortBy switch
+        {
+            "name" => scope.SortDescending
+                ? source.OrderByDescending(x =>
+                    EF.Functions.Collate(x.ExpertProfile.DisplayName ?? "", "C")
+                )
+                : source.OrderBy(x => EF.Functions.Collate(x.ExpertProfile.DisplayName ?? "", "C")),
+            "years" => scope.SortDescending
+                ? source.OrderByDescending(x => x.ExpertProfile.YearsExperience ?? 0)
+                : source.OrderBy(x => x.ExpertProfile.YearsExperience ?? 0),
+            _ => scope.SortDescending
+                ? source.OrderByDescending(x =>
+                    (
+                        scope.SortBy == "submittedAt" ? (DateTimeOffset?)x.SubmittedAt
+                        : x.Status == QualificationStatus.PendingFinalApproval ? x.DecidedAt
+                        : (DateTimeOffset?)x.SubmittedAt
+                    ) ?? DateTimeOffset.MinValue
+                )
+                : source.OrderBy(x =>
+                    (
+                        scope.SortBy == "submittedAt" ? (DateTimeOffset?)x.SubmittedAt
+                        : x.Status == QualificationStatus.PendingFinalApproval ? x.DecidedAt
+                        : (DateTimeOffset?)x.SubmittedAt
+                    ) ?? DateTimeOffset.MinValue
+                ),
+        };
+        var rows = await ordered
             .ThenBy(x => x.Id)
             .Take(take)
             .Select(x => new QueueRow(
@@ -116,7 +169,9 @@ public sealed class ReviewQueueReader(ExpertDbContext db) : IReviewQueueReader
                     false,
                     x.Status == QualificationStatus.PendingFinalApproval ? x.DecidedAt : null,
                     null,
-                    false
+                    false,
+                    0,
+                    null
                 ),
                 x.ClaimedByUserId != null
                 && (x.Status == WaitingForExpert || x.ClaimedAt > expiredBefore)
@@ -131,7 +186,21 @@ public sealed class ReviewQueueReader(ExpertDbContext db) : IReviewQueueReader
                 ).FirstOrDefault()
             ))
             .ToListAsync(ct);
-        return rows.ConvertAll(x => x.ToResponse(scope));
+        var summaries = await screeningRepo.GetLatestSummaryByApplicationAsync(
+            rows.Select(x => Guid.Parse(x.Row.Id)).ToArray(),
+            ct
+        );
+        return rows.ConvertAll(x =>
+        {
+            var response = x.ToResponse(scope);
+            return summaries.TryGetValue(Guid.Parse(response.Id), out var summary)
+                ? response with
+                {
+                    OpenScreeningPoints = summary.OpenPointCount,
+                    ScreeningStatus = summary.Status,
+                }
+                : response;
+        });
     }
 
     public Task<int> CountFinalApprovalsPassedBeforeAsync(

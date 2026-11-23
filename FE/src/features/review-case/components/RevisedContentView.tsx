@@ -1,8 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import { cn } from '@/lib/utils'
-
-export const fieldText = (v: unknown) =>
-  typeof v === 'string' ? v : JSON.stringify(v, null, 2)
+import { fieldText } from './fieldText'
 
 type Change = 'changed' | 'added' | 'removed' | null
 

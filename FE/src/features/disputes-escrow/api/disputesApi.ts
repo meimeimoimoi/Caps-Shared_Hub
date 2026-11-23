@@ -1,27 +1,57 @@
-import { api } from '@/lib/api-client'
+import { api, ApiError } from '@/lib/api-client'
 import { isExpertDemo } from '@/lib/expert-data-source'
 import { CURRENT_ADMIN } from '@/features/expert-vetting/constants'
 import { i18n } from '@/lib/i18n'
 import { DISPUTE_OUTCOME } from '../constants'
-import { DISPUTE_ESCALATION_HOURS, DISPUTE_SLA_HOURS } from '../constants'
 import { getPublicExpert } from '@/features/marketplace/api/marketplaceApi'
 import type { Dispute, DisputeDecisionInput, Escrow } from '../types'
+import { toEscrow, type EscrowDto } from './escrowMappers'
 
 /* The demo reads fixtures (cloned so React Query sees new data) and its mutations edit them in place.
- * Disputes use the workflow service; escrows have no list endpoint yet, so BASE is still a guess. */
+ * Disputes use the workflow service, escrows the billing service. */
 const fixtures = () => import('./fixtures')
-const BASE = '/api/admin'
 const CASES = '/api/v1/admin/review-cases'
+const ESCROWS = '/api/v1/admin/billing/escrows'
 
 interface Envelope<T> {
+  success: boolean
   data: T
+  message?: string
 }
+
+type SettleKey =
+  | 'escrow.settle.notHeld'
+  | 'escrow.settle.notFound'
+  | 'escrow.settle.invalidFee'
+  | 'escrow.settle.unavailable'
+
+// Billing errors release and refund can hit; other errors keep the server message
+const SETTLE_ERRORS: Record<string, SettleKey> = {
+  ESCROW_NOT_HELD: 'escrow.settle.notHeld',
+  ESCROW_NOT_FOUND: 'escrow.settle.notFound',
+  INVALID_PLATFORM_FEE: 'escrow.settle.invalidFee',
+  SESSION_CHECK_UNAVAILABLE: 'escrow.settle.unavailable',
+}
+
+async function settle(call: Promise<unknown>) {
+  try {
+    await call
+  } catch (e) {
+    const key = e instanceof ApiError && e.code ? SETTLE_ERRORS[e.code] : undefined
+    if (!key || !(e instanceof ApiError)) throw e
+    throw new ApiError(String(i18n.t(key, { ns: 'admin' })), e.status, e.code)
+  }
+}
+
+const notConnected = () =>
+  new Error(String(i18n.t('escrow.notConnected', { ns: 'admin' })))
 
 /** AdminDisputeResponse of the workflow service */
 interface AdminDisputeDto {
   reviewCaseId: string
   /** Only admins see it; the expert never learns the client's contact */
   requesterEmail: string | null
+  requesterUserId: string
   expertProfileId: string
   fee: number
   platformFeePct: number
@@ -35,7 +65,10 @@ interface AdminDisputeDto {
     status: string
     openedAt: string
     decideBy: string
+    /** The admin already used the one extension */
+    extended: boolean
     expertStatement: string | null
+    statementDueBy: string
   }
 }
 
@@ -44,8 +77,6 @@ const REFUND_PCT = {
   RESOLVE_REFUND_USER: 50,
   RESOLVE_PAY_EXPERT: 0,
 } as const
-
-const HOUR = 3_600_000
 
 /** ReviewDispute.Reasons on the server */
 const REASON_KEY = {
@@ -61,23 +92,21 @@ function toDispute(x: AdminDisputeDto, expert: string): Dispute {
     d.reason in REASON_KEY
       ? i18n.t(REASON_KEY[d.reason as keyof typeof REASON_KEY], { ns: 'admin' })
       : d.reason
-  // The server only sends the deadline; a window longer than the base one means it was extended
-  const extended =
-    new Date(d.decideBy).getTime() - new Date(d.openedAt).getTime() >
-    (DISPUTE_SLA_HOURS + DISPUTE_ESCALATION_HOURS / 2) * HOUR
   return {
     id: x.reviewCaseId,
     code: x.reviewCaseId.slice(0, 8).toUpperCase(),
     kind: 'DELIVERY_ISSUE',
     client: x.requesterEmail ?? undefined,
+    clientUserId: x.requesterUserId,
     expert: expert || undefined,
     ground: reason,
     openedAt: d.openedAt,
     decideBy: d.decideBy,
-    escalatedAt: extended ? d.decideBy : undefined,
+    escalatedAt: d.extended ? d.decideBy : undefined,
     fee: x.fee,
     platformFeePct: x.platformFeePct,
     expertStatement: d.expertStatement ?? undefined,
+    statementDueBy: d.statementDueBy,
     reviewSummary: x.reviewSummary ?? undefined,
     complaint: { issue: reason, description: d.description },
     history: [],
@@ -146,7 +175,7 @@ export async function decideDispute(id: string, body: DisputeDecisionInput) {
   })
 }
 
-/** Escalate a professional-judgment dispute; allowed once and adds 48 hours to the deadline */
+/** Escalate a professional-judgment dispute; allowed once and adds 2 working days to the deadline */
 export async function escalateDispute(id: string) {
   if (isExpertDemo) {
     const d = (await fixtures()).mockDisputes.find((x) => x.id === id)
@@ -163,9 +192,42 @@ export async function escalateDispute(id: string) {
 }
 
 /* ── Escrow ── */
-export async function getEscrows(signal?: AbortSignal) {
+export async function getEscrows(signal?: AbortSignal): Promise<Escrow[]> {
   if (isExpertDemo) return structuredClone((await fixtures()).mockEscrows)
-  return api.get<Escrow[]>(`${BASE}/escrows`, { signal })
+  // Collect every server page before client filtering and sorting.
+  const rows = new Map<string, EscrowDto>()
+  let page = 1
+  let total = 0
+  do {
+    const res = await api.get<Envelope<{ items: EscrowDto[]; total: number }>>(ESCROWS, {
+      params: { page, pageSize: 100 },
+      signal,
+    })
+    for (const row of res.data.items) rows.set(row.id, row)
+    total = res.data.total
+    if (res.data.items.length < 100) break
+    page++
+  } while ((page - 1) * 100 < total)
+  return [...rows.values()].map(toEscrow)
+}
+
+/** Pays a HELD escrow to the expert minus the platform fee; billing creates a PENDING payout (API mode only) */
+export async function releaseEscrow(
+  caseId: string,
+  expertUserId: string,
+  platformFeePct: number
+) {
+  await settle(
+    api.post(`${ESCROWS}/${encodeURIComponent(caseId)}/release`, {
+      expertUserId,
+      platformFeePct,
+    })
+  )
+}
+
+/** Returns a HELD escrow to the payer's credits (API mode only) */
+export async function refundEscrow(caseId: string) {
+  await settle(api.post(`${ESCROWS}/${encodeURIComponent(caseId)}/refund`))
 }
 
 /** Chi trả lại khoản bị lỗi (PAYOUT_FAILED) */
@@ -185,7 +247,8 @@ export async function retryPayout(caseId: string, actor: string) {
     })
     return
   }
-  await api.post(`${BASE}/escrows/${caseId}/payout/retry`)
+  // Billing does not make the transfers yet, so there is nothing to retry
+  throw notConnected()
 }
 
 /** Đánh dấu đã hoàn tiền cho Client, kèm mã giao dịch ngân hàng để đối soát.
@@ -208,5 +271,6 @@ export async function markRefunded(caseId: string, ref: string, actor: string) {
     })
     return
   }
-  await api.post(`${BASE}/escrows/${caseId}/refund/confirm`, { ref })
+  // A billing refund goes back to the payer's credits (refundEscrow); bank refunds are not built yet
+  throw notConnected()
 }

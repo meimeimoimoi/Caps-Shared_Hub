@@ -46,6 +46,7 @@ const caseSteps = {
   RESOLVED: 'notifications.reviewCase.status.RESOLVED',
   TERMINATED: 'notifications.reviewCase.status.TERMINATED',
   WITHDRAWN: 'notifications.reviewCase.status.WITHDRAWN',
+  withdrawnClient: 'notifications.reviewCase.status.withdrawnClient',
 } as const
 
 const warningSteps = new Set([
@@ -128,7 +129,12 @@ export function useNotifications() {
           : 'accepted'
         : n.data.note === 'EXPERT_WITHDREW'
           ? 'expertWithdrew'
-          : (n.data.toStatus as keyof typeof caseSteps)
+          : // The client gets their own copy of a withdrawal (their link is /cases/…, the expert's /expert/cases/…)
+            n.data.toStatus === 'WITHDRAWN' &&
+              typeof n.data.link === 'string' &&
+              n.data.link.startsWith('/cases/')
+            ? 'withdrawnClient'
+            : (n.data.toStatus as keyof typeof caseSteps)
     if (!(step in caseSteps)) return null
     return {
       id: n.id,
@@ -140,6 +146,24 @@ export function useNotifications() {
   }
 
   const toShell = (n: AppNotification): ShellNotification | null => {
+    // The admin has not decided a dispute by its deadline; the fee stays held
+    if (n.type === 'REVIEW_CASE_DISPUTE_OVERDUE')
+      return {
+        id: n.id,
+        text: t('notifications.reviewCase.disputeOverdue'),
+        to: typeof n.data.link === 'string' ? n.data.link : '/cases',
+        tone: 'warning',
+        read: n.readAt != null,
+      }
+    // The expert's dispute statement window ends in a few hours
+    if (n.type === 'REVIEW_CASE_STATEMENT_DUE')
+      return {
+        id: n.id,
+        text: t('notifications.reviewCase.statementDue'),
+        to: typeof n.data.link === 'string' ? n.data.link : '/expert/cases',
+        tone: 'warning',
+        read: n.readAt != null,
+      }
     if (
       n.type === 'REVIEW_CASE_REQUESTED' ||
       n.type === 'REVIEW_CASE_RESPONSE_DUE'
@@ -156,6 +180,33 @@ export function useNotifications() {
         read: n.readAt != null,
       }
     if (n.type === 'REVIEW_CASE_STATUS_CHANGED') return caseStepItem(n)
+    // The expert asked for more working days (client), or the client answered (expert)
+    if (
+      n.type === 'REVIEW_CASE_EXTENSION_REQUESTED' ||
+      n.type === 'REVIEW_CASE_EXTENSION_DECIDED'
+    ) {
+      const days = typeof n.data.days === 'number' ? n.data.days : 0
+      const requested = n.type === 'REVIEW_CASE_EXTENSION_REQUESTED'
+      return {
+        id: n.id,
+        text: t(
+          requested
+            ? 'notifications.reviewCase.extensionRequested'
+            : n.data.accepted === true
+              ? 'notifications.reviewCase.extensionAccepted'
+              : 'notifications.reviewCase.extensionDeclined',
+          { days }
+        ),
+        to:
+          typeof n.data.link === 'string'
+            ? n.data.link
+            : requested
+              ? '/cases'
+              : '/expert/cases',
+        tone: requested || n.data.accepted !== true ? 'warning' : undefined,
+        read: n.readAt != null,
+      }
+    }
     if (
       n.type === 'REVIEW_CASE_INFO_REQUESTED' ||
       n.type === 'REVIEW_CASE_ACCEPTANCE_DUE'

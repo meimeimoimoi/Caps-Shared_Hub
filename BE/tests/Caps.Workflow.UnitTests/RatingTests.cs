@@ -23,6 +23,18 @@ public sealed class RatingTests
     }
 
     [Fact]
+    public void A_later_rating_keeps_the_time_the_case_closed()
+    {
+        var reviewCase = Completed();
+        var closedAt = reviewCase.UpdatedAt;
+
+        reviewCase.Rate(Client, 5, null, Now.AddHours(3));
+
+        Assert.Equal(closedAt, reviewCase.UpdatedAt);
+        Assert.Equal(Now.AddHours(3), reviewCase.RatedAt);
+    }
+
+    [Fact]
     public void A_comment_is_optional() => Assert.Null(Rated(Completed(), 5).RatingComment);
 
     [Theory]
@@ -49,13 +61,23 @@ public sealed class RatingTests
     public void A_decided_dispute_can_be_rated()
     {
         var reviewCase = InReview();
-        reviewCase.Deliver(ExpertProfile, Expert, ReviewCase.Verified, "Done", null, Now);
+        reviewCase.Deliver(
+            ExpertProfile,
+            Expert,
+            ReviewCase.Verified,
+            "Done",
+            null,
+            ["Article 9, CIT Law"],
+            true,
+            Now
+        );
         var (dispute, _) = reviewCase.OpenDispute(
             Client,
             "DELIVERABLE_INCOMPLETE",
             "VAT missing",
             Now
         );
+        reviewCase.AddExpertStatement(dispute, ExpertProfile, "All parts delivered", Now);
         reviewCase.ResolveDispute(dispute, Guid.NewGuid(), 50, "Partly delivered", Now);
 
         Assert.Equal((short)2, Rated(reviewCase, 2).Rating);
@@ -95,6 +117,8 @@ public sealed class RatingTests
             ReviewCase.Verified,
             "Done",
             null,
+            ["Article 9, CIT Law"],
+            true,
             Now.AddHours(-1)
         );
         reviewCase.Confirm(Client, Now.AddHours(-1));

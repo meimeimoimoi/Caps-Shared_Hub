@@ -79,14 +79,79 @@ public sealed record ReviewCaseAcceptanceDueEvent(
 );
 
 /// <summary>
-/// An open dispute passed its decision deadline without a decision. Published once per deadline by the workflow
-/// service (again after an extension runs out); the notification service emails the operations inbox.
+/// An open dispute is past its decision deadline without a decision. Published by the workflow service every
+/// day until it is decided; the notification service emails the operations inbox each time and, on the first
+/// alert of a deadline, tells the client and the expert that the decision is late.
 /// </summary>
 /// <param name="Extended">True when the deadline that passed was already the extended one.</param>
+/// <param name="First">True for the first alert of this deadline (again after an extension runs out).</param>
 public sealed record ReviewCaseDisputeOverdueEvent(
     Guid Id,
     Guid ReviewCaseId,
+    Guid RequesterUserId,
+    Guid ExpertUserId,
     DateTimeOffset DecideBy,
     bool Extended,
+    bool First,
+    DateTimeOffset OccurredAt
+);
+
+/// <summary>
+/// The expert asked the client for more working days before the delivery deadline (2026-11-20). Published by the
+/// workflow service after committing; the notification service tells and emails the client, who must answer
+/// before the deadline or it stays.
+/// </summary>
+/// <param name="RequesterEmail">Only to email the client themselves; null for older cases.</param>
+/// <param name="DeliveryDeadline">The deadline as it stands now, before any extension.</param>
+public sealed record ReviewCaseExtensionRequestedEvent(
+    Guid Id,
+    Guid ReviewCaseId,
+    Guid RequesterUserId,
+    string? RequesterEmail,
+    int Days,
+    string Reason,
+    DateTimeOffset DeliveryDeadline,
+    DateTimeOffset OccurredAt
+);
+
+/// <summary>
+/// The client accepted or declined the expert's extension request. Published by the workflow service after
+/// committing; the notification service tells the expert in the app.
+/// </summary>
+/// <param name="DeliveryDeadline">The deadline after the decision (moved only when accepted).</param>
+public sealed record ReviewCaseExtensionDecidedEvent(
+    Guid Id,
+    Guid ReviewCaseId,
+    Guid ExpertUserId,
+    bool Accepted,
+    int Days,
+    DateTimeOffset DeliveryDeadline,
+    DateTimeOffset OccurredAt
+);
+
+/// <summary>
+/// A step of a review case counts against the expert: delivered late, withdrew after accepting, or never
+/// delivered. Published by the workflow service after committing; the expert service keeps the points.
+/// </summary>
+/// <param name="Id">Event id, also used to ignore a redelivered message.</param>
+/// <param name="ExpertUserId">The expert's account id (identity service).</param>
+/// <param name="Kind">LATE, WITHDREW or NO_DELIVERY.</param>
+public sealed record ExpertViolationRecordedEvent(
+    Guid Id,
+    Guid ReviewCaseId,
+    Guid ExpertUserId,
+    string Kind,
+    DateTimeOffset OccurredAt
+);
+
+/// <summary>
+/// An open dispute still has no statement a few hours before the expert's window ends. Published once per dispute
+/// by the workflow service; the notification service reminds the expert in the app.
+/// </summary>
+public sealed record ReviewCaseStatementDueEvent(
+    Guid Id,
+    Guid ReviewCaseId,
+    Guid ExpertUserId,
+    DateTimeOffset StatementDueBy,
     DateTimeOffset OccurredAt
 );

@@ -1,14 +1,25 @@
 import { useEffect, useId, useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useQuery } from '@tanstack/react-query'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
-import { ArrowLeft, CircleAlert, FilePlus2 } from 'lucide-react'
+import { ArrowLeft, CircleAlert, FilePlus2, Upload } from 'lucide-react'
 import { FormField } from '@/components/ui/forms/form-field'
+import { HelpTip } from '@/components/ui/feedback/help-tip'
 import { usePublicExpert } from '@/features/marketplace/hooks/useMarketplace'
 import { FilePicker, Initials } from '@/features/review-case/components/CaseUi'
+import { ACCEPT, MAX_BYTES } from '@/features/review-case/components/CaseAttachments'
 import { fieldClass, useCaseFormat } from '@/features/review-case/ui'
 import { DEMO_CASES, REVIEWABLE_DRAFTS } from '@/features/review-case/fixtures'
-import { createReviewCase } from '@/features/review-case/api/reviewCaseApi'
+import {
+  createReviewCase,
+  getBookingTerms,
+  getLatestVersionId,
+  getMyDocuments,
+  uploadDocument,
+  type UploadedDocument,
+} from '@/features/review-case/api/reviewCaseApi'
 import { useCaseError } from '@/features/review-case/hooks/useReviewCases'
+import { ApiError } from '@/lib/api-client'
 import { isExpertDemo } from '@/lib/expert-data-source'
 import { cn } from '@/lib/utils'
 
@@ -24,6 +35,11 @@ const initialsOf = (name: string) =>
     .join('')
     .toUpperCase()
 
+// The current tax year (00 section 3a); the client can pick another period before uploading
+const TAX_YEAR = new Date().getFullYear()
+// A listed document that has no version yet cannot be booked
+const NO_VERSION = 'NO_VERSION'
+
 export default function ReviewRequestPage() {
   const { t } = useTranslation(['reviewCase', 'common'])
   const f = useCaseFormat()
@@ -36,15 +52,48 @@ export default function ReviewRequestPage() {
   const service = bio?.services.find(
     (s) => s.serviceId === params.get('service')
   )
+  // The money rules this booking would freeze, shown before the client agrees and pays
+  const terms = useQuery({
+    queryKey: ['private', 'client', 'booking-terms', expertId, service?.serviceId],
+    queryFn: ({ signal }) =>
+      getBookingTerms(expertId!, service!.serviceId, signal),
+    enabled: !isExpertDemo && Boolean(expertId && service),
+  }).data
 
-  // ponytail: no documents API yet, so a real booking names its version in the URL; add a picker when that API exists
+  // ponytail: a listed document is booked at its newest version; add a version picker if clients ask for older ones
   const documentId = params.get('document')
-  const versionId = params.get('version')
+  // The draft handoff and Marketplace pass the version as draftVersion; version is kept for older links
+  const versionId = params.get('draftVersion') ?? params.get('version')
+  const [uploaded, setUploaded] = useState<(UploadedDocument & { name: string }) | null>(null)
+  const myDocuments = useQuery({
+    queryKey: ['my-documents'],
+    queryFn: ({ signal }) => getMyDocuments(signal),
+    enabled: !isExpertDemo,
+  }).data
+  const picked = [
+    ...(documentId && versionId
+      ? [{ id: versionId, documentId, name: t('live.chosenVersion') }]
+      : []),
+    ...(uploaded ? [uploaded] : []),
+  ]
+  // A listed document's radio value is its id; its version is looked up when the request is sent
   const drafts = isExpertDemo
     ? REVIEWABLE_DRAFTS
-    : documentId && versionId
-      ? [{ id: versionId, name: t('live.chosenVersion') }]
-      : []
+    : [
+        ...picked,
+        ...(myDocuments ?? [])
+          .filter((d) => !picked.some((p) => p.documentId === d.id))
+          .map((d) => ({
+            id: d.id,
+            documentId: d.id,
+            name: d.title,
+            latest: true,
+          })),
+      ]
+  const [periodStart, setPeriodStart] = useState(`${TAX_YEAR}-01-01`)
+  const [periodEnd, setPeriodEnd] = useState(`${TAX_YEAR}-12-31`)
+  const [uploading, setUploading] = useState(false)
+  const [uploadError, setUploadError] = useState<string | null>(null)
   const toMessage = useCaseError()
   const [sending, setSending] = useState(false)
   const [sendError, setSendError] = useState<string | null>(null)
@@ -60,25 +109,63 @@ export default function ReviewRequestPage() {
     document.title = `${t('request.title')} | Shared Hub`
   }, [t])
 
+  // The uploaded file becomes version 1 of a new document and is chosen for this request
+  const upload = (file: File | undefined) => {
+    if (!file) return
+    setUploadError(null)
+    if (file.size > MAX_BYTES)
+      return setUploadError(t('errors.ATTACHMENT_TOO_LARGE'))
+    setUploading(true)
+    uploadDocument(file, file.name.slice(0, 200), periodStart, periodEnd)
+      .then((v) => {
+        setUploaded({ id: v.id, documentId: v.documentId, name: file.name })
+        setDraftId(v.id)
+      })
+      .catch((err: unknown) => setUploadError(toMessage(err)))
+      .finally(() => setUploading(false))
+  }
+
   const submit = (e: FormEvent) => {
     e.preventDefault()
     setSubmitted(true)
     if (!draftId || !consent) return
     if (isExpertDemo) return navigate(`/cases/${DEMO_CASES[0].id}`)
-    if (!scope.trim() || sending || !documentId || !expertId || !service) return
+    const chosen = drafts.find((d) => d.id === draftId)
+    const chosenDocument =
+      chosen && 'documentId' in chosen ? chosen.documentId : null
+    if (!scope.trim() || sending || !chosenDocument || !expertId || !service)
+      return
     setSending(true)
     setSendError(null)
-    createReviewCase({
-      documentId,
-      sourceVersionId: draftId,
-      expertProfileId: expertId,
-      serviceCode: service.serviceId,
-      problemDescription: scope.trim(),
-      expectedOutcome: null,
-    })
+    const version =
+      chosen && 'latest' in chosen
+        ? getLatestVersionId(chosenDocument)
+        : Promise.resolve(draftId)
+    version
+      .then((sourceVersionId) =>
+        sourceVersionId
+          ? createReviewCase({
+              documentId: chosenDocument,
+              sourceVersionId,
+              expertProfileId: expertId,
+              serviceCode: service.serviceId,
+              problemDescription: scope.trim(),
+              expectedOutcome: null,
+              expectedFee:
+                service.price == null ? null : Number(service.price),
+            })
+          : Promise.reject(new Error(NO_VERSION))
+      )
       .then((c) => navigate(`/cases/${c.id}`))
       .catch((err: unknown) => {
-        setSendError(toMessage(err))
+        // The expert changed the price meanwhile: show the new one so the client can send again
+        if (err instanceof ApiError && err.code === 'PRICE_CHANGED')
+          void query.refetch()
+        setSendError(
+          err instanceof Error && err.message === NO_VERSION
+            ? t('request.noVersion')
+            : toMessage(err)
+        )
         setSending(false)
       })
   }
@@ -226,6 +313,57 @@ export default function ReviewRequestPage() {
                     ))}
                   </div>
                 )}
+                {!isExpertDemo && (
+                  <div className="mt-4 space-y-3">
+                    <p className="text-fg-strong text-sm font-semibold">
+                      {t('request.upload.title')}
+                    </p>
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <label className="text-fg text-sm">
+                        {t('request.upload.periodStart')}
+                        <input
+                          type="date"
+                          value={periodStart}
+                          onChange={(e) => setPeriodStart(e.target.value)}
+                          className={cn(fieldClass, 'mt-1')}
+                        />
+                      </label>
+                      <label className="text-fg text-sm">
+                        {t('request.upload.periodEnd')}
+                        <input
+                          type="date"
+                          value={periodEnd}
+                          min={periodStart}
+                          onChange={(e) => setPeriodEnd(e.target.value)}
+                          className={cn(fieldClass, 'mt-1')}
+                        />
+                      </label>
+                    </div>
+                    <label className="btn btn-secondary has-[:focus-visible]:outline-ink w-full cursor-pointer has-[:focus-visible]:outline-2">
+                      <Upload size={16} aria-hidden="true" />
+                      {uploading ? t('live.files.uploading') : t('request.upload.pick')}
+                      <input
+                        type="file"
+                        accept={ACCEPT}
+                        disabled={uploading || !periodStart || !periodEnd}
+                        aria-describedby={`${id}-upload-hint`}
+                        onChange={(e) => {
+                          upload(e.target.files?.[0])
+                          e.target.value = ''
+                        }}
+                        className="sr-only"
+                      />
+                    </label>
+                    <p id={`${id}-upload-hint`} className="text-fg-muted text-sm">
+                      {t('request.upload.hint')}
+                    </p>
+                    {uploadError && (
+                      <p role="alert" className="text-danger text-sm">
+                        {uploadError}
+                      </p>
+                    )}
+                  </div>
+                )}
                 {draftError && (
                   <p
                     id={`${id}-draft-error`}
@@ -274,6 +412,44 @@ export default function ReviewRequestPage() {
                 )}
               </div>
 
+              {terms && (
+                <section
+                  aria-labelledby={`${id}-terms`}
+                  className="bg-sunken rounded-control mb-4 p-4 text-sm"
+                >
+                  <h3 id={`${id}-terms`} className="text-fg-strong font-semibold">
+                    {t('request.terms.title')}
+                  </h3>
+                  <ul className="text-fg mt-2 list-disc space-y-1 pl-5">
+                    <li>
+                      {t('request.terms.late', {
+                        hours: terms.latePenaltyHours,
+                        amount: f.money(terms.lateRefund),
+                      })}
+                    </li>
+                    <li>
+                      {t('request.terms.noDelivery', {
+                        amount: f.money(terms.noDeliveryRefund),
+                      })}
+                    </li>
+                    <li className="text-warning font-semibold">
+                      {terms.noResponseRefund > 0
+                        ? t('request.terms.noResponseRefund', {
+                            days: terms.noResponseDays,
+                            amount: f.money(terms.noResponseRefund),
+                          })
+                        : t('request.terms.noResponseNoRefund', {
+                            days: terms.noResponseDays,
+                          })}
+                    </li>
+                    <li>
+                      {t('request.terms.dispute', {
+                        amount: f.money(terms.disputeRefund),
+                      })}
+                    </li>
+                  </ul>
+                </section>
+              )}
               <label className="flex cursor-pointer items-start gap-3 text-sm">
                 <input
                   type="checkbox"
@@ -352,9 +528,14 @@ export default function ReviewRequestPage() {
                 aria-labelledby="req-next"
                 className="border-border border-t pt-5"
               >
-                <h2 id="req-next" className="eyebrow font-sans">
-                  {t('request.nextTitle')}
-                </h2>
+                <div className="flex items-center gap-2">
+                  <h2 id="req-next" className="eyebrow font-sans">
+                    {t('request.nextTitle')}
+                  </h2>
+                  <HelpTip label={t('request.workingDaysLabel')}>
+                    {t('request.workingDays')}
+                  </HelpTip>
+                </div>
                 <ol className="mt-4 space-y-4">
                   {(['s1', 's2', 's3'] as const).map((k, i) => (
                     <li key={k} className="flex gap-3 text-sm">

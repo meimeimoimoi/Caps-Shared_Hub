@@ -1,5 +1,6 @@
 using Caps.Common.Persistence;
 using Caps.Expert.Application.Abstractions;
+using Caps.Expert.Infrastructure.Ai;
 using Caps.Expert.Infrastructure.Messaging;
 using Caps.Expert.Infrastructure.Persistence;
 using Caps.Expert.Infrastructure.Storage;
@@ -28,6 +29,7 @@ public static class DependencyInjection
         services.AddScoped<IExpertProfileRepository, ExpertProfileRepository>();
         services.AddScoped<IExpertCaseSlots, ExpertCaseSlots>();
         services.AddScoped<IExpertCaseRatings, ExpertCaseRatings>();
+        services.AddScoped<IExpertViolations, ExpertViolations>();
         services.AddScoped<IExpertApplicationRepository, ExpertApplicationRepository>();
         services.AddScoped<IReviewQueueReader, ReviewQueueReader>();
         services.AddScoped<IExpertStatsReader, ExpertStatsReader>();
@@ -41,11 +43,17 @@ public static class DependencyInjection
         services.AddScoped<IPlatformFeeRepository, PlatformFeeRepository>();
         services.AddScoped<IServiceOfferingRepository, ServiceOfferingRepository>();
         services.AddScoped<IExpertNotificationOutbox, ExpertNotificationOutbox>();
+        services.AddScoped<IAuditTrail, AuditTrailWriter>();
         services.AddScoped<IPolicySettingRepository, PolicySettingRepository>();
         services.AddScoped<IExpertPolicyProvider, ExpertPolicyProvider>();
         services.AddScoped<IReviewClaimEventRepository, ReviewClaimEventRepository>();
         services.AddScoped<IKnownReviewerRepository, KnownReviewerRepository>();
         services.AddScoped<ICompetencyEvidenceRepository, CompetencyEvidenceRepository>();
+        services.AddScoped<IScreeningRepository, ScreeningRepository>();
+        services.AddSingleton<EvidenceScreeningWakeup>();
+        services.AddSingleton<IScreeningWakeup>(sp =>
+            sp.GetRequiredService<EvidenceScreeningWakeup>()
+        );
         services.AddSingleton<IObjectStorage, S3ObjectStorage>();
         return services;
     }

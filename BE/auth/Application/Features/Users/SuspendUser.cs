@@ -20,6 +20,7 @@ public sealed class SuspendUserHandler(
     ISessionIssuer sessions,
     ISessionRevocationStore revocations,
     IAccountEventOutbox accountEvents,
+    IAuditTrail audit,
     IUnitOfWork unitOfWork,
     TimeProvider clock
 ) : ICommandHandler<SuspendUserCommand, ManagedUserResponse>
@@ -34,6 +35,13 @@ public sealed class SuspendUserHandler(
         user.Suspend(command.AdminUserId, command.Reason, clock.GetUtcNow());
         await sessions.RevokeAllAsync(user, ct);
         accountEvents.StatusChanged(user);
+        audit.Record(
+            AuditActions.User,
+            user.Id,
+            AuditActions.UserLocked,
+            command.AdminUserId,
+            new { reason = command.Reason?.Trim() }
+        );
         await unitOfWork.SaveChangesAsync(ct);
         await tx.CommitAsync(ct);
         // Published after commit, so other services never see a revocation that was rolled back

@@ -42,12 +42,13 @@ public sealed class AiUsage
         string paidWith,
         long creditHold,
         string state,
-        DateTimeOffset now
+        DateTimeOffset now,
+        Guid? id = null
     )
     {
         return new AiUsage
         {
-            Id = Guid.NewGuid(),
+            Id = id ?? UuidV7.NewGuid(),
             UserId = userId,
             ConversationId = conversationId,
             QuestionId = questionId,

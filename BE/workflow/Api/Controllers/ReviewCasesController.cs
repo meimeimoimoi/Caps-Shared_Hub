@@ -45,6 +45,28 @@ public sealed class ReviewCasesController(ICurrentUser currentUser) : Controller
         return Ok(ApiResponse<ReviewCaseResponse>.Ok(reviewCase));
     }
 
+    /// <summary>What booking an expert's service would cost the client in each case, in VND.</summary>
+    /// <remarks>
+    /// Read from the offer a booking would freeze now: a late or missed delivery, an unanswered question and
+    /// an upheld dispute. The platform fee and the expert's share are not returned.
+    /// </remarks>
+    /// <response code="200">The client's terms.</response>
+    /// <response code="400">serviceCode is missing.</response>
+    /// <response code="404">EXPERT_SERVICE_UNAVAILABLE: the expert does not sell this service now.</response>
+    /// <response code="503">SERVICE_LINK_UNAVAILABLE: the expert service cannot be reached.</response>
+    [HttpGet("terms")]
+    public async Task<IActionResult> Terms(
+        [FromQuery] Guid expertProfileId,
+        [FromQuery] string serviceCode,
+        [FromServices]
+            IQueryHandler<GetBookingTermsQuery, ReviewCaseResponse.ClientTermsResponse> handler,
+        CancellationToken ct
+    )
+    {
+        var terms = await handler.HandleAsync(new(expertProfileId, serviceCode), ct);
+        return Ok(ApiResponse<ReviewCaseResponse.ClientTermsResponse>.Ok(terms));
+    }
+
     /// <summary>Requests a review of one document version; the case waits 15 minutes for payment.</summary>
     /// <remarks>Price, platform fee and turnaround are read from the expert service and frozen on the case.</remarks>
     /// <response code="200">The case, AWAITING_PAYMENT.</response>
@@ -165,6 +187,54 @@ public sealed class ReviewCasesController(ICurrentUser currentUser) : Controller
         return Ok(ApiResponse<ReviewCaseResponse>.Ok(reviewCase));
     }
 
+    /// <summary>The expert asks the client for 1–2 more working days before the delivery deadline.</summary>
+    /// <remarks>Once per case. Nothing changes until the client accepts; without an answer the deadline stays.</remarks>
+    /// <response code="200">The case with the pending extension.</response>
+    /// <response code="400">EXTENSION_DAYS_INVALID, TEXT_REQUIRED or TEXT_TOO_LONG.</response>
+    /// <response code="404">REVIEW_CASE_NOT_FOUND.</response>
+    /// <response code="409">CASE_STATUS_INVALID, CASE_DEADLINE_PASSED or EXTENSION_ALREADY_REQUESTED.</response>
+    [HttpPost("{caseId:guid}/extension")]
+    public async Task<IActionResult> RequestExtension(
+        Guid caseId,
+        ExtensionRequest r,
+        [FromServices] ICommandHandler<RequestExtensionCommand, ReviewCaseResponse> handler,
+        CancellationToken ct
+    )
+    {
+        var reviewCase = await handler.HandleAsync(new(UserId, caseId, r.Days, r.Reason), ct);
+        return Ok(ApiResponse<ReviewCaseResponse>.Ok(reviewCase));
+    }
+
+    /// <summary>The client accepts the extension; the delivery deadline moves by the days asked.</summary>
+    /// <response code="200">The case with its new delivery deadline.</response>
+    /// <response code="404">REVIEW_CASE_NOT_FOUND.</response>
+    /// <response code="409">EXTENSION_NOT_PENDING, CASE_STATUS_INVALID or CASE_DEADLINE_PASSED.</response>
+    [HttpPost("{caseId:guid}/extension/accept")]
+    public async Task<IActionResult> AcceptExtension(
+        Guid caseId,
+        [FromServices] ICommandHandler<DecideExtensionCommand, ReviewCaseResponse> handler,
+        CancellationToken ct
+    )
+    {
+        var reviewCase = await handler.HandleAsync(new(UserId, caseId, true), ct);
+        return Ok(ApiResponse<ReviewCaseResponse>.Ok(reviewCase));
+    }
+
+    /// <summary>The client declines the extension; the delivery deadline stays.</summary>
+    /// <response code="200">The case, deadline unchanged.</response>
+    /// <response code="404">REVIEW_CASE_NOT_FOUND.</response>
+    /// <response code="409">EXTENSION_NOT_PENDING, CASE_STATUS_INVALID or CASE_DEADLINE_PASSED.</response>
+    [HttpPost("{caseId:guid}/extension/decline")]
+    public async Task<IActionResult> DeclineExtension(
+        Guid caseId,
+        [FromServices] ICommandHandler<DecideExtensionCommand, ReviewCaseResponse> handler,
+        CancellationToken ct
+    )
+    {
+        var reviewCase = await handler.HandleAsync(new(UserId, caseId, false), ct);
+        return Ok(ApiResponse<ReviewCaseResponse>.Ok(reviewCase));
+    }
+
     /// <summary>The client answers the expert's question; the delivery deadline moves back by the wait.</summary>
     /// <response code="200">The case, IN_REVIEW.</response>
     /// <response code="400">TEXT_REQUIRED or TEXT_TOO_LONG.</response>
@@ -182,9 +252,30 @@ public sealed class ReviewCasesController(ICurrentUser currentUser) : Controller
         return Ok(ApiResponse<ReviewCaseResponse>.Ok(reviewCase));
     }
 
+    /// <summary>The expert saves a draft of the revised document while reviewing.</summary>
+    /// <remarks>Replaces the previous draft. The client sees it only after delivery; delivering without a revision sends this draft.</remarks>
+    /// <response code="200">The case with the saved draft.</response>
+    /// <response code="400">REVISED_CONTENT_INVALID.</response>
+    /// <response code="404">REVIEW_CASE_NOT_FOUND.</response>
+    /// <response code="409">CASE_STATUS_INVALID (only IN_REVIEW or AWAITING_USER_INFORMATION).</response>
+    [HttpPost("{caseId:guid}/revisions")]
+    public async Task<IActionResult> SaveRevision(
+        Guid caseId,
+        SaveRevisionRequest r,
+        [FromServices] ICommandHandler<SaveRevisionCommand, ReviewCaseResponse> handler,
+        CancellationToken ct
+    )
+    {
+        var reviewCase = await handler.HandleAsync(
+            new(UserId, caseId, r.RevisedContent?.GetRawText()),
+            ct
+        );
+        return Ok(ApiResponse<ReviewCaseResponse>.Ok(reviewCase));
+    }
+
     /// <summary>The expert delivers the result; the client has 72 hours to confirm, then it auto-confirms.</summary>
     /// <response code="200">The case, AWAITING_ACCEPTANCE.</response>
-    /// <response code="400">RESULT_INVALID, TEXT_REQUIRED, TEXT_TOO_LONG or REVISED_CONTENT_INVALID.</response>
+    /// <response code="400">RESULT_INVALID, TEXT_REQUIRED, TEXT_TOO_LONG or REVISED_CONTENT_INVALID or ATTESTATION_REQUIRED or CITATIONS_INVALID.</response>
     /// <response code="404">REVIEW_CASE_NOT_FOUND.</response>
     /// <response code="409">CASE_STATUS_INVALID or CASE_DEADLINE_PASSED (past the late cancel hours).</response>
     [HttpPost("{caseId:guid}/deliver")]
@@ -202,6 +293,8 @@ public sealed class ReviewCasesController(ICurrentUser currentUser) : Controller
                 r.Result,
                 r.Summary,
                 r.CannotVerifyReason,
+                r.Citations,
+                r.Attested,
                 r.RevisedContent?.GetRawText()
             ),
             ct

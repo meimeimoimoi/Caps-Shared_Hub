@@ -16,7 +16,8 @@ public sealed record RequestReviewCommand(
     Guid ExpertProfileId,
     string ServiceCode,
     string? ProblemDescription,
-    string? ExpectedOutcome
+    string? ExpectedOutcome,
+    long? ExpectedFee = null
 );
 
 /// <summary>
@@ -52,6 +53,12 @@ public sealed class RequestReviewHandler(
         var offer =
             await offerings.FindAsync(command.ExpertProfileId, command.ServiceCode, ct)
             ?? throw WorkflowErrors.ExpertServiceUnavailable();
+
+        // BR-M35: book the price the client saw; one changed meanwhile is never booked silently
+        if (command.ExpectedFee is { } seen && seen != offer.Fee)
+        {
+            throw WorkflowErrors.PriceChanged(seen, offer.Fee);
+        }
         var (reviewCase, opened) = ReviewCase.Request(
             command.UserId,
             command.UserEmail,
@@ -73,6 +80,6 @@ public sealed class RequestReviewHandler(
             // The partial unique index also stops two bookings sent at the same moment
             throw WorkflowErrors.CaseAlreadyOpen();
         }
-        return ReviewCaseResponse.From(reviewCase);
+        return ReviewCaseResponse.From(reviewCase, command.UserId);
     }
 }

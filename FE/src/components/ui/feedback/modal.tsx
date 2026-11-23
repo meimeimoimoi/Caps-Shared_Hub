@@ -61,7 +61,7 @@ export function Modal({
           restore()
       })
     }
-  }, [])
+  }, [trigger])
 
   const body = (
     <>

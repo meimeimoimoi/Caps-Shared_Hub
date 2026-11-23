@@ -1,6 +1,7 @@
 using Caps.Expert.Application.Abstractions;
 using Caps.Expert.Application.DTOs.Responses;
 using Caps.Expert.Domain.Portal;
+using Caps.Expert.Domain.Profiles;
 
 namespace Caps.Expert.Application.Common;
 
@@ -8,7 +9,10 @@ namespace Caps.Expert.Application.Common;
 public sealed class MarketplaceListing(
     IQualificationRepository qualifications,
     IServiceOfferingRepository offerings,
-    IServiceCatalogRepository catalog
+    IServiceCatalogRepository catalog,
+    IExpertPolicyProvider policies,
+    IExpertViolations violations,
+    TimeProvider clock
 ) : IMarketplaceListing
 {
     public async Task<IReadOnlyList<MarketplaceExpertResponse>> ListAsync(
@@ -26,6 +30,12 @@ public sealed class MarketplaceListing(
             return [];
         var profileIds = candidates.Select(x => x.ExpertProfileId).Distinct().ToArray();
         var prices = await offerings.ListAsync(profileIds, ct);
+        var policy = await policies.GetPricingAsync(ct);
+        var points = await violations.PointsAsync(
+            profileIds,
+            clock.GetUtcNow().AddDays(-ViolationRules.WindowDays),
+            ct
+        );
         var services = (await catalog.ListActiveAsync(ct)).ToDictionary(x => x.Code);
 
         return candidates
@@ -44,9 +54,10 @@ public sealed class MarketplaceListing(
                                 q.Status,
                                 profile.IsAccountActive,
                                 services.ContainsKey(q.ServiceCode),
-                                price != null,
+                                price != null && policy.Allows(price.Fee),
                                 q.AcceptingRequests,
-                                profile.Capacity > 0
+                                profile.Capacity > 0,
+                                points.GetValueOrDefault(profile.Id) < ViolationRules.HideAt
                             )
                         );
                         return listed

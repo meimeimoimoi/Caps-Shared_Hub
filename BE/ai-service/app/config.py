@@ -10,6 +10,14 @@ class Settings(BaseSettings):
     LLM_MODEL: str = "qwen2.5:7b"
     EMBEDDING_MODEL: str = "bge-m3:latest"
     OLLAMA_TIMEOUT_SECONDS: int = 35
+    CV_EXTRACTION_TIMEOUT_SECONDS: int = 120
+    CV_MIN_TEXT_CHARS: int = 40
+    CV_MAX_PAGES: int = 10
+    CV_OCR_MAX_PAGES: int = 5
+    OCR_ENABLED: bool = True
+    OCR_LANGUAGE: str = "vie+eng"
+    OCR_DPI: int = 200
+    OCR_TESSDATA_DIR: str = ""
     QDRANT_URL: str = "http://localhost:6333"
     QDRANT_TIMEOUT_SECONDS: int = 5
     INTERNAL_API_KEY: str = ""

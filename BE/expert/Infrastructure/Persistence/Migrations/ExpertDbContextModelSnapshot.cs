@@ -204,6 +204,11 @@ namespace Caps.Expert.Infrastructure.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("application_id");
 
+                    b.Property<string>("AssignedGroup")
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("assigned_group");
+
                     b.Property<string>("ContentType")
                         .IsRequired()
                         .HasColumnType("text")
@@ -273,6 +278,212 @@ namespace Caps.Expert.Infrastructure.Persistence.Migrations
                         .HasDatabaseName("ix_expert_evidence_qualification");
 
                     b.ToTable("expert_evidence", "expert");
+                });
+
+            modelBuilder.Entity("Caps.Expert.Domain.Applications.ScreeningEvent", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("ActorUserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("actor_user_id");
+
+                    b.Property<Guid>("ApplicationId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("application_id");
+
+                    b.Property<bool>("BySystem")
+                        .HasColumnType("boolean")
+                        .HasColumnName("by_system");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("EventType")
+                        .IsRequired()
+                        .HasMaxLength(48)
+                        .HasColumnType("character varying(48)")
+                        .HasColumnName("event_type");
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("message");
+
+                    b.Property<Guid>("ScreeningRunId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("screening_run_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ScreeningRunId");
+
+                    b.HasIndex("ApplicationId", "CreatedAt")
+                        .HasDatabaseName("ix_screening_event_application");
+
+                    b.ToTable("screening_event", "expert");
+                });
+
+            modelBuilder.Entity("Caps.Expert.Domain.Applications.ScreeningPoint", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("ApplicationId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("application_id");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("code");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("Detail")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("detail");
+
+                    b.Property<Guid?>("EvidenceId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("evidence_id");
+
+                    b.Property<string>("MetadataJson")
+                        .HasColumnType("jsonb")
+                        .HasColumnName("metadata_json");
+
+                    b.Property<string>("ResolutionReason")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("resolution_reason");
+
+                    b.Property<DateTimeOffset?>("ResolvedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("resolved_at");
+
+                    b.Property<Guid?>("ResolvedByUserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("resolved_by_user_id");
+
+                    b.Property<Guid>("ScreeningRunId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("screening_run_id");
+
+                    b.Property<string>("Source")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("source");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("status");
+
+                    b.Property<string>("SuggestedRequest")
+                        .HasColumnType("text")
+                        .HasColumnName("suggested_request");
+
+                    b.Property<string>("TargetCriterion")
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("target_criterion");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)")
+                        .HasColumnName("title");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ApplicationId")
+                        .HasDatabaseName("ix_screening_point_application");
+
+                    b.HasIndex("EvidenceId");
+
+                    b.HasIndex("ScreeningRunId", "CreatedAt")
+                        .HasDatabaseName("ix_screening_point_run");
+
+                    b.ToTable("screening_point", "expert");
+                });
+
+            modelBuilder.Entity("Caps.Expert.Domain.Applications.ScreeningRun", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("ApplicationId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("application_id");
+
+                    b.Property<int>("CheckedFileCount")
+                        .HasColumnType("integer")
+                        .HasColumnName("checked_file_count");
+
+                    b.Property<DateTimeOffset?>("CompletedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("completed_at");
+
+                    b.Property<string>("FailureReason")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("failure_reason");
+
+                    b.Property<int>("RunNumber")
+                        .HasColumnType("integer")
+                        .HasColumnName("run_number");
+
+                    b.Property<DateTimeOffset>("StartedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("started_at");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("status");
+
+                    b.Property<Guid?>("SubmissionEventId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("submission_event_id");
+
+                    b.Property<int>("SubmissionNumber")
+                        .HasColumnType("integer")
+                        .HasColumnName("submission_number");
+
+                    b.Property<DateTimeOffset>("TimeoutAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("timeout_at");
+
+                    b.Property<Guid>("TriggeredByUserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("triggered_by_user_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Status")
+                        .HasDatabaseName("ix_screening_run_running")
+                        .HasFilter("status = 'RUNNING'");
+
+                    b.HasIndex("ApplicationId", "StartedAt")
+                        .HasDatabaseName("ix_screening_run_application");
+
+                    b.ToTable("screening_run", "expert");
                 });
 
             modelBuilder.Entity("Caps.Expert.Domain.Catalog.ServiceCatalogItem", b =>
@@ -426,13 +637,13 @@ namespace Caps.Expert.Infrastructure.Persistence.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("no_delivery_refund_percent");
 
+                    b.Property<int>("NoResponseDays")
+                        .HasColumnType("integer")
+                        .HasColumnName("no_response_days");
+
                     b.Property<int>("NoResponseExpertPercent")
                         .HasColumnType("integer")
                         .HasColumnName("no_response_expert_percent");
-
-                    b.Property<int>("NoResponseHours")
-                        .HasColumnType("integer")
-                        .HasColumnName("no_response_hours");
 
                     b.Property<int>("NoResponseRefundPercent")
                         .HasColumnType("integer")
@@ -464,11 +675,11 @@ namespace Caps.Expert.Infrastructure.Persistence.Migrations
 
                     b.ToTable("platform_fee", "expert", t =>
                         {
-                            t.HasCheckConstraint("ck_platform_fee_late_rule", "late_penalty_hours >= 0 AND late_penalty_percent >= 0 AND percent + late_penalty_percent <= 100 AND late_cancel_hours BETWEEN late_penalty_hours AND 720");
+                            t.HasCheckConstraint("ck_platform_fee_late_rule", "late_penalty_hours >= 0 AND late_penalty_percent BETWEEN 0 AND 100 AND late_cancel_hours BETWEEN late_penalty_hours AND 720");
 
                             t.HasCheckConstraint("ck_platform_fee_no_delivery_rule", "no_delivery_refund_percent BETWEEN 0 AND 100");
 
-                            t.HasCheckConstraint("ck_platform_fee_no_response_rule", "no_response_hours BETWEEN 1 AND 720 AND no_response_refund_percent >= 0 AND no_response_expert_percent >= 0 AND no_response_refund_percent + no_response_expert_percent <= 100");
+                            t.HasCheckConstraint("ck_platform_fee_no_response_rule", "no_response_days BETWEEN 1 AND 30 AND no_response_refund_percent >= 0 AND no_response_expert_percent >= 0 AND no_response_refund_percent + no_response_expert_percent <= 100");
 
                             t.HasCheckConstraint("ck_platform_fee_percent", "percent BETWEEN 0 AND 50");
                         });
@@ -482,8 +693,8 @@ namespace Caps.Expert.Infrastructure.Persistence.Migrations
                             LatePenaltyHours = 24,
                             LatePenaltyPercent = 30,
                             NoDeliveryRefundPercent = 100,
+                            NoResponseDays = 3,
                             NoResponseExpertPercent = 30,
-                            NoResponseHours = 72,
                             NoResponseRefundPercent = 50,
                             Percent = 20,
                             ServiceCode = "HUMAN_VERIFICATION",
@@ -497,10 +708,26 @@ namespace Caps.Expert.Infrastructure.Persistence.Migrations
                             LatePenaltyHours = 24,
                             LatePenaltyPercent = 50,
                             NoDeliveryRefundPercent = 50,
+                            NoResponseDays = 3,
                             NoResponseExpertPercent = 60,
-                            NoResponseHours = 72,
                             NoResponseRefundPercent = 0,
                             Percent = 40,
+                            ServiceCode = "HUMAN_VERIFICATION",
+                            SetBy = new Guid("00000000-0000-0000-0000-000000000000")
+                        },
+                        new
+                        {
+                            Id = new Guid("01929e3a-0000-7000-8000-000000000060"),
+                            EffectiveFrom = new DateTimeOffset(new DateTime(2026, 11, 21, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 7, 0, 0, 0)),
+                            LateCancelHours = 24,
+                            LatePenaltyHours = 24,
+                            LatePenaltyPercent = 20,
+                            NoDeliveryRefundPercent = 100,
+                            NoResponseDays = 3,
+                            NoResponseExpertPercent = 60,
+                            NoResponseRefundPercent = 0,
+                            Percent = 40,
+                            Reason = "Theo đề xuất của thầy Thức ngày 20/11/2026: giao trễ trong 24 giờ hoàn khách 20% từ phần của nền tảng (khách 20%, nền tảng 20%, chuyên gia 60%); quá 24 giờ chưa bàn giao hoàn khách 100%.",
                             ServiceCode = "HUMAN_VERIFICATION",
                             SetBy = new Guid("00000000-0000-0000-0000-000000000000")
                         });
@@ -796,6 +1023,68 @@ namespace Caps.Expert.Infrastructure.Persistence.Migrations
                     b.ToTable("expert_profile", "expert", t =>
                         {
                             t.HasCheckConstraint("ck_expert_capacity", "capacity BETWEEN 0 AND 20 AND active_cases >= 0");
+                        });
+                });
+
+            modelBuilder.Entity("Caps.Expert.Domain.Profiles.ExpertViolation", b =>
+                {
+                    b.Property<Guid>("ReviewCaseId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("review_case_id");
+
+                    b.Property<DateTimeOffset?>("ExcuseDeclinedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("excuse_declined_at");
+
+                    b.Property<string>("ExcuseRequest")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("excuse_request");
+
+                    b.Property<DateTimeOffset?>("ExcuseRequestedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("excuse_requested_at");
+
+                    b.Property<DateTimeOffset?>("ExcusedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("excused_at");
+
+                    b.Property<Guid?>("ExcusedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("excused_by");
+
+                    b.Property<string>("ExcusedReason")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("excused_reason");
+
+                    b.Property<Guid>("ExpertProfileId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("expert_profile_id");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("kind");
+
+                    b.Property<DateTimeOffset>("OccurredAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("occurred_at");
+
+                    b.Property<short>("Points")
+                        .HasColumnType("smallint")
+                        .HasColumnName("points");
+
+                    b.HasKey("ReviewCaseId");
+
+                    b.HasIndex("ExpertProfileId", "OccurredAt")
+                        .HasDatabaseName("ix_expert_violation_profile_time");
+
+                    b.ToTable("expert_violation", "expert", t =>
+                        {
+                            t.HasCheckConstraint("ck_expert_violation_points", "points BETWEEN 1 AND 3");
                         });
                 });
 
@@ -1238,6 +1527,56 @@ namespace Caps.Expert.Infrastructure.Persistence.Migrations
                     b.Navigation("Application");
                 });
 
+            modelBuilder.Entity("Caps.Expert.Domain.Applications.ScreeningEvent", b =>
+                {
+                    b.HasOne("Caps.Expert.Domain.Applications.ExpertApplication", null)
+                        .WithMany()
+                        .HasForeignKey("ApplicationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_screening_event_application");
+
+                    b.HasOne("Caps.Expert.Domain.Applications.ScreeningRun", null)
+                        .WithMany()
+                        .HasForeignKey("ScreeningRunId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_screening_event_run");
+                });
+
+            modelBuilder.Entity("Caps.Expert.Domain.Applications.ScreeningPoint", b =>
+                {
+                    b.HasOne("Caps.Expert.Domain.Applications.ExpertApplication", null)
+                        .WithMany()
+                        .HasForeignKey("ApplicationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_screening_point_application");
+
+                    b.HasOne("Caps.Expert.Domain.Applications.ExpertEvidence", null)
+                        .WithMany()
+                        .HasForeignKey("EvidenceId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_screening_point_evidence");
+
+                    b.HasOne("Caps.Expert.Domain.Applications.ScreeningRun", null)
+                        .WithMany("Points")
+                        .HasForeignKey("ScreeningRunId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_screening_point_run");
+                });
+
+            modelBuilder.Entity("Caps.Expert.Domain.Applications.ScreeningRun", b =>
+                {
+                    b.HasOne("Caps.Expert.Domain.Applications.ExpertApplication", null)
+                        .WithMany()
+                        .HasForeignKey("ApplicationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_screening_run_application");
+                });
+
             modelBuilder.Entity("Caps.Expert.Domain.Pricing.PlatformFee", b =>
                 {
                     b.HasOne("Caps.Expert.Domain.Catalog.ServiceCatalogItem", null)
@@ -1293,6 +1632,55 @@ namespace Caps.Expert.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_expert_case_slot_profile");
+                });
+
+            modelBuilder.Entity("Caps.Expert.Domain.Profiles.ExpertViolation", b =>
+                {
+                    b.HasOne("Caps.Expert.Domain.Profiles.ExpertProfile", null)
+                        .WithMany()
+                        .HasForeignKey("ExpertProfileId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_expert_violation_profile");
+
+                    b.OwnsMany("Caps.Expert.Domain.Profiles.ExcuseFile", "ExcuseFiles", b1 =>
+                        {
+                            b1.Property<Guid>("ExpertViolationReviewCaseId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<int>("__synthesizedOrdinal")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("integer");
+
+                            b1.Property<string>("ContentType")
+                                .IsRequired()
+                                .HasColumnType("text");
+
+                            b1.Property<string>("FileName")
+                                .IsRequired()
+                                .HasColumnType("text");
+
+                            b1.Property<Guid>("Id")
+                                .HasColumnType("uuid");
+
+                            b1.Property<long>("SizeBytes")
+                                .HasColumnType("bigint");
+
+                            b1.Property<string>("StorageKey")
+                                .IsRequired()
+                                .HasColumnType("text");
+
+                            b1.HasKey("ExpertViolationReviewCaseId", "__synthesizedOrdinal");
+
+                            b1.ToTable("expert_violation", "expert");
+
+                            b1.ToJson("excuse_files");
+
+                            b1.WithOwner()
+                                .HasForeignKey("ExpertViolationReviewCaseId");
+                        });
+
+                    b.Navigation("ExcuseFiles");
                 });
 
             modelBuilder.Entity("Caps.Expert.Domain.Qualifications.CompetencyAssessment", b =>
@@ -1403,6 +1791,11 @@ namespace Caps.Expert.Infrastructure.Persistence.Migrations
                     b.Navigation("Events");
 
                     b.Navigation("Evidences");
+                });
+
+            modelBuilder.Entity("Caps.Expert.Domain.Applications.ScreeningRun", b =>
+                {
+                    b.Navigation("Points");
                 });
 
             modelBuilder.Entity("Caps.Expert.Domain.Profiles.ExpertProfile", b =>

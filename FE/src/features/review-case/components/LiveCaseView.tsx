@@ -8,6 +8,7 @@ import { CaseHeader } from '@/components/ui/layout/case-header'
 import { useAuthStore } from '@/features/auth'
 import { openCaseDispute, reviewCaseActions } from '../api/reviewCaseApi'
 import { useCaseError, useCaseRun, useLiveCase } from '../hooks/useReviewCases'
+import { ExtensionStatus } from './CaseExtension'
 import type { CaseStatus } from '../types'
 import { useCaseFormat } from '../ui'
 import { CaseAside } from './CaseAside'
@@ -128,6 +129,8 @@ export function LiveCaseView({ caseId }: { caseId: string }) {
       | 'rated'
       | 'cancelledEarly'
       | 'disputeWithdrawn'
+      | 'extensionAccepted'
+      | 'extensionDeclined'
   ) =>
     run(action, {
       onSuccess: () => {
@@ -196,6 +199,18 @@ export function LiveCaseView({ caseId }: { caseId: string }) {
 
       <div className="mt-10 grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_20rem] xl:grid-cols-[minmax(0,1fr)_22rem]">
         <div className="min-w-0 space-y-8">
+          {dto.extension && dto.status === 'IN_REVIEW' && (
+            <ExtensionStatus
+              extension={dto.extension}
+              busy={busy}
+              onDecide={(accept) =>
+                perform(
+                  () => reviewCaseActions.decideExtension(caseId, accept),
+                  accept ? 'extensionAccepted' : 'extensionDeclined'
+                )
+              }
+            />
+          )}
           <CasePanel c={c} actions={actions} />
           {c.settlement && (
             <SettlementReceipt amount={c.amount} settlement={c.settlement} />
@@ -264,6 +279,7 @@ export function LiveCaseView({ caseId }: { caseId: string }) {
 
       {dialog === 'accept' && (
         <AcceptDialog
+          refund={c.clientTerms?.acceptRefund}
           onClose={() => setDialog(null)}
           onConfirm={() =>
             perform(() => reviewCaseActions.confirm(caseId), 'accepted')
@@ -287,6 +303,7 @@ export function LiveCaseView({ caseId }: { caseId: string }) {
         )}
       {dialog === 'report' && (
         <ReportDialog
+          disputeRefund={c.clientTerms?.disputeRefund}
           onClose={() => setDialog(null)}
           onSubmit={(issue, description) =>
             perform(

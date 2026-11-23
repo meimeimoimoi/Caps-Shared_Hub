@@ -1,3 +1,4 @@
+import { SortableTh } from '@/components/ui/navigation/sortable-th'
 import { useCallback, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Download, AlertTriangle } from 'lucide-react'
@@ -28,7 +29,6 @@ import { usePricing } from '../../features/service-pricing/hooks/usePricing'
 import type { Escrow } from '../../features/disputes-escrow/types'
 import { PageHeader } from '@/components/ui/layout/page-header'
 import { LoadError } from '@/components/ui/feedback/load-error'
-import { OperationsUnavailable } from '@/features/disputes-escrow/components/OperationsUnavailable'
 
 const rowCls = 'border-border-subtle border-t [&>td]:px-4 [&>td]:py-3'
 const headCls =
@@ -48,11 +48,12 @@ const GROUPS = [
 export default function AdminEscrowPage() {
   const nav = useAdminNav()
   const { t } = useTranslation(['admin', 'common'])
-  const escrows = useEscrows(!nav.operationsUnavailable)
+  const escrows = useEscrows()
   const { paged, selected } = escrows
-  // Share comes from the pricing config; 40 (agreed 2026-11-11) is only the fallback while it loads
+  // Share comes from the pricing config; 40 (agreed 2026-11-11) is the fallback while it loads and
+  // while that config has no backend
   const platformShare =
-    usePricing(!nav.operationsUnavailable).data?.platformShare ?? 40
+    usePricing(!nav.pricingUnavailable).data?.platformShare ?? 40
   const [retrying, setRetrying] = useState<string | null>(null)
   const [toast, setToast] = useState<ToastContent | null>(null)
   const clearToast = useCallback(() => setToast(null), [])
@@ -124,144 +125,139 @@ export default function AdminEscrowPage() {
       {...nav}
       section="escrow"
       breadcrumb={t('escrow.title')}
-      search={nav.operationsUnavailable ? undefined : escrows.query}
+      search={escrows.query}
       searchLabel={t('escrow.searchLabel')}
-      onSearchChange={nav.operationsUnavailable ? undefined : escrows.setQuery}
+      onSearchChange={escrows.setQuery}
     >
       <PageHeader
         title={t('escrow.title')}
         help={t('escrow.intro')}
         actions={
-          !nav.operationsUnavailable && (
-            <button
-              type="button"
-              onClick={exportCsv}
-              disabled={!escrows.rows.length}
-              className="btn btn-press btn-secondary"
-            >
-              <Download size={16} aria-hidden="true" />
-              {t('escrow.export')}
-            </button>
-          )
+          <button
+            type="button"
+            onClick={exportCsv}
+            disabled={!escrows.rows.length}
+            className="btn btn-press btn-secondary"
+          >
+            <Download size={16} aria-hidden="true" />
+            {t('escrow.export')}
+          </button>
         }
       />
-      {/* No backend for this queue outside the demo: one honest state, no fake zeros */}
-      {nav.operationsUnavailable ? (
-        <OperationsUnavailable area="escrow" />
-      ) : (
+      {
         <>
           {/* Total tiles double as filters: click to see that status, click again to clear.
            * Shown only once the list has loaded, so a pending or failed load never reads as 0 ₫ */}
           {!escrows.isLoading && !escrows.error && (
-          <div
-            role="group"
-            aria-label={t('escrow.filterLabel')}
-            className="mt-8 flex flex-wrap gap-x-6 gap-y-5"
-          >
-            {GROUPS.map((group) => {
-              const sum = (s: Escrow['status']) =>
-                escrows.matching
-                  .filter((e) => e.status === s)
-                  .reduce((n, e) => n + e.amount, 0)
-              const count = (s: Escrow['status']) =>
-                escrows.matching.filter((e) => e.status === s).length
-              // Không có lỗi nào thì ẩn hẳn nhóm "Cần xử lý" cho đỡ nhiễu; trừ khi đang lọc theo nó
-              // (vd. vừa thử lại thành công) để còn ô bấm bỏ lọc
-              if (
-                group.key === 'action' &&
-                group.statuses.every((s) => count(s) === 0) &&
-                !(group.statuses as readonly string[]).includes(escrows.status)
-              )
-                return null
-              const holding = group.statuses.reduce((n, s) => n + sum(s), 0)
-              return (
-                <section
-                  key={group.key}
-                  aria-labelledby={`escrow-group-${group.key}`}
-                  className="min-w-64"
-                  // Nhóm nhiều ô thì rộng hơn
-                  style={{ flex: `${group.statuses.length} 1 0` }}
-                >
-                  <div className="flex items-baseline justify-between gap-3">
-                    <h2
-                      id={`escrow-group-${group.key}`}
-                      className={cn(
-                        'text-sm font-semibold',
-                        group.key === 'action'
-                          ? 'text-danger'
-                          : 'text-fg-strong'
-                      )}
-                    >
-                      {t(`escrow.groups.${group.key}`)}
-                    </h2>
-                    {group.key === 'holding' && (
-                      <span className="text-fg-muted num text-sm">
-                        {t('escrow.groups.holdingTotal', {
-                          amount: formatVnd(holding),
-                        })}
-                      </span>
-                    )}
-                  </div>
-                  <div
-                    // Màn rộng: mỗi trạng thái một cột; màn hẹp: xuống dòng thay vì ép số tiền tràn ô
-                    className="mt-2 grid [grid-template-columns:repeat(auto-fit,minmax(9.5rem,1fr))] gap-3 lg:[grid-template-columns:repeat(var(--cols),minmax(0,1fr))]"
-                    style={
-                      { '--cols': group.statuses.length } as React.CSSProperties
-                    }
+            <div
+              role="group"
+              aria-label={t('escrow.filterLabel')}
+              className="mt-8 flex flex-wrap gap-x-6 gap-y-5"
+            >
+              {GROUPS.map((group) => {
+                const sum = (s: Escrow['status']) =>
+                  escrows.matching
+                    .filter((e) => e.status === s)
+                    .reduce((n, e) => n + e.amount, 0)
+                const count = (s: Escrow['status']) =>
+                  escrows.matching.filter((e) => e.status === s).length
+                // Không có lỗi nào thì ẩn hẳn nhóm "Cần xử lý" cho đỡ nhiễu; trừ khi đang lọc theo nó
+                // (vd. vừa thử lại thành công) để còn ô bấm bỏ lọc
+                if (
+                  group.key === 'action' &&
+                  group.statuses.every((s) => count(s) === 0) &&
+                  !(group.statuses as readonly string[]).includes(escrows.status)
+                )
+                  return null
+                const holding = group.statuses.reduce((n, s) => n + sum(s), 0)
+                return (
+                  <section
+                    key={group.key}
+                    aria-labelledby={`escrow-group-${group.key}`}
+                    className="min-w-64"
+                    // Nhóm nhiều ô thì rộng hơn
+                    style={{ flex: `${group.statuses.length} 1 0` }}
                   >
-                    {group.statuses.map((s) => {
-                      const active = escrows.status === s
-                      const failed = group.key === 'action' && count(s) > 0
-                      return (
-                        <button
-                          key={s}
-                          type="button"
-                          aria-pressed={active}
-                          onClick={() => escrows.setStatus(active ? ALL : s)}
-                          className={cn(
-                            'paper motion-lift p-4 text-left',
-                            active && 'outline-accent outline-2'
-                          )}
-                        >
-                          <span
+                    <div className="flex items-baseline justify-between gap-3">
+                      <h2
+                        id={`escrow-group-${group.key}`}
+                        className={cn(
+                          'text-sm font-semibold',
+                          group.key === 'action'
+                            ? 'text-danger'
+                            : 'text-fg-strong'
+                        )}
+                      >
+                        {t(`escrow.groups.${group.key}`)}
+                      </h2>
+                      {group.key === 'holding' && (
+                        <span className="text-fg-muted num text-sm">
+                          {t('escrow.groups.holdingTotal', {
+                            amount: formatVnd(holding),
+                          })}
+                        </span>
+                      )}
+                    </div>
+                    <div
+                      // Màn rộng: mỗi trạng thái một cột; màn hẹp: xuống dòng thay vì ép số tiền tràn ô
+                      className="mt-2 grid [grid-template-columns:repeat(auto-fit,minmax(9.5rem,1fr))] gap-3 lg:[grid-template-columns:repeat(var(--cols),minmax(0,1fr))]"
+                      style={
+                        { '--cols': group.statuses.length } as React.CSSProperties
+                      }
+                    >
+                      {group.statuses.map((s) => {
+                        const active = escrows.status === s
+                        const failed = group.key === 'action' && count(s) > 0
+                        return (
+                          <button
+                            key={s}
+                            type="button"
+                            aria-pressed={active}
+                            onClick={() => escrows.setStatus(active ? ALL : s)}
                             className={cn(
-                              'flex items-center gap-1.5 text-sm',
-                              failed
-                                ? 'text-danger font-semibold'
-                                : 'text-fg-muted'
+                              'paper motion-lift p-4 text-left',
+                              active && 'outline-accent outline-2'
                             )}
                           >
-                            {/* Icon as well as colour, so a failure is not signalled by colour alone */}
-                            {failed && (
-                              <AlertTriangle size={14} aria-hidden="true" />
-                            )}
-                            {t(`escrow.status.${s}`)}
-                          </span>
-                          <span
-                            className={cn(
-                              'num mt-1 block font-semibold',
-                              // Đã xong thì chữ nhỏ và nhạt hơn: không cần làm gì
-                              group.key === 'done'
-                                ? 'text-fg text-lg'
-                                : 'text-xl',
-                              failed
-                                ? 'text-danger'
-                                : group.key !== 'done' && 'text-fg-strong'
-                            )}
-                          >
-                            {formatVnd(sum(s))}
-                          </span>
-                          <span className="text-fg-muted num block text-sm">
-                            {t('escrow.items', { count: count(s) })}
-                          </span>
-                        </button>
-                      )
-                    })}
-                  </div>
-                </section>
-              )
-            })}
-          </div>
+                            <span
+                              className={cn(
+                                'flex items-center gap-1.5 text-sm',
+                                failed
+                                  ? 'text-danger font-semibold'
+                                  : 'text-fg-muted'
+                              )}
+                            >
+                              {/* Icon as well as colour, so a failure is not signalled by colour alone */}
+                              {failed && (
+                                <AlertTriangle size={14} aria-hidden="true" />
+                              )}
+                              {t(`escrow.status.${s}`)}
+                            </span>
+                            <span
+                              className={cn(
+                                'num mt-1 block font-semibold',
+                                // Đã xong thì chữ nhỏ và nhạt hơn: không cần làm gì
+                                group.key === 'done'
+                                  ? 'text-fg text-lg'
+                                  : 'text-xl',
+                                failed
+                                  ? 'text-danger'
+                                  : group.key !== 'done' && 'text-fg-strong'
+                              )}
+                            >
+                              {formatVnd(sum(s))}
+                            </span>
+                            <span className="text-fg-muted num block text-sm">
+                              {t('escrow.items', { count: count(s) })}
+                            </span>
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </section>
+                )
+              })}
+            </div>
           )}
 
           <section className="paper mt-6 overflow-x-auto">
@@ -269,24 +265,49 @@ export default function AdminEscrowPage() {
               <caption className="sr-only">{t('escrow.title')}</caption>
               <thead>
                 <tr className={headCls}>
-                  <th scope="col" className="text-left">
+                  <SortableTh
+                    className="text-left"
+                    column="caseId"
+                    sort={escrows.sort}
+                    onSort={escrows.onSort}
+                  >
                     {t('escrow.col.caseId')}
-                  </th>
-                  <th scope="col" className="text-left">
+                  </SortableTh>
+                  <SortableTh
+                    className="text-left"
+                    column="client"
+                    sort={escrows.sort}
+                    onSort={escrows.onSort}
+                  >
                     {t('escrow.col.client')}
-                  </th>
-                  <th scope="col" className="text-left">
+                  </SortableTh>
+                  <SortableTh
+                    className="text-left"
+                    column="expert"
+                    sort={escrows.sort}
+                    onSort={escrows.onSort}
+                  >
                     {t('escrow.col.expert')}
-                  </th>
-                  <th scope="col" className="text-right">
+                  </SortableTh>
+                  <SortableTh
+                    className="text-right"
+                    column="amount"
+                    sort={escrows.sort}
+                    onSort={escrows.onSort}
+                  >
                     {t('escrow.col.amount')}
-                  </th>
+                  </SortableTh>
                   <th scope="col" className="text-left">
                     {t('escrow.col.status')}
                   </th>
-                  <th scope="col" className="text-right">
+                  <SortableTh
+                    className="text-right"
+                    column="nextAt"
+                    sort={escrows.sort}
+                    onSort={escrows.onSort}
+                  >
                     {t('escrow.col.next')}
-                  </th>
+                  </SortableTh>
                   <th scope="col">
                     <span className="sr-only">{t('escrow.col.actions')}</span>
                   </th>
@@ -350,6 +371,8 @@ export default function AdminEscrowPage() {
               paged={paged}
               onPrev={escrows.prev}
               onNext={escrows.next}
+              onPageChange={escrows.setPage}
+              onPageSizeChange={escrows.setPageSize}
             />
           </section>
 
@@ -412,7 +435,7 @@ export default function AdminEscrowPage() {
           )}
           {toast && <Toast message={toast} onDone={clearToast} />}
         </>
-      )}
+      }
     </AdminLayout>
   )
 }

@@ -3,6 +3,7 @@ using Caps.Common.Messaging;
 using Caps.Common.Persistence;
 using Caps.Notification;
 using Caps.Notification.Data;
+using Caps.Notification.Features.AuditLogs;
 using Caps.Notification.Features.AuthEmails;
 using Caps.Notification.Features.ExpertDecisions;
 using Caps.Notification.Features.Realtime;
@@ -27,7 +28,12 @@ builder.Services.AddCapsMessaging(
         x.AddConsumer<ReviewCaseAcceptanceDueConsumer>();
         x.AddConsumer<ReviewCaseStatusChangedConsumer>();
         x.AddConsumer<ReviewCaseResponseDueConsumer>();
+        x.AddConsumer<ReviewCaseStatementDueConsumer>();
         x.AddConsumer<ReviewCaseDisputeOverdueConsumer>();
+        x.AddConsumer<ReviewCaseExtensionRequestedConsumer>();
+        x.AddConsumer<ReviewCaseExtensionDecidedConsumer>();
+        x.AddConsumer<ExpertExcuseRequestedConsumer>();
+        x.AddConsumer<AuditRecordedConsumer>();
     }
 );
 var app = builder.Build();

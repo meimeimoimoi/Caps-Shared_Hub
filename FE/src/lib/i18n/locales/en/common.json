@@ -19,6 +19,8 @@
     "preview": "Demo preview"
   },
   "navigation": {
+    "admin": "Admin navigation",
+    "breadcrumb": "Breadcrumb",
     "home": "Shared Hub home",
     "open": "Open navigation",
     "close": "Close navigation",
@@ -43,7 +45,15 @@
   "form": {
     "help": "Help for {{label}}"
   },
+  "table": {
+    "ascending": "Ascending",
+    "descending": "Descending",
+  "sort": "Sort by",
+  "sortAscending": "Sort {{column}} ascending",
+  "sortDescending": "Sort {{column}} descending"
+},
   "pagination": {
+    "pageOf": "Page {{page}} / {{totalPages}}",
     "label": "Pagination",
     "previous": "Previous",
     "next": "Next",
@@ -150,9 +160,15 @@
         "DISPUTED": "The client disputed the result. You can send an explanation.",
         "RESOLVED": "An admin decided the dispute.",
         "TERMINATED": "The case ended because the requested information did not arrive in time.",
-        "WITHDRAWN": "The client withdrew the review request; the fee was refunded to the client."
+        "WITHDRAWN": "The client withdrew the review request; the fee was refunded to the client.",
+        "withdrawnClient": "You withdrew your review request. The full fee was refunded to your wallet."
       },
-      "acceptanceDue": "Your review result confirms itself soon. Accept it or report a problem before the deadline."
+      "acceptanceDue": "Your review result confirms itself soon. Accept it or report a problem before the deadline.",
+      "extensionRequested": "The expert asks for {{days}} more working days to deliver. Accept or decline before the deadline; if you do not answer, the deadline stays.",
+      "extensionAccepted": "The client accepted {{days}} more working days; the delivery deadline moved.",
+      "extensionDeclined": "The client declined the extension; the delivery deadline stays.",
+      "statementDue": "A dispute's statement window ends soon. Send your statement and evidence before the administrator decides.",
+      "disputeOverdue": "The dispute decision is taking longer than expected. The fee stays safely on hold until it is decided."
     }
   },
   "states": {

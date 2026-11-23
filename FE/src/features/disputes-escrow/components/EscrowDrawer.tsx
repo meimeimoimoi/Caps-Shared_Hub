@@ -7,6 +7,7 @@ import { formatVnd } from '@/lib/format-money'
 import { Drawer } from '@/components/ui/feedback/drawer'
 import { Modal } from '@/components/ui/feedback/modal'
 import { HelpTip } from '@/components/ui/feedback/help-tip'
+import { FormField } from '@/components/ui/forms/form-field'
 import { TERMINATION_MATRIX } from '../constants'
 import { escrowSplit } from '../utils/escrow'
 import type { Escrow } from '../types'
@@ -75,18 +76,63 @@ export function EscrowDrawer({
             {retrying ? t('escrow.retrying') : t('escrow.retry')}
           </button>
         ) : refundOpen ? (
-          <button
-            type="button"
-            onClick={() => {
-              setConfirming(true)
-              setRef('')
-              setError(null)
-            }}
-            className="btn btn-press btn-primary"
-          >
-            <CircleCheck size={16} aria-hidden="true" />
-            {t('escrow.refund.mark')}
-          </button>
+          confirming ? (
+            <div className="w-full space-y-3">
+              <div>
+                <p className="text-fg-strong font-semibold">
+                  {t('escrow.refund.title', {
+                    amount: formatVnd(split.client),
+                  })}
+                </p>
+                <p className="text-fg-muted mt-1 text-sm">
+                  {t('escrow.refund.body', { account: e.refundAccount ?? '' })}
+                </p>
+              </div>
+              <FormField label={t('escrow.refund.ref')} help={t('escrow.refund.refHint')} className="!mb-0">
+                <input
+                  value={ref}
+                  onChange={(ev) => setRef(ev.target.value)}
+                  className="border-border-control rounded-control shadow-control bg-paper h-control num border px-3 text-base font-normal"
+                />
+              </FormField>
+              {error && (
+                <p role="alert" className="text-danger text-sm">
+                  {error}
+                </p>
+              )}
+              <div className="flex flex-wrap justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setConfirming(false)}
+                  disabled={busy}
+                  className="btn btn-press btn-secondary"
+                >
+                  {t('escrow.refund.cancel')}
+                </button>
+                <button
+                  type="button"
+                  onClick={confirmRefund}
+                  disabled={busy}
+                  className="btn btn-press btn-primary"
+                >
+                  {t('escrow.refund.confirm')}
+                </button>
+              </div>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => {
+                setConfirming(true)
+                setRef('')
+                setError(null)
+              }}
+              className="btn btn-press btn-primary"
+            >
+              <CircleCheck size={16} aria-hidden="true" />
+              {t('escrow.refund.mark')}
+            </button>
+          )
         ) : undefined
       }
     >

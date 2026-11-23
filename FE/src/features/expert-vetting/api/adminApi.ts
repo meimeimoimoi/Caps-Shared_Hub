@@ -11,9 +11,14 @@ import type {
   EligibilityResult,
   Expert,
   ExpertApplication,
+  ExpertViolations,
+  ExcuseRequest,
   CriterionDeclaration,
   InformationRounds,
   ReviewClaimState,
+  ScreeningPointAction,
+  ScreeningRun,
+  ScreeningRunStatus,
   Submission,
 } from '../types'
 
@@ -38,6 +43,8 @@ interface ReviewQueueItem {
   status: ApplicationStatus
   submittedAt: string | null
   isReapplication: boolean
+  openScreeningPoints?: number
+  screeningStatus?: ScreeningRunStatus | null
 }
 
 interface ReviewApplication {
@@ -92,13 +99,15 @@ interface ReviewApplication {
   declarationPassedCriteria?: string[]
   claim?: ReviewClaimState
   rounds?: InformationRounds
+  screening?: ScreeningRun | null
 }
 
 const toQueueRow = (a: ReviewQueueItem): ExpertApplication => ({
   id: a.id,
   name: a.displayName ?? a.applicantUserId,
   years: a.yearsExperience ?? 0,
-  aiFlags: 0,
+  aiFlags: a.openScreeningPoints ?? 0,
+  screeningStatus: a.screeningStatus ?? null,
   submittedAt: a.submittedAt ?? '',
   status: a.status,
   fields: a.fields,
@@ -112,7 +121,8 @@ function toDetail(a: ReviewApplication): ApplicationDetail {
     id: a.id,
     name,
     years: p.yearsExperience ?? 0,
-    aiFlags: 0,
+    aiFlags: a.screening?.openPointCount ?? 0,
+    screeningStatus: a.screening?.status ?? null,
     submittedAt: a.submittedAt ?? a.createdAt,
     status: a.status,
     birthDate: p.birthDate ?? '',
@@ -122,6 +132,7 @@ function toDetail(a: ReviewApplication): ApplicationDetail {
     bio: p.bio ?? '',
     fields: p.fields,
     highlights: p.highlights ?? '',
+    screening: a.screening ?? null,
     documents: a.evidence.map((e) => ({
       code: e.code,
       name: e.sourceUrl || e.fileName,
@@ -217,6 +228,40 @@ export async function releaseApplication(id: string): Promise<ApplicationDetail>
   return toDetail(res.data)
 }
 
+/** Resolves or reopens one Gate 1 screening point */
+export async function resolveScreeningPoint(
+  id: string,
+  pointId: string,
+  body: { action: ScreeningPointAction; reason?: string | null }
+): Promise<ApplicationDetail> {
+  const res = await api.post<Envelope<ReviewApplication>>(
+    `${REVIEW_BASE}/${id}/screening/points/${pointId}/resolve`,
+    body
+  )
+  return toDetail(res.data)
+}
+
+/** Retries a failed or timed-out AI screening run */
+export async function retryScreening(id: string): Promise<ApplicationDetail> {
+  const res = await api.post<Envelope<ReviewApplication>>(
+    `${REVIEW_BASE}/${id}/screening/retry`
+  )
+  return toDetail(res.data)
+}
+
+/** Assigns a SUPPLEMENT evidence file to a target Gate 1 criterion group */
+export async function assignSupplementGroup(
+  id: string,
+  evidenceId: string,
+  groupCode: string | null
+): Promise<ApplicationDetail> {
+  const res = await api.put<Envelope<ReviewApplication>>(
+    `${REVIEW_BASE}/${id}/evidence/${evidenceId}/group`,
+    { groupCode }
+  )
+  return toDetail(res.data)
+}
+
 /* ── Expert management: one row per Expert–Service past final approval ── */
 const MANAGED = '/api/v1/admin/experts/managed'
 const SERVICE_ACCESS = (id: string) => `/api/v1/admin/experts/approvals/${id}/service-access`
@@ -224,6 +269,7 @@ const SERVICE_ACCESS = (id: string) => `/api/v1/admin/experts/approvals/${id}/se
 interface ManagedExpert {
   id: string
   applicationId: string
+  expertId: string
   displayName: string | null
   email: string | null
   yearsExperience: number | null
@@ -275,6 +321,7 @@ const historyActor = (actor: string) =>
 const toExpert = (m: ManagedExpert): Expert => ({
   id: m.id,
   applicationId: m.applicationId,
+  expertId: m.expertId,
   name: m.displayName ?? m.email ?? m.id,
   email: m.email ?? '',
   fields: m.fields,
@@ -316,5 +363,50 @@ export async function setExpertServiceStatus(
   await api.post(SERVICE_ACCESS(id), {
     action: status === 'SUSPENDED' ? 'SUSPEND' : 'REINSTATE',
     note: note?.trim() || null,
+  })
+}
+
+const VIOLATIONS = (expertId: string) => `/api/v1/admin/experts/${expertId}/violations`
+
+/** Violation points of one expert (late +1, withdrew +2, never delivered +3, counted 90 days) */
+export async function getExpertViolations(expertId: string, signal?: AbortSignal) {
+  if (isExpertDemo) {
+    return { points: 0, excusesLeft: 2, windowDays: 90, items: [] } satisfies ExpertViolations
+  }
+  const res = await api.get<Envelope<ExpertViolations>>(VIOLATIONS(expertId), { signal })
+  return res.data
+}
+
+/** Force majeure: the violation stops counting; the money split of the case does not change */
+export async function excuseViolation(expertId: string, reviewCaseId: string, reason: string) {
+  const res = await api.post<Envelope<ExpertViolations>>(
+    `${VIOLATIONS(expertId)}/${reviewCaseId}/excuse`,
+    { reason }
+  )
+  return res.data
+}
+
+/** Turns down the expert's excuse request; the violation keeps counting */
+export async function declineExcuse(expertId: string, reviewCaseId: string) {
+  const res = await api.post<Envelope<ExpertViolations>>(
+    `${VIOLATIONS(expertId)}/${reviewCaseId}/decline-excuse`
+  )
+  return res.data
+}
+
+/** Excuse requests from every expert waiting for a decision, oldest first */
+export async function getExcuseRequests(signal?: AbortSignal) {
+  if (isExpertDemo) return [] satisfies ExcuseRequest[]
+  const res = await api.get<Envelope<ExcuseRequest[]>>('/api/v1/admin/experts/excuse-requests', {
+    signal,
+  })
+  return res.data
+}
+
+/** One evidence file of an excuse request, as a blob the page saves or opens */
+export async function getExcuseFile(expertId: string, reviewCaseId: string, fileId: string) {
+  return api.get<Blob>(`${VIOLATIONS(expertId)}/${reviewCaseId}/files/${fileId}`, {
+    responseType: 'blob',
+    timeout: 60_000,
   })
 }

@@ -7,6 +7,8 @@
 export const SETTLEMENT_POLICY = {
   USER_ACCEPTED: { type: 'NORMAL', split: [0, 60, 40] },
   AUTO_CONFIRMED: { type: 'NORMAL', split: [0, 60, 40] },
+  // Delivered late (2026-11-20): the refund comes out of the platform's share (real amounts come from the BE)
+  LATE_DELIVERY: { type: 'LATE', split: [20, 60, 20] },
   USER_NON_RESPONSE: { type: 'TERMINATION', split: [0, 60, 40] },
   USER_CANCELLED: { type: 'TERMINATION', split: [50, 30, 20] },
   EXPERT_START_TIMEOUT: { type: 'TERMINATION', split: [100, 0, 0] },

@@ -44,12 +44,13 @@ public sealed class OutboxReviewCaseEvents(WorkflowDbContext db, TimeProvider cl
             ct
         );
 
-    public Task StatusChangedAsync(
+    public async Task StatusChangedAsync(
         ReviewCase reviewCase,
         ReviewStatusHistory history,
         CancellationToken ct
-    ) =>
-        PublishAsync(
+    )
+    {
+        await PublishAsync(
             new ReviewCaseStatusChangedEvent(
                 Guid.NewGuid(),
                 reviewCase.Id,
@@ -64,6 +65,22 @@ public sealed class OutboxReviewCaseEvents(WorkflowDbContext db, TimeProvider cl
             reviewCase.Id,
             ct
         );
+        // Delivered late, withdrew or never delivered: the expert service conunts the points
+        if (reviewCase.ViolationOf(history) is { } kind)
+        {
+            await PublishAsync(
+                new ExpertViolationRecordedEvent(
+                    Guid.NewGuid(),
+                    reviewCase.Id,
+                    reviewCase.ExpertUserId,
+                    kind,
+                    history.CreatedAt
+                ),
+                reviewCase.Id,
+                ct
+            );
+        }
+    }
 
     public Task ResponseDueAsync(
         Guid reviewCaseId,
@@ -77,6 +94,24 @@ public sealed class OutboxReviewCaseEvents(WorkflowDbContext db, TimeProvider cl
                 reviewCaseId,
                 expertUserId,
                 responseDeadline,
+                clock.GetUtcNow()
+            ),
+            reviewCaseId,
+            ct
+        );
+
+    public Task StatementDueAsync(
+        Guid reviewCaseId,
+        Guid expertUserId,
+        DateTimeOffset statementDueBy,
+        CancellationToken ct
+    ) =>
+        PublishAsync(
+            new ReviewCaseStatementDueEvent(
+                Guid.NewGuid(),
+                reviewCaseId,
+                expertUserId,
+                statementDueBy,
                 clock.GetUtcNow()
             ),
             reviewCaseId,
@@ -105,19 +140,56 @@ public sealed class OutboxReviewCaseEvents(WorkflowDbContext db, TimeProvider cl
 
     public Task DisputeOverdueAsync(
         Guid reviewCaseId,
+        Guid requesterUserId,
+        Guid expertUserId,
         DateTimeOffset decideBy,
         bool extended,
+        bool first,
         CancellationToken ct
     ) =>
         PublishAsync(
             new ReviewCaseDisputeOverdueEvent(
                 Guid.NewGuid(),
                 reviewCaseId,
+                requesterUserId,
+                expertUserId,
                 decideBy,
                 extended,
+                first,
                 clock.GetUtcNow()
             ),
             reviewCaseId,
+            ct
+        );
+
+    public Task ExtensionRequestedAsync(ReviewCase reviewCase, CancellationToken ct) =>
+        PublishAsync(
+            new ReviewCaseExtensionRequestedEvent(
+                Guid.NewGuid(),
+                reviewCase.Id,
+                reviewCase.RequesterUserId,
+                reviewCase.RequesterEmail,
+                reviewCase.ExtensionDays!.Value,
+                reviewCase.ExtensionReason!,
+                reviewCase.DeliveryDeadline!.Value,
+                clock.GetUtcNow()
+            ),
+            reviewCase.Id,
+            ct
+        );
+
+    public Task ExtensionDecidedAsync(ReviewCase reviewCase, CancellationToken ct) =>
+        PublishAsync(
+            new ReviewCaseExtensionDecidedEvent(
+                Guid.NewGuid(),
+                reviewCase.Id,
+                reviewCase.ExpertUserId,
+                reviewCase.ExtensionDecision == ReviewCase.ExtensionAccepted,
+                reviewCase.ExtensionDays!.Value,
+                reviewCase.DeliveryDeadline!.Value,
+                clock.GetUtcNow()
+            ),
+            reviewCase.Id,
             ct
         );
 
@@ -159,13 +231,6 @@ public sealed class NoReviewCaseEvents : IReviewCaseEvents
         Guid reviewCaseId,
         Guid expertUserId,
         DateTimeOffset responseDeadline,
-        CancellationToken ct
-    ) => Task.CompletedTask;
-
-    public Task DisputeOverdueAsync(
-        Guid reviewCaseId,
-        DateTimeOffset decideBy,
-        bool extended,
         CancellationToken ct
     ) => Task.CompletedTask;
 }

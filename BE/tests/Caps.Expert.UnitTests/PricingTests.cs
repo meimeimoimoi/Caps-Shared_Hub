@@ -25,6 +25,16 @@ public sealed class PricingTests
     // Default admin policy: 500,000 to 30,000,000 VND, 1 to 7 days, 7 days notice, warning above 50%
     private static readonly PricingPolicy Policy = new(500_000, 30_000_000, 1, 7, 7, 50);
 
+    // BR-E18: a price outside the current range is hidden from the marketplace until the expert fixes it
+    [Fact]
+    public void A_price_outside_the_range_or_off_step_is_not_allowed()
+    {
+        Assert.True(Policy.Allows(1_000_000));
+        Assert.False(Policy.Allows(490_000));
+        Assert.False(Policy.Allows(30_010_000));
+        Assert.False(Policy.Allows(1_005_000));
+    }
+
     // First rate of the service: takes effect at once
     private static PlatformFee Rate(
         int percent = 20,
@@ -37,7 +47,7 @@ public sealed class PricingTests
             24,
             30,
             72,
-            72,
+            3,
             50,
             30,
             noDelivery,
@@ -128,7 +138,7 @@ public sealed class PricingTests
             24,
             50,
             24,
-            72,
+            3,
             0,
             60,
             50,
@@ -160,7 +170,7 @@ public sealed class PricingTests
 
     [Theory]
     [InlineData(20, -1, 30, 72)] // negative hours
-    [InlineData(20, 24, 81, 72)] // penalty + platform fee over 100%
+    [InlineData(20, 24, 101, 72)] // penalty over 100%
     [InlineData(20, 24, 30, 23)] // cancel before the penalty band ends
     [InlineData(20, 24, 30, 721)] // past the cap
     public void A_late_rule_out_of_range_is_rejected(
@@ -177,7 +187,7 @@ public sealed class PricingTests
                 hours,
                 penalty,
                 cancel,
-                72,
+                3,
                 50,
                 30,
                 50,
@@ -203,11 +213,11 @@ public sealed class PricingTests
         Assert.Equal(50, Rate(noDelivery: 50).NoDeliveryRefundPercent);
 
     [Theory]
-    [InlineData(0, 50, 30)] // no hours
-    [InlineData(73, 50, 30)] // past 72 hours: two questions would pause the case over 144 hours
-    [InlineData(72, -1, 30)] // negative share
-    [InlineData(72, 80, 30)] // client + expert over 100%
-    public void A_no_response_rule_out_of_range_is_rejected(int hours, int refund, int expert)
+    [InlineData(0, 50, 30)] // no days
+    [InlineData(4, 50, 30)] // past 3 working days: two questions would pause the case over 6 working days
+    [InlineData(3, -1, 30)] // negative share
+    [InlineData(3, 80, 30)] // client + expert over 100%
+    public void A_no_response_rule_out_of_range_is_rejected(int days, int refund, int expert)
     {
         var e = Assert.Throws<AppException>(() =>
             PlatformFee.Set(
@@ -216,7 +226,7 @@ public sealed class PricingTests
                 24,
                 30,
                 72,
-                hours,
+                days,
                 refund,
                 expert,
                 50,
@@ -236,7 +246,7 @@ public sealed class PricingTests
     {
         var rate = Rate();
 
-        Assert.Equal(72, rate.NoResponseHours);
+        Assert.Equal(3, rate.NoResponseDays);
         Assert.Equal(50, rate.NoResponseRefundPercent);
         Assert.Equal(30, rate.NoResponseExpertPercent);
     }

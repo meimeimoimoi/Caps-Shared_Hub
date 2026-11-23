@@ -292,41 +292,37 @@ export function getMockApplicationDetail(
     highlights:
       'Phụ trách quyết toán thuế TNDN cho khoảng 40 doanh nghiệp; rà soát chi phí được trừ, ưu đãi thuế.',
     screening: {
-      ranAt: app.submittedAt,
-      rerunAt: flags.length
-        ? new Date(
-            new Date(app.submittedAt).getTime() + 2 * 86_400_000
-          ).toISOString()
-        : undefined,
-      checkedCount: 10,
-      flags,
-      legalChecks: [
-        {
-          item: 'Số năm kinh nghiệm kê khai',
-          result: 'declared',
-          note: `${app.years} năm; điều kiện tối thiểu 5 năm.`,
-        },
-        {
-          item: 'EV-01 [Tên giấy tờ]',
-          result: 'present',
-          note: 'Đọc được số hiệu và ngày cấp.',
-          document: 'ChungChiHanhNgheThue.pdf',
-        },
-        {
-          item: 'EV-02 [Tên giấy tờ]',
-          result: 'present',
-          note: '2 file, cùng một văn bằng.',
-          document: 'BangCuNhan (2 file)',
-        },
-        {
-          item: 'EV-03 [Tên giấy tờ]',
-          result: flags.length ? 'review' : 'present',
-          note: flags.length
-            ? 'Chỉ xác nhận giai đoạn tại An Phát.'
-            : 'Xác nhận đủ các giai đoạn công tác.',
-          document: 'XacNhanCongTac.pdf',
-        },
-      ],
+      runId: `run-${id}`,
+      submissionNumber: 1,
+      runNumber: flags.length ? 2 : 1,
+      status: 'COMPLETED',
+      startedAt: app.submittedAt,
+      timeoutAt: at(10),
+      completedAt: at(1),
+      failureReason: null,
+      checkedFileCount: 4,
+      openPointCount: flags.length,
+      canRetry: false,
+      visionEnabled: true,
+      points: flags.map((f, idx) => ({
+        id: f.id,
+        source: idx === 1 ? 'SYSTEM' : 'AI',
+        code: idx === 0 ? 'AI_EXPERIENCE_MISMATCH' : idx === 1 ? 'SYS_UNREADABLE_OR_SCAN' : 'AI_NAME_MISMATCH',
+        evidenceId: null,
+        evidenceCode: f.document,
+        fileName: f.documentName,
+        targetCriterion: f.document,
+        title: f.title,
+        detail: f.detail,
+        suggestedRequest: f.request,
+        status: 'OPEN',
+        resolutionReason: null,
+        resolvedByUserId: null,
+        resolvedAt: null,
+        createdAt: app.submittedAt,
+      })),
+      extractions: [],
+      history: [],
     },
     documents: [
       {

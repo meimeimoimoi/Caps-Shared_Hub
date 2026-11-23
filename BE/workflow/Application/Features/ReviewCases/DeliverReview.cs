@@ -14,6 +14,8 @@ public sealed record DeliverReviewCommand(
     string? Result,
     string? Summary,
     string? CannotVerifyReason,
+    string[]? Citations,
+    bool Attested,
     string? RevisedContent
 );
 
@@ -46,6 +48,8 @@ public sealed class DeliverReviewHandler(
             command.Result,
             command.Summary,
             command.CannotVerifyReason,
+            command.Citations,
+            command.Attested,
             clock.GetUtcNow(),
             command.RevisedContent,
             calendar
@@ -54,6 +58,6 @@ public sealed class DeliverReviewHandler(
         await events.StatusChangedAsync(reviewCase, delivered, ct);
         await unitOfWork.SaveChangesAsync(ct);
         await tx.CommitAsync(ct);
-        return ReviewCaseResponse.From(reviewCase);
+        return ReviewCaseResponse.From(reviewCase, command.UserId);
     }
 }

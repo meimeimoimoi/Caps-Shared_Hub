@@ -265,7 +265,7 @@ public static class ExpertErrors
         new(
             ErrorType.Validation,
             "LATE_RULE_INVALID",
-            $"Late hours must be 0 to {maxHours} with the cancel hours not below the penalty hours, and the penalty plus the platform fee at most 100 percent."
+            $"Late hours must be 0 to {maxHours} with the cancel hours not below the penalty hours, and the penalty at most 100 percent."
         );
 
     public static AppException NoDeliveryRuleInvalid() =>
@@ -275,11 +275,11 @@ public static class ExpertErrors
             "The refund when the expert never delivers must be 0 to 100 percent."
         );
 
-    public static AppException NoResponseRuleInvalid(int maxHours) =>
+    public static AppException NoResponseRuleInvalid(int maxDays) =>
         new(
             ErrorType.Validation,
             "NO_RESPONSE_RULE_INVALID",
-            $"The no-response hours must be 1 to {maxHours}, and the client's plus the expert's share at most 100 percent."
+            $"The no-response days must be 1 to {maxDays} working days, and the client's plus the expert's share at most 100 percent."
         );
 
     public static AppException PlatformFeeNotSet() =>
@@ -513,4 +513,99 @@ public static class ExpertErrors
             "REVIEWER_NOT_FOUND",
             "Reviewer not found; they must open the review queue at least once."
         );
+
+    public static AppException ScreeningNotFound() =>
+        new(ErrorType.NotFound, "SCREENING_NOT_FOUND", "Screening run not found.");
+
+    public static AppException ScreeningRunNotRetryable() =>
+        new(
+            ErrorType.Conflict,
+            "SCREENING_RUN_NOT_RETRYABLE",
+            "Only a failed or timed-out screening run can be retried."
+        );
+
+    public static AppException ScreeningPointNotFound() =>
+        new(ErrorType.NotFound, "SCREENING_POINT_NOT_FOUND", "Screening point not found.");
+
+    public static AppException ScreeningPointReasonRequired() =>
+        new(
+            ErrorType.Validation,
+            "SCREENING_REASON_REQUIRED",
+            "Provide a reason when marking a screening point as checked."
+        );
+
+    public static AppException ScreeningPointReasonTooLong(int max) =>
+        new(
+            ErrorType.Validation,
+            "SCREENING_REASON_TOO_LONG",
+            $"The reason can be at most {max} characters."
+        );
+
+    public static AppException InvalidScreeningPointAction() =>
+        new(
+            ErrorType.Validation,
+            "INVALID_SCREENING_ACTION",
+            "Action must be CHECKED, USED_FOR_SUPPLEMENT or REOPEN."
+        );
+
+    public static AppException ScreeningPointsUnresolved(int openCount) =>
+        new(
+            ErrorType.Conflict,
+            "SCREENING_POINTS_UNRESOLVED",
+            $"Resolve all {openCount} open screening points before deciding Gate 1."
+        );
+
+    public static AppException EvidenceGroupAssignNotAllowed() =>
+        new(
+            ErrorType.Validation,
+            "EVIDENCE_GROUP_ASSIGN_NOT_ALLOWED",
+            "Only supplementary evidence can be assigned to a criterion group."
+        );
+
+    public static AppException ViolationNotFound() =>
+        new(ErrorType.NotFound, "VIOLATION_NOT_FOUND", "The violation was not found.");
+
+    public static AppException ViolationAlreadyExcused() =>
+        new(ErrorType.Conflict, "VIOLATION_ALREADY_EXCUSED", "The violation is already excused.");
+
+    public static AppException ViolationExcuseReasonRequired() =>
+        new(
+            ErrorType.Validation,
+            "VIOLATION_EXCUSE_REASON_REQUIRED",
+            "Give the reason for the excuse."
+        );
+
+    public static AppException ViolationExcuseLimit(int max, int days) =>
+        new(
+            ErrorType.Conflict,
+            "VIOLATION_EXCUSE_LIMIT",
+            $"At most {max} violations can be excused within {days} days."
+        );
+
+    public static AppException ViolationExcuseAlreadyRequested() =>
+        new(
+            ErrorType.Conflict,
+            "VIOLATION_EXCUSE_ALREADY_REQUESTED",
+            "An excuse was already asked for this violation."
+        );
+
+    public static AppException ViolationExcuseRequestClosed(int days) =>
+        new(
+            ErrorType.Conflict,
+            "VIOLATION_EXCUSE_REQUEST_CLOSED",
+            $"An excuse can be asked within {days} days of the violation."
+        );
+
+    public static AppException ViolationExcuseNotRequested() =>
+        new(
+            ErrorType.Conflict,
+            "VIOLATION_EXCUSE_NOT_REQUESTED",
+            "There is no excuse request waiting."
+        );
+
+    public static AppException ViolationExcuseFileLimit(int max) =>
+        new(ErrorType.Validation, "VIOLATION_EXCUSE_FILE_LIMIT", $"Attach at most {max} files.");
+
+    public static AppException ViolationFileNotFound() =>
+        new(ErrorType.NotFound, "VIOLATION_FILE_NOT_FOUND", "The file was not found.");
 }

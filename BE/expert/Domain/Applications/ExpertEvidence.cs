@@ -26,19 +26,28 @@ public sealed class ExpertEvidence
     public long SizeBytes { get; private set; }
     public string? ParsedMeta { get; private set; }
     public string? ScreeningFlag { get; }
+
+    /// <summary>Optional criterion group assigned to a SUPPLEMENT file (CV or EV-01…EV-05).</summary>
+    public string? AssignedGroup { get; private set; }
     public DateTimeOffset CreatedAt { get; private set; }
 
     /// <summary>External URL (LinkedIn, website) supplied by the applicant; null for file-only evidence.</summary>
     public string? SourceUrl { get; private set; }
 
-    /// <summary>Content extraction status: PENDING, EXTRACTED or FAILED; null when nothing is extracted (files, and links, which people open directly).</summary>
+    /// <summary>Content extraction status: PENDING, PROCESSING, EXTRACTED, UNREADABLE or FAILED; null for links, Gate 2 files, and non-CV Gate 1 evidence.</summary>
     public string? ExtractionStatus { get; private set; }
 
-    /// <summary>When the link content was successfully extracted.</summary>
+    /// <summary>When the file or link content was extracted or checked.</summary>
     public DateTimeOffset? ExtractedAt { get; private set; }
 
     /// <summary>Whether this evidence is a link rather than an uploaded file.</summary>
     public bool IsLink => SourceUrl != null;
+
+    /// <summary>
+    /// True for Gate 1 uploaded CV files (EV-01..EV-05, SUPPLEMENT, links, and Gate 2 files are never read by AI).
+    /// </summary>
+    public bool RequiresAiExtraction =>
+        !IsLink && QualificationId == null && EvidenceType == ApplicationRules.CvCode;
 
     /// <summary>Records a file uploaded to the application; its storage path is derived from the ids.</summary>
     /// <param name="contentType">Detected from the file bytes (see ApplicationRules.ValidateFile).</param>
@@ -63,6 +72,7 @@ public sealed class ExpertEvidence
             CreatedAt = now,
         };
         evidence.FileUrl = $"experts/{userId}/{application.Id}/{evidence.Id}";
+        evidence.PrepareExtraction();
         return evidence;
     }
 
@@ -149,6 +159,27 @@ public sealed class ExpertEvidence
         return evidence;
     }
 
+    /// <summary>Marks an eligible Gate 1 file as waiting for one-time AI extraction.</summary>
+    public void PrepareExtraction()
+    {
+        if (RequiresAiExtraction && ExtractionStatus == null)
+            ExtractionStatus = ExtractionStatuses.Pending;
+    }
+
+    /// <summary>Re-queues extraction when retrying a failed or previously disabled run.</summary>
+    public void QueueExtractionRetry()
+    {
+        if (RequiresAiExtraction)
+            ExtractionStatus = ExtractionStatuses.Pending;
+    }
+
+    /// <summary>Marks extraction as actively in flight so duplicate workers do not process the same file.</summary>
+    public void MarkExtractionProcessing(DateTimeOffset now)
+    {
+        ExtractionStatus = ExtractionStatuses.Processing;
+        ExtractedAt = now;
+    }
+
     /// <summary>Updates the extraction result after background processing.</summary>
     public void MarkExtracted(string parsedMeta, DateTimeOffset now)
     {
@@ -157,10 +188,34 @@ public sealed class ExpertEvidence
         ExtractedAt = now;
     }
 
-    /// <summary>Marks the extraction as failed when the link could not be read.</summary>
+    /// <summary>Marks the file as unreadable or skipped because image reading is disabled.</summary>
+    public void MarkUnreadable(string parsedMeta, DateTimeOffset now)
+    {
+        ExtractionStatus = ExtractionStatuses.Unreadable;
+        ParsedMeta = parsedMeta;
+        ExtractedAt = now;
+    }
+
+    /// <summary>Marks extraction as failed when the AI service or storage call failed transiently.</summary>
     public void MarkExtractionFailed()
     {
         ExtractionStatus = ExtractionStatuses.Failed;
+    }
+
+    /// <summary>Assigns a SUPPLEMENT file to a target evidence group (or clears it with null).</summary>
+    public void AssignGroup(string? group)
+    {
+        if (EvidenceType != ApplicationRules.SupplementCode)
+            throw ExpertErrors.EvidenceGroupAssignNotAllowed();
+        if (group == null)
+        {
+            AssignedGroup = null;
+            return;
+        }
+        var normalized = group.Trim().ToUpperInvariant();
+        if (!ApplicationRules.EvidenceCodes.Contains(normalized))
+            throw ExpertErrors.InvalidEvidenceCode();
+        AssignedGroup = normalized;
     }
 
     /// <summary>Keeps only the file name part (no client path) and caps its length.</summary>
@@ -174,6 +229,8 @@ public sealed class ExpertEvidence
 public static class ExtractionStatuses
 {
     public const string Pending = "PENDING";
+    public const string Processing = "PROCESSING";
     public const string Extracted = "EXTRACTED";
+    public const string Unreadable = "UNREADABLE";
     public const string Failed = "FAILED";
 }

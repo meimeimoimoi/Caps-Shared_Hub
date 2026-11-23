@@ -34,6 +34,8 @@ export interface ReviewQueueRow {
   /** Waiting for final approval: when it is due and whether that has passed */
   finalApprovalDueAt?: string | null
   finalApprovalOverdue?: boolean
+  openScreeningPoints?: number
+  screeningStatus?: 'RUNNING' | 'COMPLETED' | 'FAILED' | 'SKIPPED' | null
 }
 
 interface ReviewQueuePage {
@@ -71,6 +73,8 @@ export interface ReviewQueueParams {
   pageSize: number
   /** Reviewer queue only; leave out for the server default (mine or unclaimed) */
   claim?: ClaimFilter
+  sortBy?: string
+  sortDescending?: boolean
 }
 
 const REVIEW = '/api/v1/admin/experts/review-queue'
@@ -90,7 +94,7 @@ export async function searchReviewQueue(
   const search = params.search.trim() || undefined
   const query =
     scope === 'approval'
-      ? { status: params.qualificationStatuses, q: search, page: params.page, pageSize: params.pageSize }
+      ? { status: params.qualificationStatuses, q: search, page: params.page, pageSize: params.pageSize, sortBy: params.sortBy, sortDescending: params.sortDescending }
       : {
           applicationStatus: params.applicationStatuses,
           qualificationStatus: params.qualificationStatuses,
@@ -98,6 +102,8 @@ export async function searchReviewQueue(
           page: params.page,
           pageSize: params.pageSize,
           claim: params.claim,
+          sortBy: params.sortBy,
+          sortDescending: params.sortDescending,
         }
   const res = await api.get<Envelope<ReviewQueuePage>>(scope === 'approval' ? APPROVAL : REVIEW, {
     params: query,
@@ -141,7 +147,8 @@ export const toApplicationRow = (r: ReviewQueueRow): ExpertApplication => ({
   id: r.id,
   name: r.displayName ?? r.applicantUserId,
   years: r.yearsExperience ?? 0,
-  aiFlags: 0,
+  aiFlags: r.openScreeningPoints ?? 0,
+  screeningStatus: r.screeningStatus ?? null,
   submittedAt: r.submittedAt ?? '',
   status: r.status as ApplicationStatus,
   fields: r.fields,

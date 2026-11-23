@@ -23,7 +23,27 @@ public sealed class AvailabilityTests
     }
 
     private static ListingFacts Listed() =>
-        new(QualificationStatus.ApprovedForService, true, true, true, true, true);
+        new(QualificationStatus.ApprovedForService, true, true, true, true, true, true);
+
+    // 2026-11-20: 6 violation points in 90 days hide the expert until older points expire
+    [Fact]
+    public void Too_many_violation_points_hide_the_expert()
+    {
+        var facts = Listed() with { GoodStanding = false };
+
+        Assert.False(MarketplaceRules.IsListed(facts));
+        Assert.Equal(["VIOLATION_POINTS"], MarketplaceRules.Missing(facts));
+    }
+
+    [Theory]
+    [InlineData("LATE", 1)]
+    [InlineData("WITHDREW", 2)]
+    [InlineData("NO_DELIVERY", 3)]
+    public void Each_violation_kind_has_its_points(string kind, short points) =>
+        Assert.Equal(
+            points,
+            ExpertViolation.Record(Guid.NewGuid(), Guid.NewGuid(), kind, Now).Points
+        );
 
     [Fact]
     public void A_new_profile_has_no_capacity_and_no_free_slot()
@@ -95,10 +115,10 @@ public sealed class AvailabilityTests
     }
 
     [Fact]
-    public void The_missing_step_is_reported_in_the_order_the_expert_fixes_it()
+    public void Every_missing_step_is_reported_in_the_order_the_expert_fixes_it()
     {
         Assert.Equal(
-            ["PRICING_PENDING"],
+            ["PRICING_PENDING", "REQUESTS_TURNED_OFF", "CAPACITY_NOT_SET"],
             MarketplaceRules.Missing(
                 Listed() with
                 {
@@ -109,7 +129,18 @@ public sealed class AvailabilityTests
             )
         );
         Assert.Equal(
-            ["REQUESTS_TURNED_OFF"],
+            ["VIOLATION_POINTS", "PRICING_PENDING", "ACCOUNT_INACTIVE"],
+            MarketplaceRules.Missing(
+                Listed() with
+                {
+                    GoodStanding = false,
+                    PriceInEffect = false,
+                    AccountActive = false,
+                }
+            )
+        );
+        Assert.Equal(
+            ["REQUESTS_TURNED_OFF", "CAPACITY_NOT_SET"],
             MarketplaceRules.Missing(
                 Listed() with
                 {

@@ -1,3 +1,4 @@
+import { SortableTh } from '@/components/ui/navigation/sortable-th'
 import { useCallback, useState } from 'react'
 import { ListFilter, Tags } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -108,19 +109,46 @@ export default function AdminExpertsPage() {
           <caption className="sr-only">{t('admin:experts.title')}</caption>
           <thead className="bg-sunken text-fg-muted text-left">
             <tr className="[&>th]:px-4 [&>th]:py-3 [&>th]:font-semibold [&>th]:whitespace-nowrap">
-              <th scope="col">{t('admin:experts.table.expert')}</th>
-              <th scope="col">{t('admin:experts.table.service')}</th>
+              <SortableTh
+                column="name"
+                sort={experts.sort}
+                onSort={experts.onSort}
+              >
+                {t('admin:experts.table.expert')}
+              </SortableTh>
+              <SortableTh
+                column="service"
+                sort={experts.sort}
+                onSort={experts.onSort}
+              >
+                {t('admin:experts.table.service')}
+              </SortableTh>
               <th scope="col">{t('admin:experts.table.field')}</th>
               <th scope="col">{t('admin:experts.table.serviceStatus')}</th>
-              <th scope="col" className="text-right">
+              <SortableTh
+                className="text-right"
+                column="fee"
+                sort={experts.sort}
+                onSort={experts.onSort}
+              >
                 {t('admin:experts.table.reviewFee')}
-              </th>
-              <th scope="col" className="text-right">
+              </SortableTh>
+              <SortableTh
+                className="text-right"
+                column="activeCases"
+                sort={experts.sort}
+                onSort={experts.onSort}
+              >
                 {t('admin:experts.table.activeCases')}
-              </th>
-              <th scope="col" className="text-right">
+              </SortableTh>
+              <SortableTh
+                className="text-right"
+                column="approvedAt"
+                sort={experts.sort}
+                onSort={experts.onSort}
+              >
                 {t('admin:experts.table.approvedAt')}
-              </th>
+              </SortableTh>
             </tr>
           </thead>
           <tbody>
@@ -225,7 +253,13 @@ export default function AdminExpertsPage() {
             )}
           </tbody>
         </table>
-        <TablePager paged={paged} onPrev={experts.prev} onNext={experts.next} />
+        <TablePager
+          paged={paged}
+          onPrev={experts.prev}
+          onNext={experts.next}
+          onPageChange={experts.setPage}
+          onPageSizeChange={experts.setPageSize}
+        />
       </section>
 
       {experts.selected && (

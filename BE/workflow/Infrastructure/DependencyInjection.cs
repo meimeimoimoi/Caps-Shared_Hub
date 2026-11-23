@@ -32,10 +32,10 @@ public static class DependencyInjection
         );
 
         // Repositories
-        // Public holidays as yyyy-MM-dd under WorkCalendar:Holidays; Saturdays and Sundays never count
+        // Fixed solar holidays as MM-dd under WorkCalendar:Holidays, every year; Saturdays and Sundays never count
         services.AddSingleton(
             new WorkCalendar(
-                configuration.GetSection("WorkCalendar:Holidays").Get<DateOnly[]>() ?? []
+                configuration.GetSection("WorkCalendar:Holidays").Get<string[]>() ?? []
             )
         );
         services.AddScoped<IReviewCaseRepository, ReviewCaseRepository>();
@@ -100,6 +100,7 @@ public static class DependencyInjection
         services.AddScoped<IExpertRatings>(sp => sp.GetRequiredService<ExpertServiceClient>());
         services.AddHttpClient<BillingServiceClient>(http => Link(http, config, "Billing"));
         services.AddScoped<IEscrows>(sp => sp.GetRequiredService<BillingServiceClient>());
+        services.AddScoped<IAiCredits>(sp => sp.GetRequiredService<BillingServiceClient>());
         // The expiry job refunds and settles through these links
         services.AddHostedService<ReviewCaseExpiryJob>();
         return services;

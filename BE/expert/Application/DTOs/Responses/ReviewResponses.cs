@@ -10,7 +10,9 @@ public sealed record ReviewQueueItemResponse(
     string[] Fields,
     string Status,
     DateTimeOffset? SubmittedAt,
-    bool IsReapplication
+    bool IsReapplication,
+    int OpenScreeningPoints = 0,
+    string? ScreeningStatus = null
 );
 
 /// <summary>The reviewer's view of an application: details, files, history and the latest Gate 1 results.</summary>
@@ -52,7 +54,8 @@ public sealed record ReviewApplicationResponse(
     CriterionDeclarationResponse[] CriterionDeclarations,
     string[] DeclarationPassedCriteria,
     ReviewClaimStateResponse Claim,
-    InformationRoundsResponse Rounds
+    InformationRoundsResponse Rounds,
+    ReviewScreeningResponse? Screening = null
 );
 
 /// <summary>A statement the applicant agreed to, shown under the criterion it supports.</summary>
@@ -118,4 +121,92 @@ public sealed record EligibilityCheckResponse(
     string? Note,
     DateTimeOffset DecidedAt,
     int? AppliedMinYearsExperience = null
+);
+
+/// <summary>Latest Gate 1 screening run with its points, per-file extractions and internal history.</summary>
+public sealed record ReviewScreeningResponse(
+    string RunId,
+    int SubmissionNumber,
+    int RunNumber,
+    string Status,
+    DateTimeOffset StartedAt,
+    DateTimeOffset TimeoutAt,
+    DateTimeOffset? CompletedAt,
+    string? FailureReason,
+    int CheckedFileCount,
+    int OpenPointCount,
+    bool CanRetry,
+    bool VisionEnabled,
+    ReviewScreeningPointResponse[] Points,
+    ReviewScreeningExtractionResponse[] Extractions,
+    ReviewScreeningHistoryResponse[] History
+);
+
+/// <summary>One discrepancy or check point raised by AI or system rules for reviewer handling.</summary>
+public sealed record ReviewScreeningPointResponse(
+    string Id,
+    string Source,
+    string Code,
+    string? EvidenceId,
+    string? EvidenceCode,
+    string? FileName,
+    string? TargetCriterion,
+    string Title,
+    string Detail,
+    string? SuggestedRequest,
+    string Status,
+    string? ResolutionReason,
+    string? ResolvedByUserId,
+    DateTimeOffset? ResolvedAt,
+    DateTimeOffset CreatedAt
+);
+
+/// <summary>One Gate 1 CV file's extracted Section 1 fields (never raw file content).</summary>
+public sealed record ReviewScreeningExtractionResponse(
+    string EvidenceId,
+    string EvidenceCode,
+    string FileName,
+    string? AssignedGroup,
+    string ExtractionStatus,
+    bool IsImage,
+    bool IsScanned,
+    bool IsUnreadable,
+    string? UnreadableReason,
+    string? FullName,
+    string? DocumentType,
+    string[] FieldCodes,
+    double? DerivedTaxYears,
+    ReviewScreeningMilestoneResponse[] WorkMilestones,
+    ReviewScreeningCertificateResponse[] Certificates,
+    DateTimeOffset? ExtractedAt
+);
+
+/// <summary>One work milestone extracted from a CV or professional document.</summary>
+public sealed record ReviewScreeningMilestoneResponse(
+    string? Company,
+    string? Role,
+    int? StartYear,
+    int? StartMonth,
+    int? EndYear,
+    int? EndMonth,
+    bool IsCurrent,
+    bool IsTaxAccounting
+);
+
+/// <summary>One certificate entry extracted from a CV or certificate file.</summary>
+public sealed record ReviewScreeningCertificateResponse(
+    string? Name,
+    string? Issuer,
+    DateOnly? IssuedDate,
+    DateOnly? ExpiryDate
+);
+
+/// <summary>One internal screening timeline event visible only to reviewers and system admins.</summary>
+public sealed record ReviewScreeningHistoryResponse(
+    string Id,
+    string EventType,
+    string Message,
+    string ActorUserId,
+    bool BySystem,
+    DateTimeOffset At
 );

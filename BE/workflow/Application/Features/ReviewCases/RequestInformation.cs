@@ -2,6 +2,7 @@ using Caps.Common.Application;
 using Caps.Workflow.Application.Abstractions;
 using Caps.Workflow.Application.DTOs.Responses;
 using Caps.Workflow.Domain;
+using Caps.Workflow.Domain.Review;
 
 namespace Caps.Workflow.Application.Features.ReviewCases;
 
@@ -14,7 +15,8 @@ public sealed class RequestInformationHandler(
     IInfoRequestRepository infoRequests,
     IReviewCaseEvents events,
     IUnitOfWork unitOfWork,
-    TimeProvider clock
+    TimeProvider clock,
+    WorkCalendar? calendar = null
 ) : ICommandHandler<RequestInformationCommand, ReviewCaseResponse>
 {
     public async Task<ReviewCaseResponse> HandleAsync(
@@ -35,7 +37,8 @@ public sealed class RequestInformationHandler(
             reviewCase.ExpertProfileId,
             command.UserId,
             command.Message,
-            clock.GetUtcNow()
+            clock.GetUtcNow(),
+            calendar
         );
         infoRequests.Add(request);
         cases.AddHistory(paused);
@@ -43,6 +46,6 @@ public sealed class RequestInformationHandler(
         await events.InfoRequestedAsync(reviewCase, request, ct);
         await unitOfWork.SaveChangesAsync(ct);
         await tx.CommitAsync(ct);
-        return ReviewCaseResponse.From(reviewCase);
+        return ReviewCaseResponse.From(reviewCase, command.UserId);
     }
 }

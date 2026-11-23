@@ -80,7 +80,7 @@ public sealed class PlatformFeesController(ICurrentUser currentUser) : Controlle
                 r.LatePenaltyHours,
                 r.LatePenaltyPercent,
                 r.LateCancelHours,
-                r.NoResponseHours,
+                r.NoResponseDays,
                 r.NoResponseRefundPercent,
                 r.NoResponseExpertPercent,
                 // A page not yet sending it gets the agreed default

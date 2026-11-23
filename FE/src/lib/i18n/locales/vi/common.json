@@ -19,6 +19,8 @@
     "preview": "Xem thử demo"
   },
   "navigation": {
+    "admin": "Điều hướng quản trị",
+    "breadcrumb": "Đường dẫn điều hướng",
     "home": "Về trang chủ Shared Hub",
     "open": "Mở điều hướng",
     "close": "Đóng điều hướng",
@@ -43,7 +45,15 @@
   "form": {
     "help": "Hướng dẫn cho {{label}}"
   },
+  "table": {
+    "ascending": "Tăng dần",
+    "descending": "Giảm dần",
+  "sort": "Sắp xếp",
+  "sortAscending": "Sắp xếp {{column}} tăng dần",
+  "sortDescending": "Sắp xếp {{column}} giảm dần"
+},
   "pagination": {
+    "pageOf": "Trang {{page}} / {{totalPages}}",
     "label": "Phân trang",
     "previous": "Trang trước",
     "next": "Trang sau",
@@ -150,9 +160,15 @@
         "DISPUTED": "Khách hàng đã khiếu nại kết quả. Bạn có thể gửi giải trình.",
         "RESOLVED": "Khiếu nại đã có quyết định của quản trị viên.",
         "TERMINATED": "Hồ sơ đã kết thúc vì thông tin bổ sung không được gửi đúng hạn.",
-        "WITHDRAWN": "Khách hàng đã rút yêu cầu review; phí đã được hoàn cho khách hàng."
+        "WITHDRAWN": "Khách hàng đã rút yêu cầu review; phí đã được hoàn cho khách hàng.",
+        "withdrawnClient": "Bạn đã rút yêu cầu rà soát. Toàn bộ phí đã được hoàn vào ví."
       },
-      "acceptanceDue": "Kết quả thẩm định sắp tự xác nhận. Hãy nghiệm thu hoặc báo cáo vấn đề trước hạn."
+      "acceptanceDue": "Kết quả thẩm định sắp tự xác nhận. Hãy nghiệm thu hoặc báo cáo vấn đề trước hạn.",
+      "extensionRequested": "Chuyên gia xin thêm {{days}} ngày làm việc để giao kết quả. Hãy đồng ý hoặc từ chối trước hạn; không trả lời thì hạn giữ nguyên.",
+      "extensionAccepted": "Khách hàng đã đồng ý gia hạn {{days}} ngày làm việc; hạn giao kết quả đã dời.",
+      "extensionDeclined": "Khách hàng không đồng ý gia hạn; hạn giao kết quả giữ nguyên.",
+      "statementDue": "Một khiếu nại sắp hết hạn giải trình. Hãy gửi giải trình và bằng chứng trước khi quản trị viên quyết định.",
+      "disputeOverdue": "Quyết định khiếu nại đang chậm hơn dự kiến. Khoản tiền vẫn được giữ an toàn cho tới khi có quyết định."
     }
   },
   "states": {

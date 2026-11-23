@@ -11,7 +11,8 @@ public sealed partial class ReviewCase
         Guid requesterUserId,
         string? reason,
         string? description,
-        DateTimeOffset now
+        DateTimeOffset now,
+        WorkCalendar? calendar = null
     )
     {
         EnsureRequester(requesterUserId);
@@ -24,7 +25,8 @@ public sealed partial class ReviewCase
             Id,
             reason,
             RequiredText(description, "Description"),
-            now
+            now,
+            calendar ?? WorkCalendar.WeekendsOnly
         );
         return (dispute, MoveTo(ReviewCaseStatus.Disputed, requesterUserId, reason, now));
     }
@@ -45,6 +47,7 @@ public sealed partial class ReviewCase
     /// <summary>
     /// The admin's decision: rejected (0) or upheld (DisputeUpheldRefundPct back to the client, the platform keeps
     /// the rest); the caller settles the escrow.
+    /// The admin waits for the expert's statement, or for its window to end.
     /// </summary>
     public ReviewStatusHistory ResolveDispute(
         ReviewDispute dispute,
@@ -60,6 +63,7 @@ public sealed partial class ReviewCase
             throw WorkflowErrors.DisputeRefundInvalid();
         }
         var reason = RequiredText(note, "Decision note");
+        dispute.EnsureDecidable(now);
         dispute.Resolve(adminUserId, refundPct, reason, now);
         DisputeRefundPct = refundPct;
         CompletedAt = now;

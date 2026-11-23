@@ -5,6 +5,7 @@ using Caps.Expert.Application.DTOs.Responses;
 using Caps.Expert.Domain.Catalog;
 using Caps.Expert.Domain.Portal;
 using Caps.Expert.Domain.Pricing;
+using Caps.Expert.Domain.Profiles;
 using Caps.Expert.Domain.Qualifications;
 
 namespace Caps.Expert.Application.Features.Portal;
@@ -27,6 +28,8 @@ public sealed class GetMyContextHandler(
     IQualificationRepository qualifications,
     IServiceOfferingRepository offerings,
     IServiceCatalogRepository catalog,
+    IExpertPolicyProvider policies,
+    IExpertViolations violations,
     TimeProvider clock
 ) : IQueryHandler<GetMyContextQuery, ExpertContextResponse>
 {
@@ -45,7 +48,18 @@ public sealed class GetMyContextHandler(
             profile == null ? [] : await qualifications.ListLatestByProfileAsync(profile.Id, ct);
         var prices = profile == null ? [] : await offerings.ListAsync([profile.Id], ct);
         var services = await catalog.ListActiveAsync(ct);
+        var policy = await policies.GetPricingAsync(ct);
         var now = clock.GetUtcNow();
+        var points =
+            profile == null
+                ? 0
+                : (
+                    await violations.PointsAsync(
+                        [profile.Id],
+                        now.AddDays(-ViolationRules.WindowDays),
+                        ct
+                    )
+                ).GetValueOrDefault(profile.Id);
         // The expert's own token is the freshest account status
         var accountActive = query.AccountStatus == ActiveAccount;
         var capacitySet = profile?.Capacity > 0;
@@ -60,7 +74,9 @@ public sealed class GetMyContextHandler(
                     qualification,
                     prices.FirstOrDefault(x => x.ServiceCode == service.Code),
                     accountActive,
-                    capacitySet
+                    capacitySet,
+                    policy,
+                    points < ViolationRules.HideAt
                 );
             })
             .ToArray();
@@ -94,7 +110,9 @@ public sealed class GetMyContextHandler(
         ExpertServiceQualification? qualification,
         ServiceOffering? offering,
         bool accountActive,
-        bool capacitySet
+        bool capacitySet,
+        PricingPolicy policy,
+        bool goodStanding
     )
     {
         var accepting = qualification?.AcceptingRequests == true;
@@ -105,9 +123,10 @@ public sealed class GetMyContextHandler(
                     qualification.Status,
                     accountActive,
                     service.IsActive,
-                    offering != null,
+                    offering != null && policy.Allows(offering.Fee),
                     accepting,
-                    capacitySet
+                    capacitySet,
+                    goodStanding
                 );
         string[] reasons = facts switch
         {

@@ -10,7 +10,8 @@ public sealed record RequestReviewRequest(
     Guid ExpertProfileId,
     string ServiceCode,
     string? ProblemDescription,
-    string? ExpectedOutcome
+    string? ExpectedOutcome,
+    long? ExpectedFee = null
 )
 {
     public RequestReviewCommand ToCommand(Guid userId, string? email) =>
@@ -22,7 +23,8 @@ public sealed record RequestReviewRequest(
             ExpertProfileId,
             ServiceCode,
             ProblemDescription,
-            ExpectedOutcome
+            ExpectedOutcome,
+            ExpectedFee
         );
 }
 
@@ -37,8 +39,16 @@ public sealed record DeliverReviewRequest(
     string? Result,
     string? Summary,
     string? CannotVerifyReason,
+    string[]? Citations,
+    bool Attested,
     JsonElement? RevisedContent
 );
 
+/// <summary>The expert's draft of the revised document, a JSON object.</summary>
+public sealed record SaveRevisionRequest(JsonElement? RevisedContent);
+
 /// <summary>1 to 5 stars for the expert, with an optional comment.</summary>
 public sealed record RateReviewRequest(int Stars, string? Comment);
+
+/// <summary>How many working days the expert asks for (1–2) and why.</summary>
+public sealed record ExtensionRequest(int Days, string? Reason);

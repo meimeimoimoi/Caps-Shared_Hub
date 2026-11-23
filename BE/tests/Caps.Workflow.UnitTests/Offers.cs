@@ -17,7 +17,7 @@ internal static class Offers
         int latePenaltyHours = 24,
         short latePenaltyPct = 30,
         int lateCancelHours = 72,
-        int noResponseHours = 72,
+        int noResponseDays = 3,
         short noResponseRefundPct = 50,
         short noResponseExpertPct = 30,
         string serviceCode = "HUMAN_VERIFICATION"
@@ -33,7 +33,7 @@ internal static class Offers
             latePenaltyHours,
             latePenaltyPct,
             lateCancelHours,
-            noResponseHours,
+            noResponseDays,
             noResponseRefundPct,
             noResponseExpertPct
         );

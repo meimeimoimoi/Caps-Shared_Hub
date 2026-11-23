@@ -23,4 +23,7 @@ public sealed record PricingPolicy(
     public const long FeeStep = 10_000;
 
     public const int HoursPerDay = 24;
+
+    /// <summary>The price sits in the current range and on a whole step.</summary>
+    public bool Allows(long fee) => fee >= MinFee && fee <= MaxFee && fee % FeeStep == 0;
 }

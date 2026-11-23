@@ -31,6 +31,7 @@ public sealed class ExpertDbContext(DbContextOptions<ExpertDbContext> options) :
     public DbSet<PlatformFee> PlatformFees => Set<PlatformFee>();
     public DbSet<ExpertCaseSlot> ExpertCaseSlots => Set<ExpertCaseSlot>();
     public DbSet<ExpertCaseRating> ExpertCaseRatings => Set<ExpertCaseRating>();
+    public DbSet<ExpertViolation> ExpertViolations => Set<ExpertViolation>();
     public DbSet<ServiceOffering> ServiceOfferings => Set<ServiceOffering>();
     public DbSet<ServiceOfferingChange> ServiceOfferingChanges => Set<ServiceOfferingChange>();
     public DbSet<ServiceCatalogItem> ServiceCatalog => Set<ServiceCatalogItem>();
@@ -41,6 +42,9 @@ public sealed class ExpertDbContext(DbContextOptions<ExpertDbContext> options) :
     public DbSet<KnownReviewer> KnownReviewers => Set<KnownReviewer>();
     public DbSet<CompetencyEvidenceLink> CompetencyEvidenceLinks => Set<CompetencyEvidenceLink>();
     public DbSet<CompetencyDescription> CompetencyDescriptions => Set<CompetencyDescription>();
+    public DbSet<ScreeningRun> ScreeningRuns => Set<ScreeningRun>();
+    public DbSet<ScreeningPoint> ScreeningPoints => Set<ScreeningPoint>();
+    public DbSet<ScreeningEvent> ScreeningEvents => Set<ScreeningEvent>();
 
     private static readonly JsonSerializerOptions SnapshotJson = new(JsonSerializerDefaults.Web);
 
@@ -131,6 +135,36 @@ public sealed class ExpertDbContext(DbContextOptions<ExpertDbContext> options) :
                 .HasConstraintName("fk_expert_case_rating_profile");
         });
 
+        modelBuilder.Entity<ExpertViolation>(e =>
+        {
+            e.ToTable(
+                "expert_violation",
+                t => t.HasCheckConstraint("ck_expert_violation_points", "points BETWEEN 1 AND 3")
+            );
+            e.HasKey(x => x.ReviewCaseId);
+            e.Property(x => x.ReviewCaseId).HasColumnName("review_case_id");
+            e.Property(x => x.ExpertProfileId).HasColumnName("expert_profile_id");
+            e.Property(x => x.Kind).HasColumnName("kind").HasMaxLength(20).IsRequired();
+            e.Property(x => x.Points).HasColumnName("points");
+            e.Property(x => x.OccurredAt).HasColumnName("occurred_at");
+            e.Property(x => x.ExcusedAt).HasColumnName("excused_at");
+            e.Property(x => x.ExcusedBy).HasColumnName("excused_by");
+            e.Property(x => x.ExcusedReason).HasColumnName("excused_reason").HasMaxLength(1000);
+            e.Property(x => x.ExcuseRequest).HasColumnName("excuse_request").HasMaxLength(1000);
+            e.Property(x => x.ExcuseRequestedAt).HasColumnName("excuse_requested_at");
+            e.Property(x => x.ExcuseDeclinedAt).HasColumnName("excuse_declined_at");
+            e.Ignore(x => x.ExcusePending);
+            // At most 5 files per request, never queried on their own: one jsonb column
+            e.OwnsMany(x => x.ExcuseFiles, f => f.ToJson("excuse_files"));
+            e.HasIndex(x => new { x.ExpertProfileId, x.OccurredAt })
+                .HasDatabaseName("ix_expert_violation_profile_time");
+            e.HasOne<ExpertProfile>()
+                .WithMany()
+                .HasForeignKey(x => x.ExpertProfileId)
+                .OnDelete(DeleteBehavior.Restrict)
+                .HasConstraintName("fk_expert_violation_profile");
+        });
+
         modelBuilder.Entity<ExpertApplication>(e =>
         {
             e.ToTable("expert_application");
@@ -214,6 +248,7 @@ public sealed class ExpertDbContext(DbContextOptions<ExpertDbContext> options) :
             e.Property(x => x.SizeBytes).HasColumnName("size_bytes");
             e.Property(x => x.ParsedMeta).HasColumnName("parsed_meta").HasColumnType("jsonb");
             e.Property(x => x.ScreeningFlag).HasColumnName("screening_flag");
+            e.Property(x => x.AssignedGroup).HasColumnName("assigned_group").HasMaxLength(16);
             e.Property(x => x.CreatedAt).HasColumnName("created_at").IsRequired();
             e.Property(x => x.SourceUrl).HasColumnName("source_url");
             e.Property(x => x.ExtractionStatus).HasColumnName("extraction_status");
@@ -452,15 +487,15 @@ public sealed class ExpertDbContext(DbContextOptions<ExpertDbContext> options) :
                 t =>
                 {
                     t.HasCheckConstraint("ck_platform_fee_percent", "percent BETWEEN 0 AND 50");
-                    // The penalty comes out of the expert's share: never more than what the platform fee leaves
+                    // The late refund goes to the client, the platform keeps the rest
                     t.HasCheckConstraint(
                         "ck_platform_fee_late_rule",
-                        "late_penalty_hours >= 0 AND late_penalty_percent >= 0 AND percent + late_penalty_percent <= 100 AND late_cancel_hours BETWEEN late_penalty_hours AND 720"
+                        "late_penalty_hours >= 0 AND late_penalty_percent BETWEEN 0 AND 100 AND late_cancel_hours BETWEEN late_penalty_hours AND 720"
                     );
                     // The client's and the expert's shares of a no-response case; the platform keeps the rest
                     t.HasCheckConstraint(
                         "ck_platform_fee_no_response_rule",
-                        "no_response_hours BETWEEN 1 AND 720 AND no_response_refund_percent >= 0 AND no_response_expert_percent >= 0 AND no_response_refund_percent + no_response_expert_percent <= 100"
+                        "no_response_days BETWEEN 1 AND 30 AND no_response_refund_percent >= 0 AND no_response_expert_percent >= 0 AND no_response_refund_percent + no_response_expert_percent <= 100"
                     );
                     t.HasCheckConstraint(
                         "ck_platform_fee_no_delivery_rule",
@@ -478,7 +513,7 @@ public sealed class ExpertDbContext(DbContextOptions<ExpertDbContext> options) :
             e.Property(x => x.LatePenaltyHours).HasColumnName("late_penalty_hours");
             e.Property(x => x.LatePenaltyPercent).HasColumnName("late_penalty_percent");
             e.Property(x => x.LateCancelHours).HasColumnName("late_cancel_hours");
-            e.Property(x => x.NoResponseHours).HasColumnName("no_response_hours");
+            e.Property(x => x.NoResponseDays).HasColumnName("no_response_days");
             e.Property(x => x.NoResponseRefundPercent).HasColumnName("no_response_refund_percent");
             e.Property(x => x.NoResponseExpertPercent).HasColumnName("no_response_expert_percent");
             e.Property(x => x.NoDeliveryRefundPercent).HasColumnName("no_delivery_refund_percent");
@@ -507,7 +542,7 @@ public sealed class ExpertDbContext(DbContextOptions<ExpertDbContext> options) :
                     LatePenaltyHours = 24,
                     LatePenaltyPercent = 30,
                     LateCancelHours = 72,
-                    NoResponseHours = 72,
+                    NoResponseDays = 3,
                     NoResponseRefundPercent = 50,
                     NoResponseExpertPercent = 30,
                     // Before the 2026-11-11 meeting a case nobody delivered was refunded in full
@@ -525,7 +560,7 @@ public sealed class ExpertDbContext(DbContextOptions<ExpertDbContext> options) :
                     LatePenaltyHours = 24,
                     LatePenaltyPercent = 50,
                     LateCancelHours = 24,
-                    NoResponseHours = 72,
+                    NoResponseDays = 3,
                     NoResponseRefundPercent = 0,
                     NoResponseExpertPercent = 60,
                     NoDeliveryRefundPercent = 50,
@@ -539,6 +574,32 @@ public sealed class ExpertDbContext(DbContextOptions<ExpertDbContext> options) :
                         PlatformFee.LocalOffset
                     ),
                     SetBy = SystemActor.UserId,
+                },
+                // Advisor's rule of 2026-11-20: late within 24h refunds 20% out of the platform's share (client 20,
+                // platform 20, expert 60); nothing delivered by then refunds 100%. Takes effect on deploy.
+                new
+                {
+                    Id = Guid.Parse("01929e3a-0000-7000-8000-000000000060"),
+                    ServiceCode = "HUMAN_VERIFICATION",
+                    Percent = 40,
+                    LatePenaltyHours = 24,
+                    LatePenaltyPercent = 20,
+                    LateCancelHours = 24,
+                    NoResponseDays = 3,
+                    NoResponseRefundPercent = 0,
+                    NoResponseExpertPercent = 60,
+                    NoDeliveryRefundPercent = 100,
+                    EffectiveFrom = new DateTimeOffset(
+                        2026,
+                        11,
+                        21,
+                        0,
+                        0,
+                        0,
+                        PlatformFee.LocalOffset
+                    ),
+                    SetBy = SystemActor.UserId,
+                    Reason = "Theo đề xuất của thầy Thức ngày 20/11/2026: giao trễ trong 24 giờ hoàn khách 20% từ phần của nền tảng (khách 20%, nền tảng 20%, chuyên gia 60%); quá 24 giờ chưa bàn giao hoàn khách 100%.",
                 }
             );
         });
@@ -711,6 +772,102 @@ public sealed class ExpertDbContext(DbContextOptions<ExpertDbContext> options) :
             e.Property(x => x.UserId).HasColumnName("user_id").ValueGeneratedNever();
             e.Property(x => x.Email).HasColumnName("email").HasMaxLength(320);
             e.Property(x => x.LastSeenAt).HasColumnName("last_seen_at").IsRequired();
+        });
+
+        modelBuilder.Entity<ScreeningRun>(e =>
+        {
+            e.ToTable("screening_run");
+            e.HasKey(x => x.Id);
+            e.Property(x => x.Id).HasColumnName("id");
+            e.Property(x => x.ApplicationId).HasColumnName("application_id");
+            e.Property(x => x.SubmissionEventId).HasColumnName("submission_event_id");
+            e.Property(x => x.SubmissionNumber).HasColumnName("submission_number");
+            e.Property(x => x.RunNumber).HasColumnName("run_number");
+            e.Property(x => x.Status).HasColumnName("status").HasMaxLength(32).IsRequired();
+            e.Property(x => x.TriggeredByUserId).HasColumnName("triggered_by_user_id");
+            e.Property(x => x.StartedAt).HasColumnName("started_at").IsRequired();
+            e.Property(x => x.TimeoutAt).HasColumnName("timeout_at").IsRequired();
+            e.Property(x => x.CompletedAt).HasColumnName("completed_at");
+            e.Property(x => x.FailureReason).HasColumnName("failure_reason").HasMaxLength(64);
+            e.Property(x => x.CheckedFileCount).HasColumnName("checked_file_count");
+            e.HasIndex(x => new { x.ApplicationId, x.StartedAt })
+                .HasDatabaseName("ix_screening_run_application");
+            e.HasIndex(x => x.Status)
+                .HasFilter("status = 'RUNNING'")
+                .HasDatabaseName("ix_screening_run_running");
+            e.HasOne<ExpertApplication>()
+                .WithMany()
+                .HasForeignKey(x => x.ApplicationId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("fk_screening_run_application");
+        });
+
+        modelBuilder.Entity<ScreeningPoint>(e =>
+        {
+            e.ToTable("screening_point");
+            e.HasKey(x => x.Id);
+            e.Property(x => x.Id).HasColumnName("id");
+            e.Property(x => x.ScreeningRunId).HasColumnName("screening_run_id");
+            e.Property(x => x.ApplicationId).HasColumnName("application_id");
+            e.Property(x => x.EvidenceId).HasColumnName("evidence_id");
+            e.Property(x => x.Source).HasColumnName("source").HasMaxLength(16).IsRequired();
+            e.Property(x => x.Code).HasColumnName("code").HasMaxLength(64).IsRequired();
+            e.Property(x => x.TargetCriterion).HasColumnName("target_criterion").HasMaxLength(16);
+            e.Property(x => x.Title).HasColumnName("title").HasMaxLength(256).IsRequired();
+            e.Property(x => x.Detail).HasColumnName("detail").IsRequired();
+            e.Property(x => x.SuggestedRequest).HasColumnName("suggested_request");
+            e.Property(x => x.MetadataJson).HasColumnName("metadata_json").HasColumnType("jsonb");
+            e.Property(x => x.Status).HasColumnName("status").HasMaxLength(32).IsRequired();
+            e.Property(x => x.ResolutionReason)
+                .HasColumnName("resolution_reason")
+                .HasMaxLength(ScreeningPoint.MaxReasonLength);
+            e.Property(x => x.ResolvedByUserId).HasColumnName("resolved_by_user_id");
+            e.Property(x => x.ResolvedAt).HasColumnName("resolved_at");
+            e.Property(x => x.CreatedAt).HasColumnName("created_at").IsRequired();
+            e.HasIndex(x => new { x.ScreeningRunId, x.CreatedAt })
+                .HasDatabaseName("ix_screening_point_run");
+            e.HasIndex(x => x.ApplicationId).HasDatabaseName("ix_screening_point_application");
+            e.HasOne<ScreeningRun>()
+                .WithMany(r => r.Points)
+                .HasForeignKey(x => x.ScreeningRunId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("fk_screening_point_run");
+            e.HasOne<ExpertApplication>()
+                .WithMany()
+                .HasForeignKey(x => x.ApplicationId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("fk_screening_point_application");
+            e.HasOne<ExpertEvidence>()
+                .WithMany()
+                .HasForeignKey(x => x.EvidenceId)
+                .OnDelete(DeleteBehavior.SetNull)
+                .HasConstraintName("fk_screening_point_evidence");
+        });
+
+        modelBuilder.Entity<ScreeningEvent>(e =>
+        {
+            e.ToTable("screening_event");
+            e.HasKey(x => x.Id);
+            e.Property(x => x.Id).HasColumnName("id");
+            e.Property(x => x.ApplicationId).HasColumnName("application_id");
+            e.Property(x => x.ScreeningRunId).HasColumnName("screening_run_id");
+            e.Property(x => x.ActorUserId).HasColumnName("actor_user_id");
+            e.Property(x => x.BySystem).HasColumnName("by_system");
+            e.Property(x => x.EventType).HasColumnName("event_type").HasMaxLength(48).IsRequired();
+            e.Property(x => x.Message).HasColumnName("message").HasMaxLength(1000).IsRequired();
+            e.Property(x => x.CreatedAt).HasColumnName("created_at").IsRequired();
+            e.HasIndex(x => new { x.ApplicationId, x.CreatedAt })
+                .HasDatabaseName("ix_screening_event_application");
+            e.HasOne<ExpertApplication>()
+                .WithMany()
+                .HasForeignKey(x => x.ApplicationId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("fk_screening_event_application");
+            e.HasOne<ScreeningRun>()
+                .WithMany()
+                .HasForeignKey(x => x.ScreeningRunId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("fk_screening_event_run");
         });
     }
 }

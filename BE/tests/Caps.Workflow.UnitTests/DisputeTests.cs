@@ -28,7 +28,16 @@ public sealed class DisputeTests
             .Case;
         reviewCase.ConfirmPayment(Now.AddHours(-2));
         reviewCase.Accept(Expert, ExpertUser, Now.AddHours(-1));
-        reviewCase.Deliver(Expert, ExpertUser, ReviewCase.Verified, "All good", null, Now);
+        reviewCase.Deliver(
+            Expert,
+            ExpertUser,
+            ReviewCase.Verified,
+            "All good",
+            null,
+            ["Article 9, CIT Law"],
+            true,
+            Now
+        );
         return reviewCase;
     }
 
@@ -60,7 +69,8 @@ public sealed class DisputeTests
         Assert.Equal(ReviewCaseStatus.AwaitingAcceptance, history.FromStatus);
         Assert.Equal(ReviewDispute.Open, dispute.Status);
         Assert.Equal("The VAT part is missing", dispute.Description);
-        Assert.Equal(Now.AddHours(1) + ReviewDispute.DecisionWindow, dispute.DecideBy);
+        // Tuesday plus 2 working days is Thursday
+        Assert.Equal(Now.AddHours(1).AddDays(2), dispute.DecideBy);
         // The expiry job only auto-confirms cases still awaiting acceptance
         Assert.Null(reviewCase.ExpireIfOverdue(Now.AddDays(30)));
     }
@@ -148,8 +158,9 @@ public sealed class DisputeTests
 
         dispute.Extend();
 
-        Assert.Equal(due + ReviewDispute.DecisionWindow, dispute.DecideBy);
-        Assert.Equal("DISPUTE_ALREADY_EXTENDED", Errors.CodeOf(dispute.Extend));
+        // Thursday plus 2 working days skips the weekend: Monday
+        Assert.Equal(due.AddDays(4), dispute.DecideBy);
+        Assert.Equal("DISPUTE_ALREADY_EXTENDED", Errors.CodeOf(() => dispute.Extend()));
     }
 
     // Upheld: the client gets 50%, the platform keeps the rest; rejected: the fee splits as booked
@@ -164,6 +175,7 @@ public sealed class DisputeTests
     )
     {
         var (reviewCase, dispute) = Disputed();
+        reviewCase.AddExpertStatement(dispute, Expert, "VAT was out of scope", Now.AddHours(2));
 
         var history = reviewCase.ResolveDispute(
             dispute,
@@ -219,7 +231,7 @@ public sealed class DisputeTests
 
     // Fee 1,000,000, 20% platform fee, late rule 24h / 30%: delivered 10h late, so accepting refunds 300,000
     [Theory]
-    [InlineData(0, 300_000, 700_000, 0)]
+    [InlineData(0, 300_000, 0, 700_000)]
     [InlineData(50, 500_000, 500_000, 0)]
     public void A_decision_on_a_late_delivery_keeps_the_larger_refund(
         short pct,
@@ -229,6 +241,12 @@ public sealed class DisputeTests
     )
     {
         var (reviewCase, dispute) = DisputedLate(lateHours: 10);
+        reviewCase.AddExpertStatement(
+            dispute,
+            Expert,
+            "Delivered all parts",
+            LateDelivery(10).AddHours(1)
+        );
 
         reviewCase.ResolveDispute(
             dispute,
@@ -246,6 +264,12 @@ public sealed class DisputeTests
     {
         // 30h late is past the 24h penalty window: the client already gets the whole fee back
         var (reviewCase, dispute) = DisputedLate(lateHours: 30);
+        reviewCase.AddExpertStatement(
+            dispute,
+            Expert,
+            "Delivered all parts",
+            LateDelivery(30).AddHours(1)
+        );
 
         reviewCase.ResolveDispute(
             dispute,
@@ -265,7 +289,7 @@ public sealed class DisputeTests
 
         reviewCase.WithdrawDispute(dispute, Client, LateDelivery(10).AddHours(2));
 
-        Assert.Equal(new ReviewSettlement(300_000, 700_000, 0), reviewCase.Settle());
+        Assert.Equal(new ReviewSettlement(300_000, 0, 700_000), reviewCase.Settle());
     }
 
     // Accepted at Now - 1h (a Tuesday): due one working day later, Now + 23h
@@ -288,7 +312,16 @@ public sealed class DisputeTests
         reviewCase.ConfirmPayment(Now.AddHours(-2));
         reviewCase.Accept(Expert, ExpertUser, Now.AddHours(-1));
         var delivered = LateDelivery(lateHours);
-        reviewCase.Deliver(Expert, ExpertUser, ReviewCase.Verified, "All good", null, delivered);
+        reviewCase.Deliver(
+            Expert,
+            ExpertUser,
+            ReviewCase.Verified,
+            "All good",
+            null,
+            ["Article 9, CIT Law"],
+            true,
+            delivered
+        );
         var (dispute, _) = reviewCase.OpenDispute(
             Client,
             Reason,
@@ -308,10 +341,76 @@ public sealed class DisputeTests
             "CASE_STATUS_INVALID",
             Errors.CodeOf(() => reviewCase.ResolveDispute(dispute, Admin, 50, "Late", Now))
         );
-        Assert.Equal("CASE_STATUS_INVALID", Errors.CodeOf(dispute.Extend));
+        Assert.Equal("CASE_STATUS_INVALID", Errors.CodeOf(() => dispute.Extend()));
     }
 
     [Fact]
     public void A_disputed_case_still_blocks_a_new_booking_of_the_version() =>
         Assert.Contains(ReviewCaseStatus.Disputed, ReviewCase.OpenStatuses);
+
+    // Statement window (2026-11-22): the expert has 1 working day from the opening to explain; the admin waits for
+    // it unless it comes earlier. Disputed() opens on Tuesday at Now + 1h, so the window ends Wednesday at Now + 25h.
+    [Fact]
+    public void The_expert_has_one_working_day_to_explain()
+    {
+        var (_, dispute) = Disputed();
+
+        Assert.Equal(Now.AddHours(25), dispute.StatementDueBy);
+    }
+
+    [Fact]
+    public void The_admin_waits_for_the_statement_window_without_a_statement()
+    {
+        var (reviewCase, dispute) = Disputed();
+
+        Assert.Equal(
+            "DISPUTE_AWAITING_STATEMENT",
+            Errors.CodeOf(() =>
+                reviewCase.ResolveDispute(dispute, Admin, 50, "Upheld", Now.AddHours(24))
+            )
+        );
+        Assert.Equal(ReviewCaseStatus.Disputed, reviewCase.Status);
+    }
+
+    [Fact]
+    public void Without_a_statement_the_admin_decides_once_the_window_ends()
+    {
+        var (reviewCase, dispute) = Disputed();
+
+        reviewCase.ResolveDispute(
+            dispute,
+            Admin,
+            50,
+            "No answer from the expert",
+            Now.AddHours(25)
+        );
+
+        Assert.Equal(ReviewCaseStatus.Resolved, reviewCase.Status);
+        Assert.Null(dispute.ExpertStatement);
+    }
+
+    [Fact]
+    public void A_statement_lets_the_admin_decide_at_once()
+    {
+        var (reviewCase, dispute) = Disputed();
+        reviewCase.AddExpertStatement(dispute, Expert, "VAT was out of scope", Now.AddHours(2));
+
+        reviewCase.ResolveDispute(dispute, Admin, 0, "Out of scope", Now.AddHours(3));
+
+        Assert.Equal(ReviewCaseStatus.Resolved, reviewCase.Status);
+    }
+
+    [Fact]
+    public void A_statement_after_the_window_is_refused()
+    {
+        var (reviewCase, dispute) = Disputed();
+
+        Assert.Equal(
+            "DISPUTE_STATEMENT_CLOSED",
+            Errors.CodeOf(() =>
+                reviewCase.AddExpertStatement(dispute, Expert, "Too late", Now.AddHours(25))
+            )
+        );
+        Assert.Null(dispute.ExpertStatement);
+    }
 }
