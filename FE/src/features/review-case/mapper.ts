@@ -55,7 +55,7 @@ function ruleOf(d: ReviewCaseDto, dispute?: DisputeDto | null): SettlementRule {
     case 'COMPLETED':
     case 'AUTO_CONFIRMED':
       // Only a late delivery refunds part of an accepted case
-      if (d.settlement && d.settlement.clientRefund > 0) return 'LATE_DELIVERY'
+      if ((d.settlement?.clientRefund ?? 0) > 0) return 'LATE_DELIVERY'
       return d.status === 'COMPLETED' ? 'USER_ACCEPTED' : 'AUTO_CONFIRMED'
     case 'RESOLVED':
       return outcomeOf(dispute?.refundPct ?? null)
@@ -117,6 +117,8 @@ function disputeOf(dispute?: DisputeDto | null): ReviewCase['dispute'] {
     issue: dispute.reason as IssueCode,
     description: dispute.description,
     openedAt: dispute.openedAt,
+    decisionLate:
+      dispute.status === 'OPEN' && new Date(dispute.decideBy).getTime() < Date.now(),
     decision:
       dispute.status === 'RESOLVED' && dispute.closedAt
         ? {
@@ -146,6 +148,7 @@ export function toReviewCase(
     id: d.id,
     code,
     live: true,
+    clientTerms: d.clientTerms ?? undefined,
     title: caseTitle(d.problemDescription),
     status,
     expert: {

@@ -332,6 +332,9 @@ function DeliverForm({
   )
 }
 
+// Mirrors ReviewCase.MaxInfoRequests in the workflow service
+const MAX_INFO_REQUESTS = 2
+
 const Card = ({
   title,
   children,
@@ -395,6 +398,19 @@ export function ExpertLiveCase({
     })
   const a = reviewCaseActions
   const open = dto.infoRequests?.find((q) => q.status === 'OPEN')
+  const asked = dto.infoRequests?.length ?? 0
+  // Whole hours past the delivery deadline, 0 when delivered on time
+  const lateHours =
+    dto.deliveredAt && dto.deliveryDeadline
+      ? Math.max(
+          0,
+          Math.ceil(
+            (new Date(dto.deliveredAt).getTime() -
+              new Date(dto.deliveryDeadline).getTime()) /
+              3_600_000
+          )
+        )
+      : 0
   const canWithdraw =
     dto.status === 'IN_REVIEW' || dto.status === 'AWAITING_USER_INFORMATION'
 
@@ -458,6 +474,13 @@ export function ExpertLiveCase({
 
           {dto.status === 'PENDING_EXPERT_RESPONSE' && (
             <Card title={t('live.expert.decide')}>
+              {dto.expertTerms && (
+                <p className="text-fg-strong">
+                  {t('live.expert.netPayout', {
+                    amount: f.money(dto.expertTerms.payout),
+                  })}
+                </p>
+              )}
               <button
                 type="button"
                 disabled={busy}
@@ -485,6 +508,15 @@ export function ExpertLiveCase({
 
           {dto.status === 'IN_REVIEW' && (
             <Card title={t('live.expert.deliverTitle')}>
+              {dto.expertTerms && (
+                <p className="para-check text-warning text-sm">
+                  {t('live.expert.lateRule', {
+                    hours: dto.expertTerms.latePenaltyHours,
+                    payout: f.money(dto.expertTerms.latePayout),
+                    cancel: dto.expertTerms.lateCancelHours,
+                  })}
+                </p>
+              )}
               <DeliverForm
                 busy={busy}
                 source={dto.sourceContent}
@@ -533,8 +565,14 @@ export function ExpertLiveCase({
             </Card>
           )}
 
-          {dto.status === 'IN_REVIEW' && (
+          {dto.status === 'IN_REVIEW' && asked < MAX_INFO_REQUESTS && (
             <Card title={t('live.expert.askTitle')}>
+              <p className="text-fg text-sm">
+                {t('live.expert.askLeft', {
+                  left: MAX_INFO_REQUESTS - asked,
+                  max: MAX_INFO_REQUESTS,
+                })}
+              </p>
               <TextAction
                 label={t('live.expert.askLabel')}
                 submit={t('live.expert.ask')}
@@ -554,6 +592,7 @@ export function ExpertLiveCase({
                 dueAt={open.dueAt}
                 onExpire={expire}
               />
+              <p className="text-fg text-sm">{t('live.expert.deliveryPaused')}</p>
             </Card>
           )}
 
@@ -581,6 +620,18 @@ export function ExpertLiveCase({
               <p className="text-fg-strong font-semibold">
                 {t(`result.${dto.result ?? 'VERIFIED'}`)}
               </p>
+              {dto.deliveredAt && (
+                <p className="text-fg text-sm">
+                  {lateHours > 0
+                    ? t('live.expert.deliveredLate', {
+                        time: f.at(dto.deliveredAt),
+                        hours: lateHours,
+                      })
+                    : t('live.expert.deliveredOnTime', {
+                        time: f.at(dto.deliveredAt),
+                      })}
+                </p>
+              )}
               <p className="text-fg-strong break-words whitespace-pre-wrap">
                 {dto.reviewSummary}
               </p>
@@ -692,20 +743,12 @@ export function ExpertLiveCase({
             <section className="paper p-5 text-sm">
               <h2 className="eyebrow font-sans">{t('settlement.title')}</h2>
               <dl className="mt-3 space-y-2">
-                {(
-                  [
-                    ['expert', dto.settlement.expertAmount],
-                    ['platform', dto.settlement.platformFee],
-                    ['refund', dto.settlement.clientRefund],
-                  ] as const
-                ).map(([k, v]) => (
-                  <div key={k} className="flex justify-between gap-4">
-                    <dt className="text-fg-muted">{t(`settlement.${k}`)}</dt>
-                    <dd className="num text-fg-strong font-semibold">
-                      {f.money(v)}
-                    </dd>
-                  </div>
-                ))}
+                <div className="flex justify-between gap-4">
+                  <dt className="text-fg-muted">{t('settlement.expert')}</dt>
+                  <dd className="num text-fg-strong font-semibold">
+                    {f.money(dto.settlement.expertAmount ?? 0)}
+                  </dd>
+                </div>
               </dl>
             </section>
           )}

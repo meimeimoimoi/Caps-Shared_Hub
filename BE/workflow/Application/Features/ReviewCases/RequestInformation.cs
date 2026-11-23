@@ -46,6 +46,6 @@ public sealed class RequestInformationHandler(
         await events.InfoRequestedAsync(reviewCase, request, ct);
         await unitOfWork.SaveChangesAsync(ct);
         await tx.CommitAsync(ct);
-        return ReviewCaseResponse.From(reviewCase);
+        return ReviewCaseResponse.From(reviewCase, command.UserId);
     }
 }

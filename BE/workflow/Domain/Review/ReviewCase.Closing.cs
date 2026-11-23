@@ -46,11 +46,23 @@ public sealed partial class ReviewCase
             return new(refund, Fee - refund, 0);
         }
         // Late but delivered (2026-11-20): the refund comes out of the platform's share, the expert keeps theirs
-        var platform = Fee * PlatformFeePct / 100;
-        var late = Fee * LateRefundPct / 100;
+        return DeliveredSplit(LateRefundPct);
+    }
+
+    /// <summary>
+    /// The split of a delivered case whose client gets latePct back (0 when on time): the refund comes out of
+    /// the platform's share first, so the expert keeps theirs unless latePct is above the platform fee.
+    /// </summary>
+    public ReviewSettlement DeliveredSplit(short latePct)
+    {
+        var platform = ShareOf(PlatformFeePct);
+        var late = ShareOf(latePct);
         var kept = Math.Max(platform - late, 0);
         return new(late, kept, Fee - late - kept);
     }
+
+    /// <summary>A percentage of the fee in VND, rounded down like every split.</summary>
+    public long ShareOf(short pct) => Fee * pct / 100;
 
     /// <summary>
     /// How the fee ended up, once the case is over: the split for a delivered, terminated or undelivered case, a

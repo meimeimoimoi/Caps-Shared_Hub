@@ -36,6 +36,6 @@ public sealed class SaveRevisionHandler(
         );
         await unitOfWork.SaveChangesAsync(ct);
         await tx.CommitAsync(ct);
-        return ReviewCaseResponse.From(reviewCase, showDraft: true);
+        return ReviewCaseResponse.From(reviewCase, command.UserId);
     }
 }

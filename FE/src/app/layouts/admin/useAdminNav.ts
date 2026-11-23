@@ -90,6 +90,7 @@ export function useAdminNav(enabled = true) {
     isOverdue(waitedDays(a.submittedAt, now), slaDays)
   ).length
   const open = (canSeeDisputes ? disputes.data ?? [] : []).filter((d) => !d.resolvedAt)
+  const overdueDisputes = open.filter((d) => disputeHoursLeft(d, now) === 0).length
   const nearestHours = open.length
     ? Math.min(...open.map((d) => disputeHoursLeft(d, now)))
     : 0
@@ -103,6 +104,12 @@ export function useAdminNav(enabled = true) {
 
   // Derive notifications from accessible queues, ordered by urgency.
   const notifications: ShellNotification[] = [
+    overdueDisputes > 0 && {
+      id: 'disputes-overdue',
+      text: t('notifications.disputesOverdue', { count: overdueDisputes }),
+      to: '/admin/disputes',
+      tone: 'warning' as const,
+    },
     open.length > 0 && {
       id: 'disputes',
       text: t('dashboard.attention.dispute', {

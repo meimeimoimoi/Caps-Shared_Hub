@@ -29,7 +29,7 @@ public sealed class ListMyReviewCaseHandler(
                 c.Status == ReviewCaseStatus.AwaitingUserInformation
                     ? await infoRequest.ListAsync(c.Id, ct)
                     : null;
-            result.Add(ReviewCaseResponse.From(c, question));
+            result.Add(ReviewCaseResponse.From(c, query.UserId, question));
         }
         return result.ToArray();
     }

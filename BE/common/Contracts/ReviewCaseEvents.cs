@@ -79,15 +79,20 @@ public sealed record ReviewCaseAcceptanceDueEvent(
 );
 
 /// <summary>
-/// An open dispute passed its decision deadline without a decision. Published once per deadline by the workflow
-/// service (again after an extension runs out); the notification service emails the operations inbox.
+/// An open dispute is past its decision deadline without a decision. Published by the workflow service every
+/// day until it is decided; the notification service emails the operations inbox each time and, on the first
+/// alert of a deadline, tells the client and the expert that the decision is late.
 /// </summary>
 /// <param name="Extended">True when the deadline that passed was already the extended one.</param>
+/// <param name="First">True for the first alert of this deadline (again after an extension runs out).</param>
 public sealed record ReviewCaseDisputeOverdueEvent(
     Guid Id,
     Guid ReviewCaseId,
+    Guid RequesterUserId,
+    Guid ExpertUserId,
     DateTimeOffset DecideBy,
     bool Extended,
+    bool First,
     DateTimeOffset OccurredAt
 );
 

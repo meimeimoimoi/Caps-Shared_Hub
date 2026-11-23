@@ -167,7 +167,8 @@
       "extensionRequested": "The expert asks for {{days}} more working days to deliver. Accept or decline before the deadline; if you do not answer, the deadline stays.",
       "extensionAccepted": "The client accepted {{days}} more working days; the delivery deadline moved.",
       "extensionDeclined": "The client declined the extension; the delivery deadline stays.",
-      "statementDue": "A dispute's statement window ends soon. Send your statement and evidence before the administrator decides."
+      "statementDue": "A dispute's statement window ends soon. Send your statement and evidence before the administrator decides.",
+      "disputeOverdue": "The dispute decision is taking longer than expected. The fee stays safely on hold until it is decided."
     }
   },
   "states": {

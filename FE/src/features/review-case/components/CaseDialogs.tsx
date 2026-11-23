@@ -17,15 +17,27 @@ const ISSUES: IssueCode[] = [
 export function AcceptDialog({
   onConfirm,
   onClose,
+  refund,
 }: {
   onConfirm: () => void
   onClose: () => void
+  /** What accepting returns to the client, in VND; omitted for the demo, which has no terms */
+  refund?: number
 }) {
   const { t } = useTranslation(['reviewCase', 'common'])
+  const f = useCaseFormat()
   return (
     <Modal
       title={t('dialogs.accept.title')}
-      description={t('dialogs.accept.body')}
+      description={
+        refund == null
+          ? t('dialogs.accept.body')
+          : `${t('dialogs.accept.body')} ${
+              refund > 0
+                ? t('dialogs.accept.lateRefund', { amount: f.money(refund) })
+                : t('dialogs.accept.noRefund')
+            }`
+      }
       onClose={onClose}
       footer={
         <>
@@ -204,12 +216,16 @@ export function ChallengeDialog({
 export function ReportDialog({
   onSubmit,
   onClose,
+  disputeRefund,
 }: {
   onSubmit: (issue: IssueCode, description: string) => void
   onClose: () => void
+  /** What an upheld dispute returns to the client, in VND; omitted for the demo */
+  disputeRefund?: number
 }) {
   const { t } = useTranslation(['reviewCase', 'common'])
   const id = useId()
+  const f = useCaseFormat()
   const [issue, setIssue] = useState<IssueCode | ''>('')
   const [text, setText] = useState('')
   const [submitted, setSubmitted] = useState(false)
@@ -219,7 +235,11 @@ export function ReportDialog({
   return (
     <Modal
       title={t('dialogs.report.title')}
-      description={t('dialogs.report.body')}
+      description={
+        disputeRefund == null
+          ? t('dialogs.report.bodyHold')
+          : t('dialogs.report.body', { amount: f.money(disputeRefund) })
+      }
       onClose={onClose}
       onSubmit={() => {
         setSubmitted(true)

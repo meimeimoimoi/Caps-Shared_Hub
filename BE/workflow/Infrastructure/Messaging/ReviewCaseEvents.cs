@@ -140,16 +140,22 @@ public sealed class OutboxReviewCaseEvents(WorkflowDbContext db, TimeProvider cl
 
     public Task DisputeOverdueAsync(
         Guid reviewCaseId,
+        Guid requesterUserId,
+        Guid expertUserId,
         DateTimeOffset decideBy,
         bool extended,
+        bool first,
         CancellationToken ct
     ) =>
         PublishAsync(
             new ReviewCaseDisputeOverdueEvent(
                 Guid.NewGuid(),
                 reviewCaseId,
+                requesterUserId,
+                expertUserId,
                 decideBy,
                 extended,
+                first,
                 clock.GetUtcNow()
             ),
             reviewCaseId,
@@ -225,13 +231,6 @@ public sealed class NoReviewCaseEvents : IReviewCaseEvents
         Guid reviewCaseId,
         Guid expertUserId,
         DateTimeOffset responseDeadline,
-        CancellationToken ct
-    ) => Task.CompletedTask;
-
-    public Task DisputeOverdueAsync(
-        Guid reviewCaseId,
-        DateTimeOffset decideBy,
-        bool extended,
         CancellationToken ct
     ) => Task.CompletedTask;
 }

@@ -49,11 +49,17 @@ public interface IReviewCaseEvents
     /// <summary>The client answered the expert's extension request; the expert is told.</summary>
     Task ExtensionDecidedAsync(ReviewCase reviewCase, CancellationToken ct) => Task.CompletedTask;
 
-    /// <summary>An open dispute passed its decision deadline; called once per deadline.</summary>
+    /// <summary>
+    /// An open dispute is past its decision deadline; called every day until it is decided, with first set on
+    /// the first call for a deadline.
+    /// </summary>
     Task DisputeOverdueAsync(
         Guid reviewCaseId,
+        Guid requesterUserId,
+        Guid expertUserId,
         DateTimeOffset decideBy,
         bool extended,
+        bool first,
         CancellationToken ct
-    );
+    ) => Task.CompletedTask;
 }

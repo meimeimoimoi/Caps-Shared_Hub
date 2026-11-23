@@ -51,6 +51,6 @@ public sealed class PayReviewHandler(
         // a failed save after the hold leaves credits held; the expiry job refunds it
         await unitOfWork.SaveChangesAsync(ct);
         await tx.CommitAsync(ct);
-        return ReviewCaseResponse.From(reviewCase);
+        return ReviewCaseResponse.From(reviewCase, command.UserId);
     }
 }

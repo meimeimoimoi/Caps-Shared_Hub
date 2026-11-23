@@ -44,6 +44,6 @@ public sealed class DeclineReviewHandler(
         await events.StatusChangedAsync(reviewCase, declined, ct);
         await unitOfWork.SaveChangesAsync(ct);
         await tx.CommitAsync(ct);
-        return ReviewCaseResponse.From(reviewCase);
+        return ReviewCaseResponse.From(reviewCase, command.UserId);
     }
 }

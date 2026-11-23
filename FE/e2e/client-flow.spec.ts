@@ -95,9 +95,12 @@ test('Bước 4 · hủy khi đang thẩm định quyết toán 50 / 30 / 20', a
   await dialog.getByRole('button', { name: 'Xác nhận hủy' }).click()
 
   await expect(heading(page, 'Hồ sơ đã chấm dứt')).toBeVisible()
+  // The client sees only their refund and what they paid; the expert's and platform's shares stay internal
   const receipt = page.getByRole('region', { name: 'Quyết toán' })
-  for (const amount of ['1.100.000', '660.000', '440.000', '2.200.000'])
+  for (const amount of ['1.100.000', '2.200.000'])
     await expect(receipt).toContainText(amount)
+  for (const internal of ['660.000', '440.000'])
+    await expect(receipt).not.toContainText(internal)
 })
 
 test('Bước 6 · nghiệm thu quyết toán 60 / 40 rồi đánh giá chuyên gia', async ({
@@ -111,9 +114,12 @@ test('Bước 6 · nghiệm thu quyết toán 60 / 40 rồi đánh giá chuyên 
     .click()
 
   await expect(heading(page, 'Hồ sơ đã hoàn tất')).toBeVisible()
+  // Nothing comes back on acceptance; the expert's 1.500.000 and the platform's 1.000.000 are not shown
   const receipt = page.getByRole('region', { name: 'Quyết toán' })
-  await expect(receipt).toContainText('1.500.000')
-  await expect(receipt).toContainText('1.000.000')
+  await expect(receipt).toContainText('Hoàn cho bạn')
+  await expect(receipt).toContainText('2.500.000')
+  await expect(receipt).not.toContainText('1.500.000')
+  await expect(receipt).not.toContainText('1.000.000')
 
   const rate = page.getByRole('button', { name: 'Gửi đánh giá' })
   await rate.click()

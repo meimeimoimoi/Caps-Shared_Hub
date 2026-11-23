@@ -105,7 +105,9 @@
       "cta": "Thanh toán {{amount}}",
       "escrow": "Khoản thanh toán được Shared Hub giữ hộ tới khi bạn nghiệm thu.",
       "link": "Mỗi link thanh toán PayOS có hiệu lực 15 phút. Link hết hạn thì bạn tạo link mới, miễn còn trong hạn thanh toán.",
-      "cancel": "Hủy yêu cầu"
+      "cancel": "Hủy yêu cầu",
+      "balance": "Số dư ví: {{amount}}.",
+      "topUp": "Nạp thêm vào ví"
     },
     "CANCELLED_UNPAID": {
       "title": "Yêu cầu đã hủy do chưa thanh toán",
@@ -139,7 +141,8 @@
       "due": "Hạn bàn giao",
       "grace": "Hết gia hạn bàn giao",
       "progress": "Tiến độ thẩm định",
-      "cancel": "Yêu cầu hủy hồ sơ"
+      "cancel": "Yêu cầu hủy hồ sơ",
+      "lateTerms": "Chuyên gia bàn giao trễ trong {{hours}} giờ thì bạn được hoàn {{late}}; quá thời gian đó chưa bàn giao thì bạn được hoàn {{none}}."
     },
     "AWAITING_USER_INFORMATION": {
       "title": "Chuyên gia cần bạn bổ sung thông tin",
@@ -153,7 +156,9 @@
       "filesHint": "PDF, Excel hoặc ảnh chụp, tối đa 20 MB mỗi tệp.",
       "required": "Nhập nội dung phản hồi hoặc đính kèm ít nhất một tài liệu.",
       "submit": "Gửi phản hồi",
-      "answered": "Phản hồi của bạn"
+      "answered": "Phản hồi của bạn",
+      "warningNoRefund": "Quá hạn mà chưa trả lời, hồ sơ sẽ chấm dứt và bạn không được hoàn tiền.",
+      "warningRefund": "Quá hạn mà chưa trả lời, hồ sơ sẽ chấm dứt và bạn chỉ được hoàn {{amount}}."
     },
     "AWAITING_ACCEPTANCE": {
       "title": "Kết quả đã bàn giao, mời bạn nghiệm thu",
@@ -175,7 +180,8 @@
       "description": "Nội dung",
       "opened": "Gửi lúc",
       "sla": "Dispute Admin phản hồi trong {{days}} ngày làm việc.",
-      "escalation": "Nếu tranh chấp cần đánh giá chuyên môn, hồ sơ được chuyển tới chuyên gia thẩm định độc lập; quản trị viên không thay thế kết luận chuyên môn."
+      "escalation": "Nếu tranh chấp cần đánh giá chuyên môn, hồ sơ được chuyển tới chuyên gia thẩm định độc lập; quản trị viên không thay thế kết luận chuyên môn.",
+      "late": "Quyết định đang chậm hơn dự kiến; khoản tiền vẫn được giữ an toàn và bạn sẽ được báo ngay khi có quyết định."
     },
     "RESOLVED": {
       "title": "Tranh chấp đã có quyết định",
@@ -307,7 +313,9 @@
     "accept": {
       "title": "Nghiệm thu kết quả?",
       "body": "Hồ sơ chuyển sang Hoàn tất và khoản thanh toán được quyết toán theo tỷ lệ đã chốt lúc đặt. Sau khi nghiệm thu, bạn không thể báo cáo vấn đề.",
-      "confirm": "Nghiệm thu"
+      "confirm": "Nghiệm thu",
+      "noRefund": "Bạn không được hoàn khoản nào.",
+      "lateRefund": "Chuyên gia bàn giao trễ nên bạn được hoàn {{amount}}."
     },
     "cancel": {
       "title": "Hủy hồ sơ đang thẩm định?",
@@ -335,7 +343,7 @@
     },
     "report": {
       "title": "Báo cáo vấn đề với kết quả",
-      "body": "Khoản thanh toán được giữ nguyên cho tới khi có quyết định giải quyết tranh chấp.",
+      "body": "Khoản thanh toán được giữ nguyên cho tới khi có quyết định. Quản trị viên chấp thuận khiếu nại thì bạn được hoàn {{amount}}; bác bỏ thì quyết toán như khi bạn nghiệm thu.",
       "issue": "Loại vấn đề",
       "issuePlaceholder": "Chọn loại vấn đề",
       "issues": {
@@ -348,7 +356,8 @@
       "descriptionHint": "Nêu cụ thể nội dung, vị trí trong kết quả và bằng chứng liên quan.",
       "issueRequired": "Chọn loại vấn đề.",
       "descriptionRequired": "Mô tả tối thiểu 20 ký tự để Dispute Admin có đủ thông tin xem xét.",
-      "submit": "Gửi khiếu nại"
+      "submit": "Gửi khiếu nại",
+      "bodyHold": "Khoản thanh toán được giữ nguyên cho tới khi có quyết định giải quyết tranh chấp."
     },
     "challenge": {
       "title": "Khiếu nại quyết định chấm dứt",
@@ -697,14 +706,20 @@
       "statement": "Giải trình của bạn",
       "sendStatement": "Gửi giải trình",
       "withdraw": "Rút khỏi hồ sơ",
-      "withdrawHint": "Khách hàng được hoàn toàn bộ phí và bạn không nhận được khoản nào.",
+      "withdrawHint": "Khách hàng được hoàn toàn bộ phí, bạn không nhận được khoản nào và bị cộng 2 điểm vi phạm.",
       "withdrawReason": "Lý do rút khỏi hồ sơ",
       "acceptedFeedback": "Đã nhận hồ sơ. Bạn có thể bắt đầu rà soát.",
       "declinedFeedback": "Đã từ chối hồ sơ.",
       "deliveredFeedback": "Đã gửi kết quả rà soát cho khách hàng.",
       "saved": "Đã lưu.",
       "statementDue": "Hạn giải trình",
-      "statementClosed": "Đã hết hạn giải trình. Quản trị viên sẽ quyết định dựa trên bằng chứng hiện có."
+      "statementClosed": "Đã hết hạn giải trình. Quản trị viên sẽ quyết định dựa trên bằng chứng hiện có.",
+      "askLeft": "Còn {{left}}/{{max}} lần hỏi cho hồ sơ này.",
+      "deliveryPaused": "Hạn bàn giao tạm dừng tới khi khách trả lời và được cộng bù đúng thời gian chờ.",
+      "deliveredOnTime": "Bàn giao lúc {{time}} · đúng hạn",
+      "deliveredLate": "Bàn giao lúc {{time}} · trễ {{hours}} giờ",
+      "netPayout": "Bạn thực nhận {{amount}} khi hoàn tất.",
+      "lateRule": "Bàn giao trễ trong {{hours}} giờ: bạn nhận {{payout}} và bị cộng 1 điểm vi phạm. Quá {{cancel}} giờ chưa bàn giao: hồ sơ bị hủy, bạn không nhận khoản nào và bị cộng 3 điểm."
     },
     "notConnected": "Chưa có dữ liệu.",
     "openCases": "Các hồ sơ đang mở của bạn."

@@ -80,6 +80,6 @@ public sealed class RequestReviewHandler(
             // The partial unique index also stops two bookings sent at the same moment
             throw WorkflowErrors.CaseAlreadyOpen();
         }
-        return ReviewCaseResponse.From(reviewCase);
+        return ReviewCaseResponse.From(reviewCase, command.UserId);
     }
 }

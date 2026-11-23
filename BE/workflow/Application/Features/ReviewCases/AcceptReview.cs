@@ -56,6 +56,6 @@ public sealed class AcceptReviewHandler(
             var waiting = await cases.ListPendingIdsAsync(reviewCase.ExpertUserId, null, ct);
             await refunds.RefundAsync(waiting, ReviewCase.ExpertFull, ct);
         }
-        return ReviewCaseResponse.From(reviewCase);
+        return ReviewCaseResponse.From(reviewCase, command.UserId);
     }
 }
