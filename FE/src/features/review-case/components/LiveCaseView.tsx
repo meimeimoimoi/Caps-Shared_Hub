@@ -279,6 +279,7 @@ export function LiveCaseView({ caseId }: { caseId: string }) {
 
       {dialog === 'accept' && (
         <AcceptDialog
+          refund={c.clientTerms?.acceptRefund}
           onClose={() => setDialog(null)}
           onConfirm={() =>
             perform(() => reviewCaseActions.confirm(caseId), 'accepted')
@@ -302,6 +303,7 @@ export function LiveCaseView({ caseId }: { caseId: string }) {
         )}
       {dialog === 'report' && (
         <ReportDialog
+          disputeRefund={c.clientTerms?.disputeRefund}
           onClose={() => setDialog(null)}
           onSubmit={(issue, description) =>
             perform(

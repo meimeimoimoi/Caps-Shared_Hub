@@ -105,7 +105,9 @@
       "cta": "Pay {{amount}}",
       "escrow": "Shared Hub holds your payment until you accept the result.",
       "link": "Each PayOS payment link is valid for 15 minutes. If a link expires, create a new one while the payment deadline is still open.",
-      "cancel": "Cancel request"
+      "cancel": "Cancel request",
+      "balance": "Wallet balance: {{amount}}.",
+      "topUp": "Top up your wallet"
     },
     "CANCELLED_UNPAID": {
       "title": "Request cancelled: payment not received",
@@ -139,7 +141,8 @@
       "due": "Delivery deadline",
       "grace": "Grace period ends",
       "progress": "Review progress",
-      "cancel": "Request cancellation"
+      "cancel": "Request cancellation",
+      "lateTerms": "If the expert delivers up to {{hours}} h late you get {{late}} back; if nothing is delivered after that you get {{none}} back."
     },
     "AWAITING_USER_INFORMATION": {
       "title": "The expert needs more information",
@@ -153,7 +156,9 @@
       "filesHint": "PDF, Excel or images, up to 20 MB each.",
       "required": "Enter a response or attach at least one document.",
       "submit": "Send response",
-      "answered": "Your response"
+      "answered": "Your response",
+      "warningNoRefund": "If you do not answer in time the case ends and you get nothing back.",
+      "warningRefund": "If you do not answer in time the case ends and you get only {{amount}} back."
     },
     "AWAITING_ACCEPTANCE": {
       "title": "Result delivered: please review and accept",
@@ -307,7 +312,9 @@
     "accept": {
       "title": "Accept the result?",
       "body": "The case moves to Completed and the payment is settled at the split fixed at booking. After accepting, you can no longer report an issue.",
-      "confirm": "Accept"
+      "confirm": "Accept",
+      "noRefund": "Nothing is refunded to you.",
+      "lateRefund": "The expert delivered late, so {{amount}} comes back to you."
     },
     "cancel": {
       "title": "Cancel a case in review?",
@@ -335,7 +342,7 @@
     },
     "report": {
       "title": "Report an issue with the result",
-      "body": "The payment stays on hold until the dispute is decided.",
+      "body": "The payment stays on hold until a decision. If the administrator upholds the issue you get {{amount}} back; if it is rejected the case settles as if you had accepted.",
       "issue": "Issue type",
       "issuePlaceholder": "Choose an issue type",
       "issues": {
@@ -348,7 +355,8 @@
       "descriptionHint": "Describe what is wrong, where it appears in the result and the supporting evidence.",
       "issueRequired": "Choose an issue type.",
       "descriptionRequired": "Write at least 20 characters so the Dispute Admin has enough to review.",
-      "submit": "Submit complaint"
+      "submit": "Submit complaint",
+      "bodyHold": "The payment stays on hold until the dispute is decided."
     },
     "challenge": {
       "title": "Challenge the termination",
@@ -697,14 +705,20 @@
       "statement": "Your statement",
       "sendStatement": "Send statement",
       "withdraw": "Withdraw from the case",
-      "withdrawHint": "The client gets a full refund and you receive nothing.",
+      "withdrawHint": "The client gets a full refund, you receive nothing and you get 2 violation points.",
       "withdrawReason": "Reason for withdrawing",
       "acceptedFeedback": "Case accepted. You can start the review.",
       "declinedFeedback": "Case declined.",
       "deliveredFeedback": "Review sent to the client.",
       "saved": "Saved.",
       "statementDue": "Statement due",
-      "statementClosed": "The statement window has ended. The administrator will decide on the evidence at hand."
+      "statementClosed": "The statement window has ended. The administrator will decide on the evidence at hand.",
+      "askLeft": "{{left}} of {{max}} questions left for this case.",
+      "deliveryPaused": "The delivery deadline is paused until the client answers and moves by exactly the time waited.",
+      "deliveredOnTime": "Delivered {{time}} · on time",
+      "deliveredLate": "Delivered {{time}} · {{hours}} h late",
+      "netPayout": "You receive {{amount}} when it completes.",
+      "lateRule": "Delivered up to {{hours}} h late: you receive {{payout}} and get 1 violation point. Not delivered within {{cancel}} h: the case is cancelled, you receive nothing and get 3 points."
     },
     "notConnected": "No data yet.",
     "openCases": "Your open cases."

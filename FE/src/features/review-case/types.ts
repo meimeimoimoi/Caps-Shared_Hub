@@ -47,12 +47,36 @@ export type ReviewResult =
 /** DELIVERY_ISSUE moves the case to DISPUTED; a USER_NON_RESPONSE challenge leaves it TERMINATED. */
 export type DisputeKind = 'DELIVERY_ISSUE' | 'USER_NON_RESPONSE_CHALLENGE'
 
+/** What the client gets back in each case, in VND (GET /review-cases/{id} → clientTerms; the expert gets null). */
+export interface ClientTerms {
+  latePenaltyHours: number
+  lateCancelHours: number
+  noResponseDays: number
+  lateRefund: number
+  noDeliveryRefund: number
+  noResponseRefund: number
+  /** Back if the client accepts the delivery as it stands: the late refund, or 0 */
+  acceptRefund: number
+  disputeRefund: number
+}
+
+/** What the expert receives in each case, in VND (GET /review-cases/{id} → expertTerms; the client gets null). */
+export interface ExpertTerms {
+  latePenaltyHours: number
+  lateCancelHours: number
+  noResponseDays: number
+  payout: number
+  latePayout: number
+  noResponsePayout: number
+}
+
 export interface ReviewCase {
   id: string
   /** Short code shown for a real case, whose id is a UUID */
   code?: string
   /** Comes from the API; the demo's steps that the API does not have are hidden */
   live?: boolean
+  clientTerms?: ClientTerms
   problemDescription?: string
   expectedOutcome?: string | null
   declineReason?: string
@@ -114,11 +138,10 @@ export interface ReviewCase {
   updatedAt?: string
 }
 
-/** How the fee was split once the case ended, in VND (GET /review-cases/{id} → settlement). */
+/** The viewer's own part of the final split, in VND: the client's refund or the expert's payout, the other null. */
 export interface SettlementAmounts {
-  clientRefund: number
-  platformFee: number
-  expertAmount: number
+  clientRefund: number | null
+  expertAmount: number | null
 }
 
 /** A question the expert asked and the client's answer (GET /review-cases/{id} → infoRequests). */
@@ -213,6 +236,8 @@ export interface ReviewCaseDto {
   infoRequests: InfoRequestDto[] | null
   /** The expert's extension request; null when never asked */
   extension?: ExtensionDto | null
+  clientTerms?: ClientTerms | null
+  expertTerms?: ExpertTerms | null
   updatedAt: string
   createdAt: string
 }

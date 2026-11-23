@@ -3,7 +3,8 @@ import { SETTLEMENT_POLICY, settle } from '../settlement'
 import type { ReviewCase } from '../types'
 import { useCaseFormat } from '../ui'
 
-/* Biên nhận quyết toán: một rule duy nhất / case, tổng 3 phần luôn bằng số đã thanh toán */
+/* The client's settlement receipt: what came back to them out of what they paid. The expert's and the
+   platform's shares are internal and never shown here. */
 export function SettlementReceipt({
   amount,
   settlement,
@@ -14,24 +15,10 @@ export function SettlementReceipt({
   const { t } = useTranslation('reviewCase')
   const f = useCaseFormat()
   const { type } = SETTLEMENT_POLICY[settlement.rule]
-  // The backend's settled amounts win; the policy split is only an estimate for fixture cases
-  const a = settlement.amounts
-  const money = a
-    ? {
-        gross: amount,
-        refund: a.clientRefund,
-        expert: a.expertAmount,
-        platform: a.platformFee,
-      }
-    : settle(amount, settlement.rule)
-  const pct = (value: number) =>
-    money.gross ? Math.round((value * 100) / money.gross) : 0
-  const parts = [
-    { key: 'refund', value: money.refund, swatch: 'bg-success' },
-    { key: 'expert', value: money.expert, swatch: 'bg-ink' },
-    { key: 'platform', value: money.platform, swatch: 'bg-border-control' },
-  ] as const
-  const shown = parts.map((p) => ({ ...p, pct: pct(p.value) }))
+  // The backend's settled refund wins; the policy split is only an estimate for fixture cases
+  const refund = settlement.amounts
+    ? (settlement.amounts.clientRefund ?? 0)
+    : settle(amount, settlement.rule).refund
 
   return (
     <section className="paper p-6 md:p-8" aria-labelledby="settlement-title">
@@ -45,47 +32,17 @@ export function SettlementReceipt({
         <p className="num text-fg-muted text-sm">{settlement.ref}</p>
       </div>
 
-      <div
-        aria-hidden="true"
-        className="bg-track mt-6 flex h-2 gap-0.5 overflow-hidden rounded-full"
-      >
-        {shown.map(
-          (p) =>
-            p.pct > 0 && (
-              <span
-                key={p.key}
-                className={p.swatch}
-                style={{ width: `${p.pct}%` }}
-              />
-            )
-        )}
-      </div>
-
       <dl className="mt-5">
-        {shown.map((p) => (
-          <div
-            key={p.key}
-            className="border-border-subtle flex items-center justify-between gap-4 border-b py-3"
-          >
-            <dt className="flex items-center gap-2.5">
-              <span
-                aria-hidden="true"
-                className={`${p.swatch} size-2.5 rounded-full`}
-              />
-              {t(`settlement.${p.key}`)}
-              <span className="num text-fg-muted text-sm">{p.pct}%</span>
-            </dt>
-            <dd className="num text-fg-strong font-semibold">
-              {f.money(p.value)}
-            </dd>
-          </div>
-        ))}
+        <div className="border-border-subtle flex items-center justify-between gap-4 border-b py-3">
+          <dt>{t('settlement.refund')}</dt>
+          <dd className="num text-fg-strong font-semibold">{f.money(refund)}</dd>
+        </div>
         <div className="border-border-strong flex items-center justify-between gap-4 border-t-2 pt-3">
           <dt className="text-fg-strong font-semibold">
             {t('settlement.gross')}
           </dt>
           <dd className="num text-fg-strong text-h2 font-semibold">
-            {f.money(money.gross)}
+            {f.money(amount)}
           </dd>
         </div>
       </dl>

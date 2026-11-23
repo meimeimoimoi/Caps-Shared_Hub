@@ -16,6 +16,7 @@ import { cn } from '@/lib/utils'
 import type { ReviewCase, TaskCode } from '../types'
 import { Countdown, Deadline, FilePicker } from './CaseUi'
 import { EvidenceUpload } from './CaseAttachments'
+import { useCreditOverview } from '@/features/credits/hooks/useCreditOverview'
 import { caseText, fieldClass, useCaseFormat } from '../ui'
 
 const TASKS: TaskCode[] = ['T1', 'T2', 'T3', 'T4', 'T5', 'T6']
@@ -193,6 +194,7 @@ export function CasePanel({
               <p className="text-fg-muted text-sm">
                 {copy('AWAITING_PAYMENT.method')}
               </p>
+              {c.live && <WalletBalance amount={c.amount} />}
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
@@ -266,6 +268,15 @@ export function CasePanel({
               dueAt={deliveryDue}
               onExpire={actions.expire}
             />
+          )}
+          {c.clientTerms && (
+            <p className="text-fg text-sm">
+              {t('panel.IN_REVIEW.lateTerms', {
+                hours: c.clientTerms.latePenaltyHours,
+                late: f.money(c.clientTerms.lateRefund),
+                none: f.money(c.clientTerms.noDeliveryRefund),
+              })}
+            </p>
           )}
           {!c.live && (
             <div>
@@ -378,7 +389,13 @@ export function CasePanel({
               aria-hidden="true"
               className="mt-0.5 shrink-0"
             />
-            {copy('AWAITING_USER_INFORMATION.warning')}
+            {c.clientTerms
+              ? c.clientTerms.noResponseRefund > 0
+                ? t('panel.AWAITING_USER_INFORMATION.warningRefund', {
+                    amount: f.money(c.clientTerms.noResponseRefund),
+                  })
+                : t('panel.AWAITING_USER_INFORMATION.warningNoRefund')
+              : copy('AWAITING_USER_INFORMATION.warning')}
           </p>
           <InfoResponseForm
             caseId={c.id}
@@ -576,6 +593,27 @@ export function CasePanel({
       )
     }
   }
+}
+
+/** The wallet balance the payment comes from, with a top-up link when it does not cover the fee. */
+function WalletBalance({ amount }: { amount: number }) {
+  const { t } = useTranslation('reviewCase')
+  const f = useCaseFormat()
+  const balance = useCreditOverview().data?.wallet.balance
+  if (balance == null) return null
+  return (
+    <p className={cn('mt-2 text-sm', balance < amount ? 'text-warning' : 'text-fg')}>
+      {t('panel.AWAITING_PAYMENT.balance', { amount: f.money(balance) })}
+      {balance < amount && (
+        <>
+          {' '}
+          <Link to="/wallet" className="font-semibold underline">
+            {t('panel.AWAITING_PAYMENT.topUp')}
+          </Link>
+        </>
+      )}
+    </p>
+  )
 }
 
 function InfoResponseForm({

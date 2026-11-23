@@ -32,6 +32,6 @@ public sealed class DecideExtensionHandler(
         await events.ExtensionDecidedAsync(reviewCase, ct);
         await unitOfWork.SaveChangesAsync(ct);
         await tx.CommitAsync(ct);
-        return ReviewCaseResponse.From(reviewCase);
+        return ReviewCaseResponse.From(reviewCase, command.UserId);
     }
 }
