@@ -79,6 +79,9 @@ export const reviewCaseActions = {
   rate: (id: string, stars: number, comment: string) =>
     act(id, 'rating', { stars, comment: comment || null }),
   withdrawDispute: (id: string) => act(id, 'dispute/withdraw'),
+  /** Saves the expert's revised draft; the client sees it only after delivery */
+  saveRevision: (id: string, revisedContent: Record<string, unknown> | null) =>
+    act(id, 'revisions', { revisedContent }),
 }
 
 export const getCaseDispute = (id: string, signal?: AbortSignal) =>

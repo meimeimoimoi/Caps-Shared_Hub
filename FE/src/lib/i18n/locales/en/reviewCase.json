@@ -734,7 +734,9 @@
       "deliveredOnTime": "Delivered {{time}} · on time",
       "deliveredLate": "Delivered {{time}} · {{hours}} h late",
       "netPayout": "You receive {{amount}} when it completes.",
-      "lateRule": "Delivered up to {{hours}} h late: you receive {{payout}} and get 1 violation point. Not delivered within {{cancel}} h: the case is cancelled, you receive nothing and get 3 points."
+      "lateRule": "Delivered up to {{hours}} h late: you receive {{payout}} and get 1 violation point. Not delivered within {{cancel}} h: the case is cancelled, you receive nothing and get 3 points.",
+      "saveDraft": "Save draft",
+      "draftSaved": "Draft saved. The client sees your revision only after delivery."
     },
     "notConnected": "No data yet.",
     "openCases": "Your open cases."
