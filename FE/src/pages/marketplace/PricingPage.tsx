@@ -4,6 +4,8 @@ import { Link } from 'react-router-dom'
 import { VideoBackground } from '@/components/auth/VideoBackground'
 import { PublicFooter } from '@/components/ui/layout/public-footer'
 import { PublicNavigation } from '@/components/ui/layout/public-navigation'
+import { useAuthStore } from '@/features/auth/store/authStore'
+import { DEFAULT_HOME } from '@/features/auth/utils/returnPath'
 import '@/styles/public-site.css'
 import './pricing.css'
 
@@ -19,7 +21,9 @@ export default function PricingPage() {
         {t('skip')}
       </a>
       <div className="env" aria-hidden="true" />
-      <PublicNavigation />
+      <PublicNavigation
+        appHref={useAuthStore((s) => s.token) ? DEFAULT_HOME : undefined}
+      />
       <main id="main">
         <section className="ai-hero" aria-labelledby="ai-price-title">
           <VideoBackground className="absolute motion-reduce:hidden" />

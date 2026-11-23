@@ -629,7 +629,8 @@
         "client": "Client's evidence",
         "expert": "Expert's evidence",
         "none": "No files.",
-        "duringDispute": "Added during the dispute"
+        "duringDispute": "Added during the dispute",
+        "attachAnswer": "Attach supporting documents"
       }
     },
     "revised": {

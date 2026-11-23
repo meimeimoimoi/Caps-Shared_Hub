@@ -38,7 +38,7 @@ public sealed partial class ReviewCase
         }
         Rating = (short)stars;
         RatingComment = OptionalText(comment, "Comment");
+        // A rating is not a step of the case: UpdatedAt keeps the moment the case closed (its settlement time)
         RatedAt = now;
-        UpdatedAt = now;
     }
 }

@@ -35,6 +35,7 @@ public sealed record ReviewCaseResponse(
     DateTimeOffset? DeliveredAt,
     short? Rating,
     string? RatingComment,
+    DateTimeOffset? RatedAt,
     SettlementResponse? Settlement,
     InfoRequestResponse[]? InfoRequests,
     ExtensionResponse? Extension,
@@ -81,6 +82,7 @@ public sealed record ReviewCaseResponse(
             c.DeliveredAt,
             c.Rating,
             c.RatingComment,
+            c.RatedAt,
             c.Outcome() is { } s ? new(s.ClientRefund, s.PlatformFee, s.ExpertAmount) : null,
             questions?.Select(InfoRequestResponse.From).ToArray(),
             c.ExtensionRequestedAt is { } asked
