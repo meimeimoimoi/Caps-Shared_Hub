@@ -112,6 +112,35 @@ export interface UploadedDocument {
   documentId: string
 }
 
+/** A document the client already has in their workspace. */
+export interface ClientDocument {
+  id: string
+  title: string
+}
+
+// ponytail: first 50 documents only; add paging or search when clients keep more
+export const getMyDocuments = (signal?: AbortSignal) =>
+  unwrap(
+    api.get<Envelope<{ items: ClientDocument[] }>>('/api/v1/documents', {
+      params: { pageSize: 50 },
+      signal,
+    })
+  ).then((page) => page.items)
+
+/** The newest version of a document, the one sent for review; undefined when it has none yet. */
+export const getLatestVersionId = (documentId: string) =>
+  unwrap(
+    api.get<Envelope<{ id: string; versionNo: number }[]>>(
+      `/api/v1/documents/${documentId}/versions`
+    )
+  ).then(
+    (versions) =>
+      versions.reduce<{ id: string; versionNo: number } | undefined>(
+        (newest, v) => (!newest || v.versionNo > newest.versionNo ? v : newest),
+        undefined
+      )?.id
+  )
+
 /** Uploads the client's own file as a new document so it can be sent for expert review. */
 export function uploadDocument(
   file: File,

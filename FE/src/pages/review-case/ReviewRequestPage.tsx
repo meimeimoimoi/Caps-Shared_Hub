@@ -13,6 +13,8 @@ import { DEMO_CASES, REVIEWABLE_DRAFTS } from '@/features/review-case/fixtures'
 import {
   createReviewCase,
   getBookingTerms,
+  getLatestVersionId,
+  getMyDocuments,
   uploadDocument,
   type UploadedDocument,
 } from '@/features/review-case/api/reviewCaseApi'
@@ -35,6 +37,8 @@ const initialsOf = (name: string) =>
 
 // The current tax year (00 section 3a); the client can pick another period before uploading
 const TAX_YEAR = new Date().getFullYear()
+// A listed document that has no version yet cannot be booked
+const NO_VERSION = 'NO_VERSION'
 
 export default function ReviewRequestPage() {
   const { t } = useTranslation(['reviewCase', 'common'])
@@ -56,18 +60,35 @@ export default function ReviewRequestPage() {
     enabled: !isExpertDemo && Boolean(expertId && service),
   }).data
 
-  // ponytail: no list of the client's documents here yet; the version comes from the draft handoff URL or an upload below
+  // ponytail: a listed document is booked at its newest version; add a version picker if clients ask for older ones
   const documentId = params.get('document')
   // The draft handoff and Marketplace pass the version as draftVersion; version is kept for older links
   const versionId = params.get('draftVersion') ?? params.get('version')
   const [uploaded, setUploaded] = useState<(UploadedDocument & { name: string }) | null>(null)
+  const myDocuments = useQuery({
+    queryKey: ['my-documents'],
+    queryFn: ({ signal }) => getMyDocuments(signal),
+    enabled: !isExpertDemo,
+  }).data
+  const picked = [
+    ...(documentId && versionId
+      ? [{ id: versionId, documentId, name: t('live.chosenVersion') }]
+      : []),
+    ...(uploaded ? [uploaded] : []),
+  ]
+  // A listed document's radio value is its id; its version is looked up when the request is sent
   const drafts = isExpertDemo
     ? REVIEWABLE_DRAFTS
     : [
-        ...(documentId && versionId
-          ? [{ id: versionId, documentId, name: t('live.chosenVersion') }]
-          : []),
-        ...(uploaded ? [uploaded] : []),
+        ...picked,
+        ...(myDocuments ?? [])
+          .filter((d) => !picked.some((p) => p.documentId === d.id))
+          .map((d) => ({
+            id: d.id,
+            documentId: d.id,
+            name: d.title,
+            latest: true,
+          })),
       ]
   const [periodStart, setPeriodStart] = useState(`${TAX_YEAR}-01-01`)
   const [periodEnd, setPeriodEnd] = useState(`${TAX_YEAR}-12-31`)
@@ -116,21 +137,35 @@ export default function ReviewRequestPage() {
       return
     setSending(true)
     setSendError(null)
-    createReviewCase({
-      documentId: chosenDocument,
-      sourceVersionId: draftId,
-      expertProfileId: expertId,
-      serviceCode: service.serviceId,
-      problemDescription: scope.trim(),
-      expectedOutcome: null,
-      expectedFee: service.price == null ? null : Number(service.price),
-    })
+    const version =
+      chosen && 'latest' in chosen
+        ? getLatestVersionId(chosenDocument)
+        : Promise.resolve(draftId)
+    version
+      .then((sourceVersionId) =>
+        sourceVersionId
+          ? createReviewCase({
+              documentId: chosenDocument,
+              sourceVersionId,
+              expertProfileId: expertId,
+              serviceCode: service.serviceId,
+              problemDescription: scope.trim(),
+              expectedOutcome: null,
+              expectedFee:
+                service.price == null ? null : Number(service.price),
+            })
+          : Promise.reject(new Error(NO_VERSION))
+      )
       .then((c) => navigate(`/cases/${c.id}`))
       .catch((err: unknown) => {
         // The expert changed the price meanwhile: show the new one so the client can send again
         if (err instanceof ApiError && err.code === 'PRICE_CHANGED')
           void query.refetch()
-        setSendError(toMessage(err))
+        setSendError(
+          err instanceof Error && err.message === NO_VERSION
+            ? t('request.noVersion')
+            : toMessage(err)
+        )
         setSending(false)
       })
   }
