@@ -6,6 +6,7 @@ import { StatusBadge } from '@/components/ui/display/status-badge'
 import { Modal } from '@/components/ui/feedback/modal'
 import { Toast } from '@/components/ui/feedback/toast'
 import { KnowledgeLayout } from '@/app/layouts/knowledge/KnowledgeLayout'
+import { EmptyState } from '@/components/ui/feedback/empty-state'
 import { useKnowledgeNav } from '@/app/layouts/knowledge/useKnowledgeNav'
 import {
   FIELD_TYPE,
@@ -41,17 +42,28 @@ export default function KnowledgeTemplatePage() {
   if (!template) {
     return (
       <KnowledgeLayout {...layout} breadcrumb={listLink}>
-        <h1 className="text-h1">
-          {isLoading
-            ? 'Đang tải…'
-            : (error?.message ?? `Không tìm thấy template ${id}`)}
-        </h1>
-        <Link
-          to="/knowledge/templates"
-          className="text-accent-text mt-3 inline-block underline"
-        >
-          Quay lại danh sách
-        </Link>
+        {isLoading ? (
+          <h1 className="text-h1">Đang tải…</h1>
+        ) : (
+          <EmptyState
+            tone="error"
+            title={
+              error
+                ? 'Không tải được template'
+                : `Không tìm thấy template ${id}`
+            }
+            actions={
+              <Link
+                to="/knowledge/templates"
+                className="btn btn-press btn-secondary no-underline"
+              >
+                Quay lại danh sách
+              </Link>
+            }
+          >
+            {error?.message}
+          </EmptyState>
+        )}
       </KnowledgeLayout>
     )
   }
