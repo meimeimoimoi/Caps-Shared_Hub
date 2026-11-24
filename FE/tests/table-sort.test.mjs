@@ -154,7 +154,9 @@ test('escrow retrieval includes every server page before sorting', async () => {
     '@/lib/api-client': {
       ApiError: Error,
       api: {
-        get: async (_url, { params }) => {
+        get: async (url, { params }) => {
+          // Each escrow page also asks workflow who the parties are; none here
+          if (url.endsWith('/parties')) return { data: [] }
           pages.push(params.page)
           const start = (params.page - 1) * 100
           const items = Array.from(
