@@ -145,5 +145,15 @@
   "claimAction": "Claim",
   "claimTaken": "Another reviewer just claimed this review.",
   "claimFailed": "Could not claim the review. Please try again.",
-  "overdue": "waiting over {{days}} days"
+  "overdue": "waiting over {{days}} days",
+  "aboutPage": "About this page",
+  "loadFailed": "Couldn't load the queue. Please try again.",
+  "sortLabel": "Sort",
+  "sorts": {
+    "queue_asc": "Default order",
+    "waiting_desc": "Longest waiting first",
+    "submittedAt_desc": "Newest first",
+    "name_asc": "Name A–Z",
+    "years_desc": "Most experience first"
+  }
 }

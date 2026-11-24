@@ -2,7 +2,7 @@ import { useCallback, useId, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { ArrowRight, Hand, Inbox, ListFilter, RefreshCw, Search, UserRound } from 'lucide-react'
+import { ArrowDownUp, ArrowRight, Hand, ListFilter, RefreshCw, Search, UserRound } from 'lucide-react'
 import { useReviewerQueue, useReviewerSearch } from '@/features/reviewer/useReviewerQueue'
 import { StatusBadge } from '@/components/ui/display/status-badge'
 import { CustomSelect } from '@/components/ui/forms/custom-select'
@@ -14,6 +14,8 @@ import { useFieldLabel } from '@/features/expert-vetting/hooks/useLabels'
 import { Input } from '@/components/ui/forms/input'
 import { isOverdue } from '@/features/expert-vetting/hooks/useReviewSlaDays'
 import { Toast } from '@/components/ui/feedback/toast'
+import { EmptyState } from '@/components/ui/feedback/empty-state'
+import { HelpTip } from '@/components/ui/feedback/help-tip'
 import { ApiError } from '@/lib/api-client'
 import { claimApplication } from '@/features/expert-vetting/api/adminApi'
 import { claimQualification } from '@/features/expert-vetting/api/qualificationApi'
@@ -21,6 +23,16 @@ import { adminKeys } from '@/features/expert-vetting/api/queryKeys'
 import type { ClaimFilter } from '@/features/expert-vetting/api/reviewQueueApi'
 
 const CLAIM_FILTERS: ClaimFilter[] = ['MINE_OR_UNCLAIMED', 'MINE', 'UNCLAIMED', 'ALL']
+// Server sort keys with direction; "queue" keeps the server's default order
+const SORTS = ['queue:asc', 'waiting:desc', 'submittedAt:desc', 'name:asc', 'years:desc'] as const
+type QueueSort = (typeof SORTS)[number]
+const SORT_LABELS = {
+  'queue:asc': 'sorts.queue_asc',
+  'waiting:desc': 'sorts.waiting_desc',
+  'submittedAt:desc': 'sorts.submittedAt_desc',
+  'name:asc': 'sorts.name_asc',
+  'years:desc': 'sorts.years_desc',
+} as const satisfies Record<QueueSort, string>
 
 export default function ReviewerQueuePage({ history = false, gate: routeGate = 'ALL' }: { history?: boolean; gate?: 'ALL' | 'GATE_1' | 'GATE_2' }) {
   const { t } = useTranslation('reviewer')
@@ -37,12 +49,14 @@ export default function ReviewerQueuePage({ history = false, gate: routeGate = '
   const [status, setStatus] = useState('OPEN')
   // Default: what this reviewer can work on (held by them or by nobody)
   const [claimFilter, setClaimFilter] = useState<ClaimFilter>('MINE_OR_UNCLAIMED')
+  const [sort, setSort] = useState<QueueSort>('queue:asc')
+  const [sortBy, sortDirection] = sort.split(':')
   const [toast, setToast] = useState<string | null>(null)
   const clearToast = useCallback(() => setToast(null), [])
   const qc = useQueryClient()
   // Paging, search and status filtering run on the server; the search waits for typing to pause
   const search = useDebouncedValue(query)
-  const filterKey = `${history}:${search}:${gate}:${status}:${claimFilter}`
+  const filterKey = `${history}:${search}:${gate}:${status}:${claimFilter}:${sort}`
   const [paging, setPaging] = useState({ key: filterKey, page: 1, pageSize: 10 })
   const page = paging.key === filterKey ? paging.page : 1
   const { records, total, slaDays, isLoading, isFetching, error, refresh } = useReviewerQueue({
@@ -52,6 +66,8 @@ export default function ReviewerQueuePage({ history = false, gate: routeGate = '
     page,
     pageSize: paging.pageSize,
     claim: claimFilter,
+    sortBy,
+    sortDescending: sortDirection === 'desc',
   })
   const rows = records
   // Read the clock once on mount so renders stay pure
@@ -99,14 +115,17 @@ export default function ReviewerQueuePage({ history = false, gate: routeGate = '
     <div className="mx-auto w-full max-w-6xl space-y-5 font-sans">
       <header className="flex flex-wrap items-end justify-between gap-3">
         <div className="min-w-0">
-          <h1 className="text-text-strong !font-sans text-xl font-semibold tracking-tight">{title}</h1>
-          <p className="text-text-muted mt-1 text-sm">{description}</p>
+          <div className="flex items-center gap-1.5">
+            <h1 className="text-text-strong !font-sans text-xl font-semibold tracking-tight">{title}</h1>
+            <HelpTip label={t('aboutPage')}>{description}</HelpTip>
+          </div>
         </div>
       </header>
 
-      {error && (
+      {/* Rows from an earlier load stay visible; without rows the error takes the list's place */}
+      {error && records.length > 0 && (
         <div role="alert" className="border-danger/30 bg-danger-soft text-danger flex flex-wrap items-center justify-between gap-3 rounded-lg border px-4 py-3 text-sm">
-          <p>{error.message}</p>
+          <p>{t('loadFailed')}</p>
           <Button variant="outline" disabled={isFetching} onClick={() => void refresh()}>
             {t('retry')}
           </Button>
@@ -154,6 +173,15 @@ export default function ReviewerQueuePage({ history = false, gate: routeGate = '
               triggerClassName="!h-8 !min-h-8 !w-auto !gap-2 !rounded-md !px-2.5 !py-0 text-sm !shadow-none"
             />
           )}
+          <CustomSelect
+            label={t('sortLabel')}
+            value={sort}
+            options={SORTS.map((value) => ({ value, label: t(SORT_LABELS[value]) }))}
+            onChange={(value) => setSort(value as QueueSort)}
+            triggerLeading={<ArrowDownUp size={14} aria-hidden="true" className="text-text-muted" />}
+            className="flex min-w-0 flex-col text-xs [&>span]:sr-only"
+            triggerClassName="!h-8 !min-h-8 !w-auto !gap-2 !rounded-md !px-2.5 !py-0 text-sm !shadow-none"
+          />
           <div className="ml-auto flex items-center gap-3">
             {!isLoading && !error && <p aria-live="polite" className="text-text-muted text-sm tabular-nums">{t('queueCount', { count: total })}</p>}
             <button type="button" aria-label={t('refresh')} title={t('refresh')} disabled={isFetching} onClick={() => void refresh()} className="border-border text-text-muted hover:bg-surface-muted hover:text-text-strong focus-visible:ring-[var(--ui-border-strong)] inline-flex size-8 shrink-0 items-center justify-center rounded-md border focus-visible:ring-2 focus-visible:outline-none disabled:opacity-40">
@@ -170,7 +198,15 @@ export default function ReviewerQueuePage({ history = false, gate: routeGate = '
             <RefreshCw size={15} aria-hidden="true" className="animate-spin motion-reduce:animate-none" />
             {t('loading')}
           </div>
-        ) : error && !records.length ? null : total ? (
+        ) : error && !records.length ? (
+          <div className="border-border rounded-lg border">
+            <EmptyState
+              tone="error"
+              title={t('loadFailed')}
+              actions={<Button variant="outline" disabled={isFetching} onClick={() => void refresh()}>{t('retry')}</Button>}
+            />
+          </div>
+        ) : total ? (
           <>
             {/* Full-width list: one row per application, divided inside a single bordered list */}
             <ul className="border-border bg-surface divide-border divide-y overflow-hidden rounded-lg border">
@@ -196,7 +232,6 @@ export default function ReviewerQueuePage({ history = false, gate: routeGate = '
                         {row.open && (
                           <span className={isOverdue(waitedDays(row.submittedAt), slaDays) ? 'text-warning font-medium' : undefined}>
                             {waited(row.submittedAt)}
-                            {isOverdue(waitedDays(row.submittedAt), slaDays) && <span className="sr-only"> ({t('overdue', { days: slaDays })})</span>}
                             {' · '}
                           </span>
                         )}
@@ -204,7 +239,12 @@ export default function ReviewerQueuePage({ history = false, gate: routeGate = '
                       </span>
                     </div>
                     <div className="md:w-52 md:shrink-0">
-                      <div className="[&>*]:whitespace-nowrap"><StatusBadge status={row.statusMeta} /></div>
+                      <div className="flex flex-wrap items-center gap-1.5 [&>*]:whitespace-nowrap">
+                        <StatusBadge status={row.statusMeta} />
+                        {row.open && isOverdue(waitedDays(row.submittedAt), slaDays) && (
+                          <span className="bg-warning/15 text-warning rounded px-1.5 py-0.5 text-xs font-medium">{t('overdue', { days: slaDays })}</span>
+                        )}
+                      </div>
                       {!history && (
                         <p className="text-text-muted mt-1 flex min-w-0 items-center gap-1 text-xs">
                           <span className="shrink-0">{t('holderLabel')}:</span>
@@ -238,15 +278,16 @@ export default function ReviewerQueuePage({ history = false, gate: routeGate = '
             </ul>
           </>
         ) : (
-          <div className="border-border flex min-h-48 flex-col items-center justify-center rounded-lg border border-dashed px-6 py-10 text-center">
-            <Inbox size={20} strokeWidth={1.75} aria-hidden="true" className="text-text-muted mb-3" />
-            <h2 className="text-text-strong text-sm font-medium">{t('noReviews')}</h2>
-            <p className="text-text-muted mt-1 max-w-sm text-sm">{t('noReviewsBody')}</p>
-            {(query || status !== 'OPEN' || claimFilter !== 'MINE_OR_UNCLAIMED') && <Button variant="outline" className="mt-4" onClick={clear}>{t('clearFilters')}</Button>}
+          <div className="border-border rounded-lg border border-dashed">
+            <EmptyState
+              title={t('noReviews')}
+              actions={(query || status !== 'OPEN' || claimFilter !== 'MINE_OR_UNCLAIMED') && <Button variant="outline" onClick={clear}>{t('clearFilters')}</Button>}
+            >
+              {t('noReviewsBody')}
+            </EmptyState>
           </div>
         )}
         {!isLoading && total > 0 && (
-          <div className="[&_.shared-pagination]:!rounded-none [&_.shared-pagination]:!border-t-0 [&_.shared-pagination]:!bg-transparent [&_.shared-pagination]:!px-0 [&_.shared-pagination]:!py-1">
           <Pagination
             page={page}
             pageSize={paging.pageSize}
@@ -256,7 +297,6 @@ export default function ReviewerQueuePage({ history = false, gate: routeGate = '
             pageSizeOptions={[10, 20, 50]}
             label={t('queuePagination')}
           />
-          </div>
         )}
       </section>
       {toast && <Toast message={toast} onDone={clearToast} />}

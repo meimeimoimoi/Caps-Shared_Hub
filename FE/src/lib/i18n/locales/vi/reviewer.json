@@ -144,5 +144,15 @@
   "claimAction": "Nhận",
   "claimTaken": "Hồ sơ vừa được người khác nhận.",
   "claimFailed": "Chưa nhận được hồ sơ. Vui lòng thử lại.",
-  "overdue": "chờ quá {{days}} ngày"
+  "overdue": "chờ quá {{days}} ngày",
+  "aboutPage": "Về trang này",
+  "loadFailed": "Không tải được hàng đợi. Vui lòng thử lại.",
+  "sortLabel": "Sắp xếp",
+  "sorts": {
+    "queue_asc": "Thứ tự mặc định",
+    "waiting_desc": "Chờ lâu nhất trước",
+    "submittedAt_desc": "Mới nộp trước",
+    "name_asc": "Tên A–Z",
+    "years_desc": "Nhiều kinh nghiệm trước"
+  }
 }
