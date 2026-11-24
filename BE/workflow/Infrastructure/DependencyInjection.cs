@@ -101,8 +101,9 @@ public static class DependencyInjection
         services.AddHttpClient<BillingServiceClient>(http => Link(http, config, "Billing"));
         services.AddScoped<IEscrows>(sp => sp.GetRequiredService<BillingServiceClient>());
         services.AddScoped<IAiCredits>(sp => sp.GetRequiredService<BillingServiceClient>());
-        // The expiry job refunds and settles through these links
+        // The expiry jobs refund and settle through these links
         services.AddHostedService<ReviewCaseExpiryJob>();
+        services.AddHostedService<ChatClarificationExpiryJob>();
         return services;
     }
 

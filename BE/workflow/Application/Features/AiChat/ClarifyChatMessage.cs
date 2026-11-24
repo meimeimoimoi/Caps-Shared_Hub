@@ -19,7 +19,7 @@ public static class ClarifyChatMessage
         DateOnly? PeriodEnd
     );
 
-    /// <summary>Handles clarifying a previous question, re-querying RAG with the original user question, and storing the result.</summary>
+    /// <summary>Handles clarifying a previous question within the 2-round / 24-hour limits and storing the result.</summary>
     public sealed class ClarifyChatMessageHandler(
         IChatMessageRepository chatMessageRepository,
         IConversationRepository conversationRepository,
@@ -41,10 +41,7 @@ public static class ClarifyChatMessage
                 throw WorkflowErrors.MessageNotFound(command.MessageId);
             }
 
-            if (
-                targetMessage.Sender != ChatMessageSender.AI
-                || targetMessage.AnswerStatus != ChatMessageAnswerStatus.NeedClarification
-            )
+            if (!targetMessage.IsAwaitingClarification)
             {
                 throw WorkflowErrors.InvalidClarificationTarget();
             }
@@ -64,18 +61,72 @@ public static class ClarifyChatMessage
             }
 
             var now = timeProvider.GetUtcNow();
-
-            // Retrieve the original user question preceding the AI clarification prompt
             var history = await chatMessageRepository.GetByConversationIdAsync(conversation.Id, ct);
-            var originalUserQuery =
-                history
-                    .Where(m =>
-                        m.Sender == ChatMessageSender.User && m.CreatedAt <= targetMessage.CreatedAt
-                    )
-                    .OrderByDescending(m => m.CreatedAt)
-                    .Select(m => m.Content)
-                    .FirstOrDefault()
-                ?? targetMessage.Content;
+            var (rootQuestion, threadMessages) = ResolveQuestionThread(history, targetMessage);
+            var rootQuestionId = rootQuestion?.Id ?? targetMessage.RootQuestionId;
+            var originalUserQuery = rootQuestion?.Content ?? targetMessage.Content;
+
+            var priorPrompts = threadMessages
+                .Where(m =>
+                    m.Sender == ChatMessageSender.AI
+                    && m.AnswerStatus == ChatMessageAnswerStatus.NeedClarification
+                )
+                .Select(m => m.Content)
+                .ToList();
+            if (!priorPrompts.Contains(targetMessage.Content, StringComparer.Ordinal))
+            {
+                priorPrompts.Add(targetMessage.Content);
+            }
+
+            var priorUserClarifications = threadMessages
+                .Where(m => m.Sender == ChatMessageSender.User && m.Id != rootQuestionId)
+                .Select(m => m.Content)
+                .ToList();
+
+            var threadQuestionIds = threadMessages
+                .Where(m => m.Sender == ChatMessageSender.User)
+                .Select(m => m.Id)
+                .Distinct()
+                .ToList();
+            if (rootQuestionId.HasValue && !threadQuestionIds.Contains(rootQuestionId.Value))
+            {
+                threadQuestionIds.Add(rootQuestionId.Value);
+            }
+
+            // Enforce the 24-hour clarification deadline even if the background expiry job has not ticked yet (BR-C22).
+            if (targetMessage.IsClarificationOverdue(now))
+            {
+                var missingSummary = ChatMessage.BuildMissingInformationSummary(
+                    originalUserQuery,
+                    priorPrompts,
+                    priorUserClarifications
+                );
+                var closedMessage = ChatMessage.CreateInsufficientInformationMessage(
+                    conversation.Id,
+                    rootQuestionId,
+                    Math.Max(targetMessage.ClarificationRound, 1),
+                    ChatMessageClosureReason.UserDidNotClarify,
+                    missingSummary,
+                    targetMessage.PeriodStart,
+                    targetMessage.PeriodEnd,
+                    now
+                );
+
+                await using var tx = await unitOfWork.BeginTransactionAsync(ct);
+                targetMessage.MarkClarificationResolved(now);
+                await chatMessageRepository.AddAsync(closedMessage, ct);
+                conversation.Touch(now);
+                await aiCreditChargeService.ReleaseReservedUsagesForQuestionAsync(
+                    threadQuestionIds,
+                    "AI chat INSUFFICIENT_INFORMATION (USER_DID_NOT_CLARIFY)",
+                    now,
+                    ct
+                );
+                await unitOfWork.SaveChangesAsync(ct);
+                await tx.CommitAsync(ct);
+
+                throw WorkflowErrors.ClarificationExpired();
+            }
 
             var effectivePeriodStart = command.PeriodStart ?? targetMessage.PeriodStart;
             var effectivePeriodEnd = command.PeriodEnd ?? targetMessage.PeriodEnd;
@@ -85,13 +136,23 @@ public static class ClarifyChatMessage
                 command.ClarificationText,
                 effectivePeriodStart,
                 effectivePeriodEnd,
-                now
+                now,
+                rootQuestionId: rootQuestionId
             );
+
+            var allClarifications = priorUserClarifications
+                .Append(command.ClarificationText)
+                .Where(c => !string.IsNullOrWhiteSpace(c))
+                .ToList();
+            var combinedClarification =
+                allClarifications.Count == 1
+                    ? allClarifications[0]
+                    : string.Join("\n", allClarifications);
 
             var ragRequest = new RagQueryRequest(
                 conversation.Id,
                 Query: originalUserQuery,
-                Clarification: command.ClarificationText,
+                Clarification: combinedClarification,
                 PeriodStart: effectivePeriodStart,
                 PeriodEnd: effectivePeriodEnd
             );
@@ -108,8 +169,44 @@ public static class ClarifyChatMessage
                 aiBillingSettings,
                 unitOfWork,
                 timeProvider,
-                ct
+                ct,
+                clarifiedTarget: targetMessage,
+                rootQuestionId: rootQuestionId,
+                priorClarificationPrompts: priorPrompts,
+                priorUserClarifications: allClarifications,
+                threadQuestionIds: threadQuestionIds
             );
+        }
+
+        internal static (
+            ChatMessage? RootQuestion,
+            IReadOnlyList<ChatMessage> ThreadMessages
+        ) ResolveQuestionThread(IReadOnlyList<ChatMessage> history, ChatMessage targetMessage)
+        {
+            if (targetMessage.RootQuestionId is { } rootId)
+            {
+                var root = history.FirstOrDefault(m => m.Id == rootId);
+                var thread = history
+                    .Where(m => m.Id == rootId || m.RootQuestionId == rootId)
+                    .OrderBy(m => m.CreatedAt)
+                    .ToList();
+                return (root, thread);
+            }
+
+            var fallbackRoot = history
+                .Where(m =>
+                    m.Sender == ChatMessageSender.User && m.CreatedAt <= targetMessage.CreatedAt
+                )
+                .OrderByDescending(m => m.CreatedAt)
+                .FirstOrDefault();
+
+            var fallbackThread = new List<ChatMessage>();
+            if (fallbackRoot is not null)
+            {
+                fallbackThread.Add(fallbackRoot);
+            }
+            fallbackThread.Add(targetMessage);
+            return (fallbackRoot, fallbackThread);
         }
     }
 }

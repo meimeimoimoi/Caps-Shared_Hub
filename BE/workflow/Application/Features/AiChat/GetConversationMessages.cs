@@ -59,7 +59,11 @@ public static class GetConversationMessages
                         m.ScopeResult,
                         m.AnswerStatus,
                         citations,
-                        m.CreatedAt
+                        m.CreatedAt,
+                        m.ClarificationRound,
+                        m.ClarificationDeadline,
+                        m.ClosureReason,
+                        m.MissingInformationSummary
                     );
                 })
                 .ToList();

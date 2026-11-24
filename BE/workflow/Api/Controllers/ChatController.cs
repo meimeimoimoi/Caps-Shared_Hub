@@ -115,11 +115,12 @@ public sealed class ChatController(ICurrentUser currentUser) : ControllerBase
     }
 
     /// <summary>Submits a clarification response for an AI message that requested more context.</summary>
-    /// <remarks>Provides additional tax period or transaction date details to complete the RAG query.</remarks>
-    /// <response code="200">The clarification message and new AI answer.</response>
-    /// <response code="400">The target message is not an AI message awaiting clarification.</response>
+    /// <remarks>Enforces a 24-hour response window per prompt and a maximum of 2 clarification rounds per question; exceeding the limit closes the question as INSUFFICIENT_INFORMATION.</remarks>
+    /// <response code="200">The clarification message and new AI answer (or INSUFFICIENT_INFORMATION closure after round 2).</response>
+    /// <response code="400">The target message is not an active AI message awaiting clarification.</response>
     /// <response code="404">Target message or conversation not found.</response>
     /// <response code="409">INSUFFICIENT_CREDITS when AI billing is enabled and wallet balance is too low.</response>
+    /// <response code="422">WORKFLOW_CLARIFICATION_EXPIRED when the 24-hour clarification deadline has passed.</response>
     [HttpPost("messages/{id:guid}/clarify")]
     [RequirePermission(Permission.BusinessWrite)]
     [RequireSessionCheck]

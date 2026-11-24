@@ -445,6 +445,354 @@ public sealed class AiChatHandlerTests
         Assert.False(failStore.Saved);
     }
 
+    [Fact]
+    public async Task Send_sets_round_one_and_24h_deadline_when_clarification_is_needed()
+    {
+        var store = new Store();
+        var conversation = store.AddConversation(Owner, "Tax question");
+        store.NextRagResponse = new(
+            "Vui lòng cho biết kỳ tính thuế áp dụng?",
+            ChatMessageScopeResult.InScope,
+            ChatMessageAnswerStatus.NeedClarification,
+            null,
+            null,
+            []
+        );
+
+        var result = await SendHandler(store)
+            .HandleAsync(
+                new(conversation.Id, Owner, "Chi phí tiếp khách có được trừ?", null, null),
+                default
+            );
+
+        Assert.Equal(ChatMessageAnswerStatus.NeedClarification, result.AiMessageDto.AnswerStatus);
+        Assert.Equal(1, result.AiMessageDto.ClarificationRound);
+        Assert.Equal(Now.AddHours(24), result.AiMessageDto.ClarificationDeadline);
+        Assert.Null(result.AiMessageDto.ClosureReason);
+        Assert.Equal(result.UserMessageDto.Id, store.Messages.Last().RootQuestionId);
+    }
+
+    [Fact]
+    public async Task Clarify_allows_two_rounds_then_closes_as_insufficient_information_with_summary()
+    {
+        var clock = new MutableClock(Now);
+        var store = new Store { WalletBalance = 5_000 };
+        var conversation = store.AddConversation(Owner, "Tax question");
+        store.NextRagResponse = new(
+            "Vui lòng cho biết kỳ tính thuế áp dụng?",
+            ChatMessageScopeResult.InScope,
+            ChatMessageAnswerStatus.NeedClarification,
+            null,
+            null,
+            []
+        );
+
+        var initial = await SendHandler(store, EnabledBillingSettings, clock)
+            .HandleAsync(
+                new(
+                    conversation.Id,
+                    Owner,
+                    "Chi phí tài trợ có được trừ thuế TNDN không?",
+                    null,
+                    null
+                ),
+                default
+            );
+        Assert.Equal(1, initial.AiMessageDto.ClarificationRound);
+
+        // Round 1 reply -> AI still needs clarification -> Round 2 (deadline refreshed to +24h)
+        clock.Advance(TimeSpan.FromHours(2));
+        store.NextRagResponse = new(
+            "Vui lòng bổ sung loại hình tổ chức nhận tài trợ và năm phát sinh?",
+            ChatMessageScopeResult.InScope,
+            ChatMessageAnswerStatus.NeedClarification,
+            null,
+            null,
+            []
+        );
+        var round2 = await ClarifyHandler(store, EnabledBillingSettings, clock)
+            .HandleAsync(
+                new(initial.AiMessageDto.Id, Owner, "Chi cho hội thảo địa phương", null, null),
+                default
+            );
+
+        Assert.Equal(ChatMessageAnswerStatus.NeedClarification, round2.AiMessageDto.AnswerStatus);
+        Assert.Equal(2, round2.AiMessageDto.ClarificationRound);
+        Assert.Equal(clock.Current.AddHours(24), round2.AiMessageDto.ClarificationDeadline);
+        Assert.Equal("Chi phí tài trợ có được trừ thuế TNDN không?", store.LastRagRequest?.Query);
+
+        // Round 1 prompt is resolved and cannot be clarified again
+        var replayEx = await Assert.ThrowsAsync<AppException>(() =>
+            ClarifyHandler(store, EnabledBillingSettings, clock)
+                .HandleAsync(new(initial.AiMessageDto.Id, Owner, "Duplicate", null, null), default)
+        );
+        Assert.Equal("WORKFLOW_INVALID_CLARIFICATION_TARGET", replayEx.Code);
+
+        // Round 2 reply -> AI STILL needs clarification -> closed as INSUFFICIENT_INFORMATION
+        clock.Advance(TimeSpan.FromHours(1));
+        store.NextRagResponse = new(
+            "Vẫn thiếu kỳ tính thuế và hồ sơ chứng từ tài trợ.",
+            ChatMessageScopeResult.InScope,
+            ChatMessageAnswerStatus.NeedClarification,
+            null,
+            null,
+            []
+        );
+        var closed = await ClarifyHandler(store, EnabledBillingSettings, clock)
+            .HandleAsync(
+                new(round2.AiMessageDto.Id, Owner, "Không rõ tổ chức nhận", null, null),
+                default
+            );
+
+        Assert.Equal("Chi phí tài trợ có được trừ thuế TNDN không?", store.LastRagRequest?.Query);
+        Assert.Contains("Chi cho hội thảo địa phương", store.LastRagRequest?.Clarification);
+        Assert.Contains("Không rõ tổ chức nhận", store.LastRagRequest?.Clarification);
+        Assert.Equal(
+            ChatMessageAnswerStatus.InsufficientInformation,
+            closed.AiMessageDto.AnswerStatus
+        );
+        Assert.Equal(
+            ChatMessageClosureReason.ClarificationLimitReached,
+            closed.AiMessageDto.ClosureReason
+        );
+        Assert.Equal(2, closed.AiMessageDto.ClarificationRound);
+        Assert.Null(closed.AiMessageDto.ClarificationDeadline);
+        Assert.False(string.IsNullOrWhiteSpace(closed.AiMessageDto.MissingInformationSummary));
+        Assert.Contains("Vẫn thiếu kỳ tính thuế", closed.AiMessageDto.MissingInformationSummary);
+        Assert.Contains("không đưa ra kết luận chắc chắn", closed.AiMessageDto.Content);
+
+        // Credit was never captured: all holds were released and wallet balance stays intact
+        Assert.Equal(5_000, store.WalletBalance);
+        Assert.Empty(store.CaptureCalls);
+        Assert.Equal(3, store.ReleaseCalls.Count);
+        Assert.All(store.Usages, u => Assert.Equal(AiUsageState.Refunded, u.State));
+    }
+
+    [Fact]
+    public async Task Clarify_succeeds_on_round_two_and_captures_credit_when_answered()
+    {
+        var clock = new MutableClock(Now);
+        var store = new Store { WalletBalance = 5_000 };
+        var conversation = store.AddConversation(Owner, "Tax question");
+        store.NextRagResponse = new(
+            "Kỳ tính thuế nào?",
+            ChatMessageScopeResult.InScope,
+            ChatMessageAnswerStatus.NeedClarification,
+            null,
+            null,
+            []
+        );
+        var round1 = await SendHandler(store, EnabledBillingSettings, clock)
+            .HandleAsync(new(conversation.Id, Owner, "Thuế suất TNDN?", null, null), default);
+
+        clock.Advance(TimeSpan.FromHours(1));
+        var round2 = await ClarifyHandler(store, EnabledBillingSettings, clock)
+            .HandleAsync(
+                new(round1.AiMessageDto.Id, Owner, "Doanh nghiệp nhỏ", null, null),
+                default
+            );
+        Assert.Equal(2, round2.AiMessageDto.ClarificationRound);
+
+        clock.Advance(TimeSpan.FromHours(1));
+        store.NextRagResponse = new(
+            "Thuế suất TNDN phổ thông năm 2026 là 20%.",
+            ChatMessageScopeResult.InScope,
+            ChatMessageAnswerStatus.Answered,
+            Jan1,
+            Dec31,
+            []
+        );
+        var answered = await ClarifyHandler(store, EnabledBillingSettings, clock)
+            .HandleAsync(new(round2.AiMessageDto.Id, Owner, "Năm 2026", Jan1, Dec31), default);
+
+        Assert.Equal(ChatMessageAnswerStatus.Answered, answered.AiMessageDto.AnswerStatus);
+        Assert.Equal(4_000, store.WalletBalance);
+        Assert.Single(store.CaptureCalls);
+    }
+
+    [Fact]
+    public async Task Clarify_after_24h_closes_question_as_user_did_not_clarify_without_calling_rag()
+    {
+        var clock = new MutableClock(Now);
+        var store = new Store { WalletBalance = 4_000 };
+        var conversation = store.AddConversation(Owner, "Tax question");
+        var rootQuestion = ChatMessage.CreateUserMessage(
+            conversation.Id,
+            "Chi phí lãi vay có bị khống chế?",
+            null,
+            null,
+            Now
+        );
+        var prompt = ChatMessage.CreateAiMessage(
+            conversation.Id,
+            "Vui lòng cho biết kỳ tính thuế và doanh nghiệp có giao dịch liên kết không?",
+            ChatMessageScopeResult.InScope,
+            ChatMessageAnswerStatus.NeedClarification,
+            null,
+            null,
+            null,
+            Now,
+            clarificationRound: 1,
+            clarificationDeadline: Now.AddHours(24),
+            rootQuestionId: rootQuestion.Id
+        );
+        store.Messages.AddRange([rootQuestion, prompt]);
+
+        // Pre-existing reserved credit hold linked to the question must be released on expiry
+        var reservedUsage = AiUsage.Create(
+            Owner,
+            conversation.Id,
+            rootQuestion.Id,
+            AiUsagePaidWith.Credit,
+            1_000,
+            AiUsageState.Reserved,
+            Now
+        );
+        store.WalletHeld = 1_000;
+        store.Usages.Add(reservedUsage);
+
+        clock.Advance(TimeSpan.FromHours(24));
+
+        var ex = await Assert.ThrowsAsync<AppException>(() =>
+            ClarifyHandler(store, EnabledBillingSettings, clock)
+                .HandleAsync(new(prompt.Id, Owner, "Năm 2026", Jan1, Dec31), default)
+        );
+
+        Assert.Equal("WORKFLOW_CLARIFICATION_EXPIRED", ex.Code);
+        Assert.Null(store.LastRagRequest);
+        Assert.NotNull(prompt.ClarificationResolvedAt);
+        var closed = store.Messages.Last();
+        Assert.Equal(ChatMessageAnswerStatus.InsufficientInformation, closed.AnswerStatus);
+        Assert.Equal(ChatMessageClosureReason.UserDidNotClarify, closed.ClosureReason);
+        Assert.False(string.IsNullOrWhiteSpace(closed.MissingInformationSummary));
+        Assert.Contains("không đưa ra kết luận chắc chắn", closed.Content);
+        Assert.Equal(AiUsageState.Refunded, reservedUsage.State);
+        Assert.Equal(5_000, store.WalletBalance);
+        Assert.Single(store.ReleaseCalls, reservedUsage.Id);
+    }
+
+    [Fact]
+    public async Task Expire_clarification_closes_overdue_prompt_and_releases_reserved_credit()
+    {
+        var clock = new MutableClock(Now);
+        var store = new Store { WalletBalance = 4_000, WalletHeld = 1_000 };
+        var conversation = store.AddConversation(Owner, "Tax question");
+        var rootQuestion = ChatMessage.CreateUserMessage(
+            conversation.Id,
+            "Chi phí quảng cáo có được trừ?",
+            null,
+            null,
+            Now
+        );
+        var prompt = ChatMessage.CreateAiMessage(
+            conversation.Id,
+            "Vui lòng cho biết năm phát sinh giao dịch?",
+            ChatMessageScopeResult.InScope,
+            ChatMessageAnswerStatus.NeedClarification,
+            null,
+            null,
+            null,
+            Now,
+            clarificationRound: 1,
+            clarificationDeadline: Now.AddHours(24),
+            rootQuestionId: rootQuestion.Id
+        );
+        store.Messages.AddRange([rootQuestion, prompt]);
+        var reservedUsage = AiUsage.Create(
+            Owner,
+            conversation.Id,
+            rootQuestion.Id,
+            AiUsagePaidWith.Credit,
+            1_000,
+            AiUsageState.Reserved,
+            Now
+        );
+        store.Usages.Add(reservedUsage);
+
+        // Before 24 hours: expiry job must leave prompt open
+        clock.Advance(TimeSpan.FromHours(23).Add(TimeSpan.FromMinutes(59)));
+        await ExpireHandler(store, EnabledBillingSettings, clock)
+            .HandleAsync(new(prompt.Id), default);
+        Assert.Equal(2, store.Messages.Count);
+        Assert.Null(prompt.ClarificationResolvedAt);
+        Assert.Empty(store.ReleaseCalls);
+
+        // At 24 hours: closes with INSUFFICIENT_INFORMATION / USER_DID_NOT_CLARIFY and releases hold
+        clock.Advance(TimeSpan.FromMinutes(1));
+        await ExpireHandler(store, EnabledBillingSettings, clock)
+            .HandleAsync(new(prompt.Id), default);
+
+        Assert.Equal(3, store.Messages.Count);
+        Assert.NotNull(prompt.ClarificationResolvedAt);
+        var closed = store.Messages.Last();
+        Assert.Equal(ChatMessageAnswerStatus.InsufficientInformation, closed.AnswerStatus);
+        Assert.Equal(ChatMessageClosureReason.UserDidNotClarify, closed.ClosureReason);
+        Assert.Contains(
+            "Vui lòng cho biết năm phát sinh giao dịch?",
+            closed.MissingInformationSummary
+        );
+        Assert.Contains("không đưa ra kết luận chắc chắn", closed.Content);
+        Assert.Equal(AiUsageState.Refunded, reservedUsage.State);
+        Assert.Equal(5_000, store.WalletBalance);
+        Assert.Single(store.ReleaseCalls, reservedUsage.Id);
+
+        // Running again is idempotent
+        await ExpireHandler(store, EnabledBillingSettings, clock)
+            .HandleAsync(new(prompt.Id), default);
+        Assert.Equal(3, store.Messages.Count);
+        Assert.Single(store.ReleaseCalls);
+    }
+
+    [Fact]
+    public async Task Expire_clarification_keeps_captured_credit_intact_and_skips_billing_when_disabled()
+    {
+        var clock = new MutableClock(Now.AddHours(25));
+        var store = new Store { WalletBalance = 4_000 };
+        var conversation = store.AddConversation(Owner, "Tax question");
+        var rootQuestion = ChatMessage.CreateUserMessage(
+            conversation.Id,
+            "Khấu hao TSCĐ?",
+            null,
+            null,
+            Now
+        );
+        var prompt = ChatMessage.CreateAiMessage(
+            conversation.Id,
+            "Vui lòng nêu loại tài sản và kỳ tính thuế?",
+            ChatMessageScopeResult.InScope,
+            ChatMessageAnswerStatus.NeedClarification,
+            null,
+            null,
+            null,
+            Now,
+            clarificationRound: 2,
+            clarificationDeadline: Now.AddHours(24),
+            rootQuestionId: rootQuestion.Id
+        );
+        store.Messages.AddRange([rootQuestion, prompt]);
+        var capturedUsage = AiUsage.Create(
+            Owner,
+            conversation.Id,
+            rootQuestion.Id,
+            AiUsagePaidWith.Credit,
+            1_000,
+            AiUsageState.Captured,
+            Now
+        );
+        store.Usages.Add(capturedUsage);
+
+        await ExpireHandler(store, EnabledBillingSettings, clock)
+            .HandleAsync(new(prompt.Id), default);
+
+        Assert.Equal(AiUsageState.Captured, capturedUsage.State);
+        Assert.Empty(store.ReleaseCalls);
+        Assert.Equal(4_000, store.WalletBalance);
+        var closed = store.Messages.Last();
+        Assert.Equal(ChatMessageAnswerStatus.InsufficientInformation, closed.AnswerStatus);
+        Assert.Equal(ChatMessageClosureReason.UserDidNotClarify, closed.ClosureReason);
+        Assert.Equal(2, closed.ClarificationRound);
+    }
+
     private static readonly AiBillingSettings FreeBillingSettings = new() { Enabled = false };
 
     private static readonly AiBillingSettings EnabledBillingSettings = new()
@@ -456,29 +804,52 @@ public sealed class AiChatHandlerTests
 
     private static SendChatMessage.SendChatMessageHandler SendHandler(
         Store store,
-        AiBillingSettings? settings = null
+        AiBillingSettings? settings = null,
+        TimeProvider? clock = null
     )
     {
         var billing = settings ?? FreeBillingSettings;
-        var clock = new FixedClock();
-        var chargeService = new AiCreditChargeService(store, store, store, billing, clock);
-        return new(store, store, store, chargeService, billing, store, clock);
+        var time = clock ?? new FixedClock();
+        var chargeService = new AiCreditChargeService(store, store, store, billing, time);
+        return new(store, store, store, chargeService, billing, store, time);
     }
 
     private static ClarifyChatMessage.ClarifyChatMessageHandler ClarifyHandler(
         Store store,
-        AiBillingSettings? settings = null
+        AiBillingSettings? settings = null,
+        TimeProvider? clock = null
     )
     {
         var billing = settings ?? FreeBillingSettings;
-        var clock = new FixedClock();
-        var chargeService = new AiCreditChargeService(store, store, store, billing, clock);
-        return new(store, store, store, chargeService, billing, store, clock);
+        var time = clock ?? new FixedClock();
+        var chargeService = new AiCreditChargeService(store, store, store, billing, time);
+        return new(store, store, store, chargeService, billing, store, time);
+    }
+
+    private static ExpireChatClarificationHandler ExpireHandler(
+        Store store,
+        AiBillingSettings? settings = null,
+        TimeProvider? clock = null
+    )
+    {
+        var billing = settings ?? FreeBillingSettings;
+        var time = clock ?? new FixedClock();
+        var chargeService = new AiCreditChargeService(store, store, store, billing, time);
+        return new(store, store, chargeService, store, time);
     }
 
     private sealed class FixedClock : TimeProvider
     {
         public override DateTimeOffset GetUtcNow() => Now;
+    }
+
+    private sealed class MutableClock(DateTimeOffset start) : TimeProvider
+    {
+        public DateTimeOffset Current { get; private set; } = start;
+
+        public void Advance(TimeSpan delta) => Current = Current.Add(delta);
+
+        public override DateTimeOffset GetUtcNow() => Current;
     }
 
     private sealed class Store
@@ -540,6 +911,11 @@ public sealed class AiChatHandlerTests
         Task<ChatMessage?> IChatMessageRepository.GetByIdAsync(Guid id, CancellationToken ct) =>
             Task.FromResult(Messages.SingleOrDefault(m => m.Id == id));
 
+        Task<ChatMessage?> IChatMessageRepository.FindForUpdateAsync(
+            Guid id,
+            CancellationToken ct
+        ) => Task.FromResult(Messages.SingleOrDefault(m => m.Id == id));
+
         public Task<IReadOnlyList<ChatMessage>> GetByConversationIdAsync(
             Guid conversationId,
             CancellationToken ct = default
@@ -577,6 +953,16 @@ public sealed class AiChatHandlerTests
             Usages.Add(usage);
             return Task.CompletedTask;
         }
+
+        public Task<IReadOnlyList<AiUsage>> FindByQuestionIdsAsync(
+            IReadOnlyCollection<Guid> questionIds,
+            CancellationToken ct = default
+        ) =>
+            Task.FromResult<IReadOnlyList<AiUsage>>(
+                Usages
+                    .Where(u => u.QuestionId.HasValue && questionIds.Contains(u.QuestionId.Value))
+                    .ToList()
+            );
 
         Task<AiQuota?> IAiQuotaRepository.GetByUserIdAsync(Guid userId, CancellationToken ct) =>
             Task.FromResult(Quotas.GetValueOrDefault(userId));
