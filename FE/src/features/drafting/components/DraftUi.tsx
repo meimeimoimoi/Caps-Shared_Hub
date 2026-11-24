@@ -5,6 +5,7 @@ import type { ButtonHTMLAttributes, ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { Button } from '@/components/ui/actions/button'
 import { Check } from 'lucide-react'
+import { HelpTip } from '@/components/ui/feedback/help-tip'
 import { useMotion } from '@/components/ui/motion'
 import { ApiError } from '@/lib/api-client'
 import { useDraftHref } from '../hooks/useDrafting'
@@ -139,10 +140,10 @@ export function DraftHeading({
     <header className="mb-8 space-y-5">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="max-w-3xl min-w-0">
-          <h1 className="text-h1-tool md:text-h1 break-words">{title}</h1>
-          {description && (
-            <p className="text-fg-muted mt-2 max-w-[70ch]">{description}</p>
-          )}
+          <div className="flex items-center gap-2">
+            <h1 className="text-h1-tool md:text-h1 break-words">{title}</h1>
+            {description && <HelpTip label={title}>{description}</HelpTip>}
+          </div>
         </div>
         {children}
       </div>
