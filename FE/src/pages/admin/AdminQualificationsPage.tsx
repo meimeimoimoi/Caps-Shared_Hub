@@ -12,6 +12,7 @@ import {
 import type { QualificationScope } from '../../features/expert-vetting/types'
 import { PageHeader } from '@/components/ui/layout/page-header'
 import { LoadError } from '@/components/ui/feedback/load-error'
+import { EmptyState } from '@/components/ui/feedback/empty-state'
 
 /** Gate 2 queue for reviewers, or the final approval queue for System Admins */
 export default function AdminQualificationsPage({
@@ -77,21 +78,23 @@ export default function AdminQualificationsPage({
             <LoadError error={error} />
           ) : review ? undefined : (
             // Say which filter is empty and where earlier files are, instead of a bare "no files"
-            <div className="flex flex-col items-center gap-3">
-              <p>
-                {query.trim()
+            <EmptyState
+              title={
+                query.trim()
                   ? t('finalApproval.emptySearch', { query: query.trim() })
                   : t('finalApproval.emptyQueue', {
                       status: t(`qualifications.tabs.${tab}`),
-                    })}
-              </p>
-              <Link
-                to="/admin/experts/assignments"
-                className="btn btn-press btn-secondary h-9 px-3 text-sm no-underline"
-              >
-                {t('finalApproval.seeEarlier')}
-              </Link>
-            </div>
+                    })
+              }
+              actions={
+                <Link
+                  to="/admin/experts/assignments"
+                  className="btn btn-press btn-secondary h-9 px-3 text-sm no-underline"
+                >
+                  {t('finalApproval.seeEarlier')}
+                </Link>
+              }
+            />
           )
         }
         linkBase={

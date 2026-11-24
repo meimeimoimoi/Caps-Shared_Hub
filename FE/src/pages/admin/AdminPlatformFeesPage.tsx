@@ -31,6 +31,7 @@ import { formatDate } from '../../features/expert-vetting/utils/applications'
 import { PageHeader } from '@/components/ui/layout/page-header'
 import { LoadError } from '@/components/ui/feedback/load-error'
 import { PlatformFeeHistory } from '@/features/expert-vetting/components/PlatformFeeHistory'
+import { EmptyState } from '@/components/ui/feedback/empty-state'
 
 const LATE_FIELDS = [
   'penaltyHours',
@@ -712,7 +713,7 @@ export default function AdminPlatformFeesPage() {
         )}
         {!query.isLoading && rows.length === 0 && (
           <div className="paper text-fg-muted px-5 py-10 text-center">
-            {query.error ? <LoadError error={query.error} /> : t('admin:platformFees.empty')}
+            {query.error ? <LoadError error={query.error} /> : <EmptyState title={t('admin:platformFees.empty')} />}
           </div>
         )}
       </div>

@@ -16,6 +16,7 @@ import { ExcuseDialog } from '@/features/expert-vetting/components/ExpertViolati
 import { ExcuseFiles } from '@/features/expert-vetting/components/ExcuseFiles'
 import type { ExcuseRequest } from '@/features/expert-vetting/types'
 import { foldVietnamese, formatDateTime } from '@/features/expert-vetting/utils/applications'
+import { EmptyState } from '@/components/ui/feedback/empty-state'
 
 /** Force-majeure excuse requests from experts, oldest first: read the reason and evidence, then excuse or decline. */
 export default function AdminExcuseRequestsPage() {
@@ -161,9 +162,9 @@ export default function AdminExcuseRequestsPage() {
                   {requests.isError ? (
                     <LoadError />
                   ) : all.length > 0 ? (
-                    t('excuseRequests.noResults')
+                    <EmptyState title={t('excuseRequests.noResults')} />
                   ) : (
-                    t('excuseRequests.empty')
+                    <EmptyState title={t('excuseRequests.empty')} />
                   )}
                 </td>
               </tr>
