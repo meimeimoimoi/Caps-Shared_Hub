@@ -83,6 +83,16 @@ export async function setTemplateStatus(
   throw new Error('Chức năng tạm ngưng template chưa được kết nối với máy chủ.')
 }
 
+/** Puts the sample .docx on the template's draft version; the server refuses when there is no draft */
+export async function uploadTemplateFile(id: string, file: File) {
+  const form = new FormData()
+  form.append('file', file)
+  await api.put(`${ADMIN}/${encodeURIComponent(id)}/file`, form, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+    timeout: 60_000,
+  })
+}
+
 /** Saves the fields as the template's draft, then uploads the sample .docx to that draft; users see it once published */
 export async function createTemplate(
   file: File | null,
@@ -132,19 +142,12 @@ export async function createTemplate(
   })
   const id = res.data.templateId
   if (file) {
-    const form = new FormData()
-    form.append('file', file)
     // Saving again overwrites the same draft, so a retry after a failed upload is safe
-    await api
-      .put(`${ADMIN}/${encodeURIComponent(id)}/file`, form, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-        timeout: 60_000,
-      })
-      .catch((err: Error) => {
-        throw new Error(
-          `Đã lưu các trường nhưng chưa tải được file mẫu (${err.message}). Bấm Tạo template lần nữa để thử lại.`
-        )
-      })
+    await uploadTemplateFile(id, file).catch((err: Error) => {
+      throw new Error(
+        `Đã lưu các trường nhưng chưa tải được file mẫu (${err.message}). Bấm Tạo template lần nữa để thử lại.`
+      )
+    })
   }
   return id
 }

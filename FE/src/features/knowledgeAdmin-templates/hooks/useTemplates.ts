@@ -6,6 +6,7 @@ import {
   getTemplateFile,
   getTemplates,
   publishTemplate,
+  uploadTemplateFile,
   setTemplateStatus,
 } from '../api/templatesApi'
 import { templatesKeys } from '../api/queryKeys'
@@ -41,6 +42,11 @@ export function useManagedTemplate(id: string) {
     /** Publishes the draft waiting behind the published version (draftPending) */
     publish: async () => {
       await publishTemplate(id)
+      await qc.invalidateQueries({ queryKey: templatesKeys.all })
+    },
+    /** Attaches or replaces the draft's sample .docx */
+    uploadFile: async (file: File) => {
+      await uploadTemplateFile(id, file)
       await qc.invalidateQueries({ queryKey: templatesKeys.all })
     },
   }
