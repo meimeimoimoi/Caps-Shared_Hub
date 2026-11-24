@@ -1,6 +1,7 @@
 using Caps.Common.Application;
 using Caps.Workflow.Application.Abstractions;
 using Caps.Workflow.Application.DTOs.Responses;
+using Caps.Workflow.Application.Features.Attachments;
 using Caps.Workflow.Domain;
 
 namespace Caps.Workflow.Application.Features.ReviewCases;
@@ -25,13 +26,15 @@ public sealed class GetReviewCaseHandler(
             ?? throw WorkflowErrors.ReviewCaseNotFound();
         reviewCase.EnsureVisibleTo(query.UserId);
         var questions = await infoRequests.ListAsync(reviewCase.Id, ct);
-        // An upload file's version holds file details, not draft fiels
+        // An upload file's version holds file details, not draft fields: send its name instead of its content
         var source = await attachments.FindSourceAsync(reviewCase.SourceVersionId, ct);
+        var uploaded = source?.FileUrl is not null;
         return ReviewCaseResponse.From(
             reviewCase,
             query.UserId,
             questions,
-            source?.FileUrl is null ? source?.Content : null
+            uploaded ? null : source?.Content,
+            uploaded ? OpenSourceFileHandler.FileNameOf(source!.Content) : null
         );
     }
 }

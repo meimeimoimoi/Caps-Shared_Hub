@@ -19,16 +19,24 @@ public sealed class AdminDisputesController(ICurrentUser currentUser) : Controll
 {
     private Guid UserId => currentUser.RequireUserId();
 
-    /// <summary>Returns the open disputes, earliest decision deadline first.</summary>
-    /// <response code="200">The open disputes (may be empty); overdue ones are flagged.</response>
+    /// <summary>Returns the open disputes, earliest decision deadline first, or the closed ones.</summary>
+    /// <remarks>
+    /// closed=true lists the resolved and withdrawn disputes instead, most recently closed first (at most 200),
+    /// with their outcome, refund and decision note.
+    /// </remarks>
+    /// <param name="closed">True for the decided and withdrawn disputes; false (default) for the open queue.</param>
+    /// <param name="handler">Query handler listing the disputes.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <response code="200">The disputes (may be empty); open overdue ones are flagged.</response>
     /// <response code="403">Missing the DisputeResolve permission.</response>
     [HttpGet("disputes")]
     public async Task<IActionResult> ListOpen(
+        [FromQuery] bool closed,
         [FromServices] IQueryHandler<ListOpenDisputesQuery, AdminDisputeResponse[]> handler,
         CancellationToken ct
     )
     {
-        var queue = await handler.HandleAsync(new(), ct);
+        var queue = await handler.HandleAsync(new(closed), ct);
         return Ok(ApiResponse<AdminDisputeResponse[]>.Ok(queue));
     }
 

@@ -11,8 +11,12 @@ public interface IReviewDisputeRepository
     /// <summary>Tracks a new dispute.</summary>
     void Add(ReviewDispute dispute);
 
-    /// <summary>Open disputes with their cases, earliest decision deadline first, untracked.</summary>
-    Task<IReadOnlyList<(ReviewDispute Dispute, ReviewCase Case)>> ListOpenAsync(
+    /// <summary>
+    /// Disputes with their cases, untracked: the open ones earliest decision deadline first, or the closed ones
+    /// (resolved or withdrawn) most recently closed first.
+    /// </summary>
+    Task<IReadOnlyList<(ReviewDispute Dispute, ReviewCase Case)>> ListAsync(
+        bool open,
         CancellationToken ct
     );
 }
