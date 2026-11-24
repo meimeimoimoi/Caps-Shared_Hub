@@ -495,6 +495,29 @@
     "priceTbd": "Price not set",
     "buy": "Top up via PayOS",
     "buyUnavailable": "This package has no price yet, so it isn't on sale.",
+    "buySoon": "Top-up via PayOS is being finished and will open in an upcoming update.",
+    "rateItems": {
+      "ai-question": {
+        "action": "AI assistant question",
+        "when": "Held when you send; captured once the question goes to research, even if the sources are insufficient. Follow-ups to clarify are not charged again"
+      },
+      "ai-out-of-scope": {
+        "action": "Question outside corporate income tax",
+        "when": "Detected before research; the full hold is released"
+      },
+      "ai-system-error": {
+        "action": "System error after capture",
+        "when": "Processing failed entirely due to a platform error; 1 credit refunded"
+      },
+      "draft-export": {
+        "action": "Download a draft",
+        "when": "DOCX or PDF export; re-downloading the same version is free"
+      },
+      "draft-preview": {
+        "action": "Generate and preview a draft",
+        "when": "Free, including regeneration"
+      }
+    },
     "rates": "Credit pricing",
     "free": "Free",
     "tbd": "Not set",

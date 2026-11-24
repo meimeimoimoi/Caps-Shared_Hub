@@ -9,6 +9,8 @@ import { useFormatters } from '@/hooks/useFormatters'
 import { isExpertDemo } from '@/lib/expert-data-source'
 import { useCreditOverview } from '@/features/credits/hooks/useCreditOverview'
 import type { PaymentTransaction } from '@/features/credits/types'
+import { EmptyState } from '@/components/ui/feedback/empty-state'
+import { HelpTip } from '@/components/ui/feedback/help-tip'
 import { StatusBadge } from '@/components/ui/display/status-badge'
 import { SkeletonRows } from '@/components/ui/display/skeleton-rows'
 import type { StatusMeta } from '@/lib/constants'
@@ -32,9 +34,25 @@ export default function WalletPage() {
   const wallet = payments.data?.wallet
   const ledger = payments.data?.ledger ?? []
   const { creditPackages, creditRates } = mockPricing
-  const held = useClientCases().cases.filter((c) =>
+  const clientCases = useClientCases()
+  const held = clientCases.cases.filter((c) =>
     ['held', 'locked'].includes(fundsOf(c))
   )
+  const loadError = payments.isError ? (
+    <EmptyState
+      tone="error"
+      title={t('errors.failed')}
+      actions={
+        <button
+          type="button"
+          onClick={() => void payments.refetch()}
+          className="btn btn-secondary"
+        >
+          {t('retry')}
+        </button>
+      }
+    />
+  ) : null
 
   useEffect(() => {
     document.title = `${t('nav.wallet')} | Shared Hub`
@@ -42,8 +60,10 @@ export default function WalletPage() {
 
   return (
     <>
-      <h1 className="text-h1 font-serif">{t('nav.wallet')}</h1>
-      <p className="text-fg-muted mt-2 max-w-[65ch]">{t('wallet.lead')}</p>
+      <div className="flex items-center gap-2">
+        <h1 className="text-h1 font-serif">{t('nav.wallet')}</h1>
+        <HelpTip label={t('nav.wallet')}>{t('wallet.lead')}</HelpTip>
+      </div>
 
       <section
         aria-label={t('wallet.available')}
@@ -61,11 +81,13 @@ export default function WalletPage() {
           )}
         </div>
         <div className="sm:border-border sm:border-l sm:pl-6">
-          <p className="eyebrow">{t('wallet.held')}</p>
+          <div className="flex items-center gap-1.5">
+            <p className="eyebrow">{t('wallet.held')}</p>
+            <HelpTip label={t('wallet.held')}>{t('wallet.heldHint')}</HelpTip>
+          </div>
           <p className="num text-fg-strong text-h2 mt-1 font-semibold">
             {wallet ? t('wallet.unit', { count: wallet.held }) : '—'}
           </p>
-          <p className="text-fg-muted mt-1 text-sm">{t('wallet.heldHint')}</p>
         </div>
       </section>
 
@@ -103,12 +125,11 @@ export default function WalletPage() {
                         ? t('wallet.priceTbd')
                         : f.money(p.price)}
                     </p>
+                    {/* Top-up checkout has no billing endpoint yet, so buying stays disabled */}
                     <button
                       type="button"
-                      disabled={p.price == null}
-                      title={
-                        p.price == null ? t('wallet.buyUnavailable') : undefined
-                      }
+                      disabled
+                      aria-describedby="w-buy-note"
                       className="btn btn-press btn-primary mt-5"
                     >
                       {t('wallet.buy')}
@@ -116,11 +137,11 @@ export default function WalletPage() {
                   </li>
                 ))}
             </ul>
-            {creditPackages.every((p) => p.price == null) && (
-              <p className="text-fg-muted mt-3 text-sm">
-                {t('wallet.buyUnavailable')}
-              </p>
-            )}
+            <p id="w-buy-note" className="text-fg-muted mt-3 text-sm">
+              {creditPackages.every((p) => p.price == null)
+                ? t('wallet.buyUnavailable')
+                : t('wallet.buySoon')}
+            </p>
           </section>
 
           <section aria-labelledby="w-ledger">
@@ -180,11 +201,10 @@ export default function WalletPage() {
                   {payments.isLoading && <SkeletonRows cols={4} />}
                   {!payments.isLoading && ledger.length === 0 && (
                     <tr className="border-border-subtle border-t">
-                      <td
-                        colSpan={4}
-                        className="text-fg-muted px-4 py-10 text-center"
-                      >
-                        {payments.error?.message ?? t('wallet.ledgerEmpty')}
+                      <td colSpan={4}>
+                        {loadError ?? (
+                          <EmptyState title={t('wallet.ledgerEmpty')} />
+                        )}
                       </td>
                     </tr>
                   )}
@@ -242,11 +262,10 @@ export default function WalletPage() {
                   {payments.isLoading && <SkeletonRows cols={4} />}
                   {!payments.isLoading && !payments.data?.payments?.length && (
                     <tr className="border-border-subtle border-t">
-                      <td
-                        colSpan={4}
-                        className="text-fg-muted px-4 py-10 text-center"
-                      >
-                        {payments.error?.message ?? tc('credits.emptyPayments')}
+                      <td colSpan={4}>
+                        {loadError ?? (
+                          <EmptyState title={tc('credits.emptyPayments')} />
+                        )}
                       </td>
                     </tr>
                   )}
@@ -271,8 +290,16 @@ export default function WalletPage() {
                   className="border-border-subtle flex items-start justify-between gap-4 border-b py-3 text-sm"
                 >
                   <dt>
-                    <span className="text-fg-strong block">{r.action}</span>
-                    <span className="text-fg-muted block">{r.when}</span>
+                    <span className="text-fg-strong block">
+                      {t(`wallet.rateItems.${r.id}.action`, {
+                        defaultValue: r.action,
+                      })}
+                    </span>
+                    <span className="text-fg-muted block">
+                      {t(`wallet.rateItems.${r.id}.when`, {
+                        defaultValue: r.when,
+                      })}
+                    </span>
                   </dt>
                   <dd className="num text-fg-strong shrink-0 font-semibold">
                     {r.credits == null
@@ -293,7 +320,13 @@ export default function WalletPage() {
             <h2 id="w-escrow" className="eyebrow font-sans">
               {t('wallet.escrow')}
             </h2>
-            {held.length === 0 ? (
+            {clientCases.isPending ? (
+              <div
+                role="status"
+                aria-label={t('live.loading')}
+                className="bg-sunken mt-3 h-16 rounded motion-safe:animate-pulse"
+              />
+            ) : held.length === 0 ? (
               <p className="text-fg-muted mt-3 text-sm">
                 {t('wallet.escrowEmpty')}
               </p>
