@@ -1,0 +1,37 @@
+{
+  "empty": {
+    "documents": "No documents in the knowledge base yet",
+    "queue": "No documents at this stage",
+    "failed": "No failed documents",
+    "search": "No documents match your search",
+    "sources": "No collection sources yet",
+    "runs": "No collection history yet",
+    "templates": "No templates yet",
+    "category": "No templates in this category yet",
+    "versions": "This template has no versions yet",
+    "versionHint": "This template cannot be previewed or published yet."
+  },
+  "actions": {
+    "upload": "Upload a document",
+    "sources": "Configure collection sources",
+    "clearSearch": "Clear search",
+    "allDocuments": "View all documents",
+    "addSource": "Add source",
+    "run": "Run collection now",
+    "createTemplate": "Create template",
+    "allTemplates": "View all templates",
+    "backQueue": "Back to review queue",
+    "backDocuments": "Back to documents",
+    "backTemplates": "Back to templates"
+  },
+  "errors": {
+    "review": "Cannot open the review content",
+    "reviewMissing": "Extracted content is not available for this document yet.",
+    "document": "Cannot open the document",
+    "documentMissing": "This document was not found.",
+    "comparison": "Cannot compare versions",
+    "comparisonMissing": "This document has no versions to compare.",
+    "templates": "Cannot load templates"
+  },
+  "noVersion": "No version yet"
+}

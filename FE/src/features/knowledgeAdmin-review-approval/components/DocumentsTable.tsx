@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import type { ReactNode } from 'react'
 import { TriangleAlert } from 'lucide-react'
 import { formatDate } from '@/lib/utils'
 import { DOCUMENT_STATUS } from '@/lib/constants'
@@ -16,8 +17,8 @@ const queueLink = (d: KnowledgeDocument) =>
 
 interface DocumentsTableProps {
   rows: KnowledgeDocument[]
-  /** Chữ khi không có dòng nào, vd. đang tải hoặc lỗi */
-  empty?: string
+  /** Content shown when there are no rows, including recovery actions. */
+  empty?: ReactNode
   /** Đang tải lần đầu: hiện dòng khung xương đúng số cột thay cho chữ */
   loading?: boolean
   /** Link khi bấm số hiệu */
@@ -42,6 +43,9 @@ export function DocumentsTable({
     preset: 'fade',
     replayKey: rows.map((row) => row.id).join(','),
   })
+  if (!loading && rows.length === 0) {
+    return <section className="paper mt-4 p-4 text-center">{empty}</section>
+  }
   return (
     <section className="paper mt-4 overflow-x-auto">
       <div className="text-fg-muted flex justify-between px-4 py-3 text-sm">
@@ -153,16 +157,6 @@ export function DocumentsTable({
           ))}
           {loading && rows.length === 0 && (
             <SkeletonRows cols={showStage ? 8 : 7} />
-          )}
-          {!loading && rows.length === 0 && (
-            <tr className="border-border-subtle border-t">
-              <td
-                colSpan={showStage ? 8 : 7}
-                className="text-fg-muted px-4 py-10 text-center"
-              >
-                {empty}
-              </td>
-            </tr>
           )}
         </tbody>
       </table>
