@@ -36,7 +36,6 @@ export default function DashboardPage() {
       <h1 className="text-h1 font-serif">
         {t('dashboard.greeting', { name: account.name })}
       </h1>
-      <p className="text-fg-muted mt-2">{t('dashboard.lead')}</p>
 
       <div className="mt-8 grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_20rem]">
         <div className="min-w-0 space-y-8">
