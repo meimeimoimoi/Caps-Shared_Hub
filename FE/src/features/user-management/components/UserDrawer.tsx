@@ -13,6 +13,9 @@ import type { ManagedUser } from '../types'
 
 type Action = 'lock' | 'unlock' | 'reset'
 
+// Same minimum as other audited admin changes (expert policy), so every reason explains itself
+const MIN_REASON_LENGTH = 10
+
 function Row({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div className="grid gap-2 py-4">
@@ -54,8 +57,10 @@ export function UserDrawer({
   const history = usePagination(user.history ?? [], user.id, 5)
 
   const run = () => {
-    if (action === 'lock' && !reason.trim())
-      return setError(t('users.action.lockReason'))
+    if (action === 'lock' && reason.trim().length < MIN_REASON_LENGTH)
+      return setError(
+        t('users.action.lockReasonMin', { count: MIN_REASON_LENGTH })
+      )
     setBusy(true)
     setError(null)
     const done =

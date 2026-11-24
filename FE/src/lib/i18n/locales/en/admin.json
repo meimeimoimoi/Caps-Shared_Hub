@@ -941,6 +941,7 @@
       "lockBody": "They cannot sign in until unlocked. Work in progress is not deleted.",
       "lockReason": "Reason (required)",
       "lockReasonHint": "Shown in account details while the account is locked.",
+      "lockReasonMin": "Enter a reason of at least {{count}} characters.",
       "lockConfirm": "Lock account",
       "unlockTitle": "Unlock {{name}}?",
       "unlockBody": "They can sign in again right away.",

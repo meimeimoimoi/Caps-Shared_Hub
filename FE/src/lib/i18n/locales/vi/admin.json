@@ -932,6 +932,7 @@
       "lockBody": "Người này không đăng nhập được cho tới khi mở khóa. Việc đang làm dở không bị xóa.",
       "lockReason": "Lý do khóa (bắt buộc)",
       "lockReasonHint": "Hiển thị trong chi tiết tài khoản khi đang khóa.",
+      "lockReasonMin": "Nhập lý do ít nhất {{count}} ký tự.",
       "lockConfirm": "Khóa tài khoản",
       "unlockTitle": "Mở khóa {{name}}?",
       "unlockBody": "Người này đăng nhập lại được ngay.",
