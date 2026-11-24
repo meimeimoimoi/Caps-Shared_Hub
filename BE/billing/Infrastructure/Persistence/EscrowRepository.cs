@@ -15,4 +15,15 @@ public sealed class EscrowRepository(BillingDbContext db) : IEscrowRepository
             .SingleOrDefaultAsync(ct);
 
     public void Add(Escrow escrow) => db.Escrows.Add(escrow);
+
+    public Task<int> CountAsync(CancellationToken ct) => db.Escrows.CountAsync(ct);
+
+    public async Task<IReadOnlyList<Escrow>> ListAsync(int skip, int take, CancellationToken ct) =>
+        await db
+            .Escrows.AsNoTracking()
+            .OrderByDescending(x => x.CreatedAt)
+            .ThenByDescending(x => x.Id)
+            .Skip(skip)
+            .Take(take)
+            .ToListAsync(ct);
 }

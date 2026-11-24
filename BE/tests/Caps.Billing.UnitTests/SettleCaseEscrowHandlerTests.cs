@@ -13,6 +13,25 @@ public sealed class SettleCaseEscrowHandlerTests
     private const long Price = 1_000_000;
 
     [Fact]
+    public async Task Staff_list_the_escrows_page_by_page_with_when_they_were_paid()
+    {
+        var escrow = Escrow.Hold(Guid.NewGuid(), Guid.NewGuid(), Price, Now);
+        var handler = new ListEscrowsHandler(new Escrows(escrow));
+
+        var page = await handler.HandleAsync(new(1, 20), default);
+
+        var item = Assert.Single(page.Items);
+        Assert.Equal(
+            (1, escrow.ReviewCaseId.ToString(), Price, Now),
+            (page.Total, item.ReviewCaseId, item.Amount, item.CreatedAt)
+        );
+        var e = await Assert.ThrowsAsync<AppException>(() =>
+            handler.HandleAsync(new(1, ListEscrowsHandler.MaxPageSize + 1), default)
+        );
+        Assert.Equal("INVALID_PAGING", e.Code);
+    }
+
+    [Fact]
     public async Task An_on_time_case_pays_the_expert_and_empties_the_held_credits()
     {
         var run = new Run();
@@ -177,6 +196,11 @@ public sealed class SettleCaseEscrowHandlerTests
             Task.FromResult(escrow.ReviewCaseId == reviewCaseId ? escrow : null);
 
         public void Add(Escrow added) => throw new NotSupportedException();
+
+        public Task<int> CountAsync(CancellationToken ct) => Task.FromResult(1);
+
+        public Task<IReadOnlyList<Escrow>> ListAsync(int skip, int take, CancellationToken ct) =>
+            Task.FromResult<IReadOnlyList<Escrow>>(skip == 0 && take > 0 ? [escrow] : []);
     }
 
     private sealed class Wallets(CreditWallet wallet) : ICreditWalletRepository

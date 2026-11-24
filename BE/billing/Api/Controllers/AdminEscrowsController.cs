@@ -13,6 +13,32 @@ namespace Caps.Billing.Api.Controllers;
 [RequirePermission(Permission.PayoutManage), RequireSessionCheck]
 public sealed class AdminEscrowsController : ControllerBase
 {
+    /// <summary>Lists the escrows newest first, one page at a time.</summary>
+    /// <remarks>
+    /// page starts at 1; pageSize defaults to 20 and is at most 100. Status is HELD, RELEASED or REFUNDED. Billing
+    /// knows the payer by account id only; the expert and the case details live in workflow.
+    /// </remarks>
+    /// <param name="handler">Query handler listing the escrows.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <param name="page">Page number, from 1.</param>
+    /// <param name="pageSize">Rows per page, 1 to 100.</param>
+    /// <response code="200">The page with the total number of escrows.</response>
+    /// <response code="400">INVALID_PAGING.</response>
+    /// <response code="401">Missing, invalid or revoked access token.</response>
+    /// <response code="403">The account lacks the PayoutManage permission.</response>
+    /// <response code="503">SESSION_CHECK_UNAVAILABLE: the session could not be checked.</response>
+    [HttpGet]
+    public async Task<IActionResult> List(
+        [FromServices] IQueryHandler<ListEscrowsQuery, EscrowPageResponse> handler,
+        CancellationToken ct,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20
+    )
+    {
+        var escrows = await handler.HandleAsync(new(page, pageSize), ct);
+        return Ok(ApiResponse<EscrowPageResponse>.Ok(escrows));
+    }
+
     /// <summary>Releases the escrow of a review case to the expert, minus the platform fee.</summary>
     /// <remarks>
     /// The held credits leave the payer's wallet. The settlement records the split (the fee is rounded down) and a
