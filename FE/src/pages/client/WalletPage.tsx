@@ -16,6 +16,13 @@ import { SkeletonRows } from '@/components/ui/display/skeleton-rows'
 import type { StatusMeta } from '@/lib/constants'
 import { cn } from '@/lib/utils'
 
+type RateId =
+  | 'ai-question'
+  | 'ai-out-of-scope'
+  | 'ai-system-error'
+  | 'draft-export'
+  | 'draft-preview'
+
 const PAYMENT_TONE = {
   PENDING: 'warning',
   SUCCEEDED: 'success',
@@ -291,14 +298,10 @@ export default function WalletPage() {
                 >
                   <dt>
                     <span className="text-fg-strong block">
-                      {t(`wallet.rateItems.${r.id}.action`, {
-                        defaultValue: r.action,
-                      })}
+                      {t(`wallet.rateItems.${r.id as RateId}.action`)}
                     </span>
                     <span className="text-fg-muted block">
-                      {t(`wallet.rateItems.${r.id}.when`, {
-                        defaultValue: r.when,
-                      })}
+                      {t(`wallet.rateItems.${r.id as RateId}.when`)}
                     </span>
                   </dt>
                   <dd className="num text-fg-strong shrink-0 font-semibold">
