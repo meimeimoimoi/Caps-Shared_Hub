@@ -209,6 +209,8 @@ export interface ReviewCaseDto {
   citations: string[]
   /** The AI draft under review (detail only; null for uploaded files). */
   sourceContent: Record<string, unknown> | null
+  /** Name of the file the client uploaded for review; null for a draft written in the app */
+  sourceFileName?: string | null
   /** The expert's edited copy of that draft, once delivered. */
   revisedContent: Record<string, unknown> | null
   declineReason: string | null

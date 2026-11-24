@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { BadgeCheck, BriefcaseBusiness, MapPin } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useFormatters } from '@/hooks/useFormatters'
@@ -14,6 +15,8 @@ export function ExpertBioView({
 }) {
   const { t } = useTranslation('expert')
   const format = useFormatters()
+  // 404 means the expert has no avatar: show initials; kept per URL so a new avatar is tried again
+  const [failedAvatar, setFailedAvatar] = useState<string | null>(null)
   const initials = bio.displayName
     .split(/\s+/)
     .map((part) => part[0])
@@ -24,11 +27,12 @@ export function ExpertBioView({
   return (
     <article className="border-border bg-paper text-fg rounded-xl border">
       <header className="border-border flex flex-wrap items-center gap-5 border-b p-6 md:p-8">
-        {bio.avatarUrl ? (
+        {bio.avatarUrl && bio.avatarUrl !== failedAvatar ? (
           <img
             src={bio.avatarUrl}
             alt=""
             className="size-20 shrink-0 rounded-full object-cover"
+            onError={() => setFailedAvatar(bio.avatarUrl)}
           />
         ) : (
           <span

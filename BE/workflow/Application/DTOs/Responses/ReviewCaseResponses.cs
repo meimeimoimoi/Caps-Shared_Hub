@@ -7,6 +7,10 @@ namespace Caps.Workflow.Application.DTOs.Responses;
 /// <summary>A review case as its client or expert sees it.</summary>
 /// <param name="RequesterUserId">The client, so a user who is both client and expert can tell their roles apart.</param>
 /// <param name="Fee">Price frozen at booking, in VND.</param>
+/// <param name="SourceFileName">
+/// Name of the file the client uploaded as the document under review; null for a draft written in the app.
+/// Only the case detail fills it.
+/// </param>
 public sealed record ReviewCaseResponse(
     string Id,
     string Status,
@@ -42,7 +46,8 @@ public sealed record ReviewCaseResponse(
     ClientTermsResponse? ClientTerms,
     ExpertTermsResponse? ExpertTerms,
     DateTimeOffset UpdatedAt,
-    DateTimeOffset CreatedAt
+    DateTimeOffset CreatedAt,
+    string? SourceFileName = null
 )
 {
     /// <summary>
@@ -53,7 +58,8 @@ public sealed record ReviewCaseResponse(
         ReviewCase c,
         Guid viewerId,
         IReadOnlyList<InfoRequest>? questions = null,
-        string? sourceContent = null
+        string? sourceContent = null,
+        string? sourceFileName = null
     )
     {
         var forExpert = viewerId == c.ExpertUserId;
@@ -130,7 +136,8 @@ public sealed record ReviewCaseResponse(
                 )
                 : null,
             c.UpdatedAt,
-            c.CreatedAt
+            c.CreatedAt,
+            sourceFileName
         );
     }
 
@@ -202,3 +209,11 @@ public sealed record ReviewCaseResponse(
     private static JsonElement? Json(string? json) =>
         json is null ? null : JsonSerializer.Deserialize<JsonElement>(json);
 }
+
+/// <summary>Who the client and the expert of a case are, for staff lists keyed by case id.</summary>
+/// <param name="RequesterEmail">The client's email kept at booking; null for cases booked before it was kept.</param>
+public sealed record CasePartiesResponse(
+    string ReviewCaseId,
+    string? RequesterEmail,
+    string ExpertProfileId
+);

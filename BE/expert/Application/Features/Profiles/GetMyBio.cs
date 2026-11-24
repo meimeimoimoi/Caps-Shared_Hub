@@ -41,6 +41,7 @@ public sealed class GetMyBioHandler(IExpertProfileRepository profiles, IMarketpl
             ? listed[0]
             : new(
                 profile.Id.ToString(),
+                MarketplaceListing.AvatarPath(profile.UserId),
                 profile.DisplayName,
                 profile.Title,
                 profile.Company,

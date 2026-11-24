@@ -58,6 +58,8 @@ interface AdminDisputeDto {
   result: string | null
   reviewSummary: string | null
   overdue: boolean
+  /** The uploaded document's name; null for a draft written in the app */
+  sourceFileName?: string | null
   dispute: {
     id: string
     reason: string
@@ -69,6 +71,10 @@ interface AdminDisputeDto {
     extended: boolean
     expertStatement: string | null
     statementDueBy: string
+    /** Set once the dispute is closed (RESOLVED or WITHDRAWN) */
+    closedAt: string | null
+    refundPct: number | null
+    resolutionNote: string | null
   }
 }
 
@@ -83,6 +89,8 @@ const REASON_KEY = {
   DELIVERABLE_INCOMPLETE: 'disputes.reason.DELIVERABLE_INCOMPLETE',
   OBLIGATION_NOT_MET: 'disputes.reason.OBLIGATION_NOT_MET',
   PROFESSIONAL_JUDGMENT: 'disputes.reason.PROFESSIONAL_JUDGMENT',
+  // No longer accepted (the late rule refunds lateness); kept so older disputes still read
+  SLA_BREACH: 'disputes.reason.SLA_BREACH',
 } as const
 
 function toDispute(x: AdminDisputeDto, expert: string): Dispute {
@@ -108,25 +116,65 @@ function toDispute(x: AdminDisputeDto, expert: string): Dispute {
     expertStatement: d.expertStatement ?? undefined,
     statementDueBy: d.statementDueBy,
     reviewSummary: x.reviewSummary ?? undefined,
+    sourceFileName: x.sourceFileName,
+    resolvedAt: d.closedAt ?? undefined,
     complaint: { issue: reason, description: d.description },
-    history: [],
+    history: d.closedAt ? [closingEntry(d, d.closedAt)] : [],
   }
 }
 
+/** What closed the dispute: the admin's decision with its note, or the client's withdrawal */
+function closingEntry(d: AdminDisputeDto['dispute'], at: string) {
+  const ns = { ns: 'admin' } as const
+  if (d.status === 'WITHDRAWN')
+    return {
+      at,
+      actor: i18n.t('disputes.closed.client', ns),
+      text: i18n.t('disputes.closed.withdrawn', ns),
+    }
+  const outcome =
+    (d.refundPct ?? 0) > 0 ? 'RESOLVE_REFUND_USER' : 'RESOLVE_PAY_EXPERT'
+  return {
+    at,
+    actor: i18n.t('disputes.closed.admin', ns),
+    text: [i18n.t(DISPUTE_OUTCOME[outcome].label, ns), d.resolutionNote]
+      .filter(Boolean)
+      .join('. '),
+  }
+}
+
+// Open queue first, then the closed history, in one list: the page filters by status locally
 async function openDisputes(signal?: AbortSignal) {
-  const response = await api.get<Envelope<AdminDisputeDto[]>>(
-    `${CASES}/disputes`,
-    { signal }
+  const [open, closed] = await Promise.all(
+    [false, true].map((closed) =>
+      api.get<Envelope<AdminDisputeDto[]>>(`${CASES}/disputes`, {
+        params: { closed },
+        signal,
+      })
+    )
   )
-  // ponytail: one marketplace call per distinct expert; add the name to the dispute API if the queue grows large
-  const ids = [...new Set(response.data.map((x) => x.expertProfileId))]
-  const names = new Map(
+  const response = { data: [...open.data, ...closed.data] }
+  const names = await expertNames(
+    response.data.map((x) => x.expertProfileId),
+    signal
+  )
+  return response.data.map((x) =>
+    toDispute(x, names.get(x.expertProfileId) ?? '')
+  )
+}
+
+/**
+ * Expert display names by profile id, for staff lists that only hold the id. A suspended expert is no longer
+ * listed, so their name comes back empty and the caller shows a dash.
+ * ponytail: one marketplace call per distinct expert; add the name to the APIs if the lists grow large
+ */
+async function expertNames(ids: string[], signal?: AbortSignal) {
+  return new Map(
     await Promise.all(
-      ids.map(
+      [...new Set(ids)].map(
         async (id) =>
           [
             id,
-            // A suspended expert is no longer listed: the email still shows
             await getPublicExpert(id, signal)
               .then((e) => e.displayName ?? '')
               .catch(() => ''),
@@ -134,10 +182,26 @@ async function openDisputes(signal?: AbortSignal) {
       )
     )
   )
-  return response.data.map((x) =>
-    toDispute(x, names.get(x.expertProfileId) ?? '')
-  )
 }
+
+/** Workflow's GET /admin/review-cases/parties row: who the client and the expert of a case are */
+interface CasePartiesDto {
+  reviewCaseId: string
+  requesterEmail: string | null
+  expertProfileId: string
+}
+
+// The client's email and the expert of each case on one escrow page; empty until the endpoint exists
+const caseParties = (ids: string[], signal?: AbortSignal) =>
+  api
+    .get<Envelope<CasePartiesDto[]>>(`${CASES}/parties`, {
+      params: { ids },
+      // ASP.NET binds arrays as ?ids=a&ids=b, not axios' default ids[]=a
+      paramsSerializer: { indexes: null },
+      signal,
+    })
+    .then((r) => r.data)
+    .catch(() => [] as CasePartiesDto[])
 
 /* ── Khiếu nại ── */
 export async function getDisputes(signal?: AbortSignal) {
@@ -153,7 +217,7 @@ export async function getDispute(
     const d = (await fixtures()).mockDisputes.find((x) => x.id === id)
     return d ? structuredClone(d) : null
   }
-  // The server has the open queue only, no single-dispute endpoint
+  // No single-dispute endpoint: look it up among the open and closed lists
   return (await openDisputes(signal)).find((x) => x.id === id) ?? null
 }
 
@@ -196,6 +260,7 @@ export async function getEscrows(signal?: AbortSignal): Promise<Escrow[]> {
   if (isExpertDemo) return structuredClone((await fixtures()).mockEscrows)
   // Collect every server page before client filtering and sorting.
   const rows = new Map<string, EscrowDto>()
+  const byCase = new Map<string, CasePartiesDto>()
   let page = 1
   let total = 0
   do {
@@ -204,11 +269,29 @@ export async function getEscrows(signal?: AbortSignal): Promise<Escrow[]> {
       signal,
     })
     for (const row of res.data.items) rows.set(row.id, row)
+    // At most 100 escrows a page, the parties endpoint's limit: no chunking needed
+    const parties = await caseParties(
+      res.data.items.map((e) => e.reviewCaseId),
+      signal
+    )
+    for (const p of parties) byCase.set(p.reviewCaseId, p)
     total = res.data.total
     if (res.data.items.length < 100) break
     page++
   } while ((page - 1) * 100 < total)
-  return [...rows.values()].map(toEscrow)
+  const names = await expertNames(
+    [...byCase.values()].map((p) => p.expertProfileId),
+    signal
+  )
+  return [...rows.values()].map((e) => {
+    const p = byCase.get(e.reviewCaseId)
+    return {
+      ...toEscrow(e),
+      // Cases booked before the email was kept have none: the account id still identifies the payer
+      client: p?.requesterEmail ?? e.userId,
+      expert: (p && names.get(p.expertProfileId)) || '—',
+    }
+  })
 }
 
 /** Pays a HELD escrow to the expert minus the platform fee; billing creates a PENDING payout (API mode only) */

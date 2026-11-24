@@ -9,4 +9,10 @@ public interface IEscrowRepository
     Task<Escrow?> LockByReviewCaseAsync(Guid reviewCaseId, CancellationToken ct);
 
     void Add(Escrow escrow);
+
+    /// <summary>How many escrows there are, for paging.</summary>
+    Task<int> CountAsync(CancellationToken ct);
+
+    /// <summary>One page of escrows, newest first, untracked.</summary>
+    Task<IReadOnlyList<Escrow>> ListAsync(int skip, int take, CancellationToken ct);
 }

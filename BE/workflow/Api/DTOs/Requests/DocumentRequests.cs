@@ -26,6 +26,11 @@ public static class DocumentRequests
 
     public sealed record DownloadDocumentRequest([MaxLength(10)] string? Format);
 
+    /// <summary>Multipart form for creating a document from an uploaded file.</summary>
+    /// <param name="Title">Document name shown to the client and the expert, at most 200 characters.</param>
+    /// <param name="PeriodStart">First day of the tax period the document covers (yyyy-MM-dd).</param>
+    /// <param name="PeriodEnd">Last day of the tax period (yyyy-MM-dd); must not be before PeriodStart.</param>
+    /// <param name="File">The document: PDF, JPEG, PNG, WebP or Word .docx, at most 50 MB.</param>
     public sealed record UploadDocumentRequest(
         [Required, MaxLength(200)] string Title,
         [Required] DateOnly PeriodStart,

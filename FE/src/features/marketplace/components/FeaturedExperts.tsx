@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom'
 import { Award, ShieldCheck, Star } from 'lucide-react'
 import { useFormatters } from '@/hooks/useFormatters'
 import { lowestFee } from '../model'
+import { Avatar } from './ListingParts'
 import type { Expert } from '../types'
 import '../styles/featured.css'
 
@@ -32,19 +33,7 @@ export function FeaturedExperts({
         >
           <Link to={`/experts/${e.id}`} className="me-card">
             <span className="me-top">
-              {e.avatar ? (
-                <img
-                  className="me-avatar"
-                  src={e.avatar}
-                  alt=""
-                  loading="lazy"
-                  decoding="async"
-                />
-              ) : (
-                <span className="me-avatar" aria-hidden="true">
-                  {e.initials}
-                </span>
-              )}
+              <Avatar src={e.avatar} text={e.initials} className="me-avatar" />
               <span className="me-id">
                 <span className="me-name">{e.name}</span>
                 <span className="me-verified">

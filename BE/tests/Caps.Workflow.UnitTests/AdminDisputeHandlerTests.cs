@@ -76,8 +76,26 @@ public sealed class AdminDisputeHandlerTests
         Assert.Equal("DISPUTE_NOT_FOUND", e.Code);
     }
 
-    [Theory]
+    [Fact]
+    public async Task A_decided_dispute_leaves_the_queue_and_shows_among_the_closed()
+    {
+        var run = new Run();
+        await run.Resolve(50);
+        // Long past the decision window: a closed dispute is never flagged overdue
+        var list = (bool closed) =>
+            new ListOpenDisputesHandler(
+                run.Disputes,
+                new CaseDetailsTests.FakeSources(null),
+                new Clock(T0.AddDays(30))
+            ).HandleAsync(new(closed), default);
+
+        Assert.Empty(await list(false));
+        var item = Assert.Single(await list(true));
+        Assert.Equal((ReviewDispute.Resolved, false), (item.Dispute.Status, item.Overdue));
+    }
+
     // Opened Friday: 2 working days end on Tuesday, 96 hours later
+    [Theory]
     [InlineData(95, false)]
     [InlineData(97, true)]
     public async Task The_queue_flags_disputes_past_their_decision_window(int hours, bool overdue)
@@ -86,6 +104,7 @@ public sealed class AdminDisputeHandlerTests
 
         var queue = await new ListOpenDisputesHandler(
             run.Disputes,
+            new CaseDetailsTests.FakeSources(null),
             new Clock(T0.AddHours(1 + hours))
         ).HandleAsync(new(), default);
 
@@ -172,11 +191,12 @@ public sealed class AdminDisputeHandlerTests
         public Task<ReviewDispute?> FindByCaseAsync(Guid reviewCaseId, CancellationToken ct) =>
             Task.FromResult(dispute.ReviewCaseId == reviewCaseId ? dispute : null);
 
-        public Task<IReadOnlyList<(ReviewDispute Dispute, ReviewCase Case)>> ListOpenAsync(
+        public Task<IReadOnlyList<(ReviewDispute Dispute, ReviewCase Case)>> ListAsync(
+            bool open,
             CancellationToken ct
         ) =>
             Task.FromResult<IReadOnlyList<(ReviewDispute, ReviewCase)>>(
-                dispute.Status == ReviewDispute.Open ? [(dispute, reviewCase)] : []
+                (dispute.Status == ReviewDispute.Open) == open ? [(dispute, reviewCase)] : []
             );
 
         public void Add(ReviewDispute dispute) => throw new NotSupportedException();

@@ -35,9 +35,13 @@ public sealed record ExcuseFileResponse(
 );
 
 /// <summary>An excuse request waiting for the admin, with who asked.</summary>
+/// <param name="ExcusesLeft">
+/// How many more violations this expert can have excused within the window; 0 means the request can only be declined.
+/// </param>
 public sealed record ExcuseRequestResponse(
     string ExpertProfileId,
     string? ExpertName,
     string? ExpertEmail,
-    ExpertViolationResponse Violation
+    ExpertViolationResponse Violation,
+    int ExcusesLeft
 );

@@ -40,6 +40,10 @@ public sealed class OpenSourceFileHandler(
         );
     }
 
+    /// <summary>The uploaded file's name kept in an EXTERNAL_FILE version's details; null when absent.</summary>
+    public static string? FileNameOf(string content) =>
+        Text(JsonDocument.Parse(content).RootElement, "fileName");
+
     private static string? Text(JsonElement meta, string name) =>
         meta.ValueKind == JsonValueKind.Object
         && meta.TryGetProperty(name, out var value)

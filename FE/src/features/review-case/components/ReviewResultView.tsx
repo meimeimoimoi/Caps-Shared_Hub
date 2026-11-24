@@ -61,7 +61,7 @@ export function ReviewResultView({
           {result.outcome === 'VERIFIED' ? (
             <div>
               <h3 className="eyebrow">{t('result.conclusion')}</h3>
-              <p className="text-doc text-fg-strong mt-2 max-w-[65ch]">
+              <p className="text-doc text-fg-strong mt-2 max-w-[65ch] wrap-break-word whitespace-pre-wrap">
                 {result.conclusion}
               </p>
             </div>
@@ -69,13 +69,13 @@ export function ReviewResultView({
             <>
               <div>
                 <h3 className="eyebrow">{t('result.summary')}</h3>
-                <p className="text-doc text-fg-strong mt-2 max-w-[65ch]">
+                <p className="text-doc text-fg-strong mt-2 max-w-[65ch] wrap-break-word whitespace-pre-wrap">
                   {result.summary}
                 </p>
               </div>
               <div>
                 <h3 className="eyebrow">{t('result.rationale')}</h3>
-                <p className="text-doc text-fg mt-2 max-w-[65ch]">
+                <p className="text-doc text-fg mt-2 max-w-[65ch] wrap-break-word whitespace-pre-wrap">
                   {result.rationale}
                 </p>
               </div>
@@ -91,9 +91,15 @@ export function ReviewResultView({
                   : 'result.findings'
               )}
             </h3>
+            {/* A delivered citation is one sentence with no separate note: only its number goes in the
+                upper-case label, the sentence itself reads as body text */}
             {notes.map((n, i) => (
-              <MarginNote key={`${i}-${n.ref}`} kind="cite" label={`[${i + 1}] ${n.ref}`}>
-                {n.note}
+              <MarginNote
+                key={`${i}-${n.ref}`}
+                kind="cite"
+                label={n.note ? `[${i + 1}] ${n.ref}` : `[${i + 1}]`}
+              >
+                {n.note || n.ref}
               </MarginNote>
             ))}
           </div>
