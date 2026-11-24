@@ -213,9 +213,14 @@ export default function ExpertQualificationPage() {
                     {t(`qualifications.results.${c.result}`)}
                   </span>
                 </div>
-                <p className="mt-1 whitespace-pre-line text-[var(--ep-muted)]">
-                  {c.note}
-                </p>
+                {c.note && (
+                  // Reviewer reasons must stay readable, not muted, when a criterion is returned
+                  <p
+                    className={`mt-1 whitespace-pre-line ${c.result === 'PASS' || !c.result ? 'text-[var(--ep-muted)]' : 'border-l-2 border-[var(--ep-warning)] pl-3 text-[var(--ep-ink)]'}`}
+                  >
+                    {c.note}
+                  </p>
+                )}
               </li>
             ))}
           </ul>
