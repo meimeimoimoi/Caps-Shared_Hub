@@ -192,8 +192,7 @@ export function ChallengeDialog({
       <FormField
         label={t('dialogs.challenge.description')}
         htmlFor={`${id}-desc`}
-        hint={t('dialogs.challenge.descriptionHint')}
-        hintId={`${id}-hint`}
+        help={t('dialogs.challenge.descriptionHint')}
         error={textError ? t('dialogs.report.descriptionRequired') : undefined}
         errorId={`${id}-error`}
         className="mt-5 mb-0"
@@ -204,7 +203,7 @@ export function ChallengeDialog({
           maxLength={2000}
           value={text}
           aria-invalid={textError}
-          aria-describedby={textError ? `${id}-error` : `${id}-hint`}
+          aria-describedby={textError ? `${id}-error` : undefined}
           onChange={(e) => setText(e.target.value)}
           className={cn(fieldClass, 'resize-y')}
         />
@@ -272,8 +271,7 @@ export function ReportDialog({
         <FormField
           label={t('dialogs.report.description')}
           htmlFor={`${id}-desc`}
-          hint={t('dialogs.report.descriptionHint')}
-          hintId={`${id}-hint`}
+          help={t('dialogs.report.descriptionHint')}
           error={
             textError ? t('dialogs.report.descriptionRequired') : undefined
           }
@@ -286,7 +284,7 @@ export function ReportDialog({
             maxLength={2000}
             value={text}
             aria-invalid={textError}
-            aria-describedby={textError ? `${id}-error` : `${id}-hint`}
+            aria-describedby={textError ? `${id}-error` : undefined}
             onChange={(e) => setText(e.target.value)}
             className={cn(fieldClass, 'resize-y')}
           />

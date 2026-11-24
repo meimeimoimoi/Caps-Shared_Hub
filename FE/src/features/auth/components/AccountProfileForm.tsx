@@ -70,7 +70,7 @@ export function AccountProfileForm() {
       <FormField
         htmlFor="account-phone"
         label={t('accountProfile.phone')}
-        hint={t('accountProfile.phoneHint')}
+        help={t('accountProfile.phoneHint')}
         error={errors.phone}
         errorId="account-phone-error"
       >

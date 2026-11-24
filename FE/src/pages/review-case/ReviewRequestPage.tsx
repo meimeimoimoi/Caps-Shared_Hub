@@ -379,8 +379,7 @@ export default function ReviewRequestPage() {
                 <FormField
                   label={t('request.scope')}
                   htmlFor={`${id}-scope`}
-                  hint={`${t('request.scopeHint')} ${scope.length}/1000`}
-                  hintId={`${id}-scope-hint`}
+                  help={t('request.scopeHint')}
                   error={scopeError ? t('live.scopeRequired') : undefined}
                   errorId={`${id}-scope-error`}
                 >
@@ -391,7 +390,7 @@ export default function ReviewRequestPage() {
                     value={scope}
                     aria-invalid={scopeError}
                     aria-describedby={
-                      scopeError ? `${id}-scope-error` : `${id}-scope-hint`
+                      scopeError ? `${id}-scope-error` : undefined
                     }
                     onChange={(e) => setScope(e.target.value)}
                     className={cn(fieldClass, 'resize-y')}
@@ -401,13 +400,9 @@ export default function ReviewRequestPage() {
                   <FormField
                     label={t('request.files')}
                     htmlFor={`${id}-files`}
-                    hint={t('request.filesHint')}
-                    hintId={`${id}-files-hint`}
+                    help={t('request.filesHint')}
                   >
-                    <FilePicker
-                      id={`${id}-files`}
-                      hintId={`${id}-files-hint`}
-                    />
+                    <FilePicker id={`${id}-files`} />
                   </FormField>
                 )}
               </div>

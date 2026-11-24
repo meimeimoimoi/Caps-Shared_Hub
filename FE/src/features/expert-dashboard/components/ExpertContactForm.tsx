@@ -64,7 +64,7 @@ export function ExpertContactForm({
       <FormField
         htmlFor="expert-contact-name"
         label={t('fullName')}
-        hint={t('contact.nameHint')}
+        help={t('contact.nameHint')}
         error={errors.name}
         errorId="expert-contact-name-error"
       >
@@ -81,7 +81,7 @@ export function ExpertContactForm({
       <FormField
         htmlFor="expert-contact-phone"
         label={t('contact.phone')}
-        hint={t('contact.phoneHint')}
+        help={t('contact.phoneHint')}
         error={errors.phone}
         errorId="expert-contact-phone-error"
       >
