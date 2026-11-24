@@ -78,7 +78,7 @@ test('Bước 4 · phản hồi yêu cầu bổ sung đưa hồ sơ về đang t
   ).toBeVisible()
 
   await page
-    .getByLabel('Nội dung phản hồi')
+    .getByRole('textbox', { name: 'Nội dung phản hồi', exact: true })
     .fill('Đã tải lên bảng EBITDA 2025 và Phụ lục I đã ký.')
   await send.click()
   await expect(heading(page, 'Chuyên gia đang thẩm định hồ sơ')).toBeVisible()
@@ -148,7 +148,7 @@ test('Bước 6-7 · báo cáo vấn đề giữ nguyên khoản thanh toán', a
   await dialog.getByRole('combobox', { name: 'Loại vấn đề' }).click()
   await page.getByRole('option', { name: 'Thiếu nội dung bàn giao' }).click()
   await dialog
-    .getByLabel('Mô tả chi tiết')
+    .getByRole('textbox', { name: 'Mô tả chi tiết', exact: true })
     .fill('Kết luận chưa xử lý khoản trích trước chi phí bảo hành.')
   await submit.click()
 

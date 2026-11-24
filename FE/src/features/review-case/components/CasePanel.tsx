@@ -646,8 +646,7 @@ function InfoResponseForm({
       <FormField
         label={t('panel.AWAITING_USER_INFORMATION.response')}
         htmlFor={`${id}-text`}
-        hint={t('panel.AWAITING_USER_INFORMATION.responseHint')}
-        hintId={`${id}-hint`}
+        help={t('panel.AWAITING_USER_INFORMATION.responseHint')}
         error={
           error
             ? live
@@ -663,7 +662,7 @@ function InfoResponseForm({
           maxLength={2000}
           value={text}
           aria-invalid={error}
-          aria-describedby={error ? `${id}-error` : `${id}-hint`}
+          aria-describedby={error ? `${id}-error` : undefined}
           onChange={(e) => {
             setText(e.target.value)
             setError(false)
@@ -675,12 +674,10 @@ function InfoResponseForm({
         <FormField
           label={t('panel.AWAITING_USER_INFORMATION.files')}
           htmlFor={`${id}-files`}
-          hint={t('panel.AWAITING_USER_INFORMATION.filesHint')}
-          hintId={`${id}-files-hint`}
+          help={t('panel.AWAITING_USER_INFORMATION.filesHint')}
         >
           <FilePicker
             id={`${id}-files`}
-            hintId={`${id}-files-hint`}
             onCount={(n) => {
               setFiles(n)
               setError(false)
@@ -814,8 +811,7 @@ function Rating({
       <FormField
         label={t('rating.comment')}
         htmlFor={`${id}-comment`}
-        hint={t('rating.commentHint')}
-        hintId={`${id}-comment-hint`}
+        help={t('rating.commentHint')}
         className="mt-5"
       >
         <textarea
@@ -823,7 +819,6 @@ function Rating({
           rows={3}
           maxLength={1000}
           value={comment}
-          aria-describedby={`${id}-comment-hint`}
           onChange={(e) => setComment(e.target.value)}
           className={cn(fieldClass, 'resize-y')}
         />

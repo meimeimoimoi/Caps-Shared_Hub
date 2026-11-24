@@ -9,8 +9,6 @@ export interface FormFieldProps {
   children: ReactNode
   className?: string
   help?: ReactNode
-  hintId?: string
-  hint?: string
   error?: string
   errorId?: string
   htmlFor?: string
@@ -20,9 +18,7 @@ export function FormField({
   label,
   className,
   help,
-  hintId,
   children,
-  hint,
   error,
   errorId,
   htmlFor,
@@ -58,11 +54,6 @@ export function FormField({
         )}
       </div>
       {htmlFor && children}
-      {hint && !error && (
-        <small id={hintId} className="text-ex-muted text-[13px] font-normal">
-          {hint}
-        </small>
-      )}
       {error && (
         <p
           id={errorId}
