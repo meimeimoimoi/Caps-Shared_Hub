@@ -160,3 +160,35 @@ test('the detail lists versions newest first with their fields', () => {
   assert.equal(t.versions[0].fields[0].type, 'money')
   assert.equal(t.versions[1].changelog, 'Đã thay bằng phiên bản mới')
 })
+
+test('save is blocked with a pointer to each control to fix', async () => {
+  const { templateIssues } = await import(
+    '../src/features/knowledgeAdmin-templates/utils/validation.ts'
+  )
+  const at = { block: 2, find: 'Họ và tên' }
+  const field = (over) => ({ id: 'x', label: 'X', group: 'A', type: 'text', required: true, ...over })
+  const issues = templateIssues({
+    code: '',
+    title: 'Tờ khai',
+    category: 'TAX',
+    description: '',
+    changelog: '',
+    fileName: '',
+    fields: [
+      field({ id: 'ho_ten', label: 'Họ tên', anchor: at }),
+      field({ id: '', label: '', group: '' }),
+      field({ id: 'nguoi_nop', label: 'Người nộp', group: '', anchor: { ...at } }),
+    ],
+  })
+  assert.deepEqual(
+    issues.map((x) => [x.target, x.field]),
+    [
+      ['code', undefined],
+      ['label', 1],
+      ['group', 1],
+      ['anchor', 2],
+    ]
+  )
+  assert.equal(issues[2].message, 'Đặt tên nhóm cho trường 2, 3.')
+  assert.equal(issues[3].message, 'Trường 3 trùng vị trí trên file với trường 1.')
+})

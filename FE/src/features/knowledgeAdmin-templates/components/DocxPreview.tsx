@@ -29,19 +29,36 @@ const writeFill = (
     if (input !== keep) input.value = texts[j] ?? ''
 }
 
+// Marks the blank of the field being edited
+const FOCUS = ['outline-3', 'outline-offset-2', 'outline-accent']
+
+// The nearest box that scrolls; never the page itself, so the form being typed in stays where it is
+const scrollParent = (el: HTMLElement) => {
+  for (let p = el.parentElement; p && p !== document.body; p = p.parentElement)
+    if (
+      /auto|scroll/.test(getComputedStyle(p).overflowY) &&
+      p.scrollHeight > p.clientHeight
+    )
+      return p
+  return null
+}
+
 /**
  * Renders a .docx as Word lays it out (pages, tables, boxes), scaled down to fit the panel, with `fills`
  * written into their blanks. The file renders once; each change of the values refills a fresh copy.
  * With `onEdit`, each blank is an input instead: typing there reports the fill and the text of all its blanks.
+ * `focusId` outlines the blanks of the fill with that id and scrolls them into view inside their panel.
  */
 export function DocxPreview({
   file,
   fills = [],
   onEdit,
+  focusId,
 }: {
   file: File
   fills?: Fill[]
   onEdit?: (fill: Fill, parts: string[]) => void
+  focusId?: string
 }) {
   const ref = useRef<HTMLDivElement>(null)
   const [doc, setDoc] = useState<{ file: File; root: HTMLElement } | null>(null)
@@ -94,6 +111,28 @@ export function DocxPreview({
     )
   }, [doc, layoutKey, fillKey, editable])
 
+  useEffect(() => {
+    const box = ref.current
+    if (!box || focusId === undefined) return
+    const at = String(
+      (JSON.parse(fillKey) as Fill[]).findIndex((f) => f.id === focusId)
+    )
+    const blanks = [...box.querySelectorAll<HTMLElement>('[data-fill]')]
+    for (const el of blanks)
+      for (const c of FOCUS) el.classList.toggle(c, el.dataset.fill === at)
+    const target = blanks.find((el) => el.dataset.fill === at)
+    const scroller = target && scrollParent(target)
+    if (!target || !scroller) return
+    const offset =
+      target.getBoundingClientRect().top - scroller.getBoundingClientRect().top
+    scroller.scrollBy({
+      top: offset - scroller.clientHeight / 2,
+      behavior: matchMedia('(prefers-reduced-motion: reduce)').matches
+        ? 'auto'
+        : 'smooth',
+    })
+  }, [doc, layoutKey, fillKey, focusId])
+
   const edit = (event: FormEvent<HTMLDivElement>) => {
     const i = (event.target as HTMLElement).dataset.fill
     const fill = i === undefined ? undefined : fills[Number(i)]
@@ -124,7 +163,8 @@ export function DocxPreview({
       aria-label={`Nội dung ${file.name}`}
       onInput={editable ? edit : undefined}
       onBlur={editable ? leave : undefined}
-      className="bg-sunken rounded-surface min-h-40 overflow-auto [&_section]:mx-auto [&_section]:mb-3 [&_section]:shadow-md"
+      // Word pages stay paper in dark mode: white page, black text, light highlights
+      className="bg-sunken rounded-surface min-h-40 overflow-auto [&_input]:bg-[#ffedd5] [&_input]:text-black [&_mark]:bg-[#ffedd5] [&_mark]:text-black [&_section]:mx-auto [&_section]:mb-3 [&_section]:bg-white [&_section]:text-black [&_section]:shadow-md"
     >
       {!ready && <p className="text-fg-muted p-4 text-sm">Đang mở file…</p>}
       <div ref={ref} />

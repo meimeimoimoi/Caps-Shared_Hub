@@ -84,8 +84,9 @@ function put(el: Element, [start, end]: [number, number], node: Element) {
   if (!placed) el.append(...nodes)
 }
 
-const mark = (text: string, label: string) => {
+const mark = (text: string, label: string, fill: number) => {
   const m = document.createElement('mark')
+  m.dataset.fill = String(fill)
   m.textContent = text
   m.title = label
   m.className = 'bg-accent-soft text-fg-strong rounded-sm px-0.5'
@@ -116,7 +117,7 @@ function putInput(
 
 /**
  * Writes each value into its blank in a rendered copy of the file, highlighted, with the field name on hover.
- * With `editable`, each blank gets an empty input instead (`data-fill` = the fill's index); the caller sets values.
+ * Each blank carries `data-fill` = the fill's index. With `editable`, it gets an empty input instead; the caller sets values.
  */
 export function fillDocx(root: HTMLElement, fills: Fill[], editable = false) {
   fills.forEach((f, i) => {
@@ -129,6 +130,6 @@ export function fillDocx(root: HTMLElement, fills: Fill[], editable = false) {
     // Last blank first, so the earlier offsets stay valid
     for (let j = ranges.length - 1; j >= 0; j--)
       if (editable) putInput(el, ranges[j], i, f.label)
-      else put(el, ranges[j], mark(values[j], f.label))
+      else put(el, ranges[j], mark(values[j], f.label, i))
   })
 }
