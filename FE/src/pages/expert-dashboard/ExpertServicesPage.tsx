@@ -1,4 +1,6 @@
 import { Link, useLocation } from 'react-router-dom'
+import { PageHeader } from '@/components/ui/layout/page-header'
+import { EmptyState } from '@/components/ui/feedback/empty-state'
 import { useTranslation } from 'react-i18next'
 import { useFormatters } from '@/hooks/useFormatters'
 import {
@@ -37,12 +39,10 @@ export default function ExpertServicesPage() {
   const receiving = data.services.filter((s) => s.bookingAllowed).length
   return (
     <div className="space-y-6">
-      <div className="ep-page-heading">
-        <div>
-          <h1>{t('serviceSetup.title')}</h1>
-          <p>{t('serviceSetup.description')}</p>
-        </div>
-      </div>
+      <PageHeader
+        title={t('serviceSetup.title')}
+        help={t('serviceSetup.description')}
+      />
       <dl className="flex flex-wrap gap-x-8 gap-y-3 border-y border-[var(--ep-line)] py-4 text-sm">
         {[
           [t('totalServices'), data.services.length],
@@ -58,17 +58,18 @@ export default function ExpertServicesPage() {
         ))}
       </dl>
       {data.services.length === 0 ? (
-        <div className="ep-empty">
-          <h3>{t('noServicesRegistered')}</h3>
-          <p>
-            {t(
-              'youHaveNotRegisteredForAnyServicesYetServiceRegistrationIsAvailableThroughTheExpertOnboardingFlow'
-            )}
-          </p>
-          <Link to="/expert/qualifications" className="ep-button mt-4">
-            {t('serviceSetup.review')}
-          </Link>
-        </div>
+        <EmptyState
+          title={t('noServicesRegistered')}
+          actions={
+            <Link to="/expert/qualifications" className="ep-button">
+              {t('serviceSetup.review')}
+            </Link>
+          }
+        >
+          {t(
+            'youHaveNotRegisteredForAnyServicesYetServiceRegistrationIsAvailableThroughTheExpertOnboardingFlow'
+          )}
+        </EmptyState>
       ) : (
         <div className="space-y-5">
           {data.services.map((service) => (

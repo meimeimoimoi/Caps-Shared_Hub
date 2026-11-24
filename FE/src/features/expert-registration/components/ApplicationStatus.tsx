@@ -1,4 +1,5 @@
 import { Trans, useTranslation } from 'react-i18next'
+import { PageHeader } from '@/components/ui/layout/page-header'
 import { Link } from 'react-router-dom'
 import { ArrowRight, Check, Clock3 } from 'lucide-react'
 import { labels } from '../constants'
@@ -32,7 +33,7 @@ export interface ApplicationStatusProps {
   progress: number
   history: string[]
   supplementFormProps: SupplementFormProps
-  /** Ô xem thử các giai đoạn: chỉ ở chế độ demo khi dev */
+  /** Stage preview control: only in dev demo mode */
   onRequestSupplement: () => void
 }
 
@@ -111,21 +112,18 @@ export function ApplicationStatus({
 
   return (
     <>
-      <div className="expert-status-header">
-        <div className="min-w-0">
-          <h1 className="!text-[30px] !tracking-[-0.025em] [text-wrap:balance] md:!text-[34px]">
-            {t(labels[stage])}
-          </h1>
-          <p className={mutedCls}>
+      <PageHeader
+        className="expert-status-header"
+        title={t(labels[stage])}
+        help={
+          stage === 'eligible' ? t('status.eligibleNext') : t('status.track')
+        }
+        badge={
+          <span className="text-sm">
             {t('dynamic.application', { name: profileName })}
-          </p>
-          <p>
-            {stage === 'eligible'
-              ? t('status.eligibleNext')
-              : t('status.track')}
-          </p>
-        </div>
-      </div>
+          </span>
+        }
+      />
 
       <ol className="expert-status-timeline">
         {timeline.map((s, i) => (

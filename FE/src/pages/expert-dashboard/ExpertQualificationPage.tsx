@@ -1,4 +1,6 @@
 import { useState } from 'react'
+import { PageHeader } from '@/components/ui/layout/page-header'
+import { EmptyState } from '@/components/ui/feedback/empty-state'
 import { Link, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { ArrowLeft, FileText, Link2 } from 'lucide-react'
@@ -86,11 +88,13 @@ export default function ExpertQualificationPage() {
     return (
       <>
         {back}
-        <p className="text-sm text-[var(--ep-muted)]">
-          {q.isLoading
-            ? t('qualifications.loading')
-            : t('qualifications.notFound')}
-        </p>
+        {q.isLoading ? (
+          <p className="text-sm" role="status">
+            {t('qualifications.loading')}
+          </p>
+        ) : (
+          <EmptyState title={t('qualifications.notFound')} />
+        )}
       </>
     )
 
@@ -139,15 +143,20 @@ export default function ExpertQualificationPage() {
   return (
     <>
       {back}
-      <div className="ep-page-heading">
-        <div>
-          <h1>{data.serviceName}</h1>
-          <p>
-            {display.qualification(data.status)} ·{' '}
+      <PageHeader
+        className="mb-6"
+        title={data.serviceName}
+        badge={
+          <span className="ep-status ep-status-paused">
+            {display.qualification(data.status)}
+          </span>
+        }
+        actions={
+          <span className="text-sm">
             {t('qualifications.submittedAt', { date: time(data.submittedAt) })}
-          </p>
-        </div>
-      </div>
+          </span>
+        }
+      />
 
       {message && (
         <p
