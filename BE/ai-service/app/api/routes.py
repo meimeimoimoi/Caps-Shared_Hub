@@ -2,6 +2,7 @@ import json
 import logging
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
+import httpx
 
 from app.api.dependencies import verify_internal_key
 from app.modules.cv_screening.extractor import CvExtractor
