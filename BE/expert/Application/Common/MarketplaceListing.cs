@@ -15,6 +15,12 @@ public sealed class MarketplaceListing(
     TimeProvider clock
 ) : IMarketplaceListing
 {
+    /// <summary>
+    /// Public avatar of the expert's account, served by auth through the gateway. Unversioned: this service does
+    /// not know when the avatar changed, so auth caches this URL only briefly.
+    /// </summary>
+    public static string AvatarPath(Guid userId) => $"/api/v1/users/{userId}/avatar";
+
     public async Task<IReadOnlyList<MarketplaceExpertResponse>> ListAsync(
         string? serviceCode,
         Guid? profileId,
@@ -76,6 +82,7 @@ public sealed class MarketplaceListing(
                     ? null
                     : new MarketplaceExpertResponse(
                         profile.Id.ToString(),
+                        AvatarPath(profile.UserId),
                         profile.DisplayName,
                         profile.Title,
                         profile.Company,
