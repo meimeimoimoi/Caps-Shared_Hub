@@ -150,11 +150,12 @@ public sealed class DocumentController(ICurrentUser currentUser) : ControllerBas
     /// <summary>
     /// 4. Generate a new document draft version using the AI drafting service.
     /// </summary>
+    /// <remarks>Computes real draft readiness (READY, READY_WITH_WARNINGS, NOT_READY) and persists grounding, template, numerical, and citation issues.</remarks>
     /// <param name="id">Document identifier.</param>
     /// <param name="request">Draft configuration including optional SnapshotId, TemplateVersionId, and Citations.</param>
     /// <param name="handler">Command handler for draft generation.</param>
     /// <param name="ct">Cancellation token.</param>
-    /// <response code="200">The generated document version details.</response>
+    /// <response code="200">The generated document version details including readiness assessment and issues.</response>
     /// <response code="409">INSUFFICIENT_CREDITS when AI billing is enabled and wallet balance is too low.</response>
     [HttpPost("{id:guid}/generate-draft")]
     [RequirePermission(Permission.BusinessWrite)]
@@ -290,10 +291,29 @@ public sealed class DocumentController(ICurrentUser currentUser) : ControllerBas
         return File(file.Content, file.ContentType, file.FileName);
     }
 
-    /// <summary>Creates a document from an uploaded file (multipart: title, periodStart, periodEnd, file).</summary>
-    /// <remarks>Version 1 is the file (EXTERNAL_FILE); use its id as sourceVersionId when booking a review.</remarks>
-    /// <response code="200">The first version (id = sourceVersionId, documentId).</response>
-    /// <response code="400">ATTACHMENT_REQUIRED, ATTACHMENT_TOO_LARGE, ATTACHMENT_TYPE_INVALID, TEXT_REQUIRED or an invalid period.</response>
+    /// <summary>Creates a document from a file the client already has, so it can be sent for expert review.</summary>
+    /// <remarks>
+    /// Send as multipart/form-data with the fields title, periodStart, periodEnd and file. Use this when the client
+    /// wants an expert to review their own document instead of an AI draft.
+    ///
+    /// The file becomes version 1 of a new document (versionType EXTERNAL_FILE, immutable) owned by the caller.
+    /// Accepted formats are PDF, JPEG, PNG, WebP and Word .docx, at most 50 MB; the format is detected from the
+    /// file content, not from its name or extension.
+    ///
+    /// Next step: book a review with POST /api/v1/review-cases, passing documentId and the returned id as
+    /// sourceVersionId. GET /api/v1/documents/{id}/versions/{versionId}/file downloads the stored file.
+    /// </remarks>
+    /// <param name="request">Title, tax period and the file to upload.</param>
+    /// <param name="handler">Command handler that stores the file and creates the document.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <response code="200">The first version: id (use as sourceVersionId), documentId, versionNo = 1, versionType = EXTERNAL_FILE.</response>
+    /// <response code="400">
+    /// ATTACHMENT_REQUIRED (no file or empty file), ATTACHMENT_TOO_LARGE (over 50 MB), ATTACHMENT_TYPE_INVALID
+    /// (not PDF, JPEG, PNG, WebP or .docx), TEXT_REQUIRED (missing title or file name),
+    /// WORKFLOW_DOCUMENT_INVALID_PERIOD (periodEnd before periodStart) or a missing/too-long field.
+    /// </response>
+    /// <response code="401">Missing or invalid access token.</response>
+    /// <response code="403">The account lacks the permission to create documents.</response>
     [HttpPost("upload")]
     [RequirePermission(Permission.BusinessWrite)]
     [RequestSizeLimit(UploadLimit), RequestFormLimits(MultipartBodyLengthLimit = UploadLimit)]

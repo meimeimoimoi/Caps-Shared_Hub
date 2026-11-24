@@ -77,7 +77,8 @@ public static class SendChatMessage
                 aiBillingSettings,
                 unitOfWork,
                 timeProvider,
-                ct
+                ct,
+                rootQuestionId: userMessage.Id
             );
         }
     }

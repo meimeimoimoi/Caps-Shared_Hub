@@ -450,6 +450,8 @@ export interface ExcuseRequest {
   expertName: string | null
   expertEmail: string | null
   violation: ExpertViolation
+  /** Excuses this expert still has within the window; 0 means the request can only be declined */
+  excusesLeft: number
 }
 
 export interface ExpertViolations {

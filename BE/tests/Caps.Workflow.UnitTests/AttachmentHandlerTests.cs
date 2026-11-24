@@ -52,6 +52,18 @@ public sealed class AttachmentHandlerTests
     }
 
     [Fact]
+    public async Task The_same_file_twice_is_refused_and_stores_nothing_more()
+    {
+        var run = new Run();
+        await run.Upload(Client);
+
+        var e = await Assert.ThrowsAsync<AppException>(() => run.Upload(Expert));
+
+        Assert.Equal("ATTACHMENT_DUPLICATE", e.Code);
+        Assert.Single(run.Storage.Files);
+    }
+
+    [Fact]
     public async Task Parties_and_admins_list_the_files_and_nobody_else()
     {
         var run = new Run();
@@ -198,7 +210,14 @@ public sealed class AttachmentHandlerTests
             Case.ConfirmPayment(now);
             Case.Accept(ExpertProfile, Expert, now);
             Cases = new FakeCases(Case);
-            Attachments = new FakeAttachments(existing);
+            Attachments = new FakeAttachments();
+            // Distinct names, so only the per-case limit applies
+            for (var i = 0; i < existing; i++)
+            {
+                Attachments.Stored.Add(
+                    Case.AddAttachment(Client, $"old-{i}.pdf", Pdf, Attachments.Stored, now)
+                );
+            }
             UnitOfWork = new FakeUnitOfWork(saveFails);
         }
 
@@ -258,12 +277,9 @@ public sealed class AttachmentHandlerTests
         }
     }
 
-    private sealed class FakeAttachments(int existing) : IReviewAttachmentRepository
+    private sealed class FakeAttachments : IReviewAttachmentRepository
     {
         public List<ReviewAttachment> Stored { get; } = [];
-
-        public Task<int> CountAsync(Guid reviewCaseId, CancellationToken ct) =>
-            Task.FromResult(existing + Stored.Count);
 
         public Task<IReadOnlyList<ReviewAttachment>> ListAsync(
             Guid reviewCaseId,

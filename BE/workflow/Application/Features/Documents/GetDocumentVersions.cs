@@ -46,7 +46,8 @@ public static class GetDocumentVersions
                     v.ContentHash,
                     v.IsImmutable,
                     v.CreatedBy,
-                    v.CreatedAt
+                    v.CreatedAt,
+                    v.DraftAssessment
                 ))
                 .ToList();
         }

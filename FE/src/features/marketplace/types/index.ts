@@ -53,6 +53,8 @@ export type MarketplaceData = {
 /** GET /api/v1/marketplace/experts item (expert service, BR-M01). */
 export interface MarketplaceExpertDto {
   expertId: string
+  /** Account avatar (gateway path, then a full URL after withAvatarUrl); 404 when the expert has none */
+  avatarUrl?: string | null
   displayName: string | null
   title: string | null
   company: string | null

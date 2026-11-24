@@ -42,7 +42,11 @@ public static class ChatDtos
         string? ScopeResult,
         string? AnswerStatus,
         IReadOnlyList<CitationDto>? Citations,
-        DateTimeOffset CreatedAt
+        DateTimeOffset CreatedAt,
+        int ClarificationRound = 0,
+        DateTimeOffset? ClarificationDeadline = null,
+        string? ClosureReason = null,
+        string? MissingInformationSummary = null
     );
 
     /// <summary>Result of sending or clarifying a chat message, including the user prompt and AI reply.</summary>

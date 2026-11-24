@@ -4,9 +4,13 @@ namespace Caps.Expert.Application.DTOs.Responses;
 /// A listed expert (BR-M01): public profile, the services they can be booked for with the approved price,
 /// and how many cases they can still take. Evidence and CV are never public.
 /// </summary>
+/// <param name="AvatarUrl">
+/// Gateway path of the account avatar (auth); 404 when the expert has none, then show initials.
+/// </param>
 /// <param name="FreeSlots">Cases the expert can still accept now; 0 means full (still listed, not bookable).</param>
 public sealed record MarketplaceExpertResponse(
     string ExpertId,
+    string AvatarUrl,
     string? DisplayName,
     string? Title,
     string? Company,

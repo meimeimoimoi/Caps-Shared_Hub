@@ -199,6 +199,13 @@ public static class WorkflowErrors
     public static AppException AttachmentLimit(int max) =>
         new(ErrorType.Conflict, "ATTACHMENT_LIMIT", $"A case holds at most {max} files.");
 
+    public static AppException AttachmentDuplicate(string fileName) =>
+        new(
+            ErrorType.Conflict,
+            "ATTACHMENT_DUPLICATE",
+            $"The case already has the file {fileName}."
+        );
+
     public static AppException AttachmentNotFound() =>
         new(ErrorType.NotFound, "ATTACHMENT_NOT_FOUND", "File not found.");
 

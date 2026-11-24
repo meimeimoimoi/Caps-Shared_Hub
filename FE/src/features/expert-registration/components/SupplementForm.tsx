@@ -40,7 +40,7 @@ export function SupplementForm({
       <p>{t('supplement.guidance')}</p>
       <FormField
         label={t('supplement.document')}
-        hint={t('supplement.formats')}
+        help={t('supplement.formats')}
       >
         <label className="border-ex-chip-border bg-ex-drop-bg hover:border-ex-accent hover:bg-ex-drop-hover focus-within:ring-ex-accent flex cursor-pointer flex-col items-center gap-2 rounded-md border border-dashed px-4 py-6 text-center transition-[border-color,background,box-shadow] duration-[var(--motion-feedback)] ease-in-out focus-within:ring-2 focus-within:ring-offset-2 motion-reduce:transition-none">
           <Upload size={22} />

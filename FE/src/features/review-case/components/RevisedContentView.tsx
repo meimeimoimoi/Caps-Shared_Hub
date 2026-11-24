@@ -1,8 +1,24 @@
 import { useTranslation } from 'react-i18next'
 import { cn } from '@/lib/utils'
-import { fieldText } from './fieldText'
+import { fieldText, lineDiff } from './fieldText'
 
 type Change = 'changed' | 'added' | 'removed' | null
+
+/** One removed or added line; screen readers hear "before"/"after" instead of the colour. */
+const DiffText = ({
+  tag: Tag,
+  label,
+  text,
+}: {
+  tag: 'del' | 'ins'
+  label: string
+  text: string
+}) => (
+  <Tag className="text-fg-strong min-w-0 flex-1 wrap-break-word whitespace-pre-wrap no-underline">
+    <span className="sr-only">{label} </span>
+    {text || ' '}
+  </Tag>
+)
 
 const changeOf = (
   key: string,
@@ -18,8 +34,8 @@ const changeOf = (
         : null
 
 /**
- * The expert's copy of an AI draft beside the original: edited fields carry a bar, a red * and "old -> new",
- * removed ones are struck through, so the client finds every change at a glance.
+ * The expert's copy of an AI draft beside the original: edited fields carry a bar and a red *, and their text shows
+ * as a line diff (removed lines red, added lines green), so the client finds every change at a glance.
  */
 export function RevisedContentView({
   source,
@@ -80,30 +96,54 @@ export function RevisedContentView({
                 </span>
               )}
             </dt>
-            <dd className="mt-1 flex flex-wrap items-baseline gap-x-2 wrap-break-word whitespace-pre-wrap">
-              {change === 'changed' || change === 'removed' ? (
-                <del className="text-fg-muted">
-                  <span className="sr-only">{t('live.revised.before')} </span>
-                  {fieldText(source[key])}
-                </del>
-              ) : null}
-              {change === 'changed' && (
-                <span aria-hidden="true" className="text-fg-muted">
-                  →
-                </span>
-              )}
-              {change === 'changed' || change === 'added' ? (
-                <ins className="text-fg-strong font-medium no-underline">
-                  <span className="sr-only">{t('live.revised.after')} </span>
-                  {fieldText(revised[key])}
-                </ins>
-              ) : null}
-              {change === null && (
-                <span className="text-fg-strong">
-                  {fieldText(revised[key])}
-                </span>
-              )}
-            </dd>
+            {change === null ? (
+              <dd className="text-fg-strong mt-1 wrap-break-word whitespace-pre-wrap">
+                {fieldText(revised[key])}
+              </dd>
+            ) : (
+              // Code-review style: removed lines red with "-", added lines green with "+", kept lines plain
+              <dd className="border-border rounded-control mt-2 overflow-hidden border text-sm">
+                {lineDiff(
+                  key in source ? fieldText(source[key]) : '',
+                  key in revised ? fieldText(revised[key]) : ''
+                ).map((line, i) => (
+                  <div
+                    key={i}
+                    className={cn(
+                      'flex gap-3 px-3 py-0.5',
+                      line.kind === '-' && 'bg-danger-soft',
+                      line.kind === '+' && 'bg-success-soft'
+                    )}
+                  >
+                    <span
+                      aria-hidden="true"
+                      className={cn(
+                        'w-3 shrink-0 font-mono select-none',
+                        line.kind === '-' && 'text-danger',
+                        line.kind === '+' && 'text-success'
+                      )}
+                    >
+                      {line.kind}
+                    </span>
+                    {line.kind === ' ' ? (
+                      <span className="text-fg min-w-0 flex-1 wrap-break-word whitespace-pre-wrap">
+                        {line.text || ' '}
+                      </span>
+                    ) : (
+                      <DiffText
+                        tag={line.kind === '-' ? 'del' : 'ins'}
+                        label={t(
+                          line.kind === '-'
+                            ? 'live.revised.before'
+                            : 'live.revised.after'
+                        )}
+                        text={line.text}
+                      />
+                    )}
+                  </div>
+                ))}
+              </dd>
+            )}
           </div>
         ))}
       </dl>

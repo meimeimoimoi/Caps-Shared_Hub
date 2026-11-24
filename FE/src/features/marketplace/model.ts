@@ -49,6 +49,7 @@ export function expertFromDto(dto: MarketplaceExpertDto): Expert {
     id: dto.expertId,
     name,
     initials: initialsOf(name),
+    avatar: dto.avatarUrl ?? undefined,
     headline: headlineOf(dto),
     credential: null,
     location: dto.location,
@@ -95,7 +96,7 @@ export function bioFromDto(dto: MarketplaceExpertDto): ExpertBio {
   return {
     expertId: expert.id,
     displayName: expert.name,
-    avatarUrl: null,
+    avatarUrl: expert.avatar ?? null,
     headline: expert.headline,
     location: expert.location ?? '',
     yearsOfExperience: expert.years ?? 0,

@@ -1,4 +1,4 @@
-import { api, apiClient, ApiError } from '@/lib/api-client'
+import { api, ApiError, gatewayUrl } from '@/lib/api-client'
 import { i18n } from '@/lib/i18n'
 import { isExpertDemo } from '@/lib/expert-data-source'
 import { getAccessToken, isSignedIn } from '@/lib/access-token'
@@ -41,14 +41,8 @@ export function toUser(me: BackendMe): User {
     emailVerified: me.emailVerified,
     roles: me.roles,
     permissions: me.permissions,
-    avatarUrl: absoluteUrl(me.avatarUrl),
+    avatarUrl: gatewayUrl(me.avatarUrl),
   }
-}
-
-/** Ảnh đại diện là đường dẫn tương đối qua gateway; thẻ img cần URL đầy đủ */
-function absoluteUrl(path: string | null | undefined) {
-  if (!path) return undefined
-  return /^https?:/.test(path) ? path : (apiClient.defaults.baseURL ?? '') + path
 }
 
 /** Dev: expert/customer pages can be viewed with a demo account when not really signed in */

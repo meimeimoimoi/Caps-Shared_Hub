@@ -119,6 +119,16 @@ public sealed class WorkflowDbContext(DbContextOptions<WorkflowDbContext> option
             e.Property(x => x.ScopeResult).HasColumnName("scope_result");
             e.Property(x => x.AnswerStatus).HasColumnName("answer_status");
             e.Property(x => x.Citations).HasColumnName("citations").HasColumnType("jsonb");
+            e.Property(x => x.RootQuestionId).HasColumnName("root_question_id");
+            e.Property(x => x.ClarificationRound)
+                .HasColumnName("clarification_round")
+                .HasDefaultValue(0)
+                .IsRequired();
+            e.Property(x => x.ClarificationDeadline).HasColumnName("clarification_deadline");
+            e.Property(x => x.ClarificationResolvedAt).HasColumnName("clarification_resolved_at");
+            e.Property(x => x.ClosureReason).HasColumnName("closure_reason").HasMaxLength(64);
+            e.Property(x => x.MissingInformationSummary)
+                .HasColumnName("missing_information_summary");
             e.Property(x => x.CreatedAt)
                 .HasColumnName("created_at")
                 .HasDefaultValueSql("now()")
@@ -126,6 +136,11 @@ public sealed class WorkflowDbContext(DbContextOptions<WorkflowDbContext> option
 
             e.HasIndex(x => new { x.ConversationId, x.CreatedAt })
                 .HasDatabaseName("ix_chat_message_2");
+            e.HasIndex(x => x.ClarificationDeadline)
+                .HasFilter(
+                    "answer_status = 'NEED_CLARIFICATION' AND clarification_resolved_at IS NULL AND clarification_deadline IS NOT NULL"
+                )
+                .HasDatabaseName("ix_chat_message_clarification_due");
 
             e.HasOne(x => x.Conversation)
                 .WithMany(c => c.Messages)
@@ -260,6 +275,7 @@ public sealed class WorkflowDbContext(DbContextOptions<WorkflowDbContext> option
             e.Property(x => x.TemplateVersionId).HasColumnName("template_version_id");
             e.Property(x => x.Citations).HasColumnName("citations").HasColumnType("jsonb");
             e.Property(x => x.DraftAssessment).HasColumnName("draft_assessment");
+            e.Property(x => x.DraftIssues).HasColumnName("draft_issues").HasColumnType("jsonb");
             e.Property(x => x.ReviewCaseId).HasColumnName("review_case_id");
             e.Property(x => x.FileUrl).HasColumnName("file_url");
             e.Property(x => x.Content).HasColumnName("content").HasColumnType("jsonb").IsRequired();

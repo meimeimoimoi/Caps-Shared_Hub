@@ -52,6 +52,8 @@ export interface Dispute {
   client?: string
   /** The client's account id: tells the arbiter which files are the client's */
   clientUserId?: string
+  /** The uploaded document's name (null: a draft written in the app; undefined: unknown) */
+  sourceFileName?: string | null
   expert?: string
   /** Server deadline; when set it replaces the 48-hour rule computed here */
   decideBy?: string

@@ -182,6 +182,47 @@ public sealed class AiCreditChargeService(
         reservation.MarkSettled();
     }
 
+    /// <summary>
+    /// Releases any still-reserved credit or quota holds linked to a question closing as INSUFFICIENT_INFORMATION,
+    /// while leaving already-captured usages intact.
+    /// </summary>
+    public async Task ReleaseReservedUsagesForQuestionAsync(
+        IReadOnlyCollection<Guid> questionIds,
+        string note,
+        DateTimeOffset now,
+        CancellationToken ct
+    )
+    {
+        if (questionIds.Count == 0)
+        {
+            return;
+        }
+
+        var usages = await aiUsageRepository.FindByQuestionIdsAsync(questionIds, ct);
+        foreach (var usage in usages)
+        {
+            if (usage.State != AiUsageState.Reserved)
+            {
+                // Captured usages remain captured; refunded usages are already settled.
+                continue;
+            }
+
+            if (settings.Enabled)
+            {
+                if (usage.PaidWith == AiUsagePaidWith.Credit)
+                {
+                    await aiCredits.ReleaseAsync(usage.Id, note, ct);
+                }
+                else if (usage.PaidWith == AiUsagePaidWith.Quota)
+                {
+                    await aiQuotaRepository.RefundOneAsync(usage.UserId, now, ct);
+                }
+            }
+
+            usage.TransitionState(AiUsageState.Refunded, now);
+        }
+    }
+
     public async Task ReleaseOnErrorAsync(AiCreditReservation reservation, string? note)
     {
         if (reservation.Settled)

@@ -1,4 +1,5 @@
 import { useExpertPresentation } from '@/features/expert-dashboard/hooks/useExpertPresentation'
+import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useExpertDashboard } from '../../features/expert-dashboard/hooks/useExpertDashboard'
 import { useExpertContext } from '@/features/expert-context'
@@ -8,7 +9,7 @@ import {
   DashboardSkeleton,
 } from '../../features/expert-dashboard/components/DashboardSectionState'
 import { Link, useLocation, useSearchParams } from 'react-router-dom'
-import { Clock3, Pause, Filter, ArrowRight } from 'lucide-react'
+import { AlertTriangle, Clock3, Pause, Filter, ArrowRight } from 'lucide-react'
 import { isExpertDemo } from '@/lib/expert-data-source'
 import { CustomSelect } from '@/components/ui/forms/custom-select'
 import { Pagination } from '@/components/ui/navigation/pagination'
@@ -50,6 +51,12 @@ export default function ExpertCasesPage() {
         : t('cases')
   const context = useExpertContext()
   const dashboard = useExpertDashboard()
+  // Re-checked each minute so a case crossing the reminder hours moves up without a reload
+  const [now, setNow] = useState(() => Date.now())
+  useEffect(() => {
+    const id = window.setInterval(() => setNow(Date.now()), 60_000)
+    return () => window.clearInterval(id)
+  }, [])
   const refresh = () => {
     void context.refetch()
     void dashboard.refetch()
@@ -75,9 +82,19 @@ export default function ExpertCasesPage() {
   const filter = scope === 'queue'
     ? 'ALL'
     : filters.find((option) => option.value === params.get('status'))?.value ?? 'ALL'
-  const visibleItems = scopedItems.filter(
-    (item) => filter === 'ALL' || item.status === filter
-  )
+  // How pressing the expert's own deadline is: 0 overdue, 1 within the reminder hours, 2 otherwise.
+  // Waiting on the client or paused never counts: the expert cannot act on it.
+  const urgency = (item: (typeof scopedItems)[number]) => {
+    const d = item.deadline
+    if (d.actor !== 'EXPERT' || d.paused || !d.at) return 2
+    if (d.overdue) return 0
+    return Date.parse(d.at) - now < URGENT_MS ? 1 : 2
+  }
+  // Stable sort: pressing cases first, the rest keep the server order
+  const visibleItems = scopedItems
+    .filter((item) => filter === 'ALL' || item.status === filter)
+    .sort((a, b) => urgency(a) - urgency(b))
+  const urgentCount = visibleItems.filter((item) => urgency(item) < 2).length
   const pagination = usePagination(visibleItems, `${scope}:${filter}`)
   const setFilter = (value: WorkStatus | 'ALL') => {
     setParams((current) => {
@@ -148,6 +165,12 @@ export default function ExpertCasesPage() {
                 />
               </div>
             )}
+            {urgentCount > 0 && (
+              <span className="ep-urgent-note" role="status">
+                <AlertTriangle size={14} aria-hidden="true" />
+                {t('urgentCases', { count: urgentCount })}
+              </span>
+            )}
             <span className="ep-count-label">
               {t('shownCount', { total: display.number(visibleItems.length) })}
               {model.queue.data.hasMore ? ' · ' + t('partialDataset') : ''}
@@ -182,12 +205,19 @@ export default function ExpertCasesPage() {
                   </thead>
                   <tbody>
                     {pagination.rows.map((item) => {
-                      const overdue =
-                        item.deadline.overdue &&
-                        !item.deadline.paused &&
-                        item.deadline.actor === 'EXPERT'
+                      const level = urgency(item)
+                      const overdue = level === 0
                       return (
-                        <tr key={item.id}>
+                        <tr
+                          key={item.id}
+                          className={
+                            overdue
+                              ? 'ep-row-urgent ep-row-overdue'
+                              : level === 1
+                                ? 'ep-row-urgent'
+                                : undefined
+                          }
+                        >
                           <td className="ep-case-title whitespace-normal!">
                             <span className="block font-semibold wrap-anywhere">
                               {item.title}
@@ -239,6 +269,11 @@ export default function ExpertCasesPage() {
                                         urgentMs={URGENT_MS}
                                       />{' '}
                                       {tc('countdown.left')}
+                                      {level === 1 && (
+                                        <span className="ep-due-soon">
+                                          {t('dueSoon')}
+                                        </span>
+                                      )}
                                     </span>
                                   )}
                               </div>

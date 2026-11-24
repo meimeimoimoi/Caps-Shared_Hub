@@ -31,6 +31,11 @@ public sealed class ChatMessageRepository(WorkflowDbContext dbContext) : IChatMe
         return await _messages.FirstOrDefaultAsync(m => m.Id == id, ct);
     }
 
+    public Task<ChatMessage?> FindForUpdateAsync(Guid id, CancellationToken ct = default) =>
+        _messages
+            .FromSqlInterpolated($"SELECT * FROM workspace.chat_message WHERE id = {id} FOR UPDATE")
+            .SingleOrDefaultAsync(m => m.Id == id, ct);
+
     public async Task<ChatMessage?> GetLatestAnsweredMessageAsync(
         Guid conversationId,
         CancellationToken ct = default

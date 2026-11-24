@@ -203,7 +203,8 @@ public sealed class DisputeHandlerTests
         public Task<ReviewDispute?> FindByCaseAsync(Guid reviewCaseId, CancellationToken ct) =>
             Task.FromResult(stored.SingleOrDefault(x => x.ReviewCaseId == reviewCaseId));
 
-        public Task<IReadOnlyList<(ReviewDispute Dispute, ReviewCase Case)>> ListOpenAsync(
+        public Task<IReadOnlyList<(ReviewDispute Dispute, ReviewCase Case)>> ListAsync(
+            bool open,
             CancellationToken ct
         ) => throw new NotSupportedException();
 

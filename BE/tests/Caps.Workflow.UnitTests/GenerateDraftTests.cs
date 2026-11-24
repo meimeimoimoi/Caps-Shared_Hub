@@ -24,13 +24,33 @@ public sealed class GenerateDraftTests
         var publishedVersion = TemplateVersion.SaveDraft(
             template,
             null,
-            """[{"name":"revenue","type":"number"}]""",
+            """[{"name":"revenue","type":"number","required":true}]""",
             Owner,
             Now
         );
         publishedVersion.Publish(null);
 
-        var store = new Store(publishedVersion);
+        var store = new Store(publishedVersion)
+        {
+            NextResponse = new AiDraftResponse(
+                JsonSerializer.SerializeToElement(new { revenue = 1000 }),
+                "ai-hash",
+                false,
+                [],
+                JsonSerializer.SerializeToElement(
+                    new[]
+                    {
+                        new
+                        {
+                            document_number = "320/2025/ND-CP",
+                            doc_title = "Decree 320",
+                            article = "Điều 11",
+                            effective_from = "2025-01-01",
+                        },
+                    }
+                )
+            ),
+        };
         var doc = store.AddDocument(Owner, template.Id);
         var snapshot = store.AddSnapshot(doc, "{\"revenue\":1000}");
         var handler = CreateHandler(store);
@@ -43,7 +63,8 @@ public sealed class GenerateDraftTests
         Assert.Equal(publishedVersion.Id, result.TemplateVersionId);
         Assert.Equal(publishedVersion.FieldSchema, store.LastRequest?.TemplateSchemaJson);
         Assert.Equal("AI_DRAFT", result.VersionType);
-        Assert.Equal("AI_GENERATED_PENDING_REVIEW", result.DraftAssessment);
+        Assert.Equal(DraftReadinessStatus.Ready, result.DraftAssessment);
+        Assert.Empty(result.DraftIssues!);
         var usage = Assert.Single(store.Usages);
         Assert.Equal((AiUsagePaidWith.Free, AiUsageState.Captured), (usage.PaidWith, usage.State));
         Assert.True(store.Saved);
@@ -212,6 +233,189 @@ public sealed class GenerateDraftTests
         Assert.Equal(AiUsagePaidWith.Credit, Assert.Single(store.Usages).PaidWith);
     }
 
+    [Fact]
+    public async Task Readiness_is_ready_with_warnings_when_only_warnings_exist()
+    {
+        var template = Template.Create("CIT_WARN", "CIT Declaration", null, Now);
+        var publishedVersion = TemplateVersion.SaveDraft(
+            template,
+            null,
+            """
+            [
+              {"id":"revenue","label":"Doanh thu","required":true},
+              {"id":"note","label":"Ghi chú bổ sung","required":false}
+            ]
+            """,
+            Owner,
+            Now
+        );
+        publishedVersion.Publish(null);
+
+        var store = new Store(publishedVersion)
+        {
+            NextResponse = new AiDraftResponse(
+                JsonSerializer.SerializeToElement(new { revenue = 1000 }),
+                "ai-hash",
+                false,
+                [],
+                JsonSerializer.SerializeToElement(
+                    new[]
+                    {
+                        new
+                        {
+                            document_number = "320/2025/ND-CP",
+                            doc_title = "Decree 320",
+                            article = (string?)null,
+                            effective_from = (string?)null,
+                        },
+                    }
+                )
+            ),
+        };
+        var doc = store.AddDocument(Owner, template.Id);
+        var snapshot = store.AddSnapshot(doc, "{\"revenue\":1000}");
+
+        var result = await CreateHandler(store)
+            .HandleAsync(new(doc.Id, Owner, snapshot.Id, null, null), default);
+
+        Assert.Equal(DraftReadinessStatus.ReadyWithWarnings, result.DraftAssessment);
+        Assert.NotNull(result.DraftIssues);
+        Assert.All(result.DraftIssues!, i => Assert.Equal(DraftIssueSeverity.Warning, i.Severity));
+        Assert.Contains(
+            result.DraftIssues!,
+            i => i.Code == DraftIssueCode.MissingOptionalField && i.FieldId == "note"
+        );
+        Assert.Contains(
+            result.DraftIssues!,
+            i => i.Code == DraftIssueCode.IncompleteCitationMetadata
+        );
+
+        var detail = await new GetDocumentVersionDetail.GetDocumentVersionDetailHandler(
+            store,
+            store
+        ).HandleAsync(new(doc.Id, result.Id, Owner), default);
+        Assert.Equal(DraftReadinessStatus.ReadyWithWarnings, detail.DraftAssessment);
+        Assert.Equal(result.DraftIssues!.Count, detail.DraftIssues!.Count);
+    }
+
+    [Fact]
+    public async Task Readiness_is_not_ready_when_grounding_issue_or_empty_citations_occur()
+    {
+        var template = Template.Create("CIT_GROUND", "CIT Declaration", null, Now);
+        var publishedVersion = TemplateVersion.SaveDraft(
+            template,
+            null,
+            """[{"id":"revenue","label":"Doanh thu","required":true}]""",
+            Owner,
+            Now
+        );
+        publishedVersion.Publish(null);
+
+        var store = new Store(publishedVersion)
+        {
+            NextResponse = new AiDraftResponse(
+                JsonSerializer.SerializeToElement(new { revenue = 1000 }),
+                "ai-hash",
+                false,
+                [],
+                JsonSerializer.SerializeToElement(Array.Empty<object>()),
+                HasGroundingIssues: true,
+                Issues:
+                [
+                    new AiDraftIssue(
+                        DraftIssueCode.MissingLegalBasis,
+                        DraftIssueType.GroundingIssue,
+                        DraftIssueSeverity.Blocking,
+                        "Không tìm thấy căn cứ pháp lý phù hợp."
+                    ),
+                ]
+            ),
+        };
+        var doc = store.AddDocument(Owner, template.Id);
+        var snapshot = store.AddSnapshot(doc, "{\"revenue\":1000}");
+
+        var result = await CreateHandler(store)
+            .HandleAsync(new(doc.Id, Owner, snapshot.Id, null, null), default);
+
+        Assert.Equal(DraftReadinessStatus.NotReady, result.DraftAssessment);
+        var issue = Assert.Single(result.DraftIssues!);
+        Assert.Equal(DraftIssueCode.MissingLegalBasis, issue.Code);
+        Assert.Equal(DraftIssueType.GroundingIssue, issue.Type);
+        Assert.Equal(DraftIssueSeverity.Blocking, issue.Severity);
+
+        var persisted = Assert.Single(store.Versions);
+        Assert.Equal(DraftReadinessStatus.NotReady, persisted.DraftAssessment);
+        Assert.Contains(DraftIssueCode.MissingLegalBasis, persisted.DraftIssues);
+    }
+
+    [Fact]
+    public async Task Readiness_is_not_ready_for_unauthorized_numbers_missing_required_field_or_untraceable_citation()
+    {
+        var template = Template.Create("CIT_BLOCK", "CIT Declaration", null, Now);
+        var publishedVersion = TemplateVersion.SaveDraft(
+            template,
+            null,
+            """
+            [
+              {"id":"revenue","label":"Doanh thu","required":true},
+              {"id":"taxableIncome","label":"Thu nhập tính thuế","required":true},
+              {"id":"optionalNote","label":"Ghi chú","required":false}
+            ]
+            """,
+            Owner,
+            Now
+        );
+        publishedVersion.Publish(null);
+
+        var store = new Store(publishedVersion)
+        {
+            NextResponse = new AiDraftResponse(
+                JsonSerializer.SerializeToElement(new { revenue = 1000 }),
+                "ai-hash",
+                HasUnauthorizedNumbers: true,
+                UnauthorizedNumbers: ["999999"],
+                Citations: JsonSerializer.SerializeToElement(
+                    new[] { new { doc_title = "Unknown source" } }
+                )
+            ),
+        };
+        var doc = store.AddDocument(Owner, template.Id);
+        var snapshot = store.AddSnapshot(doc, "{\"revenue\":1000}");
+
+        var result = await CreateHandler(store)
+            .HandleAsync(new(doc.Id, Owner, snapshot.Id, null, null), default);
+
+        Assert.Equal(DraftReadinessStatus.NotReady, result.DraftAssessment);
+        var issues = result.DraftIssues!;
+        Assert.Contains(
+            issues,
+            i =>
+                i.Code == DraftIssueCode.UnauthorizedNumbers
+                && i.Severity == DraftIssueSeverity.Blocking
+        );
+        Assert.Contains(
+            issues,
+            i =>
+                i.Code == DraftIssueCode.MissingRequiredSection
+                && i.FieldId == "taxableIncome"
+                && i.Severity == DraftIssueSeverity.Blocking
+        );
+        Assert.Contains(
+            issues,
+            i =>
+                i.Code == DraftIssueCode.UntraceableRequiredCitation
+                && i.Severity == DraftIssueSeverity.Blocking
+        );
+        // Warning issue is also preserved alongside blocking issues
+        Assert.Contains(
+            issues,
+            i =>
+                i.Code == DraftIssueCode.MissingOptionalField
+                && i.FieldId == "optionalNote"
+                && i.Severity == DraftIssueSeverity.Warning
+        );
+    }
+
     private static readonly AiBillingSettings FreeBillingSettings = new() { Enabled = false };
 
     private static readonly AiBillingSettings EnabledBillingSettings = new()
@@ -260,6 +464,7 @@ public sealed class GenerateDraftTests
         public long WalletBalance { get; set; }
         public long WalletHeld { get; set; }
         public bool FailDraft { get; set; }
+        public AiDraftResponse? NextResponse { get; set; }
         public Dictionary<Guid, string> ExplicitSchemas { get; } = [];
         public AiDraftRequest? LastRequest { get; private set; }
         public bool Saved { get; private set; }
@@ -421,6 +626,16 @@ public sealed class GenerateDraftTests
             return Task.CompletedTask;
         }
 
+        public Task<IReadOnlyList<AiUsage>> FindByQuestionIdsAsync(
+            IReadOnlyCollection<Guid> questionIds,
+            CancellationToken ct = default
+        ) =>
+            Task.FromResult<IReadOnlyList<AiUsage>>(
+                Usages
+                    .Where(u => u.QuestionId.HasValue && questionIds.Contains(u.QuestionId.Value))
+                    .ToList()
+            );
+
         public Task<AiQuota?> GetByUserIdAsync(Guid userId, CancellationToken ct = default) =>
             Task.FromResult(Quotas.GetValueOrDefault(userId));
 
@@ -467,13 +682,14 @@ public sealed class GenerateDraftTests
             }
 
             return Task.FromResult(
-                new AiDraftResponse(
-                    JsonSerializer.SerializeToElement(new { summary = "Generated" }),
-                    "ai-hash",
-                    false,
-                    [],
-                    JsonSerializer.SerializeToElement(Array.Empty<object>())
-                )
+                NextResponse
+                    ?? new AiDraftResponse(
+                        JsonSerializer.SerializeToElement(new { summary = "Generated" }),
+                        "ai-hash",
+                        false,
+                        [],
+                        JsonSerializer.SerializeToElement(Array.Empty<object>())
+                    )
             );
         }
 
