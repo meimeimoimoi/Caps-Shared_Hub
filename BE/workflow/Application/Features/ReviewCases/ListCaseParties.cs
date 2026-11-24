@@ -7,6 +7,7 @@ namespace Caps.Workflow.Application.Features.ReviewCases;
 /// <summary>The client and expert of each of these cases.</summary>
 public sealed record ListCasePartiesQuery(Guid[] Ids);
 
+/// <summary>One row per known case, duplicates and unknown ids skipped.</summary>
 public sealed class ListCasePartiesHandler(IReviewCaseLookup cases)
     : IQueryHandler<ListCasePartiesQuery, CasePartiesResponse[]>
 {
