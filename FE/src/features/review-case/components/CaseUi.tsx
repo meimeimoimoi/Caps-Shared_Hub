@@ -122,11 +122,9 @@ export function Initials({
 /* Nút chọn tệp theo ngôn ngữ app; input gốc vẫn nhận bàn phím và trình đọc màn hình */
 export function FilePicker({
   id,
-  hintId,
   onCount,
 }: {
   id: string
-  hintId: string
   onCount?: (count: number) => void
 }) {
   const { t } = useTranslation('reviewCase')
@@ -141,7 +139,6 @@ export function FilePicker({
           type="file"
           multiple
           accept=".pdf,.xls,.xlsx,.csv,image/*"
-          aria-describedby={hintId}
           onChange={(e) => {
             const list = Array.from(e.target.files ?? [], (f) => f.name)
             setNames(list)
