@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
-import { HelpTip } from '@/components/ui/feedback/help-tip'
 import { MotionReveal, MotionStagger } from '@/components/ui/motion'
+import { ShieldCheck } from 'lucide-react'
 
 const topics = ['deductible', 'invoice', 'rate', 'welfare'] as const
 
@@ -33,14 +33,20 @@ export function AssistantWelcome({
         >
           {t('welcome.title')}
         </h1>
-        <div className="mt-2 shrink-0">
-          <HelpTip label={t('welcome.title')} className="[&>div]:right-0 [&>div]:left-auto">
-            {t('welcome.lead')}
-          </HelpTip>
-        </div>
       </MotionReveal>
 
-      <MotionReveal preset="reveal">{composer}</MotionReveal>
+      <MotionReveal preset="reveal" className="flex flex-col gap-2">
+        {composer}
+        {/* Trust note stays visible next to the input, not hidden in a tooltip */}
+        <p className="text-text-muted flex items-start justify-center gap-1.5 text-center text-sm text-pretty">
+          <ShieldCheck
+            size={15}
+            aria-hidden="true"
+            className="text-accent-text mt-0.5 shrink-0"
+          />
+          {t('welcome.trust')}
+        </p>
+      </MotionReveal>
 
       <div className="flex flex-col gap-3">
         <h2 className="text-text-muted text-sm font-sans font-medium text-center">
