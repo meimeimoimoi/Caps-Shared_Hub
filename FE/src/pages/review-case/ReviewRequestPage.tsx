@@ -2,7 +2,13 @@ import { useEffect, useId, useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useQuery } from '@tanstack/react-query'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
-import { ArrowLeft, CircleAlert, FilePlus2, Upload } from 'lucide-react'
+import {
+  ArrowLeft,
+  CircleAlert,
+  FilePlus2,
+  ShieldCheck,
+  Upload,
+} from 'lucide-react'
 import { FormField } from '@/components/ui/forms/form-field'
 import { HelpTip } from '@/components/ui/feedback/help-tip'
 import { usePublicExpert } from '@/features/marketplace/hooks/useMarketplace'
@@ -243,10 +249,7 @@ export default function ReviewRequestPage() {
         </div>
       ) : (
         <>
-          <h1 className="text-h1 font-serif">{t('request.title')}</h1>
-          <p className="text-fg-muted mt-2 mb-8 max-w-[60ch]">
-            {t('request.lead')}
-          </p>
+          <h1 className="text-h1 mb-8 font-serif">{t('request.title')}</h1>
           <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_22rem]">
             <form
               noValidate
@@ -473,12 +476,22 @@ export default function ReviewRequestPage() {
                   {sendError}
                 </p>
               )}
+              {/* Payment and escrow terms sit next to the action they apply to */}
+              <p className="text-fg mt-8 flex items-start gap-2 text-sm">
+                <ShieldCheck
+                  size={16}
+                  aria-hidden="true"
+                  className="text-success mt-0.5 shrink-0"
+                />
+                {t('request.lead')}
+              </p>
               <button
                 type="submit"
                 disabled={sending}
-                className="btn btn-press btn-primary mt-8 disabled:opacity-60 max-sm:w-full"
+                aria-busy={sending}
+                className="btn btn-press btn-primary mt-4 disabled:opacity-60 max-sm:w-full"
               >
-                {t('request.submit')}
+                {sending ? t('request.sending') : t('request.submit')}
               </button>
             </form>
 

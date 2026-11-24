@@ -402,6 +402,7 @@
     "consent": "Tôi hiểu: tôi thanh toán ngay khi gửi yêu cầu; khoản thanh toán được giữ hộ tới khi nghiệm thu và được hoàn 100% nếu chuyên gia không nhận; phí trả cho hoạt động thẩm định, không phụ thuộc kết quả VERIFIED.",
     "consentRequired": "Xác nhận điều khoản để gửi yêu cầu.",
     "submit": "Gửi yêu cầu thẩm định",
+    "sending": "Đang gửi…",
     "summary": "Tóm tắt yêu cầu",
     "priceOnRequest": "Báo giá sau",
     "nextTitle": "Điều gì xảy ra tiếp theo",

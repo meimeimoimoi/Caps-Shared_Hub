@@ -402,6 +402,7 @@
     "consent": "I understand: I pay when I send the request; the payment is held until I accept the result and fully refunded if the expert does not take the case; the fee pays for the review work and does not depend on a VERIFIED result.",
     "consentRequired": "Confirm the terms to send the request.",
     "submit": "Send review request",
+    "sending": "Sending…",
     "summary": "Request summary",
     "priceOnRequest": "Quoted later",
     "nextTitle": "What happens next",
