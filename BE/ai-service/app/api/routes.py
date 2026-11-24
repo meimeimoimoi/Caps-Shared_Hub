@@ -249,12 +249,14 @@ def draft_document(req: GenerateDraftRequest):
         context = "\n".join(
             [(h.payload or {}).get("text_content", "") for h in retrieved]
         )
+        citations = build_citations(retrieved, include_text=False)
 
         result = DocumentDrafter.generate_draft(
-            req.snapshot_data, req.template_schema, context
+            req.snapshot_data,
+            req.template_schema,
+            context,
+            citations=citations,
         )
-
-        citations = build_citations(retrieved, include_text=False)
 
         return GenerateDraftResponse(
             status=OperationStatus.SUCCESS,
@@ -263,6 +265,8 @@ def draft_document(req: GenerateDraftRequest):
             has_unauthorized_numbers=result["has_unauthorized_numbers"],
             unauthorized_numbers=result["unauthorized_numbers"],
             citations=citations,
+            has_grounding_issues=result.get("has_grounding_issues", False),
+            issues=result.get("issues", []),
         )
     except HTTPException:
         raise

@@ -150,11 +150,12 @@ public sealed class DocumentController(ICurrentUser currentUser) : ControllerBas
     /// <summary>
     /// 4. Generate a new document draft version using the AI drafting service.
     /// </summary>
+    /// <remarks>Computes real draft readiness (READY, READY_WITH_WARNINGS, NOT_READY) and persists grounding, template, numerical, and citation issues.</remarks>
     /// <param name="id">Document identifier.</param>
     /// <param name="request">Draft configuration including optional SnapshotId, TemplateVersionId, and Citations.</param>
     /// <param name="handler">Command handler for draft generation.</param>
     /// <param name="ct">Cancellation token.</param>
-    /// <response code="200">The generated document version details.</response>
+    /// <response code="200">The generated document version details including readiness assessment and issues.</response>
     /// <response code="409">INSUFFICIENT_CREDITS when AI billing is enabled and wallet balance is too low.</response>
     [HttpPost("{id:guid}/generate-draft")]
     [RequirePermission(Permission.BusinessWrite)]

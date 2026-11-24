@@ -21,6 +21,7 @@ public sealed class DocumentVersion
     public TemplateVersion? TemplateVersion { get; set; }
     public string? Citations { get; set; } // jsonb
     public string? DraftAssessment { get; set; }
+    public string? DraftIssues { get; set; } // jsonb
     public Guid? ReviewCaseId { get; set; }
     public string? FileUrl { get; set; }
     public string Content { get; set; } = default!; // jsonb
