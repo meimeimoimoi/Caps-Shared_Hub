@@ -305,10 +305,14 @@ class ScopeRouter:
         sanitized_msg = _sanitize_clarification_msg(analysis.clarification_msg)
         explicit_period = parse_tax_period(user_tax_period)
         clarification_suffix = _extract_clarification_suffix(question)
-        clarification_period = (
-            parse_tax_period(clarification_suffix)
-            or (_extract_unique_period_from_question(clarification_suffix) if clarification_suffix else None)
-        )
+        clarification_period = parse_tax_period(clarification_suffix)
+        if clarification_period is None and clarification_suffix:
+            for line in reversed(clarification_suffix.splitlines()):
+                clarification_period = parse_tax_period(line)
+                if clarification_period is not None:
+                    break
+        if clarification_period is None and clarification_suffix:
+            clarification_period = _extract_unique_period_from_question(clarification_suffix)
         question_only = (
             question[: question.lower().rfind("clarification:")].strip()
             if clarification_suffix

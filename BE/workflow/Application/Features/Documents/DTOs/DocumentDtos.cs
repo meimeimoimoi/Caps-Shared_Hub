@@ -62,6 +62,16 @@ public static class DocumentDtos
         DateTimeOffset CreatedAt
     );
 
+    /// <summary>Structured blocking or warning issue attached to an AI-generated document draft.</summary>
+    public sealed record DraftIssueDto(
+        string Code,
+        string Type,
+        string Severity,
+        string Description,
+        string? FieldId = null,
+        string? CitationId = null
+    );
+
     /// <summary>Summary of a document version in version history.</summary>
     public sealed record DocumentVersionSummaryDto(
         Guid Id,
@@ -73,10 +83,11 @@ public static class DocumentDtos
         string ContentHash,
         bool IsImmutable,
         Guid CreatedBy,
-        DateTimeOffset CreatedAt
+        DateTimeOffset CreatedAt,
+        string? DraftAssessment = null
     );
 
-    /// <summary>Full content, hash, citations, and metadata of a document version.</summary>
+    /// <summary>Full content, hash, citations, readiness assessment, and issues of a document version.</summary>
     public sealed record DocumentVersionDetailDto(
         Guid Id,
         Guid DocumentId,
@@ -90,7 +101,8 @@ public static class DocumentDtos
         string ContentHash,
         bool IsImmutable,
         Guid CreatedBy,
-        DateTimeOffset CreatedAt
+        DateTimeOffset CreatedAt,
+        IReadOnlyList<DraftIssueDto>? DraftIssues = null
     );
 
     /// <summary>Signed download URL and metadata for an exported document version.</summary>

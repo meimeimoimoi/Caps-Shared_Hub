@@ -172,15 +172,36 @@ public static class GenerateDraft
                         normalizedCitations = draftResponse.Citations.GetRawText();
                     }
 
-                    // 7. Resolve next version number & persist atomically with usage/credit settlement
+                    // 7. Evaluate draft grounding and readiness (READY / READY_WITH_WARNINGS / NOT_READY)
+                    var aiIssues = (draftResponse.Issues ?? [])
+                        .Select(i => new DraftIssue(
+                            i.Code,
+                            i.Type,
+                            i.Severity,
+                            i.Description,
+                            i.FieldId,
+                            i.CitationId
+                        ))
+                        .ToList();
+                    var readiness = DraftReadinessEvaluator.Evaluate(
+                        canonicalContent,
+                        snapshot.Data,
+                        templateSchema,
+                        normalizedCitations,
+                        draftResponse.HasUnauthorizedNumbers,
+                        draftResponse.UnauthorizedNumbers,
+                        aiIssues
+                    );
+                    var serializedIssues = DraftReadinessEvaluator.SerializeIssues(
+                        readiness.Issues
+                    );
+
+                    // 8. Resolve next version number & persist atomically with usage/credit settlement
                     var settledAt = timeProvider.GetUtcNow();
                     var nextVersionNo = await documentVersionRepository.GetNextVersionNoAsync(
                         document.Id,
                         ct
                     );
-                    var assessment = draftResponse.HasUnauthorizedNumbers
-                        ? "AI_GENERATED_UNAUTHORIZED_NUMBERS"
-                        : "AI_GENERATED_PENDING_REVIEW";
 
                     var documentVersion = new DocumentVersion
                     {
@@ -191,7 +212,8 @@ public static class GenerateDraft
                         InputSnapshotId = snapshot.Id,
                         TemplateVersionId = resolvedTemplateVersionId,
                         Citations = normalizedCitations,
-                        DraftAssessment = assessment,
+                        DraftAssessment = readiness.Result,
+                        DraftIssues = serializedIssues,
                         ReviewCaseId = null,
                         FileUrl = null,
                         Content = canonicalContent,
@@ -223,6 +245,17 @@ public static class GenerateDraft
                     );
                     await tx.CommitAsync(ct);
 
+                    var issueDtos = readiness
+                        .Issues.Select(i => new DraftIssueDto(
+                            i.Code,
+                            i.Type,
+                            i.Severity,
+                            i.Description,
+                            i.FieldId,
+                            i.CitationId
+                        ))
+                        .ToList();
+
                     return new DocumentVersionDetailDto(
                         documentVersion.Id,
                         documentVersion.DocumentId,
@@ -236,7 +269,8 @@ public static class GenerateDraft
                         documentVersion.ContentHash,
                         documentVersion.IsImmutable,
                         documentVersion.CreatedBy,
-                        documentVersion.CreatedAt
+                        documentVersion.CreatedAt,
+                        issueDtos
                     );
                 }
                 catch
