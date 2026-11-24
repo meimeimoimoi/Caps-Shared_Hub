@@ -234,7 +234,7 @@
   "notAvailable": "Chưa có dữ liệu",
   "availableForWithdrawal": "Có thể rút",
   "pendingClearance": "Chờ đối soát",
-  "2TransactionsClearing": "2 giao dịch đang đối soát",
+  "transactionsClearing_other": "{{count}} giao dịch đang đối soát",
   "lifetimeEarnings": "Tổng thu nhập tích lũy",
   "updatedToday": "Cập nhật hôm nay",
   "withdrawalToBankAccount": "Rút về tài khoản ngân hàng",
