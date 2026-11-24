@@ -379,6 +379,7 @@ export default function AdminQualificationDetailPage({
               onShowDocument={showDocument}
               onConclude={() => setConfirming(true)}
               canConclude={review.canDecide && !readOnly}
+              lockedReason={readOnly ? t('admin:detail.blockers.notClaimed') : undefined}
             />
           </div>
         )}

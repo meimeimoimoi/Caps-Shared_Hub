@@ -34,6 +34,8 @@ interface CompetencyReviewProps {
   /** Opens the conclusion dialog once every competency is complete */
   onConclude: () => void
   canConclude: boolean
+  /** Why concluding is unavailable to this reviewer, shown above the button */
+  lockedReason?: string
 }
 
 const resultStyle = {
@@ -63,6 +65,7 @@ export function CompetencyReview({
   onShowDocument,
   onConclude,
   canConclude,
+  lockedReason,
 }: CompetencyReviewProps) {
   const { t } = useTranslation('admin')
   const label = useCompetencyLabel()
@@ -178,6 +181,7 @@ export function CompetencyReview({
           <div className="border-border space-y-3 border-t p-4">
             <p role="status" className="text-text-strong text-sm font-medium tabular-nums">{t('competency.graded', { done: completed, total: assessments.length })}</p>
             <progress value={completed} max={assessments.length} aria-label={t('reviewWorkspace.progress')} className="block h-1 w-full overflow-hidden rounded-full [&::-webkit-progress-bar]:bg-[var(--ui-surface-muted)] [&::-webkit-progress-value]:bg-[var(--ui-text-strong)] [&::-moz-progress-bar]:bg-[var(--ui-text-strong)]" />
+            {lockedReason && <p className="text-warning text-sm">{lockedReason}</p>}
             <button type="button" disabled={!canConclude} onClick={onConclude} className="btn btn-press btn-primary w-full">
               {t('competency.conclude')}
             </button>

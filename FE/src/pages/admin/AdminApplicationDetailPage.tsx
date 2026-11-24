@@ -73,7 +73,8 @@ export default function AdminApplicationDetailPage({ embedded = false }: { embed
     { key: 'history', label: t('admin:detail.tabs.history') },
   ] as const
   const [chosenTab, setTab] = useState<TabKey>()
-  const tab: TabKey = chosenTab ?? (detail?.screening ? 'ai' : 'profile')
+  // Reviewers start from the applicant's own record so the AI suggestion does not anchor the assessment
+  const tab: TabKey = chosenTab ?? (detail?.screening && !embedded ? 'ai' : 'profile')
   const [docKey, setDocKey] = useState<string>()
   const [confirming, setConfirming] = useState(false)
   const [toast, setToast] = useState<ToastContent | null>(null)
@@ -185,6 +186,11 @@ export default function AdminApplicationDetailPage({ embedded = false }: { embed
   }
 
   const blockers = [
+    // Reviewers see why the form is locked before anything else
+    detail.canDecide && !claim.heldByMe && {
+      text: t('admin:detail.blockers.notClaimed'),
+      tone: 'warning' as const,
+    },
     review.remaining > 0 && {
       text: t('admin:eligibility.remaining', { count: review.remaining }),
     },
