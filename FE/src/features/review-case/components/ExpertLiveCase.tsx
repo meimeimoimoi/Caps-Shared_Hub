@@ -128,13 +128,21 @@ function DeliverForm({
     draft ? Object.keys(source ?? {}).filter((k) => !(k in draft)) : []
   )
   const cannot = result === 'CANNOT_VERIFY'
-  const ready =
-    summary.trim() &&
-    (!cannot || reason.trim()) &&
-    (cannot || citations.length > 0) &&
-    citations.length <= MAX_CITATIONS &&
-    citations.every((c) => c.length <= MAX_CITATION_LENGTH) &&
-    checked.length === ATTESTED_TASKS.length
+  // A file the client uploaded has no AI draft (the server sends no source content), so T2 does not apply
+  const tasks = ATTESTED_TASKS.filter((k) => k !== 'T2' || source)
+  // What still blocks delivery, named by the field labels the expert sees
+  const missing = [
+    !summary.trim() && t('live.expert.summary'),
+    cannot && !reason.trim() && t('live.expert.cannotVerifyReason'),
+    ((!cannot && citations.length === 0) ||
+      citations.length > MAX_CITATIONS ||
+      citations.some((c) => c.length > MAX_CITATION_LENGTH)) &&
+      t('live.expert.citations'),
+    tasks.some((k) => !checked.includes(k)) &&
+      t('live.expert.missingAttest', { count: tasks.length }),
+  ].filter((x): x is string => Boolean(x))
+  const ready = missing.length === 0
+  const [tried, setTried] = useState(false)
   // Fields that were not text go back as JSON when they still parse
   const revised = () =>
     source &&
@@ -153,8 +161,11 @@ function DeliverForm({
   return (
     <form
       className="space-y-4"
+      // The missing-fields line below replaces the browser's one-field-at-a-time bubbles
+      noValidate
       onSubmit={(e) => {
         e.preventDefault()
+        setTried(true)
         if (ready)
           onSubmit(
             result,
@@ -184,7 +195,8 @@ function DeliverForm({
           ))}
         </div>
       </fieldset>
-      {source && (
+      {/* An empty source ({}) has nothing to edit: no heading without fields */}
+      {source && Object.keys(fields).length > 0 && (
         <fieldset className="space-y-3">
           <legend className="text-fg-strong text-sm font-semibold">
             {t('live.expert.editFields')}
@@ -315,7 +327,7 @@ function DeliverForm({
         <legend className="text-fg-strong text-sm font-semibold">
           {t('live.expert.attest')}
         </legend>
-        {ATTESTED_TASKS.map((k) => (
+        {tasks.map((k) => (
           <label key={k} className="text-fg flex items-center gap-2 text-sm">
             <input
               type="checkbox"
@@ -333,10 +345,16 @@ function DeliverForm({
           </label>
         ))}
       </fieldset>
+      {tried && missing.length > 0 && (
+        <p role="alert" className="text-danger text-sm">
+          {t('live.expert.missing', { items: missing.join(', ') })}
+        </p>
+      )}
       <div className="flex flex-wrap gap-3">
+        {/* Always looks clickable: a greyed-out button read as "no button"; a click says what is missing */}
         <button
           type="submit"
-          disabled={busy || !ready}
+          disabled={busy}
           className="btn btn-press btn-primary disabled:opacity-60"
         >
           {t('live.expert.deliver')}
@@ -361,16 +379,24 @@ const MAX_INFO_REQUESTS = 2
 
 const Card = ({
   title,
+  help,
   children,
 }: {
   title: string
+  help?: string
   children: React.ReactNode
 }) => (
   <section className="paper space-y-4 p-6">
-    <h2 className="text-h2 font-serif">{title}</h2>
+    <h2 className="text-h2 inline-flex items-center gap-2 font-serif">
+      {title}
+      {help && <HelpTip label={title}>{help}</HelpTip>}
+    </h2>
     {children}
   </section>
 )
+
+// Same as the server's reminder (ReviewCase.ReminderHours): from here the late rule turns into a warning
+const URGENT_MS = 3 * 3_600_000
 
 /** The expert's page of a real case. The client's name and contact details are never shown. */
 export function ExpertLiveCase({
@@ -438,6 +464,17 @@ export function ExpertLiveCase({
   const canWithdraw =
     dto.status === 'IN_REVIEW' || dto.status === 'AWAITING_USER_INFORMATION'
 
+  const lateRule =
+    dto.expertTerms &&
+    t('live.expert.lateRule', {
+      hours: dto.expertTerms.latePenaltyHours,
+      payout: f.money(dto.expertTerms.latePayout),
+      cancel: dto.expertTerms.lateCancelHours,
+    })
+  const deliveryUrgent =
+    !!view.due?.delivery &&
+    new Date(view.due.delivery).getTime() - Date.now() < URGENT_MS
+
   return (
     <div className="mx-auto max-w-340">
       <Link
@@ -459,7 +496,7 @@ export function ExpertLiveCase({
         </span>
       </header>
 
-      <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
+      <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_24rem]">
         <div className="min-w-0 space-y-6">
           <Card title={t('live.expert.request')}>
             <p className="text-fg-strong max-w-[65ch] break-words whitespace-pre-wrap">
@@ -531,15 +568,13 @@ export function ExpertLiveCase({
           )}
 
           {dto.status === 'IN_REVIEW' && (
-            <Card title={t('live.expert.deliverTitle')}>
-              {dto.expertTerms && (
-                <p className="para-check text-warning text-sm">
-                  {t('live.expert.lateRule', {
-                    hours: dto.expertTerms.latePenaltyHours,
-                    payout: f.money(dto.expertTerms.latePayout),
-                    cancel: dto.expertTerms.lateCancelHours,
-                  })}
-                </p>
+            <Card
+              title={t('live.expert.deliverTitle')}
+              // Far from the deadline the late rule is reference only; close to it, it becomes the warning below
+              help={lateRule && !deliveryUrgent ? lateRule : undefined}
+            >
+              {lateRule && deliveryUrgent && (
+                <p className="para-check text-warning text-sm">{lateRule}</p>
               )}
               <DeliverForm
                 busy={busy}
@@ -574,6 +609,14 @@ export function ExpertLiveCase({
                 }
               />
             </Card>
+          )}
+
+          {/* Right under the delivery form: it is what the client receives with the result */}
+          {dto.sourceContent && dto.revisedContent && (
+            <RevisedContentView
+              source={dto.sourceContent}
+              revised={dto.revisedContent}
+            />
           )}
 
           {dto.status === 'IN_REVIEW' && !dto.extension && (
@@ -683,13 +726,6 @@ export function ExpertLiveCase({
             </Card>
           )}
 
-          {dto.sourceContent && dto.revisedContent && (
-            <RevisedContentView
-              source={dto.sourceContent}
-              revised={dto.revisedContent}
-            />
-          )}
-
           {dispute && (
             <Card title={t('panel.DISPUTED.title')}>
               <p className="text-fg-strong font-semibold">
@@ -770,13 +806,13 @@ export function ExpertLiveCase({
               </div>
             </details>
           )}
+        </div>
 
+        {/* Chat sits beside the work instead of below every form, so the client's messages stay in view */}
+        <aside className="min-w-0 space-y-6">
           {CHAT_STATUSES.includes(dto.status) && (
             <CaseChat caseId={caseId} role="EXPERT" />
           )}
-        </div>
-
-        <aside className="min-w-0 space-y-6">
           {dto.settlement && (
             <section className="paper p-5 text-sm">
               <h2 className="eyebrow font-sans">{t('settlement.title')}</h2>
@@ -794,6 +830,8 @@ export function ExpertLiveCase({
             caseId={caseId}
             canUpload={UPLOAD_STATUSES.includes(dto.status)}
             requesterUserId={dto.requesterUserId}
+            // A draft written in the app has content and no file; an unnamed upload keeps the generic button
+            sourceFileName={dto.sourceContent ? null : (dto.sourceFileName ?? undefined)}
           />
         </aside>
       </div>

@@ -645,6 +645,10 @@
 .ep-cases-table tbody tr:hover { background: var(--ep-surface-raised); }
 .ep-row-overdue { background: var(--ep-danger-bg); }
 .ep-row-overdue:hover { background: var(--ep-danger-bg) !important; }
+/* The expert's own deadline is close or passed: a red edge marks the row without recolouring it */
+.ep-row-urgent td:first-child { box-shadow: inset 3px 0 0 var(--ep-danger); }
+.ep-due-soon { display: inline-block; margin-left: 6px; padding: 1px 6px; border-radius: 999px; font-size: 10px; font-weight: 600; color: var(--ep-danger); background: var(--ep-danger-bg); vertical-align: 1px; }
+.ep-urgent-note { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; color: var(--ep-danger); padding-top: 4px; }
 .ep-case-title { max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500; }
 .ep-case-deadline .ep-deadline { gap: 5px; }
 .ep-case-deadline time { font-size: 11px; }

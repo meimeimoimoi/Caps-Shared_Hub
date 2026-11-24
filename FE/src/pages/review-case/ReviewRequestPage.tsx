@@ -8,6 +8,7 @@ import { HelpTip } from '@/components/ui/feedback/help-tip'
 import { usePublicExpert } from '@/features/marketplace/hooks/useMarketplace'
 import { FilePicker, Initials } from '@/features/review-case/components/CaseUi'
 import { ACCEPT, MAX_BYTES } from '@/features/review-case/components/CaseAttachments'
+import { useFileDrop } from '@/features/review-case/hooks/useFileDrop'
 import { fieldClass, useCaseFormat } from '@/features/review-case/ui'
 import { DEMO_CASES, REVIEWABLE_DRAFTS } from '@/features/review-case/fixtures'
 import {
@@ -124,6 +125,12 @@ export default function ReviewRequestPage() {
       .catch((err: unknown) => setUploadError(toMessage(err)))
       .finally(() => setUploading(false))
   }
+
+  // One document per request: a drop of several files takes the first
+  const drop = useFileDrop(
+    (files) => upload(files[0]),
+    uploading || !periodStart || !periodEnd
+  )
 
   const submit = (e: FormEvent) => {
     e.preventDefault()
@@ -339,9 +346,19 @@ export default function ReviewRequestPage() {
                         />
                       </label>
                     </div>
-                    <label className="btn btn-secondary has-[:focus-visible]:outline-ink w-full cursor-pointer has-[:focus-visible]:outline-2">
+                    <label
+                      {...drop.props}
+                      className={cn(
+                        'btn btn-secondary has-[:focus-visible]:outline-ink w-full cursor-pointer border-dashed has-[:focus-visible]:outline-2',
+                        drop.over && 'border-accent bg-sunken'
+                      )}
+                    >
                       <Upload size={16} aria-hidden="true" />
-                      {uploading ? t('live.files.uploading') : t('request.upload.pick')}
+                      {uploading
+                        ? t('live.files.uploading')
+                        : drop.over
+                          ? t('live.files.dropHere')
+                          : t('request.upload.pick')}
                       <input
                         type="file"
                         accept={ACCEPT}
