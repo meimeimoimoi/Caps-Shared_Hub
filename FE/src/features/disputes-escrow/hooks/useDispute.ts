@@ -13,6 +13,10 @@ export function useDisputes(enabled = true) {
     queryKey: disputesKeys.disputes(),
     queryFn: ({ signal }) => getDisputes(signal),
     enabled,
+    // No realtime push reaches the admin queue, so a newly opened dispute shows within a minute
+    // or when the admin comes back to the tab
+    refetchInterval: 60_000,
+    refetchOnWindowFocus: true,
   })
 }
 

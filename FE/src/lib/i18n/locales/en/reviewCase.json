@@ -806,7 +806,8 @@
       },
       "saveDraft": "Save draft",
       "draftSaved": "Draft saved. The client sees your revision only after delivery.",
-      "decisionLate": "The decision is taking longer than planned. Your share is still held, and you will be told as soon as it is decided."
+      "decisionLate": "The decision is taking longer than planned. Your share is still held, and you will be told as soon as it is decided.",
+      "decision": "Decision"
     },
     "notConnected": "No data yet.",
     "openCases": "Your open cases.",
