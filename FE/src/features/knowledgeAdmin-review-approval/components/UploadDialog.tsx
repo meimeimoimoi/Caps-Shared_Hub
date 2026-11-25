@@ -15,8 +15,11 @@ interface UploadDialogProps {
 }
 
 const ACCEPT = '.pdf,.docx'
+// Same limit as ingestion (DocumentFiles.MaxBytes)
+const MAX_BYTES = 20 * 1024 * 1024
 
 const emptyMeta: UploadMeta = {
+  title: '',
   number: '',
   docType: '',
   issuer: '',
@@ -38,6 +41,7 @@ export function UploadDialog({ onClose, onUpload }: UploadDialogProps) {
     if (!f) return
     if (!/\.(pdf|docx)$/i.test(f.name))
       return setError('Chỉ nhận PDF hoặc DOCX.')
+    if (f.size > MAX_BYTES) return setError('File lớn hơn 20 MB.')
     setError(null)
     setFile(f)
   }
@@ -148,7 +152,7 @@ export function UploadDialog({ onClose, onUpload }: UploadDialogProps) {
             <span className="text-fg-muted">
               hoặc kéo thả file vào đây
               <br />
-              PDF, DOCX · tối đa [dung lượng theo System Policy]
+              PDF, DOCX · tối đa 20 MB
             </span>
           </div>
         )}

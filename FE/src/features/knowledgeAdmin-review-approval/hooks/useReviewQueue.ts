@@ -40,6 +40,7 @@ export function useReviewQueue(stage: QueueFilter) {
     query,
     setQuery,
     summary: summary.data,
+    total: documents.data?.length ?? 0,
     rows,
     isLoading: documents.isLoading,
     error: documents.error,

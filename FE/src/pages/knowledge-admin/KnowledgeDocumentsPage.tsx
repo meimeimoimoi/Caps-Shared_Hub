@@ -1,11 +1,19 @@
 import { KnowledgeLayout } from '@/app/layouts/knowledge/KnowledgeLayout'
+import { useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
+import { EmptyState } from '@/components/ui/feedback/empty-state'
 import { useKnowledgeNav } from '@/app/layouts/knowledge/useKnowledgeNav'
 import { DocumentsTable } from '../../features/knowledgeAdmin-review-approval/components/DocumentsTable'
+import { UploadDialog } from '../../features/knowledgeAdmin-review-approval/components/UploadDialog'
 import { useReviewQueue } from '../../features/knowledgeAdmin-review-approval/hooks/useReviewQueue'
 
 export default function KnowledgeDocumentsPage() {
+  const { t } = useTranslation('knowledge')
+  const [uploadOpen, setUploadOpen] = useState(false)
+  const navigate = useNavigate()
   const nav = useKnowledgeNav()
-  const docs = useReviewQueue('collect') // 'collect' = mọi văn bản
+  const docs = useReviewQueue('collect') // 'collect' includes every document.
 
   return (
     <KnowledgeLayout
@@ -27,9 +35,58 @@ export default function KnowledgeDocumentsPage() {
           showStage
           linkTo={(d) => `/knowledge/documents/${d.id}`}
           loading={docs.isLoading}
-          empty={docs.error?.message}
+          empty={
+            docs.error?.message ?? (
+              <EmptyState
+                title={t(
+                  docs.query.trim() && docs.total > 0
+                    ? 'empty.search'
+                    : 'empty.documents'
+                )}
+                actions={
+                  docs.query.trim() && docs.total > 0 ? (
+                    <button
+                      type="button"
+                      onClick={() => docs.setQuery('')}
+                      className="btn btn-secondary"
+                    >
+                      {t('actions.clearSearch')}
+                    </button>
+                  ) : (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => setUploadOpen(true)}
+                        className="btn btn-primary"
+                      >
+                        {t('actions.upload')}
+                      </button>
+                      <Link
+                        to="/knowledge/sources"
+                        className="btn btn-secondary no-underline"
+                      >
+                        {t('actions.sources')}
+                      </Link>
+                    </>
+                  )
+                }
+              />
+            )
+          }
         />
       </div>
+      {uploadOpen && (
+        <UploadDialog
+          onClose={() => setUploadOpen(false)}
+          onUpload={(file, meta, onProgress) =>
+            docs.upload(file, meta, onProgress).then(() =>
+              navigate('/knowledge/uploads', {
+                state: { toast: `Đã tải lên ${file.name}` },
+              })
+            )
+          }
+        />
+      )}
     </KnowledgeLayout>
   )
 }

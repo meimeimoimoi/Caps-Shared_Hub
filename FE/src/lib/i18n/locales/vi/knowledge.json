@@ -1,0 +1,37 @@
+{
+  "empty": {
+    "documents": "Chưa có văn bản trong kho tri thức",
+    "queue": "Không có văn bản ở bước này",
+    "failed": "Không có văn bản lỗi",
+    "search": "Không có văn bản khớp với tìm kiếm",
+    "sources": "Chưa có nguồn thu thập",
+    "runs": "Chưa có lịch sử thu thập",
+    "templates": "Chưa có template",
+    "category": "Chưa có template trong nhóm này",
+    "versions": "Template chưa có phiên bản",
+    "versionHint": "Chưa thể xem trước hoặc phát hành template này."
+  },
+  "actions": {
+    "upload": "Tải tài liệu lên",
+    "sources": "Cấu hình nguồn thu thập",
+    "clearSearch": "Xóa tìm kiếm",
+    "allDocuments": "Xem tất cả văn bản",
+    "addSource": "Thêm nguồn",
+    "run": "Chạy thu thập ngay",
+    "createTemplate": "Tạo template",
+    "allTemplates": "Xem tất cả template",
+    "backQueue": "Quay lại hàng đợi duyệt",
+    "backDocuments": "Quay lại danh sách văn bản",
+    "backTemplates": "Quay lại danh sách template"
+  },
+  "errors": {
+    "review": "Chưa thể mở nội dung rà soát",
+    "reviewMissing": "Văn bản chưa có nội dung bóc tách.",
+    "document": "Chưa thể mở văn bản",
+    "documentMissing": "Không tìm thấy văn bản này.",
+    "comparison": "Chưa thể so sánh phiên bản",
+    "comparisonMissing": "Văn bản không có phiên bản cần so sánh.",
+    "templates": "Không tải được template"
+  },
+  "noVersion": "Chưa có phiên bản"
+}

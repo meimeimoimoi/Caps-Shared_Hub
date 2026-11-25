@@ -1,4 +1,10 @@
+import {
+  errorToast,
+  type ToastContent,
+} from '@/components/ui/feedback/toast-content'
 import { useCallback, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { EmptyState } from '@/components/ui/feedback/empty-state'
 import { Plus, TriangleAlert } from 'lucide-react'
 import { formatDateTime } from '@/lib/utils'
 import { StatusBadge } from '@/components/ui/display/status-badge'
@@ -13,27 +19,35 @@ import {
   SOURCE_STATUS,
 } from '../../features/knowledgeAdmin-sources/constants'
 import { useCollection } from '../../features/knowledgeAdmin-sources/hooks/useCollection'
+import { runResult } from '../../features/knowledgeAdmin-sources/api/mappers'
 
 const headCls =
   'bg-sunken text-fg-muted [&>th]:px-4 [&>th]:py-3 [&>th]:font-semibold'
 const rowCls = 'border-border-subtle border-t [&>td]:px-4 [&>td]:py-3'
 
 export default function KnowledgeSourcesPage() {
+  const { t } = useTranslation('knowledge')
   const nav = useKnowledgeNav()
   const collection = useCollection()
   const { data } = collection
   const [running, setRunning] = useState(false)
   /** 'new' = thêm nguồn; một nguồn = đang sửa nguồn đó */
   const [editing, setEditing] = useState<CollectionSource | 'new' | null>(null)
-  const [toast, setToast] = useState<string | null>(null)
+  const [toast, setToast] = useState<ToastContent | null>(null)
   const clearToast = useCallback(() => setToast(null), [])
+  const canRun =
+    !!data?.sources.some((source) => source.status === 'ACTIVE') &&
+    !collection.error &&
+    !collection.isLoading &&
+    !running
 
   const runNow = () => {
+    if (!canRun) return
     setRunning(true)
     collection
       .runNow()
       .then(() => setToast('Đã bắt đầu thu thập, kết quả hiện ở Lịch sử'))
-      .catch((e: Error) => setToast(e.message))
+      .catch((e: Error) => setToast(errorToast(e.message)))
       .finally(() => setRunning(false))
   }
 
@@ -50,7 +64,7 @@ export default function KnowledgeSourcesPage() {
         <button
           type="button"
           onClick={runNow}
-          disabled={running}
+          disabled={!canRun}
           className="btn btn-press btn-primary"
         >
           {running ? 'Đang chạy…' : 'Chạy thu thập ngay'}
@@ -63,16 +77,18 @@ export default function KnowledgeSourcesPage() {
         </p>
       ) : (
         <div className="mt-8 space-y-6">
-          <ScheduleCard
-            key={data.schedule.frequency}
-            schedule={data.schedule}
-            onSave={(f) =>
-              collection
-                .saveSchedule(f)
-                .then(() => setToast('Đã lưu lịch thu thập'))
-                .catch((e: Error) => setToast(e.message))
-            }
-          />
+          {data.schedule && (
+            <ScheduleCard
+              key={data.schedule.frequency}
+              schedule={data.schedule}
+              onSave={(f) =>
+                collection
+                  .saveSchedule(f)
+                  .then(() => setToast('Đã lưu lịch thu thập'))
+                  .catch((e: Error) => setToast(errorToast(e.message)))
+              }
+            />
+          )}
 
           <section className="paper overflow-x-auto">
             <div className="flex items-center justify-between px-4 py-3">
@@ -86,8 +102,10 @@ export default function KnowledgeSourcesPage() {
                 Thêm nguồn
               </button>
             </div>
-            <table className="w-full min-w-200 text-sm">
-              <thead>
+            <table
+              className={`w-full text-sm ${data.sources.length ? 'min-w-200' : ''}`}
+            >
+              <thead className={data.sources.length ? undefined : 'hidden'}>
                 <tr className={headCls}>
                   <th className="text-left">Nguồn</th>
                   <th className="text-left">Phạm vi thu thập</th>
@@ -98,6 +116,24 @@ export default function KnowledgeSourcesPage() {
                 </tr>
               </thead>
               <tbody>
+                {data.sources.length === 0 && (
+                  <tr className={rowCls}>
+                    <td colSpan={4}>
+                      <EmptyState
+                        title={t('empty.sources')}
+                        actions={
+                          <button
+                            type="button"
+                            onClick={() => setEditing('new')}
+                            className="btn btn-primary"
+                          >
+                            {t('actions.addSource')}
+                          </button>
+                        }
+                      />
+                    </td>
+                  </tr>
+                )}
                 {data.sources.map((s) => (
                   <tr key={s.id} className={rowCls}>
                     <td>
@@ -130,8 +166,10 @@ export default function KnowledgeSourcesPage() {
 
           <section className="paper overflow-x-auto">
             <h2 className="text-h2 px-4 py-3">Lịch sử thu thập</h2>
-            <table className="w-full min-w-200 text-sm">
-              <thead>
+            <table
+              className={`w-full text-sm ${data.runs.length ? 'min-w-200' : ''}`}
+            >
+              <thead className={data.runs.length ? undefined : 'hidden'}>
                 <tr className={headCls}>
                   <th className="text-left">Thời điểm</th>
                   <th className="text-left">Kiểu chạy</th>
@@ -140,19 +178,47 @@ export default function KnowledgeSourcesPage() {
                 </tr>
               </thead>
               <tbody>
+                {data.runs.length === 0 && (
+                  <tr className={rowCls}>
+                    <td colSpan={4}>
+                      <EmptyState
+                        title={t('empty.runs')}
+                        actions={
+                          data.sources.length === 0 ? (
+                            <button
+                              type="button"
+                              onClick={() => setEditing('new')}
+                              className="btn btn-primary"
+                            >
+                              {t('actions.addSource')}
+                            </button>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={runNow}
+                              disabled={!canRun}
+                              className="btn btn-primary"
+                            >
+                              {t('actions.run')}
+                            </button>
+                          )
+                        }
+                      />
+                    </td>
+                  </tr>
+                )}
                 {data.runs.map((r) => (
-                  <tr key={r.at} className={rowCls}>
+                  <tr key={r.id ?? r.at} className={rowCls}>
                     <td className="num">{formatDateTime(r.at)}</td>
                     <td>
                       {RUN_TRIGGER[r.trigger]}
                       {r.actor && ` · ${r.actor}`}
                     </td>
-                    <td className="num">
-                      {r.newDocs} mới · {r.newVersions} phiên bản mới ·{' '}
-                      {r.unchanged} không đổi
-                    </td>
+                    <td className="num">{runResult(r)}</td>
                     <td>
-                      {r.errors > 0 ? (
+                      {r.status === 'FAILED' ? (
+                        <span className="text-danger">{r.note}</span>
+                      ) : r.errors > 0 ? (
                         <span className="text-warning inline-flex items-center gap-1.5">
                           <TriangleAlert size={14} aria-hidden="true" />
                           <span className="num">{r.errors}</span> lỗi trích xuất

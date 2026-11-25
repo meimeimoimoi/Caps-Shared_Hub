@@ -1,4 +1,6 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { EmptyState } from '@/components/ui/feedback/empty-state'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { Info } from 'lucide-react'
 import { formatDateTime } from '@/lib/utils'
@@ -17,11 +19,17 @@ const queueLink = (
 )
 
 export default function KnowledgeVersionPage() {
+  const { t } = useTranslation(['knowledge', 'common'])
   const { id = '' } = useParams()
   const navigate = useNavigate()
   const nav = useKnowledgeNav()
-  const { comparison: c, isLoading, error, continueReview, reject } =
-    useVersionReview(id)
+  const {
+    comparison: c,
+    isLoading,
+    error,
+    continueReview,
+    reject,
+  } = useVersionReview(id)
   const [rejecting, setRejecting] = useState(false)
   const [busy, setBusy] = useState(false)
   const [actionError, setActionError] = useState<string | null>(null)
@@ -41,11 +49,25 @@ export default function KnowledgeVersionPage() {
   if (!c) {
     return (
       <KnowledgeLayout {...nav} section="queue" breadcrumb={queueLink}>
-        <h1 className="text-h1-tool">
-          {isLoading
-            ? 'Đang tải…'
-            : (error?.message ?? 'Văn bản không có phiên bản cần so sánh')}
-        </h1>
+        {isLoading ? (
+          <p role="status">{t('common:loading')}</p>
+        ) : (
+          <EmptyState
+            title={t('errors.comparison')}
+            actions={
+              <Link
+                to="/knowledge/queue"
+                className="btn btn-secondary no-underline"
+              >
+                {t('actions.backQueue')}
+              </Link>
+            }
+          >
+            <p role={error ? 'alert' : undefined}>
+              {error?.message ?? t('errors.comparisonMissing')}
+            </p>
+          </EmptyState>
+        )}
       </KnowledgeLayout>
     )
   }
@@ -99,7 +121,10 @@ export default function KnowledgeVersionPage() {
             type="button"
             disabled={busy}
             onClick={() =>
-              run(continueReview(), `Đã chuyển v${c.version} sang bước Bóc tách`)
+              run(
+                continueReview(),
+                `Đã chuyển v${c.version} sang bước Bóc tách`
+              )
             }
             className="btn btn-press btn-primary"
           >
