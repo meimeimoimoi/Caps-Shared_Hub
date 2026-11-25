@@ -1,6 +1,6 @@
 import { useCallback, useState, type KeyboardEvent } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, Copy } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { ApiError } from '@/lib/api-client'
 import {
@@ -261,7 +261,26 @@ export default function AdminApplicationDetailPage({ embedded = false }: { embed
             {jobTitle && <div><dt className="sr-only">{t('detail.meta.jobTitle')}</dt><dd className="inline">{jobTitle}</dd></div>}
             <div><dt className="sr-only">{t('detail.meta.experience')}</dt><dd className="inline tabular-nums">{years}</dd></div>
             <div><dt className="inline">{t('detail.meta.submitted')} </dt><dd className="inline tabular-nums">{formatDate(detail.submittedAt)}</dd></div>
-            <div><dt className="inline">{t('reviewWorkspace.reference')} </dt><dd title={detail.id} className="inline tabular-nums">{detail.id.slice(0, 8)}</dd></div>
+            <div>
+              <dt className="inline">{t('reviewWorkspace.reference')} </dt>
+              <dd title={detail.id} className="inline-flex items-center gap-1 tabular-nums">
+                {detail.id.slice(0, 8)}
+                <button
+                  type="button"
+                  aria-label={t('detail.meta.copyReference')}
+                  title={t('detail.meta.copyReference')}
+                  onClick={() =>
+                    void navigator.clipboard
+                      .writeText(detail.id)
+                      .then(() => setToast(t('admin:detail.meta.referenceCopied')))
+                      .catch(() => setToast(t('admin:detail.meta.copyFailed')))
+                  }
+                  className="text-text-muted hover:text-text-strong focus-visible:ring-[var(--ui-border-strong)] inline-flex size-7 items-center justify-center rounded focus-visible:ring-2 focus-visible:outline-none"
+                >
+                  <Copy size={13} aria-hidden="true" />
+                </button>
+              </dd>
+            </div>
           </dl>
         </header>
       )}

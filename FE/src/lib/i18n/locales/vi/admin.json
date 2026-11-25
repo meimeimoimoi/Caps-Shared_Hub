@@ -300,7 +300,10 @@
       "jobTitle": "Chức danh",
       "experience": "Kinh nghiệm",
       "years": "{{count}} năm",
-      "submitted": "Nộp"
+      "submitted": "Nộp",
+      "copyReference": "Sao chép mã tham chiếu",
+      "referenceCopied": "Đã sao chép mã tham chiếu",
+      "copyFailed": "Không sao chép được. Vui lòng thử lại."
     },
     "blockers": {
       "flags": "{{count}} mục AI cần xem lại chưa được xem xét",

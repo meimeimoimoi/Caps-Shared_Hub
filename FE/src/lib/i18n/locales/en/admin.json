@@ -306,7 +306,10 @@
       "jobTitle": "Job Title",
       "experience": "Experience",
       "years": "{{count}} year(s)",
-      "submitted": "Submitted"
+      "submitted": "Submitted",
+      "copyReference": "Copy reference",
+      "referenceCopied": "Reference copied",
+      "copyFailed": "Couldn't copy. Please try again."
     },
     "blockers": {
       "flags": "{{count}} AI flags unreviewed",
