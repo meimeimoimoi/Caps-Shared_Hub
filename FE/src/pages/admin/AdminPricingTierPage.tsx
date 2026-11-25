@@ -1,11 +1,12 @@
 import { Pagination } from '@/components/ui/navigation/pagination'
 import { usePagination } from '@/hooks/usePagination'
-import { useState, type ReactNode } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { Link, useBlocker, useNavigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Info } from 'lucide-react'
 import { formatDate } from '@/lib/utils'
 import { DecisionBar } from '@/components/ui/actions/decision-bar'
+import { Modal } from '@/components/ui/feedback/modal'
 import { AdminLayout } from '@/app/layouts/admin/AdminLayout'
 import { useAdminNav } from '@/app/layouts/admin/useAdminNav'
 import { usePricing } from '../../features/service-pricing/hooks/usePricing'
@@ -132,6 +133,32 @@ function TierForm({
   const [reason, setReason] = useState('')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  // The change reaches every expert in the group, so it is restated before it is scheduled
+  const [reviewing, setReviewing] = useState(false)
+  // Set once the save succeeds, so the redirect to the list is not treated as leaving with edits
+  const saved = useRef(false)
+  const [initialFrom] = useState(effectiveFrom)
+
+  const dirty =
+    group.trim() !== '' ||
+    reason.trim() !== '' ||
+    min !== (base ? String(base.min) : '') ||
+    max !== (base ? String(base.max) : '') ||
+    step !== String(tier?.step ?? 100_000) ||
+    effectiveFrom !== initialFrom
+  // Leaving with typed values would drop them silently: ask first
+  const blocker = useBlocker(
+    ({ currentLocation, nextLocation }) =>
+      dirty &&
+      !saved.current &&
+      currentLocation.pathname !== nextLocation.pathname
+  )
+  useEffect(() => {
+    if (!dirty) return
+    const warn = (e: BeforeUnloadEvent) => e.preventDefault()
+    window.addEventListener('beforeunload', warn)
+    return () => window.removeEventListener('beforeunload', warn)
+  }, [dirty])
 
   const lo = Number(min)
   const hi = Number(max)
@@ -152,6 +179,41 @@ function TierForm({
     },
     !reason.trim() && { text: t('pricing.tier.blocker.reason') },
   ].filter((b) => !!b)
+
+  const submit = () => {
+    setBusy(true)
+    setError(null)
+    const name = tier?.group ?? group.trim()
+    onSubmit({
+      group: name,
+      min: lo,
+      max: hi,
+      step: st,
+      effectiveFrom,
+      reason: reason.trim(),
+    })
+      .then(() => {
+        saved.current = true
+        navigate('/admin/pricing', {
+          state: {
+            toast: tier
+              ? t('pricing.tier.scheduled', {
+                  name,
+                  date: formatDate(effectiveFrom),
+                })
+              : t('pricing.tier.created', {
+                  name,
+                  date: formatDate(effectiveFrom),
+                }),
+          },
+        })
+      })
+      // The dialog stays open with the error, so the admin can retry or go back to edit
+      .catch(() => {
+        setBusy(false)
+        setError(t('common:states.actionFailed'))
+      })
+  }
 
   return (
     <>
@@ -380,40 +442,115 @@ function TierForm({
               ? t('pricing.tier.schedule')
               : t('pricing.tier.create'),
           disabled: blockers.length > 0 || busy,
-          onClick: () => {
-            setBusy(true)
-            setError(null)
-            const name = tier?.group ?? group.trim()
-            onSubmit({
-              group: name,
-              min: lo,
-              max: hi,
-              step: st,
-              effectiveFrom,
-              reason: reason.trim(),
-            })
-              .then(() =>
-                navigate('/admin/pricing', {
-                  state: {
-                    toast: tier
-                      ? t('pricing.tier.scheduled', {
-                          name,
-                          date: formatDate(effectiveFrom),
-                        })
-                      : t('pricing.tier.created', {
-                          name,
-                          date: formatDate(effectiveFrom),
-                        }),
-                  },
-                })
-              )
-              .catch(() => {
-                setBusy(false)
-                setError(t('common:states.actionFailed'))
-              })
-          },
+          onClick: () => setReviewing(true),
         }}
       />
+      {reviewing && (
+        <Modal
+          title={
+            tier
+              ? t('pricing.tier.reviewChangeTitle', { name: tier.group })
+              : t('pricing.tier.reviewCreateTitle', { name: group.trim() })
+          }
+          preventClose={busy}
+          onClose={() => setReviewing(false)}
+          footer={
+            <>
+              <button
+                type="button"
+                autoFocus
+                disabled={busy}
+                onClick={() => setReviewing(false)}
+                className="btn btn-press btn-secondary"
+              >
+                {t('pricing.tier.reviewBack')}
+              </button>
+              <button
+                type="button"
+                disabled={busy}
+                onClick={submit}
+                className="btn btn-press btn-primary"
+              >
+                {busy
+                  ? t('pricing.tier.saving')
+                  : tier
+                    ? t('pricing.tier.schedule')
+                    : t('pricing.tier.create')}
+              </button>
+            </>
+          }
+        >
+          <dl className="bg-sunken rounded-surface mt-4 grid gap-2 p-3 text-sm">
+            {(
+              [
+                [
+                  'pricing.tier.reviewRange',
+                  tier
+                    ? `${formatVnd(tier.min)} – ${formatVnd(tier.max)} → ${formatVnd(lo)} – ${formatVnd(hi)}`
+                    : `${formatVnd(lo)} – ${formatVnd(hi)}`,
+                ],
+                [
+                  'pricing.tier.reviewStep',
+                  tier && tier.step !== st
+                    ? `${formatVnd(tier.step)} → ${formatVnd(st)}`
+                    : formatVnd(st),
+                ],
+                ['pricing.tier.reviewFrom', formatDate(effectiveFrom)],
+                ...(tier
+                  ? ([
+                      [
+                        'pricing.tier.reviewImpact',
+                        t('pricing.tier.reviewImpactValue', {
+                          count: tier.expertsAccepting,
+                          outside: outside.length,
+                        }),
+                      ],
+                    ] as const)
+                  : []),
+                ['pricing.tier.reviewReason', reason.trim()],
+              ] as const
+            ).map(([label, value]) => (
+              <div key={label} className="grid gap-0.5">
+                <dt className="text-fg-muted">{t(label)}</dt>
+                <dd className="num text-fg-strong break-words whitespace-pre-wrap">
+                  {value}
+                </dd>
+              </div>
+            ))}
+          </dl>
+          {error && (
+            <p role="alert" className="text-danger mt-3 text-sm">
+              {error}
+            </p>
+          )}
+        </Modal>
+      )}
+      {blocker.state === 'blocked' && (
+        <Modal
+          title={t('pricing.tier.leaveTitle')}
+          description={t('pricing.tier.leaveBody')}
+          onClose={() => blocker.reset()}
+          footer={
+            <>
+              <button
+                type="button"
+                autoFocus
+                onClick={() => blocker.reset()}
+                className="btn btn-press btn-secondary"
+              >
+                {t('pricing.tier.stay')}
+              </button>
+              <button
+                type="button"
+                onClick={() => blocker.proceed()}
+                className="btn btn-press btn-danger"
+              >
+                {t('pricing.tier.leave')}
+              </button>
+            </>
+          }
+        />
+      )}
     </>
   )
 }

@@ -877,7 +877,20 @@
       "schedule": "Lên lịch áp dụng",
       "create": "Tạo nhóm",
       "scheduled": "Đã lên lịch khung mới cho {{name}} từ {{date}}",
-      "created": "Đã tạo nhóm {{name}}, mở từ {{date}}"
+      "created": "Đã tạo nhóm {{name}}, mở từ {{date}}",
+      "reviewChangeTitle": "Lên lịch khung mới cho {{name}}?",
+      "reviewCreateTitle": "Tạo nhóm {{name}}?",
+      "reviewBack": "Quay lại sửa",
+      "reviewRange": "Khung giá",
+      "reviewStep": "Bước giá",
+      "reviewFrom": "Hiệu lực từ",
+      "reviewImpact": "Chuyên gia bị ảnh hưởng",
+      "reviewImpactValue": "{{count}} chuyên gia trong nhóm · {{outside}} ngoài khung mới",
+      "reviewReason": "Lý do",
+      "leaveTitle": "Bỏ thay đổi chưa lưu?",
+      "leaveBody": "Khung giá và lý do bạn đã nhập sẽ mất.",
+      "stay": "Ở lại",
+      "leave": "Bỏ thay đổi"
     }
   },
   "users": {

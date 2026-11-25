@@ -886,7 +886,20 @@
       "schedule": "Schedule",
       "create": "Create group",
       "scheduled": "Scheduled a new range for {{name}} from {{date}}",
-      "created": "Created {{name}}, open from {{date}}"
+      "created": "Created {{name}}, open from {{date}}",
+      "reviewChangeTitle": "Schedule the new range for {{name}}?",
+      "reviewCreateTitle": "Create the group {{name}}?",
+      "reviewBack": "Back to editing",
+      "reviewRange": "Fee range",
+      "reviewStep": "Price step",
+      "reviewFrom": "Effective from",
+      "reviewImpact": "Experts affected",
+      "reviewImpactValue": "{{count}} experts in the group · {{outside}} outside the new range",
+      "reviewReason": "Reason",
+      "leaveTitle": "Discard unsaved changes?",
+      "leaveBody": "The range and reason you entered will be lost.",
+      "stay": "Stay",
+      "leave": "Discard changes"
     }
   },
   "users": {
