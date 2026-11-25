@@ -18,6 +18,7 @@ import {
 import { ReviewPageLayout } from '@/features/expert-vetting/components/ReviewPageLayout'
 import { getEvidenceFile } from '../../features/expert-vetting/api/adminApi'
 import { AiScreeningTab } from '../../features/expert-vetting/components/AiScreeningTab'
+import { NextReviewBar } from '@/features/reviewer/NextReviewBar'
 import { ClaimBar } from '../../features/expert-vetting/components/ClaimBar'
 import { DecisionDialog } from '../../features/expert-vetting/components/DecisionDialog'
 import { EligibilityDecisionPanel } from '../../features/expert-vetting/components/EligibilityDecisionPanel'
@@ -64,6 +65,8 @@ export default function AdminApplicationDetailPage({ embedded = false }: { embed
   const review = useApplicationReview(id)
   const { detail, status } = review
   const claim = useReviewClaim('GATE_1', id, detail?.claim)
+  // Set after concluding or releasing, to offer the next review in the reviewer workspace
+  const [handedOff, setHandedOff] = useState(false)
   const tabs = [
     { key: 'profile', label: t('admin:detail.tabs.profile') },
     { key: 'documents', label: t('admin:detail.tabs.documents') },
@@ -146,7 +149,10 @@ export default function AdminApplicationDetailPage({ embedded = false }: { embed
   const releaseClaim = () =>
     void claim
       .release()
-      .then(() => setToast(t('admin:claim.released')))
+      .then(() => {
+        setHandedOff(true)
+        setToast(t('admin:claim.released'))
+      })
       .catch((e: unknown) => setToast(errorToast(claimError(e))))
 
   const finish = (note: string) => {
@@ -155,6 +161,7 @@ export default function AdminApplicationDetailPage({ embedded = false }: { embed
       .decide(note)
       .then(() => {
         setConfirming(false)
+        setHandedOff(true)
         setTab('history')
         setToast(t(`admin:${ELIGIBILITY_OUTCOME[outcome].toast}`))
       })
@@ -285,6 +292,11 @@ export default function AdminApplicationDetailPage({ embedded = false }: { embed
         </header>
       )}
 
+      {embedded && handedOff && (
+        <div className="mt-5">
+          <NextReviewBar currentId={detail.id} gate="GATE_1" />
+        </div>
+      )}
       <div className="mt-5">
         <ClaimBar
           current={claim.current}

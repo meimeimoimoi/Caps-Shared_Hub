@@ -156,5 +156,9 @@
     "name_asc": "Name A–Z",
     "years_desc": "Most experience first"
   },
-  "claimHint": "Claim to start assessing. The review stays yours until the hold expires."
+  "claimHint": "Claim to start assessing. The review stays yours until the hold expires.",
+  "nextReview": "Next review",
+  "nextReviewName": "Next: {{name}}",
+  "queueDone": "No more reviews you can take in the queue.",
+  "backToQueue": "Back to queue"
 }

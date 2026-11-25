@@ -1,4 +1,4 @@
-import { useCallback, useId, useState } from 'react'
+import { useCallback, useEffect, useId, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
@@ -21,6 +21,7 @@ import { ApiError } from '@/lib/api-client'
 import { claimApplication } from '@/features/expert-vetting/api/adminApi'
 import { claimQualification } from '@/features/expert-vetting/api/qualificationApi'
 import { adminKeys } from '@/features/expert-vetting/api/queryKeys'
+import { saveQueueContext } from '@/features/reviewer/queueContext'
 import type { ClaimFilter } from '@/features/expert-vetting/api/reviewQueueApi'
 
 const CLAIM_FILTERS: ClaimFilter[] = ['MINE_OR_UNCLAIMED', 'MINE', 'UNCLAIMED', 'ALL']
@@ -57,6 +58,10 @@ export default function ReviewerQueuePage({ history = false, gate: routeGate = '
   const qc = useQueryClient()
   // Paging, search and status filtering run on the server; the search waits for typing to pause
   const search = useDebouncedValue(query)
+  // Remember this view so "next review" on the detail page follows the same filters and order
+  useEffect(() => {
+    if (!history) saveQueueContext({ gate, search, claim: claimFilter, sortBy, sortDescending: sortDirection === 'desc' })
+  }, [history, gate, search, claimFilter, sortBy, sortDirection])
   const filterKey = `${history}:${search}:${gate}:${status}:${claimFilter}:${sort}`
   const [paging, setPaging] = useState({ key: filterKey, page: 1, pageSize: 10 })
   const page = paging.key === filterKey ? paging.page : 1
