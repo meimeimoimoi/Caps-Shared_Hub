@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { ShieldCheck } from 'lucide-react'
@@ -8,6 +8,7 @@ import { fundsOf, useCaseFormat } from '@/features/review-case/ui'
 import { useFormatters } from '@/hooks/useFormatters'
 import { isExpertDemo } from '@/lib/expert-data-source'
 import { useCreditOverview } from '@/features/credits/hooks/useCreditOverview'
+import { TopupDialog } from '@/features/credits/components/TopupDialog'
 import type { PaymentTransaction } from '@/features/credits/types'
 import { StatusBadge } from '@/components/ui/display/status-badge'
 import { SkeletonRows } from '@/components/ui/display/skeleton-rows'
@@ -32,6 +33,8 @@ export default function WalletPage() {
   const wallet = payments.data?.wallet
   const ledger = payments.data?.ledger ?? []
   const { creditPackages, creditRates } = mockPricing
+  // null = closed; 0 = opened without a package, the user types the amount
+  const [topupAmount, setTopupAmount] = useState<number | null>(null)
   const held = useClientCases().cases.filter((c) =>
     ['held', 'locked'].includes(fundsOf(c))
   )
@@ -59,6 +62,13 @@ export default function WalletPage() {
               {t('wallet.unit', { count: wallet.balance })}
             </p>
           )}
+          <button
+            type="button"
+            onClick={() => setTopupAmount(0)}
+            className="btn btn-press btn-primary mt-4"
+          >
+            {t('wallet.topup.open')}
+          </button>
         </div>
         <div className="sm:border-border sm:border-l sm:pl-6">
           <p className="eyebrow">{t('wallet.held')}</p>
@@ -106,6 +116,7 @@ export default function WalletPage() {
                     <button
                       type="button"
                       disabled={p.price == null}
+                      onClick={() => setTopupAmount(p.price ?? 0)}
                       title={
                         p.price == null ? t('wallet.buyUnavailable') : undefined
                       }
@@ -335,6 +346,12 @@ export default function WalletPage() {
           </section>
         </aside>
       </div>
+      {topupAmount !== null && (
+        <TopupDialog
+          initialAmount={topupAmount || undefined}
+          onClose={() => setTopupAmount(null)}
+        />
+      )}
     </>
   )
 }
