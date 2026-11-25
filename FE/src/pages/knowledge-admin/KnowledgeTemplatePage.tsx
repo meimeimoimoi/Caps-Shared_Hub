@@ -138,6 +138,11 @@ export default function KnowledgeTemplatePage() {
             <span className="num text-fg-strong font-semibold">
               v{current.version}
             </span>
+            {current.taxYear && (
+              <span className="num text-fg-muted">
+                Năm tính thuế {current.taxYear}
+              </span>
+            )}
             <StatusBadge status={TEMPLATE_STATUS[template.status]} />
           </div>
         </div>
@@ -321,6 +326,11 @@ export default function KnowledgeTemplatePage() {
                     <span className="flex items-baseline justify-between gap-2">
                       <span className="num text-fg-strong font-semibold">
                         v{v.version}
+                        {v.taxYear && (
+                          <span className="text-fg-muted ml-2 font-normal">
+                            {v.taxYear}
+                          </span>
+                        )}
                         {(v.status
                           ? v.status === 'PUBLISHED'
                           : v === current) && (
