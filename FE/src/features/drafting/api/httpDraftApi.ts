@@ -198,15 +198,24 @@ async function saveSnapshot(
   ).data
 }
 
+/** The sample .docx of a released template version (only when its schema says hasFile) */
+export async function templateFile(versionId: string, signal?: AbortSignal) {
+  const blob = await api.get<Blob>(
+    `${templates}/versions/${encodeURIComponent(versionId)}/file`,
+    { responseType: 'blob', signal, timeout: 60_000 }
+  )
+  return new File([blob], 'template.docx', { type: blob.type })
+}
+
 export const httpDraftApi: DraftApi = {
   templates: async (ctx) =>
     (await listTemplates(ctx)).map((item) => mapTemplate(item)),
   template: async (id, ctx) => {
     const { template, schema } = await get<{
       template: TemplateDto
-      schema: { fieldSchema: SchemaField[] }
+      schema: { fieldSchema: SchemaField[]; hasFile?: boolean }
     }>(`${templates}/versions/${encodeURIComponent(id)}`, ctx)
-    return mapTemplate(template, schema.fieldSchema)
+    return { ...mapTemplate(template, schema.fieldSchema), hasFile: schema.hasFile === true }
   },
   list: async (ctx) => {
     const [docs, library] = await Promise.all([

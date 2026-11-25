@@ -467,6 +467,11 @@
     "decisionTitle": "System Admin decision"
   },
   "disputes": {
+    "closed": {
+      "admin": "Admin",
+      "client": "Client",
+      "withdrawn": "Withdrew the complaint; the case settled as if accepted."
+    },
     "filters": {
       "search": "Search case ID, client, expert or grounds",
       "deadline": "Decision deadline",
@@ -575,7 +580,8 @@
     "reason": {
       "DELIVERABLE_INCOMPLETE": "Delivery is incomplete",
       "OBLIGATION_NOT_MET": "Expert did not meet an obligation",
-      "PROFESSIONAL_JUDGMENT": "Disagrees with the professional judgment"
+      "PROFESSIONAL_JUDGMENT": "Disagrees with the professional judgment",
+      "SLA_BREACH": "Late delivery (former reason)"
     },
     "expertSide": {
       "title": "Expert's side",
@@ -623,13 +629,6 @@
     "retrying": "Retrying…",
     "retried": "Payout retried for case {{id}}",
     "empty": "No Escrow records yet.",
-    "matrix": {
-      "title": "Case termination matrix",
-      "case": "Termination case",
-      "client": "Client refund",
-      "expert": "Expert",
-      "platform": "Platform"
-    },
     "nextLabel": {
       "DISPUTE_LOCKED": "decide by",
       "HELD": "auto-confirms",
@@ -1672,6 +1671,8 @@
     "requestedAt": "Sent",
     "empty": "No requests waiting.",
     "search": "Search by expert, email or case code",
-    "noResults": "No requests match your search."
+    "noResults": "No requests match your search.",
+    "limitReached": "Excused 2/2 times in 90 days",
+    "limitReachedHint": "This expert has used both excuses for the last 90 days; this request can only be declined."
   }
 }

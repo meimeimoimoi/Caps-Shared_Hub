@@ -19,11 +19,19 @@ public sealed class ListExcuseRequestsHandler(IExpertViolations violations, Time
     {
         var since = clock.GetUtcNow().AddDays(-ViolationRules.WindowDays);
         var rows = await violations.ListPendingRequestsAsync(ct);
+        // Lets the queue show an expert who used up their excuses before the admin tries to excuse again
+        // ponytail: one count per expert in the queue; batch it in the repository if the queue grows long
+        var excused = new Dictionary<Guid, int>();
+        foreach (var id in rows.Select(r => r.Expert.Id).Distinct())
+        {
+            excused[id] = await violations.CountExcusedAsync(id, since, ct);
+        }
         return rows.Select(r => new ExcuseRequestResponse(
                 r.Expert.Id.ToString(),
                 r.Expert.DisplayName,
                 r.Expert.ContactEmail,
-                ListViolationsHandler.Describe(r.Violation, since)
+                ListViolationsHandler.Describe(r.Violation, since),
+                Math.Max(0, ViolationRules.MaxExcuses - excused[r.Expert.Id])
             ))
             .ToList();
     }

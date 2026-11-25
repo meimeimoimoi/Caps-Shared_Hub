@@ -13,7 +13,10 @@ namespace Caps.Auth.Api.Controllers;
 public sealed class AvatarsController : ControllerBase
 {
     /// <summary>Returns a user's avatar image (no sign-in needed, so img tags can load it).</summary>
-    /// <remarks>Use the versioned URL from the profile; each version is cached for a year.</remarks>
+    /// <remarks>
+    /// Use the versioned URL from the profile; each version is cached for a year. Without ?v (public expert
+    /// profiles) the image is cached for 5 minutes.
+    /// </remarks>
     /// <response code="200">The image bytes.</response>
     /// <response code="404">The user has no avatar.</response>
     [HttpGet]
@@ -27,8 +30,11 @@ public sealed class AvatarsController : ControllerBase
         if (avatar == null)
             return NotFound();
         Response.Headers.XContentTypeOptions = "nosniff";
-        // The URL carries ?v=<updated time>, so each image version can be cached long-term.
-        Response.Headers.CacheControl = "public, max-age=31536000, immutable";
+        // A ?v=<updated time> URL never changes, so it is cached long-term; the bare URL (public expert
+        // profiles, which do not know the version) is cached briefly so a new avatar shows up soon.
+        Response.Headers.CacheControl = Request.Query.ContainsKey("v")
+            ? "public, max-age=31536000, immutable"
+            : "public, max-age=300";
         return File(avatar.Data, avatar.ContentType);
     }
 }

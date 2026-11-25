@@ -7,6 +7,7 @@ import unittest
 from unittest.mock import MagicMock, patch
 
 from fastapi.testclient import TestClient
+import httpx
 import pymupdf
 
 AI_SERVICE_ROOT = Path(__file__).resolve().parents[1]
@@ -426,6 +427,122 @@ class CvExtractorTests(unittest.TestCase):
 
         self.assertIn("trợ lý kiểm toán", SYSTEM_PROMPT)
         self.assertIn('NEVER invent "-01-01" or "-01"', SYSTEM_PROMPT)
+
+    def test_year_only_certificate_forces_fabricated_jan1_issued_date_to_null(self):
+        pdf = _make_text_pdf(
+            "Nguyen Van A - Tax Advisor\n"
+            "01/2019 - 12/2022: Senior Accountant at ABC Co.\n"
+            "Certificates:\n"
+            "Tax Practice Certificate - GDT (2019)\n"
+            "CPA Vietnam - Ministry of Finance (2021)"
+        )
+        fake_resp = MagicMock()
+        fake_resp.status_code = 200
+        fake_resp.json.return_value = {
+            "message": {
+                "content": json.dumps(
+                    {
+                        "full_name": "Nguyen Van A",
+                        "document_type": "CV",
+                        "field_codes": ["CORPORATE_INCOME_TAX"],
+                        "work_milestones": [],
+                        "certificates": [
+                            {
+                                "name": "Tax Practice Certificate",
+                                "issuer": "GDT",
+                                "issued_date": "2019-01-01",
+                                "expiry_date": None,
+                            },
+                            {
+                                "name": "CPA Vietnam",
+                                "issuer": "Ministry of Finance",
+                                "issued_date": "2021",
+                                "expiry_date": "2026-01-01",
+                            },
+                        ],
+                    }
+                )
+            }
+        }
+
+        with patch("app.modules.cv_screening.extractor.httpx.post", return_value=fake_resp):
+            resp = self.client.post(
+                "/api/v1/cv/extract",
+                files={"file": ("cv.pdf", pdf, "application/pdf")},
+                data={"evidence_type": "CV"},
+            )
+
+        self.assertEqual(resp.status_code, 200)
+        certs = resp.json()["extracted"]["certificates"]
+        self.assertIsNone(certs[0]["issued_date"])
+        self.assertIsNone(certs[1]["issued_date"])
+        self.assertIsNone(certs[1]["expiry_date"])
+
+    def test_explicit_january_certificate_date_is_preserved(self):
+        pdf = _make_text_pdf(
+            "Nguyen Van B - Tax Advisor\n"
+            "Certificates:\n"
+            "Tax Practice Certificate - GDT - issued 01/01/2019\n"
+            "CPA Certificate - MoF - 01/2021"
+        )
+        fake_resp = MagicMock()
+        fake_resp.status_code = 200
+        fake_resp.json.return_value = {
+            "message": {
+                "content": json.dumps(
+                    {
+                        "full_name": "Nguyen Van B",
+                        "document_type": "CV",
+                        "field_codes": ["CORPORATE_INCOME_TAX"],
+                        "work_milestones": [],
+                        "certificates": [
+                            {
+                                "name": "Tax Practice Certificate",
+                                "issuer": "GDT",
+                                "issued_date": "2019-01-01",
+                                "expiry_date": None,
+                            },
+                            {
+                                "name": "CPA Certificate",
+                                "issuer": "MoF",
+                                "issued_date": "2021-01",
+                                "expiry_date": None,
+                            },
+                        ],
+                    }
+                )
+            }
+        }
+
+        with patch("app.modules.cv_screening.extractor.httpx.post", return_value=fake_resp):
+            resp = self.client.post(
+                "/api/v1/cv/extract",
+                files={"file": ("cv.pdf", pdf, "application/pdf")},
+                data={"evidence_type": "CV"},
+            )
+
+        self.assertEqual(resp.status_code, 200)
+        certs = resp.json()["extracted"]["certificates"]
+        self.assertEqual(certs[0]["issued_date"], "2019-01-01")
+        self.assertEqual(certs[1]["issued_date"], "2021-01-01")
+
+    def test_timeout_during_cv_extraction_returns_504(self):
+        pdf = _make_text_pdf(
+            "Valid text content inside PDF with more than forty characters for timeout test."
+        )
+
+        with patch(
+            "app.modules.cv_screening.extractor.httpx.post",
+            side_effect=httpx.ReadTimeout("timed out"),
+        ):
+            resp = self.client.post(
+                "/api/v1/cv/extract",
+                files={"file": ("cv.pdf", pdf, "application/pdf")},
+                data={"evidence_type": "CV"},
+            )
+
+        self.assertEqual(resp.status_code, 504)
+        self.assertEqual(resp.json()["detail"], "AI extraction timed out.")
 
 
 if __name__ == "__main__":

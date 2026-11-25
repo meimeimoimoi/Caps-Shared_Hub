@@ -1,3 +1,5 @@
+using Caps.Expert.Application.Abstractions;
+using Caps.Expert.Application.Features.Violations;
 using Caps.Expert.Domain.Profiles;
 
 namespace Caps.Expert.UnitTests;
@@ -151,5 +153,71 @@ public class ViolationTests
             "VIOLATION_EXCUSE_FILE_LIMIT",
             Errors.CodeOf(() => Late().RequestExcuse("Flood", files, Now))
         );
+    }
+
+    [Fact]
+    public async Task The_excuse_queue_shows_how_many_excuses_each_expert_has_left()
+    {
+        var usedUp = ExpertProfile.Create(Guid.NewGuid(), "A", Now);
+        var fresh = ExpertProfile.Create(Guid.NewGuid(), "B", Now);
+        var violations = new QueueViolations(
+            [(Late(), usedUp), (Late(), usedUp), (Late(), fresh)],
+            new() { [usedUp.Id] = 2 }
+        );
+
+        var queue = await new ListExcuseRequestsHandler(violations, new Clock()).HandleAsync(
+            new ListExcuseRequestsQuery(),
+            CancellationToken.None
+        );
+
+        Assert.Equal([0, 0, 2], queue.Select(r => r.ExcusesLeft));
+        Assert.Equal(Now.AddDays(-ViolationRules.WindowDays), violations.CountedSince);
+    }
+
+    private sealed class Clock : TimeProvider
+    {
+        public override DateTimeOffset GetUtcNow() => Now;
+    }
+
+    private sealed class QueueViolations(
+        IReadOnlyList<(ExpertViolation Violation, ExpertProfile Expert)> pending,
+        Dictionary<Guid, int> excused
+    ) : IExpertViolations
+    {
+        public DateTimeOffset? CountedSince { get; private set; }
+
+        public Task<
+            IReadOnlyList<(ExpertViolation Violation, ExpertProfile Expert)>
+        > ListPendingRequestsAsync(CancellationToken ct) => Task.FromResult(pending);
+
+        public Task<int> CountExcusedAsync(
+            Guid profileId,
+            DateTimeOffset since,
+            CancellationToken ct
+        )
+        {
+            CountedSince = since;
+            return Task.FromResult(excused.GetValueOrDefault(profileId));
+        }
+
+        public Task<bool> AddAsync(ExpertViolation violation, CancellationToken ct) =>
+            throw new NotSupportedException();
+
+        public Task<IReadOnlyDictionary<Guid, int>> PointsAsync(
+            IReadOnlyCollection<Guid> profileIds,
+            DateTimeOffset since,
+            CancellationToken ct
+        ) => throw new NotSupportedException();
+
+        public Task<IReadOnlyList<ExpertViolation>> ListAsync(
+            Guid profileId,
+            CancellationToken ct
+        ) => throw new NotSupportedException();
+
+        public Task<ExpertViolation?> FindAsync(
+            Guid profileId,
+            Guid reviewCaseId,
+            CancellationToken ct
+        ) => throw new NotSupportedException();
     }
 }

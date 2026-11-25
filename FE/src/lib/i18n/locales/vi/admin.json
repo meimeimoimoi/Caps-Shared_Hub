@@ -460,6 +460,11 @@
     "decisionTitle": "Quyết định của quản trị viên hệ thống"
   },
   "disputes": {
+    "closed": {
+      "admin": "Quản trị viên",
+      "client": "Khách hàng",
+      "withdrawn": "Đã rút khiếu nại; hồ sơ được quyết toán như khi nghiệm thu."
+    },
     "filters": {
       "search": "Tìm mã hồ sơ, khách, chuyên gia hoặc căn cứ",
       "deadline": "Hạn xử lý",
@@ -566,7 +571,8 @@
     "reason": {
       "DELIVERABLE_INCOMPLETE": "Kết quả bàn giao chưa đủ",
       "OBLIGATION_NOT_MET": "Chuyên gia chưa làm đúng nghĩa vụ",
-      "PROFESSIONAL_JUDGMENT": "Không đồng ý với nhận định chuyên môn"
+      "PROFESSIONAL_JUDGMENT": "Không đồng ý với nhận định chuyên môn",
+      "SLA_BREACH": "Bàn giao trễ hạn (lý do cũ)"
     },
     "expertSide": {
       "title": "Phía chuyên gia",
@@ -614,13 +620,6 @@
     "retrying": "Đang thử lại…",
     "retried": "Đã chi trả lại hồ sơ {{id}}",
     "empty": "Chưa có khoản ký quỹ nào.",
-    "matrix": {
-      "title": "Ma trận chấm dứt hồ sơ",
-      "case": "Tình huống chấm dứt",
-      "client": "Hoàn cho khách",
-      "expert": "Chuyên gia",
-      "platform": "Nền tảng"
-    },
     "nextLabel": {
       "DISPUTE_LOCKED": "quyết định trước",
       "HELD": "tự xác nhận",
@@ -1662,6 +1661,8 @@
     "requestedAt": "Gửi lúc",
     "empty": "Không có đơn nào đang chờ.",
     "search": "Tìm theo chuyên gia, email hoặc mã hồ sơ",
-    "noResults": "Không có đơn khớp với từ khóa."
+    "noResults": "Không có đơn khớp với từ khóa.",
+    "limitReached": "Đã miễn 2/2 lần trong 90 ngày",
+    "limitReachedHint": "Chuyên gia đã dùng hết 2 lượt miễn trong 90 ngày, chỉ có thể từ chối đơn này."
   }
 }

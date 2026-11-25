@@ -24,6 +24,17 @@ export function getApiBaseUrl() {
   return '/api'
 }
 
+/**
+ * Turns a gateway path the API returns (/api/v1/...) into a URL an img tag can load: prefixed with the gateway
+ * origin, or kept once under a base that already ends in /api.
+ */
+export function gatewayUrl(path: string | null | undefined) {
+  if (!path) return undefined
+  if (/^https?:/.test(path)) return path
+  const base = getApiBaseUrl()
+  return base.endsWith('/api') ? base + path.replace(/^\/api(?=\/)/, '') : base + path
+}
+
 export const apiClient = axios.create({
   baseURL: getApiBaseUrl(),
   timeout: 15000,

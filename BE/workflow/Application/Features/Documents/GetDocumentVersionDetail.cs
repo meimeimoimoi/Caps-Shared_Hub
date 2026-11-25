@@ -1,6 +1,7 @@
 using Caps.Common.Application;
 using Caps.Workflow.Application.Abstractions.Documents;
 using Caps.Workflow.Domain.Exceptions;
+using Caps.Workflow.Domain.Workspace;
 using static Caps.Workflow.Application.Features.Documents.DTOs.DocumentDtos;
 
 namespace Caps.Workflow.Application.Features.Documents;
@@ -43,6 +44,20 @@ public static class GetDocumentVersionDetail
                 throw WorkflowErrors.DocumentVersionNotFound(query.VersionId);
             }
 
+            var draftIssues = version.DraftIssues is not null
+                ? DraftReadinessEvaluator
+                    .DeserializeIssues(version.DraftIssues)
+                    .Select(i => new DraftIssueDto(
+                        i.Code,
+                        i.Type,
+                        i.Severity,
+                        i.Description,
+                        i.FieldId,
+                        i.CitationId
+                    ))
+                    .ToList()
+                : null;
+
             return new DocumentVersionDetailDto(
                 version.Id,
                 version.DocumentId,
@@ -56,7 +71,8 @@ public static class GetDocumentVersionDetail
                 version.ContentHash,
                 version.IsImmutable,
                 version.CreatedBy,
-                version.CreatedAt
+                version.CreatedAt,
+                draftIssues
             );
         }
     }

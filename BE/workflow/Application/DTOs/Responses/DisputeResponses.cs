@@ -42,6 +42,7 @@ public sealed record DisputeResponse(
 
 /// <summary>An open dispute in the admin queue, with what the admin needs to decide it and who the parties are.</summary>
 /// <param name="Overdue">Past the decision window (2 working days, or 4 once extended); nothing is decided automatically.</param>
+/// <param name="SourceFileName">Name of the file the client uploaded for review; null for a draft written in the app.</param>
 public sealed record AdminDisputeResponse(
     string ReviewCaseId,
     string? RequesterEmail,
@@ -52,5 +53,6 @@ public sealed record AdminDisputeResponse(
     string? Result,
     string? ReviewSummary,
     bool Overdue,
-    DisputeResponse Dispute
+    DisputeResponse Dispute,
+    string? SourceFileName = null
 );

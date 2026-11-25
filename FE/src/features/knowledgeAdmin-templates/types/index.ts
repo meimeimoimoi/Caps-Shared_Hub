@@ -13,6 +13,8 @@ export interface ManagedTemplateVersion {
   changelog: string
   /** File mẫu văn bản (.docx) đã tải lên cho phiên bản này */
   fileName: string
+  /** The server holds a sample .docx for this version (API mode only) */
+  hasFile?: boolean
   fields: SchemaField[]
   /** Số bản nháp đang ghim phiên bản này */
   workspaces: number

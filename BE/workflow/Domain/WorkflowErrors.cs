@@ -199,6 +199,13 @@ public static class WorkflowErrors
     public static AppException AttachmentLimit(int max) =>
         new(ErrorType.Conflict, "ATTACHMENT_LIMIT", $"A case holds at most {max} files.");
 
+    public static AppException AttachmentDuplicate(string fileName) =>
+        new(
+            ErrorType.Conflict,
+            "ATTACHMENT_DUPLICATE",
+            $"The case already has the file {fileName}."
+        );
+
     public static AppException AttachmentNotFound() =>
         new(ErrorType.NotFound, "ATTACHMENT_NOT_FOUND", "File not found.");
 
@@ -220,6 +227,20 @@ public static class WorkflowErrors
 
     public static AppException TemplateInvalid(string field) =>
         new(ErrorType.Validation, "TEMPLATE_INVALID", $"{field} is required.");
+
+    public static AppException TemplateFileInvalid() =>
+        new(
+            ErrorType.Validation,
+            "TEMPLATE_FILE_INVALID",
+            "The template file must be a Word (.docx) document."
+        );
+
+    public static AppException TemplateFileNotFound() =>
+        new(
+            ErrorType.NotFound,
+            "TEMPLATE_FILE_NOT_FOUND",
+            "This template version has no sample file."
+        );
 
     public static AppException TemplateNoDraft() =>
         new(

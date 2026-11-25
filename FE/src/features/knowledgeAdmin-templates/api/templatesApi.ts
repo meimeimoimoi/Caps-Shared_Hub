@@ -42,6 +42,19 @@ export async function getTemplate(
   return fromAdminTemplate(res.data)
 }
 
+/** The sample .docx of one version, drafts included (only when the version hasFile) */
+export async function getTemplateFile(
+  id: string,
+  versionId: string,
+  signal?: AbortSignal
+) {
+  const blob = await api.get<Blob>(
+    `${ADMIN}/${encodeURIComponent(id)}/versions/${encodeURIComponent(versionId)}/file`,
+    { responseType: 'blob', signal, timeout: 60_000 }
+  )
+  return new File([blob], 'template.docx', { type: blob.type })
+}
+
 /** Publishes the newest draft; the version users saw before becomes DEPRECATED */
 export async function publishTemplate(id: string) {
   await api.post(`${ADMIN}/${encodeURIComponent(id)}/publish`)
@@ -70,9 +83,19 @@ export async function setTemplateStatus(
   throw new Error('Chức năng tạm ngưng template chưa được kết nối với máy chủ.')
 }
 
-/** Tải lên template mới (file mẫu + khai báo trường): phát hành v1 ở trạng thái Tạm ngưng để admin kiểm tra trước khi người dùng thấy */
+/** Puts the sample .docx on the template's draft version; the server refuses when there is no draft */
+export async function uploadTemplateFile(id: string, file: File) {
+  const form = new FormData()
+  form.append('file', file)
+  await api.put(`${ADMIN}/${encodeURIComponent(id)}/file`, form, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+    timeout: 60_000,
+  })
+}
+
+/** Saves the fields as the template's draft, then uploads the sample .docx to that draft; users see it once published */
 export async function createTemplate(
-  _file: File,
+  file: File | null,
   input: NewTemplateInput,
   actor: string
 ): Promise<string> {
@@ -103,18 +126,28 @@ export async function createTemplate(
         {
           at,
           actor,
-          text: `Tải lên ${input.fileName}, phát hành v1 (đang tạm ngưng)`,
+          text: input.fileName
+            ? `Tải lên ${input.fileName}, phát hành v1 (đang tạm ngưng)`
+            : 'Tạo template, phát hành v1 (đang tạm ngưng)',
         },
       ],
     })
     return id
   }
-  // shortcut: the server keeps the field schema only, not the .docx file; send it once workflow stores files
   const res = await api.post<Envelope<{ templateId: string }>>(ADMIN, {
     code: input.code,
     name: input.title,
     description: input.description,
     fieldSchema: input.fields,
   })
-  return res.data.templateId
+  const id = res.data.templateId
+  if (file) {
+    // Saving again overwrites the same draft, so a retry after a failed upload is safe
+    await uploadTemplateFile(id, file).catch((err: Error) => {
+      throw new Error(
+        `Đã lưu các trường nhưng chưa tải được file mẫu (${err.message}). Bấm Tạo template lần nữa để thử lại.`
+      )
+    })
+  }
+  return id
 }

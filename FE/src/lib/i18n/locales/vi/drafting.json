@@ -325,5 +325,14 @@
   "freeDraftExport": "Xuất bản nháp AI miễn phí.",
   "draftUnverifiedNumbers": "AI tìm thấy số liệu cần xác minh.",
   "draftVerifyAgainstInputs": "Đối chiếu số liệu với dữ liệu đầu vào trước khi sử dụng.",
-  "txtTextFile": "TXT · Tệp văn bản"
+  "txtTextFile": "TXT · Tệp văn bản",
+  "templateLayout": "Xem theo mẫu",
+  "templateLayoutHelp": "Giá trị bạn nhập hiện ngay vào đúng ô của mẫu gốc. Chỗ chưa nhập vẫn để dấu chấm.",
+  "templateLayoutEditHelp": "Gõ thẳng vào các ô tô màu trên mẫu hoặc nhập ở form, hai bên luôn khớp nhau. Trường không có chỗ trên mẫu thì nhập ở form.",
+  "printTemplateLayout": "In / Lưu PDF",
+  "viewTemplateFile": "Xem mẫu",
+  "templateFilePreviewHelp": "Ô tô màu là chỗ bạn sẽ nhập, chữ trong ô là tên trường tương ứng. Bạn nhập dữ liệu sau khi bấm Dùng mẫu này.",
+  "templateLayoutUnavailable": "Không tải được file mẫu. Bạn vẫn nhập dữ liệu bình thường.",
+  "draftContent": "Nội dung bản nháp",
+  "draftView": "Kiểu xem bản nháp"
 }

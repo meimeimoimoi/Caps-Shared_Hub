@@ -22,6 +22,12 @@ public interface ITemplateRepository
 
     Task<TemplateVersion?> FindReleasedVersionAsync(Guid versionId, CancellationToken ct);
 
+    /// <summary>Every template with all its versions (drafts included), untracked, by name.</summary>
+    Task<IReadOnlyList<Template>> ListWithVersionsAsync(CancellationToken ct);
+
+    /// <summary>The template with all its versions (drafts included), untracked.</summary>
+    Task<Template?> FindWithVersionsAsync(Guid templateId, CancellationToken ct);
+
     void Add(Template newTemplate);
 
     void Add(TemplateVersion version);

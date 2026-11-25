@@ -1,5 +1,18 @@
-import { api } from '@/lib/api-client'
+import { api, ApiError } from '@/lib/api-client'
 import { isKnowledgeDemo } from '@/lib/knowledge-data-source'
+import {
+  rejectedResult,
+  uploadedResult,
+  type UploadedDocumentDto,
+} from './uploadMappers'
+import {
+  toDocumentDetail,
+  toDocumentReview,
+  toKnowledgeDocument,
+  toPipelineSummary,
+  type DocumentPreviewDto,
+  type DocumentSummaryDto,
+} from './mappers'
 import type { QueueFilter } from '../constants'
 import type {
   ApproveInput,
@@ -12,28 +25,99 @@ import type {
   VersionComparison,
 } from '../types'
 
-/* Dev chạy demo thì đọc fixtures.
- * TODO(api): đối chiếu lại đường dẫn endpoint với BE khi có Swagger. */
+/* Dev chạy demo thì đọc fixtures; API mode reads ingestion through the gateway. */
 const fixtures = () => import('./fixtures')
-const BASE = '/api/knowledge'
+const DOCUMENTS = '/api/v1/knowledge/documents'
 
-export async function getPipelineSummary(signal?: AbortSignal) {
-  if (isKnowledgeDemo) return structuredClone((await fixtures()).mockSummary)
-  return api.get<PipelineSummary>(`${BASE}/pipeline/summary`, { signal })
+interface Envelope<T> {
+  success: boolean
+  data: T
+  message?: string
 }
 
-/** stage = 'collect' → mọi văn bản thu thập trong tháng; 'failed' → văn bản đang lỗi */
-export async function getDocuments(stage: QueueFilter, signal?: AbortSignal) {
-  if (isKnowledgeDemo) {
-    const docs = structuredClone((await fixtures()).mockDocuments)
-    if (stage === 'collect') return docs
-    if (stage === 'failed') return docs.filter((d) => d.failure)
-    return docs.filter((d) => d.stage === stage)
+interface Page<T> {
+  items: T[]
+  page: number
+  pageSize: number
+  total: number
+}
+
+const notConnected = (what: string) =>
+  new Error(`Chức năng ${what} chưa được kết nối với máy chủ.`)
+
+// Conflicts an admin can hit from the review and queue screens; the API text is English
+const CONFLICTS: Record<string, string> = {
+  DOCUMENT_NOT_PENDING: 'Văn bản đã được duyệt hoặc từ chối trước đó.',
+  DOCUMENT_PARSE_FAILED: 'Văn bản bóc tách lỗi nên không thể index.',
+  DOCUMENT_NOT_INDEX_FAILED:
+    'Chỉ thử lại được văn bản lỗi index; văn bản lỗi bóc tách cần tải lên lại.',
+  INDEX_RETRY_EXCEEDED: 'Đã thử lại index quá số lần cho phép.',
+}
+
+const explain = (e: unknown) =>
+  e instanceof ApiError && e.code && CONFLICTS[e.code]
+    ? new ApiError(CONFLICTS[e.code], e.status, e.code)
+    : e
+
+interface DocumentActionDto {
+  status: string
+  lastError: string | null
+}
+
+/** approve / retry-index: ingestion chunks and embeds in ai-service before it answers */
+async function indexDocument(
+  documentId: string,
+  action: 'approve' | 'retry-index'
+) {
+  try {
+    const res = await api.post<Envelope<DocumentActionDto>>(
+      `${DOCUMENTS}/${encodeURIComponent(documentId)}/${action}`,
+      undefined,
+      // ingestion waits up to 10 min for ai-service; the default 15 s would report a failure that did not happen
+      { timeout: 600_000 }
+    )
+    return res.data
+  } catch (e) {
+    throw explain(e)
   }
-  return api.get<KnowledgeDocument[]>(`${BASE}/documents`, {
-    params: { stage },
-    signal,
-  })
+}
+
+// shortcut: the first 100 pending versions (the API maximum); page through them when the queue grows
+async function pendingDocuments(signal?: AbortSignal) {
+  const res = await api.get<Envelope<Page<DocumentSummaryDto>>>(
+    `${DOCUMENTS}/pending`,
+    { params: { page: 1, pageSize: 100 }, signal }
+  )
+  return res.data.items.map(toKnowledgeDocument)
+}
+
+async function preview(documentId: string, signal?: AbortSignal) {
+  const res = await api.get<Envelope<DocumentPreviewDto>>(
+    `${DOCUMENTS}/${encodeURIComponent(documentId)}/preview`,
+    { signal }
+  )
+  return res.data
+}
+
+export async function getPipelineSummary(
+  signal?: AbortSignal
+): Promise<PipelineSummary> {
+  if (isKnowledgeDemo) return structuredClone((await fixtures()).mockSummary)
+  return toPipelineSummary(await pendingDocuments(signal))
+}
+
+/** stage = 'collect' → mọi văn bản thu thập trong tháng; 'failed' → văn bản đang lỗi.
+ * The API only lists PENDING versions, so the index stages stay empty there. */
+export async function getDocuments(
+  stage: QueueFilter,
+  signal?: AbortSignal
+): Promise<KnowledgeDocument[]> {
+  const docs = isKnowledgeDemo
+    ? structuredClone((await fixtures()).mockDocuments)
+    : await pendingDocuments(signal)
+  if (stage === 'collect') return docs
+  if (stage === 'failed') return docs.filter((d) => d.failure)
+  return docs.filter((d) => d.stage === stage)
 }
 
 /** Thử lại ngay bước bị lỗi (index hoặc bóc tách) */
@@ -48,20 +132,25 @@ export async function retryDocument(documentId: string) {
     delete d.failure
     return
   }
-  await api.post(`${BASE}/documents/${documentId}/retry`)
+  const result = await indexDocument(documentId, 'retry-index')
+  if (result.status === 'INDEX_FAILED')
+    throw new Error(
+      `Index vẫn lỗi: ${result.lastError ?? 'không rõ nguyên nhân'}`
+    )
 }
 
 /* ── Kiểm tra phiên bản ── */
 /** null = văn bản không có phiên bản cần so sánh */
 export async function getVersionComparison(
   documentId: string,
-  signal?: AbortSignal
+  _signal?: AbortSignal
 ): Promise<VersionComparison | null> {
   if (isKnowledgeDemo) {
     const c = (await fixtures()).mockComparisons[documentId]
     return c ? structuredClone(c) : null
   }
-  return api.get<VersionComparison>(`${BASE}/documents/${documentId}/comparison`, { signal })
+  // Ingestion does not compare versions yet; the page then says there is nothing to compare
+  return null
 }
 
 /** Rời hàng đợi Chờ duyệt: demo bớt số đếm và bỏ/chuyển văn bản trong fixtures */
@@ -98,7 +187,7 @@ export async function getDocumentDetail(
     })
     return d
   }
-  return api.get<DocumentDetail>(`${BASE}/documents/${documentId}`, { signal })
+  return toDocumentDetail(await preview(documentId, signal))
 }
 
 /* ── Rà soát nội dung bóc tách ── */
@@ -111,7 +200,7 @@ export async function getDocumentReview(
     const r = (await fixtures()).mockReviews[documentId]
     return r ? structuredClone(r) : null
   }
-  return api.get<DocumentReview>(`${BASE}/documents/${documentId}/review`, { signal })
+  return toDocumentReview(await preview(documentId, signal))
 }
 
 async function findUnitDemo(documentId: string, unitId: string) {
@@ -128,28 +217,43 @@ export async function markUnitReviewed(documentId: string, unitId: string) {
     if (u) u.status = 'REVIEWED'
     return
   }
-  await api.post(`${BASE}/documents/${documentId}/units/${unitId}/reviewed`)
+  throw notConnected('đánh dấu đã rà soát')
 }
 
 /** Sửa nội dung một đơn vị; sửa xong coi như đã rà soát */
-export async function saveUnitText(documentId: string, unitId: string, text: string) {
+export async function saveUnitText(
+  documentId: string,
+  unitId: string,
+  text: string
+) {
   if (isKnowledgeDemo) {
     const u = await findUnitDemo(documentId, unitId)
     if (u) Object.assign(u, { text, status: 'REVIEWED' })
     return
   }
-  await api.put(`${BASE}/documents/${documentId}/units/${unitId}`, { text })
+  throw notConnected('sửa nội dung bóc tách')
 }
 
 /** Duyệt nội dung → chuyển sang bước Index */
-export async function approveDocument(documentId: string, body: ApproveInput) {
+export async function approveDocument(documentId: string, _body: ApproveInput) {
   if (isKnowledgeDemo) return leaveReviewDemo(documentId, 'index')
-  await api.post(`${BASE}/documents/${documentId}/approve`, body)
+  const result = await indexDocument(documentId, 'approve')
+  // The approval is saved even when indexing fails; say so instead of reporting success
+  if (result.status === 'INDEX_FAILED')
+    throw new Error(
+      `Đã duyệt nhưng index lỗi: ${result.lastError ?? 'không rõ nguyên nhân'}`
+    )
 }
 
 export async function rejectDocument(documentId: string, reason: string) {
   if (isKnowledgeDemo) return leaveReviewDemo(documentId, null)
-  await api.post(`${BASE}/documents/${documentId}/reject`, { reason })
+  try {
+    await api.post(`${DOCUMENTS}/${encodeURIComponent(documentId)}/reject`, {
+      reason,
+    })
+  } catch (e) {
+    throw explain(e)
+  }
 }
 
 /** REPROCESS_REQUIRED: send the version back to parsing; it must come back to review (BR-K08) */
@@ -175,19 +279,22 @@ export async function retireDocument(documentId: string, reason: string) {
 /** Chấp nhận phiên bản mới, chuyển sang bước Bóc tách */
 export async function continueVersionReview(documentId: string) {
   if (isKnowledgeDemo) return leaveReviewDemo(documentId, 'parse')
-  await api.post(`${BASE}/documents/${documentId}/version/continue`)
+  throw notConnected('kiểm tra phiên bản')
 }
 
-export async function rejectVersion(documentId: string, reason: string) {
+export async function rejectVersion(documentId: string, _reason: string) {
   if (isKnowledgeDemo) return leaveReviewDemo(documentId, null)
-  await api.post(`${BASE}/documents/${documentId}/version/reject`, { reason })
+  throw notConnected('kiểm tra phiên bản')
 }
 
 /* ── Tải lên ── */
+// shortcut: uploads made in this tab only; read them from the API once ingestion lists past uploads
+const sessionUploads: UploadResult[] = []
+
 /** Kết quả các lần tải lên gần đây của người dùng, mới nhất trước */
-export async function getUploads(signal?: AbortSignal) {
+export async function getUploads(): Promise<UploadResult[]> {
   if (isKnowledgeDemo) return structuredClone((await fixtures()).mockUploads)
-  return api.get<UploadResult[]>(`${BASE}/uploads`, { signal })
+  return [...sessionUploads]
 }
 
 /** onProgress nhận 0–100 theo số byte đã gửi */
@@ -211,11 +318,33 @@ export async function uploadDocument(
   }
   const body = new FormData()
   body.append('file', file)
-  Object.entries(meta).forEach(([k, v]) => body.append(k, v))
-  // apiClient mặc định gửi JSON; FormData cần header multipart
-  await api.post(`${BASE}/documents`, body, {
-    headers: { 'Content-Type': 'multipart/form-data' },
-    onUploadProgress: (e) =>
-      e.total && onProgress(Math.round((e.loaded / e.total) * 100)),
-  })
+  body.append('documentNumber', meta.number)
+  body.append('docType', meta.docType)
+  body.append('issuingAuthority', meta.issuer)
+  body.append('title', meta.title ?? '')
+  if (meta.issuedAt) body.append('issuedDate', meta.issuedAt)
+  if (meta.effectiveAt) body.append('effectiveFrom', meta.effectiveAt)
+  const at = new Date().toISOString()
+  try {
+    // apiClient mặc định gửi JSON; FormData cần header multipart
+    const res = await api.post<Envelope<UploadedDocumentDto>>(
+      `${DOCUMENTS}/upload`,
+      body,
+      {
+        headers: { 'Content-Type': 'multipart/form-data' },
+        // A 20 MB file on a slow line outlasts the default 15 s timeout
+        timeout: 120_000,
+        onUploadProgress: (e) =>
+          e.total && onProgress(Math.round((e.loaded / e.total) * 100)),
+      }
+    )
+    sessionUploads.unshift(uploadedResult(file.name, res.data))
+  } catch (e) {
+    const rejected =
+      e instanceof ApiError
+        ? rejectedResult(file.name, meta.number, e.code, at)
+        : null
+    if (!rejected) throw e
+    sessionUploads.unshift(rejected)
+  }
 }

@@ -90,6 +90,10 @@ class ScopeRouterTests(unittest.TestCase):
                 "Chi phí tiếp khách có được trừ thuế TNDN?\nClarification: 2025",
                 (date(2025, 1, 1), date(2025, 12, 31)),
             ),
+            (
+                "Chi phí tiếp khách có được trừ thuế TNDN?\nClarification: Chi cho đối tác khách hàng\n2026",
+                (date(2026, 1, 1), date(2026, 12, 31)),
+            ),
         ]
         for question, (expected_start, expected_end) in cases:
             with self.subTest(question=question), patch("app.modules.rag.router.llm_model") as mock_llm:

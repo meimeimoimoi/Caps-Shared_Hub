@@ -64,6 +64,11 @@ public sealed class TransferDraftTests
         Task<ChatMessage?> IChatMessageRepository.GetByIdAsync(Guid id, CancellationToken ct) =>
             Task.FromResult(Messages.SingleOrDefault(x => x.Id == id));
 
+        Task<ChatMessage?> IChatMessageRepository.FindForUpdateAsync(
+            Guid id,
+            CancellationToken ct
+        ) => Task.FromResult(Messages.SingleOrDefault(x => x.Id == id));
+
         public Task<ChatMessage?> GetLatestAnsweredMessageAsync(
             Guid conversationId,
             CancellationToken ct = default

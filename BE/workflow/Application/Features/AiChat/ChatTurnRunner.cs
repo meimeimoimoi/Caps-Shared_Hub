@@ -7,7 +7,7 @@ using static Caps.Workflow.Application.AiChat.DTOs.ChatDtos;
 
 namespace Caps.Workflow.Application.Features.AiChat;
 
-/// <summary>Executes one RAG chat turn with quota/credit reservation and atomic settlement.</summary>
+/// <summary>Executes one RAG chat turn with quota/credit reservation, clarification rules, and atomic settlement.</summary>
 internal static class ChatTurnRunner
 {
     public static async Task<SendChatMessageResultDto> RunAsync(
@@ -22,7 +22,12 @@ internal static class ChatTurnRunner
         AiBillingSettings aiBillingSettings,
         IUnitOfWork unitOfWork,
         TimeProvider timeProvider,
-        CancellationToken ct
+        CancellationToken ct,
+        ChatMessage? clarifiedTarget = null,
+        Guid? rootQuestionId = null,
+        IReadOnlyList<string>? priorClarificationPrompts = null,
+        IReadOnlyList<string>? priorUserClarifications = null,
+        IReadOnlyCollection<Guid>? threadQuestionIds = null
     )
     {
         var now = timeProvider.GetUtcNow();
@@ -40,24 +45,85 @@ internal static class ChatTurnRunner
         {
             var ragResponse = await ragQueryClient.QueryAsync(ragRequest, ct);
 
-            var citationsJson =
-                ragResponse.Citations.Count > 0
-                    ? JsonSerializer.Serialize(ragResponse.Citations)
-                    : null;
-
             var settledAt = timeProvider.GetUtcNow();
-            var aiMessage = ChatMessage.CreateAiMessage(
-                conversation.Id,
-                ragResponse.Content,
-                ragResponse.ScopeResult,
-                ragResponse.AnswerStatus,
-                ragResponse.PeriodStart ?? ragRequest.PeriodStart,
-                ragResponse.PeriodEnd ?? ragRequest.PeriodEnd,
-                citationsJson,
-                settledAt
-            );
+            var effectiveRootId = rootQuestionId ?? userMessage.Id;
+            var effectivePeriodStart = ragResponse.PeriodStart ?? ragRequest.PeriodStart;
+            var effectivePeriodEnd = ragResponse.PeriodEnd ?? ragRequest.PeriodEnd;
+
+            ChatMessage aiMessage;
+            IReadOnlyList<CitationDto>? responseCitations = ragResponse.Citations;
+
+            if (ragResponse.AnswerStatus == ChatMessageAnswerStatus.NeedClarification)
+            {
+                var nextRound = clarifiedTarget is null
+                    ? 1
+                    : Math.Max(clarifiedTarget.ClarificationRound, 1) + 1;
+
+                if (nextRound > ChatMessage.MaxClarificationRounds)
+                {
+                    var missingSummary = ChatMessage.BuildMissingInformationSummary(
+                        ragRequest.Query,
+                        priorClarificationPrompts ?? [],
+                        priorUserClarifications ?? [],
+                        ragResponse.Content
+                    );
+                    aiMessage = ChatMessage.CreateInsufficientInformationMessage(
+                        conversation.Id,
+                        effectiveRootId,
+                        ChatMessage.MaxClarificationRounds,
+                        ChatMessageClosureReason.ClarificationLimitReached,
+                        missingSummary,
+                        effectivePeriodStart,
+                        effectivePeriodEnd,
+                        settledAt
+                    );
+                    responseCitations = [];
+                }
+                else
+                {
+                    aiMessage = ChatMessage.CreateAiMessage(
+                        conversation.Id,
+                        ragResponse.Content,
+                        ragResponse.ScopeResult,
+                        ChatMessageAnswerStatus.NeedClarification,
+                        effectivePeriodStart,
+                        effectivePeriodEnd,
+                        citations: null,
+                        settledAt,
+                        clarificationRound: nextRound,
+                        clarificationDeadline: settledAt.Add(ChatMessage.ClarificationWindow),
+                        rootQuestionId: effectiveRootId
+                    );
+                    responseCitations = [];
+                }
+            }
+            else
+            {
+                var citationsJson =
+                    ragResponse.Citations.Count > 0
+                        ? JsonSerializer.Serialize(ragResponse.Citations)
+                        : null;
+                var completedRound = clarifiedTarget is null
+                    ? 0
+                    : Math.Max(clarifiedTarget.ClarificationRound, 1);
+
+                aiMessage = ChatMessage.CreateAiMessage(
+                    conversation.Id,
+                    ragResponse.Content,
+                    ragResponse.ScopeResult,
+                    ragResponse.AnswerStatus,
+                    effectivePeriodStart,
+                    effectivePeriodEnd,
+                    citationsJson,
+                    settledAt,
+                    clarificationRound: completedRound,
+                    clarificationDeadline: null,
+                    rootQuestionId: effectiveRootId
+                );
+            }
 
             await using var tx = await unitOfWork.BeginTransactionAsync(ct);
+            clarifiedTarget?.MarkClarificationResolved(settledAt);
             await chatMessageRepository.AddAsync(userMessage, ct);
             await chatMessageRepository.AddAsync(aiMessage, ct);
 
@@ -74,7 +140,7 @@ internal static class ChatTurnRunner
                 conversation.Touch(settledAt);
             }
 
-            if (ragResponse.AnswerStatus == ChatMessageAnswerStatus.Answered)
+            if (aiMessage.AnswerStatus == ChatMessageAnswerStatus.Answered)
             {
                 await aiCreditChargeService.RecordCapturedUsageAsync(
                     reservation,
@@ -102,10 +168,23 @@ internal static class ChatTurnRunner
                     settledAt,
                     ct
                 );
+                if (
+                    aiMessage.AnswerStatus == ChatMessageAnswerStatus.InsufficientInformation
+                    && threadQuestionIds is { Count: > 0 }
+                )
+                {
+                    await aiCreditChargeService.ReleaseReservedUsagesForQuestionAsync(
+                        threadQuestionIds,
+                        $"AI chat {aiMessage.AnswerStatus} ({aiMessage.ClosureReason})",
+                        settledAt,
+                        ct
+                    );
+                }
+
                 await unitOfWork.SaveChangesAsync(ct);
                 await aiCreditChargeService.ReleaseHeldCreditAsync(
                     reservation,
-                    $"AI chat {ragResponse.AnswerStatus}",
+                    $"AI chat {aiMessage.AnswerStatus}",
                     ct
                 );
             }
@@ -122,7 +201,11 @@ internal static class ChatTurnRunner
                 null,
                 null,
                 null,
-                userMessage.CreatedAt
+                userMessage.CreatedAt,
+                userMessage.ClarificationRound,
+                userMessage.ClarificationDeadline,
+                userMessage.ClosureReason,
+                userMessage.MissingInformationSummary
             );
 
             var aiDto = new ChatMessageDto(
@@ -134,8 +217,12 @@ internal static class ChatTurnRunner
                 aiMessage.PeriodEnd,
                 aiMessage.ScopeResult,
                 aiMessage.AnswerStatus,
-                ragResponse.Citations,
-                aiMessage.CreatedAt
+                responseCitations,
+                aiMessage.CreatedAt,
+                aiMessage.ClarificationRound,
+                aiMessage.ClarificationDeadline,
+                aiMessage.ClosureReason,
+                aiMessage.MissingInformationSummary
             );
 
             return new SendChatMessageResultDto(userDto, aiDto);

@@ -1,6 +1,7 @@
 import { api } from '@/lib/api-client'
 import { isExpertDemo } from '@/lib/expert-data-source'
 import { bioFromDto } from '@/features/marketplace/model'
+import { withAvatarUrl } from '@/features/marketplace/api/marketplaceApi'
 import type { MarketplaceExpertDto } from '@/features/marketplace/types'
 import type { ExpertBio, ExpertBioInput } from '../types'
 import { demoBio, saveDemoBio } from './demoRepository'
@@ -9,7 +10,7 @@ const BASE = '/api/v1/experts/me/bio'
 
 // The editor works on the title alone; the public page adds the company after it
 const myBio = (dto: MarketplaceExpertDto): ExpertBio => ({
-  ...bioFromDto(dto),
+  ...bioFromDto(withAvatarUrl(dto)),
   headline: dto.title ?? '',
 })
 

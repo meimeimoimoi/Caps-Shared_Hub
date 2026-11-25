@@ -1,3 +1,4 @@
+using System.IO.Compression;
 using Caps.Workflow.Domain.Workspace;
 
 namespace Caps.Workflow.UnitTests;
@@ -79,4 +80,44 @@ public sealed class TemplateTests
             "TEMPLATE_INVALID",
             Errors.CodeOf(() => Template.Create(code, name, null, Now))
         );
+
+    [Fact]
+    public void A_draft_takes_a_word_file_under_a_new_key_each_time()
+    {
+        var draft = TemplateVersion.SaveDraft(NewTemplate(), null, Fields, Admin, Now);
+
+        var none = draft.AttachFile(Docx());
+        var first = draft.FileKey;
+        var replaced = draft.AttachFile(Docx());
+
+        Assert.Null(none);
+        Assert.StartsWith($"templates/{draft.TemplateId}/{draft.Id}/", first);
+        Assert.Equal(first, replaced);
+        Assert.NotEqual(first, draft.FileKey);
+    }
+
+    [Fact]
+    public void Only_a_draft_takes_a_file_and_only_a_word_one()
+    {
+        var draft = TemplateVersion.SaveDraft(NewTemplate(), null, Fields, Admin, Now);
+
+        Assert.Equal(
+            "TEMPLATE_FILE_INVALID",
+            Errors.CodeOf(() => draft.AttachFile([.. "%PDF-1.7 test"u8]))
+        );
+        draft.Publish(null);
+        Assert.Equal("TEMPLATE_NO_DRAFT", Errors.CodeOf(() => draft.AttachFile(Docx())));
+        Assert.Null(draft.FileKey);
+    }
+
+    private static byte[] Docx()
+    {
+        using var buffer = new MemoryStream();
+        using (var zip = new ZipArchive(buffer, ZipArchiveMode.Create, leaveOpen: true))
+        {
+            using var writer = new StreamWriter(zip.CreateEntry("word/document.xml").Open());
+            writer.Write("<xml/>");
+        }
+        return buffer.ToArray();
+    }
 }

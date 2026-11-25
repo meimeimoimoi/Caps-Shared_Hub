@@ -725,6 +725,25 @@ namespace Caps.Workflow.Infrastructure.Persistence.Migrations
                         .HasColumnType("jsonb")
                         .HasColumnName("citations");
 
+                    b.Property<DateTimeOffset?>("ClarificationDeadline")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("clarification_deadline");
+
+                    b.Property<DateTimeOffset?>("ClarificationResolvedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("clarification_resolved_at");
+
+                    b.Property<int>("ClarificationRound")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasColumnName("clarification_round");
+
+                    b.Property<string>("ClosureReason")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("closure_reason");
+
                     b.Property<string>("Content")
                         .IsRequired()
                         .HasColumnType("text")
@@ -740,6 +759,10 @@ namespace Caps.Workflow.Infrastructure.Persistence.Migrations
                         .HasColumnName("created_at")
                         .HasDefaultValueSql("now()");
 
+                    b.Property<string>("MissingInformationSummary")
+                        .HasColumnType("text")
+                        .HasColumnName("missing_information_summary");
+
                     b.Property<DateOnly?>("PeriodEnd")
                         .HasColumnType("date")
                         .HasColumnName("period_end");
@@ -747,6 +770,10 @@ namespace Caps.Workflow.Infrastructure.Persistence.Migrations
                     b.Property<DateOnly?>("PeriodStart")
                         .HasColumnType("date")
                         .HasColumnName("period_start");
+
+                    b.Property<Guid?>("RootQuestionId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("root_question_id");
 
                     b.Property<string>("ScopeResult")
                         .HasColumnType("text")
@@ -758,6 +785,10 @@ namespace Caps.Workflow.Infrastructure.Persistence.Migrations
                         .HasColumnName("sender");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ClarificationDeadline")
+                        .HasDatabaseName("ix_chat_message_clarification_due")
+                        .HasFilter("answer_status = 'NEED_CLARIFICATION' AND clarification_resolved_at IS NULL AND clarification_deadline IS NOT NULL");
 
                     b.HasIndex("ConversationId", "CreatedAt")
                         .HasDatabaseName("ix_chat_message_2");
@@ -915,6 +946,10 @@ namespace Caps.Workflow.Infrastructure.Persistence.Migrations
                         .HasColumnType("text")
                         .HasColumnName("draft_assessment");
 
+                    b.Property<string>("DraftIssues")
+                        .HasColumnType("jsonb")
+                        .HasColumnName("draft_issues");
+
                     b.Property<string>("FileUrl")
                         .HasColumnType("text")
                         .HasColumnName("file_url");
@@ -1061,6 +1096,10 @@ namespace Caps.Workflow.Infrastructure.Persistence.Migrations
                         .IsRequired()
                         .HasColumnType("jsonb")
                         .HasColumnName("field_schema");
+
+                    b.Property<string>("FileKey")
+                        .HasColumnType("text")
+                        .HasColumnName("file_key");
 
                     b.Property<string>("Status")
                         .IsRequired()
