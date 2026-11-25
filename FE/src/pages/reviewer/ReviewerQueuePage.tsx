@@ -12,6 +12,7 @@ import { useFormatters } from '@/hooks/useFormatters'
 import { useDebouncedValue } from '@/hooks/useDebouncedValue'
 import { useFieldLabel } from '@/features/expert-vetting/hooks/useLabels'
 import { Input } from '@/components/ui/forms/input'
+import { formatDate } from '@/lib/utils'
 import { isOverdue } from '@/features/expert-vetting/hooks/useReviewSlaDays'
 import { Toast } from '@/components/ui/feedback/toast'
 import { EmptyState } from '@/components/ui/feedback/empty-state'
@@ -227,7 +228,7 @@ export default function ReviewerQueuePage({ history = false, gate: routeGate = '
                       </p>
                     </div>
                     <div className="text-text-muted w-full text-xs tabular-nums md:w-44 md:shrink-0">
-                      <time dateTime={row.submittedAt} className="text-text block text-sm">{format.timestamp(row.submittedAt, 'Asia/Bangkok', { dateStyle: 'medium' })}</time>
+                      <time dateTime={row.submittedAt} className="text-text block text-sm">{formatDate(row.submittedAt)}</time>
                       <span>
                         {row.open && (
                           <span className={isOverdue(waitedDays(row.submittedAt), slaDays) ? 'text-warning font-medium' : undefined}>
