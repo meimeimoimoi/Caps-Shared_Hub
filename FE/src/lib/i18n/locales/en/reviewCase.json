@@ -748,6 +748,8 @@
       "deliveredLate": "Delivered {{time}} · {{hours}} h late",
       "netPayout": "You receive {{amount}} when it completes.",
       "lateRule": "Delivered up to {{hours}} h late: you receive {{payout}} and get 1 violation point. Not delivered within {{cancel}} h: the case is cancelled, you receive nothing and get 3 points.",
+      "actionFailed": "The action did not go through.",
+      "dismissError": "Dismiss",
       "confirmDeliver": {
         "title": "Deliver the result?",
         "body": "The result goes to the client for review. Check the summary and citations before you deliver.",

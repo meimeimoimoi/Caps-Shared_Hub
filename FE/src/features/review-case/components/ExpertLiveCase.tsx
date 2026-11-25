@@ -474,6 +474,8 @@ export function ExpertLiveCase({
   const { run, busy } = useCaseRun()
   const toMessage = useCaseError()
   const [toast, setToast] = useState<string | null>(null)
+  // Failed actions stay on screen until dismissed or the next action succeeds
+  const [actionError, setActionError] = useState<string | null>(null)
   const expire = useCallback(() => void refetch(), [refetch])
 
   if (isPending)
@@ -501,8 +503,11 @@ export function ExpertLiveCase({
 
   const perform = (action: () => Promise<unknown>, success = t('live.expert.saved')) =>
     run(action, {
-      onSuccess: () => setToast(success),
-      onError: (e) => setToast(toMessage(e)),
+      onSuccess: () => {
+        setActionError(null)
+        setToast(success)
+      },
+      onError: (e) => setActionError(toMessage(e)),
     })
   const a = reviewCaseActions
   const open = dto.infoRequests?.find((q) => q.status === 'OPEN')
@@ -553,6 +558,24 @@ export function ExpertLiveCase({
           {tr(`live.expert.status.${dto.status}`)}
         </span>
       </header>
+      {actionError && (
+        <div
+          role="alert"
+          className="border-danger bg-danger-soft text-danger mb-6 flex items-start justify-between gap-4 rounded border px-4 py-3 text-sm"
+        >
+          <p>
+            <span className="font-semibold">{t('live.expert.actionFailed')}</span>{' '}
+            {actionError}
+          </p>
+          <button
+            type="button"
+            onClick={() => setActionError(null)}
+            className="shrink-0 font-semibold underline underline-offset-2"
+          >
+            {t('live.expert.dismissError')}
+          </button>
+        </div>
+      )}
 
       <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_24rem]">
         <div className="min-w-0 space-y-6">
