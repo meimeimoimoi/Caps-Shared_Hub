@@ -82,8 +82,9 @@ dotnet run --project workflow/Api    # http://localhost:5030/healthz
 
 EF commands: `dotnet ef migrations add <Name> --project workflow/Infrastructure --startup-project workflow/Api --output-dir Persistence/Migrations`.
 
-Development connection (database and service role must already exist):
+Development connection and internal RAG key (database and service role must already exist; `rag-query` rejects empty `InternalApi:Key`, so set `RagQueryInternalKey` once for local AI chat):
 
 ```powershell
 .\scripts\set-connections.ps1 -Service workflow
+.\scripts\set-connections.ps1 -Service workflow,rag-query -Name RagQueryInternalKey
 ```

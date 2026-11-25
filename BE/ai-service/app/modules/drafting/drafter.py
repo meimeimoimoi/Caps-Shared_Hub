@@ -5,11 +5,12 @@ from typing import Any
 
 from app.core.ai_response import parse_ai_response
 from app.core.models import llm_model
-from app.modules.drafting.prompts import build_draft_prompt
+from app.modules.drafting.prompts import NO_APPROVED_LEGAL_BASIS_NOTE, build_draft_prompt
 from app.schemas.ai_results import DraftContent
 from app.schemas.drafting_dto import DraftIssueItem, DraftIssueSeverity
 
-_NUMBER_RE = re.compile(r"\b\d+(?:[.,]\d+)?\b")
+_NUMBER_RE = re.compile(r"\b\d{1,3}(?:[.,]\d{3})+\b|\b\d+(?:[.,]\d+)?\b")
+_GROUPED_THOUSANDS_RE = re.compile(r"^\d{1,3}(?:[.,]\d{3})+$")
 _LEGAL_REF_RE = re.compile(
     r"(?:"
     r"\b(?:nghị\s+định|thông\s+tư|quyết\s+định|luật|nghị\s+quyết)\s+(?:số\s+)?\d+(?:/\d{4})?(?:/[\w\-]+)?\b"
@@ -39,8 +40,31 @@ _NO_BASIS_MARKERS = (
 )
 
 
+def _normalize_number_token(token: str) -> str:
+    cleaned = token.strip()
+    if _GROUPED_THOUSANDS_RE.fullmatch(cleaned):
+        digits = re.sub(r"[.,]", "", cleaned)
+        return digits.lstrip("0") or "0"
+    if cleaned.isdigit():
+        return cleaned.lstrip("0") or "0"
+    return cleaned.replace(",", ".")
+
+
 def _extract_numbers(value: Any) -> set[str]:
     return set(_NUMBER_RE.findall(json.dumps(value, ensure_ascii=False)))
+
+
+def _find_unauthorized_numbers(
+    output_tokens: set[str],
+    allowed_tokens: set[str],
+) -> list[str]:
+    normalized_allowed = {_normalize_number_token(tok) for tok in allowed_tokens} | allowed_tokens
+    return sorted(
+        tok
+        for tok in output_tokens
+        if tok not in normalized_allowed
+        and _normalize_number_token(tok) not in normalized_allowed
+    )
 
 
 def _extract_citation_numbers(citations: list[dict[str, Any]]) -> set[str]:
@@ -284,6 +308,83 @@ def _evaluate_draft_issues(
     return issues
 
 
+def build_draft_retrieval_query(snapshot_data: dict, template_schema: Any) -> str:
+    """Build a Vietnamese semantic query from template labels and descriptive snapshot fields."""
+    parts: list[str] = [
+        "Quy định pháp luật thuế thu nhập doanh nghiệp TNDN doanh thu chi phí được trừ quyết toán thuế"
+    ]
+    for field in _extract_template_fields(template_schema):
+        for key in ("label", "title", "group"):
+            val = field.get(key)
+            if isinstance(val, str) and val.strip():
+                parts.append(val.strip())
+
+    if isinstance(snapshot_data, dict):
+        for val in snapshot_data.values():
+            if isinstance(val, str):
+                cleaned = val.strip()
+                if cleaned and not cleaned.isdigit():
+                    parts.append(cleaned)
+
+    return " | ".join(dict.fromkeys(parts))
+
+
+def _synthesize_snapshot_narrative(snapshot_data: dict, template_schema: Any) -> str:
+    """Build a deterministic Vietnamese explanation strictly from user-provided snapshot values."""
+    label_map: dict[str, str] = {}
+    for field in _extract_template_fields(template_schema):
+        fid = str(field.get("id") or field.get("name") or field.get("key") or "").strip()
+        flabel = str(field.get("label") or field.get("title") or "").strip()
+        if fid and flabel:
+            label_map[fid] = flabel
+
+    lines: list[str] = [
+        "Bản nháp thuyết minh được tổng hợp từ dữ liệu đầu vào đã xác nhận của người nộp thuế:"
+    ]
+    for key, val in snapshot_data.items():
+        if not _is_non_empty_value(val):
+            continue
+        display_label = label_map.get(str(key), str(key))
+        val_text = val.strip() if isinstance(val, str) else json.dumps(val, ensure_ascii=False)
+        lines.append(f"- {display_label}: {val_text}.")
+    return "\n".join(lines)
+
+
+def _enrich_draft_content(
+    draft_content: dict[str, Any],
+    snapshot_data: dict,
+    template_schema: Any,
+    has_legal_basis: bool,
+) -> dict[str, Any]:
+    """Backfill missing required non-legal snapshot fields and ensure narrative sections when ungrounded."""
+    enriched = dict(draft_content)
+    snapshot = snapshot_data if isinstance(snapshot_data, dict) else {}
+
+    # Preserve required non-legal template fields that already have values in snapshot_data.
+    for field in _extract_template_fields(template_schema):
+        if not field.get("required") or _is_legal_basis_field(field):
+            continue
+        if _is_non_empty_value(_lookup_field_value(enriched, field)):
+            continue
+        snapshot_val = _lookup_field_value(snapshot, field)
+        field_key = str(field.get("id") or field.get("name") or field.get("key") or "").strip()
+        if field_key and _is_non_empty_value(snapshot_val):
+            enriched[field_key] = snapshot_val
+
+    # If retrieval found no legal basis and the LLM merely echoed snapshot keys without narrative prose,
+    # synthesize an explicit Vietnamese explanation + ungrounded legal basis notice without inventing numbers.
+    if not has_legal_basis and snapshot:
+        snapshot_keys = {str(k).strip().lower() for k in snapshot.keys()}
+        content_keys = {str(k).strip().lower() for k in enriched.keys()}
+        if content_keys and content_keys.issubset(snapshot_keys):
+            enriched["noi_dung_giai_trinh"] = _synthesize_snapshot_narrative(
+                snapshot, template_schema
+            )
+            enriched["can_cu_phap_ly"] = NO_APPROVED_LEGAL_BASIS_NOTE
+
+    return enriched
+
+
 class DocumentDrafter:
     @staticmethod
     def generate_draft(
@@ -298,16 +399,25 @@ class DocumentDrafter:
             legal_context=legal_context,
         )
         res = llm_model.invoke(prompt)
-        draft_content = parse_ai_response(res.content, DraftContent).root
+        raw_draft_content = parse_ai_response(res.content, DraftContent).root
 
         resolved_citations = citations or []
+        has_legal_basis = (
+            bool(legal_context and legal_context.strip()) and len(resolved_citations) > 0
+        )
+        draft_content = _enrich_draft_content(
+            draft_content=raw_draft_content,
+            snapshot_data=snapshot_data,
+            template_schema=template_schema,
+            has_legal_basis=has_legal_basis,
+        )
 
         # Guardrail: detect numbers absent from the input snapshot and retrieved citation references.
         allowed_numbers = _extract_numbers(snapshot_data) | _extract_citation_numbers(
             resolved_citations
         )
         output_numbers = _extract_numbers(draft_content)
-        unauthorized = sorted(output_numbers - allowed_numbers)
+        unauthorized = _find_unauthorized_numbers(output_numbers, allowed_numbers)
 
         issues = _evaluate_draft_issues(
             snapshot_data=snapshot_data,

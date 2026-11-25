@@ -105,6 +105,7 @@ cd BE
 Copy-Item docker\.env.example docker\.env   # lần đầu: đổi các mật khẩu trong docker/.env
 docker compose -f docker/docker-compose.yml up -d postgres redis rabbitmq mailpit seaweedfs
 .\scripts\set-connections.ps1 -Service auth,expert,billing,workflow,ingestion
+.\scripts\set-connections.ps1 -Service workflow,rag-query -Name RagQueryInternalKey   # bắt buộc để chat AI local không bị 503
 ```
 
 | Dịch vụ | Địa chỉ | Tài khoản |

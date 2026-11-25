@@ -17,11 +17,11 @@ YÊU CẦU TRẢ VỀ DUY NHẤT ĐỊNH DẠNG JSON (không giải thích thêm
 }}
 Quy tắc:
 1. is_cit:
-   - Đặt true CHỈ KHI câu hỏi liên quan trực tiếp đến Thuế Thu nhập doanh nghiệp (TNDN / CIT) của doanh nghiệp/tổ chức (doanh thu tính thuế TNDN, chi phí được trừ/không được trừ, thuế suất TNDN, ưu đãi/miễn giảm TNDN, chuyển lỗ, tạm nộp/quyết toán TNDN).
+   - Đặt true CHỈ KHI câu hỏi liên quan trực tiếp đến Thuế Thu nhập doanh nghiệp (TNDN / CIT) của doanh nghiệp/tổ chức (doanh thu tính thuế TNDN, chi phí được trừ/không được trừ khi tính thuế TNDN, thuế suất TNDN, ưu đãi/miễn giảm TNDN, chuyển lỗ, tạm nộp/quyết toán TNDN).
    - Đặt false với mọi chủ đề ngoài TNDN, đặc biệt:
-     * Thuế Thu nhập cá nhân (TNCN / PIT), kể cả khi không viết chữ "TNCN" như: giảm trừ gia cảnh, người phụ thuộc, quyết toán lương/thù lao cá nhân.
+     * Thuế Thu nhập cá nhân (TNCN / PIT), kể cả khi câu hỏi nhắc tới "doanh nghiệp/công ty" khấu trừ, kê khai hoặc quyết toán thuế TNCN cho nhân viên/người lao động, giảm trừ gia cảnh, người phụ thuộc, biểu thuế lũy tiến từng phần, thu nhập vãng lai.
      * Hộ kinh doanh, cá nhân kinh doanh, thuế khoán.
-     * Thuế GTGT (VAT) thuần túy, thuế xuất nhập khẩu, kế toán nội bộ, câu hỏi đời sống.
+     * Thuế GTGT (VAT) thuần túy, lệ phí môn bài, lệ phí trước bạ, thuế xuất nhập khẩu, kế toán nội bộ, câu hỏi đời sống.
 2. period_start và period_end: lấy từ câu hỏi hoặc kỳ thuế đi kèm và quy đổi sang "YYYY-MM-DD" (năm 2025 -> "2025-01-01" đến "2025-12-31"; quý 1/2025 -> "2025-01-01" đến "2025-03-31").
 3. needs_clarification và clarification_msg:
    - Chỉ đặt needs_clarification = true khi is_cit = true nhưng chưa xác định được năm hoặc kỳ tính thuế áp dụng.
@@ -30,23 +30,34 @@ Quy tắc:
 
 Ví dụ mẫu:
 - Câu hỏi: "Mức giảm trừ gia cảnh cho bản thân là bao nhiêu?" -> {{"is_cit": false, "period_start": null, "period_end": null, "needs_clarification": false, "clarification_msg": null}}
+- Câu hỏi: "Doanh nghiệp khấu trừ thuế TNCN cho nhân viên thử việc như thế nào?" -> {{"is_cit": false, "period_start": null, "period_end": null, "needs_clarification": false, "clarification_msg": null}}
 - Câu hỏi: "Tháng 3/2026 hộ kinh doanh nộp thuế khoán thế nào?" -> {{"is_cit": false, "period_start": null, "period_end": null, "needs_clarification": false, "clarification_msg": null}}
-- Câu hỏi: "Năm 2024 chi phí nào được trừ khi tính thuế TNDN?" -> {{"is_cit": true, "period_start": "2024-01-01", "period_end": "2024-12-31", "needs_clarification": false, "clarification_msg": null}}
+- Câu hỏi: "Năm 2026 chi phí nào được trừ khi tính thuế TNDN?" -> {{"is_cit": true, "period_start": "2026-01-01", "period_end": "2026-12-31", "needs_clarification": false, "clarification_msg": null}}
 - Câu hỏi: "Thuế suất TNDN phổ thông là bao nhiêu?" -> {{"is_cit": true, "period_start": null, "period_end": null, "needs_clarification": true, "clarification_msg": "Vui lòng cho biết bạn muốn tra cứu thuế suất TNDN cho năm hoặc kỳ tính thuế nào?"}}"""
 
 
-def build_grounded_answer_prompt(question: str,
-                                 context: str,
-                                 period_str: str,) -> str:
-    return f"""Bạn là Trợ lý AI Pháp lý Thuế TNDN. Chỉ trả lời dựa trên Căn cứ pháp lý dưới đây.
-TUYỆT ĐỐI KHÔNG SUY DIỄN NGOÀI CĂN CỨ.
+def build_grounded_answer_prompt(
+    question: str,
+    context: str,
+    period_str: str,
+) -> str:
+    return f"""Bạn là Trợ lý AI Pháp lý Thuế Thu nhập doanh nghiệp (TNDN). Chỉ trả lời dựa trên Căn cứ pháp lý truy xuất dưới đây.
+TUYỆT ĐỐI KHÔNG SUY DIỄN HOẶC BỊA THÊM QUY ĐỊNH NGOÀI CĂN CỨ.
 
-Căn cứ pháp lý:
+Căn cứ pháp lý truy xuất:
 {context}
 
 Kỳ thuế áp dụng: {period_str}
 Câu hỏi: {question}
 
-QUY TẮC:
-1. Nếu thông tin không đủ để kết luận, hãy trả lời chính xác: "Căn cứ pháp lý được cung cấp chưa đủ để đưa ra kết luận chắc chắn cho tình huống này."
-2. BẮT BUỘC liệt kê mục "Căn cứ pháp lý trích dẫn:" ở cuối câu trả lời (ghi rõ Tên văn bản, Số hiệu, Điều, Khoản)."""
+YÊU CẦU TRẢ VỀ DUY NHẤT ĐỊNH DẠNG JSON HỢP LỆ (không giải thích ngoài JSON):
+{{
+  "facts": "...",
+  "legal_basis": "...",
+  "conclusion": "..."
+}}
+
+QUY TẮC BẮT BUỘC CHO 3 PHẦN (viết bằng tiếng Việt rõ ràng, không lặp lại tiêu đề mục ở đầu chuỗi):
+1. "facts" (Dữ kiện): Tóm tắt đúng câu hỏi hoặc tình huống người dùng đưa ra kèm kỳ tính thuế áp dụng ({period_str}); chỉ nêu những gì có trong câu hỏi.
+2. "legal_basis" (Căn cứ): Trích dẫn Số hiệu văn bản, Tên văn bản, Điều, Khoản, Điểm phù hợp trong Căn cứ pháp lý truy xuất (gắn ký hiệu [1], [2]...) và nội dung quy định tương ứng. Lưu ý: khoản quy định mức thuế suất chung 20% chính là mức thuế suất thuế TNDN phổ thông.
+3. "conclusion" (Kết luận): Đưa ra câu trả lời trực tiếp, rõ ràng cho câu hỏi dựa trên phần Căn cứ (kèm [1], [2]...). Nếu người dùng hỏi quy định chung hoặc mức thuế suất phổ thông thì khẳng định trực tiếp mức quy định chung theo căn cứ (và có thể lưu ý ngắn gọn các trường hợp áp dụng mức khác hoặc ưu đãi nêu trong căn cứ). Chỉ khi tất cả các đoạn trong Căn cứ pháp lý truy xuất hoàn toàn không liên quan đến chủ đề câu hỏi mới nêu rằng căn cứ hiện có chưa quy định nội dung này."""

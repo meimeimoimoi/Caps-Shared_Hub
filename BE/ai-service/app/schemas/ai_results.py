@@ -20,3 +20,9 @@ class ScopeAnalysis(BaseModel):
 
 class DraftContent(RootModel[dict[str, Any]]):
     pass
+
+
+class GroundedAnswerSections(BaseModel):
+    facts: str
+    legal_basis: str
+    conclusion: str

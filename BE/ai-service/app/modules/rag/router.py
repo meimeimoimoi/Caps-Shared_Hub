@@ -66,15 +66,25 @@ _NON_CIT_KEYWORDS = (
     "người phụ thuộc",
     "thuế tncn",
     "thu nhập cá nhân",
+    "biểu thuế lũy tiến",
+    "thu nhập vãng lai",
     "hộ kinh doanh",
     "cá nhân kinh doanh",
     "thuế khoán",
+    "thuế gtgt",
+    "thuế giá trị gia tăng",
+    "hoàn thuế gtgt",
+    "khấu trừ thuế gtgt",
+    "lệ phí môn bài",
+    "thuế môn bài",
+    "lệ phí trước bạ",
 )
-_CIT_CONTEXT_KEYWORDS = (
+_EXPLICIT_CIT_TAX_KEYWORDS = (
     "tndn",
     "thu nhập doanh nghiệp",
     "cit",
-    "doanh nghiệp",
+    "chi phí được trừ",
+    "chi phí không được trừ",
 )
 _PROMPT_LEAK_MARKERS = (
     "kỳ thuế do người dùng cung cấp",
@@ -254,9 +264,9 @@ def _extract_unique_period_from_question(question: str) -> tuple[date, date] | N
 
 
 def _is_obvious_non_cit_question(question: str) -> bool:
-    """Catch unambiguous PIT/household-business queries when no CIT context keyword is present."""
+    """Catch unambiguous PIT, VAT, and household-business queries when no explicit CIT tax keyword is present."""
     normalized = " ".join(question.lower().split())
-    if any(cit_kw in normalized for cit_kw in _CIT_CONTEXT_KEYWORDS):
+    if any(cit_kw in normalized for cit_kw in _EXPLICIT_CIT_TAX_KEYWORDS):
         return False
     return any(non_cit_kw in normalized for non_cit_kw in _NON_CIT_KEYWORDS)
 

@@ -13,6 +13,7 @@ if str(AI_SERVICE_ROOT) not in sys.path:
 
 from app.config import settings  # noqa: E402
 from app.main import app  # noqa: E402
+from app.modules.drafting.drafter import build_draft_retrieval_query  # noqa: E402
 
 
 def _make_hit(
@@ -221,6 +222,90 @@ class DraftingGroundingTests(unittest.TestCase):
         self.assertEqual(len(body["issues"]), 1)
         self.assertEqual(body["issues"][0]["code"], "INCOMPLETE_CITATION_METADATA")
         self.assertEqual(body["issues"][0]["severity"], "WARNING")
+
+    def test_empty_retrieval_synthesizes_narrative_when_llm_echoes_snapshot_only(self):
+        llm_reply = SimpleNamespace(
+            content=json.dumps(
+                {"companyName": "Công ty Minh An", "revenue": 1000},
+                ensure_ascii=False,
+            )
+        )
+        with (
+            patch("app.api.routes.TemporalRetriever.retrieve", return_value=[]),
+            patch("app.modules.drafting.drafter.llm_model") as mock_llm,
+        ):
+            mock_llm.invoke.return_value = llm_reply
+            resp = self.client.post(
+                "/api/v1/drafting/generate",
+                json={
+                    "document_id": "doc-6",
+                    "snapshot_data": {"companyName": "Công ty Minh An", "revenue": 1000},
+                    "template_schema": [
+                        {"id": "companyName", "label": "Tên doanh nghiệp", "required": True},
+                        {"id": "revenue", "label": "Doanh thu", "required": True},
+                    ],
+                    "period_start": "2026-01-01",
+                    "period_end": "2026-12-31",
+                },
+            )
+
+        self.assertEqual(resp.status_code, 200)
+        body = resp.json()
+        self.assertEqual(body["content"]["companyName"], "Công ty Minh An")
+        self.assertEqual(body["content"]["revenue"], 1000)
+        self.assertIn("noi_dung_giai_trinh", body["content"])
+        self.assertIn("Tên doanh nghiệp: Công ty Minh An", body["content"]["noi_dung_giai_trinh"])
+        self.assertIn("Chưa có căn cứ pháp lý đã được phê duyệt", body["content"]["can_cu_phap_ly"])
+        self.assertFalse(body["has_unauthorized_numbers"])
+        codes = {i["code"] for i in body["issues"]}
+        self.assertIn("MISSING_LEGAL_BASIS", codes)
+        self.assertNotIn("FABRICATED_LEGAL_BASIS", codes)
+
+    def test_build_draft_retrieval_query_combines_labels_and_descriptive_values(self):
+        query = build_draft_retrieval_query(
+            {"companyName": "Công ty Minh An", "taxCode": "0123456789", "revenue": 1000},
+            [{"id": "expenseDescription", "label": "Chi phí khấu hao tài sản cố định"}],
+        )
+        self.assertIn("Chi phí khấu hao tài sản cố định", query)
+        self.assertIn("Công ty Minh An", query)
+        self.assertNotIn("0123456789", query)
+
+    def test_thousand_separator_formatting_of_snapshot_numbers_is_authorized(self):
+        llm_reply = SimpleNamespace(
+            content=json.dumps(
+                {
+                    "deductibleAmount": "160000000",
+                    "noi_dung_giai_trinh": "Khoản chi đề nghị được trừ là 160,000,000 VND (tức 160.000.000 đồng) phát sinh ngày 15 tháng 3 năm 2026.",
+                    "can_cu_phap_ly": "Theo Điều 11 Nghị định 320/2025/ND-CP.",
+                },
+                ensure_ascii=False,
+            )
+        )
+        with (
+            patch("app.api.routes.TemporalRetriever.retrieve", return_value=[_make_hit()]),
+            patch("app.modules.drafting.drafter.llm_model") as mock_llm,
+        ):
+            mock_llm.invoke.return_value = llm_reply
+            resp = self.client.post(
+                "/api/v1/drafting/generate",
+                json={
+                    "document_id": "doc-7",
+                    "snapshot_data": {
+                        "deductibleAmount": "160000000",
+                        "transactionDate": "2026-03-15",
+                    },
+                    "template_schema": [
+                        {"id": "deductibleAmount", "label": "Số tiền đề nghị được trừ", "required": True},
+                    ],
+                    "period_start": "2026-01-01",
+                    "period_end": "2026-12-31",
+                },
+            )
+
+        self.assertEqual(resp.status_code, 200)
+        body = resp.json()
+        self.assertFalse(body["has_unauthorized_numbers"], body["unauthorized_numbers"])
+        self.assertEqual(body["issues"], [])
 
 
 if __name__ == "__main__":
