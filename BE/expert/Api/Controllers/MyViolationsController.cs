@@ -37,7 +37,7 @@ public sealed class MyViolationsController(ICurrentUser currentUser) : Controlle
     /// <response code="200">The violations after the request.</response>
     /// <response code="400">VIOLATION_EXCUSE_REASON_REQUIRED, VIOLATION_EXCUSE_FILE_LIMIT, EVIDENCE_TOO_LARGE or EVIDENCE_INVALID_TYPE.</response>
     /// <response code="404">VIOLATION_NOT_FOUND.</response>
-    /// <response code="409">VIOLATION_ALREADY_EXCUSED, VIOLATION_EXCUSE_ALREADY_REQUESTED or VIOLATION_EXCUSE_REQUEST_CLOSED.</response>
+    /// <response code="409">VIOLATION_ALREADY_EXCUSED, VIOLATION_EXCUSE_ALREADY_REQUESTED, VIOLATION_EXCUSE_REQUEST_CLOSED or VIOLATION_EXCUSE_LIMIT.</response>
     [HttpPost("{reviewCaseId:guid}/excuse-request")]
     [RequestSizeLimit(UploadLimit), RequestFormLimits(MultipartBodyLengthLimit = UploadLimit)]
     public async Task<IActionResult> RequestExcuse(
@@ -59,5 +59,22 @@ public sealed class MyViolationsController(ICurrentUser currentUser) : Controlle
         await request.HandleAsync(new(UserId, reviewCaseId, reason, uploads), ct);
         var violations = await list.HandleAsync(new(UserId), ct);
         return Ok(ApiResponse<ExpertViolationsResponse>.Ok(violations));
+    }
+
+    /// <summary>Downloads one evidence file the expert sent with an excuse request.</summary>
+    /// <response code="200">The file.</response>
+    /// <response code="404">VIOLATION_NOT_FOUND or VIOLATION_FILE_NOT_FOUND.</response>
+    [HttpGet("{reviewCaseId:guid}/files/{fileId:guid}")]
+    public async Task<IActionResult> OpenFile(
+        Guid reviewCaseId,
+        Guid fileId,
+        [FromServices] IQueryHandler<OpenMyExcuseFileQuery, ExpertEvidenceFile> handler,
+        CancellationToken ct
+    )
+    {
+        var file = await handler.HandleAsync(new(UserId, reviewCaseId, fileId), ct);
+        Response.Headers.XContentTypeOptions = "nosniff";
+        Response.Headers.CacheControl = "private, no-store";
+        return File(file.Content, file.ContentType, file.FileName);
     }
 }
