@@ -176,18 +176,23 @@ public sealed class User
             throw AuthErrors.UserAlreadySuspended();
         if (string.IsNullOrWhiteSpace(reason))
             throw AuthErrors.SuspendReasonRequired();
+        var trimmed = AdminActionReason.Require(reason);
         Status = UserStatus.Suspended;
-        SuspendedReason = reason.Trim();
+        SuspendedReason = trimmed;
         SuspendedAt = now;
         SuspendedBy = adminUserId;
         UpdatedAt = now;
     }
 
-    /// <summary>Unlocks the account back to where it was: active, or still waiting for email verification.</summary>
-    public void Reinstate(DateTimeOffset now)
+    /// <summary>
+    /// Unlocks the account back to where it was: active, or still waiting for email verification. The reason is
+    /// checked here but kept only in the audit trail, since the account no longer carries a lock.
+    /// </summary>
+    public void Reinstate(string? reason, DateTimeOffset now)
     {
         if (!IsSuspended)
             throw AuthErrors.UserNotSuspended();
+        AdminActionReason.Require(reason);
         Status = EmailVerifiedAt is null ? UserStatus.PendingVerification : UserStatus.Active;
         SuspendedReason = null;
         SuspendedAt = null;
