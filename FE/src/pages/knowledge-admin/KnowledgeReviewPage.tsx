@@ -27,6 +27,10 @@ import { useDocumentReview } from '../../features/knowledgeAdmin-review-approval
 import type { DocumentReview } from '../../features/knowledgeAdmin-review-approval/types'
 import { articleStatus } from '../../features/knowledgeAdmin-review-approval/utils/review'
 import { openOriginal } from '../../features/knowledgeAdmin-review-approval/utils/openOriginal'
+import {
+  loadCrosscheck,
+  saveCrosscheck,
+} from '../../features/knowledgeAdmin-review-approval/utils/crosscheckDraft'
 
 const queueLink = (
   <Link to="/knowledge/queue" className="text-fg-muted hover:text-fg-strong">
@@ -104,7 +108,9 @@ function ReviewWorkspace({
   )
   const [editing, setEditing] = useState(false)
   const [edits, setEdits] = useState<Record<string, string>>({})
-  const [checked, setChecked] = useState<CrosscheckKey[]>([])
+  const [checked, setChecked] = useState<CrosscheckKey[]>(() =>
+    loadCrosscheck(review.documentId)
+  )
   // Article the admin asked to open while unsaved edits are pending
   const [leaving, setLeaving] = useState<string | null>(null)
   const [meta, setMeta] = useState(review.meta)
@@ -141,6 +147,14 @@ function ReviewWorkspace({
     if (editing && Object.keys(edits).length) setLeaving(id)
     else open(id)
   }
+  const toggleCheck = (k: CrosscheckKey) =>
+    setChecked((c) => {
+      const next = c.includes(k) ? c.filter((x) => x !== k) : [...c, k]
+      saveCrosscheck(review.documentId, next)
+      return next
+    })
+  // A decided document needs no saved ticks
+  const done = () => saveCrosscheck(review.documentId, [])
 
   const total = articles.length
   const metaMissing = Object.values(meta).some((v) => !v?.trim())
@@ -283,14 +297,7 @@ function ReviewWorkspace({
 
         <div className="space-y-4 lg:sticky lg:top-20 lg:max-h-[calc(100vh-180px)] lg:overflow-y-auto">
           <section className="paper p-5">
-            <CrosscheckPanel
-              checked={checked}
-              onToggle={(k) =>
-                setChecked((c) =>
-                  c.includes(k) ? c.filter((x) => x !== k) : [...c, k]
-                )
-              }
-            />
+            <CrosscheckPanel checked={checked} onToggle={toggleCheck} />
           </section>
           <section className="paper p-5">
             <h2 className="text-h2 mb-4">Metadata</h2>
@@ -328,11 +335,12 @@ function ReviewWorkspace({
             setBusy(true)
             state
               .approve({ meta, crosscheck: checked })
-              .then(() =>
+              .then(() => {
+                done()
                 navigate(`/knowledge/documents/${review.documentId}`, {
                   state: { toast: `Đã duyệt ${meta.number}, đang index` },
                 })
-              )
+              })
               .catch((e: Error) => {
                 setBusy(false)
                 fail(e)
@@ -348,11 +356,12 @@ function ReviewWorkspace({
           confirmLabel="Từ chối văn bản"
           onClose={() => setRejecting(false)}
           onConfirm={(reason) =>
-            state.reject(reason).then(() =>
+            state.reject(reason).then(() => {
+              done()
               navigate('/knowledge/queue', {
                 state: { toast: `Đã từ chối ${review.meta.number}` },
               })
-            )
+            })
           }
         />
       )}
@@ -364,13 +373,14 @@ function ReviewWorkspace({
           reasonLabel="Lý do bóc tách lại (bắt buộc)"
           onClose={() => setReprocessing(false)}
           onConfirm={(reason) =>
-            state.reprocess(reason).then(() =>
+            state.reprocess(reason).then(() => {
+              done()
               navigate('/knowledge/queue', {
                 state: {
                   toast: `Đã gửi ${review.meta.number} về bước bóc tách`,
                 },
               })
-            )
+            })
           }
         />
       )}
