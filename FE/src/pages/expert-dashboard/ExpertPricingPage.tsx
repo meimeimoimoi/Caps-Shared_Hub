@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { DemoBanner } from '@/components/ui/feedback/demo-banner'
 import { PageHeader } from '@/components/ui/layout/page-header'
 import { EmptyState } from '@/components/ui/feedback/empty-state'
 import { Link, useLocation, useParams } from 'react-router-dom'
@@ -231,9 +232,10 @@ function PricingEditor({
   return (
     <>
       {isExpertDemo && (
-        <div className="epr-notice epr-demo">
-          <Info size={18} aria-hidden="true" />
-          <p>{t('pricing.demo')}</p>
+        <div className="mb-6">
+          <DemoBanner>
+            <p>{t('pricing.demo')}</p>
+          </DemoBanner>
         </div>
       )}
       {pending && (
