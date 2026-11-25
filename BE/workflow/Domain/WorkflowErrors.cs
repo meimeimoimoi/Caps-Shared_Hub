@@ -256,6 +256,13 @@ public static class WorkflowErrors
             "The template has no draft version to publish."
         );
 
+    public static AppException TemplateTaxYearInvalid() =>
+        new(
+            ErrorType.Validation,
+            "TEMPLATE_TAX_YEAR_INVALID",
+            "The template version needs the tax year its form applies to (2000-2100)."
+        );
+
     public static AppException FieldSchemaInvalid() =>
         new(
             ErrorType.Validation,

@@ -17,7 +17,7 @@ public sealed class TemplateTests
     {
         var template = NewTemplate();
 
-        var version = TemplateVersion.SaveDraft(template, null, Fields, Admin, Now);
+        var version = TemplateVersion.SaveDraft(template, null, Fields, Admin, Now, 2026);
 
         Assert.Equal("03/TNDN", template.Code);
         Assert.Equal("Tax return", template.Name);
@@ -31,7 +31,7 @@ public sealed class TemplateTests
     public void Saving_again_overwrites_the_open_draft()
     {
         var template = NewTemplate();
-        var draft = TemplateVersion.SaveDraft(template, null, Fields, Admin, Now);
+        var draft = TemplateVersion.SaveDraft(template, null, Fields, Admin, Now, 2026);
         const string changed = """[{"id":"revenue","type":"money"}]""";
 
         var saved = TemplateVersion.SaveDraft(template, draft, changed, Admin, Now);
@@ -45,7 +45,7 @@ public sealed class TemplateTests
     public void Publishing_a_draft_deprecates_the_previous_version_and_locks_it()
     {
         var template = NewTemplate();
-        var v1 = TemplateVersion.SaveDraft(template, null, Fields, Admin, Now);
+        var v1 = TemplateVersion.SaveDraft(template, null, Fields, Admin, Now, 2026);
         v1.Publish(null);
 
         var v2 = TemplateVersion.SaveDraft(template, v1, Fields, Admin, Now);
@@ -67,8 +67,39 @@ public sealed class TemplateTests
     public void The_schema_must_be_a_non_empty_array_of_fields(string? schema) =>
         Assert.Equal(
             "FIELD_SCHEMA_INVALID",
-            Errors.CodeOf(() => TemplateVersion.SaveDraft(NewTemplate(), null, schema, Admin, Now))
+            Errors.CodeOf(() =>
+                TemplateVersion.SaveDraft(NewTemplate(), null, schema, Admin, Now, 2026)
+            )
         );
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData(1999)]
+    [InlineData(2101)]
+    public void The_first_version_needs_a_valid_tax_year(int? taxYear) =>
+        Assert.Equal(
+            "TEMPLATE_TAX_YEAR_INVALID",
+            Errors.CodeOf(() =>
+                TemplateVersion.SaveDraft(NewTemplate(), null, Fields, Admin, Now, taxYear)
+            )
+        );
+
+    [Fact]
+    public void The_next_version_keeps_the_tax_year_unless_a_new_one_is_given()
+    {
+        var template = NewTemplate();
+        var v1 = TemplateVersion.SaveDraft(template, null, Fields, Admin, Now, 2026);
+        v1.Publish(null);
+
+        var v2 = TemplateVersion.SaveDraft(template, v1, Fields, Admin, Now);
+        Assert.Equal(2026, v2.TaxYear);
+
+        var moved = TemplateVersion.SaveDraft(template, v2, Fields, Admin, Now, 2027);
+        Assert.Same(v2, moved);
+        Assert.Equal(2027, moved.TaxYear);
+        Assert.Equal(2026, v1.TaxYear);
+        Assert.Equal((new DateOnly(2027, 1, 1), new DateOnly(2027, 12, 31)), moved.TaxPeriod());
+    }
 
     [Theory]
     [InlineData(null, "Name")]
@@ -84,7 +115,7 @@ public sealed class TemplateTests
     [Fact]
     public void A_draft_takes_a_word_file_under_a_new_key_each_time()
     {
-        var draft = TemplateVersion.SaveDraft(NewTemplate(), null, Fields, Admin, Now);
+        var draft = TemplateVersion.SaveDraft(NewTemplate(), null, Fields, Admin, Now, 2026);
 
         var none = draft.AttachFile(Docx());
         var first = draft.FileKey;
@@ -99,7 +130,7 @@ public sealed class TemplateTests
     [Fact]
     public void Only_a_draft_takes_a_file_and_only_a_word_one()
     {
-        var draft = TemplateVersion.SaveDraft(NewTemplate(), null, Fields, Admin, Now);
+        var draft = TemplateVersion.SaveDraft(NewTemplate(), null, Fields, Admin, Now, 2026);
 
         Assert.Equal(
             "TEMPLATE_FILE_INVALID",

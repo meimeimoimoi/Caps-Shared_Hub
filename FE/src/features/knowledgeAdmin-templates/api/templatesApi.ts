@@ -119,6 +119,7 @@ export async function createTemplate(
           changelog: input.changelog,
           fileName: input.fileName,
           fields: input.fields,
+          taxYear: input.taxYear,
           workspaces: 0,
         },
       ],
@@ -139,6 +140,7 @@ export async function createTemplate(
     name: input.title,
     description: input.description,
     fieldSchema: input.fields,
+    taxYear: input.taxYear,
   })
   const id = res.data.templateId
   if (file) {

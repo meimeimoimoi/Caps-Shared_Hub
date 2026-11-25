@@ -174,6 +174,7 @@ test('save is blocked with a pointer to each control to fix', async () => {
     description: '',
     changelog: '',
     fileName: '',
+    taxYear: 2026,
     fields: [
       field({ id: 'ho_ten', label: 'Họ tên', anchor: at }),
       field({ id: '', label: '', group: '' }),

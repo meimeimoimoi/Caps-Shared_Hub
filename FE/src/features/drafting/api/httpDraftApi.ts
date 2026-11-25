@@ -261,8 +261,7 @@ export const httpDraftApi: DraftApi = {
       title: template.title,
       templateId: template.templateId,
       metadata: JSON.stringify({ templateVersionId: template.id }),
-      periodStart: '2026-01-01',
-      periodEnd: '2026-12-31',
+      // The server sets the period to the tax year of the template's published version
     })
     return toWorkspace(response.data, template.id)
   },

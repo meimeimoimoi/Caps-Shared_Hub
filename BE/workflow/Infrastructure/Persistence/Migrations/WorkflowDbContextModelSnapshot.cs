@@ -1108,6 +1108,10 @@ namespace Caps.Workflow.Infrastructure.Persistence.Migrations
                         .HasDefaultValue("DRAFT")
                         .HasColumnName("status");
 
+                    b.Property<int>("TaxYear")
+                        .HasColumnType("integer")
+                        .HasColumnName("tax_year");
+
                     b.Property<Guid>("TemplateId")
                         .HasColumnType("uuid")
                         .HasColumnName("template_id");

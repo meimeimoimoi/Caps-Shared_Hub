@@ -7,8 +7,8 @@ public static class DocumentRequests
     public sealed record CreateDocumentRequest(
         [Required, MaxLength(200)] string Title,
         Guid? TemplateId,
-        [Required] DateOnly PeriodStart,
-        [Required] DateOnly PeriodEnd,
+        DateOnly? PeriodStart,
+        DateOnly? PeriodEnd,
         [MaxLength(50)] string? Source,
         [MaxLength(100_000)] string? Metadata
     );
