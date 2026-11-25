@@ -29,6 +29,7 @@ import { usePricing } from '../../features/service-pricing/hooks/usePricing'
 import type { Escrow } from '../../features/disputes-escrow/types'
 import { PageHeader } from '@/components/ui/layout/page-header'
 import { LoadError } from '@/components/ui/feedback/load-error'
+import { EmptyState } from '@/components/ui/feedback/empty-state'
 
 const rowCls = 'border-border-subtle border-t [&>td]:px-4 [&>td]:py-3'
 const headCls =
@@ -361,7 +362,11 @@ export default function AdminEscrowPage() {
                       colSpan={7}
                       className="text-fg-muted px-4 py-10 text-center"
                     >
-                      {escrows.error ? <LoadError /> : t('escrow.noMatch')}
+                      {escrows.error ? (
+                        <LoadError />
+                      ) : (
+                        <EmptyState title={t('escrow.noMatch')} />
+                      )}
                     </td>
                   </tr>
                 )}

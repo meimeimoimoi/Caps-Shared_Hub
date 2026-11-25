@@ -13,6 +13,7 @@ import { useTranslation } from 'react-i18next'
 import { useMotion } from '@/components/ui/motion'
 import { useFieldLabel } from '../hooks/useLabels'
 import { SkeletonRows } from '@/components/ui/display/skeleton-rows'
+import { EmptyState } from '@/components/ui/feedback/empty-state'
 
 interface ApplicationsTableProps {
   paged: Paged<ExpertApplication>
@@ -183,7 +184,9 @@ export function ApplicationsTable({
           {!loading && rows.length === 0 && (
             <tr className="border-border-subtle border-t">
               <td colSpan={6} className="text-fg-muted px-4 py-10 text-center">
-                {empty ?? t('applicationsTable.noApplications')}
+                {empty ?? (
+                  <EmptyState title={t('applicationsTable.noApplications')} />
+                )}
               </td>
             </tr>
           )}

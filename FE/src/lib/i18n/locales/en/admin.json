@@ -240,6 +240,8 @@
       "request": "The expert asks: {{text}}",
       "requestDeclined": "Request declined; still counted",
       "decline": "Decline request",
+      "declineTitle": "Decline the excuse request from {{name}}?",
+      "declineBody": "The violation keeps its points. This cannot be undone.",
       "noFiles": "No evidence files attached.",
       "fileFailed": "Couldn't open the file. Try again."
     }
@@ -545,6 +547,8 @@
       "confirmBody": "The decision goes to both the client and the expert, and the escrow is split by the outcome below.",
       "failed": "The decision wasn't sent and nothing was recorded. Try again.",
       "reasonMissing": "Enter a reason for the decision.",
+      "reasonMin": "Enter a reason of at least {{count}} characters.",
+      "amountsNoLate": "Excludes any late-delivery refund; if the case was late, the client gets more and the final split is set at settlement.",
       "awaitingStatement": "The expert can still explain until {{time}}. You can decide after that, or as soon as they have explained."
     },
     "escalation": {
@@ -881,7 +885,20 @@
       "schedule": "Schedule",
       "create": "Create group",
       "scheduled": "Scheduled a new range for {{name}} from {{date}}",
-      "created": "Created {{name}}, open from {{date}}"
+      "created": "Created {{name}}, open from {{date}}",
+      "reviewChangeTitle": "Schedule the new range for {{name}}?",
+      "reviewCreateTitle": "Create the group {{name}}?",
+      "reviewBack": "Back to editing",
+      "reviewRange": "Fee range",
+      "reviewStep": "Price step",
+      "reviewFrom": "Effective from",
+      "reviewImpact": "Experts affected",
+      "reviewImpactValue": "{{count}} experts in the group · {{outside}} outside the new range",
+      "reviewReason": "Reason",
+      "leaveTitle": "Discard unsaved changes?",
+      "leaveBody": "The range and reason you entered will be lost.",
+      "stay": "Stay",
+      "leave": "Discard changes"
     }
   },
   "users": {
@@ -940,6 +957,11 @@
       "lockBody": "They cannot sign in until unlocked. Work in progress is not deleted.",
       "lockReason": "Reason (required)",
       "lockReasonHint": "Shown in account details while the account is locked.",
+      "lockReasonMin": "Enter a reason of at least {{count}} characters.",
+      "unlockReason": "Reason for unlocking (required)",
+      "unlockReasonHint": "Kept in the account audit trail.",
+      "resetReason": "Reason for the password reset (required)",
+      "resetReasonHint": "Kept in the account audit trail.",
       "lockConfirm": "Lock account",
       "unlockTitle": "Unlock {{name}}?",
       "unlockBody": "They can sign in again right away.",

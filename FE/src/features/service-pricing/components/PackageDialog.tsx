@@ -1,6 +1,7 @@
 import { useState, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Modal } from '@/components/ui/feedback/modal'
+import { FormField } from '@/components/ui/forms/form-field'
 import type { CreditPackage, PackageInput } from '../types'
 
 interface PackageDialogProps {
@@ -18,25 +19,27 @@ const inputCls =
 
 function Field(props: {
   label: string
-  hint?: string
+  /** Explanation shown in a HelpTip next to the label */
+  help?: string
+  /** Live value derived from the input (e.g. price per credit), kept visible */
+  note?: string
   suffix?: string
   children: ReactNode
 }) {
   return (
-    <label className="flex flex-col gap-1.5 text-sm font-semibold">
-      {props.label}
+    <FormField label={props.label} help={props.help} className="!mb-0">
       <span className="flex items-center gap-2">
         {props.children}
         {props.suffix && (
           <span className="text-fg-muted font-normal">{props.suffix}</span>
         )}
       </span>
-      {props.hint && (
-        <span className="text-fg-muted text-caption font-normal">
-          {props.hint}
+      {props.note && (
+        <span className="text-fg text-caption num font-normal">
+          {props.note}
         </span>
       )}
-    </label>
+    </FormField>
   )
 }
 
@@ -118,7 +121,7 @@ export function PackageDialog({
       <div className="mt-5 space-y-4">
         <Field
           label={t('pricing.package.name')}
-          hint={t('pricing.package.nameHint')}
+          help={t('pricing.package.nameHint')}
         >
           <input
             required
@@ -143,7 +146,7 @@ export function PackageDialog({
           <Field
             label={t('pricing.package.price')}
             suffix="đ"
-            hint={
+            note={
               perCredit
                 ? t('pricing.package.perCredit', {
                     amount: perCredit.toLocaleString('vi-VN'),
@@ -164,7 +167,7 @@ export function PackageDialog({
         </div>
         <Field
           label={t('pricing.package.order')}
-          hint={t('pricing.package.orderHint')}
+          help={t('pricing.package.orderHint')}
         >
           <input
             required

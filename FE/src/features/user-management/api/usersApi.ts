@@ -69,7 +69,7 @@ export async function getUsers(signal?: AbortSignal) {
   return [...users.values()]
 }
 
-/** Lock or unlock an account. */
+/** Lock or unlock an account; both need a reason, kept in the audit trail. */
 export async function setUserLocked(
   id: string,
   locked: boolean,
@@ -86,27 +86,31 @@ export async function setUserLocked(
       actor,
       text: locked
         ? `Khóa tài khoản: ${reason}`
-        : `Mở khóa tài khoản${reason ? `: ${reason}` : ''}`,
+        : `Mở khóa tài khoản: ${reason}`,
     })
     return
   }
   if (locked) {
     await api.post(`${BASE}/${id}/lock`, { reason })
   } else {
-    await api.post(`${BASE}/${id}/unlock`)
+    await api.post(`${BASE}/${id}/unlock`, { reason })
   }
 }
 
-/** Request a password reset email for the account. */
-export async function sendPasswordReset(id: string, actor: string) {
+/** Request a password reset email for the account, with the reason kept in the audit trail. */
+export async function sendPasswordReset(
+  id: string,
+  reason: string,
+  actor: string
+) {
   if (isExpertDemo) {
     const user = (await fixtures()).mockUsers.find((x) => x.id === id)
     user?.history?.unshift({
       at: new Date().toISOString(),
       actor,
-      text: 'Gửi email đặt lại mật khẩu',
+      text: `Gửi email đặt lại mật khẩu: ${reason}`,
     })
     return
   }
-  await api.post(`${BASE}/${id}/password-reset`)
+  await api.post(`${BASE}/${id}/password-reset`, { reason })
 }

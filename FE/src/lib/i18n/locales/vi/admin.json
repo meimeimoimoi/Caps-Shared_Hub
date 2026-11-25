@@ -234,6 +234,8 @@
       "request": "Chuyên gia xin miễn: {{text}}",
       "requestDeclined": "Đã từ chối yêu cầu miễn, vẫn tính điểm",
       "decline": "Từ chối yêu cầu",
+      "declineTitle": "Từ chối yêu cầu miễn của {{name}}?",
+      "declineBody": "Vi phạm vẫn được tính điểm. Không hoàn tác được.",
       "noFiles": "Không kèm tệp bằng chứng.",
       "fileFailed": "Không mở được tệp. Hãy thử lại."
     }
@@ -537,6 +539,8 @@
       "confirmBody": "Quyết định được gửi cho cả khách và chuyên gia, và tiền ký quỹ được chia theo kết quả dưới đây.",
       "failed": "Chưa gửi được quyết định; quyết định chưa được ghi. Hãy thử lại.",
       "reasonMissing": "Nhập lý do quyết định.",
+      "reasonMin": "Nhập lý do ít nhất {{count}} ký tự.",
+      "amountsNoLate": "Chưa tính phần hoàn do giao muộn (nếu có); khi có, khách nhận nhiều hơn và hệ thống chia lại khi chốt.",
       "awaitingStatement": "Chuyên gia còn hạn giải trình tới {{time}}. Bạn ra quyết định được sau thời điểm đó, hoặc ngay khi chuyên gia đã giải trình."
     },
     "escalation": {
@@ -872,7 +876,20 @@
       "schedule": "Lên lịch áp dụng",
       "create": "Tạo nhóm",
       "scheduled": "Đã lên lịch khung mới cho {{name}} từ {{date}}",
-      "created": "Đã tạo nhóm {{name}}, mở từ {{date}}"
+      "created": "Đã tạo nhóm {{name}}, mở từ {{date}}",
+      "reviewChangeTitle": "Lên lịch khung mới cho {{name}}?",
+      "reviewCreateTitle": "Tạo nhóm {{name}}?",
+      "reviewBack": "Quay lại sửa",
+      "reviewRange": "Khung giá",
+      "reviewStep": "Bước giá",
+      "reviewFrom": "Hiệu lực từ",
+      "reviewImpact": "Chuyên gia bị ảnh hưởng",
+      "reviewImpactValue": "{{count}} chuyên gia trong nhóm · {{outside}} ngoài khung mới",
+      "reviewReason": "Lý do",
+      "leaveTitle": "Bỏ thay đổi chưa lưu?",
+      "leaveBody": "Khung giá và lý do bạn đã nhập sẽ mất.",
+      "stay": "Ở lại",
+      "leave": "Bỏ thay đổi"
     }
   },
   "users": {
@@ -931,6 +948,11 @@
       "lockBody": "Người này không đăng nhập được cho tới khi mở khóa. Việc đang làm dở không bị xóa.",
       "lockReason": "Lý do khóa (bắt buộc)",
       "lockReasonHint": "Hiển thị trong chi tiết tài khoản khi đang khóa.",
+      "lockReasonMin": "Nhập lý do ít nhất {{count}} ký tự.",
+      "unlockReason": "Lý do mở khóa (bắt buộc)",
+      "unlockReasonHint": "Lưu vào nhật ký kiểm toán của tài khoản.",
+      "resetReason": "Lý do gửi đặt lại mật khẩu (bắt buộc)",
+      "resetReasonHint": "Lưu vào nhật ký kiểm toán của tài khoản.",
       "lockConfirm": "Khóa tài khoản",
       "unlockTitle": "Mở khóa {{name}}?",
       "unlockBody": "Người này đăng nhập lại được ngay.",
