@@ -153,6 +153,8 @@ public sealed class CaseDetailsTests
         ) => throw new NotSupportedException();
 
         public void Add(ReviewAttachment attachment) => throw new NotSupportedException();
+
+        public void Remove(ReviewAttachment attachment) => throw new NotSupportedException();
     }
 
     private static ReviewCase Booked() =>

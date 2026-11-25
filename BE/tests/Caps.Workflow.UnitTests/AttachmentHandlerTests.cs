@@ -300,6 +300,8 @@ public sealed class AttachmentHandlerTests
 
         public void Add(ReviewAttachment attachment) => Stored.Add(attachment);
 
+        public void Remove(ReviewAttachment attachment) => Stored.Remove(attachment);
+
         public List<DocumentVersion> Versions { get; } = [];
 
         public Task<DocumentVersion?> FindSourceAsync(Guid versionId, CancellationToken ct) =>

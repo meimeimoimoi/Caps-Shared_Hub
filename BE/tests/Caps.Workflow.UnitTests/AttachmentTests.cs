@@ -144,6 +144,83 @@ public sealed class AttachmentTests
             )
         );
 
+    [Fact]
+    public void The_uploader_takes_a_file_back_within_15_minutes()
+    {
+        var reviewCase = InReview();
+        var attachment = reviewCase.AddAttachment(Client, "wrong.pdf", Pdf, [], Now);
+
+        reviewCase.EnsureAttachmentRemovable(Client, attachment, Now.AddMinutes(15));
+
+        Assert.Equal(
+            "ATTACHMENT_NOT_REMOVABLE",
+            Errors.CodeOf(() =>
+                reviewCase.EnsureAttachmentRemovable(Client, attachment, Now.AddMinutes(16))
+            )
+        );
+    }
+
+    [Fact]
+    public void The_expert_takes_a_file_back_any_time_before_delivery()
+    {
+        var reviewCase = InReview();
+        var attachment = reviewCase.AddAttachment(Expert, "working-notes.pdf", Pdf, [], Now);
+
+        reviewCase.EnsureAttachmentRemovable(Expert, attachment, Now.AddHours(5));
+
+        reviewCase.Deliver(
+            ExpertProfile,
+            Expert,
+            ReviewCase.Verified,
+            "Done",
+            null,
+            ["Article 9, CIT Law"],
+            true,
+            Now.AddHours(5)
+        );
+        Assert.Equal(
+            "ATTACHMENT_NOT_REMOVABLE",
+            Errors.CodeOf(() =>
+                reviewCase.EnsureAttachmentRemovable(Expert, attachment, Now.AddHours(5))
+            )
+        );
+    }
+
+    [Fact]
+    public void A_party_cannot_take_back_the_other_sides_file()
+    {
+        var reviewCase = InReview();
+        var attachment = reviewCase.AddAttachment(Expert, "draft.pdf", Pdf, [], Now);
+
+        Assert.Equal(
+            "ATTACHMENT_NOT_REMOVABLE",
+            Errors.CodeOf(() => reviewCase.EnsureAttachmentRemovable(Client, attachment, Now))
+        );
+    }
+
+    [Fact]
+    public void A_file_stays_once_a_dispute_is_open()
+    {
+        var reviewCase = InReview();
+        reviewCase.Deliver(
+            ExpertProfile,
+            Expert,
+            ReviewCase.Verified,
+            "Done",
+            null,
+            ["Article 9, CIT Law"],
+            true,
+            Now
+        );
+        reviewCase.OpenDispute(Client, "DELIVERABLE_INCOMPLETE", "VAT missing", Now);
+        var attachment = reviewCase.AddAttachment(Client, "vat.pdf", Pdf, [], Now);
+
+        Assert.Equal(
+            "ATTACHMENT_NOT_REMOVABLE",
+            Errors.CodeOf(() => reviewCase.EnsureAttachmentRemovable(Client, attachment, Now))
+        );
+    }
+
     private static byte[] Zip(string entry)
     {
         using var buffer = new MemoryStream();
