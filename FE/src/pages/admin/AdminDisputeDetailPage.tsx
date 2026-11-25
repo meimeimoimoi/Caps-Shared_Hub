@@ -255,6 +255,8 @@ export default function AdminDisputeDetailPage() {
                 ? dispute.statementDueBy
                 : undefined
             }
+            fee={dispute.fee}
+            platformFeePct={dispute.platformFeePct}
             onEscalate={() =>
               escalate().then(() => setToast(t('disputes.escalation.toast')))
             }

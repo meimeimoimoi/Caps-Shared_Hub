@@ -542,6 +542,8 @@
       "confirmBody": "The decision goes to both the client and the expert, and the escrow is split by the outcome below.",
       "failed": "The decision wasn't sent and nothing was recorded. Try again.",
       "reasonMissing": "Enter a reason for the decision.",
+      "reasonMin": "Enter a reason of at least {{count}} characters.",
+      "amountsNoLate": "Excludes any late-delivery refund; if the case was late, the client gets more and the final split is set at settlement.",
       "awaitingStatement": "The expert can still explain until {{time}}. You can decide after that, or as soon as they have explained."
     },
     "escalation": {

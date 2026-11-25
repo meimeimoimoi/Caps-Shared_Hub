@@ -534,6 +534,8 @@
       "confirmBody": "Quyết định được gửi cho cả khách và chuyên gia, và tiền ký quỹ được chia theo kết quả dưới đây.",
       "failed": "Chưa gửi được quyết định; quyết định chưa được ghi. Hãy thử lại.",
       "reasonMissing": "Nhập lý do quyết định.",
+      "reasonMin": "Nhập lý do ít nhất {{count}} ký tự.",
+      "amountsNoLate": "Chưa tính phần hoàn do giao muộn (nếu có); khi có, khách nhận nhiều hơn và hệ thống chia lại khi chốt.",
       "awaitingStatement": "Chuyên gia còn hạn giải trình tới {{time}}. Bạn ra quyết định được sau thời điểm đó, hoặc ngay khi chuyên gia đã giải trình."
     },
     "escalation": {

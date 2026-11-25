@@ -4,12 +4,30 @@ import { AlertTriangle, Info } from 'lucide-react'
 import { Modal } from '@/components/ui/feedback/modal'
 import { HelpTip } from '@/components/ui/feedback/help-tip'
 import { cn } from '@/lib/utils'
+import { formatVnd } from '@/lib/format-money'
 import { StatusBadge } from '@/components/ui/display/status-badge'
 import {
   DISPUTE_ESCALATION_DAYS,
   DISPUTE_OUTCOME,
   type DisputeOutcome,
 } from '../constants'
+
+// Same minimum as other audited admin decisions; the reason goes to both parties
+const MIN_REASON_LENGTH = 10
+
+/**
+ * VND each party receives, mirroring ReviewCase.Settle on the workflow service with integer (floor) division.
+ * The late-delivery refund is not sent to this page, so the amounts assume an on-time delivery; the dialog
+ * says so. Upheld: the client gets 50%, the platform the rest. Rejected: the platform fee as booked.
+ */
+function outcomeSplit(outcome: DisputeOutcome, fee: number, platformFeePct: number) {
+  if (outcome === 'RESOLVE_REFUND_USER') {
+    const client = Math.floor((fee * 50) / 100)
+    return { client, expert: 0, platform: fee - client }
+  }
+  const platform = Math.floor((fee * platformFeePct) / 100)
+  return { client: 0, expert: fee - platform, platform }
+}
 
 interface DisputeDecisionProps {
   hoursLeft: number
@@ -19,6 +37,9 @@ interface DisputeDecisionProps {
   escalated: boolean
   /** Set while the expert can still explain and has not: the decision waits until then */
   awaitingStatementUntil?: string
+  /** Fee held for the case (VND) and the platform fee frozen at booking; shown as amounts when known */
+  fee?: number
+  platformFeePct?: number
   /** Rejects when the server refuses; the error stays on the card */
   onDecide: (outcome: DisputeOutcome, reason: string) => Promise<unknown>
   onEscalate: () => Promise<unknown>
@@ -32,6 +53,8 @@ export function DisputeDecision({
   decided,
   escalated,
   awaitingStatementUntil,
+  fee,
+  platformFeePct,
   onDecide,
   onEscalate,
 }: DisputeDecisionProps) {
@@ -69,8 +92,10 @@ export function DisputeDecision({
       // `required` trên radio + textarea đã chặn submit khi thiếu
       onSubmit={(e) => {
         e.preventDefault()
-        if (!reason.trim()) {
-          setError(t('disputes.decision.reasonMissing'))
+        if (reason.trim().length < MIN_REASON_LENGTH) {
+          setError(
+            t('disputes.decision.reasonMin', { count: MIN_REASON_LENGTH })
+          )
           return
         }
         setError(null)
@@ -261,6 +286,33 @@ export function DisputeDecision({
                 </dd>
                 <dd className="num">{t(DISPUTE_OUTCOME[outcome].split)}</dd>
               </div>
+              {fee != null &&
+                (outcome === 'RESOLVE_REFUND_USER' || platformFeePct != null) &&
+                (() => {
+                  const split = outcomeSplit(outcome, fee, platformFeePct ?? 0)
+                  return (
+                    <div className="grid gap-1">
+                      {(
+                        [
+                          ['escrow.drawer.total', fee],
+                          ['escrow.drawer.toClient', split.client],
+                          ['escrow.drawer.toExpert', split.expert],
+                          ['escrow.drawer.toPlatform', split.platform],
+                        ] as const
+                      ).map(([label, amount]) => (
+                        <div key={label} className="flex justify-between gap-4">
+                          <dt className="text-fg-muted">{t(label)}</dt>
+                          <dd className="num text-fg-strong font-semibold">
+                            {formatVnd(amount)}
+                          </dd>
+                        </div>
+                      ))}
+                      <p className="text-fg-muted mt-1 text-xs">
+                        {t('disputes.decision.amountsNoLate')}
+                      </p>
+                    </div>
+                  )
+                })()}
               <div>
                 <dt className="text-fg-muted">
                   {t('disputes.decision.reason')}
