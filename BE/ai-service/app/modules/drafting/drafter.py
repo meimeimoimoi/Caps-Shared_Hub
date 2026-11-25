@@ -4,6 +4,7 @@ import re
 from typing import Any
 
 from app.core.ai_response import parse_ai_response
+from app.core.legal_refs import LEGAL_REF_RE as _LEGAL_REF_RE
 from app.core.models import llm_model
 from app.modules.drafting.prompts import NO_APPROVED_LEGAL_BASIS_NOTE, build_draft_prompt
 from app.schemas.ai_results import DraftContent
@@ -11,14 +12,6 @@ from app.schemas.drafting_dto import DraftIssueItem, DraftIssueSeverity
 
 _NUMBER_RE = re.compile(r"\b\d{1,3}(?:[.,]\d{3})+\b|\b\d+(?:[.,]\d+)?\b")
 _GROUPED_THOUSANDS_RE = re.compile(r"^\d{1,3}(?:[.,]\d{3})+$")
-_LEGAL_REF_RE = re.compile(
-    r"(?:"
-    r"\b(?:nghị\s+định|thông\s+tư|quyết\s+định|luật|nghị\s+quyết)\s+(?:số\s+)?\d+(?:/\d{4})?(?:/[\w\-]+)?\b"
-    r"|\bđiều\s+\d+\b"
-    r"|\b\d+/\d{4}/(?:nđ-cp|nd-cp|tt-btc|qh\d+|qđ-ttg|qd-ttg)\b"
-    r")",
-    re.IGNORECASE,
-)
 _LEGAL_FIELD_KEYWORDS = (
     "legal_basis",
     "legalbasis",

@@ -206,7 +206,7 @@ def chat_query(req: ChatQueryRequest):
                 answer_status=AnswerStatus.REJECTED,
                 period_start=None,
                 period_end=None,
-                answer=OUT_OF_SCOPE_ANSWER,
+                answer=analysis.out_of_scope_msg or OUT_OF_SCOPE_ANSWER,
                 citations=[],
             )
 
