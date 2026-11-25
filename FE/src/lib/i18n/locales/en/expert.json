@@ -662,6 +662,7 @@
     "addFile": "Upload a file ({{count}}/{{max}})",
     "addedFile": "Supplement",
     "removeFile": "Remove {{name}}",
+    "supplementFor": "Add new evidence or explanation for: {{list}}",
     "supplementTitle": "Send supplement",
     "supplementNote": "Explanation (optional if you uploaded files)",
     "supplementSubmit": "Send supplement",

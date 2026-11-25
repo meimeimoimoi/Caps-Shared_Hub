@@ -660,6 +660,7 @@
     "addFile": "Tải tài liệu ({{count}}/{{max}})",
     "addedFile": "Bổ sung",
     "removeFile": "Xóa {{name}}",
+    "supplementFor": "Cần bổ sung bằng chứng hoặc giải trình cho: {{list}}",
     "supplementTitle": "Gửi bổ sung",
     "supplementNote": "Giải thích thêm (không bắt buộc nếu đã tải tài liệu)",
     "supplementSubmit": "Gửi bổ sung",

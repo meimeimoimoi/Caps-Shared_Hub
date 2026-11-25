@@ -302,6 +302,14 @@ export default function ExpertQualificationPage() {
               </span>
             )}
           </div>
+          {issues.length > 0 && (
+            // Say up front which criteria the new evidence must cover
+            <p className="mt-3 text-sm">
+              {t('qualifications.supplementFor', {
+                list: issues.map((c) => competencyName(c.code)).join(', '),
+              })}
+            </p>
+          )}
           <label className="mt-3 flex flex-col gap-2 text-sm font-semibold">
             {t('qualifications.supplementNote')}
             <textarea
