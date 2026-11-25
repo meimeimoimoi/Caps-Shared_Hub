@@ -66,7 +66,8 @@
     "dh": "{{d}} ngày {{h}} giờ",
     "left": "còn lại",
     "until": "Hạn {{date}}",
-    "expired": "Đã hết hạn"
+    "expired": "Đã hết hạn",
+    "soon": "Sắp trễ"
   },
   "next": {
     "you": "Việc của bạn",
@@ -735,6 +736,7 @@
       "decide": "Nhận hay từ chối yêu cầu",
       "accept": "Nhận hồ sơ",
       "decline": "Từ chối yêu cầu",
+      "declineEffect": "Case sẽ đóng ở trạng thái chuyên gia từ chối và khách hàng được hoàn toàn bộ phí. Từ chối trước khi nhận case không bị ghi nhận vi phạm.",
       "declineReason": "Lý do từ chối",
       "deliverTitle": "Bàn giao kết quả",
       "result": "Kết quả",
@@ -776,6 +778,14 @@
       "deliveredLate": "Bàn giao lúc {{time}} · trễ {{hours}} giờ",
       "netPayout": "Bạn thực nhận {{amount}} khi hoàn tất.",
       "lateRule": "Bàn giao trễ trong {{hours}} giờ: bạn nhận {{payout}} và bị cộng 1 điểm vi phạm. Quá {{cancel}} giờ chưa bàn giao: hồ sơ bị hủy, bạn không nhận khoản nào và bị cộng 3 điểm.",
+      "actionFailed": "Thao tác chưa thực hiện được.",
+      "dismissError": "Đóng",
+      "confirmDeliver": {
+        "title": "Bàn giao kết quả?",
+        "body": "Kết quả sẽ được gửi cho khách hàng xem xét. Hãy kiểm tra tóm tắt và trích dẫn trước khi bàn giao.",
+        "edited": "Số trường đã sửa",
+        "back": "Tiếp tục sửa"
+      },
       "saveDraft": "Lưu nháp",
       "draftSaved": "Đã lưu nháp. Khách chỉ thấy bản chỉnh sửa sau khi bạn bàn giao.",
       "decisionLate": "Quyết định đang chậm hơn dự kiến. Phần tiền của bạn vẫn được giữ, bạn sẽ được báo ngay khi có quyết định."

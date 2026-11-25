@@ -77,6 +77,7 @@
     "saved": "Link saved"
   },
   "files": {
+    "retry": "Choose again",
     "open": "View document",
     "openNamed": "View {{name}} (opens in a new tab)",
     "opening": "Opening document…",

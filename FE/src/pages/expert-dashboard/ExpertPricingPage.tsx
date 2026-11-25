@@ -1,4 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
+import { DemoBanner } from '@/components/ui/feedback/demo-banner'
+import { PageHeader } from '@/components/ui/layout/page-header'
+import { EmptyState } from '@/components/ui/feedback/empty-state'
 import { Link, useLocation, useParams } from 'react-router-dom'
 import {
   AlertTriangle,
@@ -70,10 +73,9 @@ export default function ExpertPricingPage() {
     return (
       <>
         {back}
-        <div className="ep-empty">
-          <h1>{t('pricing.notFound')}</h1>
-          <p>{t('pricing.notFoundHelp')}</p>
-        </div>
+        <EmptyState title={t('pricing.notFound')}>
+          {t('pricing.notFoundHelp')}
+        </EmptyState>
       </>
     )
   return (
@@ -109,11 +111,10 @@ function PricingService({
   return (
     <div className="epr-page">
       {back}
-      <div className="ep-page-heading">
-        <div>
-          <h1>{t('pricing.title')}</h1>
-          <p>{service.serviceName}</p>
-        </div>
+      <PageHeader
+        className="mb-6"
+        title={`${t('pricing.title')} · ${service.serviceName}`}
+        badge={
         <span
           className={
             'ep-status ' + (qualified ? 'ep-status-ready' : 'ep-status-paused')
@@ -126,7 +127,8 @@ function PricingService({
           )}
           {qualified ? t('approvedForService') : t('pricing.restricted')}
         </span>
-      </div>
+        }
+      />
       {!qualified ? (
         <Notice
           title={t('pricing.restricted')}
@@ -230,9 +232,10 @@ function PricingEditor({
   return (
     <>
       {isExpertDemo && (
-        <div className="epr-notice epr-demo">
-          <Info size={18} aria-hidden="true" />
-          <p>{t('pricing.demo')}</p>
+        <div className="mb-6">
+          <DemoBanner>
+            <p>{t('pricing.demo')}</p>
+          </DemoBanner>
         </div>
       )}
       {pending && (

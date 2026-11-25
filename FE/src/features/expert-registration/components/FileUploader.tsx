@@ -232,6 +232,15 @@ export function FileUploader({
         >
           <CircleAlert size={16} aria-hidden="true" />
           <span>{error}</span>
+          {!disabled && (
+            // Retry: reopen the file picker after a failed or rejected upload
+            <label
+              htmlFor={`validation-${id}`}
+              className="ml-auto cursor-pointer font-semibold underline underline-offset-4"
+            >
+              {t('files.retry')}
+            </label>
+          )}
         </p>
       )}
       {files.length > 0 && (
