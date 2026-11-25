@@ -39,6 +39,44 @@ public sealed class DocumentHandlerTests
         Assert.True(store.Saved);
     }
 
+    [Fact]
+    public async Task Create_from_a_template_covers_the_tax_year_of_its_published_version()
+    {
+        var store = new Store();
+        var template = Template.Create("03/TNDN", "Tax return", null, DateTimeOffset.UtcNow);
+        var version = TemplateVersion.SaveDraft(
+            template,
+            null,
+            """[{"id":"revenue","type":"money"}]""",
+            Owner,
+            DateTimeOffset.UtcNow,
+            2026
+        );
+        version.Publish(null);
+
+        // The client's period is ignored: the form decides which year can be drafted
+        await Create(store, version)
+            .HandleAsync(
+                new(Owner, "QT", template.Id, new(2025, 1, 1), new(2025, 12, 31), null, null),
+                default
+            );
+
+        var doc = store.Documents.Single();
+        Assert.Equal(new DateOnly(2026, 1, 1), doc.PeriodStart);
+        Assert.Equal(new DateOnly(2026, 12, 31), doc.PeriodEnd);
+    }
+
+    [Fact]
+    public async Task Create_without_a_template_needs_a_period()
+    {
+        var store = new Store();
+        var e = await Assert.ThrowsAsync<AppException>(() =>
+            Create(store).HandleAsync(new(Owner, "Q1", null, null, null, null, null), default)
+        );
+        Assert.Equal("WORKFLOW_DOCUMENT_INVALID_PERIOD", e.Code);
+        Assert.False(store.Saved);
+    }
+
     // metadata is a jsonb column: non-JSON text must be a 400, not a database error
     [Fact]
     public async Task Create_rejects_metadata_that_is_not_json()
@@ -177,20 +215,22 @@ public sealed class DocumentHandlerTests
         Assert.Equal("WORKFLOW_DOCUMENT_ACCESS_DENIED", e.Code);
     }
 
-    private static CreateDocument.CreateDocumentHandler Create(Store s) =>
-        new(s, new NoPublishedTemplates(), s, TimeProvider.System);
+    private static CreateDocument.CreateDocumentHandler Create(
+        Store s,
+        TemplateVersion? published = null
+    ) => new(s, new PublishedTemplates(published), s, TimeProvider.System);
 
     private static CreateInputSnapshot.CreateInputSnapshotHandler Snapshot(Store s) =>
         new(s, s, s, TimeProvider.System);
 
-    private sealed class NoPublishedTemplates : ITemplateRepository
+    private sealed class PublishedTemplates(TemplateVersion? published) : ITemplateRepository
     {
         public void Add(Template template) => throw new NotSupportedException();
 
         public void Add(TemplateVersion version) => throw new NotSupportedException();
 
         public Task<TemplateVersion?> FindPublishedAsync(Guid templateId, CancellationToken ct) =>
-            Task.FromResult<TemplateVersion?>(null);
+            Task.FromResult(published?.TemplateId == templateId ? published : null);
 
         public Task<IReadOnlyList<TemplateVersion>> ListPublishedAsync(CancellationToken ct) =>
             throw new NotSupportedException();

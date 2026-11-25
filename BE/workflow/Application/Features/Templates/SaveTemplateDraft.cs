@@ -5,13 +5,14 @@ using Caps.Workflow.Domain.Workspace;
 
 namespace Caps.Workflow.Application.Features.Templates;
 
-/// <summary>An admin's template, identified by its code, with the field schema of its next version.</summary>
+/// <summary>An admin's template, identified by its code, with the field schema and tax year of its next version.</summary>
 public sealed record SaveTemplateDraftCommand(
     Guid UserId,
     string? Code,
     string? Name,
     string? Description,
-    string? FieldSchema
+    string? FieldSchema,
+    int? TaxYear = null
 );
 
 /// <summary>Creates the template on first use, then saves the schema into its draft version.</summary>
@@ -45,7 +46,8 @@ public sealed class SaveTemplateDraftHandler(
             latest,
             command.FieldSchema,
             command.UserId,
-            now
+            now,
+            command.TaxYear
         );
         if (version != latest)
             templates.Add(version);

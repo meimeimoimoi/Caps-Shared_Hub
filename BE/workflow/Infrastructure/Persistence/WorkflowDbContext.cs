@@ -65,6 +65,7 @@ public sealed class WorkflowDbContext(DbContextOptions<WorkflowDbContext> option
             e.Property(x => x.Id).HasColumnName("id");
             e.Property(x => x.TemplateId).HasColumnName("template_id");
             e.Property(x => x.VersionNo).HasColumnName("version_no");
+            e.Property(x => x.TaxYear).HasColumnName("tax_year");
             e.Property(x => x.FieldSchema)
                 .HasColumnName("field_schema")
                 .HasColumnType("jsonb")
