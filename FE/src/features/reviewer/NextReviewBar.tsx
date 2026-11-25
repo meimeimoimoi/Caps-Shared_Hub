@@ -15,7 +15,7 @@ const gatePath = (gate: string) => (gate === 'GATE_1' ? '/reviewer/gate-1' : '/r
 export function NextReviewBar({ currentId, gate }: { currentId: string; gate: Gate }) {
   const { t } = useTranslation('reviewer')
   const [context] = useState(readQueueContext)
-  const { records, isLoading } = useReviewerQueue({
+  const { records, total, isLoading } = useReviewerQueue({
     gate: context?.gate ?? gate,
     mode: 'OPEN',
     search: context?.search ?? '',
@@ -25,13 +25,16 @@ export function NextReviewBar({ currentId, gate }: { currentId: string; gate: Ga
     sortBy: context?.sortBy,
     sortDescending: context?.sortDescending,
   })
-  const next = records.find((row) => row.id !== currentId && (!row.held || row.heldByMe))
+  // Only reviews waiting for a decision: one returned to the expert cannot be worked on yet
+  const next = records.find((row) => row.id !== currentId && row.claimable && (!row.held || row.heldByMe))
+  // Only the first page is checked, so more rows on the server means the queue is not necessarily empty
+  const morePages = total > records.length
   const queuePath = context?.gate === 'ALL' ? '/reviewer' : gatePath(context?.gate ?? gate)
 
   return (
     <div className="border-border bg-surface flex flex-wrap items-center gap-3 rounded-lg border px-4 py-3">
       <p className="text-text-strong min-w-0 flex-1 text-sm font-medium">
-        {isLoading ? t('loading') : next ? t('nextReviewName', { name: next.name }) : t('queueDone')}
+        {isLoading ? t('loading') : next ? t('nextReviewName', { name: next.name }) : morePages ? t('nextNotFound') : t('queueDone')}
       </p>
       {!isLoading && (
         <Link

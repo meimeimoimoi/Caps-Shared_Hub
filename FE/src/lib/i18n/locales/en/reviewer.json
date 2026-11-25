@@ -160,5 +160,6 @@
   "nextReview": "Next review",
   "nextReviewName": "Next: {{name}}",
   "queueDone": "No more reviews you can take in the queue.",
-  "backToQueue": "Back to queue"
+  "backToQueue": "Back to queue",
+  "nextNotFound": "No review you can take near the top of the queue. Open the queue to see more."
 }

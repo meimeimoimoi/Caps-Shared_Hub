@@ -159,5 +159,6 @@
   "nextReview": "Hồ sơ tiếp theo",
   "nextReviewName": "Tiếp theo: {{name}}",
   "queueDone": "Không còn hồ sơ nào bạn có thể nhận trong hàng đợi.",
-  "backToQueue": "Về hàng đợi"
+  "backToQueue": "Về hàng đợi",
+  "nextNotFound": "Không thấy hồ sơ bạn nhận được ở đầu hàng đợi. Mở hàng đợi để xem thêm."
 }
