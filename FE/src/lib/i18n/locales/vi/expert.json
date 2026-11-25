@@ -220,6 +220,7 @@
   "serverTotals": "Tổng số từ máy chủ",
   "awaitingResponse": "Chờ phản hồi",
   "overdue": "Quá hạn",
+  "dueSoon": "Sắp trễ",
   "filterLoadedCases": "Lọc hồ sơ đã tải",
   "anOverdueCaseNeedsYourAttention": "Một hồ sơ quá hạn cần bạn xử lý",
   "openOverdueCase": "Mở hồ sơ quá hạn",

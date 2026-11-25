@@ -220,6 +220,7 @@
   "serverTotals": "Server totals",
   "awaitingResponse": "Awaiting response",
   "overdue": "Overdue",
+  "dueSoon": "Due soon",
   "filterLoadedCases": "Filter loaded cases",
   "anOverdueCaseNeedsYourAttention": "An overdue case needs your attention",
   "openOverdueCase": "Open overdue case",

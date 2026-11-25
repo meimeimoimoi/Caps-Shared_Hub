@@ -62,3 +62,69 @@
     white-space: normal;
   }
 }
+
+@layer components {
+/* Case task list (sidebar steps + SLA note) */
+.expert-portal .ep-case-task-list {
+  position: sticky;
+  top: 1.5rem;
+}
+.expert-portal .ep-case-task-list > p {
+  margin: 8px 0 18px;
+  font-size: 12px;
+}
+.expert-portal .ep-case-task-list nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+.expert-portal .ep-case-task-list nav button {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 10px;
+  border: 0;
+  border-radius: 0.5rem;
+  padding: 13px 12px;
+  text-align: left;
+  font-family: inherit;
+  color: var(--ep-muted);
+  background: transparent;
+}
+.expert-portal .ep-case-task-list nav button > span {
+  flex: 1;
+}
+.expert-portal .ep-case-task-list nav button:hover {
+  background: var(--ep-surface-raised);
+}
+.expert-portal .ep-case-task-list nav button[aria-current='true'] {
+  background: var(--ep-accent-glow);
+  font-weight: 600;
+  color: var(--ep-accent-text);
+}
+.expert-portal .ep-case-task-list .ep-case-sla {
+  margin-top: 1.5rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding-top: 18px;
+  border-top: 1px solid var(--ep-line);
+}
+@media (max-width: 768px) {
+  .expert-portal .ep-case-task-list {
+    position: static;
+  }
+  .expert-portal .ep-case-task-list nav {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+  .expert-portal .ep-case-task-list .ep-case-sla {
+    margin-top: 0.75rem;
+  }
+}
+@media (max-width: 401px) {
+  .expert-portal .ep-case-task-list nav {
+    grid-template-columns: 1fr;
+  }
+}
+}
