@@ -1,7 +1,9 @@
-import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
+import { usePageTitle } from '@/hooks/usePageTitle'
 import { Link, useSearchParams } from 'react-router-dom'
 import { FolderSearch, Store } from 'lucide-react'
+import { EmptyState } from '@/components/ui/feedback/empty-state'
+import { HelpTip } from '@/components/ui/feedback/help-tip'
 import { StatusBadge } from '@/components/ui/display/status-badge'
 import { CASE_STATUS } from '@/lib/constants'
 import { cn } from '@/lib/utils'
@@ -42,16 +44,14 @@ export default function CasesPage() {
   const unread = useCaseUnread().data
   const shown = cases.filter((c) => match(filter, c))
 
-  useEffect(() => {
-    document.title = `${t('nav.cases')} | Shared Hub`
-  }, [t])
+  usePageTitle(t('nav.cases'))
 
   return (
     <>
       <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
+        <div className="flex items-center gap-2">
           <h1 className="text-h1 font-serif">{t('nav.cases')}</h1>
-          <p className="text-fg-muted mt-2 max-w-[65ch]">{t('cases.lead')}</p>
+          <HelpTip label={t('nav.cases')}>{t('cases.lead')}</HelpTip>
         </div>
         <Link to="/marketplace" className="btn btn-press btn-primary">
           <Store size={17} aria-hidden="true" />
@@ -97,26 +97,33 @@ export default function CasesPage() {
           className="bg-sunken mt-6 h-40 rounded motion-safe:animate-pulse"
         />
       ) : isError ? (
-        <div role="alert" className="paper mt-6 p-10 text-center">
-          <p className="text-fg-strong font-semibold">{t('errors.failed')}</p>
-          <button
-            type="button"
-            onClick={() => void refetch()}
-            className="btn btn-secondary mt-4"
-          >
-            {t('retry')}
-          </button>
+        <div className="paper mt-6">
+          <EmptyState
+            tone="error"
+            title={t('errors.failed')}
+            actions={
+              <button
+                type="button"
+                onClick={() => void refetch()}
+                className="btn btn-secondary"
+              >
+                {t('retry')}
+              </button>
+            }
+          />
         </div>
       ) : shown.length === 0 ? (
-        <div className="paper mt-6 p-10 text-center">
-          <FolderSearch
-            size={28}
-            aria-hidden="true"
-            className="text-fg-muted mx-auto"
+        <div className="paper mt-6">
+          <EmptyState
+            icon={
+              <FolderSearch
+                size={28}
+                aria-hidden="true"
+                className="text-fg-muted"
+              />
+            }
+            title={cases.length ? t('cases.empty') : t('cases.emptyAll')}
           />
-          <p className="text-fg-strong mt-3 font-semibold">
-            {cases.length ? t('cases.empty') : t('cases.emptyAll')}
-          </p>
         </div>
       ) : (
         <div className="paper mt-6 overflow-x-auto">

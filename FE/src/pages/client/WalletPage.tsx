@@ -1,5 +1,5 @@
-import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
+import { usePageTitle } from '@/hooks/usePageTitle'
 import { Link } from 'react-router-dom'
 import { ShieldCheck } from 'lucide-react'
 import { mockPricing } from '@/features/service-pricing/api/fixtures'
@@ -9,10 +9,19 @@ import { useFormatters } from '@/hooks/useFormatters'
 import { isExpertDemo } from '@/lib/expert-data-source'
 import { useCreditOverview } from '@/features/credits/hooks/useCreditOverview'
 import type { PaymentTransaction } from '@/features/credits/types'
+import { EmptyState } from '@/components/ui/feedback/empty-state'
+import { HelpTip } from '@/components/ui/feedback/help-tip'
 import { StatusBadge } from '@/components/ui/display/status-badge'
 import { SkeletonRows } from '@/components/ui/display/skeleton-rows'
 import type { StatusMeta } from '@/lib/constants'
 import { cn } from '@/lib/utils'
+
+type RateId =
+  | 'ai-question'
+  | 'ai-out-of-scope'
+  | 'ai-system-error'
+  | 'draft-export'
+  | 'draft-preview'
 
 const PAYMENT_TONE = {
   PENDING: 'warning',
@@ -32,18 +41,34 @@ export default function WalletPage() {
   const wallet = payments.data?.wallet
   const ledger = payments.data?.ledger ?? []
   const { creditPackages, creditRates } = mockPricing
-  const held = useClientCases().cases.filter((c) =>
+  const clientCases = useClientCases()
+  const held = clientCases.cases.filter((c) =>
     ['held', 'locked'].includes(fundsOf(c))
   )
+  const loadError = payments.isError ? (
+    <EmptyState
+      tone="error"
+      title={t('errors.failed')}
+      actions={
+        <button
+          type="button"
+          onClick={() => void payments.refetch()}
+          className="btn btn-secondary"
+        >
+          {t('retry')}
+        </button>
+      }
+    />
+  ) : null
 
-  useEffect(() => {
-    document.title = `${t('nav.wallet')} | Shared Hub`
-  }, [t])
+  usePageTitle(t('nav.wallet'))
 
   return (
     <>
-      <h1 className="text-h1 font-serif">{t('nav.wallet')}</h1>
-      <p className="text-fg-muted mt-2 max-w-[65ch]">{t('wallet.lead')}</p>
+      <div className="flex items-center gap-2">
+        <h1 className="text-h1 font-serif">{t('nav.wallet')}</h1>
+        <HelpTip label={t('nav.wallet')}>{t('wallet.lead')}</HelpTip>
+      </div>
 
       <section
         aria-label={t('wallet.available')}
@@ -61,11 +86,13 @@ export default function WalletPage() {
           )}
         </div>
         <div className="sm:border-border sm:border-l sm:pl-6">
-          <p className="eyebrow">{t('wallet.held')}</p>
+          <div className="flex items-center gap-1.5">
+            <p className="eyebrow">{t('wallet.held')}</p>
+            <HelpTip label={t('wallet.held')}>{t('wallet.heldHint')}</HelpTip>
+          </div>
           <p className="num text-fg-strong text-h2 mt-1 font-semibold">
             {wallet ? t('wallet.unit', { count: wallet.held }) : '—'}
           </p>
-          <p className="text-fg-muted mt-1 text-sm">{t('wallet.heldHint')}</p>
         </div>
       </section>
 
@@ -103,12 +130,11 @@ export default function WalletPage() {
                         ? t('wallet.priceTbd')
                         : f.money(p.price)}
                     </p>
+                    {/* Top-up checkout has no billing endpoint yet, so buying stays disabled */}
                     <button
                       type="button"
-                      disabled={p.price == null}
-                      title={
-                        p.price == null ? t('wallet.buyUnavailable') : undefined
-                      }
+                      disabled
+                      aria-describedby="w-buy-note"
                       className="btn btn-press btn-primary mt-5"
                     >
                       {t('wallet.buy')}
@@ -116,18 +142,18 @@ export default function WalletPage() {
                   </li>
                 ))}
             </ul>
-            {creditPackages.every((p) => p.price == null) && (
-              <p className="text-fg-muted mt-3 text-sm">
-                {t('wallet.buyUnavailable')}
-              </p>
-            )}
+            <p id="w-buy-note" className="text-fg-muted mt-3 text-sm">
+              {creditPackages.every((p) => p.price == null)
+                ? t('wallet.buyUnavailable')
+                : t('wallet.buySoon')}
+            </p>
           </section>
 
           <section aria-labelledby="w-ledger">
             <h2 id="w-ledger" className="text-h2">
               {t('wallet.ledger')}
             </h2>
-            <div className="paper mt-4 overflow-x-auto">
+            <div className="paper mt-4 overflow-x-auto max-md:hidden">
               <table className="w-full text-sm sm:min-w-[36rem]">
                 <thead className="bg-sunken text-fg-muted text-left">
                   <tr className="[&>th]:px-4 [&>th]:py-3 [&>th]:font-semibold [&>th]:whitespace-nowrap">
@@ -180,24 +206,63 @@ export default function WalletPage() {
                   {payments.isLoading && <SkeletonRows cols={4} />}
                   {!payments.isLoading && ledger.length === 0 && (
                     <tr className="border-border-subtle border-t">
-                      <td
-                        colSpan={4}
-                        className="text-fg-muted px-4 py-10 text-center"
-                      >
-                        {payments.error?.message ?? t('wallet.ledgerEmpty')}
+                      <td colSpan={4}>
+                        {loadError ?? (
+                          <EmptyState title={t('wallet.ledgerEmpty')} />
+                        )}
                       </td>
                     </tr>
                   )}
                 </tbody>
               </table>
             </div>
+            {/* Below md the ledger reads as cards instead of a scrolling table */}
+            <ul className="mt-4 space-y-3 md:hidden">
+              {ledger.map((e) => (
+                <li key={e.id} className="paper flex justify-between gap-4 p-4">
+                  <span className="min-w-0">
+                    <span className="text-fg-strong block font-semibold">
+                      {t(`wallet.types.${e.entryType}`)}
+                    </span>
+                    <span className="num text-fg-muted block text-xs">
+                      {f.at(e.createdAt)}
+                    </span>
+                  </span>
+                  <span className="shrink-0 text-right">
+                    <span
+                      className={cn(
+                        'num block font-semibold',
+                        e.amount > 0 ? 'text-success' : 'text-fg-strong'
+                      )}
+                    >
+                      {e.amount > 0 ? `+${number(e.amount)}` : number(e.amount)}
+                    </span>
+                    <span className="num text-fg-muted block text-xs">
+                      {t('wallet.ledgerCols.balance')}: {number(e.balanceAfter)}
+                    </span>
+                  </span>
+                </li>
+              ))}
+              {payments.isLoading && (
+                <li
+                  role="status"
+                  aria-label={t('live.loading')}
+                  className="bg-sunken h-16 rounded motion-safe:animate-pulse"
+                />
+              )}
+              {!payments.isLoading && ledger.length === 0 && (
+                <li className="paper">
+                  {loadError ?? <EmptyState title={t('wallet.ledgerEmpty')} />}
+                </li>
+              )}
+            </ul>
           </section>
 
           <section aria-labelledby="w-payments">
             <h2 id="w-payments" className="text-h2">
               {tc('credits.paymentsTitle')}
             </h2>
-            <div className="paper mt-4 overflow-x-auto">
+            <div className="paper mt-4 overflow-x-auto max-md:hidden">
               <table className="w-full text-sm sm:min-w-[36rem]">
                 <thead className="bg-sunken text-fg-muted text-left">
                   <tr className="[&>th]:px-4 [&>th]:py-3 [&>th]:font-semibold [&>th]:whitespace-nowrap">
@@ -242,17 +307,53 @@ export default function WalletPage() {
                   {payments.isLoading && <SkeletonRows cols={4} />}
                   {!payments.isLoading && !payments.data?.payments?.length && (
                     <tr className="border-border-subtle border-t">
-                      <td
-                        colSpan={4}
-                        className="text-fg-muted px-4 py-10 text-center"
-                      >
-                        {payments.error?.message ?? tc('credits.emptyPayments')}
+                      <td colSpan={4}>
+                        {loadError ?? (
+                          <EmptyState title={tc('credits.emptyPayments')} />
+                        )}
                       </td>
                     </tr>
                   )}
                 </tbody>
               </table>
             </div>
+            <ul className="mt-4 space-y-3 md:hidden">
+              {payments.data?.payments?.map((p) => (
+                <li key={p.id} className="paper space-y-2 p-4">
+                  <div className="flex justify-between gap-4">
+                    <span className="text-fg-strong min-w-0 font-semibold">
+                      {tc(`credits.purpose.${p.purpose}`)}
+                    </span>
+                    <span className="num shrink-0">{f.money(p.amount)}</span>
+                  </div>
+                  <div className="flex items-center justify-between gap-4">
+                    <span className="num text-fg-muted min-w-0 text-xs">
+                      {f.at(p.createdAt)} · {p.orderCode}
+                    </span>
+                    <StatusBadge
+                      status={{
+                        label: tc(`credits.paymentStatus.${p.status}`),
+                        tone: PAYMENT_TONE[p.status],
+                      }}
+                    />
+                  </div>
+                </li>
+              ))}
+              {payments.isLoading && (
+                <li
+                  role="status"
+                  aria-label={t('live.loading')}
+                  className="bg-sunken h-16 rounded motion-safe:animate-pulse"
+                />
+              )}
+              {!payments.isLoading && !payments.data?.payments?.length && (
+                <li className="paper">
+                  {loadError ?? (
+                    <EmptyState title={tc('credits.emptyPayments')} />
+                  )}
+                </li>
+              )}
+            </ul>
           </section>
         </div>
 
@@ -271,8 +372,12 @@ export default function WalletPage() {
                   className="border-border-subtle flex items-start justify-between gap-4 border-b py-3 text-sm"
                 >
                   <dt>
-                    <span className="text-fg-strong block">{r.action}</span>
-                    <span className="text-fg-muted block">{r.when}</span>
+                    <span className="text-fg-strong block">
+                      {t(`wallet.rateItems.${r.id as RateId}.action`)}
+                    </span>
+                    <span className="text-fg-muted block">
+                      {t(`wallet.rateItems.${r.id as RateId}.when`)}
+                    </span>
                   </dt>
                   <dd className="num text-fg-strong shrink-0 font-semibold">
                     {r.credits == null
@@ -293,7 +398,13 @@ export default function WalletPage() {
             <h2 id="w-escrow" className="eyebrow font-sans">
               {t('wallet.escrow')}
             </h2>
-            {held.length === 0 ? (
+            {clientCases.isPending ? (
+              <div
+                role="status"
+                aria-label={t('live.loading')}
+                className="bg-sunken mt-3 h-16 rounded motion-safe:animate-pulse"
+              />
+            ) : held.length === 0 ? (
               <p className="text-fg-muted mt-3 text-sm">
                 {t('wallet.escrowEmpty')}
               </p>

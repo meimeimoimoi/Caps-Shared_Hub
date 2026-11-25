@@ -402,6 +402,13 @@
     "consent": "I understand: I pay when I send the request; the payment is held until I accept the result and fully refunded if the expert does not take the case; the fee pays for the review work and does not depend on a VERIFIED result.",
     "consentRequired": "Confirm the terms to send the request.",
     "submit": "Send review request",
+    "sending": "Sending…",
+    "submitHold": "Send review request and hold {{amount}}",
+    "balance": "Wallet balance",
+    "hold": "To be held",
+    "remaining": "Left after the hold",
+    "shortfall": "Your wallet is {{amount}} short of the review fee.",
+    "toWallet": "Go to wallet",
     "summary": "Request summary",
     "priceOnRequest": "Quoted later",
     "nextTitle": "What happens next",
@@ -495,6 +502,29 @@
     "priceTbd": "Price not set",
     "buy": "Top up via PayOS",
     "buyUnavailable": "This package has no price yet, so it isn't on sale.",
+    "buySoon": "Top-up via PayOS is being finished and will open in an upcoming update.",
+    "rateItems": {
+      "ai-question": {
+        "action": "AI assistant question",
+        "when": "Held when you send; captured once the question goes to research, even if the sources are insufficient. Follow-ups to clarify are not charged again"
+      },
+      "ai-out-of-scope": {
+        "action": "Question outside corporate income tax",
+        "when": "Detected before research; the full hold is released"
+      },
+      "ai-system-error": {
+        "action": "System error after capture",
+        "when": "Processing failed entirely due to a platform error; 1 credit refunded"
+      },
+      "draft-export": {
+        "action": "Download a draft",
+        "when": "DOCX or PDF export; re-downloading the same version is free"
+      },
+      "draft-preview": {
+        "action": "Generate and preview a draft",
+        "when": "Free, including regeneration"
+      }
+    },
     "rates": "Credit pricing",
     "free": "Free",
     "tbd": "Not set",

@@ -402,6 +402,13 @@
     "consent": "Tôi hiểu: tôi thanh toán ngay khi gửi yêu cầu; khoản thanh toán được giữ hộ tới khi nghiệm thu và được hoàn 100% nếu chuyên gia không nhận; phí trả cho hoạt động thẩm định, không phụ thuộc kết quả VERIFIED.",
     "consentRequired": "Xác nhận điều khoản để gửi yêu cầu.",
     "submit": "Gửi yêu cầu thẩm định",
+    "sending": "Đang gửi…",
+    "submitHold": "Gửi yêu cầu thẩm định và giữ {{amount}}",
+    "balance": "Số dư ví",
+    "hold": "Sẽ giữ hộ",
+    "remaining": "Còn lại sau khi giữ",
+    "shortfall": "Ví còn thiếu {{amount}} để giữ phí thẩm định.",
+    "toWallet": "Đến Ví",
     "summary": "Tóm tắt yêu cầu",
     "priceOnRequest": "Báo giá sau",
     "nextTitle": "Điều gì xảy ra tiếp theo",
@@ -495,6 +502,29 @@
     "priceTbd": "Chưa chốt giá",
     "buy": "Nạp qua PayOS",
     "buyUnavailable": "Gói chưa có giá nên chưa mở bán.",
+    "buySoon": "Nạp credit qua PayOS đang được hoàn thiện, sẽ mở trong bản cập nhật tới.",
+    "rateItems": {
+      "ai-question": {
+        "action": "Câu hỏi trợ lý AI",
+        "when": "Giữ tạm khi gửi; trừ khi câu hỏi được đưa vào tra cứu, kể cả khi không đủ căn cứ. Hỏi lại để làm rõ không trừ thêm"
+      },
+      "ai-out-of-scope": {
+        "action": "Câu hỏi ngoài phạm vi Thuế TNDN",
+        "when": "Phát hiện trước khi tra cứu; hoàn toàn bộ credit giữ tạm"
+      },
+      "ai-system-error": {
+        "action": "Lỗi hệ thống sau khi đã trừ",
+        "when": "Xử lý thất bại hoàn toàn do lỗi nền tảng; hoàn 1 credit"
+      },
+      "draft-export": {
+        "action": "Tải bản nháp về",
+        "when": "Xuất DOCX hoặc PDF; tải lại cùng phiên bản không tính thêm"
+      },
+      "draft-preview": {
+        "action": "Tạo và xem trước bản nháp",
+        "when": "Miễn phí, kể cả khi tạo lại"
+      }
+    },
     "rates": "Bảng giá credit",
     "free": "Miễn phí",
     "tbd": "Chưa chốt",

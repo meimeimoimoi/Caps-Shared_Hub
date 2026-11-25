@@ -1,13 +1,13 @@
 import { Link } from 'react-router-dom'
 import { ArrowRight, ArrowUpRight, LayoutDashboard } from 'lucide-react'
 import { BrandLogo } from '@/components/ui/display/brand-logo'
-import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
+import { usePageTitle } from '@/hooks/usePageTitle'
 import { LanguageSwitcher } from '@/components/ui/layout/language-switcher'
 
 export default function NotFoundPage() {
   const { t } = useTranslation('common')
-  useEffect(() => { document.title = `${t('notFound.title')} | Shared Hub` }, [t])
+  usePageTitle(t('notFound.title'))
   return (
     <div className="flex min-h-svh flex-col bg-desk-2 px-[clamp(24px,5vw,80px)] text-fg-strong">
       <header className="flex min-h-20 flex-wrap items-center justify-between gap-3 border-b border-border py-4 md:min-h-[100px] md:gap-6">
