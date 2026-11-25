@@ -15,6 +15,8 @@ public interface IReviewAttachmentRepository
     /// <summary>Tracks a new file.</summary>
     void Add(ReviewAttachment attachment);
 
+    void Remove(ReviewAttachment attachment);
+
     /// <summary>The document version a case reviews, untracked.</summary>
     Task<DocumentVersion?> FindSourceAsync(Guid versionId, CancellationToken ct);
 }

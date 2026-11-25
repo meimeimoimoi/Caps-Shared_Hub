@@ -212,8 +212,12 @@ public sealed record ReviewCaseResponse(
 
 /// <summary>Who the client and the expert of a case are, for staff lists keyed by case id.</summary>
 /// <param name="RequesterEmail">The client's email kept at booking; null for cases booked before it was kept.</param>
+/// <param name="Status">The case status, so a staff list can name what the next deadline is for.</param>
+/// <param name="NextDeadline">When the current step runs out; null when nothing runs out.</param>
 public sealed record CasePartiesResponse(
     string ReviewCaseId,
     string? RequesterEmail,
-    string ExpertProfileId
+    string ExpertProfileId,
+    string Status,
+    DateTimeOffset? NextDeadline
 );

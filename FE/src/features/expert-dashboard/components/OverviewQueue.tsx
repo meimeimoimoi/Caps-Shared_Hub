@@ -1,4 +1,5 @@
 import { useExpertPresentation } from '@/features/expert-dashboard/hooks/useExpertPresentation'
+import { statusTone } from '../statusTone'
 import { useTranslation } from 'react-i18next'
 import {
   ExpertPanel,
@@ -175,7 +176,7 @@ export function OverviewQueue({
                     </td>
                     <td>
                       <span
-                        className={`eo-status inline-flex rounded-[5px] bg-[var(--ep-surface-raised)] bg-none [padding:4px_8px] text-[10px] font-semibold whitespace-nowrap text-[var(--ep-muted)] ${overdue ? 'eo-status-danger bg-[var(--ep-danger-bg)] bg-none text-[var(--ep-danger)]' : item.deadline.paused ? 'eo-status-paused bg-[var(--ep-warning-bg)] bg-none text-[var(--ep-warning)]' : ''}`}
+                        className={`ep-status whitespace-nowrap ${statusTone(item.status, overdue)}`}
                       >
                         {overdue
                           ? t('overdueStatus', {

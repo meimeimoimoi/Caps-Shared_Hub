@@ -46,4 +46,34 @@ public sealed partial class ReviewCase
         }
         return attachment;
     }
+
+    /// <summary>Minutes after upload during which the uploader can take a file back.</summary>
+    public const int AttachmentRemoveMinutes = 15;
+
+    /// <summary>
+    /// The uploader takes back a file sent by mistake: the expert any time before delivery, otherwise within
+    /// AttachmentRemoveMinutes of uploading; never another party's file, during a dispute or once the case is closed.
+    /// </summary>
+    public void EnsureAttachmentRemovable(
+        Guid userId,
+        ReviewAttachment attachment,
+        DateTimeOffset now
+    )
+    {
+        var role = ParticipantRoleOf(userId);
+        var open =
+            Status
+            is ReviewCaseStatus.InReview
+                or ReviewCaseStatus.AwaitingUserInformation
+                or ReviewCaseStatus.AwaitingAcceptance;
+        // The expert's working files stay theirs until delivery; otherwise only a quick undo after uploading
+        var expertBeforeDelivery =
+            role == CaseParticipant.Expert
+            && Status is (ReviewCaseStatus.InReview or ReviewCaseStatus.AwaitingUserInformation);
+        var justUploaded = now <= attachment.UploadedAt.AddMinutes(AttachmentRemoveMinutes);
+        if (attachment.UploadedBy != userId || !open || !(expertBeforeDelivery || justUploaded))
+        {
+            throw WorkflowErrors.AttachmentNotRemovable(AttachmentRemoveMinutes);
+        }
+    }
 }

@@ -117,6 +117,17 @@ public sealed partial class ReviewCase
     // After this the expert can no longer deliver and the expiry job refunds the client
     private DateTimeOffset? CancelAt => DeliveryDeadline + TimeSpan.FromHours(LateCancelHours);
 
+    /// <summary>When the current step runs out and the expiry job acts; null when nothing runs out.</summary>
+    public DateTimeOffset? NextDeadline =>
+        Status switch
+        {
+            ReviewCaseStatus.AwaitingPayment => PaymentDeadline,
+            ReviewCaseStatus.PendingExpertResponse => ResponseDeadline,
+            ReviewCaseStatus.InReview => DeliveryDeadline,
+            ReviewCaseStatus.AwaitingAcceptance => AcceptanceDeadline,
+            _ => null,
+        };
+
     public string ProblemDescription { get; private set; } = default!;
     public string? ExpectedOutcome { get; private set; }
     public string Status { get; private set; } = ReviewCaseStatus.AwaitingPayment;

@@ -189,7 +189,9 @@
       "decision": "Quyết định",
       "reason": "Lý do",
       "decidedBy": "Người quyết định",
-      "decidedAt": "Thời điểm"
+      "decidedAt": "Thời điểm",
+      "rejected": "Không chấp thuận khiếu nại · phí được chi trả cho chuyên gia",
+      "upheld": "Chấp thuận khiếu nại · bạn được hoàn {{amount}}"
     },
     "TERMINATED": {
       "title": "Hồ sơ đã chấm dứt",
@@ -258,6 +260,10 @@
       "RESOLVE_PARTIAL": "Quyết toán một phần",
       "FULL_REFUND": "Hoàn toàn bộ phí cho bạn",
       "LATE_DELIVERY": "Chuyên gia giao trễ, bạn được hoàn theo luật giao trễ đã chốt lúc đặt"
+    },
+    "dispute": {
+      "rejected": "Khiếu nại bị bác bỏ: bạn nhận đủ phần của mình.",
+      "upheld": "Khiếu nại được chấp thuận: khách được hoàn một phần phí."
     }
   },
   "package": {
@@ -438,7 +444,15 @@
     },
     "workingDaysLabel": "Về ngày làm việc",
     "workingDays": "Ngày làm việc không tính thứ Bảy, Chủ nhật và các ngày lễ dương lịch. Hạn rơi vào ngày nghỉ được dời sang ngày làm việc kế tiếp, cùng giờ.",
-    "noVersion": "Tài liệu này chưa có phiên bản nào để gửi thẩm định. Hãy chọn tài liệu khác hoặc tải tệp lên."
+    "noVersion": "Tài liệu này chưa có phiên bản nào để gửi thẩm định. Hãy chọn tài liệu khác hoặc tải tệp lên.",
+    "myDocs": {
+      "title": "Tài liệu của bạn",
+      "search": "Tìm theo tên tài liệu",
+      "ai": "Bản nháp AI",
+      "upload": "Tệp tải lên",
+      "period": "Kỳ {{from}} – {{to}}",
+      "none": "Không có tài liệu nào khớp."
+    }
   },
   "nav": {
     "label": "Không gian khách hàng",
@@ -615,7 +629,8 @@
     "EXTENSION_NOT_PENDING": "Không còn yêu cầu gia hạn nào chờ trả lời.",
     "EXTENSION_DAYS_INVALID": "Chỉ xin gia hạn 1 hoặc 2 ngày làm việc.",
     "DISPUTE_AWAITING_STATEMENT": "Chuyên gia còn trong hạn giải trình, chưa ra quyết định được.",
-    "DISPUTE_STATEMENT_CLOSED": "Đã hết hạn giải trình cho khiếu nại này."
+    "DISPUTE_STATEMENT_CLOSED": "Đã hết hạn giải trình cho khiếu nại này.",
+    "ATTACHMENT_NOT_REMOVABLE": "Chỉ gỡ được tệp của chính bạn: chuyên gia gỡ được trước khi bàn giao, còn lại trong 15 phút sau khi tải lên; không gỡ được khi đang có khiếu nại."
   },
   "live": {
     "loading": "Đang tải hồ sơ",
@@ -694,7 +709,10 @@
         "none": "Chưa có tệp.",
         "duringDispute": "Nộp khi tranh chấp",
         "attachAnswer": "Đính kèm chứng từ"
-      }
+      },
+      "remove": "Gỡ {{name}}",
+      "removeHint": "Gỡ được trong {{minutes}} phút sau khi tải lên, trước khi có khiếu nại.",
+      "removeUntilDelivery": "Gỡ được cho tới khi bạn bàn giao kết quả."
     },
     "revised": {
       "title": "Bản chuyên gia đã chỉnh sửa",
@@ -791,7 +809,18 @@
       "decisionLate": "Quyết định đang chậm hơn dự kiến. Phần tiền của bạn vẫn được giữ, bạn sẽ được báo ngay khi có quyết định."
     },
     "notConnected": "Chưa có dữ liệu.",
-    "openCases": "Các hồ sơ đang mở của bạn."
+    "openCases": "Các hồ sơ đang mở của bạn.",
+    "noDeliveriesYet": "Chưa có hồ sơ nào được bàn giao.",
+    "activity": {
+      "requested": "Có yêu cầu thẩm định mới",
+      "accepted": "Bạn đã nhận hồ sơ",
+      "delivered": "Bạn đã bàn giao kết quả",
+      "rated": "Khách đánh giá {{stars}} sao",
+      "disputed": "Khách khiếu nại kết quả",
+      "completed": "Hồ sơ đã hoàn tất",
+      "you": "Bạn",
+      "client": "Khách hàng"
+    }
   },
   "extension": {
     "title": "Gia hạn bàn giao",

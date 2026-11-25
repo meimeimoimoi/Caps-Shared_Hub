@@ -22,7 +22,9 @@ public sealed class ListCasePartiesHandler(IReviewCaseLookup cases)
             .. found.Select(c => new CasePartiesResponse(
                 c.Id.ToString(),
                 c.RequesterEmail,
-                c.ExpertProfileId.ToString()
+                c.ExpertProfileId.ToString(),
+                c.Status,
+                c.NextDeadline
             )),
         ];
     }

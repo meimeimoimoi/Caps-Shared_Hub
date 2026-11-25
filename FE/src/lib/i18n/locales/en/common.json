@@ -144,6 +144,11 @@
       "SUSPENDED": "{{service}} is suspended",
       "REINSTATED": "{{service}} has been reinstated"
     },
+    "violation": {
+      "LATE": "You got 1 violation point for a late delivery. If it was force majeure, ask for an excuse within 2 days.",
+      "WITHDREW": "You got 2 violation points for withdrawing from an accepted case. If it was force majeure, ask for an excuse within 2 days.",
+      "NO_DELIVERY": "You got 3 violation points for not delivering. If it was force majeure, ask for an excuse within 2 days."
+    },
     "reviewCase": {
       "requested": "You have a new review request. Accept or decline it before the response deadline.",
       "infoRequested": "The expert needs more information from you. Answer before the deadline so your case is not closed.",

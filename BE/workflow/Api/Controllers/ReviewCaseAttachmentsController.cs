@@ -76,4 +76,21 @@ public sealed class ReviewCaseAttachmentsController(ICurrentUser currentUser) : 
         Response.Headers.CacheControl = "private, no-store";
         return File(file.Content, file.ContentType, file.FileName);
     }
+
+    /// <summary>Removes a file the caller uploaded by mistake.</summary>
+    /// <remarks>Only the uploader, within 15 minutes of uploading, while the review runs and before any dispute.</remarks>
+    /// <response code="204">Removed.</response>
+    /// <response code="404">REVIEW_CASE_NOT_FOUND or ATTACHMENT_NOT_FOUND.</response>
+    /// <response code="409">ATTACHMENT_NOT_REMOVABLE.</response>
+    [HttpDelete("{attachmentId:guid}")]
+    public async Task<IActionResult> Remove(
+        Guid caseId,
+        Guid attachmentId,
+        [FromServices] ICommandHandler<RemoveAttachmentCommand> handler,
+        CancellationToken ct
+    )
+    {
+        await handler.HandleAsync(new(UserId, caseId, attachmentId), ct);
+        return NoContent();
+    }
 }

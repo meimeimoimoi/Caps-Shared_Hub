@@ -155,6 +155,17 @@ export function useNotifications() {
         tone: 'warning',
         read: n.readAt != null,
       }
+    // A case counted against the expert; points by kind as in ViolationRules (late 1, withdrew 2, never delivered 3)
+    if (n.type === 'EXPERT_VIOLATION_RECORDED') {
+      const kind = n.data.kind === 'WITHDREW' || n.data.kind === 'NO_DELIVERY' ? n.data.kind : 'LATE'
+      return {
+        id: n.id,
+        text: t(`notifications.violation.${kind}`),
+        to: typeof n.data.link === 'string' ? n.data.link : '/expert/availability',
+        tone: 'warning',
+        read: n.readAt != null,
+      }
+    }
     // The expert's dispute statement window ends in a few hours
     if (n.type === 'REVIEW_CASE_STATEMENT_DUE')
       return {

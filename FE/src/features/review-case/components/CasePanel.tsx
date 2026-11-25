@@ -497,7 +497,12 @@ export function CasePanel({
             <dl className="grid gap-x-8 gap-y-4 text-sm sm:grid-cols-[10rem_minmax(0,1fr)]">
               <dt className="text-fg-muted">{t('panel.RESOLVED.decision')}</dt>
               <dd className="verdict text-fg-strong font-semibold">
-                {t(`settlement.rules.${d.outcome}`)}
+                {/* Said from the client's side, with the money it means for them */}
+                {d.outcome === 'RESOLVE_PAY_EXPERT'
+                  ? t('panel.RESOLVED.rejected')
+                  : t('panel.RESOLVED.upheld', {
+                      amount: f.money(c.settlement?.amounts?.clientRefund ?? 0),
+                    })}
               </dd>
               <dt className="text-fg-muted">{t('panel.RESOLVED.reason')}</dt>
               <dd className="text-fg-strong max-w-[65ch]">{d.reason}</dd>

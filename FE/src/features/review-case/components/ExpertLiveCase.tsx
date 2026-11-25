@@ -471,6 +471,13 @@ export function ExpertLiveCase({
   const f = useCaseFormat()
   const { dto, dispute, view, isPending, isFetching, notFound, refetch } =
     useLiveCase(caseId)
+  // A decided dispute: rejected keeps the expert's share (green), upheld refunded the client from it (red)
+  const disputeOutcome =
+    dispute?.status === 'RESOLVED'
+      ? (dispute.refundPct ?? 0) > 0
+        ? ('upheld' as const)
+        : ('rejected' as const)
+      : null
   const { run, busy } = useCaseRun()
   const toMessage = useCaseError()
   const [toast, setToast] = useState<string | null>(null)
@@ -907,16 +914,40 @@ export function ExpertLiveCase({
               <dl className="mt-3 space-y-2">
                 <div className="flex justify-between gap-4">
                   <dt className="text-fg-muted">{t('settlement.expert')}</dt>
-                  <dd className="num text-fg-strong font-semibold">
+                  <dd
+                    className={cn(
+                      'num font-semibold',
+                      disputeOutcome === 'rejected'
+                        ? 'text-success'
+                        : disputeOutcome === 'upheld'
+                          ? 'text-danger'
+                          : 'text-fg-strong'
+                    )}
+                  >
                     {f.money(dto.settlement.expertAmount ?? 0)}
                   </dd>
                 </div>
               </dl>
+              {/* The colour alone does not say why; one line names the decision */}
+              {disputeOutcome && (
+                <p
+                  className={cn(
+                    'mt-2 text-xs',
+                    disputeOutcome === 'rejected' ? 'text-success' : 'text-danger'
+                  )}
+                >
+                  {t(`settlement.dispute.${disputeOutcome}`)}
+                </p>
+              )}
             </section>
           )}
           <CaseAttachments
             caseId={caseId}
             canUpload={UPLOAD_STATUSES.includes(dto.status)}
+            canRemove={UPLOAD_STATUSES.includes(dto.status) && dto.status !== 'DISPUTED'}
+            removeUntilDelivery={
+              dto.status === 'IN_REVIEW' || dto.status === 'AWAITING_USER_INFORMATION'
+            }
             requesterUserId={dto.requesterUserId}
             // A draft written in the app has content and no file; an unnamed upload keeps the generic button
             sourceFileName={dto.sourceContent ? null : (dto.sourceFileName ?? undefined)}

@@ -1,4 +1,5 @@
 import { useExpertPresentation } from '@/features/expert-dashboard/hooks/useExpertPresentation'
+import { statusTone } from '@/features/expert-dashboard/statusTone'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useExpertDashboard } from '../../features/expert-dashboard/hooks/useExpertDashboard'
@@ -229,7 +230,7 @@ export default function ExpertCasesPage() {
                           </td>
                           <td>
                             <span
-                              className={`ep-status ${item.deadline.paused ? 'ep-status-paused' : ''}`}
+                              className={`ep-status ${statusTone(item.status, overdue)}`}
                             >
                               {display.status(item.status)}
                             </span>

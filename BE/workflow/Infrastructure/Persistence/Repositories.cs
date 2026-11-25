@@ -201,6 +201,8 @@ public sealed class ReviewAttachmentRepository(WorkflowDbContext db) : IReviewAt
 
     public void Add(ReviewAttachment attachment) => db.ReviewAttachments.Add(attachment);
 
+    public void Remove(ReviewAttachment attachment) => db.ReviewAttachments.Remove(attachment);
+
     public Task<DocumentVersion?> FindSourceAsync(Guid versionId, CancellationToken ct) =>
         db.DocumentVersions.AsNoTracking().SingleOrDefaultAsync(x => x.Id == versionId, ct);
 }

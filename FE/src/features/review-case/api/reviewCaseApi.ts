@@ -116,6 +116,12 @@ export interface UploadedDocument {
 export interface ClientDocument {
   id: string
   title: string
+  /** TEMPLATE: drafted with AI from a template; EXTERNAL_FILE: uploaded by the client */
+  source: string
+  /** DRAFT, IN_REVIEW or VERIFIED */
+  status: string
+  periodStart: string | null
+  periodEnd: string | null
 }
 
 // ponytail: first 50 documents only; add paging or search when clients keep more
@@ -174,6 +180,10 @@ export const listCaseAttachments = (
   unwrap(
     api.get<Envelope<AttachmentDto[]>>(attachmentsUrl(id, scope), { signal })
   )
+
+/** The uploader takes back a file within 15 minutes of uploading, before any dispute (server rule) */
+export const removeCaseAttachment = (id: string, attachmentId: string) =>
+  api.del(`${attachmentsUrl(id, 'party')}/${attachmentId}`)
 
 export function addCaseAttachment(id: string, file: File) {
   const form = new FormData()

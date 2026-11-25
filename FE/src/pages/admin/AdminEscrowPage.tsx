@@ -191,8 +191,9 @@ export default function AdminEscrowPage() {
                       >
                         {t(`escrow.groups.${group.key}`)}
                       </h2>
-                      {group.key === 'holding' && (
-                        <span className="text-fg-muted num text-sm">
+                      {/* Money groups show their total; the action group is about counts */}
+                      {group.key !== 'action' && (
+                        <span className="text-fg-strong num text-lg font-semibold">
                           {t('escrow.groups.holdingTotal', {
                             amount: formatVnd(holding),
                           })}
@@ -341,7 +342,7 @@ export default function AdminEscrowPage() {
                       )}
                     </td>
                     <td className="text-fg-muted text-right whitespace-nowrap">
-                      {t(ESCROW_NEXT_LABEL[e.status])}{' '}
+                      {t(e.nextLabel ?? ESCROW_NEXT_LABEL[e.status])}{' '}
                       <span className="num">{formatDayMonth(e.nextAt)}</span>
                     </td>
                     <td className="text-right">

@@ -10,6 +10,20 @@ public class ViolationTests
     private static readonly DateTimeOffset Now = new(2026, 11, 21, 1, 0, 0, TimeSpan.Zero);
     private static readonly Guid Admin = Guid.NewGuid();
 
+    [Fact]
+    public void An_expert_with_no_excuses_left_cannot_ask_for_another()
+    {
+        var violation = Late();
+
+        Assert.Equal(
+            "VIOLATION_EXCUSE_LIMIT",
+            Errors.CodeOf(() =>
+                violation.RequestExcuse("Flood", [], ViolationRules.MaxExcuses, Now)
+            )
+        );
+        Assert.Null(violation.ExcuseRequestedAt);
+    }
+
     private static ExpertViolation Late() =>
         ExpertViolation.Record(Guid.NewGuid(), Guid.NewGuid(), "LATE", Now.AddDays(-1));
 
@@ -65,7 +79,7 @@ public class ViolationTests
     {
         var violation = Late();
 
-        violation.RequestExcuse("  In hospital since Friday  ", [], Now);
+        violation.RequestExcuse("  In hospital since Friday  ", [], 0, Now);
 
         Assert.Equal(
             ("In hospital since Friday", Now),
@@ -74,7 +88,7 @@ public class ViolationTests
         Assert.True(violation.ExcusePending);
         Assert.Equal(
             "VIOLATION_EXCUSE_ALREADY_REQUESTED",
-            Errors.CodeOf(() => violation.RequestExcuse("Again", [], Now))
+            Errors.CodeOf(() => violation.RequestExcuse("Again", [], 0, Now))
         );
     }
 
@@ -82,21 +96,23 @@ public class ViolationTests
     public void An_excuse_is_asked_within_two_days_of_the_violation() =>
         Assert.Equal(
             "VIOLATION_EXCUSE_REQUEST_CLOSED",
-            Errors.CodeOf(() => Late().RequestExcuse("Too late", [], Now.AddDays(1).AddMinutes(1)))
+            Errors.CodeOf(() =>
+                Late().RequestExcuse("Too late", [], 0, Now.AddDays(1).AddMinutes(1))
+            )
         );
 
     [Fact]
     public void An_excuse_request_needs_a_reason() =>
         Assert.Equal(
             "VIOLATION_EXCUSE_REASON_REQUIRED",
-            Errors.CodeOf(() => Late().RequestExcuse("  ", [], Now))
+            Errors.CodeOf(() => Late().RequestExcuse("  ", [], 0, Now))
         );
 
     [Fact]
     public void A_declined_request_keeps_the_points_and_is_not_pending()
     {
         var violation = Late();
-        violation.RequestExcuse("Power cut", [], Now);
+        violation.RequestExcuse("Power cut", [], 0, Now);
 
         violation.DeclineExcuse(Now.AddHours(1));
 
@@ -113,7 +129,7 @@ public class ViolationTests
             Errors.CodeOf(() => Late().DeclineExcuse(Now))
         );
         var excused = Late();
-        excused.RequestExcuse("Flood", [], Now);
+        excused.RequestExcuse("Flood", [], 0, Now);
         excused.Excuse(Admin, "Flood checked", 0, Now);
 
         Assert.False(excused.ExcusePending);
@@ -135,7 +151,7 @@ public class ViolationTests
             12_345
         );
 
-        violation.RequestExcuse("In hospital", [note], Now);
+        violation.RequestExcuse("In hospital", [note], 0, Now);
 
         Assert.Equal([note], violation.ExcuseFiles);
         Assert.Equal($"violations/{violation.ReviewCaseId}/{note.Id}", note.StorageKey);
@@ -151,7 +167,7 @@ public class ViolationTests
 
         Assert.Equal(
             "VIOLATION_EXCUSE_FILE_LIMIT",
-            Errors.CodeOf(() => Late().RequestExcuse("Flood", files, Now))
+            Errors.CodeOf(() => Late().RequestExcuse("Flood", files, 0, Now))
         );
     }
 

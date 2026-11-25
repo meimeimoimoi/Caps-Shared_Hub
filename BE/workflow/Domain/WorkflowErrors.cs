@@ -209,6 +209,13 @@ public static class WorkflowErrors
     public static AppException AttachmentNotFound() =>
         new(ErrorType.NotFound, "ATTACHMENT_NOT_FOUND", "File not found.");
 
+    public static AppException AttachmentNotRemovable(int minutes) =>
+        new(
+            ErrorType.Conflict,
+            "ATTACHMENT_NOT_REMOVABLE",
+            $"Only your own file can be removed: the expert's before delivery, otherwise within {minutes} minutes of uploading, never during a dispute."
+        );
+
     public static AppException RatingClosed(string status) =>
         new(
             ErrorType.Conflict,

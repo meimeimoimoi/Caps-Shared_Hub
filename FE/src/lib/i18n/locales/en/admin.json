@@ -502,6 +502,7 @@
       "opened": "Opened",
       "status": "Status",
       "left": "Time left",
+      "decided": "Decided at",
       "actions": "Actions"
     },
     "hours": "{{hours}} h",
@@ -635,8 +636,10 @@
     "empty": "No Escrow records yet.",
     "nextLabel": {
       "DISPUTE_LOCKED": "decide by",
+      "respond": "accept by",
+      "deliver": "deliver by",
       "HELD": "auto-confirms",
-      "PAYOUT_SCHEDULED": "payout on",
+      "PAYOUT_SCHEDULED": "settled on",
       "PAID": "paid on",
       "REFUNDED": "refunded on",
       "PAYOUT_FAILED": "failed on",
@@ -673,7 +676,7 @@
       "ALL": "All",
       "HELD": "Awaiting acceptance",
       "DISPUTE_LOCKED": "Dispute lock",
-      "PAYOUT_SCHEDULED": "Payout scheduled · 7 days",
+      "PAYOUT_SCHEDULED": "Payout pending",
       "PAID": "Paid out",
       "REFUNDED": "Refunded",
       "PAYOUT_FAILED": "Payout failed",
@@ -1339,8 +1342,8 @@
     "setFor": "Set fee · {{name}}",
     "cancelFor": "Cancel pending change · {{name}}",
     "lateSteps": {
-      "penalty": "Up to {{hours}}h late: {{percent}}% back",
-      "full": "{{from}}–{{to}}h: 100% back",
+      "penalty": "Late by {{hours}}h or less: {{percent}}% back",
+      "full": "Late by more than {{from}}h, up to {{to}}h: 100% back",
       "cancel": "Not delivered after {{hours}} h: cancelled, {{percent}}% refunded"
     },
     "dialogPart": "{{part}} · {{name}}",
@@ -1356,13 +1359,18 @@
     },
     "cases": {
       "onTime": "On time",
-      "late": "Up to {{hours}}h late",
-      "lateMore": "{{from}}–{{to}}h late",
+      "late": "Late by {{hours}}h or less",
+      "lateMore": "Late by more than {{from}}h, up to {{to}}h",
       "cancel": "Undelivered after {{hours}}h",
       "silence": "Client silent for {{days}} working days",
       "preview": "Split after saving",
       "silenceIndependent": "Set on its own; does not follow the platform fee",
       "previewStale": "Current split (the new value is not valid yet)"
+    },
+    "who": {
+      "client": "Client",
+      "expert": "Expert",
+      "platform": "Platform"
     },
     "parts": {
       "client": "Client {{percent}}%",

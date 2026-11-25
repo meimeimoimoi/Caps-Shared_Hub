@@ -3,13 +3,15 @@ import { cn } from '@/lib/utils'
 import { useFileDrop } from '../hooks/useFileDrop'
 import { useTranslation } from 'react-i18next'
 import { useQuery } from '@tanstack/react-query'
-import { Download, FileText, Paperclip } from 'lucide-react'
+import { Download, FileText, Paperclip, Trash2 } from 'lucide-react'
 import { ApiError } from '@/lib/api-client'
+import { useAuthStore } from '@/features/auth'
 import {
   addCaseAttachment,
   downloadCaseAttachment,
   downloadSourceFile,
   listCaseAttachments,
+  removeCaseAttachment,
   type AttachmentScope,
 } from '../api/reviewCaseApi'
 import {
@@ -29,6 +31,9 @@ const sizeLabel = (bytes: number) =>
     : `${(bytes / (1024 * 1024)).toFixed(1)} MB`
 
 // Always saved, never opened in this origin: the file comes from the other party
+// Same window as the server (ReviewCase.AttachmentRemoveMinutes)
+const REMOVE_MINUTES = 15
+
 async function save(blob: Blob, name: string) {
   const url = URL.createObjectURL(blob)
   const link = document.createElement('a')
@@ -42,6 +47,8 @@ export function CaseAttachments({
   caseId,
   scope = 'party',
   canUpload = false,
+  canRemove = false,
+  removeUntilDelivery = false,
   requesterUserId,
   dispute,
   sourceFileName,
@@ -51,6 +58,10 @@ export function CaseAttachments({
   sourceFileName?: string | null
   scope?: AttachmentScope
   canUpload?: boolean
+  /** The caller may take back their own file uploaded in the last 15 minutes (not during a dispute) */
+  canRemove?: boolean
+  /** The expert before delivery: their own files can go at any time, not only in the first 15 minutes */
+  removeUntilDelivery?: boolean
   /** A case has two parties, so a file the client did not add is the expert's. */
   requesterUserId?: string
   /** For the arbiter: files split by party, and those added once the dispute opened are marked */
@@ -63,6 +74,19 @@ export function CaseAttachments({
   const [error, setError] = useState<string | null>(null)
   // Who the client is decides the two groups; unknown (no requester given) keeps one flat list
   const clientId = dispute?.clientUserId ?? requesterUserId
+  const me = useAuthStore((s) => s.user?.id)
+  const { run, busy } = useCaseRun()
+  const removable = (a: AttachmentDto) =>
+    canRemove &&
+    a.uploadedBy === me &&
+    (removeUntilDelivery ||
+      Date.now() - new Date(a.uploadedAt).getTime() < REMOVE_MINUTES * 60_000)
+  const remove = (a: AttachmentDto) => {
+    setError(null)
+    run(() =>
+      removeCaseAttachment(caseId, a.id).catch((e: unknown) => setError(toMessage(e)))
+    )
+  }
   const files = useQuery({
     queryKey: [...reviewCaseKeys.attachments(caseId), scope],
     queryFn: ({ signal }) => listCaseAttachments(caseId, scope, signal),
@@ -186,6 +210,22 @@ export function CaseAttachments({
               >
                 <Download size={15} aria-hidden="true" />
               </button>
+              {removable(a) && (
+                <button
+                  type="button"
+                  disabled={busy}
+                  onClick={() => remove(a)}
+                  aria-label={t('live.files.remove', { name: a.fileName })}
+                  title={
+                    removeUntilDelivery
+                      ? t('live.files.removeUntilDelivery')
+                      : t('live.files.removeHint', { minutes: REMOVE_MINUTES })
+                  }
+                  className="btn btn-ghost hover:text-danger !min-h-0 shrink-0 !p-1.5"
+                >
+                  <Trash2 size={15} aria-hidden="true" />
+                </button>
+              )}
             </li>
           ))}
         </ul>
