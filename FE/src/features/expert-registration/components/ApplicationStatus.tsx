@@ -45,6 +45,30 @@ const noteCls =
 const mutedCls = 'text-[13px] text-ex-muted font-normal'
 const stepBubbleCls =
   'flex items-center justify-center w-6 h-6 border border-ex-step-border rounded-full text-xs'
+type Phase =
+  | 'terminal'
+  | 'supplement'
+  | 'additional'
+  | 'approved'
+  | 'eligible'
+  | 'screening'
+  | 'eligibility'
+  | 'review'
+
+const PHASE_VIEW = {
+  terminal: { tone: 'danger', pill: 'status.outcome', title: 'status.reassess' },
+  supplement: { tone: 'warning', pill: 'status.action', title: 'status.supplement' },
+  additional: { tone: 'warning', pill: 'status.action', title: 'status.next' },
+  approved: { tone: 'success', pill: 'status.complete', title: 'status.selectedApproved' },
+  eligible: { tone: 'success', pill: 'status.complete', title: 'status.next' },
+  screening: { tone: 'progress', pill: 'status.inProgress', title: 'status.screening' },
+  eligibility: { tone: 'progress', pill: 'status.inProgress', title: 'status.eligibilityTitle' },
+  review: { tone: 'progress', pill: 'status.inProgress', title: 'status.next' },
+} as const satisfies Record<
+  Phase,
+  { tone: 'danger' | 'warning' | 'success' | 'progress'; pill: string; title: string }
+>
+
 function IssueList({
   title,
   issues,
@@ -101,14 +125,24 @@ export function ApplicationStatus({
   const ineligible = stage === 'ineligible'
   // POL-EXP-REAPP: a new application needs a change for every failed criterion, not only the wait
   const toChange = eligibilityIssues.filter((i) => i.result === 'FAIL')
-  // Colour of the status pill: problem, action needed, done, or still in review
-  const tone = terminal
-    ? 'danger'
-    : stage === 'additional' || supplement
-      ? 'warning'
-      : stage === 'approved' || stage === 'eligible'
-        ? 'success'
-        : 'progress'
+  // One phase drives pill tone, pill text and heading, so they cannot disagree
+  const phase: Phase = terminal
+    ? 'terminal'
+    : supplement
+      ? 'supplement'
+      : stage === 'additional'
+        ? 'additional'
+        : stage === 'approved'
+          ? 'approved'
+          : stage === 'eligible'
+            ? 'eligible'
+            : stage === 'screening'
+              ? 'screening'
+              : stage === 'eligibility'
+                ? 'eligibility'
+                : 'review'
+  const view = PHASE_VIEW[phase]
+  const tone = view.tone
 
   return (
     <>
@@ -156,27 +190,9 @@ export function ApplicationStatus({
       >
         <span className="expert-status-pill" data-tone={tone}>
           <span className="expert-status-pill-dot" aria-hidden="true" />
-          {terminal
-            ? t('status.outcome')
-            : stage === 'additional' || supplement
-              ? t('status.action')
-              : stage === 'approved' || stage === 'eligible'
-                ? t('status.complete')
-                : t('status.inProgress')}
+          {t(view.pill)}
         </span>
-        <h2>
-          {supplement
-            ? t('status.supplement')
-            : terminal
-              ? t('status.reassess')
-              : stage === 'approved'
-                ? t('status.selectedApproved')
-                : stage === 'screening'
-                  ? t('status.screening')
-                  : stage === 'eligibility'
-                    ? t('status.eligibilityTitle')
-                    : t('status.next')}
-        </h2>
+        <h2>{t(view.title)}</h2>
         {supplement ? (
           <SupplementForm {...supplementFormProps} />
         ) : stage === 'additional' ? (
