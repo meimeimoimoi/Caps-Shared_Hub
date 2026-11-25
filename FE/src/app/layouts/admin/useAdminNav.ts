@@ -71,6 +71,9 @@ export function useAdminNav(enabled = true) {
     queryKey: disputesKeys.disputes(),
     queryFn: ({ signal }) => getDisputes(signal),
     enabled: canSeeDisputes,
+    // Same refresh as the queue page, so the badge counts a new dispute on any admin page
+    refetchInterval: 60_000,
+    refetchOnWindowFocus: true,
   })
   const escrows = useQuery({
     queryKey: disputesKeys.escrows(),

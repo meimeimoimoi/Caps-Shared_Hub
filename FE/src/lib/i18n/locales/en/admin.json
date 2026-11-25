@@ -511,7 +511,7 @@
     "empty": "No disputes yet.",
     "resolved": "Decided",
     "badge": {
-      "open": "Disputed",
+      "open": "Awaiting decision",
       "challenge": "Challenged · case terminated",
       "escalated": "Escalated to professional review"
     },

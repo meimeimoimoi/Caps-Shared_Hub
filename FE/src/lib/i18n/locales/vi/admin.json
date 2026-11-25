@@ -503,7 +503,7 @@
     "empty": "Chưa có khiếu nại nào.",
     "resolved": "Đã có quyết định",
     "badge": {
-      "open": "Đang tranh chấp",
+      "open": "Chờ quyết định",
       "challenge": "Đang khiếu nại · hồ sơ đã chấm dứt",
       "escalated": "Đã chuyển cấp chuyên môn"
     },

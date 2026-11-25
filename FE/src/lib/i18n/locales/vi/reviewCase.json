@@ -806,7 +806,8 @@
       },
       "saveDraft": "Lưu nháp",
       "draftSaved": "Đã lưu nháp. Khách chỉ thấy bản chỉnh sửa sau khi bạn bàn giao.",
-      "decisionLate": "Quyết định đang chậm hơn dự kiến. Phần tiền của bạn vẫn được giữ, bạn sẽ được báo ngay khi có quyết định."
+      "decisionLate": "Quyết định đang chậm hơn dự kiến. Phần tiền của bạn vẫn được giữ, bạn sẽ được báo ngay khi có quyết định.",
+      "decision": "Kết quả"
     },
     "notConnected": "Chưa có dữ liệu.",
     "openCases": "Các hồ sơ đang mở của bạn.",

@@ -821,7 +821,9 @@ export function ExpertLiveCase({
           )}
 
           {dispute && (
-            <Card title={t('panel.DISPUTED.title')}>
+            <Card
+              title={t(disputeOutcome ? 'panel.RESOLVED.title' : 'panel.DISPUTED.title')}
+            >
               <p className="text-fg-strong font-semibold">
                 {caseText(`dialogs.report.issues.${dispute.reason}`) ??
                   dispute.reason}
@@ -874,10 +876,25 @@ export function ExpertLiveCase({
                 // Evidence sits next to the statement so the arbiter can weigh it against the client's
                 <EvidenceUpload caseId={caseId} label={t('live.files.evidence.add')} />
               )}
-              {dispute.resolutionNote && (
-                <p className="text-fg break-words whitespace-pre-wrap">
-                  {dispute.resolutionNote}
-                </p>
+              {disputeOutcome && (
+                // Labelled like the statement above, so the decision is not read as one more remark
+                <div>
+                  <h3 className="eyebrow font-sans">{t('live.expert.decision')}</h3>
+                  <p
+                    className={cn(
+                      'mt-1 font-semibold',
+                      disputeOutcome === 'rejected' ? 'text-success' : 'text-danger'
+                    )}
+                  >
+                    {t(`settlement.dispute.${disputeOutcome}`)}
+                  </p>
+                  {dispute.resolutionNote && (
+                    <p className="text-fg mt-1 break-words whitespace-pre-wrap">
+                      <span className="text-fg-muted">{t('panel.RESOLVED.reason')}: </span>
+                      {dispute.resolutionNote}
+                    </p>
+                  )}
+                </div>
               )}
             </Card>
           )}
