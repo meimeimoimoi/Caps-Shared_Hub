@@ -75,6 +75,7 @@
     "saved": "Liên kết đã lưu"
   },
   "files": {
+    "retry": "Chọn lại tệp",
     "open": "Xem tài liệu",
     "openNamed": "Xem {{name}} (mở trong tab mới)",
     "opening": "Đang mở tài liệu…",
