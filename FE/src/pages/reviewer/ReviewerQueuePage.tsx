@@ -254,8 +254,8 @@ export default function ReviewerQueuePage({ history = false, gate: routeGate = '
                     </div>
                     {!history && row.claimable && !row.held && (
                       <Button
-                        variant="outline"
                         disabled={take.isPending}
+                        title={t('claimHint')}
                         onClick={() => take.mutate(row)}
                         aria-label={`${t('claimAction')}: ${row.name}`}
                         className="relative z-10 ml-auto h-9 shrink-0 gap-1.5"

@@ -155,5 +155,6 @@
     "submittedAt_desc": "Newest first",
     "name_asc": "Name A–Z",
     "years_desc": "Most experience first"
-  }
+  },
+  "claimHint": "Claim to start assessing. The review stays yours until the hold expires."
 }

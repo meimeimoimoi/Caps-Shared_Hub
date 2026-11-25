@@ -154,5 +154,6 @@
     "submittedAt_desc": "Mới nộp trước",
     "name_asc": "Tên A–Z",
     "years_desc": "Nhiều kinh nghiệm trước"
-  }
+  },
+  "claimHint": "Nhận để bắt đầu đánh giá. Hồ sơ được giữ cho bạn đến hết thời hạn giữ."
 }
