@@ -234,6 +234,8 @@
       "request": "Chuyên gia xin miễn: {{text}}",
       "requestDeclined": "Đã từ chối yêu cầu miễn, vẫn tính điểm",
       "decline": "Từ chối yêu cầu",
+      "declineTitle": "Từ chối yêu cầu miễn của {{name}}?",
+      "declineBody": "Vi phạm vẫn được tính điểm. Không hoàn tác được.",
       "noFiles": "Không kèm tệp bằng chứng.",
       "fileFailed": "Không mở được tệp. Hãy thử lại."
     }

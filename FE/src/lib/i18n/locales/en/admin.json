@@ -240,6 +240,8 @@
       "request": "The expert asks: {{text}}",
       "requestDeclined": "Request declined; still counted",
       "decline": "Decline request",
+      "declineTitle": "Decline the excuse request from {{name}}?",
+      "declineBody": "The violation keeps its points. This cannot be undone.",
       "noFiles": "No evidence files attached.",
       "fileFailed": "Couldn't open the file. Try again."
     }

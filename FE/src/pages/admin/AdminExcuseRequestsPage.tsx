@@ -17,17 +17,20 @@ import { ExcuseFiles } from '@/features/expert-vetting/components/ExcuseFiles'
 import type { ExcuseRequest } from '@/features/expert-vetting/types'
 import { foldVietnamese, formatDateTime } from '@/features/expert-vetting/utils/applications'
 import { EmptyState } from '@/components/ui/feedback/empty-state'
+import { Modal } from '@/components/ui/feedback/modal'
 
 /** Force-majeure excuse requests from experts, oldest first: read the reason and evidence, then excuse or decline. */
 export default function AdminExcuseRequestsPage() {
   const nav = useAdminNav()
-  const { t } = useTranslation('admin')
+  const { t } = useTranslation(['admin', 'common'])
   const qc = useQueryClient()
   const requests = useQuery({
     queryKey: adminKeys.excuseRequests(),
     queryFn: ({ signal }) => getExcuseRequests(signal),
   })
   const [excusing, setExcusing] = useState<ExcuseRequest | null>(null)
+  // Declining keeps the violation points, so it is confirmed first
+  const [declining, setDeclining] = useState<ExcuseRequest | null>(null)
   const [busy, setBusy] = useState<string | null>(null)
   const [failed, setFailed] = useState(false)
   const [query, setQuery] = useState('')
@@ -45,6 +48,7 @@ export default function AdminExcuseRequestsPage() {
     try {
       await declineExcuse(r.expertProfileId, r.violation.reviewCaseId)
       await refresh(r)
+      setDeclining(null)
     } catch {
       setFailed(true)
     } finally {
@@ -145,7 +149,7 @@ export default function AdminExcuseRequestsPage() {
                       <button
                         type="button"
                         disabled={busy === v.reviewCaseId}
-                        onClick={() => void decline(r)}
+                        onClick={() => setDeclining(r)}
                         className="btn btn-press btn-secondary disabled:opacity-60"
                       >
                         {t('experts.violations.decline')}
@@ -173,6 +177,37 @@ export default function AdminExcuseRequestsPage() {
         </table>
       </section>
 
+      {declining && (
+        <Modal
+          title={t('experts.violations.declineTitle', {
+            name: declining.expertName ?? '—',
+          })}
+          description={t('experts.violations.declineBody')}
+          preventClose={busy === declining.violation.reviewCaseId}
+          onClose={() => setDeclining(null)}
+          footer={
+            <>
+              <button
+                type="button"
+                autoFocus
+                disabled={busy === declining.violation.reviewCaseId}
+                onClick={() => setDeclining(null)}
+                className="btn btn-press btn-secondary"
+              >
+                {t('common:actions.cancel')}
+              </button>
+              <button
+                type="button"
+                disabled={busy === declining.violation.reviewCaseId}
+                onClick={() => void decline(declining)}
+                className="btn btn-press btn-danger disabled:opacity-60"
+              >
+                {t('experts.violations.decline')}
+              </button>
+            </>
+          }
+        />
+      )}
       {excusing && (
         <ExcuseDialog
           violation={excusing.violation}
