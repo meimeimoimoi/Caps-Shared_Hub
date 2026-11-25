@@ -155,7 +155,7 @@ export default function WalletPage() {
             <h2 id="w-ledger" className="text-h2">
               {t('wallet.ledger')}
             </h2>
-            <div className="paper mt-4 overflow-x-auto">
+            <div className="paper mt-4 overflow-x-auto max-md:hidden">
               <table className="w-full text-sm sm:min-w-[36rem]">
                 <thead className="bg-sunken text-fg-muted text-left">
                   <tr className="[&>th]:px-4 [&>th]:py-3 [&>th]:font-semibold [&>th]:whitespace-nowrap">
@@ -218,13 +218,53 @@ export default function WalletPage() {
                 </tbody>
               </table>
             </div>
+            {/* Below md the ledger reads as cards instead of a scrolling table */}
+            <ul className="mt-4 space-y-3 md:hidden">
+              {ledger.map((e) => (
+                <li key={e.id} className="paper flex justify-between gap-4 p-4">
+                  <span className="min-w-0">
+                    <span className="text-fg-strong block font-semibold">
+                      {t(`wallet.types.${e.entryType}`)}
+                    </span>
+                    <span className="num text-fg-muted block text-xs">
+                      {f.at(e.createdAt)}
+                    </span>
+                  </span>
+                  <span className="shrink-0 text-right">
+                    <span
+                      className={cn(
+                        'num block font-semibold',
+                        e.amount > 0 ? 'text-success' : 'text-fg-strong'
+                      )}
+                    >
+                      {e.amount > 0 ? `+${number(e.amount)}` : number(e.amount)}
+                    </span>
+                    <span className="num text-fg-muted block text-xs">
+                      {t('wallet.ledgerCols.balance')}: {number(e.balanceAfter)}
+                    </span>
+                  </span>
+                </li>
+              ))}
+              {payments.isLoading && (
+                <li
+                  role="status"
+                  aria-label={t('live.loading')}
+                  className="bg-sunken h-16 rounded motion-safe:animate-pulse"
+                />
+              )}
+              {!payments.isLoading && ledger.length === 0 && (
+                <li className="paper">
+                  {loadError ?? <EmptyState title={t('wallet.ledgerEmpty')} />}
+                </li>
+              )}
+            </ul>
           </section>
 
           <section aria-labelledby="w-payments">
             <h2 id="w-payments" className="text-h2">
               {tc('credits.paymentsTitle')}
             </h2>
-            <div className="paper mt-4 overflow-x-auto">
+            <div className="paper mt-4 overflow-x-auto max-md:hidden">
               <table className="w-full text-sm sm:min-w-[36rem]">
                 <thead className="bg-sunken text-fg-muted text-left">
                   <tr className="[&>th]:px-4 [&>th]:py-3 [&>th]:font-semibold [&>th]:whitespace-nowrap">
@@ -279,6 +319,43 @@ export default function WalletPage() {
                 </tbody>
               </table>
             </div>
+            <ul className="mt-4 space-y-3 md:hidden">
+              {payments.data?.payments?.map((p) => (
+                <li key={p.id} className="paper space-y-2 p-4">
+                  <div className="flex justify-between gap-4">
+                    <span className="text-fg-strong min-w-0 font-semibold">
+                      {tc(`credits.purpose.${p.purpose}`)}
+                    </span>
+                    <span className="num shrink-0">{f.money(p.amount)}</span>
+                  </div>
+                  <div className="flex items-center justify-between gap-4">
+                    <span className="num text-fg-muted min-w-0 text-xs">
+                      {f.at(p.createdAt)} · {p.orderCode}
+                    </span>
+                    <StatusBadge
+                      status={{
+                        label: tc(`credits.paymentStatus.${p.status}`),
+                        tone: PAYMENT_TONE[p.status],
+                      }}
+                    />
+                  </div>
+                </li>
+              ))}
+              {payments.isLoading && (
+                <li
+                  role="status"
+                  aria-label={t('live.loading')}
+                  className="bg-sunken h-16 rounded motion-safe:animate-pulse"
+                />
+              )}
+              {!payments.isLoading && !payments.data?.payments?.length && (
+                <li className="paper">
+                  {loadError ?? (
+                    <EmptyState title={tc('credits.emptyPayments')} />
+                  )}
+                </li>
+              )}
+            </ul>
           </section>
         </div>
 
