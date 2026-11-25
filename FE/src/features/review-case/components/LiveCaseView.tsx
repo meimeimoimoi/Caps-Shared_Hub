@@ -251,6 +251,7 @@ export function LiveCaseView({ caseId }: { caseId: string }) {
           <CaseAttachments
             caseId={caseId}
             canUpload={UPLOAD_STATUSES.includes(c.status)}
+            canRemove={UPLOAD_STATUSES.includes(c.status) && c.status !== 'DISPUTED'}
             requesterUserId={dto.requesterUserId}
             sourceFileName={dto.sourceContent ? null : (dto.sourceFileName ?? undefined)}
           />

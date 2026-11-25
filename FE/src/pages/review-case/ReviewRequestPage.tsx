@@ -47,6 +47,8 @@ const initialsOf = (name: string) =>
 // The current tax year (00 section 3a); the client can pick another period before uploading
 const TAX_YEAR = new Date().getFullYear()
 // A listed document that has no version yet cannot be booked
+// "2026-01-01" -> "01/01/2026"; a tax period is a calendar day, so no time zone is involved
+const dayOf = (date: string) => date.split('-').reverse().join('/')
 const NO_VERSION = 'NO_VERSION'
 
 export default function ReviewRequestPage() {
@@ -86,19 +88,27 @@ export default function ReviewRequestPage() {
     ...(uploaded ? [uploaded] : []),
   ]
   // A listed document's radio value is its id; its version is looked up when the request is sent
-  const drafts = isExpertDemo
-    ? REVIEWABLE_DRAFTS
-    : [
-        ...picked,
-        ...(myDocuments ?? [])
-          .filter((d) => !picked.some((p) => p.documentId === d.id))
-          .map((d) => ({
-            id: d.id,
-            documentId: d.id,
-            name: d.title,
-            latest: true,
-          })),
-      ]
+  const listed = isExpertDemo
+    ? []
+    : (myDocuments ?? [])
+        // A document already under review cannot be booked again (CASE_ALREADY_OPEN)
+        .filter(
+          (d) =>
+            d.status !== 'IN_REVIEW' &&
+            !picked.some((p) => p.documentId === d.id)
+        )
+        .map((d) => ({
+          id: d.id,
+          documentId: d.id,
+          name: d.title,
+          latest: true,
+          doc: d,
+        }))
+  const drafts = isExpertDemo ? REVIEWABLE_DRAFTS : [...picked, ...listed]
+  const [docQuery, setDocQuery] = useState('')
+  const shownListed = listed.filter((d) =>
+    d.name.toLowerCase().includes(docQuery.trim().toLowerCase())
+  )
   const [periodStart, setPeriodStart] = useState(`${TAX_YEAR}-01-01`)
   const [periodEnd, setPeriodEnd] = useState(`${TAX_YEAR}-12-31`)
   const [uploading, setUploading] = useState(false)
@@ -285,7 +295,7 @@ export default function ReviewRequestPage() {
                   </div>
                 ) : (
                   <div className="space-y-3">
-                    {drafts.map((d) => (
+                    {drafts.filter((d) => !('latest' in d)).map((d) => (
                       <label
                         key={d.id}
                         className={cn(
@@ -327,6 +337,75 @@ export default function ReviewRequestPage() {
                         </span>
                       </label>
                     ))}
+                    {listed.length > 0 && (
+                      // The client's own documents: one compact, scrollable box instead of a card each
+                      <div className="rounded-surface border-border border">
+                        <div className="border-border-subtle flex flex-wrap items-center justify-between gap-2 border-b px-4 py-3">
+                          <span className="text-fg-strong text-sm font-semibold">
+                            {t('request.myDocs.title')}{' '}
+                            <span className="text-fg-muted num font-normal">
+                              ({listed.length})
+                            </span>
+                          </span>
+                          {listed.length > 5 && (
+                            <input
+                              type="search"
+                              value={docQuery}
+                              onChange={(e) => setDocQuery(e.target.value)}
+                              placeholder={t('request.myDocs.search')}
+                              aria-label={t('request.myDocs.search')}
+                              className={cn(fieldClass, 'w-full py-1.5 text-sm sm:w-56')}
+                            />
+                          )}
+                        </div>
+                        <ul className="divide-border-subtle max-h-72 divide-y overflow-y-auto">
+                          {shownListed.map((d) => (
+                            <li key={d.id}>
+                              <label
+                                className={cn(
+                                  'flex cursor-pointer items-center gap-3 border-l-2 px-4 py-2.5 transition-colors',
+                                  draftId === d.id
+                                    ? 'border-ink bg-sunken'
+                                    : 'hover:bg-sunken border-transparent'
+                                )}
+                              >
+                                <input
+                                  type="radio"
+                                  name="draft"
+                                  value={d.id}
+                                  checked={draftId === d.id}
+                                  onChange={() => setDraftId(d.id)}
+                                  className="accent-ink size-4 shrink-0"
+                                />
+                                <span className="min-w-0 flex-1">
+                                  <span className="text-fg-strong block truncate text-sm font-medium">
+                                    {d.name}
+                                  </span>
+                                  <span className="text-fg-muted num block text-xs">
+                                    {t(
+                                      d.doc.source === 'TEMPLATE'
+                                        ? 'request.myDocs.ai'
+                                        : 'request.myDocs.upload'
+                                    )}
+                                    {d.doc.periodStart &&
+                                      d.doc.periodEnd &&
+                                      ` · ${t('request.myDocs.period', {
+                                        from: dayOf(d.doc.periodStart),
+                                        to: dayOf(d.doc.periodEnd),
+                                      })}`}
+                                  </span>
+                                </span>
+                              </label>
+                            </li>
+                          ))}
+                          {shownListed.length === 0 && (
+                            <li className="text-fg-muted px-4 py-3 text-sm">
+                              {t('request.myDocs.none')}
+                            </li>
+                          )}
+                        </ul>
+                      </div>
+                    )}
                   </div>
                 )}
                 {!isExpertDemo && (

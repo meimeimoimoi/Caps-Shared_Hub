@@ -820,11 +820,7 @@
       "plus_one": "+{{count}} point",
       "plus_other": "+{{count}} points",
       "case": "Case {{id}}",
-      "counted": "Counting",
-      "expired": "No longer counted",
-      "excused": "Excused: {{reason}}",
-      "pending": "Waiting for the administrator",
-      "declined": "Excuse declined; still counted",
+      "excused": "Excused because: {{reason}}",
       "yourRequest": "You asked: {{text}}",
       "ask": "Ask for a force-majeure excuse",
       "reason": "Reason (required)",
@@ -838,10 +834,33 @@
         "VIOLATION_EXCUSE_REASON_REQUIRED": "Enter a reason.",
         "VIOLATION_EXCUSE_FILE_LIMIT": "Attach at most 5 files.",
         "EVIDENCE_TOO_LARGE": "Each file is at most 10 MB.",
-        "EVIDENCE_INVALID_TYPE": "Only PDF, JPG or PNG files."
+        "EVIDENCE_INVALID_TYPE": "Only PDF, JPG or PNG files.",
+        "VIOLATION_EXCUSE_LIMIT": "You have used every excuse for the last 90 days, so you cannot ask for another."
       },
       "files": "Evidence files (PDF, JPG, PNG; up to 5 files, 10 MB each)",
-      "yourFiles": "Files sent: {{names}}"
+      "yourFilesLabel": "Files sent:",
+      "fileFailed": "Could not open the file. Try again.",
+      "badge": {
+        "excused": "Excused",
+        "declined": "Excuse declined",
+        "pending": "Excuse pending",
+        "notSent": "No excuse sent",
+        "counted": "Counting",
+        "expired": "No longer counted"
+      },
+      "view": "View details",
+      "hide": "Hide details",
+      "openCase": "Open case {{id}}",
+      "timeline": {
+        "occurred": "Violation recorded",
+        "requested": "You asked for an excuse",
+        "askBy": "Excuse request due",
+        "excused": "Admin excused it",
+        "declined": "Admin declined the excuse",
+        "dropsOff": "Stops counting",
+        "droppedOff": "Stopped counting"
+      },
+      "noExcusesLeft": "You have used every excuse for the last {{days}} days, so you cannot ask for another."
     }
   },
   "preparingEvidence": "Preparing competency evidence"

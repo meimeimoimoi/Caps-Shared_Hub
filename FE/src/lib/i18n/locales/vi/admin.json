@@ -494,6 +494,7 @@
       "opened": "Mở ngày",
       "status": "Trạng thái",
       "left": "Còn lại",
+      "decided": "Quyết định lúc",
       "actions": "Thao tác"
     },
     "hours": "{{hours}} giờ",
@@ -626,8 +627,10 @@
     "empty": "Chưa có khoản ký quỹ nào.",
     "nextLabel": {
       "DISPUTE_LOCKED": "quyết định trước",
+      "respond": "hạn nhận",
+      "deliver": "hạn giao",
       "HELD": "tự xác nhận",
-      "PAYOUT_SCHEDULED": "chi trả ngày",
+      "PAYOUT_SCHEDULED": "quyết toán ngày",
       "PAID": "chi trả ngày",
       "REFUNDED": "hoàn ngày",
       "PAYOUT_FAILED": "lỗi ngày",
@@ -664,7 +667,7 @@
       "ALL": "Tất cả",
       "HELD": "Chờ nghiệm thu",
       "DISPUTE_LOCKED": "Khóa tranh chấp",
-      "PAYOUT_SCHEDULED": "Chờ chi trả · 7 ngày",
+      "PAYOUT_SCHEDULED": "Chờ chi trả",
       "PAID": "Đã chi trả",
       "REFUNDED": "Đã hoàn",
       "PAYOUT_FAILED": "Chi trả lỗi",
@@ -1330,8 +1333,8 @@
     "setFor": "Đặt phí · {{name}}",
     "cancelFor": "Hủy thay đổi đang chờ · {{name}}",
     "lateSteps": {
-      "penalty": "Trễ đến {{hours}} giờ: hoàn {{percent}}%",
-      "full": "{{from}}–{{to}} giờ: hoàn 100%",
+      "penalty": "Trễ không quá {{hours}} giờ: hoàn {{percent}}%",
+      "full": "Trễ hơn {{from}} giờ, không quá {{to}} giờ: hoàn 100%",
       "cancel": "Quá {{hours}} giờ chưa giao: hủy, hoàn {{percent}}%"
     },
     "dialogPart": "{{part}} · {{name}}",
@@ -1347,13 +1350,18 @@
     },
     "cases": {
       "onTime": "Đúng hạn",
-      "late": "Trễ đến {{hours}} giờ",
-      "lateMore": "Trễ {{from}}–{{to}} giờ",
+      "late": "Trễ không quá {{hours}} giờ",
+      "lateMore": "Trễ hơn {{from}} giờ, không quá {{to}} giờ",
       "cancel": "Quá {{hours}} giờ chưa giao",
       "silence": "Khách không trả lời {{days}} ngày làm việc",
       "preview": "Chia tiền sau khi lưu",
       "silenceIndependent": "Đặt riêng, không đổi theo phí nền tảng",
       "previewStale": "Chia tiền hiện tại (giá trị mới chưa hợp lệ)"
+    },
+    "who": {
+      "client": "Khách",
+      "expert": "Chuyên gia",
+      "platform": "Nền tảng"
     },
     "parts": {
       "client": "Khách {{percent}}%",

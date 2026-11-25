@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useExpertPresentation } from '@/features/expert-dashboard/hooks/useExpertPresentation'
+import { statusTone } from '@/features/expert-dashboard/statusTone'
 import { useTranslation } from 'react-i18next'
 import { Link, useLocation, useParams } from 'react-router-dom'
 import './case-detail.css'
@@ -111,7 +112,7 @@ function CaseWorkspace({
             {item.id} · {clients[item.id] ?? t('sampleClient')}
           </p>
         </div>
-        <span className="ep-status">
+        <span className={`ep-status ${ws.closed || ws.accepted ? '' : statusTone(ws.status)}`}>
           {ws.closed
             ? t('declinedInPreview')
             : ws.accepted

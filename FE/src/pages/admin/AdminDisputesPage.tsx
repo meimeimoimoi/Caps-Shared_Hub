@@ -83,6 +83,7 @@ export default function AdminDisputesPage() {
     caseId: (d) => d.code ?? d.id,
     amount: (d) => d.fee,
     openedAt: (d) => Date.parse(d.openedAt),
+    resolvedAt: (d) => (d.resolvedAt ? Date.parse(d.resolvedAt) : null),
     deadline: (d) => d.resolvedAt ? null : d.decideBy ? Date.parse(d.decideBy) : Date.parse(d.openedAt) + disputeSlaHours(d) * 3_600_000,
   }, { key: 'deadline', direction: 'asc' })
   const paged = usePagination(tableSort.rows, JSON.stringify([query.trim(), status, sla, tableSort.sort]))
@@ -121,6 +122,16 @@ export default function AdminDisputesPage() {
         : d.hoursLeft === 0
           ? t('disputes.filters.sla.overdue')
           : t('disputes.hours', { hours: d.hoursLeft })}
+    </span>
+  )
+  const decidedAt = (d: DisputeRow) => (
+    <span className="num text-fg-muted">
+      {d.resolvedAt
+        ? format.timestamp(d.resolvedAt, 'Asia/Ho_Chi_Minh', {
+            dateStyle: 'medium',
+            timeStyle: 'short',
+          })
+        : '—'}
     </span>
   )
   const viewLink = (d: DisputeRow) => (
@@ -166,7 +177,7 @@ export default function AdminDisputesPage() {
           <div className="mt-8 flex flex-wrap items-end gap-3">
             <CustomSelect label={t('common:table.sort')} value={tableSort.sort.key + ':' + tableSort.sort.direction}
               onChange={(value) => { const [key, direction] = value.split(':'); tableSort.setSort({key, direction: direction === 'desc' ? 'desc' : 'asc'}) }}
-              options={(['deadline', 'openedAt', 'amount', 'caseId'] as const).flatMap((key) => (['asc', 'desc'] as const).map((direction) => ({value: key + ':' + direction, label: t(key === 'deadline' ? 'disputes.col.left' : key === 'amount' ? 'disputes.meta.fee' : key === 'caseId' ? 'disputes.col.caseId' : 'disputes.col.opened') + ' · ' + t(direction === 'asc' ? 'common:table.ascending' : 'common:table.descending')})))}
+              options={(['deadline', 'resolvedAt', 'openedAt', 'amount', 'caseId'] as const).flatMap((key) => (['asc', 'desc'] as const).map((direction) => ({value: key + ':' + direction, label: t(key === 'deadline' ? 'disputes.col.left' : key === 'amount' ? 'disputes.meta.fee' : key === 'caseId' ? 'disputes.col.caseId' : key === 'resolvedAt' ? 'disputes.col.decided' : 'disputes.col.opened') + ' · ' + t(direction === 'asc' ? 'common:table.ascending' : 'common:table.descending')})))}
               className="min-w-40 max-sm:w-full" />
             <CustomSelect
               label={t('disputes.col.status')}
@@ -288,6 +299,10 @@ export default function AdminDisputesPage() {
                         {t('disputes.col.left')}
                       </dt>
                       <dd>{deadline(d)}</dd>
+                      <dt className="text-fg-muted">
+                        {t('disputes.col.decided')}
+                      </dt>
+                      <dd>{decidedAt(d)}</dd>
                     </dl>
                     {viewLink(d)}
                   </li>
@@ -305,7 +320,9 @@ export default function AdminDisputesPage() {
                       <SortableTh column="openedAt" sort={tableSort.sort} onSort={tableSort.onSort}>{t('disputes.col.opened')}</SortableTh>
                       <th scope="col">{t('disputes.col.status')}</th>
                       <SortableTh column="deadline" sort={tableSort.sort} onSort={tableSort.onSort}>{t('disputes.col.left')}</SortableTh>
-                      <th scope="col">
+                      <SortableTh column="resolvedAt" sort={tableSort.sort} onSort={tableSort.onSort}>{t('disputes.col.decided')}</SortableTh>
+                      {/* Fixed width: table-fixed splits the rest evenly, and the button must not wrap */}
+                      <th scope="col" className="w-48">
                         <span className="sr-only">
                           {t('disputes.col.actions')}
                         </span>
@@ -336,6 +353,7 @@ export default function AdminDisputesPage() {
                         </td>
                         <td>{statusBadge(d)}</td>
                         <td>{deadline(d)}</td>
+                        <td>{decidedAt(d)}</td>
                         <td>{viewLink(d)}</td>
                       </tr>
                     ))}

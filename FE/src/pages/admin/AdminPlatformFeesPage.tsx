@@ -103,9 +103,21 @@ const isSaveError = (code?: string): code is SaveError =>
 // Sample prices that show the admin what experts receive before and after the change
 const SAMPLE_PRICES = [500_000, 1_000_000, 2_000_000]
 
+type Party = 'client' | 'expert' | 'platform'
+interface Share {
+  who: Party
+  percent: number
+}
+// One hue per party, the same on every row, so a share reads at a glance down the list
+const PARTY_COLOR: Record<Party, string> = {
+  client: 'bg-info',
+  expert: 'bg-accent',
+  platform: 'bg-border-control',
+}
+
 interface ScenarioItem {
   label: string
-  parts: string[]
+  parts: Share[]
   /** Shown under the split, e.g. that this case does not follow the fee */
   note?: string
 }
@@ -118,14 +130,29 @@ function Scenarios({
   items: ScenarioItem[]
   separated?: boolean
 }) {
+  const { t } = useTranslation('admin')
   return (
     <dl className={separated ? 'divide-border-subtle divide-y text-sm' : 'grid gap-2 text-sm'}>
       {items.map((item) => (
         <div key={item.label} className={`grid gap-x-4 gap-y-1 sm:grid-cols-[minmax(9rem,2fr)_3fr] ${separated ? 'py-3' : ''}`}>
           <dt className="text-fg-muted font-medium">{item.label}</dt>
-          <dd className="num text-fg-strong">
-            <ul className="flex flex-wrap gap-x-4 gap-y-1">
-              {item.parts.map((part) => <li key={part}>{part}</li>)}
+          <dd className="min-w-0">
+            {/* The bar shows the split; the list below says it in words for screen readers */}
+            <div aria-hidden="true" className="bg-sunken flex h-2 gap-px overflow-hidden rounded-full">
+              {item.parts
+                .filter((p) => p.percent > 0)
+                .map((p) => (
+                  <span key={p.who} className={PARTY_COLOR[p.who]} style={{ width: `${p.percent}%` }} />
+                ))}
+            </div>
+            <ul className="mt-2 grid grid-cols-3 gap-2">
+              {item.parts.map((p) => (
+                <li key={p.who} className={`flex items-center gap-1.5 ${p.percent === 0 ? 'opacity-50' : ''}`}>
+                  <span aria-hidden="true" className={`size-2 shrink-0 rounded-full ${PARTY_COLOR[p.who]}`} />
+                  <span className="text-fg-muted truncate">{t(`platformFees.who.${p.who}`)}</span>
+                  <span className="num text-fg-strong ml-auto font-semibold">{p.percent}%</span>
+                </li>
+              ))}
             </ul>
             {item.note && (
               <span className="text-fg-muted block font-sans text-xs">
@@ -446,12 +473,11 @@ export default function AdminPlatformFeesPage() {
     lateRule: LateRule,
     silence: NoResponseRule
   ): ScenarioItem[] {
-    const split = (client: number, expert: number, platform: number) =>
-      [
-        client > 0 && t('admin:platformFees.parts.client', { percent: client }),
-        t('admin:platformFees.parts.expert', { percent: expert }),
-        t('admin:platformFees.parts.platform', { percent: platform }),
-      ].filter(Boolean) as string[]
+    const split = (client: number, expert: number, platform: number): Share[] => [
+      { who: 'client', percent: client },
+      { who: 'expert', percent: expert },
+      { who: 'platform', percent: platform },
+    ]
     const lateShare = lateSplit(fee, lateRule.penaltyPercent)
     return [
       {
@@ -471,7 +497,7 @@ export default function AdminPlatformFeesPage() {
                 from: lateRule.penaltyHours,
                 to: lateRule.cancelHours,
               }),
-              parts: [t('admin:platformFees.parts.client', { percent: 100 })],
+              parts: split(100, 0, 0),
             },
           ]
         : []),

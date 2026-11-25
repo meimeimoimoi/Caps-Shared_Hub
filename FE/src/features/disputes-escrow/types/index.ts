@@ -12,6 +12,8 @@ export interface Escrow {
   termination?: TerminationReason
   /** Hạn quyết định / tự xác nhận, hoặc ngày hoàn tất */
   nextAt: string
+  /** i18n key naming nextAt when it is not the status's usual one */
+  nextLabel?: 'escrow.nextLabel.respond' | 'escrow.nextLabel.deliver'
   /** Lúc Client thanh toán vào Escrow */
   paidAt: string
   /** Mã giao dịch PayOS, dùng để đối soát */
