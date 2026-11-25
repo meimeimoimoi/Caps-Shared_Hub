@@ -3,7 +3,9 @@ import { Link } from 'react-router-dom'
 import { Info, Upload } from 'lucide-react'
 import { useNavToast } from '@/hooks/useNavToast'
 import { StatusBadge } from '@/components/ui/display/status-badge'
+import { EmptyState } from '@/components/ui/feedback/empty-state'
 import { Toast } from '@/components/ui/feedback/toast'
+import { PageHeader } from '@/components/ui/layout/page-header'
 import { KnowledgeLayout } from '@/app/layouts/knowledge/KnowledgeLayout'
 import { useKnowledgeNav } from '@/app/layouts/knowledge/useKnowledgeNav'
 import { UploadDialog } from '../../features/knowledgeAdmin-review-approval/components/UploadDialog'
@@ -54,6 +56,17 @@ export default function KnowledgeUploadsPage() {
     return null
   }
 
+  const uploadButton = (
+    <button
+      type="button"
+      onClick={() => setUploadOpen(true)}
+      className="btn btn-press btn-primary"
+    >
+      <Upload size={16} aria-hidden="true" />
+      Tải văn bản lên
+    </button>
+  )
+
   return (
     <KnowledgeLayout
       {...nav}
@@ -74,23 +87,11 @@ export default function KnowledgeUploadsPage() {
         </>
       }
     >
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <h1 className="text-h1">Kết quả tải lên</h1>
-          <p className="text-fg-muted mt-3">
-            Hệ thống tự kiểm tra định dạng, trùng phiên bản và bóc tách. Bạn chỉ
-            cần đọc kết quả và xử lý dòng có lỗi.
-          </p>
-        </div>
-        <button
-          type="button"
-          onClick={() => setUploadOpen(true)}
-          className="btn btn-press btn-primary"
-        >
-          <Upload size={16} aria-hidden="true" />
-          Tải văn bản lên
-        </button>
-      </div>
+      <PageHeader
+        title="Kết quả tải lên"
+        help="Hệ thống tự kiểm tra định dạng, trùng phiên bản và bóc tách. Bạn chỉ cần đọc kết quả và xử lý dòng có lỗi."
+        actions={uploadButton}
+      />
 
       <section className="paper mt-8 overflow-x-auto">
         <table className="w-full min-w-200 text-sm">
@@ -127,13 +128,25 @@ export default function KnowledgeUploadsPage() {
             ))}
             {uploads.length === 0 && (
               <tr className="border-border-subtle border-t">
-                <td
-                  colSpan={4}
-                  className="text-fg-muted px-4 py-10 text-center"
-                >
-                  {isLoading
-                    ? 'Đang tải…'
-                    : (error?.message ?? 'Chưa có lần tải lên nào.')}
+                <td colSpan={4} className={isLoading ? 'px-4 py-10' : ''}>
+                  {isLoading ? (
+                    <p className="text-fg-muted text-center">Đang tải…</p>
+                  ) : error ? (
+                    <EmptyState
+                      tone="error"
+                      title="Không tải được kết quả tải lên"
+                    >
+                      {error.message}
+                    </EmptyState>
+                  ) : (
+                    <EmptyState
+                      title="Chưa có lần tải lên nào"
+                      actions={uploadButton}
+                    >
+                      Tải văn bản Word hoặc PDF lên; hệ thống kiểm tra rồi đưa
+                      vào hàng đợi duyệt.
+                    </EmptyState>
+                  )}
                 </td>
               </tr>
             )}

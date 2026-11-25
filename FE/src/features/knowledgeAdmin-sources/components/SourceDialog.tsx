@@ -1,4 +1,5 @@
 import { useState, type ReactNode } from 'react'
+import { HelpTip } from '@/components/ui/feedback/help-tip'
 import { Modal } from '@/components/ui/feedback/modal'
 import { SOURCE_STATUS } from '../constants'
 import type { CollectionSource, SourceInput } from '../types'
@@ -7,29 +8,32 @@ const inputCls =
   'border-border-control rounded-control shadow-control bg-paper h-control w-full border px-3 text-base font-normal'
 
 function Field({
+  id,
   label,
-  hint,
+  help,
   error,
   children,
 }: {
+  id: string
   label: string
-  hint?: string
+  help?: string
   error?: string
   children: ReactNode
 }) {
   return (
-    <label className="flex flex-col gap-1.5 text-sm font-semibold">
-      {label}
+    <div className="flex flex-col gap-1.5 text-sm font-semibold">
+      {/* HelpTip is interactive, so it sits next to the label instead of inside it */}
+      <div className="flex items-center gap-1.5">
+        <label htmlFor={id}>{label}</label>
+        {help && <HelpTip label={`Giải thích: ${label}`}>{help}</HelpTip>}
+      </div>
       {children}
-      {hint && (
-        <span className="text-fg-muted text-caption font-normal">{hint}</span>
-      )}
       {error && (
         <span role="alert" className="text-danger text-caption font-normal">
           {error}
         </span>
       )}
-    </label>
+    </div>
   )
 }
 
@@ -111,19 +115,26 @@ export function SourceDialog({
       }
     >
       <div className="mt-4 space-y-4">
-        <Field label="Tên nguồn" error={tried ? errors.name : undefined}>
+        <Field
+          id="source-name"
+          label="Tên nguồn"
+          error={tried ? errors.name : undefined}
+        >
           <input
+            id="source-name"
             value={name}
             onChange={(e) => setName(e.target.value)}
             className={inputCls}
           />
         </Field>
         <Field
+          id="source-url"
           label="Địa chỉ"
-          hint="Trang danh sách văn bản cần thu thập."
+          help="Trang danh sách văn bản cần thu thập."
           error={tried ? errors.url : undefined}
         >
           <input
+            id="source-url"
             type="url"
             inputMode="url"
             placeholder="https://"
@@ -133,10 +144,12 @@ export function SourceDialog({
           />
         </Field>
         <Field
+          id="source-scope"
           label="Phạm vi thu thập"
-          hint="Từ khóa hoặc mục cần lấy, vd. “Từ khóa: thuế TNDN”. Bỏ trống thì lấy tất cả."
+          help="Từ khóa hoặc mục cần lấy, vd. “Từ khóa: thuế TNDN”. Bỏ trống thì lấy tất cả."
         >
           <input
+            id="source-scope"
             value={scope}
             onChange={(e) => setScope(e.target.value)}
             className={inputCls}

@@ -10,6 +10,7 @@ import { formatDateTime } from '@/lib/utils'
 import { StatusBadge } from '@/components/ui/display/status-badge'
 import { Toast } from '@/components/ui/feedback/toast'
 import { KnowledgeLayout } from '@/app/layouts/knowledge/KnowledgeLayout'
+import { HelpTip } from '@/components/ui/feedback/help-tip'
 import { useKnowledgeNav } from '@/app/layouts/knowledge/useKnowledgeNav'
 import { ScheduleCard } from '../../features/knowledgeAdmin-sources/components/ScheduleCard'
 import { SourceDialog } from '../../features/knowledgeAdmin-sources/components/SourceDialog'
@@ -54,12 +55,12 @@ export default function KnowledgeSourcesPage() {
   return (
     <KnowledgeLayout {...nav} section="sources" breadcrumb="Nguồn thu thập">
       <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
+        <div className="flex items-center gap-2">
           <h1 className="text-h1">Nguồn thu thập</h1>
-          <p className="text-fg-muted mt-3">
+          <HelpTip label="Về Nguồn thu thập">
             Văn bản mới hoặc có thay đổi sẽ được bóc tách và đưa vào hàng đợi
             duyệt. Văn bản không đổi được bỏ qua.
-          </p>
+          </HelpTip>
         </div>
         <button
           type="button"
