@@ -161,7 +161,8 @@ export default function ExpertCasesPage() {
                   options={filters}
                   label={t('filterByStatus')}
                   className="flex items-center gap-2 [&>span]:hidden"
-                  triggerClassName="!min-h-[34px] !py-1 !text-xs !w-[200px]"
+                  size="sm"
+                  triggerClassName="w-[200px] text-xs"
                 />
               </div>
             )}

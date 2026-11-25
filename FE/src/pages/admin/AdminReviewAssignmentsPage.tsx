@@ -126,7 +126,8 @@ export default function AdminReviewAssignmentsPage() {
           onChange={(value) => setGate(value as GateFilter)}
           triggerLeading={<ListFilter size={14} aria-hidden="true" className="text-text-muted" />}
           className="inline-flex min-w-0 flex-col items-start text-xs [&>span]:sr-only"
-          triggerClassName="!h-9 !min-h-9 !w-auto !gap-2 !rounded-md !px-3 !py-0 text-sm !shadow-none"
+          size="sm"
+          triggerClassName="w-auto"
         />
         <CustomSelect
           label={t('admin:assignments.claimFilter')}
@@ -135,7 +136,8 @@ export default function AdminReviewAssignmentsPage() {
           onChange={(value) => setClaim(value as ClaimFilter)}
           triggerLeading={<UserRound size={14} aria-hidden="true" className="text-text-muted" />}
           className="inline-flex min-w-0 flex-col items-start text-xs [&>span]:sr-only"
-          triggerClassName="!h-9 !min-h-9 !w-auto !gap-2 !rounded-md !px-3 !py-0 text-sm !shadow-none"
+          size="sm"
+          triggerClassName="w-auto"
         />
       </div>
 

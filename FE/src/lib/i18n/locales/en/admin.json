@@ -308,10 +308,14 @@
       "jobTitle": "Job Title",
       "experience": "Experience",
       "years": "{{count}} year(s)",
-      "submitted": "Submitted"
+      "submitted": "Submitted",
+      "copyReference": "Copy reference",
+      "referenceCopied": "Reference copied",
+      "copyFailed": "Couldn't copy. Please try again."
     },
     "blockers": {
-      "flags": "{{count}} AI flags unreviewed"
+      "flags": "{{count}} AI flags unreviewed",
+      "notClaimed": "Claim this review to assess it"
     },
     "scoreSummary": {
       "level": "Level {{level}}",
@@ -455,7 +459,8 @@
       "colResult": "AI result",
       "colNote": "AI note",
       "colDocument": "Document",
-      "documentReviewed": "{{document}} · Reviewed"
+      "documentReviewed": "{{document}} · Reviewed",
+      "suggestionBadge": "AI suggestion"
     },
     "competency": {
       "title": "Competency Review",
@@ -1576,7 +1581,9 @@
       "REVIEW_CLAIMED": "Another reviewer just claimed this review. Reloaded to show who holds it.",
       "REVIEW_NOT_CLAIMED": "You no longer hold this review (the hold expired or it was handed on). Reloaded the review.",
       "failed": "That did not work. Please try again."
-    }
+    },
+    "releaseConfirm": "Release this review? Unsubmitted results are not kept.",
+    "releaseCancel": "Keep"
   },
   "assignments": {
     "title": "Review assignments",

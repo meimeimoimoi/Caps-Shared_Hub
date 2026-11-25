@@ -302,10 +302,14 @@
       "jobTitle": "Chức danh",
       "experience": "Kinh nghiệm",
       "years": "{{count}} năm",
-      "submitted": "Nộp"
+      "submitted": "Nộp",
+      "copyReference": "Sao chép mã tham chiếu",
+      "referenceCopied": "Đã sao chép mã tham chiếu",
+      "copyFailed": "Không sao chép được. Vui lòng thử lại."
     },
     "blockers": {
-      "flags": "{{count}} mục AI cần xem lại chưa được xem xét"
+      "flags": "{{count}} mục AI cần xem lại chưa được xem xét",
+      "notClaimed": "Nhận hồ sơ để đánh giá"
     },
     "scoreSummary": {
       "level": "Mức {{level}}",
@@ -448,7 +452,8 @@
       "colResult": "Kết quả AI",
       "colNote": "Ghi chú AI",
       "colDocument": "Tài liệu",
-      "documentReviewed": "{{document}} · Đã xem xét"
+      "documentReviewed": "{{document}} · Đã xem xét",
+      "suggestionBadge": "AI gợi ý"
     },
     "competency": {
       "title": "Đánh giá năng lực",
@@ -1566,7 +1571,9 @@
       "REVIEW_CLAIMED": "Hồ sơ vừa được người khác nhận. Đã tải lại để hiện người đang giữ.",
       "REVIEW_NOT_CLAIMED": "Bạn không còn giữ hồ sơ này (đã quá hạn hoặc đã chuyển cho người khác). Đã tải lại hồ sơ.",
       "failed": "Chưa thực hiện được. Vui lòng thử lại."
-    }
+    },
+    "releaseConfirm": "Trả hồ sơ? Kết quả chưa gửi sẽ không được giữ.",
+    "releaseCancel": "Giữ lại"
   },
   "assignments": {
     "title": "Phân công người chấm",

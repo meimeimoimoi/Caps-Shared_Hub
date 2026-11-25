@@ -234,7 +234,7 @@ export function AiSummaryCard({
     <section className="paper p-5 md:p-6">
       <div className="flex items-start justify-between gap-4">
         <h2 className="text-h2">{t('detail.aiScreening.results')}</h2>
-        <span className="badge-ai">AI</span>
+        <span className="badge-ai">{t('detail.aiScreening.suggestionBadge')}</span>
       </div>
       <p className="text-fg-muted mt-1 text-sm">
         {t(`detail.aiScreening.runStatus.${screening.status}`)} ·{' '}
