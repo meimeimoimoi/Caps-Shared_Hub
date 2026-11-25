@@ -222,9 +222,9 @@ export default function AdminUsersPage() {
                 )
               )
           }
-          onReset={() =>
+          onReset={(reason) =>
             users
-              .sendReset(selected.id)
+              .sendReset(selected.id, reason)
               .then(() =>
                 setToast(t('users.action.resetSent', { email: selected.email }))
               )

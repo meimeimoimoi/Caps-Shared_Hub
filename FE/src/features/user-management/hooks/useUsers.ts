@@ -87,6 +87,7 @@ export function useUsers() {
     next: () => setPage((p) => p + 1),
     setLocked: (id: string, locked: boolean, reason: string) =>
       setUserLocked(id, locked, reason, me.name).then(refresh),
-    sendReset: (id: string) => sendPasswordReset(id, me.name).then(refresh),
+    sendReset: (id: string, reason: string) =>
+      sendPasswordReset(id, reason, me.name).then(refresh),
   }
 }
