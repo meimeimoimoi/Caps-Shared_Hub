@@ -150,7 +150,8 @@ export default function ReviewerQueuePage({ history = false, gate: routeGate = '
               onChange={setStatus}
               triggerLeading={<ListFilter size={14} aria-hidden="true" className="text-text-muted" />}
               className="flex min-w-0 flex-col text-xs [&>span]:sr-only"
-              triggerClassName="!h-8 !min-h-8 !w-auto !gap-2 !rounded-md !px-2.5 !py-0 text-sm !shadow-none"
+              size="sm"
+              triggerClassName="w-auto px-2.5"
             />
           )}
           {!history && (
@@ -161,7 +162,8 @@ export default function ReviewerQueuePage({ history = false, gate: routeGate = '
               onChange={(value) => setClaimFilter(value as ClaimFilter)}
               triggerLeading={<UserRound size={14} aria-hidden="true" className="text-text-muted" />}
               className="flex min-w-0 flex-col text-xs [&>span]:sr-only"
-              triggerClassName="!h-8 !min-h-8 !w-auto !gap-2 !rounded-md !px-2.5 !py-0 text-sm !shadow-none"
+              size="sm"
+              triggerClassName="w-auto px-2.5"
             />
           )}
           {(routeGate === 'ALL' || history) && (
@@ -171,7 +173,8 @@ export default function ReviewerQueuePage({ history = false, gate: routeGate = '
               options={[{ value: 'ALL', label: t('allGates') }, { value: 'GATE_1', label: t('gate1') }, { value: 'GATE_2', label: t('gate2') }]}
               onChange={changeGate}
               className="flex min-w-0 flex-col text-xs [&>span]:sr-only"
-              triggerClassName="!h-8 !min-h-8 !w-auto !gap-2 !rounded-md !px-2.5 !py-0 text-sm !shadow-none"
+              size="sm"
+              triggerClassName="w-auto px-2.5"
             />
           )}
           <CustomSelect
@@ -181,7 +184,8 @@ export default function ReviewerQueuePage({ history = false, gate: routeGate = '
             onChange={(value) => setSort(value as QueueSort)}
             triggerLeading={<ArrowDownUp size={14} aria-hidden="true" className="text-text-muted" />}
             className="flex min-w-0 flex-col text-xs [&>span]:sr-only"
-            triggerClassName="!h-8 !min-h-8 !w-auto !gap-2 !rounded-md !px-2.5 !py-0 text-sm !shadow-none"
+            size="sm"
+            triggerClassName="w-auto px-2.5"
           />
           <div className="ml-auto flex items-center gap-3">
             {!isLoading && !error && <p aria-live="polite" className="text-text-muted text-sm tabular-nums">{t('queueCount', { count: total })}</p>}
