@@ -125,6 +125,9 @@ cp .env.example .env    # điền INTERNAL_API_KEY = InternalApi:Key của inges
 python worker.py        # chạy ít nhất 1 lần trước khi kích hoạt crawl để tạo queue
 ```
 
+Trên VPS, worker chạy thường trực bằng service `crawler-worker` trong `BE/docker/docker-compose.prod.yml` (cùng image
+`caps-crawler`), key lấy từ `INGESTION_INTERNAL_API_KEY` trong `docker/.env`.
+
 ## Nguồn vbpq.mof.gov.vn (Bộ Tài chính) + OCR
 
 `--sources mof` cào CSDL văn bản QPPL ngành tài chính qua API JSON công khai

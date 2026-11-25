@@ -2,6 +2,7 @@ from datetime import date
 import logging
 import os
 from pathlib import Path
+import re
 import sys
 
 from fastapi import HTTPException, status
@@ -14,7 +15,7 @@ from app.modules.cv_screening.prompts import (
     SYSTEM_PROMPT,
     build_text_extraction_prompt,
 )
-from app.schemas.cv_dto import CvExtractResponse, ExtractedDocumentData
+from app.schemas.cv_dto import CertificateInfo, CvExtractResponse, ExtractedDocumentData
 from app.schemas.errors import ErrorMessage
 
 logger = logging.getLogger(__name__)
@@ -23,6 +24,76 @@ _PNG_MAGIC = b"\x89PNG\r\n\x1a\n"
 _JPEG_MAGIC = b"\xff\xd8\xff"
 _PDF_MAGIC = b"%PDF-"
 _MAX_TEXT_CHARS = 24_000
+
+
+_CERT_LINE_KEYWORDS = (
+    "chứng chỉ",
+    "chung chi",
+    "certificate",
+    "cpa",
+    "acca",
+    "đại lý thuế",
+    "dai ly thue",
+    "hành nghề",
+    "hanh nghe",
+    "bằng",
+    "bang",
+    "cấp",
+    "cap",
+    "issued",
+)
+_WORK_RANGE_MARKER_RE = re.compile(
+    r"(?:-|–|—|\bđến\b|\bden\b|\bto\b|\bpresent\b|\bhiện tại\b|\bhien tai\b|\bnow\b)",
+    re.IGNORECASE,
+)
+
+
+def _line_matches_certificate(line: str, cert: CertificateInfo) -> bool:
+    lowered = line.lower()
+    if any(kw in lowered for kw in _CERT_LINE_KEYWORDS):
+        return True
+    for raw in (cert.name, cert.issuer):
+        if not raw:
+            continue
+        tokens = [t for t in re.findall(r"\w+", raw.lower()) if len(t) >= 3]
+        if tokens and sum(1 for t in tokens if t in lowered) >= min(2, len(tokens)):
+            return True
+    return False
+
+
+def _has_explicit_january_date(document_text: str, cert: CertificateInfo, year: int) -> bool:
+    """Return True only when the document explicitly writes a Jan 1 date or a Jan month+year for this certificate."""
+    y = str(year)
+    full_jan1_patterns = (
+        rf"(?<!\d)0?1[/\-.]0?1[/\-.]{y}\b",
+        rf"\b{y}[/\-.]0?1[/\-.]0?1(?!\d)",
+        rf"\bngày\s+0?1\s+tháng\s+0?1\s*(?:năm\s+)?{y}\b",
+        rf"\b(?:jan(?:uary)?\.?\s+0?1(?:st)?,?\s+{y}|0?1(?:st)?\s+jan(?:uary)?\.?,?\s+{y})\b",
+    )
+    if any(re.search(pattern, document_text, re.IGNORECASE) for pattern in full_jan1_patterns):
+        return True
+
+    jan_month_patterns = (
+        rf"(?<![0-9/\-.])0?1[/\-.]{y}\b",
+        rf"\b{y}[/\-.]0?1(?![0-9/\-.])",
+        rf"\btháng\s+0?1(?:\s*[/\-]|\s+năm\s+){y}\b",
+        rf"\bjan(?:uary)?\.?\s+{y}\b",
+    )
+    lines = [line.strip() for line in document_text.splitlines() if line.strip()]
+    for idx, line in enumerate(lines):
+        if y not in line:
+            continue
+        if not any(re.search(pattern, line, re.IGNORECASE) for pattern in jan_month_patterns):
+            continue
+        if _line_matches_certificate(line, cert):
+            return True
+        if (
+            idx > 0
+            and _line_matches_certificate(lines[idx - 1], cert)
+            and not _WORK_RANGE_MARKER_RE.search(line)
+        ):
+            return True
+    return False
 
 
 class CvExtractor:
@@ -176,11 +247,13 @@ class CvExtractor:
 
     @staticmethod
     def _normalize_extracted_data(
-        data: ExtractedDocumentData, reference_date: date
+        data: ExtractedDocumentData,
+        reference_date: date,
+        document_text: str | None = None,
     ) -> ExtractedDocumentData:
-        """Mark milestones ending in the reference month/year as current when the model left is_current false."""
+        """Normalize current milestones and strip fabricated Jan 1 dates on year-only certificates."""
         updated_milestones = []
-        changed = False
+        milestones_changed = False
         for milestone in data.work_milestones:
             if (
                 not milestone.is_current
@@ -188,13 +261,46 @@ class CvExtractor:
                 and milestone.end_month == reference_date.month
             ):
                 updated_milestones.append(milestone.model_copy(update={"is_current": True}))
-                changed = True
+                milestones_changed = True
             else:
                 updated_milestones.append(milestone)
 
-        if not changed:
+        updated_certificates = []
+        certificates_changed = False
+        for cert in data.certificates:
+            cert_updates: dict[str, date | None] = {}
+            if (
+                document_text is not None
+                and cert.issued_date is not None
+                and cert.issued_date.month == 1
+                and cert.issued_date.day == 1
+                and not _has_explicit_january_date(document_text, cert, cert.issued_date.year)
+            ):
+                cert_updates["issued_date"] = None
+            if (
+                document_text is not None
+                and cert.expiry_date is not None
+                and cert.expiry_date.month == 1
+                and cert.expiry_date.day == 1
+                and not _has_explicit_january_date(document_text, cert, cert.expiry_date.year)
+            ):
+                cert_updates["expiry_date"] = None
+
+            if cert_updates:
+                updated_certificates.append(cert.model_copy(update=cert_updates))
+                certificates_changed = True
+            else:
+                updated_certificates.append(cert)
+
+        updates: dict[str, object] = {}
+        if milestones_changed:
+            updates["work_milestones"] = updated_milestones
+        if certificates_changed:
+            updates["certificates"] = updated_certificates
+
+        if not updates:
             return data
-        return data.model_copy(update={"work_milestones": updated_milestones})
+        return data.model_copy(update=updates)
 
     @classmethod
     def _extract_from_text(
@@ -207,16 +313,21 @@ class CvExtractor:
         is_ocr: bool = False,
     ) -> CvExtractResponse:
         today = cls._current_date()
+        truncated_text = text[:_MAX_TEXT_CHARS]
         extracted = cls._call_ollama(
             settings.LLM_MODEL,
             build_text_extraction_prompt(
                 evidence_type,
-                text[:_MAX_TEXT_CHARS],
+                truncated_text,
                 is_ocr=is_ocr,
                 reference_date=today,
             ),
         )
-        normalized = cls._normalize_extracted_data(extracted, today)
+        normalized = cls._normalize_extracted_data(
+            extracted,
+            today,
+            document_text=truncated_text,
+        )
         return CvExtractResponse(
             status="EXTRACTED",
             is_image=is_image,

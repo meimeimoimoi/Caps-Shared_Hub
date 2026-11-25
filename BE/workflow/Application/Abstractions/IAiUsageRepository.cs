@@ -6,4 +6,8 @@ namespace Caps.Workflow.Application.Abstractions;
 public interface IAiUsageRepository
 {
     Task AddAsync(AiUsage usage, CancellationToken ct = default);
+    Task<IReadOnlyList<AiUsage>> FindByQuestionIdsAsync(
+        IReadOnlyCollection<Guid> questionIds,
+        CancellationToken ct = default
+    );
 }

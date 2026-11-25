@@ -32,12 +32,12 @@ public sealed class AddAttachmentHandler(
         var reviewCase =
             await cases.FindForUpdateAsync(command.ReviewCaseId, ct)
             ?? throw WorkflowErrors.ReviewCaseNotFound();
-        var count = await attchments.CountAsync(reviewCase.Id, ct);
+        var existing = await attchments.ListAsync(reviewCase.Id, ct);
         var attachment = reviewCase.AddAttachment(
             command.UserId,
             command.FileName,
             command.Content,
-            count,
+            existing,
             clock.GetUtcNow()
         );
 

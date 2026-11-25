@@ -17,7 +17,7 @@ public sealed class AttachmentTests
     {
         var reviewCase = InReview();
 
-        var attachment = reviewCase.AddAttachment(Client, "C:/Users/me/tax.pdf", Pdf, 0, Now);
+        var attachment = reviewCase.AddAttachment(Client, "C:/Users/me/tax.pdf", Pdf, [], Now);
 
         Assert.Equal(FileSignature.Pdf, attachment.ContentType);
         Assert.Equal("tax.pdf", attachment.FileName);
@@ -30,7 +30,7 @@ public sealed class AttachmentTests
     public void A_word_document_is_accepted()
     {
         var attachment = InReview()
-            .AddAttachment(Expert, "to-khai.docx", Zip("word/document.xml"), 0, Now);
+            .AddAttachment(Expert, "to-khai.docx", Zip("word/document.xml"), [], Now);
 
         Assert.Equal(ReviewAttachment.Docx, attachment.ContentType);
     }
@@ -41,7 +41,7 @@ public sealed class AttachmentTests
     public void Another_zip_is_rejected(string entry) =>
         Assert.Equal(
             "ATTACHMENT_TYPE_INVALID",
-            Errors.CodeOf(() => InReview().AddAttachment(Client, "a.docx", Zip(entry), 0, Now))
+            Errors.CodeOf(() => InReview().AddAttachment(Client, "a.docx", Zip(entry), [], Now))
         );
 
     [Fact]
@@ -49,7 +49,7 @@ public sealed class AttachmentTests
         Assert.Equal(
             "ATTACHMENT_TYPE_INVALID",
             Errors.CodeOf(() =>
-                InReview().AddAttachment(Client, "invoice.pdf", [.. "MZ executable"u8], 0, Now)
+                InReview().AddAttachment(Client, "invoice.pdf", [.. "MZ executable"u8], [], Now)
             )
         );
 
@@ -62,11 +62,11 @@ public sealed class AttachmentTests
 
         Assert.Equal(
             "ATTACHMENT_REQUIRED",
-            Errors.CodeOf(() => reviewCase.AddAttachment(Client, "a.pdf", [], 0, Now))
+            Errors.CodeOf(() => reviewCase.AddAttachment(Client, "a.pdf", [], [], Now))
         );
         Assert.Equal(
             "ATTACHMENT_TOO_LARGE",
-            Errors.CodeOf(() => reviewCase.AddAttachment(Client, "a.pdf", big, 0, Now))
+            Errors.CodeOf(() => reviewCase.AddAttachment(Client, "a.pdf", big, [], Now))
         );
     }
 
@@ -74,21 +74,21 @@ public sealed class AttachmentTests
     public void A_missing_file_is_reported_before_its_missing_name() =>
         Assert.Equal(
             "ATTACHMENT_REQUIRED",
-            Errors.CodeOf(() => InReview().AddAttachment(Client, null, [], 0, Now))
+            Errors.CodeOf(() => InReview().AddAttachment(Client, null, [], [], Now))
         );
 
     [Fact]
     public void A_file_needs_a_name() =>
         Assert.Equal(
             "TEXT_REQUIRED",
-            Errors.CodeOf(() => InReview().AddAttachment(Client, "  ", Pdf, 0, Now))
+            Errors.CodeOf(() => InReview().AddAttachment(Client, "  ", Pdf, [], Now))
         );
 
     [Fact]
     public void A_stranger_cannot_add_files() =>
         Assert.Equal(
             "REVIEW_CASE_NOT_FOUND",
-            Errors.CodeOf(() => InReview().AddAttachment(Guid.NewGuid(), "a.pdf", Pdf, 0, Now))
+            Errors.CodeOf(() => InReview().AddAttachment(Guid.NewGuid(), "a.pdf", Pdf, [], Now))
         );
 
     [Fact]
@@ -98,7 +98,7 @@ public sealed class AttachmentTests
 
         Assert.Equal(
             "ATTACHMENTS_CLOSED",
-            Errors.CodeOf(() => unpaid.AddAttachment(Client, "a.pdf", Pdf, 0, Now))
+            Errors.CodeOf(() => unpaid.AddAttachment(Client, "a.pdf", Pdf, [], Now))
         );
     }
 
@@ -118,7 +118,7 @@ public sealed class AttachmentTests
         );
         reviewCase.OpenDispute(Client, "DELIVERABLE_INCOMPLETE", "VAT missing", Now);
 
-        var attachment = reviewCase.AddAttachment(Client, "vat.pdf", Pdf, 0, Now);
+        var attachment = reviewCase.AddAttachment(Client, "vat.pdf", Pdf, [], Now);
 
         Assert.Equal(reviewCase.Id, attachment.ReviewCaseId);
     }
@@ -128,7 +128,19 @@ public sealed class AttachmentTests
         Assert.Equal(
             "ATTACHMENT_LIMIT",
             Errors.CodeOf(() =>
-                InReview().AddAttachment(Client, "a.pdf", Pdf, ReviewAttachment.MaxPerCase, Now)
+                InReview()
+                    .AddAttachment(
+                        Client,
+                        "a.pdf",
+                        Pdf,
+                        Enumerable
+                            .Range(0, ReviewAttachment.MaxPerCase)
+                            .Select(i =>
+                                InReview().AddAttachment(Client, $"f{i}.pdf", Pdf, [], Now)
+                            )
+                            .ToList(),
+                        Now
+                    )
             )
         );
 

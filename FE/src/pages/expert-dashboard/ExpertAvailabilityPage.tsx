@@ -159,28 +159,45 @@ export default function ExpertAvailabilityPage() {
                         {display.qualification(s.qualificationStatus)}
                       </p>
                     </div>
-                    <label className="inline-flex min-h-11 cursor-pointer items-center gap-2 text-sm">
-                      <input
-                        type="checkbox"
-                        role="switch"
-                        className="size-5 accent-[var(--ep-accent)]"
-                        checked={s.acceptingRequests}
-                        disabled={busy || (!s.acceptingRequests && !s.canTurnOn)}
-                        onChange={(e) => {
-                          setError(null)
-                          toggle.mutate(
-                            {
-                              serviceCode: s.serviceCode,
-                              accepting: e.target.checked,
-                            },
-                            { onError: fail }
-                          )
-                        }}
-                      />
-                      {s.acceptingRequests
-                        ? t('availabilityPage.accepting')
-                        : t('availabilityPage.notAccepting')}
-                    </label>
+                    <button
+                      type="button"
+                      role="switch"
+                      aria-checked={s.acceptingRequests}
+                      aria-label={s.serviceName}
+                      disabled={busy || (!s.acceptingRequests && !s.canTurnOn)}
+                      onClick={() => {
+                        setError(null)
+                        toggle.mutate(
+                          {
+                            serviceCode: s.serviceCode,
+                            accepting: !s.acceptingRequests,
+                          },
+                          { onError: fail }
+                        )
+                      }}
+                      className="inline-flex min-h-11 cursor-pointer items-center gap-3 text-sm text-[var(--ep-ink)] disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      <span className="w-28 text-right">
+                        {s.acceptingRequests
+                          ? t('availabilityPage.accepting')
+                          : t('availabilityPage.notAccepting')}
+                      </span>
+                      {/* Track and knob: the knob slides right and the track fills with the accent when on */}
+                      <span
+                        aria-hidden="true"
+                        className={`relative h-6 w-11 shrink-0 rounded-full transition-colors duration-200 ${
+                          s.acceptingRequests
+                            ? 'bg-[var(--ep-accent)]'
+                            : 'bg-[color-mix(in_srgb,var(--ep-muted)_40%,transparent)]'
+                        }`}
+                      >
+                        <span
+                          className={`absolute top-0.5 left-0.5 size-5 rounded-full bg-white shadow-sm transition-transform duration-200 ${
+                            s.acceptingRequests ? 'translate-x-5' : 'translate-x-0'
+                          }`}
+                        />
+                      </span>
+                    </button>
                   </li>
                 ))}
               </ul>

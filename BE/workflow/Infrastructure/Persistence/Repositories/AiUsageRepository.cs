@@ -13,4 +13,19 @@ public sealed class AiUsageRepository(WorkflowDbContext dbContext) : IAiUsageRep
     {
         await _aiUsages.AddAsync(usage, ct);
     }
+
+    public async Task<IReadOnlyList<AiUsage>> FindByQuestionIdsAsync(
+        IReadOnlyCollection<Guid> questionIds,
+        CancellationToken ct = default
+    )
+    {
+        if (questionIds.Count == 0)
+        {
+            return [];
+        }
+
+        return await _aiUsages
+            .Where(u => u.QuestionId.HasValue && questionIds.Contains(u.QuestionId.Value))
+            .ToListAsync(ct);
+    }
 }

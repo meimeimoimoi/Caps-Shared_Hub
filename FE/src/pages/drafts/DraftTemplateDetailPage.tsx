@@ -1,7 +1,7 @@
 import { useDraftPresentation } from '@/features/drafting/hooks/useDraftPresentation'
 import { useTranslation } from 'react-i18next'
-import { useRef } from 'react'
-import { ArrowLeft, ArrowRight, Info } from 'lucide-react'
+import { useRef, useState } from 'react'
+import { ArrowLeft, ArrowRight, FileText, Info } from 'lucide-react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { draftApi } from '@/features/drafting/api/draftApi'
 import {
@@ -16,6 +16,7 @@ import {
   DraftError,
   DraftButton,
 } from '@/features/drafting/components/DraftUi'
+import { TemplateFileModal } from '@/features/drafting/components/TemplateFileModal'
 import { cn } from '@/lib/utils'
 
 export default function DraftTemplateDetailPage() {
@@ -29,6 +30,7 @@ export default function DraftTemplateDetailPage() {
   const navigate = useNavigate()
   const href = useDraftHref()
   const key = useRef(crypto.randomUUID())
+  const [viewing, setViewing] = useState(false)
   const create = useDraftAction((_: void, ctx) =>
     draftApi.create(templateVersionId!, key.current, ctx)
   )
@@ -67,6 +69,18 @@ export default function DraftTemplateDetailPage() {
       )}
     </DraftButton>
   )
+
+  const viewButton = (className?: string) =>
+    template.hasFile && (
+      <DraftButton
+        secondary
+        className={cn('gap-2 rounded-xl', className)}
+        onClick={() => setViewing(true)}
+      >
+        <FileText size={16} aria-hidden="true" />
+        {t('viewTemplateFile')}
+      </DraftButton>
+    )
 
   return (
     <>
@@ -231,6 +245,7 @@ export default function DraftTemplateDetailPage() {
             </p>
             <div className="mt-5 hidden flex-col gap-2 lg:flex">
               {startButton('w-full')}
+              {viewButton('w-full')}
               {create.isError && <DraftError error={create.error} />}
               <DraftLink
                 to={`/drafts/templates?category=${encodeURIComponent(params.get('category') ?? 'All')}`}
@@ -285,9 +300,22 @@ export default function DraftTemplateDetailPage() {
               {t('chooseAnotherTemplate')}
             </span>
           </DraftLink>
+          {viewButton('shrink-0')}
           {startButton('flex-1')}
         </div>
       </div>
+      {viewing && (
+        <TemplateFileModal
+          template={template}
+          onClose={() => setViewing(false)}
+          action={
+            <>
+              {create.isError && <DraftError error={create.error} />}
+              {startButton()}
+            </>
+          }
+        />
+      )}
     </>
   )
 }

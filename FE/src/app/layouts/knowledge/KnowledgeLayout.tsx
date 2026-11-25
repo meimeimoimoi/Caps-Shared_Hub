@@ -6,6 +6,7 @@ import {
   LayoutTemplate,
   ListChecks,
   Rss,
+  Scale,
   UserRound,
 } from 'lucide-react'
 import { useDialogMotion } from '@/components/ui/motion'
@@ -20,7 +21,13 @@ import { type ShellNotification } from '../NotificationBell'
 interface KnowledgeLayoutProps {
   /** Mục sidebar đang mở */
   section:
-    'overview' | 'queue' | 'sources' | 'documents' | 'templates' | 'account'
+    | 'overview'
+    | 'queue'
+    | 'sources'
+    | 'documents'
+    | 'legalSources'
+    | 'templates'
+    | 'account'
   queueCount: number
   notifications?: ShellNotification[]
   breadcrumb: ReactNode
@@ -85,6 +92,13 @@ export function KnowledgeLayout({
           label: 'Tất cả văn bản',
           icon: <BookOpen size={18} />,
           active: section === 'documents',
+        },
+        {
+          id: 'legalSources',
+          to: '/knowledge/legal-sources',
+          label: 'Tra cứu văn bản',
+          icon: <Scale size={18} />,
+          active: section === 'legalSources',
         },
         {
           id: 'sources',
@@ -202,7 +216,7 @@ export function KnowledgeLayout({
         />
         <main
           id="knowledge-main"
-          className="px-4 py-12 md:px-6 lg:px-8"
+          className="px-4 pt-6 pb-12 md:px-6 md:pt-8 lg:px-8"
         >
           {children}
         </main>

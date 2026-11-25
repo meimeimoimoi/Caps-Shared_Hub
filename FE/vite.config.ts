@@ -11,4 +11,6 @@ export default defineConfig({
       '@': path.resolve(import.meta.dirname, './src'),
     },
   },
+  // Loaded only through a lazy import(), which the dev server would otherwise find late and fail on
+  optimizeDeps: { include: ['docx-preview'] },
 })

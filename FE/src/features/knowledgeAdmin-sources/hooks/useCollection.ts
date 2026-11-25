@@ -14,6 +14,9 @@ export function useCollection() {
   const query = useQuery({
     queryKey: sourcesKeys.overview,
     queryFn: ({ signal }) => getCollectionOverview(signal),
+    // Follow a running crawl until the worker reports its result
+    refetchInterval: (q) =>
+      q.state.data?.runs.some((r) => r.status === 'RUNNING') ? 5000 : false,
   })
   const refresh = () => qc.invalidateQueries({ queryKey: sourcesKeys.overview })
 
