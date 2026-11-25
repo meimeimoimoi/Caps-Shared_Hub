@@ -15,7 +15,7 @@ from app.schemas.statuses import DocumentStatus
 
 
 def to_rfc3339(date_str: str, is_end: bool = False) -> str:
-    """Chuyển đổi YYYY-MM-DD sang chuẩn RFC 3339 cho Qdrant"""
+    """Convert YYYY-MM-DD date string to RFC 3339 UTC format for Qdrant."""
     if not date_str:
         return ""
     clean_date = str(date_str).strip()
@@ -27,7 +27,7 @@ def to_rfc3339(date_str: str, is_end: bool = False) -> str:
 
 class TemporalRetriever:
     @staticmethod
-    def retrieve(query: str, period_start: str, period_end: str, limit: int = 4):
+    def retrieve(query: str, period_start: str, period_end: str, limit: int = 8):
         query_vector = embedding_model.embed_query(query)
 
         rfc_start = to_rfc3339(period_start, is_end=False)
@@ -36,18 +36,22 @@ class TemporalRetriever:
         # Temporal RAG filter:
         # 1. status = APPROVED
         # 2. effective_from <= tax period end
-        # 3. effective_to >= tax period start OR still in effect (null/empty)
+        # 3. (effective_to >= tax period start OR still in effect: null/empty)
         temporal_filter = Filter(
             must=[
                 FieldCondition(
                     key="status", match=MatchValue(value=DocumentStatus.APPROVED)
                 ),
                 FieldCondition(key="effective_from", range=DatetimeRange(lte=rfc_end)),
-            ],
-            should=[
-                FieldCondition(key="effective_to", range=DatetimeRange(gte=rfc_start)),
-                IsEmptyCondition(is_empty=PayloadField(key="effective_to")),
-                IsNullCondition(is_null=PayloadField(key="effective_to")),
+                Filter(
+                    should=[
+                        FieldCondition(
+                            key="effective_to", range=DatetimeRange(gte=rfc_start)
+                        ),
+                        IsEmptyCondition(is_empty=PayloadField(key="effective_to")),
+                        IsNullCondition(is_null=PayloadField(key="effective_to")),
+                    ]
+                ),
             ],
         )
 

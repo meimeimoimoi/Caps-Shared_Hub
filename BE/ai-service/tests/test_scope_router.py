@@ -156,6 +156,10 @@ class ScopeRouterTests(unittest.TestCase):
             "Năm 2019 giảm trừ người phụ thuộc bao nhiêu?",
             "Tháng 3/2026 hộ kinh doanh nộp thuế khoán thế nào?",
             "Thuế TNCN năm 2025 tính sao?",
+            "Doanh nghiệp khấu trừ thuế TNCN cho nhân viên thử việc như thế nào?",
+            "Biểu thuế lũy tiến từng phần áp dụng thế nào?",
+            "Doanh nghiệp hoàn thuế GTGT hàng xuất khẩu cần hồ sơ gì?",
+            "Lệ phí môn bài năm 2026 nộp khi nào?",
         ]
         for question in questions:
             with self.subTest(question=question), patch("app.modules.rag.router.llm_model") as mock_llm:
