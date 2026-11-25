@@ -6,7 +6,7 @@ export function useUploads() {
   const qc = useQueryClient()
   const query = useQuery({
     queryKey: knowledgeKeys.uploads(),
-    queryFn: ({ signal }) => getUploads(signal),
+    queryFn: () => getUploads(),
   })
   return {
     uploads: query.data ?? [],

@@ -381,46 +381,6 @@ export default function AdminEscrowPage() {
             />
           </section>
 
-          {/* Bảng tham chiếu cố định: gập lại để không chiếm chỗ của danh sách tiền */}
-          <details className="motion-details paper mt-6">
-            <summary className="text-fg-strong cursor-pointer px-4 py-3 font-semibold">
-              {t('escrow.matrix.title')}
-            </summary>
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-150 text-sm">
-                <caption className="sr-only">{t('escrow.matrix.title')}</caption>
-                <thead>
-                  <tr className={headCls}>
-                    <th scope="col" className="text-left">
-                      {t('escrow.matrix.case')}
-                    </th>
-                    <th scope="col" className="text-right">
-                      {t('escrow.matrix.client')}
-                    </th>
-                    <th scope="col" className="text-right">
-                      {t('escrow.matrix.expert')}
-                    </th>
-                    <th scope="col" className="text-right">
-                      {t('escrow.matrix.platform')}
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {Object.values(TERMINATION_MATRIX).map((term) => (
-                    <tr key={term.label} className={rowCls}>
-                      <td>{t(term.label)}</td>
-                      {term.split.map((pct, i) => (
-                        <td key={i} className="num text-right">
-                          {pct}%
-                        </td>
-                      ))}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </details>
-
           {selected && (
             <EscrowDrawer
               key={selected.caseId}

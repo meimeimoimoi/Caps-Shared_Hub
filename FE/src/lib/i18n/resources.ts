@@ -28,10 +28,13 @@ import viClient from './locales/vi/client.json'
 import enClient from './locales/en/client.json'
 import viLegal from './locales/vi/legal.json'
 import enLegal from './locales/en/legal.json'
+import viKnowledge from './locales/vi/knowledge.json'
+import enKnowledge from './locales/en/knowledge.json'
 
 // Add feature namespaces as each rollout group migrates its screens.
 export const resources = {
   vi: {
+    knowledge: viKnowledge,
     legal: viLegal,
     home: viHome,
     publicSite: viPublicSite,
@@ -49,6 +52,7 @@ export const resources = {
     client: viClient,
   },
   en: {
+    knowledge: enKnowledge,
     legal: enLegal,
     home: enHome,
     publicSite: enPublicSite,

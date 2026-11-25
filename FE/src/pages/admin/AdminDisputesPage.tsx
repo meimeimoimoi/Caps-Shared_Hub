@@ -127,7 +127,7 @@ export default function AdminDisputesPage() {
     <Link
       to={`/admin/disputes/${d.id}`}
       aria-label={t('disputes.viewLabel', { id: d.code ?? d.id })}
-      className="btn btn-press btn-secondary max-w-full !whitespace-normal no-underline"
+      className="btn btn-press btn-secondary shrink-0 whitespace-nowrap no-underline"
     >
       {t('disputes.view')}
     </Link>
@@ -279,7 +279,7 @@ export default function AdminDisputesPage() {
                       <dt className="text-fg-muted">
                         {t('disputes.col.opened')}
                       </dt>
-                      <dd>{format.dateOnly(d.openedAt)}</dd>
+                      <dd>{format.timestamp(d.openedAt, 'Asia/Ho_Chi_Minh', { dateStyle: 'medium' })}</dd>
                       <dt className="text-fg-muted">
                         {t('disputes.col.status')}
                       </dt>
@@ -332,7 +332,7 @@ export default function AdminDisputesPage() {
                         <td className="num">{formatVnd(d.fee)}</td>
                     <td>{d.ground}</td>
                         <td className="num text-fg-muted">
-                          {format.dateOnly(d.openedAt)}
+                          {format.timestamp(d.openedAt, 'Asia/Ho_Chi_Minh', { dateStyle: 'medium' })}
                         </td>
                         <td>{statusBadge(d)}</td>
                         <td>{deadline(d)}</td>

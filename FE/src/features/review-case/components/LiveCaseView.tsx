@@ -252,6 +252,7 @@ export function LiveCaseView({ caseId }: { caseId: string }) {
             caseId={caseId}
             canUpload={UPLOAD_STATUSES.includes(c.status)}
             requesterUserId={dto.requesterUserId}
+            sourceFileName={dto.sourceContent ? null : (dto.sourceFileName ?? undefined)}
           />
         </div>
       </div>

@@ -41,6 +41,13 @@ public static class WorkflowErrors
             "Only AI messages with status 'NEED_CLARIFICATION' can be clarified."
         );
 
+    public static AppException ClarificationExpired() =>
+        new(
+            ErrorType.RuleViolation,
+            "WORKFLOW_CLARIFICATION_EXPIRED",
+            "The 24-hour clarification window has expired and this question has been closed due to insufficient information."
+        );
+
     public static AppException RagQueryFailed() =>
         new(
             ErrorType.Unavailable,

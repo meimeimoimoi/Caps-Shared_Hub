@@ -108,11 +108,18 @@ export default function AdminExcuseRequestsPage() {
           <tbody className="divide-border-subtle divide-y">
             {rows.map((r) => {
               const v = r.violation
+              // Used up: excusing would fail, so only declining is offered
+              const usedUp = r.excusesLeft <= 0
               return (
                 <tr key={v.reviewCaseId} className="align-top">
                   <td className="px-4 py-3">
                     <p className="text-fg-strong font-semibold">{r.expertName ?? '—'}</p>
                     <p className="text-fg-muted text-xs">{r.expertEmail}</p>
+                    {usedUp && (
+                      <span className="bg-warning-soft text-warning num mt-2 inline-block rounded-full px-2 py-0.5 text-xs font-medium">
+                        {t('excuseRequests.limitReached')}
+                      </span>
+                    )}
                   </td>
                   <td className="px-4 py-3">
                     <p className="text-fg-strong">
@@ -140,9 +147,10 @@ export default function AdminExcuseRequestsPage() {
                     <div className="flex flex-wrap justify-end gap-2">
                       <button
                         type="button"
-                        disabled={busy === v.reviewCaseId}
+                        disabled={busy === v.reviewCaseId || usedUp}
+                        title={usedUp ? t('excuseRequests.limitReachedHint') : undefined}
                         onClick={() => setExcusing(r)}
-                        className="btn btn-press btn-primary disabled:opacity-60"
+                        className="btn btn-press btn-primary disabled:cursor-not-allowed disabled:opacity-60"
                       >
                         {t('experts.violations.excuse')}
                       </button>

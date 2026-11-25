@@ -1,5 +1,7 @@
 import { useState, type KeyboardEvent, type ReactNode } from 'react'
-import { useParams } from 'react-router-dom'
+import { Link, useParams } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
+import { EmptyState } from '@/components/ui/feedback/empty-state'
 import { Check } from 'lucide-react'
 import { cn, formatDate, formatDateTime } from '@/lib/utils'
 import { DOCUMENT_STATUS } from '@/lib/constants'
@@ -30,6 +32,7 @@ const headCls = 'bg-sunken text-fg-muted [&>th]:px-4 [&>th]:py-3 [&>th]:font-sem
 const rowCls = 'border-border-subtle border-t [&>td]:px-4 [&>td]:py-3'
 
 export default function KnowledgeDocumentPage() {
+  const { t } = useTranslation(['knowledge', 'common'])
   const { id = '' } = useParams()
   const nav = useKnowledgeNav()
   const { data: doc, isLoading, error, retire } = useDocumentDetail(id)
@@ -55,10 +58,24 @@ export default function KnowledgeDocumentPage() {
     >
       {doc ? (
         <DocumentView doc={doc} onRetire={retire} />
+      ) : isLoading ? (
+        <p role="status">{t('common:loading')}</p>
       ) : (
-        <h1 className="text-h1-tool">
-          {isLoading ? 'Đang tải…' : (error?.message ?? `Không tìm thấy văn bản ${id}`)}
-        </h1>
+        <EmptyState
+          title={t('errors.document')}
+          actions={
+            <Link
+              to="/knowledge/documents"
+              className="btn btn-secondary no-underline"
+            >
+              {t('actions.backDocuments')}
+            </Link>
+          }
+        >
+          <p role={error ? 'alert' : undefined}>
+            {error?.message ?? t('errors.documentMissing')}
+          </p>
+        </EmptyState>
       )}
     </KnowledgeLayout>
   )

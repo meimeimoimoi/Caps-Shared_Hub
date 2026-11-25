@@ -95,6 +95,36 @@ public sealed class CaseDetailsTests
         Assert.Null(forUpload.SourceContent);
     }
 
+    [Fact]
+    public async Task Staff_get_the_client_email_and_expert_of_known_cases_only()
+    {
+        var reviewCase = Booked();
+        var handler = new ListCasePartiesHandler(new OneCase(reviewCase));
+
+        // The same case twice and an unknown id: one row back
+        var rows = await handler.HandleAsync(
+            new([reviewCase.Id, reviewCase.Id, Guid.NewGuid()]),
+            default
+        );
+
+        var row = Assert.Single(rows);
+        Assert.Equal(
+            (reviewCase.Id.ToString(), "client@caps.test", ExpertProfile.ToString()),
+            (row.ReviewCaseId, row.RequesterEmail, row.ExpertProfileId)
+        );
+    }
+
+    private sealed class OneCase(ReviewCase reviewCase) : IReviewCaseLookup
+    {
+        public Task<IReadOnlyList<ReviewCase>> ListByIdsAsync(
+            IReadOnlyCollection<Guid> ids,
+            CancellationToken ct
+        ) =>
+            Task.FromResult<IReadOnlyList<ReviewCase>>(
+                ids.Contains(reviewCase.Id) ? [reviewCase] : []
+            );
+    }
+
     private static Task<Application.DTOs.Responses.ReviewCaseResponse> Detail(
         ReviewCase reviewCase,
         DocumentVersion source
@@ -105,13 +135,11 @@ public sealed class CaseDetailsTests
             new FakeSources(source)
         ).HandleAsync(new(Client, reviewCase.Id), default);
 
-    private sealed class FakeSources(DocumentVersion? source) : IReviewAttachmentRepository
+    // Shared with AdminDisputeHandlerTests: only the reviewed document version is ever looked up
+    internal sealed class FakeSources(DocumentVersion? source) : IReviewAttachmentRepository
     {
         public Task<DocumentVersion?> FindSourceAsync(Guid versionId, CancellationToken ct) =>
             Task.FromResult(source?.Id == versionId ? source : null);
-
-        public Task<int> CountAsync(Guid reviewCaseId, CancellationToken ct) =>
-            throw new NotSupportedException();
 
         public Task<IReadOnlyList<ReviewAttachment>> ListAsync(
             Guid reviewCaseId,

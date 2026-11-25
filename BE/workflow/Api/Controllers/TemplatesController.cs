@@ -53,4 +53,21 @@ public sealed class TemplatesController : ControllerBase
         var version = await handler.HandleAsync(new(versionId), ct);
         return Ok(ApiResponse<ReleasedTemplateVersionResponse>.Ok(version));
     }
+
+    /// <summary>Downloads the sample Word file of a released version, to show the user's values in the form's own layout.</summary>
+    /// <remarks>Only when the version's schema says <c>hasFile</c>.</remarks>
+    /// <response code="200">The .docx bytes.</response>
+    /// <response code="404">TEMPLATE_NOT_FOUND (not released) or TEMPLATE_FILE_NOT_FOUND (no file).</response>
+    [HttpGet("versions/{versionId:guid}/file")]
+    public async Task<IActionResult> OpenFile(
+        Guid versionId,
+        [FromServices] IQueryHandler<OpenTemplateFileQuery, AttachmentFile> handler,
+        CancellationToken ct
+    )
+    {
+        var file = await handler.HandleAsync(new(versionId), ct);
+        Response.Headers.XContentTypeOptions = "nosniff";
+        Response.Headers.CacheControl = "private, no-store";
+        return File(file.Content, file.ContentType, file.FileName);
+    }
 }

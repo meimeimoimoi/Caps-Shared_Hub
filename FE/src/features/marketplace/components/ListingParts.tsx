@@ -1,4 +1,4 @@
-import { useId } from 'react'
+import { useId, useState } from 'react'
 import { Check, ShieldCheck } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useFormatters } from '@/hooks/useFormatters'
@@ -82,24 +82,28 @@ export function VerifiedBadge({
   )
 }
 
-/** Avatar; falls back to initials. Decorative (the name sits next to it), so alt is empty. */
+/** Avatar; falls back to initials, also when the image fails (404: no avatar). Decorative, so alt is empty. */
 export function Avatar({
   src,
   text,
   large = false,
+  className = large ? 'mk-avatar mk-avatar-lg' : 'mk-avatar',
 }: {
   src?: string | null
   text: string
   large?: boolean
+  className?: string
 }) {
-  const className = large ? 'mk-avatar mk-avatar-lg' : 'mk-avatar'
-  return src ? (
+  // Kept per URL, so a new avatar is tried again
+  const [failed, setFailed] = useState<string | null>(null)
+  return src && src !== failed ? (
     <img
       className={className}
       src={src}
       alt=""
       loading="lazy"
       decoding="async"
+      onError={() => setFailed(src)}
     />
   ) : (
     <span className={className} aria-hidden="true">

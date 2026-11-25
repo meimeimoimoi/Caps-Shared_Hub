@@ -6,6 +6,7 @@ namespace Caps.Workflow.Application.Abstractions;
 public interface IChatMessageRepository
 {
     Task<ChatMessage?> GetByIdAsync(Guid id, CancellationToken ct = default);
+    Task<ChatMessage?> FindForUpdateAsync(Guid id, CancellationToken ct = default);
     Task<IReadOnlyList<ChatMessage>> GetByConversationIdAsync(
         Guid conversationId,
         CancellationToken ct = default

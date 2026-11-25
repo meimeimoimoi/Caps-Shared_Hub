@@ -226,6 +226,7 @@ export default function AdminDisputeDetailPage() {
             <CaseAttachments
               caseId={dispute.id}
               scope="admin"
+              sourceFileName={dispute.sourceFileName}
               dispute={
                 dispute.clientUserId
                   ? { clientUserId: dispute.clientUserId, openedAt: dispute.openedAt }

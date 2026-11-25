@@ -32,6 +32,7 @@ import type {
   TemplateVersion,
   Workspace,
 } from '@/features/drafting/types'
+import { TemplateLayout } from '@/features/drafting/components/TemplateLayout'
 
 function InputEditor({
   workspace,
@@ -88,7 +89,9 @@ function InputEditor({
           {source ? t('cancelRevision') : t('allWorkspaces')}
         </DraftLink>
       </DraftHeading>
-      <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_300px]">
+      <div
+        className={`grid items-start gap-6 ${template.hasFile ? 'lg:grid-cols-2' : 'lg:grid-cols-[minmax(0,1fr)_300px]'}`}
+      >
         <Paper>
           <div className="mb-6 flex flex-wrap items-center justify-between gap-3 text-sm">
             <p className="text-fg-muted">
@@ -207,6 +210,14 @@ function InputEditor({
           )}
         </Paper>
         <aside className="space-y-5 lg:sticky lg:top-6">
+          {template.hasFile && (
+            <TemplateLayout
+              template={template}
+              input={editor.input}
+              setValue={editor.setValue}
+              disabled={editor.busy}
+            />
+          )}
           <Paper>
             <h2 className="text-h2">{t('inputVersions')}</h2>
             <p className="text-fg-muted mt-3 text-sm">

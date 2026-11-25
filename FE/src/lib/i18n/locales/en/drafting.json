@@ -325,5 +325,14 @@
   "freeDraftExport": "AI draft export is free.",
   "draftUnverifiedNumbers": "AI found numbers that need verification.",
   "draftVerifyAgainstInputs": "Check the numbers against your input before using them.",
-  "txtTextFile": "TXT · Text file"
+  "txtTextFile": "TXT · Text file",
+  "templateLayout": "Form layout",
+  "templateLayoutHelp": "What you type appears in the matching blanks of the original form. Blanks you have not filled keep their dots.",
+  "templateLayoutEditHelp": "Type straight into the highlighted blanks of the form, or use the fields; both stay in step. Fields with no place on the form are entered in the fields.",
+  "printTemplateLayout": "Print / Save PDF",
+  "viewTemplateFile": "View form",
+  "templateFilePreviewHelp": "Highlighted blanks are where your input goes; the text in each is the field that fills it. You enter data after choosing Use this template.",
+  "templateLayoutUnavailable": "The form file could not be loaded. You can still enter your data.",
+  "draftContent": "Draft content",
+  "draftView": "Draft view"
 }

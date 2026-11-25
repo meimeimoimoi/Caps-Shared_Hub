@@ -1,4 +1,6 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { EmptyState } from '@/components/ui/feedback/empty-state'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { CircleX, Upload } from 'lucide-react'
 import { useNavToast } from '@/hooks/useNavToast'
@@ -18,6 +20,7 @@ import { useReviewQueue } from '../../features/knowledgeAdmin-review-approval/ho
 const FILTERS = [...PIPELINE.map((p) => p.key), 'failed'] as const
 
 export default function KnowledgeQueuePage() {
+  const { t } = useTranslation('knowledge')
   // Bộ lọc nằm trên URL (?stage=) để chuông thông báo và nút Back dẫn đúng chỗ
   const [params, setParams] = useSearchParams()
   const raw = params.get('stage')
@@ -137,7 +140,52 @@ export default function KnowledgeQueuePage() {
         onOpen={failed ? (d) => setOpenId(d.id) : undefined}
         loading={queue.isLoading}
         empty={
-          queue.error?.message ?? (failed ? 'Không có văn bản lỗi.' : undefined)
+          queue.error?.message ?? (
+            <EmptyState
+              title={t(
+                queue.query.trim() && queue.total > 0
+                  ? 'empty.search'
+                  : failed
+                    ? 'empty.failed'
+                    : 'empty.queue'
+              )}
+              actions={
+                queue.query.trim() && queue.total > 0 ? (
+                  <button
+                    type="button"
+                    onClick={() => queue.setQuery('')}
+                    className="btn btn-secondary"
+                  >
+                    {t('actions.clearSearch')}
+                  </button>
+                ) : (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => setUploadOpen(true)}
+                      className="btn btn-primary"
+                    >
+                      {t('actions.upload')}
+                    </button>
+                    <Link
+                      to="/knowledge/sources"
+                      className="btn btn-secondary no-underline"
+                    >
+                      {t('actions.sources')}
+                    </Link>
+                    {stage !== 'collect' && (
+                      <Link
+                        to="/knowledge/documents"
+                        className="btn btn-secondary no-underline"
+                      >
+                        {t('actions.allDocuments')}
+                      </Link>
+                    )}
+                  </>
+                )
+              }
+            />
+          )
         }
       />
 

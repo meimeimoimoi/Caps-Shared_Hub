@@ -137,14 +137,34 @@ public sealed class AiDraftingClient(HttpClient httpClient, ILogger<AiDraftingCl
                 ? result.Citations
                 : EmptyArrayElement;
 
+        var issues = (result.Issues ?? []).ConvertAll(i => new AiDraftIssue(
+            i.Code ?? string.Empty,
+            i.Type ?? string.Empty,
+            i.Severity ?? string.Empty,
+            i.Description ?? string.Empty,
+            i.FieldId,
+            i.CitationId
+        ));
+
         return new AiDraftResponse(
             result.Content,
             result.ContentHash ?? string.Empty,
             result.HasUnauthorizedNumbers,
             result.UnauthorizedNumbers ?? [],
-            citations
+            citations,
+            result.HasGroundingIssues,
+            issues
         );
     }
+
+    private sealed record AiDraftIssueRaw(
+        [property: JsonPropertyName("code")] string? Code,
+        [property: JsonPropertyName("type")] string? Type,
+        [property: JsonPropertyName("severity")] string? Severity,
+        [property: JsonPropertyName("description")] string? Description,
+        [property: JsonPropertyName("field_id")] string? FieldId,
+        [property: JsonPropertyName("citation_id")] string? CitationId
+    );
 
     private sealed record AiDraftRawResponse(
         [property: JsonPropertyName("status")] string? Status,
@@ -152,6 +172,8 @@ public sealed class AiDraftingClient(HttpClient httpClient, ILogger<AiDraftingCl
         [property: JsonPropertyName("content_hash")] string? ContentHash,
         [property: JsonPropertyName("has_unauthorized_numbers")] bool HasUnauthorizedNumbers,
         [property: JsonPropertyName("unauthorized_numbers")] List<string>? UnauthorizedNumbers,
-        [property: JsonPropertyName("citations")] JsonElement Citations
+        [property: JsonPropertyName("citations")] JsonElement Citations,
+        [property: JsonPropertyName("has_grounding_issues")] bool HasGroundingIssues,
+        [property: JsonPropertyName("issues")] List<AiDraftIssueRaw>? Issues
     );
 }

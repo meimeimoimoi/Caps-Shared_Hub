@@ -6,7 +6,9 @@ using Microsoft.EntityFrameworkCore;
 namespace Caps.Workflow.Infrastructure.Persistence;
 
 /// <summary>EF Core store for review cases.</summary>
-public sealed class ReviewCaseRepository(WorkflowDbContext db) : IReviewCaseRepository
+public sealed class ReviewCaseRepository(WorkflowDbContext db)
+    : IReviewCaseRepository,
+        IReviewCaseLookup
 {
     public Task<ReviewCase?> FindAsync(Guid reviewCaseId, CancellationToken ct) =>
         db.ReviewCases.AsNoTracking().SingleOrDefaultAsync(x => x.Id == reviewCaseId, ct);
@@ -51,6 +53,11 @@ public sealed class ReviewCaseRepository(WorkflowDbContext db) : IReviewCaseRepo
             )
             .Select(x => x.Id)
             .ToListAsync(ct);
+
+    public async Task<IReadOnlyList<ReviewCase>> ListByIdsAsync(
+        IReadOnlyCollection<Guid> ids,
+        CancellationToken ct
+    ) => await db.ReviewCases.AsNoTracking().Where(x => ids.Contains(x.Id)).ToListAsync(ct);
 }
 
 /// <summary>EF Core store for client disputes; a case has at most one.</summary>
@@ -62,16 +69,19 @@ public sealed class ReviewDisputeRepository(WorkflowDbContext db) : IReviewDispu
     public void Add(ReviewDispute dispute) => db.ReviewDisputes.Add(dispute);
 
     // the 200 earliest deadlines, no paging; add a cursor when the queue grows
-    public async Task<IReadOnlyList<(ReviewDispute Dispute, ReviewCase Case)>> ListOpenAsync(
+    public async Task<IReadOnlyList<(ReviewDispute Dispute, ReviewCase Case)>> ListAsync(
+        bool open,
         CancellationToken ct
     )
     {
-        var rows = await (
+        var joined =
             from d in db.ReviewDisputes.AsNoTracking()
             join c in db.ReviewCases.AsNoTracking() on d.ReviewCaseId equals c.Id
-            where d.Status == ReviewDispute.Open
-            orderby d.DecideBy
-            select new { d, c }
+            where (d.Status == ReviewDispute.Open) == open
+            select new { d, c };
+        // ponytail: newest 200 closed disputes; page them once the history outgrows that
+        var rows = await (
+            open ? joined.OrderBy(x => x.d.DecideBy) : joined.OrderByDescending(x => x.d.ClosedAt)
         )
             .Take(200)
             .ToListAsync(ct);
@@ -170,9 +180,6 @@ public sealed class CaseReadMarkerRepository(WorkflowDbContext db) : ICaseReadMa
 /// <summary>EF Core store for the files added to review cases.</summary>
 public sealed class ReviewAttachmentRepository(WorkflowDbContext db) : IReviewAttachmentRepository
 {
-    public Task<int> CountAsync(Guid reviewCaseId, CancellationToken ct) =>
-        db.ReviewAttachments.CountAsync(x => x.ReviewCaseId == reviewCaseId, ct);
-
     public async Task<IReadOnlyList<ReviewAttachment>> ListAsync(
         Guid reviewCaseId,
         CancellationToken ct
@@ -241,6 +248,19 @@ public sealed class TemplateRepository(WorkflowDbContext db) : ITemplateReposito
                     ),
                 ct
             );
+
+    public async Task<IReadOnlyList<Template>> ListWithVersionsAsync(CancellationToken ct) =>
+        await db
+            .Templates.AsNoTracking()
+            .Include(x => x.Versions)
+            .OrderBy(x => x.Name)
+            .ToListAsync(ct);
+
+    public Task<Template?> FindWithVersionsAsync(Guid templateId, CancellationToken ct) =>
+        db
+            .Templates.AsNoTracking()
+            .Include(x => x.Versions)
+            .SingleOrDefaultAsync(x => x.Id == templateId, ct);
 
     public void Add(Template newTemplate) => db.Templates.Add(newTemplate);
 
