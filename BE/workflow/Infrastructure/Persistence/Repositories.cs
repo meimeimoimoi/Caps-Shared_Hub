@@ -249,6 +249,19 @@ public sealed class TemplateRepository(WorkflowDbContext db) : ITemplateReposito
                 ct
             );
 
+    public async Task<IReadOnlyList<Template>> ListWithVersionsAsync(CancellationToken ct) =>
+        await db
+            .Templates.AsNoTracking()
+            .Include(x => x.Versions)
+            .OrderBy(x => x.Name)
+            .ToListAsync(ct);
+
+    public Task<Template?> FindWithVersionsAsync(Guid templateId, CancellationToken ct) =>
+        db
+            .Templates.AsNoTracking()
+            .Include(x => x.Versions)
+            .SingleOrDefaultAsync(x => x.Id == templateId, ct);
+
     public void Add(Template newTemplate) => db.Templates.Add(newTemplate);
 
     public void Add(TemplateVersion version) => db.TemplateVersions.Add(version);

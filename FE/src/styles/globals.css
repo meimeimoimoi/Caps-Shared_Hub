@@ -3162,3 +3162,15 @@ html:has(dialog:modal) { overflow: hidden; }
 .expert-status-dossier { padding: 0 24px; border: 1px solid var(--ui-border) !important; border-radius: 14px; background: var(--ui-surface); }
 .expert-status-dossier > summary { padding: 20px 0 !important; font-size: 17px !important; cursor: pointer; }
 
+
+/* Printing a page with a .print-sheet (template paper preview) prints that sheet alone, at full A4 width */
+@media print {
+  body:has(.print-sheet) * { visibility: hidden; }
+  body:has(.print-sheet) .print-sheet,
+  body:has(.print-sheet) .print-sheet * { visibility: visible; }
+  body:has(.print-sheet) .print-sheet { position: absolute; inset: 0 auto auto 0; max-width: none; box-shadow: none; }
+  /* A Word layout is shrunk and scrolled to fit its panel on screen; on paper it prints whole, at full size */
+  body:has(.print-sheet) .print-sheet,
+  body:has(.print-sheet) .print-sheet * { max-height: none !important; overflow: visible !important; }
+  body:has(.print-sheet) .print-sheet [style*='zoom'] { zoom: 1 !important; }
+}

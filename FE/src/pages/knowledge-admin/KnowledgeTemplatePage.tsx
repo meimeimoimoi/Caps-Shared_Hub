@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react'
 import { Link, useParams, useSearchParams } from 'react-router-dom'
-import { Eye, FileText } from 'lucide-react'
+import { Eye, FileText, Upload } from 'lucide-react'
 import { cn, formatDayMonth } from '@/lib/utils'
 import { StatusBadge } from '@/components/ui/display/status-badge'
 import { Modal } from '@/components/ui/feedback/modal'
@@ -19,8 +19,9 @@ import { TemplatePreview } from '../../features/knowledgeAdmin-templates/compone
 export default function KnowledgeTemplatePage() {
   const id = useParams().id!
   const nav = useKnowledgeNav()
-  const { template, isLoading, error, setStatus, publish } =
+  const { template, isLoading, error, setStatus, publish, uploadFile } =
     useManagedTemplate(id)
+  const [uploading, setUploading] = useState(false)
   const [params, setParams] = useSearchParams()
   const [confirming, setConfirming] = useState(false)
   const [previewing, setPreviewing] = useState(false)
@@ -69,6 +70,26 @@ export default function KnowledgeTemplatePage() {
     0
   )
   const active = template.status === 'ACTIVE'
+  // The server attaches files to a draft only; demo data has no status and no upload
+  const draft = current.status === 'DRAFT'
+  const anchored = (v: typeof current) =>
+    v.fields.some((f) => f.anchor) && !v.hasFile
+  // Fields point at blanks in a file that is not there: users would get no form layout
+  const missingFile = draft && anchored(current)
+  const publishedNoFile =
+    !draft && current.status === 'PUBLISHED' && anchored(current)
+  const pickFile = (file: File | undefined) => {
+    if (!file) return
+    if (!file.name.toLowerCase().endsWith('.docx')) {
+      setToast('Chỉ nhận file Word .docx')
+      return
+    }
+    setUploading(true)
+    uploadFile(file)
+      .then(() => setToast(`Đã tải file mẫu lên v${current.version}`))
+      .catch((e: Error) => setToast(`Chưa tải được file mẫu (${e.message})`))
+      .finally(() => setUploading(false))
+  }
 
   return (
     <KnowledgeLayout
@@ -121,13 +142,15 @@ export default function KnowledgeTemplatePage() {
               {selected.fields.length} trường
             </span>
           </div>
-          <p className="text-fg-muted mt-1 flex items-center gap-1.5 text-sm">
-            <FileText size={14} aria-hidden="true" />
-            File mẫu:{' '}
-            <span className="text-fg-strong break-all">
-              {selected.fileName}
-            </span>
-          </p>
+          {selected.fileName && (
+            <p className="text-fg-muted mt-1 flex items-center gap-1.5 text-sm">
+              <FileText size={14} aria-hidden="true" />
+              File mẫu:{' '}
+              <span className="text-fg-strong break-all">
+                {selected.fileName}
+              </span>
+            </p>
+          )}
           {selected !== current && (
             <p className="bg-sunken rounded-surface text-fg-muted mt-3 px-3 py-2 text-sm">
               Đang xem phiên bản cũ. Bản nháp mới dùng v{current.version}.
@@ -190,9 +213,25 @@ export default function KnowledgeTemplatePage() {
                 : 'Người dùng không tạo được bản nháp mới từ template này.'}{' '}
               <span className="num">{totalWorkspaces}</span> bản nháp đang dùng.
             </p>
+            {missingFile && (
+              <p role="status" className="text-warning mt-3 text-sm">
+                v{current.version} chưa có file mẫu nên chưa phát hành được. Tải
+                file .docx lên trước.
+              </p>
+            )}
+            {publishedNoFile && (
+              <p role="status" className="text-warning mt-3 text-sm">
+                v{current.version} chưa có file mẫu. Để bổ sung, vào{' '}
+                <Link to="/knowledge/templates/new" className="underline">
+                  Tạo template
+                </Link>{' '}
+                và nhập mã {template.code} để tạo bản nháp mới kèm file.
+              </p>
+            )}
             <button
               type="button"
               onClick={() => setConfirming(true)}
+              disabled={!active && missingFile}
               className={cn(
                 'btn btn-press mt-4 w-full',
                 active ? 'btn-secondary' : 'btn-primary'
@@ -208,10 +247,36 @@ export default function KnowledgeTemplatePage() {
                     .then(() => setToast(`Đã phát hành v${current.version}`))
                     .catch((e: Error) => setToast(e.message))
                 }
+                disabled={missingFile}
                 className="btn btn-press btn-primary mt-2 w-full"
               >
                 Phát hành v{current.version}
               </button>
+            )}
+            {draft && (
+              <label
+                className={cn(
+                  'btn btn-press btn-secondary mt-2 w-full cursor-pointer has-focus-visible:outline-2 has-focus-visible:outline-offset-2',
+                  uploading && 'pointer-events-none opacity-60'
+                )}
+              >
+                <Upload size={16} aria-hidden="true" />
+                {uploading
+                  ? 'Đang tải lên…'
+                  : current.hasFile
+                    ? 'Thay file mẫu'
+                    : 'Tải file mẫu'}
+                <input
+                  type="file"
+                  accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                  className="sr-only"
+                  disabled={uploading}
+                  onChange={(e) => {
+                    pickFile(e.target.files?.[0])
+                    e.target.value = ''
+                  }}
+                />
+              </label>
             )}
           </section>
 
@@ -238,7 +303,9 @@ export default function KnowledgeTemplatePage() {
                     <span className="flex items-baseline justify-between gap-2">
                       <span className="num text-fg-strong font-semibold">
                         v{v.version}
-                        {(v.status ? v.status === 'PUBLISHED' : v === current) && (
+                        {(v.status
+                          ? v.status === 'PUBLISHED'
+                          : v === current) && (
                           <span className="text-fg-muted ml-2 font-normal">
                             đang phát hành
                           </span>

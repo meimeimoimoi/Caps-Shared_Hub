@@ -228,6 +228,20 @@ public static class WorkflowErrors
     public static AppException TemplateInvalid(string field) =>
         new(ErrorType.Validation, "TEMPLATE_INVALID", $"{field} is required.");
 
+    public static AppException TemplateFileInvalid() =>
+        new(
+            ErrorType.Validation,
+            "TEMPLATE_FILE_INVALID",
+            "The template file must be a Word (.docx) document."
+        );
+
+    public static AppException TemplateFileNotFound() =>
+        new(
+            ErrorType.NotFound,
+            "TEMPLATE_FILE_NOT_FOUND",
+            "This template version has no sample file."
+        );
+
     public static AppException TemplateNoDraft() =>
         new(
             ErrorType.Conflict,

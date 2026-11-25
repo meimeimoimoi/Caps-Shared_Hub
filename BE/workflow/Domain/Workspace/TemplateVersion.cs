@@ -18,6 +18,26 @@ public sealed class TemplateVersion
     public Guid CreatedBy { get; private set; }
     public DateTimeOffset CreatedAt { get; private set; }
 
+    /// <summary>Object storage key of the sample .docx users see their values written into; null when none was uploaded.</summary>
+    public string? FileKey { get; private set; }
+
+    /// <summary>
+    /// Sets the draft's sample Word file and returns the key it replaces, so the caller can delete that file.
+    /// Published versions keep theirs, like their fields.
+    /// </summary>
+    public string? AttachFile(byte[] content)
+    {
+        if (Status != TemplateVersionStatus.Draft)
+            throw WorkflowErrors.TemplateNoDraft();
+        // shortcut: reuses the attachment checks (ATTACHMENT_REQUIRED/TOO_LARGE/TYPE_INVALID, 50 MB); give templates their own if the FE must tell them apart
+        if (Review.ReviewAttachment.DetectType(content) != Review.ReviewAttachment.Docx)
+            throw WorkflowErrors.TemplateFileInvalid();
+        var previous = FileKey;
+        // A new key per upload, so a failed save never leaves the row pointing at half-replaced bytes
+        FileKey = $"templates/{TemplateId}/{Id}/{UuidV7.NewGuid()}.docx";
+        return previous;
+    }
+
     /// <summary>
     /// Saves an admin's field schema: rewrites <paramref name="latest"/> while it is a draft, otherwise
     /// starts the next version as a draft, so published versions never change.
