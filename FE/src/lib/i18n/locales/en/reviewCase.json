@@ -748,6 +748,12 @@
       "deliveredLate": "Delivered {{time}} · {{hours}} h late",
       "netPayout": "You receive {{amount}} when it completes.",
       "lateRule": "Delivered up to {{hours}} h late: you receive {{payout}} and get 1 violation point. Not delivered within {{cancel}} h: the case is cancelled, you receive nothing and get 3 points.",
+      "confirmDeliver": {
+        "title": "Deliver the result?",
+        "body": "The result goes to the client for review. Check the summary and citations before you deliver.",
+        "edited": "Fields changed",
+        "back": "Keep editing"
+      },
       "saveDraft": "Save draft",
       "draftSaved": "Draft saved. The client sees your revision only after delivery.",
       "decisionLate": "The decision is taking longer than planned. Your share is still held, and you will be told as soon as it is decided."

@@ -6,6 +6,7 @@ import { ArrowLeft } from 'lucide-react'
 import { HelpTip } from '@/components/ui/feedback/help-tip'
 import { DISPUTE_SLA_DAYS } from '@/features/disputes-escrow/constants'
 import { Toast } from '@/components/ui/feedback/toast'
+import { Modal } from '@/components/ui/feedback/modal'
 import { addDisputeStatement, reviewCaseActions } from '../api/reviewCaseApi'
 import { useCaseError, useCaseRun, useLiveCase } from '../hooks/useReviewCases'
 import { caseCode } from '../mapper'
@@ -146,6 +147,8 @@ function DeliverForm({
   ].filter((x): x is string => Boolean(x))
   const ready = missing.length === 0
   const [tried, setTried] = useState(false)
+  // Delivery goes through a confirmation step before it is sent
+  const [confirming, setConfirming] = useState(false)
   // Fields that were not text go back as JSON when they still parse
   const revised = () =>
     source &&
@@ -169,14 +172,8 @@ function DeliverForm({
       onSubmit={(e) => {
         e.preventDefault()
         setTried(true)
-        if (ready)
-          onSubmit(
-            result,
-            summary.trim(),
-            cannot ? reason.trim() : null,
-            citations,
-            revised()
-          )
+        // Delivery goes through a confirmation step before it is sent
+        if (ready) setConfirming(true)
       }}
     >
       <fieldset>
@@ -373,6 +370,64 @@ function DeliverForm({
           </button>
         )}
       </div>
+      {confirming && (
+        <Modal
+          title={t('live.expert.confirmDeliver.title')}
+          onClose={() => setConfirming(false)}
+          footer={
+            <>
+              <button
+                type="button"
+                className="btn btn-press btn-secondary"
+                onClick={() => setConfirming(false)}
+              >
+                {t('live.expert.confirmDeliver.back')}
+              </button>
+              <button
+                type="button"
+                disabled={busy}
+                className="btn btn-press btn-primary disabled:opacity-60"
+                onClick={() => {
+                  setConfirming(false)
+                  onSubmit(
+                    result,
+                    summary.trim(),
+                    cannot ? reason.trim() : null,
+                    citations,
+                    revised()
+                  )
+                }}
+              >
+                {t('live.expert.deliver')}
+              </button>
+            </>
+          }
+        >
+          <p className="text-fg-strong text-sm">
+            {t('live.expert.confirmDeliver.body')}
+          </p>
+          <dl className="mt-3 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-sm">
+            <dt>{t('live.expert.result')}</dt>
+            <dd className="font-semibold">{t(`result.${result}`)}</dd>
+            {source && (
+              <>
+                <dt>{t('live.expert.confirmDeliver.edited')}</dt>
+                <dd className="num font-semibold">
+                  {
+                    Object.keys(fields).filter(
+                      (k) =>
+                        removed.includes(k) ||
+                        fields[k] !== fieldText(source[k])
+                    ).length
+                  }
+                </dd>
+              </>
+            )}
+            <dt>{t('live.expert.citations')}</dt>
+            <dd className="num font-semibold">{citations.length}</dd>
+          </dl>
+        </Modal>
+      )}
     </form>
   )
 }
