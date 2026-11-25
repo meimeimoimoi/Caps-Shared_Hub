@@ -28,6 +28,7 @@ import {
 import { useCaseError } from '@/features/review-case/hooks/useReviewCases'
 import { ApiError } from '@/lib/api-client'
 import { isExpertDemo } from '@/lib/expert-data-source'
+import { useCreditOverview } from '@/features/credits/hooks/useCreditOverview'
 import { cn } from '@/lib/utils'
 
 /* Flow 5 · Bước 1: gửi Review Request cho chuyên gia đã chọn trên Sàn.
@@ -111,6 +112,12 @@ export default function ReviewRequestPage() {
   const draftError = submitted && !draftId
   const consentError = submitted && !consent
   const scopeError = !isExpertDemo && submitted && !scope.trim()
+  // Billing holds the fee from this wallet balance, so the client sees it before sending
+  const credits = useCreditOverview()
+  const fee = service?.price == null ? null : Number(service.price)
+  const balance = isExpertDemo ? undefined : credits.data?.wallet.balance
+  const remaining = balance != null && fee != null ? balance - fee : null
+  const shortfall = remaining != null && remaining < 0
 
   usePageTitle(t('request.title'))
 
@@ -133,7 +140,7 @@ export default function ReviewRequestPage() {
   const submit = (e: FormEvent) => {
     e.preventDefault()
     setSubmitted(true)
-    if (!draftId || !consent) return
+    if (!draftId || !consent || shortfall) return
     if (isExpertDemo) return navigate(`/cases/${DEMO_CASES[0].id}`)
     const chosen = drafts.find((d) => d.id === draftId)
     const chosenDocument =
@@ -447,6 +454,15 @@ export default function ReviewRequestPage() {
                   </ul>
                 </section>
               )}
+              {/* Escrow terms come before the consent they are part of */}
+              <p className="text-fg mt-8 mb-4 flex items-start gap-2 text-sm">
+                <ShieldCheck
+                  size={16}
+                  aria-hidden="true"
+                  className="text-success mt-0.5 shrink-0"
+                />
+                {t('request.lead')}
+              </p>
               <label className="flex cursor-pointer items-start gap-3 text-sm">
                 <input
                   type="checkbox"
@@ -475,22 +491,30 @@ export default function ReviewRequestPage() {
                   {sendError}
                 </p>
               )}
-              {/* Payment and escrow terms sit next to the action they apply to */}
-              <p className="text-fg mt-8 flex items-start gap-2 text-sm">
-                <ShieldCheck
-                  size={16}
-                  aria-hidden="true"
-                  className="text-success mt-0.5 shrink-0"
-                />
-                {t('request.lead')}
-              </p>
+              {shortfall && remaining != null && (
+                <p
+                  id={`${id}-shortfall`}
+                  role="alert"
+                  className="text-danger mt-8 text-sm"
+                >
+                  {t('request.shortfall', { amount: f.money(-remaining) })}{' '}
+                  <Link to="/wallet" className="font-semibold underline">
+                    {t('request.toWallet')}
+                  </Link>
+                </p>
+              )}
               <button
                 type="submit"
-                disabled={sending}
+                disabled={sending || shortfall}
                 aria-busy={sending}
-                className="btn btn-press btn-primary mt-4 disabled:opacity-60 max-sm:w-full"
+                aria-describedby={shortfall ? `${id}-shortfall` : undefined}
+                className="btn btn-press btn-primary mt-8 disabled:opacity-60 max-sm:w-full"
               >
-                {sending ? t('request.sending') : t('request.submit')}
+                {sending
+                  ? t('request.sending')
+                  : fee == null
+                    ? t('request.submit')
+                    : t('request.submitHold', { amount: f.money(fee) })}
               </button>
             </form>
 
@@ -528,6 +552,38 @@ export default function ReviewRequestPage() {
                         : f.money(Number(service.price))}
                     </dd>
                   </div>
+                  {balance != null && fee != null && remaining != null && (
+                    <>
+                      <div className="flex items-baseline justify-between gap-4">
+                        <dt className="text-fg-muted">
+                          {t('request.balance')}
+                        </dt>
+                        <dd className="num text-fg-strong">
+                          {f.money(balance)}
+                        </dd>
+                      </div>
+                      <div className="flex items-baseline justify-between gap-4">
+                        <dt className="text-fg-muted">{t('request.hold')}</dt>
+                        <dd className="num text-fg-strong">
+                          {'\u2212'}
+                          {f.money(fee)}
+                        </dd>
+                      </div>
+                      <div className="border-border-subtle flex items-baseline justify-between gap-4 border-t pt-3">
+                        <dt className="text-fg-strong font-semibold">
+                          {t('request.remaining')}
+                        </dt>
+                        <dd
+                          className={cn(
+                            'num font-semibold',
+                            shortfall ? 'text-danger' : 'text-fg-strong'
+                          )}
+                        >
+                          {f.money(remaining)}
+                        </dd>
+                      </div>
+                    </>
+                  )}
                 </dl>
               </section>
 
