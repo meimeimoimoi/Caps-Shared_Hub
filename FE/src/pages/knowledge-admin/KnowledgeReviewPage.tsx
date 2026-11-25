@@ -9,6 +9,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { Eye, Info } from 'lucide-react'
 import { RAIL_DOCUMENT } from '@/lib/constants'
 import { DecisionBar } from '@/components/ui/actions/decision-bar'
+import { Modal } from '@/components/ui/feedback/modal'
 import { Toast } from '@/components/ui/feedback/toast'
 import { ToolHeader } from '@/components/ui/layout/tool-header'
 import { KnowledgeLayout } from '@/app/layouts/knowledge/KnowledgeLayout'
@@ -104,6 +105,8 @@ function ReviewWorkspace({
   const [editing, setEditing] = useState(false)
   const [edits, setEdits] = useState<Record<string, string>>({})
   const [checked, setChecked] = useState<CrosscheckKey[]>([])
+  // Article the admin asked to open while unsaved edits are pending
+  const [leaving, setLeaving] = useState<string | null>(null)
   const [meta, setMeta] = useState(review.meta)
   const [rejecting, setRejecting] = useState(false)
   const [reprocessing, setReprocessing] = useState(false)
@@ -123,14 +126,20 @@ function ReviewWorkspace({
     const next = [...articles.slice(i + 1), ...articles.slice(0, i)].find(
       (a) => articleStatus(a) !== 'REVIEWED'
     )
-    if (next) setSelectedId(next.id)
+    if (next) select(next.id)
     else setToast('Đã rà soát hết các Điều')
   }
 
-  const select = (id: string) => {
+  const open = (id: string) => {
     setEditing(false)
     setEdits({})
     setSelectedId(id)
+  }
+  // Switching article drops the edit buffer, so ask first when it holds changes
+  const select = (id: string) => {
+    if (id === selectedId) return
+    if (editing && Object.keys(edits).length) setLeaving(id)
+    else open(id)
   }
 
   const total = articles.length
@@ -362,6 +371,34 @@ function ReviewWorkspace({
                 },
               })
             )
+          }
+        />
+      )}
+      {leaving && (
+        <Modal
+          title="Bỏ đoạn đã sửa chưa lưu?"
+          description={`Chuyển sang Điều khác sẽ mất ${Object.keys(edits).length} đoạn đã sửa nhưng chưa lưu.`}
+          onClose={() => setLeaving(null)}
+          footer={
+            <>
+              <button
+                type="button"
+                onClick={() => setLeaving(null)}
+                className="btn btn-press btn-secondary"
+              >
+                Ở lại sửa tiếp
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  open(leaving)
+                  setLeaving(null)
+                }}
+                className="btn btn-press bg-danger text-paper"
+              >
+                Bỏ thay đổi
+              </button>
+            </>
           }
         />
       )}
