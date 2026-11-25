@@ -10,3 +10,14 @@ INSUFFICIENT_KNOWLEDGE_ANSWER = (
     "Kho tri thức hiện chưa có căn cứ pháp lý đã được phê duyệt áp dụng cho kỳ thuế này. "
     "Hệ thống đề xuất bạn chuyển tiếp câu hỏi cho Chuyên gia để thẩm định."
 )
+
+UNSUPPORTED_QUESTION_ANSWER = (
+    "Căn cứ pháp lý đã được phê duyệt trong kho tri thức chưa đủ để trả lời trực tiếp câu hỏi này. "
+    "Hệ thống đề xuất bạn chuyển tiếp câu hỏi cho Chuyên gia để thẩm định."
+)
+
+INVESTMENT_INCENTIVE_OUT_OF_SCOPE_ANSWER = (
+    "Ưu đãi thuế TNDN theo dự án đầu tư (địa bàn, ngành nghề, khu kinh tế, khu công nghệ cao...) "
+    "nằm ngoài phạm vi hỗ trợ của trợ lý AI. "
+    "Hệ thống đề xuất bạn chuyển tiếp câu hỏi cho Chuyên gia để thẩm định."
+)

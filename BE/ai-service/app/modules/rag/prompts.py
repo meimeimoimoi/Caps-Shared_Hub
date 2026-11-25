@@ -40,7 +40,9 @@ def build_grounded_answer_prompt(
     question: str,
     context: str,
     period_str: str,
+    retry_note: str | None = None,
 ) -> str:
+    retry_block = f"\n\nLƯU Ý SỬA LẠI: {retry_note}" if retry_note else ""
     return f"""Bạn là Trợ lý AI Pháp lý Thuế Thu nhập doanh nghiệp (TNDN). Chỉ trả lời dựa trên Căn cứ pháp lý truy xuất dưới đây.
 TUYỆT ĐỐI KHÔNG SUY DIỄN HOẶC BỊA THÊM QUY ĐỊNH NGOÀI CĂN CỨ.
 
@@ -50,14 +52,18 @@ Căn cứ pháp lý truy xuất:
 Kỳ thuế áp dụng: {period_str}
 Câu hỏi: {question}
 
-YÊU CẦU TRẢ VỀ DUY NHẤT ĐỊNH DẠNG JSON HỢP LỆ (không giải thích ngoài JSON):
+YÊU CẦU TRẢ VỀ DUY NHẤT MỘT ĐỐI TƯỢNG JSON HỢP LỆ (không giải thích ngoài JSON). Mọi giá trị "facts", "legal_basis", "conclusion" là CHUỖI văn bản, không lồng đối tượng JSON:
 {{
+  "answerable": true hoặc false,
+  "used_sources": [số thứ tự các đoạn căn cứ đã dùng, ví dụ 1, 3],
   "facts": "...",
   "legal_basis": "...",
   "conclusion": "..."
 }}
 
-QUY TẮC BẮT BUỘC CHO 3 PHẦN (viết bằng tiếng Việt rõ ràng, không lặp lại tiêu đề mục ở đầu chuỗi):
-1. "facts" (Dữ kiện): Tóm tắt đúng câu hỏi hoặc tình huống người dùng đưa ra kèm kỳ tính thuế áp dụng ({period_str}); chỉ nêu những gì có trong câu hỏi.
-2. "legal_basis" (Căn cứ): Trích dẫn Số hiệu văn bản, Tên văn bản, Điều, Khoản, Điểm phù hợp trong Căn cứ pháp lý truy xuất (gắn ký hiệu [1], [2]...) và nội dung quy định tương ứng. Lưu ý: khoản quy định mức thuế suất chung 20% chính là mức thuế suất thuế TNDN phổ thông.
-3. "conclusion" (Kết luận): Đưa ra câu trả lời trực tiếp, rõ ràng cho câu hỏi dựa trên phần Căn cứ (kèm [1], [2]...). Nếu người dùng hỏi quy định chung hoặc mức thuế suất phổ thông thì khẳng định trực tiếp mức quy định chung theo căn cứ (và có thể lưu ý ngắn gọn các trường hợp áp dụng mức khác hoặc ưu đãi nêu trong căn cứ). Chỉ khi tất cả các đoạn trong Căn cứ pháp lý truy xuất hoàn toàn không liên quan đến chủ đề câu hỏi mới nêu rằng căn cứ hiện có chưa quy định nội dung này."""
+QUY TẮC BẮT BUỘC:
+0. "answerable": đặt true CHỈ KHI có ít nhất một đoạn căn cứ nêu TRỰC TIẾP nội dung trả lời câu hỏi (đúng mẫu biểu, đúng chỉ tiêu, đúng phụ lục, đúng mức số được hỏi). Đặt false khi các đoạn chỉ nói về chủ đề gần giống, hoặc phải đoán, suy luận thêm mới trả lời được. Ví dụ: hỏi một phụ lục hay chỉ tiêu trên tờ khai mà không đoạn nào mô tả phụ lục, chỉ tiêu đó thì answerable = false. Khi answerable = false, để "used_sources" là [] và "conclusion" là chuỗi rỗng.
+1. "used_sources": chỉ liệt kê số thứ tự [n] của các đoạn thật sự dùng để trả lời; không liệt kê đoạn không dùng.
+2. "facts" (Dữ kiện): Tóm tắt đúng câu hỏi hoặc tình huống người dùng đưa ra kèm kỳ tính thuế áp dụng ({period_str}); chỉ nêu những gì có trong câu hỏi, không tự thêm giả định.
+3. "legal_basis" (Căn cứ): Trích dẫn Số hiệu văn bản, Tên văn bản, Điều, Khoản, Điểm của các đoạn đã dùng (gắn ký hiệu [1], [2]...) và nội dung quy định tương ứng. Chỉ được nêu số hiệu văn bản xuất hiện trong Căn cứ pháp lý truy xuất. Lưu ý: khoản quy định mức thuế suất chung 20% chính là mức thuế suất thuế TNDN phổ thông.
+4. "conclusion" (Kết luận): Trả lời trực tiếp, rõ ràng cho câu hỏi dựa trên phần Căn cứ (kèm [1], [2]...). Không đưa ra con số, mẫu biểu, chỉ tiêu hay văn bản không có trong các đoạn đã dùng.{retry_block}"""
