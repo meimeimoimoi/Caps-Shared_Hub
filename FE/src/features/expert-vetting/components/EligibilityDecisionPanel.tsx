@@ -14,9 +14,10 @@ interface EligibilityDecisionPanelProps {
 }
 
 const tone = {
-  success: { chip: 'bg-success/10 text-success', button: 'bg-success text-white hover:bg-success/90' },
-  warning: { chip: 'bg-warning/10 text-warning', button: 'bg-warning text-black hover:bg-warning/90' },
-  danger: { chip: 'bg-danger/10 text-danger', button: 'bg-danger text-white hover:bg-danger/90' },
+  // Buttons use the shared button tokens: accent to approve, danger to reject, neutral to ask for more
+  success: { chip: 'bg-success/10 text-success', button: 'btn-primary' },
+  warning: { chip: 'bg-warning/10 text-warning', button: 'btn-secondary' },
+  danger: { chip: 'bg-danger/10 text-danger', button: 'btn-danger' },
 } as const
 
 /** Gate 1 footer: the outcome the results lead to, what still blocks it, and the matching confirm action */
@@ -53,7 +54,7 @@ export function EligibilityDecisionPanel({ outcome, blockers, disabled, onConfir
         type="button"
         disabled={disabled}
         onClick={onConfirm}
-        className={cn('inline-flex min-h-11 shrink-0 items-center gap-2 rounded-md px-4 text-sm font-semibold transition-colors focus-visible:ring-2 focus-visible:ring-[var(--ui-border-strong)] focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed', disabled ? 'bg-surface-muted text-text-muted' : style.button)}
+        className={cn('btn btn-press min-h-11 shrink-0 focus-visible:ring-2 focus-visible:ring-[var(--ui-border-strong)] focus-visible:ring-offset-2 focus-visible:outline-none', style.button)}
       >
         {t(config.confirm)}
         <ArrowRight size={16} aria-hidden="true" />
