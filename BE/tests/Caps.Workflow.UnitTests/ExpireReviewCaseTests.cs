@@ -173,6 +173,34 @@ public sealed class ExpireReviewCaseTests
         Assert.False(run.UnitOfWork.Saved);
     }
 
+    [Fact]
+    public void Next_deadline_follows_the_current_step()
+    {
+        var reviewCase = Booked();
+        Assert.Equal(reviewCase.PaymentDeadline, reviewCase.NextDeadline);
+
+        reviewCase.ConfirmPayment(T0);
+        Assert.Equal(reviewCase.ResponseDeadline, reviewCase.NextDeadline);
+
+        reviewCase.Accept(ExpertProfile, Expert, T0);
+        Assert.Equal(reviewCase.DeliveryDeadline, reviewCase.NextDeadline);
+
+        reviewCase.Deliver(
+            ExpertProfile,
+            Expert,
+            ReviewCase.Verified,
+            "Looks right",
+            null,
+            ["Article 9, CIT Law"],
+            true,
+            T0
+        );
+        Assert.Equal(reviewCase.AcceptanceDeadline, reviewCase.NextDeadline);
+
+        reviewCase.Confirm(Client, T0);
+        Assert.Null(reviewCase.NextDeadline);
+    }
+
     private static ReviewCase Booked() =>
         ReviewCase
             .Request(
