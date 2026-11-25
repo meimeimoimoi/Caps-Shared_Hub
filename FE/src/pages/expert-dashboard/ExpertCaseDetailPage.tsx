@@ -340,6 +340,10 @@ function CaseWorkspace({
                       >
                         {t('reasonForDeclining')}
                       </label>
+                      {/* Matches workflow DeclineReviewHandler: case closes as declined, full refund, no violation */}
+                      <p className="text-[14px] text-[var(--ep-ink)]">
+                        {t('declineEffect')}
+                      </p>
                       <textarea
                         id="decline-reason"
                         className="min-h-25 w-full resize-y rounded-xl bg-[var(--ep-surface)] bg-none [padding:16px] [font-family:inherit] text-[15px] text-[var(--ep-ink)] [caret-color:var(--ep-accent)] transition-colors outline-none [border:2px_solid_var(--ep-line)] placeholder:text-[var(--ep-muted)] focus:[border-color:var(--ep-accent)]"

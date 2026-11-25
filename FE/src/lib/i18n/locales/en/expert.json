@@ -220,6 +220,7 @@
   "serverTotals": "Server totals",
   "awaitingResponse": "Awaiting response",
   "overdue": "Overdue",
+  "declineEffect": "The case will close as declined by the expert and the client is refunded in full. Declining before you accept is not recorded as a violation.",
   "dueSoon": "Due soon",
   "filterLoadedCases": "Filter loaded cases",
   "anOverdueCaseNeedsYourAttention": "An overdue case needs your attention",

@@ -220,6 +220,7 @@
   "serverTotals": "Tổng số từ máy chủ",
   "awaitingResponse": "Chờ phản hồi",
   "overdue": "Quá hạn",
+  "declineEffect": "Case sẽ đóng ở trạng thái chuyên gia từ chối và khách hàng được hoàn toàn bộ phí. Từ chối trước khi nhận case không bị ghi nhận vi phạm.",
   "dueSoon": "Sắp trễ",
   "filterLoadedCases": "Lọc hồ sơ đã tải",
   "anOverdueCaseNeedsYourAttention": "Một hồ sơ quá hạn cần bạn xử lý",
