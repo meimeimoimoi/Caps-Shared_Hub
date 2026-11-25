@@ -30,6 +30,9 @@ const CHAT_STATUSES = [
 const UPLOAD_STATUSES = [...CHAT_STATUSES, 'DISPUTED']
 
 /** A required text and one button; used for every action that needs the expert's words. */
+// Expert-side deadlines turn amber within the last 24 hours
+const DUE_SOON_MS = 24 * 60 * 60 * 1000
+
 function TextAction({
   label,
   submit,
@@ -513,6 +516,7 @@ export function ExpertLiveCase({
             {view.due?.response && (
               <Deadline
                 label={t('live.expert.responseDue')}
+                soonMs={DUE_SOON_MS}
                 dueAt={view.due.response}
                 onExpire={expire}
               />
@@ -520,6 +524,7 @@ export function ExpertLiveCase({
             {view.due?.delivery && (
               <Deadline
                 label={t('panel.IN_REVIEW.due')}
+                soonMs={DUE_SOON_MS}
                 dueAt={view.due.delivery}
                 onExpire={expire}
               />
@@ -554,7 +559,11 @@ export function ExpertLiveCase({
                 <summary className="text-fg-strong cursor-pointer text-sm font-semibold">
                   {t('live.expert.decline')}
                 </summary>
-                <div className="mt-3">
+                <div className="mt-3 space-y-3">
+                  {/* Matches workflow DeclineReviewHandler: case closes as declined, full refund, no violation */}
+                  <p className="text-fg-strong text-sm">
+                    {t('live.expert.declineEffect')}
+                  </p>
                   <TextAction
                     label={t('live.expert.declineReason')}
                     submit={t('live.expert.decline')}
@@ -750,6 +759,7 @@ export function ExpertLiveCase({
                   <>
                     <Deadline
                       label={t('live.expert.statementDue')}
+                soonMs={DUE_SOON_MS}
                       dueAt={dispute.statementDueBy}
                       onExpire={expire}
                     />
