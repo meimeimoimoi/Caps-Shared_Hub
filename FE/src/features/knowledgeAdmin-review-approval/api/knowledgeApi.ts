@@ -45,6 +45,43 @@ interface Page<T> {
 const notConnected = (what: string) =>
   new Error(`Chức năng ${what} chưa được kết nối với máy chủ.`)
 
+// Conflicts an admin can hit from the review and queue screens; the API text is English
+const CONFLICTS: Record<string, string> = {
+  DOCUMENT_NOT_PENDING: 'Văn bản đã được duyệt hoặc từ chối trước đó.',
+  DOCUMENT_PARSE_FAILED: 'Văn bản bóc tách lỗi nên không thể index.',
+  DOCUMENT_NOT_INDEX_FAILED:
+    'Chỉ thử lại được văn bản lỗi index; văn bản lỗi bóc tách cần tải lên lại.',
+  INDEX_RETRY_EXCEEDED: 'Đã thử lại index quá số lần cho phép.',
+}
+
+const explain = (e: unknown) =>
+  e instanceof ApiError && e.code && CONFLICTS[e.code]
+    ? new ApiError(CONFLICTS[e.code], e.status, e.code)
+    : e
+
+interface DocumentActionDto {
+  status: string
+  lastError: string | null
+}
+
+/** approve / retry-index: ingestion chunks and embeds in ai-service before it answers */
+async function indexDocument(
+  documentId: string,
+  action: 'approve' | 'retry-index'
+) {
+  try {
+    const res = await api.post<Envelope<DocumentActionDto>>(
+      `${DOCUMENTS}/${encodeURIComponent(documentId)}/${action}`,
+      undefined,
+      // ingestion waits up to 10 min for ai-service; the default 15 s would report a failure that did not happen
+      { timeout: 600_000 }
+    )
+    return res.data
+  } catch (e) {
+    throw explain(e)
+  }
+}
+
 // shortcut: the first 100 pending versions (the API maximum); page through them when the queue grows
 async function pendingDocuments(signal?: AbortSignal) {
   const res = await api.get<Envelope<Page<DocumentSummaryDto>>>(
@@ -95,7 +132,11 @@ export async function retryDocument(documentId: string) {
     delete d.failure
     return
   }
-  throw notConnected('thử lại')
+  const result = await indexDocument(documentId, 'retry-index')
+  if (result.status === 'INDEX_FAILED')
+    throw new Error(
+      `Index vẫn lỗi: ${result.lastError ?? 'không rõ nguyên nhân'}`
+    )
 }
 
 /* ── Kiểm tra phiên bản ── */
@@ -180,7 +221,11 @@ export async function markUnitReviewed(documentId: string, unitId: string) {
 }
 
 /** Sửa nội dung một đơn vị; sửa xong coi như đã rà soát */
-export async function saveUnitText(documentId: string, unitId: string, text: string) {
+export async function saveUnitText(
+  documentId: string,
+  unitId: string,
+  text: string
+) {
   if (isKnowledgeDemo) {
     const u = await findUnitDemo(documentId, unitId)
     if (u) Object.assign(u, { text, status: 'REVIEWED' })
@@ -192,8 +237,12 @@ export async function saveUnitText(documentId: string, unitId: string, text: str
 /** Duyệt nội dung → chuyển sang bước Index */
 export async function approveDocument(documentId: string, _body: ApproveInput) {
   if (isKnowledgeDemo) return leaveReviewDemo(documentId, 'index')
-  // POST /documents/{id}/approve is not built yet in ingestion
-  throw notConnected('duyệt và index')
+  const result = await indexDocument(documentId, 'approve')
+  // The approval is saved even when indexing fails; say so instead of reporting success
+  if (result.status === 'INDEX_FAILED')
+    throw new Error(
+      `Đã duyệt nhưng index lỗi: ${result.lastError ?? 'không rõ nguyên nhân'}`
+    )
 }
 
 export async function rejectDocument(documentId: string, reason: string) {
@@ -203,13 +252,7 @@ export async function rejectDocument(documentId: string, reason: string) {
       reason,
     })
   } catch (e) {
-    if (e instanceof ApiError && e.code === 'DOCUMENT_NOT_PENDING')
-      throw new ApiError(
-        'Văn bản đã được duyệt hoặc từ chối trước đó.',
-        e.status,
-        e.code
-      )
-    throw e
+    throw explain(e)
   }
 }
 
