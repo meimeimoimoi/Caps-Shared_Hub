@@ -17,6 +17,23 @@ store client, model client or endpoints yet.
   interfaces so they can be swapped and faked in tests.
 - Keep API keys in user-secrets or the environment, never in `appsettings.json`.
 
+## Internal authentication (`workflow` → `rag-query`)
+
+`POST /api/v1/internal/rag/query` is protected by `[RequireInternalKey]` (`X-Internal-Key` header). Both `rag-query`'s `InternalApi:Key` and `workflow`'s `Services:RagQueryInternalKey` default to `""` in `appsettings.json`, and an empty key rejects every call (producing `503 WORKFLOW_RAG_SERVICE_UNAVAILABLE` in chat).
+
+Before running AI chat locally, set the same random development key in both user-secrets (never commit keys):
+
+~~~powershell
+.\scripts\set-connections.ps1 -Service workflow,rag-query -Name RagQueryInternalKey
+~~~
+
+Or set them manually from `BE/`:
+
+~~~powershell
+dotnet user-secrets set "InternalApi:Key" "<dev-random-key>" --project rag-query
+dotnet user-secrets set "Services:RagQueryInternalKey" "<dev-random-key>" --project workflow/Api
+~~~
+
 ## Run (PowerShell from BE)
 
 ~~~powershell
