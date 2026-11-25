@@ -7,11 +7,12 @@ import { useAuth } from '../features/auth/hooks/useAuth'
 import type { LoginFormValues } from '../features/auth/types'
 import { LanguageToggle as AuthLanguageToggle } from '@/components/ui/layout/language-toggle'
 import { useTranslation } from 'react-i18next'
+import { usePageTitle } from '@/hooks/usePageTitle'
 import { useLocation } from 'react-router-dom'
 
 export default function LoginPage() {
   const { t } = useTranslation('auth')
-  useEffect(() => { document.title = `${t('social.title')} | Shared Hub` }, [t])
+  usePageTitle(t('social.title'))
   // Trang đặt lại mật khẩu gửi state { view: 'forgot' } khi liên kết hết hạn,
   // trang xác thực email gửi { view: 'email' } để vào thẳng form đăng nhập
   const initialView = (useLocation().state as { view?: 'forgot' | 'email' } | null)?.view

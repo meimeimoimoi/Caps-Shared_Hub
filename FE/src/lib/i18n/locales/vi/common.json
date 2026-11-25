@@ -1,4 +1,5 @@
 {
+  "pageTitle": "{{page}} | Shared Hub",
   "routeError": {
     "title": "Chưa thể tải trang này.",
     "description": "Một phần của Shared Hub chưa tải được. Hãy tải lại trang để thử lại.",

@@ -1,5 +1,6 @@
-import { useEffect, useId, useState, type FormEvent } from 'react'
+import { useId, useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
+import { usePageTitle } from '@/hooks/usePageTitle'
 import { useQuery } from '@tanstack/react-query'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import {
@@ -111,9 +112,7 @@ export default function ReviewRequestPage() {
   const consentError = submitted && !consent
   const scopeError = !isExpertDemo && submitted && !scope.trim()
 
-  useEffect(() => {
-    document.title = `${t('request.title')} | Shared Hub`
-  }, [t])
+  usePageTitle(t('request.title'))
 
   // The uploaded file becomes version 1 of a new document and is chosen for this request
   const upload = (file: File | undefined) => {

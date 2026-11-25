@@ -1,5 +1,5 @@
-import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
+import { usePageTitle } from '@/hooks/usePageTitle'
 import { Link, useSearchParams } from 'react-router-dom'
 import { FolderSearch, Store } from 'lucide-react'
 import { EmptyState } from '@/components/ui/feedback/empty-state'
@@ -44,9 +44,7 @@ export default function CasesPage() {
   const unread = useCaseUnread().data
   const shown = cases.filter((c) => match(filter, c))
 
-  useEffect(() => {
-    document.title = `${t('nav.cases')} | Shared Hub`
-  }, [t])
+  usePageTitle(t('nav.cases'))
 
   return (
     <>

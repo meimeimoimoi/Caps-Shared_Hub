@@ -1,5 +1,5 @@
-import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
+import { usePageTitle } from '@/hooks/usePageTitle'
 import { Link } from 'react-router-dom'
 import { ShieldCheck } from 'lucide-react'
 import { mockPricing } from '@/features/service-pricing/api/fixtures'
@@ -61,9 +61,7 @@ export default function WalletPage() {
     />
   ) : null
 
-  useEffect(() => {
-    document.title = `${t('nav.wallet')} | Shared Hub`
-  }, [t])
+  usePageTitle(t('nav.wallet'))
 
   return (
     <>

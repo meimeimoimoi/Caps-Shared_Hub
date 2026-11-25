@@ -1,6 +1,6 @@
 import { useDraftPresentation } from '@/features/drafting/hooks/useDraftPresentation'
 import { useTranslation } from 'react-i18next'
-import { useEffect } from 'react'
+import { usePageTitle } from '@/hooks/usePageTitle'
 import type { ButtonHTMLAttributes, ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { Button } from '@/components/ui/actions/button'
@@ -131,9 +131,7 @@ export function DraftHeading({
   step?: number
   children?: ReactNode
 }) {
-  useEffect(() => {
-    document.title = `${title} | Shared Hub`
-  }, [title])
+  usePageTitle(title)
   const { t } = useTranslation('drafting')
 
   return (

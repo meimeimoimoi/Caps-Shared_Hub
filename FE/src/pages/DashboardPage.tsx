@@ -1,5 +1,5 @@
-import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
+import { usePageTitle } from '@/hooks/usePageTitle'
 import { Link } from 'react-router-dom'
 import { ArrowRight, Bot, CircleCheck, FilePlus2, Store } from 'lucide-react'
 import { StatusBadge } from '@/components/ui/display/status-badge'
@@ -21,9 +21,7 @@ export default function DashboardPage() {
   const wallet = useCreditOverview().data?.wallet
   const todo = cases.filter((c) => ACTION_STATUSES.includes(c.status))
 
-  useEffect(() => {
-    document.title = `${t('nav.dashboard')} | Shared Hub`
-  }, [t])
+  usePageTitle(t('nav.dashboard'))
 
   const quick = [
     { to: '/drafts', label: t('dashboard.newDraft'), icon: FilePlus2 },

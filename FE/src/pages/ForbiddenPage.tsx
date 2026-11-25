@@ -1,6 +1,6 @@
-import { useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { usePageTitle } from '@/hooks/usePageTitle'
 import { ArrowRight, LayoutDashboard } from 'lucide-react'
 import { BrandLogo } from '@/components/ui/display/brand-logo'
 import { useAuth } from '@/features/auth'
@@ -9,9 +9,7 @@ import { useAuth } from '@/features/auth'
 export default function ForbiddenPage() {
   const { t } = useTranslation('common')
   const { user, logout } = useAuth()
-  useEffect(() => {
-    document.title = `${t('forbidden.title')} | Shared Hub`
-  }, [t])
+  usePageTitle(t('forbidden.title'))
   return (
     <div className="bg-desk-2 text-fg-strong flex min-h-svh flex-col px-[clamp(24px,5vw,80px)]">
       <header className="border-border flex min-h-20 items-center border-b py-4 md:min-h-[100px]">

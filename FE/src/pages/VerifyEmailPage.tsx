@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
+import { usePageTitle } from '@/hooks/usePageTitle'
 import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { CircleCheck, Loader2, Lock, MailCheck } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -53,9 +54,7 @@ function afterVerification(state: VerifyState): { to: string; state: unknown } {
  * - Token in the link (opened from the email): call verify-email, then refresh to get an ACTIVE token. */
 export default function VerifyEmailPage() {
   const { t } = useTranslation('auth')
-  useEffect(() => {
-    document.title = `${t('verify.pageTitle')} | Shared Hub`
-  }, [t])
+  usePageTitle(t('verify.pageTitle'))
   const token = useLinkToken()
   const user = useAuthStore((s) => s.user)
   const authenticated = useAuthStore((s) => s.isAuthenticated)

@@ -1,6 +1,6 @@
-import { useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { usePageTitle } from '@/hooks/usePageTitle'
 import { ArrowLeft } from 'lucide-react'
 import { BrandLogo } from '@/components/ui/display/brand-logo'
 import { LanguageSwitcher } from '@/components/ui/layout/language-switcher'
@@ -13,7 +13,7 @@ export default function LegalPage({ kind }: { kind: 'terms' | 'privacy' }) {
     body: string
   }[]
 
-  useEffect(() => { document.title = `${title} | Shared Hub` }, [title])
+  usePageTitle(title)
 
   return (
     <div className="bg-surface text-text-strong min-h-svh px-5 text-[16px] sm:px-10">

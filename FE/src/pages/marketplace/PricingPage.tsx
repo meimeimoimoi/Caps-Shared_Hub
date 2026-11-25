@@ -1,5 +1,5 @@
-import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
+import { usePageTitle } from '@/hooks/usePageTitle'
 import { Link } from 'react-router-dom'
 import { VideoBackground } from '@/components/auth/VideoBackground'
 import { PublicFooter } from '@/components/ui/layout/public-footer'
@@ -11,9 +11,7 @@ import './pricing.css'
 
 export default function PricingPage() {
   const { t } = useTranslation('home')
-  useEffect(() => {
-    document.title = `${t('pricing.title')} | Shared Hub`
-  }, [t])
+  usePageTitle(t('pricing.title'))
 
   return (
     <div id="shub-home">
