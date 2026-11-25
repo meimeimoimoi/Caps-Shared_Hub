@@ -8,6 +8,7 @@ import type {
   Snapshot,
   Workspace,
 } from '../types'
+import { toAssessment, type DraftIssueDto } from './readiness'
 
 const base = getApiBaseUrl().endsWith('/api') ? '/v1' : '/api/v1'
 const documents = `${base}/documents`
@@ -46,6 +47,8 @@ interface VersionDto {
   content: string
   citations: string | null
   draftAssessment: string | null
+  /** Only on the version detail endpoint */
+  draftIssues?: DraftIssueDto[] | null
 }
 
 const get = async <T>(url: string, ctx: RequestContext) =>
@@ -120,8 +123,8 @@ function draftFromVersion(version: VersionDto, title: string): DraftVersion {
     article?: string
     clause?: string
     point?: string
+    legal_source_id?: string
   }[]
-  const warned = version.draftAssessment === 'AI_GENERATED_UNAUTHORIZED_NUMBERS'
   return {
     id: version.id,
     workspaceId: version.documentId,
@@ -150,21 +153,11 @@ function draftFromVersion(version: VersionDto, title: string): DraftVersion {
         available: true,
       })
     ),
-    assessment: {
-      status: 'COMPLETED',
-      result: 'READY_WITH_WARNINGS',
-      checks: [],
-      issues: warned
-        ? [
-            {
-              id: 'unverified-numbers',
-              severity: 'warning',
-              message: 'draftUnverifiedNumbers',
-              guidance: 'draftVerifyAgainstInputs',
-            },
-          ]
-        : [],
-    },
+    assessment: toAssessment(
+      version.draftAssessment,
+      version.draftIssues,
+      Array.isArray(references) ? references : []
+    ),
     actions: {
       export: { allowed: true },
       review: { allowed: true },
@@ -215,7 +208,10 @@ export const httpDraftApi: DraftApi = {
       template: TemplateDto
       schema: { fieldSchema: SchemaField[]; hasFile?: boolean }
     }>(`${templates}/versions/${encodeURIComponent(id)}`, ctx)
-    return { ...mapTemplate(template, schema.fieldSchema), hasFile: schema.hasFile === true }
+    return {
+      ...mapTemplate(template, schema.fieldSchema),
+      hasFile: schema.hasFile === true,
+    }
   },
   list: async (ctx) => {
     const [docs, library] = await Promise.all([

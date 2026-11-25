@@ -6,7 +6,20 @@ import { draftApi } from '../api/draftApi'
 import { useDraftAction } from '../hooks/useDrafting'
 import { DraftButton, DraftError, DraftLink, ReadinessBadge } from './DraftUi'
 
-import type { DraftVersion } from '../types'
+import type { DraftIssue, DraftVersion } from '../types'
+
+// Label and guidance per BE issue type (DraftIssueType in workflow)
+const issueTypeKeys = {
+  GROUNDING_ISSUE: ['issueGrounding', 'issueGroundingGuidance'],
+  NUMERICAL_INTEGRITY: ['issueNumbers', 'draftVerifyAgainstInputs'],
+  TEMPLATE_COMPLETENESS: ['issueTemplate', 'issueTemplateGuidance'],
+  CITATION_TRACEABILITY: ['issueCitation', 'issueCitationGuidance'],
+  EXPERT_REVIEW: ['issueExpert', 'issueExpertGuidance'],
+} as const
+const typeKeys = (issue: DraftIssue) =>
+  issue.type && Object.hasOwn(issueTypeKeys, issue.type)
+    ? issueTypeKeys[issue.type as keyof typeof issueTypeKeys]
+    : undefined
 
 export function ReadinessPanel({
   draft,
@@ -69,41 +82,49 @@ export function ReadinessPanel({
           </div>
         ))}
       </dl>
-      {draft.assessment.issues.map((issue) => (
-        <article
-          key={issue.id}
-          className={`rounded-control mt-4 border p-4 text-sm ${issue.severity === 'blocking' ? 'border-danger/30 bg-danger-soft text-danger' : 'border-warning/30 bg-warning-soft text-warning'}`}
-        >
-          <strong>
-            {issue.severity === 'blocking' ? t('blockingIssue') : t('warning')}
-          </strong>
-          <p className="mt-2">
-            {issue.id === 'unverified-numbers'
-              ? t('draftUnverifiedNumbers')
-              : display.demoCopy(issue.message)}
-          </p>
-          <p className="mt-2">
-            {issue.id === 'unverified-numbers'
-              ? t('draftVerifyAgainstInputs')
-              : display.demoCopy(issue.guidance)}
-          </p>
-          {issue.fieldId && (
-            <DraftLink
-              to={`/drafts/${draft.workspaceId}/input?fromVersion=${draft.id}&field=${issue.fieldId}`}
-            >
-              {t('reviseRelatedInput')}
-            </DraftLink>
-          )}
-          {issue.citationId && (
-            <button
-              className="mt-3 min-h-11 underline"
-              onClick={() => onCitation(issue.citationId!)}
-            >
-              {t('inspectCitation')}
-            </button>
-          )}
-        </article>
-      ))}
+      {draft.assessment.issues.map((issue) => {
+        const keys = typeKeys(issue)
+        return (
+          <article
+            key={issue.id}
+            className={`rounded-control mt-4 border p-4 text-sm ${issue.severity === 'blocking' ? 'border-danger/30 bg-danger-soft text-danger' : 'border-warning/30 bg-warning-soft text-warning'}`}
+          >
+            <strong>
+              {issue.severity === 'blocking'
+                ? t('blockingIssue')
+                : t('warning')}
+              {keys && ` · ${t(keys[0])}`}
+            </strong>
+            <p className="mt-2">
+              {issue.id === 'unverified-numbers'
+                ? t('draftUnverifiedNumbers')
+                : display.demoCopy(issue.message)}
+            </p>
+            <p className="mt-2">
+              {issue.id === 'unverified-numbers'
+                ? t('draftVerifyAgainstInputs')
+                : keys
+                  ? t(keys[1])
+                  : display.demoCopy(issue.guidance)}
+            </p>
+            {issue.fieldId && (
+              <DraftLink
+                to={`/drafts/${draft.workspaceId}/input?fromVersion=${draft.id}&field=${issue.fieldId}`}
+              >
+                {t('reviseRelatedInput')}
+              </DraftLink>
+            )}
+            {issue.citationId && (
+              <button
+                className="mt-3 min-h-11 underline"
+                onClick={() => onCitation(issue.citationId!)}
+              >
+                {t('inspectCitation')}
+              </button>
+            )}
+          </article>
+        )
+      })}
     </section>
   )
 }
