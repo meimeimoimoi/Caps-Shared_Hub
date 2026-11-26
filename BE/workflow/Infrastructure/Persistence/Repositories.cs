@@ -58,6 +58,17 @@ public sealed class ReviewCaseRepository(WorkflowDbContext db)
         IReadOnlyCollection<Guid> ids,
         CancellationToken ct
     ) => await db.ReviewCases.AsNoTracking().Where(x => ids.Contains(x.Id)).ToListAsync(ct);
+
+    public async Task<(int AsClient, int AsExpert)> CountOpenForUserAsync(
+        Guid userId,
+        CancellationToken ct
+    )
+    {
+        var open = db.ReviewCases.Where(x => ReviewCase.OpenStatuses.Contains(x.Status));
+        var asClient = await open.CountAsync(x => x.RequesterUserId == userId, ct);
+        var asExpert = await open.CountAsync(x => x.ExpertUserId == userId, ct);
+        return (asClient, asExpert);
+    }
 }
 
 /// <summary>EF Core store for client disputes; a case has at most one.</summary>

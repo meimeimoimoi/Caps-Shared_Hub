@@ -10,4 +10,7 @@ public interface IReviewCaseLookup
         IReadOnlyCollection<Guid> ids,
         CancellationToken ct
     );
+
+    /// <summary>How many open cases the user is in, as the client and as the expert.</summary>
+    Task<(int AsClient, int AsExpert)> CountOpenForUserAsync(Guid userId, CancellationToken ct);
 }

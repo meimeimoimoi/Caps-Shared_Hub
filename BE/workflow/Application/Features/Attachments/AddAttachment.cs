@@ -2,6 +2,7 @@ using Caps.Common.Application;
 using Caps.Workflow.Application.Abstractions;
 using Caps.Workflow.Application.DTOs.Responses;
 using Caps.Workflow.Domain;
+using Caps.Workflow.Domain.Review;
 
 namespace Caps.Workflow.Application.Features.Attachments;
 
@@ -17,6 +18,7 @@ public sealed record AddAttachmentCommand(
 public sealed class AddAttachmentHandler(
     IReviewCaseRepository cases,
     IReviewAttachmentRepository attchments,
+    IReviewDisputeRepository disputes,
     IObjectStorage storage,
     IUnitOfWork unitOfWork,
     TimeProvider clock
@@ -33,6 +35,10 @@ public sealed class AddAttachmentHandler(
             await cases.FindForUpdateAsync(command.ReviewCaseId, ct)
             ?? throw WorkflowErrors.ReviewCaseNotFound();
         var existing = await attchments.ListAsync(reviewCase.Id, ct);
+        var dispute =
+            reviewCase.Status == ReviewCaseStatus.Disputed
+                ? await disputes.FindByCaseAsync(reviewCase.Id, ct)
+                : null;
         var attachment = reviewCase.AddAttachment(
             command.UserId,
             command.FileName,

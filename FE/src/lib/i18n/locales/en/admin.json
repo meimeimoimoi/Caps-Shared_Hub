@@ -558,14 +558,15 @@
       "awaitingStatement": "The expert can still explain until {{time}}. You can decide after that, or as soon as they have explained."
     },
     "escalation": {
-      "hint": "Disputes about professional judgment or a CIT conclusion go to an Authorized Reviewer. The decision deadline is extended by {{days}} working days, once.",
-      "action": "Escalate to professional review",
-      "done": "Escalated to professional review; the decision deadline was extended.",
-      "logged": "Escalated to an Authorized Reviewer; decision deadline extended by 2 working days",
-      "toast": "Escalated to professional review",
-      "confirmTitle": "Escalate for professional review?",
-      "confirmBody": "The dispute goes to an Authorized Reviewer and the decision deadline gains {{days}} working days. This can be done only once.",
-      "failed": "Couldn't escalate. Try again."
+      "hint": "Need more time, for example while both sides add evidence: the decision deadline moves by {{days}} working days, once, with a reason. The client and the expert are told the new deadline. Extending hands the dispute to no one.",
+      "action": "Extend the decision",
+      "done": "The decision was extended once.",
+      "logged": "Decision extended by 2 working days",
+      "toast": "Decision extended",
+      "confirmTitle": "Extend the decision?",
+      "confirmBody": "The decision deadline moves by {{days}} working days; it can be extended only once. The client and the expert are told the new deadline.",
+      "failed": "Could not extend. Try again.",
+      "reason": "Reason for extending"
     },
     "outcome": {
       "RESOLVE_REFUND_USER": {
@@ -963,6 +964,8 @@
       "cancel": "Cancel",
       "lockTitle": "Lock {{name}}?",
       "lockBody": "They cannot sign in until unlocked. Work in progress is not deleted.",
+      "lockOpenCases": "This account has {{count}} review cases in progress ({{asClient}} as the client, {{asExpert}} as the expert); locking now leaves them hanging until they run out.",
+      "lockOpenCasesExpert": "Suspend the expert's services first so no new request comes in, then lock once the cases have ended.",
       "lockReason": "Reason (required)",
       "lockReasonHint": "Shown in account details while the account is locked.",
       "lockReasonMin": "Enter a reason of at least {{count}} characters.",
@@ -1342,9 +1345,9 @@
     "setFor": "Set fee · {{name}}",
     "cancelFor": "Cancel pending change · {{name}}",
     "lateSteps": {
-      "penalty": "Late by {{hours}}h or less: {{percent}}% back",
-      "full": "Late by more than {{from}}h, up to {{to}}h: 100% back",
-      "cancel": "Not delivered after {{hours}} h: cancelled, {{percent}}% refunded"
+      "penalty": "Late by {{hours}} working hours or less: {{percent}}% back",
+      "full": "Late by more than {{from}}h, up to {{to}} working hours: 100% back",
+      "cancel": "Not delivered after {{hours}} working hours: cancelled, {{percent}}% refunded"
     },
     "dialogPart": "{{part}} · {{name}}",
     "isDefault": "Default level",
@@ -1359,9 +1362,9 @@
     },
     "cases": {
       "onTime": "On time",
-      "late": "Late by {{hours}}h or less",
-      "lateMore": "Late by more than {{from}}h, up to {{to}}h",
-      "cancel": "Undelivered after {{hours}}h",
+      "late": "Late by {{hours}} working hours or less",
+      "lateMore": "Late by more than {{from}}h, up to {{to}} working hours",
+      "cancel": "Undelivered after {{hours}} working hours",
       "silence": "Client silent for {{days}} working days",
       "preview": "Split after saving",
       "silenceIndependent": "Set on its own; does not follow the platform fee",

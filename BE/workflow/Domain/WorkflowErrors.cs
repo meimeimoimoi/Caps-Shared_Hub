@@ -46,7 +46,7 @@ public static class WorkflowErrors
         new(
             ErrorType.Conflict,
             "REVIEW_CASE_ALREADY_OPEN",
-            "This document version already has an open review with this expert."
+            "This document version already has an open review."
         );
 
     public static AppException ResultInvalid() =>
@@ -112,6 +112,13 @@ public static class WorkflowErrors
             "The time to explain this dispute has ended."
         );
 
+    public static AppException DisputeEvidenceClosed() =>
+        new(
+            ErrorType.Conflict,
+            "DISPUTE_EVIDENCE_CLOSED",
+            "The time to add evidence to this dispute has ended."
+        );
+
     public static AppException DisputeAwaitingStatement(DateTimeOffset dueBy) =>
         new(
             ErrorType.Conflict,
@@ -124,6 +131,13 @@ public static class WorkflowErrors
             ErrorType.Conflict,
             "DISPUTE_ALREADY_EXTENDED",
             "The decision window was already extended once."
+        );
+
+    public static AppException DisputeExtensionReasonRequired(int minLength) =>
+        new(
+            ErrorType.Validation,
+            "DISPUTE_EXTENSION_REASON_REQUIRED",
+            $"Give a reason of at least {minLength} characters for extending the decision."
         );
 
     public static AppException DisputeRefundInvalid() =>
@@ -197,7 +211,11 @@ public static class WorkflowErrors
         );
 
     public static AppException AttachmentLimit(int max) =>
-        new(ErrorType.Conflict, "ATTACHMENT_LIMIT", $"A case holds at most {max} files.");
+        new(
+            ErrorType.Conflict,
+            "ATTACHMENT_LIMIT",
+            $"Each party adds at most {max} files to a case."
+        );
 
     public static AppException AttachmentDuplicate(string fileName) =>
         new(

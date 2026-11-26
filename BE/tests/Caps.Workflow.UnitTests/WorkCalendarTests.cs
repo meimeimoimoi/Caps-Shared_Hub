@@ -42,7 +42,60 @@ public sealed class WorkCalendarTests
         Assert.Equal(new DateTimeOffset(dy, dm, dd, 9, 0, 0, Vietnam), due);
     }
 
+    [Theory]
+    [InlineData(23, 17, 24, 26, 17)] // Friday 17:00 + 24h skips the weekend: Monday 17:00
+    [InlineData(22, 9, 24, 23, 9)] // Thursday 09:00 + 24h: Friday 09:00
+    [InlineData(24, 10, 24, 27, 0)] // Saturday: counting starts Monday 00:00
+    [InlineData(23, 17, 0, 23, 17)] // no late window: the deadline itself
+    public void Late_hours_count_only_working_days(
+        int day,
+        int hour,
+        int hours,
+        int dueDay,
+        int dueHour
+    )
+    {
+        var due = WorkCalendar.WeekendsOnly.AddWorkingHours(
+            new(2026, 10, day, hour, 0, 0, Vietnam),
+            hours
+        );
+
+        Assert.Equal(TimeSpan.Zero, due.Offset);
+        Assert.Equal(new DateTimeOffset(2026, 10, dueDay, dueHour, 0, 0, Vietnam), due);
+    }
+
     [Fact]
-    public void A_bad_holiday_fails_at_startup() =>
-        Assert.Throws<FormatException>(() => new WorkCalendar(["2026-09-02"]));
+    public void Late_hours_skip_a_fixed_holiday()
+    {
+        var calendar = new WorkCalendar(["04-30", "05-01"]);
+
+        // Wednesday 29/4 18:00 + 24h: 6h on Wednesday, 30/4 + 1/5 + the weekend off, 18h on Monday 4/5
+        var due = calendar.AddWorkingHours(new(2026, 4, 29, 18, 0, 0, Vietnam), 24);
+
+        Assert.Equal(new DateTimeOffset(2026, 5, 4, 18, 0, 0, Vietnam), due);
+    }
+
+    [Fact]
+    public void A_dated_holiday_counts_only_that_year()
+    {
+        // Tết 2027 for civil servants: Thursday 4/2 to Wednesday 10/2
+        var calendar = new WorkCalendar([
+            "2027-02-04",
+            "2027-02-05",
+            "2027-02-08",
+            "2027-02-09",
+            "2027-02-10",
+        ]);
+
+        var due = calendar.AddWorkingDays(new(2027, 2, 3, 9, 0, 0, Vietnam), 1);
+
+        Assert.Equal(new DateTimeOffset(2027, 2, 11, 9, 0, 0, Vietnam), due);
+        Assert.True(calendar.IsWorkingDay(new DateOnly(2028, 2, 4)));
+    }
+
+    [Theory]
+    [InlineData("02/09")]
+    [InlineData("2027/02/04")]
+    public void A_bad_holiday_fails_at_startup(string holiday) =>
+        Assert.Throws<FormatException>(() => new WorkCalendar([holiday]));
 }

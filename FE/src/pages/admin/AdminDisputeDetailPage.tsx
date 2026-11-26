@@ -258,8 +258,8 @@ export default function AdminDisputeDetailPage() {
             }
             fee={dispute.fee}
             platformFeePct={dispute.platformFeePct}
-            onEscalate={() =>
-              escalate().then(() => setToast(t('disputes.escalation.toast')))
+            onEscalate={(reason) =>
+              escalate(reason).then(() => setToast(t('disputes.escalation.toast')))
             }
             onDecide={(outcome, reason) =>
               // A decided dispute leaves the open queue this page reads, so go back to the list and say so there

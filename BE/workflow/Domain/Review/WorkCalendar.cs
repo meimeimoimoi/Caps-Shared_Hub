@@ -5,18 +5,23 @@ namespace Caps.Workflow.Domain.Review;
 /// holidays (the same day every year, written MM-dd) do not count, so a deadline that would fall on one moves to
 /// the next working day.
 /// </summary>
-/// <remarks>ponytail: lunar holidays (Tết, Hùng Kings) and substitute days off are out of scope.</remarks>
+/// <remarks>Lunar holidays (Tết, Hùng Kings) and substitute days off move every year: they are listed as
+/// yyyy-MM-dd once the government announces them.</remarks>
 public sealed class WorkCalendar(IEnumerable<string> holidays)
 {
     private static readonly TimeSpan LocalOffset = TimeSpan.FromHours(7);
-    private readonly HashSet<(int Month, int Day)> holidays = [.. holidays.Select(Parse)];
+    private readonly HashSet<(int Month, int Day)> yearly =
+    [
+        .. holidays.Select(x => x.Trim()).Where(x => x.Length == 5).Select(Parse),
+    ];
 
     /// <summary>No public holidays: for tests and before the holidays are configured.</summary>
     public static readonly WorkCalendar WeekendsOnly = new([]);
 
     public bool IsWorkingDay(DateOnly day) =>
         day.DayOfWeek is not (DayOfWeek.Saturday or DayOfWeek.Sunday)
-        && !holidays.Contains((day.Month, day.Day));
+        && !yearly.Contains((day.Month, day.Day))
+        && !dated.Contains(day);
 
     /// <summary>The same Vietnam clock time `days` working days later, in UTC (timestamptz takes UTC only).</summary>
     public DateTimeOffset AddWorkingDays(DateTimeOffset from, int days)
@@ -37,10 +42,49 @@ public sealed class WorkCalendar(IEnumerable<string> holidays)
         ).ToUniversalTime();
     }
 
-    // "09-02" -> (9, 2); a leap year accepts 02-29 as a day
+    /// <summary>
+    /// `hours` later counting only the hours of working days, in UTC: 24 hours from Friday 17:00 ends Monday 17:00.
+    /// </summary>
+    public DateTimeOffset AddWorkingHours(DateTimeOffset from, int hours)
+    {
+        if (hours <= 0)
+        {
+            return from.ToUniversalTime();
+        }
+        var at = from.ToOffset(LocalOffset);
+        var left = TimeSpan.FromHours(hours);
+        while (true)
+        {
+            var day = DateOnly.FromDateTime(at.DateTime);
+            var nextMidnight = new DateTimeOffset(
+                day.AddDays(1).ToDateTime(TimeOnly.MinValue),
+                LocalOffset
+            );
+            if (IsWorkingDay(day))
+            {
+                var today = nextMidnight - at;
+                if (left <= today)
+                {
+                    return (at + left).ToUniversalTime();
+                }
+                left -= today;
+            }
+            at = nextMidnight;
+        }
+    }
+
+    // "09-02" every year; "2027-02-04" on that day only
     private static (int Month, int Day) Parse(string monthDay)
     {
         var day = DateOnly.ParseExact($"2000-{monthDay.Trim()}", "yyyy-MM-dd");
         return (day.Month, day.Day);
     }
+
+    private readonly HashSet<DateOnly> dated =
+    [
+        .. holidays
+            .Select(x => x.Trim())
+            .Where(x => x.Length != 5)
+            .Select(x => DateOnly.ParseExact(x, "yyyy-MM-dd")),
+    ];
 }

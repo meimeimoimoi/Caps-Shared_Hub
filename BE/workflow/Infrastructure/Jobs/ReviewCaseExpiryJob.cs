@@ -55,6 +55,8 @@ public sealed class ReviewCaseExpiryJob(
                     WHERE ((c.status = {ReviewCaseStatus.AwaitingPayment} AND c.payment_deadline <= {now})
                         OR (c.status = {ReviewCaseStatus.PendingExpertResponse} AND c.response_deadline <= {now})
                         OR (c.status = {ReviewCaseStatus.AwaitingAcceptance} AND c.acceptance_deadline <= {now})
+                        -- ponytail: continuous hours end no later than working hours, so this finds a superset;
+                        -- ExpireIfOverdue decides with the calendar. Store cancel_at if the re-checks ever cost
                         OR (c.status = {ReviewCaseStatus.InReview}
                             AND c.delivery_deadline + make_interval(hours => c.late_cancel_hours) <= {now})
                         OR (c.status = {ReviewCaseStatus.AwaitingUserInformation} AND EXISTS (
@@ -118,7 +120,13 @@ public sealed class ReviewCaseExpiryJob(
                 .ToListAsync(ct);
             foreach (var r in due)
             {
-                await events.ResponseDueAsync(r.Id, r.ExpertUserId, r.ResponseDeadline, ct);
+                await events.ResponseDueAsync(
+                    r.Id,
+                    r.ExpertUserId,
+                    r.ResponseDeadline,
+                    r.ExpertEmail,
+                    ct
+                );
             }
             // The same column marks the client's reminder: one sent before the delivery belongs to the expert
             var accepting = await db
@@ -129,8 +137,8 @@ public sealed class ReviewCaseExpiryJob(
                         AND (reminder_sent_at IS NULL OR reminder_sent_at < delivered_at)
                         AND acceptance_deadline > {now}
                         AND acceptance_deadline - make_interval(hours => {ReviewCase.ReminderHours}) <= {now}
-                    RETURNING id AS "Id", requester_user_id AS "RequesterUserId",
-                        requester_email AS "RequesterEmail", acceptance_deadline AS "AcceptanceDeadline"
+                    RETURNING id AS "Id", expert_user_id AS "ExpertUserId", response_deadline AS "ResponseDeadline",
+                        expert_email AS "ExpertEmail"
                     """
                 )
                 .ToListAsync(ct);
@@ -237,6 +245,7 @@ public sealed class ReviewCaseExpiryJob(
         public Guid Id { get; init; }
         public Guid ExpertUserId { get; init; }
         public DateTimeOffset ResponseDeadline { get; init; }
+        public string? ExpertEmail { get; init; }
     }
 
     private sealed class DueAcceptance

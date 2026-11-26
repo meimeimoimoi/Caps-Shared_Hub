@@ -8,6 +8,19 @@ internal sealed class RecordedEvents : IReviewCaseEvents
 {
     public List<string> StatusChanges { get; } = [];
 
+    /// <summary>Cases whose dispute deadline was extended, in order.</summary>
+    public List<Guid> DisputesExtended { get; } = [];
+
+    public Task DisputeExtendedAsync(
+        ReviewCase reviewCase,
+        ReviewDispute dispute,
+        CancellationToken ct
+    )
+    {
+        DisputesExtended.Add(reviewCase.Id);
+        return Task.CompletedTask;
+    }
+
     public Task RequestedAsync(ReviewCase reviewCase, CancellationToken ct) => Task.CompletedTask;
 
     public Task InfoRequestedAsync(
@@ -20,6 +33,7 @@ internal sealed class RecordedEvents : IReviewCaseEvents
         Guid reviewCaseId,
         Guid expertUserId,
         DateTimeOffset responseDeadline,
+        string? expertEmail,
         CancellationToken ct
     ) => Task.CompletedTask;
 

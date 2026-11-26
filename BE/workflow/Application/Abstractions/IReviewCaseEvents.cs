@@ -23,6 +23,7 @@ public interface IReviewCaseEvents
         Guid reviewCaseId,
         Guid expertUserId,
         DateTimeOffset responseDeadline,
+        string? expertEmail,
         CancellationToken ct
     );
 
@@ -62,4 +63,8 @@ public interface IReviewCaseEvents
         bool first,
         CancellationToken ct
     ) => Task.CompletedTask;
+
+    /// <summary>An admin extended an open dispute's decision deadline; the client and the expert are told.</summary>
+    Task DisputeExtendedAsync(ReviewCase reviewCase, ReviewDispute dispute, CancellationToken ct) =>
+        Task.CompletedTask;
 }

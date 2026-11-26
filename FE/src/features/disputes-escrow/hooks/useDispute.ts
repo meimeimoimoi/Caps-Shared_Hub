@@ -37,8 +37,8 @@ export function useDispute(id: string, enabled = true) {
       // Đổi badge, nhật ký, danh sách và Escrow cùng lúc
       await qc.invalidateQueries({ queryKey: disputesKeys.all })
     },
-    escalate: async () => {
-      await escalateDispute(id)
+    escalate: async (reason: string) => {
+      await escalateDispute(id, reason)
       await qc.invalidateQueries({ queryKey: disputesKeys.all })
     },
   }

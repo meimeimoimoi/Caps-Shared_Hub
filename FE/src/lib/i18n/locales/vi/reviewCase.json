@@ -143,7 +143,7 @@
       "grace": "Hết gia hạn bàn giao",
       "progress": "Tiến độ thẩm định",
       "cancel": "Yêu cầu hủy hồ sơ",
-      "lateTerms": "Chuyên gia bàn giao trễ trong {{hours}} giờ thì bạn được hoàn {{late}}; quá thời gian đó chưa bàn giao thì bạn được hoàn {{none}}."
+      "lateTerms": "Chuyên gia bàn giao trễ trong {{hours}} giờ làm việc thì bạn được hoàn {{late}}; quá thời gian đó chưa bàn giao thì bạn được hoàn {{none}}."
     },
     "AWAITING_USER_INFORMATION": {
       "title": "Chuyên gia cần bạn bổ sung thông tin",
@@ -182,7 +182,9 @@
       "opened": "Gửi lúc",
       "sla": "Dispute Admin phản hồi trong {{days}} ngày làm việc.",
       "escalation": "Nếu tranh chấp cần đánh giá chuyên môn, hồ sơ được chuyển tới chuyên gia thẩm định độc lập; quản trị viên không thay thế kết luận chuyên môn.",
-      "late": "Quyết định đang chậm hơn dự kiến; khoản tiền vẫn được giữ an toàn và bạn sẽ được báo ngay khi có quyết định."
+      "late": "Quyết định đang chậm hơn dự kiến; khoản tiền vẫn được giữ an toàn và bạn sẽ được báo ngay khi có quyết định.",
+      "decideBy": "Hạn ra quyết định: {{at}}.",
+      "decideByExtended": "Hạn ra quyết định: {{at}} (đã gia hạn một lần)."
     },
     "RESOLVED": {
       "title": "Tranh chấp đã có quyết định",
@@ -429,7 +431,7 @@
     "backToProfile": "Về hồ sơ chuyên gia",
     "terms": {
       "title": "Số tiền bạn được hoàn trong từng trường hợp",
-      "late": "Chuyên gia bàn giao trễ trong {{hours}} giờ: bạn được hoàn {{amount}}.",
+      "late": "Chuyên gia bàn giao trễ trong {{hours}} giờ làm việc: bạn được hoàn {{amount}}.",
       "noDelivery": "Chuyên gia không bàn giao: bạn được hoàn {{amount}}.",
       "noResponseNoRefund": "Bạn không trả lời yêu cầu bổ sung trong {{days}} ngày làm việc: hồ sơ chấm dứt và bạn không được hoàn tiền.",
       "noResponseRefund": "Bạn không trả lời yêu cầu bổ sung trong {{days}} ngày làm việc: hồ sơ chấm dứt và bạn chỉ được hoàn {{amount}}.",
@@ -597,7 +599,7 @@
     "CASE_STATUS_INVALID": "Hồ sơ đã chuyển sang bước khác. Tải lại trang để xem trạng thái mới.",
     "CASE_DEADLINE_PASSED": "Đã quá hạn cho thao tác này.",
     "REVIEW_CASE_NOT_FOUND": "Không tìm thấy hồ sơ.",
-    "REVIEW_CASE_ALREADY_OPEN": "Phiên bản này đang có yêu cầu mở với chuyên gia đó.",
+    "REVIEW_CASE_ALREADY_OPEN": "Phiên bản này đang có yêu cầu thẩm định chưa kết thúc. Hãy chờ yêu cầu đó xong hoặc chọn phiên bản khác.",
     "CASE_SELF_REVIEW": "Bạn không thể tự thẩm định hồ sơ của mình.",
     "DOCUMENT_NOT_FOUND": "Không tìm thấy phiên bản hồ sơ của bạn.",
     "EXPERT_SERVICE_UNAVAILABLE": "Chuyên gia hiện không nhận dịch vụ này.",
@@ -623,7 +625,7 @@
     "ATTACHMENT_DUPLICATE": "Tệp này đã có trong hồ sơ.",
     "ATTACHMENT_TYPE_INVALID": "Chỉ nhận PDF, JPEG, PNG, WebP hoặc Word (.docx).",
     "ATTACHMENTS_CLOSED": "Hồ sơ ở trạng thái này không thêm được tệp.",
-    "ATTACHMENT_LIMIT": "Mỗi hồ sơ có tối đa 20 tệp.",
+    "ATTACHMENT_LIMIT": "Mỗi bên tải lên tối đa 10 tệp cho một hồ sơ.",
     "ATTACHMENT_NOT_FOUND": "Không tìm thấy tệp.",
     "CHAT_CLOSED": "Hồ sơ ở trạng thái này không nhắn tin được.",
     "MESSAGE_EMPTY": "Vui lòng nhập tin nhắn.",
@@ -634,6 +636,7 @@
     "EXTENSION_DAYS_INVALID": "Chỉ xin gia hạn 1 hoặc 2 ngày làm việc.",
     "DISPUTE_AWAITING_STATEMENT": "Chuyên gia còn trong hạn giải trình, chưa ra quyết định được.",
     "DISPUTE_STATEMENT_CLOSED": "Đã hết hạn giải trình cho khiếu nại này.",
+    "DISPUTE_EVIDENCE_CLOSED": "Đã hết hạn nộp bằng chứng cho khiếu nại này.",
     "ATTACHMENT_NOT_REMOVABLE": "Chỉ gỡ được tệp của chính bạn: chuyên gia gỡ được trước khi bàn giao, còn lại trong 15 phút sau khi tải lên; không gỡ được khi đang có khiếu nại."
   },
   "live": {
@@ -799,7 +802,7 @@
       "deliveredOnTime": "Bàn giao lúc {{time}} · đúng hạn",
       "deliveredLate": "Bàn giao lúc {{time}} · trễ {{hours}} giờ",
       "netPayout": "Bạn thực nhận {{amount}} khi hoàn tất.",
-      "lateRule": "Bàn giao trễ trong {{hours}} giờ: bạn nhận {{payout}} và bị cộng 1 điểm vi phạm. Quá {{cancel}} giờ chưa bàn giao: hồ sơ bị hủy, bạn không nhận khoản nào và bị cộng 3 điểm.",
+      "lateRule": "Bàn giao trễ trong {{hours}} giờ làm việc: bạn nhận {{payout}} và bị cộng 1 điểm vi phạm. Quá {{cancel}} giờ làm việc chưa bàn giao: hồ sơ bị hủy, bạn không nhận khoản nào và bị cộng 3 điểm.",
       "actionFailed": "Thao tác chưa thực hiện được.",
       "dismissError": "Đóng",
       "confirmDeliver": {

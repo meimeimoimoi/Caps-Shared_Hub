@@ -221,3 +221,6 @@ public sealed record CasePartiesResponse(
     string Status,
     DateTimeOffset? NextDeadline
 );
+
+/// <summary>Open cases of one user, so the staff see what locking the account would leave hanging.</summary>
+public sealed record OpenCaseCountResponse(int AsClient, int AsExpert);

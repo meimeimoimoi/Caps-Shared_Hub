@@ -124,25 +124,23 @@ public sealed class AttachmentTests
     }
 
     [Fact]
-    public void A_case_holds_at_most_20_files() =>
+    public void Each_party_adds_at_most_10_files_and_one_full_side_does_not_block_the_other()
+    {
+        var reviewCase = InReview();
+        var clientFiles = Enumerable
+            .Range(0, ReviewAttachment.MaxPerParty)
+            .Select(i => reviewCase.AddAttachment(Client, $"f{i}.pdf", Pdf, [], Now))
+            .ToList();
+
         Assert.Equal(
             "ATTACHMENT_LIMIT",
-            Errors.CodeOf(() =>
-                InReview()
-                    .AddAttachment(
-                        Client,
-                        "a.pdf",
-                        Pdf,
-                        Enumerable
-                            .Range(0, ReviewAttachment.MaxPerCase)
-                            .Select(i =>
-                                InReview().AddAttachment(Client, $"f{i}.pdf", Pdf, [], Now)
-                            )
-                            .ToList(),
-                        Now
-                    )
-            )
+            Errors.CodeOf(() => reviewCase.AddAttachment(Client, "a.pdf", Pdf, clientFiles, Now))
         );
+        Assert.Equal(
+            Expert,
+            reviewCase.AddAttachment(Expert, "a.pdf", Pdf, clientFiles, Now).UploadedBy
+        );
+    }
 
     [Fact]
     public void The_uploader_takes_a_file_back_within_15_minutes()

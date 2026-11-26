@@ -143,7 +143,7 @@
       "grace": "Grace period ends",
       "progress": "Review progress",
       "cancel": "Request cancellation",
-      "lateTerms": "If the expert delivers up to {{hours}} h late you get {{late}} back; if nothing is delivered after that you get {{none}} back."
+      "lateTerms": "If the expert delivers up to {{hours}} working hours late you get {{late}} back; if nothing is delivered after that you get {{none}} back."
     },
     "AWAITING_USER_INFORMATION": {
       "title": "The expert needs more information",
@@ -182,7 +182,9 @@
       "opened": "Submitted",
       "sla": "A Dispute Admin responds within {{days}} working days.",
       "escalation": "If the dispute needs professional judgment, it is escalated to an independent expert reviewer; admins do not replace the expert's professional conclusion.",
-      "late": "The decision is taking longer than expected; the fee stays safely on hold and you will be told as soon as it is decided."
+      "late": "The decision is taking longer than expected; the fee stays safely on hold and you will be told as soon as it is decided.",
+      "decideBy": "Decision due by {{at}}.",
+      "decideByExtended": "Decision due by {{at}} (extended once)."
     },
     "RESOLVED": {
       "title": "The dispute has been decided",
@@ -429,7 +431,7 @@
     "backToProfile": "Back to expert profile",
     "terms": {
       "title": "What you get back in each case",
-      "late": "The expert delivers up to {{hours}} h late: you get {{amount}} back.",
+      "late": "The expert delivers up to {{hours}} working hours late: you get {{amount}} back.",
       "noDelivery": "The expert does not deliver: you get {{amount}} back.",
       "noResponseNoRefund": "You do not answer a question within {{days}} working days: the case ends and nothing is refunded.",
       "noResponseRefund": "You do not answer a question within {{days}} working days: the case ends and you get only {{amount}} back.",
@@ -597,7 +599,7 @@
     "CASE_STATUS_INVALID": "The case has moved on. Reload to see its current step.",
     "CASE_DEADLINE_PASSED": "The deadline for this action has passed.",
     "REVIEW_CASE_NOT_FOUND": "Case not found.",
-    "REVIEW_CASE_ALREADY_OPEN": "This version already has an open request with that expert.",
+    "REVIEW_CASE_ALREADY_OPEN": "This version already has a review in progress. Wait for it to finish or pick another version.",
     "CASE_SELF_REVIEW": "You cannot review your own document.",
     "DOCUMENT_NOT_FOUND": "That document version was not found.",
     "EXPERT_SERVICE_UNAVAILABLE": "The expert is not taking this service right now.",
@@ -623,7 +625,7 @@
     "ATTACHMENT_DUPLICATE": "This file is already on the case.",
     "ATTACHMENT_TYPE_INVALID": "Only PDF, JPEG, PNG, WebP or Word (.docx) files.",
     "ATTACHMENTS_CLOSED": "Files cannot be added at this step.",
-    "ATTACHMENT_LIMIT": "A case holds at most 20 files.",
+    "ATTACHMENT_LIMIT": "Each party adds at most 10 files to a case.",
     "ATTACHMENT_NOT_FOUND": "File not found.",
     "CHAT_CLOSED": "Messages cannot be sent at this step.",
     "MESSAGE_EMPTY": "Please enter a message.",
@@ -634,6 +636,7 @@
     "EXTENSION_DAYS_INVALID": "An extension is 1 or 2 working days.",
     "DISPUTE_AWAITING_STATEMENT": "The expert can still explain; the dispute cannot be decided yet.",
     "DISPUTE_STATEMENT_CLOSED": "The statement window for this dispute has ended.",
+    "DISPUTE_EVIDENCE_CLOSED": "The time to add evidence to this dispute has ended.",
     "ATTACHMENT_NOT_REMOVABLE": "You can only remove your own file: the expert before delivery, otherwise within 15 minutes of uploading; never during a dispute."
   },
   "live": {
@@ -799,7 +802,7 @@
       "deliveredOnTime": "Delivered {{time}} · on time",
       "deliveredLate": "Delivered {{time}} · {{hours}} h late",
       "netPayout": "You receive {{amount}} when it completes.",
-      "lateRule": "Delivered up to {{hours}} h late: you receive {{payout}} and get 1 violation point. Not delivered within {{cancel}} h: the case is cancelled, you receive nothing and get 3 points.",
+      "lateRule": "Delivered up to {{hours}} working hours late: you receive {{payout}} and get 1 violation point. Not delivered within {{cancel}} working hours: the case is cancelled, you receive nothing and get 3 points.",
       "actionFailed": "The action did not go through.",
       "dismissError": "Dismiss",
       "confirmDeliver": {

@@ -45,35 +45,47 @@ public sealed class AdminDisputeHandlerTests
     }
 
     [Fact]
-    public async Task The_admin_extends_once()
+    public async Task The_admin_extends_once_and_both_parties_are_told()
     {
         var run = new Run();
-        var handler = new ExtendDisputeHandler(run.Disputes, run.UnitOfWork);
 
-        var response = await handler.HandleAsync(new(run.Case.Id), default);
+        var response = await run.Extend(run.Case.Id, "Waiting for the client's VAT invoices");
         var e = await Assert.ThrowsAsync<AppException>(() =>
-            handler.HandleAsync(new(run.Case.Id), default)
+            run.Extend(run.Case.Id, "Waiting for the client's VAT invoices")
         );
 
         // Opened Friday: due Tuesday, extended to Thursday
         Assert.Equal(T0.AddHours(1).AddDays(6), response.DecideBy);
+        Assert.Equal(Admin, run.Dispute.ExtendedBy);
         Assert.Equal("DISPUTE_ALREADY_EXTENDED", e.Code);
+        Assert.Equal([run.Case.Id], run.Events.DisputesExtended);
         Assert.True(run.UnitOfWork.Saved);
     }
 
     [Fact]
-    public async Task Extending_a_case_without_a_dispute_is_not_found()
+    public async Task An_extension_without_a_reason_changes_nothing()
+    {
+        var run = new Run();
+        var due = run.Dispute.DecideBy;
+
+        var e = await Assert.ThrowsAsync<AppException>(() => run.Extend(run.Case.Id, "  "));
+
+        Assert.Equal("DISPUTE_EXTENSION_REASON_REQUIRED", e.Code);
+        Assert.Equal(due, run.Dispute.DecideBy);
+        Assert.Empty(run.Events.DisputesExtended);
+        Assert.False(run.UnitOfWork.Saved);
+    }
+
+    [Fact]
+    public async Task Extending_an_unknown_case_is_not_found()
     {
         var run = new Run();
 
         var e = await Assert.ThrowsAsync<AppException>(() =>
-            new ExtendDisputeHandler(run.Disputes, run.UnitOfWork).HandleAsync(
-                new(Guid.NewGuid()),
-                default
-            )
+            run.Extend(Guid.NewGuid(), "Waiting for the client's VAT invoices")
         );
 
-        Assert.Equal("DISPUTE_NOT_FOUND", e.Code);
+        Assert.Equal("REVIEW_CASE_NOT_FOUND", e.Code);
     }
 
     [Fact]
@@ -167,6 +179,16 @@ public sealed class AdminDisputeHandlerTests
         public FakeEscrows Escrows { get; }
         public FakeSlots Slots { get; } = new();
         public FakeUnitOfWork UnitOfWork { get; } = new();
+        public RecordedEvents Events { get; } = new();
+
+        public Task<DisputeResponse> Extend(Guid caseId, string? reason) =>
+            new ExtendDisputeHandler(
+                new FakeCases(Case),
+                Disputes,
+                Events,
+                UnitOfWork,
+                new Clock(T0.AddHours(5))
+            ).HandleAsync(new(Admin, caseId, reason), default);
 
         public Task<DisputeResponse> Resolve(short pct) =>
             new ResolveDisputeHandler(
@@ -273,7 +295,7 @@ public sealed class AdminDisputeHandlerTests
             Task.FromResult<ReviewCase?>(reviewCase.Id == reviewCaseId ? reviewCase : null);
 
         public Task<ReviewCase?> FindAsync(Guid reviewCaseId, CancellationToken ct) =>
-            throw new NotSupportedException();
+            Task.FromResult<ReviewCase?>(reviewCase.Id == reviewCaseId ? reviewCase : null);
 
         public void AddHistory(ReviewStatusHistory history) { }
 

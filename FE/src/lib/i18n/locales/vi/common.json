@@ -174,6 +174,7 @@
       "extensionAccepted": "Khách hàng đã đồng ý gia hạn {{days}} ngày làm việc; hạn giao kết quả đã dời.",
       "extensionDeclined": "Khách hàng không đồng ý gia hạn; hạn giao kết quả giữ nguyên.",
       "statementDue": "Một khiếu nại sắp hết hạn giải trình. Hãy gửi giải trình và bằng chứng trước khi quản trị viên quyết định.",
+      "disputeExtended": "Hạn quyết định khiếu nại được lùi tới {{at}}. Khoản tiền vẫn được giữ tới khi có quyết định.",
       "disputeOverdue": "Quyết định khiếu nại đang chậm hơn dự kiến. Khoản tiền vẫn được giữ an toàn cho tới khi có quyết định."
     }
   },

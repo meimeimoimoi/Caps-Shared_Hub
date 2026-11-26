@@ -64,8 +64,8 @@ public sealed class ExpireReviewCaseTests
     public async Task An_expert_who_never_delivers_settles_the_frozen_share_and_frees_the_slot()
     {
         var reviewCase = Accepted();
-        // Due one working day later (Friday, T0 + 24h), then the 72h cancel window
-        var run = new Run(reviewCase, T0.AddHours(96));
+        // Due one working day later (Friday 15:00); the 72 late hours skip the weekend: Wednesday 15:00
+        var run = new Run(reviewCase, T0.AddHours(144));
 
         await run.ExpireAsync();
 
