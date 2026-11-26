@@ -116,6 +116,9 @@ public sealed class CaseDetailsTests
 
     private sealed class OneCase(ReviewCase reviewCase) : IReviewCaseLookup
     {
+        public Task<bool> HasOpenCaseAsync(Guid documentId, CancellationToken ct) =>
+            throw new NotSupportedException();
+
         public Task<(int AsClient, int AsExpert)> CountOpenForUserAsync(
             Guid userId,
             CancellationToken ct

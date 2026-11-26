@@ -28,6 +28,7 @@ public sealed class RequestReviewHandler(
     IDocumentRepository documents,
     IExpertOfferings offerings,
     IReviewCaseRepository cases,
+    IReviewCaseLookup openCases,
     IUnitOfWork unitOfWork,
     TimeProvider clock
 ) : ICommandHandler<RequestReviewCommand, ReviewCaseResponse>
@@ -48,6 +49,12 @@ public sealed class RequestReviewHandler(
         )
         {
             throw WorkflowErrors.DocumentNotFound();
+        }
+
+        // BR-G02: one running case per document, whatever the version or the expert
+        if (await openCases.HasOpenCaseAsync(command.DocumentId, ct))
+        {
+            throw WorkflowErrors.CaseAlreadyOpen();
         }
 
         var offer =
@@ -77,7 +84,7 @@ public sealed class RequestReviewHandler(
         }
         catch (UniqueConstraintException)
         {
-            // The partial unique index also stops two bookings sent at the same moment
+            // Two bookings of the same version sent at the same moment: the partial unique index stops the second
             throw WorkflowErrors.CaseAlreadyOpen();
         }
         return ReviewCaseResponse.From(reviewCase, command.UserId);

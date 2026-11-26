@@ -599,7 +599,7 @@
     "CASE_STATUS_INVALID": "The case has moved on. Reload to see its current step.",
     "CASE_DEADLINE_PASSED": "The deadline for this action has passed.",
     "REVIEW_CASE_NOT_FOUND": "Case not found.",
-    "REVIEW_CASE_ALREADY_OPEN": "This version already has a review in progress. Wait for it to finish or pick another version.",
+    "REVIEW_CASE_ALREADY_OPEN": "This document already has a review in progress. Wait for it to finish or withdraw that request.",
     "CASE_SELF_REVIEW": "You cannot review your own document.",
     "DOCUMENT_NOT_FOUND": "That document version was not found.",
     "EXPERT_SERVICE_UNAVAILABLE": "The expert is not taking this service right now.",

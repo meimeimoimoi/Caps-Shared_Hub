@@ -46,7 +46,7 @@ public static class WorkflowErrors
         new(
             ErrorType.Conflict,
             "REVIEW_CASE_ALREADY_OPEN",
-            "This document version already has an open review."
+            "This document already has an open review."
         );
 
     public static AppException ResultInvalid() =>
