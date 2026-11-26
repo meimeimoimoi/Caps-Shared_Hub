@@ -44,7 +44,8 @@ public sealed class AddAttachmentHandler(
             command.FileName,
             command.Content,
             existing,
-            clock.GetUtcNow()
+            clock.GetUtcNow(),
+            dispute
         );
 
         await storage.PutAsync(attachment.FileUrl, command.Content, attachment.ContentType, ct);

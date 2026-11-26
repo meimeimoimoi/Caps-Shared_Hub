@@ -70,3 +70,12 @@ export const fundsOf = (c: ReviewCase) =>
       : (c.live ? LIVE_UNPAID : UNPAID).includes(c.status)
         ? 'none'
         : 'held'
+
+/**
+ * Both parties add evidence until the statement window ends; an extension reopens it until the new decision
+ * deadline (the API refuses after that). A dispute without the dates (demo data) stays open.
+ */
+export function evidenceOpen(d: { statementDueBy?: string; decideBy?: string; extended?: boolean }) {
+  const until = d.extended ? d.decideBy : d.statementDueBy
+  return !until || new Date(until).getTime() > Date.now()
+}

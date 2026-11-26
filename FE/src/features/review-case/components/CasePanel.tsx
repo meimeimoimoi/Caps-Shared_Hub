@@ -15,9 +15,10 @@ import { DISPUTE_SLA_DAYS } from '@/features/disputes-escrow/constants'
 import { cn } from '@/lib/utils'
 import type { ReviewCase, TaskCode } from '../types'
 import { Countdown, Deadline, FilePicker } from './CaseUi'
-import { EvidenceUpload } from './CaseAttachments'
+import { CaseAttachments, EvidenceUpload } from './CaseAttachments'
+import { useAuthStore } from '@/features/auth'
 import { useCreditOverview } from '@/features/credits/hooks/useCreditOverview'
-import { caseText, fieldClass, useCaseFormat } from '../ui'
+import { caseText, evidenceOpen, fieldClass, useCaseFormat } from '../ui'
 
 const TASKS: TaskCode[] = ['T1', 'T2', 'T3', 'T4', 'T5', 'T6']
 // Payment window of the case; a single payOS link lasts 15 minutes and can be recreated
@@ -82,6 +83,8 @@ export function CasePanel({
   c: ReviewCase
   actions: PanelActions
 }) {
+  // The client is the viewer here, so their files group as the client's
+  const me = useAuthStore((s) => s.user?.id)
   const { t } = useTranslation('reviewCase')
   const f = useCaseFormat()
   const name = c.expert.name
@@ -477,8 +480,19 @@ export function CasePanel({
                 : t('panel.DISPUTED.sla', { days: DISPUTE_SLA_DAYS })}{' '}
             {t('panel.DISPUTED.escalation')}
           </p>
-          {c.live && (
-            <EvidenceUpload caseId={c.id} label={t('live.files.evidence.add')} />
+          {c.live && c.dispute && (
+            // Evidence sits under the dispute, apart from the files of the review itself
+            <CaseAttachments
+              bare
+              caseId={c.id}
+              since={c.dispute.openedAt}
+              requesterUserId={me}
+              canUpload={evidenceOpen(c.dispute)}
+              uploadLabel={t('live.files.evidence.add')}
+            />
+          )}
+          {c.live && c.dispute && !evidenceOpen(c.dispute) && (
+            <p className="text-fg-muted text-sm">{t('live.files.evidence.closed')}</p>
           )}
           {actions.withdrawDispute && (
             <button

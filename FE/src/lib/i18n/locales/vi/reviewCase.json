@@ -714,6 +714,7 @@
         "client": "Bằng chứng của khách",
         "expert": "Bằng chứng của chuyên gia",
         "none": "Chưa có tệp.",
+        "closed": "Đã hết hạn nộp bằng chứng; quản trị viên quyết định dựa trên các tệp hiện có.",
         "duringDispute": "Nộp khi tranh chấp",
         "attachAnswer": "Đính kèm chứng từ"
       },

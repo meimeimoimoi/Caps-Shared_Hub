@@ -714,6 +714,7 @@
         "client": "Client's evidence",
         "expert": "Expert's evidence",
         "none": "No files.",
+        "closed": "The time to add evidence has ended; the admin decides on the files already here.",
         "duringDispute": "Added during the dispute",
         "attachAnswer": "Attach supporting documents"
       },
