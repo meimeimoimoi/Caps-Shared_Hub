@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Caps.Billing.Api.Controllers;
 
-/// <summary>Staff view of payouts and refunds to users and experts (SYSTEM_ADMIN).</summary>
+/// <summary>Staff view and PayOS transfer of payouts to experts (SYSTEM_ADMIN).</summary>
 [ApiController, Route("api/v1/admin/billing/payouts")]
 [RequirePermission(Permission.PayoutManage), RequireSessionCheck]
 public sealed class AdminPayoutsController : ControllerBase
@@ -40,5 +40,51 @@ public sealed class AdminPayoutsController : ControllerBase
             ct
         );
         return Ok(ApiResponse<PayoutPageResponse>.Ok(payouts));
+    }
+
+    /// <summary>Sends a PENDING or FAILED payout to the expert's bank account through PayOS (chi hộ).</summary>
+    /// <remarks>
+    /// The payout goes to the snapshot account, or to the expert's current default account when it has none or the
+    /// expert removed it. It becomes PROCESSING before PayOS is called; PayOS may already report SUCCEEDED or FAILED.
+    /// A refusal (low payout balance, limits, invalid account) makes it FAILED with lastError, and it may be sent
+    /// again. 503 PAYMENT_UNAVAILABLE after it became PROCESSING means the outcome is unknown: call refresh.
+    /// </remarks>
+    /// <response code="200">The payout after the attempt.</response>
+    /// <response code="401">Missing, invalid or revoked access token.</response>
+    /// <response code="403">The account lacks the PayoutManage permission.</response>
+    /// <response code="404">PAYOUT_NOT_FOUND.</response>
+    /// <response code="409">PAYOUT_NOT_TRANSFERABLE (PROCESSING or SUCCEEDED) or PAYOUT_NO_BANK_ACCOUNT.</response>
+    /// <response code="503">PAYMENT_UNAVAILABLE (payout keys missing or PayOS unreachable) or SESSION_CHECK_UNAVAILABLE.</response>
+    [HttpPost("{payoutId:guid}/transfer")]
+    public async Task<IActionResult> Transfer(
+        Guid payoutId,
+        [FromServices] ICommandHandler<TransferPayoutCommand, PayoutResponse> handler,
+        CancellationToken ct
+    )
+    {
+        var payout = await handler.HandleAsync(new(payoutId), ct);
+        return Ok(ApiResponse<PayoutResponse>.Ok(payout));
+    }
+
+    /// <summary>Reads the outcome of a PROCESSING payout from PayOS.</summary>
+    /// <remarks>
+    /// PayOS sends no payout webhook, so staff refresh PROCESSING payouts. Other payouts are returned unchanged. A
+    /// transfer PayOS still does not know 10 minutes after it was sent becomes FAILED (NOT_RECEIVED) and may be
+    /// sent again.
+    /// </remarks>
+    /// <response code="200">The payout, updated when PayOS reported a change.</response>
+    /// <response code="401">Missing, invalid or revoked access token.</response>
+    /// <response code="403">The account lacks the PayoutManage permission.</response>
+    /// <response code="404">PAYOUT_NOT_FOUND.</response>
+    /// <response code="503">PAYMENT_UNAVAILABLE (payout keys missing or PayOS unreachable) or SESSION_CHECK_UNAVAILABLE.</response>
+    [HttpPost("{payoutId:guid}/refresh")]
+    public async Task<IActionResult> Refresh(
+        Guid payoutId,
+        [FromServices] ICommandHandler<RefreshPayoutCommand, PayoutResponse> handler,
+        CancellationToken ct
+    )
+    {
+        var payout = await handler.HandleAsync(new(payoutId), ct);
+        return Ok(ApiResponse<PayoutResponse>.Ok(payout));
     }
 }

@@ -39,6 +39,30 @@ public static class PayOsSignature
         return Sign(checksumKey, string.Join('&', pairs));
     }
 
+    /// <summary>
+    /// Signature of a payout request (x-signature header), as the official SDK computes it: the body's top-level
+    /// fields sorted by name (ordinal), name and value each encoded like JavaScript's encodeURIComponent.
+    /// </summary>
+    public static string ForFields(
+        string checksumKey,
+        IEnumerable<KeyValuePair<string, string>> fields
+    )
+    {
+        var pairs = fields
+            .OrderBy(p => p.Key, StringComparer.Ordinal)
+            .Select(p => $"{EncodeUriComponent(p.Key)}={EncodeUriComponent(p.Value)}");
+        return Sign(checksumKey, string.Join('&', pairs));
+    }
+
+    // EscapeDataString also escapes !'()*, which encodeURIComponent leaves as they are
+    private static string EncodeUriComponent(string value) =>
+        Uri.EscapeDataString(value)
+            .Replace("%21", "!", StringComparison.Ordinal)
+            .Replace("%27", "'", StringComparison.Ordinal)
+            .Replace("%28", "(", StringComparison.Ordinal)
+            .Replace("%29", ")", StringComparison.Ordinal)
+            .Replace("%2A", "*", StringComparison.Ordinal);
+
     /// <summary>Constant-time comparison, so response timing reveals nothing about the expected signature.</summary>
     public static bool Matches(string expected, string? actual) =>
         actual != null

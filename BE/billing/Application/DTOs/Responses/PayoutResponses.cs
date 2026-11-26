@@ -15,6 +15,7 @@ public sealed record PayoutResponse(
     string Status,
     int AttemptCount,
     string? LastError,
+    string? ProviderRef,
     DateTimeOffset CreatedAt,
     DateTimeOffset? CompletedAt
 )
@@ -32,6 +33,7 @@ public sealed record PayoutResponse(
             x.Status,
             x.AttemptCount,
             x.LastError,
+            x.ProviderRef,
             x.CreatedAt,
             x.CompletedAt
         );

@@ -98,6 +98,23 @@ public static class BillingErrors
             "The paid amount does not match the payment."
         );
 
+    public static AppException PayoutNotFound() =>
+        new(ErrorType.NotFound, "PAYOUT_NOT_FOUND", "Payout not found.");
+
+    public static AppException PayoutNotTransferable() =>
+        new(
+            ErrorType.Conflict,
+            "PAYOUT_NOT_TRANSFERABLE",
+            "The payout is already being transferred or has been paid."
+        );
+
+    public static AppException PayoutNoBankAccount() =>
+        new(
+            ErrorType.Conflict,
+            "PAYOUT_NO_BANK_ACCOUNT",
+            "The expert has no bank account to receive this payout."
+        );
+
     public static AppException AiCreditHoldNotFound() =>
         new(
             ErrorType.NotFound,

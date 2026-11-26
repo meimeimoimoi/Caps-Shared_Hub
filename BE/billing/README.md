@@ -8,7 +8,8 @@ It does **not** own accounts (auth), review cases themselves (workflow) or exper
 
 Built: wallet and ledger reads, payout bank accounts, PayOS credit top-ups (link + webhook), the staff payout
 list and escrow: hold (use case only, no endpoint until workflow sends the case fee), staff release (settlement +
-PENDING expert payout) and staff refund. Payout transfers and disputes have tables only.
+PENDING expert payout), staff refund and staff payout transfers through PayOS payouts (chi hộ). Disputes have tables
+only.
 
 | Entity | Purpose |
 |---|---|
@@ -29,6 +30,8 @@ PENDING expert payout) and staff refund. Payout transfers and disputes have tabl
 | GET | `/api/v1/billing/payos/topups/{paymentId}` | signed in, own payments only | status for polling; another user's id answers 404 |
 | POST | `/api/v1/billing/payos/webhook` | anonymous, HMAC signature | called by PayOS; unknown orders are acknowledged |
 | GET | `/api/v1/admin/billing/payouts` | `PayoutManage`, session check | optional `status`, paging as the ledger |
+| POST | `/api/v1/admin/billing/payouts/{payoutId}/transfer` | `PayoutManage`, session check | PENDING or FAILED only; sends it to the expert's bank |
+| POST | `/api/v1/admin/billing/payouts/{payoutId}/refresh` | `PayoutManage`, session check | reads a PROCESSING payout's outcome from PayOS |
 | POST | `/api/v1/admin/billing/escrows/{reviewCaseId}/release` | `PayoutManage`, session check | `expertUserId`, `platformFeePct` (0–100, fee rounded down) |
 | POST | `/api/v1/admin/billing/escrows/{reviewCaseId}/refund` | `PayoutManage`, session check | held credits back to the payer's balance |
 
@@ -48,6 +51,12 @@ PENDING expert payout) and staff refund. Payout transfers and disputes have tabl
   client must fall back to the QR code or `checkoutUrl`. The client then polls `topups/{paymentId}`.
 - PayOS is called over plain `HttpClient`; signatures are made in `PayOsSignature` (no SDK). The webhook reads the
   raw body because the signature covers the exact JSON.
+- Payouts: `PENDING` → `PROCESSING` → `SUCCEEDED` or `FAILED` (staff may send a FAILED one again). The attempt is
+  committed as PROCESSING before PayOS is called; its reference `<payoutId:N>-<attempt>` is also the
+  `x-idempotency-key`, so repeating one attempt never pays twice and a retry is a new transfer. PayOS has no payout
+  webhook: staff call `refresh`, which looks the payout up by its PayOS id, or by reference when the answer was lost.
+  A reference PayOS still does not know 10 minutes later becomes FAILED (`NOT_RECEIVED`). A payout without a usable
+  account (none, or the expert removed it) takes the expert's current default account when it is sent.
 - Account numbers are encrypted with Data Protection and hashed with HMAC. Losing the Data Protection keys makes
   stored numbers unreadable; changing `Billing:AccountHashKey` breaks duplicate detection. A duplicate means the
   same `BankBin` and the same number hash.
@@ -58,6 +67,7 @@ PENDING expert payout) and staff refund. Payout transfers and disputes have tabl
 |---|---|---|
 | `PayOS:ClientId`, `PayOS:ApiKey`, `PayOS:ChecksumKey` | user-secrets / environment | without them payments answer `PAYMENT_UNAVAILABLE` |
 | `PayOS:ReturnUrl`, `PayOS:CancelUrl` | appsettings | FE wallet page after checkout |
+| `PayOS:PayoutClientId`, `PayOS:PayoutApiKey`, `PayOS:PayoutChecksumKey` | user-secrets / environment | keys of the payout (chi hộ) channel, separate from payments; without them transfers answer `PAYMENT_UNAVAILABLE`. The channel must hold enough balance |
 | `Billing:AccountHashKey` | user-secrets / environment (dev value in `appsettings.Development.json`) | at least 32 characters |
 | `Billing:DataProtectionKeysPath` | environment | required outside Development |
 
