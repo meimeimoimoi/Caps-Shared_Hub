@@ -70,9 +70,23 @@ interface ContentJson {
 
 const UPLOAD = 'MANUAL_UPLOAD'
 
-const failure = (d: DocumentSummaryDto): DocumentFailure => ({
-  kind: 'PARSE_FAILED',
-  title: 'Không bóc tách được',
+/** Pipeline counts from GET /knowledge/stats (KnowledgePipelineResponse) */
+export interface KnowledgePipelineDto {
+  awaitingContent: number
+  awaitingReview: number
+  approved: number
+  indexed: number
+  parseFailed: number
+  indexFailed: number
+}
+
+const failure = (
+  d: DocumentSummaryDto,
+  kind: DocumentFailure['kind']
+): DocumentFailure => ({
+  kind,
+  title:
+    kind === 'INDEX_FAILED' ? 'Không index được' : 'Không bóc tách được',
   message: d.lastError ?? '',
   ref: d.id,
   attempts: 1,
@@ -81,33 +95,50 @@ const failure = (d: DocumentSummaryDto): DocumentFailure => ({
   log: [{ at: d.createdAt, text: d.lastError ?? '' }],
 })
 
-/** A PENDING version: in review once the worker has split it, parsing (or failed) before that */
+/** PENDING: in review once the worker has split it, parsing (or failed) before that.
+ * APPROVED / INDEX_FAILED sit in the index step; INDEXED and later states are indexed. */
 export function toKnowledgeDocument(d: DocumentSummaryDto): KnowledgeDocument {
+  const stage: KnowledgeDocument['stage'] =
+    d.status === 'PENDING'
+      ? d.hasContent
+        ? 'review'
+        : 'parse'
+      : d.status === 'APPROVED' || d.status === 'INDEX_FAILED'
+        ? 'index'
+        : 'indexed'
+  const failed =
+    d.status === 'INDEX_FAILED'
+      ? failure(d, 'INDEX_FAILED')
+      : d.status === 'PENDING' && d.lastError
+        ? failure(d, 'PARSE_FAILED')
+        : null
   return {
     id: d.id,
     number: d.documentNumber,
     title: d.title,
     docType: d.docType,
     source: d.source === UPLOAD ? 'UPLOAD' : 'CRAWL',
-    stage: d.hasContent ? 'review' : 'parse',
+    stage,
     version: d.versionNo > 1 ? { no: d.versionNo, changed: true } : null,
     parseWarnings: 0,
     effectiveAt: d.effectiveFrom,
     queuedAt: d.createdAt,
-    ...(d.lastError ? { failure: failure(d) } : {}),
+    ...(failed ? { failure: failed } : {}),
   }
 }
 
-/** shortcut: counted from the pending queue only; index counts stay 0 until ingestion reports them */
-export function toPipelineSummary(docs: KnowledgeDocument[]): PipelineSummary {
+export function toPipelineSummary(
+  p: KnowledgePipelineDto,
+  collectedThisMonth: number
+): PipelineSummary {
   return {
-    collectedThisMonth: 0,
-    parsing: docs.filter((d) => d.stage === 'parse' && !d.failure).length,
-    pending: docs.filter((d) => d.stage === 'review').length,
-    indexing: 0,
-    indexFailed: 0,
-    parseFailed: docs.filter((d) => d.failure).length,
-    indexed: 0,
+    collectedThisMonth,
+    parsing: p.awaitingContent,
+    pending: p.awaitingReview,
+    indexing: p.approved,
+    indexFailed: p.indexFailed,
+    parseFailed: p.parseFailed,
+    indexed: p.indexed,
   }
 }
 
