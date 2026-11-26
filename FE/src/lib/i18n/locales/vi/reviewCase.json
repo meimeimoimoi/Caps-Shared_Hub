@@ -143,7 +143,7 @@
       "grace": "Hết gia hạn bàn giao",
       "progress": "Tiến độ thẩm định",
       "cancel": "Yêu cầu hủy hồ sơ",
-      "lateTerms": "Chuyên gia bàn giao trễ trong {{hours}} giờ làm việc thì bạn được hoàn {{late}}; quá thời gian đó chưa bàn giao thì bạn được hoàn {{none}}."
+      "lateTerms": "Chuyên gia bàn giao trễ trong {{hours}} giờ (không tính thứ Bảy, Chủ nhật, ngày lễ) thì bạn được hoàn {{late}}; quá thời gian đó chưa bàn giao thì bạn được hoàn {{none}}."
     },
     "AWAITING_USER_INFORMATION": {
       "title": "Chuyên gia cần bạn bổ sung thông tin",
@@ -431,7 +431,7 @@
     "backToProfile": "Về hồ sơ chuyên gia",
     "terms": {
       "title": "Số tiền bạn được hoàn trong từng trường hợp",
-      "late": "Chuyên gia bàn giao trễ trong {{hours}} giờ làm việc: bạn được hoàn {{amount}}.",
+      "late": "Chuyên gia bàn giao trễ trong {{hours}} giờ (không tính thứ Bảy, Chủ nhật, ngày lễ): bạn được hoàn {{amount}}.",
       "noDelivery": "Chuyên gia không bàn giao: bạn được hoàn {{amount}}.",
       "noResponseNoRefund": "Bạn không trả lời yêu cầu bổ sung trong {{days}} ngày làm việc: hồ sơ chấm dứt và bạn không được hoàn tiền.",
       "noResponseRefund": "Bạn không trả lời yêu cầu bổ sung trong {{days}} ngày làm việc: hồ sơ chấm dứt và bạn chỉ được hoàn {{amount}}.",
@@ -803,7 +803,7 @@
       "deliveredOnTime": "Bàn giao lúc {{time}} · đúng hạn",
       "deliveredLate": "Bàn giao lúc {{time}} · trễ {{hours}} giờ",
       "netPayout": "Bạn thực nhận {{amount}} khi hoàn tất.",
-      "lateRule": "Bàn giao trễ trong {{hours}} giờ làm việc: bạn nhận {{payout}} và bị cộng 1 điểm vi phạm. Quá {{cancel}} giờ làm việc chưa bàn giao: hồ sơ bị hủy, bạn không nhận khoản nào và bị cộng 3 điểm.",
+      "lateRule": "Bàn giao trễ trong {{hours}} giờ: bạn nhận {{payout}} và bị cộng 1 điểm vi phạm. Quá {{cancel}} giờ chưa bàn giao: hồ sơ bị hủy, bạn không nhận khoản nào và bị cộng 3 điểm. Số giờ trễ không tính thứ Bảy, Chủ nhật, ngày lễ.",
       "actionFailed": "Thao tác chưa thực hiện được.",
       "dismissError": "Đóng",
       "confirmDeliver": {

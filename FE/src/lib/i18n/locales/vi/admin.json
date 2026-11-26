@@ -1336,9 +1336,9 @@
     "setFor": "Đặt phí · {{name}}",
     "cancelFor": "Hủy thay đổi đang chờ · {{name}}",
     "lateSteps": {
-      "penalty": "Trễ không quá {{hours}} giờ làm việc: hoàn {{percent}}%",
-      "full": "Trễ hơn {{from}} giờ, không quá {{to}} giờ làm việc: hoàn 100%",
-      "cancel": "Quá {{hours}} giờ làm việc chưa giao: hủy, hoàn {{percent}}%"
+      "penalty": "Trễ không quá {{hours}} giờ (không tính cuối tuần, ngày lễ): hoàn {{percent}}%",
+      "full": "Trễ hơn {{from}} giờ, không quá {{to}} giờ (không tính cuối tuần, ngày lễ): hoàn 100%",
+      "cancel": "Quá {{hours}} giờ (không tính cuối tuần, ngày lễ) chưa giao: hủy, hoàn {{percent}}%"
     },
     "dialogPart": "{{part}} · {{name}}",
     "isDefault": "Mức mặc định",
@@ -1353,9 +1353,9 @@
     },
     "cases": {
       "onTime": "Đúng hạn",
-      "late": "Trễ không quá {{hours}} giờ làm việc",
-      "lateMore": "Trễ hơn {{from}} giờ, không quá {{to}} giờ làm việc",
-      "cancel": "Quá {{hours}} giờ làm việc chưa giao",
+      "late": "Trễ không quá {{hours}} giờ (không tính cuối tuần, ngày lễ)",
+      "lateMore": "Trễ hơn {{from}} giờ, không quá {{to}} giờ (không tính cuối tuần, ngày lễ)",
+      "cancel": "Quá {{hours}} giờ (không tính cuối tuần, ngày lễ) chưa giao",
       "silence": "Khách không trả lời {{days}} ngày làm việc",
       "preview": "Chia tiền sau khi lưu",
       "silenceIndependent": "Đặt riêng, không đổi theo phí nền tảng",
