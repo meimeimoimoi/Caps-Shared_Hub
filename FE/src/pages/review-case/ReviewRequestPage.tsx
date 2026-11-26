@@ -23,17 +23,28 @@ import {
   getBookingTerms,
   getDocumentVersions,
   getMyDocuments,
+  listReviewCases,
   uploadDocument,
   type UploadedDocument,
 } from '@/features/review-case/api/reviewCaseApi'
-import { useCaseError } from '@/features/review-case/hooks/useReviewCases'
+import { reviewCaseKeys, useCaseError } from '@/features/review-case/hooks/useReviewCases'
 import { ApiError } from '@/lib/api-client'
 import { isExpertDemo } from '@/lib/expert-data-source'
 import { useCreditOverview } from '@/features/credits/hooks/useCreditOverview'
 import { cn } from '@/lib/utils'
 
-/* Flow 5 · Bước 1: gửi Review Request cho chuyên gia đã chọn trên Sàn.
- * Chỉ tạo case ở PENDING_EXPERT_RESPONSE; thanh toán chỉ mở sau khi chuyên gia nhận. */
+/* Flow 5, step 1: sends a review request to the expert chosen on the marketplace.
+ * The case starts AWAITING_PAYMENT and the client pays right away from the wallet. */
+
+// The backend's open statuses (ReviewCase.OpenStatuses): a document with such a case cannot be booked again
+const OPEN_CASE_STATUSES = new Set([
+  'AWAITING_PAYMENT',
+  'PENDING_EXPERT_RESPONSE',
+  'IN_REVIEW',
+  'AWAITING_USER_INFORMATION',
+  'AWAITING_ACCEPTANCE',
+  'DISPUTED',
+])
 
 const initialsOf = (name: string) =>
   name
@@ -78,6 +89,18 @@ export default function ReviewRequestPage() {
     queryFn: ({ signal }) => getMyDocuments(signal),
     enabled: !isExpertDemo,
   }).data
+  // A document stays IN_REVIEW only once its case is paid, so the client's own open cases are checked too
+  const openCaseDocuments = new Set(
+    (
+      useQuery({
+        queryKey: reviewCaseKeys.list(),
+        queryFn: ({ signal }) => listReviewCases(signal),
+        enabled: !isExpertDemo,
+      }).data ?? []
+    )
+      .filter((c) => OPEN_CASE_STATUSES.has(c.status))
+      .map((c) => c.documentId)
+  )
   const picked = [
     ...(documentId && versionId
       ? [{ id: versionId, documentId, name: t('live.chosenVersion') }]
@@ -88,10 +111,11 @@ export default function ReviewRequestPage() {
   const listed = isExpertDemo
     ? []
     : (myDocuments ?? [])
-        // A document already under review cannot be booked again (CASE_ALREADY_OPEN)
+        // One open case per document (REVIEW_CASE_ALREADY_OPEN), paid or not
         .filter(
           (d) =>
             d.status !== 'IN_REVIEW' &&
+            !openCaseDocuments.has(d.id) &&
             !picked.some((p) => p.documentId === d.id)
         )
         .map((d) => ({
