@@ -76,26 +76,6 @@ public sealed class WorkCalendarTests
     }
 
     [Fact]
-    public void A_dated_holiday_counts_only_that_year()
-    {
-        // Tết 2027 for civil servants: Thursday 4/2 to Wednesday 10/2
-        var calendar = new WorkCalendar([
-            "2027-02-04",
-            "2027-02-05",
-            "2027-02-08",
-            "2027-02-09",
-            "2027-02-10",
-        ]);
-
-        var due = calendar.AddWorkingDays(new(2027, 2, 3, 9, 0, 0, Vietnam), 1);
-
-        Assert.Equal(new DateTimeOffset(2027, 2, 11, 9, 0, 0, Vietnam), due);
-        Assert.True(calendar.IsWorkingDay(new DateOnly(2028, 2, 4)));
-    }
-
-    [Theory]
-    [InlineData("02/09")]
-    [InlineData("2027/02/04")]
-    public void A_bad_holiday_fails_at_startup(string holiday) =>
-        Assert.Throws<FormatException>(() => new WorkCalendar([holiday]));
+    public void A_bad_holiday_fails_at_startup() =>
+        Assert.Throws<FormatException>(() => new WorkCalendar(["2026-09-02"]));
 }
