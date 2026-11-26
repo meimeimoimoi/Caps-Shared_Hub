@@ -137,3 +137,40 @@ test('payouts send the status filter only when one is chosen', async () => {
     { status: 'PENDING', page: 2, pageSize: 20 },
   ])
 })
+
+test('payout transfer and refresh post to the payout and return it', async () => {
+  const calls = []
+  const { transferPayout, refreshPayout } = billing(
+    'features/disputes-escrow/api/payoutsApi.ts',
+    {
+      post: async (url) => {
+        calls.push(url)
+        return { data: { id: 'p/1', status: 'PROCESSING' } }
+      },
+    }
+  )
+  assert.equal((await transferPayout('p/1')).status, 'PROCESSING')
+  await refreshPayout('p/1')
+  assert.deepEqual(calls, [
+    '/api/v1/admin/billing/payouts/p%2F1/transfer',
+    '/api/v1/admin/billing/payouts/p%2F1/refresh',
+  ])
+})
+
+test('payout errors become staff messages; unknown codes keep the server text', async () => {
+  const failing = (code) =>
+    billing('features/disputes-escrow/api/payoutsApi.ts', {
+      post: async () => {
+        throw new ApiError('server text', 409, code)
+      },
+    })
+  await assert.rejects(failing('PAYOUT_NO_BANK_ACCOUNT').transferPayout('p'), {
+    message: 't:payouts.errors.noAccount',
+  })
+  await assert.rejects(failing('PAYMENT_UNAVAILABLE').refreshPayout('p'), {
+    message: 't:payouts.errors.unavailable',
+  })
+  await assert.rejects(failing('SOMETHING_ELSE').transferPayout('p'), {
+    message: 'server text',
+  })
+})

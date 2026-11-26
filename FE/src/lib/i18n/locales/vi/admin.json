@@ -1669,10 +1669,32 @@
       "recipient": "Người nhận",
       "account": "Tài khoản nhận",
       "amount": "Số tiền",
-      "status": "Trạng thái"
+      "status": "Trạng thái",
+      "actions": "Thao tác"
     },
     "status": {
-      "PENDING": "Chờ chuyển khoản"
+      "PENDING": "Chờ chuyển khoản",
+      "PROCESSING": "Đang chuyển",
+      "SUCCEEDED": "Đã chuyển",
+      "FAILED": "Chuyển lỗi"
+    },
+    "transfer": "Chuyển khoản",
+    "retry": "Chuyển lại",
+    "refresh": "Kiểm tra kết quả",
+    "confirm": "Xác nhận chuyển {{amount}}",
+    "cancel": "Hủy",
+    "result": {
+      "PENDING": "Lệnh chi chưa được gửi.",
+      "PROCESSING": "Đã gửi lệnh chi qua PayOS, đang chờ ngân hàng xử lý.",
+      "SUCCEEDED": "Đã chuyển tiền cho chuyên gia.",
+      "FAILED": "Lệnh chi bị từ chối, xem lý do trong bảng."
+    },
+    "errors": {
+      "notTransferable": "Lệnh chi đang được chuyển hoặc đã chuyển xong.",
+      "noAccount": "Chuyên gia chưa có tài khoản ngân hàng để nhận tiền.",
+      "notFound": "Không tìm thấy lệnh chi.",
+      "unavailable": "Chưa biết kết quả từ PayOS (chưa cấu hình kênh chi hộ hoặc PayOS không phản hồi). Bấm Kiểm tra kết quả sau ít phút.",
+      "sessionCheck": "Không kiểm tra được phiên đăng nhập, thử lại sau."
     }
   }
 }

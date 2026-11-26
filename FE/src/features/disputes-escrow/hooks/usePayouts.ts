@@ -1,12 +1,18 @@
 import { useState } from 'react'
-import { keepPreviousData, useQuery } from '@tanstack/react-query'
-import { getPayouts } from '../api/payoutsApi'
+import {
+  keepPreviousData,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query'
+import { getPayouts, refreshPayout, transferPayout } from '../api/payoutsApi'
 
+const all = ['private', 'admin', 'disputes-escrow', 'payouts'] as const
 const key = (status: string | null, page: number) =>
-  ['private', 'admin', 'disputes-escrow', 'payouts', status, page] as const
+  [...all, status, page] as const
 
 /** Payout list filtered by status on the server, one page at a time */
 export function usePayouts() {
+  const qc = useQueryClient()
   const [status, setStatusState] = useState<string | null>(null)
   const [page, setPage] = useState(1)
   const query = useQuery({
@@ -15,6 +21,9 @@ export function usePayouts() {
     // Keep the current page on screen while the next one loads
     placeholderData: keepPreviousData,
   })
+  // A failed call may still have moved the payout (e.g. to PROCESSING), so reload either way
+  const reload = <T>(call: Promise<T>) =>
+    call.finally(() => qc.invalidateQueries({ queryKey: all }))
   return {
     ...query,
     status,
@@ -24,5 +33,7 @@ export function usePayouts() {
     },
     page,
     setPage,
+    transfer: (id: string) => reload(transferPayout(id)),
+    refresh: (id: string) => reload(refreshPayout(id)),
   }
 }

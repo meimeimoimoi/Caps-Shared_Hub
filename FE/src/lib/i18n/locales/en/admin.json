@@ -1679,10 +1679,32 @@
       "recipient": "Recipient",
       "account": "Receiving account",
       "amount": "Amount",
-      "status": "Status"
+      "status": "Status",
+      "actions": "Actions"
     },
     "status": {
-      "PENDING": "Awaiting transfer"
+      "PENDING": "Awaiting transfer",
+      "PROCESSING": "Transferring",
+      "SUCCEEDED": "Transferred",
+      "FAILED": "Transfer failed"
+    },
+    "transfer": "Transfer",
+    "retry": "Transfer again",
+    "refresh": "Check result",
+    "confirm": "Confirm transfer of {{amount}}",
+    "cancel": "Cancel",
+    "result": {
+      "PENDING": "The payout has not been sent.",
+      "PROCESSING": "Sent through PayOS, waiting for the bank.",
+      "SUCCEEDED": "The expert has been paid.",
+      "FAILED": "The transfer was refused; the reason is shown in the table."
+    },
+    "errors": {
+      "notTransferable": "This payout is already being transferred or has been paid.",
+      "noAccount": "The expert has no bank account to receive this payout.",
+      "notFound": "Payout not found.",
+      "unavailable": "No answer from PayOS yet (payout channel not configured or PayOS not responding). Use Check result in a few minutes.",
+      "sessionCheck": "Your session could not be checked; try again later."
     }
   }
 }
