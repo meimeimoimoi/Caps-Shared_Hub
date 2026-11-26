@@ -10,7 +10,8 @@ namespace Caps.Workflow.Api.Controllers;
 
 /// <summary>
 /// Files the client and the expert add to a review case: PDF, JPEG, PNG, WebP or Word (.docx), up to 50 MB each and
-/// 20 per case, while the review runs or a dispute is open. Only the two parties see them.
+/// 10 per party (client, expert), while the review runs or, in a dispute, until the evidence window ends. Only
+/// the two parties see them.
 /// </summary>
 [ApiController, Authorize, Route("api/v1/review-cases/{caseId:guid}/attachments")]
 public sealed class ReviewCaseAttachmentsController(ICurrentUser currentUser) : ControllerBase

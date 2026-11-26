@@ -69,7 +69,6 @@ export default function ReviewRequestPage() {
     enabled: !isExpertDemo && Boolean(expertId && service),
   }).data
 
-  // ponytail: a listed document is booked at its newest version; add a version picker if clients ask for older ones
   const documentId = params.get('document')
   // The draft handoff and Marketplace pass the version as draftVersion; version is kept for older links
   const versionId = params.get('draftVersion') ?? params.get('version')

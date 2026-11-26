@@ -143,7 +143,7 @@
       "grace": "Grace period ends",
       "progress": "Review progress",
       "cancel": "Request cancellation",
-      "lateTerms": "If the expert delivers up to {{hours}} working hours late you get {{late}} back; if nothing is delivered after that you get {{none}} back."
+      "lateTerms": "If the expert delivers up to {{hours}} hours late (weekends and public holidays not counted) you get {{late}} back; if nothing is delivered after that you get {{none}} back."
     },
     "AWAITING_USER_INFORMATION": {
       "title": "The expert needs more information",
@@ -431,7 +431,7 @@
     "backToProfile": "Back to expert profile",
     "terms": {
       "title": "What you get back in each case",
-      "late": "The expert delivers up to {{hours}} working hours late: you get {{amount}} back.",
+      "late": "The expert delivers up to {{hours}} hours late (weekends and public holidays not counted): you get {{amount}} back.",
       "noDelivery": "The expert does not deliver: you get {{amount}} back.",
       "noResponseNoRefund": "You do not answer a question within {{days}} working days: the case ends and nothing is refunded.",
       "noResponseRefund": "You do not answer a question within {{days}} working days: the case ends and you get only {{amount}} back.",
@@ -803,7 +803,7 @@
       "deliveredOnTime": "Delivered {{time}} · on time",
       "deliveredLate": "Delivered {{time}} · {{hours}} h late",
       "netPayout": "You receive {{amount}} when it completes.",
-      "lateRule": "Delivered up to {{hours}} working hours late: you receive {{payout}} and get 1 violation point. Not delivered within {{cancel}} working hours: the case is cancelled, you receive nothing and get 3 points.",
+      "lateRule": "Delivered up to {{hours}} hours late: you receive {{payout}} and get 1 violation point. Not delivered within {{cancel}} hours: the case is cancelled, you receive nothing and get 3 points. Weekends and public holidays are not counted.",
       "actionFailed": "The action did not go through.",
       "dismissError": "Dismiss",
       "confirmDeliver": {
