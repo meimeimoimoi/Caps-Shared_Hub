@@ -18,7 +18,8 @@ public sealed record ReviewOffer(
     int NoResponseDays,
     short NoResponseRefundPct,
     short NoResponseExpertPct,
-    short NoDeliveryRefundPct = 50
+    short NoDeliveryRefundPct = 50,
+    string? ExpertEmail = null
 );
 
 /// <summary>How the held fee splits when a case completes, in VND.</summary>

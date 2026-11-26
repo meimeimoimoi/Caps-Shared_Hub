@@ -10,12 +10,15 @@ export function Countdown({
   dueAt,
   totalMs,
   urgentMs = 0,
+  soonMs = 0,
   onExpire,
   className,
 }: {
   dueAt: string
   totalMs?: number
   urgentMs?: number
+  /** When set, amber "due soon" under this many ms left and red once expired */
+  soonMs?: number
   onExpire?: () => void
   className?: string
 }) {
@@ -53,9 +56,15 @@ export function Countdown({
     <>
       <span
         role="timer"
-        className={cn('num', left < urgentMs && 'text-danger', className)}
+        className={cn(
+          'num',
+          left < urgentMs && 'text-danger',
+          soonMs > 0 && (expired ? 'text-danger' : left <= soonMs && 'text-warning'),
+          className
+        )}
       >
         {label}
+        {soonMs > 0 && !expired && left <= soonMs && ` · ${t('countdown.soon')}`}
       </span>
       {totalMs && (
         <span aria-hidden="true" className="progress mt-3 block">
@@ -73,10 +82,12 @@ export function Deadline({
   label,
   dueAt,
   onExpire,
+  soonMs,
 }: {
   label: string
   dueAt: string
   onExpire?: () => void
+  soonMs?: number
 }) {
   const { t } = useTranslation('reviewCase')
   const f = useCaseFormat()
@@ -84,7 +95,7 @@ export function Deadline({
     <div className="border-indicator border-l-2 pl-4">
       <p className="eyebrow">{label}</p>
       <p className="text-fg-strong text-h2 mt-1 font-semibold">
-        <Countdown dueAt={dueAt} onExpire={onExpire} />{' '}
+        <Countdown dueAt={dueAt} onExpire={onExpire} soonMs={soonMs} />{' '}
         <span className="text-fg-muted text-sm font-normal">
           {t('countdown.left')}
         </span>

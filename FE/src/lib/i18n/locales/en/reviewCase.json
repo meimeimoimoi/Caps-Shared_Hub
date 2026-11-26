@@ -66,7 +66,8 @@
     "dh": "{{d}} d {{h}} h",
     "left": "left",
     "until": "Due {{date}}",
-    "expired": "Expired"
+    "expired": "Expired",
+    "soon": "Due soon"
   },
   "next": {
     "you": "Your move",
@@ -142,7 +143,7 @@
       "grace": "Grace period ends",
       "progress": "Review progress",
       "cancel": "Request cancellation",
-      "lateTerms": "If the expert delivers up to {{hours}} h late you get {{late}} back; if nothing is delivered after that you get {{none}} back."
+      "lateTerms": "If the expert delivers up to {{hours}} hours late (weekends and public holidays not counted) you get {{late}} back; if nothing is delivered after that you get {{none}} back."
     },
     "AWAITING_USER_INFORMATION": {
       "title": "The expert needs more information",
@@ -181,14 +182,18 @@
       "opened": "Submitted",
       "sla": "A Dispute Admin responds within {{days}} working days.",
       "escalation": "If the dispute needs professional judgment, it is escalated to an independent expert reviewer; admins do not replace the expert's professional conclusion.",
-      "late": "The decision is taking longer than expected; the fee stays safely on hold and you will be told as soon as it is decided."
+      "late": "The decision is taking longer than expected; the fee stays safely on hold and you will be told as soon as it is decided.",
+      "decideBy": "Decision due by {{at}}.",
+      "decideByExtended": "Decision due by {{at}} (extended once)."
     },
     "RESOLVED": {
       "title": "The dispute has been decided",
       "decision": "Decision",
       "reason": "Reason",
       "decidedBy": "Decided by",
-      "decidedAt": "Decided at"
+      "decidedAt": "Decided at",
+      "rejected": "Dispute not upheld · the fee goes to the expert",
+      "upheld": "Dispute upheld · you get {{amount}} back"
     },
     "TERMINATED": {
       "title": "Case terminated",
@@ -257,6 +262,10 @@
       "RESOLVE_PARTIAL": "Partial settlement",
       "FULL_REFUND": "Full refund to you",
       "LATE_DELIVERY": "The expert delivered late; you get the late refund fixed at booking"
+    },
+    "dispute": {
+      "rejected": "The dispute was rejected: you keep your full share.",
+      "upheld": "The dispute was upheld: the client got part of the fee back."
     }
   },
   "package": {
@@ -402,6 +411,13 @@
     "consent": "I understand: I pay when I send the request; the payment is held until I accept the result and fully refunded if the expert does not take the case; the fee pays for the review work and does not depend on a VERIFIED result.",
     "consentRequired": "Confirm the terms to send the request.",
     "submit": "Send review request",
+    "sending": "Sending…",
+    "submitHold": "Send review request and hold {{amount}}",
+    "balance": "Wallet balance",
+    "hold": "To be held",
+    "remaining": "Left after the hold",
+    "shortfall": "Your wallet is {{amount}} short of the review fee.",
+    "toWallet": "Go to wallet",
     "summary": "Request summary",
     "priceOnRequest": "Quoted later",
     "nextTitle": "What happens next",
@@ -415,7 +431,7 @@
     "backToProfile": "Back to expert profile",
     "terms": {
       "title": "What you get back in each case",
-      "late": "The expert delivers up to {{hours}} h late: you get {{amount}} back.",
+      "late": "The expert delivers up to {{hours}} hours late (weekends and public holidays not counted): you get {{amount}} back.",
       "noDelivery": "The expert does not deliver: you get {{amount}} back.",
       "noResponseNoRefund": "You do not answer a question within {{days}} working days: the case ends and nothing is refunded.",
       "noResponseRefund": "You do not answer a question within {{days}} working days: the case ends and you get only {{amount}} back.",
@@ -430,7 +446,19 @@
     },
     "workingDaysLabel": "About working days",
     "workingDays": "Working days leave out Saturdays, Sundays and solar-calendar public holidays. A deadline that falls on a day off moves to the next working day, same time.",
-    "noVersion": "This document has no version to send for review yet. Choose another document or upload a file."
+    "noVersion": "This document has no version to send for review yet. Choose another document or upload a file.",
+    "myDocs": {
+      "title": "Your documents",
+      "search": "Search by document name",
+      "ai": "AI draft",
+      "upload": "Uploaded file",
+      "period": "Period {{from}} – {{to}}",
+      "none": "No document matches.",
+      "version": "Version to review",
+      "versionOption": "Version {{no}} · {{kind}} · {{at}}",
+      "newest": "newest",
+      "expertReviewed": "Expert-reviewed version"
+    }
   },
   "nav": {
     "label": "Client workspace",
@@ -495,6 +523,29 @@
     "priceTbd": "Price not set",
     "buy": "Top up via PayOS",
     "buyUnavailable": "This package has no price yet, so it isn't on sale.",
+    "buySoon": "Top-up via PayOS is being finished and will open in an upcoming update.",
+    "rateItems": {
+      "ai-question": {
+        "action": "AI assistant question",
+        "when": "Held when you send; captured once the question goes to research, even if the sources are insufficient. Follow-ups to clarify are not charged again"
+      },
+      "ai-out-of-scope": {
+        "action": "Question outside corporate income tax",
+        "when": "Detected before research; the full hold is released"
+      },
+      "ai-system-error": {
+        "action": "System error after capture",
+        "when": "Processing failed entirely due to a platform error; 1 credit refunded"
+      },
+      "draft-export": {
+        "action": "Download a draft",
+        "when": "DOCX or PDF export; re-downloading the same version is free"
+      },
+      "draft-preview": {
+        "action": "Generate and preview a draft",
+        "when": "Free, including regeneration"
+      }
+    },
     "rates": "Credit pricing",
     "free": "Free",
     "tbd": "Not set",
@@ -574,7 +625,7 @@
     "CASE_STATUS_INVALID": "The case has moved on. Reload to see its current step.",
     "CASE_DEADLINE_PASSED": "The deadline for this action has passed.",
     "REVIEW_CASE_NOT_FOUND": "Case not found.",
-    "REVIEW_CASE_ALREADY_OPEN": "This version already has an open request with that expert.",
+    "REVIEW_CASE_ALREADY_OPEN": "This document already has a review in progress. Wait for it to finish or withdraw that request.",
     "CASE_SELF_REVIEW": "You cannot review your own document.",
     "DOCUMENT_NOT_FOUND": "That document version was not found.",
     "EXPERT_SERVICE_UNAVAILABLE": "The expert is not taking this service right now.",
@@ -600,7 +651,7 @@
     "ATTACHMENT_DUPLICATE": "This file is already on the case.",
     "ATTACHMENT_TYPE_INVALID": "Only PDF, JPEG, PNG, WebP or Word (.docx) files.",
     "ATTACHMENTS_CLOSED": "Files cannot be added at this step.",
-    "ATTACHMENT_LIMIT": "A case holds at most 20 files.",
+    "ATTACHMENT_LIMIT": "Each party adds at most 10 files to a case.",
     "ATTACHMENT_NOT_FOUND": "File not found.",
     "CHAT_CLOSED": "Messages cannot be sent at this step.",
     "MESSAGE_EMPTY": "Please enter a message.",
@@ -610,7 +661,9 @@
     "EXTENSION_NOT_PENDING": "There is no extension waiting for an answer.",
     "EXTENSION_DAYS_INVALID": "An extension is 1 or 2 working days.",
     "DISPUTE_AWAITING_STATEMENT": "The expert can still explain; the dispute cannot be decided yet.",
-    "DISPUTE_STATEMENT_CLOSED": "The statement window for this dispute has ended."
+    "DISPUTE_STATEMENT_CLOSED": "The statement window for this dispute has ended.",
+    "DISPUTE_EVIDENCE_CLOSED": "The time to add evidence to this dispute has ended.",
+    "ATTACHMENT_NOT_REMOVABLE": "You can only remove your own file: the expert before delivery, otherwise within 15 minutes of uploading; never during a dispute."
   },
   "live": {
     "loading": "Loading the case",
@@ -687,9 +740,13 @@
         "client": "Client's evidence",
         "expert": "Expert's evidence",
         "none": "No files.",
+        "closed": "The time to add evidence has ended; the admin decides on the files already here.",
         "duringDispute": "Added during the dispute",
         "attachAnswer": "Attach supporting documents"
-      }
+      },
+      "remove": "Remove {{name}}",
+      "removeHint": "You can remove it within {{minutes}} minutes of uploading, before any dispute.",
+      "removeUntilDelivery": "You can remove it until you deliver the result."
     },
     "revised": {
       "title": "Expert's edited version",
@@ -731,6 +788,7 @@
       "decide": "Accept or decline",
       "accept": "Accept the case",
       "decline": "Decline the request",
+      "declineEffect": "The case will close as declined by the expert and the client is refunded in full. Declining before you accept is not recorded as a violation.",
       "declineReason": "Reason for declining",
       "deliverTitle": "Deliver the result",
       "result": "Result",
@@ -771,13 +829,33 @@
       "deliveredOnTime": "Delivered {{time}} · on time",
       "deliveredLate": "Delivered {{time}} · {{hours}} h late",
       "netPayout": "You receive {{amount}} when it completes.",
-      "lateRule": "Delivered up to {{hours}} h late: you receive {{payout}} and get 1 violation point. Not delivered within {{cancel}} h: the case is cancelled, you receive nothing and get 3 points.",
+      "lateRule": "Delivered up to {{hours}} hours late: you receive {{payout}} and get 1 violation point. Not delivered within {{cancel}} hours: the case is cancelled, you receive nothing and get 3 points. Weekends and public holidays are not counted.",
+      "actionFailed": "The action did not go through.",
+      "dismissError": "Dismiss",
+      "confirmDeliver": {
+        "title": "Deliver the result?",
+        "body": "The result goes to the client for review. Check the summary and citations before you deliver.",
+        "edited": "Fields changed",
+        "back": "Keep editing"
+      },
       "saveDraft": "Save draft",
       "draftSaved": "Draft saved. The client sees your revision only after delivery.",
-      "decisionLate": "The decision is taking longer than planned. Your share is still held, and you will be told as soon as it is decided."
+      "decisionLate": "The decision is taking longer than planned. Your share is still held, and you will be told as soon as it is decided.",
+      "decision": "Decision"
     },
     "notConnected": "No data yet.",
-    "openCases": "Your open cases."
+    "openCases": "Your open cases.",
+    "noDeliveriesYet": "No case has been delivered yet.",
+    "activity": {
+      "requested": "New review request",
+      "accepted": "You accepted the case",
+      "delivered": "You delivered the result",
+      "rated": "The client rated it {{stars}} stars",
+      "disputed": "The client disputed the result",
+      "completed": "The case is complete",
+      "you": "You",
+      "client": "Client"
+    }
   },
   "extension": {
     "title": "Delivery extension",

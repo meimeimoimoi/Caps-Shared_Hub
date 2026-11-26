@@ -200,8 +200,19 @@ export async function getDocumentReview(
     const r = (await fixtures()).mockReviews[documentId]
     return r ? structuredClone(r) : null
   }
-  return toDocumentReview(await preview(documentId, signal))
+  const review = toDocumentReview(await preview(documentId, signal))
+  const reviewed = reviewedUnits.get(documentId)
+  if (review && reviewed)
+    for (const u of review.chapters
+      .flatMap((c) => c.articles)
+      .flatMap((a) => a.units))
+      if (reviewed.has(u.id)) u.status = 'REVIEWED'
+  return review
 }
+
+// shortcut: the review checklist lives in this tab because ingestion stores no per-unit review state;
+// a reload starts the checklist over. Add a review-state endpoint if it must survive reloads or be shared.
+const reviewedUnits = new Map<string, Set<string>>()
 
 async function findUnitDemo(documentId: string, unitId: string) {
   const r = (await fixtures()).mockReviews[documentId]
@@ -217,7 +228,10 @@ export async function markUnitReviewed(documentId: string, unitId: string) {
     if (u) u.status = 'REVIEWED'
     return
   }
-  throw notConnected('đánh dấu đã rà soát')
+  reviewedUnits.set(
+    documentId,
+    (reviewedUnits.get(documentId) ?? new Set<string>()).add(unitId)
+  )
 }
 
 /** Sửa nội dung một đơn vị; sửa xong coi như đã rà soát */

@@ -189,6 +189,15 @@ interface CasePartiesDto {
   reviewCaseId: string
   requesterEmail: string | null
   expertProfileId: string
+  status: string
+  /** When the case's current step runs out; null when nothing runs out */
+  nextDeadline: string | null
+}
+
+// What a held fee waits for, by case status; awaiting acceptance keeps the HELD label (auto-confirm)
+const HELD_NEXT_LABEL: Record<string, Escrow['nextLabel']> = {
+  PENDING_EXPERT_RESPONSE: 'escrow.nextLabel.respond',
+  IN_REVIEW: 'escrow.nextLabel.deliver',
 }
 
 // The client's email and the expert of each case on one escrow page; empty until the endpoint exists
@@ -240,7 +249,7 @@ export async function decideDispute(id: string, body: DisputeDecisionInput) {
 }
 
 /** Escalate a professional-judgment dispute; allowed once and adds 2 working days to the deadline */
-export async function escalateDispute(id: string) {
+export async function escalateDispute(id: string, reason: string) {
   if (isExpertDemo) {
     const d = (await fixtures()).mockDisputes.find((x) => x.id === id)
     if (!d || d.escalatedAt || d.resolvedAt) return
@@ -252,7 +261,7 @@ export async function escalateDispute(id: string) {
     })
     return
   }
-  await api.post(`${CASES}/${id}/dispute/extend`)
+  await api.post(`${CASES}/${id}/dispute/extend`, { reason })
 }
 
 /* ── Escrow ── */
@@ -290,6 +299,12 @@ export async function getEscrows(signal?: AbortSignal): Promise<Escrow[]> {
       // Cases booked before the email was kept have none: the account id still identifies the payer
       client: p?.requesterEmail ?? e.userId,
       expert: (p && names.get(p.expertProfileId)) || '—',
+      // Billing only knows when the escrow last changed; the case knows when it moves on
+      ...(e.status === 'HELD' &&
+        p?.nextDeadline && {
+          nextAt: p.nextDeadline,
+          nextLabel: HELD_NEXT_LABEL[p.status],
+        }),
     }
   })
 }

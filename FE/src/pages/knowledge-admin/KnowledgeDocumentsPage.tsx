@@ -7,6 +7,7 @@ import { useKnowledgeNav } from '@/app/layouts/knowledge/useKnowledgeNav'
 import { DocumentsTable } from '../../features/knowledgeAdmin-review-approval/components/DocumentsTable'
 import { UploadDialog } from '../../features/knowledgeAdmin-review-approval/components/UploadDialog'
 import { useReviewQueue } from '../../features/knowledgeAdmin-review-approval/hooks/useReviewQueue'
+import { PageHeader } from '@/components/ui/layout/page-header'
 
 export default function KnowledgeDocumentsPage() {
   const { t } = useTranslation('knowledge')
@@ -23,11 +24,10 @@ export default function KnowledgeDocumentsPage() {
       search={docs.query}
       onSearchChange={docs.setQuery}
     >
-      <h1 className="text-h1">Tất cả văn bản</h1>
-      <p className="text-fg-muted mt-3">
-        Mọi văn bản trong kho tri thức, ở bất kỳ bước nào. Bấm số hiệu để xem
-        phiên bản, đoạn đã index và trạng thái AI/RAG.
-      </p>
+      <PageHeader
+        title="Tất cả văn bản"
+        help="Mọi văn bản trong kho tri thức, ở bất kỳ bước nào. Bấm số hiệu để xem phiên bản, đoạn đã index và trạng thái AI/RAG."
+      />
 
       <div className="mt-8">
         <DocumentsTable

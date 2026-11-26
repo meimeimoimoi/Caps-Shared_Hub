@@ -500,6 +500,7 @@ function ProfileMissing({
 
 export default function ExpertPublicProfilePage() {
   const { t } = useTranslation('marketplace')
+  const { t: tc } = useTranslation('common')
   const { expertId } = useParams()
   const { hash } = useLocation()
   const [params] = useSearchParams()
@@ -508,11 +509,13 @@ export default function ExpertPublicProfilePage() {
 
   useEffect(() => {
     const previous = document.title
-    document.title = `${bio?.displayName ?? t('profile.back')} | Shared Hub`
+    document.title = tc('pageTitle', {
+      page: bio?.displayName ?? t('profile.back'),
+    })
     return () => {
       document.title = previous
     }
-  }, [bio, t])
+  }, [bio, t, tc])
 
   // ScrollRestoration already went to the top; the request panel only exists once data arrives, so scroll to #hash here.
   useEffect(() => {

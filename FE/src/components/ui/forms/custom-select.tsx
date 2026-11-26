@@ -32,7 +32,14 @@ export interface CustomSelectProps<T extends string = string> {
   triggerClassName?: string
   menuClassName?: string
   triggerLeading?: ReactNode
+  /** 'sm' is a compact 32px trigger for toolbars; 'md' (default) keeps the 44px touch target */
+  size?: 'md' | 'sm'
 }
+
+const triggerSize = {
+  md: 'min-h-11 gap-3 rounded-lg py-2',
+  sm: 'h-8 min-h-8 gap-2 rounded-md py-0 text-sm',
+} as const
 
 /** Controlled single select with keyboard navigation and typeahead. */
 export function CustomSelect<T extends string>({
@@ -48,6 +55,7 @@ export function CustomSelect<T extends string>({
   triggerClassName,
   menuClassName,
   triggerLeading,
+  size = 'md',
 }: CustomSelectProps<T>) {
   const { t } = useTranslation('common')
   const id = useId()
@@ -187,7 +195,8 @@ export function CustomSelect<T extends string>({
         aria-invalid={!!error}
         aria-describedby={error ? `${id}-error` : undefined}
         className={cn(
-          'motion-interactive border-border-control text-text-strong focus-visible:outline-accent-text bg-surface flex min-h-11 w-full items-center justify-between gap-3 rounded-lg border px-3 py-2 text-left focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-55',
+          'motion-interactive border-border-control text-text-strong focus-visible:outline-accent-text bg-surface flex w-full items-center justify-between border px-3 text-left focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-55',
+          triggerSize[size],
           triggerClassName
         )}
         onKeyDown={onKeyDown}

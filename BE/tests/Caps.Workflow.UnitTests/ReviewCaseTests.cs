@@ -98,7 +98,7 @@ public sealed class ReviewCaseTests
     [Fact]
     public void Request_freezes_the_offer_and_records_the_opening()
     {
-        var offer = Offers.Sample(Expert, ExpertUser);
+        var offer = Offers.Sample(Expert, ExpertUser) with { ExpertEmail = "expert@caps.test" };
         var (reviewCase, opened) = ReviewCase.Request(
             Client,
             "client@caps.test",
@@ -116,6 +116,8 @@ public sealed class ReviewCaseTests
         Assert.Null(reviewCase.ExpectedOutcome);
         // Kept so the client can be emailed when the expert later asks them something
         Assert.Equal("client@caps.test", reviewCase.RequesterEmail);
+        // Kept so the expert is emailed on the new request and the response reminder
+        Assert.Equal("expert@caps.test", reviewCase.ExpertEmail);
         // Kept so suspending the service refunds only that service's waiting requests
         Assert.Equal("HUMAN_VERIFICATION", reviewCase.ServiceCode);
         Assert.Null(opened.FromStatus);
@@ -399,11 +401,13 @@ public sealed class ReviewCaseTests
     [Fact]
     public void Case_in_review_times_out_only_past_the_late_cancel_hours()
     {
-        // Due at Now + 24h (one working day), cancelled from Now + 24h + 72h
-        Assert.Null(InReview().ExpireIfOverdue(Now.AddHours(95)));
+        // Due Wednesday 15:00 (one working day); the 72 late hours skip the weekend: cancelled Monday 15:00.
+        // Saturday (Now + 96h) is still inside the window
+        Assert.Null(InReview().ExpireIfOverdue(Now.AddHours(96)));
+        Assert.Null(InReview().ExpireIfOverdue(Now.AddHours(143)));
 
         var reviewCase = InReview();
-        reviewCase.ExpireIfOverdue(Now.AddHours(96));
+        reviewCase.ExpireIfOverdue(Now.AddHours(144));
         Assert.Equal(ReviewCaseStatus.DeliveryOverdue, reviewCase.Status);
         // Nothing delivered: the client gets the frozen share (50 by default), the platform the rest
         Assert.Equal(new ReviewSettlement(500_000, 500_000, 0), reviewCase.Outcome());
@@ -653,7 +657,8 @@ public sealed class ReviewCaseTests
     public void Never_delivering_counts_as_a_violation()
     {
         var reviewCase = InReview();
-        var overdue = reviewCase.ExpireIfOverdue(Now.AddHours(24 + 72))!;
+        // Due Wednesday 15:00, 72 working-day hours later is Monday 15:00
+        var overdue = reviewCase.ExpireIfOverdue(Now.AddHours(144))!;
 
         Assert.Equal(ReviewCaseStatus.DeliveryOverdue, overdue.ToStatus);
         Assert.Equal(ReviewCase.NoDeliveryViolation, reviewCase.ViolationOf(overdue));
@@ -777,7 +782,7 @@ public sealed class ReviewCaseTests
                         null,
                         ["Article 9, CIT Law"],
                         true,
-                        Now.AddHours(120)
+                        Now.AddHours(144)
                     )
             )
         );

@@ -1,11 +1,11 @@
 import {
-  useEffect,
   useId,
   useState,
   type FormEvent,
   type ReactNode,
 } from 'react'
 import { useTranslation } from 'react-i18next'
+import { usePageTitle } from '@/hooks/usePageTitle'
 import { Link } from 'react-router-dom'
 import { Circle, CircleCheck, Lock } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -29,9 +29,7 @@ import {
 /* Step 2 of a password reset: opened from the emailed link (#token=...) */
 export default function ResetPasswordPage() {
   const { t } = useTranslation('auth')
-  useEffect(() => {
-    document.title = `${t('reset.title')} | Shared Hub`
-  }, [t])
+  usePageTitle(t('reset.title'))
   const token = useLinkToken()
   const [password, setPassword] = useState('')
   const [confirm, setConfirm] = useState('')

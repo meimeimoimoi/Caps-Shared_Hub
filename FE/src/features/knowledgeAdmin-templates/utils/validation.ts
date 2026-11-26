@@ -14,7 +14,14 @@ export const toFieldId = (label: string) =>
 export type TemplateIssue = {
   message: string
   target:
-    'code' | 'title' | 'category' | 'fields' | 'label' | 'group' | 'anchor'
+    | 'code'
+    | 'taxYear'
+    | 'title'
+    | 'category'
+    | 'fields'
+    | 'label'
+    | 'group'
+    | 'anchor'
   field?: number
 }
 
@@ -23,6 +30,12 @@ export function templateIssues(input: NewTemplateInput): TemplateIssue[] {
   const issues: TemplateIssue[] = []
   if (!input.code.trim())
     issues.push({ message: 'Nhập mã template.', target: 'code' })
+  if (
+    !Number.isInteger(input.taxYear) ||
+    input.taxYear < 2000 ||
+    input.taxYear > 2100
+  )
+    issues.push({ message: 'Nhập năm tính thuế của mẫu.', target: 'taxYear' })
   if (!input.title.trim())
     issues.push({ message: 'Nhập tên template.', target: 'title' })
   if (!input.category)

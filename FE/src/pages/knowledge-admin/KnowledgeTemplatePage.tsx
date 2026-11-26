@@ -5,7 +5,12 @@ import { cn, formatDayMonth } from '@/lib/utils'
 import { StatusBadge } from '@/components/ui/display/status-badge'
 import { Modal } from '@/components/ui/feedback/modal'
 import { Toast } from '@/components/ui/feedback/toast'
+import {
+  errorToast,
+  type ToastContent,
+} from '@/components/ui/feedback/toast-content'
 import { KnowledgeLayout } from '@/app/layouts/knowledge/KnowledgeLayout'
+import { EmptyState } from '@/components/ui/feedback/empty-state'
 import { useKnowledgeNav } from '@/app/layouts/knowledge/useKnowledgeNav'
 import {
   FIELD_TYPE,
@@ -25,7 +30,8 @@ export default function KnowledgeTemplatePage() {
   const [params, setParams] = useSearchParams()
   const [confirming, setConfirming] = useState(false)
   const [previewing, setPreviewing] = useState(false)
-  const [toast, setToast] = useState<string | null>(null)
+  const [publishing, setPublishing] = useState<'confirm' | 'busy' | null>(null)
+  const [toast, setToast] = useState<ToastContent | null>(null)
   const clearToast = useCallback(() => setToast(null), [])
   const listLink = (
     <Link to="/knowledge/templates" className="hover:text-fg-strong">
@@ -41,17 +47,28 @@ export default function KnowledgeTemplatePage() {
   if (!template) {
     return (
       <KnowledgeLayout {...layout} breadcrumb={listLink}>
-        <h1 className="text-h1">
-          {isLoading
-            ? 'Đang tải…'
-            : (error?.message ?? `Không tìm thấy template ${id}`)}
-        </h1>
-        <Link
-          to="/knowledge/templates"
-          className="text-accent-text mt-3 inline-block underline"
-        >
-          Quay lại danh sách
-        </Link>
+        {isLoading ? (
+          <h1 className="text-h1">Đang tải…</h1>
+        ) : (
+          <EmptyState
+            tone="error"
+            title={
+              error
+                ? 'Không tải được template'
+                : `Không tìm thấy template ${id}`
+            }
+            actions={
+              <Link
+                to="/knowledge/templates"
+                className="btn btn-press btn-secondary no-underline"
+              >
+                Quay lại danh sách
+              </Link>
+            }
+          >
+            {error?.message}
+          </EmptyState>
+        )}
       </KnowledgeLayout>
     )
   }
@@ -70,6 +87,9 @@ export default function KnowledgeTemplatePage() {
     0
   )
   const active = template.status === 'ACTIVE'
+  // A template that never had a released version is activated for the first time, not "again"
+  const everReleased = template.versions.some((v) => v.status !== 'DRAFT')
+  const activateLabel = everReleased ? 'Kích hoạt lại' : 'Kích hoạt'
   // The server attaches files to a draft only; demo data has no status and no upload
   const draft = current.status === 'DRAFT'
   const anchored = (v: typeof current) =>
@@ -118,6 +138,11 @@ export default function KnowledgeTemplatePage() {
             <span className="num text-fg-strong font-semibold">
               v{current.version}
             </span>
+            {current.taxYear && (
+              <span className="num text-fg-muted">
+                Năm tính thuế {current.taxYear}
+              </span>
+            )}
             <StatusBadge status={TEMPLATE_STATUS[template.status]} />
           </div>
         </div>
@@ -237,20 +262,18 @@ export default function KnowledgeTemplatePage() {
                 active ? 'btn-secondary' : 'btn-primary'
               )}
             >
-              {active ? 'Tạm ngưng template' : 'Kích hoạt lại'}
+              {active ? 'Tạm ngưng template' : `${activateLabel} template`}
             </button>
             {template.draftPending && (
               <button
                 type="button"
-                onClick={() =>
-                  publish()
-                    .then(() => setToast(`Đã phát hành v${current.version}`))
-                    .catch((e: Error) => setToast(e.message))
-                }
-                disabled={missingFile}
+                onClick={() => setPublishing('confirm')}
+                disabled={missingFile || publishing === 'busy'}
                 className="btn btn-press btn-primary mt-2 w-full"
               >
-                Phát hành v{current.version}
+                {publishing === 'busy'
+                  ? 'Đang phát hành…'
+                  : `Phát hành v${current.version}`}
               </button>
             )}
             {draft && (
@@ -303,6 +326,11 @@ export default function KnowledgeTemplatePage() {
                     <span className="flex items-baseline justify-between gap-2">
                       <span className="num text-fg-strong font-semibold">
                         v{v.version}
+                        {v.taxYear && (
+                          <span className="text-fg-muted ml-2 font-normal">
+                            {v.taxYear}
+                          </span>
+                        )}
                         {(v.status
                           ? v.status === 'PUBLISHED'
                           : v === current) && (
@@ -358,7 +386,7 @@ export default function KnowledgeTemplatePage() {
       )}
       {confirming && (
         <Modal
-          title={active ? 'Tạm ngưng template?' : 'Kích hoạt lại template?'}
+          title={active ? 'Tạm ngưng template?' : `${activateLabel} template?`}
           description={
             active
               ? `Người dùng sẽ không tạo được bản nháp mới từ "${template.title}". ${totalWorkspaces} bản nháp đang dùng vẫn tiếp tục bình thường.`
@@ -383,14 +411,45 @@ export default function KnowledgeTemplatePage() {
                       setToast(
                         active
                           ? 'Đã tạm ngưng template'
-                          : 'Đã kích hoạt lại template'
+                          : `Đã ${activateLabel.toLowerCase()} template`
                       )
                     )
                     .catch((e: Error) => setToast(e.message))
                 }}
                 className="btn btn-press btn-primary"
               >
-                {active ? 'Tạm ngưng' : 'Kích hoạt lại'}
+                {active ? 'Tạm ngưng' : activateLabel}
+              </button>
+            </>
+          }
+        />
+      )}
+      {publishing === 'confirm' && (
+        <Modal
+          title={`Phát hành v${current.version}?`}
+          description={`v${current.version} trở thành phiên bản hiện hành của "${template.title}". ${totalWorkspaces} bản nháp đang có vẫn giữ phiên bản lúc tạo.`}
+          onClose={() => setPublishing(null)}
+          footer={
+            <>
+              <button
+                type="button"
+                onClick={() => setPublishing(null)}
+                className="btn btn-press btn-secondary"
+              >
+                Hủy
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setPublishing('busy')
+                  publish()
+                    .then(() => setToast(`Đã phát hành v${current.version}`))
+                    .catch((e: Error) => setToast(errorToast(e.message)))
+                    .finally(() => setPublishing(null))
+                }}
+                className="btn btn-press btn-primary"
+              >
+                Phát hành
               </button>
             </>
           }

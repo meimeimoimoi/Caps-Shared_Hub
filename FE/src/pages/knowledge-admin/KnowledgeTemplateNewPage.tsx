@@ -145,6 +145,8 @@ export default function KnowledgeTemplateNewPage() {
   const nextVersion = latest
     ? latest.version + (latest.status === 'DRAFT' ? 0 : 1)
     : 1
+  // Year of the form this version follows; a new year's form is saved as the next version
+  const [taxYear, setTaxYear] = useState(String(new Date().getFullYear()))
   const [title, setTitle] = useState('')
   const [category, setCategory] = useState('')
   const [description, setDescription] = useState('')
@@ -164,6 +166,7 @@ export default function KnowledgeTemplateNewPage() {
     description: description.trim(),
     category,
     changelog: changelog.trim() || 'Phiên bản đầu tiên.',
+    taxYear: Number(taxYear),
     fields: fields.map(({ key: _key, hint, anchor: chosen, ...f }) => {
       // An anchor only means something next to its file, so a removed file takes the anchors with it
       const anchor = file ? fieldAnchor(blanks, f.label, chosen) : undefined
@@ -464,17 +467,37 @@ export default function KnowledgeTemplateNewPage() {
             <h2 id="new-info" className="text-h2">
               Thông tin chung
             </h2>
-            <Field label="Mã template" required>
-              <input
-                id="tpl-code"
+            <div className="flex flex-wrap gap-4">
+              <Field label="Mã template" required>
+                <input
+                  id="tpl-code"
+                  required
+                  aria-invalid={bad('tpl-code')}
+                  value={code}
+                  onChange={(e) => setCode(e.target.value)}
+                  placeholder="vd. 03/TNDN"
+                  className={`${inputCls} num max-w-56`}
+                />
+              </Field>
+              <Field
+                label="Năm tính thuế"
                 required
-                aria-invalid={bad('tpl-code')}
-                value={code}
-                onChange={(e) => setCode(e.target.value)}
-                placeholder="vd. 03/TNDN"
-                className={`${inputCls} num max-w-56`}
-              />
-            </Field>
+                hint="Người dùng chỉ soạn được hồ sơ của năm này từ phiên bản đang phát hành. Mẫu của năm mới thì lưu thành phiên bản mới rồi phát hành."
+              >
+                <input
+                  id="tpl-taxYear"
+                  required
+                  type="number"
+                  inputMode="numeric"
+                  min={2000}
+                  max={2100}
+                  aria-invalid={bad('tpl-taxYear')}
+                  value={taxYear}
+                  onChange={(e) => setTaxYear(e.target.value)}
+                  className={`${inputCls} num w-28`}
+                />
+              </Field>
+            </div>
             {existing && (
               <p
                 role="status"

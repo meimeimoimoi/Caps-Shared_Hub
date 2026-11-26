@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { usePageTitle } from '@/hooks/usePageTitle'
 import { Link, useLocation } from 'react-router-dom'
 import {
   RegisterForm,
@@ -18,9 +19,7 @@ import type { SignupRole } from '../features/auth/utils/signupRole'
  * reload asks again. */
 export default function RegisterPage() {
   const { t } = useTranslation('auth')
-  useEffect(() => {
-    document.title = `${t('register.pageTitle')} | Shared Hub`
-  }, [t])
+  usePageTitle(t('register.pageTitle'))
   const emailInput = useRef<HTMLInputElement>(null)
   const returnState = useLocation().state
   const { register, loginWithGoogle, isLoading, error, isAuthenticated } =

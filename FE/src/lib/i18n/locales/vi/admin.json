@@ -234,6 +234,8 @@
       "request": "Chuyên gia xin miễn: {{text}}",
       "requestDeclined": "Đã từ chối yêu cầu miễn, vẫn tính điểm",
       "decline": "Từ chối yêu cầu",
+      "declineTitle": "Từ chối yêu cầu miễn của {{name}}?",
+      "declineBody": "Vi phạm vẫn được tính điểm. Không hoàn tác được.",
       "noFiles": "Không kèm tệp bằng chứng.",
       "fileFailed": "Không mở được tệp. Hãy thử lại."
     }
@@ -300,10 +302,14 @@
       "jobTitle": "Chức danh",
       "experience": "Kinh nghiệm",
       "years": "{{count}} năm",
-      "submitted": "Nộp"
+      "submitted": "Nộp",
+      "copyReference": "Sao chép mã tham chiếu",
+      "referenceCopied": "Đã sao chép mã tham chiếu",
+      "copyFailed": "Không sao chép được. Vui lòng thử lại."
     },
     "blockers": {
-      "flags": "{{count}} mục AI cần xem lại chưa được xem xét"
+      "flags": "{{count}} mục AI cần xem lại chưa được xem xét",
+      "notClaimed": "Nhận hồ sơ để đánh giá"
     },
     "scoreSummary": {
       "level": "Mức {{level}}",
@@ -446,7 +452,8 @@
       "colResult": "Kết quả AI",
       "colNote": "Ghi chú AI",
       "colDocument": "Tài liệu",
-      "documentReviewed": "{{document}} · Đã xem xét"
+      "documentReviewed": "{{document}} · Đã xem xét",
+      "suggestionBadge": "AI gợi ý"
     },
     "competency": {
       "title": "Đánh giá năng lực",
@@ -487,6 +494,7 @@
       "opened": "Mở ngày",
       "status": "Trạng thái",
       "left": "Còn lại",
+      "decided": "Quyết định lúc",
       "actions": "Thao tác"
     },
     "hours": "{{hours}} giờ",
@@ -495,7 +503,7 @@
     "empty": "Chưa có khiếu nại nào.",
     "resolved": "Đã có quyết định",
     "badge": {
-      "open": "Đang tranh chấp",
+      "open": "Chờ quyết định",
       "challenge": "Đang khiếu nại · hồ sơ đã chấm dứt",
       "escalated": "Đã chuyển cấp chuyên môn"
     },
@@ -537,17 +545,20 @@
       "confirmBody": "Quyết định được gửi cho cả khách và chuyên gia, và tiền ký quỹ được chia theo kết quả dưới đây.",
       "failed": "Chưa gửi được quyết định; quyết định chưa được ghi. Hãy thử lại.",
       "reasonMissing": "Nhập lý do quyết định.",
+      "reasonMin": "Nhập lý do ít nhất {{count}} ký tự.",
+      "amountsNoLate": "Chưa tính phần hoàn do giao muộn (nếu có); khi có, khách nhận nhiều hơn và hệ thống chia lại khi chốt.",
       "awaitingStatement": "Chuyên gia còn hạn giải trình tới {{time}}. Bạn ra quyết định được sau thời điểm đó, hoặc ngay khi chuyên gia đã giải trình."
     },
     "escalation": {
-      "hint": "Tranh chấp cần xét đoán chuyên môn hoặc kết luận Thuế TNDN phải chuyển cho người đánh giá được ủy quyền. Hạn quyết định được cộng thêm {{days}} ngày làm việc, chỉ một lần.",
-      "action": "Chuyển cấp chuyên môn",
-      "done": "Đã chuyển cấp chuyên môn; hạn quyết định đã được gia hạn.",
-      "logged": "Chuyển cấp chuyên môn cho người đánh giá được ủy quyền; gia hạn quyết định thêm 2 ngày làm việc",
-      "toast": "Đã chuyển cấp chuyên môn",
-      "confirmTitle": "Chuyển cấp chuyên môn?",
-      "confirmBody": "Khiếu nại được chuyển cho người đánh giá được ủy quyền và hạn quyết định được cộng thêm {{days}} ngày làm việc. Chỉ chuyển được một lần.",
-      "failed": "Chưa chuyển cấp được. Hãy thử lại."
+      "hint": "Cần thêm thời gian xét, ví dụ chờ hai bên nộp thêm bằng chứng: hạn quyết định cộng thêm {{days}} ngày làm việc, chỉ một lần, bắt buộc lý do. Khách và chuyên gia được báo hạn mới. Gia hạn không chuyển khiếu nại cho người khác.",
+      "action": "Gia hạn quyết định",
+      "done": "Đã gia hạn quyết định một lần.",
+      "logged": "Gia hạn quyết định thêm 2 ngày làm việc",
+      "toast": "Đã gia hạn quyết định",
+      "confirmTitle": "Gia hạn quyết định?",
+      "confirmBody": "Hạn quyết định cộng thêm {{days}} ngày làm việc; chỉ gia hạn được một lần. Khách và chuyên gia được báo hạn mới.",
+      "failed": "Chưa gia hạn được. Hãy thử lại.",
+      "reason": "Lý do gia hạn"
     },
     "outcome": {
       "RESOLVE_REFUND_USER": {
@@ -617,8 +628,10 @@
     "empty": "Chưa có khoản ký quỹ nào.",
     "nextLabel": {
       "DISPUTE_LOCKED": "quyết định trước",
+      "respond": "hạn nhận",
+      "deliver": "hạn giao",
       "HELD": "tự xác nhận",
-      "PAYOUT_SCHEDULED": "chi trả ngày",
+      "PAYOUT_SCHEDULED": "quyết toán ngày",
       "PAID": "chi trả ngày",
       "REFUNDED": "hoàn ngày",
       "PAYOUT_FAILED": "lỗi ngày",
@@ -655,7 +668,7 @@
       "ALL": "Tất cả",
       "HELD": "Chờ nghiệm thu",
       "DISPUTE_LOCKED": "Khóa tranh chấp",
-      "PAYOUT_SCHEDULED": "Chờ chi trả · 7 ngày",
+      "PAYOUT_SCHEDULED": "Chờ chi trả",
       "PAID": "Đã chi trả",
       "REFUNDED": "Đã hoàn",
       "PAYOUT_FAILED": "Chi trả lỗi",
@@ -872,7 +885,20 @@
       "schedule": "Lên lịch áp dụng",
       "create": "Tạo nhóm",
       "scheduled": "Đã lên lịch khung mới cho {{name}} từ {{date}}",
-      "created": "Đã tạo nhóm {{name}}, mở từ {{date}}"
+      "created": "Đã tạo nhóm {{name}}, mở từ {{date}}",
+      "reviewChangeTitle": "Lên lịch khung mới cho {{name}}?",
+      "reviewCreateTitle": "Tạo nhóm {{name}}?",
+      "reviewBack": "Quay lại sửa",
+      "reviewRange": "Khung giá",
+      "reviewStep": "Bước giá",
+      "reviewFrom": "Hiệu lực từ",
+      "reviewImpact": "Chuyên gia bị ảnh hưởng",
+      "reviewImpactValue": "{{count}} chuyên gia trong nhóm · {{outside}} ngoài khung mới",
+      "reviewReason": "Lý do",
+      "leaveTitle": "Bỏ thay đổi chưa lưu?",
+      "leaveBody": "Khung giá và lý do bạn đã nhập sẽ mất.",
+      "stay": "Ở lại",
+      "leave": "Bỏ thay đổi"
     }
   },
   "users": {
@@ -929,8 +955,15 @@
       "cancel": "Hủy",
       "lockTitle": "Khóa {{name}}?",
       "lockBody": "Người này không đăng nhập được cho tới khi mở khóa. Việc đang làm dở không bị xóa.",
+      "lockOpenCases": "Tài khoản còn {{count}} hồ sơ thẩm định đang chạy ({{asClient}} với vai trò khách, {{asExpert}} với vai trò chuyên gia); khóa bây giờ thì các hồ sơ này bị treo tới khi hết hạn.",
+      "lockOpenCasesExpert": "Nên tạm ngưng dịch vụ của chuyên gia trước để không nhận thêm yêu cầu, rồi khóa khi các hồ sơ đã kết thúc.",
       "lockReason": "Lý do khóa (bắt buộc)",
       "lockReasonHint": "Hiển thị trong chi tiết tài khoản khi đang khóa.",
+      "lockReasonMin": "Nhập lý do ít nhất {{count}} ký tự.",
+      "unlockReason": "Lý do mở khóa (bắt buộc)",
+      "unlockReasonHint": "Lưu vào nhật ký kiểm toán của tài khoản.",
+      "resetReason": "Lý do gửi đặt lại mật khẩu (bắt buộc)",
+      "resetReasonHint": "Lưu vào nhật ký kiểm toán của tài khoản.",
       "lockConfirm": "Khóa tài khoản",
       "unlockTitle": "Mở khóa {{name}}?",
       "unlockBody": "Người này đăng nhập lại được ngay.",
@@ -1303,9 +1336,9 @@
     "setFor": "Đặt phí · {{name}}",
     "cancelFor": "Hủy thay đổi đang chờ · {{name}}",
     "lateSteps": {
-      "penalty": "Trễ đến {{hours}} giờ: hoàn {{percent}}%",
-      "full": "{{from}}–{{to}} giờ: hoàn 100%",
-      "cancel": "Quá {{hours}} giờ chưa giao: hủy, hoàn {{percent}}%"
+      "penalty": "Trễ không quá {{hours}} giờ (không tính cuối tuần, ngày lễ): hoàn {{percent}}%",
+      "full": "Trễ hơn {{from}} giờ, không quá {{to}} giờ (không tính cuối tuần, ngày lễ): hoàn 100%",
+      "cancel": "Quá {{hours}} giờ (không tính cuối tuần, ngày lễ) chưa giao: hủy, hoàn {{percent}}%"
     },
     "dialogPart": "{{part}} · {{name}}",
     "isDefault": "Mức mặc định",
@@ -1320,13 +1353,18 @@
     },
     "cases": {
       "onTime": "Đúng hạn",
-      "late": "Trễ đến {{hours}} giờ",
-      "lateMore": "Trễ {{from}}–{{to}} giờ",
-      "cancel": "Quá {{hours}} giờ chưa giao",
+      "late": "Trễ không quá {{hours}} giờ (không tính cuối tuần, ngày lễ)",
+      "lateMore": "Trễ hơn {{from}} giờ, không quá {{to}} giờ (không tính cuối tuần, ngày lễ)",
+      "cancel": "Quá {{hours}} giờ (không tính cuối tuần, ngày lễ) chưa giao",
       "silence": "Khách không trả lời {{days}} ngày làm việc",
       "preview": "Chia tiền sau khi lưu",
       "silenceIndependent": "Đặt riêng, không đổi theo phí nền tảng",
       "previewStale": "Chia tiền hiện tại (giá trị mới chưa hợp lệ)"
+    },
+    "who": {
+      "client": "Khách",
+      "expert": "Chuyên gia",
+      "platform": "Nền tảng"
     },
     "parts": {
       "client": "Khách {{percent}}%",
@@ -1544,7 +1582,9 @@
       "REVIEW_CLAIMED": "Hồ sơ vừa được người khác nhận. Đã tải lại để hiện người đang giữ.",
       "REVIEW_NOT_CLAIMED": "Bạn không còn giữ hồ sơ này (đã quá hạn hoặc đã chuyển cho người khác). Đã tải lại hồ sơ.",
       "failed": "Chưa thực hiện được. Vui lòng thử lại."
-    }
+    },
+    "releaseConfirm": "Trả hồ sơ? Kết quả chưa gửi sẽ không được giữ.",
+    "releaseCancel": "Giữ lại"
   },
   "assignments": {
     "title": "Phân công người chấm",

@@ -255,6 +255,10 @@ namespace Caps.Workflow.Infrastructure.Persistence.Migrations
                         .HasColumnType("text")
                         .HasColumnName("expected_outcome");
 
+                    b.Property<string>("ExpertEmail")
+                        .HasColumnType("text")
+                        .HasColumnName("expert_email");
+
                     b.Property<Guid>("ExpertProfileId")
                         .HasColumnType("uuid")
                         .HasColumnName("expert_profile_id");
@@ -429,6 +433,11 @@ namespace Caps.Workflow.Infrastructure.Persistence.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("SourceVersionId")
+                        .IsUnique()
+                        .HasDatabaseName("ux_review_case_open")
+                        .HasFilter("status IN ('AWAITING_PAYMENT', 'PENDING_EXPERT_RESPONSE', 'IN_REVIEW', 'AWAITING_USER_INFORMATION', 'AWAITING_ACCEPTANCE', 'DISPUTED')");
+
                     b.HasIndex("DocumentId", "SourceVersionId");
 
                     b.HasIndex("ExpertProfileId", "Status")
@@ -439,11 +448,6 @@ namespace Caps.Workflow.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("RequesterUserId", "Status")
                         .HasDatabaseName("ix_review_case_6");
-
-                    b.HasIndex("SourceVersionId", "ExpertProfileId")
-                        .IsUnique()
-                        .HasDatabaseName("ux_review_case_open")
-                        .HasFilter("status IN ('AWAITING_PAYMENT', 'PENDING_EXPERT_RESPONSE', 'IN_REVIEW', 'AWAITING_USER_INFORMATION', 'AWAITING_ACCEPTANCE', 'DISPUTED')");
 
                     b.ToTable("review_case", "review", t =>
                         {
@@ -482,6 +486,18 @@ namespace Caps.Workflow.Infrastructure.Persistence.Migrations
                     b.Property<bool>("Extended")
                         .HasColumnType("boolean")
                         .HasColumnName("extended");
+
+                    b.Property<DateTimeOffset?>("ExtendedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("extended_at");
+
+                    b.Property<Guid?>("ExtendedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("extended_by");
+
+                    b.Property<string>("ExtensionReason")
+                        .HasColumnType("text")
+                        .HasColumnName("extension_reason");
 
                     b.Property<DateTimeOffset>("OpenedAt")
                         .HasColumnType("timestamp with time zone")
@@ -1107,6 +1123,10 @@ namespace Caps.Workflow.Infrastructure.Persistence.Migrations
                         .HasColumnType("text")
                         .HasDefaultValue("DRAFT")
                         .HasColumnName("status");
+
+                    b.Property<int>("TaxYear")
+                        .HasColumnType("integer")
+                        .HasColumnName("tax_year");
 
                     b.Property<Guid>("TemplateId")
                         .HasColumnType("uuid")

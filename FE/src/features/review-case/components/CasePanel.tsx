@@ -15,9 +15,10 @@ import { DISPUTE_SLA_DAYS } from '@/features/disputes-escrow/constants'
 import { cn } from '@/lib/utils'
 import type { ReviewCase, TaskCode } from '../types'
 import { Countdown, Deadline, FilePicker } from './CaseUi'
-import { EvidenceUpload } from './CaseAttachments'
+import { CaseAttachments, EvidenceUpload } from './CaseAttachments'
+import { useAuthStore } from '@/features/auth'
 import { useCreditOverview } from '@/features/credits/hooks/useCreditOverview'
-import { caseText, fieldClass, useCaseFormat } from '../ui'
+import { caseText, evidenceOpen, fieldClass, useCaseFormat } from '../ui'
 
 const TASKS: TaskCode[] = ['T1', 'T2', 'T3', 'T4', 'T5', 'T6']
 // Payment window of the case; a single payOS link lasts 15 minutes and can be recreated
@@ -82,6 +83,8 @@ export function CasePanel({
   c: ReviewCase
   actions: PanelActions
 }) {
+  // The client is the viewer here, so their files group as the client's
+  const me = useAuthStore((s) => s.user?.id)
   const { t } = useTranslation('reviewCase')
   const f = useCaseFormat()
   const name = c.expert.name
@@ -470,11 +473,26 @@ export function CasePanel({
           <p className="text-fg-muted max-w-[65ch] text-sm">
             {c.dispute?.decisionLate
               ? t('panel.DISPUTED.late')
-              : t('panel.DISPUTED.sla', { days: DISPUTE_SLA_DAYS })}{' '}
+              : c.dispute?.decideBy
+                ? t(c.dispute.extended ? 'panel.DISPUTED.decideByExtended' : 'panel.DISPUTED.decideBy', {
+                    at: f.at(c.dispute.decideBy),
+                  })
+                : t('panel.DISPUTED.sla', { days: DISPUTE_SLA_DAYS })}{' '}
             {t('panel.DISPUTED.escalation')}
           </p>
-          {c.live && (
-            <EvidenceUpload caseId={c.id} label={t('live.files.evidence.add')} />
+          {c.live && c.dispute && (
+            // Evidence sits under the dispute, apart from the files of the review itself
+            <CaseAttachments
+              bare
+              caseId={c.id}
+              since={c.dispute.openedAt}
+              requesterUserId={me}
+              canUpload={evidenceOpen(c.dispute)}
+              uploadLabel={t('live.files.evidence.add')}
+            />
+          )}
+          {c.live && c.dispute && !evidenceOpen(c.dispute) && (
+            <p className="text-fg-muted text-sm">{t('live.files.evidence.closed')}</p>
           )}
           {actions.withdrawDispute && (
             <button
@@ -497,7 +515,12 @@ export function CasePanel({
             <dl className="grid gap-x-8 gap-y-4 text-sm sm:grid-cols-[10rem_minmax(0,1fr)]">
               <dt className="text-fg-muted">{t('panel.RESOLVED.decision')}</dt>
               <dd className="verdict text-fg-strong font-semibold">
-                {t(`settlement.rules.${d.outcome}`)}
+                {/* Said from the client's side, with the money it means for them */}
+                {d.outcome === 'RESOLVE_PAY_EXPERT'
+                  ? t('panel.RESOLVED.rejected')
+                  : t('panel.RESOLVED.upheld', {
+                      amount: f.money(c.settlement?.amounts?.clientRefund ?? 0),
+                    })}
               </dd>
               <dt className="text-fg-muted">{t('panel.RESOLVED.reason')}</dt>
               <dd className="text-fg-strong max-w-[65ch]">{d.reason}</dd>

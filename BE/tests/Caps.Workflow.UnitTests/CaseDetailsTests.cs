@@ -116,6 +116,14 @@ public sealed class CaseDetailsTests
 
     private sealed class OneCase(ReviewCase reviewCase) : IReviewCaseLookup
     {
+        public Task<bool> HasOpenCaseAsync(Guid documentId, CancellationToken ct) =>
+            throw new NotSupportedException();
+
+        public Task<(int AsClient, int AsExpert)> CountOpenForUserAsync(
+            Guid userId,
+            CancellationToken ct
+        ) => throw new NotSupportedException();
+
         public Task<IReadOnlyList<ReviewCase>> ListByIdsAsync(
             IReadOnlyCollection<Guid> ids,
             CancellationToken ct
@@ -153,6 +161,8 @@ public sealed class CaseDetailsTests
         ) => throw new NotSupportedException();
 
         public void Add(ReviewAttachment attachment) => throw new NotSupportedException();
+
+        public void Remove(ReviewAttachment attachment) => throw new NotSupportedException();
     }
 
     private static ReviewCase Booked() =>

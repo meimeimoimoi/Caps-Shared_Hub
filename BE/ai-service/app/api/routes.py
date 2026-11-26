@@ -1,4 +1,3 @@
-import json
 import logging
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
@@ -6,9 +5,9 @@ import httpx
 
 from app.api.dependencies import verify_internal_key
 from app.modules.cv_screening.extractor import CvExtractor
-from app.modules.drafting.drafter import DocumentDrafter
+from app.modules.drafting.drafter import DocumentDrafter, build_draft_retrieval_query
 from app.modules.ingestion.chunker import LegalChunker
-from app.modules.ingestion.indexer import LegalIndexer
+from app.modules.ingestion.indexer import LegalIndexer, to_rfc3339
 from app.modules.rag.generator import GroundedGenerator, build_citations
 from app.modules.rag.retriever import TemporalRetriever
 from app.modules.rag.router import ScopeRouter
@@ -78,6 +77,23 @@ def chunk_and_embed(req: IngestDocRequest):
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=ErrorChunkEmpty.EMPTY_CHUNK,
             )
+
+        for chunk in chunks_to_index:
+            eff_from = chunk.get("effective_from")
+            if not eff_from or not str(eff_from).strip():
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="effective_from is required for indexing legal chunks.",
+                )
+            try:
+                to_rfc3339(str(eff_from), is_end=False)
+                if chunk.get("effective_to"):
+                    to_rfc3339(str(chunk["effective_to"]), is_end=True)
+            except ValueError as e:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Invalid effective date format (expected YYYY-MM-DD).",
+                ) from e
 
         # Generate embeddings and upsert into Qdrant
         kb_chunks = LegalIndexer.index_to_qdrant(chunks_to_index)
@@ -190,7 +206,7 @@ def chat_query(req: ChatQueryRequest):
                 answer_status=AnswerStatus.REJECTED,
                 period_start=None,
                 period_end=None,
-                answer=OUT_OF_SCOPE_ANSWER,
+                answer=analysis.out_of_scope_msg or OUT_OF_SCOPE_ANSWER,
                 citations=[],
             )
 
@@ -241,14 +257,34 @@ def chat_query(req: ChatQueryRequest):
 @router.post("/drafting/generate", response_model=GenerateDraftResponse)
 def draft_document(req: GenerateDraftRequest):
     try:
+        retrieval_query = build_draft_retrieval_query(
+            req.snapshot_data, req.template_schema
+        )
         retrieved = TemporalRetriever.retrieve(
-            query=json.dumps(req.snapshot_data, ensure_ascii=False),
+            query=retrieval_query,
             period_start=req.period_start,
             period_end=req.period_end,
         )
-        context = "\n".join(
-            [(h.payload or {}).get("text_content", "") for h in retrieved]
-        )
+        context_blocks = []
+        for idx, hit in enumerate(retrieved, start=1):
+            payload = hit.payload or {}
+            ref_parts = [
+                str(part).strip()
+                for part in (
+                    payload.get("document_number"),
+                    payload.get("document_title") or payload.get("doc_title"),
+                    payload.get("article"),
+                    payload.get("clause"),
+                    payload.get("point"),
+                )
+                if part and str(part).strip()
+            ]
+            header = f"[{idx}] " + (
+                " | ".join(ref_parts) if ref_parts else "Căn cứ pháp lý"
+            )
+            body = str(payload.get("text_content") or "").strip()
+            context_blocks.append(f"{header}\n{body}" if body else header)
+        context = "\n---\n".join(context_blocks)
         citations = build_citations(retrieved, include_text=False)
 
         result = DocumentDrafter.generate_draft(

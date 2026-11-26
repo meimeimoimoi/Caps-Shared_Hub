@@ -70,6 +70,8 @@ export function useReviewerQueue({
   page = 1,
   pageSize = 10,
   claim,
+  sortBy,
+  sortDescending,
 }: {
   gate?: string
   mode?: Mode
@@ -78,6 +80,9 @@ export function useReviewerQueue({
   pageSize?: number
   /** Who holds the reviews to show; history ignores it and shows everything */
   claim?: ClaimFilter
+  /** Server order: name, years, submittedAt or waiting */
+  sortBy?: string
+  sortDescending?: boolean
 } = {}) {
   const params = {
     ...statusesFor(gate, mode),
@@ -85,6 +90,8 @@ export function useReviewerQueue({
     page,
     pageSize,
     claim: mode === 'HISTORY' ? ('ALL' as const) : claim,
+    sortBy,
+    sortDescending,
   }
   const query = useQuery({
     queryKey: adminKeys.queue('review', params),

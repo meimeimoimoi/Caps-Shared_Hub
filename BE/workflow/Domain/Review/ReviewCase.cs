@@ -70,6 +70,8 @@ public sealed partial class ReviewCase
     // Null for cases booked before it was kept
     public string? RequesterEmail { get; private set; }
 
+    // From the expert's offer at booking, only to email the expert; never sent to the client
+    public string? ExpertEmail { get; private set; }
     public Guid ExpertProfileId { get; private set; }
 
     // Tokens carry user ids only and the expert schema is off limits, so the expert's user id is copied here
@@ -114,8 +116,23 @@ public sealed partial class ReviewCase
     /// <summary>Share returned to the client when the expert never delivers, frozen at booking; the platform keeps the rest.</summary>
     public short NoDeliveryRefundPct { get; private set; }
 
-    // After this the expert can no longer deliver and the expiry job refunds the client
-    private DateTimeOffset? CancelAt => DeliveryDeadline + TimeSpan.FromHours(LateCancelHours);
+    // After this the expert can no longer deliver and the expiry job settles the no-delivery split.
+    // Like the deadlines, the late window counts only the hours of working days
+    private DateTimeOffset? CancelAt(WorkCalendar? calendar) =>
+        DeliveryDeadline is { } due
+            ? (calendar ?? WorkCalendar.WeekendsOnly).AddWorkingHours(due, LateCancelHours)
+            : null;
+
+    /// <summary>When the current step runs out and the expiry job acts; null when nothing runs out.</summary>
+    public DateTimeOffset? NextDeadline =>
+        Status switch
+        {
+            ReviewCaseStatus.AwaitingPayment => PaymentDeadline,
+            ReviewCaseStatus.PendingExpertResponse => ResponseDeadline,
+            ReviewCaseStatus.InReview => DeliveryDeadline,
+            ReviewCaseStatus.AwaitingAcceptance => AcceptanceDeadline,
+            _ => null,
+        };
 
     public string ProblemDescription { get; private set; } = default!;
     public string? ExpectedOutcome { get; private set; }
@@ -206,6 +223,7 @@ public sealed partial class ReviewCase
         {
             RequesterUserId = requesterUserId,
             RequesterEmail = requesterEmail,
+            ExpertEmail = offer.ExpertEmail,
             DocumentId = documentId,
             SourceVersionId = sourceVersionId,
             ExpertProfileId = offer.ExpertProfileId,

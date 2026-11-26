@@ -30,6 +30,7 @@ export interface AdminTemplateDto {
     createdAt: string
     fieldSchema: unknown
     hasFile?: boolean
+    taxYear?: number
   }[]
 }
 
@@ -86,6 +87,7 @@ export function fromAdminTemplate(t: AdminTemplateDto): ManagedTemplate {
       fileName: v.hasFile ? 'Đã tải lên (.docx)' : '',
       hasFile: v.hasFile === true,
       fields: toSchemaFields(v.fieldSchema),
+      ...(v.taxYear ? { taxYear: v.taxYear } : {}),
       workspaces: 0,
     }))
   return {

@@ -240,6 +240,8 @@
       "request": "The expert asks: {{text}}",
       "requestDeclined": "Request declined; still counted",
       "decline": "Decline request",
+      "declineTitle": "Decline the excuse request from {{name}}?",
+      "declineBody": "The violation keeps its points. This cannot be undone.",
       "noFiles": "No evidence files attached.",
       "fileFailed": "Couldn't open the file. Try again."
     }
@@ -306,10 +308,14 @@
       "jobTitle": "Job Title",
       "experience": "Experience",
       "years": "{{count}} year(s)",
-      "submitted": "Submitted"
+      "submitted": "Submitted",
+      "copyReference": "Copy reference",
+      "referenceCopied": "Reference copied",
+      "copyFailed": "Couldn't copy. Please try again."
     },
     "blockers": {
-      "flags": "{{count}} AI flags unreviewed"
+      "flags": "{{count}} AI flags unreviewed",
+      "notClaimed": "Claim this review to assess it"
     },
     "scoreSummary": {
       "level": "Level {{level}}",
@@ -453,7 +459,8 @@
       "colResult": "AI result",
       "colNote": "AI note",
       "colDocument": "Document",
-      "documentReviewed": "{{document}} · Reviewed"
+      "documentReviewed": "{{document}} · Reviewed",
+      "suggestionBadge": "AI suggestion"
     },
     "competency": {
       "title": "Competency Review",
@@ -495,6 +502,7 @@
       "opened": "Opened",
       "status": "Status",
       "left": "Time left",
+      "decided": "Decided at",
       "actions": "Actions"
     },
     "hours": "{{hours}} h",
@@ -503,7 +511,7 @@
     "empty": "No disputes yet.",
     "resolved": "Decided",
     "badge": {
-      "open": "Disputed",
+      "open": "Awaiting decision",
       "challenge": "Challenged · case terminated",
       "escalated": "Escalated to professional review"
     },
@@ -545,17 +553,20 @@
       "confirmBody": "The decision goes to both the client and the expert, and the escrow is split by the outcome below.",
       "failed": "The decision wasn't sent and nothing was recorded. Try again.",
       "reasonMissing": "Enter a reason for the decision.",
+      "reasonMin": "Enter a reason of at least {{count}} characters.",
+      "amountsNoLate": "Excludes any late-delivery refund; if the case was late, the client gets more and the final split is set at settlement.",
       "awaitingStatement": "The expert can still explain until {{time}}. You can decide after that, or as soon as they have explained."
     },
     "escalation": {
-      "hint": "Disputes about professional judgment or a CIT conclusion go to an Authorized Reviewer. The decision deadline is extended by {{days}} working days, once.",
-      "action": "Escalate to professional review",
-      "done": "Escalated to professional review; the decision deadline was extended.",
-      "logged": "Escalated to an Authorized Reviewer; decision deadline extended by 2 working days",
-      "toast": "Escalated to professional review",
-      "confirmTitle": "Escalate for professional review?",
-      "confirmBody": "The dispute goes to an Authorized Reviewer and the decision deadline gains {{days}} working days. This can be done only once.",
-      "failed": "Couldn't escalate. Try again."
+      "hint": "Need more time, for example while both sides add evidence: the decision deadline moves by {{days}} working days, once, with a reason. The client and the expert are told the new deadline. Extending hands the dispute to no one.",
+      "action": "Extend the decision",
+      "done": "The decision was extended once.",
+      "logged": "Decision extended by 2 working days",
+      "toast": "Decision extended",
+      "confirmTitle": "Extend the decision?",
+      "confirmBody": "The decision deadline moves by {{days}} working days; it can be extended only once. The client and the expert are told the new deadline.",
+      "failed": "Could not extend. Try again.",
+      "reason": "Reason for extending"
     },
     "outcome": {
       "RESOLVE_REFUND_USER": {
@@ -626,8 +637,10 @@
     "empty": "No Escrow records yet.",
     "nextLabel": {
       "DISPUTE_LOCKED": "decide by",
+      "respond": "accept by",
+      "deliver": "deliver by",
       "HELD": "auto-confirms",
-      "PAYOUT_SCHEDULED": "payout on",
+      "PAYOUT_SCHEDULED": "settled on",
       "PAID": "paid on",
       "REFUNDED": "refunded on",
       "PAYOUT_FAILED": "failed on",
@@ -664,7 +677,7 @@
       "ALL": "All",
       "HELD": "Awaiting acceptance",
       "DISPUTE_LOCKED": "Dispute lock",
-      "PAYOUT_SCHEDULED": "Payout scheduled · 7 days",
+      "PAYOUT_SCHEDULED": "Payout pending",
       "PAID": "Paid out",
       "REFUNDED": "Refunded",
       "PAYOUT_FAILED": "Payout failed",
@@ -881,7 +894,20 @@
       "schedule": "Schedule",
       "create": "Create group",
       "scheduled": "Scheduled a new range for {{name}} from {{date}}",
-      "created": "Created {{name}}, open from {{date}}"
+      "created": "Created {{name}}, open from {{date}}",
+      "reviewChangeTitle": "Schedule the new range for {{name}}?",
+      "reviewCreateTitle": "Create the group {{name}}?",
+      "reviewBack": "Back to editing",
+      "reviewRange": "Fee range",
+      "reviewStep": "Price step",
+      "reviewFrom": "Effective from",
+      "reviewImpact": "Experts affected",
+      "reviewImpactValue": "{{count}} experts in the group · {{outside}} outside the new range",
+      "reviewReason": "Reason",
+      "leaveTitle": "Discard unsaved changes?",
+      "leaveBody": "The range and reason you entered will be lost.",
+      "stay": "Stay",
+      "leave": "Discard changes"
     }
   },
   "users": {
@@ -938,8 +964,15 @@
       "cancel": "Cancel",
       "lockTitle": "Lock {{name}}?",
       "lockBody": "They cannot sign in until unlocked. Work in progress is not deleted.",
+      "lockOpenCases": "This account has {{count}} review cases in progress ({{asClient}} as the client, {{asExpert}} as the expert); locking now leaves them hanging until they run out.",
+      "lockOpenCasesExpert": "Suspend the expert's services first so no new request comes in, then lock once the cases have ended.",
       "lockReason": "Reason (required)",
       "lockReasonHint": "Shown in account details while the account is locked.",
+      "lockReasonMin": "Enter a reason of at least {{count}} characters.",
+      "unlockReason": "Reason for unlocking (required)",
+      "unlockReasonHint": "Kept in the account audit trail.",
+      "resetReason": "Reason for the password reset (required)",
+      "resetReasonHint": "Kept in the account audit trail.",
       "lockConfirm": "Lock account",
       "unlockTitle": "Unlock {{name}}?",
       "unlockBody": "They can sign in again right away.",
@@ -1312,9 +1345,9 @@
     "setFor": "Set fee · {{name}}",
     "cancelFor": "Cancel pending change · {{name}}",
     "lateSteps": {
-      "penalty": "Up to {{hours}}h late: {{percent}}% back",
-      "full": "{{from}}–{{to}}h: 100% back",
-      "cancel": "Not delivered after {{hours}} h: cancelled, {{percent}}% refunded"
+      "penalty": "Late by {{hours}}h or less (excluding weekends and holidays): {{percent}}% back",
+      "full": "Late by more than {{from}}h, up to {{to}}h (excluding weekends and holidays): 100% back",
+      "cancel": "Not delivered after {{hours}}h (excluding weekends and holidays): cancelled, {{percent}}% refunded"
     },
     "dialogPart": "{{part}} · {{name}}",
     "isDefault": "Default level",
@@ -1329,13 +1362,18 @@
     },
     "cases": {
       "onTime": "On time",
-      "late": "Up to {{hours}}h late",
-      "lateMore": "{{from}}–{{to}}h late",
-      "cancel": "Undelivered after {{hours}}h",
+      "late": "Late by {{hours}}h or less (excluding weekends and holidays)",
+      "lateMore": "Late by more than {{from}}h, up to {{to}}h (excluding weekends and holidays)",
+      "cancel": "Undelivered after {{hours}}h (excluding weekends and holidays)",
       "silence": "Client silent for {{days}} working days",
       "preview": "Split after saving",
       "silenceIndependent": "Set on its own; does not follow the platform fee",
       "previewStale": "Current split (the new value is not valid yet)"
+    },
+    "who": {
+      "client": "Client",
+      "expert": "Expert",
+      "platform": "Platform"
     },
     "parts": {
       "client": "Client {{percent}}%",
@@ -1554,7 +1592,9 @@
       "REVIEW_CLAIMED": "Another reviewer just claimed this review. Reloaded to show who holds it.",
       "REVIEW_NOT_CLAIMED": "You no longer hold this review (the hold expired or it was handed on). Reloaded the review.",
       "failed": "That did not work. Please try again."
-    }
+    },
+    "releaseConfirm": "Release this review? Unsubmitted results are not kept.",
+    "releaseCancel": "Keep"
   },
   "assignments": {
     "title": "Review assignments",

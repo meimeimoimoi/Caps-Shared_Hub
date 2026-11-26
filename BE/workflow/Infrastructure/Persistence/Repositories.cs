@@ -58,6 +58,23 @@ public sealed class ReviewCaseRepository(WorkflowDbContext db)
         IReadOnlyCollection<Guid> ids,
         CancellationToken ct
     ) => await db.ReviewCases.AsNoTracking().Where(x => ids.Contains(x.Id)).ToListAsync(ct);
+
+    public async Task<(int AsClient, int AsExpert)> CountOpenForUserAsync(
+        Guid userId,
+        CancellationToken ct
+    )
+    {
+        var open = db.ReviewCases.Where(x => ReviewCase.OpenStatuses.Contains(x.Status));
+        var asClient = await open.CountAsync(x => x.RequesterUserId == userId, ct);
+        var asExpert = await open.CountAsync(x => x.ExpertUserId == userId, ct);
+        return (asClient, asExpert);
+    }
+
+    public Task<bool> HasOpenCaseAsync(Guid documentId, CancellationToken ct) =>
+        db.ReviewCases.AnyAsync(
+            x => x.DocumentId == documentId && ReviewCase.OpenStatuses.Contains(x.Status),
+            ct
+        );
 }
 
 /// <summary>EF Core store for client disputes; a case has at most one.</summary>
@@ -200,6 +217,8 @@ public sealed class ReviewAttachmentRepository(WorkflowDbContext db) : IReviewAt
             .SingleOrDefaultAsync(x => x.Id == attachmentId && x.ReviewCaseId == reviewCaseId, ct);
 
     public void Add(ReviewAttachment attachment) => db.ReviewAttachments.Add(attachment);
+
+    public void Remove(ReviewAttachment attachment) => db.ReviewAttachments.Remove(attachment);
 
     public Task<DocumentVersion?> FindSourceAsync(Guid versionId, CancellationToken ct) =>
         db.DocumentVersions.AsNoTracking().SingleOrDefaultAsync(x => x.Id == versionId, ct);

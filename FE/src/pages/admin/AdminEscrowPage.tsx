@@ -31,6 +31,7 @@ import { usePricing } from '../../features/service-pricing/hooks/usePricing'
 import type { Escrow } from '../../features/disputes-escrow/types'
 import { PageHeader } from '@/components/ui/layout/page-header'
 import { LoadError } from '@/components/ui/feedback/load-error'
+import { EmptyState } from '@/components/ui/feedback/empty-state'
 
 const rowCls = 'border-border-subtle border-t [&>td]:px-4 [&>td]:py-3'
 const headCls =
@@ -192,8 +193,9 @@ export default function AdminEscrowPage() {
                       >
                         {t(`escrow.groups.${group.key}`)}
                       </h2>
-                      {group.key === 'holding' && (
-                        <span className="text-fg-muted num text-sm">
+                      {/* Money groups show their total; the action group is about counts */}
+                      {group.key !== 'action' && (
+                        <span className="text-fg-strong num text-lg font-semibold">
                           {t('escrow.groups.holdingTotal', {
                             amount: formatVnd(holding),
                           })}
@@ -342,7 +344,7 @@ export default function AdminEscrowPage() {
                       )}
                     </td>
                     <td className="text-fg-muted text-right whitespace-nowrap">
-                      {t(ESCROW_NEXT_LABEL[e.status])}{' '}
+                      {t(e.nextLabel ?? ESCROW_NEXT_LABEL[e.status])}{' '}
                       <span className="num">{formatDayMonth(e.nextAt)}</span>
                     </td>
                     <td className="text-right">
@@ -363,7 +365,11 @@ export default function AdminEscrowPage() {
                       colSpan={7}
                       className="text-fg-muted px-4 py-10 text-center"
                     >
-                      {escrows.error ? <LoadError /> : t('escrow.noMatch')}
+                      {escrows.error ? (
+                        <LoadError />
+                      ) : (
+                        <EmptyState title={t('escrow.noMatch')} />
+                      )}
                     </td>
                   </tr>
                 )}

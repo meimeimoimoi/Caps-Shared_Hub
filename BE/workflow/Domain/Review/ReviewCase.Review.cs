@@ -176,7 +176,7 @@ public sealed partial class ReviewCase
     )
     {
         EnsureExpert(expertProfileId);
-        EnsureStep(ReviewCaseStatus.InReview, CancelAt, now);
+        EnsureStep(ReviewCaseStatus.InReview, CancelAt(calendar), now);
         if (result is not (Verified or CannotVerify))
         {
             throw WorkflowErrors.ResultInvalid();
@@ -204,10 +204,11 @@ public sealed partial class ReviewCase
         {
             throw WorkflowErrors.RevisedContentInvalid();
         }
-        var late = now - DeliveryDeadline!.Value;
+        var due = DeliveryDeadline!.Value;
         LateRefundPct =
-            late <= TimeSpan.Zero ? (short)0
-            : late <= TimeSpan.FromHours(LatePenaltyHours) ? LatePenaltyPct
+            now <= due ? (short)0
+            : now <= (calendar ?? WorkCalendar.WeekendsOnly).AddWorkingHours(due, LatePenaltyHours)
+                ? LatePenaltyPct
             : (short)100;
         Result = result;
         ReviewSummary = text;

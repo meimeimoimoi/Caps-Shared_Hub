@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { formatDayMonth } from '@/lib/utils'
 import { useFormatters } from '@/hooks/useFormatters'
+import { EmptyState } from '@/components/ui/feedback/empty-state'
 import { HelpTip } from '@/components/ui/feedback/help-tip'
 import { KnowledgeLayout } from '@/app/layouts/knowledge/KnowledgeLayout'
 import { useKnowledgeNav } from '@/app/layouts/knowledge/useKnowledgeNav'
@@ -115,9 +116,11 @@ export default function KnowledgeDashboardPage() {
             </div>
           </div>
         ) : (
-          <p className="paper text-fg-muted mt-4 px-5 py-8 text-sm">
-            {stats.error?.message ?? 'Không tải được số liệu.'}
-          </p>
+          <div className="paper mt-4">
+            <EmptyState tone="error" title="Không tải được số liệu">
+              {stats.error?.message}
+            </EmptyState>
+          </div>
         )}
       </section>
 

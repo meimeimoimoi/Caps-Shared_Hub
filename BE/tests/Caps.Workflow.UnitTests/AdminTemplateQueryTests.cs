@@ -15,7 +15,7 @@ public sealed class AdminTemplateQueryTests
     private static Template PublishedWithDraft()
     {
         var template = Template.Create("03/TNDN", "Tax return", null, Now);
-        var v1 = TemplateVersion.SaveDraft(template, null, Fields, Admin, Now);
+        var v1 = TemplateVersion.SaveDraft(template, null, Fields, Admin, Now, 2026);
         v1.Publish(null);
         var v2 = TemplateVersion.SaveDraft(template, v1, Fields, Admin, Now.AddDays(1));
         template.Versions.Add(v1);

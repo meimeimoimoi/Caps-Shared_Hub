@@ -68,11 +68,12 @@ public sealed class ReviewCasesController(ICurrentUser currentUser) : Controller
     }
 
     /// <summary>Requests a review of one document version; the case waits 15 minutes for payment.</summary>
-    /// <remarks>Price, platform fee and turnaround are read from the expert service and frozen on the case.</remarks>
+    /// <remarks>Price, platform fee and the late and no-answer rules are read from the expert service and frozen on
+    /// the case; the review is due one working day after the expert accepts.</remarks>
     /// <response code="200">The case, AWAITING_PAYMENT.</response>
     /// <response code="400">TEXT_REQUIRED or TEXT_TOO_LONG.</response>
     /// <response code="404">DOCUMENT_NOT_FOUND or EXPERT_SERVICE_UNAVAILABLE.</response>
-    /// <response code="409">REVIEW_CASE_ALREADY_OPEN: this version already has an open case with the expert.</response>
+    /// <response code="409">REVIEW_CASE_ALREADY_OPEN: the document already has an open case, whatever the version or the expert.</response>
     /// <response code="503">SERVICE_LINK_UNAVAILABLE: the expert service cannot be reached.</response>
     [HttpPost]
     public async Task<IActionResult> Create(
@@ -85,7 +86,7 @@ public sealed class ReviewCasesController(ICurrentUser currentUser) : Controller
         return Ok(ApiResponse<ReviewCaseResponse>.Ok(reviewCase));
     }
 
-    /// <summary>Pays the case fee from the client's credits; the expert then has 24 hours to answer.</summary>
+    /// <summary>Pays the case fee from the client's credits; the expert then has 1 working day to answer.</summary>
     /// <response code="200">The case, PENDING_EXPERT_RESPONSE.</response>
     /// <response code="404">REVIEW_CASE_NOT_FOUND.</response>
     /// <response code="409">CASE_STATUS_INVALID or CASE_DEADLINE_PASSED.</response>
@@ -273,7 +274,7 @@ public sealed class ReviewCasesController(ICurrentUser currentUser) : Controller
         return Ok(ApiResponse<ReviewCaseResponse>.Ok(reviewCase));
     }
 
-    /// <summary>The expert delivers the result; the client has 72 hours to confirm, then it auto-confirms.</summary>
+    /// <summary>The expert delivers the result; the client has 1 working day to confirm, then it auto-confirms.</summary>
     /// <response code="200">The case, AWAITING_ACCEPTANCE.</response>
     /// <response code="400">RESULT_INVALID, TEXT_REQUIRED, TEXT_TOO_LONG or REVISED_CONTENT_INVALID or ATTESTATION_REQUIRED or CITATIONS_INVALID.</response>
     /// <response code="404">REVIEW_CASE_NOT_FOUND.</response>

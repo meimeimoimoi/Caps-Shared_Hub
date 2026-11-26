@@ -66,7 +66,8 @@
     "dh": "{{d}} ngày {{h}} giờ",
     "left": "còn lại",
     "until": "Hạn {{date}}",
-    "expired": "Đã hết hạn"
+    "expired": "Đã hết hạn",
+    "soon": "Sắp trễ"
   },
   "next": {
     "you": "Việc của bạn",
@@ -142,7 +143,7 @@
       "grace": "Hết gia hạn bàn giao",
       "progress": "Tiến độ thẩm định",
       "cancel": "Yêu cầu hủy hồ sơ",
-      "lateTerms": "Chuyên gia bàn giao trễ trong {{hours}} giờ thì bạn được hoàn {{late}}; quá thời gian đó chưa bàn giao thì bạn được hoàn {{none}}."
+      "lateTerms": "Chuyên gia bàn giao trễ trong {{hours}} giờ (không tính thứ Bảy, Chủ nhật, ngày lễ) thì bạn được hoàn {{late}}; quá thời gian đó chưa bàn giao thì bạn được hoàn {{none}}."
     },
     "AWAITING_USER_INFORMATION": {
       "title": "Chuyên gia cần bạn bổ sung thông tin",
@@ -181,14 +182,18 @@
       "opened": "Gửi lúc",
       "sla": "Dispute Admin phản hồi trong {{days}} ngày làm việc.",
       "escalation": "Nếu tranh chấp cần đánh giá chuyên môn, hồ sơ được chuyển tới chuyên gia thẩm định độc lập; quản trị viên không thay thế kết luận chuyên môn.",
-      "late": "Quyết định đang chậm hơn dự kiến; khoản tiền vẫn được giữ an toàn và bạn sẽ được báo ngay khi có quyết định."
+      "late": "Quyết định đang chậm hơn dự kiến; khoản tiền vẫn được giữ an toàn và bạn sẽ được báo ngay khi có quyết định.",
+      "decideBy": "Hạn ra quyết định: {{at}}.",
+      "decideByExtended": "Hạn ra quyết định: {{at}} (đã gia hạn một lần)."
     },
     "RESOLVED": {
       "title": "Tranh chấp đã có quyết định",
       "decision": "Quyết định",
       "reason": "Lý do",
       "decidedBy": "Người quyết định",
-      "decidedAt": "Thời điểm"
+      "decidedAt": "Thời điểm",
+      "rejected": "Không chấp thuận khiếu nại · phí được chi trả cho chuyên gia",
+      "upheld": "Chấp thuận khiếu nại · bạn được hoàn {{amount}}"
     },
     "TERMINATED": {
       "title": "Hồ sơ đã chấm dứt",
@@ -257,6 +262,10 @@
       "RESOLVE_PARTIAL": "Quyết toán một phần",
       "FULL_REFUND": "Hoàn toàn bộ phí cho bạn",
       "LATE_DELIVERY": "Chuyên gia giao trễ, bạn được hoàn theo luật giao trễ đã chốt lúc đặt"
+    },
+    "dispute": {
+      "rejected": "Khiếu nại bị bác bỏ: bạn nhận đủ phần của mình.",
+      "upheld": "Khiếu nại được chấp thuận: khách được hoàn một phần phí."
     }
   },
   "package": {
@@ -402,6 +411,13 @@
     "consent": "Tôi hiểu: tôi thanh toán ngay khi gửi yêu cầu; khoản thanh toán được giữ hộ tới khi nghiệm thu và được hoàn 100% nếu chuyên gia không nhận; phí trả cho hoạt động thẩm định, không phụ thuộc kết quả VERIFIED.",
     "consentRequired": "Xác nhận điều khoản để gửi yêu cầu.",
     "submit": "Gửi yêu cầu thẩm định",
+    "sending": "Đang gửi…",
+    "submitHold": "Gửi yêu cầu thẩm định và giữ {{amount}}",
+    "balance": "Số dư ví",
+    "hold": "Sẽ giữ hộ",
+    "remaining": "Còn lại sau khi giữ",
+    "shortfall": "Ví còn thiếu {{amount}} để giữ phí thẩm định.",
+    "toWallet": "Đến Ví",
     "summary": "Tóm tắt yêu cầu",
     "priceOnRequest": "Báo giá sau",
     "nextTitle": "Điều gì xảy ra tiếp theo",
@@ -415,7 +431,7 @@
     "backToProfile": "Về hồ sơ chuyên gia",
     "terms": {
       "title": "Số tiền bạn được hoàn trong từng trường hợp",
-      "late": "Chuyên gia bàn giao trễ trong {{hours}} giờ: bạn được hoàn {{amount}}.",
+      "late": "Chuyên gia bàn giao trễ trong {{hours}} giờ (không tính thứ Bảy, Chủ nhật, ngày lễ): bạn được hoàn {{amount}}.",
       "noDelivery": "Chuyên gia không bàn giao: bạn được hoàn {{amount}}.",
       "noResponseNoRefund": "Bạn không trả lời yêu cầu bổ sung trong {{days}} ngày làm việc: hồ sơ chấm dứt và bạn không được hoàn tiền.",
       "noResponseRefund": "Bạn không trả lời yêu cầu bổ sung trong {{days}} ngày làm việc: hồ sơ chấm dứt và bạn chỉ được hoàn {{amount}}.",
@@ -430,7 +446,19 @@
     },
     "workingDaysLabel": "Về ngày làm việc",
     "workingDays": "Ngày làm việc không tính thứ Bảy, Chủ nhật và các ngày lễ dương lịch. Hạn rơi vào ngày nghỉ được dời sang ngày làm việc kế tiếp, cùng giờ.",
-    "noVersion": "Tài liệu này chưa có phiên bản nào để gửi thẩm định. Hãy chọn tài liệu khác hoặc tải tệp lên."
+    "noVersion": "Tài liệu này chưa có phiên bản nào để gửi thẩm định. Hãy chọn tài liệu khác hoặc tải tệp lên.",
+    "myDocs": {
+      "title": "Tài liệu của bạn",
+      "search": "Tìm theo tên tài liệu",
+      "ai": "Bản nháp AI",
+      "upload": "Tệp tải lên",
+      "period": "Kỳ {{from}} – {{to}}",
+      "none": "Không có tài liệu nào khớp.",
+      "version": "Phiên bản gửi thẩm định",
+      "versionOption": "Phiên bản {{no}} · {{kind}} · {{at}}",
+      "newest": "mới nhất",
+      "expertReviewed": "Bản chuyên gia đã rà soát"
+    }
   },
   "nav": {
     "label": "Không gian khách hàng",
@@ -495,6 +523,29 @@
     "priceTbd": "Chưa chốt giá",
     "buy": "Nạp qua PayOS",
     "buyUnavailable": "Gói chưa có giá nên chưa mở bán.",
+    "buySoon": "Nạp credit qua PayOS đang được hoàn thiện, sẽ mở trong bản cập nhật tới.",
+    "rateItems": {
+      "ai-question": {
+        "action": "Câu hỏi trợ lý AI",
+        "when": "Giữ tạm khi gửi; trừ khi câu hỏi được đưa vào tra cứu, kể cả khi không đủ căn cứ. Hỏi lại để làm rõ không trừ thêm"
+      },
+      "ai-out-of-scope": {
+        "action": "Câu hỏi ngoài phạm vi Thuế TNDN",
+        "when": "Phát hiện trước khi tra cứu; hoàn toàn bộ credit giữ tạm"
+      },
+      "ai-system-error": {
+        "action": "Lỗi hệ thống sau khi đã trừ",
+        "when": "Xử lý thất bại hoàn toàn do lỗi nền tảng; hoàn 1 credit"
+      },
+      "draft-export": {
+        "action": "Tải bản nháp về",
+        "when": "Xuất DOCX hoặc PDF; tải lại cùng phiên bản không tính thêm"
+      },
+      "draft-preview": {
+        "action": "Tạo và xem trước bản nháp",
+        "when": "Miễn phí, kể cả khi tạo lại"
+      }
+    },
     "rates": "Bảng giá credit",
     "free": "Miễn phí",
     "tbd": "Chưa chốt",
@@ -574,7 +625,7 @@
     "CASE_STATUS_INVALID": "Hồ sơ đã chuyển sang bước khác. Tải lại trang để xem trạng thái mới.",
     "CASE_DEADLINE_PASSED": "Đã quá hạn cho thao tác này.",
     "REVIEW_CASE_NOT_FOUND": "Không tìm thấy hồ sơ.",
-    "REVIEW_CASE_ALREADY_OPEN": "Phiên bản này đang có yêu cầu mở với chuyên gia đó.",
+    "REVIEW_CASE_ALREADY_OPEN": "Tài liệu này đang có yêu cầu thẩm định chưa kết thúc. Hãy chờ yêu cầu đó xong hoặc rút yêu cầu cũ.",
     "CASE_SELF_REVIEW": "Bạn không thể tự thẩm định hồ sơ của mình.",
     "DOCUMENT_NOT_FOUND": "Không tìm thấy phiên bản hồ sơ của bạn.",
     "EXPERT_SERVICE_UNAVAILABLE": "Chuyên gia hiện không nhận dịch vụ này.",
@@ -600,7 +651,7 @@
     "ATTACHMENT_DUPLICATE": "Tệp này đã có trong hồ sơ.",
     "ATTACHMENT_TYPE_INVALID": "Chỉ nhận PDF, JPEG, PNG, WebP hoặc Word (.docx).",
     "ATTACHMENTS_CLOSED": "Hồ sơ ở trạng thái này không thêm được tệp.",
-    "ATTACHMENT_LIMIT": "Mỗi hồ sơ có tối đa 20 tệp.",
+    "ATTACHMENT_LIMIT": "Mỗi bên tải lên tối đa 10 tệp cho một hồ sơ.",
     "ATTACHMENT_NOT_FOUND": "Không tìm thấy tệp.",
     "CHAT_CLOSED": "Hồ sơ ở trạng thái này không nhắn tin được.",
     "MESSAGE_EMPTY": "Vui lòng nhập tin nhắn.",
@@ -610,7 +661,9 @@
     "EXTENSION_NOT_PENDING": "Không còn yêu cầu gia hạn nào chờ trả lời.",
     "EXTENSION_DAYS_INVALID": "Chỉ xin gia hạn 1 hoặc 2 ngày làm việc.",
     "DISPUTE_AWAITING_STATEMENT": "Chuyên gia còn trong hạn giải trình, chưa ra quyết định được.",
-    "DISPUTE_STATEMENT_CLOSED": "Đã hết hạn giải trình cho khiếu nại này."
+    "DISPUTE_STATEMENT_CLOSED": "Đã hết hạn giải trình cho khiếu nại này.",
+    "DISPUTE_EVIDENCE_CLOSED": "Đã hết hạn nộp bằng chứng cho khiếu nại này.",
+    "ATTACHMENT_NOT_REMOVABLE": "Chỉ gỡ được tệp của chính bạn: chuyên gia gỡ được trước khi bàn giao, còn lại trong 15 phút sau khi tải lên; không gỡ được khi đang có khiếu nại."
   },
   "live": {
     "loading": "Đang tải hồ sơ",
@@ -687,9 +740,13 @@
         "client": "Bằng chứng của khách",
         "expert": "Bằng chứng của chuyên gia",
         "none": "Chưa có tệp.",
+        "closed": "Đã hết hạn nộp bằng chứng; quản trị viên quyết định dựa trên các tệp hiện có.",
         "duringDispute": "Nộp khi tranh chấp",
         "attachAnswer": "Đính kèm chứng từ"
-      }
+      },
+      "remove": "Gỡ {{name}}",
+      "removeHint": "Gỡ được trong {{minutes}} phút sau khi tải lên, trước khi có khiếu nại.",
+      "removeUntilDelivery": "Gỡ được cho tới khi bạn bàn giao kết quả."
     },
     "revised": {
       "title": "Bản chuyên gia đã chỉnh sửa",
@@ -731,6 +788,7 @@
       "decide": "Nhận hay từ chối yêu cầu",
       "accept": "Nhận hồ sơ",
       "decline": "Từ chối yêu cầu",
+      "declineEffect": "Case sẽ đóng ở trạng thái chuyên gia từ chối và khách hàng được hoàn toàn bộ phí. Từ chối trước khi nhận case không bị ghi nhận vi phạm.",
       "declineReason": "Lý do từ chối",
       "deliverTitle": "Bàn giao kết quả",
       "result": "Kết quả",
@@ -771,13 +829,33 @@
       "deliveredOnTime": "Bàn giao lúc {{time}} · đúng hạn",
       "deliveredLate": "Bàn giao lúc {{time}} · trễ {{hours}} giờ",
       "netPayout": "Bạn thực nhận {{amount}} khi hoàn tất.",
-      "lateRule": "Bàn giao trễ trong {{hours}} giờ: bạn nhận {{payout}} và bị cộng 1 điểm vi phạm. Quá {{cancel}} giờ chưa bàn giao: hồ sơ bị hủy, bạn không nhận khoản nào và bị cộng 3 điểm.",
+      "lateRule": "Bàn giao trễ trong {{hours}} giờ: bạn nhận {{payout}} và bị cộng 1 điểm vi phạm. Quá {{cancel}} giờ chưa bàn giao: hồ sơ bị hủy, bạn không nhận khoản nào và bị cộng 3 điểm. Số giờ trễ không tính thứ Bảy, Chủ nhật, ngày lễ.",
+      "actionFailed": "Thao tác chưa thực hiện được.",
+      "dismissError": "Đóng",
+      "confirmDeliver": {
+        "title": "Bàn giao kết quả?",
+        "body": "Kết quả sẽ được gửi cho khách hàng xem xét. Hãy kiểm tra tóm tắt và trích dẫn trước khi bàn giao.",
+        "edited": "Số trường đã sửa",
+        "back": "Tiếp tục sửa"
+      },
       "saveDraft": "Lưu nháp",
       "draftSaved": "Đã lưu nháp. Khách chỉ thấy bản chỉnh sửa sau khi bạn bàn giao.",
-      "decisionLate": "Quyết định đang chậm hơn dự kiến. Phần tiền của bạn vẫn được giữ, bạn sẽ được báo ngay khi có quyết định."
+      "decisionLate": "Quyết định đang chậm hơn dự kiến. Phần tiền của bạn vẫn được giữ, bạn sẽ được báo ngay khi có quyết định.",
+      "decision": "Kết quả"
     },
     "notConnected": "Chưa có dữ liệu.",
-    "openCases": "Các hồ sơ đang mở của bạn."
+    "openCases": "Các hồ sơ đang mở của bạn.",
+    "noDeliveriesYet": "Chưa có hồ sơ nào được bàn giao.",
+    "activity": {
+      "requested": "Có yêu cầu thẩm định mới",
+      "accepted": "Bạn đã nhận hồ sơ",
+      "delivered": "Bạn đã bàn giao kết quả",
+      "rated": "Khách đánh giá {{stars}} sao",
+      "disputed": "Khách khiếu nại kết quả",
+      "completed": "Hồ sơ đã hoàn tất",
+      "you": "Bạn",
+      "client": "Khách hàng"
+    }
   },
   "extension": {
     "title": "Gia hạn bàn giao",

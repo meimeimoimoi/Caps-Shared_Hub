@@ -6,6 +6,7 @@ from app.core.ai_response import parse_ai_response
 from app.core.models import llm_model
 from app.modules.rag.prompts import build_scope_prompt
 from app.schemas.ai_results import ScopeAnalysis
+from app.schemas.answers import INVESTMENT_INCENTIVE_OUT_OF_SCOPE_ANSWER
 
 _MIN_YEAR = 1900
 _MAX_YEAR = 2100
@@ -66,15 +67,35 @@ _NON_CIT_KEYWORDS = (
     "người phụ thuộc",
     "thuế tncn",
     "thu nhập cá nhân",
+    "biểu thuế lũy tiến",
+    "thu nhập vãng lai",
     "hộ kinh doanh",
     "cá nhân kinh doanh",
     "thuế khoán",
+    "thuế gtgt",
+    "thuế giá trị gia tăng",
+    "hoàn thuế gtgt",
+    "khấu trừ thuế gtgt",
+    "lệ phí môn bài",
+    "thuế môn bài",
+    "lệ phí trước bạ",
 )
-_CIT_CONTEXT_KEYWORDS = (
+_EXPLICIT_CIT_TAX_KEYWORDS = (
     "tndn",
     "thu nhập doanh nghiệp",
     "cit",
-    "doanh nghiệp",
+    "chi phí được trừ",
+    "chi phí không được trừ",
+)
+# Investment-project CIT incentives are out of scope (spec 3a); SME incentives (15%, 17%, 30% reduction) stay in scope.
+_INVESTMENT_INCENTIVE_KEYWORDS = (
+    "dự án đầu tư",
+    "ưu đãi đầu tư",
+    "địa bàn có điều kiện kinh tế",
+    "địa bàn ưu đãi",
+    "ngành nghề ưu đãi",
+    "khu kinh tế",
+    "khu công nghệ cao",
 )
 _PROMPT_LEAK_MARKERS = (
     "kỳ thuế do người dùng cung cấp",
@@ -254,11 +275,16 @@ def _extract_unique_period_from_question(question: str) -> tuple[date, date] | N
 
 
 def _is_obvious_non_cit_question(question: str) -> bool:
-    """Catch unambiguous PIT/household-business queries when no CIT context keyword is present."""
+    """Catch unambiguous PIT, VAT, and household-business queries when no explicit CIT tax keyword is present."""
     normalized = " ".join(question.lower().split())
-    if any(cit_kw in normalized for cit_kw in _CIT_CONTEXT_KEYWORDS):
+    if any(cit_kw in normalized for cit_kw in _EXPLICIT_CIT_TAX_KEYWORDS):
         return False
     return any(non_cit_kw in normalized for non_cit_kw in _NON_CIT_KEYWORDS)
+
+
+def _is_investment_incentive_question(question: str) -> bool:
+    normalized = " ".join(question.lower().split())
+    return any(keyword in normalized for keyword in _INVESTMENT_INCENTIVE_KEYWORDS)
 
 
 def _sanitize_clarification_msg(msg: str | None) -> str | None:
@@ -287,6 +313,16 @@ class ScopeRouter:
 
     @staticmethod
     def analyze(question: str, user_tax_period: str | None = None) -> ScopeAnalysis:
+        if _is_investment_incentive_question(question):
+            return ScopeAnalysis(
+                is_cit=False,
+                period_start=None,
+                period_end=None,
+                needs_clarification=False,
+                clarification_msg=None,
+                out_of_scope_msg=INVESTMENT_INCENTIVE_OUT_OF_SCOPE_ANSWER,
+            )
+
         if _is_obvious_non_cit_question(question):
             return ScopeAnalysis(
                 is_cit=False,

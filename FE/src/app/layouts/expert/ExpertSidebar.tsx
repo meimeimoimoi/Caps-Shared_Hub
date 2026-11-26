@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/layout/app-sidebar'
 import { useTranslation } from 'react-i18next'
 import { useCapabilities, type Capability } from '@/features/expert-context'
+import { useExpertDashboard } from '@/features/expert-dashboard/hooks/useExpertDashboard'
 
 export function ExpertSidebar({
   close,
@@ -29,12 +30,19 @@ export function ExpertSidebar({
   const { t } = useTranslation('navigation')
   const { pathname } = useLocation()
   const { has } = useCapabilities()
+  // Counts like the admin sidebar; a new notification refetches the dashboard, so they stay current
+  const dashboard = useExpertDashboard().data
+  const work = dashboard?.queue.status === 'available' ? dashboard.queue.data.items : []
+  const waiting = work.filter((i) => i.status === 'PENDING_EXPERT_RESPONSE').length
+  // Cases the expert has to move: write the review, or answer a dispute
+  const toDo = work.filter((i) => i.status === 'IN_REVIEW' || i.status === 'DISPUTED').length
   // Items whose capability the server has not granted yet stay visible but locked
   const item = (
     to: string,
     label: string,
     icon: SidebarGroup['items'][number]['icon'],
-    requires: Capability
+    requires: Capability,
+    count = 0
   ) => {
     const open = has(requires)
     return {
@@ -42,6 +50,7 @@ export function ExpertSidebar({
       to: open ? to : undefined,
       label,
       icon,
+      badge: open && count > 0 ? count : undefined,
       active: open && (pathname === to || pathname.startsWith(`${to}/`)),
       lockedHint: open ? undefined : t('lockedUntilApproved'),
     }
@@ -61,13 +70,15 @@ export function ExpertSidebar({
           '/expert/queue',
           t('workQueue'),
           <Inbox size={18} />,
-          'cases.work'
+          'cases.work',
+          waiting
         ),
         item(
           '/expert/active',
           t('activeCases'),
           <FileStack size={18} />,
-          'cases.work'
+          'cases.work',
+          toDo
         ),
       ],
     },

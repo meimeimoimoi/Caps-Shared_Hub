@@ -7,6 +7,7 @@ import { useNavToast } from '@/hooks/useNavToast'
 import { Toast } from '@/components/ui/feedback/toast'
 import { KnowledgeLayout } from '@/app/layouts/knowledge/KnowledgeLayout'
 import { useKnowledgeNav } from '@/app/layouts/knowledge/useKnowledgeNav'
+import { PageHeader } from '@/components/ui/layout/page-header'
 import { DocumentsTable } from '../../features/knowledgeAdmin-review-approval/components/DocumentsTable'
 import { FailureDrawer } from '../../features/knowledgeAdmin-review-approval/components/FailureDrawer'
 import { UploadDialog } from '../../features/knowledgeAdmin-review-approval/components/UploadDialog'
@@ -68,32 +69,29 @@ export default function KnowledgeQueuePage() {
       search={queue.query}
       onSearchChange={queue.setQuery}
     >
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <h1 className="text-h1">Kho tri thức Thuế TNDN</h1>
-          <p className="text-fg-muted mt-3">
-            Văn bản chỉ được AI/RAG truy vấn sau khi bạn duyệt và index thành
-            công. Bấm một bước để xem văn bản đang ở đó.
-          </p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          {/* Lối vào lại trang kết quả; trước đây chỉ tới được ngay sau khi tải lên */}
-          <Link
-            to="/knowledge/uploads"
-            className="btn btn-press btn-secondary no-underline"
-          >
-            Kết quả tải lên
-          </Link>
-          <button
-            type="button"
-            onClick={() => setUploadOpen(true)}
-            className="btn btn-press btn-primary"
-          >
-            <Upload size={16} aria-hidden="true" />
-            Tải tài liệu lên
-          </button>
-        </div>
-      </div>
+      <PageHeader
+        title="Hàng đợi duyệt"
+        help="Văn bản chỉ được AI/RAG truy vấn sau khi bạn duyệt và index thành công. Bấm một bước để xem văn bản đang ở đó."
+        actions={
+          <>
+            {/* Lối vào lại trang kết quả; trước đây chỉ tới được ngay sau khi tải lên */}
+            <Link
+              to="/knowledge/uploads"
+              className="btn btn-press btn-secondary no-underline"
+            >
+              Kết quả tải lên
+            </Link>
+            <button
+              type="button"
+              onClick={() => setUploadOpen(true)}
+              className="btn btn-press btn-primary"
+            >
+              <Upload size={16} aria-hidden="true" />
+              Tải tài liệu lên
+            </button>
+          </>
+        }
+      />
 
       <div className="mt-8">
         <PipelineSteps

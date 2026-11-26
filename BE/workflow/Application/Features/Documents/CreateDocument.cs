@@ -16,8 +16,8 @@ public static class CreateDocument
         Guid UserId,
         string Title,
         Guid? TemplateId,
-        DateOnly PeriodStart,
-        DateOnly PeriodEnd,
+        DateOnly? PeriodStart,
+        DateOnly? PeriodEnd,
         string? Source,
         string? Metadata
     );
@@ -35,19 +35,25 @@ public static class CreateDocument
             CancellationToken ct
         )
         {
-            if (command.PeriodEnd < command.PeriodStart)
+            var metadata = JsonInput.OrEmptyObject(command.Metadata, "metadata");
+            DateOnly periodStart;
+            DateOnly periodEnd;
+            if (command.TemplateId is { } templateId)
+            {
+                // An unknown or unpublished template would otherwise fail on the foreign key (500)
+                var published =
+                    await templates.FindPublishedAsync(templateId, ct)
+                    ?? throw Domain.WorkflowErrors.TemplateNotFound();
+                // The form decides the period: users draft only the tax year its published version applies to
+                (periodStart, periodEnd) = published.TaxPeriod();
+            }
+            else if (command is { PeriodStart: { } start, PeriodEnd: { } end } && end >= start)
+            {
+                (periodStart, periodEnd) = (start, end);
+            }
+            else
             {
                 throw WorkflowErrors.DocumentInvalidPeriod();
-            }
-
-            var metadata = JsonInput.OrEmptyObject(command.Metadata, "metadata");
-            // An unknown or unpublished template would otherwise fail on the foreign key (500)
-            if (
-                command.TemplateId is { } templateId
-                && await templates.FindPublishedAsync(templateId, ct) is null
-            )
-            {
-                throw Domain.WorkflowErrors.TemplateNotFound();
             }
 
             var now = timeProvider.GetUtcNow();
@@ -60,8 +66,8 @@ public static class CreateDocument
                     : command.Source.Trim().ToUpperInvariant(),
                 TemplateId = command.TemplateId,
                 Title = command.Title.Trim(),
-                PeriodStart = command.PeriodStart,
-                PeriodEnd = command.PeriodEnd,
+                PeriodStart = periodStart,
+                PeriodEnd = periodEnd,
                 Status = "DRAFT",
                 VerifiedVersionId = null,
                 Metadata = metadata,

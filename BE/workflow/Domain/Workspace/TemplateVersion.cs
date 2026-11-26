@@ -18,6 +18,12 @@ public sealed class TemplateVersion
     public Guid CreatedBy { get; private set; }
     public DateTimeOffset CreatedAt { get; private set; }
 
+    /// <summary>The tax year this version's form applies to; documents drafted from it cover that whole year.</summary>
+    public int TaxYear { get; private set; }
+
+    private const int MinTaxYear = 2000;
+    private const int MaxTaxYear = 2100;
+
     /// <summary>Object storage key of the sample .docx users see their values written into; null when none was uploaded.</summary>
     public string? FileKey { get; private set; }
 
@@ -38,22 +44,30 @@ public sealed class TemplateVersion
         return previous;
     }
 
+    /// <summary>The first and last day of the tax year a document drafted from this version covers.</summary>
+    public (DateOnly Start, DateOnly End) TaxPeriod() =>
+        (new DateOnly(TaxYear, 1, 1), new DateOnly(TaxYear, 12, 31));
+
     /// <summary>
     /// Saves an admin's field schema: rewrites <paramref name="latest"/> while it is a draft, otherwise
-    /// starts the next version as a draft, so published versions never change.
+    /// starts the next version as a draft, so published versions never change. A missing
+    /// <paramref name="taxYear"/> keeps the latest version's year; the first version must name one.
     /// </summary>
     public static TemplateVersion SaveDraft(
         Template template,
         TemplateVersion? latest,
         string? fieldSchema,
         Guid createdBy,
-        DateTimeOffset now
+        DateTimeOffset now,
+        int? taxYear = null
     )
     {
         var schema = ValidSchema(fieldSchema);
+        var year = ValidTaxYear(taxYear ?? latest?.TaxYear);
         if (latest is { Status: TemplateVersionStatus.Draft })
         {
             latest.FieldSchema = schema;
+            latest.TaxYear = year;
             return latest;
         }
         return new TemplateVersion
@@ -61,6 +75,7 @@ public sealed class TemplateVersion
             TemplateId = template.Id,
             VersionNo = (latest?.VersionNo ?? 0) + 1,
             FieldSchema = schema,
+            TaxYear = year,
             CreatedBy = createdBy,
             CreatedAt = now,
         };
@@ -78,6 +93,11 @@ public sealed class TemplateVersion
             current.Status = TemplateVersionStatus.Deprecated;
         Status = TemplateVersionStatus.Published;
     }
+
+    private static int ValidTaxYear(int? year) =>
+        year is >= MinTaxYear and <= MaxTaxYear
+            ? year.Value
+            : throw WorkflowErrors.TemplateTaxYearInvalid();
 
     // The form is built from this list, so it must be a non-empty array of field objects
     private static string ValidSchema(string? json)

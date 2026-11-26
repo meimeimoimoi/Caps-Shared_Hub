@@ -36,6 +36,10 @@ export function useAdminNav(enabled = true) {
   const canSeeDisputes =
     enabled &&
     hasAnyPermission(user, [isExpertDemo ? Permission.UserManage : Permission.DisputeResolve])
+  // Escrows come from billing (PayoutManage) outside the demo, so failed payouts and refunds are always counted
+  const canSeeEscrows =
+    enabled &&
+    hasAnyPermission(user, [isExpertDemo ? Permission.UserManage : Permission.PayoutManage])
   // Waiting limit comes from the expert policy (System Admin setting), never a constant here
   const slaDays = useReviewSlaDays(canReview)
   const applications = useQuery({
@@ -67,11 +71,14 @@ export function useAdminNav(enabled = true) {
     queryKey: disputesKeys.disputes(),
     queryFn: ({ signal }) => getDisputes(signal),
     enabled: canSeeDisputes,
+    // Same refresh as the queue page, so the badge counts a new dispute on any admin page
+    refetchInterval: 60_000,
+    refetchOnWindowFocus: true,
   })
   const escrows = useQuery({
     queryKey: disputesKeys.escrows(),
     queryFn: ({ signal }) => getEscrows(signal),
-    enabled: canViewDemoOperations,
+    enabled: canSeeEscrows,
   })
   // Same cache as the users page; only asks whether the endpoint exists yet
   const users = useQuery({
@@ -94,10 +101,10 @@ export function useAdminNav(enabled = true) {
   const nearestHours = open.length
     ? Math.min(...open.map((d) => disputeHoursLeft(d, now)))
     : 0
-  const payoutFailed = (canViewDemoOperations ? escrows.data ?? [] : []).filter(
+  const payoutFailed = (canSeeEscrows ? escrows.data ?? [] : []).filter(
     (e) => e.status === 'PAYOUT_FAILED'
   ).length
-  const refundFailed = (canViewDemoOperations ? escrows.data ?? [] : []).filter(
+  const refundFailed = (canSeeEscrows ? escrows.data ?? [] : []).filter(
     (e) => e.status === 'REFUND_FAILED'
   ).length
   const outsideRange = tiers.reduce((s, tier) => s + tier.outsideRange, 0)
@@ -184,11 +191,12 @@ export function useAdminNav(enabled = true) {
       (canReview && applications.isError) ||
       (canApprove && approvalCounts.isError) ||
       (canApprove && excuseRequests.isError) ||
-      (canSeeDisputes && disputes.isError),
+      (canSeeDisputes && disputes.isError) ||
+      (canSeeEscrows && escrows.isError),
     payoutFailedCount: payoutFailed + refundFailed,
     pricingUnavailable,
-    // Failed payout and refund alerts are only counted in the demo; the dashboard must not read as all-clear
-    payoutAlertsUnchecked: pricingUnavailable,
+    // Without access to escrows the failed payout and refund alerts are not counted; never read as all-clear
+    payoutAlertsUnchecked: pricingUnavailable && !canSeeEscrows,
     // An account without the permission sees the area as not open to it rather than an error
     disputesUnavailable: enabled && !canSeeDisputes,
     usersUnavailable: isMissingEndpoint(users.error),

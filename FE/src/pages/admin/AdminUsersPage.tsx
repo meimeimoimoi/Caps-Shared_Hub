@@ -21,6 +21,7 @@ import { PageHeader } from '@/components/ui/layout/page-header'
 import { LoadError } from '@/components/ui/feedback/load-error'
 import { isMissingEndpoint } from '@/lib/api-client'
 import { OperationsUnavailable } from '@/features/disputes-escrow/components/OperationsUnavailable'
+import { EmptyState } from '@/components/ui/feedback/empty-state'
 
 const filterClassName = 'grid w-full min-w-0 gap-2 text-sm font-semibold sm:w-72'
 
@@ -183,7 +184,7 @@ export default function AdminUsersPage() {
                     {users.error ? (
                       <LoadError error={users.error} />
                     ) : (
-                      t('users.empty')
+                      <EmptyState title={t('users.empty')} />
                     )}
                   </td>
                 </tr>
@@ -221,9 +222,9 @@ export default function AdminUsersPage() {
                 )
               )
           }
-          onReset={() =>
+          onReset={(reason) =>
             users
-              .sendReset(selected.id)
+              .sendReset(selected.id, reason)
               .then(() =>
                 setToast(t('users.action.resetSent', { email: selected.email }))
               )

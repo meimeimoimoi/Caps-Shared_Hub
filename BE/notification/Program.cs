@@ -30,9 +30,11 @@ builder.Services.AddCapsMessaging(
         x.AddConsumer<ReviewCaseResponseDueConsumer>();
         x.AddConsumer<ReviewCaseStatementDueConsumer>();
         x.AddConsumer<ReviewCaseDisputeOverdueConsumer>();
+        x.AddConsumer<ReviewCaseDisputeExtendedConsumer>();
         x.AddConsumer<ReviewCaseExtensionRequestedConsumer>();
         x.AddConsumer<ReviewCaseExtensionDecidedConsumer>();
         x.AddConsumer<ExpertExcuseRequestedConsumer>();
+        x.AddConsumer<ExpertViolationRecordedConsumer>();
         x.AddConsumer<AuditRecordedConsumer>();
     }
 );

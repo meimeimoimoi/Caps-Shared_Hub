@@ -16,6 +16,8 @@ export interface ManagedTemplateVersion {
   /** The server holds a sample .docx for this version (API mode only) */
   hasFile?: boolean
   fields: SchemaField[]
+  /** Tax year this version's form applies to; users draft only that year from it */
+  taxYear?: number
   /** Số bản nháp đang ghim phiên bản này */
   workspaces: number
 }
@@ -47,5 +49,7 @@ export interface NewTemplateInput {
   description: string
   category: string
   changelog: string
+  /** Tax year the form applies to; documents drafted from this version cover that year */
+  taxYear: number
   fields: SchemaField[]
 }
