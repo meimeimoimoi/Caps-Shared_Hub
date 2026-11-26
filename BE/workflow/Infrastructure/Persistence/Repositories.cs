@@ -70,11 +70,17 @@ public sealed class ReviewCaseRepository(WorkflowDbContext db)
         return (asClient, asExpert);
     }
 
-    public Task<bool> HasOpenCaseAsync(Guid documentId, CancellationToken ct) =>
-        db.ReviewCases.AnyAsync(
+    public async Task<bool> HasOpenCaseForUpdateAsync(Guid documentId, CancellationToken ct)
+    {
+        await db.Database.ExecuteSqlInterpolatedAsync(
+            $"SELECT 1 FROM workspace.document WHERE id = {documentId} FOR UPDATE",
+            ct
+        );
+        return await db.ReviewCases.AnyAsync(
             x => x.DocumentId == documentId && ReviewCase.OpenStatuses.Contains(x.Status),
             ct
         );
+    }
 }
 
 /// <summary>EF Core store for client disputes; a case has at most one.</summary>

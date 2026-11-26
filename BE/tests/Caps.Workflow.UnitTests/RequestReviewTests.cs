@@ -105,7 +105,7 @@ public sealed class RequestReviewTests
     // Only the booking check is used here
     private sealed class FakeOpenCases(bool open) : IReviewCaseLookup
     {
-        public Task<bool> HasOpenCaseAsync(Guid documentId, CancellationToken ct) =>
+        public Task<bool> HasOpenCaseForUpdateAsync(Guid documentId, CancellationToken ct) =>
             Task.FromResult(open);
 
         public Task<IReadOnlyList<ReviewCase>> ListByIdsAsync(
@@ -160,7 +160,7 @@ public sealed class RequestReviewTests
     private sealed class FakeUnitOfWork(bool duplicate = false) : IUnitOfWork
     {
         public Task<ITransaction> BeginTransactionAsync(CancellationToken ct) =>
-            throw new NotSupportedException();
+            Task.FromResult<ITransaction>(new FakeTransaction());
 
         public Task SaveChangesAsync(CancellationToken ct) =>
             duplicate
@@ -192,5 +192,12 @@ public sealed class RequestReviewTests
             Guid userId,
             CancellationToken ct
         ) => throw new NotSupportedException();
+    }
+
+    private sealed class FakeTransaction : ITransaction
+    {
+        public Task CommitAsync(CancellationToken ct) => Task.CompletedTask;
+
+        public ValueTask DisposeAsync() => ValueTask.CompletedTask;
     }
 }

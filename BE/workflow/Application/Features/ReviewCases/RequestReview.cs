@@ -51,8 +51,10 @@ public sealed class RequestReviewHandler(
             throw WorkflowErrors.DocumentNotFound();
         }
 
-        // BR-G02: one running case per document, whatever the version or the expert
-        if (await openCases.HasOpenCaseAsync(command.DocumentId, ct))
+        // BR-G02: one running case per document, whatever the version or the expert. The document row stays
+        // locked until the commit, so a booking sent at the same moment waits and then sees this case
+        await using var tx = await unitOfWork.BeginTransactionAsync(ct);
+        if (await openCases.HasOpenCaseForUpdateAsync(command.DocumentId, ct))
         {
             throw WorkflowErrors.CaseAlreadyOpen();
         }
@@ -81,6 +83,7 @@ public sealed class RequestReviewHandler(
         try
         {
             await unitOfWork.SaveChangesAsync(ct);
+            await tx.CommitAsync(ct);
         }
         catch (UniqueConstraintException)
         {
