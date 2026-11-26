@@ -11,6 +11,7 @@ public sealed record BankAccountResponse(
     string AccountHolderName,
     bool IsDefault,
     string Status,
+    string? RejectionReason,
     DateTimeOffset CreatedAt
 )
 {
@@ -23,6 +24,7 @@ public sealed record BankAccountResponse(
             x.AccountHolderName,
             x.IsDefault,
             x.Status,
+            x.RejectionReason,
             x.CreatedAt
         );
 

@@ -42,7 +42,7 @@ flowchart LR
 | `gateway` | `5190` | API Gateway (YARP), điểm vào duy nhất | ✅ Hoạt động |
 | `auth` | `5194` | Identity: tài khoản, phiên, JWT (schema `identity`) | ✅ Hoạt động |
 | `expert` | `5198` | Hồ sơ đăng ký chuyên gia, minh chứng S3 (schema `expert`) | ✅ Hoạt động |
-| `billing` | `5220` | Thanh toán, ví, escrow, payout (schema `billing`) | 🚧 Ví, sổ cái, nạp tiền PayOS, tài khoản ngân hàng, giữ/nhả/hoàn escrow và quyết toán cho review case, admin xem và chuyển khoản payout qua PayOS chi hộ |
+| `billing` | `5220` | Thanh toán, ví, escrow, payout (schema `billing`) | 🚧 Ví, sổ cái, nạp tiền PayOS, tài khoản ngân hàng, giữ/nhả/hoàn escrow và quyết toán cho review case, admin duyệt tài khoản ngân hàng, xem và chuyển khoản payout qua PayOS chi hộ |
 | `workflow` | `5030` | Tài liệu, hội thoại AI, review case (schema `workspace`, `review`) | ✅ Review case đủ vòng đời, chat và tệp trong case, khiếu nại và trọng tài, hết hạn tự động, chatbot, bản nháp, mẫu biểu |
 | `ingestion` | `5004` | Pipeline nạp tài liệu (schema `knowledge`) | ✅ Crawl job, upload, hàng chờ duyệt, duyệt, từ chối, index lại, tra cứu nguồn |
 | `rag-query` | `5104` | RAG / Vector Search | 🚧 Một endpoint nội bộ; truy xuất và sinh câu trả lời nằm ở `ai-service` (FastAPI + Qdrant) |

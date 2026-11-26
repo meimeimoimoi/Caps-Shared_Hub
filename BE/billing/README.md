@@ -8,8 +8,8 @@ It does **not** own accounts (auth), review cases themselves (workflow) or exper
 
 Built: wallet and ledger reads, payout bank accounts, PayOS credit top-ups (link + webhook), the staff payout
 list and escrow: hold (use case only, no endpoint until workflow sends the case fee), staff release (settlement +
-PENDING expert payout), staff refund and staff payout transfers through PayOS payouts (chi hộ). Disputes have tables
-only.
+PENDING expert payout), staff refund, staff review of bank accounts and staff payout transfers through PayOS payouts
+(chi hộ). Disputes have tables only.
 
 | Entity | Purpose |
 |---|---|
@@ -29,6 +29,9 @@ only.
 | POST | `/api/v1/billing/payos/create-topup` | signed in, session check | 10,000–50,000,000 VND; link lives 15 minutes |
 | GET | `/api/v1/billing/payos/topups/{paymentId}` | signed in, own payments only | status for polling; another user's id answers 404 |
 | POST | `/api/v1/billing/payos/webhook` | anonymous, HMAC signature | called by PayOS; unknown orders are acknowledged |
+| GET | `/api/v1/admin/billing/bank-accounts` | `PayoutManage`, session check | optional `status` (UNVERIFIED, VERIFIED, REJECTED), paging; full account numbers |
+| POST | `/api/v1/admin/billing/bank-accounts/{id}/verify` | `PayoutManage`, session check | UNVERIFIED only, not the reviewer's own account |
+| POST | `/api/v1/admin/billing/bank-accounts/{id}/reject` | `PayoutManage`, session check | `reason` (1–500, shown to the expert); final |
 | GET | `/api/v1/admin/billing/payouts` | `PayoutManage`, session check | optional `status`, paging as the ledger |
 | POST | `/api/v1/admin/billing/payouts/{payoutId}/transfer` | `PayoutManage`, session check | PENDING or FAILED only; sends it to the expert's bank |
 | POST | `/api/v1/admin/billing/payouts/{payoutId}/refresh` | `PayoutManage`, session check | reads a PROCESSING payout's outcome from PayOS |
@@ -57,6 +60,10 @@ only.
   webhook: staff call `refresh`, which looks the payout up by its PayOS id, or by reference when the answer was lost.
   A reference PayOS still does not know 10 minutes later becomes FAILED (`NOT_RECEIVED`). A payout without a usable
   account (none, or the expert removed it) takes the expert's current default account when it is sent.
+- Bank accounts start UNVERIFIED; staff verify one (the holder name in a banking app matches the expert's registered
+  name) or reject it with a reason, once. Payouts are only sent to VERIFIED accounts: the snapshot account when it is
+  still linked and verified, otherwise the expert's verified default (`PAYOUT_ACCOUNT_NOT_VERIFIED` otherwise). Full
+  numbers leave the service only on the staff review endpoints.
 - Account numbers are encrypted with Data Protection and hashed with HMAC. Losing the Data Protection keys makes
   stored numbers unreadable; changing `Billing:AccountHashKey` breaks duplicate detection. A duplicate means the
   same `BankBin` and the same number hash.

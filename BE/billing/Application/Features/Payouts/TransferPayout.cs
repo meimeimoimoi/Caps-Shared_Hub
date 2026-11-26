@@ -11,7 +11,8 @@ public sealed record TransferPayoutCommand(Guid PayoutId);
 /// <summary>
 /// Sends the transfer through the provider. The attempt is committed as PROCESSING before the call, so a lost
 /// answer can be resolved later by <see cref="RefreshPayoutHandler"/> and never becomes a second transfer.
-/// A payout without a usable account (none, or the expert removed it) takes the expert's current default.
+/// Only staff-VERIFIED accounts receive money: the snapshot account when it is still linked and verified,
+/// otherwise the expert's current default when that one is verified.
 /// </summary>
 public sealed class TransferPayoutHandler(
     IPayoutRepository payouts,
@@ -46,9 +47,13 @@ public sealed class TransferPayoutHandler(
             var now = clock.GetUtcNow();
             var accounts = await bankAccounts.ListAsync(payout.RecipientUserId, ct);
             var account =
-                accounts.FirstOrDefault(x => x.Id == payout.BankAccountId)
-                ?? accounts.FirstOrDefault(x => x.IsDefault)
-                ?? throw BillingErrors.PayoutNoBankAccount();
+                accounts.FirstOrDefault(x => x.Id == payout.BankAccountId && x.IsVerified)
+                ?? accounts.FirstOrDefault(x => x.IsDefault && x.IsVerified)
+                ?? throw (
+                    accounts.Count == 0
+                        ? BillingErrors.PayoutNoBankAccount()
+                        : BillingErrors.PayoutAccountNotVerified()
+                );
             if (account.Id != payout.BankAccountId)
                 payout.UseAccount(account, now);
             payout.StartAttempt(now);

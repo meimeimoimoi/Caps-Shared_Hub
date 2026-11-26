@@ -85,6 +85,27 @@ public sealed class PayoutTransferTests
     }
 
     [Fact]
+    public async Task Money_only_goes_to_a_verified_account()
+    {
+        var unverified = new Store(Account(isDefault: true, verified: false));
+        Assert.Equal(
+            "PAYOUT_ACCOUNT_NOT_VERIFIED",
+            (await Assert.ThrowsAsync<AppException>(unverified.Transfer)).Code
+        );
+        Assert.Equal(PayoutStatus.Pending, unverified.Payout.Status);
+        Assert.Empty(unverified.Gateway.Orders);
+
+        // The snapshot account is still unverified, but the expert's new default is verified
+        var fallback = Account(isDefault: true, last4: "2222");
+        var store = new Store(Account(isDefault: false, verified: false), fallback);
+        store.Gateway.Next = new(new("po_1", PayoutStatus.Processing, null), null);
+
+        await store.Transfer();
+
+        Assert.Equal(fallback.Id, store.Payout.BankAccountId);
+    }
+
+    [Fact]
     public async Task A_lost_answer_stays_processing_until_payos_reports_or_never_received_it()
     {
         var store = new Store(Account(isDefault: true));
@@ -132,14 +153,19 @@ public sealed class PayoutTransferTests
         Assert.Equal(PayoutStatus.Pending, store.Payout.Status);
     }
 
-    private static BankAccount Account(bool isDefault, string last4 = "6789") =>
-        BankAccount.Register(
+    private static BankAccount Account(bool isDefault, string last4 = "6789", bool verified = true)
+    {
+        var account = BankAccount.Register(
             Expert,
             new("970422", "Vietcombank", "NGUYEN VAN A"),
             new("enc:0123456789", "hash-" + last4, last4),
             isDefault,
             Now
         );
+        if (verified)
+            account.Verify(Guid.NewGuid(), Now);
+        return account;
+    }
 
     private sealed class Clock : TimeProvider
     {
@@ -247,6 +273,19 @@ public sealed class PayoutTransferTests
         ) => ListAsync(userId, ct);
 
         public void Add(BankAccount account) => accounts.Add(account);
+
+        public Task<BankAccount?> FindAsync(Guid id, CancellationToken ct) =>
+            throw new NotSupportedException();
+
+        public Task<IReadOnlyList<BankAccount>> ListByStatusAsync(
+            string? status,
+            int skip,
+            int take,
+            CancellationToken ct
+        ) => throw new NotSupportedException();
+
+        public Task<int> CountByStatusAsync(string? status, CancellationToken ct) =>
+            throw new NotSupportedException();
 
         public ProtectedAccountNumber Protect(string normalizedNumber) =>
             throw new NotSupportedException();

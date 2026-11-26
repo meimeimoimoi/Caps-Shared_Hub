@@ -19,3 +19,8 @@ public sealed record AddBankAccountRequest(
     public AddBankAccountCommand ToCommand(Guid userId) =>
         new(userId, BankBin, BankName, AccountNumber, AccountHolderName, IsDefault);
 }
+
+/// <summary>Why staff refuse a bank account; shown to the expert.</summary>
+public sealed record RejectBankAccountRequest(
+    [Required, MaxLength(BankAccount.MaxRejectionReasonLength)] string? Reason
+);
