@@ -417,7 +417,8 @@ public sealed class WorkflowDbContext(DbContextOptions<WorkflowDbContext> option
             e.HasIndex(x => new { x.RequesterUserId, x.Status })
                 .HasDatabaseName("ix_review_case_6");
             e.HasIndex(x => new { x.ExpertUserId, x.Status }).HasDatabaseName("ix_review_case_7");
-            // BR-G02: one running case per document version, whoever the expert; a closed case frees it
+            // Race guard for one version booked twice at once; the per-document rule (BR-G02) is checked when booking.
+            // ponytail: two versions of one document booked in the same instant both pass; index document_id once old duplicates are gone
             e.HasIndex(x => x.SourceVersionId)
                 .IsUnique()
                 .HasFilter($"status IN ('{string.Join("', '", ReviewCase.OpenStatuses)}')")
