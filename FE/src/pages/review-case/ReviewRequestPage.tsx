@@ -21,7 +21,7 @@ import { DEMO_CASES, REVIEWABLE_DRAFTS } from '@/features/review-case/fixtures'
 import {
   createReviewCase,
   getBookingTerms,
-  getLatestVersionId,
+  getDocumentVersions,
   getMyDocuments,
   uploadDocument,
   type UploadedDocument,
@@ -46,10 +46,8 @@ const initialsOf = (name: string) =>
 
 // The current tax year (00 section 3a); the client can pick another period before uploading
 const TAX_YEAR = new Date().getFullYear()
-// A listed document that has no version yet cannot be booked
 // "2026-01-01" -> "01/01/2026"; a tax period is a calendar day, so no time zone is involved
 const dayOf = (date: string) => date.split('-').reverse().join('/')
-const NO_VERSION = 'NO_VERSION'
 
 export default function ReviewRequestPage() {
   const { t } = useTranslation(['reviewCase', 'common'])
@@ -117,6 +115,17 @@ export default function ReviewRequestPage() {
   const [sending, setSending] = useState(false)
   const [sendError, setSendError] = useState<string | null>(null)
   const [draftId, setDraftId] = useState<string>(drafts[0]?.id ?? '')
+  // A listed document loads its versions once chosen; the client picks one, the newest is preselected
+  const chosenListed = listed.find((d) => d.id === draftId)
+  const versions = useQuery({
+    queryKey: ['private', 'document-versions', chosenListed?.documentId],
+    queryFn: ({ signal }) => getDocumentVersions(chosenListed!.documentId, signal),
+    enabled: chosenListed != null,
+  }).data
+  const [pickedVersions, setPickedVersions] = useState<Record<string, string>>({})
+  const chosenVersion = chosenListed
+    ? (pickedVersions[chosenListed.documentId] ?? versions?.[0]?.id)
+    : undefined
   const [scope, setScope] = useState('')
   const [consent, setConsent] = useState(false)
   const [submitted, setSubmitted] = useState(false)
@@ -164,37 +173,27 @@ export default function ReviewRequestPage() {
       chosen && 'documentId' in chosen ? chosen.documentId : null
     if (!scope.trim() || sending || !chosenDocument || !expertId || !service)
       return
+    // A listed document still loading its versions waits; one with none cannot be booked
+    if (chosenListed && !versions) return
+    const sourceVersionId = chosenListed ? chosenVersion : draftId
+    if (!sourceVersionId) return setSendError(t('request.noVersion'))
     setSending(true)
     setSendError(null)
-    const version =
-      chosen && 'latest' in chosen
-        ? getLatestVersionId(chosenDocument)
-        : Promise.resolve(draftId)
-    version
-      .then((sourceVersionId) =>
-        sourceVersionId
-          ? createReviewCase({
-              documentId: chosenDocument,
-              sourceVersionId,
-              expertProfileId: expertId,
-              serviceCode: service.serviceId,
-              problemDescription: scope.trim(),
-              expectedOutcome: null,
-              expectedFee:
-                service.price == null ? null : Number(service.price),
-            })
-          : Promise.reject(new Error(NO_VERSION))
-      )
+    createReviewCase({
+      documentId: chosenDocument,
+      sourceVersionId,
+      expertProfileId: expertId,
+      serviceCode: service.serviceId,
+      problemDescription: scope.trim(),
+      expectedOutcome: null,
+      expectedFee: service.price == null ? null : Number(service.price),
+    })
       .then((c) => navigate(`/cases/${c.id}`))
       .catch((err: unknown) => {
         // The expert changed the price meanwhile: show the new one so the client can send again
         if (err instanceof ApiError && err.code === 'PRICE_CHANGED')
           void query.refetch()
-        setSendError(
-          err instanceof Error && err.message === NO_VERSION
-            ? t('request.noVersion')
-            : toMessage(err)
-        )
+        setSendError(toMessage(err))
         setSending(false)
       })
   }
@@ -396,6 +395,50 @@ export default function ReviewRequestPage() {
                                   </span>
                                 </span>
                               </label>
+                              {draftId === d.id && versions && versions.length > 1 && (
+                                <div className="bg-sunken border-ink border-l-2 px-4 pb-3 pl-11">
+                                  <label
+                                    htmlFor={`${id}-version`}
+                                    className="text-fg-muted block text-xs"
+                                  >
+                                    {t('request.myDocs.version')}
+                                  </label>
+                                  <select
+                                    id={`${id}-version`}
+                                    value={chosenVersion}
+                                    onChange={(e) =>
+                                      setPickedVersions((picked) => ({
+                                        ...picked,
+                                        [d.documentId]: e.target.value,
+                                      }))
+                                    }
+                                    className={cn(fieldClass, 'mt-1 py-1.5 text-sm')}
+                                  >
+                                    {versions.map((v, i) => (
+                                      <option key={v.id} value={v.id}>
+                                        {t('request.myDocs.versionOption', {
+                                          no: v.versionNo,
+                                          // AI_DRAFT, EXTERNAL_FILE or EXPERT_REVIEWED (DocumentVersion.VersionType)
+                                          kind: t(
+                                            v.versionType === 'EXTERNAL_FILE'
+                                              ? 'request.myDocs.upload'
+                                              : v.versionType === 'EXPERT_REVIEWED'
+                                                ? 'request.myDocs.expertReviewed'
+                                                : 'request.myDocs.ai'
+                                          ),
+                                          at: f.at(v.createdAt),
+                                        })}
+                                        {i === 0 ? ` · ${t('request.myDocs.newest')}` : ''}
+                                      </option>
+                                    ))}
+                                  </select>
+                                </div>
+                              )}
+                              {draftId === d.id && versions?.length === 0 && (
+                                <p className="text-danger bg-sunken border-ink border-l-2 px-4 pb-3 pl-11 text-xs">
+                                  {t('request.noVersion')}
+                                </p>
+                              )}
                             </li>
                           ))}
                           {shownListed.length === 0 && (

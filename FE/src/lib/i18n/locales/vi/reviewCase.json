@@ -451,7 +451,11 @@
       "ai": "Bản nháp AI",
       "upload": "Tệp tải lên",
       "period": "Kỳ {{from}} – {{to}}",
-      "none": "Không có tài liệu nào khớp."
+      "none": "Không có tài liệu nào khớp.",
+      "version": "Phiên bản gửi thẩm định",
+      "versionOption": "Phiên bản {{no}} · {{kind}} · {{at}}",
+      "newest": "mới nhất",
+      "expertReviewed": "Bản chuyên gia đã rà soát"
     }
   },
   "nav": {

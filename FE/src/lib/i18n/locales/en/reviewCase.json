@@ -451,7 +451,11 @@
       "ai": "AI draft",
       "upload": "Uploaded file",
       "period": "Period {{from}} – {{to}}",
-      "none": "No document matches."
+      "none": "No document matches.",
+      "version": "Version to review",
+      "versionOption": "Version {{no}} · {{kind}} · {{at}}",
+      "newest": "newest",
+      "expertReviewed": "Expert-reviewed version"
     }
   },
   "nav": {
