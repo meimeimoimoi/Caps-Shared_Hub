@@ -12,8 +12,8 @@ using Microsoft.Extensions.Options;
 namespace Caps.Notification.Features.ReviewCases;
 
 /// <summary>
-/// A paid request is close to its response deadline: reminds the expert in the app and by email. A redelivered
-/// message reuses the stored row and only sends the email once.
+/// A paid review case waits for the expert: tells them in the app and by email. A redelivered message reuses
+/// the stored row and only sends the email once.
 /// </summary>
 public sealed class ReviewCaseResponseDueConsumer(
     NotificationDbContext db,
