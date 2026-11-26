@@ -28,6 +28,7 @@ active account. Request/response shapes, error codes and the worker endpoints: [
 | GET | `/crawl-jobs?page&pageSize` | KnowledgeManage | crawl runs, newest first |
 | GET | `/crawl-jobs/{id}` | KnowledgeManage | one run; poll while RUNNING, `detail.progress` = worker's latest milestone |
 | POST | `/documents/upload` | KnowledgeManage | multipart PDF/DOCX (20 MB) + source metadata → new PENDING version |
+| GET | `/documents?status&page&pageSize` | KnowledgeManage | versions by status (repeatable, empty = all), newest first |
 | GET | `/documents/pending?page&pageSize` | KnowledgeManage | review queue, oldest first |
 | GET | `/documents/{id}/preview` | KnowledgeManage | metadata + `contentJson` + `fileUrl`/`sourceUrl` |
 | GET | `/documents/{id}/file` | KnowledgeManage | original of an upload (crawled originals are not stored) |

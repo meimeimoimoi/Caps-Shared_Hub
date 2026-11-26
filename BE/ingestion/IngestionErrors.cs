@@ -38,6 +38,9 @@ public static class IngestionErrors
     public static AppException InvalidDocumentSource(string source) =>
         new(ErrorType.Validation, "INVALID_DOCUMENT_SOURCE", $"Unknown document source: {source}.");
 
+    public static AppException InvalidDocumentStatus(string status) =>
+        new(ErrorType.Validation, "INVALID_DOCUMENT_STATUS", $"Unknown document status: {status}.");
+
     public static AppException InvalidContentJson() =>
         new(ErrorType.Validation, "INVALID_CONTENT_JSON", "content_json must be a JSON object.");
 

@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using System.Text.Json;
 using Caps.Ingestion.Constants;
 using Caps.Ingestion.Entities;
@@ -109,4 +110,23 @@ public sealed record DocumentSummaryResponse(
             x.LastError,
             x.CreatedAt
         );
+
+    /// <summary>EF projection for list queries, so the (large) content JSON is not loaded.</summary>
+    public static readonly Expression<Func<KnowledgeDocument, DocumentSummaryResponse>> Projection =
+        x =>
+            new(
+                x.Id,
+                x.LegalSourceId,
+                x.LegalSource.DocumentNumber,
+                x.LegalSource.DocType,
+                x.LegalSource.Title,
+                x.VersionNo,
+                x.Source,
+                x.Status,
+                x.IssuedDate,
+                x.EffectiveFrom,
+                x.ContentJson != null,
+                x.LastError,
+                x.CreatedAt
+            );
 }
