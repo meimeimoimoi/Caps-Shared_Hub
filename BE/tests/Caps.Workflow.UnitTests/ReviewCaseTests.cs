@@ -98,7 +98,7 @@ public sealed class ReviewCaseTests
     [Fact]
     public void Request_freezes_the_offer_and_records_the_opening()
     {
-        var offer = Offers.Sample(Expert, ExpertUser);
+        var offer = Offers.Sample(Expert, ExpertUser) with { ExpertEmail = "expert@caps.test" };
         var (reviewCase, opened) = ReviewCase.Request(
             Client,
             "client@caps.test",
@@ -116,6 +116,8 @@ public sealed class ReviewCaseTests
         Assert.Null(reviewCase.ExpectedOutcome);
         // Kept so the client can be emailed when the expert later asks them something
         Assert.Equal("client@caps.test", reviewCase.RequesterEmail);
+        // Kept so the expert is emailed on the new request and the response reminder
+        Assert.Equal("expert@caps.test", reviewCase.ExpertEmail);
         // Kept so suspending the service refunds only that service's waiting requests
         Assert.Equal("HUMAN_VERIFICATION", reviewCase.ServiceCode);
         Assert.Null(opened.FromStatus);

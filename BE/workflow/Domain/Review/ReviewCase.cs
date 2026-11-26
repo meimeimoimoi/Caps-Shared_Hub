@@ -223,6 +223,7 @@ public sealed partial class ReviewCase
         {
             RequesterUserId = requesterUserId,
             RequesterEmail = requesterEmail,
+            ExpertEmail = offer.ExpertEmail,
             DocumentId = documentId,
             SourceVersionId = sourceVersionId,
             ExpertProfileId = offer.ExpertProfileId,
