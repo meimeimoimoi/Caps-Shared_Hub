@@ -11,7 +11,7 @@ namespace Caps.Workflow.Api.Controllers;
 
 /// <summary>
 /// System admins decide clients' disputes about deliveries: the open queue, a decision with the client's refund
-/// share, and one extension of the 48-hour decision window.
+/// share, and one extension of the decision window by 2 working days.
 /// </summary>
 [ApiController, RequirePermission(Permission.DisputeResolve)]
 [Route("api/v1/admin/review-cases")]
