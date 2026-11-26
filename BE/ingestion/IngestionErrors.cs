@@ -64,6 +64,9 @@ public static class IngestionErrors
     public static AppException DocumentNotFound() =>
         new(ErrorType.NotFound, "DOCUMENT_NOT_FOUND", "Document not found.");
 
+    public static AppException UnitNotFound() =>
+        new(ErrorType.NotFound, "UNIT_NOT_FOUND", "The document has no parsed unit with this id.");
+
     public static AppException DocumentFileNotStored() =>
         new(
             ErrorType.NotFound,

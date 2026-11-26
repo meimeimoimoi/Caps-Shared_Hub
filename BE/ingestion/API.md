@@ -63,6 +63,7 @@ Path tính từ `/api/v1/knowledge`.
 | GET | `/documents/{id}/preview` | KnowledgeManage | Xem một văn bản để duyệt |
 | GET | `/documents/{id}/file` | KnowledgeManage | Tải file gốc (văn bản upload) |
 | POST | `/documents/{id}/reject` | KnowledgeManage | Từ chối văn bản |
+| POST | `/documents/{id}/reviewed-units` | KnowledgeManage | Đánh dấu một đơn vị đã rà soát (`{ unitId }`), lưu `reviewed: true` trong `contentJson` |
 | GET | `/sources` | Tài khoản ACTIVE | Tra cứu danh mục văn bản |
 | GET | `/sources/{id}/tree` | Tài khoản ACTIVE | Cây sửa đổi |
 

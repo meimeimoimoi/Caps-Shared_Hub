@@ -32,6 +32,7 @@ active account. Request/response shapes, error codes and the worker endpoints: [
 | GET | `/documents/{id}/preview` | KnowledgeManage | metadata + `contentJson` + `fileUrl`/`sourceUrl` |
 | GET | `/documents/{id}/file` | KnowledgeManage | original of an upload (crawled originals are not stored) |
 | POST | `/documents/{id}/reject` | KnowledgeManage | `{reason}`; PENDING → REJECTED, 409 otherwise |
+| POST | `/documents/{id}/reviewed-units` | KnowledgeManage | `{ unitId }` → `reviewed: true` on that unit in `contentJson`; a new parse starts the checklist over |
 | GET | `/sources?q&docType&page&pageSize` | active account | search by number/title, with amendment links |
 | GET | `/sources/{id}/tree` | active account | amendment family tree (from `legal_amendment`) |
 

@@ -10,6 +10,12 @@ public sealed record RejectDocumentRequest([Required, MaxLength(1000)] string Re
         new(reviewerUserId, documentId, Reason);
 }
 
+/// <summary>Ticks one parsed unit off the review checklist; unitId is units[].id in contentJson.</summary>
+public sealed record MarkUnitReviewedRequest([Required, MaxLength(128)] string UnitId)
+{
+    public MarkUnitReviewedCommand ToCommand(Guid documentId) => new(documentId, UnitId);
+}
+
 /// <summary>A legal document file uploaded by a Knowledge Admin, with the metadata of its legal source.</summary>
 public sealed class UploadDocumentRequest
 {
