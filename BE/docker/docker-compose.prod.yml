@@ -127,6 +127,8 @@ services:
       Storage__SecretKey: ${SEAWEEDFS_SECRET_KEY:-caps-dev-secret-change-me}
       AiService__BaseUrl: http://ai-service:8000
       AiService__InternalKey: ${AI_SERVICE_INTERNAL_KEY:-}
+      # Called by workflow with X-Internal-Key (offers, slots, ratings)
+      InternalApi__Key: ${EXPERT_INTERNAL_API_KEY:?set it in .env}
     ports:
       - "5198:8080"
     depends_on:
@@ -167,6 +169,81 @@ services:
     networks:
       - caps_network
 
+  billing:
+    image: ghcr.io/${GHCR_OWNER:-meimeimoimoi}/caps-billing:latest
+    container_name: caps_billing
+    restart: always
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__Postgres: Host=postgres;Port=5432;Database=caps_db;Username=caps_billing;Password=${CAPS_BILLING_DB_PASSWORD}
+      ConnectionStrings__Redis: redis:6379
+      ConnectionStrings__RabbitMq: amqp://${RABBITMQ_USER:-guest}:${RABBITMQ_PASS:-guest}@rabbitmq:5672
+      Jwt__JwksUrl: http://auth:8080/.well-known/jwks.json
+      Jwt__RequireHttpsMetadata: "false"
+      # Called by workflow with X-Internal-Key (escrow hold, refund, settle)
+      InternalApi__Key: ${BILLING_INTERNAL_API_KEY:?set it in .env}
+      # Losing these keys makes every stored bank account number unreadable: keep the volume
+      Billing__DataProtectionKeysPath: /var/lib/caps-billing/keys
+      Billing__AccountHashKey: ${BILLING_ACCOUNT_HASH_KEY:?set it in .env}
+      # PayOS collection channel (top-ups); empty keys make payments answer PAYMENT_UNAVAILABLE
+      PayOS__ClientId: ${PAYOS_CLIENT_ID:-}
+      PayOS__ApiKey: ${PAYOS_API_KEY:-}
+      PayOS__ChecksumKey: ${PAYOS_CHECKSUM_KEY:-}
+      PayOS__ReturnUrl: ${PUBLIC_URL:-http://localhost}/wallet?topup=success
+      PayOS__CancelUrl: ${PUBLIC_URL:-http://localhost}/wallet?topup=cancelled
+      # PayOS payout channel (chi hộ), separate keys; empty keys make transfers answer PAYMENT_UNAVAILABLE
+      PayOS__PayoutClientId: ${PAYOS_PAYOUT_CLIENT_ID:-}
+      PayOS__PayoutApiKey: ${PAYOS_PAYOUT_API_KEY:-}
+      PayOS__PayoutChecksumKey: ${PAYOS_PAYOUT_CHECKSUM_KEY:-}
+    volumes:
+      - billing_keys:/var/lib/caps-billing/keys
+    # No published port: users go through the gateway, workflow uses caps_network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - caps_network
+
+  workflow:
+    image: ghcr.io/${GHCR_OWNER:-meimeimoimoi}/caps-workflow:latest
+    container_name: caps_workflow
+    restart: always
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__Postgres: Host=postgres;Port=5432;Database=caps_db;Username=caps_workflow;Password=${CAPS_WORKFLOW_DB_PASSWORD}
+      ConnectionStrings__Redis: redis:6379
+      ConnectionStrings__RabbitMq: amqp://${RABBITMQ_USER:-guest}:${RABBITMQ_PASS:-guest}@rabbitmq:5672
+      Jwt__JwksUrl: http://auth:8080/.well-known/jwks.json
+      Jwt__RequireHttpsMetadata: "false"
+      Expert__Url: http://expert:8080
+      Expert__InternalKey: ${EXPERT_INTERNAL_API_KEY:?set it in .env}
+      Billing__Url: http://billing:8080
+      Billing__InternalKey: ${BILLING_INTERNAL_API_KEY:?set it in .env}
+      Storage__ServiceUrl: http://seaweedfs:8333
+      Storage__AccessKey: ${SEAWEEDFS_ACCESS_KEY:-caps-dev-access}
+      Storage__SecretKey: ${SEAWEEDFS_SECRET_KEY:-caps-dev-secret-change-me}
+      Services__AiService: http://ai-service:8000
+      Services__AiServiceInternalKey: ${AI_SERVICE_INTERNAL_KEY:-}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      expert:
+        condition: service_started
+      billing:
+        condition: service_started
+    networks:
+      - caps_network
+
   gateway:
     image: ghcr.io/${GHCR_OWNER:-meimeimoimoi}/caps-gateway:latest
     container_name: caps_gateway
@@ -179,12 +256,16 @@ services:
       ReverseProxy__Clusters__auth-cluster__Destinations__auth__Address: http://auth:8080
       ReverseProxy__Clusters__expert-cluster__Destinations__expert__Address: http://expert:8080
       ReverseProxy__Clusters__ingestion-cluster__Destinations__ingestion__Address: http://ingestion:8080
+      ReverseProxy__Clusters__billing-cluster__Destinations__billing__Address: http://billing:8080
+      ReverseProxy__Clusters__workflow-cluster__Destinations__workflow__Address: http://workflow:8080
     ports:
       - "5190:8080"
     depends_on:
       - auth
       - expert
       - ingestion
+      - billing
+      - workflow
     networks:
       caps_network:
         ipv4_address: 172.28.0.10
@@ -262,5 +343,6 @@ volumes:
   rabbitmq_data:
   seaweedfs_data:
   auth_keys:
+  billing_keys:
   crawler_data:
 
