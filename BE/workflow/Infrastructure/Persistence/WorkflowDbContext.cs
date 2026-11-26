@@ -347,6 +347,7 @@ public sealed class WorkflowDbContext(DbContextOptions<WorkflowDbContext> option
             e.Property(x => x.SourceVersionId).HasColumnName("source_version_id");
             e.Property(x => x.RequesterUserId).HasColumnName("requester_user_id");
             e.Property(x => x.RequesterEmail).HasColumnName("requester_email");
+            e.Property(x => x.ExpertEmail).HasColumnName("expert_email");
             e.Property(x => x.ExpertProfileId).HasColumnName("expert_profile_id");
             e.Property(x => x.ExpertUserId).HasColumnName("expert_user_id");
             e.Property(x => x.SlotId).HasColumnName("slot_id");
@@ -416,8 +417,8 @@ public sealed class WorkflowDbContext(DbContextOptions<WorkflowDbContext> option
             e.HasIndex(x => new { x.RequesterUserId, x.Status })
                 .HasDatabaseName("ix_review_case_6");
             e.HasIndex(x => new { x.ExpertUserId, x.Status }).HasDatabaseName("ix_review_case_7");
-            // One running case per document version and expert; a closed case frees the pair
-            e.HasIndex(x => new { x.SourceVersionId, x.ExpertProfileId })
+            // BR-G02: one running case per document version, whoever the expert; a closed case frees it
+            e.HasIndex(x => x.SourceVersionId)
                 .IsUnique()
                 .HasFilter($"status IN ('{string.Join("', '", ReviewCase.OpenStatuses)}')")
                 .HasDatabaseName("ux_review_case_open");
@@ -518,6 +519,9 @@ public sealed class WorkflowDbContext(DbContextOptions<WorkflowDbContext> option
             e.Property(x => x.OpenedAt).HasColumnName("opened_at");
             e.Property(x => x.DecideBy).HasColumnName("decide_by");
             e.Property(x => x.Extended).HasColumnName("extended");
+            e.Property(x => x.ExtendedBy).HasColumnName("extended_by");
+            e.Property(x => x.ExtendedAt).HasColumnName("extended_at");
+            e.Property(x => x.ExtensionReason).HasColumnName("extension_reason");
             e.Property(x => x.OverdueAlertedAt).HasColumnName("overdue_alerted_at");
             e.Property(x => x.ExpertStatement).HasColumnName("expert_statement");
             e.Property(x => x.ExpertStatementAt).HasColumnName("expert_statement_at");

@@ -7,7 +7,9 @@ namespace Caps.Workflow.Domain.Review;
 public sealed class ReviewAttachment
 {
     public const int MaxBytes = 50 * 1024 * 1024;
-    public const int MaxPerCase = 20;
+
+    // Per party, so one side cannot use up the other's room for evidence
+    public const int MaxPerParty = 10;
     public const int MaxFileNameLength = 255;
     public const string Docx =
         "application/vnd.openxmlformats-officedocument.wordprocessingml.document";

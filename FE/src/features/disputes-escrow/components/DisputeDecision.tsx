@@ -42,7 +42,8 @@ interface DisputeDecisionProps {
   platformFeePct?: number
   /** Rejects when the server refuses; the error stays on the card */
   onDecide: (outcome: DisputeOutcome, reason: string) => Promise<unknown>
-  onEscalate: () => Promise<unknown>
+  /** Extends the decision deadline once; the reason is stored with who and when */
+  onEscalate: (reason: string) => Promise<unknown>
 }
 
 /* Arbitration card: pick an outcome and a reason, then confirm; the decision moves escrow money
@@ -61,6 +62,7 @@ export function DisputeDecision({
   const { t } = useTranslation(['admin', 'common'])
   const [outcome, setOutcome] = useState<DisputeOutcome>()
   const [reason, setReason] = useState('')
+  const [extendReason, setExtendReason] = useState('')
   const [confirming, setConfirming] = useState<'decide' | 'escalate' | null>(
     null
   )
@@ -73,7 +75,7 @@ export function DisputeDecision({
     setError(null)
     try {
       if (confirming === 'decide' && outcome) await onDecide(outcome, reason)
-      else if (confirming === 'escalate') await onEscalate()
+      else if (confirming === 'escalate') await onEscalate(extendReason.trim())
     } catch {
       setError(
         confirming === 'decide'
@@ -210,7 +212,7 @@ export function DisputeDecision({
         </button>
       </fieldset>
 
-      {/* Professional-judgment disputes go to an Authorized Reviewer; allowed once.
+      {/* One more decision window, once, with a reason; it hands the dispute to no one.
           Kept below the decision so the card has one primary path */}
       {!decided && (
         <div className="border-border-subtle mt-5 border-t pt-4 text-sm">
@@ -264,7 +266,11 @@ export function DisputeDecision({
               </button>
               <button
                 type="button"
-                disabled={pending}
+                disabled={
+                  pending ||
+                  (confirming === 'escalate' &&
+                    extendReason.trim().length < MIN_REASON_LENGTH)
+                }
                 onClick={() => void run()}
                 className={`btn btn-press ${confirming === 'decide' ? 'btn-danger' : 'btn-primary'}`}
               >
@@ -275,6 +281,21 @@ export function DisputeDecision({
             </>
           }
         >
+          {confirming === 'escalate' && (
+            <label className="mt-4 flex flex-col gap-2 text-sm font-semibold">
+              {t('disputes.escalation.reason')}
+              <textarea
+                rows={3}
+                value={extendReason}
+                onChange={(e) => setExtendReason(e.target.value)}
+                aria-describedby="extend-reason-hint"
+                className="border-border-control rounded-control shadow-control bg-paper placeholder:text-fg-muted resize-y border px-3 py-2 text-base font-normal"
+              />
+              <span id="extend-reason-hint" className="text-fg-muted text-caption font-normal">
+                {t('disputes.decision.reasonMin', { count: MIN_REASON_LENGTH })}
+              </span>
+            </label>
+          )}
           {confirming === 'decide' && outcome && (
             <dl className="bg-sunken rounded-surface mt-4 space-y-2 p-3 text-sm">
               <div>

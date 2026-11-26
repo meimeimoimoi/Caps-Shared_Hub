@@ -60,19 +60,25 @@ public sealed class AdminDisputesController(ICurrentUser currentUser) : Controll
         return Ok(ApiResponse<DisputeResponse>.Ok(dispute));
     }
 
-    /// <summary>Gives the admin one more 48-hour decision window.</summary>
+    /// <summary>Gives the admin one more decision window of 2 working days, once, with a reason.</summary>
+    /// <remarks>
+    /// Also allowed after the deadline passed. Who, when and why are stored; the client and the expert are told
+    /// in-app with the new deadline. The expert's statement window does not reopen.
+    /// </remarks>
     /// <response code="200">The dispute with the later deadline.</response>
+    /// <response code="400">DISPUTE_EXTENSION_REASON_REQUIRED (missing or under 10 characters).</response>
     /// <response code="403">Missing the DisputeResolve permission.</response>
-    /// <response code="404">DISPUTE_NOT_FOUND.</response>
+    /// <response code="404">REVIEW_CASE_NOT_FOUND or DISPUTE_NOT_FOUND.</response>
     /// <response code="409">DISPUTE_ALREADY_EXTENDED or CASE_STATUS_INVALID (closed).</response>
     [HttpPost("{caseId:guid}/dispute/extend")]
     public async Task<IActionResult> Extend(
         Guid caseId,
+        [FromBody] ExtendDisputeRequest r,
         [FromServices] ICommandHandler<ExtendDisputeCommand, DisputeResponse> handler,
         CancellationToken ct
     )
     {
-        var dispute = await handler.HandleAsync(new(caseId), ct);
+        var dispute = await handler.HandleAsync(new(UserId, caseId, r.Reason), ct);
         return Ok(ApiResponse<DisputeResponse>.Ok(dispute));
     }
 

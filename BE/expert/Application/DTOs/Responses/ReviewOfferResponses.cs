@@ -17,7 +17,8 @@ public sealed record ReviewOfferResponse(
     int NoResponseRefundPercent,
     int NoResponseExpertPercent,
     int FreeSlots,
-    int NoDeliveryRefundPercent
+    int NoDeliveryRefundPercent,
+    string? ExpertEmail = null
 );
 
 /// <summary>What the expert has left after a case took its slot.</summary>

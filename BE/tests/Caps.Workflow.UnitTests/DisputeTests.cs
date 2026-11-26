@@ -150,17 +150,92 @@ public sealed class DisputeTests
         );
     }
 
+    private const string ExtendReason = "Waiting for the client's VAT invoices";
+    private static readonly byte[] Pdf = [.. "%PDF-1.7 test"u8];
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void Both_parties_add_evidence_only_until_the_statement_deadline(bool expert)
+    {
+        var (reviewCase, dispute) = Disputed();
+        var party = expert ? ExpertUser : Client;
+        var due = dispute.StatementDueBy;
+
+        reviewCase.AddAttachment(party, "before.pdf", Pdf, [], due.AddMinutes(-1), dispute);
+
+        Assert.Equal(
+            "DISPUTE_EVIDENCE_CLOSED",
+            Errors.CodeOf(() => reviewCase.AddAttachment(party, "after.pdf", Pdf, [], due, dispute))
+        );
+    }
+
+    [Fact]
+    public void An_extension_reopens_evidence_until_the_new_decision_deadline()
+    {
+        var (reviewCase, dispute) = Disputed();
+        dispute.Extend(Admin, ExtendReason, dispute.StatementDueBy);
+
+        reviewCase.AddAttachment(
+            Client,
+            "late.pdf",
+            Pdf,
+            [],
+            dispute.DecideBy.AddMinutes(-1),
+            dispute
+        );
+
+        Assert.Equal(
+            "DISPUTE_EVIDENCE_CLOSED",
+            Errors.CodeOf(() =>
+                reviewCase.AddAttachment(ExpertUser, "x.pdf", Pdf, [], dispute.DecideBy, dispute)
+            )
+        );
+    }
+
     [Fact]
     public void The_admin_extends_the_decision_window_once()
     {
         var (_, dispute) = Disputed();
         var due = dispute.DecideBy;
 
-        dispute.Extend();
+        dispute.Extend(Admin, "  " + ExtendReason + "  ", Now.AddHours(3));
 
         // Thursday plus 2 working days skips the weekend: Monday
         Assert.Equal(due.AddDays(4), dispute.DecideBy);
-        Assert.Equal("DISPUTE_ALREADY_EXTENDED", Errors.CodeOf(() => dispute.Extend()));
+        Assert.Equal(Admin, dispute.ExtendedBy);
+        Assert.Equal(Now.AddHours(3), dispute.ExtendedAt);
+        Assert.Equal(ExtendReason, dispute.ExtensionReason);
+        Assert.Equal(
+            "DISPUTE_ALREADY_EXTENDED",
+            Errors.CodeOf(() => dispute.Extend(Admin, ExtendReason, Now.AddHours(4)))
+        );
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("Need time")]
+    public void An_extension_needs_a_reason_of_ten_characters(string? reason)
+    {
+        var (_, dispute) = Disputed();
+
+        Assert.Equal(
+            "DISPUTE_EXTENSION_REASON_REQUIRED",
+            Errors.CodeOf(() => dispute.Extend(Admin, reason, Now))
+        );
+        Assert.False(dispute.Extended);
+    }
+
+    [Fact]
+    public void A_dispute_past_its_deadline_can_still_be_extended()
+    {
+        var (_, dispute) = Disputed();
+        var due = dispute.DecideBy;
+
+        dispute.Extend(Admin, ExtendReason, due.AddDays(1));
+
+        Assert.True(dispute.DecideBy > due);
+        Assert.Null(dispute.OverdueAlertedAt);
     }
 
     // Upheld: the client gets 50%, the platform keeps the rest; rejected: the fee splits as booked
@@ -341,7 +416,10 @@ public sealed class DisputeTests
             "CASE_STATUS_INVALID",
             Errors.CodeOf(() => reviewCase.ResolveDispute(dispute, Admin, 50, "Late", Now))
         );
-        Assert.Equal("CASE_STATUS_INVALID", Errors.CodeOf(() => dispute.Extend()));
+        Assert.Equal(
+            "CASE_STATUS_INVALID",
+            Errors.CodeOf(() => dispute.Extend(Admin, ExtendReason, Now))
+        );
     }
 
     [Fact]

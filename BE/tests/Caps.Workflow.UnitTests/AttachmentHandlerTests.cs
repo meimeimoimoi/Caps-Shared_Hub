@@ -43,7 +43,7 @@ public sealed class AttachmentHandlerTests
     [Fact]
     public async Task A_full_case_stores_nothing()
     {
-        var run = new Run(existing: ReviewAttachment.MaxPerCase);
+        var run = new Run(existing: ReviewAttachment.MaxPerParty);
 
         var e = await Assert.ThrowsAsync<AppException>(() => run.Upload(Client));
 
@@ -211,7 +211,7 @@ public sealed class AttachmentHandlerTests
             Case.Accept(ExpertProfile, Expert, now);
             Cases = new FakeCases(Case);
             Attachments = new FakeAttachments();
-            // Distinct names, so only the per-case limit applies
+            // Distinct names from the client, so only the client's limit applies
             for (var i = 0; i < existing; i++)
             {
                 Attachments.Stored.Add(
@@ -231,6 +231,7 @@ public sealed class AttachmentHandlerTests
             new AddAttachmentHandler(
                 Cases,
                 Attachments,
+                new NoDisputes(),
                 Storage,
                 UnitOfWork,
                 TimeProvider.System
@@ -325,6 +326,20 @@ public sealed class AttachmentHandlerTests
         }
 
         public ValueTask DisposeAsync() => ValueTask.CompletedTask;
+    }
+
+    // No case here is disputed
+    private sealed class NoDisputes : IReviewDisputeRepository
+    {
+        public Task<ReviewDispute?> FindByCaseAsync(Guid reviewCaseId, CancellationToken ct) =>
+            Task.FromResult<ReviewDispute?>(null);
+
+        public void Add(ReviewDispute dispute) => throw new NotSupportedException();
+
+        public Task<IReadOnlyList<(ReviewDispute Dispute, ReviewCase Case)>> ListAsync(
+            bool open,
+            CancellationToken ct
+        ) => throw new NotSupportedException();
     }
 
     private sealed class FakeCases(ReviewCase reviewCase) : IReviewCaseRepository

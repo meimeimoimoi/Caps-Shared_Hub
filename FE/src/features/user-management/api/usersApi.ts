@@ -69,6 +69,22 @@ export async function getUsers(signal?: AbortSignal) {
   return [...users.values()]
 }
 
+/** Workflow's open review cases of the account, as the client and as the expert */
+export interface OpenCaseCount {
+  asClient: number
+  asExpert: number
+}
+
+/** How many review cases would be left hanging if the account were locked now. */
+export async function getOpenCases(id: string, signal?: AbortSignal) {
+  if (isExpertDemo) return { asClient: 0, asExpert: 0 }
+  const { data } = await api.get<{ data: OpenCaseCount }>(
+    '/api/v1/admin/review-cases/open-count',
+    { params: { userId: id }, signal }
+  )
+  return data
+}
+
 /** Lock or unlock an account; both need a reason, kept in the audit trail. */
 export async function setUserLocked(
   id: string,

@@ -249,7 +249,7 @@ export async function decideDispute(id: string, body: DisputeDecisionInput) {
 }
 
 /** Escalate a professional-judgment dispute; allowed once and adds 2 working days to the deadline */
-export async function escalateDispute(id: string) {
+export async function escalateDispute(id: string, reason: string) {
   if (isExpertDemo) {
     const d = (await fixtures()).mockDisputes.find((x) => x.id === id)
     if (!d || d.escalatedAt || d.resolvedAt) return
@@ -261,7 +261,7 @@ export async function escalateDispute(id: string) {
     })
     return
   }
-  await api.post(`${CASES}/${id}/dispute/extend`)
+  await api.post(`${CASES}/${id}/dispute/extend`, { reason })
 }
 
 /* ── Escrow ── */

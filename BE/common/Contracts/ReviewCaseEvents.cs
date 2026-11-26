@@ -15,7 +15,8 @@ public sealed record ReviewCaseRequestedEvent(
     long Fee,
     int TurnaroundHours,
     DateTimeOffset ResponseDeadline,
-    DateTimeOffset OccurredAt
+    DateTimeOffset OccurredAt,
+    string? ExpertEmail = null
 );
 
 /// <summary>
@@ -61,7 +62,8 @@ public sealed record ReviewCaseResponseDueEvent(
     Guid ReviewCaseId,
     Guid ExpertUserId,
     DateTimeOffset ResponseDeadline,
-    DateTimeOffset OccurredAt
+    DateTimeOffset OccurredAt,
+    string? ExpertEmail = null
 );
 
 /// <summary>
@@ -93,6 +95,19 @@ public sealed record ReviewCaseDisputeOverdueEvent(
     DateTimeOffset DecideBy,
     bool Extended,
     bool First,
+    DateTimeOffset OccurredAt
+);
+
+/// <summary>
+/// A system admin extended an open dispute's decision deadline once. Published by the workflow service; the
+/// notification service tells the client and the expert in-app, with the new deadline.
+/// </summary>
+public sealed record ReviewCaseDisputeExtendedEvent(
+    Guid Id,
+    Guid ReviewCaseId,
+    Guid RequesterUserId,
+    Guid ExpertUserId,
+    DateTimeOffset DecideBy,
     DateTimeOffset OccurredAt
 );
 

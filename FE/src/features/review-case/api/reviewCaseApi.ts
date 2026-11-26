@@ -133,19 +133,22 @@ export const getMyDocuments = (signal?: AbortSignal) =>
     })
   ).then((page) => page.items)
 
-/** The newest version of a document, the one sent for review; undefined when it has none yet. */
-export const getLatestVersionId = (documentId: string) =>
+/** One version of a client's document, as the client picks which one the expert reviews. */
+export interface DocumentVersionOption {
+  id: string
+  versionNo: number
+  /** AI_DRAFT or EXTERNAL_FILE */
+  versionType: string
+  createdAt: string
+}
+
+/** A document's versions, newest first, so the exact version is chosen rather than assumed (BR-D19). */
+export const getDocumentVersions = (documentId: string, signal?: AbortSignal) =>
   unwrap(
-    api.get<Envelope<{ id: string; versionNo: number }[]>>(
-      `/api/v1/documents/${documentId}/versions`
-    )
-  ).then(
-    (versions) =>
-      versions.reduce<{ id: string; versionNo: number } | undefined>(
-        (newest, v) => (!newest || v.versionNo > newest.versionNo ? v : newest),
-        undefined
-      )?.id
-  )
+    api.get<Envelope<DocumentVersionOption[]>>(`/api/v1/documents/${documentId}/versions`, {
+      signal,
+    })
+  ).then((versions) => [...versions].sort((a, b) => b.versionNo - a.versionNo))
 
 /** Uploads the client's own file as a new document so it can be sent for expert review. */
 export function uploadDocument(

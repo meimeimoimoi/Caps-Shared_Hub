@@ -146,6 +146,25 @@ export function useNotifications() {
   }
 
   const toShell = (n: AppNotification): ShellNotification | null => {
+    // The admin took the one extension: the decision is now due later
+    if (n.type === 'REVIEW_CASE_DISPUTE_EXTENDED')
+      return {
+        id: n.id,
+        text: t('notifications.reviewCase.disputeExtended', {
+          at:
+            typeof n.data.decideBy === 'string'
+              ? new Date(n.data.decideBy).toLocaleString('vi-VN', {
+                  hour: '2-digit',
+                  minute: '2-digit',
+                  day: '2-digit',
+                  month: '2-digit',
+                  year: 'numeric',
+                })
+              : '',
+        }),
+        to: typeof n.data.link === 'string' ? n.data.link : '/cases',
+        read: n.readAt != null,
+      }
     // The admin has not decided a dispute by its deadline; the fee stays held
     if (n.type === 'REVIEW_CASE_DISPUTE_OVERDUE')
       return {

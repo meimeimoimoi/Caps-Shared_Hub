@@ -53,7 +53,8 @@ public sealed class GetReviewOfferHandler(
             fee.NoResponseRefundPercent,
             fee.NoResponseExpertPercent,
             profile.FreeSlots,
-            fee.NoDeliveryRefundPercent
+            fee.NoDeliveryRefundPercent,
+            profile.ContactEmail
         );
     }
 }

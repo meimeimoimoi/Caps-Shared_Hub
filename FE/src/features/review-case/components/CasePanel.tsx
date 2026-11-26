@@ -470,7 +470,11 @@ export function CasePanel({
           <p className="text-fg-muted max-w-[65ch] text-sm">
             {c.dispute?.decisionLate
               ? t('panel.DISPUTED.late')
-              : t('panel.DISPUTED.sla', { days: DISPUTE_SLA_DAYS })}{' '}
+              : c.dispute?.decideBy
+                ? t(c.dispute.extended ? 'panel.DISPUTED.decideByExtended' : 'panel.DISPUTED.decideBy', {
+                    at: f.at(c.dispute.decideBy),
+                  })
+                : t('panel.DISPUTED.sla', { days: DISPUTE_SLA_DAYS })}{' '}
             {t('panel.DISPUTED.escalation')}
           </p>
           {c.live && (

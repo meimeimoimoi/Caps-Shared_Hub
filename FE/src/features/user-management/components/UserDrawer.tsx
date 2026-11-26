@@ -9,6 +9,7 @@ import { Pagination } from '@/components/ui/navigation/pagination'
 import { usePagination } from '@/hooks/usePagination'
 import { StatusBadge } from '@/components/ui/display/status-badge'
 import { USER_STATUS } from '../constants'
+import { useOpenCases } from '../hooks/useUsers'
 import type { ManagedUser } from '../types'
 
 type Action = 'lock' | 'unlock' | 'reset'
@@ -54,6 +55,9 @@ export function UserDrawer({
     .join('')
     .toUpperCase()
   const locked = user.status === 'LOCKED'
+  // Locking someone in a running case leaves it hanging: say so before the admin confirms
+  const { data: open } = useOpenCases(user.id, action === 'lock')
+  const openTotal = open ? open.asClient + open.asExpert : 0
   const history = usePagination(user.history ?? [], user.id, 5)
 
   const run = () => {
@@ -113,6 +117,19 @@ export function UserDrawer({
                     ? t('users.action.unlockBody')
                     : t('users.action.resetBody', { email: user.email })}
               </p>
+              {action === 'lock' && open && openTotal > 0 && (
+                <p
+                  role="alert"
+                  className="bg-warning-soft text-fg-strong rounded-control mt-3 px-3 py-2 text-sm"
+                >
+                  {t('users.action.lockOpenCases', {
+                    count: openTotal,
+                    asClient: open.asClient,
+                    asExpert: open.asExpert,
+                  })}
+                  {open.asExpert > 0 && ` ${t('users.action.lockOpenCasesExpert')}`}
+                </p>
+              )}
             </div>
             {/* Every account action needs a reason; it goes to the audit trail */}
             <FormField

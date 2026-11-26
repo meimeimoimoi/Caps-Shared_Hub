@@ -3,10 +3,19 @@ import { useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { foldVietnamese, paginate } from '@/lib/utils'
 import { useAccount } from '@/features/auth'
-import { getUsers, sendPasswordReset, setUserLocked } from '../api/usersApi'
+import { getOpenCases, getUsers, sendPasswordReset, setUserLocked } from '../api/usersApi'
 import { usersKeys } from '../api/queryKeys'
 import { ALL } from '../constants'
 import type { ManagedUser, UserRole } from '../types'
+
+/** The account's open review cases, read only while the lock dialog is open. */
+export function useOpenCases(id: string, enabled: boolean) {
+  return useQuery({
+    queryKey: usersKeys.openCases(id),
+    queryFn: ({ signal }) => getOpenCases(id, signal),
+    enabled,
+  })
+}
 
 /** Filter users by role, status, name or email before paginating. */
 export function useUsers() {

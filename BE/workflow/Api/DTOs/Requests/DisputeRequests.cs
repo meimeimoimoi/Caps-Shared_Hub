@@ -8,3 +8,6 @@ public sealed record OpenDisputeRequest(string? Reason, string? Description);
 
 /// <summary>The admin's decision: the share of the fee returned to the client (0–100) and why.</summary>
 public sealed record ResolveDisputeRequest(short RefundPct, string? Note);
+
+/// <summary>Why the admin needs one more decision window (at least 10 characters).</summary>
+public sealed record ExtendDisputeRequest(string? Reason);

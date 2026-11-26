@@ -121,6 +121,9 @@ export interface ReviewCase {
     openedAt: string
     /** Past the admin's decision deadline with no decision yet */
     decisionLate?: boolean
+    /** When the admin decides by; absent in the demo data */
+    decideBy?: string
+    extended?: boolean
     decision?: {
       outcome: Extract<SettlementRule, `RESOLVE_${string}`>
       reason: string
@@ -165,6 +168,8 @@ export interface DisputeDto {
   status: 'OPEN' | 'RESOLVED' | 'WITHDRAWN'
   openedAt: string
   decideBy: string
+  /** The admin used the one extension; decideBy is the extended deadline */
+  extended: boolean
   expertStatement: string | null
   expertStatementAt: string | null
   /** The expert explains before then; the admin waits for it unless the statement came earlier */
