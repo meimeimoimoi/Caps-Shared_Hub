@@ -59,6 +59,7 @@ export async function getPayouts(
 type PayoutErrorKey =
   | 'payouts.errors.notTransferable'
   | 'payouts.errors.noAccount'
+  | 'payouts.errors.notVerified'
   | 'payouts.errors.notFound'
   | 'payouts.errors.unavailable'
   | 'payouts.errors.sessionCheck'
@@ -67,6 +68,7 @@ type PayoutErrorKey =
 const ERRORS: Record<string, PayoutErrorKey> = {
   PAYOUT_NOT_TRANSFERABLE: 'payouts.errors.notTransferable',
   PAYOUT_NO_BANK_ACCOUNT: 'payouts.errors.noAccount',
+  PAYOUT_ACCOUNT_NOT_VERIFIED: 'payouts.errors.notVerified',
   PAYOUT_NOT_FOUND: 'payouts.errors.notFound',
   PAYMENT_UNAVAILABLE: 'payouts.errors.unavailable',
   SESSION_CHECK_UNAVAILABLE: 'payouts.errors.sessionCheck',

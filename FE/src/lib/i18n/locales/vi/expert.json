@@ -866,6 +866,11 @@
     "limit": "Chỉ liên kết được tối đa {{count}} tài khoản.",
     "invalid": "Thông tin tài khoản chưa đúng. Kiểm tra số tài khoản (6–19 chữ số) và tên chủ tài khoản.",
     "notFound": "Tài khoản này không còn tồn tại.",
-    "unavailable": "Chưa kiểm tra được phiên đăng nhập. Vui lòng thử lại."
+    "unavailable": "Chưa kiểm tra được phiên đăng nhập. Vui lòng thử lại.",
+    "status": {
+      "UNVERIFIED": "Chờ xác minh",
+      "VERIFIED": "Đã xác minh",
+      "REJECTED": "Bị từ chối"
+    }
   }
 }

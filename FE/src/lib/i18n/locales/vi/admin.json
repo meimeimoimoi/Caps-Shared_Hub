@@ -1694,6 +1694,41 @@
       "noAccount": "Chuyên gia chưa có tài khoản ngân hàng để nhận tiền.",
       "notFound": "Không tìm thấy lệnh chi.",
       "unavailable": "Chưa biết kết quả từ PayOS (chưa cấu hình kênh chi hộ hoặc PayOS không phản hồi). Bấm Kiểm tra kết quả sau ít phút.",
+      "sessionCheck": "Không kiểm tra được phiên đăng nhập, thử lại sau.",
+      "notVerified": "Tài khoản nhận tiền của chuyên gia chưa được xác minh. Duyệt tài khoản ở mục Xác minh tài khoản nhận tiền trước."
+    }
+  },
+  "bankReview": {
+    "title": "Xác minh tài khoản nhận tiền",
+    "help": "Chỉ chuyển tiền vào tài khoản đã xác minh. Nhập ngân hàng và số tài khoản vào app ngân hàng để xem tên chủ tài khoản thật, rồi so với họ tên đăng ký của chuyên gia. Khớp thì duyệt, không khớp thì từ chối kèm lý do. Mỗi tài khoản chỉ duyệt một lần, và bạn không được duyệt tài khoản của chính mình.",
+    "filter": "Trạng thái",
+    "all": "Tất cả",
+    "empty": "Không có tài khoản nào.",
+    "col": {
+      "createdAt": "Thêm lúc",
+      "expert": "Chuyên gia",
+      "account": "Tài khoản",
+      "holder": "Chủ tài khoản (chuyên gia nhập)",
+      "status": "Trạng thái",
+      "actions": "Thao tác"
+    },
+    "status": {
+      "UNVERIFIED": "Chờ xác minh",
+      "VERIFIED": "Đã xác minh",
+      "REJECTED": "Bị từ chối"
+    },
+    "verify": "Xác minh",
+    "reject": "Từ chối",
+    "reason": "Lý do từ chối",
+    "confirmReject": "Xác nhận từ chối",
+    "cancel": "Hủy",
+    "verified": "Đã xác minh tài khoản.",
+    "rejected": "Đã từ chối tài khoản.",
+    "errors": {
+      "alreadyReviewed": "Tài khoản này đã được xác minh hoặc từ chối.",
+      "selfReview": "Bạn không thể tự duyệt tài khoản của mình.",
+      "notFound": "Không tìm thấy tài khoản, có thể chuyên gia đã xóa.",
+      "reason": "Cần nhập lý do từ chối (tối đa 500 ký tự).",
       "sessionCheck": "Không kiểm tra được phiên đăng nhập, thử lại sau."
     }
   }

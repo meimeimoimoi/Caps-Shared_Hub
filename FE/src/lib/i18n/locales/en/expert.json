@@ -867,6 +867,11 @@
     "limit": "You can link at most {{count}} accounts.",
     "invalid": "The account details are not valid. Check the number (6–19 digits) and the holder name.",
     "notFound": "This account no longer exists.",
-    "unavailable": "Your session could not be checked. Please try again."
+    "unavailable": "Your session could not be checked. Please try again.",
+    "status": {
+      "UNVERIFIED": "Awaiting review",
+      "VERIFIED": "Verified",
+      "REJECTED": "Rejected"
+    }
   }
 }

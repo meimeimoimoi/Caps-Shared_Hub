@@ -10,6 +10,13 @@ import type { BankAccount, NewBankAccount } from '../types'
 const inputCls =
   'border-border-control rounded-control shadow-control bg-paper h-control w-full border px-3 text-base font-normal'
 
+// Staff verify each account once; payouts only go to VERIFIED ones
+const STATUS_CLASS: Record<BankAccount['status'], string> = {
+  UNVERIFIED: 'ep-status-paused',
+  VERIFIED: 'ep-status-ready',
+  REJECTED: 'ep-status-danger',
+}
+
 /* Accounts that receive payouts: billing stores the number encrypted and shows only its last 4 digits */
 export function BankAccountsSection() {
   const { t } = useTranslation('expert')
@@ -77,7 +84,19 @@ export function BankAccountsSection() {
                   )}
                 </td>
                 <td className="font-mono text-xs">•••• {a.accountLast4}</td>
-                <td className="text-xs">{a.accountHolderName}</td>
+                <td className="text-xs">
+                  {a.accountHolderName}
+                  <span
+                    className={`ep-status ${STATUS_CLASS[a.status] ?? 'ep-status-neutral'} ml-2`}
+                  >
+                    {a.status in STATUS_CLASS
+                      ? t(`bankAccounts.status.${a.status}`)
+                      : a.status}
+                  </span>
+                  {a.rejectionReason && (
+                    <p className="text-danger mt-1">{a.rejectionReason}</p>
+                  )}
+                </td>
                 <td className="text-right">
                   <button
                     type="button"

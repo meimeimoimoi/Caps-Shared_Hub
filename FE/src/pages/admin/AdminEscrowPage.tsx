@@ -25,6 +25,7 @@ import {
 } from '../../features/disputes-escrow/hooks/useEscrows'
 import { EscrowDrawer } from '../../features/disputes-escrow/components/EscrowDrawer'
 import { PayoutsTable } from '../../features/disputes-escrow/components/PayoutsTable'
+import { BankAccountReviewTable } from '../../features/disputes-escrow/components/BankAccountReviewTable'
 import { escrowSplit } from '../../features/disputes-escrow/utils/escrow'
 import { usePricing } from '../../features/service-pricing/hooks/usePricing'
 import type { Escrow } from '../../features/disputes-escrow/types'
@@ -378,6 +379,8 @@ export default function AdminEscrowPage() {
           </section>
 
           <PayoutsTable />
+
+          <BankAccountReviewTable />
 
           {selected && (
             <EscrowDrawer

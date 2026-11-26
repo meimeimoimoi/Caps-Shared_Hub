@@ -1704,6 +1704,41 @@
       "noAccount": "The expert has no bank account to receive this payout.",
       "notFound": "Payout not found.",
       "unavailable": "No answer from PayOS yet (payout channel not configured or PayOS not responding). Use Check result in a few minutes.",
+      "sessionCheck": "Your session could not be checked; try again later.",
+      "notVerified": "The expert's bank account is not verified yet. Review it under Verify payout accounts first."
+    }
+  },
+  "bankReview": {
+    "title": "Verify payout accounts",
+    "help": "Money only goes to verified accounts. Enter the bank and account number in a banking app to see the real holder name, then compare it with the expert's registered name. Verify when they match, otherwise reject with a reason. Each account is reviewed once, and you cannot review your own.",
+    "filter": "Status",
+    "all": "All",
+    "empty": "No accounts.",
+    "col": {
+      "createdAt": "Added",
+      "expert": "Expert",
+      "account": "Account",
+      "holder": "Holder (as entered)",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "status": {
+      "UNVERIFIED": "Awaiting review",
+      "VERIFIED": "Verified",
+      "REJECTED": "Rejected"
+    },
+    "verify": "Verify",
+    "reject": "Reject",
+    "reason": "Rejection reason",
+    "confirmReject": "Confirm rejection",
+    "cancel": "Cancel",
+    "verified": "Account verified.",
+    "rejected": "Account rejected.",
+    "errors": {
+      "alreadyReviewed": "This account has already been verified or rejected.",
+      "selfReview": "You cannot review your own account.",
+      "notFound": "Account not found; the expert may have removed it.",
+      "reason": "Enter a rejection reason (up to 500 characters).",
       "sessionCheck": "Your session could not be checked; try again later."
     }
   }

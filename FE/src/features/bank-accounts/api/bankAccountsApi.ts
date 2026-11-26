@@ -66,6 +66,7 @@ export async function addBankAccount(
       accountHolderName: input.accountHolderName.trim().toUpperCase(),
       isDefault,
       status: 'UNVERIFIED',
+      rejectionReason: null,
       createdAt: new Date().toISOString(),
     }
     demo = [

@@ -174,3 +174,68 @@ test('payout errors become staff messages; unknown codes keep the server text', 
     message: 'server text',
   })
 })
+
+test('bank review lists by status and posts verify and reject with the reason', async () => {
+  const calls = []
+  const { getBankAccountsForReview, verifyBankAccount, rejectBankAccount } =
+    billing('features/disputes-escrow/api/bankReviewApi.ts', {
+      get: async (url, options) => {
+        calls.push(['get', url, options.params])
+        return { data: { items: [], total: 0 } }
+      },
+      post: async (url, body) => {
+        calls.push(['post', url, body])
+        return { data: { id: 'a/1', status: 'VERIFIED' } }
+      },
+    })
+  await getBankAccountsForReview('UNVERIFIED', 1)
+  await verifyBankAccount('a/1')
+  await rejectBankAccount('a/1', 'Tên không khớp')
+  assert.deepEqual(calls, [
+    [
+      'get',
+      '/api/v1/admin/billing/bank-accounts',
+      { status: 'UNVERIFIED', page: 1, pageSize: 20 },
+    ],
+    ['post', '/api/v1/admin/billing/bank-accounts/a%2F1/verify', undefined],
+    [
+      'post',
+      '/api/v1/admin/billing/bank-accounts/a%2F1/reject',
+      { reason: 'Tên không khớp' },
+    ],
+  ])
+})
+
+test('expert names are keyed by account id for the review table', async () => {
+  const { getExpertNames } = billing(
+    'features/disputes-escrow/api/bankReviewApi.ts',
+    {
+      get: async (url) => {
+        assert.equal(url, '/api/v1/admin/experts/managed')
+        return {
+          data: [
+            { expertUserId: 'u1', displayName: 'Nguyễn Văn A', email: 'a@x.vn' },
+            { expertUserId: 'u1', displayName: 'Nguyễn Văn A', email: 'a@x.vn' },
+          ],
+        }
+      },
+    }
+  )
+  const names = await getExpertNames()
+  assert.equal(names.size, 1)
+  assert.deepEqual(names.get('u1'), { name: 'Nguyễn Văn A', email: 'a@x.vn' })
+})
+
+test('bank review errors become staff messages', async () => {
+  const { verifyBankAccount } = billing(
+    'features/disputes-escrow/api/bankReviewApi.ts',
+    {
+      post: async () => {
+        throw new ApiError('self', 403, 'BANK_ACCOUNT_SELF_REVIEW')
+      },
+    }
+  )
+  await assert.rejects(verifyBankAccount('a'), {
+    message: 't:bankReview.errors.selfReview',
+  })
+})

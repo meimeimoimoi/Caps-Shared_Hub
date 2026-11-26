@@ -8,7 +8,10 @@ export interface BankAccount {
   accountHolderName: string
   /** Payouts go to the default account */
   isDefault: boolean
-  status: string
+  /** Set once by staff review; payouts only go to VERIFIED accounts */
+  status: 'UNVERIFIED' | 'VERIFIED' | 'REJECTED'
+  /** Why staff rejected it, shown to the expert */
+  rejectionReason: string | null
   createdAt: string
 }
 
