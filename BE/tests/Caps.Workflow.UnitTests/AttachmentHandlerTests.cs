@@ -41,6 +41,17 @@ public sealed class AttachmentHandlerTests
     }
 
     [Fact]
+    public async Task Evidence_past_the_statement_deadline_stores_nothing()
+    {
+        var run = new Run(disputedLongAgo: true);
+
+        var e = await Assert.ThrowsAsync<AppException>(() => run.Upload(Client));
+
+        Assert.Equal("DISPUTE_EVIDENCE_CLOSED", e.Code);
+        Assert.Empty(run.Storage.Files);
+    }
+
+    [Fact]
     public async Task A_full_case_stores_nothing()
     {
         var run = new Run(existing: ReviewAttachment.MaxPerParty);
@@ -192,9 +203,11 @@ public sealed class AttachmentHandlerTests
 
     private sealed class Run
     {
-        public Run(bool saveFails = false, int existing = 0)
+        public Run(bool saveFails = false, int existing = 0, bool disputedLongAgo = false)
         {
             var now = TimeProvider.System.GetUtcNow();
+            // A dispute opened 10 days ago: its statement window has long ended
+            var start = disputedLongAgo ? now.AddDays(-10) : now;
             Case = ReviewCase
                 .Request(
                     Client,
@@ -204,11 +217,30 @@ public sealed class AttachmentHandlerTests
                     Offers.Sample(ExpertProfile, Expert),
                     "Check my CIT return",
                     null,
-                    now
+                    start
                 )
                 .Case;
-            Case.ConfirmPayment(now);
-            Case.Accept(ExpertProfile, Expert, now);
+            Case.ConfirmPayment(start);
+            Case.Accept(ExpertProfile, Expert, start);
+            if (disputedLongAgo)
+            {
+                Case.Deliver(
+                    ExpertProfile,
+                    Expert,
+                    ReviewCase.Verified,
+                    "Done",
+                    null,
+                    ["Article 9, CIT Law"],
+                    true,
+                    start.AddHours(1)
+                );
+                (Dispute, _) = Case.OpenDispute(
+                    Client,
+                    "DELIVERABLE_INCOMPLETE",
+                    "The VAT part is missing",
+                    start.AddHours(2)
+                );
+            }
             Cases = new FakeCases(Case);
             Attachments = new FakeAttachments();
             // Distinct names from the client, so only the client's limit applies
@@ -222,6 +254,7 @@ public sealed class AttachmentHandlerTests
         }
 
         public ReviewCase Case { get; }
+        public ReviewDispute? Dispute { get; }
         public FakeCases Cases { get; }
         public FakeAttachments Attachments { get; }
         public FakeStorage Storage { get; } = new();
@@ -231,7 +264,7 @@ public sealed class AttachmentHandlerTests
             new AddAttachmentHandler(
                 Cases,
                 Attachments,
-                new NoDisputes(),
+                new FakeDisputes(Dispute),
                 Storage,
                 UnitOfWork,
                 TimeProvider.System
@@ -328,11 +361,11 @@ public sealed class AttachmentHandlerTests
         public ValueTask DisposeAsync() => ValueTask.CompletedTask;
     }
 
-    // No case here is disputed
-    private sealed class NoDisputes : IReviewDisputeRepository
+    // The case's dispute, if the run opened one
+    private sealed class FakeDisputes(ReviewDispute? dispute) : IReviewDisputeRepository
     {
         public Task<ReviewDispute?> FindByCaseAsync(Guid reviewCaseId, CancellationToken ct) =>
-            Task.FromResult<ReviewDispute?>(null);
+            Task.FromResult(dispute);
 
         public void Add(ReviewDispute dispute) => throw new NotSupportedException();
 
