@@ -52,8 +52,19 @@ export function CaseAttachments({
   requesterUserId,
   dispute,
   sourceFileName,
+  since,
+  until,
+  bare = false,
+  uploadLabel,
 }: {
   caseId: string
+  /** Only files added at or after this time (a dispute's evidence) */
+  since?: string
+  /** Only files added before this time (the review's files, apart from a dispute's evidence) */
+  until?: string
+  /** Inside another card: no frame, title or source document, groups labelled as evidence */
+  bare?: boolean
+  uploadLabel?: string
   /** The uploaded document's name; null hides the download (a draft written in the app); undefined when unknown */
   sourceFileName?: string | null
   scope?: AttachmentScope
@@ -91,6 +102,9 @@ export function CaseAttachments({
     queryKey: [...reviewCaseKeys.attachments(caseId), scope],
     queryFn: ({ signal }) => listCaseAttachments(caseId, scope, signal),
   })
+  const shown = files.data?.filter(
+    (a) => (!since || a.uploadedAt >= since) && (!until || a.uploadedAt < until)
+  )
 
   const download = (a: AttachmentDto) => {
     setError(null)
@@ -111,6 +125,52 @@ export function CaseAttachments({
         )
       )
   }
+
+  const body = (
+    <>
+      {clientId && shown?.length ? (
+        // One group per party, so the expert's returned files never mix with the client's documents
+        (['client', 'expert'] as const).map((party, i) => {
+          const mine = shown.filter(
+            (a) => (a.uploadedBy === clientId) === (party === 'client')
+          )
+          return (
+            <div
+              key={party}
+              className={cn('mt-4', i > 0 && 'border-border border-t pt-4')}
+            >
+              <h3 className="text-fg-strong text-sm font-semibold">
+                {t(
+                  dispute || bare
+                    ? `live.files.evidence.${party}`
+                    : `live.files.party.${party}`
+                )}
+                <span className="text-fg-muted num ml-1.5 font-normal">
+                  ({mine.length})
+                </span>
+              </h3>
+              {mine.length ? (
+                list(mine)
+              ) : (
+                <p className="text-fg-muted mt-1 text-sm">{t('live.files.evidence.none')}</p>
+              )}
+            </div>
+          )
+        })
+      ) : shown?.length ? (
+        list(shown)
+      ) : (
+        <p className="text-fg-muted mt-2 text-sm">{t('live.files.empty')}</p>
+      )}
+      {canUpload && <EvidenceUpload caseId={caseId} label={uploadLabel} />}
+      {error && (
+        <p role="alert" className="text-danger mt-2 text-sm">
+          {error}
+        </p>
+      )}
+    </>
+  )
+  if (bare) return <div>{body}</div>
 
   return (
     <section className="paper p-5" aria-labelledby={`${id}-title`}>
@@ -136,46 +196,7 @@ export function CaseAttachments({
           </span>
         </button>
       )}
-      {clientId && files.data?.length ? (
-        // One group per party, so the expert's returned files never mix with the client's documents
-        (['client', 'expert'] as const).map((party, i) => {
-          const mine = files.data.filter(
-            (a) => (a.uploadedBy === clientId) === (party === 'client')
-          )
-          return (
-            <div
-              key={party}
-              className={cn('mt-4', i > 0 && 'border-border border-t pt-4')}
-            >
-              <h3 className="text-fg-strong text-sm font-semibold">
-                {t(
-                  dispute
-                    ? `live.files.evidence.${party}`
-                    : `live.files.party.${party}`
-                )}
-                <span className="text-fg-muted num ml-1.5 font-normal">
-                  ({mine.length})
-                </span>
-              </h3>
-              {mine.length ? (
-                list(mine)
-              ) : (
-                <p className="text-fg-muted mt-1 text-sm">{t('live.files.evidence.none')}</p>
-              )}
-            </div>
-          )
-        })
-      ) : files.data?.length ? (
-        list(files.data)
-      ) : (
-        <p className="text-fg-muted mt-2 text-sm">{t('live.files.empty')}</p>
-      )}
-      {canUpload && <EvidenceUpload caseId={caseId} />}
-      {error && (
-        <p role="alert" className="text-danger mt-2 text-sm">
-          {error}
-        </p>
-      )}
+      {body}
     </section>
   )
 

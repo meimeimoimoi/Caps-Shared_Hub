@@ -9,8 +9,8 @@ import { Modal } from '@/components/ui/feedback/modal'
 import { addDisputeStatement, reviewCaseActions } from '../api/reviewCaseApi'
 import { useCaseError, useCaseRun, useLiveCase } from '../hooks/useReviewCases'
 import { caseCode } from '../mapper'
-import { caseText, fieldClass, useCaseFormat } from '../ui'
-import { CaseAttachments, EvidenceUpload } from './CaseAttachments'
+import { caseText, evidenceOpen, fieldClass, useCaseFormat } from '../ui'
+import { CaseAttachments } from './CaseAttachments'
 import { CaseChat } from './CaseChat'
 import { Deadline } from './CaseUi'
 import { RevisedContentView } from './RevisedContentView'
@@ -873,9 +873,17 @@ export function ExpertLiveCase({
                       })}
                 </p>
               )}
-              {dto.status === 'DISPUTED' && (
-                // Evidence sits next to the statement so the arbiter can weigh it against the client's
-                <EvidenceUpload caseId={caseId} label={t('live.files.evidence.add')} />
+              {/* Evidence sits under the dispute, apart from the files of the review itself */}
+              <CaseAttachments
+                bare
+                caseId={caseId}
+                since={dispute.openedAt}
+                requesterUserId={dto.requesterUserId}
+                canUpload={dto.status === 'DISPUTED' && evidenceOpen(dispute)}
+                uploadLabel={t('live.files.evidence.add')}
+              />
+              {dto.status === 'DISPUTED' && !evidenceOpen(dispute) && (
+                <p className="text-fg-muted text-sm">{t('live.files.evidence.closed')}</p>
               )}
               {disputeOutcome && (
                 // Labelled like the statement above, so the decision is not read as one more remark
@@ -961,7 +969,8 @@ export function ExpertLiveCase({
           )}
           <CaseAttachments
             caseId={caseId}
-            canUpload={UPLOAD_STATUSES.includes(dto.status)}
+            until={dispute?.openedAt}
+            canUpload={UPLOAD_STATUSES.includes(dto.status) && dto.status !== 'DISPUTED'}
             canRemove={UPLOAD_STATUSES.includes(dto.status) && dto.status !== 'DISPUTED'}
             removeUntilDelivery={
               dto.status === 'IN_REVIEW' || dto.status === 'AWAITING_USER_INFORMATION'

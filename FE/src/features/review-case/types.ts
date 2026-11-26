@@ -123,6 +123,8 @@ export interface ReviewCase {
     decisionLate?: boolean
     /** When the admin decides by; absent in the demo data */
     decideBy?: string
+    /** Evidence closes then, unless the admin extended */
+    statementDueBy?: string
     extended?: boolean
     decision?: {
       outcome: Extract<SettlementRule, `RESOLVE_${string}`>
