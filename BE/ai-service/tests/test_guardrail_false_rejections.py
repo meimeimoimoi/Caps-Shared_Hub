@@ -56,6 +56,22 @@ class CalculationHintTests(unittest.TestCase):
         self.assertIn("170", hint.expected_tax_numbers)
 
 
+class RateEchoTests(unittest.TestCase):
+    def test_rate_echoed_from_false_premise_is_ungrounded(self):
+        question = "Thuế suất thuế TNDN phổ thông là 22% đúng không?"
+        conclusion = "Đúng, thuế suất thuế TNDN phổ thông là 22% [1]."
+        self.assertIn("22%", find_ungrounded_numbers(question, conclusion, [_hit(RATES)], period_str=PERIOD))
+
+    def test_rate_rejected_in_negated_clause_is_allowed(self):
+        question = "Thuế suất thuế TNDN phổ thông là 22% đúng không?"
+        conclusion = "Không đúng, không phải 22% mà là 20% [1]."
+        self.assertEqual(find_ungrounded_numbers(question, conclusion, [_hit(RATES)], period_str=PERIOD), [])
+
+    def test_rate_from_source_is_allowed(self):
+        conclusion = "Thuế suất thuế TNDN phổ thông là 20% [1]."
+        self.assertEqual(find_ungrounded_numbers("Thuế suất?", conclusion, [_hit(RATES)], period_str=PERIOD), [])
+
+
 class BracketRateTests(unittest.TestCase):
     QUESTION = "Doanh nghiệp có doanh thu năm 60 tỷ đồng thì thuế suất TNDN là bao nhiêu?"
 

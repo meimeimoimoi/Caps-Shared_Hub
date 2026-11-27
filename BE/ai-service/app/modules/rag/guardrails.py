@@ -15,7 +15,8 @@ _PERCENT_RE = re.compile(r"(\d+(?:[.,]\d+)?)\s*%")
 
 CITATION_MARKER_RE = re.compile(r"\[(\d{1,3})\]")
 _RATE_OR_DURATION_RE = re.compile(
-    r"\b(\d+(?:[.,]\d+)?)\s*(%|phần\s+trăm|năm|tháng|ngày)\b", re.IGNORECASE
+    # (?!\w) instead of \b: a trailing \b never matches after "%", which silently skipped every rate.
+    r"\b(\d+(?:[.,]\d+)?)\s*(%|phần\s+trăm|năm|tháng|ngày)(?!\w)", re.IGNORECASE
 )
 _DOC_NUMBER_SPAN_RE = re.compile(r"(?<![\d/])\d{1,4}/(?:19|20)\d{2}(?:/[\w\-]+)?", re.IGNORECASE)
 _STRUCTURAL_REF_RE = re.compile(r"\b(?:chương|mục|điều|khoản)\s+[ivxlcdm\d]+\b", re.IGNORECASE)
