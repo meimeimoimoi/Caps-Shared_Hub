@@ -63,6 +63,9 @@ so_hieu = [
     "89/2026/TT-BTC",
     # Giao dịch liên kết (từ 01/07/2026)
     "255/2026/NĐ-CP",
+    # Giao dịch liên kết cho kỳ tính thuế trước 01/07/2026 (lãi vay 30% EBITDA) và nghị định sửa đổi
+    "132/2020/NĐ-CP",
+    "20/2025/NĐ-CP",
 ]
 
 # Thuế nhà thầu nước ngoài - để sau, đang tắt.
