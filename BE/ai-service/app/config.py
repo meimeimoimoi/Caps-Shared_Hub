@@ -27,6 +27,9 @@ class Settings(BaseSettings):
     OCR_TESSDATA_DIR: str = ""
     QDRANT_URL: str = "http://localhost:6333"
     QDRANT_TIMEOUT_SECONDS: int = 5
+    RAG_RERANKER_ENABLED: bool = True
+    RAG_RERANKER_MODEL: str = "AITeamVN/Vietnamese_Reranker"
+    RAG_RERANKER_DEVICE: str = "auto"
     CHAT_MAX_QUESTION_CHARS: int = 6000
     REQUIRE_INTERNAL_API_KEY: bool = False
     INTERNAL_API_KEY: str = ""

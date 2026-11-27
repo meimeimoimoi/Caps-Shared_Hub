@@ -222,6 +222,9 @@ services:
       OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://host.docker.internal:11434}
       QDRANT_URL: http://qdrant:6333
       INTERNAL_API_KEY: ${AI_SERVICE_INTERNAL_KEY:-}
+      HF_HOME: /data/hf-cache
+    volumes:
+      - ai_hf_cache:/data/hf-cache
     ports:
       - "8000:8000"
     depends_on:
@@ -247,3 +250,4 @@ volumes:
   seaweedfs_data:
   auth_keys:
   qdrant_data:
+  ai_hf_cache:

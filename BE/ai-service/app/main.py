@@ -12,6 +12,7 @@ from app.api.exception_handlers import register_exception_handlers
 from app.api.routes import router
 from app.config import settings
 from app.core.qdrant import init_qdrant, qdrant_client
+from app.modules.rag.retriever import warmup_reranker
 
 logger = logging.getLogger(__name__)
 _READYZ_CACHE_TTL_SECONDS = 15.0
@@ -84,7 +85,8 @@ def _check_ollama_ready() -> str:
 
 
 def _warmup_ollama_models() -> None:
-    """Preload LLM and embedding models into memory in the background to avoid 30s cold start."""
+    """Preload LLM, embedding, and Cross-Encoder models in the background to avoid cold-start stalls."""
+    warmup_reranker()
     base = settings.OLLAMA_BASE_URL.rstrip("/")
     try:
         httpx.post(
