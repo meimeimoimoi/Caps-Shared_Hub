@@ -373,3 +373,16 @@ def test_export_records_writes_selected_formats(tmp_path, monkeypatch, formats, 
     assert written == suffixes
     assert ("file" in manifest[0]) == ("json" in formats)
     assert ("md_file" in manifest[0]) == ("md" in formats)
+    assert next(iter(manifest[0].values())).startswith("nghi_dinh/2025/")
+
+
+def test_export_records_without_date_goes_to_unknown_year(tmp_path, monkeypatch):
+    monkeypatch.setattr(config, "DATA_DIR", tmp_path)
+    manifest = export_records([{**_nd82_rec(), "ngay_ban_hanh": None}])
+    assert manifest[0]["file"].startswith("nghi_dinh/khong-ro-nam/")
+
+
+def test_normalize_record_drops_khong_so_from_title():
+    from src.normalize import normalize_record
+    rec = normalize_record({"so_hieu": "Không số", "tieu_de": "Luật Thuế thu nhập doanh nghiệp số Không số"})
+    assert rec["tieu_de"] == "Luật Thuế thu nhập doanh nghiệp"

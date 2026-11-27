@@ -421,10 +421,10 @@ Khác với dữ liệu crawl, thư mục export được dùng chung:
 data/export/
 ├── vbpl/
 │   └── <loai>/
-│       └── slug.json
+│       └── <năm>/slug.json
 ├── mof/
 │   └── <loai>/
-│       └── slug.json
+│       └── <năm>/slug.json
 └── manifest.json
 ```
 
