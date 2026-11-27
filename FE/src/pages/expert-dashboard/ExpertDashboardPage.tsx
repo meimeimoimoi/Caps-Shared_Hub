@@ -23,7 +23,6 @@ import {
   DashboardSectionState,
   DashboardSkeleton,
 } from '../../features/expert-dashboard/components/DashboardSectionState'
-import { NotificationsPanel } from '../../features/expert-dashboard/components/NotificationsPanel'
 import { ReviewTrendChart } from '../../features/expert-dashboard/components/ReviewTrendChart'
 import { WorkloadDistribution } from '../../features/expert-dashboard/components/WorkloadDistribution'
 import {
@@ -89,7 +88,6 @@ export default function ExpertDashboardPage() {
           <h1>{t('overview')}</h1>
         </div>
         <div className="eo-page-actions flex items-center gap-3 max-[720px]:w-full max-[720px]:justify-end max-[720px]:gap-2">
-          {model && <NotificationsPanel notifications={model.notifications} />}
           <button
             className="eo-refresh inline-flex min-h-[42px] items-center justify-center gap-2 rounded-lg bg-[var(--ep-surface)] bg-none [padding:10px_16px] [font-family:inherit] text-[13px] font-semibold [border:1px_solid_var(--ep-border)] [&:hover:not(:disabled)]:[border-color:var(--ep-border)] [&:hover:not(:disabled)]:bg-[var(--ep-surface-raised)] [&:hover:not(:disabled)]:bg-none"
             onClick={refresh}

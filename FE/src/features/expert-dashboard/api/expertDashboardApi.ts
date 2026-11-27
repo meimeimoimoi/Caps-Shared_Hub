@@ -47,7 +47,6 @@ function dashboardFrom(cases: ReviewCaseDto[], context: ExpertContext): Dashboar
     queue: { status: 'available', data: { items, total: items.length, hasMore: false } },
     counts: { status: 'available', data: { pendingResponse: count('PENDING_EXPERT_RESPONSE'), readyToStart: null, inReview: count('IN_REVIEW'), overdue: items.filter((i) => i.deadline.overdue).length, definition: i18n.t('live.openCases', { ns: 'reviewCase' }) } },
     activity: notConnected,
-    notifications: notConnected,
     performance: notConnected,
   }
 }

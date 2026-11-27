@@ -23,17 +23,6 @@ export interface ActivityEvent {
   actor: string
 }
 
-export type NotificationSeverity = 'info' | 'warning' | 'success' | 'urgent'
-export interface DashboardNotification {
-  id: string
-  severity: NotificationSeverity
-  title: string
-  message: string
-  timestamp: string
-  read: boolean
-  actionUrl: string | null
-}
-
 export interface PerformanceMetrics {
   completedThisMonth: number
   completedLastMonth: number
@@ -62,7 +51,6 @@ export interface DashboardDto {
   queue: Section<{ items: WorkItem[]; total: number; hasMore: boolean }>
   counts: Section<{ pendingResponse: number; readyToStart: number | null; inReview: number; overdue: number; definition: string }>
   activity: Section<{ events: ActivityEvent[] }>
-  notifications: Section<{ items: DashboardNotification[]; unreadCount: number }>
   performance: Section<PerformanceMetrics>
   analytics?: Section<ReviewAnalytics>
 }

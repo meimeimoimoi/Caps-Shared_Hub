@@ -67,7 +67,6 @@
 @keyframes ep-pulse-gentle { 0%, 100% { opacity: 1; } 50% { opacity: .6; } }
 @keyframes ep-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 @keyframes ep-shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
-@keyframes ep-notif-pop { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 @keyframes ep-slide-down { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
 
 .ep-spin { animation: ep-spin .8s linear infinite; }
@@ -477,65 +476,6 @@
 .ep-timeline-body p { font-size: 12px; line-height: 1.5; }
 .ep-timeline-case { display: inline-block; font-size: 11px; margin-top: 6px; padding: 2px 6px; background: var(--ep-surface); border-radius: 4px; color: var(--ep-muted); font-family: var(--font-mono); }
 
-/* ---- Notifications ---- */
-.ep-notifications-wrapper { position: relative; }
-.ep-notification-bell {
-  position: relative; width: 38px; height: 38px; display: flex; align-items: center; justify-content: center;
-  border-radius: 10px; background: transparent; border: 1px solid transparent; color: var(--ep-muted);
-  transition: all var(--motion-feedback) var(--motion-ease-enter);
-}
-.ep-notification-bell:hover { background: var(--ep-surface-raised); border-color: var(--ep-line); color: var(--ep-ink); }
-.ep-notification-badge {
-  position: absolute; top: 4px; right: 4px; min-width: 18px; height: 18px; padding: 0 5px;
-  background: var(--ui-danger-fill); color: var(--ui-on-accent); font-size: 10px; font-weight: 700; border-radius: 9px;
-  display: flex; align-items: center; justify-content: center;
-  animation: ep-notif-pop var(--motion-enter) var(--motion-ease-enter);
-}
-.ep-notifications-backdrop { position: fixed; inset: 0; z-index: 18; }
-.ep-notifications-panel {
-  position: absolute; right: 0; top: calc(100% + 10px); width: 380px; max-width: calc(100vw - 24px);
-  max-height: 480px; overflow-y: auto; background: var(--ep-surface); border-radius: 14px; z-index: 20;
-  box-shadow: 0 16px 56px -12px color-mix(in srgb, var(--ui-shadow) 22.0%, transparent), 0 0 0 1px color-mix(in srgb, var(--ui-shadow) 4.0%, transparent);
-  animation: ep-slide-down var(--motion-enter) var(--motion-ease-enter);
-}
-.ep-notifications-header {
-  display: flex; justify-content: space-between; align-items: center;
-  padding: 16px 18px; border-bottom: 1px solid var(--ep-line); position: sticky; top: 0; background: var(--ep-surface); z-index: 1;
-}
-.ep-notifications-header h3 { font-size: 15px; font-weight: 650; }
-.ep-notifications-empty { padding: 36px 18px; text-align: center; color: var(--ep-muted); }
-.ep-notifications-list { list-style: none; margin: 0; padding: 0; }
-.ep-notification-item {
-  display: flex; gap: 10px; padding: 14px 18px; border-bottom: 1px solid var(--ep-border);
-  transition: background var(--motion-feedback) var(--motion-ease-enter); animation: ep-fade-in var(--motion-enter) var(--motion-ease-enter) both;
-}
-.ep-notification-item:hover { background: var(--ep-surface-raised); }
-.ep-notif-read { opacity: .65; }
-.ep-notif-icon { flex-shrink: 0; margin-top: 2px; }
-.ep-notif-urgent .ep-notif-icon { color: var(--ep-danger); }
-.ep-notif-warning .ep-notif-icon { color: var(--ui-warning); }
-.ep-notif-success .ep-notif-icon { color: var(--ep-success); }
-.ep-notif-info .ep-notif-icon { color: var(--ui-info); }
-.ep-notif-body { flex: 1; min-width: 0; }
-.ep-notif-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 3px; }
-.ep-notif-top strong { font-size: 13px; }
-.ep-notif-top time { font-size: 11px; color: var(--ep-muted); white-space: nowrap; }
-.ep-notif-body p { font-size: 12px; line-height: 1.5; }
-.ep-notif-dismiss {
-  flex-shrink: 0; width: 26px; height: 26px; display: flex; align-items: center; justify-content: center;
-  border-radius: 6px; opacity: 0; transition: all var(--motion-feedback) var(--motion-ease-enter); background: transparent; border: none; color: var(--ep-muted);
-}
-.ep-notification-item:hover .ep-notif-dismiss,
-.ep-notif-dismiss:focus-visible { opacity: 1; }
-@media (hover: none), (pointer: coarse) {
-  .ep-notif-dismiss { opacity: 1; }
-}
-.ep-notif-dismiss:hover { background: var(--ep-surface-raised); color: var(--ep-ink); }
-.ep-notif-urgent { border-left: 3px solid var(--ep-danger); }
-.ep-notif-warning { border-left: 3px solid var(--ui-warning); }
-.ep-notif-success { border-left: 3px solid var(--ep-success); }
-.ep-notif-info { border-left: 3px solid var(--ui-info); }
-
 /* ---- Profile page ---- */
 .ep-profile-layout { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 20px; margin-top: 28px; animation: ep-fade-in var(--motion-enter) var(--motion-ease-enter) calc(var(--motion-stagger-interval) * 1) both; }
 .ep-profile-card {
@@ -692,7 +632,6 @@
   .ep-services-stats-row { flex-direction: column; gap: 10px; }
   .ep-profile-layout { grid-template-columns: 1fr; }
   .ep-profile-avatar-section { flex-direction: column; text-align: center; }
-  .ep-notifications-panel { width: 320px; right: -8px; }
   .ep-cases-table-wrapper { border-radius: 10px; }
   .ep-heading-actions { gap: 8px; }
 }
@@ -719,7 +658,6 @@
   transform-origin: top right;
   animation: none;
 }
-.ep-notifications-panel { animation: none; transform-origin: top right; }
 .ep-cases-table tbody tr:focus-within { background: var(--ep-surface-raised); }
 .ep-case-action a svg { transition: transform var(--motion-enter) var(--motion-ease-enter); }
 .ep-case-action a:hover svg { transform: translateX(3px); }

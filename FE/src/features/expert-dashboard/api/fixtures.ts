@@ -1,4 +1,4 @@
-import type { DashboardDto, WorkItem, ActivityEvent, DashboardNotification } from '../types'
+import type { DashboardDto, WorkItem, ActivityEvent } from '../types'
 
 export function createDashboardFixture(scenario: string): DashboardDto {
   const now = Date.now()
@@ -33,21 +33,12 @@ export function createDashboardFixture(scenario: string): DashboardDto {
     { id: 'evt-8', type: 'dispute_opened', title: 'Dispute raised on RC-1015', description: 'Client has opened a dispute regarding the scope of review for "Tax loss carryforward".', timestamp: ago(72), caseId: 'RC-1015', actor: 'Client' },
   ]
 
-  const notifications: DashboardNotification[] = scenario === 'empty' ? [] : [
-    { id: 'notif-1', severity: 'urgent', title: 'Overdue delivery', message: 'RC-1042 "Annual CIT return · FY 2025" delivery is 2 hours past the deadline.', timestamp: ago(0.1), read: false, actionUrl: null },
-    { id: 'notif-2', severity: 'warning', title: 'Response deadline approaching', message: 'RQ-1086 requires your response within 3 hours.', timestamp: ago(0.3), read: false, actionUrl: null },
-    { id: 'notif-3', severity: 'success', title: 'Payment received', message: 'Payment for RC-1058 has been confirmed. You can start the review.', timestamp: ago(0.5), read: false, actionUrl: null },
-    { id: 'notif-4', severity: 'info', title: 'Pricing update approved', message: 'Your pricing version PR-004 is now effective.', timestamp: ago(26), read: true, actionUrl: null },
-    { id: 'notif-5', severity: 'info', title: 'System maintenance', message: 'Scheduled maintenance window: Oct 5, 2026 02:00-04:00 (ICT).', timestamp: ago(48), read: true, actionUrl: null },
-  ]
-
   return {
     generatedAt: at(scenario === 'stale' ? -1 : 0), contextVersion: scenario === 'inconsistent' ? 'demo-v0' : 'demo-v1', timezone: 'Asia/Ho_Chi_Minh',
     freshness: { stale: scenario === 'stale', message: scenario === 'stale' ? 'The read projection is delayed. These are the last available values.' : null },
     queue: scenario === 'partial' ? { status: 'error', message: 'Work queue is temporarily unavailable. Counts and service readiness are still available.' } : { status: 'available', data: { items: scenario === 'empty' ? [] : items, total: scenario === 'empty' ? 0 : 13, hasMore: scenario !== 'empty' } },
     counts: { status: 'available', data: { pendingResponse: scenario === 'empty' ? 0 : 4, readyToStart: scenario === 'empty' ? 0 : 2, inReview: scenario === 'empty' ? 0 : 7, overdue: scenario === 'empty' ? 0 : 1, definition: 'Server totals across all active cases; closed cases excluded. Paused delivery SLAs are excluded from overdue.' } },
     activity: { status: 'available', data: { events: activityEvents } },
-    notifications: { status: 'available', data: { items: notifications, unreadCount: notifications.filter((n) => !n.read).length } },
     performance: { status: 'available', data: { completedThisMonth: scenario === 'empty' ? 0 : 12, completedLastMonth: scenario === 'empty' ? 0 : 9, avgResponseHours: scenario === 'empty' ? 0 : 4.2, avgReviewDays: scenario === 'empty' ? 0 : 2.8, satisfactionScore: scenario === 'empty' ? null : 4.7, onTimeDeliveryRate: scenario === 'empty' ? 0 : 94.5 } },
     analytics: { status: 'available', data: { daily, sourceLabel: 'Illustrative daily history · demo data' } },
   }
