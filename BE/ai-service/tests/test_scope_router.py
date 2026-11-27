@@ -33,6 +33,10 @@ class ScopeRouterTests(unittest.TestCase):
             ("quý 3 năm 2025", (date(2025, 7, 1), date(2025, 9, 30))),
             ("02/2024", (date(2024, 2, 1), date(2024, 2, 29))),
             ("tháng 3 năm 2025", (date(2025, 3, 1), date(2025, 3, 31))),
+            ("nam 2026", (date(2026, 1, 1), date(2026, 12, 31))),
+            ("quy 2 nam 2026", (date(2026, 4, 1), date(2026, 6, 30))),
+            ("thang 3 nam 2026", (date(2026, 3, 1), date(2026, 3, 31))),
+            ("tax year 2026", (date(2026, 1, 1), date(2026, 12, 31))),
         ]
         for raw, expected in cases:
             with self.subTest(raw=raw):
@@ -92,6 +96,14 @@ class ScopeRouterTests(unittest.TestCase):
             ),
             (
                 "Chi phí tiếp khách có được trừ thuế TNDN?\nClarification: Chi cho đối tác khách hàng\n2026",
+                (date(2026, 1, 1), date(2026, 12, 31)),
+            ),
+            (
+                "Thue suat TNDN nam 2026 la bao nhieu?",
+                (date(2026, 1, 1), date(2026, 12, 31)),
+            ),
+            (
+                "What is the corporate income tax rate in 2026?",
                 (date(2026, 1, 1), date(2026, 12, 31)),
             ),
         ]
@@ -244,6 +256,63 @@ class ScopeRouterTests(unittest.TestCase):
 
         enum_values = schema["components"]["schemas"]["AnswerStatus"]["enum"]
         self.assertEqual(enum_values, ["ANSWERED", "NEED_CLARIFICATION", "REJECTED"])
+
+    def test_historical_loss_year_does_not_conflict_with_selected_tax_period(self):
+        llm_reply = SimpleNamespace(
+            content='{"is_cit":true,"period_start":"2025-01-01","period_end":"2025-12-31","needs_clarification":false,"clarification_msg":null}'
+        )
+        with patch("app.modules.rag.router.llm_model") as mock_llm:
+            mock_llm.invoke.return_value = llm_reply
+            result = ScopeRouter.analyze(
+                "Doanh thu 2 tỷ, thu nhập chịu thuế 500 triệu, lỗ năm 2024 chuyển sang 200 triệu: thuế TNDN phải nộp?",
+                "2025",
+            )
+
+        self.assertTrue(result.is_cit)
+        self.assertFalse(result.needs_clarification)
+        self.assertEqual(result.period_start, date(2025, 1, 1))
+        self.assertEqual(result.period_end, date(2025, 12, 31))
+
+    def test_project_depreciation_and_hightech_finalization_stay_in_scope(self):
+        llm_reply = SimpleNamespace(
+            content='{"is_cit":true,"period_start":"2026-01-01","period_end":"2026-12-31","needs_clarification":false,"clarification_msg":null}'
+        )
+        in_scope_questions = [
+            "Chi phí khấu hao tài sản cố định của dự án đầu tư có được trừ khi tính thuế TNDN năm 2026 không?",
+            "Doanh nghiệp trong khu công nghệ cao có phải nộp hồ sơ quyết toán thuế TNDN năm 2026 không?",
+        ]
+        for question in in_scope_questions:
+            with self.subTest(question=question), patch("app.modules.rag.router.llm_model") as mock_llm:
+                mock_llm.invoke.return_value = llm_reply
+                result = ScopeRouter.analyze(question, "2026")
+                self.assertTrue(result.is_cit)
+                mock_llm.invoke.assert_called_once()
+
+    def test_quarter_or_month_within_selected_year_does_not_ask_clarification(self):
+        # Task #8 (I02, I05): mentioning Q1/2026 or month 3/2026 while UI tax period is 2026 is not a conflict.
+        llm_reply = SimpleNamespace(
+            content='{"is_cit":true,"period_start":"2026-01-01","period_end":"2026-12-31","needs_clarification":false,"clarification_msg":null}'
+        )
+        for question in (
+            "Tạm nộp thuế TNDN quý 1/2026 hạn cuối ngày nào?",
+            "Chi phí tiếp khách phát sinh tháng 3/2026 có được trừ khi quyết toán không?",
+        ):
+            with self.subTest(question=question), patch("app.modules.rag.router.llm_model") as mock_llm:
+                mock_llm.invoke.return_value = llm_reply
+                result = ScopeRouter.analyze(question, "2026")
+                self.assertTrue(result.is_cit)
+                self.assertFalse(result.needs_clarification)
+                self.assertEqual(result.period_start, date(2026, 1, 1))
+                self.assertEqual(result.period_end, date(2026, 12, 31))
+
+    def test_unaccented_guardrails_and_period_detection(self):
+        # Task #8 (F05): unaccented PIT/incentive queries are caught; unaccented CIT queries resolve period.
+        with patch("app.modules.rag.router.llm_model") as mock_llm:
+            pit_res = ScopeRouter.analyze("thue tncn nam 2026 tinh the nao?", "2026")
+            self.assertFalse(pit_res.is_cit)
+            inc_res = ScopeRouter.analyze("du an dau tu moi duoc mien thue may nam?", "2026")
+            self.assertFalse(inc_res.is_cit)
+            mock_llm.invoke.assert_not_called()
 
 
 if __name__ == "__main__":

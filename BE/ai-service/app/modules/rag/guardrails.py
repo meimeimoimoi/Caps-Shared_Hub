@@ -1,0 +1,185 @@
+import re
+
+from app.core.cit_math import (
+    NUMBER_TOKEN_RE,
+    UNIT_SCALE_VND,
+    money_representations,
+    normalize_number_token,
+    parse_numeric_scalar,
+)
+from app.core.legal_refs import extract_document_numbers
+from app.modules.rag.cit_calculator import CitCalcHint
+
+CITATION_MARKER_RE = re.compile(r"\[(\d{1,3})\]")
+_RATE_OR_DURATION_RE = re.compile(
+    r"\b(\d+(?:[.,]\d+)?)\s*(%|phần\s+trăm|năm|tháng|ngày)\b", re.IGNORECASE
+)
+_DOC_NUMBER_SPAN_RE = re.compile(r"(?<![\d/])\d{1,4}/(?:19|20)\d{2}(?:/[\w\-]+)?", re.IGNORECASE)
+_STRUCTURAL_REF_RE = re.compile(r"\b(?:chương|mục|điều|khoản)\s+[ivxlcdm\d]+\b", re.IGNORECASE)
+_SCALED_SOURCE_AMOUNT_RE = re.compile(r"\b(\d+(?:[.,]\d+)?)\s*(tỷ|triệu|nghìn|ngàn)\b", re.IGNORECASE)
+# Exclude bare "năm" because "năm" means "year" in tax law and would falsely authorize "5".
+_VIETNAMESE_NUMBER_UNIT_RE = re.compile(
+    r"\b(một|hai|ba|bốn|sáu|bảy|tám|chín|mười)\s+(?:năm|tháng|ngày|triệu|tỷ)\b", re.IGNORECASE
+)
+_VIETNAMESE_NUMBER_WORDS = {
+    "một": "1", "hai": "2", "ba": "3", "bốn": "4",
+    "sáu": "6", "bảy": "7", "tám": "8", "chín": "9", "mười": "10",
+}
+_NEGATION_MARKERS = (
+    "không đúng", "chưa đúng", "sai", "không phải", "không có quy định",
+    "không quy định", "không giới hạn", "không áp dụng", "không bị giới hạn",
+)
+_CLAUSE_SPLIT_RE = re.compile(
+    r"[.;\n]+|\b(?:nhưng|tuy\s+nhiên|mặt\s+khác|còn\s+lại|ngoài\s+ra)\b", re.IGNORECASE
+)
+_EXCESS_PORTION_RE = re.compile(
+    r"(?:"
+    r"\b(?:phần|khoản|mức|chi\s+phí|khấu\s+hao)[^.;\n]{0,60}\bvượt\b"
+    r"|\bvượt\s+(?:mức|trên|quá)\b"
+    r"|\b(?:từ|trên)\s+1[.,]6\b"
+    r"|\b1[.,]6\s*(?:–|-|đến)\s*\d+"
+    r")",
+    re.IGNORECASE,
+)
+_NON_DEDUCTIBLE_RE = re.compile(
+    r"\bkhông\s+(?:được\s+trừ|tính\s+vào\s+chi\s+phí\s+được\s+trừ|được\s+tính\s+vào\s+chi\s+phí)\b",
+    re.IGNORECASE,
+)
+_DEDUCTIBLE_RE = re.compile(
+    r"\b(?:được\s+trừ|tính\s+vào\s+chi\s+phí\s+được\s+trừ)\b", re.IGNORECASE
+)
+
+
+def is_negated_clause(clause: str) -> bool:
+    lowered = clause.lower()
+    return any(marker in lowered for marker in _NEGATION_MARKERS)
+
+
+def allowed_document_numbers_from_chunks(used_chunks: list) -> set[str]:
+    """Collect normalized legal document numbers strictly from the chunks actually cited."""
+    allowed: set[str] = set()
+    for hit in used_chunks:
+        payload = hit.payload or {}
+        for key in ("document_number", "document_title", "doc_title", "text_content"):
+            allowed |= extract_document_numbers(str(payload.get(key) or ""))
+    return allowed
+
+
+def _source_numeric_values(used_chunks: list) -> set[str]:
+    """Extract substantive numeric values from used chunk bodies, excluding structural Điều/Khoản labels."""
+    combined = " ".join(str((hit.payload or {}).get("text_content") or "") for hit in used_chunks).lower()
+    combined = _STRUCTURAL_REF_RE.sub(" ", _DOC_NUMBER_SPAN_RE.sub(" ", combined))
+
+    values = {normalize_number_token(tok) for tok in NUMBER_TOKEN_RE.findall(combined)}
+    for raw_amt, unit in _SCALED_SOURCE_AMOUNT_RE.findall(combined):
+        if (parsed := parse_numeric_scalar(raw_amt)) is not None:
+            values |= money_representations(parsed * UNIT_SCALE_VND[unit.lower()])
+    for word in _VIETNAMESE_NUMBER_UNIT_RE.findall(combined):
+        if digit := _VIETNAMESE_NUMBER_WORDS.get(word.lower()):
+            values.add(digit)
+    return values
+
+
+def find_ungrounded_numbers(
+    question: str,
+    conclusion: str,
+    used_chunks: list,
+    period_str: str = "",
+    calc_hint: CitCalcHint | None = None,
+) -> list[str]:
+    """Flag any number, rate, or duration in conclusion not backed by cited chunks or Python calculation."""
+    if not conclusion:
+        return []
+
+    stripped = _STRUCTURAL_REF_RE.sub(" ", _DOC_NUMBER_SPAN_RE.sub(" ", CITATION_MARKER_RE.sub(" ", conclusion)))
+    source_numbers = _source_numeric_values(used_chunks)
+    calc_numbers = calc_hint.authorized_numbers if calc_hint else set()
+    period_numbers = {normalize_number_token(tok) for tok in NUMBER_TOKEN_RE.findall(period_str or "")}
+
+    question_clean = _DOC_NUMBER_SPAN_RE.sub(" ", question or "")
+    question_numbers = {normalize_number_token(tok) for tok in NUMBER_TOKEN_RE.findall(question_clean)}
+    for raw_amt, unit in _SCALED_SOURCE_AMOUNT_RE.findall(question_clean.lower()):
+        if (parsed := parse_numeric_scalar(raw_amt)) is not None:
+            question_numbers |= money_representations(parsed * UNIT_SCALE_VND[unit.lower()])
+
+    ungrounded: list[str] = []
+    for sentence in re.split(r"[.!?\n]+", stripped):
+        negated = is_negated_clause(sentence)
+        for raw_num, unit in _RATE_OR_DURATION_RE.findall(sentence):
+            norm_num = normalize_number_token(raw_num)
+            if norm_num in source_numbers or norm_num in calc_numbers:
+                continue
+            if unit.lower() == "năm" and len(norm_num) == 4 and norm_num in period_numbers:
+                continue
+            if negated and norm_num in question_numbers:
+                continue
+            unit_clean = "%" if unit == "%" else unit
+            label = f"{raw_num}%" if unit_clean == "%" else f"{raw_num} {unit_clean}"
+            if label not in ungrounded:
+                ungrounded.append(label)
+
+    allowed_any = source_numbers | calc_numbers | question_numbers | period_numbers
+    for raw_tok in NUMBER_TOKEN_RE.findall(stripped):
+        if normalize_number_token(raw_tok) not in allowed_any and raw_tok not in ungrounded:
+            ungrounded.append(raw_tok)
+    return ungrounded
+
+
+def missing_verified_tax_note(conclusion: str, calc_hint: CitCalcHint | None) -> str | None:
+    """Return a retry instruction when Python computed a tax figure that the conclusion failed to state."""
+    if not calc_hint or not calc_hint.expected_tax_numbers:
+        return None
+    conclusion_nums = {
+        normalize_number_token(tok)
+        for tok in NUMBER_TOKEN_RE.findall(CITATION_MARKER_RE.sub(" ", conclusion))
+    }
+    if conclusion_nums & calc_hint.expected_tax_numbers:
+        return None
+    return (
+        f"Kết luận trước chưa nêu đúng số thuế TNDN phải nộp đã kiểm toán là {calc_hint.expected_tax_label}. "
+        "Bắt buộc sử dụng đúng kết quả tính thuế đã kiểm toán bằng code, không lấy nhầm thu nhập tính thuế hay doanh thu."
+    )
+
+
+def has_reversed_cap_polarity(conclusion: str, used_chunks: list) -> bool:
+    """Detect when a cited cap states excess is non-deductible, but the conclusion calls excess deductible."""
+    source_text = " ".join(str((hit.payload or {}).get("text_content") or "") for hit in used_chunks)
+    if not ("vượt" in source_text.lower() and _NON_DEDUCTIBLE_RE.search(source_text)):
+        return False
+    for clause in _CLAUSE_SPLIT_RE.split(conclusion or ""):
+        if _EXCESS_PORTION_RE.search(clause) and _DEDUCTIBLE_RE.search(clause) and not _NON_DEDUCTIBLE_RE.search(clause):
+            return True
+    return False
+
+
+def drops_critical_condition(question: str, conclusion: str, used_chunks: list) -> str | None:
+    """Check that mandatory statutory eligibility conditions in cited chunks are not dropped (S02, A22)."""
+    source_text = " ".join(str((hit.payload or {}).get("text_content") or "") for hit in used_chunks).lower()
+    c_low = (conclusion or "").lower()
+    q_low = (question or "").lower()
+
+    if (
+        "hộ kinh doanh" in source_text
+        and "miễn thuế" in source_text
+        and "miễn thuế" in c_low
+        and not is_negated_clause(c_low)
+        and "hộ kinh doanh" not in c_low
+        and "hộ kinh doanh" not in q_low
+    ):
+        return (
+            "Kết luận trước làm mất điều kiện áp dụng bắt buộc trong căn cứ ('thành lập mới từ hộ kinh doanh'). "
+            "Hãy nêu đầy đủ điều kiện đối tượng áp dụng theo đúng nguyên văn đoạn căn cứ."
+        )
+
+    if (
+        "bất động sản" in source_text
+        and "bù trừ" in source_text
+        and "ưu đãi" in source_text
+        and "không được bù trừ" in c_low
+        and "ưu đãi" not in c_low
+    ):
+        return (
+            "Kết luận trước nêu thiếu phạm vi hạn chế bù trừ lỗ bất động sản: đoạn căn cứ quy định cụ thể "
+            "về việc không bù trừ với thu nhập của dự án đang hưởng ưu đãi thuế. Hãy nêu chính xác theo căn cứ."
+        )
+    return None

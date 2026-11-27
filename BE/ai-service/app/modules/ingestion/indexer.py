@@ -1,6 +1,5 @@
-from datetime import date, datetime
-import uuid
 from typing import Any
+import uuid
 
 from qdrant_client.models import (
     FieldCondition,
@@ -12,21 +11,8 @@ from qdrant_client.models import (
 
 from app.config import settings
 from app.core.models import embedding_model
-from app.core.qdrant import qdrant_client
+from app.core.qdrant import qdrant_client, to_rfc3339
 from app.schemas.statuses import DocumentStatus
-
-
-def to_rfc3339(date_str: str | None, is_end: bool = False) -> str | None:
-    """Convert YYYY-MM-DD or ISO-8601 date strings to RFC 3339 UTC format for Qdrant."""
-    if not date_str:
-        return None
-    clean_date = str(date_str).strip()
-    if "T" in clean_date:
-        datetime.fromisoformat(clean_date.replace("Z", "+00:00"))
-        return clean_date
-    date.fromisoformat(clean_date)
-    time_part = "T23:59:59Z" if is_end else "T00:00:00Z"
-    return f"{clean_date}{time_part}"
 
 
 def _build_document_filter(knowledge_document_id: str) -> Filter:
