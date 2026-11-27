@@ -3,7 +3,6 @@
   "incomeUnavailableMessage": "Số dư và giao dịch sẽ xuất hiện khi dữ liệu thu nhập được kết nối.",
   "incomeDemoNotice": "Số liệu minh họa dành cho chế độ demo.",
   "refreshingOverview": "Đang làm mới…",
-  "overviewMetricUnavailable": "Chưa có dữ liệu",
   "viewCasesByStatus": "Xem hồ sơ {{status}} ({{total}})",
   "viewCasesInQueue": "Xem hồ sơ",
   "nextCaseToHandle": "Hồ sơ cần xử lý tiếp",

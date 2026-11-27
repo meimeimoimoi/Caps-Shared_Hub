@@ -220,18 +220,13 @@ export default function ExpertDashboardPage() {
                   {isExpertDemo ? t('sampleTotals') : t('allActiveCases')}
                 </span>
               </div>
-              <div className="eo-workload-numbers grid grid-cols-[repeat(4,_minmax(0,_1fr))] [padding:20px_8px] max-[720px]:grid-cols-[1fr_1fr] max-[720px]:gap-y-6 [&_.eo-danger-stat_>_strong]:text-[var(--ep-danger)] [&_>_button]:flex [&_>_button]:flex-col [&_>_button]:items-start [&_>_button]:gap-2 [&_>_button]:border-0 [&_>_button]:[padding:0_24px] [&_>_button]:text-left [&_>_button]:text-[var(--ep-ink)] [&_>_button:disabled]:cursor-default [&_>_button]:[background:none] [&_>_button]:[border-right:1px_solid_var(--ep-border)] max-[1251px]:[&_>_button]:[padding:0_18px] [&_>_button_>_span]:text-[13px] [&_>_button_>_span]:text-[var(--ep-muted)] [&_>_button_>_strong]:text-[32px] [&_>_button_>_strong]:[line-height:1.1] [&_>_button_>_strong]:font-[650] [&_>_button_>_strong]:[letter-spacing:-0.02em] max-[720px]:[&_>_button_>_strong]:text-[28px] [&_>_button:hover_small]:text-[var(--ep-accent-text)] [&_>_button:hover_small]:underline [&_>_button:hover_small]:underline-offset-[3px] [&_>_button:last-child]:[border-right:0] max-[720px]:[&_>_button:nth-child(2)]:[border-right:0] [&_>_button[aria-pressed=true]_small]:text-[var(--ep-accent-text)] [&_>_button[aria-pressed=true]_small]:underline [&_>_button[aria-pressed=true]_small]:underline-offset-[3px] [&_small]:inline-flex [&_small]:items-center [&_small]:gap-[5px] [&_small]:text-[11px] [&_small]:text-[var(--ep-muted)]">
+              <div className="eo-workload-numbers grid grid-cols-[repeat(3,_minmax(0,_1fr))] [padding:20px_8px] max-[720px]:grid-cols-[1fr_1fr] max-[720px]:gap-y-6 [&_.eo-danger-stat_>_strong]:text-[var(--ep-danger)] [&_>_button]:flex [&_>_button]:flex-col [&_>_button]:items-start [&_>_button]:gap-2 [&_>_button]:border-0 [&_>_button]:[padding:0_24px] [&_>_button]:text-left [&_>_button]:text-[var(--ep-ink)] [&_>_button:disabled]:cursor-default [&_>_button]:[background:none] [&_>_button]:[border-right:1px_solid_var(--ep-border)] max-[1251px]:[&_>_button]:[padding:0_18px] [&_>_button_>_span]:text-[13px] [&_>_button_>_span]:text-[var(--ep-muted)] [&_>_button_>_strong]:text-[32px] [&_>_button_>_strong]:[line-height:1.1] [&_>_button_>_strong]:font-[650] [&_>_button_>_strong]:[letter-spacing:-0.02em] max-[720px]:[&_>_button_>_strong]:text-[28px] [&_>_button:hover_small]:text-[var(--ep-accent-text)] [&_>_button:hover_small]:underline [&_>_button:hover_small]:underline-offset-[3px] [&_>_button:last-child]:[border-right:0] max-[720px]:[&_>_button:nth-child(2)]:[border-right:0] [&_>_button[aria-pressed=true]_small]:text-[var(--ep-accent-text)] [&_>_button[aria-pressed=true]_small]:underline [&_>_button[aria-pressed=true]_small]:underline-offset-[3px] [&_small]:inline-flex [&_small]:items-center [&_small]:gap-[5px] [&_small]:text-[11px] [&_small]:text-[var(--ep-muted)]">
                 {(
                   [
                     {
                       label: t('awaitingResponse'),
                       value: model.counts.data.pendingResponse,
                       filter: 'PENDING_EXPERT_RESPONSE',
-                    },
-                    {
-                      label: t('readyToStart'),
-                      value: model.counts.data.readyToStart,
-                      filter: 'PAYMENT_CONFIRMED',
                     },
                     {
                       label: t('inReview'),
@@ -248,36 +243,25 @@ export default function ExpertDashboardPage() {
                   <button
                     key={stat.filter}
                     aria-pressed={filter === stat.filter}
-                    disabled={stat.value === null}
-                    aria-label={
-                      stat.value === null
-                        ? undefined
-                        : t('viewCasesByStatus', {
-                            status: stat.label,
-                            total: display.number(stat.value),
-                          })
-                    }
+                    aria-label={t('viewCasesByStatus', {
+                      status: stat.label,
+                      total: display.number(stat.value),
+                    })}
                     onClick={() =>
                       filterQueue(filter === stat.filter ? 'ALL' : stat.filter)
                     }
                     className={
-                      stat.filter === 'OVERDUE' && (stat.value ?? 0) > 0
+                      stat.filter === 'OVERDUE' && stat.value > 0
                         ? 'eo-danger-stat'
                         : ''
                     }
                   >
                     <span>{stat.label}</span>
-                    {stat.value === null ? (
-                      <small>{t('overviewMetricUnavailable')}</small>
-                    ) : (
-                      <>
-                        <strong>{display.number(stat.value)}</strong>
-                        <small>
-                          {t('viewCasesInQueue')}
-                          <ArrowDown size={12} aria-hidden="true" />
-                        </small>
-                      </>
-                    )}
+                    <strong>{display.number(stat.value)}</strong>
+                    <small>
+                      {t('viewCasesInQueue')}
+                      <ArrowDown size={12} aria-hidden="true" />
+                    </small>
                   </button>
                 ))}
               </div>

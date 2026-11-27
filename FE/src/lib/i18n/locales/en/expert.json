@@ -3,7 +3,6 @@
   "incomeUnavailableMessage": "Balances and transactions will appear when income data is connected.",
   "incomeDemoNotice": "Sample figures for demo mode.",
   "refreshingOverview": "Refreshing…",
-  "overviewMetricUnavailable": "Data unavailable",
   "viewCasesByStatus": "View cases: {{status}} ({{total}})",
   "viewCasesInQueue": "View cases",
   "nextCaseToHandle": "Next case to handle",
