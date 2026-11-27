@@ -14,8 +14,9 @@ if str(AI_SERVICE_ROOT) not in sys.path:
 
 from app.config import settings  # noqa: E402
 from app.main import app  # noqa: E402
+from app.modules.ingestion.chunker import LegalChunker  # noqa: E402
 from app.modules.rag.generator import GroundedGenerator  # noqa: E402
-from app.modules.rag.retriever import TemporalRetriever  # noqa: E402
+from app.modules.rag.retriever import TemporalRetriever, _prepare_search_query  # noqa: E402
 
 
 def _sample_hit():
@@ -116,6 +117,113 @@ class RagGeneratorAndRetrieverTests(unittest.TestCase):
         nested_filter = query_filter.must[2]
         self.assertIsInstance(nested_filter, Filter)
         self.assertEqual(len(nested_filter.should), 3)
+
+    def test_temporal_retriever_reranks_cit_deductibility_chunk_above_admin_penalty_chunk(self):
+        admin_hit = SimpleNamespace(
+            score=0.62,
+            payload={
+                "document_number": "252/2026/NĐ-CP",
+                "article": "Điều 45",
+                "clause": "Khoản 1",
+                "point": None,
+                "text_content": "Thủ tục xử phạt vi phạm hành chính về quản lý thuế và cưỡng chế tiền phạt.",
+            },
+        )
+        cit_hit = SimpleNamespace(
+            score=0.56,
+            payload={
+                "document_number": "320/2025/NĐ-CP",
+                "article": "Điều 10",
+                "clause": "Khoản 2",
+                "point": None,
+                "text_content": "Các khoản chi không được trừ khi xác định thu nhập chịu thuế bao gồm các khoản tiền phạt về vi phạm hành chính.",
+            },
+        )
+        fake_qdrant = MagicMock()
+        del fake_qdrant.search
+        fake_qdrant.query_points.return_value = SimpleNamespace(points=[admin_hit, cit_hit])
+
+        with (
+            patch("app.modules.rag.retriever.embedding_model") as mock_embed,
+            patch("app.modules.rag.retriever.qdrant_client", fake_qdrant),
+        ):
+            mock_embed.embed_query.return_value = [0.1, 0.2]
+            ranked = TemporalRetriever.retrieve(
+                "Tiền phạt vi phạm hành chính có được trừ khi tính thuế TNDN không?",
+                "2026-01-01",
+                "2026-12-31",
+                limit=2,
+            )
+
+        self.assertEqual(ranked[0].payload["document_number"], "320/2025/NĐ-CP")
+
+    def test_legal_chunker_preserves_points_subpoints_and_infers_amending_clauses(self):
+        # Task #14: keep individual point/sub-point labels (a, đ1, đ2) and infer clauses in amending laws.
+        doc = {
+            "knowledge_document_id": "doc-320",
+            "legal_source_id": "src-320",
+            "document_number": "320/2025/NĐ-CP",
+            "title": "Nghị định 320",
+            "effective_from": "2025-12-15",
+            "effective_to": None,
+            "content_json": {
+                "chapters": [
+                    {
+                        "number": "II",
+                        "title": "Căn cứ tính thuế",
+                        "articles": [
+                            {
+                                "number": "10",
+                                "title": "Các khoản chi không được trừ",
+                                "units": [
+                                    {"clause": "4", "point": None, "text": "Các khoản chi vượt định mức:"},
+                                    {"clause": "4", "point": "a", "text": "Chi khấu hao vượt mức quy định."},
+                                    {
+                                        "clause": "4",
+                                        "point": "đ",
+                                        "text": "Chi hưu trí tự nguyện:\nđ1) Phần vượt 05 triệu đồng/tháng/người;\nđ2) Không ghi cụ thể điều kiện hưởng trong hợp đồng.",
+                                    },
+                                ],
+                            },
+                            {
+                                "number": "1",
+                                "title": "Sửa đổi, bổ sung một số điều",
+                                "units": [
+                                    {
+                                        "clause": None,
+                                        "point": None,
+                                        "text": "1. Sửa đổi khoản 2 Điều 10 như sau: Thuế suất 15%.\n2. Bổ sung khoản 5 Điều 12 như sau: Kê khai theo quý.",
+                                    }
+                                ],
+                            },
+                        ],
+                    }
+                ]
+            },
+        }
+        chunks = LegalChunker.chunk_document(doc)
+        art10_chunks = [c for c in chunks if c["article"] == "Điều 10"]
+        self.assertEqual(
+            [c["point"] for c in art10_chunks],
+            ["Điểm a", "Điểm đ1", "Điểm đ2"],
+        )
+        self.assertTrue(all(c["clause"] == "Khoản 4" for c in art10_chunks))
+
+        art1_chunks = [c for c in chunks if c["article"] == "Điều 1"]
+        self.assertEqual(
+            [c["clause"] for c in art1_chunks],
+            ["Khoản 1", "Khoản 2"],
+        )
+
+    def test_prepare_search_query_strips_true_false_noise_and_expands_unaccented_cit(self):
+        # Task #12 (E04, E06, F01, F02): strip "đúng không?" noise and expand unaccented Vietnamese keywords.
+        cleaned_tf = _prepare_search_query("Chuyển lỗ 7 năm có đúng không?")
+        self.assertNotIn("đúng không", cleaned_tf.lower())
+        self.assertIn("Chuyển lỗ 7 năm", cleaned_tf)
+
+        expanded_ascii = _prepare_search_query("chi phi khau hao o to duoc tru bao nhieu?")
+        self.assertIn("khấu hao", expanded_ascii)
+        self.assertIn("khoản chi được trừ", expanded_ascii)
 
     def test_chunk_and_embed_rejects_missing_or_invalid_effective_from(self):
         missing_resp = self.client.post(

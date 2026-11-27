@@ -1,341 +1,103 @@
 import hashlib
 import json
-import re
 from typing import Any
 
 from app.core.ai_response import parse_ai_response
-from app.core.legal_refs import LEGAL_REF_RE as _LEGAL_REF_RE
+from app.core.cit_math import parse_numeric_scalar
 from app.core.models import llm_model
 from app.modules.drafting.prompts import NO_APPROVED_LEGAL_BASIS_NOTE, build_draft_prompt
+from app.modules.drafting.tax_calculator import (
+    ASSESSABLE_INCOME_KEYS,
+    REVENUE_KEYS,
+    TAX_AMOUNT_KEYS,
+    TAX_RATE_KEYS,
+    TAXABLE_INCOME_KEYS,
+    canonical_key,
+    derive_cit_calculation,
+    draft_involves_tax_rate,
+    extract_template_fields,
+    is_legal_basis_field,
+    is_non_empty_value,
+    lookup_field_value,
+    lookup_numeric_by_keys,
+)
+from app.modules.drafting.validators import (
+    evaluate_draft_issues,
+    find_unauthorized_draft_numbers,
+)
 from app.schemas.ai_results import DraftContent
 from app.schemas.drafting_dto import DraftIssueItem, DraftIssueSeverity
 
-_NUMBER_RE = re.compile(r"\b\d{1,3}(?:[.,]\d{3})+\b|\b\d+(?:[.,]\d+)?\b")
-_GROUPED_THOUSANDS_RE = re.compile(r"^\d{1,3}(?:[.,]\d{3})+$")
-_LEGAL_FIELD_KEYWORDS = (
-    "legal_basis",
-    "legalbasis",
-    "legal_reference",
-    "legalreference",
-    "can_cu_phap_ly",
-    "cancuphaply",
-    "co_so_phap_ly",
-    "cosophaply",
-    "căn cứ pháp lý",
-    "cơ sở pháp lý",
-    "căn cứ luật",
+_INJECTION_QUERY_MARKERS = (
+    "trích thông tư",
+    "trích nghị định",
+    "ghi số thuế",
+    "bỏ qua quy tắc",
+    "ignore previous",
 )
-_NO_BASIS_MARKERS = (
-    "chưa có căn cứ pháp lý",
-    "không có căn cứ pháp lý",
-    "thiếu căn cứ pháp lý",
-    "không tìm thấy căn cứ pháp lý",
-)
-
-
-def _normalize_number_token(token: str) -> str:
-    cleaned = token.strip()
-    if _GROUPED_THOUSANDS_RE.fullmatch(cleaned):
-        digits = re.sub(r"[.,]", "", cleaned)
-        return digits.lstrip("0") or "0"
-    if cleaned.isdigit():
-        return cleaned.lstrip("0") or "0"
-    return cleaned.replace(",", ".")
-
-
-def _extract_numbers(value: Any) -> set[str]:
-    return set(_NUMBER_RE.findall(json.dumps(value, ensure_ascii=False)))
-
-
-def _find_unauthorized_numbers(
-    output_tokens: set[str],
-    allowed_tokens: set[str],
-) -> list[str]:
-    normalized_allowed = {_normalize_number_token(tok) for tok in allowed_tokens} | allowed_tokens
-    return sorted(
-        tok
-        for tok in output_tokens
-        if tok not in normalized_allowed
-        and _normalize_number_token(tok) not in normalized_allowed
-    )
-
-
-def _extract_citation_numbers(citations: list[dict[str, Any]]) -> set[str]:
-    tokens: list[str] = []
-    for citation in citations:
-        for key in (
-            "document_number",
-            "doc_title",
-            "article",
-            "clause",
-            "point",
-            "effective_from",
-            "effective_to",
-        ):
-            val = citation.get(key)
-            if isinstance(val, str) and val.strip():
-                tokens.append(val)
-    return _extract_numbers(tokens) if tokens else set()
-
-
-def _extract_template_fields(template_schema: Any) -> list[dict[str, Any]]:
-    if isinstance(template_schema, list):
-        return [item for item in template_schema if isinstance(item, dict)]
-    if isinstance(template_schema, dict):
-        if isinstance(template_schema.get("fields"), list):
-            return [item for item in template_schema["fields"] if isinstance(item, dict)]
-        properties = template_schema.get("properties")
-        required_set = set(template_schema.get("required") or [])
-        if isinstance(properties, dict):
-            fields: list[dict[str, Any]] = []
-            for key, spec in properties.items():
-                field_obj = dict(spec) if isinstance(spec, dict) else {}
-                field_obj.setdefault("id", key)
-                field_obj.setdefault("required", key in required_set)
-                fields.append(field_obj)
-            return fields
-    return []
-
-
-def _is_legal_basis_field(field: dict[str, Any]) -> bool:
-    candidates = [
-        str(field.get(k) or "").strip().lower()
-        for k in ("id", "name", "key", "label", "group")
-    ]
-    return any(
-        kw in text
-        for text in candidates
-        if text
-        for kw in _LEGAL_FIELD_KEYWORDS
-    )
-
-
-def _lookup_field_value(draft_content: dict[str, Any], field: dict[str, Any]) -> Any:
-    keys = [
-        str(field.get(k)).strip()
-        for k in ("id", "name", "key", "label")
-        if field.get(k)
-    ]
-    lowered_map = {str(k).strip().lower(): v for k, v in draft_content.items()}
-    for key in keys:
-        if key in draft_content:
-            return draft_content[key]
-        if key.lower() in lowered_map:
-            return lowered_map[key.lower()]
-
-    sections = draft_content.get("sections")
-    if isinstance(sections, list):
-        lowered_keys = {k.lower() for k in keys}
-        for section in sections:
-            if not isinstance(section, dict):
-                continue
-            sec_id = str(section.get("id") or "").strip().lower()
-            sec_title = str(section.get("title") or "").strip().lower()
-            if sec_id in lowered_keys or sec_title in lowered_keys:
-                return section.get("content")
-    return None
-
-
-def _is_non_empty_value(value: Any) -> bool:
-    if value is None:
-        return False
-    if isinstance(value, str):
-        return bool(value.strip())
-    if isinstance(value, (list, dict)):
-        return len(value) > 0
-    return True
-
-
-def _is_traceable_citation(citation: dict[str, Any]) -> bool:
-    if citation.get("available") is False or citation.get("synthetic") is True:
-        return False
-    doc_no = str(citation.get("document_number") or "").strip()
-    source_id = str(citation.get("legal_source_id") or "").strip()
-    return bool(doc_no or source_id)
-
-
-def _is_complete_citation(citation: dict[str, Any]) -> bool:
-    has_ref = any(
-        str(citation.get(k) or "").strip() for k in ("article", "clause", "point")
-    )
-    has_effective = bool(str(citation.get("effective_from") or "").strip())
-    return has_ref and has_effective
-
-
-def _evaluate_draft_issues(
-    snapshot_data: dict,
-    template_schema: Any,
-    legal_context: str,
-    draft_content: dict[str, Any],
-    unauthorized_numbers: list[str],
-    citations: list[dict[str, Any]],
-) -> list[DraftIssueItem]:
-    issues: list[DraftIssueItem] = []
-    has_legal_basis = bool(legal_context and legal_context.strip()) and len(citations) > 0
-
-    # 1. BR-D12 Grounding Issue when no approved legal basis was retrieved.
-    if not has_legal_basis:
-        issues.append(
-            DraftIssueItem(
-                code="MISSING_LEGAL_BASIS",
-                type="GROUNDING_ISSUE",
-                severity=DraftIssueSeverity.BLOCKING,
-                description=(
-                    "Không tìm thấy căn cứ pháp lý đã được phê duyệt phù hợp với kỳ tính thuế "
-                    "trong kho tri thức. AI không được tự tạo căn cứ pháp lý."
-                ),
-            )
-        )
-
-        snapshot_refs = {
-            m.group(0).strip().lower()
-            for m in _LEGAL_REF_RE.finditer(json.dumps(snapshot_data, ensure_ascii=False))
-        }
-        output_text = json.dumps(draft_content, ensure_ascii=False)
-        fabricated_refs = sorted(
-            {
-                m.group(0).strip()
-                for m in _LEGAL_REF_RE.finditer(output_text)
-                if m.group(0).strip().lower() not in snapshot_refs
-            }
-        )
-        if fabricated_refs:
-            issues.append(
-                DraftIssueItem(
-                    code="FABRICATED_LEGAL_BASIS",
-                    type="GROUNDING_ISSUE",
-                    severity=DraftIssueSeverity.BLOCKING,
-                    description=(
-                        "Bản nháp có đề cập căn cứ pháp lý không tồn tại trong kho tri thức truy xuất: "
-                        + ", ".join(fabricated_refs[:5])
-                        + "."
-                    ),
-                )
-            )
-    else:
-        # 2. Check mandatory legal-basis sections in template schema.
-        for field in _extract_template_fields(template_schema):
-            if not field.get("required") or not _is_legal_basis_field(field):
-                continue
-            field_id = str(field.get("id") or field.get("name") or field.get("label") or "legal_basis")
-            label = str(field.get("label") or field_id)
-            value = _lookup_field_value(draft_content, field)
-            text_val = value.strip().lower() if isinstance(value, str) else ""
-            if not _is_non_empty_value(value) or any(
-                marker in text_val for marker in _NO_BASIS_MARKERS
-            ):
-                issues.append(
-                    DraftIssueItem(
-                        code="UNGROUNDED_LEGAL_SECTION",
-                        type="GROUNDING_ISSUE",
-                        severity=DraftIssueSeverity.BLOCKING,
-                        description=(
-                            f"Nội dung pháp lý bắt buộc '{label}' chưa có căn cứ pháp lý được đối chiếu."
-                        ),
-                        field_id=field_id,
-                    )
-                )
-
-    # 3. Numerical integrity guardrail.
-    if unauthorized_numbers:
-        issues.append(
-            DraftIssueItem(
-                code="UNAUTHORIZED_NUMBERS",
-                type="NUMERICAL_INTEGRITY",
-                severity=DraftIssueSeverity.BLOCKING,
-                description=(
-                    "Phát hiện số liệu trong bản nháp không truy về được dữ liệu đầu vào (Input Snapshot): "
-                    + ", ".join(unauthorized_numbers[:10])
-                    + "."
-                ),
-            )
-        )
-
-    # 4. Citation traceability checks when citations exist.
-    if citations:
-        traceable = [c for c in citations if _is_traceable_citation(c)]
-        if not traceable:
-            issues.append(
-                DraftIssueItem(
-                    code="UNTRACEABLE_REQUIRED_CITATION",
-                    type="CITATION_TRACEABILITY",
-                    severity=DraftIssueSeverity.BLOCKING,
-                    description=(
-                        "Các trích dẫn pháp lý đi kèm không đủ định danh nguồn để truy vết "
-                        "(thiếu số hiệu văn bản và mã nguồn pháp lý)."
-                    ),
-                )
-            )
-        else:
-            for idx, citation in enumerate(citations):
-                cid = str(
-                    citation.get("document_number")
-                    or citation.get("legal_source_id")
-                    or idx
-                )
-                if not _is_traceable_citation(citation):
-                    issues.append(
-                        DraftIssueItem(
-                            code="INCOMPLETE_CITATION_METADATA",
-                            type="CITATION_TRACEABILITY",
-                            severity=DraftIssueSeverity.WARNING,
-                            description=(
-                                f"Trích dẫn #{idx + 1} thiếu mã nguồn hoặc số hiệu văn bản để truy vết đầy đủ."
-                            ),
-                            citation_id=cid,
-                        )
-                    )
-                elif not _is_complete_citation(citation):
-                    issues.append(
-                        DraftIssueItem(
-                            code="INCOMPLETE_CITATION_METADATA",
-                            type="CITATION_TRACEABILITY",
-                            severity=DraftIssueSeverity.WARNING,
-                            description=(
-                                f"Trích dẫn '{cid}' thiếu chi tiết điều/khoản hoặc ngày hiệu lực."
-                            ),
-                            citation_id=cid,
-                        )
-                    )
-
-    return issues
 
 
 def build_draft_retrieval_query(snapshot_data: dict, template_schema: Any) -> str:
-    """Build a Vietnamese semantic query from template labels and descriptive snapshot fields."""
+    """Build a Vietnamese semantic query from template labels and clean descriptive snapshot fields."""
     parts: list[str] = [
-        "Quy định pháp luật thuế thu nhập doanh nghiệp TNDN doanh thu chi phí được trừ quyết toán thuế"
+        "Quy định pháp luật thuế thu nhập doanh nghiệp TNDN thuế suất phương pháp tính thuế thu nhập tính thuế doanh thu chi phí được trừ quyết toán thuế"
     ]
-    for field in _extract_template_fields(template_schema):
+    tax_focus_keys = TAX_AMOUNT_KEYS | TAX_RATE_KEYS | TAXABLE_INCOME_KEYS | ASSESSABLE_INCOME_KEYS
+    needs_tax_rate_focus = False
+
+    for field in extract_template_fields(template_schema):
+        if canonical_key(field.get("id") or field.get("name") or field.get("key")) in tax_focus_keys:
+            needs_tax_rate_focus = True
         for key in ("label", "title", "group"):
             val = field.get(key)
             if isinstance(val, str) and val.strip():
                 parts.append(val.strip())
 
     if isinstance(snapshot_data, dict):
-        for val in snapshot_data.values():
+        for key, val in snapshot_data.items():
+            if canonical_key(key) in tax_focus_keys:
+                needs_tax_rate_focus = True
             if isinstance(val, str):
                 cleaned = val.strip()
-                if cleaned and not cleaned.isdigit():
+                if cleaned and not cleaned.isdigit() and not any(
+                    m in cleaned.lower() for m in _INJECTION_QUERY_MARKERS
+                ):
                     parts.append(cleaned)
 
+    if needs_tax_rate_focus:
+        parts.append("Điều 10 thuế suất thuế thu nhập doanh nghiệp 20% 17% 15% cách tính thuế TNDN phải nộp")
     return " | ".join(dict.fromkeys(parts))
+
+
+def prioritize_draft_hits(
+    retrieved_hits: list,
+    snapshot_data: dict,
+    template_schema: Any,
+) -> list:
+    """Place tax-rate and tax-calculation articles ahead of generic expense articles when drafting tax payable."""
+    if not retrieved_hits or not draft_involves_tax_rate(snapshot_data, template_schema):
+        return retrieved_hits
+
+    def _priority_key(item: tuple[int, Any]) -> tuple[int, int]:
+        idx, hit = item
+        payload = getattr(hit, "payload", None) or {}
+        text = " ".join(str(payload.get(k) or "") for k in ("article", "clause", "text_content")).lower()
+        has_rate = "thuế suất" in text and any(r in text for r in ("20%", "17%", "15%"))
+        return (0 if has_rate else 1, idx)
+
+    return [hit for _, hit in sorted(enumerate(retrieved_hits), key=_priority_key)]
 
 
 def _synthesize_snapshot_narrative(snapshot_data: dict, template_schema: Any) -> str:
     """Build a deterministic Vietnamese explanation strictly from user-provided snapshot values."""
-    label_map: dict[str, str] = {}
-    for field in _extract_template_fields(template_schema):
-        fid = str(field.get("id") or field.get("name") or field.get("key") or "").strip()
-        flabel = str(field.get("label") or field.get("title") or "").strip()
-        if fid and flabel:
-            label_map[fid] = flabel
-
-    lines: list[str] = [
-        "Bản nháp thuyết minh được tổng hợp từ dữ liệu đầu vào đã xác nhận của người nộp thuế:"
-    ]
+    label_map = {
+        str(f.get("id") or f.get("name") or f.get("key") or "").strip(): str(f.get("label") or f.get("title") or "").strip()
+        for f in extract_template_fields(template_schema)
+        if (f.get("id") or f.get("name") or f.get("key")) and (f.get("label") or f.get("title"))
+    }
+    lines = ["Bản nháp thuyết minh được tổng hợp từ dữ liệu đầu vào đã xác nhận của người nộp thuế:"]
     for key, val in snapshot_data.items():
-        if not _is_non_empty_value(val):
+        if not is_non_empty_value(val):
             continue
         display_label = label_map.get(str(key), str(key))
         val_text = val.strip() if isinstance(val, str) else json.dumps(val, ensure_ascii=False)
@@ -343,39 +105,96 @@ def _synthesize_snapshot_narrative(snapshot_data: dict, template_schema: Any) ->
     return "\n".join(lines)
 
 
+def _reconcile_tax_amount_fields(
+    enriched: dict[str, Any],
+    snapshot: dict[str, Any],
+    template_schema: Any,
+    derived_tax_info: dict[str, Any] | None,
+) -> list[DraftIssueItem]:
+    """Backfill verified tax_amount, or clear misassigned revenue/income values and emit an issue."""
+    issues: list[DraftIssueItem] = []
+    explicit_tax = lookup_numeric_by_keys(snapshot, TAX_AMOUNT_KEYS)
+    derived_tax = (derived_tax_info or {}).get("calculated_tax_amount")
+    income_or_rev = {
+        v
+        for v in (
+            lookup_numeric_by_keys(snapshot, REVENUE_KEYS),
+            lookup_numeric_by_keys(snapshot, TAXABLE_INCOME_KEYS),
+            lookup_numeric_by_keys(snapshot, ASSESSABLE_INCOME_KEYS),
+        )
+        if v is not None and v > 0
+    }
+
+    targets: list[tuple[str, str, bool, Any]] = []
+    seen_keys: set[str] = set()
+    for field in extract_template_fields(template_schema):
+        fkey = str(field.get("id") or field.get("name") or field.get("key") or "").strip()
+        if fkey and canonical_key(fkey) in TAX_AMOUNT_KEYS:
+            seen_keys.add(fkey)
+            targets.append((fkey, str(field.get("label") or fkey), bool(field.get("required")), lookup_field_value(enriched, field)))
+    for key in list(enriched.keys()):
+        if canonical_key(key) in TAX_AMOUNT_KEYS and key not in seen_keys:
+            targets.append((key, key, False, enriched.get(key)))
+
+    for fkey, label, is_required, current_val in targets:
+        current_num = parse_numeric_scalar(current_val)
+        if explicit_tax is not None:
+            if current_num != explicit_tax:
+                enriched[fkey] = int(explicit_tax) if float(explicit_tax).is_integer() else explicit_tax
+        elif derived_tax is not None:
+            if not is_non_empty_value(current_val) or (
+                current_num is not None and current_num != float(derived_tax) and current_num in income_or_rev
+            ):
+                enriched[fkey] = derived_tax
+        else:
+            is_misassigned = current_num is not None and current_num in income_or_rev
+            if is_misassigned or (is_required and not is_non_empty_value(current_val)):
+                enriched[fkey] = None
+                issues.append(
+                    DraftIssueItem(
+                        code="MISSING_TAX_AMOUNT_INPUT",
+                        type="GROUNDING_ISSUE",
+                        severity=DraftIssueSeverity.BLOCKING if (is_required or is_misassigned) else DraftIssueSeverity.WARNING,
+                        description=(
+                            f"Trường số thuế '{label}' chưa có sẵn trong Input Snapshot và chưa đủ chỉ tiêu/thuế suất "
+                            "được phê duyệt để xác định chính xác; đã để trống để tránh điền sai nghĩa."
+                        ),
+                        field_id=fkey,
+                    )
+                )
+    return issues
+
+
 def _enrich_draft_content(
     draft_content: dict[str, Any],
     snapshot_data: dict,
     template_schema: Any,
     has_legal_basis: bool,
-) -> dict[str, Any]:
-    """Backfill missing required non-legal snapshot fields and ensure narrative sections when ungrounded."""
+    derived_tax_info: dict[str, Any] | None = None,
+) -> tuple[dict[str, Any], list[DraftIssueItem]]:
+    """Backfill missing required fields, enforce verified tax amounts, and synthesize narrative when ungrounded."""
     enriched = dict(draft_content)
     snapshot = snapshot_data if isinstance(snapshot_data, dict) else {}
+    tax_issues = _reconcile_tax_amount_fields(enriched, snapshot, template_schema, derived_tax_info)
 
-    # Preserve required non-legal template fields that already have values in snapshot_data.
-    for field in _extract_template_fields(template_schema):
-        if not field.get("required") or _is_legal_basis_field(field):
+    for field in extract_template_fields(template_schema):
+        if not field.get("required") or is_legal_basis_field(field):
             continue
-        if _is_non_empty_value(_lookup_field_value(enriched, field)):
+        if is_non_empty_value(lookup_field_value(enriched, field)):
             continue
-        snapshot_val = _lookup_field_value(snapshot, field)
+        snapshot_val = lookup_field_value(snapshot, field)
         field_key = str(field.get("id") or field.get("name") or field.get("key") or "").strip()
-        if field_key and _is_non_empty_value(snapshot_val):
+        if field_key and is_non_empty_value(snapshot_val):
             enriched[field_key] = snapshot_val
 
-    # If retrieval found no legal basis and the LLM merely echoed snapshot keys without narrative prose,
-    # synthesize an explicit Vietnamese explanation + ungrounded legal basis notice without inventing numbers.
     if not has_legal_basis and snapshot:
         snapshot_keys = {str(k).strip().lower() for k in snapshot.keys()}
         content_keys = {str(k).strip().lower() for k in enriched.keys()}
         if content_keys and content_keys.issubset(snapshot_keys):
-            enriched["noi_dung_giai_trinh"] = _synthesize_snapshot_narrative(
-                snapshot, template_schema
-            )
+            enriched["noi_dung_giai_trinh"] = _synthesize_snapshot_narrative(snapshot, template_schema)
             enriched["can_cu_phap_ly"] = NO_APPROVED_LEGAL_BASIS_NOTE
 
-    return enriched
+    return enriched, tax_issues
 
 
 class DocumentDrafter:
@@ -385,47 +204,51 @@ class DocumentDrafter:
         template_schema: Any,
         legal_context: str,
         citations: list[dict[str, Any]] | None = None,
+        retrieved_hits: list | None = None,
     ) -> dict:
+        resolved_citations = citations or []
+        has_legal_basis = bool(legal_context and legal_context.strip()) and len(resolved_citations) > 0
+        derived_tax_info = (
+            derive_cit_calculation(snapshot_data, legal_context, retrieved_hits)
+            if has_legal_basis
+            else {}
+        )
+
         prompt = build_draft_prompt(
             snapshot_data=snapshot_data,
             template_schema=template_schema,
             legal_context=legal_context,
+            derived_tax_info=derived_tax_info or None,
         )
         res = llm_model.invoke(prompt)
         raw_draft_content = parse_ai_response(res.content, DraftContent).root
 
-        resolved_citations = citations or []
-        has_legal_basis = (
-            bool(legal_context and legal_context.strip()) and len(resolved_citations) > 0
-        )
-        draft_content = _enrich_draft_content(
+        draft_content, tax_issues = _enrich_draft_content(
             draft_content=raw_draft_content,
             snapshot_data=snapshot_data,
             template_schema=template_schema,
             has_legal_basis=has_legal_basis,
+            derived_tax_info=derived_tax_info or None,
         )
 
-        # Guardrail: detect numbers absent from the input snapshot and retrieved citation references.
-        allowed_numbers = _extract_numbers(snapshot_data) | _extract_citation_numbers(
-            resolved_citations
-        )
-        output_numbers = _extract_numbers(draft_content)
-        unauthorized = _find_unauthorized_numbers(output_numbers, allowed_numbers)
-
-        issues = _evaluate_draft_issues(
+        unauthorized = find_unauthorized_draft_numbers(
+            draft_content=draft_content,
             snapshot_data=snapshot_data,
+            derived_tax_info=derived_tax_info or None,
+            citations=resolved_citations,
+            legal_context=legal_context,
+            retrieved_hits=retrieved_hits,
+        )
+        issues = tax_issues + evaluate_draft_issues(
             template_schema=template_schema,
             legal_context=legal_context,
             draft_content=draft_content,
             unauthorized_numbers=unauthorized,
             citations=resolved_citations,
+            retrieved_hits=retrieved_hits,
         )
-
-        # Hash the canonical content for integrity checks.
         content_hash = hashlib.sha256(
-            json.dumps(
-                draft_content, sort_keys=True, separators=(",", ":"), ensure_ascii=False
-            ).encode("utf-8")
+            json.dumps(draft_content, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
         ).hexdigest()
 
         return {

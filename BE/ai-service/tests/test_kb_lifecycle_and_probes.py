@@ -11,6 +11,8 @@ if str(AI_SERVICE_ROOT) not in sys.path:
     sys.path.insert(0, str(AI_SERVICE_ROOT))
 
 from app.config import settings  # noqa: E402
+from app.core.models import llm_model  # noqa: E402
+import app.main as main_module  # noqa: E402
 from app.main import app  # noqa: E402
 from app.modules.ingestion.indexer import LegalIndexer  # noqa: E402
 
@@ -20,13 +22,21 @@ class KbLifecycleAndProbesTests(unittest.TestCase):
 
     def setUp(self):
         self._orig_internal_key = settings.INTERNAL_API_KEY
+        self._orig_require_key = settings.REQUIRE_INTERNAL_API_KEY
+        self._orig_app_env = settings.APP_ENV
         settings.INTERNAL_API_KEY = ""
+        settings.REQUIRE_INTERNAL_API_KEY = False
+        settings.APP_ENV = "dev"
+        main_module._last_ollama_probe_ok_at = 0.0
         self._init_qdrant_patch = patch("app.main.init_qdrant")
         self._init_qdrant_patch.start()
         self.client = TestClient(app)
 
     def tearDown(self):
         settings.INTERNAL_API_KEY = self._orig_internal_key
+        settings.REQUIRE_INTERNAL_API_KEY = self._orig_require_key
+        settings.APP_ENV = self._orig_app_env
+        main_module._last_ollama_probe_ok_at = 0.0
         self._init_qdrant_patch.stop()
 
     def test_health_and_healthz_return_ok(self):
@@ -45,16 +55,43 @@ class KbLifecycleAndProbesTests(unittest.TestCase):
                 {"name": settings.EMBEDDING_MODEL},
             ]
         }
+        fake_probe_resp = MagicMock()
+        fake_probe_resp.status_code = 200
 
         with (
             patch("app.main.qdrant_client") as mock_qdrant,
             patch("app.main.httpx.get", return_value=fake_ollama_resp),
+            patch("app.main.httpx.post", return_value=fake_probe_resp) as mock_probe,
         ):
             mock_qdrant.get_collections.return_value = fake_cols
             resp = self.client.get("/readyz")
 
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp.json(), {"status": "ready", "checks": {"qdrant": "ok", "ollama": "ok"}})
+        mock_probe.assert_called_once()
+
+    def test_readyz_returns_503_when_ollama_runner_hangs_even_if_tags_ok(self):
+        # Task #2 (S08): /api/tags responds 200, but live 1-token inference probe times out -> 503.
+        fake_cols = SimpleNamespace(collections=[SimpleNamespace(name=settings.QDRANT_COLLECTION)])
+        fake_ollama_resp = MagicMock()
+        fake_ollama_resp.status_code = 200
+        fake_ollama_resp.json.return_value = {
+            "models": [
+                {"name": settings.LLM_MODEL},
+                {"name": settings.EMBEDDING_MODEL},
+            ]
+        }
+
+        with (
+            patch("app.main.qdrant_client") as mock_qdrant,
+            patch("app.main.httpx.get", return_value=fake_ollama_resp),
+            patch("app.main.httpx.post", side_effect=TimeoutError("runner wedged")),
+        ):
+            mock_qdrant.get_collections.return_value = fake_cols
+            resp = self.client.get("/readyz")
+
+        self.assertEqual(resp.status_code, 503)
+        self.assertEqual(resp.json()["checks"]["ollama"], "unavailable")
 
     def test_readyz_returns_503_when_model_or_qdrant_missing(self):
         fake_cols = SimpleNamespace(collections=[])
@@ -253,6 +290,58 @@ class KbLifecycleAndProbesTests(unittest.TestCase):
         self.assertEqual(citation["effective_from"], "2025-10-01")
         self.assertEqual(citation["effective_to"], "2026-12-31")
         self.assertNotIn("text", citation)
+
+    def test_require_internal_api_key_fails_closed_when_key_empty(self):
+        settings.INTERNAL_API_KEY = ""
+        settings.REQUIRE_INTERNAL_API_KEY = True
+        resp = self.client.delete("/api/v1/kb/documents/doc-1")
+        self.assertEqual(resp.status_code, 503)
+
+    def test_chat_query_rejects_overlong_or_blank_question_with_422(self):
+        long_resp = self.client.post(
+            "/api/v1/chat/query",
+            json={"question": "a" * 7000, "user_tax_period": "2026"},
+        )
+        self.assertEqual(long_resp.status_code, 422)
+
+        blank_resp = self.client.post(
+            "/api/v1/chat/query",
+            json={"question": "   ", "user_tax_period": "2026"},
+        )
+        self.assertEqual(blank_resp.status_code, 422)
+
+    def test_chat_query_returns_504_on_timeout(self):
+        with patch("app.api.routes.ScopeRouter.analyze", side_effect=TimeoutError("ollama timeout")):
+            resp = self.client.post(
+                "/api/v1/chat/query",
+                json={"question": "Thuế suất TNDN 2026?", "user_tax_period": "2026"},
+            )
+        self.assertEqual(resp.status_code, 504)
+
+    def test_non_dev_startup_refuses_empty_internal_api_key_and_llm_caps_num_predict(self):
+        # Task #1 & #2: refuse startup in prod/ngrok without INTERNAL_API_KEY, and cap num_predict.
+        import asyncio
+
+        async def _enter_lifespan():
+            async with main_module.lifespan(app):
+                pass
+
+        self.assertEqual(llm_model.num_predict, settings.OLLAMA_NUM_PREDICT)
+        settings.APP_ENV = "prod"
+        settings.INTERNAL_API_KEY = ""
+        with self.assertRaises(RuntimeError):
+            asyncio.run(_enter_lifespan())
+
+    def test_warmup_helper_preloads_llm_and_embedding_models_with_keep_alive(self):
+        # Task #16: warm-up calls both /api/generate and /api/embeddings with OLLAMA_KEEP_ALIVE.
+        with patch("app.main.httpx.post") as mock_post:
+            main_module._warmup_ollama_models()
+        self.assertEqual(mock_post.call_count, 2)
+        first_payload = mock_post.call_args_list[0].kwargs["json"]
+        second_payload = mock_post.call_args_list[1].kwargs["json"]
+        self.assertEqual(first_payload["model"], settings.LLM_MODEL)
+        self.assertEqual(first_payload["keep_alive"], settings.OLLAMA_KEEP_ALIVE)
+        self.assertEqual(second_payload["model"], settings.EMBEDDING_MODEL)
 
 
 if __name__ == "__main__":

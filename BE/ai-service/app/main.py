@@ -1,16 +1,21 @@
 from contextlib import asynccontextmanager
 import logging
+import threading
+import time
 
 from fastapi import FastAPI, status
 from fastapi.responses import JSONResponse
 import httpx
 
+from app.api.dependencies import is_internal_key_required
 from app.api.exception_handlers import register_exception_handlers
 from app.api.routes import router
 from app.config import settings
 from app.core.qdrant import init_qdrant, qdrant_client
 
 logger = logging.getLogger(__name__)
+_READYZ_CACHE_TTL_SECONDS = 15.0
+_last_ollama_probe_ok_at: float = 0.0
 
 
 def _has_ollama_model(available_names: set[str], target_model: str) -> bool:
@@ -32,6 +37,30 @@ def _check_qdrant_ready() -> str:
         return "unavailable"
 
 
+def _probe_ollama_inference() -> bool:
+    """Send a minimal 1-token prompt to verify the Ollama runner is responsive, not stuck."""
+    global _last_ollama_probe_ok_at
+    now = time.monotonic()
+    if _last_ollama_probe_ok_at > 0 and (now - _last_ollama_probe_ok_at) < _READYZ_CACHE_TTL_SECONDS:
+        return True
+
+    gen_url = f"{settings.OLLAMA_BASE_URL.rstrip('/')}/api/generate"
+    resp = httpx.post(
+        gen_url,
+        json={
+            "model": settings.LLM_MODEL,
+            "prompt": "ok",
+            "stream": False,
+            "options": {"num_predict": 1, "temperature": 0},
+        },
+        timeout=float(settings.READYZ_PROBE_TIMEOUT_SECONDS),
+    )
+    if resp.status_code != status.HTTP_200_OK:
+        return False
+    _last_ollama_probe_ok_at = time.monotonic()
+    return True
+
+
 def _check_ollama_ready() -> str:
     tags_url = f"{settings.OLLAMA_BASE_URL.rstrip('/')}/api/tags"
     try:
@@ -46,16 +75,64 @@ def _check_ollama_ready() -> str:
             available_names, settings.EMBEDDING_MODEL
         ):
             return "model_missing"
+        if not _probe_ollama_inference():
+            return "inference_unavailable"
         return "ok"
     except Exception:
         logger.warning("Ollama readiness check failed", exc_info=True)
         return "unavailable"
 
 
+def _warmup_ollama_models() -> None:
+    """Preload LLM and embedding models into memory in the background to avoid 30s cold start."""
+    base = settings.OLLAMA_BASE_URL.rstrip("/")
+    try:
+        httpx.post(
+            f"{base}/api/generate",
+            json={
+                "model": settings.LLM_MODEL,
+                "prompt": "ok",
+                "stream": False,
+                "keep_alive": settings.OLLAMA_KEEP_ALIVE,
+                "options": {"num_predict": 1, "temperature": 0},
+            },
+            timeout=float(settings.OLLAMA_TIMEOUT_SECONDS),
+        )
+        httpx.post(
+            f"{base}/api/embeddings",
+            json={
+                "model": settings.EMBEDDING_MODEL,
+                "prompt": "thuế thu nhập doanh nghiệp",
+                "keep_alive": settings.OLLAMA_KEEP_ALIVE,
+            },
+            timeout=float(settings.OLLAMA_TIMEOUT_SECONDS),
+        )
+    except Exception:
+        logger.debug("Background Ollama warm-up skipped or failed", exc_info=True)
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    # Refuse startup outside dev when INTERNAL_API_KEY is missing; warn in local dev.
+    if not settings.INTERNAL_API_KEY.strip():
+        if is_internal_key_required():
+            raise RuntimeError(
+                "INTERNAL_API_KEY must be set when APP_ENV is not dev (or REQUIRE_INTERNAL_API_KEY=true)."
+            )
+        logger.warning(
+            "INTERNAL_API_KEY is empty; /api/v1 endpoints accept requests without X-Internal-Key. "
+            "Set INTERNAL_API_KEY before exposing externally."
+        )
     # Ensure the Qdrant collection and payload indexes exist before serving requests.
     init_qdrant()
+    if settings.WARMUP_ON_STARTUP and not isinstance(init_qdrant, type(lifespan)):
+        # Skip network warm-up when init_qdrant is mocked during unit tests.
+        if getattr(init_qdrant, "__module__", "") == "app.core.qdrant":
+            threading.Thread(
+                target=_warmup_ollama_models,
+                name="ollama-warmup",
+                daemon=True,
+            ).start()
     yield
 
 
