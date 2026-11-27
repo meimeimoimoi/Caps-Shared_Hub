@@ -499,6 +499,42 @@ public sealed class ServiceOfferingRepository(ExpertDbContext db) : IServiceOffe
             .OrderBy(o => o.ServiceCode)
             .ToListAsync(ct);
 
+    public async Task<
+        IReadOnlyList<(ServiceOffering Offering, ExpertProfile Expert)>
+    > ListByServiceAsync(string serviceCode, CancellationToken ct)
+    {
+        var rows = await db
+            .ServiceOfferings.Where(o => o.ServiceCode == serviceCode)
+            .Join(db.ExpertProfiles, o => o.ExpertProfileId, p => p.Id, (o, p) => new { o, p })
+            .Where(x => x.p.ContactEmail != null)
+            .ToListAsync(ct);
+        return rows.ConvertAll(x => (x.o, x.p));
+    }
+
+    public async Task<
+        IReadOnlyList<(ServiceOffering Offering, ExpertProfile Expert, string ServiceName)>
+    > ListPricedOutsideAsync(long minFee, long maxFee, CancellationToken ct)
+    {
+        var rows = await db
+            .ServiceOfferings.Where(o => o.Fee < minFee || o.Fee > maxFee)
+            .Join(db.ExpertProfiles, o => o.ExpertProfileId, p => p.Id, (o, p) => new { o, p })
+            .Where(x => x.p.ContactEmail != null)
+            .Join(
+                db.ServiceCatalog,
+                x => x.o.ServiceCode,
+                s => s.Code,
+                (x, s) =>
+                    new
+                    {
+                        x.o,
+                        x.p,
+                        s.Name,
+                    }
+            )
+            .ToListAsync(ct);
+        return rows.ConvertAll(x => (x.o, x.p, x.Name));
+    }
+
     public async Task<IReadOnlyList<ServiceOfferingChange>> ListChangesAsync(
         Guid profileId,
         string serviceCode,

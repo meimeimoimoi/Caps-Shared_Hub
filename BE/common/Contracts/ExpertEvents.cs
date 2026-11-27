@@ -78,6 +78,54 @@ public sealed record ExpertServiceAccessChangedEvent(
 );
 
 /// <summary>
+/// A System Admin announced a platform fee change for a service the expert has priced, or withdrew the pending
+/// one. Published through the expert outbox; the notification service tells the expert in their own numbers.
+/// </summary>
+/// <param name="Id">Event id, also used to ignore a redelivered message.</param>
+/// <param name="Fee">The expert's current price for the service, in VND.</param>
+/// <param name="NetNow">What the expert keeps per case at the rate in force.</param>
+/// <param name="NetNew">What the expert would keep per case at the announced rate.</param>
+/// <param name="Cancelled">True when the pending change was withdrawn and the rate in force stays.</param>
+public sealed record PlatformFeeChangeAnnouncedEvent(
+    Guid Id,
+    Guid UserId,
+    string Email,
+    string DisplayName,
+    string ServiceCode,
+    string ServiceName,
+    long Fee,
+    int CurrentPercent,
+    long NetNow,
+    int NewPercent,
+    long NetNew,
+    DateTimeOffset EffectiveFrom,
+    string? Reason,
+    bool Cancelled,
+    DateTimeOffset OccurredAt
+);
+
+/// <summary>
+/// A System Admin narrowed the allowed price range and the expert's price for a service fell outside it, so the
+/// service is hidden from the marketplace until they reprice. Published through the expert outbox.
+/// </summary>
+/// <param name="Id">Event id, also used to ignore a redelivered message.</param>
+/// <param name="Fee">The expert's current price for the service, in VND.</param>
+/// <param name="Reason">The admin's reason for the change, shown to the expert.</param>
+public sealed record ExpertPriceOutOfRangeEvent(
+    Guid Id,
+    Guid UserId,
+    string Email,
+    string DisplayName,
+    string ServiceCode,
+    string ServiceName,
+    long Fee,
+    long MinFee,
+    long MaxFee,
+    string Reason,
+    DateTimeOffset OccurredAt
+);
+
+/// <summary>
 /// An expert asked for a force-majeure excuse of a violation. Published by the expert service; the notification
 /// service emails the operations inbox so a System Admin reviews the request and its evidence.
 /// </summary>

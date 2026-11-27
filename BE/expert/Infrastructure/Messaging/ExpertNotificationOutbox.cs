@@ -35,6 +35,17 @@ public sealed class ExpertNotificationOutbox(ExpertDbContext db) : IExpertNotifi
     public void Enqueue(ExpertExcuseRequestedEvent message, DateTimeOffset now) =>
         Add(message.Id, nameof(ExpertExcuseRequestedEvent), JsonSerializer.Serialize(message), now);
 
+    public void Enqueue(PlatformFeeChangeAnnouncedEvent message, DateTimeOffset now) =>
+        Add(
+            message.Id,
+            nameof(PlatformFeeChangeAnnouncedEvent),
+            JsonSerializer.Serialize(message),
+            now
+        );
+
+    public void Enqueue(ExpertPriceOutOfRangeEvent message, DateTimeOffset now) =>
+        Add(message.Id, nameof(ExpertPriceOutOfRangeEvent), JsonSerializer.Serialize(message), now);
+
     private void Add(Guid id, string type, string payload, DateTimeOffset now) =>
         db.NotificationOutbox.Add(
             new NotificationOutboxEntry
