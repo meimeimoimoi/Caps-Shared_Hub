@@ -121,6 +121,29 @@ public sealed class KnowledgeDocumentsController(ICurrentUser currentUser) : Con
         return Ok(ApiResponse.Message("Document rejected."));
     }
 
+    /// <summary>Ticks one parsed unit off the review checklist.</summary>
+    /// <remarks>
+    /// Sets reviewed = true on the unit in contentJson, so every admin sees the same checklist after a reload.
+    /// Marking a unit twice is harmless. Only PENDING documents are reviewed; parsing the file again starts the
+    /// checklist over.
+    /// </remarks>
+    /// <response code="200">Marked reviewed.</response>
+    /// <response code="400">unitId is missing or longer than 128 characters.</response>
+    /// <response code="403">Missing the KnowledgeManage permission.</response>
+    /// <response code="404">DOCUMENT_NOT_FOUND or UNIT_NOT_FOUND.</response>
+    /// <response code="409">DOCUMENT_NOT_PENDING.</response>
+    [HttpPost("{id:guid}/reviewed-units")]
+    public async Task<IActionResult> MarkUnitReviewed(
+        Guid id,
+        MarkUnitReviewedRequest r,
+        [FromServices] ICommandHandler<MarkUnitReviewedCommand> handler,
+        CancellationToken ct
+    )
+    {
+        await handler.HandleAsync(r.ToCommand(id), ct);
+        return Ok(ApiResponse.Message("Unit marked reviewed."));
+    }
+
     /// <summary>Sends a pending upload back to the crawler worker to be split again (REPROCESS_REQUIRED).</summary>
     /// <remarks>
     /// The parsed content and last error are cleared and the stored file is parsed again; the version stays

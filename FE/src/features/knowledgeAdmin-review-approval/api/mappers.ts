@@ -71,6 +71,8 @@ interface ContentJson {
         text: string
         status: string
         warning?: string
+        /** Ticked off the review checklist (POST /documents/{id}/reviewed-units) */
+        reviewed?: boolean
       }[]
     }[]
   }[]
@@ -168,7 +170,11 @@ function toChapters(content: ContentJson | null): DocumentReview['chapters'] {
         id: u.id,
         label: u.label,
         text: u.text,
-        status: u.status === 'WARNING' ? 'WARNING' : 'AUTO',
+        status: u.reviewed
+          ? 'REVIEWED'
+          : u.status === 'WARNING'
+            ? 'WARNING'
+            : 'AUTO',
         ...(u.warning ? { warning: u.warning } : {}),
       })),
     })),

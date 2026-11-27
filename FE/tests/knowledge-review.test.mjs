@@ -145,6 +145,15 @@ test('parsed content becomes chapters, articles and units for review', () => {
   assert.equal(article.units[1].warning, 'Thiếu dấu')
 })
 
+test('units ticked in ingestion come back reviewed, keeping their warning', () => {
+  const p = preview()
+  p.contentJson.chapters[0].articles[0].units[1].reviewed = true
+  const units = toDocumentReview(p).chapters[0].articles[0].units
+  assert.equal(units[0].status, 'AUTO')
+  assert.equal(units[1].status, 'REVIEWED')
+  assert.equal(units[1].warning, 'Thiếu dấu')
+})
+
 test('an upload opens its stored file; no content yet means nothing to review', () => {
   const upload = preview({
     source: 'MANUAL_UPLOAD',

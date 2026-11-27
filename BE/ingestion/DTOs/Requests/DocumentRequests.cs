@@ -10,6 +10,12 @@ public sealed record RejectDocumentRequest([Required, MaxLength(1000)] string Re
         new(reviewerUserId, documentId, Reason);
 }
 
+/// <summary>Ticks one parsed unit off the review checklist; unitId is units[].id in contentJson.</summary>
+public sealed record MarkUnitReviewedRequest([Required, MaxLength(128)] string UnitId)
+{
+    public MarkUnitReviewedCommand ToCommand(Guid documentId) => new(documentId, UnitId);
+}
+
 /// <summary>Sends a pending upload back to parsing; the reason is kept in metadata.reprocess.</summary>
 public sealed record ReprocessDocumentRequest([Required, MaxLength(1000)] string Reason)
 {

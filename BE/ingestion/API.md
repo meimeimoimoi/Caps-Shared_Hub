@@ -64,6 +64,7 @@ Path tính từ `/api/v1/knowledge`.
 | GET | `/documents/{id}/preview` | KnowledgeManage | Xem một văn bản để duyệt |
 | GET | `/documents/{id}/file` | KnowledgeManage | Tải file gốc (văn bản upload) |
 | POST | `/documents/{id}/reject` | KnowledgeManage | Từ chối văn bản |
+| POST | `/documents/{id}/reviewed-units` | KnowledgeManage | Đánh dấu một đơn vị đã rà soát (`{ unitId }`), lưu `reviewed: true` trong `contentJson` |
 | POST | `/documents/{id}/reprocess` | KnowledgeManage | Bóc tách lại văn bản upload đang `PENDING` (bắt buộc `reason`, lưu ở `metadata.reprocess`) |
 | POST | `/documents/{id}/retire` | KnowledgeManage | Ngừng dùng văn bản `INDEXED` → `ARCHIVED`, vector trong Qdrant cũng `ARCHIVED` (bắt buộc `reason`, lưu ở `metadata.retire`) |
 | GET | `/sources` | Tài khoản ACTIVE | Tra cứu danh mục văn bản |
