@@ -258,6 +258,19 @@ public sealed class SettleCaseEscrowHandlerTests
         ) => ListAsync(userId, ct);
 
         public void Add(BankAccount account) => accounts.Add(account);
+
+        public Task<BankAccount?> FindAsync(Guid id, CancellationToken ct) =>
+            throw new NotSupportedException();
+
+        public Task<IReadOnlyList<BankAccount>> ListByStatusAsync(
+            string? status,
+            int skip,
+            int take,
+            CancellationToken ct
+        ) => throw new NotSupportedException();
+
+        public Task<int> CountByStatusAsync(string? status, CancellationToken ct) =>
+            throw new NotSupportedException();
     }
 
     private sealed class UserLock : IBillingUserLock

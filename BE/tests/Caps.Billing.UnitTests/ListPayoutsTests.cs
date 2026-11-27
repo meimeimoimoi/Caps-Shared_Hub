@@ -58,5 +58,8 @@ public sealed class ListPayoutsTests
         }
 
         public Task<int> CountAsync(string? status, CancellationToken ct) => Task.FromResult(25);
+
+        public Task<PayoutTransaction?> LockAsync(Guid id, CancellationToken ct) =>
+            throw new NotSupportedException();
     }
 }

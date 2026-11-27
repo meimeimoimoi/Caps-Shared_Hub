@@ -12,4 +12,17 @@ public interface IBankAccountRepository
     Task<IReadOnlyList<BankAccount>> ListForUpdateAsync(Guid userId, CancellationToken ct);
 
     void Add(BankAccount account);
+
+    /// <summary>Read-only account by id; null when unknown or deleted.</summary>
+    Task<BankAccount?> FindAsync(Guid id, CancellationToken ct);
+
+    /// <summary>Read-only staff review page, newest first; a null status means every status.</summary>
+    Task<IReadOnlyList<BankAccount>> ListByStatusAsync(
+        string? status,
+        int skip,
+        int take,
+        CancellationToken ct
+    );
+
+    Task<int> CountByStatusAsync(string? status, CancellationToken ct);
 }
