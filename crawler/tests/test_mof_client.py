@@ -196,3 +196,9 @@ def test_collect_all_does_not_apply_top_n_limit(monkeypatch):
     )
 
     assert [d.so_hieu for d in docs] == ["65/2026/TT-BTC", "70/2026/TT-BTC"]
+
+
+def test_session_retries_timeouts_and_server_errors(monkeypatch):
+    monkeypatch.setattr(mof_client.requests.Session, "get", lambda *a, **k: None)
+    retry = mof_client._session().get_adapter("https://vbpq.mof.gov.vn").max_retries
+    assert retry.total == 5 and retry.allowed_methods is None and 503 in retry.status_forcelist
