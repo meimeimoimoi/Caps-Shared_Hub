@@ -410,6 +410,12 @@ ingestion chưa cấu hình key thì trả 401 `INTERNAL_KEY_INVALID`. Cách đ�
 | POST | `/internal/crawl-jobs/{id}/complete` | `{ "status", "docsFound", "detail" }` | Crawl job |
 | GET | `/internal/documents/{id}/file` | | File gốc, như `/documents/{id}/file` |
 | POST | `/internal/documents/{id}/content` | `{ "contentJson" }` hoặc `{ "error" }` | `{}`, message `Content saved.` |
+| POST | `/internal/crawl-jobs/scheduled` | `{ "sources", "topN" }` | Crawl job (202) hoặc không có body (204) |
+
+**Crawl theo lịch** (`/crawl-jobs/scheduled`): do service `cronjob` gọi mỗi giờ sau ngày giờ đã cấu hình trong tháng.
+Tạo job `triggerType: SCHEDULED` (`triggeredBy` null) và trả 202. Trả 204 khi tháng này (giờ Việt Nam) đã có lượt theo
+lịch `RUNNING` hoặc `SUCCEEDED`, hoặc đã có 3 lượt theo lịch. Lượt `FAILED` (hoặc `RUNNING` quá 12 giờ) thì được chạy lại.
+Lỗi: 400 `INVALID_CRAWL_SOURCE`; 409 `CRAWL_ALREADY_RUNNING` khi đang có crawl thủ công, cronjob gọi lại lần sau.
 
 **Import văn bản** (`/documents`): body là nguyên một file `export/<loai>/<so-hieu>.json` (schema_version 2), key
 snake_case:
@@ -483,4 +489,4 @@ Chỉ có ở API nội bộ: `INTERNAL_KEY_INVALID` (401), `CRAWL_JOB_NOT_FOUND
 - API duyệt văn bản (`APPROVED`), tách chunk và index vào vector store.
 - Sửa metadata của nguồn văn bản, xoá văn bản.
 - Quan hệ sửa đổi giữa hai văn bản cùng khớp từ khoá (export chỉ có `related_from`), `affectedArticles`, quan hệ VBHN.
-- Chọn từ khoá hoặc loại văn bản khi crawl; crawl theo lịch (`SCHEDULED`).
+- Chọn từ khoá hoặc loại văn bản khi crawl.

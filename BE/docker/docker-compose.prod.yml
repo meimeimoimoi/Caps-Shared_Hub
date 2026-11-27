@@ -244,6 +244,25 @@ services:
     networks:
       - caps_network
 
+  # Monthly crawl schedule: calls ingestion's /internal API, no published port
+  cronjob:
+    image: ghcr.io/${GHCR_OWNER:-meimeimoimoi}/caps-cronjob:latest
+    container_name: caps_cronjob
+    restart: always
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__Redis: redis:6379
+      Jwt__JwksUrl: http://auth:8080/.well-known/jwks.json
+      Jwt__RequireHttpsMetadata: "false"
+      Jobs__MonthlyCrawl__Enabled: "true"
+      Jobs__MonthlyCrawl__IngestionUrl: http://ingestion:8080
+      Jobs__MonthlyCrawl__InternalKey: ${INGESTION_INTERNAL_API_KEY:?set it in .env}
+    depends_on:
+      - ingestion
+    networks:
+      - caps_network
+
   gateway:
     image: ghcr.io/${GHCR_OWNER:-meimeimoimoi}/caps-gateway:latest
     container_name: caps_gateway

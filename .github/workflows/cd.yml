@@ -32,6 +32,7 @@ jobs:
       ingestion: ${{ steps.filter.outputs.ingestion }}
       billing: ${{ steps.filter.outputs.billing }}
       workflow: ${{ steps.filter.outputs.workflow }}
+      cronjob: ${{ steps.filter.outputs.cronjob }}
       frontend: ${{ steps.filter.outputs.frontend }}
       ai-service: ${{ steps.filter.outputs.ai-service }}
       crawler: ${{ steps.filter.outputs.crawler }}
@@ -77,6 +78,12 @@ jobs:
               - 'BE/Directory.Build.props'
               - 'BE/Directory.Packages.props'
               - 'BE/docker/Dockerfile.service'
+            cronjob:
+              - 'BE/cronjob/**'
+              - 'BE/common/**'
+              - 'BE/Directory.Build.props'
+              - 'BE/Directory.Packages.props'
+              - 'BE/docker/Dockerfile.service'
             frontend:
               - 'FE/**'
             ai-service:
@@ -94,7 +101,8 @@ jobs:
       needs.changes.outputs.gateway == 'true' ||
       needs.changes.outputs.ingestion == 'true' ||
       needs.changes.outputs.billing == 'true' ||
-      needs.changes.outputs.workflow == 'true'
+      needs.changes.outputs.workflow == 'true' ||
+      needs.changes.outputs.cronjob == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -134,6 +142,10 @@ jobs:
               SERVICE_NAME=workflow
               PROJECT=workflow/Api/Api.csproj
               APP_NAME=Caps.Workflow.Api
+          - service: cronjob
+            changed: cronjob
+            build-args: |
+              SERVICE_NAME=cronjob
     steps:
       - name: Skip if unchanged
         if: needs.changes.outputs[matrix.changed] != 'true'

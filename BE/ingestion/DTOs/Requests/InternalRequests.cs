@@ -26,6 +26,17 @@ public sealed record CompleteCrawlJobRequest(
         );
 }
 
+/// <summary>The cronjob's monthly crawl request.</summary>
+/// <param name="Sources">vbpl and/or mof.</param>
+/// <param name="TopN">Newest documents per document type; the crawler default (3) when omitted.</param>
+public sealed record ScheduledCrawlRequest(
+    [Required, MinLength(1), MaxLength(2)] string[] Sources,
+    [Range(1, 50)] int? TopN
+)
+{
+    public TriggerScheduledCrawlCommand ToCommand() => new(Sources, TopN);
+}
+
 /// <summary>A milestone of a running crawl job.</summary>
 /// <param name="Stage">SEARCHING, DETAILS, RELATIONS, EXPORTING or POSTING.</param>
 /// <param name="Done">Items finished in the stage.</param>

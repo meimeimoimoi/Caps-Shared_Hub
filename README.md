@@ -48,7 +48,7 @@ flowchart LR
 | `rag-query` | `5104` | RAG / Vector Search | 🚧 Một endpoint nội bộ; truy xuất và sinh câu trả lời nằm ở `ai-service` (FastAPI + Qdrant) |
 | `notification` | `5100` | Thông báo bất đồng bộ | ✅ Email, thông báo trong ứng dụng, sự kiện review case, realtime |
 | `read` | `5106` | CQRS Read Model | 🧱 Skeleton |
-| `cronjob` | `5102` | Tác vụ nền định kỳ | 🧱 Skeleton |
+| `cronjob` | `5102` | Tác vụ nền định kỳ | 🚧 Crawl văn bản hằng tháng |
 
 <details>
 <summary><b>📁 Cấu trúc thư mục</b> (bấm để mở)</summary>
@@ -275,6 +275,6 @@ python -m pytest tests -q
 **Còn lại**
 
 - MassTransit mới có contracts + config, chưa có consumer thật.
-- `billing` mới có ví (`/wallet`, `/wallet/ledger`) tài khoản ngân hàng (`/bank-accounts`) và nạp tiền PayOS (`/payos/create-topup`, `/payos/webhook`); `workflow`, `ingestion` chưa có API; `rag-query`, `notification`, `read`, `cronjob` còn là skeleton.
+- `billing` mới có ví (`/wallet`, `/wallet/ledger`) tài khoản ngân hàng (`/bank-accounts`) và nạp tiền PayOS (`/payos/create-topup`, `/payos/webhook`); `workflow`, `ingestion` chưa có API; `rag-query`, `notification`, `read` còn là skeleton.
 
 </details>
