@@ -30,6 +30,8 @@ jobs:
       expert: ${{ steps.filter.outputs.expert }}
       gateway: ${{ steps.filter.outputs.gateway }}
       ingestion: ${{ steps.filter.outputs.ingestion }}
+      billing: ${{ steps.filter.outputs.billing }}
+      workflow: ${{ steps.filter.outputs.workflow }}
       frontend: ${{ steps.filter.outputs.frontend }}
       ai-service: ${{ steps.filter.outputs.ai-service }}
       crawler: ${{ steps.filter.outputs.crawler }}
@@ -63,6 +65,18 @@ jobs:
               - 'BE/Directory.Build.props'
               - 'BE/Directory.Packages.props'
               - 'BE/docker/Dockerfile.service'
+            billing:
+              - 'BE/billing/**'
+              - 'BE/common/**'
+              - 'BE/Directory.Build.props'
+              - 'BE/Directory.Packages.props'
+              - 'BE/docker/Dockerfile.service'
+            workflow:
+              - 'BE/workflow/**'
+              - 'BE/common/**'
+              - 'BE/Directory.Build.props'
+              - 'BE/Directory.Packages.props'
+              - 'BE/docker/Dockerfile.service'
             frontend:
               - 'FE/**'
             ai-service:
@@ -78,7 +92,9 @@ jobs:
       needs.changes.outputs.auth == 'true' ||
       needs.changes.outputs.expert == 'true' ||
       needs.changes.outputs.gateway == 'true' ||
-      needs.changes.outputs.ingestion == 'true'
+      needs.changes.outputs.ingestion == 'true' ||
+      needs.changes.outputs.billing == 'true' ||
+      needs.changes.outputs.workflow == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -106,6 +122,18 @@ jobs:
             changed: ingestion
             build-args: |
               SERVICE_NAME=ingestion
+          - service: billing
+            changed: billing
+            build-args: |
+              SERVICE_NAME=billing
+              PROJECT=billing/Api/Api.csproj
+              APP_NAME=Caps.Billing.Api
+          - service: workflow
+            changed: workflow
+            build-args: |
+              SERVICE_NAME=workflow
+              PROJECT=workflow/Api/Api.csproj
+              APP_NAME=Caps.Workflow.Api
     steps:
       - name: Skip if unchanged
         if: needs.changes.outputs[matrix.changed] != 'true'
