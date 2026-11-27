@@ -8,11 +8,15 @@ from app.core.cit_math import (
     parse_numeric_scalar,
 )
 from app.core.legal_refs import extract_document_numbers
-from app.modules.rag.cit_calculator import CitCalcHint
+from app.core.cit_math import resolve_statutory_cit_rate
+from app.modules.rag.cit_calculator import CitCalcHint, _extract_labeled_vnd
+
+_PERCENT_RE = re.compile(r"(\d+(?:[.,]\d+)?)\s*%")
 
 CITATION_MARKER_RE = re.compile(r"\[(\d{1,3})\]")
 _RATE_OR_DURATION_RE = re.compile(
-    r"\b(\d+(?:[.,]\d+)?)\s*(%|phần\s+trăm|năm|tháng|ngày)\b", re.IGNORECASE
+    # (?!\w) instead of \b: a trailing \b never matches after "%", which silently skipped every rate.
+    r"\b(\d+(?:[.,]\d+)?)\s*(%|phần\s+trăm|năm|tháng|ngày)(?!\w)", re.IGNORECASE
 )
 _DOC_NUMBER_SPAN_RE = re.compile(r"(?<![\d/])\d{1,4}/(?:19|20)\d{2}(?:/[\w\-]+)?", re.IGNORECASE)
 _STRUCTURAL_REF_RE = re.compile(r"\b(?:chương|mục|điều|khoản)\s+[ivxlcdm\d]+\b", re.IGNORECASE)
@@ -80,6 +84,33 @@ def _source_numeric_values(used_chunks: list) -> set[str]:
     return values
 
 
+def _nearby_years(period_numbers: set[str]) -> set[str]:
+    """Years a grounded answer may derive from the period: filing deadlines and loss carry-forward (up to 5 years)."""
+    years = [int(tok) for tok in period_numbers if len(tok) == 4 and 1900 <= int(tok) <= 2100]
+    if not years:
+        return set()
+    return {str(y) for y in range(min(years) - 5, max(years) + 6)}
+
+
+def mismatched_bracket_rate(question: str, conclusion: str, used_chunks: list) -> str | None:
+    """Return a retry note when the conclusion states a CIT rate that contradicts the revenue bracket in the question."""
+    revenue = _extract_labeled_vnd((question or "").lower(), r"\b(?:tổng\s+)?doanh\s+thu(?:\s+năm\s+\d{4})?")
+    if revenue is None:
+        return None
+    law_text = " ".join(str((hit.payload or {}).get("text_content") or "") for hit in used_chunks)
+    expected = resolve_statutory_cit_rate(revenue_vnd=revenue, law_text=law_text, explicit_rate=None)
+    if expected is None:
+        return None
+    stated = {float(normalize_number_token(m)) for m in _PERCENT_RE.findall(CITATION_MARKER_RE.sub(" ", conclusion or ""))}
+    bracket_rates = stated & {15.0, 17.0, 20.0}
+    if not bracket_rates or expected in bracket_rates:
+        return None
+    return (
+        f"Kết luận trước nêu sai mức thuế suất theo doanh thu trong câu hỏi: theo đoạn căn cứ, mức áp dụng là {expected:g}%. "
+        "Hãy đối chiếu đúng khung doanh thu trong đoạn căn cứ."
+    )
+
+
 def find_ungrounded_numbers(
     question: str,
     conclusion: str,
@@ -95,6 +126,7 @@ def find_ungrounded_numbers(
     source_numbers = _source_numeric_values(used_chunks)
     calc_numbers = calc_hint.authorized_numbers if calc_hint else set()
     period_numbers = {normalize_number_token(tok) for tok in NUMBER_TOKEN_RE.findall(period_str or "")}
+    period_numbers |= _nearby_years(period_numbers)
 
     question_clean = _DOC_NUMBER_SPAN_RE.sub(" ", question or "")
     question_numbers = {normalize_number_token(tok) for tok in NUMBER_TOKEN_RE.findall(question_clean)}
