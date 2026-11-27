@@ -37,6 +37,26 @@ export interface PaymentTransaction {
   createdAt: string
 }
 
+/** A started top-up (billing TopupResponse); credits arrive only when PayOS confirms the transfer */
+export interface Topup {
+  paymentId: string
+  orderCode: number
+  amount: number
+  checkoutUrl: string
+  expiresAt: string
+  /** Receiving account; null when PayOS did not return it (then use checkoutUrl) */
+  accountNumber: string | null
+  accountName: string | null
+  /** Must be kept exactly on a manual transfer: PayOS matches the payment by it */
+  transferNote: string | null
+}
+
+export interface TopupStatus {
+  paymentId: string
+  status: 'PENDING' | 'SUCCEEDED' | 'FAILED'
+  expiresAt: string
+}
+
 export interface CreditOverview {
   wallet: CreditWallet
   ledger: CreditLedgerEntry[]
