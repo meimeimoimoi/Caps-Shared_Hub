@@ -21,27 +21,12 @@ public sealed class ListPendingDocumentsHandler(IngestionDbContext db)
         Paging.Ensure(query.Page, query.PageSize);
         var pending = db.KnowledgeDocuments.Where(x => x.Status == DocumentStatuses.Pending);
         var total = await pending.CountAsync(ct);
-        // Projected so the (large) content JSON is not loaded
         var items = await pending
             .OrderBy(x => x.CreatedAt)
             .ThenBy(x => x.Id)
             .Skip((query.Page - 1) * query.PageSize)
             .Take(query.PageSize)
-            .Select(x => new DocumentSummaryResponse(
-                x.Id,
-                x.LegalSourceId,
-                x.LegalSource.DocumentNumber,
-                x.LegalSource.DocType,
-                x.LegalSource.Title,
-                x.VersionNo,
-                x.Source,
-                x.Status,
-                x.IssuedDate,
-                x.EffectiveFrom,
-                x.ContentJson != null,
-                x.LastError,
-                x.CreatedAt
-            ))
+            .Select(DocumentSummaryResponse.Projection)
             .ToListAsync(ct);
         return new(items, query.Page, query.PageSize, total);
     }

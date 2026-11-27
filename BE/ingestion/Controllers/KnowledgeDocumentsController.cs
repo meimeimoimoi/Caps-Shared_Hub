@@ -17,6 +17,29 @@ public sealed class KnowledgeDocumentsController(ICurrentUser currentUser) : Con
 
     private Guid UserId => currentUser.RequireUserId();
 
+    /// <summary>Lists document versions of any status, newest first.</summary>
+    /// <remarks>
+    /// status is repeatable (status=APPROVED&amp;status=INDEX_FAILED); leave it out for every status. Use it to
+    /// reach INDEX_FAILED versions, which leave the pending queue once approved. page starts at 1; pageSize
+    /// defaults to 20 and is at most 100.
+    /// </remarks>
+    /// <response code="200">The page with the total number of matching documents.</response>
+    /// <response code="400">INVALID_PAGING or INVALID_DOCUMENT_STATUS.</response>
+    /// <response code="403">Missing the KnowledgeManage permission.</response>
+    [HttpGet]
+    public async Task<IActionResult> List(
+        [FromServices]
+            IQueryHandler<ListDocumentsQuery, PageResponse<DocumentSummaryResponse>> handler,
+        CancellationToken ct,
+        [FromQuery] string[]? status = null,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20
+    )
+    {
+        var documents = await handler.HandleAsync(new(status ?? [], page, pageSize), ct);
+        return Ok(ApiResponse<PageResponse<DocumentSummaryResponse>>.Ok(documents));
+    }
+
     /// <summary>Lists documents waiting for review (PENDING), oldest first.</summary>
     /// <remarks>
     /// page starts at 1; pageSize defaults to 20 and is at most 100. hasContent = false means the worker has not
@@ -119,6 +142,53 @@ public sealed class KnowledgeDocumentsController(ICurrentUser currentUser) : Con
     {
         await handler.HandleAsync(r.ToCommand(id), ct);
         return Ok(ApiResponse.Message("Unit marked reviewed."));
+    }
+
+    /// <summary>Sends a pending upload back to the crawler worker to be split again (REPROCESS_REQUIRED).</summary>
+    /// <remarks>
+    /// The parsed content and last error are cleared and the stored file is parsed again; the version stays
+    /// PENDING and returns to review once hasContent is true. The reason (at most 1000 characters) is kept in
+    /// metadata.reprocess with who asked and when. Crawled versions keep no original, so crawl them again.
+    /// </remarks>
+    /// <response code="200">Sent back to parsing.</response>
+    /// <response code="400">The reason is missing, blank or longer than 1000 characters.</response>
+    /// <response code="403">Missing the KnowledgeManage permission.</response>
+    /// <response code="404">DOCUMENT_NOT_FOUND.</response>
+    /// <response code="409">DOCUMENT_NOT_PENDING or REPROCESS_UPLOAD_ONLY.</response>
+    /// <response code="503">SESSION_CHECK_UNAVAILABLE: the session could not be checked.</response>
+    [HttpPost("{id:guid}/reprocess"), RequireSessionCheck]
+    public async Task<IActionResult> Reprocess(
+        Guid id,
+        ReprocessDocumentRequest r,
+        [FromServices] ICommandHandler<ReprocessDocumentCommand> handler,
+        CancellationToken ct
+    )
+    {
+        await handler.HandleAsync(r.ToCommand(UserId, id), ct);
+        return Ok(ApiResponse.Message("Document sent back to parsing."));
+    }
+
+    /// <summary>Stops the AI from using an indexed version.</summary>
+    /// <remarks>
+    /// INDEXED → ARCHIVED; its vectors are marked ARCHIVED in Qdrant, and RAG only retrieves APPROVED ones. The
+    /// reason (at most 1000 characters) is kept in metadata.retire with who decided and when.
+    /// </remarks>
+    /// <response code="200">Retired.</response>
+    /// <response code="400">The reason is missing, blank or longer than 1000 characters.</response>
+    /// <response code="403">Missing the KnowledgeManage permission.</response>
+    /// <response code="404">DOCUMENT_NOT_FOUND.</response>
+    /// <response code="409">DOCUMENT_NOT_INDEXED.</response>
+    /// <response code="503">AI_SERVICE_UNAVAILABLE or SESSION_CHECK_UNAVAILABLE.</response>
+    [HttpPost("{id:guid}/retire"), RequireSessionCheck]
+    public async Task<IActionResult> Retire(
+        Guid id,
+        RetireDocumentRequest r,
+        [FromServices] ICommandHandler<RetireDocumentCommand> handler,
+        CancellationToken ct
+    )
+    {
+        await handler.HandleAsync(r.ToCommand(UserId, id), ct);
+        return Ok(ApiResponse.Message("Document retired."));
     }
 
     /// <summary>Uploads a legal document file for review (multipart form).</summary>

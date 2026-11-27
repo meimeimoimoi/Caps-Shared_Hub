@@ -28,6 +28,20 @@ public static class BillingErrors
             $"At most {max} bank accounts can be linked."
         );
 
+    public static AppException BankAccountAlreadyReviewed() =>
+        new(
+            ErrorType.Conflict,
+            "BANK_ACCOUNT_ALREADY_REVIEWED",
+            "This bank account has already been verified or rejected."
+        );
+
+    public static AppException BankAccountSelfReview() =>
+        new(
+            ErrorType.Forbidden,
+            "BANK_ACCOUNT_SELF_REVIEW",
+            "Staff cannot review their own bank account."
+        );
+
     public static AppException InvalidAmount() =>
         new(ErrorType.Validation, "INVALID_AMOUNT", "Amount must be positive.");
 
@@ -96,6 +110,30 @@ public static class BillingErrors
             ErrorType.Conflict,
             "PAYMENT_AMOUNT_MISMATCH",
             "The paid amount does not match the payment."
+        );
+
+    public static AppException PayoutNotFound() =>
+        new(ErrorType.NotFound, "PAYOUT_NOT_FOUND", "Payout not found.");
+
+    public static AppException PayoutNotTransferable() =>
+        new(
+            ErrorType.Conflict,
+            "PAYOUT_NOT_TRANSFERABLE",
+            "The payout is already being transferred or has been paid."
+        );
+
+    public static AppException PayoutNoBankAccount() =>
+        new(
+            ErrorType.Conflict,
+            "PAYOUT_NO_BANK_ACCOUNT",
+            "The expert has no bank account to receive this payout."
+        );
+
+    public static AppException PayoutAccountNotVerified() =>
+        new(
+            ErrorType.Conflict,
+            "PAYOUT_ACCOUNT_NOT_VERIFIED",
+            "The expert's bank account has not been verified by staff."
         );
 
     public static AppException AiCreditHoldNotFound() =>

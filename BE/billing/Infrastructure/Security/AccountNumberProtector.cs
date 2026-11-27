@@ -49,4 +49,6 @@ public sealed class AccountNumberProtector : IAccountNumberProtector
             BankAccountRules.Last4(normalizedNumber)
         );
     }
+
+    public string Reveal(string encrypted) => protector.Unprotect(encrypted);
 }

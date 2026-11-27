@@ -8,10 +8,14 @@ namespace Caps.Expert.Application.Abstractions;
 /// </summary>
 public interface IExpertNotificationOutbox
 {
+    void Enqueue(ExpertPriceOutOfRangeEvent message, DateTimeOffset now);
+
     void Enqueue(ExpertEligibilityDecidedEvent message, DateTimeOffset now);
 
     void Enqueue(ExpertCompetencyDecidedEvent message, DateTimeOffset now);
 
     void Enqueue(ExpertServiceAccessChangedEvent message, DateTimeOffset now);
     void Enqueue(ExpertExcuseRequestedEvent message, DateTimeOffset now);
+
+    void Enqueue(PlatformFeeChangeAnnouncedEvent message, DateTimeOffset now);
 }

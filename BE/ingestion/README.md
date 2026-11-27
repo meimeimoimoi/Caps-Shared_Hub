@@ -28,11 +28,14 @@ active account. Request/response shapes, error codes and the worker endpoints: [
 | GET | `/crawl-jobs?page&pageSize` | KnowledgeManage | crawl runs, newest first |
 | GET | `/crawl-jobs/{id}` | KnowledgeManage | one run; poll while RUNNING, `detail.progress` = worker's latest milestone |
 | POST | `/documents/upload` | KnowledgeManage | multipart PDF/DOCX (20 MB) + source metadata → new PENDING version |
+| GET | `/documents?status&page&pageSize` | KnowledgeManage | versions by status (repeatable, empty = all), newest first |
 | GET | `/documents/pending?page&pageSize` | KnowledgeManage | review queue, oldest first |
 | GET | `/documents/{id}/preview` | KnowledgeManage | metadata + `contentJson` + `fileUrl`/`sourceUrl` |
 | GET | `/documents/{id}/file` | KnowledgeManage | original of an upload (crawled originals are not stored) |
 | POST | `/documents/{id}/reject` | KnowledgeManage | `{reason}`; PENDING → REJECTED, 409 otherwise |
 | POST | `/documents/{id}/reviewed-units` | KnowledgeManage | `{ unitId }` → `reviewed: true` on that unit in `contentJson`; a new parse starts the checklist over |
+| POST | `/documents/{id}/reprocess` | KnowledgeManage | `{ reason }` → PENDING upload parsed again (crawled versions: 409 REPROCESS_UPLOAD_ONLY) |
+| POST | `/documents/{id}/retire` | KnowledgeManage | `{ reason }` → INDEXED becomes ARCHIVED, vectors marked ARCHIVED so RAG skips them |
 | GET | `/sources?q&docType&page&pageSize` | active account | search by number/title, with amendment links |
 | GET | `/sources/{id}/tree` | active account | amendment family tree (from `legal_amendment`) |
 

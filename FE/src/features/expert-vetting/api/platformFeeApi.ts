@@ -57,6 +57,7 @@ export interface PlatformFeeChange {
   noResponseDays: number
   noResponseRefundPercent: number
   noResponseExpertPercent: number
+  noDeliveryRefundPercent: number
   effectiveFrom: string
   setBy: string
   /** Null on fees set before reasons were recorded */

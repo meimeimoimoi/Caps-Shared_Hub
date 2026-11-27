@@ -114,7 +114,8 @@ public sealed class ReviewCaseExpiryJob(
                         AND reminder_sent_at IS NULL
                         AND response_deadline > {now}
                         AND response_deadline - make_interval(hours => {ReviewCase.ReminderHours}) <= {now}
-                    RETURNING id AS "Id", expert_user_id AS "ExpertUserId", response_deadline AS "ResponseDeadline"
+                    RETURNING id AS "Id", expert_user_id AS "ExpertUserId", response_deadline AS "ResponseDeadline",
+                        expert_email AS "ExpertEmail"
                     """
                 )
                 .ToListAsync(ct);
@@ -137,8 +138,8 @@ public sealed class ReviewCaseExpiryJob(
                         AND (reminder_sent_at IS NULL OR reminder_sent_at < delivered_at)
                         AND acceptance_deadline > {now}
                         AND acceptance_deadline - make_interval(hours => {ReviewCase.ReminderHours}) <= {now}
-                    RETURNING id AS "Id", expert_user_id AS "ExpertUserId", response_deadline AS "ResponseDeadline",
-                        expert_email AS "ExpertEmail"
+                    RETURNING id AS "Id", requester_user_id AS "RequesterUserId",
+                        requester_email AS "RequesterEmail", acceptance_deadline AS "AcceptanceDeadline"
                     """
                 )
                 .ToListAsync(ct);

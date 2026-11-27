@@ -254,6 +254,47 @@ export function useNotifications() {
       }
     if (n.type === 'EXPERT_COMPETENCY_DECIDED') return competencyItem(n)
     if (n.type === 'EXPERT_SERVICE_ACCESS_CHANGED') return accessItem(n)
+    if (n.type === 'EXPERT_PRICE_OUT_OF_RANGE')
+      return {
+        id: n.id,
+        text: t('notifications.priceOutOfRange', {
+          service: typeof n.data.serviceName === 'string' ? n.data.serviceName : '',
+          min: Number(n.data.minFee).toLocaleString('vi-VN'),
+          max: Number(n.data.maxFee).toLocaleString('vi-VN'),
+        }),
+        to: typeof n.data.link === 'string' ? n.data.link : '/expert/services',
+        tone: 'warning',
+        read: n.readAt != null,
+      }
+    if (
+      n.type === 'PLATFORM_FEE_CHANGE_ANNOUNCED' ||
+      n.type === 'PLATFORM_FEE_CHANGE_CANCELLED'
+    ) {
+      const announced = n.type === 'PLATFORM_FEE_CHANGE_ANNOUNCED'
+      return {
+        id: n.id,
+        text: t(
+          announced
+            ? 'notifications.platformFee.announced'
+            : 'notifications.platformFee.cancelled',
+          {
+            service: typeof n.data.serviceName === 'string' ? n.data.serviceName : '',
+            from: n.data.currentPercent,
+            to: n.data.newPercent,
+            // The effective day starts at 00:00 Vietnam time, stored in UTC
+            date:
+              typeof n.data.effectiveFrom === 'string'
+                ? new Date(n.data.effectiveFrom).toLocaleDateString('vi-VN', {
+                    timeZone: 'Asia/Ho_Chi_Minh',
+                  })
+                : '',
+          }
+        ),
+        to: typeof n.data.link === 'string' ? n.data.link : '/expert/services',
+        tone: announced ? 'warning' : undefined,
+        read: n.readAt != null,
+      }
+    }
     if (n.type !== 'EXPERT_ELIGIBILITY_DECIDED') return null
     const outcome = n.data.outcome as keyof typeof outcomes
     if (!(outcome in outcomes)) return null

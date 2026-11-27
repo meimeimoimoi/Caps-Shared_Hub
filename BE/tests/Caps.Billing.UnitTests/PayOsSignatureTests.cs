@@ -48,6 +48,46 @@ public sealed class PayOsSignatureTests
         );
     }
 
+    // Expected values from the official Node SDK's createSignature (payos-lib-node), run on the same fields
+    [Theory]
+    [InlineData(
+        "0190b2c4e1f87a3c9d2e5f6a7b8c9d0e-1",
+        "450000",
+        "CAPS chi tra (chuyen gia)! *'",
+        "970422",
+        "0123456789",
+        "6fcba2fcf22d25912c581a6c7be965fb8b3cebcc9e6fc7eae6cc2048cb6bc732"
+    )]
+    [InlineData(
+        "abc-1",
+        "1000",
+        "Thanh toán chuyên gia & phí",
+        "970436",
+        "9988",
+        "262d9b13367c4bf474c7069cf34492b05aad56928809e9a25030ba506f46547e"
+    )]
+    public void Payout_fields_are_sorted_and_encoded_like_the_sdk(
+        string referenceId,
+        string amount,
+        string description,
+        string toBin,
+        string toAccountNumber,
+        string expected
+    ) =>
+        Assert.Equal(
+            expected,
+            PayOsSignature.ForFields(
+                "checksum",
+                [
+                    new("toAccountNumber", toAccountNumber),
+                    new("referenceId", referenceId),
+                    new("amount", amount),
+                    new("toBin", toBin),
+                    new("description", description),
+                ]
+            )
+        );
+
     [Theory]
     [InlineData("1C72558DB8726FE76E7E866F964B061E27C50D9BA648CFA306C5763869ECA23C", true)]
     [InlineData("1c72558db8726fe76e7e866f964b061e27c50d9ba648cfa306c5763869eca23d", false)]

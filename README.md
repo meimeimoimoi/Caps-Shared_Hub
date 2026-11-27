@@ -42,13 +42,13 @@ flowchart LR
 | `gateway` | `5190` | API Gateway (YARP), điểm vào duy nhất | ✅ Hoạt động |
 | `auth` | `5194` | Identity: tài khoản, phiên, JWT (schema `identity`) | ✅ Hoạt động |
 | `expert` | `5198` | Hồ sơ đăng ký chuyên gia, minh chứng S3 (schema `expert`) | ✅ Hoạt động |
-| `billing` | `5220` | Thanh toán, ví, escrow, payout (schema `billing`) | 🚧 Ví, sổ cái, nạp tiền PayOS, tài khoản ngân hàng, giữ/nhả/hoàn escrow và quyết toán cho review case, admin xem payout; chưa chuyển khoản payout |
+| `billing` | `5220` | Thanh toán, ví, escrow, payout (schema `billing`) | 🚧 Ví, sổ cái, nạp tiền PayOS, tài khoản ngân hàng, giữ/nhả/hoàn escrow và quyết toán cho review case, admin duyệt tài khoản ngân hàng, xem và chuyển khoản payout qua PayOS chi hộ |
 | `workflow` | `5030` | Tài liệu, hội thoại AI, review case (schema `workspace`, `review`) | ✅ Review case đủ vòng đời, chat và tệp trong case, khiếu nại và trọng tài, hết hạn tự động, chatbot, bản nháp, mẫu biểu |
 | `ingestion` | `5004` | Pipeline nạp tài liệu (schema `knowledge`) | ✅ Crawl job, upload, hàng chờ duyệt, duyệt, từ chối, index lại, tra cứu nguồn |
 | `rag-query` | `5104` | RAG / Vector Search | 🚧 Một endpoint nội bộ; truy xuất và sinh câu trả lời nằm ở `ai-service` (FastAPI + Qdrant) |
 | `notification` | `5100` | Thông báo bất đồng bộ | ✅ Email, thông báo trong ứng dụng, sự kiện review case, realtime |
 | `read` | `5106` | CQRS Read Model | 🧱 Skeleton |
-| `cronjob` | `5102` | Tác vụ nền định kỳ | 🧱 Skeleton |
+| `cronjob` | `5102` | Tác vụ nền định kỳ | 🚧 Crawl văn bản hằng tháng |
 
 <details>
 <summary><b>📁 Cấu trúc thư mục</b> (bấm để mở)</summary>
@@ -275,6 +275,6 @@ python -m pytest tests -q
 **Còn lại**
 
 - MassTransit mới có contracts + config, chưa có consumer thật.
-- `billing` mới có ví (`/wallet`, `/wallet/ledger`) tài khoản ngân hàng (`/bank-accounts`) và nạp tiền PayOS (`/payos/create-topup`, `/payos/webhook`); `workflow`, `ingestion` chưa có API; `rag-query`, `notification`, `read`, `cronjob` còn là skeleton.
+- `billing` mới có ví (`/wallet`, `/wallet/ledger`) tài khoản ngân hàng (`/bank-accounts`) và nạp tiền PayOS (`/payos/create-topup`, `/payos/webhook`); `workflow`, `ingestion` chưa có API; `rag-query`, `notification`, `read` còn là skeleton.
 
 </details>

@@ -1,13 +1,26 @@
 from typing import List, Optional  # noqa: UP035
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, field_validator
 
+from app.config import settings
 from app.schemas.statuses import AnswerStatus, ScopeResult
 
 
 class ChatQueryRequest(BaseModel):
-    question: str
-    user_tax_period: Optional[str] = None
+    # Aligned with .NET workflow SendChatMessageRequest (4000) + Clarification suffix (2000).
+    question: str = Field(..., min_length=1, max_length=6000)
+    user_tax_period: Optional[str] = Field(default=None, max_length=100)
+
+    @field_validator("question")
+    @classmethod
+    def validate_question(cls, value: str) -> str:
+        cleaned = value.strip()
+        if not cleaned:
+            raise ValueError("question must not be blank.")
+        max_chars = settings.CHAT_MAX_QUESTION_CHARS
+        if len(cleaned) > max_chars:
+            raise ValueError(f"question exceeds maximum length of {max_chars} characters.")
+        return cleaned
 
 
 class CitationItem(BaseModel):

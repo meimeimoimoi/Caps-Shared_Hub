@@ -20,8 +20,11 @@ schema_version 2:
 import hashlib
 import json
 import re
+import zipfile
 from datetime import datetime
+from pathlib import Path
 from typing import List, Optional
+from xml.etree import ElementTree
 
 from slugify import slugify
 
@@ -55,6 +58,71 @@ MIN_BODY_CHARS = 500
 def _iso(value: Optional[str]) -> Optional[str]:
     d = parse_vn_date(value)
     return d.isoformat() if d else None
+
+
+_W = "{http://schemas.openxmlformats.org/wordprocessingml/2006/main}"
+
+
+def _docx_text(path: str) -> str:
+    """Plain text of a .docx; each table row becomes one "cell | cell" line so form codes stay next to their names."""
+    root = ElementTree.fromstring(zipfile.ZipFile(path).read("word/document.xml"))
+
+    def para(p) -> str:
+        return "".join(t.text or "" for t in p.iter(f"{_W}t")).strip()
+
+    lines: List[str] = []
+    for block in root.find(f"{_W}body"):
+        if block.tag == f"{_W}p":
+            lines.append(para(block))
+        elif block.tag == f"{_W}tbl":
+            for row in block.iter(f"{_W}tr"):
+                cells = [" ".join(filter(None, map(para, c.iter(f"{_W}p")))) for c in row.iter(f"{_W}tc")]
+                lines.append(" | ".join(c for c in cells if c))
+    return "\n".join(line for line in lines if line)
+
+
+def _attachment_appendices(rec: dict, existing: List[dict]) -> List[dict]:
+    """Appendices shipped as separate .docx attachments (e.g. "Phụ lục I" of TT 89) are not in the page text."""
+    seen = {a["title"].casefold() for a in existing}
+    out: List[dict] = []
+    for att in rec.get("attachments") or []:
+        name, local = att.get("file_name") or "", att.get("local_path") or ""
+        start = name.casefold().find("phụ lục")
+        if start < 0 or not local.lower().endswith(".docx") or not Path(local).is_file():
+            continue
+        title = Path(name[start:]).stem.strip(" .")
+        if title.casefold() in seen:
+            continue
+        try:
+            text = _docx_text(local)
+        except (zipfile.BadZipFile, KeyError, ElementTree.ParseError) as e:
+            logger.warning(f"[{rec.get('so_hieu')}] cannot read appendix {name}: {e}")
+            continue
+        if text:
+            seen.add(title.casefold())
+            out.append({"title": title, "text": text})
+    return out
+
+
+# "... này có hiệu lực ... và áp dụng từ kỳ tính thuế thu nhập doanh nghiệp năm 2025" /
+# "... áp dụng cho kỳ tính thuế từ năm 2014 trở đi" (same sentence as the effect statement).
+_TAX_PERIOD_RE = re.compile(
+    r"này có hiệu lực[^.;\n]*?áp dụng (?:kể từ|từ|cho) kỳ tính thuế[^.;\n\d]{0,40}?năm (\d{4})",
+    re.IGNORECASE,
+)
+
+
+def _tax_period_start(text: str) -> Optional[str]:
+    """Start of the first tax period the document applies to, when its effect clause says so."""
+    years = _TAX_PERIOD_RE.findall(text or "")
+    # Last match: the effect article sits at the end of the document.
+    # shortcut: assumes a calendar-year tax period (01/01); upgrade if fiscal-year rules are needed.
+    return f"{years[-1]}-01-01" if years else None
+
+
+def _effective_from(rec: dict) -> Optional[str]:
+    """RAG filters by tax period, so a document applying from a tax period counts from that period's start."""
+    return _tax_period_start(rec.get("noi_dung_text")) or _iso(rec.get("ngay_hieu_luc"))
 
 
 def _text_hash(text: str) -> str:
@@ -176,7 +244,7 @@ def _numbered(unit: Unit) -> str:
 
 def build_chunks(rec: dict, parsed: ParsedDocument) -> List[dict]:
     label = _doc_label(rec)
-    effective_from = _iso(rec.get("ngay_hieu_luc"))
+    effective_from = _effective_from(rec)
     effective_to = _iso(rec.get("ngay_het_hieu_luc"))
     chunks: List[dict] = []
 
@@ -230,7 +298,8 @@ def build_payload(rec: dict) -> dict:
     source = rec.get("source") or "vbpl"
     parsed = parse_legal_text(text, consolidated=rec.get("loai_van_ban") == vbhn.DOC_TYPE)
     content = parsed.to_content_json()
-    chunks = build_chunks(rec, parsed) if parsed.parse_status == "PARSED" else []
+    content["appendices"] += _attachment_appendices(rec, content["appendices"])
+    chunks =build_chunks(rec, parsed) if parsed.parse_status == "PARSED" else []
     file_hash, file_hash_basis = _file_hash(rec, text)
 
     return {
@@ -261,12 +330,15 @@ def build_payload(rec: dict) -> dict:
             "file_hash": file_hash,
             "file_hash_basis": file_hash_basis,
             "issued_date": _iso(rec.get("ngay_ban_hanh")),
-            "effective_from": _iso(rec.get("ngay_hieu_luc")),
+            "effective_from": _effective_from(rec),
             "effective_to": _iso(rec.get("ngay_het_hieu_luc")),
             "content_json": content,
             "ingest": _ingest_hint(rec, text, parsed, chunks),
             "metadata": {
                 "tinh_trang_hieu_luc": rec.get("tinh_trang_hieu_luc"),
+                # Legal effective date kept for reviewers when effective_from follows the tax period
+                "ngay_hieu_luc": _iso(rec.get("ngay_hieu_luc")),
+                "tax_period_from": _tax_period_start(text),
                 "text_source": rec.get("text_source"),
                 "ocr_required": rec.get("ocr_required", False),
                 "scraped_at": rec.get("scraped_at"),

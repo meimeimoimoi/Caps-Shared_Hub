@@ -16,6 +16,29 @@ namespace Caps.Ingestion.Controllers;
 [ApiController, RequireInternalKey, Route("internal")]
 public sealed class InternalIngestController : ControllerBase
 {
+    /// <summary>Starts this month's scheduled crawl; called by the cronjob service.</summary>
+    /// <remarks>
+    /// Safe to call repeatedly: once a scheduled run this month is RUNNING or SUCCEEDED, nothing starts. A FAILED
+    /// run is retried, at most 3 scheduled runs a month. Months follow Vietnam time (UTC+7).
+    /// </remarks>
+    /// <response code="202">The new job, RUNNING (trigger_type SCHEDULED).</response>
+    /// <response code="204">This month's scheduled crawl already ran or is running.</response>
+    /// <response code="400">Invalid body or INVALID_CRAWL_SOURCE.</response>
+    /// <response code="401">INTERNAL_KEY_INVALID.</response>
+    /// <response code="409">CRAWL_ALREADY_RUNNING: a manual crawl is running; call again later.</response>
+    [HttpPost("crawl-jobs/scheduled")]
+    public async Task<IActionResult> TriggerScheduledCrawl(
+        ScheduledCrawlRequest r,
+        [FromServices] ICommandHandler<TriggerScheduledCrawlCommand, CrawlJobResponse?> handler,
+        CancellationToken ct
+    )
+    {
+        var job = await handler.HandleAsync(r.ToCommand(), ct);
+        if (job is null)
+            return NoContent();
+        return Accepted(ApiResponse<CrawlJobResponse>.Ok(job));
+    }
+
     /// <summary>Imports one document found by a crawl job.</summary>
     /// <remarks>
     /// Body: one crawler export file (schema_version 2) as written to export/; chunks are ignored. The document

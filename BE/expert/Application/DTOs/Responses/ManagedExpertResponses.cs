@@ -1,12 +1,15 @@
 namespace Caps.Expert.Application.DTOs.Responses;
 
 /// <summary>One Expert–Service on the admin expert list; the id is the qualification id used by service-access.</summary>
+/// <param name="ExpertId">The expert profile id.</param>
+/// <param name="ExpertUserId">The expert's account id, as other services (billing) know the expert.</param>
 /// <param name="Fee">Null while the expert has not priced the service.</param>
 /// <param name="CompetencyReviewer">Email of the Gate 2 reviewer when known, otherwise their user id.</param>
 public sealed record ManagedExpertResponse(
     string Id,
     string ApplicationId,
     string ExpertId,
+    string ExpertUserId,
     string? DisplayName,
     string? Email,
     int? YearsExperience,
