@@ -50,6 +50,12 @@ address only (`Auth__KnownProxies__0`), so auth's rate limit counts real client 
 existing network keeps its old settings: run `docker compose down` once before `up`. Ports 5194 and 5198 are
 published for local debugging; a real deployment publishes the gateway alone.
 
+billing (`docker-compose.prod.yml`) likewise needs durable keys: `Billing__DataProtectionKeysPath` lives in the
+`billing_keys` volume, and deleting it makes every stored bank account number unreadable. Never change
+`BILLING_ACCOUNT_HASH_KEY` after first use (duplicate detection breaks). workflow calls expert and billing on
+`caps_network` with `EXPERT_INTERNAL_API_KEY` / `BILLING_INTERNAL_API_KEY`; neither publishes a port. PayOS keys are
+optional: empty collection keys disable top-ups, empty payout keys disable transfers to experts.
+
 ## Adding a service role to an existing volume
 
 `init-service-roles.sh` runs only on a new volume. For a role added later (for example `caps_notification`), add its
