@@ -128,6 +128,12 @@ class LegalChunker:
                     }
                 )
 
+        def append_appendices() -> None:
+            # Appendices (form catalogues, tables) are cited by their title, e.g. "Phụ lục I".
+            for appendix in content_json.get("appendices") or []:
+                title = str(appendix.get("title") or "").strip() or "Phụ lục"
+                append_chunk_parts(f"{doc_header}\n{title}", str(appendix.get("text") or ""), title, None, None)
+
         # 1. Crawler schema: chapters[] -> articles[] -> units[]
         chapters = content_json.get("chapters") or []
         if chapters:
@@ -171,6 +177,7 @@ class LegalChunker:
                         body = "\n".join(filter(None, (_numbered_unit_text(u) for u in group))) or art_name
                         append_chunk_parts(header, body, art_label, clause_label, point_label)
 
+            append_appendices()
             return chunks
 
         # 2. Legacy schema fallback: articles[] -> clauses[] -> points[]
@@ -199,4 +206,5 @@ class LegalChunker:
                     header = f"{doc_header}\n{trail}" if trail else doc_header
                     append_chunk_parts(header, cl.get("content", ""), art_title, cl_title, None)
 
+        append_appendices()
         return chunks

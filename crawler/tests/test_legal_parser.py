@@ -200,6 +200,46 @@ def test_payload_matches_ingestion_schema():
     assert all(c["char_count"] == len(c["text"]) <= MAX_CHUNK_CHARS for c in chunks)
 
 
+def _write_docx(path: Path, body_xml: str) -> str:
+    import zipfile
+
+    ns = "http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+    with zipfile.ZipFile(path, "w") as z:
+        z.writestr("word/document.xml", f'<w:document xmlns:w="{ns}"><w:body>{body_xml}</w:body></w:document>')
+    return str(path)
+
+
+def test_docx_appendix_attachment_is_exported(tmp_path):
+    def p(text):
+        return f"<w:p><w:r><w:t>{text}</w:t></w:r></w:p>"
+
+    def row(*cells):
+        return "<w:tr>" + "".join(f"<w:tc>{p(c)}</w:tc>" for c in cells) + "</w:tr>"
+
+    appendix = _write_docx(
+        tmp_path / "a.docx",
+        p("Phụ lục I") + p("DANH MỤC HỒ SƠ KHAI THUẾ")
+        + f"<w:tbl>{row('2', '03-2/TNDN', 'Phụ lục chuyển lỗ')}{row('9', '03-8/TNDN', 'Phụ lục bảng phân bổ')}</w:tbl>",
+    )
+    broken = tmp_path / "b.docx"
+    broken.write_text("not a zip")
+    rec = {
+        "so_hieu": "89/2026/TT-BTC", "loai_van_ban": "Thông tư", "doc_id": "tt89",
+        "noi_dung_text": "Điều 1. Phạm vi\n1. Nội dung.",
+        "attachments": [
+            {"file_name": "89-2026-tt-btc__Phụ lục I.docx", "local_path": appendix},
+            {"file_name": "THÔNG TƯ 89 LƯU HÀNH.docx", "local_path": appendix},
+            {"file_name": "Phụ lục II. Khai bổ sung.docx", "local_path": str(broken)},
+            {"file_name": "Phụ lục I. Khai thuế mẫu 1-6.rar", "local_path": str(broken.with_suffix(".rar"))},
+        ],
+    }
+    appendices = build_payload(rec)["knowledge_document"]["content_json"]["appendices"]
+    assert appendices == [{
+        "title": "Phụ lục I",
+        "text": "Phụ lục I\nDANH MỤC HỒ SƠ KHAI THUẾ\n2 | 03-2/TNDN | Phụ lục chuyển lỗ\n9 | 03-8/TNDN | Phụ lục bảng phân bổ",
+    }]
+
+
 def test_long_clause_is_split_with_header_repeated():
     sentence = "Doanh nghiệp được giảm thuế theo quy định tại khoản này. "
     text = "Điều 1. Ưu đãi thuế\n1. " + sentence * 120
