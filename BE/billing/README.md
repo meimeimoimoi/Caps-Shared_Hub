@@ -49,6 +49,9 @@ PENDING expert payout), staff refund, staff review of bank accounts and staff pa
   can never credit twice. Hold moves credits from `Balance` to `Held`; release takes them out of `Held`
   (ledger amount 0); refund moves them back to `Balance`.
 - A FAILED payment can still become SUCCEEDED from the webhook: the link may exist even though its response was lost.
+- `topups/{paymentId}` also asks PayOS (`GET v2/payment-requests/{orderCode}`) while a top-up has not succeeded and
+  credits a PAID order through the same `TopupCrediting` as the webhook, so local runs work without a tunnel and a
+  lost webhook is caught up. Each poll of an unpaid top-up is one PayOS call.
 - The client may skip the PayOS page: `create-topup` also returns the receiving account (`bankBin`, `accountNumber`,
   `accountName`) and `transferNote`, shown next to the `qrCode` (VietQR). They are null when PayOS omits them, so the
   client must fall back to the QR code or `checkoutUrl`. The client then polls `topups/{paymentId}`.

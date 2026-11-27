@@ -27,5 +27,8 @@ public sealed record PaymentBeneficiary(
     string Description
 );
 
-/// <summary>An authenticated provider notification; <paramref name="Paid"/> is false for non-success codes.</summary>
+/// <summary>
+/// What the provider reports about an order, from a signed notification or a lookup; <paramref name="Paid"/> is
+/// false for non-success codes.
+/// </summary>
 public sealed record PaymentNotice(long OrderCode, long Amount, bool Paid);
