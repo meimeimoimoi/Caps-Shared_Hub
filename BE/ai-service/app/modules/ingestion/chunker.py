@@ -317,6 +317,12 @@ class LegalChunker:
                     }
                 )
 
+        def append_appendices() -> None:
+            # Appendices (form catalogues, tables) are cited by their title, e.g. "Phụ lục I".
+            for appendix in content_json.get("appendices") or []:
+                title = str(appendix.get("title") or "").strip() or "Phụ lục"
+                append_chunk_parts(f"{doc_header}\n{title}", str(appendix.get("text") or ""), title, None, None)
+
         # 1. Crawler schema: chapters[] -> articles[] -> units[]
         chapters = content_json.get("chapters") or []
         if chapters:
@@ -353,4 +359,34 @@ class LegalChunker:
                         body = "\n".join(filter(None, (_numbered_unit_text(u) for u in group))) or art_name
                         append_chunk_parts(header, body, art_label, clause_label, point_label)
 
+            append_appendices()
+            return chunks
+
+        # 2. Legacy schema fallback: articles[] -> clauses[] -> points[]
+        articles = content_json.get("articles") or []
+        for art in articles:
+            art_title = _format_prefix("Điều", art.get("title") or art.get("number"))
+            clauses = art.get("clauses") or []
+
+            if not clauses:
+                header = f"{doc_header}\n{art_title}" if art_title else doc_header
+                append_chunk_parts(header, art.get("content", ""), art_title, None, None)
+                continue
+
+            for cl in clauses:
+                cl_title = _format_prefix("Khoản", cl.get("title") or cl.get("number"))
+                points = cl.get("points") or []
+
+                if points:
+                    for pt in points:
+                        pt_title = _format_prefix("Điểm", pt.get("title") or pt.get("number"))
+                        trail = " -> ".join(p for p in (art_title, cl_title, pt_title) if p)
+                        header = f"{doc_header}\n{trail}" if trail else doc_header
+                        append_chunk_parts(header, pt.get("content", ""), art_title, cl_title, pt_title)
+                else:
+                    trail = " -> ".join(p for p in (art_title, cl_title) if p)
+                    header = f"{doc_header}\n{trail}" if trail else doc_header
+                    append_chunk_parts(header, cl.get("content", ""), art_title, cl_title, None)
+
+        append_appendices()
         return chunks
