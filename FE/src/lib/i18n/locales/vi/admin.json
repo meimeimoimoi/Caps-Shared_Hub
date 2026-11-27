@@ -1396,7 +1396,7 @@
       "openFor": "Lịch sử phí của {{name}}",
       "title": "Lịch sử phí: {{name}}",
       "empty": "Chưa có lần đặt phí nào.",
-      "terms": "trễ ≤ {{lateHours}} giờ hoàn {{latePercent}}% · không phản hồi: khách {{refund}}%, chuyên gia {{expert}}%",
+      "terms": "trễ ≤ {{lateHours}} giờ hoàn {{latePercent}}% · không phản hồi: khách {{refund}}%, chuyên gia {{expert}}% · không giao: hoàn {{noDelivery}}%",
       "applied": "Áp dụng từ {{date}}",
       "pending": "Sẽ áp dụng từ {{date}}",
       "cancelled": "Đã rút (dự kiến {{date}})",

@@ -1,7 +1,13 @@
 using Caps.Common.Domain;
+using Caps.Contracts;
+using Caps.Expert.Application.Abstractions;
+using Caps.Expert.Application.Features.PlatformFees;
+using Caps.Expert.Application.Features.Policies;
 using Caps.Expert.Domain.Applications;
 using Caps.Expert.Domain.Catalog;
+using Caps.Expert.Domain.Policies;
 using Caps.Expert.Domain.Pricing;
+using Caps.Expert.Domain.Profiles;
 using Caps.Expert.Domain.Qualifications;
 
 namespace Caps.Expert.UnitTests;
@@ -330,5 +336,153 @@ public sealed class PricingTests
             "PRICING_NOT_ALLOWED",
             Errors.CodeOf(() => offering.Reprice(q, 2_000_000, 24, Policy, Expert, Now))
         );
+    }
+
+    // Experts who priced the service hear of an announced fee change in their own numbers
+    [Fact]
+    public async Task A_fee_change_tells_each_pricing_expert_what_they_keep_now_and_after()
+    {
+        var offering = Offer(Approved(), 1_000_000, 48);
+        var expert = ExpertProfile.Create(Guid.NewGuid(), "Mai", Now);
+        expert.RecordContactEmail("mai@example.test");
+        var current = Rate(20);
+        var change = PlatformFee.Set(
+            Service,
+            25,
+            24,
+            30,
+            72,
+            3,
+            50,
+            30,
+            100,
+            new DateOnly(2026, 11, 1),
+            true,
+            Policy.FeeNoticeDays,
+            "Higher card fees",
+            Admin,
+            Now
+        );
+        var outbox = new FakeOutbox();
+
+        await PlatformFeeNotices.EnqueueAsync(
+            new FakeOfferings([(offering, expert)]),
+            outbox,
+            Service,
+            current,
+            change,
+            false,
+            Now,
+            default
+        );
+
+        var sent = Assert.Single(outbox.Fees);
+        Assert.Equal((expert.UserId, "mai@example.test"), (sent.UserId, sent.Email));
+        Assert.Equal((1_000_000L, 20, 800_000L), (sent.Fee, sent.CurrentPercent, sent.NetNow));
+        Assert.Equal((25, 750_000L), (sent.NewPercent, sent.NetNew));
+        Assert.Equal((change.EffectiveFrom, "Higher card fees"), (sent.EffectiveFrom, sent.Reason));
+        Assert.False(sent.Cancelled);
+    }
+
+    // Only experts the narrower range has just pushed out hear of it; a wider range tells nobody
+    [Fact]
+    public async Task A_narrower_price_range_tells_only_the_experts_it_pushes_out()
+    {
+        var expert = ExpertProfile.Create(Guid.NewGuid(), "Mai", Now);
+        expert.RecordContactEmail("mai@example.test");
+        var pushedOut = Offer(Approved(), 800_000, 48);
+        var alreadyOut = Offer(Approved(), 600_000, 48);
+        var inside = Offer(Approved(), 2_000_000, 48);
+        var repo = new FakeOfferings([(pushedOut, expert), (alreadyOut, expert), (inside, expert)]);
+        var before = Range(700_000, 30_000_000);
+        var outbox = new FakeOutbox();
+
+        await PriceRangeNotices.EnqueueAsync(
+            repo,
+            outbox,
+            before,
+            Range(1_000_000, 30_000_000),
+            "Raise the floor",
+            Now,
+            default
+        );
+        await PriceRangeNotices.EnqueueAsync(
+            repo,
+            outbox,
+            before,
+            Range(500_000, 30_000_000),
+            "Lower the floor",
+            Now,
+            default
+        );
+
+        var sent = Assert.Single(outbox.OutOfRange);
+        Assert.Equal((800_000L, 1_000_000L, 30_000_000L), (sent.Fee, sent.MinFee, sent.MaxFee));
+        Assert.Equal(
+            ("mai@example.test", "Human verification", "Raise the floor"),
+            (sent.Email, sent.ServiceName, sent.Reason)
+        );
+    }
+
+    private static Dictionary<string, int> Range(int min, int max) =>
+        new() { [PolicySettingKeys.PricingMinFee] = min, [PolicySettingKeys.PricingMaxFee] = max };
+
+    private sealed class FakeOfferings(
+        IReadOnlyList<(ServiceOffering Offering, ExpertProfile Expert)> rows
+    ) : IServiceOfferingRepository
+    {
+        public Task<
+            IReadOnlyList<(ServiceOffering Offering, ExpertProfile Expert)>
+        > ListByServiceAsync(string serviceCode, CancellationToken ct) => Task.FromResult(rows);
+
+        public Task<
+            IReadOnlyList<(ServiceOffering Offering, ExpertProfile Expert, string ServiceName)>
+        > ListPricedOutsideAsync(long minFee, long maxFee, CancellationToken ct) =>
+            Task.FromResult<IReadOnlyList<(ServiceOffering, ExpertProfile, string)>>([
+                .. rows.Where(x => x.Offering.Fee < minFee || x.Offering.Fee > maxFee)
+                    .Select(x => (x.Offering, x.Expert, Service.Name)),
+            ]);
+
+        public Task<ServiceOffering?> FindAsync(
+            Guid profileId,
+            string serviceCode,
+            CancellationToken ct
+        ) => throw new NotSupportedException();
+
+        public Task<IReadOnlyList<ServiceOffering>> ListAsync(
+            IReadOnlyCollection<Guid> profileIds,
+            CancellationToken ct
+        ) => throw new NotSupportedException();
+
+        public Task<IReadOnlyList<ServiceOfferingChange>> ListChangesAsync(
+            Guid profileId,
+            string serviceCode,
+            CancellationToken ct
+        ) => throw new NotSupportedException();
+
+        public void Add(ServiceOffering offering) => throw new NotSupportedException();
+
+        public void AddChange(ServiceOfferingChange change) => throw new NotSupportedException();
+    }
+
+    private sealed class FakeOutbox : IExpertNotificationOutbox
+    {
+        public List<PlatformFeeChangeAnnouncedEvent> Fees { get; } = [];
+
+        public List<ExpertPriceOutOfRangeEvent> OutOfRange { get; } = [];
+
+        public void Enqueue(ExpertPriceOutOfRangeEvent message, DateTimeOffset now) =>
+            OutOfRange.Add(message);
+
+        public void Enqueue(PlatformFeeChangeAnnouncedEvent message, DateTimeOffset now) =>
+            Fees.Add(message);
+
+        public void Enqueue(ExpertEligibilityDecidedEvent message, DateTimeOffset now) { }
+
+        public void Enqueue(ExpertCompetencyDecidedEvent message, DateTimeOffset now) { }
+
+        public void Enqueue(ExpertServiceAccessChangedEvent message, DateTimeOffset now) { }
+
+        public void Enqueue(ExpertExcuseRequestedEvent message, DateTimeOffset now) { }
     }
 }

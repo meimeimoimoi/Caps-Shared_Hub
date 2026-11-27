@@ -19,7 +19,9 @@ public sealed class CancelPlatformFeeHandler(
     IExpertPolicyProvider policies,
     IUnitOfWork unitOfWork,
     TimeProvider clock,
-    IRealtimeNotifier realtime
+    IRealtimeNotifier realtime,
+    IServiceOfferingRepository offerings,
+    IExpertNotificationOutbox outbox
 ) : ICommandHandler<CancelPlatformFeeCommand, PlatformFeeResponse>
 {
     public async Task<PlatformFeeResponse> HandleAsync(
@@ -35,6 +37,21 @@ public sealed class CancelPlatformFeeHandler(
             throw ExpertErrors.PlatformFeeNotPending();
         foreach (var fee in pending)
             fee.Cancel(command.AdminId, now);
+        var current = await fees.FindCurrentAsync(code, now, ct);
+        // Experts warned of the change learn it is off and their payout stays as it is
+        if (current != null)
+        {
+            await PlatformFeeNotices.EnqueueAsync(
+                offerings,
+                outbox,
+                service,
+                current,
+                pending[0],
+                true,
+                now,
+                ct
+            );
+        }
         await unitOfWork.SaveChangesAsync(ct);
         await realtime.ChangedAsync(
             ExpertRealtimeTopics.Pricing,
@@ -43,7 +60,6 @@ public sealed class CancelPlatformFeeHandler(
             ct
         );
         var policy = await policies.GetPricingAsync(ct);
-        var current = await fees.FindCurrentAsync(code, now, ct);
         return PlatformFeeRows.Build(service, current, null, policy, now);
     }
 }

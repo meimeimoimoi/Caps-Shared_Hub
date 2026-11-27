@@ -105,6 +105,7 @@ export function PlatformFeeHistory({
                             latePercent: row.latePenaltyPercent,
                             refund: row.noResponseRefundPercent,
                             expert: row.noResponseExpertPercent,
+                            noDelivery: row.noDeliveryRefundPercent,
                           })}
                         </span>
                       </p>

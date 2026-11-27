@@ -1,4 +1,5 @@
 using Caps.Expert.Domain.Pricing;
+using Caps.Expert.Domain.Profiles;
 
 namespace Caps.Expert.Application.Abstractions;
 
@@ -13,6 +14,20 @@ public interface IServiceOfferingRepository
         IReadOnlyCollection<Guid> profileIds,
         CancellationToken ct
     );
+
+    /// <summary>Every offering of the service with its expert, limited to experts who have a contact email.</summary>
+    Task<IReadOnlyList<(ServiceOffering Offering, ExpertProfile Expert)>> ListByServiceAsync(
+        string serviceCode,
+        CancellationToken ct
+    );
+
+    /// <summary>
+    /// Offerings priced outside the range, with their expert and service name, limited to experts who have a
+    /// contact email.
+    /// </summary>
+    Task<
+        IReadOnlyList<(ServiceOffering Offering, ExpertProfile Expert, string ServiceName)>
+    > ListPricedOutsideAsync(long minFee, long maxFee, CancellationToken ct);
 
     /// <summary>Saved prices of the expert's offering for the service, most recent first.</summary>
     Task<IReadOnlyList<ServiceOfferingChange>> ListChangesAsync(

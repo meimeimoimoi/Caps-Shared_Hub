@@ -1405,7 +1405,7 @@
       "openFor": "Fee history of {{name}}",
       "title": "Fee history: {{name}}",
       "empty": "No fee has been set yet.",
-      "terms": "late ≤ {{lateHours}} h refunds {{latePercent}}% · no response: client {{refund}}%, expert {{expert}}%",
+      "terms": "late ≤ {{lateHours}} h refunds {{latePercent}}% · no response: client {{refund}}%, expert {{expert}}% · no delivery: refunds {{noDelivery}}%",
       "applied": "In force from {{date}}",
       "pending": "Takes effect on {{date}}",
       "cancelled": "Withdrawn (was due {{date}})",
