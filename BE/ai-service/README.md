@@ -10,6 +10,7 @@ Các lệnh dưới đây chạy bằng PowerShell tại `BE/ai-service`.
 - Ollama đang chạy tại `http://localhost:11434`, có model `bge-m3:latest` và `qwen2.5:7b`.
 - Nếu xử lý CV dạng ảnh (`PNG`/`JPEG`) hoặc PDF scan: cài **Tesseract OCR** kèm gói ngôn ngữ `vie` (tiếng Việt) và `eng`; có thể trỏ thư mục `tessdata` qua `OCR_TESSDATA_DIR` trong `.env`.
 - Nếu chưa có `.env`, sao chép `.env.example` thành `.env`. Giữ nguyên `.env` hiện có.
+- Khi mở `ai-service` ra ngoài máy local (ví dụ qua `ngrok` hoặc môi trường dùng chung), **bắt buộc** đặt `INTERNAL_API_KEY` đủ mạnh và `REQUIRE_INTERNAL_API_KEY=true` trong `.env`, đồng thời cấu hình cùng giá trị đó cho các service `.NET` (`AiService:InternalKey` ở `rag-query`, `ingestion`, `expert` và `Services:AiServiceInternalKey` ở `workflow`).
 
 Compose chung tại `BE/docker/docker-compose.yml` hiện chưa cung cấp Qdrant.
 Tạo container riêng với volume lưu dữ liệu:
