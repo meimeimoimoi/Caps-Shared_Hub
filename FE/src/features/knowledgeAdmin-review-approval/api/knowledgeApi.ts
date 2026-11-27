@@ -52,6 +52,24 @@ const CONFLICTS: Record<string, string> = {
   DOCUMENT_NOT_INDEX_FAILED:
     'Chỉ thử lại được văn bản lỗi index; văn bản lỗi bóc tách cần tải lên lại.',
   INDEX_RETRY_EXCEEDED: 'Đã thử lại index quá số lần cho phép.',
+  REPROCESS_UPLOAD_ONLY:
+    'Chỉ bóc tách lại được văn bản tải lên; văn bản thu thập cần chạy thu thập lại.',
+  DOCUMENT_NOT_INDEXED: 'Chỉ ngừng sử dụng được văn bản đang dùng (đã index).',
+}
+
+/** reprocess / retire: both require a reason, kept by ingestion */
+async function postWithReason(
+  documentId: string,
+  action: 'reprocess' | 'retire',
+  reason: string
+) {
+  try {
+    await api.post(`${DOCUMENTS}/${encodeURIComponent(documentId)}/${action}`, {
+      reason: reason.trim(),
+    })
+  } catch (e) {
+    throw explain(e)
+  }
 }
 
 const explain = (e: unknown) =>
@@ -274,7 +292,7 @@ export async function rejectDocument(documentId: string, reason: string) {
 export async function reprocessDocument(documentId: string, reason: string) {
   if (!reason.trim()) throw new Error('Vui lòng nhập lý do.')
   if (isKnowledgeDemo) return leaveReviewDemo(documentId, 'parse')
-  throw new Error('Chức năng bóc tách lại chưa được kết nối với máy chủ.')
+  await postWithReason(documentId, 'reprocess', reason)
 }
 
 // Demo only: documents retired in this browser session
@@ -287,7 +305,7 @@ export async function retireDocument(documentId: string, reason: string) {
     retiredDemo.set(documentId, { at: new Date().toISOString(), reason })
     return
   }
-  throw new Error('Chức năng ngừng sử dụng chưa được kết nối với máy chủ.')
+  await postWithReason(documentId, 'retire', reason)
 }
 
 /** Chấp nhận phiên bản mới, chuyển sang bước Bóc tách */

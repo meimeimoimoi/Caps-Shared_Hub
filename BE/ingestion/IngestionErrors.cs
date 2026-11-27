@@ -132,6 +132,13 @@ public static class IngestionErrors
             "Document status lifecycle updates apply only to indexed documents."
         );
 
+    public static AppException ReprocessUploadOnly() =>
+        new(
+            ErrorType.Conflict,
+            "REPROCESS_UPLOAD_ONLY",
+            "Only uploaded documents can be parsed again; crawled originals are not stored, crawl again instead."
+        );
+
     public static AppException AiServiceUnavailable(string detail) =>
         new(ErrorType.Unavailable, "AI_SERVICE_UNAVAILABLE", detail);
 }

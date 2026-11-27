@@ -148,3 +148,21 @@ test('the detail shows the one version with its decision', () => {
   assert.equal(detail.history[0].text, 'Từ chối: Sai số hiệu')
   assert.equal(detail.timeline.length, 5)
 })
+
+test('a retired version shows as no longer used, with the reasons newest first', () => {
+  const detail = toDocumentDetail(
+    preview({
+      status: 'ARCHIVED',
+      metadata: {
+        reprocess: { reason: 'Lỗi OCR', by: 'admin-1', at: '2026-11-01T00:00:00Z' },
+        retire: { reason: 'Đã có văn bản thay thế', by: 'admin-2', at: '2026-11-20T00:00:00Z' },
+      },
+    })
+  )
+  assert.equal(detail.versions[0].status, 'RETIRED')
+  assert.deepEqual(
+    detail.history.map((h) => h.text),
+    ['Ngừng sử dụng v2: Đã có văn bản thay thế', 'Yêu cầu bóc tách lại: Lỗi OCR']
+  )
+  assert.equal(detail.history[0].actor, 'admin-2')
+})
