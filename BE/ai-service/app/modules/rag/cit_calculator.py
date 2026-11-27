@@ -40,7 +40,12 @@ class CitCalcHint:
     formula_only: bool = False
 
 
+_PERIOD_YEAR_RE = re.compile(r"\b((?:năm|kỳ)(?:\s+tính\s+thuế)?)\s+(?:19|20)\d{2}\b", re.IGNORECASE)
+
+
 def _extract_labeled_vnd(text: str, label_regex: str) -> float | None:
+    # Drop period years ("năm 2026") so they do not block the label-to-amount match.
+    text = _PERIOD_YEAR_RE.sub(r"\1", text)
     pattern = re.compile(
         rf"(?:{label_regex})[^0-9;\n]{{0,35}}?(\d{{1,3}}(?:[.,]\d{{3}})+|\d+(?:[.,]\d+)?)\s*(tỷ|triệu|nghìn|ngàn|đồng|vnd)\b",
         re.IGNORECASE,
@@ -171,6 +176,9 @@ def compute_chat_cit_hint(question: str, retrieved_chunks: list) -> CitCalcHint 
 
     base_tax = net_taxable * (rate / 100.0)
     asks_reduction_30 = any(k in q_norm for k in ("giảm 30%", "nghị quyết 43", "nghị định 398")) and "30%" in law_text
+    # The cited reduction applies by law when revenue is within its threshold, even if the user does not ask for it.
+    if not asks_reduction_30 and revenue is not None and revenue <= 10_000_000_000:
+        asks_reduction_30 = "giảm 30%" in law_text and "10 tỷ" in law_text
     final_tax = base_tax * 0.70 if asks_reduction_30 else base_tax
 
     authorized = (

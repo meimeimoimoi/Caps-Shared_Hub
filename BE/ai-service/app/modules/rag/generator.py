@@ -16,6 +16,7 @@ from app.modules.rag.guardrails import (
     drops_critical_condition,
     find_ungrounded_numbers,
     has_reversed_cap_polarity,
+    mismatched_bracket_rate,
     missing_verified_tax_note,
 )
 from app.modules.rag.prompts import build_grounded_answer_prompt
@@ -280,6 +281,11 @@ class GroundedGenerator:
                     "trong đoạn căn cứ là KHÔNG được trừ (không tính vào chi phí được trừ). "
                     "Hãy viết lại đúng nguyên văn quy định và bỏ câu phụ dư thừa."
                 )
+                continue
+
+            if rate_note := mismatched_bracket_rate(question, conclusion_text, used_chunks):
+                logger.info("Chat answer stated a rate outside the revenue bracket (attempt %d)", attempt + 1)
+                retry_note = rate_note
                 continue
 
             if condition_note := drops_critical_condition(question, conclusion_text, used_chunks):
