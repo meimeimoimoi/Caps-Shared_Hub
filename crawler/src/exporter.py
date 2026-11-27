@@ -104,6 +104,27 @@ def _attachment_appendices(rec: dict, existing: List[dict]) -> List[dict]:
     return out
 
 
+# "... này có hiệu lực ... và áp dụng từ kỳ tính thuế thu nhập doanh nghiệp năm 2025" /
+# "... áp dụng cho kỳ tính thuế từ năm 2014 trở đi" (same sentence as the effect statement).
+_TAX_PERIOD_RE = re.compile(
+    r"này có hiệu lực[^.;\n]*?áp dụng (?:kể từ|từ|cho) kỳ tính thuế[^.;\n\d]{0,40}?năm (\d{4})",
+    re.IGNORECASE,
+)
+
+
+def _tax_period_start(text: str) -> Optional[str]:
+    """Start of the first tax period the document applies to, when its effect clause says so."""
+    years = _TAX_PERIOD_RE.findall(text or "")
+    # Last match: the effect article sits at the end of the document.
+    # shortcut: assumes a calendar-year tax period (01/01); upgrade if fiscal-year rules are needed.
+    return f"{years[-1]}-01-01" if years else None
+
+
+def _effective_from(rec: dict) -> Optional[str]:
+    """RAG filters by tax period, so a document applying from a tax period counts from that period's start."""
+    return _tax_period_start(rec.get("noi_dung_text")) or _iso(rec.get("ngay_hieu_luc"))
+
+
 def _text_hash(text: str) -> str:
     """sha256 của toàn văn đã chuẩn hoá khoảng trắng (dùng cho file_hash / dedup)."""
     normalized = re.sub(r"\s+", " ", text or "").strip()
@@ -223,7 +244,7 @@ def _numbered(unit: Unit) -> str:
 
 def build_chunks(rec: dict, parsed: ParsedDocument) -> List[dict]:
     label = _doc_label(rec)
-    effective_from = _iso(rec.get("ngay_hieu_luc"))
+    effective_from = _effective_from(rec)
     effective_to = _iso(rec.get("ngay_het_hieu_luc"))
     chunks: List[dict] = []
 
@@ -309,12 +330,15 @@ def build_payload(rec: dict) -> dict:
             "file_hash": file_hash,
             "file_hash_basis": file_hash_basis,
             "issued_date": _iso(rec.get("ngay_ban_hanh")),
-            "effective_from": _iso(rec.get("ngay_hieu_luc")),
+            "effective_from": _effective_from(rec),
             "effective_to": _iso(rec.get("ngay_het_hieu_luc")),
             "content_json": content,
             "ingest": _ingest_hint(rec, text, parsed, chunks),
             "metadata": {
                 "tinh_trang_hieu_luc": rec.get("tinh_trang_hieu_luc"),
+                # Legal effective date kept for reviewers when effective_from follows the tax period
+                "ngay_hieu_luc": _iso(rec.get("ngay_hieu_luc")),
+                "tax_period_from": _tax_period_start(text),
                 "text_source": rec.get("text_source"),
                 "ocr_required": rec.get("ocr_required", False),
                 "scraped_at": rec.get("scraped_at"),
