@@ -200,6 +200,27 @@ def test_payload_matches_ingestion_schema():
     assert all(c["char_count"] == len(c["text"]) <= MAX_CHUNK_CHARS for c in chunks)
 
 
+@pytest.mark.parametrize("effect, expected", [
+    ("Nghị định này có hiệu lực thi hành kể từ ngày ký ban hành và áp dụng từ kỳ tính thuế "
+     "thu nhập doanh nghiệp năm 2025.", "2025-01-01"),
+    ("Thông tư này có hiệu lực thi hành kể từ ngày 02/08/2014 và áp dụng cho kỳ tính thuế "
+     "từ năm 2014 trở đi.", "2014-01-01"),
+    ("Nghị định này có hiệu lực thi hành kể từ ngày 15/12/2025.", "2025-12-15"),
+])
+def test_effective_from_follows_tax_period_in_effect_clause(effect, expected):
+    text = (
+        "Điều 1. Ưu đãi\n1. Dự án được áp dụng ưu đãi cho thời gian còn lại kể từ kỳ tính thuế năm 2020.\n"
+        f"Điều 2. Hiệu lực thi hành\n1. {effect}"
+    )
+    rec = {"so_hieu": "320/2025/NĐ-CP", "loai_van_ban": "Nghị định", "doc_id": "tp",
+           "ngay_hieu_luc": "15/12/2025", "noi_dung_text": text}
+    payload = build_payload(rec)
+    kd = payload["knowledge_document"]
+    assert kd["effective_from"] == expected
+    assert kd["metadata"]["ngay_hieu_luc"] == "2025-12-15"
+    assert {c["effective_from"] for c in payload["chunks"]} == {expected}
+
+
 def test_long_clause_is_split_with_header_repeated():
     sentence = "Doanh nghiệp được giảm thuế theo quy định tại khoản này. "
     text = "Điều 1. Ưu đãi thuế\n1. " + sentence * 120
