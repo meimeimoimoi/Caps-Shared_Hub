@@ -96,16 +96,40 @@ test('a second version is flagged as a new version', () => {
   assert.equal(toKnowledgeDocument(summary()).version, null)
 })
 
-test('the pipeline counts come from the pending queue', () => {
-  const docs = [
-    summary(),
-    summary({ id: '2', hasContent: false }),
-    summary({ id: '3', hasContent: false, lastError: 'x' }),
-  ].map(toKnowledgeDocument)
-  const s = toPipelineSummary(docs)
-  assert.equal(s.pending, 1)
-  assert.equal(s.parsing, 1)
-  assert.equal(s.parseFailed, 1)
+test('approved and indexed versions leave review; a failed index stays reachable', () => {
+  assert.equal(toKnowledgeDocument(summary({ status: 'APPROVED' })).stage, 'index')
+  const indexed = toKnowledgeDocument(summary({ status: 'INDEXED' }))
+  assert.equal(indexed.stage, 'indexed')
+  assert.equal(indexed.failure, undefined)
+  const failed = toKnowledgeDocument(
+    summary({ status: 'INDEX_FAILED', lastError: 'Qdrant down' })
+  )
+  assert.equal(failed.stage, 'index')
+  assert.equal(failed.failure?.kind, 'INDEX_FAILED')
+  assert.equal(failed.failure?.message, 'Qdrant down')
+})
+
+test('the pipeline counts come from the stats endpoint', () => {
+  const s = toPipelineSummary(
+    {
+      awaitingContent: 2,
+      awaitingReview: 3,
+      approved: 1,
+      indexed: 9,
+      parseFailed: 4,
+      indexFailed: 5,
+    },
+    7
+  )
+  assert.deepEqual(s, {
+    collectedThisMonth: 7,
+    parsing: 2,
+    pending: 3,
+    indexing: 1,
+    indexFailed: 5,
+    parseFailed: 4,
+    indexed: 9,
+  })
 })
 
 test('parsed content becomes chapters, articles and units for review', () => {

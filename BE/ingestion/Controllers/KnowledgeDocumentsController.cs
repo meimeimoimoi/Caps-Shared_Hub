@@ -17,6 +17,29 @@ public sealed class KnowledgeDocumentsController(ICurrentUser currentUser) : Con
 
     private Guid UserId => currentUser.RequireUserId();
 
+    /// <summary>Lists document versions of any status, newest first.</summary>
+    /// <remarks>
+    /// status is repeatable (status=APPROVED&amp;status=INDEX_FAILED); leave it out for every status. Use it to
+    /// reach INDEX_FAILED versions, which leave the pending queue once approved. page starts at 1; pageSize
+    /// defaults to 20 and is at most 100.
+    /// </remarks>
+    /// <response code="200">The page with the total number of matching documents.</response>
+    /// <response code="400">INVALID_PAGING or INVALID_DOCUMENT_STATUS.</response>
+    /// <response code="403">Missing the KnowledgeManage permission.</response>
+    [HttpGet]
+    public async Task<IActionResult> List(
+        [FromServices]
+            IQueryHandler<ListDocumentsQuery, PageResponse<DocumentSummaryResponse>> handler,
+        CancellationToken ct,
+        [FromQuery] string[]? status = null,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20
+    )
+    {
+        var documents = await handler.HandleAsync(new(status ?? [], page, pageSize), ct);
+        return Ok(ApiResponse<PageResponse<DocumentSummaryResponse>>.Ok(documents));
+    }
+
     /// <summary>Lists documents waiting for review (PENDING), oldest first.</summary>
     /// <remarks>
     /// page starts at 1; pageSize defaults to 20 and is at most 100. hasContent = false means the worker has not

@@ -12,6 +12,7 @@ import {
   toPipelineSummary,
   type DocumentPreviewDto,
   type DocumentSummaryDto,
+  type KnowledgePipelineDto,
 } from './mappers'
 import type { QueueFilter } from '../constants'
 import type {
@@ -100,12 +101,28 @@ async function indexDocument(
   }
 }
 
-// shortcut: the first 100 pending versions (the API maximum); page through them when the queue grows
-async function pendingDocuments(signal?: AbortSignal) {
-  const res = await api.get<Envelope<Page<DocumentSummaryDto>>>(
-    `${DOCUMENTS}/pending`,
-    { params: { page: 1, pageSize: 100 }, signal }
-  )
+// Statuses each table filter reads; REJECTED versions never show in the queue
+const STATUSES: Record<QueueFilter, string[]> = {
+  collect: ['PENDING', 'APPROVED', 'INDEX_FAILED', 'INDEXED'],
+  parse: ['PENDING'],
+  review: ['PENDING'],
+  index: ['APPROVED', 'INDEX_FAILED'],
+  indexed: ['INDEXED'],
+  failed: ['PENDING', 'INDEX_FAILED'],
+}
+
+// shortcut: the newest 100 versions (the API maximum); page through them when the list grows
+async function listDocuments(statuses: string[], signal?: AbortSignal) {
+  // Repeated keys (status=A&status=B): axios would send status[]=A, which ASP.NET does not bind
+  const params = new URLSearchParams([
+    ...statuses.map((s) => ['status', s]),
+    ['page', '1'],
+    ['pageSize', '100'],
+  ])
+  const res = await api.get<Envelope<Page<DocumentSummaryDto>>>(DOCUMENTS, {
+    params,
+    signal,
+  })
   return res.data.items.map(toKnowledgeDocument)
 }
 
@@ -121,18 +138,27 @@ export async function getPipelineSummary(
   signal?: AbortSignal
 ): Promise<PipelineSummary> {
   if (isKnowledgeDemo) return structuredClone((await fixtures()).mockSummary)
-  return toPipelineSummary(await pendingDocuments(signal))
+  const res = await api.get<
+    Envelope<{
+      pipeline: KnowledgePipelineDto
+      months: { crawled: number; uploaded: number }[]
+    }>
+  >('/api/v1/knowledge/stats', { params: { months: 1 }, signal })
+  const month = res.data.months.at(-1)
+  return toPipelineSummary(
+    res.data.pipeline,
+    month ? month.crawled + month.uploaded : 0
+  )
 }
 
-/** stage = 'collect' → mọi văn bản thu thập trong tháng; 'failed' → văn bản đang lỗi.
- * The API only lists PENDING versions, so the index stages stay empty there. */
+/** stage = 'collect' → mọi văn bản đã thu thập; 'failed' → văn bản đang lỗi (bóc tách hoặc index) */
 export async function getDocuments(
   stage: QueueFilter,
   signal?: AbortSignal
 ): Promise<KnowledgeDocument[]> {
   const docs = isKnowledgeDemo
     ? structuredClone((await fixtures()).mockDocuments)
-    : await pendingDocuments(signal)
+    : await listDocuments(STATUSES[stage], signal)
   if (stage === 'collect') return docs
   if (stage === 'failed') return docs.filter((d) => d.failure)
   return docs.filter((d) => d.stage === stage)
