@@ -13,7 +13,29 @@ from app.modules.rag.cit_calculator import CitCalcHint, _extract_labeled_vnd
 
 _PERCENT_RE = re.compile(r"(\d+(?:[.,]\d+)?)\s*%")
 
-CITATION_MARKER_RE = re.compile(r"\[(\d{1,3})\]")
+# One bracket may cite several sources: "[1]", "[1, 3]", "[1; 3]" or a range "[1-3]".
+CITATION_MARKER_RE = re.compile(r"\[(\d{1,3}(?:\s*[,;\u2013-]\s*\d{1,3})*)\]")
+_MAX_CITATION_RANGE = 20
+# Calendar dates ("ngày 31 tháng 03 năm 2027", "31/03/2027", "tháng 8/2026") are not durations.
+_DATE_SPAN_RE = re.compile(
+    r"\b(?:ngày\s+)?\d{1,2}\s+tháng\s+\d{1,2}(?:\s+năm\s+\d{4})?"
+    r"|\b(?:ngày\s+)?\d{1,2}/\d{1,2}/\d{4}"
+    r"|\b(?:tháng|quý)\s+\d{1,2}(?:/\d{4}|\s+năm\s+\d{4})",
+    re.IGNORECASE,
+)
+
+
+def citation_indexes(text: str | None) -> set[int]:
+    """Return every source index cited in the text, expanding lists and short ranges inside one bracket."""
+    indexes: set[int] = set()
+    for group in CITATION_MARKER_RE.findall(text or ""):
+        for part in re.split(r"\s*[,;]\s*", group):
+            bounds = [int(x) for x in re.split(r"\s*[\u2013-]\s*", part) if x]
+            if len(bounds) == 2 and bounds[0] <= bounds[1] and bounds[1] - bounds[0] < _MAX_CITATION_RANGE:
+                indexes.update(range(bounds[0], bounds[1] + 1))
+            else:
+                indexes.update(bounds)
+    return indexes
 _RATE_OR_DURATION_RE = re.compile(
     # (?!\w) instead of \b: a trailing \b never matches after "%", which silently skipped every rate.
     r"\b(\d+(?:[.,]\d+)?)\s*(%|phần\s+trăm|năm|tháng|ngày)(?!\w)", re.IGNORECASE
@@ -137,7 +159,7 @@ def find_ungrounded_numbers(
     ungrounded: list[str] = []
     for sentence in re.split(r"[.!?\n]+", stripped):
         negated = is_negated_clause(sentence)
-        for raw_num, unit in _RATE_OR_DURATION_RE.findall(sentence):
+        for raw_num, unit in _RATE_OR_DURATION_RE.findall(_DATE_SPAN_RE.sub(" ", sentence)):
             norm_num = normalize_number_token(raw_num)
             if norm_num in source_numbers or norm_num in calc_numbers:
                 continue
@@ -155,6 +177,48 @@ def find_ungrounded_numbers(
         if normalize_number_token(raw_tok) not in allowed_any and raw_tok not in ungrounded:
             ungrounded.append(raw_tok)
     return ungrounded
+
+
+_MAX_BACKFILLED_SOURCES = 2
+
+
+def _same_lead_word(conclusion: str, hit, figure: str) -> bool:
+    """True when the word right before the figure in the conclusion also precedes it in the chunk.
+
+    "là 20%" in the answer matches "là 20%" in the rate clause, but "giảm 20%" does not, so a wrong
+    figure is not accepted just because the same number appears elsewhere in the context.
+    """
+    chunk = " ".join(str((hit.payload or {}).get("text_content") or "").lower().split())
+    leads = re.findall(r"(\w+)\s+" + re.escape(figure.lower()) + r"(?![\d,.])", " ".join(conclusion.lower().split()))
+    return any(f"{lead} {figure.lower()}" in chunk for lead in leads)
+
+
+def backfill_sources_for_figures(
+    question: str,
+    conclusion: str,
+    used_chunks: list,
+    retrieved_chunks: list,
+    period_str: str = "",
+    calc_hint: CitCalcHint | None = None,
+) -> list | None:
+    """Return used chunks plus at most two other retrieved chunks that back every flagged figure, or None.
+
+    The model sometimes states a figure that is in the retrieved context but cites the wrong chunk;
+    citing the chunk that holds the figure is better than rejecting a grounded answer.
+    """
+    used = list(used_chunks)
+    remaining = find_ungrounded_numbers(question, conclusion, used, period_str=period_str, calc_hint=calc_hint)
+    for hit in retrieved_chunks:
+        if not remaining or len(used) - len(used_chunks) >= _MAX_BACKFILLED_SOURCES:
+            break
+        if any(hit is u for u in used):
+            continue
+        after = find_ungrounded_numbers(question, conclusion, used + [hit], period_str=period_str, calc_hint=calc_hint)
+        newly_backed = [fig for fig in remaining if fig not in after]
+        if newly_backed and all(_same_lead_word(conclusion, hit, fig) for fig in newly_backed):
+            used.append(hit)
+            remaining = after
+    return used if not remaining and len(used) > len(used_chunks) else None
 
 
 def missing_verified_tax_note(conclusion: str, calc_hint: CitCalcHint | None) -> str | None:

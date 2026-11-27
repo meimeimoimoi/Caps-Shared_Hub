@@ -14,10 +14,19 @@ from app.config import settings
 from app.core.models import embedding_model
 from app.core.qdrant import qdrant_client, to_rfc3339
 from app.core.text_utils import strip_vietnamese_accents
+from app.modules.rag.cit_calculator import CALC_INTENT_KEYWORDS, CALCULATION_QUESTION_RE
 from app.schemas.statuses import DocumentStatus
 
 _BASE_SCORE_FLOOR = 0.44
 _DEFAULT_SCORE_THRESHOLD = 0.50
+# One long decree must not fill every context slot and push out the rule the question needs.
+_MAX_CHUNKS_PER_DOCUMENT = 4
+_RATE_CLAUSE_QUERY = (
+    "thuế suất thuế thu nhập doanh nghiệp 20% doanh nghiệp có tổng doanh thu năm "
+    "không quá 03 tỷ đồng 15% từ trên 03 tỷ đồng đến không quá 50 tỷ đồng 17%"
+)
+_RATE_QUESTION_RE = re.compile(r"\bthuế\s+suất\b|\bthue\s+suat\b", re.IGNORECASE)
+_MAX_RATE_CLAUSES = 2
 
 _QUESTION_NOISE_SUFFIX_RE = re.compile(
     r"(?:\b(?:có\s+đúng\s+không|đúng\s+hay\s+sai|đúng\s+không|phải\s+không|hay\s+không"
@@ -194,15 +203,64 @@ def _rerank_hits(query: str, hits: list, limit: int) -> list:
         scored_hits.append((adjusted_score, -idx, hit))
 
     scored_hits.sort(reverse=True)
-    return [hit for _, _, hit in scored_hits[:limit]]
+    return _cap_hits_per_document([hit for _, _, hit in scored_hits], limit)
+
+
+def _cap_hits_per_document(ranked_hits: list, limit: int) -> list:
+    """Keep rank order but take at most a few chunks per document, then refill from the rest if slots remain."""
+    picked: list = []
+    overflow: list = []
+    per_doc: dict[str, int] = {}
+    for hit in ranked_hits:
+        doc_no = str((getattr(hit, "payload", None) or {}).get("document_number") or "").lower()
+        if doc_no and per_doc.get(doc_no, 0) >= _MAX_CHUNKS_PER_DOCUMENT:
+            overflow.append(hit)
+            continue
+        per_doc[doc_no] = per_doc.get(doc_no, 0) + 1
+        picked.append(hit)
+        if len(picked) >= limit:
+            return picked
+    return picked + overflow[: limit - len(picked)]
+
+
+def _has_rate_brackets(hits: list) -> bool:
+    text = " ".join(str((getattr(h, "payload", None) or {}).get("text_content") or "") for h in hits).lower()
+    return "20%" in text and ("15%" in text or "17%" in text)
+
+
+def needs_rate_clauses(question: str, hits: list) -> bool:
+    """A rate or tax-amount question needs the statutory rate clause even when retrieval missed it."""
+    q_norm = " ".join((question or "").lower().split())
+    asks_rate = bool(_RATE_QUESTION_RE.search(q_norm))
+    asks_amount = bool(CALCULATION_QUESTION_RE.search(q_norm)) and any(kw in q_norm for kw in CALC_INTENT_KEYWORDS)
+    return (asks_rate or asks_amount) and not _has_rate_brackets(hits)
 
 
 class TemporalRetriever:
     @staticmethod
     def retrieve(query: str, period_start: str, period_end: str, limit: int = 10):
         effective_query = _prepare_search_query(query)
+        hits = TemporalRetriever._search(effective_query, period_start, period_end, max(limit * 3, 30))
+        return _rerank_hits(effective_query, hits, limit)
+
+    @staticmethod
+    def retrieve_for_chat(question: str, period_start: str, period_end: str, limit: int = 10):
+        """Retrieve for a chat question and append the statutory rate clause when the question needs it."""
+        hits = TemporalRetriever.retrieve(question, period_start, period_end, limit)
+        if not needs_rate_clauses(question, hits):
+            return hits
+        seen = {getattr(h, "id", None) for h in hits}
+        extra = [
+            h
+            for h in TemporalRetriever._search(_RATE_CLAUSE_QUERY, period_start, period_end, 10)
+            if getattr(h, "id", None) not in seen
+            and "%" in str((getattr(h, "payload", None) or {}).get("text_content") or "")
+        ]
+        return hits + extra[:_MAX_RATE_CLAUSES]
+
+    @staticmethod
+    def _search(effective_query: str, period_start: str, period_end: str, candidate_limit: int) -> list:
         query_vector = embedding_model.embed_query(effective_query)
-        candidate_limit = max(limit * 3, 30)
 
         rfc_start = to_rfc3339(period_start, is_end=False)
         rfc_end = to_rfc3339(period_end, is_end=True)
@@ -237,7 +295,7 @@ class TemporalRetriever:
                 limit=candidate_limit,
                 score_threshold=_BASE_SCORE_FLOOR,
             )
-            return _rerank_hits(effective_query, hits, limit)
+            return list(hits)
 
         response = qdrant_client.query_points(
             collection_name=settings.QDRANT_COLLECTION,
@@ -246,4 +304,4 @@ class TemporalRetriever:
             limit=candidate_limit,
             score_threshold=_BASE_SCORE_FLOOR,
         )
-        return _rerank_hits(effective_query, response.points, limit)
+        return list(response.points)
