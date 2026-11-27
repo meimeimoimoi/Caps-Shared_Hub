@@ -25,11 +25,11 @@ public sealed class PlatformFee
     /// <summary>Longest late window an admin may set, the same cap as a turnaround.</summary>
     public const int MaxLateHours = 720;
 
-    /// <summary>Most hours a client gets to answer one question; two questions keep the pause within 144 hours.</summary>
+    /// <summary>Most days a client gets to answer one question; two questions keep the pause within 144 hours.</summary>
     public const int MaxNoResponseDays = 3;
     public int Percent { get; private set; }
 
-    /// <summary>Up to this many hours late, the client gets LatePenaltyPercent of the fee back from the expert's share.</summary>
+    /// <summary>Up to this many hours late, the client gets LatePenaltyPercent of the fee back, taken from the platform's share first.</summary>
     public int LatePenaltyHours { get; private set; }
     public int LatePenaltyPercent { get; private set; }
 
@@ -37,7 +37,7 @@ public sealed class PlatformFee
     public int LateCancelHours { get; private set; }
 
     /// <summary>
-    /// The client did not answer the expert's question within this many hours: the case ends and the fee splits
+    /// The client did not answer the expert's question within this many days: the case ends and the fee splits
     /// into NoResponseRefundPercent for the client, NoResponseExpertPercent for the expert and the rest for the platform.
     /// </summary>
     public int NoResponseDays { get; private set; }
@@ -46,7 +46,7 @@ public sealed class PlatformFee
 
     /// <summary>
     /// The expert never delivered: the client gets this share back, the platform keeps the rest and the expert
-    /// gets nothing (meeting of 2026-11-11, 50 by default).
+    /// gets nothing (meeting of 2026-11-11, 100 by default).
     /// </summary>
     public int NoDeliveryRefundPercent { get; private set; }
 

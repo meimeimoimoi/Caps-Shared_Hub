@@ -144,6 +144,11 @@
       "SUSPENDED": "{{service}} is suspended",
       "REINSTATED": "{{service}} has been reinstated"
     },
+    "priceOutOfRange": "Your {{service}} price is outside the new {{min}}–{{max}} VND range, so it is hidden from the marketplace. Please reprice.",
+    "platformFee": {
+      "announced": "The platform fee for {{service}} changes from {{from}}% to {{to}}% on {{date}}. Check what you keep and adjust your price if needed.",
+      "cancelled": "The platform fee change for {{service}} was cancelled; the fee stays at {{from}}%."
+    },
     "violation": {
       "LATE": "You got 1 violation point for a late delivery. If it was force majeure, ask for an excuse within 2 days.",
       "WITHDREW": "You got 2 violation points for withdrawing from an accepted case. If it was force majeure, ask for an excuse within 2 days.",

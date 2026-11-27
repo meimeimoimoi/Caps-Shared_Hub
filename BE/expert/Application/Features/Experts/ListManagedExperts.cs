@@ -55,6 +55,7 @@ public sealed class ListManagedExpertsHandler(
                 r.QualificationId.ToString(),
                 r.ApplicationId.ToString(),
                 r.ExpertProfileId.ToString(),
+                r.ExpertUserId.ToString(),
                 r.DisplayName,
                 r.Email,
                 r.YearsExperience,

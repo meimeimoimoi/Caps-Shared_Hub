@@ -59,10 +59,13 @@ Path tính từ `/api/v1/knowledge`.
 | GET | `/crawl-jobs` | KnowledgeManage | Lịch sử crawl |
 | GET | `/crawl-jobs/{id}` | KnowledgeManage | Một job, kèm tiến trình (gọi lại định kỳ khi `RUNNING`) |
 | POST | `/documents/upload` | KnowledgeManage | Upload PDF/DOCX |
+| GET | `/documents?status` | KnowledgeManage | Mọi văn bản theo trạng thái (gồm `INDEX_FAILED`) |
 | GET | `/documents/pending` | KnowledgeManage | Hàng chờ duyệt |
 | GET | `/documents/{id}/preview` | KnowledgeManage | Xem một văn bản để duyệt |
 | GET | `/documents/{id}/file` | KnowledgeManage | Tải file gốc (văn bản upload) |
 | POST | `/documents/{id}/reject` | KnowledgeManage | Từ chối văn bản |
+| POST | `/documents/{id}/reprocess` | KnowledgeManage | Bóc tách lại văn bản upload đang `PENDING` (bắt buộc `reason`, lưu ở `metadata.reprocess`) |
+| POST | `/documents/{id}/retire` | KnowledgeManage | Ngừng dùng văn bản `INDEXED` → `ARCHIVED`, vector trong Qdrant cũng `ARCHIVED` (bắt buộc `reason`, lưu ở `metadata.retire`) |
 | GET | `/sources` | Tài khoản ACTIVE | Tra cứu danh mục văn bản |
 | GET | `/sources/{id}/tree` | Tài khoản ACTIVE | Cây sửa đổi |
 
@@ -201,6 +204,14 @@ Response **200**, `data` là bản tóm tắt của văn bản (các field giả
 ```
 
 Lỗi: 400 `FILE_REQUIRED`, `FILE_TOO_LARGE`, `FILE_INVALID_TYPE`, `INVALID_EFFECTIVE_PERIOD`; 409 `DOCUMENT_DUPLICATE`.
+
+### GET `/documents?status=INDEX_FAILED&page=1&pageSize=20`
+
+Văn bản theo trạng thái, mới nhất trước; item giống `GET /documents/pending`. `status` lặp được
+(`status=APPROVED&status=INDEX_FAILED`), bỏ trống là mọi trạng thái. Dùng để thấy văn bản index lỗi (đã rời hàng chờ
+duyệt) rồi gọi `retry-index`.
+
+Lỗi: 400 `INVALID_PAGING`, `INVALID_DOCUMENT_STATUS`.
 
 ### GET `/documents/pending?page=1&pageSize=20`
 

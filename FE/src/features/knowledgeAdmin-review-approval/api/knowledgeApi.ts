@@ -12,6 +12,7 @@ import {
   toPipelineSummary,
   type DocumentPreviewDto,
   type DocumentSummaryDto,
+  type KnowledgePipelineDto,
 } from './mappers'
 import type { QueueFilter } from '../constants'
 import type {
@@ -52,6 +53,24 @@ const CONFLICTS: Record<string, string> = {
   DOCUMENT_NOT_INDEX_FAILED:
     'Chỉ thử lại được văn bản lỗi index; văn bản lỗi bóc tách cần tải lên lại.',
   INDEX_RETRY_EXCEEDED: 'Đã thử lại index quá số lần cho phép.',
+  REPROCESS_UPLOAD_ONLY:
+    'Chỉ bóc tách lại được văn bản tải lên; văn bản thu thập cần chạy thu thập lại.',
+  DOCUMENT_NOT_INDEXED: 'Chỉ ngừng sử dụng được văn bản đang dùng (đã index).',
+}
+
+/** reprocess / retire: both require a reason, kept by ingestion */
+async function postWithReason(
+  documentId: string,
+  action: 'reprocess' | 'retire',
+  reason: string
+) {
+  try {
+    await api.post(`${DOCUMENTS}/${encodeURIComponent(documentId)}/${action}`, {
+      reason: reason.trim(),
+    })
+  } catch (e) {
+    throw explain(e)
+  }
 }
 
 const explain = (e: unknown) =>
@@ -82,12 +101,28 @@ async function indexDocument(
   }
 }
 
-// shortcut: the first 100 pending versions (the API maximum); page through them when the queue grows
-async function pendingDocuments(signal?: AbortSignal) {
-  const res = await api.get<Envelope<Page<DocumentSummaryDto>>>(
-    `${DOCUMENTS}/pending`,
-    { params: { page: 1, pageSize: 100 }, signal }
-  )
+// Statuses each table filter reads; REJECTED versions never show in the queue
+const STATUSES: Record<QueueFilter, string[]> = {
+  collect: ['PENDING', 'APPROVED', 'INDEX_FAILED', 'INDEXED'],
+  parse: ['PENDING'],
+  review: ['PENDING'],
+  index: ['APPROVED', 'INDEX_FAILED'],
+  indexed: ['INDEXED'],
+  failed: ['PENDING', 'INDEX_FAILED'],
+}
+
+// shortcut: the newest 100 versions (the API maximum); page through them when the list grows
+async function listDocuments(statuses: string[], signal?: AbortSignal) {
+  // Repeated keys (status=A&status=B): axios would send status[]=A, which ASP.NET does not bind
+  const params = new URLSearchParams([
+    ...statuses.map((s) => ['status', s]),
+    ['page', '1'],
+    ['pageSize', '100'],
+  ])
+  const res = await api.get<Envelope<Page<DocumentSummaryDto>>>(DOCUMENTS, {
+    params,
+    signal,
+  })
   return res.data.items.map(toKnowledgeDocument)
 }
 
@@ -103,18 +138,27 @@ export async function getPipelineSummary(
   signal?: AbortSignal
 ): Promise<PipelineSummary> {
   if (isKnowledgeDemo) return structuredClone((await fixtures()).mockSummary)
-  return toPipelineSummary(await pendingDocuments(signal))
+  const res = await api.get<
+    Envelope<{
+      pipeline: KnowledgePipelineDto
+      months: { crawled: number; uploaded: number }[]
+    }>
+  >('/api/v1/knowledge/stats', { params: { months: 1 }, signal })
+  const month = res.data.months.at(-1)
+  return toPipelineSummary(
+    res.data.pipeline,
+    month ? month.crawled + month.uploaded : 0
+  )
 }
 
-/** stage = 'collect' → mọi văn bản thu thập trong tháng; 'failed' → văn bản đang lỗi.
- * The API only lists PENDING versions, so the index stages stay empty there. */
+/** stage = 'collect' → mọi văn bản đã thu thập; 'failed' → văn bản đang lỗi (bóc tách hoặc index) */
 export async function getDocuments(
   stage: QueueFilter,
   signal?: AbortSignal
 ): Promise<KnowledgeDocument[]> {
   const docs = isKnowledgeDemo
     ? structuredClone((await fixtures()).mockDocuments)
-    : await pendingDocuments(signal)
+    : await listDocuments(STATUSES[stage], signal)
   if (stage === 'collect') return docs
   if (stage === 'failed') return docs.filter((d) => d.failure)
   return docs.filter((d) => d.stage === stage)
@@ -274,7 +318,7 @@ export async function rejectDocument(documentId: string, reason: string) {
 export async function reprocessDocument(documentId: string, reason: string) {
   if (!reason.trim()) throw new Error('Vui lòng nhập lý do.')
   if (isKnowledgeDemo) return leaveReviewDemo(documentId, 'parse')
-  throw new Error('Chức năng bóc tách lại chưa được kết nối với máy chủ.')
+  await postWithReason(documentId, 'reprocess', reason)
 }
 
 // Demo only: documents retired in this browser session
@@ -287,7 +331,7 @@ export async function retireDocument(documentId: string, reason: string) {
     retiredDemo.set(documentId, { at: new Date().toISOString(), reason })
     return
   }
-  throw new Error('Chức năng ngừng sử dụng chưa được kết nối với máy chủ.')
+  await postWithReason(documentId, 'retire', reason)
 }
 
 /** Chấp nhận phiên bản mới, chuyển sang bước Bóc tách */

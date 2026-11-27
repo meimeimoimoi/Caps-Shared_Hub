@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { usePageTitle } from '@/hooks/usePageTitle'
 import { Link } from 'react-router-dom'
@@ -8,6 +9,7 @@ import { fundsOf, useCaseFormat } from '@/features/review-case/ui'
 import { useFormatters } from '@/hooks/useFormatters'
 import { isExpertDemo } from '@/lib/expert-data-source'
 import { useCreditOverview } from '@/features/credits/hooks/useCreditOverview'
+import { TopupDialog } from '@/features/credits/components/TopupDialog'
 import type { PaymentTransaction } from '@/features/credits/types'
 import { EmptyState } from '@/components/ui/feedback/empty-state'
 import { HelpTip } from '@/components/ui/feedback/help-tip'
@@ -41,6 +43,8 @@ export default function WalletPage() {
   const wallet = payments.data?.wallet
   const ledger = payments.data?.ledger ?? []
   const { creditPackages, creditRates } = mockPricing
+  // null = closed; 0 = opened without a package, the user types the amount
+  const [topupAmount, setTopupAmount] = useState<number | null>(null)
   const clientCases = useClientCases()
   const held = clientCases.cases.filter((c) =>
     ['held', 'locked'].includes(fundsOf(c))
@@ -84,6 +88,13 @@ export default function WalletPage() {
               {t('wallet.unit', { count: wallet.balance })}
             </p>
           )}
+          <button
+            type="button"
+            onClick={() => setTopupAmount(0)}
+            className="btn btn-press btn-primary mt-4"
+          >
+            {t('wallet.topup.open')}
+          </button>
         </div>
         <div className="sm:border-border sm:border-l sm:pl-6">
           <div className="flex items-center gap-1.5">
@@ -130,11 +141,13 @@ export default function WalletPage() {
                         ? t('wallet.priceTbd')
                         : f.money(p.price)}
                     </p>
-                    {/* Top-up checkout has no billing endpoint yet, so buying stays disabled */}
                     <button
                       type="button"
-                      disabled
-                      aria-describedby="w-buy-note"
+                      disabled={p.price == null}
+                      onClick={() => setTopupAmount(p.price ?? 0)}
+                      title={
+                        p.price == null ? t('wallet.buyUnavailable') : undefined
+                      }
                       className="btn btn-press btn-primary mt-5"
                     >
                       {t('wallet.buy')}
@@ -142,11 +155,6 @@ export default function WalletPage() {
                   </li>
                 ))}
             </ul>
-            <p id="w-buy-note" className="text-fg-muted mt-3 text-sm">
-              {creditPackages.every((p) => p.price == null)
-                ? t('wallet.buyUnavailable')
-                : t('wallet.buySoon')}
-            </p>
           </section>
 
           <section aria-labelledby="w-ledger">
@@ -196,7 +204,9 @@ export default function WalletPage() {
                           e.amount > 0 ? 'text-success' : 'text-fg-strong'
                         )}
                       >
-                        {e.amount > 0 ? `+${number(e.amount)}` : number(e.amount)}
+                        {e.amount > 0
+                          ? `+${number(e.amount)}`
+                          : number(e.amount)}
                       </td>
                       <td className="num text-fg-muted text-right">
                         {number(e.balanceAfter)}
@@ -446,6 +456,12 @@ export default function WalletPage() {
           </section>
         </aside>
       </div>
+      {topupAmount !== null && (
+        <TopupDialog
+          initialAmount={topupAmount || undefined}
+          onClose={() => setTopupAmount(null)}
+        />
+      )}
     </>
   )
 }

@@ -144,6 +144,11 @@
       "SUSPENDED": "Dịch vụ {{service}} đang tạm ngưng",
       "REINSTATED": "Dịch vụ {{service}} đã được mở lại"
     },
+    "priceOutOfRange": "Giá dịch vụ {{service}} nằm ngoài khoảng mới {{min}}–{{max}} đ nên đang bị ẩn khỏi sàn. Hãy chỉnh giá.",
+    "platformFee": {
+      "announced": "Phí nền tảng dịch vụ {{service}} đổi từ {{from}}% thành {{to}}% từ ngày {{date}}. Xem số tiền bạn nhận và điều chỉnh giá nếu cần.",
+      "cancelled": "Thay đổi phí nền tảng dịch vụ {{service}} đã được hủy; phí giữ nguyên {{from}}%."
+    },
     "violation": {
       "LATE": "Bạn bị cộng 1 điểm vi phạm vì giao trễ. Nếu do bất khả kháng, hãy xin miễn trong 2 ngày.",
       "WITHDREW": "Bạn bị cộng 2 điểm vi phạm vì rút khỏi hồ sơ đã nhận. Nếu do bất khả kháng, hãy xin miễn trong 2 ngày.",

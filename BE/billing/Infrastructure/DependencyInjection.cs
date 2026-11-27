@@ -30,14 +30,15 @@ public static class DependencyInjection
         services.AddScoped<ISettlementRepository, SettlementRepository>();
         services.AddScoped<IBillingStatsReader, BillingStatsReader>();
         services.AddSingleton<IAccountNumberProtector, AccountNumberProtector>();
-        services.AddHttpClient<IPaymentGateway, PayOsClient>(
-            (sp, http) =>
-            {
-                var options = sp.GetRequiredService<PayOsOptions>();
-                http.BaseAddress = new Uri(options.BaseUrl.TrimEnd('/') + "/");
-                http.Timeout = TimeSpan.FromSeconds(15);
-            }
-        );
+        services.AddHttpClient<IPaymentGateway, PayOsClient>(ConfigurePayOs);
+        services.AddHttpClient<IPayoutGateway, PayOsPayoutClient>(ConfigurePayOs);
         return services;
+    }
+
+    private static void ConfigurePayOs(IServiceProvider sp, HttpClient http)
+    {
+        var options = sp.GetRequiredService<PayOsOptions>();
+        http.BaseAddress = new Uri(options.BaseUrl.TrimEnd('/') + "/");
+        http.Timeout = TimeSpan.FromSeconds(15);
     }
 }

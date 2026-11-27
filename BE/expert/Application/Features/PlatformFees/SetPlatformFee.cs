@@ -37,7 +37,9 @@ public sealed class SetPlatformFeeHandler(
     IExpertPolicyProvider policies,
     IUnitOfWork unitOfWork,
     TimeProvider clock,
-    IRealtimeNotifier realtime
+    IRealtimeNotifier realtime,
+    IServiceOfferingRepository offerings,
+    IExpertNotificationOutbox outbox
 ) : ICommandHandler<SetPlatformFeeCommand, PlatformFeeResponse>
 {
     public async Task<PlatformFeeResponse> HandleAsync(
@@ -71,6 +73,21 @@ public sealed class SetPlatformFeeHandler(
         foreach (var pending in await fees.ListPendingAsync(code, now, ct))
             pending.Cancel(command.AdminId, now);
         fees.Add(fee);
+        // A change to a rate already in force is always announced ahead, so every expert pricing the service
+        // hears of it before it applies. The very first rate has nobody to warn
+        if (current != null)
+        {
+            await PlatformFeeNotices.EnqueueAsync(
+                offerings,
+                outbox,
+                service,
+                current,
+                fee,
+                false,
+                now,
+                ct
+            );
+        }
         await unitOfWork.SaveChangesAsync(ct);
         // Other admins on the platform fee page see the new rate at once
         await realtime.ChangedAsync(

@@ -861,5 +861,38 @@
       "noExcusesLeft": "Bạn đã dùng hết lượt miễn trong {{days}} ngày nên không gửi thêm yêu cầu miễn được."
     }
   },
-  "preparingEvidence": "Chuẩn bị minh chứng năng lực"
+  "preparingEvidence": "Chuẩn bị minh chứng năng lực",
+  "bankAccounts": {
+    "title": "Tài khoản nhận tiền",
+    "add": "Thêm tài khoản",
+    "addTitle": "Thêm tài khoản nhận tiền",
+    "bank": "Ngân hàng",
+    "pickBank": "Chọn ngân hàng",
+    "accountNumber": "Số tài khoản",
+    "holder": "Chủ tài khoản",
+    "actions": "Thao tác",
+    "default": "Mặc định",
+    "makeDefault": "Đặt làm tài khoản nhận tiền mặc định",
+    "loading": "Đang tải…",
+    "empty": "Chưa liên kết tài khoản nào. Tiền chi trả sẽ chuyển vào tài khoản mặc định.",
+    "save": "Lưu tài khoản",
+    "saving": "Đang lưu…",
+    "cancel": "Hủy",
+    "added": "Đã thêm tài khoản",
+    "removed": "Đã xóa tài khoản",
+    "removeLabel": "Xóa tài khoản {{account}}",
+    "removeTitle": "Xóa tài khoản {{account}}?",
+    "removeBody": "Các lệnh chi đã tạo vẫn giữ thông tin tài khoản này. Nếu đây là tài khoản mặc định, tài khoản mới nhất còn lại sẽ thành mặc định.",
+    "removeConfirm": "Xóa tài khoản",
+    "duplicate": "Tài khoản này đã được liên kết.",
+    "limit": "Chỉ liên kết được tối đa {{count}} tài khoản.",
+    "invalid": "Thông tin tài khoản chưa đúng. Kiểm tra số tài khoản (6–19 chữ số) và tên chủ tài khoản.",
+    "notFound": "Tài khoản này không còn tồn tại.",
+    "unavailable": "Chưa kiểm tra được phiên đăng nhập. Vui lòng thử lại.",
+    "status": {
+      "UNVERIFIED": "Chờ xác minh",
+      "VERIFIED": "Đã xác minh",
+      "REJECTED": "Bị từ chối"
+    }
+  }
 }

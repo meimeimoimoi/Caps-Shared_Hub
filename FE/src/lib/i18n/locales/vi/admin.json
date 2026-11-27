@@ -1396,7 +1396,7 @@
       "openFor": "Lịch sử phí của {{name}}",
       "title": "Lịch sử phí: {{name}}",
       "empty": "Chưa có lần đặt phí nào.",
-      "terms": "trễ ≤ {{lateHours}} giờ hoàn {{latePercent}}% · không phản hồi: khách {{refund}}%, chuyên gia {{expert}}%",
+      "terms": "trễ ≤ {{lateHours}} giờ hoàn {{latePercent}}% · không phản hồi: khách {{refund}}%, chuyên gia {{expert}}% · không giao: hoàn {{noDelivery}}%",
       "applied": "Áp dụng từ {{date}}",
       "pending": "Sẽ áp dụng từ {{date}}",
       "cancelled": "Đã rút (dự kiến {{date}})",
@@ -1697,5 +1697,79 @@
     "noResults": "Không có đơn khớp với từ khóa.",
     "limitReached": "Đã miễn 2/2 lần trong 90 ngày",
     "limitReachedHint": "Chuyên gia đã dùng hết 2 lượt miễn trong 90 ngày, chỉ có thể từ chối đơn này."
+  },
+  "payouts": {
+    "title": "Lệnh chi trả cho chuyên gia",
+    "filter": "Trạng thái",
+    "all": "Tất cả",
+    "empty": "Chưa có lệnh chi nào.",
+    "noAccount": "Chuyên gia chưa có tài khoản mặc định",
+    "col": {
+      "createdAt": "Tạo lúc",
+      "recipient": "Người nhận",
+      "account": "Tài khoản nhận",
+      "amount": "Số tiền",
+      "status": "Trạng thái",
+      "actions": "Thao tác"
+    },
+    "status": {
+      "PENDING": "Chờ chuyển khoản",
+      "PROCESSING": "Đang chuyển",
+      "SUCCEEDED": "Đã chuyển",
+      "FAILED": "Chuyển lỗi"
+    },
+    "transfer": "Chuyển khoản",
+    "retry": "Chuyển lại",
+    "refresh": "Kiểm tra kết quả",
+    "confirm": "Xác nhận chuyển {{amount}}",
+    "cancel": "Hủy",
+    "result": {
+      "PENDING": "Lệnh chi chưa được gửi.",
+      "PROCESSING": "Đã gửi lệnh chi qua PayOS, đang chờ ngân hàng xử lý.",
+      "SUCCEEDED": "Đã chuyển tiền cho chuyên gia.",
+      "FAILED": "Lệnh chi bị từ chối, xem lý do trong bảng."
+    },
+    "errors": {
+      "notTransferable": "Lệnh chi đang được chuyển hoặc đã chuyển xong.",
+      "noAccount": "Chuyên gia chưa có tài khoản ngân hàng để nhận tiền.",
+      "notFound": "Không tìm thấy lệnh chi.",
+      "unavailable": "Chưa biết kết quả từ PayOS (chưa cấu hình kênh chi hộ hoặc PayOS không phản hồi). Bấm Kiểm tra kết quả sau ít phút.",
+      "sessionCheck": "Không kiểm tra được phiên đăng nhập, thử lại sau.",
+      "notVerified": "Tài khoản nhận tiền của chuyên gia chưa được xác minh. Duyệt tài khoản ở mục Xác minh tài khoản nhận tiền trước."
+    }
+  },
+  "bankReview": {
+    "title": "Xác minh tài khoản nhận tiền",
+    "help": "Chỉ chuyển tiền vào tài khoản đã xác minh. Nhập ngân hàng và số tài khoản vào app ngân hàng để xem tên chủ tài khoản thật, rồi so với họ tên đăng ký của chuyên gia. Khớp thì duyệt, không khớp thì từ chối kèm lý do. Mỗi tài khoản chỉ duyệt một lần, và bạn không được duyệt tài khoản của chính mình.",
+    "filter": "Trạng thái",
+    "all": "Tất cả",
+    "empty": "Không có tài khoản nào.",
+    "col": {
+      "createdAt": "Thêm lúc",
+      "expert": "Chuyên gia",
+      "account": "Tài khoản",
+      "holder": "Chủ tài khoản (chuyên gia nhập)",
+      "status": "Trạng thái",
+      "actions": "Thao tác"
+    },
+    "status": {
+      "UNVERIFIED": "Chờ xác minh",
+      "VERIFIED": "Đã xác minh",
+      "REJECTED": "Bị từ chối"
+    },
+    "verify": "Xác minh",
+    "reject": "Từ chối",
+    "reason": "Lý do từ chối",
+    "confirmReject": "Xác nhận từ chối",
+    "cancel": "Hủy",
+    "verified": "Đã xác minh tài khoản.",
+    "rejected": "Đã từ chối tài khoản.",
+    "errors": {
+      "alreadyReviewed": "Tài khoản này đã được xác minh hoặc từ chối.",
+      "selfReview": "Bạn không thể tự duyệt tài khoản của mình.",
+      "notFound": "Không tìm thấy tài khoản, có thể chuyên gia đã xóa.",
+      "reason": "Cần nhập lý do từ chối (tối đa 500 ký tự).",
+      "sessionCheck": "Không kiểm tra được phiên đăng nhập, thử lại sau."
+    }
   }
 }
