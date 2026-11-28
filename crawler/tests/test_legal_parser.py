@@ -311,6 +311,29 @@ def test_each_point_is_a_chunk_with_clause_lead_in():
     assert "Khoản 2 — Điểm b\n" in chunks[2]["text"] and "hóa đơn" not in chunks[2]["text"]
 
 
+AMENDS_TARGETS = """Điều 1. Sửa đổi, bổ sung một số điều của Nghị định số 164/2003/NĐ-CP
+1. Bổ sung thêm điểm e vào khoản 1 Điều 35 như sau:
+“e) Thuế suất 20%.”
+2. Giữ nguyên các nội dung khác.
+Điều 2. Bổ sung khoản 15 Điều 4 Nghị định số 320/2025/NĐ-CP ngày 15 tháng 12 năm 2025 của Chính phủ
+“15. Thu nhập được miễn thuế.”
+Điều 3. Hiệu lực thi hành
+Nghị định này có hiệu lực từ ngày 01 tháng 01 năm 2026.
+"""
+
+
+def test_amending_chunks_name_the_amended_target():
+    rec = {"so_hieu": "141/2026/NĐ-CP", "loai_van_ban": "Nghị định", "doc_id": "amend",
+           "tieu_de": "Nghị định sửa đổi", "noi_dung_text": AMENDS_TARGETS}
+    amends = {c["path"]: c["amends"] for c in build_payload(rec)["chunks"]}
+    assert amends == {
+        "Điều 1 · Khoản 1": "Bổ sung thêm điểm e vào khoản 1 Điều 35 của Nghị định số 164/2003/NĐ-CP",
+        "Điều 1 · Khoản 2": "Sửa đổi, bổ sung một số điều của Nghị định số 164/2003/NĐ-CP",
+        "Điều 2": "Bổ sung khoản 15 Điều 4 Nghị định số 320/2025/NĐ-CP",
+        "Điều 3": None,
+    }
+
+
 def test_document_without_text_still_has_hash_and_is_pending():
     rec = {"so_hieu": "2/2025/TT-BTC", "loai_van_ban": "Thông tư", "doc_id": "empty",
            "source": "mof", "tieu_de": "Thông tư rỗng", "noi_dung_text": "", "ocr_required": True}

@@ -226,6 +226,36 @@ def _chunk_groups(article: Article) -> List[List[Unit]]:
     return out
 
 
+_AMEND_RE = re.compile(r"^(?:Sửa đổi|Bổ sung|Bãi bỏ|Thay thế)\b", re.IGNORECASE)
+# Drop "như sau:", the issue date and "(đã được sửa đổi ...)" after the target
+_AMEND_TAIL_RE = re.compile(r"\s*(?:\bnhư sau\b|\bngày \d|\(|:|;).*$", re.DOTALL)
+_DOC_NAME_RE = re.compile(r"\b(?:Bộ luật|Luật|Pháp lệnh|Nghị quyết|Nghị định|Quyết định|Thông tư)\b.*")
+
+
+def _amend_phrase(text: str) -> Optional[str]:
+    first_line = (text or "").split("\n", 1)[0].strip()
+    if not _AMEND_RE.match(first_line):
+        return None
+    return _AMEND_TAIL_RE.sub("", first_line).rstrip(" .,") or None
+
+
+def _amends(article: Article, group: List[Unit]) -> Optional[str]:
+    """
+    Target an amending Điều/Khoản changes, e.g. "Bổ sung khoản 15 Điều 4 Nghị định số 320/2025/NĐ-CP".
+    The Khoản lead-in (or Điều intro) wins over the Điều title; one naming no document borrows it
+    from the title.
+    """
+    title_phrase = _amend_phrase(article.title)
+    lead = next((u for u in group if not u.point), None)
+    clause_phrase = _amend_phrase(lead.text) if lead else None
+    if not clause_phrase:
+        return title_phrase
+    doc = _DOC_NAME_RE.search(title_phrase or "")
+    if doc and not _DOC_NAME_RE.search(clause_phrase):
+        return f"{clause_phrase} của {doc.group()}"
+    return clause_phrase
+
+
 def _numbered(unit: Unit) -> str:
     """Giữ lại ký hiệu "1." / "a)" mà parser đã tách khỏi nội dung, để chunk đọc như bản gốc."""
     if unit.point:
@@ -274,6 +304,7 @@ def build_chunks(rec: dict, parsed: ParsedDocument) -> List[dict]:
                         "article": article.number,
                         "clause": clause,
                         "point": point,
+                        "amends": _amends(article, group),
                         "path": path,
                         "part": part_no,
                         "total_parts": len(parts),
