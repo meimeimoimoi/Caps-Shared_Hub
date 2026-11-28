@@ -107,5 +107,8 @@ def normalize_attachments(attachments: list) -> list:
 def normalize_record(rec: dict) -> dict:
     """Áp toàn bộ bước chuẩn hoá cho 1 bản ghi metadata (trả về chính dict đó)."""
     rec["so_hieu"] = resolve_so_hieu(rec.get("so_hieu"), rec.get("tieu_de"))
+    # vbpl titles of unnumbered documents end in "số Không số"
+    if rec.get("tieu_de"):
+        rec["tieu_de"] = re.sub(r"\s+số\s+không\s+số\s*$", "", rec["tieu_de"], flags=re.IGNORECASE)
     rec["attachments"] = normalize_attachments(rec.get("attachments") or [])
     return rec

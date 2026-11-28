@@ -13,6 +13,7 @@ File TOML:
     [core]
     terms   = ["thuế thu nhập doanh nghiệp", ...]
     aliases = ["thuế TNDN"]                     # tên chứa alias cũng được giữ
+    require_any = ["thu nhập doanh nghiệp"]     # (tuỳ chọn) tiêu đề/toàn văn phải nhắc 1 cụm
     doc_types = [...]                           # (tuỳ chọn) ghi đè theo nhóm
     enabled = true                              # (tuỳ chọn) false = bỏ cả nhóm
 
@@ -46,21 +47,41 @@ def _norm(text: Optional[str]) -> str:
     return re.sub(r"\s+", " ", text or "").strip().casefold()
 
 
+# One character the repair could not recover: its lead byte became U+FFFD and a trailing
+# byte undefined in cp1252 (e.g. 0x90 of "Đ") stays as a C1 control character
+_BROKEN_CHAR = re.compile("�[\x80-\x9f]?")
+_WILDCARD = "\0"
+
+
+def _contains(name: str, term: str) -> bool:
+    """`term` as whole words in name ("chuyển giá" must not match "chuyển giáo");
+    each _WILDCARD in name stands for exactly one unknown character."""
+    n = len(term)
+    for i in range(len(name) - n + 1):
+        if not all(a == b or a == _WILDCARD for a, b in zip(name[i:i + n], term)):
+            continue
+        before = name[i - 1] if i else " "
+        after = name[i + n] if i + n < len(name) else " "
+        if not (before.isalnum() and term[0].isalnum()) and not (after.isalnum() and term[-1].isalnum()):
+            return True
+    return False
+
+
 def title_matches(title: Optional[str], accept_terms: Sequence[str]) -> Optional[bool]:
     """
     Tên văn bản có chứa một trong các cụm `accept_terms` không.
 
-    None = không đọc được tên (rỗng hoặc hỏng encoding sau khi đã sửa) -> người
-    gọi giữ lại và kiểm tra lại bằng tiêu đề trên trang chi tiết.
+    Ký tự không sửa được (thường là chữ "Đ") được coi là một ký tự bất kỳ, nên tên
+    hỏng vài chữ vẫn lọc được. None = không đọc được tên (rỗng hoặc vẫn còn dấu hiệu
+    hỏng encoding) -> người gọi giữ lại và kiểm tra lại bằng tiêu đề trang chi tiết.
     """
     terms = [t for t in (_norm(x) for x in accept_terms) if t]
     if not terms:
         return True
-    fixed = fix_mojibake(title or "")
-    if not fixed.strip() or is_mojibake(fixed):
+    name = _norm(_BROKEN_CHAR.sub(_WILDCARD, fix_mojibake(title or "")))
+    if not name.strip(_WILDCARD + " ") or is_mojibake(name):
         return None
-    name = _norm(fixed)
-    return any(t in name for t in terms)
+    return any(_contains(name, t) for t in terms)
 
 
 def infer_doc_type(so_hieu: str) -> Optional[str]:
@@ -83,6 +104,14 @@ class KeywordSearch:
     doc_types: Tuple[str, ...]
     accept_terms: Tuple[str, ...] = ()
     so_hieu: Optional[str] = None  # chỉ với nhóm seeds
+    require_any: Tuple[str, ...] = ()  # title or full text must mention one of these
+
+    def on_topic(self, title: Optional[str], text: Optional[str]) -> bool:
+        """False when the document never mentions any `require_any` term (no text yet = keep)."""
+        if not self.require_any or not (text or "").strip():
+            return True
+        haystack = _norm(f"{title or ''} {text}")
+        return any(_contains(haystack, _norm(t)) for t in self.require_any)
 
     @property
     def label(self) -> str:
@@ -138,6 +167,7 @@ def load_keyword_plan(path, doc_types_override: Optional[Sequence[str]] = None) 
             continue
 
         aliases = [a for a in section.get("aliases") or [] if a.strip()]
+        require_any = tuple(r.strip() for r in section.get("require_any") or [] if r.strip())
         for term in section.get("terms") or []:
             if not term.strip() or _norm(term) in seen_terms:
                 continue
@@ -145,6 +175,7 @@ def load_keyword_plan(path, doc_types_override: Optional[Sequence[str]] = None) 
             searches.append(KeywordSearch(
                 term=term.strip(), group=group, doc_types=types,
                 accept_terms=tuple(dict.fromkeys([term.strip(), *aliases])),
+                require_any=require_any,
             ))
 
     return KeywordPlan(path=path, searches=searches)
