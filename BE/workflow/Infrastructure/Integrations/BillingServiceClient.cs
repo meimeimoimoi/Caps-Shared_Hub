@@ -29,6 +29,7 @@ public sealed class BillingServiceClient(HttpClient http, ILogger<BillingService
     public Task ReleaseAsync(
         Guid reviewCaseId,
         Guid expertUserId,
+        string? expertEmail,
         ReviewSettlement settlement,
         CancellationToken ct
     ) =>
@@ -39,6 +40,7 @@ public sealed class BillingServiceClient(HttpClient http, ILogger<BillingService
                 new
                 {
                     expertUserId,
+                    expertEmail,
                     userRefund = settlement.ClientRefund,
                     platformFee = settlement.PlatformFee,
                     expertPayout = settlement.ExpertAmount,

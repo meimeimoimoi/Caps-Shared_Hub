@@ -36,7 +36,13 @@ public sealed class WithdrawDisputeHandler(
         var completed = reviewCase.WithdrawDispute(dispute, command.UserId, clock.GetUtcNow());
 
         // Release before saving: if billing fails the dispute stays open and the client can retry
-        await escrows.ReleaseAsync(reviewCase.Id, reviewCase.ExpertUserId, reviewCase.Settle(), ct);
+        await escrows.ReleaseAsync(
+            reviewCase.Id,
+            reviewCase.ExpertUserId,
+            reviewCase.ExpertEmail,
+            reviewCase.Settle(),
+            ct
+        );
         await slots.ReleaseAsync(reviewCase.ExpertProfileId, reviewCase.Id, ct);
 
         cases.AddHistory(completed);

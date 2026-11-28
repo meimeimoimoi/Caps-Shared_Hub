@@ -67,6 +67,7 @@ public sealed class ExpireReviewCaseHandler(
                 await escrows.ReleaseAsync(
                     reviewCase.Id,
                     reviewCase.ExpertUserId,
+                    reviewCase.ExpertEmail,
                     reviewCase.Settle(),
                     ct
                 );

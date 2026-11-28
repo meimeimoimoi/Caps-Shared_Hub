@@ -49,7 +49,13 @@ public sealed class ResolveDisputeHandler(
         );
 
         //Settle before saving: if billing fails the dispute stays open and the admin can retry
-        await escrows.ReleaseAsync(reviewcase.Id, reviewcase.ExpertUserId, reviewcase.Settle(), ct);
+        await escrows.ReleaseAsync(
+            reviewcase.Id,
+            reviewcase.ExpertUserId,
+            reviewcase.ExpertEmail,
+            reviewcase.Settle(),
+            ct
+        );
         await slots.ReleaseAsync(reviewcase.ExpertProfileId, reviewcase.Id, ct);
 
         cases.AddHistory(resolved);
