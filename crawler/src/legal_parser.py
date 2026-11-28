@@ -29,9 +29,8 @@ _SECTION_RE = re.compile(r"^(?:MỤC|Mục)\s+([IVXLC]+|\d+)\b\.?\s*(.*)$")
 _ARTICLE_RE = re.compile(r"^Điều\s+(\d+[a-zđ]?)\s*[.:]?\s*(.*)$")
 # "1. ..." nhưng không phải "1.1. ..." (mục con, coi như nội dung);
 # văn bản cũ (trước ~2000) ghi Khoản dạng "1- ..." hoặc "2 - ..."
-# Amendments insert clauses "14a." and sub-points "đ1)", "g2)" between existing ones
-_CLAUSE_RE = re.compile(r"^(\d+[a-zđ]?)(?:\.(?!\d)|\s*-\s)\s*(.*)$")
-_POINT_RE = re.compile(r"^([a-zđ]\d*)\)\s*(.*)$")
+_CLAUSE_RE = re.compile(r"^(\d+)(?:\.(?!\d)|\s*-\s)\s*(.*)$")
+_POINT_RE = re.compile(r"^([a-zđ])\)\s*(.*)$")
 # Pre-2008 documents without "Điều": "I - ĐỐI TƯỢNG ÁP DỤNG", "III. TỔ CHỨC THỰC HIỆN", points "a- ..."
 _OLD_SECTION_RE = re.compile(r"^([IVXLC]+)(?:\s*[-.–:]\s*|\s+)(.+)$")
 # Parts above the roman sections: "A- LỆ PHÍ ...", "C- TỔ CHỨC THỰC HIỆN" (A-H; I is a roman section)
@@ -263,11 +262,8 @@ class _Parser:
         assert self.article is not None
         unit = Unit(clause=number, lines=[text] if text else [])
         clauses = [u.clause for u in self.article.units if u.clause and not u.point]
-        prev = int(re.match(r"\d+", clauses[-1]).group()) if clauses else 0
-        expected = str(prev + 1)
-        base = int(re.match(r"\d+", number).group())
-        # An inserted clause ("14a", "14b") keeps the number of the clause it follows
-        if not (base == prev + 1 or (number[-1].isalpha() and base == prev)):
+        expected = str(int(clauses[-1]) + 1) if clauses else "1"
+        if number != expected:
             unit.warning = f"Khoản {number} đứng sau {'Khoản ' + clauses[-1] if clauses else 'đầu Điều'} (dự kiến Khoản {expected})"
         self.article.units.append(unit)
         self.unit = unit
@@ -277,10 +273,8 @@ class _Parser:
         clause = self.unit.clause if self.unit is not None else None
         unit = Unit(clause=clause, point=letter, lines=[text] if text else [])
         siblings = [u.point for u in self.article.units if u.point and u.clause == clause]
-        if siblings and siblings[-1][0] in _POINT_ORDER and letter[0] in _POINT_ORDER:
-            prev, cur = _POINT_ORDER.index(siblings[-1][0]), _POINT_ORDER.index(letter[0])
-            # A sub-point ("đ1", "đ2") keeps the letter of the point it follows
-            if cur != prev + 1 and not (letter[1:] and cur == prev):
+        if siblings and siblings[-1] in _POINT_ORDER and letter in _POINT_ORDER:
+            if _POINT_ORDER.index(letter) != _POINT_ORDER.index(siblings[-1]) + 1:
                 unit.warning = f"Điểm {letter}) đứng sau điểm {siblings[-1]})"
         elif not siblings and letter != "a":
             unit.warning = f"Điểm đầu tiên là {letter}) thay vì a)"

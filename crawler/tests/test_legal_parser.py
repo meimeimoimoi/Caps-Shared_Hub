@@ -129,29 +129,6 @@ def test_sections_and_numbering_warnings():
     assert content["chapters"][0]["articles"][0]["units"][1]["status"] == "WARNING"
 
 
-INSERTED = """Điều 4. Thu nhập được miễn thuế
-14. Khoản mười bốn.
-14a. Khoản chèn.
-a) Điểm a.
-đ) Điểm đ.
-đ1) Điểm con một.
-đ2) Điểm con hai.
-e) Điểm e.
-15. Khoản mười lăm.
-"""
-
-
-def test_inserted_clauses_and_sub_points_are_split_without_warnings():
-    units = parse_legal_text(INSERTED).articles[0].units
-    assert [(u.clause, u.point) for u in units] == [
-        ("14", None), ("14a", None), ("14a", "a"), ("14a", "đ"),
-        ("14a", "đ1"), ("14a", "đ2"), ("14a", "e"), ("15", None),
-    ]
-    assert units[4].text == "Điểm con một."
-    # Article opening at 14 and "a) -> đ)" are real gaps; sub-points and inserted clauses are not
-    assert [(u.clause, u.point) for u in units if u.warning] == [("14", None), ("14a", "đ")]
-
-
 def test_no_articles_is_parse_failed():
     doc = parse_legal_text("Công văn trả lời doanh nghiệp.\nKhông có Điều nào.")
     assert doc.parse_status == "PARSE_FAILED"
