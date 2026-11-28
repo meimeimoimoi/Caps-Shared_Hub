@@ -436,7 +436,7 @@ public sealed class GenerateDraftTests
     {
         var billing = settings ?? FreeBillingSettings;
         var clock = new FixedClock();
-        var chargeService = new AiCreditChargeService(store, store, store, billing, clock);
+        var chargeService = new AiCreditChargeService(store, store, store, store, billing, clock);
         return new(store, store, store, store, store, chargeService, billing, store, clock);
     }
 
@@ -453,6 +453,7 @@ public sealed class GenerateDraftTests
             IAiQuotaRepository,
             IAiUsageRepository,
             IAiCredits,
+            IAiBillingSwitchRepository,
             IAiDraftingClient,
             IUnitOfWork,
             ITransaction
@@ -462,6 +463,13 @@ public sealed class GenerateDraftTests
         public List<DocumentVersion> Versions { get; } = [];
         public Dictionary<Guid, AiQuota> Quotas { get; } = [];
         public List<AiUsage> Usages { get; } = [];
+        public AiBillingSwitch? BillingSwitch { get; set; }
+
+        public Task<AiBillingSwitch?> FindAsync(CancellationToken ct) =>
+            Task.FromResult(BillingSwitch);
+
+        public void Add(AiBillingSwitch aiBillingSwitch) => BillingSwitch = aiBillingSwitch;
+
         public List<Guid> HoldCalls { get; } = [];
         public List<(Guid UsageId, Guid? DocumentVersionId)> CaptureCalls { get; } = [];
         public List<Guid> ReleaseCalls { get; } = [];

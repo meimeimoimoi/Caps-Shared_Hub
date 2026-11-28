@@ -1,9 +1,11 @@
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   createTier,
+  getAiBilling,
   getPricing,
   savePackage,
   scheduleTierChange,
+  setAiBilling,
 } from '../api/pricingApi'
 import type { NewTierInput, PackageInput, TierChangeInput } from '../types'
 
@@ -24,4 +26,21 @@ export function usePricing(enabled = true) {
     createTier: (input: NewTierInput) => createTier(input).then(refresh),
     savePackage: (input: PackageInput) => savePackage(input).then(refresh),
   }
+}
+
+const AI_BILLING_KEY = [...KEY, 'ai-billing'] as const
+
+/** The paid-AI switch; saving puts the server's answer straight into the cache */
+export function useAiBilling(enabled = true) {
+  const qc = useQueryClient()
+  const query = useQuery({
+    queryKey: AI_BILLING_KEY,
+    queryFn: ({ signal }) => getAiBilling(signal),
+    enabled,
+  })
+  const mutation = useMutation({
+    mutationFn: setAiBilling,
+    onSuccess: (saved) => qc.setQueryData(AI_BILLING_KEY, saved),
+  })
+  return { ...query, set: mutation.mutateAsync, saving: mutation.isPending }
 }

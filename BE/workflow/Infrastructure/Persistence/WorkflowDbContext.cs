@@ -16,6 +16,7 @@ public sealed class WorkflowDbContext(DbContextOptions<WorkflowDbContext> option
     public DbSet<ChatMessage> ChatMessages => Set<ChatMessage>();
     public DbSet<AiQuota> AiQuotas => Set<AiQuota>();
     public DbSet<AiUsage> AiUsages => Set<AiUsage>();
+    public DbSet<AiBillingSwitch> AiBillingSwitches => Set<AiBillingSwitch>();
     public DbSet<Document> Documents => Set<Document>();
     public DbSet<InputSnapshot> InputSnapshots => Set<InputSnapshot>();
     public DbSet<DocumentVersion> DocumentVersions => Set<DocumentVersion>();
@@ -161,6 +162,17 @@ public sealed class WorkflowDbContext(DbContextOptions<WorkflowDbContext> option
                 .HasColumnName("updated_at")
                 .HasDefaultValueSql("now()")
                 .IsRequired();
+        });
+
+        // AiBillingSwitch: one row, written by admins
+        modelBuilder.Entity<AiBillingSwitch>(e =>
+        {
+            e.ToTable("ai_billing_switch", "workspace");
+            e.HasKey(x => x.Id);
+            e.Property(x => x.Id).HasColumnName("id").ValueGeneratedNever();
+            e.Property(x => x.Enabled).HasColumnName("enabled").IsRequired();
+            e.Property(x => x.UpdatedBy).HasColumnName("updated_by").IsRequired();
+            e.Property(x => x.UpdatedAt).HasColumnName("updated_at").IsRequired();
         });
 
         // AiUsage
