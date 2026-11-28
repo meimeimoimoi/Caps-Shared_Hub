@@ -86,6 +86,49 @@ export function PayoutsTable() {
     )
   }
 
+  // What needs attention today, the same counts as the daily email (advisor 2026-11-28)
+  const banner = () => {
+    const s = payouts.summary
+    if (!s) return null
+    const short = s.balance != null && s.balance < s.summary.amountToSend
+    const parts = [
+      s.summary.overdue > 0 &&
+        t('payouts.banner.overdue', {
+          count: s.summary.overdue,
+          amount: formatVnd(s.summary.overdueAmount),
+        }),
+      s.summary.dueSoon > 0 &&
+        t('payouts.banner.dueSoon', { count: s.summary.dueSoon }),
+      s.summary.ready > 0 &&
+        t('payouts.banner.ready', { count: s.summary.ready }),
+      s.summary.waitingForAccount > 0 &&
+        t('payouts.banner.waiting', { count: s.summary.waitingForAccount }),
+    ].filter(Boolean)
+    return (
+      <div
+        role="status"
+        className={`paper mt-3 px-4 py-3 text-sm ${parts.length > 0 || short ? 'border-warning' : ''}`}
+      >
+        <p className="text-fg-strong font-semibold">
+          {parts.length > 0 ? parts.join(' · ') : t('payouts.banner.clear')}
+        </p>
+        <p className={short ? 'text-danger mt-1' : 'text-fg-muted mt-1'}>
+          {s.balance == null
+            ? t('payouts.banner.balanceUnknown')
+            : t(
+                short
+                  ? 'payouts.banner.balanceShort'
+                  : 'payouts.banner.balance',
+                {
+                  balance: formatVnd(s.balance),
+                  needed: formatVnd(s.summary.amountToSend),
+                }
+              )}
+        </p>
+      </div>
+    )
+  }
+
   const run = (p: Payout, call: (id: string) => Promise<Payout>) => {
     setConfirmId(null)
     setBusyId(p.id)
@@ -148,11 +191,16 @@ export function PayoutsTable() {
         <h2 id="payouts-title" className="text-h2">
           {t('payouts.title')}
         </h2>
+      </div>
+      {banner()}
+      <div className="mt-3 flex flex-wrap items-end gap-3">
         <label className="flex flex-col gap-1.5 text-sm font-semibold">
           {t('payouts.filter')}
           <select
-            value={payouts.status ?? ''}
-            onChange={(e) => payouts.setStatus(e.target.value || null)}
+            value={payouts.filters.status ?? ''}
+            onChange={(e) =>
+              payouts.setFilters({ status: e.target.value || null })
+            }
             className={inputCls}
           >
             <option value="">{t('payouts.all')}</option>
@@ -162,6 +210,77 @@ export function PayoutsTable() {
               </option>
             ))}
           </select>
+        </label>
+        <label className="flex flex-col gap-1.5 text-sm font-semibold">
+          {t('payouts.filters.expert')}
+          <select
+            value={payouts.filters.recipientUserId ?? ''}
+            onChange={(e) =>
+              payouts.setFilters({
+                recipientUserId: e.target.value || undefined,
+              })
+            }
+            className={inputCls}
+          >
+            <option value="">{t('payouts.all')}</option>
+            {[...(payouts.names ?? new Map()).entries()].map(([id, e]) => (
+              <option key={id} value={id}>
+                {e.name ?? e.email ?? id}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="flex flex-col gap-1.5 text-sm font-semibold">
+          {t('payouts.filters.from')}
+          <input
+            type="date"
+            value={payouts.filters.fromDay ?? ''}
+            onChange={(e) =>
+              payouts.setFilters({ fromDay: e.target.value || undefined })
+            }
+            className={inputCls}
+          />
+        </label>
+        <label className="flex flex-col gap-1.5 text-sm font-semibold">
+          {t('payouts.filters.to')}
+          <input
+            type="date"
+            value={payouts.filters.toDay ?? ''}
+            onChange={(e) =>
+              payouts.setFilters({ toDay: e.target.value || undefined })
+            }
+            className={inputCls}
+          />
+        </label>
+        <label className="flex flex-col gap-1.5 text-sm font-semibold">
+          {t('payouts.filters.minAmount')}
+          <input
+            type="number"
+            min={0}
+            step={10000}
+            value={payouts.filters.minAmount ?? ''}
+            onChange={(e) =>
+              payouts.setFilters({
+                minAmount: e.target.value ? Number(e.target.value) : undefined,
+              })
+            }
+            className={`${inputCls} w-36`}
+          />
+        </label>
+        <label className="flex flex-col gap-1.5 text-sm font-semibold">
+          {t('payouts.filters.maxAmount')}
+          <input
+            type="number"
+            min={0}
+            step={10000}
+            value={payouts.filters.maxAmount ?? ''}
+            onChange={(e) =>
+              payouts.setFilters({
+                maxAmount: e.target.value ? Number(e.target.value) : undefined,
+              })
+            }
+            className={`${inputCls} w-36`}
+          />
         </label>
       </div>
       <div className="paper mt-3 overflow-x-auto">
@@ -185,8 +304,12 @@ export function PayoutsTable() {
                 <td className="num whitespace-nowrap">
                   {formatDateTime(p.createdAt)}
                 </td>
-                <td className="num text-fg-muted break-all">
-                  {p.recipientUserId}
+                <td className="break-all">
+                  {payouts.names?.get(p.recipientUserId)?.name ?? (
+                    <span className="num text-fg-muted">
+                      {p.recipientUserId}
+                    </span>
+                  )}
                 </td>
                 <td>
                   {p.bankName ? (
@@ -223,7 +346,9 @@ export function PayoutsTable() {
                   {p.history.length > 0 && (
                     <details className="mt-2">
                       <summary className="text-fg-muted cursor-pointer">
-                        {t('payouts.history.title', { count: p.history.length })}
+                        {t('payouts.history.title', {
+                          count: p.history.length,
+                        })}
                       </summary>
                       <ol className="text-fg-muted mt-1 space-y-1">
                         {p.history.map((h, i) => (
@@ -234,13 +359,18 @@ export function PayoutsTable() {
                             {h.attemptNo > 0 &&
                               ` · ${t('payouts.history.attempt', { n: h.attemptNo })}`}
                             {h.accountLast4 && (
-                              <span className="num"> · •••• {h.accountLast4}</span>
+                              <span className="num">
+                                {' '}
+                                · •••• {h.accountLast4}
+                              </span>
                             )}
                             {' · '}
                             {h.actorUserId
                               ? t('payouts.history.by', { id: h.actorUserId })
                               : t('payouts.history.system')}
-                            {h.note && <span className="break-all"> · {h.note}</span>}
+                            {h.note && (
+                              <span className="break-all"> · {h.note}</span>
+                            )}
                           </li>
                         ))}
                       </ol>
@@ -248,7 +378,9 @@ export function PayoutsTable() {
                   )}
                   {p.attemptsExhausted && (
                     <p className="text-danger mt-1 font-semibold">
-                      {t('payouts.attemptsExhausted', { count: p.attemptCount })}
+                      {t('payouts.attemptsExhausted', {
+                        count: p.attemptCount,
+                      })}
                     </p>
                   )}
                 </td>

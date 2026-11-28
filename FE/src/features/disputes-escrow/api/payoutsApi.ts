@@ -61,9 +61,29 @@ export interface PayoutPage {
   total: number
 }
 
-/** Newest first; payouts still to send come oldest first, so the most overdue lead */
+/** Staff filters on the payout table; empty fields do not filter */
+export interface PayoutFilters {
+  status: string | null
+  recipientUserId?: string
+  /** Created on or after this day (YYYY-MM-DD, Vietnam time) */
+  fromDay?: string
+  /** Created on or before this day (YYYY-MM-DD, Vietnam time) */
+  toDay?: string
+  minAmount?: number
+  maxAmount?: number
+}
+
+// A Vietnam calendar day as the instant it starts
+const dayStart = (day: string) => `${day}T00:00:00+07:00`
+const nextDay = (day: string) => {
+  const d = new Date(`${day}T00:00:00Z`)
+  d.setUTCDate(d.getUTCDate() + 1)
+  return d.toISOString().slice(0, 10)
+}
+
+/** Unsent payouts first, the most urgent on top (the server sorts by deadline) */
 export async function getPayouts(
-  status: string | null,
+  filters: PayoutFilters,
   page: number,
   signal?: AbortSignal
 ): Promise<PayoutPage> {
@@ -72,11 +92,39 @@ export async function getPayouts(
     return { items: [], page, pageSize: PAYOUT_PAGE_SIZE, total: 0 }
   const res = await api.get<Envelope<PayoutPage>>(BASE, {
     params: {
-      status: status ?? undefined,
+      status: filters.status ?? undefined,
       page,
       pageSize: PAYOUT_PAGE_SIZE,
-      sortDescending: status !== 'PENDING' && status !== 'FAILED',
+      recipientUserId: filters.recipientUserId || undefined,
+      from: filters.fromDay ? dayStart(filters.fromDay) : undefined,
+      to: filters.toDay ? dayStart(nextDay(filters.toDay)) : undefined,
+      minAmount: filters.minAmount ?? undefined,
+      maxAmount: filters.maxAmount ?? undefined,
     },
+    signal,
+  })
+  return res.data
+}
+
+/** Unsent payouts by deadline stage and the PayOS payout balance (billing PayoutSummaryResponse) */
+export interface PayoutSummary {
+  summary: {
+    overdue: number
+    overdueAmount: number
+    dueSoon: number
+    ready: number
+    waitingForAccount: number
+    amountToSend: number
+  }
+  /** Null when PayOS cannot be read */
+  balance: number | null
+}
+
+export async function getPayoutSummary(
+  signal?: AbortSignal
+): Promise<PayoutSummary | null> {
+  if (isExpertDemo) return null
+  const res = await api.get<Envelope<PayoutSummary>>(`${BASE}/summary`, {
     signal,
   })
   return res.data
@@ -89,6 +137,7 @@ type PayoutErrorKey =
   | 'payouts.errors.notFound'
   | 'payouts.errors.onHold'
   | 'payouts.errors.attemptsExhausted'
+  | 'payouts.errors.insufficientBalance'
   | 'payouts.errors.unavailable'
   | 'payouts.errors.sessionCheck'
 
@@ -100,6 +149,7 @@ const ERRORS: Record<string, PayoutErrorKey> = {
   PAYOUT_NOT_FOUND: 'payouts.errors.notFound',
   PAYOUT_ON_HOLD: 'payouts.errors.onHold',
   PAYOUT_ATTEMPTS_EXHAUSTED: 'payouts.errors.attemptsExhausted',
+  PAYOUT_INSUFFICIENT_BALANCE: 'payouts.errors.insufficientBalance',
   PAYMENT_UNAVAILABLE: 'payouts.errors.unavailable',
   SESSION_CHECK_UNAVAILABLE: 'payouts.errors.sessionCheck',
 }

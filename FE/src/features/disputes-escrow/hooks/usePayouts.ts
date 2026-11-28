@@ -4,33 +4,49 @@ import {
   useQuery,
   useQueryClient,
 } from '@tanstack/react-query'
-import { getPayouts, refreshPayout, transferPayout } from '../api/payoutsApi'
+import { getExpertNames } from '../api/bankReviewApi'
+import {
+  getPayouts,
+  getPayoutSummary,
+  refreshPayout,
+  transferPayout,
+  type PayoutFilters,
+} from '../api/payoutsApi'
 
 const all = ['private', 'admin', 'disputes-escrow', 'payouts'] as const
-const key = (status: string | null, page: number) =>
-  [...all, status, page] as const
 
-/** Payout list filtered by status on the server, one page at a time */
+/** Payout list filtered on the server, one page at a time, with the deadline banner */
 export function usePayouts() {
   const qc = useQueryClient()
-  const [status, setStatusState] = useState<string | null>(null)
+  const [filters, setFiltersState] = useState<PayoutFilters>({ status: null })
   const [page, setPage] = useState(1)
   const query = useQuery({
-    queryKey: key(status, page),
-    queryFn: ({ signal }) => getPayouts(status, page, signal),
+    queryKey: [...all, filters, page],
+    queryFn: ({ signal }) => getPayouts(filters, page, signal),
     // Keep the current page on screen while the next one loads
     placeholderData: keepPreviousData,
+  })
+  const summary = useQuery({
+    queryKey: [...all, 'summary'],
+    queryFn: ({ signal }) => getPayoutSummary(signal),
+  })
+  const names = useQuery({
+    // Shared with the bank account review, outside the payout key
+    queryKey: ['private', 'admin', 'disputes-escrow', 'expert-names'],
+    queryFn: ({ signal }) => getExpertNames(signal),
   })
   // A failed call may still have moved the payout (e.g. to PROCESSING), so reload either way
   const reload = <T>(call: Promise<T>) =>
     call.finally(() => qc.invalidateQueries({ queryKey: all }))
   return {
     ...query,
-    status,
-    setStatus: (s: string | null) => {
-      setStatusState(s)
+    filters,
+    setFilters: (next: Partial<PayoutFilters>) => {
+      setFiltersState((f) => ({ ...f, ...next }))
       setPage(1)
     },
+    summary: summary.data,
+    names: names.data,
     page,
     setPage,
     transfer: (id: string) => reload(transferPayout(id)),
