@@ -61,6 +61,11 @@ public sealed class ListPayoutsTests
         public Task<IReadOnlyList<PayoutTransaction>> ListUnsentAsync(CancellationToken ct) =>
             throw new NotSupportedException();
 
+        public Task<IReadOnlyList<PayoutTransaction>> ListUnsentForAsync(
+            Guid recipientUserId,
+            CancellationToken ct
+        ) => throw new NotSupportedException();
+
         public Task<int> CountAsync(string? status, CancellationToken ct) => Task.FromResult(25);
 
         public Task<PayoutTransaction?> LockAsync(Guid id, CancellationToken ct) =>

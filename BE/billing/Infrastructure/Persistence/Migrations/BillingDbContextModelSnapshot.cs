@@ -76,6 +76,10 @@ namespace Caps.Billing.Infrastructure.Persistence.Migrations
                         .HasDefaultValue(false)
                         .HasColumnName("is_default");
 
+                    b.Property<string>("OwnerEmail")
+                        .HasColumnType("text")
+                        .HasColumnName("owner_email");
+
                     b.Property<string>("RejectionReason")
                         .HasColumnType("text")
                         .HasColumnName("rejection_reason");

@@ -2,6 +2,7 @@ using Caps.Billing.Application.Abstractions;
 using Caps.Billing.Application.DTOs.Responses;
 using Caps.Billing.Domain;
 using Caps.Common.Application;
+using Caps.Contracts;
 
 namespace Caps.Billing.Application.Features.BankAccounts;
 
@@ -22,7 +23,9 @@ public sealed class ReviewBankAccountHandler(
     IAccountNumberProtector protector,
     IBillingUserLock userLock,
     IUnitOfWork unitOfWork,
-    TimeProvider clock
+    TimeProvider clock,
+    IPayoutRepository payouts,
+    IBillingNotificationOutbox outbox
 ) : ICommandHandler<ReviewBankAccountCommand, ReviewBankAccountResponse>
 {
     public async Task<ReviewBankAccountResponse> HandleAsync(
@@ -43,9 +46,36 @@ public sealed class ReviewBankAccountHandler(
             ) ?? throw BillingErrors.BankAccountNotFound();
         var now = clock.GetUtcNow();
         if (command.Verified)
+        {
             account.Verify(command.StaffId, now);
+            // Payouts still waiting for a verified account go to the default one; their deadline starts now
+            if (account.IsDefault)
+            {
+                foreach (var payout in await payouts.ListUnsentForAsync(owner, ct))
+                {
+                    if (payout.BankAccount is not { IsVerified: true })
+                    {
+                        payout.UseAccount(account, now);
+                    }
+                }
+            }
+        }
         else
+        {
             account.Reject(command.StaffId, command.Reason, now);
+            outbox.Enqueue(
+                new ExpertBankAccountRejectedEvent(
+                    Guid.NewGuid(),
+                    owner,
+                    account.OwnerEmail,
+                    account.BankName,
+                    account.AccountLast4,
+                    account.RejectionReason,
+                    now
+                ),
+                now
+            );
+        }
         await unitOfWork.SaveChangesAsync(ct);
         await tx.CommitAsync(ct);
         return ReviewBankAccountResponse.From(account, protector.Reveal(account.AccountNumberEnc));

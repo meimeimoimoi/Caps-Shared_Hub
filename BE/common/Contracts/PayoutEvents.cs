@@ -32,3 +32,16 @@ public sealed record PayoutDigestEvent(
     int WaitingForAccount,
     DateTimeOffset OccurredAt
 );
+
+/// <summary>Staff rejected the expert's bank account: they must link another one before they can be paid.</summary>
+/// <param name="Email">The expert's sign-in email when they linked the account; null tells them in-app only.</param>
+/// <param name="Reason">The staff reason, shown to the expert.</param>
+public sealed record ExpertBankAccountRejectedEvent(
+    Guid Id,
+    Guid ExpertUserId,
+    string? Email,
+    string BankName,
+    string AccountLast4,
+    string? Reason,
+    DateTimeOffset OccurredAt
+);

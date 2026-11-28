@@ -151,6 +151,7 @@ public sealed class BillingDbContext(DbContextOptions<BillingDbContext> options)
             e.HasKey(x => x.Id);
             e.Property(x => x.Id).HasColumnName("id");
             e.Property(x => x.UserId).HasColumnName("user_id");
+            e.Property(x => x.OwnerEmail).HasColumnName("owner_email");
             e.Property(x => x.BankBin).HasColumnName("bank_bin").IsRequired();
             e.Property(x => x.BankName).HasColumnName("bank_name").IsRequired();
             e.Property(x => x.AccountNumberEnc).HasColumnName("account_number_enc").IsRequired();

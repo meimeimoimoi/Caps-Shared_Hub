@@ -55,13 +55,22 @@ public sealed class PayoutTransaction
     /// <summary>Working days staff have after the hold to send it (agreed with the advisor 2026-11-28).</summary>
     public const int DueWorkingDays = 2;
 
-    /// <summary>The deadline: 2 working days after the hold ends, at the same Vietnam clock time.</summary>
-    public DateTimeOffset DueAt(WorkCalendar calendar) =>
-        calendar.AddWorkingDays(TransferableFrom, DueWorkingDays);
+    /// <summary>
+    /// When the payout could first be sent: the hold end, or later when the expert's account was verified after
+    /// it; null while it has no verified account, so the deadline waits (advisor 2026-11-28).
+    /// </summary>
+    public DateTimeOffset? ReadyAt =>
+        BankAccount is { IsVerified: true, VerifiedAt: { } verifiedAt }
+            ? (verifiedAt > TransferableFrom ? verifiedAt : TransferableFrom)
+            : null;
+
+    /// <summary>The deadline: 2 working days after ReadyAt, at the same Vietnam clock time.</summary>
+    public DateTimeOffset? DueAt(WorkCalendar calendar) =>
+        ReadyAt is { } ready ? calendar.AddWorkingDays(ready, DueWorkingDays) : null;
 
     /// <summary>One working day before the deadline, when staff are reminded.</summary>
-    public DateTimeOffset RemindAt(WorkCalendar calendar) =>
-        calendar.AddWorkingDays(TransferableFrom, DueWorkingDays - 1);
+    public DateTimeOffset? RemindAt(WorkCalendar calendar) =>
+        ReadyAt is { } ready ? calendar.AddWorkingDays(ready, DueWorkingDays - 1) : null;
 
     /// <summary>Not sent yet, or the last attempt failed: staff may (re)send it.</summary>
     public bool CanTransfer => Status is PayoutStatus.Pending or PayoutStatus.Failed;

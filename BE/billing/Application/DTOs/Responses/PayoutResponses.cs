@@ -20,8 +20,8 @@ public sealed record PayoutResponse(
     DateTimeOffset CreatedAt,
     DateTimeOffset? CompletedAt,
     DateTimeOffset TransferableFrom,
-    DateTimeOffset DueAt,
-    DateTimeOffset RemindAt,
+    DateTimeOffset? DueAt,
+    DateTimeOffset? RemindAt,
     bool AttemptsExhausted,
     PayoutHistoryResponse[] History
 )

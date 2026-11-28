@@ -202,13 +202,11 @@ public sealed class PayoutTransferTests
     {
         var at = DateTimeOffset.Parse(settled, CultureInfo.InvariantCulture);
         var escrow = Escrow.Hold(Guid.NewGuid(), Guid.NewGuid(), 500_000, at);
-        var payout = PayoutTransaction.ToExpert(
-            Settlement.ForRelease(escrow, 10, at),
-            Expert,
-            null,
-            null,
-            at
-        );
+        // The account was verified before settlement, so the deadline runs from the hold end
+        var account = PayoutTestAccounts.Account(Expert, at.AddDays(-30), verified: true);
+        var payout = PayoutTransaction
+            .ToExpert(Settlement.ForRelease(escrow, 10, at), Expert, null, account, at)
+            .WithAccount(account);
         var calendar = new WorkCalendar(["09-02"]);
 
         Assert.Equal(
@@ -418,6 +416,11 @@ public sealed class PayoutTransferTests
 
         public Task<IReadOnlyList<PayoutTransaction>> ListUnsentAsync(CancellationToken ct) =>
             throw new NotSupportedException();
+
+        public Task<IReadOnlyList<PayoutTransaction>> ListUnsentForAsync(
+            Guid recipientUserId,
+            CancellationToken ct
+        ) => throw new NotSupportedException();
 
         public Task<int> CountAsync(string? status, CancellationToken ct) =>
             throw new NotSupportedException();

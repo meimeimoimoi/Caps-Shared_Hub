@@ -15,7 +15,6 @@ public sealed record SendPayoutRemindersCommand;
 /// </summary>
 public sealed class SendPayoutRemindersHandler(
     IPayoutRepository payouts,
-    IBankAccountRepository bankAccounts,
     IBillingNotificationOutbox outbox,
     IUnitOfWork unitOfWork,
     TimeProvider clock,
@@ -39,6 +38,20 @@ public sealed class SendPayoutRemindersHandler(
             {
                 continue;
             }
+            if (payout.ReadyAt == null)
+            {
+                // No verified account: the deadline waits; the expert is reminded on days 7, 14, 30
+                var days = LocalDay(now).DayNumber - LocalDay(payout.TransferableFrom).DayNumber;
+                if (days >= 30)
+                {
+                    waiting++;
+                }
+                if (AccountReminderDays.Contains(days))
+                {
+                    PayoutNotices.Enqueue(outbox, payout, now, "ACCOUNT_MISSING");
+                }
+                continue;
+            }
             if (now > payout.DueAt(calendar))
             {
                 overdue++;
@@ -51,22 +64,6 @@ public sealed class SendPayoutRemindersHandler(
             else
             {
                 ready++;
-            }
-
-            // ponytail: one bank account lookup per payout; batch it if unsent payouts reach the thousands
-            var account = await bankAccounts.ListAsync(payout.RecipientUserId, ct);
-            if (account.Any(x => x.IsVerified))
-            {
-                continue;
-            }
-            var days = LocalDay(now).DayNumber - LocalDay(payout.TransferableFrom).DayNumber;
-            if (days >= 30)
-            {
-                waiting++;
-            }
-            if (AccountReminderDays.Contains(days))
-            {
-                PayoutNotices.Enqueue(outbox, payout, now, "ACCOUNT_MISSING");
             }
         }
         if (overdue + dueSoon + ready + waiting > 0)

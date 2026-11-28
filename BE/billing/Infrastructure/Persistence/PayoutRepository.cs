@@ -26,7 +26,12 @@ public sealed class PayoutRepository(BillingDbContext db) : IPayoutRepository
                     ? source.OrderByDescending(x => x.CreatedAt)
                     : source.OrderBy(x => x.CreatedAt);
         var stable = descending ? ordered.ThenByDescending(x => x.Id) : ordered.ThenBy(x => x.Id);
-        return await stable.Include(x => x.History).Skip(skip).Take(take).ToListAsync(ct);
+        return await stable
+            .Include(x => x.History)
+            .Include(x => x.BankAccount)
+            .Skip(skip)
+            .Take(take)
+            .ToListAsync(ct);
     }
 
     public Task<int> CountAsync(string? status, CancellationToken ct) =>
@@ -42,7 +47,20 @@ public sealed class PayoutRepository(BillingDbContext db) : IPayoutRepository
     public async Task<IReadOnlyList<PayoutTransaction>> ListUnsentAsync(CancellationToken ct) =>
         await db
             .PayoutTransactions.AsNoTracking()
+            .Include(x => x.BankAccount)
             .Where(x => x.Status == PayoutStatus.Pending || x.Status == PayoutStatus.Failed)
+            .ToListAsync(ct);
+
+    public async Task<IReadOnlyList<PayoutTransaction>> ListUnsentForAsync(
+        Guid recipientUserId,
+        CancellationToken ct
+    ) =>
+        await db
+            .PayoutTransactions.Include(x => x.BankAccount)
+            .Where(x =>
+                x.RecipientUserId == recipientUserId
+                && (x.Status == PayoutStatus.Pending || x.Status == PayoutStatus.Failed)
+            )
             .ToListAsync(ct);
 
     private IQueryable<PayoutTransaction> Filter(string? status) =>
