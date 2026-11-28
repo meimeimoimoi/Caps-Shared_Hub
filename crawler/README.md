@@ -143,6 +143,16 @@ Cài OCR (một lần):
 Chưa cài Tesseract thì tool vẫn chạy: văn bản được đánh dấu `ocr_required: true`.
 Dùng `--no-ocr` để bỏ qua OCR cho nhanh.
 
+## Phụ lục đính kèm (biểu mẫu 03/TNDN...)
+
+Biểu mẫu tờ khai không nằm trong toàn văn trên trang mà ở file đính kèm có chữ "Phụ lục" trong tên
+(`.docx`, `.zip` đặt tên `.docx`, `.rar`). Khi export, `src/appendix.py` đọc từng biểu mẫu `.docx` thành một mục
+trong `content_json.appendices` (tiêu đề dạng `Phụ lục I. Khai thuế mẫu 1-6 / 6. Mẫu biểu khai TNDN / 2. 03.TNDN`);
+ai-service tạo chunk từ đó. Text phụ lục được tính vào `file_hash`, nên chạy lại `--export-only` sẽ tạo phiên bản mới
+thay vì bị ingestion bỏ qua do trùng hash.
+File `.rar` cần `bsdtar` (image Docker đã có; Debian/Ubuntu: `apt install libarchive-tools`). Mẫu `.doc`
+(Word 97-2003) hiện bị bỏ qua, chỉ ghi cảnh báo trong log.
+
 ## ⚠️ Nếu scraper không chạy đúng (0 kết quả / lỗi selector)
 
 Giao diện vbpl.vn có thể thay đổi theo thời gian. Chạy lại:

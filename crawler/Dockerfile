@@ -2,8 +2,9 @@
 # Runs as a one-shot command (docker run) or scheduled via cron.
 FROM python:3.12-slim
 
+# libarchive-tools: bsdtar unpacks .rar appendix archives (tax forms) for src/appendix.py
 RUN apt-get update && apt-get install -y --no-install-recommends \
-        tesseract-ocr tesseract-ocr-vie \
+        tesseract-ocr tesseract-ocr-vie libarchive-tools \
         libnss3 libnspr4 libatk1.0-0 libatk-bridge2.0-0 libcups2 \
         libdrm2 libxkbcommon0 libxcomposite1 libxdamage1 libxrandr2 \
         libgbm1 libasound2 libpango-1.0-0 libcairo2 libxshmfence1 libxfixes3 \
