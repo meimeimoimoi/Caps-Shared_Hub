@@ -8,25 +8,32 @@ namespace Caps.Billing.Infrastructure.Persistence;
 public sealed class PayoutRepository(BillingDbContext db) : IPayoutRepository
 {
     public async Task<IReadOnlyList<PayoutTransaction>> ListAsync(
-        string? status,
+        PayoutFilter filter,
         int skip,
         int take,
         CancellationToken ct,
-        string sortBy = "createdAt",
+        string sortBy = "due",
         bool descending = true
     )
     {
-        var source = Filter(status);
-        var ordered =
-            sortBy == "amount"
-                ? descending
-                    ? source.OrderByDescending(x => x.Amount)
-                    : source.OrderBy(x => x.Amount)
-                : descending
-                    ? source.OrderByDescending(x => x.CreatedAt)
-                    : source.OrderBy(x => x.CreatedAt);
-        var stable = descending ? ordered.ThenByDescending(x => x.Id) : ordered.ThenBy(x => x.Id);
-        return await stable
+        var source = Filter(filter);
+        var ordered = sortBy switch
+        {
+            "amount" => descending
+                ? source.OrderByDescending(x => x.Amount)
+                : source.OrderBy(x => x.Amount),
+            "createAt" => descending
+                ? source.OrderByDescending(x => x.CreatedAt)
+                : source.OrderBy(x => x.CreatedAt),
+            // Unsent first, oldest first: an older payout always reaches its hold end and deadline sooner
+            _ => source
+                .OrderBy(x =>
+                    x.Status == PaymentStatus.Pending || x.Status == PayoutStatus.Failed ? 0 : 1
+                )
+                .ThenBy(x => x.CreatedAt),
+        };
+        return await ordered
+            .ThenBy(x => x.Id)
             .Include(x => x.History)
             .Include(x => x.BankAccount)
             .Skip(skip)
@@ -34,8 +41,8 @@ public sealed class PayoutRepository(BillingDbContext db) : IPayoutRepository
             .ToListAsync(ct);
     }
 
-    public Task<int> CountAsync(string? status, CancellationToken ct) =>
-        Filter(status).CountAsync(ct);
+    public Task<int> CountAsync(PayoutFilter filter, CancellationToken ct) =>
+        Filter(filter).CountAsync(ct);
 
     public Task<PayoutTransaction?> LockAsync(Guid id, CancellationToken ct) =>
         db
@@ -63,8 +70,33 @@ public sealed class PayoutRepository(BillingDbContext db) : IPayoutRepository
             )
             .ToListAsync(ct);
 
-    private IQueryable<PayoutTransaction> Filter(string? status) =>
-        status == null
-            ? db.PayoutTransactions.AsNoTracking()
-            : db.PayoutTransactions.AsNoTracking().Where(x => x.Status == status);
+    private IQueryable<PayoutTransaction> Filter(PayoutFilter f)
+    {
+        var q = db.PayoutTransactions.AsNoTracking();
+        if (f.Status != null)
+        {
+            q = q.Where(x => x.Status == f.Status);
+        }
+        if (f.RecipientUserId != null)
+        {
+            q = q.Where(x => x.RecipientUserId == f.RecipientUserId);
+        }
+        if (f.From != null)
+        {
+            q = q.Where(x => x.CreatedAt >= f.From);
+        }
+        if (f.To != null)
+        {
+            q = q.Where(x => x.CreatedAt < f.To);
+        }
+        if (f.MinAmount != null)
+        {
+            q = q.Where(x => x.Amount >= f.MinAmount);
+        }
+        if (f.MaxAmount != null)
+        {
+            q = q.Where(x => x.Amount <= f.MaxAmount);
+        }
+        return q;
+    }
 }

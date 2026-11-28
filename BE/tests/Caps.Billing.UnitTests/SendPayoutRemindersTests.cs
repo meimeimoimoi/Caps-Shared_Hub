@@ -42,6 +42,8 @@ public sealed class SendPayoutRemindersTests
                 digest.WaitingForAccount
             )
         );
+        // Due soon + ready + overdue need 3 x 450,000 against a 500,000 balance: the digest says so
+        Assert.Equal((1_350_000L, 500_000L), (digest.AmountToSend, digest.Balance));
         Assert.Equal(["ACCOUNT_MISSING", "ACCOUNT_MISSING"], run.Outbox.Sent.Select(x => x.Change));
         Assert.All(run.Outbox.Sent, x => Assert.Equal(NoAccount, x.ExpertUserId));
         Assert.Equal(1, run.Saves);
@@ -96,10 +98,27 @@ public sealed class SendPayoutRemindersTests
         return account == null ? payout : payout.WithAccount(account);
     }
 
-    private sealed class Run(params PayoutTransaction[] payouts) : IPayoutRepository, IUnitOfWork
+    private sealed class Run(params PayoutTransaction[] payouts)
+        : IPayoutRepository,
+            IUnitOfWork,
+            IPayoutGateway
     {
         public FakeNotificationOutbox Outbox { get; } = new();
         public int Saves { get; private set; }
+        public long? Balance { get; set; } = 500_000;
+
+        public bool IsAvailable => true;
+
+        public Task<long?> GetBalanceAsync(CancellationToken ct) => Task.FromResult(Balance);
+
+        public Task<PayoutSubmission> SubmitAsync(PayoutOrder order, CancellationToken ct) =>
+            throw new NotSupportedException();
+
+        public Task<PayoutReport?> FindAsync(
+            string? providerRef,
+            string reference,
+            CancellationToken ct
+        ) => throw new NotSupportedException();
 
         public Task SendAsync() =>
             new SendPayoutRemindersHandler(
@@ -107,7 +126,8 @@ public sealed class SendPayoutRemindersTests
                 Outbox,
                 this,
                 new Clock(),
-                new WorkCalendar([])
+                new WorkCalendar([]),
+                this
             ).HandleAsync(new(), default);
 
         public Task<IReadOnlyList<PayoutTransaction>> ListUnsentAsync(CancellationToken ct) =>
@@ -125,15 +145,15 @@ public sealed class SendPayoutRemindersTests
         ) => throw new NotSupportedException();
 
         public Task<IReadOnlyList<PayoutTransaction>> ListAsync(
-            string? status,
+            PayoutFilter filter,
             int skip,
             int take,
             CancellationToken ct,
-            string sortBy = "createdAt",
+            string sortBy = "due",
             bool descending = true
         ) => throw new NotSupportedException();
 
-        public Task<int> CountAsync(string? status, CancellationToken ct) =>
+        public Task<int> CountAsync(PayoutFilter filter, CancellationToken ct) =>
             throw new NotSupportedException();
 
         public Task<PayoutTransaction?> LockAsync(Guid id, CancellationToken ct) =>

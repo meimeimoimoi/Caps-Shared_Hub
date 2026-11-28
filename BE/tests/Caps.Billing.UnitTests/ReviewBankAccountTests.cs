@@ -129,15 +129,15 @@ public sealed class ReviewBankAccountTests
             throw new NotSupportedException();
 
         public Task<IReadOnlyList<PayoutTransaction>> ListAsync(
-            string? status,
+            PayoutFilter filter,
             int skip,
             int take,
             CancellationToken ct,
-            string sortBy = "createdAt",
+            string sortBy = "due",
             bool descending = true
         ) => throw new NotSupportedException();
 
-        public Task<int> CountAsync(string? status, CancellationToken ct) =>
+        public Task<int> CountAsync(PayoutFilter filter, CancellationToken ct) =>
             throw new NotSupportedException();
 
         public Task<PayoutTransaction?> LockAsync(Guid id, CancellationToken ct) =>

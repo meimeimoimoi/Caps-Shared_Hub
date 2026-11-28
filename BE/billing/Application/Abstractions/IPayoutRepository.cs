@@ -6,15 +6,15 @@ namespace Caps.Billing.Application.Abstractions;
 public interface IPayoutRepository
 {
     Task<IReadOnlyList<PayoutTransaction>> ListAsync(
-        string? status,
+        PayoutFilter filter,
         int skip,
         int take,
         CancellationToken ct,
-        string sortBy = "createdAt",
+        string sortBy = "due",
         bool descending = true
     );
 
-    Task<int> CountAsync(string? status, CancellationToken ct);
+    Task<int> CountAsync(PayoutFilter filter, CancellationToken ct);
 
     /// <summary>Tracked and locked (FOR UPDATE) until the transaction ends; null when it does not exist.</summary>
     Task<PayoutTransaction?> LockAsync(Guid id, CancellationToken ct);

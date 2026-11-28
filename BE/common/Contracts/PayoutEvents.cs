@@ -30,6 +30,8 @@ public sealed record PayoutDigestEvent(
     int DueSoon,
     int Ready,
     int WaitingForAccount,
+    long AmountToSend,
+    long? Balance,
     DateTimeOffset OccurredAt
 );
 

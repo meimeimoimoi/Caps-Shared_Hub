@@ -150,6 +150,13 @@ public static class BillingErrors
             $"The payout failed {max} times; the expert must link another verified bank account."
         );
 
+    public static AppException PayoutInsufficientBalance(long balance) =>
+        new(
+            ErrorType.Conflict,
+            "PAYOUT_INSUFFICIENT_BALANCE",
+            $"The PayOS payout account holds {balance} VND, less than this payout."
+        );
+
     public static AppException AiCreditHoldNotFound() =>
         new(
             ErrorType.NotFound,

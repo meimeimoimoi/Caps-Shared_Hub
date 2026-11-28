@@ -18,64 +18,41 @@ public sealed class SendPayoutRemindersHandler(
     IBillingNotificationOutbox outbox,
     IUnitOfWork unitOfWork,
     TimeProvider clock,
-    WorkCalendar calendar
+    WorkCalendar calendar,
+    IPayoutGateway gateway
 ) : ICommandHandler<SendPayoutRemindersCommand>
 {
     private static readonly int[] AccountReminderDays = [7, 14, 30];
-    private static readonly TimeSpan VietnamOffset = TimeSpan.FromHours(7);
 
     public async Task HandleAsync(SendPayoutRemindersCommand command, CancellationToken ct)
     {
         var now = clock.GetUtcNow();
-        int overdue = 0,
-            dueSoon = 0,
-            ready = 0,
-            waiting = 0;
-        long overdueAmount = 0;
-        foreach (var payout in await payouts.ListUnsentAsync(ct))
+        var unsent = await payouts.ListUnsentAsync(ct);
+        foreach (var payout in unsent)
         {
-            if (now < payout.TransferableFrom)
+            // No verified account: the deadline waits; the expert is reminded on days 7, 14 and 30
+            if (
+                now >= payout.TransferableFrom
+                && payout.ReadyAt == null
+                && AccountReminderDays.Contains(PayoutSummary.DaysSinceHold(payout, now))
+            )
             {
-                continue;
-            }
-            if (payout.ReadyAt == null)
-            {
-                // No verified account: the deadline waits; the expert is reminded on days 7, 14, 30
-                var days = LocalDay(now).DayNumber - LocalDay(payout.TransferableFrom).DayNumber;
-                if (days >= 30)
-                {
-                    waiting++;
-                }
-                if (AccountReminderDays.Contains(days))
-                {
-                    PayoutNotices.Enqueue(outbox, payout, now, "ACCOUNT_MISSING");
-                }
-                continue;
-            }
-            if (now > payout.DueAt(calendar))
-            {
-                overdue++;
-                overdueAmount += payout.Amount;
-            }
-            else if (now > payout.RemindAt(calendar))
-            {
-                dueSoon++;
-            }
-            else
-            {
-                ready++;
+                PayoutNotices.Enqueue(outbox, payout, now, "ACCOUNT_MISSING");
             }
         }
-        if (overdue + dueSoon + ready + waiting > 0)
+        var s = PayoutSummary.Of(unsent, now, calendar);
+        if (s.Overdue + s.DueSoon + s.Ready + s.WaitingForAccount > 0)
         {
             outbox.Enqueue(
                 new PayoutDigestEvent(
                     Guid.NewGuid(),
-                    overdue,
-                    overdueAmount,
-                    dueSoon,
-                    ready,
-                    waiting,
+                    s.Overdue,
+                    s.OverdueAmount,
+                    s.DueSoon,
+                    s.Ready,
+                    s.WaitingForAccount,
+                    s.AmountToSend,
+                    await gateway.GetBalanceAsync(ct),
                     now
                 ),
                 now
@@ -83,7 +60,4 @@ public sealed class SendPayoutRemindersHandler(
         }
         await unitOfWork.SaveChangesAsync(ct);
     }
-
-    private static DateOnly LocalDay(DateTimeOffset at) =>
-        DateOnly.FromDateTime(at.ToOffset(VietnamOffset).DateTime);
 }

@@ -12,7 +12,12 @@ public sealed record ListPayoutsQuery(
     int Page,
     int PageSize,
     string? SortBy = null,
-    bool SortDescending = true
+    bool SortDescending = true,
+    Guid? RecipientUserId = null,
+    DateTimeOffset? From = null,
+    DateTimeOffset? To = null,
+    long? MinAmount = null,
+    long? MaxAmount = null
 );
 
 /// <summary>Newest first; released escrows create the expert payouts.</summary>
@@ -25,16 +30,22 @@ public sealed class ListPayoutsHandler(IPayoutRepository payouts, WorkCalendar c
     {
         if (query.Page < 1 || query.PageSize < 1 || query.PageSize > MaxPageSize)
             throw BillingErrors.InvalidPaging(MaxPageSize);
-        var status = string.IsNullOrWhiteSpace(query.Status)
-            ? null
-            : query.Status.Trim().ToUpperInvariant();
-        var total = await payouts.CountAsync(status, ct);
+        var filter = new PayoutFilter(
+            string.IsNullOrWhiteSpace(query.Status) ? null : query.Status.Trim().ToUpperInvariant(),
+            query.RecipientUserId,
+            // Staff pick Vietnam days; PostgreSQL timestamptz only takes UTC offsets
+            query.From?.ToUniversalTime(),
+            query.To?.ToUniversalTime(),
+            query.MinAmount,
+            query.MaxAmount
+        );
+        var total = await payouts.CountAsync(filter, ct);
         var page = await payouts.ListAsync(
-            status,
+            filter,
             (query.Page - 1) * query.PageSize,
             query.PageSize,
             ct,
-            query.SortBy == "amount" ? "amount" : "createdAt",
+            query.SortBy is "amount" or "createdAt" ? query.SortBy : "due",
             query.SortDescending
         );
         var items = page.Select(x => PayoutResponse.From(x, calendar)).ToArray();

@@ -47,6 +47,11 @@ public sealed class TransferPayoutHandler(
                 ?? throw BillingErrors.PayoutNotFound();
             if (!payout.CanTransfer)
                 throw BillingErrors.PayoutNotTransferable();
+            // A shortfall is refused before any attempt is opened, so it never uses up a retry
+            if (await gateway.GetBalanceAsync(ct) is { } balance && balance < payout.Amount)
+            {
+                throw BillingErrors.PayoutInsufficientBalance(balance);
+            }
 
             var now = clock.GetUtcNow();
             var accounts = await bankAccounts.ListAsync(payout.RecipientUserId, ct);

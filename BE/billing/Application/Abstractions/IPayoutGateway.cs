@@ -14,4 +14,7 @@ public interface IPayoutGateway
 
     /// <summary>The transfer the provider created for <paramref name="reference"/>, or null when it has none.</summary>
     Task<PayoutReport?> FindAsync(string? providerRef, string reference, CancellationToken ct);
+
+    /// <summary>The payout account's available balance in VND; null when it cannot be read.</summary>
+    Task<long?> GetBalanceAsync(CancellationToken ct);
 }
