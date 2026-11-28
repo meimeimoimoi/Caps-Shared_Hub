@@ -203,6 +203,10 @@ def run_export_only(formats=("json",)):
 
 
 def _log_export_summary(manifest):
+    skipped = sum(1 for m in manifest if m.get("skipped"))
+    manifest = [m for m in manifest if not m.get("skipped")]
+    if skipped:
+        logger.warning(f"Bỏ qua {skipped} văn bản không có nội dung (NO_TEXT), xem manifest.json.")
     failed = [m for m in manifest if m["parse_status"] != "PARSED"]
     logger.info(
         f"Đã xuất {len(manifest)} văn bản ({sum(m['chunks'] for m in manifest)} chunk) "

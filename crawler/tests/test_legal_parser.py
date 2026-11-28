@@ -421,6 +421,13 @@ def test_export_records_without_date_goes_to_unknown_year(tmp_path, monkeypatch)
     assert manifest[0]["file"].startswith("nghi_dinh/khong-ro-nam/")
 
 
+def test_export_records_skips_documents_without_text(tmp_path, monkeypatch):
+    monkeypatch.setattr(config, "DATA_DIR", tmp_path)
+    manifest = export_records([{**_nd82_rec(), "noi_dung_text": "  "}])
+    assert manifest[0]["skipped"] == "NO_TEXT" and "file" not in manifest[0]
+    assert [p.name for p in (tmp_path / "export").rglob("*") if p.is_file()] == ["manifest.json"]
+
+
 def test_normalize_record_drops_khong_so_from_title():
     from src.normalize import normalize_record
     rec = normalize_record({"so_hieu": "Không số", "tieu_de": "Luật Thuế thu nhập doanh nghiệp số Không số"})
