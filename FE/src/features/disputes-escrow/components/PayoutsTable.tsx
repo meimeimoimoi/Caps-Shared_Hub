@@ -13,11 +13,13 @@ import {
 } from '@/components/ui/feedback/toast-content'
 import { Pagination } from '@/components/ui/navigation/pagination'
 import {
+  downloadPaidPayoutsCsv,
   PAYOUT_PAGE_SIZE,
   type Payout,
   type PayoutStatus,
 } from '../api/payoutsApi'
 import { usePayouts } from '../hooks/usePayouts'
+import { ManualPayoutPanel, type ManualMode } from './ManualPayoutPanel'
 
 const headCls =
   'bg-sunken text-fg-muted [&>th]:px-4 [&>th]:py-3 [&>th]:font-semibold'
@@ -70,6 +72,31 @@ export function PayoutsTable() {
   const [holdText, setHoldText] = useState('')
   const [holdDays, setHoldDays] = useState(7)
   const [busyId, setBusyId] = useState<string | null>(null)
+  // The payout whose manual transfer panel is open, and which part of it
+  const [manual, setManual] = useState<{ id: string; mode: ManualMode } | null>(
+    null
+  )
+  // The paid range to export, defaulting to last month for the monthly statement check
+  const [exportRange, setExportRange] = useState(() => {
+    const d = new Date()
+    const day = (x: Date) =>
+      `${x.getFullYear()}-${String(x.getMonth() + 1).padStart(2, '0')}-${String(x.getDate()).padStart(2, '0')}`
+    return {
+      from: day(new Date(d.getFullYear(), d.getMonth() - 1, 1)),
+      to: day(new Date(d.getFullYear(), d.getMonth(), 0)),
+    }
+  })
+  const [exporting, setExporting] = useState(false)
+  const exportCsv = () => {
+    setExporting(true)
+    downloadPaidPayoutsCsv(exportRange.from, exportRange.to)
+      .catch((e: Error) =>
+        setToast(errorToast(e.message || t('common:states.actionFailed')))
+      )
+      .finally(() => setExporting(false))
+  }
+  // No PayOS payout channel: staff pay from the bank app and record it here
+  const manualChannel = payouts.summary?.channelAvailable === false
   const [toast, setToast] = useState<ToastContent | null>(null)
   // Read once per mount: a hold ending while the page is open shows after a refresh
   const [now] = useState(Date.now)
@@ -160,25 +187,28 @@ export function PayoutsTable() {
         <p className="text-fg-strong font-semibold">
           {parts.length > 0 ? parts.join(' · ') : t('payouts.banner.clear')}
         </p>
-        <p className={short ? 'text-danger mt-1' : 'text-fg-muted mt-1'}>
-          {s.balance == null
-            ? t('payouts.banner.balanceUnknown')
-            : t(
-                short
-                  ? 'payouts.banner.balanceShort'
-                  : 'payouts.banner.balance',
-                {
-                  balance: formatVnd(s.balance),
-                  needed: formatVnd(s.summary.amountToSend),
-                }
-              )}
-        </p>
+        {!manualChannel && (
+          <p className={short ? 'text-danger mt-1' : 'text-fg-muted mt-1'}>
+            {s.balance == null
+              ? t('payouts.banner.balanceUnknown')
+              : t(
+                  short
+                    ? 'payouts.banner.balanceShort'
+                    : 'payouts.banner.balance',
+                  {
+                    balance: formatVnd(s.balance),
+                    needed: formatVnd(s.summary.amountToSend),
+                  }
+                )}
+          </p>
+        )}
       </div>
     )
   }
 
   const run = (p: Payout, call: (id: string) => Promise<Payout>) => {
     setConfirmId(null)
+    setManual(null)
     setBusyId(p.id)
     call(p.id)
       .then((next) =>
@@ -202,7 +232,9 @@ export function PayoutsTable() {
       : payouts.hold(p.id, holdText, holdDays)
     call
       .then(() =>
-        setToast(t(p.holdReason ? 'payouts.hold.released' : 'payouts.hold.held'))
+        setToast(
+          t(p.holdReason ? 'payouts.hold.released' : 'payouts.hold.held')
+        )
       )
       .catch((e: Error) =>
         setToast(errorToast(e.message || t('common:states.actionFailed')))
@@ -219,9 +251,13 @@ export function PayoutsTable() {
         maxLength={1000}
         rows={3}
         placeholder={t(
-          p.holdReason ? 'payouts.hold.notePlaceholder' : 'payouts.hold.reasonPlaceholder'
+          p.holdReason
+            ? 'payouts.hold.notePlaceholder'
+            : 'payouts.hold.reasonPlaceholder'
         )}
-        aria-label={t(p.holdReason ? 'payouts.hold.note' : 'payouts.hold.reason')}
+        aria-label={t(
+          p.holdReason ? 'payouts.hold.note' : 'payouts.hold.reason'
+        )}
         className={`${inputCls} h-auto py-2`}
       />
       {!p.holdReason && (
@@ -254,6 +290,7 @@ export function PayoutsTable() {
 
   const openHold = (p: Payout) => {
     setConfirmId(null)
+    setManual(null)
     setHoldText('')
     setHoldDays(7)
     setHoldId(p.id)
@@ -262,13 +299,30 @@ export function PayoutsTable() {
   const actions = (p: Payout) => {
     const busy = busyId === p.id
     if (holdId === p.id) return holdForm(p)
+    if (manual?.id === p.id)
+      return (
+        <ManualPayoutPanel
+          payout={p}
+          mode={manual.mode}
+          onConfirm={(ref, amount, at) =>
+            run(p, (id) => payouts.confirmManual(id, ref, amount, at))
+          }
+          onFail={(reason) => run(p, (id) => payouts.failManual(id, reason))}
+          onClose={() => setManual(null)}
+        />
+      )
     if (p.holdReason)
       return (
-        <Button size="sm" variant="outline" disabled={busy} onClick={() => openHold(p)}>
+        <Button
+          size="sm"
+          variant="outline"
+          disabled={busy}
+          onClick={() => openHold(p)}
+        >
           {t('payouts.hold.release')}
         </Button>
       )
-    if (p.status === 'PROCESSING')
+    if (p.status === 'PROCESSING' && !manualChannel)
       return (
         <Button
           size="sm"
@@ -285,9 +339,16 @@ export function PayoutsTable() {
       return (
         <div className="flex flex-col items-end gap-2">
           <span className="text-fg-muted text-sm">
-            {t('payouts.heldUntil', { date: formatDateTime(p.transferableFrom) })}
+            {t('payouts.heldUntil', {
+              date: formatDateTime(p.transferableFrom),
+            })}
           </span>
-          <Button size="sm" variant="outline" disabled={busy} onClick={() => openHold(p)}>
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={busy}
+            onClick={() => openHold(p)}
+          >
             {t('payouts.hold.open')}
           </Button>
         </div>
@@ -303,12 +364,57 @@ export function PayoutsTable() {
           </Button>
         </div>
       )
+    const openManual = (mode: ManualMode) => {
+      setHoldId(null)
+      setManual({ id: p.id, mode })
+    }
+    if (manualChannel)
+      return (
+        <div className="flex flex-wrap justify-end gap-2">
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={busy}
+            onClick={() => openManual('info')}
+          >
+            {t('payouts.manual.info')}
+          </Button>
+          <Button
+            size="sm"
+            disabled={busy}
+            onClick={() => openManual('confirm')}
+          >
+            {t('payouts.manual.confirm')}
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={busy}
+            onClick={() => openManual('fail')}
+          >
+            {t('payouts.manual.fail')}
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={busy}
+            onClick={() => openHold(p)}
+          >
+            {t('payouts.hold.open')}
+          </Button>
+        </div>
+      )
     return (
       <div className="flex flex-wrap justify-end gap-2">
         <Button size="sm" disabled={busy} onClick={() => setConfirmId(p.id)}>
           {p.status === 'FAILED' ? t('payouts.retry') : t('payouts.transfer')}
         </Button>
-        <Button size="sm" variant="outline" disabled={busy} onClick={() => openHold(p)}>
+        <Button
+          size="sm"
+          variant="outline"
+          disabled={busy}
+          onClick={() => openHold(p)}
+        >
           {t('payouts.hold.open')}
         </Button>
       </div>
@@ -321,6 +427,44 @@ export function PayoutsTable() {
         <h2 id="payouts-title" className="text-h2">
           {t('payouts.title')}
         </h2>
+        <div className="flex flex-wrap items-end gap-2">
+          <label className="flex flex-col gap-1.5 text-sm font-semibold">
+            {t('payouts.export.from')}
+            <input
+              type="date"
+              value={exportRange.from}
+              max={exportRange.to}
+              onChange={(e) =>
+                setExportRange((r) => ({ ...r, from: e.target.value }))
+              }
+              className={inputCls}
+            />
+          </label>
+          <label className="flex flex-col gap-1.5 text-sm font-semibold">
+            {t('payouts.export.to')}
+            <input
+              type="date"
+              value={exportRange.to}
+              min={exportRange.from}
+              onChange={(e) =>
+                setExportRange((r) => ({ ...r, to: e.target.value }))
+              }
+              className={inputCls}
+            />
+          </label>
+          <Button
+            variant="outline"
+            disabled={
+              exporting ||
+              !exportRange.from ||
+              !exportRange.to ||
+              exportRange.from > exportRange.to
+            }
+            onClick={exportCsv}
+          >
+            {t('payouts.export.button')}
+          </Button>
+        </div>
       </div>
       {banner()}
       <div className="mt-3 flex flex-wrap items-end gap-3">

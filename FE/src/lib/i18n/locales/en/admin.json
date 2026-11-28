@@ -1818,7 +1818,33 @@
       "attemptsExhausted": "This payout has no retries left. The expert must add another account and have it verified.",
       "unavailable": "No answer from PayOS yet (payout channel not configured or PayOS not responding). Use Check result in a few minutes.",
       "sessionCheck": "Your session could not be checked; try again later.",
-      "notVerified": "The expert's bank account is not verified yet. Review it under Verify payout accounts first."
+      "notVerified": "The expert's bank account is not verified yet. Review it under Verify payout accounts first.",
+      "amountMismatch": "The amount does not match the payout.",
+      "manualInvalid": "The transfer time cannot be in the future.",
+      "bankRefUsed": "This bank transaction ID already confirms another payout.",
+      "channelAvailable": "The payOS payout channel is active; send it through payOS."
+    },
+    "manual": {
+      "info": "View transfer details",
+      "confirm": "Confirm transferred",
+      "fail": "Report failed transfer",
+      "bank": "Bank",
+      "accountNumber": "Account number",
+      "holder": "Account holder",
+      "amount": "Amount",
+      "description": "Transfer description",
+      "copy": "Copy {{field}}",
+      "copyShort": "Copy",
+      "bankRef": "Bank transaction ID",
+      "amountAgain": "Re-enter the amount sent ({{amount}})",
+      "transferredAt": "Transferred at",
+      "reason": "Why the transfer failed",
+      "reasonPlaceholder": "e.g. the bank reported a wrong account holder name"
+    },
+    "export": {
+      "from": "Paid from",
+      "to": "Paid to",
+      "button": "Export paid CSV"
     }
   },
   "bankReview": {

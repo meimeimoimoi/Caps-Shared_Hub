@@ -142,6 +142,18 @@ public sealed class ReviewBankAccountTests
 
         public Task<PayoutTransaction?> LockAsync(Guid id, CancellationToken ct) =>
             throw new NotSupportedException();
+
+        public Task<PayoutTransaction?> GetAsync(Guid id, CancellationToken ct) =>
+            throw new NotSupportedException();
+
+        public Task<bool> ProviderRefExistsAsync(string providerRef, CancellationToken ct) =>
+            throw new NotSupportedException();
+
+        public Task<IReadOnlyList<PayoutTransaction>> ListPaidAsync(
+            DateTimeOffset from,
+            DateTimeOffset to,
+            CancellationToken ct
+        ) => throw new NotSupportedException();
     }
 
     private sealed class Clock : TimeProvider

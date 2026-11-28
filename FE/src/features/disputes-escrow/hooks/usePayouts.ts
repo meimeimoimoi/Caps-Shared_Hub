@@ -8,6 +8,8 @@ import { getExpertNames } from '../api/bankReviewApi'
 import { getDisputes } from '../api/disputesApi'
 import { disputesKeys } from '../api/queryKeys'
 import {
+  confirmManualPayout,
+  failManualPayout,
   getPayouts,
   getPayoutSummary,
   holdPayout,
@@ -64,5 +66,9 @@ export function usePayouts() {
     hold: (id: string, reason: string, days: number) =>
       reload(holdPayout(id, reason, days)),
     release: (id: string, note: string) => reload(releasePayout(id, note)),
+    confirmManual: (id: string, bankRef: string, amount: number, at: string) =>
+      reload(confirmManualPayout(id, bankRef, amount, at)),
+    failManual: (id: string, reason: string) =>
+      reload(failManualPayout(id, reason)),
   }
 }

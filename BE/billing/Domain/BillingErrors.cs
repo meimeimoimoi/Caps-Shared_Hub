@@ -164,6 +164,41 @@ public static class BillingErrors
             $"The payout is on hold for review until {reviewBy:O}."
         );
 
+    public static AppException PayoutAmountMismatch(long expected) =>
+        new(
+            ErrorType.Validation,
+            "PAYOUT_AMOUNT_MISMATCH",
+            $"The amount entered does not match the payout ({expected} VND)."
+        );
+
+    public static AppException PayoutManualInvalid() =>
+        new(
+            ErrorType.Validation,
+            "PAYOUT_MANUAL_INVALID",
+            "The transfer time cannot be in the future."
+        );
+
+    public static AppException PayoutBankRefUsed() =>
+        new(
+            ErrorType.Conflict,
+            "PAYOUT_BANK_REF_USED",
+            "This bank transaction id already confirms another payout."
+        );
+
+    public static AppException PayoutChannelAvailable() =>
+        new(
+            ErrorType.Conflict,
+            "PAYOUT_CHANNEL_AVAILABLE",
+            "The PayOS payout channel is configured; send the payout through it."
+        );
+
+    public static AppException PayoutExportRangeInvalid(int maxDays) =>
+        new(
+            ErrorType.Validation,
+            "PAYOUT_EXPORT_RANGE_INVALID",
+            $"The export range must end after it starts and span at most {maxDays} days."
+        );
+
     public static AppException PayoutNotHeld() =>
         new(ErrorType.Conflict, "PAYOUT_NOT_HELD", "The payout is not on hold.");
 

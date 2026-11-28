@@ -1808,7 +1808,33 @@
       "attemptsExhausted": "Lệnh chi đã hết lượt chuyển lại. Cần chuyên gia thêm tài khoản khác và được xác minh.",
       "unavailable": "Chưa biết kết quả từ PayOS (chưa cấu hình kênh chi hộ hoặc PayOS không phản hồi). Bấm Kiểm tra kết quả sau ít phút.",
       "sessionCheck": "Không kiểm tra được phiên đăng nhập, thử lại sau.",
-      "notVerified": "Tài khoản nhận tiền của chuyên gia chưa được xác minh. Duyệt tài khoản ở mục Xác minh tài khoản nhận tiền trước."
+      "notVerified": "Tài khoản nhận tiền của chuyên gia chưa được xác minh. Duyệt tài khoản ở mục Xác minh tài khoản nhận tiền trước.",
+      "amountMismatch": "Số tiền nhập lại không khớp với lệnh chi.",
+      "manualInvalid": "Thời điểm chuyển không được ở tương lai.",
+      "bankRefUsed": "Mã giao dịch này đã được dùng để xác nhận một lệnh chi khác.",
+      "channelAvailable": "Kênh chi hộ payOS đang hoạt động, hãy chuyển qua payOS."
+    },
+    "manual": {
+      "info": "Xem thông tin chuyển khoản",
+      "confirm": "Xác nhận đã chuyển",
+      "fail": "Báo chuyển lỗi",
+      "bank": "Ngân hàng",
+      "accountNumber": "Số tài khoản",
+      "holder": "Chủ tài khoản",
+      "amount": "Số tiền",
+      "description": "Nội dung chuyển khoản",
+      "copy": "Sao chép {{field}}",
+      "copyShort": "Sao chép",
+      "bankRef": "Mã giao dịch ngân hàng",
+      "amountAgain": "Nhập lại số tiền đã chuyển ({{amount}})",
+      "transferredAt": "Thời điểm chuyển",
+      "reason": "Lý do chuyển lỗi",
+      "reasonPlaceholder": "Ví dụ: ngân hàng báo sai tên chủ tài khoản"
+    },
+    "export": {
+      "from": "Chuyển từ ngày",
+      "to": "Đến ngày",
+      "button": "Xuất CSV đã chuyển"
     }
   },
   "bankReview": {

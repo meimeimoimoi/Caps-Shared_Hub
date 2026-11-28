@@ -62,6 +62,25 @@ public sealed class AdminPayoutsController(ICurrentUser currentUser) : Controlle
         return Ok(ApiResponse<PayoutPageResponse>.Ok(payouts));
     }
 
+    /// <summary>Downloads the payouts paid in [from, to) as CSV, to match against the bank statement.</summary>
+    /// <remarks>
+    /// Columns: payout id, case id, expert id and email, bank, last 4 digits, amount, fee, bank transaction id,
+    /// transfer time (Vietnam time) and the confirming staff member. The range spans at most 366 days.
+    /// </remarks>
+    /// <response code="200">The CSV file (UTF-8 with BOM).</response>
+    /// <response code="400">PAYOUT_EXPORT_RANGE_INVALID.</response>
+    [HttpGet("export")]
+    public async Task<IActionResult> Export(
+        [FromQuery, Required] DateTimeOffset from,
+        [FromQuery, Required] DateTimeOffset to,
+        [FromServices] IQueryHandler<ExportPaidPayoutsQuery, PayoutCsvFile> handler,
+        CancellationToken ct
+    )
+    {
+        var file = await handler.HandleAsync(new(from, to), ct);
+        return File(file.Content, "text/csv; charset=utf-8", file.FileName);
+    }
+
     /// <summary>Unsent payouts by deadline stage and the PayOS payout balance, for the page banner.</summary>
     /// <response code="200">The counts; balance is null when PayOS cannot be read.</response>
     [HttpGet("summary")]
@@ -151,6 +170,66 @@ public sealed class AdminPayoutsController(ICurrentUser currentUser) : Controlle
     )
     {
         var payout = await handler.HandleAsync(new(payoutId, UserId, true, r.Note), ct);
+        return Ok(ApiResponse<PayoutResponse>.Ok(payout));
+    }
+
+    /// <summary>What to pay by hand: bank, full account number, holder, amount and a transfer description.</summary>
+    /// <remarks>
+    /// For when no PayOS payout channel is configured. The account is the one a PayOS transfer would use: the
+    /// snapshot account if still verified, otherwise the expert's verified default. Nothing changes until confirm.
+    /// </remarks>
+    /// <response code="200">The transfer details.</response>
+    /// <response code="404">PAYOUT_NOT_FOUND.</response>
+    /// <response code="409">PAYOUT_NOT_TRANSFERABLE, PAYOUT_NO_BANK_ACCOUNT or PAYOUT_ACCOUNT_NOT_VERIFIED.</response>
+    [HttpGet("{payoutId:guid}/manual")]
+    public async Task<IActionResult> ManualInfo(
+        Guid payoutId,
+        [FromServices]
+            IQueryHandler<GetPayoutTransferInfoQuery, PayoutTransferInfoResponse> handler,
+        CancellationToken ct
+    )
+    {
+        var info = await handler.HandleAsync(new(payoutId), ct);
+        return Ok(ApiResponse<PayoutTransferInfoResponse>.Ok(info));
+    }
+
+    /// <summary>Confirms a manual transfer: bank transaction id, the amount typed again, and when it was sent.</summary>
+    /// <remarks>
+    /// The payout becomes SUCCEEDED, the confirming staff member is kept in its history and the expert is told.
+    /// The same checks as a PayOS transfer apply (7-day hold, staff hold, attempts, verified account).
+    /// </remarks>
+    /// <response code="200">The paid payout.</response>
+    /// <response code="404">PAYOUT_NOT_FOUND.</response>
+    /// <response code="409">PAYOUT_BANK_REF_USED, PAYOUT_CHANNEL_AVAILABLE, PAYOUT_NOT_TRANSFERABLE, PAYOUT_ON_HOLD, PAYOUT_HELD, PAYOUT_ATTEMPTS_EXHAUSTED or an account error.</response>
+    /// <response code="400">PAYOUT_AMOUNT_MISMATCH or PAYOUT_MANUAL_INVALID (time in the future).</response>
+    [HttpPost("{payoutId:guid}/manual/confirm")]
+    public async Task<IActionResult> ConfirmManual(
+        Guid payoutId,
+        ConfirmManualPayoutRequest r,
+        [FromServices] ICommandHandler<ConfirmManualPayoutCommand, PayoutResponse> handler,
+        CancellationToken ct
+    )
+    {
+        var payout = await handler.HandleAsync(
+            new(payoutId, UserId, r.BankRef, r.Amount, r.TransferredAt),
+            ct
+        );
+        return Ok(ApiResponse<PayoutResponse>.Ok(payout));
+    }
+
+    /// <summary>Reports a failed manual transfer with the bank's reason; it uses up one attempt.</summary>
+    /// <response code="200">The FAILED payout; the expert is told.</response>
+    /// <response code="404">PAYOUT_NOT_FOUND.</response>
+    /// <response code="409">PAYOUT_CHANNEL_AVAILABLE, PAYOUT_NOT_TRANSFERABLE, PAYOUT_ON_HOLD, PAYOUT_HELD, PAYOUT_ATTEMPTS_EXHAUSTED or an account error.</response>
+    [HttpPost("{payoutId:guid}/manual/fail")]
+    public async Task<IActionResult> FailManual(
+        Guid payoutId,
+        FailManualPayoutRequest r,
+        [FromServices] ICommandHandler<FailManualPayoutCommand, PayoutResponse> handler,
+        CancellationToken ct
+    )
+    {
+        var payout = await handler.HandleAsync(new(payoutId, UserId, r.Reason), ct);
         return Ok(ApiResponse<PayoutResponse>.Ok(payout));
     }
 }

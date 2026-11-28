@@ -128,6 +128,8 @@ export interface PayoutSummary {
   }
   /** Null when PayOS cannot be read */
   balance: number | null
+  /** False when no PayOS payout channel is configured: staff pay by hand */
+  channelAvailable: boolean
 }
 
 export async function getPayoutSummary(
@@ -153,6 +155,10 @@ type PayoutErrorKey =
   | 'payouts.errors.notHeld'
   | 'payouts.errors.unavailable'
   | 'payouts.errors.sessionCheck'
+  | 'payouts.errors.amountMismatch'
+  | 'payouts.errors.manualInvalid'
+  | 'payouts.errors.bankRefUsed'
+  | 'payouts.errors.channelAvailable'
 
 // Billing errors staff can hit on a transfer; other errors keep the server message
 const ERRORS: Record<string, PayoutErrorKey> = {
@@ -168,11 +174,27 @@ const ERRORS: Record<string, PayoutErrorKey> = {
   PAYOUT_NOT_HELD: 'payouts.errors.notHeld',
   PAYMENT_UNAVAILABLE: 'payouts.errors.unavailable',
   SESSION_CHECK_UNAVAILABLE: 'payouts.errors.sessionCheck',
+  PAYOUT_AMOUNT_MISMATCH: 'payouts.errors.amountMismatch',
+  PAYOUT_MANUAL_INVALID: 'payouts.errors.manualInvalid',
+  PAYOUT_BANK_REF_USED: 'payouts.errors.bankRefUsed',
+  PAYOUT_CHANNEL_AVAILABLE: 'payouts.errors.channelAvailable',
+}
+
+const translated = (e: unknown) => {
+  const key = e instanceof ApiError && e.code ? ERRORS[e.code] : undefined
+  if (!key || !(e instanceof ApiError)) return e
+  return new ApiError(String(i18n.t(key, { ns: 'admin' })), e.status, e.code)
 }
 
 async function action(
   id: string,
-  name: 'transfer' | 'refresh' | 'hold' | 'release',
+  name:
+    | 'transfer'
+    | 'refresh'
+    | 'hold'
+    | 'release'
+    | 'manual/confirm'
+    | 'manual/fail',
   body?: object
 ) {
   try {
@@ -182,9 +204,7 @@ async function action(
     )
     return res.data
   } catch (e) {
-    const key = e instanceof ApiError && e.code ? ERRORS[e.code] : undefined
-    if (!key || !(e instanceof ApiError)) throw e
-    throw new ApiError(String(i18n.t(key, { ns: 'admin' })), e.status, e.code)
+    throw translated(e)
   }
 }
 
@@ -201,3 +221,55 @@ export const transferPayout = (id: string) => action(id, 'transfer')
 
 /** Asks PayOS for the outcome of a PROCESSING payout (PayOS sends no payout webhook) */
 export const refreshPayout = (id: string) => action(id, 'refresh')
+
+/** What staff type into the banking app to pay a payout by hand (billing PayoutTransferInfoResponse) */
+export interface PayoutTransferInfo {
+  payoutId: string
+  bankBin: string
+  bankName: string
+  accountNumber: string
+  accountHolderName: string
+  amount: number
+  description: string
+}
+
+/** The full account and amount of a manual transfer; only staff with the payout permission can read it */
+export async function getPayoutTransferInfo(
+  id: string
+): Promise<PayoutTransferInfo> {
+  try {
+    const res = await api.get<Envelope<PayoutTransferInfo>>(
+      `${BASE}/${encodeURIComponent(id)}/manual`
+    )
+    return res.data
+  } catch (e) {
+    throw translated(e)
+  }
+}
+
+/** Confirms a manual transfer: bank transaction id, the amount typed again and when it was sent */
+export const confirmManualPayout = (
+  id: string,
+  bankRef: string,
+  amount: number,
+  transferredAt: string
+) => action(id, 'manual/confirm', { bankRef, amount, transferredAt })
+
+/** Reports a failed manual transfer; it uses up one attempt */
+export const failManualPayout = (id: string, reason: string) =>
+  action(id, 'manual/fail', { reason })
+
+/** Payouts paid within the Vietnam days [fromDay, toDay], as CSV, to match the monthly bank statement */
+export async function downloadPaidPayoutsCsv(fromDay: string, toDay: string) {
+  const blob = await api.get<Blob>(`${BASE}/export`, {
+    params: { from: dayStart(fromDay), to: dayStart(nextDay(toDay)) },
+    responseType: 'blob',
+    timeout: 60_000,
+  })
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = `payouts_${fromDay}_${toDay}.csv`
+  link.click()
+  URL.revokeObjectURL(url)
+}
