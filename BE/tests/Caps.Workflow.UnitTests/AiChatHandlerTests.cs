@@ -150,7 +150,6 @@ public sealed class AiChatHandlerTests
             BillingSwitch = AiBillingSwitch.Create(false, Guid.NewGuid(), Now),
         };
         var conversation = store.AddConversation(Owner, "Tax question");
-        store.Quotas.Add(AiQuota.Create(Owner, 0, Now));
 
         await SendHandler(store, EnabledBillingSettings)
             .HandleAsync(new(conversation.Id, Owner, "Question", Jan1, Dec31), default);
