@@ -114,8 +114,17 @@ def _nearby_years(period_numbers: set[str]) -> set[str]:
     return {str(y) for y in range(min(years) - 5, max(years) + 6)}
 
 
+_REVENUE_RANGE_RE = re.compile(
+    r"\bdoanh\s+thu[^;\n?\d]{0,40}?\d[\d.,]*\s*(?:tỷ|triệu)?[^;\n?\d]{0,25}?\b(?:đến|tới)\b[^;\n?\d]{0,20}?\d",
+    re.IGNORECASE,
+)
+
+
 def mismatched_bracket_rate(question: str, conclusion: str, used_chunks: list) -> str | None:
     """Return a retry note when the conclusion states a CIT rate that contradicts the revenue bracket in the question."""
+    if _REVENUE_RANGE_RE.search(question or ""):
+        # "từ trên 3 tỷ đến không quá 50 tỷ" names a whole bracket, not one revenue figure (TS-03).
+        return None
     revenue = _extract_labeled_vnd((question or "").lower(), r"\b(?:tổng\s+)?doanh\s+thu(?:\s+năm\s+\d{4})?")
     if revenue is None:
         return None
@@ -189,7 +198,10 @@ def _same_lead_word(conclusion: str, hit, figure: str) -> bool:
     figure is not accepted just because the same number appears elsewhere in the context.
     """
     chunk = " ".join(str((hit.payload or {}).get("text_content") or "").lower().split())
-    leads = re.findall(r"(\w+)\s+" + re.escape(figure.lower()) + r"(?![\d,.])", " ".join(conclusion.lower().split()))
+    # Stop only at a longer number ("20" in "20,5" or "20.5"), not at a sentence-ending period ("là 20%.").
+    leads = re.findall(
+        r"(\w+)\s+" + re.escape(figure.lower()) + r"(?!\d|[.,]\d)", " ".join(conclusion.lower().split())
+    )
     return any(f"{lead} {figure.lower()}" in chunk for lead in leads)
 
 

@@ -14,6 +14,8 @@ class Settings(BaseSettings):
     OLLAMA_NUM_PREDICT: int = 768
     OLLAMA_KEEP_ALIVE: str = "30m"
     OLLAMA_MAX_CONCURRENCY: int = 2
+    # Fixed sampling seed so the same request gives the same answer across runs (eval comparability).
+    OLLAMA_SEED: int = 42
     WARMUP_ON_STARTUP: bool = True
     REQUEST_TIMEOUT_SECONDS: int = 75
     READYZ_PROBE_TIMEOUT_SECONDS: float = 8.0

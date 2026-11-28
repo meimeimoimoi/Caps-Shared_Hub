@@ -8,6 +8,7 @@ embedding_model = OllamaEmbeddings(
     base_url=settings.OLLAMA_BASE_URL,
 )
 
+# ChatOllama 0.3.1 has no `seed` field; bound kwargs that are not known params are sent as Ollama options.
 llm_model = ChatOllama(
     model=settings.LLM_MODEL,
     temperature=0.0,
@@ -15,5 +16,4 @@ llm_model = ChatOllama(
     keep_alive=settings.OLLAMA_KEEP_ALIVE,
     base_url=settings.OLLAMA_BASE_URL,
     timeout=settings.OLLAMA_TIMEOUT_SECONDS,
-)
-
+).bind(seed=settings.OLLAMA_SEED)
