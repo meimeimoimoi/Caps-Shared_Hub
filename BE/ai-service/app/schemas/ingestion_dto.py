@@ -12,6 +12,8 @@ class CrawlerChunkItem(BaseModel):
     point: Optional[str]
     path: Optional[str]
     text: str
+    # Target an amending provision changes, e.g. "Bổ sung khoản 15 Điều 4 Nghị định số 320/2025/NĐ-CP"
+    amends: Optional[str] = None
     effective_from: Optional[str] = None
     effective_to: Optional[str] = None
 

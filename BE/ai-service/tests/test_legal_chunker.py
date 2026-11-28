@@ -1,6 +1,9 @@
 import unittest
+from types import SimpleNamespace
 
 from app.modules.ingestion.chunker import LegalChunker
+from app.modules.rag.generator import build_citations, format_context_chunks
+from app.schemas.ingestion_dto import IngestDocRequest
 
 
 def _doc(content_json):
@@ -42,6 +45,22 @@ class LegalChunkerAppendixTests(unittest.TestCase):
     def test_appendices_only_document_still_has_chunks(self):
         chunks = LegalChunker.chunk_document(_doc({"appendices": [{"title": "Phụ lục I", "text": "Danh mục"}]}))
         self.assertEqual(len(chunks), 1)
+
+
+class AmendsTargetTests(unittest.TestCase):
+    def test_crawler_amends_reaches_chunk_and_legal_basis(self):
+        target = "Bổ sung khoản 15 Điều 4 Nghị định số 320/2025/NĐ-CP"
+        req = IngestDocRequest(
+            **_doc(None),
+            chunks=[{"chunk_index": 0, "article": "2", "clause": None, "point": None, "path": "Điều 2",
+                     "text": "“15. Thu nhập được miễn thuế.”", "amends": target}],
+        )
+        chunk = LegalChunker.prepare_ingest_chunks(req)[0]
+        self.assertEqual(chunk["amends"], target)
+
+        hit = SimpleNamespace(payload={"document_number": "141/2026/NĐ-CP", "article": "Điều 2", "amends": target})
+        self.assertEqual(build_citations([hit])[0]["amends"], target)
+        self.assertIn(target, format_context_chunks([hit]))
 
 
 class LegalChunkerAmendmentTests(unittest.TestCase):
