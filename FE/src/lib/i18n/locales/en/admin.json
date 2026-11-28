@@ -1736,7 +1736,8 @@
       "overdue": "Past the {{date}} deadline",
       "dueSoon": "Deadline {{date}} is near",
       "ready": "Ready to send, deadline {{date}}",
-      "holding": "In the 7-day hold, deadline {{date}}"
+      "holding": "In the 7-day hold",
+      "waitingAccount": "Waiting for a verified expert account; the deadline starts once it is verified"
     },
     "history": {
       "title": "History ({{count}})",

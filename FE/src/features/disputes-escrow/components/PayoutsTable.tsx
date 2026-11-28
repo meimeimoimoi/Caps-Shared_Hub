@@ -38,19 +38,22 @@ const TONES = {
 } as const
 
 // Where an unsent payout stands against its hold and deadline (advisor 2026-11-28)
-type Stage = 'overdue' | 'dueSoon' | 'ready' | 'holding'
+type Stage = 'overdue' | 'dueSoon' | 'ready' | 'holding' | 'waitingAccount'
 const STAGE_TONES = {
   overdue: 'text-danger font-semibold',
   dueSoon: 'text-warning font-semibold',
   ready: 'text-fg',
   holding: 'text-fg-muted',
+  waitingAccount: 'text-warning',
 } as const
 const stageOf = (p: Payout, now: number): Stage | null => {
   if (p.status !== 'PENDING' && p.status !== 'FAILED') return null
+  if (now < new Date(p.transferableFrom).getTime()) return 'holding'
+  // No verified account yet: the deadline waits until staff verify one
+  if (!p.dueAt || !p.remindAt) return 'waitingAccount'
   if (now > new Date(p.dueAt).getTime()) return 'overdue'
   if (now > new Date(p.remindAt).getTime()) return 'dueSoon'
-  if (now >= new Date(p.transferableFrom).getTime()) return 'ready'
-  return 'holding'
+  return 'ready'
 }
 
 /* Transfers owed to experts after an escrow is released; staff send them through PayOS payouts */
@@ -75,7 +78,9 @@ export function PayoutsTable() {
     return (
       stage && (
         <p className={`mt-1 ${STAGE_TONES[stage]}`}>
-          {t(`payouts.stage.${stage}`, { date: formatDateTime(p.dueAt) })}
+          {t(`payouts.stage.${stage}`, {
+            date: p.dueAt ? formatDateTime(p.dueAt) : '',
+          })}
         </p>
       )
     )

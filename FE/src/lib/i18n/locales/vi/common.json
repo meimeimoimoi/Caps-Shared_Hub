@@ -144,6 +144,7 @@
       "SUSPENDED": "Dịch vụ {{service}} đang tạm ngưng",
       "REINSTATED": "Dịch vụ {{service}} đã được mở lại"
     },
+    "bankAccountRejected": "Tài khoản {{account}} chưa được xác minh: {{reason}}. Hãy thêm tài khoản khác đứng tên bạn.",
     "payout": {
       "RECORDED": "Khoản thu nhập {{amount}} đ đã được ghi nhận, chuyển được từ ngày {{date}} vào tài khoản đã xác minh.",
       "SUCCEEDED": "Shared Hub đã chuyển {{amount}} đ vào tài khoản ngân hàng của bạn.",

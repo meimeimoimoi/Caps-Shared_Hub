@@ -1726,7 +1726,8 @@
       "overdue": "Quá hạn chót {{date}}",
       "dueSoon": "Sắp đến hạn chót {{date}}",
       "ready": "Sẵn sàng chuyển, hạn chót {{date}}",
-      "holding": "Đang giữ 7 ngày, hạn chót {{date}}"
+      "holding": "Đang giữ 7 ngày",
+      "waitingAccount": "Chờ chuyên gia có tài khoản đã xác minh; hạn chót tính từ lúc xác minh"
     },
     "history": {
       "title": "Lịch sử ({{count}})",

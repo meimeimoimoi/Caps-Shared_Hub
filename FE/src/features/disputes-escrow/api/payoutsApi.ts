@@ -33,10 +33,10 @@ export interface Payout {
   completedAt: string | null
   /** Settlement + 7 calendar days: it cannot be sent earlier */
   transferableFrom: string
-  /** Staff must send it by then: 2 working days after the hold */
-  dueAt: string
+  /** Staff must send it by then: 2 working days after the hold or the account check, null without a verified account */
+  dueAt: string | null
   /** 1 working day before dueAt, when staff are reminded */
-  remindAt: string
+  remindAt: string | null
   /** Every allowed attempt failed; only another verified account of the expert is tried */
   attemptsExhausted: boolean
   /** Status changes, oldest first; never edited */
