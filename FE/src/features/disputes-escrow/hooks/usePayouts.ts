@@ -5,6 +5,8 @@ import {
   useQueryClient,
 } from '@tanstack/react-query'
 import { getExpertNames } from '../api/bankReviewApi'
+import { getDisputes } from '../api/disputesApi'
+import { disputesKeys } from '../api/queryKeys'
 import {
   getPayouts,
   getPayoutSummary,
@@ -37,6 +39,11 @@ export function usePayouts() {
     queryKey: ['private', 'admin', 'disputes-escrow', 'expert-names'],
     queryFn: ({ signal }) => getExpertNames(signal),
   })
+  // Open and closed disputes (the id is the review case): flags payouts of a disputed case
+  const disputes = useQuery({
+    queryKey: disputesKeys.disputes(),
+    queryFn: ({ signal }) => getDisputes(signal),
+  })
   // A failed call may still have moved the payout (e.g. to PROCESSING), so reload either way
   const reload = <T>(call: Promise<T>) =>
     call.finally(() => qc.invalidateQueries({ queryKey: all }))
@@ -49,6 +56,7 @@ export function usePayouts() {
     },
     summary: summary.data,
     names: names.data,
+    disputedCases: new Set((disputes.data ?? []).map((d) => d.id)),
     page,
     setPage,
     transfer: (id: string) => reload(transferPayout(id)),

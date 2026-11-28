@@ -7,6 +7,7 @@ namespace Caps.Billing.Application.DTOs.Responses;
 public sealed record PayoutResponse(
     string Id,
     string SettlementId,
+    string? ReviewCaseId,
     string PayoutType,
     string RecipientUserId,
     long Amount,
@@ -33,6 +34,11 @@ public sealed record PayoutResponse(
         new(
             x.Id.ToString(),
             x.SettlementId.ToString(),
+            // Loaded with the list; null in a transfer's own response, which the page reloads anyway
+            x.Settlement
+                is { } settlement
+                ? settlement.ReviewCaseId.ToString()
+                : null,
             x.PayoutType,
             x.RecipientUserId.ToString(),
             x.Amount,

@@ -3,6 +3,7 @@ namespace Caps.Expert.Application.Abstractions;
 /// <summary>One approved or suspended Expert–Service with the expert's profile, price and load.</summary>
 /// <param name="ApprovedAt">When the qualification first reached APPROVED_FOR_SERVICE.</param>
 /// <param name="Fee">Null while the expert has not priced the service.</param>
+/// <param name="AccountStatus">The account status copied from auth (ACTIVE, LOCKED…).</param>
 public sealed record ManagedExpertRow(
     Guid QualificationId,
     Guid ApplicationId,
@@ -21,7 +22,8 @@ public sealed record ManagedExpertRow(
     int ActiveCases,
     DateTimeOffset? ApprovedAt,
     Guid? CompetencyReviewerUserId,
-    IReadOnlyList<ManagedExpertEventRow> Events
+    IReadOnlyList<ManagedExpertEventRow> Events,
+    string? AccountStatus = null
 );
 
 /// <summary>One status change of the qualification, oldest first.</summary>

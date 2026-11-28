@@ -1733,6 +1733,13 @@
     "retry": "Chuyển lại",
     "refresh": "Kiểm tra kết quả",
     "heldUntil": "Chuyển được từ {{date}}",
+    "signals": {
+      "account": "Tài khoản đang bị khóa ({{status}}): xem lý do",
+      "violations": "{{count}} điểm vi phạm trong 90 ngày",
+      "serviceSuspended": "Có dịch vụ đang tạm ngưng",
+      "disputed": "Case có khiếu nại: xem kết quả",
+      "case": "Case {{id}}"
+    },
     "fee": "Thực nhận đủ số tiền (không khấu trừ thuế); phí chuyển khoản {{fee}} do nền tảng chịu",
     "hold": {
       "open": "Tạm giữ",

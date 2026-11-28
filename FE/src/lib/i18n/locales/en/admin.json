@@ -1743,6 +1743,13 @@
     "retry": "Transfer again",
     "refresh": "Check result",
     "heldUntil": "Can be sent from {{date}}",
+    "signals": {
+      "account": "Account locked ({{status}}): see why",
+      "violations": "{{count}} violation points in 90 days",
+      "serviceSuspended": "A service is suspended",
+      "disputed": "Disputed case: see the outcome",
+      "case": "Case {{id}}"
+    },
     "fee": "The expert receives the full amount (no tax withheld); the {{fee}} transfer fee is borne by the platform",
     "hold": {
       "open": "Hold",

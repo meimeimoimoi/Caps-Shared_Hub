@@ -56,10 +56,22 @@ export async function getBankAccountsForReview(
   return res.data
 }
 
-/** Registered name and email per expert account id, to compare with the account holder */
+/** Who an expert account is, and the risk signals staff weigh before paying them */
+export interface ExpertInfo {
+  name: string | null
+  email: string | null
+  /** Account status copied from auth; SUSPENDED means the account is locked */
+  accountStatus: string | null
+  /** Points not excused in the last 90 days (6 hides, 9 suspends) */
+  violationPoints: number
+  /** At least one of the expert's services is suspended */
+  serviceSuspended: boolean
+}
+
+/** Registered name and email per expert account id, with their risk signals */
 export async function getExpertNames(
   signal?: AbortSignal
-): Promise<Map<string, { name: string | null; email: string | null }>> {
+): Promise<Map<string, ExpertInfo>> {
   if (isExpertDemo) return new Map()
   const res = await api.get<
     Envelope<
@@ -67,16 +79,25 @@ export async function getExpertNames(
         expertUserId: string
         displayName: string | null
         email: string | null
+        status: string
+        accountStatus: string | null
+        violationPoints: number
       }[]
     >
   >(MANAGED_EXPERTS, { signal })
   // One row per expert–service, so the same expert can appear more than once
-  return new Map(
-    res.data.map((e) => [
-      e.expertUserId,
-      { name: e.displayName, email: e.email },
-    ])
-  )
+  const map = new Map<string, ExpertInfo>()
+  for (const e of res.data) {
+    const seen = map.get(e.expertUserId)
+    map.set(e.expertUserId, {
+      name: e.displayName,
+      email: e.email,
+      accountStatus: e.accountStatus ?? null,
+      violationPoints: e.violationPoints ?? 0,
+      serviceSuspended: (seen?.serviceSuspended ?? false) || e.status === 'SUSPENDED',
+    })
+  }
+  return map
 }
 
 type BankReviewErrorKey =
