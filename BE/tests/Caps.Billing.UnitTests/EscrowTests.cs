@@ -121,7 +121,7 @@ public sealed class EscrowTests
             Now
         );
 
-        var payout = PayoutTransaction.ToExpert(settlement, Expert, account, Now);
+        var payout = PayoutTransaction.ToExpert(settlement, Expert, null, account, Now);
 
         Assert.Equal(90_000, payout.Amount);
         Assert.Equal(PayoutStatus.Pending, payout.Status);
@@ -139,7 +139,7 @@ public sealed class EscrowTests
             Now
         );
 
-        var payout = PayoutTransaction.ToExpert(settlement, Expert, null, Now);
+        var payout = PayoutTransaction.ToExpert(settlement, Expert, null, null, Now);
 
         Assert.Null(payout.BankAccountId);
         Assert.Null(payout.SnapBankBin);

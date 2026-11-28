@@ -123,6 +123,7 @@ class LegalIndexer:
                 "article": c["article"],
                 "clause": c["clause"],
                 "point": c["point"],
+                "amends": c.get("amends"),
                 "effective_from": eff_from_rfc,
                 "effective_to": eff_to_rfc,
                 "text_content": c["text"],

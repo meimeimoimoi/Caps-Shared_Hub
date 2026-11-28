@@ -16,8 +16,8 @@ public sealed record AddBankAccountRequest(
     bool IsDefault = false
 )
 {
-    public AddBankAccountCommand ToCommand(Guid userId) =>
-        new(userId, BankBin, BankName, AccountNumber, AccountHolderName, IsDefault);
+    public AddBankAccountCommand ToCommand(Guid userId, string? email) =>
+        new(userId, BankBin, BankName, AccountNumber, AccountHolderName, IsDefault, email);
 }
 
 /// <summary>Why staff refuse a bank account; shown to the expert.</summary>

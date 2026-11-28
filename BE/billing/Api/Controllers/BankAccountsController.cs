@@ -52,7 +52,7 @@ public sealed class BankAccountsController(ICurrentUser currentUser) : Controlle
         CancellationToken ct
     )
     {
-        var accounts = await handler.HandleAsync(r.ToCommand(UserId), ct);
+        var accounts = await handler.HandleAsync(r.ToCommand(UserId, currentUser.Email), ct);
         return Result(accounts);
     }
 

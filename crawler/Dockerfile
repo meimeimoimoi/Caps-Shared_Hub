@@ -3,8 +3,9 @@
 # bookworm: Playwright 1.48 has no install-deps support for newer Debian (trixie)
 FROM python:3.12-slim-bookworm
 
+# libarchive-tools: bsdtar unpacks .rar appendix archives (tax forms) for src/appendix.py
 RUN apt-get update && apt-get install -y --no-install-recommends \
-        tesseract-ocr tesseract-ocr-vie \
+        tesseract-ocr tesseract-ocr-vie libarchive-tools \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app

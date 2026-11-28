@@ -79,7 +79,8 @@ public sealed class ManagedExpertReader(ExpertDbContext db) : IManagedExpertRead
                             e.Note,
                             e.CreatedAt
                         ))
-                        .ToArray()
+                        .ToArray(),
+                    profile.AccountStatus
                 );
             })
             .OrderByDescending(r => r.ApprovedAt)

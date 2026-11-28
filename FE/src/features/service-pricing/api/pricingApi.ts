@@ -1,6 +1,7 @@
 import { api } from '@/lib/api-client'
 import { isExpertDemo } from '@/lib/expert-data-source'
 import type {
+  AiBillingSwitch,
   NewTierInput,
   PackageInput,
   PricingOverview,
@@ -85,4 +86,17 @@ export async function savePackage(body: PackageInput) {
   }
   if (body.id) await api.put(`${BASE}/packages/${body.id}`, body)
   else await api.post(`${BASE}/packages`, body)
+}
+
+// Workflow owns the paid-AI switch (PricingManage permission)
+const AI_BILLING = '/api/v1/admin/ai-billing'
+
+export async function getAiBilling(signal?: AbortSignal) {
+  const res = await api.get<{ data: AiBillingSwitch }>(AI_BILLING, { signal })
+  return res.data
+}
+
+export async function setAiBilling(enabled: boolean) {
+  const res = await api.put<{ data: AiBillingSwitch }>(AI_BILLING, { enabled })
+  return res.data
 }

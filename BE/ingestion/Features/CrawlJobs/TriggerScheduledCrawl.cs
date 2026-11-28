@@ -48,7 +48,16 @@ public sealed class TriggerScheduledCrawlHandler(
     public static DateTimeOffset MonthStart(DateTimeOffset now)
     {
         var local = now.ToOffset(VietnamOffset);
-        return new DateTimeOffset(local.Year, local.Month, 1, 0, 0, 0, VietnamOffset);
+        // Npgsql only accepts UTC offsets for timestamptz parameters
+        return new DateTimeOffset(
+            local.Year,
+            local.Month,
+            1,
+            0,
+            0,
+            0,
+            VietnamOffset
+        ).ToUniversalTime();
     }
 
     /// <summary>

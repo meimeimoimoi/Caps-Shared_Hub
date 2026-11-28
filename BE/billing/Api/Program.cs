@@ -14,6 +14,7 @@ builder.Services.AddBillingSecrets(config, builder.Environment);
 builder.Services.AddBillingPayments(config);
 builder.Services.AddBillingApplication();
 builder.Services.AddBillingInfrastructure(postgres);
+builder.Services.AddBillingNotifications(config, builder.Environment);
 
 var app = builder.Build();
 app.MigrateInDevelopment<BillingDbContext>();

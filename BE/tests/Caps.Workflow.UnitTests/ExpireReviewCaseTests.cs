@@ -284,6 +284,7 @@ public sealed class ExpireReviewCaseTests
         public Task ReleaseAsync(
             Guid reviewCaseId,
             Guid expertUserId,
+            string? expertEmail,
             ReviewSettlement settlement,
             CancellationToken ct
         )

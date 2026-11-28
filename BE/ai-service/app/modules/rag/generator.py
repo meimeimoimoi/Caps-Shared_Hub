@@ -64,6 +64,7 @@ def build_citations(retrieved_chunks: list, *, include_text: bool = True) -> lis
             "article": p.get("article"),
             "clause": p.get("clause"),
             "point": p.get("point"),
+            "amends": p.get("amends"),
             "effective_from": iso_date_only(p.get("effective_from")),
             "effective_to": iso_date_only(p.get("effective_to")),
         }
@@ -86,6 +87,7 @@ def format_context_chunks(retrieved_chunks: list) -> str:
                 payload.get("article"),
                 payload.get("clause"),
                 payload.get("point"),
+                payload.get("amends"),
             )
             if part and str(part).strip()
         ]
@@ -107,6 +109,7 @@ def _build_canonical_legal_basis(used_chunks: list) -> str:
                 payload.get("article"),
                 payload.get("clause"),
                 payload.get("point"),
+                payload.get("amends"),
             )
             if part and str(part).strip()
         ]

@@ -265,6 +265,7 @@ class LegalChunker:
                         "article": _format_prefix("Điều", c.article),
                         "clause": clause_label,
                         "point": point_label,
+                        "amends": c.amends,
                         "effective_from": c.effective_from or default_eff_from,
                         "effective_to": c.effective_to or req.effective_to,
                         "text": c.text,

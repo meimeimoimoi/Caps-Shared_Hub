@@ -104,6 +104,16 @@ export function useNotifications() {
   }
 
   // Final approval, return for review, suspension or reinstatement of one service
+  const payoutChanges = {
+    RECORDED: 'notifications.payout.RECORDED',
+    SUCCEEDED: 'notifications.payout.SUCCEEDED',
+    FAILED: 'notifications.payout.FAILED',
+    ACCOUNT_NEEDED: 'notifications.payout.ACCOUNT_NEEDED',
+    ACCOUNT_MISSING: 'notifications.payout.ACCOUNT_MISSING',
+    HELD: 'notifications.payout.HELD',
+    RELEASED: 'notifications.payout.RELEASED',
+  } as const
+
   const accessItem = (n: AppNotification): ShellNotification | null => {
     const change = n.data.change as keyof typeof accessChanges
     if (!(change in accessChanges)) return null
@@ -254,6 +264,36 @@ export function useNotifications() {
       }
     if (n.type === 'EXPERT_COMPETENCY_DECIDED') return competencyItem(n)
     if (n.type === 'EXPERT_SERVICE_ACCESS_CHANGED') return accessItem(n)
+    if (n.type === 'EXPERT_BANK_ACCOUNT_REJECTED')
+      return {
+        id: n.id,
+        text: t('notifications.bankAccountRejected', {
+          account: `${String(n.data.bankName ?? '')} •••• ${String(n.data.accountLast4 ?? '')}`,
+          reason: typeof n.data.reason === 'string' ? n.data.reason : '',
+        }),
+        to: typeof n.data.link === 'string' ? n.data.link : '/expert/income',
+        tone: 'warning',
+        read: n.readAt != null,
+      }
+    if (n.type === 'EXPERT_PAYOUT_NOTICE') {
+      const change = n.data.change as keyof typeof payoutChanges
+      if (!(change in payoutChanges)) return null
+      return {
+        id: n.id,
+        text: t(payoutChanges[change], {
+          amount: Number(n.data.amount).toLocaleString('vi-VN'),
+          date:
+            typeof n.data.transferableFrom === 'string'
+              ? new Date(n.data.transferableFrom).toLocaleDateString('vi-VN', {
+                  timeZone: 'Asia/Ho_Chi_Minh',
+                })
+              : '',
+        }),
+        to: typeof n.data.link === 'string' ? n.data.link : '/expert/income',
+        tone: change === 'RECORDED' || change === 'SUCCEEDED' ? undefined : 'warning',
+        read: n.readAt != null,
+      }
+    }
     if (n.type === 'EXPERT_PRICE_OUT_OF_RANGE')
       return {
         id: n.id,

@@ -1,4 +1,5 @@
 using Caps.Common.Application;
+using Caps.Common.Domain;
 using Caps.Workflow.Application.Abstractions;
 using Caps.Workflow.Application.Common;
 using Caps.Workflow.Application.DTOs.Responses;

@@ -1,3 +1,5 @@
+using Caps.Common.Domain;
+
 namespace Caps.Workflow.Domain.Review;
 
 // The review itself: payment, the expert answering, questions to the client, delivery, confirmation

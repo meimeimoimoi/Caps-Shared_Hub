@@ -1,4 +1,5 @@
 using Caps.Billing.Application.Abstractions;
+using Caps.Billing.Application.Common;
 using Caps.Billing.Domain;
 using Caps.Common.Application;
 
@@ -13,7 +14,8 @@ public sealed record SettleCaseEscrowCommand(
     Guid ExpertUserId,
     long UserRefund,
     long PlatformFee,
-    long ExpertPayout
+    long ExpertPayout,
+    string? ExpertEmail = null
 );
 
 /// <summary>
@@ -28,7 +30,8 @@ public sealed class SettleCaseEscrowHandler(
     IBankAccountRepository bankAccounts,
     IBillingUserLock userLock,
     IUnitOfWork unitOfWork,
-    TimeProvider clock
+    TimeProvider clock,
+    IBillingNotificationOutbox outbox
 ) : ICommandHandler<SettleCaseEscrowCommand>
 {
     public async Task HandleAsync(SettleCaseEscrowCommand command, CancellationToken ct)
@@ -71,9 +74,15 @@ public sealed class SettleCaseEscrowHandler(
         {
             var accounts = await bankAccounts.ListAsync(command.ExpertUserId, ct);
             var account = accounts.FirstOrDefault(x => x.IsDefault);
-            settlement.PayoutTransactions.Add(
-                PayoutTransaction.ToExpert(settlement, command.ExpertUserId, account, now)
+            var payout = PayoutTransaction.ToExpert(
+                settlement,
+                command.ExpertUserId,
+                command.ExpertEmail,
+                account,
+                now
             );
+            settlement.PayoutTransactions.Add(payout);
+            PayoutNotices.Enqueue(outbox, payout, now);
         }
         settlements.Add(settlement);
         await unitOfWork.SaveChangesAsync(ct);

@@ -31,6 +31,22 @@ public sealed class SettleCaseEscrowHandlerTests
         Assert.Equal("INVALID_PAGING", e.Code);
     }
 
+    // The expert hears the income is recorded, with the 7-day hold, at the email from the review case
+    [Fact]
+    public async Task Settling_tells_the_expert_the_income_is_recorded()
+    {
+        var run = new Run();
+
+        await run.SettleAsync(0, 400_000, 600_000);
+
+        var notice = Assert.Single(run.Outbox.Sent);
+        Assert.Equal(
+            ("RECORDED", run.Expert, "expert@caps.test", 600_000L),
+            (notice.Change, notice.ExpertUserId, notice.Email, notice.Amount)
+        );
+        Assert.Equal(Now.AddDays(PayoutTransaction.HoldDays), notice.TransferableFrom);
+    }
+
     [Fact]
     public async Task An_on_time_case_pays_the_expert_and_empties_the_held_credits()
     {
@@ -160,6 +176,7 @@ public sealed class SettleCaseEscrowHandlerTests
         public Ledger Ledger { get; } = new();
         public BankAccounts BankAccounts { get; } = new();
         public UnitOfWork UnitOfWork { get; } = new();
+        public FakeNotificationOutbox Outbox { get; } = new();
         public SettleCaseEscrowHandler Handler { get; }
 
         public Run()
@@ -177,12 +194,16 @@ public sealed class SettleCaseEscrowHandlerTests
                 BankAccounts,
                 new UserLock(),
                 UnitOfWork,
-                new FixedClock()
+                new FixedClock(),
+                Outbox
             );
         }
 
         public Task SettleAsync(long refund, long fee, long payout) =>
-            Handler.HandleAsync(new(CaseId, Expert, refund, fee, payout), CancellationToken.None);
+            Handler.HandleAsync(
+                new(CaseId, Expert, refund, fee, payout, "expert@caps.test"),
+                CancellationToken.None
+            );
     }
 
     private sealed class FixedClock : TimeProvider

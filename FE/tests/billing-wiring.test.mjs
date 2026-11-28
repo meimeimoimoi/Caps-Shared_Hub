@@ -130,11 +130,37 @@ test('payouts send the status filter only when one is chosen', async () => {
       return { data: { items: [], total: 0 } }
     },
   })
-  await getPayouts(null, 1)
-  await getPayouts('PENDING', 2)
+  await getPayouts({ status: null }, 1)
+  await getPayouts(
+    {
+      status: 'PENDING',
+      recipientUserId: 'u1',
+      fromDay: '2026-11-01',
+      toDay: '2026-11-30',
+      minAmount: 100000,
+    },
+    2
+  )
+  const none = {
+    recipientUserId: undefined,
+    from: undefined,
+    to: undefined,
+    minAmount: undefined,
+    maxAmount: undefined,
+  }
   assert.deepEqual(params, [
-    { status: undefined, page: 1, pageSize: 20 },
-    { status: 'PENDING', page: 2, pageSize: 20 },
+    { status: undefined, page: 1, pageSize: 20, ...none },
+    {
+      status: 'PENDING',
+      page: 2,
+      pageSize: 20,
+      ...none,
+      recipientUserId: 'u1',
+      // Vietnam days: the "to" day is included up to its midnight
+      from: '2026-11-01T00:00:00+07:00',
+      to: '2026-12-01T00:00:00+07:00',
+      minAmount: 100000,
+    },
   ])
 })
 
@@ -206,7 +232,7 @@ test('bank review lists by status and posts verify and reject with the reason', 
   ])
 })
 
-test('expert names are keyed by account id for the review table', async () => {
+test('expert names are keyed by account id, with their risk signals', async () => {
   const { getExpertNames } = billing(
     'features/disputes-escrow/api/bankReviewApi.ts',
     {
@@ -214,16 +240,31 @@ test('expert names are keyed by account id for the review table', async () => {
         assert.equal(url, '/api/v1/admin/experts/managed')
         return {
           data: [
-            { expertUserId: 'u1', displayName: 'Nguyễn Văn A', email: 'a@x.vn' },
-            { expertUserId: 'u1', displayName: 'Nguyễn Văn A', email: 'a@x.vn' },
+            { expertUserId: 'u1', displayName: 'Nguyễn Văn A', email: 'a@x.vn', status: 'SUSPENDED', accountStatus: 'SUSPENDED', violationPoints: 6 },
+            { expertUserId: 'u1', displayName: 'Nguyễn Văn A', email: 'a@x.vn', status: 'APPROVED_FOR_SERVICE', accountStatus: 'SUSPENDED', violationPoints: 6 },
+            { expertUserId: 'u2', displayName: 'Trần B', email: 'b@x.vn', status: 'APPROVED_FOR_SERVICE' },
           ],
         }
       },
     }
   )
   const names = await getExpertNames()
-  assert.equal(names.size, 1)
-  assert.deepEqual(names.get('u1'), { name: 'Nguyễn Văn A', email: 'a@x.vn' })
+  assert.equal(names.size, 2)
+  // One suspended service is enough to flag the expert, whatever order the rows come in
+  assert.deepEqual(names.get('u1'), {
+    name: 'Nguyễn Văn A',
+    email: 'a@x.vn',
+    accountStatus: 'SUSPENDED',
+    violationPoints: 6,
+    serviceSuspended: true,
+  })
+  assert.deepEqual(names.get('u2'), {
+    name: 'Trần B',
+    email: 'b@x.vn',
+    accountStatus: null,
+    violationPoints: 0,
+    serviceSuspended: false,
+  })
 })
 
 test('bank review errors become staff messages', async () => {

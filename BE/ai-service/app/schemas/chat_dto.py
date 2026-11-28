@@ -30,6 +30,7 @@ class CitationItem(BaseModel):
     article: Optional[str] = None
     clause: Optional[str] = None
     point: Optional[str] = None
+    amends: Optional[str] = None
     text: Optional[str] = None
     effective_from: Optional[str] = None
     effective_to: Optional[str] = None

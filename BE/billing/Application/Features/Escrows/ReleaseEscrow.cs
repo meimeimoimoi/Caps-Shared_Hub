@@ -2,6 +2,7 @@ using Caps.Billing.Application.Abstractions;
 using Caps.Billing.Application.DTOs.Responses;
 using Caps.Billing.Domain;
 using Caps.Common.Application;
+using Caps.Common.Domain;
 
 namespace Caps.Billing.Application.Features.Escrows;
 
@@ -20,7 +21,8 @@ public sealed class ReleaseEscrowHandler(
     IBankAccountRepository bankAccounts,
     IBillingUserLock userLock,
     IUnitOfWork unitOfWork,
-    TimeProvider clock
+    TimeProvider clock,
+    WorkCalendar calendar
 ) : ICommandHandler<ReleaseEscrowCommand, SettlementResponse>
 {
     public async Task<SettlementResponse> HandleAsync(
@@ -49,12 +51,22 @@ public sealed class ReleaseEscrowHandler(
         {
             var accounts = await bankAccounts.ListAsync(command.ExpertUserId, ct);
             var account = accounts.FirstOrDefault(x => x.IsDefault);
-            payout = PayoutTransaction.ToExpert(settlement, command.ExpertUserId, account, now);
+            payout = PayoutTransaction.ToExpert(
+                settlement,
+                command.ExpertUserId,
+                null,
+                account,
+                now
+            );
             settlement.PayoutTransactions.Add(payout);
         }
         settlements.Add(settlement);
         await unitOfWork.SaveChangesAsync(ct);
         await tx.CommitAsync(ct);
-        return SettlementResponse.From(settlement, escrow, payout);
+        return SettlementResponse.From(
+            settlement,
+            escrow,
+            payout == null ? null : PayoutResponse.From(payout, calendar)
+        );
     }
 }

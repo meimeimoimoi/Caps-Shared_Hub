@@ -143,6 +143,22 @@ public sealed class AiChatHandlerTests
     }
 
     [Fact]
+    public async Task The_admin_switch_turned_off_makes_ai_free_even_when_the_setting_charges()
+    {
+        var store = new Store
+        {
+            BillingSwitch = AiBillingSwitch.Create(false, Guid.NewGuid(), Now),
+        };
+        var conversation = store.AddConversation(Owner, "Tax question");
+
+        await SendHandler(store, EnabledBillingSettings)
+            .HandleAsync(new(conversation.Id, Owner, "Question", Jan1, Dec31), default);
+
+        Assert.Empty(store.HoldCalls);
+        Assert.Equal(AiUsagePaidWith.Free, Assert.Single(store.Usages).PaidWith);
+    }
+
+    [Fact]
     public async Task Send_rejects_when_wallet_credits_are_exhausted()
     {
         var store = new Store { WalletBalance = 500 };
@@ -810,7 +826,7 @@ public sealed class AiChatHandlerTests
     {
         var billing = settings ?? FreeBillingSettings;
         var time = clock ?? new FixedClock();
-        var chargeService = new AiCreditChargeService(store, store, store, billing, time);
+        var chargeService = new AiCreditChargeService(store, store, store, store, billing, time);
         return new(store, store, store, chargeService, billing, store, time);
     }
 
@@ -822,7 +838,7 @@ public sealed class AiChatHandlerTests
     {
         var billing = settings ?? FreeBillingSettings;
         var time = clock ?? new FixedClock();
-        var chargeService = new AiCreditChargeService(store, store, store, billing, time);
+        var chargeService = new AiCreditChargeService(store, store, store, store, billing, time);
         return new(store, store, store, chargeService, billing, store, time);
     }
 
@@ -834,7 +850,7 @@ public sealed class AiChatHandlerTests
     {
         var billing = settings ?? FreeBillingSettings;
         var time = clock ?? new FixedClock();
-        var chargeService = new AiCreditChargeService(store, store, store, billing, time);
+        var chargeService = new AiCreditChargeService(store, store, store, store, billing, time);
         return new(store, store, chargeService, store, time);
     }
 
@@ -858,6 +874,7 @@ public sealed class AiChatHandlerTests
             IAiQuotaRepository,
             IAiUsageRepository,
             IAiCredits,
+            IAiBillingSwitchRepository,
             IRagQueryClient,
             IUnitOfWork,
             ITransaction
@@ -866,6 +883,13 @@ public sealed class AiChatHandlerTests
         public List<ChatMessage> Messages { get; } = [];
         public Dictionary<Guid, AiQuota> Quotas { get; } = [];
         public List<AiUsage> Usages { get; } = [];
+        public AiBillingSwitch? BillingSwitch { get; set; }
+
+        public Task<AiBillingSwitch?> FindAsync(CancellationToken ct) =>
+            Task.FromResult(BillingSwitch);
+
+        public void Add(AiBillingSwitch aiBillingSwitch) => BillingSwitch = aiBillingSwitch;
+
         public List<Guid> HoldCalls { get; } = [];
         public List<Guid> CaptureCalls { get; } = [];
         public List<Guid> ReleaseCalls { get; } = [];

@@ -136,6 +136,79 @@ public static class BillingErrors
             "The expert's bank account has not been verified by staff."
         );
 
+    public static AppException PayoutOnHold(DateTimeOffset until) =>
+        new(
+            ErrorType.Conflict,
+            "PAYOUT_ON_HOLD",
+            $"The payout is held until {until:O} and cannot be sent before then."
+        );
+
+    public static AppException PayoutAttemptsExhausted(int max) =>
+        new(
+            ErrorType.Conflict,
+            "PAYOUT_ATTEMPTS_EXHAUSTED",
+            $"The payout failed {max} times; the expert must link another verified bank account."
+        );
+
+    public static AppException PayoutInsufficientBalance(long balance) =>
+        new(
+            ErrorType.Conflict,
+            "PAYOUT_INSUFFICIENT_BALANCE",
+            $"The PayOS payout account holds {balance} VND, less than this payout."
+        );
+
+    public static AppException PayoutHeld(DateTimeOffset reviewBy) =>
+        new(
+            ErrorType.Conflict,
+            "PAYOUT_HELD",
+            $"The payout is on hold for review until {reviewBy:O}."
+        );
+
+    public static AppException PayoutAmountMismatch(long expected) =>
+        new(
+            ErrorType.Validation,
+            "PAYOUT_AMOUNT_MISMATCH",
+            $"The amount entered does not match the payout ({expected} VND)."
+        );
+
+    public static AppException PayoutManualInvalid() =>
+        new(
+            ErrorType.Validation,
+            "PAYOUT_MANUAL_INVALID",
+            "The transfer time cannot be in the future."
+        );
+
+    public static AppException PayoutBankRefUsed() =>
+        new(
+            ErrorType.Conflict,
+            "PAYOUT_BANK_REF_USED",
+            "This bank transaction id already confirms another payout."
+        );
+
+    public static AppException PayoutChannelAvailable() =>
+        new(
+            ErrorType.Conflict,
+            "PAYOUT_CHANNEL_AVAILABLE",
+            "The PayOS payout channel is configured; send the payout through it."
+        );
+
+    public static AppException PayoutExportRangeInvalid(int maxDays) =>
+        new(
+            ErrorType.Validation,
+            "PAYOUT_EXPORT_RANGE_INVALID",
+            $"The export range must end after it starts and span at most {maxDays} days."
+        );
+
+    public static AppException PayoutNotHeld() =>
+        new(ErrorType.Conflict, "PAYOUT_NOT_HELD", "The payout is not on hold.");
+
+    public static AppException PayoutHoldInvalid(int maxDays) =>
+        new(
+            ErrorType.Validation,
+            "PAYOUT_HOLD_INVALID",
+            $"A hold needs a reason of at least 10 characters and a review within 1 to {maxDays} days."
+        );
+
     public static AppException AiCreditHoldNotFound() =>
         new(
             ErrorType.NotFound,

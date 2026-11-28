@@ -18,7 +18,7 @@ namespace Caps.Billing.Infrastructure.Persistence.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasDefaultSchema("billing")
-                .HasAnnotation("ProductVersion", "8.0.14")
+                .HasAnnotation("ProductVersion", "9.0.9")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -75,6 +75,10 @@ namespace Caps.Billing.Infrastructure.Persistence.Migrations
                         .HasColumnType("boolean")
                         .HasDefaultValue(false)
                         .HasColumnName("is_default");
+
+                    b.Property<string>("OwnerEmail")
+                        .HasColumnType("text")
+                        .HasColumnName("owner_email");
 
                     b.Property<string>("RejectionReason")
                         .HasColumnType("text")
@@ -395,6 +399,48 @@ namespace Caps.Billing.Infrastructure.Persistence.Migrations
                     b.ToTable("payment_transaction", "billing");
                 });
 
+            modelBuilder.Entity("Caps.Billing.Domain.PayoutStatusHistory", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("AccountLast4")
+                        .HasColumnType("text")
+                        .HasColumnName("account_last4");
+
+                    b.Property<Guid?>("ActorUserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("actor_user_id");
+
+                    b.Property<DateTimeOffset>("At")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("at");
+
+                    b.Property<int>("AttemptNo")
+                        .HasColumnType("integer")
+                        .HasColumnName("attempt_no");
+
+                    b.Property<string>("Note")
+                        .HasColumnType("text")
+                        .HasColumnName("note");
+
+                    b.Property<Guid>("PayoutId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("payout_id");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("status");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PayoutId");
+
+                    b.ToTable("payout_status_history", "billing");
+                });
+
             modelBuilder.Entity("Caps.Billing.Domain.PayoutTransaction", b =>
                 {
                     b.Property<Guid>("Id")
@@ -426,6 +472,23 @@ namespace Caps.Billing.Infrastructure.Persistence.Migrations
                         .HasColumnName("created_at")
                         .HasDefaultValueSql("now()");
 
+                    b.Property<DateTimeOffset?>("HeldAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("held_at");
+
+                    b.Property<Guid?>("HeldBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("held_by");
+
+                    b.Property<string>("HoldReason")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("hold_reason");
+
+                    b.Property<DateTimeOffset?>("HoldReviewBy")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("hold_review_by");
+
                     b.Property<string>("LastError")
                         .HasColumnType("text")
                         .HasColumnName("last_error");
@@ -446,9 +509,17 @@ namespace Caps.Billing.Infrastructure.Persistence.Migrations
                         .HasColumnType("text")
                         .HasColumnName("provider_ref");
 
+                    b.Property<string>("RecipientEmail")
+                        .HasColumnType("text")
+                        .HasColumnName("recipient_email");
+
                     b.Property<Guid>("RecipientUserId")
                         .HasColumnType("uuid")
                         .HasColumnName("recipient_user_id");
+
+                    b.Property<DateTimeOffset?>("ReleasedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("released_at");
 
                     b.Property<Guid>("SettlementId")
                         .HasColumnType("uuid")
@@ -476,6 +547,10 @@ namespace Caps.Billing.Infrastructure.Persistence.Migrations
                         .HasColumnType("text")
                         .HasDefaultValue("PENDING")
                         .HasColumnName("status");
+
+                    b.Property<long?>("TransferFee")
+                        .HasColumnType("bigint")
+                        .HasColumnName("transfer_fee");
 
                     b.Property<DateTimeOffset>("UpdatedAt")
                         .ValueGeneratedOnAdd()
@@ -549,6 +624,40 @@ namespace Caps.Billing.Infrastructure.Persistence.Migrations
                     b.ToTable("settlement", "billing");
                 });
 
+            modelBuilder.Entity("Caps.Billing.Infrastructure.Messaging.NotificationOutboxEntry", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("MessageType")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)")
+                        .HasColumnName("message_type");
+
+                    b.Property<string>("Payload")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("payload");
+
+                    b.Property<DateTimeOffset?>("SentAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("sent_at");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SentAt", "CreatedAt")
+                        .HasDatabaseName("ix_notification_outbox_pending");
+
+                    b.ToTable("notification_outbox", "billing");
+                });
+
             modelBuilder.Entity("Caps.Billing.Domain.CreditLedger", b =>
                 {
                     b.HasOne("Caps.Billing.Domain.PaymentTransaction", "PaymentTransaction")
@@ -557,6 +666,16 @@ namespace Caps.Billing.Infrastructure.Persistence.Migrations
                         .HasConstraintName("fk_credit_ledger_70");
 
                     b.Navigation("PaymentTransaction");
+                });
+
+            modelBuilder.Entity("Caps.Billing.Domain.PayoutStatusHistory", b =>
+                {
+                    b.HasOne("Caps.Billing.Domain.PayoutTransaction", null)
+                        .WithMany("History")
+                        .HasForeignKey("PayoutId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_payout_status_history_payout");
                 });
 
             modelBuilder.Entity("Caps.Billing.Domain.PayoutTransaction", b =>
@@ -576,6 +695,11 @@ namespace Caps.Billing.Infrastructure.Persistence.Migrations
                     b.Navigation("BankAccount");
 
                     b.Navigation("Settlement");
+                });
+
+            modelBuilder.Entity("Caps.Billing.Domain.PayoutTransaction", b =>
+                {
+                    b.Navigation("History");
                 });
 
             modelBuilder.Entity("Caps.Billing.Domain.Settlement", b =>

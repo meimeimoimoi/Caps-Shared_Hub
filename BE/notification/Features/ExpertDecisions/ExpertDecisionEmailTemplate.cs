@@ -312,6 +312,64 @@ public static class ExpertDecisionEmailTemplate
         return Render(copy, "Quản trị viên", email, m.OccurredAt, link, []);
     }
 
+    public static Content BuildPayoutDigest(PayoutDigestEvent m, string email, string link)
+    {
+        var lines = new List<Issue>();
+        if (m.Overdue > 0)
+        {
+            lines.Add(
+                new Issue(
+                    "Quá hạn chót",
+                    $"{m.Overdue} lệnh",
+                    $"Tổng {Vnd(m.OverdueAmount)}; cần chuyển ngay."
+                )
+            );
+        }
+        if (m.DueSoon > 0)
+        {
+            lines.Add(
+                new Issue(
+                    "Sắp đến hạn chót",
+                    $"{m.DueSoon} lệnh",
+                    "Hạn chót trong 1 ngày làm việc."
+                )
+            );
+        }
+        if (m.Ready > 0)
+        {
+            lines.Add(
+                new Issue("Sẵn sàng chuyển", $"{m.Ready} lệnh", "Đã hết thời gian giữ 7 ngày.")
+            );
+        }
+        if (m.HeldPastReview > 0)
+        {
+            lines.Add(
+                new Issue(
+                    "Tạm giữ quá hạn rà soát",
+                    $"{m.HeldPastReview} lệnh",
+                    "Đã quá hạn rà soát; cần quyết định bỏ tạm giữ hoặc xử lý tiếp."
+                )
+            );
+        }
+        if (m.WaitingForAccount > 0)
+        {
+            lines.Add(
+                new Issue(
+                    "Chờ tài khoản quá 30 ngày",
+                    $"{m.WaitingForAccount} lệnh",
+                    "Chuyên gia chưa có tài khoản đã xác minh; cần xử lý riêng."
+                )
+            );
+        }
+        var copy = new Copy(
+            $"Tổng hợp chi trả cho chuyên gia – {Brand}",
+            "Các lệnh chi cần xử lý hôm nay",
+            "Danh sách lệnh chi trả cho chuyên gia chưa chuyển, theo hạn chót 2 ngày làm việc sau thời gian giữ.",
+            "Mở bảng chi trả"
+        );
+        return Render(copy, "Quản trị viên", email, m.OccurredAt, link, lines);
+    }
+
     public static Content BuildExcuseRequestAlert(
         ExpertExcuseRequestedEvent m,
         string email,
@@ -426,6 +484,71 @@ public static class ExpertDecisionEmailTemplate
             link,
             [new Issue(m.ServiceName, "Lý do thay đổi", m.Reason)]
         );
+    }
+
+    public static Content Build(ExpertPayoutNoticeEvent m, string link)
+    {
+        var amount = Vnd(m.Amount);
+        var copy = m.Change switch
+        {
+            "SUCCEEDED" => new Copy(
+                $"Đã chuyển tiền cho bạn – {Brand}",
+                "Tiền đã được chuyển",
+                $"Shared Hub đã chuyển {amount} vào tài khoản ngân hàng đã xác minh của bạn.",
+                "Xem thu nhập"
+            ),
+            "FAILED" => new Copy(
+                $"Chuyển tiền chưa thành công – {Brand}",
+                "Chuyển tiền chưa thành công",
+                $"Lần chuyển {amount} vào tài khoản ngân hàng của bạn chưa thành công. Shared Hub sẽ kiểm tra và chuyển lại; bạn chưa cần làm gì.",
+                "Xem thu nhập"
+            ),
+            "ACCOUNT_NEEDED" => new Copy(
+                $"Cần cập nhật tài khoản nhận tiền – {Brand}",
+                "Cần tài khoản nhận tiền khác",
+                $"Shared Hub đã chuyển {amount} nhiều lần nhưng chưa thành công. Hãy thêm một tài khoản ngân hàng khác đứng tên bạn; sau khi tài khoản được xác minh, khoản tiền sẽ được chuyển lại.",
+                "Cập nhật tài khoản"
+            ),
+            "HELD" => new Copy(
+                $"Khoản thu nhập đang được rà soát – {Brand}",
+                "Khoản thu nhập đang được rà soát",
+                $"Khoản {amount} đang được Shared Hub rà soát trước khi chuyển. Chúng tôi sẽ báo bạn ngay khi rà soát xong.",
+                "Xem thu nhập"
+            ),
+            "RELEASED" => new Copy(
+                $"Khoản thu nhập đã rà soát xong – {Brand}",
+                "Khoản thu nhập đã rà soát xong",
+                $"Khoản {amount} đã được rà soát xong và sẽ được chuyển vào tài khoản ngân hàng đã xác minh của bạn.",
+                "Xem thu nhập"
+            ),
+            "ACCOUNT_MISSING" => new Copy(
+                $"Bạn chưa có tài khoản nhận tiền – {Brand}",
+                "Hãy thêm tài khoản nhận tiền",
+                $"Khoản {amount} đã chuyển được từ {Day(m.TransferableFrom)} nhưng bạn chưa có tài khoản ngân hàng đã được xác minh. Hãy thêm tài khoản đứng tên bạn để nhận tiền.",
+                "Thêm tài khoản"
+            ),
+            _ => new Copy(
+                $"Thu nhập mới đã được ghi nhận – {Brand}",
+                "Bạn có khoản thu nhập mới",
+                $"Khoản {amount} từ một hồ sơ đã hoàn tất đã được ghi nhận. Tiền được giữ 7 ngày để đối soát, chuyển được từ {Day(m.TransferableFrom)} vào tài khoản ngân hàng đã xác minh của bạn. Hãy kiểm tra tài khoản nhận tiền đã được xác minh.",
+                "Xem thu nhập"
+            ),
+        };
+        return Render(copy, "bạn", m.Email!, m.OccurredAt, link, []);
+    }
+
+    public static Content Build(ExpertBankAccountRejectedEvent m, string link)
+    {
+        var copy = new Copy(
+            $"Tài khoản nhận tiền chưa được xác minh – {Brand}",
+            "Tài khoản nhận tiền chưa được xác minh",
+            $"Tài khoản {m.BankName} •••• {m.AccountLast4} của bạn chưa được xác minh. Hãy thêm một tài khoản ngân hàng khác đứng tên bạn để nhận tiền.",
+            "Thêm tài khoản"
+        );
+        var reason = string.IsNullOrWhiteSpace(m.Reason)
+            ? new List<Issue>()
+            : [new Issue($"{m.BankName} •••• {m.AccountLast4}", "Lý do", m.Reason)];
+        return Render(copy, "bạn", m.Email!, m.OccurredAt, link, reason);
     }
 
     private static string? Day(DateTimeOffset? at) =>

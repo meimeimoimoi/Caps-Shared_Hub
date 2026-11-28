@@ -1,7 +1,7 @@
+using Caps.Common.Domain;
 using Caps.Common.Persistence;
 using Caps.Workflow.Application.Abstractions;
 using Caps.Workflow.Application.Abstractions.Documents;
-using Caps.Workflow.Domain.Review;
 using Caps.Workflow.Infrastructure.Clients;
 using Caps.Workflow.Infrastructure.Documents;
 using Caps.Workflow.Infrastructure.Integrations;
@@ -45,6 +45,7 @@ public static class DependencyInjection
         services.AddScoped<IConversationRepository, ConversationRepository>();
         services.AddScoped<IChatMessageRepository, ChatMessageRepository>();
         services.AddScoped<IAiQuotaRepository, AiQuotaRepository>();
+        services.AddScoped<IAiBillingSwitchRepository, AiBillingSwitchRepository>();
         services.AddScoped<IAiUsageRepository, AiUsageRepository>();
         services.AddScoped<IDocumentRepository, DocumentRepository>();
         services.AddScoped<IDocumentVersionRepository, DocumentVersionRepository>();

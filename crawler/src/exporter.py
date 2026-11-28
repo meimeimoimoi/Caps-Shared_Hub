@@ -20,15 +20,13 @@ schema_version 2:
 import hashlib
 import json
 import re
-import zipfile
 from datetime import datetime
-from pathlib import Path
 from typing import List, Optional
-from xml.etree import ElementTree
 
 from slugify import slugify
 
 import config
+from src.appendix import attachment_appendices
 from src.legal_parser import Article, ParsedDocument, Unit, parse_legal_text
 from src import vbhn
 from src.logger_setup import setup_logger
@@ -47,8 +45,6 @@ def get_export_dir():
 # Giá trị `knowledge_document.source` theo nguồn cào. Lưu ý: ràng buộc ck_kd_source
 # trong BE/SHFT_PostgreSQL.sql hiện chỉ cho CRAWL_VBPL/MANUAL_UPLOAD -> cần thêm CRAWL_MOF.
 SOURCE_CODES = {"vbpl": "CRAWL_VBPL", "mof": "CRAWL_MOF"}
-# Khoản dài hơn ngưỡng này thì tách mỗi Điểm thành 1 chunk riêng
-MAX_CLAUSE_CHARS = 1500
 # Trần độ dài toàn bộ `text` của 1 chunk (header + thân) để embedding không bị cắt cụt
 MAX_CHUNK_CHARS = 2000
 # Thân chunk tối thiểu khi header quá dài, tránh tách thành các mẩu vụn
@@ -58,50 +54,6 @@ MIN_BODY_CHARS = 500
 def _iso(value: Optional[str]) -> Optional[str]:
     d = parse_vn_date(value)
     return d.isoformat() if d else None
-
-
-_W = "{http://schemas.openxmlformats.org/wordprocessingml/2006/main}"
-
-
-def _docx_text(path: str) -> str:
-    """Plain text of a .docx; each table row becomes one "cell | cell" line so form codes stay next to their names."""
-    root = ElementTree.fromstring(zipfile.ZipFile(path).read("word/document.xml"))
-
-    def para(p) -> str:
-        return "".join(t.text or "" for t in p.iter(f"{_W}t")).strip()
-
-    lines: List[str] = []
-    for block in root.find(f"{_W}body"):
-        if block.tag == f"{_W}p":
-            lines.append(para(block))
-        elif block.tag == f"{_W}tbl":
-            for row in block.iter(f"{_W}tr"):
-                cells = [" ".join(filter(None, map(para, c.iter(f"{_W}p")))) for c in row.iter(f"{_W}tc")]
-                lines.append(" | ".join(c for c in cells if c))
-    return "\n".join(line for line in lines if line)
-
-
-def _attachment_appendices(rec: dict, existing: List[dict]) -> List[dict]:
-    """Appendices shipped as separate .docx attachments (e.g. "Phụ lục I" of TT 89) are not in the page text."""
-    seen = {a["title"].casefold() for a in existing}
-    out: List[dict] = []
-    for att in rec.get("attachments") or []:
-        name, local = att.get("file_name") or "", att.get("local_path") or ""
-        start = name.casefold().find("phụ lục")
-        if start < 0 or not local.lower().endswith(".docx") or not Path(local).is_file():
-            continue
-        title = Path(name[start:]).stem.strip(" .")
-        if title.casefold() in seen:
-            continue
-        try:
-            text = _docx_text(local)
-        except (zipfile.BadZipFile, KeyError, ElementTree.ParseError) as e:
-            logger.warning(f"[{rec.get('so_hieu')}] cannot read appendix {name}: {e}")
-            continue
-        if text:
-            seen.add(title.casefold())
-            out.append({"title": title, "text": text})
-    return out
 
 
 # "... này có hiệu lực ... và áp dụng từ kỳ tính thuế thu nhập doanh nghiệp năm 2025" /
@@ -206,9 +158,9 @@ def _doc_label(rec: dict) -> str:
 
 def _chunk_groups(article: Article) -> List[List[Unit]]:
     """
-    Gom unit thành nhóm chunk: mỗi Khoản (kèm các Điểm) là 1 chunk; Khoản quá
-    dài thì mỗi Điểm 1 chunk (phần dẫn của Khoản đi chung chunk đầu tiên).
-    Đoạn mở đầu của Điều (trước Khoản 1) là 1 chunk riêng.
+    Group units into chunks: a Khoản without Điểm is one chunk; each Điểm is its own
+    chunk carrying the Khoản lead-in, so citations can point at the Điểm.
+    The Điều intro (before Khoản 1) is its own chunk.
     """
     groups: List[List[Unit]] = []
     by_clause: dict = {}
@@ -221,16 +173,41 @@ def _chunk_groups(article: Article) -> List[List[Unit]]:
 
     out: List[List[Unit]] = []
     for group in groups:
-        size = sum(len(u.text) for u in group)
-        has_points = any(u.point for u in group)
-        if size <= MAX_CLAUSE_CHARS or not has_points:
-            out.append(group)
-            continue
         lead = [u for u in group if not u.point]
         points = [u for u in group if u.point]
-        out.append(lead + points[:1])
-        out.extend([p] for p in points[1:])
+        # The lead-in ("Các khoản chi không được trừ gồm:") changes what the Điểm means
+        out.extend([lead + [p] for p in points] or [group])
     return out
+
+
+_AMEND_RE = re.compile(r"^(?:Sửa đổi|Bổ sung|Bãi bỏ|Thay thế)\b", re.IGNORECASE)
+# Drop "như sau:", the issue date and "(đã được sửa đổi ...)" after the target
+_AMEND_TAIL_RE = re.compile(r"\s*(?:\bnhư sau\b|\bngày \d|\(|:|;).*$", re.DOTALL)
+_DOC_NAME_RE = re.compile(r"\b(?:Bộ luật|Luật|Pháp lệnh|Nghị quyết|Nghị định|Quyết định|Thông tư)\b.*")
+
+
+def _amend_phrase(text: str) -> Optional[str]:
+    first_line = (text or "").split("\n", 1)[0].strip()
+    if not _AMEND_RE.match(first_line):
+        return None
+    return _AMEND_TAIL_RE.sub("", first_line).rstrip(" .,") or None
+
+
+def _amends(article: Article, group: List[Unit]) -> Optional[str]:
+    """
+    Target an amending Điều/Khoản changes, e.g. "Bổ sung khoản 15 Điều 4 Nghị định số 320/2025/NĐ-CP".
+    The Khoản lead-in (or Điều intro) wins over the Điều title; one naming no document borrows it
+    from the title.
+    """
+    title_phrase = _amend_phrase(article.title)
+    lead = next((u for u in group if not u.point), None)
+    clause_phrase = _amend_phrase(lead.text) if lead else None
+    if not clause_phrase:
+        return title_phrase
+    doc = _DOC_NAME_RE.search(title_phrase or "")
+    if doc and not _DOC_NAME_RE.search(clause_phrase):
+        return f"{clause_phrase} của {doc.group()}"
+    return clause_phrase
 
 
 def _numbered(unit: Unit) -> str:
@@ -254,9 +231,7 @@ def build_chunks(rec: dict, parsed: ParsedDocument) -> List[dict]:
             groups = _chunk_groups(article) or [[]]
             for group in groups:
                 clause = next((u.clause for u in group if u.clause), None)
-                points = [u.point for u in group if u.point]
-                # Chunk tách theo Điểm thì ghi Điểm; chunk cả Khoản thì để trống
-                point = points[0] if len(points) == 1 and all(u.point for u in group) else None
+                point = next((u.point for u in group if u.point), None)
                 path = " · ".join(
                     p for p in (
                         f"{article.kind} {article.number}",
@@ -270,6 +245,8 @@ def build_chunks(rec: dict, parsed: ParsedDocument) -> List[dict]:
                 crumbs.append(heading)
                 if clause:
                     crumbs.append(f"Khoản {clause}")
+                if point:
+                    crumbs.append(f"Điểm {point}")
                 header = " — ".join(crumbs)
                 body = "\n".join(_numbered(u) for u in group if u.text) or article.title or ""
                 limit = max(MAX_CHUNK_CHARS - len(header) - 1, MIN_BODY_CHARS)
@@ -281,6 +258,7 @@ def build_chunks(rec: dict, parsed: ParsedDocument) -> List[dict]:
                         "article": article.number,
                         "clause": clause,
                         "point": point,
+                        "amends": _amends(article, group),
                         "path": path,
                         "part": part_no,
                         "total_parts": len(parts),
@@ -298,9 +276,11 @@ def build_payload(rec: dict) -> dict:
     source = rec.get("source") or "vbpl"
     parsed = parse_legal_text(text, consolidated=rec.get("loai_van_ban") == vbhn.DOC_TYPE)
     content = parsed.to_content_json()
-    content["appendices"] += _attachment_appendices(rec, content["appendices"])
-    chunks =build_chunks(rec, parsed) if parsed.parse_status == "PARSED" else []
-    file_hash, file_hash_basis = _file_hash(rec, text)
+    attached = attachment_appendices(rec, content["appendices"])
+    content["appendices"] += attached
+    chunks = build_chunks(rec, parsed) if parsed.parse_status == "PARSED" else []
+    # Appendix text is part of the hash, otherwise ingestion treats the re-export as already imported
+    file_hash, file_hash_basis = _file_hash(rec, "\n".join([text] + [a["text"] for a in attached]))
 
     return {
         "schema_version": SCHEMA_VERSION,
@@ -446,6 +426,14 @@ def export_records(records: List[dict], formats: tuple = ("json",)) -> List[dict
     export_dir = get_export_dir()
     manifest: List[dict] = []
     for rec in records:
+        if not (rec.get("noi_dung_text") or "").strip():
+            # No text (download failed): exporting would make BE store an empty new version, so only report it
+            entry = {"document_number": _document_number(rec), "source": rec.get("source") or "vbpl",
+                     "text_source": rec.get("text_source"), "doc_type": rec.get("loai_van_ban"),
+                     "skipped": "NO_TEXT"}
+            manifest.append(entry)
+            logger.warning(f"[{entry['document_number']}] NO_TEXT: bỏ qua, không xuất file")
+            continue
         payload = build_payload(rec)
         folder = config.get_folder_name(rec.get("loai_van_ban") or "")
         slug = slugify(rec.get("so_hieu") or rec.get("doc_id") or "unknown", separator="-")

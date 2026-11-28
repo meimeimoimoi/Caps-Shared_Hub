@@ -94,8 +94,10 @@ Mỗi file khớp schema `knowledge` của backend (`BE/ingestion/Entities`):
 - `legal_source`: `document_number`, `doc_type`, `issuing_authority`, `title`
 - `knowledge_document`: `source = "CRAWL_VBPL"` / `"CRAWL_MOF"`, `file_hash` (sha256 toàn văn),
   ngày ISO `YYYY-MM-DD`, `content_json` (cây Chương/Điều/units giống trang duyệt knowledge-admin)
-- `chunks[]`: mỗi Khoản 1 chunk (Khoản dài > 1500 ký tự thì tách theo Điểm), có
-  `article` / `clause` / `point`, `path` ("Điều 4 · Khoản 1") và `text` mở đầu bằng breadcrumb
+- `chunks[]`: mỗi Khoản 1 chunk, Khoản có Điểm thì mỗi Điểm 1 chunk (kèm câu dẫn của Khoản), có
+  `article` / `clause` / `point`, `path` ("Điều 4 · Khoản 1") và `text` mở đầu bằng breadcrumb.
+  Chunk của Điều/Khoản sửa đổi có thêm `amends` ghi điều khoản bị tác động, ví dụ
+  "Bổ sung khoản 15 Điều 4 Nghị định số 320/2025/NĐ-CP" (không phải văn bản sửa đổi thì là `null`)
 
 Những chỗ đánh số bất thường được ghi `warnings` / unit `status: "WARNING"` để duyệt tay.
 
@@ -142,6 +144,16 @@ Cài OCR (một lần):
 
 Chưa cài Tesseract thì tool vẫn chạy: văn bản được đánh dấu `ocr_required: true`.
 Dùng `--no-ocr` để bỏ qua OCR cho nhanh.
+
+## Phụ lục đính kèm (biểu mẫu 03/TNDN...)
+
+Biểu mẫu tờ khai không nằm trong toàn văn trên trang mà ở file đính kèm có chữ "Phụ lục" trong tên
+(`.docx`, `.zip` đặt tên `.docx`, `.rar`). Khi export, `src/appendix.py` đọc từng biểu mẫu `.docx` thành một mục
+trong `content_json.appendices` (tiêu đề dạng `Phụ lục I. Khai thuế mẫu 1-6 / 6. Mẫu biểu khai TNDN / 2. 03.TNDN`);
+ai-service tạo chunk từ đó. Text phụ lục được tính vào `file_hash`, nên chạy lại `--export-only` sẽ tạo phiên bản mới
+thay vì bị ingestion bỏ qua do trùng hash.
+File `.rar` cần `bsdtar` (image Docker đã có; Debian/Ubuntu: `apt install libarchive-tools`). Mẫu `.doc`
+(Word 97-2003) hiện bị bỏ qua, chỉ ghi cảnh báo trong log.
 
 ## ⚠️ Nếu scraper không chạy đúng (0 kết quả / lỗi selector)
 

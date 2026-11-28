@@ -1,4 +1,6 @@
 using Caps.Billing.Application.Abstractions;
+using Caps.Billing.Infrastructure.Jobs;
+using Caps.Billing.Infrastructure.Messaging;
 using Caps.Billing.Infrastructure.Payments;
 using Caps.Billing.Infrastructure.Persistence;
 using Caps.Billing.Infrastructure.Security;
@@ -26,9 +28,11 @@ public static class DependencyInjection
         services.AddScoped<IBankAccountRepository, BankAccountRepository>();
         services.AddScoped<IPaymentTransactionRepository, PaymentTransactionRepository>();
         services.AddScoped<IPayoutRepository, PayoutRepository>();
+        services.AddScoped<IBillingNotificationOutbox, BillingNotificationOutbox>();
         services.AddScoped<IEscrowRepository, EscrowRepository>();
         services.AddScoped<ISettlementRepository, SettlementRepository>();
         services.AddScoped<IBillingStatsReader, BillingStatsReader>();
+        services.AddHostedService<PayoutReminderJob>();
         services.AddSingleton<IAccountNumberProtector, AccountNumberProtector>();
         services.AddHttpClient<IPaymentGateway, PayOsClient>(ConfigurePayOs);
         services.AddHttpClient<IPayoutGateway, PayOsPayoutClient>(ConfigurePayOs);
