@@ -67,14 +67,14 @@ data/
         │   └── quyet_dinh/*.txt
         └── export/            # Payload cho Caps-Shared_Hub (xem bên dưới)
             ├── manifest.json
-            └── <loai>/<so-hieu>.json
+            └── <loai>/<năm>/<so-hieu>.json
 ```
 
 ## Xuất dữ liệu cho Caps-Shared_Hub (tách Điều/Khoản)
 
 Cào và chunking là **2 bước riêng**. Lệnh cào mặc định chỉ lưu text + `metadata.json`;
 bước 2 tách toàn văn thành Chương → Điều → Khoản → Điểm (`src/legal_parser.py`) và ghi
-`data/<ngày>/<lượt>/export/<loai>/<so-hieu>.json` (`src/exporter.py`; nguồn khác vbpl nằm trong thư mục `<nguon>/`).
+`data/<ngày>/<lượt>/export/<loai>/<năm>/<so-hieu>.json` (`src/exporter.py`; `<năm>` là năm ban hành, không rõ ngày thì `khong-ro-nam`; nguồn khác vbpl nằm trong thư mục `<nguon>/`).
 
 ```bash
 python scraper_agent.py --sources vbpl,mof --top-n 3   # 1. cào

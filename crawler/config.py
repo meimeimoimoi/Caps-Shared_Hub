@@ -41,6 +41,15 @@ RESULT_PAGE_SIZE_FALLBACK = 20
 # Thời gian chờ tối đa (ms) cho server action trả về kết quả tìm kiếm / chi tiết
 SEARCH_PAYLOAD_TIMEOUT_MS = 25_000
 DETAIL_CONTENT_TIMEOUT_MS = 25_000
+# vbpl sometimes serves an empty detail page (footer only, no tabs) that stays empty on reload;
+# tabs normally exist once the page is loaded, so a short wait is enough to tell them apart
+DETAIL_TABS_TIMEOUT_MS = 5_000
+# First try of the "Lược đồ" tab (p95 of the 25/11 run ~12s); the retry keeps DETAIL_CONTENT_TIMEOUT_MS
+LUOC_DO_FIRST_TRY_TIMEOUT_MS = 12_000
+# Time for a "Tải về" button click to start a download (p99 of the 25/11 run ~16s incl. saving)
+DOWNLOAD_START_TIMEOUT_MS = 15_000
+# After this many timeouts in a row the remaining buttons of the page almost never download
+MAX_CONSECUTIVE_DOWNLOAD_TIMEOUTS = 2
 
 # Trang tìm kiếm trả 10-20 kết quả / trang tuỳ thời điểm. Với từ khóa rộng
 # (kiểu "thuế thu nhập doanh nghiệp") một số loại văn bản có thể không xuất

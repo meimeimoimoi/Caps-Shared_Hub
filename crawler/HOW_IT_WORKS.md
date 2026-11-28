@@ -63,8 +63,8 @@ crawler/data/2026-10-21/run-221429/
     ├── manifest.json      ← mục lục: danh sách file + đã cắt được chưa
     ├── luat/…json
     ├── nghi_dinh/…json
-    ├── thong_tu/73-2024-tt-btc.json
-    └── van_ban_hop_nhat/25-vbhn-btc.json
+    ├── thong_tu/2024/73-2024-tt-btc.json
+    └── van_ban_hop_nhat/<năm>/25-vbhn-btc.json
 ```
 **Mỗi file `export/<loại>/<số-hiệu>.json` = một văn bản.** `manifest.json` chỉ là mục lục, dùng để duyệt qua các file và bỏ qua những file có `parse_status = PARSE_FAILED`.
 
@@ -74,7 +74,7 @@ crawler/data/2026-10-21/run-221429/
 
 ## 4. Bên trong một file export
 
-Mỗi file có 3 ngăn. Ví dụ rút gọn từ file thật `van_ban_hop_nhat/25-vbhn-btc.json`:
+Mỗi file có 3 ngăn. Ví dụ rút gọn từ file thật `van_ban_hop_nhat/<năm>/25-vbhn-btc.json`:
 
 ```jsonc
 {

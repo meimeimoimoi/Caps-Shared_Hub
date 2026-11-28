@@ -516,6 +516,9 @@ def run_keyword_pipeline(
                     continue
                 if not count_only:
                     ensure_document_text(doc)
+                    if not search.on_topic(doc.tieu_de, doc.noi_dung_text):
+                        logger.info(f"  [LOC] Bo {doc.so_hieu}: toan van khong nhac {search.require_any}")
+                        continue
                 doc.add_keyword(search.term, search.group)
                 collected[doc.unique_key] = doc
                 done_ids["vbpl"].add(doc.doc_id)
@@ -544,6 +547,9 @@ def run_keyword_pipeline(
             for doc in docs:
                 if not count_only:
                     ensure_document_text(doc)
+                    if not search.on_topic(doc.tieu_de, doc.noi_dung_text):
+                        logger.info(f"  [LOC] Bo {doc.so_hieu}: toan van khong nhac {search.require_any}")
+                        continue
                 doc.add_keyword(search.term, search.group)
                 collected[doc.unique_key] = doc
                 done_ids["mof"].add(doc.doc_id)

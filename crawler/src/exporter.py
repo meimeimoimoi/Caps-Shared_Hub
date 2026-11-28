@@ -407,7 +407,10 @@ def export_records(records: List[dict], formats: tuple = ("json",)) -> List[dict
         slug = slugify(rec.get("so_hieu") or rec.get("doc_id") or "unknown", separator="-")
         if not has_document_number(rec.get("so_hieu")) and rec.get("doc_id"):
             slug = f"{slug}-{str(rec['doc_id'])[:8]}"
-        base = config.source_dir(export_dir, rec.get("source")) / folder / slug
+        # Split each type by issue year; documents without a readable date go to "khong-ro-nam"
+        year = payload["knowledge_document"]["issued_date"]
+        year = year[:4] if year else "khong-ro-nam"
+        base = config.source_dir(export_dir, rec.get("source")) / folder / year / slug
         base.parent.mkdir(parents=True, exist_ok=True)
         written = {}
         if "json" in formats:
