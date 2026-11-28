@@ -15,6 +15,16 @@ from app.core.qdrant import init_qdrant, qdrant_client
 from app.modules.rag.retriever import reranker_status, warmup_reranker
 
 logger = logging.getLogger(__name__)
+
+# Rejection causes and retries are logged at INFO; with no handler Python prints only warnings.
+_app_logger = logging.getLogger("app")
+if not _app_logger.handlers:
+    _log_handler = logging.StreamHandler()
+    _log_handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(name)s: %(message)s"))
+    _app_logger.addHandler(_log_handler)
+    _app_logger.setLevel(logging.INFO)
+    _app_logger.propagate = False
+
 _READYZ_CACHE_TTL_SECONDS = 15.0
 _last_ollama_probe_ok_at: float = 0.0
 
