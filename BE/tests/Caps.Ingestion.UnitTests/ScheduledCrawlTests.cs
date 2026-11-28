@@ -19,6 +19,7 @@ public sealed class ScheduledCrawlTests
         );
 
         Assert.Equal(new DateTimeOffset(2026, 10, 31, 17, 0, 0, TimeSpan.Zero), start);
+        Assert.Equal(TimeSpan.Zero, start.Offset);
     }
 
     [Fact]
