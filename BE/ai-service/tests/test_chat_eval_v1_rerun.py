@@ -13,12 +13,17 @@ if str(AI_SERVICE_ROOT) not in sys.path:
 
 from app.modules.drafting.drafter import DocumentDrafter  # noqa: E402
 from app.modules.rag.cit_calculator import compute_cap_excess_hint  # noqa: E402
+from app.modules.rag.generator import GroundedGenerator  # noqa: E402
 from app.modules.rag.guardrails import (  # noqa: E402
     affirms_unsupported_premise,
+    backfill_sources_for_figures,
     contradicts_non_deductible_rule,
+    figures_in_text,
+    find_ungrounded_numbers,
     mismatched_bracket_rate,
     missing_verified_tax_note,
 )
+from app.schemas.statuses import AnswerStatus  # noqa: E402
 
 CASH = (
     "Nghị định 320/2025/NĐ-CP — Điều 9. Các khoản chi được trừ — Khoản 1 "
@@ -92,6 +97,74 @@ class FalsePremiseTests(unittest.TestCase):
         self.assertIsNotNone(note)
         self.assertIn("Sai", note)
         self.assertIsNone(mismatched_bracket_rate(question, "Sai, doanh thu 5 tỷ áp thuế suất 17% [1].", [_hit(RATES)]))
+
+
+def _full_hit(text: str, doc_no: str = "320/2025/NĐ-CP"):
+    return SimpleNamespace(
+        score=0.7,
+        payload={
+            "legal_source_id": f"src-{doc_no}",
+            "document_number": doc_no,
+            "document_title": f"Văn bản {doc_no}",
+            "article": "Điều 9",
+            "clause": None,
+            "point": None,
+            "effective_from": "2025-12-15T00:00:00Z",
+            "effective_to": None,
+            "text_content": text,
+        },
+    )
+
+
+class RejectionLogFixTests(unittest.TestCase):
+    """Causes found in the 17:20 log of the 10 rejected questions (29f2b722)."""
+
+    def test_cp03_total_named_by_the_retry_note_is_not_ungrounded(self):
+        question = CashConclusionTests.QUESTION
+        note = contradicts_non_deductible_rule(question, "Có được tính chi phí [1].", [_hit(CASH)])
+        answer = "Không được trừ vì tổng 9 triệu đồng từ 05 triệu đồng trở lên phải có chứng từ không dùng tiền mặt [1]."
+        self.assertEqual(find_ungrounded_numbers(question, answer, [_hit(CASH)]), ["9"])
+        self.assertEqual(find_ungrounded_numbers(question, answer, [_hit(CASH)], extra_allowed=figures_in_text(note)), [])
+
+    def test_cp03_retry_answer_is_accepted_end_to_end(self):
+        question = CashConclusionTests.QUESTION
+        replies = [
+            {"answerable": True, "used_sources": [1], "conclusion": "Có được tính chi phí [1]."},
+            {
+                "answerable": True,
+                "used_sources": [1],
+                "conclusion": "Không được trừ vì tổng 9 triệu đồng từ 05 triệu đồng trở lên phải có chứng từ "
+                "thanh toán không dùng tiền mặt [1].",
+            },
+        ]
+        with patch("app.modules.rag.generator.llm_model") as mock_llm:
+            mock_llm.invoke.side_effect = [SimpleNamespace(content=json.dumps(r, ensure_ascii=False)) for r in replies]
+            result = GroundedGenerator.generate_answer(question, [_full_hit(CASH)], "2026-01-01 đến 2026-12-31")
+        self.assertEqual(mock_llm.invoke.call_count, 2)
+        self.assertEqual(result["answer_status"], AnswerStatus.ANSWERED)
+
+    def test_ts04_bracket_rate_cited_from_the_wrong_clause_is_backfilled(self):
+        question = "Doanh nghiệp có doanh thu năm 60 tỷ đồng thì thuế suất TNDN là bao nhiêu?"
+        sme = _hit("Thuế suất 17% áp dụng đối với doanh nghiệp có tổng doanh thu năm từ trên 03 tỷ đồng "
+                   "đến không quá 50 tỷ đồng.")
+        general = _hit(RATES)
+        conclusion = "Thuế suất TNDN 20% [1]."
+        self.assertTrue(find_ungrounded_numbers(question, conclusion, [sme]))
+        backfilled = backfill_sources_for_figures(question, conclusion, [sme], [sme, general])
+        self.assertIsNotNone(backfilled)
+        self.assertIs(backfilled[-1], general)
+
+    def test_ts04_wrong_rate_is_still_not_backfilled(self):
+        question = "Doanh nghiệp có doanh thu năm 60 tỷ đồng thì thuế suất TNDN là bao nhiêu?"
+        sme = _hit("Thuế suất 15% áp dụng đối với doanh nghiệp có tổng doanh thu năm không quá 03 tỷ đồng.")
+        other = _hit("Áp dụng thuế suất 10% trong thời hạn 15 năm đối với dự án đầu tư mới.")
+        self.assertIsNone(backfill_sources_for_figures(question, "Thuế suất TNDN 10% [1].", [sme], [sme, other, _hit(RATES)]))
+
+    def test_premise_note_spells_out_the_opening(self):
+        question = "Doanh nghiệp doanh thu 40 tỷ được áp dụng thuế suất 17% trong 10 năm đúng không?"
+        note = affirms_unsupported_premise(question, "Đúng [1][2]", [_hit(RATES)])
+        self.assertIn("BẮT BUỘC mở đầu bằng chữ 'Sai'", note)
+        self.assertIn("không quy định 10 năm", note)
 
 
 class CapResultTests(unittest.TestCase):

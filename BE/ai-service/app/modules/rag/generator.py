@@ -19,6 +19,7 @@ from app.modules.rag.guardrails import (
     citation_indexes,
     contradicts_non_deductible_rule,
     drops_critical_condition,
+    figures_in_text,
     find_ungrounded_numbers,
     has_reversed_cap_polarity,
     mismatched_bracket_rate,
@@ -220,6 +221,8 @@ class GroundedGenerator:
             question, retrieved_chunks
         )
         retry_note: str | None = None
+        # Figures a content check put in its retry note (a summed total, the correct rate) are not ungrounded.
+        note_figures: set[str] = set()
 
         for attempt in range(2):
             if deadline is not None and time.monotonic() >= deadline:
@@ -269,11 +272,22 @@ class GroundedGenerator:
                 continue
 
             ungrounded_figures = find_ungrounded_numbers(
-                question, conclusion_text, used_chunks, period_str=period_str, calc_hint=calc_hint
+                question,
+                conclusion_text,
+                used_chunks,
+                period_str=period_str,
+                calc_hint=calc_hint,
+                extra_allowed=note_figures,
             )
             if ungrounded_figures and (
                 backfilled := backfill_sources_for_figures(
-                    question, conclusion_text, used_chunks, retrieved_chunks, period_str=period_str, calc_hint=calc_hint
+                    question,
+                    conclusion_text,
+                    used_chunks,
+                    retrieved_chunks,
+                    period_str=period_str,
+                    calc_hint=calc_hint,
+                    extra_allowed=note_figures,
                 )
             ):
                 logger.info("Chat answer cited other retrieved sources for figures %s", ungrounded_figures)
@@ -309,11 +323,13 @@ class GroundedGenerator:
             if deduction_note := contradicts_non_deductible_rule(question, conclusion_text, retrieved_chunks):
                 logger.info("Chat answer called a non-deductible expense deductible (attempt %d)", attempt + 1)
                 retry_note = deduction_note
+                note_figures = figures_in_text(deduction_note)
                 continue
 
             if rate_note := mismatched_bracket_rate(question, conclusion_text, used_chunks, retrieved_chunks):
                 logger.info("Chat answer stated a rate outside the revenue bracket (attempt %d)", attempt + 1)
                 retry_note = rate_note
+                note_figures = figures_in_text(rate_note)
                 continue
 
             if premise_note := affirms_unsupported_premise(question, conclusion_text, used_chunks):

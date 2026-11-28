@@ -153,11 +153,13 @@ def affirms_unsupported_premise(question: str, conclusion: str, used_chunks: lis
     missing += [f"ngày {d}/{m}" for d, m in sorted(_dates(q_low)) if (d, m) not in law_dates]
     if not missing:
         return None
+    details = ", ".join(missing)
+    # The model repeated "Đúng" after a softer note (TS-09, KK-10 in the 28/11 log), so spell out the opening.
     return (
-        "Kết luận trước xác nhận 'Đúng' nhưng tiền đề trong câu hỏi có chi tiết không có trong đoạn căn cứ đã dùng: "
-        + ", ".join(missing)
-        + ". Không được xác nhận chi tiết đó. Hãy trả lời 'Sai' hoặc 'Sai một phần', nói rõ phần nào của tiền đề sai "
-        "và nêu quy định đúng theo đoạn căn cứ."
+        f"Kết luận trước trả lời 'Đúng' nhưng đoạn căn cứ không có chi tiết: {details}. "
+        "Kết luận mới BẮT BUỘC mở đầu bằng chữ 'Sai' (hoặc 'Sai một phần' nếu phần còn lại của câu hỏi đúng), "
+        "TUYỆT ĐỐI KHÔNG mở đầu bằng 'Đúng'. Sau đó viết: "
+        f"\"đoạn căn cứ không quy định {details}\" và nêu quy định đúng theo đoạn căn cứ, kèm số thứ tự căn cứ."
     )
 _REDUCTION_LIMIT_RE = re.compile(r"doanh\s+thu[^.;]{0,60}?không\s+quá\s+(\d+(?:[.,]\d+)?)\s*tỷ", re.IGNORECASE)
 _GRANTS_REDUCTION_RE = re.compile(r"\bđược\s+giảm\s+30\s*%", re.IGNORECASE)
@@ -245,14 +247,18 @@ def find_ungrounded_numbers(
     used_chunks: list,
     period_str: str = "",
     calc_hint: CitCalcHint | None = None,
+    extra_allowed: set[str] | None = None,
 ) -> list[str]:
-    """Flag any number, rate, or duration in conclusion not backed by cited chunks or Python calculation."""
+    """Flag any number, rate, or duration in conclusion not backed by cited chunks or Python calculation.
+
+    `extra_allowed` holds figures the service itself put in the retry note, such as a summed total (CP-03).
+    """
     if not conclusion:
         return []
 
     stripped = _STRUCTURAL_REF_RE.sub(" ", _DOC_NUMBER_SPAN_RE.sub(" ", CITATION_MARKER_RE.sub(" ", conclusion)))
     source_numbers = _source_numeric_values(used_chunks)
-    calc_numbers = calc_hint.authorized_numbers if calc_hint else set()
+    calc_numbers = (calc_hint.authorized_numbers if calc_hint else set()) | (extra_allowed or set())
     period_numbers = {normalize_number_token(tok) for tok in NUMBER_TOKEN_RE.findall(period_str or "")}
     period_numbers |= _nearby_years(period_numbers)
 
@@ -285,7 +291,29 @@ def find_ungrounded_numbers(
     return ungrounded
 
 
+def figures_in_text(text: str) -> set[str]:
+    """Normalized numbers of a service-written note, with money amounts in every written form."""
+    clean = _DOC_NUMBER_SPAN_RE.sub(" ", text or "")
+    figures = {normalize_number_token(tok) for tok in NUMBER_TOKEN_RE.findall(clean)}
+    for raw_amt, unit in _SCALED_SOURCE_AMOUNT_RE.findall(clean.lower()):
+        if (parsed := parse_numeric_scalar(raw_amt)) is not None:
+            figures |= money_representations(parsed * UNIT_SCALE_VND[unit.lower()])
+    return figures
+
+
 _MAX_BACKFILLED_SOURCES = 2
+
+
+def _is_expected_rate(conclusion: str, figure: str, expected_rate: float | None, hit) -> bool:
+    """True when the answer states the bracket rate the code read from the law and the chunk defines that rate (TS-04).
+
+    A reduction ("giảm 20%") is not a rate, so the answer itself must call the figure "thuế suất".
+    """
+    if expected_rate is None or "thuế suất" not in conclusion.lower() or not figure.endswith("%") and not re.fullmatch(r"\d+(?:[.,]\d+)?", figure):
+        return False
+    value = parse_numeric_scalar(figure.rstrip("%").replace(",", "."))
+    chunk = str((hit.payload or {}).get("text_content") or "").lower()
+    return value == expected_rate and "thuế suất" in chunk and f"{expected_rate:g}%" in chunk
 
 
 def _same_lead_word(conclusion: str, hit, figure: str) -> bool:
@@ -309,6 +337,7 @@ def backfill_sources_for_figures(
     retrieved_chunks: list,
     period_str: str = "",
     calc_hint: CitCalcHint | None = None,
+    extra_allowed: set[str] | None = None,
 ) -> list | None:
     """Return used chunks plus at most two other retrieved chunks that back every flagged figure, or None.
 
@@ -316,15 +345,20 @@ def backfill_sources_for_figures(
     citing the chunk that holds the figure is better than rejecting a grounded answer.
     """
     used = list(used_chunks)
-    remaining = find_ungrounded_numbers(question, conclusion, used, period_str=period_str, calc_hint=calc_hint)
+    kwargs = {"period_str": period_str, "calc_hint": calc_hint, "extra_allowed": extra_allowed}
+    remaining = find_ungrounded_numbers(question, conclusion, used, **kwargs)
+    # TS-04: "là 20%" was cited from the 15%/17% clause; the code knows 20% is the rate for the revenue asked.
+    expected_rate = _expected_rate(question, _chunks_text(retrieved_chunks))
     for hit in retrieved_chunks:
         if not remaining or len(used) - len(used_chunks) >= _MAX_BACKFILLED_SOURCES:
             break
         if any(hit is u for u in used):
             continue
-        after = find_ungrounded_numbers(question, conclusion, used + [hit], period_str=period_str, calc_hint=calc_hint)
+        after = find_ungrounded_numbers(question, conclusion, used + [hit], **kwargs)
         newly_backed = [fig for fig in remaining if fig not in after]
-        if newly_backed and all(_same_lead_word(conclusion, hit, fig) for fig in newly_backed):
+        if newly_backed and all(
+            _same_lead_word(conclusion, hit, fig) or _is_expected_rate(conclusion, fig, expected_rate, hit) for fig in newly_backed
+        ):
             used.append(hit)
             remaining = after
     return used if not remaining and len(used) > len(used_chunks) else None
